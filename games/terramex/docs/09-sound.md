@@ -8,7 +8,7 @@ What this covers:
 - the player's frame: MusicFrame, UpdateTune and the channel records (9.3);
 - the order lists (9.4) and the patterns (9.5), byte by byte;
 - the instruments and the software envelope (9.6);
-- WriteAY and the eleven registers it sets (9.7);
+- WriteAY and the ten registers it sets (9.7);
 - tune 0, the only tune played, its 9698-frame loop, and tunes 1-3, never started (9.8);
 - the model of the player checked against a recording (9.9);
 - the beeper: PlaySound, SoundEffects and who calls each sound (9.10);
@@ -669,7 +669,7 @@ in none.
 The point: the instruments are C64 sounds with the waveform cut down to tone or noise. The pulse-width and filter
 bytes are copied along and ignored. The release is configured but has no time to act, so every note ends by a cut.
 
-## 9.7 WriteAY: the eleven registers
+## 9.7 WriteAY: the ten registers
 
 WriteAY `$C290` writes, in this order: R0-R1 (A's period), R2-R3 (B's), R4-R5 (C's), R10 (C's volume), R7
 (MixerImage), R8 and R9 (the volumes of A and B). Each goes through AYWrite `$CD56`: an `OUT` to `$FFFD` selects the
@@ -722,7 +722,7 @@ R6 (the noise period) and R11-R13 (the envelope generator) are never written. Th
 at whatever R6 holds. The 128K ROM's set-up leaves it at 0, the AY's fastest noise. No peak volume is above 15, so
 bit 4 of R8-R10 is never set and the hardware envelope is never used.
 
-![The 11 registers WriteAY sets, tune frames 2050-2249](img/sound/registers.png)
+![The 10 registers WriteAY sets, tune frames 2050-2249](img/sound/registers.png)
 
 How to read the figure:
 
@@ -735,7 +735,7 @@ How to read the figure:
   last values one frame longer.
 - The values are the registers after the frame's MusicFrame call. They hold on the AY from about T 4000-12 000 of
   that frame to the same point of the next.
-- **The point**: the AY state per interrupt is eleven bytes. The tune is a sequence of such snapshots, with a frame
+- **The point**: the AY state per interrupt is ten bytes. The tune is a sequence of such snapshots, with a frame
   skipped at every note end.
 
 ```bash
@@ -895,8 +895,10 @@ Earlier traces of frames 23 000-23 011 and 23 507-23 510 matched in the same way
 ten writes, in the same order, with the same values.
 
 ```bash
-python3 tools/sound_sim.py check --trace work/docs/tmD/c1/traces/23360_0-23380_0.uatr --start 21599
-python3 tools/sound_sim.py check --trace work/docs/tmD/c1/traces/23508_0-23510_0.uatr --start 21599
+python3 ../../kit/rs.py open --work work/docs/tmD/c1 --ttd work/stage1/c1/session.ttd --model 128K --port-base P
+python3 tools/sound_sim.py check --work work/docs/tmD/c1 --window 23360:0-23380:0 --start 21599
+python3 tools/sound_sim.py check --work work/docs/tmD/c1 --window 23508:0-23510:0 --start 21599
+python3 ../../kit/rs.py stop --work work/docs/tmD/c1
 ```
 
 Worked example: c1 frame 23 360 is tune frame 23 360 - 21 599 = 1761. The trace's ten `OUT` pairs of that frame give
@@ -948,11 +950,11 @@ SkoolKit also read the operand of `LD HL,$0000` at `$C54A` as NOPs.
 
 | A | Sound | Player | Played by | When |
 | ---: | --- | --- | --- | --- |
-| 0 | rise | SoundRise `$C506` | the fall death `$A88B` (C = 0, through DeathFrames `$A8AB`) | at the end of the death's frames |
+| 0 | rise | SoundRise `$C506` | FallDeath `$A888` (C = 0 set at `$A88B`); DeathFrames `$A8AB` plays it at `$A8B7` after the death frames, unless C = `$FF` | at the end of the death's frames |
 | 1 | ROM fall | SoundRomFall `$C4E9` | BarrelGo `$AA6C`; the space scene `$B13E` | a barrel; the asteroid's strike |
 | 2 | chirp | SoundChirp `$C4CE` | PickUpItem `$BBF2`; the space scene `$B122` | a pickup; the asteroid deflected |
-| 3 | hiss | SoundHiss `$C521` | the creature death `$A8A3` | a creature's touch |
-| 4 | ROM burst | SoundRomBurst `$C54A` | the room `$1A` death `$A89A` (C = 4) | the snakes |
+| 3 | hiss | SoundHiss `$C521` | CreatureDeath `$A89E` (at `$A8A3`) | a creature's touch |
+| 4 | ROM burst | SoundRomBurst `$C54A` | Room1ADeath `$A88F` (C = 4 set at `$A89A`); DeathFrames plays it at `$A8B7`, as sound 0 | the snakes, at the end of the death's frames |
 | 5 | beep high | SoundBeepHigh `$C537` | DropFall `$C051` | the drop |
 | 6 | beep low | SoundBeepLow `$C532` | the jump start `$A484` | every jump |
 
@@ -1099,9 +1101,11 @@ A half-period is H x 62 T plus about 40 T of overhead. That makes 1660 `OUT`s an
 
 ![The pickup chirp on the machine against the simulator, c1 frames 23508-23509](img/sound/chirp-witness.png)
 
-*The chirp of c1's first pickup, from the access trace of c1 frames 23 507-23 511 on the writer's instance, against
-the simulator. Command: `python3 tools/sound_sim.py fig-witness docs/img/sound/chirp-witness.png --trace
-work/docs/tmD/c1/traces/23507_0-23511_0.uatr --sound 2 --label "The pickup chirp, c1 frames 23508-23509"`.*
+*The chirp of c1's first pickup, from the access trace of c1 frames 23 507-23 511, against the simulator. Command,
+with an instance of c1 open (`python3 ../../kit/rs.py open --work work/docs/tmD/c1 --ttd work/stage1/c1/session.ttd
+--model 128K --port-base P`): `python3 tools/sound_sim.py fig-witness docs/img/sound/chirp-witness.png --work
+work/docs/tmD/c1 --window 23507:0-23511:0 --sound 2 --label "The pickup chirp, c1 frames 23508-23509"`. It records the
+trace into `work/docs/tmD/c1/traces/23507_0-23511_0.uatr` when that file is missing.*
 
 How to read the figure:
 
@@ -1121,8 +1125,10 @@ How to read the figure:
 ![The rise on the machine against the simulator, gameover frames 1368-1371](img/sound/rise-witness.png)
 
 *The rise at the fall death of gameover, from the access trace of gameover frames 1366-1372, against the simulator.
-Command: `python3 tools/sound_sim.py fig-witness docs/img/sound/rise-witness.png --trace
-work/docs/tmD/go/traces/1366_0-1372_0.uatr --sound 0 --label "The rise, gameover frames 1368-1371"`.*
+Command, with an instance of gameover open (`python3 ../../kit/rs.py open --work work/docs/tmD/go --ttd
+work/stage1/gameover/session.ttd --model 128K --port-base P`): `python3 tools/sound_sim.py fig-witness
+docs/img/sound/rise-witness.png --work work/docs/tmD/go --window 1366:0-1372:0 --sound 0 --label "The rise, gameover
+frames 1368-1371"`.*
 
 How to read the figure: the same layout as the chirp's. The machine plays 2460 `OUT`s and 60 edges, as the
 simulator, from frame 1368 T 59 644 to frame 1371 T 33 094. The first and last edges are 176 576 T apart, against
@@ -1212,15 +1218,16 @@ flowchart TD
 ```
 
 Worked example, the ROM fall's first bytes: the 48 ROM starts `F3 AF 11 FF FF C3 CB 11`. AND `$10` gives `$10`, 0,
-`$10`, `$10`, `$10`, 0, 0, `$10`: the speaker's first eight states. While B is `$23` (the first 10 bytes, count 9000
-down to 8964) the delay is 0 turns. The next 64 bytes wait 1 turn each, and so on: each step of B is 64 bytes. The
-last 64 bytes, with B = 0, wait 35 turns each.
+`$10`, `$10`, `$10`, 0, 0, `$10`: the speaker's first eight states. While B is `$23` (the first 11 bytes, count 9000
+down to 8960) the delay is 0 turns. The next 64 bytes wait 1 turn each, and so on: each step of B is 64 bytes. The
+last 63 bytes, with B = 0 (count 252 down to 4), wait 35 turns each: 11 + 34 x 64 + 63 = 2250.
 
 ![The ROM fall on the machine against the simulator, gameover frames 1579-1594](img/sound/romfall-witness.png)
 
 *The asteroid's strike in gameover, from the access trace of gameover frames 1578-1596, against the simulator.
-Command: `python3 tools/sound_sim.py fig-witness docs/img/sound/romfall-witness.png --trace
-work/docs/tmD/go/traces/1578_0-1596_0.uatr --sound 1 --label "The ROM fall, gameover frames 1579-1594"`.*
+Command, with the gameover instance of the rise (9.11) open: `python3 tools/sound_sim.py fig-witness
+docs/img/sound/romfall-witness.png --work work/docs/tmD/go --window 1578:0-1596:0 --sound 1 --label "The ROM fall,
+gameover frames 1579-1594"`.*
 
 How to read the figure:
 
@@ -1284,9 +1291,9 @@ fewer waves.
 
 ![The jump beep on the machine against the simulator, gameover frames 16-17](img/sound/beeplow-witness.png)
 
-*The jump beep at gameover frame 16, from the access trace of gameover frames 15-18. Command: `python3
-tools/sound_sim.py fig-witness docs/img/sound/beeplow-witness.png --trace work/docs/tmD/go/traces/15_0-18_0.uatr
---sound 6 --label "The low beep, gameover frames 16-17"`.*
+*The jump beep at gameover frame 16, from the access trace of gameover frames 15-18. Command, with the gameover
+instance open: `python3 tools/sound_sim.py fig-witness docs/img/sound/beeplow-witness.png --work work/docs/tmD/go
+--window 15:0-18:0 --sound 6 --label "The low beep, gameover frames 16-17"`.*
 
 How to read the figure: the machine plays the same 6 `OUT`s, from frame 16 T 60 297 to frame 17 T 6384. The interrupt
 of frame 17 falls in the fifth half-wave, so the first and last edges are 16 995 T apart against 13 098 T. The other
@@ -1318,8 +1325,8 @@ edges, at 44 100 Hz, with a little silence after the sound.
 
 ```bash
 python3 tools/sound_sim.py wavs docs/audio
-python3 tools/sound_sim.py trace-beeper --trace work/docs/tmD/c1/traces/23507_0-23511_0.uatr \
-    --out docs/audio/beeper-2-chirp-c1.wav
+python3 tools/sound_sim.py trace-beeper --work work/docs/tmD/c1 --window 23507:0-23511:0 \
+    --out docs/audio/beeper-2-chirp-c1.wav             # the c1 instance open, as for the chirp (9.11)
 ```
 
 The point: the simulator files are the sounds as written. The c1 file is the sound as heard: a little lower, with a

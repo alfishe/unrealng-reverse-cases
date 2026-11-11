@@ -24,7 +24,7 @@ The images are `work/mkgame/original.bin` (`tools/image.py`, the tape's blocks) 
 
 The case started from nzeemin's SkoolKit disassembly (skoolkit-game-revs `terramex-zx`, commit `6a328b3b`;
 [README, Sources](../README.md#sources)). The titles marked (SK) come from it; each was checked against the code and
-a recording. 2.9 lists what it covers and where this case reads the code otherwise.
+a recording. 2.10 lists what it covers and where this case reads the code otherwise.
 
 ## 2.1 The machine budget
 
@@ -33,7 +33,7 @@ a recording. 2.9 lists what it covers and where this case reads the code otherwi
 | CPU | Z80 at 3.5469 MHz on the 128K, 70 908 T a frame. No frame sync in play: a pass of MainLoop `$9018` (SK) takes 2.4 to 3.3 frames ([doc 4](04-game-loop.md)) |
 | interrupts | IM 2, I = `$8E`, the table `$8E00-$8F00` filled with `$5F` by GameEntry `$8F00`, `JP $9491` at `$5F5F`. The handler pages RAM 6 in, calls the music player at `$C000` and pages back. One interrupt every frame in play: `explorers`, `gameover` and every `rzxNNNNN` take as many interrupts as frames (the L1's `replay.interrupts`) |
 | RAM 5, 2, 0 | the 64 K view in play: ROM 1, RAM 5, RAM 2, RAM 0 (`$7FFD` = `$10`; `time_travel memory_at` in `c1`, frame 23500) |
-| RAM 1 | the explorer selector: block 4's `$7200-$9CF7`, copied to `$C000` by the 128K set-up and relocated there. Paged in with `$7FFD` = `$11` by RunSelector `$8F4A` |
+| RAM 1 | the explorer selector: block 4's `$7200-$A0DF` copied to `$C000` by the 128K set-up (Copy128K `$C040`, 12 000 bytes) and relocated there: the 11 000-byte selector block `$7200-$9CF7` at `$C000-$EAF7`, then 1000 bytes of set 0, unused, at `$EAF8-$EEDF`; `$EEE0-$FFFF` not used. Paged in with `$7FFD` = `$11` by RunSelector `$8F4A` |
 | RAM 3, 4 | the five explorer sprite sets, `$1200` bytes each: sets 0-2 in RAM 4, sets 3-4 in RAM 3 ([doc 3](03-build-and-load.md)) |
 | RAM 6 | Ben Daglish's music: block 4's `$6000-$71FF`, the player and the tunes. Paged in with `$7FFD` = `$16` by Im2Handler `$9491` |
 | RAM 7 | not used |
@@ -69,7 +69,8 @@ How to read it:
   frames from `$7200`.
 - The game code starts at GameEntry `$8F00` and ends at `$C57F`. The data above it is the level data and the tiles,
   with the back buffer `$E000` between them.
-- The lower four bars are RAM 1, 3, 4 and 6, each as `$C000-$FFFF`.
+- The lower four bars are RAM 1, 3, 4 and 6, each as `$C000-$FFFF`. RAM 1 holds the 12 000 bytes Copy128K `$C040`
+  copies: the relocated selector to `$EAF7`, then 1000 bytes of set 0 that nothing uses (`$EAF8-$EEDF`).
 
 The regions in play, from the L1 of `explorers`, `gameover` and the RZX segments (`work/stage1/l1-play.json`; `c1`
 left out because its load writes everything) and the `.ann`:
@@ -167,7 +168,7 @@ The select and music ranges are their run addresses at `$C000` in their pages. O
 files.
 
 Totals: the game 323 entries (246 code), the selector 45 (31 code), the music 91 (28 code). The game's code region
-`$8F00-$C57F` is 13 952 bytes, tables included; the rest of its 36 354 bytes is sprites, rooms, tiles and buffers.
+`$8F00-$C57F` is 13 952 bytes, tables included; the rest of its 36 352 bytes is sprites, rooms, tiles and buffers.
 
 **The point**: the game is the biggest part but not the only one. The selector and the music are 15 608 bytes of the
 tape, and none of them runs on the main 64 K map.
@@ -176,18 +177,19 @@ tape, and none of them runs on the main 64 K map.
 
 ```mermaid
 flowchart TD
-    A["power-on, 128K menu, Tape Loader"] --> B["block 2: BASIC line 0, USR $5D08"]
+    A["power-on, 128K menu, Tape Loader"] -->|"c1 frame 696"| B["block 2: BASIC line 0, USR $5D08"]
     B --> C["block 3: the loading screen at $4000"]
     C --> D["block 4: $6000-$F6F7"]
-    D --> E["set-up $7200: the paging test"]
-    E -->|128K| F["copies: selector to RAM 1, sets to RAM 4 and 3, music to RAM 6; Has128K = $11"]
-    F --> G["RAM 1 $C000: RelocateSelector, SelectorEntry returns"]
-    E -->|48K| H["relocate in place at $7200, STOP THE TAPE, the selector, the set to $6000"]
-    G --> I["block 5: $7200-$FFFF over the set-up"]
+    D -->|"11841"| E["set-up $7200: the paging test"]
+    E -->|"128K, 11841 t 26159"| F["copies: selector to RAM 1, sets to RAM 4 and 3, music to RAM 6; Has128K = $11"]
+    F -->|"11841 t 26270-41691"| G["RAM 1 $C000: RelocateSelector, SelectorEntry returns"]
+    E -->|"48K, no recording"| H["relocate in place at $7200, STOP THE TAPE, the selector, the set to $6000"]
+    G -->|"11841 t 42590"| I["block 5: $7200-$FFFF over the set-up"]
     H --> I
-    I --> J["GameEntry $8F00: IM 2"]
-    J --> K["DeviceMenu, selector in RAM 1 on a 128K"]
-    K --> L["InitGame, MainLoop"]
+    I -->|"21597 t 67875"| J["GameEntry $8F00: IM 2"]
+    J -->|"21599: the first interrupt"| K["DeviceMenu, selector in RAM 1 on a 128K"]
+    K -->|"22215: the selector"| L["InitGame, MainLoop"]
+    L -->|"23500: room $14"| M["play"]
 ```
 
 | Stage | `c1` frame | Evidence |
@@ -237,7 +239,9 @@ Made with `python3 ../../kit/fig_budget.py work/stage1/explorers/l1.json docs/im
 
 How to read it:
 
-- A bar is a module's share of all the frames' T-states. The colour is the module, the same in both panels.
+- A bar is a module's share of all the frames' T-states. Each bar is named on its left: read the name, not the
+  colour. The kit's palette has fewer colours than there are modules, so colours repeat (render and select (print)
+  are both red, panel and select (help) both green); a module keeps its colour in both panels.
 - In play (below) render takes 80.4 % and player 10.3 %. All of the music together is 4.8 %. There is no HALT.
 - In `explorers` (above) HALT takes 17.3 %: the menu and the selector waiting for the frame.
 - select (help) is 9.4 % of `explorers`: PrintPage's pause between the Help pages is a busy loop of about 10.2 million
@@ -302,18 +306,20 @@ How to read it:
 ### The stack
 
 GameEntry sets SP = `$5E00` (`LD SP,StackTop` at `$8F1C`). The lowest byte written below it in every play recording
-is `$5DDE`: 34 bytes deep (`work/stage1/l1-play.json`, the writes in `$5D00-$5DFF`). That is 17 words. The interrupt
-adds three of them (its return, AF and BC) wherever it falls; the rest are the calls of the pass and their pushes.
+is `$5DDE`: 34 bytes deep (`work/stage1/l1-play.json`, the writes in `$5D00-$5DFF`). That is 17 words. The music
+runs on the game's stack, so the interrupt alone takes at least 12 of them wherever it falls: its return, AF and BC in
+Im2Handler `$9491`, the call of MusicFrame, MusicFrame's AF', DE, HL, IX and IY (`src/music/music.ann`), the call of
+MusicTick `$C014`, its IY and the call of UpdateTune `$C1E4`. The pass under it needs only a few words.
 
 The stack sits over the BASIC loader (`$5CCB-$5DF8`), which is dead once GameEntry runs. Nothing is placed between
 `$5E00` and the vector at `$5F5F`.
 
-**The point**: a flat program has a shallow stack. The main loop is the only caller at the top, so 34 bytes cover the
-deepest pass and an interrupt on top of it.
+**The point**: a flat program has a shallow stack. The main loop is the only caller at the top, and the interrupt's
+music, not the game, makes most of the 34 bytes.
 
 ## 2.8 The leftovers
 
-Four ranges of the tape are bytes no code reads before writing them, or reads at all (`src/res/leftovers`, from
+Five ranges of the tape are bytes no code reads before writing them, or reads at all (`src/res/leftovers`, from
 `work/stage2/bytemap.py` over the play builds):
 
 | Range | Bytes | What |
@@ -336,7 +342,8 @@ How to read it:
 - `$EA98`, `$EAE0` and `$EB28` show the coils of a snake, the middle one wound round a figure (SK: "captured by the
   snake").
 - `$EB70` is a head; the last three are more figures.
-- No frame number reaches them. The sprite space is `$6000 + 72 x F`, and F = `$FF` ends at `$A7B8`.
+- No frame number reaches them. The sprite space is `$6000 + 72 x F`, and frame `$FF` lies at `$A7B8-$A7FF`, far below
+  `$E930`.
 
 No code draws them. The game's snakes (room `$1A`) kill with their own frames, Room1ADeath `$A88F`.
 
@@ -355,9 +362,15 @@ The same tape runs on both. The set-up's paging test decides, and Has128K `$5FFE
 | the music | tune 0 from RAM 6 every interrupt | none: the handler returns at once |
 | the interrupt's cost | about 3 800 T a frame | 93 T a frame |
 | the play | the same code, the same 64 K map | the same |
+| tested at | the paging test `$C010-$C033` sets Has128K (`$C015`, `$C088`); read at `$8F4A` (RunSelector), `$9492` (Im2Handler), `$C0DD` (SelectorEntry), `$C0FF` (SelectorRun), `$C134` (CopyExplorerSet) and `$C536` (ShowHelp) | the same reads, with Has128K = 0 |
 
-Only the 128K path ran in a recording. The 48K path is known only from the code (the `.ann`'s set-up and selector
-descriptions; [doc 3](03-build-and-load.md)).
+The paging test writes `$AA` to `$C000` with RAM 0 paged in and `$55` with RAM 1 paged in, then compares: on a 48K both
+writes hit the same byte. Its asm is in [doc 3, 3.3](03-build-and-load.md#33-the-128k-set-up-at-7200-and-the-relocation).
+
+Only the 128K path ran in a recording. The 48K path up to the explorer's choice was seen on stage 2's 48K tries (STOP
+THE TAPE, the selector, the set copy; `work/stage2/p48/*/sheet.png`, no `.ttd`;
+[doc 3, 3.4](03-build-and-load.md#34-the-48k-path-and-the-2a-stop-block)); past the choice it is known only from the
+code (the `.ann`'s set-up and selector descriptions).
 
 ## 2.10 What the SkoolKit disassembly covers, and where this case differs
 

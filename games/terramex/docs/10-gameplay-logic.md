@@ -33,7 +33,7 @@ The recordings it rests on (WALKTHROUGH 6.0) are the ones doc 07 uses:
 As in doc 07:
 
 - A sample of frame N is the memory at the start of frame N; a trace shows an instruction in the frame it ran in.
-- Every speed is per main-loop pass. A pass is 2.4 to 3.3 frames, 2.8 on average in the RZX run.
+- Every speed is per main-loop pass. A pass is 2 to 17 frames, mostly 2 or 3, 2.84 on average over the RZX run's play.
 - "SK" marks a reading taken from the SkoolKit disassembly of nzeemin.
 
 ## 10.1 The world and its exits
@@ -147,14 +147,14 @@ StatusDispatch:
 | 14 | BarrelRide `$AA6F` | the ride in the Barrel Medium | BarrelSpot |
 | 15 | BarrelRideShort `$AAA7` | the Barrel Small: fatal | BarrelSpot |
 | 16 | BarrelRideLong `$AABA` | the Barrel Big: on to the next room, fatal | BarrelSpot |
-| 17 | SinkInMud `$AA04` | sink one row into the mud | HeroTileChecks, after 50 passes on mud |
+| 17 | SinkInMud `$AA04` | sink one row into the mud, then status 0: not a death | HeroTileChecks (`$A15C`, written directly), after 50 passes on mud |
 | 18 | LoseLifeWait `$A9EE` | 50 passes, then a life lost | StartDying `$AAF0` |
 | 19 | LiftUp `$A96B` | the lift up | LiftPlatform `$AF81` |
 | 20 | LiftDown `$A9C4` | the lift down | LiftPlatform |
 | 21 | RideObject4 `$A95F` | carried by the basket | BasketScript `$B409` |
 | 22 | Teleport `$A8EA` | the teleport pads | TeleportPadCheck `$B03B` |
 | 23 | SilentDeath `$A8A8` | room `$20`'s pad, the radiation, room `$39`'s creature | Teleport, RadiationScript, SilverCrossScript |
-| 24 | CreatureDeath `$A89E` | a creature's touch, the beam | HitExplorer `$C0DA`, RoomEffects `$9262` |
+| 24 | CreatureDeath `$A89E` | a creature's touch, the beam | HitExplorer `$C0DA`, RoomEffects `$91C0` (the beam hit `$9260`) |
 | 25 | Room1ADeath `$A88F` | a snake's bite | RunSnakes `$B57C` |
 | 26 | FallDeath `$A888` | the fall, tile `$A5`, the balloon crash, room `$2E` | HeroLand, HeroTileChecks, BalloonCrash, ExplorerRoom2E, HitExplorer |
 | 27 | Room43Anim `$A851` | the Silver Lining becomes the Silver Cross | SilverLiningScript `$B704` |
@@ -178,7 +178,9 @@ stateDiagram-v2
     Rides --> Normal: the ride ends
     Normal --> Scripted: think 10-12, Flute 6, scenes 27-33
     Scripted --> Normal: the frames end
-    Normal --> Dying: deaths 23-26, mud 17
+    Normal --> Dying: deaths 23-26
+    Normal --> Sink: 50 passes on mud (17)
+    Sink --> Normal: one row down, not a death
     Jump --> Dying: a creature (24)
     Rides --> Dying: barrels 15-16, balloon crash 9, the pad of room $20
     Dying --> Lose: status 18, 50 passes
@@ -263,7 +265,7 @@ of a tile under the hero's middle, not of the room.
 
 Worked example: `rzx24750` frames 612-614. The hero walks left in room `$30`: X `$4C` in the samples of 612 and 613,
 `$4A` in 614, frame 3. The walk frame steps only on every other pass (PassCount bit 0), and the X changes once a pass
-because the pass is about 2.8 frames long.
+because the pass is about 2.84 frames long.
 
 Witness: HeroUpdate's climb runs 439 passes in 8 rzx segments (`.ann`, OnLadder). HeroWalkFrames runs 15 541 times in
 the 34 builds.
@@ -273,17 +275,21 @@ the 34 builds.
 A jump lasts 17 passes. Each pass sets the frame from JumpFrames `$AE8D`, moves Y by JumpRise `$AE9E` and moves X by 2
 in the jump's direction. A floor under the feet ends the jump early, and step 17 puts the hero on the row.
 
-| Step | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| frame | `$0C` | `$0C` | `$0D` | `$0D` | `$0E` | `$0E` | `$0E` | `$0E` | `$0E` | `$0F` | `$0F` | `$0F` | `$0F` | `$0F` | `$0F` | 2 | 2 |
-| rise | 4 | 3 | 3 | 3 | 2 | 2 | 1 | 0 | 0 | 0 | -1 | -2 | -2 | -3 | -3 | -3 | -4 |
+| Step | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| frame | `$0C` | `$0C` | `$0D` | `$0D` | `$0E` | `$0E` | `$0E` | `$0E` | `$0E` | `$0F` | `$0F` | `$0F` | `$0F` | `$0F` | `$0F` | 2 | 2 | `$04` |
+| rise | 4 | 3 | 3 | 3 | 2 | 2 | 1 | 0 | 0 | 0 | -1 | -2 | -2 | -3 | -3 | -3 | -4 | Y AND `$F8` |
+
+Step 17 is the snap pass. JumpArc calls FrameFromTable before its `CP $11` (`$ADB0`), so in that pass the frame is
+JumpFrames[17]: the byte past the 17-byte table, which is JumpRise[0] = `$04`. Then Y goes onto the row (Y AND `$F8`)
+and the status is cleared. The frame `$04` shows only when the jump runs its full 17 steps without meeting a floor.
 
 The rise sums to 18 pixels up and 18 down. A sideways jump covers 17 x 2 = 34 pixels. The hero is 24 pixels tall, so a
 jump clears less than his own height.
 
 ```text
 JumpArc (statuses 1, 2, 3):
-    Hero.frame = JumpFrames[StatusTimer]
+    Hero.frame = JumpFrames[StatusTimer]             ; step 17 reads JumpRise[0] = $04
     step = StatusTimer; StatusTimer += 1
     if step == $11: Y = Y AND $F8; Status = 0; return
     JumpStepY(step):
@@ -327,8 +333,7 @@ stateDiagram-v2
     Top --> Falling: steps 10-16, Y + 1 to + 4
     Falling --> Landed: a floor under the feet, frame 2
     Falling --> Landed: step 17, Y onto the row
-    Rising --> Bounce: on a Spring, status 5
-    Falling --> Bounce: on a Spring, status 5
+    Falling --> Bounce: on the Spring or Trampoline, timer >= 10, dX < 6: status 5
     Landed --> [*]: status 0
 ```
 
@@ -372,7 +377,8 @@ Worked example: `gameover`, room `$1C`. The hero stands on the floor next to the
    2 with the timer 10 or more and |dX| = 0. It sets Y = `$48` - `$17` = `$31`, frame `$0F` and status 5.
 4. BounceUp lifts him 4 pixels a pass. In frame 485 he leaves the top of the room (Y 1), and in frame 486 he is in room
    `$10` at Y `$66`.
-5. In frame 523 a floor is under his feet: status 2, the jump arc to its end. Status 0 at 526.
+5. In frame 522 BounceUp finds a floor under his feet: status 2, timer 0, Y `$3E` (the sample of 523). The new jump
+   lands at once on that floor: timer 1 and Y `$3A` at 525, status 0 and frame 2 in the sample of 526.
 
 Witness: JumpArc runs 2 391 passes in gameover and 23 rzx segments; BounceUp 67 passes in gameover, rzx10000 and
 rzx22000 (`.ann`).
@@ -388,8 +394,8 @@ chooses:
 | 1-4 | fall (HeroFall `$A570`) |
 | 5 or more | refuse (RefuseDrop `$A545`): the hero is put back and shakes his head; the third refusal in a row jumps off the edge (status 1). With the Umbrella in hand he falls instead |
 
-A falling hero moves 2 pixels, probes again, and moves 2 more while still above the floor: 4 pixels a pass. The input
-is ignored. Each pass counts FallPasses `$5C05`, except with the Umbrella in hand. A landing after 20 fall passes or more
+A falling hero moves 2 pixels, probes again, and moves 2 more while still above the floor: 4 pixels a pass. The input is
+ignored. Each pass counts FallPasses `$5C05`, except with the Umbrella in hand. A landing after 20 fall passes or more
 kills: status 26.
 
 The Umbrella exception has its own exceptions, decided by the room and X:
@@ -519,7 +525,7 @@ Each ride is a status that moves the hero by its own rules until it ends.
 | Bounce | 5 | landing on the Spring (14) or the Trampoline (20) in a jump (doc 07.9) | Y - 4 a pass, through the ceiling into the room above | a floor: status 2 | gameover, rzx10000, rzx22000: 67 passes |
 | Hover | 4 | the Vacuum Cleaner (10) in hand in room `$14` or `$08` | frame `$1D`; 2 pixels in four directions | another item in hand | 4 908 passes in c1, explorers, rzx00000 |
 | Lift down / up | 20 / 19 | down or up on the lift platform (LiftPlatform `$AF81`, X `$1A-$2F`) in the lift's room | Y + 2 or - 2 a pass along column 7 | the stop of rooms `$1F`, `$2B`, `$37`, `$43` | down: 220 passes in rzx20000, rzx36000; up: none |
-| Balloon | 7, 8 | standing at the balloon (StatusZeroTriggers) | the Bellows (6): rise 1 a pass; the Party Manifesto (7): rise; any other item: sink 2 a pass | on the ground, step out left or right | rzx14000 frames 696-1104, 452 passes, the Bellows |
+| Balloon | 7, 8 | standing at the balloon (StatusZeroTriggers) | the Bellows (6): rise 1 a pass; the Party Manifesto (7): rise; any other item: sink 2 a pass | on the ground, step out left or right | rzx14500 frames 195-849, the Bellows; rzx14000 frames 696-1104, no rise; 452 passes |
 | Balloon crash | 9 | rising with the Party Manifesto to the top of room 3 | sink | the ground: status 26 | none |
 | Barrel spot | 13 | left held at Y `$48`, X `$1C-$1F` in room `$1D` | frame `$17`, wait 5 passes | the barrel in hand chooses 14, 15 or 16 | rzx16000 frames 479-491 |
 | Barrel Medium | 14 | item 9 in hand | 84 passes, X + 2, Y along BarrelArc `$AAFA` | status 0 | rzx16000 frames 508-745 |
@@ -537,19 +543,20 @@ TeleportPadCheck (every pass in status 0):
             return
     PadLatch = 0                                 ; off every pad
 
-Teleport (status 22):
-    first pass: LiftRoom = $1F, LiftY = $50
-    Room $30: destination $3D, only while CrystalPlaced
-    Room $3D: destination $20, only while CrystalPlaced
-    Room $20: Status = 23 (the silent death)
+Teleport (status 22), no POP: it may return into HeroUpdate
+    while StatusTimer == 0: LiftRoom = $1F, LiftY = $50
+        Room $30: destination $3D; Room $3D: destination $20
+        Room $20: Status = 23 (the silent death)
+        if not CrystalPlaced: return                  ; RET Z into HeroUpdate: the normal update runs on
     play TeleportFrames; at the room byte: SetUpRoom(destination), PadLatch = pad X
 ```
 
 ```mermaid
 stateDiagram-v2
     [*] --> OnPad: Y and X on a pad, PadLatch 0
-    OnPad --> Waiting: CrystalPlaced 0
-    Waiting --> Waiting: nothing happens
+    OnPad --> Walking: CrystalPlaced 0, status 22 kept
+    Walking --> Walking: the normal update runs on, creatures cannot touch him
+    Walking --> [*]: a jump (status 2) or another status
     OnPad --> Frames: CrystalPlaced set, room $30 or $3D
     Frames --> Arrived: the room byte, SetUpRoom, PadLatch = X
     Arrived --> [*]: frames end, status 0
@@ -570,12 +577,409 @@ Worked example: `rzx24750`. The crystal was placed at frame 613 (doc 07.10). The
 the sample of 722) and lands on the pad at Y `$58`, X `$62`: the pad of room `$30` is (`$58`, `$60`), and `$62` is
 within `$60-$67`. Status 22 shows in the sample of 731. The frames run to 780, and the hero arrives in room `$3D`.
 
-The float of room `$2C` starts with the velocity `$FF02` (SetUpRoom): dx = +2, dy = -1.
+
+Without the crystal the pad does not hold the hero. Teleport has no POP, so its `RET Z` (`$A914`) returns into
+HeroUpdate before the `POP HL` at `$A919`: the normal update runs on, walk and jump, with Status 22 kept and the timer
+at
+0. Each pass the first-pass code runs again and puts the lift back in room `$1F` at Y `$50`. HitExplorer ignores a hero
+in a status of `$0F` or more (`$C0EB`) and the tile-`$A5` probe is off (`$A114`), so until he jumps (status 2) no
+creature can touch him. The two teleports of the builds both had the crystal, so this is known only from the code.
+
+### The lift (statuses 19 and 20)
+
+The lift runs in the shaft of column 7, rooms `$1F`, `$2B`, `$37` and `$43`. LiftRoom `$5B9E` holds the room it is in
+and LiftY `$5B9F` its Y. In that room the main loop calls LiftPlatform `$AF81`, which draws the lift as slot 4 (frame
+`$9F`, item sprite 31) and reads the keys of a hero standing on it. The ride moves the hero 2 pixels a pass and the lift
+8 pixels under his feet. Each room of the shaft has one stop (LiftStops `$A9E6`): there the ride ends.
+
+```text
+LiftPlatform (in room LiftRoom, every pass):
+    slot 4 = (X $24, Y LiftY, frame $9F)
+    if Hero.Y == LiftY - 8 and $12 <= Hero.X < $38:
+        NotOnLift = 0                                 ; HeroTileChecks: he stands on the lift
+        if $1A <= Hero.X < $30 and Status in (0, 19, 20):
+            if down held: SetStatus(20)               ; down wins when both are held
+            elif up held: SetStatus(19)
+
+LiftDown (status 20):
+    if Room == $43 and AtStop(): return               ; the bottom of the shaft
+    Y = Hero.Y + 2
+    if Y < $62: Hero.Y = Y; LiftY = Y + 8; AtStop()
+    else: ExitDown; LiftY = Hero.Y + 8; LiftRoom = Room
+
+LiftUp (status 19):
+    if Room == $1F and AtStop(): return               ; the top of the shaft
+    if Room == $1F: SaveRespawnPoint
+    if Hero.Y >= 2: Hero.Y -= 2; LiftY = Hero.Y + 8; AtStop()
+    else: ExitUp; LiftY = Hero.Y; Hero.Y -= 8; LiftRoom = Room
+
+AtStop (LiftAtStop $A9A9):
+    if (Room, LiftY) is in LiftStops ($1F,$50  $2B,$30  $37,$50  $43,$68): ClearStatus
+```
+
+```asm
+LiftDown:
+  POP HL
+  LD A,(Room)
+  CP $43
+  JR NZ,LiftDownMove
+  CALL LiftAtStop
+  RET Z
+LiftDownMove:
+  LD A,(IX+$01)
+  ADD A,$02
+  CP $62
+  JR C,LiftMoveY          ; still in this room: Y + 2, the lift 8 lower, the stop test
+  CALL ExitDown
+  LD A,(IX+$01)
+  ADD A,$08
+  LD (LiftY),A
+  JR LiftSetRoom          ; the lift goes with him into the room below
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> OnLift: Y = LiftY - 8, X $1A-$2F
+    OnLift --> Down: down held, status 20
+    OnLift --> Up: up held, status 19
+    Down --> Down: Y + 2 a pass
+    Down --> RoomBelow: Y reaches $62
+    RoomBelow --> Down: ExitDown, the lift follows
+    Up --> Up: Y - 2 a pass
+    Up --> RoomAbove: Y below 0
+    RoomAbove --> Up: ExitUp, the lift follows
+    Down --> Stopped: LiftY at the room's stop
+    Up --> Stopped: LiftY at the room's stop
+    Stopped --> [*]: status 0
+```
+
+The lift stays where the ride left it: a room change does not move it. A new game puts it in room `$2B` at Y `$30`
+(InitGame), the teleport in room `$1F` at Y `$50` (Teleport, above), and a respawn back where it was at the last
+checkpoint room (Respawn `$9090` reads `$5C32-$5C33`). A hero who rides down and walks away leaves the lift below; to
+go up again he must come back to it.
+
+![The lift down from room 2B to room 37](img/play/lift-down-r20000.gif)
+
+The animation shows `rzx20000` frames 612-828, every third frame, at twice the size. The hero steps onto the lift in
+room `$2B`, rides down through the floor, and the ride ends at the stop of room `$37`.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r20000 --from 612 --to 828 --step 3 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/lift-down-r20000.gif
+```
+
+Worked example: `rzx20000`, sampled every frame from `$5B00`.
+
+1. The hero stands on the lift in room `$2B` at its stop: LiftY `$30`, his Y `$28`, NotOnLift `$5BA0` = 0.
+2. Down is held: status 20 is set in frame 628. The sample of 629 shows Y `$2A`, LiftY `$32`.
+3. Y + 2 a pass up to `$60`. The next step gives `$62`: ExitDown, room `$37` in the sample of 707 with Y `$02`, LiftY
+   `$0A`, LiftRoom `$37`.
+4. Y + 2 a pass again. Room `$37`'s stop is LiftY `$50`: at Y `$48` AtStop clears the status, status 0 in the sample
+   of 806.
+5. 28 + 1 + 35 = 64 passes in 178 frames: 2.8 frames a pass, as in the rest of play.
+
+Witness: LiftDown 220 passes (L1), `rzx20000` frames 628-805 and `rzx36000` frames 334-937; LiftPlatform 1406 calls in
+6 segments. LiftUp never ran: the up ride is known only from the code.
+
+### The balloon (statuses 7, 8 and 9)
+
+The balloon flies between room `$0F` and room 3 above it. BalloonX `$5C25`, BalloonY `$5C26` and BalloonInRoom
+`$5C27` keep it between visits. In its room BalloonRoom `$AFD7` draws the basket as slot 4 (frame `$99` empty, `$24`
+with the hero in it) and the envelope as slot 3, 16 pixels higher (frame `$9A`, hidden in status 9). During the ride
+the hero's own frame is `$7F` (not drawn): the basket's frame `$24` is the hero in the basket. The held item decides the
+ride, every pass.
+
+```text
+StatusZeroTriggers (status 0, outside room $1D):
+    if Room == BalloonInRoom and BalloonY - Hero.Y in -2..1 and BalloonX - Hero.X in -2..1:
+        Status = 7                                    ; in the balloon
+
+BalloonRide (statuses 7 and 8):
+    BalloonInRoom = Room; Hero.frame = $7F; HeroTileChecks
+    if in the air:                                    ; no floor under the basket
+        if Status != 7 and right held and no wall: X += 2 (below $E4)
+        if left held and no wall: X -= 2 (not below 8)
+        BalloonX = X
+    if HeldItem == 6: Status = 8; Rise                ; the Bellows
+    elif HeldItem == 7: Status = 7; Rise              ; the Party Manifesto
+    else: Sink
+
+Rise:
+    if Hero.Y - 1 >= $18: Hero.Y -= 1
+    elif Room != 3: ExitUp                            ; into room 3
+    elif Status == 7: Status = 9                      ; room 3's top with the Manifesto: the crash
+    else: return                                      ; room 3's top with the Bellows: hover
+    BalloonY = Hero.Y
+
+Sink:
+    if in the air:
+        Hero.Y += 2; if Hero.Y >= $66: ExitDown; Hero.Y += $18
+        BalloonY = Hero.Y
+    else:                                             ; on the ground
+        BalloonY = Hero.Y
+        if right held and X + 2 < $E7: X += 2; ClearStatus  ; step out
+        if left held and X >= 2: X -= 2; ClearStatus
+
+BalloonCrash (status 9):
+    BalloonInRoom = Room; HeroTileChecks
+    if in the air: Sink
+    else: slot 4 frame $7F; SetStatus(26)             ; FallDeath
+```
+
+```asm
+BalloonItem:
+  LD A,(HeldItem)         ; item 6 or 7 lifts it
+  CP $06
+  JR Z,BalloonItem6
+  CP $07
+  JR Z,BalloonItem7
+  JR BalloonSink
+BalloonItem6:
+  LD A,$08
+  LD (Status),A
+  JR BalloonRise
+BalloonItem7:
+  LD A,$07
+  LD (Status),A
+BalloonRise:
+  LD A,(IX+$01)
+  DEC A
+  CP $18
+  JR NC,BalloonSetY       ; Y - 1, not above $18
+  LD C,A
+  LD A,(Room)
+  CP $03
+  LD A,C
+  JR Z,BalloonTop         ; room 3: hover (status 8) or burst (status 7 -> 9)
+  CALL ExitUp
+  LD A,(IX+$01)
+BalloonSetY:
+  LD (IX+$01),A
+  LD (BalloonY),A
+  RET
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Seated: at the balloon, status 7
+    Seated --> RiseB: the Bellows, status 8
+    Seated --> RiseM: the Party Manifesto, status 7
+    Seated --> Sinking: any other item
+    RiseB --> RiseB: Y - 1 a pass, left and right
+    RiseM --> RiseM: Y - 1 a pass, left only
+    RiseB --> Hover: room 3, Y $18
+    RiseM --> Crash: room 3, Y $18, status 9
+    RiseB --> Sinking: another item
+    Hover --> Sinking: another item
+    Sinking --> Ground: a floor under the basket
+    Ground --> Seated: the Bellows or the Manifesto again
+    Ground --> [*]: left or right, status 0
+    Crash --> Dead: the ground, status 26
+```
+
+Two details follow from the code. The Party Manifesto keeps status 7, and status 7 skips the right key: with the
+Manifesto the balloon only drifts left. And status 9 still sinks through BalloonSink, so the crash falls all the way
+to a floor before FallDeath; the envelope is hidden from the start of status 9. No recording holds the Manifesto in
+the balloon, so the crash is known only from the code.
+
+![The balloon ride from room 0F to room 3 and down to the ground](img/play/balloon-ride-r14500.gif)
+
+The animation shows `rzx14500` frames 384-864, every sixth frame, at twice the size. With the Bellows in hand the
+balloon rises out of room `$0F` into room 3, drifts right at the top, then sinks to the ground when another item is
+taken, and the hero steps out.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r14500 --from 384 --to 864 --step 6 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/balloon-ride-r14500.gif
+```
+
+Worked example: `rzx14500`, sampled every frame from `$5B00`.
+
+1. The hero walks into the basket in room `$0F` at frame 195: status 7 in the sample of 196, slot 4 frame `$24`, slot
+   3 frame `$9A`.
+2. The Bellows (6) are in hand from frame 396: status 8 at 399. Y - 1 a pass, from `$60` to `$18` at frame 571.
+3. Y - 1 would pass `$18`: ExitUp, room 3 at frame 572 with Y `$66`. BalloonInRoom is 3 from the sample of 581.
+4. Right is held: X + 2 a pass from frame 603. At frame 786 the balloon is at room 3's top, Y `$18`: status 8 stays,
+   the balloon hovers.
+5. The ACME Bridge (`$0B`) is taken back at frame 813: the balloon sinks 2 a pass to Y `$30` at 846, where the probes
+   find the floor. Right is held: the hero steps out, status 0 at 848, and walks into room 4 at 858.
+
+The other ride, `rzx14000` frames 696-1104, never rises: the hero enters at 697 with the ACME Bridge in hand, the hand
+is empty (`$FF`) from 896, and he steps out at 1103 where he sat.
+
+Witness: BalloonRide 452 passes (L1), `rzx14000` frames 696-1104 and `rzx14500` frames 195-849; BalloonRoom 1017
+passes in the same two segments. BalloonCrash never ran.
+
+### The barrels of room `$1D` (statuses 13 to 16)
+
+Room `$1D` holds the Cannon (item 8, which cannot be picked up) and its barrel spot. The hero stands at the spot with
+a barrel item in hand; the barrel chooses the ride. Only the Barrel Medium (9) lands safely.
+
+```text
+StatusZeroTriggers (status 0, room $1D):
+    if left held and Hero.Y == $48 and $1C <= Hero.X < $20: Hero.X = $1E; Status = 13
+
+BarrelSpot (status 13):
+    Hero.frame = $17, facing left
+    if right held: ClearStatus                        ; he gives up
+    if StatusTimer < 5: StatusTimer += 1; return
+    HeldItem 9: SetStatus(14); $1C: SetStatus(15); $1B: SetStatus(16); else wait
+    PlaySound(1)                                      ; sound 1, the ROM fall (doc 09): the beeper holds the main loop
+
+BarrelRide (status 14, item 9):
+    if StatusTimer == $54: ClearStatus; return        ; 84 passes
+    Hero.Y -= BarrelArc[StatusTimer]; StatusTimer += 1
+    Hero.X += 2; facing right
+    frame + 1 up to $19; from StatusTimer $28 frame $1A
+
+BarrelRideShort (status 15, item $1C):
+    if StatusTimer == $20: frame $1C; StartDying      ; status 18 after 32 passes
+    else as BarrelRide with BarrelShortArc
+
+BarrelRideLong (status 16, item $1B):
+    facing right; frame + 1 up to $19
+    t = StatusTimer; StatusTimer += 1; Hero.X += 2
+    if (t / 2) bit 1: Hero.Y -= 1                     ; 1 pixel on every other pair of passes
+    if t / 2 == $32: ExitRight; X 8, Y 8, frame $1B; StartDying   ; after 100 passes
+```
+
+```asm
+BarrelRide:
+  POP HL
+  LD DE,BarrelArc
+  LD HL,StatusTimer
+  LD A,(HL)
+  CP $54
+  JP Z,ClearStatus        ; 84 passes: the ride is over
+BarrelRideStep:
+  INC (HL)                ; also status 15's
+  LD L,A
+  LD H,$00
+  ADD HL,DE
+  LD A,(IX+$01)
+  SUB (HL)                ; Y - BarrelArc[timer]: up first, then down
+  LD (IX+$01),A
+  INC (IX+$00)
+  INC (IX+$00)            ; X + 2
+  SET 7,(IX+$03)          ; facing right
+```
+
+BarrelArc `$AAFA` (84 signed steps) and BarrelShortArc `$AB4E` (32) are `src/res/tables/barrel-arcs.txt`. The 84 steps
+of BarrelArc add up to 0: the Medium ride ends at Y `$48`, on the floor it started from, 168 pixels to the right.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Spot: left held at Y $48, X $1C-$1F, status 13
+    Spot --> [*]: right held, status 0
+    Spot --> Spot: 5 passes, or no barrel in hand
+    Spot --> Medium: Barrel Medium 9, status 14
+    Spot --> Small: Barrel Small $1C, status 15
+    Spot --> Big: Barrel Big $1B, status 16
+    Medium --> [*]: 84 passes along BarrelArc, status 0
+    Small --> Dying: 32 passes, frame $1C, status 18
+    Big --> NextRoom: 100 passes, ExitRight
+    NextRoom --> Dying: X 8, Y 8, frame $1B, status 18
+```
+
+![The ride in the Barrel Medium across room 1D](img/play/barrel-ride-r16000.gif)
+
+The animation shows `rzx16000` frames 476-752, every fourth frame, at twice the size. The hero walks left to the spot,
+turns into the barrel, is shot along the arc to the right and lands.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r16000 --from 476 --to 752 --step 4 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/barrel-ride-r16000.gif
+```
+
+Worked example: `rzx16000`, sampled every frame from `$5B00`.
+
+1. The Barrel Medium (9) is in hand. Left is held at Y `$48`: status 13 from the sample of 480, X `$1E`, frame `$17`,
+   facing left. StatusTimer counts to 5.
+2. Status 14 in the sample of 492. PlaySound(1) plays sound 1 on the beeper and holds the main loop: no pass ends
+   until frame 509.
+3. 84 passes: X + 2 a pass from `$1E` to `$C6`; Y from `$48` up to `$31` and back to `$48`. The frame steps to `$18`
+   and `$19`, and from StatusTimer `$28` (the sample of 609) it is `$1A`.
+4. StatusTimer reaches `$54`: status 0 in the sample of 746. The hero stands at X `$C6`, Y `$48`.
+
+Witness: BarrelSpot 6 passes and BarrelRide 85 (L1), both in `rzx16000`. Statuses 15 and 16 never ran: the Small and
+Big barrels kill only in the code.
+
+### The float of room `$2C`
+
+Room `$2C` is the lab of floating objects. Its room handler FloatInRoom2C `$A34B` starts with `POP AF`: it drops the
+return into HeroUpdate and replaces the whole update in that room. There is no walking, jumping or falling: the hero
+floats with a velocity, FloatVelocity `$5C34` (C = the X step, B = the Y step), and bounces off the walls. SetUpRoom
+`$9855` sets it to `$FF02` on entry: X + 2, Y - 1 a pass.
+
+```text
+FloatInRoom2C (room $2C, every pass, instead of HeroUpdate):
+    ClearStatus; Hero.frame = $1A; HeroTileChecks
+    keys: right C + 1, left C - 1, down B + 1, up B - 1, each kept within -3..3
+    if C >= 0 and a wall at the right edge: C = -C    ; bounce
+    if C < 0 and a wall at the left edge: C = -C
+    if B >= 0 and a floor under the feet: B = -B
+    if B < 0 and a tile at the head (HeadroomRows): B = -B
+    FloatVelocity = (C, B); facing right when C >= 0
+    Hero.Y += B; Hero.X += C
+    if Hero.X < 4: ExitLeft                           ; the only exit
+```
+
+```asm
+FloatBounceX:
+  BIT 7,C                 ; moving right: a wall at the right edge reverses it
+  JR NZ,FloatBounceLeft
+  BIT 0,(IY+$01)
+  JR Z,FloatBounceY
+  LD A,C
+  NEG
+  LD C,A
+  JR FloatBounceY
+FloatBounceLeft:
+  BIT 0,(IY+$00)          ; moving left: a wall at the left edge reverses it
+  JR Z,FloatBounceY
+  LD A,C
+  NEG
+  LD C,A
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Floating: room $2C entered, velocity +2, -1
+    Floating --> Floating: a key steps the velocity by 1, within -3..3
+    Floating --> BounceX: a wall at the leading edge
+    BounceX --> Floating: X velocity negated
+    Floating --> BounceY: a floor or a ceiling tile
+    BounceY --> Floating: Y velocity negated
+    Floating --> [*]: X below 4, ExitLeft
+```
+
+A key held for a pass changes the velocity by 1, so the hero steers by pushing: three passes of left turn +2 into -1.
+Each pass clears the status and skips the rest of HeroUpdate: no walk, jump or fall code runs in this room.
+
+![The hero floating in room 2C](img/play/float-r20000.gif)
+
+The animation shows `rzx20000` frames 0-316, every fourth frame, at twice the size. The hero floats around the lab,
+bounces off the left wall and the ceiling, and leaves by the left exit.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r20000 --from 0 --to 316 --step 4 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/float-r20000.gif
+```
+
+Worked example: `rzx20000` frames 0-312, sampled every frame from `$5B00`. The segment starts in the middle of the
+float (the hero entered in `rzx18000` frame 1769).
+
+1. Frame 0: FloatVelocity C = `$FD`, B = `$FD`: X - 3, Y - 3 a pass.
+2. At frame 41 the left edge meets the wall: C becomes `$03`, X goes from `$35` back to `$38`.
+3. At frames 45-49 the head meets the ceiling at Y `$08`: B goes from `$FD` to `$03`.
+4. X falls below 4: ExitLeft takes the hero into room `$2B` at frame 313, X `$E6`.
+
+Witness: FloatInRoom2C 149 passes (L1), `rzx18000` frames 1769-1997 and `rzx20000` frames 0-312.
 
 **The point**: each puzzle item is a vehicle. The game's movement is mostly in these rides, and three of them kill on
 purpose: the Barrel Small, the Barrel Big and the pad of room `$20`.
 
-Witness: in the table. Teleport's two runs are the only ones in the builds (`.ann`).
+Witness: in the table and at the end of each subsection. Teleport's two runs are the only ones in the builds (`.ann`).
 
 ## 10.7 Deaths, lives and the restart
 
@@ -689,7 +1093,7 @@ Worked example 2: the last life in `gameover`. Status 18 runs from 1372 to 1502.
 and LifeLossOp jumps to LoseGame: Room `$28`, the respawn state set to room `$28` with status `$1D`. The respawn of
 frame 1509 restores exactly that, and status 29 shows in the sample of 1510 (10.10).
 
-Witness: LoseLifeWait runs in gameover (frames 1374-1502) and five rzx segments: rzx06000, rzx10000, rzx22000,
+Witness: LoseLifeWait runs in gameover (frames 1372-1502) and five rzx segments: rzx06000, rzx10000, rzx22000,
 rzx24000 and rzx32000. SaveRespawnPoint runs 78 times in 27 builds (`.ann`).
 
 ## 10.8 Creatures and hazards
@@ -705,7 +1109,7 @@ The creature types are in doc 07.5. Here is what each means for the hero.
 | Radiation | room `$3C` | 20 passes in the room without having picked up the Pills | 23 | the Anti Radiation Pills (22), picked up once |
 | Room `$39`'s creature | room `$39` | the hero below Y `$48`, X `$62` or more, status below 4 | 23 | the Silver Cross (29): it flees |
 | Electric beams | rooms `$20`, `$38`, `$39`, `$3A`, `$3C`, `$43` | the hero inside a beam's span and within 12 rows, status below 4 | 24 | timing |
-| Mud | tiles `$BC`, `$BD` (rooms `$35`, `$36` flicker them) | 50 passes standing on them | 17: sink one row | keep moving |
+| Mud | tiles `$BC`, `$BD` (rooms `$35`, `$36` flicker them) | never: 50 passes on them sink him one row | status 17, one row down (not a death) | jump, or leave the mud tiles |
 | Tile `$A5` | the normal tile set | standing on it in status 0 | 26 | do not step on it |
 | Long falls | anywhere | 20 fall passes | 26 | the Umbrella, outside the exceptions |
 
@@ -733,6 +1137,9 @@ flowchart TD
     F -- no --> ST["frame $55: the strike"]
 ```
 
+The bite also changes the hints: Room1ADeath sets the ThinkHints of rooms `$17` and `$1A` to `$0C`, the Flute
+(`$A88F-$A894`). After one bite, thinking (the T key) in either snake room suggests the Flute (Think, 10.9).
+
 The strike and the bite take two passes: the strike frame `$55` shows for one pass before the bite. That pass is the
 hero's only warning.
 
@@ -750,7 +1157,7 @@ Witness:
 - The radiation death branch (`$B796`) never ran. A clone probe (`work/stage2/probe_points.py` C: the RZX state at
   44 000 with PillsTaken = 0, room `$3C` entered from `$3D`) shows status 23 at frame 70, status 18 at 225, and the
   restart in room `$3B` at 355 with Lives 3 to 2.
-- The beam's hit (`$9262`), the mud sink (`$A15A`) and tile `$A5` (11 772 tests, no match) never ran.
+- The beam's hit (`$9260`), the mud sink (`$A15A`) and tile `$A5` (11 772 tests, no match) never ran.
 
 ## 10.9 Items and puzzles
 
@@ -825,9 +1232,13 @@ python3 tools/fig_gameplay.py docs/img/gameplay
 How to read the figure:
 
 - The 72 rooms, darkened, 12 to a row.
-- Each item is drawn in its colour in the room where it lies; its line ends in a dot in the room where it is used.
+- Each item is drawn in its colour in the room where it lies; its line ends in a dot in the room where it is used. The
+  number at the dot is the item. The professor's room gets its six numbers as a list beside the dot.
+- The key below gives each line's colour, item number and name, and its rooms (from -> to). An item used in two rooms
+  (the Flute, the Switch) has one line to each.
 - The labels mark the professor (`$3B`), the crystal pad (`$30`), the barrels (`$1D`) and the balloon (`$0F`).
-- The text below lists what is not drawn: the Umbrella, the key items of the explorer rooms, the Spring and Trampoline.
+- The grey text lists what is not drawn: the Umbrella, the key items of the explorer rooms, the Party Manifesto and the
+  other barrels, the Spring and the Trampoline.
 
 **The point**: the items are spread over the map, and most are used far from where they lie. The professor's room is
 the hub: six lines end there.
@@ -843,7 +1254,17 @@ The explorer rooms each test one key item, the explorer's own from the instructi
 | 4 | `$47` | Flashgun (1) at Y `$60` | the flash (status 33), two screen flashes | eaten: status 18 |
 
 Each explorer room except `$2D` holds a Formula (ItemPlaces records 27-30). Room `$2D` gives its Formula by the throw.
-So every explorer can get exactly one Formula.
+So every explorer can get exactly one Formula. The code does not check which explorer plays: ExitLeft from `$2E`,
+`$2F` and `$47` leads by the grid into `$2D`, `$2E` and `$46` (`$A657`), and CricketBallScript tests only the item and
+the place. What keeps each explorer to his own room is the rock: the left three tile columns of rooms `$2D`, `$2E`,
+`$2F` and `$46` are solid (ExtraSolidTiles, rows 0-15), and those of `$47` from row 3 down, so no explorer walks on into
+a neighbour's room.
+
+The actors of these rooms are drawn from the chosen explorer's own sprite set, frames `$37-$3F` (doc 07.5): room `$2D`'s
+ball `$39` and throw pose `$3E` (`$B3B6`), room `$2E`'s creature `$3C`, `$37`, `$38` (`$B276`, `$B2B7`), room `$2F`'s
+UnicycleFrames `$3C` and fall `$3B` (`$B246`, `$B258`), room `$46`'s creature `$39-$3F` (`$B2F6`, `$B30F`, `$B324`,
+`$B338`). Each explorer's set carries his own room's creature and poses; since no explorer reaches another
+explorer's room, the frames `$37-$3F` of a set only need to serve that one room.
 
 Worked example: room `$2D` in the RZX run (explorer 0), in rzx16000 and rzx18000 (`.ann`, CricketBallScript):
 
@@ -854,13 +1275,458 @@ Worked example: room `$2D` in the RZX run (explorer 0), in rzx16000 and rzx18000
 4. The target's frame goes to `$50`, and the Formula drops from Y 8 to Y `$48`, 1 pixel a pass.
 5. BallThrown is set, HeldItem = `$0F`, the status is cleared. The RZX run gets its Formula here (rzx18000, stage 3).
 
+### The bridge of rooms `$19` and `$3A`
+
+Both rooms have a gap in tile row 11. BridgeEffect `$BA97`, called by the items pass in these two rooms, lays a
+bridge across it one tile at a time. BridgeState `$5C0C` is 0 when idle (SetUpRoom zeroes it on every room entry);
+bits 0-6 count the tile (1-`$10`); bit 7 marks the second sweep. BridgeReverse `$5C0D` is 1 for a bridge laid from
+the right end.
+
+```text
+BridgeEffect(room) (items pass, rooms $19 and $3A):
+    if BridgeState == 0:
+        room $19: needs HeldItem == $0B               ; the ACME Expanding Bridge
+        room $3A: needs LastGift != 0 or HeldItem == $0F   ; the professor has an item, or the Formula
+        if $2C <= Hero.X < $36: BridgeState = 1, BridgeReverse = 0      ; the left end
+        elif $B2 <= Hero.X < $B8: BridgeState = $10, BridgeReverse = 1  ; the right end
+        return
+    if PassCount & 3 != 0: return                     ; one tile every fourth pass
+    column = 8 + (BridgeState & $7F) - 1
+    tile = the bridge tile ($07, room $3A $BF), or in the second sweep BridgeTiles[column & 3]
+    SetTile(row 11, column, tile)
+    forward: BridgeState + 1 up to $10; there wait until Hero.X >= $BA; then $81 .. $90; then 0
+    reverse: BridgeState - 1 down to 1; there wait until Hero.X < $30; then $90 .. $81; then 0
+```
+
+```asm
+BridgeWrite:
+  CALL SetTile            ; write the tile; then step BridgeState
+  LD HL,BridgeState
+  LD A,(BridgeReverse)
+  OR A
+  JR NZ,BridgeReverseStep
+  LD A,(HL)
+  AND $7F
+  CP $10
+  INC (HL)
+  RET C                   ; not yet the 16th tile
+  BIT 7,(HL)
+  JR NZ,BridgeDone        ; the second sweep is over: BridgeState = 0
+  DEC (HL)                ; stay at $10 ...
+  LD A,(Hero)
+  CP $BA
+  RET C                   ; ... until the explorer is across
+  LD (HL),$81             ; then the second sweep
+  RET
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: room entry, BridgeState 0
+    Idle --> Laying: the item, the explorer at the left end, state 1
+    Idle --> LayingBack: the item, the explorer at the right end, state $10
+    Laying --> Laying: a tile every 4 passes, state + 1
+    Laying --> Across: state $10
+    Across --> Sweep: explorer X $BA or more, state $81
+    LayingBack --> LayingBack: a tile every 4 passes, state - 1
+    LayingBack --> AcrossBack: state 1
+    AcrossBack --> Sweep: explorer X below $30, state $90
+    Sweep --> Idle: 16 tiles of BridgeTiles
+```
+
+One tile is 8 pixels and comes every fourth pass: 2 pixels a pass, the walking speed. The bridge grows exactly as fast
+as the hero walks along it. The second sweep writes the tiles of BridgeTiles `$BB51` (room `$19`: `$97 $9A $9D $9E`;
+room `$3A`, `$BB55`: `$81` four times) over the bridge: in room `$19` the gap comes back behind the hero. The bridge
+is gone again on every entry, when the room's tile map is set up anew: each crossing needs the item in hand again.
+
+![The ACME Bridge laid across room 19](img/play/bridge-r08000.gif)
+
+The animation shows `rzx08000` frames 880-1200, every fourth frame, at twice the size. The hero stands at the left end
+with the ACME Bridge, the bridge grows under his feet as he walks, and behind him the gap opens again as he leaves to
+the right.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r08000 --from 880 --to 1200 --step 4 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/bridge-r08000.gif
+```
+
+Worked example: `rzx08000`, room `$19`, sampled every frame from `$5B00`.
+
+1. The ACME Bridge (`$0B`) is in hand from frame 841.
+2. At frame 898 the hero is at X `$2C`, the left end: BridgeState = 1.
+3. BridgeState + 1 every fourth pass while the hero walks right 2 pixels a pass; it is `$10` at frame 1032.
+4. It waits at `$10` until the hero's X is `$BA`: `$81` in the sample of 1132.
+5. The second sweep has written five tiles (BridgeState `$86`) when the hero leaves into room `$1A` at frame 1187, X
+   `$02`. SetUpRoom zeroes BridgeState: 0 in the sample of 1188.
+
+Witness: the bridge starts 3 times (`$BACC`): `rzx08000` and `rzx12000` in room `$19`, `rzx42000` in room `$3A`.
+`rzx08000` and `rzx42000` cross forward (`$BB37` once each), `rzx12000` in reverse (`$BB4E`). BridgeEffect runs 857
+times (L1).
+
+### The lever of rooms `$3E` and `$40` and the basket of room `$3F`
+
+Room `$3F` lies between rooms `$3E` and `$40`. Its basket (slot 4, frame `$9E`, item sprite 30) runs on a track across
+the room and carries the hero from one end to the other. The lever stands in both side rooms (slot 4 at Y `$12`, X
+`$DC` in room `$3E`). The two levers are one: SwitchFitted `$5C43` and LeverState `$5C42` are shared. The Switch (item
+16) must be fitted once; then each touch flips LeverState, and LeverState decides to which end the basket goes when it
+has no rider.
+
+```text
+LeverScript (rooms $3E and $40):
+    lever.Y = $12; lever.frame = $57 if SwitchFitted else $56
+    if not SwitchFitted:
+        if HeldItem == $10 and Near(): HeldItem = $FF; SwitchFitted = $FF; DrawPortrait
+        return
+    mirror bit = (LeverState == 0)
+    if not Near(): RoomFlag = 0; return
+    if RoomFlag == 0: RoomFlag = 1; LeverState ^= $FF; mirror bit = (LeverState == 0)   ; a new touch
+
+BasketScript (room $3F):
+    stage 0: basket at X $D8 and RoomFlag = 1 when Hero.X < $C8, else X $08 and RoomFlag = 0; Y $30; stage 1
+    stage 1: RoomFlag 1 and LeverState != 0: BasketLeft      ; travel to the explorer, if the lever allows
+             RoomFlag 0 and LeverState == 0: BasketRight
+             at the end of the track and Near(): stage 2, RoomFlag ^= 1, Status = $15
+    stage 2: RoomFlag 1: BasketLeft, else BasketRight        ; carry him, whatever the lever
+             at the end: Hero.Y -= 8; stage 3; ClearStatus
+    stage 3: nothing until the room is entered again
+
+RideObject4 (status $15): Hero.X, Hero.Y = the basket's; Hero.frame = $2D
+
+The track (BasketRight, X + 1 a pass; BasketLeft, X - 1):
+    going right: X below $38: Y - 2 (not above 8); from X $C8: Y + 2 (below $30); between: level
+    going left:  X from $7B up: Y - 2 (not above 8); X below $1C: Y + 2 (below $30); between: level
+```
+
+```asm
+BasketLeft:
+  LD E,$00
+  LD A,(IY+$00)
+  CP $09
+  RET C                   ; X 8: the left end, E = 0
+  INC E
+  LD B,(IY+$01)
+  DEC A
+  LD (IY+$00),A
+  CP $1C
+  JR NC,BasketLeftTail
+  LD C,A                  ; X below $1C: sink 2 pixels, below Y $30
+  LD A,B
+  ADD A,$02
+  CP $30
+  RET NC
+  LD (IY+$01),A
+  RET
+  ...
+BasketLeftTail:
+  CP $7B
+  RET C                   ; X $1C-$7A: keep the height
+  LD A,B
+  SUB $02                 ; X $7B or more: rise 2 pixels, not above Y 8
+  CP $08
+  RET C
+  LD (IY+$01),A
+  RET
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotFitted: frame $56
+    NotFitted --> Fitted: the Switch in hand, near, HeldItem $FF
+    Fitted --> Fitted: away, RoomFlag 0
+    Fitted --> Flipped: a new touch, LeverState flips
+    Flipped --> Fitted: away
+    state "Room $3F" as R3F {
+        [*] --> Placed: stage 0, the end away from the explorer
+        Placed --> Travel: stage 1, the lever points at his end
+        Travel --> Waiting: the end of the track
+        Placed --> Waiting: the lever blocks, no key held
+        Waiting --> Riding: near, stage 2, status $15
+        Riding --> Arrived: the other end, Y - 8, stage 3, status 0
+    }
+```
+
+A blocked move (the lever pointing at the basket's own end) returns at once and leaves E as BasketScript's caller had
+it, the key bits: on a pass with no key held the basket counts as at its end, and an explorer who walks up to it can
+board it there. Known only from the code.
+
+The track is not symmetric: going right the basket climbs at once and sinks only from X `$C8`; going left it climbs
+from the right end and stays high down to X `$1C`. Either way it rides at Y 8, high over the floor of room `$3F`.
+
+![The Switch fitted into the lever of room 3E and pulled](img/play/lever-r28000.gif)
+
+The animation shows `rzx28000` frames 380-488, every third frame, at twice the size. The hero jumps to the lever with
+the Switch; the Switch leaves his hand, the lever's frame changes and its arm turns.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r28000 --from 380 --to 488 --step 3 --scale 2 --delay 100 \
+  --hold 2000 docs/img/play/lever-r28000.gif
+```
+
+![The basket comes for the hero and carries him across room 3F](img/play/basket-r28000.gif)
+
+The animation shows `rzx28000` frames 528-1672, every twelfth frame, at twice the size. The basket travels from the
+right end to the hero at the left end, then carries him back along the track and sets him down at the right end.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r28000 --from 528 --to 1672 --step 12 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/basket-r28000.gif
+```
+
+Worked example: `rzx28000`, sampled every frame from `$5B00`.
+
+1. Room `$3E`: the Switch (`$10`) is in hand from frame 389. The lever is high (Y `$12`): the hero jumps, status 2 at
+   434.
+2. Near the lever in frame 442: fitted. The sample of 443 shows HeldItem `$FF`, SwitchFitted `$FF`, LeverState 0, the
+   lever's frame still `$56`.
+3. The next pass is a new touch, since RoomFlag is still 0: RoomFlag 1, LeverState `$FF`, frame `$57` in the sample of
+   446. LeverState is not 0, so the mirror bit is cleared.
+4. Room `$3F` is entered at frame 518 from the left. Stage 0 at 527: the hero's X is 4, below `$C8`, so the basket
+   starts at X `$D8`, Y `$30`, RoomFlag 1.
+5. Stage 1: LeverState is `$FF`, so the basket travels left, X - 1 a pass. From X `$D8` it rises 2 a pass to Y 8 at X
+   `$C4`, keeps its height down to X `$1C`, and sinks to Y `$2E` at X 8 (the sample of 1096). The hero waits at X 4,
+   Y `$28`.
+6. Near at the end of the track: stage 2 at frame 1098, RoomFlag 0, status `$15`. The hero takes the basket's place
+   with frame `$2D`.
+7. BasketRight: Y 8 from about X `$1B`, level, and from X `$C8` down to Y `$2A` at X `$D8` (frame 1621).
+8. Arrival at frame 1624: status 0, stage 3. The hero is set 8 pixels above the basket and drops onto the floor, Y
+   `$28` at 1627.
+
+Witness: the Switch is fitted once (`$B751`, `rzx28000`) and the lever pulled twice (`$B770`, `rzx28000` and
+`rzx32750`). BasketScript runs in `rzx28000` frames 526-1693, `rzx32750` frames 364-1249 and `rzx34000` frames 2-159;
+stage 0 and the ride (`$B44E`) once each in `rzx28000` and `rzx32750`, the arrival (`$B471`) in `rzx28000` and
+`rzx34000`.
+
+### The rope of room `$10`
+
+Playing the Flute (12) at one spot of room `$10` grows a rope down through the floor into room `$1C` below. RopeTrick
+`$BC73` runs in the items pass of room `$10`; RopeCount `$5C24` counts the notes.
+
+```text
+RopeTrick (room $10, every pass):
+    if RopeCount == $0D or HeldItem != $0C: return    ; the rope is whole, or no Flute
+    if Hero.Y not in ($46, $48) or not ($28 <= Hero.X < $34): return
+    facing right; Hero.Y rocks between $46 and $48 by PassCount bit 0
+    if PassCount & 3 != 0: return
+    Status = 6                                        ; stand and animate
+    n = RopeCount; RopeCount += 1
+    if n == $0C: ClearStatus; return                  ; the rope is whole
+    if n >= 6: SetTile(row 9 + (12 - n), column 8, $98); SetTile(the same row, column 9, $99)
+
+SetUpRoom, room $1C entered:
+    if RopeCount != 0: rope tiles $98, $99 into columns 8 and 9 of rows 0-11
+    RopeCount = 0                                     ; on every room entry
+```
+
+```asm
+RopeGrow:
+  LD A,(PassCount)        ; every fourth pass: status 6, RopeCount + 1
+  AND $03
+  RET NZ
+  LD A,$06
+  LD (Status),A
+  LD A,(HL)
+  INC (HL)
+  CP $0C
+  JP Z,ClearStatus        ; the 13th note: the rope is whole
+  SUB $06
+  RET C                   ; the first six notes draw nothing
+  LD C,A
+  LD A,$06
+  SUB C                   ; row 9 + (6 - (count - 6)): rows 15 up to 10
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: RopeCount 0
+    Idle --> Playing: the Flute, Y $46 or $48, X $28-$33
+    Playing --> Playing: every 4th pass, status 6, count + 1
+    Playing --> Growing: count 6 to 11, two rope tiles a note
+    Growing --> Growing: one row higher
+    Growing --> Whole: count $0C, status 0
+    Whole --> Room1C: room $1C entered next, the rope drawn there
+    Whole --> Idle: any other room entered, RopeCount 0
+```
+
+The rope grows upwards in room `$10`, rows 15 to 10, while the hero plays: 12 notes take 48 passes. Room `$1C` gets
+the rope only when it is the next room entered, since every room entry clears RopeCount. Room `$1C`'s set-up draws
+the whole rope, 12 rows, whenever RopeCount is not 0: a single note in room `$10` would be enough. The rope then lets
+the hero climb columns 8 and 9 of room `$1C`. SK called this a seesaw. No recording stood at the spot with the Flute
+(`rzx10000` and `gameover` reach Y `$46` / `$48` with it, `$BC8A` once each, but never X `$28-$33`), so the rope is
+known only from the code and there is no animation.
+
+Witness: RopeTrick runs 674 times (L1) in `gameover` and two rzx segments; the rope code from `$BC91` never
+runs.
+
+### The creature of room `$39` and the Silver Cross
+
+Room `$39`'s creature (slot 3, X `$A4`, Y `$40`, frame `$40`) guards the right half of the room. SilverCrossScript
+`$B4E2` keeps its state in CrossState `$5C45`: 0 waiting, 1 fleeing, `$FF` gone. The Silver Cross (29) is the
+Silver Lining (13) changed in room `$43` (status 27).
+
+```text
+SilverCrossScript (room $39, every pass):
+    stage 0: slot 3 = (X $A4, Y $40, frame $40); stage 1
+    if CrossState == $FF: frame $7F; return           ; gone for good
+    if CrossState == 0:
+        if Hero.Y >= $48 or Hero.X < $62: return      ; not yet in its reach
+        if HeldItem != $1D:                           ; no Silver Cross
+            facing right; frame $44
+            if Status < 4: SetStatus($17)             ; status 23, the silent death
+            return
+    CrossState = 1; facing left                       ; flee
+    if creature.X >= $E6: AddScore(150); CrossState = $FF; frame $7F; return
+    creature.X += 2; frame = $41 + (PassCount / 2 & 3)
+```
+
+```asm
+CrossFlee:
+  LD (HL),$01             ; flee right until X $E6
+  RES 7,(IY+$03)
+  LD A,(IY+$00)
+  CP $E6
+  JR C,CrossStep
+  LD DE,$0096             ; out of the room: +150
+  CALL AddScore
+  JR CrossGone
+CrossStep:
+  INC (IY+$00)            ; X + 2, frame $41 + (PassCount / 2 & 3)
+  INC (IY+$00)
+  LD C,$41
+  LD A,(PassCount)
+  SRL A
+  AND $03
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Waiting: stage 0, X $A4, CrossState 0
+    Waiting --> Waiting: explorer Y $48 or more, or X below $62
+    Waiting --> Attack: in reach, no Silver Cross
+    Attack --> Dead: status below 4, status 23
+    Waiting --> Fleeing: in reach with the Silver Cross, CrossState 1
+    Fleeing --> Fleeing: X + 2 a pass, frames $41-$44
+    Fleeing --> Gone: X $E6, +150, CrossState $FF
+```
+
+Once fleeing, the creature does not stop: CrossState 1 skips the tests, so dropping the cross does not bring it back.
+CrossState is cleared only by InitGame, so the creature never comes back in that game.
+
+![The creature of room 39 flees from the Silver Cross](img/play/silver-cross-r40000.gif)
+
+The animation shows `rzx40000` frames 1600-1730, every third frame, at twice the size. The hero walks right with the
+Silver Cross; when he reaches X `$62` the creature runs off to the right edge.
+
+```bash
+python3 ../../kit/screen_anim.py --work work/review/fixC/r40000 --from 1600 --to 1730 --step 3 --scale 2 --delay 80 \
+  --hold 2000 docs/img/play/silver-cross-r40000.gif
+```
+
+Worked example: `rzx40000`, sampled every frame from `$5B00`.
+
+1. Room `$39` is entered at frame 1161. Stage 0 places slot 3 at X `$A4`, Y `$40`, frame `$40` (the sample of 1171).
+2. The hero holds the Cup of tea (`$17`) and takes the Silver Cross (`$1D`) from the bearers at frame 1423.
+3. He climbs a ladder at X `$24` and walks right at Y `$40`, below `$48`.
+4. At X `$62` the test passes with the cross in hand: CrossState 1 in the sample of 1623, the creature at X `$A6`,
+   frame `$42`.
+5. X + 2 a pass with frames `$41-$44`, 33 passes to X `$E6`.
+6. Frame 1715: AddScore(150). The sample of 1716 shows CrossState `$FF` and the score `$04E2` -> `$0578`, 1250 ->
+   1400.
+
+Witness: `rzx40000` runs SilverCrossScript 273 times: the placing (`$B4ED`) once, the flight (`$B540`) 33 times, the
+score (`$B538`) once. The attack (`$B518`) never ran.
+
+### Think and ThinkHints
+
+The T key (ThinkKey `$B02E`, half row Q-T, bit 4) starts status 10. HeroUpdate reads it after StatusDispatch and only
+when the hero stands on a floor, so in practice in status 0. The hero puts his hand to his head,
+and a thought bubble shows the item that ThinkHints `$A6E6` gives for the room, or he shakes his head. Each frame of
+the three lists lasts 2 passes (NextFrame).
+
+```text
+Think (status 10):
+    play ThinkFrames ($09 $0A four times: 16 passes)
+    if Hero.Y >= $18: Thought.Y = Hero.Y - $18; Thought.X = Hero.X        ; above the head
+    else:             Thought.Y = Hero.Y;       Thought.X = Hero.X -/+ $18 ; beside him
+                      (on the side he faces; at an edge the facing turns and the other side is used)
+    Thought.item = ThinkHints[Room]
+    SetStatus(12 if Thought.item == $FF else 11)
+
+BrightIdea (status 11): IdeaFrames ($1F twelve times, then $07 $08 $07 $05 three times: 48 passes)
+NoIdea (status 12):     NoIdeaFrames ($04 $05 $04 $02 $06 $02 twice: 24 passes)
+    at the end: Thought.item = $FE (EraseItem); ClearStatus
+
+DrawItems (every pass): ItemSlot1, ItemSlot2, then Thought (X, Y, item); $FF draws nothing
+```
+
+```asm
+Think:
+  POP HL
+  LD DE,ThinkFrames
+  CALL NextFrame
+  CP $FF
+  JR NZ,SetHeroFrame
+  LD A,(IX+$01)
+  CP $18
+  JR C,ThinkPlaceY        ; Y below $18: carry set, the bubble goes beside him
+  SUB $18                 ; else above the head, carry clear
+ThinkPlaceY:
+  LD (Thought+1),A
+ThinkPlaceX:
+  LD A,(IX+$00)
+  JR NC,ThinkHint         ; above the head: the hero's X
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Thinking: T held in status 0, status 10
+    Thinking --> Thinking: ThinkFrames, 16 passes
+    Thinking --> Idea: ThinkHints of the room not $FF, status 11
+    Thinking --> NoIdea: $FF, status 12
+    Idea --> [*]: the item in the bubble for 48 passes, then erased, status 0
+    NoIdea --> [*]: head shaking 24 passes, status 0
+```
+
+The hints, ThinkHints `$A6E6`, one byte a room (`src/res/tables/think-hints.csv`); every other room is `$FF`:
+
+| Room | Idea | Room | Idea |
+| --- | --- | --- | --- |
+| `$01`, `$04`, `$0A`, `$0B` | 5 Umbrella | `$1A` | `$FF` after InitGame; `$0C` Flute after a bite |
+| `$07` | 8 Cannon | `$1D` | 9 Barrel Medium |
+| `$08`, `$14` | `$0A` Vacuum Cleaner | `$2D` | 2 Cricket Ball |
+| `$09` | `$1A`, no carried item | `$30` | `$18` Energy Crystal |
+| `$0F` | 7 Party Manifesto; 6 Bellows once room `$10` is entered | `$39` | `$1D` Silver Cross |
+| `$10` | `$0C` Flute | `$3A` | `$0F` Formula |
+| `$17` | `$FF` after InitGame; `$0C` Flute after a bite | `$3C` | `$16` Anti Radiation Pills |
+| `$19` | `$0B` ACME Bridge | `$3E` | `$10` Switch |
+| | | `$43` | `$0D` Silver Lining |
+
+Three writers change the table in play. InitGame puts `$FF` into rooms `$17` and `$1A` and 7 into room `$0F`.
+SetUpRoomTiles `$9880` (at `$98E9`) puts 6 into room `$0F` when room `$10` is entered. Room1ADeath `$A88F` (status 25, a
+snake's bite) puts `$0C` into rooms `$17` and `$1A`. The hints mostly match the puzzles above. Two are traps or
+oddities: room `$0F` first suggests the Party Manifesto, the item that crashes the balloon (BalloonCrash), and only
+after a visit to room `$10` the Bellows; room `$09` holds `$1A`, an item number that draws the balloon's envelope, not
+an item to carry.
+
+Worked example, from the code (no recording pressed T). The hero thinks in room `$19` at X `$2C`, Y `$40`, facing
+right:
+
+1. Status 10, frames `$09 $0A` alternate for 16 passes.
+2. Y `$40` >= `$18`: Thought = (X `$2C`, Y `$28`, item `$0B`), the bubble above his head. Status 11.
+3. IdeaFrames for 48 passes; DrawItems draws the ACME Bridge at X `$28` (X AND `$F8`), Y `$28` every pass.
+4. At the end Thought.item = `$FE`: EraseItem clears it; status 0.
+
+In room `$31` (ThinkHints `$FF`) the same key gives status 12 and 24 passes of head shaking, with nothing drawn.
+
+Witness: Think, BrightIdea and NoIdea never ran (L1: 0 passes); ThinkKey runs 16 037 times and is never taken. The
+lists, the placement and the hints are known only from the code; there is no animation.
+
 Witness:
 
 - The bridge (BridgeEffect) ran in rzx08000 and rzx12000 (room `$19`) and rzx42000 (room `$3A`).
 - The lever was fitted and pulled in rzx28000 and rzx32750; the basket arrived in rzx28000 and rzx34000.
-- The Silver Cross made the creature flee 33 passes, with the score once (`$B538`); status 27 shows in rzx38000 frames
-  2-135. The trigger instruction of room `$43` (`$B71E`) is in no build: the segment starts with status 27 already
-  set.
+- The Silver Cross made room `$39`'s creature flee in rzx40000: 33 passes, with the score once (`$B538`). The Silver
+  Lining became the Silver Cross in room `$43`: status 27 shows in rzx38000 frames 2-135. The trigger instruction of
+  room `$43` (`$B71E`) is in no build: the segment starts with status 27 already set.
 - The rope (`$BC91` on), Think (status 10) and every explorer room but `$2D` never ran.
 
 ## 10.10 The professor, the telescope and the ending
@@ -869,8 +1735,8 @@ Professor Eyestrain stands in room `$3B` (ProfessorScript `$B5DD`). He walks to 
 plays his frames (ProfFrames `$B6C1`), and his last frame `$4D` is the asking pose: WantedItem = WantedItems[GiftCount],
 and the speech bubble in slot 3 shows that item's sprite (`$80` + item).
 
-The six wishes, in order (WantedItems `$B6BB`): the Formula (15), the Coat Hanger (19), the Battery (18), the Atomic Pile
-(21), the Button (17) and the Cup of tea (23).
+The six wishes, in order (WantedItems `$B6BB`): the Formula (15), the Coat Hanger (19), the Battery (18), the Atomic
+Pile (21), the Button (17) and the Cup of tea (23).
 
 ```text
 ProfessorScript, every pass:
@@ -949,6 +1815,15 @@ The telescope of room `$12`: standing at X `$C0`, Y `$40` with right held starts
 eyepiece, and status 31 shows space: room `$28` set up, the asteroid in slot 4 at X `$75`, Y = 2 x (40 - days), and the
 text "TIME REMAINING TO COLLISION" with the days, hours and minutes. The fewer the days, the lower the asteroid stands.
 After `$80` passes the hero is back in room `$12`. Room `$12` was never reached, so this is known only from the code.
+
+A quirk of the telescope, known only from the code. TelescopeView calls SetUpRoom(`$28`) and later SetUpRoom(`$12`)
+without writing Room (`$A7CA`, `$A81A`), so Room stays `$12` through the view, and room `$12`'s script and items run
+on. Both `$28` and `$12` are CheckpointRooms, so each call runs SaveRespawnPoint with Room `$12`, Status 31 and the
+hero's frame `$7F`: the timer is 1 at the first call and `$80` at the last, just before ClearStatus. A life lost later,
+before another checkpoint room is entered, respawns into status 31 with the timer at `$80`. TelescopeWait then counts on
+from `$80`: 128 passes print the clock over room `$12` with the hero hidden; when the timer wraps to 0 the view starts
+again (room `$28` set up, the respawn saved once more with timer 1), and 127 passes later the hero is back in room
+`$12` in status 0. A clone with Room `$12` and a life lost would settle the effect; no recording comes near room `$12`.
 
 The ending is the script of room `$28`, SpaceScene `$B0B6`. LoseGame and ProfessorEnding both lead there; GameWon
 decides the outcome.
@@ -1034,14 +1909,17 @@ flowchart LR
     DN -- yes --> L["LoseGame $9372"]
 ```
 
-The whole clock is 31 x 24 x 60 = 44 640 passes. At 2.8 frames a pass that is about 125 000 frames, 42 minutes of play.
+The whole clock is 31 x 24 x 60 = 44 640 passes. At 2.84 frames a pass that is about 126 800 frames, 42 minutes of
+play.
 Because there is no frame sync, the clock runs faster in quiet rooms and slower in busy ones.
 
 **The point**: the countdown counts work, not time. A player who stands in an empty room spends days faster than one in
 a crowded room.
 
 Worked example: the RZX run. At RZX 250 the clock reads 30 days 23:41; at 25 000, 24 days 20:40 (`$18 $14 $28`); at the
-end, 18 days 15:32. The run used 12 days 8 hours 27 minutes: 17 787 passes in about 50 700 frames, 2.85 frames a pass.
+end, 18 days 15:32. The run used 12 days 8 hours 27 minutes: 17 787 passes. Between RZX frame 225 (30 days 23:51) and
+the game's end at RZX frame 50 730 the clock lost 17 779 minutes in 50 505 frames: 2.84 frames a pass, the figure the
+other documents use.
 
 Witness: the hours roll over 440 times and the days 13 times in the builds (`$9364`, `$936B`). The time running out was
 reached only on a clone (`work/stage2/probe_points.py` A: the RZX state at 44 000 with the clock set to 0 days 0 hours
@@ -1104,12 +1982,14 @@ The RZX run ends at 2 300. The fixed events give 6 x 150 + 150 + 75 + 75 = 1 200
 **The point**: points come only from progress. There is nothing to shoot and no bonus for time left, so the score is a
 measure of how far the player got.
 
-Witness: AddScore's callers are the five in the table (`.ann`); the score samples of the RZX run are drawn in doc 07.12.
+Witness: AddScore has six callers: the five scoring ones of the table (`$A868`, `$B53B`, `$B601`, `$BA2D`, `$BBEC`)
+and InitGame (`$8FCC`), which calls it with DE = 0 to print the zeroed score (`.ann`). The score samples of the RZX run
+are drawn in doc 07.12.
 
 ## 10.13 Notable features
 
-- **No frame sync.** The main loop has no HALT; a pass takes 2.4 to 3.3 frames. All speeds, the countdown and the
-  random waits are per pass (doc 04).
+- **No frame sync.** The main loop has no HALT; a pass takes 2.84 frames on average over the RZX run, 2 to 17 each. All
+  speeds, the countdown and the random waits are per pass (doc 04).
 - **The countdown counts passes** (10.11), so it runs at the speed of the room.
 - **R-based random numbers.** Random mixes a 16-bit state with the R register (doc 07.7). Only the creatures' waits use
   it; everything else is fixed.
@@ -1124,7 +2004,16 @@ Witness: AddScore's callers are the five in the table (`.ann`); the score sample
 - **Three deliberate death rides**: the Barrel Small, the Barrel Big and the pad of room `$20` (10.6).
 - **A Cursor joystick reader that no menu choice reaches** (ReadCursorKeys `$B8D4`), with a bug: a released 6 returns
   the port byte instead of the input bits (doc 05).
-- **The room `$10` entry rewrites ThinkHints**: the idea of room `$0F` becomes 6, the Bellows (SetUpRoomTiles).
+- **The game rewrites ThinkHints as it learns**: entering room `$10` makes the idea of room `$0F` 6, the Bellows
+  (SetUpRoomTiles); a snake bite makes the idea of rooms `$17` and `$1A` `$0C`, the Flute (Room1ADeath `$A88F`);
+  InitGame puts back `$FF`, `$FF` and 7 (10.9).
+- **The bridge grows at walking speed**: one 8-pixel tile every fourth pass, 2 pixels a pass, so the hero walks on the
+  tile just laid; the second sweep opens the gap again behind him (10.9).
+- **The first hint is a trap**: until room `$10` is entered, thinking at the balloon suggests the Party Manifesto, the
+  item that crashes it (10.9).
+- **One note is a rope**: room `$1C` draws the whole rope whenever RopeCount is not 0 (10.9).
+- **The telescope leaves a respawn in status 31** (10.10): a life lost after the view, before another checkpoint, would
+  replay the clock over room `$12`.
 - **Off-by-one handler names** in the `.ann` comments: several name the handler of status N + 1 (10.2, sent to the
   lead).
 
@@ -1133,12 +2022,14 @@ Witness: AddScore's callers are the five in the table (`.ann`); the score sample
 Known only from the code, or from a clone probe where said:
 
 - the beam's hit; the mud sink (status 17); tile `$A5`;
-- the telescope (room `$12` never visited; statuses 30, 31);
+- the telescope (room `$12` never visited; statuses 30, 31) and its respawn state in status 31;
 - Think and its ideas (statuses 10-12);
 - the lift up (status 19); the balloon crash (status 9); the Barrel Small and the Barrel Big (statuses 15, 16);
 - the rope of room `$10`; the Silver Lining's trigger (status 27 is seen, its start is not);
 - the explorer rooms `$2E`, `$2F`, `$46` and `$47` (statuses 32, 33), and every explorer but 0;
 - status 23 in play (only the radiation probe), room `$39`'s attack, the pad of room `$20`;
+- a teleport pad without the crystal (status 22 kept while the hero walks on);
+- boarding room `$3F`'s basket where it stands while the lever blocks it (10.9);
 - the countdown running out (only the clock probe);
 - the flier's change of type, a third item in a room, the full bearers (doc 07.13);
 - the WantedItem = 0 gift of the Unicycle;

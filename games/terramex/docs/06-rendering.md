@@ -206,7 +206,8 @@ How to read:
   not bright.
 - The alternate sheet has 8 rows. Its first cell replaces base tile `$80`.
 - The flame frames are copied over tile `$B5`, the capsule frames over tiles `$8C-$8D` (6.5).
-- The panel is the bottom third as the tape loads it. The yellow boxes are the fields the play code redraws (6.12).
+- The panel is the bottom third as the tape loads it. The yellow boxes are the five fields the play code redraws
+  with BlitColumns (6.12); the score, printed with PrintChar, has no box.
 
 Worked example: the hero walks from a room on the base set into room `$1E`. `$1E` is the second byte of the list, so
 SetUpRoomTiles jumps to SetUpRoomTilesAlt. AltTileset is 0, so SwapTileset runs. Tile `$80` now draws the 8 bytes
@@ -452,7 +453,7 @@ How to read:
 - Right: the listing at the PC, and the registers.
 
 Worked example (room `$14`, cell n = `$10C`, the hut's top left): T = TileMap `$F90C` = `$80`. The attribute goes to
-`$5800 + $10C = $590C`: TileAttrs `$DF80` = `$06`, yellow paper and black ink. The screen cell: n >> 8 = 1, so H =
+`$5800 + $10C = $590C`: TileAttrs `$DF80` = `$06`, yellow ink on black paper. The screen cell: n >> 8 = 1, so H =
 `$40 OR $08 = $48`, and L = `$0C`: `$480C`. The buffer cell is `$E80C`. The 8 bytes come from
 `$F000 + 8 x $80 = $F400`. They go to `$480C`, `$490C`, ..., `$4F0C` and to `$E80C`, ..., `$EF0C`.
 
@@ -479,7 +480,8 @@ BRIGHT bit when bit 0 of the R register is set. The attribute is the map address
 `$58xx`.
 
 **The beams (alternate set).** EffectCellsA holds pairs of cells: a beam's left and right ends. For each pair Beams
-`$9208` writes random bytes (R, rotated, XOR PassCount) on pixel rows 6 and 7 of each cell between the ends. It writes
+`$9208` writes random bytes (R, rotated, XOR PassCount) on pixel rows 6 and 7 of each cell between the ends: from the
+cell after the left end (`INC DE` at `$921D`) up to the cell before the right end. It writes
 the screen only. If the hero is within the beam's span and within 12 rows of it, with the status below 4, it sets
 status `$18`: the hero is hit.
 
@@ -506,7 +508,7 @@ RoomEffects():                              # once a pass, before RenderPass
     else:
         for (left, right) in EffectCellsA:
             if hero in span and |hero Y + 6 - beam Y| < 12 and Status < 4: SetStatus($18)
-            for cell in left..right-1: screen rows 6, 7 = random
+            for cell in left+1..right-1: screen rows 6, 7 = random   # INC DE at $921D first
         f = PassCount & 3; if PassCount bit 2 clear: f ^= 3
         TilePixels[$8C..$8D] = CapsuleFrames[f]
         for cell in EffectCellsB: SetTileBuffer(cell, $8C); SetTileBuffer(cell + 1, $8D)
@@ -936,8 +938,9 @@ into it. So 24 rows come from 2 x 2 x 2 x 3 runs, with no counter.
 
 DrawSpriteRow makes the mask from the graphic. The index is the OR of three bytes: the row above (C', 0 for the first
 row), this row, and the row below (the next byte). OutlineMasks `$FF00` holds NOT (v OR v << 1 OR v >> 1) for each
-index v. So the mask clears every pixel of the sprite and every pixel next to one: left, right, above and below. The
-graphic is then ORed in. A sprite gets a one-pixel border of paper, and stays readable on any background.
+index v. So the mask clears every pixel of the sprite and every pixel next to one, diagonals included: the rows
+above and below are ORed in, then the result is spread left and right. The graphic is then ORed in. A sprite gets a
+one-pixel border of paper, and stays readable on any background.
 
 The mirror is two patched instructions. MirrorPatch1 `$9C82` follows the read of this row's byte; MirrorPatch2 `$9C87`
 follows the read of the row below. RenderPass writes two NOPs there when flags bit 7 is clear. It writes
@@ -1312,7 +1315,7 @@ vacuum cleaner. BufferAddress gives C = `$10 OR $80 = $90` and B = `$E8`: `$E890
 `$E890`. Then D = `$E8` loses bits 5 and 7, giving `$48`, and `$4890` gets the same byte. D + `$A1` = `$E9`:
 the next row of the buffer.
 
-Witness: in the pass of frames 6001-6004, DrawItemRow wrote 72 screen bytes, from `$86D0-$8718` (Figure 6.16). The
+Witness: in the pass of frames 6001-6004, DrawItemRow wrote 72 screen bytes, read from `$86D0-$8717` (Figure 6.16). The
 item's next-character-row path at `$9E50` ran 34 342 times in 19 builds. EraseItem ran 35 times in 17 builds: once
 per item taken.
 
@@ -1324,7 +1327,8 @@ writes an item, and in return never tracks which items an actor has passed over.
 The panel is the bottom third: `$5000-$57FF`, with attributes `$5A00-$5AFF` (`src/res/screens/panel.png`, Figure
 6.2). The tape holds it at `$E000-$E8FF`, in the back buffer's place. InitGame copies it to the screen before play,
 and EndGame saves it back there, because play uses those bytes as the buffer ([doc 4](04-game-loop.md)). During play
-the code redraws only five fields, each 24 rows high, with BlitColumns `$9F86`:
+the code redraws only five fields with BlitColumns `$9F86`, each 24 rows high (the score and the text fields are
+printed with PrintChar, [doc 8](08-hud-and-text.md), 8.5):
 
 | Field | Address | Columns | Routine | What |
 | --- | --- | ---: | --- | --- |
@@ -1416,9 +1420,10 @@ docs/img/routines/DrawPortrait.gif`. The bearer row's scroll is in doc 8's DrawB
 
 How to read:
 
-- Left below: the panel. The portrait's three columns appear one after the other, each 24 rows from top to bottom.
-- Then the held item's three columns appear above it.
-- In the memory map, PanelColumns `$5BD6` lights up before each column is copied.
+- Left: the panel, under a memory map of only two rows (`$5B00-$5CFF`). The portrait's three columns are written one
+  after the other, each 24 rows from top to bottom, with the same bytes as before: the face does not change.
+- Then the held item's three columns are written above it: the cell goes from blank to the new item.
+- In the thin memory map, PanelColumns `$5BD6` lights up before each column is copied.
 
 Worked example (`rzx02000`, frame 2, Figure 6.1): the portrait goes to `$5092`: third 2, character row 4, column 18,
 pixel (144, 160). Its source is frame 9: `$6000 + 72 x 9 = $6288`. The first column's first 8 bytes go to `$5092`,
@@ -1437,6 +1442,16 @@ Two more drawers sit outside RenderPass.
 **The menu globes.** DrawMenuGlobes `$9F27` draws the Earth and the Moon on the device menu. The Earth is frames
 `$71-$74`, 2 rows of 6 columns at `$4837` and `$4897`. The Moon is frame `$75`, at `$4842`. The globes use the panel's
 AddColumnPointers and BlitColumns: they are 24-row columns copied to the screen.
+
+Worked example (the Moon, bytes from `build/game.bin`). SpriteAddress `$9FAA` gives
+`$6000 + 72 x $75 = $6000 + $20E8 = $80E8`. AddColumnPointers stores `$80E8`, `$8100` and `$8118` in PanelColumns
+`$5BD6`. BlitColumns with B = 3 and HL = `$4842` copies 24 bytes a column, one pixel row each (`INC H`, NextCharRow
+after every 8). Column 1 (`$8100`) holds `00 00 00 00 1E 67 8D 2F 5B B5 57 BF 5E 33 59 AF 77 1E 00 ...`. Its row 4,
+`$1E` (`%00011110`), goes to `$4C43`: the Moon's top. Its row 9, `$B5`, goes to `$4963` (character row 11, pixel row
+1). The Earth's four frames give 12 column pointers; the first 6 columns go to `$4837` and the next 6 to `$4897`, so
+the Earth is 48 x 48 pixels. The device menu screenshot (`docs/img/play/menu.png`, [doc 8](08-hud-and-text.md)) shows
+both globes there. Witness: DrawMenuGlobes ran 9 times, once per menu drawn (`c1`, `explorers`, `gameover`,
+`rzx50000`).
 
 **The hand cursor.** The selector in RAM 1 moves a hand over its picture ([doc 5](05-controls.md), 5.6). The hand is
 24 x 16 pixels. It is kept in four copies, pre-shifted by 0, 2, 4 and 6 pixels: CursorSprites `$CD8F`, 96 bytes each,
@@ -1562,7 +1577,7 @@ What it shows:
 - 456 of the 6144 screen bytes are written in the pass, by 1032 writes.
 - CopyRectRows writes 960 times: 10 rectangles of 96 bytes. The red block at the top left is the empty slots'
   rectangle at `$4000`, copied twice by each call.
-- DrawItemRow writes the 72 bytes of the vacuum cleaner, from `$86D0-$8718`, through OutlineMasks.
+- DrawItemRow writes the 72 bytes of the vacuum cleaner, read from `$86D0-$8717`, through OutlineMasks.
 - Nothing else writes the screen: no flame, no panel change, no attribute.
 
 ![Code vs the beam: one pass](img/render/beam-pass.png)

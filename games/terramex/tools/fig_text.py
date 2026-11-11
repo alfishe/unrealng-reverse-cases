@@ -316,7 +316,7 @@ def cmd_panel(args):
     print('wrote', args.out)
 
 
-SCORE_CASES = [(0, 'GameInit $8FCC: AddScore with DE = 0'), (50, 'one pickup, +50 ($BBE9)'),
+SCORE_CASES = [(0, 'InitGame $8F69 at $8FCC: AddScore with DE = 0'), (50, 'one pickup, +50 ($BBE9)'),
                (2300, 'the RZX run\'s final score'), (9999, 'the largest four-digit score'),
                (10000, 'thousands = 10: the character after 9'), (12345, 'thousands = 12'),
                (256000, 'thousands = 256 wraps C to 0'), (-50, 'a negative score: no minus sign')]

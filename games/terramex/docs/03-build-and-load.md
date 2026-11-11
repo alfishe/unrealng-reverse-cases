@@ -11,7 +11,8 @@ What this covers:
 - the source build that gives the tape back byte for byte.
 
 The recording it rests on: `c1` (power-on, the original tape at ROM speed on the 128K;
-[WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)). The 48K path has no recording: it is known only from the code.
+[WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)). The 48K path has no recording: up to the explorer's choice
+it was seen on stage 2's 48K tries (3.4, no `.ttd`); past the choice it is known only from the code.
 
 There is no packer, no decryptor and no turbo loader. The only trick is the loader hidden in a BASIC variable.
 
@@ -192,7 +193,7 @@ and MERGE show nothing useful.
 
 ## 3.3 The 128K set-up at `$7200` and the relocation
 
-Block 4's `$7200-$9CF7` is one position-independent block, 11 000 bytes: the set-up, the selector, Help and the
+Block 4's `$7200-$9CF7` is one relocatable block, 11 000 bytes: the set-up, the selector, Help and the
 selector's picture. Its absolute addresses are stored as offsets from its first byte, and a relocation pass adds the
 run address. It runs in three places:
 
@@ -213,7 +214,7 @@ Setup (BC = the block's address):
     page RAM 0; compare with $C000; restore the byte
     if equal: RelocateInPlace                             ; one RAM there: a 48K
     ; a 128K
-    page RAM 1; copy $7200.. ($2EE0 bytes) to $C000
+    page RAM 1; copy $7200-$A0DF ($2EE0 = 12 000 bytes) to $C000   ; 1000 of them set 0's, unused at $EAF8
     copy sets 0-2 ($3600 bytes from $9CF8) to RAM 4 at $C000, a byte at a time, paging between
     copy sets 3-4 ($2400 bytes) to RAM 3 at $C000
     Has128K = $11
@@ -437,9 +438,23 @@ The tape must stop between blocks 4 and 5 while the player chooses. The original
 stops the tape by hand. The Quicksilva and Bug-Byte TZXs add a TZX block `$2A` ("stop the tape if in 48K mode")
 before block 5, so an emulator stops there by itself.
 
-No recording reached play on a 48K (stage 2, open point 4). Two tries, the Quicksilva TZX with the `$2A` block and the
+No recording reached play on a 48K (stage 2, open point 4). The tries, the Quicksilva TZX with the `$2A` block and the
 original with an explicit `/tape/pause`, saw the STOP THE TAPE screen, the selector and the set copy. But the tape
 never resumed for block 5 in our instance. The 48K path past the choice is known only from the code.
+
+![The 48K path up to the explorer's choice](img/load/48k-screens.png)
+
+*The 48K screens of stage 2's second try on the original TZX: a clone of a 48K power-on at ROM speed, no `.ttd`
+(`python3 work/stage2/probe_48k_orig2.py PORT_BASE`, its screens in `work/stage2/p48/orig2/`). Made with `python3
+tools/fig_load48k.py docs/img/load/48k-screens.png`.*
+
+How to read it:
+
+- Left: block 4 has loaded and the set-up found one RAM. ShowStopTape runs in place, at `$C295 - $4E00` = `$7495`.
+- Middle: after SPACE, the selector, the same faces as on the 128K, with its hand cursor.
+- Right: FIRE on Fortisque-Smithe. Explorer `$5B70` = 0 and `$6000` holds set 0's first bytes
+  (`00 00 00 01 04 0F 03 00`, the same as `$9CF8`; `work/stage2/p48/orig2/log.txt`); the selector prints EXPLORER SELECTED / START TAPE.
+- After this the tape stayed paused in our instance, so block 5 never loaded.
 
 **The point**: on a 48K the explorer choice happens during the load, in the gap between two blocks. That is why the
 re-releases added a stop block for emulators, and why a 48K player chooses once a load.

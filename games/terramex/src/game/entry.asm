@@ -19,8 +19,10 @@ Leftover8D01:
 ; GameEntry $8F00 writes 257 bytes of $5F from $8E00, its own first byte $8F00
 ; included (the SkoolKit snapshot, taken after it, holds $5F there). With I =
 ; $8E and the bus at $FF the CPU reads the vector from $8EFF and $8F00: $5F5F,
-; where GameEntry put JP $9491. Witness: every play build reads $8EFF 69582
-; times in all (one interrupt a frame), and no other byte of the table.
+; where GameEntry put JP $9491. Witness: the play L1 counts 69582 reads of
+; $8EFF (and of $8F00) against 78587 interrupts in the same builds, so the
+; count is a lower bound, not one read an interrupt; no other byte of the table
+; is read.
 Im2Table:
   INCBIN "res/leftovers/im2-table-tape.bin",$0000,256
 
@@ -101,15 +103,16 @@ SetLifeLossOp:
 ; selector runs in place before the last block), so the same explorer plays
 ; every game.
 ;
-; 3. The set-up (InitGame `$8F69`): clears `$5B04-$5B66` (the hero and party
-; records and other state, 99 bytes); fills BearerLoads `$5B7C-$5B96` (27
-; bytes) with `$FF` (free); `$B932` clears the creature table's active bits and
-; bit 7 of `$B9D9` is set again; copies the saved panel back to the screen
+; 3. The set-up (InitGame `$8F69`): clears `$5B04-$5B67` (the hero and party
+; records and other state, 100 bytes: one stored, 99 copied by the LDIR at
+; `$8F74`); fills BearerLoads `$5B7C-$5B96` (27 bytes) with `$FF` (free);
+; ResetItems `$B932` clears the taken bits (bit 7) of the 31 ItemPlaces records
+; and bit 7 of `$B9D9` is set again; copies the saved panel back to the screen
 ; (`$E000` -> `$5000`, 2048 bytes; `$E800` -> `$5A00`, 256 attributes: EndGame
 ; `$906D` saved it there, because play uses `$E000-$EFFF` as the background
 ; copy of the play window); the tile bitmap pointer `$5B72` = `$F000`; `$5C3C`,
 ; `$A6FD`, `$A700`, `$5B98`, `$5B9B` = `$FF`, `$A6F5` = 7, `$5B06` = 0; clears
-; `$5BFA-$5C8D` (148 bytes: the countdown, GameOver, Room, PassCount, RoomEvent
+; `$5BFA-$5C8D` (148 bytes: the countdown, GameOver, Room, PassCount, Status
 ; and the rest); `$BCF2` with DE = 0; the object at `$5C25-$5C27` = X `$70`, Y
 ; `$60`, room `$0F`; Room `$5C01` = `$14` and the room set-up `$9855`; `$9EBD`;
 ; Lives `$5B97` = 4 and `$9E96` (the lives in the panel); the hero at X `$0A`
@@ -182,7 +185,7 @@ InitGame:
   XOR A
   LD (Hero+2),A
   LD HL,UnicycleFrames             ; clear $5BFA-$5C8D (148 bytes): Countdown, GameOver,
-                          ; Room, PassCount, RoomEvent, ...
+                          ; Room, PassCount, Status, ...
   LD DE,CountdownDays
   LD BC,$0093
   LD (HL),A

@@ -34,7 +34,7 @@ NegateNumber:
 ; Add DE (signed) to the score and print it, every register kept
 ;
 ; DE = the points (+50 a pickup $BBE9, +75 the crystal $BA2A, +150 the Silver
-; Cross $B538 and each gift $B5FE, from GameInit $8FCC, $A851 +75). Saves IX,
+; Cross $B538 and each gift $B5FE, from InitGame $8FCC, $A851 +75). Saves IX,
 ; IY, HL, BC, AF and the alternate HL, BC, DE; AddToScore $BD11, PrintScore
 ; $BD75.
 ;

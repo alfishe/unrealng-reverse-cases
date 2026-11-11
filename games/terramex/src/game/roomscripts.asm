@@ -273,8 +273,8 @@ TelescopeRoom:
 
 ; Room $47 (explorer 4): item 1 at the creature, or be eaten
 ;
-; $5C00 set: nothing. RoomStep $5C41 0: object 4 at $80, $60, frame $64. 1: its
-; frames $64-$67; with the hero left of X $B4: at Y $60 with item 1 in use
+; $5C00 set: nothing. RoomStage $5C41 0: object 4 at $80, $60, frame $64. 1:
+; its frames $64-$67; with the hero left of X $B4: at Y $60 with item 1 in use
 ; status 33 (FlashPose $A770), else touching it: eaten (step 4, status 18).
 ; 2-3: two screen flashes ($916A), then $5C00 is set. Not executed in any
 ; recording.
@@ -533,7 +533,7 @@ Room46Dead:
 ; hands
 ;
 ; The room script of room $2D (RoomScripts $B7EC). Does nothing once BallThrown
-; $5C00 is set (TestBallThrown $B165). Stage 0 (RoomStage $5C41 = 0) puts an
+; $5C00 is set (KeyRoomDoneFlag $B165). Stage 0 (RoomStage $5C41 = 0) puts an
 ; object in slot $5B10 (X $64, Y $48, frame $4F; the target) every pass and
 ; waits for the explorer to stand at X $DC, Y $48 holding the Cricket Ball
 ; (HeldItem $5B98 = 2); then clears the explorer's facing bit (IX+3 bit 7),
@@ -626,16 +626,16 @@ CricketFormulaFalls:
 ;
 ; The room script of room $3F. The basket is slot $5B14 (frame $9E: item sprite
 ; $80 + 30, SK "Busket"). Stage 0 places it at the side away from the explorer:
-; X $D8 (the right end) with BasketSide $5C40 = 1 when the explorer is left of
-; X $C8, else X $08 with BasketSide 0; Y $30.
+; X $D8 (the right end) with RoomFlag $5C40 = 1 when the explorer is left of X
+; $C8, else X $08 with RoomFlag 0; Y $30.
 ;
 ; Stage 1: the basket travels toward the explorer one pixel a pass, only while
-; the lever of rooms $3E and $40 allows it: from the right end (BasketSide 1)
+; the lever of rooms $3E and $40 allows it: from the right end (RoomFlag 1)
 ; while LeverState $5C42 is not 0 (BasketToLeft $B4B0), from the left end
-; (BasketSide 0) while LeverState is 0 (BasketToRight $B47E); a blocked move
+; (RoomFlag 0) while LeverState is 0 (BasketToRight $B47E); a blocked move
 ; leaves E as the caller had it (known only from the code). At the end of its
 ; way (E = 0) it waits for the explorer to come near ($9140); then stage 2,
-; BasketSide flipped, status $15 (RideObject4 $A95F). Stage 2 carries it to the
+; RoomFlag flipped, status $15 (RideObject4 $A95F). Stage 2 carries it to the
 ; other end whatever the lever (BasketRight $B483 / BasketLeft $B4B5); at the
 ; end the explorer is set 8 pixels higher (IX+1 - 8), stage 3 (the script then
 ; does nothing until the room is entered again) and the status is cleared
@@ -661,7 +661,7 @@ BasketScript:
   LD (IY+$00),$08         ; ... or at the left end when the explorer is right
                           ; of X $C8
 BasketPlace:
-  LD A,C                  ; BasketSide = 1 (at the right end) or 0
+  LD A,C                  ; RoomFlag = 1 (at the right end) or 0
   LD (RoomFlag),A
   LD A,$30
   LD (ObjectSlot4+1),A
@@ -686,7 +686,7 @@ BasketWait:
   RET NC
   LD (HL),$02
   LD A,(RoomFlag)
-  XOR $01                 ; flip BasketSide: the ride goes to the other end
+  XOR $01                 ; flip RoomFlag: the ride goes to the other end
   LD (RoomFlag),A
   LD A,$15                ; status $15
   LD (Status),A
@@ -784,9 +784,9 @@ BasketToLeft:
 ; Move the basket left one pixel, along the track's profile
 ;
 ; Out: E = 0 at the left end (X 8), else E = 1 and X - 1. While X is below $1C
-; the basket sinks 2 pixels a pass (Y + 2, below $30); from X $7B down to $1C
-; it rises 2 a pass, not above Y 8 (BasketLeftTail $B4D5); above $7B it keeps
-; its height.
+; the basket sinks 2 pixels a pass (Y + 2, below $30); from X $7B up it rises 2
+; a pass, not above Y 8 (BasketLeftTail $B4D5); from $1C to $7A it keeps its
+; height.
 ;
 ; Witness: L1 418 (rzx, rzx, rzx).
 BasketLeft:
@@ -815,9 +815,12 @@ BasketLeft:
 BasketPad2:
   DEFB $79
 
-; From X $7B down to $1C rise 2 pixels a pass, not above Y 8
+; X $1C or more: keep the height below X $7B, from X $7B up rise 2 pixels a
+; pass, not above Y 8
 ;
-; Entered from BasketLeft $B4B5 with A = the new X, B = Y.
+; Entered from BasketLeft $B4B5 with A = the new X, B = Y. Evidence: rzx28000
+; frames 527-1096, the basket from X $D8 at Y $30 up to Y 8 at X $C4, level
+; down to X $1C, then down to Y $2E at X 8.
 ;
 ; Witness: L1 376 (rzx, rzx, rzx).
 BasketLeftTail:
@@ -1014,17 +1017,18 @@ SnakeTemplate:
 ; score, GiftCount $5C3D + 1; the sixth gift ends the game (ProfessorEnding
 ; $B6EE).
 ;
-; ProfState $5BA1 (0 on room entry): 0 places him (X $1A, Y $48, the bubble at
-; Y $30) and sets 1; 1 (bits 0-6) he walks (ProfWalk $B676) with bit 7 the
-; direction; 2 he plays the frames of ProfFrames $B6C1 one a pass through $ABE1
-; (step LabStep $B6ED) and goes back to 1 at their end mark $FF; while bit 7 is
-; clear (he walks right) the first frame $4D ends the sequence instead, so he
-; asks only on his way left. Each new frame $4D (his asking pose) shows the
-; bubble: WantedItem = WantedItems[GiftCount] ($B6BB), the bubble frame $80 +
-; that item. InitGame writes $FF at $8FA6, but its clear of $5BFA-$5C8D ($8FBE)
-; runs after and zeroes $5C3C: WantedItem is 0 (the Unicycle) until he first
-; asks (rzx44000 frames 0-415 and rzx24750 frame 613: $5C3C = 0). WantedItem is
-; not reset after a gift (rzx44000 frames 460-723: $0F kept).
+; ProfessorState $5BA1 (0 on room entry): 0 places him (X $1A, Y $48, the
+; bubble at Y $30) and sets 1; 1 (bits 0-6) he walks (ProfWalk $B676) with bit
+; 7 the direction; 2 he plays the frames of ProfFrames $B6C1 one a pass through
+; $ABE1 (step LabStep $B6ED) and goes back to 1 at their end mark $FF; while
+; bit 7 is clear (he walks right) the first frame $4D ends the sequence
+; instead, so he asks only on his way left. Each new frame $4D (his asking
+; pose) shows the bubble: WantedItem = WantedItems[GiftCount] ($B6BB), the
+; bubble frame $80 + that item. InitGame writes $FF at $8FA6, but its clear of
+; $5BFA-$5C8D ($8FBE) runs after and zeroes $5C3C: WantedItem is 0 (the
+; Unicycle) until he first asks (rzx44000 frames 0-415 and rzx24750 frame 613:
+; $5C3C = 0). WantedItem is not reset after a gift (rzx44000 frames 460-723:
+; $0F kept).
 ;
 ; Witness: rzx42000-rzx50000 run it 2293 times; the bubble ($B65E) 11 times,
 ; the gifts ($B5EF) 6 times (rzx44000 2, rzx46000 2, rzx48000 1, rzx50000 1),
@@ -1055,7 +1059,7 @@ ProfessorScript:
   CP $06
   JP Z,ProfessorEnding
 ProfState:
-  LD HL,ProfessorState             ; ProfState 0: place the professor
+  LD HL,ProfessorState             ; ProfessorState 0: place the professor
   LD A,(HL)
   OR A
   JR NZ,ProfMode
@@ -1115,7 +1119,7 @@ ProfWalk:
   LD C,$02
   BIT 7,(HL)
   JR Z,ProfWalkStep
-  RES 7,(IY+$03)          ; ProfState bit 7 set: walk left
+  RES 7,(IY+$03)          ; ProfessorState bit 7 set: walk left
   LD C,$FE
 ProfWalkStep:
   LD A,(IY+$00)
@@ -1123,7 +1127,7 @@ ProfWalkStep:
   LD (IY+$00),A
   LD (ObjectSlot3),A
   SUB $04                 ; every 32 pixels: stop and play the sequence
-                          ; (ProfState 2)
+                          ; (ProfessorState 2)
   LD C,A
   AND $1F
   OR A
@@ -1251,9 +1255,9 @@ LeverRoom3E:
 ; holding the Switch (HeldItem $5B98 = $10) it is fitted: HeldItem = $FF,
 ; SwitchFitted = $FF, the hand icon redrawn. Fitted (in both rooms: one flag):
 ; the lever's mirror bit (IY+3 bit 7) shows LeverState $5C42 (set when 0), and
-; each new touch (LeverDebounce $5C40 from 0 to 1) flips LeverState; away from
-; the explorer LeverDebounce is 0 again. LeverState chooses the end of room $3F
-; the basket waits at (BasketScript $B409).
+; each new touch (RoomFlag $5C40 from 0 to 1) flips LeverState; away from the
+; explorer LeverDebounce is 0 again. LeverState chooses the end of room $3F the
+; basket waits at (BasketScript $B409).
 ;
 ; Witness: the Switch is fitted once ($B751, rzx28000), the lever pulled twice
 ; ($B770, rzx28000 and rzx32750).

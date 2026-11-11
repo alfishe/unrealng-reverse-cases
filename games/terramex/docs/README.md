@@ -23,7 +23,7 @@
 | the five explorers, their own rooms | [1.3](01-game-design.md#13-the-five-explorers), [10.9](10-gameplay-logic.md#109-items-and-puzzles) |
 | the items and the six wishes | [1.7](01-game-design.md#17-the-items-and-the-professors-six-wishes), [7.8](07-objects.md#78-the-items-itemplaces-the-item-slots-and-the-sprites), [7.9](07-objects.md#79-picking-up-helditem-and-the-27-bearers) |
 | the map, every room | [1.8](01-game-design.md#18-the-map), [10.1](10-gameplay-logic.md#101-the-world-and-its-exits) |
-| the RZX run's walkthrough | [1.10](01-game-design.md#110-a-walkthrough-the-rzx-run), [7.12](07-objects.md#712-the-course-of-the-rzx-run) |
+| the RZX run's walkthrough | [1.11](01-game-design.md#111-a-walkthrough-the-rzx-run), [7.12](07-objects.md#712-the-course-of-the-rzx-run) |
 | the 128K pages, the memory map, the module map | [2.1](02-architecture.md#21-the-machine-budget), [2.2](02-architecture.md#22-the-memory-map), [2.3](02-architecture.md#23-the-module-map) |
 | the frame budget, the call graph, the heatmap | [2.5](02-architecture.md#25-the-frame-budget), [2.6](02-architecture.md#26-the-main-loops-call-graph), [2.7](02-architecture.md#27-the-heatmap-and-the-stack) |
 | the SkoolKit disassembly | [2.10](02-architecture.md#210-what-the-skoolkit-disassembly-covers-and-where-this-case-differs) |
@@ -53,17 +53,17 @@ Each term once, here; the documents link to it.
 | AYWrite | `$CD56` (RAM 6): the only routine that touches the AY: register at `$FFFD`, value at `$BFFD` | 09 |
 | back buffer | `$E000-$EFFF`: the play window's twin in the screen's layout (screen address OR `$A000`); between passes it holds the room without the actors | 06 |
 | back-tile | a block of 4 x 4 tiles at `$C600 + 16 x index`; a room is 8 x 4 back-tiles | 06 |
-| bearer | one of 27 invisible carriers of the items not in the hand, BearerLoads `$5B7C` (`$FF` free); a pickup moves the held item to the first free one; four show in the panel's bearer row, scrolled by keys 1 and 2 | 07, 08 |
+| bearer | one of 27 invisible carriers of the items not in the hand, BearerLoads `$5B7C` (`$FF` free); a pickup moves the held item to the first free one; the panel's bearer row draws four from BearerIndex `$5C23`, nine of their twelve columns show: three whole bearers at rest, parts of four while keys 1 and 2 scroll the row | 07, 08 |
 | BearerIndex | `$5C23`: the first of the 27 bearers shown in the bearer row | 08 |
 | BearerPhase | `$5C22`: 0-3, the columns of the bearer row skipped; the row's one-column scroll step | 08 |
-| BearerScrollDir | `$5C21`: 0 the bearer row scrolls up (key 2), 1 down (key 1) | 08 |
+| BearerScrollDir | `$5C21`: 1 after key 1, the bearers move right (BearerPhase counts down from 4); 0 after key 2, they move left (the phase counts up to 4) | 08 |
 | BlitColumns | `$9F86`: copies 24-byte sprite columns from PanelColumns `$5BD6` to the panel | 08 |
 | cell | a character cell of the screen, 8 x 8 pixels with one attribute; the play window is 32 x 16 cells, one tile each | 06 |
 | checkpoint room | one of the 44 rooms of CheckpointRooms `$9AF5`; entered without falling, it saves the respawn point (SaveRespawnPoint `$9AA1`) | 04, 10 |
 | CollisionText | `$B07C`: the telescope's "TIME REMAINING TO COLLISION" text | 08 |
 | countdown | days, hours, minutes at `$5BFB-$5BFD`, plain binary, from 30/23/59; one minute a main-loop pass; at 0 the game is lost (LoseGame `$9372`) | 04, 10 |
 | creature record | 4 bytes a creature in RoomCreatures `$C152` (three a room, 12 bytes); unpacked into a 10-byte working record at CreatureRecords `$BE24` on each room entry | 07 |
-| day | a day of the countdown: 24 x 60 = 1440 passes, about 4100 frames (82 s) at the RZX run's 2.86 frames a pass | 01, 04 |
+| day | a day of the countdown: 24 x 60 = 1440 passes, about 4090 frames (82 s) at the RZX run's 2.84 frames a pass | 01, 04 |
 | DigitShown | `$5C20`: PrintNumber's leading-zero switch | 08 |
 | explorer set | one explorer's 64 sprite frames, `$1200` bytes; on the 128K in RAM 4 (sets 0-2) or RAM 3 (sets 3-4), copied to ExplorerSet `$6000` for play | 02, 03 |
 | frame | 1/50 s of the 128K, 70 908 T (69 888 T on the 48K); a recording's frames count from its start, 0 the first | 04 |
@@ -78,14 +78,14 @@ Each term once, here; the documents link to it.
 | object slot | one of the five 4-byte records at `$5B04-$5B17` (X, Y, frame, flags) that RenderPass draws, also called an actor slot; slot 0 is the hero; flags bit 7 mirrors the sprite (the stored graphics face left, so bit 7 set faces right) | 06, 07 |
 | order list | a channel's list of patterns and commands (transpose, repeat, detune, slot, end) | 09 |
 | own room | the room left of room `$29` that only one explorer reaches (ExplorerRooms `$A66C`: `$2D`, `$2E`, `$2F`, `$46`, `$47`), where he gets the Formula | 01, 10 |
-| pass | one turn of the main loop, from MainLoop `$9018` to its `JP MainLoop`; no HALT, so a pass takes 2.4 to 3.3 frames (2.86 on average over the RZX run); PassCount `$5C02` counts them | 04 |
+| pass | one turn of the main loop, from MainLoop `$9018` to its `JP MainLoop`; no HALT, so a pass takes 2.4 to 3.3 frames (2.84 on average over the RZX run); PassCount `$5C02` counts them | 04 |
 | play window | the screen's top two thirds, `$4000-$4FFF`, 256 x 128 pixels, where the rooms are drawn | 06 |
 | PlaySound | `$C4B2`: the beeper sounds 0-6 through SoundDispatch `$C4BC` and SoundEffects `$C55B` | 09 |
 | PrintChar | `$90C6`: one ROM-font character, no attribute | 08 |
 | PrintNumber | `$BD78`: the four-cell decimal printer of the score and the high score | 08 |
 | PrintPage | `$C574` (RAM 1): the selector's page printer for Help (`$16` c r, `$0D`, `$01` pause, `$00` wait) | 08 |
 | PrintString | `$94F9`: text with `$0D` line ends, attribute in A' | 08 |
-| relocation table | the 67 words found through RelocTableOffset `$2A0F` (at base + 3): each names an address in the selector stored as an offset from its first byte; the relocation adds the run address, `$C000` on a 128K | 03 |
+| relocation table | the 67 words found through RelocTableOffset `$C003` (base + 3), which holds `$2A0F`: each names an address in the selector stored as an offset from its first byte; the relocation adds the run address, `$C000` on a 128K | 03 |
 | respawn | the restart after a lost life, at the last checkpoint room's entry state (Respawn `$9090`) | 04 |
 | room | one screen of the play window, 32 x 16 cells; its number is level x 12 + column (`$00-$47`, 72 rooms: six levels of 12, the last two only explorers' own rooms); Room `$5C01` | 01, 06 |
 | room script | the per-room routine of RoomScripts `$B7EC`, run every pass before the hero moves | 07 |

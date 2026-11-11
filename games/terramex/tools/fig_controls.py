@@ -39,8 +39,8 @@ NAMES = {'CS': 'CAPS SH.', 'SS': 'SYM SH.'}
 
 COL = {'kbd': (46, 140, 60), 'sin': (40, 100, 200), 'menu': (170, 50, 170), 'panel': (225, 120, 20),
        'quit': (200, 40, 40), 'sel': (20, 150, 150), 'cur': (150, 150, 160)}
-LEGEND = [('kbd', 'device 1 on the menu: the keyboard (ReadKeyboard $B8FE; the selector $C471 too)'),
-          ('sin', 'device 3: Sinclair, keys 6-0 (port $EFFE, $B8A6; the selector $C416)'),
+LEGEND = [('kbd', 'menu key 1, device 0: the keyboard (ReadKeyboard $B8FE; the selector $C471 too)'),
+          ('sin', 'menu key 3, device 2: Sinclair, keys 6-0 (port $EFFE, $B8A6; the selector $C416)'),
           ('menu', 'the device menu: 1 2 3 choose, 0 starts (MenuKeys $9468)'),
           ('panel', 'in play, any device: 1 2 scroll the bearers ($BC24), S swaps ($BA40), T thinks ($B031)'),
           ('quit', 'end of a pass: Q, then CAPS SHIFT quits ($905C) or A freezes while held ($9064)'),

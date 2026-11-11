@@ -511,7 +511,7 @@ SolidTileDone:
 ; The hero's update in room $2C: floating with momentum, bouncing off walls
 ; (SK, renamed)
 ;
-; The room handler of room $2C (RoomHandlers $B7EC, reached through $B7DD and
+; The room handler of room $2C (RoomScripts $B7EC, reached through $B7DD and
 ; JumpThroughWord $A6DD from HeroUpdate $A3E1). POP AF drops the return into
 ; HeroUpdate, so this replaces the whole update in that room. Status 0
 ; (ClearStatus $AE84), frame $1A, the probes (HeroTileChecks $A102).
@@ -621,7 +621,7 @@ FloatMove:
 ;
 ; Called from the main loop $9018 ($902B) every pass, IX = the hero. In order:
 ;
-; 1. The room handler of the current room ($B7DD: RoomHandlers $B7EC through
+; 1. The room handler of the current room ($B7DD: RoomScripts $B7EC through
 ; JumpThroughWord $A6DD). A handler that starts with POP (FloatInRoom2C $A34B)
 ; replaces the rest.
 ;
@@ -1029,11 +1029,11 @@ ExitLeftEnter:
 ;
 ; Rooms $2D, $2E, $2F, $46 and $47 for explorers 0-4. ExitLeft $A640 reads the
 ; explorer's byte; ExitRight $A671 sends the hero from any of these rooms to
-; room $29. Each has its room handler (RoomHandlers $B7EC: $B370,
-; ExplorerRoom2E $B263, ExplorerRoom2F $B22D, ExplorerRoom46 $B2EB,
-; ExplorerRoom47 $B18A), and each handler tests one item: the explorer's key
-; item of the instructions. Evidence: the RZX run plays explorer 0 (one extra
-; read of $A66C at the room $29 exit).
+; room $29. Each has its room handler (RoomScripts $B7EC: $B370, ExplorerRoom2E
+; $B263, ExplorerRoom2F $B22D, ExplorerRoom46 $B2EB, ExplorerRoom47 $B18A), and
+; each handler tests one item: the explorer's key item of the instructions.
+; Evidence: the RZX run plays explorer 0 (one extra read of $A66C at the room
+; $29 exit).
 ExplorerRooms:
   INCBIN "res/tables/explorer-rooms.bin",$0000,5
 
@@ -1041,7 +1041,7 @@ ExplorerRooms:
 ;
 ; From a room of ExplorerRooms $A66C the hero goes to room $29; else same
 ; level, column + 1, 11 wrapping to 0. X = 2, then the room is set up ($9855).
-; Called from HeroUpdate $A3E1, JumpArc $ADAC and BarrelBigRide $AABA.
+; Called from HeroUpdate $A3E1, JumpArc $ADAC and BarrelRideLong $AABA.
 ; Evidence: 38 exits in gameover and 18 rzx segments; the explorer room path
 ; once.
 ;
@@ -1184,8 +1184,9 @@ InputBits:
 ; Read the controls; both left and right, or both up and down, read as nothing
 ;
 ; Out: A = the InputBits of ReadDevice $B894, or 0 when bits 0 and 1 or bits 2
-; and 3 are both set. Called by $A3E1 every pass ($A3F4), by $A34B and by
-; $AF81.
+; and 3 are both set; E = the raw InputBits on every path. Called by $A3E1
+; every pass ($A3F4), by $A34B ($A356), by $AF81 ($AFBA, which tests E: up +
+; down there gives down, status 20) and by TelescopeRoom $B16A ($B17F).
 ;
 ; Witness: L1 26612 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

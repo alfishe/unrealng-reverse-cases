@@ -52,11 +52,11 @@ JumpThroughWord:
 ;
 ; Read only by Think $AB6E (status 10, the T key): ThinkHints[room] goes to
 ; $5B9B and chooses BrightIdea $ABC7 (an item) or NoIdea $ABD9 ($FF). Written
-; by GameInit (rooms $17, $1A = $FF, $0F = 7), by $98E9 (room $0F = 6, in room
-; $10) and by Room1ADeath $A88F (rooms $17, $1A = $0C). No recording ran Think,
-; so the reads are known only from the code. The items fit the rooms' handlers:
-; room $1D = 9 (the barrel of BarrelSpot $AA3C), room $14 and $08 = $0A (Hover
-; $AD32), room $0F = 7 (BalloonRide $AC35).
+; by InitGame (rooms $17, $1A = $FF, $0F = 7), by SetUpRoomTiles $9880 at $98E9
+; (room $0F = 6, in room $10) and by Room1ADeath $A88F (rooms $17, $1A = $0C).
+; No recording ran Think, so the reads are known only from the code. The items
+; fit the rooms' handlers: room $1D = 9 (the barrel of BarrelSpot $AA3C), room
+; $14 and $08 = $0A (Hover $AD32), room $0F = 7 (BalloonRide $AC35).
 ThinkHints:
   INCBIN "res/tables/think-hints.bin",$0000,72
 
@@ -101,7 +101,7 @@ StatusHandlers:
 ; Status 33: hold frame $3F for 64 passes, then the next step of room $47
 ;
 ; Set by ExplorerRoom47 $B18A when the hero uses item 1 at its spot. $5C07
-; counts; at bit 6 RoomStep $5C41 + 1 and status 0. Not executed in any
+; counts; at bit 6 RoomStage $5C41 + 1 and status 0. Not executed in any
 ; recording (c1, explorers, gameover, rzx x31); known only from the code.
 ;
 ; Witness: L1 0 ().
@@ -216,9 +216,9 @@ TelescopeWait:
 
 ; Status 30: the hero bends to the telescope, then the view
 ;
-; Set by TelescopeRoom $B16A. Plays TelescopeFrames $A79F (Status28Anim's tail
-; $A82C); at the end status 31 (TelescopeView $A7B9). Not executed in any
-; recording.
+; Set by TelescopeRoom $B16A. Plays TelescopeFrames $A79F (through
+; FrameListStatus $A82C); at the end status 31 (TelescopeView $A7B9). Not
+; executed in any recording.
 ;
 ; Witness: L1 0 ().
 LookIntoTelescope:
@@ -307,7 +307,7 @@ Room1ADeath:
 ; Status 24: the death by a creature's touch, sound 3 every pass
 ;
 ; Set by HitExplorer $C0F9 (a creature's touch, not standing) and by the beam
-; hit $9262 (RoomEffects: within the beam's X span and 12 rows, status below
+; hit $9260 (RoomEffects: within the beam's X span and 12 rows, status below
 ; 4). CreatureDeathFrames $A8E0 with sound 3 each pass, then status 18.
 ; Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
 ;
@@ -364,9 +364,10 @@ Room1ADeathFrames:
 ;
 ; Set by TeleportPadCheck $B03B. First pass ($5C07 = 0): the lift is reset to
 ; room $1F, Y $50 ($5B9E, $5B9F). Room $30 sends to room $3D, room $3D to room
-; $20, each only while $5C44 is not 0 (else nothing happens and the status
-; stays); the destination goes into TeleportDest $A959. Room $20: status 23
-; (SilentDeath $A8A8).
+; $20, each only while $5C44 is not 0 (else RET Z at $A914 returns into
+; HeroUpdate before the POP HL at $A919: the normal update runs on with status
+; 22 kept, and every pass resets the lift again); the destination goes into
+; TeleportDest $A959. Room $20: status 23 (SilentDeath $A8A8).
 ;
 ; Witness: L1 36 (rzx, rzx).
 Teleport:
@@ -771,9 +772,11 @@ BarrelShortArc:
 ; Status 10: the hero thinks; ThinkHints decides the idea
 ;
 ; Set by ThinkKey $B02E (T). ThinkFrames $ABEB; at the end the thought's place:
-; $5B9A = Y (- $18 when Y >= $18), $5B99 = X - $18 or + $18 (the side the hero
-; faces; turned at the edges), $5B9B = ThinkHints $A6E6[room]; status 12
-; (NoIdea) for $FF, else 11 (BrightIdea). Not executed in any recording.
+; $5B9A = Y (- $18 when Y >= $18), $5B99 = X when Y >= $18 (the bubble above
+; the head), else X - $18 or + $18 (beside him, on the side he faces; at an
+; edge the facing turns and the other side is used), $5B9B = ThinkHints
+; $A6E6[room]; status 12 (NoIdea) for $FF, else 11 (BrightIdea). Not executed
+; in any recording.
 ;
 ; Witness: L1 0 ().
 Think:
@@ -918,8 +921,10 @@ BalloonCrash:
 ; room 3 status 8 hovers and status 7 becomes 9 (BalloonCrash $AC1A). Other
 ; items: the balloon sinks 2 pixels a pass (the room below at $66) and on the
 ; ground left or right steps out (status 0). $5C25 / $5C26 keep the balloon's X
-; and Y. Evidence: rzx14000 frames 696-1104 (452 passes, item 6); the screen of
-; rzx14000 frame 750 shows the balloon.
+; and Y. Evidence: rzx14500 frames 195-849 (the Bellows from frame 396: up from
+; room $0F into room 3, hovering at its top, down to the ground with item $0B)
+; and rzx14000 frames 696-1104 (item $0B, then none: no rise); 452 passes; the
+; screen of rzx14000 frame 750 shows the balloon.
 ;
 ; Witness: L1 452 (rzx, rzx).
 BalloonRide:
@@ -1311,6 +1316,10 @@ SetStatus:
   RET
 
 ; The frames of the 17 jump steps
+;
+; 17 bytes, one frame a step. JumpRise follows at $AE9E: at the snap pass (step
+; 17) JumpArc calls FrameFromTable before its CP $11, so the frame of that pass
+; is JumpRise[0] = $04.
 JumpFrames:
   INCBIN "res/tables/jump.bin",$0000,17
 JumpRise:

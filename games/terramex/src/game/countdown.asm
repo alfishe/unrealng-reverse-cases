@@ -41,8 +41,8 @@ CountDown:
 ;
 ; The hero's frame `$5B06` = `$7F` (the blank sprite), Room `$5C01` = `$28` and
 ; the room set-up `$9855`; the respawn state too: room `$28` (`$5C2D`),
-; EventTimer 0 (`$5C2C`), RoomEvent `$1D` (`$5C2B`); `JP $AE85` with A = `$1D`:
-; RoomEvent = `$1D`, EventTimer = 0. Status `$1D` is Frozen `$A90E`, which only
+; StatusTimer 0 (`$5C2C`), Status `$1D` (`$5C2B`); `JP $AE85` with A = `$1D`:
+; Status = `$1D`, StatusTimer = 0. Status `$1D` is Frozen `$A90E`, which only
 ; holds; SpaceScene `$B0B6`, room `$28`'s script, plays the asteroid striking
 ; (gameover frames 1509-1961) and sets GameOver; EndGame `$906D` follows (frame
 ; 1962). After the last life the respawn (`$9090`, LifeLost still set) restores

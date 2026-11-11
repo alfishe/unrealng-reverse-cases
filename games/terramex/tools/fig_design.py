@@ -10,6 +10,8 @@ route, the items.
     python3 tools/fig_design.py map docs/img/design/map-route.png
     python3 tools/fig_design.py items docs/img/design/items.png
     python3 tools/fig_design.py moments docs/img/design/moments.png
+    python3 tools/fig_design.py moments2 docs/img/design/moments-2.png
+    python3 tools/fig_design.py creatures docs/img/design/creatures.png
 
 screens and panel use the screenshots of the recordings (docs/img/play/*.png, 512 x 384, and the case's screen
 dumps in work/docs/tmA: work/stage1/<recording>/screens/*.scr drawn at 1 x). explorers uses the five play screens of
@@ -18,7 +20,11 @@ explorer-N.png. rooms draws every room from src/res with tools/fig_rooms.py's ro
 number. map draws the 72 rooms by level and column (room = level x 12 + column) and the RZX run's route over them:
 the room sequence of work/docs/tmA/route-events.txt (the RZX played in SkoolKit's simulator by tools/rzx_dump.py,
 sampled every 25 RZX frames). items draws the 32 item sprites from src/res/sprites/items.png (via fig_rooms'
-resources) with their names and marks the professor's six wishes (src/res/tables/wanted-items.csv).
+resources) with their names and marks the professor's six wishes (src/res/tables/wanted-items.csv). moments2 draws
+nine screens of the RZX run from the RZX dump (work/docs/tmA/rzx25/screens.bin: the RZX played in SkoolKit's simulator
+by tools/rzx_dump.py, one screen every 25 RZX frames). creatures decodes the 216 creature records of RoomCreatures
+$C152 (src/res/rooms/rooms.txt) and draws, for each of the eight types, the four frames from each first frame the
+records give (src/res/sprites/creatures.png; type 8 uses explorer 0's frame $2C), with the rooms it lives in.
 """
 import argparse
 import os
@@ -57,12 +63,12 @@ def screens(args):
     shots = [('play/loading-screen.png', 'the loading screen (c1, block 3)'),
              ('play/menu.png', 'the device menu'),
              ('play/selector.png', 'the explorer selector (128K)'),
-             ('play/help-1.png', 'Help, page 1: the story'),
+             ('play/help-1.png', 'Help: the title (explorers 13 750)'),
              ('play/start-room-14.png', 'play: the first room, $14'),
              ('play/gameover-1700.png', 'the space scene: the strike (gameover 1700)'),
              ('play/ending-lab-r48000-1999.png', 'the lab $3B: the professor (rzx48000)'),
-             ('play/ending-room-28-r50000-500.png', 'the ending: the asteroid deflected (rzx50000)'),
-             ('play/help-3.png', 'Help, page 3: the controls')]
+             ('play/ending-room-28-r50000-500.png', 'the ending (rzx50000 500)'),
+             ('play/help-3.png', 'Help, page 1: the story (explorers 15 000)')]
     cols, sw, sh = 3, 336, 252
     gap = (W - cols * sw) // (cols + 1)
     rows = (len(shots) + cols - 1) // cols
@@ -270,9 +276,9 @@ def moments(args):
     """Key moments: four screenshots of the case's recordings (work/docs/tmA/shots, 512 x 384 dumps of
     time_travel memory_at screens)."""
     shots = [('fall-1366.png', 'the fall death in room $1C (gameover 1366)'),
+             ('dying-1420.png', 'dying: status 18, 50 passes (gameover 1420)'),
              ('won-100.png', 'the professor in the lab $3B (rzx50000 100)'),
-             ('space-1600.png', 'the asteroid falls on the building (gameover 1600)'),
-             ('space-1900.png', 'after the strike (gameover 1900)')]
+             ('space-1600.png', 'the strike: the asteroid at the Earth (gameover 1600)')]
     sw, sh = 512, 384
     gap = (W - 2 * sw) // 3
     H = 66 + 2 * (sh + 30) + 6
@@ -290,17 +296,133 @@ def moments(args):
     print(args.out)
 
 
+def sprite_cell(d, sheet, frame, x, y, s, colour=(240, 240, 240)):
+    spr = sheet[frame * 72:frame * 72 + 72]
+    d.rectangle([x - 2, y - 2, x + 24 * s + 1, y + 24 * s + 1], fill=(0, 0, 0))
+    for col in range(3):
+        for row in range(24):
+            byte = spr[col * 24 + row]
+            for bit in range(8):
+                if byte & (0x80 >> bit):
+                    px, py = x + (col * 8 + bit) * s, y + row * s
+                    d.rectangle([px, py, px + s - 1, py + s - 1], fill=colour)
+
+
+CREATURE_TYPES = {1: 'walker: 2 pixels a pass along X, turns at walls and edges',
+                  2: 'climber: 2 pixels a pass along Y',
+                  3: 'left flier: waits unseen, crosses the room leftwards once, waits again',
+                  4: 'right flier: the same, rightwards',
+                  5: 'drop: waits, falls 2 pixels a pass, splashes on the floor',
+                  6: 'still creature: animates in place (the snakes: a room script strikes)',
+                  7: 'riser: rises through four frames, sinks, pauses; hits only fully up',
+                  8: 'scenery: never moves, never hits (an explorer frame)'}
+
+
+def creatures(args):
+    r = fig_rooms.resources()
+    table, sheet = r['rooms/table.bin'], r['sprites/creatures.bin']
+    explorer = fig_rooms.RF.to_bytes('sprites/explorer-0.png', 'single',
+                                     open(P('src', 'res', 'sprites', 'explorer-0.png'), 'rb').read())
+    explorer = next(iter(explorer.values()))
+    types = {}
+    for room in range(len(table) // 12):
+        for k in range(3):
+            rec = table[room * 12 + 4 * k:room * 12 + 4 * k + 4]
+            t = rec[0] & 15
+            if not t:
+                continue
+            firsts, rooms = types.setdefault(t, ({}, set()))
+            firsts[rec[1]] = firsts.get(rec[1], 0) + 1
+            rooms.add(room)
+    s, cell = 2, 24 * 2 + 6
+    rh = cell + 50
+    H = 66 + len(types) * rh + 10
+    img = Image.new('RGB', (W, H), BG)
+    d = ImageDraw.Draw(img)
+    title(d, 'The eight creature types, from the room records (RoomCreatures $C152)',
+          'Each row: the type and how it moves; four frames from each first frame of the records (2 x); '
+          'the rooms on the right')
+    f, fs = kitlib.font(14), kitlib.font(12)
+    for i, t in enumerate(sorted(types)):
+        firsts, rooms = types[t]
+        y = 64 + i * rh
+        n = sum(firsts.values())
+        d.text((20, y), f'type {t}, {CREATURE_TYPES[t]}', font=f, fill=HI)
+        x = 20
+        for first, count in sorted(firsts.items(), key=lambda kv: -kv[1]):
+            frames = [first] if t == 8 else [first + j for j in range(4)]
+            d.text((x, y + 24 + cell), f'from ${first:02X}: {count} records', font=fs, fill=DIM)
+            for fr in frames:
+                if fr < 0x40:
+                    sprite_cell(d, explorer, fr, x + 2, y + 22, s)
+                else:
+                    sprite_cell(d, sheet, fr - 0x40, x + 2, y + 22, s)
+                x += cell
+            x += max(14, int(d.textlength(f'from ${first:02X}: {count} records', font=fs)) - cell * len(frames) + 14)
+        tx = max(x + 6, 300)
+        d.text((tx, y + 22), f'{n} records in {len(rooms)} rooms:', font=fs, fill=TEXT)
+        lines, line = [], ''
+        for word in (f'${q:02X}' for q in sorted(rooms)):
+            if d.textlength(line + ' ' + word, font=fs) > W - tx - 16:
+                lines.append(line)
+                line = word
+            else:
+                line = (line + ' ' + word).strip()
+        lines.append(line)
+        for j, ln in enumerate(lines[:3]):
+            d.text((tx, y + 40 + 16 * j), ln, font=fs, fill=DIM)
+    img.save(args.out)
+    print(args.out)
+
+
+def moments2(args):
+    """Nine moments of the RZX run, from the RZX dump's screens (one every 25 RZX frames)."""
+    import json
+    sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
+    import zxscreen
+    rzx = P('work', 'docs', 'tmA', 'rzx25')
+    frames = json.load(open(os.path.join(rzx, 'index.json')))['frames']
+    data = open(os.path.join(rzx, 'screens.bin'), 'rb').read()
+    shots = [(400, 'the hover with the Vacuum Cleaner,', 'a bird above: room $14, RZX 400'),
+             (11525, 'the respawn after the fall into $1C:', 'room $1B, 3 lives, RZX 11 525'),
+             (14900, 'the balloon rises, the Bellows', 'in the hand: room $0F, RZX 14 900'),
+             (16525, 'the barrel ride: the cannon fires', 'the Barrel Medium: room $1D, RZX 16 525'),
+             (17750, 'the Cricket Ball thrown at the', 'target: room $2D, RZX 17 750'),
+             (20675, 'the lift down (status 20):', 'room $2B, RZX 20 675'),
+             (25500, 'the teleport pad (status 22):', 'room $30, RZX 25 500'),
+             (25525, 'out of the teleport:', 'room $3D, RZX 25 525'),
+             (50225, 'the ending: the asteroid falls,', 'the deflector waits: room $28, RZX 50 225')]
+    cols, sw, sh = 3, 336, 252
+    gap = (W - cols * sw) // (cols + 1)
+    rows = (len(shots) + cols - 1) // cols
+    H = 70 + rows * (sh + 46) + 10
+    img = Image.new('RGB', (W, H), BG)
+    d = ImageDraw.Draw(img)
+    title(d, 'The RZX run: each new mechanism as it first appears', 'The RZX\'s own screens (the RZX dump, one every '
+          '25 RZX frames), 1.3 x; the label gives the room and the RZX frame')
+    f = kitlib.font(13)
+    for i, (fr, lab1, lab2) in enumerate(shots):
+        k = frames.index(fr)
+        im = zxscreen.render(data[k * 6912:(k + 1) * 6912], 2).convert('RGB').resize((sw, sh), Image.LANCZOS)
+        x, y = gap + (i % cols) * (sw + gap), 66 + (i // cols) * (sh + 46)
+        img.paste(im, (x, y))
+        d.text((x, y + sh + 5), lab1, font=f, fill=TEXT)
+        d.text((x, y + sh + 21), lab2, font=f, fill=DIM)
+    img.save(args.out)
+    print(args.out)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest='cmd', required=True)
-    for name in ('screens', 'explorers', 'panel', 'map', 'items', 'moments'):
+    for name in ('screens', 'explorers', 'panel', 'map', 'items', 'moments', 'moments2', 'creatures'):
         sub.add_parser(name).add_argument('out')
     ro = sub.add_parser('rooms')
     ro.add_argument('out')
     ro.add_argument('--levels', default='0-2')
     a = ap.parse_args()
     {'screens': screens, 'explorers': explorers, 'panel': panel, 'rooms': rooms, 'map': map_route,
-     'items': items, 'moments': moments}[a.cmd](a)
+     'items': items, 'moments': moments, 'moments2': moments2, 'creatures': creatures}[a.cmd](a)
 
 
 if __name__ == '__main__':

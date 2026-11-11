@@ -5,7 +5,7 @@ What this covers:
 - the input devices and every port the game, the selector and Help read;
 - the device menu: 1, 2 and 3 choose the device, 0 starts;
 - the three readers of play: the keyboard Z X O K SPACE, the Kempston port `$1F` and the Sinclair keys 6-0;
-- ReadControls, which drops opposite directions;
+- ReadControls, which returns 0 for opposite directions in A but keeps the raw reading in E;
 - the cursor-key readers, which no path reaches;
 - the selector's input: every device at once, the Kempston probe, the cursor and its boxes, the Help keys;
 - the path from the input byte to the hero: walking, jumping, climbing, the hover;
@@ -16,7 +16,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K, every load at ROM 
 
 | Recording | Used for |
 | --- | --- |
-| `explorers` | five games from the device menu (Kempston twice, the keyboard, Sinclair, Kempston), each ended by CAPS SHIFT + Q, then Help. Round 3, the keyboard, gives the menu keys (1 at frame 5138, 0 at 5223), the selector (X from 5548, K from 5588, SPACE at 5648), the walk (X from 5958), the bearer key 1 (6470), T (6590), 5 (6750), Z (6860), 0 (7322) and CAPS SHIFT + Q (7642). Round 4 gives the Sinclair reads (frames 8219-10185). Help runs over frames 13560-14790 |
+| `explorers` | five games from the device menu (Kempston twice, the keyboard, Sinclair, Kempston), each ended by CAPS SHIFT + Q, then Help. Round 3, the keyboard, gives the menu keys (1 at frame 5138, 0 at 5223), the selector (X from 5548, K from 5588, SPACE at 5648), the walk (X from 5958), the bearer key 1 (6470), T (6590), 5 (6750), Z (6860), 0 (7322) and CAPS SHIFT + Q (7642). Round 4 gives the Sinclair reads (frames 8219-10185). Help runs from the fire at frame 13660 (the cursor moves there from 13560) to the end of the script, 15190: the screen of frame 15000 still shows page 1, so the ENTER at 14780 did not return to the selector |
 | `c1` | the menu keys 1, 3, 2 and 0; the selector moved by the Kempston; one abort |
 | `gameover` | the RZX state at 10000 with Lives `$5B97` poked to 1 (a POKE): the RZX player's Kempston keys from `tests/inputs/gameover.txt`, with jumps at frames 2, 122, 289 and 749 |
 | `rzx02000` | a segment of the RZX archive's run (another player's game, replayed from its port reads as Kempston keys): a ladder climbed down over frames 1003-1110 and up over 1136-1232 |
@@ -138,7 +138,7 @@ MenuKeys `$9468`:
 4. `$1E` (only 1 down) stores device 0. `$1D` (only 2) stores 1. `$1B` (only 3) stores 2. Any other value stores
    nothing: two keys at once, 4, 5, or no key.
 5. It reads key 0. B is reloaded with `$EF` and C still holds `$FE`, so the port is `$EFFE`. Bit 0 at 0 returns to
-   NewGame `$8F47`.
+   RunSelector `$8F4A`, after the CALL in NewGame `$8F47`.
 6. Otherwise it jumps back to MenuLoop.
 
 Pseudocode:
@@ -220,7 +220,7 @@ Worked example (`explorers` round 3). Round 2 ended with InputDevice = 1, so the
 on row 10, KEMPSTON. The script holds 1 from frame 5138. The next MenuKeys reads `$F7FE` as `$1E` after `AND $1F`.
 E stays 0, so InputDevice = 0. The next MenuLoop paints row 8 + 2 x 0 = 8 white. The sample of frame 5143 shows
 InputDevice = 0 and the bar on KEYBOARD. The script holds 0 from frame 5223. `IN A,(C)` with BC = `$EFFE` gives bit
-0 = 0, and `RET Z` returns to NewGame.
+0 = 0, and `RET Z` returns to RunSelector `$8F4A` (after the CALL in NewGame `$8F47`).
 
 Witness: MenuKeys ran 6 836 times in 5 builds (`c1`, `explorers`, `gameover`, and two `rzx` segments that end in the
 menu). `c1` chose 1, 3 and 2, then 0; `explorers` chose all three devices.
@@ -315,7 +315,8 @@ flowchart TD
 ```
 
 Worked example (`explorers`, the keyboard round). At frame 6001 the script holds X. A trace of frames 6001-6004 puts
-ReadControls at frame 6001 T 35101 and its return at T 35370: about 270 T, four port reads included. The `$FEFE`
+ReadControls at frame 6001 T 35101, ReadDevice's InputBitsOut `$B930` at T 35370 and ReadControls' `RET` at T
+35456: 365 T for the call with its `RET`, four port reads included (Z and X share the one `IN` of `$FEFE`). The `$FEFE`
 read gives bit 2 = 0, so `SET 0,(HL)` runs, and InputBits = `$01`. The hero moves 2 pixels right in the same pass
 (5.7).
 
@@ -330,17 +331,17 @@ into 0, so the hero stands still. This follows from the code only; the recording
 The point: the three readers give the same byte. The Kempston costs one IN; the keyboard costs four. A pass of 2.4 to
 3.3 frames reads the device only once, so a tap shorter than a pass can be missed.
 
-## 5.4 ReadControls `$B87D`: opposite directions cancel
+## 5.4 ReadControls `$B87D`: opposite directions cancel in A
 
-ReadControls calls ReadDevice, then looks at the pairs. Left with right gives 0. Up with down gives 0. Fire is lost
-with them: the whole byte becomes 0.
+ReadControls calls ReadDevice, then looks at the pairs. Left with right gives A = 0. Up with down gives A = 0. Fire is
+lost with them: the whole byte becomes 0. The cancel clears A only: E keeps the raw reading (`LD E,A` at `$B880`).
 
 ```text
 ReadControls:                               ; $B87D
-    e = ReadDevice()
-    if e AND 3 == 3: return 0               ; left and right
-    if e AND $0C == $0C: return 0           ; up and down
-    return e
+    e = ReadDevice()                        ; E = the raw reading, kept on every path
+    if e AND 3 == 3: return a = 0           ; left and right
+    if e AND $0C == $0C: return a = 0       ; up and down
+    return a = e
 ```
 
 ```text
@@ -364,21 +365,37 @@ B893 C9          RET
 ```mermaid
 flowchart TD
     A["ReadControls B87D: E = ReadDevice"] --> B{"E AND 3 = 3, left and right?"}
-    B -->|"yes"| Z["A = 0"]
+    B -->|"yes"| Z["A = 0, E = the raw reading"]
     B -->|"no"| C{"E AND 0C = 0C, up and down?"}
     C -->|"yes"| Z
     C -->|"no"| D["A = E"]
+    Z --> U["HeroUpdate A3F4, float A356: LD E,A, the cancelled byte"]
+    D --> U
+    Z --> T["TelescopeRoom B17F: A AND 1, right"]
+    D --> T
+    Z --> L["LiftPlatform AFBA: BIT 2,E then BIT 3,E, the raw byte"]
+    D --> L
 ```
 
 Worked example: Kempston up + down + fire reads `$1C`. `$1C AND $03` = 0, so the first test passes. `$1C AND $0C` =
 `$0C`, so the second test returns 0, and the fire is lost too.
 
-Its callers are HeroUpdate `$A3E1` (every pass, at `$A3F4`), the room-`$2C` float `$A34B` and LiftPlatform `$AF81`.
+Its callers, and which output each uses:
+
+| Caller | Call at | Uses | Effect of a cancel |
+| --- | --- | --- | --- |
+| HeroUpdate `$A3E1` (every pass) | `$A3F4` | A, copied to E by `LD E,A` at `$A3F7` | no move, no jump |
+| FloatInRoom2C `$A34B` (room `$2C`'s float) | `$A356` | A, copied to E at `$A359` | no velocity change |
+| LiftPlatform `$AF81` | `$AFBA` | E, the raw reading (`BIT 2,E` at `$AFBD`, then `BIT 3,E`) | none: up + down gives down, status 20 |
+| TelescopeRoom `$B16A` (room `$12`) | `$B17F` | A AND 1: right sets status `$1E` | no telescope view |
+
+On the lift, up + down together is not cancelled: E still has both bits, `BIT 2,E` (down) is tested first, and the
+status becomes 20. This is known only from the code: no recording holds opposite keys (5.11).
 
 Witness: ReadControls ran 26 612 times in 34 builds. Its two cancel branches (`$B887`, `$B890`) ran in no recording.
 
 The point: no keyboard player can press Z and X together to get a strange move. The cost is the fire: a jump
-pressed with both directions is not taken.
+pressed with both directions is not taken. The lift escapes the rule only because it tests E, not A.
 
 ## 5.5 The cursor-key readers (known only from the code)
 
@@ -601,7 +618,13 @@ pre-shifted frames.
 
 Help shows its pages with PrintPage `$C574`. WaitSpaceOrEnter `$C5E4` then polls two keys: SPACE (`$7FFE` bit 0)
 returns 1, the next page; ENTER (`$BFFE` bit 0) returns 0, back to the selector. The poll has no HALT; its loop ran
-577 796 times in the Help part of `explorers` (frames 13560-14790).
+577 796 times in the Help part of `explorers` (frames 13660-15190; the cursor moves to Help from 13560).
+
+The 128K path does not wait for the key to be let go (only the 48K's Help48KText goes through WaitKeysUp). A SPACE
+held longer than a page takes to draw, about 8 frames, turns two pages. In `explorers` page 1 is drawn over frames
+13857-13865, so the SPACE of 13820 falls in the title's pause and is lost. The SPACE held over 13980-13990 then shows
+page 2 and at once page 3, which is on the screen at frame 14000 ([doc 8](08-hud-and-text.md), 8.4). PrintPage ran
+10 times in all, 3 of them titles, for the six SPACEs.
 
 Three more waits exist for other machines and loads:
 
@@ -631,8 +654,8 @@ HeroUpdate `$A3E1` runs once a pass, from MainLoop. Its input part:
 11. Left: facing bit 7 clear, X - 2; X < 4 leaves by ExitLeft `$A640`.
 12. Down: only when OnLadder `$A193` sees a ladder tile under the middle of the feet; Y + 2. Y >= `$67` leaves by
     ExitDown `$A6AE`.
-13. Up: only on a ladder; Y - 2. Above the top it leaves by ExitUp `$A69B`. In room `$18` the hero hops out with
-    status 3 instead.
+13. Up: only on a ladder; Y - 2. Above the top it leaves by ExitUp `$A69B`. In room `$18` ClimbOutTop `$A4F1` calls
+    ExitUp too, then sets Y = `$60`, JumpDirection = 0 and status 3 (a hop), not the climb-out status.
 14. Climbing sets the frame to `$20 + (Y AND 6) / 2`: four climb frames by height.
 15. Otherwise the probes HeroTileChecks `$A102`: a wall puts X back; then the ladder, landing, falling (4 pixels a
     pass) or a refusal of a big drop ([doc 10](10-gameplay-logic.md)).
@@ -655,7 +678,8 @@ HeroUpdate:                                 ; $A3E1, once a pass
     if e.right: facing right; X += 2; if X >= $E8: ExitRight
     if e.left:  facing left;  X -= 2; if X < 4: ExitLeft
     if e.down and OnLadder(Y + 1): Y += 2; if Y >= $67: ExitDown; frame = $20 + (Y AND 6) / 2; return
-    if e.up and OnLadder: Y -= 2; if Y < 0: ExitUp (room $18: hop out, status 3); frame = ...; return
+    if e.up and OnLadder: Y -= 2; if Y < 0: ExitUp (room $18: then Y = $60, JumpDirection = 0, status 3)
+        frame = ...; return
     probes, walls, ladder, land, fall or refuse
     walk frames
 ```
@@ -777,8 +801,8 @@ docs/img/play/jump-kempston.gif`.*
 
 How to read: the same panels. Fire is held from frame 122. The status becomes 2 in the sample of frame 123, and the
 frames `$0C-$0F` of the jump follow. The arc itself is JumpArc's work ([doc 10](10-gameplay-logic.md)). The hero
-lands at Y `$40`, on lower ground than he took off from, and walks on: status 0, frames `$10-$13` (he holds the
-Flute).
+takes off at X `$8E`, Y `$40` and lands at Y `$40` again, on the same ground (X `$B0` in the sample of frame 180),
+and walks on: status 0, frames `$10-$13` (he holds the Flute).
 
 ![A climb down and up on the Kempston](img/play/climb-kempston.gif)
 
@@ -787,8 +811,8 @@ Flute).
 play --work work/docs/tmB/r02000 --inputs tests/inputs/rzx-02000.txt --from 996 --to 1240 --step 2 --title '...'
 --out docs/img/play/climb-kempston.gif`.*
 
-How to read: the hero steps right onto the ladder's top, then down is held from frame 1003. Y rises 2 a pass, and
-the frame is one of `$20-$23`. The status stays 0: climbing is no status, only frames.
+How to read: the hero steps right onto the ladder's top, then down is held from frame 1003. Y grows by 2 a pass (the
+hero moves down), and the frame is one of `$20-$23`. The status stays 0: climbing is no status, only frames.
 
 Worked example (`rzx02000`, the climb down). The samples:
 
@@ -825,8 +849,9 @@ and the hover replaces the jump.
 
 The trace of the input in a pass: [HeroUpdate.gif](img/routines/HeroUpdate.gif) shows HeroUpdate and the readers at
 work over frame 6004 T 13743-27000 of `explorers` (the hero's record `$5B00-$5B1F` as hex), made with
-`kit/routine_anim.py --window 6004:13743-6004:27000 --view buffer:5B00:16x2:hex --range 5B00-FFFF --pc
-A0FE-A6CB,B87C-B931 --pictures 40 --listing build/game.lst`.
+`python3 ../../kit/routine_anim.py --work work/docs/tmB/explorers --window 6004:13743-6004:27000 --view
+buffer:5B00:16x2:hex --range 5B00-FFFF --pc A0FE-A6CB,B87C-B931 --pictures 40 --listing build/game.lst --title '...'
+--out docs/img/routines/HeroUpdate.gif`.
 
 The point: a key moves the hero 2 pixels in the same pass that reads it. The walk speed is set by the pass, not by
 the frame: 2 pixels per 2.4-3.3 frames. A jump takes its direction once, at take-off, into JumpDirection.
@@ -967,8 +992,9 @@ flowchart TD
 ![The bearer key 1 at work](img/routines/BearerKeys.gif)
 
 *Animation 5.5: key 1 pressed at frame 6470 of `explorers`: BearerKeys and the panel's redraw, the panel third
-(`$5000`, 32 x 64 cells) as screen pixels: `kit/routine_anim.py --window 6470:0-6483:0 --view
-buffer:5000:32x64:screen --pc BC1F-BC72,9EBD-9F26,9F6B-9FDD,9DBF-9DE2 --pictures 48 --listing build/game.lst`.*
+(`$5000`, 32 bytes x 64 pixel rows) as screen pixels: `python3 ../../kit/routine_anim.py --work work/docs/tmB/explorers
+--window 6470:0-6483:0 --view buffer:5000:32x64:screen --pc BC1F-BC72,9EBD-9F26,9F6B-9FDD,9DBF-9DE2 --pictures 48
+--listing build/game.lst --title '...' --out docs/img/routines/BearerKeys.gif`.*
 
 How to read: each picture shows the panel after the instructions run so far. The bearer row at the right (row 20,
 columns 22-30) and their loads above it (row 17) slide one column a pass, four times.
@@ -984,7 +1010,8 @@ builds; `gameover` presses 1 at frames 999 and 1028.
 ### The lift
 
 LiftPlatform `$AF81` reads ReadControls on its own while the hero stands on the lift in room `$2B`. Up gives status
-19, down status 20 ([doc 10](10-gameplay-logic.md)).
+19, down status 20 ([doc 10](10-gameplay-logic.md)). It tests E, the raw reading, so up + down together gives status 20
+(5.4).
 
 The point: the keys around the hero are few, and each acts at most once a pass. S and the bearer keys work in any
 status the swap allows, standing or not.
@@ -1056,7 +1083,7 @@ names.
 
 - The cursor-key readers `$B8D4` and `$C444`, and the `RET NZ` bug of the first (5.5).
 - The cancel branches of ReadControls and of the selector's ReadDeviceFiltered: no recording pressed opposite
-  directions.
+  directions. So is the lift's up + down, which E lets through as down (5.4).
 - The freeze, Q + A (5.9).
 - T from the keyboard: ThinkKey never found T down.
 - A Kempston chosen with no interface: `$FF` becomes `$1F`, which ReadControls cancels (5.3).

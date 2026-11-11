@@ -25,7 +25,7 @@ writer's own instance (port base 37570, muted):
   selector, play. The game starts at frame 23 367, the first pickup is at frame 23 508, the bearer row scrolls at
   frames 23 935-23 938, and the game is quit with CAPS SHIFT + Q at frame 26 210.
 - `explorers` (`work/stage1/explorers/session.ttd`, frames 0-15 190): the menu (frame 7750), all five explorers, and
-  Help (frames 13 750-15 190).
+  Help (frames 13 660-15 190: from the fire on the question mark to the end of the script).
 - `gameover` (`work/stage1/gameover/session.ttd`): the RZX state of frame 10 000 with Lives `$5B97` set to 1, a POKE.
   The game ends at frame 1962.
 - the RZX segments `rzxNNNNN`: another player's run (Bobby Lequay's RZX), replayed. They are used for the final score,
@@ -107,10 +107,11 @@ python3 tools/fig_text.py font --out docs/img/text/font.png
 ```
 
 Worked example: the `S` of SCORE is code `$53`. Its glyph is at `$3C00` + 8 x `$53` = `$3E98`:
-`00 3C 40 3C 02 42 3C 00`. PrintChar with HL = `$5029` would write those bytes to `$5029`, `$5129`, ... `$5729`, and return HL = `$502A`.
+`00 3C 40 3C 02 42 3C 00`. PrintChar with HL = `$5029` would write those bytes to `$5029`, `$5129`, ... `$5729`, and
+return HL = `$502A`.
 
-Witness: PrintChar runs 1933 times in the L1 builds. The writers map of 8.5 shows PrintCharRow `$90D7` writing 40
-bytes of the panel when a game starts: 5 characters of 8 lines.
+Witness: PrintChar runs 1933 times in the L1 builds. The writers map of 8.5 shows PrintCharRow `$90D6` (the write at
+`$90D7`) writing 40 bytes of the panel when a game starts: 5 characters of 8 lines.
 
 The point: one 27-byte routine and the ROM font are the whole text engine. Everything else in this document is about
 where it prints and what colour the cell gets.
@@ -482,8 +483,11 @@ Worked example: HelpTitle `$C708` is `16 05 0A` + "TERRAMEX INSTRUCTIONS" + `01`
 - 21 characters run to column 25.
 - `$01`: the pause. 6 x 65 536 x 26 T = 10 223 616 T, 144 frames: the title shows for 2.9 s, then page 1 is drawn.
 
-Witness: `explorers` runs Help from frame 13 750. The screenshots at 13 750, 14 000 and 15 000 are the title, page 3
-and page 1 (SPACE through the pages and round again). PrintPage's model equals all three.
+Witness: `explorers` enters Help at the fire of frame 13 660. The title is on the screen at 13 750, and page 1 is
+drawn over frames 13 857-13 865 (the PrintPage animation below). The screenshots at 13 750, 14 000 and 15 000 are the
+title, page 3 and page 1 (SPACE through the pages and round again). The script's ENTER at 14 780 did not return to
+the selector: page 1 is still on the screen at 15 000, and Help runs to the end of the script, 15 190. PrintPage's
+model equals all three screenshots.
 
 The point: PrintPage is a page printer, not a line printer. It clears, it wraps and it waits for a key, so Help is
 three byte strings and a ten-line loop.
@@ -496,8 +500,8 @@ is the original's ("asteriod").
 | Text | Address | Bytes | Printer | Where it shows |
 | --- | --- | ---: | --- | --- |
 | MenuText | `$9540` (game) | 57 | PrintString via PrintMenuText `$94EF` | the device menu, row 8, column 8, attribute `$44` |
-| CreditsText | `$9579` (game) | 132 | PrintString from `$943D` | the device menu, rows 17-21, column 2, attribute `$47` |
-| CollisionText | `$B07C` (game) | 58 | PrintString from TelescopeView `$A7EB` | the telescope view, `$48A2`, attribute `$0F` (8.10) |
+| CreditsText | `$9579` (game) | 132 | PrintString from DeviceMenu `$93AF` (at `$943D`) | the device menu, rows 17-21, column 2, attribute `$47` |
+| CollisionText | `$B07C` (game) | 58 | PrintString from TelescopeView `$A7B9` (at `$A7EB`) | the telescope view, `$48A2`, attribute `$0F` (8.10) |
 | Help48KText | `$C5F9` (selector) | 271 | PrintPage | Help on a 48K |
 | HelpTitle | `$C708` (selector) | 25 | PrintPage | Help's title card, ends on the pause `$01` |
 | HelpPage1 | `$C721` (selector) | 606 | PrintPage | the story: the professor and the asteroid |
@@ -544,7 +548,7 @@ reads is in the selector's Help, which the game itself never sees.
 
 The panel is the bottom third of the screen, rows 16-23. Its picture (the vine frame, SCORE and HISCORE, the tree) is
 part of BackBuffer `$E000`: InitGame `$8F69` copies `$E000-$E7FF` to `$5000-$57FF` and `$E800-$E8FF` to the
-attributes `$5A00-$5AFF`. The game then writes six fields into it:
+attributes `$5A00-$5AFF`. The game then writes seven fields into it:
 
 | Field | Screen | Written by | When |
 | --- | --- | --- | --- |
@@ -655,8 +659,8 @@ How to read the figure:
   `$E000`.
 - **Green, BlitColumnsRow** (`$9F92`): 792 bytes. The spare lives (9 columns), the portrait and held item (6), the
   bearers and their loads (18): 33 columns of 24 bytes.
-- **Blue, PrintCharRow** (`$90D7`): 32 bytes last, 40 writes. PrintScore's four spaces and the `0`. The space
-  writes over the cell of the `0` are written again by the `0`.
+- **Blue, PrintCharRow** (the write at `$90D7`): 32 bytes last, 40 writes. PrintScore's four spaces and the `0`. The
+  space writes over the cell of the `0` are written again by the `0`.
 - **HISCORE's 0000** is red: the picture's own digits, never printed (8.9).
 - **The point**: at the start of a game, 1224 bytes of the panel come from the picture, 792 from the sprite blitter
   and 32 from the text printer.
@@ -757,28 +761,31 @@ held item's. The blue reads in the grid are PanelColumns `$5BD6`, the six column
 same bytes; only the item cell changes, from blank to the new item.
 
 Worked example, a game's start: InitGame sets Lives = 4 (`$8FEB`) and calls DrawSpareLives. Lives - 1 = 3, so all three
-places get a sprite: frames 2, 3 and 4 at `$5081`, `$5084` and `$5087`. After the first death, LifeLossOp `$AA01`
-jumps to DrawSpareLives with Lives = 3: frames 2 and 3, and BlankIcon in the third place.
+places get a sprite: frames 2, 3 and 4 at `$5081`, `$5084` and `$5087`. After the first death, LifeLossOp `$A9FD`
+(`DEC (HL)`) takes Lives to 3 and `JP DrawSpareLives` at `$AA01` draws with Lives = 3: frames 2 and 3, and BlankIcon
+in the third place.
 
 Witness: DrawPortrait runs 81 times in the L1 builds and DrawSpareLives 11 times.
 
 The point: the panel shows lives as pictures, not as a number. The spare-lives row is three explorer frames, so it is
-also a little animation strip: the three pictures are the walk's frames 2-4.
+also a little animation strip: the three pictures are sprite frames 2, 3 and 4 of the explorer's set (2 and 3 are
+walk frames, [doc 6](06-rendering.md), 6.8: walking is 0-3; 4 is the next frame of the set).
 
 ## 8.7 The bearer row
 
 The explorer has bearers who carry the items he picks up (doc 10). BearerLoads `$5B7C` holds 27 entries, one per
-bearer: an item number, or `$FF` for none. The panel shows four bearers at a time: their figures (BearerFigures
-`$9FDE`, four poses chosen by bearer AND 3) at `$5096`, and their loads (ItemSprites) above them at `$5036`. Four
-sprites are 12 columns; the panel shows 9.
+bearer: an item number, or `$FF` for none. The panel draws four bearers: their figures (BearerFigures `$9FDE`, four
+poses chosen by bearer AND 3) at `$5096`, and their loads (ItemSprites) above them at `$5036`. Four sprites are 12
+columns; the panel shows 9: three whole bearers at phase 0, parts of four while the row scrolls.
 
-BearerIndex `$5C23` is the first bearer shown. BearerPhase `$5C22` (0-3) is how many columns of the 12 are skipped,
-so the row slides in steps of one column. Keys 1 and 2 (BearerKeys `$BC1F`) scroll it:
+BearerIndex `$5C23` is the first bearer shown. BearerPhase `$5C22` (0-3; 4 only between key 1 and the next pass) is
+how many columns of the 12 are skipped, so the row slides in steps of one column. Keys 1 and 2 (BearerKeys `$BC1F`) scroll it:
 
-- **key 2** sets BearerScrollDir `$5C21` = 0 and BearerPhase = 0. Each later pass draws the row, then adds 1 to the
-  phase; at 4 the phase is 0 again and BearerIndex goes up by 1 (27 wraps to 0).
-- **key 1** sets BearerScrollDir = 1, BearerPhase = 4 and takes 1 from BearerIndex (below 0: 26). Each later pass
-  takes 1 from the phase and draws.
+- **key 2** sets BearerScrollDir `$5C21` = 0 and BearerPhase = 0, then falls into BearerScrollStep `$BC4A`. This pass
+  and each later one draw the row, then add 1 to the phase; at 4 the phase is 0 again and BearerIndex goes up by 1
+  (27 wraps to 0).
+- **key 1** sets BearerScrollDir = 1, BearerPhase = 4 and takes 1 from BearerIndex (below 0: 26), and returns
+  without drawing. Each later pass takes 1 from the phase and draws.
 
 ```text
 DrawBearers():
@@ -983,14 +990,14 @@ flowchart TD
 
 Who adds to the score:
 
-| Where | Amount | What |
-| --- | ---: | --- |
-| InitGame `$8FCC` | 0 | a game's start: prints "0" |
-| PickUpItem `$BBE9` | +50 | an item picked up |
-| ItemsPass `$BA2A` | +75 | the crystal |
-| Room43Anim `$A865` | +75 | the scene of room `$43` |
-| CrossFlee `$B538` | +150 | a creature flees from the Silver Cross |
-| ProfessorScript `$B5FE` | +150 | a gift the professor wanted |
+| Routine | Call site | Amount | What |
+| --- | --- | ---: | --- |
+| InitGame `$8F69` | `$8FCC` | 0 | a game's start: prints "0" |
+| PickUpItem `$BB6C` | `$BBE9` | +50 | an item picked up |
+| ItemsPass `$B9FA` | `$BA2A` | +75 | the crystal |
+| Room43Anim `$A851` | `$A865` | +75 | the scene of room `$43` |
+| CrossFlee `$B52B` | `$B538` | +150 | a creature flees from the Silver Cross |
+| ProfessorScript `$B5DD` | `$B5FE` | +150 | a gift the professor wanted |
 
 ![PrintNumber modelled on chosen values](img/text/score-cases.png)
 

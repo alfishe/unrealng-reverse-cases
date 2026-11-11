@@ -184,7 +184,8 @@ def item_uses(out):
     r = FR.resources()
     isheet = r['sprites/items.bin']
     cw, ch = 86, 62
-    o = Image.new('RGB', (W, 78 + 6 * (ch + 4) + 90), BG)
+    keyrows = (len(USES) + 2) // 3
+    o = Image.new('RGB', (W, 78 + 6 * (ch + 4) + 104 + keyrows * 20 + 70), BG)
     d = ImageDraw.Draw(o)
     title(d, 'The items the RZX run needs: where each lies and where it is used',
           'From the HeldItem tests of the room scripts and statuses; arrows from the item\'s room to the room of use')
@@ -199,6 +200,7 @@ def item_uses(out):
         cent[room] = (x + cw // 2, y + ch // 2)
     pal = [(255, 220, 90), (90, 210, 230), (120, 220, 120), (240, 110, 100), (250, 170, 70), (120, 160, 255),
            (230, 130, 220)]
+    ends = []
     for i, (item, src, dst, what) in enumerate(USES):
         col = pal[i % len(pal)]
         for s in src:
@@ -209,10 +211,25 @@ def item_uses(out):
                 off = (i % 5 - 2) * 3
                 d.line((x1 + off, y1 + off, x2 + off, y2 + off), fill=col, width=2)
                 d.ellipse((x2 + off - 5, y2 + off - 5, x2 + off + 5, y2 + off + 5), fill=col)
+                ends.append((x2 + off, y2 + off, item, col, t))
         for s in src:
             sp = sprite_img(isheet, item, scale=1, ink=col)
             x, y = cent[s]
             o.paste(sp, (x - 12, y - 14), sp)
+    # the item number at each line's end (the dot); a room with more than two ends gets one list of numbers
+    byroom = {}
+    for x, y, item, col, room in ends:
+        byroom.setdefault(room, []).append((x, y, item, col))
+    for room, lst in byroom.items():
+        if len(lst) <= 2:
+            for n, (x, y, item, col) in enumerate(lst):
+                d.text((x + 7, y - 9 + 15 * n), str(item), font=K.font(14), fill=col, stroke_width=2,
+                       stroke_fill=(0, 0, 0))
+        else:
+            cx, cy = cent[room]
+            for n, (x, y, item, col) in enumerate(lst):
+                d.text((cx - 40 + (n % 3) * 26, cy - 31 + (n // 3) * 15), str(item), font=K.font(14), fill=col,
+                       stroke_width=2, stroke_fill=(0, 0, 0))
     for room, lab in ((0x3B, 'professor'), (0x30, 'crystal pad'), (0x1D, 'barrels'), (0x0F, 'balloon')):
         x, y = cent[room]
         d.text((x - 38, y + 14), lab, font=K.font(14), fill=(255, 255, 255))
@@ -224,7 +241,17 @@ def item_uses(out):
            'other barrels.', font=f14, fill=DIM)
     d.text((12, y0 + 36), 'The Spring and the Trampoline bounce where they lie; the Cannon is never taken. '
            'Dot: the room of use.', font=f14, fill=DIM)
-    d.text((12, y0 + 60), 'python3 tools/fig_gameplay.py docs/img/gameplay', font=f14, fill=DIM)
+    ky = y0 + 62
+    d.text((12, ky), 'Key: the number at a dot is the item used there; each line has the colour of its item.',
+           font=f14, fill=TEXT)
+    for i, (item, src, dst, what) in enumerate(USES):
+        col = pal[i % len(pal)]
+        kx, kyy = 12 + (i % 3) * 345, ky + 22 + (i // 3) * 20
+        d.rectangle((kx, kyy + 4, kx + 14, kyy + 14), fill=col)
+        frm = ' '.join(f'${x:02X}' for x in src)
+        to = ' '.join(f'${x:02X}' for x in dst if x not in src) or '-'
+        d.text((kx + 20, kyy), f'{item} {ITEMS[item]}: {frm} -> {to}', font=f14, fill=col)
+    d.text((12, ky + 26 + keyrows * 20), 'python3 tools/fig_gameplay.py docs/img/gameplay', font=f14, fill=DIM)
     o.save(os.path.join(out, 'item-uses.png'))
 
 

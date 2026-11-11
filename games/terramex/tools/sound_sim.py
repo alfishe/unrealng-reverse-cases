@@ -8,9 +8,11 @@ the seven beeper sounds of the game, their WAV renders (written, never played) a
     python3 tools/sound_sim.py beeper                        the seven beeper sounds: T-states, toggles, half-periods
     python3 tools/sound_sim.py check --trace T.uatr --start S   the AY writes of a recording's trace against the model,
                                                              S = the recording frame of the model's frame 0 (StartTune)
+        (check, trace-beeper and fig-witness take --work W --window F:T-F:T instead of --trace: the trace
+        W/traces/F_T-G_U.uatr, recorded first on the instance of W when it is missing)
     python3 tools/sound_sim.py trace-beeper --trace T.uatr --out OUT.wav   a recording's OUT ($FE) edges to a WAV
     python3 tools/sound_sim.py fig-tune OUT.png              tune 0 as a piano roll, the three channels, the loop
-    python3 tools/sound_sim.py fig-regs OUT.png --from F --frames N   the 11 registers WriteAY writes, frame by frame
+    python3 tools/sound_sim.py fig-regs OUT.png --from F --frames N   the 10 registers WriteAY writes, frame by frame
     python3 tools/sound_sim.py fig-witness OUT.png --trace T.uatr --sound N   a beeper sound on the machine vs the model
     python3 tools/sound_sim.py fig-instruments OUT.png       the volume envelope of each instrument (the real code)
     python3 tools/sound_sim.py fig-effects OUT.png           the seven beeper sounds: speaker bit and half-periods
@@ -261,10 +263,22 @@ def beeper(n):
     return t, edges, len(fe)
 
 
-def trace_edges(path, port_low=0xFE):
-    sys.path.insert(0, os.path.join(os.path.dirname(ROOT), '..', 'kit'))
+def load_trace(args):
+    """The access trace of --trace, or of --work W --window F:T-F:T: read from W/traces/F_T-G_U.uatr, recorded there
+    first (kitlib.load_trace) when the file is missing, on the instance W's session.json names (kit/rs.py open)."""
+    sys.path.insert(0, os.path.join(ROOT, '..', '..', 'kit'))
     import kitlib
-    tr = kitlib.access_trace().load(path)
+    ns = argparse.Namespace(trace=args.trace, work=args.work, window=args.window, max_cycles=None, unreal=None)
+    tr = kitlib.load_trace(ns)
+    if not args.trace:
+        start, _, end = args.window.partition('-')
+        (f0, t0), (f1, t1) = kitlib.parse_moment(start, 0), kitlib.parse_moment(end, 0)
+        args.trace = os.path.join(args.work, 'traces', '%d_%d-%d_%d.uatr' % (f0, t0, f1, t1))
+    return tr
+
+
+def trace_edges(args, port_low=0xFE):
+    tr = load_trace(args)
     out = []
     for x in tr.instructions:
         for c in x.cycles:
@@ -316,10 +330,7 @@ def cmd_beeper(args):
 
 
 def cmd_check(args):
-    tr_mod = None
-    sys.path.insert(0, os.path.join(ROOT, '..', '..', 'kit'))
-    import kitlib
-    tr = kitlib.access_trace().load(args.trace)
+    tr = load_trace(args)
     sel = 0
     frames = {}
     for x in tr.instructions:
@@ -352,7 +363,7 @@ def cmd_check(args):
 
 
 def cmd_trace_beeper(args):
-    tr, ev = trace_edges(args.trace)
+    tr, ev = trace_edges(args)
     edges, last = [], None
     for T, b, f, t in ev:
         if b != last:
@@ -373,7 +384,7 @@ def cmd_fig_witness(args):
     """A beeper sound on the machine (an access trace) against the simulator: the half-periods edge by edge."""
     import numpy as np
     plt = plt_setup()
-    tr, ev = trace_edges(args.trace)
+    tr, ev = trace_edges(args)
     edges, last = [], None
     for T, b, f, t in ev:
         if b != last:
@@ -560,7 +571,7 @@ def cmd_fig_regs(args):
     axes[3].set_yticks([])
     axes[3].set_ylabel('no write', fontsize=10)
     axes[3].set_xlabel('frame from StartTune (the model, which the c1 trace matches write for write)')
-    fig.suptitle('The 11 registers WriteAY sets, frames %d-%d of tune 0:\n'
+    fig.suptitle('The 10 registers WriteAY sets, frames %d-%d of tune 0:\n'
                  'the periods, the volumes, the mixer, and the frames a note ends (no write)' % (f0, f0 + nf - 1),
                  fontsize=12)
     fig.tight_layout()
@@ -695,11 +706,15 @@ def main():
     s.add_argument('--from', type=int, default=0)
     s.add_argument('--frames', type=int, default=50)
     sub.add_parser('beeper')
+    def trace_args(s):
+        s.add_argument('--trace', help='an access trace (.uatr)')
+        s.add_argument('--work', help='or a work folder with an open instance (kit/rs.py open) ...')
+        s.add_argument('--window', help='... and the window F:T-F:T: W/traces/F_T-G_U.uatr, recorded when missing')
     s = sub.add_parser('check')
-    s.add_argument('--trace', required=True)
+    trace_args(s)
     s.add_argument('--start', type=int, required=True)
     s = sub.add_parser('trace-beeper')
-    s.add_argument('--trace', required=True)
+    trace_args(s)
     s.add_argument('--out')
     for name in ('fig-tune', 'fig-instruments', 'fig-effects', 'fig-cost'):
         s = sub.add_parser(name)
@@ -710,12 +725,14 @@ def main():
     s.add_argument('--frames', type=int, default=200)
     s = sub.add_parser('fig-witness')
     s.add_argument('out')
-    s.add_argument('--trace', required=True)
+    trace_args(s)
     s.add_argument('--sound', type=int, required=True)
     s.add_argument('--label', default='')
     s = sub.add_parser('wavs')
     s.add_argument('dir')
     a = p.parse_args()
+    if getattr(a, 'work', None) is None and hasattr(a, 'trace') and not a.trace:
+        p.error('give --trace T.uatr, or --work W --window F:T-F:T')
     {'loop': cmd_loop, 'costs': cmd_costs, 'regs': cmd_regs, 'beeper': cmd_beeper, 'check': cmd_check,
      'trace-beeper': cmd_trace_beeper, 'fig-tune': cmd_fig_tune, 'fig-regs': cmd_fig_regs, 'fig-witness': cmd_fig_witness,
      'fig-instruments': cmd_fig_instruments, 'fig-effects': cmd_fig_effects, 'fig-cost': cmd_fig_cost,

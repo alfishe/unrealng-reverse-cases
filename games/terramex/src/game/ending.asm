@@ -36,8 +36,8 @@ InvertPlayWindowLoop:
 ; The room handler of room $28: the asteroid falls on the Earth; deflected (the
 ; ending) or not (the loss) (SK "warp fanfare", renamed)
 ;
-; IY = object 1 ($5B08). RoomStep $5C41 steps: 0 sets the asteroid (object 1 at
-; $A2, $04, frame $75), the Earth at the bottom (objects 2 and 3 at Y $68,
+; IY = object 1 ($5B08). RoomStage $5C41 steps: 0 sets the asteroid (object 1
+; at $A2, $04, frame $75), the Earth at the bottom (objects 2 and 3 at Y $68,
 ; frames $72 and $71) and, when $5BFE is set (the deflector), object 4 at $89,
 ; $5C. 1: the asteroid moves 1 left, 4 down a pass to Y $54. With the
 ; deflector: object 4's frame + 1, sound 2, step 3: the asteroid goes back 4

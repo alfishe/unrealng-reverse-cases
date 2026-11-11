@@ -293,8 +293,8 @@ def fig_outline(setn, frame, row, out):
     for k, (n, v, col, note) in enumerate(rows_):
         bitrow(y + 26 + 30 * k, n, v, col, note)
     yy = y + 26 + 30 * len(rows_) + 10
-    for t in ['The mask clears this byte\'s pixels and their neighbours left, right, above and below: a one-pixel '
-              'outline inside the byte.',
+    for t in ['The mask clears this byte\'s pixels and all eight neighbours, diagonals included (rows ORed, then '
+              'spread left and right).',
               'Pixels at the byte\'s edge get no outline from the next column (o << 1 and o >> 1 stay in the byte).',
               'The first row of a column has "above" = 0; the last row reads the next column\'s first byte '
               '(a quirk: the outline can leak).']:

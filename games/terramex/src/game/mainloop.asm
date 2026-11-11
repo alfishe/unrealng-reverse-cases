@@ -6,7 +6,7 @@
 ;
 ; One pass: `$5BA0` = 1 (`$AF81` clears it on the lift); IX = the hero record
 ; `$5B04`; when Room `$5C01` equals the lift's room `$5B9E`, `$AF81` (the
-; lift); `$A3E1` (the hero: input, movement, the RoomEvent handlers); when
+; lift); `$A3E1` (the hero: input, movement, the Status handlers); when
 ; LifeLost `$5C2A` is set, Respawn `$9090`; else `$B9FA` (the items),
 ; RoomEffects `$91C0`, CountDown `$935D` (one minute a pass), `$BE98` (the
 ; creatures), `$9B22` (the sprites; it calls ShowCapsules `$92BD`); GameOver
@@ -32,7 +32,7 @@ MainLoop:
   LD HL,LiftRoom
   CP (HL)
   CALL Z,LiftPlatform
-  CALL HeroUpdate         ; the hero: input, movement, RoomEvent
+  CALL HeroUpdate         ; the hero: input, movement, Status
   LD A,(LifeLost)            ; a life lost ($5C2A set by $A9EE)? respawn
   OR A
   JR NZ,Respawn
@@ -96,13 +96,13 @@ EndGame:
 ; Restart after a lost life from the respawn state
 ;
 ; Reached from MainLoop `$9018` when LifeLost `$5C2A` is set (`$A9EE` sets it
-; to `$32` when EventTimer `$5C07` reaches 50 and takes a life). gameover frame
-; 1509 (the last life; `$A9EE` went on to LoseGame `$9372`, which put room
-; `$28` and RoomEvent `$1D` in the respawn state, so this respawn starts the
+; to `$32` when StatusTimer `$5C07` reaches 50 and takes a life). gameover
+; frame 1509 (the last life; `$A9EE` went on to LoseGame `$9372`, which put
+; room `$28` and Status `$1D` in the respawn state, so this respawn starts the
 ; space scene), rzx 4 runs.
 ;
-; Clears LifeLost and `$5C05`; copies the respawn state back: RoomEvent `$5C06`
-; from `$5C2B`, EventTimer `$5C07` from `$5C2C`, the hero record `$5B04-$5B07`
+; Clears LifeLost and `$5C05`; copies the respawn state back: Status `$5C06`
+; from `$5C2B`, StatusTimer `$5C07` from `$5C2C`, the hero record `$5B04-$5B07`
 ; from `$5C2E-$5C31`, Room `$5C01` from `$5C2D`, the lift `$5B9E-$5B9F` from
 ; `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up
 ; `$9855`; `$5B9B` = `$FE`; back to MainLoop.

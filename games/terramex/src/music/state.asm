@@ -79,7 +79,7 @@ TunePointer:
 ; UpdateTune $C1E4 adds 1 for each channel whose note timer is 1 at the frame's
 ; start (the timer is set to 0 there, so the channel reads its next event this
 ; frame). ChannelEffects $C56D returns before the envelope and the effects,
-; UpdateTune skips WriteAY $C290, and UpdateTuneEnd $C2DF clears the flag.
+; UpdateTune skips WriteAY $C290, and EndFrame $C2DF clears the flag.
 ; explorers: 1778 of 15 189 updates skip the AY write.
 NoteEndFlag:
   DEFB $00

@@ -17,7 +17,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K, every load at ROM 
 | `c1` | GameEntry at frame 21597, the first interrupt at 21599, the menu, the selector, play in room `$14`, the abort |
 | `explorers` | five games from the menu and five aborts; the menu's and the selector's HALT loops |
 | `gameover` | the RZX state at 10000 with Lives `$5B97` poked to 1 (a POKE): the fall death at frame 1363, status 18 from 1374, LoseGame at 1502, the space scene, EndGame at 1962. Traced over frames 1355-1512 for `StatusDispatch.gif` |
-| `rzx02000`, `rzx12000`, `rzx24000`, `rzx36000`, `rzx46000` | segments of the RZX archive's run (another player's game, replayed by its port reads) in rooms `$08`, `$1A`, `$32`, `$1F`, `$3B`. Frames 1-31 of each were traced for the step costs (4.3). `rzx02000` frames 1-3 give `RenderPass.gif`; `rzx02000` frames 100-103 and `rzx46000` frames 7-11 give the beam timelines |
+| `rzx02000`, `rzx12000`, `rzx24000`, `rzx36000`, `rzx46000` | segments of the RZX archive's run (another player's game, replayed by its port reads) in rooms `$08`, `$1A`, `$32`, `$1F`, `$3B`. Frames 1-31 of each were traced for the step costs (4.3). `rzx02000` frames 1-3 give `RenderPass.gif`; `rzx02000` frames 100-103 and `rzx46000` frames 7-11 give the beam timelines, and the latter `MainLoop-heaviest.gif` |
 | `rzx50000` | the ending: SpaceScene `$B0B6` with the deflector, GameOver at frame 729 |
 | probe A (stage 2) | the countdown poked to 0 days, 0 hours, 2 minutes on a clone of the RZX state at 44000: the time running out (`work/stage2/probe_points.py`) |
 
@@ -193,8 +193,9 @@ Worked example:
 
 - In `c1` GameEntry runs at frame 21597 t 67875 (`time_travel find_last`, access execute).
 - The first interrupt through `$5F5F` arrives at frame 21599, on the menu.
-- Every play build reads `$8EFF` 69 582 times in all, one read an interrupt, and no other byte of the table (Im2Table
-  in `src/game/game.ann`).
+- The play L1 counts 69 582 reads of `$8EFF` (and as many of `$8F00`) and no other byte of the table (Im2Table in
+  `src/game/game.ann`). The same builds take 78 587 interrupts, so the L1 counts fewer vector reads than interrupts:
+  69 582 is a lower bound, and the handler count of 4.4 (83 616 runs) is the measure of how often the vector is used.
 
 The life-loss patch is a hook for a cheat.
 
@@ -246,7 +247,7 @@ InitGame, in order (its description in `src/game/game.ann` lists every byte):
 
 | Step | What | Value |
 | --- | --- | --- |
-| 1 | clear the hero, party and actor records `$5B04-$5B66` | 99 bytes of 0 |
+| 1 | clear the hero, party and actor records `$5B04-$5B67` (one byte stored, 99 copied by the LDIR at `$8F74`) | 100 bytes of 0 |
 | 2 | BearerLoads `$5B7C-$5B96`: no bearer carries anything | 27 bytes of `$FF` |
 | 3 | ResetItems `$B932`, then the Energy Crystal's place (`$B9D9`) bit 7 set | |
 | 4 | the panel EndGame saved, back on the screen | `$E000` to `$5000` (2048 bytes), `$E800` to `$5A00` (256) |
@@ -496,12 +497,20 @@ time from `/video/beam`; `work/stage1/passes.json`):
 The traced passes of 4.3 (the same states, the RZX's keys held) agree within 5 %: 2.45, 2.68, 2.75, 2.81 and 3.04
 frames. Two more measures agree.
 
-- **The RZX's own port reads.** The game reads the Kempston port once a pass, at `$B8CC`. In the RZX's 51 148 frames
-  the gap between two reads is 2 frames 4376 times and 3 frames 12 178 times (WALKTHROUGH 1).
-- **The countdown.** It loses a minute a pass. Between RZX frames 225 (30 days 23:51) and 51 125 (18 days 15:32) it
-  lost 44 631 - 26 852 = 17 779 minutes in 50 900 frames: 2.86 frames a pass over the whole run.
+- **The RZX's own port reads.** The pass-end Q test at `$9052` reads the keyboard once a pass. Between RZX frames 209
+  and 50 730 (GameOver) it is read 17 786 times, a mean of 2.84 frames (`work/stage1/rzx/inputs.json`, WALKTHROUGH 1).
+  The gaps between two reads:
 
-So the game runs at about 17.5 passes a second: about 20.8 in a light room, 16.4 in the lab.
+| Gap (frames) | 2 | 3 | 4 | 5-6 | 9-12 | 17 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reads | 4470 | 12 236 | 954 | 39 | 85 | 1 |
+
+  The gaps of 2-4 frames are ordinary passes; the 125 longer ones are passes with a room set-up or a status that waits.
+- **The countdown.** It loses a minute a pass. Between RZX frame 225 (30 days 23:51) and GameOver at 50 730 (18 days
+  15:32, the countdown stands from then on) it lost 44 631 - 26 852 = 17 779 minutes in 50 505 frames: 2.84 frames a
+  pass over the whole run.
+
+So the game runs at about 17.6 passes a second: about 20.8 in a light room, 16.4 in the lab.
 
 **Nothing is lost when a pass runs over a frame.** Interrupts are never off in play. The handler ran 83 616 times over
 the recordings, one a frame in every build after GameEntry (Im2Handler in `src/game/game.ann`). It interrupts the
@@ -513,14 +522,17 @@ pass wherever it is, plays the music, and the pass goes on.
 
 *One main-loop pass of `rzx02000` (the RZX run, replayed), from `$9018` at frame 100 t 54365 to the next `$9018` at
 frame 103 t 10087 (168 446 T, 2.38 frames). The figure shows frames 100-102; the last 10 087 T, in frame 103, are the
-pass's last few hundred instructions of buffer work. Made with `python3 ../../kit/beam_timeline.py --work
-work/docs/tmA/r02000 --window 100:54365-103:10087 --listing build/game.lst --machine 128k --out
-docs/img/loop/beam-pass-r02000.png`.*
+pass's last few hundred instructions of buffer work. Made with `python3 tools/beam_paged.py --page-name "6=the music
+player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r02000 --window 100:54365-103:10087 --listing
+build/game.lst --machine 128k --out docs/img/loop/beam-pass-r02000.png`. `tools/beam_paged.py` runs
+`kit/beam_timeline.py` with the 128K pages told apart: code at `$C000-$FFFF` that runs while RAM 6 is paged in is the
+music player, not the RAM 0 data at the same addresses.*
 
 How to read it:
 
 - Each band is a frame, its paper lines 0-191 down, its T-states across.
-- The coloured strip above each band shows which routine ran at each T-state. The legend gives the colours.
+- The coloured strip above each band shows which routine ran at each T-state. The legend gives the colours; "the
+  music player (RAM 6)" is the interrupt's MusicFrame and its callees (722 instructions here).
 - The diagonal is the beam on the paper. The thin vertical line near T 1 900 is the interrupt.
 - Each dot is a write to the screen at its line and T-state.
 - Frames 100 and 101 hold only buffer work (the plotters and the mirror patches): no screen write.
@@ -533,9 +545,9 @@ How to read it:
 ![The heaviest pass measured, in the lab 3B](img/loop/beam-pass-r46000.png)
 
 *The longest of the nine passes traced in frames 1-31 of `rzx46000` (the RZX run, replayed), room `$3B` (the lab):
-from frame 7 t 70304 to frame 11 t 8133, 221 461 T (3.12 frames). Made with `python3 ../../kit/beam_timeline.py --work
-work/docs/tmA/r46000 --window 7:70304-11:8133 --frames 5 --listing build/game.lst --machine 128k --out
-docs/img/loop/beam-pass-r46000.png`.*
+from frame 7 t 70304 to frame 11 t 8133, 221 461 T (3.12 frames). Made with `python3 tools/beam_paged.py --page-name
+"6=the music player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r46000 --window 7:70304-11:8133 --frames 5
+--listing build/game.lst --machine 128k --out docs/img/loop/beam-pass-r46000.png`.*
 
 How to read it:
 
@@ -544,6 +556,26 @@ How to read it:
 - In frame 10 CopyRectRows (red) writes the 960 rectangle bytes: 754 before the beam, 206 after it.
 - CopyBackCellLoop (green, 96 writes, all after the beam) is RoomEffects' beam cells, written straight to the screen.
 - RestoreRectCell (violet here) runs from frame 10 into frame 11.
+- The pink blocks at the start of frames 8-11 are the music player (RAM 6), 1225 instructions over the pass.
+
+![The heaviest pass at work, in the lab 3B](img/routines/MainLoop-heaviest.gif)
+
+*The same pass as an animation: 90 pictures of 2461 T from the cached trace of `rzx46000` frame 7 t 70304 to frame 11
+t 8133 (30 963 instructions). Left above: memory `$4000-$FFFF`; left below: the screen; right: the listing at the PC.
+Made with `python3 tools/beam_paged.py --tool routine_anim --page-name "6=the music player (RAM 6)"`
+`--trace work/docs/tmA/r46000/traces/7_70304-11_8133.uatr --listing build/game.lst --view screen`
+`--range 4000-FFFF --pc 5F00-C57F --pictures 90 --title 'MainLoop $9018: the heaviest pass, the lab $3B'`
+`--out docs/img/routines/MainLoop-heaviest.gif`.*
+
+How to read it:
+
+- The first pictures (frame 8) are HeroUpdate's wall probes: WallColumnCompare over the lab's columns.
+- Most of the pass is the plotters and the buffer rows (NextBufferRow, PlotRowShift7, the mirror patches): the
+  sprites drawn into the back buffer, while the screen does not change.
+- Late in frame 10 CopyRectRows puts the ten rectangles on the screen: only then do the moved sprites show.
+- The interrupt's music runs in RAM 6; the picture counts it as "other" ("66 other" in a slice), so the listing never
+  shows the RAM 0 data at its addresses. One interrupt on its own is
+  [doc 9's MusicFrame animation](09-sound.md#93-the-players-frame-musicframe-and-updatetune).
 
 **The point**: the copy to the screen takes about 30 000 T, under half a frame, but it runs wherever the pass happens
 to be in the frame.
@@ -620,7 +652,7 @@ instruction over the 34 recordings:
 | 2 | JumpArc `$ADAC` | the jump (fire): 17 passes of JumpFrames | 0 | as above |
 | 3 | JumpArc `$ADAC` | the hop off the ladder top in room `$18` | 0 | as above |
 | 4 | Hover `$AD32` | hover with the Vacuum Cleaner | 0 | 4908 (`c1`, `explorers`, rzx) |
-| 5 | BounceUp `$AD17` | rise off the Spring or the Trampoline | 1 | 67 (`gameover`, rzx) |
+| 5 | BounceUp `$AD17` | rise off the Spring or the Trampoline | 2 (on a floor, `$AD2D`) | 67 (`gameover`, rzx) |
 | 6 | `$A5F0`, inside HeroUpdate | stay in place, animate only | set back by the room | |
 | 7, 8 | BalloonRide `$AC35` | in the balloon; 8 with the Bellows | 9 or 0 | 452 (rzx) |
 | 9 | BalloonCrash `$AC1A` | the balloon falls; landing kills | 26 | not executed |
@@ -715,7 +747,8 @@ LifeLossOp:
 ![The status machine at work: the fall death, dying, and the last life lost](img/routines/StatusDispatch.gif)
 
 *StatusDispatch `$A6CC` and the handlers over `gameover` frames 1355-1512 (the RZX state at 10000, Lives poked to 1),
-90 pictures of about 123 700 T. Left above: memory `$5B00-$5DFF`. Left below: `$5B90-$5C3F` in hex, so that Lives
+90 pictures of about 123 700 T. Left above: memory `$5B00-$5DFF`, three rows of 256 bytes, a thin strip that shows
+only where the bytes change; the hex view below is the one to read. Left below: `$5B90-$5C3F` in hex, so that Lives
 `$5B97`, the countdown `$5BFB-$5BFD`, GameOver `$5BFF`, Room `$5C01`, PassCount `$5C02`, Status `$5C06`, StatusTimer
 `$5C07`, LifeLost `$5C2A` and the respawn point `$5C2B-$5C33` are all in view. Right: the listing at the PC. Made with
 `python3 ../../kit/routine_anim.py --work work/docs/tmA/gameover --window 1355:0-1512:0 --listing build/game.lst
@@ -833,9 +866,10 @@ Worked example, minutes into the next hour:
 
 How long a game can last:
 
-- 30 days 23:59 is 44 640 passes to 0/0/0, and one more pass runs out.
-- At the 2.86 frames a pass measured over the RZX run (4.4) that is 127 700 frames, about 42 minutes 34 seconds.
-- The RZX player won with 18 days 15:32 left (RZX frame 51 125).
+- 30 days 23:59 is 30 x 1440 + 23 x 60 + 59 = 44 639 minutes. `DEC` comes before the test, so the clock reads 0/0/0
+  after 44 639 passes and the 44 640th pass runs out: the whole countdown is 44 640 passes.
+- At the 2.84 frames a pass measured over the RZX run (4.4) that is about 126 800 frames, 42 minutes 16 seconds.
+- The RZX player won with 18 days 15:32 left (the countdown stands from GameOver at RZX frame 50 730).
 
 The time running out was seen only on a clone (stage 2, probe A):
 
@@ -857,7 +891,7 @@ The telescope in room `$12` shows the countdown as the player sees it. Telescope
 it stands. No recording looked into the telescope, so this is known only from the code.
 
 **The point**: the countdown is a pass counter dressed as a clock. A game in heavy rooms has fewer real seconds than a
-game in light ones, but always the same 44 641 passes.
+game in light ones, but always the same 44 640 passes.
 
 ### The space scene: the end of every game
 
@@ -898,10 +932,13 @@ docs/img/play/space-scene-won.gif`.*
 
 How to read them:
 
-- Both open on the same picture: the Earth at the bottom, the asteroid high on the right.
-- In the lost game the asteroid reaches the Earth and the Earth flashes.
+- The lost game opens on the dead hero in room `$1C` (frame 1500; Respawn at 1509 enters room `$28`); the ending opens
+  in the lab (frame 150), and room `$28` follows from frame 194.
+- In room `$28` the asteroid comes down 4 pixels a pass from Y 4 to `$54`, 20 passes, so it reaches the Earth near
+  frame 1570 in the lost game.
+- In the lost game the asteroid strikes the Earth and the Earth flashes.
 - In the ending the deflector stands left of the Earth and sends the asteroid back.
-- Both end on the device menu.
+- Both close on room `$28` just before EndGame; the menu that follows is not in the GIFs.
 
 The scene lasts 453 frames in the lost game (1509-1961) and 536 in the ending (194-729). Both are the step count to `$80`, about 160 passes.
 
@@ -986,8 +1023,9 @@ RunSelector, settle it: RAM 6 holds the music, RAM 1 the selector ([doc 2](02-ar
   the handler, 5.5 % of a frame.
 - In `c1` the handler ran 5029 times, one a frame from frame 21599, about 3793 T each (`$RS interrupts`,
   WALKTHROUGH 1).
-- On a 48K the handler costs 93 T with the IM 2 response (19 T), the `JP` (10) and nine instructions (64), and the
-  game has no music. No 48K run reached play, so this is known only from the code.
+- On a 48K the handler costs 93 T with the IM 2 response (19 T), the `JP` (10) and seven instructions (64: `PUSH AF`,
+  `LD A,(Has128K)`, `OR A`, `JR Z`, `POP AF`, `EI`, `RET`), and the game has no music. No 48K run reached play, so
+  this is known only from the code.
 
 **The point**: the interrupt is a music box bolted onto a free-running game. Paging RAM 6 in and out around one call
 is all the 128K version needed; the game itself never knows the tune is there.
@@ -998,8 +1036,8 @@ Every delay of the game is counted in passes (play) or in frames (the menu, the 
 
 | Timer | Where | Count | Unit | Measured or derived |
 | --- | --- | ---: | --- | --- |
-| the countdown | CountDown `$935D`, `$5BFB-$5BFD` | 44 641 | passes | about 127 700 frames (42 min 34 s) at 2.86 frames a pass |
-| a day of the countdown | `$936B` | 1440 | passes | about 4100 frames: 13 day rollovers in the rzx segments |
+| the countdown | CountDown `$935D`, `$5BFB-$5BFD` | 44 640 | passes | about 126 800 frames (42 min 16 s) at 2.84 frames a pass |
+| a day of the countdown | `$936B` | 1440 | passes | about 4090 frames: 13 day rollovers in the rzx segments |
 | dying | LoseLifeWait `$A9EE`, `$5C07` | 50 | passes | `gameover` frames 1374-1502: 128 frames |
 | the jump | JumpArc `$ADAC`, JumpFrames `$AE8D` | 17 | passes | about 45 frames |
 | a fall that kills | FallPasses `$5C05` | 20 or more | passes | [doc 10](10-gameplay-logic.md) |
@@ -1015,7 +1053,7 @@ Every delay of the game is counted in passes (play) or in frames (the menu, the 
 ```mermaid
 flowchart LR
     subgraph passes["counted in passes: slower in heavy rooms"]
-        A["countdown 44 641"]
+        A["countdown 44 640"]
         B["dying 50"]
         C["jump 17"]
         D["space scene about 160"]

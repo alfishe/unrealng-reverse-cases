@@ -8,7 +8,7 @@
 ; screen
 ;
 ; Called once a pass by the main loop at $9040 (26 517 calls over the 34
-; builds). The actor slots ActorSlots $5B04 hold 5 records of 4 bytes (X, Y,
+; builds). The object slots from Hero $5B04 hold 5 records of 4 bytes (X, Y,
 ; frame, flags; slot 0 the hero).
 ;
 ; 1. For each slot BufferAddress $9CEE gives the back-buffer address of (X, Y)
@@ -17,8 +17,8 @@
 ;
 ; 2. Each slot's sprite, frame F at $6000 + 72 * F, is drawn into the back
 ; buffer in three columns of 24 rows (DrawSpriteColumn $9C6A). Flags bit 7 set
-; (facing right: the stored graphics face left) patches the two MirrorPatch
-; points $9C82/$9C87 to LD L,A / LD A,(HL), so each byte is bit-reversed
+; (facing right: the stored graphics face left) patches MirrorPatch1 and
+; MirrorPatch2 $9C82/$9C87 to LD L,A / LD A,(HL), so each byte is bit-reversed
 ; through the table at $FE00, and draws the columns right to left; bit 7 clear
 ; patches them to two NOPs. The L1 arrivals record these writes in 21 builds
 ; ($9B82/$9B85 or $9B9C/$9B9F). After slot 0 WellFront $9A09 may paint the well
@@ -264,11 +264,12 @@ CopyRectRows:
 ; Draw one 24-row sprite column into the back buffer with its outline mask
 ;
 ; In: the main set DE = the column's 24 bytes, H = $FE (the bit-reverse page,
-; used when MirrorPatch is in); the alternate set BC = the buffer address, IY =
-; the row plotter from BufferAddress $9CEE. C (main set) = 0: the byte above
-; the first row. The nested calls DrawSprite12Rows $9C72, DrawSprite6Rows
-; $9C75, DrawSprite3Rows $9C78 run DrawSpriteRow $9C7E 24 times. Called by
-; RenderPass 6 call sites, 397 715 calls (three a slot a pass).
+; used when MirrorPatch1/2 are patched in); the alternate set BC = the buffer
+; address, IY = the row plotter from BufferAddress $9CEE. C (main set) = 0: the
+; byte above the first row. The nested calls DrawSprite12Rows $9C72,
+; DrawSprite6Rows $9C75, DrawSprite3Rows $9C78 run DrawSpriteRow $9C7E 24
+; times. Called by RenderPass 6 call sites, 397 715 calls (three a slot a
+; pass).
 ;
 ; Witness: L1 397715 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -579,13 +580,13 @@ EraseItem:
 
 ; Repaint the back buffer under the five actors from the tile map (SK)
 ;
-; IX = ActorSlots $5B04, B = 5. For each actor: its rectangle from ActorRects
-; ($5B44), the cells under it, 3 columns and 3 rows, one more column when X mod
-; 8 is not 0 and one more row when Y mod 8 is not 0; each cell's tile index
-; from the tile map ($F800 + 256 * third + the low byte of the address), its 8
-; bytes from TileBitmaps $5B72 into the buffer. This removes the sprites drawn
-; this pass, after CopyRects has shown them. Called by RenderPass at $9BE7 (26
-; 510 calls).
+; IX = Hero $5B04 (the first of the object slots), B = 5. For each actor: its
+; rectangle from ActorRects ($5B44), the cells under it, 3 columns and 3 rows,
+; one more column when X mod 8 is not 0 and one more row when Y mod 8 is not 0;
+; each cell's tile index from the tile map ($F800 + 256 * third + the low byte
+; of the address), its 8 bytes from TilePixelsPtr $5B72 into the buffer. This
+; removes the sprites drawn this pass, after CopyRects has shown them. Called
+; by RenderPass at $9BE7 (26 510 calls).
 ;
 ; Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -758,10 +759,9 @@ NextCharRowThird:
 
 ; Draw the room's two floor items and the third item record
 ;
-; DrawItem $9DF8 for FloorItem1 $5C0E, FloorItem2 $5C13 (placed by $B93F from
-; the table $B99D) and, running on, for the record $5B99 (X, Y, frame; $5B9B =
-; $FE set by the respawn at $90BE). Called by RenderPass at $9BC4 (26 510
-; calls).
+; DrawItem $9DF8 for ItemSlot1 $5C0E, ItemSlot2 $5C13 (placed by $B93F from the
+; table $B99D) and, running on, for the record $5B99 (X, Y, frame; $5B9B = $FE
+; set by the respawn at $90BE). Called by RenderPass at $9BC4 (26 510 calls).
 ;
 ; Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

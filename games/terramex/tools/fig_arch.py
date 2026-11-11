@@ -47,13 +47,14 @@ PLAY = [
     (0xFE00, 0xFFFF, 'BitReverse', C_DATA),
 ]
 PAGES = [
-    ('RAM 1', 'the selector (block 4 $7200-$9CF7, relocated)', [
+    ('RAM 1', 'the selector (block 4 $7200-$A0DF copied, $7200-$9CF7 relocated)', [
         (0xC000, 0xC0D1, 'set-up, relocation', C_CODE),
         (0xC0D2, 0xC535, 'selector, input, stub, print', C_CODE),
         (0xC536, 0xCD8E, 'Help pages', C_DATA),
         (0xCD8F, 0xEA0E, 'selector picture and data', C_GFX),
         (0xEA0F, 0xEAF7, 'RelocTable, leftover', C_DATA),
-        (0xEAF8, 0xFFFF, 'not used', C_FREE)]),
+        (0xEAF8, 0xEEDF, 'set 0 start, unused', C_GFX),
+        (0xEEE0, 0xFFFF, 'not used', C_FREE)]),
     ('RAM 3', 'explorer sets 3-4 (block 4 $D2F8-$F6F7)', [
         (0xC000, 0xD1FF, 'set 3 Big John Caine', C_GFX),
         (0xD200, 0xE3FF, 'set 4 Wu Pong', C_GFX),
@@ -180,7 +181,7 @@ def leftovers(args):
                         px, py = x0 + (col * 8 + bit) * scale, y0 + row * scale
                         d.rectangle([px, py, px + scale - 1, py + scale - 1], fill=(240, 240, 240))
         d.text((x0, y0 + 24 * scale + 6), f'${a:04X}', font=f, fill=DIM)
-    d.text((20, H - 30), 'No frame number reaches them: the sprite space $6000 + 72 x F ends at $A7B8 (F = $FF), below $E930.',
+    d.text((20, H - 30), 'No frame number reaches them: in the sprite space $6000 + 72 x F, frame $FF lies at $A7B8-$A7FF, far below $E930.',
            font=f, fill=DIM)
     img.save(args.out)
     print(args.out)

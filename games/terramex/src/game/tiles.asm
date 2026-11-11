@@ -4,7 +4,7 @@
 
 ; The attributes of the alternate upper tiles $80-$FF
 ;
-; In a room of RoomsOnAltTiles $9AC6 the room builder swaps these 128 bytes
+; In a room of AltTilesetRooms $9AC6 the room builder swaps these 128 bytes
 ; with TileAttrs+$80 ($DF80) and AltTilePixels $FA00 with TilePixels+$400
 ; ($F400); the next room on the base set swaps them back. Witness: written and
 ; read in the rzx builds 18000, 20000, 26000 (the swap $918D).

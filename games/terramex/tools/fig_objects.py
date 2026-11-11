@@ -234,10 +234,17 @@ def creature_types(r, out):
         d.text((10, y + 2), f'{t} {TYPES[t]}', font=K.font(18), fill=YEL)
         d.text((10, y + 26), HANDLERS[t], font=f14, fill=DIM)
         d.text((10, y + 44), f'{len(lst)} records', font=f14, fill=TEXT)
-        n = 1 if t == 8 else 4
-        for i in range(n):
-            o.paste(sprite_img(sheet, f0 - 0x40 + i), (200 + i * 54, y + 6), sprite_img(sheet, f0 - 0x40 + i))
-        d.text((200, y + 54 - 2), f'${f0:02X}' + ('' if n == 1 else f'-${f0 + 3:02X}'), font=f14, fill=DIM)
+        if t == 8:  # scenery: frames $2B / $2C of the explorer part ($00-$3F), drawn from explorer 0's set
+            ex0 = FR.RF.to_bytes('sprites/explorer-0.png', 'single',
+                                 open(os.path.join(FR.RF.RES, 'sprites/explorer-0.png'), 'rb').read())
+            spr = sprite_img(ex0['sprites/explorer-0.bin'], f0)
+            o.paste(spr, (200, y + 6), spr)
+            d.text((200, y + 54 - 2), f"explorer 0's frame ${f0:02X}", font=f14, fill=DIM)
+        else:
+            for i in range(4):
+                spr = sprite_img(sheet, f0 - 0x40 + i)
+                o.paste(spr, (200 + i * 54, y + 6), spr)
+            d.text((200, y + 54 - 2), f'${f0:02X}-${f0 + 3:02X}', font=f14, fill=DIM)
         d.text((420, y + 4), moves[t], font=f16, fill=TEXT)
         rooms = sorted({room for room, _ in lst})
         txt = ' '.join(f'${x:02X}' for x in rooms)
@@ -301,7 +308,7 @@ def item_places(r, out):
     d.text((12, y0 + 100), 'PlaceItem $B95F decodes a record into an item slot. PickUpItem $BB6C sets bit 7 of byte 0 '
            'when the item is taken:', font=f14, fill=DIM)
     d.text((12, y0 + 120), 'the record then matches no room. ResetItems $B932 clears every bit 7 at a new game; '
-           'GameInit sets record 20\'s again.', font=f14, fill=DIM)
+           'InitGame sets record 20\'s again.', font=f14, fill=DIM)
     d.text((12, y0 + 150), 'python3 tools/fig_objects.py docs/img/objects', font=f14, fill=DIM)
     o.save(os.path.join(out, 'item-places.png'))
 

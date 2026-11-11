@@ -103,12 +103,12 @@ SwapTileAttrs:
 ; between them get random bytes (R rotated, XOR PassCount); the beam is redrawn
 ; every pass (rzx26000-rzx42000, 9538 runs of `$9266`). The hero is hit when
 ; his X is from the left end's X to below the right end's X minus 12 and |Y + 6
-; - the row's Y| < 12, while RoomEvent `$5C06` is below 4: RoomEvent = `$18`
-; through `$AE85` (CreatureDeath `$A89E` in the table at `$A72E`). The hit
-; (`$9260`) is not executed in any recording. A list that ends after an odd
-; entry returns without the capsules. Rooms with tile `$DD`: `$20`, `$38` (two
-; beams), `$39`, `$3A`, `$3C`, `$43`. rzx42000 frame 500 shows the beam of room
-; `$3A` across row 13.
+; - the row's Y| < 12, while Status `$5C06` is below 4: Status = `$18` through
+; `$AE85` (CreatureDeath `$A89E` in the table at `$A72E`). The hit (`$9260`) is
+; not executed in any recording. A list that ends after an odd entry returns
+; without the capsules. Rooms with tile `$DD`: `$20`, `$38` (two beams), `$39`,
+; `$3A`, `$3C`, `$43`. rzx42000 frame 500 shows the beam of room `$3A` across
+; row 13.
 ;
 ; Then the capsules (Capsules `$9282`): the 16-byte frame of CapsuleFrames
 ; `$92FD` (PassCount AND 3, run backwards when bit 2 of PassCount is clear: 3 2
@@ -226,10 +226,10 @@ Beams:
 BeamCheckY:
   CP $0C
   JR NC,BeamDraw
-  LD A,(Status)            ; and RoomEvent below 4?
+  LD A,(Status)            ; and Status below 4?
   CP $04
   JR NC,BeamDraw
-  LD A,$18                ; the hero is hit: RoomEvent $18
+  LD A,$18                ; the hero is hit: Status $18
   CALL SetStatus
 BeamDraw:
   EXX
@@ -413,7 +413,7 @@ FlameFrames:
 ; proper (SK)
 ;
 ; A = the new room (level * 12 + column). Called right after every change of
-; Room $5C01: GameInit at $8FE5, the respawn $9090 at $90BB, the game-over path
+; Room $5C01: InitGame at $8FE5, the respawn $9090 at $90BB, the game-over path
 ; $9372 at $937C, the room exits $A640/$A671/$A69B/$A6AE (tail jumps at $A669,
 ; $A691, $A6AB, $A6BF), $A8EA at $A94E and $B5DD at $B6F3.
 ;
@@ -421,7 +421,7 @@ FlameFrames:
 ; $5C34 to $FF02: $5C34 is the pair C = dx, B = dy that $A34B moves the hero by
 ; (each kept in -3..3 there), so the room starts the hero with dx = +2, dy =
 ; -1; r18000 is the only build that entered room $2C. Then the room is looked
-; up in CheckpointRooms $9AF5: when it is listed and FallCount $5C05 is 0 (the
+; up in CheckpointRooms $9AF5: when it is listed and FallPasses $5C05 is 0 (the
 ; hero is not falling), SaveRespawnPoint $9AA1 records this room as the place a
 ; lost life restarts. Last the per-room set-up SetUpRoomTiles $9880, with IX
 ; preserved around it.
@@ -471,7 +471,7 @@ SetUpRoomTail:
 ; $DF80 with $C580). Witness: $918D called 6 times in 5 builds over 105
 ; set-ups.
 ;
-; Then WellCell $5BA2 = 0, BuildTileMap $9914 expands the room into the tile
+; Then WellHole $5BA2 = 0, BuildTileMap $9914 expands the room into the tile
 ; map $F800, the two effect lists $9AD5-$9AF4 are cleared (32 bytes) and filled
 ; by FindTileCells $9A8C: EffectCellsA $9AD5 with every cell of tile $B5 (the
 ; base set) or $DD (the alternate set), and with the alternate set EffectCellsB
@@ -687,10 +687,10 @@ BuildTileMapCell:
 ; buffer (SK)
 ;
 ; For each of the 512 cells n of the tile map $F800 (32 x 16): the attribute
-; $5800 + n = $DF00[tile], and the tile's 8 bytes at (TileBitmaps $5B72, $F000)
-; + 8 * tile go to the screen cell (the top two thirds, $4000-$4FFF) and to the
-; same cell of the back buffer ($E000-$EFFF, the screen address OR $A000), so
-; the buffer starts each room as a clean copy of the background.
+; $5800 + n = $DF00[tile], and the tile's 8 bytes at (TilePixelsPtr $5B72,
+; $F000) + 8 * tile go to the screen cell (the top two thirds, $4000-$4FFF) and
+; to the same cell of the back buffer ($E000-$EFFF, the screen address OR
+; $A000), so the buffer starts each room as a clean copy of the background.
 ;
 ; Called only by SetUpRoomTiles at $990E (106 runs, 31 builds). Stops when n
 ; reaches 512 (BIT 1,H).
@@ -763,7 +763,7 @@ DrawRoomRow:
 ; rows
 ;
 ; Called by BuildTileMap at $993D when the back-tile is $10. IX = the
-; back-tile's first cell in the tile map, HL = its 16 tile indices. WellCell
+; back-tile's first cell in the tile map, HL = its 16 tile indices. WellHole
 ; $5BA2 = IX + $6020: the same cell one row down, written in the attribute-file
 ; form ($5800 + offset: only bits 0-1 of the high byte and the low byte are
 ; used by DrawTileAt $9A64); WellTiles $5BA4 = HL + 4: the back-tile's rows 1
@@ -793,18 +793,17 @@ WellRecord:
 ;
 ; Called by RenderPass $9B22 at $9BB7 right after the hero (actor slot 0) is
 ; drawn into the back buffer, once a pass (26 517 calls over the 34 builds).
-; $AF22 returns carry when the room has no well (WellCell $5BA2 = 0) or the
+; $AF22 returns carry when the room has no well (WellHole $5BA2 = 0) or the
 ; hero's X ($5B04) is not within the 8 pixels of the well's column; otherwise,
-; when RoomEvent $5C06 is 2 with EventTimer $5C07 >= 8, or RoomEvent is 3 with
-; EventTimer < 8, DrawWellFront $9A2F paints the wall's 2 x 4 cells over the
-; hero in the buffer, so the hero is hidden behind the well's rim. RoomEvent 3
-; is set at $A508 when the hero climbs up out of room $18 into room $0C (the
-; room above it, Y = $60); RoomEvent 2 at $AD2D ($AD17, the climb). BC, HL, DE
-; kept.
+; when Status $5C06 is 2 with StatusTimer $5C07 >= 8, or Status is 3 with
+; StatusTimer < 8, DrawWellFront $9A2F paints the wall's 2 x 4 cells over the
+; hero in the buffer, so the hero is hidden behind the well's rim. Status 3 is
+; set at $A508 when the hero climbs up out of room $18 into room $0C (the room
+; above it, Y = $60); Status 2 at $AD2D ($AD17, the climb). BC, HL, DE kept.
 ;
-; Evidence: the wall was drawn 11 times (r06500, r12000); RoomEvent 2 reached
-; $9A1F in r06500, RoomEvent 3 in r12000. What the screen shows is not yet
-; checked (run request R1).
+; Evidence: the wall was drawn 11 times (r06500, r12000); Status 2 reached
+; $9A1F in r06500, Status 3 in r12000. What the screen shows is not yet checked
+; (run request R1).
 ;
 ; Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -817,12 +816,12 @@ WellFront:
   JR Z,WellFrontEvent2
   CP $03
   RET NZ
-  LD A,(StatusTimer)            ; RoomEvent 3: only for the first 8 counts
+  LD A,(StatusTimer)            ; Status 3: only for the first 8 counts
   CP $08
   RET NC
   JR WellFrontDraw
 WellFrontEvent2:
-  LD A,(StatusTimer)            ; RoomEvent 2: from the 8th count on
+  LD A,(StatusTimer)            ; Status 2: from the 8th count on
   CP $08
   RET C
 WellFrontDraw:
@@ -837,7 +836,7 @@ WellFrontDraw:
 
 ; Redraw the well's front wall: 2 rows of 4 cells into the back buffer
 ;
-; HL = WellCell $5BA2 (returns at once when 0), DE = WellTiles $5BA4. Two rows
+; HL = WellHole $5BA2 (returns at once when 0), DE = WellTiles $5BA4. Two rows
 ; of four cells through DrawTileBuffer $9A62, the second row 32 cells on.
 ; Called only by WellFront at $9A28 (11 runs, r06500 and r12000).
 ;
@@ -921,8 +920,8 @@ DrawTileBuffer:
 ; HL = a cell address of which only L (the cell in the third) and bits 0-1 of H
 ; (the third) are used, so tile-map ($F8xx) and attribute ($58xx) forms both
 ; work; DE points to the tile index; C = the page. The tile's 8 bytes at
-; (TileBitmaps $5B72) + 8 * tile go to the 8 pixel rows of the cell. Out: L + 1
-; (the next cell), DE + 1; BC kept.
+; (TilePixelsPtr $5B72) + 8 * tile go to the 8 pixel rows of the cell. Out: L +
+; 1 (the next cell), DE + 1; BC kept.
 ;
 ; Witness: L1 49646 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
@@ -999,13 +998,13 @@ FindTileCellsNext:
 ; Record the room, the event state and the hero as the place a lost life
 ; restarts (SK)
 ;
-; Copies Room $5C01 to $5C2D, RoomEvent $5C06 to $5C2B, EventTimer $5C07 to
+; Copies Room $5C01 to $5C2D, Status $5C06 to $5C2B, StatusTimer $5C07 to
 ; $5C2C, the hero's X and Y ($5B04) to $5C2E, his frame and flags ($5B06) to
 ; $5C30 and the word $5B9E to $5C32. The respawn $9090 copies them all back and
 ; calls SetUpRoom.
 ;
-; Callers: GameInit at $9012 (the start room) and SetUpRoom at $9874 (a room
-; listed in CheckpointRooms entered while FallCount $5C05 = 0). 78 runs in 27
+; Callers: InitGame at $9012 (the start room) and SetUpRoom at $9874 (a room
+; listed in CheckpointRooms entered while FallPasses $5C05 = 0). 78 runs in 27
 ; builds. A life lost in an unlisted room restarts in the last listed room
 ; entered.
 ;
@@ -1031,8 +1030,8 @@ SaveRespawnPoint:
 ;
 ; SetUpRoomTiles $9880 scans all 15 (B = 15) on every room set-up; a listed
 ; room has the tiles from $FA00 (attributes $C580) in place of $F400 ($DF80).
-; Read in every play build (1495 reads). doc 02 2.5 draws room $14 from the
-; data this way and it equals the screen.
+; Read in every play build (1495 reads). doc 06, 6.3 draws room $14 (a base-set
+; room) from the data and it equals the screen.
 AltTilesetRooms:
   INCBIN "res/rooms/alt-rooms.bin",$0000,15
 
@@ -1084,7 +1083,7 @@ BackTiles:
 ;
 ; Room R (level x 12 + column) at $D600 + 32 x R. Rooms $46 and $47, past the
 ; 70 of the map, exist in both tables and are portal targets; their records in
-; RoomTable $C152 are zeros.
+; RoomCreatures $C152 are zeros.
 ;
 ; Witness: each room the recordings enter has its 32 bytes read (bytemap.py; 57
 ; rooms in the RZX run).

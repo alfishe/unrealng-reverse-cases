@@ -47,8 +47,8 @@ frame in which it ran. So "the crystal is in item slot 1 in frame 614" means the
 that put it there ran in frame 613.
 
 One clock drives every object: the main loop pass (MainLoop `$9018`, doc 04). There is no HALT, so a pass lasts as long
-as its work takes: 2.4 to 3.3 frames, 2.8 on average in the RZX run. Every speed below ("2 pixels a pass") is per pass,
-not per frame.
+as its work takes: 2 to 17 frames, mostly 2 or 3, 2.84 on average over the RZX run's play. Every speed below ("2 pixels
+a pass") is per pass, not per frame.
 
 The creatures, the items, the room script and the hero all run once a pass, in this order:
 
@@ -74,9 +74,9 @@ convention.
 | --- | --- | --- | --- |
 | 0 | `$5B04` Hero | the hero | HeroUpdate `$A3E1`, the status handlers, Respawn `$9090` |
 | 1 | `$5B08` ObjectSlot1 | creature 0 of the room; the asteroid | RunCreatures `$BE98` (IX = `$5B08`); SpaceScene `$B0B6` |
-| 2 | `$5B0C` ObjectSlot2 | creature 1; the snakes | RunCreatures; RunSnakes `$B57C` |
-| 3 | `$5B10` ObjectSlot3 | creature 2; the professor's speech bubble; the room `$2D` target; room `$39`'s creature | RunCreatures; ProfessorScript `$B5DD`; CricketBallScript `$B370`; SilverCrossScript `$B4E2` |
-| 4 | `$5B14` ObjectSlot4 | the room script's actor: the professor, the basket, the lever, the lift, the balloon | ProfessorScript, BasketScript `$B409`, LeverScript `$B735`, LiftPlatform `$AF81`, BalloonRoom `$AFD7` |
+| 2 | `$5B0C` ObjectSlot2 | creature 1; room `$17`'s first snake; room `$1A`'s first snake; the Earth (left half) | RunCreatures; RunSnakes `$B57C`; SnakesRoom1A `$B562`; SpaceScene `$B0CE-$B0EA` |
+| 3 | `$5B10` ObjectSlot3 | creature 2; room `$17`'s and `$1A`'s second snake; the professor's speech bubble; the room `$2D` target; room `$39`'s creature; the balloon's envelope; the Earth (right half) | RunCreatures; RunSnakes; ProfessorScript `$B5DD`; CricketBallScript `$B370`; SilverCrossScript `$B4E2`; BalloonRoom `$AFD7`; SpaceScene |
+| 4 | `$5B14` ObjectSlot4 | the room script's actor: the professor, the basket, the lever, the lift, the balloon's basket; room `$1A`'s third snake; room `$2D`'s cricket ball; the creatures of rooms `$2E`, `$46` and `$47`; the telescope's object; the deflector; the floor rooms' follower | ProfessorScript, BasketScript `$B409`, LeverScript `$B735`, LiftPlatform `$AF81`, BalloonRoom; SnakesRoom1A; CricketBallScript (`$B3B6`); ExplorerRoom46 `$B2EB` (`$B2EE`), ExplorerRoom47 `$B18A` (`$B192`), ExplorerRoom2E `$B263` (IY = slot 3, but it writes IY+4 to IY+7: slot 4; Room2ETouch `$B2C5` tests Near on it); TelescopeRoom `$B16A`, TelescopeView `$A7B9` (`$A7BA`, `$A7CF`); SpaceScene (`$B0F3`); FlickerFloor `$B7A8` (`$B7B5`) |
 
 Each slot holds the same four bytes:
 
@@ -89,12 +89,16 @@ Each slot holds the same four bytes:
 
 The code does not check which slots a script may use. That is a convention of the room data. Six rooms have both a
 script and creature records: `$17`, `$1A`, `$2C`, `$3E`, `$40` and `$43`. In rooms `$3E` and `$40` the lever uses
-slot 4, which no creature writes. In rooms `$17` and `$1A` the snake script steers the creatures of the room
-themselves, by setting their frames (doc 10.8). On every room entry ClearPartySlots parks slots 1-4 on the blank
+slot 4, which no creature writes. In room `$17` the snake script steers the room's two still creatures (slots 2, 3)
+by setting their frames; in room `$1A` it places its own three snakes from SnakeTemplate `$B5D1` in slots 2-4, over
+the room's drop (doc 10.8). In rooms `$35` and `$36` FlickerFloor puts slot 4 at the hero's X, 8 pixels below him, and
+sets the Y of slots 1-3 to 0 every pass. On every room entry ClearPartySlots parks slots 1-4 on the blank
 frame `$7F`, so no actor of the last room is left on the screen.
 
-The game variables live in one block, `$5B70-$5C47`, which InitGame `$8F69` clears and sets (doc 04). These are the
-ones this document and doc 10 use:
+The game variables live at `$5B70-$5C47`. InitGame `$8F69` clears `$5B04-$5B67` (the slots, 100 bytes) and
+`$5BFA-$5C8D` (the countdown to the respawn state, 148 bytes), fills BearerLoads with `$FF` and sets the rest one by one
+(HeldItem, WantedItem, Lives, LiftRoom, the balloon...). `$5B70-$5BF9` is not cleared: Explorer and HiScore keep their
+values from the selector and the last game (doc 04). These are the variables this document and doc 10 use:
 
 | Address | Name | Size | Meaning | Start value |
 | --- | --- | ---: | --- | --- |
@@ -157,7 +161,9 @@ Worked example: the block in `rzx24750` frames 613 and 614. This is the pass tha
 | `$5C44` | CrystalPlaced | `00` | `FF` | the teleports now work |
 
 The countdown read 24 days 18:15 at RZX frame 25 363 (24 750 + 613). Counted from 30 days 23:59, that is 8 984
-minutes. So the run made 8 984 passes in 25 363 frames: 2.82 frames a pass.
+minutes. So the run made 8 984 passes in 25 363 frames: 2.82 frames a pass, counted from RZX frame 0. The frames
+before play (the first pass runs at about RZX frame 210) and the pass-count's start are in that figure; over the play
+alone, RZX frames 225-50 730, the run makes 2.84 frames a pass (doc 04).
 
 **The point**: five slots and one variable block are the whole live state. A creature does not own a slot through a
 kind byte. Slot 1 is creature 0 only because RunCreatures starts IX there.
@@ -287,7 +293,7 @@ working records of 10 bytes. RunCreatures reads only the working copies; nothing
 | +4 | first frame | byte 1 | never |
 | +5 | X | byte 2 | never: it is the start place |
 | +6 | Y | byte 3 & `$7F` | never |
-| +7 | counter | byte 3 & `$80`: the direction, in bit 7 | the handlers: the animation step in the low bits |
+| +7 | counter | byte 3 & `$80`: the direction, in bit 7 | the handlers: the animation step in the low bits; the drop leaves it 8 higher after each splash (7.5) |
 | +8 | timer | 0 | PlaceCreature (bit 0: placed), CreatureTimer (a random wait) |
 | +9 | unused | 0 | never read |
 
@@ -524,8 +530,9 @@ python3 tools/fig_objects.py docs/img/objects
 How to read the figure:
 
 - One row a type: its number and name, its handler, and how many of the 216 room records have that type.
-- The sprites are the four frames the handler plays from the most common first frame (one frame for scenery). They are
-  white on black, as in src/res/sprites/creatures.png.
+- The sprites are the four frames the handler plays from the most common first frame, white on black, as in
+  src/res/sprites/creatures.png. Scenery is one frame, `$2C`, from the explorer part of the sprite space: it is drawn
+  from explorer 0's set (src/res/sprites/explorer-0.png), the set every recording plays.
 - Right: what the handler does, the rooms with that type and the other first frames used.
 
 **The point**: eight small handlers make every creature of the game. The drop (33 records) and the riser (20) are 60 %
@@ -711,6 +718,10 @@ A drop waits like a flier, through CreatureTimer with C = 1. Then it falls 2 pix
   first + 2 and first + 3.
 - When the splash ends, the drop disappears, its timer goes to 0 and sound 5 plays (doc 09).
 - If it falls to Y `$67` instead, it ends the same way, but with no splash and no sound.
+- The counter +7 is never reset between drops. A splash ends when (+7 AND 6) is 0, so it leaves +7 at 8, then `$10`,
+  `$18`... PlaceCreature copies +7 into the slot's flags: the table of 7.4 shows `08` and, after the next splash, `10`
+  at frame 19. After 16 drops bit 7 is set and the drop is drawn mirrored; after 32 the counter wraps to 0. A drop is
+  symmetric enough that this is harmless.
 
 The drop is the only creature that tests the hero on every pass with no hit flag (`JP HitExplorer` at `$C037`). Its
 contact box is half the size, because Near `$9140` uses 8 pixels for frames `$5C-$5F` (7.6).
@@ -901,6 +912,19 @@ The 10 scenery records use frames `$2C` (and `$2B` in room `$2C`). These are fra
 space. The selector copies the chosen explorer's set to `$6000-$71FF`, so their picture depends on the explorer. Every
 recording plays explorer 0, so the pictures for the other explorers are known only from the code.
 
+The explorer rooms use the same trick for their actors. Each explorer's set carries his own room's creature and poses
+in frames `$37-$3F`:
+
+| Room | Actor | Frames | Written at |
+| --- | --- | --- | --- |
+| `$2D` (explorer 0) | the cricket ball, slot 4; the hero's throw pose | `$39`; `$3E` | `$B3B6`; Room2DFrames |
+| `$2E` (explorer 1) | the creature, slot 4 | `$3C`, then Room2EFrames, `$37` and `$38` | `$B276`, `$B2B7` |
+| `$2F` (explorer 2) | the hero on the unicycle; his fall | UnicycleFrames `$3C`; `$3B` | `$B246`; `$B258` |
+| `$46` (explorer 3) | the creature, slot 4 | `$3E` waiting, `$3F` killing, `$3A-$3D` ridden, `$39` at the end | `$B2F6`, `$B30F`, `$B324`, `$B338`, `$B346` |
+
+Only one explorer ever enters each of these rooms (doc 10.9), so the frames `$37-$3F` of the other four sets are never
+drawn there.
+
 ```asm
 PlaceCreature:
   SET 0,(IY+$08)          ; placed
@@ -1039,7 +1063,7 @@ The table at `$A72E` holds the word N - 1 for status N, so the handlers of these
 `$A89E` (`$18`) and FallDeath `$A888` (`$1A`) (doc 10.2).
 
 A hazard can also kill by contact through the electric beams of the alternate-set rooms (RoomEffects `$91C0`, the hit
-at `$9262`). The hero dies when he is inside the beam's X span, within 12 rows of it, and in a status below 4: he gets
+at `$9260`). The hero dies when he is inside the beam's X span, within 12 rows of it, and in a status below 4: he gets
 status `$18`. No recording reaches this (doc 10.8).
 
 Worked example: `rzx06000` frames 493-696, room `$0C`. The samples:
@@ -1180,7 +1204,10 @@ How to read the figure:
 - Bottom: record 15, bit by bit, with the three formulas applied to it.
 
 **The point**: the items are scattered over the whole map, but never more than two to a room. Four Formulas (item 15)
-lie in the four explorer rooms `$2E`, `$2F`, `$46` and `$47`, and each explorer reaches only his own (doc 10.9).
+lie in the four explorer rooms `$2E`, `$2F`, `$46` and `$47`, and each explorer reaches only his own (doc 10.9). The code
+does not forbid the others: ExitLeft from `$2E`, `$2F` or `$47` would lead by the grid to `$2D`, `$2E` or `$46`. The rock
+does: the left tile columns of `$2D`, `$2E`, `$2F` and `$46` are solid from top to bottom, and those of `$47` from row 3
+down (the tiles of ExtraSolidTiles `$A242`), so no explorer walks on into a neighbour's room.
 
 ResetItems `$B932` clears every taken bit at the start of a new game. InitGame then sets the bit of record 20 again
 (`$8F86`). So the crystal of room `$30` is missing until the hero puts one in place (7.10). The crystal he carries
@@ -1331,7 +1358,8 @@ PickUpItem(IY = item slot):
     if item == 8: return                            ; the Cannon cannot be taken
     if item == $0E or item == $14:                  ; the Spring, the Trampoline
         if Status == 2 and StatusTimer >= 10 and |Hero.X - IY.X| < 6:
-            Hero.X = IY.X; Hero.Y = IY.Y - $17; Hero.frame = $0F; Status = 5   ; the bounce
+            Hero.X = IY.X; Hero.Y = IY.Y - $17; Hero.frame = $0F
+            Status = 5                              ; the bounce, written directly: StatusTimer runs on
         return
     if HeldItem != $FF: BearerLoads[b] = HeldItem   ; the old item goes to the bearer
     AddScore(50); PlaySound(2)
@@ -1385,8 +1413,13 @@ PickUpScore:
   SET 7,(HL)
 ```
 
-A pickup needs a free bearer even when the hand is empty and nothing would go to one. With all 27 bearers loaded, the
-hero can pick up nothing. This is known only from the code: the RZX run loads at most 19 bearers (7.12).
+A pickup needs a free bearer even when the hand is empty and nothing would go to one. The search for it
+(`$BB7E-$BB8D`) runs before the Cannon, Spring and Trampoline tests (`$BB8F`). So with all 27 bearers loaded the hero
+can pick up nothing and cannot bounce on the Spring or the Trampoline either. This is known only from the code: the RZX
+run loads at most 19 bearers (7.12).
+
+The bounce writes Status 5 directly (`$BBD5`), not through SetStatus, so StatusTimer is not cleared: it shows `$0B` in
+the sample of 447 and `$0C` from 448 on, all through status 5 (`gameover` samples 484-522).
 
 The swap (ItemsKeys `$BA36`) works like this:
 
@@ -1437,7 +1470,9 @@ Step by step:
    until frame 584. Only then does it make the Bellows (6) the held item, write `$FE` into the slot and set bit 7 of
    record 10 (`$B9BB`: `10` becomes `90`). The sample of 585 shows all three.
 4. EraseItem later repaints the floor and writes `$FF` (frame 679's slot 1).
-5. In frame 679 the same happens to the Spurs. The Bellows go to bearer 10, and slot 2 shows `$FE` until it is erased.
+5. In frames 677-679 the same happens to the Spurs. The Bellows go to bearer 10 and the score to 600 in frame 677 (the
+   sample of 678); the Spurs become the held item in frame 679 (the sample of 680), and slot 2 shows `$FE` until it is
+   erased.
 
 For two frames the Flute is both in the hand and on bearer 9.
 
@@ -1674,11 +1709,11 @@ Formula, given in `rzx44000` frame 459 (RZX 44 459, 7.11).
   samples show `$5C3C` = 0 in `rzx24750` frame 613 and in `rzx44000` frames 0-415.
 - WantedItem is not cleared after a gift. Until the professor asks again (his frame `$4D`), the same item would count a
   second time. `rzx44000` frames 460-723 show WantedItem `$0F` kept after the gift. Only the Formula has several
-  copies (records 27-30, in the explorer rooms), and each explorer reaches only his own room. So no second copy can be
+  copies (records 27-30, in the explorer rooms), and each explorer reaches only his own room (the rock walls of 7.8). So no second copy can be
   brought in that window (known only from the code).
 - The fliers' change of type when blocked (`$BF9A`, `$BFF0`) never ran.
 - No room has a third item (PlaceItem's guard), and the bearers were never full.
-- The electric beam's hit (`$9262`) never ran (doc 10.8).
+- The electric beam's hit (`$9260`) never ran (doc 10.8).
 - The scenery objects use explorer frames `$2B` and `$2C`. Every recording plays explorer 0, so their pictures with the
   other explorers are known only from the code.
 - Rooms `$46` and `$47`, and the 13 rooms the RZX run does not visit (WALKTHROUGH 6.0), were never played. Their

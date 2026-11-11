@@ -84,7 +84,7 @@ BlankIcon      EQU $5C46  ; 72 zero bytes, the empty panel icon
 StackTop       EQU $5E00
 Im2Jump        EQU $5F5F  ; JP Im2Handler, written by GameEntry
 Last7FFD       EQU $5FE5  ; the last value sent to port $7FFD
-PagedStub      EQU $5FE6  ; the selector's paging stub (OUT (C),A; RET once patched)
+PagingStub     EQU $5FE6  ; the selector's paging stub (OUT (C),A; RET once patched)
 Has128K        EQU $5FFE  ; $11 on a 128K, 0 on a 48K
 GameLoaded     EQU $5FFF  ; 1 from GameEntry: the selector returns to the game
 ExplorerSet    EQU $6000  ; the chosen explorer's sprites: frames $00-$3F of the sprite space

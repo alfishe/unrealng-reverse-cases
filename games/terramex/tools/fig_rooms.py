@@ -95,15 +95,17 @@ def main():
     rooms = len(r['rooms/grids.bin']) // 32
     if a.room is not None:
         room_image(r, a.room).resize((512, 256), Image.NEAREST).save(a.out_room)
-    w, h, top, lab = 128, 64, 64, 24
+    w, h, top, lab = 128, 64, 88, 24
     f, fs = K.font(22), K.font(20)
     levels = (rooms + 11) // 12
     o = Image.new('RGB', (12 * (w + 4) + 44, top + levels * (h + lab + 4)), (24, 24, 28))
     d = ImageDraw.Draw(o)
     d.text((4, 4), 'The %d rooms drawn from src/res/rooms and src/res/tiles: room R = level x 12 + column' % rooms,
            font=f, fill=(235, 235, 235))
-    d.text((4, 32), 'Levels L0-L5 (rows), columns 0-11; the label is R in hex; * = the alternate tile set; '
-           'white: the creatures, yellow: the items at the start', font=fs, fill=(190, 190, 190))
+    d.text((4, 32), 'Levels L0-L5 (rows), columns 0-11; the label is R in hex; * = the alternate tile set',
+           font=fs, fill=(190, 190, 190))
+    d.text((4, 58), 'White: the creatures at their start places; yellow: the items at the start of a game',
+           font=fs, fill=(190, 190, 190))
     for room in range(rooms):
         lv, col = divmod(room, 12)
         x, y = 40 + col * (w + 4), top + lv * (h + lab + 4)

@@ -12,7 +12,7 @@
 ; column list PanelColumns $5BD6 and BlitColumns $9F86. The screenshot
 ; start-room-14.png shows the explorer at row 20, column 18 and no held item.
 ;
-; Callers: GameInit at $9015, $A851 at $A862, $B370 at $B403, $B5DD at $B5FB,
+; Callers: InitGame at $9015, $A851 at $A862, $B370 at $B403, $B5DD at $B5FB,
 ; $B735 at $B759 (tail), $B9FA at $BA30 and $BA71, $BB6C at $BC0A: 81 runs in
 ; 30 builds.
 ;
@@ -48,7 +48,7 @@ DrawPortraitItem:
 ; $5C46; drawn at $5081 (row 20, columns 1-9) by SpareLivesShow $9F1E. With the
 ; 4 lives of the start three figures show (start-room-14.png).
 ;
-; Callers: GameInit at $8FF0, $A9EE at $AA01 (tail, the life lost): 11 runs in
+; Callers: InitGame at $8FF0, $A9EE at $AA01 (tail, the life lost): 11 runs in
 ; 7 builds; the blank icon ran in r06000, r10000, r24000, r32000.
 ;
 ; Witness: L1 11 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
@@ -85,7 +85,7 @@ DrawSpareLivesStore:
 ; $5C22 (0-3), so the keys 1 and 2 (bearers left, right) scroll the row a
 ; character at a time.
 ;
-; Callers: GameInit at $8FE8, $B9FA at $BA6E, $BB6C at $BC1C (tail), $BC1F at
+; Callers: InitGame at $8FE8, $B9FA at $BA6E, $BB6C at $BC1C (tail), $BC1F at
 ; $BC50, $BC64, $BC69, $BC70 (scroll): 1139 runs in 29 builds.
 ;
 ; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

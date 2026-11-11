@@ -70,7 +70,7 @@ $C14B w TunePointer 1 ; The current tune's entry in TuneTable
 > Set by StartTune $C79F (TuneTable + 6 x tune), read by UpdateTune $C1E4 for each channel's order list.
 
 $C14D b NoteEndFlag 1 ; Not 0: a note ended this frame (no effects, no AY write)
-> UpdateTune $C1E4 adds 1 for each channel whose note timer is 1 at the frame's start (the timer is set to 0 there, so the channel reads its next event this frame). ChannelEffects $C56D returns before the envelope and the effects, UpdateTune skips WriteAY $C290, and UpdateTuneEnd $C2DF clears the flag. explorers: 1778 of 15 189 updates skip the AY write.
+> UpdateTune $C1E4 adds 1 for each channel whose note timer is 1 at the frame's start (the timer is set to 0 there, so the channel reads its next event this frame). ChannelEffects $C56D returns before the envelope and the effects, UpdateTune skips WriteAY $C290, and EndFrame $C2DF clears the flag. explorers: 1778 of 15 189 updates skip the AY write.
 
 $C14E b MixerImage 1 ; The AY mixer (register 7) the player writes: $B8 at the start
 > Bits 0-2 tone off, 3-5 noise off for channels A, B, C, set by SetInstrument $C3D8 from the instrument's +2 bit 7; bits 6-7 stay %10 from the image. Written to register 7 by WriteAY $C2CB.

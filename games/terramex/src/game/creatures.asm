@@ -660,9 +660,9 @@ PlaceCreature:
 ; straight at PlaceCreature $C135). Counted over the 72 rooms: 33 drops, 20
 ; risers, 10 walkers, 10 scenery, 8 still, 3 right fliers, 2 left fliers, 2
 ; climbers. The sprite frames the types use: drops $5C, risers $58, walkers $60
-; / $78 / $6B, the snakes of room $17 $51 (RunSnakes $B55A animates them),
-; still ones $64; SK names (Room-Format.md / Actors.md): $05 Water Drop, $07
-; Tentacles in a concrete block, $01 / $03 Flying Lizard.
+; / $78 / $6B, the snakes of room $17 $51 (SnakesRoom17 $B55A and RunSnakes
+; $B57C animate them), still ones $64; SK names (Room-Format.md / Actors.md):
+; $05 Water Drop, $07 Tentacles in a concrete block, $01 / $03 Flying Lizard.
 ;
 ; 72 rooms (864 bytes, to $C4B1), the 70 of the map and the portal rooms $46,
 ; $47 (both empty). Witness: every play build reads the records of the rooms it

@@ -70,7 +70,7 @@ Reached from GameEntry `$8F00` (falls in) and from EndGame `$906D` (`JP $8F47`) 
 
 2. On a 128K (Has128K `$5FFE` not 0): pages RAM 1 in (`$7FFD` = `$11`, kept in Last7FFD `$5FE5`) and calls `$C000` with BC = `$C000`: the explorer selector, which the 128K setup copied to RAM 1 and relocated there; it copies the chosen explorer's data set to `$6000-$71FF` and returns; then RAM 0 is paged back (`$10`). On a 48K the explorer was chosen during the load (the selector runs in place before the last block), so the same explorer plays every game.
 
-3. The set-up (InitGame `$8F69`): clears `$5B04-$5B66` (the hero and party records and other state, 99 bytes); fills BearerLoads `$5B7C-$5B96` (27 bytes) with `$FF` (free); `$B932` clears the creature table's active bits and bit 7 of `$B9D9` is set again; copies the saved panel back to the screen (`$E000` -> `$5000`, 2048 bytes; `$E800` -> `$5A00`, 256 attributes: EndGame `$906D` saved it there, because play uses `$E000-$EFFF` as the background copy of the play window); the tile bitmap pointer `$5B72` = `$F000`; `$5C3C`, `$A6FD`, `$A700`, `$5B98`, `$5B9B` = `$FF`, `$A6F5` = 7, `$5B06` = 0; clears `$5BFA-$5C8D` (148 bytes: the countdown, GameOver, Room, PassCount, RoomEvent and the rest); `$BCF2` with DE = 0; the object at `$5C25-$5C27` = X `$70`, Y `$60`, room `$0F`; Room `$5C01` = `$14` and the room set-up `$9855`; `$9EBD`; Lives `$5B97` = 4 and `$9E96` (the lives in the panel); the hero at X `$0A` (`$5B04`), Y `$60` (`$5B05`); the lift (`$AF81`) in room `$2B` (`$5B9E`) at Y `$30` (`$5B9F`); the countdown 30 days 23:59 (`$5BFB` days = `$1E`, `$5BFC` hours = `$17`, `$5BFD` minutes = `$3B`); `$9AA1` copies the start into the respawn state `$5C2B-$5C33`; `$9E5D`. Falls into MainLoop `$9018`.
+3. The set-up (InitGame `$8F69`): clears `$5B04-$5B67` (the hero and party records and other state, 100 bytes: one stored, 99 copied by the LDIR at `$8F74`); fills BearerLoads `$5B7C-$5B96` (27 bytes) with `$FF` (free); ResetItems `$B932` clears the taken bits (bit 7) of the 31 ItemPlaces records and bit 7 of `$B9D9` is set again; copies the saved panel back to the screen (`$E000` -> `$5000`, 2048 bytes; `$E800` -> `$5A00`, 256 attributes: EndGame `$906D` saved it there, because play uses `$E000-$EFFF` as the background copy of the play window); the tile bitmap pointer `$5B72` = `$F000`; `$5C3C`, `$A6FD`, `$A700`, `$5B98`, `$5B9B` = `$FF`, `$A6F5` = 7, `$5B06` = 0; clears `$5BFA-$5C8D` (148 bytes: the countdown, GameOver, Room, PassCount, Status and the rest); `$BCF2` with DE = 0; the object at `$5C25-$5C27` = X `$70`, Y `$60`, room `$0F`; Room `$5C01` = `$14` and the room set-up `$9855`; `$9EBD`; Lives `$5B97` = 4 and `$9E96` (the lives in the panel); the hero at X `$0A` (`$5B04`), Y `$60` (`$5B05`); the lift (`$AF81`) in room `$2B` (`$5B9E`) at Y `$30` (`$5B9F`); the countdown 30 days 23:59 (`$5BFB` days = `$1E`, `$5BFC` hours = `$17`, `$5BFD` minutes = `$3B`); `$9AA1` copies the start into the respawn state `$5C2B-$5C33`; `$9E5D`. Falls into MainLoop `$9018`.
 
 Witness: L1 9 (c1, explorers, gameover, rzx).
 
@@ -109,13 +109,15 @@ Witness: L1 8 (c1, explorers, rzx).
 
 **The main loop: one pass of the game, no frame sync**
 
-One pass: `$5BA0` = 1 (`$AF81` clears it on the lift); IX = the hero record `$5B04`; when Room `$5C01` equals the lift's room `$5B9E`, `$AF81` (the lift); `$A3E1` (the hero: input, movement, the RoomEvent handlers); when LifeLost `$5C2A` is set, Respawn `$9090`; else `$B9FA` (the items), RoomEffects `$91C0`, CountDown `$935D` (one minute a pass), `$BE98` (the creatures), `$9B22` (the sprites; it calls ShowCapsules `$92BD`); GameOver `$5BFF` set ends the game (EndGame `$906D`); PassCount `$5C02` + 1.
+One pass: `$5BA0` = 1 (`$AF81` clears it on the lift); IX = the hero record `$5B04`; when Room `$5C01` equals the lift's room `$5B9E`, `$AF81` (the lift); `$A3E1` (the hero: input, movement, the Status handlers); when LifeLost `$5C2A` is set, Respawn `$9090`; else `$B9FA` (the items), RoomEffects `$91C0`, CountDown `$935D` (one minute a pass), `$BE98` (the creatures), `$9B22` (the sprites; it calls ShowCapsules `$92BD`); GameOver `$5BFF` set ends the game (EndGame `$906D`); PassCount `$5C02` + 1.
 
 The keys at the end of a pass: Q held with CAPS SHIFT ends the game (the abort: c1 and explorers, 6 runs of `$9059`); Q held with A held freezes the game until A is let go (`$9062`, not executed in any recording); Q alone does nothing.
 
 There is no HALT: a pass takes as long as its work. In the rzx segments the day rolls over (`$936B`, 13 runs, one in every segment of about 4000 frames) every 1440 passes, so a pass is about 2.8 frames (WALKTHROUGH 1: 2.4 to 3.3).
 
 Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+[Animation: `MainLoop` at work, heaviest](img/routines/MainLoop-heaviest.gif)
 
 | | |
 | --- | --- |
@@ -143,9 +145,9 @@ Witness: L1 8 (c1, explorers, gameover, rzx).
 
 **Restart after a lost life from the respawn state**
 
-Reached from MainLoop `$9018` when LifeLost `$5C2A` is set (`$A9EE` sets it to `$32` when EventTimer `$5C07` reaches 50 and takes a life). gameover frame 1509 (the last life; `$A9EE` went on to LoseGame `$9372`, which put room `$28` and RoomEvent `$1D` in the respawn state, so this respawn starts the space scene), rzx 4 runs.
+Reached from MainLoop `$9018` when LifeLost `$5C2A` is set (`$A9EE` sets it to `$32` when StatusTimer `$5C07` reaches 50 and takes a life). gameover frame 1509 (the last life; `$A9EE` went on to LoseGame `$9372`, which put room `$28` and Status `$1D` in the respawn state, so this respawn starts the space scene), rzx 4 runs.
 
-Clears LifeLost and `$5C05`; copies the respawn state back: RoomEvent `$5C06` from `$5C2B`, EventTimer `$5C07` from `$5C2C`, the hero record `$5B04-$5B07` from `$5C2E-$5C31`, Room `$5C01` from `$5C2D`, the lift `$5B9E-$5B9F` from `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up `$9855`; `$5B9B` = `$FE`; back to MainLoop.
+Clears LifeLost and `$5C05`; copies the respawn state back: Status `$5C06` from `$5C2B`, StatusTimer `$5C07` from `$5C2C`, the hero record `$5B04-$5B07` from `$5C2E-$5C31`, Room `$5C01` from `$5C2D`, the lift `$5B9E-$5B9F` from `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up `$9855`; `$5B9B` = `$FE`; back to MainLoop.
 
 Witness: L1 5 (gameover, rzx, rzx, rzx, rzx).
 
@@ -258,7 +260,7 @@ Witness: L1 0 ().
 
 **The room handler of room `$28`: the asteroid falls on the Earth; deflected (the ending) or not (the loss) (SK "warp fanfare", renamed)**
 
-IY = object 1 (`$5B08`). RoomStep `$5C41` steps: 0 sets the asteroid (object 1 at `$A2`, `$04`, frame `$75`), the Earth at the bottom (objects 2 and 3 at Y `$68`, frames `$72` and `$71`) and, when `$5BFE` is set (the deflector), object 4 at `$89`, `$5C`. 1: the asteroid moves 1 left, 4 down a pass to Y `$54`. With the deflector: object 4's frame + 1, sound 2, step 3: the asteroid goes back 4 left, 1 up a pass and vanishes at X 4. Without: the asteroid hidden, object 2 frame `$76`, then `$77` (the strike), sound 1. Then the step counts to `$80` and GameOver `$5BFF` = 1.
+IY = object 1 (`$5B08`). RoomStage `$5C41` steps: 0 sets the asteroid (object 1 at `$A2`, `$04`, frame `$75`), the Earth at the bottom (objects 2 and 3 at Y `$68`, frames `$72` and `$71`) and, when `$5BFE` is set (the deflector), object 4 at `$89`, `$5C`. 1: the asteroid moves 1 left, 4 down a pass to Y `$54`. With the deflector: object 4's frame + 1, sound 2, step 3: the asteroid goes back 4 left, 1 up a pass and vanishes at X 4. Without: the asteroid hidden, object 2 frame `$76`, then `$77` (the strike), sound 1. Then the step counts to `$80` and GameOver `$5BFF` = 1.
 
 Evidence: gameover frames 1516-1959 (no deflector, the strike, after the last life); rzx50000 frames 194-729 (the deflector, GameOver at 729).
 
@@ -316,7 +318,7 @@ Called once a pass by MainLoop `$9018`. The lists are built by the room set-up `
 
 Base set (AltTileset `$918C` = 0): for the first two entries of `$9AD5` (B = 2) the 8-byte frame PassCount AND 3 of FlameFrames `$933D` is copied into tile `$B5`'s bitmap (`$F5A8`), the cell is drawn again on the screen and in the background copy (`$9A52`), and its attribute (map address + `$6000` = `$5800 + offset`) gets BRIGHT flipped at random (bit 0 of R). The rooms with tile `$B5` (from the room data): `$1C`, `$21`, `$29`, `$2D`, `$2E`, `$2F`, `$33`, `$35`, `$36`, `$3F`, `$40`, `$41`, `$42`. gameover (room `$1C`) and 11 rzx segments run it (5256 runs of `$91D6`).
 
-Alternate set (Beams `$9208`): `$9AD5` is read as pairs of tile `$DD` cells on one row: the two ends of an electric beam. Pixel rows 6 and 7 of each cell between them get random bytes (R rotated, XOR PassCount); the beam is redrawn every pass (rzx26000-rzx42000, 9538 runs of `$9266`). The hero is hit when his X is from the left end's X to below the right end's X minus 12 and |Y + 6 - the row's Y| < 12, while RoomEvent `$5C06` is below 4: RoomEvent = `$18` through `$AE85` (CreatureDeath `$A89E` in the table at `$A72E`). The hit (`$9260`) is not executed in any recording. A list that ends after an odd entry returns without the capsules. Rooms with tile `$DD`: `$20`, `$38` (two beams), `$39`, `$3A`, `$3C`, `$43`. rzx42000 frame 500 shows the beam of room `$3A` across row 13.
+Alternate set (Beams `$9208`): `$9AD5` is read as pairs of tile `$DD` cells on one row: the two ends of an electric beam. Pixel rows 6 and 7 of each cell between them get random bytes (R rotated, XOR PassCount); the beam is redrawn every pass (rzx26000-rzx42000, 9538 runs of `$9266`). The hero is hit when his X is from the left end's X to below the right end's X minus 12 and |Y + 6 - the row's Y| < 12, while Status `$5C06` is below 4: Status = `$18` through `$AE85` (CreatureDeath `$A89E` in the table at `$A72E`). The hit (`$9260`) is not executed in any recording. A list that ends after an odd entry returns without the capsules. Rooms with tile `$DD`: `$20`, `$38` (two beams), `$39`, `$3A`, `$3C`, `$43`. rzx42000 frame 500 shows the beam of room `$3A` across row 13.
 
 Then the capsules (Capsules `$9282`): the 16-byte frame of CapsuleFrames `$92FD` (PassCount AND 3, run backwards when bit 2 of PassCount is clear: 3 2 1 0 0 1 2 3) is copied into tiles `$8C`-`$8D` (`$F460`), and each cell of `$9AE5` gets tile `$8C` and the next cell `$8D` again in the map and the background copy (`$9A4D`); ShowCapsules `$92BD` copies them to the screen later in the pass. Rooms with tile `$8C`: `$12`, `$20`, `$2B`, `$2C`, `$38`, `$3A`, `$3B` (six: the lab, rzx46000 frame 500), `$3C`, `$44`.
 
@@ -396,9 +398,9 @@ Witness: L1 3646 (rzx, rzx, rzx, rzx, rzx, rzx).
 
 **Set up room A: the room-entry specials, the respawn point, then the room proper (SK)**
 
-A = the new room (level * 12 + column). Called right after every change of Room `$5C01`: GameInit at `$8FE5`, the respawn `$9090` at `$90BB`, the game-over path `$9372` at `$937C`, the room exits `$A640`/`$A671`/`$A69B`/`$A6AE` (tail jumps at `$A669`, `$A691`, `$A6AB`, `$A6BF`), `$A8EA` at `$A94E` and `$B5DD` at `$B6F3`.
+A = the new room (level * 12 + column). Called right after every change of Room `$5C01`: InitGame at `$8FE5`, the respawn `$9090` at `$90BB`, the game-over path `$9372` at `$937C`, the room exits `$A640`/`$A671`/`$A69B`/`$A6AE` (tail jumps at `$A669`, `$A691`, `$A6AB`, `$A6BF`), `$A8EA` at `$A94E` and `$B5DD` at `$B6F3`.
 
-First CALL `$BE42` (the room's creature decode, A kept). Room `$2C` sets the word `$5C34` to `$FF02`: `$5C34` is the pair C = dx, B = dy that `$A34B` moves the hero by (each kept in -3..3 there), so the room starts the hero with dx = +2, dy = -1; r18000 is the only build that entered room `$2C`. Then the room is looked up in CheckpointRooms `$9AF5`: when it is listed and FallCount `$5C05` is 0 (the hero is not falling), SaveRespawnPoint `$9AA1` records this room as the place a lost life restarts. Last the per-room set-up SetUpRoomTiles `$9880`, with IX preserved around it.
+First CALL `$BE42` (the room's creature decode, A kept). Room `$2C` sets the word `$5C34` to `$FF02`: `$5C34` is the pair C = dx, B = dy that `$A34B` moves the hero by (each kept in -3..3 there), so the room starts the hero with dx = +2, dy = -1; r18000 is the only build that entered room `$2C`. Then the room is looked up in CheckpointRooms `$9AF5`: when it is listed and FallPasses `$5C05` is 0 (the hero is not falling), SaveRespawnPoint `$9AA1` records this room as the place a lost life restarts. Last the per-room set-up SetUpRoomTiles `$9880`, with IX preserved around it.
 
 Evidence: 105 entries over all 31 play builds, SaveRespawnPoint called from `$9874` 71 times (27 builds), so 34 room entries were in rooms not listed or while falling.
 
@@ -419,7 +421,7 @@ Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx
 
 A = the room. The tile set: when the room is in AltTilesetRooms `$9AC6` and the alternate set is not loaded (flag `$918C` = 0), or not in it and the set is loaded, `$918D` swaps the tiles `$80-$FF` (`$F400` with `$FA00`, their attributes `$DF80` with `$C580`). Witness: `$918D` called 6 times in 5 builds over 105 set-ups.
 
-Then WellCell `$5BA2` = 0, BuildTileMap `$9914` expands the room into the tile map `$F800`, the two effect lists `$9AD5-$9AF4` are cleared (32 bytes) and filled by FindTileCells `$9A8C`: EffectCellsA `$9AD5` with every cell of tile `$B5` (the base set) or `$DD` (the alternate set), and with the alternate set EffectCellsB `$9AE5` with every cell of tile `$8C`. `$91C0` and `$9282`/`$92BD` animate those cells each pass.
+Then WellHole `$5BA2` = 0, BuildTileMap `$9914` expands the room into the tile map `$F800`, the two effect lists `$9AD5-$9AF4` are cleared (32 bytes) and filled by FindTileCells `$9A8C`: EffectCellsA `$9AD5` with every cell of tile `$B5` (the base set) or `$DD` (the alternate set), and with the alternate set EffectCellsB `$9AE5` with every cell of tile `$8C`. `$91C0` and `$9282`/`$92BD` animate those cells each pass.
 
 Then `$5C0C`, `$5C41` and `$5BA1` are cleared and `$B072` set to 1 (counters of other modules); room `$10` sets the byte `$A6F5` (the room-`$0F` byte of the per-room table `$A6E6`) to 6 (it starts at 7, `$8F47` area); room `$1C` with `$5C24` non-zero writes the tile pair `$98`, `$99` into columns 8-9 of rows 0-11 of the tile map (`$5C24` counts the column that `$BC73` raises cell by cell while item `$0C` is used there). `$5C24` is cleared in every room. Last `$917C` parks actor slots 1-4 (frame `$7F`, the blank sprite), DrawRoom `$99A4` draws the whole play window and `$B93F` (tail jump) places the room's floor items.
 
@@ -459,7 +461,7 @@ Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx
 
 **Draw the whole play window from the tile map: attributes, screen and back buffer (SK)**
 
-For each of the 512 cells n of the tile map `$F800` (32 x 16): the attribute `$5800` + n = `$DF00`[tile], and the tile's 8 bytes at (TileBitmaps `$5B72`, `$F000`) + 8 * tile go to the screen cell (the top two thirds, `$4000-$4FFF`) and to the same cell of the back buffer (`$E000-$EFFF`, the screen address OR `$A000`), so the buffer starts each room as a clean copy of the background.
+For each of the 512 cells n of the tile map `$F800` (32 x 16): the attribute `$5800` + n = `$DF00`[tile], and the tile's 8 bytes at (TilePixelsPtr `$5B72`, `$F000`) + 8 * tile go to the screen cell (the top two thirds, `$4000-$4FFF`) and to the same cell of the back buffer (`$E000-$EFFF`, the screen address OR `$A000`), so the buffer starts each room as a clean copy of the background.
 
 Called only by SetUpRoomTiles at `$990E` (106 runs, 31 builds). Stops when n reaches 512 (BIT 1,H).
 
@@ -479,7 +481,7 @@ Witness: L1 106 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx
 
 **Note the well (back-tile `$10`): the cell under its top row and its middle tile rows**
 
-Called by BuildTileMap at `$993D` when the back-tile is `$10`. IX = the back-tile's first cell in the tile map, HL = its 16 tile indices. WellCell `$5BA2` = IX + `$6020`: the same cell one row down, written in the attribute-file form (`$5800` + offset: only bits 0-1 of the high byte and the low byte are used by DrawTileAt `$9A64`); WellTiles `$5BA4` = HL + 4: the back-tile's rows 1 and 2 (tiles `$34-$37` and `$3F-$42`, the well's front wall). DrawWellFront `$9A2F` redraws exactly those 2 x 4 cells. All registers kept.
+Called by BuildTileMap at `$993D` when the back-tile is `$10`. IX = the back-tile's first cell in the tile map, HL = its 16 tile indices. WellHole `$5BA2` = IX + `$6020`: the same cell one row down, written in the attribute-file form (`$5800` + offset: only bits 0-1 of the high byte and the low byte are used by DrawTileAt `$9A64`); WellTiles `$5BA4` = HL + 4: the back-tile's rows 1 and 2 (tiles `$34-$37` and `$3F-$42`, the well's front wall). DrawWellFront `$9A2F` redraws exactly those 2 x 4 cells. All registers kept.
 
 Witness: 3 runs (r06000, r12000), the room-`$0C` set-ups.
 
@@ -495,9 +497,9 @@ Witness: L1 3 (rzx, rzx).
 
 **Draw the well's front wall over the hero while he climbs into or out of the well**
 
-Called by RenderPass `$9B22` at `$9BB7` right after the hero (actor slot 0) is drawn into the back buffer, once a pass (26 517 calls over the 34 builds). `$AF22` returns carry when the room has no well (WellCell `$5BA2` = 0) or the hero's X (`$5B04`) is not within the 8 pixels of the well's column; otherwise, when RoomEvent `$5C06` is 2 with EventTimer `$5C07` >= 8, or RoomEvent is 3 with EventTimer < 8, DrawWellFront `$9A2F` paints the wall's 2 x 4 cells over the hero in the buffer, so the hero is hidden behind the well's rim. RoomEvent 3 is set at `$A508` when the hero climbs up out of room `$18` into room `$0C` (the room above it, Y = `$60`); RoomEvent 2 at `$AD2D` (`$AD17`, the climb). BC, HL, DE kept.
+Called by RenderPass `$9B22` at `$9BB7` right after the hero (actor slot 0) is drawn into the back buffer, once a pass (26 517 calls over the 34 builds). `$AF22` returns carry when the room has no well (WellHole `$5BA2` = 0) or the hero's X (`$5B04`) is not within the 8 pixels of the well's column; otherwise, when Status `$5C06` is 2 with StatusTimer `$5C07` >= 8, or Status is 3 with StatusTimer < 8, DrawWellFront `$9A2F` paints the wall's 2 x 4 cells over the hero in the buffer, so the hero is hidden behind the well's rim. Status 3 is set at `$A508` when the hero climbs up out of room `$18` into room `$0C` (the room above it, Y = `$60`); Status 2 at `$AD2D` (`$AD17`, the climb). BC, HL, DE kept.
 
-Evidence: the wall was drawn 11 times (r06500, r12000); RoomEvent 2 reached `$9A1F` in r06500, RoomEvent 3 in r12000. What the screen shows is not yet checked (run request R1).
+Evidence: the wall was drawn 11 times (r06500, r12000); Status 2 reached `$9A1F` in r06500, Status 3 in r12000. What the screen shows is not yet checked (run request R1).
 
 Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -513,7 +515,7 @@ Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 **Redraw the well's front wall: 2 rows of 4 cells into the back buffer**
 
-HL = WellCell `$5BA2` (returns at once when 0), DE = WellTiles `$5BA4`. Two rows of four cells through DrawTileBuffer `$9A62`, the second row 32 cells on. Called only by WellFront at `$9A28` (11 runs, r06500 and r12000).
+HL = WellHole `$5BA2` (returns at once when 0), DE = WellTiles `$5BA4`. Two rows of four cells through DrawTileBuffer `$9A62`, the second row 32 cells on. Called only by WellFront at `$9A28` (11 runs, r06500 and r12000).
 
 Witness: L1 11 (rzx, rzx).
 
@@ -576,7 +578,7 @@ Witness: L1 44297 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 **Draw tile (DE) into the cell HL of the screen page C (`$40`) or the back buffer (`$E0`)**
 
-HL = a cell address of which only L (the cell in the third) and bits 0-1 of H (the third) are used, so tile-map (`$F8`xx) and attribute (`$58`xx) forms both work; DE points to the tile index; C = the page. The tile's 8 bytes at (TileBitmaps `$5B72`) + 8 * tile go to the 8 pixel rows of the cell. Out: L + 1 (the next cell), DE + 1; BC kept.
+HL = a cell address of which only L (the cell in the third) and bits 0-1 of H (the third) are used, so tile-map (`$F8`xx) and attribute (`$58`xx) forms both work; DE points to the tile index; C = the page. The tile's 8 bytes at (TilePixelsPtr `$5B72`) + 8 * tile go to the 8 pixel rows of the cell. Out: L + 1 (the next cell), DE + 1; BC kept.
 
 Witness: L1 49646 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -609,9 +611,9 @@ Witness: L1 124 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx
 
 **Record the room, the event state and the hero as the place a lost life restarts (SK)**
 
-Copies Room `$5C01` to `$5C2D`, RoomEvent `$5C06` to `$5C2B`, EventTimer `$5C07` to `$5C2C`, the hero's X and Y (`$5B04`) to `$5C2E`, his frame and flags (`$5B06`) to `$5C30` and the word `$5B9E` to `$5C32`. The respawn `$9090` copies them all back and calls SetUpRoom.
+Copies Room `$5C01` to `$5C2D`, Status `$5C06` to `$5C2B`, StatusTimer `$5C07` to `$5C2C`, the hero's X and Y (`$5B04`) to `$5C2E`, his frame and flags (`$5B06`) to `$5C30` and the word `$5B9E` to `$5C32`. The respawn `$9090` copies them all back and calls SetUpRoom.
 
-Callers: GameInit at `$9012` (the start room) and SetUpRoom at `$9874` (a room listed in CheckpointRooms entered while FallCount `$5C05` = 0). 78 runs in 27 builds. A life lost in an unlisted room restarts in the last listed room entered.
+Callers: InitGame at `$9012` (the start room) and SetUpRoom at `$9874` (a room listed in CheckpointRooms entered while FallPasses `$5C05` = 0). 78 runs in 27 builds. A life lost in an unlisted room restarts in the last listed room entered.
 
 Witness: L1 78 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -649,7 +651,7 @@ Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 Reached by falling in from CountDown `$935D` (the time is up) and by `JP Z,$9372` at `$A9FE` in `$A9EE` when the last life is lost (gameover frame 1502).
 
-The hero's frame `$5B06` = `$7F` (the blank sprite), Room `$5C01` = `$28` and the room set-up `$9855`; the respawn state too: room `$28` (`$5C2D`), EventTimer 0 (`$5C2C`), RoomEvent `$1D` (`$5C2B`); `JP $AE85` with A = `$1D`: RoomEvent = `$1D`, EventTimer = 0. Status `$1D` is Frozen `$A90E`, which only holds; SpaceScene `$B0B6`, room `$28`'s script, plays the asteroid striking (gameover frames 1509-1961) and sets GameOver; EndGame `$906D` follows (frame 1962). After the last life the respawn (`$9090`, LifeLost still set) restores the same room and event.
+The hero's frame `$5B06` = `$7F` (the blank sprite), Room `$5C01` = `$28` and the room set-up `$9855`; the respawn state too: room `$28` (`$5C2D`), StatusTimer 0 (`$5C2C`), Status `$1D` (`$5C2B`); `JP $AE85` with A = `$1D`: Status = `$1D`, StatusTimer = 0. Status `$1D` is Frozen `$A90E`, which only holds; SpaceScene `$B0B6`, room `$28`'s script, plays the asteroid striking (gameover frames 1509-1961) and sets GameOver; EndGame `$906D` follows (frame 1962). After the last life the respawn (`$9090`, LifeLost still set) restores the same room and event.
 
 The time running out, on a clone (work/stage2/probe_points.py A: the RZX state at 44000 in room `$3B`, the countdown poked to 0 days 0 hours 2 minutes): the pass after 0/0/0 falls in here (days wrap to 255, the clock goes on counting: 255/23/59), Room `$28` 10 frames after the poke, status 29 from frame 20, GameOver `$5BFF` at frame 430: the same space scene as the last life's (no other end for the time running out).
 
@@ -882,11 +884,11 @@ Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 **Draw the five actors and the items of one main-loop pass and update the screen**
 
-Called once a pass by the main loop at `$9040` (26 517 calls over the 34 builds). The actor slots ActorSlots `$5B04` hold 5 records of 4 bytes (X, Y, frame, flags; slot 0 the hero).
+Called once a pass by the main loop at `$9040` (26 517 calls over the 34 builds). The object slots from Hero `$5B04` hold 5 records of 4 bytes (X, Y, frame, flags; slot 0 the hero).
 
 1. For each slot BufferAddress `$9CEE` gives the back-buffer address of (X, Y) and the row plotter for X mod 8; both go to the slot's record in ActorRects `$5B44` (slot + `$40`: the address, slot + `$42`: the plotter).
 
-2. Each slot's sprite, frame F at `$6000` + 72 * F, is drawn into the back buffer in three columns of 24 rows (DrawSpriteColumn `$9C6A`). Flags bit 7 set (facing right: the stored graphics face left) patches the two MirrorPatch points `$9C82`/`$9C87` to LD L,A / LD A,(HL), so each byte is bit-reversed through the table at `$FE00`, and draws the columns right to left; bit 7 clear patches them to two NOPs. The L1 arrivals record these writes in 21 builds (`$9B82`/`$9B85` or `$9B9C`/`$9B9F`). After slot 0 WellFront `$9A09` may paint the well over the hero.
+2. Each slot's sprite, frame F at `$6000` + 72 * F, is drawn into the back buffer in three columns of 24 rows (DrawSpriteColumn `$9C6A`). Flags bit 7 set (facing right: the stored graphics face left) patches MirrorPatch1 and MirrorPatch2 `$9C82`/`$9C87` to LD L,A / LD A,(HL), so each byte is bit-reversed through the table at `$FE00`, and draws the columns right to left; bit 7 clear patches them to two NOPs. The L1 arrivals record these writes in 21 builds (`$9B82`/`$9B85` or `$9B9C`/`$9B9F`). After slot 0 WellFront `$9A09` may paint the well over the hero.
 
 3. DrawItems `$9DE3` draws the floor items into the buffer and the screen at once. 4. CopyRects `$9BEB` copies the 4-byte by 24-row rectangles of last pass's positions (PrevActorRects `$5B24`, through IX = `$5AE4`) and of this pass's (`$5B44`) from the buffer to the screen: the old places get their background back and the new ones the sprites, with no flicker. 5. `$5B44` is saved to `$5B24`, the alternate set's effects run (`$92BD`) and RestoreActorBackgrounds `$9D3C` repaints the buffer under the five actors from the tile map, ready for the next pass.
 
@@ -961,7 +963,7 @@ Witness: L1 265129 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, 
 
 **Draw one 24-row sprite column into the back buffer with its outline mask**
 
-In: the main set DE = the column's 24 bytes, H = `$FE` (the bit-reverse page, used when MirrorPatch is in); the alternate set BC = the buffer address, IY = the row plotter from BufferAddress `$9CEE`. C (main set) = 0: the byte above the first row. The nested calls DrawSprite12Rows `$9C72`, DrawSprite6Rows `$9C75`, DrawSprite3Rows `$9C78` run DrawSpriteRow `$9C7E` 24 times. Called by RenderPass 6 call sites, 397 715 calls (three a slot a pass).
+In: the main set DE = the column's 24 bytes, H = `$FE` (the bit-reverse page, used when MirrorPatch1/2 are patched in); the alternate set BC = the buffer address, IY = the row plotter from BufferAddress `$9CEE`. C (main set) = 0: the byte above the first row. The nested calls DrawSprite12Rows `$9C72`, DrawSprite6Rows `$9C75`, DrawSprite3Rows `$9C78` run DrawSpriteRow `$9C7E` 24 times. Called by RenderPass 6 call sites, 397 715 calls (three a slot a pass).
 
 Witness: L1 397715 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1201,7 +1203,7 @@ Witness: L1 35 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 
 **Repaint the back buffer under the five actors from the tile map (SK)**
 
-IX = ActorSlots `$5B04`, B = 5. For each actor: its rectangle from ActorRects (`$5B44`), the cells under it, 3 columns and 3 rows, one more column when X mod 8 is not 0 and one more row when Y mod 8 is not 0; each cell's tile index from the tile map (`$F800` + 256 * third + the low byte of the address), its 8 bytes from TileBitmaps `$5B72` into the buffer. This removes the sprites drawn this pass, after CopyRects has shown them. Called by RenderPass at `$9BE7` (26 510 calls).
+IX = Hero `$5B04` (the first of the object slots), B = 5. For each actor: its rectangle from ActorRects (`$5B44`), the cells under it, 3 columns and 3 rows, one more column when X mod 8 is not 0 and one more row when Y mod 8 is not 0; each cell's tile index from the tile map (`$F800` + 256 * third + the low byte of the address), its 8 bytes from TilePixelsPtr `$5B72` into the buffer. This removes the sprites drawn this pass, after CopyRects has shown them. Called by RenderPass at `$9BE7` (26 510 calls).
 
 Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1282,7 +1284,7 @@ Witness: L1 893376 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, 
 
 **Draw the room's two floor items and the third item record**
 
-DrawItem `$9DF8` for FloorItem1 `$5C0E`, FloorItem2 `$5C13` (placed by `$B93F` from the table `$B99D`) and, running on, for the record `$5B99` (X, Y, frame; `$5B9B` = `$FE` set by the respawn at `$90BE`). Called by RenderPass at `$9BC4` (26 510 calls).
+DrawItem `$9DF8` for ItemSlot1 `$5C0E`, ItemSlot2 `$5C13` (placed by `$B93F` from the table `$B99D`) and, running on, for the record `$5B99` (X, Y, frame; `$5B9B` = `$FE` set by the respawn at `$90BE`). Called by RenderPass at `$9BC4` (26 510 calls).
 
 Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1321,7 +1323,7 @@ Witness: L1 79532 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 The explorer's frame 9 (`$6288`, the front view) at screen `$5092` (character row 20, columns 18-20) and the held item (`$5B98`, the item sprite at `$8400`; BlankIcon `$5C46` when `$FF`) at `$5032` (row 17, columns 18-20), through the column list PanelColumns `$5BD6` and BlitColumns `$9F86`. The screenshot start-room-14.png shows the explorer at row 20, column 18 and no held item.
 
-Callers: GameInit at `$9015`, `$A851` at `$A862`, `$B370` at `$B403`, `$B5DD` at `$B5FB`, `$B735` at `$B759` (tail), `$B9FA` at `$BA30` and `$BA71`, `$BB6C` at `$BC0A`: 81 runs in 30 builds.
+Callers: InitGame at `$9015`, `$A851` at `$A862`, `$B370` at `$B403`, `$B5DD` at `$B5FB`, `$B735` at `$B759` (tail), `$B9FA` at `$BA30` and `$BA71`, `$BB6C` at `$BC0A`: 81 runs in 30 builds.
 
 Witness: L1 81 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1341,7 +1343,7 @@ Witness: L1 81 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 
 Lives `$5B97` = 0 returns. Otherwise three icons, frames 2, 3 and 4 of the explorer's set, the k-th (k = 1-3) shown when Lives - 1 >= k, else BlankIcon `$5C46`; drawn at `$5081` (row 20, columns 1-9) by SpareLivesShow `$9F1E`. With the 4 lives of the start three figures show (start-room-14.png).
 
-Callers: GameInit at `$8FF0`, `$A9EE` at `$AA01` (tail, the life lost): 11 runs in 7 builds; the blank icon ran in r06000, r10000, r24000, r32000.
+Callers: InitGame at `$8FF0`, `$A9EE` at `$AA01` (tail, the life lost): 11 runs in 7 builds; the blank icon ran in r06000, r10000, r24000, r32000.
 
 Witness: L1 11 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
 
@@ -1359,7 +1361,7 @@ Witness: L1 11 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
 
 DrawBearerItems `$9EE3` draws the items first. Then four bearer figures from BearerFigures `$9FDE`, figure (log index AND 3) for the bearers BearerIndex `$5C23` to +3 (wrapping at 27), at `$5096` (row 20, columns 22-30) through BearerRowShow `$9F6B`. Only 9 of the 12 columns show, from column BearerPhase `$5C22` (0-3), so the keys 1 and 2 (bearers left, right) scroll the row a character at a time.
 
-Callers: GameInit at `$8FE8`, `$B9FA` at `$BA6E`, `$BB6C` at `$BC1C` (tail), `$BC1F` at `$BC50`, `$BC64`, `$BC69`, `$BC70` (scroll): 1139 runs in 29 builds.
+Callers: InitGame at `$8FE8`, `$B9FA` at `$BA6E`, `$BB6C` at `$BC1C` (tail), `$BC1F` at `$BC50`, `$BC64`, `$BC69`, `$BC70` (scroll): 1139 runs in 29 builds.
 
 Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1715,7 +1717,7 @@ Witness: L1 3540 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rz
 
 **The hero's update in room `$2C`: floating with momentum, bouncing off walls (SK, renamed)**
 
-The room handler of room `$2C` (RoomHandlers `$B7EC`, reached through `$B7DD` and JumpThroughWord `$A6DD` from HeroUpdate `$A3E1`). POP AF drops the return into HeroUpdate, so this replaces the whole update in that room. Status 0 (ClearStatus `$AE84`), frame `$1A`, the probes (HeroTileChecks `$A102`).
+The room handler of room `$2C` (RoomScripts `$B7EC`, reached through `$B7DD` and JumpThroughWord `$A6DD` from HeroUpdate `$A3E1`). POP AF drops the return into HeroUpdate, so this replaces the whole update in that room. Status 0 (ClearStatus `$AE84`), frame `$1A`, the probes (HeroTileChecks `$A102`).
 
 The input (`$B87D`) steps the velocity `$5C34` (C = X, B = Y) by 1 a pass towards the held direction, each kept within -3..3. A wall at the leading edge ((IY+1) going right, (IY+0) going left), a floor under the feet going down, or a tile at the head going up (HeadroomRows `$A1D3`) negates that component: the hero bounces. The facing follows the sign of C; X and Y move by the velocity. X below 4 leaves by the left exit (ExitLeft `$A640`); this routine has no right or vertical exit.
 
@@ -1737,7 +1739,7 @@ Witness: L1 149 (rzx, rzx).
 
 Called from the main loop `$9018` (`$902B`) every pass, IX = the hero. In order:
 
-1. The room handler of the current room (`$B7DD`: RoomHandlers `$B7EC` through JumpThroughWord `$A6DD`). A handler that starts with POP (FloatInRoom2C `$A34B`) replaces the rest.
+1. The room handler of the current room (`$B7DD`: RoomScripts `$B7EC` through JumpThroughWord `$A6DD`). A handler that starts with POP (FloatInRoom2C `$A34B`) replaces the rest.
 
 2. IY = `$A0FE`, SP saved in SavedSP `$AF39` (JumpHoleCheck `$AF09` unwinds to it). A frame list in progress (FrameListPtr `$AEED` not 0) plays one frame (FrameListPlay `$AEB9`) and nothing else happens.
 
@@ -1803,7 +1805,7 @@ Witness: L1 30 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
 
 **Leave the room by the right edge (SK, renamed)**
 
-From a room of ExplorerRooms `$A66C` the hero goes to room `$29`; else same level, column + 1, 11 wrapping to 0. X = 2, then the room is set up (`$9855`). Called from HeroUpdate `$A3E1`, JumpArc `$ADAC` and BarrelBigRide `$AABA`. Evidence: 38 exits in gameover and 18 rzx segments; the explorer room path once.
+From a room of ExplorerRooms `$A66C` the hero goes to room `$29`; else same level, column + 1, 11 wrapping to 0. X = 2, then the room is set up (`$9855`). Called from HeroUpdate `$A3E1`, JumpArc `$ADAC` and BarrelRideLong `$AABA`. Evidence: 38 exits in gameover and 18 rzx segments; the explorer room path once.
 
 Witness: L1 38 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 
@@ -1880,7 +1882,7 @@ Witness: L1 26583 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 **Read the controls; both left and right, or both up and down, read as nothing**
 
-Out: A = the InputBits of ReadDevice `$B894`, or 0 when bits 0 and 1 or bits 2 and 3 are both set. Called by `$A3E1` every pass (`$A3F4`), by `$A34B` and by `$AF81`.
+Out: A = the InputBits of ReadDevice `$B894`, or 0 when bits 0 and 1 or bits 2 and 3 are both set; E = the raw InputBits on every path. Called by `$A3E1` every pass (`$A3F4`), by `$A34B` (`$A356`), by `$AF81` (`$AFBA`, which tests E: up + down there gives down, status 20) and by TelescopeRoom `$B16A` (`$B17F`).
 
 Witness: L1 26612 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). The cancel branches (`$B887`, `$B890`) are not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 
@@ -1991,7 +1993,7 @@ Witness: L1 35947 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, r
 
 **Status 33: hold frame `$3F` for 64 passes, then the next step of room `$47`**
 
-Set by ExplorerRoom47 `$B18A` when the hero uses item 1 at its spot. `$5C07` counts; at bit 6 RoomStep `$5C41` + 1 and status 0. Not executed in any recording (c1, explorers, gameover, rzx x31); known only from the code.
+Set by ExplorerRoom47 `$B18A` when the hero uses item 1 at its spot. `$5C07` counts; at bit 6 RoomStage `$5C41` + 1 and status 0. Not executed in any recording (c1, explorers, gameover, rzx x31); known only from the code.
 
 Witness: L1 0 ().
 
@@ -2029,7 +2031,7 @@ Witness: L1 0 ().
 
 **Status 30: the hero bends to the telescope, then the view**
 
-Set by TelescopeRoom `$B16A`. Plays TelescopeFrames `$A79F` (Status28Anim's tail `$A82C`); at the end status 31 (TelescopeView `$A7B9`). Not executed in any recording.
+Set by TelescopeRoom `$B16A`. Plays TelescopeFrames `$A79F` (through FrameListStatus `$A82C`); at the end status 31 (TelescopeView `$A7B9`). Not executed in any recording.
 
 Witness: L1 0 ().
 
@@ -2103,7 +2105,7 @@ Witness: L1 7 (rzx).
 
 **Status 24: the death by a creature's touch, sound 3 every pass**
 
-Set by HitExplorer `$C0F9` (a creature's touch, not standing) and by the beam hit `$9262` (RoomEffects: within the beam's X span and 12 rows, status below 4). CreatureDeathFrames `$A8E0` with sound 3 each pass, then status 18. Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
+Set by HitExplorer `$C0F9` (a creature's touch, not standing) and by the beam hit `$9260` (RoomEffects: within the beam's X span and 12 rows, status below 4). CreatureDeathFrames `$A8E0` with sound 3 each pass, then status 18. Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
 
 Witness: L1 33 (rzx, rzx, rzx).
 
@@ -2143,7 +2145,7 @@ Witness: L1 49 (gameover, rzx, rzx, rzx, rzx, rzx).
 
 **Status 22: the teleport pads of rooms `$30` and `$3D`; the pad of room `$20` kills**
 
-Set by TeleportPadCheck `$B03B`. First pass (`$5C07` = 0): the lift is reset to room `$1F`, Y `$50` (`$5B9E`, `$5B9F`). Room `$30` sends to room `$3D`, room `$3D` to room `$20`, each only while `$5C44` is not 0 (else nothing happens and the status stays); the destination goes into TeleportDest `$A959`. Room `$20`: status 23 (SilentDeath `$A8A8`).
+Set by TeleportPadCheck `$B03B`. First pass (`$5C07` = 0): the lift is reset to room `$1F`, Y `$50` (`$5B9E`, `$5B9F`). Room `$30` sends to room `$3D`, room `$3D` to room `$20`, each only while `$5C44` is not 0 (else RET Z at `$A914` returns into HeroUpdate before the POP HL at `$A919`: the normal update runs on with status 22 kept, and every pass resets the lift again); the destination goes into TeleportDest `$A959`. Room `$20`: status 23 (SilentDeath `$A8A8`).
 
 Witness: L1 36 (rzx, rzx).
 
@@ -2360,7 +2362,7 @@ Witness: L1 8 (gameover, rzx, rzx, rzx, rzx, rzx, rzx).
 
 **Status 10: the hero thinks; ThinkHints decides the idea**
 
-Set by ThinkKey `$B02E` (T). ThinkFrames `$ABEB`; at the end the thought's place: `$5B9A` = Y (- `$18` when Y >= `$18`), `$5B99` = X - `$18` or + `$18` (the side the hero faces; turned at the edges), `$5B9B` = ThinkHints `$A6E6`[room]; status 12 (NoIdea) for `$FF`, else 11 (BrightIdea). Not executed in any recording.
+Set by ThinkKey `$B02E` (T). ThinkFrames `$ABEB`; at the end the thought's place: `$5B9A` = Y (- `$18` when Y >= `$18`), `$5B99` = X when Y >= `$18` (the bubble above the head), else X - `$18` or + `$18` (beside him, on the side he faces; at an edge the facing turns and the other side is used), `$5B9B` = ThinkHints `$A6E6`[room]; status 12 (NoIdea) for `$FF`, else 11 (BrightIdea). Not executed in any recording.
 
 Witness: L1 0 ().
 
@@ -2451,7 +2453,7 @@ Witness: L1 0 ().
 
 **Statuses 7 and 8: in the balloon: rise with item 6 or 7, else sink and step out**
 
-Set by StatusZeroTriggers `$AF3B` (the hero at the balloon), status 8 here. `$5C27` = the room (the balloon goes with the hero), frame `$7F` (the hero is drawn inside the basket by BalloonRoom `$AFD7`). In the air (probe +3 not 0) left and right move 2 pixels (right not in status 7). Item 6 in use: status 8, item 7: status 7; both rise 1 pixel a pass; at the top the room above, in room 3 status 8 hovers and status 7 becomes 9 (BalloonCrash `$AC1A`). Other items: the balloon sinks 2 pixels a pass (the room below at `$66`) and on the ground left or right steps out (status 0). `$5C25` / `$5C26` keep the balloon's X and Y. Evidence: rzx14000 frames 696-1104 (452 passes, item 6); the screen of rzx14000 frame 750 shows the balloon.
+Set by StatusZeroTriggers `$AF3B` (the hero at the balloon), status 8 here. `$5C27` = the room (the balloon goes with the hero), frame `$7F` (the hero is drawn inside the basket by BalloonRoom `$AFD7`). In the air (probe +3 not 0) left and right move 2 pixels (right not in status 7). Item 6 in use: status 8, item 7: status 7; both rise 1 pixel a pass; at the top the room above, in room 3 status 8 hovers and status 7 becomes 9 (BalloonCrash `$AC1A`). Other items: the balloon sinks 2 pixels a pass (the room below at `$66`) and on the ground left or right steps out (status 0). `$5C25` / `$5C26` keep the balloon's X and Y. Evidence: rzx14500 frames 195-849 (the Bellows from frame 396: up from room `$0F` into room 3, hovering at its top, down to the ground with item `$0B`) and rzx14000 frames 696-1104 (item `$0B`, then none: no rise); 452 passes; the screen of rzx14000 frame 750 shows the balloon.
 
 Witness: L1 452 (rzx, rzx).
 
@@ -2756,7 +2758,7 @@ Witness: L1 0 ().
 
 **Room `$47` (explorer 4): item 1 at the creature, or be eaten**
 
-`$5C00` set: nothing. RoomStep `$5C41` 0: object 4 at `$80`, `$60`, frame `$64`. 1: its frames `$64-$67`; with the hero left of X `$B4`: at Y `$60` with item 1 in use status 33 (FlashPose `$A770`), else touching it: eaten (step 4, status 18). 2-3: two screen flashes (`$916A`), then `$5C00` is set. Not executed in any recording.
+`$5C00` set: nothing. RoomStage `$5C41` 0: object 4 at `$80`, `$60`, frame `$64`. 1: its frames `$64-$67`; with the hero left of X `$B4`: at Y `$60` with item 1 in use status 33 (FlashPose `$A770`), else touching it: eaten (step 4, status 18). 2-3: two screen flashes (`$916A`), then `$5C00` is set. Not executed in any recording.
 
 Witness: L1 0 ().
 
@@ -2804,7 +2806,7 @@ Witness: L1 0 ().
 
 **Room `$2D`: throw the Cricket Ball, and the Formula falls into the explorer's hands**
 
-The room script of room `$2D` (RoomScripts `$B7EC`). Does nothing once BallThrown `$5C00` is set (TestBallThrown `$B165`). Stage 0 (RoomStage `$5C41` = 0) puts an object in slot `$5B10` (X `$64`, Y `$48`, frame `$4F`; the target) every pass and waits for the explorer to stand at X `$DC`, Y `$48` holding the Cricket Ball (HeldItem `$5B98` = 2); then clears the explorer's facing bit (IX+3 bit 7), goes to stage 1 and sets status `$1C` (Room2DAnim `$A828` through the status table `$A72E`; stage 1 then waits for the throw frame).
+The room script of room `$2D` (RoomScripts `$B7EC`). Does nothing once BallThrown `$5C00` is set (KeyRoomDoneFlag `$B165`). Stage 0 (RoomStage `$5C41` = 0) puts an object in slot `$5B10` (X `$64`, Y `$48`, frame `$4F`; the target) every pass and waits for the explorer to stand at X `$DC`, Y `$48` holding the Cricket Ball (HeldItem `$5B98` = 2); then clears the explorer's facing bit (IX+3 bit 7), goes to stage 1 and sets status `$1C` (Room2DAnim `$A828` through the status table `$A72E`; stage 1 then waits for the throw frame).
 
 Stage 1 waits for the explorer's frame `$3E` (the throw pose), then puts the ball in slot `$5B14` (X `$C8`, Y `$39`, frame `$39`). Stage 2 flies the ball 4 pixels left and 1 down a pass until Y `$52`, then steps the target's frame (`$4F` to `$50`) and drops the Formula from the top: slot `$5B14` X `$DC`, Y `$08`, frame `$8F` (`$80` + 15; frames `$80` + n show item n, as the professor's bubble does too: inferred from the two uses, a run request). Stage 3 lowers it 1 pixel a pass to Y `$48` (the explorer's hands), then sets BallThrown, hides the slot, makes the Formula (`$0F`) the held item, redraws the hand icon (`$9E5D`) and clears the status (`$AE84`).
 
@@ -2824,9 +2826,9 @@ Witness: L1 346 (rzx, rzx).
 
 **Room `$3F`: the basket that carries the explorer across the room**
 
-The room script of room `$3F`. The basket is slot `$5B14` (frame `$9E`: item sprite `$80` + 30, SK "Busket"). Stage 0 places it at the side away from the explorer: X `$D8` (the right end) with BasketSide `$5C40` = 1 when the explorer is left of X `$C8`, else X `$08` with BasketSide 0; Y `$30`.
+The room script of room `$3F`. The basket is slot `$5B14` (frame `$9E`: item sprite `$80` + 30, SK "Busket"). Stage 0 places it at the side away from the explorer: X `$D8` (the right end) with RoomFlag `$5C40` = 1 when the explorer is left of X `$C8`, else X `$08` with RoomFlag 0; Y `$30`.
 
-Stage 1: the basket travels toward the explorer one pixel a pass, only while the lever of rooms `$3E` and `$40` allows it: from the right end (BasketSide 1) while LeverState `$5C42` is not 0 (BasketToLeft `$B4B0`), from the left end (BasketSide 0) while LeverState is 0 (BasketToRight `$B47E`); a blocked move leaves E as the caller had it (known only from the code). At the end of its way (E = 0) it waits for the explorer to come near (`$9140`); then stage 2, BasketSide flipped, status `$15` (RideObject4 `$A95F`). Stage 2 carries it to the other end whatever the lever (BasketRight `$B483` / BasketLeft `$B4B5`); at the end the explorer is set 8 pixels higher (IX+1 - 8), stage 3 (the script then does nothing until the room is entered again) and the status is cleared (`$AE84`).
+Stage 1: the basket travels toward the explorer one pixel a pass, only while the lever of rooms `$3E` and `$40` allows it: from the right end (RoomFlag 1) while LeverState `$5C42` is not 0 (BasketToLeft `$B4B0`), from the left end (RoomFlag 0) while LeverState is 0 (BasketToRight `$B47E`); a blocked move leaves E as the caller had it (known only from the code). At the end of its way (E = 0) it waits for the explorer to come near (`$9140`); then stage 2, RoomFlag flipped, status `$15` (RideObject4 `$A95F`). Stage 2 carries it to the other end whatever the lever (BasketRight `$B483` / BasketLeft `$B4B5`); at the end the explorer is set 8 pixels higher (IX+1 - 8), stage 3 (the script then does nothing until the room is entered again) and the status is cleared (`$AE84`).
 
 Witness: rzx28000 and rzx32750 each run stage 0 and the ride (`$B44E` once each), rzx28000 and rzx34000 the arrival (`$B471`).
 
@@ -2901,7 +2903,7 @@ Witness: L1 209 (rzx).
 
 **Move the basket left one pixel, along the track's profile**
 
-Out: E = 0 at the left end (X 8), else E = 1 and X - 1. While X is below `$1C` the basket sinks 2 pixels a pass (Y + 2, below `$30`); from X `$7B` down to `$1C` it rises 2 a pass, not above Y 8 (BasketLeftTail `$B4D5`); above `$7B` it keeps its height.
+Out: E = 0 at the left end (X 8), else E = 1 and X - 1. While X is below `$1C` the basket sinks 2 pixels a pass (Y + 2, below `$30`); from X `$7B` up it rises 2 a pass, not above Y 8 (BasketLeftTail `$B4D5`); from `$1C` to `$7A` it keeps its height.
 
 Witness: L1 418 (rzx, rzx, rzx).
 
@@ -2914,9 +2916,9 @@ Witness: L1 418 (rzx, rzx, rzx).
 
 ### `BasketLeftTail` (`$B4D5`)
 
-**From X `$7B` down to `$1C` rise 2 pixels a pass, not above Y 8**
+**X `$1C` or more: keep the height below X `$7B`, from X `$7B` up rise 2 pixels a pass, not above Y 8**
 
-Entered from BasketLeft `$B4B5` with A = the new X, B = Y.
+Entered from BasketLeft `$B4B5` with A = the new X, B = Y. Evidence: rzx28000 frames 527-1096, the basket from X `$D8` at Y `$30` up to Y 8 at X `$C4`, level down to X `$1C`, then down to Y `$2E` at X 8.
 
 Witness: L1 376 (rzx, rzx, rzx).
 
@@ -2983,7 +2985,7 @@ Witness: L1 437 (rzx, rzx, rzx).
 
 The room script of room `$3B` (the lab). The professor is slot `$5B14`, his speech bubble slot `$5B10` (its frame `$80` + the item he wants: an item sprite). Every pass: when the explorer is near him (`$9140`) holding WantedItem `$5C3C`, the item is given: HeldItem = `$FF`, LastGift `$5C3E` = the item, the items of the room are scanned again (`$B93F`), the hand icon redrawn (`$9E5D`), +150 score, GiftCount `$5C3D` + 1; the sixth gift ends the game (ProfessorEnding `$B6EE`).
 
-ProfState `$5BA1` (0 on room entry): 0 places him (X `$1A`, Y `$48`, the bubble at Y `$30`) and sets 1; 1 (bits 0-6) he walks (ProfWalk `$B676`) with bit 7 the direction; 2 he plays the frames of ProfFrames `$B6C1` one a pass through `$ABE1` (step LabStep `$B6ED`) and goes back to 1 at their end mark `$FF`; while bit 7 is clear (he walks right) the first frame `$4D` ends the sequence instead, so he asks only on his way left. Each new frame `$4D` (his asking pose) shows the bubble: WantedItem = WantedItems[GiftCount] (`$B6BB`), the bubble frame `$80` + that item. InitGame writes `$FF` at `$8FA6`, but its clear of `$5BFA-$5C8D` (`$8FBE`) runs after and zeroes `$5C3C`: WantedItem is 0 (the Unicycle) until he first asks (rzx44000 frames 0-415 and rzx24750 frame 613: `$5C3C` = 0). WantedItem is not reset after a gift (rzx44000 frames 460-723: `$0F` kept).
+ProfessorState `$5BA1` (0 on room entry): 0 places him (X `$1A`, Y `$48`, the bubble at Y `$30`) and sets 1; 1 (bits 0-6) he walks (ProfWalk `$B676`) with bit 7 the direction; 2 he plays the frames of ProfFrames `$B6C1` one a pass through `$ABE1` (step LabStep `$B6ED`) and goes back to 1 at their end mark `$FF`; while bit 7 is clear (he walks right) the first frame `$4D` ends the sequence instead, so he asks only on his way left. Each new frame `$4D` (his asking pose) shows the bubble: WantedItem = WantedItems[GiftCount] (`$B6BB`), the bubble frame `$80` + that item. InitGame writes `$FF` at `$8FA6`, but its clear of `$5BFA-$5C8D` (`$8FBE`) runs after and zeroes `$5C3C`: WantedItem is 0 (the Unicycle) until he first asks (rzx44000 frames 0-415 and rzx24750 frame 613: `$5C3C` = 0). WantedItem is not reset after a gift (rzx44000 frames 460-723: `$0F` kept).
 
 Witness: rzx42000-rzx50000 run it 2293 times; the bubble (`$B65E`) 11 times, the gifts (`$B5EF`) 6 times (rzx44000 2, rzx46000 2, rzx48000 1, rzx50000 1), the ending once (rzx50000).
 
@@ -3061,7 +3063,7 @@ Witness: L1 571 (rzx, rzx, rzx).
 
 **The lever of rooms `$3E` and `$40`: fit the Switch, then pull it to send the basket**
 
-IY = slot `$5B14`, Y `$12`. Frame `$56` before the Switch is fitted, `$57` after (SwitchFitted `$5C43` not 0). Not fitted: when the explorer comes near (`$9140`) holding the Switch (HeldItem `$5B98` = `$10`) it is fitted: HeldItem = `$FF`, SwitchFitted = `$FF`, the hand icon redrawn. Fitted (in both rooms: one flag): the lever's mirror bit (IY+3 bit 7) shows LeverState `$5C42` (set when 0), and each new touch (LeverDebounce `$5C40` from 0 to 1) flips LeverState; away from the explorer LeverDebounce is 0 again. LeverState chooses the end of room `$3F` the basket waits at (BasketScript `$B409`).
+IY = slot `$5B14`, Y `$12`. Frame `$56` before the Switch is fitted, `$57` after (SwitchFitted `$5C43` not 0). Not fitted: when the explorer comes near (`$9140`) holding the Switch (HeldItem `$5B98` = `$10`) it is fitted: HeldItem = `$FF`, SwitchFitted = `$FF`, the hand icon redrawn. Fitted (in both rooms: one flag): the lever's mirror bit (IY+3 bit 7) shows LeverState `$5C42` (set when 0), and each new touch (RoomFlag `$5C40` from 0 to 1) flips LeverState; away from the explorer LeverDebounce is 0 again. LeverState chooses the end of room `$3F` the basket waits at (BasketScript `$B409`).
 
 Witness: the Switch is fitted once (`$B751`, rzx28000), the lever pulled twice (`$B770`, rzx28000 and rzx32750).
 
@@ -3209,7 +3211,7 @@ Witness: L1 674 (gameover, rzx, rzx).
 
 **Put every item back: clear the taken bit of all 31 ItemPlaces records**
 
-Called by GameInit at `$8F83` (a new game); GameInit then marks the Energy Crystal of room `$30` taken (`$8F86`). Witness: c1 once, explorers 5 times, rzx00000 once (the new games).
+Called by InitGame at `$8F83` (a new game); InitGame then marks the Energy Crystal of room `$30` taken (`$8F86`). Witness: c1 once, explorers 5 times, rzx00000 once (the new games).
 
 Witness: L1 7 (c1, explorers, rzx).
 
@@ -3399,7 +3401,7 @@ Witness: L1 0 ().
 
 **Add DE (signed) to the score and print it, every register kept**
 
-DE = the points (+50 a pickup `$BBE9`, +75 the crystal `$BA2A`, +150 the Silver Cross `$B538` and each gift `$B5FE`, from GameInit `$8FCC`, `$A851` +75). Saves IX, IY, HL, BC, AF and the alternate HL, BC, DE; AddToScore `$BD11`, PrintScore `$BD75`.
+DE = the points (+50 a pickup `$BBE9`, +75 the crystal `$BA2A`, +150 the Silver Cross `$B538` and each gift `$B5FE`, from InitGame `$8FCC`, `$A851` +75). Saves IX, IY, HL, BC, AF and the alternate HL, BC, DE; AddToScore `$BD11`, PrintScore `$BD75`.
 
 Witness: L1 46 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
 

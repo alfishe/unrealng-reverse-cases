@@ -36,7 +36,7 @@ ending), ZXDB's instructions, maps and POKE file (`work/candidates/zxdb-*`).
 
 `c1`: the 128K from power-on, the original TZX at ROM speed (`tools/rs_capture.py --record-load --load-frames 21900`,
 port base 37500), then `tests/inputs/c1.txt` (the menu, the selector, play, abort). The stages from the L1 arrivals
-are in [doc 3, 3.3](docs/03-build-and-load.md#33-the-128k-set-up-at-7200-and-the-relocation): the loader at frame 696, the
+are in [doc 3, 3.5](docs/03-build-and-load.md#35-the-stages-of-the-load-in-c1): the loader at frame 696, the
 set-up and the selector's relocation into RAM 1 at 11841, GameEntry `$8F00` at frame 21597 t 67875 (`time_travel find_last`, access execute).
 
 The interrupts and the timing, a first look:
@@ -65,19 +65,49 @@ The interrupts and the timing, a first look:
 | `snap-46000` | `$3B` | 220 476 | 3.11 | 232 943 (pass 151) | 3.29 |
 
 A pass is 2.4 to 3.1 frames of work; the heaviest measured is 232 943 T (3.29 frames) in room `$3B`. The RZX's own
-reads of the Kempston port at `$B8CC` agree: in its 51 148 frames the gap between reads is 2 frames 4376 times and 3
-frames 12 178 times (`work/stage1/rzx/inputs.json`).
+port reads agree. The pass-end Q test at `$9052`, once a pass, is read 17 786 times between RZX frames 209 and 50 730
+(GameOver): 2.84 frames a pass on average. The gaps between its reads are 2 frames 4470 times, 3 frames 12 236, 4
+frames 954, 5-6 frames 39, 9-12 frames 85 and 17 frames once (`work/stage1/rzx/inputs.json`). The countdown gives the
+same mean: 17 779 minutes went in the 50 505 frames from RZX frame 225 to 50 730.
 
 ## 2. Static pass over the medium
 
+- `python3 tools/tzxblocks.py list orig/Terramex.tzx` (from the zip): the TZX's blocks, all standard speed, with their
+  pulses, durations, flags and checksums ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)): a
+  Program header "TERRAMEX", its BASIC, the loading screen (6912 bytes at `$4000`), block 4 (38 648 bytes at `$6000`)
+  and block 5 (36 352 bytes at `$7200`). No turbo, no custom loader block.
+- `python3 tools/basic_list.py build/basic.bin 58`: the BASIC line 0 and its hidden numbers; the loader is machine code
+  in the string `l$` of the variables area, entered by `USR $5D08`
+  ([doc 3, 3.2](docs/03-build-and-load.md#32-the-basic-loader-hidden-in-l)).
+- `python3 tools/image.py work/mkgame/original.bin`: the 64 K as the tape leaves it, the image every later comparison
+  starts from. The other copies were compared block by block by `tools/copy_compare.py` and `tools/media_compare.py`
+  ([doc 3, 3.6](docs/03-build-and-load.md#36-the-copies-and-the-re-releases)).
+
 ## 3. The stages and the packers
 
+There is no packer, no decryptor and no turbo loader. The one trick is the BASIC loader hidden in `l$`. Block 4's
+`$7200-$9CF7` is relocatable: its absolute words are stored as offsets and RelocateSelector `$C0AB` adds the run
+address, `$C000` in RAM 1 on a 128K or `$7200` in place on a 48K. The source keeps the selector at `$C000` and
+`tools/mktape.py` takes the offsets back for the tape
+([doc 3, 3.3](docs/03-build-and-load.md#33-the-128k-set-up-at-7200-and-the-relocation)). The stages in `c1` are
+[doc 3, 3.5](docs/03-build-and-load.md#35-the-stages-of-the-load-in-c1).
+
 ## 4. The medium from source
+
+`. work/env.sh && sh tools/build.sh $SJASMPLUS` assembles the six parts from their `.ann` files (`tools/mkasm_all.sh`,
+`kit/mkgame.py`) and `src/res` (`tools/res_formats.py build`), writes `build/Terramex.tzx` with `tools/mktape.py` and
+prints "identical" against `orig/Terramex.tzx.zip`. `python3 tools/res_formats.py check` prints 0 bad: every
+resource file converts back to the bytes it came from
+([doc 3, 3.7](docs/03-build-and-load.md#37-the-build)).
 
 ## 5. Tool gaps found and fixed in unreal-ng
 
 | Gap | Fix | unreal-ng commit |
 | --- | --- | --- |
+| On a 48K at ROM speed, `POST /tape/play` after a TZX `$2A` stop block (or after an explicit `POST /tape/pause`) answers "resumed" but the tape stays paused, so block 5 never loads and the 48K path cannot reach play (stage 2's 48K tries, `work/stage2/p48/`) | open, filed in `R/TODO.md` | none |
+
+The case's own tools gained `tools/beam_paged.py` (kit/beam_timeline.py and kit/routine_anim.py with the 128K pages
+told apart, so the music player in RAM 6 is not named after the RAM 0 data at its addresses).
 
 ## 6. The game
 
@@ -115,13 +145,13 @@ The writers made no new recording. They opened the sessions above on their own p
 work folders that name the session they read: `work/docs/tmA/{c1,exp,gameover,r02000,r12000,r24000,r36000,r46000,r50000}`,
 `work/docs/tmB/{explorers,gameover,r02000}`, `work/docs/tmC/{go,r06,r247,r44}` (`gameover`, `rzx06000`, `rzx24750`,
 `rzx44000`) and `work/docs/tmD/{c1,ex,go}`. tmA's RZX dump `work/docs/tmA/rzx25` (`tools/rzx_dump.py`, the
-variables every 25 RZX frames, no instance) gives the route of doc 1, 1.10.
+variables every 25 RZX frames, no instance) gives the route of doc 1, 1.11.
 
 Not reached by the RZX run: 15 rooms (`$01 $02 $05 $06 $11 $12 $15 $1E $21 $24 $25 $2E $2F $46 $47`); probe B put 13 of
 them on screen, `$46` and `$47` (the own rooms of explorers 3 and 4) are drawn from the data only (doc 1, 1.8). Never
 executed in any recording: the 48K path past the selector, the Q + A freeze, the telescope (statuses 30-31), Think
-(statuses 10-12), the cheat, the deaths 9, 15, 16 and 17, the beam hit, the cursor-key readers, tunes 1-3 (doc 1,
-1.11; doc 10, 10.14).
+(statuses 10-12), the cheat, the deaths 9, 15 and 16, the mud sink (17, not a death), the beam hit, the cursor-key
+readers, tunes 1-3 (doc 1, 1.12; doc 10, 10.14).
 
 ### 6.1 Screens and rooms
 
@@ -146,7 +176,9 @@ The figures of the documents made of screenshots:
 | [screens.png](docs/img/design/screens.png) | doc 1, 1.2 | the screenshots above, nine screens |
 | [explorers.png](docs/img/design/explorers.png) | doc 1, 1.3 | `explorers` 1250, 3750, 6250, 9250, 11 750 (the panel of each explorer) |
 | [panel.png](docs/img/design/panel.png) | doc 1, 1.5 | `explorers` 1250 |
-| [moments.png](docs/img/design/moments.png) | doc 1, 1.9 | `gameover` 1366, 1600, 1900; `rzx50000` 100 |
+| [moments.png](docs/img/design/moments.png) | doc 1, 1.10 | `gameover` 1366, 1420, 1600; `rzx50000` 100 |
+| [moments-2.png](docs/img/design/moments-2.png) | doc 1, 1.10 | the RZX's own screens from the RZX dump (`work/docs/tmA/rzx25`), RZX frames 400, 11 525, 14 900, 16 525, 17 750, 20 675, 25 500, 25 525, 50 225 |
+| [48k-screens.png](docs/img/load/48k-screens.png) | doc 3, 3.4 | the 48K try `probe_48k_orig2.py` (no `.ttd`): `work/stage2/p48/orig2/a-stop.png`, `b-selector.png`, `c-chosen.png` |
 | [frame-r02000-2.png](docs/img/render/frame-r02000-2.png) | doc 6, 6.1 | `rzx02000` 2 |
 | [text/panel.png](docs/img/text/panel.png) | doc 8, 8.5 | `explorers` 750 |
 | `work/stage2/points/*.png` (not in a document) | stage 2 | probes A, B, C above |
@@ -171,8 +203,9 @@ caption gives the full command.
 | [RelocateSelector.gif](docs/img/routines/RelocateSelector.gif) | doc 3, 3.3 | `c1` | 11841:26260-11841:41700 |
 | [RenderPass.gif](docs/img/routines/RenderPass.gif) | doc 4, 4.3; doc 6, 6.7 | `rzx02000` | 1:9746-3:24326, 90 pictures |
 | [StatusDispatch.gif](docs/img/routines/StatusDispatch.gif) | doc 4, 4.5; doc 10, 10.2 | `gameover` | 1355-1512 |
-| [space-scene-lost.gif](docs/img/play/space-scene-lost.gif) | doc 1, 1.9; doc 4, 4.6 | `gameover` | 1500-1965, every 5th |
-| [space-scene-won.gif](docs/img/play/space-scene-won.gif) | doc 1, 1.9; doc 4, 4.6; doc 10, 10.10 | `rzx50000` | 150-735, every 6th |
+| [MainLoop-heaviest.gif](docs/img/routines/MainLoop-heaviest.gif) | doc 4, 4.4 | `rzx46000` | 7:70304-11:8133, 90 pictures |
+| [space-scene-lost.gif](docs/img/play/space-scene-lost.gif) | doc 1, 1.10; doc 4, 4.6 | `gameover` | 1500-1965, every 5th |
+| [space-scene-won.gif](docs/img/play/space-scene-won.gif) | doc 1, 1.10; doc 4, 4.6; doc 10, 10.10 | `rzx50000` | 150-735, every 6th |
 | [device-menu-keys.gif](docs/img/play/device-menu-keys.gif) | doc 5, 5.2 | `explorers` | 5130-5226 |
 | [walk-keyboard.gif](docs/img/play/walk-keyboard.gif) | doc 5, 5.7 | `explorers` | 5950-6130 |
 | [jump-kempston.gif](docs/img/play/jump-kempston.gif) | doc 5, 5.7 | `gameover` | 110-200 |

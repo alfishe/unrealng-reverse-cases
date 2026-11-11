@@ -6,7 +6,7 @@
 
 ; Put every item back: clear the taken bit of all 31 ItemPlaces records
 ;
-; Called by GameInit at $8F83 (a new game); GameInit then marks the Energy
+; Called by InitGame at $8F83 (a new game); InitGame then marks the Energy
 ; Crystal of room $30 taken ($8F86). Witness: c1 once, explorers 5 times,
 ; rzx00000 once (the new games).
 ;
@@ -114,7 +114,7 @@ PlaceItemSlot:
 ; $B95F). Checked live: record 15 (room $21, Barrel Small, byte2 $24) lies at X
 ; $28, Y $48 (work/stage2/probe_points.py).
 ;
-; ResetItems $B932 clears every taken bit at a new game; GameInit then sets the
+; ResetItems $B932 clears every taken bit at a new game; InitGame then sets the
 ; one of record 20 ($B9D9, the Energy Crystal of room $30) at $8F86, so that
 ; crystal is not there until the explorer puts it in place (ItemsPass $B9FA
 ; clears the bit again). SpawnRoomItems $B93F scans the records for the room on

@@ -6,6 +6,7 @@ What this covers: the game as a player meets it.
 - every screen: the loading screen, the device menu, the explorer selector and Help, play and its panel, the lab,
   the space scene, the end;
 - the five explorers;
+- the eight kinds of creature;
 - the controls;
 - the rules as the game plays them: lives, the 30-day countdown, the score;
 - the items and the professor's six wishes;
@@ -69,9 +70,9 @@ end is one room, the lab, where they are handed over in order.
 ![The screens of Terramex](img/design/screens.png)
 
 *Nine screens of the 128K version, from the screenshots in `docs/img/play/` ([WALKTHROUGH](../WALKTHROUGH.md)):
-the loading screen (the tape's block 3), the menu (`explorers` frame 7750), the selector (`explorers` 250), Help pages
-1 and 3 (`explorers` 13 750 and 15 000), play in room `$14` (`explorers` 750), the space scene (`gameover` 1700), the
-lab (`rzx48000` 1999) and the ending (`rzx50000` 500). Made with `python3 tools/fig_design.py screens
+the loading screen (the tape's block 3), the menu (`explorers` frame 7750), the selector (`explorers` 250), Help's
+title (`explorers` 13 750), play in room `$14` (`explorers` 750), the space scene (`gameover` 1700), the lab
+(`rzx48000` 1999), the ending (`rzx50000` 500) and Help, page 1: the story (`explorers` 15 000). Made with `python3 tools/fig_design.py screens
 docs/img/design/screens.png`.*
 
 How to read it, in the order a player meets them:
@@ -81,7 +82,8 @@ How to read it, in the order a player meets them:
   frame from the saved panel.
 - **The selector** (128K only, before every game): the five explorers' faces and a Help box. A hand cursor moves over
   them; FIRE chooses.
-- **Help**: three pages of story and instructions. SPACE turns the page; ENTER goes back to the selector.
+- **Help**: a title ("TERRAMEX INSTRUCTIONS") and three pages: the story on pages 1 and 2, the instructions and the controls on page 3.
+  SPACE turns the page; ENTER goes back to the selector.
 - **Play**: the room above, 256 x 128 pixels, and the panel below.
 - **The space scene**: room `$28`, the end of every game.
 - **The lab** `$3B`: the professor and his speech bubble.
@@ -100,7 +102,9 @@ How to read it, in the order a player meets them:
 
 The selector offers five explorers. Each has a sprite set of 64 frames, a portrait in the panel, and a room of his own
 left of room `$29` (ExplorerRooms `$A66C`), where he gets the Formula. In four of the rooms it lies on the floor
-(ItemPlaces records 27-30). In room `$2D` a scene hands it over (Room2DAnim `$A828`, status 28).
+(ItemPlaces records 27-30). In room `$2D` it must be won: the explorer stands at X `$DC`, Y `$48` holding the Cricket
+Ball, throws it at the target (status 28), and the Formula drops into his hand; the ball is gone (CricketBallScript
+`$B370`, Room2DAnim `$A828`).
 
 | Explorer | `$5B70` | Sprite set on the tape | 128K page | Own room |
 | --- | ---: | --- | --- | --- |
@@ -126,8 +130,8 @@ How to read it:
   deaths.
 
 The explorer changes only the figures and the own room. The map, the creatures, the items and the professor's wishes
-are the same. The RZX run plays Fortisque-Smithe. It enters room `$2D` at RZX frame 17 375 and has the Formula in the hand at
-18 050, without a pickup score.
+are the same. The RZX run plays Fortisque-Smithe. It enters room `$2D` at RZX frame 17 375 with the Cricket Ball, throws
+it from RZX frame 17 725 (status 28) and has the Formula in the hand at 18 050, without a pickup score.
 
 **The point**: the choice of explorer is cosmetic plus one room. It is the 128K's showpiece: the selector and the five
 sets live in the extra pages, and a 48K player gets one explorer per load.
@@ -141,7 +145,7 @@ From Help page 3 (`src/res/texts/help-page3.txt`) and the code ([doc 5](05-contr
 | Z, X | left, right |
 | O, K | up, down: climb, enter a lift, use some items |
 | SPACE | jump; FIRE on a joystick |
-| S | swap the held item with the nearest one |
+| S | swap the held item with the load of the first bearer shown in the row (BearerIndex `$5C23`, ItemsKeys `$BA36`; the Help says "with another nearest") |
 | 1, 2 | move the bearers and their objects right, left: scroll the panel's bearer row |
 | T | think: the explorer thinks of the item this room needs, if any (ThinkHints `$A6E6`) |
 | CAPS SHIFT + Q | quit to the menu |
@@ -165,8 +169,9 @@ How to read it:
 - **The spare lives** (bottom left): one figure of the explorer a spare life. A game starts with 4 lives, 3 figures.
 - **The portrait** (middle): the same picture for all five explorers.
 - **The item in the hand** (above the small figure): what the explorer holds and can use.
-- **The bearers** (right): a row of carried items, each above a bearer figure (DrawBearers `$9EBD`). Three show at a
-  time; the keys 1 and 2 scroll the row a character at a time.
+- **The bearers** (right): a row of carried items, each above a bearer figure (DrawBearers `$9EBD`). Four are drawn and
+  nine of their twelve columns show: three whole bearers at rest, parts of four while the row scrolls. Key 1 moves
+  the bearers right, key 2 left, a character at a time.
 
 The panel has no clock. The time left is shown only by the telescope in room `$12` ([doc 4](04-game-loop.md)).
 
@@ -175,8 +180,8 @@ The panel has no clock. The time left is shown only by the telescope in room `$1
 ### Lives
 
 - A game starts with 4 lives (InitGame `$8F69`).
-- A death plays its frames, then the explorer lies still for 50 passes, about 135 frames or 2.7 seconds
-  (LoseLifeWait `$A9EE`).
+- A death plays its frames, then the explorer lies still for 50 passes (status 18, LoseLifeWait
+  `$A9EE`): 128 frames or 2.6 seconds in `gameover` (frames 1374-1502).
 - Then a life is lost, and the explorer restarts at the entry of the last checkpoint room, as he entered it. The 44
   checkpoint rooms are listed at CheckpointRooms `$9AF5` (`src/res/tables/checkpoint-rooms.txt`).
 - The last life lost takes the game to the space scene: the asteroid strikes.
@@ -185,8 +190,11 @@ The ways to die ([doc 10](10-gameplay-logic.md)):
 
 | Death | Status | Seen in |
 | --- | ---: | --- |
-| a landing after 20 fall passes or more (FallPasses `$5C05`, not counted with the umbrella in use) | 26 | `gameover` frame 1363; the RZX run, RZX frames 11 375-11 500 |
-| a creature within 12 pixels | 24 | `rzx06000`, `rzx22000`, `rzx32000` |
+| a landing after 20 fall passes or more (FallPasses `$5C05`, not counted with the umbrella in use) | 26 | `gameover` frames 1360-1373; the RZX run's fall into `$1C` at RZX frames 11 350-11 375 (status 18 from 11 375) |
+| a creature that touches him at its hit frame (Near `$9140`: both distances under 16 pixels, 8 for a drop; HitExplorer `$C0DA`) | 24 | `rzx06000`, `rzx22000`, `rzx32000`, all three drifts of our replays: the RZX dump never holds status 24 (WALKTHROUGH 6.0) |
+| tile `$A5` under the feet (HeroTileChecks `$A102`, `$A12D`) | 26 | known only from the code |
+| the creature of room `$2E` touched without item 4 (Room2ETouch `$B2C5`, ExplorerRoom2E `$B263`) | 26 | known only from the code |
+| an electric beam: inside its X span, within 12 rows, status below 4 (RoomEffects, `$9260`) | 24 | known only from the code |
 | the snakes of room `$1A` | 25 | `rzx10000` frames 1943-1958 (a drift of our replay: the RZX player was not bitten there, WALKTHROUGH 6.0) |
 | silent: the pad of room `$20`, the radiation of room `$3C` without the pills, the creature of room `$39` without the Silver Cross | 23 | a clone probe only (stage 2) |
 | the balloon landing while it falls (status 9), then the fall death | 26 | known only from the code |
@@ -197,10 +205,10 @@ Sinking in the mud (status 17, after 50 passes on a mud tile) does not kill. The
 ### The countdown
 
 - 30 days, 23 hours, 59 minutes at the start (InitGame).
-- One minute goes every pass of the main loop: a day is 1440 passes, about 80 seconds of play.
+- One minute goes every pass of the main loop: a day is 1440 passes, about 4090 frames or 82 seconds of play.
 - At 0 the asteroid strikes: the same space scene as the last life's. There is no message.
-- The whole countdown is 44 641 passes, about 42 minutes at the RZX run's 2.86 frames a pass
-  ([doc 4](04-game-loop.md)). The RZX player finished with 18 days 15:32 left.
+- The whole countdown is 44 640 passes (44 639 to 0/0/0, the 44 640th runs out): about 126 800 frames or 42 minutes
+  at the RZX run's 2.84 frames a pass ([doc 4](04-game-loop.md)). The RZX player finished with 18 days 15:32 left.
 
 ### The score
 
@@ -242,13 +250,15 @@ How to read it:
 
 - The names are the SkoolKit notes' (Items-Format.md), checked in play by stage 2.
 - Items 25, 26, 30 and 31 (Basket, Balloon, Basket 2, Lift) are scenery that room scripts draw. They are never carried.
+- ItemPlaces' 31 records place 27 distinct items: the Formula has four records (27-30), the Energy Crystal two (19,
+  20). Items 25, 26, 29, 30 and 31 are never placed; 29, the Silver Cross, is given in room `$43`.
 - The six ringed items are the goal. The rest open the way to them.
 
 The six wishes, where each item lies, and when the RZX player gave it:
 
 | Wish | Item | Lies in | Opened by | Given at RZX frame |
 | ---: | --- | --- | --- | ---: |
-| 1 | Formula (15) | the explorer's own room | in `$2D`, the room's scene (the RZX player held the Cricket Ball there first) | 44 475 |
+| 1 | Formula (15) | the explorer's own room | in `$2D`, the Cricket Ball thrown at the target from X `$DC`, Y `$48` (CricketBallScript `$B370`) | 44 475 |
 | 2 | Coat Hanger (19) | `$31` | | 45 225 |
 | 3 | Battery (18) | `$34` | | 46 175 |
 | 4 | Atomic Pile (21) | `$3C`, the radiation room | the Anti Rad. Pills held | 47 775 |
@@ -284,7 +294,16 @@ How to read it:
   set: `$12 $1E $1F $20 $2B $2C $37-$3C $43-$45` (AltTilesetRooms `$9AC6`).
 
 The run never enters 15 rooms: `$01 $02 $05 $06 $11 $12 $15 $1E $21 $24 $25 $2E $2F $46 $47`. Four of them are the
-other explorers' own rooms. Room `$12` holds the telescope. These rooms are known from the data only.
+other explorers' own rooms. Room `$12` holds the telescope. Probe B of stage 2 put 13 of them on screen, on a clone
+with Room poked (`work/stage2/points/b-room-*.png`, [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)); only `$46`
+and `$47` are known from the data alone.
+
+The published maps agree with this one. ZXDB 5195 ([Spectrum Computing](https://spectrumcomputing.co.uk/entry/5195))
+holds four (`work/candidates/zxdb-maps/`): CRASH's of May 1988 (by Ian Bentley), Your Sinclair's "Tip o' the Month"
+(by The Wizard, with room numbers of its own), Sinclair User 74's and one pieced from screens. All four draw the same rooms in the
+same places: the sky and the desert along the top, the caves below, and on the right the block-built rooms of the
+alternate tile set going down to the professor's lab. They draw the map flat, so the wrap round each level does not
+show; the map here draws each level's 12 columns side by side, so a wrap is one of its long lines.
 
 ### Every room
 
@@ -309,7 +328,43 @@ How to read them:
 **The point**: the map is small but deep. The way down from the desert to the lab crosses all six levels, and the
 items for the six wishes lie in levels 3-5.
 
-## 1.9 The end of a game
+## 1.9 The creatures
+
+Each room holds up to three creatures, given by its records in RoomCreatures `$C152` (216 records in all). A record
+names a type, which sets how the creature moves, and a first frame, which sets how it looks. The eight types:
+
+![The eight creature types](img/design/creatures.png)
+
+*The eight creature types, decoded from `src/res/rooms/table.bin` (RoomCreatures `$C152`): for each type the frames
+from each first frame its records give (four frames from `src/res/sprites/creatures.png`, 2 x; type 8 shows explorer
+0's frame), the number of records, and the rooms on the right. Made with `python3 tools/fig_design.py creatures
+docs/img/design/creatures.png`.*
+
+How to read it:
+
+- A row is a type; its headline says how it moves. One type can look like several things: the walker is a bird, a
+  flower or a box, depending on the record's first frame.
+- The rooms list where the type lives at the start; the rooms of 1.8 show each creature at its start place.
+
+| Type | Moves | Looks | Records, rooms | Kills |
+| ---: | --- | --- | --- | --- |
+| 1 walker | 2 pixels a pass along X, turns at walls and edges | bird (`$60`), flower (`$78`), box (`$6B`) | 10, 8: `$00 $01 $0E $15 $2C $33 $43 $45` | on touch |
+| 2 climber | 2 pixels a pass along Y | box, flower | 2, 2: `$1F $38` | on touch |
+| 3 left flier | waits unseen, crosses the room leftwards once, waits again | bird | 2, 2: `$0D $14` | on touch |
+| 4 right flier | the same, rightwards | bird | 3, 3: `$07 $0D $31` | on touch |
+| 5 drop | waits, falls 2 pixels a pass, splashes on the floor | drop (`$5C`) | 33, 18 | on touch, within 8 pixels |
+| 6 still | animates in place | a crouching beast (`$64`), snakes (`$51`) | 8, 5: `$10 $17 $27 $32 $37` | the beasts on touch; the snakes never: the scripts of rooms `$17` and `$1A` make them strike unless the Flute charms them (status 25) |
+| 7 riser | rises out of the ground through four frames, sinks, pauses | `$58-$5B` | 20, 16 | only when fully up |
+| 8 scenery | never moves | an explorer frame (`$2C`, `$2B`) | 10, 7: `$04 $0D $20 $2C $30 $32 $42` | never |
+
+"On touch" is the death of 1.6: Near `$9140` at the creature's hit frame, status 24. The creature code is
+[doc 7, 7.5](07-objects.md#75-the-creature-types-one-by-one); the hazards that are not creatures (the beams, the pads,
+the radiation) are [doc 10, 10.8](10-gameplay-logic.md#108-creatures-and-hazards).
+
+**The point**: eight simple movers make all the creatures. None chases the explorer: each follows its own pattern, and
+the game is in timing the way past.
+
+## 1.10 The end of a game
 
 Every game ends in room `$28`, the space scene: the asteroid falls towards the Earth.
 
@@ -332,22 +387,45 @@ docs/img/play/space-scene-won.gif`.*
 
 How to read them:
 
-- Both open on the same picture: the Earth at the bottom, the asteroid high on the right.
-- In the lost game the asteroid reaches the Earth and the Earth flashes.
+- The lost game opens on the dead hero in room `$1C` (frame 1500; Respawn at 1509 starts the space scene); the ending
+  opens in the lab (frame 150, score 2150), and room `$28` follows from frame 194.
+- In room `$28` both show the Earth at the bottom and the asteroid coming down. SpaceScene `$B0B6` moves it 4 pixels
+  a pass, so it reaches the Earth about 20 passes after the scene starts.
+- In the lost game the asteroid strikes the Earth and the Earth flashes.
 - In the ending the deflector stands left of the Earth and sends the asteroid back.
-- Both end on the device menu.
+- Both close on room `$28` just before EndGame; the menu that follows is not in the GIFs.
 
 ![Key moments of a game](img/design/moments.png)
 
 *Four moments from the recordings: the fall death in room `$1C` (`gameover` frame 1366; the panel still shows three
-spare figures because Lives was poked, not lost), the professor in the lab (`rzx50000` frame 100, score 2150, five
-gifts given), the asteroid falling (`gameover` 1600) and after the strike (`gameover` 1900). Made with `python3
-tools/fig_design.py moments docs/img/design/moments.png` from `time_travel memory_at` screens.*
+spare figures because Lives was poked, not lost), the explorer lying dead, status 18 for 50 passes (`gameover` 1420),
+the professor in the lab (`rzx50000` frame 100, score 2150, five gifts given) and the strike, the asteroid at the
+Earth (`gameover` 1600). Made with `python3 tools/fig_design.py moments docs/img/design/moments.png` from
+`time_travel memory_at` screens.*
+
+![The RZX run: each new mechanism as it first appears](img/design/moments-2.png)
+
+*Nine moments of the RZX run, from the RZX's own screens in the RZX dump (`work/docs/tmA/rzx25/screens.bin`, one
+screen every 25 RZX frames, made by `tools/rzx_dump.py`), 1.3 x. Made with `python3 tools/fig_design.py moments2
+docs/img/design/moments-2.png`.*
+
+How to read it, left to right and down:
+
+- the hover with the Vacuum Cleaner, a bird above (room `$14`, RZX frame 400);
+- the respawn after the fall into `$1C`: room `$1B`, two spare figures left (RZX 11 525);
+- the balloon rising with the Bellows in the hand (room `$0F`, RZX 14 900);
+- the barrel ride: the cannon fires the Barrel Medium (room `$1D`, RZX 16 525);
+- the Cricket Ball thrown at the target in the explorer's own room (room `$2D`, RZX 17 750);
+- the lift down, status 20 (room `$2B`, RZX 20 675);
+- the teleport pad, status 22 (room `$30`, RZX 25 500), and out of the teleport (room `$3D`, RZX 25 525);
+- the ending: the asteroid falls while the deflector waits (room `$28`, RZX 50 225).
+
+The creatures of 1.9 are in the rooms of 1.8; a sample is the bird of the first picture.
 
 There is no ending text and no congratulation: the deflector scene is the reward. The professor's last gift, the Cup of
 tea, starts it at once (RZX frame 50 200).
 
-## 1.10 A walkthrough: the RZX run
+## 1.11 A walkthrough: the RZX run
 
 The RZX archive's run (Bobby Lequay, Fortisque-Smithe) wins with one life lost, score 2300 and 18 days 15:32 left. Its
 route, from the RZX dump every 25 RZX frames (`work/docs/tmA/route-events.txt`, made by
@@ -379,18 +457,23 @@ flowchart TD
     I --> J["10 room $28: the asteroid deflected"]
 ```
 
-The run takes 83 room changes through 57 rooms. Its 50 900 RZX frames are about 17 minutes. 17 779 minutes of the
-countdown went in that time: 2.86 frames a pass of the main loop.
+The run takes 83 room changes through 57 rooms. Its play, from RZX frame 225 to GameOver at 50 730, is 50 505 RZX
+frames, about 17 minutes. 17 779 minutes of the countdown went in that time: 2.84 frames a pass of the main loop.
+The pass-end test `$9052` gives the spread: gaps of 2 frames 4470 times, 3 frames 12 236, 4 frames 954, longer ones
+125 times (room set-ups and the death wait) ([doc 4, 4.4](04-game-loop.md#44-frames-per-pass-and-the-pass-against-the-beam)).
 
 **The point**: the route is a sweep, not a maze. It clears each level of what is needed, then goes down, and only the
 lab's six gifts are taken in a fixed order.
 
-## 1.11 Known only from the code
+## 1.12 Known only from the code
 
-- The 48K path: the explorer chosen during the load, once per load ([doc 3](03-build-and-load.md)).
+- The 48K path past the explorer's choice. Up to the choice it was seen on stage 2's 48K tries (STOP THE TAPE, the
+  selector, the set copy; no `.ttd`; [doc 3, 3.4](03-build-and-load.md#34-the-48k-path-and-the-2a-stop-block)).
 - The Q + A freeze.
 - The time running out in a real game (seen only on a clone with the countdown poked, stage 2 probe A).
 - The telescope of room `$12`: the asteroid and the time left (TelescopeView `$A7B9`).
 - The think key's hint (statuses 10-12).
-- The deaths: the balloon crash, the barrels Small and Big, the mud, room `$20`'s pad, room `$39`'s creature.
+- The deaths: the balloon crash, the barrels Small and Big, tile `$A5`, room `$2E`'s creature, the beams, room
+  `$20`'s pad, room `$39`'s creature.
+- The mud sink (status 17), which is not a death.
 - The infinite-lives hook of the loader (`$8000` = `$C9` before the load).
