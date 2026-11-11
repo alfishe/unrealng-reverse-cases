@@ -36,7 +36,8 @@ ViewBlitLow:
 ; Input: none. Output: the screen bitmap `$4080-$4CCA` (L1). Cost: 97 permille
 ; of play (the heaviest single routine of the view).
 ;
-; Witness: L1 3600 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 8222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ViewBlitFront:
   LD (l_8A27+$0017),SP
   LD HL,BackBuffer
@@ -138,8 +139,8 @@ l_8A27:
 ; `SP` on ScreenRowTable `$6580` (row 64), 86 rows of 32 bytes. Used by the
 ; menus and the console views (11 recordings).
 ;
-; Witness: L1 458 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 768 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, menu, missions, play, play2, search).
 ViewBlitWide:
   LD (l_8A50+$0045),SP
   LD SP,ScreenRowTable+$0080
@@ -239,8 +240,8 @@ l_8AA7:
 
 ; Clear the blit request `$83BA`: the interrupt's last job after a view blit
 ;
-; Witness: L1 6657 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ClearBlitRequest:
   XOR A
   LD (BlitRequest+$0001),A
@@ -358,8 +359,8 @@ BackBuffer:
 ; `SP` back, `EI`. An interrupt in this time is lost (WALKTHROUGH section 1).
 ; Once per 3D pass: its count is the number of passes (705 in play).
 ;
-; Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ClearBackBuffer:
   DI
   LD (l_96FE+$0013),SP
@@ -394,7 +395,8 @@ l_96FE:
 ; Clip the line (HL, DE) - (HL', DE') (x, y words) to the window; carry =
 ; something to draw, H, L, D, E = the ends as bytes
 ;
-; Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 ClipLine2D:
   CALL ClipLineCodes
   JP NC,l_A191
@@ -411,7 +413,8 @@ l_A191:
 ; Cohen-Sutherland: both out codes (`$A3AC`), reject, accept, or cut an end by
 ; bisection (`$A1B3`, `$A218`)
 ;
-; Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 ClipLineCodes:
   CALL OutCode
   LD C,A
@@ -440,7 +443,7 @@ l_A1AE:
 ; One end outside: find the crossing of the window edge by bisection (`$A2BA`,
 ; `$A2CA`, `$A2F3`, `$A352`)
 ;
-; Witness: L1 160 (missions).
+; Witness: L1 4809 (death, m1complete, m4complete, missions).
 ClipOneEnd:
   LD (ClipWindow+$0004),HL
   LD (ClipWindow+$0006),DE
@@ -479,7 +482,7 @@ l_A1E9:
 
 ; Swap the two ends of the line between the register sets
 ;
-; Witness: L1 273 (death, missions).
+; Witness: L1 5050 (death, m1complete, m4complete, missions).
 SwapLineEnds:
   PUSH HL
   EXX
@@ -508,7 +511,7 @@ l_A201:
 ;
 ; Entered by a jump, never called (the survey counts 0 calls).
 ;
-; Witness: L1 0 (missions).
+; Witness: L1 761 (m4complete, missions).
 ClipBothEnds:
   LD H,B
   LD L,C
@@ -598,7 +601,8 @@ l_A26E:
 
 ; Both ends inside: carry set
 ;
-; Witness: L1 4885 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 13978 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 ClipAccept:
   SCF
   RET
@@ -626,7 +630,7 @@ l_A2AF:
 
 ; Bisect the outside end towards the right edge
 ;
-; Witness: L1 120 (death, missions).
+; Witness: L1 400 (death, m4complete, missions).
 ClipToRight:
   CALL ClipBisectStep
   EXX
@@ -642,7 +646,7 @@ l_A2BE:
 
 ; Bisect the outside end towards the bottom edge
 ;
-; Witness: L1 80 (death, missions).
+; Witness: L1 551 (death, m1complete, m4complete, missions).
 ClipToBottom:
   LD HL,(ClipWindow)
   AND A
@@ -671,7 +675,7 @@ l_A2EC:
 
 ; Bisect the outside end towards the left edge
 ;
-; Witness: L1 14 (missions).
+; Witness: L1 171 (m4complete, missions).
 ClipToLeft:
   EXX
   CALL ClipBisectStep
@@ -734,7 +738,7 @@ l_A32C:
 
 ; Bisect the outside end towards a corner (two edges)
 ;
-; Witness: L1 3 (death, missions).
+; Witness: L1 633 (death, m4complete, missions).
 ClipToCorner:
   LD HL,(ClipWindow)
   AND A
@@ -765,14 +769,15 @@ ClipToCorner:
 
 ; Both ends outside on one side: no carry
 ;
-; Witness: L1 1168 (death, missions, play, play2).
+; Witness: L1 4581 (armour, death, m1complete, m4complete, missions, play,
+; play2).
 ClipReject:
   AND A
   RET
 
 ; One bisection step of the outside end towards the window
 ;
-; Witness: L1 214 (death, missions).
+; Witness: L1 8285 (death, m1complete, m4complete, missions).
 ClipBisectStep:
   LD H,D
   LD L,E
@@ -813,7 +818,8 @@ l_A3A4:
 ; The out code of the point (HL, DE): 8 x < 0, 4 x > `$A17C`, 2 y < 0, 1 y >
 ; `$A17E`
 ;
-; Witness: L1 12480 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 46545 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 OutCode:
   LD A,H
   AND A
@@ -851,7 +857,7 @@ l_A3DC:
 
 ; Bisect the segment until the midpoint lies on the window edge
 ;
-; Witness: L1 3 (death, missions).
+; Witness: L1 13621 (death, m4complete, missions).
 BisectToInside:
   EXX
 l_A3E1:
@@ -910,7 +916,7 @@ l_A41A:
 ; The other end of a line behind the eye too: no carry (skip the line); else
 ; NearClipLine
 ;
-; Witness: L1 266 (death, missions).
+; Witness: L1 5069 (death, m4complete, missions).
 NearClipLineEnd:
   EXX
   LD A,H
@@ -928,7 +934,8 @@ NearClipLineEnd:
 ; (Divide `$A687`, DivideByLog `$A6D2`, NegHL `$A771`) like OpProject.
 ; `$67B2-$67B5` hold the depths being halved.
 ;
-; Witness: L1 3110 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 17666 (armour, c1, death, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 NearClipLine:
   PUSH HL
   PUSH DE
@@ -1033,7 +1040,8 @@ l_A49A:
 
 ; x + `$9A8E` of V[B] to `$A503`, y + `$9AB3` to HL
 ;
-; Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FetchVertexXY:
   LD H,$FD
   LD A,B
@@ -1061,7 +1069,8 @@ FetchVertexXY:
 
 ; z + `$9A6C` - 96 of the vertex: the signed distance to the near plane
 ;
-; Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FetchVertexDepth:
   EX DE,HL
   LD E,(HL)
@@ -1087,7 +1096,8 @@ FetchVertexDepth:
 ; Returns carry = the polygon is complete (fill it), Z = go on with the next
 ; point, NZ = nothing left.
 ;
-; Witness: L1 3987 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 13393 (armour, c1, death, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ClipPolyNear:
   PUSH DE
   EXX
@@ -1325,7 +1335,8 @@ l_A655:
 
 ; Append (BC, DE) to the polygon list at HL and count it in `$66D5`
 ;
-; Witness: L1 4168 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 15876 (armour, c1, death, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 AppendPolyVertex:
   LD (HL),C
   INC L
@@ -1347,8 +1358,8 @@ AppendPolyVertex:
 ; LogInteger `$5C00`, then falls into DivideByLog. 283 939 calls (11
 ; recordings).
 ;
-; Witness: L1 283939 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 721062 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 Divide:
   EX DE,HL
   LD A,H
@@ -1413,8 +1424,8 @@ l_A6C9:
 ; `$3EE4` and carry (`$A769`). The most called 3D routine: 475 056 entries, 45
 ; permille.
 ;
-; Witness: L1 475056 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 1184207 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 DivideByLog:
   LD A,H
   RLA
@@ -1502,7 +1513,8 @@ l_A739:
 
 ; Negate HL when the sign saved in F' is set
 ;
-; Witness: L1 425915 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 1109957 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ApplySign:
   EX AF,AF'
   RET NC
@@ -1535,7 +1547,8 @@ l_A75A:
 
 ; HL = 0
 ;
-; Witness: L1 24493 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 74250 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ZeroQuotient:
   XOR A
   LD H,A
@@ -1550,8 +1563,8 @@ l_A769:
 
 ; HL = -HL
 ;
-; Witness: L1 308008 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 786174 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 NegHL:
   LD A,H
   CPL
@@ -1565,7 +1578,8 @@ NegHL:
 ; A = a pseudo-random byte: two additive words patched in place mixed with R
 ; (the mission vector `$67D0`)
 ;
-; Witness: L1 584 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 2198 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 Random:
   PUSH HL
   PUSH DE
@@ -1589,7 +1603,8 @@ Random:
 
 ; A = |A| (the mission vector `$67D6`)
 ;
-; Witness: L1 179580 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 521328 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 AbsA:
   AND A
   RET P
@@ -1598,7 +1613,8 @@ AbsA:
 
 ; DE = -DE
 ;
-; Witness: L1 2228 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 12022 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 NegDE:
   LD A,D
   CPL
@@ -1619,14 +1635,15 @@ NegAbsHL:
 
 ; HL = |HL|
 ;
-; Witness: L1 2 (play).
+; Witness: L1 6 (m1complete, m4complete, play).
 AbsHL:
   BIT 7,H
   RET Z
 
 ; HL = -HL (the mission vector `$67D3`)
 ;
-; Witness: L1 18194 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 51813 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 NegateHL:
   LD A,H
   CPL
@@ -1639,15 +1656,15 @@ NegateHL:
 
 ; HL = H * 32 (the back-buffer row offset of row H)
 ;
-; Witness: L1 71059 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 177524 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 HighTimes32:
   LD L,H
 
 ; HL = L * 32
 ;
-; Witness: L1 72315 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 178905 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 LowTimes32:
   LD H,$00
   ADD HL,HL
@@ -1662,8 +1679,8 @@ LowTimes32:
 ; When A + E overflows it uses A^2 + E^2 - (A-E)^2 (`$A7DD`). Tables SquareLow
 ; / SquareHigh `$5F00`.
 ;
-; Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 240864 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 MulSigned:
   LD L,A
   LD H,$5F
@@ -1710,8 +1727,8 @@ l_A7DD:
 
 ; HL = A * E / 128 rounded, signed bytes: the product with a sine of Sine8
 ;
-; Witness: L1 66079 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 205999 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 MulFrac:
   LD L,A
   LD H,$5F
@@ -1771,7 +1788,8 @@ l_A815:
 ; The mission vector `$67D9`: 220 482 calls in play, 37 permille, most of them
 ; from the mission code turning positions.
 ;
-; Witness: L1 220482 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 643316 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 MulWordByte:
   ADD HL,HL
   JR NC,l_A830
@@ -1871,8 +1889,8 @@ l_A895:
 
 ; A = Sine8[A], A' = Sine8[A + 64] (the mission vector `$67E8`)
 ;
-; Witness: L1 58907 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 153909 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 SinCos8:
   LD H,$63
   LD L,A
@@ -1887,7 +1905,8 @@ SinCos8:
 
 ; DE = Sine16[A], BC = Sine16[A + 64]
 ;
-; Witness: L1 4970 (c1, death, missions, play, play2).
+; Witness: L1 12234 (armour, c1, death, fuel, m1complete, m4complete, missions,
+; play, play2).
 SinCos16:
   LD H,$61
   LD L,A
@@ -1904,7 +1923,8 @@ SinCos16:
 ; E = A = sine, A = cosine of the angle word HL (H the angle, bit 7 of L the
 ; half step: Sine8Half `$6400`)
 ;
-; Witness: L1 22941 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 75445 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SinCosHalf:
   RL L
   LD L,H
@@ -1928,7 +1948,8 @@ l_A8BF:
 ;
 ; Caller `$BB75` (points of the scenery). 37 012 calls.
 ;
-; Witness: L1 37012 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 95537 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlotBackBuffer:
   LD A,L
   EX AF,AF'

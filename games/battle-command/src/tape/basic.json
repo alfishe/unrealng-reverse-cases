@@ -14,5 +14,7 @@
   "l1": [{"path": "work/stage1/rec/c1/l1.json", "lo": "5CCB", "hi": "5D2A", "reads": false}],
   "built": {"tape/chain-tape.bin": "chain-tape.bin"},
   "data_entries": "stop",
-  "work": "work/stage2/mkbasic"
+  "work": "work/stage2/mkbasic",
+  "ref_builds": [["stage1/c1l", "c1 from power-on to the game's entry at frame 23974: the load"]],
+  "other_builds": []
 }

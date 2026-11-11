@@ -57,8 +57,8 @@ SoundMaster:
 ; 0-35997 (12811), play 0-10930 (5510), play2 0-23665 (12957), search 0-5043
 ; (2265).
 ;
-; Witness: L1 65529 (death, m10, m2erbe, m2ocean, menu, missions, play, play2,
-; search).
+; Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 SoundFrame:
   LD A,(SoundMaster)
   AND A
@@ -246,7 +246,7 @@ l_D7E2:
 ; Witness frames (first-last frame of the recording, runs): c1 32619-33091
 ; (107), death 8122-18058 (896), play2 8608-17213 (553).
 ;
-; Witness: L1 1449 (death, play2).
+; Witness: L1 3337 (armour, c1, death, m1complete, m4complete, play2).
 SetNoise:
   SRL A
   LD B,A
@@ -269,7 +269,8 @@ SetNoise:
 ; controls 95-264 (2), m2erbe 7454-7522 (2), menu 95-1874 (4), missions
 ; 7955-34068 (16), play 10627-10693 (2), play2 9615-23533 (6).
 ;
-; Witness: L1 30 (m2erbe, menu, missions, play, play2).
+; Witness: L1 39 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 SilenceAY:
   LD HL,AYRegs
   LD B,$15
@@ -346,7 +347,7 @@ l_D849:
 ; Witness frames (first-last frame of the recording, runs): c1 32680-33293
 ; (15), play2 8700-17195 (21).
 ;
-; Witness: L1 21 (play2).
+; Witness: L1 61 (c1, m1complete, m4complete, play2).
 SoundEffectA:
   PUSH AF
   LD A,$1E
@@ -381,7 +382,7 @@ SoundSelectShort:
 ; Witness frames (first-last frame of the recording, runs): death 7705 (1),
 ; play 8425-9322 (4), play2 8362-23071 (9).
 ;
-; Witness: L1 14 (death, play, play2).
+; Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 SoundSelect:
   PUSH AF
   LD A,$12
@@ -398,7 +399,7 @@ l_D866:
 ; Witness frames (first-last frame of the recording, runs): c1 32618-33054 (5),
 ; death 8121-17902 (8), play2 8607-17180 (19).
 ;
-; Witness: L1 27 (death, play2).
+; Witness: L1 63 (armour, c1, death, m1complete, m4complete, play2).
 SoundExplosion:
   PUSH AF
   LD A,$20
@@ -413,7 +414,7 @@ SoundExplosion:
 ; Witness frames (first-last frame of the recording, runs): death 8187-17902
 ; (5).
 ;
-; Witness: L1 5 (death).
+; Witness: L1 12 (armour, death, m1complete, m4complete).
 SoundKill:
   PUSH AF
   LD A,$80
@@ -473,7 +474,7 @@ l_D891:
 ; Witness frames (first-last frame of the recording, runs): death 7897-19694
 ; (60), play 8800-9406 (4), play2 8442-16931 (6).
 ;
-; Witness: L1 70 (death, play, play2).
+; Witness: L1 147 (armour, death, m1complete, m4complete, play, play2).
 SoundFire:
   PUSH AF
   LD A,$14
@@ -496,7 +497,8 @@ SoundFireVar:
 ; (982), death 7592-20038 (10012), m2erbe 7090-7522 (281), missions 7592-34068
 ; (2195), play 8253-10693 (2004), play2 8184-23533 (3190).
 ;
-; Witness: L1 17682 (death, m2erbe, missions, play, play2).
+; Witness: L1 56368 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 EngineTone:
   LD C,A
   LD A,(PlayerSpeed)

@@ -10,7 +10,7 @@
 
 ; Remember key A, screen 2 (E = 4); the mission code's vector $67EE
 ;
-; Witness: L1 9 (missions, play, play2).
+; Witness: L1 11 (c1, controls, m10, m1complete, m4complete, menu, missions).
 ScreenFour:
   LD (PlayKeys+$000A),A
   LD E,$04
@@ -26,7 +26,7 @@ ScreenSix:
 
 ; Remember key A, screen 4 (E = 8)
 ;
-; Witness: L1 14 (missions, play, play2).
+; Witness: L1 14 (m2erbe, missions, play, play2).
 ScreenEight:
   LD (PlayKeys+$000A),A
   LD E,$08
@@ -34,28 +34,31 @@ ScreenEight:
 
 ; Key "C", screen 0
 ;
-; Witness: L1 15 (menu, missions, play, play2).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ScreenFromClick:
   LD A,$43
   LD (PlayKeys+$000A),A
 
 ; Screen 0 (E = 0)
 ;
-; Witness: L1 91 (c1, death, m2erbe, menu, missions, play, play2, search).
+; Witness: L1 108 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 ScreenZero:
   LD E,$00
   JR SetScreen
 
 ; Screen 1 (E = 2)
 ;
-; Witness: L1 12 (menu, missions, play2).
+; Witness: L1 13 (m4complete, menu).
 ScreenTwo:
   LD E,$02
 
 ; Switch to entry E/2 of the screen list: the draw routine to $6A99, the zone
 ; table to $6D47
 ;
-; Witness: L1 121 (c1, death, m2erbe, menu, missions, play, play2, search).
+; Witness: L1 148 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 SetScreen:
   LD HL,(ScreenList)
   LD D,$00
@@ -79,7 +82,8 @@ SetScreen:
 
 ; $6A6D = $FF: the current loop ends
 ;
-; Witness: L1 10 (play, play2).
+; Witness: L1 150 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 SetViewFlag:
   LD A,$FF
   LD (ViewChangeFlag+$0001),A
@@ -88,7 +92,7 @@ SetViewFlag:
 ; Once: the briefing map (bank 6's BriefingMapFrame $DACB and BriefingMap
 ; $DB64), then patched to RET
 ;
-; Witness: L1 10 (menu, play, play2).
+; Witness: L1 10 (menu).
 ShowBriefingMapOnce:
   NOP
   CALL SaveBank

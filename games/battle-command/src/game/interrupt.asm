@@ -13,7 +13,7 @@
 ; Store the message timer: the attribute (IY+3) to $7D64, the hook $7D5D
 ; enabled
 ;
-; Witness: L1 61 (death, missions, play, play2).
+; Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 SetMessage:
   LD A,(IY+$03)
   LD HL,MessageOnce
@@ -25,8 +25,8 @@ SetMessage:
 ; SoundExplosion $D86B and "TANK:HIT" $FFCF, clear: SoundEffectA $D84E and
 ; "COLLIDED" $FFDB; then RET again
 ;
-; Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions,
-; play, play2).
+; Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel,
+; m1complete, m2erbe, m4complete, missions, play, play2).
 MessageOnce:
   RET
   LD A,$64
@@ -50,8 +50,9 @@ l_7D77:
 ;
 ; `ReadControls` `$971A`, the X and Y steps (`$985E`, `$985F`) added to the
 ; pointer (`$7DC0`, `$7DC1`) within 8-247 and 8-183, then `PointerFire`
-; `$7DC2`. Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; `$7DC2`. Witness: L1 121657 (armour, c1, controls, death, fuel, m10,
+; m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2,
+; search).
 PointerTick:
   CALL ReadControls
   LD (PolyClipVars+$0002),A
@@ -108,8 +109,8 @@ PointerPos:
 ; Carry (the fire) held: after 25 frames a click ($6D43 = $FF) at the pointer,
 ; repeated every 5
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 PointerFire:
   RRA
   JR C,l_7DCA
@@ -148,8 +149,8 @@ l_7DEB:
 ; The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the
 ; mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START
 ; MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1
-; 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 ClockTick:
   NOP
   LD A,$32
@@ -199,7 +200,7 @@ ClockText:
 
 ; Print the clock's minutes and hours ($68EB, $68EC) as two digit pairs
 ;
-; Witness: L1 530 (play, play2).
+; Witness: L1 530 (m2erbe, missions, play).
 PrintClock:
   LD A,(MissionClock+$0001)
   LD C,$FF
@@ -232,8 +233,8 @@ l_7E56:
 
 ; The interrupt's sound step: bank 0's driver $D692, the bank kept
 ;
-; Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 SoundTick:
   CALL PageBank6Kept
   CALL PageBank0
@@ -242,8 +243,8 @@ SoundTick:
 
 ; $66CE and the click flag cleared
 ;
-; Witness: L1 2966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 3734 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 ClearPointerState:
   XOR A
   LD (PolyClipVars+$0002),A
@@ -289,8 +290,8 @@ MissionParams:
 
 ; The IM 2 handler: own stack, the tick jobs, the play or menu jobs, RETI
 ;
-; Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 InterruptHandler:
   DI
   EX (SP),HL
@@ -353,7 +354,8 @@ MenuJobs:
 ; A RET; behind it the clear of three bytes every 33 for 48 lines from $8AF1
 ; (unused)
 ;
-; Witness: L1 2959 (death, m2erbe, missions, play, play2).
+; Witness: L1 3717 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 ClearMarkColumn:
   RET
   LD HL,BackBuffer
@@ -405,8 +407,8 @@ SavedSP:
 
 ; Keep the current bank in $843B and page bank 6
 ;
-; Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 PageBank6Kept:
   LD A,(SaveBank+$0002)
   LD (PageBankKept+$0001),A
@@ -414,8 +416,8 @@ PageBank6Kept:
 
 ; Page the bank PageBank6Kept kept
 ;
-; Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 PageBankKept:
   LD A,$00
   JP PageBankA
@@ -424,7 +426,7 @@ PageBankKept:
 ; 6 QuitPrompt $DA09: Y to the title, N back), then clear SoundGate $D689 and
 ; PickupAnnounce $DB71
 ;
-; Witness: L1 13 (play2).
+; Witness: L1 13 (m2erbe, missions, play, play2).
 QuitKey:
   CALL SilenceAY
   CALL SaveBank
@@ -440,8 +442,8 @@ QuitKey:
 ; Every 12 frames flip the attribute bits $30 of $5758 and $5078 (a RET while
 ; off)
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 BlinkWarning:
   RET
   LD A,$01
@@ -462,8 +464,8 @@ BlinkWarning:
 
 ; Every 8 frames flip $3C on four pixel lines at $525C (a RET while off)
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 BlinkLamp:
   RET
   LD A,$01
@@ -485,8 +487,8 @@ l_8487:
 ; Scan the keyboard: a new key sets bit 0 of $8978 at once, a held key after 17
 ; frames, then every 2
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 KeyRepeat:
   CALL ScanKeyboard
   JR C,l_84A1
@@ -521,8 +523,8 @@ l_84C0:
 
 ; Count $87D7 down; at 0 print the message line $7C06 (or the blank $87F0)
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 MessageTimer:
   LD A,$00
   AND A
@@ -553,7 +555,8 @@ NightKey:
 ; Night sight on or off: the lamp attribute $5ACF, the text $BA6E / $BA7A,
 ; $757A from the table $88F8
 ;
-; Witness: L1 33 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 37 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ToggleNight:
   LD HL,$5ACF
   JR NZ,l_8818
@@ -585,8 +588,8 @@ l_8818:
 ; Each interrupt: the hour ($68EC) against the four 4-byte rows of $88F8; a
 ; match arms $885F
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 TimeOfDay:
   LD HL,HourTable
   LD DE,$0004
@@ -617,7 +620,8 @@ l_884C:
 ; Once per change: the sky and ground attributes of the hour's row, then the
 ; panel's copies
 ;
-; Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 SkyColours:
   RET
   LD A,$02
@@ -683,7 +687,8 @@ CopySkyRows:
 
 ; Once: the night or day attribute box ($88EE / $88F3)
 ;
-; Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 NightColours:
   RET
   LD A,$C9
@@ -730,8 +735,8 @@ SkyBoxes:
 ; Scan the eight half rows: the key's code from $8950 to $897B, bit 1 of $8978
 ; set; CAPS SHIFT with 0 gives $04 (the code entry's delete)
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ScanKeyboard:
   LD BC,$7FFE
   LD HL,KeyCodes
@@ -789,8 +794,8 @@ KeyRepeatCount:
 
 ; The pointer's X and Y to $7C51 and $7C53
 ;
-; Witness: L1 49405 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 61639 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 CopyPointer:
   LD A,(PointerPos)
   LD (FailReason+$0058),A

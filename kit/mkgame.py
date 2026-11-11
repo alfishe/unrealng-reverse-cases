@@ -11,11 +11,14 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
     --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints)
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
-(read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only)
-and the header; the source goes to src/game, the resources through tools/res_formats.py (case.json res_install
-names another). A part: a JSON part file (one image, or segments of one image each with its own .ann, run address
-and banks), or the command line for one image at its ORG. The keys and the reasons are in docs/ann-format.md
-section 5, the .ann format in sections 1-4; what each file of a case is in docs/case-files.md.
+(read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
+the witness lines count ref_builds and witness_builds too, witness_names renames a windowed build) and the header;
+the source goes to src/game, the resources through tools/res_formats.py (case.json res_install names another; a part
+file without res_install or res inherits case.json's, and a part whose resources nothing installs says so). Several
+part files may share one .ann (clip_to_image keeps each part's entries). A part: a JSON part file (one image, or
+segments of one image each with its own .ann, run address and banks), or the command line for one image at its ORG.
+The keys and the reasons are in docs/ann-format.md section 5, the .ann format in sections 1-4; what each file of a
+case is in docs/case-files.md.
 
 The pipeline is the same for every form: the code is what the recordings ran (instruction starts whose bytes are the
 image's, or whole basic blocks with --blocks), widened by a static walk over the branches no recording took and
@@ -43,6 +46,7 @@ import toolpaths  # noqa: E402
 import resinc  # noqa: E402
 
 ROOT = None  # the case, set by main()
+CASE = {}  # the case's case.json (a part inherits res_install from it), set by main()
 LO, HI = 0x0000, 0x10000
 BASES = {5: 0x4000, 2: 0x8000, 0: 0xC000}
 # The builds whose data reads count: the ones that start after the loader (a depacker reads its packed input where
@@ -268,8 +272,25 @@ BANK = re.compile(r'^@bank\s+' + HEX4 + r'\s+' + NAME + r'\s+(\w+)\s*(?:;\s*(.*)
 VAR = re.compile(r'^@var\s+' + HEX4 + r'\s+' + NAME + r'(?:\s+(\d+))?\s*(?:;\s*(.*))?$')
 ALIAS = re.compile(r'^@alias\s+' + NAME + r'\s+(\S+)\s*(?:;\s*(.*))?$')
 OVER = re.compile(r'^@over\s+' + HEX4 + r'\s*(?:;\s*(.*))?$')
+BANK_SHORT = re.compile(r'^@bank\s+' + HEX4 + r'\s+(\w+)\s*(?:;\s*(.*))?$')
+NAMES_FROM = re.compile(r'^@names\s+(\w+)\s+(\S+)\s*(?:;.*)?$')
 PIECE = re.compile(r'^@piece\s+(\w+)\s*$')
 OLD_FORM = re.compile(r'^#\s*(@(?:bank|var|alias|over|piece)\s.*)$')
+
+
+def ann_names(path):
+    """{address: name} of an .ann's entries and inner labels (every piece; an entry's own name before an inner one
+    on its address): the names @names lends to the @bank lines of another .ann"""
+    entries, inner = {}, {}
+    for line in open(path, encoding='utf-8'):
+        text = line.strip()
+        if not text.startswith('$'):
+            continue
+        m = ANNOTATION.match(text)
+        if m and m.group(3):
+            (entries if m.group(2) else inner).setdefault(int(m.group(1), 16), m.group(3))
+    inner.update(entries)
+    return inner
 
 
 class Annotations:
@@ -307,6 +328,9 @@ class Annotations:
         @bank $ADDR NAME BANK ; c an address in another RAM bank (BANK a number or a name): NAME EQU $ADDR; the walk
                                   does not follow the instructions whose @isub names it, and the entry mark the
                                   disassembler puts on this image's byte there is dropped
+        @bank $ADDR BANK ; c      the same, NAME the label at ADDR in the .ann that @names gives for BANK
+        @names BANK PATH          the names of BANK are the entries and labels of the .ann at PATH (relative to this
+                                  file): a short @bank takes its name there, a long one must agree with it
         @var $ADDR NAME [N] ; c   a variable inside the image's work space: a label in its data entry (the line is
                                   cut there), every instruction operand $ADDR+1..$ADDR+N-1 written NAME+k
         @alias NAME EXPR ; c      NAME EQU EXPR, for a name that cannot be a label (the operand of a JP into code)
@@ -335,6 +359,8 @@ class Annotations:
         self.vars = []  # (address, name, size, comment)
         self.aliases = []  # (name, expression, comment)
         self.over = set()  # branch targets not followed
+        self.names_from = {}  # bank: (the .ann of @names, {address: name})
+        short_banks = []  # (address, bank, comment, where) of the @bank lines without a name
         self.pieces = []  # the piece names, in the file's order
         self.path = path
         last = None
@@ -365,11 +391,24 @@ class Annotations:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
                 self.consts.append((m.group(1), m.group(2), m.group(3) or ''))
                 continue
-            if text.startswith('@bank'):
-                m = BANK.match(text)
+            if text.startswith('@names'):
+                m = NAMES_FROM.match(text)
                 if not m:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
-                self.banks.append((int(m.group(1), 16), m.group(2), m.group(3), m.group(4) or ''))
+                other = os.path.normpath(os.path.join(os.path.dirname(path), m.group(2)))
+                if not os.path.exists(other):
+                    sys.exit(f'{path}:{number}: @names {m.group(1)}: no file {other}')
+                self.names_from[m.group(1)] = (other, ann_names(other))
+                continue
+            if text.startswith('@bank'):
+                m = BANK.match(text)
+                if m:
+                    self.banks.append((int(m.group(1), 16), m.group(2), m.group(3), m.group(4) or ''))
+                    continue
+                m = BANK_SHORT.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                short_banks.append((int(m.group(1), 16), m.group(2), m.group(3) or '', f'{path}:{number}'))
                 continue
             if text.startswith('@var'):
                 m = VAR.match(text)
@@ -469,6 +508,18 @@ class Annotations:
                 self.merge_inner(a, name, comment, f'{path}:{number}')
         if piece is not None and piece not in self.pieces:
             sys.exit(f'{path}: no @piece {piece}')
+        # the @bank names from the other banks' .ann files: a short line takes it, a long one must agree
+        for a, bank, comment, where in short_banks:
+            other = self.names_from.get(bank)
+            if other is None:
+                sys.exit(f'{where}: @bank ${a:04X} {bank}: no @names {bank} PATH gives the name')
+            if a not in other[1]:
+                sys.exit(f'{where}: @bank ${a:04X} {bank}: {os.path.relpath(other[0])} has no name at ${a:04X}')
+            self.banks.append((a, other[1][a], bank, comment))
+        for a, name, bank, _ in self.banks:
+            other = self.names_from.get(bank)
+            if other and other[1].get(a, name) != name:
+                sys.exit(f'{path}: @bank ${a:04X} {name} {bank}: {os.path.relpath(other[0])} names it {other[1][a]}')
         # A variable is a label inside its data entry, as if its line came last: '$ADDR NAME ; comment'
         for a, name, _, comment in self.vars:
             self.merge_inner(a, name, comment or None, f'{path}: @var')
@@ -754,7 +805,10 @@ def split_modules(text, ann):
         label = ann.name(start)
         if not label:
             sys.exit('game.ann: module %s starts at $%04X, an entry with no name' % (name, start))
-        at = next(i for i, l in enumerate(out_lines) if l == label + ':')
+        at = next((i for i, l in enumerate(out_lines) if l == label + ':'), None)
+        if at is None:
+            sys.exit('%s: module %s starts at $%04X (%s), which the listing of $%04X-$%04X does not hold' % (
+                os.path.basename(ann.path), name, start, label, LO, HI - 1))
         while at > 0 and out_lines[at - 1].startswith(';'):
             at -= 1
         cuts.append((at, name, start))
@@ -1114,6 +1168,12 @@ class Segment:
         read_builds = tuple(get('read_builds', ()))
         l1 = spec['l1'] if 'l1' in spec else part.get('l1', [])
         self.sources = [Source.parse(s, ROOT, read_builds) for s in l1]
+        # the recordings that count for the witness lines only (not for the code): case.json's ref_builds and
+        # witness_builds for the game, the part file's witness_builds for a part
+        witness = spec.get('witness', part.get('witness'))
+        if witness is None:
+            witness = [os.path.join('work', b, 'l1.json') for b in get('witness_builds', ())]
+        self.witness = [os.path.join(ROOT, p) for p in witness]
         self.mode = get('mode', 'instructions')
         self.same_bytes = bool(get('same_bytes'))
         self.data_entries = get('data_entries')
@@ -1129,6 +1189,38 @@ class Segment:
         return os.path.splitext(os.path.basename(self.ann))[0] + ('-' + self.piece if self.piece else '')
 
 
+def clip_to_image(ann):
+    """An .ann shared by several parts (the pieces of a loader, each its own image): only its entries inside this
+    image LO..HI count here. A module whose entries all lie outside is left out of this part (it prints so); one that
+    starts outside and holds entries inside fails, naming the module and its address. The entries outside, their
+    descriptions, resources and @isub lines are dropped"""
+    if all(LO <= a < HI for a in ann.entries):
+        return
+    where = os.path.relpath(ann.path, ROOT) if ROOT else ann.path
+    order = sorted(ann.modules)
+    starts = sorted(ann.entries)
+    keep = set()
+    for k, (start, name) in enumerate(order):
+        stop = order[k + 1][0] if k + 1 < len(order) else 0x10000
+        inside = [a for a in starts if start <= a < stop and LO <= a < HI]
+        if LO <= start < HI:
+            keep.add((start, name))
+        elif inside:
+            sys.exit('%s: module %s starts at $%04X, outside the image $%04X-$%04X, and holds $%04X inside it'
+                     % (where, name, start, LO, HI - 1, inside[0]))
+        else:
+            print('%s: module %s ($%04X) lies outside the image $%04X-$%04X: not in this part'
+                  % (where, name, start, LO, HI - 1))
+    ann.modules = [m for m in ann.modules if tuple(m) in keep]
+    for a in [a for a in ann.entries if not LO <= a < HI]:
+        del ann.entries[a]
+        ann.descriptions.pop(a, None)
+        ann.resources.pop(a, None)
+        ann.res_include.discard(a)
+    for a in [a for a in ann.isub if not LO <= a < HI]:
+        del ann.isub[a]
+
+
 def generate(seg, mem, args, out, top):
     """The segment through the pipeline: (modules [(name, text)], head, resources {file: bytes}, ann, labels,
     stats); mem is the 64 K image with the segment's bytes at their run address; LO, HI set to the run range"""
@@ -1139,6 +1231,7 @@ def generate(seg, mem, args, out, top):
         for b in range(s, e):
             reads[b] = max(reads[b], 1)
     ann = Annotations(seg.ann, seg.piece, top)
+    clip_to_image(ann)
     if seg.data_entries:
         # an annotated data entry (to the next entry) is data: an instruction a recording ran there is another
         # program's whose bytes match (a lone NOP equal to a zero of the font); the walk stops there
@@ -1294,17 +1387,32 @@ def drop_stale_bins(res, files, before):
                   f'{", ".join(os.path.basename(p) for p in written)})')
 
 
+def res_installer(part):
+    """the hook that installs the part's resources: its own res_install; else, with no "res" folder of its own,
+    case.json's res_install, else the case's tools/res_formats.py when it has one (the game's default); None"""
+    if part.get('res_install'):
+        return part['res_install']
+    if part.get('res'):
+        return None
+    if not part.get('game') and CASE.get('res_install'):
+        return CASE['res_install']
+    if os.path.isfile(os.path.join(ROOT, 'tools', 'res_formats.py')):
+        return 'tools/res_formats.py'
+    return None
+
+
 def install_resources(part, resources, built=()):
-    """the part's resources into the case: through its res_install hook, as bytes into its res folder, or (the
-    case's game) through tools/res_formats.py when the case has one, else as bytes into src/res"""
+    """the part's resources into the case: through its installer (res_installer: the part's res_install, case.json's,
+    the case's tools/res_formats.py), as bytes into its res folder, or (the case's game) as bytes into src/res. A part
+    with resources and none of these says so, loudly: its sources INCBIN files nothing wrote"""
     files = {k: v for k, v in resources.items() if k not in built}
     if not files:
         return 0
-    if part.get('res_install') or (part.get('game') and not part.get('res') and
-                                   os.path.isfile(os.path.join(ROOT, 'tools', 'res_formats.py'))):
+    hook = res_installer(part)
+    if hook:
         res = os.path.join(ROOT, part.get('res') or os.path.join('src', 'res'))
         before = stamps(res, files)
-        call_hook(part.get('res_install') or 'tools/res_formats.py', files)
+        call_hook(hook, files)
         drop_stale_bins(res, files, before)
     elif part.get('res') or part.get('game'):
         for name, data in files.items():
@@ -1314,6 +1422,8 @@ def install_resources(part, resources, built=()):
             if name in INCLUDED:
                 open(resinc.inc_name(path), 'w').write(INCLUDED[name])
     else:
+        print('WARNING: %d resources not installed (%s): no res_install in the part file or case.json, no '
+              'tools/res_formats.py, no "res" folder' % (len(files), ', '.join(sorted(files))), file=sys.stderr)
         return 0
     return len(files)
 
@@ -1476,13 +1586,40 @@ def assemble(part, args, out, top):
     run(cmd + ['--lst=%s.lst' % top, top + '.asm'], cwd=out)
 
 
-WITNESS = re.compile(r'Witness: L1 (\d+) \(([^)]*)\)')
+WITNESS = re.compile(r'Witness: L1 (\d+) \(([\w ,.\-]*)\)')
+
+
+WITNESS_NAMES = {}  # case.json witness_names: {build: the name its witness lines give it} (a window: c1g as c1)
 
 
 def build_name(build):
-    """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, timer -> timer"""
+    """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, timer -> timer, a
+    recording kept under a rec folder by its own name (stage2/rec/fuel -> fuel, docs/bcC/rec/armour -> armour); case.json
+    witness_names renames a build (a --from-frame window by its recording: "stage1/c1g": "c1")"""
+    if build in WITNESS_NAMES:
+        return WITNESS_NAMES[build]
     parts = build.split('/')
+    if 'rec' in parts[1:-1]:
+        return parts[len(parts) - 1 - parts[::-1].index('rec') + 1]
     return parts[1] if len(parts) > 1 else parts[0]
+
+
+def load_witness(seg, fix=False):
+    """the runs of the segment's witness-only recordings into EXECS (the pages of its bases); a missing one is
+    skipped, or with fix (the lines would lose it) an error"""
+    for path in seg.witness:
+        if path in EXECS or any(os.path.abspath(path) == os.path.abspath(s.path) for s in seg.sources):
+            continue
+        if not os.path.exists(path):
+            if fix:
+                sys.exit(f'no recording {path}: --fix-witness would drop it from the witness lines')
+            print(f'witness: no recording {os.path.relpath(path, ROOT)}: its runs are left out of the check')
+            continue
+        ran = EXECS.setdefault(path, {})
+        for z80, page, _code, _kind, n, *_ in json.load(open(path))['instructions']:
+            if page in seg.bases:
+                a = int(z80[1:], 16)
+                ran[a] = ran.get(a, 0) + n
 
 
 def witness_text(builds, address):
@@ -1509,18 +1646,21 @@ def witness_text(builds, address):
 
 def check_witness(seg, skip=(), fix=False):
     """The "Witness: L1 N (builds)" lines of the .ann's code entries against the recordings: N is the runs of the
-    entry's first instruction summed over the segment's builds (the case's read_builds and code_builds, less
-    witness_skip), the list the builds that ran it. Prints each stale line; fix: rewrites N and the list in the .ann.
+    entry's first instruction summed over the segment's builds (the case's read_builds, code_builds, ref_builds and
+    witness_builds, or a part's l1 and witness_builds, less witness_skip), the list the builds that ran it. Prints each stale line; fix: rewrites N and the list in the .ann.
     Returns the number of stale lines"""
     if not seg.ann or not os.path.exists(seg.ann):
         return 0
+    load_witness(seg, fix)
     work = os.path.join(ROOT, 'work')
     builds = {}
     for path, ran in EXECS.items():
         build = os.path.relpath(os.path.dirname(path), work)
         if build not in skip and any(os.path.abspath(path) == os.path.abspath(s.path) or
-                                     ('*' in s.path and fnmatch.fnmatch(path, s.path)) for s in seg.sources):
+                                     ('*' in s.path and fnmatch.fnmatch(path, s.path)) for s in seg.sources) or \
+                build not in skip and any(os.path.abspath(path) == os.path.abspath(w) for w in seg.witness):
             builds[build] = ran
+    known = {build_name(b) for b in builds}
     lines = open(seg.ann).read().split('\n')
     entry, stale = None, 0
     for i, line in enumerate(lines):
@@ -1530,8 +1670,8 @@ def check_witness(seg, skip=(), fix=False):
             if m and m.group(2):
                 entry = (int(m.group(1), 16), m.group(2), m.group(3))
             continue
-        if not text.startswith('>') or entry is None or entry[1] != 'c':
-            continue
+        if not text.startswith('>') or entry is None or entry[1] != 'c' or not LO <= entry[0] < HI:
+            continue  # an entry outside this image (an .ann shared by several parts) is another part's
 
         def sub(w):
             nonlocal stale
@@ -1539,9 +1679,17 @@ def check_witness(seg, skip=(), fix=False):
             if (int(w.group(1)), w.group(2)) == (n, names):
                 return w.group(0)
             stale += 1
-            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s' % (
+            # a name of the line that is none of these builds' (a recording this run does not load): the line is
+            # kept as it is, a rewrite would drop it
+            had = {x.strip() for x in w.group(2).split(',') if x.strip()}
+            unknown = sorted(x for x in had if x not in known and not re.match(r'.* x\d+$', x))
+            dropped = sorted(had - {x.strip() for x in names.split(',')} - set(unknown))
+            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s' % (
                 os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', w.group(1), w.group(2), n, names,
-                ': rewritten' if fix else ''))
+                ('; %s ran no instruction there' % ', '.join(dropped)) if dropped else '',
+                ('; kept: %s not among the builds' % ', '.join(unknown) if unknown else ': rewritten') if fix else ''))
+            if unknown:
+                return w.group(0)
             return 'Witness: L1 %d (%s)' % (n, names)
         lines[i] = WITNESS.sub(sub, line)
     if fix and stale:
@@ -1615,6 +1763,7 @@ def load_case(case, config_path=None):
     LO, HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
     BASES = {int(k): int(v, 16) for k, v in config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}).items()}
     READ_BUILDS = tuple(config.get('read_builds', ()))
+    WITNESS_NAMES.update(config.get('witness_names', {}))
     return config
 
 
@@ -1635,6 +1784,11 @@ def game_part(config, ann):
             'dest': config.get('dest', os.path.join('src', 'game')), 'clean_work': False}
     if config.get('image_cmd'):
         part['image_cmd'] = config['image_cmd']
+    # the witness lines also count the ref builds (a --from-frame window such as c1g) and witness_builds: the
+    # recordings in no other list
+    witness = [b[0] if isinstance(b, (list, tuple)) else b for b in config.get('ref_builds', ())] + \
+        list(config.get('witness_builds', ()))
+    part['witness'] = [os.path.join('work', b, 'l1.json') for b in dict.fromkeys(witness)]
     for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten',
                 'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code', 'witness_skip'):
         if key in config:
@@ -1685,7 +1839,7 @@ def cli_part(args):
 
 
 def main():
-    global ROOT
+    global ROOT, CASE
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--case', default='.', help='the case folder (default: here)')
     p.add_argument('--config', help='the game\'s config instead of CASE/case.json')
@@ -1719,20 +1873,24 @@ def main():
     args = p.parse_args()
     args.venv = toolpaths.skoolkit_venv(args.venv)
     args.sjasmplus = toolpaths.sjasmplus(args.sjasmplus)
-    if args.part:
+    if args.part or args.image:
         ROOT = os.path.abspath(args.case)
+        config = os.path.join(ROOT, 'case.json')
+        CASE = json.load(open(config)) if os.path.exists(config) else {}
+        WITNESS_NAMES.update(CASE.get('witness_names', {}))
+    if args.part:
         part = json.load(open(os.path.join(ROOT, args.part) if not os.path.isabs(args.part) else args.part))
         if args.out:
             part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
         part.setdefault('name', os.path.splitext(os.path.basename(args.part))[0])
         return make_part(part, args)
     if args.image:
-        ROOT = os.path.abspath(args.case)
         missing = [k for k in ('org', 'ann', 'top', 'dest') if not getattr(args, k)]
         if missing:
             sys.exit('--image needs ' + ', '.join('--' + k for k in missing))
         return make_part(cli_part(args), args)
     config = load_case(args.case, args.config)
+    CASE = config
     ann = os.path.abspath(args.ann) if args.ann else os.path.join(ROOT, 'src', 'game', 'game.ann')
     part = game_part(config, ann)
     if args.out:

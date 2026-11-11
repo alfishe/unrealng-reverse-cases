@@ -1,5 +1,5 @@
 ; Battle Command, Ocean 1990: the SpeedLock loader's last piece at $BE5D, the timing check, tape block 37.
-; Written by kit/mkgame.py from src/loader/final-be5d.ann and the recordings; edit final-be5d.ann, not the .asm.
+; Written by kit/mkgame.py from src/loader/final.ann and the recordings; edit final.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

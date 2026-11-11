@@ -394,7 +394,7 @@ bytes $EC65 67 09 DD 36 26 00 DD 75 27 DD 74 28 DD 36 00 FF
 bytes $EC75 37 C9
 
 # the 3D models from $EC77 to the end (tools/models3d.py, text_lines: one instruction a line)
-model $EC77 native $67F7 20 08 04 ; box_rect 32 8 4, model
+model $EC77 native ApiVector19 20 08 04 ; box_rect 32 8 4, model
 model $EC7D verts 23 A8 63 F8 67 29 64 FF ; verts P=V35 P=(P+V40)/2 V35=P P.xz=-P.xz V39=P P=V41 V36=P
 model $EC86 project 06 44 ; project 6 from V34
 model $EC89 faces_test 20 02 98 8C 94 90 8C 88 ; faces_test from 32: (38 35 37) (36 35 34)
@@ -410,43 +410,43 @@ model $ECC4 fill_faces 01 21 07 03 01 9C 8C 88 ; fill_faces (f33 c1 39 35 34)
 model $ECCD fill_back_faces_clip 01 21 07 03 01 88 8C 9C ; fill_back_faces_clip (f33 c1 34 35 39)
 model $ECD6 return ; return
 model $ECD7 end ; end
-model $ECD8 native $67FA 20 0C 7F ; box_rect16 32 12 127, model
+model $ECD8 native ApiVector20 20 0C 7F ; box_rect16 32 12 127, model
 model $ECDE verts 28 A6 66 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
 model $ECE6 project 05 44 ; project 5 from V34
 model $ECE9 faces_test 00 04 98 8C 88 98 90 8C 98 94 90 98 88 94 ; faces_test from 0: (38 35 34) (38 36 35) (38 37 36) (38 34 37)
 model $ECF8 fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 04 98 90 8C 02 07 03 09 98 94 90 03 07 03 04 98 88 94 ; fill_faces_clip (f0 c9 38 35 34) (f1 c4 38 36 35) (f2 c9 38 37 36) (f3 c4 38 34 37)
 model $ED16 end ; end
-model $ED17 native $67FA 10 0C 66 ; box_rect16 16 12 102, model
+model $ED17 native ApiVector20 10 0C 66 ; box_rect16 16 12 102, model
 model $ED1D verts 26 A8 41 26 A7 40 A8 C0 01 66 00 A9 C0 01 67 FF ; verts P=V38 P=(P+V40)/2 V1=P P=V38 P=(P+V39)/2 V0=P P=(P+V40)/2 P+=V1 V38=P P=V0 P=(P+V41)/2 P+=V1 V39=P
 model $ED2E project 06 44 ; project 6 from V34
 model $ED31 faces_test 00 04 9C 98 8C 98 90 8C 98 94 90 9C 88 94 ; faces_test from 0: (39 38 35) (38 36 35) (38 37 36) (39 34 37)
 model $ED40 fill_faces_clip 04 00 08 04 04 9C 98 8C 88 01 07 03 09 98 90 8C 02 08 04 04 98 9C 94 90 03 07 03 09 9C 88 94 ; fill_faces_clip (f0 c4 39 38 35 34) (f1 c9 38 36 35) (f2 c4 38 39 37 36) (f3 c9 39 34 37)
 model $ED60 end ; end
-model $ED61 native $67FA 38 1C 7F ; box_rect16 56 28 127, model
+model $ED61 native ApiVector20 38 1C 7F ; box_rect16 56 28 127, model
 model $ED67 verts 28 A6 66 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 V38=P
 model $ED6F project 05 44 ; project 5 from V34
 model $ED72 faces_test 00 04 98 8C 88 98 94 90 98 88 94 98 90 8C ; faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
 model $ED81 fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04 98 90 8C ; fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
 model $ED9F end ; end
-model $EDA0 native $67FA 34 12 7F ; box_rect16 52 18 127, model
+model $EDA0 native ApiVector20 34 12 7F ; box_rect16 52 18 127, model
 model $EDA6 verts 28 A6 66 C0 26 C0 26 66 FF ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 P+=V38 V38=P
 model $EDB0 project 05 44 ; project 5 from V34
 model $EDB3 faces_test 00 04 98 8C 88 98 94 90 98 88 94 98 90 8C ; faces_test from 0: (38 35 34) (38 37 36) (38 34 37) (38 36 35)
 model $EDC2 fill_faces_clip 04 00 07 03 09 98 8C 88 01 07 03 09 98 94 90 02 07 03 04 98 88 94 03 07 03 04 98 90 8C ; fill_faces_clip (f0 c9 38 35 34) (f1 c9 38 37 36) (f2 c4 38 34 37) (f3 c4 38 36 35)
 model $EDE0 end ; end
-model $EDE1 native $67F7 0C 64 16 ; box_rect 12 100 22, model
+model $EDE1 native ApiVector19 0C 64 16 ; box_rect 12 100 22, model
 model $EDE7 verts 26 A8 56 C0 29 5E 26 C0 16 5F 26 A7 A7 A7 5A F0 F8 58 9A 98 5C 29 A8 A8 A8 5B F0 F8 59 9B 99 5D 27 A3 67 A3 63 F8 69 28 A4 68 A4 64 F8 66 1A C0 16 60 1B C0 16 61 FF ; verts P=V38 P=(P+V40)/2 V22=P P+=V41 V30=P P=V38 P+=V22 V31=P P=V38 P=(P+V39)/2 P=(P+V39)/2 P=(P+V39)/2 V26=P P=-P P.xz=-P.xz V24=P P=(P+V26)/2 P=(P+V24)/2 V28=P P=V41 P=(P+V40)/2 P=(P+V40)/2 P=(P+V40)/2 V27=P P=-P P.xz=-P.xz V25=P P=(P+V27)/2 P=(P+V25)/2 V29=P P=V39 P=(P+V35)/2 V39=P P=(P+V35)/2 V35=P P.xz=-P.xz V41=P P=V40 P=(P+V36)/2 V40=P P=(P+V36)/2 V36=P P.xz=-P.xz V38=P P=V26 P+=V22 V32=P P=V27 P+=V22 V33=P
 model $EE1F project 12 30 ; project 18 from V24
 model $EE22 faces_test 00 07 7C 80 60 80 84 64 84 78 94 78 7C 88 68 6C A0 9C A0 90 8C 90 64 ; faces_test from 0: (31 32 24) (32 33 25) (33 30 37) (30 31 34) (26 27 40) (39 40 36) (35 36 25)
 model $EE3A fill_faces 0C 00 08 04 01 7C 80 70 98 01 08 04 03 80 84 6C 68 02 08 04 01 84 78 A4 74 03 08 04 03 78 7C 98 A4 00 08 04 06 68 9C 8C 60 00 08 04 06 98 70 60 88 02 08 04 06 6C 64 90 A0 02 08 04 06 74 A4 94 64 03 08 04 07 A4 98 88 94 04 08 04 07 68 6C A0 9C 05 08 04 04 9C A0 90 8C 06 08 04 05 8C 90 64 60 ; fill_faces (f0 c1 31 32 28 38) (f1 c3 32 33 27 26) (f2 c1 33 30 41 29) (f3 c3 30 31 38 41) (f0 c6 26 39 35 24) (f0 c6 38 28 24 34) (f2 c6 27 25 36 40) (f2 c6 29 41 37 25) (f3 c7 41 38 34 37) (f4 c7 26 27 40 39) (f5 c4 39 40 36 35) (f6 c5 35 36 25 24)
 model $EE9C end ; end
-model $EE9D native $67F7 20 40 24 ; box_rect 32 64 36, model
+model $EE9D native ApiVector19 20 40 24 ; box_rect 32 64 36, model
 model $EEA3 verts 29 A6 40 A9 60 F0 5C 00 A6 5F F0 5B 25 A2 41 A5 5E F0 5A 01 A2 5D F0 59 26 A7 42 A6 58 F0 56 02 A7 57 F0 55 22 A3 43 A2 54 F0 52 03 A3 53 F0 51 1C 9A 44 9A 48 9A 45 19 9B 46 99 49 99 47 85 40 85 85 50 07 80 87 4F 08 89 4A 88 88 4D 09 8A 89 4E FF ; verts P=V41 P=(P+V38)/2 V0=P P=(P+V41)/2 V32=P P=-P V28=P P=V0 P=(P+V38)/2 V31=P P=-P V27=P P=V37 P=(P+V34)/2 V1=P P=(P+V37)/2 V30=P P=-P V26=P P=V1 P=(P+V34)/2 V29=P P=-P V25=P P=V38 P=(P+V39)/2 V2=P P=(P+V38)/2 V24=P P=-P V22=P P=V2 P=(P+V39)/2 V23=P P=-P V21=P P=V34 P=(P+V35)/2 V3=P P=(P+V34)/2 V20=P P=-P V18=P P=V3 P=(P+V35)/2 V19=P P=-P V17=P P=V28 P=(P+V26)/2 V4=P P=(P+V26)/2 V8=P P=(P+V26)/2 V5=P P=V25 P=(P+V27)/2 V6=P P=(P+V25)/2 V9=P P=(P+V25)/2 V7=P P=(P+V5)/2 V0=P P=(P+V5)/2 P=(P+V5)/2 V16=P P=V7 P=(P+V0)/2 P=(P+V7)/2 V15=P P=V8 P=(P+V9)/2 V10=P P=(P+V8)/2 P=(P+V8)/2 V13=P P=V9 P=(P+V10)/2 P=(P+V9)/2 V14=P
 model $EEF6 project 14 1A ; project 20 from V13
 model $EEF9 faces_test 00 08 80 7C 74 68 64 6C 60 5C 4C 48 44 54 44 80 78 7C 60 50 5C 68 70 64 48 58 ; faces_test from 0: (32 31 29) (26 25 27) (24 23 19) (18 17 21) (17 32 30) (31 24 20) (23 26 28) (25 18 22)
 model $EF14 fill_faces_clip 09 00 08 04 04 80 7C 74 78 01 08 04 04 68 64 6C 70 02 08 04 04 60 5C 4C 50 03 08 04 04 48 44 54 58 04 08 04 06 44 80 78 54 05 08 04 06 7C 60 50 74 06 08 04 06 5C 68 70 4C 07 08 04 06 64 48 58 6C 01 08 04 01 40 3C 38 34 ; fill_faces_clip (f0 c4 32 31 29 30) (f1 c4 26 25 27 28) (f2 c4 24 23 19 20) (f3 c4 18 17 21 22) (f4 c6 17 32 30 21) (f5 c6 31 24 20 29) (f6 c6 23 26 28 19) (f7 c6 25 18 22 27) (f1 c1 16 15 14 13)
 model $EF5E end ; end
-model $EF5F native $67FA 20 0A 58 ; box_rect16 32 10 88
+model $EF5F native ApiVector20 20 0A 58 ; box_rect16 32 10 88
 model $EF65 polar_points 01 $EF82 ; polar_points 1 (frames to $EF82)
 model $EF69 db 7F EF 7C EF 79 EF 76 EF 73 EF 40 00 00 40 20 00
 model $EF79 db 40 40 00 40 60 00 40 7F 00
@@ -462,48 +462,48 @@ model $F062 fill_faces_clip 01 26 09 05 06 A4 70 7C 80 94 ; fill_faces_clip (f38
 model $F06D fill_back_faces 01 26 09 05 06 84 98 88 74 78 ; fill_back_faces (f38 c6 33 38 34 29 30)
 model $F078 end ; end
 model $F079 native $F659 ; native $F659, model
-model $F07C native $67F7 40 1E 2C ; box_rect 64 30 44
+model $F07C native ApiVector19 40 1E 2C ; box_rect 64 30 44
 model $F082 verts 25 A3 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF ; verts P=V37 P=(P+V35)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
 model $F094 project 05 42 ; project 5 from V33
 model $F097 fill_polys 01 03 06 8C 88 94 ; fill_polys (c6 35 34 37)
 model $F09E lines A4 21 C0 ; lines M36 L33
 model $F0A2 end ; end
-model $F0A3 native $67F7 18 7F 20 ; box_rect 24 127 32
+model $F0A3 native ApiVector19 18 7F 20 ; box_rect 24 127 32
 model $F0A9 verts 24 A2 41 A3 61 01 A2 60 A5 5F 23 A2 42 21 A0 82 5E 24 A3 81 5D A5 5C 1C 9D 5B A4 A4 5A 1F 9C 64 FF ; verts P=V36 P=(P+V34)/2 V1=P P=(P+V35)/2 V33=P P=V1 P=(P+V34)/2 V32=P P=(P+V37)/2 V31=P P=V35 P=(P+V34)/2 V2=P P=V33 P=(P+V32)/2 P=(P+V2)/2 V30=P P=V36 P=(P+V35)/2 P=(P+V1)/2 V29=P P=(P+V37)/2 V28=P P=V28 P=(P+V29)/2 V27=P P=(P+V36)/2 P=(P+V36)/2 V26=P P=V31 P=(P+V28)/2 V36=P
 model $F0CB project 0C 34 ; project 12 from V26
 model $F0CE fill_polys_clip 01 06 01 74 84 78 80 7C 70 ; fill_polys_clip (c1 29 33 30 32 31 28)
 model $F0D8 lines_clip A3 21 A0 22 9A 1B A5 24 C0 ; lines_clip M35 L33 M32 L34 M26 L27 M37 L36
 model $F0E2 end ; end
-model $F0E3 native $67F4 20 04 04 ; box_square 32 4 4, model
+model $F0E3 native ApiVector18 20 04 04 ; box_square 32 4 4, model
 model $F0E9 project 08 44 ; project 8 from V34
 model $F0EC faces_test 00 04 98 9C 8C A0 A4 94 A4 98 88 9C A0 90 ; faces_test from 0: (38 39 35) (40 41 37) (41 38 34) (39 40 36)
 model $F0FB fill_faces 04 00 08 04 01 98 9C 8C 88 01 08 04 01 A0 A4 94 90 02 08 04 01 A4 98 88 94 03 08 04 01 9C A0 90 8C ; fill_faces (f0 c1 38 39 35 34) (f1 c1 40 41 37 36) (f2 c1 41 38 34 37) (f3 c1 39 40 36 35)
 model $F11D end ; end
-model $F11E native $67F7 10 40 10 ; box_rect 16 64 16, model
+model $F11E native ApiVector19 10 40 10 ; box_rect 16 64 16, model
 model $F124 verts 22 A3 A2 A2 45 F8 4C 27 A3 A3 43 F8 4E 26 A7 41 49 A6 40 83 42 26 A2 A2 46 F8 4B 22 A3 A3 A3 44 F8 4D 09 F8 49 A9 48 8B 4A 08 8D 4F 05 80 47 01 8A 50 8A 90 51 10 82 90 52 10 81 90 53 10 89 90 50 27 A3 54 28 A4 55 A7 56 95 96 55 16 94 96 54 16 A7 96 57 16 A8 96 56 FF ; verts P=V34 P=(P+V35)/2 P=(P+V34)/2 P=(P+V34)/2 V5=P P.xz=-P.xz V12=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V3=P P.xz=-P.xz V14=P P=V38 P=(P+V39)/2 V1=P V9=P P=(P+V38)/2 V0=P P=(P+V3)/2 V2=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V6=P P.xz=-P.xz V11=P P=V34 P=(P+V35)/2 P=(P+V35)/2 P=(P+V35)/2 V4=P P.xz=-P.xz V13=P P=V9 P.xz=-P.xz V9=P P=(P+V41)/2 V8=P P=(P+V11)/2 V10=P P=V8 P=(P+V13)/2 V15=P P=V5 P=(P+V0)/2 V7=P P=V1 P=(P+V10)/2 V16=P P=(P+V10)/2 P=(P+V16)/2 V17=P P=V16 P=(P+V2)/2 P=(P+V16)/2 V18=P P=V16 P=(P+V1)/2 P=(P+V16)/2 V19=P P=V16 P=(P+V9)/2 P=(P+V16)/2 V16=P P=V39 P=(P+V35)/2 V20=P P=V40 P=(P+V36)/2 V21=P P=(P+V39)/2 V22=P P=(P+V21)/2 P=(P+V22)/2 V21=P P=V22 P=(P+V20)/2 P=(P+V22)/2 V20=P P=V22 P=(P+V39)/2 P=(P+V22)/2 V23=P P=V22 P=(P+V40)/2 P=(P+V22)/2 V22=P
 model $F17E project 18 00 ; project 24 from V0
 model $F181 faces_test 00 08 00 04 08 3C 38 34 0C 2C 30 08 28 2C 04 24 28 20 00 1C 3C 1C 18 18 14 34 ; faces_test from 0: (0 1 2) (15 14 13) (3 11 12) (2 10 11) (1 9 10) (8 0 7) (15 7 6) (6 5 13)
 model $F19C fill_faces_clip 0B 04 08 04 06 04 24 28 08 00 08 04 04 4C 5C 50 48 00 0C 08 04 00 04 08 0C 10 14 18 1C 01 08 04 04 44 54 58 40 01 0C 08 04 3C 38 34 30 2C 28 24 20 02 08 04 06 0C 2C 30 10 03 08 04 05 08 28 2C 0C 05 08 04 07 20 00 1C 3C 06 08 04 05 3C 1C 18 38 07 08 04 06 38 18 14 34 04 08 04 01 58 54 50 5C ; fill_faces_clip (f4 c6 1 9 10 2) (f0 c4 19 23 20 18) (f0 c4 0 1 2 3 4 5 6 7) (f1 c4 17 21 22 16) (f1 c4 15 14 13 12 11 10 9 8) (f2 c6 3 11 12 4) (f3 c5 2 10 11 3) (f5 c7 8 0 7 15) (f6 c5 15 7 6 14) (f7 c6 14 6 5 13) (f4 c1 22 21 20 23)
 model $F1FE end ; end
-model $F1FF native $67FA 14 06 40 ; box_rect16 20 6 64, model
+model $F1FF native ApiVector20 14 06 40 ; box_rect16 20 6 64, model
 model $F205 verts 22 A6 A6 5A F8 5C 25 A9 A9 5B F8 5D 26 A9 40 A6 66 F8 68 00 A9 69 F8 67 22 A6 5E 25 A9 5F 25 A2 40 A2 A2 60 00 A5 A5 61 FF ; verts P=V34 P=(P+V38)/2 P=(P+V38)/2 V26=P P.xz=-P.xz V28=P P=V37 P=(P+V41)/2 P=(P+V41)/2 V27=P P.xz=-P.xz V29=P P=V38 P=(P+V41)/2 V0=P P=(P+V38)/2 V38=P P.xz=-P.xz V40=P P=V0 P=(P+V41)/2 V41=P P.xz=-P.xz V39=P P=V34 P=(P+V38)/2 V30=P P=V37 P=(P+V41)/2 V31=P P=V37 P=(P+V34)/2 V0=P P=(P+V34)/2 P=(P+V34)/2 V32=P P=V0 P=(P+V37)/2 P=(P+V37)/2 V33=P
 model $F22F project 10 34 ; project 16 from V26
 model $F232 faces_test 00 06 68 74 8C 74 70 90 70 6C 94 6C 68 88 98 9C 74 A0 A4 6C ; faces_test from 0: (26 29 35) (29 28 36) (28 27 37) (27 26 34) (38 39 29) (40 41 27)
 model $F247 fill_faces_clip 07 00 08 04 01 68 74 8C 88 01 0A 06 03 9C A0 70 90 8C 74 02 08 04 01 70 6C 94 90 03 0C 08 03 A4 98 68 88 80 84 94 6C 03 08 04 06 7C 78 80 84 04 08 04 04 98 9C 74 68 05 08 04 04 A0 A4 6C 70 ; fill_faces_clip (f0 c1 26 29 35 34) (f1 c3 39 40 28 36 35 29) (f2 c1 28 27 37 36) (f3 c3 41 38 26 34 32 33 37 27) (f3 c6 31 30 32 33) (f4 c4 38 39 29 26) (f5 c4 40 41 27 28)
 model $F287 end ; end
-model $F288 native $67FA 14 06 40 ; box_rect16 20 6 64, model
+model $F288 native ApiVector20 14 06 40 ; box_rect16 20 6 64, model
 model $F28E verts 26 A8 A1 40 C0 27 67 28 A9 5B F0 5E F0 F8 5A C0 00 5C F8 5D 28 C0 00 68 1E 9A 9A 5F E0 1E 40 1E A2 A2 60 C0 00 61 FF ; verts P=V38 P=(P+V40)/2 P=(P+V33)/2 V0=P P+=V39 V39=P P=V40 P=(P+V41)/2 V27=P P=-P V30=P P=-P P.xz=-P.xz V26=P P+=V0 V28=P P.xz=-P.xz V29=P P=V40 P+=V0 V40=P P=V30 P=(P+V26)/2 P=(P+V26)/2 V31=P P-=V30 V0=P P=V30 P=(P+V34)/2 P=(P+V34)/2 V32=P P+=V0 V33=P
 model $F2B6 project 10 34 ; project 16 from V26
 model $F2B9 faces_test 00 07 98 9C 8C 9C A0 90 A0 A4 94 A4 98 88 74 70 98 70 74 6C A0 9C 68 ; faces_test from 0: (38 39 35) (39 40 36) (40 41 37) (41 38 34) (29 28 38) (28 29 27) (40 39 26)
 model $F2D1 fill_faces 0A 04 08 04 04 74 70 98 A4 05 08 04 05 70 74 6C 68 06 08 04 04 A0 9C 68 6C 00 09 05 01 70 78 80 88 98 00 08 04 01 9C 8C 78 68 00 08 04 06 84 7C 78 80 01 08 04 03 9C A0 90 8C 02 08 04 01 A0 6C 94 90 02 08 04 01 74 A4 94 6C 03 08 04 03 A4 98 88 94 ; fill_faces (f4 c4 29 28 38 41) (f5 c5 28 29 27 26) (f6 c4 40 39 26 27) (f0 c1 28 30 32 34 38) (f0 c1 39 35 30 26) (f0 c6 33 31 30 32) (f1 c3 39 40 36 35) (f2 c1 40 27 37 36) (f2 c1 29 41 37 27) (f3 c3 41 38 34 37)
 model $F324 end ; end
-model $F325 native $67F7 10 40 20 ; box_rect 16 64 32, model
+model $F325 native ApiVector19 10 40 20 ; box_rect 16 64 32, model
 model $F32B verts 28 A9 40 A9 80 60 29 A5 41 A9 5F 28 A4 A4 5E A8 42 9F 43 82 5D 03 9F 83 5C 24 A5 A4 A4 5B 27 E0 28 44 C0 1B 5A 1E C0 04 59 1D C0 04 58 1C C0 04 57 20 C0 04 64 1F C0 04 61 FF ; verts P=V40 P=(P+V41)/2 V0=P P=(P+V41)/2 P=(P+V0)/2 V32=P P=V41 P=(P+V37)/2 V1=P P=(P+V41)/2 V31=P P=V40 P=(P+V36)/2 P=(P+V36)/2 V30=P P=(P+V40)/2 V2=P P=(P+V31)/2 V3=P P=(P+V2)/2 V29=P P=V3 P=(P+V31)/2 P=(P+V3)/2 V28=P P=V36 P=(P+V37)/2 P=(P+V36)/2 P=(P+V36)/2 V27=P P=V39 P-=V40 V4=P P+=V27 V26=P P=V30 P+=V4 V25=P P=V29 P+=V4 V24=P P=V28 P+=V4 V23=P P=V32 P+=V4 V36=P P=V31 P+=V4 V33=P
 model $F366 project 1B 1C ; project 27 from V14
 model $F369 faces_test 00 07 6C 78 74 68 88 84 74 78 64 78 6C 68 7C 84 88 7C 80 90 80 70 5C ; faces_test from 0: (27 30 29) (26 34 33) (29 30 25) (30 27 26) (31 33 34) (31 32 36) (32 28 23)
 model $F381 fill_faces_clip 0B 06 08 04 01 80 70 5C 90 01 09 05 04 84 60 64 68 90 01 07 03 04 84 88 5C 00 09 05 04 74 7C 94 6C 78 00 07 03 04 70 80 7C 01 09 05 04 84 60 64 68 88 01 07 03 04 84 90 5C 02 08 04 03 74 78 64 60 03 08 04 06 78 6C 68 64 04 08 04 03 7C 84 88 94 05 08 04 05 7C 80 90 84 ; fill_faces_clip (f6 c1 32 28 23 36) (f1 c4 33 24 25 26 36) (f1 c4 33 34 23) (f0 c4 29 31 37 27 30) (f0 c4 28 32 31) (f1 c4 33 24 25 26 34) (f1 c4 33 36 23) (f2 c3 29 30 25 24) (f3 c6 30 27 26 25) (f4 c3 31 33 34 37) (f5 c5 31 32 36 33)
 model $F3DB end ; end
-model $F3DC native $67F7 10 40 18 ; box_rect 16 64 24, model
+model $F3DC native ApiVector19 10 40 18 ; box_rect 16 64 24, model
 model $F3E2 verts 28 A9 60 A9 A9 5F 29 A5 5D 24 A5 40 A5 A5 9F 5E 00 A4 A4 5C 24 A8 41 A4 5B 01 9D 59 81 81 5A 27 E0 28 42 C0 1B 58 1A C0 02 57 19 C0 02 56 20 C0 02 55 1F C0 02 64 1E C0 02 53 1D C0 02 61 1C C0 02 51 28 E0 20 44 15 99 43 95 83 50 03 A0 83 4F 19 83 83 4E 03 96 83 4D 10 C0 04 4C 0F C0 04 4B 0E C0 04 4A 0D C0 04 63 FF ; verts P=V40 P=(P+V41)/2 V32=P P=(P+V41)/2 P=(P+V41)/2 V31=P P=V41 P=(P+V37)/2 V29=P P=V36 P=(P+V37)/2 V0=P P=(P+V37)/2 P=(P+V37)/2 P=(P+V31)/2 V30=P P=V0 P=(P+V36)/2 P=(P+V36)/2 V28=P P=V36 P=(P+V40)/2 V1=P P=(P+V36)/2 V27=P P=V1 P=(P+V29)/2 V25=P P=(P+V1)/2 P=(P+V1)/2 V26=P P=V39 P-=V40 V2=P P+=V27 V24=P P=V26 P+=V2 V23=P P=V25 P+=V2 V22=P P=V32 P+=V2 V21=P P=V31 P+=V2 V36=P P=V30 P+=V2 V19=P P=V29 P+=V2 V33=P P=V28 P+=V2 V17=P P=V40 P-=V32 V4=P P=V21 P=(P+V25)/2 V3=P P=(P+V21)/2 P=(P+V3)/2 V16=P P=V3 P=(P+V32)/2 P=(P+V3)/2 V15=P P=V25 P=(P+V3)/2 P=(P+V3)/2 V14=P P=V3 P=(P+V22)/2 P=(P+V3)/2 V13=P P=V16 P+=V4 V12=P P=V15 P+=V4 V11=P P=V14 P+=V4 V10=P P=V13 P+=V4 V35=P
 model $F44C project 1C 14 ; project 28 from V10
 model $F44F faces_test 00 0A 80 7C 78 90 54 58 54 80 64 5C 68 6C 60 6C 70 7C 90 4C 74 84 88 2C 3C 38 40 30 8C 30 2C 28 ; faces_test from 0: (32 31 30) (36 21 22) (21 32 25) (23 26 27) (24 27 28) (31 36 19) (29 33 34) (11 15 14) (16 12 35) (12 11 10)
@@ -513,7 +513,7 @@ model $F4C2 return ; return
 model $F4C3 fill_faces_clip 03 07 08 04 04 2C 3C 38 28 08 08 04 04 40 30 8C 34 09 08 04 01 30 2C 28 8C ; fill_faces_clip (f7 c4 11 15 14 10) (f8 c4 16 12 35 13) (f9 c1 12 11 10 35)
 model $F4DD return ; return
 model $F4DE end ; end
-model $F4DF native $67F7 18 40 10 ; box_rect 24 64 16, model
+model $F4DF native ApiVector19 18 40 10 ; box_rect 24 64 16, model
 model $F4E5 verts 28 A3 53 26 A2 A2 58 F8 5A 27 A3 A3 59 F8 5B 22 A3 5C A2 62 F8 64 1C A3 63 F8 65 27 A9 5C A6 66 1C A9 69 19 9A 99 A9 54 99 94 5C C0 13 5F 14 A6 94 68 C0 13 5E 14 9A 94 5D C0 13 60 14 A9 94 67 C0 13 61 FF ; verts P=V40 P=(P+V35)/2 V19=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V24=P P.xz=-P.xz V26=P P=V39 P=(P+V35)/2 P=(P+V35)/2 V25=P P.xz=-P.xz V27=P P=V34 P=(P+V35)/2 V28=P P=(P+V34)/2 V34=P P.xz=-P.xz V36=P P=V28 P=(P+V35)/2 V35=P P.xz=-P.xz V37=P P=V39 P=(P+V41)/2 V28=P P=(P+V38)/2 V38=P P=V28 P=(P+V41)/2 V41=P P=V25 P=(P+V26)/2 P=(P+V25)/2 P=(P+V41)/2 V20=P P=(P+V25)/2 P=(P+V20)/2 V28=P P+=V19 V31=P P=V20 P=(P+V38)/2 P=(P+V20)/2 V40=P P+=V19 V30=P P=V20 P=(P+V26)/2 P=(P+V20)/2 V29=P P+=V19 V32=P P=V20 P=(P+V41)/2 P=(P+V20)/2 V39=P P+=V19 V33=P
 model $F52A project 12 30 ; project 18 from V24
 model $F52D faces_test 00 0D 60 64 88 64 68 8C 68 6C 90 6C 60 94 98 64 60 98 68 64 A4 6C 68 A4 60 6C A0 78 7C 7C 84 80 84 9C 74 9C 84 78 70 7C 74 ; faces_test from 0: (24 25 34) (25 26 35) (26 27 36) (27 24 37) (38 25 24) (38 26 25) (41 27 26) (41 24 27) (40 30 31) (31 33 32) (33 39 29) (39 33 30) (28 31 29)
@@ -523,7 +523,7 @@ model $F59D return ; return
 model $F59E fill_faces 05 08 08 04 05 A0 78 7C 70 09 08 04 01 78 84 80 7C 0A 08 04 04 84 9C 74 80 0B 08 04 05 9C 84 78 A0 0C 08 04 03 70 7C 80 74 ; fill_faces (f8 c5 40 30 31 28) (f9 c1 30 33 32 31) (f10 c4 33 39 29 32) (f11 c5 39 33 30 40) (f12 c3 28 31 32 29)
 model $F5C8 return ; return
 model $F5C9 end ; end
-model $F5CA native $67FA 18 04 78 ; box_rect16 24 4 120, model
+model $F5CA native ApiVector20 18 04 78 ; box_rect16 24 4 120, model
 model $F5D0 verts 26 A2 5F A6 40 F8 41 29 A5 5E A9 42 F8 43 29 A6 60 A6 44 F8 45 20 A9 46 F8 47 29 A2 5D 9F 48 1E 9D 49 25 A2 5C A2 4A 1C A5 4B FF ; verts P=V38 P=(P+V34)/2 V31=P P=(P+V38)/2 V0=P P.xz=-P.xz V1=P P=V41 P=(P+V37)/2 V30=P P=(P+V41)/2 V2=P P.xz=-P.xz V3=P P=V41 P=(P+V38)/2 V32=P P=(P+V38)/2 V4=P P.xz=-P.xz V5=P P=V32 P=(P+V41)/2 V6=P P.xz=-P.xz V7=P P=V41 P=(P+V34)/2 V29=P P=(P+V31)/2 V8=P P=V30 P=(P+V29)/2 V9=P P=V37 P=(P+V34)/2 V28=P P=(P+V34)/2 V10=P P=V28 P=(P+V37)/2 V11=P
 model $F5FC project 08 44 ; project 8 from V34
 model $F5FF project 0C 00 ; project 12 from V0
@@ -535,13 +535,13 @@ model $F65A native $2200 ; native $2200
 model $F65D db E6
 model $F65E db 68
 model $F65F db C9
-model $F660 native $67F7 18 7F 20 ; box_rect 24 127 32, model
+model $F660 native ApiVector19 18 7F 20 ; box_rect 24 127 32, model
 model $F666 verts 28 A6 54 29 A6 C0 14 5D F8 5C 28 A3 A1 A1 40 26 A7 A2 A6 5E C0 00 5F 22 A3 A2 A2 60 C0 00 61 FF ; verts P=V40 P=(P+V38)/2 V20=P P=V41 P=(P+V38)/2 P+=V20 V29=P P.xz=-P.xz V28=P P=V40 P=(P+V35)/2 P=(P+V33)/2 P=(P+V33)/2 V0=P P=V38 P=(P+V39)/2 P=(P+V34)/2 P=(P+V38)/2 V30=P P+=V0 V31=P P=V34 P=(P+V35)/2 P=(P+V34)/2 P=(P+V34)/2 V32=P P+=V0 V33=P
 model $F687 project 0E 38 ; project 14 from V28
 model $F68A faces_test 00 06 98 9C 8C 9C A0 90 A0 A4 94 A4 98 88 74 70 9C 70 74 A4 ; faces_test from 0: (38 39 35) (39 40 36) (40 41 37) (41 38 34) (29 28 39) (28 29 41)
 model $F69F fill_faces 07 00 0A 06 01 98 9C 8C 84 80 88 00 08 04 03 78 7C 84 80 01 09 05 03 70 A0 90 8C 9C 02 08 04 01 A0 A4 94 90 03 09 05 03 74 98 88 94 A4 04 08 04 04 74 70 9C 98 05 08 04 05 70 74 A4 A0 ; fill_faces (f0 c1 38 39 35 33 32 34) (f0 c3 30 31 33 32) (f1 c3 28 40 36 35 39) (f2 c1 40 41 37 36) (f3 c3 29 38 34 37 41) (f4 c4 29 28 39 38) (f5 c5 28 29 41 40)
 model $F6DD end ; end
-model $F6DE native $67F4 20 18 1C ; box_square 32 24 28, model
+model $F6DE native ApiVector18 20 18 1C ; box_square 32 24 28, model
 model $F6E4 polar_points 02 $F73E ; polar_points 2 (frames to $F73E)
 model $F6E8 db 08 F7 0E F7 14 F7 1A F7 20 F7 26 F7 2C F7 32 F7
 model $F6F8 db 38 F7 32 F7 2C F7 26 F7 20 F7 1A F7 14 F7 0E F7
@@ -560,7 +560,7 @@ model $F7BB fill_faces_clip 01 02 08 04 01 20 24 28 2C ; fill_faces_clip (f2 c1 
 model $F7C5 fill_back_faces 01 02 08 04 06 2C 28 24 20 ; fill_back_faces (f2 c6 11 10 9 8)
 model $F7CF return ; return
 model $F7D0 end ; end
-model $F7D1 native $67F4 20 20 38 ; box_square 32 32 56, model
+model $F7D1 native ApiVector18 20 20 38 ; box_square 32 32 56, model
 model $F7D7 verts 26 A7 40 F8 45 26 A2 A6 42 F8 43 27 A3 A7 41 F8 44 02 81 46 82 47 06 81 46 22 A3 48 A2 49 08 A3 48 FF ; verts P=V38 P=(P+V39)/2 V0=P P.xz=-P.xz V5=P P=V38 P=(P+V34)/2 P=(P+V38)/2 V2=P P.xz=-P.xz V3=P P=V39 P=(P+V35)/2 P=(P+V39)/2 V1=P P.xz=-P.xz V4=P P=V2 P=(P+V1)/2 V6=P P=(P+V2)/2 V7=P P=V6 P=(P+V1)/2 V6=P P=V34 P=(P+V35)/2 V8=P P=(P+V34)/2 V9=P P=V8 P=(P+V35)/2 V8=P
 model $F7FA project 0A 00 ; project 10 from V0
 model $F7FD project 08 44 ; project 8 from V34
@@ -568,13 +568,13 @@ model $F800 faces_test 00 03 00 04 8C 10 08 88 14 00 08 ; faces_test from 0: (0 
 model $F80C fill_faces 04 00 09 05 04 00 04 8C 88 08 01 08 04 03 10 08 88 94 02 08 04 05 14 00 08 10 00 08 04 01 1C 18 20 24 ; fill_faces (f0 c4 0 1 35 34 2) (f1 c3 4 2 34 37) (f2 c5 5 0 2 4) (f0 c1 7 6 8 9)
 model $F82F fill_back_faces 03 00 09 05 04 90 0C 14 10 94 01 08 04 03 04 0C 90 8C 02 08 04 05 00 14 0C 04 ; fill_back_faces (f0 c4 36 3 5 4 37) (f1 c3 1 3 36 35) (f2 c5 0 5 3 1)
 model $F84A end ; end
-model $F84B native $67FA 10 05 20 ; box_rect16 16 5 32, model
+model $F84B native ApiVector20 10 05 20 ; box_rect16 16 5 32, model
 model $F851 verts 27 A9 5E 27 A8 C0 1E 5D F8 5C 23 E0 27 50 A1 90 50 23 A4 4F A4 8F 5F E0 10 60 0F A3 8F 5E E0 10 61 FF ; verts P=V39 P=(P+V41)/2 V30=P P=V39 P=(P+V40)/2 P+=V30 V29=P P.xz=-P.xz V28=P P=V35 P-=V39 V16=P P=(P+V33)/2 P=(P+V16)/2 V16=P P=V35 P=(P+V36)/2 V15=P P=(P+V36)/2 P=(P+V15)/2 V31=P P-=V16 V32=P P=V15 P=(P+V35)/2 P=(P+V15)/2 V30=P P-=V16 V33=P
 model $F874 project 0E 38 ; project 14 from V28
 model $F877 faces_test 00 06 A4 98 94 98 9C 88 9C A0 8C A0 A4 90 70 74 98 74 70 A0 ; faces_test from 0: (41 38 37) (38 39 34) (39 40 35) (40 41 36) (28 29 38) (29 28 40)
 model $F88C fill_faces_clip 07 00 09 05 06 70 98 88 94 A4 01 08 04 07 98 9C 8C 88 02 09 05 06 74 A0 90 8C 9C 03 08 04 07 A0 A4 94 90 04 08 04 01 70 74 9C 98 05 08 04 01 74 70 A4 A0 02 08 04 01 84 80 7C 78 ; fill_faces_clip (f0 c6 28 38 34 37 41) (f1 c7 38 39 35 34) (f2 c6 29 40 36 35 39) (f3 c7 40 41 37 36) (f4 c1 28 29 39 38) (f5 c1 29 28 41 40) (f2 c1 33 32 31 30)
 model $F8C8 end ; end
-model $F8C9 native $67F4 20 30 40 ; box_square 32 48 64, model
+model $F8C9 native ApiVector18 20 30 40 ; box_square 32 48 64, model
 model $F8CF verts 28 A6 61 F0 62 A1 A1 A1 65 28 A7 63 24 A7 A3 A3 64 FF ; verts P=V40 P=(P+V38)/2 V33=P P=-P V34=P P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V37=P P=V40 P=(P+V39)/2 V35=P P=V36 P=(P+V39)/2 P=(P+V35)/2 P=(P+V35)/2 V36=P
 model $F8E2 project 05 42 ; project 5 from V33
 model $F8E5 faces_test 00 01 84 8C 90 ; faces_test from 0: (33 35 36)
@@ -582,7 +582,7 @@ model $F8EB fill_faces 01 00 08 04 06 84 8C 90 94 ; fill_faces (f0 c6 33 35 36 3
 model $F8F5 fill_back_faces 01 00 08 04 06 94 90 8C 84 ; fill_back_faces (f0 c6 37 36 35 33)
 model $F8FF lines A1 22 C0 ; lines M33 L34
 model $F903 end ; end
-model $F904 native $67F7 14 30 18 ; box_rect 20 48 24, model
+model $F904 native ApiVector19 14 30 18 ; box_rect 20 48 24, model
 model $F90A verts 28 A9 41 28 A4 60 A4 A0 42 24 A5 A4 81 43 A0 A0 52 27 A6 45 27 A3 5F A3 9F 44 23 A2 A3 85 46 9F 9F 53 06 83 4C 05 81 4D 26 A2 47 29 A5 49 A6 48 A6 4A F0 4E 08 87 4B F0 4F 08 89 49 F0 50 08 A9 48 F0 51 FF ; verts P=V40 P=(P+V41)/2 V1=P P=V40 P=(P+V36)/2 V32=P P=(P+V36)/2 P=(P+V32)/2 V2=P P=V36 P=(P+V37)/2 P=(P+V36)/2 P=(P+V1)/2 V3=P P=(P+V32)/2 P=(P+V32)/2 V18=P P=V39 P=(P+V38)/2 V5=P P=V39 P=(P+V35)/2 V31=P P=(P+V35)/2 P=(P+V31)/2 V4=P P=V35 P=(P+V34)/2 P=(P+V35)/2 P=(P+V5)/2 V6=P P=(P+V31)/2 P=(P+V31)/2 V19=P P=V6 P=(P+V3)/2 V12=P P=V5 P=(P+V1)/2 V13=P P=V38 P=(P+V34)/2 V7=P P=V41 P=(P+V37)/2 V9=P P=(P+V38)/2 V8=P P=(P+V38)/2 V10=P P=-P V14=P P=V8 P=(P+V7)/2 V11=P P=-P V15=P P=V8 P=(P+V9)/2 V9=P P=-P V16=P P=V8 P=(P+V41)/2 V8=P P=-P V17=P
 model $F94F project 08 44 ; project 8 from V34
 model $F952 project 15 02 ; project 21 from V1
@@ -591,7 +591,7 @@ model $F970 fill_faces 08 00 0B 07 04 04 A4 94 90 08 48 0C 01 0B 07 04 98 14 18 
 model $F9B8 lines_if_faces 8C 04 04 0D C0 ; lines_if_faces M12 L13[f4|f4]
 model $F9BE end ; end
 model $F9BF native $F659 ; native $F659, model
-model $F9C2 native $67F7 40 1C 40 ; box_rect 64 28 64
+model $F9C2 native ApiVector19 40 1C 40 ; box_rect 64 28 64
 model $F9C8 verts 25 A2 61 29 A5 A5 65 26 A2 A2 62 A5 64 29 A6 63 FF ; verts P=V37 P=(P+V34)/2 V33=P P=V41 P=(P+V37)/2 P=(P+V37)/2 V37=P P=V38 P=(P+V34)/2 P=(P+V34)/2 V34=P P=(P+V37)/2 V36=P P=V41 P=(P+V38)/2 V35=P
 model $F9DA project 05 42 ; project 5 from V33
 model $F9DD fill_polys 01 03 04 8C 88 94 ; fill_polys (c4 35 34 37)

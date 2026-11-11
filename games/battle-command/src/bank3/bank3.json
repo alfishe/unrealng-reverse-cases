@@ -13,6 +13,5 @@
   "header": ["; Battle Command, Ocean 1990: RAM bank 3, paged at $C000, as its tape block loads it."],
   "l1": ["work/stage1/c1/l1.json", "work/stage1/menu/l1.json", "work/stage1/missions/l1.json", "work/stage1/play/l1.json", "work/stage1/play2/l1.json", "work/stage1/death/l1.json", "work/stage1/m2ocean/l1.json", "work/stage1/m2erbe/l1.json", "work/stage1/search/l1.json", "work/stage1/m10/l1.json"],
   "data_entries": "stop",
-  "work": "work/stage2/mkbank3",
-  "res_install": "tools/res_formats.py"
+  "work": "work/stage2/mkbank3"
 }

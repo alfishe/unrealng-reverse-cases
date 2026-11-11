@@ -6,7 +6,9 @@
 ; the back buffer
 ;
 ; Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then
-; `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 32 (menu, missions, search).
+; `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 36 (armour, c1, death, fuel,
+; m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2,
+; search).
 CopyCatalogueHead:
   CALL SaveBank
   CALL PageBank4
@@ -30,8 +32,9 @@ CopyCatalogueHead:
 ;
 ; Record n of the 8-byte index at `$CCA6`: the offset, two words stored at
 ; `$7143` and `$7151`, the end; the text is copied through `$8AF1` to `$DBF3`;
-; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 25 (menu,
-; missions, search).
+; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 29
+; (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions,
+; play, play2).
 CopyMissionText:
   CALL SaveBank
   CALL PageBank4
@@ -101,7 +104,8 @@ CopyMissionText:
 ; Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints
 ; `$C90D` ("loading"), pages bank 4 and loads the block (length from the header
 ; `$8AFC`) to `$CB64`; retries until its first 9 bytes are "MISSION:T"
-; (`$71BB`). Witness: L1 13 (c1, menu, missions, search).
+; (`$71BB`). Witness: L1 16 (armour, c1, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, menu, missions, play, play2, search).
 LoadDirectory:
   LD IX,BackBuffer
   LD DE,$0011
@@ -132,14 +136,16 @@ l_7181:
 
 ; Print bank 6 $C93E
 ;
-; Witness: L1 25 (c1, menu, missions, search).
+; Witness: L1 31 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; menu, missions, play, play2, search).
 PrintRewind:
   LD HL,l_C92E+$0010
   JP PrintString
 
 ; Z if the header at $8AF2 starts "MISSHDR:" (8 bytes)
 ;
-; Witness: L1 19 (c1, m10, m2erbe, m2ocean, missions, search).
+; Witness: L1 23 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, missions, play, play2, search).
 IsMissionHeader:
   LD DE,MissionHeaderName+$0001
   LD HL,BackBuffer+$0001
@@ -156,7 +162,8 @@ IsMissionBlock:
 
 ; Z if the header at $8AF2 is "DIRECTORY"
 ;
-; Witness: L1 12 (c1, menu, missions, search).
+; Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; menu, missions, play, play2, search).
 IsDirectoryHeader:
   LD DE,DirectoryName
   LD HL,BackBuffer+$0001
@@ -164,20 +171,23 @@ IsDirectoryHeader:
 
 ; Z if the catalogue at $CB64 starts "MISSION:T"
 ;
-; Witness: L1 12 (c1, menu, missions, search).
+; Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; menu, missions, play, play2, search).
 IsCatalogue:
   LD DE,CatalogueName+$0001
   LD HL,l_CB56+$000E
 
 ; B = 9, then CompareB
 ;
-; Witness: L1 24 (c1, menu, missions, search).
+; Witness: L1 30 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; menu, missions, play, play2, search).
 CompareNine:
   LD B,$09
 
 ; Compare B bytes at DE and HL: Z when equal
 ;
-; Witness: L1 41 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+; Witness: L1 454 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 CompareB:
   LD A,(DE)
   CP (HL)

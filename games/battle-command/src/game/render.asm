@@ -20,8 +20,8 @@
 ; and the bank 6 menu views `$C409`, `$C4AD`, `$CA8B`, `$DA09`, `$DB1C`. Its
 ; own time (18 permille) is the wait for the interrupt.
 ;
-; Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 StartViewPass:
   LD HL,BlitRequest+$0001
   XOR A
@@ -33,8 +33,8 @@ l_9886:
 
 ; Ask the interrupt to blit the finished back buffer: `$83BA` = `$FF`
 ;
-; Witness: L1 6658 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 13587 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 RequestViewBlit:
   LD A,$FF
   LD (BlitRequest+$0001),A
@@ -161,8 +161,8 @@ OpcodeTable:
 ; the mission code `$E3F3`, `$E561`, and ScriptTranslate `$A049`, which jumps
 ; back here.
 ;
-; Witness: L1 131277 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 319386 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 RunScript:
   LD E,(IX+$00)
   LD A,$FF
@@ -184,8 +184,8 @@ sub_9927:
 
 ; The handlers' return: go on with the next opcode
 ;
-; Witness: L1 104358 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 266356 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ScriptNext:
   JP RunScript
 
@@ -198,8 +198,8 @@ ScriptNext:
 ; bytes; other targets take none (`$F6B9` in mission 1 clears the tilt `$68E6`;
 ; `$D4A4`, `$D5C9`, `$E2C0`, `$EC2E`, `$EE06`, `$EE22`, `$FE8F` in bank 0).
 ;
-; Witness: L1 15260 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 38166 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpNative:
   LD L,(IX+$00)
   INC IX
@@ -218,8 +218,8 @@ OpNative:
 ; `SP` back, `EI`. With the box corners `V34-V41` from a box generator,
 ; midpoints and sums give every other vertex of the model in its turned axes.
 ;
-; Witness: L1 10819 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 24235 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpVertexProgram:
   POP DE
   LD (l_99C1+$0001),DE
@@ -410,8 +410,8 @@ l_9A2F:
 ; through Divide `$A687` and DivideByLog `$A6D2` (one logarithm of the depth
 ; for both). Output: `$FC00`+4i = sx word, `$FC02`+4i = sy word.
 ;
-; Witness: L1 22966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 56575 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpProject:
   POP DE
   LD (l_9AD5+$0001),DE
@@ -493,7 +493,8 @@ l_9AD5:
 ; A line is drawn only when both ends are in front of the eye; ClipLine2D
 ; `$A184` clips it to the window and `$72B1` draws it with bank 3 `$C9A7`.
 ;
-; Witness: L1 1542 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 5137 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 OpLines:
   POP DE
   LD (l_9B35+$0001),DE
@@ -660,8 +661,8 @@ l_9BAC:
 ; Slot base to `$9C6B` (+`$28`), then TestFace `$9BC3` for each triple of point
 ; offsets (4 x vertex).
 ;
-; Witness: L1 9372 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 24102 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpTestFaces:
   POP DE
   LD (l_9C79+$0001),DE
@@ -680,7 +681,8 @@ OpTestFaces:
 ; scaled to bytes (ScaleToBytes `$9C84`) and multiplied with MulSigned `$A7BF`:
 ; flag = `$FF` when ex1 * ey2 < ey1 * ex2.
 ;
-; Witness: L1 45290 (c1, death, missions, play, play2).
+; Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 TestFace:
   EX AF,AF'
   LD L,(IX+$00)
@@ -805,7 +807,8 @@ l_9C28:
 
 ; Store the face flag B at `$6728` + slot, next slot, loop over the triples
 ;
-; Witness: L1 45290 (c1, death, missions, play, play2).
+; Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 StoreFaceFlag:
   LD A,$00
   LD L,A
@@ -831,8 +834,8 @@ l_9C7C:
 ; The loop `$9C7C` shifts both right. Unreferenced code at `$9C9A` (another
 ; flag store) follows.
 ;
-; Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu,
-; missions, play, play2, search).
+; Witness: L1 247063 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ScaleToBytes:
   LD A,L
   RLA
@@ -858,7 +861,7 @@ data_9C9A:
 
 ; A face with one or two points behind the eye: flag `$FF`
 ;
-; Witness: L1 11 (c1, death).
+; Witness: L1 1130 (c1, death, m1complete, m4complete).
 FacePartlyBehind:
   POP DE
   POP DE
@@ -867,7 +870,8 @@ FacePartlyBehind:
 
 ; A face with all three points behind the eye: flag 0
 ;
-; Witness: L1 1123 (c1, death, missions, play, play2).
+; Witness: L1 12422 (armour, c1, death, m1complete, m4complete, missions, play,
+; play2).
 FaceAllBehind:
   POP DE
   POP DE
@@ -934,8 +938,8 @@ l_9D01:
 ; Opcode 11 (address): run the script at the address as a subroutine (IX
 ; pushed, opcode 9 returns)
 ;
-; Witness: L1 878 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 1496 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, menu, missions, play, play2, search).
 OpCall:
   LD C,(IX+$00)
   INC IX
@@ -951,8 +955,8 @@ OpCall:
 ;
 ; Used to end the parts of OpCall `$9D0D` and OpOrderByFace `$9D5A`.
 ;
-; Witness: L1 12941 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 27230 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpReturn:
   POP DE
   LD (l_9D25+$0001),DE
@@ -1000,8 +1004,8 @@ l_9D4E:
 ; pushed as returns. This is how a model sorts its own parts (the turret before
 ; or behind the hull) without a depth sort.
 ;
-; Witness: L1 6021 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 12854 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpOrderByFace:
   POP DE
   LD (l_9D84+$0001),DE
@@ -1040,8 +1044,8 @@ l_9D87:
 ; then shares FillFaceList `$9D99`. A face with a point behind the eye is
 ; skipped (`$9E0B`).
 ;
-; Witness: L1 11209 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 27293 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 OpFillFaces:
   LD A,$CA
   LD (l_9DA6+$000C),A
@@ -1054,7 +1058,8 @@ OpFillFaces:
 ; The colour to `$7579`, the count to `$68A9`, the face count in `$68AA`. A
 ; face whose flag fails the test is skipped by its length byte.
 ;
-; Witness: L1 5753 (missions, play2).
+; Witness: L1 28219 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 FillFaceList:
   POP DE
   LD (l_9E02+$0001),DE
@@ -1137,7 +1142,8 @@ l_9E14:
 
 ; Opcode 13: fill the visible faces, clipping those that cross the near plane
 ;
-; Witness: L1 2455 (c1, death, missions, play, play2).
+; Witness: L1 6425 (armour, c1, controls, death, fuel, m1complete, m4complete,
+; missions, play, play2).
 OpFillFacesClipped:
   LD A,$CA
 
@@ -1147,7 +1153,8 @@ OpFillFacesClipped:
 ; A = the opcode patched at `$9E40` (`JP Z` for opcode 13, `JP NZ` for 20). The
 ; first point offset is kept in `$66CC` for the closing edge.
 ;
-; Witness: L1 5778 (c1, death, missions, play, play2).
+; Witness: L1 14717 (armour, c1, controls, death, fuel, m1complete, m4complete,
+; missions, play, play2).
 FillFaceListClipped:
   POP DE
   LD (l_9EB1+$0001),DE
@@ -1251,7 +1258,8 @@ l_9EC4:
 ; Opcode 14 (n, n x (k, colour, k point offsets)): fill polygons with no face
 ; test
 ;
-; Witness: L1 5571 (c1, death, m2erbe, menu, missions, play, play2).
+; Witness: L1 11527 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; menu, missions, play, play2).
 OpFillPolys:
   POP DE
   LD (l_9F25+$0001),DE
@@ -1323,7 +1331,7 @@ l_9F2E:
 ; Opcode 15: fill the faces whose flag is 0 (`JP NZ` at `$9DB2`): the insides
 ; seen through an opening
 ;
-; Witness: L1 29 (missions, play2).
+; Witness: L1 926 (armour, m1complete, m4complete, missions, play2).
 OpFillBackFaces:
   LD A,$C2
   LD (l_9DA6+$000C),A
@@ -1334,7 +1342,7 @@ OpFillBackFaces:
 ; Opcode 16: a polyline like opcode 3, a segment with an end behind the eye cut
 ; at the near plane (`$A422`, `$A42B`)
 ;
-; Witness: L1 785 (death, missions).
+; Witness: L1 5538 (death, m1complete, m4complete, missions).
 OpLinesClipped:
   POP DE
   LD (l_9FB2+$0001),DE
@@ -1561,7 +1569,8 @@ OpTranslate:
 ; Opcode 19 (n, n x (k, colour, k point offsets)): fill polygons, clipping at
 ; the near plane
 ;
-; Witness: L1 7171 (c1, death, m2erbe, missions, play, play2).
+; Witness: L1 15521 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 OpFillPolysClipped:
   POP DE
   LD (l_A0F6+$0001),DE
@@ -1659,7 +1668,8 @@ l_A109:
 ; Opcode 20: fill the faces whose flag is 0, clipping at the near plane
 ; (FillFaceListClipped with `JP NZ`)
 ;
-; Witness: L1 3323 (c1, death, missions, play, play2).
+; Witness: L1 8292 (armour, c1, death, fuel, m1complete, m4complete, missions,
+; play, play2).
 OpFillBackFacesClipped:
   LD A,$C2
   JP FillFaceListClipped
@@ -1673,7 +1683,7 @@ OpFillBackFacesClipped:
 ; downwards. Then IX = next. Mission 1 uses it once (`$EFC5`, a barrel run out
 ; in five frames).
 ;
-; Witness: L1 4 (play2).
+; Witness: L1 723 (armour, m1complete, m4complete, play2).
 OpPolarPoints:
   POP DE
   LD (l_A179+$0001),DE
@@ -1790,7 +1800,8 @@ l_AA5B:
 ; = (S, -h, C), V36 = (-C, -h, S), V37 = (-S, -h, -C), V38-V41 the same at y =
 ; +h. The mission vector `$67F4`.
 ;
-; Witness: L1 483 (c1, death, missions, play, play2).
+; Witness: L1 3795 (armour, c1, death, m1complete, m4complete, missions, play,
+; play2).
 BoxSquare:
   POP DE
   LD (l_AAF2+$0001),DE
@@ -1837,8 +1848,8 @@ BoxSquare:
 
 ; Last operand h: y = -h for V34-V37, +h for V38-V41; V33 = (0, 0, 0); return
 ;
-; Witness: L1 9618 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 24903 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 BoxHeights:
   LD HL,$0000
   LD (MissionHeader+$217D),HL
@@ -1869,7 +1880,8 @@ l_AAF2:
 ; opposites, so b sets the aspect. Through MulWordByte `$67D9`. The mission
 ; vector `$67FA`.
 ;
-; Witness: L1 2485 (c1, death, missions, play, play2).
+; Witness: L1 6117 (armour, c1, death, fuel, m1complete, m4complete, missions,
+; play, play2).
 BoxRect16:
   POP DE
   LD (l_AAF2+$0001),DE
@@ -1932,8 +1944,8 @@ BoxRect16:
 ; The mission vector `$67F7`; the most used box (bank 3 models, mission 1: 22
 ; of 31 models).
 ;
-; Witness: L1 6221 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 14991 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 BoxRect:
   POP DE
   LD (l_AAF2+$0001),DE
@@ -1998,7 +2010,7 @@ BoxTiltPitch:
 ; in `$AD04`); sets V0 = 0. Called from OpNative in death and play2 (a tilted
 ; vehicle).
 ;
-; Witness: L1 0 (death, play2).
+; Witness: L1 1818 (armour, death, m1complete, m4complete, play2).
 BoxTilted:
   POP DE
   LD (BoxTilted+$0103),DE
@@ -2106,7 +2118,7 @@ RollSinCos:
 
 ; Turn the pair (B, C) by the angle in `$AD04`: HL, DE = the two rotated words
 ;
-; Witness: L1 1563 (death, play2).
+; Witness: L1 5454 (armour, death, m1complete, m4complete, play2).
 RotatePair:
   LD DE,(RollSinCos)
   LD A,E

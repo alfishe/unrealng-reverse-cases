@@ -34,6 +34,5 @@
     "work/stage1/m10/l1.json"
   ],
   "data_entries": "stop",
-  "work": "work/stage2/mkbank6",
-  "res_install": "tools/res_formats.py"
+  "work": "work/stage2/mkbank6"
 }

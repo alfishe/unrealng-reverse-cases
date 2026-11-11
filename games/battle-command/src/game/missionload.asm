@@ -12,7 +12,8 @@
 ; the bank-3 copy of `$DBDA`... is copied back to bank 0 (no tape). Else
 ; `$8551`: load the 17-byte header with "MISSHDR:" (`$84FE`), then the block of
 ; the header's length to `$DBC5`; SPACE stops. Then `$85F5` and `$8598` set the
-; play state from the block. Witness: L1 16 (m10, m2erbe, m2ocean, missions).
+; play state from the block. Witness: L1 20 (armour, c1, death, fuel,
+; m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 LoadMission:
   CALL PageBank0
   LD IX,ObjectTable
@@ -47,7 +48,8 @@ RestoreFromBank3:
 ; Load 17-byte headers until one is "MISSHDR:"; its length to $855C, its digit
 ; - "1" to $757D, the mark on the clipboard
 ;
-; Witness: L1 21 (m10, m2erbe, m2ocean, missions, search).
+; Witness: L1 25 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, missions, play, play2, search).
 LoadMissionHeader:
   DI
   CALL Delay
@@ -75,7 +77,8 @@ l_8516:
 
 ; The attribute C on the catalogue line of mission A ($5902 + 32A)
 ;
-; Witness: L1 24 (m10, m2erbe, m2ocean, missions, search).
+; Witness: L1 35 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, missions, play, play2, search).
 MarkMission:
   ADD A,A
   ADD A,A
@@ -97,7 +100,8 @@ HeaderMission:
 
 ; Mark the last header's mission again ($C4) unless none
 ;
-; Witness: L1 32 (menu, missions, search).
+; Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 RemarkMission:
   LD A,(HeaderMission)
   AND A
@@ -146,7 +150,8 @@ l_8588:
 ; From the loaded block: 12 bytes to $7E82, $DBFD to $CAAF, the object count to
 ; bank 6, the objects copied to bank 3
 ;
-; Witness: L1 3 (m2erbe, missions).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 MissionSetup:
   XOR A
   LD (WeaponVars+$0002),A
@@ -197,7 +202,7 @@ l_85D4:
 
 ; NC when SPACE is held (port $7FFE bit 0)
 ;
-; Witness: L1 8 (m2ocean, missions).
+; Witness: L1 8 (m2ocean).
 SpacePressed:
   LD A,$7F
   IN A,($FE)
@@ -207,7 +212,8 @@ SpacePressed:
 ; From the header: $DBE1 to $6A67, 8 bytes $DBE3 to $7611, the time limit $DBFE
 ; to $68EB, the clock stopped
 ;
-; Witness: L1 15 (m10, m2erbe, m2ocean, missions).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 MissionTimeSetup:
   LD HL,(MissionHeader+$001C)
   LD (PlayLoopTail+$0010),HL

@@ -9,6 +9,9 @@ the handler's, not the interrupted routine's. An entry no recording reached says
 recordings ran gives their calls.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
+The parts of the medium (`case.json` `ref_parts`: Bank 3, Bank 4, Bank 6, Bank 7, Tape BASIC, Decryption chain and
+loader, Loader stage 2, Loader block 37, Loader block 39) follow the game, each under its own heading with its
+modules, its source, its annotations and its recordings.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -46,7 +49,7 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 
 Each vector is a `JP` to a resident routine in bank 2 or 5: `$67BE` `$BFD1`, `$67C1` `$B766`, `$67C4` `$BCDA`, `$67C7` `$BD41`, `$67CA` `$C957`, `$67CD` `$CA3B`, `$67D0` `$A779`, `$67D3` `$A7AE`, `$67D6` `$A799`, `$67D9` `$A82C`, `$67DC` `$B660`, `$67DF` `$B6D1`, `$67E2` `$B282`, `$67E5` `$B6BD`, `$67E8` `$A899`, `$67EB` `$B611`, `$67EE` `$7040`, `$67F1` `$CC3C`, `$67F4` `$AA63`, `$67F7` `$AB7B`, `$67FA` `$AAF5`, `$67FD` `$AA47`. The mission code calls them (play: `$67D9` 220 482 times, `$67D6` 179 580).
 
-Witness: L1 15082 (death, m2erbe, missions, play, play2).
+Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -306,7 +309,7 @@ Witness: c1 frame 23974 (the bootstrap's `JP $68F4`, docs/03-build-and-load.md);
 
 Called from bank 6 `$CA8B` (the catalogue screen): pages bank 0, clears bit 7 of `$C774-$C78A` (the slot list), sets the 300 bytes from `$C648` (CollisionTables) to `$FF`, calls CameraToPlayer `$C357` (bank 0: all three addresses are bank 0's, bank 6 holds code there), returns with bank 6 paged (`JP $7278`).
 
-Witness: L1 15 (menu, missions, search).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -326,7 +329,7 @@ Witness: L1 15 (menu, missions, search).
 
 Reads the mission block's header (`$DBDA` -> `$BBF2`, `$DBD9` -> `$BBFA`), clears `$BC33`, sets the 3D view's blit (`$83E6` = `$8999`), draws the panel (`DrawBank7Picture` `$74AA` with DE = `$DD75`), resets the view parameters at `$9A6C`-`$9ABB`, calls the bank-6 set-up `$D521`, the weapon bars (`$7336`, `$73BA`), `$C632`, `$AE42`; clears the play flags (`$8459`, `$6A6D`, `$87E0`, `$D689`, `$D4B8`), prints `$D520` if `$7578` is set, then runs `$BA4A`, `$CEAB` and the play keys and falls into PlayLoop.
 
-Witness: L1 27 (death, m2erbe, missions, play, play2).
+Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -343,7 +346,7 @@ Witness: L1 27 (death, m2erbe, missions, play, play2).
 
 Calls in order: `$DB71`, the 3D frame (`$9882`), the play keys (`PlayKeys` `$6B3B`), `$B9F6`, the clipping marks (`ClearClipRow` `$6A9D`), `$BAAC`, the world (`$AD45`, `$AEA0`), `$BBF1`, `$BD98`, Bank3Step `$72A3` (bank 3 DrawDebris / MoveAllDebris), CameraSinCosAgain `$BA40`, DrawRadar `$C05E`, DrawObjectsInOrder `$BF53`, CollisionPass `$C7BC` and DrawSightOverlay `$C4CD` (bank 0), `$988D`, the message timer (`$7D5D`), the weapon bars (`$7327`), the object table (`$C026`), `$6B1D`, the mission's goal hook (`CALL LoopHook` at `$6A66`, its operand patched by the mission load: Blast Em Mission `$EB60`; LoopHook `$6A9C` is a `RET` in the image) and `$7256`, until the view flag `$6A6D` is non-zero; then the next view's loop through `$6A99`.
 
-Witness: L1 410 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `PlayLoop` at work](img/routines/PlayLoop.gif)
 
@@ -390,7 +393,7 @@ Witness: L1 410 (death, m2erbe, missions, play, play2).
 
 **Fill the 32 bytes `$90F1-$9110` with `$FF`**
 
-The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame of every view loop, before the world is drawn. Witness: L1 3626 (death, m2erbe, missions, play, play2).
+The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame of every view loop, before the world is drawn. Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -404,7 +407,7 @@ The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame 
 
 **Fill 24 character rows of 6 bytes of the screen through ScreenRowFill**
 
-A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$D521`. Witness: L1 41 (death, m2erbe, missions, play, play2).
+A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$D521`. Witness: L1 48 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -433,7 +436,7 @@ Witness: L1 1 (play).
 
 **Toggle the low nibble of object 0's byte +7 from a random number while `$68BD` is below 16**
 
-HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a random nibble (`$67D0` -> `$A779`). Runs while `$68BD` < 16 (the damage of the tank? known only from the code). Witness: L1 3601 (death, m2erbe, missions, play, play2).
+HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a random nibble (`$67D0` -> `$A779`). Runs while `$68BD` < 16 (the damage of the tank? known only from the code). Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -446,7 +449,7 @@ HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a 
 
 **Page bank 6, call its panel set-up `$D521`, page bank 0 back**
 
-Witness: L1 27 (death, m2erbe, missions, play, play2).
+Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -461,7 +464,7 @@ Witness: L1 27 (death, m2erbe, missions, play, play2).
 
 Returns unless bit 1 of `$8978` is set and the code differs from the last (`$6B45`, the operand of `LD C,0`). E: `$843F` (the quit prompt), K and J: the selected weapon's aim pair (the `JP` targets `$6B55` and `$6B50`, patched by SelectWeapon from `$7B89` + 8 x type, words 0 and 1; `$6BB0` NoAction in the image), M: the status view (`$705A`), D: the damage board (`$6BC2`), 1-4: weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z: `$CEE5`, C: remembered in `$6B45`.
 
-Witness: L1 3602 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -488,7 +491,7 @@ Witness: L1 3 (play).
 
 **A RET: the action of the keys with nothing to do**
 
-Witness: L1 14403 (death, m2erbe, missions, play, play2).
+Witness: L1 40369 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -525,7 +528,7 @@ Witness: L1 1 (play).
 
 Pages bank 6 for `$DBB6`, draws `DrawBank7Picture` DE = `$D325`, prints the help texts (`$6C8B`), sets the blit to `$DBBD`, then per frame the mission clock (`PrintClock` `$7E3A`), the world and objects and bank 6's `$DB15`, `$D3C9`, `$E5BE`, `$C0F7`, the keys (`StatusKeys` `$6C60`) until `$6A6D`.
 
-Witness: L1 10 (play, play2).
+Witness: L1 10 (m2erbe, missions, play).
 
 | | |
 | --- | --- |
@@ -565,7 +568,7 @@ Witness: L1 1 (play).
 
 **The keys of the status view: C to the 3D view, B and M to `$704E` / `$705E`, then the help texts**
 
-Witness: L1 530 (play, play2).
+Witness: L1 530 (m2erbe, missions, play).
 
 | | |
 | --- | --- |
@@ -579,7 +582,7 @@ Witness: L1 530 (play, play2).
 
 **Print the help text `$6550` with attribute `$1A` through `$B7AE`**
 
-Witness: L1 10 (play, play2).
+Witness: L1 11 (m2erbe, missions, play).
 
 | | |
 | --- | --- |
@@ -607,7 +610,7 @@ Witness: L1 1 (play).
 
 `$D52E` is `NOP` until it has run, then `RET` (`$D531` writes it; the mission load `$8598` clears it). Record 21 (`$7ADC`) gets type `$8C` at the pad `$7E89` / `$7E8C` (the block header's 12 bytes at `$DBF1` copied to `$7E82`).
 
-Witness: L1 2 (play).
+Witness: L1 7 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
@@ -670,7 +673,7 @@ The height goes 104, 96, ... 24 (one step a pass), then the handler `$6BB0` park
 
 Clears `$6760`-`$6763`, `$FF` to `$6764`-`$6767`, the handler +`$18`/+`$19` = `$DB24` (play: 1 run).
 
-Witness: L1 1 (play).
+Witness: L1 3 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
@@ -684,7 +687,7 @@ Witness: L1 1 (play).
 
 `LD (IX+$19),$DB` / `RET`, the handler's high byte.
 
-Witness: L1 1 (play).
+Witness: L1 3 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
@@ -706,7 +709,7 @@ Witness: L1 1 (play).
 
 Flies the Helicarrier to the pad: IY = the pseudo-record `$7E65` (its X / Y at `$7E88` / `$7E8B` are the pad), TurnToward, MoveObject; when the Helicarrier itself (not the tank) is within 3 units of X >> 8 and Y >> 8 (768 world units) of the pad on both axes, the arrival at `$DB61` (play: 27 runs; m1complete 16239-17099, 85 runs).
 
-Witness: L1 27 (play).
+Witness: L1 220 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
@@ -721,7 +724,7 @@ Witness: L1 27 (play).
 
 A NOP / RET gate at `$DB71`. When `$68E8` (the goal flag) is set: `$DB77` writes `RET` at `$DB71` and prints "MISSION:COMPLETE:PROCEED:TO:PICKUP" (`$DB97`). Runs once per 3D frame.
 
-Witness: L1 3483 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -749,7 +752,7 @@ Witness: L1 3483 (death, m2erbe, missions, play, play2).
 
 **Border 0 (the stored colour `$6CF1` cleared)**
 
-Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 80 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -771,7 +774,7 @@ Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, se
 
 **Fill an attribute box from a 5-byte record: width, height, column, attribute, row**
 
-HL -> B (width), C (height), E (column), A (attribute), L (row); falls into AttrBoxAt. Witness: L1 350 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+HL -> B (width), C (height), E (column), A (attribute), L (row); falls into AttrBoxAt. Witness: L1 383 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -786,7 +789,7 @@ HL -> B (width), C (height), E (column), A (attribute), L (row); falls into Attr
 
 **AttrBox with B already set (HL -> height, column, attribute, row)**
 
-Witness: L1 319 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 474 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -809,7 +812,7 @@ Witness: L1 319 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **Fill C rows of B attribute bytes with A' from row L, column E (`$5800` + 32L + E)**
 
-Witness: L1 70 (c1, menu, missions, play, play2).
+Witness: L1 483 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -822,7 +825,7 @@ Witness: L1 70 (c1, menu, missions, play, play2).
 
 **Fill E pixel lines of D bytes with A from the line table `$6500`, column C**
 
-Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 200 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 224 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -836,7 +839,7 @@ Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 200 (
 
 **When the pointer is clicked, call the zone of the current screen that holds the pointer**
 
-`LD A,n`: n (`$6D43`) is set by the fire test of the interrupt (`$7DC2`). The zone table (HL, the operand at `$6D47`, set per screen by `SetScreen` `$7060`) has 6-byte records x1, x2, y1, y2 and a routine; the first record with x1 <= X < x2 and y1 <= Y < y2 (X `$9715`, Y `$9716`) is called. A 0 byte ends the table. Witness: L1 30082532 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+`LD A,n`: n (`$6D43`) is set by the fire test of the interrupt (`$7DC2`). The zone table (HL, the operand at `$6D47`, set per screen by `SetScreen` `$7060`) has 6-byte records x1, x2, y1, y2 and a routine; the first record with x1 <= X < x2 and y1 <= Y < y2 (X `$9715`, Y `$9716`) is called. A 0 byte ends the table. Witness: L1 36012878 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -850,7 +853,7 @@ Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 200 (
 
 **Copy a C x B graphic from HL' to the screen at pixel line A, column BC**
 
-The line address table `$6500` again. Witness: L1 416 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+The line address table `$6500` again. Witness: L1 470 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -864,7 +867,7 @@ The line address table `$6500` again. Witness: L1 416 (c1, death, m10, m2erbe, m
 
 **Control code 7: switch to the small font, then CodeAt**
 
-Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -888,7 +891,7 @@ Witness: known only from the code (no string of the recordings uses code 5).
 
 **A = column in 6-pixel cells: the byte (`$6DFD`) and the bit shift (`$6DEC`)**
 
-Witness: L1 1423 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1731 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -902,7 +905,7 @@ Witness: L1 1423 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 
 **The next 6-pixel cell, a new line past column 32**
 
-Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -916,7 +919,7 @@ Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
 
 **HL = SmallFont + 5 (A - "0")**
 
-Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -929,7 +932,7 @@ Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
 
 **Print a small-font character at the current cell: 5 lines, one of four shifts through `$6E9F`**
 
-Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -954,7 +957,7 @@ Witness: known only from the code (no recording counts it: it is entered by the 
 
 **Control code 2: a row (CodeAt) then a column**
 
-Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -969,7 +972,7 @@ Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **Control code 1: the next byte is the character row: its line pointers and attribute address**
 
-Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -983,7 +986,7 @@ Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **HL = the 8x8 glyph of character A: `$F5E4` + 8 (A - `$20`) (bank 6)**
 
-Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1006,7 +1009,7 @@ Witness: known only from the code.
 
 **Control code 8: print the byte at the address that follows as three decimal digits**
 
-Witness: L1 140 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 226 (armour, death, m10, m1complete, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1040,7 +1043,7 @@ Witness: known only from the code.
 
 **A / B: C the quotient, A the rest; the digit stored at HL**
 
-Witness: L1 280 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 452 (armour, death, m10, m1complete, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1061,7 +1064,7 @@ Witness: L1 280 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **Control code 11: the next character row, column 0**
 
-Witness: L1 156 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 164 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1075,7 +1078,7 @@ Witness: L1 156 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **Control code 10: the small font's next line (9 pixel lines down: ScreenRowTable + `$12`), column = the margin**
 
-Witness: L1 301 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 326 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1090,7 +1093,7 @@ Witness: L1 301 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, s
 
 **Control code 9: the next byte is the left margin (`$6F58`)**
 
-Witness: L1 169 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 187 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1114,7 +1117,7 @@ Witness: known only from the code.
 
 **Control code 13: the next byte is the attribute of the characters (`$7025`)**
 
-Witness: L1 1325 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1463 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1128,7 +1131,7 @@ Witness: L1 1325 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 
 **Print the string at HL: characters, control codes below `$20`, tokens from `$82`, `$FF` the end**
 
-Witness: L1 2130 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 34892 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 [Animation: `PrintString` at work](img/routines/PrintString.gif)
 
@@ -1155,7 +1158,7 @@ Witness: L1 2130 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 
 In column 31 it writes no attribute and starts a new line (CodeNewLine) instead (`$700F`).
 
-Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1170,7 +1173,7 @@ Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 
 **Control code 6: the small font's line from the next byte**
 
-Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1188,7 +1191,7 @@ Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 
 **Remember key A, screen 2 (E = 4); the mission code's vector `$67EE`**
 
-Witness: L1 9 (missions, play, play2).
+Witness: L1 11 (c1, controls, m10, m1complete, m4complete, menu, missions).
 
 | | |
 | --- | --- |
@@ -1212,7 +1215,7 @@ Witness: known only from the code.
 
 **Remember key A, screen 4 (E = 8)**
 
-Witness: L1 14 (missions, play, play2).
+Witness: L1 14 (m2erbe, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1225,7 +1228,7 @@ Witness: L1 14 (missions, play, play2).
 
 **Key "C", screen 0**
 
-Witness: L1 15 (menu, missions, play, play2).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1239,7 +1242,7 @@ Witness: L1 15 (menu, missions, play, play2).
 
 **Screen 0 (E = 0)**
 
-Witness: L1 91 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 108 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1254,7 +1257,7 @@ Witness: L1 91 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Screen 1 (E = 2)**
 
-Witness: L1 12 (menu, missions, play2).
+Witness: L1 13 (m4complete, menu).
 
 | | |
 | --- | --- |
@@ -1266,7 +1269,7 @@ Witness: L1 12 (menu, missions, play2).
 
 **Switch to entry E/2 of the screen list: the draw routine to `$6A99`, the zone table to `$6D47`**
 
-Witness: L1 121 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 148 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1281,7 +1284,7 @@ Witness: L1 121 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **`$6A6D` = `$FF`: the current loop ends**
 
-Witness: L1 10 (play, play2).
+Witness: L1 150 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1293,7 +1296,7 @@ Witness: L1 10 (play, play2).
 
 **Once: the briefing map (bank 6's BriefingMapFrame `$DACB` and BriefingMap `$DB64`), then patched to RET**
 
-Witness: L1 10 (menu, play, play2).
+Witness: L1 10 (menu).
 
 | | |
 | --- | --- |
@@ -1323,7 +1326,7 @@ Witness: L1 1 (play).
 
 **Copy the catalogue's first 32 bytes to bank 6 `$CF85` and the 1 K from `$CB84` to the back buffer**
 
-Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 32 (menu, missions, search).
+Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1337,7 +1340,7 @@ Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB
 
 **Copy mission (`$757D`)'s texts from the catalogue (bank 4) to bank 6 `$DBF3`**
 
-Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143` and `$7151`, the end; the text is copied through `$8AF1` to `$DBF3`; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 25 (menu, missions, search).
+Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143` and `$7151`, the end; the text is copied through `$8AF1` to `$DBF3`; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 29 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1351,7 +1354,7 @@ Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143`
 
 **Load the catalogue from side 2: the 17-byte header "DIRECTORY", then its block to bank 4 `$CB64`**
 
-Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` ("loading"), pages bank 4 and loads the block (length from the header `$8AFC`) to `$CB64`; retries until its first 9 bytes are "MISSION:T" (`$71BB`). Witness: L1 13 (c1, menu, missions, search).
+Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` ("loading"), pages bank 4 and loads the block (length from the header `$8AFC`) to `$CB64`; retries until its first 9 bytes are "MISSION:T" (`$71BB`). Witness: L1 16 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1365,7 +1368,7 @@ Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` (
 
 **Print bank 6 `$C93E`**
 
-Witness: L1 25 (c1, menu, missions, search).
+Witness: L1 31 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1378,7 +1381,7 @@ Witness: L1 25 (c1, menu, missions, search).
 
 **Z if the header at `$8AF2` starts "MISSHDR:" (8 bytes)**
 
-Witness: L1 19 (c1, m10, m2erbe, m2ocean, missions, search).
+Witness: L1 23 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1401,7 +1404,7 @@ Witness: known only from the code.
 
 **Z if the header at `$8AF2` is "DIRECTORY"**
 
-Witness: L1 12 (c1, menu, missions, search).
+Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1414,7 +1417,7 @@ Witness: L1 12 (c1, menu, missions, search).
 
 **Z if the catalogue at `$CB64` starts "MISSION:T"**
 
-Witness: L1 12 (c1, menu, missions, search).
+Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1427,7 +1430,7 @@ Witness: L1 12 (c1, menu, missions, search).
 
 **B = 9, then CompareB**
 
-Witness: L1 24 (c1, menu, missions, search).
+Witness: L1 30 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1441,7 +1444,7 @@ Witness: L1 24 (c1, menu, missions, search).
 
 **Compare B bytes at DE and HL: Z when equal**
 
-Witness: L1 41 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+Witness: L1 454 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1458,7 +1461,7 @@ Witness: L1 41 (c1, m10, m2erbe, m2ocean, menu, missions, search).
 
 **Load a tape block to IX, length DE, flag A (carry: load) with the sound and the menu's flag set aside**
 
-Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, calls `LdBytes` `$8617`; restores `$D283` = `$C000` and the border, carry = loaded. Witness: L1 68 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, calls `LdBytes` `$8617`; restores `$D283` = `$C000` and the border, carry = loaded. Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1471,7 +1474,7 @@ Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, call
 
 **The game's copy of the ROM's LD-BYTES (`$0556`): IX, DE, A, carry; border stripes; NC on an error**
 
-The timings are the ROM's; the border colours of the stripes come from C. A block shorter than DE ends in a time-out of the edge reader (`LdEdge2` `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever (m2ocean). Witness: L1 68 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+The timings are the ROM's; the border colours of the stripes come from C. A block shorter than DE ends in a time-out of the edge reader (`LdEdge2` `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever (m2ocean). Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1487,7 +1490,7 @@ The timings are the ROM's; the border colours of the stripes come from C. A bloc
 
 **Two edges (the ROM's LD-EDGE-2)**
 
-Witness: L1 1682113 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 2102599 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1500,7 +1503,7 @@ Witness: L1 1682113 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play
 
 **One edge (the ROM's LD-EDGE-1), SPACE breaks**
 
-Witness: L1 3507210 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 4378887 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1528,7 +1531,7 @@ Witness: known only from the code (no caller found).
 
 **Wait until the interrupt clears `$83BA` (the 3D frame's blit is done)**
 
-Witness: L1 3742 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 3076073 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1541,7 +1544,7 @@ Witness: L1 3742 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **The briefing map's legend: wait for the frame, the attribute boxes `$DB01` and `$DB0B`, the text `$DAE1` ("Roads." / "Rivers."); called by bank 6 BriefingMap `$DB64`**
 
-Witness: L1 10 (menu, play, play2).
+Witness: L1 10 (menu).
 
 | | |
 | --- | --- |
@@ -1552,7 +1555,7 @@ Witness: L1 10 (menu, play, play2).
 
 **The status view map's legend: wait for the frame, the boxes `$DB10` and `$DAC1`, the text `$DAA1`; called by bank 6 StatusMap `$DB15`**
 
-Witness: L1 40 (menu, missions, play, play2).
+Witness: L1 40 (m2erbe, missions, play).
 
 | | |
 | --- | --- |
@@ -1563,7 +1566,7 @@ Witness: L1 40 (menu, missions, play, play2).
 
 **A NOP the first time: WaitFrameDone, then patched to RET**
 
-Witness: L1 6587 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 13555 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1578,7 +1581,7 @@ Witness: L1 6587 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **A = 0 then PageMain**
 
-Witness: L1 3735 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 9925 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1591,7 +1594,7 @@ Witness: L1 3735 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Set the screen bit (`$7284`, the OR operand) to A and re-page the current bank**
 
-Witness: L1 3878 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 10090 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1606,7 +1609,7 @@ Witness: L1 3878 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **A = 8 (the shadow screen bit of `$7FFD`) then PageMain**
 
-Witness: L1 143 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 165 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1619,7 +1622,7 @@ Witness: L1 143 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Page bank 3 at `$C000`**
 
-Witness: L1 158933 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 266011 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1633,7 +1636,7 @@ Witness: L1 158933 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Page bank 4 at `$C000`**
 
-Witness: L1 76703 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 135412 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1646,7 +1649,7 @@ Witness: L1 76703 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
 
 **Page bank 7 at `$C000`**
 
-Witness: L1 122 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 142 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1659,7 +1662,7 @@ Witness: L1 122 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Page bank 6 at `$C000`**
 
-Witness: L1 206018 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 336465 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1673,7 +1676,7 @@ Witness: L1 206018 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **Page bank 0 at `$C000`**
 
-Witness: L1 181126 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 263276 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1687,7 +1690,7 @@ Witness: L1 181126 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **Page bank A: kept in `$728A`, OR the screen bit, OUT to `$7FFD`**
 
-Witness: L1 870750 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1454779 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1714,7 +1717,7 @@ Witness: L1 870750 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **Keep the current bank (`$728A`) in the operand `$729D` of RestoreBank**
 
-Witness: L1 51896 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 134817 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1728,7 +1731,7 @@ Witness: L1 51896 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
 
 **Save the bank, call bank 3 `$C4C4` with A, restore**
 
-Witness: L1 38817 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 94721 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1741,7 +1744,7 @@ Witness: L1 38817 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Page the bank SaveBank kept (A and the flags kept)**
 
-Witness: L1 13069 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 134816 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1755,7 +1758,7 @@ Witness: L1 13069 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
 
 **Save the bank, call bank 3 `$D08C` and `$D1EC`, restore**
 
-Witness: L1 3602 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1769,7 +1772,7 @@ Witness: L1 3602 (death, m2erbe, missions, play, play2).
 
 **Save the bank, call bank 3 `$C9A7` with A, restore**
 
-Witness: L1 4996 (death, m2erbe, missions, play, play2).
+Witness: L1 18311 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1783,7 +1786,7 @@ Witness: L1 4996 (death, m2erbe, missions, play, play2).
 
 **Page bank 3, run the 3D frame driver `$990F`, page bank 6**
 
-Witness: L1 2954 (c1, death, m2erbe, menu, missions, play, play2, search).
+Witness: L1 3712 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1795,7 +1798,7 @@ Witness: L1 2954 (c1, death, m2erbe, menu, missions, play, play2, search).
 
 **Save the bank, call bank 4 `$C000` with A = 0, restore**
 
-Witness: L1 21 (c1, menu, missions, search).
+Witness: L1 22 (c1, controls, fuel, m2erbe, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1807,7 +1810,7 @@ Witness: L1 21 (c1, menu, missions, search).
 
 **The interrupt's call of bank 4 `$C0D2`, the bank kept and restored**
 
-Witness: L1 76552 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 135242 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1820,7 +1823,7 @@ Witness: L1 76552 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **Save the bank, call bank 0 `$D807` (the sound off), restore**
 
-Witness: L1 21 (c1, menu, missions, search).
+Witness: L1 26 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1832,7 +1835,7 @@ Witness: L1 21 (c1, menu, missions, search).
 
 **Save the bank, call bank 4 `$C1A2`, restore**
 
-Witness: L1 29 (c1, menu, missions, search).
+Witness: L1 32 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -1886,7 +1889,7 @@ Witness: L1 4 (play).
 
 **Bank 6 UpdatePanelBars `$D58C` (heading strip, bearing, speed, fuel), then UpdateAmmoBars**
 
-Witness: L1 3601 (death, m2erbe, missions, play, play2).
+Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `UpdateSlotBars` at work](img/routines/UpdateSlotBars.gif)
 
@@ -1902,7 +1905,7 @@ Witness: L1 3601 (death, m2erbe, missions, play, play2).
 
 **For the four slots of `$8368`: a bar for each ammunition count that changed (records `$68C9`)**
 
-Witness: L1 3628 (death, m2erbe, missions, play, play2).
+Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1946,7 +1949,7 @@ Witness: L1 1 (play).
 
 **The icons of the four loaded slots (`$8368` records, `$68CD`) with their frames**
 
-Witness: L1 27 (death, m2erbe, missions, play, play2).
+Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1960,7 +1963,7 @@ Witness: L1 27 (death, m2erbe, missions, play, play2).
 
 **Draw weapon icon A (1-19) from the icon table `$75CA` through CopyGraphic, 3 x 24**
 
-Witness: L1 117 (death, m2erbe, missions, play, play2).
+Witness: L1 133 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -1988,7 +1991,7 @@ Witness: L1 9 (play).
 
 **A bar of A pixels on line E, `$7E` pattern, 32 wide**
 
-Witness: L1 3794 (death, missions, play, play2).
+Witness: L1 10058 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2002,7 +2005,7 @@ Witness: L1 3794 (death, missions, play, play2).
 
 **A bar of A pixels on line E, `$F8` pattern, 24 wide**
 
-Witness: L1 5389 (death, m2erbe, missions, play, play2).
+Witness: L1 11561 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2017,7 +2020,7 @@ Witness: L1 5389 (death, m2erbe, missions, play, play2).
 
 **The bar's pixel lines through the line table `$6500`, `$AA` / `$55` dither**
 
-Witness: L1 9183 (death, m2erbe, missions, play, play2).
+Witness: L1 21619 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2031,7 +2034,7 @@ Witness: L1 9183 (death, m2erbe, missions, play, play2).
 
 **Page bank 7 and run its picture routine `$FE95` with DE (a picture), then the bank back**
 
-The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F9CD` map, `$D325` status, `$C000` Dragonfly). Clears `$83BF` (the play flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 122 (c1, death, m2erbe, menu, missions, play, play2, search).
+The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F9CD` map, `$D325` status, `$C000` Dragonfly). Clears `$83BF` (the play flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 142 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2046,7 +2049,7 @@ The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F
 
 **A = `$FF` then Bank3Fill**
 
-Witness: L1 15 (menu, missions, search).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2058,7 +2061,7 @@ Witness: L1 15 (menu, missions, search).
 
 **A = `$5F` then Bank3Fill**
 
-Witness: L1 15 (menu, missions, search).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2070,7 +2073,7 @@ Witness: L1 15 (menu, missions, search).
 
 **Save the bank, call bank 3 `$CFCD` with A, restore**
 
-Witness: L1 30 (menu, missions, search).
+Witness: L1 38 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2093,7 +2096,7 @@ Witness: known only from the code.
 
 **Screen 1 unless the current mission (`$757D`) is `$FF` or not completed**
 
-`LD A,n`: n (`$757D`) is the mission the tape gave (`$8528`: the header's digit - "1"). Witness: L1 10 (play).
+`LD A,n`: n (`$757D`) is the mission the tape gave (`$8528`: the header's digit - "1"). Witness: L1 10 (menu).
 
 | | |
 | --- | --- |
@@ -2115,7 +2118,7 @@ Witness: known only from the code (entered by a jump from `$75B8`).
 
 **Load the mission the tape holds; mission 10 only when the nine completion flags are set**
 
-If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z` back into the catalogue's zone loop; recording m10: the catalogue stays on screen, 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe, m2ocean, missions).
+If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z` back into the catalogue's zone loop; recording m10: the catalogue stays on screen, 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 22 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2129,7 +2132,7 @@ If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are
 
 **A = the completion flag of the current mission (`$6799` + n): NZ when done**
 
-Witness: L1 28 (m10, m2erbe, m2ocean, missions, play).
+Witness: L1 32 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2146,7 +2149,7 @@ Witness: L1 28 (m10, m2erbe, m2ocean, missions, play).
 
 **Store the message timer: the attribute (IY+3) to `$7D64`, the hook `$7D5D` enabled**
 
-Witness: L1 61 (death, missions, play, play2).
+Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -2160,7 +2163,7 @@ Witness: L1 61 (death, missions, play, play2).
 
 **Once after SetMessage: the timer `$87D7` = 100; bit 4 of `$7D64` set: SoundExplosion `$D86B` and "TANK:HIT" `$FFCF`, clear: SoundEffectA `$D84E` and "COLLIDED" `$FFDB`; then RET again**
 
-Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions, play, play2).
+Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2174,7 +2177,7 @@ Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions, play,
 
 **Read the controls, move the pointer within the screen, test the fire**
 
-`ReadControls` `$971A`, the X and Y steps (`$985E`, `$985F`) added to the pointer (`$7DC0`, `$7DC1`) within 8-247 and 8-183, then `PointerFire` `$7DC2`. Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+`ReadControls` `$971A`, the X and Y steps (`$985E`, `$985F`) added to the pointer (`$7DC0`, `$7DC1`) within 8-247 and 8-183, then `PointerFire` `$7DC2`. Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 [Animation: `PointerTick` at work](img/routines/PointerTick.gif)
 
@@ -2203,7 +2206,7 @@ Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions, play,
 
 **Carry (the fire) held: after 25 frames a click (`$6D43` = `$FF`) at the pointer, repeated every 5**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2217,7 +2220,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **The mission clock: the first second after 50 interrupts, then one second for every interrupt taken (the reload at `$7E03` is 1): 50 game seconds a real second**
 
-The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2231,7 +2234,7 @@ The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the missio
 
 **Print the clock's minutes and hours (`$68EB`, `$68EC`) as two digit pairs**
 
-Witness: L1 530 (play, play2).
+Witness: L1 530 (m2erbe, missions, play).
 
 | | |
 | --- | --- |
@@ -2245,7 +2248,7 @@ Witness: L1 530 (play, play2).
 
 **The interrupt's sound step: bank 0's driver `$D692`, the bank kept**
 
-Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2258,7 +2261,7 @@ Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **`$66CE` and the click flag cleared**
 
-Witness: L1 2966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 3734 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2271,7 +2274,7 @@ Witness: L1 2966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 **The IM 2 handler: own stack, the tick jobs, the play or menu jobs, RETI**
 
-Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2286,7 +2289,7 @@ Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **A RET; behind it the clear of three bytes every 33 for 48 lines from `$8AF1` (unused)**
 
-Witness: L1 2959 (death, m2erbe, missions, play, play2).
+Witness: L1 3717 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2309,7 +2312,7 @@ Witness: L1 2959 (death, m2erbe, missions, play, play2).
 
 **Keep the current bank in `$843B` and page bank 6**
 
-Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2324,7 +2327,7 @@ Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **Page the bank PageBank6Kept kept**
 
-Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2337,7 +2340,7 @@ Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **The key E: silence the AY (`$D807`), ask "Are you sure you want to quit?" (bank 6 QuitPrompt `$DA09`: Y to the title, N back), then clear SoundGate `$D689` and PickupAnnounce `$DB71`**
 
-Witness: L1 13 (play2).
+Witness: L1 13 (m2erbe, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2350,7 +2353,7 @@ Witness: L1 13 (play2).
 
 **Every 12 frames flip the attribute bits `$30` of `$5758` and `$5078` (a RET while off)**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2364,7 +2367,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **Every 8 frames flip `$3C` on four pixel lines at `$525C` (a RET while off)**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2378,7 +2381,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **Scan the keyboard: a new key sets bit 0 of `$8978` at once, a held key after 17 frames, then every 2**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2393,7 +2396,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **Count `$87D7` down; at 0 print the message line `$7C06` (or the blank `$87F0`)**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2419,7 +2422,7 @@ Witness: L1 6 (play).
 
 **Night sight on or off: the lamp attribute `$5ACF`, the text `$BA6E` / `$BA7A`, `$757A` from the table `$88F8`**
 
-Witness: L1 33 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 37 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2434,7 +2437,7 @@ Witness: L1 33 (c1, death, m2erbe, missions, play, play2).
 
 **Each interrupt: the hour (`$68EC`) against the four 4-byte rows of `$88F8`; a match arms `$885F`**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2448,7 +2451,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **Once per change: the sky and ground attributes of the hour's row, then the panel's copies**
 
-Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2474,7 +2477,7 @@ Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
 
 **Once: the night or day attribute box (`$88EE` / `$88F3`)**
 
-Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2496,7 +2499,7 @@ Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
 
 **Scan the eight half rows: the key's code from `$8950` to `$897B`, bit 1 of `$8978` set; CAPS SHIFT with 0 gives `$04` (the code entry's delete)**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2511,7 +2514,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **The pointer's X and Y to `$7C51` and `$7C53`**
 
-Witness: L1 49405 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 61639 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2546,7 +2549,7 @@ Runs once at c1 frame 23974 (docs/03-build-and-load.md); dead after the entry. W
 
 **The mission load: the same mission again from bank 3's copy, or the tape's next mission block**
 
-Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4DC`. If the mission asked for (`$757D`) is the one loaded last (`$7E2E`), the bank-3 copy of `$DBDA`... is copied back to bank 0 (no tape). Else `$8551`: load the 17-byte header with "MISSHDR:" (`$84FE`), then the block of the header's length to `$DBC5`; SPACE stops. Then `$85F5` and `$8598` set the play state from the block. Witness: L1 16 (m10, m2erbe, m2ocean, missions).
+Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4DC`. If the mission asked for (`$757D`) is the one loaded last (`$7E2E`), the bank-3 copy of `$DBDA`... is copied back to bank 0 (no tape). Else `$8551`: load the 17-byte header with "MISSHDR:" (`$84FE`), then the block of the header's length to `$DBC5`; SPACE stops. Then `$85F5` and `$8598` set the play state from the block. Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2561,7 +2564,7 @@ Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4D
 
 **Load 17-byte headers until one is "MISSHDR:"; its length to `$855C`, its digit - "1" to `$757D`, the mark on the clipboard**
 
-Witness: L1 21 (m10, m2erbe, m2ocean, missions, search).
+Witness: L1 25 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2576,7 +2579,7 @@ Witness: L1 21 (m10, m2erbe, m2ocean, missions, search).
 
 **The attribute C on the catalogue line of mission A (`$5902` + 32A)**
 
-Witness: L1 24 (m10, m2erbe, m2ocean, missions, search).
+Witness: L1 35 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2588,7 +2591,7 @@ Witness: L1 24 (m10, m2erbe, m2ocean, missions, search).
 
 **Mark the last header's mission again (`$C4`) unless none**
 
-Witness: L1 32 (menu, missions, search).
+Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2601,7 +2604,7 @@ Witness: L1 32 (menu, missions, search).
 
 **From the loaded block: 12 bytes to `$7E82`, `$DBFD` to `$CAAF`, the object count to bank 6, the objects copied to bank 3**
 
-Witness: L1 3 (m2erbe, missions).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2615,7 +2618,7 @@ Witness: L1 3 (m2erbe, missions).
 
 **NC when SPACE is held (port `$7FFE` bit 0)**
 
-Witness: L1 8 (m2ocean, missions).
+Witness: L1 8 (m2ocean).
 
 | | |
 | --- | --- |
@@ -2627,7 +2630,7 @@ Witness: L1 8 (m2ocean, missions).
 
 **From the header: `$DBE1` to `$6A67`, 8 bytes `$DBE3` to `$7611`, the time limit `$DBFE` to `$68EB`, the clock stopped**
 
-Witness: L1 15 (m10, m2erbe, m2ocean, missions).
+Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2659,7 +2662,7 @@ With `SP` on ScreenRowTable `$6540` (row 32): 79 rows of 32 bytes (`LDI` x 32), 
 
 Input: none. Output: the screen bitmap `$4080-$4CCA` (L1). Cost: 97 permille of play (the heaviest single routine of the view).
 
-Witness: L1 3600 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 8222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `ViewBlitFront` at work](img/routines/ViewBlitFront.gif)
 
@@ -2677,7 +2680,7 @@ Witness: L1 3600 (c1, death, m2erbe, missions, play, play2).
 
 `SP` on ScreenRowTable `$6580` (row 64), 86 rows of 32 bytes. Used by the menus and the console views (11 recordings).
 
-Witness: L1 458 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 768 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2706,7 +2709,7 @@ Witness: L1 24 (play).
 
 **Clear the blit request `$83BA`: the interrupt's last job after a view blit**
 
-Witness: L1 6657 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -2721,7 +2724,7 @@ Witness: L1 6657 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 Under `DI`: `SP` saved at `$9711`, `SP` = `$96F1`, HL = 0, 96 x 16 `PUSH HL`, `SP` back, `EI`. An interrupt in this time is lost (WALKTHROUGH section 1). Once per 3D pass: its count is the number of passes (705 in play).
 
-Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 [Animation: `ClearBackBuffer` at work](img/routines/ClearBackBuffer.gif)
 
@@ -2736,7 +2739,7 @@ Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 **Clip the line (HL, DE) - (HL', DE') (x, y words) to the window; carry = something to draw, H, L, D, E = the ends as bytes**
 
-Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2750,7 +2753,7 @@ Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
 
 **Cohen-Sutherland: both out codes (`$A3AC`), reject, accept, or cut an end by bisection (`$A1B3`, `$A218`)**
 
-Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2765,7 +2768,7 @@ Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
 
 **One end outside: find the crossing of the window edge by bisection (`$A2BA`, `$A2CA`, `$A2F3`, `$A352`)**
 
-Witness: L1 160 (missions).
+Witness: L1 4809 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2779,7 +2782,7 @@ Witness: L1 160 (missions).
 
 **Swap the two ends of the line between the register sets**
 
-Witness: L1 273 (death, missions).
+Witness: L1 5050 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2792,7 +2795,7 @@ Witness: L1 273 (death, missions).
 
 Entered by a jump, never called (the survey counts 0 calls).
 
-Witness: L1 0 (missions).
+Witness: L1 761 (m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2805,7 +2808,7 @@ Witness: L1 0 (missions).
 
 **Both ends inside: carry set**
 
-Witness: L1 4885 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 13978 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2817,7 +2820,7 @@ Witness: L1 4885 (c1, death, m2erbe, menu, missions, play, play2).
 
 **Bisect the outside end towards the right edge**
 
-Witness: L1 120 (death, missions).
+Witness: L1 400 (death, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2830,7 +2833,7 @@ Witness: L1 120 (death, missions).
 
 **Bisect the outside end towards the bottom edge**
 
-Witness: L1 80 (death, missions).
+Witness: L1 551 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2843,7 +2846,7 @@ Witness: L1 80 (death, missions).
 
 **Bisect the outside end towards the left edge**
 
-Witness: L1 14 (missions).
+Witness: L1 171 (m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2856,7 +2859,7 @@ Witness: L1 14 (missions).
 
 **Bisect the outside end towards a corner (two edges)**
 
-Witness: L1 3 (death, missions).
+Witness: L1 633 (death, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2869,7 +2872,7 @@ Witness: L1 3 (death, missions).
 
 **Both ends outside on one side: no carry**
 
-Witness: L1 1168 (death, missions, play, play2).
+Witness: L1 4581 (armour, death, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2880,7 +2883,7 @@ Witness: L1 1168 (death, missions, play, play2).
 
 **One bisection step of the outside end towards the window**
 
-Witness: L1 214 (death, missions).
+Witness: L1 8285 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2892,7 +2895,7 @@ Witness: L1 214 (death, missions).
 
 **The out code of the point (HL, DE): 8 x < 0, 4 x > `$A17C`, 2 y < 0, 1 y > `$A17E`**
 
-Witness: L1 12480 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 46545 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2905,7 +2908,7 @@ Witness: L1 12480 (c1, death, m2erbe, menu, missions, play, play2).
 
 **Bisect the segment until the midpoint lies on the window edge**
 
-Witness: L1 3 (death, missions).
+Witness: L1 13621 (death, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2916,7 +2919,7 @@ Witness: L1 3 (death, missions).
 
 **The other end of a line behind the eye too: no carry (skip the line); else NearClipLine**
 
-Witness: L1 266 (death, missions).
+Witness: L1 5069 (death, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -2930,7 +2933,7 @@ Witness: L1 266 (death, missions).
 
 Reads both ends with `$A4D1` / `$A4F1` (vertex + the object position operands), halves the segment until depth - 96 is 0, then projects the point (Divide `$A687`, DivideByLog `$A6D2`, NegHL `$A771`) like OpProject. `$67B2-$67B5` hold the depths being halved.
 
-Witness: L1 3110 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 17666 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2945,7 +2948,7 @@ Witness: L1 3110 (c1, death, m2erbe, missions, play, play2).
 
 **x + `$9A8E` of V[B] to `$A503`, y + `$9AB3` to HL**
 
-Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2959,7 +2962,7 @@ Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
 
 **z + `$9A6C` - 96 of the vertex: the signed distance to the near plane**
 
-Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2974,7 +2977,7 @@ Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
 
 Walks the face's point offsets from IX; at each in / out change calls NearClipLine `$A42B` and appends the cut with AppendPolyVertex `$A677`. Returns carry = the polygon is complete (fill it), Z = go on with the next point, NZ = nothing left.
 
-Witness: L1 3987 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 13393 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -2989,7 +2992,7 @@ Witness: L1 3987 (c1, death, m2erbe, missions, play, play2).
 
 **Append (BC, DE) to the polygon list at HL and count it in `$66D5`**
 
-Witness: L1 4168 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 15876 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3005,7 +3008,7 @@ Witness: L1 4168 (c1, death, m2erbe, missions, play, play2).
 
 Normalises DE to an 8-bit mantissa and an exponent, looks up LogFraction / LogInteger `$5C00`, then falls into DivideByLog. 283 939 calls (11 recordings).
 
-Witness: L1 283939 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 721062 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3021,7 +3024,7 @@ Witness: L1 283939 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 The shift of the 9-bit mantissa is a self-patched `JR` into an `ADD HL,HL` chain (`$A739`, `$A75A`). A result below 1 gives 0 (`$A765`), an overflow `$3EE4` and carry (`$A769`). The most called 3D routine: 475 056 entries, 45 permille.
 
-Witness: L1 475056 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1184207 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3036,7 +3039,7 @@ Witness: L1 475056 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **Negate HL when the sign saved in F' is set**
 
-Witness: L1 425915 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 1109957 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3049,7 +3052,7 @@ Witness: L1 425915 (c1, death, m2erbe, missions, play, play2).
 
 **HL = 0**
 
-Witness: L1 24493 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 74250 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3062,7 +3065,7 @@ Witness: L1 24493 (c1, death, m2erbe, missions, play, play2).
 
 **HL = -HL**
 
-Witness: L1 308008 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 786174 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3075,7 +3078,7 @@ Witness: L1 308008 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **A = a pseudo-random byte: two additive words patched in place mixed with R (the mission vector `$67D0`)**
 
-Witness: L1 584 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 2198 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3089,7 +3092,7 @@ Witness: L1 584 (c1, death, m2erbe, missions, play, play2).
 
 **A = |A| (the mission vector `$67D6`)**
 
-Witness: L1 179580 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 521328 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3102,7 +3105,7 @@ Witness: L1 179580 (c1, death, m2erbe, missions, play, play2).
 
 **DE = -DE**
 
-Witness: L1 2228 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 12022 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3125,7 +3128,7 @@ Witness: known only from the code (no recording runs it).
 
 **HL = |HL|**
 
-Witness: L1 2 (play).
+Witness: L1 6 (m1complete, m4complete, play).
 
 | | |
 | --- | --- |
@@ -3137,7 +3140,7 @@ Witness: L1 2 (play).
 
 **HL = -HL (the mission vector `$67D3`)**
 
-Witness: L1 18194 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 51813 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3150,7 +3153,7 @@ Witness: L1 18194 (c1, death, m2erbe, missions, play, play2).
 
 **HL = H * 32 (the back-buffer row offset of row H)**
 
-Witness: L1 71059 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 177524 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3164,7 +3167,7 @@ Witness: L1 71059 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **HL = L * 32**
 
-Witness: L1 72315 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 178905 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3179,7 +3182,7 @@ Witness: L1 72315 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 When A + E overflows it uses A^2 + E^2 - (A-E)^2 (`$A7DD`). Tables SquareLow / SquareHigh `$5F00`.
 
-Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 240864 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3192,7 +3195,7 @@ Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **HL = A * E / 128 rounded, signed bytes: the product with a sine of Sine8**
 
-Witness: L1 66079 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 205999 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3207,7 +3210,7 @@ Witness: L1 66079 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 The mission vector `$67D9`: 220 482 calls in play, 37 permille, most of them from the mission code turning positions.
 
-Witness: L1 220482 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 643316 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3220,7 +3223,7 @@ Witness: L1 220482 (c1, death, m2erbe, missions, play, play2).
 
 **A = Sine8[A], A' = Sine8[A + 64] (the mission vector `$67E8`)**
 
-Witness: L1 58907 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 153909 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3233,7 +3236,7 @@ Witness: L1 58907 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **DE = Sine16[A], BC = Sine16[A + 64]**
 
-Witness: L1 4970 (c1, death, missions, play, play2).
+Witness: L1 12234 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3246,7 +3249,7 @@ Witness: L1 4970 (c1, death, missions, play, play2).
 
 **E = A = sine, A = cosine of the angle word HL (H the angle, bit 7 of L the half step: Sine8Half `$6400`)**
 
-Witness: L1 22941 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 75445 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3261,7 +3264,7 @@ Witness: L1 22941 (c1, death, m2erbe, missions, play, play2).
 
 Caller `$BB75` (points of the scenery). 37 012 calls.
 
-Witness: L1 37012 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 95537 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3280,7 +3283,7 @@ Witness: L1 37012 (c1, death, m2erbe, missions, play, play2).
 
 **Read the chosen device: the reader of `$67B6` in the table `$9723`**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3332,7 +3335,7 @@ Witness: L1 1225 (menu).
 
 **Bits right, left, down, up, fire: the X and Y steps with acceleration (`$985E`, `$985F`), carry = fire**
 
-Witness: L1 7771 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121627 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3381,7 +3384,7 @@ Witness: known only from the code (entered by `JP (HL)`; every recording runs it
 
 **Jump to the word A of the table at HL**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3395,7 +3398,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **HL = HL + 2A**
 
-Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3413,7 +3416,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 Spins on `$83BA` (set to `$FF` by RequestViewBlit `$988D`, cleared by the interrupt after the blit, ClearBlitRequest `$8AEC`), then calls ClearBackBuffer `$96F1`. Callers: the play loops `$694B`, `$6A0C`, `$6AB9` and the bank 6 menu views `$C409`, `$C4AD`, `$CA8B`, `$DA09`, `$DB1C`. Its own time (18 permille) is the wait for the interrupt.
 
-Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3427,7 +3430,7 @@ Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 **Ask the interrupt to blit the finished back buffer: `$83BA` = `$FF`**
 
-Witness: L1 6658 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 13587 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3470,7 +3473,7 @@ Witness: known only from the code (no recording runs it).
 
 Reads the opcode at IX, IX+1, patches the `CALL` at `$9927` with OpcodeTable[opcode] and calls it; every handler returns to `$992A` (`JP $990F`), with IX past its operands. Input: IX = the script; bank of the script paged (bank 3 via `$72BE`, bank 0 for the mission models). Callers: DrawObject `$B827` (the objects), `$B190` (the ground and the sky, scripts at bank 0 `$FF80`, `$FF8C`, `$FF98`), `$72BE` (bank 6 views with bank 3 models), the mission code `$E3F3`, `$E561`, and ScriptTranslate `$A049`, which jumps back here.
 
-Witness: L1 131277 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 319386 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3493,7 +3496,7 @@ Witness: L1 131277 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **The handlers' return: go on with the next opcode**
 
-Witness: L1 104358 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 266356 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3509,7 +3512,7 @@ Witness: L1 104358 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 IX on past the word, then `JP (HL)`: the routine reads its own operands through IX and returns to ScriptNext. The models call the box generators by the mission vectors `$67F4` (BoxSquare), `$67F7` (BoxRect), `$67FA` (BoxRect16), `$67FD` (BoxSquareTurret) and `$ABFF` (BoxTilted) with 3 operand bytes; other targets take none (`$F6B9` in mission 1 clears the tilt `$68E6`; `$D4A4`, `$D5C9`, `$E2C0`, `$EC2E`, `$EE06`, `$EE22`, `$FE8F` in bank 0).
 
-Witness: L1 15260 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 38166 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3525,7 +3528,7 @@ Witness: L1 15260 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 Under `DI` with `SP` used as a pointer into the vertex rows. The current point P = (DE, DE', BC') = (x, y, z). Bytes: `$00-$3F` n: P = V[n]; `$40-$7F`: V[n AND `$3F`] = P; `$80-$BF`: P = (P + V[n AND `$3F`]) / 2; `$C0` m: P = P + V[m]; `$E0` m: P = P - V[m]; `$F0`: P = -P; `$F8`: P.x = -P.x, P.z = -P.z (the half-turn about the vertical); any other byte (`$FF`) ends it, `SP` back, `EI`. With the box corners `V34-V41` from a box generator, midpoints and sums give every other vertex of the model in its turned axes.
 
-Witness: L1 10819 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 24235 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3542,7 +3545,7 @@ Witness: L1 10819 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 For each vertex: depth = z + the operand at `$9A6C` (the object's z, `$0190` by default); if depth < 96 the point is marked behind the eye (`$FC00`+4i = `$8000`). Otherwise sx = 128 + 256 (x + `$9A8E`) / depth (shifted right by the count at `$9A93` first, the zoom), sy = 64 - 256 (y + `$9AB3`) / depth, through Divide `$A687` and DivideByLog `$A6D2` (one logarithm of the depth for both). Output: `$FC00`+4i = sx word, `$FC02`+4i = sy word.
 
-Witness: L1 22966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 56575 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3559,7 +3562,7 @@ Witness: L1 22966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 A line is drawn only when both ends are in front of the eye; ClipLine2D `$A184` clips it to the window and `$72B1` draws it with bank 3 `$C9A7`.
 
-Witness: L1 1542 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 5137 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3588,7 +3591,7 @@ Witness: known only from the code (no recording runs it).
 
 Slot base to `$9C6B` (+`$28`), then TestFace `$9BC3` for each triple of point offsets (4 x vertex).
 
-Witness: L1 9372 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 24102 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3605,7 +3608,7 @@ Witness: L1 9372 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 Counts the points behind the eye in `$9BDA`: 3 gives flag 0 (`$9CAA`), 1-2 give `$FF` (`$9CA3`, drawn and clipped later); else the two edge vectors are scaled to bytes (ScaleToBytes `$9C84`) and multiplied with MulSigned `$A7BF`: flag = `$FF` when ex1 * ey2 < ey1 * ex2.
 
-Witness: L1 45290 (c1, death, missions, play, play2).
+Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3620,7 +3623,7 @@ Witness: L1 45290 (c1, death, missions, play, play2).
 
 **Store the face flag B at `$6728` + slot, next slot, loop over the triples**
 
-Witness: L1 45290 (c1, death, missions, play, play2).
+Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3637,7 +3640,7 @@ Witness: L1 45290 (c1, death, missions, play, play2).
 
 The loop `$9C7C` shifts both right. Unreferenced code at `$9C9A` (another flag store) follows.
 
-Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 247063 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3650,7 +3653,7 @@ Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, p
 
 **A face with one or two points behind the eye: flag `$FF`**
 
-Witness: L1 11 (c1, death).
+Witness: L1 1130 (c1, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -3663,7 +3666,7 @@ Witness: L1 11 (c1, death).
 
 **A face with all three points behind the eye: flag 0**
 
-Witness: L1 1123 (c1, death, missions, play, play2).
+Witness: L1 12422 (armour, c1, death, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3699,7 +3702,7 @@ Witness: known only from the code (no recording runs it).
 
 **Opcode 11 (address): run the script at the address as a subroutine (IX pushed, opcode 9 returns)**
 
-Witness: L1 878 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 1496 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3715,7 +3718,7 @@ Witness: L1 878 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play
 
 Used to end the parts of OpCall `$9D0D` and OpOrderByFace `$9D5A`.
 
-Witness: L1 12941 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 27230 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3742,7 +3745,7 @@ Witness: known only from the code (no recording runs it).
 
 Face visible: the inline part (IX + 5), then A, then B; hidden: A, then the inline part, then B. Each part ends with opcode 9; the two other entries are pushed as returns. This is how a model sorts its own parts (the turret before or behind the hull) without a depth sort.
 
-Witness: L1 6021 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 12854 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3759,7 +3762,7 @@ Witness: L1 6021 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 Patches `$9DB2` to `JP Z` (skip hidden faces) and `$9DAD` to fall through, then shares FillFaceList `$9D99`. A face with a point behind the eye is skipped (`$9E0B`).
 
-Witness: L1 11209 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 27293 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3776,7 +3779,7 @@ Witness: L1 11209 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 The colour to `$7579`, the count to `$68A9`, the face count in `$68AA`. A face whose flag fails the test is skipped by its length byte.
 
-Witness: L1 5753 (missions, play2).
+Witness: L1 28219 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -3790,7 +3793,7 @@ Witness: L1 5753 (missions, play2).
 
 **Opcode 13: fill the visible faces, clipping those that cross the near plane**
 
-Witness: L1 2455 (c1, death, missions, play, play2).
+Witness: L1 6425 (armour, c1, controls, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3805,7 +3808,7 @@ Witness: L1 2455 (c1, death, missions, play, play2).
 
 A = the opcode patched at `$9E40` (`JP Z` for opcode 13, `JP NZ` for 20). The first point offset is kept in `$66CC` for the closing edge.
 
-Witness: L1 5778 (c1, death, missions, play, play2).
+Witness: L1 14717 (armour, c1, controls, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3820,7 +3823,7 @@ Witness: L1 5778 (c1, death, missions, play, play2).
 
 **Opcode 14 (n, n x (k, colour, k point offsets)): fill polygons with no face test**
 
-Witness: L1 5571 (c1, death, m2erbe, menu, missions, play, play2).
+Witness: L1 11527 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3835,7 +3838,7 @@ Witness: L1 5571 (c1, death, m2erbe, menu, missions, play, play2).
 
 **Opcode 15: fill the faces whose flag is 0 (`JP NZ` at `$9DB2`): the insides seen through an opening**
 
-Witness: L1 29 (missions, play2).
+Witness: L1 926 (armour, m1complete, m4complete, missions, play2).
 
 | | |
 | --- | --- |
@@ -3848,7 +3851,7 @@ Witness: L1 29 (missions, play2).
 
 **Opcode 16: a polyline like opcode 3, a segment with an end behind the eye cut at the near plane (`$A422`, `$A42B`)**
 
-Witness: L1 785 (death, missions).
+Witness: L1 5538 (death, m1complete, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -3890,7 +3893,7 @@ Witness: L1 32 (missions).
 
 **Opcode 19 (n, n x (k, colour, k point offsets)): fill polygons, clipping at the near plane**
 
-Witness: L1 7171 (c1, death, m2erbe, missions, play, play2).
+Witness: L1 15521 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3913,7 +3916,7 @@ Witness: L1 7171 (c1, death, m2erbe, missions, play, play2).
 
 **Opcode 20: fill the faces whose flag is 0, clipping at the near plane (FillFaceListClipped with `JP NZ`)**
 
-Witness: L1 3323 (c1, death, missions, play, play2).
+Witness: L1 8292 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3929,7 +3932,7 @@ Witness: L1 3323 (c1, death, missions, play, play2).
 
 The frame (`$A12C`, the object record's +4, set by DrawObject `$B827`) picks a word of the table at IX+3: the address of n triples. Each gives x = r sin(heading + angle) / 128, z = r cos(...) / 128, y = height, stored from V32 downwards. Then IX = next. Mission 1 uses it once (`$EFC5`, a barrel run out in five frames).
 
-Witness: L1 4 (play2).
+Witness: L1 723 (armour, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -3970,7 +3973,7 @@ Witness: L1 17 (missions).
 
 With S = size sin(a) / 128 and C = size cos(a) / 128: V34 = (C, -h, -S), V35 = (S, -h, C), V36 = (-C, -h, S), V37 = (-S, -h, -C), V38-V41 the same at y = +h. The mission vector `$67F4`.
 
-Witness: L1 483 (c1, death, missions, play, play2).
+Witness: L1 3795 (armour, c1, death, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -3985,7 +3988,7 @@ Witness: L1 483 (c1, death, missions, play, play2).
 
 **Last operand h: y = -h for V34-V37, +h for V38-V41; V33 = (0, 0, 0); return**
 
-Witness: L1 9618 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 24903 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -4002,7 +4005,7 @@ Witness: L1 9618 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 The corners lie at the radius r on the angles heading +/- b and their opposites, so b sets the aspect. Through MulWordByte `$67D9`. The mission vector `$67FA`.
 
-Witness: L1 2485 (c1, death, missions, play, play2).
+Witness: L1 6117 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -4019,7 +4022,7 @@ Witness: L1 2485 (c1, death, missions, play, play2).
 
 The mission vector `$67F7`; the most used box (bank 3 models, mission 1: 22 of 31 models).
 
-Witness: L1 6221 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 14991 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -4036,7 +4039,7 @@ Witness: L1 6221 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pla
 
 Rotates each corner pair with RotatePair `$AD06` (sine and cosine of the roll in `$AD04`); sets V0 = 0. Called from OpNative in death and play2 (a tilted vehicle).
 
-Witness: L1 0 (death, play2).
+Witness: L1 1818 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4050,7 +4053,7 @@ Witness: L1 0 (death, play2).
 
 **Turn the pair (B, C) by the angle in `$AD04`: HL, DE = the two rotated words**
 
-Witness: L1 1563 (death, play2).
+Witness: L1 5454 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4070,7 +4073,7 @@ Witness: L1 1563 (death, play2).
 
 Record 0's step handler (+`$18` = `$A8C7`, run by RunObjectHandlers `$C026` with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets the handler to BounceDecay `$CC09`; 0 or 6 (0 is the road, segment style 0) stores 1.25 x the speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does not change and only bank 6 DrawSpeedBar `$D612` reads `$7E8E` (the speed bar) (`$A8F0`-`$A934`, docs/10-gameplay-logic.md 10.2). The S key branch `$A8F2` -> `$A9C0` makes BrakeKey `$A9C9` the step handler and ends the pass. When the speed is not 0: the fuel, `$7C57` -= (|speed| >> 4) OR 1 (on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`), then BoundaryCheck `$D4B8` (`$A95B`), then MoveObject. The Infinite Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`). Then the turret and speed against the control state `$985F`.
 
-Witness: L1 3503 (death, m2erbe, missions, play, play2).
+Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `PlayerStep` at work](img/routines/PlayerStep.gif)
 
@@ -4089,7 +4092,7 @@ Witness: L1 3503 (death, m2erbe, missions, play, play2).
 
 Adds half the turn input `$985E` to the heading `$7612`; counts down the fire cooldown `$A9FD`; when it is zero and the fire key bit of `$6D43` is set, calls the current weapon's fire routine through the operand at `$A9B9` (set from the store-type table StoreTypes `$7B89` + 8 * type, word 2). Output: a projectile record, the cooldown restarted.
 
-Witness: L1 3521 (death, m2erbe, missions, play, play2).
+Witness: L1 9802 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -4118,7 +4121,7 @@ Known only from the code: no recording presses S in play (no L1 block of `$A9C9-
 
 Writes 8 to the cooldown byte `$A9FD`, the delay before the next shot. Called by the fire routines after a launch.
 
-Witness: L1 69 (death, play, play2).
+Witness: L1 146 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4132,7 +4135,7 @@ Witness: L1 69 (death, play, play2).
 
 Reads the slot's ammunition pointer (`$B551`, from SelectAmmoPointer `$D3C6`), DEC A and stores it (the Infinite Ammo POKE writes 0 at `$B554`, the DEC A becomes NOP). Returns M when empty. Then FindFreeObject `$BCD6`, the fire sound `$D898`, and prints the count at `$C527`.
 
-Witness: L1 70 (death, play, play2).
+Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4148,7 +4151,7 @@ Witness: L1 70 (death, play, play2).
 
 Ammunition, then ObjectSetType with `$81`, the position and heading of the player, +31 lifetime.
 
-Witness: L1 61 (death, play2).
+Witness: L1 139 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4164,7 +4167,7 @@ Witness: L1 61 (death, play2).
 
 MoveObject `$BFD1`, counts +`$31` down from 100, removes the shell at 0 (RemoveObject `$B8B1`).
 
-Witness: L1 5682 (death, play2).
+Witness: L1 11958 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4227,7 +4230,7 @@ Witness: L1 68 (play).
 
 Debris `$B6D1`, the sound `$D86B`, then RemoveObject.
 
-Witness: L1 8 (death, play2).
+Witness: L1 24 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4543,7 +4546,7 @@ Witness: L1 1 (play).
 
 `$B9F4` = `$75F0`. Also called when a mission starts (15 runs over five recordings).
 
-Witness: L1 15 (death, m2erbe, missions, play, play2).
+Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -4621,7 +4624,7 @@ MoveObject, MissileTurn `$C47C` (IY = the target +`$32`, TurnToward), MissileLif
 
 When the slot shown (`$D114`) is the current `$C53C`, falls into PrintAmmoAt.
 
-Witness: L1 86 (death, play, play2).
+Witness: L1 169 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4636,7 +4639,7 @@ Witness: L1 86 (death, play, play2).
 
 Converts the rounds at `$C527` and prints at `$FDC0`.
 
-Witness: L1 87 (death, play, play2).
+Witness: L1 170 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4650,7 +4653,7 @@ Witness: L1 87 (death, play, play2).
 
 Clears `$BA13` and `$C4DC` (the IR view and the sight overlay off) when a weapon is deselected.
 
-Witness: L1 14 (death, play, play2).
+Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4664,7 +4667,7 @@ Witness: L1 14 (death, play, play2).
 
 Writes `$C53C`, `$C53D` = the address of the slot hook's CALL operand (`$6A46` + 5n), the store type's words 0-3 (StoreTypes `$7B89` + 8 * type: K, J, fire, then the select call, word 3); a slot whose status `$68C9` + 6n is 0 prints "DAMAGED IN COMBAT" (`$C618`).
 
-Witness: L1 14 (death, play, play2).
+Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -4680,7 +4683,7 @@ Witness: L1 14 (death, play, play2).
 
 When `$C529` is set: InvertPanelB with `$6500`, then the slot's state at (`$0000` patched) chooses `$C605` (damaged) or WeaponSelectText.
 
-Witness: L1 26 (death, m2erbe, missions, play, play2).
+Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -4696,7 +4699,7 @@ Witness: L1 26 (death, m2erbe, missions, play, play2).
 
 Type 4 goes to `$CB6C`. Height >= `$30`: the top armour `$8304` -= damage; else the side (HitSide `$CB4C`) `$8301` + L, then a random subsystem from the nine pointers at `$8338`. An underflow goes to `$CB38`: `$7BF9` = `$CCBE` "FAILED TO MAKE PICKUP" when `$68E8` is set, else `$CCAB` "UNIT DESTROYED", JP `$7047`. The Infinite Damage POKEs write OR (HL) at `$CAC8`, `$CAE8`, `$CB18`.
 
-Witness: L1 41 (death, play2).
+Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 
 [Animation: `PlayerHit` at work](img/routines/PlayerHit.gif)
 
@@ -4715,7 +4718,7 @@ Witness: L1 41 (death, play2).
 
 From the hitter's view-space x (+`$2F`/+`$30`, negated when `$BA27` is set): |x| <= `$60` is side 2 (the front), else positive x side 1 and negative side 3; there is no rear side (play2: 25 runs).
 
-Witness: L1 25 (play2).
+Witness: L1 86 (c1, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4742,7 +4745,7 @@ Known only from the code: no recording runs it (static walk).
 
 +7 >>= 1 (SRA); when it reaches -1 or 0 ResetPlayerHandler (play2: 23 runs).
 
-Witness: L1 23 (play2).
+Witness: L1 43 (c1, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -4759,7 +4762,7 @@ Witness: L1 23 (play2).
 
 +`$18`/+`$19` = `$A8C7`; also called when a mission starts (19 runs).
 
-Witness: L1 19 (death, m2erbe, m2ocean, missions, play, play2).
+Witness: L1 28 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -4774,7 +4777,7 @@ Witness: L1 19 (death, m2erbe, m2ocean, missions, play, play2).
 
 +`$18`/+`$19` = BounceDecay (play2: 4 runs).
 
-Witness: L1 4 (play2).
+Witness: L1 11 (c1, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -5287,7 +5290,7 @@ Witness: L1 47 (play2).
 
 A = the slot; `$C534` + 2A to `$B551` (78 runs).
 
-Witness: L1 78 (death, play, play2).
+Witness: L1 156 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -5424,7 +5427,7 @@ Witness: L1 94 (play).
 
 A NOP / RET gate byte at `$D4B8`. |`$BC12`| against (`$DBD0`) and |`$BC1D`| against (`$DBD1`): inside, the state `$7578` = 0; outside, "GOING AWOL" (`$D51F`); beyond the extent + 4, `$7BF9` = `$CCD8` "PLAYER DESERTION" and `$7047`.
 
-Witness: L1 3096 (death, m2erbe, missions, play, play2).
+Witness: L1 9082 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5440,7 +5443,7 @@ Witness: L1 3096 (death, m2erbe, missions, play, play2).
 
 `$7578` = A unless already equal.
 
-Witness: L1 3053 (death, m2erbe, missions, play, play2).
+Witness: L1 9039 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5459,7 +5462,7 @@ Witness: L1 3053 (death, m2erbe, missions, play, play2).
 
 Input: the blip's x and y on the radar. Looks up the screen row in the table `$6600`, ORs the pixel mask (E = `$49` + x AND 7 gives the bit) into the screen at the radar window `$5036`. Called by DrawRadar `$C05E` for each blip in the list `$6768`.
 
-Witness: L1 14562 (death, m2erbe, missions, play, play2).
+Witness: L1 45560 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5475,7 +5478,7 @@ Witness: L1 14562 (death, m2erbe, missions, play, play2).
 
 dx, dy of the two records, then the octant and the ratio (BearingOctant `$B916`, BearingRatio `$B94A`, the table `$B9DE`). Output A = 0-255.
 
-Witness: L1 7491 (death, m2erbe, missions, play, play2).
+Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5507,7 +5510,7 @@ Witness: L1 12 (m2erbe, missions, play).
 
 HL = `$6550` (or the caller's HL), then InvertPanelRows. RefreshWeaponPanel `$C632` calls it with `$6500`.
 
-Witness: L1 26 (death, play, play2).
+Witness: L1 29 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -5523,7 +5526,7 @@ Witness: L1 26 (death, play, play2).
 
 Each table entry is a screen address; the row's bytes are complemented (a flash of the panel when a weapon is selected or hit).
 
-Witness: L1 38 (death, m2erbe, missions, play, play2).
+Witness: L1 41 (armour, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5538,7 +5541,7 @@ Witness: L1 38 (death, m2erbe, missions, play, play2).
 
 Called from the script interpreter `$990F` (opcode 22, `$98E1` table). Pops the return address into the `JP nn` at `$B824` (operand `$B825`); the operand of `LD A,n` at `$B7EB` is the flag. When it is set: saves `$9A8E` / `$9AB3` / `$9A6C`, pages bank 3 (`$726C`), DrawModel `$B82A` with the record from `$68E6`, restores the view values. In every recording the flag is 0 and only the `JP` back runs.
 
-Witness: L1 4 (play2).
+Witness: L1 237 (armour, m1complete, play2).
 
 | | |
 | --- | --- |
@@ -5553,7 +5556,7 @@ Witness: L1 4 (play2).
 
 Input IX = the record. +2 bit 6 picks the wreck model +8/+9 instead of +`$1C`/+`$1D`; falls into DrawModel `$B82A`.
 
-Witness: L1 9194 (death, m2erbe, missions, play, play2).
+Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5570,7 +5573,7 @@ Witness: L1 9194 (death, m2erbe, missions, play, play2).
 
 Loads the view x / depth (+`$2B`..+`$2E`) into `$9A8E` / `$9AB3`, the night-sight mode `$757A`, and calls the 3D engine (bank 2 `$990F`).
 
-Witness: L1 9194 (death, m2erbe, missions, play, play2).
+Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5592,7 +5595,7 @@ The collision handler (template +`$1A`) of the missiles `$82`-`$85`: CALL ResetS
 
 Input IX. UnregisterCollision `$CA3B`, +2 = 0 (the slot is free for FindFreeObject).
 
-Witness: L1 61 (death, play, play2).
+Witness: L1 134 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -5607,7 +5610,7 @@ Witness: L1 61 (death, play, play2).
 
 dx, dy signs give 8 octants; then BearingRatio.
 
-Witness: L1 7491 (death, m2erbe, missions, play, play2).
+Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5623,7 +5626,7 @@ Witness: L1 7491 (death, m2erbe, missions, play, play2).
 
 Divides the smaller |delta| by the larger to an index of BearingTable.
 
-Witness: L1 7491 (death, m2erbe, missions, play, play2).
+Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5639,7 +5642,7 @@ Witness: L1 7491 (death, m2erbe, missions, play, play2).
 
 Adds the octant base to the table angle.
 
-Witness: L1 7491 (death, m2erbe, missions, play, play2).
+Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5655,7 +5658,7 @@ Witness: L1 7491 (death, m2erbe, missions, play, play2).
 
 Walks the (`$DBD9`) records of 8 bytes at (`$DBDA`), 16 per call (the index is kept in `$BBF2` / `$BBFA`). A live record (bit 7) not yet spawned within 9 coarse units (InRange `$BD67`) gets a slot (FindSlot `$BCFD`), its type (ObjectSetType `$BD41`), a collision slot (`$C957`), its heading and position (CopyHeading `$BCBA`, CopyPosition `$BCC6`), and bit 6. A spawned one out of range is freed (bit 6 cleared; the slot found by +0 = the index in `$BC33`).
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `ActivateMissionObjects` at work](img/routines/ActivateMissionObjects.gif)
 
@@ -5674,7 +5677,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 The list record's +2 to the object's +`$22`.
 
-Witness: L1 183 (death, m2erbe, missions, play, play2).
+Witness: L1 365 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5691,7 +5694,7 @@ Witness: L1 183 (death, m2erbe, missions, play, play2).
 
 +4/+5 and +6/+7 of the list record through WordToWorld `$BD83` to +`$23`-+`$25` and +`$26`-+`$28`.
 
-Witness: L1 366 (death, m2erbe, missions, play, play2).
+Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5708,7 +5711,7 @@ Witness: L1 366 (death, m2erbe, missions, play, play2).
 
 D = `$17`, falls into FindFreeObject.
 
-Witness: L1 70 (death, play, play2).
+Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -5723,7 +5726,7 @@ Witness: L1 70 (death, play, play2).
 
 D = `$15`; carry set and IX = the record when found.
 
-Witness: L1 219 (death, m2erbe, missions, play, play2).
+Witness: L1 1410 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5739,7 +5742,7 @@ Witness: L1 219 (death, m2erbe, missions, play, play2).
 
 Stores 23 - E in `$C95C` and the record in `$C973`.
 
-Witness: L1 289 (death, m2erbe, missions, play, play2).
+Witness: L1 1558 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5754,7 +5757,7 @@ Witness: L1 289 (death, m2erbe, missions, play, play2).
 
 Steps 60 bytes per record until +2 = 0 or the limit.
 
-Witness: L1 415 (death, m2erbe, missions, play, play2).
+Witness: L1 1146 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5769,7 +5772,7 @@ Witness: L1 415 (death, m2erbe, missions, play, play2).
 
 One scan of records 1-20 (it does not call FindFreeObject): the first record that is free (+2 = 0) or holds an enemy shell (+3 AND `$50` = `$10`) is taken; an evicted shell is unregistered (`$67CD`) and its +2 cleared. Then the list index to +0. NC when none.
 
-Witness: L1 185 (death, m2erbe, missions, play, play2).
+Witness: L1 543 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5786,7 +5789,7 @@ Witness: L1 185 (death, m2erbe, missions, play, play2).
 
 Input A = type. Bit 7: the resident template `$B3CA` + 30 * (A - `$80`); else the mission's template table (`$DBD7`) + 30 * A. Stores the type at +1, copies the 30 template bytes to +2..+`$1F` and the serial to +`$20`.
 
-Witness: L1 431 (death, m2erbe, missions, play, play2).
+Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5802,7 +5805,7 @@ Witness: L1 431 (death, m2erbe, missions, play, play2).
 
 |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below the range: 4 for type 0 (trees), 9 for every other type (type 1 trees included). Called for each list record (70 373 runs).
 
-Witness: L1 70373 (death, m2erbe, missions, play, play2).
+Witness: L1 198222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5818,7 +5821,7 @@ Witness: L1 70373 (death, m2erbe, missions, play, play2).
 
 HL << 2 with the carry into the third byte.
 
-Witness: L1 366 (death, m2erbe, missions, play, play2).
+Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5833,7 +5836,7 @@ Witness: L1 366 (death, m2erbe, missions, play, play2).
 
 For each record with +2 bit 7: position minus camera, RotateToView `$BBBC`, depth cull, OnScreen `$BEA2` with the radius, then DepthInsert `$BEDE` into the tree at `$6800`; a blip for the radar (RadarAddBlip `$C0B2`).
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5850,7 +5853,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 View x (+`$2B`/+`$2C`) against the depth with the radius +`$16`/+`$17`.
 
-Witness: L1 32872 (death, m2erbe, missions, play, play2).
+Witness: L1 103866 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5866,7 +5869,7 @@ Witness: L1 32872 (death, m2erbe, missions, play, play2).
 
 The entry for the x test.
 
-Witness: L1 32885 (death, m2erbe, missions, play, play2).
+Witness: L1 103879 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5880,7 +5883,7 @@ Witness: L1 32885 (death, m2erbe, missions, play, play2).
 
 Resets the node pointer and the root at `$6800`.
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5896,7 +5899,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 Walks from the root, left when nearer, right when farther, and links a new 6-byte node.
 
-Witness: L1 9829 (death, m2erbe, missions, play, play2).
+Witness: L1 29277 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5912,7 +5915,7 @@ Witness: L1 9829 (death, m2erbe, missions, play, play2).
 
 Calls DrawEntry `$BF83` per node.
 
-Witness: L1 3507 (death, m2erbe, missions, play, play2).
+Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5928,7 +5931,7 @@ Witness: L1 3507 (death, m2erbe, missions, play, play2).
 
 A pointer at or above `$CF00` is a particle of the bank 3 list, drawn as a dot.
 
-Witness: L1 9715 (death, m2erbe, missions, play, play2).
+Witness: L1 29160 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5945,7 +5948,7 @@ Witness: L1 9715 (death, m2erbe, missions, play, play2).
 
 X += speed * sin(heading), Y += speed * cos(heading), through `$A8B2` / `$A7F2`.
 
-Witness: L1 14450 (death, m2erbe, missions, play, play2).
+Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5962,7 +5965,7 @@ Witness: L1 14450 (death, m2erbe, missions, play, play2).
 
 24 records from `$75F0`: when +2 bit 7 and +3 bit 0 are set, CALL (+`$18`) with IX = the record.
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5979,7 +5982,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 ClearRadar `$C094`, then RadarPlotList `$C079` (3483 runs, every 3D frame but the first).
 
-Witness: L1 3483 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -5996,7 +5999,7 @@ Witness: L1 3483 (death, m2erbe, missions, play, play2).
 
 Resets the list pointer `$7BFB`, sets `$AA1A`, plots each pair at `$6768` through PlotRadarPixel `$A9FE`.
 
-Witness: L1 3483 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6008,7 +6011,7 @@ Witness: L1 3483 (death, m2erbe, missions, play, play2).
 
 SP = the radar's screen rows, PUSH of zeros (32 rows, 5 bytes each at `$5036`).
 
-Witness: L1 3483 (death, m2erbe, missions, play, play2).
+Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6023,7 +6026,7 @@ Witness: L1 3483 (death, m2erbe, missions, play, play2).
 
 Input: the object's offset from the player. RadarRange `$C104`, RadarScale `$C0D2`, RadarStoreBlip `$C0F7`.
 
-Witness: L1 27405 (death, m2erbe, missions, play, play2).
+Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6040,7 +6043,7 @@ Witness: L1 27405 (death, m2erbe, missions, play, play2).
 
 SRA H / RR L 8 times on each offset.
 
-Witness: L1 27405 (death, m2erbe, missions, play, play2).
+Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6052,7 +6055,7 @@ Witness: L1 27405 (death, m2erbe, missions, play, play2).
 
 Writes y, x to (`$7BFB`) and advances it.
 
-Witness: L1 14952 (death, m2erbe, missions, play, play2).
+Witness: L1 45950 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6064,7 +6067,7 @@ Witness: L1 14952 (death, m2erbe, missions, play, play2).
 
 Carry set when the offset is out of the radar (|d| beyond the window).
 
-Witness: L1 48723 (death, m2erbe, missions, play, play2).
+Witness: L1 158626 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6079,7 +6082,7 @@ Witness: L1 48723 (death, m2erbe, missions, play, play2).
 
 Input IX, IY. BearingTo, the difference with +`$22`; within 4 steps it leaves the heading as it is, else +-4. Used by the Helicarrier (HelicarrierWait) and the missiles (545 runs).
 
-Witness: L1 545 (death, missions, play, play2).
+Witness: L1 2841 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6118,7 +6121,7 @@ Known only from the code: no recording runs it (static walk).
 
 The timer `$C4CE` counts down; at 0 ResetSightTimer. While `$C4DC` is set the 3D view gets the sight mask (3507 runs, every 3D frame).
 
-Witness: L1 3507 (death, m2erbe, missions, play, play2).
+Witness: L1 9793 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6146,7 +6149,7 @@ Known only from the code: no recording runs it (static walk).
 
 For each pair whose timer is due: distance minus the radii, then the boxes; on an overlap calls IX's +`$1A` with IY the other, then the other way. The Immunity POKE writes 58 at `$C875` (`JP M,$C8AF` becomes `LD A,(nn)`, the overlap branch is gone).
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 [Animation: `CollisionPass` at work](img/routines/CollisionPass.gif)
 
@@ -6165,7 +6168,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 Input B = the record number. Output HL = the record, A = +2.
 
-Witness: L1 15176 (death, m2erbe, missions, play, play2).
+Witness: L1 54430 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6180,7 +6183,7 @@ Witness: L1 15176 (death, m2erbe, missions, play, play2).
 
 Takes the first free entry of the slot list `$C775`, stores it in +`$3B`, sets the pair timers of the new row in `$C648`.
 
-Witness: L1 431 (death, m2erbe, missions, play, play2).
+Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6196,7 +6199,7 @@ Witness: L1 431 (death, m2erbe, missions, play, play2).
 
 Inside CollisionPass: both +2 bytes decide whether the pair is tested (radar bit 2, bit 4 no-collide, wrecks bits 6 / 7).
 
-Witness: L1 4065 (death, m2erbe, missions, play, play2).
+Witness: L1 12800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6208,7 +6211,7 @@ Witness: L1 4065 (death, m2erbe, missions, play, play2).
 
 Returns the slot of +`$3B` to the list and marks the row's timers `$FF`.
 
-Witness: L1 230 (death, m2erbe, missions, play, play2).
+Witness: L1 951 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6238,7 +6241,7 @@ IX = the unit. Saves its +3 and +`$14`, sets +3 b4 and doubles +`$14`, calls Pla
 
 Sets the coarse player position `$BC12` (X) and `$BC1D` (Y) = the camera words `$67A8` / `$67AB` >> 2, then for each of the (`$DBDC`) segments at `$DC80` tests both endpoints (TestVertexNear `$AE5C` / `$AE78`): visible if one lies within 8 coarse units on both axes. The flag goes to `$8305`+n. From the segment (`$DBDE`) on (the switchable ones) the flag is ANDed with the switch flags `$7BFD`, so a gate or bridge destroyed or opened by the mission script disappears.
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6255,7 +6258,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 Stores `$DC80` in the pointer `$AD4C`, the segment count in `$AE5A`, `$8305` in `$AD48` and clears `$AE5B`. Called before SegmentVisibility.
 
-Witness: L1 3576 (death, m2erbe, missions, play, play2).
+Witness: L1 9868 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6271,7 +6274,7 @@ Witness: L1 3576 (death, m2erbe, missions, play, play2).
 
 EXX, then reads vertex X `$DC00`+A against `$BC12`; falls into TestVertexNearX `$AE61`. Carry out: the vertex is near.
 
-Witness: L1 33063 (death, m2erbe, missions, play, play2).
+Witness: L1 92716 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6287,7 +6290,7 @@ Witness: L1 33063 (death, m2erbe, missions, play, play2).
 
 Input L = the vertex table offset, A = the player's coarse coordinate. Output carry set when |vertex - player| < 8. Used for both axes (TestVertexNearY `$AE79` adds `$40` to reach the Y table).
 
-Witness: L1 58209 (death, m2erbe, missions, play, play2).
+Witness: L1 170288 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6303,7 +6306,7 @@ Witness: L1 58209 (death, m2erbe, missions, play, play2).
 
 EXX and falls into TestVertexNearY `$AE79`.
 
-Witness: L1 24774 (death, m2erbe, missions, play, play2).
+Witness: L1 75268 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6319,7 +6322,7 @@ Witness: L1 24774 (death, m2erbe, missions, play, play2).
 
 L = vertex + `$40`, A = (`$BC1D`), then JP TestVertexNearX `$AE61`.
 
-Witness: L1 25146 (death, m2erbe, missions, play, play2).
+Witness: L1 77572 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6334,7 +6337,7 @@ Witness: L1 25146 (death, m2erbe, missions, play, play2).
 
 From the segment count (+5) sets the loop limit `$AEEA`, the clip window and the vertex buffers at `$FD00`-`$FF07` and `$990F`. Called once per frame before DrawSegments.
 
-Witness: L1 3507 (death, m2erbe, missions, play, play2).
+Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6351,7 +6354,7 @@ Witness: L1 3507 (death, m2erbe, missions, play, play2).
 
 Walks the segments whose flag in `$8305` is set: transforms both vertices (TransformVertex `$B242`), clips them by the orientation byte +2 (one axis `$AFDE`, the other `$B000`, the diagonals `$B021`, `$B0E4`, `$B16A`), and draws the quad by the style byte +5 (DrawSegmentStyle `$B1B6`).
 
-Witness: L1 36513 (death, m2erbe, missions, play, play2).
+Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6368,7 +6371,7 @@ Witness: L1 36513 (death, m2erbe, missions, play, play2).
 
 One pass per segment: reads the next 6-byte record, skips it when its flag is 0.
 
-Witness: L1 36513 (death, m2erbe, missions, play, play2).
+Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6384,7 +6387,7 @@ Witness: L1 36513 (death, m2erbe, missions, play, play2).
 
 The segment runs along one axis; its width is +3 (`$B2E5`), its height +4 (`$AFC4`). Seen only on the maps of missions 1 and 2 (missions, m2erbe).
 
-Witness: L1 702 (m2erbe, missions).
+Witness: L1 4566 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6400,7 +6403,7 @@ Witness: L1 702 (m2erbe, missions).
 
 As ClipSegmentAxisX `$AFDE` for the other axis.
 
-Witness: L1 744 (m2erbe, missions).
+Witness: L1 4608 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6416,7 +6419,7 @@ Witness: L1 744 (m2erbe, missions).
 
 Orientation other than 0 / `$80`: the two vertices give the slope; calls ClipDiagonalSide `$B0E4` and `$B16A`.
 
-Witness: L1 744 (m2erbe, missions).
+Witness: L1 4608 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6432,7 +6435,7 @@ Witness: L1 744 (m2erbe, missions).
 
 Part of ClipSegmentDiagonal `$B021`.
 
-Witness: L1 594 (m2erbe, missions).
+Witness: L1 3647 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6448,7 +6451,7 @@ Witness: L1 594 (m2erbe, missions).
 
 Part of ClipSegmentDiagonal `$B021`.
 
-Witness: L1 2955 (m2erbe, missions).
+Witness: L1 18411 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6462,7 +6465,7 @@ Witness: L1 2955 (m2erbe, missions).
 
 LD HL,(`$AE9E`) then JP DrawSegmentLoop `$AEE8`.
 
-Witness: L1 6628 (death, m2erbe, missions, play, play2).
+Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6477,7 +6480,7 @@ Witness: L1 6628 (death, m2erbe, missions, play, play2).
 
 Points the store `$B2F1` / `$B2F7` at `$FD00` / `$FD06`, transforms the first corner (TransformVertex `$B242`), copies the height `$AFC4` to `$B2E5`, then the second corner into `$FD02` / `$FD04`.
 
-Witness: L1 6277 (death, m2erbe, missions, play, play2).
+Witness: L1 17081 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6494,7 +6497,7 @@ Witness: L1 6277 (death, m2erbe, missions, play, play2).
 
 ResetViewOrigin `$B3B6`, then the style (the operand at `$B1BA`): 0 draws with IX = `$FF8C`, negative with `$FF80`, 1 with `$FF98`, 2 through `$B22C`, 4 / 5 / 6 set the `$FE00` constants first. The same byte is the terrain type TerrainCollision `$CC3C` returns in `$CE69`.
 
-Witness: L1 6628 (death, m2erbe, missions, play, play2).
+Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6509,7 +6512,7 @@ Witness: L1 6628 (death, m2erbe, missions, play, play2).
 
 Input: the vertex index. Vertex minus camera (VertexRelative `$B265`), the rotation (`$B2FF`, `$B38E`), the stores through `$B2F1` / `$B2F7`.
 
-Witness: L1 12554 (death, m2erbe, missions, play, play2).
+Witness: L1 34162 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6526,7 +6529,7 @@ Witness: L1 12554 (death, m2erbe, missions, play, play2).
 
 Byte * 1024 (ByteToWorld `$B282`) minus the camera X / Y `$67A8` / `$67AB`.
 
-Witness: L1 25108 (death, m2erbe, missions, play, play2).
+Witness: L1 68324 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6541,7 +6544,7 @@ Witness: L1 25108 (death, m2erbe, missions, play, play2).
 
 Seen only in missions (167 runs).
 
-Witness: L1 167 (missions).
+Witness: L1 960 (m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6555,7 +6558,7 @@ Witness: L1 167 (missions).
 
 Reads the vertex byte and falls into ByteToWorld `$B282`.
 
-Witness: L1 1488 (m2erbe, missions).
+Witness: L1 9216 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6570,7 +6573,7 @@ Witness: L1 1488 (m2erbe, missions).
 
 Input A, output the 24-bit value in A:HL. The mission code calls it through `$67E2` (the object list's X / Y words use the same scale).
 
-Witness: L1 35297 (death, m2erbe, missions, play, play2).
+Witness: L1 145759 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6585,7 +6588,7 @@ Witness: L1 35297 (death, m2erbe, missions, play, play2).
 
 Carry out: outside.
 
-Witness: L1 9467 (death, m2erbe, missions, play, play2).
+Witness: L1 27209 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6600,7 +6603,7 @@ Witness: L1 9467 (death, m2erbe, missions, play, play2).
 
 Carry out: outside.
 
-Witness: L1 9364 (death, m2erbe, missions, play, play2).
+Witness: L1 24034 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6615,7 +6618,7 @@ Witness: L1 9364 (death, m2erbe, missions, play, play2).
 
 The height operand `$B2E5` (from the segment's +3) is the vertex's height.
 
-Witness: L1 13256 (death, m2erbe, missions, play, play2).
+Witness: L1 38728 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6632,7 +6635,7 @@ Witness: L1 13256 (death, m2erbe, missions, play, play2).
 
 Through the camera sin / cos `$9A6C` / `$9A8E`.
 
-Witness: L1 26512 (death, m2erbe, missions, play, play2).
+Witness: L1 77456 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6648,7 +6651,7 @@ Witness: L1 26512 (death, m2erbe, missions, play, play2).
 
 Seen only in missions.
 
-Witness: L1 3624 (missions).
+Witness: L1 40720 (m4complete, missions).
 
 | | |
 | --- | --- |
@@ -6662,7 +6665,7 @@ Witness: L1 3624 (missions).
 
 EX AF,AF', sin / cos through `$67E8`, multiply by `$9A8E` (RotateMul `$B3A6`), clears the target.
 
-Witness: L1 24700 (death, m2erbe, missions, play, play2).
+Witness: L1 57096 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6679,7 +6682,7 @@ Witness: L1 24700 (death, m2erbe, missions, play, play2).
 
 Part of RotateAndStore.
 
-Witness: L1 49400 (death, m2erbe, missions, play, play2).
+Witness: L1 114192 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6696,7 +6699,7 @@ Witness: L1 49400 (death, m2erbe, missions, play, play2).
 
 Part of RotateAndStore.
 
-Witness: L1 53024 (death, m2erbe, missions, play, play2).
+Witness: L1 154912 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6710,7 +6713,7 @@ Witness: L1 53024 (death, m2erbe, missions, play, play2).
 
 Called by DrawSegmentStyle `$B1B6` once per drawn segment (6628 runs, as many as it).
 
-Witness: L1 6628 (death, m2erbe, missions, play, play2).
+Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6727,7 +6730,7 @@ Witness: L1 6628 (death, m2erbe, missions, play, play2).
 
 Copies +`$21`..+`$28` (table select, heading, X, Y) of the record at (`$B9F4`) to `$67A5`-`$67AC`, the height +5/+6 (or the IR height `$B8FF` when `$BA13` is set) to `$67AD`. The rear view (`$BA27` set) adds `$80` to the heading. Then CameraSinCos `$BA32`.
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6744,7 +6747,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 
 Reads the camera heading `$67A6`, sin / cos through `$67E8` (`$A899`), stores the pair in the operands `$BBBD` / `$BBC8` of RotateToView.
 
-Witness: L1 7100 (death, m2erbe, missions, play, play2).
+Witness: L1 19674 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6761,7 +6764,7 @@ Witness: L1 7100 (death, m2erbe, missions, play, play2).
 
 CALL CameraSinCos for the second view pass.
 
-Witness: L1 3550 (death, m2erbe, missions, play, play2).
+Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6792,7 +6795,7 @@ Witness: L1 5 (play).
 
 Prints `$BA86` ("REAR:VIEW") or `$BA9F` (blank) with the attribute at `$5AD2`.
 
-Witness: L1 31 (death, m2erbe, missions, play, play2).
+Witness: L1 36 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6809,7 +6812,7 @@ Witness: L1 31 (death, m2erbe, missions, play, play2).
 
 The grid moves with the camera: GridVectors `$BB54`, then PlotGroundDot `$BB75` for each dot, GridStep `$BBA6` between rows.
 
-Witness: L1 3507 (death, m2erbe, missions, play, play2).
+Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6826,7 +6829,7 @@ Witness: L1 3507 (death, m2erbe, missions, play, play2).
 
 The camera's sin / cos scaled to the grid spacing: the steps along a row and between rows.
 
-Witness: L1 14028 (death, m2erbe, missions, play, play2).
+Witness: L1 39176 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6842,7 +6845,7 @@ Witness: L1 14028 (death, m2erbe, missions, play, play2).
 
 Rotates the dot to view space, divides by depth, plots through `$AA27` when on screen (117 517 runs).
 
-Witness: L1 117517 (death, m2erbe, missions, play, play2).
+Witness: L1 324616 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6859,7 +6862,7 @@ Witness: L1 117517 (death, m2erbe, missions, play, play2).
 
 Adds the row vector to the grid origin.
 
-Witness: L1 7014 (death, m2erbe, missions, play, play2).
+Witness: L1 19588 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6875,7 +6878,7 @@ Witness: L1 7014 (death, m2erbe, missions, play, play2).
 
 Outputs the depth offset in `$9A6C` and the x offset in `$9A8E` (OpProject adds `$9A6C` to z and compares with 96).
 
-Witness: L1 50296 (death, m2erbe, missions, play, play2).
+Witness: L1 154474 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6892,7 +6895,7 @@ Witness: L1 50296 (death, m2erbe, missions, play, play2).
 
 Input IX = the object. Scans the segments flagged in `$8305` (TerrainScan `$CC4D`), tests the object's position against each one's box or diagonal (TerrainDiagonal `$CDB6`). Output carry set on a touch, the style +5 of the segment in `$CE69`. The mission code uses it through `$67F1` for the enemies.
 
-Witness: L1 5854 (death, m2erbe, missions, play, play2).
+Witness: L1 20647 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6909,7 +6912,7 @@ Witness: L1 5854 (death, m2erbe, missions, play, play2).
 
 Sets the segment pointer and the count.
 
-Witness: L1 62957 (death, m2erbe, missions, play, play2).
+Witness: L1 208483 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6925,7 +6928,7 @@ Witness: L1 62957 (death, m2erbe, missions, play, play2).
 
 One segment per pass (62 693 runs).
 
-Witness: L1 62693 (death, m2erbe, missions, play, play2).
+Witness: L1 207509 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6940,7 +6943,7 @@ Witness: L1 62693 (death, m2erbe, missions, play, play2).
 
 Steps to the next record.
 
-Witness: L1 11717 (death, m2erbe, missions, play, play2).
+Witness: L1 48694 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6954,7 +6957,7 @@ Witness: L1 11717 (death, m2erbe, missions, play, play2).
 
 Negates the 24-bit value in A:HL.
 
-Witness: L1 14955 (death, m2erbe, missions, play, play2).
+Witness: L1 62388 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -6969,7 +6972,7 @@ Witness: L1 14955 (death, m2erbe, missions, play, play2).
 
 The perpendicular distance for orientation other than 0 / `$80` (missions, m2erbe).
 
-Witness: L1 908 (m2erbe, missions).
+Witness: L1 5964 (m2erbe, m4complete, missions).
 
 | | |
 | --- | --- |
@@ -7011,7 +7014,7 @@ Witness: L1 8 (play).
 
 On: `$CEA8` = A, the zoom `$9A93` = 1, the lamp attribute `$5ACC` = `$42`, key repeat `$9719` = `$20`, prints "BINOC:X2" `$BA93`. Off: `$9A93` = 0, `$5ACC` = `$44`, `$9719` = 4, the blank `$BA9F`. The rear view (`$BA27`) blocks both.
 
-Witness: L1 34 (death, m2erbe, missions, play, play2).
+Witness: L1 39 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -7058,7 +7061,7 @@ Known only from the code: no recording runs it (static walk).
 
 HitPoints `$B6B1` with no weapon test, so any collider, the tank included (damage 0 against a tree's 0 hit points), knocks it down; on a kill unregisters the collision (`$67CD`), makes debris (`$67DF`) and joins `$B677` (+2 = 0, then AddKillScore), bypassing KillMissionObject, so the list record is not marked destroyed. Users: types 0 and 1 in all ten missions, mission 5 types 23-25, mission 6 types 27-29, mission 10 types 23-25, 30, 31, and the aircraft missiles at the end of their life (`$E632`) (docs/07-objects.md 7.5, 7.14).
 
-Witness: L1 1 (death).
+Witness: L1 2 (armour, death).
 
 | | |
 | --- | --- |
@@ -7093,7 +7096,7 @@ HitTest `$B660`; no kill returns. On a kill, when PlayerStep's JR operand `$A8C8
 
 Input IX = the hit object, IY = the hitter. HitPoints `$B6B1` (+`$13` -= the hitter's +`$14`); no kill returns NC. On a kill: UnregisterCollision `$CA3B`, Debris `$B6D1`; an object from the mission list (+0 != `$FF`) goes to KillMissionObject `$B67D`, the others are freed at `$B677`. Then AddKillScore `$B692`.
 
-Witness: L1 153 (death, missions, play2).
+Witness: L1 1132 (armour, death, m1complete, m4complete, missions, play2).
 
 [Animation: `HitTest` at work](img/routines/HitTest.gif)
 
@@ -7110,7 +7113,7 @@ Witness: L1 153 (death, missions, play2).
 
 MarkDestroyed `$B6BD`, sets the wreck bit 6 of +2 (the wreck model +8/+9 is drawn), clears the step handler bit.
 
-Witness: L1 4 (death).
+Witness: L1 9 (death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -7126,7 +7129,7 @@ Witness: L1 4 (death).
 
 Adds the word to `$68E2`-`$68E5` and calls the kill sound `$D873`. Death: the score goes 0, `$FA`, `$1F4` (two kills of a 250-point type).
 
-Witness: L1 5 (death).
+Witness: L1 12 (armour, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -7142,7 +7145,7 @@ Witness: L1 5 (death).
 
 +`$13` of IX -= +`$14` of IY.
 
-Witness: L1 7 (death).
+Witness: L1 23 (armour, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -7157,7 +7160,7 @@ Witness: L1 7 (death).
 
 Record (`$DBDA`) + 8 * (+0): sets bit 1 (destroyed), clears bit 7 (alive), so it is never spawned again. The goal hooks read this bit.
 
-Witness: L1 4 (death).
+Witness: L1 9 (death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -7172,7 +7175,7 @@ Witness: L1 4 (death).
 
 Fills the bank 3 particle list at `$CFEC` (8 records of 20 bytes): the object's position, random velocities (DebrisVelocity `$B74B` / `$B75C`).
 
-Witness: L1 13 (death, play2).
+Witness: L1 36 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7187,7 +7190,7 @@ Witness: L1 13 (death, play2).
 
 Random through `$67D0`.
 
-Witness: L1 64 (death, play2).
+Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7201,7 +7204,7 @@ Witness: L1 64 (death, play2).
 
 The entry DebrisVelocity's second call uses for the other axis.
 
-Witness: L1 64 (death, play2).
+Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7221,7 +7224,7 @@ Gated by `$D691` (1 in the image and never written: the test always passes) and 
 
 Witness frames (first-last frame of the recording, runs): c1 24005-33298 (4124), controls 0-330 (242), death 0-20038 (12655), m10 0-9028 (6434), m2erbe 0-7808 (3094), m2ocean 0-4799 (2244), menu 0-10996 (7559), missions 0-35997 (12811), play 0-10930 (5510), play2 0-23665 (12957), search 0-5043 (2265).
 
-Witness: L1 65529 (death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -7241,7 +7244,7 @@ C as the noise period (`$D67A`; both callers pass C = A), A >> 1 as the volume o
 
 Witness frames (first-last frame of the recording, runs): c1 32619-33091 (107), death 8122-18058 (896), play2 8608-17213 (553).
 
-Witness: L1 1449 (death, play2).
+Witness: L1 3337 (armour, c1, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7259,7 +7262,7 @@ Zeroes the 21 bytes from `$D674`, mixer `$3F` (all off), writes the 14 registers
 
 Witness frames (first-last frame of the recording, runs): c1 23974-24603 (2), controls 95-264 (2), m2erbe 7454-7522 (2), menu 95-1874 (4), missions 7955-34068 (16), play 10627-10693 (2), play2 9615-23533 (6).
 
-Witness: L1 30 (m2erbe, menu, missions, play, play2).
+Witness: L1 39 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -7311,7 +7314,7 @@ Known only from the code: no caller.
 
 Witness frames (first-last frame of the recording, runs): c1 32680-33293 (15), play2 8700-17195 (21).
 
-Witness: L1 21 (play2).
+Witness: L1 61 (c1, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7350,7 +7353,7 @@ Known only from the code: no caller.
 
 Witness frames (first-last frame of the recording, runs): death 7705 (1), play 8425-9322 (4), play2 8362-23071 (9).
 
-Witness: L1 14 (death, play, play2).
+Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -7366,7 +7369,7 @@ Witness: L1 14 (death, play, play2).
 
 Witness frames (first-last frame of the recording, runs): c1 32618-33054 (5), death 8121-17902 (8), play2 8607-17180 (19).
 
-Witness: L1 27 (death, play2).
+Witness: L1 63 (armour, c1, death, m1complete, m4complete, play2).
 
 | | |
 | --- | --- |
@@ -7383,7 +7386,7 @@ Witness: L1 27 (death, play2).
 
 Witness frames (first-last frame of the recording, runs): death 8187-17902 (5).
 
-Witness: L1 5 (death).
+Witness: L1 12 (armour, death, m1complete, m4complete).
 
 | | |
 | --- | --- |
@@ -7443,7 +7446,7 @@ Known only from the code: no caller.
 
 Witness frames (first-last frame of the recording, runs): death 7897-19694 (60), play 8800-9406 (4), play2 8442-16931 (6).
 
-Witness: L1 70 (death, play, play2).
+Witness: L1 147 (armour, death, m1complete, m4complete, play, play2).
 
 | | |
 | --- | --- |
@@ -7459,7 +7462,7 @@ Witness: L1 70 (death, play, play2).
 
 Witness frames (first-last frame of the recording, runs): c1 32219-33298 (982), death 7592-20038 (10012), m2erbe 7090-7522 (281), missions 7592-34068 (2195), play 8253-10693 (2004), play2 8184-23533 (3190).
 
-Witness: L1 17682 (death, m2erbe, missions, play, play2).
+Witness: L1 56368 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 | | |
 | --- | --- |
@@ -7469,3 +7472,3993 @@ Witness: L1 17682 (death, m2erbe, missions, play, play2).
 | Calls | `ApiVector08` |
 | Reads | `$75F7` (`PlayerSpeed`); `$D67B`-`$D67F` (`AYRegs+7`) |
 | Writes | `$D674`-`$D681` (`AYRegs`); `$D7F0` (`l_D7E2+14`) |
+
+
+## Bank 3 (`src/bank3/bank3.json`)
+
+Battle Command, Ocean 1990: RAM bank 3, paged at `$C000`, as its tape block loads it. Its entries are
+`src/bank3/<module>.asm`, written from `src/bank3/bank3.ann` by `kit/mkgame.py --part src/bank3/bank3.json`; the
+recordings: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission
+tape, Blast Em Mission played), and `work/stage1/menu`, `work/stage1/missions`, `work/stage1/play`,
+`work/stage1/play2`, `work/stage1/death`, `work/stage1/m2ocean`, `work/stage1/m2erbe`, `work/stage1/search`,
+`work/stage1/m10`, `work/stage1/c1`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`raster3`](#bank-3-raster3) | `$C000`-`$CFEB` | 25 of 28 |
+| [`debris`](#bank-3-debris) | `$CFEC`-`$D3FF` | 6 of 8 |
+
+### Bank 3: raster3
+
+`src/bank3/raster3.asm`
+
+#### `ClipPolyY` (`$C000`)
+
+**Clip the polygon PolyVerts `$6700` (count `$68A9`) to rows 0..95 into PolyYClipped `$66A8`**
+
+Sutherland-Hodgman by states: the last vertex inside (`$C17B`), below row 95 (`$C02F`) or above row 0 (`$C0DE`); the crossings by IntersectRow95 `$C40A` and IntersectRow0 `$C420`. Then the X clip `$C218`. Returns Z when nothing is left.
+
+Witness: L1 38525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,908 calls, 786,456 t-states own (0.12 %) |
+| Runs (the other recordings) | 38,525 calls (`stage1/death` 11,168, `stage1/play2` 8,321, `stage1/missions` 8,193 and 7 more) |
+| Called from | `FillPolygon` |
+| Calls | `ClipYBelow`, `ClipYAbove` (tail), `ClipYInside` (tail) |
+| Reads | `$6708`-`$671F` (`PolyVerts+8`); `$68A9` (`PanelGauges+1`); `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `ClipYBelow` (`$C02F`)
+
+**Y clip state: the previous vertex below the window**
+
+Witness: L1 3183 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 132 calls, 90,478 t-states own (0.01 %) |
+| Runs (the other recordings) | 1,643 calls (`stage1/death` 799, `stage1/missions` 332, `stage1/play` 220 and 4 more) |
+| Called from | `ClipPolyY`, `ClipYInside` (tail) |
+| Calls | `ClipYInside` (tail), `ClipPolyX` (tail), `IntersectRow95` |
+| Reads | `$6700`-`$6717` (`PolyVerts`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$66A8`-`$66B6` (`PolyYClipped`) |
+
+#### `ClipYAbove` (`$C0DE`)
+
+**Y clip state: the previous vertex above the window**
+
+Witness: L1 1682 (c1, death, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 1,627 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,682 calls (`stage1/play2` 702, `stage1/death` 676, `stage1/play` 290 and 3 more) |
+| Called from | `ClipPolyY` (tail), `ClipYAboveSkip` (tail), `ClipYInside` (tail) |
+| Calls | `ClipYAboveSkip` (tail), `ClipYInside` (tail), `ClipPolyX` (tail), `IntersectRow0` |
+| Reads | `$6700`-`$670F` (`PolyVerts`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$66A8`-`$66B3` (`PolyYClipped`) |
+
+#### `ClipYAboveSkip` (`$C162`)
+
+**Y clip: still above, skip the vertex**
+
+Witness: L1 1530 (c1, death, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 137 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,530 calls (`stage1/play2` 688, `stage1/death` 547, `stage1/play` 289 and 3 more) |
+| Called from | `ClipYAbove` (tail) |
+| Calls | `ClipYAbove` (tail), `ClipPolyX` (tail) |
+| Reads | `$6700`-`$670E` (`PolyVerts`); `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `ClipYInside` (`$C17B`)
+
+**Y clip state: the previous vertex inside, output it**
+
+Witness: L1 143574 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,910 calls, 4,326,536 t-states own (0.65 %) |
+| Runs (the other recordings) | 38,107 calls (`stage1/death` 11,016, `stage1/missions` 8,200, `stage1/play2` 8,120 and 7 more) |
+| Called from | `ClipPolyY` (tail), `ClipYBelow` (tail), `ClipYAbove` (tail) |
+| Calls | `ClipYBelow` (tail), `ClipYAbove` (tail), `ClipPolyX`, `ClipXInside` (tail), `IntersectRow95`, `IntersectRow0` |
+| Reads | `$66AE`-`$66B9` (`PolyYClipped+6`); `$6700`-`$671F` (`PolyVerts`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$66A8`-`$66BF` (`PolyYClipped`) |
+
+#### `ClipPolyX` (`$C218`)
+
+**Clip the Y-clipped list to columns 0..255 (the limit patched by SetClipWidth `$CFCD`) into PolyXClipped `$6680`**
+
+States `$C245` (previous right of the window), `$C2E6` (left), `$C378` (inside); crossings by IntersectColRight `$C478`, IntersectCol0 `$C48E`; the count to `$68A9`.
+
+Witness: L1 38524 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,908 calls, 4,384,410 t-states own (0.66 %) |
+| Runs (the other recordings) | 38,068 calls (`stage1/death` 11,168, `stage1/play2` 8,320, `stage1/missions` 8,193 and 4 more) |
+| Called from | `ClipYBelow` (tail), `ClipYAbove` (tail), `ClipYAboveSkip` (tail), `ClipYInside` |
+| Calls | `ClipXRight`, `ClipXLeft` (tail), `ClipXInside` (tail), `IntersectColRight`, `IntersectCol0` |
+| Reads | `$66A8`-`$66BF` (`PolyYClipped`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$6680`-`$668F` (`PolyXClipped`); `$68A9` (`PanelGauges+1`) |
+
+#### `ClipXRight` (`$C245`)
+
+**X clip state: the previous vertex right of the window**
+
+Witness: L1 11998 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 94 calls (`stage1/m2erbe` 94) |
+| Called from | `ClipPolyX`, `ClipXInside` (tail) |
+| Calls | `ClipXInside` (tail), `IntersectColRight` |
+| Reads | `$66A8`-`$66B3` (`PolyYClipped`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$6680`-`$6685` (`PolyXClipped`); `$68A9` (`PanelGauges+1`) |
+
+#### `ClipXLeft` (`$C2E6`)
+
+**X clip state: the previous vertex left of the window**
+
+Witness: L1 13550 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 41 calls (`stage1/m2erbe` 41) |
+| Called from | `ClipPolyX` (tail) |
+| Calls | `ClipXInside` (tail), `IntersectCol0` |
+| Reads | `$66A8`-`$66B3` (`PolyYClipped`) |
+| Writes | `$6680`-`$6681` (`PolyXClipped`); `$68A9` (`PanelGauges+1`) |
+
+#### `ClipXInside` (`$C378`)
+
+**X clip state: the previous vertex inside**
+
+Witness: L1 121481 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4,117 calls (`stage1/menu` 2,787, `stage1/m2erbe` 874, `stage1/m10` 152 and 2 more) |
+| Called from | `ClipYInside` (tail), `ClipPolyX` (tail), `ClipXRight` (tail), `ClipXLeft` (tail) |
+| Calls | `ClipXRight` (tail), `IntersectColRight`, `IntersectCol0` |
+| Reads | `$66A8`-`$66B9` (`PolyYClipped`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$6680`-`$668B` (`PolyXClipped`); `$68A9` (`PanelGauges+1`) |
+
+#### `IntersectRow95` (`$C40A`)
+
+**The x where the edge crosses row 95 (exact when an end is on it)**
+
+Witness: L1 3152 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 258 calls, 30,231 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,152 calls (`stage1/death` 1,506, `stage1/missions` 648, `stage1/play` 428 and 4 more) |
+| Called from | `ClipYBelow`, `ClipYInside` |
+| Calls | `IntersectRow0` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `IntersectRow0` (`$C420`)
+
+**The x where the edge crosses row 0, by bisection**
+
+Witness: L1 15203 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 260 calls, 190,554 t-states own (0.03 %) |
+| Runs (the other recordings) | 3,285 calls (`stage1/death` 1,761, `stage1/missions` 656, `stage1/play` 430 and 3 more) |
+| Called from | `ClipYAbove`, `ClipYInside`, `IntersectRow95` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `IntersectColRight` (`$C478`)
+
+**The y where the edge crosses the right column (255)**
+
+Witness: L1 5322 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 262 calls, 30,592 t-states own (0.00 %) |
+| Runs (the other recordings) | 5,322 calls (`stage1/death` 1,962, `stage1/missions` 1,284, `stage1/play2` 968 and 3 more) |
+| Called from | `ClipPolyX`, `ClipXRight`, `ClipXInside` |
+| Calls | `IntersectCol0` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `IntersectCol0` (`$C48E`)
+
+**The y where the edge crosses column 0, by bisection**
+
+Witness: L1 67550 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,126 calls, 975,932 t-states own (0.15 %) |
+| Runs (the other recordings) | 10,813 calls (`stage1/play2` 3,324, `stage1/death` 3,104, `stage1/missions` 1,886 and 4 more) |
+| Called from | `ClipPolyX`, `ClipXLeft`, `ClipXInside`, `IntersectColRight` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `FillPolygon` (`$C4C4`)
+
+**Fill the polygon PolyVerts `$6700` in the colour `$7579`: clip, find the top and bottom, walk the edges, fill**
+
+After the clips, fewer than 3 vertices return. Finds the lowest and highest row in `$6681`..., marks the top vertex, doubles the list, sets the bottom row `$67BD` (FillSpans starts there and walks up, DE = `$FFE0`; the byte is shared with MouseDelta) and the row count `$68A8`, and calls EdgeWalk `$C542`. Entered from bank 5 `$7290` (38 827 calls over the recordings).
+
+Witness: L1 38525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+[Animation: `FillPolygon` at work](img/routines/FillPolygon.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,908 calls, 2,907,394 t-states own (0.44 %) |
+| Runs (the other recordings) | 38,525 calls (`stage1/death` 11,168, `stage1/play2` 8,321, `stage1/missions` 8,193 and 7 more) |
+| Calls | `ClipPolyY`, `FillSpansThenReturn`, `EdgeWalk` (tail) |
+| Reads | `$6680`-`$668F` (`PolyXClipped`); `$82FF`-`$8300` (`Im2Table+255`); `$C4CC` (`FillPolygon+8`) |
+| Writes | `$6681`-`$669F` (`PolyXClipped+1`); `$67BD` (`MouseDelta`); `$68A8` (`PanelGauges`); `$C4CC` (`FillPolygon+8`); `$C517` (`l_C4FE+25`) |
+
+#### `FillSpansThenReturn` (`$C53E`)
+
+**CALL FillSpans `$C86A` then RET (the edge walker jumps here when the spans are on the stack)**
+
+Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,395 calls, 51,813 t-states own (0.01 %) |
+| Runs (the other recordings) | 33,753 calls (`stage1/death` 9,135, `stage1/missions` 7,698, `stage1/play2` 7,281 and 7 more) |
+| Called from | `FillPolygon`, `EdgeWalk` (tail) |
+| Calls | `FillSpans` |
+
+#### `FillSpansReturn` (`$C541`)
+
+**The RET after FillSpans**
+
+Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,395 calls, 27,487 t-states own (0.00 %) |
+| Runs (the other recordings) | 33,753 calls (`stage1/death` 9,135, `stage1/missions` 7,698, `stage1/play2` 7,281 and 7 more) |
+| Called from | `FillSpans` (tail) |
+
+#### `EdgeWalk` (`$C542`)
+
+**Walk the left and right edges from the top vertex down, pushing one (left, right) span per row on the stack**
+
+`SP` saved at `$C7EA`; each edge's step from EdgeSlope `$C959`; the next edge on either side by `$C82D` (left, IX forward) and `$C7ED` (right, IY back); at the bottom it jumps to FillSpansThenReturn `$C53E`. The biggest block of bank 3: 385 instructions.
+
+Witness: L1 31451 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,319 calls, 7,284,985 t-states own (1.10 %) |
+| Runs (the other recordings) | 31,451 calls (`stage1/death` 8,139, `stage1/missions` 7,157, `stage1/play2` 7,146 and 7 more) |
+| Called from | `FillPolygon` (tail) |
+| Calls | `FillSpansThenReturn` (tail), `NextRightEdge`, `NextLeftEdge`, `EdgeSlope` |
+| Reads | `$6680`-`$669F` (`PolyXClipped`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$C57F` (`l_C574+11`); `$C5BA` (`l_C5AF+11`); `$C7EA`-`$C7EB` (`l_C7E9+1`) |
+
+#### `NextRightEdge` (`$C7ED`)
+
+**Take the next edge on the right side (IY backwards): its rows and step**
+
+Witness: L1 10893 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,039 calls, 356,706 t-states own (0.05 %) |
+| Runs (the other recordings) | 10,893 calls (`stage1/missions` 3,023, `stage1/play2` 2,273, `stage1/menu` 1,565 and 7 more) |
+| Called from | `EdgeWalk` |
+| Calls | `EdgeSlope` |
+| Reads | `$6682`-`$669D` (`PolyXClipped+2`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$C828` (`l_C81F+9`) |
+
+#### `NextLeftEdge` (`$C82D`)
+
+**Take the next edge on the left side (IX forwards): its rows and step**
+
+Witness: L1 9734 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,060 calls, 349,979 t-states own (0.05 %) |
+| Runs (the other recordings) | 9,734 calls (`stage1/missions` 2,639, `stage1/play2` 1,820, `stage1/menu` 1,559 and 7 more) |
+| Called from | `EdgeWalk` |
+| Calls | `EdgeSlope` |
+| Reads | `$6682`-`$6699` (`PolyXClipped+2`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$C867` (`l_C85D+10`) |
+
+#### `FillSpans` (`$C86A`)
+
+**Pop the spans and fill them row by row in the back buffer with the colour's 2-row dither pattern**
+
+The pattern from FillPatterns `$66D6` + 2 `$7579` (solid `$FF` when `$757A` = 0); the edges masked with RightEdgeMasks / LeftEdgeMasks `$66F0`; the middle bytes by a patched jump into 31 `LD (HL),B`. Writes `$8AF8-$96F0`; 85 permille of the recordings' time (the heaviest routine of the 3D view after the blit).
+
+Witness: L1 33753 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+[Animation: `FillSpans` at work, mouse](img/routines/FillSpans-mouse.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2,395 calls, 16,120,013 t-states own (2.44 %) |
+| Runs (the other recordings) | 33,753 calls (`stage1/death` 9,135, `stage1/missions` 7,698, `stage1/play2` 7,281 and 7 more) |
+| Called from | `FillSpansThenReturn` |
+| Calls | `FillSpansReturn` (tail) |
+| Reads | `$66D6`-`$66FF` (`FillPatterns`); `$67BD` (`MouseDelta`); `$68A8` (`PanelGauges`); `$7579`-`$757A` (`AwolState+1`); `$82FF`-`$8300` (`Im2Table+255`); `$8AF8`-`$96F0` (`BackBuffer+7`) |
+| Writes | `$8AF8`-`$96F0` (`BackBuffer+7`); `$C8DF` (`l_C8D6+9`); `$C932`-`$C93B` (`l_C930+2`) |
+
+#### `EdgeSlope` (`$C959`)
+
+**HL = 256 H / L by logarithms (LogFraction, LogInteger, ExpFraction): the x step per row; 0 or `$FFFF` at the limits**
+
+Witness: L1 83529 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6,737 calls, 1,721,898 t-states own (0.26 %) |
+| Runs (the other recordings) | 83,529 calls (`stage1/missions` 19,976, `stage1/death` 19,084, `stage1/play2` 18,385 and 7 more) |
+| Called from | `EdgeWalk`, `NextRightEdge`, `NextLeftEdge` |
+| Reads | `$5C00`-`$5EFF` (`LogFraction`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$C981` (`l_C980+1`); `$C996` (`l_C995+1`) |
+
+#### `l_C9A3` (`$C9A3`)
+
+**l_C9A3**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DrawLine` (`$C9A7`)
+
+**Draw a line from (H, L) to (D, E) (x, y bytes) into the back buffer by OR, Bresenham**
+
+Special cases: vertical (`$CA60`), horizontal (`$CA4E`), 45 degrees (`$CA74`); the pixel bit of the start in `$CA89`. Entered from bank 5 `$72B1`.
+
+Witness: L1 4996 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 54,400 t-states own (0.01 %) |
+| Runs (the other recordings) | 4,996 calls (`stage1/death` 2,261, `stage1/play2` 1,192, `stage1/missions` 733 and 4 more) |
+| Calls | `DrawVerticalLine` (tail) |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8B00`-`$96EA` (`BackBuffer+15`); `$CA89` (`LinePixelBit`) |
+| Writes | `$8B00`-`$96EA` (`BackBuffer+15`); `$CA6F` (`l_CA6E+1`); `$CA89` (`LinePixelBit`) |
+
+#### `DrawVerticalLine` (`$CA60`)
+
+**A vertical line: `SET n,(HL)` patched to the column's bit, down D + 1 rows**
+
+Witness: L1 1262 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 114 calls, 29,458 t-states own (0.00 %) |
+| Runs (the other recordings) | 114 calls (`stage1/c1` 114) |
+| Called from | `DrawLine` (tail) |
+| Reads | `$9138`-`$9189` (`BackBuffer+1607`); `$919B`-`$91A9` (`BackBuffer+1706`); `$CA89` (`LinePixelBit`) |
+| Writes | `$9138`-`$9189` (`BackBuffer+1607`); `$919B`-`$91A9` (`BackBuffer+1706`); `$CA6F` (`l_CA6E+1`) |
+
+#### `SetClipWidth` (`$CFCD`)
+
+**Patch the X clip's limit (10 operands) with A: `$FF` full width, `$5F` the 96-pixel console view**
+
+Called through `$74CF` (`$74C9` A = `$FF`, `$74CD` A = `$5F`) by bank 6 `$CA8B`.
+
+Witness: L1 30 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 338 t-states own (0.00 %) |
+| Runs (the other recordings) | 30 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/m2erbe` 2 and 3 more) |
+| Writes | `$C23E` (`ClipPolyX+38`); `$C252` (`ClipXRight+13`); `$C288` (`l_C26E+26`); `$C2C9` (`l_C2B5+20`); `$C2F3` (`ClipXLeft+13`); `$C31A` (`ClipXLeft+52`); 3 more ranges |
+
+### Bank 3: debris
+
+`src/bank3/debris.asm`
+
+#### `DrawDebris` (`$D08C`)
+
+**Draw every live fragment that lies in front of the tank and inside the view**
+
+For each of the 8 records (IX from `$CFEC`, the count in the operand `$D140`): clear bit 5; a live record's x and z minus the camera's (`$67A7`, `$67AA`) into the projection operands `$9A8E` and `$9A6C`; skip it when x is outside -`$20`..`$1F` (high byte; the bounds are the operands `$D0C6` / `$D0CE`) or z likewise; y minus `$67AD` to +`$0D`; `$BBBC` (bank 2) gives the distance (HL, kept in `$66D0`) and HL' to +`$0B`; DebrisInView; if in view, bit 5 set and the renderer `$BEDE` draws it.
+
+Witness: L1 3602 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 4,969 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,602 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Calls | `DrawDebrisNext`, `DebrisInView` |
+| Reads | `$66D0`-`$66D1` (`PolyWorkSpare+1`); `$67A7`-`$67AE` (`WorldVars+4`); `$82FF`-`$8300` (`Im2Table+255`); `$CFEC`-`$D080` (`DebrisRecords`); `$D0C6`-`$D0CE` (`XBoundOp+1`, `XBoundNegOp`) |
+| Writes | `$66D0`-`$66D1` (`PolyWorkSpare+1`); `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`); `$CFEC`-`$D086` (`DebrisRecords`); `$D140` (`DebrisCountOp+1`) |
+
+#### `DrawDebrisNext` (`$D095`)
+
+**DrawDebrisNext**
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 70,761 t-states own (0.01 %) |
+| Runs (the other recordings) | 5,432 calls (`stage1/missions` 2,184, `stage1/play` 1,968, `stage1/c1` 952 and 1 more) |
+| Called from | `DrawDebris`, `DrawDebrisSkip` (tail) |
+| Calls | `DrawDebrisSkip` (tail) |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$CFEC`-`$D000` (`DebrisRecords`); `$D014` (`DebrisRecords+40`); `$D028` (`DebrisRecords+60`); `$D03C` (`DebrisRecords+80`); `$D050` (`DebrisRecords+100`); 2 more ranges |
+| Writes | `$CFEC`-`$D000` (`DebrisRecords`); `$D014` (`DebrisRecords+40`); `$D028` (`DebrisRecords+60`); `$D03C` (`DebrisRecords+80`); `$D050` (`DebrisRecords+100`); `$D064` (`DebrisRecords+120`); 1 more ranges |
+
+#### `DrawDebrisSkip` (`$D139`)
+
+**DrawDebrisSkip**
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 952 calls, 94,843 t-states own (0.01 %) |
+| Runs (the other recordings) | 5,432 calls (`stage1/missions` 2,184, `stage1/play` 1,968, `stage1/c1` 952 and 1 more) |
+| Called from | `DrawDebrisNext` (tail) |
+| Calls | `DrawDebrisNext` (tail) |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$D097`-`$D098` (`DrawDebrisNext+2`) |
+| Writes | `$D140` (`DebrisCountOp+1`) |
+
+#### `DebrisInView` (`$D148`)
+
+**Carry set when the fragment is outside the view's cone: |x'| > z / 2 + 100**
+
+Input: HL = the distance from `$BBBC`, IX the record (+`$0B` the side offset). Output: carry = not visible. Witness: L1 4263 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3,584 calls (`stage1/death` 3,010, `stage1/play2` 574) |
+| Called from | `DrawDebris` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$CFF7`-`$D020` (`DebrisRecords+11`); `$D033`-`$D034` (`DebrisRecords+71`); `$D047`-`$D048` (`DebrisRecords+91`); `$D05B`-`$D05C` (`DebrisRecords+111`); `$D06F`-`$D070` (`DebrisRecords+131`); 2 more ranges |
+
+#### `MoveDebris` (`$D16B`)
+
+**Move one fragment: add the speeds to x, z, y; gravity on the y speed; free the record below the ground**
+
+x += the signed +`$0F` (with carry into the word), z += +`$10`, y += +`$11`; y below 0: the record is freed (+0 = 0). Else the y speed drops by 5; when that subtraction overflows (below -128, `JP PO` not taken) the record is freed too. Then the turn +`$0A` grows by +`$12` and +`$13` (docs/10-gameplay-logic.md 10.8).
+
+Witness: L1 661 (death, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 661 calls (`stage1/death` 500, `stage1/play2` 161) |
+| Called from | `MoveAllDebris` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$CFED`-`$D08B` (`DebrisRecords+1`) |
+| Writes | `$CFEC`-`$D089` (`DebrisRecords`) |
+
+#### `MoveAllDebris` (`$D1EC`)
+
+**MoveDebris for each of the 8 records whose flags are non-zero**
+
+Witness: L1 3602 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 94,653 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,602 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Calls | `MoveDebris` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$CFEC`-`$D000` (`DebrisRecords`); `$D014` (`DebrisRecords+40`); `$D028` (`DebrisRecords+60`); `$D03C` (`DebrisRecords+80`); `$D050` (`DebrisRecords+100`); 2 more ranges |
+
+
+## Bank 4 (`src/bank4/bank4.json`)
+
+Battle Command, Ocean 1990: RAM bank 4, paged at `$C000`, as its tape block loads it. Its entries are
+`src/bank4/<module>.asm`, written from `src/bank4/bank4.ann` by `kit/mkgame.py --part src/bank4/bank4.json`; the
+recordings: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission
+tape, Blast Em Mission played), and `work/stage1/menu`, `work/stage1/missions`, `work/stage1/play`,
+`work/stage1/play2`, `work/stage1/death`, `work/stage1/m2ocean`, `work/stage1/m2erbe`, `work/stage1/search`,
+`work/stage1/m10`, `work/stage1/c1`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`music`](#bank-4-music) | `$C000`-`$CDFF` | 34 of 50 |
+
+### Bank 4: music
+
+`src/bank4/music.asm`
+
+#### `StartTune` (`$C000`)
+
+**Start tune A: the tune's speed and three order lists from TuneTable, the channel records reset, the music on**
+
+Input: A = the tune (7-byte records at TuneTable `$C869`; only tune 0 exists). Clears MusicOn and EffectOn, the speed into the operand `$C0FE`, then for each channel: transpose (+`$20`), repeat (+`$21`), duration count 1 (+`$10`), flags, vibrato and drum off, the order list into +`$03` and +`$05` (the restart point), +`$25` = 1 (take a pattern first); the global transpose `$C39D` = 0, SpeedCount and MusicOn = 1.
+
+Witness frames (first-last frame of the recording, runs): c1 24005-24633 (2), controls 125-294 (2), m2erbe 7553-7554 (1), menu 125-1904 (4), missions 8062-34099 (8), play 10724 (1), play2 9718-23564 (3).
+
+Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 1,976 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 3 more) |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$C869`-`$C86F` (`TuneTable`) |
+| Writes | `$C05A`-`$C0D1` (`ChannelRecords`, `ChannelB`, `ChannelC`, `SpeedCount` and 2 more); `$C0FE` (`SpeedOp+1`); `$C39D` (`TransposeOp+1`) |
+
+#### `MusicTick` (`$C0D2`)
+
+**One frame of music: the effect, the patterns every SpeedCount frames, each channel's sound, the AY registers out**
+
+Calls EffectTick; when MusicOn, counts SpeedCount down and at 0 steps the three channels (ChannelStep) and reloads it from the speed (`$C0FE`); then ChannelSound per channel into the tone words `$C47B`, `$C47D`, `$C47F` and the volumes `$C483`-`$C485`, and the noise period from `$C12A` into `$C481`. When EffectOn, the effect's tone A, tone C, noise, mixer and volumes replace the music's. If either is on, registers 11 down to 0 go out from `$C486` down (`OUT` on `$FFFD`, `OUTD` on `$BFFD`).
+
+Witness frames (first-last frame of the recording, runs): c1 24005-33298 (4415), controls 0-330 (259), death 0-20038 (15291), m10 0-9028 (6442), m2erbe 0-7808 (3258), m2ocean 0-4799 (2252), menu 0-10996 (7704), missions 0-35997 (14024), play 0-10930 (6216), play2 0-23665 (14418), search 0-5043 (2273).
+
+Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+[Animation: `MusicTick` at work](img/routines/MusicTick.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,415 calls, 1,150,473 t-states own (0.17 %) |
+| Runs (the other recordings) | 76,293 calls (`stage1/death` 15,291, `stage1/play2` 14,418, `stage1/missions` 14,024 and 7 more) |
+| Calls | `ChannelStep`, `ChannelSound`, `EffectTick` |
+| Reads | `$C0CF`-`$C0D1` (`SpeedCount`, `MusicOn`, `EffectOn`); `$C47B`-`$C486` (`AYShadow`, `AYNoise`, `AYMixer`, `AYVolumes`) |
+| Writes | `$C0CF` (`SpeedCount`); `$C12A` (`NoiseOutOp+1`); `$C47B`-`$C485` (`AYShadow`, `AYNoise`, `AYMixer`, `AYVolumes`) |
+| Ports out | `$BEFD`, `$FFFD` |
+
+#### `WriteAY` (`$C17A`)
+
+**Write E to AY register D**
+
+Known only from the code as a routine of its own: called by StartEffect, which no recording runs.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `MusicSilence` (`$C184`)
+
+**Registers 13 down to 0 to zero, then the mixer (register 7) to `$3F`: all quiet**
+
+Witness frames (first-last frame of the recording, runs): c1 24571-24716 (2), controls 61-224 (2), death 98 (1), m10 98 (1), m2erbe 98-7732 (2), m2ocean 98 (1), menu 61-2095 (5), missions 98-34256 (9), play 98-10891 (2), play2 98-17546 (3), search 98 (1).
+
+Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 1,614 t-states own (0.00 %) |
+| Runs (the other recordings) | 27 calls (`stage1/missions` 9, `stage1/menu` 5, `stage1/play2` 3 and 7 more) |
+| Called from | `StopMusicCore` |
+| Ports out | `$BFFD`, `$FFFD` |
+
+#### `StopMusic` (`$C1A2`)
+
+**StopMusicCore with every register saved**
+
+Witness frames (first-last frame of the recording, runs): c1 24571-24716 (2), controls 61-224 (2), death 98 (1), m10 98 (1), m2erbe 98-7732 (2), m2ocean 98 (1), menu 61-2095 (5), missions 98-34256 (9), play 98-10891 (2), play2 98-17547 (3), search 98 (1).
+
+Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 280 t-states own (0.00 %) |
+| Runs (the other recordings) | 27 calls (`stage1/missions` 9, `stage1/menu` 5, `stage1/play2` 3 and 7 more) |
+| Calls | `StopMusicCore` |
+
+#### `StopMusicCore` (`$C1B2`)
+
+**MusicOn and EffectOn off, MusicSilence, the three volumes to zero**
+
+Witness: L1 27 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 200 t-states own (0.00 %) |
+| Runs (the other recordings) | 27 calls (`stage1/missions` 9, `stage1/menu` 5, `stage1/play2` 3 and 7 more) |
+| Called from | `StopMusic` |
+| Calls | `MusicSilence` |
+| Writes | `$C0D0`-`$C0D1` (`MusicOn`, `EffectOn`); `$C483`-`$C485` (`AYVolumes`) |
+
+#### `CmdStop` (`$C1DB`)
+
+**Command `$8E`: drop the return into the channel step and stop the music**
+
+Witness: known only from the code (the tune never uses `$8E`).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdNextPattern` (`$C1DF`)
+
+**Command `$87`: the pattern is done, take the next one from the order list**
+
+Witness: L1 19 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 20 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/c1`, `stage1/play2` and 7 more) |
+| Called from | `Command` |
+| Calls | `NextPattern` (tail) |
+
+#### `CmdNoise` (`$C1E2`)
+
+**Command `$8B`: the channel plays noise only (its tone bit off in the mixer template), the noise follows the note**
+
+The mixer template is the operand at `$C446`. Witness: L1 2 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Reads | `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
+| Writes | `$C0C6` (`ChannelC+30`); `$C446` (`MixerTemplateOp+1`) |
+
+#### `CmdTone` (`$C1F7`)
+
+**Command `$8A`: the channel plays tone only, the noise no longer follows the note**
+
+Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 392 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 7 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Reads | `$C080` (`ChannelRecords+38`); `$C0A7` (`ChannelB+38`); `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
+| Writes | `$C078` (`ChannelRecords+30`); `$C09F` (`ChannelB+30`); `$C0C6` (`ChannelC+30`); `$C446` (`MixerTemplateOp+1`) |
+
+#### `CmdToneNoise` (`$C20B`)
+
+**Command `$8C`: tone and noise both on for the channel, the noise follows the note**
+
+Witness: L1 41 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 332 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 7 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Reads | `$C0CE` (`ChannelC+38`); `$C446` (`MixerTemplateOp+1`) |
+| Writes | `$C0C6` (`ChannelC+30`); `$C446` (`MixerTemplateOp+1`) |
+
+#### `CmdSlide` (`$C21C`)
+
+**Command `$84` step, delay: slide the frequency by step every delay frames**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdTranspose` (`$C232`)
+
+**Command `$89` n: transpose every channel by n semitones (the operand `$C39D`)**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdVibrato` (`$C239`)
+
+**Command `$88` step, depth: the vibrato's step and depth (its position starts at the depth)**
+
+Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 380 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Reads | `$CB0A`-`$CB0B` (`Patterns+510`); `$CB1C`-`$CB1D` (`Patterns+528`) |
+| Writes | `$C074`-`$C076` (`ChannelRecords+26`); `$C09B`-`$C09D` (`ChannelB+26`) |
+
+#### `CmdBendUp` (`$C248`)
+
+**Command `$86`: the note rises one step a frame while it lasts**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdVibratoOff` (`$C252`)
+
+**Command `$81`: no vibrato**
+
+Witness: L1 28 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 124 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/missions`, `stage1/c1` and 3 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Writes | `$C077` (`ChannelRecords+29`); `$C09E` (`ChannelB+29`); `$C0C5` (`ChannelC+29`) |
+
+#### `CmdVibratoOn` (`$C257`)
+
+**Command `$82`: vibrato every frame**
+
+Witness: L1 38 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 124 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Writes | `$C077` (`ChannelRecords+29`); `$C09E` (`ChannelB+29`) |
+
+#### `CmdVibratoHalf` (`$C25D`)
+
+**Command `$83`: vibrato every other frame**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdFlag1` (`$C263`)
+
+**Command `$8D`: set bit 1 of the channel's flags, which no routine reads**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdRest` (`$C269`)
+
+**Command `$80`: silence (volume 0, the envelope stopped) for a note's duration**
+
+Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Called from | `Command` |
+| Calls | `SetDuration` (tail) |
+| Reads | `$C081` (`ChannelB`) |
+| Writes | `$C081` (`ChannelB`); `$C094` (`ChannelB+19`) |
+
+#### `CmdHold` (`$C272`)
+
+**Command `$8F`: the envelope stops, the volume stays, for a note's duration**
+
+Witness: L1 12 (c1, menu, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 140 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/menu`, `stage1/c1`, `stage1/play2`) |
+| Called from | `Command` |
+| Calls | `SetDuration` (tail) |
+| Reads | `$C05A` (`ChannelRecords`); `$C081` (`ChannelB`) |
+| Writes | `$C05A` (`ChannelRecords`); `$C081` (`ChannelB`) |
+
+#### `CmdDrum` (`$C278`)
+
+**Command `$90`: a drum hit (noise period 1 on the channel for a frame) on every note**
+
+Witness: known only from the code.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `CmdDrumOff` (`$C27E`)
+
+**Command `$91`: no drum**
+
+Witness: L1 64 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 248 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Writes | `$C079` (`ChannelRecords+31`); `$C0A0` (`ChannelB+31`); `$C0C7` (`ChannelC+31`) |
+
+#### `CmdInlineDurations` (`$C283`)
+
+**Command `$92`: each note is followed by its duration**
+
+Witness: L1 66 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | run into, not called, 304 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/missions`, `stage1/menu`, `stage1/play2` and 3 more) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Writes | `$C07E` (`ChannelRecords+36`); `$C0A5` (`ChannelB+36`); `$C0CC` (`ChannelC+36`) |
+
+#### `CmdDuration` (`$C28A`)
+
+**Command `$93` n: every note lasts n steps**
+
+Witness: L1 2 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/menu`) |
+| Called from | `Command` |
+| Calls | `ReadStream` (tail) |
+| Reads | `$C910` (`Patterns+4`); `$C93C` (`Patterns+48`) |
+| Writes | `$C06B` (`ChannelRecords+17`); `$C07E` (`ChannelRecords+36`); `$C092` (`ChannelB+17`); `$C0A5` (`ChannelB+36`) |
+
+#### `ChannelStep` (`$C295`)
+
+**Count the note down; at its end read the channel's next note and the commands before it**
+
+Input: IX the channel record, B = 0. When +`$25` is set, the next pattern first (NextPattern). A note byte (below `$80`) plus the pattern's transpose is the note (+`$12`); a noise-following channel also sets the noise period (`$C0DD`); the ornament and the instrument's envelope restart; the duration from +`$11` or the next byte. Between notes a bend changes the note a step a frame (`$C30F`).
+
+Witness: L1 15111 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,815 calls, 136,544 t-states own (0.02 %) |
+| Runs (the other recordings) | 15,111 calls (`stage1/menu` 4,758, `stage1/missions` 4,158, `stage1/c1` 1,815 and 7 more) |
+| Called from | `MusicTick` |
+| Calls | `ReadStream`, `NextPattern` (tail) |
+| Reads | `$C05A`-`$C06A` (`ChannelRecords`); `$C07F`-`$C091` (`ChannelRecords+37`, `ChannelB`); `$C0A6`-`$C0B8` (`ChannelB+37`, `ChannelC`); `$C0CD` (`ChannelC+37`) |
+| Writes | `$C05A`-`$C06A` (`ChannelRecords`); `$C081`-`$C091` (`ChannelB`); `$C0A8`-`$C0B8` (`ChannelC`) |
+
+#### `ReadStream` (`$C2AA`)
+
+**ReadStream**
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 145 calls, 33,115 t-states own (0.01 %) |
+| Runs (the other recordings) | 1,393 calls (`stage1/missions` 397, `stage1/menu` 362, `stage1/play2` 178 and 7 more) |
+| Called from | `CmdNoise` (tail), `CmdTone` (tail), `CmdToneNoise` (tail), `CmdVibrato` (tail), `CmdVibratoOff` (tail), `CmdVibratoOn` (tail), `CmdDrumOff` (tail), `CmdInlineDurations` (tail), `CmdDuration` (tail), `ChannelStep`, `Command` (tail), `NextPattern` (tail) |
+| Calls | `SetDuration`, `Command` (tail) |
+| Reads | `$C05A`-`$C0CC` (`ChannelRecords`, `ChannelB`, `ChannelC`); `$C775` (`InstrumentData+1`); `$C7BE` (`InstrumentData+74`); `$C7D3` (`InstrumentData+95`); `$C845`-`$C855` (`InstrumentData+209`); `$C90C`-`$C91F` (`Patterns`); 4 more ranges |
+| Writes | `$C05A`-`$C0C1` (`ChannelRecords`, `ChannelB`, `ChannelC`); `$C0DD` (`NoiseOp+1`) |
+
+#### `SetDuration` (`$C2E8`)
+
+**SetDuration**
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 91 calls, 14,287 t-states own (0.00 %) |
+| Runs (the other recordings) | 415 calls (`stage1/menu` 229, `stage1/play2` 95, `stage1/c1` 91) |
+| Called from | `CmdRest` (tail), `CmdHold` (tail), `ReadStream` |
+| Reads | `$C06B`-`$C07E` (`ChannelRecords+17`); `$C092`-`$C0A5` (`ChannelB+17`); `$C0C7`-`$C0CC` (`ChannelC+31`); `$C93A` (`Patterns+46`); `$C9B6`-`$C9DA` (`Patterns+170`); `$CAC1`-`$CB62` (`Patterns+437`) |
+| Writes | `$C05B`-`$C06A` (`ChannelRecords+1`); `$C082`-`$C091` (`ChannelB+1`); `$C0A9`-`$C0B8` (`ChannelC+1`) |
+
+#### `Command` (`$C320`)
+
+**A pattern byte of `$80` and above: `$E0-$FF` an instrument, `$B0-$DF` an ornament, `$80-$AF` a command through CommandOffsets**
+
+`$E0`+n: the instrument n from Instruments `$C75A`, its speed the byte before its data. `$B0`+n: the ornament n from OrnamentOffsets `$C721`. The branch at `$C342` (the tune's speed from a byte, `$C0FE`) is never taken: the sum `A + $50` always carries for a byte from `$B0` (known only from the code).
+
+Witness: L1 595 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 58 calls, 5,468 t-states own (0.00 %) |
+| Runs (the other recordings) | 595 calls (`stage1/missions` 176, `stage1/menu` 140, `stage1/play2` 85 and 7 more) |
+| Called from | `ReadStream` (tail) |
+| Calls | `CmdNextPattern`, `CmdNoise`, `CmdTone`, `CmdToneNoise`, `CmdVibrato`, `CmdVibratoOff`, `CmdVibratoOn`, `CmdRest`, `CmdHold`, `CmdDrumOff`, `CmdInlineDurations`, `CmdDuration`, `ReadStream` (tail) |
+| Reads | `$C1C7`-`$C1DA` (`CommandOffsets`); `$C721`-`$C726` (`OrnamentOffsets`); `$C75A`-`$C774` (`Instruments`, `InstrumentData`); `$C7BD` (`InstrumentData+73`); `$C7D2` (`InstrumentData+94`); `$C844`-`$C854` (`InstrumentData+208`) |
+| Writes | `$C063`-`$C06F` (`ChannelRecords+9`); `$C08A`-`$C096` (`ChannelB+9`); `$C0B1`-`$C0BD` (`ChannelC+9`) |
+
+#### `ChannelSound` (`$C36A`)
+
+**The channel's frequency (HL) and volume (A) this frame, and its mixer bits in AYShadow**
+
+Input: IX the channel. The volume envelope steps every +`$0F` frames (the instrument's bytes until one with bit 7); the note plus the global transpose (`$C39D`) plus the ornament's byte (a byte with bit 7 ends the ornament and loops it) indexes NoteTable; the vibrato moves the frequency by its position (the depth in both directions); the slide adds its sum. The noise and tone bits go into the mixer `$C482` through the template `$C446`; a pending drum hit sets the noise period `$41`.
+
+Witness: L1 15111 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1,815 calls, 1,528,116 t-states own (0.23 %) |
+| Runs (the other recordings) | 15,111 calls (`stage1/menu` 4,758, `stage1/missions` 4,158, `stage1/c1` 1,815 and 7 more) |
+| Called from | `MusicTick` |
+| Reads | `$C05A`-`$C0CE` (`ChannelRecords`, `ChannelB`, `ChannelC`); `$C482` (`AYMixer`); `$C4A6`-`$C4A7` (`NoteTable+18`); `$C4D2`-`$C507` (`NoteTable+62`); `$C518`-`$C519` (`NoteTable+132`); `$C728`-`$C747` (`Ornaments`); 3 more ranges |
+| Writes | `$C05A`-`$C0C1` (`ChannelRecords`, `ChannelB`, `ChannelC`); `$C482` (`AYMixer`) |
+
+#### `NextPattern` (`$C554`)
+
+**Take the channel's next pattern from its order list**
+
+The order list: a byte below `$80` is a pattern (PatternTable `$C870`); `$FF` n the pattern's transpose; `$FE` n repeat the following n times; `$FD` back to the list's start; `$FC` a word, jump there. Any other byte runs the trap at `$C5B1`: random border colours forever (a debugging aid of the music editor, known only from the code).
+
+Witness: L1 76 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 8 calls, 2,856 t-states own (0.00 %) |
+| Runs (the other recordings) | 76 calls (`stage1/missions` 25, `stage1/menu` 20, `stage1/play2` 11 and 7 more) |
+| Called from | `CmdNextPattern` (tail), `ChannelStep` (tail) |
+| Calls | `ReadStream` (tail) |
+| Reads | `$C05D`-`$C05E` (`ChannelRecords+3`); `$C07B`-`$C085` (`ChannelRecords+33`, `ChannelB`); `$C0A2`-`$C0AC` (`ChannelB+33`, `ChannelC`); `$C0C9`-`$C0CB` (`ChannelC+33`); `$C870`-`$C893` (`PatternTable`, `OrderLists`); `$C8C2`-`$C8C3` (`OrderLists+48`); 1 more ranges |
+| Writes | `$C05B`-`$C05E` (`ChannelRecords+1`); `$C07A`-`$C085` (`ChannelRecords+32`, `ChannelB`); `$C0A1`-`$C0AC` (`ChannelB+32`, `ChannelC`); `$C0C8`-`$C0CD` (`ChannelC+32`) |
+
+#### `StartEffect` (`$C5E1`)
+
+**Start sound effect A: its 17 bytes from EffectTable to EffectState, the envelope registers set**
+
+Witness: known only from the code (no routine of the game calls it; the effects of play are bank 0's, `$D692`).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `EffectTick` (`$C63E`)
+
+**Step the random number; while an effect runs, its time, its repeats and its tone slides**
+
+Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,415 calls, 199,009 t-states own (0.03 %) |
+| Runs (the other recordings) | 76,293 calls (`stage1/death` 15,291, `stage1/play2` 14,418, `stage1/missions` 14,024 and 7 more) |
+| Called from | `MusicTick` |
+| Calls | `NextRandom` |
+| Reads | `$C0D1` (`EffectOn`) |
+
+#### `NextRandom` (`$C702`)
+
+**Shift the 32-bit generator at RandomSeed one step; A = its first byte**
+
+Witness: L1 76293 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4,415 calls, 653,679 t-states own (0.10 %) |
+| Runs (the other recordings) | 76,293 calls (`stage1/death` 15,291, `stage1/play2` 14,418, `stage1/missions` 14,024 and 7 more) |
+| Called from | `EffectTick` |
+| Reads | `$C71D`-`$C720` (`RandomSeed`) |
+| Writes | `$C71D`-`$C720` (`RandomSeed`) |
+
+
+## Bank 6 (`src/bank6/bank6.json`)
+
+Battle Command, Ocean 1990: RAM bank 6, paged at `$C000`, as its tape block loads it. Its entries are
+`src/bank6/<module>.asm`, written from `src/bank6/bank6.ann` by `kit/mkgame.py --part src/bank6/bank6.json`; the
+recordings: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission
+tape, Blast Em Mission played), and `work/stage1/menu`, `work/stage1/missions`, `work/stage1/play`,
+`work/stage1/play2`, `work/stage1/death`, `work/stage1/m2ocean`, `work/stage1/m2erbe`, `work/stage1/search`,
+`work/stage1/m10`, `work/stage1/c1`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`pointer`](#bank-6-pointer) | `$C000`-`$C02F`, `$D0CA`-`$D352` | 13 of 17 |
+| [`catalogue`](#bank-6-catalogue) | `$C030`-`$C078`, `$C75F`-`$C989`, `$CFA9`-`$D09F` | 13 of 21 |
+| [`statusview`](#bank-6-statusview) | `$C079`-`$C113` | 5 of 8 |
+| [`stores`](#bank-6-stores) | `$C114`-`$C125`, `$C165`-`$C408`, `$CA8B`-`$CC53`, `$D0A0`-`$D0C9`, `$D6DA`-`$D77E`, `$D7BB`-`$D9B1` | 20 of 32 |
+| [`numbers`](#bank-6-numbers) | `$C126`-`$C164`, `$D353`-`$D3C8` | 4 of 4 |
+| [`title`](#bank-6-title) | `$C409`-`$C4FB` | 2 of 4 |
+| [`password`](#bank-6-password) | `$C4FC`-`$C75E`, `$CE2E`-`$CFA8` | 14 of 28 |
+| [`briefing`](#bank-6-briefing) | `$C98A`-`$CA8A` | 3 of 5 |
+| [`results`](#bank-6-results) | `$CC54`-`$CE2D` | 9 of 15 |
+| [`panel`](#bank-6-panel) | `$D3C9`-`$D6D9`, `$D77F`-`$D7BA` | 9 of 16 |
+| [`map`](#bank-6-map) | `$D9B2`-`$E511`, `$E561`-`$E5D4` | 16 of 26 |
+| [`models`](11-data-reference.md#bank-6-models) | `$E512`-`$E560`, `$E5D5`-`$E623` | 0 of 3 |
+| [`graphics`](11-data-reference.md#bank-6-graphics) | `$E624`-`$F5E3` | 0 of 18 |
+| [`font`](11-data-reference.md#bank-6-font) | `$F5E4`-`$F8F3` | 0 of 1 |
+| [`options`](#bank-6-options) | `$F8F4`-`$F9FF` | 1 of 4 |
+
+### Bank 6: pointer
+
+`src/bank6/pointer.asm`
+
+#### `SavePointerBackground` (`$D0CA`)
+
+**Save the 8 x 2 screen bytes under the pointer into PointerBackground**
+
+The address from `$7C53` (Y) through the line table `$6500` and `$7C51` / 8 (X), which goes to the operand `$D2FC` for PutPointer. `$9719` = 4. Witness: L1 49363 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,097 calls, 3,726,119 t-states own (0.56 %) |
+| Runs (the other recordings) | 49,363 calls (`stage1/missions` 10,042, `stage1/play2` 9,545, `stage1/menu` 6,973 and 7 more) |
+| Called from | `SlotZoneA`, `FitOrRemoveWeapon`, `TitleMenu`, `MissionCatalogueScreen`, `BriefingScreen`, `StoresScreen`, `MissionStatusScreen`, `SelectMissionLine` |
+| Reads | `$4022`-`$40FC` (screen); `$4122`-`$41FC` (screen); `$4222`-`$42FC` (screen); `$4322`-`$43FC` (screen); `$4422`-`$44FC` (screen); `$4522`-`$45FC` (screen); 5 more ranges |
+| Writes | `$9719` (`StepFrames`); `$C020`-`$C02F` (`PointerBackground`); `$D2FC` (`PutPointer+11`) |
+
+#### `SetStoresWindow` (`$D102`)
+
+**The 3D window of the stores for CopyViewUnderPointer and DrawPointerInView**
+
+Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 50 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/death` 1 and 3 more) |
+| Called from | `StoresScreen` |
+| Calls | `SetViewWindow` (tail) |
+| Writes | `$D146`-`$D157` (`CopyViewUnderPointer+4`); `$D171` (`ViewUnderMiddle+4`); `$D184` (`ViewUnderBottom+1`); `$D1C2`-`$D1CD` (`DrawPointerInView+4`); `$D1EB` (`PointerInViewBottom+1`); `$D215` (`PointerInViewMiddle+7`) |
+
+#### `SetTitleWindow` (`$D10E`)
+
+**The 3D window of the title menu for the same two**
+
+Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 76 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 3 more) |
+| Called from | `TitleMenu` |
+| Calls | `SetViewWindow` |
+| Writes | `$D146`-`$D157` (`CopyViewUnderPointer+4`); `$D171` (`ViewUnderMiddle+4`); `$D184` (`ViewUnderBottom+1`); `$D1C2`-`$D1CD` (`DrawPointerInView+4`); `$D1EB` (`PointerInViewBottom+1`); `$D215` (`PointerInViewMiddle+7`) |
+
+#### `SetViewWindow` (`$D118`)
+
+**Patch the window's limits into CopyViewUnderPointer and DrawPointerInView**
+
+Input: A the bottom line, A' the top line. Witness: L1 34 (c1, death, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3 calls, 552 t-states own (0.00 %) |
+| Runs (the other recordings) | 29 calls (`stage1/missions` 16, `stage1/play2` 6, `stage1/c1` 3 and 2 more) |
+| Called from | `SetStoresWindow` (tail), `SetTitleWindow` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$D14C`-`$D157` (`CopyViewUnderPointer+10`); `$D171` (`ViewUnderMiddle+4`); `$D184` (`ViewUnderBottom+1`); `$D1C2`-`$D1CD` (`DrawPointerInView+4`); `$D1EB` (`PointerInViewBottom+1`); `$D215` (`PointerInViewMiddle+7`) |
+
+#### `CopyViewUnderPointer` (`$D142`)
+
+**Over the 3D window: take the pointer's background from the back buffer, not the screen**
+
+Run by the interrupt. Clipped at the window's top and bottom (the operands set by SetViewWindow). Witness: L1 2944 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 171 calls, 46,285 t-states own (0.01 %) |
+| Runs (the other recordings) | 2,944 calls (`stage1/play2` 1,042, `stage1/missions` 897, `stage1/play` 430 and 7 more) |
+| Reads | `$7C51`-`$7C53` (`FailReason+88`); `$8AF8`-`$8BB9` (`BackBuffer+7`); `$8BFA`-`$9280` (`BackBuffer+265`); `$92C0`-`$96E5` (`BackBuffer+1999`); `$D153` (`CopyViewUnderPointer+17`) |
+| Writes | `$C020`-`$C02F` (`PointerBackground`) |
+
+#### `DrawPointerInView` (`$D1BE`)
+
+**Over the 3D window: put the shifted pointer (ShiftedPointer) into the back buffer**
+
+Run by the interrupt; clipped like CopyViewUnderPointer. Witness: L1 2944 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 171 calls, 113,159 t-states own (0.02 %) |
+| Runs (the other recordings) | 2,944 calls (`stage1/play2` 1,042, `stage1/missions` 897, `stage1/play` 430 and 7 more) |
+| Reads | `$7C51`-`$7C53` (`FailReason+88`); `$8AF8`-`$9280` (`BackBuffer+7`); `$92C0`-`$96E5` (`BackBuffer+1999`); `$D1C9` (`DrawPointerInView+11`); `$D2D1`-`$D2F0` (`ShiftedPointer`) |
+| Writes | `$8AF8`-`$9280` (`BackBuffer+7`); `$92C0`-`$96E5` (`BackBuffer+1999`) |
+
+#### `RestorePointerBackground` (`$D251`)
+
+**Put PointerBackground back on the screen at the pointer's old place**
+
+Witness: L1 49282 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,093 calls, 3,420,974 t-states own (0.52 %) |
+| Runs (the other recordings) | 49,282 calls (`stage1/missions` 10,016, `stage1/play2` 9,536, `stage1/menu` 6,945 and 7 more) |
+| Called from | `SlotZoneA`, `FitOrRemoveWeapon`, `MissionCatalogueScreen`, `SelectMissionLine` |
+| Reads | `$6510`-`$667D` (`ScreenRowTable+16`); `$7C53`-`$7C54` (`FailReason+90`); `$82FF`-`$8300` (`Im2Table+255`); `$C020`-`$C02F` (`PointerBackground`); `$D2FC` (`PutPointer+11`) |
+| Writes | `$4022`-`$40FC` (screen); `$4122`-`$41FC` (screen); `$4222`-`$42FC` (screen); `$4322`-`$43FC` (screen); `$4422`-`$44FC` (screen); `$4522`-`$45FC` (screen); 2 more ranges |
+
+#### `DrawPointer` (`$D27C`)
+
+**ShiftPointer, then PutPointer**
+
+Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,100 calls, 83,709 t-states own (0.01 %) |
+| Runs (the other recordings) | 49,399 calls (`stage1/missions` 10,059, `stage1/play2` 9,548, `stage1/menu` 6,964 and 7 more) |
+| Called from | `ShowWaitPointer` (tail) |
+| Calls | `ShiftPointer`, `PutPointer` (tail) |
+
+#### `ShiftPointer` (`$D282`)
+
+**Shift the shape at its operand `$D283` by X AND 7 into ShiftedPointer (mask with ones, pixels with zeros)**
+
+Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,100 calls, 5,602,866 t-states own (0.85 %) |
+| Runs (the other recordings) | 49,399 calls (`stage1/missions` 10,059, `stage1/play2` 9,548, `stage1/menu` 6,964 and 7 more) |
+| Called from | `DrawPointer` |
+| Reads | `$7C51` (`FailReason+88`); `$82FF`-`$8300` (`Im2Table+255`); `$C000`-`$C01F` (`PointerShapes`, `WaitPointer`) |
+| Writes | `$D2A0` (`ShiftLoop+2`); `$D2B8` (`ShiftMaskDone+7`); `$D2D1`-`$D2F0` (`ShiftedPointer`) |
+
+#### `PutPointer` (`$D2F1`)
+
+**AND the mask and OR the pixels of ShiftedPointer into the screen**
+
+Witness: L1 49399 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3,100 calls, 5,474,780 t-states own (0.83 %) |
+| Runs (the other recordings) | 49,399 calls (`stage1/missions` 10,059, `stage1/play2` 9,548, `stage1/menu` 6,964 and 7 more) |
+| Called from | `DrawPointer` (tail) |
+| Reads | `$4022`-`$40FC` (screen); `$4122`-`$41FC` (screen); `$4222`-`$42FC` (screen); `$4322`-`$43FC` (screen); `$4422`-`$44FC` (screen); `$4522`-`$45FC` (screen); 6 more ranges |
+| Writes | `$4022`-`$40FC` (screen); `$4122`-`$41FC` (screen); `$4222`-`$42FC` (screen); `$4322`-`$43FC` (screen); `$4422`-`$44FC` (screen); `$4522`-`$45FC` (screen); 2 more ranges |
+
+#### `StoresPointerLimits` (`$D337`)
+
+**SetPointerLimits with `$D32F`**
+
+Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 22 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/c1` 1 and 3 more) |
+| Called from | `StoresScreen` |
+| Calls | `SetPointerLimits` (tail) |
+
+#### `CataloguePointerLimits` (`$D33C`)
+
+**SetPointerLimits with `$D32B`**
+
+Witness: L1 51 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 3 calls, 30 t-states own (0.00 %) |
+| Runs (the other recordings) | 51 calls (`stage1/missions` 17, `stage1/menu` 16, `stage1/play2` 6 and 7 more) |
+| Called from | `TitleMenu`, `MissionCatalogueScreen` |
+| Calls | `SetPointerLimits` |
+| Reads | `$D32B`-`$D32E` (`PointerLimits`) |
+| Writes | `$7D99`-`$7DA6` (`PointerTick+25`) |
+
+#### `SetPointerLimits` (`$D33F`)
+
+**Copy the 4 limits at HL to the pointer routine's operands**
+
+Witness: L1 85 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 6 calls, 675 t-states own (0.00 %) |
+| Runs (the other recordings) | 82 calls (`stage1/missions` 33, `stage1/menu` 20, `stage1/play2` 12 and 4 more) |
+| Called from | `TitleMenu`, `StoresPointerLimits` (tail), `CataloguePointerLimits` |
+| Reads | `$D32B`-`$D336` (`PointerLimits`, `StoresLimits`, `TitleLimits`) |
+| Writes | `$7D99`-`$7DA6` (`PointerTick+25`) |
+
+### Bank 6: catalogue
+
+`src/bank6/catalogue.asm`
+
+#### `BuildMissionNames` (`$C030`)
+
+**Copy the catalogue's head, then build the ten mission name lines at `$93D9` with their pointers at `$93B9`**
+
+CopyCatalogueHead `$70C6` puts the catalogue's first 1 K into the back buffer at `$8AF1`. For each of the ten 27-byte names there: code 13 with the attribute `$46`, the name up to its 0 byte, spaces to 27 characters, code 11 and the end `$FF`; the line's address goes to the next word of `$93B9`.
+
+Output: the strings in `$93D9-$950E` and the table `$93B9-$93CC` (in the back buffer, bank 2). Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 12,782 t-states own (0.00 %) |
+| Runs (the other recordings) | 32 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8AF1`-`$8BB8` (`BackBuffer`); `$8BC9`-`$8BD0` (`BackBuffer+216`); `$8BE4`-`$8BF0` (`BackBuffer+243`) |
+| Writes | `$93B9`-`$950E` (`BackBuffer+2248`) |
+
+#### `WaitForClick` (`$C06F`)
+
+**Wait until the interrupt's fire test sets ClickFlag `$6D43`, then clear it**
+
+Known only from the code: nothing calls it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DrawCatalogueTitlesIf` (`$C75F`)
+
+**Unused: return when no mission is chosen (`$757D` = `$FF`), else DrawCatalogueTitles**
+
+Known only from the code: nothing calls it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DrawCatalogueTitles` (`$C765`)
+
+**The catalogue's two title graphics and their attribute boxes**
+
+CopyGraphic of CatalogueGraphicA (9 x 32 at line `$A0`) and CatalogueGraphicC (9 x 16 at line `$90`), AttrBox `$C74F` and `$C754`. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 182 t-states own (0.00 %) |
+| Runs (the other recordings) | 33 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen` |
+
+#### `MissionCatalogueScreen` (`$C790`)
+
+**The mission catalogue: picture, the tape load if needed, the list, the ticks, then the zones**
+
+The shadow screen, the pointer centred, DrawBank7Picture `$74AA` with `$CCC9` (PicMissionSelect), CatalogueGraphicB, DrawCatalogueTitles, the box `$C759`. When IsCatalogueLoaded says no: PrintRewind `$719B`, RewindText, LoadDirectory `$715D`. Then BuildMissionNames, PrintMissionList, a tick for every completed mission of MissionsDone, CataloguePointerLimits, the highlight of the selected line, the arrow pointer, the texts `$C93E`, `$C8D5` and the catalogue's title `$CF85`, RemarkMission `$8548`, PrintSelectedMission; then PointerZones until the view flag is set, ShowWaitPointer, NextView. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 82,411,263 t-states own (12.46 %) |
+| Runs (the other recordings) | 33 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Calls | `BuildMissionNames`, `DrawCatalogueTitles`, `IsCatalogueLoaded`, `ShowWaitPointer`, `PrintMissionList`, `PrintSelectedMission`, `HighlightLine`, `SavePointerBackground`, `RestorePointerBackground`, `CataloguePointerLimits` |
+| Reads | `$6799`-`$67A2` (`MissionsDone`); `$6A6D` (`ViewChangeFlag+1`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$7C51`-`$7C53` (`FailReason+88`); `$7DC0`-`$7DC1` (`PointerPos`); `$83BF` (`PointerShown+1`); `$9715`-`$9716` (`ClickState`); `$D283`-`$D284` (`ShiftPointer+1`) |
+
+#### `IsCatalogueLoaded` (`$C870`)
+
+**Z when the catalogue head at `$CF85` starts with "MISSION"**
+
+Compares 7 bytes with CatalogueMagic. Witness: L1 33 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 56 t-states own (0.00 %) |
+| Runs (the other recordings) | 33 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen` |
+| Reads | `$C881`-`$C887` (`CatalogueMagic`); `$CF85`-`$CF8B` (`CatalogueTitle`) |
+
+#### `ShowWrongDisk` (`$C88E`)
+
+**Leftover of a disk version: "INCORRECT DISK" and a red attribute bar**
+
+Known only from the code: nothing calls it; the texts `$C8A0` and `$C8B2` speak of a disk.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `PrintMissionList` (`$CFA9`)
+
+**Print the ten mission lines of `$93B9` (blanks as ":") 8 pixel lines apart from line `$41`**
+
+Each line is copied over itself with spaces turned into `:` (the blank glyph of the small font) and printed after ListLinePos. Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 11,408 t-states own (0.00 %) |
+| Runs (the other recordings) | 32 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$93B9`-`$9501` (`BackBuffer+2248`); `$CFF0` (`ListLinePos+1`) |
+| Writes | `$93D9`-`$9502` (`BackBuffer+2280`); `$CFC0`-`$CFC1` (`ListPtrOp+1`); `$CFE7`-`$CFF0` (`ListCountOp+1`, `ListLinePos`) |
+
+#### `PrintSelectedMission` (`$CFF3`)
+
+**Print the name of mission (`$757B`) at SelectedPos (none when negative)**
+
+Witness: L1 32 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 61 t-states own (0.00 %) |
+| Runs (the other recordings) | 32 calls (`stage1/menu` 12, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen` |
+| Reads | `$757B` (`AwolState+3`); `$93B9`-`$93CA` (`BackBuffer+2248`) |
+
+#### `SelectMissionLine` (`$D013`)
+
+**Zone: the list line under the pointer becomes the mission (`$757D`), highlighted, its description printed**
+
+The line from the pointer's Y (`$9716`): (Y - `$40`) / 8; the pixel row into SelectedLineOp. HighlightLine, the pointer saved again. Witness: L1 29 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 207 t-states own (0.00 %) |
+| Runs (the other recordings) | 29 calls (`stage1/menu` 10, `stage1/missions` 9, `stage1/play2` 3 and 7 more) |
+| Calls | `HighlightLine`, `SavePointerBackground`, `RestorePointerBackground` |
+| Reads | `$83BF` (`PointerShown+1`); `$9716` (`ClickY`) |
+| Writes | `$757D` (`ScreenOfMission+1`); `$83BF` (`PointerShown+1`); `$C811` (`SelectedLineOp+1`) |
+
+#### `HighlightLine` (`$D040`)
+
+**Unhighlight the old line (attribute `$4D`), highlight row A (`$4E`), print the description**
+
+The old row is the operand `$D026` (`$FF` none). Witness: L1 49 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 100 t-states own (0.00 %) |
+| Runs (the other recordings) | 49 calls (`stage1/menu` 21, `stage1/missions` 17, `stage1/play2` 3 and 7 more) |
+| Called from | `MissionCatalogueScreen`, `SelectMissionLine` |
+| Calls | `FillAttrRow`, `PrintMissionDescription` (tail) |
+| Reads | `$D026` (`SelectMissionLine+19`) |
+| Writes | `$D026` (`SelectMissionLine+19`) |
+
+#### `FillAttrRow` (`$D059`)
+
+**Fill 12 attributes of row A/8 from column 3 with E**
+
+Witness: L1 88 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 436 t-states own (0.00 %) |
+| Runs (the other recordings) | 88 calls (`stage1/menu` 41, `stage1/missions` 33, `stage1/play2` 5 and 7 more) |
+| Called from | `HighlightLine` |
+| Reads | `$5903`-`$596D` (screen); `$5983`-`$598D` (screen); `$59A3`-`$59AD` (screen); `$59C3`-`$59CD` (screen); `$59E3`-`$59ED` (screen); `$5A03`-`$5A0D` (screen); 1 more ranges |
+| Writes | `$5903`-`$596E` (screen); `$5983`-`$598E` (screen); `$59A3`-`$59AE` (screen); `$59C3`-`$59CE` (screen); `$59E3`-`$59EE` (screen); `$5A03`-`$5A0E` (screen); 1 more ranges |
+
+#### `PrintMissionDescription` (`$D06C`)
+
+**Clear the description area and print mission (`$757D`)'s description from the catalogue**
+
+ScreenRowFill, DescriptionPos, then the text at `$8BFF` + the word `$8BFF`[mission]. Witness: L1 49 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 228 t-states own (0.00 %) |
+| Runs (the other recordings) | 49 calls (`stage1/menu` 21, `stage1/missions` 17, `stage1/play2` 3 and 7 more) |
+| Called from | `HighlightLine` (tail) |
+| Reads | `$757D` (`ScreenOfMission+1`); `$82FF`-`$8300` (`Im2Table+255`); `$8BFF`-`$8C14` (`BackBuffer+270`) |
+
+### Bank 6: statusview
+
+`src/bank6/statusview.asm`
+
+#### `BriefPageBox` (`$C079`)
+
+**The attribute box `$C0B1` and 8 cleared pixel lines behind the BRIEF page's text**
+
+Called once by BriefPageText `$70B6`. AttrBox `$6CFB` with `$C0B1`, then ScreenRowFill `$6D22` of 8 lines of 18 bytes from line `$88`, column 7 (through BriefPageFill). Witness: L1 1 (play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/play` 1) |
+
+#### `BriefPageBoxSmall` (`$C08E`)
+
+**Variant: the box `$C089`, then the fill of BriefPageBoxLarge**
+
+Known only from the code: nothing calls it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `BriefPageBoxLarge` (`$C096`)
+
+**Variant: the box `$C0AC` and 40 cleared lines at column 10**
+
+Known only from the code: nothing calls it; its tail BriefPageFill is the one BriefPageBox jumps to.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `FormatGridPosition` (`$C0C0`)
+
+**Format the map position: the two numbers in the operands `$C0C7` and `$C0E2` into GridText**
+
+The operands are written by DrawStatusMap `$DB1C` from the view's position (`$9A6C` and `$9A8E`). Each goes through NumberToDigits `$C126` (leading zeros kept, C = `0`) into PaddedDigits `$D9AB`; digits 2-3 and 4-5 are copied around the colon of GridText. Witness: L1 40 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 40 calls (`stage1/missions` 34, `stage1/m2erbe` 4, `stage1/play` 2) |
+| Called from | `PrintStatusGrid` |
+| Calls | `NumberToDigits` |
+| Reads | `$D9AC`-`$D9AF` (`PaddedDigits+1`) |
+| Writes | `$C106`-`$C112` (`GridText+5`) |
+
+#### `PrintStatusGrid` (`$C0F7`)
+
+**Print the grid position of the status view**
+
+Called every frame by StatusLoop `$6BC7`: FormatGridPosition, then PrintString `$6FB3` with GridText. Witness: L1 40 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 40 calls (`stage1/missions` 34, `stage1/m2erbe` 4, `stage1/play` 2) |
+| Calls | `FormatGridPosition` |
+
+### Bank 6: stores
+
+`src/bank6/stores.asm`
+
+#### `PrintPayloadWeight` (`$C114`)
+
+**Print the payload's weight in kg on the payload line**
+
+NumberToDigits `$C126` with C = `:` (the space of SmallFont `$7C59`) for the leading zeros into `$D9AB`, then PrintString `$6FB3` of PayloadText `$D9A8`. Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 68 t-states own (0.00 %) |
+| Runs (the other recordings) | 24 calls (`stage1/play2` 9, `stage1/missions` 8, `stage1/play` 4 and 3 more) |
+| Called from | `SlotZoneA`, `FitOrRemoveWeapon` |
+| Calls | `NumberToDigits` |
+
+#### `SlotZoneB` (`$C165`)
+
+**Zone of the slot at the top right: C = `$24` (slot record `$836E`)**
+
+Called through PointerZones `$6D42` (StoresZones). Witness: L1 3 (play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play2` 2, `stage1/play` 1) |
+| Calls | `FitOrRemoveWeapon` (tail) |
+
+#### `SlotZoneA` (`$C169`)
+
+**Zone of the slot at the top left: C = `$1E` (slot record `$8368`)**
+
+Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 873 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/c1` 1 and 3 more) |
+| Calls | `PrintPayloadWeight`, `FitOrRemoveWeapon` (tail), `DrawSlotIcon`, `SavePointerBackground`, `RestorePointerBackground` |
+| Reads | `$8368`-`$837A` (`WeaponSlots`); `$C11B`-`$C11C` (`PayloadWeightOp+1`); `$C19C` (`SlotTypeOp+1`); `$C371`-`$C37A` (`CurrentWeapon`, `WeaponRecords`) |
+| Writes | `$8368`-`$836D` (`WeaponSlots`); `$83BF` (`PointerShown+1`); `$C11B`-`$C11C` (`PayloadWeightOp+1`); `$C19C` (`SlotTypeOp+1`); `$C1D5`-`$C1D6` (`SlotWeightOp+1`); `$C1E7` (`SlotAmmoOp+1`) |
+
+#### `SlotZoneC` (`$C16D`)
+
+**Zone of the slot at the bottom left: C = `$2A` (slot record `$8374`)**
+
+Witness: L1 3 (play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play2` 2, `stage1/play` 1) |
+| Calls | `FitOrRemoveWeapon` (tail) |
+
+#### `SlotZoneD` (`$C171`)
+
+**Zone of the slot at the bottom right: C = `$30` (slot record `$837A`)**
+
+Falls into FitOrRemoveWeapon. Witness: L1 3 (play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play2` 2, `stage1/play` 1) |
+| Calls | `FitOrRemoveWeapon` |
+
+#### `FitOrRemoveWeapon` (`$C173`)
+
+**Fit the shown weapon into slot `$834A`+C, or take out the weapon that is in it**
+
+Three POKEs of the release's .pok patch it (bank 6, the stores screen): Ammo Number Is Not Exceeded 1 at `$C1AE` (`JP Z,$C235` becomes `LD BC,nn`), Infinite Payload Weight 0 at `$C1B9` (the `ADD HL,BC` of the weight becomes NOP), No Weight Limit 58 at `$C1C6` (`JP NC,$C23A` becomes `LD A,(nn)`).
+
+Input: C the slot's offset from `$834A`. A slot record is the weapon's type, its weight (word), the icon's column and line, its ammunition. An empty slot: the weapon's count in the slots is compared with its maximum (record +2; equal: MaxNumberText `$D990`), the new total with 1001 kg (PayloadExceededText `$D963`); when both pass, the slot gets the type, weight and ammunition, DrawSlotIcon `$C263` draws the icon, and PrintPayloadWeight the new total. A full slot: RemoveWeapon clears it, subtracts its weight and blanks the icon (ClearSlotIcon `$C25C`).
+
+Around every change the interrupt's pointer job is off (`$83BF` = 0) and the pointer is put back (RestorePointerBackground `$D251`, SavePointerBackground `$D0CA`). An error message stays for 60 frames (StoresMessageTimer `$C2C0`). Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/play2` 9, `stage1/play` 4) |
+| Called from | `SlotZoneB` (tail), `SlotZoneA` (tail), `SlotZoneC` (tail), `SlotZoneD` |
+| Calls | `PrintPayloadWeight`, `DrawSlotIcon`, `SavePointerBackground`, `RestorePointerBackground` |
+| Reads | `$8368`-`$837E` (`WeaponSlots`); `$C11B`-`$C11C` (`PayloadWeightOp+1`); `$C19C` (`SlotTypeOp+1`); `$C23A` (`PayloadExceeded`); `$C371`-`$C3FE` (`CurrentWeapon`, `WeaponRecords`) |
+| Writes | `$8368`-`$837F` (`WeaponSlots`); `$83BF` (`PointerShown+1`); `$C11B`-`$C11C` (`PayloadWeightOp+1`); `$C19C` (`SlotTypeOp+1`); `$C1D5`-`$C1D6` (`SlotWeightOp+1`); `$C1E7` (`SlotAmmoOp+1`) |
+
+#### `ClearSlotIcon` (`$C25C`)
+
+**Draw a blank icon (the back buffer's `$92C1`) into the slot at column C', line A**
+
+Falls into DrawSlotIcon with HL' = `$92C1`.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DrawSlotIcon` (`$C263`)
+
+**Draw the 3 x 24 icon at HL' into a slot: column C', pixel line A**
+
+The line address table `$6500`. The first 8 lines are copied two bytes wide one column to the right, the next 16 three bytes wide. Witness: L1 24 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 4,606 t-states own (0.00 %) |
+| Runs (the other recordings) | 24 calls (`stage1/play2` 9, `stage1/missions` 8, `stage1/play` 4 and 3 more) |
+| Called from | `SlotZoneA`, `FitOrRemoveWeapon` |
+| Reads | `$6560`-`$658F` (`ScreenRowTable+96`); `$65C0`-`$65EF` (`ScreenRowTable+192`); `$F09D`-`$F0E3` (`IconK40Mortar+1`); `$F12D`-`$F48B` (`IconSlamLaser+1`, `IconBansheeIRSS`, `IconBansheeRRSS`, `IconPhoenixIRSA` and 8 more) |
+| Writes | `$40D3`-`$491E` (screen); `$4993`-`$499E` (screen); `$49B2`-`$4A1E` (screen); `$4A93`-`$4A9E` (screen); `$4AB2`-`$4B1E` (screen); `$4B93`-`$4B9E` (screen); 9 more ranges |
+
+#### `ResetStores` (`$C2A1`)
+
+**A RET: the slot clearing that follows is switched off**
+
+Called by StoresScreen `$CACE`. The first byte is `RET`, so ResetStoresBody never runs; ClearSlots `$CC01` does the work instead. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/c1` 1 and 3 more) |
+| Called from | `StoresScreen` |
+
+#### `ResetStoresBody` (`$C2A2`)
+
+**Clear the 9 records at `$834A`, the payload weight and the hook `$A9B9`**
+
+Known only from the code: behind the `RET` of ResetStores. Clears the first three bytes of nine 6-byte records from `$834A`, the weight `$C11B` = 0, `$A9B9` = `$6BB0` (NoAction).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `StoresMessageTimer` (`$C2C0`)
+
+**Count down the error message; at 0 clear the message line and print the payload again**
+
+Called every frame by StoresScreen. The counter is the operand `$C2C1` of the first instruction (60 after a message). At 0: ScreenRowFill `$6D22`, the box PayloadLineBox, PayloadLineText `$D936`, PrintPayloadWeight, the pointer put back. Witness: L1 2525 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 121 calls, 2,662 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,525 calls (`stage1/play2` 997, `stage1/missions` 780, `stage1/play` 412 and 3 more) |
+| Called from | `StoresScreen` |
+
+#### `ShowWeapon` (`$C2FE`)
+
+**Show the weapon CurrentWeapon points at: its icon, its description, its model**
+
+ClearWeaponPanel `$C363`, CopyGraphic `$6D7F` of the 3 x 24 icon (record +5) at line `$30`, column 2, PrintString of the description (record +7), and the model (record +9) into StoresModelOp, the operand `$CB3B` of the stores' 3D loop. Witness: L1 54 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 281 t-states own (0.00 %) |
+| Runs (the other recordings) | 54 calls (`stage1/play2` 32, `stage1/play` 11, `stage1/missions` 8 and 3 more) |
+| Called from | `NextWeapon` (tail), `StoresScreen` |
+| Calls | `ClearWeaponPanel` |
+| Reads | `$C371`-`$C402` (`CurrentWeapon`, `WeaponRecords`) |
+| Writes | `$CB3B`-`$CB3C` (`StoresModelOp+2`) |
+
+#### `NextWeapon` (`$C32E`)
+
+**Zone: the next record of WeaponRecords (the first again after the end mark), then ShowWeapon**
+
+Witness: L1 39 (play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 39 calls (`stage1/play2` 29, `stage1/play` 10) |
+| Calls | `ShowWeapon` (tail) |
+| Reads | `$C371`-`$C3F8` (`CurrentWeapon`, `WeaponRecords`) |
+| Writes | `$C371`-`$C372` (`CurrentWeapon`) |
+
+#### `PreviousWeapon` (`$C347`)
+
+**Zone: the record before (the last one before the start mark), then ShowWeapon**
+
+Known only from the code: in StoresZones (`$CBD0`), but no recording clicks it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `ClearWeaponPanel` (`$C363`)
+
+**Clear 48 pixel lines of 11 bytes at column 3 from line `$30` (the weapon's icon and text)**
+
+ScreenRowFill `$6D22` with 0. Witness: L1 54 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 50 t-states own (0.00 %) |
+| Runs (the other recordings) | 54 calls (`stage1/play2` 32, `stage1/play` 11, `stage1/missions` 8 and 3 more) |
+| Called from | `ShowWeapon` |
+
+#### `StoresScreen` (`$CA8B`)
+
+**The stores: picture, slots, the weapon and its turning model, until the mission starts**
+
+Pointer job off, the hooks `$7256`, `$9A93`, `$83F1` cleared, the arrow pointer, the clip mark `$A17C` = `$5F`, Bank3Fill5F `$74CD`, ClearSlots `$CC01`, DrawBank7Picture `$C713` (PicStores), the view parameters, ResetStores, the four play hooks `$6A46-$6A55` = NoAction `$6BB0`, the first weapon (ShowWeapon), PayloadLineText, StoresGraphicA-C, StoresTitleBox, StoresPointerLimits `$D337`, the stores blit (`$83E6` = BlitStoresView `$D0A0`), SetStoresWindow `$D102`.
+
+StoresLoop: StartViewPass, the weapon's model by Bank3Render (IX = StoresModelOp's operand), RequestViewBlit, the turn `$68E7`, PointerZones, StoresMessageTimer, until the view flag. Then: ShowWaitPointer, the 3D blit back, ResetCollisionTables `$6928` (bank 0), StoresToGauges, the object table `$762C` cleared (23 records of 60 bytes, the first byte `$FF`), `$7BFD-$7C05` = `$FF`, NumberObjectRecords, the mission's header patched (`$7E2C`), the score `$68E2-$68E5` cleared, the clock stopped, Bank3FillFF, `$83F1` = `RET`, NextView (StartMission). Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 58,047 t-states own (0.01 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 3 more) |
+| Calls | `ResetStores`, `StoresMessageTimer`, `ShowWeapon`, `ShowWaitPointer`, `ClearSlots`, `StoresToGauges`, `NumberObjectRecords`, `SavePointerBackground`, `SetStoresWindow`, `StoresPointerLimits` |
+| Reads | `$68E7` (`MissionScore+5`); `$6A6D` (`ViewChangeFlag+1`); `$70A3`-`$70A4` (`BriefingTextOnce+5`); `$762C`-`$7B8F` (`PlayerY+22`); `$82FF`-`$8300` (`Im2Table+255`); `$DCB1`-`$DCE3` (`MapObjects+49`); 1 more ranges |
+| Writes | `$68E2`-`$68E7` (`MissionScore`); `$6A46`-`$6A56` (`PlayLoop+58`); `$7256` (`FirstFrameHook`); `$762C`-`$7B90` (`PlayerY+22`); `$7BFD`-`$7C05` (`FailReason+4`); `$7DFB` (`ClockTick`); 10 more ranges |
+
+#### `ShowWaitPointer` (`$CBF4`)
+
+**Pointer job off, the boxed shape WaitPointer, DrawPointer**
+
+Called when a screen is left. Witness: L1 97 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 265 t-states own (0.00 %) |
+| Runs (the other recordings) | 97 calls (`stage1/missions` 34, `stage1/menu` 28, `stage1/play2` 12 and 7 more) |
+| Called from | `TitleMenu`, `TitleLoop`, `MissionCatalogueScreen`, `BriefingScreen`, `StoresScreen`, `MissionStatusScreen` |
+| Calls | `DrawPointer` (tail) |
+| Writes | `$83BF` (`PointerShown+1`); `$D283`-`$D284` (`ShiftPointer+1`) |
+
+#### `ClearSlots` (`$CC01`)
+
+**Empty the four slot records, the payload weight = 0, the hook `$A9B9` = NoAction**
+
+Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 220 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/c1` 1 and 3 more) |
+| Called from | `StoresScreen` |
+| Writes | `$8368`-`$837A` (`WeaponSlots`); `$A9B9`-`$A9BA` (`l_A9A0+25`); `$C11B`-`$C11C` (`PayloadWeightOp+1`) |
+
+#### `StoresToGauges` (`$CC1B`)
+
+**The four damage values `$8301-$8304` = `$7F`, each weapon record of `$834A` to a gauge of `$68AB`**
+
+Nine 6-byte records: a fitted one (non-zero) gives the gauge `$5F`, an empty one 0. `$7C57` = `$3F00`, `$7578` and `$68E8` cleared. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 950 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 3 more) |
+| Called from | `StoresScreen` |
+| Reads | `$834A`-`$837A` (`DamageBoardRecords`) |
+| Writes | `$68AB`-`$68E8` (`GaugeRecords`); `$7578` (`AwolState`); `$7C57`-`$7C58` (`Fuel`); `$8301`-`$8304` (`Armour`) |
+
+#### `BlitStoresView` (`$D0A0`)
+
+**The stores' blit: 48 lines of 9 bytes of the back buffer to the screen (line table `$65C0`)**
+
+Run by the interrupt through ViewBlit `$83E6`; the stack walks the line address table. Witness: L1 2525 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 121 calls, 2,247,213 t-states own (0.34 %) |
+| Runs (the other recordings) | 2,525 calls (`stage1/play2` 997, `stage1/missions` 780, `stage1/play` 412 and 3 more) |
+| Reads | `$8AF4`-`$8FFC` (`BackBuffer+3`); `$9014`-`$901C` (`BackBuffer+1315`); `$9034`-`$903C` (`BackBuffer+1347`); `$9054`-`$905C` (`BackBuffer+1379`); `$9074`-`$907C` (`BackBuffer+1411`); `$9094`-`$909C` (`BackBuffer+1443`); 2 more ranges |
+| Writes | `$4883`-`$502B` (screen); `$5103`-`$512B` (screen); `$5203`-`$522B` (screen); `$5303`-`$532B` (screen); `$5403`-`$542B` (screen); `$5503`-`$552B` (screen); 3 more ranges |
+
+### Bank 6: numbers
+
+`src/bank6/numbers.asm`
+
+#### `NumberToDigits` (`$C126`)
+
+**Write HL as five ASCII digits at HL', then replace the leading zeros at `$D9AB` with C'**
+
+Input: HL the number, HL' the destination, C' the character for a leading zero. DigitOf `$C155` for 10000, 1000, 100 and 10, then the units. Then the five digits of PaddedDigits `$D9AB` from the left: each `0` becomes C' until the first other digit; a number 0 keeps its last `0`. Witness: L1 104 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 283 t-states own (0.00 %) |
+| Runs (the other recordings) | 104 calls (`stage1/missions` 76, `stage1/play2` 9, `stage1/m2erbe` 9 and 3 more) |
+| Called from | `FormatGridPosition`, `PrintPayloadWeight` |
+| Calls | `DigitOf` |
+| Reads | `$D9AB`-`$D9AD` (`PaddedDigits`) |
+| Writes | `$D9AB`-`$D9AF` (`PaddedDigits`) |
+
+#### `DigitOf` (`$C155`)
+
+**One decimal digit: A = how many times DE goes into HL, stored at HL' as ASCII**
+
+Input: HL, DE. Output: HL the remainder, HL' advanced. Witness: L1 416 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 4 calls, 484 t-states own (0.00 %) |
+| Runs (the other recordings) | 416 calls (`stage1/missions` 304, `stage1/m2erbe` 36, `stage1/play2` 36 and 3 more) |
+| Called from | `NumberToDigits` |
+| Writes | `$D9AB`-`$D9AE` (`PaddedDigits`) |
+
+#### `LongToDigits` (`$D353`)
+
+**Write the 32-bit number HL'HL as ten ASCII digits at DE**
+
+LongDigitOf `$D3B4` for each power of ten. Witness: L1 4 (m10, menu, missions).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/menu` 2, `stage1/m10` 1, `stage1/missions` 1) |
+| Called from | `PrintScore` |
+| Calls | `LongDigitOf` |
+| Writes | `$D4A3` (`ScoreDigits+9`) |
+
+#### `LongDigitOf` (`$D3B4`)
+
+**One digit of HL'HL by BC'BC, stored at DE**
+
+Witness: L1 36 (m10, menu, missions).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 36 calls (`stage1/menu` 18, `stage1/m10` 9, `stage1/missions` 9) |
+| Called from | `LongToDigits` |
+| Writes | `$D49A`-`$D4A2` (`ScoreDigits`) |
+
+### Bank 6: title
+
+`src/bank6/title.asm`
+
+#### `TitleMenu` (`$C409`)
+
+**The title menu: picture, graphics, pointer, then the turning model until a zone is clicked**
+
+Sound off (Bank0SoundOff `$72DE`), the shadow screen, the view parameters (`$9A6C`, `$9A8E`, `$9AB3`, `$9ABB`), DrawBank7Picture `$74AA` with `$F4E1`, CopyGraphic of TitleGraphicA, TitleGraphicB and TitleGraphicC, the attributes `$5920-$5A1F` to `$47`, the title's pointer limits, the pointer centred, the wide blit (`$83E6` = `$8A41`), SetTitleWindow `$D10E`, Bank4Start `$72C6`, TitleBox.
+
+TitleLoop: StartViewPass `$9882`, the model through Bank3Render `$72BE` (IX = `$CA8B` of bank 3), RequestViewBlit `$988D`, the turn (`$68E7` += 6), PointerZones `$6D42`, until the view flag `$6A6D` is set; then ShowWaitPointer, WaitFrameDone, Bank4Call and NextView `$6A91`. Witness: L1 19 (c1, m2erbe, menu, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 30,434 t-states own (0.00 %) |
+| Runs (the other recordings) | 19 calls (`stage1/missions` 8, `stage1/menu` 4, `stage1/play2` 3 and 3 more) |
+| Calls | `ShowWaitPointer`, `SavePointerBackground`, `SetTitleWindow`, `CataloguePointerLimits`, `SetPointerLimits` |
+| Reads | `$68E7` (`MissionScore+5`); `$6A6D` (`ViewChangeFlag+1`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$5920`-`$5A1F` (screen); `$68E7` (`MissionScore+5`); `$7256` (`FirstFrameHook`); `$757A` (`AwolState+2`); `$7DC0`-`$7DC1` (`PointerPos`); `$83BF` (`PointerShown+1`); 5 more ranges |
+
+#### `TitleLoop` (`$C4AD`)
+
+**TitleLoop**
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/death`, `stage1/m10`, `stage1/m2ocean` and 1 more) |
+| Calls | `ShowWaitPointer` |
+| Reads | `$68E7` (`MissionScore+5`); `$6A6D` (`ViewChangeFlag+1`) |
+| Writes | `$68E7` (`MissionScore+5`) |
+
+### Bank 6: password
+
+`src/bank6/password.asm`
+
+#### `ShowPassword` (`$C4FC`)
+
+**Show the password of the progress so far: "THIS IS YOUR ENTRY STRING." and the ten characters**
+
+Screen node `$74FE` (from the mission status screen). ClearMenuScreen, EncodePassword, PasswordToChars, PrintString of EntryStringText and PasswordText `$CEF6`, a delay (Delay `$CD63`), a key, ScreenZero and NextView. Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Calls | `ClearMenuScreen`, `Delay`, `EncodePassword`, `PasswordToChars` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8978` (`KeyState`) |
+
+#### `ClearMenuScreen` (`$C527`)
+
+**Clear the shadow screen's pixels and fill its attributes from the box `$C74A`**
+
+PageShadowScreen `$7268`, ScreenRowFill of 192 lines of 32 bytes with 0, AttrBox `$C74A`. Witness: L1 6 (c1, menu).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 94 t-states own (0.00 %) |
+| Runs (the other recordings) | 6 calls (`stage1/menu` 5, `stage1/c1` 1) |
+| Called from | `ShowPassword`, `PasswordScreen`, `OptionsScreen` |
+
+#### `PasswordScreen` (`$C578`)
+
+**The level entry screen: read ten characters, check them, take over the flags and the score**
+
+Node `$74F8` (from the title). ClearMenuScreen, PasswordPrompt, the buffer filled with spaces, ReadPassword `$C620`; when the view flag is set (a click elsewhere), back. Otherwise CharsToPassword, DecodePassword: a bad checksum prints "INVALID PASSWORD" and asks again; a good one copies the score to Score `$CC79`, the ten flags to MissionsDone `$6799`, counts them into MissionsCompleted `$CC93`, ScreenZero and NextView. Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Calls | `ClearMenuScreen`, `ReadPassword`, `DecodePassword`, `CharsToPassword` |
+| Reads | `$6799`-`$67A2` (`MissionsDone`); `$6A6D` (`ViewChangeFlag+1`); `$CE7D`-`$CE8A` (`DecodedFlags`, `DecodedScore`) |
+| Writes | `$6799`-`$67A2` (`MissionsDone`); `$C60E`-`$C617` (`PasswordBuffer`); `$CC79`-`$CC7C` (`Score`); `$CC93` (`MissionsCompleted`) |
+
+#### `ReadPassword` (`$C620`)
+
+**A short delay, the key state cleared, then EditLine at the screen place of the entry**
+
+EditLine `$C644` with HL = PasswordBuffer, DE = `$488A` (the pixel address), BC = `$598A` (the attribute address). Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `PasswordScreen` |
+| Calls | `EditLine` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$8979` (`KeyCode`) |
+
+#### `EditLine` (`$C644`)
+
+**Edit a line of up to 10 characters: keys add, DELETE takes back, ENTER ends when it is full**
+
+Input: HL the buffer (set to `$C60E` here), DE the screen address, BC the cursor's attribute address. The state is in operands: the cursor's attribute address CursorAttrPtr, the end of the line (EditEndOp), the length (EditLengthOp), the maximum (EditMaxOp). Each key from WaitKey `$C6EC`: codes 0-1 ignored, 2 leaves through ScreenZero `$705A`, 3 (ENTER) ends when the length is the maximum, 4 (DELETE) takes one back, the others are added up to 14. PrintRawString `$C6FC` redraws the line after every key. Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `ReadPassword` |
+| Calls | `WaitKey`, `PrintRawString` |
+| Reads | `$C6A0`-`$C6A1` (`EditEndOp+1`); `$C6B4` (`EditMaxOp+1`); `$C6E4` (`EditLengthOp+1`); `$C6FA`-`$C6FB` (`CursorAttrPtr`); `$C727`-`$C728` (`EditLineBuffer`) |
+| Writes | `$598A`-`$5994` (screen); `$C60E`-`$C619` (`PasswordBuffer`, `PasswordLeftover`); `$C677`-`$C678` (`EditRedraw+4`); `$C6A0`-`$C6A1` (`EditEndOp+1`); `$C6B4` (`EditMaxOp+1`); `$C6E4` (`EditLengthOp+1`); 2 more ranges |
+
+#### `EditLineAt` (`$C655`)
+
+**Variant entry: A = the maximum, HL = the buffer, then EditLineStart**
+
+Known only from the code: nothing calls it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `EditAddSpace` (`$C6AC`)
+
+**Unused: A = space, then the add path EditAddChar**
+
+Known only from the code: no jump reaches it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `WaitKey` (`$C6EC`)
+
+**Wait for a new key (bit 0 of KeyState `$8978`), clear the bit, A = the key code (`$8979`)**
+
+Witness: L1 286697 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 12 calls (`stage1/menu` 12) |
+| Called from | `EditLine` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8978`-`$8979` (`KeyState`) |
+| Writes | `$8978`-`$8979` (`KeyState`) |
+
+#### `PrintRawString` (`$C6FC`)
+
+**Draw the 0-terminated string at HL straight onto the screen at DE with the 8x8 font**
+
+Characters `$20-$7F` take the glyph Font8x8 + 8 (c - `$20`), the others the space; 8 lines down the screen third, one column a character. No attributes, no control codes. Witness: L1 77 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 11 calls (`stage1/menu` 11) |
+| Called from | `EditLine` |
+| Reads | `$C60E`-`$C619` (`PasswordBuffer`, `PasswordLeftover`); `$F5E4`-`$F5EB` (`Font8x8`); `$F6AC`-`$F6B3` (`Font8x8+200`) |
+| Writes | `$488A`-`$4894` (screen); `$498A`-`$4994` (screen); `$4A8A`-`$4A94` (screen); `$4B8A`-`$4B94` (screen); `$4C8A`-`$4C94` (screen); `$4D8A`-`$4D94` (screen); 2 more ranges |
+
+#### `EncodePassword` (`$CE2E`)
+
+**Pack MissionsDone and Score into the ten 5-bit values at `$CEFB`**
+
+Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag of missions 1-8; the ninth and tenth: the flags of missions 9-10 (value 8 bits 0, 1) and an 8-bit checksum, the XOR of the score's four bytes, split as its low 3 bits in value 8 (bits 2-4) and its high 5 bits in value 9. Witness: L1 1 (menu).
+
+A non-zero score: m1complete frame 22160 ("C5989999PB", score 500, mission 1), m4complete 21956 ("H59K9999PK", score 2500, missions 1 and 4).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `ShowPassword` |
+| Calls | `ScoreBits` |
+| Reads | `$6799`-`$67A2` (`MissionsDone`); `$CC79`-`$CC7C` (`Score`) |
+| Writes | `$CEFB`-`$CF04` (`PasswordValues`) |
+
+#### `DecodePassword` (`$CE8B`)
+
+**Unpack the ten values at `$CEFB` into DecodedFlags and DecodedScore; Z when the checksum agrees**
+
+Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `PasswordScreen` |
+| Reads | `$CE87`-`$CE8A` (`DecodedScore`); `$CEFB`-`$CF04` (`PasswordValues`) |
+| Writes | `$CE7D`-`$CE8A` (`DecodedFlags`, `DecodedScore`) |
+
+#### `ScoreBits` (`$CF06`)
+
+**A = the next A bits of the score at HL' (E' bits left in the byte)**
+
+Witness: L1 8 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 8 calls (`stage1/menu` 8) |
+| Called from | `EncodePassword` |
+| Reads | `$CC7A`-`$CC7D` (`Score+1`, `PrintScore`) |
+
+#### `PasswordToChars` (`$CF1C`)
+
+**Map the ten values at `$CEFB` to characters through PasswordAlphabet**
+
+Twelve `NOP`s at `$CF26` are room left for a patch. Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `ShowPassword` |
+| Reads | `$CEFB`-`$CF04` (`PasswordValues`); `$CF5F` (`PasswordAlphabet`) |
+| Writes | `$CEFB`-`$CF04` (`PasswordValues`) |
+
+#### `CharsToPassword` (`$CF3E`)
+
+**Map the ten typed characters to their places in PasswordAlphabet**
+
+An unknown character gives 4 (B = 0 after the search: 36 AND 31); D, E, F and G give 0-3 like 9876. Witness: L1 1 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `PasswordScreen` |
+| Reads | `$C60E`-`$C617` (`PasswordBuffer`); `$CF5F` (`PasswordAlphabet`) |
+| Writes | `$CEFB`-`$CF04` (`PasswordValues`) |
+
+### Bank 6: briefing
+
+`src/bank6/briefing.asm`
+
+#### `BriefingScreen` (`$C98A`)
+
+**The briefing: picture, three graphics, the mission text, then the zones with the map blit**
+
+The shadow screen, ShowBriefingMapOnce armed (`$7084` = 0), the Dragonfly's title hook `$6C56` = `RET`, the arrow pointer, SetBriefingBlit `$DBAA`, CopyMissionText, DrawBank7Picture `$E949`, BriefingBoxes, BriefingGraphicA-C, PrintString (`$70A3`), the map blit (`$83E6` = BlitMapView `$DBBD`), PointerZones until the view flag; then the 3D blit back (`$8999`) and NextView. Witness: L1 10 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/menu` 10) |
+| Calls | `ShowWaitPointer`, `SavePointerBackground`, `SetBriefingBlit` |
+| Reads | `$6A6D` (`ViewChangeFlag+1`); `$70A3`-`$70A4` (`BriefingTextOnce+5`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$6C56` (`BriefPageOnce`); `$7084` (`ShowBriefingMapOnce`); `$83BF` (`PointerShown+1`); `$83E6`-`$83E7` (`MenuJobs+7`); `$D283`-`$D284` (`ShiftPointer+1`) |
+
+#### `CopyMissionTextB6` (`$CA23`)
+
+**CopyMissionText `$70F6` called from bank 6**
+
+Called by LoadMissionIfAllowed `$759A`. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 27 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/c1` 1 and 3 more) |
+
+#### `CopyMissionTextOld` (`$CA27`)
+
+**Unused: an older copy of the mission's texts from the back buffer to `$F9C4`**
+
+Known only from the code: nothing calls it. Once per mission (the operand `$CA2E`), from the catalogue's copy at `$8AF1`; sets `$70A3`, `$7D3C`, `$7D39`, `$7C55` and calls `$7D35`.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### Bank 6: results
+
+`src/bank6/results.asm`
+
+#### `PrintFinalScore` (`$CC54`)
+
+**Unused: the mission's score as ten digits into `$D461`, then FinalScoreText**
+
+Known only from the code: nothing calls it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `DotLeadingZeros` (`$CC6A`)
+
+**Replace the leading "0" of the nine digits at `$D49A` with "[" (a full stop in SmallFont `$7C59`)**
+
+Witness: L1 4 (m10, menu, missions).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/menu` 2, `stage1/m10` 1, `stage1/missions` 1) |
+| Called from | `PrintScore` |
+| Reads | `$D49A`-`$D4A2` (`ScoreDigits`) |
+| Writes | `$D49A`-`$D4A2` (`ScoreDigits`) |
+
+#### `PrintScore` (`$CC7D`)
+
+**Print the missions completed and the score (StatusText `$D46C`)**
+
+LongToDigits `$D353` of Score into `$D49A`, DotLeadingZeros, PrintString `$D46C`. Witness: L1 4 (m10, menu, missions).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/menu` 2, `stage1/m10` 1, `stage1/missions` 1) |
+| Called from | `MissionStatusScreen` |
+| Calls | `DotLeadingZeros`, `LongToDigits` |
+| Reads | `$CC79`-`$CC7C` (`Score`) |
+
+#### `MissionCompleteScreen` (`$CD1E`)
+
+**Mission completed: PicCompletion, the score added, the flag set, the mission's text**
+
+Sound off, DrawBank7Picture `$E51E`, Score += the mission's score, MissionsDone[mission] = `$FF`, PrintString (`$7C55`), SaveLoadedMission `$CD77`, the main screen, Delay, MissionsCompleted + 1, then the key wait of MissionFailedScreen (EndScreenKey). The completion recordings run it on page 6:
+
+Witness (not an L1 build of the json): m1complete frames 21560-21721, MissionsDone and Score written at 21590, 32 frames after HelicarrierHit; m4complete 21301-21462 (work/stage2/complete-NOTES.md).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Delay` (`$CD63`)
+
+**A delay of five times 65535 loops**
+
+Witness: L1 36 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 2 calls, 17,039,304 t-states own (2.58 %) |
+| Runs (the other recordings) | 36 calls (`stage1/missions` 17, `stage1/play2` 4, `stage1/search` 3 and 7 more) |
+| Called from | `ShowPassword` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `SaveLoadedMission` (`$CD77`)
+
+**Put LoadedMission's two bytes (`$7E2C`) into the mission's header (`$70A3` +1 and +3)**
+
+Witness: L1 13 (m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 1 more) |
+| Called from | `QuitPrompt` |
+| Reads | `$70A3`-`$70A4` (`BriefingTextOnce+5`); `$7E2C`-`$7E2D` (`LoadedMission`) |
+| Writes | `$DCB1`-`$DCE3` (`MapObjects+49`); `$DD11`-`$DD13` (`MapObjects+145`) |
+
+#### `MissionFailedScreen` (`$CD84`)
+
+**Mission failed: PicCompletion, "MISSION FAILED." and the reason, then a key**
+
+Known only from the code: no recording runs it on page 6.
+
+Seen in work/stage2/rec/fuel (a POKE recording, never the image: Fuel `$7C57` = 32 at frame 7704): the failure reason `$7BF9` = `$ED` by frame 7904, MissionFailedScreen at frame 7862 shows PicCompletion with "MISSION FAILED." / "RAN OUT OF FUEL.", SaveLoadedMission `$CD77` at 7892, then the title (SetTitleWindow `$D10E`, the music from Bank4Start) at 8051: a failure ends at the title, there are no lives.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `MissionStatusScreen` (`$CDBF`)
+
+**The mission status card: PicMissionStatus, two graphics, the score, then the zones**
+
+DrawBank7Picture `$EC82`, StatusGraphicB (11 x 16), StatusGraphicA (10 x 32), the boxes, PrintScore, the pointer, PointerZones (StatusScreenZones) until the view flag, ShowWaitPointer, NextView. Witness: L1 4 (m10, menu, missions).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/menu` 2, `stage1/m10` 1, `stage1/missions` 1) |
+| Calls | `ShowWaitPointer`, `PrintScore`, `SavePointerBackground` |
+| Reads | `$6A6D` (`ViewChangeFlag+1`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$83BF` (`PointerShown+1`) |
+
+#### `NumberObjectRecords` (`$CE1F`)
+
+**Write 0-23 into the byte before each 60-byte record from `$762B`**
+
+Called by StoresScreen after the object table is cleared. Witness: L1 15 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 928 t-states own (0.00 %) |
+| Runs (the other recordings) | 15 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 3 more) |
+| Called from | `StoresScreen` |
+| Writes | `$762B`-`$79EB` (`PlayerY+21`); `$7A27` (`PlayerY+1041`); `$7A63` (`PlayerY+1101`); `$7A9F` (`PlayerY+1161`); `$7ADB` (`PlayerY+1221`); `$7B17` (`HelicarrierRecord+59`); 2 more ranges |
+
+### Bank 6: panel
+
+`src/bank6/panel.asm`
+
+#### `StatusViewMessage` (`$D3C9`)
+
+**Once per message: "TANK HAS BEEN HIT" or "COLLISION OCCURED", then MessageOnce off**
+
+Returns when MessageOnce `$7D5D` is already a `RET`; else the timer `$87D7` = 100, the text by bit 4 of `$7D64`, and `$7D5D` = `RET`. Witness: L1 43 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 43 calls (`stage1/missions` 34, `stage1/play` 5, `stage1/m2erbe` 4) |
+| Reads | `$7D5D` (`MessageOnce`) |
+
+#### `ShowDamageColours` (`$D4A5`)
+
+**Colour the Dragonfly's damage boxes by the four damage values `$8301-$8304`**
+
+DamageColour for each, AttrBoxAt `$6CFD` with the records of DamageBoxes. Witness: L1 3 (play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/play` 3) |
+| Calls | `DamageColour` |
+| Reads | `$8301`-`$8304` (`Armour`) |
+
+#### `DamageColour` (`$D4EE`)
+
+**B = DamageColourTable[A / 32]**
+
+Witness: L1 12 (play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 12 calls (`stage1/play` 12) |
+| Called from | `ShowDamageColours` |
+| Reads | `$D520` (`DamageColourTable+3`) |
+
+#### `PanelAttributes` (`$D521`)
+
+**The cockpit panel's attributes: a cleared box, two boxes and the gauge colours**
+
+Called by PanelSetup `$6B32`. ScreenRowFill, AttrBox PanelBoxB and PanelBoxA, single attributes at `$5A48-$5AAA` and `$580A-$5859`, then FillPanelRows `$6AAB`. Witness: L1 27 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 583 t-states own (0.00 %) |
+| Runs (the other recordings) | 27 calls (`stage1/missions` 16, `stage1/play` 4, `stage1/play2` 3 and 3 more) |
+| Writes | `$580A`-`$5819` (screen); `$582A`-`$5839` (screen); `$584A`-`$5859` (screen); `$5A48`-`$5A4A` (screen); `$5A68`-`$5A6A` (screen); `$5A88`-`$5A8A` (screen); 1 more ranges |
+
+#### `UpdatePanelBars` (`$D58C`)
+
+**The four bars of the cockpit panel**
+
+Called by UpdateSlotBars `$7327`. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 7,198 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,601 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Calls | `DrawHeadingStrip`, `DrawSpeedBar`, `DrawFuelBar` (tail), `DrawBearing` |
+
+#### `DrawHeadingStrip` (`$D598`)
+
+**Redraw the compass strip from the heading `$7612` (`$75F0` + `$22`) when it changed**
+
+Shapes from BarShapesB, shifted to the pixel, five lines 12 bytes apart. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 39,813 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,601 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Called from | `UpdatePanelBars` |
+| Reads | `$6664`-`$666D` (`ScreenRowTable+356`); `$7612` (`PlayerHeading`); `$82FF`-`$8300` (`Im2Table+255`); `$D77F`-`$D7BA` (`BarShapesB`) |
+| Writes | `$52D6`-`$52D9` (screen); `$53D6`-`$53D9` (screen); `$54D6`-`$54D9` (screen); `$55D6`-`$55D9` (screen); `$56D6`-`$56D9` (screen); `$D5A2` (`HeadingLastOp+1`); 2 more ranges |
+
+#### `DrawSpeedBar` (`$D612`)
+
+**The speed bar: `$7E8E` = abs(speed), line `$90` column 8, when it changed**
+
+Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 5,103 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,601 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Called from | `UpdatePanelBars` |
+| Reads | `$7E8E` (`MissionParams+12`); `$82FF`-`$8300` (`Im2Table+255`) |
+| Writes | `$D616` (`DrawSpeedBar+4`) |
+
+#### `DrawFuelBar` (`$D629`)
+
+**The fuel bar: Fuel high byte `$7C58` / 2, line `$90` column 10, redrawn every pass (no change test)**
+
+Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 6,254 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,601 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Called from | `UpdatePanelBars` (tail) |
+| Reads | `$7C58` (`Fuel+1`); `$82FF`-`$8300` (`Im2Table+255`) |
+
+#### `DrawBearing` (`$D637`)
+
+**The bearing arrow: ApiVector01's bearing less the heading `$7612`, when it changed (shapes BarShapesA), x 32-55 y 138-142**
+
+Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 43,813 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,601 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 3 more) |
+| Called from | `UpdatePanelBars` |
+| Reads | `$6614`-`$661D` (`ScreenRowTable+276`); `$7612` (`PlayerHeading`); `$82FF`-`$8300` (`Im2Table+255`); `$D6A3`-`$D6D9` (`BarShapesA`) |
+| Writes | `$5224`-`$5226` (screen); `$5324`-`$5326` (screen); `$5424`-`$5426` (screen); `$5524`-`$5526` (screen); `$5624`-`$5626` (screen); `$D646` (`DrawBearing+15`); 1 more ranges |
+
+### Bank 6: map
+
+`src/bank6/map.asm`
+
+#### `ClearQuitArea` (`$D9B2`)
+
+**Clear the screen lines of the quit prompt**
+
+Witness: L1 13 (m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/play` 1 and 1 more) |
+| Called from | `QuitPrompt` |
+| Reads | `$4080`-`$49CA` (screen); `$4A00`-`$4ACA` (screen); `$4B00`-`$4BCA` (screen); `$4C00`-`$4CCA` (screen); `$4D00`-`$4DCA` (screen); `$4E00`-`$4FAA` (screen); 2 more ranges |
+| Writes | `$4080`-`$49E2` (screen); `$49FD`-`$4AE2` (screen); `$4AFD`-`$4BE2` (screen); `$4BFD`-`$4CE2` (screen); `$4CFD`-`$4DE2` (screen); `$4DFD`-`$4FC2` (screen); 1 more ranges |
+
+#### `QuitPrompt` (`$DA09`)
+
+**"Are you sure you want to quit? Yes/No.": Y ends the mission, N goes back**
+
+ClearQuitArea, the attributes `$5880-$59CA` to `$47`, QuitText, a key: `Y` StartViewPass, the shadow screen, the clock stopped, SaveLoadedMission, ScreenEight `$704E`; `N` `$8822`, RequestViewBlit, `JP $8872`. Witness: L1 13 (m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 13 calls (`stage1/missions` 8, `stage1/play2` 3, `stage1/m2erbe` 1 and 1 more) |
+| Calls | `SaveLoadedMission`, `ClearQuitArea` |
+| Reads | `$5880`-`$59C9` (screen); `$82FF`-`$8300` (`Im2Table+255`); `$8978`-`$8979` (`KeyState`) |
+| Writes | `$5880`-`$59E2` (screen); `$59FD`-`$59FE` (screen); `$7DFB` (`ClockTick`) |
+
+#### `StatusMapFrame` (`$DA8C`)
+
+**The status view's legend frame: the box `$DAC6` and 7 cleared lines**
+
+Called by StatusLoop `$6BFC`. Witness: L1 10 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/missions` 8, `stage1/m2erbe` 1, `stage1/play` 1) |
+
+#### `BriefingMapFrame` (`$DACB`)
+
+**The briefing map's legend frame: the box `$DB06` and 10 cleared lines**
+
+Called by ShowPauseOnce `$7084`. Witness: L1 10 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/menu` 10) |
+
+#### `StatusMap` (`$DB15`)
+
+**DrawStatusMap, then the legend (StatusMapLegend)**
+
+Called by StatusLoop `$6C1D`. Witness: L1 40 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 40 calls (`stage1/missions` 34, `stage1/m2erbe` 4, `stage1/play` 2) |
+| Calls | `DrawStatusMap` |
+
+#### `DrawStatusMap` (`$DB1C`)
+
+**The mission's map in the 3D window: a view from above, the objects and three markers**
+
+The view (`$9A8E` = the operand `$DB1D`, `$9AB3` = `$DB23`, `$9A6C` = `$1B58`), MapDepth = 0, StartViewPass, DrawMapObjects, DrawMarker 0 at MarkerPosA, 1 at MarkerPosB and 2 at `$67A7` (the player), the view's position to GridXOp and GridYOp, RequestViewBlit. Witness: L1 50 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 50 calls (`stage1/missions` 34, `stage1/menu` 10, `stage1/m2erbe` 4 and 1 more) |
+| Called from | `StatusMap`, `BriefingMap` |
+| Calls | `DrawMarker`, `DrawMapObjects` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A8F` (`l_9A85+9`) |
+| Writes | `$9A6C`-`$9A6D` (`l_9A5E+14`); `$9A8E`-`$9A93` (`l_9A85+9`); `$9AB3`-`$9AB4` (`l_9A9E+21`); `$C0C7`-`$C0C8` (`GridYOp+1`); `$C0E2`-`$C0E3` (`GridXOp+1`); `$DBA8`-`$DBA9` (`MapDepth`) |
+
+#### `BriefingMap` (`$DB64`)
+
+**DrawStatusMap, then the briefing legend (BriefingMapLegend)**
+
+Called by ShowPauseOnce `$7084`. Witness: L1 10 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/menu` 10) |
+| Calls | `DrawStatusMap` |
+
+#### `DrawMarker` (`$DB6B`)
+
+**Marker A at the 24-bit position HL: the view moved there, DrawMarkerModel A**
+
+Witness: L1 150 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 150 calls (`stage1/missions` 102, `stage1/menu` 30, `stage1/m2erbe` 12 and 1 more) |
+| Called from | `DrawStatusMap` |
+| Calls | `ReadMapCoord`, `DrawMarkerModel` |
+| Reads | `$DB1D`-`$DB24` (`DrawStatusMap+1`) |
+| Writes | `$9A8E`-`$9A8F` (`l_9A85+9`); `$9AB3`-`$9AB4` (`l_9A9E+21`) |
+
+#### `ReadMapCoord` (`$DB8D`)
+
+**DE = the 24-bit coordinate at HL / 16**
+
+Witness: L1 300 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 300 calls (`stage1/missions` 204, `stage1/menu` 60, `stage1/m2erbe` 24 and 1 more) |
+| Called from | `DrawMarker` |
+| Reads | `$67A7`-`$67AC` (`WorldVars+4`); `$DBF4`-`$DBFF` (`MarkerPosA`, `MarkerPosB`) |
+
+#### `SetBriefingBlit` (`$DBAA`)
+
+**BlitMapView from line table `$6550`, column 10**
+
+Witness: L1 10 (menu).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/menu` 10) |
+| Called from | `BriefingScreen` |
+| Writes | `$DBC2`-`$DBCC` (`MapLinesOp+1`, `MapColumnOp`) |
+
+#### `SetStatusBlit` (`$DBB6`)
+
+**BlitMapView from line table `$6510`, column 7**
+
+Called by StatusLoop `$6BCA`. Witness: L1 10 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 10 calls (`stage1/missions` 8, `stage1/m2erbe` 1, `stage1/play` 1) |
+| Writes | `$DBC2`-`$DBCC` (`MapLinesOp+1`, `MapColumnOp`) |
+
+#### `BlitMapView` (`$DBBD`)
+
+**The map's blit: 96 lines of 18 bytes from the back buffer to the screen**
+
+Run by the interrupt through ViewBlit `$83E6`; the stack walks the line address table (MapLinesOp), the column is MapColumnOp. Witness: L1 50 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 50 calls (`stage1/missions` 34, `stage1/menu` 10, `stage1/m2erbe` 4 and 1 more) |
+| Reads | `$8AF1`-`$96E2` (`BackBuffer`) |
+| Writes | `$4027`-`$501B` (screen); `$510A`-`$511B` (screen); `$520A`-`$521B` (screen); `$530A`-`$531B` (screen); `$540A`-`$541B` (screen); `$550A`-`$551B` (screen); 3 more ranges |
+
+#### `DrawMapObjects` (`$E3F3`)
+
+**Draw each object of MapObjects with its model (kind 0, 6, negative, other; 2 skipped)**
+
+For each 6-byte record: X and Y from the coordinate tables, four corner vertices by ProjectMapPoint into the vertex buffers `$FD00`, and RunScript `$990F` with IX = MapModels (`$E512` kind 0, `$E534` kind 6, `$E51E` negative, `$E52A` other). Witness: L1 50 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 50 calls (`stage1/missions` 34, `stage1/menu` 10, `stage1/m2erbe` 4 and 1 more) |
+| Called from | `DrawStatusMap` |
+| Calls | `ProjectMapPoint` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$DBF3`-`$DC1B` (`MissionData`, `MarkerPosA`, `MarkerPosB`, `MapCoordX`); `$DC40`-`$DC5B` (`MapCoordY`); `$DC80`-`$DD0F` (`MapObjects`); `$E46A`-`$E477` (`MapObjectLoop+110`) |
+| Writes | `$E44D`-`$E477` (`MapObjectLoop+81`); `$E497` (`MapObjectLoop+155`); `$E4BE` (`MapObjectNext+2`); `$E4E8` (`ProjectXPositive+14`) |
+
+#### `ProjectMapPoint` (`$E4CE`)
+
+**One vertex: X and Y turned by the object's angle (through ApiVector14, SinCos8) into the vertex buffers**
+
+Witness: L1 2448 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 2,448 calls (`stage1/missions` 1,632, `stage1/menu` 480, `stage1/m2erbe` 256 and 1 more) |
+| Called from | `DrawMapObjects` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$DBA8`-`$DBA9` (`MapDepth`) |
+| Writes | `$FD00`-`$FD07`; `$FE00`-`$FE07`; `$FF00`-`$FF07` |
+
+#### `DrawMarkerModel` (`$E561`)
+
+**Marker A: its points (MarkerPointLists) into the vertex buffers, then its script (MarkerScripts)**
+
+Witness: L1 150 (m2erbe, menu, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 150 calls (`stage1/missions` 102, `stage1/menu` 30, `stage1/m2erbe` 12 and 1 more) |
+| Called from | `DrawMarker` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$DBA8`-`$DBA9` (`MapDepth`); `$E5B2`-`$E5BD` (`MarkerPointLists`, `MarkerScripts`); `$E603`-`$E623` (`MarkerPoints`, `MarkerPointsB`, `MarkerPointsC`) |
+| Writes | `$E5AC`-`$E5AD` (`MarkerScriptOp+2`); `$FD00`-`$FD0D`; `$FE00`-`$FE0D`; `$FF00`-`$FF0D` |
+
+#### `BlinkMarker` (`$E5BE`)
+
+**Toggle the third marker's script between `$E5ED` and `$E5F7`**
+
+Called by StatusLoop `$6C23`. Witness: L1 40 (m2erbe, missions, play).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1g`; in the other recordings 40 calls (`stage1/missions` 34, `stage1/m2erbe` 4, `stage1/play` 2) |
+| Reads | `$E5BC`-`$E5BD` (`MarkerScripts+4`) |
+| Writes | `$E5BC`-`$E5BD` (`MarkerScripts+4`) |
+
+### Bank 6: options
+
+`src/bank6/options.asm`
+
+#### `OptionsScreen` (`$F8F4`)
+
+**The options: print the devices, a key 1-5, the device to ControlDevice, its line highlighted**
+
+ClearMenuScreen, OptionsText, the main screen; the key from KeyState `$8978` / `$8979`; the old line's attribute back to `$44` (HighlightedOp), the new line's to `$42`, ClickFlag cleared, ScreenZero, NextView. Witness: L1 4 (c1, menu).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 1 call, 1,681,014 t-states own (0.25 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/c1` 1) |
+| Calls | `ClearMenuScreen` |
+| Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8978`-`$8979` (`KeyState`); `$F935`-`$F93E` (`OptionLines`) |
+| Writes | `$67B6` (`ControlDevice`); `$6D43` (`PointerZones+1`); `$F913`-`$F914` (`HighlightedOp+1`); `$F960` (`OptionsText+33`); `$F978` (`OptionsText+57`); `$F9B7` (`OptionsText+120`) |
+
+
+## Bank 7 (`src/bank7/bank7.json`)
+
+Battle Command, Ocean 1990: RAM bank 7, paged at `$C000`, as its tape block loads it. Its entries are
+`src/bank7/<module>.asm`, written from `src/bank7/bank7.ann` by `kit/mkgame.py --part src/bank7/bank7.json`; the
+recordings: `work/stage1/c1g` (c1 from the game's entry at frame 23974, the loader left out: the title, the mission
+tape, Blast Em Mission played), and `work/stage1/menu`, `work/stage1/missions`, `work/stage1/play`,
+`work/stage1/play2`, `work/stage1/death`, `work/stage1/m2ocean`, `work/stage1/m2erbe`, `work/stage1/search`,
+`work/stage1/m10`, `work/stage1/c1`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`pictures`](11-data-reference.md#bank-7-pictures) | `$C000`-`$FE8E` | 0 of 11 |
+| [`unpack`](#bank-7-unpack) | `$FE8F`-`$FFFF` | 5 of 7 |
+
+### Bank 7: unpack
+
+`src/bank7/unpack.asm`
+
+#### `UnpackPicture` (`$FE95`)
+
+**Unpack the block at DE onto the screen from `$4000`, then set BRIGHT in every attribute**
+
+Input: DE = a block of bank 7 (paged at `$C000`). Output: `$4000-$5AFF` the screen; BC, DE, HL, AF and the alternate set changed.
+
+Clears the output count (`$FF9F`), takes the unpacked length into the compare at `$FEC5`, the table and stream addresses into UnpackVars, the extra offset bits into `$FF43`, the output pointer `$FF97` = `$4000`, the first byte through StartBits; then a token at a time (`$FECF`): 2 bits by GetBits, the type kept in `$FF36`. 01: 8 bits to PutByte. 11: 4 bits, the table's byte `NOT n AND $0F`. 0x: a count of 6 bits (0: 7 more bits, 1: 8 bits, 2: 8 + 6 bits); type 10 then an offset of 8 bits plus the extra bits, and the count bytes from output - offset; type 00 a bit: the run byte from the table (4 bits) or 8 bits, stored into `$FF8A`, count times. When the count reaches the length, `JP BrightenAttributes`.
+
+Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+[Animation: `UnpackPicture` at work](img/routines/UnpackPicture.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 4,100,627 t-states own (0.62 %) |
+| Runs (the other recordings) | 120 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 7 more) |
+| Calls | `PutByte`, `BrightenAttributes` (tail), `GetBits`, `StartBits` |
+| Reads | `$4000`-`$56CA` (screen); `$56E2`-`$578A` (screen); `$579C`-`$57BE` (screen); `$5800`-`$5ACB` (screen); `$C002`-`$C014` (`PicDamageBoard+2`); `$C715`-`$C727` (`PicStores+2`); 9 more ranges |
+| Writes | `$FE8F`-`$FE94` (`UnpackVars`, `StreamPtr`, `TablePtr`); `$FEC6`-`$FEC7` (`LengthOp+1`); `$FF36`-`$FF43` (`TokenTypeOp+1`, `LongBitsOp`); `$FF8A`-`$FFA0` (`RunByteOp+1`, `PutByte`) |
+
+#### `PutByte` (`$FF96`)
+
+**Store A at the output pointer, advance it and count the byte**
+
+Input: A. The pointer is the operand at `$FF97`, the count the operand at `$FF9F`. Output: HL = the new count.
+
+Witness: L1 829440 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 34,560 calls, 3,445,979 t-states own (0.52 %) |
+| Runs (the other recordings) | 829,440 calls (`stage1/missions` 345,600, `stage1/menu` 193,536, `stage1/play2` 82,944 and 7 more) |
+| Called from | `UnpackPicture` |
+| Writes | `$4000`-`$5AFF` (screen); `$FF97`-`$FFA0` (`PutByte+1`, `WrittenCountOp`) |
+
+#### `BrightenAttributes` (`$FFA6`)
+
+**OR `$40` (BRIGHT) into the 768 attributes `$5800-$5AFF`**
+
+Every picture is shown bright; the blocks themselves keep BRIGHT off. Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 249,621 t-states own (0.04 %) |
+| Runs (the other recordings) | 120 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 7 more) |
+| Called from | `UnpackPicture` (tail) |
+| Reads | `$5800`-`$5AFF` (screen) |
+| Writes | `$5800`-`$5AFF` (screen) |
+
+#### `GetBits` (`$FFB7`)
+
+**Return the next A bits of the stream in A (low bits first), using the alternate set**
+
+Input: A = 1-8. The alternate DE holds the bits not yet taken, HL' the next stream byte; the number of bits left in E' is the operand at `$FFBD`. When fewer are left than asked, the next byte goes into D' and DE' shifts right as far as the bits taken. Output: A = E' before the shift (the caller masks it). Witness: L1 359432 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 14,974 calls, 4,024,454 t-states own (0.61 %) |
+| Runs (the other recordings) | 359,432 calls (`stage1/missions` 154,052, `stage1/menu` 72,804, `stage1/play2` 37,233 and 7 more) |
+| Called from | `UnpackPicture` |
+| Reads | `$C016`-`$C711` (`PicDamageBoard+22`); `$C729`-`$CCC7` (`PicStores+22`); `$CCDF`-`$D323` (`PicMissionSelect+22`); `$D33B`-`$D74E` (`PicGridPanel+22`); `$DD8B`-`$E51C` (`PicCockpit+22`); `$E95F`-`$EC80` (`PicBriefing+22`); 3 more ranges |
+| Writes | `$FFBD` (`BitsLeftOp+1`) |
+
+#### `StartBits` (`$FFE0`)
+
+**Set the offset mask from A (the extra bits) and load the stream's first byte into E'**
+
+Input: A = the extra offset bits. `$FF4B` = BitMasks + A, HL' = the stream (`$FE91`) and E' its first byte, `$FFBD` = 0. Witness: L1 120 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+
+| | |
+| --- | --- |
+| Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 5 calls, 725 t-states own (0.00 %) |
+| Runs (the other recordings) | 120 calls (`stage1/missions` 50, `stage1/menu` 28, `stage1/play2` 12 and 7 more) |
+| Called from | `UnpackPicture` |
+| Reads | `$C015` (`PicDamageBoard+21`); `$C728` (`PicStores+21`); `$CCDE` (`PicMissionSelect+21`); `$D33A` (`PicGridPanel+21`); `$DD8A` (`PicCockpit+21`); `$E95E` (`PicBriefing+21`); 5 more ranges |
+| Writes | `$FF4B` (`OffsetMaskOp+1`); `$FFBD` (`BitsLeftOp+1`) |
+
+
+## Tape BASIC (`src/tape/basic.json`)
+
+Battle Command, Ocean 1990: tape block 2, the BASIC program "BATTLE" (4917 bytes at PROG `$5CCB`, LINE 0). Its
+entries are `src/tape/<module>.asm`, written from `src/tape/basic.ann` by `kit/mkgame.py --part
+src/tape/basic.json`; the recordings: `work/stage1/c1l` (c1 from power-on to the game's entry at frame 23974: the
+load).
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`basic`](#tape-basic-basic) | `$5CCB`-`$6FFF` | 1 of 4 |
+
+### Tape BASIC: basic
+
+`src/tape/basic-module.asm`
+
+#### `Stage1` (`$5D06`)
+
+**Clear the screen, copy the chain to `$AC38-$BF0C` and return into it**
+
+Interrupts off; the screen and attributes (`$4000-$5AFF`) zeroed by LDIR, the border black. Then the 4821 bytes from PROG+95 (the address read from `$5C53`, so the copy works wherever PROG is) to `$AC38`, with SP = `$8000` and `$AC38` pushed as the return address: the RET enters the chain. c1: L1 1, frame 2028.
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 298,561 t-states own (0.02 %) |
+| Reads | `$4000`-`$5AFE` (screen); `$5C53`-`$5C54`; `$5D2A`-`$6FFE` (`ChainTape`) |
+| Writes | `$4000`-`$5AFF` (screen) |
+| Ports out | `$00FE` |
+
+
+## Decryption chain and loader (`src/loader/chain.json`)
+
+Battle Command, Ocean 1990: the BASIC's enciphered tail in its plain view, `$AC38-$BF0C`. The 103 layers of the
+decryption chain as each one runs, then the SpeedLock 7 loader as the last layer leaves it. tools/speedlock.py
+masters these bytes back into the tape's (src/tape/basic.asm INCBINs the result). Its entries are
+`src/loader/<module>.asm`, written from `src/loader/chain.ann` by `kit/mkgame.py --part src/loader/chain.json`; the
+recordings: `work/stage1/c1l` (c1 from power-on to the game's entry at frame 23974: the load).
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`chain`](#decryption-chain-and-loader-chain) | `$AC38`-`$B8F8` | 115 of 115 |
+| [`loader`](#decryption-chain-and-loader-loader) | `$B8F9`-`$BF0C` | 21 of 25 |
+
+### Decryption chain and loader: chain
+
+`src/loader/chain-module.asm`
+
+#### `Layer000` (`$AC38`)
+
+**Layer 0: rewrite the 4785 bytes `$AC5C-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AC5C-$BF0C` into p = NOT ((R XOR D) + c), D = `$F3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+[Animation: `Layer000` at work](img/routines/Layer000.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 19,270,660 t-states own (1.13 %) |
+| Calls | `PrintNotice`, `LoaderMain` (tail) |
+| Reads | `$AC24`-`$AC41` (`Layer000`); `$AC58`-`$BF0C` (`Layer000Loop+8`, `Layer001`, `Layer002`, `Layer003` and 136 more) |
+| Writes | `$AC23`-`$AC40` (`Layer000`); `$AC57`-`$BF0C` (`Layer000Loop+7`, `Layer001`, `Layer002`, `Layer003` and 136 more) |
+| Ports in | `$003F`, `$F39F` |
+| Ports out | `$001F`, `$017B`, `$01BB`, `$437F` |
+
+#### `Layer001` (`$AC5D`)
+
+**Layer 1: rewrite the 4768 bytes `$AC6D-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AC6D-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer002` (`$AC6E`)
+
+**Layer 2: rewrite the 4733 bytes `$AC90-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AC90-$BF0C` into p = NOT ((R XOR D) + c), D = `$90` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer003` (`$AC91`)
+
+**Layer 3: rewrite the 4702 bytes `$ACAF-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ACAF-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer004` (`$ACB0`)
+
+**Layer 4: rewrite the 4667 bytes `$ACD2-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ACD2-$BF0C` into p = NOT ((R XOR D) + c), D = `$F1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer005` (`$ACD3`)
+
+**Layer 5: rewrite the 4650 bytes `$ACE3-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ACE3-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer006` (`$ACE4`)
+
+**Layer 6: rewrite the 4598 bytes `$AD17-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AD17-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_ACFB` (`$ACFB`)
+
+**sub_ACFB**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer007` (`$AD11`)
+
+**Layer 7: rewrite the 4568 bytes `$AD35-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AD35-$BF0C` into p = R + c - D, D = `$B2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer008` (`$AD36`)
+
+**Layer 8: rewrite the 4537 bytes `$AD54-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AD54-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer009` (`$AD55`)
+
+**Layer 9: rewrite the 4502 bytes `$AD77-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AD77-$BF0C` into p = NOT ((R XOR D) + c), D = `$93` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer010` (`$AD78`)
+
+**Layer 10: rewrite the 4485 bytes `$AD88-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AD88-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer011` (`$AD89`)
+
+**Layer 11: rewrite the 4450 bytes `$ADAB-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ADAB-$BF0C` into p = NOT ((R XOR D) + c), D = `$B0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer012` (`$ADAC`)
+
+**Layer 12: rewrite the 4419 bytes `$ADCA-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ADCA-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer013` (`$ADCB`)
+
+**Layer 13: rewrite the 4384 bytes `$ADED-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ADED-$BF0C` into p = NOT ((R XOR D) + c), D = `$91` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer014` (`$ADEE`)
+
+**Layer 14: rewrite the 4367 bytes `$ADFE-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$ADFE-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer015` (`$ADFF`)
+
+**Layer 15: rewrite the 4315 bytes `$AE32-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AE32-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_AE16` (`$AE16`)
+
+**sub_AE16**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer016` (`$AE2C`)
+
+**Layer 16: rewrite the 4285 bytes `$AE50-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AE50-$BF0C` into p = R + c - D, D = `$D2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer017` (`$AE51`)
+
+**Layer 17: rewrite the 4254 bytes `$AE6F-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AE6F-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer018` (`$AE70`)
+
+**Layer 18: rewrite the 4219 bytes `$AE92-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AE92-$BF0C` into p = NOT ((R XOR D) + c), D = `$B3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer019` (`$AE93`)
+
+**Layer 19: rewrite the 4202 bytes `$AEA3-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AEA3-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer020` (`$AEA4`)
+
+**Layer 20: rewrite the 4167 bytes `$AEC6-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AEC6-$BF0C` into p = NOT ((R XOR D) + c), D = `$D0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer021` (`$AEC7`)
+
+**Layer 21: rewrite the 4136 bytes `$AEE5-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AEE5-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer022` (`$AEE6`)
+
+**Layer 22: rewrite the 4101 bytes `$AF08-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AF08-$BF0C` into p = NOT ((R XOR D) + c), D = `$B1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer023` (`$AF09`)
+
+**Layer 23: rewrite the 4084 bytes `$AF19-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AF19-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer024` (`$AF1A`)
+
+**Layer 24: rewrite the 4032 bytes `$AF4D-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AF4D-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_AF31` (`$AF31`)
+
+**sub_AF31**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer025` (`$AF47`)
+
+**Layer 25: rewrite the 4002 bytes `$AF6B-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AF6B-$BF0C` into p = R + c - D, D = `$F2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer026` (`$AF6C`)
+
+**Layer 26: rewrite the 3971 bytes `$AF8A-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AF8A-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer027` (`$AF8B`)
+
+**Layer 27: rewrite the 3936 bytes `$AFAD-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AFAD-$BF0C` into p = NOT ((R XOR D) + c), D = `$D3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer028` (`$AFAE`)
+
+**Layer 28: rewrite the 3919 bytes `$AFBE-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AFBE-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer029` (`$AFBF`)
+
+**Layer 29: rewrite the 3884 bytes `$AFE1-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$AFE1-$BF0C` into p = NOT ((R XOR D) + c), D = `$F0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer030` (`$AFE2`)
+
+**Layer 30: rewrite the 3853 bytes `$B000-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B000-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer031` (`$B001`)
+
+**Layer 31: rewrite the 3818 bytes `$B023-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B023-$BF0C` into p = NOT ((R XOR D) + c), D = `$D1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer032` (`$B024`)
+
+**Layer 32: rewrite the 3801 bytes `$B034-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B034-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer033` (`$B035`)
+
+**Layer 33: rewrite the 3749 bytes `$B068-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B068-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B04C` (`$B04C`)
+
+**sub_B04C**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer034` (`$B062`)
+
+**Layer 34: rewrite the 3719 bytes `$B086-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B086-$BF0C` into p = R + c - D, D = `$92` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer035` (`$B087`)
+
+**Layer 35: rewrite the 3688 bytes `$B0A5-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B0A5-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer036` (`$B0A6`)
+
+**Layer 36: rewrite the 3653 bytes `$B0C8-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B0C8-$BF0C` into p = NOT ((R XOR D) + c), D = `$F3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer037` (`$B0C9`)
+
+**Layer 37: rewrite the 3636 bytes `$B0D9-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B0D9-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer038` (`$B0DA`)
+
+**Layer 38: rewrite the 3601 bytes `$B0FC-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B0FC-$BF0C` into p = NOT ((R XOR D) + c), D = `$90` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer039` (`$B0FD`)
+
+**Layer 39: rewrite the 3570 bytes `$B11B-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B11B-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer040` (`$B11C`)
+
+**Layer 40: rewrite the 3535 bytes `$B13E-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B13E-$BF0C` into p = NOT ((R XOR D) + c), D = `$F1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer041` (`$B13F`)
+
+**Layer 41: rewrite the 3518 bytes `$B14F-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B14F-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer042` (`$B150`)
+
+**Layer 42: rewrite the 3466 bytes `$B183-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B183-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B167` (`$B167`)
+
+**sub_B167**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer043` (`$B17D`)
+
+**Layer 43: rewrite the 3436 bytes `$B1A1-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B1A1-$BF0C` into p = R + c - D, D = `$B2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer044` (`$B1A2`)
+
+**Layer 44: rewrite the 3405 bytes `$B1C0-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B1C0-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer045` (`$B1C1`)
+
+**Layer 45: rewrite the 3370 bytes `$B1E3-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B1E3-$BF0C` into p = NOT ((R XOR D) + c), D = `$93` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer046` (`$B1E4`)
+
+**Layer 46: rewrite the 3353 bytes `$B1F4-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B1F4-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer047` (`$B1F5`)
+
+**Layer 47: rewrite the 3318 bytes `$B217-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B217-$BF0C` into p = NOT ((R XOR D) + c), D = `$B0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer048` (`$B218`)
+
+**Layer 48: rewrite the 3287 bytes `$B236-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B236-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer049` (`$B237`)
+
+**Layer 49: rewrite the 3252 bytes `$B259-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B259-$BF0C` into p = NOT ((R XOR D) + c), D = `$91` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer050` (`$B25A`)
+
+**Layer 50: rewrite the 3235 bytes `$B26A-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B26A-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer051` (`$B26B`)
+
+**Layer 51: rewrite the 3183 bytes `$B29E-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B29E-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B282` (`$B282`)
+
+**sub_B282**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer052` (`$B298`)
+
+**Layer 52: rewrite the 3153 bytes `$B2BC-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B2BC-$BF0C` into p = R + c - D, D = `$D2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer053` (`$B2BD`)
+
+**Layer 53: rewrite the 3122 bytes `$B2DB-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B2DB-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer054` (`$B2DC`)
+
+**Layer 54: rewrite the 3087 bytes `$B2FE-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B2FE-$BF0C` into p = NOT ((R XOR D) + c), D = `$B3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer055` (`$B2FF`)
+
+**Layer 55: rewrite the 3070 bytes `$B30F-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B30F-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer056` (`$B310`)
+
+**Layer 56: rewrite the 3035 bytes `$B332-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B332-$BF0C` into p = NOT ((R XOR D) + c), D = `$D0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer057` (`$B333`)
+
+**Layer 57: rewrite the 3004 bytes `$B351-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B351-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer058` (`$B352`)
+
+**Layer 58: rewrite the 2969 bytes `$B374-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B374-$BF0C` into p = NOT ((R XOR D) + c), D = `$B1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer059` (`$B375`)
+
+**Layer 59: rewrite the 2952 bytes `$B385-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B385-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer060` (`$B386`)
+
+**Layer 60: rewrite the 2900 bytes `$B3B9-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B3B9-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B39D` (`$B39D`)
+
+**sub_B39D**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer061` (`$B3B3`)
+
+**Layer 61: rewrite the 2870 bytes `$B3D7-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B3D7-$BF0C` into p = R + c - D, D = `$F2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer062` (`$B3D8`)
+
+**Layer 62: rewrite the 2839 bytes `$B3F6-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B3F6-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer063` (`$B3F7`)
+
+**Layer 63: rewrite the 2804 bytes `$B419-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B419-$BF0C` into p = NOT ((R XOR D) + c), D = `$D3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer064` (`$B41A`)
+
+**Layer 64: rewrite the 2787 bytes `$B42A-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B42A-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer065` (`$B42B`)
+
+**Layer 65: rewrite the 2752 bytes `$B44D-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B44D-$BF0C` into p = NOT ((R XOR D) + c), D = `$F0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer066` (`$B44E`)
+
+**Layer 66: rewrite the 2721 bytes `$B46C-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B46C-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer067` (`$B46D`)
+
+**Layer 67: rewrite the 2686 bytes `$B48F-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B48F-$BF0C` into p = NOT ((R XOR D) + c), D = `$D1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer068` (`$B490`)
+
+**Layer 68: rewrite the 2669 bytes `$B4A0-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B4A0-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer069` (`$B4A1`)
+
+**Layer 69: rewrite the 2617 bytes `$B4D4-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B4D4-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B4B8` (`$B4B8`)
+
+**sub_B4B8**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer070` (`$B4CE`)
+
+**Layer 70: rewrite the 2587 bytes `$B4F2-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B4F2-$BF0C` into p = R + c - D, D = `$92` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer071` (`$B4F3`)
+
+**Layer 71: rewrite the 2556 bytes `$B511-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B511-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer072` (`$B512`)
+
+**Layer 72: rewrite the 2521 bytes `$B534-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B534-$BF0C` into p = NOT ((R XOR D) + c), D = `$F3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer073` (`$B535`)
+
+**Layer 73: rewrite the 2504 bytes `$B545-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B545-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer074` (`$B546`)
+
+**Layer 74: rewrite the 2469 bytes `$B568-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B568-$BF0C` into p = NOT ((R XOR D) + c), D = `$90` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer075` (`$B569`)
+
+**Layer 75: rewrite the 2438 bytes `$B587-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B587-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer076` (`$B588`)
+
+**Layer 76: rewrite the 2403 bytes `$B5AA-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B5AA-$BF0C` into p = NOT ((R XOR D) + c), D = `$F1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer077` (`$B5AB`)
+
+**Layer 77: rewrite the 2386 bytes `$B5BB-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B5BB-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer078` (`$B5BC`)
+
+**Layer 78: rewrite the 2334 bytes `$B5EF-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B5EF-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B5D3` (`$B5D3`)
+
+**sub_B5D3**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer079` (`$B5E9`)
+
+**Layer 79: rewrite the 2304 bytes `$B60D-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B60D-$BF0C` into p = R + c - D, D = `$B2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer080` (`$B60E`)
+
+**Layer 80: rewrite the 2273 bytes `$B62C-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B62C-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer081` (`$B62D`)
+
+**Layer 81: rewrite the 2238 bytes `$B64F-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B64F-$BF0C` into p = NOT ((R XOR D) + c), D = `$93` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer082` (`$B650`)
+
+**Layer 82: rewrite the 2221 bytes `$B660-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B660-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer083` (`$B661`)
+
+**Layer 83: rewrite the 2186 bytes `$B683-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B683-$BF0C` into p = NOT ((R XOR D) + c), D = `$B0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer084` (`$B684`)
+
+**Layer 84: rewrite the 2155 bytes `$B6A2-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B6A2-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer085` (`$B6A3`)
+
+**Layer 85: rewrite the 2120 bytes `$B6C5-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B6C5-$BF0C` into p = NOT ((R XOR D) + c), D = `$91` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer086` (`$B6C6`)
+
+**Layer 86: rewrite the 2103 bytes `$B6D6-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B6D6-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer087` (`$B6D7`)
+
+**Layer 87: rewrite the 2051 bytes `$B70A-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B70A-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B6EE` (`$B6EE`)
+
+**sub_B6EE**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer088` (`$B704`)
+
+**Layer 88: rewrite the 2021 bytes `$B728-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B728-$BF0C` into p = R + c - D, D = `$D2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer089` (`$B729`)
+
+**Layer 89: rewrite the 1990 bytes `$B747-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B747-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer090` (`$B748`)
+
+**Layer 90: rewrite the 1955 bytes `$B76A-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B76A-$BF0C` into p = NOT ((R XOR D) + c), D = `$B3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer091` (`$B76B`)
+
+**Layer 91: rewrite the 1938 bytes `$B77B-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B77B-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer092` (`$B77C`)
+
+**Layer 92: rewrite the 1903 bytes `$B79E-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B79E-$BF0C` into p = NOT ((R XOR D) + c), D = `$D0` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer093` (`$B79F`)
+
+**Layer 93: rewrite the 1872 bytes `$B7BD-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B7BD-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer094` (`$B7BE`)
+
+**Layer 94: rewrite the 1837 bytes `$B7E0-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B7E0-$BF0C` into p = NOT ((R XOR D) + c), D = `$B1` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer095` (`$B7E1`)
+
+**Layer 95: rewrite the 1820 bytes `$B7F1-$BF0C` (DEC (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B7F1-$BF0C` into p = c - 1 (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer096` (`$B7F2`)
+
+**Layer 96: rewrite the 1768 bytes `$B825-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B825-$BF0C` into p = ((R XOR IXh) - c) XOR IXl, IX the address after the CALL plus `$1C` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B809` (`$B809`)
+
+**sub_B809**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer097` (`$B81F`)
+
+**Layer 97: rewrite the 1738 bytes `$B843-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B843-$BF0C` into p = R + c - D, D = `$F2` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer098` (`$B844`)
+
+**Layer 98: rewrite the 1707 bytes `$B862-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B862-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer099` (`$B863`)
+
+**Layer 99: rewrite the 1672 bytes `$B885-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B885-$BF0C` into p = NOT ((R XOR D) + c), D = `$D3` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer100` (`$B886`)
+
+**Layer 100: rewrite the 1641 bytes `$B8A4-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B8A4-$BF0C` into p = R + c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer101` (`$B8A5`)
+
+**Layer 101: rewrite the 1598 bytes `$B8CF-$BF0C` (ADD A,(HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B8CF-$BF0C` into p = (R XOR D) + c - `$07`, D = `$CD` (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `Layer102` (`$B8D0`)
+
+**Layer 102: rewrite the 1557 bytes `$B8F8-$BF0C` (SUB (HL)), run into them**
+
+Shifts the 30 bytes up to its own LDDR down by one (the code already run is garbled), then rewrites each byte c of `$B8F8-$BF0C` into p = (R XOR E, E the count) - c (R the refresh register as LD A,R reads it). Known from the code and the chain run of tools/speedlock.py (all 103 layers, the tape masters back identical).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `sub_B8DF` (`$B8DF`)
+
+**sub_B8DF**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### Decryption chain and loader: loader
+
+`src/loader/loader.asm`
+
+#### `LoaderStart` (`$B8F9`)
+
+**Check for a Multiface, clear the RAM, print the notice and load the stage**
+
+Interrupts off, SP = `$BFFF`. IN A,(`$3F`) and IN A,(`$9F`) are the Multiface's page-in ports: if either pages a ROM in, the byte at `$0000` is no longer the 128K ROM's DI (`$F3`) and JP `$0000` restarts the machine. The OUTs to `$1F`, `$7B` and `$BB` page such interfaces out again. Then PrintNotice and LoaderMain. Known from the code; c1: L1 1.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `PrintNotice` (`$B935`)
+
+**Print the copyright notice: the bars and the strings of NoticeText**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 233 t-states own (0.00 %) |
+| Called from | `Layer000` |
+| Calls | `DrawBar`, `PrintString` (tail) |
+
+#### `DrawBar` (`$B96C`)
+
+**Draw a bar of A cells at the screen position BC, bright red attributes**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 4,836 t-states own (0.00 %) |
+| Called from | `PrintNotice` |
+| Calls | `CellAddress` |
+| Writes | `$4028`-`$4037` (screen); `$4128`-`$4137` (screen); `$482C`-`$4832` (screen); `$492C`-`$4932` (screen); `$5828`-`$5837` (screen); `$592C`-`$5932` (screen) |
+
+#### `PrintChar` (`$B995`)
+
+**Print the character A (from `$20`) with the ROM font at `$3D00`**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 499 calls, 69,860 t-states own (0.00 %) |
+| Called from | `PrintString` |
+| Calls | `DrawGlyph` |
+
+#### `DrawGlyph` (`$B9B1`)
+
+**Copy the 8 bytes at HL to the screen cell DE, white attribute**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 499 calls, 205,729 t-states own (0.01 %) |
+| Called from | `PrintChar` |
+| Writes | `$4008`-`$50D7` (screen); `$5100`-`$51D7` (screen); `$5200`-`$52D7` (screen); `$5300`-`$53D7` (screen); `$5400`-`$54D7` (screen); `$5500`-`$55D7` (screen); 8 more ranges |
+
+#### `CellAddress` (`$B9CD`)
+
+**DE = the screen address of row B, column C**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 501 calls, 43,086 t-states own (0.00 %) |
+| Called from | `DrawBar`, `PrintString` |
+
+#### `PrintString` (`$B9E2`)
+
+**Print the string at HL up to a zero, from row B column C, wrapping at column 32**
+
+[Animation: `PrintString` at work](img/routines/PrintString.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 6 calls, 62,777 t-states own (0.00 %) |
+| Called from | `PrintNotice` (tail) |
+| Calls | `PrintChar`, `CellAddress` |
+| Reads | `$B9FB`-`$BBF3` (`NoticeText`) |
+
+#### `WaitTask` (`$BBF4`)
+
+**The task the edge loop runs while it waits: the attribute reveal, then the countdown**
+
+LoadBlocks calls it between two edges (CALL `$BBF4` at `$BDB6`); the task's own code is reached through the pointer at `$BDB7`, which each step rewrites. Known from the code; the screen shows the attributes coming in and a countdown at the top right in c1.
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 56,865 calls, 13,209,148 t-states own (0.78 %) |
+| Called from | `LoadBlocks` |
+| Calls | `sub_BCF8` (tail) |
+| Reads | `$8000`-`$82FF` |
+| Writes | `$5800`-`$5AFF` (screen); `$BD0C`-`$BD0E` (`l_BCFC+16`); `$BDB7`-`$BDB8` (`l_BDB2+5`) |
+
+#### `l_BC5E` (`$BC5E`)
+
+**l_BC5E**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `LdEdge2` (`$BCF2`)
+
+**Two edges: sample the EAR bit until it changes, twice**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 78 calls, 1,716 t-states own (0.00 %) |
+| Called from | `LoadBlocks` |
+| Calls | `sub_BCF6` |
+
+#### `sub_BCF6` (`$BCF6`)
+
+**sub_BCF6**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 3,190 calls, 22,330 t-states own (0.00 %) |
+| Called from | `LdEdge2`, `LoadBlocks` |
+| Calls | `sub_BCF8` |
+
+#### `sub_BCF8` (`$BCF8`)
+
+**sub_BCF8**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 714,204 calls, 1,287,441,746 t-states own (75.73 %) |
+| Called from | `WaitTask` (tail), `data_BC5A` (tail), `sub_BCF6`, `LoadBlocks`, `ReadMark` |
+| Ports in | `$7FFE` |
+| Ports out | `$08FE`, `$09FE`, `$0AFE` |
+
+#### `LoadBlocks` (`$BD13`)
+
+**Read the pilot, the sync and the bytes of a block to IX, DE bytes**
+
+[Animation: `LoadBlocks` at work](img/routines/LoadBlocks.gif)
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 77,211,967 t-states own (4.54 %) |
+| Called from | `LoaderMain` |
+| Calls | `WaitTask`, `data_BC5A`, `LdEdge2`, `sub_BCF6`, `sub_BCF8`, `ReadMark`, `LoadEnd` (tail) |
+| Reads | `$BED1`-`$BEDE` (`EdgeLimits`); `$BF30`-`$BF7A` |
+| Writes | `$4000`-`$BFCF` (`Layer000`, `Layer001`, `Layer002`, `Layer003` and 137 more) |
+| Ports in | `$0AFE` |
+| Ports out | `$0AFE`, `$7FFD` |
+
+#### `StoreByte` (`$BD9C`)
+
+**Store a byte: (L XOR k) + a, k and a the operands of this code**
+
+The tape's block 17 rewrites k (`$BD9D`: `$C1`, then `$86`); a (`$BDA0`) stays `$11`. src/tape/side1.txt and tools/mktape.py use the same operands in the other direction.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `StoreLast` (`$BDD0`)
+
+**Store the last byte of a block the same way, with its own operands (block 19 rewrites them)**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `ReadMark` (`$BE47`)
+
+**Read the bits of a mark between two blocks**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 45 calls, 30,690 t-states own (0.00 %) |
+| Called from | `LoadBlocks` |
+| Calls | `sub_BCF8` |
+
+#### `TimeCheck` (`$BE5D`)
+
+**Measure the tape's edges into TimeBuffer and compare them (replaced by tape block 37)**
+
+After the stage (block 7): 255 samples of the EAR edges into TimeBuffer `$9000` (TimeSample, 18 447 T each), then TimeCompare unless the ROM byte `$006D` is `$28` (the +2A / +3 ROM 3). c1: TimeBuffer all zero at frame 2484 (the tape silent in the 2407 ms pause), passed.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `TimeSample` (`$BE78`)
+
+**Count the changes of EAR (port `$FE` bit 6) in 255 polls of 72 T into E**
+
+Both paths of a poll take 72 T (the NOP / NOP / JP of the no-change path pads it).
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 255 calls, 4,738,973 t-states own (0.28 %) |
+| Ports in | `$7FFE` |
+
+#### `TimeCompare` (`$BE94`)
+
+**S1 = samples 50-99, S2 = samples 205-254; TimeFailed = H when S2 >= `$0D00`, 1 when S2 - S1 >= 50**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 7,047 t-states own (0.00 %) |
+| Reads | `$9032`-`$9063`; `$90CD`-`$90FE` |
+
+#### `LoadEnd` (`$BEDF`)
+
+**The end of a stream of blocks: the XOR in H must be 0**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 94 t-states own (0.00 %) |
+| Called from | `LoadBlocks` (tail) |
+| Ports out | `$00FE` |
+
+#### `LoaderMain` (`$BEEA`)
+
+**Clear `$5D00-$BBF3` (the chain), load the stage at `$BF0D`, clear the screen and run it**
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 1 call, 741,151 t-states own (0.04 %) |
+| Called from | `Layer000` (tail) |
+| Calls | `LoadBlocks` |
+| Reads | `$4001`-`$5AFF` (screen); `$5D00`-`$BBF2` (`Layer000`, `Layer001`, `Layer002`, `Layer003` and 119 more); `$BED0` (`TimeFailed`) |
+| Writes | `$4000`-`$5AFF` (screen); `$5D00`-`$BBF3` (`Layer000`, `Layer001`, `Layer002`, `Layer003` and 119 more); `$BDCE`-`$BDCF` (`l_BDB2+28`) |
+
+
+## Loader stage 2 (`src/loader/stage2.json`)
+
+Battle Command, Ocean 1990: the SpeedLock loader's second stage, tape block 7, run at `$BF0D`. Its entries are
+`src/loader/<module>.asm`, written from `src/loader/stage2.ann` by `kit/mkgame.py --part src/loader/stage2.json`;
+the recordings: `work/stage1/c1l` (c1 from power-on to the game's entry at frame 23974: the load).
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`stage2`](#loader-stage-2-stage2) | `$BF0D`-`$BFCF` | 1 of 3 |
+
+### Loader stage 2: stage2
+
+`src/loader/stage2-module.asm`
+
+#### `Stage2Start` (`$BF0D`)
+
+**Load the screen and the table's blocks; then the end of the stage**
+
+AttrFlag := 0; IX = Screen, DE = `$17FF` (6144 bytes); LastStoreJump := StoreLast; CALL LoadBlocks reads the bitmap, then walks BlockTable to the end. If TimeFailed is set, WaitTask. Then the loop at `$BF2B` clears memory from `$4000` upwards for ever: block 39 replaces this end with TimeEnd (`$BF21`, src/loader/final.asm) before it is reached. c1: L1 1.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+
+## Loader block 37 (`src/loader/final-be5d.json`)
+
+Battle Command, Ocean 1990: the SpeedLock loader's last piece at `$BE5D`, the timing check, tape block 37. Its
+entries are `src/loader/<module>.asm`, written from `src/loader/final.ann` by `kit/mkgame.py --part
+src/loader/final-be5d.json`; the recordings: `work/stage1/c1l` (c1 from power-on to the game's entry at frame 23974:
+the load).
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`final`](#loader-block-37-final) | `$BE5D`-`$BECF` | 1 of 2 |
+
+### Loader block 37: final
+
+`src/loader/final.asm`
+
+#### `Unxor5B00` (`$BE5D`)
+
+**XOR the 9472 bytes of `$5B00-$7FFF` with `$AD`, then JP Bootstrap**
+
+The tape's block 23 holds the game's `$5B00-$7FFF` XORed with `$AD` on top of the loader's cipher: this loop takes it off. c1: the bank-5 bytes change in frames 23962-23969 (memory_at every quarter frame), the game is entered at frame 23974.
+
+| | |
+| --- | --- |
+| Runs (c1 from power-on to the game's entry at frame 23974: the load) | 2 calls, 530,437 t-states own (0.03 %) |
+| Reads | `$5B00`-`$7FFF` |
+| Writes | `$5B00`-`$7FFF`; `$9000`-`$90FE` |
+
+
+## Loader block 39 (`src/loader/final-bf21.json`)
+
+Battle Command, Ocean 1990: the SpeedLock loader's last piece at `$BF21`, the stage's new end, tape block 39. Its
+entries are `src/loader/<module>.asm`, written from `src/loader/final.ann` by `kit/mkgame.py --part
+src/loader/final-bf21.json`; the recordings: `work/stage1/c1l` (c1 from power-on to the game's entry at frame 23974:
+the load).
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`timeend`](#loader-block-39-timeend) | `$BF21`-`$BF2F` | 1 of 1 |
+
+### Loader block 39: timeend
+
+`src/loader/timeend.asm`
+
+#### `TimeEnd` (`$BF21`)
+
+**The stage's end: if TimeFailed, wipe the memory below `$C3EE`; else Unxor5B00**
+
+c1: L1 1, TimeFailed zero, so JP Unxor5B00.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |

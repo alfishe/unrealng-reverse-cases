@@ -26,7 +26,7 @@ NullHandler:
 ; aircraft missiles at the end of their life (`$E632`) (docs/07-objects.md 7.5,
 ; 7.14).
 ;
-; Witness: L1 1 (death).
+; Witness: L1 2 (armour, death).
 KillTree:
   CALL HitPoints
   RET NC
@@ -101,7 +101,7 @@ BridgeHit:
 ; KillMissionObject `$B67D`, the others are freed at `$B677`. Then AddKillScore
 ; `$B692`.
 ;
-; Witness: L1 153 (death, missions, play2).
+; Witness: L1 1132 (armour, death, m1complete, m4complete, missions, play2).
 HitTest:
   LD A,(IY+$03)
   AND $40
@@ -123,7 +123,7 @@ l_B677:
 ; MarkDestroyed `$B6BD`, sets the wreck bit 6 of +2 (the wreck model +8/+9 is
 ; drawn), clears the step handler bit.
 ;
-; Witness: L1 4 (death).
+; Witness: L1 9 (death, m1complete, m4complete).
 KillMissionObject:
   CALL ApiVector13
   LD A,(IX+$02)
@@ -139,7 +139,7 @@ KillMissionObject:
 ; Adds the word to `$68E2`-`$68E5` and calls the kill sound `$D873`. Death: the
 ; score goes 0, `$FA`, `$1F4` (two kills of a 250-point type).
 ;
-; Witness: L1 5 (death).
+; Witness: L1 12 (armour, death, m1complete, m4complete).
 AddKillScore:
   CALL SoundKill
   LD L,(IX+$1E)
@@ -158,7 +158,7 @@ AddKillScore:
 ;
 ; +$13 of IX -= +$14 of IY.
 ;
-; Witness: L1 7 (death).
+; Witness: L1 23 (armour, death, m1complete, m4complete).
 HitPoints:
   LD A,(IX+$13)
   SBC A,(IY+$14)
@@ -172,7 +172,7 @@ HitPoints:
 ; Record ($DBDA) + 8 * (+0): sets bit 1 (destroyed), clears bit 7 (alive), so
 ; it is never spawned again. The goal hooks read this bit.
 ;
-; Witness: L1 4 (death).
+; Witness: L1 9 (death, m1complete, m4complete).
 MarkDestroyed:
   LD DE,(MissionHeader+$0015)
   LD H,$00
@@ -192,7 +192,7 @@ MarkDestroyed:
 ; Fills the bank 3 particle list at `$CFEC` (8 records of 20 bytes): the
 ; object's position, random velocities (DebrisVelocity `$B74B` / `$B75C`).
 ;
-; Witness: L1 13 (death, play2).
+; Witness: L1 36 (armour, death, m1complete, m4complete, play2).
 Debris:
   LD A,(IX+$02)
   AND $20
@@ -254,7 +254,7 @@ l_B748:
 ;
 ; Random through `$67D0`.
 ;
-; Witness: L1 64 (death, play2).
+; Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 DebrisVelocity:
   CALL ApiVector06
   SRA A
@@ -271,7 +271,7 @@ l_B759:
 ;
 ; The entry DebrisVelocity's second call uses for the other axis.
 ;
-; Witness: L1 64 (death, play2).
+; Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 DebrisVelocityB:
   CALL ApiVector06
   SRA A

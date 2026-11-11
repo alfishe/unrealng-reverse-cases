@@ -1,7 +1,7 @@
 # The annotations of the loader's last two pieces, tape blocks 37 ($BE5D-$BECF) and 39 ($BF21-$BF2F): the source of
-# src/loader/final-be5d.asm (../../kit/mkgame.py --part src/loader/final-*.json). Format:
-# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/rec/c1), the bootstrap entered at frame 23974; the
-# blocks decoded by tools/mktape.py --decode.
+# src/loader/final.asm and timeend.asm (../../kit/mkgame.py --part src/loader/final-be5d.json and final-bf21.json,
+# each part's image takes the module inside it). Format: ../../../../docs/ann-format.md. Witness: c1
+# (work/stage1/rec/c1), the bootstrap entered at frame 23974; the blocks decoded by tools/mktape.py --decode.
 
 @equ $5B00 Bank5Code 9472 ; the game's $5B00-$7FFF, loaded XORed with $AD
 @equ $8000 Bootstrap ; the bootstrap (src/game), the last block of the tape
@@ -16,3 +16,9 @@ $BE5D c Unxor5B00 ; XOR the 9472 bytes of $5B00-$7FFF with $AD, then JP Bootstra
 $BE70 b FinalLeftover ; Bytes no code runs: a test of TimeFailed, a wipe and a copy of the bootstrap
 > Never executed in c1. They look like an earlier version of TimeEnd and of the bootstrap at $8000 (the same LDIR of $3CFF bytes from bank 1 and JP $68F4); kept as bytes of the block.
 
+@module timeend ; The stage's new end at $BF21
+@about Tape block 39 lands here, over the stage's own end; the stage runs into it when the table is done.
+
+$BF21 c TimeEnd ; The stage's end: if TimeFailed, wipe the memory below $C3EE; else Unxor5B00
+> c1: L1 1, TimeFailed zero, so JP Unxor5B00.
+$BF2B TimeWipe ; DEC HL / LD (HL),0 for ever

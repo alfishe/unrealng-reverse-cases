@@ -1,5 +1,5 @@
 ; Battle Command, Ocean 1990: the SpeedLock loader's last piece at $BF21, the stage's new end, tape block 39.
-; Written by kit/mkgame.py from src/loader/final-bf21.ann and the recordings; edit final-bf21.ann, not the .asm.
+; Written by kit/mkgame.py from src/loader/final.ann and the recordings; edit final.ann, not the .asm.
 
   DEVICE ZXSPECTRUM128
 

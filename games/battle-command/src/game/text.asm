@@ -15,8 +15,8 @@ PatchSpace:
 
 ; Border 0 (the stored colour $6CF1 cleared)
 ;
-; Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2,
-; search).
+; Witness: L1 80 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 BorderBlack:
   PUSH AF
   XOR A
@@ -40,16 +40,17 @@ l_6CF4:
 ; row
 ;
 ; HL -> B (width), C (height), E (column), A (attribute), L (row); falls into
-; AttrBoxAt. Witness: L1 350 (c1, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; AttrBoxAt. Witness: L1 383 (armour, c1, controls, death, fuel, m10,
+; m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2,
+; search).
 AttrBox:
   LD B,(HL)
   INC HL
 
 ; AttrBox with B already set (HL -> height, column, attribute, row)
 ;
-; Witness: L1 319 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 474 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 AttrBoxAt:
   LD C,(HL)
 
@@ -68,7 +69,8 @@ AttrBoxAtC:
 ; Fill C rows of B attribute bytes with A' from row L, column E ($5800 + 32L +
 ; E)
 ;
-; Witness: L1 70 (c1, menu, missions, play, play2).
+; Witness: L1 483 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 AttrBoxRC:
   LD H,$00
   LD D,H
@@ -96,7 +98,8 @@ l_6D18:
 ; Fill E pixel lines of D bytes with A from the line table $6500, column C
 ;
 ; Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1
-; 200 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+; 224 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 ScreenRowFill:
   LD B,D
   EXX
@@ -136,8 +139,9 @@ l_6D36:
 ; zone table (HL, the operand at `$6D47`, set per screen by `SetScreen`
 ; `$7060`) has 6-byte records x1, x2, y1, y2 and a routine; the first record
 ; with x1 <= X < x2 and y1 <= Y < y2 (X `$9715`, Y `$9716`) is called. A 0 byte
-; ends the table. Witness: L1 30082532 (c1, controls, death, m10, m2erbe,
-; m2ocean, menu, missions, play, play2, search).
+; ends the table. Witness: L1 36012878 (armour, c1, controls, death, fuel, m10,
+; m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2,
+; search).
 PointerZones:
   LD A,$00
   AND A
@@ -184,8 +188,9 @@ l_6D7A:
 
 ; Copy a C x B graphic from HL' to the screen at pixel line A, column BC
 ;
-; The line address table `$6500` again. Witness: L1 416 (c1, death, m10,
-; m2erbe, m2ocean, menu, missions, play, play2, search).
+; The line address table `$6500` again. Witness: L1 470 (armour, c1, controls,
+; death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions,
+; play, play2, search).
 CopyGraphic:
   LD D,$00
   LD B,D
@@ -219,8 +224,8 @@ l_6D92:
 
 ; Control code 7: switch to the small font, then CodeAt
 ;
-; Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 CodeSmallFont:
   CALL CodeSmallAt
   JR l_6DA7
@@ -238,8 +243,8 @@ l_6DA7:
 
 ; A = column in 6-pixel cells: the byte ($6DFD) and the bit shift ($6DEC)
 ;
-; Witness: L1 1423 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 1731 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 SmallFontColumn:
   ADD A,A
   LD C,A
@@ -257,8 +262,8 @@ SmallFontColumn:
 
 ; The next 6-pixel cell, a new line past column 32
 ;
-; Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 SmallFontAdvance:
   LD A,(PrintSmallChar+$0015)
   CP $20
@@ -276,8 +281,8 @@ l_6DD2:
 
 ; HL = SmallFont + 5 (A - "0")
 ;
-; Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 SmallGlyph:
   SUB $30
   LD C,A
@@ -293,8 +298,8 @@ SmallGlyph:
 ; Print a small-font character at the current cell: 5 lines, one of four shifts
 ; through $6E9F
 ;
-; Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 PrintSmallChar:
   LD HL,ShiftRoutines
   LD BC,$0000
@@ -455,8 +460,8 @@ l_6EA8:
 
 ; Control code 2: a row (CodeAt) then a column
 ;
-; Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe,
+; m4complete, menu, missions, play, play2).
 CodeAtColumn:
   CALL CodeAt
   JR l_6EA8
@@ -464,8 +469,8 @@ CodeAtColumn:
 ; Control code 1: the next byte is the character row: its line pointers and
 ; attribute address
 ;
-; Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe,
+; m4complete, menu, missions, play, play2).
 CodeAt:
   EXX
   LD A,(HL)
@@ -491,8 +496,8 @@ CodeAt:
 
 ; HL = the 8x8 glyph of character A: $F5E4 + 8 (A - $20) (bank 6)
 ;
-; Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe,
+; m4complete, menu, missions, play, play2).
 GlyphAddress:
   SUB $20
   LD L,A
@@ -519,8 +524,8 @@ NextColumn:
 ; Control code 8: print the byte at the address that follows as three decimal
 ; digits
 ;
-; Witness: L1 140 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 226 (armour, death, m10, m1complete, m4complete, menu, missions,
+; play, play2).
 CodeNumber:
   EXX
   LD E,(HL)
@@ -580,8 +585,8 @@ NumberText:
 
 ; A / B: C the quotient, A the rest; the digit stored at HL
 ;
-; Witness: L1 280 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 452 (armour, death, m10, m1complete, m4complete, menu, missions,
+; play, play2).
 DivideDigit:
   LD C,$00
   AND A
@@ -617,8 +622,8 @@ l_6F4C:
 
 ; Control code 11: the next character row, column 0
 ;
-; Witness: L1 156 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 164 (armour, c1, controls, death, fuel, m1complete, m2erbe,
+; m4complete, menu, missions, play, play2).
 CodeNewLine:
   LD HL,(PrintChar+$000B)
   LD BC,$0010
@@ -636,8 +641,8 @@ CodeNewLine:
 ; Control code 10: the small font's next line (9 pixel lines down:
 ; ScreenRowTable + $12), column = the margin
 ;
-; Witness: L1 301 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 326 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 SmallNewLine:
   LD HL,(PrintSmallChar+$0012)
   LD BC,$0012
@@ -650,8 +655,8 @@ SmallNewLine:
 
 ; Control code 9: the next byte is the left margin ($6F58)
 ;
-; Witness: L1 169 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 187 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 CodeLeftMargin:
   EXX
   LD A,(HL)
@@ -670,8 +675,8 @@ CodeMarginHere:
 
 ; Control code 13: the next byte is the attribute of the characters ($7025)
 ;
-; Witness: L1 1325 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 1463 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 CodeInk:
   EXX
   LD A,(HL)
@@ -696,8 +701,8 @@ ControlCodes:
 ; Print the string at HL: characters, control codes below $20, tokens from $82,
 ; $FF the end
 ;
-; Witness: L1 2130 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 34892 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 PrintString:
   LD A,(HL)
   INC HL
@@ -750,8 +755,8 @@ l_6FDB:
 ; In column 31 it writes no attribute and starts a new line (CodeNewLine)
 ; instead (`$700F`).
 ;
-; Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe,
+; m4complete, menu, missions, play, play2).
 PrintChar:
   CALL GlyphAddress
   LD B,$08
@@ -794,8 +799,8 @@ l_7018:
 
 ; Control code 6: the small font's line from the next byte
 ;
-; Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 CodeSmallAt:
   EXX
   LD A,(HL)

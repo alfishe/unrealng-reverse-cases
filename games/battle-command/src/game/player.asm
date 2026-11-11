@@ -25,7 +25,8 @@
 ; becomes `LD HL,($7C57)`). Then the turret and speed against the control state
 ; `$985F`.
 ;
-; Witness: L1 3503 (death, m2erbe, missions, play, play2).
+; Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlayerStep:
   JR l_A8C9
 l_A8C9:
@@ -140,7 +141,8 @@ l_A983:
 ; from the store-type table StoreTypes `$7B89` + 8 * type, word 2). Output: a
 ; projectile record, the cooldown restarted.
 ;
-; Witness: L1 3521 (death, m2erbe, missions, play, play2).
+; Witness: L1 9802 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlayerSteering:
   LD A,(StepX)
   SRA A
@@ -219,7 +221,7 @@ l_A9E9:
 ; Writes 8 to the cooldown byte `$A9FD`, the delay before the next shot. Called
 ; by the fire routines after a launch.
 ;
-; Witness: L1 69 (death, play, play2).
+; Witness: L1 146 (armour, death, m1complete, m4complete, play, play2).
 SetFireCooldown:
   LD A,$08
   LD (FireCooldown),A
@@ -240,7 +242,7 @@ FireCooldown:
 ; the DEC A becomes NOP). Returns M when empty. Then FindFreeObject `$BCD6`,
 ; the fire sound `$D898`, and prints the count at `$C527`.
 ;
-; Witness: L1 70 (death, play, play2).
+; Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 ConsumeAmmo:
   LD HL,$0000
   LD A,(HL)
@@ -265,7 +267,7 @@ ConsumeAmmo:
 ; Ammunition, then ObjectSetType with `$81`, the position and heading of the
 ; player, +31 lifetime.
 ;
-; Witness: L1 61 (death, play2).
+; Witness: L1 139 (armour, death, m1complete, m4complete, play2).
 FireCannon:
   LD A,(CurrentSlot)
   CALL SelectAmmoPointer
@@ -291,7 +293,7 @@ FireCannon:
 ; MoveObject `$BFD1`, counts +$31 down from 100, removes the shell at 0
 ; (RemoveObject `$B8B1`).
 ;
-; Witness: L1 5682 (death, play2).
+; Witness: L1 11958 (armour, death, m1complete, m4complete, play2).
 CannonShellStep:
   LD A,(IX+$31)
   DEC A
@@ -384,7 +386,7 @@ l_B5F5:
 ;
 ; Debris `$B6D1`, the sound `$D86B`, then RemoveObject.
 ;
-; Witness: L1 8 (death, play2).
+; Witness: L1 24 (armour, death, m1complete, m4complete, play2).
 Explode:
   CALL ApiVector11
   CALL SoundExplosion
@@ -923,7 +925,8 @@ RecallDragonfly:
 ; `$B9F4` = `$75F0`. Also called when a mission starts (15 runs over five
 ; recordings).
 ;
-; Witness: L1 15 (death, m2erbe, missions, play, play2).
+; Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CameraToPlayer:
   LD HL,ObjectTable
   LD (BearingTable+$0016),HL
@@ -1125,7 +1128,7 @@ MissileTurn:
 ;
 ; When the slot shown (`$D114`) is the current `$C53C`, falls into PrintAmmoAt.
 ;
-; Witness: L1 86 (death, play, play2).
+; Witness: L1 169 (armour, death, m1complete, m4complete, play, play2).
 PrintAmmo:
   LD A,(SlotShown)
   LD C,A
@@ -1137,7 +1140,7 @@ PrintAmmo:
 ;
 ; Converts the rounds at `$C527` and prints at `$FDC0`.
 ;
-; Witness: L1 87 (death, play, play2).
+; Witness: L1 170 (armour, death, m1complete, m4complete, play, play2).
 PrintAmmoAt:
   LD HL,MissionHeader+$21FB
   JP PrintString
@@ -1147,7 +1150,7 @@ PrintAmmoAt:
 ; Clears `$BA13` and `$C4DC` (the IR view and the sight overlay off) when a
 ; weapon is deselected.
 ;
-; Witness: L1 14 (death, play, play2).
+; Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 PrintSlotStatus:
   XOR A
   LD (SetCamera+$001D),A
@@ -1176,7 +1179,7 @@ CurrentSlot:
 ; J, fire, then the select call, word 3); a slot whose status `$68C9` + 6n is 0
 ; prints "DAMAGED IN COMBAT" (`$C618`).
 ;
-; Witness: L1 14 (death, play, play2).
+; Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 SelectWeapon:
   PUSH AF
   CALL SoundSelect
@@ -1313,7 +1316,8 @@ DamagedText:
 ; When `$C529` is set: InvertPanelB with `$6500`, then the slot's state at
 ; (`$0000` patched) chooses `$C605` (damaged) or WeaponSelectText.
 ;
-; Witness: L1 26 (death, m2erbe, missions, play, play2).
+; Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RefreshWeaponPanel:
   LD A,(WeaponVars+$0002)
   AND A
@@ -1337,7 +1341,7 @@ RefreshWeaponPanel:
 ; JP `$7047`. The Infinite Damage POKEs write OR (HL) at `$CAC8`, `$CAE8`,
 ; `$CB18`.
 ;
-; Witness: L1 41 (death, play2).
+; Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 PlayerHit:
   LD A,(IY+$02)
   AND $40
@@ -1442,7 +1446,7 @@ l_CB46:
 ; |x| <= `$60` is side 2 (the front), else positive x side 1 and negative side
 ; 3; there is no rear side (play2: 25 runs).
 ;
-; Witness: L1 25 (play2).
+; Witness: L1 86 (c1, m1complete, m4complete, play2).
 HitSide:
   LD A,H
   LD C,A
@@ -1572,7 +1576,7 @@ PushBackWork:
 ;
 ; +7 >>= 1 (SRA); when it reaches -1 or 0 ResetPlayerHandler (play2: 23 runs).
 ;
-; Witness: L1 23 (play2).
+; Witness: L1 43 (c1, m1complete, m4complete, play2).
 BounceDecay:
   LD A,(IX+$07)
   SRA A
@@ -1588,7 +1592,8 @@ BounceDecay:
 ;
 ; +$18/+$19 = `$A8C7`; also called when a mission starts (19 runs).
 ;
-; Witness: L1 19 (death, m2erbe, m2ocean, missions, play, play2).
+; Witness: L1 28 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean,
+; m4complete, missions, play, play2).
 ResetPlayerHandler:
   LD (IX+$18),$C7
   LD (IX+$19),$A8
@@ -1605,7 +1610,7 @@ HeadingAwayCode:
 ;
 ; +$18/+$19 = BounceDecay (play2: 4 runs).
 ;
-; Witness: L1 4 (play2).
+; Witness: L1 11 (c1, m1complete, m4complete, play2).
 SetBounce:
   LD (IX+$18),$09
   LD (IX+$19),$CC
@@ -2428,7 +2433,7 @@ SpectreDrift:
 ;
 ; A = the slot; `$C534` + 2A to `$B551` (78 runs).
 ;
-; Witness: L1 78 (death, play, play2).
+; Witness: L1 156 (armour, death, m1complete, m4complete, play, play2).
 SelectAmmoPointer:
   ADD A,A
   LD HL,AmmoPointers
@@ -2618,7 +2623,8 @@ l_D4B0:
 ; (`$D51F`); beyond the extent + 4, `$7BF9` = `$CCD8` "PLAYER DESERTION" and
 ; `$7047`.
 ;
-; Witness: L1 3096 (death, m2erbe, missions, play, play2).
+; Witness: L1 9082 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BoundaryCheck:
   NOP
   LD A,(l_BBFB+$0017)
@@ -2651,7 +2657,8 @@ l_D4DD:
 ;
 ; `$7578` = A unless already equal.
 ;
-; Witness: L1 3053 (death, m2erbe, missions, play, play2).
+; Witness: L1 9039 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SetAwolState:
   LD HL,AwolState
   CP (HL)

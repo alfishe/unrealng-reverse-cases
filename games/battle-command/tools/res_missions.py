@@ -120,7 +120,7 @@ def to_text(d, title=''):
         out.append('bytes $%04X %s' % (a + i, ' '.join('%02X' % x for x in r[i:min(i + 16, st - a)])))
     out.append('')
     out.append('# the 3D models from $%04X to the end (tools/models3d.py, text_lines: one instruction a line)' % st)
-    out += ['model ' + x for x in models3d.text_lines(d, ORG, st, ORG + len(d), starts)]
+    out += ['model ' + x for x in models3d.text_lines(d, ORG, st, ORG + len(d), starts, models3d.symbols().word)]
     return '\n'.join(out) + '\n'
 
 

@@ -3,7 +3,7 @@
   "image_cmd": ["sh", "-c", "test -f work/parts/final-bf21.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"],
   "image": "work/parts/final-bf21.bin",
   "org": "BF21",
-  "ann": "src/loader/final-bf21.ann",
+  "ann": "src/loader/final.ann",
   "top": "final-bf21",
   "bin": "final-bf21.bin",
   "dest": "src/loader",
@@ -13,5 +13,7 @@
   "header": ["; Battle Command, Ocean 1990: the SpeedLock loader's last piece at $BF21, the stage's new end, tape block 39."],
   "l1": [{"path": "work/stage1/rec/c1/l1.json", "lo": "BF21", "hi": "BF30", "reads": false}],
   "data_entries": "stop",
-  "work": "work/stage2/mkfinal-bf21"
+  "work": "work/stage2/mkfinal-bf21",
+  "ref_builds": [["stage1/c1l", "c1 from power-on to the game's entry at frame 23974: the load"]],
+  "other_builds": []
 }

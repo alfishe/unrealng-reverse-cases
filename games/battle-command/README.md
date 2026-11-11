@@ -1,6 +1,6 @@
 # Battle Command (Ocean Software, 1990)
 
-State: docs written, in review (12 documents, 62 PNG figures, 100 mermaid diagrams, 30 animations, 15 WAVs and the title tune as MP3; counted on 2026-11-11).
+State: complete 2026-11-11 (12 documents, 62 PNG figures, 100 mermaid diagrams, 30 animations, 15 WAVs and the title tune as MP3; counted on 2026-11-11).
 
 | | |
 | --- | --- |

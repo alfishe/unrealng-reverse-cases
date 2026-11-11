@@ -304,9 +304,11 @@ def model_export(name, data):
     import models3d
     org = MODEL_STARTS[name][0]
     out = ['org $%04X' % org,
-           '# %s: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as $XXXX;'
-           % name, '# after ";" the decoded instruction (ignored when built)']
-    out += models3d.text_lines(data, org, org, org + len(data), MODEL_STARTS[name])
+           '# %s: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as labels'
+           % name, '# (Label, Label+N: kit/resinc.py Symbols) or $XXXX; after ";" the decoded instruction (ignored when '
+           'built)']
+    bank = int(re.match(r'bank(\d)', name).group(1))
+    out += models3d.text_lines(data, org, org, org + len(data), MODEL_STARTS[name], models3d.symbols(bank).word)
     return {name + '.mdl': ('\n'.join(out) + '\n').encode()}
 
 

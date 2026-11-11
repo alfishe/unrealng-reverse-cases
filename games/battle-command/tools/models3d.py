@@ -38,7 +38,25 @@ BoxRect16 `$AAF5` the same with r x 64 (Sine16 is 8192 sin, MulWordByte divides 
 +h. The parts ordered by a face are all drawn, back to front by a fixed view; the sizes are model units.
 """
 import math
+import os
 import sys
+
+CASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_SYMBOLS = {}
+
+
+def symbols(bank=None):
+    """kit/resinc.py Symbols of the case for the words of a model: the game's names below `$C000` (the resident
+    pages), and with bank N bank N's names at `$C000` (a library inside src/bankN); the missions' blocks (bank 0)
+    take the game's below `$C000` only: the block's own addresses stay numbers. bank 'all': every name, for reading"""
+    if bank not in _SYMBOLS:
+        sys.path.insert(0, os.path.join(CASE, '..', '..', 'kit'))
+        import resinc
+        sym = resinc.Symbols(CASE).add('src/game/game.ann', hi=0xC000)
+        for n in ((3, 4, 6, 7) if bank == 'all' else (bank,) if bank is not None else ()):
+            sym.add('src/bank%d/bank%d.ann' % (n, n), lo=0xC000)
+        _SYMBOLS[bank] = sym
+    return _SYMBOLS[bank]
 
 OPS = {0: 'native', 1: 'verts', 2: 'project', 3: 'lines', 4: 'lines_if_faces', 5: 'faces_test',
        6: 'jump_if_visible', 7: 'jump_if_visible2', 8: 'branch_visible', 9: 'return', 10: 'order_by_face',
@@ -339,11 +357,12 @@ NAMES = dict(OPS); NAMES[255] = 'end'
 CODES = {v: k for k, v in NAMES.items()}
 
 
-def _encode(ops, words):
+def _encode(ops, words, label=None):
     out, i = [], 0
     while i < len(ops):
         if i in words:
-            out.append('$%04X' % (ops[i] | ops[i + 1] << 8))
+            w = ops[i] | ops[i + 1] << 8
+            out.append(label(w) if label else '$%04X' % w)
             i += 2
         else:
             out.append('%02X' % ops[i])
@@ -351,8 +370,9 @@ def _encode(ops, words):
     return ' '.join(out)
 
 
-def text_lines(data, org, start, end, starts=()):
-    """the lines of start-end (end exclusive); starts: addresses that must begin a line"""
+def text_lines(data, org, start, end, starts=(), label=None):
+    """the lines of start-end (end exclusive); starts: addresses that must begin a line; label(word): a word's text
+    (a Symbols' word: `Label`, `Label+N`, else `$XXXX`; default `$XXXX`)"""
     s, a, out = Script(data, org), start, []
     starts = set(starts)
     marks = set(starts)
@@ -380,7 +400,7 @@ def text_lines(data, org, start, end, starts=()):
             continue
         body = data[a - org + 1:a - org + n]
         words = set(WORD_AT.get(op, []))
-        out.append('$%04X %s %s; %s%s' % (a, NAMES[op], (_encode(body, words) + ' ') if body else '', t,
+        out.append('$%04X %s %s; %s%s' % (a, NAMES[op], (_encode(body, words, label) + ' ') if body else '', t,
                                          ', model' if a in marks else ''))
         a += n
         if op == 21:
@@ -389,8 +409,9 @@ def text_lines(data, org, start, end, starts=()):
     return out
 
 
-def assemble(lines):
-    """the bytes of text_lines' lines"""
+def assemble(lines, value=None):
+    """the bytes of text_lines' lines: a word written `$XXXX` or as a label (`Label`, `Label+N`), read by value(text)
+    (default: every name of the case, symbols('all'))"""
     out = bytearray()
     for line in lines:
         line = line.split(';')[0].split()
@@ -402,11 +423,11 @@ def assemble(lines):
         if name != 'db':
             out.append(CODES[name])
         for t in ops:
-            if t.startswith('$'):
-                v = int(t[1:], 16)
-                out += bytes([v & 255, v >> 8])
-            else:
+            if len(t) == 2 and all(c in '0123456789ABCDEFabcdef' for c in t):
                 out.append(int(t, 16))
+            else:
+                v = int(t[1:], 16) if t.startswith('$') else (value or symbols('all').value)(t)
+                out += bytes([v & 255, v >> 8])
     return bytes(out)
 
 

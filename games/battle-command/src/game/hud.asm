@@ -60,7 +60,8 @@ l_7321:
 ; Bank 6 UpdatePanelBars $D58C (heading strip, bearing, speed, fuel), then
 ; UpdateAmmoBars
 ;
-; Witness: L1 3601 (death, m2erbe, missions, play, play2).
+; Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 UpdateSlotBars:
   CALL SaveBank
   CALL PageBank6
@@ -71,7 +72,8 @@ UpdateSlotBars:
 ; For the four slots of $8368: a bar for each ammunition count that changed
 ; (records $68C9)
 ;
-; Witness: L1 3628 (death, m2erbe, missions, play, play2).
+; Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 UpdateAmmoBars:
   LD A,$04
   LD (l_737A+$0001),A
@@ -187,7 +189,8 @@ l_73A7:
 
 ; The icons of the four loaded slots ($8368 records, $68CD) with their frames
 ;
-; Witness: L1 27 (death, m2erbe, missions, play, play2).
+; Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSlotIcons:
   LD HL,SlotGauges+$0004
   EXX
@@ -227,7 +230,8 @@ l_73DB:
 ; Draw weapon icon A (1-19) from the icon table $75CA through CopyGraphic, 3 x
 ; 24
 ;
-; Witness: L1 117 (death, m2erbe, missions, play, play2).
+; Witness: L1 133 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawIcon:
   DEC A
   ADD A,A
@@ -283,7 +287,8 @@ IconFrame:
 
 ; A bar of A pixels on line E, $7E pattern, 32 wide
 ;
-; Witness: L1 3794 (death, missions, play, play2).
+; Witness: L1 10058 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawBarWide:
   EX AF,AF'
   XOR A
@@ -298,7 +303,8 @@ DrawBarWide:
 
 ; A bar of A pixels on line E, $F8 pattern, 24 wide
 ;
-; Witness: L1 5389 (death, m2erbe, missions, play, play2).
+; Witness: L1 11561 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawBar:
   EX AF,AF'
   XOR A
@@ -312,7 +318,8 @@ DrawBar:
 
 ; The bar's pixel lines through the line table $6500, $AA / $55 dither
 ;
-; Witness: L1 9183 (death, m2erbe, missions, play, play2).
+; Witness: L1 21619 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BarLines:
   EX AF,AF'
   LD D,$00
@@ -375,8 +382,9 @@ l_749C:
 ;
 ; The panels and frames of the views are bank 7's pictures (DE = `$DD75` play,
 ; `$F9CD` map, `$D325` status, `$C000` Dragonfly). Clears `$83BF` (the play
-; flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 122
-; (c1, death, m2erbe, menu, missions, play, play2, search).
+; flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 142
+; (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2, search).
 DrawBank7Picture:
   DI
   EXX
@@ -396,20 +404,23 @@ DrawBank7Picture:
 
 ; A = $FF then Bank3Fill
 ;
-; Witness: L1 15 (menu, missions, search).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 Bank3FillFF:
   LD A,$FF
   JR Bank3Fill
 
 ; A = $5F then Bank3Fill
 ;
-; Witness: L1 15 (menu, missions, search).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 Bank3Fill5F:
   LD A,$5F
 
 ; Save the bank, call bank 3 $CFCD with A, restore
 ;
-; Witness: L1 30 (menu, missions, search).
+; Witness: L1 38 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 Bank3Fill:
   PUSH AF
   CALL SaveBank
@@ -512,7 +523,7 @@ AwolState:
 ; Screen 1 unless the current mission ($757D) is $FF or not completed
 ;
 ; `LD A,n`: n (`$757D`) is the mission the tape gave (`$8528`: the header's
-; digit - "1"). Witness: L1 10 (play).
+; digit - "1"). Witness: L1 10 (menu).
 ScreenOfMission:
   LD A,$00
   CP $FF
@@ -539,8 +550,9 @@ MissionLoaded:
 ; If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1`
 ; are ANDed: if any is 0 the mission is refused (`RET Z` back into the
 ; catalogue's zone loop; recording m10: the catalogue stays on screen,
-; 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe,
-; m2ocean, missions).
+; 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 22 (armour, c1,
+; death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play,
+; play2).
 LoadMissionIfAllowed:
   CALL MissionDone
   RET NZ
@@ -565,7 +577,8 @@ l_75AF:
 
 ; A = the completion flag of the current mission ($6799 + n): NZ when done
 ;
-; Witness: L1 28 (m10, m2erbe, m2ocean, missions, play).
+; Witness: L1 32 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean,
+; m4complete, menu, missions, play, play2).
 MissionDone:
   LD HL,MissionsDone
   LD A,(ScreenOfMission+$0001)

@@ -1,8 +1,9 @@
 # Resources
 
-Every resource out of the code, in an editable format; `tools/res_formats.py build` turns them back into the bytes
-the sources INCBIN (and the tapes' blocks), `tools/res_formats.py check` proves each against the original bytes.
-`kit/mkgame.py --install` writes them through `tools/res_formats.py install` (the `res_install` key of each json).
+Every resource out of the code, in an editable format; `tools/res_formats.py build` turns them back into the bytes the
+sources INCBIN (and the tapes' blocks), `tools/res_formats.py check` proves each against the original bytes.
+`kit/mkgame.py --install` writes them through `tools/res_formats.py install` (a json's `res_install` key, else
+case.json's, else this tool by default).
 
 | Folder | What | Format | Entries |
 | --- | --- | --- | --- |

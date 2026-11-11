@@ -18,7 +18,8 @@
 ; screen at the radar window `$5036`. Called by DrawRadar `$C05E` for each blip
 ; in the list `$6768`.
 ;
-; Witness: L1 14562 (death, m2erbe, missions, play, play2).
+; Witness: L1 45560 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlotRadarPixel:
   LD A,L
   AND $07
@@ -91,7 +92,8 @@ ShellTemplate80:
 ; dx, dy of the two records, then the octant and the ratio (BearingOctant
 ; `$B916`, BearingRatio `$B94A`, the table `$B9DE`). Output A = 0-255.
 ;
-; Witness: L1 7491 (death, m2erbe, missions, play, play2).
+; Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BearingTo:
   LD L,(IY+$26)
   LD H,(IY+$27)
@@ -144,7 +146,7 @@ InvertPanelA:
 ; HL = `$6550` (or the caller's HL), then InvertPanelRows. RefreshWeaponPanel
 ; `$C632` calls it with `$6500`.
 ;
-; Witness: L1 26 (death, play, play2).
+; Witness: L1 29 (armour, death, m1complete, m4complete, play, play2).
 InvertPanelB:
   EX AF,AF'
   LD A,$08
@@ -156,7 +158,8 @@ InvertPanelB:
 ; Each table entry is a screen address; the row's bytes are complemented (a
 ; flash of the panel when a weapon is selected or hit).
 ;
-; Witness: L1 38 (death, m2erbe, missions, play, play2).
+; Witness: L1 41 (armour, death, m1complete, m2erbe, m4complete, missions,
+; play, play2).
 InvertPanelRows:
   LD C,A
   LD B,$00
@@ -206,7 +209,7 @@ l_B7CD:
 ; `$68E6`, restores the view values. In every recording the flag is 0 and only
 ; the `JP` back runs.
 ;
-; Witness: L1 4 (play2).
+; Witness: L1 237 (armour, m1complete, play2).
 ScriptDrawCarried:
   POP DE
   LD (ScriptDrawCarriedReturn+$0001),DE
@@ -243,7 +246,8 @@ ScriptDrawCarriedReturn:
 ; Input IX = the record. +2 bit 6 picks the wreck model +8/+9 instead of
 ; +$1C/+$1D; falls into DrawModel `$B82A`.
 ;
-; Witness: L1 9194 (death, m2erbe, missions, play, play2).
+; Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawObject:
   PUSH DE
   POP IX
@@ -253,7 +257,8 @@ DrawObject:
 ; Loads the view x / depth (+$2B..+$2E) into `$9A8E` / `$9AB3`, the night-sight
 ; mode `$757A`, and calls the 3D engine (bank 2 `$990F`).
 ;
-; Witness: L1 9194 (death, m2erbe, missions, play, play2).
+; Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawModel:
   LD A,(AwolState+$0002)
   PUSH AF
@@ -324,7 +329,7 @@ MissileHit:
 ; Input IX. UnregisterCollision `$CA3B`, +2 = 0 (the slot is free for
 ; FindFreeObject).
 ;
-; Witness: L1 61 (death, play, play2).
+; Witness: L1 134 (armour, death, m1complete, m4complete, play, play2).
 RemoveObject:
   CALL ApiVector05
   LD (IX+$02),$00
@@ -336,7 +341,8 @@ RemoveObject:
 ;
 ; dx, dy signs give 8 octants; then BearingRatio.
 ;
-; Witness: L1 7491 (death, m2erbe, missions, play, play2).
+; Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BearingOctant:
   BIT 7,H
   JR NZ,l_B92F
@@ -370,7 +376,8 @@ l_B93C:
 ;
 ; Divides the smaller |delta| by the larger to an index of BearingTable.
 ;
-; Witness: L1 7491 (death, m2erbe, missions, play, play2).
+; Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BearingRatio:
   PUSH HL
   AND A
@@ -388,7 +395,8 @@ BearingRatio:
 ;
 ; Adds the octant base to the table angle.
 ;
-; Witness: L1 7491 (death, m2erbe, missions, play, play2).
+; Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 BearingLookup:
   CALL Divide
   JR C,l_B967
@@ -507,7 +515,8 @@ ActivateIndexSave:
 ; (CopyHeading `$BCBA`, CopyPosition `$BCC6`), and bit 6. A spawned one out of
 ; range is freed (bit 6 cleared; the slot found by +0 = the index in `$BC33`).
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ActivateMissionObjects:
   LD HL,SetHeightAndMove
   LD DE,$0008
@@ -640,7 +649,8 @@ l_BCA6:
 ;
 ; The list record's +2 to the object's +$22.
 ;
-; Witness: L1 183 (death, m2erbe, missions, play, play2).
+; Witness: L1 365 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CopyHeading:
   XOR A
   LD (DE),A
@@ -658,7 +668,8 @@ CopyHeading:
 ; +4/+5 and +6/+7 of the list record through WordToWorld `$BD83` to +$23-+$25
 ; and +$26-+$28.
 ;
-; Witness: L1 366 (death, m2erbe, missions, play, play2).
+; Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CopyPosition:
   EX DE,HL
   LD C,(HL)
@@ -679,7 +690,7 @@ CopyPosition:
 ;
 ; D = `$17`, falls into FindFreeObject.
 ;
-; Witness: L1 70 (death, play, play2).
+; Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 FindProjectileSlot:
   LD D,$17
   JR FindFreeObjectD
@@ -688,7 +699,8 @@ FindProjectileSlot:
 ;
 ; D = `$15`; carry set and IX = the record when found.
 ;
-; Witness: L1 219 (death, m2erbe, missions, play, play2).
+; Witness: L1 1410 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FindFreeObject:
   LD D,$15
 
@@ -696,7 +708,8 @@ FindFreeObject:
 ;
 ; Stores 23 - E in `$C95C` and the record in `$C973`.
 ;
-; Witness: L1 289 (death, m2erbe, missions, play, play2).
+; Witness: L1 1558 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FindFreeObjectD:
   LD E,$01
   LD HL,PlayerY+$0018
@@ -717,7 +730,8 @@ l_BCE4:
 ;
 ; Steps 60 bytes per record until +2 = 0 or the limit.
 ;
-; Witness: L1 415 (death, m2erbe, missions, play, play2).
+; Witness: L1 1146 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FindFreeLoop:
   LD A,$17
   SUB E
@@ -735,7 +749,8 @@ FindFreeLoop:
 ; taken; an evicted shell is unregistered (`$67CD`) and its +2 cleared. Then
 ; the list index to +0. NC when none.
 ;
-; Witness: L1 185 (death, m2erbe, missions, play, play2).
+; Witness: L1 543 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 FindSlot:
   LD D,$15
   LD E,$01
@@ -792,7 +807,8 @@ l_BD1C:
 ; the mission's template table (`$DBD7`) + 30 * A. Stores the type at +1,
 ; copies the 30 template bytes to +2..+$1F and the serial to +$20.
 ;
-; Witness: L1 431 (death, m2erbe, missions, play, play2).
+; Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ObjectSetType:
   LD (DE),A
   INC DE
@@ -827,7 +843,8 @@ l_BD5C:
 ; (trees), 9 for every other type (type 1 trees included). Called for each list
 ; record (70 373 runs).
 ;
-; Witness: L1 70373 (death, m2erbe, missions, play, play2).
+; Witness: L1 198222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 InRange:
   AND A
   SBC A,C
@@ -856,7 +873,8 @@ l_BD7D:
 ;
 ; HL << 2 with the carry into the third byte.
 ;
-; Witness: L1 366 (death, m2erbe, missions, play, play2).
+; Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 WordToWorld:
   LD A,B
   AND A
@@ -879,7 +897,8 @@ l_BD8B:
 ; depth cull, OnScreen `$BEA2` with the radius, then DepthInsert `$BEDE` into
 ; the tree at `$6800`; a blip for the radar (RadarAddBlip `$C0B2`).
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TransformObjects:
   XOR A
   LD (ScriptDrawCarried+$0006),A
@@ -1013,7 +1032,8 @@ l_BE94:
 ;
 ; View x (+$2B/+$2C) against the depth with the radius +$16/+$17.
 ;
-; Witness: L1 32872 (death, m2erbe, missions, play, play2).
+; Witness: L1 103866 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 OnScreen:
   LD B,H
   LD C,L
@@ -1024,7 +1044,8 @@ OnScreen:
 ;
 ; The entry for the x test.
 ;
-; Witness: L1 32885 (death, m2erbe, missions, play, play2).
+; Witness: L1 103879 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 OnScreenX:
   LD L,(IX+$16)
   LD H,(IX+$17)
@@ -1054,7 +1075,8 @@ l_BED0:
 ;
 ; Resets the node pointer and the root at `$6800`.
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ClearDepthTree:
   LD HL,PlayWork
   LD (DepthTreeVars+$0002),HL
@@ -1069,7 +1091,8 @@ ClearDepthTree:
 ; Walks from the root, left when nearer, right when farther, and links a new
 ; 6-byte node.
 ;
-; Witness: L1 9829 (death, m2erbe, missions, play, play2).
+; Witness: L1 29277 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DepthInsert:
   LD A,(PolyWorkSpare+$0005)
   EX AF,AF'
@@ -1133,7 +1156,8 @@ DepthTreeVars:
 ;
 ; Calls DrawEntry `$BF83` per node.
 ;
-; Witness: L1 3507 (death, m2erbe, missions, play, play2).
+; Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawObjectsInOrder:
   LD A,(PolyWorkSpare+$0005)
   AND A
@@ -1174,7 +1198,8 @@ l_BF7C:
 ; A pointer at or above `$CF00` is a particle of the bank 3 list, drawn as a
 ; dot.
 ;
-; Witness: L1 9715 (death, m2erbe, missions, play, play2).
+; Witness: L1 29160 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawEntry:
   LD E,(HL)
   INC HL
@@ -1216,7 +1241,8 @@ DrawEntry:
 ; X += speed * sin(heading), Y += speed * cos(heading), through `$A8B2` /
 ; `$A7F2`.
 ;
-; Witness: L1 14450 (death, m2erbe, missions, play, play2).
+; Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 MoveObject:
   LD L,(IX+$21)
   LD H,(IX+$22)
@@ -1263,7 +1289,8 @@ l_C011:
 ; 24 records from `$75F0`: when +2 bit 7 and +3 bit 0 are set, CALL (+$18) with
 ; IX = the record.
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RunObjectHandlers:
   LD IX,ObjectTable
   LD A,$17
@@ -1296,7 +1323,8 @@ l_C04F:
 ; ClearRadar `$C094`, then RadarPlotList `$C079` (3483 runs, every 3D frame but
 ; the first).
 ;
-; Witness: L1 3483 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawRadar:
   NOP
   CALL ClearRadar
@@ -1318,7 +1346,8 @@ l_C071:
 ; Resets the list pointer `$7BFB`, sets `$AA1A`, plots each pair at `$6768`
 ; through PlotRadarPixel `$A9FE`.
 ;
-; Witness: L1 3483 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RadarPlotList:
   LD HL,(FailReason+$0002)
   XOR A
@@ -1345,7 +1374,8 @@ l_C085:
 ; SP = the radar's screen rows, PUSH of zeros (32 rows, 5 bytes each at
 ; `$5036`).
 ;
-; Witness: L1 3483 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ClearRadar:
   DI
   LD (l_C0A5+$0009),SP
@@ -1371,7 +1401,8 @@ l_C0A5:
 ; Input: the object's offset from the player. RadarRange `$C104`, RadarScale
 ; `$C0D2`, RadarStoreBlip `$C0F7`.
 ;
-; Witness: L1 27405 (death, m2erbe, missions, play, play2).
+; Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RadarAddBlip:
   PUSH HL
   EXX
@@ -1398,7 +1429,8 @@ l_C0C6:
 ;
 ; SRA H / RR L 8 times on each offset.
 ;
-; Witness: L1 27405 (death, m2erbe, missions, play, play2).
+; Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RadarScale:
   CALL RadarRange
   JR C,l_C101
@@ -1427,7 +1459,8 @@ l_C0DA:
 ;
 ; Writes y, x to (`$7BFB`) and advances it.
 ;
-; Witness: L1 14952 (death, m2erbe, missions, play, play2).
+; Witness: L1 45950 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RadarStoreBlip:
   LD HL,(FailReason+$0002)
   LD (HL),D
@@ -1445,7 +1478,8 @@ l_C101:
 ;
 ; Carry set when the offset is out of the radar (|d| beyond the window).
 ;
-; Witness: L1 48723 (death, m2erbe, missions, play, play2).
+; Witness: L1 158626 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RadarRange:
   LD A,H
   AND A
@@ -1469,7 +1503,8 @@ l_C111:
 ; the heading as it is, else +-4. Used by the Helicarrier (HelicarrierWait) and
 ; the missiles (545 runs).
 ;
-; Witness: L1 545 (death, missions, play, play2).
+; Witness: L1 2841 (armour, c1, death, fuel, m1complete, m4complete, missions,
+; play, play2).
 TurnToward:
   CALL ApiVector01
   LD C,(IX+$22)
@@ -1529,7 +1564,8 @@ SetHeightAndMove:
 ; The timer `$C4CE` counts down; at 0 ResetSightTimer. While `$C4DC` is set the
 ; 3D view gets the sight mask (3507 runs, every 3D frame).
 ;
-; Witness: L1 3507 (death, m2erbe, missions, play, play2).
+; Witness: L1 9793 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSightOverlay:
   LD A,$00
   AND A
@@ -1645,7 +1681,8 @@ CollisionTables:
 ; Immunity POKE writes 58 at `$C875` (`JP M,$C8AF` becomes `LD A,(nn)`, the
 ; overlap branch is gone).
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CollisionPass:
   LD A,$14
   LD (l_C7FB+$0001),A
@@ -1868,7 +1905,8 @@ l_C93F:
 ;
 ; Input B = the record number. Output HL = the record, A = +2.
 ;
-; Witness: L1 15176 (death, m2erbe, missions, play, play2).
+; Witness: L1 54430 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RecordByIndex:
   LD HL,ObjectTable+$0002
   LD DE,$003C
@@ -1890,7 +1928,8 @@ l_C952:
 ; Takes the first free entry of the slot list `$C775`, stores it in +$3B, sets
 ; the pair timers of the new row in `$C648`.
 ;
-; Witness: L1 431 (death, m2erbe, missions, play, play2).
+; Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RegisterCollision:
   PUSH AF
   PUSH BC
@@ -1954,7 +1993,8 @@ l_C9A1:
 ; Inside CollisionPass: both +2 bytes decide whether the pair is tested (radar
 ; bit 2, bit 4 no-collide, wrecks bits 6 / 7).
 ;
-; Witness: L1 4065 (death, m2erbe, missions, play, play2).
+; Witness: L1 12800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CollisionFilter:
   BIT 2,A
   JR Z,l_C99B
@@ -2065,7 +2105,8 @@ l_CA32:
 ;
 ; Returns the slot of +$3B to the list and marks the row's timers `$FF`.
 ;
-; Witness: L1 230 (death, m2erbe, missions, play, play2).
+; Witness: L1 951 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 UnregisterCollision:
   LD A,(IX+$3B)
   LD E,A

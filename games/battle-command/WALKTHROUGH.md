@@ -192,6 +192,15 @@ python3 ../../kit/rs.py open --work work/stage1/c1g --ttd work/stage1/c1/session
 python3 ../../kit/rs.py build --work work/stage1/c1g --from-frame 23974
 python3 ../../kit/rs.py stop --work work/stage1/c1g
 ```
+
+The loader parts of docs 11 and 12 (the chain and the final pieces) read `work/stage1/c1l`, the other window of c1:
+frames 0-23974, from power-on to the game's entry (`work/kitfix/c1l.sh`):
+
+```sh
+python3 ../../kit/rs.py open --work work/stage1/c1l --ttd work/stage1/c1/session.ttd --model 128K --ranges 4000-FFFF
+python3 ../../kit/rs.py build --work work/stage1/c1l --to-frame 23974
+python3 ../../kit/rs.py stop --work work/stage1/c1l
+```
  The completion recordings steer in a closed loop on the
 player record (work/stage2/complete-NOTES.md); their Immunity POKE is written back to `$FA` before any shooting and
 before the Helicarrier.

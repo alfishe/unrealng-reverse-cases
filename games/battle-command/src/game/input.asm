@@ -23,8 +23,8 @@ StepFrames:
 
 ; Read the chosen device: the reader of $67B6 in the table $9723
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 ReadControls:
   LD A,(ControlDevice)
   LD HL,DeviceReaders
@@ -82,8 +82,8 @@ InvertDirections:
 ; Bits right, left, down, up, fire: the X and Y steps with acceleration ($985E,
 ; $985F), carry = fire
 ;
-; Witness: L1 7771 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121627 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 DecodeDirections:
   AND $1F
   LD C,A
@@ -296,8 +296,8 @@ KeyTable:
 
 ; Jump to the word A of the table at HL
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 CallTableEntry:
   CALL TableEntry
   LD A,(HL)
@@ -308,8 +308,8 @@ CallTableEntry:
 
 ; HL = HL + 2A
 ;
-; Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete,
+; m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 TableEntry:
   ADD A,A
   ADD A,L

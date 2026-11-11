@@ -13,5 +13,7 @@
   "header": ["; Battle Command, Ocean 1990: the SpeedLock loader's second stage, tape block 7, run at $BF0D."],
   "l1": [{"path": "work/stage1/rec/c1/l1.json", "lo": "BF0D", "hi": "BFD0", "reads": false}],
   "data_entries": "stop",
-  "work": "work/stage2/mkstage2"
+  "work": "work/stage2/mkstage2",
+  "ref_builds": [["stage1/c1l", "c1 from power-on to the game's entry at frame 23974: the load"]],
+  "other_builds": []
 }

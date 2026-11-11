@@ -19,7 +19,8 @@
 ; switch flags `$7BFD`, so a gate or bridge destroyed or opened by the mission
 ; script disappears.
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SegmentVisibility:
   LD H,$DC
   LD DE,WorldWork
@@ -158,7 +159,8 @@ l_AE33:
 ; Stores `$DC80` in the pointer `$AD4C`, the segment count in `$AE5A`, `$8305`
 ; in `$AD48` and clears `$AE5B`. Called before SegmentVisibility.
 ;
-; Witness: L1 3576 (death, m2erbe, missions, play, play2).
+; Witness: L1 9868 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ResetSegmentWalk:
   LD HL,MissionHeader+$00BB
   LD (SegmentVisibility+$0007),HL
@@ -181,7 +183,8 @@ SegmentWalkCount:
 ; EXX, then reads vertex X `$DC00`+A against `$BC12`; falls into
 ; TestVertexNearX `$AE61`. Carry out: the vertex is near.
 ;
-; Witness: L1 33063 (death, m2erbe, missions, play, play2).
+; Witness: L1 92716 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TestVertexNear:
   EXX
   LD L,A
@@ -193,7 +196,8 @@ TestVertexNear:
 ; carry set when |vertex - player| < 8. Used for both axes (TestVertexNearY
 ; `$AE79` adds `$40` to reach the Y table).
 ;
-; Witness: L1 58209 (death, m2erbe, missions, play, play2).
+; Witness: L1 170288 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TestVertexNearX:
   LD B,A
   LD A,(HL)
@@ -218,7 +222,8 @@ l_AE6A:
 ;
 ; EXX and falls into TestVertexNearY `$AE79`.
 ;
-; Witness: L1 24774 (death, m2erbe, missions, play, play2).
+; Witness: L1 75268 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TestVertexNearB:
   EXX
 
@@ -226,7 +231,8 @@ TestVertexNearB:
 ;
 ; L = vertex + `$40`, A = (`$BC1D`), then JP TestVertexNearX `$AE61`.
 ;
-; Witness: L1 25146 (death, m2erbe, missions, play, play2).
+; Witness: L1 77572 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TestVertexNearY:
   ADD A,$40
   LD L,A
@@ -249,7 +255,8 @@ SegmentScratch:
 ; the vertex buffers at `$FD00`-`$FF07` and `$990F`. Called once per frame
 ; before DrawSegments.
 ;
-; Witness: L1 3507 (death, m2erbe, missions, play, play2).
+; Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SetupClipWindow:
   LD A,(MissionHeader+$0017)
   LD C,$05
@@ -294,7 +301,8 @@ l_AEDB:
 ; `$AFDE`, the other `$B000`, the diagonals `$B021`, `$B0E4`, `$B16A`), and
 ; draws the quad by the style byte +5 (DrawSegmentStyle `$B1B6`).
 ;
-; Witness: L1 36513 (death, m2erbe, missions, play, play2).
+; Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSegments:
   LD A,(HL)
   LD (SegmentScratch+$001C),HL
@@ -306,7 +314,8 @@ DrawSegments:
 ; One pass per segment: reads the next 6-byte record, skips it when its flag is
 ; 0.
 ;
-; Witness: L1 36513 (death, m2erbe, missions, play, play2).
+; Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSegmentLoop:
   INC L
   LD A,$00
@@ -451,7 +460,7 @@ l_AFD6:
 ; The segment runs along one axis; its width is +3 (`$B2E5`), its height +4
 ; (`$AFC4`). Seen only on the maps of missions 1 and 2 (missions, m2erbe).
 ;
-; Witness: L1 702 (m2erbe, missions).
+; Witness: L1 4566 (m2erbe, m4complete, missions).
 ClipSegmentAxisX:
   LD DE,(WorldVars+$0004)
   AND A
@@ -472,7 +481,7 @@ ClipSegmentAxisX:
 ;
 ; As ClipSegmentAxisX `$AFDE` for the other axis.
 ;
-; Witness: L1 744 (m2erbe, missions).
+; Witness: L1 4608 (m2erbe, m4complete, missions).
 ClipSegmentAxisY:
   LD A,C
   CALL VertexByteToWorld
@@ -498,7 +507,7 @@ ClipSegmentAxisY:
 ; Orientation other than 0 / `$80`: the two vertices give the slope; calls
 ; ClipDiagonalSide `$B0E4` and `$B16A`.
 ;
-; Witness: L1 744 (m2erbe, missions).
+; Witness: L1 4608 (m2erbe, m4complete, missions).
 ClipSegmentDiagonal:
   LD DE,(WorldVars+$0004)
   LD BC,(WorldVars+$0006)
@@ -590,7 +599,7 @@ l_B0A9:
 ;
 ; Part of ClipSegmentDiagonal `$B021`.
 ;
-; Witness: L1 594 (m2erbe, missions).
+; Witness: L1 3647 (m2erbe, m4complete, missions).
 ClipDiagonalSide:
   LD DE,(SegmentScratch+$000A)
   LD BC,(SegmentScratch+$000C)
@@ -654,7 +663,7 @@ l_B12E:
 ;
 ; Part of ClipSegmentDiagonal `$B021`.
 ;
-; Witness: L1 2955 (m2erbe, missions).
+; Witness: L1 18411 (m2erbe, m4complete, missions).
 ClipDiagonalEnd:
   AND A
   SBC HL,DE
@@ -684,7 +693,8 @@ l_B182:
 ;
 ; LD HL,(`$AE9E`) then JP DrawSegmentLoop `$AEE8`.
 ;
-; Witness: L1 6628 (death, m2erbe, missions, play, play2).
+; Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSegmentTail:
   LD HL,(SegmentScratch+$001C)
   JP DrawSegmentLoop
@@ -695,7 +705,8 @@ DrawSegmentTail:
 ; corner (TransformVertex `$B242`), copies the height `$AFC4` to `$B2E5`, then
 ; the second corner into `$FD02` / `$FD04`.
 ;
-; Witness: L1 6277 (death, m2erbe, missions, play, play2).
+; Witness: L1 17081 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TransformSegmentEnds:
   PUSH BC
   LD HL,MissionHeader+$213B
@@ -719,7 +730,8 @@ TransformSegmentEnds:
 ; 4 / 5 / 6 set the `$FE00` constants first. The same byte is the terrain type
 ; TerrainCollision `$CC3C` returns in `$CE69`.
 ;
-; Witness: L1 6628 (death, m2erbe, missions, play, play2).
+; Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 DrawSegmentStyle:
   CALL ResetViewOrigin
   LD A,$00
@@ -781,7 +793,8 @@ l_B22C:
 ; Input: the vertex index. Vertex minus camera (VertexRelative `$B265`), the
 ; rotation (`$B2FF`, `$B38E`), the stores through `$B2F1` / `$B2F7`.
 ;
-; Witness: L1 12554 (death, m2erbe, missions, play, play2).
+; Witness: L1 34162 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TransformVertex:
   LD H,D
   LD BC,(WorldVars+$0004)
@@ -801,7 +814,8 @@ TransformVertex:
 ;
 ; Byte * 1024 (ByteToWorld `$B282`) minus the camera X / Y `$67A8` / `$67AB`.
 ;
-; Witness: L1 25108 (death, m2erbe, missions, play, play2).
+; Witness: L1 68324 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 VertexRelative:
   SLA H
   SLA H
@@ -814,7 +828,7 @@ VertexRelative:
 ;
 ; Seen only in missions (167 runs).
 ;
-; Witness: L1 167 (missions).
+; Witness: L1 960 (m4complete, missions).
 Negate24:
   LD (Negate24+$000D),A
   EX DE,HL
@@ -829,7 +843,7 @@ Negate24:
 ;
 ; Reads the vertex byte and falls into ByteToWorld `$B282`.
 ;
-; Witness: L1 1488 (m2erbe, missions).
+; Witness: L1 9216 (m2erbe, m4complete, missions).
 VertexByteToWorld:
   LD H,$DC
   LD L,A
@@ -840,7 +854,8 @@ VertexByteToWorld:
 ; Input A, output the 24-bit value in A:HL. The mission code calls it through
 ; `$67E2` (the object list's X / Y words use the same scale).
 ;
-; Witness: L1 35297 (death, m2erbe, missions, play, play2).
+; Witness: L1 145759 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ByteToWorld:
   AND A
   LD H,A
@@ -859,7 +874,8 @@ l_B28B:
 ;
 ; Carry out: outside.
 ;
-; Witness: L1 9467 (death, m2erbe, missions, play, play2).
+; Witness: L1 27209 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ClipTestX:
   LD H,$DC
   LD L,A
@@ -895,7 +911,8 @@ l_B2B4:
 ;
 ; Carry out: outside.
 ;
-; Witness: L1 9364 (death, m2erbe, missions, play, play2).
+; Witness: L1 24034 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ClipTestY:
   LD H,$DC
   ADD A,$40
@@ -932,7 +949,8 @@ l_B2DD:
 ;
 ; The height operand `$B2E5` (from the segment's +3) is the vertex's height.
 ;
-; Witness: L1 13256 (death, m2erbe, missions, play, play2).
+; Witness: L1 38728 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 StoreVertex:
   LD A,$01
   LD BC,(WorldVars+$0003)
@@ -951,7 +969,8 @@ StoreVertex:
 ;
 ; Through the camera sin / cos `$9A6C` / `$9A8E`.
 ;
-; Witness: L1 26512 (death, m2erbe, missions, play, play2).
+; Witness: L1 77456 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RotateVertex:
   LD A,(DrawSegmentStyle+$0004)
   AND A
@@ -1021,7 +1040,7 @@ l_B365:
 ;
 ; Seen only in missions.
 ;
-; Witness: L1 3624 (missions).
+; Witness: L1 40720 (m4complete, missions).
 SignExtendA:
   LD H,$00
   AND A
@@ -1035,7 +1054,8 @@ l_B38D:
 ; EX AF,AF', sin / cos through `$67E8`, multiply by `$9A8E` (RotateMul
 ; `$B3A6`), clears the target.
 ;
-; Witness: L1 24700 (death, m2erbe, missions, play, play2).
+; Witness: L1 57096 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RotateAndStore:
   EX AF,AF'
   CALL ApiVector14
@@ -1054,7 +1074,8 @@ RotateAndStore:
 ;
 ; Part of RotateAndStore.
 ;
-; Witness: L1 49400 (death, m2erbe, missions, play, play2).
+; Witness: L1 114192 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RotateMul:
   LD H,$00
   AND A
@@ -1065,7 +1086,8 @@ RotateMul:
 ;
 ; Part of RotateAndStore.
 ;
-; Witness: L1 53024 (death, m2erbe, missions, play, play2).
+; Witness: L1 154912 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RotateMulAdd:
   LD L,A
   ADD HL,BC
@@ -1082,7 +1104,8 @@ RotateMulAdd:
 ; Called by DrawSegmentStyle `$B1B6` once per drawn segment (6628 runs, as many
 ; as it).
 ;
-; Witness: L1 6628 (death, m2erbe, missions, play, play2).
+; Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ResetViewOrigin:
   LD HL,$0000
   LD (l_9A85+$0009),HL
@@ -1101,7 +1124,8 @@ ResetViewOrigin:
 ; set) to `$67AD`. The rear view (`$BA27` set) adds `$80` to the heading. Then
 ; CameraSinCos `$BA32`.
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SetCamera:
   LD HL,(BearingTable+$0016)
   PUSH HL
@@ -1141,7 +1165,8 @@ l_BA1F:
 ; Reads the camera heading `$67A6`, sin / cos through `$67E8` (`$A899`), stores
 ; the pair in the operands `$BBBD` / `$BBC8` of RotateToView.
 ;
-; Witness: L1 7100 (death, m2erbe, missions, play, play2).
+; Witness: L1 19674 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CameraSinCos:
   CALL ApiVector07
   CALL SinCosHalf
@@ -1154,7 +1179,8 @@ CameraSinCos:
 ;
 ; CALL CameraSinCos for the second view pass.
 ;
-; Witness: L1 3550 (death, m2erbe, missions, play, play2).
+; Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 CameraSinCosAgain:
   LD HL,(WorldVars+$0002)
   JR CameraSinCos
@@ -1173,7 +1199,8 @@ RearViewOff:
 ; Prints `$BA86` ("REAR:VIEW") or `$BA9F` (blank) with the attribute at
 ; `$5AD2`.
 ;
-; Witness: L1 31 (death, m2erbe, missions, play, play2).
+; Witness: L1 36 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ToggleRearView:
   LD HL,$5AD2
   JR Z,l_BA62
@@ -1217,7 +1244,8 @@ ViewTextBlank:
 ; The grid moves with the camera: GridVectors `$BB54`, then PlotGroundDot
 ; `$BB75` for each dot, GridStep `$BBA6` between rows.
 ;
-; Witness: L1 3507 (death, m2erbe, missions, play, play2).
+; Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 GroundDots:
   LD A,(WorldVars+$0004)
   CPL
@@ -1306,7 +1334,8 @@ l_BB3E:
 ; The camera's sin / cos scaled to the grid spacing: the steps along a row and
 ; between rows.
 ;
-; Witness: L1 14028 (death, m2erbe, missions, play, play2).
+; Witness: L1 39176 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 GridVectors:
   LD A,(WorldVars+$0003)
   NEG
@@ -1338,7 +1367,8 @@ l_BB71:
 ; Rotates the dot to view space, divides by depth, plots through `$AA27` when
 ; on screen (117 517 runs).
 ;
-; Witness: L1 117517 (death, m2erbe, missions, play, play2).
+; Witness: L1 324616 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlotGroundDot:
   CALL Divide
   LD BC,(l_9A9E+$0005)
@@ -1371,7 +1401,8 @@ PlotGroundDot:
 ;
 ; Adds the row vector to the grid origin.
 ;
-; Witness: L1 7014 (death, m2erbe, missions, play, play2).
+; Witness: L1 19588 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 GridStep:
   EX DE,HL
   LD HL,(l_BB0A+$0004)
@@ -1393,7 +1424,8 @@ GridStep:
 ; Outputs the depth offset in `$9A6C` and the x offset in `$9A8E` (OpProject
 ; adds `$9A6C` to z and compares with 96).
 ;
-; Witness: L1 50296 (death, m2erbe, missions, play, play2).
+; Witness: L1 154474 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 RotateToView:
   LD A,$00
   LD HL,(l_9A5E+$000E)
@@ -1429,7 +1461,8 @@ RotateToView:
 ; (TerrainDiagonal `$CDB6`). Output carry set on a touch, the style +5 of the
 ; segment in `$CE69`. The mission code uses it through `$67F1` for the enemies.
 ;
-; Witness: L1 5854 (death, m2erbe, missions, play, play2).
+; Witness: L1 20647 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TerrainCollision:
   LD A,(IX+$07)
   AND A
@@ -1446,7 +1479,8 @@ TerrainCollision:
 ;
 ; Sets the segment pointer and the count.
 ;
-; Witness: L1 62957 (death, m2erbe, missions, play, play2).
+; Witness: L1 208483 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TerrainScan:
   LD A,(HL)
   AND A
@@ -1456,7 +1490,8 @@ TerrainScan:
 ;
 ; One segment per pass (62 693 runs).
 ;
-; Witness: L1 62693 (death, m2erbe, missions, play, play2).
+; Witness: L1 207509 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TerrainScanLoop:
   DEC HL
   DJNZ TerrainScan
@@ -1639,7 +1674,8 @@ l_CD94:
 ;
 ; Steps to the next record.
 ;
-; Witness: L1 11717 (death, m2erbe, missions, play, play2).
+; Witness: L1 48694 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TerrainNext:
   EXX
   JP TerrainScanLoop
@@ -1648,7 +1684,8 @@ TerrainNext:
 ;
 ; Negates the 24-bit value in A:HL.
 ;
-; Witness: L1 14955 (death, m2erbe, missions, play, play2).
+; Witness: L1 62388 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 TerrainNegate24:
   EX AF,AF'
   LD A,L
@@ -1669,7 +1706,7 @@ TerrainNegate24:
 ; The perpendicular distance for orientation other than 0 / `$80` (missions,
 ; m2erbe).
 ;
-; Witness: L1 908 (m2erbe, missions).
+; Witness: L1 5964 (m2erbe, m4complete, missions).
 TerrainDiagonal:
   LD A,(l_CCD8+$0007)
   LD C,A
@@ -1789,7 +1826,8 @@ ToggleBinoculars:
 ; `$5ACC` = `$44`, `$9719` = 4, the blank `$BA9F`. The rear view (`$BA27`)
 ; blocks both.
 ;
-; Witness: L1 34 (death, m2erbe, missions, play, play2).
+; Witness: L1 39 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 SetBinoculars:
   LD HL,$5ACC
   JR NZ,l_CEC9

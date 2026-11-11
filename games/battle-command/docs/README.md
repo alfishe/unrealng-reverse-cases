@@ -12,8 +12,8 @@
 | [8. HUD and text](08-hud-and-text.md) | PrintString and its 14 control codes, the 8 x 8 and 6-pixel fonts, the four small-font shifts, the numbers, the cockpit panel field by field with its writers and costs, the hit messages and their timer, the catalogue, briefing, status and end screens, the load / save code editor and its alphabet, the data sheet of every text |
 | [9. Sound](09-sound.md) | two AY drivers on one chip, the effect driver's shadow and gates, the engine as an envelope, 14 effects decoded with WAVs, the bank 4 tracker player and its format, the title tune with its leaking transpose, pitch, costs, witnesses |
 | [10. Gameplay logic](10-gameplay-logic.md) | a pass in order, PlayerStep and fuel (the fuel failure), the boundary (AWOL, desertion), the enemies and their shared gun timer, PlayerHit with the armour and subsystems (a death by armour, POKE recording), kills and the score, all 13 stores and the 1000 kg payload, debris, the ten goal hooks, the Helicarrier and the pickup, every failure cause, the Grand Finale gate, the save code, the two completed missions, notable features |
-| [11. Data reference](11-data-reference.md) | every data entry of the game image `$5B00-$FFFF` (generated: `kit/refdocs.py --case .`) |
-| [12. Routine reference](12-routine-reference.md) | every routine of the game image with its callers, runs and figures (generated) |
+| [11. Data reference](11-data-reference.md) | every data entry of the game image `$5B00-$FFFF`, then of banks 3, 4, 6, 7 and the loader pieces (generated: `kit/refdocs.py --case .`) |
+| [12. Routine reference](12-routine-reference.md) | every routine of the game image, the banks and the loader pieces with its callers, runs and figures (generated) |
 
 ## Terms
 

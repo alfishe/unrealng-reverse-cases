@@ -296,7 +296,7 @@ bytes $E7F7 DD 7E 31 3D 28 06 DD 77 31 C3 BE 67 CD CD 67 DD
 bytes $E807 36 02 00 C9
 
 # the 3D models from $E80B to the end (tools/models3d.py, text_lines: one instruction a line)
-model $E80B native $67FA 30 01 38 ; box_rect16 48 1 56, model
+model $E80B native ApiVector20 30 01 38 ; box_rect16 48 1 56, model
 model $E811 verts 29 A6 61 26 A2 60 25 A2 5F 29 A5 5E A0 5D A6 40 A6 80 A6 80 5C 26 A0 41 A0 81 41 9D 81 81 5B 21 A6 5A A1 9A 5A 9D 9A 9A 5A 29 A1 59 A1 99 59 9D 99 99 59 29 9D 58 A9 98 A9 98 58 29 9E 57 9E 97 57 9D 97 97 57 20 A2 56 A0 96 56 9D 96 96 56 1D A2 55 A2 95 A2 95 55 1F A2 54 9F 94 54 9D 94 94 54 1F A5 53 9F 93 53 9D 93 93 53 1D A5 52 A5 92 A5 92 52 1E A5 51 9E 91 51 9D 91 91 51 21 9D A1 A1 A1 61 1D A0 A0 A0 A0 60 1D 9E 9E 9E 9E 5E 1D 9F 9F 9F 9F 5F 29 A3 5D 9E 50 17 9D 4F 18 9D 4E 19 9D 4D 21 9D 4C 1A 9D 4B 1C 9D 4A 1B 9D 49 20 9D 48 16 9D 47 15 9D 46 14 9D 45 1F 9D 44 13 9D 43 12 9D 42 11 9D 41 1E 9D 40 FF ; verts P=V41 P=(P+V38)/2 V33=P P=V38 P=(P+V34)/2 V32=P P=V37 P=(P+V34)/2 V31=P P=V41 P=(P+V37)/2 V30=P P=(P+V32)/2 V29=P P=(P+V38)/2 V0=P P=(P+V38)/2 P=(P+V0)/2 P=(P+V38)/2 P=(P+V0)/2 V28=P P=V38 P=(P+V32)/2 V1=P P=(P+V32)/2 P=(P+V1)/2 V1=P P=(P+V29)/2 P=(P+V1)/2 P=(P+V1)/2 V27=P P=V33 P=(P+V38)/2 V26=P P=(P+V33)/2 P=(P+V26)/2 V26=P P=(P+V29)/2 P=(P+V26)/2 P=(P+V26)/2 V26=P P=V41 P=(P+V33)/2 V25=P P=(P+V33)/2 P=(P+V25)/2 V25=P P=(P+V29)/2 P=(P+V25)/2 P=(P+V25)/2 V25=P P=V41 P=(P+V29)/2 V24=P P=(P+V41)/2 P=(P+V24)/2 P=(P+V41)/2 P=(P+V24)/2 V24=P P=V41 P=(P+V30)/2 V23=P P=(P+V30)/2 P=(P+V23)/2 V23=P P=(P+V29)/2 P=(P+V23)/2 P=(P+V23)/2 V23=P P=V32 P=(P+V34)/2 V22=P P=(P+V32)/2 P=(P+V22)/2 V22=P P=(P+V29)/2 P=(P+V22)/2 P=(P+V22)/2 V22=P P=V29 P=(P+V34)/2 V21=P P=(P+V34)/2 P=(P+V21)/2 P=(P+V34)/2 P=(P+V21)/2 V21=P P=V31 P=(P+V34)/2 V20=P P=(P+V31)/2 P=(P+V20)/2 V20=P P=(P+V29)/2 P=(P+V20)/2 P=(P+V20)/2 V20=P P=V31 P=(P+V37)/2 V19=P P=(P+V31)/2 P=(P+V19)/2 V19=P P=(P+V29)/2 P=(P+V19)/2 P=(P+V19)/2 V19=P P=V29 P=(P+V37)/2 V18=P P=(P+V37)/2 P=(P+V18)/2 P=(P+V37)/2 P=(P+V18)/2 V18=P P=V30 P=(P+V37)/2 V17=P P=(P+V30)/2 P=(P+V17)/2 V17=P P=(P+V29)/2 P=(P+V17)/2 P=(P+V17)/2 V17=P P=V33 P=(P+V29)/2 P=(P+V33)/2 P=(P+V33)/2 P=(P+V33)/2 V33=P P=V29 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 P=(P+V32)/2 V32=P P=V29 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 P=(P+V30)/2 V30=P P=V29 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 P=(P+V31)/2 V31=P P=V41 P=(P+V35)/2 V29=P P=(P+V30)/2 V16=P P=V23 P=(P+V29)/2 V15=P P=V24 P=(P+V29)/2 V14=P P=V25 P=(P+V29)/2 V13=P P=V33 P=(P+V29)/2 V12=P P=V26 P=(P+V29)/2 V11=P P=V28 P=(P+V29)/2 V10=P P=V27 P=(P+V29)/2 V9=P P=V32 P=(P+V29)/2 V8=P P=V22 P=(P+V29)/2 V7=P P=V21 P=(P+V29)/2 V6=P P=V20 P=(P+V29)/2 V5=P P=V31 P=(P+V29)/2 V4=P P=V19 P=(P+V29)/2 V3=P P=V18 P=(P+V29)/2 V2=P P=V17 P=(P+V29)/2 V1=P P=V30 P=(P+V29)/2 V0=P
 model $E8DD project 26 00 ; project 38 from V0
 model $E8E0 faces_test 00 03 84 68 70 88 74 8C 90 74 94 ; faces_test from 0: (33 26 28) (34 29 35) (36 29 37)
@@ -307,7 +307,7 @@ model $E912 return ; return
 model $E913 lines_clip 9D 21 1A 1C 1B 20 9D 1A 9D 1C 9D 1B 9D 20 16 1D 96 15 1D 95 14 1D 94 1F 1D 9D 19 21 9D 18 19 9D 17 18 9D 1E 17 9F 13 1D 93 12 1D 92 11 1D 91 1E 90 0F 0E 0D 0C 0B 0A 09 08 07 06 05 04 03 02 01 00 C0 ; lines_clip M29 L33 L26 L28 L27 L32 M29 L26 M29 L28 M29 L27 M29 L32 L22 L29 M22 L21 L29 M21 L20 L29 M20 L31 L29 M29 L25 L33 M29 L24 L25 M29 L23 L24 M29 L30 L23 M31 L19 L29 M19 L18 L29 M18 L17 L29 M17 L30 M16 L15 L14 L13 L12 L11 L10 L9 L8 L7 L6 L5 L4 L3 L2 L1 L0
 model $E956 return ; return
 model $E957 end ; end
-model $E958 native $67FA 20 0C 7F ; box_rect16 32 12 127, model
+model $E958 native ApiVector20 20 0C 7F ; box_rect16 32 12 127, model
 model $E95E verts 28 A6 66 C0 26 80 00 E0 61 33 11 91 00 20 E0 60 93 12 11 80 40 E0 61 33 12 92 00 60 E0 60 93 11 12 9F E0 1F 4C E2 ; verts P=V40 P=(P+V38)/2 V38=P P+=V38 P=(P+V0)/2 P=V0 P-=V97 P=V51 P=V17 P=(P+V17)/2 P=V0 P=V32 P-=V96 P=(P+V19)/2 P=V18 P=V17 P=(P+V0)/2 V0=P P-=V97 P=V51 P=V18 P=(P+V18)/2 P=V0 V32=P P-=V96 P=(P+V19)/2 P=V17 P=V18 P=(P+V31)/2 P-=V31 V12=P
 model $E985 verts 8C C0 24 D5 ; verts P=(P+V12)/2 P+=V36
 model $E98A branch_visible 24 $E8D4 $1815 ; branch_visible f36 $E8D4 $1815
@@ -322,7 +322,7 @@ model $E999 db 40
 model $E99A db C8
 model $E99B db 80
 model $E99C db A0
-model $E99D native $9393 ; native $9393
+model $E99D native BackBuffer+2210 ; native $9393
 model $E9A0 db 11
 model $E9A1 db 93
 model $E9A2 translate 11 ; translate V8
@@ -360,7 +360,7 @@ model $E9E9 translate 11 ; translate V8
 model $E9EB db 81
 model $E9EC db A0
 model $E9ED db 80
-model $E9EE native $61E0 ; native $61E0
+model $E9EE native Sine16Low+224 ; native $61E0
 model $E9F1 db 33
 model $E9F2 db 11
 model $E9F3 db 91
@@ -413,7 +413,7 @@ model $EA2A translate 11 ; translate V8
 model $EA2C db 81
 model $EA2D db A0
 model $EA2E db 80
-model $EA2F native $61E0 ; native $61E0
+model $EA2F native Sine16Low+224 ; native $61E0
 model $EA32 db 33
 model $EA33 db 11
 model $EA34 db 91
@@ -489,7 +489,7 @@ model $EA8D verts 40 C0 33 13 91 90 90 11 00 01 00 80 6F 0F 90 90 00 21 20 A0 6E
 model $EACC db E3
 model $EACD db 0F
 model $EACE db E4
-model $EACF native $9424 ; native $9424
+model $EACF native BackBuffer+2355 ; native $9424
 model $EAD2 db 48
 model $EAD3 db 34
 model $EAD4 db 6C
@@ -618,7 +618,7 @@ model $EB70 db EC
 model $EB71 db E8
 model $EB72 db 03
 model $EB73 db 88
-model $EB74 native $B424 ; native $B424
+model $EB74 native ShellTemplate80+90 ; native $B424
 model $EB77 db 4C
 model $EB78 db 25
 model $EB79 db 34
@@ -773,8 +773,8 @@ model $ED06 db 50
 model $ED07 db 48
 model $ED08 db 60
 model $ED09 db 3F
-model $ED0A branch_visible 95 $8830 $5FC0 ; branch_visible f149 $8830 $5FC0
-model $ED10 branch_visible B4 $A8B0 $50E0 ; branch_visible f180 $A8B0 $50E0
+model $ED0A branch_visible 95 ToggleNight+49 SquareLow+192 ; branch_visible f149 $8830 $5FC0
+model $ED10 branch_visible B4 SinCos16+11 $50E0 ; branch_visible f180 $A8B0 $50E0
 model $ED16 db A9
 model $ED17 db 04
 model $ED18 db 74
@@ -784,7 +784,7 @@ model $ED1B verts 38 01 29 5F E0 41 40 00 A0 00 63 00 00 82 00 81 02 81 01 81 80
 model $ED58 db 81
 model $ED59 native $0082 ; native $0082
 model $ED5C db 41
-model $ED5D native $8380 ; native $8380
+model $ED5D native WeaponSlots+24 ; native $8380
 model $ED60 db 81
 model $ED61 db 81
 model $ED62 project 80 71 ; project 128 from V56
@@ -876,7 +876,7 @@ model $EDD9 call $0B3F ; call $0B3F
 model $EDDC db 7F
 model $EDDD db E0
 model $EDDE db 41
-model $EDDF branch_visible 80 $A043 $A000 ; branch_visible f128 $A043 $A000
+model $EDDF branch_visible 80 OpLinesByFacesClipped+128 OpLinesByFacesClipped+61 ; branch_visible f128 $A043 $A000
 model $EDE5 verts 14 93 11 13 94 12 13 13 91 94 14 92 94 8C 0C 93 0C 8D 0D 0D 94 14 0D 8C 01 81 C0 01 00 80 74 93 11 12 80 21 00 80 73 94 12 11 80 41 00 80 93 13 91 91 00 61 00 80 94 14 92 92 00 41 00 80 20 00 81 01 80 41 00 80 22 02 83 03 80 41 00 80 24 04 85 05 80 61 00 80 26 06 87 07 80 61 00 80 28 08 89 09 80 61 00 80 2A 0A 8B 8B 00 81 00 80 D4 ; verts P=V20 P=(P+V19)/2 P=V17 P=V19 P=(P+V20)/2 P=V18 P=V19 P=V19 P=(P+V17)/2 P=(P+V20)/2 P=V20 P=(P+V18)/2 P=(P+V20)/2 P=(P+V12)/2 P=V12 P=(P+V19)/2 P=V12 P=(P+V13)/2 P=V13 P=V13 P=(P+V20)/2 P=V20 P=V13 P=(P+V12)/2 P=V1 P=(P+V1)/2 P+=V1 P=V0 P=(P+V0)/2 V52=P P=(P+V19)/2 P=V17 P=V18 P=(P+V0)/2 P=V33 P=V0 P=(P+V0)/2 V51=P P=(P+V20)/2 P=V18 P=V17 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=(P+V19)/2 P=V19 P=(P+V17)/2 P=(P+V17)/2 P=V0 V33=P P=V0 P=(P+V0)/2 P=(P+V20)/2 P=V20 P=(P+V18)/2 P=(P+V18)/2 P=V0 V1=P P=V0 P=(P+V0)/2 P=V32 P=V0 P=(P+V1)/2 P=V1 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V34 P=V2 P=(P+V3)/2 P=V3 P=(P+V0)/2 V1=P P=V0 P=(P+V0)/2 P=V36 P=V4 P=(P+V5)/2 P=V5 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V38 P=V6 P=(P+V7)/2 P=V7 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V40 P=V8 P=(P+V9)/2 P=V9 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2 P=V42 P=V10 P=(P+V11)/2 P=(P+V11)/2 P=V0 P=(P+V1)/2 P=V0 P=(P+V0)/2
 model $EE55 db 8C
 model $EE56 db 0C
@@ -949,20 +949,20 @@ model $EEB2 db 7D
 model $EEB3 db C1
 model $EEB4 db 80
 model $EEB5 db 24
-model $EEB6 native $60E0 ; native $60E0
+model $EEB6 native SquareHigh+224 ; native $60E0
 model $EEB9 db 73
 model $EEBA db 11
 model $EEBB db 92
 model $EEBC db 82
 model $EEBD db 80
 model $EEBE db 24
-model $EEBF native $60E0 ; native $60E0
+model $EEBF native SquareHigh+224 ; native $60E0
 model $EEC2 db 72
 model $EEC3 db 91
 model $EEC4 db 93
 model $EEC5 verts 21 80 24 20 E0 60 33 91 91 02 80 24 20 E0 60 31 11 93 81 3F E0 1E EC ; verts P=V33 P=(P+V0)/2 P=V36 P=V32 P-=V96 P=V51 P=(P+V17)/2 P=(P+V17)/2 P=V2 P=(P+V0)/2 P=V36 P=V32 P-=V96 P=V49 P=V17 P=(P+V19)/2 P=(P+V1)/2 P=V63 P-=V30
 model $EEDD db E2
-model $EEDE branch_visible 02 $2400 $7454 ; branch_visible f2 $2400 $7454
+model $EEDE branch_visible 02 $2400 DrawBar+5 ; branch_visible f2 $2400 $7454
 model $EEE4 db 54
 model $EEE5 db 48
 model $EEE6 db BF
@@ -986,17 +986,17 @@ model $EF61 verts 00 01 00 80 89 8B 8A 09 00 01 81 00 80 00 81 01 82 02 83 03 80
 model $EF8F db 85
 model $EF90 db 86
 model $EF91 project 00 61 ; project 0 from V48
-model $EF94 native $A180 ; native $A180
+model $EF94 native ClipWindow+4 ; native $A180
 model $EF97 db 05
 model $EF98 db 05
 model $EF99 db 81
 model $EF9A db 80
 model $EF9B db A1
 model $EF9C native $E480 ; native $E480
-model $EF9F native $8703 ; native $8703
+model $EF9F native SaBytes+66 ; native $8703
 model $EFA2 db 80
 model $EFA3 db C1
-model $EFA4 native $A780 ; native $A780
+model $EFA4 native Random+7 ; native $A780
 model $EFA7 db 83
 model $EFA8 db 83
 model $EFA9 jump_if_visible2 00 $00E1 ; jump_if_visible2 f0 $00E1
@@ -1006,7 +1006,7 @@ model $EFAF db 03
 model $EFB0 project 86 80 ; project 134 from V64
 model $EFB3 db 81
 model $EFB4 native $2B80 ; native $2B80
-model $EFB7 order_by_face 8A $9F0B $1FE0 ; order_by_face f138 $9F0B $1FE0
+model $EFB7 order_by_face 8A OpFillPolys+62 $1FE0 ; order_by_face f138 $9F0B $1FE0
 model $EFBD db 4C
 model $EFBE db E2
 model $EFBF db 80
@@ -1024,7 +1024,7 @@ model $EFCC db 7E
 model $EFCD call $1FDE ; call $1FDE
 model $EFD0 db 0B
 model $EFD1 db 58 ; model
-model $EFD2 native $9F0B ; native $9F0B
+model $EFD2 native OpFillPolys+62 ; native $9F0B
 model $EFD5 call $18A5 ; call $18A5
 model $EFD8 native $030D ; native $030D
 model $EFDB db D3
@@ -1063,7 +1063,7 @@ model $F001 db 94
 model $F002 db 13
 model $F003 db 8D
 model $F004 verts 81 40 81 00 80 8E 8E 13 14 80 A1 00 80 AE 0E 8D 8D 00 C1 ; verts P=(P+V1)/2 V0=P P=(P+V1)/2 P=V0 P=(P+V0)/2 P=(P+V14)/2 P=(P+V14)/2 P=V19 P=V20 P=(P+V0)/2 P=(P+V33)/2 P=V0 P=(P+V0)/2 P=(P+V46)/2 P=V14 P=(P+V13)/2 P=(P+V13)/2 P=V0
-model $F018 native $9480 ; native $9480
+model $F018 native BackBuffer+2447 ; native $9480
 model $F01B db 13
 model $F01C db 8D
 model $F01D db 0D
@@ -1091,7 +1091,7 @@ model $F04D db 92
 model $F04E db 8D
 model $F04F db 80
 model $F050 db 61
-model $F051 native $7480 ; native $7480
+model $F051 native BarLines+28 ; native $7480
 model $F054 db 93
 model $F055 db 11
 model $F056 translate 9F ; translate V79
@@ -1113,7 +1113,7 @@ model $F06B db 14
 model $F06C db 94
 model $F06D db 8B
 model $F06E db D5 ; model
-model $F06F branch_visible 53 $70E8 $A04B ; branch_visible f83 $70E8 $A04B
+model $F06F branch_visible 53 CopyCatalogueHead+34 OpTranslate+2 ; branch_visible f83 $70E8 $A04B
 model $F075 db 73
 model $F076 db F0
 model $F077 db 6B
@@ -1125,14 +1125,14 @@ model $F07C db 8B
 model $F07D db 64
 model $F07E db FC
 model $F07F db 05
-model $F080 branch_visible 98 $6B03 $D843 ; branch_visible f152 $6B03 $D843
+model $F080 branch_visible 98 DragonflyViewLoop+74 $D843 ; branch_visible f152 $6B03 $D843
 model $F086 native $238B ; native $238B
 model $F089 db B8
 model $F08A native $038B ; native $038B
 model $F08D db 98
 model $F08E native $E48A ; native $E48A
 model $F091 db 18
-model $F092 native $838C ; native $838C
+model $F092 native InterruptHandler+9 ; native $838C
 model $F095 db F8
 model $F096 native $3F8C ; native $3F8C
 model $F099 db E0
@@ -1140,7 +1140,7 @@ model $F09A db 43
 model $F09B db 63
 model $F09C db 80
 model $F09D db A0
-model $F09E native $8FED ; native $8FED
+model $F09E native BackBuffer+1276 ; native $8FED
 model $F0A1 db 0E
 model $F0A2 db 8D
 model $F0A3 db 11
@@ -1158,7 +1158,7 @@ model $F0AE db 0F
 model $F0AF db 90
 model $F0B0 translate 10 ; translate V8
 model $F0B2 db 0E
-model $F0B3 call $A181 ; call $A181
+model $F0B3 call ClipWindow+5 ; call $A181
 model $F0B6 db 60
 model $F0B7 db C1
 model $F0B8 native $3080 ; native $3080
@@ -1204,7 +1204,7 @@ model $F0EA db 60
 model $F0EB db 90
 model $F0EC db 92
 model $F0ED call $4180 ; call $4180
-model $F0F0 native $6E80 ; native $6E80
+model $F0F0 native PrintSmallChar+152 ; native $6E80
 model $F0F3 db 8F
 model $F0F4 db 0C
 model $F0F5 db 8C
@@ -1216,12 +1216,12 @@ model $F0FC db 8D
 model $F0FD db 0C
 model $F0FE db 80
 model $F0FF db 81
-model $F100 native $6F80 ; native $6F80
+model $F100 native CodeMarginHere ; native $6F80
 model $F103 db 90
 model $F104 db 91
 model $F105 translate 80 ; translate V64
 model $F107 db A1
-model $F108 native $AF80 ; native $AF80
+model $F108 native DrawSegmentLoop+152 ; native $AF80
 model $F10B db 90
 model $F10C translate 10 ; translate V8
 model $F10E db 9F
@@ -1249,23 +1249,23 @@ model $F128 db 94
 model $F129 db 8B
 model $F12A db 84
 model $F12B db 95
-model $F12C branch_visible 34 $608B $AB33 ; branch_visible f52 $608B $AB33
+model $F12C branch_visible 34 SquareHigh+139 BoxRect16+62 ; branch_visible f52 $608B $AB33
 model $F132 db 30
 model $F133 db 30
 model $F134 db 2B
 model $F135 db 44
 model $F136 db FC
 model $F137 db 05
-model $F138 branch_visible 58 $6B03 $5803 ; branch_visible f88 $6B03 $5803
+model $F138 branch_visible 58 DragonflyViewLoop+74 $5803 ; branch_visible f88 $6B03 $5803
 model $F13E native $E34A ; native $E34A
 model $F141 db 38
 model $F142 native $C44A ; native $C44A
 model $F145 db 18
-model $F146 native $A34A ; native $A34A
+model $F146 native ClipToLeft+87 ; native $A34A
 model $F149 db F8
-model $F14A native $834C ; native $834C
+model $F14A native DamageBoardRecords+2 ; native $834C
 model $F14D db D8
-model $F14E native $634A ; native $634A
+model $F14E native Sine8+74 ; native $634A
 model $F151 db B8
 model $F152 native $234C ; native $234C
 model $F155 db 98
@@ -1277,13 +1277,13 @@ model $F16C db D0
 model $F16D db 69
 model $F16E db A2
 model $F16F db 18
-model $F170 native $8189 ; native $8189
+model $F170 native Stack+5 ; native $8189
 model $F173 db F8
-model $F174 native $6189 ; native $6189
+model $F174 native Sine16Low+137 ; native $6189
 model $F177 db D8
 model $F178 native $4189 ; native $4189
 model $F17B db B8
-model $F17C native $7F8C ; native $7F8C
+model $F17C native MissionParams+266 ; native $7F8C
 model $F17F db E0
 model $F180 db 43
 model $F181 db 82
@@ -1321,7 +1321,7 @@ model $F1D1 db 8F
 model $F1D2 db 0C
 model $F1D3 db 80
 model $F1D4 verts 20 A0 8D 0E 92 8E 0D 80 21 00 80 92 0A 8B 09 80 21 20 A0 90 8B 8C 08 91 00 C1 ; verts P=V32 P=(P+V32)/2 P=(P+V13)/2 P=V14 P=(P+V18)/2 P=(P+V14)/2 P=V13 P=(P+V0)/2 P=V33 P=V0 P=(P+V0)/2 P=(P+V18)/2 P=V10 P=(P+V11)/2 P=V9 P=(P+V0)/2 P=V33 P=V32 P=(P+V32)/2 P=(P+V16)/2 P=(P+V11)/2 P=(P+V12)/2 P=V8 P=(P+V17)/2 P=V0
-model $F1EF native $AE80 ; native $AE80
+model $F1EF native TestVertexNearY+7 ; native $AE80
 model $F1F2 db 90
 model $F1F3 db 91
 model $F1F4 translate 81 ; translate V64
@@ -1329,11 +1329,11 @@ model $F1F6 db 21
 model $F1F7 db A0
 model $F1F8 db 60
 model $F1F9 db E1
-model $F1FA native $8580 ; native $8580
+model $F1FA native MissionBlockLoaded+16 ; native $8580
 model $F1FD db 87
 model $F1FE db 87
 model $F1FF faces_test 01 01 00 80 88 ; faces_test from 1: (0 32 34)
-model $F205 jump_if_visible 11 $8186 ; jump_if_visible f17 $8186
+model $F205 jump_if_visible 11 Stack+2 ; jump_if_visible f17 $8186
 model $F209 db 21
 model $F20A native $2680 ; native $2680
 model $F20D db 05
@@ -1345,7 +1345,7 @@ model $F212 db E0
 model $F213 db 1E
 model $F214 db EC
 model $F215 db E3
-model $F216 branch_visible 02 $2500 $6A14 ; branch_visible f2 $2500 $6A14
+model $F216 branch_visible 02 $2500 PlayLoop+8 ; branch_visible f2 $2500 $6A14
 model $F21C db 64
 model $F21D db D4
 model $F21E db 54
@@ -1437,7 +1437,7 @@ model $F308 db 14
 model $F309 db 8C
 model $F30A db 14
 model $F30B db 94
-model $F30C branch_visible 44 $B494 $2890 ; branch_visible f68 $B494 $2890
+model $F30C branch_visible 44 ShellTemplate80+202 $2890 ; branch_visible f68 $B494 $2890
 model $F312 db 74
 model $F313 db 14 ; model
 model $F314 order_by_face 44 $C8F4 $F4A4 ; order_by_face f68 $C8F4 $F4A4
@@ -1484,31 +1484,31 @@ model $F341 order_by_face 01 $2915 $0A1E ; order_by_face f1 $2915 $0A1E
 model $F347 db 3F
 model $F348 db E0
 model $F349 db 41
-model $F34A branch_visible 80 $A042 $A040 ; branch_visible f128 $A042 $A040
+model $F34A branch_visible 80 OpLinesByFacesClipped+127 OpLinesByFacesClipped+125 ; branch_visible f128 $A042 $A040
 model $F350 verts 00 94 92 93 02 83 02 01 11 14 93 11 03 02 80 85 05 84 87 08 88 09 89 01 01 81 00 01 60 E0 80 94 92 92 01 09 01 80 21 60 E0 93 02 83 09 82 11 91 00 41 00 80 C2 ; verts P=V0 P=(P+V20)/2 P=(P+V18)/2 P=(P+V19)/2 P=V2 P=(P+V3)/2 P=V2 P=V1 P=V17 P=V20 P=(P+V19)/2 P=V17 P=V3 P=V2 P=(P+V0)/2 P=(P+V5)/2 P=V5 P=(P+V4)/2 P=(P+V7)/2 P=V8 P=(P+V8)/2 P=V9 P=(P+V9)/2 P=V1 P=V1 P=(P+V1)/2 P=V0 P=V1 V32=P P-=V128 P=(P+V20)/2 P=(P+V18)/2 P=(P+V18)/2 P=V1 P=V9 P=V1 P=(P+V0)/2 P=V33 V32=P P-=V147 P=V2 P=(P+V3)/2 P=V9 P=(P+V2)/2 P=V17 P=(P+V17)/2 P=V0 V1=P P=V0 P=(P+V0)/2
 model $F386 verts 12 11 80 61 00 80 D4 ; verts P=V18 P=V17 P=(P+V0)/2 V33=P P=V0 P=(P+V0)/2
 model $F38E db 93
 model $F38F db 11
 model $F390 translate 80 ; translate V64
 model $F392 db 81
-model $F393 native $A380 ; native $A380
+model $F393 native ClipReject+1 ; native $A380
 model $F396 project 80 81 ; project 128 from V64
 model $F399 db 80
 model $F39A db A1
-model $F39B native $A580 ; native $A580
+model $F39B native ClipPolyNear+119 ; native $A580
 model $F39E db 05
 model $F39F db 84
 model $F3A0 db 84
 model $F3A1 native $00C1 ; native $00C1
 model $F3A4 db 80
 model $F3A5 db 27
-model $F3A6 branch_visible 88 $8007 $00E1 ; branch_visible f136 $8007 $00E1
+model $F3A6 branch_visible 88 Bootstrap+7 $00E1 ; branch_visible f136 $8007 $00E1
 model $F3AC db 80
 model $F3AD db C2
 model $F3AE return ; return
 model $F3AF db 89
 model $F3B0 verts 00 91 80 80 81 B8 1F E0 1E 8C E4 ; verts P=V0 P=(P+V17)/2 P=(P+V0)/2 P=(P+V0)/2 P=(P+V1)/2 P=(P+V56)/2 P=V31 P-=V30 P=(P+V12)/2
-model $F3BC native $8080 ; native $8080
+model $F3BC native LoadAttrLeftover+60 ; native $8080
 model $F3BF db 41
 model $F3C0 branch_visible 80 $00A0 $1393 ; branch_visible f128 $00A0 $1393
 model $F3C6 db 91
@@ -1532,7 +1532,7 @@ model $F3FF db 1E
 model $F400 call $1480 ; call $1480
 model $F403 db CB
 model $F404 db FE
-model $F405 call $B464 ; call $B464
+model $F405 call ShellTemplate80+154 ; call $B464
 model $F408 db 48
 model $F409 db 34 ; model
 model $F40A db AB
@@ -1552,7 +1552,7 @@ model $F420 db 68
 model $F421 db 74
 model $F422 db 4A
 model $F423 db 9E
-model $F424 order_by_face 40 $6A74 $0A7E ; order_by_face f64 $6A74 $0A7E
+model $F424 order_by_face 40 ViewChangeFlag+8 $0A7E ; order_by_face f64 $6A74 $0A7E
 model $F42A db 23
 model $F42B db 93
 model $F42C db 48
@@ -1595,7 +1595,7 @@ model $F491 db 90
 model $F492 db 0F
 model $F493 order_by_face 80 $00A1 $CF80 ; order_by_face f128 $00A1 $CF80
 model $F499 db 8C
-model $F49A order_by_face 0E $C180 $8000 ; order_by_face f14 $C180 $8000
+model $F49A order_by_face 0E $C180 Bootstrap ; order_by_face f14 $C180 $8000
 model $F4A0 db CB
 model $F4A1 db 8D
 model $F4A2 db 0E
@@ -1604,7 +1604,7 @@ model $F4A4 db 80
 model $F4A5 db E1
 model $F4A6 native $CC80 ; native $CC80
 model $F4A9 db 89
-model $F4AA call $800D ; call $800D
+model $F4AA call Bootstrap+13 ; call $800D
 model $F4AD db 21
 model $F4AE native $2880 ; native $2880
-model $F4B1 jump_if_visible2 87 $9F06 ; jump_if_visible2 f135 $9F06
+model $F4B1 jump_if_visible2 87 OpFillPolys+57 ; jump_if_visible2 f135 $9F06

@@ -17,7 +17,8 @@
 ; `$67F7` `$AB7B`, `$67FA` `$AAF5`, `$67FD` `$AA47`. The mission code calls
 ; them (play: `$67D9` 220 482 times, `$67D6` 179 580).
 ;
-; Witness: L1 15082 (death, m2erbe, missions, play, play2).
+; Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ApiVector00:
   JP MoveObject
 

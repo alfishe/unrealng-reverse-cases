@@ -26,7 +26,8 @@
 ; `$D689`, `$D4B8`), prints `$D520` if `$7578` is set, then runs `$BA4A`,
 ; `$CEAB` and the play keys and falls into PlayLoop.
 ;
-; Witness: L1 27 (death, m2erbe, missions, play, play2).
+; Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 StartMission:
   CALL PageBank0
   CALL PageShadowScreen
@@ -122,7 +123,8 @@ l_6A04:
 ; until the view flag `$6A6D` is non-zero; then the next view's loop through
 ; `$6A99`.
 ;
-; Witness: L1 410 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlayLoop:
   CALL PickupAnnounce
   CALL StartViewPass
@@ -202,8 +204,9 @@ LoopHook:
 ; Fill the 32 bytes $90F1-$9110 with $FF
 ;
 ; The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a
-; frame of every view loop, before the world is drawn. Witness: L1 3626 (death,
-; m2erbe, missions, play, play2).
+; frame of every view loop, before the world is drawn. Witness: L1 9794
+; (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play,
+; play2).
 ClearClipRow:
   LD HL,BackBuffer+$0600
   LD D,H
@@ -217,7 +220,8 @@ ClearClipRow:
 ; Fill 24 character rows of 6 bytes of the screen through ScreenRowFill
 ;
 ; A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` /
-; `$D521`. Witness: L1 41 (death, m2erbe, missions, play, play2).
+; `$D521`. Witness: L1 48 (armour, c1, death, fuel, m1complete, m2erbe,
+; m4complete, missions, play, play2).
 FillPanelRows:
   LD A,$FF
   EX AF,AF'
@@ -284,8 +288,8 @@ l_6ACF:
 ;
 ; HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with
 ; a random nibble (`$67D0` -> `$A779`). Runs while `$68BD` < 16 (the damage of
-; the tank? known only from the code). Witness: L1 3601 (death, m2erbe,
-; missions, play, play2).
+; the tank? known only from the code). Witness: L1 9769 (armour, c1, death,
+; fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 FlickerPlayer:
   LD A,(GaugeRecords+$0012)
   CP $10
@@ -303,7 +307,8 @@ FlickerPlayer:
 
 ; Page bank 6, call its panel set-up $D521, page bank 0 back
 ;
-; Witness: L1 27 (death, m2erbe, missions, play, play2).
+; Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PanelSetup:
   CALL PageBank6
   CALL PanelAttributes
@@ -319,7 +324,8 @@ PanelSetup:
 ; weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z:
 ; `$CEE5`, C: remembered in `$6B45`.
 ;
-; Witness: L1 3602 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PlayKeys:
   LD A,(KeyState)
   AND $02
@@ -383,7 +389,8 @@ DamageKeys:
 
 ; A RET: the action of the keys with nothing to do
 ;
-; Witness: L1 14403 (death, m2erbe, missions, play, play2).
+; Witness: L1 40369 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 NoAction:
   RET
 ; This entry point is used by the routine at DamageKeys.
@@ -418,7 +425,7 @@ SelectDamage:
 ; clock (`PrintClock` `$7E3A`), the world and objects and bank 6's `$DB15`,
 ; `$D3C9`, `$E5BE`, `$C0F7`, the keys (`StatusKeys` `$6C60`) until `$6A6D`.
 ;
-; Witness: L1 10 (play, play2).
+; Witness: L1 10 (m2erbe, missions, play).
 StatusLoop:
   CALL PageBank6
   CALL SetStatusBlit
@@ -495,7 +502,7 @@ BriefPageOnce:
 ; The keys of the status view: C to the 3D view, B and M to $704E / $705E, then
 ; the help texts
 ;
-; Witness: L1 530 (play, play2).
+; Witness: L1 530 (m2erbe, missions, play).
 StatusKeys:
   LD A,(KeyState)
   AND $02
@@ -521,7 +528,7 @@ l_6C83:
 
 ; Print the help text $6550 with attribute $1A through $B7AE
 ;
-; Witness: L1 10 (play, play2).
+; Witness: L1 11 (m2erbe, missions, play).
 PrintStatusHelp:
   LD HL,ScreenRowTable+$0050
   LD A,$1A
@@ -591,7 +598,7 @@ TerrainType:
 ; load `$8598` clears it). Record 21 (`$7ADC`) gets type `$8C` at the pad
 ; `$7E89` / `$7E8C` (the block header's 12 bytes at `$DBF1` copied to `$7E82`).
 ;
-; Witness: L1 2 (play).
+; Witness: L1 7 (m1complete, m4complete, play).
 PlaceHelicarrier:
   NOP
   LD A,$C9
@@ -795,7 +802,7 @@ HelicarrierDescent:
 ; Clears `$6760`-`$6763`, `$FF` to `$6764`-`$6767`, the handler +$18/+$19 =
 ; `$DB24` (play: 1 run).
 ;
-; Witness: L1 1 (play).
+; Witness: L1 3 (m1complete, m4complete, play).
 HelicarrierInit:
   LD HL,FaceFlags+$0038
   LD B,$04
@@ -814,7 +821,7 @@ l_DB0C:
 ;
 ; `LD (IX+$19),$DB` / `RET`, the handler's high byte.
 ;
-; Witness: L1 1 (play).
+; Witness: L1 3 (m1complete, m4complete, play).
 SetHelicarrierHandler:
   LD (IX+$19),$DB
   RET
@@ -840,7 +847,7 @@ HelicarrierCode:
 ; world units) of the pad on both axes, the arrival at `$DB61` (play: 27 runs;
 ; m1complete 16239-17099, 85 runs).
 ;
-; Witness: L1 27 (play).
+; Witness: L1 220 (m1complete, m4complete, play).
 HelicarrierWait:
   LD IY,l_7E56+$000F
   LD HL,MissionParams+$0007
@@ -894,7 +901,8 @@ HelicarrierArrival:
 ; writes `RET` at `$DB71` and prints "MISSION:COMPLETE:PROCEED:TO:PICKUP"
 ; (`$DB97`). Runs once per 3D frame.
 ;
-; Witness: L1 3483 (death, m2erbe, missions, play, play2).
+; Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 PickupAnnounce:
   NOP
   LD A,(GoalFlag)

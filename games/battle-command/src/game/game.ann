@@ -12,122 +12,128 @@
 #   @isub $ADDR LD HL,-6            the instruction written so
 #   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
 #   @inline $ADDR                   a routine that reads its data after the CALL
+#   @names BANK PATH, @bank $ADDR BANK   an address in RAM bank BANK, named by the .ann of that bank
 
-@bank $C409 TitleMenu 6
+@names 3 ../bank3/bank3.ann ; RAM bank 3 at $C000 (src/bank3)
+@names 4 ../bank4/bank4.ann ; RAM bank 4 at $C000 (src/bank4)
+@names 6 ../bank6/bank6.ann ; RAM bank 6 at $C000 (src/bank6)
+@names 7 ../bank7/bank7.ann ; RAM bank 7 at $C000 (src/bank7)
+
+@bank $C409 6
 
 @isub $6925 JP TitleMenu
 
-@bank $D521 PanelAttributes 6
+@bank $D521 6
 
 @isub $6B35 CALL PanelAttributes
 
-@bank $DBB6 SetStatusBlit 6
+@bank $DBB6 6
 
 @isub $6BCA CALL SetStatusBlit
 
-@bank $DA8C StatusMapFrame 6
+@bank $DA8C 6
 
 @isub $6BFC CALL StatusMapFrame
 
-@bank $DB15 StatusMap 6
+@bank $DB15 6
 
 @isub $6C1D CALL StatusMap
 
-@bank $D3C9 StatusViewMessage 6
+@bank $D3C9 6
 
 @isub $6C20 CALL StatusViewMessage
 
-@bank $E5BE BlinkMarker 6
+@bank $E5BE 6
 
 @isub $6C23 CALL BlinkMarker
 
-@bank $C0F7 PrintStatusGrid 6
+@bank $C0F7 6
 
 @isub $6C26 CALL PrintStatusGrid
 
 @isub $6CD4 CALL StatusViewMessage
 
-@bank $DACB BriefingMapFrame 6
+@bank $DACB 6
 
 @isub $708B CALL BriefingMapFrame
 
-@bank $DB64 BriefingMap 6
+@bank $DB64 6
 
 @isub $708E CALL BriefingMap
 
-@bank $C079 BriefPageBox 6
+@bank $C079 6
 
 @isub $70B7 CALL BriefPageBox
 
-@bank $D27C DrawPointer 6
+@bank $D27C 6
 
 @isub $7202 CALL DrawPointer
 
-@bank $C4C4 FillPolygon 3
+@bank $C4C4 3
 
 @isub $7298 CALL FillPolygon
 
-@bank $D08C DrawDebris 3
+@bank $D08C 3
 
 @isub $72A9 CALL DrawDebris
 
-@bank $D1EC MoveAllDebris 3
+@bank $D1EC 3
 
 @isub $72AC CALL MoveAllDebris
 
-@bank $C9A7 DrawLine 3
+@bank $C9A7 3
 
 @isub $72B9 CALL DrawLine
 
-@bank $C000 StartTune 4
+@bank $C000 4
 
 @isub $72CD CALL StartTune
 
-@bank $C0D2 MusicTick 4
+@bank $C0D2 4
 
 @isub $72D8 CALL MusicTick
 
-@bank $C1A2 StopMusic 4
+@bank $C1A2 4
 
 @isub $72EF CALL StopMusic
 
-@bank $D58C UpdatePanelBars 6
+@bank $D58C 6
 
 @isub $732D CALL UpdatePanelBars
 
-@bank $FE95 UnpackPicture 7
+@bank $FE95 7
 
 @isub $74B4 CALL UnpackPicture
 
-@bank $CFCD SetClipWidth 3
+@bank $CFCD 3
 
 @isub $74D7 CALL SetClipWidth
 
-@bank $CBF4 ShowWaitPointer 6
+@bank $CBF4 6
 
 @isub $758E CALL ShowWaitPointer
 
 @isub $7591 CALL DrawPointer
 
-@bank $CA23 CopyMissionTextB6 6
+@bank $CA23 6
 
 @isub $7594 CALL CopyMissionTextB6
 
-@bank $D251 RestorePointerBackground 6
+@bank $D251 6
 
 @isub $83C7 CALL RestorePointerBackground
 
-@bank $D0CA SavePointerBackground 6
+@bank $D0CA 6
 
 @isub $83CD CALL SavePointerBackground
 
-@bank $D142 CopyViewUnderPointer 6
+@bank $D142 6
 
 @isub $83D3 CALL CopyViewUnderPointer
 
 @isub $83D6 CALL DrawPointer
 
-@bank $D1BE DrawPointerInView 6
+@bank $D1BE 6
 
 @isub $83D9 CALL DrawPointerInView
 
@@ -137,11 +143,11 @@
 
 @isub $8416 CALL DrawPointer
 
-@bank $DA09 QuitPrompt 6
+@bank $DA09 6
 
 @isub $8448 CALL QuitPrompt
 
-@bank $CD63 Delay 6
+@bank $CD63 6
 
 @isub $84FF CALL Delay
 
@@ -230,7 +236,7 @@ $67BD MouseDelta ; shared: the mouse delta (ReadMouse) and the polygon fill's bo
 @about The mission block (side 2, loaded at bank 0 $DBC5) is code as well as data; it reaches the resident routines through this table of 22 JP instructions at fixed addresses, so the resident code may move between releases without relinking the missions. Recording play: every vector runs (L1 counts in each entry); the callers are in $E1xx-$EBxx of the mission block.
 $67BE c ApiVector00 ; The mission code's service vectors: 22 JP instructions, $67BE-$67FF
 > Each vector is a `JP` to a resident routine in bank 2 or 5: `$67BE` `$BFD1`, `$67C1` `$B766`, `$67C4` `$BCDA`, `$67C7` `$BD41`, `$67CA` `$C957`, `$67CD` `$CA3B`, `$67D0` `$A779`, `$67D3` `$A7AE`, `$67D6` `$A799`, `$67D9` `$A82C`, `$67DC` `$B660`, `$67DF` `$B6D1`, `$67E2` `$B282`, `$67E5` `$B6BD`, `$67E8` `$A899`, `$67EB` `$B611`, `$67EE` `$7040`, `$67F1` `$CC3C`, `$67F4` `$AA63`, `$67F7` `$AB7B`, `$67FA` `$AAF5`, `$67FD` `$AA47`. The mission code calls them (play: `$67D9` 220 482 times, `$67D6` 179 580).
-> Witness: L1 15082 (death, m2erbe, missions, play, play2).
+> Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $67C1 ApiVector01
 $67C4 ApiVector02
 $67C7 ApiVector03
@@ -270,49 +276,49 @@ $68F4 c Entry ; The game's entry from the bootstrap: stack, IM 2 table, border, 
 
 $6928 c ResetCollisionTables ; Reset the collision tables of bank 0 before a mission: clear bit 7 of $C774-$C78A, fill $C648-$C773 with $FF, point the camera at the player
 > Called from bank 6 `$CA8B` (the catalogue screen): pages bank 0, clears bit 7 of `$C774-$C78A` (the slot list), sets the 300 bytes from `$C648` (CollisionTables) to `$FF`, calls CameraToPlayer `$C357` (bank 0: all three addresses are bank 0's, bank 6 holds code there), returns with bank 6 paged (`JP $7278`).
-> Witness: L1 15 (menu, missions, search).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module missionflow ; The mission's start, the play loops of the three views, the play keys
 @about StartMission $694B sets the play state from the mission block's header ($DBD9-$DBDA), draws the panel through bank 7 ($74AA), and then runs PlayLoop $6A0C until the flag at $6A6D (the operand of LD A,0 at $6A6C) says the view changes. The views each have their own loop: the 3D view (PlayLoop), the Dragonfly's flight view ($6AB9, after its launch), the status view ($6BC7) and the damage board ($6C93, key D). The loops call the same world, object and enemy steps; only the drawing differs.
 @about The key codes come from the interrupt's keyboard scan (ScanKeyboard $8910) in KeyCode $8979 with the new-key flag in bit 1 of KeyFlags $8978.
 $694B c StartMission ; Start the loaded mission: the play state from the header, the panel, the counters, then PlayLoop
 > Reads the mission block's header (`$DBDA` -> `$BBF2`, `$DBD9` -> `$BBFA`), clears `$BC33`, sets the 3D view's blit (`$83E6` = `$8999`), draws the panel (`DrawBank7Picture` `$74AA` with DE = `$DD75`), resets the view parameters at `$9A6C`-`$9ABB`, calls the bank-6 set-up `$D521`, the weapon bars (`$7336`, `$73BA`), `$C632`, `$AE42`; clears the play flags (`$8459`, `$6A6D`, `$87E0`, `$D689`, `$D4B8`), prints `$D520` if `$7578` is set, then runs `$BA4A`, `$CEAB` and the play keys and falls into PlayLoop.
-> Witness: L1 27 (death, m2erbe, missions, play, play2).
+> Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $6A0C c PlayLoop ; One frame of the 3D view: draw, keys, world, objects, enemies, HUD; loop until the view changes
 > Calls in order: `$DB71`, the 3D frame (`$9882`), the play keys (`PlayKeys` `$6B3B`), `$B9F6`, the clipping marks (`ClearClipRow` `$6A9D`), `$BAAC`, the world (`$AD45`, `$AEA0`), `$BBF1`, `$BD98`, Bank3Step `$72A3` (bank 3 DrawDebris / MoveAllDebris), CameraSinCosAgain `$BA40`, DrawRadar `$C05E`, DrawObjectsInOrder `$BF53`, CollisionPass `$C7BC` and DrawSightOverlay `$C4CD` (bank 0), `$988D`, the message timer (`$7D5D`), the weapon bars (`$7327`), the object table (`$C026`), `$6B1D`, the mission's goal hook (`CALL LoopHook` at `$6A66`, its operand patched by the mission load: Blast Em Mission `$EB60`; LoopHook `$6A9C` is a `RET` in the image) and `$7256`, until the view flag `$6A6D` is non-zero; then the next view's loop through `$6A99`.
-> Witness: L1 410 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $6A57 PlayLoopTail ; the second half of the frame, also run alone after a view change
 $6A6C ViewChangeFlag ; LD A,n: n ($6A6D) non-zero ends the loop
 $6A91 NextView
 $6A9C LoopHook ; a RET the menus patch ; clear the flag and return into the loop $6A99 names (default the title menu $C409)
 
 $6A9D c ClearClipRow ; Fill the 32 bytes $90F1-$9110 with $FF
-> The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame of every view loop, before the world is drawn. Witness: L1 3626 (death, m2erbe, missions, play, play2).
+> The row of the back buffer `$90F1` (its line 75 + 16) set to `$FF` once a frame of every view loop, before the world is drawn. Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $6AAB c FillPanelRows ; Fill 24 character rows of 6 bytes of the screen through ScreenRowFill
-> A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$D521`. Witness: L1 41 (death, m2erbe, missions, play, play2).
+> A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$D521`. Witness: L1 48 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $6AB9 c DragonflyViewLoop ; The Dragonfly's flight view: the monitor frame from bank 7, the narrow blit, then the world and objects seen from the Dragonfly
 > Entered only from LaunchDragonfly (`$C30F`, `LD HL,$6AB9` into NextView), after the camera `$B9F4` points at the Dragonfly's record; ScreenList node `$7572` names it, but no transition word leads there. Draws the monitor frame (`DrawBank7Picture` with DE = `$F9CD`), sets the blit to `$8A98`, then per frame `$9882`, `$B9F6`, `ClearClipRow`, `$BAAC`, `$AD45`, `$AEA0`, `$BBF1`, `$BD98`, `$BA40`, `$BF53`, `$C7BC`, `$C4CD`, `$988D`, `$C026`, `$7256` until `$6A6D`; then the 3D blit again and `NextView`.
 > Witness: L1 1 (play).
 
 $6B1D c FlickerPlayer ; Toggle the low nibble of object 0's byte +7 from a random number while $68BD is below 16
-> HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a random nibble (`$67D0` -> `$A779`). Runs while `$68BD` < 16 (the damage of the tank? known only from the code). Witness: L1 3601 (death, m2erbe, missions, play, play2).
+> HL = `$75F7` (object 0, +7): if the byte is non-zero, XOR its low nibble with a random nibble (`$67D0` -> `$A779`). Runs while `$68BD` < 16 (the damage of the tank? known only from the code). Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $6B32 c PanelSetup ; Page bank 6, call its panel set-up $D521, page bank 0 back
-> Witness: L1 27 (death, m2erbe, missions, play, play2).
+> Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $6B3B c PlayKeys ; The play keys: a new key code in $8979 jumps to its action
 > Returns unless bit 1 of `$8978` is set and the code differs from the last (`$6B45`, the operand of `LD C,0`). E: `$843F` (the quit prompt), K and J: the selected weapon's aim pair (the `JP` targets `$6B55` and `$6B50`, patched by SelectWeapon from `$7B89` + 8 x type, words 0 and 1; `$6BB0` NoAction in the image), M: the status view (`$705A`), D: the damage board (`$6BC2`), 1-4: weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z: `$CEE5`, C: remembered in `$6B45`.
-> Witness: L1 3602 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $6B45 LastKey ; the operand of LD C,n: the last key code acted on
 
 $6B95 c DamageKeys ; The keys of the damage board (called only from DamageLoop $6CB9): B to the status view $6BC7, C back to the 3D view, D the damage board again
 > Witness: L1 3 (play).
 
 $6BB0 c NoAction ; A RET: the action of the keys with nothing to do
-> Witness: L1 14403 (death, m2erbe, missions, play, play2).
+> Witness: L1 40369 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $6BB1 SelectPlay
 $6BB4 SelectLoop ; HL = the loop to run next ($6A99), A remembered, then the view flag set
 
@@ -321,7 +327,7 @@ $6BC2 c SelectDamage ; The key D: HL = $6C93, the damage board's loop, then Sele
 
 $6BC7 c StatusLoop ; The status view's loop: the panel through bank 7 and the status texts, no 3D frame
 > Pages bank 6 for `$DBB6`, draws `DrawBank7Picture` DE = `$D325`, prints the help texts (`$6C8B`), sets the blit to `$DBBD`, then per frame the mission clock (`PrintClock` `$7E3A`), the world and objects and bank 6's `$DB15`, `$D3C9`, `$E5BE`, `$C0F7`, the keys (`StatusKeys` `$6C60`) until `$6A6D`.
-> Witness: L1 10 (play, play2).
+> Witness: L1 10 (m2erbe, missions, play).
 
 $6C44 c BriefPage ; The console's BRIEF page (node $7544, key B in the status view): the briefing text once ($6C56), then the clock and keys loop
 > Witness: L1 1 (play).
@@ -330,10 +336,10 @@ $6C56 c BriefPageOnce ; A NOP patched to RET after the first call of $70B6; Stat
 > Witness: L1 1 (play).
 
 $6C60 c StatusKeys ; The keys of the status view: C to the 3D view, B and M to $704E / $705E, then the help texts
-> Witness: L1 530 (play, play2).
+> Witness: L1 530 (m2erbe, missions, play).
 
 $6C8B c PrintStatusHelp ; Print the help text $6550 with attribute $1A through $B7AE
-> Witness: L1 10 (play, play2).
+> Witness: L1 11 (m2erbe, missions, play).
 
 $6C93 c DamageLoop ; The damage board's loop (key D): PicDamageBoard from bank 7 at $C000, the weapon icons and bars, then world and objects
 > Witness: L1 1 (play).
@@ -343,47 +349,47 @@ $6C93 c DamageLoop ; The damage board's loop (key D): PicDamageBoard from bank 7
 $6CE4 b PatchSpace 7 ; Seven zero bytes (NOP) before BorderBlack: room for a patch
 
 $6CEB c BorderBlack ; Border 0 (the stored colour $6CF1 cleared)
-> Witness: L1 66 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 80 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $6CEF BorderNext ; the border one colour on (a debug aid, known only from the code)
 
 $6CFB c AttrBox ; Fill an attribute box from a 5-byte record: width, height, column, attribute, row
-> HL -> B (width), C (height), E (column), A (attribute), L (row); falls into AttrBoxAt. Witness: L1 350 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> HL -> B (width), C (height), E (column), A (attribute), L (row); falls into AttrBoxAt. Witness: L1 383 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6CFD c AttrBoxAt ; AttrBox with B already set (HL -> height, column, attribute, row)
 $6CFE AttrBoxAtC
-> Witness: L1 319 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 474 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6D05 c AttrBoxRC ; Fill C rows of B attribute bytes with A' from row L, column E ($5800 + 32L + E)
-> Witness: L1 70 (c1, menu, missions, play, play2).
+> Witness: L1 483 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6D22 c ScreenRowFill ; Fill E pixel lines of D bytes with A from the line table $6500, column C
-> Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 200 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Uses the line address table at `$6500` (2 bytes a pixel line). Witness: L1 224 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6D42 c PointerZones ; When the pointer is clicked, call the zone of the current screen that holds the pointer
-> `LD A,n`: n (`$6D43`) is set by the fire test of the interrupt (`$7DC2`). The zone table (HL, the operand at `$6D47`, set per screen by `SetScreen` `$7060`) has 6-byte records x1, x2, y1, y2 and a routine; the first record with x1 <= X < x2 and y1 <= Y < y2 (X `$9715`, Y `$9716`) is called. A 0 byte ends the table. Witness: L1 30082532 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> `LD A,n`: n (`$6D43`) is set by the fire test of the interrupt (`$7DC2`). The zone table (HL, the operand at `$6D47`, set per screen by `SetScreen` `$7060`) has 6-byte records x1, x2, y1, y2 and a routine; the first record with x1 <= X < x2 and y1 <= Y < y2 (X `$9715`, Y `$9716`) is called. A 0 byte ends the table. Witness: L1 36012878 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $6D43 ClickFlag ; the operand: non-zero = a click to act on
 $6D47 ZoneTable ; the operand: the current screen's zone table
 
 $6D7F c CopyGraphic ; Copy a C x B graphic from HL' to the screen at pixel line A, column BC
-> The line address table `$6500` again. Witness: L1 416 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> The line address table `$6500` again. Witness: L1 470 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6DA1 c CodeSmallFont ; Control code 7: switch to the small font, then CodeAt
-> Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6DA6 c CodeSmallChars ; Control code 5: the small font's column (6-pixel cells) from the next byte; the font is not switched
 > Witness: known only from the code (no string of the recordings uses code 5).
 
 $6DA9 c SmallFontColumn ; A = column in 6-pixel cells: the byte ($6DFD) and the bit shift ($6DEC)
-> Witness: L1 1423 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1731 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6DC0 c SmallFontAdvance ; The next 6-pixel cell, a new line past column 32
-> Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6DDA c SmallGlyph ; HL = SmallFont + 5 (A - "0")
-> Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6DE8 c PrintSmallChar ; Print a small-font character at the current cell: 5 lines, one of four shifts through $6E9F
-> Witness: L1 17639 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 21016 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6E9F w ShiftRoutines 4 ; The four shift routines of PrintSmallChar (shift 0, 6, 4, 2 bits)
 
@@ -391,19 +397,19 @@ $6EA7 c CodeColumn ; Control code 0: the next byte is the column ($6FF8)
 > Witness: known only from the code (no recording counts it: it is entered by the CALL patched at `$6FD6`).
 
 $6EAE c CodeAtColumn ; Control code 2: a row (CodeAt) then a column
-> Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $6EB3 c CodeAt ; Control code 1: the next byte is the character row: its line pointers and attribute address
-> Witness: L1 859 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 873 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $6ED7 c GlyphAddress ; HL = the 8x8 glyph of character A: $F5E4 + 8 (A - $20) (bank 6)
-> Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $6EE5 c NextColumn ; The column one on, a new line after 31
 > Witness: known only from the code.
 
 $6EF1 c CodeNumber ; Control code 8: print the byte at the address that follows as three decimal digits
-> Witness: L1 140 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 226 (armour, death, m10, m1complete, m4complete, menu, missions, play, play2).
 
 $6EFB c CodeNumberA ; Control code 3: three decimal digits of a constant: LD A,$5E overwrites A, so it prints "094"; no string uses it
 > Witness: known only from the code.
@@ -415,65 +421,65 @@ $6F2D b NumberText 4 ; Three digits and $FF: the buffer of CodeNumber
 
 $6F31 c DivideDigit ; A / B: C the quotient, A the rest; the digit stored at HL
 $6F3D DigitChar ; A (0-15) as a digit or a letter at HL
-> Witness: L1 280 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 452 (armour, death, m10, m1complete, m4complete, menu, missions, play, play2).
 
 $6F4D c CodeNewLine ; Control code 11: the next character row, column 0
-> Witness: L1 156 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 164 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $6F67 c SmallNewLine ; Control code 10: the small font's next line (9 pixel lines down: ScreenRowTable + $12), column = the margin
-> Witness: L1 301 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 326 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6F79 c CodeLeftMargin ; Control code 9: the next byte is the left margin ($6F58)
-> Witness: L1 169 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 187 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6F80 c CodeMarginHere ; Control code 12: the margin = the current column
 > Witness: known only from the code.
 
 $6F88 c CodeInk ; Control code 13: the next byte is the attribute of the characters ($7025)
-> Witness: L1 1325 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1463 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $6F8F w ControlCodes 2 ; The 18 control code routines of PrintString (codes 0-17)
 > Read by `PrintString` at `$6FC7`: code n calls the word n. 14 used, 4 zero.
 
 $6FB3 c PrintString ; Print the string at HL: characters, control codes below $20, tokens from $82, $FF the end
-> Witness: L1 2130 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 34892 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $6FD6 CallControl ; CALL n: n ($6FD7) patched with the control code's routine
 
 $6FF0 c PrintChar ; Print the 8x8 character A at the current cell and its attribute ($7025), then the next column
 > In column 31 it writes no attribute and starts a new line (CodeNewLine) instead (`$700F`).
-> Witness: L1 6525 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 6723 (armour, c1, controls, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $7029 c CodeSmallAt ; Control code 6: the small font's line from the next byte
-> Witness: L1 1122 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1405 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module screens ; The menu screens: the screen list, the screen switch, the help lines
 @about The menus are a list of screens (ScreenList $74E6): each screen is a pair of words, the routine that draws it and its pointer zone table. SetScreen $7060 takes the Nth pair (E = 2N): the routine goes to the loop's return address ($6A99) and the zone table to PointerZones; the view flag ends the current loop.
 $7040 c ScreenFour ; Remember key A, screen 2 (E = 4); the mission code's vector $67EE
-> Witness: L1 9 (missions, play, play2).
+> Witness: L1 11 (c1, controls, m10, m1complete, m4complete, menu, missions).
 
 $7047 c ScreenSix ; Remember key A, screen 3 (E = 6)
 > Witness: known only from the code.
 
 $704E c ScreenEight ; Remember key A, screen 4 (E = 8)
-> Witness: L1 14 (missions, play, play2).
+> Witness: L1 14 (m2erbe, missions, play, play2).
 
 $7055 c ScreenFromClick ; Key "C", screen 0
-> Witness: L1 15 (menu, missions, play, play2).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $705A c ScreenZero ; Screen 0 (E = 0)
-> Witness: L1 91 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 108 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $705E c ScreenTwo ; Screen 1 (E = 2)
-> Witness: L1 12 (menu, missions, play2).
+> Witness: L1 13 (m4complete, menu).
 
 $7060 c SetScreen ; Switch to entry E/2 of the screen list: the draw routine to $6A99, the zone table to $6D47
-> Witness: L1 121 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 148 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $707E c SetViewFlag ; $6A6D = $FF: the current loop ends
-> Witness: L1 10 (play, play2).
+> Witness: L1 150 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7084 c ShowBriefingMapOnce ; Once: the briefing map (bank 6's BriefingMapFrame $DACB and BriefingMap $DB64), then patched to RET
-> Witness: L1 10 (menu, play, play2).
+> Witness: L1 10 (menu).
 $709E BriefingTextOnce ; the briefing's TEXT button: the text at ($70A3), once
 
 $70B6 c BriefPageText ; Once: bank 6's box $C079, the briefing text at ($70A3) in the console's screen, the attribute box $C0BB
@@ -481,34 +487,34 @@ $70B6 c BriefPageText ; Once: bank 6's box $C079, the briefing text at ($70A3) i
 
 @module catalogue ; The mission catalogue: the directory load, the text of a mission
 $70C6 c CopyCatalogueHead ; Copy the catalogue's first 32 bytes to bank 6 $CF85 and the 1 K from $CB84 to the back buffer
-> Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 32 (menu, missions, search).
+> Pages bank 4, copies `$CB64` (32 bytes) via `$8AF1` to bank 6 `$CF85`, then `$CB84` (1024 bytes) to `$8AF1`. Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $70F6 c CopyMissionText ; Copy mission ($757D)'s texts from the catalogue (bank 4) to bank 6 $DBF3
-> Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143` and `$7151`, the end; the text is copied through `$8AF1` to `$DBF3`; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 25 (menu, missions, search).
+> Record n of the 8-byte index at `$CCA6`: the offset, two words stored at `$7143` and `$7151`, the end; the text is copied through `$8AF1` to `$DBF3`; `$70A3` and `$7C55` get the addresses of its two parts. Witness: L1 29 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $715D c LoadDirectory ; Load the catalogue from side 2: the 17-byte header "DIRECTORY", then its block to bank 4 $CB64
-> Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` ("loading"), pages bank 4 and loads the block (length from the header `$8AFC`) to `$CB64`; retries until its first 9 bytes are "MISSION:T" (`$71BB`). Witness: L1 13 (c1, menu, missions, search).
+> Loops until a header whose name is "DIRECTORY" (`$71B3`) loads, prints `$C90D` ("loading"), pages bank 4 and loads the block (length from the header `$8AFC`) to `$CB64`; retries until its first 9 bytes are "MISSION:T" (`$71BB`). Witness: L1 16 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $719B c PrintRewind ; Print bank 6 $C93E
-> Witness: L1 25 (c1, menu, missions, search).
+> Witness: L1 31 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $71A1 c IsMissionHeader ; Z if the header at $8AF2 starts "MISSHDR:" (8 bytes)
-> Witness: L1 19 (c1, m10, m2erbe, m2ocean, missions, search).
+> Witness: L1 23 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 
 $71AB c IsMissionBlock ; Z if the block at $DBC6 starts "MISSION::" (9 bytes)
 > Witness: known only from the code.
 
 $71B3 c IsDirectoryHeader ; Z if the header at $8AF2 is "DIRECTORY"
-> Witness: L1 12 (c1, menu, missions, search).
+> Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $71BB c IsCatalogue ; Z if the catalogue at $CB64 starts "MISSION:T"
-> Witness: L1 12 (c1, menu, missions, search).
+> Witness: L1 15 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $71C1 c CompareNine ; B = 9, then CompareB
-> Witness: L1 24 (c1, menu, missions, search).
+> Witness: L1 30 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $71C3 c CompareB ; Compare B bytes at DE and HL: Z when equal
-> Witness: L1 41 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+> Witness: L1 454 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $71CB t MissionBlockName ; "MISSION::", the name a mission block starts with
 
@@ -520,80 +526,80 @@ $71E6 t CatalogueName ; "MISSION:T", the start of the catalogue
 
 @module tape ; The tape: one block through the game's own LD-BYTES, the bank to stay in
 $71F1 c LoadBlock ; Load a tape block to IX, length DE, flag A (carry: load) with the sound and the menu's flag set aside
-> Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, calls `LdBytes` `$8617`; restores `$D283` = `$C000` and the border, carry = loaded. Witness: L1 68 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+> Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`, calls `LdBytes` `$8617`; restores `$D283` = `$C000` and the border, carry = loaded. Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module paging ; The paging routines: one entry per bank, the page kept in $728A
 $7225 c WaitFrameDone ; Wait until the interrupt clears $83BA (the 3D frame's blit is done)
-> Witness: L1 3742 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 3076073 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $722C c BriefingMapLegend ; The briefing map's legend: wait for the frame, the attribute boxes $DB01 and $DB0B, the text $DAE1 ("Roads." / "Rivers."); called by bank 6 BriefingMap $DB64
-> Witness: L1 10 (menu, play, play2).
+> Witness: L1 10 (menu).
 
 $7241 c StatusMapLegend ; The status view map's legend: wait for the frame, the boxes $DB10 and $DAC1, the text $DAA1; called by bank 6 StatusMap $DB15
-> Witness: L1 40 (menu, missions, play, play2).
+> Witness: L1 40 (m2erbe, missions, play).
 
 $7256 c FirstFrameHook ; A NOP the first time: WaitFrameDone, then patched to RET
-> Witness: L1 6587 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 13555 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $725F c PageBank0Main ; A = 0 then PageMain
-> Witness: L1 3735 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 9925 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7260 c PageMain ; Set the screen bit ($7284, the OR operand) to A and re-page the current bank
-> Witness: L1 3878 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 10090 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7268 c PageShadowScreen ; A = 8 (the shadow screen bit of $7FFD) then PageMain
-> Witness: L1 143 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 165 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $726C c PageBank3 ; Page bank 3 at $C000
-> Witness: L1 158933 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 266011 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7270 c PageBank4 ; Page bank 4 at $C000
-> Witness: L1 76703 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 135412 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7274 c PageBank7 ; Page bank 7 at $C000
-> Witness: L1 122 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 142 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7278 c PageBank6 ; Page bank 6 at $C000
-> Witness: L1 206018 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 336465 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $727C c PageBank0 ; Page bank 0 at $C000
-> Witness: L1 181126 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 263276 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $727D c PageBankA ; Page bank A: kept in $728A, OR the screen bit, OUT to $7FFD
-> Witness: L1 870750 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1454779 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $7280 PageOut
 $7284 ScreenBit ; the OR operand: 0 or 8 (the shadow screen)
 
 $7288 c SaveBank ; Keep the current bank ($728A) in the operand $729D of RestoreBank
-> Witness: L1 51896 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 134817 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $728A CurrentBank ; the operand of LD A,n: the bank paged now
 
 $7290 c Bank3SetObject ; Save the bank, call bank 3 $C4C4 with A, restore
-> Witness: L1 38817 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 94721 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $729B c RestoreBank ; Page the bank SaveBank kept (A and the flags kept)
-> Witness: L1 13069 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 134816 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $72A3 c Bank3Step ; Save the bank, call bank 3 $D08C and $D1EC, restore
-> Witness: L1 3602 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $72B1 c Bank3Lookup ; Save the bank, call bank 3 $C9A7 with A, restore
-> Witness: L1 4996 (death, m2erbe, missions, play, play2).
+> Witness: L1 18311 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $72BE c Bank3Render ; Page bank 3, run the 3D frame driver $990F, page bank 6
-> Witness: L1 2954 (c1, death, m2erbe, menu, missions, play, play2, search).
+> Witness: L1 3712 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $72C6 c Bank4Start ; Save the bank, call bank 4 $C000 with A = 0, restore
-> Witness: L1 21 (c1, menu, missions, search).
+> Witness: L1 22 (c1, controls, fuel, m2erbe, menu, missions, play, play2).
 
 $72D2 c Bank4Tick ; The interrupt's call of bank 4 $C0D2, the bank kept and restored
-> Witness: L1 76552 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 135242 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $72DE c Bank0SoundOff ; Save the bank, call bank 0 $D807 (the sound off), restore
-> Witness: L1 21 (c1, menu, missions, search).
+> Witness: L1 26 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $72E9 c Bank4Call ; Save the bank, call bank 4 $C1A2, restore
-> Witness: L1 29 (c1, menu, missions, search).
+> Witness: L1 32 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 @module hud ; The panel: the weapon slots, their bars and the gauges
 @about The weapon table $68AB has nine 6-byte records (one per weapon kind: slot marks, bar position, colour, count); the four loaded slots are $8368, 6 bytes each, with the ammunition at +5 ($836D for slot 1, death: 79 at frame 7939, 69 at 9939).
@@ -607,43 +613,43 @@ $72F9 c DrawWeaponBars ; Redraw each weapon record of $68AB whose value changed:
 > Witness: L1 4 (play).
 
 $7327 c UpdateSlotBars ; Bank 6 UpdatePanelBars $D58C (heading strip, bearing, speed, fuel), then UpdateAmmoBars
-> Witness: L1 3601 (death, m2erbe, missions, play, play2).
+> Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $7336 c UpdateAmmoBars ; For the four slots of $8368: a bar for each ammunition count that changed (records $68C9)
-> Witness: L1 3628 (death, m2erbe, missions, play, play2).
+> Witness: L1 9800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $7383 c DrawDamagePanel ; The nine weapon icons of the damage board ($834A records) with their frames
 > Witness: L1 1 (play).
 
 $73BA c DrawSlotIcons ; The icons of the four loaded slots ($8368 records, $68CD) with their frames
-> Witness: L1 27 (death, m2erbe, missions, play, play2).
+> Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $73E8 c DrawIcon ; Draw weapon icon A (1-19) from the icon table $75CA through CopyGraphic, 3 x 24
-> Witness: L1 117 (death, m2erbe, missions, play, play2).
+> Witness: L1 133 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $7407 c IconFrame ; The attribute frame of an icon at column E, pixel line A
 > Witness: L1 9 (play).
 
 $7438 c DrawBarWide ; A bar of A pixels on line E, $7E pattern, 32 wide
-> Witness: L1 3794 (death, missions, play, play2).
+> Witness: L1 10058 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $744F c DrawBar ; A bar of A pixels on line E, $F8 pattern, 24 wide
-> Witness: L1 5389 (death, m2erbe, missions, play, play2).
+> Witness: L1 11561 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $7464 c BarLines ; The bar's pixel lines through the line table $6500, $AA / $55 dither
-> Witness: L1 9183 (death, m2erbe, missions, play, play2).
+> Witness: L1 21619 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $74AA c DrawBank7Picture ; Page bank 7 and run its picture routine $FE95 with DE (a picture), then the bank back
-> The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F9CD` map, `$D325` status, `$C000` Dragonfly). Clears `$83BF` (the play flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 122 (c1, death, m2erbe, menu, missions, play, play2, search).
+> The panels and frames of the views are bank 7's pictures (DE = `$DD75` play, `$F9CD` map, `$D325` status, `$C000` Dragonfly). Clears `$83BF` (the play flag of the interrupt) and resets bank 6's `$D283` = `$C000`. Witness: L1 142 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $74C9 c Bank3FillFF ; A = $FF then Bank3Fill
-> Witness: L1 15 (menu, missions, search).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $74CD c Bank3Fill5F ; A = $5F then Bank3Fill
-> Witness: L1 15 (menu, missions, search).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $74CF c Bank3Fill ; Save the bank, call bank 3 $CFCD with A, restore
-> Witness: L1 30 (menu, missions, search).
+> Witness: L1 38 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $74DD c Bank0Call ; Page bank 0, call $CEA4, page bank 6
 > Witness: known only from the code.
@@ -653,17 +659,17 @@ $74E6 b ScreenList 2 ; The menu screens: the current pointer, then pairs of word
 $7578 AwolState ; the AWOL state: 0 inside, 1 beyond the extent (GOING AWOL), 2 more than 4 beyond (desertion); SetAwolState $D4E9
 
 $757C c ScreenOfMission ; Screen 1 unless the current mission ($757D) is $FF or not completed
-> `LD A,n`: n (`$757D`) is the mission the tape gave (`$8528`: the header's digit - "1"). Witness: L1 10 (play).
+> `LD A,n`: n (`$757D`) is the mission the tape gave (`$8528`: the header's digit - "1"). Witness: L1 10 (menu).
 $757D CurrentMission ; the operand: the mission number 0-9 ($FF none)
 
 $7588 c MissionLoaded ; If a mission is loaded: bank 6 $CBF4, $D27C, $CA23, then screen 0
 > Witness: known only from the code (entered by a jump from `$75B8`).
 
 $759A c LoadMissionIfAllowed ; Load the mission the tape holds; mission 10 only when the nine completion flags are set
-> If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z` back into the catalogue's zone loop; recording m10: the catalogue stays on screen, 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe, m2ocean, missions).
+> If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z` back into the catalogue's zone loop; recording m10: the catalogue stays on screen, 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 22 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 
 $75BB c MissionDone ; A = the completion flag of the current mission ($6799 + n): NZ when done
-> Witness: L1 28 (m10, m2erbe, m2ocean, missions, play).
+> Witness: L1 32 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2).
 
 $75CA w IconTable 2 ; The addresses of the 19 weapon icons (bank 6), read by DrawIcon
 > 19 words at `$75CA-$75EF`: icon n at word n-1.
@@ -695,22 +701,22 @@ $7D35 b SmallFontLeftover 16 ; 28 bytes after the font that no routine reads or 
 @module interrupt ; The IM 2 handler and the jobs it runs every frame
 @about The handler $8383 runs at every interrupt (the 257 vectors at $8200 all give $8383): it switches to its own stack (top $7C49 in bank 5), saves every register, and calls the tick routines: the sound ($7E6E bank 0), bank 4's tick, the mission clock, the warning blinkers, the keyboard, the pointer, the message timer; then in play (the flag $83BF) bank 6's display jobs, or in the menus the panel blits and the 3D view's blit (the routine in $83E6) when the frame is ready ($83BA).
 $7D51 c SetMessage ; Store the message timer: the attribute (IY+3) to $7D64, the hook $7D5D enabled
-> Witness: L1 61 (death, missions, play, play2).
+> Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 
 $7D5D c MessageOnce ; Once after SetMessage: the timer $87D7 = 100; bit 4 of $7D64 set: SoundExplosion $D86B and "TANK:HIT" $FFCF, clear: SoundEffectA $D84E and "COLLIDED" $FFDB; then RET again
-> Patched to `RET` after one run. Witness: L1 3601 (death, m2erbe, missions, play, play2).
+> Patched to `RET` after one run. Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $7D80 c PointerTick ; Read the controls, move the pointer within the screen, test the fire
-> `ReadControls` `$971A`, the X and Y steps (`$985E`, `$985F`) added to the pointer (`$7DC0`, `$7DC1`) within 8-247 and 8-183, then `PointerFire` `$7DC2`. Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> `ReadControls` `$971A`, the X and Y steps (`$985E`, `$985F`) added to the pointer (`$7DC0`, `$7DC1`) within 8-247 and 8-183, then `PointerFire` `$7DC2`. Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $7DA7 ClampStep
 
 $7DC0 b PointerPos 2 ; The pointer's X and Y (copied to $7C51 / $7C53 by $897E)
 
 $7DC2 c PointerFire ; Carry (the fire) held: after 25 frames a click ($6D43 = $FF) at the pointer, repeated every 5
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7DFB c ClockTick ; The mission clock: the first second after 50 interrupts, then one second for every interrupt taken (the reload at $7E03 is 1): 50 game seconds a real second
-> The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7E2C b LoadedMission 3 ; Two spare bytes and the mission loaded last ($7E2E, $FF none)
 $7E2E LastLoadedMission
@@ -718,13 +724,13 @@ $7E2E LastLoadedMission
 $7E2F b ClockText 11 ; The clock's string: position codes and "00:00", $FF
 
 $7E3A c PrintClock ; Print the clock's minutes and hours ($68EB, $68EC) as two digit pairs
-> Witness: L1 530 (play, play2).
+> Witness: L1 530 (m2erbe, missions, play).
 
 $7E6E c SoundTick ; The interrupt's sound step: bank 0's driver $D692, the bank kept
-> Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7E7A c ClearPointerState ; $66CE and the click flag cleared
-> Witness: L1 2966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 3734 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $7E82 b MissionParams 12 ; 12 bytes of the mission header ($DBF1), copied by $8598
 
@@ -751,7 +757,7 @@ $8368 WeaponSlots ; four 6-byte slot records, the ammunition at +5
 
 @module interrupt
 $8383 c InterruptHandler ; The IM 2 handler: own stack, the tick jobs, the play or menu jobs, RETI
-> Witness: L1 69896 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $83B9 BlitRequest ; LD A,n: the blit request ($83BA): $FF set by RequestViewBlit $988D, 0 after the blit (ClearBlitRequest $8AEC); $FF takes the long path (MenuJobs: the view blit)
 $83BE PointerShown ; LD A,n: non-zero while the menus show the pointer ($83BF); 0 in the play views
 $83DF MenuJobs
@@ -761,62 +767,62 @@ $841C HandlerExit
 $842A SavedSP ; LD SP,n: the interrupted stack ($842B)
 
 $83F1 c ClearMarkColumn ; A RET; behind it the clear of three bytes every 33 for 48 lines from $8AF1 (unused)
-> Witness: L1 2959 (death, m2erbe, missions, play, play2).
+> Witness: L1 3717 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $8431 c PageBank6Kept ; Keep the current bank in $843B and page bank 6
-> Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $843A c PageBankKept ; Page the bank PageBank6Kept kept
-> Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 318515 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $843F c QuitKey ; The key E: silence the AY ($D807), ask "Are you sure you want to quit?" (bank 6 QuitPrompt $DA09: Y to the title, N back), then clear SoundGate $D689 and PickupAnnounce $DB71
-> Witness: L1 13 (play2).
+> Witness: L1 13 (m2erbe, missions, play, play2).
 
 $8459 c BlinkWarning ; Every 12 frames flip the attribute bits $30 of $5758 and $5078 (a RET while off)
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $8475 c BlinkLamp ; Every 8 frames flip $3C on four pixel lines at $525C (a RET while off)
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $848F c KeyRepeat ; Scan the keyboard: a new key sets bit 0 of $8978 at once, a held key after 17 frames, then every 2
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module missionload ; The mission load: the header, the block, the play state it sets
 $84C1 c LoadMission ; The mission load: the same mission again from bank 3's copy, or the tape's next mission block
-> Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4DC`. If the mission asked for (`$757D`) is the one loaded last (`$7E2E`), the bank-3 copy of `$DBDA`... is copied back to bank 0 (no tape). Else `$8551`: load the 17-byte header with "MISSHDR:" (`$84FE`), then the block of the header's length to `$DBC5`; SPACE stops. Then `$85F5` and `$8598` set the play state from the block. Witness: L1 16 (m10, m2erbe, m2ocean, missions).
+> Pages bank 0, `$CC1E` with IX = `$75F0`; clears `$BA27`, `$CEA8`, `$87FD`, `$C4DC`. If the mission asked for (`$757D`) is the one loaded last (`$7E2E`), the bank-3 copy of `$DBDA`... is copied back to bank 0 (no tape). Else `$8551`: load the 17-byte header with "MISSHDR:" (`$84FE`), then the block of the header's length to `$DBC5`; SPACE stops. Then `$85F5` and `$8598` set the play state from the block. Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 $84E8 RestoreFromBank3
 $8551 LoadMissionTape
 $855B LoadMissionBlock ; LD DE,n: n ($855C) the header's length
 $8570 MissionBlockLoaded
 
 $84FE c LoadMissionHeader ; Load 17-byte headers until one is "MISSHDR:"; its length to $855C, its digit - "1" to $757D, the mark on the clipboard
-> Witness: L1 21 (m10, m2erbe, m2ocean, missions, search).
+> Witness: L1 25 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 
 $8535 c MarkMission ; The attribute C on the catalogue line of mission A ($5902 + 32A)
-> Witness: L1 24 (m10, m2erbe, m2ocean, missions, search).
+> Witness: L1 35 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2, search).
 $8547 HeaderMission ; the mission of the last header (a byte, $FF none)
 
 $8548 c RemarkMission ; Mark the last header's mission again ($C4) unless none
-> Witness: L1 32 (menu, missions, search).
+> Witness: L1 36 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $8598 c MissionSetup ; From the loaded block: 12 bytes to $7E82, $DBFD to $CAAF, the object count to bank 6, the objects copied to bank 3
-> Witness: L1 3 (m2erbe, missions).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $85EF c SpacePressed ; NC when SPACE is held (port $7FFE bit 0)
-> Witness: L1 8 (m2ocean, missions).
+> Witness: L1 8 (m2ocean).
 
 $85F5 c MissionTimeSetup ; From the header: $DBE1 to $6A67, 8 bytes $DBE3 to $7611, the time limit $DBFE to $68EB, the clock stopped
-> Witness: L1 15 (m10, m2erbe, m2ocean, missions).
+> Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module tape
 $8617 c LdBytes ; The game's copy of the ROM's LD-BYTES ($0556): IX, DE, A, carry; border stripes; NC on an error
-> The timings are the ROM's; the border colours of the stripes come from C. A block shorter than DE ends in a time-out of the edge reader (`LdEdge2` `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever (m2ocean). Witness: L1 68 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> The timings are the ROM's; the border colours of the stripes come from C. A block shorter than DE ends in a time-out of the edge reader (`LdEdge2` `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever (m2ocean). Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $869F c LdEdge2 ; Two edges (the ROM's LD-EDGE-2)
-> Witness: L1 1682113 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 2102599 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $86A3 c LdEdge1 ; One edge (the ROM's LD-EDGE-1), SPACE breaks
-> Witness: L1 3507210 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 4378887 (armour, c1, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $86C1 c SaBytes ; The game's copy of the ROM's SA-BYTES ($04C2): no recording runs it
 > Witness: known only from the code (no caller found).
@@ -828,7 +834,7 @@ $8775 b ModelMissile 16 ; The model of templates $82-$86, the missiles and the D
 
 @module interrupt
 $87D6 c MessageTimer ; Count $87D7 down; at 0 print the message line $7C06 (or the blank $87F0)
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $87F0 t BlankMessage ; The empty message line
 
@@ -836,18 +842,18 @@ $87FC c NightKey ; The key N: LD A,n (n = $87FD), then ToggleNight
 > Witness: L1 6 (play).
 
 $87FF c ToggleNight ; Night sight on or off: the lamp attribute $5ACF, the text $BA6E / $BA7A, $757A from the table $88F8
-> Witness: L1 33 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 37 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $8836 c TimeOfDay ; Each interrupt: the hour ($68EC) against the four 4-byte rows of $88F8; a match arms $885F
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $885F c SkyColours ; Once per change: the sky and ground attributes of the hour's row, then the panel's copies
-> Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 $88A8 CopySkyRows
 
 $88CF c NightColours ; Once: the night or day attribute box ($88EE / $88F3)
 $88D5 NightBoxSelect ; LD A,n: n ($88D6) the hour row
-> Witness: L1 6657 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $88EE b DayBox 5 ; An attribute box record (AttrBox)
 
@@ -858,7 +864,7 @@ $88F8 b HourTable 4 ; Four rows: the hour, two attributes, the light value for $
 $8908 b SkyBoxes 4
 
 $8910 c ScanKeyboard ; Scan the eight half rows: the key's code from $8950 to $897B, bit 1 of $8978 set; CAPS SHIFT with 0 gives $04 (the code entry's delete)
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $8950 b KeyCodes 8 ; 40 key codes, by half row and bit
 
@@ -867,7 +873,7 @@ $8979 KeyCode
 $897A KeyRepeatCount
 
 $897E c CopyPointer ; The pointer's X and Y to $7C51 and $7C53
-> Witness: L1 49405 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 61639 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module raster ; The 3D view's raster: the back buffer, the blits to the screen, the clear, the projection, the clips, the arithmetic
 @about The 3D view is drawn into a 32 x 96 byte back buffer at $8AF1-$96F0 (256 x 96 pixels, no attributes), cleared with PUSH once a pass ($96F1) and copied to the screen by one of three LDI blits that the interrupt runs when the pass is done ($83BA). The projection divides with logarithms (DivideByLog $A6D2 and the tables at $5C00); lines and polygons are clipped against the near plane in 3D ($A42B, $A509) and against the window in 2D ($A184 here, $C000/$C218 in bank 3). The filler and the line drawer live in bank 3 (frag-bank3.ann).
@@ -877,25 +883,25 @@ $898B c ViewBlitLow ; Another entry of ViewBlitFront: the back buffer from its r
 $8999 c ViewBlitFront ; Copy the back buffer to the screen rows 32-126: the front view with the cockpit cut-outs
 > With `SP` on ScreenRowTable `$6540` (row 32): 79 rows of 32 bytes (`LDI` x 32), then 8 rows of 11 + 11 bytes (the middle 10 bytes skipped, the cockpit), then 8 rows of 2 + 2 bytes (the outer columns only). `SP` is saved at `$8A3E`. Runs under the interrupt (the routine pointer `$83E6`).
 > Input: none. Output: the screen bitmap `$4080-$4CCA` (L1). Cost: 97 permille of play (the heaviest single routine of the view).
-> Witness: L1 3600 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 8222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $8A41 c ViewBlitWide ; Copy the 86 top rows of the back buffer to the screen rows 64-149, full width
 > `SP` on ScreenRowTable `$6580` (row 64), 86 rows of 32 bytes. Used by the menus and the console views (11 recordings).
-> Witness: L1 458 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 768 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $8A98 c ViewBlitNarrow ; Copy 95 rows of 22 bytes (back-buffer columns 5-26) to the screen rows 40-134 at column 6
 > `SP` on ScreenRowTable `$6550` (row 40); each row `INC E` x 6, 22 `LDI`, skip 10. Only the play recording runs it (the binoculars or the rear view).
 > Witness: L1 24 (play).
 
 $8AEC c ClearBlitRequest ; Clear the blit request `$83BA`: the interrupt's last job after a view blit
-> Witness: L1 6657 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 13586 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $8AF1 b BackBuffer 32 ; The 3D view's back buffer: 96 rows of 32 bytes (256 x 96 pixels, row 0 at the top)
 > Cleared by ClearBackBuffer `$96F1`, drawn by the span filler (bank 3 `$C86A`), the line drawer (bank 3 `$C9A7`) and PlotBackBuffer `$AA27`, read by the three blits. Row y starts at `$8AF1` + 32y. Its last 113 bytes (`$9680-$96F0`) are what game.ann calls InputLeftover: they are back-buffer rows 92-95, zeroed every pass.
 
 $96F1 c ClearBackBuffer ; Zero the back buffer `$8AF1-$96F0` with 1536 PUSH HL
 > Under `DI`: `SP` saved at `$9711`, `SP` = `$96F1`, HL = 0, 96 x 16 `PUSH HL`, `SP` back, `EI`. An interrupt in this time is lost (WALKTHROUGH section 1). Once per 3D pass: its count is the number of passes (705 in play).
-> Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module input ; The controls: keyboard, cursor, Sinclair, Kempston joystick and mouse
 @about ReadControls $971A runs the reader of the device chosen in the options ($67B6, 0-4) through the table $9723. Every reader but the mouse ends in DecodeDirections $9758: the five bits right, left, down, up, fire, with acceleration (the step grows by one up to 8 while a direction is held, $9719 frames per step).
@@ -907,7 +913,7 @@ $9718 FireCount
 $9719 StepFrames
 
 $971A c ReadControls ; Read the chosen device: the reader of $67B6 in the table $9723
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9723 w DeviceReaders 2 ; Five readers: Sinclair, cursor, Kempston mouse, Kempston joystick, keyboard
 
@@ -921,7 +927,7 @@ $9757 c InvertDirections ; CPL then DecodeDirections
 > Witness: L1 1225 (menu).
 
 $9758 c DecodeDirections ; Bits right, left, down, up, fire: the X and Y steps with acceleration ($985E, $985F), carry = fire
-> Witness: L1 7771 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121627 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9813 c ReadMouse ; Kempston mouse: X from $FBDF, Y from $FFDF, the deltas
 > Reads X (`AND $7F`, doubled) and Y (inverted), stores them at `$67BB`, then the deltas over `$67BC-$67BD`: the delta word overwrites the new Y. It returns straight to the caller with A = the X delta and the carry of that subtraction: it never reaches `DecodeDirections`, so `$985E` / `$985F` keep their last values and `PointerFire` takes the carry for the fire button. Recording controls: 30 runs (frames 295-330) before the machine resets (see NOTES.md, open point 4). Witness: L1 0 (controls; entered by `JP (HL)`).
@@ -940,19 +946,19 @@ $985F StepY
 $9862 b KeyTable 2 ; The five keys of ReadKeys: half-row high byte and bit mask
 
 $9874 c CallTableEntry ; Jump to the word A of the table at HL
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $987C c TableEntry ; HL = HL + 2A
-> Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121657 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 @module render ; The 3D display-list interpreter: the frame start, the opcodes, the model scripts' renderers, the box generators
 @about A model is a script of byte opcodes read through IX by RunScript $990F until $FF; the opcode indexes the 23-word table $98E1. The vertices live in three rows of words at $FD00 (x), $FE00 (y), $FF00 (z), 64 vertices, in the model's own axes already turned by the object's heading (the box generators); ProjectScript $9A43 adds the object's position (the operands at $9A6C, $9A8E, $9AB3, set by DrawObject $B827) and writes the screen points to $FC00 (4 bytes a vertex, x = $8000 behind the eye). The opcodes test faces by their screen winding ($9BAF), fill the front faces through the bank 3 filler, draw lines through the bank 3 line drawer, and order the parts of a model by a face's visibility ($9D5A). Models: bank 3 $CA8B-$CFCC, bank 2 $8739-$87D5, bank 5 $7E8F-$7FAF, bank 0 $D5D0, $D934, $FE80, bank 6 $E512-$E560, and each mission block's library (mission 1: 31 models at $EC57-$FB3E).
 $9882 c StartViewPass ; Start a 3D pass: wait until the last blit is done (`$83BA` = 0), clear the back buffer
 > Spins on `$83BA` (set to `$FF` by RequestViewBlit `$988D`, cleared by the interrupt after the blit, ClearBlitRequest `$8AEC`), then calls ClearBackBuffer `$96F1`. Callers: the play loops `$694B`, `$6A0C`, `$6AB9` and the bank 6 menu views `$C409`, `$C4AD`, `$CA8B`, `$DA09`, `$DB1C`. Its own time (18 permille) is the wait for the interrupt.
-> Witness: L1 6643 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 13569 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $988D c RequestViewBlit ; Ask the interrupt to blit the finished back buffer: `$83BA` = `$FF`
-> Witness: L1 6658 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 13587 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9893 c ClearBackBufferOld ; Unused: clear 1792 bytes below `$98EF` and fill 1792 bytes below with `$AA`/`$55` rows, both by PUSH
 > Sets `SP` = `$98F1` and calls two PUSH loops that take their return address off the stack first. As placed it would overwrite OpcodeTable `$98E1` and the code below it; no caller, a leftover of an earlier layout.
@@ -963,26 +969,26 @@ $98E1 w OpcodeTable 1 ; The 23 script opcodes' handlers, indexed by the opcode b
 
 $990F c RunScript ; Run the model script at IX until the byte `$FF`
 > Reads the opcode at IX, IX+1, patches the `CALL` at `$9927` with OpcodeTable[opcode] and calls it; every handler returns to `$992A` (`JP $990F`), with IX past its operands. Input: IX = the script; bank of the script paged (bank 3 via `$72BE`, bank 0 for the mission models). Callers: DrawObject `$B827` (the objects), `$B190` (the ground and the sky, scripts at bank 0 `$FF80`, `$FF8C`, `$FF98`), `$72BE` (bank 6 views with bank 3 models), the mission code `$E3F3`, `$E561`, and ScriptTranslate `$A049`, which jumps back here.
-> Witness: L1 131277 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 319386 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $992A c ScriptNext ; The handlers' return: go on with the next opcode
-> Witness: L1 104358 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 266356 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $992D c OpNative ; Opcode 0: jump to the native routine at the word operand
 > IX on past the word, then `JP (HL)`: the routine reads its own operands through IX and returns to ScriptNext. The models call the box generators by the mission vectors `$67F4` (BoxSquare), `$67F7` (BoxRect), `$67FA` (BoxRect16), `$67FD` (BoxSquareTurret) and `$ABFF` (BoxTilted) with 3 operand bytes; other targets take none (`$F6B9` in mission 1 clears the tilt `$68E6`; `$D4A4`, `$D5C9`, `$E2C0`, `$EC2E`, `$EE06`, `$EE22`, `$FE8F` in bank 0).
-> Witness: L1 15260 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 38166 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9938 c OpVertexProgram ; Opcode 1: build vertices from others with a byte program: load, store, midpoint, add, subtract, negate
 > Under `DI` with `SP` used as a pointer into the vertex rows. The current point P = (DE, DE', BC') = (x, y, z). Bytes: `$00-$3F` n: P = V[n]; `$40-$7F`: V[n AND `$3F`] = P; `$80-$BF`: P = (P + V[n AND `$3F`]) / 2; `$C0` m: P = P + V[m]; `$E0` m: P = P - V[m]; `$F0`: P = -P; `$F8`: P.x = -P.x, P.z = -P.z (the half-turn about the vertical); any other byte (`$FF`) ends it, `SP` back, `EI`. With the box corners `V34-V41` from a box generator, midpoints and sums give every other vertex of the model in its turned axes.
-> Witness: L1 10819 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 24235 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9A43 c OpProject ; Opcode 2 (n, 2k): project n vertices from V[k] to screen points in ProjectedPoints `$FC00`
 > For each vertex: depth = z + the operand at `$9A6C` (the object's z, `$0190` by default); if depth < 96 the point is marked behind the eye (`$FC00`+4i = `$8000`). Otherwise sx = 128 + 256 (x + `$9A8E`) / depth (shifted right by the count at `$9A93` first, the zoom), sy = 64 - 256 (y + `$9AB3`) / depth, through Divide `$A687` and DivideByLog `$A6D2` (one logarithm of the depth for both). Output: `$FC00`+4i = sx word, `$FC02`+4i = sy word.
-> Witness: L1 22966 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 56575 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9AD8 c OpLines ; Opcode 3: a polyline: `$80`+v moves to point v, v draws a line to it, `$C0` ends
 > A line is drawn only when both ends are in front of the eye; ClipLine2D `$A184` clips it to the window and `$72B1` draws it with bank 3 `$C9A7`.
-> Witness: L1 1542 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 5137 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $9B38 c OpLinesByFaces ; Opcode 4: edges drawn when either of two faces is visible: (face a, face b, v) or `$80`+v, `$C0` ends
 > The wire edge between faces a and b (flags `$6728`+a, +b) is drawn to point v when one of them faces the eye, else the pen moves to v. In no model of the recordings (one use in mission 1 at `$F99E`, its model not drawn in them).
@@ -990,24 +996,24 @@ $9B38 c OpLinesByFaces ; Opcode 4: edges drawn when either of two faces is visib
 
 $9BAF c OpTestFaces ; Opcode 5 (slot, n, n x (a, b, c)): set the visibility flags of n faces from their screen winding
 > Slot base to `$9C6B` (+`$28`), then TestFace `$9BC3` for each triple of point offsets (4 x vertex).
-> Witness: L1 9372 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 24102 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9BC3 c TestFace ; One face: the sign of the cross product (b - a) x (c - a) of three screen points into FaceFlags
 > Counts the points behind the eye in `$9BDA`: 3 gives flag 0 (`$9CAA`), 1-2 give `$FF` (`$9CA3`, drawn and clipped later); else the two edge vectors are scaled to bytes (ScaleToBytes `$9C84`) and multiplied with MulSigned `$A7BF`: flag = `$FF` when ex1 * ey2 < ey1 * ex2.
-> Witness: L1 45290 (c1, death, missions, play, play2).
+> Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9C6A c StoreFaceFlag ; Store the face flag B at `$6728` + slot, next slot, loop over the triples
-> Witness: L1 45290 (c1, death, missions, play, play2).
+> Witness: L1 133984 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9C84 c ScaleToBytes ; Halve the two words HL, DE together until both fit in a signed byte (C = the sign bias)
 > The loop `$9C7C` shifts both right. Unreferenced code at `$9C9A` (another flag store) follows.
-> Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 247063 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9CA3 c FacePartlyBehind ; A face with one or two points behind the eye: flag `$FF`
-> Witness: L1 11 (c1, death).
+> Witness: L1 1130 (c1, death, m1complete, m4complete).
 
 $9CAA c FaceAllBehind ; A face with all three points behind the eye: flag 0
-> Witness: L1 1123 (c1, death, missions, play, play2).
+> Witness: L1 12422 (armour, c1, death, m1complete, m4complete, missions, play, play2).
 
 $9CB1 c OpJumpIfVisible ; Opcode 6 (face, address): go on at the address when the face is visible, else skip 3 bytes
 > Unreferenced code at `$9CD7` (the same with a return address pushed) follows.
@@ -1017,42 +1023,42 @@ $9CE8 c OpJumpIfVisible2 ; Opcode 7 (face, address): the same as opcode 6
 > Witness: known only from the code (no recording runs it).
 
 $9D0D c OpCall ; Opcode 11 (address): run the script at the address as a subroutine (IX pushed, opcode 9 returns)
-> Witness: L1 878 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1496 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 $9D1E c OpReturn ; Opcode 9: return from a script subroutine: IX popped from the stack
 > Used to end the parts of OpCall `$9D0D` and OpOrderByFace `$9D5A`.
-> Witness: L1 12941 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 27230 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9D28 c OpBranchOnFace ; Opcode 8 (face, visible, hidden): go on at one of two addresses, the return pushed (IX + 5)
 > Witness: known only from the code (no recording runs it).
 
 $9D5A c OpOrderByFace ; Opcode 10 (face, part A, part B): draw the inline part and the two parts in an order set by the face
 > Face visible: the inline part (IX + 5), then A, then B; hidden: A, then the inline part, then B. Each part ends with opcode 9; the two other entries are pushed as returns. This is how a model sorts its own parts (the turret before or behind the hull) without a depth sort.
-> Witness: L1 6021 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 12854 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9D8F c OpFillFaces ; Opcode 12 (n, n x face): fill the visible faces; face = (slot, length, k, colour, k point offsets)
 > Patches `$9DB2` to `JP Z` (skip hidden faces) and `$9DAD` to fall through, then shares FillFaceList `$9D99`. A face with a point behind the eye is skipped (`$9E0B`).
-> Witness: L1 11209 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 27293 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9D99 c FillFaceList ; Copy each chosen face's screen points to PolyVerts `$6700` and fill it with bank 3 `$C4C4` (via `$7290`)
 > The colour to `$7579`, the count to `$68A9`, the face count in `$68AA`. A face whose flag fails the test is skipped by its length byte.
-> Witness: L1 5753 (missions, play2).
+> Witness: L1 28219 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $9E1E c OpFillFacesClipped ; Opcode 13: fill the visible faces, clipping those that cross the near plane
-> Witness: L1 2455 (c1, death, missions, play, play2).
+> Witness: L1 6425 (armour, c1, controls, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $9E20 c FillFaceListClipped ; As FillFaceList, but a point behind the eye calls ClipPolyNear `$A509` to cut the face at the near plane
 > A = the opcode patched at `$9E40` (`JP Z` for opcode 13, `JP NZ` for 20). The first point offset is kept in `$66CC` for the closing edge.
-> Witness: L1 5778 (c1, death, missions, play, play2).
+> Witness: L1 14717 (armour, c1, controls, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $9ECD c OpFillPolys ; Opcode 14 (n, n x (k, colour, k point offsets)): fill polygons with no face test
-> Witness: L1 5571 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 11527 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $9F37 c OpFillBackFaces ; Opcode 15: fill the faces whose flag is 0 (`JP NZ` at `$9DB2`): the insides seen through an opening
-> Witness: L1 29 (missions, play2).
+> Witness: L1 926 (armour, m1complete, m4complete, missions, play2).
 
 $9F43 c OpLinesClipped ; Opcode 16: a polyline like opcode 3, a segment with an end behind the eye cut at the near plane (`$A422`, `$A42B`)
-> Witness: L1 785 (death, missions).
+> Witness: L1 5538 (death, m1complete, m4complete, missions).
 
 $9FC3 c OpLinesByFacesClipped ; Opcode 17: opcode 4 with the near clip
 > Its near-clip calls `$A039`, `$A041` are unreferenced. In no model of the recordings.
@@ -1063,154 +1069,154 @@ $A049 c OpTranslate ; Opcode 18 (2k): add vertex k to the projection's position 
 > Witness: L1 32 (missions).
 
 $A07E c OpFillPolysClipped ; Opcode 19 (n, n x (k, colour, k point offsets)): fill polygons, clipping at the near plane
-> Witness: L1 7171 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 15521 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A114 c OpFillBackFacesClipped ; Opcode 20: fill the faces whose flag is 0, clipping at the near plane (FillFaceListClipped with `JP NZ`)
-> Witness: L1 3323 (c1, death, missions, play, play2).
+> Witness: L1 8292 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $A119 c OpPolarPoints ; Opcode 21 (n, next, frame table): n vertices from (angle, radius, height) triples, turned by the heading
 > The frame (`$A12C`, the object record's +4, set by DrawObject `$B827`) picks a word of the table at IX+3: the address of n triples. Each gives x = r sin(heading + angle) / 128, z = r cos(...) / 128, y = height, stored from V32 downwards. Then IX = next. Mission 1 uses it once (`$EFC5`, a barrel run out in five frames).
-> Witness: L1 4 (play2).
+> Witness: L1 723 (armour, m1complete, m4complete, play2).
 
 $A17C b ClipWindow 2 ; The 2D clip window: x max (`$FF`), y max (`$5F`), and the clipper's work words
 > `$A17C` = 255 (bank 6 `$CA8B` sets 95 for the narrow console view), `$A17E` = 95; `$A180-$A183` hold the two points while ClipLine2D bisects.
 
 @module raster
 $A184 c ClipLine2D ; Clip the line (HL, DE) - (HL', DE') (x, y words) to the window; carry = something to draw, H, L, D, E = the ends as bytes
-> Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $A192 c ClipLineCodes ; Cohen-Sutherland: both out codes (`$A3AC`), reject, accept, or cut an end by bisection (`$A1B3`, `$A218`)
-> Witness: L1 6164 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 22892 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $A1B3 c ClipOneEnd ; One end outside: find the crossing of the window edge by bisection (`$A2BA`, `$A2CA`, `$A2F3`, `$A352`)
-> Witness: L1 160 (missions).
+> Witness: L1 4809 (death, m1complete, m4complete, missions).
 
 $A1F6 c SwapLineEnds ; Swap the two ends of the line between the register sets
-> Witness: L1 273 (death, missions).
+> Witness: L1 5050 (death, m1complete, m4complete, missions).
 
 $A218 c ClipBothEnds ; Both ends outside on different sides: bisect for the middle point, then clip each half
 > Entered by a jump, never called (the survey counts 0 calls).
-> Witness: L1 0 (missions).
+> Witness: L1 761 (m4complete, missions).
 
 $A29D c ClipAccept ; Both ends inside: carry set
-> Witness: L1 4885 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 13978 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $A2BA c ClipToRight ; Bisect the outside end towards the right edge
-> Witness: L1 120 (death, missions).
+> Witness: L1 400 (death, m4complete, missions).
 
 $A2CA c ClipToBottom ; Bisect the outside end towards the bottom edge
-> Witness: L1 80 (death, missions).
+> Witness: L1 551 (death, m1complete, m4complete, missions).
 
 $A2F3 c ClipToLeft ; Bisect the outside end towards the left edge
-> Witness: L1 14 (missions).
+> Witness: L1 171 (m4complete, missions).
 
 $A352 c ClipToCorner ; Bisect the outside end towards a corner (two edges)
-> Witness: L1 3 (death, missions).
+> Witness: L1 633 (death, m4complete, missions).
 
 $A37F c ClipReject ; Both ends outside on one side: no carry
-> Witness: L1 1168 (death, missions, play, play2).
+> Witness: L1 4581 (armour, death, m1complete, m4complete, missions, play, play2).
 
 $A381 c ClipBisectStep ; One bisection step of the outside end towards the window
-> Witness: L1 214 (death, missions).
+> Witness: L1 8285 (death, m1complete, m4complete, missions).
 
 $A3AC c OutCode ; The out code of the point (HL, DE): 8 x < 0, 4 x > `$A17C`, 2 y < 0, 1 y > `$A17E`
-> Witness: L1 12480 (c1, death, m2erbe, menu, missions, play, play2).
+> Witness: L1 46545 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $A3E0 c BisectToInside ; Bisect the segment until the midpoint lies on the window edge
-> Witness: L1 3 (death, missions).
+> Witness: L1 13621 (death, m4complete, missions).
 
 $A422 c NearClipLineEnd ; The other end of a line behind the eye too: no carry (skip the line); else NearClipLine
-> Witness: L1 266 (death, missions).
+> Witness: L1 5069 (death, m4complete, missions).
 
 $A42B c NearClipLine ; Cut the 3D segment V[B] - V[B'] at the near plane by bisection and project the cut: carry, HL / HL' = the screen point
 > Reads both ends with `$A4D1` / `$A4F1` (vertex + the object position operands), halves the segment until depth - 96 is 0, then projects the point (Divide `$A687`, DivideByLog `$A6D2`, NegHL `$A771`) like OpProject. `$67B2-$67B5` hold the depths being halved.
-> Witness: L1 3110 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 17666 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A4D1 c FetchVertexXY ; x + `$9A8E` of V[B] to `$A503`, y + `$9AB3` to HL
-> Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A4F1 c FetchVertexDepth ; z + `$9A6C` - 96 of the vertex: the signed distance to the near plane
-> Witness: L1 6220 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 35332 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A509 c ClipPolyNear ; Cut a face at the near plane (Sutherland-Hodgman on depth = 96) into PolyVerts `$6700`
 > Walks the face's point offsets from IX; at each in / out change calls NearClipLine `$A42B` and appends the cut with AppendPolyVertex `$A677`. Returns carry = the polygon is complete (fill it), Z = go on with the next point, NZ = nothing left.
-> Witness: L1 3987 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 13393 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A677 c AppendPolyVertex ; Append (BC, DE) to the polygon list at HL and count it in `$66D5`
-> Witness: L1 4168 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 15876 (armour, c1, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A687 c Divide ; HL = 256 HL / DE (signed HL, positive DE) by logarithms; DE = log2 of the divisor, kept for a second DivideByLog
 > Normalises DE to an 8-bit mantissa and an exponent, looks up LogFraction / LogInteger `$5C00`, then falls into DivideByLog. 283 939 calls (11 recordings).
-> Witness: L1 283939 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 721062 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A6D2 c DivideByLog ; HL = 256 HL / 2^(DE / 256): log of |HL|, minus DE, antilog by ExpFraction `$5E00`, the sign back
 > The shift of the 9-bit mantissa is a self-patched `JR` into an `ADD HL,HL` chain (`$A739`, `$A75A`). A result below 1 gives 0 (`$A765`), an overflow `$3EE4` and carry (`$A769`). The most called 3D routine: 475 056 entries, 45 permille.
-> Witness: L1 475056 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 1184207 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A745 c ApplySign ; Negate HL when the sign saved in F' is set
-> Witness: L1 425915 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 1109957 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A765 c ZeroQuotient ; HL = 0
-> Witness: L1 24493 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 74250 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A771 c NegHL ; HL = -HL
-> Witness: L1 308008 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 786174 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A779 c Random ; A = a pseudo-random byte: two additive words patched in place mixed with R (the mission vector `$67D0`)
-> Witness: L1 584 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 2198 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A799 c AbsA ; A = |A| (the mission vector `$67D6`)
-> Witness: L1 179580 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 521328 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A79E c NegDE ; DE = -DE
-> Witness: L1 2228 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 12022 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A7A6 c NegAbsHL ; HL = -|HL|
 > Witness: known only from the code (no recording runs it).
 
 $A7AB c AbsHL ; HL = |HL|
-> Witness: L1 2 (play).
+> Witness: L1 6 (m1complete, m4complete, play).
 
 $A7AE c NegateHL ; HL = -HL (the mission vector `$67D3`)
-> Witness: L1 18194 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 51813 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A7B6 c HighTimes32 ; HL = H * 32 (the back-buffer row offset of row H)
-> Witness: L1 71059 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 177524 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A7B7 c LowTimes32 ; HL = L * 32
-> Witness: L1 72315 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 178905 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A7BF c MulSigned ; HL = A * E, signed bytes, by quarter squares: ((A+E)^2 - A^2 - E^2) / 2
 > When A + E overflows it uses A^2 + E^2 - (A-E)^2 (`$A7DD`). Tables SquareLow / SquareHigh `$5F00`.
-> Witness: L1 107436 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 240864 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A7F2 c MulFrac ; HL = A * E / 128 rounded, signed bytes: the product with a sine of Sine8
-> Witness: L1 66079 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 205999 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A82C c MulWordByte ; HL = HL * A / 128 for a signed word HL and a signed byte A (two quarter-square products)
 > The mission vector `$67D9`: 220 482 calls in play, 37 permille, most of them from the mission code turning positions.
-> Witness: L1 220482 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 643316 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A899 c SinCos8 ; A = Sine8[A], A' = Sine8[A + 64] (the mission vector `$67E8`)
-> Witness: L1 58907 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 153909 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $A8A5 c SinCos16 ; DE = Sine16[A], BC = Sine16[A + 64]
-> Witness: L1 4970 (c1, death, missions, play, play2).
+> Witness: L1 12234 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $A8B2 c SinCosHalf ; E = A = sine, A = cosine of the angle word HL (H the angle, bit 7 of L the half step: Sine8Half `$6400`)
-> Witness: L1 22941 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 75445 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module player ; The player's tank: steering, fuel, armour, terrain and boundary checks, the weapons and their projectiles
 @about The player is record 0 ($75F0): speed $75F7, heading $7612, X $7613-$7615, Y $7616-$7618, height $75F5, step handler $7608 (PlayerStep $A8C7), collision handler PlayerHit $CAA5. Fuel $7C57, armour $8301-$8303 (sides) and $8304 (top), the four loaded weapon slots $8368 (6 bytes: +0 store type, +5 ammunition), the current slot $C53C.
 $A8C7 c PlayerStep ; The player's step handler: terrain, brake, fuel, boundary, move, the turret
 > Record 0's step handler (+$18 = `$A8C7`, run by RunObjectHandlers `$C026` with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets the handler to BounceDecay `$CC09`; 0 or 6 (0 is the road, segment style 0) stores 1.25 x the speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does not change and only bank 6 DrawSpeedBar `$D612` reads `$7E8E` (the speed bar) (`$A8F0`-`$A934`, docs/10-gameplay-logic.md 10.2). The S key branch `$A8F2` -> `$A9C0` makes BrakeKey `$A9C9` the step handler and ends the pass. When the speed is not 0: the fuel, `$7C57` -= (|speed| >> 4) OR 1 (on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`), then BoundaryCheck `$D4B8` (`$A95B`), then MoveObject. The Infinite Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`). Then the turret and speed against the control state `$985F`.
-> Witness: L1 3503 (death, m2erbe, missions, play, play2).
+> Witness: L1 9769 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $A94E OutOfFuel ; fuel underflow: $7BF9 = $CCED "RAN OUT OF FUEL", CALL $7047 (witness: the fuel recording, POKE Fuel = 32, frame 7860, T 60 751-60 872)
 $A958 ; the Infinite Fuel POKE writes 42 here
 
 $A986 c PlayerSteering ; Steering and the fire key: heading += turn / 2, the fire cooldown
 > Adds half the turn input `$985E` to the heading `$7612`; counts down the fire cooldown `$A9FD`; when it is zero and the fire key bit of `$6D43` is set, calls the current weapon's fire routine through the operand at `$A9B9` (set from the store-type table StoreTypes `$7B89` + 8 * type, word 2). Output: a projectile record, the cooldown restarted.
-> Witness: L1 3521 (death, m2erbe, missions, play, play2).
+> Witness: L1 9802 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $A9C9 c BrakeKey ; The brake (the S key): the player's step handler while S is down: |speed| - 8 each pass, then 0 and PlayerStep again
 > The S key (code `$53`) sets record 0's handler (+`$18`) to `$A9C9`. `LD A,(IX+7)` / `ABS` through `$67D6`, stores `$7E8E`; above 8 the speed loses 8 with its sign kept, then PlayerSteering; below 8 the speed is 0 and the handler is PlayerStep `$A8C7` again (docs/05-controls.md 5.9).
@@ -1218,7 +1224,7 @@ $A9C9 c BrakeKey ; The brake (the S key): the player's step handler while S is d
 
 $A9F7 c SetFireCooldown ; Set the fire cooldown to 8 passes
 > Writes 8 to the cooldown byte `$A9FD`, the delay before the next shot. Called by the fire routines after a launch.
-> Witness: L1 69 (death, play, play2).
+> Witness: L1 146 (armour, death, m1complete, m4complete, play, play2).
 
 $A9FD b FireCooldown 1 ; The fire cooldown, passes until the next shot
 > Counted down by PlayerSteering `$A986`, set by SetFireCooldown `$A9F7`.
@@ -1227,12 +1233,12 @@ $A9FD b FireCooldown 1 ; The fire cooldown, passes until the next shot
 @about ObjectTable $75F0 (bank 5): 24 records of 60 bytes; record 0 is the player, 1-20 the general slots, 21 ($7ADC) the Helicarrier, 22 projectiles (FindProjectileSlot scans 1-22; 23 is never allocated). +1 type, +2 state flags (bit7 present, bit6 wreck, bit2 on the radar), +3 handler flags (bit0 step handler on), +5/+6 height, +7 speed, +$13 hit points, +$14 damage, +$16/+$17 radius, +$18/+$19 step handler, +$1A/+$1B collision handler, +$1C/+$1D model, +$1E/+$1F score, +$22 heading, +$23-+$25 X, +$26-+$28 Y, +$31-+$3A per-type state, +$3B collision slot. +1 is the type, the 30 bytes +2..+$1F come from the type's template, +$20 is the serial.
 $A9FE c PlotRadarPixel ; Plot one radar pixel through the row table $6600
 > Input: the blip's x and y on the radar. Looks up the screen row in the table `$6600`, ORs the pixel mask (E = `$49` + x AND 7 gives the bit) into the screen at the radar window `$5036`. Called by DrawRadar `$C05E` for each blip in the list `$6768`.
-> Witness: L1 14562 (death, m2erbe, missions, play, play2).
+> Witness: L1 45560 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module raster
 $AA27 c PlotBackBuffer ; Set the pixel (x = L, y = H) in the back buffer (the bit masks at `$7C49`)
 > Caller `$BB75` (points of the scenery). 37 012 calls.
-> Witness: L1 37012 (c1, death, m2erbe, missions, play, play2).
+> Witness: L1 95537 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module render
 $AA47 c BoxSquareTurret ; BoxSquare with the second heading `$68E9` in place of `$68E7` (the mission vector `$67FD`): a turret
@@ -1240,161 +1246,161 @@ $AA47 c BoxSquareTurret ; BoxSquare with the second heading `$68E9` in place of 
 
 $AA63 c BoxSquare ; Native (turn, size, height): the 8 corners V34-V41 of a square box turned by the heading `$68E7` + turn, V33 = 0
 > With S = size sin(a) / 128 and C = size cos(a) / 128: V34 = (C, -h, -S), V35 = (S, -h, C), V36 = (-C, -h, S), V37 = (-S, -h, -C), V38-V41 the same at y = +h. The mission vector `$67F4`.
-> Witness: L1 483 (c1, death, missions, play, play2).
+> Witness: L1 3795 (armour, c1, death, m1complete, m4complete, missions, play, play2).
 
 $AAC2 c BoxHeights ; Last operand h: y = -h for V34-V37, +h for V38-V41; V33 = (0, 0, 0); return
-> Witness: L1 9618 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 24903 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $AAF5 c BoxRect16 ; Native (half angle, radius, height): a rectangle box with 16-bit corners (Sine16), turned by the heading
 > The corners lie at the radius r on the angles heading +/- b and their opposites, so b sets the aspect. Through MulWordByte `$67D9`. The mission vector `$67FA`.
-> Witness: L1 2485 (c1, death, missions, play, play2).
+> Witness: L1 6117 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $AB7B c BoxRect ; Native (half angle, radius, height): the same rectangle box with 8-bit corners (Sine8, MulFrac)
 > The mission vector `$67F7`; the most used box (bank 3 models, mission 1: 22 of 31 models).
-> Witness: L1 6221 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 14991 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $ABFD b BoxTiltPitch 2 ; Spare byte; the pitch of BoxTilted (`$ABFE`, from the object record +`$2A` by DrawObject `$B827`)
 
 $ABFF c BoxTilted ; Native (half angle, radius, height): a rectangle box turned by the heading, the pitch `$ABFE` and the roll `$68E6`
 > Rotates each corner pair with RotatePair `$AD06` (sine and cosine of the roll in `$AD04`); sets V0 = 0. Called from OpNative in death and play2 (a tilted vehicle).
-> Witness: L1 0 (death, play2).
+> Witness: L1 1818 (armour, death, m1complete, m4complete, play2).
 
 $AD04 b RollSinCos 2 ; The sine and cosine of the roll for RotatePair
 
 $AD06 c RotatePair ; Turn the pair (B, C) by the angle in `$AD04`: HL, DE = the two rotated words
-> Witness: L1 1563 (death, play2).
+> Witness: L1 5454 (armour, death, m1complete, m4complete, play2).
 
 @module world ; The world: the mission map (vertices, segments), its visibility, the terrain drawing, the camera
 @about The map of a mission lives in its block at bank 0 $DBC5: 64 vertices (X at $DC00+i, Y at $DC40+i, signed bytes, 1024 world units each) and ($DBDC) segments of 6 bytes at $DC80 (vertex a, vertex b, orientation, two sizes, style). SegmentVisibility $AD45 keeps the segments with an endpoint within 8 coarse units of the player; DrawSegments $AEE1 draws them as quads; GroundDots $BAAC draws the ground grid.
 $AD45 c SegmentVisibility ; Mark the segments near the player visible, 0 / $FF per segment at $8305
 > Sets the coarse player position `$BC12` (X) and `$BC1D` (Y) = the camera words `$67A8` / `$67AB` >> 2, then for each of the ($DBDC) segments at `$DC80` tests both endpoints (TestVertexNear `$AE5C` / `$AE78`): visible if one lies within 8 coarse units on both axes. The flag goes to `$8305`+n. From the segment ($DBDE) on (the switchable ones) the flag is ANDed with the switch flags `$7BFD`, so a gate or bridge destroyed or opened by the mission script disappears.
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE42 c ResetSegmentWalk ; Reset the segment walk: $DC80, the count ($DBDC), the flags $8305
 > Stores `$DC80` in the pointer `$AD4C`, the segment count in `$AE5A`, `$8305` in `$AD48` and clears `$AE5B`. Called before SegmentVisibility.
-> Witness: L1 3576 (death, m2erbe, missions, play, play2).
+> Witness: L1 9868 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE5A b SegmentWalkCount 2 ; The segments left in the walk and the walk index
 > Written by ResetSegmentWalk `$AE42`.
 
 $AE5C c TestVertexNear ; Test vertex A against the coarse player position: within 8 units
 > EXX, then reads vertex X `$DC00`+A against `$BC12`; falls into TestVertexNearX `$AE61`. Carry out: the vertex is near.
-> Witness: L1 33063 (death, m2erbe, missions, play, play2).
+> Witness: L1 92716 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE61 c TestVertexNearX ; Compare one vertex coordinate with the player's, |d| < 8
 > Input L = the vertex table offset, A = the player's coarse coordinate. Output carry set when |vertex - player| < 8. Used for both axes (TestVertexNearY `$AE79` adds `$40` to reach the Y table).
-> Witness: L1 58209 (death, m2erbe, missions, play, play2).
+> Witness: L1 170288 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE78 c TestVertexNearB ; Test the segment's second vertex (EXX, then the Y test)
 > EXX and falls into TestVertexNearY `$AE79`.
-> Witness: L1 24774 (death, m2erbe, missions, play, play2).
+> Witness: L1 75268 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE79 c TestVertexNearY ; Test a vertex's Y ($DC40+i) against $BC1D
 > L = vertex + `$40`, A = (`$BC1D`), then JP TestVertexNearX `$AE61`.
-> Witness: L1 25146 (death, m2erbe, missions, play, play2).
+> Witness: L1 77572 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AE82 b SegmentScratch 8 ; 30 bytes of scratch for the segment draw
 > Zero in every image; the segment drawing keeps its working values here (the word at `$AE9E` is read by DrawSegmentTail `$B18A`).
 
 $AEA0 c SetupClipWindow ; Build the clip window and the vertex buffers for the segment draw
 > From the segment count (+5) sets the loop limit `$AEEA`, the clip window and the vertex buffers at `$FD00`-`$FF07` and `$990F`. Called once per frame before DrawSegments.
-> Witness: L1 3507 (death, m2erbe, missions, play, play2).
+> Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AEE1 c DrawSegments ; Draw every visible segment as a quad
 > Walks the segments whose flag in `$8305` is set: transforms both vertices (TransformVertex `$B242`), clips them by the orientation byte +2 (one axis `$AFDE`, the other `$B000`, the diagonals `$B021`, `$B0E4`, `$B16A`), and draws the quad by the style byte +5 (DrawSegmentStyle `$B1B6`).
-> Witness: L1 36513 (death, m2erbe, missions, play, play2).
+> Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AEE8 c DrawSegmentLoop ; The loop of DrawSegments, entered again by DrawSegmentTail
 > One pass per segment: reads the next 6-byte record, skips it when its flag is 0.
-> Witness: L1 36513 (death, m2erbe, missions, play, play2).
+> Witness: L1 94909 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $AFDE c ClipSegmentAxisX ; Clip an axis-aligned segment (orientation 0)
 > The segment runs along one axis; its width is +3 (`$B2E5`), its height +4 (`$AFC4`). Seen only on the maps of missions 1 and 2 (missions, m2erbe).
-> Witness: L1 702 (m2erbe, missions).
+> Witness: L1 4566 (m2erbe, m4complete, missions).
 
 $B000 c ClipSegmentAxisY ; Clip a segment along the other axis (orientation bit 7)
 > As ClipSegmentAxisX `$AFDE` for the other axis.
-> Witness: L1 744 (m2erbe, missions).
+> Witness: L1 4608 (m2erbe, m4complete, missions).
 
 $B021 c ClipSegmentDiagonal ; Clip a diagonal segment
 > Orientation other than 0 / `$80`: the two vertices give the slope; calls ClipDiagonalSide `$B0E4` and `$B16A`.
-> Witness: L1 744 (m2erbe, missions).
+> Witness: L1 4608 (m2erbe, m4complete, missions).
 
 $B0E4 c ClipDiagonalSide ; Clip one side of a diagonal segment
 > Part of ClipSegmentDiagonal `$B021`.
-> Witness: L1 594 (m2erbe, missions).
+> Witness: L1 3647 (m2erbe, m4complete, missions).
 
 $B16A c ClipDiagonalEnd ; Clip the far end of a diagonal segment
 > Part of ClipSegmentDiagonal `$B021`.
-> Witness: L1 2955 (m2erbe, missions).
+> Witness: L1 18411 (m2erbe, m4complete, missions).
 
 $B18A c DrawSegmentTail ; Continue the segment loop from the saved pointer $AE9E
 > LD HL,(`$AE9E`) then JP DrawSegmentLoop `$AEE8`.
-> Witness: L1 6628 (death, m2erbe, missions, play, play2).
+> Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B190 c TransformSegmentEnds ; Transform both corners of a segment into the vertex buffer $FD00
 > Points the store `$B2F1` / `$B2F7` at `$FD00` / `$FD06`, transforms the first corner (TransformVertex `$B242`), copies the height `$AFC4` to `$B2E5`, then the second corner into `$FD02` / `$FD04`.
-> Witness: L1 6277 (death, m2erbe, missions, play, play2).
+> Witness: L1 17081 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B1B6 c DrawSegmentStyle ; Draw a segment by its style byte (+5)
 > ResetViewOrigin `$B3B6`, then the style (the operand at `$B1BA`): 0 draws with IX = `$FF8C`, negative with `$FF80`, 1 with `$FF98`, 2 through `$B22C`, 4 / 5 / 6 set the `$FE00` constants first. The same byte is the terrain type TerrainCollision `$CC3C` returns in `$CE69`.
-> Witness: L1 6628 (death, m2erbe, missions, play, play2).
+> Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B242 c TransformVertex ; Transform one map vertex to view space
 > Input: the vertex index. Vertex minus camera (VertexRelative `$B265`), the rotation (`$B2FF`, `$B38E`), the stores through `$B2F1` / `$B2F7`.
-> Witness: L1 12554 (death, m2erbe, missions, play, play2).
+> Witness: L1 34162 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B265 c VertexRelative ; Vertex position minus the camera, 24-bit
 > Byte * 1024 (ByteToWorld `$B282`) minus the camera X / Y `$67A8` / `$67AB`.
-> Witness: L1 25108 (death, m2erbe, missions, play, play2).
+> Witness: L1 68324 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B26F c Negate24 ; Negate a 24-bit value
 > Seen only in missions (167 runs).
-> Witness: L1 167 (missions).
+> Witness: L1 960 (m4complete, missions).
 
 $B27E c VertexByteToWorld ; A vertex byte to a 24-bit world coordinate (signed byte * 1024)
 > Reads the vertex byte and falls into ByteToWorld `$B282`.
-> Witness: L1 1488 (m2erbe, missions).
+> Witness: L1 9216 (m2erbe, m4complete, missions).
 
 $B282 c ByteToWorld ; Signed byte to 24-bit: A * 1024 (vector $67E2)
 > Input A, output the 24-bit value in A:HL. The mission code calls it through `$67E2` (the object list's X / Y words use the same scale).
-> Witness: L1 35297 (death, m2erbe, missions, play, play2).
+> Witness: L1 145759 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B294 c ClipTestX ; Clip test of a view-space point against the window on X
 > Carry out: outside.
-> Witness: L1 9467 (death, m2erbe, missions, play, play2).
+> Witness: L1 27209 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B2BB c ClipTestY ; Clip test of a view-space point on Y (depth)
 > Carry out: outside.
-> Witness: L1 9364 (death, m2erbe, missions, play, play2).
+> Witness: L1 24034 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B2E4 c StoreVertex ; Store a transformed vertex through $B2F1 / $B2F7
 > The height operand `$B2E5` (from the segment's +3) is the vertex's height.
-> Witness: L1 13256 (death, m2erbe, missions, play, play2).
+> Witness: L1 38728 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B2FF c RotateVertex ; Rotate a camera-relative vertex by the view angle
 > Through the camera sin / cos `$9A6C` / `$9A8E`.
-> Witness: L1 26512 (death, m2erbe, missions, play, play2).
+> Witness: L1 77456 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B386 c SignExtendA ; Sign-extend A into HL (H = 0 or $FF)
 > Seen only in missions.
-> Witness: L1 3624 (missions).
+> Witness: L1 40720 (m4complete, missions).
 
 $B38E c RotateAndStore ; Rotate by the sin / cos of A and store the pair
 > EX AF,AF', sin / cos through `$67E8`, multiply by `$9A8E` (RotateMul `$B3A6`), clears the target.
-> Witness: L1 24700 (death, m2erbe, missions, play, play2).
+> Witness: L1 57096 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B3A6 c RotateMul ; One product of the rotation (BC * the sin or cos)
 > Part of RotateAndStore.
-> Witness: L1 49400 (death, m2erbe, missions, play, play2).
+> Witness: L1 114192 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B3AD c RotateMulAdd ; The second product, added to the first
 > Part of RotateAndStore.
-> Witness: L1 53024 (death, m2erbe, missions, play, play2).
+> Witness: L1 154912 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B3B6 c ResetViewOrigin ; Reset the view origin before a segment is drawn
 > Called by DrawSegmentStyle `$B1B6` once per drawn segment (6628 runs, as many as it).
-> Witness: L1 6628 (death, m2erbe, missions, play, play2).
+> Witness: L1 19364 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module objects
 $B3C9 b WeaponTemplates 30 ; The resident templates of the projectile types $80-$8C: 13 records of 30 bytes from $B3CA
@@ -1404,16 +1410,16 @@ $B3CA ShellTemplate80 ; template $80, the K-40 mortar shell; 30 bytes a type up 
 @module player
 $B550 c ConsumeAmmo ; Take one round from the current slot; find a slot for the projectile
 > Reads the slot's ammunition pointer (`$B551`, from SelectAmmoPointer `$D3C6`), DEC A and stores it (the Infinite Ammo POKE writes 0 at `$B554`, the DEC A becomes NOP). Returns M when empty. Then FindFreeObject `$BCD6`, the fire sound `$D898`, and prints the count at `$C527`.
-> Witness: L1 70 (death, play, play2).
+> Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 $B554 ; the Infinite Ammo POKE writes 0 here (DEC A becomes NOP)
 
 $B568 c FireCannon ; Fire the turret cannon (store type 4): projectile $81
 > Ammunition, then ObjectSetType with `$81`, the position and heading of the player, +31 lifetime.
-> Witness: L1 61 (death, play2).
+> Witness: L1 139 (armour, death, m1complete, m4complete, play2).
 
 $B592 c CannonShellStep ; Step of a cannon shell: move, lifetime 100
 > MoveObject `$BFD1`, counts +$31 down from 100, removes the shell at 0 (RemoveObject `$B8B1`).
-> Witness: L1 5682 (death, play2).
+> Witness: L1 11958 (armour, death, m1complete, m4complete, play2).
 
 $B59F c FireMortar ; Fire the K-40 mortar (store type 3): projectile $80
 > SelectAmmoPointer, A = `$80`, then LaunchProjectile `$B5A7`.
@@ -1434,7 +1440,7 @@ $B611 b NullHandler 1 ; A RET used as a null handler
 
 $B612 c KillTree ; The hit handler of the trees (types 0, 1) and some scenery: any collider kills it
 > HitPoints `$B6B1` with no weapon test, so any collider, the tank included (damage 0 against a tree's 0 hit points), knocks it down; on a kill unregisters the collision (`$67CD`), makes debris (`$67DF`) and joins `$B677` (+2 = 0, then AddKillScore), bypassing KillMissionObject, so the list record is not marked destroyed. Users: types 0 and 1 in all ten missions, mission 5 types 23-25, mission 6 types 27-29, mission 10 types 23-25, 30, 31, and the aircraft missiles at the end of their life (`$E632`) (docs/07-objects.md 7.5, 7.14).
-> Witness: L1 1 (death).
+> Witness: L1 2 (armour, death).
 
 $B61E c KillSwitchObject ; A collision handler no recording runs: hit, then switch a segment off
 > HitTest through `$67DC`; on a kill, when the header's first switch object `$DBDD` is not 0: c = the list index (+0) - (`$DBDD`), two segment numbers from the table at ($DBDF) + c, each minus the first switchable segment ($DBDE), and the two switch flags at `$7BFD` + n cleared, so the bridge or post it guards vanishes from the map. Users: mission 5 type 29, mission 8 types 8 and 9 (the templates' hit handler word).
@@ -1444,40 +1450,40 @@ $B64E c BridgeHit ; The bridge's hit handler (mission 2 type 3): hit, then TANK 
 
 $B660 c HitTest ; Damage IX by IY's damage; on a kill score and remove (vector $67DC)
 > Input IX = the hit object, IY = the hitter. HitPoints `$B6B1` (+$13 -= the hitter's +$14); no kill returns NC. On a kill: UnregisterCollision `$CA3B`, Debris `$B6D1`; an object from the mission list (+0 != `$FF`) goes to KillMissionObject `$B67D`, the others are freed at `$B677`. Then AddKillScore `$B692`.
-> Witness: L1 153 (death, missions, play2).
+> Witness: L1 1132 (armour, death, m1complete, m4complete, missions, play2).
 
 $B67D c KillMissionObject ; A killed mission object: mark it in the list, leave the wreck
 > MarkDestroyed `$B6BD`, sets the wreck bit 6 of +2 (the wreck model +8/+9 is drawn), clears the step handler bit.
-> Witness: L1 4 (death).
+> Witness: L1 9 (death, m1complete, m4complete).
 
 $B692 c AddKillScore ; Add the object's score (+$1E/+$1F) to the 32-bit score $68E2
 > Adds the word to `$68E2`-`$68E5` and calls the kill sound `$D873`. Death: the score goes 0, `$FA`, `$1F4` (two kills of a 250-point type).
-> Witness: L1 5 (death).
+> Witness: L1 12 (armour, death, m1complete, m4complete).
 
 $B6B1 c HitPoints ; Subtract the hitter's damage from the hit points; carry = killed
 > +$13 of IX -= +$14 of IY.
-> Witness: L1 7 (death).
+> Witness: L1 23 (armour, death, m1complete, m4complete).
 
 $B6BD c MarkDestroyed ; Mark a mission object destroyed in the list (vector $67E5)
 > Record ($DBDA) + 8 * (+0): sets bit 1 (destroyed), clears bit 7 (alive), so it is never spawned again. The goal hooks read this bit.
-> Witness: L1 4 (death).
+> Witness: L1 9 (death, m1complete, m4complete).
 
 $B6D1 c Debris ; Throw 8 debris particles from the object (vector $67DF)
 > Fills the bank 3 particle list at `$CFEC` (8 records of 20 bytes): the object's position, random velocities (DebrisVelocity `$B74B` / `$B75C`).
-> Witness: L1 13 (death, play2).
+> Witness: L1 36 (armour, death, m1complete, m4complete, play2).
 
 $B74B c DebrisVelocity ; A random velocity component for a particle
 > Random through `$67D0`.
-> Witness: L1 64 (death, play2).
+> Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 $B75C c DebrisVelocityB ; The second component (shares the code)
 > The entry DebrisVelocity's second call uses for the other axis.
-> Witness: L1 64 (death, play2).
+> Witness: L1 196 (armour, death, m1complete, m4complete, play2).
 
 @module objects
 $B766 c BearingTo ; Bearing from IX to IY, a byte angle (vector $67C1)
 > dx, dy of the two records, then the octant and the ratio (BearingOctant `$B916`, BearingRatio `$B94A`, the table `$B9DE`). Output A = 0-255.
-> Witness: L1 7491 (death, m2erbe, missions, play, play2).
+> Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B7AE c InvertPanelA ; Invert the screen rows of the table $6500 (a panel flash)
 > HL = `$6500`, then InvertPanelRows `$B7BD`. Seen in m2erbe, missions and play (12 runs).
@@ -1485,24 +1491,24 @@ $B7AE c InvertPanelA ; Invert the screen rows of the table $6500 (a panel flash)
 
 $B7B6 c InvertPanelB ; Invert the rows of the table $6550
 > HL = `$6550` (or the caller's HL), then InvertPanelRows. RefreshWeaponPanel `$C632` calls it with `$6500`.
-> Witness: L1 26 (death, play, play2).
+> Witness: L1 29 (armour, death, m1complete, m4complete, play, play2).
 
 $B7BD c InvertPanelRows ; Invert N screen rows from a table of addresses
 > Each table entry is a screen address; the row's bytes are complemented (a flash of the panel when a weapon is selected or hit).
-> Witness: L1 38 (death, m2erbe, missions, play, play2).
+> Witness: L1 41 (armour, death, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B7E5 c ScriptDrawCarried ; 3D script opcode 22: draw the carried object when the flag $B7EB is set
 > Called from the script interpreter `$990F` (opcode 22, `$98E1` table). Pops the return address into the `JP nn` at `$B824` (operand `$B825`); the operand of `LD A,n` at `$B7EB` is the flag. When it is set: saves `$9A8E` / `$9AB3` / `$9A6C`, pages bank 3 (`$726C`), DrawModel `$B82A` with the record from `$68E6`, restores the view values. In every recording the flag is 0 and only the `JP` back runs.
-> Witness: L1 4 (play2).
+> Witness: L1 237 (armour, m1complete, play2).
 $B824 ScriptDrawCarriedReturn ; JP nn: the script's return address
 
 $B827 c DrawObject ; Draw one object: its model, or the wreck model
 > Input IX = the record. +2 bit 6 picks the wreck model +8/+9 instead of +$1C/+$1D; falls into DrawModel `$B82A`.
-> Witness: L1 9194 (death, m2erbe, missions, play, play2).
+> Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B82A c DrawModel ; Project and draw a 3D model at the object's view-space position
 > Loads the view x / depth (+$2B..+$2E) into `$9A8E` / `$9AB3`, the night-sight mode `$757A`, and calls the 3D engine (bank 2 `$990F`).
-> Witness: L1 9194 (death, m2erbe, missions, play, play2).
+> Witness: L1 27342 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B8A8 c MissileHit ; A missile's hit handler: reset the sight timer, then fall into Explode
 > The collision handler (template +`$1A`) of the missiles `$82`-`$85`: CALL ResetSightTimer `$C506` (the radar lock's gate opens again), then falls into Explode `$B8AB`. No recording launches a missile.
@@ -1510,12 +1516,12 @@ $B8A8 c MissileHit ; A missile's hit handler: reset the sight timer, then fall i
 @module player
 $B8AB c Explode ; Explode a projectile: debris and the explosion sound
 > Debris `$B6D1`, the sound `$D86B`, then RemoveObject.
-> Witness: L1 8 (death, play2).
+> Witness: L1 24 (armour, death, m1complete, m4complete, play2).
 
 @module objects
 $B8B1 c RemoveObject ; Free a record: unregister its collision, clear +2
 > Input IX. UnregisterCollision `$CA3B`, +2 = 0 (the slot is free for FindFreeObject).
-> Witness: L1 61 (death, play, play2).
+> Witness: L1 134 (armour, death, m1complete, m4complete, play, play2).
 
 @module player
 $B8B9 b MortarElevationUp 11 ; Raise the mortar elevation (no recording runs it)
@@ -1539,15 +1545,15 @@ $B909 c AimLimit ; Clamp the aim within the weapon's limit
 @module objects
 $B916 c BearingOctant ; BearingTo: the octant from the signs of dx, dy
 > dx, dy signs give 8 octants; then BearingRatio.
-> Witness: L1 7491 (death, m2erbe, missions, play, play2).
+> Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B94A c BearingRatio ; BearingTo: the ratio of the smaller to the larger delta
 > Divides the smaller |delta| by the larger to an index of BearingTable.
-> Witness: L1 7491 (death, m2erbe, missions, play, play2).
+> Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B95A c BearingLookup ; BearingTo: the angle from the table $B9DE
 > Adds the octant base to the table angle.
-> Witness: L1 7491 (death, m2erbe, missions, play, play2).
+> Witness: L1 29500 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $B9DE b BearingTable 8 ; The arctangent table of BearingTo
 > 24 bytes of angles read by BearingLookup `$B95A`.
@@ -1555,15 +1561,15 @@ $B9DE b BearingTable 8 ; The arctangent table of BearingTo
 @module world
 $B9F6 c SetCamera ; Set the camera from the viewed object (the player, a missile, the Dragonfly)
 > Copies +$21..+$28 (table select, heading, X, Y) of the record at (`$B9F4`) to `$67A5`-`$67AC`, the height +5/+6 (or the IR height `$B8FF` when `$BA13` is set) to `$67AD`. The rear view (`$BA27` set) adds `$80` to the heading. Then CameraSinCos `$BA32`.
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BA32 c CameraSinCos ; The camera heading's sine and cosine
 > Reads the camera heading `$67A6`, sin / cos through `$67E8` (`$A899`), stores the pair in the operands `$BBBD` / `$BBC8` of RotateToView.
-> Witness: L1 7100 (death, m2erbe, missions, play, play2).
+> Witness: L1 19674 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BA40 c CameraSinCosAgain ; CameraSinCos for the second pass
 > CALL CameraSinCos for the second view pass.
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BA45 c RearViewOff ; Rear view off
 > Clears `$BA27`, falls into ToggleRearView.
@@ -1571,7 +1577,7 @@ $BA45 c RearViewOff ; Rear view off
 
 $BA4A c ToggleRearView ; Rear view on or off: the flag $BA27, the text REAR:VIEW / :::
 > Prints `$BA86` ("REAR:VIEW") or `$BA9F` (blank) with the attribute at `$5AD2`.
-> Witness: L1 31 (death, m2erbe, missions, play, play2).
+> Witness: L1 36 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BA6E b ViewTexts 13 ; The view labels: IR:SIGHT, REAR:VIEW, BINOC:X2 and their blanks
 > Strings for PrintString `$6FB3` (`$07` position code, `$FF` end): `$BA6E` "IR:SIGHT", `$BA7A` blank, `$BA86` "REAR:VIEW", `$BA93` "BINOC:X2" (the digit at `$BA9D`), `$BA9F` blank.
@@ -1582,23 +1588,23 @@ $BA9F ViewTextBlank
 
 $BAAC c GroundDots ; Draw the ground-plane dot grid
 > The grid moves with the camera: GridVectors `$BB54`, then PlotGroundDot `$BB75` for each dot, GridStep `$BBA6` between rows.
-> Witness: L1 3507 (death, m2erbe, missions, play, play2).
+> Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BB54 c GridVectors ; The grid's step vectors for the camera heading
 > The camera's sin / cos scaled to the grid spacing: the steps along a row and between rows.
-> Witness: L1 14028 (death, m2erbe, missions, play, play2).
+> Witness: L1 39176 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BB75 c PlotGroundDot ; Project one ground dot and plot it
 > Rotates the dot to view space, divides by depth, plots through `$AA27` when on screen (117 517 runs).
-> Witness: L1 117517 (death, m2erbe, missions, play, play2).
+> Witness: L1 324616 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BBA6 c GridStep ; Step to the next grid row
 > Adds the row vector to the grid origin.
-> Witness: L1 7014 (death, m2erbe, missions, play, play2).
+> Witness: L1 19588 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BBBC c RotateToView ; Rotate dx, dy by the camera (sin `$BBBD`, cos `$BBC8`)
 > Outputs the depth offset in `$9A6C` and the x offset in `$9A8E` (OpProject adds `$9A6C` to z and compares with 96).
-> Witness: L1 50296 (death, m2erbe, missions, play, play2).
+> Witness: L1 154474 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module objects
 $BBF0 b ActivateIndexSave 1 ; Saved operand of ActivateMissionObjects
@@ -1606,67 +1612,67 @@ $BBF0 b ActivateIndexSave 1 ; Saved operand of ActivateMissionObjects
 
 $BBF1 c ActivateMissionObjects ; Spawn the mission objects near the player, despawn the far ones (16 per call)
 > Walks the ($DBD9) records of 8 bytes at ($DBDA), 16 per call (the index is kept in `$BBF2` / `$BBFA`). A live record (bit 7) not yet spawned within 9 coarse units (InRange `$BD67`) gets a slot (FindSlot `$BCFD`), its type (ObjectSetType `$BD41`), a collision slot (`$C957`), its heading and position (CopyHeading `$BCBA`, CopyPosition `$BCC6`), and bit 6. A spawned one out of range is freed (bit 6 cleared; the slot found by +0 = the index in `$BC33`).
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCBA c CopyHeading ; Copy the list record's heading (+2) to the object
 > The list record's +2 to the object's +$22.
-> Witness: L1 183 (death, m2erbe, missions, play, play2).
+> Witness: L1 365 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCC6 c CopyPosition ; Copy the list record's X / Y words, << 2 into 24 bits (WordToWorld $BD83)
 > +4/+5 and +6/+7 of the list record through WordToWorld `$BD83` to +$23-+$25 and +$26-+$28.
-> Witness: L1 366 (death, m2erbe, missions, play, play2).
+> Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCD6 c FindProjectileSlot ; Find a free record for a projectile (up to record 23)
 > D = `$17`, falls into FindFreeObject.
-> Witness: L1 70 (death, play, play2).
+> Witness: L1 148 (armour, death, m1complete, m4complete, play, play2).
 
 $BCDA c FindFreeObject ; Find a free record 1-20 (vector $67C4)
 > D = `$15`; carry set and IX = the record when found.
-> Witness: L1 219 (death, m2erbe, missions, play, play2).
+> Witness: L1 1410 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCDC c FindFreeObjectD ; Find a free record below D: +2 = 0
 > Stores 23 - E in `$C95C` and the record in `$C973`.
-> Witness: L1 289 (death, m2erbe, missions, play, play2).
+> Witness: L1 1558 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCF0 c FindFreeLoop ; The scan loop
 > Steps 60 bytes per record until +2 = 0 or the limit.
-> Witness: L1 415 (death, m2erbe, missions, play, play2).
+> Witness: L1 1146 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BCFD c FindSlot ; Find a slot for a list record: the first free or evictable record of 1-20
 > One scan of records 1-20 (it does not call FindFreeObject): the first record that is free (+2 = 0) or holds an enemy shell (+3 AND `$50` = `$10`) is taken; an evicted shell is unregistered (`$67CD`) and its +2 cleared. Then the list index to +0. NC when none.
-> Witness: L1 185 (death, m2erbe, missions, play, play2).
+> Witness: L1 543 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BD41 c ObjectSetType ; Set the type and copy the 30-byte template (vector $67C7)
 > Input A = type. Bit 7: the resident template `$B3CA` + 30 * (A - `$80`); else the mission's template table (`$DBD7`) + 30 * A. Stores the type at +1, copies the 30 template bytes to +2..+$1F and the serial to +$20.
-> Witness: L1 431 (death, m2erbe, missions, play, play2).
+> Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BD67 c InRange ; Is the list record within range of the player (4 coarse units for type 0, 9 for the others)
 > |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below the range: 4 for type 0 (trees), 9 for every other type (type 1 trees included). Called for each list record (70 373 runs).
-> Witness: L1 70373 (death, m2erbe, missions, play, play2).
+> Witness: L1 198222 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BD83 c WordToWorld ; A list word << 2 into a 24-bit coordinate
 > HL << 2 with the carry into the third byte.
-> Witness: L1 366 (death, m2erbe, missions, play, play2).
+> Witness: L1 730 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BD98 c TransformObjects ; Make every present object camera-relative, cull it, insert it into the depth tree
 > For each record with +2 bit 7: position minus camera, RotateToView `$BBBC`, depth cull, OnScreen `$BEA2` with the radius, then DepthInsert `$BEDE` into the tree at `$6800`; a blip for the radar (RadarAddBlip `$C0B2`).
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BEA2 c OnScreen ; Is the object within the screen with its radius
 > View x (+$2B/+$2C) against the depth with the radius +$16/+$17.
-> Witness: L1 32872 (death, m2erbe, missions, play, play2).
+> Witness: L1 103866 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BEA8 c OnScreenX ; The x half of OnScreen
 > The entry for the x test.
-> Witness: L1 32885 (death, m2erbe, missions, play, play2).
+> Witness: L1 103879 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BED2 c ClearDepthTree ; Empty the depth tree at $6800
 > Resets the node pointer and the root at `$6800`.
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9837 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BEDE c DepthInsert ; Insert a record into the depth tree (6-byte nodes: depth, left, right, record)
 > Walks from the root, left when nearer, right when farther, and links a new 6-byte node.
-> Witness: L1 9829 (death, m2erbe, missions, play, play2).
+> Witness: L1 29277 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BF20 b DepthTreeVars 4 ; Variables of the depth tree
 > Zero in the image; the walk of the tree keeps its stack depth here.
@@ -1679,47 +1685,47 @@ $BF24 c FindMissileTarget ; Search the depth tree for a missile target
 @module objects
 $BF53 c DrawObjectsInOrder ; Draw the objects far to near (in-order walk of the depth tree)
 > Calls DrawEntry `$BF83` per node.
-> Witness: L1 3507 (death, m2erbe, missions, play, play2).
+> Witness: L1 9794 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BF83 c DrawEntry ; Draw one tree entry: an object (DrawObject) or a debris particle
 > A pointer at or above `$CF00` is a particle of the bank 3 list, drawn as a dot.
-> Witness: L1 9715 (death, m2erbe, missions, play, play2).
+> Witness: L1 29160 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $BFD1 c MoveObject ; Move an object by its speed along its heading (vector $67BE)
 > X += speed * sin(heading), Y += speed * cos(heading), through `$A8B2` / `$A7F2`.
-> Witness: L1 14450 (death, m2erbe, missions, play, play2).
+> Witness: L1 53953 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C026 c RunObjectHandlers ; Run each present object's step handler
 > 24 records from `$75F0`: when +2 bit 7 and +3 bit 0 are set, CALL (+$18) with IX = the record.
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C05E c DrawRadar ; Draw the radar: clear it, plot the blip list $6768
 > ClearRadar `$C094`, then RadarPlotList `$C079` (3483 runs, every 3D frame but the first).
-> Witness: L1 3483 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C079 c RadarPlotList ; Plot the list of blips and reset it
 > Resets the list pointer `$7BFB`, sets `$AA1A`, plots each pair at `$6768` through PlotRadarPixel `$A9FE`.
-> Witness: L1 3483 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C094 c ClearRadar ; Clear 32 rows of 5 bytes at $5036 with stack pushes
 > SP = the radar's screen rows, PUSH of zeros (32 rows, 5 bytes each at `$5036`).
-> Witness: L1 3483 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C0B2 c RadarAddBlip ; Add an object to the radar list when within range
 > Input: the object's offset from the player. RadarRange `$C104`, RadarScale `$C0D2`, RadarStoreBlip `$C0F7`.
-> Witness: L1 27405 (death, m2erbe, missions, play, play2).
+> Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C0D2 c RadarScale ; Scale the offsets to radar units
 > SRA H / RR L 8 times on each offset.
-> Witness: L1 27405 (death, m2erbe, missions, play, play2).
+> Witness: L1 88141 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C0F7 c RadarStoreBlip ; Store the blip in the list at ($7BFB)
 > Writes y, x to (`$7BFB`) and advances it.
-> Witness: L1 14952 (death, m2erbe, missions, play, play2).
+> Witness: L1 45950 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C104 c RadarRange ; Is the offset within the radar's range
 > Carry set when the offset is out of the radar (|d| beyond the window).
-> Witness: L1 48723 (death, m2erbe, missions, play, play2).
+> Witness: L1 158626 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module player
 $C113 b WeightText 8 ; A print of the weight and its text
@@ -1793,7 +1799,7 @@ $C33E c RecallDragonfly ; Recall the Dragonfly
 
 $C357 c CameraToPlayer ; Point the camera back at the player
 > `$B9F4` = `$75F0`. Also called when a mission starts (15 runs over five recordings).
-> Witness: L1 15 (death, m2erbe, missions, play, play2).
+> Witness: L1 20 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C391 c DragonflyStep ; The Dragonfly's flight: steered by the controls
 > Turns by the control input, MoveObject, height from the up / down keys (play: 25 runs).
@@ -1813,7 +1819,7 @@ $C47C MissileTurn ; IY = the target (+$32), then TurnToward
 @module objects
 $C485 c TurnToward ; Turn IX toward IY by at most 4 per pass
 > Input IX, IY. BearingTo, the difference with +$22; within 4 steps it leaves the heading as it is, else +-4. Used by the Helicarrier (HelicarrierWait) and the missiles (545 runs).
-> Witness: L1 545 (death, missions, play, play2).
+> Witness: L1 2841 (armour, c1, death, fuel, m1complete, m4complete, missions, play, play2).
 
 $C4A5 c HomingMissileStep ; The height-following missiles' step ($83, $84)
 > MissileTurn `$C47C`, MissileSerialCheck `$C45D` (with the lifetime), then the height = target + (own - target) / 16 (four `SRA H` / `RR L`: each pass closes 15/16 of the gap), stored by SetHeightAndMove `$C4C4`, which falls into MoveObject.
@@ -1824,7 +1830,7 @@ $C4C4 c SetHeightAndMove ; Store the height (HL) and move the object
 
 $C4CD c DrawSightOverlay ; Draw the sight mask $FD80 into the back buffer $9000 while $C4DC is set
 > The timer `$C4CE` counts down; at 0 ResetSightTimer. While `$C4DC` is set the 3D view gets the sight mask (3507 runs, every 3D frame).
-> Witness: L1 3507 (death, m2erbe, missions, play, play2).
+> Witness: L1 9793 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C506 c ResetSightTimer ; Clear the sight timer $C4CE and open the target gate $C198
 > `$C4CE` = 0, `$C198` = 1 (TargetInCone runs its body).
@@ -1833,15 +1839,15 @@ $C506 c ResetSightTimer ; Clear the sight timer $C4CE and open the target gate $
 @module player
 $C510 c PrintAmmo ; Print the current slot's rounds when it is the one shown
 > When the slot shown (`$D114`) is the current `$C53C`, falls into PrintAmmoAt.
-> Witness: L1 86 (death, play, play2).
+> Witness: L1 169 (armour, death, m1complete, m4complete, play, play2).
 
 $C519 c PrintAmmoAt ; Print the rounds at $FDC0
 > Converts the rounds at `$C527` and prints at `$FDC0`.
-> Witness: L1 87 (death, play, play2).
+> Witness: L1 170 (armour, death, m1complete, m4complete, play, play2).
 
 $C51F c PrintSlotStatus ; Print the slot's status
 > Clears `$BA13` and `$C4DC` (the IR view and the sight overlay off) when a weapon is deselected.
-> Witness: L1 14 (death, play, play2).
+> Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 $C527 b WeaponVars 8 ; The weapon variables: the rounds shown, the ammunition pointers $C534, the current slot $C53C
 > `$C534` holds the four pointers `$836D`, `$8373`, `$8379`, `$837F` (+5 of each slot), `$C53C` the slot 0-3, `$C53D` the address of the slot hook's CALL operand (`$6A46` + 5n).
@@ -1850,14 +1856,14 @@ $C53C CurrentSlot ; 0-3
 
 $C53F c SelectWeapon ; Select a weapon slot with the keys 1-4
 > Writes `$C53C`, `$C53D` = the address of the slot hook's CALL operand (`$6A46` + 5n), the store type's words 0-3 (StoreTypes `$7B89` + 8 * type: K, J, fire, then the select call, word 3); a slot whose status `$68C9` + 6n is 0 prints "DAMAGED IN COMBAT" (`$C618`).
-> Witness: L1 14 (death, play, play2).
+> Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 $C618 b DamagedText 13 ; "DAMAGED IN COMBAT"
 > PrintString text: `$07` position codes and "DAMAGED", "IN", "COMBAT".
 
 $C632 c RefreshWeaponPanel ; Redraw the weapon panel
 > When `$C529` is set: InvertPanelB with `$6500`, then the slot's state at (`$0000` patched) chooses `$C605` (damaged) or WeaponSelectText.
-> Witness: L1 26 (death, m2erbe, missions, play, play2).
+> Witness: L1 31 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module objects
 $C648 b CollisionTables 8 ; The collision pair timers, the slot list $C775, the row pointers $C78C
@@ -1865,24 +1871,24 @@ $C648 b CollisionTables 8 ; The collision pair timers, the slot list $C775, the 
 
 $C7BC c CollisionPass ; Test the registered pairs and call both collision handlers
 > For each pair whose timer is due: distance minus the radii, then the boxes; on an overlap calls IX's +$1A with IY the other, then the other way. The Immunity POKE writes 58 at `$C875` (`JP M,$C8AF` becomes `LD A,(nn)`, the overlap branch is gone).
-> Witness: L1 3550 (death, m2erbe, missions, play, play2).
+> Witness: L1 9836 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $C875 ; the Immunity POKE writes 58 here: JP M,$C8AF becomes LD A,(nn): no overlap is handled, the player's own shells included (complete-NOTES)
 
 $C944 c RecordByIndex ; HL = the record B (+2), A = its state
 > Input B = the record number. Output HL = the record, A = +2.
-> Witness: L1 15176 (death, m2erbe, missions, play, play2).
+> Witness: L1 54430 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C957 c RegisterCollision ; Give the record a collision slot (vector $67CA)
 > Takes the first free entry of the slot list `$C775`, stores it in +$3B, sets the pair timers of the new row in `$C648`.
-> Witness: L1 431 (death, m2erbe, missions, play, play2).
+> Witness: L1 1235 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $C9A7 c CollisionFilter ; Which pairs collide: the state bits 2 / 4 / 6 / 7
 > Inside CollisionPass: both +2 bytes decide whether the pair is tested (radar bit 2, bit 4 no-collide, wrecks bits 6 / 7).
-> Witness: L1 4065 (death, m2erbe, missions, play, play2).
+> Witness: L1 12800 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CA3B c UnregisterCollision ; Free the record's collision slot (vector $67CD)
 > Returns the slot of +$3B to the list and marks the row's timers `$FF`.
-> Witness: L1 230 (death, m2erbe, missions, play, play2).
+> Witness: L1 951 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CA7C c StrikePlayer ; A unit strikes the tank with no shell: PlayerHit with the unit as the hitter, damage doubled
 > IX = the unit. Saves its +3 and +$14, sets +3 b4 and doubles +$14, calls PlayerHit `$CAA5` with IY = the unit and IX = the tank (`$75F0`), then restores both bytes. Called by mission 8's type 10 at `$E1FC` (a direct strike while it is aligned, docs/07-objects.md 7.14); no recording runs it.
@@ -1890,13 +1896,13 @@ $CA7C c StrikePlayer ; A unit strikes the tank with no shell: PlayerHit with the
 @module player
 $CAA5 c PlayerHit ; The player's collision handler: armour and subsystem damage
 > Type 4 goes to `$CB6C`. Height >= `$30`: the top armour `$8304` -= damage; else the side (HitSide `$CB4C`) `$8301` + L, then a random subsystem from the nine pointers at `$8338`. An underflow goes to `$CB38`: `$7BF9` = `$CCBE` "FAILED TO MAKE PICKUP" when `$68E8` is set, else `$CCAB` "UNIT DESTROYED", JP `$7047`. The Infinite Damage POKEs write OR (HL) at `$CAC8`, `$CAE8`, `$CB18`.
-> Witness: L1 41 (death, play2).
+> Witness: L1 116 (armour, c1, death, m1complete, m4complete, play2).
 $CB38 ArmourDestroyed ; armour underflow: the failure reason ($CCBE or $CCAB), JP $7047 (witness: the armour recording, POKE armour = 1 at frame 7704, frame 18423)
 $CB6C HitObstacle ; a type 4 hitter (static)
 
 $CB4C c HitSide ; Which side was hit (1-3) from the bearing
 > From the hitter's view-space x (+`$2F`/+`$30`, negated when `$BA27` is set): |x| <= `$60` is side 2 (the front), else positive x side 1 and negative side 3; there is no rear side (play2: 25 runs).
-> Witness: L1 25 (play2).
+> Witness: L1 86 (c1, m1complete, m4complete, play2).
 
 $CBBD b HitVars 9 ; Variables of PlayerHit
 > `$FF` in the image.
@@ -1910,43 +1916,43 @@ $CC05 b PushBackWork 4 ; Work bytes of PushBack
 
 $CC09 c BounceDecay ; After a wall: halve the speed until it is 0, then PlayerStep again
 > +7 >>= 1 (SRA); when it reaches -1 or 0 ResetPlayerHandler (play2: 23 runs).
-> Witness: L1 23 (play2).
+> Witness: L1 43 (c1, m1complete, m4complete, play2).
 
 $CC1E c ResetPlayerHandler ; Set the player's handler back to PlayerStep
 > +$18/+$19 = `$A8C7`; also called when a mission starts (19 runs).
-> Witness: L1 19 (death, m2erbe, m2ocean, missions, play, play2).
+> Witness: L1 28 (armour, c1, death, fuel, m1complete, m2erbe, m2ocean, m4complete, missions, play, play2).
 
 $CC2B b HeadingAwayCode 8 ; Code no recording runs (heading + $80)
 > `CALL $67C1` / `ADD A,$80` / `LD (IX+$22),A`: turn away from the hitter.
 
 $CC33 c SetBounce ; Set the handler to BounceDecay
 > +$18/+$19 = BounceDecay (play2: 4 runs).
-> Witness: L1 4 (play2).
+> Witness: L1 11 (c1, m1complete, m4complete, play2).
 
 @module world
 $CC3C c TerrainCollision ; Does the object touch a visible segment; the style to $CE69 (vector $67F1)
 > Input IX = the object. Scans the segments flagged in `$8305` (TerrainScan `$CC4D`), tests the object's position against each one's box or diagonal (TerrainDiagonal `$CDB6`). Output carry set on a touch, the style +5 of the segment in `$CE69`. The mission code uses it through `$67F1` for the enemies.
-> Witness: L1 5854 (death, m2erbe, missions, play, play2).
+> Witness: L1 20647 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CC4D c TerrainScan ; The scan over the visible segments
 > Sets the segment pointer and the count.
-> Witness: L1 62957 (death, m2erbe, missions, play, play2).
+> Witness: L1 208483 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CC51 c TerrainScanLoop ; The scan loop
 > One segment per pass (62 693 runs).
-> Witness: L1 62693 (death, m2erbe, missions, play, play2).
+> Witness: L1 207509 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CDA2 c TerrainNext ; Continue with the next segment
 > Steps to the next record.
-> Witness: L1 11717 (death, m2erbe, missions, play, play2).
+> Witness: L1 48694 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CDA6 c TerrainNegate24 ; Negate a 24-bit difference
 > Negates the 24-bit value in A:HL.
-> Witness: L1 14955 (death, m2erbe, missions, play, play2).
+> Witness: L1 62388 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CDB6 c TerrainDiagonal ; Distance to a diagonal segment
 > The perpendicular distance for orientation other than 0 / `$80` (missions, m2erbe).
-> Witness: L1 908 (m2erbe, missions).
+> Witness: L1 5964 (m2erbe, m4complete, missions).
 
 @module missionflow ; The mission goal: the pickup message, the Helicarrier, mission complete and failed
 @about A mission's goal hook (the block's word at $DBE1, called from $6A66 every pass) sets the flag $68E8 when the goal objects are destroyed. Then PickupAnnounce $DB71 prints the message once, and the Helicarrier at the pad ($7E89 / $7E8C) takes the player away: mission complete through $67EE ($7040), the reason of a failure in $7BF9 and $7047.
@@ -1965,7 +1971,7 @@ $CEA7 c ToggleBinoculars ; Binoculars on or off
 
 $CEAB c SetBinoculars ; Apply the binoculars flag: the zoom $9A93, the lamp, the key repeat, the text
 > On: `$CEA8` = A, the zoom `$9A93` = 1, the lamp attribute `$5ACC` = `$42`, key repeat `$9719` = `$20`, prints "BINOC:X2" `$BA93`. Off: `$9A93` = 0, `$5ACC` = `$44`, `$9719` = 4, the blank `$BA9F`. The rear view (`$BA27`) blocks both.
-> Witness: L1 34 (death, m2erbe, missions, play, play2).
+> Witness: L1 39 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $CEE5 c CycleBinocularZoom ; Step the binocular zoom 1-3 (x2, x4, x8)
 > When the binoculars are on: `$CED4` + 1, wrapping 4 to 1, to the zoom `$9A93`; falls into ShowSightZoom (play: 6 runs).
@@ -2122,7 +2128,7 @@ $D3AD c SpectreDrift ; The Spectre drifts under its parachute
 
 $D3C6 c SelectAmmoPointer ; The current slot's ammunition pointer to $B551
 > A = the slot; `$C534` + 2A to `$B551` (78 runs).
-> Witness: L1 78 (death, play, play2).
+> Witness: L1 156 (armour, death, m1complete, m4complete, play, play2).
 
 $D3D6 c PhantasmCode ; The Phantasm's auto-fire hook, once a pass while on
 > Saves SlotShown, then `$D3E6`: SlotShown = the slot, the counter `$D3EB` less one; below 0 it reloads 16 and falls into LaunchPhantasm (a shot every 17 passes); `$D3DF` puts SlotShown back and calls SelectAmmoPointer for the selected slot (SlamHook and SpectreCode end there too).
@@ -2159,11 +2165,11 @@ $D4AE c CopyHudGlyphsB ; Copy one HUD glyph
 
 $D4B8 c BoundaryCheck ; The map edge: AWOL warning, then desertion
 > A NOP / RET gate byte at `$D4B8`. |`$BC12`| against (`$DBD0`) and |`$BC1D`| against (`$DBD1`): inside, the state `$7578` = 0; outside, "GOING AWOL" (`$D51F`); beyond the extent + 4, `$7BF9` = `$CCD8` "PLAYER DESERTION" and `$7047`.
-> Witness: L1 3096 (death, m2erbe, missions, play, play2).
+> Witness: L1 9082 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $D4E9 c SetAwolState ; Set the AWOL state AwolState $7578 (0 inside, 1 GOING AWOL, 2 desertion)
 > `$7578` = A unless already equal.
-> Witness: L1 3053 (death, m2erbe, missions, play, play2).
+> Witness: L1 9039 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 $D512 b AwolBlankText 8 ; The blank that clears the AWOL warning, and the head of the warning
 > PrintString text: `$07` `$8D` `$10`, ten blanks, `$FF` (the warning cleared); `$D51F` starts "GOING AWOL" (`$07` `$8D` `$10` then the text at `$D521`).
@@ -2172,7 +2178,7 @@ $D51F AwolWarningText ; the start of "GOING AWOL"; its text from $D521 on is tak
 @module missionflow
 $D52E c PlaceHelicarrier ; Once (the RET / NOP gate $D52E), on the key H: call the Helicarrier, which then flies to the pad
 > `$D52E` is `NOP` until it has run, then `RET` (`$D531` writes it; the mission load `$8598` clears it). Record 21 (`$7ADC`) gets type `$8C` at the pad `$7E89` / `$7E8C` (the block header's 12 bytes at `$DBF1` copied to `$7E82`).
-> Witness: L1 2 (play).
+> Witness: L1 7 (m1complete, m4complete, play).
 $D531 ; writes the RET at $D52E
 
 $D5C9 c CopyHelicarrierState ; Copy the Helicarrier's state byte
@@ -2202,17 +2208,17 @@ $D691 SoundMaster ; 1 in the image, never written
 $D692 c SoundFrame ; The sound step of a frame (the interrupt)
 > Gated by `$D691` (1 in the image and never written: the test always passes) and `$D689`. EngineTone `$D8A1` from |`$75F7`|, then each effect counter `$D682`-`$D68B` counts down and sets its registers in the shadow `$D674`-`$D681`, then WriteAY `$D7DC` (B = `$FF` select port `$FFFD` at `$D7E4`, data port `$BFFD` at `$D7EB`). Called by the interrupt's `$7E6E` in every recording.
 > Witness frames (first-last frame of the recording, runs): c1 24005-33298 (4124), controls 0-330 (242), death 0-20038 (12655), m10 0-9028 (6434), m2erbe 0-7808 (3094), m2ocean 0-4799 (2244), menu 0-10996 (7559), missions 0-35997 (12811), play 0-10930 (5510), play2 0-23665 (12957), search 0-5043 (2265).
-> Witness: L1 65529 (death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+> Witness: L1 121656 (armour, c1, controls, death, fuel, m10, m1complete, m2erbe, m2ocean, m4complete, menu, missions, play, play2, search).
 
 $D7F4 c SetNoise ; Set the noise period and the volume of channel C, noise C on
 > C as the noise period (`$D67A`; both callers pass C = A), A >> 1 as the volume of channel C (`$D67E`), the mixer's bit 5 cleared (noise C on); returns without a write when A >> 1 is not above NoisePriority `$D688` (death, play2).
 > Witness frames (first-last frame of the recording, runs): c1 32619-33091 (107), death 8122-18058 (896), play2 8608-17213 (553).
-> Witness: L1 1449 (death, play2).
+> Witness: L1 3337 (armour, c1, death, m1complete, m4complete, play2).
 
 $D807 c SilenceAY ; Silence the AY
 > Zeroes the 21 bytes from `$D674`, mixer `$3F` (all off), writes the 14 registers.
 > Witness frames (first-last frame of the recording, runs): c1 23974-24603 (2), controls 95-264 (2), m2erbe 7454-7522 (2), menu 95-1874 (4), missions 7955-34068 (16), play 10627-10693 (2), play2 9615-23533 (6).
-> Witness: L1 30 (m2erbe, menu, missions, play, play2).
+> Witness: L1 39 (armour, c1, controls, fuel, m1complete, m2erbe, m4complete, menu, missions, play, play2).
 
 $D839 c SoundSweep ; Effect trigger: the sweep counter $D68D = $1F
 > `PUSH AF` / `LD A,$1F` / `LD ($D68D),A` / `POP AF` / `RET`. SoundFrame then sweeps tone B down in pitch (doc 09).
@@ -2228,7 +2234,7 @@ $D846 c SoundNoise23 ; Effect trigger: the steady noise counter $D68C = $23
 $D84E c SoundEffectA ; Effect trigger $D68B
 > `$D68B` = `$1E` (play2: 21 runs).
 > Witness frames (first-last frame of the recording, runs): c1 32680-33293 (15), play2 8700-17195 (21).
-> Witness: L1 21 (play2).
+> Witness: L1 61 (c1, m1complete, m4complete, play2).
 
 $D856 c SoundRandomTone ; Effect trigger: the random tone flag $D68A = 1
 > Known only from the code: no caller.
@@ -2240,17 +2246,17 @@ $D85E c SoundSelectShort ; Effect trigger: SelectCount $D682 = 1
 $D863 c SoundSelect ; Weapon select sound
 > `$D682` = `$12`: the weapon select.
 > Witness frames (first-last frame of the recording, runs): death 7705 (1), play 8425-9322 (4), play2 8362-23071 (9).
-> Witness: L1 14 (death, play, play2).
+> Witness: L1 17 (armour, death, m1complete, m4complete, play, play2).
 
 $D86B c SoundExplosion ; Explosion sound
 > `$D683` = `$20`: an explosion.
 > Witness frames (first-last frame of the recording, runs): c1 32618-33054 (5), death 8121-17902 (8), play2 8607-17180 (19).
-> Witness: L1 27 (death, play2).
+> Witness: L1 63 (armour, c1, death, m1complete, m4complete, play2).
 
 $D873 c SoundKill ; Kill sound
 > `$D684`: a kill (death: 5 runs).
 > Witness frames (first-last frame of the recording, runs): death 8187-17902 (5).
-> Witness: L1 5 (death).
+> Witness: L1 12 (armour, death, m1complete, m4complete).
 
 $D87B c SoundToneC8 ; Effect trigger: ToneC8Count $D685 = 7
 > Known only from the code: no caller.
@@ -2269,7 +2275,7 @@ $D890 c SoundSiren40 ; Effect trigger: the siren counter $D68E = $40
 $D898 c SoundFire ; Fire sound
 > `$D686` = `$14`: a shot.
 > Witness frames (first-last frame of the recording, runs): death 7897-19694 (60), play 8800-9406 (4), play2 8442-16931 (6).
-> Witness: L1 70 (death, play, play2).
+> Witness: L1 147 (armour, death, m1complete, m4complete, play, play2).
 
 $D8A0 b SoundFireVar 1 ; A spare byte after SoundFire
 > `$0A`, after the RET of SoundFire; no routine of this fragment reads it.
@@ -2277,7 +2283,7 @@ $D8A0 b SoundFireVar 1 ; A spare byte after SoundFire
 $D8A1 c EngineTone ; Engine tone from the speed
 > |speed| through `$67D6` gives the tone period of channel A in the shadow (17 682 runs).
 > Witness frames (first-last frame of the recording, runs): c1 32219-33298 (982), death 7592-20038 (10012), m2erbe 7090-7522 (281), missions 7592-34068 (2195), play 8253-10693 (2004), play2 8184-23533 (3190).
-> Witness: L1 17682 (death, m2erbe, missions, play, play2).
+> Witness: L1 56368 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 
 @module world
 $D8D4 b BinocularIcons 8 ; The binocular zoom icons
@@ -2298,18 +2304,18 @@ $DADE c HelicarrierDescent ; The Helicarrier's landing: down 8 a step to the pad
 
 $DB00 c HelicarrierInit ; The Helicarrier's set-up
 > Clears `$6760`-`$6763`, `$FF` to `$6764`-`$6767`, the handler +$18/+$19 = `$DB24` (play: 1 run).
-> Witness: L1 1 (play).
+> Witness: L1 3 (m1complete, m4complete, play).
 
 $DB15 c SetHelicarrierHandler ; The Helicarrier handler's high byte
 > `LD (IX+$19),$DB` / `RET`, the handler's high byte.
-> Witness: L1 1 (play).
+> Witness: L1 3 (m1complete, m4complete, play).
 
 $DB1A c HelicarrierCode ; Code whose address PlaceHelicarrier writes into +$31/+$32; no recording runs it
 > `LD IY,$75F0` / `LD HL,$67A8` / `EXX` / `JR $DB2C` into HelicarrierWait with the player as the target. PlaceHelicarrier stores `$DB1A` when |pad| - |camera| is below 8 on both axes; whether anything jumps to it is SUSPECTED (docs/10-gameplay-logic.md 10.9).
 
 $DB24 c HelicarrierWait ; The Helicarrier waits for the player
 > Flies the Helicarrier to the pad: IY = the pseudo-record `$7E65` (its X / Y at `$7E88` / `$7E8B` are the pad), TurnToward, MoveObject; when the Helicarrier itself (not the tank) is within 3 units of X >> 8 and Y >> 8 (768 world units) of the pad on both axes, the arrival at `$DB61` (play: 27 runs; m1complete 16239-17099, 85 runs).
-> Witness: L1 27 (play).
+> Witness: L1 220 (m1complete, m4complete, play).
 $DB61 HelicarrierArrival ; the arrival over the pad: the record's handler becomes HelicarrierTurn $DAC4 (m1complete 17099, m4complete 15435)
 
 $DB6F b HelicarrierTail 2 ; Operand bytes
@@ -2317,7 +2323,7 @@ $DB6F b HelicarrierTail 2 ; Operand bytes
 
 $DB71 c PickupAnnounce ; Announce the pickup once the goal is met
 > A NOP / RET gate at `$DB71`. When `$68E8` (the goal flag) is set: `$DB77` writes `RET` at `$DB71` and prints "MISSION:COMPLETE:PROCEED:TO:PICKUP" (`$DB97`). Runs once per 3D frame.
-> Witness: L1 3483 (death, m2erbe, missions, play, play2).
+> Witness: L1 9770 (armour, c1, death, fuel, m1complete, m2erbe, m4complete, missions, play, play2).
 $DB77 PickupMessage ; writes RET at $DB71, the blit ViewBlitLow, prints $DB97 (m1complete 16138, m4complete 14215)
 
 $DB97 b PickupText 8 ; The pickup text

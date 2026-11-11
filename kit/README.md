@@ -39,13 +39,13 @@ what the generator does with it, the part files); every file of a case and the c
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step); a `basic` header's program length is the program without its variables, found as SAVE writes it (or given: `basic:NAME:LINE:FILE:LENGTH`) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
-| `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; the case's `res_formats.py build` calls it |
+| `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; `Symbols(case).add(ann, lo, hi)` writes and reads an address of an editable form as a name (`word($CCDA)` is `SharedModels+591`, `value()` the address again); the case's `res_formats.py build` calls it |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above) |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
-| `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
+| `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
 | `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked |
 | `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
@@ -63,17 +63,24 @@ what the generator does with it, the part files); every file of a case and the c
 | `dest`, `work`, `res_install`, `operands`, `no_entries`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
 | `ref_builds` | `[key, text]` of the builds docs 11 and 12 report first (each its own Runs row); the other recordings count after them |
 | `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional |
+| `witness_builds` | recordings that count in the witness lines only (a fuel failure, an armour test), optional |
+| `witness_names` | `{build: name}` for a witness list: a windowed copy of a recording under its recording's name (Battle Command `{"stage1/c1g": "c1"}`), optional |
+| `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each, optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
 
 Every run checks the `.ann`'s `Witness: L1 N (builds)` lines of the code entries against the recordings: N the runs
-of the entry's first instruction summed over `read_builds` and `code_builds` (less `witness_skip`), the list the
-builds that ran it (`c1, hiscore, rzx x29`), and prints each stale line
+of the entry's first instruction summed over `ref_builds`, `read_builds`, `code_builds` and `witness_builds` (less
+`witness_skip`; a `ref_builds` recording with a window counts only inside it), the list the builds that ran it (`c1,
+hiscore, rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
-`--fix-witness` rewrites them in the `.ann`
+`--fix-witness` rewrites them in the `.ann`, keeps a line that names a recording it did not load, and prints each
+name it drops (`menu, search ran no instruction there`)
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)).
 
-`--install` writes the modules, `game.asm` and the resources, and deletes only the modules the old `game.asm`
+`--install` writes the modules, `game.asm` and the resources (through the json's `res_install`, else `case.json`'s,
+else the case's `tools/res_formats.py`; a part with resources and none of these prints `WARNING: N resources not
+installed`), and deletes only the modules the old `game.asm`
 included that the `.ann` no longer has (a hand-written `.asm` beside them stays) and a resource's `src/res/NAME.bin`
 left by an earlier install when the case's `res_formats.py` now writes its editable form (`NAME.png`, `NAME.txt`)
 and not the bytes.
@@ -90,6 +97,9 @@ case's `res_formats.py build` writes that file from the editable form with `resi
 text edit takes effect and a label that moves is followed (SimCity's menus). A module named again further on
 (`@module tasks` before the IM 2 handler and again before its vector table far above) is one file of several
 stretches: the second starts with `ORG` at its address ([ann-format.md 2](../docs/ann-format.md#2-directives)).
+Several part files may share one `.ann`: each keeps the entries inside its image, and a module wholly outside is
+skipped with a note. A 128K game's `@bank` lines take their names from the banks' `.ann` files:
+`@names 3 ../bank3/bank3.ann`, then `@bank $CA8B 3` ([ann-format.md 5.1](../docs/ann-format.md#51-the-part-directives)).
 
 What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann`:
 
@@ -109,6 +119,10 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
   `ref_builds` recording reached says "not reached in `c1`; in the other recordings 648 calls (`rec/growth` 600,
   ...)", one it reached gets a row "Runs (the other recordings)" beside its `ref_builds` rows; "not reached in the
   recordings" only when none ran it.
+- **The parts.** `case.json` `ref_parts` adds a section a part after the game's (`## Bank 3 (`src/bank3`)`), each
+  from the part's `.ann`, image and recordings (only the instructions inside the part's window, and for a
+  `"mode": "blocks"` part only those whose bytes are the part's); a call into the game's pages names the game's
+  routine, a bank's address its bank.
 - **Doc 11** gives each inner label of a data entry (a field, a row) a row of its own under the entry, `Name`
   (`Entry`+k), its size up to the next label, its comment, its readers and writers. The readers and writers are the
   `ref_builds`' routines, then those only another recording saw, with the first such build in brackets

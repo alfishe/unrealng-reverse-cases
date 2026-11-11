@@ -18,5 +18,7 @@
   "l1": [{"path": "work/parts/chain-trace.json", "format": "trace", "reads": false},
          {"path": "work/stage1/rec/c1/l1.json", "lo": "B8F9", "hi": "BF0D", "reads": false}],
   "data_entries": "stop",
-  "work": "work/stage2/mkchain"
+  "work": "work/stage2/mkchain",
+  "ref_builds": [["stage1/c1l", "c1 from power-on to the game's entry at frame 23974: the load"]],
+  "other_builds": []
 }

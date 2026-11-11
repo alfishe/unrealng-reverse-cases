@@ -2,7 +2,9 @@
 
 The models are scripts of RunScript `$990F` (src/game/render.asm). Their editable form, which the build reads, is one
 instruction a line (tools/models3d.py `text_lines` and `assemble`, byte for byte): the address, the opcode's name,
-the operand bytes in hex and the words as `$XXXX`, then after `;` the decoded instruction, ignored by the build.
+the operand bytes in hex and the words as labels where the address has one (`ApiVector19`, `SharedModels+591`:
+kit/resinc.py `Symbols` over src/game/game.ann below `$C000` and the model's bank .ann; a mission's own addresses
+stay `$XXXX`), then after `;` the decoded instruction, ignored by the build.
 `db` lines hold the bytes that are no instruction (the frames of polar_points, mission 2's broken part). A vertex
 operand is 4 x the vertex number, as the game stores it. Words are addresses: a model that grows moves the ones after
 it, so their callers' words change too.

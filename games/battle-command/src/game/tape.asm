@@ -7,7 +7,8 @@
 ;
 ; Under `DI`, with bank 6 `$D27C` (the pointer's save) and `$D283` = `$C010`,
 ; calls `LdBytes` `$8617`; restores `$D283` = `$C000` and the border, carry =
-; loaded. Witness: L1 68 (c1, m10, m2erbe, m2ocean, menu, missions, search).
+; loaded. Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 LoadBlock:
   DI
   CALL SaveBank
@@ -43,8 +44,8 @@ LoadBlock:
 ; block shorter than DE ends in a time-out of the edge reader (`LdEdge2`
 ; `$869F`), `RET NC`: Ocean's mission 2 header asks for 6406 bytes, its block
 ; holds 6384 (src/tape/side2.txt), so `LoadMissionBlock` retries for ever
-; (m2ocean). Witness: L1 68 (c1, death, m10, m2erbe, m2ocean, menu, missions,
-; play, play2, search).
+; (m2ocean). Witness: L1 82 (armour, c1, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 LdBytes:
   INC D
   EX AF,AF'
@@ -142,16 +143,16 @@ l_8686:
 
 ; Two edges (the ROM's LD-EDGE-2)
 ;
-; Witness: L1 1682113 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 2102599 (armour, c1, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 LdEdge2:
   CALL LdEdge1
   RET NC
 
 ; One edge (the ROM's LD-EDGE-1), SPACE breaks
 ;
-; Witness: L1 3507210 (c1, death, m10, m2erbe, m2ocean, menu, missions, play,
-; play2, search).
+; Witness: L1 4378887 (armour, c1, death, fuel, m10, m1complete, m2erbe,
+; m2ocean, m4complete, menu, missions, play, play2, search).
 LdEdge1:
   LD A,$16
 l_86A5:

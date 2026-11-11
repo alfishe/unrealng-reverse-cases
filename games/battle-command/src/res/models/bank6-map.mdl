@@ -1,6 +1,6 @@
 org $E512
-# bank6-map: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as $XXXX;
-# after ";" the decoded instruction (ignored when built)
+# bank6-map: 3D model scripts (tools/models3d.py text_lines): address, opcode, operand bytes, words as labels
+# (Label, Label+N: kit/resinc.py Symbols) or $XXXX; after ";" the decoded instruction (ignored when built)
 $E512 project 04 00 ; project 4 from V0, model
 $E515 fill_polys 01 04 04 00 04 08 0C ; fill_polys (c4 0 1 2 3)
 $E51D end ; end

@@ -50,7 +50,8 @@ Entry:
 ; addresses are bank 0's, bank 6 holds code there), returns with bank 6 paged
 ; (`JP $7278`).
 ;
-; Witness: L1 15 (menu, missions, search).
+; Witness: L1 19 (armour, c1, death, fuel, m1complete, m2erbe, m4complete,
+; missions, play, play2).
 ResetCollisionTables:
   CALL PageBank0
   LD B,$17

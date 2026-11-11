@@ -43,7 +43,7 @@ The parser reads the file line by line. Leading and trailing spaces are dropped.
 | empty | nothing |
 | `#` | a comment for the reader of the `.ann`. It is never written to the `.asm`. The older form of the part directives (`# @bank`, `# @var`, ...) is read behind it too (section 5.1) |
 | `@module`, `@about`, `@res`, `@isub`, `@inline`, `@equ` | a directive (section 2) |
-| `@const`, `@bank`, `@var`, `@alias`, `@over`, `@piece` | a part directive (section 5.1) |
+| `@const`, `@bank`, `@names`, `@var`, `@alias`, `@over`, `@piece` | a part directive (section 5.1) |
 | `>` | a description paragraph of the last entry |
 | `$ADDR` | an entry or an inner line (section 3) |
 | anything else | an error: `game.ann:N: cannot read: ...` |
@@ -57,7 +57,7 @@ lines, but `kit/ann_names.py` only matches upper case, so write upper case.
 | --- | --- | --- |
 | `@module` | `@module NAME [; title]` | The entries from the next entry line on go to `NAME.asm`. The title heads that file and the `INCLUDE` line in `game.asm`. The module starts at its first entry, which must have a name, or `split_modules` fails. A module named like the top file that includes the modules (`@module game` beside `game.asm`) goes to `NAME-module.asm` (`game-module.asm`); its name stays `game` in the headers, docs 11 / 12 and the signatures. A module with no entry fails. The same name again further on adds a stretch to that module (an IM 2 handler at `$F70B` and its jump and vector table at `$FCFC`-`$FE00` with other modules between): one file, the stretches in address order, the second and later ones opened by `ORG $ADDR` where the assembly does not already stand; `game.asm` includes the file where its first stretch lies, the title is the first `@module` line's (a later line's title only when the first had none), `@about` lines add to the one header, docs 11 / 12 give the module one section with all its stretches, `kit/sig_add.py` one signature entry a stretch. Not in a part segment assembled under `DISP` (mkgame refuses it there) |
 | `@about` | `@about text` | One paragraph of the current module's file header (wrapped at 116 columns between two rule lines). It is an error before any `@module` |
-| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. In a `w` entry, a word skool2asm wrote as a data label (`DEFW TileData`) is kept as a check after the `INCBIN`s, `ASSERT {TileGraphics} == TileData`, one line per `DEFW` line: the build fails when the label moves and the bytes do not (a word equal to a code label's address, `$0000` or `$FFFF` is taken for a number: data that matches an instruction's address, an end mark). The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install`; a `NAME.bin` an earlier install left beside the editable form it now writes is deleted. `@res KIND/NAME.bin include`: the entry's lines become `INCLUDE "res/KIND/NAME.inc"` instead, a file the case's `res_formats.py build` writes from the editable form with `kit/resinc.py` (`DB` lines, a `DW Label` for an address, so sjasmplus resolves it and a moved label is followed; the entry's inner labels as labels inside it): the text stays the source, an address in it can be a name. One entry a file. mkgame checks its own assembly with a numeric `.inc` of the image's bytes (and installs that one beside the bytes for a case without a res hook) |
+| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. In a `w` entry, a word skool2asm wrote as a data label (`DEFW TileData`) is kept as a check after the `INCBIN`s, `ASSERT {TileGraphics} == TileData`, one line per `DEFW` line: the build fails when the label moves and the bytes do not (a word equal to a code label's address, `$0000` or `$FFFF` is taken for a number: data that matches an instruction's address, an end mark). The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install`; a `NAME.bin` an earlier install left beside the editable form it now writes is deleted. `@res KIND/NAME.bin include`: the entry's lines become `INCLUDE "res/KIND/NAME.inc"` instead, a file the case's `res_formats.py build` writes from the editable form with `kit/resinc.py` (`DB` lines, a `DW Label` for an address, so sjasmplus resolves it and a moved label is followed; the entry's inner labels as labels inside it): the text stays the source, an address in it can be a name. `resinc.Symbols` gives a case's editable form the names both ways: `word($CCDA)` is `SharedModels+591` (the label at or below inside its entry, `Label+N`, else `$XXXX`), `value('SharedModels+591')` the address again (Battle Command's 3D models and mission `model` lines). One entry a file. mkgame checks its own assembly with a numeric `.inc` of the image's bytes (and installs that one beside the bytes for a case without a res hook) |
 | `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). A number equal to a label's address stays a number (skool2asm would write the label; the kit puts the instruction back as written), and a decimal number stays decimal (`LD DE,-10000`, which skool2asm writes `LD DE,-$2710`; `LD DE,1*256+30`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
 | `@inline` | `@inline $ADDR [N]` | The routine at `ADDR` reads data placed after its `CALL` (a print routine with an inline string). The static walk stops at every call to it, so a string no recording printed is not taken for code. With `N`, the routine reads exactly `N` bytes (a one-byte code, a column): the walk goes on after them, and only those bytes are data |
 | `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead. Two operands are never named: the offset of a `Label+offset` (`LD HL,data_96FE+$4455` stays so inside `@equ $4000 Screen 6144`), and a port, the `LD BC,nn` whose `BC` feeds `IN` or `OUT (C)` (section 3.4; mkgame prints `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`); an `at` list that names the instruction still names it |
@@ -114,13 +114,17 @@ $6800 b PathStarts 14 ; The start of each of the 28 enemy paths: (address - $681
 ```
 
 **Witness counts.** In a `c` entry's description, `Witness: L1 N (builds)` is checked by mkgame on every run: N must
-be the runs of the entry's first instruction summed over the part's recordings (the game: `read_builds` and
-`code_builds` of `case.json`, less `witness_skip`), and the list the builds that ran it, each by its name
-(`stage1/c1` is `c1`, `stage2/rzx04/cap` is `rzx04`: the second part of the build's path, else the whole), sorted, a
+be the runs of the entry's first instruction summed over the part's recordings (the game: `ref_builds`,
+`read_builds`, `code_builds` and `witness_builds` of `case.json`, less `witness_skip`; a part: its `l1` and its
+`witness_builds`), and the list the builds that ran it, each by its name (`stage1/c1` is `c1`, `stage2/rzx04/cap`
+is `rzx04`: the second part of the build's path, else the whole; the part after `rec` (`stage2/rec/fuel` is `fuel`);
+`case.json` `witness_names` `{"stage1/c1g": "c1"}` gives a windowed copy of a recording its name), sorted, a
 numbered family of two or more builds in the set as one item (`rzx x32`): `Witness: L1 90104 (c1, hiscore, lives,
 menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swaps a build, is printed:
 `witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`;
-`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays). Other witness text
+`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays); a line that names a
+build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), and a name it drops is
+printed as `NAME ran no instruction there`. Other witness text
 (`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched.
 
 ### 3.3 An inner line: `$ADDR [NAME] [; comment]`
@@ -212,8 +216,9 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
 6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in the work folder and compares `game.bin` with the image.
    It prints `assembled: identical to the original image` or the first differing address.
 7. **Install** (`--install`, only when identical). Writes the modules and `game.asm` into `src/game` (`case.json`
-   `dest`), and the resources through `tools/res_formats.py install`, or `case.json` `res_install`, or as bytes
-   when the case has neither. It never deletes a file it does not write: only the modules the old `game.asm`
+   `dest`), and the resources through the json's `res_install`, else (a part file with no `res` folder of its own)
+   `case.json`'s `res_install`, else the case's `tools/res_formats.py install`, or as bytes when the case has none
+   of these. A part with resources and no way to install them prints `WARNING: N resources not installed`. It never deletes a file it does not write: only the modules the old `game.asm`
    included and the `.ann` no longer has, and a resource's `src/res/NAME.bin` that the case's hook did not write
    while it wrote `NAME.png` / `NAME.txt` beside it (an install from before the editable form: the build would read
    both).
@@ -257,7 +262,8 @@ These are directives of the kit's parser (`mkgame.Annotations`), in any `.ann`:
 | Directive | Grammar | Does |
 | --- | --- | --- |
 | `@const` | `@const NAME VALUE [; comment]` (VALUE `$hex` or decimal) | `NAME EQU VALUE` in the top file: a port, a ROM entry, a page value, an address in another program (`@const GS_CMD $BB ; ...`). The instructions use it through `@isub` |
-| `@bank` | `@bank $ADDR NAME BANK [; comment]` (BANK a number or a name: `1`, `DriverBank`) | An address in another RAM bank paged at `$C000` (a player in bank 1, the disk module in bank 4). It becomes `NAME EQU $ADDR ; bank BANK: comment`, sorted by bank and address. The walk does not follow the instructions whose `@isub` names it, and the entry mark the disassembler puts on this image's byte there is dropped. `@equ` cannot do it: the address may be inside the image, and one address can mean different things in different banks |
+| `@bank` | `@bank $ADDR NAME BANK [; comment]` (BANK a number or a name: `1`, `DriverBank`), or `@bank $ADDR BANK [; comment]` after an `@names BANK` line | An address in another RAM bank paged at `$C000` (a player in bank 1, the disk module in bank 4). It becomes `NAME EQU $ADDR ; bank BANK: comment`, sorted by bank and address. The walk does not follow the instructions whose `@isub` names it, and the entry mark the disassembler puts on this image's byte there is dropped. `@equ` cannot do it: the address may be inside the image, and one address can mean different things in different banks. The short form takes NAME from the bank's `.ann` (`@names`): the entry or inner label at `$ADDR` there, so a name the bank defines is written once; an address that file does not name fails, and a long form whose NAME differs from it fails too |
+| `@names` | `@names BANK PATH [; comment]` (PATH relative to this `.ann`) | The `.ann` of bank BANK (its own part): the names the short `@bank` lines read. Battle Command's `game.ann` has `@names 3 ../bank3/bank3.ann` (and 4, 6, 7), its 30 `@bank` lines say only `@bank $CA8B 3` |
 | `@var` | `@var $ADDR NAME [N] [; comment]` | A variable inside the image's work space: a label in its data entry (the data line is cut there), and every instruction operand `ADDR+1..ADDR+N-1` written `NAME+k` |
 | `@alias` | `@alias NAME EXPR [; comment]` | `NAME EQU EXPR` for a name that cannot be a label (the operand of a `JP` into a handler: `@alias Handler ImJump+1`). The instructions name it through `@isub` |
 | `@over` | `@over $ADDR [; why]` | A branch target that holds other bytes when the branch runs (code loaded over the caller's strings): the walk does not follow it |
@@ -265,6 +271,14 @@ These are directives of the kit's parser (`mkgame.Annotations`), in any `.ann`:
 
 The cases' first generators read `@bank`, `@var`, `@alias`, `@over` and `@piece` behind a `#` (`# @bank ...`);
 the kit reads that form too, so existing `.ann` files need no edit. Write new lines without the `#`.
+
+**One `.ann` for several parts.** Two part files may name the same `.ann` (`"ann"`), each with its own image: mkgame
+keeps the entries inside the part's image and drops the rest with their descriptions, resources and `@isub` lines. A
+module whose entries all lie outside the image is not in that part (mkgame prints
+`module NAME ($ADDR) lies outside the image ...: not in this part`); a module that starts outside the image and holds an entry inside fails with the
+module's name and address, as does a module whose first entry has no name (`split_modules`). Battle Command's loader
+blocks 37 (`$BE5D`) and 39 (`$BF21`) share `src/loader/final.ann`: the common `@equ` lines once, the modules `final`
+and `timeend`. `@piece` (below) is the other way: one image, pieces copied to their run addresses.
 
 ### 5.2 Part files
 
@@ -299,6 +313,7 @@ source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per seg
 | `ann`, `piece` | the annotations (and the piece of them) |
 | `top` / `name`, `dest`, `bin` / `out` | the top file `TOP.asm`, where `--install` writes it and the modules, the `SAVEBIN` name |
 | `header`, `written`, `device` | the top file's first comment lines, its "Written by" line (default: from the `.ann`), the sjasmplus `DEVICE` (`ZXSPECTRUM48`) |
+| `witness_builds` | more recordings for the witness counts only (section 3.2): `work/<build>/l1.json` |
 | `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
 | `mode` | `"instructions"` (default: every recorded instruction whose opcode and length are the image's) or `"blocks"` (only whole recorded basic blocks whose every instruction has the image's bytes, no routine entries: a later program at the same addresses cannot make a lone byte look like code) |
 | `bases`, `pages`, `bank` | L1 page -> Z80 base (`{"5": "4000", "2": "8000", "0": "C000"}` by default); `pages` lists pages at their natural base (5 `$4000`, 2 `$8000`, any other `$C000`); `bank` N adds `SLOT 3` / `PAGE N` to the top file |
@@ -308,7 +323,7 @@ source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per seg
 | `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there |
 | `operands` | `LD BC,nn` as `Label+offset` (section 3.4): only the pointers read through `(BC)` by default, `"wide"` every one, `"narrow"` none |
 | `drop_data_refs`, `isub_as_written` | drop sna2skool's reference marks inside data rows; write `@isub` numbers as the `.ann` does (decimal), not as skool2asm's hex (now always so: the key stays for the older part files) |
-| `res`, `res_install`, `built`, `save` | the resources: as bytes into `res` (the `INCBIN`s name it relative to `dest`), or through a hook `tools/x.py[:function]` called with `{name: bytes}`; `built` `{NAME: PATH}` is a resource the build makes (not installed, `INCBIN "PATH"`); `save` is the installed top file's `SAVEBIN` path |
+| `res`, `res_install`, `built`, `save` | the resources: as bytes into `res` (the `INCBIN`s name it relative to `dest`), or through a hook `tools/x.py[:function]` called with `{name: bytes}` (no `res_install` and no `res`: `case.json`'s, else `tools/res_formats.py`, section 4 step 7); `built` `{NAME: PATH}` is a resource the build makes (not installed, `INCBIN "PATH"`); `save` is the installed top file's `SAVEBIN` path |
 | `segments` | the segments layout: `{"ann", "piece", "lo", "hi", "run", "bases", "read_builds", "title", "load_label", "l1", ...}` (any key above may be set per segment) or `{"lo", "hi", "lines": [...]}` |
 | `external`, `subdir`, `include`, `before_assemble` | names other included sources define (no `EQU` for them); modules in `dest/<top>/` (default) or `dest/`; `-I` folders for sjasmplus; a hook `tools/x.py:function` called with the work folder before sjasmplus |
 | `work`, `clean_work` | the work folder (default `work/mkpart/<top>`) |
@@ -342,6 +357,7 @@ python3 ../../kit/mkgame.py --image work/parts/loader-5d3b.bin --org '$5D3B' --a
 | zynaps-gs | the game; `src/disk/{boot,screen,loader,menu,driver}` | `tools/regen.sh` (`--image --blocks --page N`) |
 | nether-earth-gs | the game (`@bank`, `@var`, `@alias`); the TRD boot menu | `kit/mkgame.py --install`; `--part src/trd/boot/{menu,print64}.json` |
 | nether-earth-zs-edition | nine parts: game99, patches99 (`@piece`, one segment a piece), game98, intro98, stage2, pictures99, music99, stage3, menu99 (`@over`) | `tools/regen.sh` (`--part src/<part>/<name>.json`) |
+| battle-command | the game (`@bank` short form, `@names` of the four banks); banks 3, 4, 6, 7 (`"bank": N`); the tape BASIC, the decryption chain, loader stage 2, blocks 37 and 39 (one `final.ann`) | `tools/mkasm_all.sh` (`--case .`, `--part src/<part>/<name>.json`) |
 | advanced-nether-earth | the game (`@bank`); the boot menu (simulator traces); the disk parts; the endings | `kit/mkgame.py --install`; `--part src/{bootmenu,disk,endings}/*.json`; the intro stays on `tools/intro_mkpart.py` |
 
 The intro of Advanced Nether Earth keeps its own generator: its code comes from `tools/intro_trace.py`'s phased
