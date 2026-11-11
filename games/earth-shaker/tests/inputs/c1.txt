@@ -1,0 +1,51 @@
+# c1: after the tape (record-load from power-on, the side wound to "EARTH", ROM speed): the menu, 4 (joystick:
+# Kempston), 3 (keyboard), 2 (redefine: O left, P right, Q up, A down, M fire), 1 (start), ENTER at the password
+# prompt (level 1), the level's intro, then keyboard play on level 1, F (the map), more play, H (quit the screen),
+# G (abort to the menu)
+0 -
++100 4
++40 -
++100 3
++40 -
++100 2
++40 -
++60 O
++3 -
++40 P
++3 -
++40 Q
++3 -
++40 A
++3 -
++40 M
++3 -
++150 1
++40 -
++60 ENTER
++5 -
++450 P
++40 A
++40 P
++40 -
++20 O
++40 A
++30 Q
++30 M
++10 -
++20 P
++60 A
++40 -
++20 F
++10 -
++700 O
++50 A
++50 P
++50 -
++20 H
++10 -
++700 A
++40 P
++40 -
++20 G
++10 -
++400 END

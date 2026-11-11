@@ -1,0 +1,20 @@
+# From the menu (after-load.szx): 1 (start), ENTER at the password prompt (cave 1), then H (quit the cave) once
+# a cave is running, again and again until the lives are gone: the game over screen and the hi-score check with a
+# score of 0, back to the menu.
+0 1
++60 -
++150 ENTER
++5 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++2500 END

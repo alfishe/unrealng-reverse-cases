@@ -1,0 +1,5 @@
+# From cave 1 in play (work/stage1/probe/level1.szx, after c1's load): F (the map) once, then no key at all, so the
+# time runs out (and again with the next lives).
+240 F
++10 -
+12000 END

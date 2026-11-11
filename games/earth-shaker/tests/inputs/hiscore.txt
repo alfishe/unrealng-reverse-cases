@@ -1,0 +1,30 @@
+# From the RZX archive's earth10 start snapshot (cave 10's intro, the score the RZX player made in caves 1-9):
+# H (quit the cave) again and again until the lives are gone, the game over, the hi-score entry: the name typed
+# (A G E N T, ENTER), the table, the menu.
+700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++700 H
++10 -
++1500 A
++3 -
++40 G
++3 -
++40 E
++3 -
++40 N
++3 -
++40 T
++3 -
++40 ENTER
++3 -
++3000 END

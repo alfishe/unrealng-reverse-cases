@@ -1,0 +1,22 @@
+# The menu from the state after the load (work/stage1/probe/after-load.szx, c1's load at ROM speed): the title tune
+# to its end, the hi-score table under the scroller, the menu again; 4 (joystick), 3 (keyboard), 2 (redefine:
+# O P Q A M), 5 (quit). A menu key is held 60 frames: the menu reads it between the tune's notes.
+6600 4
++60 -
++100 3
++60 -
++100 2
++60 -
++100 O
++3 -
++40 P
++3 -
++40 Q
++3 -
++40 A
++3 -
++40 M
++3 -
++200 5
++60 -
++400 END
