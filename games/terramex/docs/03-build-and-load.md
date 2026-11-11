@@ -475,11 +475,12 @@ The stages from the L1 arrivals (`$RS stages`):
 
 ![Memory filling during the load](img/load/load-memory.gif)
 
-*The 64 K during the load in `c1`, frames 650-21700, one picture every 18 000 000 T (about 254 frames), 83 pictures.
-Above: memory `$4000-$FFFF`, one row a page of 256 bytes, each byte's grey its value; yellow is written since the last
-picture, fading through red. Below: the screen. Made with `python3 ../../kit/memanim.py --work work/docs/tmA/c1 --from
-650 --to 21700 --step 18000000 --from-address 4000 --screen --label "c1: the ROM-speed load ..."
-docs/img/load/load-memory.gif`.*
+*The 64 K during the load in `c1`, frames 650-21700, one picture every 18 000 000 T (about 254 frames), 83 pictures,
+830 px wide (3 px a byte). Above: memory `$4000-$FFFF`, one row a page of 256 bytes, each byte's grey its value;
+yellow is written since the last picture, fading through red. Below: the screen. Made with `python3
+../../kit/memanim.py --work W --from 650 --to 21700 --step 18000000 --from-address 4000 --screen --cell 3 --label
+"c1: the ROM-speed load, blocks 3-5 and the set-up, the 64 K seen by the CPU" docs/img/load/load-memory.gif`, W an
+instance with `work/stage1/c1/session.ttd` open (`$RS open`).*
 
 How to read it:
 
@@ -487,6 +488,8 @@ How to read it:
 - Then block 4 fills `$6000` upwards for about three minutes. The screen stays.
 - At the set-up nothing changes in this map: the copies go to RAM 1, 3, 4 and 6, outside the 64 K shown.
 - Then block 5 fills `$7200` upwards again, over block 4: the rows flash a second time.
+- The last picture (frame 21700) is past GameEntry: the device menu is on the screen, its panel and text written in
+  `$4000-$5AFF` (the yellow band).
 
 **The point**: the load is plain and slow. Seven and a half minutes of tape, and the only work between the blocks is the
 set-up, which enters RAM 1 at frame 11841 and is back in the loader the same frame.

@@ -5,7 +5,7 @@
 
 The three screens are work/stage2/p48/orig2/a-stop.png, b-selector.png and c-chosen.png, taken by
 work/stage2/probe_48k_orig2.py on a clone of a 48K power-on with the original TZX at ROM speed (no .ttd): the tape
-paused after block 4, SPACE, the cursor walked onto Fortisque-Smithe with O and Z, SPACE. Each is drawn at 4/3 x.
+paused after block 4, SPACE, the cursor walked onto Fortisque-Smithe with O and Z, SPACE. Each is drawn about 1.3 x, so that the three fit the 1050 px width.
 """
 import os
 import sys
@@ -25,8 +25,9 @@ SHOTS = [('a-stop.png', 'STOP THE TAPE (one RAM found)', 'ShowStopTape, run in p
 
 def main():
     out = sys.argv[1]
-    W, S, GAP, LEFT = 1050, 4 / 3, 13, 12
-    pw, ph = int(256 * S), int(192 * S)
+    W, GAP, LEFT = 1050, 13, 12
+    pw = (W - 2 * LEFT - 2 * GAP) // 3        # three screens side by side, inside the margins
+    ph = pw * 192 // 256
     f, fs, fb = kitlib.font(14), kitlib.font(13), kitlib.font(19)
     img = Image.new('RGB', (W, 60 + ph + 70), BG)
     d = ImageDraw.Draw(img)

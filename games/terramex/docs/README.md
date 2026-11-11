@@ -53,9 +53,9 @@ Each term once, here; the documents link to it.
 | AYWrite | `$CD56` (RAM 6): the only routine that touches the AY: register at `$FFFD`, value at `$BFFD` | 09 |
 | back buffer | `$E000-$EFFF`: the play window's twin in the screen's layout (screen address OR `$A000`); between passes it holds the room without the actors | 06 |
 | back-tile | a block of 4 x 4 tiles at `$C600 + 16 x index`; a room is 8 x 4 back-tiles | 06 |
-| bearer | one of 27 invisible carriers of the items not in the hand, BearerLoads `$5B7C` (`$FF` free); a pickup moves the held item to the first free one; the panel's bearer row draws four from BearerIndex `$5C23`, nine of their twelve columns show: three whole bearers at rest, parts of four while keys 1 and 2 scroll the row | 07, 08 |
+| bearer | one of 27 invisible carriers of the items not in the hand, BearerLoads `$5B7C` (`$FF` free); a pickup moves the held item to the first free one; the panel's bearer row draws four from BearerIndex `$5C23`, nine of their twelve columns show: three whole bearers at rest, parts of four while keys 1 and 2 scroll the row, one bearer (3 columns) a scroll | 07, 08 |
 | BearerIndex | `$5C23`: the first of the 27 bearers shown in the bearer row | 08 |
-| BearerPhase | `$5C22`: 0-3, the columns of the bearer row skipped; the row's one-column scroll step | 08 |
+| BearerPhase | `$5C22`: 0 at rest, 1-3 while the row scrolls, the columns skipped; phase 3 shows what phase 0 of the next bearer shows, so one scroll moves the row one bearer (3 columns) in 3 one-column steps; the row's one-column scroll step | 08 |
 | BearerScrollDir | `$5C21`: 1 after key 1, the bearers move right (BearerPhase counts down from 4); 0 after key 2, they move left (the phase counts up to 4) | 08 |
 | BlitColumns | `$9F86`: copies 24-byte sprite columns from PanelColumns `$5BD6` to the panel | 08 |
 | cell | a character cell of the screen, 8 x 8 pixels with one attribute; the play window is 32 x 16 cells, one tile each | 06 |
@@ -92,7 +92,7 @@ Each term once, here; the documents link to it.
 | RZX frame | a frame counted from the start of the RZX archive's run (51 148 frames); the RZX dump samples the variables every 25 (`tools/rzx_dump.py`, `work/docs/tmA/rzx25`) | 01, 04 |
 | rzxNNNNN | a segment of the RZX run replayed on our instance from the RZX state at frame NNNNN; its frames count from 0 | 04 |
 | selector | the 128K's explorer choice screen in RAM 1, relocated to `$C000` by the set-up `$7200`; on a 48K it runs in place | 03, 05 |
-| space scene | room `$28`'s script SpaceScene `$B0B6`, the end of every game: the asteroid falls on the Earth; with GameWon the deflector sends it back | 04, 10 |
+| space scene | room `$28`'s script SpaceScene `$B0B6`, the end of every game: the asteroid falls on the Earth; with GameWon the deflector turns it away | 04, 10 |
 | sprite space | `$6000-$8CFF`: 160 frames of 72 bytes, frame F at `$6000 + 72 x F`; explorer `$00-$3F`, creatures `$40-$7E`, blank `$7F`, items `$80 + n` | 06 |
 | status | `$5C06`, 0-33: the hero's mode; 0 is free movement, each of 1-33 runs its handler of StatusHandlers `$A72E` (word N - 1 for status N) through StatusDispatch `$A6CC` | 04, 10 |
 | tile | 8 x 8 pixels at TilePixels `$F000 + 8 x T`, attribute at `$DF00 + T`; tiles `$80-$FF` have a second set (the alternate set) | 06 |

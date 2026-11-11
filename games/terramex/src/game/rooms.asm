@@ -478,14 +478,14 @@ SetUpRoomTail:
 ; $9AE5 with every cell of tile $8C. $91C0 and $9282/$92BD animate those cells
 ; each pass.
 ;
-; Then $5C0C, $5C41 and $5BA1 are cleared and $B072 set to 1 (counters of other
-; modules); room $10 sets the byte $A6F5 (the room-$0F byte of the per-room
-; table $A6E6) to 6 (it starts at 7, $8F47 area); room $1C with $5C24 non-zero
-; writes the tile pair $98, $99 into columns 8-9 of rows 0-11 of the tile map
-; ($5C24 counts the column that $BC73 raises cell by cell while item $0C is
-; used there). $5C24 is cleared in every room. Last $917C parks actor slots 1-4
-; (frame $7F, the blank sprite), DrawRoom $99A4 draws the whole play window and
-; $B93F (tail jump) places the room's floor items.
+; Then BridgeState $5C0C, RoomStage $5C41 and ProfessorState $5BA1 are cleared
+; and PadLatch $B072 set to 1; room $10 sets ThinkHints $A6E6[$0F] (the byte
+; $A6F5) to 6 (InitGame puts 7 there at $8FB7); room $1C with RopeCount $5C24
+; not 0 (the notes RopeTrick $BC73 counted while the Flute, item $0C, was
+; played in room $10) writes the tile pair $98, $99 into columns 8-9 of rows
+; 0-11 of the tile map. RopeCount is cleared in every room. Last $917C parks
+; actor slots 1-4 (frame $7F, the blank sprite), DrawRoom $99A4 draws the whole
+; play window and $B93F (tail jump) places the room's floor items.
 ;
 ; Evidence: 105-106 runs in 31 builds; the room-$10 branch ran in gameover,
 ; r10000 and r14500; the room-$1C column ($98F7-$9906) did not run in any of
@@ -545,12 +545,12 @@ SetUpRoomTilesCounters:
   LD (RoomStage),A
   LD (ProfessorState),A
   INC A
-  LD (PadLatch),A         ; $B072 = 1
+  LD (PadLatch),A         ; PadLatch = 1
   POP AF
   CP $10
   JR NZ,SetUpRoomTilesRoom1C
   PUSH AF
-  LD A,$06                ; room $10: the room-$0F byte of $A6E6 becomes 6
+  LD A,$06                ; room $10: ThinkHints[$0F] becomes 6, the Bellows
   LD (ThinkHints+$000F),A
   POP AF
 SetUpRoomTilesRoom1C:

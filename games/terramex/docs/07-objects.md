@@ -215,7 +215,7 @@ flowchart TD
     R10 -- yes --> TH["ThinkHints byte $0F = 6"]
     R10 -- no --> ROPE
     TH --> ROPE{"R = $1C and RopeCount not 0?"}
-    ROPE -- yes --> RT["the rope: tiles $98 $99 down column 8"]
+    ROPE -- yes --> RT["the rope: tiles $98 $99 down columns 8 and 9"]
     ROPE -- no --> RC0
     RT --> RC0["RopeCount = 0; ClearPartySlots"]
     RC0 --> DR["DrawRoom (doc 06)"]

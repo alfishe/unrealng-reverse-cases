@@ -254,7 +254,7 @@ def rooms_out(bins):
         raise ValueError('rooms: %d grid bytes, %d record bytes' % (len(grids), len(table)))
     out = head([
         'The rooms of Terramex (tools/res_formats.py; src/res/rooms/README.md). Room R = level x 12 + column.',
-        'The rooms drawn with the alternate tiles $80-$FF (RoomsOnAltTiles), in the order of their list:',
+        'The rooms drawn with the alternate tiles $80-$FF (AltTilesetRooms), in the order of their list:',
     ])
     out.append('alternate ' + ' '.join('$%02X' % r for r in alt))
     out += head(['',

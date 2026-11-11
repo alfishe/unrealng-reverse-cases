@@ -112,8 +112,8 @@ Witness:
 
 The hero's state is Status `$5C06`, 0-33, with StatusTimer `$5C07` counting the passes inside it. Status 0 is the
 normal update (walk, climb, fall, jump start). Every other status is a handler that replaces the rest of the update:
-StatusDispatch `$A6CC` jumps to word N - 1 of StatusHandlers `$A72E`, and each handler starts with a POP that drops
-the return into HeroUpdate.
+StatusDispatch `$A6CC` jumps to word N - 1 of StatusHandlers `$A72E`, and each handler drops the return into
+HeroUpdate with a POP (Teleport's first pass does not: 10.6).
 
 ```asm
 StatusDispatch:
@@ -530,10 +530,10 @@ Each ride is a status that moves the hero by its own rules until it ends.
 | Barrel spot | 13 | left held at Y `$48`, X `$1C-$1F` in room `$1D` | frame `$17`, wait 5 passes | the barrel in hand chooses 14, 15 or 16 | rzx16000 frames 479-491 |
 | Barrel Medium | 14 | item 9 in hand | 84 passes, X + 2, Y along BarrelArc `$AAFA` | status 0 | rzx16000 frames 508-745 |
 | Barrel Small | 15 | item 28 in hand | BarrelShortArc, 32 passes | frame `$1C`, status 18: death | none |
-| Barrel Big | 16 | item 27 in hand | X + 2, 100 passes, on to the next room | status 18: death | none |
+| Barrel Big | 16 | item 27 in hand | X + 2, Y - 1 on four passes of eight, 101 passes, on to the next room | status 18: death | none |
 | Basket | 21 | near the basket at its end in room `$3F` | the hero takes the basket's place, frame `$2D` | the other end: Y - 8, status 0 | 418 passes in rzx28000, rzx32750, rzx34000 |
 | Float | none: FloatInRoom2C replaces the update | entering room `$2C` | velocity -3..3 on each axis, +1 a pass towards the held direction, bounce off walls | the left exit | rzx18000, rzx20000: 149 passes |
-| Teleport | 22 | standing on a pad (TeleportPads `$B073`) with CrystalPlaced set | TeleportFrames, then the other pad | room `$30` to `$3D`, `$3D` to `$20`; the pad of room `$20` kills (status 23) | rzx24750 frames 731-780, rzx34000 frames 1461-1512 |
+| Teleport | 22 | standing on a pad (TeleportPads `$B073`), PadLatch 0; it moves him only with CrystalPlaced set | TeleportFrames, then the other pad | room `$30` to `$3D`, `$3D` to `$20`; the pad of room `$20` kills (status 23) | rzx24750 frames 731-780, rzx34000 frames 1461-1512 |
 
 ```text
 TeleportPadCheck (every pass in status 0):
@@ -572,6 +572,9 @@ room `$30`, dissolves, and appears in room `$3D`.
 python3 ../../kit/screen_anim.py --work work/docs/tmC/r247 --from 716 --to 786 --step 2 --scale 2 --delay 100 \
   --hold 2000 docs/img/play/teleport-r24750.gif
 ```
+
+**The point**: the pad, not the crystal, starts status 22. Only the crystal makes it a journey; without it the hero
+stays in a status no creature can touch, until he jumps.
 
 Worked example: `rzx24750`. The crystal was placed at frame 613 (doc 07.10). The hero jumps in frame 721 (status 2 in
 the sample of 722) and lands on the pad at Y `$58`, X `$62`: the pad of room `$30` is (`$58`, `$60`), and `$62` is
@@ -668,12 +671,16 @@ python3 ../../kit/screen_anim.py --work work/review/fixC/r20000 --from 612 --to 
   --hold 2000 docs/img/play/lift-down-r20000.gif
 ```
 
+**The point**: the lift is a persistent object: it stays where the ride left it, and only InitGame, the teleport and a
+respawn move it.
+
 Worked example: `rzx20000`, sampled every frame from `$5B00`.
 
 1. The hero stands on the lift in room `$2B` at its stop: LiftY `$30`, his Y `$28`, NotOnLift `$5BA0` = 0.
 2. Down is held: status 20 is set in frame 628. The sample of 629 shows Y `$2A`, LiftY `$32`.
-3. Y + 2 a pass up to `$60`. The next step gives `$62`: ExitDown, room `$37` in the sample of 707 with Y `$02`, LiftY
-   `$0A`, LiftRoom `$37`.
+3. Y + 2 a pass up to `$60`. The next step gives `$62`: ExitDown, room `$37` and Y `$02` in the sample of 707. The
+   room build inside ExitDown spans frames 707-713; LiftY `$0A` and LiftRoom `$37` are written after it returns, in
+   the sample of 714.
 4. Y + 2 a pass again. Room `$37`'s stop is LiftY `$50`: at Y `$48` AtStop clears the status, status 0 in the sample
    of 806.
 5. 28 + 1 + 35 = 64 passes in 178 frames: 2.8 frames a pass, as in the rest of play.
@@ -793,11 +800,14 @@ python3 ../../kit/screen_anim.py --work work/review/fixC/r14500 --from 384 --to 
   --hold 2000 docs/img/play/balloon-ride-r14500.gif
 ```
 
+**The point**: the held item steers the balloon every pass: the Bellows lift it, any other item lets it sink, and the
+Party Manifesto lifts it into a crash.
+
 Worked example: `rzx14500`, sampled every frame from `$5B00`.
 
-1. The hero walks into the basket in room `$0F` at frame 195: status 7 in the sample of 196, slot 4 frame `$24`, slot
-   3 frame `$9A`.
-2. The Bellows (6) are in hand from frame 396: status 8 at 399. Y - 1 a pass, from `$60` to `$18` at frame 571.
+1. The hero walks into the basket in room `$0F` at frame 195: status 7 in the sample of 196; slot 4 frame `$24` (the
+   hero in the basket) in that of 198, slot 3 frame `$9A`.
+2. The Bellows (6) are in hand from frame 396: status 8 at 399. Y - 1 a pass, from `$60` to `$18` in the sample of 569.
 3. Y - 1 would pass `$18`: ExitUp, room 3 at frame 572 with Y `$66`. BalloonInRoom is 3 from the sample of 581.
 4. Right is held: X + 2 a pass from frame 603. At frame 786 the balloon is at room 3's top, Y `$18`: status 8 stays,
    the balloon hovers.
@@ -839,8 +849,8 @@ BarrelRideShort (status 15, item $1C):
 BarrelRideLong (status 16, item $1B):
     facing right; frame + 1 up to $19
     t = StatusTimer; StatusTimer += 1; Hero.X += 2
-    if (t / 2) bit 1: Hero.Y -= 1                     ; 1 pixel on every other pair of passes
-    if t / 2 == $32: ExitRight; X 8, Y 8, frame $1B; StartDying   ; after 100 passes
+    if t bit 2: Hero.Y -= 1                           ; (t / 2) bit 1: four passes of eight (t = 4-7, 12-15, ...)
+    if t / 2 == $32: ExitRight; X 8, Y 8, frame $1B; StartDying   ; t = $64, the 101st pass
 ```
 
 ```asm
@@ -877,7 +887,7 @@ stateDiagram-v2
     Spot --> Big: Barrel Big $1B, status 16
     Medium --> [*]: 84 passes along BarrelArc, status 0
     Small --> Dying: 32 passes, frame $1C, status 18
-    Big --> NextRoom: 100 passes, ExitRight
+    Big --> NextRoom: 101 passes, ExitRight
     NextRoom --> Dying: X 8, Y 8, frame $1B, status 18
 ```
 
@@ -891,6 +901,9 @@ python3 ../../kit/screen_anim.py --work work/review/fixC/r16000 --from 476 --to 
   --hold 2000 docs/img/play/barrel-ride-r16000.gif
 ```
 
+**The point**: the spot is the same for every barrel; the item in hand alone decides between the one safe arc and two
+deaths.
+
 Worked example: `rzx16000`, sampled every frame from `$5B00`.
 
 1. The Barrel Medium (9) is in hand. Left is held at Y `$48`: status 13 from the sample of 480, X `$1E`, frame `$17`,
@@ -902,7 +915,8 @@ Worked example: `rzx16000`, sampled every frame from `$5B00`.
 4. StatusTimer reaches `$54`: status 0 in the sample of 746. The hero stands at X `$C6`, Y `$48`.
 
 Witness: BarrelSpot 6 passes and BarrelRide 85 (L1), both in `rzx16000`. Statuses 15 and 16 never ran: the Small and
-Big barrels kill only in the code.
+Big barrels kill only in the code. In the Barrel Big the hero climbs 49 pixels in 101 passes (Y - 1 on t = 4-7,
+12-15, ..., 92-95 and `$64`) while X gains 202, then he is put at X 8, Y 8 in the room to the right and dies.
 
 ### The float of room `$2C`
 
@@ -965,6 +979,9 @@ bounces off the left wall and the ceiling, and leaves by the left exit.
 python3 ../../kit/screen_anim.py --work work/review/fixC/r20000 --from 0 --to 316 --step 4 --scale 2 --delay 80 \
   --hold 2000 docs/img/play/float-r20000.gif
 ```
+
+**The point**: room `$2C` swaps the whole hero update for a velocity: the keys only nudge it by 1 a pass, so the player
+steers a drifting body, not a walker.
 
 Worked example: `rzx20000` frames 0-312, sampled every frame from `$5B00`. The segment starts in the middle of the
 float (the hero entered in `rzx18000` frame 1769).
@@ -1234,8 +1251,8 @@ How to read the figure:
 - The 72 rooms, darkened, 12 to a row.
 - Each item is drawn in its colour in the room where it lies; its line ends in a dot in the room where it is used. The
   number at the dot is the item. The professor's room gets its six numbers as a list beside the dot.
-- The key below gives each line's colour, item number and name, and its rooms (from -> to). An item used in two rooms
-  (the Flute, the Switch) has one line to each.
+- The key below gives each line's colour, item number and name, and its rooms (from -> to). An item used in more
+  than one room (the Flute in three, the Switch in two) has one line to each.
 - The labels mark the professor (`$3B`), the crystal pad (`$30`), the barrels (`$1D`) and the balloon (`$0F`).
 - The grey text lists what is not drawn: the Umbrella, the key items of the explorer rooms, the Party Manifesto and the
   other barrels, the Spring and the Trampoline.
@@ -1350,10 +1367,13 @@ python3 ../../kit/screen_anim.py --work work/review/fixC/r08000 --from 880 --to 
   --hold 2000 docs/img/play/bridge-r08000.gif
 ```
 
+**The point**: the bridge is not an object but tile-map writes paced at the walking speed: it exists only while the hero
+is in the room, and each crossing needs the item again.
+
 Worked example: `rzx08000`, room `$19`, sampled every frame from `$5B00`.
 
 1. The ACME Bridge (`$0B`) is in hand from frame 841.
-2. At frame 898 the hero is at X `$2C`, the left end: BridgeState = 1.
+2. In the sample of 899 the hero is at X `$2C`, the left end: BridgeState = 1.
 3. BridgeState + 1 every fourth pass while the hero walks right 2 pixels a pass; it is `$10` at frame 1032.
 4. It waits at `$10` until the hero's X is `$BA`: `$81` in the sample of 1132.
 5. The second sweep has written five tiles (BridgeState `$86`) when the hero leaves into room `$1A` at frame 1187, X
@@ -1462,6 +1482,9 @@ python3 ../../kit/screen_anim.py --work work/review/fixC/r28000 --from 380 --to 
   --hold 2000 docs/img/play/lever-r28000.gif
 ```
 
+**The point**: the Switch is fitted once for both lever rooms (one flag); after that each new touch flips LeverState,
+the only input of the basket.
+
 ![The basket comes for the hero and carries him across room 3F](img/play/basket-r28000.gif)
 
 The animation shows `rzx28000` frames 528-1672, every twelfth frame, at twice the size. The basket travels from the
@@ -1471,6 +1494,8 @@ right end to the hero at the left end, then carries him back along the track and
 python3 ../../kit/screen_anim.py --work work/review/fixC/r28000 --from 528 --to 1672 --step 12 --scale 2 --delay 80 \
   --hold 2000 docs/img/play/basket-r28000.gif
 ```
+
+**The point**: the lever chooses only where the empty basket waits; a rider is carried whatever it says.
 
 Worked example: `rzx28000`, sampled every frame from `$5B00`.
 
@@ -1554,6 +1579,8 @@ the hero climb columns 8 and 9 of room `$1C`. SK called this a seesaw. No record
 (`rzx10000` and `gameover` reach Y `$46` / `$48` with it, `$BC8A` once each, but never X `$28-$33`), so the rope is
 known only from the code and there is no animation.
 
+**The point**: the rope is made in one room and used in the next: RopeCount carries it over exactly one room entry.
+
 Witness: RopeTrick runs 674 times (L1) in `gameover` and two rzx segments; the rope code from `$BC91` never
 runs.
 
@@ -1620,6 +1647,9 @@ Silver Cross; when he reaches X `$62` the creature runs off to the right edge.
 python3 ../../kit/screen_anim.py --work work/review/fixC/r40000 --from 1600 --to 1730 --step 3 --scale 2 --delay 80 \
   --hold 2000 docs/img/play/silver-cross-r40000.gif
 ```
+
+**The point**: the Silver Cross is a key held in the hand: with it the creature flees for good and pays 150 points,
+without it the creature kills.
 
 Worked example: `rzx40000`, sampled every frame from `$5B00`.
 
@@ -1706,6 +1736,9 @@ snake's bite) puts `$0C` into rooms `$17` and `$1A`. The hints mostly match the 
 oddities: room `$0F` first suggests the Party Manifesto, the item that crashes the balloon (BalloonCrash), and only
 after a visit to room `$10` the Bellows; room `$09` holds `$1A`, an item number that draws the balloon's envelope, not
 an item to carry.
+
+**The point**: Think is the game's built-in hint, one byte a room; the table changes only three times, and two of
+its hints mislead.
 
 Worked example, from the code (no recording pressed T). The hero thinks in room `$19` at X `$2C`, Y `$40`, facing
 right:

@@ -78,7 +78,8 @@ is time: an interrupt in the middle of a beep stretches it (9.11).
 
 ## 9.2 The interrupt and the cost
 
-GameEntry `$8F00` puts `JP $9491` at `$5F5F` and sets IM 2 with I = `$5F`. Every interrupt then reaches Im2Handler.
+GameEntry `$8F00` fills the IM 2 table `$8E00-$8F00` (257 bytes) with `$5F`, puts `JP $9491` at `$5F5F` and sets IM 2
+with I = `$8E`: whatever byte the bus gives, the vector is `$5F5F`. Every interrupt then reaches Im2Handler.
 
 ```text
 Im2Handler(on every interrupt):
@@ -951,11 +952,11 @@ SkoolKit also read the operand of `LD HL,$0000` at `$C54A` as NOPs.
 | A | Sound | Player | Played by | When |
 | ---: | --- | --- | --- | --- |
 | 0 | rise | SoundRise `$C506` | FallDeath `$A888` (C = 0 set at `$A88B`); DeathFrames `$A8AB` plays it at `$A8B7` after the death frames, unless C = `$FF` | at the end of the death's frames |
-| 1 | ROM fall | SoundRomFall `$C4E9` | BarrelGo `$AA6C`; the space scene `$B13E` | a barrel; the asteroid's strike |
-| 2 | chirp | SoundChirp `$C4CE` | PickUpItem `$BBF2`; the space scene `$B122` | a pickup; the asteroid deflected |
+| 1 | ROM fall | SoundRomFall `$C4E9` | BarrelGo `$AA66` (at `$AA6C`); the space scene, SpaceExplodeEnd `$B13C` (at `$B140`) | a barrel; the asteroid's strike |
+| 2 | chirp | SoundChirp `$C4CE` | PickUpItem `$BB6C` (at `$BBF2`); the space scene, SpaceAsteroidIn `$B104` (at `$B122`) | a pickup; the asteroid deflected |
 | 3 | hiss | SoundHiss `$C521` | CreatureDeath `$A89E` (at `$A8A3`) | a creature's touch |
 | 4 | ROM burst | SoundRomBurst `$C54A` | Room1ADeath `$A88F` (C = 4 set at `$A89A`); DeathFrames plays it at `$A8B7`, as sound 0 | the snakes, at the end of the death's frames |
-| 5 | beep high | SoundBeepHigh `$C537` | DropFall `$C051` | the drop |
+| 5 | beep high | SoundBeepHigh `$C537` | DropFall `$C000` (at `$C051`) | the drop |
 | 6 | beep low | SoundBeepLow `$C532` | the jump start `$A484` | every jump |
 
 ```mermaid

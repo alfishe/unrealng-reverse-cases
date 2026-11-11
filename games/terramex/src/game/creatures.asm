@@ -602,9 +602,9 @@ TestBelowRight:
 ; The results of the creatures' tile tests: two records of 4 bytes
 ;
 ; $A2AC and $A2FA write +0 and +1 through IY = $C12D, $A31F and $A30B write +4
-; and +5 through IY = TileScanSecond $C131 (the tile scans of GC's range). +2,
-; +3, +6, +7 are only read by the load in c1. SK took $C12E-$C134 for NOPs
-; (code).
+; and +5 through IY = TileScanSecond $C131 (LeftWallCheck, RightWallCheck,
+; CreatureSolidAt, CreatureFloorBelow). +2, +3, +6, +7 are only read by the
+; load in c1. SK took $C12E-$C134 for NOPs (code).
 TileScanFlags:
   DEFB $00,$00,$00,$00
 TileScanSecond:

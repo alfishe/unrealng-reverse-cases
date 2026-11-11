@@ -56,7 +56,7 @@ flowchart LR
     A["the menu: choose the device"] --> B["the selector: choose an explorer"]
     B --> C["room $14: explore, collect, solve"]
     C --> D["the lab $3B: give the six wishes in order"]
-    D --> E["room $28: the deflector sends the asteroid back"]
+    D --> E["room $28: the deflector turns the asteroid away"]
     C -->|"4 lives lost or the countdown at 0"| F["room $28: the asteroid strikes"]
     E --> G["the menu, the high score"]
     F --> G
@@ -125,7 +125,8 @@ docs/img/design/explorers.png`.*
 How to read it:
 
 - The spare lives (left of the panel) and the hero are drawn with the chosen set, so they change with the explorer.
-- The portrait in the middle and the bearers on the right are the same for all five.
+- The picture in the middle (the waterfall) and the bearers on the right are the same for all five. The portrait,
+  the small figure under the held item (frame 9 of the set, DrawPortrait `$9E5D`), shows the chosen explorer.
 - In each sheet the first rows are walking and standing, then climbing, jumping and the poses; the last row holds the
   deaths.
 
@@ -167,11 +168,14 @@ How to read it:
 - **SCORE and HISCORE** (top left): four digits each, printed by PrintScore `$BD75`. The high score lasts from game to
   game until the tape is loaded again.
 - **The spare lives** (bottom left): one figure of the explorer a spare life. A game starts with 4 lives, 3 figures.
-- **The portrait** (middle): the same picture for all five explorers.
-- **The item in the hand** (above the small figure): what the explorer holds and can use.
+- **The panel's picture** (middle): the waterfall, the same for all five explorers.
+- **The item in the hand** (above the portrait): what the explorer holds and can use.
+- **The portrait** (under the item): the chosen explorer, frame 9 of his set at `$5092` (row 20, columns 18-20),
+  drawn by DrawPortrait `$9E5D` ([doc 8, 8.6](08-hud-and-text.md#86-the-portrait-the-held-item-and-the-spare-lives)).
 - **The bearers** (right): a row of carried items, each above a bearer figure (DrawBearers `$9EBD`). Four are drawn and
   nine of their twelve columns show: three whole bearers at rest, parts of four while the row scrolls. Key 1 moves
-  the bearers right, key 2 left, a character at a time.
+  the bearers right, key 2 left: one bearer (3 columns, 24 pixels) a scroll, in 3 moves of one character column (5
+  passes for key 1, 4 for key 2).
 
 The panel has no clock. The time left is shown only by the telescope in room `$12` ([doc 4](04-game-loop.md)).
 
@@ -195,7 +199,7 @@ The ways to die ([doc 10](10-gameplay-logic.md)):
 | tile `$A5` under the feet (HeroTileChecks `$A102`, `$A12D`) | 26 | known only from the code |
 | the creature of room `$2E` touched without item 4 (Room2ETouch `$B2C5`, ExplorerRoom2E `$B263`) | 26 | known only from the code |
 | an electric beam: inside its X span, within 12 rows, status below 4 (RoomEffects, `$9260`) | 24 | known only from the code |
-| the snakes of room `$1A` | 25 | `rzx10000` frames 1943-1958 (a drift of our replay: the RZX player was not bitten there, WALKTHROUGH 6.0) |
+| the snakes of rooms `$17` and `$1A` (RunSnakes, shared) | 25 | `rzx10000` frames 1943-1958 (a drift of our replay: the RZX player was not bitten there, WALKTHROUGH 6.0) |
 | silent: the pad of room `$20`, the radiation of room `$3C` without the pills, the creature of room `$39` without the Silver Cross | 23 | a clone probe only (stage 2) |
 | the balloon landing while it falls (status 9), then the fall death | 26 | known only from the code |
 | the barrel rides Small and Big | 15, 16 | known only from the code |
@@ -278,8 +282,8 @@ through room `$29`'s left exit.
 ![The map with the RZX route](img/design/map-route.png)
 
 *The map: the 72 rooms drawn from `src/res` by `tools/fig_rooms.py`'s room drawing, by level and column, and the RZX
-run's route over them in red: the room every 25 RZX frames from the RZX dump (`work/docs/tmA/route-events.txt`). Rooms
-the run never entered are greyed. Made with `python3 tools/fig_design.py map docs/img/design/map-route.png`.*
+run's route over them in red: the room every 25 RZX frames from the RZX dump (`work/docs/tmA/route-events.txt`); a room
+left within 25 frames would be missed (none is suspected). Rooms the run never entered are greyed. Made with `python3 tools/fig_design.py map docs/img/design/map-route.png`.*
 
 How to read it:
 
@@ -322,7 +326,8 @@ How to read them:
 
 - The label gives the room's number, its level and column; `*` marks the alternate tile set.
 - The rooms are drawn from the resources, not from the screen: the creatures stand at their start places.
-- Items taken at the start (the Energy Crystal of room `$30`) are not drawn.
+- The Energy Crystal of room `$30` is drawn, although InitGame `$8F86` marks that place (record 20, `$B9D9`) taken
+  when a game starts: the figure shows the data as stored.
 - Room `$14` (level 1, column 8) is the start, with the Vacuum Cleaner. Room `$3B` is the lab; room `$28` is space.
 
 **The point**: the map is small but deep. The way down from the desert to the lab crosses all six levels, and the
@@ -330,12 +335,12 @@ items for the six wishes lie in levels 3-5.
 
 ## 1.9 The creatures
 
-Each room holds up to three creatures, given by its records in RoomCreatures `$C152` (216 records in all). A record
+Each room holds up to three creatures, given by its records in RoomCreatures `$C152` (216 slots, 72 rooms x 3; 88 of them used). A record
 names a type, which sets how the creature moves, and a first frame, which sets how it looks. The eight types:
 
 ![The eight creature types](img/design/creatures.png)
 
-*The eight creature types, decoded from `src/res/rooms/table.bin` (RoomCreatures `$C152`): for each type the frames
+*The eight creature types, decoded from `build/res/rooms/table.bin` (built from `src/res/rooms/rooms.txt`) (RoomCreatures `$C152`): for each type the frames
 from each first frame its records give (four frames from `src/res/sprites/creatures.png`, 2 x; type 8 shows explorer
 0's frame), the number of records, and the rooms on the right. Made with `python3 tools/fig_design.py creatures
 docs/img/design/creatures.png`.*
@@ -353,7 +358,7 @@ How to read it:
 | 3 left flier | waits unseen, crosses the room leftwards once, waits again | bird | 2, 2: `$0D $14` | on touch |
 | 4 right flier | the same, rightwards | bird | 3, 3: `$07 $0D $31` | on touch |
 | 5 drop | waits, falls 2 pixels a pass, splashes on the floor | drop (`$5C`) | 33, 18 | on touch, within 8 pixels |
-| 6 still | animates in place | a crouching beast (`$64`), snakes (`$51`) | 8, 5: `$10 $17 $27 $32 $37` | the beasts on touch; the snakes never: the scripts of rooms `$17` and `$1A` make them strike unless the Flute charms them (status 25) |
+| 6 still | animates in place | a crouching beast (`$64`), snakes (`$51`) | 8, 5: `$10 $17 $27 $32 $37` | the beasts on touch; the snakes never: the scripts of rooms `$17` and `$1A` make them strike unless the Flute is held (in `$1A` only while the explorer's Y < `$3A`, `$B59F`), status 25. Room `$1A`'s three snakes are not records: its script copies SnakeTemplate `$B5D1` into the slots |
 | 7 riser | rises out of the ground through four frames, sinks, pauses | `$58-$5B` | 20, 16 | only when fully up |
 | 8 scenery | never moves | an explorer frame (`$2C`, `$2B`) | 10, 7: `$04 $0D $20 $2C $30 $32 $42` | never |
 
@@ -369,7 +374,7 @@ the game is in timing the way past.
 Every game ends in room `$28`, the space scene: the asteroid falls towards the Earth.
 
 - **Lost** (the last life or the countdown): the asteroid strikes the Earth.
-- **Won** (the sixth gift given): the professor's deflector stands beside the Earth and sends the asteroid back.
+- **Won** (the sixth gift given): the professor's deflector stands on top of the Earth and turns the asteroid away.
 
 Either way the game returns to the menu, and the high score is kept if beaten.
 
@@ -392,8 +397,9 @@ How to read them:
 - In room `$28` both show the Earth at the bottom and the asteroid coming down. SpaceScene `$B0B6` moves it 4 pixels
   a pass, so it reaches the Earth about 20 passes after the scene starts.
 - In the lost game the asteroid strikes the Earth and the Earth flashes.
-- In the ending the deflector stands left of the Earth and sends the asteroid back.
-- Both close on room `$28` just before EndGame; the menu that follows is not in the GIFs.
+- In the ending the deflector stands on top of the Earth; it fires and the asteroid flies off to the left.
+- Both close as EndGame starts (the lost one already shows the updated high score); the menu that follows is not in
+  the GIFs.
 
 ![Key moments of a game](img/design/moments.png)
 

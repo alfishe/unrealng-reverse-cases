@@ -1430,7 +1430,8 @@ pixel (144, 160). Its source is frame 9: `$6000 + 72 x 9 = $6288`. The first col
 `$5192`, ..., `$5792`. Then NextCharRow moves to `$50B2` for the next 8 rows, and to `$50D2` for the last 8.
 
 Witness: DrawPortrait ran 81 times in 30 builds, DrawSpareLives 11 times in 7 builds, DrawBearers 1 139 times in 29
-builds. Each bearer scroll draws the row four times.
+builds. A bearer scroll moves the row three columns: key 1 draws it four times, key 2 five times (the first draw
+of each leaves the row as it was, and key 2 draws its last picture twice; doc 5, 5.8).
 
 The point: the panel changes only when something happens: a life lost, an item taken, a bearer scroll. So it is
 drawn straight to the screen with the plainest copy, and it is never part of the buffer.
@@ -1637,8 +1638,8 @@ SK described most of these routines first. Its reading is kept, and credited, fo
   that row, when the address is no longer used. No recording shows a sprite drawn past row 127; the code would draw
   its lower rows at the top of the window.
 - **The beam hit.** `$9260` sets status `$18` when the hero touches a beam. 0 runs: the RZX player never touched one.
-- **The rope column of room `$1C`.** SetUpRoomTiles writes tiles `$98` and `$99` down column 8 when RopeCount is set
-  (`$98F7`). 0 runs.
+- **The rope column of room `$1C`.** SetUpRoomTiles writes `$98` in column 8 and `$99` in column 9 of rows 0-11 of
+  the tile map when RopeCount is set (`$98F7-$9905`). 0 runs.
 - **The Q + A freeze** stops the drawing with the rest of the game ([doc 5](05-controls.md), 5.9). 0 runs.
 - **The blank slots.** Empty slots hold frame `$7F` and are drawn, copied and repaired like the others. In the pass
   measured in 6.7 they take about two fifths of the 96 082 T of step 2. Nothing in the code skips them.

@@ -22,8 +22,8 @@ The recordings are those of [WALKTHROUGH 6.0](../WALKTHROUGH.md). Each was opene
 writer's own instance (port base 37570, muted):
 
 - `c1` (`work/stage1/c1/session.ttd`, frames 0-26 628): power-on, the tape load, the device menu (frame 21 602), the
-  selector, play. The game starts at frame 23 367, the first pickup is at frame 23 508, the bearer row scrolls at
-  frames 23 935-23 938, and the game is quit with CAPS SHIFT + Q at frame 26 210.
+  selector, play. The game starts at frame 23 367, the first pickup is at frame 23 508, the bearer row scrolls over
+  frames 23 934-23 945 (key 2 held 23 934-23 944), and the game is quit with CAPS SHIFT + Q at frame 26 210.
 - `explorers` (`work/stage1/explorers/session.ttd`, frames 0-15 190): the menu (frame 7750), all five explorers, and
   Help (frames 13 660-15 190: from the fire on the question mark to the end of the script).
 - `gameover` (`work/stage1/gameover/session.ttd`): the RZX state of frame 10 000 with Lives `$5B97` set to 1, a POKE.
@@ -776,16 +776,21 @@ walk frames, [doc 6](06-rendering.md), 6.8: walking is 0-3; 4 is the next frame 
 The explorer has bearers who carry the items he picks up (doc 10). BearerLoads `$5B7C` holds 27 entries, one per
 bearer: an item number, or `$FF` for none. The panel draws four bearers: their figures (BearerFigures `$9FDE`, four
 poses chosen by bearer AND 3) at `$5096`, and their loads (ItemSprites) above them at `$5036`. Four sprites are 12
-columns; the panel shows 9: three whole bearers at phase 0, parts of four while the row scrolls.
+columns; the panel shows 9: three whole bearers at phase 0 (and at phase 3), parts of four at phases 1 and 2.
 
-BearerIndex `$5C23` is the first bearer shown. BearerPhase `$5C22` (0-3; 4 only between key 1 and the next pass) is
-how many columns of the 12 are skipped, so the row slides in steps of one column. Keys 1 and 2 (BearerKeys `$BC1F`) scroll it:
+BearerIndex `$5C23` is the first bearer shown. BearerPhase `$5C22` (0 at rest, 1-3 while the row scrolls; 4 only
+between key 1 and the next pass) is how many columns of the 12 are skipped, so the row slides in steps of one column.
+A bearer is 3 columns, so phase 3 of one BearerIndex shows what phase 0 of the next shows: a scroll is one bearer,
+three one-column moves, in four phases. Keys 1 and 2 (BearerKeys `$BC1F`) scroll it:
 
 - **key 2** sets BearerScrollDir `$5C21` = 0 and BearerPhase = 0, then falls into BearerScrollStep `$BC4A`. This pass
-  and each later one draw the row, then add 1 to the phase; at 4 the phase is 0 again and BearerIndex goes up by 1
-  (27 wraps to 0).
+  and each later one draw the row, then add 1 to the phase; at 4 the phase is 0 again, BearerIndex goes up by 1
+  (27 wraps to 0) and the row is drawn again. The first draw (phase 0) leaves the row as it was; phases 1, 2 and 3
+  each move it one column; the second draw of the fourth pass gives the same picture as phase 3. 4 passes, 5 draws,
+  3 moves.
 - **key 1** sets BearerScrollDir = 1, BearerPhase = 4 and takes 1 from BearerIndex (below 0: 26), and returns
-  without drawing. Each later pass takes 1 from the phase and draws.
+  without drawing. Each later pass takes 1 from the phase and draws: phase 3 (the row as it was), then 2, 1, 0, one
+  column each. 5 passes, 4 draws, 3 moves.
 
 ```text
 DrawBearers():
@@ -867,17 +872,23 @@ flowchart TD
     DN --> DB
 ```
 
-![DrawBearers on key 2, c1 frames 23935-23938](img/routines/DrawBearers.gif)
+![DrawBearers on key 2, c1 frames 23934-23945](img/routines/DrawBearers.gif)
 
-*The routine animation of BearerKeys, DrawBearers and the blitter in `c1` from 23935:30000 to 23938:60000. It has 80
-pictures, 3035 T each, and 32 942 instructions. The view is the panel's bitmap `$5000`; the memory grid is
-`$5B00-$5CFF`. Command: `python3 ../../kit/routine_anim.py --work work/docs/tmD/c1 --window
-23935:30000-23938:60000 --listing build/game.lst --view buffer:5000:32x64:screen --pc
-BC1F-BC72,9EBD-9F1D,9F6B-9FDD --range 5B00-5CFF --pictures 80 --out docs/img/routines/DrawBearers.gif`.*
+*The routine animation of BearerKeys, DrawBearers and the blitter in `c1` from 23934:0 to 23946:0, the whole scroll
+of key 2. It has 80 pictures, 10 637 T each, and 119 347 instructions. The view is the panel's bitmap `$5000`; the
+memory grid is `$5B00-$5CFF`; the title is "BearerKeys `$BC1F` and DrawBearers `$9EBD`: key 2 held". Command:
+`python3 ../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23934:0-23946:0 --listing build/game.lst --view
+buffer:5000:32x64:screen --pc BC1F-BC72,9EBD-9F1D,9F6B-9FDD --range 5B00-5CFF --pictures 80 --title '...' --out
+docs/img/routines/DrawBearers.gif`.*
 
-How to read the animation: the player holds key 2. Each pass redraws the 9 columns of loads and the 9 columns of
-figures, one column further on: the row slides left 8 pixels a pass. In the grid, BearerPhase `$5C22` counts 0, 1, 2,
-3 and BearerIndex `$5C23` goes up by 1 when the phase wraps.
+How to read the animation: the player holds key 2 over frames 23 934-23 944; the bearer box is at the right of the
+view (the loads above it are blank: the bearers shown carry nothing). The redraws flash yellow, then fade. The first
+pass (about picture 9, frame 23 935) redraws the row unchanged at phase 0; the next three (pictures 29, 45 and 64)
+each move it one column, 8 pixels, to the left; the pass that wraps the phase draws it twice in a row (pictures
+64-76), the second time identical. The last picture shows the row one bearer on: new poses in the same places. The
+kit's memory grid is one thin strip for 512 bytes and the view is single, so BearerPhase is not readable in the
+GIF; the samples of `$5C21-$5C23` at the frame starts are `01 00 1A` up to 23 935, `00 01 1A` at 23 936, `00 02 1A`
+at 23 939, `00 03 1A` at 23 942 and `00 00 00` at 23 945 (BearerIndex `$1A` wraps to 0).
 
 Worked example: BearerIndex = 0, BearerPhase = 2. DrawBearers adds the columns of bearers 0, 1, 2, 3 (poses 0-3): 12
 pointers. ShowScrolled skips 2 of them, so the screen shows columns 2-10: the last column of bearer 0, all of bearers
@@ -886,8 +897,8 @@ pointers. ShowScrolled skips 2 of them, so the screen shows columns 2-10: the la
 Witness: c1 presses keys 1 and 2 (`tests/inputs/c1.txt`). Key 1 runs 128 times in 21 builds (`$BC2F`) and key 2 113
 times (`$BC43`). DrawBearers runs 1139 times.
 
-The point: the scroll is not a pixel scroll. It redraws 18 columns from a column pointer table, a column later each
-pass. That costs 432 bytes of copying a pass (18 columns of 24), but the panel needs no buffer of its own.
+The point: the scroll is not a pixel scroll. It redraws 18 columns from a column pointer table, three columns in
+four passes (key 2) or five (key 1). That costs 432 bytes of copying a pass (18 columns of 24), but the panel needs no buffer of its own.
 
 ## 8.8 The score
 
@@ -1229,7 +1240,7 @@ flowchart TD
 The right panel of the menu figure in 8.2 is this view, modelled: CollisionText and 30 days, 23 hours, 11 minutes,
 printed by the PrintString and PrintByte models with the game's addresses and attribute.
 
-Worked example: at a game's start the countdown is 30 days, 23 hours, 59 minutes (InitGame `$9007`). A look at that
+Worked example: at a game's start the countdown is 30 days, 23 hours, 59 minutes (InitGame `$8F69`, at `$9007`). A look at that
 moment would print:
 
 - days 30 at `$48C7`: digit buffer `030`, one leading zero: `3`, `0`, then one space;

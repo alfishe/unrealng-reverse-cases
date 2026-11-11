@@ -7,8 +7,8 @@
 ; $A102 (IY = $A0FE) zeroes them and its tile tests set them. Of their uses: +0
 ; and +1 are tested by $A34B before it turns the velocity $5C34 round (+0 when
 ; moving left, +1 when moving right), +3 is tested by $AD17 after a climb step
-; and in $A34B for downward moves (known only from the code; the meanings are
-; GC's). 83 554 reads and 150 559 writes over the builds.
+; and in $A34B for downward moves (known only from the code). 83 554 reads and
+; 150 559 writes over the builds.
 HeroProbes:
   DEFB $00,$00,$00,$00
 
@@ -314,8 +314,8 @@ SolidTiles:
 ; The floor tiles of the other tile set (4 bytes), then the solid ones to their
 ; $00 end
 ;
-; The other tile set is in when $918C is not 0 (the 15 rooms of $9AC6, GB).
-; FloorDistance $A1F4 scans from here instead of FloorTiles $A234.
+; The other tile set is in when $918C is not 0 (the 15 rooms of AltTilesetRooms
+; $9AC6). FloorDistance $A1F4 scans from here instead of FloorTiles $A234.
 AltFloorTiles:
   INCBIN "res/tables/alt-floor-tiles.bin",$0000,4
 AltExtraSolidTiles:
@@ -929,7 +929,8 @@ HeroSinkIn:
 ; the umbrella (item 5) 4 rows or more above the floor gives frame $0B.
 ;
 ; Status 6 enters at Status6Entry $A5F0 (StatusHandlers $A72E): the hero stays
-; in place and only animates; it is set by $BCB4 (GD).
+; in place and only animates; it is set by RopeTrick $BC73 ($BCB4, a note of
+; the Flute in room $10).
 ;
 ; Witness: L1 15541 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
@@ -1143,7 +1144,7 @@ JumpHoleDone:
 ; Is the hero over the hole whose tile map address is $5BA2?
 ;
 ; $5BA2 = 0: carry. Else its column x 8 against the hero's X: no carry when X
-; is within 8 pixels right of it. Also called by $9A09 (GB).
+; is within 8 pixels right of it. Also called by WellFront $9A09.
 ;
 ; Witness: L1 26583 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
 ; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,

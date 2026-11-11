@@ -659,8 +659,12 @@ HeroUpdate `$A3E1` runs once a pass, from MainLoop. Its input part:
 14. Climbing sets the frame to `$20 + (Y AND 6) / 2`: four climb frames by height.
 15. Otherwise the probes HeroTileChecks `$A102`: a wall puts X back; then the ladder, landing, falling (4 pixels a
     pass) or a refusal of a big drop ([doc 10](10-gameplay-logic.md)).
-16. HeroWalkFrames `$A5E3`: with any direction, on every second pass (PassCount odd) the walk frame steps, frame + 1
-    AND 3. With no direction the frame is 2, standing. Holding the Flute (item `$0C`) adds `$10` to frames 0-3.
+16. HeroWalkFrames `$A5E3` first clears RefuseCount `$5C03` and Falling `$5C04` (a fall enters later, at
+    HeroWalkAnim `$A5EA`). With any direction, on every second pass (PassCount odd) the walk frame steps, frame + 1
+    AND 3. With no direction the frame is 2, standing. On the unicycle (UnicycleFrames `$5BFA` not 0) the frames are
+    `$3C-$3F` (frame AND 3 + `$3C`, `$A601-$A60E`). Holding the Flute (item `$0C`) adds `$10` to frames 0-3. Falling 4
+    rows or more above the floor with the umbrella (item 5) gives frame `$0B` (`$A623-$A634`,
+    [doc 10](10-gameplay-logic.md)).
 
 ```text
 HeroUpdate:                                 ; $A3E1, once a pass
@@ -681,7 +685,13 @@ HeroUpdate:                                 ; $A3E1, once a pass
     if e.up and OnLadder: Y -= 2; if Y < 0: ExitUp (room $18: then Y = $60, JumpDirection = 0, status 3)
         frame = ...; return
     probes, walls, ladder, land, fall or refuse
-    walk frames
+    walk frames:                            ; HeroWalkFrames $A5E3
+        RefuseCount = 0; Falling = 0        ; skipped when a fall enters at $A5EA
+        if e.direction: if PassCount odd: frame = (frame + 1) AND 3
+        else: frame = 2
+        if UnicycleFrames: frame = (frame AND 3) + $3C
+        if HeldItem == $0C and frame < 4: frame += $10
+        if Falling and HeldItem == 5 and rows above the floor >= 4: frame = $0B
 ```
 
 The fire and the walk, from `build/game.lst`:
@@ -943,12 +953,17 @@ status 57 times in 21 builds.
 The panel shows three of the 27 invisible bearers, each with its load. BearerKeys `$BC1F` reads 1 and 2 (`$F7FE` bits
 0 and 1) when no scroll is in progress:
 
-- Key 1: BearerScrollDir `$5C21` = 1, BearerPhase `$5C22` = 4, BearerIndex `$5C23` - 1 (0 wraps to `$1A`). The next
-  passes draw phases 3, 2, 1, 0: the row slides right by one column a pass, and the previous bearer comes in from the
-  left.
-- Key 2: BearerScrollDir = 0, BearerPhase = 0, and the same pass draws phase 0. The next passes draw 1, 2, 3; at 4
-  the phase goes back to 0 and BearerIndex + 1 (`$1B` wraps to 0). The row slides left.
-- Both keys at once count as key 1. Holding a key repeats the scroll: four passes a bearer.
+- Key 1: BearerScrollDir `$5C21` = 1, BearerPhase `$5C22` = 4, BearerIndex `$5C23` - 1 (0 wraps to `$1A`), and the
+  pass returns without drawing. The next four passes draw phases 3, 2, 1, 0. A bearer is 3 columns, so phase 3 of the
+  new index shows the same 9 columns as phase 0 of the old one: the first redraw leaves the row as it was, then it
+  slides right one column a pass, three times, and the previous bearer has come in from the left. 5 passes, 4
+  draws, 3 moves.
+- Key 2: BearerScrollDir = 0, BearerPhase = 0, and the same pass draws phase 0: the row unchanged. The next passes
+  draw 1 and 2; the fourth draws 3, the phase reaches 4, goes back to 0 with BearerIndex + 1 (`$1B` wraps to 0), and
+  the same pass draws the row again, the same picture. The row slides left one column a pass, three times: 4 passes,
+  5 draws, 3 moves.
+- Both keys at once count as key 1. Holding a key repeats the scroll: a bearer (3 columns) every 5 passes with key 1,
+  every 4 with key 2.
 
 ShowScrolled `$9F73` skips BearerPhase columns of the 12-column list (4 bearers x 3 columns) and blits 9.
 
@@ -985,8 +1000,8 @@ flowchart TD
     K -->|"1, or 1 and 2"| K1["dir 1, phase 4, BearerIndex - 1, wrap to 1A"]
     K -->|"2"| K2["dir 0, phase 0"]
     K2 --> S
-    S -->|"0"| UP["DrawBearers, phase + 1; at 4: phase 0, index + 1"]
-    S -->|"1"| DN["phase - 1, DrawBearers"]
+    S -->|"0"| UP["DrawBearers, phase + 1; at 4: phase 0, index + 1, DrawBearers again (same picture)"]
+    S -->|"1"| DN["phase - 1, DrawBearers (phase 3: the row unchanged)"]
 ```
 
 ![The bearer key 1 at work](img/routines/BearerKeys.gif)
@@ -997,12 +1012,15 @@ flowchart TD
 --listing build/game.lst --title '...' --out docs/img/routines/BearerKeys.gif`.*
 
 How to read: each picture shows the panel after the instructions run so far. The bearer row at the right (row 20,
-columns 22-30) and their loads above it (row 17) slide one column a pass, four times.
+columns 22-30) and their loads above it (row 17) slide one column a pass, three times: the first redraw, at phase 3
+after BearerIndex - 1, shows the row unchanged.
 
 Worked example (`explorers`, key 1 at 6470). The sample of frame 6470 shows BearerScrollDir, BearerPhase and
 BearerIndex = `00 00 00`. Key 1 sets the phase to 4 and BearerIndex to `$FF`, which `BIT 7` sees: BearerIndex =
 `$1A`, the last bearer. That pass returns without drawing: the sample of 6472 shows `01 04 1A`. The samples of
-frames 6474-6482 show the phase at 3, 2, 1 and 0, one step a pass, the row redrawn each time.
+frames 6474-6482 show the phase at 3, 2, 1 and 0, one step a pass, the row redrawn each time. The phase-3 picture
+equals the old row (bearer `$1A` skipped whole, bearers 0, 1, 2 shown, as at `00 00 00`); phases 2, 1 and 0 each
+bring in one more column of bearer `$1A` from the left.
 
 Witness: BearerKeys ran 26 514 times in 34 builds. Key 1's branch ran 128 times and key 2's 113 times, each in 21
 builds; `gameover` presses 1 at frames 999 and 1028.

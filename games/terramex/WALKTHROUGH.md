@@ -164,7 +164,7 @@ Every screen reached, from our recordings at the frames named:
 | the explorer selector | [selector.png](docs/img/play/selector.png) | `explorers` 250 |
 | Help: the title, the controls, the story | [help-1.png](docs/img/play/help-1.png), [help-2.png](docs/img/play/help-2.png), [help-3.png](docs/img/play/help-3.png) | `explorers` 13 750, 14 000, 15 000 |
 | play, the start room `$14` | [start-room-14.png](docs/img/play/start-room-14.png) | `explorers` 750 |
-| the last life lost: the space scene | [gameover-1509.png](docs/img/play/gameover-1509.png), [gameover-1700.png](docs/img/play/gameover-1700.png) | `gameover` 1509, 1700 |
+| the last life lost: the space scene | [gameover-1509.png](docs/img/play/gameover-1509.png), [gameover-1700.png](docs/img/play/gameover-1700.png) | `gameover` 1509 (Respawn: room `$28` set up a second time, the scene not started), 1700 |
 | room `$3B` before the end | [ending-lab-r48000-1999.png](docs/img/play/ending-lab-r48000-1999.png) | `rzx48000` 1999 |
 | the ending in room `$28` | [ending-room-28-r50000-500.png](docs/img/play/ending-room-28-r50000-500.png) | `rzx50000` 500 |
 | the 57 rooms of the RZX run | [rooms-reached-1.png](docs/img/play/rooms-reached-1.png), [rooms-reached-2.png](docs/img/play/rooms-reached-2.png) | the in-sync rzx segments, one screen a room (below) |
@@ -227,7 +227,7 @@ caption gives the full command.
 | [ItemsPass.gif](docs/img/routines/ItemsPass.gif) | doc 7, 7.10 | `rzx24750` | 608-624 |
 | [PrintString.gif](docs/img/routines/PrintString.gif) | doc 8, 8.2 | `c1` | 21602:50000-21604:43000 |
 | [PrintPage.gif](docs/img/routines/PrintPage.gif) | doc 8, 8.3 | `explorers` | 13857-13866 |
-| [DrawBearers.gif](docs/img/routines/DrawBearers.gif) | doc 6, 6.12; doc 8, 8.7 | `c1` | 23935:30000-23938:60000 |
+| [DrawBearers.gif](docs/img/routines/DrawBearers.gif) | doc 6, 6.12; doc 8, 8.7 | `c1` | 23934:0-23946:0 |
 | [AddScore.gif](docs/img/routines/AddScore.gif) | doc 8, 8.8 | `c1` | 23508:800-23508:12400 |
 | [NewHiScore.gif](docs/img/routines/NewHiScore.gif) | doc 8, 8.9 | `c1` | 26210:20300-26210:28300 |
 | [MusicFrame.gif](docs/img/routines/MusicFrame.gif) | doc 9, 9.3 | `c1` | 23004:1870-23004:6900 |

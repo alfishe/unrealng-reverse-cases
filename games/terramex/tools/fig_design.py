@@ -128,8 +128,8 @@ def panel(args):
     # (x0, y0, x1, y1) in panel pixels, label
     parts = [((0, 0, 104, 23), 'score and high score', (255, 220, 90)),
              ((0, 23, 90, 64), 'spare lives: one figure a life', (110, 220, 110)),
-             ((90, 4, 140, 64), 'the portrait', (110, 170, 250)),
-             ((140, 4, 172, 64), 'the item in the hero\'s hand', (250, 130, 110)),
+             ((90, 4, 140, 64), 'the panel\'s picture (the waterfall), the same for all five', (110, 170, 250)),
+             ((140, 4, 172, 64), 'the held item (above) and the portrait of the chosen explorer (below)', (250, 130, 110)),
              ((172, 4, 256, 64), 'the three bearers, an item above each one that carries one', (220, 140, 230))]
     ly = y0 + 64 * s + 14
     lx = 20

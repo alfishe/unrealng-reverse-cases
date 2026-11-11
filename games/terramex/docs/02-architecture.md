@@ -33,7 +33,7 @@ a recording. 2.10 lists what it covers and where this case reads the code otherw
 | CPU | Z80 at 3.5469 MHz on the 128K, 70 908 T a frame. No frame sync in play: a pass of MainLoop `$9018` (SK) takes 2.4 to 3.3 frames ([doc 4](04-game-loop.md)) |
 | interrupts | IM 2, I = `$8E`, the table `$8E00-$8F00` filled with `$5F` by GameEntry `$8F00`, `JP $9491` at `$5F5F`. The handler pages RAM 6 in, calls the music player at `$C000` and pages back. One interrupt every frame in play: `explorers`, `gameover` and every `rzxNNNNN` take as many interrupts as frames (the L1's `replay.interrupts`) |
 | RAM 5, 2, 0 | the 64 K view in play: ROM 1, RAM 5, RAM 2, RAM 0 (`$7FFD` = `$10`; `time_travel memory_at` in `c1`, frame 23500) |
-| RAM 1 | the explorer selector: block 4's `$7200-$A0DF` copied to `$C000` by the 128K set-up (Copy128K `$C040`, 12 000 bytes) and relocated there: the 11 000-byte selector block `$7200-$9CF7` at `$C000-$EAF7`, then 1000 bytes of set 0, unused, at `$EAF8-$EEDF`; `$EEE0-$FFFF` not used. Paged in with `$7FFD` = `$11` by RunSelector `$8F4A` |
+| RAM 1 | the explorer selector: block 4's `$7200-$A0DF` copied to `$C000` by the 128K set-up (Copy128K `$C035`, 12 000 bytes) and relocated there: the 11 000-byte selector block `$7200-$9CF7` at `$C000-$EAF7`, then 1000 bytes of set 0, unused, at `$EAF8-$EEDF`; `$EEE0-$FFFF` not used. Paged in with `$7FFD` = `$11` by RunSelector `$8F4A` |
 | RAM 3, 4 | the five explorer sprite sets, `$1200` bytes each: sets 0-2 in RAM 4, sets 3-4 in RAM 3 ([doc 3](03-build-and-load.md)) |
 | RAM 6 | Ben Daglish's music: block 4's `$6000-$71FF`, the player and the tunes. Paged in with `$7FFD` = `$16` by Im2Handler `$9491` |
 | RAM 7 | not used |
@@ -69,7 +69,7 @@ How to read it:
   frames from `$7200`.
 - The game code starts at GameEntry `$8F00` and ends at `$C57F`. The data above it is the level data and the tiles,
   with the back buffer `$E000` between them.
-- The lower four bars are RAM 1, 3, 4 and 6, each as `$C000-$FFFF`. RAM 1 holds the 12 000 bytes Copy128K `$C040`
+- The lower four bars are RAM 1, 3, 4 and 6, each as `$C000-$FFFF`. RAM 1 holds the 12 000 bytes Copy128K `$C035`
   copies: the relocated selector to `$EAF7`, then 1000 bytes of set 0 that nothing uses (`$EAF8-$EEDF`).
 
 The regions in play, from the L1 of `explorers`, `gameover` and the RZX segments (`work/stage1/l1-play.json`; `c1`
@@ -171,7 +171,8 @@ Totals: the game 323 entries (246 code), the selector 45 (31 code), the music 91
 `$8F00-$C57F` is 13 952 bytes, tables included; the rest of its 36 352 bytes is sprites, rooms, tiles and buffers.
 
 **The point**: the game is the biggest part but not the only one. The selector and the music are 15 608 bytes of the
-tape, and none of them runs on the main 64 K map.
+tape. On a 128K they run outside the main map, the selector in RAM 1 and the music in RAM 6 (after the set-up at
+`$7200`); on a 48K the selector runs in place at `$7200` during the load.
 
 ## 2.4 The stages from power-on to play
 

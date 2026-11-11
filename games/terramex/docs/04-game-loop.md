@@ -251,13 +251,17 @@ InitGame, in order (its description in `src/game/game.ann` lists every byte):
 | 2 | BearerLoads `$5B7C-$5B96`: no bearer carries anything | 27 bytes of `$FF` |
 | 3 | ResetItems `$B932`, then the Energy Crystal's place (`$B9D9`) bit 7 set | |
 | 4 | the panel EndGame saved, back on the screen | `$E000` to `$5000` (2048 bytes), `$E800` to `$5A00` (256) |
-| 5 | clear `$5BFA-$5C8D` | the countdown, GameOver, Room, PassCount, Status and the rest (148 bytes) |
-| 6 | score 0 (AddScore `$BCF2` with DE = 0); the object at `$5C25-$5C27` (the balloon) at X `$70`, Y `$60`, room `$0F` | |
-| 7 | Room `$5C01` = `$14`, SetUpRoom `$9855` | |
-| 8 | Lives `$5B97` = 4, DrawSpareLives `$9E96` | |
-| 9 | the hero at X `$0A`, Y `$60`; the lift in room `$2B` at Y `$30` | |
-| 10 | the countdown: 30 days, 23 hours, 59 minutes | `$5BFB` = `$1E`, `$5BFC` = `$17`, `$5BFD` = `$3B` |
-| 11 | SaveRespawnPoint `$9AA1`: the start is the first respawn point | |
+| 5 | TilePixelsPtr `$5B72` = `$F000` (the base tile set) | |
+| 6 | WantedItem `$5C3C`, HeldItem `$5B98` and Thought+2 `$5B9B` = `$FF`; the ThinkHints patches: `$A6FD` and `$A700` (rooms `$17`, `$1A`) = `$FF`, `$A6F5` (room `$0F`) = 7 | WantedItem is cleared again by step 8 |
+| 7 | the hero's frame `$5B06` = 0 | |
+| 8 | clear `$5BFA-$5C8D` | the countdown, GameOver, Room, PassCount, Status and the rest (148 bytes) |
+| 9 | score 0 (AddScore `$BCF2` with DE = 0); the object at `$5C25-$5C27` (the balloon) at X `$70`, Y `$60`, room `$0F` | |
+| 10 | TilePixelsPtr = `$F000` again; Room `$5C01` = `$14`, SetUpRoom `$9855`, DrawBearers `$9EBD` | |
+| 11 | Lives `$5B97` = 4, DrawSpareLives `$9E96` | |
+| 12 | the hero at X `$0A`, Y `$60`; the lift in room `$2B` at Y `$30` | |
+| 13 | the countdown: 30 days, 23 hours, 59 minutes | `$5BFB` = `$1E`, `$5BFC` = `$17`, `$5BFD` = `$3B` |
+| 14 | SaveRespawnPoint `$9AA1`: the start is the first respawn point | |
+| 15 | DrawPortrait `$9E5D`: the explorer's face and the empty hand; then MainLoop `$9018` follows | |
 
 Witness: `c1` frame 23500 holds Room `$14`, Lives 4 and the countdown 30 days 23:11 (`memory_at`). The first RZX
 sample in play, RZX frame 225, holds 30 days 23:51: eight passes after InitGame.
@@ -428,7 +432,8 @@ How to read it:
 - Red is HeroUpdate. It is small in room `$08`, where the hero hovers with the Vacuum Cleaner: Hover `$AD32`, status
   4, replaces most of the update. Elsewhere it is about 15 000-18 000 T: the room handler, the tile probes and the
   walk.
-- Green is RoomEffects. It is about 300 T where nothing is animated, and 8 970 T in the lab `$3B` with its beams.
+- Green is RoomEffects. It is about 300 T where nothing is animated, and 8 970 T in the lab `$3B`, which animates its six
+  capsules (Capsules `$9282`, tile `$8C`); the lab has no beam.
 - Cyan is the interrupt: about 3 900 T for each of the 2-3 interrupts a pass holds.
 
 **The point**: the game logic is cheap; drawing is the game's cost. A pass is long because RenderPass composes five
@@ -446,7 +451,11 @@ items. Its draw paths are [doc 6](06-rendering.md)'s subject. Here is its shape 
 3. DrawItems `$9DE3` draws the floor items.
 4. CopyRects `$9BEB` copies the 4-byte by 24-row rectangles from the buffer to the screen. Last pass's places
    (PrevActorRects `$5B24`) get their background back; this pass's places (ActorRects `$5B44`) get the sprites.
-5. RestoreActorBackgrounds `$9D3C` repaints the buffer under the five actors from the tile map, ready for the next
+5. An `LDIR` at `$9BDE` copies ActorRects `$5B44` to PrevActorRects `$5B24` (32 bytes): this pass's rectangles become
+   the next pass's places to clear.
+6. ShowCapsules `$92BD` (alternate tile set only; it returns at once otherwise) copies the capsule cells of
+   EffectCellsB `$9AE5`, 2 cells x 8 rows each, from the buffer to the screen with CopyBackCell `$92D6`.
+7. RestoreActorBackgrounds `$9D3C` repaints the buffer under the five actors from the tile map, ready for the next
    pass.
 
 ```mermaid
@@ -457,6 +466,10 @@ flowchart LR
     IT["DrawItems $9DE3"] --> BUF
     BUF --> C["CopyRects $9BEB: 10 rectangles 4 x 24"]
     C --> SCR[("screen $4000")]
+    C --> L["LDIR $5B44 to $5B24"]
+    L --> SC["ShowCapsules $92BD"]
+    BUF --> SC
+    SC --> SCR
     TM["tile map $F800"] --> RB["RestoreActorBackgrounds $9D3C"]
     RB --> BUF
 ```
@@ -554,7 +567,8 @@ How to read it:
 - The pass begins at the very end of frame 7 and ends early in frame 11.
 - Frame 8 starts with WallColumnCompare: the hero's probes against the lab's walls, part of HeroUpdate.
 - In frame 10 CopyRectRows (red) writes the 960 rectangle bytes: 754 before the beam, 206 after it.
-- CopyBackCellLoop (green, 96 writes, all after the beam) is RoomEffects' beam cells, written straight to the screen.
+- CopyBackCellLoop (green, 96 writes, all after the beam) is ShowCapsules `$92BD`, called by RenderPass after
+  CopyRects: the lab's six capsules, 2 cells x 8 rows each, copied from the back buffer to the screen.
 - RestoreRectCell (violet here) runs from frame 10 into frame 11.
 - The pink blocks at the start of frames 8-11 are the music player (RAM 6), 1225 instructions over the pass.
 
@@ -565,11 +579,15 @@ t 8133 (30 963 instructions). Left above: memory `$4000-$FFFF`; left below: the 
 Made with `python3 tools/beam_paged.py --tool routine_anim --page-name "6=the music player (RAM 6)"`
 `--trace work/docs/tmA/r46000/traces/7_70304-11_8133.uatr --listing build/game.lst --view screen`
 `--range 4000-FFFF --pc 5F00-C57F --pictures 90 --title 'MainLoop $9018: the heaviest pass, the lab $3B'`
-`--out docs/img/routines/MainLoop-heaviest.gif`.*
+`--out docs/img/routines/MainLoop-heaviest.gif`. The screen view starts from the trace's memory at the pass's start;
+beam_paged.py saves the GIF with an opaque black (kitlib.save_gif's transparent index is black, which hid the
+screen's black in the first redraw).*
 
 How to read it:
 
-- The first pictures (frame 8) are HeroUpdate's wall probes: WallColumnCompare over the lab's columns.
+- The first pictures (frame 8) are HeroUpdate: the professor's script, the controls, then the floor probe
+  (FloorScanMatch, pictures 1-3) and the wall probes (WallColumnCompare over the lab's columns, pictures 3-8).
+- Pictures 9-13 are RoomEffects' capsules (CapsulesLoop, DrawTileAt) and RunCreatures.
 - Most of the pass is the plotters and the buffer rows (NextBufferRow, PlotRowShift7, the mirror patches): the
   sprites drawn into the back buffer, while the screen does not change.
 - Late in frame 10 CopyRectRows puts the ten rectangles on the screen: only then do the moved sprites show.
@@ -598,6 +616,8 @@ StatusDispatch `$A6CC` is called from HeroUpdate at `$A40C`, after the room hand
   `$A6DD`.
 - The return into HeroUpdate is still on the stack. Every handler starts with `POP`, or never returns there, so the rest
   of HeroUpdate is skipped. The handler does the whole update for that pass.
+- One exception: Teleport `$A8EA` at timer 0 in rooms `$30` and `$3D` reaches TeleportStep `$A910`, whose `RET Z`
+  (CrystalPlaced `$5C44` = 0) returns into HeroUpdate before any `POP`: the hero walks on, and status 22 stays.
 
 The SkoolKit disassembly named the dispatcher and the table; the handler names are ours (stage 2 renamed most of them
 from their effect, `src/game/game.ann`).
@@ -668,14 +688,14 @@ instruction over the 34 recordings:
 | 19 | LiftUp `$A96B` | the lift up | 0 | not executed |
 | 20 | LiftDown `$A9C4` | the lift down | 0 | 220 (rzx) |
 | 21 | RideObject4 `$A95F` | the hero takes object 4's place | set back by the room | 418 (rzx) |
-| 22 | Teleport `$A8EA` | the pads of rooms `$30` and `$3D`; room `$20`'s pad kills | 0 or 23 | 36 (rzx) |
+| 22 | Teleport `$A8EA` | the pads of rooms `$30` and `$3D`, working only once the crystal is placed (CrystalPlaced `$5C44`); room `$20`'s pad kills | 0 or 23 | 36 (rzx) |
 | 23 | SilentDeath `$A8A8` | a death with no sound: room `$20`'s pad, the radiation of `$3C`, room `$39`'s creature | 18 | not executed; probe C |
 | 24 | CreatureDeath `$A89E` | a creature's touch | 18 | 33 (rzx) |
-| 25 | Room1ADeath `$A88F` | the snakes of room `$1A` | 18 | 7 (rzx) |
+| 25 | Room1ADeath `$A88F` | the snakes of rooms `$17` and `$1A` (SnakeBite `$B5C8` in the shared RunSnakes `$B57C`) | 18 | 7 (rzx) |
 | 26 | FallDeath `$A888` | the fall death | 18 | 9 (`gameover`, rzx) |
 | 27 | Room43Anim `$A851` | room `$43`'s frame list, then +75 | 0 | 50 (rzx) |
 | 28 | Room2DAnim `$A828` | room `$2D`'s frame list | 29 | 43 (rzx) |
-| 29 | Frozen `$A90E` | nothing: a room handler drives the scene (room `$2D`, the space scene) | set by the room | 413 (`gameover`, rzx) |
+| 29 | Frozen `$A90E` | nothing: a room handler drives the scene (room `$2D`, the space scene) | set by LoseGame `$938D`, ProfessorEnding `$B6FB`, ExplorerRoom46 `$B2EB`; Room2DAnim steps into it | 413 (`gameover`, rzx) |
 | 30 | LookIntoTelescope `$A822` | bend to the telescope in room `$12` | 31 | not executed |
 | 31 | TelescopeView `$A7B9` | the asteroid in space and the time left, 128 passes | 0 | not executed |
 | 32 | DrinkPose `$A783` | frames `$3D-$3F` in room `$2E` | set back by the room | not executed |
@@ -722,7 +742,7 @@ The `gameover` recording starts from the RZX state at 10000 with Lives poked to 
 | 1374-1502 | 50 passes of LoseLifeWait | 18 | 1 to 50 | 1 |
 | 1502 t 29408 | Lives - 1 = 0: `JP Z,LoseGame` | 18 | 50 | 0 |
 | 1502 | LoseGame `$9372`: Room `$28`, the respawn point room `$28`, status `$1D` | 29 | 0 | 0 |
-| 1509 t 36492 | Respawn `$9090` (LifeLost is still set) | 29 | 0 | 0 |
+| 1509 t 36492 | Respawn `$9090` in the same pass (LoseGame's `JP SetStatus` returns to `$902E`, LifeLost is set): room `$28` set up again | 29 | 0 | 0 |
 | 1509-1961 | the space scene: SpaceScene `$B0B6` in room `$28` | 29 | | 0 |
 | 1962 | GameOver set: EndGame `$906D`, the menu | | | |
 
@@ -882,7 +902,9 @@ There is no "time up" message: the end is the same space scene as the last life'
 
 LoseGame also writes the respawn point. That is for the last-life path.
 
-- LoseLifeWait has already set LifeLost, so on the next pass MainLoop runs Respawn.
+- LoseLifeWait has already set LifeLost, and LoseGame's `JP SetStatus` returns into MainLoop at `$902E`, where
+  LifeLost is tested: Respawn runs in the same pass and builds room `$28` a second time (the `gameover` frames
+  1502-1509 show the two set-ups before the scene starts).
 - Respawn reloads room `$28` and status `$1D` from the respawn point.
 - Without that, the respawn would take the hero back to the last checkpoint with no lives.
 
@@ -902,9 +924,11 @@ it:
 | --- | --- | --- |
 | 0 | the asteroid at X `$A2`, Y 4; the Earth at the bottom | the same, and the deflector (object 4) at `$89`, `$5C` |
 | 1 | the asteroid moves 1 left, 4 down a pass, to Y `$54` | the same |
-| 2 | the asteroid hidden; the Earth's frame `$76`, then `$77`: the strike, sound 1 | the deflector fires (frame + 1), sound 2 |
-| 3 | | the asteroid is pushed back up and vanishes |
-| then | the step counts to `$80`, then GameOver = 1 | the same |
+| 2 | the asteroid hidden; the Earth's frame `$76`, then `$77`: the strike, sound 1 (2 passes) | skipped: at Y `$54` the step goes straight to 3, the deflector fires (frame + 1), sound 2 |
+| 3 | | the asteroid flies off to the left (X - 4, Y - 1 a pass) until X < 4, then is hidden (35 passes) |
+| 4 on | the step counts from 4 to `$80` (124 passes), then GameOver = 1 | the same |
+
+The lost scene is 1 + 20 + 2 + 124 = 147 passes, the won one 1 + 20 + 35 + 124 = 180.
 
 ```mermaid
 flowchart LR
@@ -912,8 +936,8 @@ flowchart LR
     B --> C["step 1: the asteroid falls"]
     C --> D{"GameWon $5BFE?"}
     D -->|no| E["the strike, sound 1"]
-    D -->|yes| F["the deflector fires, sound 2, the asteroid pushed back"]
-    E --> G["count to $80"]
+    D -->|yes| F["the deflector fires, sound 2, the asteroid flies off left"]
+    E --> G["count 4 to $80, 124 passes"]
     F --> G
     G --> H["GameOver $5BFF = 1"]
 ```
@@ -937,13 +961,14 @@ How to read them:
 - In room `$28` the asteroid comes down 4 pixels a pass from Y 4 to `$54`, 20 passes, so it reaches the Earth near
   frame 1570 in the lost game.
 - In the lost game the asteroid strikes the Earth and the Earth flashes.
-- In the ending the deflector stands left of the Earth and sends the asteroid back.
-- Both close on room `$28` just before EndGame; the menu that follows is not in the GIFs.
+- In the ending the deflector stands on top of the Earth; it fires and the asteroid flies off to the left.
+- Both close as EndGame starts (the lost one already shows the updated high score); the menu that follows is not in
+  the GIFs.
 
-The scene lasts 453 frames in the lost game (1509-1961) and 536 in the ending (194-729). Both are the step count to `$80`, about 160 passes.
+The scene lasts 453 frames in the lost game (1509-1961) and 536 in the ending (194-729). That is 147 passes lost and 180 won (the table above): 3.08 and 2.98 frames a pass.
 
 **The point**: winning and losing are one routine with one flag. GameWon `$5BFE` only adds the deflector and turns
-the asteroid back.
+the asteroid away.
 
 ## 4.7 The interrupt
 
@@ -1045,7 +1070,7 @@ Every delay of the game is counted in passes (play) or in frames (the menu, the 
 | the barrel ride | BarrelRide `$AA6F` | 84 | passes | 85 runs in the rzx segments |
 | the telescope view | TelescopeView `$A7B9` | 128 | passes | known only from the code |
 | room `$47`'s pose | FlashPose `$A770` | 64 | passes | known only from the code |
-| the space scene | SpaceScene `$B0B6`, RoomStage to `$80` | about 160 | passes | 453 frames (`gameover`), 536 frames (`rzx50000`) |
+| the space scene | SpaceScene `$B0B6`, RoomStage to `$80` | 147 lost, 180 won | passes | 453 frames (`gameover`), 536 frames (`rzx50000`) |
 | the device menu | MenuKeys `$9468` | 1 | frame a turn | HALT |
 | the selector | SelectorWait `$C12A` | 1 | frame a turn | HALT |
 | the tune | MusicFrame `$C000` | 9698 | frames | the tune's loop ([doc 9](09-sound.md)) |
@@ -1056,7 +1081,7 @@ flowchart LR
         A["countdown 44 640"]
         B["dying 50"]
         C["jump 17"]
-        D["space scene about 160"]
+        D["space scene 147 or 180"]
     end
     subgraph frames["counted in frames: always 50 Hz"]
         E["menu, HALT"]

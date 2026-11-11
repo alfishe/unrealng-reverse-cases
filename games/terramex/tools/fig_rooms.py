@@ -4,7 +4,7 @@
 A room is 8 x 4 back-tiles (rooms/rooms.txt, RoomGrids `$D600`); a back-tile is 4 x 4 tile indices
 (rooms/backtiles.txt, BackTiles `$C600`); a tile is 8 bytes of pixels and an attribute (tiles/base.png: TilePixels
 `$F000`, TileAttrs `$DF00`). Tiles `$80-$FF` come from tiles/alt.png (AltTilePixels `$FA00`, AltTileAttrs `$C580`) in
-the rooms of the `alternate` line of rooms.txt (RoomsOnAltTiles `$9AC6`; the room builder swaps the two halves). A room
+the rooms of the `alternate` line of rooms.txt (AltTilesetRooms `$9AC6`; the room builder swaps the two halves). A room
 is 32 x 16 cells, 256 x 128 pixels: the play window above the panel. Room R = level x 12 + column, levels 0-5 top to
 bottom; rooms `$46` and `$47` (level 5, columns 10 and 11) are two explorers' own rooms, reached only through room
 `$29`'s left exit (ExplorerRooms `$A66C`). Each room shows its creatures at their start places (the first frame of

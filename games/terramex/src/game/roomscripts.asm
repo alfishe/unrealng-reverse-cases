@@ -1256,8 +1256,8 @@ LeverRoom3E:
 ; SwitchFitted = $FF, the hand icon redrawn. Fitted (in both rooms: one flag):
 ; the lever's mirror bit (IY+3 bit 7) shows LeverState $5C42 (set when 0), and
 ; each new touch (RoomFlag $5C40 from 0 to 1) flips LeverState; away from the
-; explorer LeverDebounce is 0 again. LeverState chooses the end of room $3F the
-; basket waits at (BasketScript $B409).
+; explorer RoomFlag $5C40 is 0 again. LeverState chooses the end of room $3F
+; the basket waits at (BasketScript $B409).
 ;
 ; Witness: the Switch is fitted once ($B751, rzx28000), the lever pulled twice
 ; ($B770, rzx28000 and rzx32750).
@@ -1370,8 +1370,8 @@ FloorRoom35:
 ; the tile $BC + (B & 1) XOR (PassCount / 2 & 1) written through $9A4D. So the
 ; floor alternates $BC / $BD tile by tile and swaps every second pass; $BC and
 ; $BD are the tiles $A102 counts when stood on (SK: 50 of them set status $11,
-; SinkInMud $AA04; GC's range). What slot $5B14 shows here is known only from
-; the code (a run request).
+; SinkInMud $AA04). What slot $5B14 shows here is known only from the code (a
+; run request).
 ;
 ; Witness: L1 5312 (rzx).
 FlickerFloor:
