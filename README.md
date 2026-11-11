@@ -39,6 +39,7 @@ Each case is a full reverse of one game:
 | [Tujad](games/tujad/README.md) | Ariolasoft UK (Orpheus), 1986 | 48K, tape | complete 2026-11-10 | Orpheus' flip-screen maze shooter: a droid in a circuit-board world, an IM 2 handler that reads the controls and draws the sprites, a plain ROM-speed tape |
 | [SimCity](games/simcity/README.md) | Infogrames (Probe Software), 1990 | 48K, tape | complete 2026-11-10 | Maxis' city simulation on the Spectrum: a 96 x 96 map scrolled in a window, menus and dialogs, a tape loader that decrypts itself with the R register and then every byte it loads |
 | [Earth Shaker](games/earth-shaker/README.md) | Your Sinclair (Michael Batty), 1990 | 48K, tape | complete 2026-11-11 | a boulder-and-gems mine game given away on the Your Sinclair issue 63 covertape: 32 caves of 30 x 20 cells in a scrolling window, falling boulders and gems, a password per cave, a plain ROM-speed load |
+| [Battle Command](games/battle-command/README.md) | Ocean Software (Realtime Games), 1990 | 128K, tape (two sides) | in progress (stage 1) | a 3D tank combat game: one Mauler tank in a filled-polygon world, ten missions on a mission tape, SpeedLock 7 |
 
 Every case is one folder in `games/`:
 
