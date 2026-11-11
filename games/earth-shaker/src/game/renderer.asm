@@ -17,8 +17,10 @@
 ;
 ; Read through CellGraphicAddr $8D66 by DrawCell $8F60 (every cell drawn, in
 ; every build). Words 3 and 4 (the player), 1 (the exit), 6 and 5 (earth, wall)
-; and the animated words 8-15 are rewritten during play. Word 0 is BlankGraphic
-; $AA72 (the empty cell). Words 16 and 21 ($8020, $802A) are never read: the
+; and the animated words 8-15 are rewritten during play, and word 0 (the empty
+; cell) in the falling-earth caves: EarthAnimStep $FB70 points it at a frame of
+; EmptyFrames $FAE0 each pass, and SetEarthFalls $FB84 puts BlankGraphic $AA72
+; back at every cave start. Words 16 and 21 ($8020, $802A) are never read: the
 ; codes $10 and $15 step on (AnimateCellCodes $937E) before the window is drawn
 ; in the same pass. Words 28-31 are $0000: no such cells.
 CellGraphicsTable:
@@ -37,7 +39,7 @@ CellEarthGfx:
   DEFW GfxEarth           ; cell 6
 CellGemGfx:
   DEFW GfxGem             ; cell 7
-CellCapsuleGfx:
+CellJellyBeanGfx:
   DEFW GfxJellyBean       ; cell 8
 CellForceFieldGfx:
   DEFW $A378              ; cell 9
@@ -79,7 +81,7 @@ CellUnusedGfx:
 ; Out: DE past the glyph, HL the last screen byte. The font, the HUD digits and
 ; the map glyphs go through it.
 ;
-; Witness: L1 89565 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx x32).
 PrintGlyph:
   LD A,B
   AND $F8
@@ -132,7 +134,7 @@ AttrAddr:
 ;
 ; B = the row, C = the column. DE = $5800 + 32B + C.
 ;
-; Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 AttrAddrDE:
   LD A,B
   SRA A
@@ -191,7 +193,7 @@ LineAddr:
 ; ColourCycleInk into the 4 attributes of the gem graphic $9B74-$9B77 (ink, ink
 ; - 1, ink - 2, ink - 1), AnimateCells $900B, AnimateTable $90B2.
 ;
-; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 DrawPass:
   LD A,(ColourCycleInk)
   LD HL,GfxGem
@@ -213,7 +215,7 @@ DrawPass:
 
 ; DE = the table word of cell A: $8000 + 2 x (A AND $1F)
 ;
-; Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 CellGraphicAddr:
   AND $1F
   RLCA
@@ -227,7 +229,7 @@ CellGraphicAddrPad:
 
 ; Draw the window at ViewOrigin
 ;
-; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 DrawWindowAtOrigin:
   CALL DrawPass
 
@@ -236,7 +238,7 @@ DrawWindowAtOrigin:
 ; DrawCell $8F60 for each; B = the character row (0, 2, ... 20), C = the column
 ; (0, 2, ... 30).
 ;
-; Witness: L1 44156 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 44157 (c1, hiscore, lives, timer, rzx x32).
 DrawWindow:
   LD DE,CaveGrid
   ADD HL,DE
@@ -280,7 +282,7 @@ DrawWindowLoop:
 ; (row + 1) + column - 188). The window is drawn later, by MapKey's CALL
 ; DrawWindowAtOrigin.
 ;
-; Witness: L1 44155 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43833 (c1, hiscore, lives, timer, rzx x32).
 WindowOrigin:
   LD BC,$0000
   LD HL,(PlayerIndex)
@@ -330,7 +332,7 @@ WindowOriginLoop2:
 ; 5,E for the lower half needs bit 5 of E clear. The graphic pointer steps with
 ; INC L inside each 4-byte group, so no group may cross a 256-byte page.
 ;
-; Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 DrawCell:
   CALL CellGraphicAddr
   NOP
@@ -499,7 +501,7 @@ DrawCell:
 ; AnimPhase $FD72 0-3: the player's table words $8006 / $8008 from $9B98 /
 ; $9C28 + 36 x phase. Out: HL = ViewOrigin.
 ;
-; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 AnimateCells:
   LD A,(AnimPhase)
   INC A
@@ -532,7 +534,7 @@ AnimateCellsSkip:
 ; EarthAnim $9DFC, then the words of cells 8, 9, $0A, $0C, $0D, $0E, $0F from
 ; frame AnimPhase.
 ;
-; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 AnimateTable:
   PUSH HL
   PUSH DE
@@ -627,7 +629,7 @@ AnimateTableLoop7:
   ADD HL,DE
   DJNZ AnimateTableLoop7
 AnimateTableSkip8:
-  LD (CellCapsuleGfx),HL
+  LD (CellJellyBeanGfx),HL
   POP BC
   POP DE
   POP HL

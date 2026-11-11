@@ -29,12 +29,15 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   (frames 2428-2487).
 - The RZX state logs `work/stage1/rzx/earthNN.ins.state.bin`: `$FD7E-$FFFF` after every frame of each of the 32 RZX
   files, 642 bytes a frame, logged while SkoolKit played the RZX (`tools/rzx_inputs.py`).
-- The L1 counts of the builds, quoted from the `.ann` descriptions ("L1 n").
+- The L1 counts of the builds ("L1 n", from the `.ann` descriptions and `work/docs/esC/l1.txt`): `c1`, `menu`,
+  `hiscore`, `lives`, `timer` and the 32 RZX caves, cave 4 from `stage2/rzx04/cap`; `death-crush` and `death-fire` are
+  named apart.
 
 A sample of frame N is the memory at the start of frame N. A trace, and so a routine animation, puts an instruction in
 the frame where it ran. "Cell 225 holds the boulder in frame 22" means the sample of frame 22; the scan that moved it
-ran in frame 21. A [pass](README.md#terms) is one turn of `PlayCave $8885` and lasts five to nine frames
-([doc 04](04-game-loop.md)). A cell moves at most once a pass.
+ran in frame 21. A [pass](README.md#terms) is one turn of `PassLoop $888D` in `PlayCave $8885`. The mean pass of a
+cave lasts 5.5 to 9.4 frames ([doc 04.6](04-game-loop.md#46-the-cost-of-a-pass-in-every-cave)); a pass with a long
+sound (the switch, a burst, a jelly bean) lasts much longer. A cell moves at most once a pass.
 
 ## 7.1 The cave grid and the cell codes
 
@@ -111,15 +114,15 @@ Witness, all from `rzx-earth02` (the RZX player's play, replayed), sampled as ab
 | 380 | 437: `$02` to `$20`; 466: `$06` to `$04`; 467: `$04` to `$02` | the player digs left from 467 to 466; the boulder above falls into the cell he left |
 | 382 | 437: `$20` to 0 | the vacated mark is gone at the next sample |
 | 388 | 497: `$0B` to `$20`; 529-533: `$09` to `$20` | the switch box and five force fields cleared |
-| 404 | 497, 529-533: `$20` to 0 | |
-| 2448 | 50: `$0F` to `$10` | a bubble pushed into the fire at cell 50 |
+| 404 | 497, 529-533: `$20` to 0 | the marks stay for 16 samples: `SwitchSound` (261 ms, [doc 09](09-sound.md)) runs inside `SwitchClear`, after the clear and before `ClearVacated` |
+| 2448 | 50: `$0F` to `$10` | a bubble pushed into the fire at cell 50; the sample falls inside the long `RaspSound`, after the push and before the scan |
 | 2458, 2465, 2472, 2479 | 50: `$11`, `$12`, `$13`, `$14` | one burst step a pass, seven frames apart |
 | 2486 | 50: `$14` to `$20` | |
 | 2487 | 50: `$20` to 0 | |
 
 **The point**: the vacated mark `$20` lives only inside one pass. A move writes it and `ClearVacated $81AC` clears it
 in the same pass, before the window is drawn, so the screen never shows it. A sample shows it only when a frame
-boundary falls between the two, as in the frames above.
+boundary, or a long sound inside the pass, falls between the two, as in the frames above.
 
 ## 7.2 The cave record byte by byte
 
@@ -221,7 +224,9 @@ How to read the figure:
 - Top: row 0's 15 bytes. Under them are the 30 cells they give, drawn with cave 1's graphics. Each cell is numbered
   with its nibble (blue for the low nibble, orange for the high) and its column.
 - Left: the whole cave decoded from the record; row 0 is framed red. The player stands at cell 285.
-- Right: the 14 parameter bytes, each with the variable it lands in and its meaning.
+- Right: the 14 parameter bytes, each with the variable it lands in and its meaning. A colour byte is named bit by
+  bit (flash, bright, ink, paper), but its BRIGHT bit has no effect: `SetGraphicColour` (7.3) makes the left half of
+  the cell bright and the right half plain in every cave, so caves 6-9, whose colours lack `$40`, look the same way.
 - Command: `python3 tools/fig_objects.py record --cave 1` (`src/res/caves/caves.txt`; the bytes from the loaded image
   `work/mkgame/original.bin`).
 
@@ -234,8 +239,9 @@ How to read the animation:
 - Top left: memory `$C000-$FFFF`, 256 bytes a row; the record of cave 2 (`$C13A-$C273`) is read, the grid at the
   bottom is written.
 - Below it: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes, so each row of the picture is a row of the cave. Yellow bytes
-  were written in this slice, red ones earlier. Two bytes appear for each record byte read: a code in the low nibble
-  and one in the high.
+  were written in this slice; they fade through red over the next few slices and then turn grey again (the hex view
+  keeps no trail), so the last picture colours only the last row written, and the 570 cells before it are grey. Two
+  bytes appear for each record byte read: a code in the low nibble and one in the high.
 - Right: the listing with the instruction running; the loop at `$82C9-$82DB` runs 300 times, then the LDIR copies
   the parameters.
 - Recording and frames: `rzx-earth02` (the RZX player's play, replayed), frame 269, T 13 000 to T 44 200 (the routine
@@ -250,7 +256,7 @@ through the recording:
 
 ![Cave 2 in play, rzx-earth02 half way through](img/play/cave-02.png)
 
-Witness: `UnpackCave` ran 48 times over the builds (L1). In `rzx-earth02` the grid of the frame 269 sample still holds
+Witness: `UnpackCave` ran 47 times over the builds (L1). In `rzx-earth02` the grid of the frame 269 sample still holds
 the previous cave: it differs from cave 2 of `caves.txt` in 431 of the 600 cells. The frame 270 sample equals cave 2
 cell for cell, and `PlayerIndex` is 467, the cave's start.
 
@@ -267,9 +273,9 @@ apart from their codes, so `caves.txt` shows the cave exactly as the game sees i
 | `$FD9B` | `GemValue` | 1 | `AddGemValue $8376` | the points a gem gives, added one at a time |
 | `$FD9C` | `PlayerIndex` | 2 | the moves, `PutPlayer $8382`, `WindowOrigin $8DA6` | the start cell; from then on the player's cell |
 | `$FD9E` | `GemsNeededDigits` | 2 | `ShowCounters $85AD` | `GemsNeeded` as two decimal digits for the panel, tens first |
-| `$FDA0` | `EarthGraphic` | 2 | `CaveSetup $9313`, `SetEarthFalls $FB81` | the graphic of code 6, put into table word 6 (`$800C`) |
+| `$FDA0` | `EarthGraphic` | 2 | `CaveSetup $9313` (copied to table word 6, which `SetEarthFalls $FB81` and `EarthAnim $9DFC` then test) | the graphic of code 6, put into table word 6 (`$800C`) |
 | `$FDA2` | `WallGraphic` | 2 | `CaveSetup` | the graphic of code 5, put into table word 5 (`$800A`) |
-| `$FDA4` | `DoorColour` | 1 | `CaveSetup` | the attribute of the exit graphic `$9B08` |
+| `$FDA4` | `DoorColour` | 1 | `CaveSetup` | the attribute of the exit graphic `CellGraphics $9B08` |
 | `$FDA5` | `BoulderColour` | 1 | `CaveSetup`; `CaveSetupAll $A600` copies it on | the attribute of `GfxBoulder $9B2C`, then of the 7 dissolve frames |
 | `$FDA6` | `Wall1Colour` | 1 | `CaveSetup` | the attribute of `GfxWall1 $9CB8` |
 | `$FDA7` | `EarthColour` | 1 | `CaveSetup` | the attribute of `GfxEarth $9B50` |
@@ -278,17 +284,21 @@ apart from their codes, so `caves.txt` shows the cave exactly as the game sees i
 after a death unpacks the record again, so the start comes back.
 
 `CaveSetup $9313` applies the graphic words and the colours. `SetGraphicColour $9305` writes one colour into a
-graphic's four attributes as bright, plain, plain, bright, so each such cell has its two bright quarters on one
-diagonal. `SetEarthFalls $FB81` runs after it at every cave start (`ResetCave $85F1`) and decides whether earth falls.
+graphic's four attributes as bright, plain, plain, bright. The attributes are stored in drawing order: top left, top
+right, bottom right, bottom left (`DrawCell $8F6D`, `$8F71`, `$8F76` after `SET 5,E`, `$8F7A` after `DEC E`). So the
+left half of the cell is bright and the right half plain: in `img/play/cave-30.png` below every boulder is bright on
+its left half. FLASH (bit 7) survives only in the first byte, the top left quarter: the `AND $3F` at `$9308` clears it
+for the other three. `SetEarthFalls $FB81` runs after it at every cave start (`ResetCave $85F1`) and decides whether earth falls.
 
 ```text
 CaveSetup:
     UnpackCave()
     CellGraphicsTable[6] = EarthGraphic
     CellGraphicsTable[5] = WallGraphic
-    for (colour, graphic) in (DoorColour, GfxExit), (BoulderColour, GfxBoulder),
-                             (Wall1Colour, GfxWall1), (EarthColour, GfxEarth):
-        graphic.attributes = [colour OR 0x40, colour AND 0x3F, colour AND 0x3F, colour OR 0x40]
+    for (colour, graphic) in (DoorColour, CellGraphics), (BoulderColour, GfxBoulder),
+                             (Wall1Colour, GfxWall1), (EarthColour, GfxEarth):     # CellGraphics 9B08: the exit
+        # top left, top right, bottom right, bottom left
+        graphic.attributes = [colour OR 0x40, colour AND 0x3F, colour AND 0x3F, (colour AND 0x3F) OR 0x40]
 CaveSetupAll:
     CaveSetup()
     for each of the 7 dissolve frames: its attributes from GfxBoulder's first attribute
@@ -335,7 +345,7 @@ flowchart LR
     P -->|GemValue| AG["AddGemValue: the score"]
     P -->|PlayerIndex| PL["the player's cell"]
     P -->|EarthGraphic, WallGraphic| T["CellGraphicsTable words 6 and 5"]
-    P -->|four colours| G["the attributes of GfxExit, GfxBoulder, GfxWall1, GfxEarth"]
+    P -->|four colours| G["the attributes of the exit 9B08, GfxBoulder, GfxWall1, GfxEarth: left half bright"]
     T -->|"high byte A4"| S["SetEarthFalls: the scans' earth test patched to NOP"]
 ```
 
@@ -346,7 +356,8 @@ the zero flag is clear, so the jump is not taken and earth is no longer skipped:
 dissolve path the flag is set by `CP $0F`, so the jump skips the cell, which now holds `$15` and would be skipped
 anyway. In cave 1 (`GfxEarth $9B50`) the high byte is `$9B` and the `$BE` stays. Witness: `Crush $9ABC` ran 48
 times over the builds (L1). 47 of them were falling earth in `rzx-earth13`, 17, 22, 24 and 26, with `EarthFell $9AA5`
-set and no death; the other was the boulder that killed the player in `c1` frame 13208.
+set and no death; the other was the boulder that killed the player in `c1` frame 13208. `death-crush`, not in the sums,
+adds the kill of 7.6.
 
 Worked example, cave 30 (THE KEEP). Its `earth_graphic` is `GfxBoulder $9B2C`, the boulder's own graphic. Table word 6
 then points at the boulder graphic, coloured with `BoulderColour`, so earth and boulders look the same. The high byte
@@ -410,20 +421,20 @@ Its LDIR of `$028A` bytes runs on past `$FFFF` into `$0000-$0004`, the ROM, whic
 | Address | Name | Format | Written by | Meaning |
 | --- | --- | --- | --- | --- |
 | `$FD70` | `ViewOrigin` | word | `WindowOrigin $8DA6` | the window's first cell |
-| `$FD72` | `AnimPhase` | 0-3 | `AnimateCells $900B` | the animation phase of the player, the exit and the specials |
+| `$FD72` | `AnimPhase` | 0-3 | `AnimateCells $900B`, `CaveStartState $9052`, `TeleportFlashOut $9230`, `TeleportFlashIn $924F` | the animation phase of the player, the exit and the specials |
 | `$FD73` | `ForceFieldPhase` | 0-7 | `AnimateTable $90B2` | the force field's frame |
 | `$FD74` | `TeleporterPhase` | 0-11 | `AnimateTable` | the teleporter's frame |
 | `$FD7C` | `TimerSub` | `+$40` a pass | `TimerStep $86DE` | the timer's sub-counter: every fourth pass wraps to 0 |
-| `$FD7D` | `CaveOver` | flag | `TimerStep`, `QuitKey $872D` | `$FF`: out of time, or H pressed |
-| `$FD7E` | `CaveDigits` | 2 digits | `StartGame`, `NextCave $8A07`, `Password $8F29` | the cave number for the panel |
+| `$FD7D` | `CaveOver` | flag | `TimerStep`, `QuitKey $872D`; cleared by `PlayCave $8888` and `CaveStart $89FE` | `$FF`: out of time, or H pressed |
+| `$FD7E` | `CaveDigits` | 2 digits | `StartGame`, `NextCave $8A07`, `Password $8F29`, `WinGame $A8BF` (01) | the cave number for the panel |
 | `$FD80` | `KeyMoved` | flag | the four `Try...` routines | `$FF` once a direction key acted this pass |
 | `$FD82` | `GemDigits` | 2 digits | `CountGem $8394` | the gems taken, for the panel |
-| `$FD84` | `CaveDone` | flag | the four `Try...` routines | `$FF`: the player entered the open exit |
-| `$FD85` | `ExitOpen` | flag | `CountGem` | `$FF` when the gem count reached `GemsNeeded` |
+| `$FD84` | `CaveDone` | flag | the four `Try...` routines; cleared by `ResetCave $85F4` (one word with `ExitOpen`) and `CaveStart $8A01` | `$FF`: the player entered the open exit |
+| `$FD85` | `ExitOpen` | flag | `CountGem`; cleared by `ResetCave` | `$FF` when the gem count reached `GemsNeeded` |
 | `$FD86` | `PlayerFacing` | 3 or 4 | `TryLeft`, `TryRight`, `FaceLeft $838E` | the player's cell code |
 | `$FD87` | `Continuation` | word | the special dispatchers | where a special cell's handler goes on (`Continue $9410`) |
 | `$FD89` | `SavedCell` | word | the fire-key routines | the cell the fire key acts on |
-| `$FD8B` | `AntiGravDigits` | 2 digits | `AntiGravStartScan $A7A0`, `AntiGravPass $A7CD` | the anti-gravity passes left, for the panel |
+| `$FD8B` | `AntiGravDigits` | 2 digits | `AntiGravStartScan $A7A0`, `AntiGravPass $A7CD`, `ResetAntiGravState $A792` | the anti-gravity passes left, for the panel |
 | `$FD8D` | `AntiGravSteps` | count | the same | anti-gravity passes left (99 down to 0) |
 | `$FD8E` | `ColourPhase` | 1 or `$FF` | `ColourCycle $81E7`, `ResetGame` | the direction of the colour cycle: 1 up, `$FF` down |
 | `$FD8F` | `ColourCycleInk` | `$43-$46` | `ColourCycle`, `ClearScreenCave $9346` | the cycling ink of the gems and of the open exit |
@@ -431,7 +442,7 @@ Its LDIR of `$028A` bytes runs on past `$FFFF` into `$0000-$0004`, the ROM, whic
 | `$FD91` | `CaveNumber` | 1-32 | `ResetGame`, `Password`, `NextCave` | the cave |
 | `$FD92` | `GemCount` | count | `CountGem`, `ResetCave` | the gems taken in this cave |
 | `$FD93` | `Lives` | 0-9 | `StartGame` (5), `NextCave`, `TakePotion $91C9` | the lives |
-| `$FD94` | `ScoreDigits` | 6 digits | `AddPoint $8321` | the score, one decimal digit a byte, the highest first |
+| `$FD94` | `ScoreDigits` | 6 digits | `AddPoint $8321`; zeroed by `StartGame` (LDIR at `$85EE`) | the score, one decimal digit a byte, the highest first |
 | `$FD9A` | `CaveParams` | 14 bytes | `UnpackCave` | 7.3 |
 
 The flags of one pass lie elsewhere, next to the code that uses them: `FizzCount $7FFB`, `SwitchHit $7FFC`,
@@ -545,10 +556,16 @@ stateDiagram-v2
     Resting --> Dissolving: fire below
     Falling --> Dissolving: lands over fire
     Dissolving --> [*]: 1B steps to 20
-    Falling --> [*]: the cell under its new place is the player, Crush
+    Falling --> Falling: the cell under its new place is the player, Crush kills him
     Resting --> Pushed: the player pushes it sideways
     Pushed --> Resting: the next scan finds it
 ```
+
+`Crush` only sets `PlayerKilled`: the object stays in its new cell, over the player. The scan moves the falling
+objects; [doc 10.2](10-gameplay-logic.md#102-the-scan-and-why-its-order-matters) shows one whole scan at work
+(`ScanCells.gif`: a boulder rolls right, other objects fall) and
+[doc 10.3](10-gameplay-logic.md#103-falling-and-crushing) the fall that kills (`Crush.gif`). The player's push of a
+bubble is animated in [doc 10.5](10-gameplay-logic.md#105-pushing-boulders-and-bubbles) (`BubbleRight.gif`).
 
 The bubble and the teleporter:
 
@@ -565,9 +582,32 @@ stateDiagram-v2
         T0: Teleporter 0D
         T0 --> Erased: the player enters it, it becomes 20
         T0 --> Covered: the first teleporter left in the grid, the player put on it
+        T0 --> T0: in cell 599 and the only one left, never found, so the jump fails (10.8)
         Covered --> Empty: the player walks off, the cell becomes 0
     }
 ```
+
+The burst and the dissolve are counters kept in the cell. `AnimateCellCodes $937E` walks the 600 cells once a pass,
+after the scan, and steps every code from `$10` to `$1F`; `$14` and `$1B` step to `$20`. One pass of it at work, the
+last step of the burst of `rzx-earth02`:
+
+![AnimateCellCodes in rzx-earth02 frame 2485: the burst at cell 50 steps from 14 to 20](img/routines/AnimateCellCodes.gif)
+
+How to read the animation:
+
+- Left: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes. The loop reads every cell from the top left (blue); the one write
+  (yellow) is cell 50, row 1, column 20, where `$14` becomes `$20`, early in the walk. The write fades after a few
+  slices: the hex view keeps no trail.
+- Right: the listing of `AnimateCellCodes`; the branch `$9395 LD A,$20` (the burst ends) runs once, `$939B` (the
+  dissolve ends) not at all.
+- Recording and frames: `rzx-earth02` (the RZX player's play, replayed), 2485:33900 to 2485:68900, 80 pictures; the
+  samples show cell 50 as `$14` in frame 2479 and `$20` in frame 2486. Command: `python3 ../../kit/routine_anim.py
+  --work work/docs/esC/r02 --window 2485:33900-2485:68900 --pictures 80 --listing build/game.lst --view
+  buffer:FDA8:30x20:hex --range FD00-FFFF --pc 937E-93A4 --title ... --out
+  docs/img/routines/AnimateCellCodes.gif`.
+
+A dissolve on fire, pass by pass, is in [doc 10.6](10-gameplay-logic.md#106-fire-the-dissolve-and-the-burst)
+(`dissolve.png`).
 
 The switch and the force fields:
 
@@ -582,8 +622,10 @@ stateDiagram-v2
     Cleared --> [*]: ClearVacated, the same pass
 ```
 
-Witness: the switch in `rzx-earth02` (frames 380 and 388 above), the bubble in `rzx-earth02` (frames 2428-2487), the
-teleporter in the `earth04` RZX state log (frames 2130-2235, [doc 10.8](10-gameplay-logic.md#108-the-special-cells)).
+Witness: the switch in `rzx-earth02` (frames 380 and 388 above; `SwitchClear.gif` in
+[doc 10.7](10-gameplay-logic.md#107-the-switch-a-chain-reaction) animates the clear), the bubble in `rzx-earth02`
+(frames 2428-2487), the teleporter in the `earth04` RZX state log (frames 2184-2235 and 3356-3407,
+[doc 10.8](10-gameplay-logic.md#108-the-special-cells)).
 
 **The point**: no object has a state byte of its own. The machines are made of codes and of what lies next to them,
 and the two codes that do count (the burst and the dissolve) are counters kept in the cell.

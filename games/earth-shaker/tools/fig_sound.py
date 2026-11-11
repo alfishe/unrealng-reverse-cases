@@ -10,6 +10,8 @@ traced cave tune of rzx-earth01). The effects come from the speaker writes of th
     python3 tools/fig_sound.py shapes     docs/img/sound/effects.png: one call of each effect, the speaker bit
     python3 tools/fig_sound.py pitch      docs/img/sound/effects-pitch.png: each effect's half periods over time
     python3 tools/fig_sound.py models     docs/img/sound/effects-code-only.png: PasswordAccepted and the fizz, modelled
+    python3 tools/fig_sound.py dig        docs/img/sound/dig-in-place.png: DigInPlace, modelled (NoiseBurst checked
+                                          against the traced thud)
     python3 tools/fig_sound.py spectro    docs/img/sound/spectrograms.png: each effect's WAV as a spectrogram
     python3 tools/fig_sound.py irq        docs/img/sound/interrupts.png: the interrupts taken and lost, rzx-earth01
     python3 tools/fig_sound.py wav        docs/audio/*.wav (22 050 Hz, 8 bit, mono)
@@ -310,6 +312,161 @@ def fizz_model(pass_t=6 * FT):
     return w, t
 
 
+def rom48():
+    """the 48K ROM of the unreal-ng checkout (kit/toolpaths.py finds it): NoiseBurst reads its bytes $0101-$0140"""
+    sys.path.insert(0, os.path.join(CASE, '..', '..', 'kit'))
+    import toolpaths
+    return open(os.path.join(toolpaths.unreal_ng(), 'data', 'rom', '48.rom'), 'rb').read()
+
+
+def noise_burst(rom, d, t=0):
+    """NoiseBurst $E740 with NoiseBurstPitch = d, from its DI at t: ([(t, value)], t at the RET's end). 64 steps,
+    HL = $0140 down to $0101, the ROM byte fixed for the step; each step a budget of 16 DJNZ turns (BC = $1001);
+    within it, high after E = (ROM AND $3F, OR 7 if not below d) - d turns, low after d turns"""
+    w = []
+    t += 4 + 10 + 4 + 11                              # DI, LD HL,$0140, XOR A, OUT
+    w.append((t, 0))
+    h, l = 1, 0x40
+    while True:
+        t += 10 + 7                                   # LD BC,$1001; LD D,d
+        b, c, end = 0x10, 1, False
+        while not end:
+            a = rom[h * 256 + l] & 0x3F               # NoiseBurstLoop
+            t += 7 + 7 + 4
+            if a < d:
+                t += 12
+            else:
+                t += 7 + 7
+                a |= 7
+            e = (a - d) & 0xFF
+            t += 4 + 4
+            while True:                               # NoiseBurstLoop2: the low time
+                e = (e - 1) & 0xFF
+                t += 4
+                if e == 0:
+                    t += 7 + 7 + 11
+                    w.append((t, 0x18))
+                    t += 12 + 4                       # JR NoiseBurstSkip3; LD E,D
+                    e = d
+                    while True:                       # NoiseBurstLoop3: the high time
+                        e = (e - 1) & 0xFF
+                        t += 4
+                        if e == 0:
+                            t += 7 + 4 + 11
+                            w.append((t, 0))
+                            t += 12
+                            break
+                        t += 12
+                        b = (b - 1) & 0xFF
+                        if b:
+                            t += 13
+                            continue
+                        t += 8 + 4
+                        c -= 1
+                        if c:
+                            t += 12
+                            continue
+                        t += 7
+                        end = True
+                        break
+                    break
+                t += 12
+                b = (b - 1) & 0xFF
+                if b:
+                    t += 13
+                    continue
+                t += 8 + 4
+                c = (c - 1) & 0xFF
+                if c:
+                    t += 12
+                    continue
+                t += 7 + 12
+                end = True
+                break
+        l = (l - 1) & 0xFF                            # NoiseBurstSkip5
+        t += 4
+        if l:
+            t += 12
+            continue
+        t += 7 + 4
+        h -= 1
+        if h:
+            t += 12
+            continue
+        t += 7 + 4 + 10                               # EI, RET
+        return w, t
+
+
+DIG_PITCHES = (1, 2, 4, 10)
+
+
+def dig_in_place_model(rom):
+    """DigInPlace $E7FE from its first instruction: four NoiseBursts with NoiseBurstPitch 1, 2, 4, 10"""
+    w, t, starts = [], 0, []
+    for d in DIG_PITCHES:
+        t += 7 + 13 + 17                              # LD A,d; LD (NoiseBurstPitch+1),A; CALL NoiseBurst
+        starts.append(t)
+        bw, t = noise_burst(rom, d, t)
+        w += bw
+    return w, t + 10, starts
+
+
+def noise_burst_check(rom):
+    """the model against the traced thud of rzx-earth01 frame 1839 (NoiseThud: NoiseBurst with 6, 4, 2)"""
+    d = load('rzx01-1836-1842')
+    calls = [c[0] for c in d['abs_calls'] if c[1] == 'NoiseBurst']
+    rows = []
+    for i, (t0, pitch) in enumerate(zip(calls, (6, 4, 2))):
+        t1 = calls[i + 1] if i + 1 < len(calls) else d['frames'][1] * FT
+        tr = [(t, v) for t, v, pc in d['outs'] if t0 <= t < t1 and 0xE740 <= pc <= 0xE77B]
+        m, _ = noise_burst(rom, pitch)
+        ti = [b[0] - a[0] for a, b in zip(tr, tr[1:])]
+        mi = [b[0] - a[0] for a, b in zip(m, m[1:])]
+        diff = [x - y for x, y in zip(ti, mi)]
+        rows.append((pitch, len(tr), len(m), [v for _, v in tr] == [v for _, v in m], sum(1 for x in diff if x == 0),
+                     len(diff), max(abs(x) for x in diff)))
+    return rows
+
+
+def cmd_dig(_a):
+    rom = rom48()
+    for pitch, nt, nm, same, exact, n, worst in noise_burst_check(rom):
+        print(f'NoiseBurst {pitch}: trace {nt} writes, model {nm}, values equal {same}, intervals exact {exact} of {n}, '
+              f'worst {worst} T')
+    w, total, starts = dig_in_place_model(rom)
+    print(f'DigInPlace: {len(w)} writes, {total} T, {total / CLOCK * 1e3:.1f} ms, {total / FT:.2f} frames')
+    fig, axes = plt.subplots(2, 1, figsize=(10.5, 5.6), gridspec_kw={'height_ratios': [1, 1.6]})
+    xs, ys = steps(w, 0, total)
+    axes[0].plot(xs, ys, color='k', lw=0.5)
+    axes[0].set_yticks([])
+    axes[0].set_xlim(0, total / CLOCK * 1e3)
+    axes[0].set_title(f'the speaker bit: {len(w)} writes, {total / CLOCK * 1e3:.1f} ms ({total / FT:.2f} frames), '
+                      'interrupts off but for the gaps between bursts', loc='left', fontsize=10)
+    cols = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    ends = starts[1:] + [total]
+    for k, (a, b, d) in enumerate(zip(starts, ends, DIG_PITCHES)):
+        part = [(t, v) for t, v in w if a <= t < b]
+        px = [part[i][0] / CLOCK * 1e3 for i in range(1, len(part))]
+        py = [part[i][0] - part[i - 1][0] for i in range(1, len(part))]
+        axes[1].scatter(px, py, s=5, color=cols[k], label=f'pitch {d}: {len(part)} writes')
+        for ax in axes:
+            ax.axvline(a / CLOCK * 1e3, color=cols[k], lw=0.8, alpha=0.6)
+    axes[1].set_yscale('log')
+    lo, hi = axes[1].get_ylim()
+    axes[1].set_ylim(lo, hi * 12)                     # room for the legend above the dots
+    axes[1].yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v:g}'))
+    axes[1].yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    axes[1].set_xlim(0, total / CLOCK * 1e3)
+    axes[1].set_ylabel('T to the next write')
+    axes[1].set_xlabel('ms from DigInPlace $E7FE (a T-state model of the code, checked against the traced thud)')
+    axes[1].legend(loc='upper center', fontsize=9, ncol=4)
+    axes[1].grid(alpha=0.3)
+    fig.suptitle('Fire on earth: DigInPlace $E7FE, four NoiseBursts with pitch 1, 2, 4 and 10, ROM bytes $0140 down to '
+                 '$0101', fontsize=11)
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    save(fig, 'dig-in-place.png')
+
+
 def cmd_models(_a):
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.6))
     for ax, (name, (w, total), what) in zip(axes, (
@@ -408,6 +565,8 @@ def cmd_wav(_a):
     render(w, os.path.join(AUDIO, 'password-accepted.wav'), t_end=total)
     w, total = fizz_model()
     render(w, os.path.join(AUDIO, 'fizz.wav'), t_end=total)
+    w, total, _ = dig_in_place_model(rom48())
+    render(w, os.path.join(AUDIO, 'dig-in-place.wav'), t_end=total)
     per = TM.periods()
     for name, (f, a, who) in TM.TUNES.items():
         w, ev, total = TM.play_tune(TM.tune(name), per)
@@ -480,11 +639,12 @@ def cmd_table(_a):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
-    p.add_argument('what', choices=['tunes', 'mix', 'shapes', 'pitch', 'models', 'spectro', 'irq', 'wav', 'table', 'all'])
+    p.add_argument('what', choices=['tunes', 'mix', 'shapes', 'pitch', 'models', 'dig', 'spectro', 'irq', 'wav', 'table',
+                                    'all'])
     a = p.parse_args()
     cmds = {'tunes': cmd_tunes, 'mix': cmd_mix, 'shapes': cmd_shapes, 'wav': cmd_wav, 'spectro': cmd_spectro,
-            'irq': cmd_irq, 'table': cmd_table, 'pitch': cmd_pitch, 'models': cmd_models}
-    order = ['tunes', 'mix', 'irq', 'shapes', 'pitch', 'models', 'wav', 'spectro']
+            'irq': cmd_irq, 'table': cmd_table, 'pitch': cmd_pitch, 'models': cmd_models, 'dig': cmd_dig}
+    order = ['tunes', 'mix', 'irq', 'shapes', 'pitch', 'models', 'dig', 'wav', 'spectro']
     for k in (order if a.what == 'all' else [a.what]):
         cmds[k](a)
 

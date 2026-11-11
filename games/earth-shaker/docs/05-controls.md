@@ -217,6 +217,19 @@ In the Kempston form byte +1 is the second of the four NOPs, so the row becomes 
 - `$7F` (M) is `LD A,A`.
 
 So the hybrid still reads `IN A,($1F)` with `RET Z`: the stick drives the player, with the masks of the new keys.
+Each key's mask now picks a stick bit (Kempston bits: 0 right, 1 left, 2 down, 3 up, 4 fire):
+
+| Key | Mask | Stick bit it reads | In play |
+| --- | --- | --- | --- |
+| O (left) | `$02` | left | walks left, as meant |
+| P (right) | `$01` | right | walks right, as meant |
+| Q (up) | `$01` | right | never reached: TryRight runs first on the same bit and sets KeyMoved |
+| A (down) | `$01` | right | never reached, the same |
+| M (fire) | `$04` | down | down on the stick is fire; the stick's fire button does nothing |
+
+So the hybrid player cannot walk up or down.
+Down alone holds fire with no direction, which does nothing; down with right runs FireRight, FireUp and FireDown on
+the same bit, so one pass acts on the cells to the right, above and below.
 In the clone, P (keyboard) left PlayerIndex at 285, and the stick pushed right moved it from 285 to 294 in 200
 frames (`work/docs/esB/expA-start.png`, `expA-end.png`).
 
@@ -247,8 +260,8 @@ That costs nothing in play, but the save that should protect a redefinition runs
 
 Menu key 2 runs RedefineKeys `$8C30`.
 It clears the screen and puts the keyboard code into the sites (ClearAndKeyboard `$ECDC`).
-It colours rows 6-14, then asks for the five keys in turn, with the prompts of KeyPrompts `$A978` ("PRESS KEY FOR
-LEFT " and so on, 19 characters each, `src/res/texts/key-prompts.txt`).
+It colours the even rows 6-14 (6, 8, 10, 12, 14), then asks for the five keys in turn, with the prompts of
+KeyPrompts `$A978` ("PRESS KEY FOR LEFT " and so on, 19 characters each, `src/res/texts/key-prompts.txt`).
 
 WaitKey `$8C1D` scans KeyTable `$A900` (`src/res/tables/keys.csv`): 40 records of half row, bit mask and character.
 
@@ -261,7 +274,7 @@ WaitKey:                                     ; $8C1D
 
 RedefineKeys:                                ; $8C30
     ClearAndKeyboard                          ; ClearScreen, KeyboardControl
-    colour rows 6-14 (FillAttrs)
+    colour rows 6, 8, 10, 12, 14 (FillAttrs; the odd rows keep their colour)
     for (prompt, sites) in [(LEFT, TryLeft and FireLeft), (RIGHT, TryRight and FireRight),
                             (UP, TryUp and FireUp), (DOWN, TryDown and FireDown), (FIRE, KeysStep)]:
         print prompt at row 6, 8, 10, 12, 14, column 5
@@ -384,8 +397,10 @@ MenuKeys `$8B29` then decides.
 
 ```text
 MenuKeys:                                    ; $8B29, HL = where PlayTune stopped
-    if HL == TitleTune end ($B269):          ; the tune ran out, no key
-        ShowHiScores; goto GameEntryLoop     ; the table and the scroller, then the tune again
+    if HL == $B269:                          ; the $FF of TitleTune's end record: the tune ran out, no key
+        ShowHiScores                         ; the table and the scroller; AF kept from RunScroller
+        if the scroller ran out (Z): goto GameEntryLoop   ; the tune again
+                                             ; else a key 1-5 stopped it: fall into the dispatch below
     if key 1: NewGame; goto GameEntry
     if key 2: RedefineKeys; goto GameEntry
     ChooseControl:                           ; $ECE3
@@ -399,7 +414,9 @@ MenuKeys:                                    ; $8B29, HL = where PlayTune stoppe
 ```mermaid
 flowchart TD
     A["GameEntry 8B20: ResetAll, DrawTitle"] --> B["PlayTitleTune: PlayTune 88CE"]
-    B -- "tune ran out" --> H["ShowHiScores B2E4"] --> B
+    B -- "tune ran out" --> H["ShowHiScores B2E4"]
+    H -- "scroller ran out (Z)" --> B
+    H -- "a key 1-5 stopped the scroller (NZ)" --> M
     B -- "a key 1-5 down" --> M["MenuKeys 8B29"]
     M -- "1" --> N["NewGame 8BE5: the game, GameOver"] --> A
     M -- "2" --> R["RedefineKeys 8C30"] --> A
@@ -524,8 +541,9 @@ MoveLeft:                                    ; $8428
     PlayerIndex -= 1; old cell = 0
 ```
 
-TryUp and TryDown have the same shape with three differences:
+TryUp and TryDown have the same shape with four differences:
 
+- they do not touch PlayerFacing `$FD86`: a vertical move keeps the facing of the last horizontal one;
 - the edge test is a single compare: `PlayerIndex - 30` borrows (row 0), or `PlayerIndex - 570` does not borrow
   (row 19);
 - a boulder above or below blocks (`RET Z`), it is never pushed;
@@ -687,6 +705,9 @@ Worked example 5: a walk and two pushes on the Kempston stick, `rzx-earth01` fra
    MoveRight follows at 3015:16500.
 4. The same again at 3022:26972 and 3022:27076. PlayerIndex 429 becomes 431, and the boulder has moved two cells
    right.
+5. The cell scan, not the controls, moves the boulder once more: it rests on a gem (`$07`, row 15, column 12), rolls
+   off it from 432 to 433, and the cell 432 is empty again in the last frame (doc 10 for rolling). The second boulder
+   of column 10 falls behind the player into 430.
 
 The animations of this walk, one as the cave buffer and one as the screen:
 
@@ -696,7 +717,9 @@ The animations of this walk, one as the cave buffer and one as the screen:
 `rzx-earth01` (replayed RZX), window 2945:0-3030:0, cave rows 11-16 (`$FEF2`, 30 x 6). `python3 R/kit/routine_anim.py
 --work work/docs/esB/rzx01 --window 2945:0-3030:0 --listing build/game.lst --view buffer:FEF2:30x6:hex --pc
 83C3-8595,8759-8884,E81F-E86F --range 8000-FFFF --pictures 85 --hold 3000 --title ...`. The kit draws the hex view
-1084 px wide.*
+1084 px wide The listing pane is the image as loaded (`build/game.lst`), with the keyboard
+form at the key sites; in this recording the sites hold the Kempston code (5.3), so the instructions that really run
+are `NOP` x 4, `IN A,($1F)`, `AND $10`, `JR NZ` at KeysStep and `IN A,($1F)`, `AND` mask, `RET Z` at the Try sites.*
 
 ![The player walking and pushing](img/play/walk-push.gif)
 
@@ -775,7 +798,7 @@ Worked example 6: fire and left, with the player at index 301 and earth (6) at 3
 
 1. KeysStep finds fire down and calls FireStep.
 2. FireLeft finds left down. 301 is not a multiple of 30, so the player is not in column 0.
-3. Cell 300 holds 6: it becomes `$20`, and DigInPlace plays its four noise bursts.
+3. Cell 300 holds 6: it becomes `$20`, and DigInPlace plays its four noise bursts (48.7 ms, doc 09 9.7).
 4. PlayerIndex stays 301. ClearVacated turns the `$20` into 0 later in the pass.
 5. Had the player stood at 300, the column-0 test would have returned at once: 300 is a multiple of 30.
 
@@ -859,6 +882,9 @@ Witness: in `c1`, G goes down at 15 240; AbortKey runs for the last time at 15 2
 
 H runs the time-out as if the time had run out, quickly and with a click per step: the bar empties, CaveOver ends the
 pass loop, and NextCave takes a life (doc 08 for the bar, doc 10 for the life).
+The DI at `$8736` lasts only until the first BEEPER call at `$8741`: BEEPER ends with `EI` (doc 09), so from the first
+bar step on the drain runs with interrupts on (TimeOutSound has its own `DI` and `EI`, so the `EI` at `$8757` changes
+nothing).
 Witness: `c1`, H at 14 430; the next intro shows 3 lives, one fewer than after the boulder death at 13 208
 (`c1/screens.png` has the intros with 5, 4 and 3 lives).
 
@@ -907,14 +933,22 @@ KeyClick `$8E18` clicks each accepted key.
 ```mermaid
 flowchart TD
     A["WaitKey 8C1D"] --> B{"character"}
-    B -- "0" --> C["delete one, KeyClick"] --> A
+    B -- "0" --> C{"first column?"}
+    C -- "no" --> C1["back one, space, KeyClick"] --> A
+    C -- "yes: password" --> A
+    C -- "yes: name" --> C2["space at the first column, KeyClick"] --> A
     B -- "e, ENTER" --> D["RET: text done"]
-    B -- "space or A to Z" --> E["store, print, KeyClick"] --> A
+    B -- "space or A to Z" --> E["store, print, KeyClick, C + 1"] --> F{"C at the end?"}
+    F -- "no" --> A
+    F -- "password 26, name 24" --> D
     B -- "other" --> A
 ```
 
-WaitKey has no release wait here either; the click between two keys is short (KeyClick), so a held key repeats
-quickly.
+WaitKey has no release wait here either: KeyClick (534 784 T, 7.65 frames, with DI) is the only gap between two
+reads, so a held key repeats about six times a second.
+The entry also ends by itself when it is full: the password after 20 characters (C runs from 6 to `$1A`), the name
+after 9 (C from `$0F` to `$18`).
+A delete at the first column differs: EnterPassword does nothing, EnterName still writes a space there and clicks.
 Witness: `c1`, key 1 at 12 605, the prompt from 12 617, ENTER at 12 705 ends it with an empty password.
 
 The point: one 40-record table serves the redefinition, the password and the name; the special keys get letters `c`,

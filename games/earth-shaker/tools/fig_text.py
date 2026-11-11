@@ -135,7 +135,7 @@ def cmd_font(_a):
     legend = [('T', 'printed by a text (menu, HUD line, names, scroller, ...)'), ('D', 'a digit: PrintDigits $832A'),
               ('I', 'an icon by PrintGlyph: AntiGravIcon $BF18 (c), AntiGravIconOff $BF20 (d)'),
               ('K', 'a key name on the redefine screen (KeyTable $A900: c CAPS, s SYMBOL, e ENTER)'),
-              ('N', 'may be typed into a name or a password (the KeyTable\'s space and A-Z; digits and @ are refused)')]
+              ('N', 'may be typed into a name or a password (the KeyTable\'s space and A-Z; digits are refused, no key gives @)')]
     for j, (k, t) in enumerate(legend):
         d.rectangle([12, y + j * 20 + 3, 24, y + j * 20 + 15], outline=cols[k], width=2)
         d.text((32, y + j * 20), f'{k}: {t}', font=fs, fill=FG)

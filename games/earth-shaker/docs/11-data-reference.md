@@ -18,7 +18,7 @@ Written by `kit/refdocs.py`.
 | `$AA4E` | `GameOverTexts` | 36 | "GAME OVER", "YOU SCORED", "AND REACHED LEVEL" | - | - |
 | `$AA57` | `YouScoredText` (`GameOverTexts`+9) | 10 | - | - | - |
 | `$AA61` | `ReachedLevelText` (`GameOverTexts`+19) | 17 | - | - | - |
-| `$AA72` | `BlankGraphic` | 36 | A blank cell graphic (36 zeros): the high-score area is cleared with it | `DrawCell` | - |
+| `$AA72` | `BlankGraphic` | 36 | The empty cell's graphic (36 zeros): table word 0, set by SetEarthFalls; also clears the high-score area | `DrawCell` | - |
 | `$AA96` | `GameOverPad` | 106 | Zeros (106 bytes) | - | - |
 | `$B2F9` | `ShowHiScoresPad` | 7 | Zeros (7 bytes) | - | - |
 
@@ -80,7 +80,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$8000` | `CellGraphicsTable` | 64 | The graphic of each cell code 0-31: 32 addresses of 36-byte graphics. Read through CellGraphicAddr `$8D66` by DrawCell `$8F60` (every cell drawn, in every build). Words 3 and 4 (the player), 1 (the exit), 6 and 5 (earth, wall) and the animated words 8-15 are rewritten during play. Word 0 is BlankGraphic `$AA72` (the empty cell). Words 16 and 21 (`$8020`, `$802A`) are never read: the codes `$10` and `$15` step on (AnimateCellCodes `$937E`) before the window is drawn in the same pass. Words 28-31 are `$0000`: no such cells. | `AnimateCells`, `DrawCell`, `EarthAnim`, `SetEarthFalls` | `AnimateCells`, `AnimateTable`, `CaveSetup`, `DeathView`, `SetEarthFalls` +3 |
+| `$8000` | `CellGraphicsTable` | 64 | The graphic of each cell code 0-31: 32 addresses of 36-byte graphics. Read through CellGraphicAddr `$8D66` by DrawCell `$8F60` (every cell drawn, in every build). Words 3 and 4 (the player), 1 (the exit), 6 and 5 (earth, wall) and the animated words 8-15 are rewritten during play, and word 0 (the empty cell) in the falling-earth caves: EarthAnimStep `$FB70` points it at a frame of EmptyFrames `$FAE0` each pass, and SetEarthFalls `$FB84` puts BlankGraphic `$AA72` back at every cave start. Words 16 and 21 (`$8020`, `$802A`) are never read: the codes `$10` and `$15` step on (AnimateCellCodes `$937E`) before the window is drawn in the same pass. Words 28-31 are `$0000`: no such cells. | `AnimateCells`, `DrawCell`, `EarthAnim`, `SetEarthFalls` | `AnimateCells`, `AnimateTable`, `CaveSetup`, `DeathView`, `SetEarthFalls` +3 |
 | `$8002` | `CellExitGfx` (`CellGraphicsTable`+2) | 2 | cell 1 | - | - |
 | `$8004` | `CellBoulderGfx` (`CellGraphicsTable`+4) | 2 | cell 2 | `DrawCell` | - |
 | `$8006` | `CellPlayerRightGfx` (`CellGraphicsTable`+6) | 2 | cell 3 | `AnimateCells`, `DrawCell` | `AnimateCells`, `DeathView`, `WinScreen` (code) |
@@ -88,7 +88,7 @@ Written by `kit/refdocs.py`.
 | `$800A` | `CellWallGfx` (`CellGraphicsTable`+10) | 2 | cell 5 | `DrawCell` | `CaveSetup` |
 | `$800C` | `CellEarthGfx` (`CellGraphicsTable`+12) | 2 | cell 6 | `DrawCell`, `EarthAnim`, `SetEarthFalls` | `CaveSetup`, `EarthAnim` (code) |
 | `$800E` | `CellGemGfx` (`CellGraphicsTable`+14) | 2 | cell 7 | `DrawCell` | - |
-| `$8010` | `CellCapsuleGfx` (`CellGraphicsTable`+16) | 2 | cell 8 | `DrawCell` | `AnimateTable` |
+| `$8010` | `CellJellyBeanGfx` (`CellGraphicsTable`+16) | 2 | cell 8 | `DrawCell` | `AnimateTable` |
 | `$8012` | `CellForceFieldGfx` (`CellGraphicsTable`+18) | 2 | cell 9 | - | `AnimateTable` |
 | `$8014` | `CellAntiGravGfx` (`CellGraphicsTable`+20) | 2 | cell 10 | - | `AnimateTable` |
 | `$8016` | `CellSwitchGfx` (`CellGraphicsTable`+22) | 2 | cell 11 | - | - |

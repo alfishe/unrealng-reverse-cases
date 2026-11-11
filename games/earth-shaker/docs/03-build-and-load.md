@@ -96,8 +96,8 @@ LD-BYTES(IX = start, DE = length, A = flag):     ; ROM $0556
 ```
 
 ```text
-05C2  DD 23       LD-DEC:     INC IX               ; the next address
-05C4  1B                      DEC DE
+05C2  DD 23       LD-NEXT:    INC IX               ; the next address
+05C4  1B          LD-DEC:     DEC DE               ; LD-FLAG's JR comes here
 05C5  08                      EX AF,AF'
 05C6  06 B2                   LD B,$B2             ; the timing constant
 05C8  2E 01       LD-MARKER:  LD L,$01             ; the marker bit
@@ -157,9 +157,10 @@ screen. The BASIC arrives at `$5CCB`, then the game fills `$6D42-$FFFF` from the
 Command: `python3 ../../kit/memanim.py --work work/docs/esA/c1 --from 200 --to 11240 --step 16773120 --from-address
 4000 --to-address FFFF --cell 3 --screen --width 1050`.*
 
-The static timing and the recording agree. Block 13 lasts 204.09 s, 10 204 frames, of which the data pilot is 3223 ×
-2168 T, about 100 frames. So the bytes should take about 10 104 frames. In `c1` the first byte lands at 1104 and the
-last during 11222: 10 118 frames. The 14 frames of difference are the flag byte, the sync and the frame boundaries.
+The static timing and the recording agree. Block 13 lasts 204.09 s, 204.09 × 3 500 000 / 69 888 = 10 221 frames, of
+which the data pilot is 3223 × 2168 T, about 100 frames. The bit sum of the 37 566 bytes is 707.3 million T, 10 120
+frames. In `c1` the first byte lands at 1104 and the last during 11222: 10 118 frames. The static timing and the
+recording agree within two frames.
 
 Worked example: `$8000` arrives at frame 2293. It is byte `$8000 - $6D42` = 4 798 of the block. A 0 bit takes two
 pulses of 855 T and a 1 bit two of 1710 T, so the time of a byte depends on its 1 bits. Summing the bits of the first
@@ -203,16 +204,17 @@ The point: every 48K copy carries the same game block. Only the hack changes cod
 ## 3.5 The build
 
 `tools/build.sh` builds Earth Shaker's four blocks from source and compares them with the original's blocks 10-13 byte
-for byte.
+for byte. It starts at the `.asm` files: `kit/mkgame.py` writes them from the `.ann` files beforehand, a separate step
+run after editing an `.ann` (the dotted arrows).
 
 ```mermaid
 flowchart TD
-    ANN["src/game/game.ann"] --> MK["kit/mkgame.py"] --> ASM["src/game/*.asm"]
+    ANN["src/game/game.ann"] -. "run after editing game.ann, not by build.sh" .-> MK["kit/mkgame.py"] -.-> ASM["src/game/*.asm"]
     RES["src/res: caves.txt, texts, graphics, tunes, leftovers"] --> RF["tools/res_formats.py build"] --> BRES["build/res/*.bin"]
     ASM --> SJ1["sjasmplus game.asm"]
     BRES --> SJ1
     SJ1 --> GB["build/game.bin, game.lst"]
-    BANN["src/tape/basic.ann"] --> MK2["kit/mkgame.py"] --> BASM["src/tape/basic.asm"]
+    BANN["src/tape/basic.ann"] -. "the same, beforehand" .-> MK2["kit/mkgame.py"] -.-> BASM["src/tape/basic.asm"]
     BASM --> SJ2["sjasmplus basic.asm"] --> BB["build/basic.bin"]
     GB --> TAP["kit/tap.py: headers, flags, parity"]
     BB --> TAP

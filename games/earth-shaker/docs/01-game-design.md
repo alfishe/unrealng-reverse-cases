@@ -14,13 +14,15 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `timer`: cave 1 in play, F, then no key until the time runs out.
 - `rzx-earth01` to `rzx-earth32`: the RZX archive's play of all 32 caves, replayed frame by frame.
 - `death-crush` (stage 2): cave 1, the player walks under a boulder.
+- `death-fire` (stage 2): cave 4 from the RZX's `earth04` snapshot, one step left into fire.
 
-The screenshots come from `tools/fig_play.py`. The other recordings count frames from their start snapshot.
+The screenshots come from `tools/fig_play.py`, the shots between the captures' screens from `kit/screen_shot.py` on a
+reopened recording. The other recordings count frames from their start snapshot.
 
 ## 1.1 The game
 
-Earth Shaker is a boulder-dash game by Michael Batty, published on the Your Sinclair issue 63 covertape in 1990
-([doc 3](03-build-and-load.md#31-the-tape-block-by-block)). It is a 48K game. The player digs through 32 caves, one
+Earth Shaker is a boulder-dash game by Michael Batty, written and copyrighted 1990 and published on the Your Sinclair
+issue 63 covertape (March 1991; [doc 3](03-build-and-load.md#31-the-tape-block-by-block)). It is a 48K game. The player digs through 32 caves, one
 after another. In each cave he must take a set number of gems, then reach the exit before the time runs out. Boulders,
 gems and fire fall when nothing holds them up. A falling object kills the player. So does fire walked into.
 
@@ -35,18 +37,21 @@ The front end in one sheet:
 
 ![The front-end screens](img/play/front.png)
 
-*The menu, the high scores, the joystick menu, the redefine prompts, the quit, the intro, the play, the map, the time
-running out, the game over and a high score entered; each labelled with its recording and frame. Command: `python3
-tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...` (stage 1).*
+*The menu, the high scores, the title drawn again, the redefine prompts, the quit, the password prompt, the intro, the
+play, the map, the time running out, the game over and a high score entered; each labelled with its recording and
+frame (`c1` frames count from 11800). Command: `python3 tools/fig_play.py --out docs/img/play --sheet front.png
+menu:250:menu menu:4000:hiscores c1:750:menu-joystick menu:7000:redefine menu:7750:quit-rom "@SHOT|c1 frame
+900|password" c1:1000:intro-cave01 ...`, the password from `kit/screen_shot.py` at `c1` frame 12700 (a frame
+between the capture's screens).*
 
 | Screen | What it shows | How it is reached | Picture |
 | --- | --- | --- | --- |
 | the menu | the logo, the five lines, the title tune | after the load, or after each game | `menu` frame 250 |
 | the high scores | five records under the scroller | the title tune ran to its end | `menu` frame 4000 |
-| the menu, joystick | the control lines changed | keys 3 and 4 | `c1` 750 (frame 12550) |
+| the title again | the logo wiped in line by line, the same five lines | after keys 2, 3 and 4 | `c1` 750 (frame 12550) |
 | redefine | "PRESS KEY FOR LEFT" and the other four | key 2 | `menu` frame 7000 |
 | quit | the ROM's copyright screen | key 5: `JP 0` | `menu` frame 7750 |
-| the password | "ENTER PASSWORD (ENTER=LEVEL ONE)" | key 1 | `c1` frames 12617-12705 |
+| the password | "ENTER PASSWORD (ENTER=LEVEL ONE)" | key 1 | `c1` 900 (frame 12700; prompt 12617-12705) |
 | the cave intro | the level, the lives, the score, the cave's name | each cave's start | `c1` 1000 |
 | the play | the 16 × 11 window, the time bar, the panel line | after the intro | `c1` 2000 |
 | the map | the whole cave in 8 × 8 glyphs | F, once a cave | `timer` frame 250 |
@@ -60,7 +65,10 @@ tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...` (stage 1).*
 
 ![The menu drawn again after the redefinition](img/play/menu-joystick.png)
 
-*Recording `c1`, frame 12 550: the title drawn again after the redefinition (the sites hold the keyboard code; the screen shows no control choice; [doc 5.3](05-controls.md#53-two-copies-of-the-code-keyboard-and-kempston)).*
+*Recording `c1`, frame 12 550: the title drawn again after the redefinition, the logo half drawn: WipeInLogo `$8979`
+copies it in line by line with a pause before each of its 64 steps, and the pixels below the wipe have no
+attributes yet ([doc 4.8](04-game-loop.md#48-the-waits-outside-a-cave)). The sites hold the keyboard code; the screen
+shows no control choice ([doc 5.3](05-controls.md#53-two-copies-of-the-code-keyboard-and-kempston)).*
 
 ![The high-score table](img/play/hiscores.png)
 
@@ -68,11 +76,16 @@ tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...` (stage 1).*
 
 ![The redefine prompts](img/play/redefine.png)
 
-*Recording `menu`, frame 7000: key 2, one prompt a key.*
+*Recording `menu`, frame 7000: key 2, one prompt a key. The 2 that chose the menu line, still held, is taken as the
+first three keys ("LEFT 2", "RIGHT 2", "UP 2"): WaitKey has no release wait ([doc 5](05-controls.md)).*
 
 ![The quit: the ROM's copyright screen](img/play/quit-rom.png)
 
 *Recording `menu`, frame 7750: key 5 jumps to `$0000`; the machine starts again.*
+
+![The password prompt](img/play/password.png)
+
+*Recording `c1`, frame 12 700 (`kit/screen_shot.py`): key 1, the prompt at the top; `c1` presses ENTER at 12705.*
 
 ![The cave intro](img/play/intro-cave01.png)
 
@@ -134,8 +147,8 @@ and the rule in short. Command: `python3 tools/fig_design.py --out docs/img/desi
 | 5 | wall | blocks; its look changes from cave to cave |
 | 6 | earth | dug away; in caves 13, 17, 22, 24 and 26 it falls, but never crushes |
 | 7 | gem | falls and rolls like a boulder; taken for points |
-| 8 | jelly bean | falls; taken, it refills the time bar |
-| 9 | force field | holds the player for 12 timer ticks; cleared by the switch |
+| 8 | jelly bean | falls; taken, it adds 32 pixels to the time bar (128 passes, the bar at most full) and 64 points |
+| 9 | force field | blocks; each push into it costs 12 passes of time at once (three pixels of the bar, three clicks; it can end the cave by time-out); cleared by the switch |
 | 10 | anti-gravity | falls; taken, objects rise instead of falling for a while; 200 points |
 | 11 | switch box | an object landing on it clears every force field (and every switch box); 250 points |
 | 12 | potion | falls; taken, an extra life up to 9; 20 points |
@@ -156,8 +169,11 @@ When the count reaches the number, the exit opens with a sound and starts to fla
 caves the number is every gem in the cave. Cave 30 has 100 gems and asks for 99.
 
 **The time.** The bar under the window is the time. It loses one pixel every four passes and holds 256, so a cave
-lasts 1024 passes ([doc 4.7](04-game-loop.md#47-the-time-limit-is-counted-in-passes)). A jelly bean refills it. When the
-bar is empty a life is lost. Since a pass takes 5.5 to 9.4 frames, the time limit is 113 to 193 seconds.
+lasts 1024 passes ([doc 4.7](04-game-loop.md#47-the-time-limit-is-counted-in-passes)). A jelly bean adds 32 pixels,
+128 passes: JellyBean `$91F7` runs TimeRefill `$A9D7` 32 times, and each turn shifts one set pixel into the bar from
+the left (TimeBarRefillStep `$91DB`, `SCF` then `RR (HL)` along each of the 4 lines), so a full bar stays full.
+Walking into a force field costs 12 passes at once (ForceField `$914C` calls TimerStep 12 times). When the bar is
+empty a life is lost. Since a pass takes 5.5 to 9.4 frames, the time limit is 113 to 193 seconds.
 
 **The lives.** A game starts with 5. A potion adds one, up to 9. A life is lost when the player is crushed, walks into
 fire, runs out of time or presses H. Then the same cave starts again. When the last life is lost the game is over.
@@ -171,12 +187,14 @@ fire, runs out of time or presses H. Then the same cave starts again. When the l
 | a bubble burst | 100 |
 | anti-gravity taken | 200 |
 | a potion | 20 |
+| a jelly bean | 64 (2 for each of the 32 pixels added, TimeRefill `$A9DA`) |
 | the cave done | 1 a pixel left in the time bar (TimeBonus `$8702`) |
 
 **The high scores.** Five records of six digits and a 9-character name. The defaults run from 020000 to 004000, all
 "M.BATTY". A score at least as high as a record goes into the table (HiScoreInsert `$7F7A`), and the player types a name.
 
-**After cave 32.** The win screen and the win tune, then cave 1 again with the score and the lives kept.
+**After cave 32.** The win screen and the win tune; when WinGame returns, NextCave sets cave 1 (`$8A2E`) and the game
+goes on with the score and the lives kept.
 
 ### The password
 
@@ -248,14 +266,53 @@ The point: the password is the cave's name, and the comparison runs 18 records p
 
 ## 1.6 The key moments
 
-A death by a boulder. In `death-crush` the player walks under a boulder in cave 1. The boulder falls into his cell,
-DeathView shows the death graphics, DeathSound plays, and the cave starts again with one life fewer.
+A death by a boulder. In `death-crush` the player walks under a boulder in cave 1. The boulder falls into the cell
+above him: MoveObject `$80DB` moves an object only into an empty cell, then tests the cell under its new place, and
+that cell holds the player (3 or 4), so Crush `$9ABC` sets PlayerKilled. DeathView shows the death graphics,
+DeathSound plays, and the cave starts again with one life fewer.
 
 ![The player crushed in cave 1](img/design/death-crush.png)
 
-*Recording `death-crush` (stage 2, `work/stage2/death-crush`), frames 10, 24, 28 and 200: the boulder above, the fall,
-the death graphics, the cave again. Command: `python3 ../../kit/screen_shot.py` on each frame, then `python3
+*Recording `death-crush` (stage 2, `work/stage2/death-crush`), frames 10, 24, 28 and 200: the boulder above, the
+boulder landed above him, the death graphics, the intro again with 4 lives. Command: `python3 ../../kit/screen_shot.py` on each frame, then `python3
 tools/fig_design.py --sheet docs/img/design/death-crush.png ...`.*
+
+Frames 24 and 28 differ only in the player's 16 × 16 graphic, so the player's cell enlarged:
+
+![The player's cell at frames 10, 24 and 28](img/design/death-crush-zoom.png)
+
+*Crops of the `death-crush` shots (window columns 7-10, rows 3-5): at 24 the boulder rests on the player's cell, at 28
+DeathView has put the death graphic in the player's table words. Command: crops of `work/docs/esA/shots/dcN.png`,
+then `python3 tools/fig_design.py --sheet docs/img/design/death-crush-zoom.png ...`.*
+
+A death by fire. In `death-fire` the player steps left into fire on the first pass of cave 4: WalkIntoFire `$91AE`
+(reached through LeftSpecial `$94D6`) sets PlayerKilled at frame 279, DeathSound plays at 288, lives 5 to 4.
+
+![The player walking into fire in cave 4](img/design/death-fire.png)
+
+*Recording `death-fire` (stage 2), frames 279, 283 and 290. Command: `python3 ../../kit/screen_shot.py --work W
+f279=279 f283=283 f290=290` on a reopened `work/stage2/death-fire`, then `python3 tools/fig_design.py --sheet
+docs/img/design/death-fire.png ...` (`work/review/fixA/shots.sh`).*
+
+The new objects as they first appear in the RZX's play, the frame of the routine's first L1 entry in brackets:
+
+![The exit opening and a jelly bean](img/design/moments-gems-time.png)
+
+*`rzx-earth01`: the 36th gem taken opens the exit (ExitOpenSound `$9072` at 3366; the exit is on row 0, off the
+window, the panel reads 36:36); a jelly bean taken at 1524 (JellyBean `$91F7`): by 1560 the bar is 32 pixels longer
+the score from 000122 at 1526 (two points in) to 000184, 64 in all. Command: `kit/screen_shot.py` on a reopened
+`work/stage1/rzx01`, then `tools/fig_design.py --sheet` (`work/review/fixA/shots.sh`).*
+
+![Anti-gravity, a teleport and a potion](img/design/moments-specials.png)
+
+*`rzx-earth03` 620: anti-gravity taken at 543 (AntiGravStart `$A9EF`), the panel counts 96 steps left and the objects
+rise; `rzx-earth04` (stage 1's `work/stage1/rzx04`) 1182: the teleport effect, TeleportOutEffect `$E87B` from 1175;
+`rzx-earth09` 6356: a potion taken at 6352 (TakePotion `$91C9`), 6 lives. Same commands.*
+
+A switch box hit and a bubble burst are animated in doc 10: the boulder on the switch in `rzx-earth02` 376-412
+([switch-chain.gif](img/play/switch-chain.gif), SwitchScore at 387) and a bubble pushed into fire in `rzx-earth02`
+2426-2490 ([bubble-burst.gif](img/play/bubble-burst.gif), BubbleScore at 2447). Walking into a force field first
+happens in `rzx-earth22` at 2446 (ForceField `$914C`).
 
 The time running out. In `timer` nobody presses a key after the map. The bar empties at frame 6040: TimeOutSound plays
 and a life is lost (5 to 4).
@@ -280,8 +337,8 @@ The win.
 
 *Recording `rzx-earth32`, its last frame: "WELL DONE ... AND THANKS !" and Michael Batty's joke about the fortune.*
 
-The point: every way a cave ends is in a recording, but a death by fire and the accepted password are not in a stage 1
-recording of our own play ([1.9](#19-what-no-recording-reached)).
+The point: every way a cave ends is in a recording, and every new object is seen at work in the RZX's play; only the
+accepted password is in no recording ([1.9](#19-what-no-recording-reached)).
 
 ## 1.7 The 32 caves
 
@@ -348,12 +405,23 @@ What the table shows:
 - **Difficulty.** No parameter sets a speed or a level of difficulty. The caves get harder by design: more fire, more
   bubbles, more teleporters. Cave 26 has 42 force fields and 36 teleporters; cave 31 has 271 bubbles.
 
+Two published maps were compared with `caves.txt` (`work/review/fixA/mapcmp.py`, each 16 × 16 cell empty or not;
+the output in `work/review/fixA/mapcmp.txt`). ZXDB's
+[EarthShaker_Level20.png](https://spectrumcomputing.co.uk/pub/sinclair/games-maps/e/EarthShaker_Level20.png) (cave
+20, 30 × 20 cells) draws exactly the walls of cave 20 plus 16 cells (15 earth, the exit). David Pegg's sheet of all
+32 caves (2002, [maps.speccy.cz](http://maps.speccy.cz/map.php?id=EarthShaker)) agrees with the empty cells of
+caves 1, 4, 5, 6, 7, 13, 20 and 21 within 7 cells each; in the other caves the test reads objects drawn on black
+paper (bubbles, fire, teleporters) as empty, so it does not settle them, and no cell-by-cell comparison of the
+objects was made. Neither map shows a cave that `caves.txt` does not have.
+
 The point: a cave is 600 cells and 14 bytes. Everything that makes one harder than another is in the cells.
 
 ## 1.8 The unused test cave
 
 At `$F9A6`, inside a stretch no code reads, lies one more cave record of 314 bytes. No table points at it. Its top row
-holds one of each object: `D.ZZAASS++TTOOFF+:::FF::***#X#`. It has no player cell.
+holds every special object, most of them twice, with earth, gems, wall and an exit, and no boulder:
+`D.ZZAASS++TTOOFF+:::FF::***#X#` (one teleporter, two each of force field, anti-gravity, switch, jelly bean and
+bubble, three potions, four fires, three gems). It has no player cell.
 
 ![The unused test cave](img/design/test-cave.png)
 
@@ -370,7 +438,8 @@ The point: the image keeps the designer's workbench next to the 32 caves.
 ## 1.9 What no recording reached
 
 - A typed password that matches: PasswordFlashText `$8EB6` and PasswordAccepted `$8EE4` run in no recording.
-- The win tune to its end: `rzx-earth32` stops during it (PlayWinTuneEnd `$A61B`), and cave 1 after the win.
-- Walking up into fire (UpSpecialCell `$9194` and its tail `$919A`). Walking into fire sideways is in stage 2's
+- The win tune to its end: `rzx-earth32` stops during it (PlayWinTuneEnd `$A61B`) with CaveNumber still 33, and cave
+  1 after the win (NextCave `$8A2E`).
+- Walking up into fire (the test `$9194`) or into a potion (the carry tail `$919A` after TakePotion, doc 10.8). Walking into fire sideways is in stage 2's
   `death-fire`.
 - The unused graphic slot GfxSpare, and the font codes `$68-$7F` but `$73` (the SYMBOL SHIFT name, [doc 8](08-hud-and-text.md)).

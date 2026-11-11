@@ -5,8 +5,8 @@
 ; with HL = $020B, DE = 3 before the note, drum 2 with HL = $0106, DE = 5 (two clicks of different pitch); other
 ; values nothing. n1 and n2 index NotePeriods $BC00 (a big-endian word at $BC00 + 2n): two counters toggle bit 4 of
 ; port $FE, each at its own period, for length x 256 loop turns. The tune ends at the record whose n1 is $FF, or when
-; a key of half row 1-5 (port $F7FE) is down. HL returns pointing past the byte that ended it: the menu compares HL
-; with TitleTune's end $B269 to know the tune ran out.
+; a key of half row 1-5 (port $F7FE) is down. HL returns pointing at the n1 byte of the record where it stopped (past
+; its drum byte): the menu compares HL with $B269, the $FF byte of TitleTune's end record, to know the tune ran out.
 ;
 ; The tunes: the title TitleTune $AD00, the game over GameOverTune $AA00, the extra life LifeTune $AC5F, the win
 ; WinTune $6EF4, the map MapTune $E8E8 and eight cave tunes, one per four caves (CaveTunes $EE24; the 1988 version

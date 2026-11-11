@@ -54,8 +54,10 @@ The 48K's sound is bit 4 of port `$FE`: the speaker is high or low. The game wri
 - its own loops of `OUT ($FE),A`, for the tunes (PlayTune, 9.3) and some effects (9.7, 9.9);
 - noise loops that send ROM bytes `AND $18` to the port (9.7).
 
-Every value written has bit 3 (the MIC output) with bit 4, or is 0, and the border bits 0-2 are 0: the border stays
-black. There is no sound on the interrupt: the ROM's IM 1 handler only counts frames and reads the keyboard. So a
+The values written are `$00`, `$08`, `$10` and `$18`. PlayTune writes `$10` and `$00` (bit 4 alone); BEEPER writes
+`$18` and `$08` (the MIC bit 3 set throughout, bit 4 toggling); the game's own effect loops write `$18` and `$00`; the
+noise loops write any of the four (ROM bytes `AND $18`). The border bits 0-2 are always 0: the border stays black
+(all `OUT ($FE)` of the traces in `work/docs/es*/ev-*.json`). There is no sound on the interrupt: the ROM's IM 1 handler only counts frames and reads the keyboard. So a
 sound is always a busy loop in the main program, and nothing else runs while it plays. Most of these loops disable
 interrupts, so the frame interrupts that fall inside them are lost (9.6).
 
@@ -247,7 +249,7 @@ How to read the figure:
 - **The point**: two independent counters and one bit make a two-note sound. The detune of voice 1 (`DEC IX`) makes a
   unison note sweep its pulse width instead of staying a thin click train.
 
-The unison case matters: 439 of the 973 notes of the 13 tunes have N1 = N2. A low unison note (period 256) widens by
+The unison case matters: 439 of the 969 notes of the 13 tunes have N1 = N2. A low unison note (period 256) widens by
 only 78 T a period of 20 000 T, so it stays a thin, quiet buzz. A high one (period 64) sweeps through all widths in
 about 64 periods, 60 ms, which sounds like a phaser. Without the `DEC IX`, both voices would fire in the same turn
 forever, and the speaker would only blip for 30 T each period.
@@ -374,8 +376,8 @@ flowchart TD
 
 Worked example: cave 10. `10 - 1` = 9, `AND $FC` = 8, `RRCA` = 4: the third word of CaveTunes, CaveTune3. Its 16
 notes take 213 frames, 4.3 s, during which the cave intro stays on the screen and nothing moves. The MenuKeys check
-`TitleTune+$0569` (the address just after the title tune's end record) tells "the tune ended" from "a key stopped it"
-by the HL PlayTune returns ([doc 8](08-hud-and-text.md#812-the-menu-scroller)).
+`TitleTune+$0569` (the `$FF` byte of the title tune's end record at `$B268`, where PlayTune leaves HL) tells "the
+tune ended" from "a key stopped it" by the HL PlayTune returns ([doc 8](08-hud-and-text.md#812-the-menu-scroller)).
 
 ![The eight cave tunes as piano rolls](img/sound/tunes-caves.png)
 
@@ -439,9 +441,9 @@ Witness: `ev-rzx01-400-700.json` (the `irq` list); the per-effect counts of 9.10
 
 The point: the sound is the clock. While a sound plays, the game, the frame counter and the keyboard scan all wait.
 
-## 9.7 The noise loops: dig, fall, thud
+## 9.7 The noise loops: dig, fall, thud, dig in place
 
-Three effects use bytes of the ROM as random numbers.
+Four effects use bytes of the ROM as random numbers.
 
 **The dig** (DigNoise `$8548`, from DigNoiseIfDug `$E860` when the player dug earth): the bytes `$00FF` down to
 `$0001`, each `AND $18`, go straight to port `$FE`. 255 writes, 55-58 T apart: 4.1 ms of white noise. It does not
@@ -454,6 +456,11 @@ the low time E; the high time is D. The pair repeats inside a fixed budget of tu
 D = 6, 4, 2 (NoiseThud patches NoiseBurstPitch), so each burst is higher than the last. PassSound `$E83A` picks one of
 the two each pass: the thud if a boulder landed or was pushed, else the fall if an object fell.
 
+**The dig in place** (DigInPlace `$E7FE`, fire with a direction on earth, doc 05 5.7) is the same engine four times:
+it patches NoiseBurstPitch with 1, 2, 4 and 10 and calls NoiseBurst after each patch. Each burst reads the same 64
+ROM bytes `$0140` down to `$0101`, so the four differ only in D: D = 1 makes clicks 42 T high, D = 10 a slower,
+wider pulse train. 469 writes in 170 538 T, 48.7 ms, 2.44 frames, the longest of the three NoiseBurst sounds.
+
 ```text
 DigNoise:   for HL = $00FF down to 1: OUT ($FE), ROM[HL] AND $18                ; interrupts stay on
 NoiseBurst(D):                                                                    ; DI ... EI
@@ -465,6 +472,7 @@ NoiseBurst(D):                                                                  
             wait E turns (or until the budget ends); OUT $18
             wait D turns; OUT 0
 NoiseThud: for D = 6, 4, 2: NoiseBurst(D)
+DigInPlace: for D = 1, 2, 4, 10: NoiseBurst(D)                                    ; $E7FE
 ```
 
 ```asm
@@ -488,14 +496,38 @@ flowchart TD
     D -- yes --> E["FallSound"]
     D -- no --> F["silence"]
     G["the player dug earth"] --> H["DigNoise: 255 ROM bytes to the port"]
+    I["fire with a direction on earth"] --> J["DigInPlace E7FE: NoiseBurst D = 1, 2, 4, 10"]
 ```
 
 Worked example: the dig at `rzx-earth01` frame 775 T 20 092: 255 writes in 14 218 T. The intervals are 55, 56 or
 58 T (the figure 9.10), the loop's 56 T plus contention. The values are the ROM's first 255 bytes reversed, so every
 dig sounds exactly the same.
 
+Worked example: the dig in place, D = 1, the first three steps (the model's writes).
+
+1. The ROM byte at `$0140` is `$52`: `AND $3F` gives `$12`, not below D, so `OR 7` makes `$17` and E = 22. That is
+   more than the step's budget of 16 DJNZ turns, so the step ends with no write.
+2. The byte at `$013F` is `$45`: E = 6. The speaker goes high after 6 turns (T 815) and low after D = 1 turn (T 857),
+   a pulse of 42 T. The same byte gives the same E again, so pulses follow 268 T apart (T 1083, 1351) until the 16
+   turns are used: three pulses.
+3. The byte at `$013E` is `$4D`: E = 14, one pulse before the budget ends.
+
+Every high time of the D = 1 burst is 42 T; only the gaps vary with the ROM bytes, and a byte that gives E above 16
+is a silent step. A larger D lengthens each pulse and leaves room for fewer: 161, 137, 125 and 46 writes for D = 1, 2,
+4, 10.
+
+![DigInPlace: four NoiseBursts](img/sound/dig-in-place.png)
+
+*DigInPlace from a T-state model of NoiseBurst (`tools/fig_sound.py` `noise_burst()`), checked against the traced
+thud of `rzx-earth01` frame 1839: the same writes and values for D = 6, 4 and 2, and every interval exact or within
+6 T of contention. Command, from the case folder after `. work/env.sh`: `python3 tools/fig_sound.py dig`. How to
+read: top, the speaker bit over the 48.7 ms; bottom, the time to the next write, one colour a burst; the vertical
+lines are the four calls. The point: one routine with one patched byte makes the thud and the dig in place.*
+
 Witness: dig `rzx-earth01` 775 (and `c1` 13160); fall `rzx-earth01` 1578; thud `rzx-earth01` 1839 (stage 2 NOTES
-3.9, traced here: `ev-rzx01-770-780.json`, `-1575-1582`, `-1836-1842`).
+3.9, traced here: `ev-rzx01-770-780.json`, `-1575-1582`, `-1836-1842`). DigInPlace runs 167 times in the RZX replays
+(L1, 16 recordings), 84 of them in `rzx-earth24` (first at frame 434); its L1 cost is 171 088 T a call on average, the
+model's 170 538 T plus contention. Its sound was not traced: the waveform and the WAV are the model's.
 
 The point: the ROM is the noise table. Reading it costs nothing and gives the same "random" sound every time.
 
@@ -509,7 +541,7 @@ Most effects are BEEPER called in a loop:
 | jelly bean | JellyBean `$91F7` | 32 pairs: HL = `$80` + B and `$80` + 32 - B, DE = 20, then TimeRefill | 2688 |
 | death | DeathSound `$862E` | L = 0, 255 ... 1: HL = ROM[L], DE = (L / 4) AND 15 | 4352 |
 | rasp | RaspSound `$90A0` | L = 0, 255 ... 1: HL = ROM[L], DE = 1 | 1024 |
-| anti-gravity | AntiGravSound `$8156` | C = `$A0` down by 8: L = C + `$3C` down to C, DE = 2 | 7200 |
+| anti-gravity | AntiGravSound `$8156` | C = `$A0` down by 8: L = C + `$3C` down to C + 1, DE = 2 | 7200 |
 | anti-gravity tick | AntiGravPass `$A7CD` | each pass: HL = 2 x steps, DE = 10 | 22 |
 | time bonus | BonusTick `$871C` | each pixel: HL = D (0, 255, 254 ...), DE = 1 | 4 a pixel |
 | timer click | TimerStep `$86DE` | every fourth pass: HL = 0, DE = 0 | 2 |
@@ -603,7 +635,7 @@ Six effects drive the port from their own counted loops, all with interrupts off
   256 (out) or 242 and 241 (in), 16 steps of 4096 turns, an attribute frame of the flash between steps. The two
   toggles drift against each other, so the pulse width sweeps up and down: the V shapes of the figure.
 - **KeyClick** `$8E18`: D = 0, 255, ..., 1, a write after each delay of D turns (256 for D = 0): a chirp that rises
-  from 850 Hz to tens of kHz, 534 784 T, 7.65 frames.
+  from about 424 Hz (the first half period is 4129 T, so a period of 8258 T) to tens of kHz, 534 784 T, 7.65 frames.
 - **PasswordAccepted** `$8EE4`: D = 1 ... 255, 1024 turns a step, a toggle every D turns: a falling sweep, 2.2 s, with
   the password line's colours rotating (PasswordFlashStep). No recording types a valid password (9.12).
 
@@ -722,6 +754,7 @@ that fell in that span and were not taken (the first frame's interrupt counted i
 | gem | a gem taken | GemSound `$82F9` | 76 | 21 ms | BEEPER's DI | 1 of 1 | `rzx-earth01` 814 |
 | fall | an object fell this pass | FallSound `$E7A9` | 315 | 27 ms | DI | 1 of 1 | `rzx-earth01` 1578 |
 | thud | a boulder landed or was pushed | ThudSound `$8228` | 318 | 36 ms | DI | 2 of 2 | `rzx-earth01` 1839 |
+| dig in place | fire with a direction on earth | DigInPlace `$E7FE` | 469 | 49 ms | DI, on only between bursts | 2-3 of 2-3 | model; L1 `rzx-earth24` 434 |
 | jelly bean | a jelly bean taken | JellyBean `$91F7` | 2688 | 632 ms | DI after each call | 31 of 31 | `rzx-earth01` 1524 |
 | exit open | the last needed gem, then every gem | ExitOpenSound `$9072` | 2048 | 796 ms | DI | 40 of 40 | `rzx-earth01` 3366 |
 | time bonus | the exit taken | TimeBonus `$8702` | 4 a pixel | 895 ms for 192 | BEEPER's DI only | 4 of 45 | `rzx-earth01` 3668 |
@@ -732,6 +765,7 @@ that fell in that span and were not taken (the first frame's interrupt counted i
 | anti-gravity | the arrow taken | AntiGravSound `$8156` | 7200 | 1.12 s | BEEPER's DI | 53 of 56 | `rzx-earth03` 543 |
 | anti-gravity tick | each anti-gravity pass | AntiGravPass `$A7CD` | 22 | 5.4 ms | DI after | 0 | `rzx-earth03` 609 |
 | teleport | a teleporter used | TeleportOutEffect `$E87B`, TeleportInEffect `$E8AE` | 1054 | 1.97 s | DI | 96 of 99 | `rzx-earth04` 1175 |
+| drain click | H pressed: each step of QuitKey's drain | QuitKey `$8741`: BEEPER HL = 1, DE = 0 | 2 a step | a 122 T pulse every 10 900 T, up to 256 steps (0.8 s) | BEEPER's DI only | about 1 in 27 (404 T of each step) | code; `c1` 14 430 not traced |
 | time-out | the bar empty | TimeOutSound `$86AD` | 2048 | 1.04 s | DI | 52 of 52 | `timer` 6040 |
 | key click | a character typed or deleted | KeyClick `$8E18` | 256 | 152 ms | DI | 7 of 7 | `hiscore` 4960 |
 | fizz | a boulder dissolved in fire | FizzSound `$A773` | 42 a pass, 7 passes | 7 short beeps | BEEPER's DI | | code only |
@@ -750,9 +784,9 @@ flowchart TD
     A --> C["TimerStep: click every 4th pass"]
     A --> D["FizzSound while FizzCount runs"]
     A --> E["AntiGravPass tick while anti-gravity runs"]
-    F["the player's move"] --> G["dig, gem, jelly bean, switch, bubble, arrow, potion, teleport"]
+    F["the player's move"] --> G["dig, dig in place, gem, jelly bean, switch, bubble, arrow, potion, teleport"]
     G --> H["exit open after the last gem"]
-    I["the cave's end"] --> J["time bonus, time-out, death"]
+    I["the cave's end"] --> J["time bonus, drain click (H), time-out, death"]
     K["the screens"] --> L["tunes, key click, rasp, password"]
 ```
 
@@ -782,6 +816,7 @@ the mean removed. None of them was played while this case was made.
   [time-out](audio/time-out.wav), [key-click](audio/key-click.wav).
 - The two code-only effects, from the models of 9.9: [password-accepted](audio/password-accepted.wav),
   [fizz](audio/fizz.wav).
+- The dig in place, from the NoiseBurst model of 9.7: [dig-in-place](audio/dig-in-place.wav).
 - The 13 tunes, from the T-state model of PlayTune (9.3), whole: [title](audio/tune-title.wav),
   [cave-1](audio/tune-cave-1.wav), [cave-2](audio/tune-cave-2.wav), [cave-3](audio/tune-cave-3.wav),
   [cave-4](audio/tune-cave-4.wav), [cave-5](audio/tune-cave-5.wav), [cave-6](audio/tune-cave-6.wav),
@@ -799,6 +834,11 @@ The model's tunes have no contention, so they run 0.08 % faster than the real ma
   model.
 - **The `AND $7F` no-op** in ExitOpenSound and TimeOutSound (9.9) and **BonusTick's lost `DEC D`** (9.8): the traces
   show their effect (a full ROM byte in C, HL falling by 1 a tick); the intent is a guess.
+- **The dig in place**: DigInPlace runs in 16 RZX replays but no event file traces it; its sound is the NoiseBurst
+  model, which reproduces the traced thud write for write.
+- **QuitKey's drain click**: one BEEPER cycle (HL = 1, DE = 0) after each ShiftTimeBar; `c1` presses H at 14 430, but
+  no event file covers it. The 122 T pulse is BEEPER's model, the step of about 10 900 T is ShiftTimeBar's traced
+  10 362 T plus the loop and the call.
 - **The rasp's full length**: one bubble's RaspSound is traced in full only in the retrace `ev-rzx02-2445-2465.json`;
   the redefine screen's five rasps are known from L1 entry counts.
 

@@ -16,11 +16,11 @@ Earth Shaker is a 48K game. It uses no 128K memory, no AY and no paging. It runs
 | Resource | Use |
 | --- | --- |
 | CPU | Z80 at 3.5 MHz, 69 888 T a frame; no frame sync ([doc 4.2](04-game-loop.md#42-the-interrupt)) |
-| interrupts | IM 1, the ROM's handler: FRAMES and the keyboard scan; off during every sound |
+| interrupts | IM 1, the ROM's handler: FRAMES and the keyboard scan; off inside every BEEPER call, the tunes, the game's own sound loops and the screen wipe ([doc 4.2](04-game-loop.md#42-the-interrupt)) |
 | RAM | the image `$6D42-$FFFF` (37 566 bytes), the screen, the system variables, 63 bytes of stack under `$6978` |
-| ROM | BEEPER `$03B5` for every sound, KEY-SCAN through the handler, LD-BYTES for the load; nothing else |
+| ROM | BEEPER `$03B5` for most effects; KEY-SCAN `$028E` in the handler and called by GameOverScreen `$8BDE`; the bytes from `$0140` as NoiseBurst's noise (`$E741`); `$0038` as PotionScore's return path; `JP $0000` for quit (`$8B6F`); LD-BYTES for the load. ClearVars' LDIR also writes into `$0000-$0004` (2.8) |
 | screen | the 16 × 11-cell window in the top two thirds, the time bar and the panel line below |
-| sound | the beeper only, through the ROM's BEEPER and the game's own loops with DI |
+| sound | the beeper only: the ROM's BEEPER for the clicks and beeps, the game's own `OUT ($FE)` loops with DI for PlayTune, NoiseBurst, FallSound and the teleport sweeps ([doc 9](09-sound.md)) |
 | input | the keyboard through port `$FE` (five keys, redefinable, plus F, H, G); Kempston through port `$1F` |
 | free | `$5D36-$6938` below the stack (3 075 bytes), never used by the game |
 
@@ -66,7 +66,7 @@ checked against the L1 byte counts of every recording:
 | `$8000-$803F` | 64 | CellGraphicsTable: 32 words, the graphic of each cell code |
 | `$8040-$96FF` | 5 824 | the main code: the scan, the unpack, the player, the timer, the loop, the menu, the window |
 | `$9700-$997F` | 640 | CaveNames: 32 names of 20 characters, the passwords |
-| `$9980-$9B07` | 392 | the map's glyphs and attributes, the map-patch leftover, pads |
+| `$9980-$9B07` | 392 | BubbleRightMove and BubbleLeftMove (code, to `$99BF`), zeros, MapGlyphs `$9A00` and MapAttrs `$9A80`, the map-patch leftover `$9A90`, EarthFell, EarthFallGuard and Crush (code, `$9AA5-$9ACB`), zeros, EnterPasswordText `$9AE8` |
 | `$9B08-$A5FF` | 2 808 | CellGraphics: 36 bytes each (4 attributes, 32 pixel bytes) |
 | `$A600-$AAFF` | 1 280 | cave set-up, anti-gravity, jingles, the win, the key table, texts |
 | `$AB00-$AC5E` | 351 | MenuTexts, WinTexts, code |
@@ -85,7 +85,8 @@ checked against the L1 byte counts of every recording:
 | `$FDA8-$FFFF` | 600 | CaveGrid: the current cave, 30 × 20 cells, one byte each |
 
 Stage 1 named `$6EF4-$7F5F` "data read a few times". It is WinTune (`$6EF4`) and TeleportFrames (`$7300`). Stage 1
-put the low mark of the stack at `$6943`; the traces show `$6939`.
+put the low mark of the stack at `$6943`, the deepest the game's own code goes (BoulderLandCheck, 2.7); with an
+interrupt on top the traces show `$6939`.
 
 ![Memory use over the stage 1 recordings](img/heatmap.png)
 
@@ -107,8 +108,9 @@ top right, bottom right, bottom left), then 32 pixel bytes, two a line, left the
 left on odd ones ([doc 6](06-rendering.md)).
 
 The table changes per cave. CaveSetup `$9313` writes the cave's earth graphic into entry 6 and its wall graphic into
-entry 5 (parameter bytes 6-9). CaveSetupAll `$A600` colours the exit, the boulder, wall 1 and the earth from parameter
-bytes 10-13 (SetGraphicColour `$9305`). The animation phases (AnimPhase `$FD72`, ForceFieldPhase `$FD73`, TeleporterPhase `$FD74`) write other entries
+entry 5 (parameter bytes 6-9), then colours the exit, the boulder, wall 1 and the earth from parameter bytes 10-13
+(SetGraphicColour `$9305`). CaveSetupAll `$A600` calls it, then puts the boulder colour into the seven dissolve frames
+from GfxDissolve `$A1A4`. SetEarthFalls `$FB81` calls CaveSetupAll and sets entry 0 to BlankGraphic `$AA72`. The animation phases (AnimPhase `$FD72`, ForceFieldPhase `$FD73`, TeleporterPhase `$FD74`) write other entries
 as they run, and DeathView puts the death graphics into entries 3 and 4.
 
 ![The cell graphics of cave 1: each table entry with its value and address](img/sprites/cells-cave01.png)
@@ -188,18 +190,22 @@ the design could have avoided.
 
 ## 2.6 The call graph
 
-The main loop's calls, from GameEntry to the per-cell routines. Each box is a routine; the arrow is a CALL.
+The main loop's calls, from GameEntry to the per-cell routines. Each box is a routine; a plain arrow is a CALL, a
+labelled one a jump or a fall-through.
 
 ```mermaid
 flowchart TD
     GE["GameEntry 8B20"] --> PTT["PlayTitleTune 8A35"] --> PT["PlayTune 88CE"]
     GE --> NG["NewGame 8BE5"]
     NG --> SGE["StartGameEntry 89F4"] --> SG["StartGame 85D6"] --> PW["Password 8F29"]
-    SGE --> CPL["CavePlay 89EA"]
+    SGE -- "falls through" --> CS["CaveStart 89F7"] --> CPL["CavePlay 89EA"]
+    CS --> CLS["ClearScreen 860E: WipeScreen 8DE3"]
     CPL --> CI["CaveIntro 92D4"]
-    CPL --> PCT["PlayCaveTune EE34"] --> PT
+    CPL --> PCJ["PlayCaveTuneJump 895D"] -- "JP" --> PCT["PlayCaveTune EE34"] --> PT
     CPL --> PC["PlayCave 8885"]
-    PC --> CINIT["CaveInit 91B9"] --> CR["CaveReset 8687"] --> UC["UnpackCave 82B6"]
+    PC --> CINIT["CaveInit 91B9"] --> CSS["CaveStartState 9052"] --> CR["CaveReset 8687"]
+    CR --> RC["ResetCave 85F1"] --> SEF["SetEarthFalls FB81"] --> CSA["CaveSetupAll A600"]
+    CSA --> CSU["CaveSetup 9313"] --> UC["UnpackCave 82B6"]
     PC --> KS["KeysStep 8759"] --> PS["PlayerStep 8556"]
     PC --> AK["AbortKey 93A5"] --> ACC["AnimateCellCodes 937E"] --> SWC["SwitchClear 817A"] --> AGP["AntiGravPass A7CD"]
     AGP --> SC["ScanCells 8075"] --> MO["MoveObject 80DB"]
@@ -229,20 +235,40 @@ runs PassLoop, SP is `$6959` in every trace. The four return addresses above it 
 | `$695B` | `$8A07` | CaveStart's `CALL CavePlay` |
 | `$6959` | `$89F3` | CavePlay's `CALL PlayCave` |
 
-Above `$6961` lie the ROM's own words from the BASIC line and USR. AbortKey's four POPs remove `$89F3` to `$8BE8`
+Above `$6961` lie the ROM's own words from the BASIC line and USR. AbortKey, called from PassLoop, pushes its own
+return `$889B` at `$6957`; its four POPs remove that and `$89F3` to `$8BE8`, and its RET takes `$8B42`
 ([doc 4.1](04-game-loop.md#41-the-states-of-the-game)).
 
-The deepest point of the game's own code is in the cave set-up: UnpackCave runs at SP `$6949`. The deepest point of all
-is `$6939`. It is the ROM's KEY-SCAN (`$028E`, `$0333`) inside an interrupt that fell during a pass (the `c1` trace
+The deepest chain of the game's own code is the scan's, a boulder falling (SP after each instruction):
+
+| Instruction | SP |
+| --- | --- |
+| PassLoop `$8898 CALL AbortKey` | `$6957` |
+| AbortKey `$93A5 CALL AnimateCellCodes` | `$6955` |
+| AnimateCellCodes `$937E CALL SwitchClear` | `$6953` |
+| SwitchClear `$81A3 CALL AntiGravPass` | `$6951` |
+| AntiGravPass `$A7D3 CALL ScanCells` (`JP ClearFallFlags`, on to ScanCellsBody) | `$694F` |
+| ScanRowLoop `$8084 PUSH BC` | `$694D` |
+| `$80CE PUSH BC` | `$694B` |
+| `$80CF CALL EarthFallGuard` (it ends `JP MoveObject`) | `$6949` |
+| MoveObject `$80E7 CALL BoulderLandCheck` | `$6947` |
+| BoulderLandCheck `$E78C PUSH HL`, `$E78D PUSH DE` | `$6943` |
+
+The deepest point of the game's own code is the scan: a boulder that falls runs BoulderLandCheck `$E78C` at SP
+`$6943`, stage 1's low mark (counted from the code above; UnpackCave runs at `$6949`, and the `c1` L1 has no game
+write below `$6943`). The deepest point of all is `$6939`. It is the ROM's KEY-SCAN (`$028E`, `$0333`) inside an interrupt that fell during a pass (the `c1` trace
 13120-13240). That is 63 bytes below RAMTOP. 3 075 free bytes lie below it.
 
 Witness: the traces in `work/docs/esA/c1/traces/` and `work/docs/esA/r13/traces/`, SP of each instruction.
 
-The point: the stack is shallow and far from anything. No stack trick is used except AbortKey's four POPs.
+The point: the stack is shallow and far from anything. Two stack tricks are used: AbortKey's four POPs, and
+PotionScore's `PUSH BC` at `$A8E3`, never popped, whose RET runs the ROM's IM 1 routine at `$0038`
+([doc 10.8](10-gameplay-logic.md#108-the-special-cells)).
 
 ## 2.8 The leftovers and the 1990 patches
 
-Earth Shaker was written in 1988 and published in 1990. The 1990 version changed the code in place. It did not
+Earth Shaker was written in 1988 and published in 1990. Witness: the credit line at `$AC2E`, "ARTWORK AND MUSIC
+(C) 1988 MICHAEL BATTY", never printed, against the menu's "(C) 1990 MICHAEL BATTY" (MenuCopyrightText `$AB49`). The 1990 version changed the code in place. It did not
 reassemble it. A new routine was hooked in by putting a CALL or a JP where the old code started, and NOPs over what was
 left. The patch chain of the pass is the clearest case:
 

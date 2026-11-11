@@ -33,14 +33,18 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `c1` (power-on to cave 1; a boulder kill at frame 13208) and `lives` (H until the game is over), quoted from stage 2.
 - The RZX state logs `work/stage1/rzx/earthNN.ins.state.bin`: `$FD7E-$FFFF` after every frame of each RZX file
   (642 bytes a frame), logged while SkoolKit played the RZX. They hold every cave's play to its end.
-- The L1 counts of the builds ("L1 n") and the first frames of routines from each recording's `l1.json`
+- The L1 counts of the builds ("L1 n"; `c1`, `menu`, `hiscore`, `lives`, `timer` and the 32 RZX caves, cave 4 from
+  `stage2/rzx04/cap`, not `stage1/rzx04`; `death-crush` and `death-fire` named apart; `work/docs/esC/l1.txt`) and the
+  first frames of routines from each recording's `l1.json`
   (`work/docs/esC/firsts.py`), and the execution count of every address over the stage 2 recordings
   (`work/stage2/execs.json`: `c1`, `menu`, `lives`, `hiscore`, `timer` and the 32 RZX recordings).
 
 A sample of frame N is the memory at the start of frame N; a trace, and so a routine animation, puts an instruction in
 the frame where it ran. Event tables below give the sample frame, and the trace frame where one was taken. A frame is
-1/50 s; a [pass](README.md#terms) is one turn of `PlayCave $8885`. A pass lasts as long as its work: the mean is 5.5
-to 9.4 frames, by cave ([doc 04.6](04-game-loop.md#46-the-cost-of-a-pass-in-every-cave)); in the samples of `rzx-earth02` the cells move every seven frames.
+1/50 s; a [pass](README.md#terms) is one turn of `PassLoop $888D` in `PlayCave $8885`. A pass lasts as long as its work: the mean is 5.5
+to 9.4 frames, by cave ([doc 04.6](04-game-loop.md#46-the-cost-of-a-pass-in-every-cave)), and a pass with a long
+sound (the switch, a burst, a jelly bean) lasts much longer; in the samples of `rzx-earth02` the cells move every seven
+frames.
 
 ## 10.1 A pass: the order of the work
 
@@ -370,7 +374,9 @@ How to read the animation:
 
 - Left: the grid as 30 x 20 hex bytes; the scan walks up from the bottom right. Cell 225 (row 7, column 15) gets the
   `02` and cell 195 above it the `20`; the `04` under them is the player.
-- Right: the listing of the scan, `MoveObject`, `Crush` and `BoulderLandCheck`; `CrushSkip` runs at the end.
+- Right: the listing of the scan, `MoveObject`, `Crush` and `BoulderLandCheck`. `Crush` and `CrushSkip` run at 21:714,
+  when the scan reaches row 6, two thirds into the window; the scan then goes on to row 0, and the last picture is its
+  `RET` at `$80DA`.
 - Recording and frames: `death-crush`, 20:11418 to 21:31484, 110 pictures. Command: `python3 ../../kit/routine_anim.py
   --work work/docs/esC/dc --window 20:11418-21:31484 --pictures 110 --listing build/game.lst --view
   buffer:FDA8:30x20:hex --range FD00-FFFF --pc 8075-8164,9AA5-9ACB,E78C-E7FD --out docs/img/routines/Crush.gif`.
@@ -385,7 +391,7 @@ docs/img/play/death-crush.gif`). The death graphics appear at frame 27.
 
 Witness: `Crush` ran 48 times over the builds (L1): 47 times for falling earth in `rzx-earth13`, 17, 22, 24 and 26
 with `EarthFell` set and no death, and once for the boulder that killed the player in `c1` at frame 13208. In
-`death-crush` it kills at trace frame 21.
+`death-crush`, which is not in the sums, it kills at trace frame 21.
 
 **The point**: only a moving object kills, and only by landing on the cell above the player. Standing under a boulder
 is safe; leaving from under it downward is not.
@@ -487,9 +493,13 @@ boulder blocks (`TryUp` and `TryDown` return on code 2). There is no delay: ever
 
 A bubble moves in all four directions, into earth or an empty cell. Pushed into fire it bursts (10.6): the fire cell
 becomes `$10`, `BubbleScore $93B6` gives 100 points with `RaspSound`, and the player moves into the bubble's cell. The
-bubble's own old cell is simply covered by the player. Pushed right or left, `BubbleRightMove $9980` and
-`BubbleLeftMove $99A0` also mark the cell beyond the bubble's new place with `$20` when it is empty. That keeps an
-object from rolling into the bubble's path in this pass.
+bubble's own old cell is simply covered by the player. Pushed right or left, the bubble is written into its new cell
+first (`$95CF`, `$9600`); then `BubbleRightMove $9980` and `BubbleLeftMove $99A0` mark the cell beyond the bubble's new
+place with `$20` when it is empty, and go on with `Continue`. That keeps an object from falling or rolling into the
+bubble's path in this pass. When the new place is in column 29 (or 0) there is no cell beyond in the row: the column
+loop ends with HL = 0 and jumps straight to the same `LD (HL),$20` (`$999A`, `$99BA`), a write to `$0000` in the ROM,
+which has no effect. That edge is known only from the code: `$999A` is shared with the normal path, so the execution
+counts cannot tell the two apart.
 
 ```text
 push left (the player at p, the object at p - 1):
@@ -498,7 +508,11 @@ push left (the player at p, the object at p - 1):
         grid[p - 2] = BOULDER; BoulderPushed = 1; MoveLeft()
     if the object is BUBBLE:
         beyond = grid[p - 2]  (blocked in column 0)
-        if beyond in (EMPTY, EARTH): grid[p - 2] = BUBBLE; if grid[p - 3] == EMPTY: grid[p - 3] = 0x20; MoveLeft()
+        if beyond in (EMPTY, EARTH):
+            grid[p - 2] = BUBBLE
+            if p - 2 is in column 0: write 0x20 to address 0000 (the ROM: no effect)
+            elif grid[p - 3] == EMPTY: grid[p - 3] = 0x20
+            MoveLeft()
         elif beyond == FIRE:      grid[p - 2] = 0x10; 100 points; MoveLeft()
         else: blocked
 ```
@@ -516,6 +530,10 @@ E829  LD (BoulderPushed),A
 E82C  POP AF
 E82D  RET
 BubbleRight:                ; HL = the bubble
+95A4  PUSH HL
+                            ; ... the bubble in column 29: POP HL, RET (blocked)
+95B7  POP HL
+95B8  PUSH HL
 95B9  INC HL                ; the cell beyond
 95BA  LD A,(HL)
 95BB  CP $06
@@ -531,6 +549,25 @@ BubbleRight:                ; HL = the bubble
 95CC  JP Continue           ; MoveRight
 95CF  LD (HL),$0E           ; BubbleRightSkip3
 95D2  JP BubbleRightMove    ; the cell after it = 20 if empty, then MoveRight
+BubbleRightMove:            ; HL = the bubble's new cell, the old one on the stack
+9980  LD DE,CaveGrid-1
+9983  SBC HL,DE             ; the new cell's index + 1
+9985  LD DE,$001E
+9988  LD B,$15
+998A  SBC HL,DE             ; BubbleRightMoveLoop: a multiple of 30 is column 29
+998C  JR NZ,BubbleRightMoveSkip
+998E  JR BubbleRightMoveSkip2   ; column 29: HL = 0
+9990  DJNZ BubbleRightMoveLoop  ; BubbleRightMoveSkip
+9992  POP HL                ; the bubble's old cell
+9993  PUSH HL
+9994  INC HL
+9995  INC HL                ; the cell beyond the new place
+9996  LD A,(HL)
+9997  OR A
+9998  JR NZ,BubbleRightMoveSkip3
+999A  LD (HL),$20           ; BubbleRightMoveSkip2: empty (or 0000 at the edge)
+999C  POP HL                ; BubbleRightMoveSkip3
+999D  JP Continue           ; MoveRight
 ```
 
 ```mermaid
@@ -561,11 +598,32 @@ The animation is `rzx-earth02` frames 2426-2490 (the RZX player's play), one pic
 merged (`python3 ../../kit/screen_anim.py --work work/docs/esC/r02 --from 2426 --to 2490 --step 1 --scale 3 --delay
 100 --hold 1500 docs/img/play/bubble-burst.gif`).
 
-The fire key pushes too, without moving the player: `FireLeftBoulder $879F` moves the boulder beside the player one
-cell on, when that cell is empty, and leaves `$20` in its old cell; doc 05 covers the fire key's other uses.
+The first push of the table, inside the code:
 
-Witness: `PushBoulder` L1 439 (31 recordings); `BubbleRight` L1 499 (19) and `BubbleLeft` L1 380 (20); `BubbleBurst`
-L1 136 (21).
+![BubbleRight in rzx-earth02 frame 2427: the player at 45 pushes the bubble from 46 to 47 and 48 is marked](img/routines/BubbleRight.gif)
+
+How to read the animation:
+
+- Left: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes; cells 45-48 are row 1, columns 15-18. Reads are blue, writes
+  yellow, fading through red over the next slices.
+- Right: the listing. `PlayerStep` finds the right key, `TryRight` sees `$0E` above 6 and goes to `RightSpecial`,
+  `BubbleRight` tests the column and the cell beyond (47, empty), writes `0E` there, `BubbleRightMove` writes `20` into
+  48, and `Continue` runs `MoveRight`: `PlayerIndex` 46 and 0 in cell 45. `PutPlayer` writes the `03` into 46 last.
+- Recording and frames: `rzx-earth02` (the RZX player's play, replayed), 2427:64300 to 2427:68100, 70 pictures; the
+  sample of frame 2428 shows the result (the table above). Command: `python3 ../../kit/routine_anim.py --work
+  work/docs/esC/r02 --window 2427:64300-2427:68100 --pictures 70 --listing build/game.lst --view
+  buffer:FDA8:30x20:hex --range FD00-FFFF --pc
+  8556-85A0,8437-84B0,9494-9517,95A4-95D4,9980-999F,9410-9413,8382-838D --title ... --out
+  docs/img/routines/BubbleRight.gif`.
+
+The fire key pushes too, without moving the player: `FireLeftBoulder $879F` moves the boulder beside the player one
+cell on, when the boulder is not in column 0 and the cell beyond it is empty (`$87BA LD (HL),$02`), leaves `$20` in its
+old cell (`$87BD`) and calls `ThudSound $8228`; it does not set `BoulderPushed`. Doc 05 covers the fire key's other
+uses. Witness: the push `$87BA` ran 30 times in six RZX recordings (`rzx-earth09`, 16, 24, 26, 27, 28;
+`work/stage2/execs.json`), against 304 calls of `FireLeftBoulder` and 73 that passed the column test.
+
+Witness: `PushBoulder` L1 434 (30 recordings); `BubbleRight` L1 499 (19) and `BubbleLeft`
+L1 380 (20); `BubbleBurst` L1 136 (21).
 
 **The point**: pushing is immediate and costs only the pass, so the puzzle is in where things end up, not in timing.
 Bubbles are the one object that can be pushed up and down, and the only way to put out fire.
@@ -640,9 +698,38 @@ burst from `$11` and the dissolve from `$16`. A burst lasts five passes and a di
 Witness: the burst of 10.5 in `rzx-earth02`: cell 50 is `$10` in the sample of frame 2448, `$11` to `$14` in the
 samples of frames 2458, 2465, 2472 and 2479, `$20` in frame 2486 and 0 in frame 2487. The 2448 sample shows `$10`
 because the frame boundary fell inside the long `RaspSound`, between the burst and the scan. Over the stage 2
-recordings a dissolve starts 486 times in `ScanCells` (`$8091`) and 35 times in `AntiGravScan` (`$A671`), and ends
-518 times (`$939B`), in 20 RZX recordings; a burst ends 135 times (`$9395`) against 136 bursts. The few that did not
-end were cut off by the end of their cave.
+recordings (`work/stage2/execs.json`) a dissolve starts 486 times in `ScanCells` (`$8091`) and 35 times in
+`AntiGravScan` (`$A671`), 521 starts, and ends 518 times (`$939B`), in 20 RZX recordings: three dissolves were cut off
+by the end of their cave. A burst starts 135 times (`BubbleBurst $9378`) and ends 135 times (`$9395`): every burst
+ended. (The L1 count of 136 bursts in 10.5 is over the builds, which take cave 4 from `stage2/rzx04/cap`.)
+
+Worked example, a dissolve: the `earth06` RZX state log (the RZX player's play of cave 6; the memory after each frame).
+The boulder at cell 153 (row 5, column 3) stands over the empty 183, with fire at 213 under that.
+
+| Frame (after) | 153 | 183 | 213 | What happened |
+| ---: | --- | --- | --- | --- |
+| 445 | `$20` | `$02` | `$0F` | the boulder falls into 183, over the fire |
+| 446 | 0 | `$02` | `$0F` | `ClearVacated` |
+| 453 | 0 | `$15` | `$0F` | the scan: a boulder with fire below becomes `$15`; this frame ended between the scan and `AnimateCellCodes` |
+| 454 | 0 | `$16` | `$0F` | `AnimateCellCodes` steps it in the same pass |
+| 461, 467, 474, 480, 487 | 0 | `$17` ... `$1B` | `$0F` | one step a pass |
+| 493 | 0 | `$20` | `$0F` | `$1B` + 1 is `$1C`: `$939B` writes `$20` |
+| 494 | 0 | 0 | `$0F` | `ClearVacated`; the fire stays |
+
+![A boulder dissolves on fire in cave 6, the earth06 state log, frames 444-495](img/rules/dissolve.png)
+
+How to read the figure:
+
+- Cave 6, columns 0-6 and rows 4-8, one panel each time the grid changed, labelled with its frame; the first panel
+  numbers the cells 153, 183 and 213. Framing as in 10.2: yellow got a code, red got `$20` (hatched), grey emptied.
+- The dissolve codes are drawn with their table graphics, the boulder burning down from 453 to 487. In 491 the player,
+  standing beside it at 182, turns right (code 4 to 3); after frame 498 he walks into the emptied 183.
+- Command: `python3 tools/fig_rules.py statelog --cave 6 --frames 444-495 --cols 0-6 --rows 4-8 --per-row 5 --cell 28
+  --label 153,183,213 --title "A boulder dissolves on fire: cave 6, the earth06 state log, frames 444-495" --out
+  docs/img/rules/dissolve.png`.
+
+`AnimateCellCodes` at work on the burst of 10.5 (its last step, `$14` to `$20`) is animated in
+[doc 07.5](07-objects.md#75-each-object-kind-as-a-state-machine).
 
 **The point**: fire is permanent unless a bubble is spent on it. Boulders cannot be used to bridge fire; they burn.
 Cave 29 holds 103 fire cells and cave 31 holds 271 bubbles (10.12), so these two rules carry whole caves.
@@ -713,7 +800,7 @@ is at 497 under him, five force fields at 529-533.
 | ---: | --- | --- | --- |
 | 380 | | 466: 6 to 4; 467: 4 to 2; 437: 2 to `$20` | the player digs left; `MoveLeft` leaves 0 and the boulder falls into 467 in the same pass: 497 under it is the switch box |
 | 388 | `SwitchClear` and `SwitchScore` in frames 386-387 | 497: `$0B` to `$20`; 529-533: 9 to `$20` | the next pass clears the switch box and the force fields |
-| 404 | | 497, 529-533: `$20` to 0 | |
+| 404 | | 497, 529-533: `$20` to 0 | the marks stay for 16 samples: `SwitchSound` (261 ms, [doc 09](09-sound.md)) runs inside `SwitchClear`, after the clear and before `ClearVacated` |
 | 408 | | 467: 2 to `$20`; 497: 0 to 2 | the boulder falls on into the switch box's cell |
 
 ![SwitchClear in rzx-earth02 frames 386-387: the force fields and the switch box become 20](img/routines/SwitchClear.gif)
@@ -735,7 +822,7 @@ The screen animation is `rzx-earth02` frames 376-412, one picture a frame, repea
 docs/img/play/switch-chain.gif`). The force fields are the yellow zigzags right of the player; the switch box is the
 cyan box under him.
 
-Witness: `SwitchScore` L1 24 (24 recordings); the frames above.
+Witness: `SwitchScore` L1 23 (23 recordings); the frames above.
 
 **The point**: the switch is the game's long-range chain reaction. It acts on every switch box and force field of the
 cave at once, wherever they are, and a cave with several switch boxes (cave 26 has three, cave 30 has 28) is opened by
@@ -785,6 +872,32 @@ shifted back into the time bar from the left (`TimeBarRefillStep $91DB`) and 2 p
 32 pixels, 128 passes of time (10.10), and 64 points. The force field takes time: `ForceField $914C` calls `TimerStep`
 12 times, three pixels of the bar, and blocks. Walking into a force field again and again drains the bar.
 
+```text
+JellyBean:
+    repeat 32 times:
+        two ROM BEEPER notes
+        TimeRefill()              # TimeBarRefillStep: one set pixel shifted in from the left; 2 points
+    Continue()                    # the move into the bean's cell
+ForceField:
+    repeat 12 times:
+        TimerStep()               # a quarter pixel each; every fourth one shifts the bar
+        if CaveOver: return       # the time ran out inside the loop
+    return                        # blocked: the player stays
+```
+
+```mermaid
+flowchart TD
+    A["a move into 08 or 09"] --> B{"08, a jelly bean?"}
+    B -- yes --> J["32 times: beep pair, a pixel back into the bar, 2 points"]
+    J --> M["Continue: the player moves into the cell"]
+    B -- "no, 09" --> F["TimerStep, up to 12 times"]
+    F --> O{"CaveOver?"}
+    O -- yes --> R["return: the cave ends at this pass's end test"]
+    O -- no --> N{"12 done?"}
+    N -- no --> F
+    N -- yes --> X["return: blocked"]
+```
+
 ```asm
 JellyBean:
 91F7  LD B,$20              ; 32 steps
@@ -808,6 +921,19 @@ ForceField:
 915E  RET                   ; blocked
 ```
 
+Worked example, a jelly bean in the `earth02` RZX state log (the RZX player's play). The player stands at 573 with
+jelly beans at 571 and 572 and moves left into 572. `JellyBean` first runs in frame 5769 (L1, `rzx-earth02`). After
+frame 5769 the score is 001760; it then rises 2 points a frame, one `TimeRefill` a frame (two in frame 5774), to
+001824 after frame 5800: 64 points. `PlayerIndex` is 572 after frame 5800. On the screen the time bar grows from 16 to 48 pixels:
+
+![rzx-earth02 frame 5768, before the jelly bean: the time bar 16 pixels, the score 001760](img/play/jelly-before.png)
+
+![rzx-earth02 frame 5801, after the jelly bean: the time bar 48 pixels, the score 001824](img/play/jelly-after.png)
+
+The two screenshots are `rzx-earth02` at the ends of frames 5768 and 5801 (the RZX player's play; `python3
+../../kit/screen_shot.py --work work/docs/esC/r02 --out-dir docs/img/play jelly-before=5768 jelly-after=5801`). The
+bar is the blue line at the bottom left. The window still shows the player at 573: it is redrawn later in the pass.
+
 Witness: `JellyBean` L1 132 (23 RZX recordings), `TimeRefill` L1 4224 (32 per bean); `ForceField` L1 11 (5 RZX
 recordings).
 
@@ -816,8 +942,10 @@ recordings).
 `TakePotion $91C9` adds a life unless there are 9, prints the counters, and calls `PotionScore $A8E0`, which plays the
 life tune and gives 20 points. `PotionScore` pushes BC once more than it pops: its `RET` takes the pushed BC as the
 return address. After `PotionTune` BC holds `$0038`, so the `RET` jumps into the ROM's interrupt routine at `$0038`.
-That routine scans the keyboard, counts `FRAMES` and ends with its own `RET`, which pops the real return address. The
-potion works because the stray BC happens to point at a routine that returns.
+That routine scans the keyboard, counts `FRAMES`, enables interrupts (`EI`) and returns: its `RET` pops the real
+return address. It is the routine the IM 1 interrupt runs every frame, which is why the extra run is harmless, and its
+`EI` turns the interrupts back on after `PotionTune`'s `DI` (`$91C7`). The potion works because the stray BC happens
+to point at a routine that returns.
 
 ```asm
 PotionScore:
@@ -844,7 +972,7 @@ sequenceDiagram
     TP->>PS: CALL, return address 91DA on the stack
     PS->>PS: PotionTune, PUSH BC = 0038, AddPoints
     PS->>ROM: RET pops 0038
-    ROM->>ROM: the keyboard scan, FRAMES
+    ROM->>ROM: the keyboard scan, FRAMES, EI
     ROM->>TP: RET pops 91DA
 ```
 
@@ -917,8 +1045,86 @@ stateDiagram-v2
     Up --> Down: AntiGravSteps reaches 0, the icon off
 ```
 
-Witness: `AntiGravScan` L1 1397 (6 RZX recordings); `AntiGravTake` L1 15. Because objects never land on the player
-while rising, anti-gravity is 99 passes in which nothing can crush him.
+```asm
+AntiGravPass:
+A7CD  LD A,(AntiGravSteps)
+A7D0  OR A
+A7D1  JR NZ,AntiGravPassSkip
+A7D3  CALL ScanCells        ; normal gravity
+A7D6  RET
+A7D7  DEC A                 ; AntiGravPassSkip
+A7D8  LD (AntiGravSteps),A
+A7DB  OR A
+A7DC  JR NZ,AntiGravPassSkip2
+A7DE  LD DE,AntiGravIconOff ; the last pass: the icon off
+A7E1  LD BC,$170F
+A7E4  CALL PrintGlyph
+                            ; AntiGravPassSkip2 A7E7-A800: the two digits down by one, printed
+A803  CALL AntiGravScan
+A806  LD A,(AntiGravSteps)
+A809  RLCA                  ; the beep's pitch from the steps left
+A80A  LD DE,$000A
+A80D  LD L,A
+A80E  LD H,$00
+A810  CALL RomBeeper
+A813  DI
+A814  RET
+AntiGravScan:
+A655  XOR A
+A656  CALL SetBoulderFlags
+A659  LD (ObjectFell),A
+A65C  LD HL,CaveGrid+$001E  ; row 1, column 0
+A65F  LD DE,CaveGrid        ; the cell above
+A662  LD B,$13              ; 19 rows
+A664  PUSH BC               ; AntiGravScanLoop
+A665  LD B,$1E              ; 30 cells
+A667  LD A,$02              ; AntiGravScanLoop2: a boulder ...
+A669  CP (HL)
+A66A  JR NZ,AntiGravSkipTests
+A66C  LD A,(DE)             ; ... under fire?
+A66D  CP $0F
+A66F  JR NZ,AntiGravSkipTests
+A671  LD (HL),$15           ; the dissolve
+A673  LD A,$07
+A675  LD (FizzCount),A
+A678  LD A,$06              ; AntiGravSkipTests
+A67A  CP (HL)               ; AntiGravEarthTest: NOP when earth falls
+A67B  JR Z,AntiGravScanSkip
+                            ; ... the same skip list as ScanCells: 0, 5, 9, 0E, 0D, 1, 0B, 3, 4, above 10
+A6AE  PUSH BC
+A6AF  CALL AntiGravMove     ; up into an empty cell, or roll off upward
+A6B2  POP BC
+A6B3  INC HL                ; AntiGravScanSkip: left to right
+A6B4  INC DE
+A6B5  DJNZ AntiGravScanLoop2
+A6B7  POP BC
+A6B8  DJNZ AntiGravScanLoop
+A6BA  RET
+```
+
+Worked example, cave 3 (THE GRAVITY CHAMBER), the `earth03` RZX state log (the RZX player's play). The player at 285
+moves left into the arrow at 284. After frame 600 `PlayerIndex` is 284 and `AntiGravSteps` 98: `AntiGravStartScan`
+set 99 in the player's step and `AntiGravPass` counted the same pass. In that pass's scan the boulder at 128 (row 4,
+column 8) rises to 98 and the gem at 67 to 37; the next pass (after frame 608, 97 left) the boulder rises on to 68. Each
+object leaves `$20` in its old cell, so a column rises with gaps, as it falls. The steps count down 98, 97, 96, 95 after
+frames 600, 607, 615 and 622: one a pass.
+
+![Anti-gravity in cave 3: objects rise one cell a pass, the earth03 state log, frames 596-626](img/rules/antigravity.png)
+
+How to read the figure:
+
+- Cave 3, columns 2-9 and rows 1-9, one panel each time the grid changed, labelled with its frame. Framing as in 10.2:
+  yellow got an object, red got `$20` (hatched), grey emptied.
+- In 600 the red marks lie under the yellow cells: every object moved up. In 601 the scan, which runs top to bottom,
+  has reached the lower rows within the same pass (the log frame ended inside it). In 602 and 603 the marks are
+  cleared.
+- Command: `python3 tools/fig_rules.py statelog --cave 3 --frames 596-626 --cols 2-9 --rows 1-9 --per-row 5 --cell 24
+  --title "Anti-gravity: objects rise one cell a pass (cave 3, the earth03 state log, frames 596-626)" --out
+  docs/img/rules/antigravity.png`.
+
+Witness: `AntiGravScan` L1 1397 (6 RZX recordings: `rzx-earth03`, 10, 11, 14, 17 and 22); `AntiGravTake` L1 15; the
+arrows taken after frames 600, 2019 and 4043 of `earth03`. Because objects never land on the player while rising,
+anti-gravity is 99 passes in which nothing can crush him.
 
 ### Teleporters
 
@@ -927,12 +1133,31 @@ Entering a teleporter erases it (`$20`) and moves the player onto the first tele
 jump uses two teleporters: the cave's teleporters are a stock that runs out, and the destination is always the
 remaining one nearest the top-left.
 
+After the `CPIR` the code tests BC, not the zero flag (`LD A,B`, `OR C`, `RET Z` at `$9539`, `$957F`, `$9440` and
+`$928F`). `CPIR` stops with BC = 0 both when it searched all 600 cells in vain and when it found the teleporter in the
+last cell, 599. So a teleporter in cell 599 counts as none. Caves 8 (teleporters at 7, 12, 141, 424, 456 and 599) and
+23 (30, 241, 479 and 599) have one there. While another teleporter lies before it, `CPIR` stops there first and nothing
+shows; but when 599 is the only one left and the player enters another, the jump fails: moving left, right or up he
+stands on the erased teleporter, moving down he ends one row above where he stood (`TeleportDown` moves him up first,
+10.13). The teleporter at 599 itself can still be entered and erased.
+
 ```text
 TeleportRight (the teleporter at p + 1):
     MoveRight(); grid[p + 1] = 0x20
-    t = the first cell from 0 holding TELEPORTER (CPIR over 600 cells)
-    if none: return                    # the player stays one cell right, on the erased teleporter
-    PlayerIndex = t; draw the window; the flash effects
+    CPIR for TELEPORTER over the 600 cells from cell 0
+    if BC == 0: return                 # none left, or the one found is cell 599: the player stays one cell right,
+                                       # on the erased teleporter
+    PlayerIndex = the cell found; draw the window; the flash effects
+```
+
+```mermaid
+flowchart TD
+    E["the player moves into 0D: MoveLeft, MoveRight or MoveUp; TeleportDown uses MoveUp"] --> X["the teleporter entered = 20"]
+    X --> C["CPIR for 0D from cell 0, BC = 600"]
+    C --> B{"BC = 0 after it?"}
+    B -- "no: found in cells 0-598" --> J["PlayerIndex = the cell found, WindowOrigin, the flash effects"]
+    J --> P["PutPlayer covers that teleporter"]
+    B -- "yes: none left, or found in cell 599" --> S["return: the jump fails, the player stays where the move put him"]
 ```
 
 ```asm
@@ -958,8 +1183,26 @@ TeleportRight:
 Witness: the `earth04` RZX state log. Cave 4 starts with 8 teleporters and the RZX player makes four jumps, after
 frames 1223, 2184, 2839 and 3356. Each time the count drops by one when the player enters (`PlayerIndex` 573 to 105
 at the first) and by one more about 51 frames later, after the teleport effects, when `PutPlayer` covers the
-destination. After the last jump none is left. `TeleportRight` L1 20, `TeleportLeft` L1 13, `TeleportUp` L1 17,
-`TeleportDown` L1 11.
+destination. After the last jump none is left. `TeleportRight` L1 18, `TeleportLeft` L1 13, `TeleportUp` L1 16,
+`TeleportDown` L1 11 (over the builds). The `RET Z` never ran in any of the four routines
+(`work/stage2/execs.json`: its count equals the `CPIR` count at every site), so neither a stock run out nor the cell
+599 case was met. In `earth08` the cave ends with 456 and 599 left. In `earth23` the list goes from 30, 241, 479 and
+599 to 30, 241 and 599 (after frame 3430), 241 and 599 (3481), 241 (6065) and none (6116). At 6065 the player, at 598
+since frame 6012, walked right into 599 himself and jumped to 241, so 599 was entered, never sought.
+
+![The last teleport of cave 4: the player enters 587 and comes out at 595, the earth04 state log](img/rules/teleport.png)
+
+How to read the figure:
+
+- Cave 4, columns 14-27 and rows 15-19 (row 19 is the bottom of the cave), one panel each time the grid changed,
+  labelled with its frame; the first panel numbers the cells 586, 587 and 595. Framing as in 10.2.
+- 3340: the player at 586, teleporters at 587 and 595, the last two of the cave's eight. 3356: he has moved into 587,
+  which `TeleportRight` erased (`$20`, red); 586 is emptied. The `CPIR` found 595, and `PlayerIndex` is 595 from
+  frame 3357 (no panel: the grid did not change). 3407: after the flash effects
+  `PutPlayer` writes him at 595 (yellow), over the teleporter. 3410: `ClearVacated` empties 587. No teleporter is left.
+- Command: `python3 tools/fig_rules.py statelog --cave 4 --frames 3340-3410 --cols 14-27 --rows 15-19 --per-row 2
+  --cell 32 --label 586,587,595 --title "The last teleport of cave 4: into 587, out at 595 (the earth04 state log)"
+  --out docs/img/rules/teleport.png`.
 
 ### Falling earth
 
@@ -1141,19 +1384,29 @@ state: after the win it starts over at cave 1 with the score.
 
 The caves are played in order, 1 to 32. A password chooses where to start. At every new game `StartGame $85D6` calls
 `Password $8F29`. `EnterPassword $8E2D` fills the 20-byte buffer `$FD00` with spaces and stores the keys typed: space
-and the letters, at most 20, `0` to delete, ENTER to end. `FindPassword $8E91` compares the buffer with 50 records of
-20 bytes from `CaveNames $9700` and returns the record number B, or 50 when none matched. A match starts the game at
-cave B + 1 (`PasswordAccepted $8EE4` colours the line and plays a rising buzz); no match starts at cave 1.
+and the letters (`$20` and `$40-$5A`, `$8E6E-$8E78`), `0` to delete, ENTER to end. The 20th stored character ends the
+entry by itself, with no ENTER (`$8E89 INC C`, `$8E8C CP $1A`, `$8E90 RET`). `FindPassword $8E91` compares the buffer
+with 50 records of 20 bytes from `CaveNames $9700` and returns the record number B, or 50 when none matched. A match
+starts the game at cave B + 1: `CaveDigits` is counted up B + 1 times by `IncDigits` (`$8F4D-$8F5A`) and
+`PasswordAccepted $8EE4` colours the line and plays a rising buzz. No match calls `PasswordRejected $8F08` and starts at
+cave 1, with `CaveDigits` 01 (`$8F34-$8F3F`).
 
 The 32 records the game needs are the cave names, shown on each cave's intro screen. So the password of a cave is its
 own name, and seeing a cave once is enough to return to it.
 
 ```text
+EnterPassword:
+    buffer[0 .. 19] = spaces; n = 0
+    loop:
+        key = WaitKey()
+        if key == '0': if n > 0: n -= 1; buffer[n] = space; print it
+        elif key == ENTER: return
+        elif key is space or 0x40 .. 0x5A (the keys give A-Z): buffer[n] = key; print it; n += 1; if n == 20: return
 Password:
     EnterPassword()                     # the buffer: spaces, then the typed letters
     B = FindPassword()
-    if B == 50: CaveNumber = 1          # no match
-    else: CaveNumber = B + 1; CaveDigits = B + 1; PasswordAccepted()
+    if B == 50: PasswordRejected(); CaveNumber = 1; CaveDigits = 01     # no match
+    else: CaveNumber = B + 1; CaveDigits = 00, IncDigits B + 1 times; PasswordAccepted()
 FindPassword:
     for B in 0 .. 49:
         if the 20 bytes at CaveNames + 20 * B equal the buffer: return B
@@ -1283,6 +1536,9 @@ because it holds more of the objects that cost time or block the way, not becaus
   teleporter below. With another teleporter left the player is moved there anyway, so it does not show. With none
   left, the player stays one cell above where he stood and `PutPlayer` writes him over whatever was there. Known only
   from the code: the `earth04` jumps all had a destination.
+- **A teleporter in cell 599 is never found.** The four teleport routines test BC after `CPIR`, not the zero flag, and
+  a match in the last cell leaves BC = 0, the same as no match. In caves 8 and 23, which have a teleporter at 599, a
+  jump made when it is the only one left fails as if none were left (10.8). Known only from the code.
 - **The passwords are the cave names**, with seven anagram pairs and a palindrome among them, and the search runs over
   18 records of code that can never match (10.11).
 - **No random numbers.** No `LD A,R`, no `FRAMES`: every cave plays the same for the same keys (doc 07.7).
@@ -1295,8 +1551,9 @@ recordings, `death-crush`, `death-fire`):
 - a password that matches, and `PasswordAccepted $8EE4`;
 - walking up into a potion (`$9194`, `$919A`);
 - a teleport with no teleporter left;
+- a teleport whose only remaining teleporter is cell 599, which `CPIR` finds with BC = 0 and the code takes for none
+  (reachable in caves 8 and 23; in `earth08` the cave ended with 456 and 599 left, in `earth23` 599 was entered);
 - the burst code `$10` falling or rolling in the one scan it is visible to;
 - `PlayerStep $8556` with `PlayerIndex` 0, which skips `TryLeft` (the `JR Z` goes to `TryRight`);
-- a life gained at 9 lives (`TakePotion` keeps 9);
 - an anti-gravity scan moving an object into the cell above a switch box (it has no switch test, so nothing would
   happen).

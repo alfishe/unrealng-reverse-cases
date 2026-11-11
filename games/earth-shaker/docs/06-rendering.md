@@ -79,21 +79,23 @@ DrawCell finds the graphic of a code with CellGraphicAddr `$8D66`:
 | 1 | 1 exit | CellGraphics `$9B08` | colours: CaveSetup, ExitFlash |
 | 2 | 2 boulder | GfxBoulder `$9B2C` | colours: CaveSetup |
 | 3, 4 | 3, 4 player right, left | GfxPlayerRight `$9B98`, GfxPlayerLeft `$9C28` | AnimateCells (4 frames), DeathView |
-| 5 | 5 wall | per cave | CaveSetup (WallGraphic `$FDA2`) |
-| 6 | 6 earth | per cave | CaveSetup (EarthGraphic `$FDA0`), EarthAnim |
+| 5 | 5 wall | GfxWall2 `$9CDC` | CaveSetup (WallGraphic `$FDA2`) |
+| 6 | 6 earth | GfxEarth `$9B50` | CaveSetup (EarthGraphic `$FDA0`), EarthAnim |
 | 7 | 7 gem | GfxGem `$9B74` | colours: DrawPass, every pass |
 | 8 | 8 jelly bean | GfxJellyBean `$A4E0` | AnimateTable (4 frames) |
-| 9 | 9 force field | GfxForceField `$A2A0` | AnimateTable (8 frames) |
+| 9 | 9 force field | GfxForceField + 6 x 36 `$A378` (frame 6, as saved) | AnimateTable (8 frames from `$A2A0`) |
 | 10 | `$0A` anti-gravity arrow | GfxAntiGrav `$A3C0` | AnimateTable (4 frames) |
 | 11 | `$0B` switch box | GfxSwitch `$9EB0` | never |
 | 12 | `$0C` potion | CellGraphics2 `$9E20` | AnimateTable (4 frames) |
-| 13 | `$0D` teleporter | GfxTeleporter `$9F64` | AnimateTable (12 frames) |
+| 13 | `$0D` teleporter | GfxTeleporter + 9 x 36 `$A0A8` (frame 9, as saved) | AnimateTable (12 frames from `$9F64`) |
 | 14 | `$0E` bubble | GfxBubble `$A114` | AnimateTable (4 frames) |
 | 15 | `$0F` fire | GfxFire `$9ED4` | AnimateTable (4 frames) |
 | 16-20 | `$10-$14` the bubble burst | GfxBurst `$A570` ... `$A5DC` | never; word 16 is never read |
 | 21-27 | `$15-$1B` the boulder dissolving in fire | GfxDissolve `$A1A4` ... `$A27C` | colours: CaveSetupAll |
 | 28-31 | none | `$0000` | never read |
 
+The "as loaded" column is the table in `build/game.bin`: words 5, 6, 9 and 13 hold what the game left there when the
+image was saved, not the first frame.
 The cell codes `$10-$1B` are animation states that step on by one each pass (AnimateCellCodes `$937E`, doc 10).
 Their table words are the animation frames, so the grid itself carries the animation.
 Words 16 and 21 are never read: AnimateCellCodes steps codes `$10` and `$15` on before the window is drawn in the same
@@ -750,12 +752,12 @@ flowchart TD
     A["MapKey EA96: F, MapShown 0"] --> B["ShowMap EA80"]
     B --> C["DrawMapFrame EA00: edges, corners, attributes 43"]
     C --> D["DrawMapCells 8059: 20 rows x 30 cells, last first"]
-    D --> E{"code below 10?"}
+    D --> E{"code 0 to 15?"}
     E -- "yes" --> F["PrintGlyph 8040: MapGlyphs + 8 x code"]
     E -- "no" --> G["no glyph: old pixels stay"]
     F --> H["ColourMapCells 81CC"]
     G --> H
-    H --> I{"code below 10?"}
+    H --> I{"code 0 to 15?"}
     I -- "yes" --> J["MapAttrs 9A80 + code"]
     I -- "no" --> K["attribute 0: black on black"]
     J --> L["PlayMapTune E8E1"]
@@ -796,7 +798,9 @@ DrawMapCells holds code that is read two ways:
 
 From `$805E` the bytes are `LD C,$1E` and `LD D,$9A`: the column count and the glyph page.
 The column loop jumps back to `$805F`, the operand of `LD C`, where the same bytes read `LD E,$16` and `SBC A,D`.
-Both results are overwritten at once (`LD A,(HL)`, `LD E,A`), so the side entry only skips the reload of C.
+Both results are overwritten at once (`LD A,(HL)`, `LD E,A`), so the side entry skips the reload of C and of D.
+Skipping D is harmless: PrintGlyph only steps DE through the 8 bytes of a glyph, and E stays at most `$80`, so D
+keeps `$9A`.
 mkgame keeps the three overlapped bytes as data.
 
 ![The map glyphs and their colours](img/render/map-glyphs.png)

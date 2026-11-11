@@ -210,7 +210,7 @@ MapShown:
 
 ; MapShown and PlayerKilled 0
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 ClearMapFlag:
   XOR A
   LD (MapShown),A
@@ -222,7 +222,7 @@ ClearMapFlag:
 ; Its last instruction, CALL DrawWindowAtOrigin $8D75, runs every pass: this is
 ; where the window is drawn.
 ;
-; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 MapKey:
   LD A,$FD
   OUT ($FF),A

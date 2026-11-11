@@ -4,6 +4,9 @@
 
     python3 tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...
     python3 tools/fig_play.py --out docs/img/play --sheet caves.png REC:FRAME:NAME ...   # also one labelled sheet
+
+A shot given as @PNG|LABEL|NAME is a 512 x 384 screenshot already made (kit/screen_shot.py, a frame between the
+capture's screens): it is copied as NAME.png and put on the sheet with LABEL.
 """
 import argparse
 import os
@@ -40,6 +43,12 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     made = []
     for spec in a.shots:
+        if spec.startswith('@'):
+            path, label, name = spec[1:].split('|', 2)
+            img = Image.open(path).convert('RGB').resize((256, 192), Image.NEAREST)
+            img.resize((512, 384), Image.NEAREST).save(os.path.join(a.out, name + '.png'))
+            made.append((label, img))
+            continue
         rec, frame, name = spec.split(':', 2)
         data = open(os.path.join(CASE, 'work', 'stage1', rec, 'screens', f'{int(frame):06d}.scr'), 'rb').read()
         img = scr_image(data)

@@ -29,7 +29,13 @@ flowchart TD
     BASIC["BASIC: RANDOMIZE USR 35616"] --> GE["GameEntry 8B20: ResetAll, DrawTitle"]
     GE --> TT["PlayTitleTune 8A35"]
     TT --> MK{"MenuKeys 8B29"}
-    MK -- "tune ran to its end" --> HS["ShowHiScores B2E4: the scroller"] --> TT
+    MK -- "tune ran to its end" --> HS["ShowHiScores B2E4: the scroller"]
+    HS -- "the scroller ran out (Z)" --> TT
+    HS -- "a key 1-5 stopped it (NZ)" --> KEYS["MenuKeysSkip 8B35: the key dispatch"]
+    KEYS --> NG
+    KEYS --> RK
+    KEYS --> CC
+    KEYS --> RM
     MK -- "key 1" --> NG["NewGame 8BE5"]
     MK -- "key 2" --> RK["RedefineKeys 8C30"] --> GE
     MK -- "keys 3, 4" --> CC["ChooseControl ECE3"] --> GE
@@ -40,7 +46,7 @@ flowchart TD
     CI --> PC["PlayCave 8885: set up, then passes"]
     PC --> NC{"NextCave 8A07"}
     NC -- "CaveDone, cave below 33" --> CS
-    NC -- "CaveDone after cave 32" --> WG["WinGame A8BF, back to cave 1"] --> CS
+    NC -- "CaveDone after cave 32" --> WG["WinGame A8BF; then NextCave sets cave 1"] --> CS
     NC -- "not done, lives left" --> CS
     NC -- "not done, last life" --> GO["GameOver 7FF3: the high scores, GAME OVER"] --> GE
     PC -- "key G: AbortKey drops 4 returns" --> GE
@@ -53,7 +59,10 @@ GameEntry:                               ; $8B20, entered by the BASIC loader
     ResetAll(); DrawTitle()
     loop:
         HL = PlayTitleTune()             ; HL = $B269 when the tune ran to its end
-        if HL == $B269: ShowHiScores(); continue
+        if HL == $B269:
+            ShowHiScores()               ; keeps RunScroller's flags
+            if Z: continue               ; the scroller ran out: the title tune again ($8B33)
+                                         ; else a key 1-5 stopped it: on to the dispatch below
         if key 1: NewGame(); goto GameEntry
         if key 2: RedefineKeys(); goto GameEntry
         if keys 3 or 4: ChooseControl()  ; jumps back to GameEntry itself
@@ -129,7 +138,9 @@ OVER screen.
 Worked example. The `lives` recording starts cave 1 and presses H again and again. Each H costs a life: the intro
 shows 5, 4, 3, 2, 1 lives. After the fifth H, NextCave returns with Lives 0 and GameOver shows GAME OVER
 ([doc 1.6](01-game-design.md#16-the-key-moments)). The RZX's play takes the CaveDone branch 32 times. At the end of
-`rzx-earth32` WinGame shows the win screen, and CaveNumber is 1 again.
+`rzx-earth32` WinGame is playing the win tune and CaveNumber `$FD91` is 33 (the RZX state log has `$21` from RZX
+frame 20648 to its last, 20881; CaveDigits already read "01", WinGame's own write); NextCave sets it to 1 at `$8A2E`
+after WinGame returns, which no recording reaches.
 
 Witness: the `c1` L1 has StartGame at frame 12617, CaveIntro at 12727, PlayCave at 12992 and the first KeysStep at
 13016. `c1` ends with H, then G: the menu returns with no GAME OVER screen.
@@ -166,8 +177,10 @@ interrupt does nothing for the game but cost time.
 The handler costs 882 T from the acknowledge to the end of the RET, in each of the six interrupts of the `c1` pass
 trace. That is 1.3 % of a frame. A pass of cave 1 takes six of them: 5 292 T of 394 506.
 
-The game turns interrupts off for every sound and for the screen wipe. Each routine below opens with DI and closes with
-EI:
+Interrupts are off inside every BEEPER call and in the routines of the table below whose loops do not call BEEPER
+(PlayTune re-issues DI after its drum BEEPERs). Each opens with DI and closes with EI. TimeBonus and QuitKey also start
+with DI, but their loops call BEEPER, whose EI undoes it: they run with interrupts on (41 of the 45 interrupts of the
+bonus in `rzx-earth01` 3668-3713 are taken):
 
 | Routine | DI | EI | What |
 | --- | --- | --- | --- |
@@ -178,16 +191,19 @@ EI:
 | FallSound | `$E7A9` | `$E7E3` | an object falls |
 | TeleportOut, TeleportIn | `$E87B`, `$E8AE` | `$E8AC`, `$E8DF` | the teleport sweeps |
 | TimeOutSound | `$86AD` | `$86D1` | the time ran out |
-| TimeBonus | `$8702` | `$871A` | the bar counted into the score |
-| QuitKey | `$8736` | `$8757` | H: the bar drains |
+| TimeBonus | `$8702`, undone by BonusTick's BEEPER `$8723` | `$871A` | the bar counted into the score |
+| QuitKey | `$8736`, undone by the BEEPER at `$8741` | `$8757` | H: the bar drains |
 | WipeScreen | `$8DE3` | `$8DFD` | the wipe before a cave |
 | KeyClick | `$8E1A` | `$8E29` | a key typed in the password |
 | PasswordAccepted | `$8EE7` | `$8F06` | the password matched |
 
-The ROM's BEEPER `$03B5` starts with DI and ends with EI at `$03F6`. So after each BEEPER call inside a sound the game
-issues DI again: PlayTune `$88E2` and `$88F8`, JellyBean `$9207` and `$921A`, PotionTune `$91C7`, AntiGravPass `$A813`.
-Without it an interrupt could fall between two notes. TimerStep's click at `$86F1` calls BEEPER with interrupts on, and
-BEEPER leaves them on.
+The ROM's BEEPER `$03B5` starts with DI and ends with EI at `$03F6`. So after some BEEPER calls the game issues DI
+again: PlayTune `$88E2` and `$88F8`, JellyBean `$9207` and `$921A`, AntiGravPass `$A813`. JellyBean leaves by
+`$9221 JP Continue` with the DI of `$921A` still on. PotionTune `$91C7` issues DI after PlayTune (whose EI is TuneEnds `$890E`)
+and returns with interrupts off; they come back only through PotionScore's RET into the ROM handler, whose EI is at
+`$0051` ([doc 10.8](10-gameplay-logic.md#108-the-special-cells)). GemSound `$82F9`, DeathSound `$862E`, RaspSound
+`$90A6`, FizzSound `$A78E` and AntiGravSound `$8164` call BEEPER with no DI of their own, and TimerStep's click at `$86F1`
+calls it with interrupts on: BEEPER leaves them on.
 
 An INT that falls while interrupts are off is lost: the 48K holds INT for only 32 T at the start of the frame. The
 pass with a thud shows it: 7.54 frames, five interrupts taken, two lost ([4.5](#45-where-a-pass-goes)). The lost
@@ -239,8 +255,9 @@ cell in the low nibble. The last 14 bytes are the parameters:
 | 8-9 | the wall graphic | `$9CB8` (GfxWall1) |
 | 10-13 | colours: door, boulder, wall 1, earth | `$44 $46 $42 $41` |
 
-The cell codes 0-15 are the objects ([doc 1.4](01-game-design.md#14-the-objects)). The game's own states use 16-31 and
-bit 5 ([doc 7](07-objects.md)).
+The cell codes 0-15 are the objects ([doc 1.4](01-game-design.md#14-the-objects)). The game's own states use 16-27
+(`$10-$1B`, the burst and the dissolve) and `$20`, the vacated mark; no code writes `$1C-$1F`
+([doc 7](07-objects.md)).
 
 ### The unpacker
 
@@ -525,8 +542,26 @@ work/docs/esA/c1 --window 13143:35781-13149:10971 --listing build/game.lst --mac
 work/docs/esA/c1 --window 13183:15803-13190:53826 --listing build/game.lst --machine 48k --width 1050 --frames 8`.*
 
 The window is drawn across frame boundaries with no regard for the beam. Its writes cross the beam's line in every
-frame, so a cell can show half old and half new for one frame. The game does nothing about it. An object moves one
+frame, so a cell can show half old and half new for one frame (read from the beam timelines; no screenshot of a torn
+frame was taken). The game does nothing about it. An object moves one
 cell a pass, every 5-10 frames, so the tear lasts one frame in five or more.
+
+The heaviest traced pass, cave 13 in `rzx-earth13`, against the beam: the scan and the fall sound fill frames 1533-1538
+with no screen write at all, ClearVacated runs into 1539, and only then is the window drawn, across 1539-1542.
+
+![The cave 13 pass against the beam](img/loop/beam-cave13.png)
+
+*Recording `rzx-earth13`, frames 1533:24069-1543:67391, eleven frames; DrawCell writes 6336 bytes, 3131 before the beam
+and 3205 after it. Command: `python3 ../../kit/beam_timeline.py --trace
+work/docs/esA/r13/traces/1533_24069-1543_67391.uatr --listing build/game.lst --machine 48k --width 1050 --frames 11
+--out docs/img/loop/beam-cave13.png`.*
+
+![The heaviest pass: PlayCave in cave 13](img/routines/PlayCave-cave13.gif)
+
+*The same pass, 10.62 frames, as an animation: memory `$8000-$FFFF` and the screen; the scan walks CaveGrid for most
+of the pass, then the window is redrawn. 60 pictures of 12 370 T. Command: `python3 ../../kit/routine_anim.py --trace
+work/docs/esA/r13/traces/1533_24069-1543_67391.uatr --listing build/game.lst --view screen --range 8000-FFFF --pc
+8885-88CD --pictures 60 --width 1050 --out docs/img/routines/PlayCave-cave13.gif`.*
 
 The point: a pass has a fixed part (the window, 3.26 frames) and a variable part (the cell update and the sounds).
 
@@ -560,7 +595,8 @@ Why the speed varies:
 - **Objects in motion.** The scan moves every falling boulder, gem, bubble and fire. Cave 24 has 56 bubbles and 31
   fires.
 - **Sounds.** A thud or a fall sound plays inside the pass with interrupts off.
-- **Empty caves are fast.** Cave 20 has no special objects and runs at 5.52 frames; cave 1 at 5.94.
+- **Caves with nothing to fall are fast.** Cave 20 has no boulder and no special (5.52 frames), cave 31 no boulder and
+  no earth (5.91); cave 21, no specials but 141 boulders, runs at 7.19. Cave 1 runs at 5.94.
 
 So the game is about 1.7 times slower in cave 13 than in cave 20. The player moves one cell a pass: 9 cells a second in
 cave 20, 5.3 in cave 13.
@@ -569,7 +605,7 @@ The idle passes (the player still) of the stage 1 sample give medians of 5.49-7.
 cave 24 ([WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on)).
 
 Witness: `work/docs/esA/pass-cost.tsv`, one row a cave with its passes and each part in T a pass. The passes per cave
-run from 513 (cave 1) to 3408 (cave 32).
+run from 362 (cave 13) to 3408 (cave 32).
 
 The point: the speed of the game is the work of the pass, and the cave's design sets that work.
 
@@ -621,12 +657,16 @@ flowchart LR
     Z -- yes --> O["TimeOutSound, CaveOver = FF"]
 ```
 
-256 pixels × 4 passes = 1024 passes a cave. A jelly bean refills the bar ([doc 1.5](01-game-design.md#15-the-rules)).
+256 pixels × 4 passes = 1024 passes a cave. A jelly bean adds 32 pixels, 128 passes, and a push into a force field
+takes 12 passes at once ([doc 1.5](01-game-design.md#15-the-rules)).
 
 Worked example: the `timer` recording. PlayCave starts at frame 2. F shows the map from frame 243 to 738; the pass
 stays inside MapKey all that time, while the map tune plays. TimeOutSound runs at frame 6040 and the next intro at
 6115. That is 6038 frames, less 495 for the map: 5543 frames of passes. 5543 / 1024 = 5.41 frames a pass, the idle
-pass of cave 1.
+pass of cave 1. The pass probe of [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on), from the same
+snapshot, has a median of 5.49 frames, so 1024 passes would take 5622 frames, 79 more: the two measurements differ by
+1.5 %. Not settled: TimerSub `$FD7C` is not reset per cave, so the first click comes after 1 to 4 passes, which
+accounts for at most 3 passes; the rest is open.
 
 Since the limit is in passes, the limit in seconds depends on the cave. At 5.5 frames a pass a cave lasts 113 s; at
 9.4 frames (cave 13) it lasts 193 s.
@@ -638,24 +678,34 @@ The point: a heavy cave runs slower and gives more seconds, so the player gets t
 
 ## 4.8 The waits outside a cave
 
-Outside the passes the game waits by doing something. There is no delay loop on FRAMES.
+Outside the passes the game waits by doing something. There is no delay loop on FRAMES; the one busy loop is Pause
+`$8C0E` (30 × 256 DJNZ turns, about 100 400 T), which paces the logo's wipe-in.
 
 | Wait | Where | Length in `c1` | How |
 | --- | --- | --- | --- |
+| the title logo | WipeInLogo `$8979`, from DrawTitle | 11229-11357 in `c1`: about 128 frames, every time the title is drawn | 64 steps, each Pause `$8C0E` then the logo lines copied; the L1 of `c1`: 8.93 million T an entry (5 entries), 6.52 million of them in Pause (320 entries) |
 | the title tune | PlayTitleTune `$8A35` | from frame 11357, until a key or the tune's end | PlayTune with DI, a keyboard read at `$8901` |
-| the cave intro | CaveIntro `$92D4` | 12727-12729 | DJNZ loops at `$92E3` and `$92EE` |
+| the wipe before the intro | ClearScreen `$860E` from CaveStart `$89F7` | 12705-12727 | WipeScreen `$8DE3` with DI, 22 frames |
+| the cave intro | CaveIntro `$92D4` | 12727-12729 | prints and returns: its DJNZ loops at `$92E3` and `$92EE` find the name and count its trailing spaces; the cave tune is the wait |
 | the cave tune | PlayCaveTune `$EE34` | 12729-12992 | PlayTune with DI |
-| the wipe | WipeScreen `$8DE3` | 12992-13014 | 1.35 million T with DI |
+| the wipe in the set-up | WipeScreen `$8DE3` (ClearScreenCave, 4.3) | 12992-13014 | 1.35 million T with DI; with the one before the intro, two 22-frame wipes a cave start (the L1 of `c1`: 9 entries, 1.54 million T each) |
 | the map | ShowMap `$EA80` | 495 frames in `timer` | the map drawn, then the map tune |
-| the time bonus | TimeBonus `$8702` | one beep a bar pixel | BonusTick with DI |
+| the time bonus | TimeBonus `$8702` ([animation](img/routines/TimeBonus.gif), doc 8) | one beep a bar pixel; `rzx-earth01` 3668-3713 | BonusTick's BEEPER; the DI at `$8702` lasts only to the first BEEPER, 41 of the 45 interrupts are taken |
+| the quit drain | QuitKey `$872D` (H) | about 39 frames for a full bar, then TimeOutSound 52 frames | ShiftTimeBar and a one-cycle BEEPER a pixel (below) |
 | the game over | GameOverScreen `$8BD5` | until a key | RomKeyScan |
 
-The point: every wait is a sound or a picture, and most run with interrupts off.
+The point: every wait is a sound or a picture; the tunes and the wipes run with interrupts off, the bonus and the
+drain with them on.
 
 ## 4.9 Known only from the code
 
-- After cave 32, WinGame sets cave 1 again. `rzx-earth32` ends on the win screen; no recording plays on into cave 1.
+- After WinGame returns, NextCave sets cave 1 (`$8A2E`). `rzx-earth32` ends inside the win tune with CaveNumber 33;
+  no recording plays on into cave 1.
 - If PlayerKilled and CaveDone are both set in one pass, PassLoop tests PlayerKilled first, so the death wins. No
   recording has both.
-- QuitKey drains the bar with DI, a click a pixel, then sets CaveOver ([doc 5](05-controls.md)). `c1` and `lives`
-  press H, but no trace covers the drain.
+- QuitKey drains the bar a pixel at a time, ShiftTimeBar and a one-cycle BEEPER (HL = 1, DE = 0) each, then sets
+  CaveOver and plays TimeOutSound ([doc 5](05-controls.md)). Its DI at `$8736` lasts only to the first BEEPER. No
+  trace covers the drain, but the L1 totals measure it: in `lives`, five drains of 1206 pixels in all cost QuitKey
+  31.10 million T inclusive, 18.29 million of them TimeOutSound, so 10 620 T a pixel (`c1`: 217 pixels, 10 690 T).
+  A full bar of 256 pixels drains in about 2.72 million T, 39 frames, then TimeOutSound takes 3.66 million T, 52
+  frames.

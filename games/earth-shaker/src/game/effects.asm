@@ -24,7 +24,7 @@ TeleportFrames:
 ;
 ; NoiseThud $E77C with AF, BC, DE, HL saved.
 ;
-; Witness: L1 3435 (c1, hiscore, rzx x29).
+; Witness: L1 3446 (c1, hiscore, rzx x29).
 ThudSound:
   PUSH AF
   PUSH DE
@@ -49,7 +49,7 @@ ThudSoundPad:
 ; JP PassSoundJump $E7E5 (the 1990 version moved the choice to PassSound
 ; $E83A).
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 PassSoundEntry:
   JP PassSoundJump
 
@@ -58,7 +58,7 @@ PassSoundEntry:
 ; A = BoulderFell $7FFF (from PassSound): not 0 plays FallSound $E7A9; else
 ; ObjectFell $7FFE not 0 does.
 ;
-; Witness: L1 40715 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 40382 (c1, hiscore, lives, timer, rzx x32).
 FallSoundChoice:
   OR A
   LD A,A
@@ -82,7 +82,7 @@ FallSoundPad:
 ;
 ; ROM BEEPER HL = $0200, DE = 5, then HL = $0100, DE = 10.
 ;
-; Witness: L1 1680 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx x32).
 GemSound:
   LD HL,$0200
   LD DE,$0005
@@ -171,7 +171,7 @@ DeathLoopPad:
 ; LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0
 ; byte gives a 256-turn low half).
 ;
-; Witness: L1 32 (rzx x31).
+; Witness: L1 33 (rzx x32).
 ExitOpenSound:
   DI
   LD HL,$0180
@@ -202,7 +202,7 @@ ExitOpenSoundLoop4:
 
 ; A rasp: the key redefined, a bubble burst
 ;
-; Witness: L1 145 (c1, menu, rzx x20).
+; Witness: L1 146 (c1, menu, rzx x21).
 RaspSound:
   LD HL,$0000
   LD DE,$0001
@@ -221,7 +221,7 @@ RaspSoundLoop:
 
 ; The teleport: the next attribute frame up
 ;
-; Witness: L1 912 (rzx x19).
+; Witness: L1 928 (rzx x19).
 TeleportFlashOut:
   LD HL,TeleportFrames
   LD DE,$0300
@@ -243,7 +243,7 @@ TeleportFlashOutSkip:
 
 ; The teleport: the next attribute frame down
 ;
-; Witness: L1 912 (rzx x19).
+; Witness: L1 928 (rzx x19).
 TeleportFlashIn:
   LD HL,TeleportFrames
   LD DE,$0300
@@ -339,7 +339,7 @@ SwitchSound:
 
 ; While FizzCount runs down: one beep a pass
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 FizzSound:
   CALL PassSoundEntry
   NOP
@@ -366,7 +366,7 @@ FizzSound:
 
 ; ROM bytes as noise
 ;
-; Witness: L1 10973 (c1, hiscore, rzx x30).
+; Witness: L1 11006 (c1, hiscore, rzx x30).
 NoiseBurst:
   DI
   LD HL,$0140
@@ -418,7 +418,7 @@ NoiseBurstSkip5:
 
 ; The thud: NoiseBurst with a short length
 ;
-; Witness: L1 3435 (c1, hiscore, rzx x29).
+; Witness: L1 3446 (c1, hiscore, rzx x29).
 NoiseThud:
   LD D,$06
 NoiseThudLoop:
@@ -436,7 +436,7 @@ NoiseThudLoop:
 
 ; The fall noise
 ;
-; Witness: L1 3591 (c1, rzx x32).
+; Witness: L1 3647 (c1, rzx x32).
 FallSound:
   DI
   LD HL,$010A
@@ -487,7 +487,7 @@ FallSoundSkip5:
 
 ; JP PassSound
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 PassSoundJump:
   JP PassSound
 
@@ -500,7 +500,7 @@ PassSoundOld:
 
 ; The dig noise when DugEarth
 ;
-; Witness: L1 20716 (c1, rzx x32).
+; Witness: L1 20264 (c1, rzx x32).
 DigNoiseIfDug:
   LD A,(DugEarth)
   CP $FF
@@ -511,7 +511,7 @@ DigNoiseIfDug:
 
 ; The teleport out: sound and attribute frames
 ;
-; Witness: L1 57 (rzx x19).
+; Witness: L1 58 (rzx x19).
 TeleportOutEffect:
   DI
   XOR A
@@ -553,7 +553,7 @@ TeleportOutEffectSkip2:
 
 ; The teleport in: sound and attribute frames
 ;
-; Witness: L1 57 (rzx x19).
+; Witness: L1 58 (rzx x19).
 TeleportInEffect:
   DI
   XOR A

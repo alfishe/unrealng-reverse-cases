@@ -24,7 +24,7 @@
 ; $94D6 (which takes gems and the other specials, continuation MoveLeft); then
 ; MoveLeft $8428.
 ;
-; Witness: L1 42409 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
 TryLeft:
   LD A,$DF
   OUT ($FF),A
@@ -85,7 +85,7 @@ TryLeftSkip2:
 
 ; Move the player one cell left (the old cell 0)
 ;
-; Witness: L1 4334 (c1, rzx x32).
+; Witness: L1 4365 (c1, rzx x32).
 MoveLeft:
   LD HL,(PlayerIndex)
   DEC HL
@@ -101,7 +101,7 @@ MoveLeft:
 ; As TryLeft $83C3 with PlayerFacing = 3, column 29 the edge, RightSpecial
 ; $9494 (continuation MoveRight), MoveRight $849E.
 ;
-; Witness: L1 36640 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 36883 (c1, hiscore, lives, timer, rzx x32).
 TryRight:
   LD A,$DF
   OUT ($FF),A
@@ -164,7 +164,7 @@ TryRightSkip2:
 
 ; Move the player one cell right
 ;
-; Witness: L1 4725 (c1, rzx x32).
+; Witness: L1 4761 (c1, rzx x32).
 MoveRight:
   LD HL,(PlayerIndex)
   INC HL
@@ -179,7 +179,7 @@ MoveRight:
 ;
 ; As TryLeft, row 0 the edge; boulders block; UpSpecial $9414, MoveUp $84E6.
 ;
-; Witness: L1 31174 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 31376 (c1, hiscore, lives, timer, rzx x32).
 TryUp:
   LD A,$FB
   OUT ($FF),A
@@ -215,7 +215,7 @@ TryUpSkip:
 
 ; Move the player one row up
 ;
-; Witness: L1 3768 (rzx x32).
+; Witness: L1 3803 (rzx x32).
 MoveUp:
   LD HL,(PlayerIndex)
   LD DE,$001E
@@ -231,7 +231,7 @@ MoveUp:
 ;
 ; Row 19 the edge; DownSpecial $93CE, MoveDown $8535.
 ;
-; Witness: L1 26576 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 26738 (c1, hiscore, lives, timer, rzx x32).
 TryDown:
   LD A,$FD
   OUT ($FF),A
@@ -268,7 +268,7 @@ TryDownSkip:
 
 ; Move the player one row down
 ;
-; Witness: L1 4021 (c1, rzx x32).
+; Witness: L1 4052 (c1, rzx x32).
 MoveDown:
   LD HL,(PlayerIndex)
   LD DE,$001E
@@ -289,7 +289,7 @@ MoveDown:
 ; recording has it). TryLeft, TryRight, TryUp, TryDown, each only while
 ; KeyMoved is not $FF; DigNoiseIfDug $E860.
 ;
-; Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 PlayerStep:
   CALL ClearStepFlags
   LD (HL),$00
@@ -328,7 +328,7 @@ PlayerStepSkip2:
 ; AddGemValue $8376, ShowScore $8342, CountGem $8394; when ExitOpen became $FF,
 ; ExitOpenSound $9072.
 ;
-; Witness: L1 1680 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx x32).
 CollectGem:
   CALL AddGemValue
   CALL ShowScore
@@ -351,7 +351,7 @@ CollectGem:
 ; The fire key's site (LD A,$7F at $8759, AND $04 at $875F: SPACE half row, bit
 ; 2 = M) is written by RedefineKeys $8C30.
 ;
-; Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 KeysStep:
   LD A,$7F
   OUT ($FF),A
@@ -406,10 +406,12 @@ FireLeftPad:
 
 ; Fire left on a boulder: push it when the cell beyond is empty
 ;
-; Not in column 0 or 1; the cell two to the left 0: it gets the boulder,
-; BoulderPushed.
+; The boulder not in column 0 (the test is on PlayerIndex - 1) and the cell
+; beyond it 0: the boulder moves there ($87BA), its old cell gets $20 ($87BD),
+; ThudSound $8228. BoulderPushed is not written.
 ;
-; Witness: L1 304 (rzx x15).
+; Witness: L1 304 (rzx x15); the push $87BA ran 30 times (rzx x6: rzx09, 16,
+; 24, 26, 27, 28; work/stage2/execs.json).
 FireLeftBoulder:
   CP $02
   RET NZ
@@ -567,7 +569,7 @@ FireStep:
 
   ORG $914C
 
-; Walked into a force field (9): stuck for 12 timer ticks
+; Walked into a force field (9): blocked, 12 TimerSteps at once (3 bar pixels)
 ;
 ; Witness: L1 11 (rzx x5).
 ForceField:
@@ -603,7 +605,7 @@ ForceFieldSkip:
 ; 279, from LeftSpecial $94D6, TryLeft's dispatcher: cave 4, one step left into
 ; fire).
 ;
-; Witness: L1 514 (rzx x32).
+; Witness: L1 517 (rzx x32).
 UpSpecialCell:
   LD A,$07
   CP (HL)
@@ -798,7 +800,7 @@ BubbleUpSkip2:
 
 ; A bubble pushed into fire: the cell becomes $10 (the burst), BubbleScore
 ;
-; Witness: L1 135 (rzx x20).
+; Witness: L1 136 (rzx x21).
 BubbleBurst:
   LD (HL),$10
   CALL BubbleScore
@@ -808,7 +810,7 @@ BubbleBurst:
 
 ; The burst bubble: RaspSound, 100 points
 ;
-; Witness: L1 135 (rzx x20).
+; Witness: L1 136 (rzx x21).
 BubbleScore:
   CALL RaspSound
   LD B,$64
@@ -822,7 +824,7 @@ BubbleScorePad:
 
 ; A cell code above $0F above the player blocks; else UpSpecialCell
 ;
-; Witness: L1 520 (rzx x32).
+; Witness: L1 523 (rzx x32).
 UpSpecialCheck:
   LD A,$0F
   CP (HL)
@@ -871,14 +873,14 @@ DownSpecialSkip:
 
 ; JP (HL): the stored continuation Continuation $FD87
 ;
-; Witness: L1 1607 (c1, rzx x27).
+; Witness: L1 1608 (c1, rzx x28).
 Continue:
   LD HL,(Continuation)
   JP (HL)
 
 ; The cell above is a special: its handler
 ;
-; Witness: L1 520 (rzx x32).
+; Witness: L1 523 (rzx x32).
 UpSpecial:
   PUSH HL
   LD HL,MoveUp
@@ -886,7 +888,11 @@ UpSpecial:
   POP HL
   JP UpSpecialCheck
 
-; A teleporter below: erase it, go to the next teleporter
+; A teleporter below: MoveUp, erase it, go to the next teleporter
+;
+; It calls MoveUp $84E6 ($942B), not MoveDown, then writes $20 into the cell
+; below. With no teleporter found (or only one in cell 599: the test is on BC
+; after CPIR, $9440) it returns with the player one row above where he stood.
 ;
 ; Witness: L1 11 (rzx x8).
 TeleportDown:
@@ -973,7 +979,7 @@ BubbleDownSkip2:
 ; The cell to the right is a special (TryRight $8437): its handler,
 ; continuation MoveRight
 ;
-; Witness: L1 957 (c1, rzx x32).
+; Witness: L1 959 (c1, rzx x32).
 RightSpecial:
   PUSH HL
   LD HL,MoveRight
@@ -1014,7 +1020,7 @@ RightSpecialSkip:
 ; The cell to the left is a special (TryLeft $83C3): its handler, continuation
 ; MoveLeft
 ;
-; Witness: L1 838 (rzx x32).
+; Witness: L1 847 (rzx x32).
 LeftSpecial:
   PUSH HL
   LD HL,MoveLeft
@@ -1054,7 +1060,7 @@ LeftSpecialSkip:
 
 ; A teleporter to the right
 ;
-; Witness: L1 17 (rzx x10).
+; Witness: L1 18 (rzx x10).
 TeleportRight:
   CALL TeleportOutEffect
   NOP
@@ -1189,7 +1195,7 @@ BubbleRightSkip3:
 
 ; Push a bubble left
 ;
-; Witness: L1 379 (rzx x19).
+; Witness: L1 380 (rzx x20).
 BubbleLeft:
   PUSH HL
   LD DE,CaveGrid
@@ -1403,7 +1409,11 @@ CollectPad:
 
   ORG $9980
 
-; The bubble pushed right moves
+; Mark the cell beyond a bubble pushed right
+;
+; The bubble is already written ($95CF). The cell beyond its new place gets $20
+; when it is 0; when the new place is in column 29 the loop ends with HL = 0
+; and the $20 goes to $0000 (the ROM, no effect). Then Continue $9410.
 ;
 ; Witness: L1 400 (rzx x19).
 BubbleRightMove:
@@ -1430,7 +1440,11 @@ BubbleRightMoveSkip3:
   POP HL
   JP Continue
 
-; The bubble pushed left moves
+; Mark the cell beyond a bubble pushed left
+;
+; The bubble is already written ($9600). The cell beyond its new place gets $20
+; when it is 0; when the new place is in column 0 the loop ends with HL = 0 and
+; the $20 goes to $0000 (the ROM, no effect). Then Continue $9410.
 ;
 ; Witness: L1 306 (rzx x18).
 BubbleLeftMove:
@@ -1494,7 +1508,7 @@ DigInPlace:
 
 ; Push a boulder left or right when the cell beyond is empty
 ;
-; Witness: L1 432 (c1, rzx x29).
+; Witness: L1 434 (c1, rzx x29).
 PushBoulder:
   CP (HL)
   JR Z,PushBoulderSkip
@@ -1514,7 +1528,7 @@ BoulderPushed:
 
 ; KeyMoved and BoulderPushed 0
 ;
-; Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 ClearMoveFlags:
   LD HL,KeyMoved
   LD (HL),$00
@@ -1530,7 +1544,7 @@ DugEarth:
 
 ; DugEarth 0, then ClearMoveFlags
 ;
-; Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 ClearStepFlags:
   LD HL,DugEarth
   LD (HL),$00
@@ -1540,7 +1554,7 @@ ClearStepFlags:
 
 ; A wall stops the move (the return address dropped); earth sets DugEarth
 ;
-; Witness: L1 19745 (c1, rzx x32).
+; Witness: L1 19281 (c1, rzx x32).
 BlockWall:
   LD A,$05
   CP (HL)

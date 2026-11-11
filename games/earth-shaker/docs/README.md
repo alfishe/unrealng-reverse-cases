@@ -44,8 +44,8 @@ Each term once, here; the documents link to it. Alphabetical.
 | speaker write | an `OUT ($FE)` that sets bit 4 (the speaker) high or low |
 | switch chain | an object landing on a switch box clears every switch box and force field of the cave at the next pass (doc 10.7) |
 | table word | the word of CellGraphicsTable `$8000` for a cell code: the address of its graphic |
-| test cave | the unused cave record at `$F9A6` in the leftovers, one of each object on its top row |
-| time bar | the 256-pixel bar at `$52C0` (row 22): one pixel per four passes |
+| test cave | the unused cave record at `$F9A6` in the leftovers, every special object (most of them twice) on its top row |
+| time bar | the 256-pixel bar at `$52C0` (row 22): one pixel per four passes; a jelly bean adds 32 pixels (128 passes), a push into a force field takes 3 |
 | unison note | a note with N1 = N2: voice 1's period is one turn shorter, so the pulse width sweeps |
 | vacated mark | bit 5 (`$20`) of a cell: written into a cell an object (or a vertical move of the player) just left, and under the new place of a rolled object; nothing falls or rolls into it for the rest of the pass, and ClearVacated `$81AC` clears it before the draw (doc 10.2) |
 | ViewOrigin | `$FD70`: the cave index of the window's top-left cell |

@@ -187,7 +187,9 @@ Witness: L1 2 (hiscore, menu).
 
 ### `ClearHiScoreArea` (`$B2C9`)
 
-**Clear rows 8-21 with BlankGraphic**
+**Clear rows 9-21 with BlankGraphic**
+
+C runs from 32 down to 0, so each row's 33rd glyph spills into column 0 of the next row (row 15's into row 8, row 21's into row 22).
 
 Witness: L1 2 (menu).
 
@@ -198,6 +200,8 @@ Witness: L1 2 (menu).
 ### `ShowHiScores` (`$B2E4`)
 
 **The high scores with the scroller, then the menu again**
+
+Out: RunScroller's flags, kept by PUSH AF / POP AF: NZ when a key 1-5 stopped the scroller, and MenuKeys `$8B29` then acts on that key at once; Z when the text ran out, and the title tune plays again.
 
 Witness: L1 1 (menu).
 
@@ -274,7 +278,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 
 NoiseThud `$E77C` with AF, BC, DE, HL saved.
 
-Witness: L1 3435 (c1, hiscore, rzx x29).
+Witness: L1 3446 (c1, hiscore, rzx x29).
 
 | | |
 | --- | --- |
@@ -288,7 +292,7 @@ Witness: L1 3435 (c1, hiscore, rzx x29).
 
 JP PassSoundJump `$E7E5` (the 1990 version moved the choice to PassSound `$E83A`).
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -302,7 +306,7 @@ Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
 
 A = BoulderFell `$7FFF` (from PassSound): not 0 plays FallSound `$E7A9`; else ObjectFell `$7FFE` not 0 does.
 
-Witness: L1 40715 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 40382 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -317,7 +321,7 @@ Witness: L1 40715 (c1, hiscore, lives, timer, rzx x32).
 
 ROM BEEPER HL = `$0200`, DE = 5, then HL = `$0100`, DE = 10.
 
-Witness: L1 1680 (c1, rzx x32).
+Witness: L1 1692 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -352,7 +356,7 @@ Witness: L1 255 (c1).
 
 LD C,(HL) then AND `$7F`: the AND acts on A, so C keeps the full ROM byte (a 0 byte gives a 256-turn low half).
 
-Witness: L1 32 (rzx x31).
+Witness: L1 33 (rzx x32).
 
 | | |
 | --- | --- |
@@ -362,7 +366,7 @@ Witness: L1 32 (rzx x31).
 
 **A rasp: the key redefined, a bubble burst**
 
-Witness: L1 145 (c1, menu, rzx x20).
+Witness: L1 146 (c1, menu, rzx x21).
 
 | | |
 | --- | --- |
@@ -373,7 +377,7 @@ Witness: L1 145 (c1, menu, rzx x20).
 
 **The teleport: the next attribute frame up**
 
-Witness: L1 912 (rzx x19).
+Witness: L1 928 (rzx x19).
 
 | | |
 | --- | --- |
@@ -383,7 +387,7 @@ Witness: L1 912 (rzx x19).
 
 **The teleport: the next attribute frame down**
 
-Witness: L1 912 (rzx x19).
+Witness: L1 928 (rzx x19).
 
 | | |
 | --- | --- |
@@ -418,7 +422,7 @@ Witness: L1 27 (c1, menu, rzx x23).
 
 **While FizzCount runs down: one beep a pass**
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -431,7 +435,7 @@ Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
 
 **ROM bytes as noise**
 
-Witness: L1 10973 (c1, hiscore, rzx x30).
+Witness: L1 11006 (c1, hiscore, rzx x30).
 
 | | |
 | --- | --- |
@@ -443,7 +447,7 @@ Witness: L1 10973 (c1, hiscore, rzx x30).
 
 **The thud: NoiseBurst with a short length**
 
-Witness: L1 3435 (c1, hiscore, rzx x29).
+Witness: L1 3446 (c1, hiscore, rzx x29).
 
 | | |
 | --- | --- |
@@ -456,7 +460,7 @@ Witness: L1 3435 (c1, hiscore, rzx x29).
 
 **The fall noise**
 
-Witness: L1 3591 (c1, rzx x32).
+Witness: L1 3647 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -468,7 +472,7 @@ Witness: L1 3591 (c1, rzx x32).
 
 **JP PassSound**
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -480,7 +484,7 @@ Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
 
 **The dig noise when DugEarth**
 
-Witness: L1 20716 (c1, rzx x32).
+Witness: L1 20264 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -493,7 +497,7 @@ Witness: L1 20716 (c1, rzx x32).
 
 **The teleport out: sound and attribute frames**
 
-Witness: L1 57 (rzx x19).
+Witness: L1 58 (rzx x19).
 
 | | |
 | --- | --- |
@@ -503,7 +507,7 @@ Witness: L1 57 (rzx x19).
 
 **The teleport in: sound and attribute frames**
 
-Witness: L1 57 (rzx x19).
+Witness: L1 58 (rzx x19).
 
 | | |
 | --- | --- |
@@ -519,7 +523,7 @@ Witness: L1 57 (rzx x19).
 
 A = 0, JP ClearFallFlags `$E7F5`, which clears BoulderLanded `$E7A8` and BoulderFell `$7FFF` and jumps to ScanCellsBody `$8079`.
 
-Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `ScanCells` at work](img/routines/ScanCells.gif)
 
@@ -535,7 +539,7 @@ Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
 
 ObjectFell `$7FFE` = A (0). HL = `$FFE1` (row 18, column 29), DE = HL + 30, 19 rows of 30 cells. A boulder above fire becomes `$15` (the dissolve) and FizzCount `$7FFB` = 7. The cells skipped (see the module header) never reach EarthFallGuard `$9AA6` / MoveObject `$80DB`. The CP (HL) at `$809A` is the earth test SetEarthFalls `$FB81` patches to NOP.
 
-Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -551,7 +555,7 @@ Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
 
 HL = the object, DE = the cell below, B = the column count left (30 for column 29, 1 for column 0). The cell below empty: the object moves into it, HL gets `$20`; a boulder calls BoulderLandCheck `$E78C`, another object sets ObjectFell `$7FFE`. Then the cell under the new place: the player facing right (3) jumps to Crush `$9ABC`, the rest to MoveObjectLanded `$8104`. The cell below not empty: RollObject `$8117`.
 
-Witness: L1 4542200 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -603,7 +607,7 @@ Witness: L1 16 (rzx x6).
 
 If SwitchHit `$7FFC`: every cell 9 (force field) and `$0B` (switch box) becomes `$20`, SwitchScore `$A9E3` (250 points and the sound), SwitchHit = 0. Then AntiGravPass `$A7CD`: the gravity scan of the pass.
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `SwitchClear` at work](img/routines/SwitchClear.gif)
 
@@ -620,7 +624,7 @@ Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
 
 Every grid cell AND `$1F`: `$20` becomes 0, the animation codes `$10-$1F` stay.
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -635,7 +639,9 @@ Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 
 `$10-$14` step to `$15`, which becomes `$20` (the burst); `$15-$1B` step to `$1C`, which becomes `$20` (the dissolve).
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+
+[Animation: `AnimateCellCodes` at work](img/routines/AnimateCellCodes.gif)
 
 | | |
 | --- | --- |
@@ -648,7 +654,7 @@ Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
 
 **Mark falling earth, then MoveObject**
 
-Witness: L1 4542200 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -677,7 +683,7 @@ Witness: L1 48 (c1, rzx x5): 47 falling earth in caves 13, 17, 22, 24, 26 (Earth
 
 **The falling-earth caves: animate earth and the empty cell (frames EmptyFrames `$FAE0`)**
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -729,7 +735,7 @@ Witness: L1 15 (rzx x6).
 
 **The gravity scan of a pass: down, or up while anti-gravity runs**
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -742,7 +748,7 @@ Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
 
 **A boulder fell: BoulderLanded when the cell under its new place is not empty or vacated**
 
-Witness: L1 9272 (c1, hiscore, rzx x29).
+Witness: L1 9340 (c1, hiscore, rzx x29).
 
 | | |
 | --- | --- |
@@ -755,7 +761,7 @@ Witness: L1 9272 (c1, hiscore, rzx x29).
 
 **BoulderLanded and BoulderFell = A, then ScanCellsBody**
 
-Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -768,7 +774,7 @@ Witness: L1 42702 (c1, hiscore, lives, timer, rzx x32).
 
 **The pass sound: a thud after a landing or a push, else the fall noise**
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -803,7 +809,7 @@ Witness: L1 6610 (rzx x5).
 
 The earth graphic's page decides the rule: earth falls when word 6 points into page `$A4` (GfxFallingEarth).
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -823,7 +829,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 B = the character row (0-23), C = the column (0-31), DE = the 8 glyph bytes. Out: DE past the glyph, HL the last screen byte. The font, the HUD digits and the map glyphs go through it.
 
-Witness: L1 89565 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -851,7 +857,7 @@ Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx x32).
 
 B = the row, C = the column. DE = `$5800` + 32B + C.
 
-Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -875,7 +881,7 @@ Witness: L1 19296 (c1, lives, menu).
 
 ColourCycleInk into the 4 attributes of the gem graphic `$9B74-$9B77` (ink, ink - 1, ink - 2, ink - 1), AnimateCells `$900B`, AnimateTable `$90B2`.
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -889,7 +895,7 @@ Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 
 **DE = the table word of cell A: `$8000` + 2 x (A AND `$1F`)**
 
-Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -900,7 +906,7 @@ Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
 
 **Draw the window at ViewOrigin**
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -914,7 +920,7 @@ Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 
 DrawCell `$8F60` for each; B = the character row (0, 2, ... 20), C = the column (0, 2, ... 30).
 
-Witness: L1 44156 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 44157 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `DrawWindow` at work](img/routines/DrawWindow.gif)
 
@@ -931,7 +937,7 @@ Witness: L1 44156 (c1, hiscore, lives, timer, rzx x32).
 
 Row = PlayerIndex / 30, column the rest; the column clamped to 8-22, the row to 5-14; ViewOrigin `$FD70` = 30 x (row - 5) + column - 8 (computed as 30 x (row + 1) + column - 188). The window is drawn later, by MapKey's CALL DrawWindowAtOrigin.
 
-Witness: L1 44155 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43833 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -946,7 +952,7 @@ Witness: L1 44155 (c1, hiscore, lives, timer, rzx x32).
 
 The graphic from CellGraphicsTable; its 4 attributes through AttrAddrDE `$8265`, then 32 pixel bytes in zigzag order. Valid on even character rows: SET 5,E for the lower half needs bit 5 of E clear. The graphic pointer steps with INC L inside each 4-byte group, so no group may cross a 256-byte page.
 
-Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -962,7 +968,7 @@ Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
 
 AnimPhase `$FD72` 0-3: the player's table words `$8006` / `$8008` from `$9B98` / `$9C28` + 36 x phase. Out: HL = ViewOrigin.
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -977,7 +983,7 @@ Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 
 EarthAnim `$9DFC`, then the words of cells 8, 9, `$0A`, `$0C`, `$0D`, `$0E`, `$0F` from frame AnimPhase.
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `AnimateTable` at work](img/routines/AnimateTable.gif)
 
@@ -987,7 +993,7 @@ Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 | Called from | `DrawPass` |
 | Calls | `EarthAnim` |
 | Reads | `$FD72`-`$FD74` (`AnimPhase`, `ForceFieldPhase`, `TeleporterPhase`) |
-| Writes | `$8010`-`$801F` (`CellCapsuleGfx`, `CellForceFieldGfx`, `CellAntiGravGfx`, `CellSwitchGfx` and 4 more); `$FD73`-`$FD74` (`ForceFieldPhase`, `TeleporterPhase`) |
+| Writes | `$8010`-`$801F` (`CellJellyBeanGfx`, `CellForceFieldGfx`, `CellAntiGravGfx`, `CellSwitchGfx` and 4 more); `$FD73`-`$FD74` (`ForceFieldPhase`, `TeleporterPhase`) |
 
 ## mapscreen
 
@@ -1075,7 +1081,7 @@ Witness: L1 1 (timer).
 
 **MapShown and PlayerKilled 0**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1089,7 +1095,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 Its last instruction, CALL DrawWindowAtOrigin `$8D75`, runs every pass: this is where the window is drawn.
 
-Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1115,11 +1121,11 @@ Witness: L1 600 (timer).
 
 ### `ColourCycle` (`$81E7`)
 
-**Step the cycling colour, flash the open exit, then the pass sound**
+**Step the cycling colour and flash the open exit**
 
-ColourPhase `$FD8E` steps; ColourCycleInk `$FD8F` cycles `$43-$46` (DrawPass `$8D46` writes it into the gem graphic). ExitFlash `$905B`. Ends with JP PassSoundEntry `$8250`.
+ColourPhase `$FD8E` steps; ColourCycleInk `$FD8F` cycles `$43-$46` (DrawPass `$8D46` writes it into the gem graphic). Ends with CALL ExitFlash `$905B`, RET (on either branch).
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1164,7 +1170,7 @@ Witness: L1 9 (c1, lives, menu).
 
 CaveDone, ExitOpen and GemDigits 0, GemCount 0; SetEarthFalls `$FB81`, FaceLeft, ShowHudLine, ShowScore, ShowCounters.
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1179,7 +1185,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 ResetAntiGrav `$A64B`, ResetCave `$85F1`, FillTimeBar `$8654`.
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1193,7 +1199,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 8 pixel lines from `$50DF`: RL through the 32 bytes of a line, the rightmost first. The bar's first byte `$52C0` empties last.
 
-Witness: L1 15905 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 15903 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1208,7 +1214,7 @@ Witness: L1 15905 (c1, hiscore, lives, timer, rzx x32).
 
 LD C,(HL) then AND `$7F`: the AND acts on A, so C keeps the full ROM byte (a 0 byte gives a 256-turn low half).
 
-Witness: L1 14 (c1, hiscore, lives, timer, rzx x1).
+Witness: L1 13 (c1, hiscore, lives, timer).
 
 | | |
 | --- | --- |
@@ -1222,7 +1228,7 @@ Witness: L1 14 (c1, hiscore, lives, timer, rzx x1).
 
 TimerSub `$FD7C` + `$40`; on the wrap: ShiftTimeBar `$8691` and a ROM BEEPER click (HL = 0, DE = 0). The bar's first byte `$52C0` at 0: TimeOutSound `$86AD`, CaveOver `$FD7D` = `$FF`.
 
-Witness: L1 44229 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43907 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1238,7 +1244,7 @@ Witness: L1 44229 (c1, hiscore, lives, timer, rzx x32).
 
 DI at its start, but the first BEEPER's EI turns them on again: 41 of the 45 interrupts in the bonus are taken (rzx-earth01 3668-3713). While `$52C0` is not 0: BonusTick `$871C` (a beep, D its period, rising), ShiftTimeBar, AddPoint, ShowScore.
 
-Witness: L1 31 (rzx x31).
+Witness: L1 32 (rzx x32).
 
 [Animation: `TimeBonus` at work](img/routines/TimeBonus.gif)
 
@@ -1250,7 +1256,7 @@ Witness: L1 31 (rzx x31).
 
 **One bonus beep: ROM BEEPER HL = D, DE = 1; its three DEC D are lost to TimeBonus's POP DE, so D falls by 1 a pixel (TimeBonus's own DEC D)**
 
-Witness: L1 1983 (rzx x31).
+Witness: L1 2062 (rzx x32).
 
 | | |
 | --- | --- |
@@ -1260,9 +1266,9 @@ Witness: L1 1983 (rzx x31).
 
 **Key H (half row `$BF`, bit 4): drain the time bar, end the cave**
 
-Shifts the bar with a click until it is empty, then CaveOver `$FD7D` = `$FF` and TimeOutSound: NextCave takes a life.
+Shifts the bar with a click until it is empty, then CaveOver `$FD7D` = `$FF` and TimeOutSound: NextCave takes a life. The DI at `$8736` lasts only to the first BEEPER (its EI): the drain runs with interrupts on. About 10 650 T a pixel (L1 totals of lives and c1), a full bar about 39 frames.
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1280,9 +1286,11 @@ Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
 
 CaveOver `$FD7D` = 0, CaveInit `$91B9`; each pass KeyMoved `$FD80` = 0, then the steps of the module header. CaveOver ends it; PlayerKilled: DeathView `$903F`, DeathSound `$862E`; CaveDone: TimeBonus `$8702`.
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `PlayCave` at work](img/routines/PlayCave.gif)
+
+[Animation: `PlayCave` at work, cave13](img/routines/PlayCave-cave13.gif)
 
 | | |
 | --- | --- |
@@ -1378,7 +1386,7 @@ Witness: L1 1 (c1).
 
 **AnimPhase = 3, CaveReset**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1391,7 +1399,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **Flash the exit door's colour while the exit is open**
 
-Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1403,7 +1411,7 @@ Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
 
 **A cave's start: CaveStartState, MapShown and PlayerKilled 0**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1430,7 +1438,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 
 The four POPs drop the returns of PlayCave, CavePlay, CaveStart and NewGame (`$889B`, `$89F3`, `$8A07`, `$8BE8`, the CALL GameOver); the RET reaches `$8B42` (JP GameEntry): no game-over screen, no high-score check. Witness: c1, AbortKey last at 15 244, GameOver never runs.
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1474,7 +1482,7 @@ Witness: L1 1 (rzx x1).
 
 **ResetAntiGravState, FizzCount and SwitchHit 0**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1487,7 +1495,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **ClearScreenCave, the anti-gravity digits and steps 0**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1536,7 +1544,7 @@ Witness: L1 1 (rzx x1).
 
 HL = `$BEC6` + 314 x CaveNumber `$FD91`; 300 bytes give 600 cells (low nibble first) into CaveGrid `$FDA8`, then 14 bytes to CaveParams `$FD9A`.
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `UnpackCave` at work](img/routines/UnpackCave.gif)
 
@@ -1555,7 +1563,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **Write A into the 4 attributes of the graphic at HL: bright, plain, plain, bright**
 
-Witness: L1 528 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 517 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1569,7 +1577,7 @@ Witness: L1 528 (c1, hiscore, lives, timer, rzx x32).
 
 UnpackCave `$82B6`; EarthGraphic `$FDA0` into the table word `$800C` (cell 6), WallGraphic `$FDA2` into `$800A` (cell 5); DoorColour into the exit graphic `$9B08`, BoulderColour into `$9B2C`, Wall1Colour into `$9CB8`, EarthColour into `$9B50` (SetGraphicColour).
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1583,7 +1591,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **ClearScreen, ColourCycleInk = `$45`**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1596,7 +1604,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **CaveSetup, then the boulder colour into the 7 dissolve frames**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1615,7 +1623,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 HL = the last digit, B = the digits. The carry runs left while a digit wraps from 9 to 0.
 
-Witness: L1 70071 (c1, rzx x32).
+Witness: L1 70659 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1630,7 +1638,7 @@ Witness: L1 70071 (c1, rzx x32).
 
 IncDigits on ScoreDigits `$FD94-$FD99`.
 
-Witness: L1 61386 (c1, rzx x32).
+Witness: L1 61961 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1644,7 +1652,7 @@ Witness: L1 61386 (c1, rzx x32).
 
 HL = the last digit, B = the row, C = the last digit's column, D = the count. The glyph of digit k is `$BD80` + 8k.
 
-Witness: L1 82024 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 82125 (c1, hiscore, lives, menu, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1657,7 +1665,7 @@ Witness: L1 82024 (c1, hiscore, lives, menu, timer, rzx x32).
 
 **Print the score at row 23, columns 26-31**
 
-Witness: L1 12513 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 12605 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1671,7 +1679,7 @@ Witness: L1 12513 (c1, hiscore, lives, timer, rzx x32).
 
 HL = the text, B = the row, C = the first column, D = the length. The glyph of code k is `$BC00` + 8k (Font `$BD00` is code `$20`).
 
-Witness: L1 5950 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 5949 (c1, hiscore, lives, menu, timer, rzx x32).
 
 [Animation: `PrintText` at work](img/routines/PrintText.gif)
 
@@ -1686,7 +1694,7 @@ Witness: L1 5950 (c1, hiscore, lives, menu, timer, rzx x32).
 
 **Print HudLine `$BCE0` on row 23**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1698,7 +1706,7 @@ Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 
 **Add GemValue `$FD9B` points, one at a time**
 
-Witness: L1 1680 (c1, rzx x32).
+Witness: L1 1692 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1713,7 +1721,7 @@ Witness: L1 1680 (c1, rzx x32).
 
 CaveGrid + PlayerIndex = PlayerFacing `$FD86`.
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1726,7 +1734,7 @@ Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
 
 **PlayerFacing = 4 (facing left)**
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1742,7 +1750,7 @@ GemCount `$FD92` + 1; when it equals GemsNeeded `$FD9A`, ExitOpen `$FD85` = `$FF
 
 Witness: rzx-earth01 frame 814, the panel goes from 00 to 01.
 
-Witness: L1 1680 (c1, rzx x32).
+Witness: L1 1692 (c1, rzx x32).
 
 [Animation: `CountGem` at work](img/routines/CountGem.gif)
 
@@ -1758,7 +1766,7 @@ Witness: L1 1680 (c1, rzx x32).
 
 **Print the cave number, the gems needed and the lives on row 23**
 
-Witness: L1 54 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 53 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1774,7 +1782,7 @@ Then BarColours `$9224`.
 
 4 pixel lines of 32 bytes from `$52C0`: 256 pixels, one taken every 4th pass by TimerStep, so a cave lasts 1024 passes (the timer recording: 5543 frames of passes, 5.41 frames a pass).
 
-Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1812,7 +1820,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 
 ### `JellyBean` (`$91F7`)
 
-**The jelly bean (8): the bar refilled with a sweep**
+**The jelly bean (8): 32 pixels added to the time bar with a sweep, 64 points**
 
 Witness: L1 132 (rzx x23).
 
@@ -1837,7 +1845,7 @@ Witness: L1 105 (c1, hiscore, lives, timer, rzx x32).
 
 **Add B points**
 
-Witness: L1 31018 (rzx x29).
+Witness: L1 31019 (rzx x29).
 
 | | |
 | --- | --- |
@@ -1895,7 +1903,7 @@ Witness: L1 16 (rzx x6).
 
 The key site LD A,row (`$83C4`) / AND mask (`$83CA`) is written by RedefineKeys `$8C30` and the control choice. Pressed: PlayerFacing = 4, KeyMoved = `$FF`; column 0 stops; the exit (1) only when ExitOpen (then CaveDone); the wall test BlockWall `$E869`, boulders PushBoulder `$E81F`, the codes > 6 LeftSpecial `$94D6` (which takes gems and the other specials, continuation MoveLeft); then MoveLeft `$8428`.
 
-Witness: L1 42409 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1911,7 +1919,7 @@ Witness: L1 42409 (c1, hiscore, lives, timer, rzx x32).
 
 **Move the player one cell left (the old cell 0)**
 
-Witness: L1 4334 (c1, rzx x32).
+Witness: L1 4365 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1923,7 +1931,7 @@ Witness: L1 4334 (c1, rzx x32).
 
 As TryLeft `$83C3` with PlayerFacing = 3, column 29 the edge, RightSpecial `$9494` (continuation MoveRight), MoveRight `$849E`.
 
-Witness: L1 36640 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 36883 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1939,7 +1947,7 @@ Witness: L1 36640 (c1, hiscore, lives, timer, rzx x32).
 
 **Move the player one cell right**
 
-Witness: L1 4725 (c1, rzx x32).
+Witness: L1 4761 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1954,7 +1962,7 @@ Witness: L1 4725 (c1, rzx x32).
 
 As TryLeft, row 0 the edge; boulders block; UpSpecial `$9414`, MoveUp `$84E6`.
 
-Witness: L1 31174 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 31376 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1967,7 +1975,7 @@ Witness: L1 31174 (c1, hiscore, lives, timer, rzx x32).
 
 **Move the player one row up**
 
-Witness: L1 3768 (rzx x32).
+Witness: L1 3803 (rzx x32).
 
 | | |
 | --- | --- |
@@ -1979,7 +1987,7 @@ Witness: L1 3768 (rzx x32).
 
 Row 19 the edge; DownSpecial `$93CE`, MoveDown `$8535`.
 
-Witness: L1 26576 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 26738 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1995,7 +2003,7 @@ Witness: L1 26576 (c1, hiscore, lives, timer, rzx x32).
 
 **Move the player one row down**
 
-Witness: L1 4021 (c1, rzx x32).
+Witness: L1 4052 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -2010,7 +2018,7 @@ Witness: L1 4021 (c1, rzx x32).
 
 ClearStepFlags `$E858` (DugEarth, KeyMoved, BoulderPushed 0). PlayerIndex 0 skips only TryLeft (JR Z,PlayerStepSkip lands on the TryRight call; no recording has it). TryLeft, TryRight, TryUp, TryDown, each only while KeyMoved is not `$FF`; DigNoiseIfDug `$E860`.
 
-Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -2026,7 +2034,7 @@ Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
 
 AddGemValue `$8376`, ShowScore `$8342`, CountGem `$8394`; when ExitOpen became `$FF`, ExitOpenSound `$9072`.
 
-Witness: L1 1680 (c1, rzx x32).
+Witness: L1 1692 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -2041,7 +2049,7 @@ Witness: L1 1680 (c1, rzx x32).
 
 The fire key's site (LD A,`$7F` at `$8759`, AND `$04` at `$875F`: SPACE half row, bit 2 = M) is written by RedefineKeys `$8C30`.
 
-Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `KeysStep` at work](img/routines/KeysStep.gif)
 
@@ -2069,9 +2077,9 @@ Witness: L1 1678 (rzx x23).
 
 **Fire left on a boulder: push it when the cell beyond is empty**
 
-Not in column 0 or 1; the cell two to the left 0: it gets the boulder, BoulderPushed.
+The boulder not in column 0 (the test is on PlayerIndex - 1) and the cell beyond it 0: the boulder moves there (`$87BA`), its old cell gets `$20` (`$87BD`), ThudSound `$8228`. BoulderPushed is not written.
 
-Witness: L1 304 (rzx x15).
+Witness: L1 304 (rzx x15); the push `$87BA` ran 30 times (rzx x6: rzx09, 16, 24, 26, 27, 28; work/stage2/execs.json).
 
 | | |
 | --- | --- |
@@ -2119,7 +2127,7 @@ Witness: L1 1678 (rzx x23).
 
 ### `ForceField` (`$914C`)
 
-**Walked into a force field (9): stuck for 12 timer ticks**
+**Walked into a force field (9): blocked, 12 TimerSteps at once (3 bar pixels)**
 
 Witness: L1 11 (rzx x5).
 
@@ -2135,7 +2143,7 @@ HL = the cell above (code `$07-$0F`, UpSpecialCheck `$93C7`). Gem: CollectGem `$
 
 Known only from the code: the fire test `$9194` and the tail `$919A` never ran: no build walked up into fire or a potion. The tail is reached after a potion taken from above: CALL Z,TakePotion returns with HL at the `$FF` that ends LifeTune, every later test fails, CP `$0F` leaves carry, and SBC gives PlayerIndex - 30: the player moves up into the potion's cell, by luck of the carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial `$94D6`, TryLeft's dispatcher: cave 4, one step left into fire).
 
-Witness: L1 514 (rzx x32).
+Witness: L1 517 (rzx x32).
 
 | | |
 | --- | --- |
@@ -2195,7 +2203,7 @@ Witness: L1 206 (rzx x16).
 
 **A bubble pushed into fire: the cell becomes `$10` (the burst), BubbleScore**
 
-Witness: L1 135 (rzx x20).
+Witness: L1 136 (rzx x21).
 
 | | |
 | --- | --- |
@@ -2205,7 +2213,7 @@ Witness: L1 135 (rzx x20).
 
 **The burst bubble: RaspSound, 100 points**
 
-Witness: L1 135 (rzx x20).
+Witness: L1 136 (rzx x21).
 
 | | |
 | --- | --- |
@@ -2215,7 +2223,7 @@ Witness: L1 135 (rzx x20).
 
 **A cell code above `$0F` above the player blocks; else UpSpecialCell**
 
-Witness: L1 520 (rzx x32).
+Witness: L1 523 (rzx x32).
 
 | | |
 | --- | --- |
@@ -2239,7 +2247,7 @@ Witness: L1 1120 (c1, rzx x32).
 
 **JP (HL): the stored continuation Continuation `$FD87`**
 
-Witness: L1 1607 (c1, rzx x27).
+Witness: L1 1608 (c1, rzx x28).
 
 | | |
 | --- | --- |
@@ -2252,7 +2260,7 @@ Witness: L1 1607 (c1, rzx x27).
 
 **The cell above is a special: its handler**
 
-Witness: L1 520 (rzx x32).
+Witness: L1 523 (rzx x32).
 
 | | |
 | --- | --- |
@@ -2260,7 +2268,9 @@ Witness: L1 520 (rzx x32).
 
 ### `TeleportDown` (`$941F`)
 
-**A teleporter below: erase it, go to the next teleporter**
+**A teleporter below: MoveUp, erase it, go to the next teleporter**
+
+It calls MoveUp `$84E6` (`$942B`), not MoveDown, then writes `$20` into the cell below. With no teleporter found (or only one in cell 599: the test is on BC after CPIR, `$9440`) it returns with the player one row above where he stood.
 
 Witness: L1 11 (rzx x8).
 
@@ -2296,7 +2306,7 @@ Witness: L1 592 (c1, rzx x21).
 
 **The cell to the right is a special (TryRight `$8437`): its handler, continuation MoveRight**
 
-Witness: L1 957 (c1, rzx x32).
+Witness: L1 959 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -2310,7 +2320,7 @@ Witness: L1 957 (c1, rzx x32).
 
 **The cell to the left is a special (TryLeft `$83C3`): its handler, continuation MoveLeft**
 
-Witness: L1 838 (rzx x32).
+Witness: L1 847 (rzx x32).
 
 | | |
 | --- | --- |
@@ -2320,7 +2330,7 @@ Witness: L1 838 (rzx x32).
 
 **A teleporter to the right**
 
-Witness: L1 17 (rzx x10).
+Witness: L1 18 (rzx x10).
 
 | | |
 | --- | --- |
@@ -2342,6 +2352,8 @@ Witness: L1 13 (rzx x9).
 
 Witness: L1 499 (rzx x19).
 
+[Animation: `BubbleRight` at work](img/routines/BubbleRight.gif)
+
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 499 calls (`stage1/rzx32` 260, `stage1/rzx25` 45, `stage1/rzx26` 39 and 16 more) |
@@ -2350,7 +2362,7 @@ Witness: L1 499 (rzx x19).
 
 **Push a bubble left**
 
-Witness: L1 379 (rzx x19).
+Witness: L1 380 (rzx x20).
 
 | | |
 | --- | --- |
@@ -2458,7 +2470,9 @@ Witness: L1 2 (rzx x2).
 
 ### `BubbleRightMove` (`$9980`)
 
-**The bubble pushed right moves**
+**Mark the cell beyond a bubble pushed right**
+
+The bubble is already written (`$95CF`). The cell beyond its new place gets `$20` when it is 0; when the new place is in column 29 the loop ends with HL = 0 and the `$20` goes to `$0000` (the ROM, no effect). Then Continue `$9410`.
 
 Witness: L1 400 (rzx x19).
 
@@ -2468,7 +2482,9 @@ Witness: L1 400 (rzx x19).
 
 ### `BubbleLeftMove` (`$99A0`)
 
-**The bubble pushed left moves**
+**Mark the cell beyond a bubble pushed left**
+
+The bubble is already written (`$9600`). The cell beyond its new place gets `$20` when it is 0; when the new place is in column 0 the loop ends with HL = 0 and the `$20` goes to `$0000` (the ROM, no effect). Then Continue `$9410`.
 
 Witness: L1 306 (rzx x18).
 
@@ -2500,7 +2516,7 @@ Witness: L1 167 (rzx x16).
 
 **Push a boulder left or right when the cell beyond is empty**
 
-Witness: L1 432 (c1, rzx x29).
+Witness: L1 434 (c1, rzx x29).
 
 | | |
 | --- | --- |
@@ -2512,7 +2528,7 @@ Witness: L1 432 (c1, rzx x29).
 
 **KeyMoved and BoulderPushed 0**
 
-Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -2524,7 +2540,7 @@ Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
 
 **DugEarth 0, then ClearMoveFlags**
 
-Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -2537,7 +2553,7 @@ Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
 
 **A wall stops the move (the return address dropped); earth sets DugEarth**
 
-Witness: L1 19745 (c1, rzx x32).
+Witness: L1 19281 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -2570,7 +2586,7 @@ Witness: L1 9 (c1, lives, menu).
 
 Attributes `$47` (bright white on black), WipeScreen `$8DE3`.
 
-Witness: L1 105 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -2675,7 +2691,7 @@ Witness: L1 1 (menu).
 
 **Wipe the pixels away: 8 passes shifting each byte pair apart**
 
-Witness: L1 105 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 
 | | |
 | --- | --- |

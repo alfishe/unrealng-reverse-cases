@@ -45,16 +45,20 @@ Interrupts, a first look (L1 of `c1`, `menu`, `lives`, `rzx-earth01`):
 - No HALT runs in any recording (the L1 instruction lists hold no `$76`; the `$76` bytes at `$9A22`, `$B7C5`,
   `$B7DD` and `$BF02` are graphics and never run), and no game code reads FRAMES (its reads equal the ROM
   handler's writes). The game never waits for the frame: a pass of the cave takes as long as its work.
-- Interrupts go off only around sound: the tune player `$88CE` (DI at `$88CE`, `$88E2`, `$88F8`, EI at `$890E`
-  when a key 1-5 ends the tune), the jingles and effects `$86AD-$86D1`, `$8702-$871A`, `$8736-$8757` (DI, the
-  ROM's BEEPER `$03B5`, EI) and a few short ones (`$8DE3-$8DFD`, `$9072-$908F`, `$9207`, `$921A`, `$A713-$A749`,
-  `$E740-$E77A`, `$E7A9-$E7E3`). So `rzx-earth01`'s 3803 frames took 2898 interrupts: the rest fell while a tune
+- Interrupts go off around sound and for the screen wipe: the tune player `$88CE` (DI at `$88CE`, `$88E2`, `$88F8`,
+  EI at `$890E` when a key 1-5 ends the tune), every BEEPER call (its own DI, EI at `$03F6`), TimeOutSound
+  `$86AD-$86D1`, the effects `$9072-$908F`, `$9207`, `$921A`, `$A713-$A749`, `$E740-$E77A`, `$E7A9-$E7E3`, and the
+  wipe WipeScreen `$8DE3-$8DFD` (22 frames). TimeBonus `$8702-$871A` and QuitKey `$8736-$8757` start with DI, but
+  the first BEEPER in their loops turns interrupts on again, so they run with interrupts on
+  ([doc 4.2](docs/04-game-loop.md#42-the-interrupt)). So `rzx-earth01`'s 3803 frames took 2898 interrupts: the rest fell while a tune
   or a jingle held them off.
 - The pass: the player's controls are read once a pass, the left key (or Kempston) at `$83C3`, right `$8437`, up
-  `$84AD`, down `$84F9`, fire `$8759`, abort G `$93A8`, quit H `$872D`, each a self-modified
-  `LD A,row; OUT ($FF),A; IN A,($FE); AND mask` whose row and mask the redefine menu writes. In the RZX archive's
-  `earth01` the reads of `$83C3` come every 5 frames (247 passes), 6 (224), 7 (33) or 8 (5): a pass is 5 to 8
-  frames of work in cave 1.
+  `$84AD`, down `$84F9`, fire `$8759`, each a self-modified `LD A,row; OUT ($FF),A; IN A,($FE); AND mask` whose
+  row and mask the redefine menu writes; abort G `$93A8` and quit H `$872D` are fixed reads of the same form. In
+  the RZX archive's `earth01` the reads of `$83C3` come every 5 RZX frames (247 passes), 6 (224), 7 (33) or 8 (5).
+  RZX frames end at accepted interrupts, so a frame whose interrupt was lost under DI is not an RZX frame and passes
+  with sounds look shorter; in 69 888-T frames the mean pass of cave 1 is 5.94
+  ([doc 4.6](docs/04-game-loop.md#46-the-cost-of-a-pass-in-every-cave)).
 
 The pass in our own instance (`tools/passes.py`: 300 passes from one `$8759` to the next with `/skip_until`,
 timed by `/video/beam`, no key held, from each state after its intro; `work/stage1/passes.json`):
@@ -94,6 +98,9 @@ each `$RS capture` also takes `--model 48K --ranges 4000-FFFF --binary $BIN` (th
 
 The writers of docs 01-10 made no new recording: they reopened these sessions in their own work folders
 (`work/docs/es*/<name>/`; esA on port base 37150, esB 37160, esD 37180) to trace and animate them.
+In the review, fixA reopened `c1`, `death-fire` and `rzx-earth01`-`04` (stage 1's `rzx04`), `09` and `22` on port base
+37250 for screenshots between the captures' screens (`work/review/fixA/shots.sh`, `kit/screen_shot.py`: the password
+prompt, the death by fire and the first appearances of doc 1.6), muted and stopped after each.
 esB's control experiments (doc 5.3, cases A-D) ran on clones of `work/stage1/probe/after-load.szx`
 (`python3 work/docs/esB/exp_controls.py`), not as recordings.
 
@@ -172,10 +179,11 @@ Every cave in play, half way through its `rzx-earthNN` recording, and the win sc
 | `front.png` | the shots below | (labelled) | the front-end sheet | [1](docs/01-game-design.md), WALKTHROUGH |
 | `caves.png` | `rzx-earth01` ... `rzx-earth32` | (labelled) | the 32 caves and the win | [1](docs/01-game-design.md), [6](docs/06-rendering.md), WALKTHROUGH |
 | `menu.png` | `menu` | 250 | the menu with the control lines 3 and 4 | [1](docs/01-game-design.md), [5](docs/05-controls.md), [8](docs/08-hud-and-text.md) |
-| `menu-joystick.png` | `c1` | 12 550 | the title drawn again after the redefinition (keyboard code in the sites) | [1](docs/01-game-design.md), [5](docs/05-controls.md), [8](docs/08-hud-and-text.md) |
+| `menu-joystick.png` | `c1` | 12 550 | the title drawn again after the redefinition, the logo half wiped in (keyboard code in the sites) | [1](docs/01-game-design.md), [5](docs/05-controls.md), [8](docs/08-hud-and-text.md) |
 | `hiscores.png` | `menu` | 4000 | the default high-score table under the scroller | [1](docs/01-game-design.md), [8](docs/08-hud-and-text.md) |
 | `redefine.png` | `menu` | 7000 | the redefine prompts (key 2) | [1](docs/01-game-design.md), [5](docs/05-controls.md), [8](docs/08-hud-and-text.md) |
 | `quit-rom.png` | `menu` | 7750 | key 5: the ROM's copyright screen | [1](docs/01-game-design.md), [5](docs/05-controls.md) |
+| `password.png` | `c1` | 12 700 (`kit/screen_shot.py`, between the capture's screens) | the password prompt (key 1) | [1](docs/01-game-design.md) |
 | `intro-cave01.png` | `c1` | 12 800 | cave 1's intro | [1](docs/01-game-design.md), [8](docs/08-hud-and-text.md), [10](docs/10-gameplay-logic.md) |
 | `play-cave01.png` | `c1` | 13 800 | cave 1 in play, 4 lives after the crush at 13 208 | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `map-cave01.png` | `timer` | 250 | the map of cave 1 (F) | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
@@ -216,7 +224,7 @@ Every cave in play, half way through its `rzx-earthNN` recording, and the win sc
 | `cave-31.png` | `rzx-earth31` | 5000 | cave 31 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `cave-32.png` | `rzx-earth32` | 10250 | cave 32 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 
-The caves drawn whole from their data are in [doc 2.3](docs/02-architecture.md#23-the-cells-and-their-graphics).
+The caves drawn whole from their data are in [doc 1.7](docs/01-game-design.md#17-the-32-caves).
 
 ### 6.2 The animations
 
@@ -231,6 +239,7 @@ recording; the full command is in each caption. Frames are `frame` or `frame:T` 
 | `docs/img/routines/UnpackCave-memory.gif` | [4](docs/04-game-loop.md) | `c1` | 13014:58000-13015:24000 |
 | `docs/img/routines/UnpackCave-nibbles.gif` | [4](docs/04-game-loop.md), [7](docs/07-objects.md) | `rzx-earth02` | 269 |
 | `docs/img/routines/PlayCave.gif` | [4](docs/04-game-loop.md) | `c1` | 13143:35781-13149:10971 (one pass) |
+| `docs/img/routines/PlayCave-cave13.gif` | [4](docs/04-game-loop.md) | `rzx-earth13` | 1533:24069-1543:67391 (the heaviest traced pass) |
 | `docs/img/routines/KeysStep.gif` | [5](docs/05-controls.md) | `rzx-earth01` | 2945:0-3030:0 |
 | `docs/img/play/walk-push.gif` | [5](docs/05-controls.md) | `rzx-earth01` | 2945-3030 |
 | `docs/img/routines/RedefineKeys.gif` | [5](docs/05-controls.md) | `c1` | 12279:62000-12280:5900 |

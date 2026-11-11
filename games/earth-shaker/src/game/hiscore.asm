@@ -401,7 +401,8 @@ YouScoredText:
 ReachedLevelText:
   INCBIN "res/texts/game-over.bin",$0013,17
 
-; A blank cell graphic (36 zeros): the high-score area is cleared with it
+; The empty cell's graphic (36 zeros): table word 0, set by SetEarthFalls; also
+; clears the high-score area
 BlankGraphic:
   INCBIN "res/graphics/blank.bin",$0000,36
 
@@ -492,7 +493,10 @@ ColourHiScoresLoop:
   CALL FillAttrs
   RET
 
-; Clear rows 8-21 with BlankGraphic
+; Clear rows 9-21 with BlankGraphic
+;
+; C runs from 32 down to 0, so each row's 33rd glyph spills into column 0 of
+; the next row (row 15's into row 8, row 21's into row 22).
 ;
 ; Witness: L1 2 (menu).
 ClearHiScoreArea:
@@ -517,6 +521,10 @@ ClearHiScoreAreaLoop2:
   RET
 
 ; The high scores with the scroller, then the menu again
+;
+; Out: RunScroller's flags, kept by PUSH AF / POP AF: NZ when a key 1-5 stopped
+; the scroller, and MenuKeys $8B29 then acts on that key at once; Z when the
+; text ran out, and the title tune plays again.
 ;
 ; Witness: L1 1 (menu).
 ShowHiScores:

@@ -7,21 +7,21 @@
 ; screen, then cave 1 again) or a life.
 ;
 ; A pass of PlayCave: KeysStep $8759 (the player), PutPlayer $8382, AbortKey $93A5 (G), ClearVacated $81AC,
-; WindowOrigin $8DA6 (the window drawn), MapKey $EA96 (F), ColourCycle $81E7 (with the cell update and the pass
-; sound), FizzSound $A773, TimerStep $86DE, QuitKey $872D (H). It ends when CaveOver $FD7D is set (out of time or
-; quit), PlayerKilled $7FFD (DeathView $903F, DeathSound $862E) or CaveDone $FD84 (the exit entered: TimeBonus $8702).
-; The game has no frame sync (no HALT): a pass takes as long as its work and its sounds.
+; WindowOrigin $8DA6 (the window drawn), MapKey $EA96 (F), ColourCycle $81E7 (the gem and exit colours), FizzSound
+; $A773 (the pass sound and the fizz), TimerStep $86DE, QuitKey $872D (H). It ends when CaveOver $FD7D is set (out of
+; time or quit), PlayerKilled $7FFD (DeathView $903F, DeathSound $862E) or CaveDone $FD84 (the exit entered: TimeBonus
+; $8702). The game has no frame sync (no HALT): a pass takes as long as its work and its sounds.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $81E7
 
-; Step the cycling colour, flash the open exit, then the pass sound
+; Step the cycling colour and flash the open exit
 ;
 ; ColourPhase $FD8E steps; ColourCycleInk $FD8F cycles $43-$46 (DrawPass $8D46
-; writes it into the gem graphic). ExitFlash $905B. Ends with JP PassSoundEntry
-; $8250.
+; writes it into the gem graphic). Ends with CALL ExitFlash $905B, RET (on
+; either branch).
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 ColourCycle:
   LD A,(ColourCycleInk)
   CP $46
@@ -90,7 +90,7 @@ ResetGame:
 ; CaveDone, ExitOpen and GemDigits 0, GemCount 0; SetEarthFalls $FB81,
 ; FaceLeft, ShowHudLine, ShowScore, ShowCounters.
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 ResetCave:
   LD HL,$0000
   LD (CaveDone),HL
@@ -110,7 +110,7 @@ ResetCave:
 ;
 ; ResetAntiGrav $A64B, ResetCave $85F1, FillTimeBar $8654.
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 CaveReset:
   CALL ResetAntiGrav
   CALL ResetCave
@@ -122,7 +122,7 @@ CaveReset:
 ; 8 pixel lines from $50DF: RL through the 32 bytes of a line, the rightmost
 ; first. The bar's first byte $52C0 empties last.
 ;
-; Witness: L1 15905 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 15903 (c1, hiscore, lives, timer, rzx x32).
 ShiftTimeBar:
   LD HL,Screen+4319
   LD B,$08
@@ -150,7 +150,7 @@ ShiftTimeBarLoop2:
 ; LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0
 ; byte gives a 256-turn low half).
 ;
-; Witness: L1 14 (c1, hiscore, lives, timer, rzx x1).
+; Witness: L1 13 (c1, hiscore, lives, timer).
 TimeOutSound:
   DI
   LD HL,$0180
@@ -195,7 +195,7 @@ TimeOutPad:
 ; (HL = 0, DE = 0). The bar's first byte $52C0 at 0: TimeOutSound $86AD,
 ; CaveOver $FD7D = $FF.
 ;
-; Witness: L1 44229 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43907 (c1, hiscore, lives, timer, rzx x32).
 TimerStep:
   LD A,(TimerSub)
   ADD A,$40
@@ -221,7 +221,7 @@ TimerStep:
 ; 0: BonusTick $871C (a beep, D its period, rising), ShiftTimeBar, AddPoint,
 ; ShowScore.
 ;
-; Witness: L1 31 (rzx x31).
+; Witness: L1 32 (rzx x32).
 TimeBonus:
   DI
   LD D,$00
@@ -242,7 +242,7 @@ TimeBonusLoop:
 ; One bonus beep: ROM BEEPER HL = D, DE = 1; its three DEC D are lost to
 ; TimeBonus's POP DE, so D falls by 1 a pixel (TimeBonus's own DEC D)
 ;
-; Witness: L1 1983 (rzx x31).
+; Witness: L1 2062 (rzx x32).
 BonusTick:
   LD H,$00
   LD L,D
@@ -262,9 +262,11 @@ TimeBonusPad:
 ; Key H (half row $BF, bit 4): drain the time bar, end the cave
 ;
 ; Shifts the bar with a click until it is empty, then CaveOver $FD7D = $FF and
-; TimeOutSound: NextCave takes a life.
+; TimeOutSound: NextCave takes a life. The DI at $8736 lasts only to the first
+; BEEPER (its EI): the drain runs with interrupts on. About 10 650 T a pixel
+; (L1 totals of lives and c1), a full bar about 39 frames.
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 QuitKey:
   LD A,$BF
   OUT ($FF),A
@@ -300,7 +302,7 @@ QuitKeyLoop:
 ; steps of the module header. CaveOver ends it; PlayerKilled: DeathView $903F,
 ; DeathSound $862E; CaveDone: TimeBonus $8702.
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 PlayCave:
   LD HL,CaveOver
   LD (HL),$00
@@ -432,7 +434,7 @@ DeathView:
 
 ; AnimPhase = 3, CaveReset
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 CaveStartState:
   LD A,$03
   LD (AnimPhase),A
@@ -441,7 +443,7 @@ CaveStartState:
 
 ; Flash the exit door's colour while the exit is open
 ;
-; Witness: L1 44097 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 ExitFlash:
   LD A,(ExitOpen)
   OR A
@@ -458,7 +460,7 @@ ExitFlash:
 
 ; A cave's start: CaveStartState, MapShown and PlayerKilled 0
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 CaveInit:
   CALL CaveStartState
   XOR A
@@ -511,7 +513,7 @@ CaveIntroSkip:
 ; GameEntry): no game-over screen, no high-score check. Witness: c1, AbortKey
 ; last at 15 244, GameOver never runs.
 ;
-; Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 AbortKey:
   CALL AnimateCellCodes
   LD A,$FD
@@ -562,7 +564,7 @@ WinScreen:
 
 ; ResetAntiGravState, FizzCount and SwitchHit 0
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 ResetAntiGrav:
   CALL ResetAntiGravState
   LD HL,$0000
@@ -573,7 +575,7 @@ ResetAntiGrav:
 
 ; ClearScreenCave, the anti-gravity digits and steps 0
 ;
-; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 ResetAntiGravState:
   CALL ClearScreenCave
   XOR A

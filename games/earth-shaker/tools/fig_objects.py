@@ -162,7 +162,9 @@ def record(out, n):
         elif size == 2:
             meaning = f'${v:04X}' + (f' = {v}: row {v // 30}, column {v % 30}' if key == 'start' else '')
         elif 'colour' in key:
-            meaning = f'ink {v & 7}, paper {v >> 3 & 7}'
+            # SetGraphicColour forces BRIGHT on the left half and clears it on the right, whatever bit 6 says
+            meaning = (('flash, ' if v & 0x80 else '') + ('bright, ' if v & 0x40 else '') +
+                       f'ink {v & 7}, paper {v >> 3 & 7}')
         else:
             meaning = f'{v}'
         d.text((x0, y), ' '.join(f'{b:02X}' for b in bs), font=f, fill=FG)

@@ -4,7 +4,8 @@
 ; GameEntry $8B20 (the BASIC's RANDOMIZE USR 35616) clears the variables, draws the title (DrawTitle $8AC8: the texts,
 ; the logo wiped in line by line, its colours), plays the title tune and reads keys 1-5 (MenuKeys $8B29): 1 a game, 2
 ; redefine the keys, 3 keyboard, 4 joystick, 5 reset. When the title tune runs out the high scores and the scroller
-; show (ShowHiScores $B2E4), then the title tune again.
+; show (ShowHiScores $B2E4), then the title tune again if the scroller ran out; a key 1-5 that stops the scroller is
+; acted on at once.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $85CF
@@ -25,7 +26,7 @@ ResetAll:
 ;
 ; Attributes $47 (bright white on black), WipeScreen $8DE3.
 ;
-; Witness: L1 105 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 ClearScreen:
   LD HL,Attributes
   LD DE,Attributes+1
@@ -225,7 +226,7 @@ ResetMachinePad:
 
 ; Wipe the pixels away: 8 passes shifting each byte pair apart
 ;
-; Witness: L1 105 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 WipeScreen:
   DI
   LD B,$08

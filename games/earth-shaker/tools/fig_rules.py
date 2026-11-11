@@ -5,6 +5,7 @@
     python3 tools/fig_rules.py passes --samples F.jsonl --cave N --frames A-B --cols C0-C1 --rows R0-R1
                               --title TEXT --out docs/img/rules/NAME.png [--per-row 8]
     python3 tools/fig_rules.py statelog --cave N --frames A-B --cols C0-C1 --rows R0-R1 --title TEXT --out ...
+                              [--cell PIXELS] [--label CELL,CELL]   (both for passes too)
     python3 tools/fig_rules.py passwords [--out docs/img/rules/passwords.png]
     python3 tools/fig_rules.py census [--out docs/img/rules/census.png]
 
@@ -102,7 +103,7 @@ def grids_from_statelog(cave, lo, hi):
     return out
 
 
-def passes(out, grids, cave, cols, rows, title, per_row, source):
+def passes(out, grids, cave, cols, rows, title, per_row, source, cell=0, labels=()):
     params = res_formats.read_caves()[cave - 1][0]
     m = fig_caves.cave_setup(fig_caves.resource_memory(), params)
     cache = {}
@@ -120,7 +121,7 @@ def passes(out, grids, cave, cols, rows, title, per_row, source):
     c0, c1 = cols
     r0, r1 = rows
     nc, nr = c1 - c0 + 1, r1 - r0 + 1
-    cell = 16 if nc * 16 * per_row < 960 else 12
+    cell = cell or (16 if nc * 16 * per_row < 960 else 12)
     pw, ph = nc * cell, nr * cell
     fb, fs = K.font(17), K.font(13)
     gap = 14
@@ -149,6 +150,10 @@ def passes(out, grids, cave, cols, rows, title, per_row, source):
                 if pg is not None and pg[r * 30 + c] != v:
                     col = RED if v == 0x20 else (GREY if v == 0 else YEL)
                     d.rectangle((x, y, x + cell - 1, y + cell - 1), outline=col, width=2)
+                if i == 0 and r * 30 + c in labels:
+                    tx = f'{r * 30 + c}'
+                    d.rectangle((x + 2, y + 2, x + 4 + 7 * len(tx), y + 15), fill=BG)
+                    d.text((x + 3, y + 1), tx, font=K.font(11), fill=FG)
     yb = 64 + nrows * (ph + 34) + 4
     for x, (col, t) in zip((14, 330, 620), ((YEL, 'got an object (or the player)'), (RED, 'got 20, the vacated mark'),
                                            (GREY, 'emptied (20 cleared, or left)'))):
@@ -254,6 +259,8 @@ def main():
     ap.add_argument('--title', default='')
     ap.add_argument('--per-row', type=int, default=8)
     ap.add_argument('--source', default='')
+    ap.add_argument('--cell', type=int, default=0, help='pixels a cell (default 16, or 12 for wide windows)')
+    ap.add_argument('--label', default='', help='cells to number in the first panel, comma-separated')
     a = ap.parse_args()
     d = os.path.join(CASE, 'docs', 'img', 'rules')
     os.makedirs(d, exist_ok=True)
@@ -267,7 +274,8 @@ def main():
         lo, hi = rng(a.frames)
         grids = grids_from_samples(a.samples, lo, hi) if a.what == 'passes' else grids_from_statelog(a.cave, lo, hi)
         cmd = 'python3 tools/fig_rules.py ' + ' '.join(sys.argv[1:])
-        passes(a.out, grids, a.cave, rng(a.cols), rng(a.rows), a.title, a.per_row, a.source or cmd)
+        passes(a.out, grids, a.cave, rng(a.cols), rng(a.rows), a.title, a.per_row, a.source or cmd, a.cell,
+               {int(x) for x in a.label.split(',') if x.strip()})
 
 
 if __name__ == '__main__':

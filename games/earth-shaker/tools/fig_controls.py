@@ -77,8 +77,8 @@ def fig_keyboard(out):
     y = y0 + 4 * (kh + gap) + 14
     notes = [
         'How to read:',
-        '- O P Q A M: the five key sites as loaded (left, right, up, down, fire); RedefineKeys $8C30 can put any of the 40',
-        '  keys there (the half row at site+1, the mask at site+7).',
+        '- O P Q A M: the five keys as loaded (nine key sites: left, right, up, down, fire); RedefineKeys $8C30 can put any',
+        '  of the 40 keys there (the half row at site+1, the mask at site+7).',
         '- F G H: fixed keys read once a pass: MapKey $EA96 ($FD/$08), AbortKey $93A5 ($FD/$10), QuitKey $872D ($BF/$10).',
         '- 1-5: the menu (MenuKeys $8B29, ChooseControl $ECE3, ResetMachine $8B65), all on half row $F7.',
         '- index: the place in KeyTable; WaitKey $8C1D scans 0 to 39 and takes the first key down, so with two keys held the',

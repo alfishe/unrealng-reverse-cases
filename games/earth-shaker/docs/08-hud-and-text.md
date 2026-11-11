@@ -125,13 +125,14 @@ Worked example: the last score digit sits at row 23, column 31. B is `$17`, so `
 `B AND 7` is 7; rotated right three times it is `$E0`. Adding C = `$1F` gives L = `$FF`. The glyph goes to `$50FF`,
 `$51FF`, ... `$57FF`: the bottom right cell of the screen.
 
-A glyph costs about 300 T: 8 turns of 33 T, the set-up and the RET. The screen bytes are in contended memory, so a
+A glyph costs about 380 T: 71 T of set-up, 8 turns of 37 T (291 T, the last DJNZ falls through), `POP BC` and
+the RET (20 T); the CALL adds 17 T. The screen bytes are in contended memory, so a
 glyph written while the beam draws the screen costs a few T more.
 
 Witness: PrintGlyph runs in every recording. In `rzx-earth01` frame 3736, CaveIntro prints 30 glyphs through it
 between T 8484 and T 69 458 (the event file `work/docs/esD/ev-rzx01-3660-3740.json`).
 
-The point: one 20-byte routine is the whole output stage. Text, digits, icons and even the blank cells of the
+The point: one 25-byte routine (`$8040-$8058`) is the whole output stage. Text, digits, icons and even the blank cells of the
 high-score area go through it (ClearHiScoreArea `$B2C9` prints BlankGraphic `$AA72` glyphs, 8.11). Every screen in
 this document is a list of PrintGlyph calls.
 
@@ -147,7 +148,7 @@ Font `$BD00` holds 96 glyphs for the codes `$20-$7F`, 8 bytes each, `$BD00-$BFFF
 | IconGlyphs | `$BF08` | `$61-$62` | `a` the gem, `b` the heart: the panel's icons |
 | AntiGravIcon | `$BF18` | `$63` | `c` the anti-gravity arrow, lit |
 | AntiGravIconOff | `$BF20` | `$64-$67` | `d` the arrow, dark; `e` a `g` shape, the gravity label; `f`, `g` |
-| FontUnused | `$BF40` | `$68-$7F` | 24 glyphs that copy the capitals `H-Z` and the symbols |
+| FontUnused | `$BF40` | `$68-$7F` | 24 glyphs: `$68-$7A` copy the capitals `H-Z`, `$7B-$7F` are their own `{ \| } ~ ©`; only `$73` (`s`, SYMBOL SHIFT) is printed |
 
 ![The font: codes 0x20-0x7F, coloured by who prints them](img/text/font.png)
 
@@ -162,7 +163,7 @@ How to read the figure:
   hold. The frame colour is the first of these.
 - **Grey** frames are glyphs that no code path prints.
 - **The point**: the font is a full printable ASCII set, but the texts use only the capitals, the digits and a few
-  symbols. The small-letter slots `a-e` carry the panel's icons. Most of `$68-$7F` are copies nobody prints.
+  symbols. The small-letter slots `a-e` carry the panel's icons. `$68-$7A` are copies of `H-Z`, and of `$68-$7F` only `$73` is ever printed.
 
 Two facts about the font are known only from the code:
 
@@ -462,11 +463,11 @@ During play only five routines touch the line, each when its value changes:
 - ShowScore after points;
 - AntiGravPass on each anti-gravity pass;
 - AntiGravStartScan when the arrow is taken;
-- ShowCounters at a cave start and after a life is lost.
+- ShowCounters at a cave start, after a life is lost and after a potion (TakePotion `$91C9`).
 
-The lives digit can show 0-9. The RZX player reaches `$FD93` = 9 from cave 22 on and gets no further, so the field
-never needs two digits in the recordings. Nothing in the code stops a tenth life from printing the glyph of code
-`$3A`, the colon (known only from the code).
+The lives digit shows 0-9, and the code keeps it there: TakePotion `$91C9` caps Lives at 9 (`CP $09` / `JR Z` skips
+the `INC A`), and the only other writes to `$FD93` are the reset (`$82F0`) and the loss of a life (`$8A11`). So the
+field never needs two digits; the RZX player sits at the cap from cave 22 on (`rzx-earth32`).
 
 Witness: ShowHudLine and ShowCounters run once in `rzx-earth01`, at frames 691-692 (L1 `work/stage1/rzx01/l1.json`).
 BarColours copies the colours in the same frame.
@@ -724,8 +725,8 @@ flowchart TD
     G -- yes --> H["TimeOutSound, CaveOver = 0xFF"]
 ```
 
-The jelly bean puts time back. JellyBean `$91F7` makes 32 beeps and calls TimeRefill 32 times. Each TimeRefill gives
-2 points and calls TimeBarRefillStep `$91DB`. That routine shifts lines 2-5 of the bar one pixel right, with a set
+The jelly bean puts time back. JellyBean `$91F7` makes 32 pairs of beeps (64 BEEPER calls, 2688 writes) and calls
+TimeRefill 32 times. Each TimeRefill gives 2 points and calls TimeBarRefillStep `$91DB`. That routine shifts lines 2-5 of the bar one pixel right, with a set
 pixel coming in at the left (`SCF` then `RR (HL)` along the row). So a jelly bean adds 32 pixels, 128 passes of time.
 A full bar stays full: the pixel pushed out at column 31 is lost.
 
@@ -740,7 +741,7 @@ the same in every cave: the caves have no time parameter. `rzx-earth01` adds up 
 | left at the exit, turned into points by TimeBonus | 192 shifts | 192 |
 
 513 passes took 2971 frames, 5.8 frames a pass. At that rate a full bar lasts about 5940 frames, two minutes.
-A heavier cave takes longer in seconds for the same 1024 passes (doc 4 measures 5.5-9.3 frames a pass).
+A heavier cave takes longer in seconds for the same 1024 passes (doc 4 measures 5.5-9.4 frames a pass).
 
 ShiftTimeBar costs about 10 400 T. In `rzx-earth01` frame 3713 it enters at T 35 980 and the next routine at
 T 46 342. Most of that is the 256 `RL (HL)` on contended screen memory.
@@ -784,8 +785,9 @@ flowchart TD
 Worked example: `rzx-earth01` takes the exit with 192 pixels left. TimeBonus starts at frame 3668 T 47 685, and the
 192nd BonusTick is at frame 3713 T 34 429. That is 192 points in 45 frames, about 16 400 T a pixel: ShiftTimeBar
 10 400, ShowScore 3600, the tick and AddPoint the rest. The beeper's HL runs 0, 255, 254, ... 65 (the RomBeeper
-entries of `ev-rzx01-3660-3740.json`). Of the 46 frame interrupts in that time, 42 are taken and 4 are lost (frames
-3681, 3687, 3695 and 3698): those fell inside a beeper call's own `DI`.
+entries of `ev-rzx01-3660-3740.json`). Of the 45 frame interrupts of the bonus (frames 3669-3713; the one of
+frame 3668 comes before TimeBonus starts), 41 are taken and 4 are lost (frames 3681, 3687, 3695 and 3698): those fell
+inside a beeper call's own `DI`.
 
 ![TimeBonus: the bar turns into points](img/routines/TimeBonus.gif)
 
@@ -920,8 +922,8 @@ colour. The data sheet of 8.13 gives every string's address, length, place and p
 - **The password prompt**: ShowPasswordPrompt `$8DFF` clears the screen and prints
   `ENTER PASSWORD (ENTER=LEVEL ONE)` on row 0 in `$43` (bright magenta). EnterPassword `$8E2D` echoes the typed
   characters ([doc 5](05-controls.md)) and prints the sixth character of that same text, a space, over a deleted one.
-- **The key prompts**: RedefineKeys `$8C30` colours rows 6-14 (`$44` for the prompts, `$46` for the key cell at column
-  25), then prints `PRESS KEY FOR LEFT`, `RIGHT`, `UP`, `DOWN`, `FIRE` on rows 6, 8, 10, 12, 14 one at a time, each
+- **The key prompts**: RedefineKeys `$8C30` colours the even rows 6-14 (6, 8, 10, 12, 14; `$44` for the prompts,
+  `$46` for the key cell at column 25), then prints `PRESS KEY FOR LEFT`, `RIGHT`, `UP`, `DOWN`, `FIRE` on rows 6, 8, 10, 12, 14 one at a time, each
   followed by the key's character at column 25 and RaspSound ([redefine.png](img/play/redefine.png)).
 - **The game over**: ShowGameOver `$8B7F` prints `GAME OVER` (row 8, `$44`), `YOU SCORED` with the six score digits
   (row 10, `$45`) and `AND REACHED LEVEL` with the cave digits (row 12, `$45`) ([game-over.png](img/play/game-over.png)).
@@ -998,7 +1000,7 @@ EnterName(B):
             if C != 15: DE -= 1; C -= 1
             (DE) = ' '; print a space at C; KeyClick
         elif key == 'e': return                ; ENTER
-        elif key == ' ' or '@' <= key <= 'Z':
+        elif key == ' ' or '@' <= key <= 'Z':  ; the filter passes '@', but no KeyTable key gives it
             (DE) = key; print it at C; KeyClick; C += 1; DE += 1
             if C == 24: return                 ; 9 characters
 ```
@@ -1071,7 +1073,7 @@ flowchart TD
     J --> K{"which character?"}
     K -- "0" --> L["delete: back one, space, KeyClick"]
     K -- "e" --> M["done"]
-    K -- "space, @ to Z" --> N["store, print, KeyClick, column + 1"]
+    K -- "space, A to Z (the filter passes 40, no key gives @)" --> N["store, print, KeyClick, column + 1"]
     K -- "other" --> J
     L --> J
     N --> O{"column 24?"}
@@ -1149,8 +1151,12 @@ place where the missing key-release wait shows, and the `hiscore` recording caug
 
 ## 8.12 The menu scroller
 
-When the title tune ends without a key, MenuKeys `$8B29` calls ShowHiScores `$B2E4`. It clears rows 8-21 (ClearHiScoreArea),
-colours and prints the table, and runs RunScroller `$8AEB`. The scroller moves row 23, the copyright line, left one
+When the title tune ends without a key, MenuKeys `$8B29` calls ShowHiScores `$B2E4`. It clears rows 9-21
+(ClearHiScoreArea; C runs from 32 down to 0, so each row's 33rd glyph spills into column 0 of the next row: row 15's
+into row 8, the top of the third, and row 21's into row 22; those two cells are blanked too), colours and prints the
+table, and runs RunScroller `$8AEB`. ShowHiScores keeps RunScroller's flags across its clean-up (`PUSH AF` ... `POP
+AF`): a key 1-5 that stops the scroller goes straight to the menu dispatch, and only a scroller that ran out plays
+the title tune again ([doc 5](05-controls.md#55-the-menu-keys)). The scroller moves row 23, the copyright line, left one
 pixel at a time and feeds in ScrollerText `$6D42`: 433 characters and a 0.
 
 For each character RunScroller does three things. It reads keys 1-5 (port `$F7FE`) and returns if one is down. It
@@ -1268,7 +1274,7 @@ character be printed whole, instead of drawn a pixel column at a time.
 | ScrollerText | `$6D42` | 434 | RunScroller `$8AEB` | row 23, column 31, scrolled | `$47`, the new cell `$00` |
 | CaveNames | `$9700` | 640 | CaveIntro `$92D4` | row 8, centred | the screen's |
 | EnterPasswordText | `$9AE8` | 32 | ShowPasswordPrompt `$8DFF` | row 0 | `$43` |
-| KeyPrompts | `$A978` | 5 x 19 | RedefineKeys `$8C30` | rows 6-14, column 5 | `$44` |
+| KeyPrompts | `$A978` | 5 x 19 | RedefineKeys `$8C30` | rows 6, 8, 10, 12, 14, column 5 | `$44` |
 | GameOverTexts | `$AA4E` | 9 + 10 + 17 | ShowGameOver `$8B7F` | rows 8, 10, 12 | `$44`, `$45`, `$45` |
 | MenuTexts | `$AB00` | 106 | ShowMenuTexts `$8A3C` | rows 11, 13, 19, 23 | ColourMenuTexts `$8A83` |
 | MenuDemoText | `$AB27` | 17 | none since 1990 | | |
@@ -1288,14 +1294,13 @@ are `src/res/tables/hiscores`.
 - PrintText's codes below `$20` would read NotePeriods, BarAttrs and HudLine; no text holds one. Code 0 is printed
   once, by the scroller, into a black cell (8.2, 8.12).
 - The SYMBOL SHIFT key name prints `$73` from FontUnused; no recording redefines a key to SYMBOL SHIFT (8.2).
-- A tenth life would print the colon glyph in the lives field (8.5).
 - A tie with a high score goes above the old record; digits and `.` cannot be typed in a name (8.11).
 - 999 999 points wrap to 000 000 (8.4).
 - MenuDemoText and Credits are never printed (8.10).
 
 ## 8.15 The point
 
-Every text in Earth Shaker goes through one 20-byte glyph copier, with two front ends: PrintText for ASCII, with an
+Every text in Earth Shaker goes through one 25-byte glyph copier, with two front ends: PrintText for ASCII, with an
 adding loop that makes a `Z` cost more than an `A`, and PrintDigits for the decimal strings the game counts in. There
 is no number conversion anywhere, and no time variable: the score is counted in decimal one point at a time, and the
 time is the bar's pixels on the screen. The panel is printed once as a template and patched where a value changes,
