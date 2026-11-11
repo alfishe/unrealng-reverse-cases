@@ -417,8 +417,10 @@ flowchart LR
     B -- no --> D["lost: the frame passes unseen"]
 ```
 
-Worked example: `rzx-earth01` frames 400-700. The cave tune covers 405-691: 286 frame interrupts, all lost. Only 11
-of the 300 frames take theirs (two before the tune and nine after). Over its 3803 frames, `rzx-earth01` takes 2898
+Worked example: `rzx-earth01` frames 400-700. The cave tune runs from 405 T 7680 (PlayTune's `DI`) into frame 691:
+the 285 interrupts of frames 406-690 are all lost. Only 11 of the 300 frames take theirs (404 and 405 before the tune,
+691-699 after); 400-403 take none either (the event file has a `DI` at 403 T 35 236; what keeps 400-402 off is not
+traced). 285 + 4 + 11 = 300 (`ev-rzx01-400-700.json`, `irq` and `di`). Over its 3803 frames, `rzx-earth01` takes 2898
 interrupts (WALKTHROUGH 1): the 905 lost are the tunes, the effects and the screen wipes.
 
 ![Interrupts taken and lost around the cave tune](img/sound/interrupts.png)
@@ -613,7 +615,9 @@ How to read the figure:
 
 Witness: gem `rzx-earth01` 814; jelly bean 1524; time bonus 3668; timer click 803; death `death-crush` 30 (and `c1`
 13218, `death-fire` 288); rasp `rzx-earth02` 2447 (a bubble) and `c1` 12280 (the redefine screen); anti-gravity
-`rzx-earth03` 543, its tick 609. The fizz is known only from the code (9.12).
+`rzx-earth03` 543, its tick 609. The fizz sounded: FizzSound's BEEPER call `$A78E` ran 2682 times in 20 RZX
+replays (`work/stage2/execs.json`, the most in `rzx-earth23`, 374); no event file traces one, so its shape is the
+model (9.12).
 
 The point: one ROM routine and a few loops give a dozen distinct sounds. The argument patterns, not new code, make
 each one.
@@ -725,16 +729,17 @@ How to read the figure:
   time-out; **flat bands** are fixed tones (the jelly bean's two notes); **diffuse bands** are the ROM-byte sounds.
 - **The point**: each event has a sound you can tell apart by its shape alone, made from the same one-bit port.
 
-![The two effects no recording reaches](img/sound/effects-code-only.png)
+![The two effects no event file traces](img/sound/effects-code-only.png)
 
-*PasswordAccepted and the fizz from a T-state model of their code, not from a trace. Command, from the case folder
+*PasswordAccepted (no recording reaches it) and the fizz (it ran, but no event file traces it) from a T-state model of
+their code, not from a trace. Command, from the case folder
 after `. work/env.sh`: `python3 tools/fig_sound.py models`.*
 
 How to read the figure:
 
 - **Left**: PasswordAccepted's half periods, D turns of about 29 T each for D = 1 to 255: a 2.2 s falling sweep.
 - **Right**: the fizz's seven BEEPER calls, one a pass (spaced 6 frames here, a typical pass), HL from 96 down to 0.
-- **The point**: these are the two sounds no recording plays; their shape is known from the code alone.
+- **The point**: these are the two sounds no event file traces; their shape is known from the code alone.
 
 Witness: exit `rzx-earth01` 3366; time-out `timer` 6040; switch `rzx-earth02` 387 (and `c1` 11910 at the menu's
 control choice); teleport `rzx-earth04` 1175 and 1226; key click `hiscore` 4960 and 4967. The KeyClick model matches
@@ -754,7 +759,7 @@ that fell in that span and were not taken (the first frame's interrupt counted i
 | gem | a gem taken | GemSound `$82F9` | 76 | 21 ms | BEEPER's DI | 1 of 1 | `rzx-earth01` 814 |
 | fall | an object fell this pass | FallSound `$E7A9` | 315 | 27 ms | DI | 1 of 1 | `rzx-earth01` 1578 |
 | thud | a boulder landed or was pushed | ThudSound `$8228` | 318 | 36 ms | DI | 2 of 2 | `rzx-earth01` 1839 |
-| dig in place | fire with a direction on earth | DigInPlace `$E7FE` | 469 | 49 ms | DI, on only between bursts | 2-3 of 2-3 | model; L1 `rzx-earth24` 434 |
+| dig in place | fire with a direction on earth | DigInPlace `$E7FE` | 469 | 49 ms | DI, on only between bursts | 2-3 of 2-3 | model; L1 167 calls in 16 RZX replays, first `rzx-earth24` 434 |
 | jelly bean | a jelly bean taken | JellyBean `$91F7` | 2688 | 632 ms | DI after each call | 31 of 31 | `rzx-earth01` 1524 |
 | exit open | the last needed gem, then every gem | ExitOpenSound `$9072` | 2048 | 796 ms | DI | 40 of 40 | `rzx-earth01` 3366 |
 | time bonus | the exit taken | TimeBonus `$8702` | 4 a pixel | 895 ms for 192 | BEEPER's DI only | 4 of 45 | `rzx-earth01` 3668 |
@@ -765,10 +770,10 @@ that fell in that span and were not taken (the first frame's interrupt counted i
 | anti-gravity | the arrow taken | AntiGravSound `$8156` | 7200 | 1.12 s | BEEPER's DI | 53 of 56 | `rzx-earth03` 543 |
 | anti-gravity tick | each anti-gravity pass | AntiGravPass `$A7CD` | 22 | 5.4 ms | DI after | 0 | `rzx-earth03` 609 |
 | teleport | a teleporter used | TeleportOutEffect `$E87B`, TeleportInEffect `$E8AE` | 1054 | 1.97 s | DI | 96 of 99 | `rzx-earth04` 1175 |
-| drain click | H pressed: each step of QuitKey's drain | QuitKey `$8741`: BEEPER HL = 1, DE = 0 | 2 a step | a 122 T pulse every 10 900 T, up to 256 steps (0.8 s) | BEEPER's DI only | about 1 in 27 (404 T of each step) | code; `c1` 14 430 not traced |
+| drain click | H pressed: each step of QuitKey's drain | QuitKey `$8741`: BEEPER HL = 1, DE = 0 | 2 a step | a 122 T pulse every 10 620 T (L1 of `lives`), up to 256 steps (39 frames, 0.78 s) | BEEPER's DI only | about 1 in 26 (404 T of each step) | `lives` L1 totals; `c1` 14 430 |
 | time-out | the bar empty | TimeOutSound `$86AD` | 2048 | 1.04 s | DI | 52 of 52 | `timer` 6040 |
 | key click | a character typed or deleted | KeyClick `$8E18` | 256 | 152 ms | DI | 7 of 7 | `hiscore` 4960 |
-| fizz | a boulder dissolved in fire | FizzSound `$A773` | 42 a pass, 7 passes | 7 short beeps | BEEPER's DI | | code only |
+| fizz | a boulder dissolved in fire | FizzSound `$A773` | 42 a pass, 7 passes | 7 short beeps | BEEPER's DI | | model; L1 2682 beeps (`$A78E`) in 20 RZX replays |
 | password | a valid password | PasswordAccepted `$8EE4` | 6149 | 2.24 s | DI | all | code only |
 | the tunes | 9.5 | PlayTune `$88CE` | | 0.9-74 s | DI | all | 9.5 |
 
@@ -814,7 +819,7 @@ the mean removed. None of them was played while this case was made.
   [rasp](audio/rasp.wav), [anti-gravity](audio/anti-gravity.wav),
   [anti-gravity-tick](audio/anti-gravity-tick.wav), [teleport](audio/teleport.wav),
   [time-out](audio/time-out.wav), [key-click](audio/key-click.wav).
-- The two code-only effects, from the models of 9.9: [password-accepted](audio/password-accepted.wav),
+- The two untraced effects, from the models of 9.9: [password-accepted](audio/password-accepted.wav),
   [fizz](audio/fizz.wav).
 - The dig in place, from the NoiseBurst model of 9.7: [dig-in-place](audio/dig-in-place.wav).
 - The 13 tunes, from the T-state model of PlayTune (9.3), whole: [title](audio/tune-title.wav),
@@ -828,7 +833,8 @@ The model's tunes have no contention, so they run 0.08 % faster than the real ma
 ## 9.12 What is known only from the code
 
 - **PasswordAccepted** `$8EE4`: no recording enters a valid password; the sound and its 2.2 s are from the model.
-- **The fizz**: no recording traced a boulder dissolving in fire; the seven beeps are from the code and the BEEPER
+- **The fizz**: it sounded, FizzSound's BEEPER call `$A78E` 2682 times in 20 RZX replays (`work/stage2/execs.json`,
+  the most in `rzx-earth23`, 374), but no event file traces it; the seven beeps' shape is from the code and the BEEPER
   model, with the passes assumed 6 frames apart.
 - **WinTune** beyond its first 254 frames: `rzx-earth32` ends at frame 20 931, at about note 27 of 258. The rest is the
   model.
@@ -837,8 +843,8 @@ The model's tunes have no contention, so they run 0.08 % faster than the real ma
 - **The dig in place**: DigInPlace runs in 16 RZX replays but no event file traces it; its sound is the NoiseBurst
   model, which reproduces the traced thud write for write.
 - **QuitKey's drain click**: one BEEPER cycle (HL = 1, DE = 0) after each ShiftTimeBar; `c1` presses H at 14 430, but
-  no event file covers it. The 122 T pulse is BEEPER's model, the step of about 10 900 T is ShiftTimeBar's traced
-  10 362 T plus the loop and the call.
+  no event file traces the clicks. The 122 T pulse is BEEPER's model; the step, 10 620 T, is measured from the L1
+  totals of `lives` (1206 pixels in 5 drains; `c1` 10 690 T, doc 04.9).
 - **The rasp's full length**: one bubble's RaspSound is traced in full only in the retrace `ev-rzx02-2445-2465.json`;
   the redefine screen's five rasps are known from L1 entry counts.
 

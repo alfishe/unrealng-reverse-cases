@@ -26,7 +26,7 @@ wall). A cave is `cave N`, ten parameter lines, then 20 rows of 30 characters, o
 | `gems_digits` | 2 | GemsNeededDigits `$FD9E` | gems_needed as the two HUD digits, tens first |
 | `earth_graphic` | 2 | EarthGraphic `$FDA0` | the graphic of cell 6, by name (GfxFallingEarth `$A450` makes earth fall: SetEarthFalls `$FB81`) |
 | `wall_graphic` | 2 | WallGraphic `$FDA2` | the graphic of cell 5, by name |
-| `door_colour` | 1 | DoorColour `$FDA4` | the attribute CaveSetup writes into GfxExit `$9B08` |
+| `door_colour` | 1 | DoorColour `$FDA4` | the attribute CaveSetup writes into CellGraphics `$9B08` (the exit) |
 | `boulder_colour` | 1 | BoulderColour `$FDA5` | into GfxBoulder `$9B2C` |
 | `wall1_colour` | 1 | Wall1Colour `$FDA6` | into GfxWall1 `$9CB8` |
 | `earth_colour` | 1 | EarthColour `$FDA7` | into GfxEarth `$9B50` |

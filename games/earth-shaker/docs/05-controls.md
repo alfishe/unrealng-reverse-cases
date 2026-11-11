@@ -345,14 +345,14 @@ WaitKey itself:
 8C2E  18 ED        JR WaitKey
 ```
 
-The table runs from the outer end of each half row inwards: V C X Z CAPS SHIFT, G F D S A, T R E W Q, 5 4 3 2 1,
+The table runs from bit 4 to bit 0 of each half row, from the middle of the keyboard outwards: V C X Z CAPS SHIFT, G F D S A, T R E W Q, 5 4 3 2 1,
 6 7 8 9 0, Y U I O P, H J K L ENTER, B N M SYMBOL SHIFT SPACE.
 The characters for CAPS SHIFT, SYMBOL SHIFT and ENTER are `c`, `s` and `e`.
 When two keys are down, the one earlier in the table wins.
 
 Worked example 3: O for left in `c1` (frame 12 280).
 
-1. WaitKey finds no key until O goes down at 12 280. O is record 28: half row `$DF`, mask `$02`, character `O`, at
+1. WaitKey finds no key until O goes down at 12 280. O is record 28, counting from 0: half row `$DF`, mask `$02`, character `O`, at
    `$A954`.
 2. WaitKey returns with HL = `$A955` (the mask byte).
 3. `O` is printed at row 6, column 25.
@@ -717,7 +717,7 @@ The animations of this walk, one as the cave buffer and one as the screen:
 `rzx-earth01` (replayed RZX), window 2945:0-3030:0, cave rows 11-16 (`$FEF2`, 30 x 6). `python3 R/kit/routine_anim.py
 --work work/docs/esB/rzx01 --window 2945:0-3030:0 --listing build/game.lst --view buffer:FEF2:30x6:hex --pc
 83C3-8595,8759-8884,E81F-E86F --range 8000-FFFF --pictures 85 --hold 3000 --title ...`. The kit draws the hex view
-1084 px wide The listing pane is the image as loaded (`build/game.lst`), with the keyboard
+1084 px wide (a kit gap, R/TODO.md). The listing pane is the image as loaded (`build/game.lst`), with the keyboard
 form at the key sites; in this recording the sites hold the Kempston code (5.3), so the instructions that really run
 are `NOP` x 4, `IN A,($1F)`, `AND $10`, `JR NZ` at KeysStep and `IN A,($1F)`, `AND` mask, `RET Z` at the Try sites.*
 
@@ -727,10 +727,10 @@ are `NOP` x 4, `IN A,($1F)`, `AND $10`, `JR NZ` at KeysStep and `IN A,($1F)`, `A
 RZX), frames 2945-3030. `python3 R/kit/screen_anim.py --work work/docs/esB/rzx01 --from 2945 --to 3030 --step 1
 --scale 4 --delay 60 --hold 2000 docs/img/play/walk-push.gif`.*
 
-Counts over all recordings: TryLeft runs 42 409 times, TryRight 36 640, TryUp 31 174, TryDown 26 576. The falling
+Counts over the builds (WALKTHROUGH 6.0): TryLeft runs 42 086 times, TryRight 36 883, TryUp 31 376, TryDown 26 738. The falling
 numbers are the priority at work: each Try runs only while the ones before it found their key up.
-MoveLeft runs 4334 times, MoveDown 4021, MoveUp 3768.
-PushBoulder runs 432 times.
+MoveLeft runs 4366 times, MoveDown 4052, MoveUp 3803 (MoveUp only in the RZX caves).
+PushBoulder runs 434 times.
 
 The point: one key read gives at most one step a pass, and the step is decided by the first key down in a fixed
 order.
@@ -803,8 +803,9 @@ Worked example 6: fire and left, with the player at index 301 and earth (6) at 3
 5. Had the player stood at 300, the column-0 test would have returned at once: 300 is a multiple of 30.
 
 Witnesses: FireStep runs 1678 times in 23 of the 32 RZX replays (the most in `rzx-earth24`, 323), DigInPlace 167 times
-(84 in `rzx-earth24`, cave 24's falling earth). FireLeftBoulder and FireRight's push never ran in any recording:
-pushing from standing is known only from the code. No `c1` key press holds M in play.
+(84 in `rzx-earth24`, cave 24's falling earth). Pushing from standing ran: the push `$87BA` of
+FireLeftBoulder 30 times in six RZX replays (09, 16, 24, 26, 27, 28) and FireRight's `$8814` 23 times in six (09, 19,
+23, 27, 28, 30), `work/stage2/execs.json`. No `c1` key press holds M in play.
 
 The point: fire turns the four direction keys into four actions at once, and lets the player dig or collect a cell
 without stepping into what may fall into it.
@@ -980,7 +981,6 @@ The point: play input is sampled once per pass, and the pass time sets the feel 
 
 ## 5.11 What is known only from the code
 
-- Pushing from standing (FireLeftBoulder `$879F`, the push in FireRight) never ran in any recording.
 - PlayerIndex 0 skips TryLeft only (PlayerStep `$8562`); no recording has the player in cell 0.
 - The faults of the control save (cases A and B) are shown on a clone, not in a recording.
 - What the Kempston form reads when no interface is fitted depends on the machine's bus; the game does not test for

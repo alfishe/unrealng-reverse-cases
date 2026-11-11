@@ -316,7 +316,7 @@ Worked example 2: the cost, `c1` pass of 14 293.
 4. The rest of the pass is mostly the cell scan (14293:38172 to 14295:24404, about 125 000 T) and ClearVacated (about
    28 000 T).
 
-Counts over all recordings: DrawCell runs 7 771 378 times, DrawWindow 44 156.
+Counts over the builds (WALKTHROUGH 6.0): DrawCell runs 7 714 880 times, DrawWindow 43 834 (176 cells each).
 
 ![DrawWindow drawing the window](img/routines/DrawWindow.gif)
 
@@ -461,7 +461,8 @@ CaveSetup:                                   ; $9313
     SetGraphicColour(GfxEarth $9B50, EarthColour)
 
 SetGraphicColour(g, a):                      ; $9305
-    g[0] = a OR $40; g[1] = a AND $3F; g[2] = a AND $3F; g[3] = a OR $40   ; bright, plain, plain, bright
+    g[0] = a OR $40; g[1] = g[2] = a AND $3F; g[3] = (a AND $3F) OR $40   ; bright, plain, plain, bright
+                                             ; (FLASH only in g[0])
 
 CaveSetupAll:                                ; $A600
     CaveSetup

@@ -199,7 +199,8 @@ year.
 with the patches of [doc 2.8](02-architecture.md#28-the-leftovers-and-the-1990-patches). Only the look of the player
 changed.
 
-The point: every 48K copy carries the same game block. Only the hack changes code, by one byte.
+The point: every tape copy carries the same game block (the conversions repack it); EARTHOLD changes graphics only,
+and only the hack changes code, by one byte.
 
 ## 3.5 The build
 

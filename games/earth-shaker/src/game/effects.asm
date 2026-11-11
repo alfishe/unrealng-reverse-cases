@@ -107,7 +107,7 @@ DigNoise:
 
 ; The noise loop: (HL) AND $18 to port $FE for HL down to 0
 ;
-; Witness: L1 991362 (c1, rzx x31).
+; Witness: L1 1004824 (c1, rzx x31).
 DigNoiseLoop:
   NOP
   LD A,(HL)

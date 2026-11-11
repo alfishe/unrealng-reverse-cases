@@ -475,9 +475,10 @@ CAVES_HEAD = [
     '(GemsNeededDigits $FD9E: gems_needed as the two HUD digits, tens first), earth_graphic and wall_graphic',
     '(EarthGraphic $FDA0 / WallGraphic $FDA2: the cell graphics of earth (6) and wall (5), written into',
     'CellGraphicsTable by CaveSetup $9313; earth $A450 GfxFallingEarth falls, SetEarthFalls $FB81), door_colour,',
-    'boulder_colour, wall1_colour, earth_colour (the attributes CaveSetup writes into GfxExit $9B08, GfxBoulder',
-    '$9B2C, GfxWall1 $9CB8 and GfxEarth $9B50: bright, plain, plain, bright). The two graphics are written by',
-    'name (an @res ... include: the build writes caves.inc with a DW line each, so a moved graphic is followed).',
+    'boulder_colour, wall1_colour, earth_colour (the attributes CaveSetup writes into CellGraphics $9B08, the',
+    'exit, GfxBoulder $9B2C, GfxWall1 $9CB8 and GfxEarth $9B50: bright, plain, plain, bright). The two graphics are',
+    'written by name (an @res ... include: the build writes caves.inc with a DW line each, so a moved graphic is',
+    'followed).',
     'Numbers decimal or $hex; text after ; is a comment.']
 
 

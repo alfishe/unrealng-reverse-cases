@@ -57,10 +57,12 @@ frames.
    `AntiGravScan $A655` while anti-gravity runs). Back in `AnimateCellCodes`, every burst and dissolve code steps on.
    Then the G key is tested.
 4. `ClearVacated $81AC`: every cell AND `$1F`, so the vacated marks `$20` become 0.
-5. `WindowOrigin $8DA6`: the window placed and drawn.
-6. `MapKey $EA96`, `ColourCycle $81E7`, `FizzSound $A773` (the pass sound and the fizz), `TimerStep $86DE`,
+5. `WindowOrigin $8DA6`: `ViewOrigin` computed from the player's cell (the window placed, not drawn).
+6. `MapKey $EA96`: the map on key F, once a cave; its last instruction, `CALL DrawWindowAtOrigin $8D75` at `$EAAF`,
+   draws the window at `ViewOrigin`, every pass.
+7. `ColourCycle $81E7`, `FizzSound $A773` (the pass sound and the fizz), `TimerStep $86DE`,
    `QuitKey $872D`.
-7. The end tests: `CaveOver`, then `PlayerKilled` (the death view and sound), then `CaveDone` (the time bonus).
+8. The end tests: `CaveOver`, then `PlayerKilled` (the death view and sound), then `CaveDone` (the time bonus).
 
 ```mermaid
 sequenceDiagram
@@ -77,8 +79,9 @@ sequenceDiagram
         A->>S: AntiGravPass: ScanCells or AntiGravScan
         S-->>A: objects moved, 20 marks left
         A->>A: burst and dissolve codes step on, G key
-        P->>V: 20 marks cleared, the window drawn
-        P->>T: map key, colours, sounds, the timer, H key
+        P->>V: 20 marks cleared, the window placed
+        P->>V: map key, then the window drawn
+        P->>T: colours, sounds, the timer, H key
         P->>P: CaveOver? PlayerKilled? CaveDone?
     end
 ```
@@ -94,8 +97,8 @@ PlayCave:
 8895  CALL PutPlayer
 8898  CALL AbortKey         ; AnimateCellCodes, SwitchClear, the scan
 889B  CALL ClearVacated
-889E  CALL WindowOrigin     ; the window drawn
-88A1  CALL MapKey
+889E  CALL WindowOrigin     ; ViewOrigin from PlayerIndex
+88A1  CALL MapKey           ; the map on F, then DrawWindowAtOrigin
 88A4  CALL ColourCycle
 88A7  CALL FizzSound
 88AA  CALL TimerStep
@@ -122,7 +125,8 @@ Three consequences of the order:
 - The player moves before the scan. A cell the player leaves sideways is 0 when the scan comes (`MoveLeft` and
   `MoveRight` write 0), so the object above it falls in the same pass. A cell he leaves up or down is `$20` (`MoveUp`
   and `MoveDown` write `$20`), so the object above it waits one pass. 10.3 shows why that kills.
-- A switch hit in the scan is cleared at the start of the next pass, before that pass's scan (10.7).
+- A switch hit in the scan is cleared in the next pass, after the player's step and before that pass's scan (10.7):
+  in that pass the player can still bump a force field that the same pass then clears.
 - `ClearVacated` runs before the draw, so `$20` is never on the screen, and the end tests come after the draw, so the
   frame that shows the death is the one the death view redraws (10.9).
 
@@ -498,8 +502,10 @@ first (`$95CF`, `$9600`); then `BubbleRightMove $9980` and `BubbleLeftMove $99A0
 place with `$20` when it is empty, and go on with `Continue`. That keeps an object from falling or rolling into the
 bubble's path in this pass. When the new place is in column 29 (or 0) there is no cell beyond in the row: the column
 loop ends with HL = 0 and jumps straight to the same `LD (HL),$20` (`$999A`, `$99BA`), a write to `$0000` in the ROM,
-which has no effect. That edge is known only from the code: `$999A` is shared with the normal path, so the execution
-counts cannot tell the two apart.
+which has no effect. The edge ran: the `JR` taken only there (`$998E`, `$99AE`) ran 13 times on the right
+(`rzx-earth08`, 22, 25 (7), 26, 29, 31, 32) and 4 on the left (`rzx-earth09` once, 31 three times), 17 edge pushes in
+8 recordings (`work/stage2/execs.json`); the counts add up, `$9992` 387 + 13 = `BubbleRightMove` 400 and `$99B2`
+302 + 4 = `BubbleLeftMove` 306.
 
 ```text
 push left (the player at p, the object at p - 1):
@@ -636,8 +642,9 @@ it:
 
 - **The dissolve.** The scan turns a boulder with fire directly below into `$15` and sets `FizzCount` to 7. The fire
   stays; the boulder burns away. `AnimateCellCodes` steps the code once a pass to `$1B`, and `$1B` becomes `$20`.
-  `FizzSound` beeps one note a pass while `FizzCount` runs down. Only a boulder dissolves; a gem or any other object
-  over fire rolls off it or rests on it.
+  `FizzSound` beeps one note a pass while `FizzCount` runs down: its BEEPER call `$A78E` ran 2682 times in 20 RZX
+  recordings (`work/stage2/execs.json`). Only a boulder dissolves; a gem or any other object over fire rolls off it
+  or rests on it.
 - **The burst.** A bubble pushed into fire makes the fire cell `$10` (10.5). The code steps once a pass to `$14`, and
   `$14` becomes `$20`: the fire is gone.
 
@@ -737,12 +744,13 @@ Cave 29 holds 103 fire cells and cave 31 holds 271 bubbles (10.12), so these two
 ## 10.7 The switch: a chain reaction
 
 A switch box (`$0B`) does nothing until an object falls into the cell above it. `MoveObject` then sets `SwitchHit`.
-At the start of the next pass, before that pass's scan, `SwitchClear $817A` turns every force field (9) and every
-switch box in the cave into `$20` and calls `SwitchScore` (250 points and `SwitchSound`). `ClearVacated` empties them
-the same pass, and the next scans let everything that rested on them fall: one falling object can open the whole cave.
+In the next pass, after the player's step and before that pass's scan, `SwitchClear $817A` turns every force field
+(9) and every switch box in the cave into `$20` and calls `SwitchScore` (250 points and `SwitchSound`). So in that
+pass the player's step still meets the force fields (a push runs `ForceField`, 10.8). `ClearVacated` empties them the
+same pass, and the next scans let everything that rested on them fall: one falling object can open the whole cave.
 
 ```text
-SwitchClear (start of every pass):
+SwitchClear (every pass, after the player's step):
     if SwitchHit:
         for each of the 600 cells: if code in (FORCE_FIELD, SWITCH_BOX): code = 0x20
         SwitchScore()                       # 250 points, the sound
@@ -787,7 +795,7 @@ sequenceDiagram
     Pl->>G: steps away sideways from under a boulder
     Sc->>G: the boulder falls into the cell above the switch box
     Sc->>Sw: SwitchHit = FF
-    Note over Sw: the next pass
+    Note over Sw: the next pass, after the player's step
     Sw->>G: every 09 and 0B becomes 20, 250 points
     G->>G: ClearVacated: they become 0
     Sc->>G: later passes: what rested on them falls
@@ -941,15 +949,15 @@ recordings).
 
 `TakePotion $91C9` adds a life unless there are 9, prints the counters, and calls `PotionScore $A8E0`, which plays the
 life tune and gives 20 points. `PotionScore` pushes BC once more than it pops: its `RET` takes the pushed BC as the
-return address. After `PotionTune` BC holds `$0038`, so the `RET` jumps into the ROM's interrupt routine at `$0038`.
-That routine scans the keyboard, counts `FRAMES`, enables interrupts (`EI`) and returns: its `RET` pops the real
-return address. It is the routine the IM 1 interrupt runs every frame, which is why the extra run is harmless, and its
-`EI` turns the interrupts back on after `PotionTune`'s `DI` (`$91C7`). The potion works because the stray BC happens
-to point at a routine that returns.
+return address. When the life tune plays to its end, BC holds `$0038` after `PotionTune`, so the `RET` jumps into the
+ROM's interrupt routine at `$0038`. That routine scans the keyboard, counts `FRAMES`, enables interrupts (`EI`) and
+returns: its `RET` pops the real return address. It is the routine the IM 1 interrupt runs every frame, which is why
+the extra run is harmless, and its `EI` turns the interrupts back on after `PotionTune`'s `DI` (`$91C7`). The potion
+works because the stray BC happens to point at a routine that returns, and only when the tune is not cut short (below).
 
 ```asm
 PotionScore:
-A8E0  CALL PotionTune       ; PlayTune LifeTune, DI; BC = 0038 after it
+A8E0  CALL PotionTune       ; PlayTune LifeTune, DI; BC = 0038 after the full tune
 A8E3  PUSH BC               ; pushed, never popped
 A8E4  LD B,$14              ; 20 points
 A8E6  PUSH HL
@@ -961,7 +969,7 @@ A8ED  POP AF
 A8EE  POP DE
 A8EF  POP BC
 A8F0  POP HL
-A8F1  RET                   ; to 0038, the ROM's IM 1 routine, whose RET goes to TakePotion
+A8F1  RET                   ; to BC: 0038, the ROM's IM 1 routine, whose RET goes to TakePotion
 ```
 
 ```mermaid
@@ -983,9 +991,78 @@ at 6397:67112 and the ROM's keyboard scan, then `$91DA` at 6397:67994, `Continue
 after frame 6352, and the player in 360 after frame 6397. Lives rise the same way in caves 15 (6 to 7), 19 (7 to 8)
 and 22 (8 to 9); in caves 27 and 28 the RZX player already had 9 and `TakePotion` kept 9.
 
+**A key 1-5 cuts the tune and moves the jump.** `PlayTune $88CE` tests the keys 1-5 (port `$F7FE`) at every record
+boundary, before it reads the next note, and stops at once when one is held (`TuneEnds $890E`). BC is then what the
+last note left in it: each note loads BC with the period of its second voice (n2) and counts it down once a loop turn,
+reloading at 0, for `duration x 256` turns. The `RET` of `PotionScore` goes to that residue. A model of the loop over
+`LifeTune`'s 39 notes (`build/res/music/life.bin`, `periods.bin`) gives the residue after each note; the natural end,
+after note 38, gives `$0038`, which matches the trace. A stop before the first note leaves the caller's BC
+(`ShowCounters`). The default keys O P Q A M do not touch the row `$F7FE`; the keys are redefinable to 1-5 (`WaitKey`
+reads all 40), and any key 1-5 held at the moment does it.
+
+```text
+PlayTune (the key test at each record):
+    loop:
+        drum = tune[HL]; HL += 1                 # 1 or 2: a ROM BEEPER drum
+        if a key 1-5 is held or tune[HL] == 0xFF: EI; return     # BC as the last note left it
+        n1, n2, duration = tune[HL], tune[HL + 1], tune[HL + 2]
+        DE = period(n1); BC = period(n2)
+        repeat duration x 256 times:
+            DE -= 1; if DE == 0: click, DE = period(n1) - 1    # IX, DEC IX at $8921
+            BC -= 1; if BC == 0: click, BC = period(n2)
+        HL += 3
+```
+
+```asm
+PlayTuneSkip2:
+88FD  LD A,$F7
+88FF  OUT ($FF),A
+8901  IN A,($FE)            ; port F7FE: the keys 1-5
+8903  AND $1F
+8905  CP $1F
+8907  JR NZ,TuneEnds        ; a key held: stop before the next note
+8909  LD A,(HL)
+890A  CP $FF
+890C  JR NZ,PlayNote        ; FF: the tune's end
+TuneEnds:
+890E  EI
+890F  RET
+```
+
+| BC after the stop | After notes | Where the `RET` of `PotionScore` lands (48K ROM) | Outcome | How known |
+| --- | --- | --- | --- | --- |
+| `$0038` | 8, 16, 27, 29, 37, 38 (the end) | the IM 1 routine | returns to `$91DA`, `EI` | trace, `rzx-earth09` frame 6397 |
+| `$0080` | 1, 7, 12, 18 | `CP $0D` inside SKIP-OVER `$007D` | every path ends in a `RET` to `$91DA`; no `EI` | run (below) |
+| `$0051` | 20, 28 | `EI`, `RET` at the end of the IM 1 routine | returns to `$91DA` | ROM code |
+| `$0020`, `$001D` | 14, 22, 33; 23, 31 | `$0020`: inside NEXT-CHAR (`RST $20`); `$001D`: the middle of GET-CHAR's `CALL $007D` | `$001D` returns at once when carry is clear; else, and at `$0020`, it steps `CH_ADD` on until a character from `$21`, then returns to `$91DA` | ROM code |
+| `$003E`, `$0040`, `$0041`, `$0044` | 0; 4, 15, 32, 35; 2, 10, 21; 17, 25, 36 | the middle of the IM 1 routine, past its `PUSH AF` / `PUSH HL` | its `POP HL` / `POP AF` take `$91DA` and the next word, and its `RET` the word after: two return addresses skipped | ROM code |
+| `$0028` | 9, 26, 34 | `RST $28`, the calculator | reads the bytes at `$91DA` as calculator literals | ROM code |
+| `$0002` | 3, 5, 13, 24 | `LD DE,$FFFF`, `JP $11CB` of the reset | the machine restarts (NEW) | ROM code |
+| `$0062`, `$0067` | 11, 19, 30; 6 | the `$FF` bytes before the NMI routine, the NMI routine | the `RST $38`s run on into `$0066`; with `NMIADD` 0 (as after power-on) its `JP (HL)` goes to `$0000`, a reset | ROM code |
+
+```mermaid
+flowchart TD
+    T["PotionTune: LifeTune plays"] --> K{"a key 1-5 held at a record boundary?"}
+    K -- no --> E["the end, after note 38: BC = 0038"]
+    K -- "yes, after note n" --> R["BC = the residue of note n"]
+    E --> I["RET to 0038: IM 1 routine, EI, back to 91DA"]
+    R --> H{"the residue"}
+    H -- "38, 51, 80, 20, 1D" --> B["back to 91DA (80: interrupts left off)"]
+    H -- "3E, 40, 41, 44, 28" --> X["stack unbalanced or the calculator"]
+    H -- "02, 62, 67" --> Z["the machine resets"]
+```
+
+Worked example, run on a clone of the `rzx-earth09` start state (cave 9, the RZX player's Kempston controls;
+`python3 work/review/fixC/potion_key.py`): a potion poked left of the player at 498, Kempston left held, key 1 pressed
+two frames after `Lives` went from 5 to 6. The control-flow trace (`debug_code trace`) shows `$890F RET` to `$91C7`,
+then `$A8F1 RET` to `$0080` and `$0089 RET` to `$91DA`: the tune stopped after note 1, 7, 12 or 18, and SKIP-OVER
+returned to `TakePotion`. The player moved into 497 and play went on; this path has no `EI`, and the interrupts
+stayed off for about six frames, until a later `EI`. The other rows are read from the ROM's code; none was run.
+
 The up direction has a second oddity. `UpSpecialCell` tests the potion with `CALL Z,TakePotion` instead of a jump, and
-then goes on testing the cell at HL. After the tune HL points at the `$FF` that ended `LifeTune`, so none of the
-remaining tests match. The last one, `CP $0F` against `$FF`, leaves carry set. The tail at `$919A` then computes
+then goes on testing the cell at HL. After the tune HL points at the `$FF` that ended `LifeTune` (after a key 1-5
+stop, at the next note's n1 byte, `$1E-$2E`), so none of the remaining tests match. The last one, `CP $0F` against
+`$FF` (or any byte above `$0F`), leaves carry set. The tail at `$919A` then computes
 `PlayerIndex + 1 - 30 - carry`, which is `PlayerIndex - 30`, and marks the old cell `$20`: the player moves up into
 the potion's cell, by luck of the carry.
 
@@ -1017,7 +1094,7 @@ UpSpecialCell:
 
 Witness: not executed in any recording. The execution counts of stage 2 (`work/stage2/execs.json`) give `$9185` 221
 and `$918E` 205, and none for `$9194` and `$919A`, over `c1`, `menu`, `hiscore`, `lives`, `timer` and the 32 RZX
-recordings: no player walked up into a potion. Known only from the code.
+recordings: no player walked up into fire or a potion. Known only from the code.
 
 ### Anti-gravity
 
@@ -1355,10 +1432,12 @@ CountGem:
                             ; CountGemSkip: GemDigits + 1, printed, GemSound
 ```
 
-**The cave done.** `TimeBonus $8702` turns every remaining pixel of the bar into one point, with interrupts off and a
-beep per pixel, each higher than the last (`BonusTick $871C`), until `$52C0` is empty. `NextCave` then counts the cave digits up and `CaveNumber` up. After cave
-32 (`CaveNumber` `$21`), `WinGame $A8BF` shows the win screen, plays the win tune and sets the cave digits to 01, and
-`CaveNumber` becomes 1: the game goes on from cave 1 with the score and lives kept.
+**The cave done.** `TimeBonus $8702` turns every remaining pixel of the bar into one point, with a beep per pixel,
+each higher than the last (`BonusTick $871C`), until `$52C0` is empty. Its `DI` at `$8702` lasts only up to the first
+`BonusTick` BEEPER, which ends with `EI` (`$03F6`): the loop runs with interrupts on (in `rzx-earth01` 41 of the 45
+frame interrupts of the bonus are taken, doc 09). `NextCave` then counts the cave digits up and `CaveNumber` up.
+After cave 32 (`CaveNumber` `$21`), `WinGame $A8BF` shows the win screen, plays the win tune and sets the cave digits
+to 01, and `CaveNumber` becomes 1: the game goes on from cave 1 with the score and lives kept.
 
 ```mermaid
 flowchart LR
@@ -1516,7 +1595,9 @@ because it holds more of the objects that cost time or block the way, not becaus
 
 - **The potion returns through the ROM.** `PotionScore $A8E0` pushes BC once too often; its `RET` lands on `$0038`,
   the ROM's interrupt routine, whose own `RET` takes the real return address. It works because BC holds `$0038` after
-  the life tune (10.8; witness `rzx-earth09` frame 6397).
+  the whole life tune (10.8; witness `rzx-earth09` frame 6397). A key 1-5 held during the tune stops it early and
+  leaves another BC: the `RET` then lands elsewhere in the ROM, from a harmless return (run once, `$0080`) to a
+  reset (`$0002`; from the ROM's code).
 - **The up-potion tail works by the carry.** In `UpSpecialCell` the potion is a `CALL`, not a jump; the tests go on
   with HL pointing into the tune, and the tail at `$919A` moves the player up only because `CP $0F` against `$FF`
   left carry set (10.8; known only from the code).
@@ -1549,7 +1630,9 @@ Known only from the code, with the recordings checked (`c1`, `menu`, `lives`, `h
 recordings, `death-crush`, `death-fire`):
 
 - a password that matches, and `PasswordAccepted $8EE4`;
-- walking up into a potion (`$9194`, `$919A`);
+- walking up into fire or a potion (`$9194`, `$919A`);
+- a potion taken with a key 1-5 held during the life tune (10.8): no recording; one case (`$0080`) was run on a clone
+  of the `rzx-earth09` state, the other residues are known only from the ROM's code;
 - a teleport with no teleporter left;
 - a teleport whose only remaining teleporter is cell 599, which `CPIR` finds with BC = 0 and the code takes for none
   (reachable in caves 8 and 23; in `earth08` the cave ended with 456 and 599 left, in `earth23` 599 was entered);

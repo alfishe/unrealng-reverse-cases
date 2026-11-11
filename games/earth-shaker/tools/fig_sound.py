@@ -482,7 +482,7 @@ def cmd_models(_a):
         ax.set_xlabel(what, fontsize=9.5)
         ax.grid(alpha=0.3)
     axes[0].set_ylabel('T to the next write')
-    fig.suptitle('The two effects no recording reaches, from a T-state model of their code (half periods, log scale)',
+    fig.suptitle('The two effects no event file traces, from a T-state model of their code (half periods, log scale)',
                  fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     save(fig, 'effects-code-only.png')

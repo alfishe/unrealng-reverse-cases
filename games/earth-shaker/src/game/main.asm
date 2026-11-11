@@ -7,10 +7,11 @@
 ; screen, then cave 1 again) or a life.
 ;
 ; A pass of PlayCave: KeysStep $8759 (the player), PutPlayer $8382, AbortKey $93A5 (G), ClearVacated $81AC,
-; WindowOrigin $8DA6 (the window drawn), MapKey $EA96 (F), ColourCycle $81E7 (the gem and exit colours), FizzSound
-; $A773 (the pass sound and the fizz), TimerStep $86DE, QuitKey $872D (H). It ends when CaveOver $FD7D is set (out of
-; time or quit), PlayerKilled $7FFD (DeathView $903F, DeathSound $862E) or CaveDone $FD84 (the exit entered: TimeBonus
-; $8702). The game has no frame sync (no HALT): a pass takes as long as its work and its sounds.
+; WindowOrigin $8DA6 (ViewOrigin, the window placed), MapKey $EA96 (F; its CALL DrawWindowAtOrigin $8D75 draws the
+; window every pass), ColourCycle $81E7 (the gem and exit colours), FizzSound $A773 (the pass sound and the fizz),
+; TimerStep $86DE, QuitKey $872D (H). It ends when CaveOver $FD7D is set (out of time or quit), PlayerKilled $7FFD
+; (DeathView $903F, DeathSound $862E) or CaveDone $FD84 (the exit entered: TimeBonus $8702). The game has no frame
+; sync (no HALT): a pass takes as long as its work and its sounds.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $81E7

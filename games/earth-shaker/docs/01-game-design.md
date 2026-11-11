@@ -6,8 +6,8 @@ controls, the sixteen objects and the rules: the gems, the exit, the timer, the 
 
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
 
-- `c1`: power-on, the tape at ROM speed, every menu key but 5, cave 1 played, the map, H, G. Its screens are numbered
-  from frame 11800, so `c1` 750 is frame 12550.
+- `c1`: power-on, the tape at ROM speed, every menu key but 5, cave 1 played, H, G (its F fell in the death and the
+  intro: no map; the map is in `timer`). Its screens are numbered from frame 11800, so `c1` 750 is frame 12550.
 - `menu`: from the menu after `c1`'s load. The title tune to its end, the high-score table, the menu keys, 5.
 - `lives`: cave 1 and H until the game is over.
 - `hiscore`: from the RZX's cave 10 snapshot. H until the game is over, then a high score typed in.
@@ -21,10 +21,12 @@ reopened recording. The other recordings count frames from their start snapshot.
 
 ## 1.1 The game
 
-Earth Shaker is a boulder-dash game by Michael Batty, written and copyrighted 1990 and published on the Your Sinclair
-issue 63 covertape (March 1991; [doc 3](03-build-and-load.md#31-the-tape-block-by-block)). It is a 48K game. The player digs through 32 caves, one
-after another. In each cave he must take a set number of gems, then reach the exit before the time runs out. Boulders,
-gems and fire fall when nothing holds them up. A falling object kills the player. So does fire walked into.
+Earth Shaker is a boulder-dash game by Michael Batty, written 1988-1990 (a 1988 credit is left in the image,
+[doc 2.8](02-architecture.md#28-the-leftovers-and-the-1990-patches)), copyrighted 1990 and published on the Your
+Sinclair issue 63 covertape (March 1991; [doc 3](03-build-and-load.md#31-the-tape-block-by-block)). It is a 48K game.
+The player digs through 32 caves, one after another. In each cave he must take a set number of gems, then reach the
+exit before the time runs out. Boulders, gems, fire and the jelly beans, arrows and potions fall when nothing holds them
+up; any of them falling onto the player kills him (falling earth does not). So does fire walked into.
 
 The game adds objects to the Boulder Dash formula: jelly beans for time, force fields and the switch that clears them,
 anti-gravity, potions, teleporters and bubbles. The scroller says it: "EARTH SHAKER - FEATURING ANTI-GRAVITY".
@@ -117,7 +119,7 @@ The map shows the whole cave at one glyph a cell. F shows it once a cave. The pa
 | Key | What it does | Where |
 | --- | --- | --- |
 | left, right, up, down | move one cell a pass; dig earth; take what is there; push a boulder or a bubble sideways | KeysStep `$8759`, PlayerStep `$8556` |
-| fire held with a direction | act on the next cell without moving: dig it, take it | FireStep `$8878` |
+| fire held with a direction | act on the next cell without moving: dig it, take it, or (fire and left) push the boulder beside the player one cell on (FireLeftBoulder `$879F`, [doc 10.5](10-gameplay-logic.md#105-pushing-boulders-and-bubbles)) | FireStep `$8878` |
 | F | the map, once a cave | MapKey `$EA96` |
 | H | give up the cave: the bar drains, a life is lost | QuitKey `$872D` |
 | G | abort to the menu, no game-over screen | AbortKey `$93A5` |
@@ -146,12 +148,12 @@ and the rule in short. Command: `python3 tools/fig_design.py --out docs/img/desi
 | 3, 4 | the player | the start, facing right or left; one in every cave |
 | 5 | wall | blocks; its look changes from cave to cave |
 | 6 | earth | dug away; in caves 13, 17, 22, 24 and 26 it falls, but never crushes |
-| 7 | gem | falls and rolls like a boulder; taken for points |
-| 8 | jelly bean | falls; taken, it adds 32 pixels to the time bar (128 passes, the bar at most full) and 64 points |
+| 7 | gem | falls (and kills like a boulder) and rolls like a boulder; taken for points |
+| 8 | jelly bean | falls (and kills like a boulder); taken, it adds 32 pixels to the time bar (128 passes, the bar at most full) and 64 points |
 | 9 | force field | blocks; each push into it costs 12 passes of time at once (three pixels of the bar, three clicks; it can end the cave by time-out); cleared by the switch |
-| 10 | anti-gravity | falls; taken, objects rise instead of falling for a while; 200 points |
+| 10 | anti-gravity | falls (and kills like a boulder); taken, objects rise instead of falling for 99 passes (the panel counts them down); 200 points |
 | 11 | switch box | an object landing on it clears every force field (and every switch box); 250 points |
-| 12 | potion | falls; taken, an extra life up to 9; 20 points |
+| 12 | potion | falls (and kills like a boulder); taken, an extra life up to 9; 20 points |
 | 13 | teleporter | walk in: the player reappears at the next teleporter |
 | 14 | bubble | pushed by the player; into fire it bursts; 100 points |
 | 15 | fire | falls and kills when it lands on the player; walking into it kills |
@@ -200,8 +202,9 @@ goes on with the score and the lives kept.
 
 A game starts at the password prompt. FindPassword `$8E91` compares the 20 typed characters with 50 records of 20
 bytes from CaveNames `$9700`. Only the first 32 records are cave names. Records 33-50 run on over code, zeros and the
-map's glyphs (`$9980-$9AE7`), so no typed name can match them. A match at record B starts the game at cave B + 1. No
-match, or ENTER alone, starts cave 1.
+map's glyphs (`$9980-$9AE7`), so no typed name can match them. A match leaves B = the record's index from 0, and the game
+starts at cave B + 1. No match, or ENTER alone, starts cave 1, with no message: PasswordRejected `$8F08` is a lone
+`RET`.
 
 ```mermaid
 flowchart TD
@@ -252,15 +255,16 @@ Password():                              ; $8F29
 ```
 
 Worked example: `c1` presses ENTER at the prompt (frames 12617-12705). The buffer holds no name, all 50 records
-differ, B is 50, and the game starts at cave 1. Typing "WET HELL SOIL" (padded to 20) would match record 12 and start
-cave 13.
+differ, B is 50, and the game starts at cave 1. Typing "WET HELL SOIL" (padded to 20) would match record 13 (B = 12) and
+start cave 13.
 
 ![The 50 records FindPassword compares](img/rules/passwords.png)
 
 *The records from `$9700`: the 32 names, then the 18 records over code and data. From doc 10 (`tools/fig_rules.py`).*
 
-Witness: the `c1` L1 has FindPassword and PasswordRejected at frames 12617-12705, and CaveNumber `$FD91` is 1 at
-`memory_at` 12727. No recording types a valid name, so the accepted path is known only from the code.
+Witness: in `c1` the prompt is up from frame 12617; the L1 has FindPassword and PasswordRejected once each, at frame
+12705 (PasswordRejected 10 T: the lone `RET`; the old failure flash PasswordRejectedOld `$8F09` never runs), and
+CaveNumber `$FD91` is 1 at `memory_at` 12727. No recording types a valid name, so the accepted path is known only from the code.
 
 The point: the password is the cave's name, and the comparison runs 18 records past the last name.
 
@@ -353,8 +357,10 @@ And as the player sees them, half way through each `rzx-earthNN` recording:
 
 ![The 32 caves in play](img/play/caves.png)
 
-*Each cave at the middle frame of its `rzx-earthNN` recording; the win screen at the end of `rzx-earth32`. Command:
-`python3 tools/fig_play.py --out docs/img/play --sheet caves.png REC:FRAME:NAME ...` (stage 1).*
+*Each cave at the middle frame of its `rzx-earthNN` recording (cave 4 from stage 2's `rzx04/cap`, 2500 of 5106: stage
+1's replay lost the RZX at frame 2344); the win screen at the end of `rzx-earth32`. Command: `python3 tools/fig_play.py
+--out docs/img/play --cols 6 --sheet caves.png REC:FRAME:NAME ...` with the 33 shots of
+`work/review/fixA/caves-shots.txt` (the frames of [WALKTHROUGH 6.1](../WALKTHROUGH.md#61-the-screens)).*
 
 The parameters of each cave. "Frames a pass" is the mean pass in the RZX's play
 ([doc 4.6](04-game-loop.md#46-the-cost-of-a-pass-in-every-cave)). "Time limit" is 1024 passes at that rate, with no jelly

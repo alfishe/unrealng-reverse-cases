@@ -332,7 +332,7 @@ Witness: L1 1692 (c1, rzx x32).
 
 **The noise loop: (HL) AND `$18` to port `$FE` for HL down to 0**
 
-Witness: L1 991362 (c1, rzx x31).
+Witness: L1 1004824 (c1, rzx x31).
 
 | | |
 | --- | --- |
@@ -571,7 +571,7 @@ Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
 
 A = the cell. 4 jumps to Crush `$9ABC`; else LandOnSwitch `$810E`.
 
-Witness: L1 15822 (c1, hiscore, rzx x32).
+Witness: L1 15918 (c1, hiscore, rzx x32).
 
 | | |
 | --- | --- |
@@ -583,7 +583,7 @@ Witness: L1 15822 (c1, hiscore, rzx x32).
 
 A = `$0B`: SwitchHit `$7FFC` = `$FF`. The code that follows (`$8117`, RollObject) is reached from MoveObject when the cell below is not empty: an object on the player (3, 4), earth (6) or a vacated cell (`$20`) stays; else it rolls left when it is not in column 0 and the left cell and the one below it are both 0, else right when it is not in column 29 and those are 0.
 
-Witness: L1 15805 (c1, hiscore, rzx x32).
+Witness: L1 15901 (c1, hiscore, rzx x32).
 
 | | |
 | --- | --- |
@@ -920,7 +920,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 
 DrawCell `$8F60` for each; B = the character row (0, 2, ... 20), C = the column (0, 2, ... 30).
 
-Witness: L1 44157 (c1, hiscore, lives, timer, rzx x32).
+Witness: L1 43834 (c1, hiscore, lives, timer, rzx x32).
 
 [Animation: `DrawWindow` at work](img/routines/DrawWindow.gif)
 
@@ -964,7 +964,7 @@ Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 
 ### `AnimateCells` (`$900B`)
 
-**Step the player and exit frames (4 frames, 36 bytes apart)**
+**Step the player's frames (4 frames, 36 bytes apart)**
 
 AnimPhase `$FD72` 0-3: the player's table words `$8006` / `$8008` from `$9B98` / `$9C28` + 36 x phase. Out: HL = ViewOrigin.
 
@@ -1623,7 +1623,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 
 HL = the last digit, B = the digits. The carry runs left while a digit wraps from 9 to 0.
 
-Witness: L1 70659 (c1, rzx x32).
+Witness: L1 70724 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -1652,7 +1652,7 @@ Witness: L1 61961 (c1, rzx x32).
 
 HL = the last digit, B = the row, C = the last digit's column, D = the count. The glyph of digit k is `$BD80` + 8k.
 
-Witness: L1 82125 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx x32).
 
 | | |
 | --- | --- |
@@ -1679,7 +1679,7 @@ Witness: L1 12605 (c1, hiscore, lives, timer, rzx x32).
 
 HL = the text, B = the row, C = the first column, D = the length. The glyph of code k is `$BC00` + 8k (Font `$BD00` is code `$20`).
 
-Witness: L1 5949 (c1, hiscore, lives, menu, timer, rzx x32).
+Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx x32).
 
 [Animation: `PrintText` at work](img/routines/PrintText.gif)
 
@@ -1845,7 +1845,7 @@ Witness: L1 105 (c1, hiscore, lives, timer, rzx x32).
 
 **Add B points**
 
-Witness: L1 31019 (rzx x29).
+Witness: L1 31118 (rzx x29).
 
 | | |
 | --- | --- |
@@ -1855,7 +1855,9 @@ Witness: L1 31019 (rzx x29).
 
 **20 points**
 
-The PUSH BC at `$A8E3` is never popped: the RET pops it. BC is `$0038` after PotionTune, so the RET jumps to the ROM's IM 1 routine at `$0038`, which scans the keyboard and RETs to the true return `$91DA` in TakePotion. Witness: rzx-earth09 frame 6397 (`$A8F1` at T 67102, `$0038` at 67112, `$91DA` at 67994).
+The PUSH BC at `$A8E3` is never popped: the RET pops it. When LifeTune plays to its end BC is `$0038` after PotionTune, so the RET jumps to the ROM's IM 1 routine at `$0038`, which scans the keyboard and RETs to the true return `$91DA` in TakePotion. Witness: rzx-earth09 frame 6397 (`$A8F1` at T 67102, `$0038` at 67112, `$91DA` at 67994).
+
+A key 1-5 held during the tune stops PlayTune `$88CE` at a record boundary, and BC is the residue the last note's second-voice counter left: per note 0-38 3E 80 41 02 40 02 67 80 38 28 41 62 80 02 20 40 38 44 80 62 51 41 20 1D 02 44 28 38 51 38 62 1D 40 20 28 40 44 38 38 (a model of the loop over LifeTune; the last matches the trace). The RET then lands elsewhere in the ROM: `$0080` (SKIP-OVER) returns to `$91DA` without EI (run on a clone of the rzx-earth09 state: `$A8F1` RET to `$0080`, `$0089` RET to `$91DA`); from the ROM's code, `$0051` returns, `$003E-$0044` unbalance the stack, `$0028` enters the calculator, `$0002`, `$0062` and `$0067` reset the machine. No recording held a key 1-5 during a potion.
 
 Witness: L1 6 (rzx x6).
 
@@ -1865,7 +1867,7 @@ Witness: L1 6 (rzx x6).
 
 ### `TimeRefill` (`$A9D7`)
 
-**Refill the time bar: 32 steps, 2 points each**
+**One time-bar step and 2 points (JellyBean calls it 32 times)**
 
 Witness: L1 4224 (rzx x23).
 
@@ -1919,7 +1921,7 @@ Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
 
 **Move the player one cell left (the old cell 0)**
 
-Witness: L1 4365 (c1, rzx x32).
+Witness: L1 4366 (c1, rzx x32).
 
 | | |
 | --- | --- |
@@ -2141,7 +2143,7 @@ Witness: L1 11 (rzx x5).
 
 HL = the cell above (code `$07-$0F`, UpSpecialCheck `$93C7`). Gem: CollectGem `$8595`, MoveUp `$84E6`; jelly bean JellyBean `$91F7`; force field ForceField `$914C`; anti-gravity arrow AntiGravTake `$A7C7`; switch box: RET (blocks); potion: TakePotion `$91C9`, then the tests go on; teleporter TeleportUp `$926E`; bubble BubbleUp `$934F`; fire WalkIntoFire `$91AE` (PlayerKilled `$7FFD` = `$FF`, Continue `$9410`).
 
-Known only from the code: the fire test `$9194` and the tail `$919A` never ran: no build walked up into fire or a potion. The tail is reached after a potion taken from above: CALL Z,TakePotion returns with HL at the `$FF` that ends LifeTune, every later test fails, CP `$0F` leaves carry, and SBC gives PlayerIndex - 30: the player moves up into the potion's cell, by luck of the carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial `$94D6`, TryLeft's dispatcher: cave 4, one step left into fire).
+Known only from the code: the fire test `$9194` and the tail `$919A` never ran: no build walked up into fire or a potion. The tail is reached after a potion taken from above: CALL Z,TakePotion returns with HL at the `$FF` that ends LifeTune (after a key 1-5 stop, at the next note's n1 byte, `$1E-$2E`), every later test fails, CP `$0F` leaves carry, and SBC gives PlayerIndex - 30: the player moves up into the potion's cell, by luck of the carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial `$94D6`, TryLeft's dispatcher: cave 4, one step left into fire).
 
 Witness: L1 517 (rzx x32).
 
@@ -2474,7 +2476,7 @@ Witness: L1 2 (rzx x2).
 
 The bubble is already written (`$95CF`). The cell beyond its new place gets `$20` when it is 0; when the new place is in column 29 the loop ends with HL = 0 and the `$20` goes to `$0000` (the ROM, no effect). Then Continue `$9410`.
 
-Witness: L1 400 (rzx x19).
+Witness: L1 400 (rzx x19). The edge ran 13 times: the JR at `$998E`, taken only there, in rzx08, 22, 25 (7), 26, 29, 31 and 32 (work/stage2/execs.json; `$9992` 387 + 13 = 400).
 
 | | |
 | --- | --- |
@@ -2486,7 +2488,7 @@ Witness: L1 400 (rzx x19).
 
 The bubble is already written (`$9600`). The cell beyond its new place gets `$20` when it is 0; when the new place is in column 0 the loop ends with HL = 0 and the `$20` goes to `$0000` (the ROM, no effect). Then Continue `$9410`.
 
-Witness: L1 306 (rzx x18).
+Witness: L1 306 (rzx x18). The edge ran 4 times: the JR at `$99AE`, taken only there, in rzx09 (once) and rzx31 (3) (work/stage2/execs.json; `$99B2` 302 + 4 = 306).
 
 | | |
 | --- | --- |

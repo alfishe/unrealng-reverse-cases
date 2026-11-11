@@ -85,7 +85,7 @@ TryLeftSkip2:
 
 ; Move the player one cell left (the old cell 0)
 ;
-; Witness: L1 4365 (c1, rzx x32).
+; Witness: L1 4366 (c1, rzx x32).
 MoveLeft:
   LD HL,(PlayerIndex)
   DEC HL
@@ -599,11 +599,11 @@ ForceFieldSkip:
 ; Known only from the code: the fire test $9194 and the tail $919A never ran:
 ; no build walked up into fire or a potion. The tail is reached after a potion
 ; taken from above: CALL Z,TakePotion returns with HL at the $FF that ends
-; LifeTune, every later test fails, CP $0F leaves carry, and SBC gives
-; PlayerIndex - 30: the player moves up into the potion's cell, by luck of the
-; carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame
-; 279, from LeftSpecial $94D6, TryLeft's dispatcher: cave 4, one step left into
-; fire).
+; LifeTune (after a key 1-5 stop, at the next note's n1 byte, $1E-$2E), every
+; later test fails, CP $0F leaves carry, and SBC gives PlayerIndex - 30: the
+; player moves up into the potion's cell, by luck of the carry. WalkIntoFire
+; itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial
+; $94D6, TryLeft's dispatcher: cave 4, one step left into fire).
 ;
 ; Witness: L1 517 (rzx x32).
 UpSpecialCell:
@@ -1415,7 +1415,9 @@ CollectPad:
 ; when it is 0; when the new place is in column 29 the loop ends with HL = 0
 ; and the $20 goes to $0000 (the ROM, no effect). Then Continue $9410.
 ;
-; Witness: L1 400 (rzx x19).
+; Witness: L1 400 (rzx x19). The edge ran 13 times: the JR at $998E, taken only
+; there, in rzx08, 22, 25 (7), 26, 29, 31 and 32 (work/stage2/execs.json; $9992
+; 387 + 13 = 400).
 BubbleRightMove:
   LD DE,CaveGrid-1
   SBC HL,DE
@@ -1446,7 +1448,9 @@ BubbleRightMoveSkip3:
 ; when it is 0; when the new place is in column 0 the loop ends with HL = 0 and
 ; the $20 goes to $0000 (the ROM, no effect). Then Continue $9410.
 ;
-; Witness: L1 306 (rzx x18).
+; Witness: L1 306 (rzx x18). The edge ran 4 times: the JR at $99AE, taken only
+; there, in rzx09 (once) and rzx31 (3) (work/stage2/execs.json; $99B2 302 + 4 =
+; 306).
 BubbleLeftMove:
   LD DE,CaveGrid
   SBC HL,DE

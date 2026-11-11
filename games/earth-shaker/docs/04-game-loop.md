@@ -194,7 +194,7 @@ bonus in `rzx-earth01` 3668-3713 are taken):
 | TimeBonus | `$8702`, undone by BonusTick's BEEPER `$8723` | `$871A` | the bar counted into the score |
 | QuitKey | `$8736`, undone by the BEEPER at `$8741` | `$8757` | H: the bar drains |
 | WipeScreen | `$8DE3` | `$8DFD` | the wipe before a cave |
-| KeyClick | `$8E1A` | `$8E29` | a key typed in the password |
+| KeyClick | `$8E1A` | `$8E29` | a key typed in the password (EnterPassword `$8E66`, `$8E86`) or the high-score name (EnterName `$7F35`, `$7F55`) |
 | PasswordAccepted | `$8EE7` | `$8F06` | the password matched |
 
 The ROM's BEEPER `$03B5` starts with DI and ends with EI at `$03F6`. So after some BEEPER calls the game issues DI
@@ -238,7 +238,8 @@ In `c1` the steps fall in these frames: the cave intro at 12727, the cave tune a
 12992-13014, UnpackCave at 13014, FillTimeBar and the first KeysStep at 13016. The intro and the tune take 265 frames
 (5.3 s). The wipe takes 22. It runs with interrupts off. It shifts every even screen byte right and every odd one left,
 eight times, so each 16-pixel pair is squeezed into its middle seam. That is 8 × 192 × 16 × 55 T, about 1.35 million T
-or 19.4 frames.
+or 19.3 frames uncontended; the `c1` L1 measures 1.54 million T an entry (9 entries), 22 frames, the rest the ULA's
+contention on the screen reads and writes.
 
 ### The cave format
 
@@ -368,10 +369,19 @@ The same routine on cave 2, made in stage 2:
 
 ![UnpackCave on cave 2 in rzx-earth02](img/routines/UnpackCave-nibbles.gif)
 
-*Recording `rzx-earth02`, frame 269 (the RZX replay), 100 pictures; `kit/routine_anim.py`.*
+*UnpackCave on cave 2, recording `rzx-earth02` (the RZX replay), frames 269:13000-269:44200, 100 pictures of 312 T.
+The first picture has HL = `$C13B` (cave 2's record starts at `$C13A`) and the buffer `$FDA8` still holding the cells
+of the start snapshot; the 600 cells overwrite it row by row from `$FDA8`, and the last picture is the LDIR of the 14
+parameters. Read it as the cave 1 animation above: the memory map on top (reads at `$C13A-$C273`, writes at
+`$FDA8-$FFFF`), the buffer as 30 × 20 hex cells below it, the code on the right. The hex view colours only the latest
+writes, so the last picture shows only row 19 in colour (a kit gap, `work/review/kit-gaps.md`). Command: `python3
+../../kit/routine_anim.py --trace work/docs/esC/r02/traces/269_13000-269_44200.uatr --listing build/game.lst --view
+buffer:FDA8:30x20:hex --range C000-FFFF --pc 82B6-82E5 --pictures 100 --width 1084 --title "rzx-earth02 frame 269 (RZX
+replay): UnpackCave splits cave 2's 300 record bytes into 600 cells, then copies the 14 parameters"` (the trace made by
+`--work work/docs/esC/r02 --window 269:13000-269:44200`).*
 
 The point: the caves are stored at half size. The unpack is the only reader of CaveData. It costs under half a frame,
-hidden behind a 19-frame wipe.
+hidden behind a 22-frame wipe.
 
 ## 4.4 One pass
 
@@ -592,11 +602,16 @@ Why the speed varies:
 
 - **Falling earth.** Caves 13 and 17 are the slowest, 9.43 and 8.34 frames. Their earth falls, so every earth cell goes
   through the falling-object code. Caves 22, 24 and 26 also have falling earth and run at 7.3-7.5.
-- **Objects in motion.** The scan moves every falling boulder, gem, bubble and fire. Cave 24 has 56 bubbles and 31
-  fires.
+- **Objects that can fall.** ScanCells sends every boulder, gem, jelly bean, anti-gravity arrow, potion and fire (and
+  the earth of the falling-earth caves) through EarthFallGuard and MoveObject each pass, moving or not. It skips the
+  bubble (`$80AB CP $0E`, `JR Z,ScanNextCell`) with the wall, the exit, the switch box, the teleporter, the player and
+  (unless SetEarthFalls NOPs `$809A`) the earth. Cave 24 has 54 boulders, 47 gems, 5 jelly beans, 31 fires and 217
+  falling earth cells, 354 in all.
 - **Sounds.** A thud or a fall sound plays inside the pass with interrupts off.
-- **Caves with nothing to fall are fast.** Cave 20 has no boulder and no special (5.52 frames), cave 31 no boulder and
-  no earth (5.91); cave 21, no specials but 141 boulders, runs at 7.19. Cave 1 runs at 5.94.
+- **Caves with few falling-kind cells are fast.** Cave 20 has only its 68 gems (5.52 frames, the scan 74 349 T a
+  pass); cave 31 has 80 (30 gems, 7 jelly beans, 43 fires; 5.91, 95 625 T), its 271 bubbles cost the scan only the
+  compare that skips them. Cave 1 has 89 (5.94, 81 038 T). Cave 21 has 240 (141 boulders, 99 gems) and runs at 7.19
+  (157 609 T); cave 13 has 519 with its falling earth (255 477 T).
 
 So the game is about 1.7 times slower in cave 13 than in cave 20. The player moves one cell a pass: 9 cells a second in
 cave 20, 5.3 in cave 13.
@@ -688,7 +703,7 @@ Outside the passes the game waits by doing something. There is no delay loop on 
 | the wipe before the intro | ClearScreen `$860E` from CaveStart `$89F7` | 12705-12727 | WipeScreen `$8DE3` with DI, 22 frames |
 | the cave intro | CaveIntro `$92D4` | 12727-12729 | prints and returns: its DJNZ loops at `$92E3` and `$92EE` find the name and count its trailing spaces; the cave tune is the wait |
 | the cave tune | PlayCaveTune `$EE34` | 12729-12992 | PlayTune with DI |
-| the wipe in the set-up | WipeScreen `$8DE3` (ClearScreenCave, 4.3) | 12992-13014 | 1.35 million T with DI; with the one before the intro, two 22-frame wipes a cave start (the L1 of `c1`: 9 entries, 1.54 million T each) |
+| the wipe in the set-up | WipeScreen `$8DE3` (ClearScreenCave, 4.3) | 12992-13014 | 1.35 million T uncontended (1.54 million measured) with DI; with the one before the intro, two 22-frame wipes a cave start (the L1 of `c1`: 9 entries, 1.54 million T each) |
 | the map | ShowMap `$EA80` | 495 frames in `timer` | the map drawn, then the map tune |
 | the time bonus | TimeBonus `$8702` ([animation](img/routines/TimeBonus.gif), doc 8) | one beep a bar pixel; `rzx-earth01` 3668-3713 | BonusTick's BEEPER; the DI at `$8702` lasts only to the first BEEPER, 41 of the 45 interrupts are taken |
 | the quit drain | QuitKey `$872D` (H) | about 39 frames for a full bar, then TimeOutSound 52 frames | ShiftTimeBar and a one-cycle BEEPER a pixel (below) |

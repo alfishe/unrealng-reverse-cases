@@ -47,8 +47,10 @@ Interrupts, a first look (L1 of `c1`, `menu`, `lives`, `rzx-earth01`):
   handler's writes). The game never waits for the frame: a pass of the cave takes as long as its work.
 - Interrupts go off around sound and for the screen wipe: the tune player `$88CE` (DI at `$88CE`, `$88E2`, `$88F8`,
   EI at `$890E` when a key 1-5 ends the tune), every BEEPER call (its own DI, EI at `$03F6`), TimeOutSound
-  `$86AD-$86D1`, the effects `$9072-$908F`, `$9207`, `$921A`, `$A713-$A749`, `$E740-$E77A`, `$E7A9-$E7E3`, and the
-  wipe WipeScreen `$8DE3-$8DFD` (22 frames). TimeBonus `$8702-$871A` and QuitKey `$8736-$8757` start with DI, but
+  `$86AD-$86D1`, the effects `$9072-$908F`, `$9207`, `$921A`, `$A713-$A749`, `$E740-$E77A`, `$E7A9-$E7E3`, the
+  teleport sweeps `$E87B-$E8AC` and `$E8AE-$E8DF`, KeyClick `$8E1A-$8E29`, PasswordAccepted `$8EE7-$8F06`, the DI
+  after a BEEPER in AntiGravPass `$A813` and PotionTune `$91C7`, and the wipe WipeScreen `$8DE3-$8DFD` (22 frames;
+  the full table: [doc 4.2](docs/04-game-loop.md#42-the-interrupt)). TimeBonus `$8702-$871A` and QuitKey `$8736-$8757` start with DI, but
   the first BEEPER in their loops turns interrupts on again, so they run with interrupts on
   ([doc 4.2](docs/04-game-loop.md#42-the-interrupt)). So `rzx-earth01`'s 3803 frames took 2898 interrupts: the rest fell while a tune
   or a jingle held them off.
@@ -78,14 +80,28 @@ interrupts that land in a pass and the objects that move.
 
 ## 2. Static pass over the medium
 
+The static pass is stage 1's: the tape split into its blocks (`tools/tape.py`, `tools/tzxblocks.py`,
+`work/stage1/blocks/`), the BASIC listed (`tools/basic_list.py`), the game block disassembled whole (`work/stage1/g.asm`, read by address range with
+`work/stage1/dis.py`) and read against the L1 code map of the recordings, and the tape compared with the other copies of the game
+(`tools/media_compare.py`, `work/stage1/media-compare.txt`). Its notes: `work/stage1/NOTES.md`; stage 2 named the
+entries and the data (`work/stage2/NOTES.md`).
+
 ## 3. The stages and the packers
+
+There is no packer: the ROM's LD-BYTES loads the game block as it runs, and the image is that block
+([doc 3.2](docs/03-build-and-load.md#32-the-basic-loader)). The only packing is the caves' nibbles, undone by
+UnpackCave at each cave start ([doc 4.3](docs/04-game-loop.md#43-the-cave-start-and-the-unpacker)).
 
 ## 4. The medium from source
 
+`sh tools/build.sh` assembles `src/tape/basic.asm` and `src/game/game.asm` (both written by `kit/mkgame.py` from the
+`.ann` files and `src/res`), writes the four tape blocks as `build/EarthShaker.tap` and compares them with the
+original's, byte for byte ([doc 3.5](docs/03-build-and-load.md#35-the-build)).
+
 ## 5. Tool gaps found and fixed in unreal-ng
 
-| Gap | Fix | unreal-ng commit |
-| --- | --- | --- |
+No unreal-ng gap was found or fixed for this case. The kit's gaps are listed for its owner in
+`work/review/kit-gaps.md` and `work/stage2/NOTES.md` section 5.
 
 ## 6. The game
 
@@ -97,10 +113,15 @@ each `$RS capture` also takes `--model 48K --ranges 4000-FFFF --binary $BIN` (th
 `work/stage1/extra.sh` hold them whole). Every instance was muted and stopped after its run.
 
 The writers of docs 01-10 made no new recording: they reopened these sessions in their own work folders
-(`work/docs/es*/<name>/`; esA on port base 37150, esB 37160, esD 37180) to trace and animate them.
+(`work/docs/es*/<name>/`; esA on port base 37150, esB 37160, esC 37170, esD 37180) to trace and animate them.
 In the review, fixA reopened `c1`, `death-fire` and `rzx-earth01`-`04` (stage 1's `rzx04`), `09` and `22` on port base
 37250 for screenshots between the captures' screens (`work/review/fixA/shots.sh`, `kit/screen_shot.py`: the password
-prompt, the death by fire and the first appearances of doc 1.6), muted and stopped after each.
+prompt, the death by fire and the first appearances of doc 1.6), muted and stopped after each. fixC reopened
+`rzx-earth02` once on port base 37270 (`work/docs/esC/r02`) for the traces of `AnimateCellCodes.gif` and
+`BubbleRight.gif` and the figures `dissolve.png`, `teleport.png`, `antigravity.png` and `jelly-before.png` /
+`jelly-after.png` ([round 1 fixes of fixC](work/review/round1-fixes-fixC.md)); fixB started no instance. In round 2
+fixA regenerated `UnpackCave-nibbles.gif` from esC's kept trace and `cave-04.png` from stage 2's screens, with no
+instance.
 esB's control experiments (doc 5.3, cases A-D) ran on clones of `work/stage1/probe/after-load.szx`
 (`python3 work/docs/esB/exp_controls.py`), not as recordings.
 
@@ -194,7 +215,7 @@ Every cave in play, half way through its `rzx-earthNN` recording, and the win sc
 | `cave-01.png` | `rzx-earth01` | 1750 | cave 1 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `cave-02.png` | `rzx-earth02` | 3750 | cave 2 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md), [7](docs/07-objects.md) |
 | `cave-03.png` | `rzx-earth03` | 3000 | cave 3 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
-| `cave-04.png` | `rzx-earth04 (stage 1's `work/stage1/rzx04`)` | 3250 | cave 4 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
+| `cave-04.png` | `rzx-earth04` (stage 2's `work/stage2/rzx04/cap`: stage 1's replay lost the RZX at 2344) | 2500 | cave 4 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `cave-05.png` | `rzx-earth05` | 4000 | cave 5 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `cave-06.png` | `rzx-earth06` | 4000 | cave 6 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
 | `cave-07.png` | `rzx-earth07` | 4000 | cave 7 in play | [1](docs/01-game-design.md), [6](docs/06-rendering.md) |
@@ -230,35 +251,45 @@ The caves drawn whole from their data are in [doc 1.7](docs/01-game-design.md#17
 
 Every animation of the documents, drawn by `kit/routine_anim.py` (a routine at work over an access trace),
 `kit/memanim.py` (memory over time) or `kit/screen_anim.py` (the screen, a picture a frame) from a reopened
-recording; the full command is in each caption. Frames are `frame` or `frame:T` positions.
+recording; the full command is in each caption. Frames are `frame` or `frame:T` positions. One row for each GIF
+under `docs/img`; the Document column names every document that shows or names it
+(`work/review/fixA/r2/gif_table.py` rewrites the table).
 
 | Animation | Document | Recording | Frames |
 | --- | --- | --- | --- |
 | `docs/img/load/c1-load.gif` | [3](docs/03-build-and-load.md) | `c1` | 200-11 240, a picture every 240 frames |
-| `docs/img/routines/UnpackCave.gif` | [4](docs/04-game-loop.md) | `c1` | 13014:58300-13015:22000 |
-| `docs/img/routines/UnpackCave-memory.gif` | [4](docs/04-game-loop.md) | `c1` | 13014:58000-13015:24000 |
-| `docs/img/routines/UnpackCave-nibbles.gif` | [4](docs/04-game-loop.md), [7](docs/07-objects.md) | `rzx-earth02` | 269 |
-| `docs/img/routines/PlayCave.gif` | [4](docs/04-game-loop.md) | `c1` | 13143:35781-13149:10971 (one pass) |
-| `docs/img/routines/PlayCave-cave13.gif` | [4](docs/04-game-loop.md) | `rzx-earth13` | 1533:24069-1543:67391 (the heaviest traced pass) |
-| `docs/img/routines/KeysStep.gif` | [5](docs/05-controls.md) | `rzx-earth01` | 2945:0-3030:0 |
+| `docs/img/routines/UnpackCave.gif` | [4](docs/04-game-loop.md), [12](docs/12-routine-reference.md) | `c1` | 13014:58300-13015:22000 |
+| `docs/img/routines/UnpackCave-memory.gif` | [4](docs/04-game-loop.md), [12](docs/12-routine-reference.md) | `c1` | 13014:58000-13015:24000 |
+| `docs/img/routines/UnpackCave-nibbles.gif` | [4](docs/04-game-loop.md), [7](docs/07-objects.md), [12](docs/12-routine-reference.md) | `rzx-earth02` | 269:13000-269:44200 |
+| `docs/img/routines/PlayCave.gif` | [4](docs/04-game-loop.md), [12](docs/12-routine-reference.md) | `c1` | 13143:35781-13149:10971 (one pass) |
+| `docs/img/routines/PlayCave-cave13.gif` | [4](docs/04-game-loop.md), [12](docs/12-routine-reference.md) | `rzx-earth13` | 1533:24069-1543:67391 (the heaviest traced pass) |
+| `docs/img/routines/KeysStep.gif` | [5](docs/05-controls.md), [12](docs/12-routine-reference.md) | `rzx-earth01` | 2945:0-3030:0 |
 | `docs/img/play/walk-push.gif` | [5](docs/05-controls.md) | `rzx-earth01` | 2945-3030 |
-| `docs/img/routines/RedefineKeys.gif` | [5](docs/05-controls.md) | `c1` | 12279:62000-12280:5900 |
-| `docs/img/routines/AnimateTable.gif` | [6](docs/06-rendering.md) | `c1` | 14299:0-14321:0 |
-| `docs/img/routines/DrawWindow.gif` | [6](docs/06-rendering.md) | `c1` | 14295:55000-14299:3300 |
+| `docs/img/routines/RedefineKeys.gif` | [5](docs/05-controls.md), [12](docs/12-routine-reference.md) | `c1` | 12279:62000-12280:5900 |
+| `docs/img/routines/AnimateTable.gif` | [6](docs/06-rendering.md), [12](docs/12-routine-reference.md) | `c1` | 14299:0-14321:0 |
+| `docs/img/routines/DrawWindow.gif` | [6](docs/06-rendering.md), [12](docs/12-routine-reference.md) | `c1` | 14295:55000-14299:3300 |
 | `docs/img/play/window-scroll.gif` | [6](docs/06-rendering.md) | `c1` | 14 306-14 420 |
-| `docs/img/routines/ShowMap.gif` | [6](docs/06-rendering.md) | `timer` | 243:9000-251:13700 |
-| `docs/img/routines/CountGem.gif` | [8](docs/08-hud-and-text.md) | `rzx-earth01` | 814:49000-815:62000 |
-| `docs/img/routines/PrintText.gif` | [8](docs/08-hud-and-text.md) | `rzx-earth01` | 403:35000-405:7600 |
-| `docs/img/routines/TimeBonus.gif` | [8](docs/08-hud-and-text.md) | `rzx-earth01` | 3668:47000-3676:47000 |
-| `docs/img/routines/HiScoreInsert.gif` | [8](docs/08-hud-and-text.md) | `hiscore` | 4361:0-4365:0 |
-| `docs/img/routines/EnterName.gif` | [8](docs/08-hud-and-text.md) | `hiscore` | 4959:60000-4976:0 |
-| `docs/img/routines/RunScroller.gif` | [8](docs/08-hud-and-text.md) | `menu` | 3284:0-3300:0 |
-| `docs/img/routines/PlayTune.gif` | [9](docs/09-sound.md) | `rzx-earth01` | 405:7000-440:0 |
-| `docs/img/routines/ScanCells.gif` | [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 1325:3500-1326:31500 |
-| `docs/img/routines/Crush.gif` | [10](docs/10-gameplay-logic.md) | `death-crush` | 20:11418-21:31484 |
+| `docs/img/routines/ShowMap.gif` | [6](docs/06-rendering.md), [12](docs/12-routine-reference.md) | `timer` | 243:9000-251:13700 |
+| `docs/img/routines/CountGem.gif` | [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `rzx-earth01` | 814:49000-815:62000 |
+| `docs/img/routines/PrintText.gif` | [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `rzx-earth01` | 403:35000-405:7600 |
+| `docs/img/routines/TimeBonus.gif` | [4](docs/04-game-loop.md), [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `rzx-earth01` | 3668:47000-3676:47000 |
+| `docs/img/routines/HiScoreInsert.gif` | [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `hiscore` | 4361:0-4365:0 |
+| `docs/img/routines/EnterName.gif` | [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `hiscore` | 4959:60000-4976:0 |
+| `docs/img/routines/RunScroller.gif` | [8](docs/08-hud-and-text.md), [12](docs/12-routine-reference.md) | `menu` | 3284:0-3300:0 |
+| `docs/img/routines/PlayTune.gif` | [9](docs/09-sound.md), [12](docs/12-routine-reference.md) | `rzx-earth01` | 405:7000-440:0 |
+| `docs/img/routines/ScanCells.gif` | [7](docs/07-objects.md), [10](docs/10-gameplay-logic.md), [12](docs/12-routine-reference.md) | `rzx-earth02` | 1325:3500-1326:31500 |
+| `docs/img/routines/Crush.gif` | [7](docs/07-objects.md), [10](docs/10-gameplay-logic.md), [12](docs/12-routine-reference.md) | `death-crush` | 20:11418-21:31484 |
 | `docs/img/play/death-crush.gif` | [10](docs/10-gameplay-logic.md) | `death-crush` | 0-44 |
-| `docs/img/routines/SwitchClear.gif` | [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 386:63400-387:38100 |
-| `docs/img/play/switch-chain.gif` | [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 376-412 |
-| `docs/img/play/bubble-burst.gif` | [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 2426-2490 |
+| `docs/img/routines/SwitchClear.gif` | [7](docs/07-objects.md), [10](docs/10-gameplay-logic.md), [12](docs/12-routine-reference.md) | `rzx-earth02` | 386:63400-387:38100 |
+| `docs/img/play/switch-chain.gif` | [1](docs/01-game-design.md), [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 376-412 |
+| `docs/img/play/bubble-burst.gif` | [1](docs/01-game-design.md), [10](docs/10-gameplay-logic.md) | `rzx-earth02` | 2426-2490 |
+| `docs/img/routines/AnimateCellCodes.gif` | [7](docs/07-objects.md), [12](docs/12-routine-reference.md) | `rzx-earth02` | 2485:33900-2485:68900 |
+| `docs/img/routines/BubbleRight.gif` | [7](docs/07-objects.md), [10](docs/10-gameplay-logic.md), [12](docs/12-routine-reference.md) | `rzx-earth02` | 2427:64300-2427:68100 |
 
 ## 7. Review
+
+Two review rounds, each with three reviewers over three groups of documents (docs 01-04 with the READMEs and this
+walkthrough; docs 05, 06, 08, 09; docs 07, 10, 11, 12) and a fixer for each. Round 1: `work/review/rvA.md`, `rvB.md`,
+`rvC.md`, answered in `round1-fixes-fixA.md`, `-fixB.md`, `-fixC.md`; round 2: `rv2A.md`, `rv2B.md`, `rv2C.md`,
+answered in `round2-fixes-fixA.md`, `-fixB.md`, `-fixC.md`. The facts the fixers share are in `work/review/canon.md`,
+the kit's gaps in `work/review/kit-gaps.md`, and the check of the documents in `work/review/check<N>-<fixer>.txt`.

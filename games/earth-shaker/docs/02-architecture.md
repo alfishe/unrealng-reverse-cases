@@ -53,7 +53,7 @@ checked against the L1 byte counts of every recording:
 | Range | Bytes | What |
 | --- | ---: | --- |
 | `$4000-$5AFF` | 6 912 | the screen |
-| `$5B00-$5CCA` | 459 | the ROM's system variables; FRAMES `$5C78` |
+| `$5B00-$5CCA` | 459 | the printer buffer `$5B00-$5BFF`, the ROM's system variables `$5C00-$5CB5` (FRAMES `$5C78`) and the channel information `$5CB6-$5CCA` |
 | `$5CCB-$5D35` | 107 | the BASIC loader, left in place |
 | `$5D36-$6938` | 3 075 | free, never used |
 | `$6939-$6977` | 63 | the deepest the stack goes ([2.7](#27-the-stack)) |
@@ -267,8 +267,9 @@ PotionScore's `PUSH BC` at `$A8E3`, never popped, whose RET runs the ROM's IM 1 
 
 ## 2.8 The leftovers and the 1990 patches
 
-Earth Shaker was written in 1988 and published in 1990. Witness: the credit line at `$AC2E`, "ARTWORK AND MUSIC
-(C) 1988 MICHAEL BATTY", never printed, against the menu's "(C) 1990 MICHAEL BATTY" (MenuCopyrightText `$AB49`). The 1990 version changed the code in place. It did not
+Earth Shaker began in 1988. Witness: the credit line at `$AC2E`, "ARTWORK AND MUSIC (C) 1988 MICHAEL BATTY", never
+printed, against the menu's "(C) 1990 MICHAEL BATTY" (MenuCopyrightText `$AB49`). The tape's version is the 1990 one,
+published in March 1991 ([doc 1.1](01-game-design.md#11-the-game)). The 1990 version changed the code in place. It did not
 reassemble it. A new routine was hooked in by putting a CALL or a JP where the old code started, and NOPs over what was
 left. The patch chain of the pass is the clearest case:
 
@@ -306,9 +307,9 @@ keeps every such byte as a file in `src/res/leftovers/` (its README lists them):
 | Leftover | Address | Bytes | What |
 | --- | --- | ---: | --- |
 | `win-pad.bin` | `$72FE-$72FF` | 2 | two `$FF` after WinTune |
-| `names-pad.bin` | `$99C0-$99FF` | 64 | zeros after CaveNames; FindPassword compares them as records 33-50 |
+| `names-pad.bin` | `$99C0-$99FF` | 64 | zeros after the bubble code; FindPassword compares them inside records 36-39 (record n from 1 at `$9700 + 20(n-1)`) |
 | `map-patch.bin` | `$9A90-$9AA4` | 21 | code no path reaches: an installer of the map patch, ending `JP $8B20` |
-| `names-pad2.bin` | `$9ACC-$9AE7` | 28 | zeros, the end of record 50 |
+| `names-pad2.bin` | `$9ACC-$9AE7` | 28 | zeros, the end of record 49 and record 50 |
 | `earth-anim-pad.bin` | `$9E1A-$9E1F` | 6 | bytes after EarthAnim |
 | `life-pad.bin` | `$ACFD-$ACFF` | 3 | three `$FF` after LifeTune |
 | `title-pad.bin` | `$B26A-$B26B` | 2 | two zeros after TitleTune |

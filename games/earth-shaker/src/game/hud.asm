@@ -14,7 +14,7 @@
 ; HL = the last digit, B = the digits. The carry runs left while a digit wraps
 ; from 9 to 0.
 ;
-; Witness: L1 70659 (c1, rzx x32).
+; Witness: L1 70724 (c1, rzx x32).
 IncDigits:
   LD A,(HL)
   INC A
@@ -42,7 +42,7 @@ AddPoint:
 ; HL = the last digit, B = the row, C = the last digit's column, D = the count.
 ; The glyph of digit k is $BD80 + 8k.
 ;
-; Witness: L1 82125 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx x32).
 PrintDigits:
   PUSH DE
   LD A,(HL)
@@ -80,7 +80,7 @@ ShowScore:
 ; HL = the text, B = the row, C = the first column, D = the length. The glyph
 ; of code k is $BC00 + 8k (Font $BD00 is code $20).
 ;
-; Witness: L1 5949 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx x32).
 PrintText:
   PUSH DE
   PUSH HL
@@ -342,7 +342,7 @@ BarColours:
 
 ; Add B points
 ;
-; Witness: L1 31019 (rzx x29).
+; Witness: L1 31118 (rzx x29).
 AddPoints:
   PUSH BC
   CALL AddPoint
@@ -353,10 +353,22 @@ AddPoints:
 
 ; 20 points
 ;
-; The PUSH BC at $A8E3 is never popped: the RET pops it. BC is $0038 after
-; PotionTune, so the RET jumps to the ROM's IM 1 routine at $0038, which scans
-; the keyboard and RETs to the true return $91DA in TakePotion. Witness:
-; rzx-earth09 frame 6397 ($A8F1 at T 67102, $0038 at 67112, $91DA at 67994).
+; The PUSH BC at $A8E3 is never popped: the RET pops it. When LifeTune plays to
+; its end BC is $0038 after PotionTune, so the RET jumps to the ROM's IM 1
+; routine at $0038, which scans the keyboard and RETs to the true return $91DA
+; in TakePotion. Witness: rzx-earth09 frame 6397 ($A8F1 at T 67102, $0038 at
+; 67112, $91DA at 67994).
+;
+; A key 1-5 held during the tune stops PlayTune $88CE at a record boundary, and
+; BC is the residue the last note's second-voice counter left: per note 0-38 3E
+; 80 41 02 40 02 67 80 38 28 41 62 80 02 20 40 38 44 80 62 51 41 20 1D 02 44 28
+; 38 51 38 62 1D 40 20 28 40 44 38 38 (a model of the loop over LifeTune; the
+; last matches the trace). The RET then lands elsewhere in the ROM: $0080
+; (SKIP-OVER) returns to $91DA without EI (run on a clone of the rzx-earth09
+; state: $A8F1 RET to $0080, $0089 RET to $91DA); from the ROM's code, $0051
+; returns, $003E-$0044 unbalance the stack, $0028 enters the calculator, $0002,
+; $0062 and $0067 reset the machine. No recording held a key 1-5 during a
+; potion.
 ;
 ; Witness: L1 6 (rzx x6).
 PotionScore:
@@ -380,7 +392,7 @@ AddPointsPad:
 
   ORG $A9D7
 
-; Refill the time bar: 32 steps, 2 points each
+; One time-bar step and 2 points (JellyBean calls it 32 times)
 ;
 ; Witness: L1 4224 (rzx x23).
 TimeRefill:

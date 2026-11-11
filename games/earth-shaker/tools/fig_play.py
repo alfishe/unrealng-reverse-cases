@@ -5,6 +5,8 @@
     python3 tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...
     python3 tools/fig_play.py --out docs/img/play --sheet caves.png REC:FRAME:NAME ...   # also one labelled sheet
 
+REC is a stage 1 recording (rzx01) or a capture folder under work/ (stage2/rzx04/cap).
+
 A shot given as @PNG|LABEL|NAME is a 512 x 384 screenshot already made (kit/screen_shot.py, a frame between the
 capture's screens): it is copied as NAME.png and put on the sheet with LABEL.
 """
@@ -50,10 +52,13 @@ def main():
             made.append((label, img))
             continue
         rec, frame, name = spec.split(':', 2)
-        data = open(os.path.join(CASE, 'work', 'stage1', rec, 'screens', f'{int(frame):06d}.scr'), 'rb').read()
+        # REC is a stage 1 recording, or a path under work/ (stage2/rzx04/cap: labelled "rzx04 (stage 2)")
+        folder = os.path.join(CASE, 'work', rec) if '/' in rec else os.path.join(CASE, 'work', 'stage1', rec)
+        label = f'{rec.split("/")[1]} ({rec.split("/")[0].replace("stage", "stage ")})' if '/' in rec else rec
+        data = open(os.path.join(folder, 'screens', f'{int(frame):06d}.scr'), 'rb').read()
         img = scr_image(data)
         img.resize((512, 384), Image.NEAREST).save(os.path.join(a.out, name + '.png'))
-        made.append((f'{rec} frame {int(frame)}', img))
+        made.append((f'{label} frame {int(frame)}', img))
     if a.sheet:
         rows = (len(made) + a.cols - 1) // a.cols
         sheet = Image.new('RGB', (a.cols * 260, rows * 214), (24, 24, 30))

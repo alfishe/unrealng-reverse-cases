@@ -39,11 +39,10 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 
 | Documents | Figures (PNG) | Animations (GIF) | WAVs | Lines of the documents |
 | ---: | ---: | ---: | ---: | ---: |
-| 12 | 138 | 28 | 32 | 11 371 |
+| 12 | 138 | 28 | 32 | 11 498 |
 
 Counted by `ls docs/[01][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l;
-find docs/audio -name '*.wav' | wc -l; cat docs/[01][0-9]-*.md | wc -l` (counted during the review fixes; the other
-fixers' changes may move them).
+find docs/audio -name '*.wav' | wc -l; cat docs/[01][0-9]-*.md | wc -l` (counted after the round 2 fixes).
 
 ## Build
 

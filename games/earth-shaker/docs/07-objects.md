@@ -85,8 +85,9 @@ it is. Six codes fall (`$02 $07 $08 $0A $0C $0F`); everything else is scenery th
 
 ### The states of a cell
 
-A cell's code changes only along these paths. The scan, the player's step and `AnimateCellCodes` write the grid;
-nothing else writes it during play.
+A cell's code changes only along these paths. The player's step, `PutPlayer $8382`, `AnimateCellCodes $937E` and
+the routines it calls (`SwitchClear` and the scan), and `ClearVacated $81AC` write the grid; nothing else writes it
+during play.
 
 ```mermaid
 stateDiagram-v2
@@ -288,7 +289,8 @@ graphic's four attributes as bright, plain, plain, bright. The attributes are st
 right, bottom right, bottom left (`DrawCell $8F6D`, `$8F71`, `$8F76` after `SET 5,E`, `$8F7A` after `DEC E`). So the
 left half of the cell is bright and the right half plain: in `img/play/cave-30.png` below every boulder is bright on
 its left half. FLASH (bit 7) survives only in the first byte, the top left quarter: the `AND $3F` at `$9308` clears it
-for the other three. `SetEarthFalls $FB81` runs after it at every cave start (`ResetCave $85F1`) and decides whether earth falls.
+for the other three. `SetEarthFalls $FB81` is the entry, at every cave start (`ResetCave $85FE`): it calls
+`CaveSetupAll $A600` (which calls `CaveSetup`, which calls `UnpackCave`), then decides whether earth falls.
 
 ```text
 CaveSetup:
@@ -421,14 +423,14 @@ Its LDIR of `$028A` bytes runs on past `$FFFF` into `$0000-$0004`, the ROM, whic
 | Address | Name | Format | Written by | Meaning |
 | --- | --- | --- | --- | --- |
 | `$FD70` | `ViewOrigin` | word | `WindowOrigin $8DA6` | the window's first cell |
-| `$FD72` | `AnimPhase` | 0-3 | `AnimateCells $900B`, `CaveStartState $9052`, `TeleportFlashOut $9230`, `TeleportFlashIn $924F` | the animation phase of the player, the exit and the specials |
+| `$FD72` | `AnimPhase` | 0-3 | `AnimateCells $900B`, `CaveStartState $9052`, `TeleportFlashOut $9230`, `TeleportFlashIn $924F` | the animation phase of the player's frames (table words 3 and 4); the falling-earth caves also take their earth and empty frames from it (`EarthAnim $9DFC`, `EarthAnimStep $FB70`). The exit flashes by its attributes (`ExitFlash $905B`), not by a phase |
 | `$FD73` | `ForceFieldPhase` | 0-7 | `AnimateTable $90B2` | the force field's frame |
 | `$FD74` | `TeleporterPhase` | 0-11 | `AnimateTable` | the teleporter's frame |
 | `$FD7C` | `TimerSub` | `+$40` a pass | `TimerStep $86DE` | the timer's sub-counter: every fourth pass wraps to 0 |
 | `$FD7D` | `CaveOver` | flag | `TimerStep`, `QuitKey $872D`; cleared by `PlayCave $8888` and `CaveStart $89FE` | `$FF`: out of time, or H pressed |
 | `$FD7E` | `CaveDigits` | 2 digits | `StartGame`, `NextCave $8A07`, `Password $8F29`, `WinGame $A8BF` (01) | the cave number for the panel |
 | `$FD80` | `KeyMoved` | flag | the four `Try...` routines | `$FF` once a direction key acted this pass |
-| `$FD82` | `GemDigits` | 2 digits | `CountGem $8394` | the gems taken, for the panel |
+| `$FD82` | `GemDigits` | 2 digits | `CountGem $8394`; zeroed by `ResetCave $85F7` | the gems taken, for the panel |
 | `$FD84` | `CaveDone` | flag | the four `Try...` routines; cleared by `ResetCave $85F4` (one word with `ExitOpen`) and `CaveStart $8A01` | `$FF`: the player entered the open exit |
 | `$FD85` | `ExitOpen` | flag | `CountGem`; cleared by `ResetCave` | `$FF` when the gem count reached `GemsNeeded` |
 | `$FD86` | `PlayerFacing` | 3 or 4 | `TryLeft`, `TryRight`, `FaceLeft $838E` | the player's cell code |
@@ -441,7 +443,7 @@ Its LDIR of `$028A` bytes runs on past `$FFFF` into `$0000-$0004`, the ROM, whic
 | `$FD90` | `Unused99` | 99 | `ResetGame` | set, never read |
 | `$FD91` | `CaveNumber` | 1-32 | `ResetGame`, `Password`, `NextCave` | the cave |
 | `$FD92` | `GemCount` | count | `CountGem`, `ResetCave` | the gems taken in this cave |
-| `$FD93` | `Lives` | 0-9 | `StartGame` (5), `NextCave`, `TakePotion $91C9` | the lives |
+| `$FD93` | `Lives` | 0-9 | `ResetGame $82F0` (4), `StartGame` (5), `NextCave`, `TakePotion $91C9` | the lives |
 | `$FD94` | `ScoreDigits` | 6 digits | `AddPoint $8321`; zeroed by `StartGame` (LDIR at `$85EE`) | the score, one decimal digit a byte, the highest first |
 | `$FD9A` | `CaveParams` | 14 bytes | `UnpackCave` | 7.3 |
 

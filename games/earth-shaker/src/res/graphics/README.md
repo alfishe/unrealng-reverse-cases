@@ -10,7 +10,7 @@ paper, 1 ink, 2 the grid), the chunk `es-sheet` holds the glyph count and the gl
 
 | File | Address | Bytes | Readers | What |
 | --- | --- | ---: | --- | --- |
-| `cells-a.png` | `$9B08-$9DFB` | 756 | CellGraphicsTable `$8000` words, DrawCell `$8F60`, CaveSetup `$9313` (colours), AnimateCells `$900B`, DrawPass `$8D46` (gem ink), DeathView `$903F`, ExitFlash `$905B`, WinScreen `$A61C` | slots 0-20: GfxExit (cell 1), GfxBoulder (2), GfxEarth (6), GfxGem (7), GfxPlayerRight (3, four frames), GfxPlayerLeft (4, four frames), GfxWall1-GfxWall6 (the caves' walls), GfxSpare (slot 18, never read), GfxDeathRight, GfxDeathLeft (slot 20, never drawn in a recording) |
+| `cells-a.png` | `$9B08-$9DFB` | 756 | CellGraphicsTable `$8000` words, DrawCell `$8F60`, CaveSetup `$9313` (colours), AnimateCells `$900B`, DrawPass `$8D46` (gem ink), DeathView `$903F`, ExitFlash `$905B`, WinScreen `$A61C` | slots 0-20: CellGraphics (the exit, cell 1), GfxBoulder (2), GfxEarth (6), GfxGem (7), GfxPlayerRight (3, four frames), GfxPlayerLeft (4, four frames), GfxWall1-GfxWall6 (the caves' walls), GfxSpare (slot 18, never read), GfxDeathRight, GfxDeathLeft (slot 20, never drawn in a recording) |
 | `cells-b.png` | `$9E20-$A5FF` | 2016 | AnimateTable `$90B2`, EarthAnim `$9DFC`, CaveSetupAll `$A600` (the dissolve frames' colour), the table words | slots 22-77: the switch (cell `$B`), fire (`$F`, 4 frames), teleporter (`$D`, 12), bubble (`$E`, 4), dissolve (`$15-$1B`, 7), force field (9, 8), anti-gravity arrow (`$A`, 4), GfxFallingEarth `$A450` (4, the falling earth of caves 13, 17, 22, 24, 26), GfxJellyBean (8, 4), GfxBurst (`$10-$14`, 4) |
 | `extra-a.png` | `$ED28-$EDDB` | 180 | CaveSetup through the caves' earth_graphic / wall_graphic | ExtraGraphics (earth and wall of cave 20), GfxExtraWall2 (wall of cave 4), GfxExtraWall3 (18), GfxExtraWall4 (7), GfxExtraWall5 (10, 26) |
 | `extra-b.png` | `$EE00-$EE23` | 36 | the same | ExtraGraphic2: the wall of caves 24 and 28 |
@@ -26,5 +26,5 @@ paper, 1 ink, 2 the grid), the chunk `es-sheet` holds the glyph count and the gl
 | `teleport-frames.txt` | `$7300-$7EFF` | 3072 | TeleportFlashOut `$9230`, TeleportFlashIn `$924F` | TeleportFrames: four attribute screens of 768 bytes copied to `$5800` in turn, hex, 32 a line |
 
 Per cave, CaveSetup `$9313` points table words 6 and 5 at the cave's earth and wall graphics and writes four colours
-into GfxExit, GfxBoulder, GfxWall1 and GfxEarth (caves/README.md). Cave 30's earth is GfxBoulder. The cell table
-`$8000` itself stays in the source (a `w` entry of DEFW labels): its words are names.
+into CellGraphics (the exit), GfxBoulder, GfxWall1 and GfxEarth (caves/README.md). Cave 30's earth is GfxBoulder. The
+cell table `$8000` itself stays in the source (a `w` entry of DEFW labels): its words are names.

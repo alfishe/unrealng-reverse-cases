@@ -278,8 +278,8 @@ The cost matters only on screens that print a lot at once. The cave intro's 30 c
 of a frame. During play nothing calls PrintText. The panel's live fields are digits, printed by PrintDigits (8.4),
 which has no such loop.
 
-Witness: L1 counts 5950 entries of PrintText over the recordings (`c1`, `hiscore`, `lives`, `menu`, `timer`, every
-`rzx`). The cost per code is from `ev-rzx01-3660-3740.json` (the entries' T-states in frame 3736).
+Witness: L1 counts 5918 runs of PrintText over the builds ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings):
+`c1`, `hiscore`, `lives`, `menu`, `timer`, every `rzx`). The cost per code is from `ev-rzx01-3660-3740.json` (the entries' T-states in frame 3736).
 
 The point: PrintText is short and slow. The slowness never shows, because the texts are printed while nothing else
 moves: the intro, the menu, the high-score screen.
@@ -375,7 +375,7 @@ ends in 9. AddPoint calls IncDigits at T 46 376, the digit wraps to 0, and IncDi
 tens (the second entry comes from `$831E`, the DJNZ). ShowScore follows at T 46 516. PrintDigits enters six times,
 at 46 564, 47 150, 47 706, 48 286, 48 842 and 49 422: about 570 T a digit, 3600 T for the score.
 
-Witness: L1 counts 70 071 IncDigits, 61 386 AddPoint and 82 024 PrintDigits entries over the recordings. The moments
+Witness: L1 counts 70 724 IncDigits, 61 961 AddPoint and 82 595 PrintDigits runs over the builds (WALKTHROUGH 6.0). The moments
 above are from `ev-rzx01-3660-3740.json`.
 
 The point: decimal strings make printing cheap (no division) and adding dear (one call a point). The game adds at
@@ -443,8 +443,9 @@ How to read the figure:
 - **Green and magenta** are ShiftTimeBar: 6 calls, one every fourth pass, each rewriting all 256 bytes of row 22
   (magenta is column 31, the first `RL (HL)` of each line). FillTimeBar's 128 writes are all overwritten, so it owns no byte.
 - **Red** is DrawCell, the play window above ([doc 6](06-rendering.md)).
-- **The point**: the two panel rows have exactly two writers each, and row 22's are the timer's. Nothing else in the
-  game draws there.
+- **The point**: in this window the two panel rows have exactly two writers each, and row 22's are the timer's. Over
+  a whole cave the jelly bean's TimeBarRefillStep `$91DB` writes row 22 too (8.8); none falls in frames 691-830 (the
+  first is at 1524).
 
 The order at a cave start, from L1 of `rzx-earth01` (frames 691-692, when the cave tune has just ended):
 
@@ -576,7 +577,7 @@ How to read the animation:
 The six NOPs of CountGem, and the four after ExitOpenSound in CollectGem, are code blanked in place by an older edit.
 Nothing after them moved. ExitOpenSound runs on every gem after the exit opened, because ExitOpen stays `$FF`.
 
-Witness: L1 counts 1680 CollectGem and CountGem entries over `c1` and the 32 RZX replays. The table is from
+Witness: L1 counts 1692 CollectGem and CountGem runs over `c1` and the 32 RZX replays. The table is from
 `ev-rzx01-812-818.json`.
 
 The point: a gem is three panel writes and a sound, all inside the pass that took it. With no frame lock, the pass

@@ -25,8 +25,8 @@
 FlagsPad:
   DEFB $00
 
-; The fizz countdown: 7 when a boulder falls into fire; FizzSound $A773 beeps
-; while it runs down
+; The fizz countdown: 7 when a boulder stands over fire (the scan's dissolve);
+; FizzSound $A773 beeps while it runs down
 FizzCount:
   DEFB $00
 
@@ -177,7 +177,7 @@ MoveObjectPad:
 ;
 ; A = the cell. 4 jumps to Crush $9ABC; else LandOnSwitch $810E.
 ;
-; Witness: L1 15822 (c1, hiscore, rzx x32).
+; Witness: L1 15918 (c1, hiscore, rzx x32).
 MoveObjectLanded:
   CP $04
   JR NZ,LandOnSwitch
@@ -195,7 +195,7 @@ MoveObjectPad2:
 ; when it is not in column 0 and the left cell and the one below it are both 0,
 ; else right when it is not in column 29 and those are 0.
 ;
-; Witness: L1 15805 (c1, hiscore, rzx x32).
+; Witness: L1 15901 (c1, hiscore, rzx x32).
 LandOnSwitch:
   CP $0B
   RET NZ

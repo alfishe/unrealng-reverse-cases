@@ -6,9 +6,9 @@
 ; graphic is 36 bytes: 4 attributes (top left, top right, bottom right, bottom left), then 32 pixel bytes in zigzag
 ; order (even pixel lines left then right, odd lines right then left), drawn by DrawCell $8F60.
 ;
-; The animated cells are animated by rewriting their table words each pass (AnimateCells $900B: the player and the
-; exit; AnimateTable $90B2: the specials) and the gem colour bytes (DrawPass $8D46). The cave's earth and wall words
-; are set from its parameters (CaveSetup $9313).
+; The animated cells are animated by rewriting their table words each pass (AnimateCells $900B: the player;
+; AnimateTable $90B2: the specials and, in the falling-earth caves, the earth and empty frames) and the gem colour
+; bytes (DrawPass $8D46). The cave's earth and wall words are set from its parameters (CaveSetup $9313).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $8000
@@ -16,13 +16,16 @@
 ; The graphic of each cell code 0-31: 32 addresses of 36-byte graphics
 ;
 ; Read through CellGraphicAddr $8D66 by DrawCell $8F60 (every cell drawn, in
-; every build). Words 3 and 4 (the player), 1 (the exit), 6 and 5 (earth, wall)
-; and the animated words 8-15 are rewritten during play, and word 0 (the empty
-; cell) in the falling-earth caves: EarthAnimStep $FB70 points it at a frame of
-; EmptyFrames $FAE0 each pass, and SetEarthFalls $FB84 puts BlankGraphic $AA72
-; back at every cave start. Words 16 and 21 ($8020, $802A) are never read: the
-; codes $10 and $15 step on (AnimateCellCodes $937E) before the window is drawn
-; in the same pass. Words 28-31 are $0000: no such cells.
+; every build). Words 3 and 4 (the player), 6 and 5 (earth, wall) and the
+; animated words 8, 9, 10 and 12-15 are rewritten during play, and word 0 (the
+; empty cell) in the falling-earth caves: EarthAnimStep $FB70 points it at a
+; frame of EmptyFrames $FAE0 each pass, and SetEarthFalls $FB84 puts
+; BlankGraphic $AA72 back at every cave start. Words 16 and 21 ($8020, $802A)
+; are never read: the codes $10 and $15 step on (AnimateCellCodes $937E) before
+; the window is drawn in the same pass. Words 1 (the exit: it flashes by its
+; attributes, ExitFlash $905B), 2 (the boulder), 7 (the gem: DrawPass $8D46
+; cycles its attribute bytes) and 11 (the switch) are never written (code and
+; the state logs). Words 28-31 are $0000: no such cells.
 CellGraphicsTable:
   DEFW BlankGraphic
 CellExitGfx:
@@ -238,7 +241,7 @@ DrawWindowAtOrigin:
 ; DrawCell $8F60 for each; B = the character row (0, 2, ... 20), C = the column
 ; (0, 2, ... 30).
 ;
-; Witness: L1 44157 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43834 (c1, hiscore, lives, timer, rzx x32).
 DrawWindow:
   LD DE,CaveGrid
   ADD HL,DE
@@ -496,7 +499,7 @@ DrawCell:
   LD (DE),A
   RET
 
-; Step the player and exit frames (4 frames, 36 bytes apart)
+; Step the player's frames (4 frames, 36 bytes apart)
 ;
 ; AnimPhase $FD72 0-3: the player's table words $8006 / $8008 from $9B98 /
 ; $9C28 + 36 x phase. Out: HL = ViewOrigin.
