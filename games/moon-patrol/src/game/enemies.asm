@@ -86,7 +86,7 @@ TankShotTest:
   LD A,$FF
   LD (ShotForward+2),A
 TankHit:
-  LD DE,-$0004            ; explosion sprite $32, TankExplodeHandler, 250
+  LD DE,-4                ; explosion sprite $32, TankExplodeHandler, 250
                           ; points
   ADD HL,DE
   LD (HL),$32
@@ -474,7 +474,7 @@ LowFlyerShotTest:
   LD A,$FF
   LD (ShotForward+2),A
 LowFlyerHit:
-  LD DE,-$0005            ; explosion sprite $36, LowFlyerExplodeHandler
+  LD DE,-5                ; explosion sprite $36, LowFlyerExplodeHandler
   ADD HL,DE
   LD (HL),$36
   DEC HL
@@ -692,7 +692,7 @@ BoulderShotTest:
   LD A,$FF
   LD (ShotForward+2),A
 BoulderHit:
-  LD DE,-$0004            ; by size: explosion sprite and 100 / 150 / 200
+  LD DE,-4                ; by size: explosion sprite and 100 / 150 / 200
   ADD HL,DE
   LD A,(HL)
   PUSH HL

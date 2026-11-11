@@ -57,7 +57,7 @@ PrintNumber5:
 ; The operand $FF9C is -100 (the source writes it so with @isub; as a label it
 ; would read Buildings+155, a false symbol). Used by PrintMenuTotal and $A833.
 PrintNumber3:
-  LD BC,-$0064            ; -100
+  LD BC,-100              ; -100
   CALL PrintDigit         ; the hundreds
 
 ; Print the tens and the units of HL

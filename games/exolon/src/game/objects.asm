@@ -77,7 +77,7 @@ AddObjectCell:
   LD C,L
   ADD HL,HL
   ADD HL,BC
-  LD BC,KindTable-$000C
+  LD BC,KindTable-12
   ADD HL,BC
   PUSH HL
   POP IX
@@ -287,7 +287,7 @@ AnimateTurretsSkip:
 TurretFrame:
   LD L,A
   LD H,$00
-  LD BC,TurretFrames-$0001
+  LD BC,TurretFrames-1
   ADD HL,BC
   LD A,(HL)
   RET

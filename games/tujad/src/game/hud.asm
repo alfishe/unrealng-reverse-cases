@@ -428,7 +428,7 @@ PrintBcd:
   JR Z,PrintBcdClick
   ADD A,$30
   PUSH HL
-  LD HL,Font-$0100
+  LD HL,Font-256
   LD D,$00
   LD E,A
   SLA E
@@ -452,7 +452,7 @@ PrintBcdClickLoop:
   AND $0F
   ADD A,$30
   PUSH HL
-  LD HL,Font-$0100
+  LD HL,Font-256
   LD D,$00
   LD E,A
   SLA E

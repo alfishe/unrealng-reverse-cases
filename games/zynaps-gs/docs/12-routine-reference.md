@@ -133,7 +133,7 @@ Output: A random byte, F changed. Callers all over the game (stars, enemies, eff
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 303 calls, 105,190 t-states own (0.10 %) |
 | Called from | `InitStars`, `MoveStars`, `LaunchWave`, `PathOpRandomDirection`, `PathOpRandomSpeed`, `PathOpDive`, `ScatterDebris`, `EnemyFire` |
 | Reads | `$7F71`-`$7F75` (`RandomSeed`) |
-| Writes | `$7F71`-`$7F75` (`RandomSeed`); `$8582`-`$8589` (`Random`) |
+| Writes | `$7F71`-`$7F75` (`RandomSeed`); `$8582`-`$8589` (`RandomRestoreBC+1`, `RandomRestoreDE`, `RandomRestoreHL`) |
 
 ### `ClearScreen` (`$858B`)
 
@@ -149,9 +149,9 @@ Input: none. Output: BC, DE, HL changed; interrupts enabled. c1: 4 entries (betw
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 5,049,962 t-states own (0.10 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 459,088 t-states own (0.44 %) |
 | Called from | `MenuScreenSetup`, `RoundPlaySetup` |
-| Calls | `FadeAttributes`, `InterruptJump` |
-| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$4000`-`$5AFF` (screen); `$5BF6`-`$5BFB` (system) |
+| Calls | `FadeAttributes` |
+| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$00FE` |
 
 ### `FadeAttributes` (`$85AD`)
@@ -168,9 +168,8 @@ Output: BC, E, HL changed. Called by ClearScreen (c1: 4 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 33 calls, 27,636,614 t-states own (0.53 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3 calls, 2,513,000 t-states own (2.40 %) |
 | Called from | `ClearScreen`, `EndOfPlay` |
-| Calls | `InterruptJump` |
-| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeAttributes`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5800`-`$5AFF` (screen); `$5BF4`-`$5BFB` (system) |
+| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$5800`-`$5AFF` (screen) |
 
 ## playfield
 
@@ -193,7 +192,7 @@ Called from the play interrupt `$A9ED` once a pass (two frames) while playing (c
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 60,206 t-states own (0.06 %) |
 | Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `RowStart` (tail) |
-| Writes | `$7F6F` (`RowsLeft`); `$85E1`-`$85E8` (`RenderDone`, `SentinelNode`, `RowEnd`) |
+| Writes | `$7F6F` (`RowsLeft`); `$85E1`-`$85E8` (`RenderDone+1`, `SentinelNode`, `RowEnd`) |
 
 ### `RenderDone` (`$85E0`)
 
@@ -228,7 +227,7 @@ c2: 11592 entries (= 659 frames * 18 rows minus the frames cut short).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11,592 calls, 1,072,154 t-states own (1.02 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Calls | `StripNext`, `RowStar` (tail) |
-| Reads | `$F12F`-`$F363` (`RowRecords`) |
+| Reads | `$F12F`-`$F363` (`RowRecords+3`) |
 
 ### `StripNext` (`$8602`)
 
@@ -285,7 +284,7 @@ c2: 11592 entries (as RowEnd).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 11,862 calls, 3,562,032 t-states own (3.40 %) |
 | Called from | `RowEnd` (tail), `StripDraw` |
 | Calls | `RenderDone` (tail), `RowStart` |
-| Reads | `$4321`-`$43FF` (screen); `$4B00`-`$4BFF` (screen); `$5300`-`$535F` (screen); `$5820`-`$5A5F` (screen); `$7F6F` (`RowsLeft`); `$F12F`-`$F271` (`RowRecords`); 7 more ranges |
+| Reads | `$4321`-`$43FF` (screen); `$4B00`-`$4BFF` (screen); `$5300`-`$535F` (screen); `$5820`-`$5A5F` (screen); `$7F6F` (`RowsLeft`); `$F12F`-`$F271` (`RowRecords+3`); 7 more ranges |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 12 more ranges |
 
 ### `RowStart` (`$86CE`)
@@ -308,7 +307,7 @@ c2: 11862 entries.
 | Called from | `DrawPlayfield` (tail), `RowStar` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$7F6A` (`ShiftPage`); `$7F7E`-`$7F7F` (`RowBeep`, `RowBeepMask`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
-| Writes | `$7F7E` (`RowBeep`); `$867C`-`$867D` (`RowStar`) |
+| Writes | `$7F7E` (`RowBeep`); `$867C`-`$867D` (`RowStar+1`) |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `SpanDraw4` (`$873E`)
@@ -328,7 +327,7 @@ The top cost of the game: c2 18726 entries, 123 per mille of all instructions.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18,726 calls, 12,886,201 t-states own (12.28 %) |
 | Called from | `RowStart`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
-| Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
+| Reads | `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`) |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 9 more ranges |
 
 ### `SpanDraw3` (`$8797`)
@@ -344,7 +343,7 @@ As SpanDraw4 with three bytes a line. c2: 5790 entries.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5,790 calls, 2,983,964 t-states own (2.84 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw2`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
-| Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
+| Reads | `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`) |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 9 more ranges |
 
 ### `SpanDraw2` (`$87E0`)
@@ -360,7 +359,7 @@ As SpanDraw4 with two bytes a line. c2: 2306 entries.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,306 calls, 927,494 t-states own (0.88 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw1` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw1`, `SpanDraw0` |
-| Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
+| Reads | `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`) |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 9 more ranges |
 
 ### `SpanDraw1` (`$8819`)
@@ -376,7 +375,7 @@ As SpanDraw4 with one byte a line (LD A,(HL); LD (DE),A). c2: 5328 entries.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5,328 calls, 1,290,464 t-states own (1.23 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2` |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw0` |
-| Reads | `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`) |
+| Reads | `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`) |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 9 more ranges |
 
 ### `SpanDraw0` (`$8842`)
@@ -416,7 +415,7 @@ Called by LevelSetUp (`$8D30`) and StarsSwitch.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 3,664 t-states own (0.00 %) |
 | Called from | `LevelSetUp` |
 | Calls | `Random` |
-| Writes | `$8881`-`$8882` (`InitStars`) |
+| Writes | `$8881`-`$8882` (`InitStarsDone+1`) |
 
 ### `StarsSwitch` (`$8884`)
 
@@ -445,8 +444,8 @@ Called by the frame handler (c2: 659 entries, 37 per mille).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 3,877,411 t-states own (3.70 %) |
 | Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `Random` |
-| Reads | `$81DA` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
-| Writes | `$88F5`-`$88FA` (`MoveStars`); `$890F`-`$8910` (`MoveStars`) |
+| Reads | `$81DA` (`PlayFlags`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`) |
+| Writes | `$88F5`-`$88FA` (`StarDotOpcode+1`, `StarDot`); `$890F`-`$8910` (`MoveStarsDone+1`) |
 
 ## scroll
 
@@ -468,9 +467,8 @@ Called by NewSpanNode (c2: 307 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 1,066,067 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 58,627 t-states own (0.06 %) |
 | Called from | `NewSpanNode` |
-| Calls | `InterruptJump` |
-| Reads | `$8015`-`$8017` (`GlyphAlloc`); `$FEFF`-`$FF00` (`VectorTable`); `$FFE0`-`$FFFF` (`ColumnFlags`) |
-| Writes | `$5BE6`-`$5BE9` (system); `$8015`-`$8017` (`GlyphAlloc`) |
+| Reads | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFF` (`ColumnFlags`) |
+| Writes | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`) |
 
 ### `StartColumn` (`$894D`)
 
@@ -486,8 +484,8 @@ Called from the frame handler cycle (c2: 229 entries, one per scroll step).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,658 calls, 1,183,829 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 229 calls, 32,223 t-states own (0.03 %) |
 | Called from | `PlayInterrupt`, `l_A9EF`, `ReplayStep` |
-| Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`ScriptState`) |
-| Writes | `$896F`-`$8975` (`BuildColumn`) |
+| Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`PlayFlags`) |
+| Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumn` (`$896D`)
 
@@ -505,9 +503,9 @@ c2: 688 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 28,975 calls, 1,419,437 t-states own (0.03 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 688 calls, 582,970 t-states own (0.56 %) |
 | Called from | `ChainDrawStrips1`, `ChainDrawStrips2`, `ChainDrawStrips3`, `ReplayRoundEnd` |
-| Calls | `BuildColumnLoop`, `BuildCell`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system); `$896F`-`$8975` (`BuildColumn`) |
+| Calls | `BuildColumnLoop`, `BuildCell` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumnLoop` (`$897A`)
 
@@ -517,7 +515,7 @@ c2: 688 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,858 calls, 4,979,328 t-states own (0.09 %) |
 | Called from | `BuildColumn`, `BuildColumnStep` (tail) |
-| Calls | `BuildCell`, `InterruptJump` |
+| Calls | `BuildCell` |
 
 ### `BuildColumnBack` (`$897E`)
 
@@ -527,9 +525,8 @@ c2: 688 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5 calls, 6,720,140 t-states own (0.13 %) |
 | Called from | `BuildCellDone`, `GlyphBuilt` |
-| Calls | `BuildColumnStep`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDA`-`$5BDB` (system); `$5BF4`-`$5BF5` (system) |
+| Calls | `BuildColumnStep` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `BuildColumnStep` (`$8987`)
 
@@ -539,9 +536,9 @@ c2: 688 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,859 calls, 7,575,510 t-states own (0.14 %) |
 | Called from | `BuildColumnBack`, `PlayInterruptExit` |
-| Calls | `BuildColumnLoop` (tail), `ChainStep1End`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system); `$896F`-`$8975` (`BuildColumn`) |
+| Calls | `BuildColumnLoop` (tail), `ChainStep1End` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildCell` (`$899E`)
 
@@ -557,9 +554,9 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 138,859 calls, 10,867,098 t-states own (0.21 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,948 calls, 302,926 t-states own (0.29 %) |
 | Called from | `BuildColumn`, `BuildColumnLoop`, `PlayInterruptExit` |
-| Calls | `BuildGlyph` (tail), `InterruptJump` |
-| Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2AC` (`RowRecords`); `$F2BF`-`$F2CC` (`RowRecords`); `$F2DF`-`$F2EC` (`RowRecords`); `$F2FF`-`$F30C` (`RowRecords`); `$F31F`-`$F32C` (`RowRecords`); 3 more ranges |
-| Writes | `$5BF0`-`$5BF1` (system); `$B702`-`$BFFE` (`data_B700`, `MapRingSpace`, `TileSource`); `$F13F`-`$F29F` (`RowRecords`); `$F2BF` (`RowRecords`); `$F2DF`-`$F2E0` (`RowRecords`); `$F2FF`-`$F300` (`RowRecords`); 3 more ranges |
+| Calls | `BuildGlyph` (tail) |
+| Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2AC` (`RowRecords`); `$F2BF`-`$F2CC` (`RowRecords+403`); `$F2DF`-`$F2EC` (`RowRecords+435`); `$F2FF`-`$F30C` (`RowRecords+467`); `$F31F`-`$F32C` (`RowRecords+499`); 3 more ranges |
+| Writes | `$B702`-`$BFFE` (`data_B700+2`, `MapRingSpace`, `TileSource`); `$F13F`-`$F29F` (`RowRecords+19`); `$F2BF` (`RowRecords+403`); `$F2DF`-`$F2E0` (`RowRecords+435`); `$F2FF`-`$F300` (`RowRecords+467`); `$F31F`-`$F320` (`RowRecords+499`); 2 more ranges |
 
 ### `BuildCellDone` (`$89C4`)
 
@@ -570,8 +567,8 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 80,403 t-states own (0.00 %) |
 | Called from | `GlyphBuilt` |
 | Calls | `BuildColumnBack` |
-| Reads | `$F140`-`$F280` (`RowRecords`); `$F2A0` (`RowRecords`); `$F2C0` (`RowRecords`); `$F2E0` (`RowRecords`); `$F300` (`RowRecords`); `$F320` (`RowRecords`); 2 more ranges |
-| Writes | `$F140`-`$F280` (`RowRecords`); `$F2A0` (`RowRecords`); `$F2C0` (`RowRecords`); `$F2E0` (`RowRecords`); `$F300` (`RowRecords`); `$F320` (`RowRecords`); 2 more ranges |
+| Reads | `$F140`-`$F280` (`RowRecords+20`); `$F2A0` (`RowRecords+372`); `$F2C0` (`RowRecords+404`); `$F2E0` (`RowRecords+436`); `$F300` (`RowRecords+468`); `$F320` (`RowRecords+500`); 2 more ranges |
+| Writes | `$F140`-`$F280` (`RowRecords+20`); `$F2A0` (`RowRecords+372`); `$F2C0` (`RowRecords+404`); `$F2E0` (`RowRecords+436`); `$F300` (`RowRecords+468`); `$F320` (`RowRecords+500`); 2 more ranges |
 
 ### `BuildGlyph` (`$89C9`)
 
@@ -591,9 +588,9 @@ c2: 1025 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,108 calls, 6,524,131 t-states own (0.12 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,025 calls, 2,165,679 t-states own (2.06 %) |
 | Called from | `BuildCell` (tail) |
-| Calls | `GlyphLine`, `NewSpanNode`, `InterruptJump` |
-| Reads | `$5C00`-`$5EBA` (`TileGraphics`); `$5F00`-`$5FBA` (`TileGraphics`); `$6000`-`$60BA` (`TileGraphics`); `$6100`-`$61BA` (`TileGraphics`); `$6200`-`$62BA` (`TileGraphics`); `$6300`-`$63BA` (`TileGraphics`); 10 more ranges |
-| Writes | `$5BEC`-`$5BF1` (system); `$8A1D`-`$8A1F` (`GlyphLine`); `$C000`-`$DFFE` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F2A0` (`RowRecords`); `$F2BB`-`$F2C0` (`RowRecords`); `$F2DB`-`$F2E0` (`RowRecords`); 5 more ranges |
+| Calls | `GlyphLine`, `NewSpanNode` |
+| Reads | `$5C00`-`$5EBA` (`TileGraphics`); `$5F00`-`$5FBA` (`TileGraphics+768`); `$6000`-`$60BA` (`TileGraphics+1024`); `$6100`-`$61BA` (`TileGraphics+1280`); `$6200`-`$62BA` (`TileGraphics+1536`); `$6300`-`$63BA` (`TileGraphics+1792`); 10 more ranges |
+| Writes | `$8A1D`-`$8A1F` (`GlyphLineStep`, `GlyphMirror`); `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F2A0` (`RowRecords+15`); `$F2BB`-`$F2C0` (`RowRecords+399`); `$F2DB`-`$F2E0` (`RowRecords+431`); `$F2FB`-`$F300` (`RowRecords+463`); 4 more ranges |
 
 ### `GlyphLine` (`$8A1C`)
 
@@ -603,9 +600,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,864 calls, 7,163,268 t-states own (0.14 %) |
 | Called from | `BuildGlyph`, `GlyphShift4` (tail) |
-| Calls | `GlyphShift2`, `InterruptJump` |
-| Reads | `$5C00`-`$5EDB` (`TileGraphics`); `$5EF8`-`$5FDB` (`TileGraphics`); `$5FF8`-`$60DB` (`TileGraphics`); `$60F8`-`$61DB` (`TileGraphics`); `$61F8`-`$62DB` (`TileGraphics`); `$62F8`-`$63DB` (`TileGraphics`); 8 more ranges |
-| Writes | `$5BD2`-`$5BD3` (system); `$5BEC`-`$5BEF` (system); `$C000`-`$C7FE` (`TileSource`, `WaveCellSource`) |
+| Calls | `GlyphShift2` |
+| Reads | `$5C00`-`$5EDB` (`TileGraphics`); `$5EF8`-`$5FDB` (`TileGraphics+760`); `$5FF8`-`$60DB` (`TileGraphics+1016`); `$60F8`-`$61DB` (`TileGraphics+1272`); `$61F8`-`$62DB` (`TileGraphics+1528`); `$62F8`-`$63DB` (`TileGraphics+1784`); 8 more ranges |
+| Writes | `$C000`-`$C7FE` (`GlyphCache`, `WaveCellSource`) |
 
 ### `GlyphShift2` (`$8A25`)
 
@@ -615,9 +612,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 15,439,416 t-states own (0.29 %) |
 | Called from | `GlyphLine`, `PlayInterruptExit` |
-| Calls | `GlyphShift4`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD4`-`$5BD5` (system); `$5BEC`-`$5BEF` (system); `$C800`-`$CFFE` (`GlyphCacheUpper`); `$D800`-`$DFFE` (`GlyphCacheUpper`) |
+| Calls | `GlyphShift4` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$C800`-`$CFFE` (`GlyphCacheUpper`); `$D800`-`$DFFE` (`GlyphCacheUpper+4096`) |
 
 ### `GlyphShift4` (`$8A34`)
 
@@ -627,9 +624,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 152,865 calls, 9,171,973 t-states own (0.17 %) |
 | Called from | `GlyphShift2`, `PlayInterruptExit` |
-| Calls | `GlyphLine` (tail), `GlyphMarkBits`, `InterruptJump` |
-| Reads | `$F13C`-`$F29D` (`RowRecords`); `$F2BC`-`$F2BD` (`RowRecords`); `$F2DC`-`$F2DD` (`RowRecords`); `$F2FC`-`$F2FD` (`RowRecords`); `$F31C`-`$F31D` (`RowRecords`); `$F33C`-`$F33D` (`RowRecords`); 2 more ranges |
-| Writes | `$5BDA`-`$5BDB` (system); `$5BEE`-`$5BEF` (system); `$D000`-`$D7FE` (`GlyphCacheUpper`) |
+| Calls | `GlyphLine` (tail), `GlyphMarkBits` |
+| Reads | `$F13C`-`$F29D` (`RowRecords+16`); `$F2BC`-`$F2BD` (`RowRecords+400`); `$F2DC`-`$F2DD` (`RowRecords+432`); `$F2FC`-`$F2FD` (`RowRecords+464`); `$F31C`-`$F31D` (`RowRecords+496`); `$F33C`-`$F33D` (`RowRecords+528`); 2 more ranges |
+| Writes | `$D000`-`$D7FE` (`GlyphCacheUpper+2048`) |
 
 ### `GlyphMarkBits` (`$8A46`)
 
@@ -639,9 +636,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,109 calls, 1,652,046 t-states own (0.03 %) |
 | Called from | `GlyphShift4`, `PlayInterruptExit` |
-| Calls | `GlyphBuilt`, `InterruptJump` |
-| Reads | `$F13C`-`$F2A0` (`RowRecords`); `$F2BC`-`$F2C0` (`RowRecords`); `$F2DC`-`$F2E0` (`RowRecords`); `$F2FC`-`$F300` (`RowRecords`); `$F31C`-`$F320` (`RowRecords`); `$F33C`-`$F340` (`RowRecords`); 2 more ranges |
-| Writes | `$F13C`-`$F2A0` (`RowRecords`); `$F2BC`-`$F2C0` (`RowRecords`); `$F2DC`-`$F2E0` (`RowRecords`); `$F2FC`-`$F300` (`RowRecords`); `$F31C`-`$F320` (`RowRecords`); `$F33C`-`$F340` (`RowRecords`); 2 more ranges |
+| Calls | `GlyphBuilt` |
+| Reads | `$F13C`-`$F2A0` (`RowRecords+16`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); `$F33C`-`$F340` (`RowRecords+528`); 2 more ranges |
+| Writes | `$F13C`-`$F2A0` (`RowRecords+16`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); `$F33C`-`$F340` (`RowRecords+528`); 2 more ranges |
 
 ### `GlyphBuilt` (`$8A59`)
 
@@ -669,9 +666,9 @@ c2: 307 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 4,436,634 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 244,420 t-states own (0.23 %) |
 | Called from | `BuildGlyph` |
-| Calls | `AllocGlyphs`, `PopNode`, `InterruptJump` |
-| Reads | `$7F65` (`PassPhase`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F132`-`$F2FF` (`RowRecords`); `$F312`-`$F31F` (`RowRecords`); `$F332`-`$F33F` (`RowRecords`); `$F352`-`$F35F` (`RowRecords`); 2 more ranges |
-| Writes | `$5BEA`-`$5BED` (system); `$F132`-`$F2FF` (`RowRecords`); `$F312`-`$F31F` (`RowRecords`); `$F332`-`$F33F` (`RowRecords`); `$F352`-`$F35F` (`RowRecords`); `$F800`-`$FA36` (`NodePool`) |
+| Calls | `AllocGlyphs`, `PopNode` |
+| Reads | `$7F65` (`PassPhase`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F132`-`$F2FF` (`RowRecords+6`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); `$F352`-`$F35F` (`RowRecords+550`); 2 more ranges |
+| Writes | `$F132`-`$F2FF` (`RowRecords+6`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); `$F352`-`$F35F` (`RowRecords+550`); `$F800`-`$FA36` (`NodePool`) |
 
 ### `PopNode` (`$8AD0`)
 
@@ -685,9 +682,8 @@ Output: DE = the node, NodeFreeList (`$7F68`) = the node's link. HL preserved. c
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,559 calls, 618,050 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 307 calls, 34,044 t-states own (0.03 %) |
 | Called from | `NewSpanNode` |
-| Calls | `InterruptJump` |
-| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA31` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE8`-`$5BE9` (system); `$7F68`-`$7F69` (`NodeFreeList`) |
+| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA31` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$7F68`-`$7F69` (`NodeFreeList`) |
 
 ### `PushNode` (`$8ADF`)
 
@@ -701,9 +697,8 @@ The node's first word = the old NodeFreeList, NodeFreeList = HL. DE preserved. c
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,193 calls, 483,204 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 230 calls, 21,578 t-states own (0.02 %) |
 | Called from | `ScrollStep` |
-| Calls | `InterruptJump` |
-| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF2`-`$5BF3` (system); `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`) |
+| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`) |
 
 ### `ScrollStep` (`$8AED`)
 
@@ -727,9 +722,9 @@ Called from the frame handler cycle (c2: 228 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 9,647 calls, 62,617,919 t-states own (1.19 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 228 calls, 1,871,733 t-states own (1.78 %) |
 | Called from | `PlayInterrupt`, `l_A9EF`, `ReplayRoundEnd` |
-| Calls | `PushNode`, `SetSpanHandler`, `InterruptJump` |
-| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool`); 2 more ranges |
-| Writes | `$5BF6`-`$5BF7` (system); `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScriptState`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); 2 more ranges |
+| Calls | `PushNode`, `SetSpanHandler` |
+| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 2 more ranges |
+| Writes | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScrollCount`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 1 more ranges |
 
 ### `SetSpanHandler` (`$8C1C`)
 
@@ -743,9 +738,8 @@ Handler = SpanHandlers[(IY+6)] into the node's first word. c2: 1559 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 31,867 calls, 3,921,354 t-states own (0.07 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,559 calls, 192,424 t-states own (0.18 %) |
 | Called from | `ScrollStep` |
-| Calls | `InterruptJump` |
-| Reads | `$8C33`-`$8C3A` (`SpanHandlers`); `$F806`-`$FA36` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system); `$F800`-`$FA31` (`NodePool`) |
+| Reads | `$8C33`-`$8C3A` (`SpanHandlers+2`); `$F806`-`$FA36` (`NodePool+6`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$F800`-`$FA31` (`NodePool`) |
 
 ## levels
 
@@ -769,9 +763,9 @@ Called from the level start `$AF49` (c2: 1 entry).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 1,439,982 t-states own (0.03 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 130,873 t-states own (0.12 %) |
 | Called from | `LevelStart` |
-| Calls | `InitStars`, `ClearHitGrid`, `InterruptJump` |
-| Reads | `$B700`-`$BFFE` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FEFF`-`$FF00` (`VectorTable`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
-| Writes | `$5BF8`-`$5BF9` (system); `$7EFF`-`$7F4F` (`SpriteCache`); `$7F68`-`$7F69` (`NodeFreeList`); `$801C`-`$8025` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 4 more); `$8072`-`$8087` (`FreeEnemySlots`, `WavesAllowed`, `EnemyShotsLeft`, `WaveRecords` and 1 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); 4 more ranges |
+| Calls | `InitStars`, `ClearHitGrid` |
+| Reads | `$B700`-`$BFFE` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
+| Writes | `$7EFF`-`$7F4F` (`SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3`, `SpriteCacheRecord4` and 2 more); `$7F68`-`$7F69` (`NodeFreeList`); `$801C`-`$8025` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 4 more); `$8072`-`$8087` (`FreeEnemySlots`, `WavesAllowed`, `EnemyShotsLeft`, `WaveRecords` and 1 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); 3 more ranges |
 
 ## scenery
 
@@ -806,9 +800,9 @@ Called from the frame handler cycle `$AA96` (c2: 524 entries) and from the catch
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 19,842 calls, 1,298,532 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 524 calls, 35,639 t-states own (0.03 %) |
 | Called from | `StartScript`, `PlayPass`, `ReplayRound` |
-| Calls | `ScriptMain`, `InterruptJump` |
-| Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system); `$8018`-`$8020` (`MainSP`, `ScriptSP`, `ScrollColumn`, `ScriptColumn` and 2 more) |
+| Calls | `ScriptMain` |
+| Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$8018`-`$8020` (`MainSP`, `ScriptSP`, `ScrollColumn`, `ScriptColumn` and 2 more) |
 
 ### `YieldScript` (`$8D69`)
 
@@ -839,7 +833,7 @@ A = ScriptNumber (`$81DD`), RunScript, again. Its first RET came from StartScrip
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 30 t-states own (0.00 %) |
 | Called from | `ResumeScript`, `ScriptMainAgain` (tail) |
 | Calls | `RunScript` |
-| Reads | `$81DD` (`ScriptState`) |
+| Reads | `$81DD` (`ScriptNumber`) |
 
 ### `ScriptMainAgain` (`$8D78`)
 
@@ -864,7 +858,7 @@ HL = the script's address from the word table `$72E1`, then ScriptStep. c2: 4 en
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 calls, 249 t-states own (0.00 %) |
 | Called from | `ScriptMain`, `ScriptStep` |
 | Calls | `YieldScript`, `ScriptStep`, `DrawGroup`, `ScriptSetCell` |
-| Reads | `$72E3`-`$7332` (`SceneryScriptTable`, `SceneryScripts`); `$745B`-`$7461` (`SceneryScripts`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
+| Reads | `$72E3`-`$7332` (`SceneryScriptTable+2`, `SceneryScripts`); `$745B`-`$7461` (`SceneryScripts+300`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 | Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 
 ### `ScriptStep` (`$8D86`)
@@ -879,7 +873,7 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 2,392 t-states own (0.00 %) |
 | Called from | `RunScript`, `ScriptReturn` (tail) |
 | Calls | `YieldScript`, `ScriptMainAgain`, `RunScript`, `DrawGroup`, `ScriptSetCell` |
-| Reads | `$732F`-`$73DB` (`SceneryScripts`); `$7401`-`$7499` (`SceneryScripts`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
+| Reads | `$732F`-`$73DB` (`SceneryScripts`); `$7401`-`$7499` (`SceneryScripts+210`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 | Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 
 ### `ScriptReturn` (`$8DC3`)
@@ -911,9 +905,9 @@ c2: 15 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 488 calls, 1,016,316 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 15 calls, 66,220 t-states own (0.06 %) |
 | Called from | `RunScript`, `ScriptStep` |
-| Calls | `YieldScript`, `PlaceColumn`, `InterruptJump` |
-| Reads | `$749A`-`$799B` (`GroupTable`, `ObjectGroups`, `ShapeTable`, `Shapes`); `$79CA`-`$7AC7` (`Shapes`); `$7AF2`-`$7B16` (`Shapes`); `$7B41`-`$7BA3` (`Shapes`); `$7BD9`-`$7C31` (`Shapes`); `$7C5E`-`$7DB5` (`Shapes`); 5 more ranges |
-| Writes | `$8E94` (`DrawGroup`); `$8EAD` (`PlaceColumn`); `$8EBF`-`$8EC0` (`PlaceColumn`); `$FDED`-`$FDEE` (`ScriptStack`) |
+| Calls | `YieldScript`, `PlaceColumn` |
+| Reads | `$749A`-`$799B` (`GroupTable`, `ObjectGroups`, `ShapeTable`, `Shapes`); `$79CA`-`$7AC7` (`Shapes+425`); `$7AF2`-`$7B16` (`Shapes+721`); `$7B41`-`$7BA3` (`Shapes+800`); `$7BD9`-`$7C31` (`Shapes+952`); `$7C5E`-`$7DB5` (`Shapes+1085`); 5 more ranges |
+| Writes | `$8E94` (`ObjectRowStep`); `$8EAD` (`PlaceFlags+1`); `$8EBF`-`$8EC0` (`PlaceStepE`, `PlaceStepC`) |
 
 ### `PlaceColumn` (`$8EA1`)
 
@@ -929,9 +923,8 @@ c2: 209 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,394 calls, 1,749,260 t-states own (0.03 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 209 calls, 111,149 t-states own (0.11 %) |
 | Called from | `DrawGroup` |
-| Calls | `InterruptJump` |
-| Reads | `$7822`-`$78A6` (`Shapes`); `$78BE`-`$7DD9` (`Shapes`); `$7DFD`-`$7E33` (`Shapes`); `$7E4A`-`$7E59` (`Shapes`); `$FEFF`-`$FF00` (`VectorTable`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
-| Writes | `$8EBB` (`PlaceColumn`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$FDE9`-`$FDEA` (`ScriptStack`) |
+| Reads | `$7822`-`$78A6` (`Shapes+1`); `$78BE`-`$7DD9` (`Shapes+157`); `$7DFD`-`$7E33` (`Shapes+1500`); `$7E4A`-`$7E59` (`Shapes+1577`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
+| Writes | `$8EBB` (`PlaceAttr+1`); `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$FDE9`-`$FDEA` (`ScriptStack+89`) |
 
 ### `ScriptSetCell` (`$8EC5`)
 
@@ -967,8 +960,8 @@ Input: HL = the source glyphs, DE = the destination, B = the cells a column, C =
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 9,281 t-states own (0.01 %) |
 | Called from | `LoadCellSprite` |
 | Calls | `FillBlankCell` |
-| Reads | `$6400`-`$653F` (`WaveCellGraphics`); `$6560`-`$65BF` (`WaveCellGraphics`); `$65E0`-`$65FF` (`WaveCellGraphics`); `$6620`-`$66DF` (`WaveCellGraphics`) |
-| Writes | `$E748`-`$E787` (`SpriteCacheImages`); `$E988`-`$E9AF` (`SpriteCacheImages`); `$EBC8`-`$EC07` (`SpriteCacheImages`); `$EE08`-`$EE2F` (`SpriteCacheImages`) |
+| Reads | `$6400`-`$653F` (`WaveCellGraphics`); `$6560`-`$65BF` (`WaveCellGraphics+352`); `$65E0`-`$65FF` (`WaveCellGraphics+480`); `$6620`-`$66DF` (`WaveCellGraphics+544`) |
+| Writes | `$E748`-`$E787` (`SpriteCacheImages`); `$E988`-`$E9AF` (`SpriteCacheImages+576`); `$EBC8`-`$EC07` (`SpriteCacheImages+1152`); `$EE08`-`$EE2F` (`SpriteCacheImages+1728`) |
 
 ### `FillBlankCell` (`$8EFF`)
 
@@ -982,7 +975,7 @@ A and BC preserved. c2: 30 entries.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,201 calls, 588,956 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 30 calls, 7,939 t-states own (0.01 %) |
 | Called from | `BuildCellSprite`, `BuildBigSprite` |
-| Writes | `$C000`-`$C0B7` (`TileSource`); `$C0E0`-`$C0E7` (`TileSource`); `$C118`-`$C11F` (`TileSource`); `$C150`-`$C1FF` (`TileSource`); `$E740`-`$E7A7` (`BallSprite`, `SpriteCacheImages`); `$E980`-`$E9CF` (`SpriteCacheImages`); 2 more ranges |
+| Writes | `$C000`-`$C0B7` (`GlyphCache`); `$C0E0`-`$C0E7` (`GlyphCache+224`); `$C118`-`$C11F` (`GlyphCache+280`); `$C150`-`$C1FF` (`GlyphCache+336`); `$E740`-`$E7A7` (`BallSprite+248`, `SpriteCacheImages`); `$E980`-`$E9CF` (`SpriteCacheImages+568`); 2 more ranges |
 
 ### `BuildBigSprite` (`$8F0C`)
 
@@ -998,7 +991,7 @@ Each map bit (7 a byte, 9 bytes) set = the next glyph complemented (BigSpriteCel
 | Called from | `LoadCellSprite` |
 | Calls | `FillBlankCell`, `BigSpriteCell` |
 | Reads | `$8098`-`$80A9` (`BigSpriteMap1`, `BigSpriteMap2`) |
-| Writes | `$8F52`-`$8F57` (`BigSpriteCell`) |
+| Writes | `$8F52`-`$8F57` (`BigSpriteStep`, `BigSpriteNext`) |
 
 ### `BigSpriteCell` (`$8F4B`)
 
@@ -1008,8 +1001,8 @@ Each map bit (7 a byte, 9 bytes) set = the next glyph complemented (BigSpriteCel
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 216 calls, 83,525 t-states own (0.00 %) |
 | Called from | `BuildBigSprite` |
-| Reads | `$5CDC`-`$5DFF` (`TileGraphics`); `$5EDC`-`$5EFF` (`TileGraphics`); `$5FDC`-`$5FFF` (`TileGraphics`); `$60DC`-`$60FF` (`TileGraphics`); `$61DC`-`$61FF` (`TileGraphics`); `$62DC`-`$62FF` (`TileGraphics`); 2 more ranges |
-| Writes | `$C018`-`$C037` (`TileSource`); `$C048`-`$C06F` (`TileSource`); `$C080`-`$C0A7` (`TileSource`); `$C0B8`-`$C17F` (`TileSource`); `$C190`-`$C1B7` (`TileSource`) |
+| Reads | `$5CDC`-`$5DFF` (`TileGraphics+220`); `$5EDC`-`$5EFF` (`TileGraphics+732`); `$5FDC`-`$5FFF` (`TileGraphics+988`); `$60DC`-`$60FF` (`TileGraphics+1244`); `$61DC`-`$61FF` (`TileGraphics+1500`); `$62DC`-`$62FF` (`TileGraphics+1756`); 2 more ranges |
+| Writes | `$C018`-`$C037` (`GlyphCache+24`); `$C048`-`$C06F` (`GlyphCache+72`); `$C080`-`$C0A7` (`GlyphCache+128`); `$C0B8`-`$C17F` (`GlyphCache+184`); `$C190`-`$C1B7` (`GlyphCache+400`) |
 
 ### `RotateSprite` (`$8F5A`)
 
@@ -1025,9 +1018,8 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,408 calls, 9,651 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 calls, 385 t-states own (0.00 %) |
 | Called from | `SpriteShiftRound`, `SpriteShiftCopy` |
-| Calls | `RotateSpriteRows`, `RotateLine`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDC`-`$5BDD` (system) |
+| Calls | `RotateSpriteRows`, `RotateLine` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `RotateSpriteRows` (`$8F5B`)
 
@@ -1049,7 +1041,7 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,140 calls, 687,177 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 840 calls, 22,753 t-states own (0.02 %) |
 | Called from | `RotateSprite`, `RotateSpriteRows`, `RotateNextByte` (tail), `RotateLineCount` (tail), `PlayInterruptExit` |
-| Calls | `RotateLineSave`, `RotateLineCarry`, `RotateByte`, `InterruptJump` |
+| Calls | `RotateLineSave`, `RotateLineCarry`, `RotateByte` |
 
 ### `RotateLineSave` (`$8F5E`)
 
@@ -1059,7 +1051,7 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 678,894 t-states own (0.01 %) |
 | Called from | `RotateLine`, `PlayInterruptExit` |
-| Calls | `RotateLineCarry`, `InterruptJump` |
+| Calls | `RotateLineCarry` |
 
 ### `RotateLineCarry` (`$8F5F`)
 
@@ -1070,9 +1062,8 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 4,704 t-states own (0.00 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 236,582 t-states own (0.00 %) |
 | Called from | `RotateLine`, `RotateLineSave`, `PlayInterruptExit` |
-| Calls | `RotateByte`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD8`-`$5BD9` (system) |
+| Calls | `RotateByte` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `RotateByte` (`$8F60`)
 
@@ -1084,9 +1075,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,411 calls, 769,554 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,520 calls, 85,718 t-states own (0.08 %) |
 | Called from | `RotateLine`, `RotateLineCarry`, `RotateByteOut` (tail), `RotateNextByte` (tail), `PlayInterruptExit` |
-| Calls | `RotateByteShift`, `RotateByteOut`, `RotateNextByte`, `InterruptJump` |
-| Reads | `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD8`-`$5BE7` (system); `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`) |
+| Calls | `RotateByteShift`, `RotateByteOut`, `RotateNextByte` |
+| Reads | `$E790`-`$E987` (`SpriteCacheImages+72`); `$E9D0`-`$EBC7` (`SpriteCacheImages+648`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$E790`-`$E987` (`SpriteCacheImages+72`); `$E9D0`-`$EBC7` (`SpriteCacheImages+648`) |
 
 ### `RotateByteShift` (`$8F61`)
 
@@ -1096,9 +1087,9 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,366 calls, 2,886,008 t-states own (0.06 %) |
 | Called from | `RotateByte`, `PlayInterruptExit` |
-| Calls | `RotateByteOut`, `InterruptJump` |
-| Reads | `$C200`-`$CFC7` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages`); `$EC10`-`$F047` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD8`-`$5BE7` (system); `$C200`-`$CFC7` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages`); `$EC10`-`$F047` (`SpriteCacheImages`) |
+| Calls | `RotateByteOut` |
+| Reads | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
 
 ### `RotateByteOut` (`$8F63`)
 
@@ -1109,9 +1100,8 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 3,529 calls, 92,923 t-states own (0.07 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,392 calls, 2,890,036 t-states own (0.06 %) |
 | Called from | `RotateByte`, `RotateByteShift`, `PlayInterruptExit` |
-| Calls | `RotateByte` (tail), `RotateNextByte`, `RotateLineWrap`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BD8`-`$5BE7` (system) |
+| Calls | `RotateByte` (tail), `RotateNextByte`, `RotateLineWrap` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `RotateNextByte` (`$8F65`)
 
@@ -1122,9 +1112,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 192,604 calls, 2,205,969 t-states own (0.04 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,522 calls, 79,981 t-states own (0.08 %) |
 | Called from | `RotateByte`, `RotateByteOut`, `PlayInterruptExit` |
-| Calls | `RotateLine` (tail), `RotateByte` (tail), `RotateLineWrap`, `SpriteShiftNext`, `InterruptJump` |
-| Reads | `$E790`-`$E7A7` (`SpriteCacheImages`); `$E7D8`-`$E7EF` (`SpriteCacheImages`); `$E820`-`$E837` (`SpriteCacheImages`); `$E868`-`$E87F` (`SpriteCacheImages`); `$E8B0`-`$E8C7` (`SpriteCacheImages`); `$E8F8`-`$E90F` (`SpriteCacheImages`); 2 more ranges |
-| Writes | `$5BD8`-`$5BE7` (system); `$E790`-`$E7A7` (`SpriteCacheImages`); `$E7D8`-`$E7EF` (`SpriteCacheImages`); `$E820`-`$E837` (`SpriteCacheImages`); `$E868`-`$E87F` (`SpriteCacheImages`); `$E8B0`-`$E8C7` (`SpriteCacheImages`); 2 more ranges |
+| Calls | `RotateLine` (tail), `RotateByte` (tail), `RotateLineWrap`, `SpriteShiftNext` |
+| Reads | `$E790`-`$E7A7` (`SpriteCacheImages+72`); `$E7D8`-`$E7EF` (`SpriteCacheImages+144`); `$E820`-`$E837` (`SpriteCacheImages+216`); `$E868`-`$E87F` (`SpriteCacheImages+288`); `$E8B0`-`$E8C7` (`SpriteCacheImages+360`); `$E8F8`-`$E90F` (`SpriteCacheImages+432`); 2 more ranges |
+| Writes | `$E790`-`$E7A7` (`SpriteCacheImages+72`); `$E7D8`-`$E7EF` (`SpriteCacheImages+144`); `$E820`-`$E837` (`SpriteCacheImages+216`); `$E868`-`$E87F` (`SpriteCacheImages+288`); `$E8B0`-`$E8C7` (`SpriteCacheImages+360`); `$E8F8`-`$E90F` (`SpriteCacheImages+432`); 1 more ranges |
 
 ### `RotateLineWrap` (`$8F67`)
 
@@ -1135,7 +1125,7 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 804,476 t-states own (0.02 %) |
 | Called from | `RotateByteOut`, `RotateNextByte`, `PlayInterruptExit` |
-| Calls | `RotateLineMerge`, `InterruptJump` |
+| Calls | `RotateLineMerge` |
 
 ### `RotateLineMerge` (`$8F68`)
 
@@ -1146,9 +1136,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 23,539 t-states own (0.02 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,140 calls, 414,009 t-states own (0.01 %) |
 | Called from | `RotateLineWrap`, `PlayInterruptExit` |
-| Calls | `RotateLineStore`, `RotateLineRestore`, `InterruptJump` |
-| Reads | `$C200`-`$C42F` (`TileSource`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource`); `$C7E8`-`$C81F` (`WaveCellSource`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper`); `$CBD8`-`$CC0F` (`GlyphCacheUpper`); `$CDD0`-`$CE07` (`GlyphCacheUpper`); 2 more ranges |
-| Writes | `$5BDA`-`$5BE9` (system); `$E790`-`$E957` (`SpriteCacheImages`); `$E9D0`-`$E9E7` (`SpriteCacheImages`); `$EA18`-`$EA2F` (`SpriteCacheImages`); `$EA60`-`$EA77` (`SpriteCacheImages`); `$EAA8`-`$EABF` (`SpriteCacheImages`); 3 more ranges |
+| Calls | `RotateLineStore`, `RotateLineRestore` |
+| Reads | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 2 more ranges |
+| Writes | `$E790`-`$E957` (`SpriteCacheImages+72`); `$E9D0`-`$E9E7` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 2 more ranges |
 
 ### `RotateLineStore` (`$8F69`)
 
@@ -1158,9 +1148,9 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 413,990 t-states own (0.01 %) |
 | Called from | `RotateLineMerge`, `PlayInterruptExit` |
-| Calls | `RotateLineNext`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDA`-`$5BE9` (system); `$C200`-`$C42F` (`TileSource`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource`); `$C7E8`-`$C81F` (`WaveCellSource`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper`); `$CBD8`-`$CC0F` (`GlyphCacheUpper`); 2 more ranges |
+| Calls | `RotateLineNext` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 1 more ranges |
 
 ### `RotateLineNext` (`$8F6A`)
 
@@ -1170,9 +1160,8 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,138 calls, 354,873 t-states own (0.01 %) |
 | Called from | `RotateLineStore`, `PlayInterruptExit` |
-| Calls | `RotateLineRestore`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDA`-`$5BDB` (system) |
+| Calls | `RotateLineRestore` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `RotateLineRestore` (`$8F6B`)
 
@@ -1183,7 +1172,7 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 11,779 t-states own (0.01 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,139 calls, 686,844 t-states own (0.01 %) |
 | Called from | `RotateLineMerge`, `RotateLineNext`, `PlayInterruptExit` |
-| Calls | `RotateLineCount`, `InterruptJump` |
+| Calls | `RotateLineCount` |
 
 ### `RotateLineCount` (`$8F6C`)
 
@@ -1194,9 +1183,8 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 1,177 calls, 19,080 t-states own (0.02 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 59,137 calls, 958,947 t-states own (0.02 %) |
 | Called from | `RotateLineRestore`, `PlayInterruptExit` |
-| Calls | `RotateLine` (tail), `SpriteShiftNext`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDC`-`$5BEB` (system) |
+| Calls | `RotateLine` (tail), `SpriteShiftNext` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `ClearStripCounts` (`$8F70`)
 
@@ -1210,7 +1198,7 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,543 calls, 12,755,783 t-states own (0.24 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 660 calls, 231,598 t-states own (0.22 %) |
 | Called from | `ObjectStrips` |
-| Writes | `$F141` (`RowRecords`); `$F161` (`RowRecords`); `$F181` (`RowRecords`); `$F1A1` (`RowRecords`); `$F1C1` (`RowRecords`); `$F1E1` (`RowRecords`); 12 more ranges |
+| Writes | `$F141` (`RowRecords+21`); `$F161` (`RowRecords+53`); `$F181` (`RowRecords+85`); `$F1A1` (`RowRecords+117`); `$F1C1` (`RowRecords+149`); `$F1E1` (`RowRecords+181`); 12 more ranges |
 
 ### `ObjectStrips` (`$8F9B`)
 
@@ -1227,7 +1215,7 @@ Called from the frame handler cycle `$AA96` (c2: 660 entries).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 660 calls, 1,571,099 t-states own (1.50 %) |
 | Called from | `PlayPass` |
 | Calls | `ClearStripCounts`, `BuildObjectStrips` |
-| Reads | `$7F82`-`$7F83` (`ObjectBeep`, `ObjectBeepMask`); `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); 3 more ranges |
+| Reads | `$7F82`-`$7F83` (`ObjectBeep`, `ObjectBeepMask`); `$F374`-`$F4D4` (`PlayerObject+8`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`); 3 more ranges |
 | Writes | `$7F82` (`ObjectBeep`) |
 | Ports out | `$00FE`, `$18FE` |
 
@@ -1247,8 +1235,8 @@ Saves SP into BuildStripsDone. c2: 3327 entries, 46 per mille.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 198,736 calls, 309,524,067 t-states own (5.90 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 3,327 calls, 4,845,376 t-states own (4.62 %) |
 | Called from | `ObjectStrips` |
-| Reads | `$90A5`-`$90A6` (`BuildObjectStrips`); `$F141`-`$F283` (`RowRecords`); `$F2A1`-`$F2A3` (`RowRecords`); `$F2C1`-`$F2C3` (`RowRecords`); `$F2E1`-`$F2E3` (`RowRecords`); `$F301`-`$F303` (`RowRecords`); 10 more ranges |
-| Writes | `$9093`-`$9094` (`BuildObjectStrips`); `$90A5`-`$90A6` (`BuildObjectStrips`); `$F141`-`$F2A3` (`RowRecords`); `$F2C1`-`$F2C3` (`RowRecords`); `$F2E1`-`$F2E3` (`RowRecords`); `$F301`-`$F303` (`RowRecords`); 11 more ranges |
+| Reads | `$90A5`-`$90A6` (`BuildStripsDone+1`); `$F141`-`$F283` (`RowRecords+21`); `$F2A1`-`$F2A3` (`RowRecords+373`); `$F2C1`-`$F2C3` (`RowRecords+405`); `$F2E1`-`$F2E3` (`RowRecords+437`); `$F301`-`$F303` (`RowRecords+469`); 10 more ranges |
+| Writes | `$9093`-`$9094` (`StripListHead+2`); `$90A5`-`$90A6` (`BuildStripsDone+1`); `$F141`-`$F2A3` (`RowRecords+21`); `$F2C1`-`$F2C3` (`RowRecords+405`); `$F2E1`-`$F2E3` (`RowRecords+437`); `$F301`-`$F303` (`RowRecords+469`); 11 more ranges |
 
 ## objgrid
 
@@ -1278,8 +1266,8 @@ Reads the records with SP (POP IX, POP HL); SP is kept in the operand at `$9144`
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 18,277 calls, 41,740,213 t-states own (0.80 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 331 calls, 599,463 t-states own (0.57 %) |
 | Called from | `PlayPass` |
-| Reads | `$7EA9`-`$7EAC` (`ExplosionAnim`); `$7EC3`-`$7EC6` (`PodAnim`); `$7EDD`-`$7F4D` (`ShotDescriptor`, `SpriteCache`); `$F3A0`-`$F3A3` (`EnemyObjects`); `$F3CC`-`$F3CF` (`EnemyObjects`); `$F3F8`-`$F3FB` (`EnemyObjects`); 7 more ranges |
-| Writes | `$9144`-`$9145` (`MarkEnemyGrid`); `$FC34`-`$FCDE` (`HitGridX`); `$FD00`-`$FD96` (`HitGridY`, `ScriptStack`) |
+| Reads | `$7EA9`-`$7EAC` (`ExplosionAnim+8`); `$7EC3`-`$7EC6` (`PodAnim+8`); `$7EDD`-`$7F4D` (`ShotDescriptor+8`, `SpriteCache`); `$F3A0`-`$F3A3` (`EnemyObjects+8`); `$F3CC`-`$F3CF` (`EnemyObjects+52`); `$F3F8`-`$F3FB` (`EnemyObjects+96`); 7 more ranges |
+| Writes | `$9144`-`$9145` (`MarkGridRestoreSp+1`); `$FC34`-`$FCDE` (`MenuColours+20`); `$FD00`-`$FD96` (`HitGridY`, `ScriptStack`) |
 
 ### `TestHitGrid` (`$9150`)
 
@@ -1293,8 +1281,8 @@ Called from `$A9ED` in phases 2-4 (494 entries in c2's 659 passes, 2 % of play's
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,404 calls, 117,375,966 t-states own (2.24 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 494 calls, 2,115,709 t-states own (2.02 %) |
 | Called from | `PlayInterrupt`, `l_A9EF` |
-| Reads | `$7E9C`-`$7E9F` (`ShipDescriptor`); `$7EB6`-`$7EB9` (`SightDescriptor`); `$7ED0`-`$7EE0` (`LaserDescriptor`, `ShotDescriptor`); `$F373`-`$F374` (`PlayerObject`); `$F4FF`-`$F500` (`LaserShots`); `$F52B`-`$F52C` (`LaserShots`); 5 more ranges |
-| Writes | `$80BB` (`LaserHitMask`); `$91C3`-`$91C4` (`TestHitGrid`); `$F379` (`PlayerObject`); `$F505` (`LaserShots`); `$F531` (`LaserShots`); `$F55D` (`LaserShots`); 4 more ranges |
+| Reads | `$7E9C`-`$7E9F` (`ShipDescriptor+8`); `$7EB6`-`$7EB9` (`SightDescriptor+8`); `$7ED0`-`$7EE0` (`LaserDescriptor+8`, `ShotDescriptor`); `$F373`-`$F374` (`PlayerObject+7`); `$F4FF`-`$F500` (`LaserShots+7`); `$F52B`-`$F52C` (`LaserShots+51`); 5 more ranges |
+| Writes | `$80BB` (`LaserHitMask`); `$91C3`-`$91C4` (`TestGridRestoreSp+1`); `$F379` (`PlayerHitMask`); `$F505` (`LaserShots+13`); `$F531` (`LaserShots+57`); `$F55D` (`LaserShots+101`); 4 more ranges |
 
 ### `ClearHitGrid` (`$91C6`)
 
@@ -1308,7 +1296,7 @@ Pushes 200 zero words down from `$FD90` (20 x 10 PUSH HL): the X bytes `$FC00-$F
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 27,426 calls, 69,168,495 t-states own (1.32 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 496 calls, 1,250,924 t-states own (1.19 %) |
 | Called from | `LevelSetUp`, `PlayInterrupt`, `l_A9EF`, `RoundPlaySetup`, `TuneOrder` (tail) |
-| Writes | `$91DF`-`$91E0` (`ClearHitGrid`) |
+| Writes | `$91DF`-`$91E0` (`ClearGridRestoreSp+1`) |
 
 ### `JumpTable` (`$91E2`)
 
@@ -1346,8 +1334,8 @@ Then for each object: TakeEnemySlot, count + 1, the template copied over the slo
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 52,177 t-states own (0.05 %) |
 | Called from | `WaveScriptStep` |
 | Calls | `Random`, `TakeEnemySlot`, `GetSpriteCache` |
-| Reads | `$6800`-`$681B` (`PathStarts`); `$6926`-`$6B29` (`WaveIndex`, `WaveDefinitions`, `EnemyKinds`, `KindColours`); `$7EEE`-`$7F51` (`SpriteCache`); `$803E`-`$8081` (`WaveTemplate`, `WavePaths`, `FreeEnemySlots`, `WavesAllowed` and 2 more); `$80E9` (`WeaponRatingLevel`); `$F3A0` (`EnemyObjects`); 5 more ranges |
-| Writes | `$7EEF`-`$7F4F` (`SpriteCache`); `$803E`-`$8083` (`WaveTemplate`, `WavePaths`, `FreeEnemySlots`, `WavesAllowed` and 2 more); `$931B`-`$931C` (`LaunchWave`); `$F398`-`$F473` (`EnemyObjects`) |
+| Reads | `$6800`-`$681B` (`PathStarts`); `$6926`-`$6B29` (`WaveIndex`, `WaveDefinitions`, `EnemyKinds`, `KindColours`); `$7EEE`-`$7F51` (`SpriteCache+12`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$803E`-`$8081` (`WaveTemplate`, `WavePaths`, `FreeEnemySlots`, `WavesAllowed` and 2 more); `$80E9` (`WeaponRatingLevel`); `$F3A0` (`EnemyObjects+8`); 5 more ranges |
+| Writes | `$7EEF`-`$7F4F` (`SpriteCache+13`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$803E`-`$8083` (`WaveTemplate`, `WavePaths`, `FreeEnemySlots`, `WavesAllowed` and 2 more); `$931B`-`$931C` (`LaunchWavePathList+1`); `$F398`-`$F473` (`EnemyObjects`) |
 | Ports out | `$00FE` |
 
 ### `TakeEnemySlot` (`$938D`)
@@ -1362,7 +1350,7 @@ NC (Z) when `$8072`, the free enemy slots, is 0; else `$8072` - 1 and IY = the f
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,568 calls, 268,288 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 25 calls, 5,101 t-states own (0.00 %) |
 | Called from | `LaunchWave` |
-| Reads | `$8072` (`FreeEnemySlots`); `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
+| Reads | `$8072` (`FreeEnemySlots`); `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
 | Writes | `$8072` (`FreeEnemySlots`) |
 
 ### `GetSpriteCache` (`$93A7`)
@@ -1378,8 +1366,8 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 7 calls, 4,232 t-states own (0.00 %) |
 | Called from | `LaunchWave` |
 | Calls | `SpriteCacheRecord` (tail), `SpriteCacheRet` (tail), `QueueSpriteLoad` |
-| Reads | `$7EFF`-`$7F51` (`SpriteCache`); `$8087`-`$8094` (`SpriteCacheMask`, `SpriteCacheFree`) |
-| Writes | `$7F00`-`$7F51` (`SpriteCache`); `$8087` (`SpriteCacheMask`) |
+| Reads | `$7EFF`-`$7F51` (`SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3`, `SpriteCacheRecord4` and 2 more); `$8087`-`$8094` (`SpriteCacheMask`, `SpriteCacheFree`) |
+| Writes | `$7F00`-`$7F51` (`SpriteCacheUse1+1`, `SpriteCacheRecord2`, `SpriteCacheRecord3`, `SpriteCacheRecord4` and 2 more); `$8087` (`SpriteCacheMask`) |
 
 ### `SpriteCacheRecord` (`$940A`)
 
@@ -1448,8 +1436,8 @@ After the loop the per-frame hit masks are cleared: `$80BB` (lasers and player),
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 5,942,216 t-states own (5.66 %) |
 | Called from | `PlayPass` |
 | Calls | `JumpTable` |
-| Reads | `$7F86`-`$7F87` (`SlotBeep`, `SlotBeepMask`); `$974C` (`LandingFlag`); `$F373` (`PlayerObject`); `$F39F`-`$F4D4` (`EnemyObjects`, `EnemyShots`); `$F4FF`-`$F500` (`LaserShots`); `$F52B`-`$F52C` (`LaserShots`); 5 more ranges |
-| Writes | `$7F86` (`SlotBeep`); `$80BB` (`LaserHitMask`); `$80E3`-`$80E5` (`MissileHitMask`, `SightMask`, `PlasmaHitMask`); `$974C` (`LandingFlag`); `$F379` (`PlayerObject`); `$F505` (`LaserShots`); 6 more ranges |
+| Reads | `$7F86`-`$7F87` (`SlotBeep`, `SlotBeepMask`); `$974C` (`LandingFlag`); `$F373` (`PlayerObject+7`); `$F39F`-`$F4D4` (`EnemyObjects+7`, `EnemyShots`); `$F4FF`-`$F500` (`LaserShots+7`); `$F52B`-`$F52C` (`LaserShots+51`); 5 more ranges |
+| Writes | `$7F86` (`SlotBeep`); `$80BB` (`LaserHitMask`); `$80E3`-`$80E5` (`MissileHitMask`, `SightMask`, `PlasmaHitMask`); `$974C` (`LandingFlag`); `$F379` (`PlayerHitMask`); `$F505` (`LaserShots+13`); 6 more ranges |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `RunPath` (`$94CB`)
@@ -1465,8 +1453,8 @@ Frames left +`$1B` - 1: 0 fetches the next command; a count that was already 0 (
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,405 calls, 192,569 t-states own (0.18 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `JumpTable` |
-| Reads | `$681C`-`$6918` (`PathCode`); `$F3B3`-`$F3B6` (`EnemyObjects`); `$F3DF`-`$F3E2` (`EnemyObjects`); `$F40B`-`$F40E` (`EnemyObjects`); `$F437`-`$F43A` (`EnemyObjects`); `$F463`-`$F466` (`EnemyObjects`) |
-| Writes | `$F3B3`-`$F3B6` (`EnemyObjects`); `$F3DF`-`$F3E2` (`EnemyObjects`); `$F40B`-`$F40E` (`EnemyObjects`); `$F437`-`$F43A` (`EnemyObjects`); `$F463`-`$F466` (`EnemyObjects`) |
+| Reads | `$681C`-`$6918` (`PathCode`); `$F3B3`-`$F3B6` (`EnemyObjects+27`); `$F3DF`-`$F3E2` (`EnemyObjects+71`); `$F40B`-`$F40E` (`EnemyObjects+115`); `$F437`-`$F43A` (`EnemyObjects+159`); `$F463`-`$F466` (`EnemyObjects+203`) |
+| Writes | `$F3B3`-`$F3B6` (`EnemyObjects+27`); `$F3DF`-`$F3E2` (`EnemyObjects+71`); `$F40B`-`$F40E` (`EnemyObjects+115`); `$F437`-`$F43A` (`EnemyObjects+159`); `$F463`-`$F466` (`EnemyObjects+203`) |
 
 ### `PathOpExtended` (`$9509`)
 
@@ -1492,8 +1480,8 @@ Used by PathOpLoop for its jump target. Not run in c1/c2.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 180 calls, 24,279 t-states own (0.00 %) |
 | Called from | `PathOpLoop` |
-| Reads | `$6840`-`$6841` (`PathCode`); `$6875`-`$6876` (`PathCode`); `$6897`-`$68A5` (`PathCode`); `$68BA`-`$68BB` (`PathCode`); `$68E3`-`$68E4` (`PathCode`); `$F3B5`-`$F3B6` (`EnemyObjects`); 4 more ranges |
-| Writes | `$F3B5`-`$F3B6` (`EnemyObjects`); `$F3E1`-`$F3E2` (`EnemyObjects`); `$F40D`-`$F40E` (`EnemyObjects`); `$F439`-`$F43A` (`EnemyObjects`); `$F465`-`$F466` (`EnemyObjects`) |
+| Reads | `$6840`-`$6841` (`PathCode+36`); `$6875`-`$6876` (`PathCode+89`); `$6897`-`$68A5` (`PathCode+123`); `$68BA`-`$68BB` (`PathCode+158`); `$68E3`-`$68E4` (`PathCode+199`); `$F3B5`-`$F3B6` (`EnemyObjects+29`); 4 more ranges |
+| Writes | `$F3B5`-`$F3B6` (`EnemyObjects+29`); `$F3E1`-`$F3E2` (`EnemyObjects+73`); `$F40D`-`$F40E` (`EnemyObjects+117`); `$F439`-`$F43A` (`EnemyObjects+161`); `$F465`-`$F466` (`EnemyObjects+205`) |
 
 ### `PathOpAccelerate` (`$9529`)
 
@@ -1507,8 +1495,8 @@ C bit 3: Vx += Ax; bit 4: Vx -= Ax; bit 5: Vy += Ay; bit 6: Vy -= Ay. Then X += 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 67,062 calls, 31,351,459 t-states own (0.60 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,684 calls, 784,805 t-states own (0.75 %) |
 | Called from | `JumpTable`, `PathOpBounce`, `PathOpDriftMiddle`, `PathOpToCentre`, `PlayerHandler`, `RequestEffect` (tail) |
-| Reads | `$F36F`-`$F381` (`PlayerObject`); `$F39B`-`$F3AD` (`EnemyObjects`); `$F3C7`-`$F3D9` (`EnemyObjects`); `$F3F3`-`$F405` (`EnemyObjects`); `$F41F`-`$F431` (`EnemyObjects`); `$F44B`-`$F45D` (`EnemyObjects`) |
-| Writes | `$F36F`-`$F37F` (`PlayerObject`); `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
+| Reads | `$F36F`-`$F381` (`PlayerObject+3`, `PlayerHitMask`, `PlayerAccelX`, `PlayerAccelY`); `$F39B`-`$F3AD` (`EnemyObjects+3`); `$F3C7`-`$F3D9` (`EnemyObjects+47`); `$F3F3`-`$F405` (`EnemyObjects+91`); `$F41F`-`$F431` (`EnemyObjects+135`); `$F44B`-`$F45D` (`EnemyObjects+179`) |
+| Writes | `$F36F`-`$F37F` (`PlayerObject+3`, `PlayerHitMask`, `PlayerAccelX`); `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
 
 ### `PathOpSetLoop` (`$9591`)
 
@@ -1520,7 +1508,7 @@ Carry: an instant command. Not run in c1/c2.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,604 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Writes | `$F3B7` (`EnemyObjects`); `$F3E3` (`EnemyObjects`); `$F40F` (`EnemyObjects`); `$F43B` (`EnemyObjects`); `$F467` (`EnemyObjects`) |
+| Writes | `$F3B7` (`EnemyObjects+31`); `$F3E3` (`EnemyObjects+75`); `$F40F` (`EnemyObjects+119`); `$F43B` (`EnemyObjects+163`); `$F467` (`EnemyObjects+207`) |
 
 ### `PathOpSetInterval` (`$959C`)
 
@@ -1532,7 +1520,7 @@ Carry. Not run in c1/c2.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,850 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Writes | `$F3BF`-`$F3C0` (`EnemyObjects`); `$F3EB`-`$F3EC` (`EnemyObjects`); `$F417`-`$F418` (`EnemyObjects`); `$F443`-`$F444` (`EnemyObjects`); `$F46F`-`$F470` (`EnemyObjects`) |
+| Writes | `$F3BF`-`$F3C0` (`EnemyObjects+39`); `$F3EB`-`$F3EC` (`EnemyObjects+83`); `$F417`-`$F418` (`EnemyObjects+127`); `$F443`-`$F444` (`EnemyObjects+171`); `$F46F`-`$F470` (`EnemyObjects+215`) |
 
 ### `PathOpBounce` (`$95AA`)
 
@@ -1545,8 +1533,8 @@ With scenery under the object (SceneryAt6): only X moves. Else Y moves with the 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 2,035,992 t-states own (0.04 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `SceneryAt6` |
-| Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
-| Writes | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
+| Reads | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
+| Writes | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
 
 ### `PathOpHomePlayer` (`$95FC`)
 
@@ -1559,7 +1547,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1 call, 5,616 t-states own (0.00 %) |
 | Called from | `JumpTable`, `PathOpHomeTarget` (tail) |
 | Calls | `PathHomeSetRate` |
-| Writes | `$F3C1`-`$F3C2` (`EnemyObjects`); `$F3ED`-`$F3EE` (`EnemyObjects`); `$F419`-`$F41A` (`EnemyObjects`); `$F445`-`$F446` (`EnemyObjects`); `$F471`-`$F472` (`EnemyObjects`) |
+| Writes | `$F3C1`-`$F3C2` (`EnemyObjects+41`); `$F3ED`-`$F3EE` (`EnemyObjects+85`); `$F419`-`$F41A` (`EnemyObjects+129`); `$F445`-`$F446` (`EnemyObjects+173`); `$F471`-`$F472` (`EnemyObjects+217`) |
 
 ### `PathHomeSetRate` (`$9605`)
 
@@ -1570,7 +1558,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 176 calls, 12,878 t-states own (0.00 %) |
 | Called from | `PathOpHomePlayer`, `PathOpHomeTarget` (tail) |
 | Calls | `PathOpHome` |
-| Writes | `$F3C3` (`EnemyObjects`); `$F3EF` (`EnemyObjects`); `$F41B` (`EnemyObjects`); `$F447` (`EnemyObjects`); `$F473` (`EnemyObjects`) |
+| Writes | `$F3C3` (`EnemyObjects+43`); `$F3EF` (`EnemyObjects+87`); `$F41B` (`EnemyObjects+131`); `$F447` (`EnemyObjects+175`); `$F473` (`EnemyObjects+219`) |
 
 ### `PathOpSetDirection` (`$9613`)
 
@@ -1585,8 +1573,8 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 2,098 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SetVelocity` |
-| Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
-| Writes | `$F3AE` (`EnemyObjects`); `$F3DA` (`EnemyObjects`); `$F406` (`EnemyObjects`); `$F432` (`EnemyObjects`); `$F45E` (`EnemyObjects`) |
+| Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
+| Writes | `$F3AE` (`EnemyObjects+22`); `$F3DA` (`EnemyObjects+66`); `$F406` (`EnemyObjects+110`); `$F432` (`EnemyObjects+154`); `$F45E` (`EnemyObjects+198`) |
 
 ### `PathOpHomeTarget` (`$9625`)
 
@@ -1599,7 +1587,7 @@ The target record +`$29`: no longer active, or of kind 3, makes it PathOpHomePla
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 8,330 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHomePlayer` (tail), `PathHomeSetRate` (tail) |
-| Reads | `$F373`-`$F374` (`PlayerObject`); `$F39F`-`$F3A0` (`EnemyObjects`); `$F3C1`-`$F3C2` (`EnemyObjects`); `$F445`-`$F446` (`EnemyObjects`) |
+| Reads | `$F373`-`$F374` (`PlayerObject+7`); `$F39F`-`$F3A0` (`EnemyObjects+7`); `$F3C1`-`$F3C2` (`EnemyObjects+41`); `$F445`-`$F446` (`EnemyObjects+173`) |
 
 ### `PathOpScroll` (`$9640`)
 
@@ -1613,8 +1601,8 @@ Bit 0 of `$7F6C` set (a frame the playfield scrolls one step): X - `$40` (a quar
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 15,486 calls, 2,264,213 t-states own (0.04 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 172 calls, 35,916 t-states own (0.03 %) |
 | Called from | `JumpTable`, `PathOpDive`, `PodStep` |
-| Reads | `$7F6C` (`ScrollThisPass`); `$F39B`-`$F39C` (`EnemyObjects`); `$F3C7`-`$F3C8` (`EnemyObjects`); `$F3F3`-`$F3F4` (`EnemyObjects`); `$F41F`-`$F420` (`EnemyObjects`); `$F44B`-`$F44C` (`EnemyObjects`) |
-| Writes | `$F39B`-`$F39C` (`EnemyObjects`); `$F3C7`-`$F3C8` (`EnemyObjects`); `$F3F3`-`$F3F4` (`EnemyObjects`); `$F41F`-`$F420` (`EnemyObjects`); `$F44B`-`$F44C` (`EnemyObjects`) |
+| Reads | `$7F6C` (`ScrollThisPass`); `$F39B`-`$F39C` (`EnemyObjects+3`); `$F3C7`-`$F3C8` (`EnemyObjects+47`); `$F3F3`-`$F3F4` (`EnemyObjects+91`); `$F41F`-`$F420` (`EnemyObjects+135`); `$F44B`-`$F44C` (`EnemyObjects+179`) |
+| Writes | `$F39B`-`$F39C` (`EnemyObjects+3`); `$F3C7`-`$F3C8` (`EnemyObjects+47`); `$F3F3`-`$F3F4` (`EnemyObjects+91`); `$F41F`-`$F420` (`EnemyObjects+135`); `$F44B`-`$F44C` (`EnemyObjects+179`) |
 
 ### `PathOpStop` (`$9658`)
 
@@ -1637,8 +1625,8 @@ Vx = Vy = 0; the flags of XOR A: NC. Not run in c1/c2.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 3,640 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpMove`, `SetVelocity` |
-| Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
-| Writes | `$F3AE` (`EnemyObjects`); `$F3DA` (`EnemyObjects`); `$F406` (`EnemyObjects`); `$F432` (`EnemyObjects`); `$F45E` (`EnemyObjects`) |
+| Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
+| Writes | `$F3AE` (`EnemyObjects+22`); `$F3DA` (`EnemyObjects+66`); `$F406` (`EnemyObjects+110`); `$F432` (`EnemyObjects+154`); `$F45E` (`EnemyObjects+198`) |
 
 ### `PathOpLoop` (`$9679`)
 
@@ -1651,8 +1639,8 @@ Reads the target word; +`$1F` - 1: not 0 = the path pointer goes to the target; 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 17,995 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathReadWord` |
-| Reads | `$F3B7` (`EnemyObjects`); `$F3E3` (`EnemyObjects`); `$F40F` (`EnemyObjects`); `$F43B` (`EnemyObjects`); `$F467` (`EnemyObjects`) |
-| Writes | `$F3B5`-`$F3B7` (`EnemyObjects`); `$F3E1`-`$F3E3` (`EnemyObjects`); `$F40D`-`$F40F` (`EnemyObjects`); `$F439`-`$F43B` (`EnemyObjects`); `$F465`-`$F467` (`EnemyObjects`) |
+| Reads | `$F3B7` (`EnemyObjects+31`); `$F3E3` (`EnemyObjects+75`); `$F40F` (`EnemyObjects+119`); `$F43B` (`EnemyObjects+163`); `$F467` (`EnemyObjects+207`) |
+| Writes | `$F3B5`-`$F3B7` (`EnemyObjects+29`); `$F3E1`-`$F3E3` (`EnemyObjects+73`); `$F40D`-`$F40F` (`EnemyObjects+117`); `$F439`-`$F43B` (`EnemyObjects+161`); `$F465`-`$F467` (`EnemyObjects+205`) |
 
 ### `PathOpDriftMiddle` (`$9689`)
 
@@ -1667,7 +1655,7 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 91,094 t-states own (0.09 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `RequestEffect` |
-| Reads | `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); `$F44E` (`EnemyObjects`) |
+| Reads | `$F39E` (`EnemyObjects+6`); `$F3CA` (`EnemyObjects+50`); `$F3F6` (`EnemyObjects+94`); `$F422` (`EnemyObjects+138`); `$F44E` (`EnemyObjects+182`) |
 
 ### `PathOpAimPlayer` (`$9699`)
 
@@ -1680,7 +1668,7 @@ Above row 8: C = `$20` (Vy + Ay), else `$40` (Vy - Ay); PathOpAccelerate; NC. 10
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 11,745 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `DirectionTo`, `SetVelocity` |
-| Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
+| Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
 
 ### `PathOpMove` (`$96A8`)
 
@@ -1694,8 +1682,8 @@ NC. Also the move of SetDirection, RandomDirection, PathOpHome and MoveFragile. 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 12,011 calls, 9,459,489 t-states own (0.18 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 10,110 t-states own (0.01 %) |
 | Called from | `JumpTable`, `PathOpSetDirection`, `PathOpRandomDirection`, `PathOpHome`, `PathOpMoveFragile` |
-| Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`); `$F477`-`$F487` (`EnemyShots`); 2 more ranges |
-| Writes | `$F39B`-`$F39E` (`EnemyObjects`); `$F3C7`-`$F3CA` (`EnemyObjects`); `$F3F3`-`$F3F6` (`EnemyObjects`); `$F41F`-`$F422` (`EnemyObjects`); `$F44B`-`$F44E` (`EnemyObjects`); `$F477`-`$F47A` (`EnemyShots`); 2 more ranges |
+| Reads | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`); `$F477`-`$F487` (`EnemyShots+3`); 2 more ranges |
+| Writes | `$F39B`-`$F39E` (`EnemyObjects+3`); `$F3C7`-`$F3CA` (`EnemyObjects+47`); `$F3F3`-`$F3F6` (`EnemyObjects+91`); `$F41F`-`$F422` (`EnemyObjects+135`); `$F44B`-`$F44E` (`EnemyObjects+179`); `$F477`-`$F47A` (`EnemyShots+3`); 2 more ranges |
 
 ### `PathOpScrollAlways` (`$96D0`)
 
@@ -1719,8 +1707,8 @@ Every +`$28` frames (+`$27` counts down): the direction to the target (+`$29`/+`
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18 calls, 1,327 t-states own (0.00 %) |
 | Called from | `PathHomeSetRate`, `EnemyShotStep` |
 | Calls | `PathOpMove`, `DirectionTo`, `SetVelocity` |
-| Reads | `$F3AE`-`$F3C3` (`EnemyObjects`); `$F3DA`-`$F3EF` (`EnemyObjects`); `$F406`-`$F41B` (`EnemyObjects`); `$F432`-`$F447` (`EnemyObjects`); `$F45E`-`$F473` (`EnemyObjects`); `$F48A`-`$F49F` (`EnemyShots`); 2 more ranges |
-| Writes | `$F3AE` (`EnemyObjects`); `$F3BF` (`EnemyObjects`); `$F3DA` (`EnemyObjects`); `$F3EB` (`EnemyObjects`); `$F406` (`EnemyObjects`); `$F417` (`EnemyObjects`); 10 more ranges |
+| Reads | `$F3AE`-`$F3C3` (`EnemyObjects+22`); `$F3DA`-`$F3EF` (`EnemyObjects+66`); `$F406`-`$F41B` (`EnemyObjects+110`); `$F432`-`$F447` (`EnemyObjects+154`); `$F45E`-`$F473` (`EnemyObjects+198`); `$F48A`-`$F49F` (`EnemyShots+22`); 2 more ranges |
+| Writes | `$F3AE` (`EnemyObjects+22`); `$F3BF` (`EnemyObjects+39`); `$F3DA` (`EnemyObjects+66`); `$F3EB` (`EnemyObjects+83`); `$F406` (`EnemyObjects+110`); `$F417` (`EnemyObjects+127`); 10 more ranges |
 
 ### `PathOpToCentre` (`$972E`)
 
@@ -1733,7 +1721,7 @@ X below 32: C = 8 (Vx + Ax), else `$10`; Y below 8: `$20`, else `$40`; PathOpAcc
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,115,506 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate` |
-| Reads | `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
+| Reads | `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
 
 ### `PathOpLand` (`$974D`)
 
@@ -1748,8 +1736,8 @@ One object a frame (bit 7 of LandingFlag). After 8 failed tries in a row, or whe
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 598 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6`, `SceneryCell` |
-| Reads | `$974C` (`LandingFlag`); `$B800`-`$BFFF` (`MapRingSpace`, `TileSource`); `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); 1 more ranges |
-| Writes | `$974C` (`LandingFlag`); `$F39C`-`$F39E` (`EnemyObjects`); `$F3B3` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3DF` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); 5 more ranges |
+| Reads | `$974C` (`LandingFlag`); `$B800`-`$BFFF` (`MapRingSpace+209`, `TileSource`); `$F39E` (`EnemyObjects+6`); `$F3CA` (`EnemyObjects+50`); `$F3F6` (`EnemyObjects+94`); `$F422` (`EnemyObjects+138`); 1 more ranges |
+| Writes | `$974C` (`LandingFlag`); `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3B3` (`EnemyObjects+27`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3DF` (`EnemyObjects+71`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); 5 more ranges |
 
 ### `PathOpRandomSpeed` (`$97B3`)
 
@@ -1762,8 +1750,8 @@ A random byte below `$55` keeps it, below `$AA` + 1, else - 1; kept in 1-7 (0 re
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 28,295 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `Random` |
-| Reads | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
-| Writes | `$F3AF` (`EnemyObjects`); `$F3DB` (`EnemyObjects`); `$F407` (`EnemyObjects`); `$F433` (`EnemyObjects`); `$F45F` (`EnemyObjects`) |
+| Reads | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
+| Writes | `$F3AF` (`EnemyObjects+23`); `$F3DB` (`EnemyObjects+67`); `$F407` (`EnemyObjects+111`); `$F433` (`EnemyObjects+155`); `$F45F` (`EnemyObjects+199`) |
 
 ### `PathOpBounceArena` (`$97CD`)
 
@@ -1776,8 +1764,8 @@ X + Vx: outside columns 16-45 or on scenery: X back, Vx = -Vx. Y + Vy: Y 17 or m
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 9,772,567 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt6` |
-| Reads | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
-| Writes | `$F39B`-`$F3AB` (`EnemyObjects`); `$F3C7`-`$F3D7` (`EnemyObjects`); `$F3F3`-`$F403` (`EnemyObjects`); `$F41F`-`$F42F` (`EnemyObjects`); `$F44B`-`$F45B` (`EnemyObjects`) |
+| Reads | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
+| Writes | `$F39B`-`$F3AB` (`EnemyObjects+3`); `$F3C7`-`$F3D7` (`EnemyObjects+47`); `$F3F3`-`$F403` (`EnemyObjects+91`); `$F41F`-`$F42F` (`EnemyObjects+135`); `$F44B`-`$F45B` (`EnemyObjects+179`) |
 
 ### `PathOpDive` (`$9837`)
 
@@ -1790,8 +1778,8 @@ PathOpScroll, then, once its column is no more than the player's plus half the r
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 687,779 t-states own (0.01 %) |
 | Called from | `JumpTable` |
 | Calls | `Random`, `PathOpScroll`, `SelfDestruct`, `SceneryAt6` |
-| Reads | `$F370`-`$F372` (`PlayerObject`); `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
-| Writes | `$F3A6`-`$F3B3` (`EnemyObjects`); `$F3D2`-`$F3DF` (`EnemyObjects`); `$F3FE`-`$F40B` (`EnemyObjects`); `$F42A`-`$F437` (`EnemyObjects`); `$F456`-`$F463` (`EnemyObjects`) |
+| Reads | `$F370`-`$F372` (`PlayerObject+4`); `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
+| Writes | `$F3A6`-`$F3B3` (`EnemyObjects+14`); `$F3D2`-`$F3DF` (`EnemyObjects+58`); `$F3FE`-`$F40B` (`EnemyObjects+102`); `$F42A`-`$F437` (`EnemyObjects+146`); `$F456`-`$F463` (`EnemyObjects+190`) |
 
 ### `PathOpMoveFragile` (`$9874`)
 
@@ -1804,7 +1792,7 @@ PathOpMove; Y 17 or more, X outside 16-46, or scenery under it: SelfDestruct. NC
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 44,545 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpMove`, `SelfDestruct`, `SceneryAt6` |
-| Reads | `$F39C`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`) |
+| Reads | `$F39C`-`$F39E` (`EnemyObjects+4`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`) |
 
 ### `PathOpWait` (`$9890`)
 
@@ -1827,8 +1815,8 @@ NC. Not run in c1/c2.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36 calls, 2,656 t-states own (0.00 %) |
 | Called from | `PathOpDive`, `PathOpMoveFragile` |
-| Reads | `$80BB` (`LaserHitMask`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
-| Writes | `$80BB` (`LaserHitMask`); `$F3A5` (`EnemyObjects`); `$F3D1` (`EnemyObjects`); `$F3FD` (`EnemyObjects`); `$F429` (`EnemyObjects`); `$F455` (`EnemyObjects`) |
+| Reads | `$80BB` (`LaserHitMask`); `$F3BC` (`EnemyObjects+36`); `$F3E8` (`EnemyObjects+80`); `$F414` (`EnemyObjects+124`); `$F440` (`EnemyObjects+168`); `$F46C` (`EnemyObjects+212`) |
+| Writes | `$80BB` (`LaserHitMask`); `$F3A5` (`EnemyObjects+13`); `$F3D1` (`EnemyObjects+57`); `$F3FD` (`EnemyObjects+101`); `$F429` (`EnemyObjects+145`); `$F455` (`EnemyObjects+189`) |
 
 ### `DirectionTo` (`$989F`)
 
@@ -1840,7 +1828,7 @@ The rounded column and row distances; their signs pick the octant, the ratio of 
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,431 calls, 658,847 t-states own (0.01 %) |
 | Called from | `PathOpAimPlayer`, `PathOpHome`, `EnemyFire` |
-| Reads | `$F36F`-`$F372` (`PlayerObject`); `$F39B`-`$F39E` (`EnemyObjects`); `$F3C8`-`$F3CA` (`EnemyObjects`); `$F3F4`-`$F3F6` (`EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`); 3 more ranges |
+| Reads | `$F36F`-`$F372` (`PlayerObject+3`); `$F39B`-`$F39E` (`EnemyObjects+3`); `$F3C8`-`$F3CA` (`EnemyObjects+48`); `$F3F4`-`$F3F6` (`EnemyObjects+92`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`); 3 more ranges |
 
 ### `SetVelocity` (`$98F1`)
 
@@ -1855,7 +1843,7 @@ Vx = B x sine[A] and Vy = B x sine[(A - 16) & `$3F`] with the 64-entry signed si
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 21 calls, 8,399 t-states own (0.01 %) |
 | Called from | `PathOpSetDirection`, `PathOpRandomDirection`, `PathOpAimPlayer`, `PathOpHome`, `EnemyFire` |
 | Reads | `$8144`-`$8183` (`SineTable`) |
-| Writes | `$F3A6`-`$F3AB` (`EnemyObjects`); `$F3D2`-`$F3D7` (`EnemyObjects`); `$F3FE`-`$F403` (`EnemyObjects`); `$F42A`-`$F42F` (`EnemyObjects`); `$F456`-`$F45B` (`EnemyObjects`); `$F482`-`$F487` (`EnemyShots`); 2 more ranges |
+| Writes | `$F3A6`-`$F3AB` (`EnemyObjects+14`); `$F3D2`-`$F3D7` (`EnemyObjects+58`); `$F3FE`-`$F403` (`EnemyObjects+102`); `$F42A`-`$F42F` (`EnemyObjects+146`); `$F456`-`$F45B` (`EnemyObjects+190`); `$F482`-`$F487` (`EnemyShots+14`); 2 more ranges |
 
 ## objutil
 
@@ -1873,8 +1861,8 @@ Its collision bit (+`$24`) is cleared from the masks `$80BD` and `$80BE` (the ha
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,212 calls, 157,702 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 26 calls, 3,401 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `ExplosionStep` (tail), `PodStep`, `ExplosionToPod` (tail), `CmdEnemyEscape` |
-| Reads | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects`); `$F3BC`-`$F3CC` (`EnemyObjects`); `$F3E8`-`$F3F8` (`EnemyObjects`); `$F414`-`$F424` (`EnemyObjects`); 2 more ranges |
-| Writes | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); 1 more ranges |
+| Reads | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects+8`); `$F3BC`-`$F3CC` (`EnemyObjects+36`); `$F3E8`-`$F3F8` (`EnemyObjects+80`); `$F414`-`$F424` (`EnemyObjects+124`); 2 more ranges |
+| Writes | `$8072` (`FreeEnemySlots`); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); 1 more ranges |
 
 ### `FreeObject` (`$9941`)
 
@@ -1887,8 +1875,8 @@ Used by `$A263` (the kind 5 handler); `$8074` is set at `$8D0D` and read at `$A1
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 514 calls, 28,045 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 59 t-states own (0.00 %) |
 | Called from | `EnemyShotStep` |
-| Reads | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
-| Writes | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
+| Reads | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots+8`); `$F4A8` (`EnemyShots+52`); `$F4D4` (`EnemyShots+96`) |
+| Writes | `$8074` (`EnemyShotsLeft`); `$F47C` (`EnemyShots+8`); `$F4A8` (`EnemyShots+52`); `$F4D4` (`EnemyShots+96`) |
 
 ### `EnemyEscaped` (`$994A`)
 
@@ -1915,7 +1903,7 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 234 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `EnemyGone` |
-| Writes | `$F3BE` (`EnemyObjects`); `$F3EA` (`EnemyObjects`); `$F416` (`EnemyObjects`); `$F442` (`EnemyObjects`); `$F46E` (`EnemyObjects`) |
+| Writes | `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); `$F442` (`EnemyObjects+170`); `$F46E` (`EnemyObjects+214`) |
 
 ### `EnemyGone` (`$9954`)
 
@@ -1927,8 +1915,8 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 16 calls, 4,590 t-states own (0.00 %) |
 | Called from | `EnemyEscaped` (tail), `EnemyKilled` |
 | Calls | `AddScore` |
-| Reads | `$7ECA` (`LaserDescriptor`); `$7EEF`-`$7F51` (`SpriteCache`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects`); `$F3DE`-`$F3F1` (`EnemyObjects`); 3 more ranges |
-| Writes | `$7EEF`-`$7F4F` (`SpriteCache`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F3BE` (`EnemyObjects`); `$F3EA` (`EnemyObjects`); `$F416` (`EnemyObjects`); `$F442` (`EnemyObjects`); 1 more ranges |
+| Reads | `$7ECA` (`LaserDescriptor+2`); `$7EEF`-`$7F51` (`SpriteCache+13`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects+26`); `$F3DE`-`$F3F1` (`EnemyObjects+70`); 3 more ranges |
+| Writes | `$7EEF`-`$7F4F` (`SpriteCache+13`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); `$F442` (`EnemyObjects+170`); 1 more ranges |
 
 ### `SceneryAt1` (`$99A9`)
 
@@ -1942,7 +1930,7 @@ Used by PlasmaHandler, SeekerHandler and `$A263`. 18 entries in c2.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 18 calls, 918 t-states own (0.00 %) |
 | Called from | `EnemyShotStep` |
 | Calls | `SceneryCell` |
-| Reads | `$B706`-`$B75A` (`data_B700`, `MapRingSpace`); `$B76F`-`$B77C` (`MapRingSpace`); `$B799`-`$BF02` (`MapRingSpace`, `TileSource`); `$BF18`-`$BF23` (`TileSource`); `$BF3A`-`$BF9F` (`TileSource`); `$BFB9`-`$BFE5` (`TileSource`) |
+| Reads | `$B706`-`$B75A` (`data_B700+6`, `MapRingSpace`); `$B76F`-`$B77C` (`MapRingSpace+64`); `$B799`-`$BF02` (`MapRingSpace+106`, `TileSource`); `$BF18`-`$BF23` (`TileSource+792`); `$BF3A`-`$BF9F` (`TileSource+826`); `$BFB9`-`$BFE5` (`TileSource+953`) |
 
 ### `SceneryAt2` (`$99B1`)
 
@@ -1957,7 +1945,7 @@ Used by LaserHandler (869 entries in c2).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 869 calls, 52,135 t-states own (0.05 %) |
 | Called from | `LaserHandler` |
 | Calls | `SceneryCell` |
-| Reads | `$B700`-`$B7CD` (`data_B700`, `MapRingSpace`); `$B7E0`-`$BFFF` (`MapRingSpace`, `TileSource`) |
+| Reads | `$B700`-`$B7CD` (`data_B700`, `MapRingSpace`); `$B7E0`-`$BFFF` (`MapRingSpace+177`, `TileSource`) |
 
 ### `SceneryAt4` (`$99BB`)
 
@@ -1971,7 +1959,7 @@ Used by `$A2D6`. 2 entries in c2.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 258 t-states own (0.00 %) |
 | Called from | `ExplosionToPod` |
 | Calls | `SceneryCell` |
-| Reads | `$B7A3`-`$B7A4` (`MapRingSpace`); `$B823`-`$B824` (`MapRingSpace`); `$B842`-`$B87C` (`MapRingSpace`); `$B8D5`-`$B8DB` (`MapRingSpace`); `$B8F3`-`$B8F4` (`MapRingSpace`); `$B90E`-`$BEFF` (`MapRingSpace`, `TileSource`); 7 more ranges |
+| Reads | `$B7A3`-`$B7A4` (`MapRingSpace+116`); `$B823`-`$B824` (`MapRingSpace+244`); `$B842`-`$B87C` (`MapRingSpace+275`); `$B8D5`-`$B8DB` (`MapRingSpace+422`); `$B8F3`-`$B8F4` (`MapRingSpace+452`); `$B90E`-`$BEFF` (`MapRingSpace+479`, `TileSource`); 7 more ranges |
 
 ### `SceneryAt6` (`$99D5`)
 
@@ -1986,7 +1974,7 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 92,222 t-states own (0.09 %) |
 | Called from | `PathOpBounce`, `PathOpLand`, `PathOpBounceArena`, `PathOpDive`, `PathOpMoveFragile`, `PlayerHandler` |
 | Calls | `SceneryAt6Row2`, `SceneryCell` |
-| Reads | `$B700`-`$BF11` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource`); `$BF50`-`$BFB7` (`TileSource`); `$BFCE`-`$BFD6` (`TileSource`); `$BFEB`-`$BFEC` (`TileSource`); `$F372` (`PlayerObject`); 5 more ranges |
+| Reads | `$B700`-`$BF11` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource+806`); `$BF50`-`$BFB7` (`TileSource+848`); `$BFCE`-`$BFD6` (`TileSource+974`); `$BFEB`-`$BFEC` (`TileSource+1003`); `$F372` (`PlayerObject+6`); 5 more ranges |
 
 ### `SceneryAt6Row2` (`$99E4`)
 
@@ -1997,7 +1985,7 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 134,520 calls, 17,253,141 t-states own (0.33 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,227 calls, 157,374 t-states own (0.15 %) |
 | Called from | `SceneryAt6` |
-| Reads | `$B700`-`$C010` (`data_B700`, `MapRingSpace`, `TileSource`); `$C026`-`$C027` (`TileSource`); `$C050`-`$C0B7` (`TileSource`); `$C0CE`-`$C0D6` (`TileSource`); `$C0EB`-`$C0EC` (`TileSource`); `$F372` (`PlayerObject`); 5 more ranges |
+| Reads | `$B700`-`$C010` (`data_B700`, `MapRingSpace`, `TileSource`); `$C026`-`$C027` (`GlyphCache+38`); `$C050`-`$C0B7` (`GlyphCache+80`); `$C0CE`-`$C0D6` (`GlyphCache+206`); `$C0EB`-`$C0EC` (`GlyphCache+235`); `$F372` (`PlayerObject+6`); 5 more ranges |
 
 ### `SceneryCell` (`$99FF`)
 
@@ -2011,7 +1999,7 @@ HL = (`$8022`) + Y x 128 + X with the integer parts +`$06` and +`$04`. 2118 entr
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 187,305 calls, 19,707,390 t-states own (0.38 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,118 calls, 222,913 t-states own (0.21 %) |
 | Called from | `PathOpLand`, `SceneryAt1`, `SceneryAt2`, `SceneryAt4`, `SceneryAt6` |
-| Reads | `$8022`-`$8023` (`ScrollMap`); `$F370`-`$F3F6` (`PlayerObject`, `EnemyObjects`); `$F420`-`$F422` (`EnemyObjects`); `$F44C`-`$F44E` (`EnemyObjects`); `$F478`-`$F47A` (`EnemyShots`); `$F4A4`-`$F4A6` (`EnemyShots`); 3 more ranges |
+| Reads | `$8022`-`$8023` (`ScrollMap`); `$F370`-`$F3F6` (`PlayerObject+4`, `EnemyObjects`); `$F420`-`$F422` (`EnemyObjects+136`); `$F44C`-`$F44E` (`EnemyObjects+180`); `$F478`-`$F47A` (`EnemyShots+4`); `$F4A4`-`$F4A6` (`EnemyShots+48`); 3 more ranges |
 
 ### `ClampRow` (`$9A13`)
 
@@ -2025,8 +2013,8 @@ A negative row: Y = 0.0; 16 or more: Y = 15 + `$E0`/256. 2028 entries in c2.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 135,057 calls, 7,036,872 t-states own (0.13 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2,028 calls, 107,254 t-states own (0.10 %) |
 | Called from | `PlayerHandler`, `ScatterDebris`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
-| Reads | `$F372` (`PlayerObject`); `$F39E` (`EnemyObjects`); `$F3CA` (`EnemyObjects`); `$F3F6` (`EnemyObjects`); `$F422` (`EnemyObjects`); `$F44E` (`EnemyObjects`) |
-| Writes | `$F371`-`$F372` (`PlayerObject`); `$F39D`-`$F39E` (`EnemyObjects`); `$F3C9`-`$F3CA` (`EnemyObjects`); `$F3F5`-`$F3F6` (`EnemyObjects`); `$F421`-`$F422` (`EnemyObjects`); `$F44D`-`$F44E` (`EnemyObjects`) |
+| Reads | `$F372` (`PlayerObject+6`); `$F39E` (`EnemyObjects+6`); `$F3CA` (`EnemyObjects+50`); `$F3F6` (`EnemyObjects+94`); `$F422` (`EnemyObjects+138`); `$F44E` (`EnemyObjects+182`) |
+| Writes | `$F371`-`$F372` (`PlayerObject+5`); `$F39D`-`$F39E` (`EnemyObjects+5`); `$F3C9`-`$F3CA` (`EnemyObjects+49`); `$F3F5`-`$F3F6` (`EnemyObjects+93`); `$F421`-`$F422` (`EnemyObjects+137`); `$F44D`-`$F44E` (`EnemyObjects+181`) |
 
 ### `ClampColumn` (`$9A2F`)
 
@@ -2040,8 +2028,8 @@ Below 16: X = 16.0; 46 or more: X = 45 + `$E0`/256. Only the player uses it (613
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 2,000,737 t-states own (0.04 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 613 calls, 33,887 t-states own (0.03 %) |
 | Called from | `PlayerHandler` |
-| Reads | `$F370` (`PlayerObject`) |
-| Writes | `$F36F`-`$F370` (`PlayerObject`) |
+| Reads | `$F370` (`PlayerObject+4`) |
+| Writes | `$F36F`-`$F370` (`PlayerObject+3`) |
 
 ### `CycleColour` (`$9A4C`)
 
@@ -2053,8 +2041,8 @@ The flash of the missiles, the plasma and the hit big enemy. Not run in c1/c2.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 291 calls, 21,718 t-states own (0.00 %) |
 | Called from | `BigEnemyHandler` |
-| Reads | `$F3BD` (`EnemyObjects`) |
-| Writes | `$F3BD` (`EnemyObjects`) |
+| Reads | `$F3BD` (`EnemyObjects+37`) |
+| Writes | `$F3BD` (`EnemyObjects+37`) |
 
 ## player
 
@@ -2075,8 +2063,8 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 613,496 t-states own (0.58 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `ScatterDebris`, `FuelOut`, `FireLaser`, `ReadControls`, `TunePatternA` (tail) |
-| Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); 10 more ranges |
-| Writes | `$7F7B`-`$7F7C` (`DeathTimer`, `EndPending`); `$80BF`-`$80E6` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask` and 4 more); `$F371`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); 4 more ranges |
+| Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2SideWeapon`, `Player2DoublePlasma`, `Player2LaserLevel`, `Player2Speed`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); 10 more ranges |
+| Writes | `$7F7B`-`$7F7C` (`DeathTimer`, `EndPending`); `$80BF`-`$80E6` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask` and 4 more); `$F371`-`$F4D4` (`PlayerObject+5`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); 4 more ranges |
 
 ### `KillPlayer` (`$9B5F`)
 
@@ -2089,8 +2077,8 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 2,772 t-states own (0.00 %) |
 | Called from | `TunePatternA` (tail) |
 | Calls | `ScatterDebris` |
-| Reads | `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); `$F5B0` (`PlasmaBall2`); 2 more ranges |
-| Writes | `$7F7B` (`DeathTimer`); `$F374`-`$F4D4` (`PlayerObject`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`); 3 more ranges |
+| Reads | `$F374`-`$F4D4` (`PlayerObject+8`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`); `$F5B0` (`PlasmaBall2+8`); 2 more ranges |
+| Writes | `$7F7B` (`DeathTimer`); `$F374`-`$F4D4` (`PlayerObject+8`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`); 3 more ranges |
 
 ### `WeaponRating` (`$9B75`)
 
@@ -2104,7 +2092,7 @@ L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 fro
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 914 calls, 229,050 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 10 calls, 2,508 t-states own (0.00 %) |
 | Called from | `ScoreJob`, `ScoreJobRating`, `RoundPlaySetup` |
-| Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2`); `$81DE` (`ScriptState`) |
+| Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD4`-`$7FD7` (`Player2SideWeapon`, `Player2DoublePlasma`, `Player2LaserLevel`, `Player2Speed`); `$81DE` (`ScriptLevelBias`) |
 | Writes | `$80E7`-`$80E9` (`WeaponRatingMask`, `WeaponRatingValue`, `WeaponRatingLevel`) |
 
 ### `ScatterDebris` (`$9BAB`)
@@ -2120,8 +2108,8 @@ Each at a random column X - 1 + 0-3 and a random row near Y, active, +`$26` = 0,
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,767 t-states own (0.00 %) |
 | Called from | `PlayerHandler`, `KillPlayer`, `BigEnemyHandler` |
 | Calls | `Random`, `ClampRow`, `StartExplosion`, `StartExplosionQuiet` |
-| Reads | `$F370`-`$F372` (`PlayerObject`); `$F39C`-`$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
-| Writes | `$8072` (`FreeEnemySlots`); `$F39C`-`$F3A0` (`EnemyObjects`); `$F3BE`-`$F3CC` (`EnemyObjects`); `$F3EA`-`$F3F8` (`EnemyObjects`); `$F416`-`$F424` (`EnemyObjects`); `$F442`-`$F450` (`EnemyObjects`); 1 more ranges |
+| Reads | `$F370`-`$F372` (`PlayerObject+4`); `$F39C`-`$F3A0` (`EnemyObjects+4`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
+| Writes | `$8072` (`FreeEnemySlots`); `$F39C`-`$F3A0` (`EnemyObjects+4`); `$F3BE`-`$F3CC` (`EnemyObjects+38`); `$F3EA`-`$F3F8` (`EnemyObjects+82`); `$F416`-`$F424` (`EnemyObjects+126`); `$F442`-`$F450` (`EnemyObjects+170`); 1 more ranges |
 
 ### `FuelOut` (`$9C03`)
 
@@ -2135,8 +2123,8 @@ The laser level +`$0A` of IX does not go below 0, the speed +`$0B` not below `$4
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 33 calls, 4,042 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 97 t-states own (0.00 %) |
 | Called from | `PlayerHandler`, `PlayerDied` |
-| Reads | `$7FA6`-`$7FA7` (`Player1`); `$7FD6`-`$7FD7` (`Player2`) |
-| Writes | `$7FA6` (`Player1`); `$7FD6` (`Player2`); `$80E6` (`Fuel`) |
+| Reads | `$7FA6`-`$7FA7` (`Player1LaserLevel`, `Player1Speed`); `$7FD6`-`$7FD7` (`Player2LaserLevel`, `Player2Speed`) |
+| Writes | `$7FA6` (`Player1LaserLevel`); `$7FD6` (`Player2LaserLevel`); `$80E6` (`Fuel`) |
 
 ### `FireLaser` (`$9C1D`)
 
@@ -2151,8 +2139,8 @@ The laser level +`$0A` of IX does not go below 0, the speed +`$0B` not below `$4
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 564 calls, 74,369 t-states own (0.07 %) |
 | Called from | `PlayerHandler` |
 | Calls | `RequestEffect`, `TunePatternB` |
-| Reads | `$7F77` (`PanelBurst`); `$7F99`-`$7FA6` (`PlayerRecord`, `Players`, `Player1`); `$80BA` (`LaserShotsFree`); `$F36F`-`$F372` (`PlayerObject`); `$F392` (`PlayerObject`); `$F500` (`LaserShots`); 1 more ranges |
-| Writes | `$7F77` (`PanelBurst`); `$80BA` (`LaserShotsFree`); `$F392` (`PlayerObject`); `$F4FB`-`$F500` (`LaserShots`); `$F527`-`$F52C` (`LaserShots`) |
+| Reads | `$7F77` (`PanelBurst`); `$7F99`-`$7FA6` (`PlayerRecord`, `Players`, `Player1`); `$80BA` (`LaserShotsFree`); `$F36F`-`$F372` (`PlayerObject+3`); `$F392` (`PlayerAccelY+18`); `$F500` (`LaserShots+8`); 1 more ranges |
+| Writes | `$7F77` (`PanelBurst`); `$80BA` (`LaserShotsFree`); `$F392` (`PlayerAccelY+18`); `$F4FB`-`$F500` (`LaserShots+3`); `$F527`-`$F52C` (`LaserShots+47`) |
 
 ## weapons
 
@@ -2291,8 +2279,8 @@ Gone on an enemy in its overlap mask (the harmless enemies of `$80BD`/`$80BE` an
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 201,636 t-states own (0.19 %) |
 | Called from | `JumpTable` |
 | Calls | `SceneryAt2` |
-| Reads | `$80BA`-`$80BE` (`LaserShotsFree`, `LaserHitMask`, `ColourCycle`, `HarmlessMaskA` and 1 more); `$F4FB`-`$F505` (`LaserShots`); `$F527`-`$F531` (`LaserShots`) |
-| Writes | `$80BA` (`LaserShotsFree`); `$F4FB`-`$F500` (`LaserShots`); `$F527`-`$F52C` (`LaserShots`) |
+| Reads | `$80BA`-`$80BE` (`LaserShotsFree`, `LaserHitMask`, `ColourCycle`, `HarmlessMaskA` and 1 more); `$F4FB`-`$F505` (`LaserShots+3`); `$F527`-`$F531` (`LaserShots+47`) |
+| Writes | `$80BA` (`LaserShotsFree`); `$F4FB`-`$F500` (`LaserShots+3`); `$F527`-`$F52C` (`LaserShots+47`) |
 
 ### `PlasmaHandler` (`$9E67`)
 
@@ -2341,8 +2329,8 @@ Flashes. A target (+`$29`) that is active and of kind 2: PathOpHome on it, its m
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 305,329 t-states own (0.29 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
-| Reads | `$80BB` (`LaserHitMask`); `$80E5` (`PlasmaHitMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC`-`$F3D1` (`EnemyObjects`); `$F3E8`-`$F3FD` (`EnemyObjects`); `$F414`-`$F429` (`EnemyObjects`); 2 more ranges |
-| Writes | `$F3A5` (`EnemyObjects`); `$F3D1` (`EnemyObjects`); `$F3FD` (`EnemyObjects`); `$F429` (`EnemyObjects`); `$F455` (`EnemyObjects`) |
+| Reads | `$80BB` (`LaserHitMask`); `$80E5` (`PlasmaHitMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC`-`$F3D1` (`EnemyObjects+36`); `$F3E8`-`$F3FD` (`EnemyObjects+80`); `$F414`-`$F429` (`EnemyObjects+124`); 2 more ranges |
+| Writes | `$F3A5` (`EnemyObjects+13`); `$F3D1` (`EnemyObjects+57`); `$F3FD` (`EnemyObjects+101`); `$F429` (`EnemyObjects+145`); `$F455` (`EnemyObjects+189`) |
 
 ### `LockableHandler` (`$9FC8`)
 
@@ -2355,8 +2343,8 @@ As EnemyHandler without the plasma kill; with no lock (`$80E2` = 0) and its bit 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 947,997 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `FreeEnemySlot`, `EnemyEscaped`, `EnemyKilled`, `ClampRow`, `EnemyFire`, `StartExplosion`, `AddScore` |
-| Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC`-`$F3D1` (`EnemyObjects`); `$F3E8`-`$F3FD` (`EnemyObjects`); `$F414`-`$F429` (`EnemyObjects`); 2 more ranges |
-| Writes | `$80E2` (`LockMask`); `$F3A5` (`EnemyObjects`); `$F3D1` (`EnemyObjects`); `$F3FD` (`EnemyObjects`); `$F429` (`EnemyObjects`); `$F455` (`EnemyObjects`) |
+| Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC`-`$F3D1` (`EnemyObjects+36`); `$F3E8`-`$F3FD` (`EnemyObjects+80`); `$F414`-`$F429` (`EnemyObjects+124`); 2 more ranges |
+| Writes | `$80E2` (`LockMask`); `$F3A5` (`EnemyObjects+13`); `$F3D1` (`EnemyObjects+57`); `$F3FD` (`EnemyObjects+101`); `$F429` (`EnemyObjects+145`); `$F455` (`EnemyObjects+189`) |
 
 ### `BigEnemyHandler` (`$A03E`)
 
@@ -2369,8 +2357,8 @@ Columns 7-55. Its row mask +`$0B` = `$FE` shifted left once per row below row 11
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 1,504,025 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `RunPath`, `EnemyKilled`, `ClampRow`, `CycleColour`, `ScatterDebris`, `EnemyFire`, `AddScore` |
-| Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects`); `$F3BC` (`EnemyObjects`) |
-| Writes | `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80E2` (`LockMask`); `$F39C`-`$F3A5` (`EnemyObjects`) |
+| Reads | `$80BB` (`LaserHitMask`); `$80E2`-`$80E4` (`LockMask`, `MissileHitMask`, `SightMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`); `$F3BC` (`EnemyObjects+36`) |
+| Writes | `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80E2` (`LockMask`); `$F39C`-`$F3A5` (`EnemyObjects+4`) |
 
 ## objects
 
@@ -2395,8 +2383,8 @@ Callers: the enemy movers at `$9FA2`, `$9FEB` and `$A06E` (EnemyHandler). Eviden
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,405 calls, 215,050 t-states own (0.21 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
 | Calls | `Random`, `DirectionTo`, `SetVelocity`, `RequestEffect` |
-| Reads | `$7F63`-`$7F71` (`PassBit`, `PassDepth`, `PassPhase`, `ChainStep` and 8 more); `$8074` (`EnemyShotsLeft`); `$80E7`-`$80E8` (`WeaponRatingMask`, `WeaponRatingValue`); `$F39B`-`$F48B` (`EnemyObjects`, `EnemyShots`); `$F4A8`-`$F4B7` (`EnemyShots`); `$F4D4`-`$F4E3` (`EnemyShots`) |
-| Writes | `$8074` (`EnemyShotsLeft`); `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`); 1 more ranges |
+| Reads | `$7F63`-`$7F71` (`PassBit`, `PassDepth`, `PassPhase`, `ChainStep` and 8 more); `$8074` (`EnemyShotsLeft`); `$80E7`-`$80E8` (`WeaponRatingMask`, `WeaponRatingValue`); `$F39B`-`$F48B` (`EnemyObjects+3`, `EnemyShots`); `$F4A8`-`$F4B7` (`EnemyShots+52`); `$F4D4`-`$F4E3` (`EnemyShots+96`) |
+| Writes | `$8074` (`EnemyShotsLeft`); `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`); 1 more ranges |
 
 ### `ExplosionStep` (`$A1C8`)
 
@@ -2413,8 +2401,8 @@ After frame 8 the explosion ends: removed (RemoveObject `$992A`) when +`$26` is 
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 32,812 t-states own (0.03 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot` (tail), `ExplosionToPod` (tail) |
-| Reads | `$7F62` (`PassCount`); `$F39A` (`EnemyObjects`); `$F3BD`-`$F3C6` (`EnemyObjects`); `$F3E9`-`$F3F2` (`EnemyObjects`); `$F415`-`$F41E` (`EnemyObjects`); `$F441`-`$F44A` (`EnemyObjects`); 1 more ranges |
-| Writes | `$F39A` (`EnemyObjects`); `$F3BD`-`$F3C6` (`EnemyObjects`); `$F3E9`-`$F3F2` (`EnemyObjects`); `$F415`-`$F41E` (`EnemyObjects`); `$F441`-`$F44A` (`EnemyObjects`); `$F46D`-`$F46F` (`EnemyObjects`) |
+| Reads | `$7F62` (`PassCount`); `$F39A` (`EnemyObjects+2`); `$F3BD`-`$F3C6` (`EnemyObjects+37`); `$F3E9`-`$F3F2` (`EnemyObjects+81`); `$F415`-`$F41E` (`EnemyObjects+125`); `$F441`-`$F44A` (`EnemyObjects+169`); 1 more ranges |
+| Writes | `$F39A` (`EnemyObjects+2`); `$F3BD`-`$F3C6` (`EnemyObjects+37`); `$F3E9`-`$F3F2` (`EnemyObjects+81`); `$F415`-`$F41E` (`EnemyObjects+125`); `$F441`-`$F44A` (`EnemyObjects+169`); `$F46D`-`$F46F` (`EnemyObjects+213`) |
 
 ### `ExplosionAdvance` (`$A1EC`)
 
@@ -2444,8 +2432,8 @@ Not collected: the pod moves with the scenery (ScrollObject `$9640`), its colour
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 22,659 t-states own (0.02 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpScroll`, `FreeEnemySlot`, `AddScore`, `RequestEffect` |
-| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$80BC` (`ColourCycle`); `$80E6` (`Fuel`); `$8184` (`FireHeld`); `$81C5` (`EventRequests`); `$F379` (`PlayerObject`); 6 more ranges |
-| Writes | `$7FA3` (`Player1`); `$80E6` (`Fuel`); `$81C5` (`EventRequests`); `$F3BD` (`EnemyObjects`); `$F3E9` (`EnemyObjects`); `$F415` (`EnemyObjects`); 2 more ranges |
+| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$80BC` (`ColourCycle`); `$80E6` (`Fuel`); `$8184` (`FireHeld`); `$81C5` (`EventRequests`); `$F379` (`PlayerHitMask`); 6 more ranges |
+| Writes | `$7FA3` (`Player1PodSelector`); `$80E6` (`Fuel`); `$81C5` (`EventRequests`); `$F3BD` (`EnemyObjects+37`); `$F3E9` (`EnemyObjects+81`); `$F415` (`EnemyObjects+125`); 2 more ranges |
 
 ### `EnemyShotStep` (`$A263`)
 
@@ -2459,8 +2447,8 @@ IY: the shot. It ends (FreeShot `$9941`) when its lifetime +`$26` runs out, when
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 4,139 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PathOpHome`, `FreeObject`, `SceneryAt1` |
-| Reads | `$F379` (`PlayerObject`); `$F478`-`$F47A` (`EnemyShots`); `$F498`-`$F4A6` (`EnemyShots`); `$F4C4`-`$F4D2` (`EnemyShots`); `$F4F0`-`$F4F2` (`EnemyShots`) |
-| Writes | `$F49A` (`EnemyShots`); `$F4C6` (`EnemyShots`); `$F4F2` (`EnemyShots`) |
+| Reads | `$F379` (`PlayerHitMask`); `$F478`-`$F47A` (`EnemyShots+4`); `$F498`-`$F4A6` (`EnemyShots+36`); `$F4C4`-`$F4D2` (`EnemyShots+80`); `$F4F0`-`$F4F2` (`EnemyShots+124`) |
+| Writes | `$F49A` (`EnemyShots+38`); `$F4C6` (`EnemyShots+82`); `$F4F2` (`EnemyShots+126`) |
 
 ### `StartExplosion` (`$A293`)
 
@@ -2475,8 +2463,8 @@ Callers: the hit handling at ScatterDebris and the enemy movers (EnemyHandler).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 809 calls, 275,451 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19 calls, 6,600 t-states own (0.01 %) |
 | Called from | `ScatterDebris`, `EnemyHandler`, `LockableHandler` |
-| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
-| Writes | `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects`); `$F3E9`-`$F3FB` (`EnemyObjects`); `$F415`-`$F427` (`EnemyObjects`); 2 more ranges |
+| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects+36`); `$F3E8` (`EnemyObjects+80`); `$F414` (`EnemyObjects+124`); `$F440` (`EnemyObjects+168`); `$F46C` (`EnemyObjects+212`) |
+| Writes | `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects+37`); `$F3E9`-`$F3FB` (`EnemyObjects+81`); `$F415`-`$F427` (`EnemyObjects+125`); 2 more ranges |
 
 ### `StartExplosionQuiet` (`$A2A5`)
 
@@ -2486,8 +2474,8 @@ Callers: the hit handling at ScatterDebris and the enemy movers (EnemyHandler).
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 20 calls, 5,160 t-states own (0.00 %) |
 | Called from | `ScatterDebris` |
-| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects`); `$F3E8` (`EnemyObjects`); `$F414` (`EnemyObjects`); `$F440` (`EnemyObjects`); `$F46C` (`EnemyObjects`) |
-| Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects`); `$F3E9`-`$F3FB` (`EnemyObjects`); `$F415`-`$F427` (`EnemyObjects`); `$F441`-`$F453` (`EnemyObjects`); 1 more ranges |
+| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F3BC` (`EnemyObjects+36`); `$F3E8` (`EnemyObjects+80`); `$F414` (`EnemyObjects+124`); `$F440` (`EnemyObjects+168`); `$F46C` (`EnemyObjects+212`) |
+| Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects+37`); `$F3E9`-`$F3FB` (`EnemyObjects+81`); `$F415`-`$F427` (`EnemyObjects+125`); `$F441`-`$F453` (`EnemyObjects+169`); 1 more ranges |
 
 ### `ExplosionToPod` (`$A2D6`)
 
@@ -2503,8 +2491,8 @@ Used by ExplosionStep.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 772 t-states own (0.00 %) |
 | Called from | `ExplosionStep` (tail) |
 | Calls | `FreeEnemySlot` (tail), `SceneryAt4`, `RequestEffect` |
-| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F39D`-`$F39E` (`EnemyObjects`); `$F3BC`-`$F3CA` (`EnemyObjects`); `$F3E8`-`$F3F6` (`EnemyObjects`); `$F414`-`$F422` (`EnemyObjects`); `$F440`-`$F44E` (`EnemyObjects`); 1 more ranges |
-| Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects`); `$F3E9`-`$F3FB` (`EnemyObjects`); `$F415`-`$F427` (`EnemyObjects`); `$F441`-`$F453` (`EnemyObjects`); 1 more ranges |
+| Reads | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F39D`-`$F39E` (`EnemyObjects+5`); `$F3BC`-`$F3CA` (`EnemyObjects+36`); `$F3E8`-`$F3F6` (`EnemyObjects+80`); `$F414`-`$F422` (`EnemyObjects+124`); `$F440`-`$F44E` (`EnemyObjects+168`); 1 more ranges |
+| Writes | `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$F398`-`$F3A3` (`EnemyObjects`); `$F3BD`-`$F3CF` (`EnemyObjects+37`); `$F3E9`-`$F3FB` (`EnemyObjects+81`); `$F415`-`$F427` (`EnemyObjects+125`); `$F441`-`$F453` (`EnemyObjects+169`); 1 more ranges |
 
 ## print
 
@@ -2526,8 +2514,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,774 calls, 110,266 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 122 calls, 84,490 t-states own (0.08 %) |
 | Called from | `PrintString`, `PrintBcd`, `PrintBcdLeading`, `PrintBcdOut` |
-| Calls | `PrintCharSave`, `PrintSetColumn`, `PrintSetRow`, `InterruptJump` |
-| Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable`) |
+| Calls | `PrintCharSave`, `PrintSetColumn`, `PrintSetRow` |
+| Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`) |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); 8 more ranges |
 
 ### `PrintCharSave` (`$A322`)
@@ -2538,9 +2526,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,775 calls, 605,189 t-states own (0.01 %) |
 | Called from | `PrintChar`, `PlayInterruptExit` |
-| Calls | `PrintCharTest`, `PrintSetColumn`, `PrintSetRow`, `InterruptJump` |
-| Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE4`-`$5BE5` (system) |
+| Calls | `PrintCharTest`, `PrintSetColumn`, `PrintSetRow` |
+| Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PrintCharTest` (`$A32E`)
 
@@ -2550,9 +2537,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 54,129 t-states own (0.00 %) |
 | Called from | `PrintCharSave`, `PlayInterruptExit` |
-| Calls | `PrintCharKind`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE4`-`$5BE5` (system) |
+| Calls | `PrintCharKind` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PrintCharKind` (`$A330`)
 
@@ -2562,9 +2548,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,731 calls, 998,127 t-states own (0.02 %) |
 | Called from | `PrintCharTest`, `PlayInterruptExit` |
-| Calls | `PrintCharGlyph`, `PrintCharDone` (tail), `InterruptJump` |
-| Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5802`-`$581D` (screen); `$5927`-`$5938` (screen); `$596C`-`$5973` (screen); `$5BE4`-`$5BE5` (system); `$80AA`-`$80AB` (`PrintPos`) |
+| Calls | `PrintCharGlyph`, `PrintCharDone` (tail) |
+| Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$5802`-`$581D` (screen); `$5927`-`$5938` (screen); `$596C`-`$5973` (screen); `$80AA`-`$80AB` (`PrintPos`) |
 
 ### `PrintCharGlyph` (`$A34D`)
 
@@ -2574,9 +2560,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 7,688 calls, 276,715 t-states own (0.01 %) |
 | Called from | `PrintCharKind`, `PlayInterruptExit` |
-| Calls | `PrintRomGlyph`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE4`-`$5BE5` (system) |
+| Calls | `PrintRomGlyph` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PrintRomGlyph` (`$A357`)
 
@@ -2597,9 +2582,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 46,116 calls, 184,483 t-states own (0.00 %) |
 | Called from | `PrintRomGlyph`, `PrintCharBold` (tail) |
-| Calls | `PrintCharBold`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE4`-`$5BE5` (system) |
+| Calls | `PrintCharBold` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PrintCharBold` (`$A366`)
 
@@ -2734,7 +2718,7 @@ Callers: PrintMessage and the title loop (HiScorePage).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,666 t-states own (0.00 %) |
 | Called from | `PrintMessage` |
 | Calls | `PrintChar`, `PrintMessage` |
-| Reads | `$80AD` (`PrintPending`); `$84B2`-`$84D7` (`Messages`) |
+| Reads | `$80AD` (`PrintPending`); `$84B2`-`$84D7` (`Messages+452`, `PlayerDigit`) |
 
 ### `PrintMessage` (`$A423`)
 
@@ -2750,9 +2734,8 @@ Callers: PrintString, the menu screens (RedefineKeys, PrintKeyName, SelectPlayer
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 221,672 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 20,152 t-states own (0.02 %) |
 | Called from | `PrintString`, `LevelStart` |
-| Calls | `PrintString`, `InterruptJump` |
-| Reads | `$82ED`-`$84BC` (`ColoursBar`, `Messages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE0`-`$5BF1` (system) |
+| Calls | `PrintString` |
+| Reads | `$82ED`-`$84BC` (`MessageListBase`, `Messages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PrintBcdSpaces` (`$A43C`)
 
@@ -2814,8 +2797,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 3,551 calls, 215,641 t-states own (0.00 %) |
 | Called from | `PrintBcdLeadNext`, `PrintBcdRestNext` (tail) |
 | Calls | `PrintBcdOut` |
-| Reads | `$7FFD`-`$7FFF` (`BcdScratch`) |
-| Writes | `$7FFD`-`$7FFF` (`BcdScratch`) |
+| Reads | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
+| Writes | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
 
 ### `PrintBcdOut` (`$A47E`)
 
@@ -2836,8 +2819,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 4 calls, 122,074 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
 | Calls | `PrintBcdRest` (tail), `PrintPlayerScoreDone` |
-| Reads | `$7FFF` (`BcdScratch`) |
-| Writes | `$7FFF` (`BcdScratch`) |
+| Reads | `$7FFF` (`BcdScratch+3`) |
+| Writes | `$7FFF` (`BcdScratch+3`) |
 
 ## score
 
@@ -2856,7 +2839,7 @@ Callers: the enemy kill (EnemyGone), the enemy movers (EnemyHandler), PodStep.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,003 calls, 324,270 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 2,964 t-states own (0.00 %) |
 | Called from | `EnemyGone`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler`, `PodStep` |
-| Reads | `$7F98`-`$7F9F` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$81C5` (`EventRequests`); `$8235`-`$825C` (`PointsTable`) |
+| Reads | `$7F98`-`$7F9F` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$81C5` (`EventRequests`); `$8235`-`$825C` (`PointsTable+4`) |
 | Writes | `$7F9C`-`$7F9F` (`Player1`); `$81C5` (`EventRequests`) |
 
 ### `PrintPlayerScore` (`$A4AE`)
@@ -2907,7 +2890,7 @@ Six life marks from the attribute `$5AD8` (row 22, column 24), the steps between
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 16 calls, 8,304 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 552 t-states own (0.00 %) |
 | Called from | `ScoreJobRating`, `RoundPlaySetup` |
-| Reads | `$7F99`-`$7FA0` (`PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`); `$81C0`-`$81C5` (`LifeSteps`, `EventRequests`) |
+| Reads | `$7F99`-`$7FA0` (`PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2Lives`); `$81C0`-`$81C5` (`LifeSteps`, `EventRequests`) |
 | Writes | `$5A98`-`$5A99` (screen); `$5AB8`-`$5AB9` (screen); `$5AD8`-`$5AD9` (screen) |
 
 ## menu
@@ -2929,7 +2912,7 @@ Installed by SetMenuRaster in the interrupt handler pointer `$FDFE`. Evidence: c
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 76 calls, 2,720,324 t-states own (2.59 %) |
 | Called from | `InterruptJump` (tail) |
 | Reads | `$581A`-`$589A` (screen); `$58BA` (screen); `$58DA` (screen); `$58FA` (screen); `$591A` (screen); `$593A` (screen); 4 more ranges |
-| Writes | `$80B9` (`RasterFrames`); `$A576`-`$A577` (`MenuRasterInterrupt`) |
+| Writes | `$80B9` (`RasterFrames`); `$A576`-`$A577` (`MenuRasterSavedSp+1`) |
 | Ports out | `$00FE` |
 
 ### `SetMenuRaster` (`$A58D`)
@@ -2944,7 +2927,7 @@ Writes `$A512` to the handler pointer `$FDFE`, EI. Callers: MenuScreenSetup, Sel
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 440 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 40 t-states own (0.00 %) |
 | Called from | `MenuScreenSetup` |
-| Writes | `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `WaitMenuRasterEnd` (`$A595`)
 
@@ -2958,9 +2941,9 @@ Waits (HALT) until `$80B9` is 0, clears the colour buffer, then installs TitleIn
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 20,024,954 t-states own (0.38 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 1,105,430 t-states own (1.05 %) |
 | Called from | `RoundPlaySetup` |
-| Calls | `ClearColourBuffer`, `InterruptJump` |
-| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFA`-`$5BFB` (system); `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Calls | `ClearColourBuffer` |
+| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `ClearColourBuffer` (`$A5A7`)
 
@@ -2974,7 +2957,7 @@ Callers: WaitMenuRasterEnd, MenuScreenSetup, SelectPlayers.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 22 calls, 130,064 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 11,824 t-states own (0.01 %) |
 | Called from | `WaitMenuRasterEnd`, `MenuScreenSetup` |
-| Writes | `$FC00`-`$FCFF` (`HitGridX`) |
+| Writes | `$FC00`-`$FCFF` (`HitGridX`, `MenuColours`) |
 
 ### `ExpandNextColours` (`$A5B0`)
 
@@ -3001,7 +2984,7 @@ Callers: MenuScreenSetup, SelectPlayers, RedefineKeys (by ExpandNextColours).
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 17,082 t-states own (0.02 %) |
 | Called from | `MenuScreenSetup` |
 | Reads | `$82A7`-`$82D6` (`ColoursTop`, `ColoursMenu`) |
-| Writes | `$FC20`-`$FCC7` (`HitGridX`) |
+| Writes | `$FC20`-`$FCC7` (`MenuColours`) |
 
 ### `RedefineKeys` (`$A5D1`)
 
@@ -3064,9 +3047,8 @@ GS: the installer copies WaitStub over it (src/disk/install.asm): a call of the 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 38,349,918 t-states own (0.73 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 3,838,981 t-states own (3.66 %) |
 | Called from | `EndOfPlay` |
-| Calls | `l_B466` (tail), `InterruptJump` |
-| Reads | `$A6B2` (`WaitFrames`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF6`-`$5BF7` (system) |
+| Calls | `l_B466` (tail) |
+| Reads | `$A6B2` (`WaitFramesLoop+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ## input
 
@@ -3184,7 +3166,7 @@ Callers: the panel update PanelFrame (`$AB97`, `$AB9F`).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 73,084 calls, 114,155,973 t-states own (2.18 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1,318 calls, 2,058,285 t-states own (1.96 %) |
 | Called from | `PanelFrame` |
-| Reads | `$A919`-`$A978` (`SpinnerFrames`, `SpinnerImages`); `$FB03`-`$FBC0` (`BitReverse`); `$FBE0` (`BitReverse`) |
+| Reads | `$A919`-`$A978` (`SpinnerFrames`, `SpinnerImages`); `$FB03`-`$FBC0` (`BitReverse+3`); `$FBE0` (`BitReverse+224`) |
 | Writes | `$5081`-`$50BE` (screen); `$5181`-`$51BE` (screen); `$5281`-`$52BE` (screen); `$5381`-`$53BE` (screen); `$5481`-`$54BE` (screen); `$5581`-`$55BE` (screen); 5 more ranges |
 
 ### `RestorePanel` (`$A979`)
@@ -3199,9 +3181,8 @@ Callers: the panel update PanelFrame (`$AB97`, `$AB9F`).
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 623,381 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 56,671 t-states own (0.05 %) |
 | Called from | `RoundPlaySetup` |
-| Calls | `InterruptJump` |
-| Reads | `$E748`-`$EFE7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$5BFA`-`$5BFB` (system) |
+| Reads | `$E748`-`$EFE7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen) |
 
 ### `SavePanel` (`$A98D`)
 
@@ -3215,9 +3196,8 @@ The reverse of RestorePanel. Called at `$B1F9`.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 532,107 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 97,379 t-states own (0.09 %) |
 | Called from | `PlayLoopTest`, `PlayLoopBranch` |
-| Calls | `InterruptJump` |
-| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFA`-`$5BFB` (system); `$E748`-`$EFE7` (`SpriteCacheImages`) |
+| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$E748`-`$EFE7` (`SpriteCacheImages`) |
 
 ## interrupts
 
@@ -3237,8 +3217,8 @@ Called by PlayPass. Evidence: TTD c2 frames 300-316: `$7F6A` C8, D8, D0, C0, `$7
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 36,542 calls, 7,067,427 t-states own (0.13 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 130,431 t-states own (0.12 %) |
 | Called from | `PlayPass` |
-| Reads | `$7F65`-`$7F7B` (`PassPhase`, `ChainStep`, `NodeFreeList`, `ShiftPage` and 12 more); `$81DA`-`$81E3` (`ScriptState`) |
-| Writes | `$7F6A`-`$7F6C` (`ShiftPage`, `FineScrollToggle`, `ScrollThisPass`); `$81DA` (`ScriptState`) |
+| Reads | `$7F65`-`$7F7B` (`PassPhase`, `ChainStep`, `NodeFreeList`, `ShiftPage` and 12 more); `$81DA`-`$81E3` (`PlayFlags`, `ScrollCount`, `ScriptNumber`, `ScriptLevelBias` and 4 more) |
+| Writes | `$7F6A`-`$7F6C` (`ShiftPage`, `FineScrollToggle`, `ScrollThisPass`); `$81DA` (`PlayFlags`) |
 
 ### `TitleInterrupt` (`$A9E4`)
 
@@ -3271,7 +3251,7 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 1,295,432 t-states own (1.23 %) |
 | Called from | `InterruptJump` (tail) |
 | Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `l_A9EF`, `PanelFrame` |
-| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BC` (`ColourCycle`); `$81DA` (`ScriptState`) |
+| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$7F80`-`$7F89` (`SoundPattern1`, `ObjectBeep`, `ObjectBeepMask`, `SoundPattern2` and 3 more); `$80BC` (`ColourCycle`); `$81DA` (`PlayFlags`) |
 | Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F7F`-`$7F96` (`RowBeepMask`, `SoundPattern1`, `ObjectBeep`, `ObjectBeepMask` and 11 more); `$80BC` (`ColourCycle`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
 | Ports out | `$00FE` |
 
@@ -3284,8 +3264,8 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 584 calls, 1,129,946 t-states own (0.89 %) |
 | Called from | `PlayInterrupt` |
 | Calls | `DrawPlayfield`, `MoveStars`, `StartColumn`, `ScrollStep`, `TestHitGrid`, `ClearHitGrid`, `PanelFrame` |
-| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$80BC` (`ColourCycle`); `$81DA` (`ScriptState`) |
-| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F96` (`EffectTick`); `$80BC` (`ColourCycle`); `$AA29` (`l_A9EF`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
+| Reads | `$7F62`-`$7F65` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase`); `$80BC` (`ColourCycle`); `$81DA` (`PlayFlags`) |
+| Writes | `$7F62`-`$7F67` (`PassCount`, `PassBit`, `PassDepth`, `PassPhase` and 1 more); `$7F96` (`EffectTick`); `$80BC` (`ColourCycle`); `$AA29` (`PlayInterruptColour+2`); `$AAED`-`$AAF8` (`ChainStep1End`, `ChainDrawStrips2`, `ChainDrawStrips3`) |
 | Ports out | `$00FE` |
 
 ### `PlayPass` (`$AA96`)
@@ -3426,7 +3406,7 @@ Called from PlayInterrupt `$A9ED` (at `$AA87`) once a pass; c2: 659 entries in 6
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 659 calls, 630,704 t-states own (0.60 %) |
 | Called from | `PlayInterrupt`, `l_A9EF` |
 | Calls | `DrawSpinner` |
-| Reads | `$5AC6`-`$5AC7` (screen); `$7F62` (`PassCount`); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD7` (`Player2`); `$80E6` (`Fuel`) |
+| Reads | `$5AC6`-`$5AC7` (screen); `$7F62` (`PassCount`); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$7FD7` (`Player2Speed`); `$80E6` (`Fuel`) |
 | Writes | `$5AAB`-`$5AF1` (screen); `$7F77`-`$7F7A` (`PanelBurst`, `SpinnerFrame`, `SpinnerColour`, `SpinnerColourStep`) |
 
 ### `CheckPauseAndEnd` (`$ABD5`)
@@ -3443,7 +3423,7 @@ Called by the play interrupt once a pass (the phase dispatch in the routine at `
 | Called from | `PlayPass` |
 | Calls | `StopAndSettle` |
 | Reads | `$7F7C` (`EndPending`) |
-| Writes | `$7F7D` (`EndCode`); `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Writes | `$7F7D` (`EndCode`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 | Ports in | `$F7FE` |
 
 ### `StopAndSettle` (`$ABF0`)
@@ -3458,9 +3438,9 @@ Requests effect 0 (RequestEffect `$B2F0` takes 0 as `$80`: the stop), keeps Inte
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 933,558 t-states own (0.02 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 278,742 t-states own (0.27 %) |
 | Called from | `CheckPauseAndEnd` |
-| Calls | `RequestEffect`, `InterruptJump` |
-| Reads | `$AC00`-`$AC01` (`StopAndSettle`); `$FDFE`-`$FDFF` (`InterruptJump`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BDA`-`$5BE3` (system); `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Calls | `RequestEffect` |
+| Reads | `$AC00`-`$AC01` (`StopAndSettle+16`); `$FDFE`-`$FDFF` (`InterruptHandler`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ## events
 
@@ -3478,9 +3458,8 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,873 calls, 29,259,036 t-states own (0.56 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,560 calls, 685,745 t-states own (0.65 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopPass`, `EffectTickTest`, `EffectTickBranch` |
-| Calls | `EventPending`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFA`-`$5BFB` (system) |
+| Calls | `EventPending` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EventPending` (`$AC0A`)
 
@@ -3492,9 +3471,8 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,937 calls, 38,029,390 t-states own (0.73 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,552 calls, 891,421 t-states own (0.85 %) |
 | Called from | `PlayInterruptExit`, `EventDispatch` |
-| Calls | `EventEnabled`, `InterruptJump` |
-| Reads | `$81C5` (`EventRequests`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BEC`-`$5BFB` (system) |
+| Calls | `EventEnabled` |
+| Reads | `$81C5` (`EventRequests`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EventEnabled` (`$AC0D`)
 
@@ -3506,9 +3484,8 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,924,872 calls, 20,467,383 t-states own (0.39 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,557 calls, 479,746 t-states own (0.46 %) |
 | Called from | `PlayInterruptExit`, `EventPending` |
-| Calls | `EventAny`, `InterruptJump` |
-| Reads | `$81C6` (`EventMask`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFA`-`$5BFB` (system) |
+| Calls | `EventAny` |
+| Reads | `$81C6` (`EventMask`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EventAny` (`$AC0E`)
 
@@ -3520,7 +3497,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,923,881 calls, 40,855,638 t-states own (0.78 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,530 calls, 936,005 t-states own (0.89 %) |
 | Called from | `PlayInterruptExit`, `EventEnabled` |
-| Calls | `JumpTable`, `PlayLoopCheck`, `EffectAfterJobs`, `InterruptJump` |
+| Calls | `JumpTable`, `PlayLoopCheck`, `EffectAfterJobs` |
 | Reads | `$81C6` (`EventMask`) |
 | Writes | `$81C5` (`EventRequests`) |
 
@@ -3558,7 +3535,7 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 224 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `IconRow` |
-| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$7FD3` (`Player2`); `$81C6` (`EventMask`) |
+| Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$7FD3` (`Player2PodSelector`); `$81C6` (`EventMask`) |
 | Writes | `$5A86`-`$5A87` (screen); `$5AA6`-`$5AA7` (screen); `$81C6` (`EventMask`) |
 
 ### `IconLowerRow` (`$AC5A`)
@@ -3605,9 +3582,9 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 653 calls, 220,189 t-states own (0.00 %) |
 | Called from | `PlayInterruptExit`, `IconCell` |
-| Calls | `EventDone`, `IconLowerRow`, `IconCell` (tail), `InterruptJump` |
-| Reads | `$B4AF`-`$B54E` (`PodIcons`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5086`-`$50A7` (screen); `$5186`-`$51A7` (screen); `$5286`-`$52A7` (screen); `$5386`-`$53A7` (screen); `$5486`-`$54A7` (screen); `$5586`-`$55A7` (screen); 3 more ranges |
+| Calls | `EventDone`, `IconLowerRow`, `IconCell` (tail) |
+| Reads | `$B4AF`-`$B54E` (`PodIcons`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$5086`-`$50A7` (screen); `$5186`-`$51A7` (screen); `$5286`-`$52A7` (screen); `$5386`-`$53A7` (screen); `$5486`-`$54A7` (screen); `$5586`-`$55A7` (screen); 2 more ranges |
 
 ### `EffectJob` (`$AC6F`)
 
@@ -3660,7 +3637,7 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 | Called from | `PrintPlayerScoreDone` |
 | Calls | `WeaponRating`, `DrawLives`, `EventDone` |
 | Reads | `$7F99`-`$7FA8` (`PlayerRecord`, `Players`, `Player1`); `$800F`-`$8014` (`ExtraLifeScores`) |
-| Writes | `$7FA0`-`$7FA8` (`Player1`) |
+| Writes | `$7FA0`-`$7FA8` (`Player1Lives`, `Player1LivesLost`, `Player1LevelIndex`, `Player1PodSelector` and 5 more) |
 
 ### `SpriteBuildJob` (`$ACA6`)
 
@@ -3688,9 +3665,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 688 calls, 20,659 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 10 calls, 1,271 t-states own (0.00 %) |
 | Called from | `SpriteBuildJob`, `SpriteBuildDone` (tail) |
-| Calls | `EventDone`, `SpriteBuildEmpty`, `LoadCellSprite`, `SpriteBuildShifts`, `InterruptJump` |
-| Reads | `$8024`-`$802E` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE8`-`$5BE9` (system); `$8024` (`DrawQueueRead`) |
+| Calls | `EventDone`, `SpriteBuildEmpty`, `LoadCellSprite`, `SpriteBuildShifts` |
+| Reads | `$8024`-`$802E` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$8024` (`DrawQueueRead`) |
 
 ### `SpriteBuildEmpty` (`$ACB4`)
 
@@ -3715,8 +3692,8 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 314 t-states own (0.00 %) |
 | Called from | `SpriteShiftNext`, `SpriteShiftLoop` |
 | Calls | `SpriteBuildNext` (tail) |
-| Reads | `$7EF0`-`$7F50` (`SpriteCache`) |
-| Writes | `$7EF0`-`$7F50` (`SpriteCache`) |
+| Reads | `$7EF0`-`$7F50` (`SpriteCache+14`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
+| Writes | `$7EF0`-`$7F50` (`SpriteCache+14`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
 
 ### `LoadCellSprite` (`$ACD9`)
 
@@ -3731,7 +3708,7 @@ In: A the kind, HL the descriptor (+0/+1 the image's address). Kinds `$14` and u
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 1,410 t-states own (0.00 %) |
 | Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
 | Calls | `BuildCellSprite`, `BuildBigSprite` |
-| Reads | `$7EF2`-`$7F43` (`SpriteCache`) |
+| Reads | `$7EF2`-`$7F43` (`SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3` and 3 more) |
 
 ### `SpriteBuildShifts` (`$AD16`)
 
@@ -3746,8 +3723,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 5 calls, 993 t-states own (0.00 %) |
 | Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
 | Calls | `SpriteShiftRound` |
-| Reads | `$7EE2`-`$7F4D` (`SpriteCache`) |
-| Writes | `$AD3E`-`$AD4B` (`SpriteShiftTest`, `SpriteShiftCopy`) |
+| Reads | `$7EE2`-`$7F4D` (`SpriteCache`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
+| Writes | `$AD3E`-`$AD4B` (`SpriteShiftLength+1`, `SpriteShiftCopy`) |
 
 ### `SpriteShiftRound` (`$AD38`)
 
@@ -3759,9 +3736,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,408 calls, 37,680 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 35 calls, 2,103 t-states own (0.00 %) |
 | Called from | `SpriteBuildShifts`, `SpriteShiftNext` (tail), `SpriteShiftLoop` (tail) |
-| Calls | `RotateSprite`, `SpriteShiftTest`, `SpriteShiftCopy`, `InterruptJump` |
-| Reads | `$E748`-`$E93F` (`SpriteCacheImages`); `$E988`-`$EB7F` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE2`-`$5BE3` (system); `$E790`-`$E987` (`SpriteCacheImages`); `$E9D0`-`$EBC7` (`SpriteCacheImages`) |
+| Calls | `RotateSprite`, `SpriteShiftTest`, `SpriteShiftCopy` |
+| Reads | `$E748`-`$E93F` (`SpriteCacheImages`); `$E988`-`$EB7F` (`SpriteCacheImages+576`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$E790`-`$E987` (`SpriteCacheImages+72`); `$E9D0`-`$EBC7` (`SpriteCacheImages+648`) |
 
 ### `SpriteShiftTest` (`$AD3A`)
 
@@ -3782,9 +3759,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,509 calls, 4,184,182 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 38 calls, 55,100 t-states own (0.05 %) |
 | Called from | `PlayInterruptExit`, `SpriteShiftRound`, `SpriteShiftTest` |
-| Calls | `RotateSprite`, `InterruptJump` |
-| Reads | `$C008`-`$CDCF` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E748`-`$EB7F` (`SpriteCacheImages`); `$EBC8`-`$EFFF` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BE2`-`$5BF1` (system); `$C200`-`$CFC7` (`TileSource`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages`); `$EC10`-`$F047` (`SpriteCacheImages`) |
+| Calls | `RotateSprite` |
+| Reads | `$C008`-`$CDCF` (`GlyphCache+8`, `WaveCellSource`, `GlyphCacheUpper`); `$E748`-`$EB7F` (`SpriteCacheImages`); `$EBC8`-`$EFFF` (`SpriteCacheImages+1152`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
 
 ### `SpriteShiftNext` (`$AD50`)
 
@@ -3796,7 +3773,7 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 357 calls, 73,816 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 1,564 t-states own (0.00 %) |
 | Called from | `RotateNextByte`, `RotateLineCount` |
-| Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail), `SpriteShiftLoop`, `InterruptJump` |
+| Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail), `SpriteShiftLoop` |
 
 ### `SpriteShiftLoop` (`$AD53`)
 
@@ -3821,7 +3798,7 @@ Copies the player record's +`$0D`-+`$2F` (35 bytes, the checkpoint that CmdCheck
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 852 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
 | Reads | `$7F99`-`$7FFB` (`PlayerRecord`, `Players`, `Player1`, `Player2`) |
-| Writes | `$81D7`-`$81F9` (`ScriptState`) |
+| Writes | `$81D7`-`$81F9` (`ScriptState`, `ScriptPC`, `PlayFlags`, `ScrollCount` and 8 more) |
 
 ## wavescript
 
@@ -3840,8 +3817,8 @@ Called from the play interrupt at phase 2 (`$AA96`; c2: 165 entries, one in four
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 165 calls, 19,047 t-states own (0.02 %) |
 | Called from | `PlayPass` |
 | Calls | `JumpTable`, `LaunchWave`, `ScriptWord`, `ScriptByte`, `ScriptTest` |
-| Reads | `$6B8D`-`$6FA6` (`LevelScripts`); `$6FCA`-`$72A7` (`LevelScripts`); `$7F7B` (`DeathTimer`); `$81D8`-`$81E1` (`ScriptState`) |
-| Writes | `$81D8`-`$81E1` (`ScriptState`) |
+| Reads | `$6B8D`-`$6FA6` (`LevelScripts`); `$6FCA`-`$72A7` (`LevelScripts+1085`); `$7F7B` (`DeathTimer`); `$81D8`-`$81E1` (`ScriptPC`, `PlayFlags`, `ScrollCount`, `ScriptNumber` and 3 more) |
+| Writes | `$81D8`-`$81E1` (`ScriptPC`, `PlayFlags`, `ScrollCount`, `ScriptNumber` and 3 more) |
 
 ### `ScriptSaveFlags` (`$ADD3`)
 
@@ -3854,7 +3831,7 @@ PUSH AF / POP HL takes F into L, stored in ScriptFlags `$81E2` (the conditions r
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,176 calls, 92,311 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 165 t-states own (0.00 %) |
 | Called from | `CmdDecrement`, `CmdEnemiesLeft` |
-| Writes | `$81E2` (`ScriptState`) |
+| Writes | `$81E2` (`ScriptFlags`) |
 
 ### `ScriptWord` (`$ADDC`)
 
@@ -3868,8 +3845,8 @@ Reads the word at the PC (`$81D8`) and steps the PC past it; HL kept.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,042 calls, 198,942 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 6 calls, 598 t-states own (0.00 %) |
 | Called from | `WaveScriptStep`, `CmdStore`, `CmdDecrement` |
-| Reads | `$6B92`-`$6BA6` (`LevelScripts`); `$6BC6`-`$6C52` (`LevelScripts`); `$6C70`-`$6CAD` (`LevelScripts`); `$6CC4`-`$6D42` (`LevelScripts`); `$6D57`-`$6F2A` (`LevelScripts`); `$6F4E`-`$6FA8` (`LevelScripts`); 3 more ranges |
-| Writes | `$81D8`-`$81D9` (`ScriptState`) |
+| Reads | `$6B92`-`$6BA6` (`LevelScripts+5`); `$6BC6`-`$6C52` (`LevelScripts+57`); `$6C70`-`$6CAD` (`LevelScripts+227`); `$6CC4`-`$6D42` (`LevelScripts+311`); `$6D57`-`$6F2A` (`LevelScripts+458`); `$6F4E`-`$6FA8` (`LevelScripts+961`); 3 more ranges |
+| Writes | `$81D8`-`$81D9` (`ScriptPC`) |
 
 ### `ScriptByte` (`$ADE9`)
 
@@ -3883,8 +3860,8 @@ Reads the byte at the PC and steps it; HL kept.
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 754 calls, 63,369 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9 calls, 773 t-states own (0.00 %) |
 | Called from | `WaveScriptStep` |
-| Reads | `$6B8F`-`$6BFB` (`LevelScripts`); `$6C22`-`$6EE1` (`LevelScripts`); `$6F08`-`$6F6C` (`LevelScripts`); `$6FCC`-`$701F` (`LevelScripts`); `$7044`-`$70D7` (`LevelScripts`); `$70F8`-`$7162` (`LevelScripts`); 3 more ranges |
-| Writes | `$81D8`-`$81D9` (`ScriptState`) |
+| Reads | `$6B8F`-`$6BFB` (`LevelScripts+2`); `$6C22`-`$6EE1` (`LevelScripts+149`); `$6F08`-`$6F6C` (`LevelScripts+891`); `$6FCC`-`$701F` (`LevelScripts+1087`); `$7044`-`$70D7` (`LevelScripts+1207`); `$70F8`-`$7162` (`LevelScripts+1387`); 3 more ranges |
+| Writes | `$81D8`-`$81D9` (`ScriptPC`) |
 
 ### `ScriptTest` (`$ADF4`)
 
@@ -3898,7 +3875,7 @@ In: A the condition (0-6). Out: carry when it holds; A, BC, DE, HL kept (A is th
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 425 t-states own (0.00 %) |
 | Called from | `WaveScriptStep` |
 | Calls | `JumpTable` |
-| Reads | `$81E2`-`$81E3` (`ScriptState`) |
+| Reads | `$81E2`-`$81E3` (`ScriptFlags`, `ScrollRestart`) |
 
 ### `CondAlways` (`$AE0C`)
 
@@ -3987,8 +3964,8 @@ Also called by CmdLevelEnd. The scroll (`$8AED` area) runs while bit 5 is set; a
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 725 t-states own (0.00 %) |
 | Called from | `JumpTable`, `CmdLevelEnd` |
-| Reads | `$81DA` (`ScriptState`) |
-| Writes | `$81DA` (`ScriptState`) |
+| Reads | `$81DA` (`PlayFlags`) |
+| Writes | `$81DA` (`PlayFlags`) |
 
 ### `CmdModeOn` (`$AE34`)
 
@@ -4018,7 +3995,7 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 | Called from | `JumpTable` |
 | Calls | `CmdScrollStop` |
 | Reads | `$7F99`-`$7F9A` (`PlayerRecord`) |
-| Writes | `$7F7C` (`EndPending`); `$7FA4`-`$7FA5` (`Player1`) |
+| Writes | `$7F7C` (`EndPending`); `$7FA4`-`$7FA5` (`Player1SideWeapon`, `Player1DoublePlasma`) |
 
 ### `CmdNop2` (`$AE54`)
 
@@ -4039,7 +4016,7 @@ The scroll stops, EndPending (`$7F7C`) = 2 (the play loop ends with code 2: Leve
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 88 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptWord` |
-| Writes | `$81E4`-`$81E5` (`ScriptState`) |
+| Writes | `$81E4`-`$81E5` (`ScriptCounter`) |
 
 ### `CmdCopy` (`$AE60`)
 
@@ -4061,8 +4038,8 @@ The word is read, ADC HL,DE with HL = `$FFFF` gives word - 1 with Z when it reac
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 324 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags`, `ScriptWord` |
-| Reads | `$81E4`-`$81E5` (`ScriptState`) |
-| Writes | `$81E4`-`$81E5` (`ScriptState`) |
+| Reads | `$81E4`-`$81E5` (`ScriptCounter`) |
+| Writes | `$81E4`-`$81E5` (`ScriptCounter`) |
 
 ### `CmdIncrement` (`$AE84`)
 
@@ -4108,8 +4085,8 @@ Copies the VM state `$81D7-$81F9` (35 bytes, PC past this instruction) to the pl
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 18,125 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$81D7`-`$81F9` (`ScriptState`) |
-| Writes | `$7FA9`-`$7FCB` (`Player1`) |
+| Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$81D7`-`$81F9` (`ScriptState`, `ScriptPC`, `PlayFlags`, `ScrollCount` and 8 more) |
+| Writes | `$7FA9`-`$7FCB` (`Player1LevelState`) |
 
 ### `CmdResetRecords` (`$AEE3`)
 
@@ -4121,8 +4098,8 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 214,426 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F26D` (`RowRecords`); `$F28C`-`$F28D` (`RowRecords`); `$F2AC`-`$F2AD` (`RowRecords`); `$F2CC`-`$F2CD` (`RowRecords`); `$F2EC`-`$F2ED` (`RowRecords`); 3 more ranges |
-| Writes | `$B700`-`$BF03` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF1E`-`$BF7F` (`TileSource`); `$BF93`-`$BFD7` (`TileSource`); `$BFEC`-`$BFFF` (`TileSource`); `$F132`-`$F274` (`RowRecords`); `$F292`-`$F294` (`RowRecords`); 6 more ranges |
+| Reads | `$B700`-`$BFFF` (`data_B700`, `MapRingSpace`, `TileSource`); `$F12C`-`$F26D` (`RowRecords`); `$F28C`-`$F28D` (`RowRecords+352`); `$F2AC`-`$F2AD` (`RowRecords+384`); `$F2CC`-`$F2CD` (`RowRecords+416`); `$F2EC`-`$F2ED` (`RowRecords+448`); 3 more ranges |
+| Writes | `$B700`-`$BF03` (`data_B700`, `MapRingSpace`, `TileSource`); `$BF1E`-`$BF7F` (`TileSource+798`); `$BF93`-`$BFD7` (`TileSource+915`); `$BFEC`-`$BFFF` (`TileSource+1004`); `$F132`-`$F274` (`RowRecords+6`); `$F292`-`$F294` (`RowRecords+358`); 6 more ranges |
 
 ### `CmdEnemyEscape` (`$AF16`)
 
@@ -4133,7 +4110,7 @@ For each record: +8 = 0, +6/+7 = `$85E4`; then of the 32 bytes below its pointer
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 320 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FreeEnemySlot`, `EnemyEscaped` |
-| Reads | `$F3A0` (`EnemyObjects`) |
+| Reads | `$F3A0` (`EnemyObjects+8`) |
 
 ### `CmdEnemiesLeft` (`$AF26`)
 
@@ -4146,7 +4123,7 @@ A record counts when +8 has bits 5 and 7 set and +`$0D` is not `$FF`. The flags 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | run into, not called, 92,206 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `ScriptSaveFlags` |
-| Reads | `$F3A0`-`$F3A5` (`EnemyObjects`); `$F3CC`-`$F3D1` (`EnemyObjects`); `$F3F8`-`$F3FD` (`EnemyObjects`); `$F424`-`$F429` (`EnemyObjects`); `$F450`-`$F455` (`EnemyObjects`) |
+| Reads | `$F3A0`-`$F3A5` (`EnemyObjects+8`); `$F3CC`-`$F3D1` (`EnemyObjects+52`); `$F3F8`-`$F3FD` (`EnemyObjects+96`); `$F424`-`$F429` (`EnemyObjects+140`); `$F450`-`$F455` (`EnemyObjects+184`) |
 
 ## rounds
 
@@ -4178,8 +4155,8 @@ LevelSetUp `$8C3B` (the playfield model, the map buffer), MenuScreenSetup `$A685
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 131 t-states own (0.00 %) |
 | Called from | `YieldScript` |
 | Calls | `ReplayStep` (tail) |
-| Reads | `$81DB`-`$81DC` (`ScriptState`) |
-| Writes | `$7F76` (`SkipDraw`); `$81DB`-`$81DC` (`ScriptState`) |
+| Reads | `$81DB`-`$81DC` (`ScrollCount`) |
+| Writes | `$7F76` (`SkipDraw`); `$81DB`-`$81DC` (`ScrollCount`) |
 
 ### `ReplayColumns` (`$AF90`)
 
@@ -4201,7 +4178,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 13,300 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 1,662 t-states own (0.00 %) |
 | Called from | `ReplayScroll` (tail) |
-| Calls | `StartColumn`, `ReplayRound`, `InterruptJump` |
+| Calls | `StartColumn`, `ReplayRound` |
 
 ### `ReplayRound` (`$AF9F`)
 
@@ -4213,7 +4190,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,560 calls, 50,549 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 192 calls, 6,211 t-states own (0.01 %) |
 | Called from | `ReplayStep`, `ReplayRoundEnd` (tail) |
-| Calls | `ResumeScript`, `InterruptJump` |
+| Calls | `ResumeScript` |
 
 ### `ReplayRoundEnd` (`$AFA3`)
 
@@ -4225,9 +4202,8 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 57 calls, 103,675 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 25 calls, 12,856 t-states own (0.01 %) |
 | Called from | `YieldScript` |
-| Calls | `BuildColumn`, `ScrollStep`, `ReplayRound` (tail), `RoundPlaySetup`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF8`-`$5BFB` (system) |
+| Calls | `BuildColumn`, `ScrollStep`, `ReplayRound` (tail), `RoundPlaySetup` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `InterruptSetup` (`$AFB0`)
 
@@ -4265,7 +4241,7 @@ WaitMenuRasterEnd `$A595`, ClearHitGrid `$91C6` with interrupts off, Fuel = `$5A
 | Called from | `MainLoopEnd` |
 | Calls | `RestoreCheckpoint`, `LevelStart`, `PlayerSetup`, `EnemiesSetup`, `ShotsSetup` |
 | Reads | `$7F98` (`CurrentPlayer`) |
-| Writes | `$84BB` (`Messages`) |
+| Writes | `$84BB` (`PlayerDigit`) |
 
 ### `RoundPlaySetup` (`$B03A`)
 
@@ -4290,8 +4266,8 @@ In: IX the record. +5 = 0, `$81E3` = 0; the record's +`$0D` gets the 8 bytes of 
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 8,444 t-states own (0.00 %) |
 | Called from | `LevelDone` |
-| Reads | `$6B35`-`$6B8C` (`LevelTable`); `$7FA2` (`Player1`); `$8004`-`$800E` (`LevelOrder`); `$81FA`-`$81FE` (`ScriptStateInit`) |
-| Writes | `$7FA1`-`$7FB5` (`Player1`); `$81E3` (`ScriptState`) |
+| Reads | `$6B35`-`$6B8C` (`LevelTable+8`); `$7FA2` (`Player1LevelIndex`); `$8004`-`$800E` (`LevelOrder+1`); `$81FA`-`$81FE` (`ScriptStateInit`) |
+| Writes | `$7FA1`-`$7FB5` (`Player1LivesLost`, `Player1LevelIndex`, `Player1PodSelector`, `Player1SideWeapon` and 5 more); `$81E3` (`ScrollRestart`) |
 
 ### `CreditsPage` (`$B095`)
 
@@ -4332,7 +4308,7 @@ GS: LD (`$B109`),A; CALL WaitFrames; CALL FadeAttributes; LD A,code; DEC A; LD H
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 2 calls, 144 t-states own (0.00 %) |
 | Called from | `MainLoopEnd` |
 | Calls | `FadeAttributes`, `JumpTable`, `WaitFrames` |
-| Writes | `$B109` (`EndOfPlay`) |
+| Writes | `$B109` (`EndCodeLoad+1`) |
 
 ### `PlayerDied` (`$B119`)
 
@@ -4346,8 +4322,8 @@ The record's deaths +5 + 1, +8 and +9 zeroed (the side weapon and the double pla
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | run into, not called, 205 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `FuelOut`, `NextPlayer` |
-| Reads | `$7F99`-`$7FA1` (`PlayerRecord`, `Players`, `Player1`); `$7FD0`-`$7FD1` (`Player2`) |
-| Writes | `$7FA1`-`$7FA5` (`Player1`); `$7FD1`-`$7FD5` (`Player2`) |
+| Reads | `$7F99`-`$7FA1` (`PlayerRecord`, `Players`, `Player1`); `$7FD0`-`$7FD1` (`Player2Lives`, `Player2LivesLost`) |
+| Writes | `$7FA1`-`$7FA5` (`Player1LivesLost`, `Player1LevelIndex`, `Player1PodSelector`, `Player1SideWeapon` and 1 more); `$7FD1`-`$7FD5` (`Player2LivesLost`, `Player2LevelIndex`, `Player2PodSelector`, `Player2SideWeapon` and 1 more) |
 
 ### `NextPlayer` (`$B149`)
 
@@ -4360,8 +4336,8 @@ One player: the life is taken from the current record. Two: when the other recor
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 4 calls, 834 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 80 t-states own (0.00 %) |
 | Called from | `PlayerDied` |
-| Reads | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`) |
-| Writes | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2`) |
+| Reads | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2Lives`) |
+| Writes | `$7F98`-`$7FA0` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$7FD0` (`Player2Lives`) |
 
 ### `LevelDone` (`$B174`)
 
@@ -4375,7 +4351,7 @@ The record's +6 + 1, wrapping from 12 to 0, SetLevelStart. Not in c1 or c2; r1 (
 | Called from | `JumpTable` |
 | Calls | `SetLevelStart` |
 | Reads | `$7F99`-`$7FA2` (`PlayerRecord`, `Players`, `Player1`) |
-| Writes | `$7FA2` (`Player1`) |
+| Writes | `$7FA2` (`Player1LevelIndex`) |
 
 ### `AbortGame` (`$B18A`)
 
@@ -4409,9 +4385,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 237,768 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 21,595 t-states own (0.02 %) |
 | Called from | `MainLoopPlay` |
-| Calls | `PlayLoopPass`, `InterruptJump` |
-| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFC`-`$5BFD` (system); `$7F64`-`$7F6B` (`PassDepth`, `PassPhase`, `ChainStep`, `NodeFreeList` and 2 more); `$7F7C`-`$7F7D` (`EndPending`, `EndCode`); `$7F97` (`CurrentEffect`); `$81C5`-`$81C6` (`EventRequests`, `EventMask`); `$974C` (`LandingFlag`); 1 more ranges |
+| Calls | `PlayLoopPass` |
+| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop+42`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$7F64`-`$7F6B` (`PassDepth`, `PassPhase`, `ChainStep`, `NodeFreeList` and 2 more); `$7F7C`-`$7F7D` (`EndPending`, `EndCode`); `$7F97` (`CurrentEffect`); `$81C5`-`$81C6` (`EventRequests`, `EventMask`); `$974C` (`LandingFlag`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopPass` (`$B1E6`)
 
@@ -4423,7 +4399,7 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,567 calls, 58,001,436 t-states own (1.11 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,083 calls, 1,344,154 t-states own (1.28 %) |
 | Called from | `PlayInterruptExit`, `PlayLoop`, `PlayLoopAgain` (tail) |
-| Calls | `EventDispatch`, `InterruptJump` |
+| Calls | `EventDispatch` |
 
 ### `PlayLoopCheck` (`$B1E9`)
 
@@ -4435,9 +4411,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 5,380 calls, 40,902,188 t-states own (0.78 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 148 calls, 954,572 t-states own (0.91 %) |
 | Called from | `PlayInterruptExit`, `EventAny`, `EventDone` |
-| Calls | `PlayLoopTest`, `InterruptJump` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFC`-`$5BFD` (system) |
+| Calls | `PlayLoopTest` |
+| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `PlayLoopTest` (`$B1EC`)
 
@@ -4449,9 +4424,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,519 calls, 11,574,063 t-states own (0.22 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,079 calls, 749,140 t-states own (0.71 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopCheck` |
-| Calls | `SavePanel`, `PlayLoopBranch`, `PlayLoopAgain`, `MainLoopEnd`, `InterruptJump` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFC`-`$5BFD` (system); `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Calls | `SavePanel`, `PlayLoopBranch`, `PlayLoopAgain`, `MainLoopEnd` |
+| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopBranch` (`$B1ED`)
 
@@ -4462,9 +4437,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 291,458 calls, 2,041,121 t-states own (1.61 %) |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,893,497 calls, 20,276,374 t-states own (0.39 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopTest` |
-| Calls | `SavePanel`, `PlayLoopAgain`, `MainLoopEnd`, `InterruptJump` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFC`-`$5BFD` (system); `$FDFE`-`$FDFF` (`InterruptJump`) |
+| Calls | `SavePanel`, `PlayLoopAgain`, `MainLoopEnd` |
+| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopAgain` (`$B1EF`)
 
@@ -4476,9 +4451,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 2,894,587 calls, 34,742,197 t-states own (0.66 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 68,070 calls, 817,222 t-states own (0.78 %) |
 | Called from | `PlayInterruptExit`, `PlayLoopTest`, `PlayLoopBranch` |
-| Calls | `PlayLoopPass` (tail), `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BFC`-`$5BFD` (system) |
+| Calls | `PlayLoopPass` (tail) |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `MainLoop` (`$B200`)
 
@@ -4528,8 +4502,8 @@ The ship's record `$F36C`: X 0/`$14`, Y 0/8, active (bit 7 of +8), +`$25` = `$68
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 7,911 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 717 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Reads | `$7F99`-`$7FA4` (`PlayerRecord`, `Players`, `Player1`); `$7FD4` (`Player2`); `$F374` (`PlayerObject`); `$F5B0` (`PlasmaBall2`); `$F5DC` (`SideShot`); `$F608` (`SightObject`) |
-| Writes | `$80BF` (`ShipHistoryIndex`); `$B263`-`$B264` (`PlayerSetup`); `$F36F`-`$F380` (`PlayerObject`); `$F391` (`PlayerObject`); `$F5B0` (`PlasmaBall2`); `$F5DC` (`SideShot`); 1 more ranges |
+| Reads | `$7F99`-`$7FA4` (`PlayerRecord`, `Players`, `Player1`); `$7FD4` (`Player2SideWeapon`); `$F374` (`PlayerObject+8`); `$F5B0` (`PlasmaBall2+8`); `$F5DC` (`SideShot+8`); `$F608` (`SightObject+8`) |
+| Writes | `$80BF` (`ShipHistoryIndex`); `$B263`-`$B264` (`FillRestoreSP+1`); `$F36F`-`$F380` (`PlayerObject+3`, `PlayerHitMask`, `PlayerAccelX`, `PlayerAccelY`); `$F391` (`PlayerAccelY+17`); `$F5B0` (`PlasmaBall2+8`); `$F5DC` (`SideShot+8`); 1 more ranges |
 
 ### `EnemiesSetup` (`$B28B`)
 
@@ -4544,8 +4518,8 @@ The five records of `$2C` bytes at `$F398`: inactive (bit 7 of +8), +`$26` = `$E
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 689 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
 | Calls | `PodsSetup` |
-| Reads | `$F3A0` (`EnemyObjects`); `$F3CC` (`EnemyObjects`); `$F3F8` (`EnemyObjects`); `$F424` (`EnemyObjects`); `$F450` (`EnemyObjects`) |
-| Writes | `$F3A0` (`EnemyObjects`); `$F3BE`-`$F3CC` (`EnemyObjects`); `$F3EA`-`$F3F8` (`EnemyObjects`); `$F416`-`$F424` (`EnemyObjects`); `$F442`-`$F450` (`EnemyObjects`); `$F46E`-`$F46F` (`EnemyObjects`) |
+| Reads | `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
+| Writes | `$F3A0` (`EnemyObjects+8`); `$F3BE`-`$F3CC` (`EnemyObjects+38`); `$F3EA`-`$F3F8` (`EnemyObjects+82`); `$F416`-`$F424` (`EnemyObjects+126`); `$F442`-`$F450` (`EnemyObjects+170`); `$F46E`-`$F46F` (`EnemyObjects+214`) |
 
 ### `PodsSetup` (`$B2AA`)
 
@@ -4559,8 +4533,8 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 6,163 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 567 t-states own (0.00 %) |
 | Called from | `EnemiesSetup` |
-| Reads | `$F47C` (`EnemyShots`); `$F4A8` (`EnemyShots`); `$F4D4` (`EnemyShots`) |
-| Writes | `$F47B`-`$F47C` (`EnemyShots`); `$F499`-`$F4A8` (`EnemyShots`); `$F4C5`-`$F4D4` (`EnemyShots`); `$F4F1`-`$F4F6` (`EnemyShots`) |
+| Reads | `$F47C` (`EnemyShots+8`); `$F4A8` (`EnemyShots+52`); `$F4D4` (`EnemyShots+96`) |
+| Writes | `$F47B`-`$F47C` (`EnemyShots+7`); `$F499`-`$F4A8` (`EnemyShots+37`); `$F4C5`-`$F4D4` (`EnemyShots+81`); `$F4F1`-`$F4F6` (`EnemyShots+125`) |
 
 ### `ShotsSetup` (`$B2CF`)
 
@@ -4574,8 +4548,8 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11 calls, 6,176 t-states own (0.00 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 1 call, 554 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Reads | `$F500` (`LaserShots`); `$F52C` (`LaserShots`); `$F558` (`LaserShots`); `$F584` (`LaserShots`) |
-| Writes | `$80BA` (`LaserShotsFree`); `$F500`-`$F503` (`LaserShots`); `$F51D`-`$F52F` (`LaserShots`); `$F549`-`$F55B` (`LaserShots`); `$F575`-`$F587` (`LaserShots`); `$F5A1` (`LaserShots`) |
+| Reads | `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`) |
+| Writes | `$80BA` (`LaserShotsFree`); `$F500`-`$F503` (`LaserShots+8`); `$F51D`-`$F52F` (`LaserShots+37`); `$F549`-`$F55B` (`LaserShots+81`); `$F575`-`$F587` (`LaserShots+125`); `$F5A1` (`LaserShots+169`) |
 
 ## effects
 
@@ -4596,8 +4570,8 @@ GS: the installer copies ObjectSoundStub here: the two path movers (`$9694`, `$9
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 66 calls, 9,024 t-states own (0.01 %) |
 | Called from | `PathOpDriftMiddle`, `FireLaser`, `EnemyFire`, `PodStep`, `ExplosionToPod`, `StopAndSettle` |
 | Calls | `PathOpAccelerate` (tail), `l_B47E` |
-| Reads | `$7F97` (`CurrentEffect`); `$81C5` (`EventRequests`); `$F3DF`-`$F3E2` (`EnemyObjects`); `$F40B`-`$F40E` (`EnemyObjects`); `$F437`-`$F43A` (`EnemyObjects`); `$F463`-`$F466` (`EnemyObjects`) |
-| Writes | `$7F96`-`$7F97` (`EffectTick`, `CurrentEffect`); `$81C5` (`EventRequests`); `$B497`-`$B498` (`l_B47E`) |
+| Reads | `$7F97` (`CurrentEffect`); `$81C5` (`EventRequests`); `$F3DF`-`$F3E2` (`EnemyObjects+71`); `$F40B`-`$F40E` (`EnemyObjects+115`); `$F437`-`$F43A` (`EnemyObjects+159`); `$F463`-`$F466` (`EnemyObjects+203`) |
+| Writes | `$7F96`-`$7F97` (`EffectTick`, `CurrentEffect`); `$81C5` (`EventRequests`); `$B497`-`$B498` (`TuneMix+5`) |
 
 ### `EffectPlay` (`$B30C`)
 
@@ -4610,9 +4584,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 11,165 calls, 4,836,111 t-states own (0.09 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 106 calls, 49,692 t-states own (0.05 %) |
 | Called from | `EffectJob`, `EffectAfterJobs` (tail), `EffectRestore` (tail) |
-| Calls | `EffectFirstLen`, `EffectPeriod`, `EffectEnd` (tail), `InterruptJump` |
-| Reads | `$7E5A`-`$7E81` (`EffectTable`); `$7F8A`-`$7F97` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 4 more); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system); `$7F8A`-`$7F95` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 2 more) |
+| Calls | `EffectFirstLen`, `EffectPeriod`, `EffectEnd` (tail) |
+| Reads | `$7E5A`-`$7E81` (`EffectTable`); `$7F8A`-`$7F97` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 4 more); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Writes | `$7F8A`-`$7F95` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 2 more) |
 
 ### `EffectFirstLen` (`$B345`)
 
@@ -4634,9 +4608,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,841 calls, 3,971,125 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,788 calls, 39,178 t-states own (0.04 %) |
 | Called from | `PlayInterruptExit`, `EffectPlay`, `EffectFirstLen`, `EffectTickTest` (tail), `EffectTickBranch` (tail), `EffectAfterJobs` (tail), `EffectRestore` (tail) |
-| Calls | `EffectHalves`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectHalves` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectHalves` (`$B359`)
 
@@ -4647,9 +4620,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,680 calls, 6,950,604 t-states own (0.13 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,787 calls, 137,047 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectPeriod` |
-| Calls | `EffectSpeakerOn`, `EffectHalf`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectSpeakerOn`, `EffectHalf` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectSpeakerOn` (`$B35B`)
 
@@ -4659,9 +4631,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,760 calls, 6,956,627 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectHalves` |
-| Calls | `EffectHalf`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectHalf` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectHalf` (`$B35D`)
 
@@ -4672,9 +4643,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,986,257 calls, 15,058,773 t-states own (0.29 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,577 calls, 146,812 t-states own (0.14 %) |
 | Called from | `PlayInterruptExit`, `EffectHalves`, `EffectSpeakerOn`, `EffectHalfLoop` (tail) |
-| Calls | `EffectOut`, `InterruptJump` |
-| Reads | `$7F93`-`$7F94` (`PitchA`, `PitchB`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectOut` |
+| Reads | `$7F93`-`$7F94` (`PitchA`, `PitchB`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectOut` (`$B35E`)
 
@@ -4685,9 +4655,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,443 calls, 24,926,222 t-states own (0.48 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 243,380 t-states own (0.23 %) |
 | Called from | `PlayInterruptExit`, `EffectHalf` |
-| Calls | `EffectWait`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectWait` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `EffectWait` (`$B360`)
@@ -4699,9 +4668,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,284,083 calls, 165,150,782 t-states own (3.15 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,160 calls, 1,917,054 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectOut`, `EffectWait3` (tail) |
-| Calls | `EffectWait1`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectWait1` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectWait1` (`$B361`)
 
@@ -4712,9 +4680,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,273,629 calls, 165,147,894 t-states own (3.15 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,013 calls, 1,917,073 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectWait` |
-| Calls | `EffectWait2`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectWait2` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectWait2` (`$B362`)
 
@@ -4725,9 +4692,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,273,480 calls, 165,163,816 t-states own (3.15 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,014 calls, 1,917,168 t-states own (1.83 %) |
 | Called from | `PlayInterruptExit`, `EffectWait1` |
-| Calls | `EffectWait3`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectWait3` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectWait3` (`$B363`)
 
@@ -4738,9 +4704,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 41,274,317 calls, 526,847,808 t-states own (10.05 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 479,020 calls, 6,132,414 t-states own (5.85 %) |
 | Called from | `PlayInterruptExit`, `EffectWait2` |
-| Calls | `EffectWait` (tail), `EffectSwap`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectWait` (tail), `EffectSwap` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectSwap` (`$B365`)
 
@@ -4751,9 +4716,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,485 calls, 7,943,690 t-states own (0.15 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,571 calls, 78,299 t-states own (0.07 %) |
 | Called from | `PlayInterruptExit`, `EffectWait3` |
-| Calls | `EffectLow`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectLow` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectLow` (`$B366`)
 
@@ -4764,9 +4728,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,435 calls, 13,900,270 t-states own (0.27 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,571 calls, 137,028 t-states own (0.13 %) |
 | Called from | `PlayInterruptExit`, `EffectSwap` |
-| Calls | `EffectHalfNext`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectHalfNext` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectHalfNext` (`$B368`)
 
@@ -4777,9 +4740,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,470 calls, 7,942,987 t-states own (0.15 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 78,318 t-states own (0.07 %) |
 | Called from | `PlayInterruptExit`, `EffectLow` |
-| Calls | `EffectHalfLoop`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectHalfLoop` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectHalfLoop` (`$B369`)
 
@@ -4790,9 +4752,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 1,985,398 calls, 18,872,807 t-states own (0.36 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 19,572 calls, 186,010 t-states own (0.18 %) |
 | Called from | `PlayInterruptExit`, `EffectHalfNext` |
-| Calls | `EffectHalf` (tail), `EffectTickCheck`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectHalf` (tail), `EffectTickCheck` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectTickCheck` (`$B36B`)
 
@@ -4803,9 +4764,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,778 calls, 3,978,474 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,786 calls, 179,771 t-states own (0.17 %) |
 | Called from | `PlayInterruptExit`, `EffectHalfLoop` |
-| Calls | `EffectTickRead`, `EffectTickTest`, `InterruptJump` |
-| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectTickRead`, `EffectTickTest` |
+| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectTickRead` (`$B36C`)
 
@@ -4815,9 +4775,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 993,066 calls, 14,559,330 t-states own (0.28 %) |
 | Called from | `PlayInterruptExit`, `EffectTickCheck` |
-| Calls | `EffectTickTest`, `InterruptJump` |
-| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EffectTickTest` |
+| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectTickTest` (`$B36F`)
 
@@ -4828,9 +4787,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,867 calls, 3,970,931 t-states own (0.08 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 9,788 calls, 186,470 t-states own (0.18 %) |
 | Called from | `PlayInterruptExit`, `EffectTickCheck`, `EffectTickRead` |
-| Calls | `EventDispatch`, `EffectPeriod` (tail), `EffectTickBranch`, `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EventDispatch`, `EffectPeriod` (tail), `EffectTickBranch` |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectTickBranch` (`$B370`)
 
@@ -4840,9 +4798,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | --- | --- |
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 992,669 calls, 13,788,428 t-states own (0.26 %) |
 | Called from | `PlayInterruptExit`, `EffectTickTest` |
-| Calls | `EventDispatch`, `EffectPeriod` (tail), `InterruptJump` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable`) |
-| Writes | `$5BF4`-`$5BF5` (system) |
+| Calls | `EventDispatch`, `EffectPeriod` (tail) |
+| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectAfterJobs` (`$B379`)
 
@@ -4853,9 +4810,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (the 48K case's `r1` (`../zynaps/work/r1`): all 12 levels and the wrap, 75000 frames (the same code at the same addresses, without the GS hooks)) | 275 calls, 372,600 t-states own (0.01 %) |
 | Runs (the 48K case's `c2` (`../zynaps/work/c2`): level 1 from the start, 1500 frames) | 4 calls, 157,783 t-states own (0.15 %) |
 | Called from | `EventAny`, `EventDone` |
-| Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectRestore`, `EffectEnd` (tail), `InterruptJump` |
+| Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectRestore`, `EffectEnd` (tail) |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
-| Writes | `$7F8B`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
+| Writes | `$7F8B`-`$7F96` (`EffectState+1`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
 
 ### `EffectRestore` (`$B37A`)
 
@@ -4867,7 +4824,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Called from | `PlayInterruptExit`, `EffectAfterJobs` |
 | Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectEnd` (tail) |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
-| Writes | `$7F8B`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
+| Writes | `$7F8B`-`$7F96` (`EffectState+1`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
 
 ### `EffectEnd` (`$B441`)
 
@@ -4916,7 +4873,7 @@ GS: the installer copies its trampolines over the player (`$B446-$B4A8`: the att
 | --- | --- |
 | Runs (the GS game's own play: stage 2's TTD recording `r1` (Pentagon 128 + GS 512 KB, music) replayed by L1 over its frames 2951-4724, level 1 from the round start (1773 frames; zgsA's `work/zgsA/r1-play`, copied)) | 18 calls, 47,252 t-states own (0.04 %) |
 | Called from | `RequestEffect`, `l_B466` (tail) |
-| Reads | `$F3C4` (`EnemyObjects`); `$F3F0` (`EnemyObjects`); `$F41C` (`EnemyObjects`); `$F448` (`EnemyObjects`) |
+| Reads | `$F3C4` (`EnemyObjects+44`); `$F3F0` (`EnemyObjects+88`); `$F41C` (`EnemyObjects+132`); `$F448` (`EnemyObjects+176`) |
 
 ## start
 

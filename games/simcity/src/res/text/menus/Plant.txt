@@ -1,8 +1,11 @@
 # A menu description (DrawMenu $67C3): 'header N' (the first line's number), then one item a line:
 #   text "..."  (kind 0)      number "..."  (kind 8, a selectable line with a number field)
-#   action $ADDR "..."  (2)   toggle $FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
-# In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V, maximum M (the value the
-# player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits); bit 7 ends the text.
+#   action ADDR "..."  (2)   toggle FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
+# ADDR and FLAG are a label of the game (the build writes DW Label, sjasmplus resolves it: a moved label follows)
+# or a number ($6703). In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V,
+# maximum M (the value the player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits);
+# bit 7 ends the text. A label of the game inside the menu: 'label NAME' before an item, {=NAME} before a letter,
+# NAME=V on a field (the byte the code reads). The build assembles this file (build/res/text/menus/NAME.inc).
 header 8
 text "          SELECT TYPE"
 separator
@@ -10,12 +13,12 @@ text " "
 text " "
 text " "
 text " "
-action $9FC4 "  NUCLEAR POWER STATION $5000"
+action ChooseNuclear "  NUCLEAR POWER STATION $5000"
 text " "
-action $9FCA "    COAL POWER STATION $3000"
+action ChooseCoal "    COAL POWER STATION $3000"
 text " "
 text " "
 text " "
 separator
-action $9FBE "             NONE"
+action NoPlant "             NONE"
 end

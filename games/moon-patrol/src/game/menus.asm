@@ -68,7 +68,7 @@ TitlePage:
   LD (BlitX),HL
   LD HL,TitleMoon
   CALL BlitRows
-  LD HL,$50*$0100+$37     ; "Patrol": lines $37-$4F, x $48, 14 bytes a line
+  LD HL,$50*256+$37       ; "Patrol": lines $37-$4F, x $48, 14 bytes a line
   LD (BlitTop),HL
   LD HL,$0E48
   LD (BlitX),HL
@@ -234,7 +234,7 @@ ScoreAdvancePage:
   LD HL,$3FA0
   LD E,$0A
   CALL UnplotRun
-  LD HL,$DE*$0100+$A0
+  LD HL,$DE*256+$A0
   LD E,$1C
   CALL UnplotRun
   EXX

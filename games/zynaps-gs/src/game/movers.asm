@@ -60,7 +60,7 @@ RunObjectsLoop:
   CALL JumpTable
   POP BC
 RunObjectsNext:
-  LD DE,-$002C            ; the next slot down, and the speaker click
+  LD DE,-44               ; the next slot down, and the speaker click
   ADD IY,DE
   LD HL,SlotBeep          ; the beeper: $7F86 ^= $18, AND the enable mask
                           ; $7F87, OUT ($FE)
@@ -364,7 +364,7 @@ PathOpScroll:
   RET Z
   LD L,(IY+$03)
   LD H,(IY+$04)
-  LD DE,-$0040
+  LD DE,-64
   ADD HL,DE
   LD (IY+$03),L
   LD (IY+$04),H
@@ -470,7 +470,7 @@ PathOpMove:
 PathOpScrollAlways:
   LD L,(IY+$03)
   LD H,(IY+$04)
-  LD DE,-$0040
+  LD DE,-64
   ADD HL,DE
   LD (IY+$03),L
   LD (IY+$04),H

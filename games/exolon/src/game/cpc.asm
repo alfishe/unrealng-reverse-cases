@@ -14,7 +14,7 @@
 ; is shared by both).
 CpcReadKeyboard:
   DI
-  LD HL,CpcKeyMatrix-$0001
+  LD HL,CpcKeyMatrix-1
   LD BC,$F40E
   OUT (C),C
   LD B,$F6

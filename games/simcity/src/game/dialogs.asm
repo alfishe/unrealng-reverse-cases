@@ -12,7 +12,7 @@ PlantChoice:
 ; the menu: SELECT TYPE, NUCLEAR POWER STATION $5000, COAL POWER STATION $3000,
 ; NONE
 PlantMenu:
-  INCBIN "res/text/menus/Plant.bin",$0000,125
+  INCLUDE "res/text/menus/Plant.inc"
 
 ; NONE: PlantChoice 0 (not run in the recordings)
 NoPlant:
@@ -40,7 +40,7 @@ Confirm:
 
 ; ConfirmMenu
 ConfirmMenu:
-  INCBIN "res/text/menus/Confirm.bin",$0000,84
+  INCLUDE "res/text/menus/Confirm.inc"
 
 ; OR A
 ConfirmNo:
@@ -52,7 +52,7 @@ ConfirmYes:
 
 ; SYSTEM: about, start new city, use old landscape, load, save, exit
 SystemMenu:
-  INCBIN "res/text/menus/System.bin",$0000,134
+  INCLUDE "res/text/menus/System.inc"
 
 ; EXIT SIMCITY: confirmed, a new city with a new landscape
 ExitSimCity:
@@ -76,7 +76,7 @@ AboutWindow:
 
 ; AboutText
 AboutText:
-  INCBIN "res/text/menus/About.bin",$0000,297
+  INCLUDE "res/text/menus/About.inc"
 
 ; LOADING MENU
 LoadMenu:
@@ -84,7 +84,7 @@ LoadMenu:
 
 ; LoadMenuText
 LoadMenuText:
-  INCBIN "res/text/menus/Load.bin",$0000,81
+  INCLUDE "res/text/menus/Load.inc"
 
 ; SAVING MENU
 SaveMenu:
@@ -92,7 +92,7 @@ SaveMenu:
 
 ; SaveMenuText
 SaveMenuText:
-  INCBIN "res/text/menus/Save.bin",$0000,80
+  INCLUDE "res/text/menus/Save.inc"
 
 ; TYPE FILE NAME, THEN PRESS ENTER
 ;
@@ -102,7 +102,7 @@ FileNameWindow:
 
 ; FileNameText
 FileNameText:
-  INCBIN "res/text/menus/FileName.bin",$0000,63
+  INCLUDE "res/text/menus/FileName.inc"
 
 ; TAPE LOADING ERROR
 ;
@@ -112,7 +112,7 @@ LoadErrorWindow:
 
 ; LoadErrorText
 LoadErrorText:
-  INCBIN "res/text/menus/LoadError.bin",$0000,31
+  INCLUDE "res/text/menus/LoadError.inc"
 
 ; START TAPE AND PRESS SPACE: wait for SPACE
 ;
@@ -137,7 +137,7 @@ TapeWindow:
 
 ; TapeText
 TapeText:
-  INCBIN "res/text/menus/Tape.bin",$0000,31
+  INCLUDE "res/text/menus/Tape.inc"
 
 ; the options (toggles): AUTO-BULLDOZE 1, AUTO-BUDGET 0, SOUND 1, ZONE DEMOLISH
 ; WAIT 1
@@ -152,7 +152,7 @@ DemolishWait:
 
 ; OPTIONS: the four toggles, SIMULATION SPEED, EXIT MENU
 OptionsMenu:
-  INCBIN "res/text/menus/Options.bin",$0000,124
+  INCLUDE "res/text/menus/Options.inc"
 
 ; 0 fast, 1 normal, 2 slow, 3 paused
 Speed:
@@ -164,15 +164,7 @@ SpeedMenu:
 
 ; SpeedMenuText
 SpeedMenuText:
-  INCBIN "res/text/menus/Speed.bin",$0000,33
-SpeedMarkFast:
-  INCBIN "res/text/menus/Speed.bin",$0021,11
-SpeedMarkNormal:
-  INCBIN "res/text/menus/Speed.bin",$002C,13
-SpeedMarkSlow:
-  INCBIN "res/text/menus/Speed.bin",$0039,11
-SpeedMarkPaused:
-  INCBIN "res/text/menus/Speed.bin",$0044,26
+  INCLUDE "res/text/menus/Speed.inc"
 
 ; Speed = A; the asterisk moved to (HL)
 SetSpeedItem:
@@ -207,7 +199,7 @@ DisastersOff:
 
 ; DISASTERS: fire, flood, earthquake, air crash, tornado, nuclear meltdown
 DisasterMenu:
-  INCBIN "res/text/menus/Disasters.bin",$0000,124
+  INCLUDE "res/text/menus/Disasters.inc"
 
 ; DisasterDue = the item + 1
 ;
@@ -220,7 +212,7 @@ PickDisaster:
 
 ; WINDOWS: maps, budget, evaluation
 WindowsMenu:
-  INCBIN "res/text/menus/Windows.bin",$0000,79
+  INCLUDE "res/text/menus/Windows.inc"
 
 ; set by MAPS: the UI task opens the maps window
 MapsDue:
@@ -244,7 +236,7 @@ LevelMenu:
 
 ; LevelMenuText
 LevelMenuText:
-  INCBIN "res/text/menus/Level.bin",$0000,141
+  INCLUDE "res/text/menus/Level.inc"
 
 ; Level = the item
 ;
@@ -278,9 +270,7 @@ UseOldLandscape:
 
 ; OldLandscapeMenu
 OldLandscapeMenu:
-  INCBIN "res/text/menus/OldLandscape.bin",$0000,54
-GeneShown:
-  INCBIN "res/text/menus/OldLandscape.bin",$0036,87
+  INCLUDE "res/text/menus/OldLandscape.inc"
 
 ; INPUT NEW GENE: 5 digits at row 11, column 25
 InputGene:
@@ -308,7 +298,7 @@ InputGeneShow:
 
 ; CREATING LANDSCAPE, PLEASE WAIT
 CreatingText:
-  INCBIN "res/text/menus/Creating.bin",$0000,52
+  INCLUDE "res/text/menus/Creating.inc"
 
 ; the line editor: row, column, the buffer, the cursor, the digits flag, the
 ; length, a buffer of 12, the key delay
@@ -522,9 +512,9 @@ NumberDigits:
   LD A,(InputLength)
   LD C,A
   LD B,$05
-  LD DE,-$2710
+  LD DE,-10000
   CALL NumberDigit
-  LD DE,-$03E8
+  LD DE,-1000
   CALL NumberDigit
   LD DE,$FF9C
   CALL NumberDigit

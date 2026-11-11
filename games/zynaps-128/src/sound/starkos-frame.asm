@@ -47,7 +47,7 @@ ChanAInstrPointer:
   LD HL,$0000             ; ChanAInstrPointer+1: the instrument's line
   LD IY,AYReg0+$0001      ; IY = AYReg0+1: channel A's period low byte (+$1B
                           ; the high byte, +$36 the volume)
-  LD A,(ChanAInstrCounter+1); A = the counter: InstrumentLine retriggers
+  LD A,(ChanAInstrCounter+1)     ; A = the counter: InstrumentLine retriggers
                                  ; the envelope at 0 only
   CALL InstrumentLine
   EX DE,HL                ; DE = the line's end

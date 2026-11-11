@@ -20,7 +20,7 @@
 ; LAST_K ENTER, CAPS LOCK off), JP DiskModule.
 GameLoad:
   LD (LoadReturn+$0001),SP ; keep SP in LoadReturn's LD SP
-  LD SP,GlueStack+$0049   ; GlueStack
+  LD SP,GlueStack+73      ; GlueStack
   LD IX,DiskLoad          ; the module's load entry
   LD A,$14                ; bank 4: the disk module
   EI

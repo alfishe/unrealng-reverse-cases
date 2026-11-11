@@ -123,7 +123,7 @@ SetGameBank:
 ; ($E73B) unpacks the picture onto the screen; then bank 0 again.
 MenuPicture:
   LD (MenuPictureSP+$0001),SP ; keep SP in the LD SP below
-  LD SP,GlueStack+$0049   ; GlueStack: the bank-3 call needs a stack below
+  LD SP,GlueStack+73      ; GlueStack: the bank-3 call needs a stack below
                           ; $C000
   LD A,$13                ; bank 3: Dead End and the picture
   CALL SetGameBank

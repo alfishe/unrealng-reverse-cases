@@ -120,7 +120,7 @@ BuildColumnLoop:
 ; BuildColumnBack
 BuildColumnBack:
   POP BC                  ; back from BuildCell: the cell above
-  LD DE,-$0020
+  LD DE,-32
   ADD IX,DE
   LD A,$80
   ADD A,L

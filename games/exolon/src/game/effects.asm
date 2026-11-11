@@ -723,7 +723,7 @@ AnimatePuffsLoop:
   DEC (HL)
   LD L,A                  ; HL = $9864 + t
   LD H,$00
-  LD BC,PuffFrames-$0001
+  LD BC,PuffFrames-1
   ADD HL,BC
   INC HL
   LD A,(HL)

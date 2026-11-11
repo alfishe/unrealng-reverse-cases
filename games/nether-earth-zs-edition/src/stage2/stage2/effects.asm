@@ -13,7 +13,7 @@
 ; "You wanted new levels? Take its!" that moves each call. Called twice a
 ; scroll (r99 frames 747-1310, 368 calls). A, B, HL changed.
 CycleBottomRow:
-  LD HL,Attrs+$02E0
+  LD HL,Attrs+736
   LD B,$20
   LD A,(HL)
 BottomRowCell:
@@ -35,7 +35,7 @@ BottomRowInk:
 ; changed; BC kept.
 CycleLogoColours:
   PUSH BC
-  LD HL,Attrs+$0031
+  LD HL,Attrs+49
   LD A,(HL)
   LD B,$0F
 LogoRow:
@@ -86,7 +86,7 @@ PrintLineChar:
 ; printed through the ROM (the bytes at $7587 are not in the ROM's font layout,
 ; see Font64). Known only from the code.
 PrintLineFont:
-  LD HL,Font64-$0100
+  LD HL,Font64-256
 ; This entry point is used by the routine at PrintLineRom.
 PrintLineSetChars:
   LD ($5C36),HL
@@ -109,7 +109,7 @@ PrintLineRom:
 RollInPicture:
   LD (RollInSource),HL
   LD A,$BF
-  LD BC,$00C0*$0100
+  LD BC,192*256
 RollInLine:
   PUSH BC
   PUSH AF
@@ -164,7 +164,7 @@ RollInSource:
 ; 191 (the opening runs down the screen), then lines 64-191 128 times more. Ran
 ; once after SPACE, r99 frames 1312-1953. A, BC, DE, HL changed.
 PushOutScreen:
-  LD HL,Screen+$000F
+  LD HL,Screen+15
   LD B,$01
 PushOutStep:
   PUSH HL
@@ -176,7 +176,7 @@ PushOutStep:
   LD A,B
   CP $C0
   JR NZ,PushOutStep
-  LD HL,Screen+$080F
+  LD HL,Screen+2063
   LD B,$80
 PushOutEnd:
   PUSH BC

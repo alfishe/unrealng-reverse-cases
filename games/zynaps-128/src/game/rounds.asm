@@ -243,7 +243,7 @@ SetLevelStart:
   LD B,(HL)
   INC B
   LD DE,$0008
-  LD HL,LevelTable-$0008  ; $6B25 + 8 * (order + 1): the entry of that level
+  LD HL,LevelTable-8      ; $6B25 + 8 * (order + 1): the entry of that level
 LevelEntryFind:
   ADD HL,DE
   DJNZ LevelEntryFind

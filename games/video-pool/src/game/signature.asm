@@ -177,7 +177,7 @@ SigBandExitAbove:
   LD (PenBand),A
   CALL PenDraw
   PUSH BC
-  LD BC,$012C
+  LD BC,300
 SigBandPause:
   DEC BC
   LD A,B
@@ -236,7 +236,7 @@ PenStepMove:
 ; Called from SigBandSlow $BDF4 only; no build ran it.
 PenDelay:
   PUSH BC
-  LD BC,$0384
+  LD BC,900
 PenDelayLoop:
   DEC BC
   LD A,B

@@ -181,7 +181,7 @@ LaunchWaveTemplate:
   ADD HL,DE
   LD A,(HL)
   LD (WaveTemplate+$0023),A
-  LD DE,-$0003            ; DE = -3: the descriptor's +$0C, the row mask
+  LD DE,-3                ; DE = -3: the descriptor's +$0C, the row mask
   ADD HL,DE
   LD A,(HL)
   LD (WaveTemplate+$000B),A

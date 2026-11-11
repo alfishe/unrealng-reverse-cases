@@ -784,7 +784,7 @@ DrawViewBackground:
 ; ShowRobotDesign and $CB52.
 ClearViewBuffer:
   LD (SavedSP),SP           ; keep SP
-  LD SP,ViewBuffer+$0C80  ; the end of the buffer
+  LD SP,ViewBuffer+3200   ; the end of the buffer
   LD B,$C6                ; 198 x 8 words
   LD HL,$0000             ; the zeros to push
 ClearPushLoop:

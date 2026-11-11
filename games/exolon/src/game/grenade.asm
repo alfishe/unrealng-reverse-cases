@@ -116,7 +116,7 @@ MoveGrenade:
   RET Z
   LD C,A
   LD B,$00
-  LD HL,GrenadeArc-$0001
+  LD HL,GrenadeArc-1
   ADD HL,BC
   DEC A
   JR Z,GrenadeErase

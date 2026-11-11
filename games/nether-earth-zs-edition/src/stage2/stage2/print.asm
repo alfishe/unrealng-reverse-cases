@@ -120,7 +120,7 @@ PrintArgumentFont:
 ; HL = PrintFont + 2, back into PrintArgument's store: the first byte (2 left)
 ; goes to PrintFont, the second to PrintFont+1. Known only from the code.
 PrintFontArgument:
-  LD HL,PrintFont+$0002
+  LD HL,PrintFont+2
   JR PrintArgumentStore
 
 ; One argument byte less to come

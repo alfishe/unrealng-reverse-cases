@@ -17,6 +17,13 @@ Both layouts keep the picture within --width pixels (1050, the figure limit, rea
 default): the screen at 2 x goes beside the grid when both fit, else under it. --layout wide always puts it beside:
 at 2 x when that fits, else at 1 x (with --screen at --cell 2 the screen is 256 x 192 beside a 512-pixel grid).
 --width 0 takes the limit away (wide: the older 1102-pixel picture).
+
+--cell is the pixels a byte (2): at 2 a byte is 2 px, too small to read at 900 px. For an address range of up to 64
+pages (16 K) take --cell 3: the grid is 768 px, the compact picture 830 px.
+
+A second animation of a routine another document already shows gets a file of its own, NAME-what.gif
+(SimTask-growth.gif beside SimTask.gif): kit/refdocs.py links both from doc 12. Writing over an existing GIF prints a
+note, so that one writer's animation does not silently replace another's.
 """
 import argparse
 import os
@@ -108,7 +115,9 @@ def main():
     p.add_argument('--label', default='')
     p.add_argument('--delay', type=int, default=80, help='ms per picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
-    p.add_argument('--cell', type=int, default=2)
+    p.add_argument('--cell', type=int, default=2,
+                   help='pixels a byte (2: a byte is hard to read at 900 px); for a range of up to 64 pages (16 K) '
+                        'take 3: with the compact layout the picture is 830 px wide')
     p.add_argument('--layout', choices=('compact', 'wide'), default='compact',
                    help='compact: the screen under the grid when beside it the picture is wider than --width; '
                         'wide: always beside (the older picture)')
@@ -205,6 +214,8 @@ def main():
             break
         now = min(last, now + args.step)
     durations = [args.delay] * (len(pictures) - 1) + [args.hold]
+    if os.path.exists(args.out):
+        print(f'note: {args.out} exists and is replaced (a second animation of one routine: NAME-what.gif)')
     pictures[0].save(args.out, save_all=True, append_images=pictures[1:], duration=durations, loop=0,
                      optimize=True)
     print(f'{args.out}: {len(pictures)} pictures')

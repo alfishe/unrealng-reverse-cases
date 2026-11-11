@@ -260,7 +260,7 @@ LiftPhrase:
   AND $07
   INC A
   LD B,A
-  LD HL,LiftPhrases-$0001
+  LD HL,LiftPhrases-1
 LiftPhraseFind:
   INC HL
   DJNZ LiftPhraseFind

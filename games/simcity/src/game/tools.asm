@@ -1048,7 +1048,7 @@ ConfirmHold:
   LD A,(DemolishWait)
   AND A
   RET Z
-  LD DE,$9C40
+  LD DE,40000
 ConfirmHoldLoop:
   LD A,(KeyRowSpace)
   AND $01

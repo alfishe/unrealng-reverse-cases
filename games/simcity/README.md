@@ -1,6 +1,6 @@
 # SimCity (Infogrames, 1990)
 
-State: docs written, in review (2026-11-10). The tape's seven data blocks rebuilt byte for byte from the annotated
+State: complete 2026-11-10. The tape's seven data blocks rebuilt byte for byte from the annotated
 source (29 modules) and the 54 editable resources in `src/res`, protection included; docs 01-12 (12 documents, 123
 figures, 29 animations, 5 WAVs, 80 mermaid diagrams), counted with
 `ls docs/[0-9][0-9]-*.md | wc -l; for e in png gif wav; do find docs -name "*.$e" | wc -l; done; grep -h '^```mermaid' docs/*.md | wc -l`.

@@ -246,7 +246,7 @@ SetLevelStart:
                           ; LEVEL writes LD B,n at $B073: every SetLevelStart
                           ; (the game's start and every level done) gives level
                           ; n
-  LD HL,LevelTable-$0008  ; $6B25 + 8 * (order + 1): the entry of that level
+  LD HL,LevelTable-8      ; $6B25 + 8 * (order + 1): the entry of that level
 LevelEntryFind:
   ADD HL,DE
   DJNZ LevelEntryFind

@@ -417,7 +417,7 @@ DrawHenSprite:
   SLA C
   SLA C
   RL B
-  LD HL,HenSprites-$0002
+  LD HL,HenSprites-2
   ADD HL,BC
   EX DE,HL
   LD C,$02

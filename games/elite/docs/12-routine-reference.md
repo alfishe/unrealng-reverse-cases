@@ -3,7 +3,10 @@
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
 the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/d1` (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)), `work/f1` (launch, flight, hyperspace to Diso, the laser), `work/w1` (the witch-space trick: a jump into witch space and the Thargoids). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
-of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
+of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
+and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
+the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
+recordings ran gives their calls.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -104,9 +107,8 @@ L is the attribute; with CloakOn `$D041` zero only its INK bits stay (AND 7). Th
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1 call, 38,470 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3 calls, 105,130 t-states own (0.02 %) |
 | Called from | `FillAttrsVector` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$70C5` (`FillAttrsTinted`); `$70DE`-`$70DF` (`FillSP`); `$D041` (`CloakOn`); `$D081` (`NovaMission`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70DE`-`$70DF` (`FillSP`); `$FFF7`-`$FFFC` (`work space $FFF7+`) |
+| Reads | `$70C5` (`FillAttrsNow+1`); `$70DE`-`$70DF` (`FillSP`); `$D041` (`CloakOn`); `$D081` (`NovaMission`) |
+| Writes | `$70DE`-`$70DF` (`FillSP`) |
 
 ### `FillAttrsTinted` (`$70BA`)
 
@@ -196,9 +198,8 @@ Every pass of FlightLoop (197283 runs over f1, w1, d1). The high bytes of RollCo
 | Runs (launch, flight, hyperspace to Diso, the laser) | 38,713 calls, 10,714,807 t-states own (3.16 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 38,410 calls, 10,630,512 t-states own (2.27 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`); `$FF09`-`$FF0D` (`RollControl`, `PitchControl`, `SpeedControl`) |
-| Writes | `$70E4`-`$7100` (`RollRate`, `PitchRate`, `SpeedRate`, `BarDrawn`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Reads | `$FF09`-`$FF0D` (`RollControl+1`, `PitchControl`, `SpeedControl`) |
+| Writes | `$70E4`-`$7100` (`RollRate`, `PitchRate`, `SpeedRate`, `BarDrawn`) |
 
 ### `DockKeys` (`$717B`)
 
@@ -249,9 +250,9 @@ Docked `$9C9A` is set by the collision code when the ship enters the station (`$
 | Runs (launch, flight, hyperspace to Diso, the laser) | 38,069 calls, 3,492,462 t-states own (1.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 38,069 calls, 3,492,462 t-states own (0.75 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `CallScreen`, `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$D03F` (`TunnelOn`); `$FC09`-`$FC0C` (`KeySteer`, `KeyViews`, `KeyCombat`, `KeyChart`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FC09`-`$FC0C` (`KeySteer`, `KeyViews`, `KeyCombat`, `KeyChart`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `CallScreen` |
+| Reads | `$70E3` (`ViewIndex`); `$D03F` (`TunnelOn`); `$FC09`-`$FC0C` (`KeySteer`, `KeyViews`, `KeyCombat`, `KeyChart`) |
+| Writes | `$FC09`-`$FC0C` (`KeySteer`, `KeyViews`, `KeyCombat`, `KeyChart`) |
 
 ### `CloakKey` (`$7222`)
 
@@ -265,9 +266,8 @@ The device is MissionFlags bit 6 (AddCargoSpecial, the mission ship's canister).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 12,647,099 t-states own (3.73 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 5,736,193 t-states own (1.23 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `IM2Entry` |
-| Reads | `$7221` (`CloakKeyCount`); `$7232` (`CloakKey`); `$FC08` (`KeyScreens`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7221` (`CloakKeyCount`); `$FC08` (`KeyScreens`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Reads | `$7221` (`CloakKeyCount`); `$7232` (`CloakKey+16`); `$FC08` (`KeyScreens`) |
+| Writes | `$7221` (`CloakKeyCount`); `$FC08` (`KeyScreens`) |
 
 ### `NovaTint` (`$725C`)
 
@@ -337,9 +337,9 @@ KeyViews `$FC0A` bit 7 is the pause key (the keyboard scan sets it). The game wa
 | Runs (launch, flight, hyperspace to Diso, the laser) | 38,713 calls, 1,356,793 t-states own (0.40 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 38,410 calls, 8,163,292 t-states own (1.75 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `OptionBit6`, `ErrorBeep`, `IM2Entry` |
-| Reads | `$72AD`-`$72B4` (`PauseMenu`); `$FC0A`-`$FC0D` (`KeyViews`, `KeyCombat`, `KeyChart`, `KeyCode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FC08`-`$FC0C` (`KeyScreens`, `KeySteer`, `KeyViews`, `KeyCombat` and 1 more); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `OptionBit6`, `ErrorBeep` |
+| Reads | `$72AD`-`$72B4` (`PauseRelease+1`, `PauseKey`); `$FC0A`-`$FC0D` (`KeyViews`, `KeyCombat`, `KeyChart`, `KeyCode`) |
+| Writes | `$FC08`-`$FC0C` (`KeyScreens`, `KeySteer`, `KeyViews`, `KeyCombat` and 1 more) |
 
 ### `ClearKeys` (`$72F1`)
 
@@ -424,9 +424,7 @@ KeyViews `$FC0A` bit 7 is the pause key (the keyboard scan sets it). The game wa
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 435,370 t-states own (0.09 %) |
 | Called from | `PauseMenu` |
-| Calls | `IM2Entry` |
-| Reads | `$734A` (`ErrorBeep`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF7`-`$FFF8` (`work space $FFF7+`) |
+| Reads | `$734A` (`ErrorBeepFrame+2`) |
 | Ports out | `$00FE`, `$30FE` |
 
 ### `Title` (`$7366`)
@@ -448,9 +446,9 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | run into, not called, 28,636,084 t-states own (15.12 %) |
 | Runs (launch, flight, hyperspace to Diso, the laser) | run into, not called, 10,183,513 t-states own (3.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | run into, not called, 450 t-states own (0.00 %) |
-| Calls | `CopyRates`, `DockKeys`, `ChartCursorKeys`, `CloakKey`, `PauseMenu`, `TitleNext` (tail), `TitleTextLoad`, `TitleTextPress`, `WhiteAttrs`, `DrawSunPlanet`, `MoveSunPlanet`, `StationRunIn`, `Stardust`, `InSystemJump`, `CopyBackBuffer`, `DashboardRestore`, `ClearView`, `SelectView`, `DashboardSave`, `DashDistances`, `DrawBars`, `HitFlash`, `TunnelStart`, `ResetControls`, `DrawScanner`, `DashboardTick`, `UpdateShipsVector`, `ShipActionVector`, `DrawTitleShipVector`, `ScreenStatus`, `NewGameVector`, `ViewTextsVector`, `JumpKeysVector`, `IM2Entry` |
-| Reads | `$6065` (`ShipSlots`); `$70E3` (`ViewIndex`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711F`-`$7124` (`TooClose`, `SunLarge`, `ConditionLightVector`, `HoldRates`); `$73D6` (`TitleNext`); `$7470` (`TitleShipCount`); 2 more ranges |
-| Writes | `$6065` (`ShipSlots`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711E` (`SunNear`); `$7470` (`TitleShipCount`); `$7583` (`LastSunRadius`); `$D041` (`CloakOn`); 3 more ranges |
+| Calls | `CopyRates`, `DockKeys`, `ChartCursorKeys`, `CloakKey`, `PauseMenu`, `TitleNext` (tail), `TitleTextLoad`, `TitleTextPress`, `WhiteAttrs`, `DrawSunPlanet`, `MoveSunPlanet`, `StationRunIn`, `Stardust`, `InSystemJump`, `CopyBackBuffer`, `DashboardRestore`, `ClearView`, `SelectView`, `DashboardSave`, `DashDistances`, `DrawBars`, `HitFlash`, `TunnelStart`, `ResetControls`, `DrawScanner`, `DashboardTick`, `UpdateShipsVector`, `ShipActionVector`, `DrawTitleShipVector`, `ScreenStatus`, `NewGameVector`, `ViewTextsVector`, `JumpKeysVector` |
+| Reads | `$6065` (`ShipSlots+29`); `$70E3` (`ViewIndex`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711F`-`$7124` (`TooClose`, `SunLarge`, `ConditionLightVector`, `HoldRates`); `$73D6` (`TitleLoop+19`); `$7470` (`TitleShipCount`); 1 more ranges |
+| Writes | `$6065` (`ShipSlots+29`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711E` (`SunNear`); `$7470` (`TitleShipCount`); `$7583` (`LastSunRadius`); `$D041` (`CloakOn`); 2 more ranges |
 | Ports in | `$FF1F` |
 
 ### `TitleNext` (`$739E`)
@@ -461,9 +459,9 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 23,840,742 t-states own (5.10 %) |
 | Called from | `TitleLoad` (tail) |
-| Calls | `FillAttrsVector`, `CopyRates`, `DockKeys`, `ChartCursorKeys`, `CloakKey`, `PauseMenu`, `TitleTextPress`, `WhiteAttrs`, `DrawSunPlanet`, `MoveSunPlanet`, `StationRunIn`, `Stardust`, `InSystemJump`, `CopyBackBuffer`, `DashboardRestore`, `ClearView`, `SelectView`, `DashboardSave`, `DashDistances`, `DrawBars`, `HitFlash`, `TunnelStart`, `ResetControls`, `ClearShips`, `SoundLaunch`, `SoundGameOver`, `DrawScanner`, `ScannerRestore`, `DashboardTick`, `UpdateShipsVector`, `ShipActionVector`, `ResetShipsVector`, `DrawTitleShipVector`, `ScreenStatus`, `NewGameVector`, `PrintOtherVector`, `ViewTextsVector`, `JumpKeysVector`, `IM2Entry` |
-| Reads | `$6065` (`ShipSlots`); `$70E3` (`ViewIndex`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711F`-`$7124` (`TooClose`, `SunLarge`, `ConditionLightVector`, `HoldRates`); `$73D6` (`TitleNext`); `$7470` (`TitleShipCount`); 5 more ranges |
-| Writes | `$6065` (`ShipSlots`); `$70E6` (`SpeedRate`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711E`-`$7124` (`SunNear`, `TooClose`, `SunLarge`, `ConditionLightVector` and 1 more); `$7470` (`TitleShipCount`); `$7583` (`LastSunRadius`); 5 more ranges |
+| Calls | `FillAttrsVector`, `CopyRates`, `DockKeys`, `ChartCursorKeys`, `CloakKey`, `PauseMenu`, `TitleTextPress`, `WhiteAttrs`, `DrawSunPlanet`, `MoveSunPlanet`, `StationRunIn`, `Stardust`, `InSystemJump`, `CopyBackBuffer`, `DashboardRestore`, `ClearView`, `SelectView`, `DashboardSave`, `DashDistances`, `DrawBars`, `HitFlash`, `TunnelStart`, `ResetControls`, `ClearShips`, `SoundLaunch`, `SoundGameOver`, `DrawScanner`, `ScannerRestore`, `DashboardTick`, `UpdateShipsVector`, `ShipActionVector`, `ResetShipsVector`, `DrawTitleShipVector`, `ScreenStatus`, `NewGameVector`, `PrintOtherVector`, `ViewTextsVector`, `JumpKeysVector` |
+| Reads | `$6065` (`ShipSlots+29`); `$70E3` (`ViewIndex`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711F`-`$7124` (`TooClose`, `SunLarge`, `ConditionLightVector`, `HoldRates`); `$73D6` (`TitleLoop+19`); `$7470` (`TitleShipCount`); 4 more ranges |
+| Writes | `$6065` (`ShipSlots+29`); `$70E6` (`SpeedRate`); `$7103`-`$7104` (`WitchSpace`, `Condition`); `$711E`-`$7124` (`SunNear`, `TooClose`, `SunLarge`, `ConditionLightVector` and 1 more); `$7470` (`TitleShipCount`); `$7583` (`LastSunRadius`); 4 more ranges |
 | Ports in | `$FF1F` |
 
 ### `TitleTextLoad` (`$7426`)
@@ -501,8 +499,8 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 287 calls, 31,852 t-states own (0.01 %) |
 | Called from | `TitleTextLoad` (tail), `TitleTextPress` |
 | Calls | `PlainText` (tail), `PrintOtherVector` |
-| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotChar`) |
-| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D50A` (`PlotChar`) |
+| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotCharGlyph+25`) |
+| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D50A` (`PlotCharGlyph+25`) |
 
 ### `TitleElite` (`$7447`)
 
@@ -515,8 +513,8 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 287 calls, 36,641 t-states own (0.01 %) |
 | Called from | `TitleTextLoad`, `TitleTextPress` |
 | Calls | `PrintCodeVector` |
-| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotChar`) |
-| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D50A` (`PlotChar`) |
+| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotCharGlyph+25`) |
+| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D50A` (`PlotCharGlyph+25`) |
 
 ### `PlainText` (`$7459`)
 
@@ -528,8 +526,8 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | Runs (launch, flight, hyperspace to Diso, the laser) | 53 calls, 6,161 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 287 calls, 32,804 t-states own (0.01 %) |
 | Called from | `TitleTextPrint` (tail) |
-| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotChar`) |
-| Writes | `$D50A` (`PlotChar`) |
+| Reads | `$D0D5`-`$D0D6` (`PrintPointer`); `$D50A` (`PlotCharGlyph+25`) |
+| Writes | `$D50A` (`PlotCharGlyph+25`) |
 
 ### `WhiteAttrs` (`$7461`)
 
@@ -553,9 +551,7 @@ SP is kept in TitleSP `$7578` for the game overs (PirateStation, ArrivalScreens)
 | Runs (launch, flight, hyperspace to Diso, the laser) | 184 calls, 1,527,052 t-states own (0.45 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 186 calls, 1,541,263 t-states own (0.33 %) |
 | Called from | `WhiteAttrs` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5800`-`$59FF` (screen); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Writes | `$5800`-`$59FF` (screen) |
 
 ## flightloop
 
@@ -585,9 +581,9 @@ Each position is copied to CircleVector and projected (ProjectCircle); the sun i
 | Runs (launch, flight, hyperspace to Diso, the laser) | 655 calls, 444,979 t-states own (0.13 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 137 calls, 92,475 t-states own (0.02 %) |
 | Called from | `TitleLoad`, `TitleNext`, `SceneLaunch` |
-| Calls | `SunGrowth`, `ProjectCircle`, `DrawCircle` (tail), `IM2Entry` |
-| Reads | `$7107`-`$7118` (`SunPosition`, `PlanetPosition`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7120` (`SunLarge`); `$757A`-`$7582` (`CircleVector`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `SunGrowth`, `ProjectCircle`, `DrawCircle` (tail) |
+| Reads | `$7107`-`$7118` (`SunPosition`, `PlanetPosition`) |
+| Writes | `$7120` (`SunLarge`); `$757A`-`$7582` (`CircleVector`) |
 
 ### `SunGrowth` (`$75C0`)
 
@@ -615,9 +611,9 @@ The view picks the axes: front x/z and y/z, rear the same with z's sign flipped,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,310 calls, 748,598 t-states own (0.22 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 274 calls, 174,650 t-states own (0.04 %) |
 | Called from | `DrawSunPlanet` |
-| Calls | `ProjectCircleStore` (tail), `Divide24`, `ProjectCircleNone` (tail), `DivideFractionE`, `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$757A`-`$7582` (`CircleVector`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7582` (`CircleVector`); `$861A`-`$861C` (`CircleY`, `CircleX`, `CircleQuadrant`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `ProjectCircleStore` (tail), `Divide24`, `ProjectCircleNone` (tail), `DivideFractionE` |
+| Reads | `$70E3` (`ViewIndex`); `$757A`-`$7582` (`CircleVector`) |
+| Writes | `$7582` (`CircleVector+8`); `$861A`-`$861C` (`CircleY`, `CircleX`, `CircleQuadrant`) |
 
 ### `ProjectCircleStore` (`$7793`)
 
@@ -643,9 +639,7 @@ Shift and subtract. The alternate C counts the two calls (one for x, one for y):
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,310 calls, 1,030,694 t-states own (0.30 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 274 calls, 277,069 t-states own (0.06 %) |
 | Called from | `ProjectCircle` |
-| Calls | `DivideFractionE`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF8` (`work space $FFF1+`) |
+| Calls | `DivideFractionE` |
 
 ### `ProjectCircleNone` (`$782A`)
 
@@ -657,7 +651,6 @@ Shift and subtract. The alternate C counts the two calls (one for x, one for y):
 | Runs (launch, flight, hyperspace to Diso, the laser) | 655 calls, 9,936 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 137 calls, 2,069 t-states own (0.00 %) |
 | Called from | `ProjectCircle` (tail) |
-| Calls | `IM2Entry` |
 
 ### `DivideFraction` (`$783B`)
 
@@ -677,9 +670,6 @@ Shift and subtract. The alternate C counts the two calls (one for x, one for y):
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,965 calls, 1,081,286 t-states own (0.32 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 411 calls, 220,648 t-states own (0.05 %) |
 | Called from | `ProjectCircle`, `Divide24` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF7`-`$FFF8` (`work space $FFF7+`) |
 
 ### `MoveSunPlanet` (`$7853`)
 
@@ -691,9 +681,7 @@ Shift and subtract. The alternate C counts the two calls (one for x, one for y):
 | Runs (launch, flight, hyperspace to Diso, the laser) | 655 calls, 44,940 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 137 calls, 8,959 t-states own (0.00 %) |
 | Called from | `TitleLoad`, `TitleNext`, `SceneLaunch` |
-| Calls | `MovePositionVector` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `MovePositionVector` (tail) |
 
 ### `StationRunIn` (`$7861`)
 
@@ -707,9 +695,8 @@ StationLaunch `$711D` set: slot 0 is moved (MoveShipVector `$9C83`) each frame u
 | Runs (launch, flight, hyperspace to Diso, the laser) | 644 calls, 88,054 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 126 calls, 10,330 t-states own (0.00 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `MovePositionVector`, `IM2Entry` |
-| Reads | `$604A`-`$6050` (`ShipSlots`); `$606A` (`ShipSlots`); `$711D` (`StationLaunch`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `MovePositionVector` |
+| Reads | `$604A`-`$6050` (`ShipSlots+2`); `$606A` (`ShipSlots+34`); `$711D` (`StationLaunch`) |
 
 ## stardust
 
@@ -725,9 +712,9 @@ StationLaunch `$711D` set: slot 0 is moved (MoveShipVector `$9C83`) each frame u
 | Runs (launch, flight, hyperspace to Diso, the laser) | 691 calls, 512,648 t-states own (0.15 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 418 calls, 326,885 t-states own (0.07 %) |
 | Called from | `TitleLoad`, `TitleNext`, `SceneLaunch` |
-| Calls | `StardustFront`, `IM2Entry` |
-| Reads | `$70E3`-`$70E6` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate`); `$7103` (`WitchSpace`); `$7E8D`-`$7E91` (`StarDots`); `$7EDD` (`StarWarp`); `$7F6F`-`$7F7B` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 8 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `StardustFront` |
+| Reads | `$70E3`-`$70E6` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate`); `$7103` (`WitchSpace`); `$7E8D`-`$7E91` (`StarDots`); `$7EDD` (`StarWarp`); `$7F6F`-`$7F7B` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 8 more) |
+| Writes | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more) |
 
 ### `StardustPass` (`$78B1`)
 
@@ -751,9 +738,9 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 11,051 calls, 11,939,676 t-states own (3.52 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,748 calls, 4,039,352 t-states own (0.86 %) |
 | Called from | `Stardust`, `StardustNext` (tail) |
-| Calls | `StarRollScale`, `StarRollPitch`, `NegateX`, `NegateY`, `MulBits`, `DivideShifted`, `DivideFrac8`, `StarRespawn` (tail), `IM2Entry` |
-| Reads | `$7F6F`-`$7F7F` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 11 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7F76`-`$7F7A` (`StarXFrac`, `StarX`, `StarYFrac`, `StarY` and 1 more); `$FFF3`-`$FFFC` (`work space $FFF3+`) |
+| Calls | `StarRollScale`, `StarRollPitch`, `NegateX`, `NegateY`, `MulBits`, `DivideShifted`, `DivideFrac8`, `StarRespawn` (tail) |
+| Reads | `$7F6F`-`$7F7F` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 11 more) |
+| Writes | `$7F76`-`$7F7A` (`StarXFrac`, `StarX`, `StarYFrac`, `StarY` and 1 more) |
 
 ### `StarRollScale` (`$7AA5`)
 
@@ -776,9 +763,9 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 10,509 calls, 5,820,997 t-states own (1.72 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,632 calls, 125,113 t-states own (0.03 %) |
 | Called from | `StardustFront` |
-| Calls | `StarPlot` (tail), `StardustNext`, `NegateX`, `MulBits`, `DivideFrac8`, `StarAddress`, `StarRespawn` (tail), `IM2Entry` |
-| Reads | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7E8D`-`$7EDC` (`StarDots`); `$7F71`-`$7FB1` (`StarRollWork`, `StarFlags`, `StarPointer`, `StarSpeed` and 12 more); `$FFF5`-`$FFFC` (`work space $FFF5+`) |
+| Calls | `StarPlot` (tail), `StardustNext`, `NegateX`, `MulBits`, `DivideFrac8`, `StarAddress`, `StarRespawn` (tail) |
+| Reads | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more) |
+| Writes | `$7E8D`-`$7EDC` (`StarDots`); `$7F71`-`$7FB1` (`StarRollWork`, `StarFlags`, `StarPointer`, `StarSpeed` and 12 more) |
 
 ### `StarPlot` (`$7B5D`)
 
@@ -789,9 +776,9 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 2,179 calls, 1,093,382 t-states own (0.58 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,632 calls, 1,791,187 t-states own (0.38 %) |
 | Called from | `StarRollPitch` (tail) |
-| Calls | `StardustNext`, `StarAddress`, `StarRespawn` (tail), `IM2Entry` |
-| Reads | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7E8D`-`$7EDC` (`StarDots`); `$7F73`-`$7FB1` (`StarPointer`, `StarSpeed`, `StarXFrac`, `StarX` and 10 more); `$FFF5`-`$FFFC` (`work space $FFF5+`) |
+| Calls | `StardustNext`, `StarAddress`, `StarRespawn` (tail) |
+| Reads | `$7F6F`-`$7F80` (`StarRoll`, `StarPitch`, `StarRollWork`, `StarFlags` and 12 more) |
+| Writes | `$7E8D`-`$7EDC` (`StarDots`); `$7F73`-`$7FB1` (`StarPointer`, `StarSpeed`, `StarXFrac`, `StarX` and 10 more) |
 
 ### `StardustNext` (`$7BB3`)
 
@@ -803,9 +790,9 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 11,050 calls, 4,269,045 t-states own (1.26 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,748 calls, 1,363,980 t-states own (0.29 %) |
 | Called from | `StarRollPitch`, `StarPlot`, `StarRespawnFront` (tail), `StarRespawnMake` (tail) |
-| Calls | `StardustFront` (tail), `StarPlotAll` (tail), `IM2Entry` |
-| Reads | `$7E92`-`$7EDC` (`StarDots`); `$7F72`-`$7F7F` (`StarFlags`, `StarPointer`, `StarSpeed`, `StarXFrac` and 8 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7F76`-`$7F7F` (`StarXFrac`, `StarX`, `StarYFrac`, `StarY` and 5 more); `$FFF5`-`$FFFC` (`work space $FFF5+`) |
+| Calls | `StardustFront` (tail), `StarPlotAll` (tail) |
+| Reads | `$7E92`-`$7EDC` (`StarDots+5`); `$7F72`-`$7F7F` (`StarFlags`, `StarPointer`, `StarSpeed`, `StarXFrac` and 8 more) |
+| Writes | `$7F76`-`$7F7F` (`StarXFrac`, `StarX`, `StarYFrac`, `StarY` and 5 more) |
 
 ### `StarPlotAll` (`$7C92`)
 
@@ -817,9 +804,8 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 690 calls, 907,538 t-states own (0.27 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 418 calls, 325,687 t-states own (0.07 %) |
 | Called from | `StardustNext` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$7F80`-`$7FB1` (`StarListCount`, `JumpToggle`, `StarList`); `$C021`-`$CFFE` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$C021`-`$CFFE` (`BackBuffer`); `$FFF5`-`$FFFC` (`work space $FFF5+`) |
+| Reads | `$7F80`-`$7FB1` (`StarListCount`, `JumpToggle`, `StarList`); `$C021`-`$CFFE` (`BackBuffer+33`) |
+| Writes | `$C021`-`$CFE7` (`BackBuffer+33`) |
 
 ### `NegateX` (`$7CA7`)
 
@@ -854,9 +840,6 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 44,517 calls, 15,017,972 t-states own (4.43 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 14,880 calls, 4,997,782 t-states own (1.07 %) |
 | Called from | `StardustFront`, `StarRollScale`, `StarRollPitch` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFFA` (`work space $FFF1+`) |
 
 ### `DivideShifted` (`$7CD5`)
 
@@ -868,9 +851,7 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 15,727 calls, 7,131,249 t-states own (2.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,258 calls, 1,906,605 t-states own (0.41 %) |
 | Called from | `StardustFront` |
-| Calls | `DivideFrac8`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFFA` (`work space $FFF3+`) |
+| Calls | `DivideFrac8` |
 
 ### `DivideFrac8` (`$7CFB`)
 
@@ -882,9 +863,6 @@ X += X * speed / depth (MulBits, then DivideShifted or DivideFrac8), Y the same,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 22,173 calls, 11,623,879 t-states own (3.43 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 7,325 calls, 3,793,629 t-states own (0.81 %) |
 | Called from | `StardustFront`, `StarRollPitch`, `DivideShifted` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFFA` (`work space $FFF3+`) |
 
 ### `StarAddress` (`$7D0F`)
 
@@ -898,9 +876,7 @@ The centre is (128, 63): X added or subtracted by StarSigns bit 7, Y by bit 6 (b
 | Runs (launch, flight, hyperspace to Diso, the laser) | 10,095 calls, 4,091,055 t-states own (1.21 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,539 calls, 1,403,199 t-states own (0.30 %) |
 | Called from | `StarRollPitch`, `StarPlot` |
-| Calls | `IM2Entry` |
-| Reads | `$7F77`-`$7F7F` (`StarX`, `StarYFrac`, `StarY`, `StarDepth` and 4 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFFA` (`work space $FFF3+`) |
+| Reads | `$7F77`-`$7F7F` (`StarX`, `StarYFrac`, `StarY`, `StarDepth` and 4 more) |
 
 ### `StarRespawn` (`$7D55`)
 
@@ -912,9 +888,9 @@ The centre is (128, 63): X added or subtracted by StarSigns bit 7, Y by bit 6 (b
 | Runs (launch, flight, hyperspace to Diso, the laser) | 912 calls, 107,995 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 202 calls, 21,332 t-states own (0.00 %) |
 | Called from | `StardustFront` (tail), `StarRollPitch` (tail), `StarPlot` (tail) |
-| Calls | `StarRespawnFront`, `StarRespawnMake` (tail), `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$7105`-`$7106` (`StarSeed`); `$7F70`-`$7F7F` (`StarPitch`, `StarRollWork`, `StarFlags`, `StarPointer` and 10 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7D7A`-`$7D83` (`StarRespawnMake`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `StarRespawnFront`, `StarRespawnMake` (tail) |
+| Reads | `$70E3` (`ViewIndex`); `$7105`-`$7106` (`StarSeed`); `$7F70`-`$7F7F` (`StarPitch`, `StarRollWork`, `StarFlags`, `StarPointer` and 10 more) |
+| Writes | `$7D7A`-`$7D83` (`StarRespawnMake+4`) |
 
 ### `StarRespawnFront` (`$7D68`)
 
@@ -926,9 +902,8 @@ The centre is (128, 63): X added or subtracted by StarSigns bit 7, Y by bit 6 (b
 | Runs (launch, flight, hyperspace to Diso, the laser) | 861 calls, 63,209 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 218 calls, 67,425 t-states own (0.01 %) |
 | Called from | `StarRespawn`, `TunnelFrameText`, `TunnelFrame` |
-| Calls | `StardustNext` (tail), `StarRespawnMake`, `StarRandom`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7105`-`$7106` (`StarSeed`); `$7D7A`-`$7D83` (`StarRespawnMake`); `$7E8D`-`$7EDA` (`StarDots`); `$7F73`-`$7F74` (`StarPointer`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `StardustNext` (tail), `StarRespawnMake`, `StarRandom` |
+| Writes | `$7105`-`$7106` (`StarSeed`); `$7D7A`-`$7D83` (`StarRespawnMake+4`); `$7E8D`-`$7EDA` (`StarDots`); `$7F73`-`$7F74` (`StarPointer`) |
 
 ### `StarRespawnMake` (`$7D76`)
 
@@ -959,9 +934,6 @@ The centre is (128, 63): X added or subtracted by StarSigns bit 7, Y by bit 6 (b
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,783 calls, 110,804 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 654 calls, 25,667 t-states own (0.01 %) |
 | Called from | `StarRespawnFront`, `StarRespawnMake` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
 
 ### `InSystemJump` (`$7EDE`)
 
@@ -975,9 +947,8 @@ KeyViews `$FC0A` bit 6 (cleared here). Refused while the sun or the planet is ne
 | Runs (launch, flight, hyperspace to Diso, the laser) | 644 calls, 57,818 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 126 calls, 11,433 t-states own (0.00 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `IM2Entry` |
-| Reads | `$FC0A` (`KeyViews`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FC0A` (`KeyViews`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Reads | `$FC0A` (`KeyViews`) |
+| Writes | `$FC0A` (`KeyViews`) |
 
 ### `JumpCloser` (`$7F2D`)
 
@@ -1003,9 +974,7 @@ Four CopyThird calls of 1024 bytes: the even pixel lines of the top third (`$400
 | Runs (launch, flight, hyperspace to Diso, the laser) | 829 calls, 181,394 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 791 calls, 169,618 t-states own (0.04 %) |
 | Called from | `TitleLoad`, `TitleNext`, `TunnelFrameText`, `TunnelStart`, `TunnelFrame`, `SceneLaunch` |
-| Calls | `CopyThird`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `CopyThird` |
 
 ### `CopyThird` (`$7FE3`)
 
@@ -1029,9 +998,7 @@ Four CopyThird calls of 1024 bytes: the even pixel lines of the top third (`$400
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,528 calls, 798,261 t-states own (0.24 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25,312 calls, 757,593 t-states own (0.16 %) |
 | Called from | `CopyThird`, `CopyThirdLine` (tail) |
-| Calls | `CopyThirdLine`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF5`-`$FFF8` (`work space $FFF5+`) |
+| Calls | `CopyThirdLine` |
 
 ### `CopyThirdLine` (`$7FEA`)
 
@@ -1043,9 +1010,9 @@ Four CopyThird calls of 1024 bytes: the even pixel lines of the top third (`$400
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,528 calls, 71,759,733 t-states own (21.14 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25,312 calls, 68,273,199 t-states own (14.60 %) |
 | Called from | `CopyThirdRow` |
-| Calls | `CopyThirdRow` (tail), `IM2Entry` |
-| Reads | `$C000`-`$CFFF` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$4000`-`$4FFF` (screen); `$FFEF`-`$FFFA` (`work space $FFEF+`) |
+| Calls | `CopyThirdRow` (tail) |
+| Reads | `$C000`-`$CFFF` (`BackBuffer`) |
+| Writes | `$4000`-`$4FFF` (screen) |
 
 ### `DashboardRestore` (`$8042`)
 
@@ -1059,9 +1026,9 @@ The screen byte `$4000` is `$FF` only while a full page is up (ClearScreen draws
 | Runs (launch, flight, hyperspace to Diso, the laser) | 645 calls, 83,595 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 343 calls, 73,608 t-states own (0.02 %) |
 | Called from | `TitleLoad`, `TitleNext`, `SceneLaunch` |
-| Calls | `NovaTint`, `CloakRestore`, `ClearKeyBytes`, `ScannerSaveOn` (tail), `ClearScreenVector`, `IM2Entry` |
-| Reads | `$4000` (screen); `$5B00`-`$5BFF` (`ScannerSave`); `$C000`-`$C7FF` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5000`-`$5800` (screen); `$581F`-`$5AFF` (screen); `$FFF7`-`$FFFC` (`work space $FFF7+`) |
+| Calls | `NovaTint`, `CloakRestore`, `ClearKeyBytes`, `ScannerSaveOn` (tail), `ClearScreenVector` |
+| Reads | `$4000` (screen); `$5B00`-`$5BFF` (`ScannerSave`); `$C000`-`$C7FF` (`BackBuffer`) |
+| Writes | `$5000`-`$5800` (screen); `$581F`-`$5AFF` (screen) |
 
 ### `DashboardRestoreNow` (`$804B`)
 
@@ -1098,9 +1065,8 @@ KeyViews `$FC0A` bits 0-3 are 1-4: in flight the views 0-3 (SetView); docked key
 | Runs (launch, flight, hyperspace to Diso, the laser) | 38,713 calls, 3,446,429 t-states own (1.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 38,410 calls, 3,419,462 t-states own (0.73 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `SelectViewDone` (tail), `CallScreen`, `SetView`, `SceneLaunch`, `IM2Entry` |
-| Reads | `$7104` (`Condition`); `$D040` (`TunnelLoop`); `$FC08`-`$FC0A` (`KeyScreens`, `KeySteer`, `KeyViews`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `SelectViewDone` (tail), `CallScreen`, `SetView`, `SceneLaunch` |
+| Reads | `$7104` (`Condition`); `$D040` (`TunnelLoop`); `$FC08`-`$FC0A` (`KeyScreens`, `KeySteer`, `KeyViews`) |
 
 ### `SelectViewDone` (`$8136`)
 
@@ -1128,7 +1094,7 @@ The CALL at `$8153` is patched to `$D000` + 3 A. The screens draw full pages; th
 | Called from | `ChartCursorKeys`, `SelectView` |
 | Calls | `ClearKeyBytes` (tail), `ScreenGalaxy`, `ScreenLocal`, `ScreenData`, `ScreenMarket`, `CursorLeft`, `CursorDistance` |
 | Reads | `$80D1`-`$80D2` (`ClearViewSP`) |
-| Writes | `$80D1`-`$80D2` (`ClearViewSP`); `$8154`-`$8155` (`CallScreenCall`) |
+| Writes | `$80D1`-`$80D2` (`ClearViewSP`); `$8154`-`$8155` (`CallScreenCall+1`) |
 
 ### `CallScreenCall` (`$8153`)
 
@@ -1164,9 +1130,9 @@ A screen's key while that screen is up does nothing; `$D03F` set takes the other
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1 call, 52,592 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 52,592 t-states own (0.01 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `ScannerRestore`, `IM2Entry` |
-| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5AFF` (screen); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5B00`-`$5BFF` (`ScannerSave`); `$C000`-`$C7FF` (`BackBuffer`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `ScannerRestore` |
+| Reads | `$5000`-`$57FF` (screen); `$5A00`-`$5AFF` (screen) |
+| Writes | `$5B00`-`$5BFF` (`ScannerSave`); `$C000`-`$C7FF` (`BackBuffer`) |
 
 ## dashboard
 
@@ -1184,9 +1150,9 @@ The sun: with all three top bytes clear its distance (VectorLength) gives the ca
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 321,837 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 194,202 t-states own (0.04 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `CompassDivide`, `CompassDivideSigned`, `VectorLengthAbs`, `VectorLength`, `DrawCompass` (tail), `IM2Entry` |
-| Reads | `$6050` (`ShipSlots`); `$7109`-`$711D` (`SunPosition`, `PlanetPosition`, `DrawChartCircleVector`, `SafeZone` and 1 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$711C` (`SafeZone`); `$81A4`-`$81A8` (`DashWork`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `CompassDivide`, `CompassDivideSigned`, `VectorLengthAbs`, `VectorLength`, `DrawCompass` (tail) |
+| Reads | `$6050` (`ShipSlots+8`); `$7109`-`$711D` (`SunPosition+2`, `PlanetPosition`, `DrawChartCircleVector`, `SafeZone` and 1 more) |
+| Writes | `$711C` (`SafeZone`); `$81A4`-`$81A8` (`SunClose`, `PlanetClose`, `CompassX`, `CompassY` and 1 more) |
 
 ### `CompassDivide` (`$8271`)
 
@@ -1198,7 +1164,7 @@ The sun: with all three top bytes clear its distance (VectorLength) gives the ca
 | Runs (launch, flight, hyperspace to Diso, the laser) | 238 calls, 13,824 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 682 calls, 109,880 t-states own (0.02 %) |
 | Called from | `DashDistances` |
-| Calls | `CompassDivideScale` (tail), `Divide16Vector`, `IM2Entry` |
+| Calls | `CompassDivideScale` (tail), `Divide16Vector` |
 | Reads | `$6048`-`$604D` (`ShipSlots`) |
 
 ### `CompassDivideSigned` (`$82B0`)
@@ -1221,7 +1187,7 @@ The sun: with all three top bytes clear its distance (VectorLength) gives the ca
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,286 calls, 134,115 t-states own (0.04 %) |
 | Called from | `CompassDivide` (tail), `CompassDivideSigned` |
 | Calls | `Divide16Vector` |
-| Reads | `$604A`-`$604D` (`ShipSlots`); `$7112`-`$7115` (`PlanetPosition`) |
+| Reads | `$604A`-`$604D` (`ShipSlots+2`); `$7112`-`$7115` (`PlanetPosition+2`) |
 
 ### `SetTooClose` (`$82D1`)
 
@@ -1251,7 +1217,7 @@ Known from the code only: no recording came that close.
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 89,417 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 45,282 t-states own (0.01 %) |
 | Called from | `VectorLengthAbs`, `VectorLength` |
-| Reads | `$6048`-`$604F` (`ShipSlots`); `$7111`-`$7118` (`PlanetPosition`) |
+| Reads | `$6048`-`$604F` (`ShipSlots`); `$7111`-`$7118` (`PlanetPosition+1`) |
 
 ### `VectorLengthAbs` (`$8315`)
 
@@ -1275,9 +1241,7 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 119 calls, 2,856 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 266,762 t-states own (0.06 %) |
 | Called from | `DashDistances` |
-| Calls | `LoadVector`, `VectorLengthShift`, `Square`, `SquareRootVector`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF7`-`$FFFA` (`work space $FFF7+`) |
+| Calls | `LoadVector`, `VectorLengthShift`, `Square`, `SquareRootVector` |
 
 ### `VectorLengthShift` (`$8327`)
 
@@ -1299,9 +1263,9 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 580,971 t-states own (0.17 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 292,636 t-states own (0.06 %) |
 | Called from | `DashDistances` (tail) |
-| Calls | `NextLineDown`, `DrawCompassDialArt`, `IM2Entry` |
-| Reads | `$5056`-`$5157` (screen); `$5256`-`$5257` (screen); `$5356`-`$5357` (screen); `$5456`-`$5457` (screen); `$5556`-`$5557` (screen); `$5656`-`$5657` (screen); 5 more ranges |
-| Writes | `$5056`-`$5157` (screen); `$5256`-`$5257` (screen); `$5356`-`$5357` (screen); `$5456`-`$5457` (screen); `$5556`-`$5557` (screen); `$5656`-`$5657` (screen); 3 more ranges |
+| Calls | `NextLineDown`, `DrawCompassDialArt` |
+| Reads | `$5056`-`$5157` (screen); `$5256`-`$5257` (screen); `$5356`-`$5357` (screen); `$5456`-`$5457` (screen); `$5556`-`$5557` (screen); `$5656`-`$5657` (screen); 4 more ranges |
+| Writes | `$5056`-`$5157` (screen); `$5256`-`$5257` (screen); `$5356`-`$5357` (screen); `$5456`-`$5457` (screen); `$5556`-`$5557` (screen); `$5656`-`$5657` (screen); 2 more ranges |
 
 ### `NextLineDown` (`$8445`)
 
@@ -1313,9 +1277,6 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,136 calls, 96,215 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,573 calls, 70,842 t-states own (0.02 %) |
 | Called from | `DrawCompass`, `DrawCompassDialArt`, `DrawScanner` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF7`-`$FFFA` (`work space $FFF7+`) |
 
 ### `NextLineUp` (`$844F`)
 
@@ -1335,9 +1296,9 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 1,796,834 t-states own (0.53 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 963,965 t-states own (0.21 %) |
 | Called from | `DrawCompass` |
-| Calls | `NextLineDown`, `IM2Entry` |
-| Reads | `$8491`-`$84D8` (`CompassDial`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5035`-`$5177` (screen); `$5235`-`$5277` (screen); `$5335`-`$5377` (screen); `$5435`-`$5477` (screen); `$5535`-`$5577` (screen); `$5635`-`$5677` (screen); 2 more ranges |
+| Calls | `NextLineDown` |
+| Reads | `$8491`-`$84D8` (`CompassDial`) |
+| Writes | `$5035`-`$5177` (screen); `$5235`-`$5277` (screen); `$5335`-`$5377` (screen); `$5435`-`$5477` (screen); `$5535`-`$5577` (screen); `$5635`-`$5677` (screen); 1 more ranges |
 
 ### `DrawBars` (`$84D9`)
 
@@ -1351,9 +1312,9 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 644 calls, 799,031 t-states own (0.24 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 342 calls, 444,907 t-states own (0.10 %) |
 | Called from | `TitleLoad`, `TitleNext`, `SceneLaunch` |
-| Calls | `DrawMarker`, `DrawBar`, `IM2Entry` |
-| Reads | `$70E7`-`$7100` (`BarDrawn`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70E7`-`$70FF` (`BarDrawn`); `$8523` (`BarMarkerMode`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `DrawMarker`, `DrawBar` |
+| Reads | `$70E7`-`$7100` (`BarDrawn`, `BarForeShield`, `BarAftShield`, `BarFuel` and 10 more) |
+| Writes | `$70E7`-`$70FF` (`BarDrawn`, `BarForeShield`, `BarAftShield`, `BarFuel` and 9 more); `$8523` (`BarMarkerMode`) |
 
 ### `DrawMarker` (`$8540`)
 
@@ -1366,7 +1327,7 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 16 calls, 1,056 t-states own (0.00 %) |
 | Called from | `DrawBars` |
 | Calls | `DrawBarRows` (tail) |
-| Writes | `$856D` (`DrawBarRows`); `$8597` (`DrawBarRows`); `$85B9` (`DrawBarRows`) |
+| Writes | `$856D` (`DrawBarLength+4`); `$8597` (`DrawBarLine+2`); `$85B9` (`DrawBarWholeLine+2`) |
 
 ### `DrawBar` (`$854F`)
 
@@ -1378,9 +1339,8 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 123 calls, 6,169 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 311 calls, 15,550 t-states own (0.00 %) |
 | Called from | `DrawBars` |
-| Calls | `DrawBarRows`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$856D` (`DrawBarRows`); `$8597` (`DrawBarRows`); `$85B9` (`DrawBarRows`); `$FFF5`-`$FFF6` (`work space $FFF5+`) |
+| Calls | `DrawBarRows` |
+| Writes | `$856D` (`DrawBarLength+4`); `$8597` (`DrawBarLine+2`); `$85B9` (`DrawBarWholeLine+2`) |
 
 ### `DrawBarRows` (`$855B`)
 
@@ -1392,9 +1352,9 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 162 calls, 172,119 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 327 calls, 356,444 t-states own (0.08 %) |
 | Called from | `DrawMarker` (tail), `DrawBar` |
-| Calls | `BarByte`, `IM2Entry` |
-| Reads | `$8523`-`$853D` (`BarMarkerMode`, `BarAddresses`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5123`-`$53FC` (screen); `$5423`-`$54FC` (screen); `$5523`-`$55FC` (screen); `$FFF3`-`$FFF6` (`work space $FFF3+`) |
+| Calls | `BarByte` |
+| Reads | `$8523`-`$853D` (`BarMarkerMode`, `BarAddresses`) |
+| Writes | `$5123`-`$53FC` (screen); `$5423`-`$54FC` (screen); `$5523`-`$55FC` (screen) |
 
 ### `BarByte` (`$8606`)
 
@@ -1406,9 +1366,8 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 535 calls, 24,764 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,175 calls, 45,169 t-states own (0.01 %) |
 | Called from | `DrawBarRows` |
-| Calls | `IM2Entry` |
-| Reads | `$8523` (`BarMarkerMode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5124`-`$52FC` (screen); `$5324`-`$537A` (screen); `$5399`-`$53FC` (screen); `$5424`-`$547A` (screen); `$5499`-`$54FC` (screen); `$5524`-`$557A` (screen); 2 more ranges |
+| Reads | `$8523` (`BarMarkerMode`) |
+| Writes | `$5124`-`$52FC` (screen); `$5324`-`$537A` (screen); `$5399`-`$53FC` (screen); `$5424`-`$547A` (screen); `$5499`-`$54FC` (screen); `$5524`-`$557A` (screen); 1 more ranges |
 
 ## circles
 
@@ -1468,9 +1427,9 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,440 calls, 125,318 t-states own (0.04 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,095 calls, 95,379 t-states own (0.02 %) |
 | Called from | `CircleArcs` (tail) |
-| Calls | `OutlinePlotSide` (tail), `IM2Entry` |
-| Reads | `$8629` (`CircleMode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$8628` (`RunRight`); `$FFED`-`$FFF4` (`work space $FFED+`) |
+| Calls | `OutlinePlotSide` (tail) |
+| Reads | `$8629` (`CircleMode`) |
+| Writes | `$8628` (`RunRight`) |
 
 ### `ArcRunLeft` (`$86A1`)
 
@@ -1496,9 +1455,8 @@ The three words are shifted left together until one would overflow (A counts the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 70 calls, 2,469 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 70 calls, 2,450 t-states own (0.00 %) |
 | Called from | `FillClipped` |
-| Calls | `OutlineRunUp` (tail), `IM2Entry` |
-| Reads | `$8629` (`CircleMode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFF4` (`work space $FFF3+`) |
+| Calls | `OutlineRunUp` (tail) |
+| Reads | `$8629` (`CircleMode`) |
 
 ### `OutlineEdgeDown` (`$86C4`)
 
@@ -1546,7 +1504,7 @@ f1, w1, d1: 899 calls, 2697 instructions. CircleMode = 1, then DrawCircleShape.
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,683 calls, 85,852 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,165 calls, 59,415 t-states own (0.01 %) |
 | Called from | `DrawCircle`, `TunnelFrameText`, `TunnelFrame` |
-| Calls | `DrawCircleShape`, `IM2Entry` |
+| Calls | `DrawCircleShape` |
 | Writes | `$8629` (`CircleMode`) |
 
 ### `DrawCircleShape` (`$86EE`)
@@ -1561,9 +1519,9 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,683 calls, 457,326 t-states own (0.13 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,165 calls, 316,781 t-states own (0.07 %) |
 | Called from | `DrawCircleOutline` |
-| Calls | `Square`, `CircleArcs` (tail), `FillClipped` (tail), `FillCorner` (tail), `IM2Entry` |
-| Reads | `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$861E`-`$8621` (`CircleRowOffset`, `CircleColOffset`, `CircleScreenY`, `CircleScreenX`); `$FFEF`-`$FFFA` (`work space $FFEF+`) |
+| Calls | `Square`, `CircleArcs` (tail), `FillClipped` (tail), `FillCorner` (tail) |
+| Reads | `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`) |
+| Writes | `$861E`-`$8621` (`CircleRowOffset`, `CircleColOffset`, `CircleScreenY`, `CircleScreenX`) |
 
 ### `Square` (`$87BF`)
 
@@ -1575,8 +1533,7 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,893 calls, 173,580 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,701 calls, 222,079 t-states own (0.05 %) |
 | Called from | `VectorLength`, `VectorLengthShift`, `DrawCircleShape`, `HalfChord`, `DrawScanner` |
-| Calls | `IM2Entry` |
-| Reads | `$BE00`-`$BE40` (`SquaresLow`); `$BE60` (`SquaresLow`); `$BE78`-`$BF40` (`SquaresLow`, `SquaresHigh`); `$BF60` (`SquaresHigh`); `$BF78`-`$BFFF` (`SquaresHigh`) |
+| Reads | `$BE00`-`$BE40` (`SquaresLow`); `$BE60` (`SquaresLow+96`); `$BE78`-`$BF40` (`SquaresLow+120`, `SquaresHigh`); `$BF60` (`SquaresHigh+96`); `$BF78`-`$BFFF` (`SquaresHigh+120`) |
 
 ### `CircleArcs` (`$87C8`)
 
@@ -1588,9 +1545,7 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,440 calls, 87,859 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,095 calls, 66,833 t-states own (0.01 %) |
 | Called from | `DrawCircleShape` (tail) |
-| Calls | `ArcRunRight` (tail), `ArcRunLeft`, `CircleArc`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEF`-`$FFF0` (`work space $FFEF+`) |
+| Calls | `ArcRunRight` (tail), `ArcRunLeft`, `CircleArc` |
 
 ### `CircleArc` (`$87D4`)
 
@@ -1602,9 +1557,8 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,880 calls, 403,352 t-states own (0.12 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 306,809 t-states own (0.07 %) |
 | Called from | `CircleArcs` |
-| Calls | `PointLeft`, `PointRight` (tail), `IM2Entry` |
-| Reads | `$861C`-`$8621` (`CircleQuadrant`, `CircleRadius`, `CircleRowOffset`, `CircleColOffset` and 2 more); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFF4` (`work space $FFED+`) |
+| Calls | `PointLeft`, `PointRight` (tail) |
+| Reads | `$861C`-`$8621` (`CircleQuadrant`, `CircleRadius`, `CircleRowOffset`, `CircleColOffset` and 2 more) |
 
 ### `FillClipped` (`$87FE`)
 
@@ -1666,9 +1620,8 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,882 calls, 207,542 t-states own (0.06 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 157,699 t-states own (0.03 %) |
 | Called from | `CircleArc`, `FillCorner` |
-| Calls | `MaskRight` (tail), `IM2Entry` |
-| Reads | `$8629` (`CircleMode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Calls | `MaskRight` (tail) |
+| Reads | `$8629` (`CircleMode`) |
 
 ### `PointRight` (`$89EF`)
 
@@ -1680,9 +1633,9 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,882 calls, 360,383 t-states own (0.11 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 273,883 t-states own (0.06 %) |
 | Called from | `CircleArc` (tail), `FillCorner` |
-| Calls | `MaskLeft` (tail), `IM2Entry` |
-| Reads | `$8629` (`CircleMode`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$8627` (`CirclePointX`); `$FFF3`-`$FFF8` (`work space $FFF3+`) |
+| Calls | `MaskLeft` (tail) |
+| Reads | `$8629` (`CircleMode`) |
+| Writes | `$8627` (`CirclePointX`) |
 
 ### `SpanStep` (`$8A16`)
 
@@ -1719,9 +1672,9 @@ The screen centre is (128, 64): CircleScreenX `$8621` = 128 +/- CircleX, CircleS
 | Runs (launch, flight, hyperspace to Diso, the laser) | 72 calls, 60,888 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 70 calls, 59,164 t-states own (0.01 %) |
 | Called from | `FillClipped`, `FillCorner` |
-| Calls | `Square`, `IM2Entry` |
-| Reads | `$8625`-`$8626` (`HalfChordTarget`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$8625`-`$8626` (`HalfChordTarget`); `$FFE7`-`$FFEE` (`work space $FFE7+`) |
+| Calls | `Square` |
+| Reads | `$8625`-`$8626` (`HalfChordTarget`) |
+| Writes | `$8625`-`$8626` (`HalfChordTarget`) |
 
 ### `FillPushes1` (`$8B33`)
 
@@ -1799,9 +1752,7 @@ Known from the code only, like the five chains after it: the filled circle (the 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,464 calls, 88,344 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,246 calls, 56,742 t-states own (0.01 %) |
 | Called from | `OutlinePlotTop`, `OutlinePixels` |
-| Calls | `CircleRowUp`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFF0` (`work space $FFEB+`) |
+| Calls | `CircleRowUp` |
 
 ### `CircleRowUp` (`$8DF3`)
 
@@ -1813,9 +1764,7 @@ Known from the code only, like the five chains after it: the filled circle (the 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4,374 calls, 289,680 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,715 calls, 245,420 t-states own (0.05 %) |
 | Called from | `CircleLineUp`, `OutlinePixel` |
-| Calls | `CircleAbort` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEF`-`$FFF0` (`work space $FFEF+`) |
+| Calls | `CircleAbort` (tail) |
 
 ### `CircleLineDown` (`$8E08`)
 
@@ -1839,9 +1788,7 @@ Known from the code only, like the five chains after it: the filled circle (the 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,425 calls, 228,098 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,765 calls, 183,847 t-states own (0.04 %) |
 | Called from | `CircleLineDown`, `OutlinePixel` |
-| Calls | `CircleAbort` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF6` (`work space $FFF1+`) |
+| Calls | `CircleAbort` (tail) |
 
 ### `CircleAbort` (`$8E22`)
 
@@ -1869,7 +1816,7 @@ The centre is ChartCursorX / ChartCursorY (`$D051`, `$D052`) against the chart's
 | Called from | `DrawChartCircleVector` (tail) |
 | Calls | `DrawCircle` |
 | Reads | `$8623`-`$862A` (`CircleSP`, `HalfChordTarget`, `CirclePointX`, `RunRight` and 2 more); `$8E8D`-`$8ECC` (`ChartPatch`, `ViewPatch`); `$D051`-`$D053` (`CrossX`, `CrossY`, `ChartRadius`) |
-| Writes | `$861A`-`$8624` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius` and 6 more); `$86FB`-`$8744` (`DrawCircleShape`); `$87FF`-`$8804` (`FillClipped`); `$889A` (`FillClipped`); `$89B3`-`$8A1B` (`SpanEndRight`, `ArcSeed`, `PointLeft`, `PointRight` and 1 more); `$8DFE`-`$8E18` (`CircleRowUp`, `CircleLineDown`, `CircleRowDown`); 3 more ranges |
+| Writes | `$861A`-`$8624` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius` and 6 more); `$86FB`-`$8744` (`DrawCircleShape+13`, `DrawCircleShapeIfNotZero`, `DrawCircleShapeIfZero`, `DrawCircleShapeReturn` and 5 more); `$87FF`-`$8804` (`FillClipped+1`, `FillClippedJoin`); `$889A` (`FillSides+2`); `$89B3`-`$8A1B` (`SpanEndRight+18`, `ArcSeed`, `PointLeft`, `PointRight` and 1 more); `$8DFE`-`$8E18` (`CircleRowUp+11`, `CircleLineDown`, `CircleRowDown`); 3 more ranges |
 
 ### `HitFlash` (`$8F0D`)
 
@@ -1883,9 +1830,9 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 144,077 t-states own (0.04 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 367,966 t-states own (0.08 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `CircleBase`, `IM2Entry` |
-| Reads | `$6068`-`$608F` (`ShipSlots`); `$60B6` (`ShipSlots`); `$60DD` (`ShipSlots`); `$6104` (`ShipSlots`); `$612B` (`ShipSlots`); `$6152` (`ShipSlots`); 3 more ranges |
-| Writes | `$8A7D` (`SpanStart`); `$8F9B`-`$8FA6` (`CircleBase`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `CircleBase` |
+| Reads | `$6068`-`$608F` (`ShipSlots+32`); `$60B6` (`ShipSlots+110`); `$60DD` (`ShipSlots+149`); `$6104` (`ShipSlots+188`); `$612B` (`ShipSlots+227`); `$6152` (`ShipSlots+266`); 2 more ranges |
+| Writes | `$8A7D` (`SpanStartIfBelow+2`); `$8F9B`-`$8FA6` (`CircleBase+19`) |
 
 ### `CircleBase` (`$8F88`)
 
@@ -1897,8 +1844,7 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 240 calls, 49,219 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 682 calls, 139,829 t-states own (0.03 %) |
 | Called from | `HitFlash` |
-| Calls | `IM2Entry` |
-| Writes | `$89DA`-`$89DB` (`PointLeft`); `$89FB`-`$89FC` (`PointRight`); `$8A40`-`$8A41` (`SpanStart`); `$8A8B`-`$8A8C` (`SpanStart`); `$8AC8` (`SpanStart`); `$8B02`-`$8B09` (`HalfChord`); 4 more ranges |
+| Writes | `$89DA`-`$89DB` (`PointLeft+6`); `$89FB`-`$89FC` (`PointRight+12`); `$8A40`-`$8A41` (`FillRunUp+9`); `$8A8B`-`$8A8C` (`FillRunDown+9`); `$8AC8` (`SpanStartIfBelow2+2`); `$8B02`-`$8B09` (`FillSpanTest1+11`, `HalfChordIfNotZero`); 4 more ranges |
 
 ### `OutlineEdgeStart` (`$8FB8`)
 
@@ -1918,9 +1864,6 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,882 calls, 347,525 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 270,003 t-states own (0.06 %) |
 | Called from | `PointLeft` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFF6` (`work space $FFED+`) |
 
 ### `MaskLeft` (`$8FED`)
 
@@ -1932,9 +1875,7 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,882 calls, 370,036 t-states own (0.11 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 295,676 t-states own (0.06 %) |
 | Called from | `PointRight` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$8627` (`CirclePointX`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFF8` (`work space $FFED+`) |
+| Reads | `$8627` (`CirclePointX`) |
 
 ### `OutlineSpanStart` (`$8FF9`)
 
@@ -1957,9 +1898,6 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 70 calls, 180,218 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 70 calls, 180,180 t-states own (0.04 %) |
 | Called from | `OutlineEdgeUp` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF0` (`work space $FFE9+`) |
 
 ### `OutlineRunDown` (`$9032`)
 
@@ -1971,9 +1909,6 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 70 calls, 174,777 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 70 calls, 174,796 t-states own (0.04 %) |
 | Called from | `OutlineEdgeDown` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF0` (`work space $FFE9+`) |
 
 ### `OutlinePlotTop` (`$9060`)
 
@@ -1985,9 +1920,9 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 140 calls, 22,773 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 140 calls, 22,754 t-states own (0.00 %) |
 | Called from | `OutlineRunUpRight` (tail), `OutlineRunUpLeft` (tail) |
-| Calls | `CircleLineUp`, `CircleLineDown`, `OutlineStep` (tail), `IM2Entry` |
-| Reads | `$8628` (`RunRight`); `$C441` (`BackBuffer`); `$CCA1` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$8623`-`$8624` (`CircleSP`); `$C441` (`BackBuffer`); `$CCA1` (`BackBuffer`); `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Calls | `CircleLineUp`, `CircleLineDown`, `OutlineStep` (tail) |
+| Reads | `$8628` (`RunRight`); `$C441` (`BackBuffer+1089`); `$CCA1` (`BackBuffer+3233`) |
+| Writes | `$8623`-`$8624` (`CircleSP`); `$C441` (`BackBuffer+1089`); `$CCA1` (`BackBuffer+3233`) |
 
 ### `OutlinePlotSide` (`$90FB`)
 
@@ -1999,9 +1934,9 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,882 calls, 243,543 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,190 calls, 185,112 t-states own (0.04 %) |
 | Called from | `ArcRunRight` (tail), `ArcRunLeft` (tail) |
-| Calls | `OutlinePixel`, `IM2Entry` |
-| Reads | `$8628` (`RunRight`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$8623`-`$8624` (`CircleSP`); `$FFF1`-`$FFF4` (`work space $FFF1+`) |
+| Calls | `OutlinePixel` |
+| Reads | `$8628` (`RunRight`) |
+| Writes | `$8623`-`$8624` (`CircleSP`) |
 
 ### `OutlinePixel` (`$9117`)
 
@@ -2013,9 +1948,9 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,341 calls, 9,252,710 t-states own (2.73 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 21,603 calls, 7,709,145 t-states own (1.65 %) |
 | Called from | `OutlinePlotSide`, `OutlineStep` (tail) |
-| Calls | `CircleRowUp`, `CircleRowDown`, `OutlineStepX`, `IM2Entry` |
-| Reads | `$40C5`-`$5751` (screen); `$8628` (`RunRight`); `$C002`-`$CFFD` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$40C5`-`$5751` (screen); `$C002`-`$CFFD` (`BackBuffer`); `$FFEB`-`$FFF8` (`work space $FFEB+`) |
+| Calls | `CircleRowUp`, `CircleRowDown`, `OutlineStepX` |
+| Reads | `$40C5`-`$5751` (screen); `$8628` (`RunRight`); `$C002`-`$CFFD` (`BackBuffer+2`) |
+| Writes | `$40C5`-`$5751` (screen); `$C002`-`$CFE7` (`BackBuffer+2`) |
 
 ### `OutlineStepX` (`$9144`)
 
@@ -2027,9 +1962,7 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,006 calls, 497,572 t-states own (0.15 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 21,257 calls, 403,678 t-states own (0.09 %) |
 | Called from | `OutlinePixel` |
-| Calls | `OutlineStepY`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFF4` (`work space $FFEB+`) |
+| Calls | `OutlineStepY` |
 
 ### `OutlineStepY` (`$9148`)
 
@@ -2041,9 +1974,7 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,006 calls, 494,190 t-states own (0.15 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 21,257 calls, 403,940 t-states own (0.09 %) |
 | Called from | `OutlineStepX` |
-| Calls | `OutlineStep`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF4` (`work space $FFF1+`) |
+| Calls | `OutlineStep` |
 
 ### `OutlineStep` (`$914B`)
 
@@ -2055,9 +1986,7 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 26,054 calls, 885,903 t-states own (0.26 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 21,305 calls, 722,118 t-states own (0.15 %) |
 | Called from | `OutlinePlotTop` (tail), `OutlineStepY` |
-| Calls | `OutlinePixel` (tail), `OutlinePixels` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFF6` (`work space $FFED+`) |
+| Calls | `OutlinePixel` (tail), `OutlinePixels` (tail) |
 
 ### `OutlinePixels` (`$917B`)
 
@@ -2069,9 +1998,9 @@ With HitFlashes set (the explosions; k2 frame 2572 on): the circle code is patch
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,595 calls, 3,812,470 t-states own (1.12 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,892 calls, 2,750,447 t-states own (0.59 %) |
 | Called from | `OutlineStep` (tail) |
-| Calls | `CircleLineUp`, `CircleLineDown`, `IM2Entry` |
-| Reads | `$4088`-`$4983` (screen); `$4BE1`-`$5770` (screen); `$8623`-`$8628` (`CircleSP`, `HalfChordTarget`, `CirclePointX`, `RunRight`); `$C009`-`$CFF1` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$4088`-`$4983` (screen); `$4BE1`-`$5770` (screen); `$C009`-`$CFF3` (`BackBuffer`); `$FFEB`-`$FFF6` (`work space $FFEB+`) |
+| Calls | `CircleLineUp`, `CircleLineDown` |
+| Reads | `$4088`-`$4983` (screen); `$4BE1`-`$5770` (screen); `$8623`-`$8628` (`CircleSP`, `HalfChordTarget`, `CirclePointX`, `RunRight`); `$C009`-`$CFF1` (`BackBuffer+9`) |
+| Writes | `$4088`-`$4983` (screen); `$4BE1`-`$5770` (screen); `$C009`-`$CFE7` (`BackBuffer+9`) |
 
 ## tunnel
 
@@ -2091,7 +2020,7 @@ The flight loop's and the scenes' per-frame call. 1220 runs over f1, w1, d1.
 | Called from | `SceneLaunch` |
 | Calls | `StarRespawnFront`, `CopyBackBuffer`, `ClearView`, `DrawCircleOutline`, `TunnelFrame` (tail), `TunnelDivide`, `ViewTextsVector` |
 | Reads | `$7105`-`$7106` (`StarSeed`); `$93D0`-`$93D2` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`); `$93E3`-`$93EA` (`LaunchRings`); `$D03F`-`$D040` (`TunnelOn`, `TunnelLoop`) |
-| Writes | `$70E6` (`SpeedRate`); `$7D69`-`$7D6E` (`StarRespawnFront`); `$7E0E` (`StarRespawnMake`); `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`); `$9318` (`TunnelFrame`); `$93D1`-`$93D2` (`TunnelRingsLeft`, `TunnelTop`); 2 more ranges |
+| Writes | `$70E6` (`SpeedRate`); `$7D69`-`$7D6E` (`StarRespawnFront+1`); `$7E0E` (`StarRespawnLoop+11`); `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`); `$9318` (`TunnelFrameNext+5`); `$93D1`-`$93D2` (`TunnelRingsLeft`, `TunnelTop`); 2 more ranges |
 
 ### `TunnelStart` (`$9296`)
 
@@ -2107,7 +2036,7 @@ In witch space (WitchSpace non-zero) slot 0's energy is cleared and ship action 
 | Called from | `TitleLoad`, `TitleNext` |
 | Calls | `CopyBackBuffer`, `ClearView`, `TunnelFrame`, `ResetControls`, `ClearShips`, `SoundJump`, `ShipActionVector` |
 | Reads | `$7103` (`WitchSpace`); `$D040` (`TunnelLoop`) |
-| Writes | `$606A` (`ShipSlots`); `$92FA`-`$92FB` (`TunnelFrame`); `$9326`-`$932B` (`TunnelFrame`); `$93D0`-`$93D2` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`) |
+| Writes | `$606A` (`ShipSlots+34`); `$92FA`-`$92FB` (`TunnelFrameStart+1`); `$9326`-`$932B` (`TunnelFrameShow+8`); `$93D0`-`$93D2` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`) |
 
 ### `TunnelFrame` (`$92D6`)
 
@@ -2120,9 +2049,9 @@ With TunnelLoop set (the jump, the first frames of the launch and the dock) the 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 49 calls, 260,492 t-states own (0.08 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 49 calls, 260,568 t-states own (0.06 %) |
 | Called from | `TunnelFrameText` (tail), `TunnelStart` |
-| Calls | `StarRespawnFront`, `CopyBackBuffer`, `ClearView`, `DrawCircleOutline`, `TunnelDivide`, `TunnelDone` (tail), `IM2Entry` |
-| Reads | `$7105`-`$7106` (`StarSeed`); `$93D0`-`$93EA` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`, `TunnelRings` and 1 more); `$D040` (`TunnelLoop`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70E6` (`SpeedRate`); `$7D69`-`$7D6E` (`StarRespawnFront`); `$7E0E` (`StarRespawnMake`); `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`); `$9318` (`TunnelFrame`); `$93D1`-`$93EA` (`TunnelRingsLeft`, `TunnelTop`, `TunnelRings`, `LaunchRings`); 2 more ranges |
+| Calls | `StarRespawnFront`, `CopyBackBuffer`, `ClearView`, `DrawCircleOutline`, `TunnelDivide`, `TunnelDone` (tail) |
+| Reads | `$7105`-`$7106` (`StarSeed`); `$93D0`-`$93EA` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`, `TunnelRings` and 1 more); `$D040` (`TunnelLoop`) |
+| Writes | `$70E6` (`SpeedRate`); `$7D69`-`$7D6E` (`StarRespawnFront+1`); `$7E0E` (`StarRespawnLoop+11`); `$861A`-`$861D` (`CircleY`, `CircleX`, `CircleQuadrant`, `CircleRadius`); `$9318` (`TunnelFrameNext+5`); `$93D1`-`$93EA` (`TunnelRingsLeft`, `TunnelTop`, `TunnelRings`, `LaunchRings`); 1 more ranges |
 
 ### `TunnelCount` (`$9337`)
 
@@ -2186,9 +2115,6 @@ A restoring division, eight bits of quotient; C starts at `$FE` so the carry out
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,568 calls, 625,462 t-states own (0.18 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,568 calls, 625,424 t-states own (0.13 %) |
 | Called from | `TunnelFrameText`, `TunnelFrame` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFFA` (`work space $FFF3+`) |
 
 ### `TunnelDone` (`$93C0`)
 
@@ -2221,7 +2147,7 @@ The dock (dk docked by hand at frame 2190 and by the computer at 3408; gx, m1, m
 | Called from | `SelectView` |
 | Calls | `NovaSunGrows`, `DrawSunPlanet`, `MoveSunPlanet`, `Stardust`, `CopyBackBuffer`, `DashboardRestore`, `ClearView`, `DrawBars`, `TunnelFrameText`, `ResetControls`, `ZeroBytes`, `ClearShips`, `SoundLaunch`, `ResetFlight` |
 | Reads | `$7103`-`$710F` (`WitchSpace`, `Condition`, `StarSeed`, `SunPosition`) |
-| Writes | `$604E`-`$606A` (`ShipSlots`); `$70E3` (`ViewIndex`); `$7104`-`$7124` (`Condition`, `StarSeed`, `SunPosition`, `PlanetPosition` and 8 more); `$92FA`-`$92FB` (`TunnelFrame`); `$9326`-`$932B` (`TunnelFrame`); `$93D0`-`$93D2` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`); 2 more ranges |
+| Writes | `$604E`-`$606A` (`ShipSlots+6`); `$70E3` (`ViewIndex`); `$7104`-`$7124` (`Condition`, `StarSeed`, `SunPosition`, `PlanetPosition` and 8 more); `$92FA`-`$92FB` (`TunnelFrameStart+1`); `$9326`-`$932B` (`TunnelFrameShow+8`); `$93D0`-`$93D2` (`TunnelRingCount`, `TunnelRingsLeft`, `TunnelTop`); 2 more ranges |
 
 ### `ResetControls` (`$94F4`)
 
@@ -2234,7 +2160,7 @@ The dock (dk docked by hand at frame 2190 and by the computer at 3408; gx, m1, m
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3 calls, 132 t-states own (0.00 %) |
 | Called from | `TitleLoad`, `TitleNext`, `TunnelStart`, `SceneLaunch` |
 | Calls | `ClearKeyBytes`, `ZeroBytes` |
-| Writes | `$FF0D` (`SpeedControl`) |
+| Writes | `$FF0D` (`SpeedControl+1`) |
 
 ### `ClearKeyBytes` (`$94FE`)
 
@@ -2276,9 +2202,8 @@ Run by the launch and the jump: no ship survives them.
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2 calls, 829 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3 calls, 1,243 t-states own (0.00 %) |
 | Called from | `TitleNext`, `TunnelStart`, `SceneLaunch` |
-| Calls | `IM2Entry` |
-| Reads | `$6069` (`ShipSlots`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$6069` (`ShipSlots`); `$6091` (`ShipSlots`); `$60B8` (`ShipSlots`); `$60DF` (`ShipSlots`); `$6106` (`ShipSlots`); `$612D` (`ShipSlots`); 4 more ranges |
+| Reads | `$6069` (`ShipSlots+33`) |
+| Writes | `$6069` (`ShipSlots+33`); `$6091` (`ShipSlots+73`); `$60B8` (`ShipSlots+112`); `$60DF` (`ShipSlots+151`); `$6106` (`ShipSlots+190`); `$612D` (`ShipSlots+229`); 3 more ranges |
 
 ### `SoundLaunch` (`$9527`)
 
@@ -2460,9 +2385,9 @@ The level is bit 3 or bit 4 of the ROM byte (the MIC and EAR bits of `$FE`), so 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 54 calls, 8,795,291 t-states own (2.59 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 94 calls, 12,838,996 t-states own (2.75 %) |
 | Called from | `SoundPulses`, `SoundArmPulse` (tail), `SoundArmLaunch` (tail) |
-| Calls | `SoundSecond`, `SoundEnd` (tail), `IM2Entry` |
-| Reads | `$7128` (`SoundRequests`); `$9522` (`SoundMode`); `$96BF` (`SoundBit`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$7128` (`SoundRequests`); `$9522`-`$9526` (`SoundMode`, `SoundPitch`, `SoundSource`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `SoundSecond`, `SoundEnd` (tail) |
+| Reads | `$7128` (`SoundRequests`); `$9522` (`SoundMode`); `$96BF` (`SoundBit`) |
+| Writes | `$7128` (`SoundRequests`); `$9522`-`$9526` (`SoundMode`, `SoundPitch`, `SoundSource`) |
 | Ports out | `$00FE`, `$08FE`, `$10FE`, `$18FE` |
 
 ### `SoundSecond` (`$95CF`)
@@ -2473,7 +2398,7 @@ The level is bit 3 or bit 4 of the ROM byte (the MIC and EAR bits of `$FE`), so 
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2 calls, 212 t-states own (0.00 %) |
 | Called from | `SoundGameOver`, `SoundPulsesNow` |
-| Writes | `$9522`-`$9526` (`SoundMode`, `SoundPitch`, `SoundSource`); `$95AE` (`SoundPulsesNow`) |
+| Writes | `$9522`-`$9526` (`SoundMode`, `SoundPitch`, `SoundSource`); `$95AE` (`SoundPulsesNow+1`) |
 
 ### `SoundNoise` (`$95E7`)
 
@@ -2554,7 +2479,7 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 18 calls, 1,332 t-states own (0.00 %) |
 | Called from | `SoundLaser` (tail) |
 | Calls | `SoundSweepNow` (tail) |
-| Writes | `$9522` (`SoundMode`); `$962B` (`SoundSweepNow`) |
+| Writes | `$9522` (`SoundMode`); `$962B` (`SoundSweepNow+3`) |
 
 ### `SoundArmECM` (`$9648`)
 
@@ -2581,7 +2506,7 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 48 calls, 4,608 t-states own (0.00 %) |
 | Called from | `SoundHit` (tail) |
 | Calls | `SoundNoiseNow` (tail) |
-| Writes | `$9522` (`SoundMode`); `$95F2`-`$95F3` (`SoundNoiseNow`) |
+| Writes | `$9522` (`SoundMode`); `$95F2`-`$95F3` (`SoundNoiseLoop+2`) |
 
 ### `SoundArmShipHit` (`$965E`)
 
@@ -2625,7 +2550,7 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5 calls, 270 t-states own (0.00 %) |
 | Called from | `SoundArmTwoPhase`, `SoundArmLaunch` (tail), `SoundArmScene` (tail) |
 | Calls | `SoundPulsesNow` (tail) |
-| Writes | `$95AE`-`$95BD` (`SoundPulsesNow`) |
+| Writes | `$95AE`-`$95BD` (`SoundPulsesNow+1`, `SoundPulsesLoop`, `SoundPulsesDelay`, `SoundPulsesPass`) |
 
 ### `SoundArmTwoPhase` (`$9692`)
 
@@ -2649,7 +2574,7 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2 calls, 112 t-states own (0.00 %) |
 | Called from | `SoundLaunch` |
 | Calls | `SoundPulsesNow` (tail), `SoundArmPulse` (tail) |
-| Writes | `$9522` (`SoundMode`); `$95AE`-`$95BD` (`SoundPulsesNow`) |
+| Writes | `$9522` (`SoundMode`); `$95AE`-`$95BD` (`SoundPulsesNow+1`, `SoundPulsesLoop`, `SoundPulsesDelay`, `SoundPulsesPass`) |
 
 ### `SoundArmArrive` (`$96A9`)
 
@@ -2719,9 +2644,7 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (launch, flight, hyperspace to Diso, the laser) | 595 calls, 9,539 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,945 calls, 79,196 t-states own (0.02 %) |
 | Called from | `ShiftBC3`, `DrawScanner` |
-| Calls | `ShiftBC1`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `ShiftBC1` |
 
 ### `ShiftBC1` (`$96D1`)
 
@@ -2733,9 +2656,6 @@ SoundArmNoise patches the instruction at `$95F2`: SRL A (`$CB` `$3F`) for a ship
 | Runs (launch, flight, hyperspace to Diso, the laser) | 714 calls, 18,602 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5,934 calls, 154,379 t-states own (0.03 %) |
 | Called from | `ShiftBC2`, `DrawScanner` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
 
 ## scanner
 
@@ -2761,9 +2681,9 @@ Nothing is drawn while no slot is in use (ShipsPresent `$9C96`); a free slot has
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 589,386 t-states own (0.17 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 2,689,366 t-states own (0.58 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `NextLineDown`, `Square`, `ShiftBC4`, `ShiftBC3`, `ShiftBC2`, `ShiftBC1`, `ScannerLineDown`, `ScannerLineUp`, `ConditionYellow`, `ScannerRestore`, `Divide16Vector`, `IM2Entry` |
-| Reads | `$50AE`-`$50B0` (screen); `$518F`-`$51B0` (screen); `$528F`-`$52B0` (screen); `$538F`-`$53AF` (screen); `$548E`-`$55AF` (screen); `$568E`-`$5690` (screen); 13 more ranges |
-| Writes | `$5009`-`$5015` (screen); `$50AE`-`$50B0` (screen); `$5109`-`$5115` (screen); `$518F`-`$51B0` (screen); `$5209`-`$5215` (screen); `$528F`-`$52B0` (screen); 11 more ranges |
+| Calls | `NextLineDown`, `Square`, `ShiftBC4`, `ShiftBC3`, `ShiftBC2`, `ShiftBC1`, `ScannerLineDown`, `ScannerLineUp`, `ConditionYellow`, `ScannerRestore`, `Divide16Vector` |
+| Reads | `$50AE`-`$50B0` (screen); `$518F`-`$51B0` (screen); `$528F`-`$52B0` (screen); `$538F`-`$53AF` (screen); `$548E`-`$55AF` (screen); `$568E`-`$5690` (screen); 12 more ranges |
+| Writes | `$5009`-`$5015` (screen); `$50AE`-`$50B0` (screen); `$5109`-`$5115` (screen); `$518F`-`$51B0` (screen); `$5209`-`$5215` (screen); `$528F`-`$52B0` (screen); 10 more ranges |
 
 ### `ScannerLineDown` (`$986A`)
 
@@ -2782,9 +2702,6 @@ Nothing is drawn while no slot is in use (ShipsPresent `$9C96`); a free slot has
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 139 calls, 8,915 t-states own (0.00 %) |
 | Called from | `DrawScanner` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
 
 ### `ConditionYellow` (`$988E`)
 
@@ -2812,7 +2729,7 @@ The five patched bytes turn the copy around: EX DE,HL first, PUSH HL and POP HL 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 194 t-states own (0.00 %) |
 | Called from | `DashboardRestore` (tail) |
 | Calls | `ScannerRestore`, `ScannerCopy` (tail) |
-| Writes | `$9912`-`$991A` (`ScannerCopy`); `$9935`-`$9940` (`ScannerCopy`) |
+| Writes | `$9912`-`$991A` (`ScannerCopyFlip`, `ScannerCopyRow`, `ScannerCopyLine`); `$9935`-`$9940` (`ScannerCopyLine+27`, `ScannerCopyFlipBack`) |
 
 ### `ScannerRestore` (`$98CD`)
 
@@ -2824,9 +2741,9 @@ The five patched bytes turn the copy around: EX DE,HL first, PUSH HL and POP HL 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 645 calls, 334,903 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 344 calls, 918,037 t-states own (0.20 %) |
 | Called from | `TitleNext`, `DashboardSave`, `DrawScanner`, `ScannerSaveOn` |
-| Calls | `ScannerCopy`, `IM2Entry` |
-| Reads | `$96C4` (`SoundBit`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$502A`-`$5134` (screen); `$522A`-`$5234` (screen); `$532A`-`$5334` (screen); `$542A`-`$5434` (screen); `$552A`-`$5534` (screen); `$562A`-`$5634` (screen); 5 more ranges |
+| Calls | `ScannerCopy` |
+| Reads | `$96C4` (`SoundBit+5`) |
+| Writes | `$502A`-`$5134` (screen); `$522A`-`$5234` (screen); `$532A`-`$5334` (screen); `$542A`-`$5434` (screen); `$552A`-`$5534` (screen); `$562A`-`$5634` (screen); 4 more ranges |
 
 ### `ScannerCopy` (`$990C`)
 
@@ -2838,9 +2755,8 @@ The five patched bytes turn the copy around: EX DE,HL first, PUSH HL and POP HL 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 120 calls, 1,816,181 t-states own (0.54 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 342 calls, 4,994,785 t-states own (1.07 %) |
 | Called from | `ScannerSaveOn` (tail), `ScannerRestore` |
-| Calls | `IM2Entry` |
-| Reads | `$5049`-`$52F5` (screen); `$5349`-`$53F5` (screen); `$5449`-`$54F5` (screen); `$5549`-`$55F5` (screen); `$5649`-`$56F5` (screen); `$5749`-`$57F5` (screen); 2 more ranges |
-| Writes | `$5049`-`$52F5` (screen); `$5349`-`$53F5` (screen); `$5449`-`$54F5` (screen); `$5549`-`$55F5` (screen); `$5649`-`$56F5` (screen); `$5749`-`$57F5` (screen); 2 more ranges |
+| Reads | `$5049`-`$52F5` (screen); `$5349`-`$53F5` (screen); `$5449`-`$54F5` (screen); `$5549`-`$55F5` (screen); `$5649`-`$56F5` (screen); `$5749`-`$57F5` (screen); 1 more ranges |
+| Writes | `$5049`-`$52F5` (screen); `$5349`-`$53F5` (screen); `$5449`-`$54F5` (screen); `$5549`-`$55F5` (screen); `$5649`-`$56F5` (screen); `$5749`-`$57F5` (screen); 1 more ranges |
 
 ### `ResetFlight` (`$9946`)
 
@@ -2855,8 +2771,8 @@ The shields and the altitude full (`$A0`), the energy banks full, the cabin and 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 443 t-states own (0.00 %) |
 | Called from | `SceneLaunch` |
 | Calls | `FillBlock`, `DrawMissiles`, `ClearHighlightsVector` |
-| Reads | `$70E3` (`ViewIndex`); `$D089` (`Equipment`) |
-| Writes | `$70E8`-`$70FC` (`BarDrawn`); `$7129` (`AutoDocked`); `$9C1B` (`MissileLaunchFlag`); `$9C9B` (`ECMActive`); `$D047` (`MissileState`) |
+| Reads | `$70E3` (`ViewIndex`); `$D089` (`Equipment+5`) |
+| Writes | `$70E8`-`$70FC` (`BarForeShield`, `BarAftShield`, `BarFuel`, `BarCabinTemp` and 7 more); `$7129` (`AutoDocked`); `$9C1B` (`MissileLaunchFlag`); `$9C9B` (`ECMActive`); `$D047` (`MissileState`) |
 
 ### `FillBlock` (`$9995`)
 
@@ -2882,9 +2798,9 @@ In the menus and charts (views 4 and up) the condition is a text instead: tokens
 | Runs (launch, flight, hyperspace to Diso, the laser) | 693 calls, 202,589 t-states own (0.06 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 391 calls, 116,585 t-states own (0.02 %) |
 | Called from | `ConditionLightVector` (tail) |
-| Calls | `ConditionGreen`, `IM2Entry` |
-| Reads | `$70E3`-`$70EA` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate` and 1 more); `$7104` (`Condition`); `$99A3` (`ConditionFlash`); `$D047` (`MissileState`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$5A28`-`$5A29` (screen); `$5A48`-`$5A49` (screen); `$5AE7` (screen); `$7104` (`Condition`); `$99A3` (`ConditionFlash`); `$FFF7`-`$FFF8` (`work space $FFF7+`) |
+| Calls | `ConditionGreen` |
+| Reads | `$70E3`-`$70EA` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate` and 1 more); `$7104` (`Condition`); `$99A3` (`ConditionFlash`); `$D047` (`MissileState`) |
+| Writes | `$5A28`-`$5A29` (screen); `$5A48`-`$5A49` (screen); `$5AE7` (screen); `$7104` (`Condition`); `$99A3` (`ConditionFlash`) |
 
 ### `ConditionGreen` (`$9A3A`)
 
@@ -2910,9 +2826,9 @@ The missile keys are cleared after use (KeyCombat AND `$91` keeps A, E and C: T,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 342,199 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 114,206 t-states own (0.02 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `EnergyBombVector`, `DrainBanks`, `ShieldHit`, `Recharge`, `DrawIndicators`, `MissileKeys`, `EscapePod`, `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$70F6`-`$7104` (`BarDrawn`, `WitchSpace`, `Condition`); `$9CA2`-`$9CA4` (`EnergyDrain`, `FrontHits`, `AftHits`); `$D041` (`CloakOn`); `$FC0B` (`KeyCombat`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70F6`-`$7104` (`BarDrawn`, `WitchSpace`, `Condition`); `$FC0B` (`KeyCombat`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `EnergyBombVector`, `DrainBanks`, `ShieldHit`, `Recharge`, `DrawIndicators`, `MissileKeys`, `EscapePod` |
+| Reads | `$70E3` (`ViewIndex`); `$70F6`-`$7104` (`BarEnergy1`, `WitchSpace`, `Condition`); `$9CA2`-`$9CA4` (`EnergyDrain`, `FrontHits`, `AftHits`); `$D041` (`CloakOn`); `$FC0B` (`KeyCombat`) |
+| Writes | `$70F6`-`$7104` (`BarEnergy1`, `WitchSpace`, `Condition`); `$FC0B` (`KeyCombat`) |
 
 ### `Damage` (`$9A59`)
 
@@ -2932,8 +2848,8 @@ Front hits (`$9CA3`) on the front shield, aft hits (`$9CA4`) on the aft one, the
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 378 calls, 77,151 t-states own (0.02 %) |
 | Called from | `DashboardTick`, `ShieldHit` |
-| Reads | `$70F6`-`$70FC` (`BarDrawn`) |
-| Writes | `$70F6`-`$70FC` (`BarDrawn`); `$711F` (`TooClose`) |
+| Reads | `$70F6`-`$70FC` (`BarEnergy1`, `BarEnergy2`, `BarEnergy3`, `BarEnergy4`) |
+| Writes | `$70F6`-`$70FC` (`BarEnergy1`, `BarEnergy2`, `BarEnergy3`, `BarEnergy4`); `$711F` (`TooClose`) |
 
 ### `ShieldHit` (`$9AA7`)
 
@@ -2947,9 +2863,9 @@ A hit of `$46` or more, or a flash count past 12, calls DamageItem (DamageVector
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,286 calls, 60,442 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 682 calls, 41,846 t-states own (0.01 %) |
 | Called from | `DashboardTick` |
-| Calls | `DrainBanks`, `DamageVector` (tail), `IM2Entry` |
-| Reads | `$70E8`-`$70EA` (`BarDrawn`); `$9ADA` (`HitCount`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70E8`-`$70EA` (`BarDrawn`); `$9ADA` (`HitCount`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `DrainBanks`, `DamageVector` (tail) |
+| Reads | `$70E8`-`$70EA` (`BarForeShield`, `BarAftShield`); `$9ADA` (`HitCount`) |
+| Writes | `$70E8`-`$70EA` (`BarForeShield`, `BarAftShield`); `$9ADA` (`HitCount`) |
 
 ### `Recharge` (`$9ADB`)
 
@@ -2961,9 +2877,9 @@ A hit of `$46` or more, or a flash count past 12, calls DamageItem (DamageVector
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 179,176 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 83,862 t-states own (0.02 %) |
 | Called from | `DashboardTick` |
-| Calls | `ShieldGain`, `IM2Entry` |
-| Reads | `$70F6`-`$70FC` (`BarDrawn`); `$D08B` (`Equipment`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$70F6`-`$70FC` (`BarDrawn`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `ShieldGain` |
+| Reads | `$70F6`-`$70FC` (`BarEnergy1`, `BarEnergy2`, `BarEnergy3`, `BarEnergy4`); `$D08B` (`Equipment+7`) |
+| Writes | `$70F6`-`$70FC` (`BarEnergy1`, `BarEnergy2`, `BarEnergy3`, `BarEnergy4`) |
 
 ### `RechargeStep` (`$9AE2`)
 
@@ -2983,8 +2899,8 @@ A hit of `$46` or more, or a flash count past 12, calls DamageItem (DamageVector
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,190 calls, 31,552 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 296 calls, 8,079 t-states own (0.00 %) |
 | Called from | `Recharge` |
-| Reads | `$70E8`-`$70EA` (`BarDrawn`) |
-| Writes | `$70E8` (`BarDrawn`) |
+| Reads | `$70E8`-`$70EA` (`BarForeShield`, `BarAftShield`) |
+| Writes | `$70E8` (`BarForeShield`) |
 
 ### `DrawIndicators` (`$9B01`)
 
@@ -3000,7 +2916,7 @@ Printed through PrintCode with the back-buffer switch (`$D04B`'s byte) off, at t
 | Called from | `DashboardTick` |
 | Calls | `PrintBlock`, `PrintCodeVector` |
 | Reads | `$711C` (`SafeZone`); `$9C9B` (`ECMActive`); `$D04B`-`$D04C` (`PrintTarget`) |
-| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D548` (`PlotChar`) |
+| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D548` (`PlotCharLine+2`) |
 
 ### `PrintBlock` (`$9B4A`)
 
@@ -3049,8 +2965,8 @@ Printed through PrintCode with the back-buffer switch (`$D04B`'s byte) off, at t
 | Runs (launch, flight, hyperspace to Diso, the laser) | 5,144 calls, 313,803 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,728 calls, 166,408 t-states own (0.04 %) |
 | Called from | `PrintTwo` |
-| Calls | `PrintCodeVector`, `IM2Entry` |
-| Reads | `$9B68`-`$9B73` (`IndicatorCodes`) |
+| Calls | `PrintCodeVector` |
+| Reads | `$9B68`-`$9B73` (`IndicatorCodes+6`) |
 
 ### `DrawMissiles` (`$9B74`)
 
@@ -3064,7 +2980,7 @@ Printed through PrintCode with the back-buffer switch (`$D04B`'s byte) off, at t
 | Called from | `ResetFlight` |
 | Calls | `PrintCodeVector` |
 | Reads | `$D04B`-`$D04C` (`PrintTarget`); `$D083` (`Missiles`) |
-| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D548` (`PlotChar`) |
+| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D548` (`PlotCharLine+2`) |
 
 ### `MissileKeys` (`$9BA7`)
 
@@ -3078,9 +2994,7 @@ MissileState `$D047`: 0 off, 1 armed, 2 locked on MissileTarget `$D0E3`. The loc
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 92,611 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 49,104 t-states own (0.01 %) |
 | Called from | `DashboardTick` |
-| Calls | `IM2Entry` |
-| Reads | `$D047` (`MissileState`); `$D083` (`Missiles`); `$FC0B` (`KeyCombat`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Reads | `$D047` (`MissileState`); `$D083` (`Missiles`); `$FC0B` (`KeyCombat`) |
 
 ## shipmotion
 
@@ -3098,9 +3012,7 @@ Clears the cargo hold (`$D06B`, 17 bytes) and the fugitive bit of `$D0B0`, empti
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 41,795 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 341 calls, 22,184 t-states own (0.00 %) |
 | Called from | `DashboardTick` |
-| Calls | `IM2Entry` |
-| Reads | `$9C1B` (`MissileLaunchFlag`); `$FC0B` (`KeyCombat`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Reads | `$9C1B` (`MissileLaunchFlag`); `$FC0B` (`KeyCombat`) |
 
 ### `UpdateShipsVector` (`$9C80`)
 
@@ -3112,9 +3024,7 @@ Clears the cargo hold (`$D06B`, 17 bytes) and the fugitive bit of `$D0B0`, empti
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 6,430 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 371 calls, 3,729 t-states own (0.00 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `ShipsAndLaser` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `ShipsAndLaser` (tail) |
 
 ### `MovePositionVector` (`$9C83`)
 
@@ -3150,9 +3060,7 @@ Clears the cargo hold (`$D06B`, 17 bytes) and the fugitive bit of `$D0B0`, empti
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,643 calls, 16,430 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,649 calls, 36,509 t-states own (0.01 %) |
 | Called from | `CompassDivide`, `CompassDivideScale`, `DrawScanner` |
-| Calls | `Divide16` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF7`-`$FFF8` (`work space $FFF7+`) |
+| Calls | `Divide16` (tail) |
 
 ### `DrawLineVector` (`$9C8C`)
 
@@ -3252,9 +3160,9 @@ Before the loop: the station hostile in mission state 4 (`$D0AF`), the line draw
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 502,963 t-states own (0.15 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 371 calls, 298,705 t-states own (0.06 %) |
 | Called from | `ShipsAndLaser` |
-| Calls | `UpdateSlot`, `ShipAction`, `IM2Entry` |
-| Reads | `$608F`-`$6091` (`ShipSlots`); `$60B6`-`$60B8` (`ShipSlots`); `$60DD`-`$60DF` (`ShipSlots`); `$6104`-`$6106` (`ShipSlots`); `$612D` (`ShipSlots`); `$6154` (`ShipSlots`); 6 more ranges |
-| Writes | `$9C93`-`$9CB3` (`JumpEncounter`, `ShipsAbout`, `BombKill`, `ShipsPresent` and 17 more); `$B435` (`LineUpX`); `$B465` (`LineUpY`); `$B486` (`LineDownX`); `$B4B2` (`LineDownY`); `$FFF7`-`$FFFA` (`work space $FFF7+`) |
+| Calls | `UpdateSlot`, `ShipAction` |
+| Reads | `$608F`-`$6091` (`ShipSlots+71`); `$60B6`-`$60B8` (`ShipSlots+110`); `$60DD`-`$60DF` (`ShipSlots+149`); `$6104`-`$6106` (`ShipSlots+188`); `$612D` (`ShipSlots+229`); `$6154` (`ShipSlots+268`); 5 more ranges |
+| Writes | `$9C93`-`$9CB3` (`JumpEncounter`, `ShipsAbout`, `BombKill`, `ShipsPresent` and 17 more); `$B435` (`LineUpX+1`); `$B465` (`LineUpY+1`); `$B486` (`LineDownX+1`); `$B4B2` (`LineDownY+1`) |
 
 ### `UpdateSlot` (`$9D38`)
 
@@ -3268,9 +3176,9 @@ A destroyed ship (+`$20` bits 4-5 = 01 or 11) skips the move; state 10 frees the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 5,144 calls, 394,024 t-states own (0.12 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,968 calls, 940,492 t-states own (0.20 %) |
 | Called from | `UpdateShips`, `UpdateSlotNext` (tail) |
-| Calls | `UpdateSlotNext` (tail), `TidyAxis`, `UpdateShip`, `Tactics`, `DrawShip`, `Orthogonalise`, `Collide`, `IM2Entry` |
-| Reads | `$6068`-`$6095` (`ShipSlots`); `$60B6`-`$60BC` (`ShipSlots`); `$60DD`-`$60E3` (`ShipSlots`); `$6104`-`$610A` (`ShipSlots`); `$612D` (`ShipSlots`); `$6154` (`ShipSlots`); 3 more ranges |
-| Writes | `$6068` (`ShipSlots`); `$608F` (`ShipSlots`); `$60B6` (`ShipSlots`); `$60DD` (`ShipSlots`); `$6104` (`ShipSlots`); `$9C94`-`$9C96` (`ShipsAbout`, `BombKill`, `ShipsPresent`); 2 more ranges |
+| Calls | `UpdateSlotNext` (tail), `TidyAxis`, `UpdateShip`, `Tactics`, `DrawShip`, `Orthogonalise`, `Collide` |
+| Reads | `$6068`-`$6095` (`ShipSlots+32`); `$60B6`-`$60BC` (`ShipSlots+110`); `$60DD`-`$60E3` (`ShipSlots+149`); `$6104`-`$610A` (`ShipSlots+188`); `$612D` (`ShipSlots+229`); `$6154` (`ShipSlots+268`); 2 more ranges |
+| Writes | `$6068` (`ShipSlots+32`); `$608F` (`ShipSlots+71`); `$60B6` (`ShipSlots+110`); `$60DD` (`ShipSlots+149`); `$6104` (`ShipSlots+188`); `$9C94`-`$9C96` (`ShipsAbout`, `BombKill`, `ShipsPresent`); 1 more ranges |
 
 ### `UpdateSlotNext` (`$9E5C`)
 
@@ -3282,9 +3190,9 @@ A destroyed ship (+`$20` bits 4-5 = 01 or 11) skips the move; state 10 frees the
 | Runs (launch, flight, hyperspace to Diso, the laser) | 5,144 calls, 291,922 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,968 calls, 164,269 t-states own (0.04 %) |
 | Called from | `UpdateSlot` (tail) |
-| Calls | `UpdateSlot` (tail), `IM2Entry` |
-| Reads | `$9C94` (`ShipsAbout`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$9C95`-`$9C99` (`BombKill`, `ShipsPresent`, `SightTarget`, `ShipVarSpare2` and 1 more); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `UpdateSlot` (tail) |
+| Reads | `$9C94` (`ShipsAbout`) |
+| Writes | `$9C95`-`$9C99` (`BombKill`, `ShipsPresent`, `SightTarget`, `ShipVarSpare2` and 1 more) |
 
 ### `Normalise` (`$9E73`)
 
@@ -3306,9 +3214,8 @@ A destroyed ship (+`$20` bits 4-5 = 01 or 11) skips the move; state 10 frees the
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 645 calls, 209,017 t-states own (0.04 %) |
 | Called from | `Normalise` |
-| Calls | `Multiply8`, `IM2Entry` |
-| Reads | `$A2B8`-`$A2BD` (`TargetVector`); `$BE00`-`$BFFF` (`SquaresLow`, `SquaresHigh`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFEC` (`work space $FFE9+`) |
+| Calls | `Multiply8` |
+| Reads | `$A2B8`-`$A2BD` (`TargetVector`); `$BE00`-`$BFFF` (`SquaresLow`, `SquaresHigh`) |
 
 ### `DivideComponent` (`$9ECF`)
 
@@ -3318,9 +3225,9 @@ A destroyed ship (+`$20` bits 4-5 = 01 or 11) skips the move; state 10 frees the
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 645 calls, 122,201 t-states own (0.03 %) |
 | Called from | `Normalise` |
-| Calls | `Divide16`, `IM2Entry` |
-| Reads | `$A2B8`-`$A2BD` (`TargetVector`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$A2B8`-`$A2BD` (`TargetVector`); `$FFE9`-`$FFEC` (`work space $FFE9+`) |
+| Calls | `Divide16` |
+| Reads | `$A2B8`-`$A2BD` (`TargetVector`) |
+| Writes | `$A2B8`-`$A2BD` (`TargetVector`) |
 
 ### `SquareRoot` (`$9EF1`)
 
@@ -3334,9 +3241,7 @@ Below `$1000` the value is shifted up by 8 (or 4) and the root down by 4 (or 2).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 647 calls, 15,537 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 560 calls, 48,834 t-states own (0.01 %) |
 | Called from | `SquareRootVector` (tail), `Normalise` |
-| Calls | `SquareRootCore` (tail), `SquareRootStep`, `SquareRootAdd`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFEE` (`work space $FFED+`) |
+| Calls | `SquareRootCore` (tail), `SquareRootStep`, `SquareRootAdd` |
 
 ### `SquareRootCore` (`$9F18`)
 
@@ -3347,9 +3252,7 @@ Below `$1000` the value is shifted up by 8 (or 4) and the root down by 4 (or 2).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 647 calls, 71,170 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 560 calls, 61,619 t-states own (0.01 %) |
 | Called from | `SquareRoot` (tail) |
-| Calls | `SquareRootStep`, `SquareRootAdd`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE7`-`$FFE8` (`work space $FFE7+`) |
+| Calls | `SquareRootStep`, `SquareRootAdd` |
 
 ### `SquareRootStep` (`$9F2B`)
 
@@ -3373,9 +3276,7 @@ Below `$1000` the value is shifted up by 8 (or 4) and the root down by 4 (or 2).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,941 calls, 153,358 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,680 calls, 132,815 t-states own (0.03 %) |
 | Called from | `SquareRoot`, `SquareRootCore`, `SquareRootStep` |
-| Calls | `Divide16`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE7`-`$FFEA` (`work space $FFE7+`) |
+| Calls | `Divide16` |
 
 ### `TidyAxis` (`$9F41`)
 
@@ -3389,9 +3290,8 @@ The correction is the sum of the three high bytes' squares (the table `$BF00`, i
 | Runs (launch, flight, hyperspace to Diso, the laser) | 466 calls, 97,602 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,802 calls, 798,633 t-states own (0.17 %) |
 | Called from | `UpdateSlot`, `TurnTitleShip` |
-| Calls | `TidyPart`, `IM2Entry` |
-| Reads | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$616D` (`Slot7`); 2 more ranges |
-| Writes | `$FFF3`-`$FFF4` (`work space $FFF3+`) |
+| Calls | `TidyPart` |
+| Reads | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`); 1 more ranges |
 
 ### `TidyPart` (`$9F68`)
 
@@ -3403,9 +3303,9 @@ The correction is the sum of the three high bytes' squares (the table `$BF00`, i
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,398 calls, 191,132 t-states own (0.06 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 11,406 calls, 1,568,162 t-states own (0.34 %) |
 | Called from | `TidyAxis` |
-| Calls | `Multiply8`, `IM2Entry` |
-| Reads | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$616D` (`Slot7`); 1 more ranges |
-| Writes | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$616D` (`Slot7`); 1 more ranges |
+| Calls | `Multiply8` |
+| Reads | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`) |
+| Writes | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`) |
 
 ### `UpdateShip` (`$9F82`)
 
@@ -3419,9 +3319,9 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 120 calls, 52,456 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,076 calls, 493,690 t-states own (0.11 %) |
 | Called from | `UpdateSlot` |
-| Calls | `MoveShip`, `TurnAxis`, `MovePosition`, `RemoveShip` (tail), `IM2Entry` |
-| Reads | `$604A`-`$604D` (`ShipSlots`); `$6065`-`$6074` (`ShipSlots`); `$608C`-`$609B` (`ShipSlots`); `$60B3`-`$60C2` (`ShipSlots`); `$60DA`-`$60E9` (`ShipSlots`); `$6101`-`$610A` (`ShipSlots`); 2 more ranges |
-| Writes | `$606A` (`ShipSlots`); `$608C`-`$608D` (`ShipSlots`); `$60B3`-`$60B4` (`ShipSlots`); `$60DA`-`$60DB` (`ShipSlots`); `$6101`-`$6102` (`ShipSlots`); `$9F80`-`$9F81` (`TurnRates`); 1 more ranges |
+| Calls | `MoveShip`, `TurnAxis`, `MovePosition`, `RemoveShip` (tail) |
+| Reads | `$604A`-`$604D` (`ShipSlots+2`); `$6065`-`$6074` (`ShipSlots+29`); `$608C`-`$609B` (`ShipSlots+68`); `$60B3`-`$60C2` (`ShipSlots+107`); `$60DA`-`$60E9` (`ShipSlots+146`); `$6101`-`$610A` (`ShipSlots+185`); 1 more ranges |
+| Writes | `$606A` (`ShipSlots+34`); `$608C`-`$608D` (`ShipSlots+68`); `$60B3`-`$60B4` (`ShipSlots+107`); `$60DA`-`$60DB` (`ShipSlots+146`); `$6101`-`$6102` (`ShipSlots+185`); `$9F80`-`$9F81` (`TurnRates`) |
 
 ### `MoveShip` (`$9FFD`)
 
@@ -3433,9 +3333,9 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 172 calls, 50,860 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,363 calls, 403,166 t-states own (0.09 %) |
 | Called from | `UpdateShip`, `TurnTitleShip` |
-| Calls | `MoveAlongAxis`, `TurnOwn`, `IM2Entry` |
-| Reads | `$6063`-`$6064` (`ShipSlots`); `$608A`-`$608B` (`ShipSlots`); `$60B1`-`$60B2` (`ShipSlots`); `$60D8`-`$60D9` (`ShipSlots`); `$60FF`-`$6100` (`ShipSlots`); `$6174`-`$6175` (`Slot7`) |
-| Writes | `$9F81` (`TurnRates`) |
+| Calls | `MoveAlongAxis`, `TurnOwn` |
+| Reads | `$6063`-`$6064` (`ShipSlots+27`); `$608A`-`$608B` (`ShipSlots+66`); `$60B1`-`$60B2` (`ShipSlots+105`); `$60D8`-`$60D9` (`ShipSlots+144`); `$60FF`-`$6100` (`ShipSlots+183`); `$6174`-`$6175` (`Slot7+27`) |
+| Writes | `$9F81` (`TurnRates+1`) |
 
 ### `MoveAlongAxis` (`$A04B`)
 
@@ -3447,9 +3347,9 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 516 calls, 143,126 t-states own (0.04 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,089 calls, 1,144,534 t-states own (0.24 %) |
 | Called from | `MoveShip` |
-| Calls | `MultiplySpeed`, `AddSigned`, `IM2Entry` |
-| Reads | `$6048`-`$6056` (`ShipSlots`); `$606F`-`$607D` (`ShipSlots`); `$6096`-`$60A4` (`ShipSlots`); `$60BD`-`$60CB` (`ShipSlots`); `$60E4`-`$60F2` (`ShipSlots`); `$6159`-`$6167` (`Slot7`); 1 more ranges |
-| Writes | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots`); `$6096`-`$609E` (`ShipSlots`); `$60BD`-`$60C5` (`ShipSlots`); `$60E4`-`$60EC` (`ShipSlots`); `$6159`-`$6161` (`Slot7`); 1 more ranges |
+| Calls | `MultiplySpeed`, `AddSigned` |
+| Reads | `$6048`-`$6056` (`ShipSlots`); `$606F`-`$607D` (`ShipSlots+39`); `$6096`-`$60A4` (`ShipSlots+78`); `$60BD`-`$60CB` (`ShipSlots+117`); `$60E4`-`$60F2` (`ShipSlots+156`); `$6159`-`$6167` (`Slot7`) |
+| Writes | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots+39`); `$6096`-`$609E` (`ShipSlots+78`); `$60BD`-`$60C5` (`ShipSlots+117`); `$60E4`-`$60EC` (`ShipSlots+156`); `$6159`-`$6161` (`Slot7`) |
 
 ### `MultiplySpeed` (`$A076`)
 
@@ -3461,9 +3361,6 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 516 calls, 200,819 t-states own (0.06 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,089 calls, 1,641,107 t-states own (0.35 %) |
 | Called from | `MoveAlongAxis` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF0` (`work space $FFE9+`) |
 
 ### `AddSigned` (`$A098`)
 
@@ -3475,9 +3372,6 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 516 calls, 26,288 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,089 calls, 214,661 t-states own (0.05 %) |
 | Called from | `MoveAlongAxis` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFEC` (`work space $FFEB+`) |
 
 ### `TurnAxis` (`$A0AB`)
 
@@ -3489,9 +3383,9 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 357 calls, 164,881 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3,228 calls, 1,490,512 t-states own (0.32 %) |
 | Called from | `UpdateShip` |
-| Calls | `RotatePart`, `IM2Entry` |
-| Reads | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$9F80`-`$9F81` (`TurnRates`); 1 more ranges |
-| Writes | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$FFEF`-`$FFF2` (`work space $FFEF+`) |
+| Calls | `RotatePart` |
+| Reads | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$9F80`-`$9F81` (`TurnRates`) |
+| Writes | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`) |
 
 ### `RotatePart` (`$A0FD`)
 
@@ -3503,9 +3397,7 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,492 calls, 536,700 t-states own (0.16 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 29,268 calls, 4,497,500 t-states own (0.96 %) |
 | Called from | `TurnAxis`, `TurnOwn` |
-| Calls | `Multiply8High`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFF0` (`work space $FFEB+`) |
+| Calls | `Multiply8High` |
 
 ### `TurnOwn` (`$A127`)
 
@@ -3517,9 +3409,9 @@ Too far: a high byte of x, y or z past 0 (z past `$60` for anything but the stat
 | Runs (launch, flight, hyperspace to Diso, the laser) | 516 calls, 223,763 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,089 calls, 1,780,426 t-states own (0.38 %) |
 | Called from | `MoveShip` |
-| Calls | `RotatePart`, `IM2Entry` |
-| Reads | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$6173` (`Slot7`); 2 more ranges |
-| Writes | `$6052`-`$6062` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$6173` (`Slot7`); 1 more ranges |
+| Calls | `RotatePart` |
+| Reads | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$6173` (`Slot7+10`); 1 more ranges |
+| Writes | `$6052`-`$6062` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$6173` (`Slot7+10`) |
 
 ### `MovePosition` (`$A173`)
 
@@ -3533,9 +3425,9 @@ x, y, z each three bytes; the four rotations use full precision (CombineParts). 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,954 calls, 815,207 t-states own (0.24 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,350 calls, 557,491 t-states own (0.12 %) |
 | Called from | `MovePositionVector` (tail), `UpdateShip` |
-| Calls | `CombineParts`, `RateBits`, `IM2Entry` |
-| Reads | `$604E`-`$6050` (`ShipSlots`); `$6075`-`$6077` (`ShipSlots`); `$609C`-`$609E` (`ShipSlots`); `$60C3`-`$60C5` (`ShipSlots`); `$60EA`-`$60EC` (`ShipSlots`); `$70E4`-`$70E6` (`RollRate`, `PitchRate`, `SpeedRate`); 2 more ranges |
-| Writes | `$604E`-`$6050` (`ShipSlots`); `$6075`-`$6077` (`ShipSlots`); `$609C`-`$609E` (`ShipSlots`); `$60C3`-`$60C5` (`ShipSlots`); `$60EA`-`$60EC` (`ShipSlots`); `$710D`-`$7118` (`SunPosition`, `PlanetPosition`); 1 more ranges |
+| Calls | `CombineParts`, `RateBits` |
+| Reads | `$604E`-`$6050` (`ShipSlots+6`); `$6075`-`$6077` (`ShipSlots+45`); `$609C`-`$609E` (`ShipSlots+84`); `$60C3`-`$60C5` (`ShipSlots+123`); `$60EA`-`$60EC` (`ShipSlots+162`); `$70E4`-`$70E6` (`RollRate`, `PitchRate`, `SpeedRate`); 1 more ranges |
+| Writes | `$604E`-`$6050` (`ShipSlots+6`); `$6075`-`$6077` (`ShipSlots+45`); `$609C`-`$609E` (`ShipSlots+84`); `$60C3`-`$60C5` (`ShipSlots+123`); `$60EA`-`$60EC` (`ShipSlots+162`); `$710D`-`$7118` (`SunPosition+6`, `PlanetPosition`) |
 
 ### `CombineParts` (`$A1EA`)
 
@@ -3547,9 +3439,9 @@ x, y, z each three bytes; the four rotations use full precision (CombineParts). 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 7,816 calls, 5,716,758 t-states own (1.68 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5,400 calls, 3,947,106 t-states own (0.84 %) |
 | Called from | `MovePosition` |
-| Calls | `Multiply8High`, `Multiply8`, `IM2Entry` |
-| Reads | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots`); `$6096`-`$609E` (`ShipSlots`); `$60BD`-`$60C5` (`ShipSlots`); `$60E4`-`$60EC` (`ShipSlots`); `$7107`-`$7118` (`SunPosition`, `PlanetPosition`); 1 more ranges |
-| Writes | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots`); `$6096`-`$609E` (`ShipSlots`); `$60BD`-`$60C5` (`ShipSlots`); `$60E4`-`$60EC` (`ShipSlots`); `$7107`-`$7118` (`SunPosition`, `PlanetPosition`); 1 more ranges |
+| Calls | `Multiply8High`, `Multiply8` |
+| Reads | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots+39`); `$6096`-`$609E` (`ShipSlots+78`); `$60BD`-`$60C5` (`ShipSlots+117`); `$60E4`-`$60EC` (`ShipSlots+156`); `$7107`-`$7118` (`SunPosition`, `PlanetPosition`) |
+| Writes | `$6048`-`$6050` (`ShipSlots`); `$606F`-`$6077` (`ShipSlots+39`); `$6096`-`$609E` (`ShipSlots+78`); `$60BD`-`$60C5` (`ShipSlots+117`); `$60E4`-`$60EC` (`ShipSlots+156`); `$7107`-`$7118` (`SunPosition`, `PlanetPosition`) |
 
 ### `RateBits` (`$A281`)
 
@@ -3561,7 +3453,6 @@ x, y, z each three bytes; the four rotations use full precision (CombineParts). 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,908 calls, 179,787 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,700 calls, 124,200 t-states own (0.03 %) |
 | Called from | `MovePosition` |
-| Calls | `IM2Entry` |
 
 ## tactics
 
@@ -3580,7 +3471,7 @@ Roll `$94` (TurnRates) and pitch `$8C` (A) through MoveShip with the ship's own 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 287 calls, 61,896 t-states own (0.01 %) |
 | Called from | `DrawTitleShipVector` (tail) |
 | Calls | `TidyAxis`, `MoveShip`, `DrawShip` (tail), `Orthogonalise` |
-| Reads | `$617C`-`$617D` (`Slot7`) |
+| Reads | `$617C`-`$617D` (`Slot7+35`) |
 | Writes | `$9F80` (`TurnRates`) |
 
 ### `Tactics` (`$A2C0`)
@@ -3593,9 +3484,9 @@ Energy: one more a pass (four more above `$F0` of the blueprint's maximum, +`$07
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 215 calls, 170,464 t-states own (0.04 %) |
 | Called from | `UpdateSlot` |
-| Calls | `NearBox`, `AwayPart`, `TowardsPart`, `TacticsAim` (tail), `IM2Entry` |
-| Reads | `$606A` (`ShipSlots`); `$6090`-`$6095` (`ShipSlots`); `$60B7`-`$60BC` (`ShipSlots`); `$60DE`-`$60E3` (`ShipSlots`); `$6105`-`$610A` (`ShipSlots`); `$617B` (`Slot7`); 5 more ranges |
-| Writes | `$6091`-`$6095` (`ShipSlots`); `$60B8`-`$60BC` (`ShipSlots`); `$60DF`-`$60E3` (`ShipSlots`); `$6106`-`$610A` (`ShipSlots`); `$A2B8`-`$A2BD` (`TargetVector`) |
+| Calls | `NearBox`, `AwayPart`, `TowardsPart`, `TacticsAim` (tail) |
+| Reads | `$606A` (`ShipSlots+34`); `$6090`-`$6095` (`ShipSlots+72`); `$60B7`-`$60BC` (`ShipSlots+111`); `$60DE`-`$60E3` (`ShipSlots+150`); `$6105`-`$610A` (`ShipSlots+189`); `$617B` (`Slot7+34`); 5 more ranges |
+| Writes | `$6091`-`$6095` (`ShipSlots+73`); `$60B8`-`$60BC` (`ShipSlots+112`); `$60DF`-`$60E3` (`ShipSlots+151`); `$6106`-`$610A` (`ShipSlots+190`); `$A2B8`-`$A2BD` (`TargetVector`) |
 
 ### `LaunchFromShip` (`$A403`)
 
@@ -3613,9 +3504,7 @@ Energy: one more a pass (four more above `$F0` of the blueprint's maximum, +`$07
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 282 calls, 37,599 t-states own (0.01 %) |
 | Called from | `Tactics` |
-| Calls | `IM2Entry` |
-| Reads | `$606F`-`$6076` (`ShipSlots`); `$6096`-`$609D` (`ShipSlots`); `$60BD`-`$60C4` (`ShipSlots`); `$60E4`-`$60EB` (`ShipSlots`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF3`-`$FFF4` (`work space $FFF3+`) |
+| Reads | `$606F`-`$6076` (`ShipSlots+39`); `$6096`-`$609D` (`ShipSlots+78`); `$60BD`-`$60C4` (`ShipSlots+117`); `$60E4`-`$60EB` (`ShipSlots+156`) |
 
 ### `TacticsSteer` (`$A42F`)
 
@@ -3662,7 +3551,7 @@ The target is +`$25` (0 the player, else 8 - slot). Hitting the station in missi
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 396 calls, 15,523 t-states own (0.00 %) |
 | Called from | `Tactics` |
 | Calls | `TowardsPartNow` (tail) |
-| Reads | `$6071`-`$6077` (`ShipSlots`); `$6098`-`$609E` (`ShipSlots`); `$60BF`-`$60C5` (`ShipSlots`); `$60E6`-`$60EC` (`ShipSlots`) |
+| Reads | `$6071`-`$6077` (`ShipSlots+41`); `$6098`-`$609E` (`ShipSlots+80`); `$60BF`-`$60C5` (`ShipSlots+119`); `$60E6`-`$60EC` (`ShipSlots+158`) |
 
 ### `TowardsPart` (`$A56F`)
 
@@ -3673,7 +3562,7 @@ The target is +`$25` (0 the player, else 8 - slot). Hitting the station in missi
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 249 calls, 4,996 t-states own (0.00 %) |
 | Called from | `Tactics` |
 | Calls | `TowardsPartNow` |
-| Reads | `$6071`-`$6077` (`ShipSlots`); `$6098`-`$609E` (`ShipSlots`); `$60BF`-`$60C5` (`ShipSlots`); `$60E6`-`$60EC` (`ShipSlots`) |
+| Reads | `$6071`-`$6077` (`ShipSlots+41`); `$6098`-`$609E` (`ShipSlots+80`); `$60BF`-`$60C5` (`ShipSlots+119`); `$60E6`-`$60EC` (`ShipSlots+158`) |
 
 ### `TowardsPartNow` (`$A572`)
 
@@ -3683,9 +3572,7 @@ The target is +`$25` (0 the player, else 8 - slot). Hitting the station in missi
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 645 calls, 71,963 t-states own (0.02 %) |
 | Called from | `AwayPart` (tail), `TowardsPart` |
-| Calls | `IM2Entry` |
-| Reads | `$606F`-`$6076` (`ShipSlots`); `$6096`-`$609D` (`ShipSlots`); `$60BD`-`$60C4` (`ShipSlots`); `$60E4`-`$60EB` (`ShipSlots`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Reads | `$606F`-`$6076` (`ShipSlots+39`); `$6096`-`$609D` (`ShipSlots+78`); `$60BD`-`$60C4` (`ShipSlots+117`); `$60E4`-`$60EB` (`ShipSlots+156`) |
 
 ### `TacticsAim` (`$A587`)
 
@@ -3697,9 +3584,9 @@ Roll from the side's product (up to 15 steps, its sign against the roof), pitch 
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 215 calls, 192,009 t-states own (0.04 %) |
 | Called from | `Tactics` (tail) |
-| Calls | `Normalise`, `DotProduct`, `Random`, `IM2Entry` |
-| Reads | `$6077`-`$607D` (`ShipSlots`); `$608F`-`$60A4` (`ShipSlots`); `$60B6`-`$60CB` (`ShipSlots`); `$60DD`-`$60F2` (`ShipSlots`); `$6104`-`$610A` (`ShipSlots`); `$6C15` (`ShipThargoid`); 5 more ranges |
-| Writes | `$608B`-`$608F` (`ShipSlots`); `$60B2`-`$60B6` (`ShipSlots`); `$60D9`-`$60DD` (`ShipSlots`); `$6100`-`$6104` (`ShipSlots`); `$7128` (`SoundRequests`); `$9CA3`-`$9CA4` (`FrontHits`, `AftHits`); 2 more ranges |
+| Calls | `Normalise`, `DotProduct`, `Random` |
+| Reads | `$6077`-`$607D` (`ShipSlots+47`); `$608F`-`$60A4` (`ShipSlots+71`); `$60B6`-`$60CB` (`ShipSlots+110`); `$60DD`-`$60F2` (`ShipSlots+149`); `$6104`-`$610A` (`ShipSlots+188`); `$6C15` (`ShipThargoid+2`); 4 more ranges |
+| Writes | `$608B`-`$608F` (`ShipSlots+67`); `$60B2`-`$60B6` (`ShipSlots+106`); `$60D9`-`$60DD` (`ShipSlots+145`); `$6100`-`$6104` (`ShipSlots+184`); `$7128` (`SoundRequests`); `$9CA3`-`$9CA4` (`FrontHits`, `AftHits`); 1 more ranges |
 
 ### `MultiplyHigh4` (`$A69D`)
 
@@ -3711,7 +3598,7 @@ Roll from the side's product (up to 15 steps, its sign against the roof), pitch 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 519 calls, 43,096 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 6,024 calls, 500,011 t-states own (0.11 %) |
 | Called from | `DotProduct` |
-| Calls | `Multiply8High`, `IM2Entry` |
+| Calls | `Multiply8High` |
 
 ### `DotProduct` (`$A6AC`)
 
@@ -3723,9 +3610,8 @@ Roll from the side's product (up to 15 steps, its sign against the roof), pitch 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 173 calls, 50,685 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,008 calls, 592,083 t-states own (0.13 %) |
 | Called from | `TacticsAim`, `Orthogonalise` |
-| Calls | `MultiplyHigh4`, `AddSignedBytes`, `IM2Entry` |
-| Reads | `$6052`-`$605C` (`ShipSlots`); `$6079`-`$6089` (`ShipSlots`); `$60A0`-`$60B0` (`ShipSlots`); `$60C7`-`$60D7` (`ShipSlots`); `$60EE`-`$60FE` (`ShipSlots`); `$6163`-`$616D` (`Slot7`); 2 more ranges |
-| Writes | `$FFEB`-`$FFF0` (`work space $FFEB+`) |
+| Calls | `MultiplyHigh4`, `AddSignedBytes` |
+| Reads | `$6052`-`$605C` (`ShipSlots+10`); `$6079`-`$6089` (`ShipSlots+49`); `$60A0`-`$60B0` (`ShipSlots+88`); `$60C7`-`$60D7` (`ShipSlots+127`); `$60EE`-`$60FE` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`); 1 more ranges |
 
 ## drawships
 
@@ -3743,9 +3629,9 @@ Roll from the side's product (up to 15 steps, its sign against the roof), pitch 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 173 calls, 84,611 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,363 calls, 764,840 t-states own (0.16 %) |
 | Called from | `UpdateSlot`, `TurnTitleShip` (tail) |
-| Calls | `PlotPixel`, `DrawLaserOnly` (tail), `ProjectVertices`, `DividePoint`, `DrawEdges`, `PointOf`, `ViewMatrixSetup`, `DrawLine`, `Random`, `FaceVisibility`, `IM2Entry` |
-| Reads | `$6048`-`$6050` (`ShipSlots`); `$6068`-`$607D` (`ShipSlots`); `$608F`-`$60A4` (`ShipSlots`); `$60B6`-`$60CB` (`ShipSlots`); `$60DD`-`$60F2` (`ShipSlots`); `$6104`-`$6105` (`ShipSlots`); 14 more ranges |
-| Writes | `$608F` (`ShipSlots`); `$60B6` (`ShipSlots`); `$60E3` (`ShipSlots`); `$6104` (`ShipSlots`); `$9C97` (`SightTarget`); `$A6DE` (`DotProductSpare`); 3 more ranges |
+| Calls | `PlotPixel`, `DrawLaserOnly` (tail), `ProjectVertices`, `DividePoint`, `DrawEdges`, `PointOf`, `ViewMatrixSetup`, `DrawLine`, `Random`, `FaceVisibility` |
+| Reads | `$6048`-`$6050` (`ShipSlots`); `$6068`-`$607D` (`ShipSlots+32`); `$608F`-`$60A4` (`ShipSlots+71`); `$60B6`-`$60CB` (`ShipSlots+110`); `$60DD`-`$60F2` (`ShipSlots+149`); `$6104`-`$6105` (`ShipSlots+188`); 13 more ranges |
+| Writes | `$608F` (`ShipSlots+71`); `$60B6` (`ShipSlots+110`); `$60E3` (`ShipSlots+155`); `$6104` (`ShipSlots+188`); `$9C97` (`SightTarget`); `$A6DE` (`DotProductSpare`); 2 more ranges |
 
 ### `PlotPixel` (`$A83C`)
 
@@ -3755,8 +3641,8 @@ Roll from the side's product (up to 15 steps, its sign against the roof), pitch 
 | --- | --- |
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4 calls, 612 t-states own (0.00 %) |
 | Called from | `DrawShip` |
-| Reads | `$C7EF`-`$C7F0` (`BackBuffer`); `$C80F`-`$C810` (`BackBuffer`) |
-| Writes | `$C7EF`-`$C7F0` (`BackBuffer`); `$C80F`-`$C810` (`BackBuffer`) |
+| Reads | `$C7EF`-`$C7F0` (`BackBuffer+2031`); `$C80F`-`$C810` (`BackBuffer+2063`) |
+| Writes | `$C7EF`-`$C7F0` (`BackBuffer+2031`); `$C80F`-`$C810` (`BackBuffer+2063`) |
 
 ### `DrawWireframe` (`$A84D`)
 
@@ -3785,7 +3671,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1 call, 36 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25 calls, 835 t-states own (0.00 %) |
 | Called from | `DrawShip` (tail) |
-| Reads | `$6068` (`ShipSlots`); `$608F` (`ShipSlots`); `$60B6` (`ShipSlots`); `$60DD` (`ShipSlots`); `$6104` (`ShipSlots`) |
+| Reads | `$6068` (`ShipSlots+32`); `$608F` (`ShipSlots+71`); `$60B6` (`ShipSlots+110`); `$60DD` (`ShipSlots+149`); `$6104` (`ShipSlots+188`) |
 
 ### `ProjectVertices` (`$A9C9`)
 
@@ -3797,9 +3683,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 53 calls, 7,390 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 502 calls, 72,296 t-states own (0.02 %) |
 | Called from | `DrawShip` |
-| Calls | `ProjectVertex`, `IM2Entry` |
-| Reads | `$61CF`-`$61D9` (`ShipAsp`); `$63E8`-`$63F2` (`ShipCanister`); `$6493`-`$649D` (`ShipCobraTrader`); `$68AA`-`$68B4` (`ShipPlate`); `$68E9`-`$68F3` (`ShipPythonTrader`); `$6C16`-`$6C20` (`ShipThargoid`); 1 more ranges |
-| Writes | `$FFED`-`$FFEE` (`work space $FFED+`) |
+| Calls | `ProjectVertex` |
+| Reads | `$61CF`-`$61D9` (`ShipAsp+3`); `$63E8`-`$63F2` (`ShipCanister+3`); `$6493`-`$649D` (`ShipCobraTrader+3`); `$68AA`-`$68B4` (`ShipPlate+3`); `$68E9`-`$68F3` (`ShipPythonTrader+3`); `$6C16`-`$6C20` (`ShipThargoid+3`) |
 
 ### `ProjectVertex` (`$A9DE`)
 
@@ -3811,9 +3696,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 638 calls, 102,876 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 8,288 calls, 1,415,355 t-states own (0.30 %) |
 | Called from | `ProjectVertices`, `ProjectNext` (tail) |
-| Calls | `EitherFace`, `Project` (tail), `ProjectNext` (tail), `IM2Entry` |
-| Reads | `$61E6`-`$6254` (`ShipAspVertices`); `$63FF`-`$6436` (`ShipCanisterVertices`); `$64C1`-`$6564` (`ShipCobraVertices`); `$68C1`-`$68D4` (`ShipPlateVertices`); `$6917`-`$6955` (`ShipPythonVertices`); `$6C2D`-`$6CA1` (`ShipThargoidVertices`); 2 more ranges |
-| Writes | `$A9BA`-`$A9C8` (`PointOffset`, `VertexX`, `VertexY`, `VertexZ` and 8 more); `$FFEB`-`$FFF4` (`work space $FFEB+`) |
+| Calls | `EitherFace`, `Project` (tail), `ProjectNext` (tail) |
+| Reads | `$61E6`-`$6254` (`ShipAspVertices+3`); `$63FF`-`$6436` (`ShipCanisterVertices+3`); `$64C1`-`$6564` (`ShipCobraVertices+3`); `$68C1`-`$68D4` (`ShipPlateVertices+3`); `$6917`-`$6955` (`ShipPythonVertices+3`); `$6C2D`-`$6CA1` (`ShipThargoidVertices+3`); 1 more ranges |
+| Writes | `$A9BA`-`$A9C8` (`PointOffset`, `VertexX`, `VertexY`, `VertexZ` and 8 more) |
 
 ### `EitherFace` (`$AA10`)
 
@@ -3825,9 +3710,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,243 calls, 157,034 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 22,776 calls, 1,594,975 t-states own (0.34 %) |
 | Called from | `ProjectVertex`, `DrawEdges` |
-| Calls | `FaceIsVisible`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFF4` (`work space $FFEB+`) |
+| Calls | `FaceIsVisible` |
 
 ### `FaceIsVisible` (`$AA20`)
 
@@ -3839,9 +3722,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,381 calls, 172,450 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 34,226 calls, 1,746,381 t-states own (0.37 %) |
 | Called from | `EitherFace` |
-| Calls | `IM2Entry` |
-| Reads | `$A984`-`$A993` (`FaceVisible`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF4` (`work space $FFE9+`) |
+| Reads | `$A984`-`$A993` (`FaceVisible`) |
 
 ### `RotateVertexScaled` (`$AA2B`)
 
@@ -3853,9 +3734,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,566 calls, 1,076,437 t-states own (0.32 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 15,201 calls, 10,616,656 t-states own (2.27 %) |
 | Called from | `Project` |
-| Calls | `AddSignedBytes`, `MultiplyScaled`, `IM2Entry` |
-| Reads | `$61DD`-`$6252` (`ShipAsp`, `ShipAspVertices`); `$63F6`-`$6435` (`ShipCanister`, `ShipCanisterVertices`); `$64B8`-`$6563` (`ShipCobraPirate`, `ShipCobraVertices`); `$68B8`-`$68D3` (`ShipPlate`, `ShipPlateVertices`); `$6914`-`$6953` (`ShipPythonVertices`); `$6C24`-`$6C9F` (`ShipThargoid`, `ShipThargoidVertices`); 2 more ranges |
-| Writes | `$A9A6`-`$A9B7` (`ViewMatrix`); `$FFE7`-`$FFF0` (`work space $FFE7+`) |
+| Calls | `AddSignedBytes`, `MultiplyScaled` |
+| Reads | `$61DD`-`$6252` (`ShipAsp+17`, `ShipAspVertices`); `$63F6`-`$6435` (`ShipCanister+17`, `ShipCanisterVertices`); `$64B8`-`$6563` (`ShipCobraPirate+17`, `ShipCobraVertices`); `$68B8`-`$68D3` (`ShipPlate+17`, `ShipPlateVertices`); `$6914`-`$6953` (`ShipPythonVertices`); `$6C24`-`$6C9F` (`ShipThargoid+17`, `ShipThargoidVertices`); 1 more ranges |
+| Writes | `$A9A6`-`$A9B7` (`ViewMatrix+18`) |
 
 ### `AddSignedBytes` (`$AAFB`)
 
@@ -3867,9 +3748,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 7,912 calls, 351,626 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 74,954 calls, 3,381,822 t-states own (0.72 %) |
 | Called from | `DotProduct`, `RotateVertexScaled`, `RotateVertexReuse`, `RotateNormal` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFDF`-`$FFEE` (`work space $FFDF+`) |
 
 ### `Multiply8High` (`$AB0B`)
 
@@ -3881,9 +3759,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 24,646 calls, 2,070,984 t-states own (0.61 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 156,207 calls, 13,172,283 t-states own (2.82 %) |
 | Called from | `RotatePart`, `CombineParts`, `MultiplyHigh4`, `MultiplyScaled`, `RotateNormal`, `OrthogonalisePart`, `MultiplyWord` |
-| Calls | `IM2Entry` |
-| Reads | `$BF00`-`$BFFB` (`SquaresHigh`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFDD`-`$FFEE` (`work space $FFDD+`) |
+| Reads | `$BF00`-`$BFFB` (`SquaresHigh`) |
 
 ### `MultiplyScaled` (`$AB1E`)
 
@@ -3895,9 +3771,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,609 calls, 462,867 t-states own (0.14 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 36,873 calls, 5,010,885 t-states own (1.07 %) |
 | Called from | `RotateVertexScaled` |
-| Calls | `Multiply8High`, `IM2Entry` |
-| Reads | `$A995`-`$A9A5` (`ViewMatrix`); `$A9C7` (`VertexScale`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE5`-`$FFEE` (`work space $FFE5+`) |
+| Calls | `Multiply8High` |
+| Reads | `$A995`-`$A9A5` (`ViewMatrix+1`); `$A9C7` (`VertexScale`) |
 
 ### `Multiply8` (`$AB34`)
 
@@ -3909,9 +3784,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 19,415 calls, 2,489,209 t-states own (0.73 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 41,045 calls, 5,278,832 t-states own (1.13 %) |
 | Called from | `SquareComponent`, `TidyPart`, `CombineParts`, `DifferenceOfProducts`, `MultiplyRound`, `MultiplyWord` |
-| Calls | `IM2Entry` |
-| Reads | `$BE00`-`$BFFE` (`SquaresLow`, `SquaresHigh`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFDB`-`$FFF0` (`work space $FFDB+`) |
+| Reads | `$BE00`-`$BFFE` (`SquaresLow`, `SquaresHigh`) |
 
 ### `AddDoubled` (`$AB4F`)
 
@@ -3923,9 +3796,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,716 calls, 170,054 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 20,289 calls, 2,061,891 t-states own (0.44 %) |
 | Called from | `ProjectAdd` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE7`-`$FFEA` (`work space $FFE7+`) |
 
 ### `RotateVertexSmall` (`$AB73`)
 
@@ -3937,9 +3807,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 50 calls, 16,613 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,696 calls, 551,469 t-states own (0.12 %) |
 | Called from | `Project` (tail) |
-| Calls | `RotateVertexReuse`, `RotateNormal`, `ProjectAdd` (tail), `IM2Entry` |
-| Reads | `$64E2`-`$64F0` (`ShipCobraVertices`); `$690E`-`$6915` (`ShipPythonPirate`, `ShipPythonVertices`); `$6C24`-`$6C9E` (`ShipThargoid`, `ShipThargoidVertices`); `$A9C8` (`VertexCached`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$A9BB`-`$A9C0` (`VertexX`, `VertexY`, `VertexZ`); `$AC9F`-`$ACA1` (`VertexHigh`); `$FFE9`-`$FFEC` (`work space $FFE9+`) |
+| Calls | `RotateVertexReuse`, `RotateNormal`, `ProjectAdd` (tail) |
+| Reads | `$64E2`-`$64F0` (`ShipCobraVertices+36`); `$690E`-`$6915` (`ShipPythonPirate+17`, `ShipPythonVertices`); `$6C24`-`$6C9E` (`ShipThargoid+17`, `ShipThargoidVertices`); `$A9C8` (`VertexCached`) |
+| Writes | `$A9BB`-`$A9C0` (`VertexX`, `VertexY`, `VertexZ`); `$AC9F`-`$ACA1` (`VertexHigh`) |
 
 ### `RotateVertexReuse` (`$ABC0`)
 
@@ -3951,9 +3821,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 9 calls, 3,246 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 477 calls, 170,598 t-states own (0.04 %) |
 | Called from | `RotateVertexSmall` |
-| Calls | `AddSignedBytes`, `IM2Entry` |
-| Reads | `$64EB`-`$64F1` (`ShipCobraVertices`); `$6C8D`-`$6C9F` (`ShipThargoidVertices`); `$A9A6`-`$A9B7` (`ViewMatrix`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$A9A7`-`$A9B7` (`ViewMatrix`); `$FFE9`-`$FFEA` (`work space $FFE9+`) |
+| Calls | `AddSignedBytes` |
+| Reads | `$64EB`-`$64F1` (`ShipCobraVertices+45`); `$6C8D`-`$6C9F` (`ShipThargoidVertices+99`); `$A9A6`-`$A9B7` (`ViewMatrix+18`) |
+| Writes | `$A9A7`-`$A9B7` (`ViewMatrix+19`) |
 
 ### `RotateNormal` (`$AC01`)
 
@@ -3965,9 +3835,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,208 calls, 1,339,578 t-states own (0.39 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 19,791 calls, 12,011,405 t-states own (2.57 %) |
 | Called from | `RotateVertexSmall`, `NormalPart` |
-| Calls | `AddSignedBytes`, `Multiply8High`, `IM2Entry` |
-| Reads | `$62C5`-`$62F4` (`ShipAspFaces`); `$6474`-`$64EB` (`ShipCanisterFaces`, `ShipCobraTrader`, `ShipCobraPirate`, `ShipCobraVertices`); `$65FE`-`$6631` (`ShipCobraFaces`); `$6914`-`$6917` (`ShipPythonVertices`); `$69BE`-`$69F1` (`ShipPythonFaces`); `$6C2A`-`$6C8D` (`ShipThargoidVertices`); 3 more ranges |
-| Writes | `$A9A6`-`$A9B7` (`ViewMatrix`); `$FFE1`-`$FFEA` (`work space $FFE1+`) |
+| Calls | `AddSignedBytes`, `Multiply8High` |
+| Reads | `$62C5`-`$62F4` (`ShipAspFaces`); `$6474`-`$64EB` (`ShipCanisterFaces`, `ShipCobraTrader`, `ShipCobraPirate`, `ShipCobraVertices`); `$65FE`-`$6631` (`ShipCobraFaces`); `$6914`-`$6917` (`ShipPythonVertices`); `$69BE`-`$69F1` (`ShipPythonFaces`); `$6C2A`-`$6C8D` (`ShipThargoidVertices`); 2 more ranges |
+| Writes | `$A9A6`-`$A9B7` (`ViewMatrix+18`) |
 
 ### `DividePoint` (`$AC69`)
 
@@ -3981,9 +3851,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,306 calls, 9,161 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 15,107 calls, 106,148 t-states own (0.02 %) |
 | Called from | `DrawShip`, `ProjectAdd` |
-| Calls | `DividePointNormalise`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Calls | `DividePointNormalise` |
 
 ### `DividePointNormalise` (`$AC6B`)
 
@@ -3995,9 +3863,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 9,891 calls, 39,583 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 108,937 calls, 436,166 t-states own (0.09 %) |
 | Called from | `DividePoint`, `DividePointShift` (tail) |
-| Calls | `DividePointShift`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEB`-`$FFF4` (`work space $FFEB+`) |
+| Calls | `DividePointShift` |
 
 ### `DividePointShift` (`$AC6C`)
 
@@ -4009,9 +3875,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 9,891 calls, 699,786 t-states own (0.21 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 108,937 calls, 7,692,661 t-states own (1.65 %) |
 | Called from | `DividePointNormalise` |
-| Calls | `DividePointNormalise` (tail), `DividePointLoop`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF4` (`work space $FFE9+`) |
+| Calls | `DividePointNormalise` (tail), `DividePointLoop` |
 
 ### `DividePointLoop` (`$AC8B`)
 
@@ -4023,9 +3887,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4,979 calls, 2,233,213 t-states own (0.66 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25,012 calls, 11,494,781 t-states own (2.46 %) |
 | Called from | `DividePointShift`, `LineFraction` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE1`-`$FFF2` (`work space $FFE1+`) |
 
 ### `Project` (`$ACA2`)
 
@@ -4037,9 +3898,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 572 calls, 181,654 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 6,763 calls, 1,824,956 t-states own (0.39 %) |
 | Called from | `ProjectVertex` (tail) |
-| Calls | `RotateVertexScaled`, `RotateVertexSmall` (tail), `ProjectAdd`, `IM2Entry` |
-| Reads | `$61E3`-`$6251` (`ShipAspVertices`); `$63FC`-`$6434` (`ShipCanisterVertices`); `$64BE`-`$6562` (`ShipCobraVertices`); `$68BE`-`$68D2` (`ShipPlateVertices`); `$6914`-`$6952` (`ShipPythonVertices`); `$6C2A`-`$6C9E` (`ShipThargoidVertices`); 2 more ranges |
-| Writes | `$A9BB`-`$A9C7` (`VertexX`, `VertexY`, `VertexZ`, `ScreenX` and 6 more); `$AC9F`-`$ACA1` (`VertexHigh`); `$FFEB`-`$FFF2` (`work space $FFEB+`) |
+| Calls | `RotateVertexScaled`, `RotateVertexSmall` (tail), `ProjectAdd` |
+| Reads | `$61E3`-`$6251` (`ShipAspVertices`); `$63FC`-`$6434` (`ShipCanisterVertices`); `$64BE`-`$6562` (`ShipCobraVertices`); `$68BE`-`$68D2` (`ShipPlateVertices`); `$6914`-`$6952` (`ShipPythonVertices`); `$6C2A`-`$6C9E` (`ShipThargoidVertices`); 1 more ranges |
+| Writes | `$A9BB`-`$A9C7` (`VertexX`, `VertexY`, `VertexZ`, `ScreenX` and 6 more); `$AC9F`-`$ACA1` (`VertexHigh`) |
 
 ### `ProjectAdd` (`$ACDF`)
 
@@ -4051,9 +3912,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 572 calls, 662,389 t-states own (0.20 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 6,763 calls, 7,845,789 t-states own (1.68 %) |
 | Called from | `RotateVertexSmall` (tail), `Project` |
-| Calls | `AddDoubled`, `DividePoint`, `ProjectNext`, `IM2Entry` |
-| Reads | `$606F`-`$6077` (`ShipSlots`); `$6096`-`$609E` (`ShipSlots`); `$60BD`-`$60C5` (`ShipSlots`); `$60E4`-`$60EC` (`ShipSlots`); `$6159`-`$6161` (`Slot7`); `$70E3` (`ViewIndex`); 3 more ranges |
-| Writes | `$A8FA`-`$A94D` (`ProjectedPoints`); `$A9BB`-`$A9C8` (`VertexX`, `VertexY`, `VertexZ`, `ScreenX` and 7 more); `$AC9F`-`$ACA1` (`VertexHigh`); `$FFE9`-`$FFF4` (`work space $FFE9+`) |
+| Calls | `AddDoubled`, `DividePoint`, `ProjectNext` |
+| Reads | `$606F`-`$6077` (`ShipSlots+39`); `$6096`-`$609E` (`ShipSlots+78`); `$60BD`-`$60C5` (`ShipSlots+117`); `$60E4`-`$60EC` (`ShipSlots+156`); `$6159`-`$6161` (`Slot7`); `$70E3` (`ViewIndex`); 2 more ranges |
+| Writes | `$A8FA`-`$A94D` (`ProjectedPoints`); `$A9BB`-`$A9C8` (`VertexX`, `VertexY`, `VertexZ`, `ScreenX` and 7 more); `$AC9F`-`$ACA1` (`VertexHigh`) |
 
 ### `ProjectNext` (`$ADF2`)
 
@@ -4065,9 +3926,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 639 calls, 30,807 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 8,288 calls, 392,454 t-states own (0.08 %) |
 | Called from | `ProjectVertex` (tail), `ProjectAdd` |
-| Calls | `ProjectVertex` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFED`-`$FFF6` (`work space $FFED+`) |
+| Calls | `ProjectVertex` (tail) |
 
 ### `DrawEdges` (`$AE01`)
 
@@ -4079,9 +3938,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 54 calls, 379,388 t-states own (0.11 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 502 calls, 3,259,661 t-states own (0.70 %) |
 | Called from | `DrawShip` |
-| Calls | `EitherFace`, `PointOf`, `DrawLine`, `IM2Entry` |
-| Reads | `$61D0`-`$61DB` (`ShipAsp`); `$6255`-`$62C4` (`ShipAspEdges`); `$63E9`-`$63F4` (`ShipCanister`); `$6438`-`$6473` (`ShipCanisterEdges`); `$6494`-`$649F` (`ShipCobraTrader`); `$6566`-`$65FD` (`ShipCobraEdges`); 7 more ranges |
-| Writes | `$FFED`-`$FFF8` (`work space $FFED+`) |
+| Calls | `EitherFace`, `PointOf`, `DrawLine` |
+| Reads | `$61D0`-`$61DB` (`ShipAsp+4`); `$6255`-`$62C4` (`ShipAspEdges`); `$63E9`-`$63F4` (`ShipCanister+4`); `$6438`-`$6473` (`ShipCanisterEdges`); `$6494`-`$649F` (`ShipCobraTrader+4`); `$6566`-`$65FD` (`ShipCobraEdges`); 6 more ranges |
 
 ### `PointOf` (`$AE50`)
 
@@ -4093,9 +3951,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,950 calls, 226,460 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 16,885 calls, 1,961,457 t-states own (0.42 %) |
 | Called from | `DrawShip`, `DrawEdges` |
-| Calls | `IM2Entry` |
-| Reads | `$A8FA`-`$A94D` (`ProjectedPoints`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF4` (`work space $FFE9+`) |
+| Reads | `$A8FA`-`$A94D` (`ProjectedPoints`) |
 
 ### `Orthogonalise` (`$AE69`)
 
@@ -4107,9 +3963,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 173 calls, 36,330 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,363 calls, 286,287 t-states own (0.06 %) |
 | Called from | `UpdateSlot`, `TurnTitleShip` |
-| Calls | `DotProduct`, `OrthogonalisePart`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Calls | `DotProduct`, `OrthogonalisePart` |
 
 ### `OrthogonalisePart` (`$AE8A`)
 
@@ -4121,9 +3975,9 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 519 calls, 141,334 t-states own (0.04 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4,089 calls, 1,112,752 t-states own (0.24 %) |
 | Called from | `Orthogonalise` |
-| Calls | `Multiply8High`, `IM2Entry` |
-| Reads | `$6052`-`$605C` (`ShipSlots`); `$6079`-`$6083` (`ShipSlots`); `$60A0`-`$60AA` (`ShipSlots`); `$60C7`-`$60D1` (`ShipSlots`); `$60EE`-`$60F8` (`ShipSlots`); `$6163`-`$616D` (`Slot7`); 1 more ranges |
-| Writes | `$6058`-`$605C` (`ShipSlots`); `$607F`-`$6083` (`ShipSlots`); `$60A6`-`$60AA` (`ShipSlots`); `$60CD`-`$60D1` (`ShipSlots`); `$60F4`-`$60F8` (`ShipSlots`); `$6169`-`$616D` (`Slot7`); 1 more ranges |
+| Calls | `Multiply8High` |
+| Reads | `$6052`-`$605C` (`ShipSlots+10`); `$6079`-`$6083` (`ShipSlots+49`); `$60A0`-`$60AA` (`ShipSlots+88`); `$60C7`-`$60D1` (`ShipSlots+127`); `$60EE`-`$60F8` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`) |
+| Writes | `$6058`-`$605C` (`ShipSlots+16`); `$607F`-`$6083` (`ShipSlots+55`); `$60A6`-`$60AA` (`ShipSlots+94`); `$60CD`-`$60D1` (`ShipSlots+133`); `$60F4`-`$60F8` (`ShipSlots+172`); `$6169`-`$616D` (`Slot7+16`) |
 
 ### `ViewMatrixSetup` (`$AECC`)
 
@@ -4136,8 +3990,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 502 calls, 278,897 t-states own (0.06 %) |
 | Called from | `DrawShip` |
 | Calls | `DifferenceOfProducts` |
-| Reads | `$6079`-`$6083` (`ShipSlots`); `$60A0`-`$60AA` (`ShipSlots`); `$60C7`-`$60D1` (`ShipSlots`); `$60EE`-`$60F8` (`ShipSlots`); `$6163`-`$616D` (`Slot7`) |
-| Writes | `$6085`-`$6089` (`ShipSlots`); `$60AC`-`$60B0` (`ShipSlots`); `$60D3`-`$60D7` (`ShipSlots`); `$60FA`-`$60FE` (`ShipSlots`); `$616F`-`$6173` (`Slot7`); `$A995`-`$A9A5` (`ViewMatrix`) |
+| Reads | `$6079`-`$6083` (`ShipSlots+49`); `$60A0`-`$60AA` (`ShipSlots+88`); `$60C7`-`$60D1` (`ShipSlots+127`); `$60EE`-`$60F8` (`ShipSlots+166`); `$6163`-`$616D` (`Slot7+10`) |
+| Writes | `$6085`-`$6089` (`ShipSlots+61`); `$60AC`-`$60B0` (`ShipSlots+100`); `$60D3`-`$60D7` (`ShipSlots+139`); `$60FA`-`$60FE` (`ShipSlots+178`); `$616F`-`$6173` (`Slot7+22`); `$A995`-`$A9A5` (`ViewMatrix+1`) |
 
 ### `DifferenceOfProducts` (`$AF22`)
 
@@ -4149,9 +4003,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 159 calls, 42,043 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,506 calls, 399,042 t-states own (0.09 %) |
 | Called from | `ViewMatrixSetup` |
-| Calls | `Multiply8`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFEF`-`$FFF0` (`work space $FFEF+`) |
+| Calls | `Multiply8` |
 
 ### `MultiplyUnused` (`$AF64`)
 
@@ -4171,9 +4023,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,584 calls, 5,301,465 t-states own (1.56 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5,974 calls, 8,853,663 t-states own (1.89 %) |
 | Called from | `Divide16Vector` (tail), `DivideComponent`, `SquareRootAdd` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE1`-`$FFFA` (`work space $FFE1+`) |
 
 ### `SubtractSigned` (`$AFC9`)
 
@@ -4193,9 +4042,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,378 calls, 158,783 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 10,120 calls, 1,168,776 t-states own (0.25 %) |
 | Called from | `FaceDot` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFDF`-`$FFE6` (`work space $FFDF+`) |
 
 ## linedraw
 
@@ -4213,9 +4059,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,595 calls, 1,286,655 t-states own (0.38 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9,876 calls, 3,537,962 t-states own (0.76 %) |
 | Called from | `DrawShip`, `DrawEdges`, `LaserBeams` (tail), `Gunsight` |
-| Calls | `LineSetup`, `ClipLine` (tail), `LineAddress`, `LineSkip` (tail), `LineOctant`, `IM2Entry` |
-| Reads | `$AFF2`-`$B009` (`LineSteps`); `$B01B`-`$B03F` (`LineSteps`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE5`-`$FFFA` (`work space $FFE5+`) |
+| Calls | `LineSetup`, `ClipLine` (tail), `LineAddress`, `LineSkip` (tail), `LineOctant` |
+| Reads | `$AFF2`-`$B009` (`LineSteps+2`); `$B01B`-`$B03F` (`LineSteps+43`) |
 
 ### `LineSetup` (`$B0E0`)
 
@@ -4227,9 +4072,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,595 calls, 703,696 t-states own (0.21 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9,652 calls, 1,891,698 t-states own (0.40 %) |
 | Called from | `DrawLine`, `LineSkip` (tail) |
-| Calls | `LineUpX` (tail), `LineUpY` (tail), `LineDownX` (tail), `LineDownY` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$B43B`-`$B440` (`LineUpX`); `$B458`-`$B46B` (`LineUpX`, `LineUpY`); `$B48C`-`$B491` (`LineDownX`); `$B4A9`-`$B4B8` (`LineDownX`, `LineDownY`); `$B4D1` (`LineDownY`); `$FFEB`-`$FFFA` (`work space $FFEB+`) |
+| Calls | `LineUpX` (tail), `LineUpY` (tail), `LineDownX` (tail), `LineDownY` (tail) |
+| Writes | `$B43B`-`$B440` (`LineUpX+7`); `$B458`-`$B46B` (`LineUpXByte`, `LineUpY`); `$B48C`-`$B491` (`LineDownX+7`); `$B4A9`-`$B4B8` (`LineDownXByte`, `LineDownY`); `$B4D1` (`LineDownYByte`) |
 
 ### `ClipLine` (`$B18A`)
 
@@ -4265,9 +4109,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,672 calls, 227,740 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9,992 calls, 619,827 t-states own (0.13 %) |
 | Called from | `ClipLine`, `LineSkip`, `LineOctant` |
-| Calls | `DividePointLoop`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE5`-`$FFF2` (`work space $FFE5+`) |
+| Calls | `DividePointLoop` |
 
 ### `LineAddress` (`$B308`)
 
@@ -4279,9 +4121,6 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,595 calls, 1,685,949 t-states own (0.50 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9,652 calls, 4,194,089 t-states own (0.90 %) |
 | Called from | `DrawLine`, `ClipLine` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE7`-`$FFF6` (`work space $FFE7+`) |
 
 ### `LineSkip` (`$B362`)
 
@@ -4305,9 +4144,7 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 3,665 calls, 1,333,922 t-states own (0.39 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9,929 calls, 3,674,242 t-states own (0.79 %) |
 | Called from | `DrawLine`, `ClipLine`, `LineSkip` |
-| Calls | `LineFraction`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE9`-`$FFF8` (`work space $FFE9+`) |
+| Calls | `LineFraction` |
 
 ### `LineUpXRow` (`$B433`)
 
@@ -4327,9 +4164,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 796 calls, 826,366 t-states own (0.24 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,539 calls, 3,327,690 t-states own (0.71 %) |
 | Called from | `LineSetup` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$C002` (`BackBuffer`); `$C020`-`$CEE7` (`BackBuffer`); `$CF00`-`$CFDE` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$C002` (`BackBuffer`); `$C020`-`$CEE7` (`BackBuffer`); `$CF00`-`$CFDE` (`BackBuffer`); `$FFEB`-`$FFF6` (`work space $FFEB+`) |
+| Reads | `$C002` (`BackBuffer+2`); `$C020`-`$CEE7` (`BackBuffer+32`); `$CF00`-`$CFDE` (`BackBuffer+3840`) |
+| Writes | `$C002` (`BackBuffer+2`); `$C020`-`$CEE7` (`BackBuffer+32`); `$CF00`-`$CFDE` (`BackBuffer+3840`) |
 
 ### `LineUpY` (`$B464`)
 
@@ -4341,9 +4177,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 222 calls, 476,835 t-states own (0.14 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,405 calls, 2,922,142 t-states own (0.62 %) |
 | Called from | `LineSetup` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$C022`-`$CFDE` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$C022`-`$CFDE` (`BackBuffer`); `$FFEB`-`$FFF4` (`work space $FFEB+`) |
+| Reads | `$C022`-`$CFDE` (`BackBuffer+34`) |
+| Writes | `$C022`-`$CFDE` (`BackBuffer+34`) |
 
 ### `LineDownX` (`$B485`)
 
@@ -4355,9 +4190,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,006 calls, 1,499,304 t-states own (0.44 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,954 calls, 2,722,827 t-states own (0.58 %) |
 | Called from | `LineSetup` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$C017`-`$CEDF` (`BackBuffer`); `$CF03`-`$CFDE` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$C017`-`$CEDF` (`BackBuffer`); `$CF03`-`$CFDE` (`BackBuffer`); `$FFEB`-`$FFFA` (`work space $FFEB+`) |
+| Reads | `$C017`-`$CEDF` (`BackBuffer+23`); `$CF03`-`$CFDE` (`BackBuffer+3843`) |
+| Writes | `$C017`-`$CEDF` (`BackBuffer+23`); `$CF03`-`$CFDE` (`BackBuffer+3843`) |
 
 ### `LineDownY` (`$B4B1`)
 
@@ -4369,9 +4203,8 @@ The laser of a firing ship (+`$20` bit 3) is a line from its gun vertex (+`$14` 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,571 calls, 1,581,560 t-states own (0.47 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,754 calls, 3,227,750 t-states own (0.69 %) |
 | Called from | `LineSetup` (tail) |
-| Calls | `IM2Entry` |
-| Reads | `$C003`-`$CFDF` (`BackBuffer`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$C003`-`$CFDF` (`BackBuffer`); `$FFEB`-`$FFFA` (`work space $FFEB+`) |
+| Reads | `$C003`-`$CFDF` (`BackBuffer+3`) |
+| Writes | `$C003`-`$CFDF` (`BackBuffer+3`) |
 
 ## combat
 
@@ -4389,9 +4222,7 @@ The box is the blueprint's size (+`$01`; 180 for scoopables; z one more page for
 | Runs (launch, flight, hyperspace to Diso, the laser) | 120 calls, 37,705 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,076 calls, 217,798 t-states own (0.05 %) |
 | Called from | `UpdateSlot` |
-| Calls | `IM2Entry` |
-| Reads | `$6048`-`$604F` (`ShipSlots`); `$606E`-`$6070` (`ShipSlots`); `$6095`-`$609D` (`ShipSlots`); `$60BC`-`$60C4` (`ShipSlots`); `$60E3`-`$60E5` (`ShipSlots`); `$610A` (`ShipSlots`); 4 more ranges |
-| Writes | `$FFF5`-`$FFF6` (`work space $FFF5+`) |
+| Reads | `$6048`-`$604F` (`ShipSlots`); `$606E`-`$6070` (`ShipSlots+38`); `$6095`-`$609D` (`ShipSlots+77`); `$60BC`-`$60C4` (`ShipSlots+116`); `$60E3`-`$60E5` (`ShipSlots+155`); `$610A` (`ShipSlots+194`); 3 more ranges |
 
 ### `RemoveShip` (`$B5DF`)
 
@@ -4401,7 +4232,7 @@ The box is the blueprint's size (+`$01`; 180 for scoopables; z one more page for
 | --- | --- |
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1 call, 555 t-states own (0.00 %) |
 | Called from | `UpdateShip` (tail) |
-| Reads | `$6091` (`ShipSlots`); `$60B8` (`ShipSlots`); `$60DF` (`ShipSlots`); `$6106` (`ShipSlots`); `$612D` (`ShipSlots`); `$6154` (`ShipSlots`); 3 more ranges |
+| Reads | `$6091` (`ShipSlots+73`); `$60B8` (`ShipSlots+112`); `$60DF` (`ShipSlots+151`); `$6106` (`ShipSlots+190`); `$612D` (`ShipSlots+229`); `$6154` (`ShipSlots+268`); 3 more ranges |
 
 ### `ShipsWreck` (`$B618`)
 
@@ -4413,7 +4244,7 @@ The box is the blueprint's size (+`$01`; 180 for scoopables; z one more page for
 | Called from | `ResetShipsVector` (tail) |
 | Calls | `ShipAction` |
 | Reads | `$7128` (`SoundRequests`) |
-| Writes | `$606A` (`ShipSlots`); `$6091` (`ShipSlots`); `$60B8` (`ShipSlots`); `$60DF` (`ShipSlots`); `$6106` (`ShipSlots`); `$612D` (`ShipSlots`); 4 more ranges |
+| Writes | `$606A` (`ShipSlots+34`); `$6091` (`ShipSlots+73`); `$60B8` (`ShipSlots+112`); `$60DF` (`ShipSlots+151`); `$6106` (`ShipSlots+190`); `$612D` (`ShipSlots+229`); 4 more ranges |
 
 ### `LaserCooling` (`$B63C`)
 
@@ -4429,7 +4260,7 @@ LaserMounts `$D07D` (one byte per view): 1 pulse, 2 beam, 3 military, 4 mining (
 | Called from | `Gunsight` |
 | Calls | `LaserBeams` (tail) |
 | Reads | `$70E3`-`$70F0` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate` and 1 more); `$7128` (`SoundRequests`); `$9C93`-`$9CA2` (`JumpEncounter`, `ShipsAbout`, `BombKill`, `ShipsPresent` and 8 more); `$B4D7` (`LaserFired`); `$D07D` (`LaserMounts`); `$FC0B` (`KeyCombat`) |
-| Writes | `$70F0` (`BarDrawn`); `$7128` (`SoundRequests`); `$9CA2` (`EnergyDrain`); `$B4D7` (`LaserFired`); `$FC0B` (`KeyCombat`) |
+| Writes | `$70F0` (`BarLaserTemp`); `$7128` (`SoundRequests`); `$9CA2` (`EnergyDrain`); `$B4D7` (`LaserFired`); `$FC0B` (`KeyCombat`) |
 
 ### `LaserBeams` (`$B749`)
 
@@ -4477,9 +4308,9 @@ The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 th
 | Runs (launch, flight, hyperspace to Diso, the laser) | 643 calls, 296,735 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 371 calls, 159,448 t-states own (0.03 %) |
 | Called from | `ShipsAndLaser` (tail) |
-| Calls | `DrawLine`, `LaserCooling`, `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$711F` (`TooClose`); `$9C9B` (`ECMActive`); `$D07D`-`$D085` (`LaserMounts`, `NovaMission`, `Fuel`, `Missiles` and 1 more); `$D0B0` (`MissionFlags`); `$FC0B` (`KeyCombat`); 1 more ranges |
-| Writes | `$7043`-`$7044` (`Commodities`); `$FC0B` (`KeyCombat`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `DrawLine`, `LaserCooling` |
+| Reads | `$70E3` (`ViewIndex`); `$711F` (`TooClose`); `$9C9B` (`ECMActive`); `$D07D`-`$D085` (`LaserMounts`, `NovaMission`, `Fuel`, `Missiles` and 1 more); `$D0B0` (`MissionFlags`); `$FC0B` (`KeyCombat`) |
+| Writes | `$7043`-`$7044` (`Commodities+40`); `$FC0B` (`KeyCombat`) |
 
 ### `ShipAction` (`$B867`)
 
@@ -4504,8 +4335,8 @@ The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 th
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 9 calls, 13,356 t-states own (0.00 %) |
 | Called from | `CreateAtOrigin`, `ActionThargoids`, `ActionTitleShip` |
 | Calls | `Random` |
-| Reads | `$6071`-`$6074` (`ShipSlots`); `$608F`-`$609B` (`ShipSlots`); `$60B6`-`$60C2` (`ShipSlots`); `$60DD`-`$60E9` (`ShipSlots`); `$6104`-`$6105` (`ShipSlots`); `$615B`-`$615E` (`Slot7`); 9 more ranges |
-| Writes | `$606F`-`$610A` (`ShipSlots`); `$6159`-`$617F` (`Slot7`) |
+| Reads | `$6071`-`$6074` (`ShipSlots+41`); `$608F`-`$609B` (`ShipSlots+71`); `$60B6`-`$60C2` (`ShipSlots+110`); `$60DD`-`$60E9` (`ShipSlots+149`); `$6104`-`$6105` (`ShipSlots+188`); `$615B`-`$615E` (`Slot7+2`); 9 more ranges |
+| Writes | `$606F`-`$610A` (`ShipSlots+39`); `$6159`-`$617F` (`Slot7`) |
 
 ### `LaunchShip` (`$B91E`)
 
@@ -4523,7 +4354,7 @@ The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 th
 | --- | --- |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 7 calls, 1,065 t-states own (0.00 %) |
 | Called from | `CreateAtOrigin`, `ActionThargoids` |
-| Reads | `$6091` (`ShipSlots`); `$60B8` (`ShipSlots`); `$60DF` (`ShipSlots`); `$6106` (`ShipSlots`) |
+| Reads | `$6091` (`ShipSlots+73`); `$60B8` (`ShipSlots+112`); `$60DF` (`ShipSlots+151`); `$6106` (`ShipSlots+190`) |
 
 ### `CreateAtOrigin` (`$B94A`)
 
@@ -4534,8 +4365,8 @@ The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 th
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3 calls, 683 t-states own (0.00 %) |
 | Called from | `DebrisNear` |
 | Calls | `CreateShip`, `FreeSlot` |
-| Reads | `$607D`-`$6085` (`ShipSlots`); `$60A4`-`$60AC` (`ShipSlots`); `$60CB`-`$60D3` (`ShipSlots`) |
-| Writes | `$606F`-`$6085` (`ShipSlots`); `$6096`-`$60AC` (`ShipSlots`); `$60BD`-`$60D3` (`ShipSlots`) |
+| Reads | `$607D`-`$6085` (`ShipSlots+53`); `$60A4`-`$60AC` (`ShipSlots+92`); `$60CB`-`$60D3` (`ShipSlots+131`) |
+| Writes | `$606F`-`$6085` (`ShipSlots+39`); `$6096`-`$60AC` (`ShipSlots+78`); `$60BD`-`$60D3` (`ShipSlots+117`) |
 
 ### `CreateHere` (`$B950`)
 
@@ -4554,8 +4385,8 @@ The ECM on (ECMActive, 10 frames): each frame drain 1 and the ECM sound; at 0 th
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 976 t-states own (0.00 %) |
 | Called from | `ShipAction` (tail) |
 | Calls | `Random`, `CreateShip`, `FreeSlot`, `RandomRoll` |
-| Reads | `$6094` (`ShipSlots`); `$60BB` (`ShipSlots`); `$60E2` (`ShipSlots`); `$6109` (`ShipSlots`) |
-| Writes | `$6070`-`$6076` (`ShipSlots`); `$6094`-`$609D` (`ShipSlots`); `$60BB`-`$60C4` (`ShipSlots`); `$60E2`-`$60EB` (`ShipSlots`); `$6109` (`ShipSlots`) |
+| Reads | `$6094` (`ShipSlots+76`); `$60BB` (`ShipSlots+115`); `$60E2` (`ShipSlots+154`); `$6109` (`ShipSlots+193`) |
+| Writes | `$6070`-`$6076` (`ShipSlots+40`); `$6094`-`$609D` (`ShipSlots+76`); `$60BB`-`$60C4` (`ShipSlots+115`); `$60E2`-`$60EB` (`ShipSlots+154`); `$6109` (`ShipSlots+193`) |
 
 ### `ActionMissile` (`$B99F`)
 
@@ -4600,7 +4431,7 @@ The new ship is turned about (FlipShip) unless it leaves the station, and is hos
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 7 calls, 681 t-states own (0.00 %) |
 | Called from | `ActionThargoids`, `DebrisNear` |
 | Calls | `Random` |
-| Writes | `$6079`-`$607B` (`ShipSlots`); `$60A0`-`$60A2` (`ShipSlots`); `$60C7`-`$60C9` (`ShipSlots`); `$60EE`-`$60F0` (`ShipSlots`) |
+| Writes | `$6079`-`$607B` (`ShipSlots+49`); `$60A0`-`$60A2` (`ShipSlots+88`); `$60C7`-`$60C9` (`ShipSlots+127`); `$60EE`-`$60F0` (`ShipSlots+166`) |
 
 ### `ActionPlates` (`$BA94`)
 
@@ -4631,8 +4462,8 @@ The new ship is turned about (FlipShip) unless it leaves the station, and is hos
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 3 calls, 1,252 t-states own (0.00 %) |
 | Called from | `PlateNear`, `ActionCanister` (tail) |
 | Calls | `Random`, `CreateAtOrigin`, `RandomRoll` |
-| Reads | `$6079`-`$607B` (`ShipSlots`); `$608F` (`ShipSlots`); `$60A0`-`$60A2` (`ShipSlots`); `$60B6` (`ShipSlots`); `$60C7`-`$60C9` (`ShipSlots`); `$60DD` (`ShipSlots`) |
-| Writes | `$606F`-`$6075` (`ShipSlots`); `$608A`-`$609C` (`ShipSlots`); `$60B1`-`$60C3` (`ShipSlots`); `$60D8`-`$60DD` (`ShipSlots`) |
+| Reads | `$6079`-`$607B` (`ShipSlots+49`); `$608F` (`ShipSlots+71`); `$60A0`-`$60A2` (`ShipSlots+88`); `$60B6` (`ShipSlots+110`); `$60C7`-`$60C9` (`ShipSlots+127`); `$60DD` (`ShipSlots+149`) |
+| Writes | `$606F`-`$6075` (`ShipSlots+39`); `$608A`-`$609C` (`ShipSlots+66`); `$60B1`-`$60C3` (`ShipSlots+105`); `$60D8`-`$60DD` (`ShipSlots+144`) |
 
 ### `ActionCanister` (`$BAF2`)
 
@@ -4679,7 +4510,7 @@ The new ship is turned about (FlipShip) unless it leaves the station, and is hos
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2 calls, 1,340 t-states own (0.00 %) |
 | Called from | `ShipAction` (tail) |
 | Calls | `CreateShip` |
-| Reads | `$6179` (`Slot7`); `$B85D`-`$B865` (`TitleShipAxes`) |
+| Reads | `$6179` (`Slot7+32`); `$B85D`-`$B865` (`TitleShipAxes`) |
 | Writes | `$6159`-`$6179` (`Slot7`) |
 
 ### `SpawnShip` (`$BBBA`)
@@ -4693,7 +4524,7 @@ The danger C is (slaves + narcotics) x 2 + firearms in the hold (`$D06E`, `$D071
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2 calls, 338 t-states own (0.00 %) |
 | Called from | `ShipAction` (tail) |
 | Calls | `Random` |
-| Reads | `$9CB2` (`MissionShip`); `$D06E`-`$D075` (`CargoHold`) |
+| Reads | `$9CB2` (`MissionShip`); `$D06E`-`$D075` (`CargoHold+3`) |
 
 ### `SpawnMissionDone` (`$BBF2`)
 
@@ -4715,9 +4546,9 @@ A face whose visibility distance passes is tested; one that fails is hidden. A s
 | Runs (launch, flight, hyperspace to Diso, the laser) | 53 calls, 320,593 t-states own (0.09 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 502 calls, 2,388,882 t-states own (0.51 %) |
 | Called from | `DrawShip` |
-| Calls | `FaceDot`, `NormalPart`, `IM2Entry` |
-| Reads | `$61D1`-`$61DF` (`ShipAsp`); `$62C8`-`$62F4` (`ShipAspFaces`); `$63EA`-`$63F8` (`ShipCanister`); `$6477`-`$64A3` (`ShipCanisterFaces`, `ShipCobraTrader`); `$6601`-`$6631` (`ShipCobraFaces`); `$68AC`-`$68BA` (`ShipPlate`); 7 more ranges |
-| Writes | `$A984`-`$A990` (`FaceVisible`); `$BCC8`-`$BCD3` (`FaceBlueprint`, `FaceScale`, `FaceNormal`, `FaceSigns`); `$FFE7`-`$FFF4` (`work space $FFE7+`) |
+| Calls | `FaceDot`, `NormalPart` |
+| Reads | `$61D1`-`$61DF` (`ShipAsp+5`); `$62C8`-`$62F4` (`ShipAspFaces+3`); `$63EA`-`$63F8` (`ShipCanister+5`); `$6477`-`$64A3` (`ShipCanisterFaces+3`, `ShipCobraTrader`); `$6601`-`$6631` (`ShipCobraFaces+3`); `$68AC`-`$68BA` (`ShipPlate+5`); 6 more ranges |
+| Writes | `$A984`-`$A990` (`FaceVisible`); `$BCC8`-`$BCD3` (`FaceBlueprint`, `FaceScale`, `FaceNormal`, `FaceSigns`) |
 
 ### `FaceDot` (`$BD5F`)
 
@@ -4729,9 +4560,8 @@ A face whose visibility distance passes is tested; one that fails is hidden. A s
 | Runs (launch, flight, hyperspace to Diso, the laser) | 689 calls, 225,701 t-states own (0.07 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5,060 calls, 1,658,392 t-states own (0.35 %) |
 | Called from | `FaceVisibility` |
-| Calls | `AddSignedHalf` (tail), `MultiplyWord`, `IM2Entry` |
-| Reads | `$BCCB`-`$BCD3` (`FaceNormal`, `FaceSigns`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFE1`-`$FFEC` (`work space $FFE1+`) |
+| Calls | `AddSignedHalf` (tail), `MultiplyWord` |
+| Reads | `$BCCB`-`$BCD3` (`FaceNormal`, `FaceSigns`) |
 
 ### `MultiplyWord` (`$BD95`)
 
@@ -4743,9 +4573,7 @@ A face whose visibility distance passes is tested; one that fails is hidden. A s
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,067 calls, 341,321 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 15,180 calls, 2,506,828 t-states own (0.54 %) |
 | Called from | `FaceDot` |
-| Calls | `Multiply8High`, `Multiply8`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFDF`-`$FFEA` (`work space $FFDF+`) |
+| Calls | `Multiply8High`, `Multiply8` |
 
 ### `NormalPart` (`$BDB4`)
 
@@ -4757,9 +4585,8 @@ A face whose visibility distance passes is tested; one that fails is hidden. A s
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,067 calls, 782,717 t-states own (0.23 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 15,180 calls, 6,020,436 t-states own (1.29 %) |
 | Called from | `FaceVisibility` |
-| Calls | `RotateNormal`, `IM2Entry` |
-| Reads | `$606F`-`$6077` (`ShipSlots`); `$6096`-`$609E` (`ShipSlots`); `$60BD`-`$60C5` (`ShipSlots`); `$60E4`-`$60EC` (`ShipSlots`); `$6159`-`$6161` (`Slot7`); `$BCCA` (`FaceScale`); 1 more ranges |
-| Writes | `$FFE1`-`$FFEE` (`work space $FFE1+`) |
+| Calls | `RotateNormal` |
+| Reads | `$606F`-`$6077` (`ShipSlots+39`); `$6096`-`$609E` (`ShipSlots+78`); `$60BD`-`$60C5` (`ShipSlots+117`); `$60E4`-`$60EC` (`ShipSlots+156`); `$6159`-`$6161` (`Slot7`); `$BCCA` (`FaceScale`) |
 
 ## gamestate
 
@@ -4979,9 +4806,7 @@ A face whose visibility distance passes is tested; one that fails is hidden. A s
 | Runs (launch, flight, hyperspace to Diso, the laser) | 38,713 calls, 387,301 t-states own (0.11 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 38,410 calls, 384,100 t-states own (0.08 %) |
 | Called from | `TitleLoad`, `TitleNext` |
-| Calls | `JumpKeys` (tail), `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `JumpKeys` (tail) |
 
 ### `PrintCodeVector` (`$D048`)
 
@@ -5174,7 +4999,7 @@ Firearms (`$0A`) cost 2, slaves (3) and narcotics (6) cost 4 on LegalStatus, up 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25 calls, 2,122 t-states own (0.00 %) |
 | Called from | `DamageVector` (tail) |
 | Calls | `AddAToHL` |
-| Reads | `$7105` (`StarSeed`); `$D085` (`Equipment`); `$DA76` (`MessageToken`) |
+| Reads | `$7105` (`StarSeed`); `$D085` (`Equipment+1`); `$DA76` (`MessageToken`) |
 
 ### `NewGame` (`$D298`)
 
@@ -5187,8 +5012,8 @@ Firearms (`$0A`) cost 2, slaves (3) and narcotics (6) cost 4 on LegalStatus, up 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 2,642 t-states own (0.00 %) |
 | Called from | `NewGameVector` (tail) |
 | Calls | `ClearMessages`, `FindNearestNow`, `MakeMarket` |
-| Reads | `$D097`-`$D099` (`Seeds`); `$D232`-`$D297` (`DefaultCommander`, `DefaultSun`); `$DEED`-`$DEF4` (`SelectedName`) |
-| Writes | `$7107`-`$710F` (`SunPosition`); `$D054`-`$D0BC` (`CommanderName`, `LegalStatus`, `CombatScore`, `CommanderRest` and 15 more); `$DBA1` (`JumpCountdown`); `$DEE4`-`$DEEB` (`CurrentName`); `$E1B0` (`MakeMarket`) |
+| Reads | `$D097`-`$D099` (`Seeds+9`); `$D232`-`$D297` (`DefaultCommander`, `DefaultSun`); `$DEED`-`$DEF4` (`SelectedName`) |
+| Writes | `$7107`-`$710F` (`SunPosition`); `$D054`-`$D0BC` (`CommanderName`, `LegalStatus`, `CombatScore`, `CommanderRest` and 15 more); `$DBA1` (`JumpCountdown`); `$DEE4`-`$DEEB` (`CurrentName`); `$E1B0` (`MakeMarketPrice+18`) |
 
 ## textprint
 
@@ -5243,8 +5068,8 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 24 calls, 5,316 t-states own (0.00 %) |
 | Called from | `PrintByteNow`, `PrintCash` (tail), `PrintDistance`, `MarketRow`, `DataScreen`, `PrintRadius` (tail) |
 | Calls | `PrintNumberUnits` (tail), `PrintDigit`, `PadNumber`, `PrintInline` |
-| Reads | `$D0CC` (`Messages`) |
-| Writes | `$D0CC` (`Messages`); `$D2DC`-`$D2DD` (`NumberLeft`) |
+| Reads | `$D0CC` (`Messages+15`) |
+| Writes | `$D0CC` (`Messages+15`); `$D2DC`-`$D2DD` (`NumberLeft`) |
 
 ### `PrintNumberUnits` (`$D31D`)
 
@@ -5258,7 +5083,7 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Called from | `PrintNumber` (tail), `PrintChar`, `PlotChar` |
 | Calls | `PrintDigitChar` |
 | Reads | `$D2DC`-`$D2DD` (`NumberLeft`) |
-| Writes | `$D0CC`-`$D0CE` (`Messages`) |
+| Writes | `$D0CC`-`$D0CE` (`Messages+15`) |
 
 ### `PrintCash` (`$D32D`)
 
@@ -5271,8 +5096,8 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 111 t-states own (0.00 %) |
 | Called from | `ControlCash` |
 | Calls | `PrintNumber` (tail) |
-| Reads | `$D066`-`$D069` (`CommanderRest`) |
-| Writes | `$D0CE` (`Messages`) |
+| Reads | `$D066`-`$D069` (`CommanderRest+3`) |
+| Writes | `$D0CE` (`Messages+17`) |
 
 ### `PrintCashNow` (`$D334`)
 
@@ -5292,9 +5117,9 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (launch, flight, hyperspace to Diso, the laser) | 96 calls, 12,658 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 96 calls, 12,658 t-states own (0.00 %) |
 | Called from | `PrintNumber` |
-| Calls | `PrintDigitChar`, `IM2Entry` |
-| Reads | `$D0CC` (`Messages`); `$D2DC`-`$D2DD` (`NumberLeft`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF4`-`$CFF5` (`BackBuffer`); `$D0CC` (`Messages`); `$D2DC`-`$D2DD` (`NumberLeft`) |
+| Calls | `PrintDigitChar` |
+| Reads | `$D0CC` (`Messages+15`); `$D2DC`-`$D2DD` (`NumberLeft`) |
+| Writes | `$D0CC` (`Messages+15`); `$D2DC`-`$D2DD` (`NumberLeft`) |
 
 ### `PrintDigitChar` (`$D371`)
 
@@ -5319,7 +5144,7 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 24 calls, 5,304 t-states own (0.00 %) |
 | Called from | `PrintNumber` |
 | Calls | `AtLeast`, `PrintCode` |
-| Reads | `$D0CC`-`$D0CE` (`Messages`) |
+| Reads | `$D0CC`-`$D0CE` (`Messages+15`) |
 
 ### `AtLeast` (`$D3CE`)
 
@@ -5375,7 +5200,7 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 18 calls, 612 t-states own (0.00 %) |
 | Called from | `PrintNumber`, `ControlFuel`, `PrintDistance`, `MarketRow`, `PrintCapitals`, `PrintUnit`, `DataScreen`, `StatusScreen`, `StatusSystem` |
 | Calls | `PrintCode` |
-| Reads | `$D31C` (`PointCode`); `$D83F` (`FuelSpace`); `$E122` (`PrintDistance`); `$E24C` (`MarketRow`); `$E2FC` (`PrintCapitals`); `$E346` (`PrintUnit`); 3 more ranges |
+| Reads | `$D31C` (`PointCode`); `$D83F` (`FuelSpace`); `$E122` (`PrintDistance+27`); `$E24C` (`MarketRowStock+14`); `$E2FC` (`PrintCapitals+4`); `$E346` (`PrintUnitKm+3`); 3 more ranges |
 
 ### `PrintCode` (`$D425`)
 
@@ -5389,9 +5214,8 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (launch, flight, hyperspace to Diso, the laser) | 16,471 calls, 16,957,588 t-states own (5.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 14,617 calls, 17,259,877 t-states own (3.69 %) |
 | Called from | `PrintCodeVector` (tail), `PrintDigitChar` (tail), `PadNumber`, `PrintInline`, `PrintOtherChar` (tail), `ViewTexts`, `MarketRow`, `PrintCodeColon`, `PrintCodeSpace`, `PrintCodeNow` (tail), `PrintCodeLine`, `PrintCapitals` (tail), `PageTitle` (tail), `PrintCodes`, `PrintUnit`, `PrintUnitNow` (tail), `PrintEconomy`, `PrintSpecies` (tail), `PrintLaser` |
-| Calls | `PrintChar` (tail), `PrintStdPair` (tail), `TokenControl` (tail), `PrintDistanceEnd`, `StatusScreen`, `IM2Entry` |
-| Reads | `$F11A`-`$F4E4` (`TokenTable`, `OtherTable`, `StdTokens`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF0`-`$CFFB` (`BackBuffer`); `$FFEB`-`$FFFA` (`work space $FFEB+`) |
+| Calls | `PrintChar` (tail), `PrintStdPair` (tail), `TokenControl` (tail), `PrintDistanceEnd`, `StatusScreen` |
+| Reads | `$F11A`-`$F4E4` (`TokenTable`, `OtherTable`, `StdTokens`) |
 
 ### `PrintOther` (`$D45F`)
 
@@ -5403,9 +5227,8 @@ Five digits by repeated subtraction (PrintDigit) from 10000 down, the leading ze
 | Runs (launch, flight, hyperspace to Diso, the laser) | 168 calls, 3,812,392 t-states own (1.12 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 900 calls, 19,608,305 t-states own (4.19 %) |
 | Called from | `PrintOtherVector` (tail), `PrintOtherChar` (tail), `RandomToken` (tail), `PrintOtherColon`, `ClearPageText` (tail), `DataScreen` (tail) |
-| Calls | `PrintOtherChar`, `IM2Entry` |
-| Reads | `$F11C`-`$F11D` (`OtherTable`); `$F4F5`-`$FA6E` (`OtherTokens`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFEC`-`$CFF9` (`BackBuffer`); `$FFF1`-`$FFF8` (`work space $FFF1+`) |
+| Calls | `PrintOtherChar` |
+| Reads | `$F11C`-`$F11D` (`OtherTable`); `$F4F5`-`$FA6E` (`OtherTokens`) |
 
 ### `PrintOtherChar` (`$D470`)
 
@@ -5432,9 +5255,9 @@ PrintCase `$D0D1`: 0 the sentence case (a capital after a non-letter), 1 all cap
 | Runs (launch, flight, hyperspace to Diso, the laser) | 16,883 calls, 15,270,994 t-states own (4.50 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 20,545 calls, 18,736,496 t-states own (4.01 %) |
 | Called from | `PrintCode` (tail), `PrintOtherChar` (tail), `PrintPairNow` (tail) |
-| Calls | `PrintNumberUnits`, `PlotChar`, `JustifyChar` (tail), `ControlFuelValue`, `StatusScreen`, `StatusSystem`, `IM2Entry` |
-| Reads | `$4027`-`$54F7` (screen); `$5514`-`$55F7` (screen); `$5614`-`$56F7` (screen); `$5714`-`$57F7` (screen); `$5D70`-`$5D77` (`Font`); `$5D90`-`$5E47` (`Font`); 9 more ranges |
-| Writes | `$4027`-`$54F7` (screen); `$5514`-`$55F7` (screen); `$5614`-`$56F7` (screen); `$5714`-`$57F7` (screen); `$C022`-`$C738` (`BackBuffer`); `$C7EB`-`$C7F4` (`BackBuffer`); 4 more ranges |
+| Calls | `PrintNumberUnits`, `PlotChar`, `JustifyChar` (tail), `ControlFuelValue`, `StatusScreen`, `StatusSystem` |
+| Reads | `$4027`-`$54F7` (screen); `$5514`-`$55F7` (screen); `$5614`-`$56F7` (screen); `$5714`-`$57F7` (screen); `$5D70`-`$5D77` (`Font`); `$5D90`-`$5E47` (`Font+32`); 8 more ranges |
+| Writes | `$4027`-`$54F7` (screen); `$5514`-`$55F7` (screen); `$5614`-`$56F7` (screen); `$5714`-`$57F7` (screen); `$C022`-`$C738` (`BackBuffer+34`); `$C7EB`-`$C7F4` (`BackBuffer+2027`); 3 more ranges |
 
 ### `PlotChar` (`$D4E1`)
 
@@ -5444,9 +5267,9 @@ PrintCase `$D0D1`: 0 the sentence case (a capital after a non-letter), 1 all cap
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 5,509 calls, 4,181,777 t-states own (2.21 %) |
 | Called from | `PrintChar`, `JustifyChar` |
-| Calls | `PrintNumberUnits`, `ControlFuelValue`, `MarketRow`, `PrintUnit`, `DataScreen`, `StatusScreen`, `StatusSystem`, `IM2Entry` |
-| Reads | `$4025`-`$57F7` (screen); `$5D70`-`$5D77` (`Font`); `$5D90`-`$5E47` (`Font`); `$5E68`-`$6047` (`Font`); `$C026`-`$C738` (`BackBuffer`); `$C8C2`-`$CFDC` (`BackBuffer`); 2 more ranges |
-| Writes | `$4025`-`$57F7` (screen); `$C026`-`$C738` (`BackBuffer`); `$C8C2`-`$CFF9` (`BackBuffer`); `$D045` (`TextColumn`); `$FFEB`-`$FFF6` (`work space $FFEB+`) |
+| Calls | `PrintNumberUnits`, `ControlFuelValue`, `MarketRow`, `PrintUnit`, `DataScreen`, `StatusScreen`, `StatusSystem` |
+| Reads | `$4025`-`$57F7` (screen); `$5D70`-`$5D77` (`Font`); `$5D90`-`$5E47` (`Font+32`); `$5E68`-`$6047` (`Font+248`); `$C026`-`$C738` (`BackBuffer+38`); `$C8C2`-`$CFDC` (`BackBuffer+2242`); 1 more ranges |
+| Writes | `$4025`-`$57F7` (screen); `$C026`-`$C738` (`BackBuffer+38`); `$C8C2`-`$CFDC` (`BackBuffer+2242`); `$D045` (`TextColumn`) |
 
 ### `FillAttrRow` (`$D54F`)
 
@@ -5542,9 +5365,7 @@ The status and the market pages call it with their lists (`$FD8E` and others).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 757 calls, 12,869 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 477 calls, 8,128 t-states own (0.00 %) |
 | Called from | `PrintCode` (tail) |
-| Calls | `PrintPairNow`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$FFF5`-`$FFF6` (`work space $FFF5+`) |
+| Calls | `PrintPairNow` |
 
 ### `PrintPairNow` (`$D5A1`)
 
@@ -5556,9 +5377,8 @@ The status and the market pages call it with their lists (`$FD8E` and others).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 973 calls, 103,157 t-states own (0.03 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,659 calls, 175,854 t-states own (0.04 %) |
 | Called from | `PrintOtherPair` (tail), `PrintStdPair` |
-| Calls | `PrintChar` (tail), `IM2Entry` |
-| Reads | `$FDA1`-`$FE00` (`OtherPairs`, `StdPairs`, `DataBands`, `MarketBands2` and 2 more) |
-| Writes | `$FFF5`-`$FFF6` (`work space $FFF5+`) |
+| Calls | `PrintChar` (tail) |
+| Reads | `$FDA1`-`$FDF2` (`OtherPairs+8`, `StdPairs`) |
 
 ### `RandomToken` (`$D5B4`)
 
@@ -5606,9 +5426,9 @@ The status and the market pages call it with their lists (`$FD8E` and others).
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4 calls, 71,534 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4 calls, 71,534 t-states own (0.02 %) |
 | Called from | `ClearScreen`, `GalacticChart`, `StatusBomb` (tail) |
-| Calls | `FillRule`, `IM2Entry` |
-| Reads | `$4000`-`$5740` (screen); `$575F`-`$5760` (screen); `$577F`-`$5780` (screen); `$579F`-`$57A0` (screen); `$57BF`-`$57C0` (screen); `$57DF`-`$57E0` (screen); 2 more ranges |
-| Writes | `$4000`-`$5720` (screen); `$573F`-`$5740` (screen); `$575F`-`$5760` (screen); `$577F`-`$5780` (screen); `$579F`-`$57A0` (screen); `$57BF`-`$57C0` (screen); 4 more ranges |
+| Calls | `FillRule` |
+| Reads | `$4000`-`$5740` (screen); `$575F`-`$5760` (screen); `$577F`-`$5780` (screen); `$579F`-`$57A0` (screen); `$57BF`-`$57C0` (screen); `$57DF`-`$57E0` (screen); 1 more ranges |
+| Writes | `$4000`-`$5720` (screen); `$573F`-`$5740` (screen); `$575F`-`$5760` (screen); `$577F`-`$5780` (screen); `$579F`-`$57A0` (screen); `$57BF`-`$57C0` (screen); 3 more ranges |
 
 ### `JustifyChar` (`$D6B9`)
 
@@ -5620,9 +5440,9 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 75 calls, 18,456 t-states own (0.01 %) |
 | Called from | `PrintChar` (tail) |
-| Calls | `PlotChar`, `JustifyNewLine`, `JustifyBackWord`, `JustifyAddSpace`, `NewLine`, `IM2Entry` |
-| Reads | `$D676`-`$D694` (`JustifyLine`); `$D6B3`-`$D6B6` (`JustifyLine`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF0`-`$CFF1` (`BackBuffer`); `$D0D2` (`PrintCapital`); `$D676`-`$D699` (`JustifyLine`); `$D6B3`-`$D6B8` (`JustifyLine`) |
+| Calls | `PlotChar`, `JustifyNewLine`, `JustifyBackWord`, `JustifyAddSpace`, `NewLine` |
+| Reads | `$D676`-`$D694` (`JustifyLine+1`); `$D6B3`-`$D6B6` (`JustifyLine+62`) |
+| Writes | `$D0D2` (`PrintCapital`); `$D676`-`$D699` (`JustifyLine+1`); `$D6B3`-`$D6B8` (`JustifyLine+62`) |
 
 ### `JustifyPrint` (`$D71A`)
 
@@ -5640,8 +5460,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 4 calls, 6,080 t-states own (0.00 %) |
 | Called from | `JustifyChar`, `JustifyOn` (tail) |
-| Reads | `$D695`-`$D6B8` (`JustifyLine`) |
-| Writes | `$D676`-`$D6B8` (`JustifyLine`) |
+| Reads | `$D695`-`$D6B8` (`JustifyLine+32`) |
+| Writes | `$D676`-`$D6B8` (`JustifyLine+1`) |
 
 ### `JustifyOn` (`$D75A`)
 
@@ -5652,7 +5472,7 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | run into, not called, 900 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `JustifyNewLine` (tail) |
-| Writes | `$D0D4` (`PrintBuffering`); `$D695`-`$D6B8` (`JustifyLine`) |
+| Writes | `$D0D4` (`PrintBuffering`); `$D695`-`$D6B8` (`JustifyLine+32`) |
 
 ### `JustifyOff` (`$D776`)
 
@@ -5662,7 +5482,7 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | run into, not called, 57 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Reads | `$D6B4` (`JustifyLine`) |
+| Reads | `$D6B4` (`JustifyLine+63`) |
 | Writes | `$D0D4` (`PrintBuffering`) |
 
 ### `JustifyBackWord` (`$D783`)
@@ -5673,8 +5493,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 10 calls, 2,790 t-states own (0.00 %) |
 | Called from | `JustifyChar` |
-| Reads | `$D675`-`$D693` (`JustifyLine`); `$D6B5`-`$D6B6` (`JustifyLine`) |
-| Writes | `$D6B5`-`$D6B6` (`JustifyLine`) |
+| Reads | `$D675`-`$D693` (`JustifyLine`); `$D6B5`-`$D6B6` (`JustifyLine+64`) |
+| Writes | `$D6B5`-`$D6B6` (`JustifyLine+64`) |
 
 ### `JustifyAddSpace` (`$D7A1`)
 
@@ -5684,8 +5504,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 8 calls, 4,880 t-states own (0.00 %) |
 | Called from | `JustifyChar` |
-| Reads | `$D67A`-`$D693` (`JustifyLine`); `$D6B5`-`$D6B6` (`JustifyLine`) |
-| Writes | `$D67A`-`$D693` (`JustifyLine`) |
+| Reads | `$D67A`-`$D693` (`JustifyLine+5`); `$D6B5`-`$D6B6` (`JustifyLine+64`) |
+| Writes | `$D67A`-`$D693` (`JustifyLine+5`) |
 
 ### `OtherControl` (`$D7B0`)
 
@@ -5722,7 +5542,7 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 342 calls, 19,836 t-states own (0.00 %) |
 | Called from | `OtherControl` (tail), `TokenControl` |
 | Calls | `HorizontalRule`, `ClearScreen`, `JustifyOn`, `JustifyOff`, `ControlCash`, `ControlCommander`, `ControlSentence`, `ControlFuel`, `ControlGalaxy`, `ControlCurrent`, `ControlSelected`, `ControlTab`, `CapitalNext`, `ControlMixed`, `ControlCapitals`, `ControlPeople`, `OtherOn`, `OtherOff`, `NewLine` |
-| Reads | `$D7C5`-`$D806` (`TokenControls`, `OtherControls`) |
+| Reads | `$D7C5`-`$D806` (`TokenControls+2`, `OtherControls`) |
 
 ### `WaitControl` (`$D81F`)
 
@@ -5814,8 +5634,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | run into, not called, 47 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PrintByte` (tail) |
-| Reads | `$D065` (`CommanderRest`) |
-| Writes | `$D0CE` (`Messages`) |
+| Reads | `$D065` (`CommanderRest+2`) |
+| Writes | `$D0CE` (`Messages+17`) |
 
 ### `ControlFirstSystem` (`$D857`)
 
@@ -5933,9 +5753,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 19 calls, 437 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 19 calls, 437 t-states own (0.00 %) |
 | Called from | `ControlSentence` (tail), `ControlMixed` (tail), `ControlCapitals` |
-| Calls | `PrintCapitals`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFFA`-`$CFFB` (`BackBuffer`); `$D0D1` (`PrintCase`) |
+| Calls | `PrintCapitals` |
+| Writes | `$D0D1` (`PrintCase`) |
 
 ### `ControlPeople` (`$D8B4`)
 
@@ -5946,8 +5765,8 @@ The other set's control codes 14 and 15 start and end it (the mission texts and 
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | run into, not called, 219 t-states own (0.00 %) |
 | Called from | `JumpTable` |
 | Calls | `PrintString` (tail), `CapitalNext`, `PrintCodes` |
-| Reads | `$D6B4`-`$D6B6` (`JustifyLine`); `$D8E0`-`$D8E1` (`Vowels`); `$DEF0` (`SelectedName`) |
-| Writes | `$D6B4`-`$D6B6` (`JustifyLine`) |
+| Reads | `$D6B4`-`$D6B6` (`JustifyLine+63`); `$D8E0`-`$D8E1` (`Vowels`); `$DEF0` (`SelectedName+3`) |
+| Writes | `$D6B4`-`$D6B6` (`JustifyLine+63`) |
 
 ### `OtherOn` (`$D8E5`)
 
@@ -6131,9 +5950,9 @@ Called each pass (1220 times in c1). The name is plotted with SET 7 at `$D50A`, 
 | Runs (launch, flight, hyperspace to Diso, the laser) | 691 calls, 149,060 t-states own (0.04 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 389 calls, 83,630 t-states own (0.02 %) |
 | Called from | `ViewTextsVector` (tail) |
-| Calls | `PrintCode`, `MessageTick`, `PrintCodeLine`, `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$D50A` (`PlotChar`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D0D1` (`PrintCase`); `$D50A` (`PlotChar`); `$FFFB`-`$FFFC` (`work space $FFFB+`) |
+| Calls | `PrintCode`, `MessageTick`, `PrintCodeLine` |
+| Reads | `$70E3` (`ViewIndex`); `$D50A` (`PlotCharGlyph+25`) |
+| Writes | `$D045`-`$D046` (`TextColumn`, `TextRow`); `$D0D1` (`PrintCase`); `$D50A` (`PlotCharGlyph+25`) |
 
 ### `MessageTick` (`$DAB4`)
 
@@ -6147,9 +5966,9 @@ The ten slots at `$D0BD` hold a column and a code each, bit 7 of the column a re
 | Runs (launch, flight, hyperspace to Diso, the laser) | 691 calls, 273,134 t-states own (0.08 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 389 calls, 149,513 t-states own (0.03 %) |
 | Called from | `ViewTexts` |
-| Calls | `FillAttrsVector`, `ConditionLightVector`, `MessageShow` (tail), `JumpTick`, `PrintCodeLine` (tail), `IM2Entry` |
-| Reads | `$70E3` (`ViewIndex`); `$70FC` (`BarDrawn`); `$711E`-`$7129` (`SunNear`, `TooClose`, `SunLarge`, `ConditionLightVector` and 4 more); `$D081` (`NovaMission`); `$D0AF`-`$D0CF` (`MissionState`, `MissionFlags`, `RecordTail`, `SunGrows` and 3 more); `$DA72`-`$DA76` (`MessageTimer`, `MessageShown`, `MessagePass`, `MessageColumn` and 1 more); 1 more ranges |
-| Writes | `$D041`-`$D046` (`CloakOn`, `JumpKeysVector`, `TextColumn`, `TextRow`); `$DA72`-`$DA74` (`MessageTimer`, `MessageShown`, `MessagePass`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `FillAttrsVector`, `ConditionLightVector`, `MessageShow` (tail), `JumpTick`, `PrintCodeLine` (tail) |
+| Reads | `$70E3` (`ViewIndex`); `$70FC` (`BarEnergy4`); `$711E`-`$7129` (`SunNear`, `TooClose`, `SunLarge`, `ConditionLightVector` and 4 more); `$D081` (`NovaMission`); `$D0AF`-`$D0CF` (`MissionState`, `MissionFlags`, `RecordTail`, `SunGrows` and 3 more); `$DA72`-`$DA76` (`MessageTimer`, `MessageShown`, `MessagePass`, `MessageColumn` and 1 more) |
+| Writes | `$D041`-`$D046` (`CloakOn`, `JumpKeysVector`, `TextColumn`, `TextRow`); `$DA72`-`$DA74` (`MessageTimer`, `MessageShown`, `MessagePass`) |
 
 ### `MessageShow` (`$DAE1`)
 
@@ -6229,8 +6048,8 @@ Called each pass through JumpKeysVector (197283 runs, 4 with a key). The keys ar
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 389 calls, 14,577 t-states own (0.00 %) |
 | Called from | `MessageTick` |
 | Calls | `PrintByte` (tail), `ClearMessages`, `JumpEnd` (tail), `SetFuel`, `NewMarket` |
-| Reads | `$604F`-`$6050` (`ShipSlots`); `$7105`-`$7118` (`StarSeed`, `SunPosition`, `PlanetPosition`); `$D03F` (`TunnelOn`); `$D05F`-`$D065` (`LegalStatus`, `CombatScore`, `CommanderRest`); `$D081`-`$D082` (`NovaMission`, `Fuel`); `$D097`-`$D099` (`Seeds`); 5 more ranges |
-| Writes | `$6048`-`$6062` (`ShipSlots`); `$7060` (`EquipmentPrices`); `$70E3`-`$70F2` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate` and 1 more); `$7103`-`$711E` (`WitchSpace`, `Condition`, `StarSeed`, `SunPosition` and 5 more); `$9CB2` (`MissionShip`); `$D040`-`$D047` (`TunnelLoop`, `CloakOn`, `JumpKeysVector`, `TextColumn` and 2 more); 6 more ranges |
+| Reads | `$604F`-`$6050` (`ShipSlots+7`); `$7105`-`$7118` (`StarSeed`, `SunPosition`, `PlanetPosition`); `$D03F` (`TunnelOn`); `$D05F`-`$D065` (`LegalStatus`, `CombatScore`, `CommanderRest`); `$D081`-`$D082` (`NovaMission`, `Fuel`); `$D097`-`$D099` (`Seeds+9`); 5 more ranges |
+| Writes | `$6048`-`$6062` (`ShipSlots`); `$7060` (`EquipmentPrices+1`); `$70E3`-`$70F2` (`ViewIndex`, `RollRate`, `PitchRate`, `SpeedRate` and 1 more); `$7103`-`$711E` (`WitchSpace`, `Condition`, `StarSeed`, `SunPosition` and 5 more); `$9CB2` (`MissionShip`); `$D040`-`$D047` (`TunnelLoop`, `CloakOn`, `JumpKeysVector`, `TextColumn` and 2 more); 6 more ranges |
 
 ### `GalaxyJump` (`$DC4E`)
 
@@ -6339,7 +6158,7 @@ MissionState 1 becomes 2 (the MAYDAY left unanswered), 4 becomes 3 (left the bas
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1 call, 95 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 95 t-states own (0.00 %) |
 | Called from | `JumpTick` |
-| Writes | `$70EC` (`BarDrawn`); `$D082` (`Fuel`) |
+| Writes | `$70EC` (`BarFuel`); `$D082` (`Fuel`) |
 
 ## galaxy
 
@@ -6396,9 +6215,9 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4 calls, 161,231 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 4 calls, 161,231 t-states own (0.03 %) |
 | Called from | `NewGame`, `FindNearest` (tail) |
-| Calls | `NextSystem`, `SquaredDistance`, `JumpDistance`, `SystemName`, `KeepName`, `SystemData`, `GalaxySeeds`, `SaveSeeds`, `RestoreSeeds`, `IM2Entry` |
-| Reads | `$D097`-`$D099` (`Seeds`); `$DEC1`-`$DEC3` (`SystemSeeds`); `$DF5E`-`$DF5F` (`BestDistance`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF8`-`$CFF9` (`BackBuffer`); `$DF5E`-`$DF5F` (`BestDistance`); `$FFF7`-`$FFFA` (`work space $FFF7+`) |
+| Calls | `NextSystem`, `SquaredDistance`, `JumpDistance`, `SystemName`, `KeepName`, `SystemData`, `GalaxySeeds`, `SaveSeeds`, `RestoreSeeds` |
+| Reads | `$D097`-`$D099` (`Seeds+9`); `$DEC1`-`$DEC3` (`SystemSeeds+1`); `$DF5E`-`$DF5F` (`BestDistance`) |
+| Writes | `$DF5E`-`$DF5F` (`BestDistance`) |
 
 ### `NextSystem` (`$DFC4`)
 
@@ -6410,9 +6229,7 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,526 calls, 329,673 t-states own (0.10 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,526 calls, 329,673 t-states own (0.07 %) |
 | Called from | `FindNearestNow`, `GalacticChart`, `EachSystemInWindow`, `DrawSystemIcon` (tail) |
-| Calls | `Twist`, `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF6`-`$CFF7` (`BackBuffer`) |
+| Calls | `Twist` |
 
 ### `SquaredDistance` (`$DFCE`)
 
@@ -6424,9 +6241,8 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (launch, flight, hyperspace to Diso, the laser) | 1,028 calls, 177,958 t-states own (0.05 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1,028 calls, 177,958 t-states own (0.04 %) |
 | Called from | `FindNearestNow` |
-| Calls | `AbsDifference`, `MultiplyDA`, `IM2Entry` |
-| Reads | `$D0BB`-`$D0BC` (`ChartCursorX`, `ChartCursorY`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF2`-`$CFF3` (`BackBuffer`) |
+| Calls | `AbsDifference`, `MultiplyDA` |
+| Reads | `$D0BB`-`$D0BC` (`ChartCursorX`, `ChartCursorY`) |
 
 ### `AbsDifference` (`$DFEA`)
 
@@ -6462,9 +6278,6 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2,064 calls, 910,493 t-states own (0.27 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2,064 calls, 910,493 t-states own (0.19 %) |
 | Called from | `SquaredDistance`, `SystemData` |
-| Calls | `IM2Entry` |
-| Reads | `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF0`-`$CFF3` (`BackBuffer`); `$FFF1`-`$FFF2` (`work space $FFF1+`) |
 
 ### `SystemName` (`$E01C`)
 
@@ -6491,7 +6304,7 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 44 calls, 7,660 t-states own (0.00 %) |
 | Called from | `SystemName` |
 | Calls | `Twist` |
-| Reads | `$DEC4`-`$DEC5` (`SystemSeeds`); `$DF01`-`$DF02` (`NamePointer`); `$FDB5`-`$FDF2` (`StdPairs`) |
+| Reads | `$DEC4`-`$DEC5` (`SystemSeeds+4`); `$DF01`-`$DF02` (`NamePointer`); `$FDB5`-`$FDF2` (`StdPairs+2`) |
 | Writes | `$DEDB`-`$DEE2` (`NameBuffer`); `$DF01`-`$DF02` (`NamePointer`) |
 
 ### `Twist` (`$E063`)
@@ -6504,9 +6317,8 @@ Found: the system becomes the selected one, the chart's cross is moved (EraseCro
 | Runs (launch, flight, hyperspace to Diso, the laser) | 6,160 calls, 1,034,975 t-states own (0.30 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 6,160 calls, 1,034,975 t-states own (0.22 %) |
 | Called from | `NextSystem`, `SystemName` (tail), `NamePair` |
-| Calls | `IM2Entry` |
-| Reads | `$DEC0`-`$DEC5` (`SystemSeeds`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF2`-`$CFF5` (`BackBuffer`); `$DEC0`-`$DEC5` (`SystemSeeds`); `$FFF1`-`$FFF2` (`work space $FFF1+`) |
+| Reads | `$DEC0`-`$DEC5` (`SystemSeeds`) |
+| Writes | `$DEC0`-`$DEC5` (`SystemSeeds`) |
 
 ### `KeepName` (`$E080`)
 
@@ -6549,7 +6361,7 @@ As BBC Elite: the government is s1's bits 3-5, the economy s0's high bits 0-2 (b
 | Called from | `ShowSelected`, `DataScreen` |
 | Calls | `PrintNumber`, `PrintInline`, `PrintCodeColon`, `NewLine` (tail) |
 | Reads | `$DEF6`-`$DEF7` (`JumpRange`) |
-| Writes | `$D0CE` (`Messages`) |
+| Writes | `$D0CE` (`Messages+17`) |
 
 ### `PrintDistanceEnd` (`$E123`)
 
@@ -6608,7 +6420,7 @@ As BBC Elite: the government is s1's bits 3-5, the economy s0's high bits 0-2 (b
 | Runs (launch, flight, hyperspace to Diso, the laser) | 25 calls, 3,525 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 25 calls, 3,525 t-states own (0.00 %) |
 | Called from | `GalaxySeeds` (tail), `SaveSeeds` (tail), `RestoreSeeds` |
-| Reads | `$D090`-`$D095` (`Seeds`); `$DEC0`-`$DECB` (`SystemSeeds`, `BestSeeds`) |
+| Reads | `$D090`-`$D095` (`Seeds+2`); `$DEC0`-`$DECB` (`SystemSeeds`, `BestSeeds`) |
 | Writes | `$DEC0`-`$DECB` (`SystemSeeds`, `BestSeeds`) |
 
 ### `NewMarket` (`$E142`)
@@ -6621,7 +6433,7 @@ As BBC Elite: the government is s1's bits 3-5, the economy s0's high bits 0-2 (b
 | Called from | `JumpTick` |
 | Calls | `MakeMarket` |
 | Reads | `$7105` (`StarSeed`) |
-| Writes | `$D06A` (`CommanderRest`) |
+| Writes | `$D06A` (`CommanderRest+7`) |
 
 ### `MakeMarket` (`$E148`)
 
@@ -6635,7 +6447,7 @@ For each of the 17 entries (base price, factor, base quantity, mask): the produc
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2 calls, 19,397 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 9,681 t-states own (0.00 %) |
 | Called from | `NewGame`, `NewMarket` |
-| Reads | `$701B`-`$705E` (`Commodities`); `$D06A` (`CommanderRest`); `$DEF8` (`Economy`) |
+| Reads | `$701B`-`$705E` (`Commodities`); `$D06A` (`CommanderRest+7`); `$DEF8` (`Economy`) |
 | Writes | `$D09E`-`$D0AE` (`MarketStock`); `$E1BD`-`$E1DE` (`Prices`) |
 
 ## menuhelpers
@@ -6681,7 +6493,7 @@ MarketItem picks the name (standard code `$D0` + item); the columns are 13, 15 a
 | Called from | `PlotChar`, `SetColumn`, `MarketPrices` |
 | Calls | `PrintByte`, `PrintNumber`, `PrintInline`, `PrintCode`, `PrintCodeLine`, `NewLine`, `ColumnInline`, `PrintUnit` |
 | Reads | `$D09E`-`$D0AE` (`MarketStock`); `$E1BD`-`$E1E5` (`Prices`, `MarketItem`, `HoldPointer`, `PricePointer` and 1 more) |
-| Writes | `$D0CE` (`Messages`); `$E1E2`-`$E1E5` (`PricePointer`, `StockPointer`) |
+| Writes | `$D0CE` (`Messages+17`); `$E1E2`-`$E1E5` (`PricePointer`, `StockPointer`) |
 
 ### `HoldRow` (`$E268`)
 
@@ -6761,7 +6573,7 @@ MarketItem picks the name (standard code `$D0` + item); the columns are 13, 15 a
 | Runs (launch, flight, hyperspace to Diso, the laser) | 715 calls, 12,174 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 424 calls, 7,227 t-states own (0.00 %) |
 | Called from | `PrintLine` (tail), `ViewTexts`, `MessageTick` (tail), `MarketRow`, `PrintCodeGap`, `MarketPrices`, `StatusScreen`, `StatusSystem` (tail) |
-| Calls | `PrintCode`, `IM2Entry` |
+| Calls | `PrintCode` |
 
 ### `NewLine` (`$E2A9`)
 
@@ -6773,9 +6585,9 @@ MarketItem picks the name (standard code `$D0` + item); the columns are 13, 15 a
 | Runs (launch, flight, hyperspace to Diso, the laser) | 7 calls, 48,199 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 7 calls, 28,993 t-states own (0.01 %) |
 | Called from | `JustifyChar`, `JumpTable`, `PrintDistance` (tail), `PrintDistanceEnd` (tail), `MarketRow`, `ShowSelected`, `DataScreen`, `PrintCodeGap` (tail), `NewLineGap`, `NewLineGapSecond` (tail), `EquipmentLine` |
-| Calls | `ColumnZero`, `SetRow` (tail), `IM2Entry` |
-| Reads | `$D046` (`TextRow`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$D0D2` (`PrintCapital`); `$FFF9`-`$FFFA` (`work space $FFF9+`) |
+| Calls | `ColumnZero`, `SetRow` (tail) |
+| Reads | `$D046` (`TextRow`) |
+| Writes | `$D0D2` (`PrintCapital`) |
 
 ### `NewLineRow` (`$E2B1`)
 
@@ -6808,7 +6620,7 @@ MarketItem picks the name (standard code `$D0` + item); the columns are 13, 15 a
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 5 calls, 170 t-states own (0.00 %) |
 | Called from | `ControlTab`, `MarketRow`, `ScreenHeading`, `StatusScreen`, `StatusSystem` |
 | Calls | `SetColumn` |
-| Reads | `$D87E` (`TabColumn`); `$E21D`-`$E224` (`MarketRow`); `$E23D` (`MarketRow`); `$EB67` (`ScreenHeading`); `$EF9B` (`StatusScreen`); `$F0A5` (`StatusSystem`) |
+| Reads | `$D87E` (`TabColumn`); `$E21D`-`$E224` (`MarketRow+11`, `MarketRowUnit`); `$E23D` (`MarketRowPrice+24`); `$EB67` (`ScreenHeading+4`); `$EF9B` (`StatusScreen+20`); `$F0A5` (`StatusSystem+4`) |
 
 ### `SetColumn` (`$E2C0`)
 
@@ -6833,7 +6645,7 @@ MarketItem picks the name (standard code `$D0` + item); the columns are 13, 15 a
 | Runs (launch, flight, hyperspace to Diso, the laser) | 734 calls, 22,773 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 443 calls, 13,752 t-states own (0.00 %) |
 | Called from | `NewLine` (tail), `ClearInputRows`, `DataScreen`, `StatusScreen` |
-| Calls | `StatusScreen`, `IM2Entry` |
+| Calls | `StatusScreen` |
 | Writes | `$D046` (`TextRow`) |
 
 ### `DeleteChar` (`$E2D5`)
@@ -7029,7 +6841,7 @@ B is written into the CP at `$E413` (the length check). Accepted: 0-9 and @, A-Z
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 17 calls, 4,639 t-states own (0.00 %) |
 | Called from | `FindNearest` (tail), `ChartLeft` (tail), `GalacticChart`, `ShortRangeChart` (tail) |
 | Calls | `DrawCross` (tail) |
-| Reads | `$D097`-`$D099` (`Seeds`); `$D0BB`-`$D0BC` (`ChartCursorX`, `ChartCursorY`); `$E52B` (`CrossSize`) |
+| Reads | `$D097`-`$D099` (`Seeds+9`); `$D0BB`-`$D0BC` (`ChartCursorX`, `ChartCursorY`); `$E52B` (`CrossSize`) |
 | Writes | `$D051`-`$D052` (`CrossX`, `CrossY`) |
 
 ### `ChartUp` (`$E4D4`)
@@ -7184,7 +6996,7 @@ The horizontal line is drawn a byte at a time: a partial byte (a mask of the fir
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 1 call, 32 t-states own (0.00 %) |
 | Called from | `MarketPrices` |
-| Reads | `$E1D2` (`Prices`) |
+| Reads | `$E1D2` (`Prices+21`) |
 
 ### `FillAllAttrs` (`$E75E`)
 
@@ -7446,7 +7258,7 @@ The chart is the galaxy at half height: a system's dot is at (x, y / 2 + 24), x 
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 1 call, 17,871 t-states own (0.01 %) |
 | Called from | `ScreenGalaxy` (tail) |
 | Calls | `DrawChartCircleVector`, `FillRule`, `FillBytes`, `ClearScreen`, `DrawFrame`, `NextSystem`, `GalaxySeeds`, `ChartCross`, `DrawCross`, `ScreenHeading`, `ClearBlock`, `PlotSystem` |
-| Reads | `$D082` (`Fuel`); `$D097`-`$D099` (`Seeds`) |
+| Reads | `$D082` (`Fuel`); `$D097`-`$D099` (`Seeds+9`) |
 | Writes | `$D051`-`$D053` (`CrossX`, `CrossY`, `ChartRadius`); `$E52B`-`$E52D` (`CrossSize`, `CrossTop`, `CrossBottom`) |
 
 ### `ClearBlock` (`$EBEE`)
@@ -7472,9 +7284,8 @@ PIXEL-ADD counts y from the bottom, so B = (y / 2 XOR 127) + 24 is 175 less the 
 | --- | --- |
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 256 calls, 44,590 t-states own (0.02 %) |
 | Called from | `GalacticChart` |
-| Calls | `IM2Entry` |
-| Reads | `$4060`-`$40FD` (screen); `$4164`-`$41F5` (screen); `$4261`-`$43D3` (screen); `$446B`-`$45E6` (screen); `$4678`-`$46DA` (screen); `$4778`-`$533A` (screen); 4 more ranges |
-| Writes | `$4060`-`$40FD` (screen); `$4164`-`$41F5` (screen); `$4261`-`$43D3` (screen); `$446B`-`$45E6` (screen); `$4678`-`$46DA` (screen); `$4778`-`$533A` (screen); 4 more ranges |
+| Reads | `$4060`-`$40FD` (screen); `$4164`-`$41F5` (screen); `$4261`-`$43D3` (screen); `$446B`-`$45E6` (screen); `$4678`-`$46DA` (screen); `$4778`-`$533A` (screen); 3 more ranges |
+| Writes | `$4060`-`$40FD` (screen); `$4164`-`$41F5` (screen); `$4261`-`$43D3` (screen); `$446B`-`$45E6` (screen); `$4678`-`$46DA` (screen); `$4778`-`$533A` (screen); 3 more ranges |
 
 ### `ClampLow` (`$EC3B`)
 
@@ -7505,8 +7316,8 @@ The window is the current system's x ± 19 and y ± 34, written into the four CP
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 1,114 t-states own (0.00 %) |
 | Called from | `ScreenLocal` (tail) |
 | Calls | `DrawChartCircleVector`, `FillAttrRow`, `ClearScreen`, `ChartCross` (tail), `DrawCross`, `ScreenHeading`, `EachSystemInWindow` |
-| Reads | `$D082` (`Fuel`); `$D097`-`$D099` (`Seeds`) |
-| Writes | `$D051`-`$D053` (`CrossX`, `CrossY`, `ChartRadius`); `$E52B`-`$E52D` (`CrossSize`, `CrossTop`, `CrossBottom`); `$EC40`-`$EC57` (`RowsUsed`); `$ECDF`-`$ECEE` (`EachSystemInWindow`) |
+| Reads | `$D082` (`Fuel`); `$D097`-`$D099` (`Seeds+9`) |
+| Writes | `$D051`-`$D053` (`CrossX`, `CrossY`, `ChartRadius`); `$E52B`-`$E52D` (`CrossSize`, `CrossTop`, `CrossBottom`); `$EC40`-`$EC57` (`RowsUsed`); `$ECDF`-`$ECEE` (`EachSystemLoop+5`) |
 
 ### `EachSystemInWindow` (`$ECD2`)
 
@@ -7520,9 +7331,9 @@ The window is the current system's x ± 19 and y ± 34, written into the four CP
 | Runs (launch, flight, hyperspace to Diso, the laser) | 2 calls, 52,676 t-states own (0.02 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 2 calls, 52,676 t-states own (0.01 %) |
 | Called from | `ShortRangeChart` |
-| Calls | `NextSystem`, `GalaxySeeds`, `DrawSystemIcon`, `LabelSystem`, `IM2Entry` |
-| Reads | `$DEC1`-`$DEC3` (`SystemSeeds`); `$FDFF`-`$FE00` (`IM2Vector`) |
-| Writes | `$CFF8`-`$CFFB` (`BackBuffer`); `$ECF2`-`$ECF3` (`EachSystemCall`) |
+| Calls | `NextSystem`, `GalaxySeeds`, `DrawSystemIcon`, `LabelSystem` |
+| Reads | `$DEC1`-`$DEC3` (`SystemSeeds+1`) |
+| Writes | `$ECF2`-`$ECF3` (`EachSystemCall+1`) |
 
 ### `EachSystemCall` (`$ECF1`)
 
@@ -7544,8 +7355,7 @@ dx and dy are the system's x and y less the current system's; the icon is 8 x 8,
 | Runs (launch, flight, hyperspace to Diso, the laser) | 20 calls, 3,859 t-states own (0.00 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 20 calls, 3,859 t-states own (0.00 %) |
 | Called from | `DrawSystemIcon`, `LabelSystem` |
-| Calls | `IM2Entry` |
-| Reads | `$D097`-`$D099` (`Seeds`); `$DEC1`-`$DEC3` (`SystemSeeds`) |
+| Reads | `$D097`-`$D099` (`Seeds+9`); `$DEC1`-`$DEC3` (`SystemSeeds+1`) |
 
 ### `DrawSystemIcon` (`$ED27`)
 
@@ -7559,9 +7369,9 @@ The shift A is written into the LD B at `$ED47`. The icon's eight rows step down
 | Runs (launch, flight, hyperspace to Diso, the laser) | 10 calls, 23,061 t-states own (0.01 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 10 calls, 23,061 t-states own (0.00 %) |
 | Called from | `EachSystemInWindow` |
-| Calls | `NextSystem` (tail), `SystemPixel`, `IM2Entry` |
-| Reads | `$40A4`-`$46CC` (screen); `$4784`-`$5088` (screen); `$5134`-`$5168` (screen); `$5234`-`$5268` (screen); `$5334`-`$5368` (screen); `$5434`-`$5568` (screen); 6 more ranges |
-| Writes | `$40A4`-`$46CC` (screen); `$4784`-`$5088` (screen); `$5134`-`$5168` (screen); `$5234`-`$5268` (screen); `$5334`-`$5368` (screen); `$5434`-`$5568` (screen); 4 more ranges |
+| Calls | `NextSystem` (tail), `SystemPixel` |
+| Reads | `$40A4`-`$46CC` (screen); `$4784`-`$5088` (screen); `$5134`-`$5168` (screen); `$5234`-`$5268` (screen); `$5334`-`$5368` (screen); `$5434`-`$5568` (screen); 5 more ranges |
+| Writes | `$40A4`-`$46CC` (screen); `$4784`-`$5088` (screen); `$5134`-`$5168` (screen); `$5234`-`$5268` (screen); `$5334`-`$5368` (screen); `$5434`-`$5568` (screen); 3 more ranges |
 
 ### `LabelSystem` (`$ED78`)
 
@@ -7592,8 +7402,8 @@ The column is the icon's x / 8 + 1, the row 22 less the icon's B / 8 rounded up.
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 13 calls, 1,286 t-states own (0.00 %) |
 | Called from | `LabelSystem` |
 | Calls | `PrintCodes` (tail), `AddAToHL` |
-| Reads | `$D046` (`TextRow`); `$EC44`-`$EC53` (`RowsUsed`) |
-| Writes | `$D0D2` (`PrintCapital`); `$EC44`-`$EC53` (`RowsUsed`) |
+| Reads | `$D046` (`TextRow`); `$EC44`-`$EC53` (`RowsUsed+4`) |
+| Writes | `$D0D2` (`PrintCapital`); `$EC44`-`$EC53` (`RowsUsed+4`) |
 
 ### `DataScreen` (`$EDDF`)
 
@@ -7606,8 +7416,8 @@ The species is in brackets after the population; the productivity has " M CR", t
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 1 call, 855 t-states own (0.00 %) |
 | Called from | `ScreenData` (tail), `PlotChar` |
 | Calls | `PrintByteDot`, `PrintByte`, `PrintNumber`, `PrintInline`, `PrintOther` (tail), `ColourBands`, `FindNearest`, `PrintDistance`, `PrintOtherColon`, `PrintCodeColon`, `NewLine`, `SetRow`, `PrintCapitals`, `PageTitle`, `PrintUnit`, `ClearPageText`, `PrintCodeGap`, `NewLineGap`, `PrintEconomy`, `PrintSpecies`, `PrintRadius` |
-| Reads | `$D0AF` (`MissionState`); `$DEBC`-`$DEBF` (`SelectedSeeds`); `$DEF9`-`$DEFD` (`Government`, `TechLevel`, `Population`, `Productivity`) |
-| Writes | `$D0CE` (`Messages`); `$DECC`-`$DECF` (`TextSeeds`); `$E1DF` (`MarketItem`) |
+| Reads | `$D0AF` (`MissionState`); `$DEBC`-`$DEBF` (`SelectedSeeds+2`); `$DEF9`-`$DEFD` (`Government`, `TechLevel`, `Population`, `Productivity`) |
+| Writes | `$D0CE` (`Messages+17`); `$DECC`-`$DECF` (`TextSeeds`); `$E1DF` (`MarketItem`) |
 
 ### `PrintCodeGap` (`$EE9D`)
 
@@ -7665,7 +7475,7 @@ s2 high bits 2-4 below 3: LARGE, FIERCE, SMALL (codes `$E3-$E5`); bits 5-7 below
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 1 call, 63 t-states own (0.00 %) |
 | Called from | `DataScreen` |
 | Calls | `PrintCode` (tail) |
-| Reads | `$DEBE`-`$DEBF` (`SelectedSeeds`) |
+| Reads | `$DEBE`-`$DEBF` (`SelectedSeeds+4`) |
 
 ### `PrintRadius` (`$EF21`)
 
@@ -7676,8 +7486,8 @@ s2 high bits 2-4 below 3: LARGE, FIERCE, SMALL (codes `$E3-$E5`); bits 5-7 below
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 1 call, 92 t-states own (0.00 %) |
 | Called from | `DataScreen` |
 | Calls | `PrintNumber` (tail) |
-| Reads | `$DEBC`-`$DEBF` (`SelectedSeeds`) |
-| Writes | `$D0CE` (`Messages`) |
+| Reads | `$DEBC`-`$DEBF` (`SelectedSeeds+2`) |
+| Writes | `$D0CE` (`Messages+17`) |
 
 ### `IsFirstSystem` (`$EF37`)
 
@@ -7730,7 +7540,7 @@ The legal status: CLEAN (0), OFFENDER (1-49), FUGITIVE (50 and more). The rating
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 1 call, 399 t-states own (0.00 %) |
 | Called from | `PrintIfFitted` |
 | Calls | `DrawFrame` (tail), `PrintIfFitted`, `PrintLaser` |
-| Reads | `$D08A`-`$D08D` (`Equipment`); `$D0B0` (`MissionFlags`) |
+| Reads | `$D08A`-`$D08D` (`Equipment+6`); `$D0B0` (`MissionFlags`) |
 | Writes | `$EF86` (`StatusLaserView`) |
 
 ### `PrintIfFitted` (`$F068`)
@@ -7746,7 +7556,7 @@ The legal status: CLEAN (0), OFFENDER (1-49), FUGITIVE (50 and more). The rating
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 7 calls, 343 t-states own (0.00 %) |
 | Called from | `StatusScreen`, `StatusBomb` |
 | Calls | `StatusScreen`, `StatusBomb` |
-| Reads | `$F00D`-`$F014` (`StatusScreen`); `$F02C`-`$F048` (`StatusScreen`, `StatusBomb`) |
+| Reads | `$F00D`-`$F014` (`StatusRating+17`); `$F02C`-`$F048` (`StatusEcm+6`, `StatusBomb`) |
 
 ### `EquipmentLine` (`$F072`)
 
@@ -7897,10 +7707,10 @@ The roll and the pitch are sign and magnitude words (bit 15 the sign): a key in 
 | Runs (docked at Lave: status, market, data, the two charts, the launch (2560 frames from the title)) | 2,613 calls, 713,349 t-states own (0.38 %) |
 | Runs (launch, flight, hyperspace to Diso, the laser) | 4,571 calls, 1,247,883 t-states own (0.37 %) |
 | Runs (the witch-space trick: a jump into witch space and the Thargoids) | 6,214 calls, 1,696,422 t-states own (0.36 %) |
-| Called from | `FillAttrs`, `CopyRates`, `ChartCursorKeys`, `CloakKey`, `PauseMenu`, `ErrorBeep`, `TitleLoad`, `TitleNext`, `FillAttrPage`, `DrawSunPlanet`, `ProjectCircle`, `Divide24`, `ProjectCircleNone`, `DivideFractionE`, `MoveSunPlanet`, `StationRunIn`, `Stardust`, `StardustFront`, `StarRollPitch`, `StarPlot`, `StardustNext`, `StarPlotAll`, `MulBits`, `DivideShifted`, `DivideFrac8`, `StarAddress`, `StarRespawn`, `StarRespawnFront`, `StarRandom`, `InSystemJump`, `CopyBackBuffer`, `CopyThirdRow`, `CopyThirdLine`, `DashboardRestore`, `SelectView`, `DashboardSave`, `DashDistances`, `CompassDivide`, `VectorLength`, `DrawCompass`, `NextLineDown`, `DrawCompassDialArt`, `DrawBars`, `DrawBar`, `DrawBarRows`, `BarByte`, `ArcRunRight`, `OutlineEdgeUp`, `DrawCircleOutline`, `DrawCircleShape`, `Square`, `CircleArcs`, `CircleArc`, `PointLeft`, `PointRight`, `HalfChord`, `CircleLineUp`, `CircleRowUp`, `CircleRowDown`, `HitFlash`, `CircleBase`, `MaskRight`, `MaskLeft`, `OutlineRunUp`, `OutlineRunDown`, `OutlinePlotTop`, `OutlinePlotSide`, `OutlinePixel`, `OutlineStepX`, `OutlineStepY`, `OutlineStep`, `OutlinePixels`, `TunnelFrame`, `TunnelDivide`, `ClearShips`, `SoundPulsesNow`, `ShiftBC2`, `ShiftBC1`, `DrawScanner`, `ScannerLineUp`, `ScannerRestore`, `ScannerCopy`, `ConditionLight`, `DashboardTick`, `ShieldHit`, `Recharge`, `PrintNext`, `MissileKeys`, `EscapePod`, `UpdateShipsVector`, `Divide16Vector`, `UpdateShips`, `UpdateSlot`, `UpdateSlotNext`, `SquareComponent`, `DivideComponent`, `SquareRoot`, `SquareRootCore`, `SquareRootAdd`, `TidyAxis`, `TidyPart`, `UpdateShip`, `MoveShip`, `MoveAlongAxis`, `MultiplySpeed`, `AddSigned`, `TurnAxis`, `RotatePart`, `TurnOwn`, `MovePosition`, `CombineParts`, `RateBits`, `Tactics`, `NearBox`, `TowardsPartNow`, `TacticsAim`, `MultiplyHigh4`, `DotProduct`, `DrawShip`, `ProjectVertices`, `ProjectVertex`, `EitherFace`, `FaceIsVisible`, `RotateVertexScaled`, `AddSignedBytes`, `Multiply8High`, `MultiplyScaled`, `Multiply8`, `AddDoubled`, `RotateVertexSmall`, `RotateVertexReuse`, `RotateNormal`, `DividePoint`, `DividePointNormalise`, `DividePointShift`, `DividePointLoop`, `Project`, `ProjectAdd`, `ProjectNext`, `DrawEdges`, `PointOf`, `Orthogonalise`, `OrthogonalisePart`, `DifferenceOfProducts`, `Divide16`, `AddSignedHalf`, `DrawLine`, `LineSetup`, `LineFraction`, `LineAddress`, `LineOctant`, `LineUpX`, `LineUpY`, `LineDownX`, `LineDownY`, `Collide`, `Gunsight`, `FaceVisibility`, `FaceDot`, `MultiplyWord`, `NormalPart`, `JumpKeysVector`, `PrintDigit`, `PrintCode`, `PrintOther`, `PrintChar`, `PlotChar`, `PrintStdPair`, `PrintPairNow`, `DrawFrame`, `JustifyChar`, `SetCase`, `ViewTexts`, `MessageTick`, `FindNearestNow`, `NextSystem`, `SquaredDistance`, `MultiplyDA`, `Twist`, `PrintCodeLine`, `NewLine`, `SetRow`, `PlotSystem`, `EachSystemInWindow`, `SystemPixel`, `DrawSystemIcon` |
+| Entered by | the interrupt, 13,291 times in 186 routines |
 | Calls | `SoundTickVector`, `ScanKeyboard`, `ReadControls` |
-| Reads | `$FF56`-`$FF57` (`IM2SavedSP`) |
-| Writes | `$FF56`-`$FF57` (`IM2SavedSP`) |
+| Reads | `$FDFF`-`$FE00` (`IM2Vector`); `$FF56`-`$FF57` (`IM2SavedSP`) |
+| Writes | `$CFDE`-`$CFFE` (`BackBuffer+4062`); `$FF56`-`$FF57` (`IM2SavedSP`); `$FFDB`-`$FFFE` (`work space $FFDB+`) |
 
 ### `ReadControlsSlower` (`$FF0E`)
 

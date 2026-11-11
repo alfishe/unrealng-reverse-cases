@@ -39,12 +39,13 @@ what the generator does with it, the part files); every file of a case and the c
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step); a `basic` header's program length is the program without its variables, found as SAVE writes it (or given: `basic:NAME:LINE:FILE:LENGTH`) |
 | `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
+| `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; the case's `res_formats.py build` calls it |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
 | `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above) |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
-| `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings; doc 12 links `docs/img/routines/<Label>.gif` |
+| `refdocs.py --case C` | docs 11 and 12 from `game.ann` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
 | `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked |
 | `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
@@ -73,8 +74,37 @@ What `mkgame.py` writes as a name and what it keeps a number:
 [ann-format.md 3.4](../docs/ann-format.md#34-what-becomes-labeloffset). A port (`LD BC,nn` before `IN` / `OUT (C)`)
 stays a number against a label, an `@equ` range and `Label+offset`, and mkgame prints the name it did not use:
 `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`. An `@isub` stays as written even where
-its number is a label's address; a `w` entry's labelled words inside an `@res` become `ASSERT` lines after its
-`INCBIN`s.
+its number is a label's address, and a decimal number in it stays decimal (`LD DE,-10000`, not `-$2710`); a `w`
+entry's labelled words inside an `@res` become `ASSERT` lines after its `INCBIN`s. A resource whose bytes hold
+addresses can be assembled from source instead: `@res NAME.bin include` writes `INCLUDE "res/NAME.inc"`, and the
+case's `res_formats.py build` writes that file from the editable form with `resinc.py` (`lines()`: `DB` lines, a
+`DW Label` per address, inner labels; `symbols(case)`: the `.ann`'s names by address, name and resource offset), so a
+text edit takes effect and a label that moves is followed (SimCity's menus). A module named again further on
+(`@module tasks` before the IM 2 handler and again before its vector table far above) is one file of several
+stretches: the second starts with `ORG` at its address ([ann-format.md 2](../docs/ann-format.md#2-directives)).
+
+What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann`:
+
+- **Memory ranges** (doc 12, Reads / Writes) name the label at or below their first byte, inner labels included, as
+  `Label+offset` (`$77D6` is `TrainOut`, not the record `TrainCell` that holds it); a range inside one entry then
+  names the inner labels it covers, a longer one the entries it runs into.
+- **The interrupt's acceptance** is the handler's. L1 books the IM 2 vector read and the return address the interrupt
+  pushes to the instruction it interrupted; refdocs takes them from that routine and gives them to the handler (the
+  callee of L1's `interrupt` edge): the read of a word holding the handler's address in the page the most interrupted
+  routines read it in (the I page; without the image, a scratch case's, the word pairs half the interrupted routines
+  read), and the writes of the interrupted routine to the stack's slots (L1 `byte_use`: pushed and popped, never
+  run). The handler says "Entered by: the interrupt, N times in M routines" instead of a "Called from" list,
+  and no routine "Calls" it.
+- **Runs** of a routine no `ref_builds` recording reached: the calls the case's other recordings (`read_builds`,
+  `code_builds`) saw, "not reached in `c1`; in the other recordings 648 calls (`rec/growth` 600, ...)"; "not reached
+  in the recordings" only when none ran it.
+- **Doc 11** gives each inner label of a data entry (a field, a row) a row of its own under the entry, `Name`
+  (`Entry`+k), its size up to the next label, its comment, its readers and writers. The readers and writers are the
+  recordings' routines and, marked "(code)", the routines whose `LD r,(nn)` / `LD (nn),r` (`game.skool`) names the
+  bytes where no recording saw them do so.
+- **Animations**: every `docs/img/routines/<Label>.gif` and `<Label>-<what>.gif`. A second document's animation of a
+  routine another already shows gets its own `<Label>-<what>.gif` (SimCity's `SimTask-growth.gif` beside
+  `SimTask.gif`); `routine_anim.py` and `memanim.py` print a note when they write over an existing GIF.
 
 ## The signature base
 
@@ -123,7 +153,9 @@ python3 kit/routine_anim.py --work $C/work/p2 --window 1001:5336-1001:45336 --li
 A buffer view is `buffer:ADDR:WxH` (W bytes across, H lines) with its storage order: `:rows` (the default, a
 linear bitmap), `:columns` (column by column, H bytes a column, top first), `:columns-up` (the same, bottom first:
 the H.A.T.E. playfield's strips), `:screen` (whole thirds laid out like the screen's pixel lines, W 32: a
-back buffer). The GIFs share one palette and store each picture as its changes, so a routine
+back buffer), `:hex` (a stack or a record as numbers: H lines of W bytes in hex, each line headed by its address) and
+`:words` (the same as 16-bit words, W / 2 a line: pushed return addresses read as `$F75F`, not as bits). A byte
+written in the picture is drawn in the write colours, one read in blue. The GIFs share one palette and store each picture as its changes, so a routine
 animation of 90 pictures stays near 1 MB.
 
 `--pc LO-HI` is the routine's code, the rest counts as "other"; several ranges (`--pc EAE3-EBA9,EC40-EC9F`, or
@@ -142,4 +174,6 @@ the memory map above the view on the left, each at the largest whole scale that 
 `--scale` (2; two screens fit with narrower gaps) or the largest whole scale that fits, else stacked, the `--zoom`
 insets on a row of their own enlarged as far as it allows. `beam_timeline.py` draws `--width` pixels (1050), the time
 axis taking what the labels leave. Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
-picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one.
+picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one. `memanim.py --cell` is
+the pixels a byte (2, too small to read at 900 px): for an address range of up to 64 pages (16 K) take `--cell 3`, the
+compact picture is 830 px wide.

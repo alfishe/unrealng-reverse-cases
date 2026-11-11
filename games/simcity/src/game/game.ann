@@ -1530,7 +1530,7 @@ $9194 c BudgetWindow ; The year's budget window (the UI task, when BudgetDue): B
 > L1 9.
 $91BC b BudgetWindowText 16 ; The budget window's menu description: FISCAL BUDGET, the tax rate, the three fundings, the cash lines, GO WITH THESE FIGURES
 > The numbers live inside the text (menu codes 5, 6, 7, section DrawMenu): TaxRate and the three funding percentages are the bytes the player edits.
-@res text/menus/Budget.bin
+@res text/menus/Budget.bin include
 $91E4 TaxRate ; the tax rate, 0-20 (7 in the image): code 7's value byte
 $9256 TransportPercent ; the transport funding, 0-100 %
 $926F PolicePercent
@@ -1578,7 +1578,7 @@ $95B4 ApplyFireStore
 @about The EVALUATION window: the category (from 2000, 10 000, 50 000, 100 000, 500 000 people), the problems, the score and the poll; Advise picks the advice line every pass.
 $95B8 c EvaluationWindow ; The WINDOWS menu's EVALUATION: the window $95D7 with the hook Evaluate
 $95D7 b EvaluationText 16 ; The evaluation window: the poll, the worst problems, population, migration, value, category, level, score
-@res text/menus/Evaluation.bin
+@res text/menus/Evaluation.bin include
 
 $9737 c Evaluate ; The evaluation hook: the category, the figures; with a population, the problems, the score and the poll
 > L1 18.
@@ -1718,7 +1718,7 @@ $9F2F PrintFileNameLoop
 @about The SYSTEM, OPTIONS, DISASTERS and WINDOWS menus, the dialogs (confirm, about, load, save, file name, tape, speed, level, old landscape) and their actions; the options' flags; the name and gene editor.
 $9F40 b PlantChoice 1 ; The power station menu's answer: 0 none, 1 nuclear, 2 coal
 $9F41 b PlantMenu 16 ; the menu: SELECT TYPE, NUCLEAR POWER STATION $5000, COAL POWER STATION $3000, NONE
-@res text/menus/Plant.bin
+@res text/menus/Plant.bin include
 $9FBE c NoPlant ; NONE: PlantChoice 0 (not run in the recordings)
 $9FC4 c ChooseNuclear ; PlantChoice 1
 > L1 3.
@@ -1726,29 +1726,29 @@ $9FCA ChooseCoal ; PlantChoice 2
 $9FD0 c Confirm ; ARE YOU SURE ?: carry set for YES
 > L1 5.
 $9FD3 b ConfirmMenu 16
-@res text/menus/Confirm.bin
+@res text/menus/Confirm.bin include
 $A027 c ConfirmNo ; OR A
 $A029 ConfirmYes ; SCF
 $A02B b SystemMenu 16 ; SYSTEM: about, start new city, use old landscape, load, save, exit
-@res text/menus/System.bin
+@res text/menus/System.bin include
 $A0B1 c ExitSimCity ; EXIT SIMCITY: confirmed, a new city with a new landscape
 $A0B7 NewCityItem ; START NEW CITY: confirmed, the gene from the random seed, then NewCity
 $A0C1 NewCity ; the difficulty menu, then NewLandscape
 $A0C7 c AboutWindow ; ABOUT SIM CITY
 $A0CA b AboutText 16
-@res text/menus/About.bin
+@res text/menus/About.bin include
 $A1F3 c LoadMenu ; LOADING MENU
 $A1F6 b LoadMenuText 16
-@res text/menus/Load.bin
+@res text/menus/Load.bin include
 $A247 c SaveMenu ; SAVING MENU
 $A24A b SaveMenuText 16
-@res text/menus/Save.bin
+@res text/menus/Save.bin include
 $A29A c FileNameWindow ; TYPE FILE NAME, THEN PRESS ENTER
 $A29D b FileNameText 16
-@res text/menus/FileName.bin
+@res text/menus/FileName.bin include
 $A2DC c LoadErrorWindow ; TAPE LOADING ERROR
 $A2DF b LoadErrorText 16
-@res text/menus/LoadError.bin
+@res text/menus/LoadError.bin include
 $A2FE c WaitTapeStart ; START TAPE AND PRESS SPACE: wait for SPACE
 $A301 WaitTapeLoop
 $A303 WaitTapeIn
@@ -1756,17 +1756,17 @@ $A305 WaitTapeTest
 $A307 WaitTapeAgain
 $A309 c TapeWindow
 $A30C b TapeText 16
-@res text/menus/Tape.bin
+@res text/menus/Tape.bin include
 $A32B b AutoBulldoze 1 ; the options (toggles): AUTO-BULLDOZE 1, AUTO-BUDGET 0, SOUND 1, ZONE DEMOLISH WAIT 1
 $A32C AutoBudget
 $A32D SoundOn
 $A32E DemolishWait
 $A32F b OptionsMenu 16 ; OPTIONS: the four toggles, SIMULATION SPEED, EXIT MENU
-@res text/menus/Options.bin
+@res text/menus/Options.bin include
 $A3AB b Speed 1 ; 0 fast, 1 normal, 2 slow, 3 paused
 $A3AC c SpeedMenu ; SIMULATION SPEED
 $A3AF b SpeedMenuText 16
-@res text/menus/Speed.bin
+@res text/menus/Speed.bin include
 $A3D0 SpeedMarkFast ; the asterisk places of the four items
 $A3DB SpeedMarkNormal
 $A3E8 SpeedMarkSlow
@@ -1778,28 +1778,28 @@ $A42F SpeedSlow
 $A436 SpeedPaused
 $A43D b DisastersOff 1 ; DISABLE ALL (a toggle): no random disasters
 $A43E b DisasterMenu 16 ; DISASTERS: fire, flood, earthquake, air crash, tornado, nuclear meltdown
-@res text/menus/Disasters.bin
+@res text/menus/Disasters.bin include
 $A4BA c PickDisaster ; DisasterDue = the item + 1
 > L1 6.
 $A4C2 b WindowsMenu 16 ; WINDOWS: maps, budget, evaluation
-@res text/menus/Windows.bin
+@res text/menus/Windows.bin include
 $A511 b MapsDue 1 ; set by MAPS: the UI task opens the maps window
 $A512 c MapsItem
 $A518 b Level 1 ; 0 easy, 1 medium, 2 difficult
 $A519 c LevelMenu ; SELECT DIFFICULTY LEVEL
 $A51C b LevelMenuText 16
-@res text/menus/Level.bin
+@res text/menus/Level.bin include
 $A5A9 c SetLevel ; Level = the item
 > L1 12.
 $A5B0 InputCityName ; INPUT NEW CITY NAME: edit CityName at row 5
 $A5DC UseOldLandscape ; USE OLD LANDSCAPE: the gene into the menu's number, the menu
 $A5E5 b OldLandscapeMenu 16
-@res text/menus/OldLandscape.bin
+@res text/menus/OldLandscape.bin include
 $A61B GeneShown ; the gene in the menu (code 6's value)
 $A672 c InputGene ; INPUT NEW GENE: 5 digits at row 11, column 25
 $A68C InputGeneShow
 $A6A4 b CreatingText 16 ; CREATING LANDSCAPE, PLEASE WAIT
-@res text/menus/Creating.bin
+@res text/menus/Creating.bin include
 $A6D8 b InputAt 2 ; the line editor: row, column, the buffer, the cursor, the digits flag, the length, a buffer of 12, the key delay
 $A6DA InputBuffer
 $A6DC InputCursor

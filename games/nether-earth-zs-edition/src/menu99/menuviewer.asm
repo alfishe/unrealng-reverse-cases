@@ -215,7 +215,7 @@ ParamBack:
 ViewerParamFont:
   CP $17
   JR NZ,ViewerParamDone
-  LD HL,ViewerFontPtr+$0002
+  LD HL,ViewerFontPtr+2
   JR ViewerParamStore
 ViewerParamDone:
   LD A,(ViewerParams)

@@ -48,7 +48,7 @@ DrawPointerRow:
   LD D,A
   LD E,$00
   LD L,$FF
-  LD A,(DrawPointer+$0001)
+  LD A,(DrawPointer+1)
   AND $07
   LD B,A
   JR Z,DrawPointerPut
@@ -84,7 +84,7 @@ DrawPointerPut:
   RET
 ; This entry point is used by the routine at SetPointerBgWay.
 PointerBgCopy:
-  LD BC,(DrawPointer+$0001) ; 16 bytes between the screen under the pointer and
+  LD BC,(DrawPointer+1)     ; 16 bytes between the screen under the pointer and
                             ; PointerBg, the way BgSwap1 / BgSwap2 say
   LD A,$08
   LD DE,PointerBg

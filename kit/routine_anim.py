@@ -9,14 +9,16 @@ Each picture has three panels:
   - the view: what the routine draws, as it draws it. `screen` is the Spectrum screen (or `screen:C000` for a
     shadow screen), `buffer:ADDR:WxH` an off-screen bitmap of W bytes a row and H rows (`:columns` when it is stored
     column by column, H bytes a column; `:columns-up` the same with each column's first byte at the bottom; `:screen` a back buffer laid out
-    like the screen's pixel lines), `none` leaves it out.
+    like the screen's pixel lines; `:hex` a stack or a record as numbers, W bytes a line in hex; `:words` the same
+    as 16-bit words, W / 2 a line, low byte first in memory), `none` leaves it out.
     Bytes written in the slice flash in the write colours.
   - the code: the listing round the instruction last executed, the lines run in the slice marked by how often, the
     registers, the moment and the routine's name.
 
     python3 routine_anim.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/routines/DrawSprites.gif
-           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen] | none] [--range 4000-FFFF] [--pictures 90]
+           [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen|:hex|:words] | none]
+           [--range 4000-FFFF] [--pictures 90]
            [--step TSTATES] [--pc EAE3-EBFF[,EC40-EC9F] ...] [--title "DrawSprites $EAE3"] [--delay 80]
            [--layout compact|wide] [--width 1050] [--unreal U]
 
@@ -54,7 +56,8 @@ def parse_view(text):
         size, _, order = size.partition(':')
         width, _, height = size.lower().partition('x')
         return ('buffer', K.hex_address(address), int(width), int(height), order or 'rows')
-    raise SystemExit(f'--view {text}: screen[:ADDR], buffer:ADDR:WxH[:rows|columns|columns-up|screen] or none')
+    raise SystemExit(f'--view {text}: screen[:ADDR], buffer:ADDR:WxH[:rows|columns|columns-up|screen|hex|words] '
+                     'or none')
 
 
 class Ages:
@@ -119,6 +122,8 @@ def view_picture(view, mem, ages, now):
                 x, y = (cell & 31) * 8, (cell >> 5) * 8
                 draw.rectangle([x, y, x + 7, y + 7], outline=fade[now - w])
         return image
+    if order in ('hex', 'words'):
+        return numbers_picture(base, width, height, order == 'words', mem, ages, now)
     image = Image.new('RGB', (width * 8, height))
     px = image.load()
     for row, column, a in K.buffer_cells(base, width, height, order):
@@ -128,6 +133,39 @@ def view_picture(view, mem, ages, now):
         off = tuple(c // 4 for c in hot) if hot else (28, 28, 34)
         for bit in range(8):
             px[column * 8 + bit, row] = on if bits & (0x80 >> bit) else off
+    return image
+
+
+def numbers_picture(base, width, height, words, mem, ages, now):
+    """A buffer as numbers: H lines of W bytes from base, each line headed by its address, in hex (two digits a
+    byte, or four a word with words: the high byte first as written, the low byte first in memory). A byte written in
+    the slice is drawn in the write colours, read in blue, the rest in grey"""
+    font = K.font(11)
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    digit = max(1, int(probe.textlength('0', font=font)))
+    step = 2 if words else 1
+    cell = digit * (4 if words else 2) + digit  # the number and a gap
+    head = digit * 6
+    line_h = 14
+    image = Image.new('RGB', (head + cell * (width // step) + 2, height * line_h + 2), (20, 20, 26))
+    draw = ImageDraw.Draw(image)
+    fade = K.WRITE_FADE
+    for row in range(height):
+        at = (base + row * width) & 0xFFFF
+        y = 1 + row * line_h
+        draw.text((1, y), f'{at:04X}', fill=K.DIM, font=font)
+        for column in range(width // step):
+            a = (at + column * step) & 0xFFFF
+            cells = [a, (a + 1) & 0xFFFF] if words else [a]
+            written = [now - ages.write[c] for c in cells if ages.write[c] >= 0 and now - ages.write[c] < len(fade)]
+            if written:
+                colour = fade[min(written)]
+            elif any(ages.read[c] == now for c in cells):
+                colour = K.READ
+            else:
+                colour = (170, 170, 178)
+            text = f'{mem[cells[-1]]:02X}{mem[a]:02X}' if words else f'{mem[a]:02X}'
+            draw.text((head + column * cell, y), text, fill=colour, font=font)
     return image
 
 
@@ -212,6 +250,8 @@ def main():
         slice_no += 1
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    if os.path.exists(args.out):
+        print(f'note: {args.out} exists and is replaced (a second animation of one routine: NAME-what.gif)')
     durations = [args.delay] * (len(pictures) - 1) + [args.hold]
     K.save_gif(args.out, pictures, durations)
     print(f'{args.out}: {len(pictures)} pictures, {step} T each, {n} instructions, '

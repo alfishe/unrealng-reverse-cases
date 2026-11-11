@@ -33,7 +33,7 @@ DeadEnd:
   LD (HL),$FD
   LD BC,$0100
   LDIR
-  LD A,Im2Table/$100      ; I = the table's page
+  LD A,Im2Table/256       ; I = the table's page
   LD I,A
   IM 2
   EI                      ; from now on the tune plays every frame

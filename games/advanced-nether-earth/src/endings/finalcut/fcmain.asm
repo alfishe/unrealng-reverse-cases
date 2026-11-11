@@ -234,7 +234,7 @@ FcRow:
   ADD HL,DE
   LD (FcTextPtr+$0001),HL
 FcTextPtr:
-  LD HL,ScrollText-$0008  ; the text row (the operand; it starts 8 before
+  LD HL,ScrollText-8      ; the text row (the operand; it starts 8 before
                           ; ScrollText, so the first row is ScrollText's)
   PUSH AF
   LD A,(HL)               ; 0: the end of the text
@@ -286,7 +286,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -306,7 +306,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -326,7 +326,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -346,7 +346,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -366,7 +366,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -386,7 +386,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -406,7 +406,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL
@@ -425,7 +425,7 @@ FcDrawRow:
   ADD HL,HL
   ADD HL,HL
   ADD HL,HL
-  LD BC,ScrollFont-$20*$0020
+  LD BC,ScrollFont-$20*32
   ADD HL,BC
   LD A,L
   ADD A,IXL

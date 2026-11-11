@@ -21,17 +21,17 @@ MenuHere:
   LD HL,MenuPutByte-MenuHere
   ADD HL,BC
   EX DE,HL
-  LD HL,MenuMatchCall+$0001-MenuHere
+  LD HL,MenuMatchCall+1-MenuHere
   ADD HL,BC
   LD (HL),E
   INC HL
   LD (HL),D
-  LD HL,MenuLiteralCall+$0001-MenuHere
+  LD HL,MenuLiteralCall+1-MenuHere
   ADD HL,BC
   LD (HL),E
   INC HL
   LD (HL),D
-  LD HL,MenuRunCall+$0001-MenuHere
+  LD HL,MenuRunCall+1-MenuHere
   ADD HL,BC
   LD (HL),E
   INC HL

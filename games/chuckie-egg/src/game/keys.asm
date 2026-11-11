@@ -60,7 +60,7 @@ RedefineKeysRelease:
   LD A,$05
   LD IX,KeySet3
   LD HL,Attributes+298
-  LD BC,InstructionsText+$0066
+  LD BC,InstructionsText+102
   LD DE,$0E16
 RedefineKeysNext:
   CALL RedefineOne
@@ -90,7 +90,7 @@ RedefineKeysNext:
 ; (the second jump key, 1) is never compared. Witness: 5 calls; redefine-odd, 9
 ; refused at frame 112.
 KeyUsed:
-  LD HL,KeySet3-$0001
+  LD HL,KeySet3-1
   LD B,$00
 KeyUsedEnd:
   INC HL
@@ -131,7 +131,7 @@ KeyUsedNext:
 ; Witness: 13 calls.
 DeathPhrase:
   LD A,R
-  LD HL,DeathPhrases-$0001
+  LD HL,DeathPhrases-1
   AND $07
   INC A
   LD B,A
@@ -196,7 +196,7 @@ RedefineOneKey:
   LD B,E
   LD (IX+$00),L
   LD (IX+$01),H
-  LD HL,KeyNames-$0006
+  LD HL,KeyNames-6
   LD DE,$0005
 RedefineOneRow:
   ADD HL,DE

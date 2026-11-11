@@ -21,12 +21,12 @@ EnemyKindSet:
   LD (EnemyKindTurn),A
   LD E,A
   LD D,$00
-  LD HL,EnemyFrameCounts-$0001
+  LD HL,EnemyFrameCounts-1
   ADD HL,DE
   LD A,(HL)
   LD (DrawMode),A
   SLA E
-  LD HL,EnemyGraphics-$0002
+  LD HL,EnemyGraphics-2
   ADD HL,DE
   RET
 

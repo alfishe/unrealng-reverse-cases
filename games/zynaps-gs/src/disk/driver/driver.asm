@@ -802,7 +802,7 @@ LevelChange:
   IM 1
   LD A,$3F
   LD I,A
-  LD (RestoreStack+1),SP  ; the stack pointer into the LD SP at RestoreStack
+  LD (RestoreStack+1),SP     ; the stack pointer into the LD SP at RestoreStack
   LD HL,StackArea
   LD DE,StackAreaCopy
   LD BC,$0200

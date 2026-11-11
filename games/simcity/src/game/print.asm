@@ -88,14 +88,14 @@ PrintNumberAt:
 ;
 ; L1 4.
 Print5Digits:
-  LD DE,-$2710
+  LD DE,-10000
   CALL PrintDigitOf
 
 ; HL in 4 digits (the year)
 ;
 ; L1 9921.
 Print4Digits:
-  LD DE,-$03E8
+  LD DE,-1000
   CALL PrintDigitOf
 
 ; HL in 3 digits (menus' numbers, the tax rate)

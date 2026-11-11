@@ -132,7 +132,7 @@ DelayInner:
   JR NZ,DelayOuter
   CALL ReadMenuKeys
   LD D,$00                ; D counts the moves of this pass
-  LD BC,(DrawPointer+$0001)
+  LD BC,(DrawPointer+1)
   BIT 2,E                 ; Q: up (y 0 at least)
   JR NZ,KeyDown
   LD A,B
@@ -179,7 +179,7 @@ KeySpace:
 MenuSelect:
   CALL RestorePointerBg   ; SPACE: the cell under the pointer's corner, by row
                           ; and column
-  LD BC,(DrawPointer+$0001)
+  LD BC,(DrawPointer+1)
   RR B
   RR B
   RR B
@@ -284,7 +284,7 @@ StartGame:
   LD DE,EnemyProduce
   LD BC,$0009
   LDIR
-  LD A,(LevelLd+$0001)    ; EASY ends here (A = 0)
+  LD A,(LevelLd+1)        ; EASY ends here (A = 0)
   CP $01
   LD A,$00
   RET Z
@@ -296,14 +296,14 @@ StartGame:
   LD DE,InsgRobotCount
   LD BC,$0006
   LDIR
-  LD A,(LevelLd+$0001)
+  LD A,(LevelLd+1)
   CP $02
   LD A,$00
   RET Z
   LD DE,EnemyProduce             ; HARD and up: the enemy's production upgraded
   LD BC,$0009
   LDIR
-  LD A,(LevelLd+$0001)
+  LD A,(LevelLd+1)
   CP $03
   LD A,$00
   RET Z

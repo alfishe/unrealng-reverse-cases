@@ -22,7 +22,7 @@ EvaluationWindow:
 ; The evaluation window: the poll, the worst problems, population, migration,
 ; value, category, level, score
 EvaluationText:
-  INCBIN "res/text/menus/Evaluation.bin",$0000,352
+  INCLUDE "res/text/menus/Evaluation.inc"
 
 ; The evaluation hook: the category, the figures; with a population, the
 ; problems, the score and the poll

@@ -912,7 +912,7 @@ ObjRockShotTest:
   LD A,$FF
   LD (ShotForward+2),A
 ObjRockHit:
-  LD DE,-$0004            ; explodes: sprite $2A, the explosion handler, 100
+  LD DE,-4                ; explodes: sprite $2A, the explosion handler, 100
                           ; points
   ADD HL,DE
   LD (HL),$2A

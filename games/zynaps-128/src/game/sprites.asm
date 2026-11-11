@@ -21,7 +21,7 @@
 ; $E748-$E757 and $E760-$E76F from $64E0-$64FF and $65E0-$65FF.
 BuildCellSprite:
   PUSH HL
-  LD HL,-$0008
+  LD HL,-8
   ADD HL,DE
   EX DE,HL
   CALL FillBlankCell
@@ -276,7 +276,7 @@ ObjectStripsLoop:
   CALL BuildObjectStrips
   POP BC
 ObjectStripsNext:
-  LD DE,-$002C
+  LD DE,-44
   ADD IY,DE
   LD HL,ObjectBeep
   LD A,(HL)

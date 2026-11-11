@@ -338,14 +338,14 @@ DrawRoomTile:
   LD D,$00
   SLA E
   PUSH DE
-  LD HL,TileAttrs-$0002
+  LD HL,TileAttrs-2
   ADD HL,DE
   LD E,(HL)
   INC HL
   LD D,(HL)
   LD (TileAttrPtr),DE
   POP DE
-  LD HL,TileGraphics-$0002
+  LD HL,TileGraphics-2
   ADD HL,DE
   LD E,(HL)
   INC HL
@@ -607,7 +607,7 @@ DrawItem:
   RES 7,A
   DEC A
   LD DE,$0020
-  LD HL,EdPieces-$0160
+  LD HL,EdPieces-352
 DrawItemEdColumn:
   ADD HL,DE
   LD B,A
@@ -639,7 +639,7 @@ DrawItemWeaponIcon:
   ADD HL,DE
   DJNZ DrawItemWeaponIcon
   EX DE,HL
-  LD HL,WeaponColours-$0001
+  LD HL,WeaponColours-1
   ADD A,L
   LD L,A
   JR NC,DrawItemWeaponColour

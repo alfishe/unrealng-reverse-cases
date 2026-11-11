@@ -17,7 +17,9 @@ The formats (each folder's README.md lists its files):
   paper or all ink, `simcity-tiles` the tile and attribute counts.
 - graphics/Pointer.png (the arrow, then its mask, 8 x 16), graphics/Movers.png (five 16 x 16 sprites side by side):
   two colours, white = a set bit.
-- text/*.txt: bit-7-ended strings, one a line. text/menus/*.txt: a menu description, one item a line (MENU_HELP).
+- text/*.txt: bit-7-ended strings, one a line. text/menus/*.txt: a menu description, one item a line (MENU_HELP),
+  its addresses and inner labels by name; `build` also writes build/res/text/menus/NAME.inc (DB / DW lines,
+  kit/resinc.py) that game.ann's `@res ... include` assembles.
   text/inline/*.txt: PrintInline codes and letters (INLINE_HELP). Bytes outside the printable ASCII range, and
   { } ", are written {xx} in hex.
 - tables/*.csv: a table with a header row; columns marked by '(label)' are made from the row number and ignored when
@@ -30,6 +32,8 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, '..', '..', 'kit'))
+import resinc  # noqa: E402
 RES = os.path.join(ROOT, 'src', 'res')
 
 
@@ -270,15 +274,60 @@ def txt_to_strings(t):
 
 MENU_HELP = """# A menu description (DrawMenu $67C3): 'header N' (the first line's number), then one item a line:
 #   text "..."  (kind 0)      number "..."  (kind 8, a selectable line with a number field)
-#   action $ADDR "..."  (2)   toggle $FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
-# In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V, maximum M (the value the
-# player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits); bit 7 ends the text."""
+#   action ADDR "..."  (2)   toggle FLAG "..."  (1, ON / OFF after it)   separator  (3)   end  (4)
+# ADDR and FLAG are a label of the game (the build writes DW Label, sjasmplus resolves it: a moved label follows)
+# or a number ($6703). In the text: {tab} code $21 (to column 24); {byte F V M} code 7: field flag F, value V,
+# maximum M (the value the player edits lives here); {word F V M} code 6 (16 bits); {long F V} code 5 (24 bits);
+# bit 7 ends the text. A label of the game inside the menu: 'label NAME' before an item, {=NAME} before a letter,
+# NAME=V on a field (the byte the code reads). The build assembles this file (build/res/text/menus/NAME.inc)."""
 
 
-def text_to_menu_str(d, i):
+def syms():
+    """the game's names (kit/resinc.py symbols of src/game/game.ann): {addr: name}, {name: addr}, {file: marks}"""
+    global SYMS
+    if SYMS is None:
+        SYMS = resinc.symbols(ROOT)
+    return SYMS
+
+
+SYMS = None
+
+
+class Marks:
+    """the inner labels of a menu by their offset, each placed once"""
+
+    def __init__(self, marks):
+        self.marks, self.used = dict(marks or {}), set()
+
+    def at(self, i):
+        if i in self.marks:
+            self.used.add(i)
+            return self.marks[i]
+        return None
+
+    def check(self, name, *spans):
+        for lo, hi in spans:
+            for k in range(lo, hi):
+                if k in self.marks:
+                    raise ValueError('menu: label %s at offset %d is inside a number: cannot be written' %
+                                     (self.marks[k], k))
+
+    def left(self):
+        return [self.marks[k] for k in sorted(set(self.marks) - self.used)]
+
+
+def text_to_menu_str(d, i, marks):
     s = ''
+
+    def field(k, v):
+        n = marks.at(k)
+        return ('%s=%d' % (n, v)) if n else '%d' % v
+
     while True:
         c = d[i]
+        n = marks.at(i)
+        if n:
+            s += '{=%s}' % n
         if c & 0x80:
             s += esc(c & 0x7F)
             return s, i + 1
@@ -286,51 +335,74 @@ def text_to_menu_str(d, i):
             s += '{tab}'
             i += 1
         elif c == 7:
-            s += '{byte %d %d %d}' % (d[i + 1], d[i + 2], d[i + 3])
+            s += '{byte %s %s %s}' % (field(i + 1, d[i + 1]), field(i + 2, d[i + 2]), field(i + 3, d[i + 3]))
             i += 4
         elif c == 6:
-            s += '{word %d %d %d}' % (d[i + 1], d[i + 2] | d[i + 3] << 8, d[i + 4] | d[i + 5] << 8)
+            marks.check('word', (i + 3, i + 4), (i + 5, i + 6))
+            s += '{word %s %s %s}' % (field(i + 1, d[i + 1]), field(i + 2, d[i + 2] | d[i + 3] << 8),
+                                      field(i + 4, d[i + 4] | d[i + 5] << 8))
             i += 6
         elif c == 5:
-            s += '{long %d %d}' % (d[i + 1], d[i + 2] | d[i + 3] << 8 | d[i + 4] << 16)
+            marks.check('long', (i + 3, i + 5))
+            s += '{long %s %s}' % (field(i + 1, d[i + 1]), field(i + 2, d[i + 2] | d[i + 3] << 8 | d[i + 4] << 16))
             i += 5
         else:
             s += esc(c)
             i += 1
 
 
-def menu_str_to_text(s):
-    out = bytearray()
+def menu_str_items(s):
+    """the resinc items of a menu text: its bytes (bit 7 on the last), the labels between them"""
+    out = []
+
+    def field(t, size):
+        name, _, v = t.rpartition('=')
+        if name:
+            out.append(('label', name))
+        v = int(v)
+        out.extend(('b', (v >> (8 * k)) & 255) for k in range(size))
+
     i = 0
     while i < len(s):
         if s[i] == '{':
             j = s.index('}', i)
             tok = s[i + 1:j].split()
-            if tok[0] == 'tab':
-                out.append(0x21)
-            elif tok[0] == 'byte':
-                out += bytes([7, int(tok[1]), int(tok[2]), int(tok[3])])
-            elif tok[0] == 'word':
-                v, m = int(tok[2]), int(tok[3])
-                out += bytes([6, int(tok[1]), v & 255, v >> 8, m & 255, m >> 8])
-            elif tok[0] == 'long':
-                v = int(tok[2])
-                out += bytes([5, int(tok[1]), v & 255, (v >> 8) & 255, v >> 16])
+            if tok[0].startswith('='):
+                out.append(('label', tok[0][1:]))
+            elif tok[0] == 'tab':
+                out.append(('b', 0x21))
+            elif tok[0] in ('byte', 'word', 'long'):
+                code, sizes = {'byte': (7, (1, 1, 1)), 'word': (6, (1, 2, 2)), 'long': (5, (1, 3))}[tok[0]]
+                if len(tok) != len(sizes) + 1:
+                    raise ValueError('menu: {%s} takes %d numbers' % (tok[0], len(sizes)))
+                out.append(('b', code))
+                for t, size in zip(tok[1:], sizes):
+                    field(t, size)
             else:
-                out.append(int(tok[0], 16))
+                out.append(('b', int(tok[0], 16)))
             i = j + 1
         else:
-            out.append(ord(s[i]))
+            out.append(('b', ord(s[i])))
             i += 1
-    out[-1] |= 0x80
-    return bytes(out)
+    last = max(k for k, (kind, _) in enumerate(out) if kind == 'b')
+    out[last] = ('b', out[last][1] | 0x80)
+    return out
 
 
-def menu_to_txt(d):
-    lines = [MENU_HELP, 'header %d' % d[0]]
+def menu_to_txt(d, name=None):
+    names, _, marks = syms() if name else ({}, {}, {})
+    marks = Marks(marks.get(name))
+    lines = [MENU_HELP]
+    n = marks.at(0)
+    if n:
+        lines.append('label ' + n)
+    lines.append('header %d' % d[0])
     i = 1
     while i < len(d):
         k = d[i]
+        n = marks.at(i)
+        if n:
+            lines.append('label ' + n)
         i += 1
         if k == 4:
             lines.append('end')
@@ -339,39 +411,72 @@ def menu_to_txt(d):
             lines.append('separator')
             continue
         if k in (1, 2):
+            marks.check('address', (i, i + 2))
             a = d[i] | d[i + 1] << 8
+            where = names.get(a, '$%04X' % a)
             i += 2
-        s, i = text_to_menu_str(d, i)
-        name = {0: 'text', 8: 'number', 1: 'toggle $%04X' % a if k == 1 else '', 2: 'action $%04X' % a if k == 2 else ''}[k]
-        lines.append('%s "%s"' % (name, s))
+        s, i = text_to_menu_str(d, i, marks)
+        kind = {0: 'text', 8: 'number', 1: 'toggle %s' % where if k == 1 else '',
+                2: 'action %s' % where if k == 2 else ''}[k]
+        lines.append('%s "%s"' % (kind, s))
     if i != len(d):
         raise ValueError('menu: %d bytes after the end' % (len(d) - i))
+    if marks.left():
+        raise ValueError('menu: labels %s not placed' % ', '.join(marks.left()))
     return ('\n'.join(lines) + '\n').encode('utf-8')
 
 
-def txt_to_menu(t):
-    out = bytearray()
+def txt_to_items(t):
+    """the resinc items of a menu file (kit/resinc.py lines() writes them as DB / DW lines)"""
+    out = []
     for line in t.decode('utf-8').split('\n'):
         if line.startswith('#') or not line.strip():
             continue
         w = line.split(' ', 1)
-        if w[0] == 'header':
-            out.append(int(w[1]))
+        if w[0] == 'label':
+            out.append(('label', w[1].strip()))
+        elif w[0] == 'header':
+            out.append(('b', int(w[1])))
         elif w[0] == 'end':
-            out.append(4)
+            out.append(('b', 4))
         elif w[0] == 'separator':
-            out.append(3)
+            out.append(('b', 3))
         else:
             head, s = line.split('"', 1)
             s = s[:s.rindex('"')]
             head = head.split()
             k = {'text': 0, 'number': 8, 'toggle': 1, 'action': 2}[head[0]]
-            out.append(k)
+            out.append(('b', k))
             if k in (1, 2):
-                a = num(head[1])
-                out += bytes([a & 255, a >> 8])
-            out += menu_str_to_text(s)
+                out.append(('w', num(head[1]) if head[1][0] in '$%0123456789' else head[1]))
+            out += menu_str_items(s)
+    return out
+
+
+def items_bytes(items):
+    """the bytes of resinc items, a label's name read from game.ann"""
+    out = bytearray()
+    for kind, v in items:
+        if kind == 'b':
+            out.append(v)
+        elif kind == 'w':
+            if not isinstance(v, int):
+                addrs = syms()[1]
+                if v not in addrs:
+                    raise ValueError('menu: %s is no label of src/game/game.ann' % v)
+                v = addrs[v]
+            out += bytes([v & 255, v >> 8])
     return bytes(out)
+
+
+def txt_to_menu(t):
+    return items_bytes(txt_to_items(t))
+
+
+def menu_inc(name, t):
+    """build/res/<menu>.inc: the menu file as DB / DW lines (the INCLUDE of @res ... include in game.ann)"""
+    return resinc.lines(txt_to_items(t), ['%s: written by tools/res_formats.py from src/res/%s' %
+                                          (resinc.inc_name(name), os.path.splitext(name)[0] + '.txt')])
 
 
 INLINE_HELP = """# PrintInline codes (PrintInline $5DEF) and letters; line breaks are ignored:
@@ -612,7 +717,7 @@ def editable(name):
     if name in STRINGS:
         return '.txt', lambda n, d: strings_to_txt(d, STRINGS[n]), lambda n, d: txt_to_strings(d)
     if name.startswith('text/menus/'):
-        return '.txt', lambda n, d: menu_to_txt(d), lambda n, d: txt_to_menu(d)
+        return '.txt', lambda n, d: menu_to_txt(d, n), lambda n, d: txt_to_menu(d)
     if name.startswith('text/inline/'):
         return '.txt', lambda n, d: inline_to_txt(d), lambda n, d: txt_to_inline(d)
     if name in TABLES or name in GRIDS or name in PARALLEL:
@@ -698,6 +803,8 @@ def build(out):
             dst = os.path.join(out, name)
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             open(dst, 'wb').write(data)
+            if name.startswith('text/menus/'):
+                open(resinc.inc_name(dst), 'w').write(menu_inc(name, open(src, 'rb').read()))
 
 
 def check(against=None):

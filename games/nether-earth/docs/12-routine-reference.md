@@ -3,7 +3,10 @@
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
 the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window), `work/deep` (the bot's game: robots built, orders given, factories captured, fights). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
-of the recording. Memory ranges name the entries they cover. An entry no recording reached says so.
+of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
+and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
+the handler's, not the interrupted routine's. An entry no recording reached says so; one the case's other
+recordings ran gives their calls.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 
@@ -44,7 +47,7 @@ The IM 2 table `$FE00-$FF00` (257 x `$FD`), JP at `$FDFD`, Handler = StartInterr
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 15 calls (`load` 14, `play` 1) |
 
 ### `NewGameSetup` (`$A62D`)
 
@@ -59,8 +62,8 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 | Runs (the first recording's game window) | run into, not called, 26,831 t-states own (0.01 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | run into, not called, 656,157 t-states own (0.03 %) |
 | Calls | `PlayLoop`, `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `BuildMap`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `DrawViewBackground`, `DrawPlayScreen`, `UpdateStatusPanel`, `WaitKey` |
-| Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E716` (`Map`); `$E914`-`$EB18` (`Map`); `$ED12`-`$ED18` (`Map`); `$EF12`-`$F118` (`Map`); 6 more ranges |
-| Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`work space $FD04+`); `$FF01`-`$FFC9` (`work space $FF01+`); `$FFFE`-`$FFFF` (`work space $FFFE+`) |
+| Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E716` (`Map+2580`); `$E914`-`$EB18` (`Map+3092`); `$ED12`-`$ED18` (`Map+4114`); `$EF12`-`$F118` (`Map+4626`); 6 more ranges |
+| Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`work space $FD04+`); `$FF01`-`$FFC9` (`work space $FF01+`) |
 
 ### `EnterPlay` (`$A68E`)
 
@@ -70,7 +73,7 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
 
 ### `PlayLoop` (`$A69A`)
 
@@ -89,7 +92,7 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 | Runs (the first recording's game window) | 1 call, 64,293 t-states own (0.02 %) |
 | Called from | `NewGameSetup` |
 | Calls | `GameTurn`, `MoveShip`, `WorldTurn`, `ShipCell`, `DrawView`, `WaitKey` |
-| Reads | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E710` (`Map`); `$E90E`-`$E910` (`Map`); `$EB0E`-`$EB12` (`Map`); `$ED0E`-`$ED12` (`Map`); `$EF0E`-`$F31A` (`Map`); 3 more ranges |
+| Reads | `$DF0E`-`$E110` (`Map+526`); `$E30E`-`$E710` (`Map+1550`); `$E90E`-`$E910` (`Map+3086`); `$EB0E`-`$EB12` (`Map+3598`); `$ED0E`-`$ED12` (`Map+4110`); `$EF0E`-`$F31A` (`Map+4622`); 3 more ranges |
 
 ## robotmenu
 
@@ -106,7 +109,7 @@ IX = IY (the record), +`$0A` = 1 (the robot stands: UpdateRobot returns at once 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 7 calls, 616 t-states own (0.00 %) |
 | Called from | `NewGameSetup` |
 | Calls | `RobotMenuShow` |
-| Writes | `$DA0A`-`$DA5A` (`Robots`); `$FD1F` (`work space $FD1F+`); `$FD39` (`work space $FD39+`) |
+| Writes | `$DA0A`-`$DA5A` (`Robots+10`); `$FD1F` (`work space $FD1F+`); `$FD39` (`work space $FD39+`) |
 
 ### `RobotMenuShow` (`$A732`)
 
@@ -131,7 +134,7 @@ Copies the 27-byte name of order +`$0B` from OrderNames (`$A848` + 27 x order) i
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 14 calls, 10,094 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintInline` |
-| Reads | `$A848`-`$A862` (`OrderNames`); `$A899`-`$A8B3` (`OrderName3`); `$A8EA`-`$A91F` (`OrderName6`, `OrderName7`); `$DA0B`-`$DA5B` (`Robots`) |
+| Reads | `$A848`-`$A862` (`OrderNames`); `$A899`-`$A8B3` (`OrderName3`); `$A8EA`-`$A91F` (`OrderName6`, `OrderName7`); `$DA0B`-`$DA5B` (`Robots+11`) |
 | Writes | `$A7B2`-`$A7CC` (`OrderLine`) |
 
 ### `ShowOrderMiles` (`$A7CD`)
@@ -147,8 +150,8 @@ The printing tail after the inline position is ShowMilesCode (`$A7DC`). No recor
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 14 calls, 3,185 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
-| Reads | `$DA0B`-`$DA5B` (`Robots`); `$FD1F` (`work space $FD1F+`) |
-| Writes | `$DA06`-`$DA5A` (`Robots`); `$FD1F` (`work space $FD1F+`); `$FD30`-`$FD39` (`work space $FD30+`) |
+| Reads | `$DA0B`-`$DA5B` (`Robots+11`); `$FD1F` (`work space $FD1F+`) |
+| Writes | `$DA06`-`$DA5A` (`Robots+6`); `$FD1F` (`work space $FD1F+`); `$FD30`-`$FD39` (`work space $FD30+`) |
 
 ### `ShowMilesCode` (`$A7DC`)
 
@@ -195,7 +198,7 @@ The tail of ShowStrength after its inline string: a negative strength is shown a
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 111 calls, 9,435 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintNumber3`, `PrintCharKeep` (tail) |
-| Reads | `$DA0C`-`$DA5C` (`Robots`) |
+| Reads | `$DA0C`-`$DA5C` (`Robots+12`) |
 
 ### `DirectControlItem` (`$A93B`)
 
@@ -356,8 +359,8 @@ CombatMenu (`$AC00`) follows in the same block: the robot menu's item 3.
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 7 calls, 1,680 t-states own (0.00 %) |
 | Called from | `DestroyMenuChoose` (tail), `CaptureMenuChoose` |
 | Calls | `RobotMenuShow` (tail), `WaitRelease`, `FindTargetBuilding`, `Beep` |
-| Reads | `$DA02`-`$DA53` (`Robots`) |
-| Writes | `$DA0B`-`$DA5E` (`Robots`); `$FD51` (`work space $FD51+`) |
+| Reads | `$DA02`-`$DA53` (`Robots+2`) |
+| Writes | `$DA0B`-`$DA5E` (`Robots+11`); `$FD51` (`work space $FD51+`) |
 
 ### `CombatMenuCode` (`$AC7C`)
 
@@ -386,7 +389,7 @@ Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn, ShowSt
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 28 calls, 36,032 t-states own (0.00 %) |
 | Called from | `ShowOrderMiles`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose` |
 | Calls | `ShowStrength`, `PaintMenuItem`, `WaitRelease`, `GameTurn`, `MenuRadarTick`, `WorldTurn`, `Beep`, `DrawView`, `WaitKey` |
-| Reads | `$DA01`-`$DA51` (`Robots`); `$FD0C` (`work space $FD0C+`) |
+| Reads | `$DA01`-`$DA51` (`Robots+1`); `$FD0C` (`work space $FD0C+`) |
 
 ### `PaintMenuItem` (`$AD3C`)
 
@@ -447,8 +450,8 @@ Last, the pacing (TurnPace): waits until PlayInterrupt has counted 10 frames in 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,413 calls, 188,090,433 t-states own (7.47 %) |
 | Called from | `PrintInline` |
 | Calls | `CheckGameEnd`, `CountBases`, `GiveFactory`, `MapCell`, `FindRobot`, `UpdateStatusPanel`, `PrintNumber2Zero`, `PrintNumber5`, `PrintCharKeep`, `PrintNewline` |
-| Reads | `$DA0A` (`Robots`); `$DBAA` (`EnemyRobots`); `$DC1A` (`EnemyRobots`); `$DC3A` (`EnemyRobots`); `$DC9A` (`EnemyRobots`); `$DCBA` (`EnemyRobots`); 11 more ranges |
-| Writes | `$FD34` (`work space $FD34+`); `$FD74`-`$FDFB` (`work space $FD74+`); `$FFF2`-`$FFFD` (`work space $FFF2+`) |
+| Reads | `$DA0A` (`Robots+10`); `$DBAA` (`EnemyRobots+42`); `$DC1A` (`EnemyRobots+154`); `$DC3A` (`EnemyRobots+186`); `$DC9A` (`EnemyRobots+282`); `$DCBA` (`EnemyRobots+314`); 11 more ranges |
+| Writes | `$FD34` (`work space $FD34+`); `$FD74`-`$FDFB` (`work space $FD74+`) |
 
 ### `UnusedTapeCode` (`$AE29`)
 
@@ -513,7 +516,6 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,414 calls, 177,623 t-states own (0.01 %) |
 | Called from | `GameTurnEnd` |
 | Reads | `$FD3A`-`$FD42` (`work space $FD3A+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFFB` (`work space $FFF2+`) |
 
 ### `LostJump` (`$AEAF`)
 
@@ -572,7 +574,7 @@ Also the auto-climb (ClimbTurns), the altitude (fire +2 up to `$30`, else -1 dow
 | Called from | `NewGameSetup`, `PlayLoop` |
 | Calls | `ScrollRadar`, `LiftShipFromMap`, `PutShipOnMap`, `CheckShipMove` |
 | Reads | `$FD0A`-`$FD1E` (`work space $FD0A+`); `$FD30` (`work space $FD30+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD06`-`$FD1E` (`work space $FD06+`); `$FD30` (`work space $FD30+`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Writes | `$FD06`-`$FD1E` (`work space $FD06+`); `$FD30` (`work space $FD30+`) |
 
 ### `ScrollRadar` (`$AFE6`)
 
@@ -599,8 +601,8 @@ Called by MoveShip first thing each game turn, before the ship moves: the cell u
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,332 calls, 146,608 t-states own (0.01 %) |
 | Called from | `MoveShip` |
 | Calls | `BlinkShipDot` (tail), `ShipCell` |
-| Reads | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E716` (`Map`); `$E90E`-`$EB18` (`Map`); `$ED0E`-`$ED18` (`Map`); `$EF0E`-`$F31A` (`Map`); `$F50E`-`$F519` (`Map`); 2 more ranges |
-| Writes | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E716` (`Map`); `$E90E`-`$EB18` (`Map`); `$ED0E`-`$ED18` (`Map`); `$EF0E`-`$F31A` (`Map`); `$F50E`-`$F519` (`Map`); 2 more ranges |
+| Reads | `$DF0E`-`$E110` (`Map+526`); `$E30E`-`$E716` (`Map+1550`); `$E90E`-`$EB18` (`Map+3086`); `$ED0E`-`$ED18` (`Map+4110`); `$EF0E`-`$F31A` (`Map+4622`); `$F50E`-`$F519` (`Map+6158`); 2 more ranges |
+| Writes | `$DF0E`-`$E110` (`Map+526`); `$E30E`-`$E716` (`Map+1550`); `$E90E`-`$EB18` (`Map+3086`); `$ED0E`-`$ED18` (`Map+4110`); `$EF0E`-`$F31A` (`Map+4622`); `$F50E`-`$F519` (`Map+6158`); 2 more ranges |
 
 ### `PutShipOnMap` (`$B024`)
 
@@ -614,8 +616,8 @@ Called at the end of MoveShip (and by BuildMap). Sets bit 7 of the ship's cell, 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,333 calls, 106,656 t-states own (0.00 %) |
 | Called from | `MoveShip`, `BuildMap` |
 | Calls | `RefreshRadar`, `BlinkShipDot`, `ShipCell`, `BuildRadar` |
-| Reads | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E716` (`Map`); `$E90E`-`$EB18` (`Map`); `$ED0E`-`$ED18` (`Map`); `$EF0E`-`$F31A` (`Map`); `$F50E`-`$F519` (`Map`); 3 more ranges |
-| Writes | `$DF0E`-`$E110` (`Map`); `$E30E`-`$E716` (`Map`); `$E90E`-`$EB18` (`Map`); `$ED0E`-`$ED18` (`Map`); `$EF0E`-`$F31A` (`Map`); `$F50E`-`$F519` (`Map`); 3 more ranges |
+| Reads | `$DF0E`-`$E110` (`Map+526`); `$E30E`-`$E716` (`Map+1550`); `$E90E`-`$EB18` (`Map+3086`); `$ED0E`-`$ED18` (`Map+4110`); `$EF0E`-`$F31A` (`Map+4622`); `$F50E`-`$F519` (`Map+6158`); 3 more ranges |
+| Writes | `$DF0E`-`$E110` (`Map+526`); `$E30E`-`$E716` (`Map+1550`); `$E90E`-`$EB18` (`Map+3086`); `$ED0E`-`$ED18` (`Map+4110`); `$EF0E`-`$F31A` (`Map+4622`); `$F50E`-`$F519` (`Map+6158`); 3 more ranges |
 
 ### `RefreshRadar` (`$B029`)
 
@@ -644,7 +646,6 @@ RadarBlink (`$FD1E`) counts the game turns (MoveShip increments it between LiftS
 | Called from | `LiftShipFromMap` (tail), `PutShipOnMap`, `RefreshRadar`, `MenuRadarTick` |
 | Calls | `ToggleRadarDot` (tail) |
 | Reads | `$FD0D`-`$FD1E` (`work space $FD0D+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
 
 ### `MenuRadarTick` (`$B048`)
 
@@ -688,8 +689,7 @@ DE a map cell. The cell's type (bits 0-4) indexes the ground height table Terrai
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 39,396 calls, 2,364,045 t-states own (0.09 %) |
 | Called from | `CellTop`, `GroundUnderFootprint` |
 | Calls | `KeepHigher` (tail), `AddAToHL` |
-| Reads | `$D7BC`-`$D7CD` (`TerrainHeights`); `$DD0E`-`$DD14` (`Map`); `$DD67`-`$DE66` (`Map`); `$DE8C`-`$DECD` (`Map`); `$DF0E`-`$FCE8` (`Map`, `MapTail`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE6`-`$FFEF` (`work space $FFE6+`) |
+| Reads | `$D7BC`-`$D7CD` (`TerrainHeights`); `$DD0E`-`$DD14` (`Map+14`); `$DD67`-`$DE66` (`Map+103`); `$DE8C`-`$DECD` (`Map+396`); `$DF0E`-`$FCE8` (`Map+526`, `MapTail`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `CellTop` (`$B096`)
 
@@ -716,7 +716,7 @@ When the cell has bit 6 (an object anchored there): a robot (FindRobot) counts w
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 11,860 calls, 698,111 t-states own (0.03 %) |
 | Called from | `CheckShipMove` |
 | Calls | `KeepHigher`, `FindRobot`, `FindBuilding`, `AddAToHL` |
-| Reads | `$B0C1`-`$B0C8` (`BuildingTops`); `$DA09`-`$DA5D` (`Robots`); `$DD0D`-`$DD14` (`Map`); `$DF0D`-`$DF14` (`Map`); `$E10D`-`$E919` (`Map`); `$EB0D`-`$EB19` (`Map`); 5 more ranges |
+| Reads | `$B0C1`-`$B0C8` (`BuildingTops`); `$DA09`-`$DA5D` (`Robots+9`); `$DD0D`-`$DD14` (`Map+13`); `$DF0D`-`$DF14` (`Map+525`); `$E10D`-`$E919` (`Map+1037`); `$EB0D`-`$EB19` (`Map+3597`); 5 more ranges |
 
 ### `KeepHigher` (`$B0AB`)
 
@@ -730,7 +730,6 @@ The common tail of TerrainTop and ObjectTop.
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 39,745 calls, 994,692 t-states own (0.04 %) |
 | Called from | `TerrainTop` (tail), `ObjectTop` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFEE`-`$FFEF` (`work space $FFEE+`) |
 
 ## world
 
@@ -750,8 +749,7 @@ Called once a game turn by the play loop (PlayLoop) and by the menus (DirectCont
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,415 calls, 17,199,406 t-states own (0.68 %) |
 | Called from | `NewGameSetup`, `PlayLoop`, `ListMenu` |
 | Calls | `UpdateRobot`, `UpdateShot`, `EnemyCommander` |
-| Reads | `$D7D4`-`$D7F8` (`Shots`); `$DA01`-`$DCF1` (`Robots`, `EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFFD` (`work space $FFF2+`) |
+| Reads | `$D7D4`-`$D7F8` (`Shots+1`); `$DA01`-`$DCF1` (`Robots+1`, `EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `UpdateRobot` (`$B0FA`)
 
@@ -765,8 +763,8 @@ IY = the robot record. Strength +`$0C` decides: positive, the robot acts (RobotS
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 49,165 calls, 11,200,217 t-states own (0.44 %) |
 | Called from | `WorldTurn` |
 | Calls | `RobotStep` (tail), `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `CountRobots`, `PutBlock`, `PlaceRobot` (tail), `UpdateStatusPanel`, `Random`, `ToggleRadarDot` |
-| Reads | `$DA00`-`$DA5F` (`Robots`); `$DB80`-`$DBEF` (`EnemyRobots`); `$DC00`-`$DC5F` (`EnemyRobots`); `$DC70`-`$DCCF` (`EnemyRobots`); `$DCE0`-`$DCFF` (`EnemyRobots`); `$DD97`-`$DD99` (`Map`); 7 more ranges |
-| Writes | `$DA01`-`$DA5F` (`Robots`); `$DB81`-`$DBAF` (`EnemyRobots`); `$DBC5`-`$DBEF` (`EnemyRobots`); `$DC05`-`$DC5F` (`EnemyRobots`); `$DC71`-`$DCCF` (`EnemyRobots`); `$DCE5`-`$DCFF` (`EnemyRobots`); 8 more ranges |
+| Reads | `$DA00`-`$DA5F` (`Robots`); `$DB80`-`$DBEF` (`EnemyRobots`); `$DC00`-`$DC5F` (`EnemyRobots+128`); `$DC70`-`$DCCF` (`EnemyRobots+240`); `$DCE0`-`$DCFF` (`EnemyRobots+352`); `$DD97`-`$DD99` (`Map+151`); 7 more ranges |
+| Writes | `$DA01`-`$DA5F` (`Robots+1`); `$DB81`-`$DBAF` (`EnemyRobots+1`); `$DBC5`-`$DBEF` (`EnemyRobots+69`); `$DC05`-`$DC5F` (`EnemyRobots+133`); `$DC71`-`$DCCF` (`EnemyRobots+241`); `$DCE5`-`$DCFF` (`EnemyRobots+357`); 7 more ranges |
 
 ### `RobotStep` (`$B154`)
 
@@ -785,8 +783,8 @@ Recording: 9652 steps; the shot records and strengths at frames 18680-18850 matc
 | Runs (the first recording's game window) | 844 calls, 151,768 t-states own (0.06 %) |
 | Called from | `UpdateRobot` (tail) |
 | Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot` |
-| Reads | `$DB80`-`$DB8F` (`EnemyRobots`); `$DC40`-`$DC4F` (`EnemyRobots`); `$DC90`-`$DC9F` (`EnemyRobots`); `$DCB0`-`$DCBF` (`EnemyRobots`); `$E3F1` (`Map`); `$E5F1` (`Map`); 6 more ranges |
-| Writes | `$DB85`-`$DB8F` (`EnemyRobots`); `$DC45`-`$DC4F` (`EnemyRobots`); `$DC95`-`$DC9F` (`EnemyRobots`); `$DCB5`-`$DCBF` (`EnemyRobots`); `$E3F1` (`Map`); `$E5F1` (`Map`); 7 more ranges |
+| Reads | `$DB80`-`$DB8F` (`EnemyRobots`); `$DC40`-`$DC4F` (`EnemyRobots+192`); `$DC90`-`$DC9F` (`EnemyRobots+272`); `$DCB0`-`$DCBF` (`EnemyRobots+304`); `$E3F1` (`Map+1777`); `$E5F1` (`Map+2289`); 6 more ranges |
+| Writes | `$DB85`-`$DB8F` (`EnemyRobots+5`); `$DC45`-`$DC4F` (`EnemyRobots+197`); `$DC95`-`$DC9F` (`EnemyRobots+277`); `$DCB5`-`$DCBF` (`EnemyRobots+309`); `$E3F1` (`Map+1777`); `$E5F1` (`Map+2289`); 7 more ranges |
 
 ### `SteerByOrder` (`$B222`)
 
@@ -810,8 +808,8 @@ Bug (experiment, breakpoint at `$B2B8` after poking the target factory's owner):
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 2,275 calls, 1,321,359 t-states own (0.05 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
 | Calls | `FindTargetBuilding`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `FindNearestOpponent`, `CountDirections`, `AddAToHL`, `Random` |
-| Reads | `$DA01`-`$DA5E` (`Robots`); `$DAF1`-`$DB01` (`Robots`); `$DB81`-`$DBAE` (`EnemyRobots`); `$DBC2`-`$DC5E` (`EnemyRobots`); `$DC71`-`$DCCE` (`EnemyRobots`); `$DCE2`-`$DCFE` (`EnemyRobots`); 3 more ranges |
-| Writes | `$DA06`-`$DA4E` (`Robots`); `$DB86`-`$DBAE` (`EnemyRobots`); `$DBEE` (`EnemyRobots`); `$DC06`-`$DC1E` (`EnemyRobots`); `$DC36`-`$DC5E` (`EnemyRobots`); `$DC76`-`$DCBE` (`EnemyRobots`); 2 more ranges |
+| Reads | `$DA01`-`$DA5E` (`Robots+1`); `$DAF1`-`$DB01` (`Robots+241`); `$DB81`-`$DBAE` (`EnemyRobots+1`); `$DBC2`-`$DC5E` (`EnemyRobots+66`); `$DC71`-`$DCCE` (`EnemyRobots+241`); `$DCE2`-`$DCFE` (`EnemyRobots+354`); 3 more ranges |
+| Writes | `$DA06`-`$DA4E` (`Robots+6`); `$DB86`-`$DBAE` (`EnemyRobots+6`); `$DBEE` (`EnemyRobots+110`); `$DC06`-`$DC1E` (`EnemyRobots+134`); `$DC36`-`$DC5E` (`EnemyRobots+182`); `$DC76`-`$DCBE` (`EnemyRobots+246`); 1 more ranges |
 
 ### `PickOneDirection` (`$B33E`)
 
@@ -836,7 +834,6 @@ A = the order (3 goes to FindNearestOpponent), HL = the robot's column, IY the r
 | Called from | `SetOrder`, `SteerByOrder`, `EnemyCommander` |
 | Calls | `ConsiderBuilding`, `TargetBuildingTable`, `InitNearestSearch`, `FindNearestOpponent` (tail) |
 | Reads | `$FD73`-`$FDFA` (`work space $FD73+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
 
 ### `ConsiderBuilding` (`$B36C`)
 
@@ -850,8 +847,7 @@ HL = the record's owner byte (+`$03`), C its index, A' the order. Scans the 24 r
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 894 calls, 2,137,588 t-states own (0.08 %) |
 | Called from | `FindTargetBuilding` |
 | Calls | `KeepNearest` |
-| Reads | `$DA01`-`$DCFE` (`Robots`, `EnemyRobots`); `$FD51` (`work space $FD51+`); `$FD70`-`$FD71` (`work space $FD70+`); `$FD84`-`$FDF8` (`work space $FD84+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE8`-`$FFF3` (`work space $FFE8+`) |
+| Reads | `$DA01`-`$DCFE` (`Robots+1`, `EnemyRobots`); `$FD51` (`work space $FD51+`); `$FD70`-`$FD71` (`work space $FD70+`); `$FD84`-`$FDF8` (`work space $FD84+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `KeepNearest` (`$B3B3`)
 
@@ -866,7 +862,6 @@ The comparison step of the nearest searches (InitNearestSearch sets it up): HL' 
 | Called from | `ConsiderBuilding`, `FindNearestOpponent` |
 | Calls | `ColumnDistance` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
 
 ### `ColumnDistance` (`$B3CA`)
 
@@ -892,7 +887,6 @@ A = the order. Orders 5 and 8 (destroy / capture warbases): HL = `$FD73`, the ow
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,731 calls, 235,279 t-states own (0.01 %) |
 | Called from | `SteerByOrder`, `FindTargetBuilding`, `EnemyCommander` |
 | Reads | `$FD51` (`work space $FD51+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF4`-`$FFF5` (`work space $FFF4+`) |
 
 ### `TargetRobotRecord` (`$B3F9`)
 
@@ -904,7 +898,7 @@ HL = `$DB80` + 16 * (+`$0E`) for our robots, `$DA00` + 16 * (+`$0E`) for the ene
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,072 calls, 123,156 t-states own (0.00 %) |
 | Called from | `SteerByOrder` |
-| Reads | `$DA2E`-`$DA4E` (`Robots`); `$DB8E`-`$DB9E` (`EnemyRobots`); `$DBEE` (`EnemyRobots`); `$DC0E` (`EnemyRobots`); `$DC3E`-`$DC5E` (`EnemyRobots`); `$DC7E`-`$DC8E` (`EnemyRobots`); 3 more ranges |
+| Reads | `$DA2E`-`$DA4E` (`Robots+46`); `$DB8E`-`$DB9E` (`EnemyRobots+14`); `$DBEE` (`EnemyRobots+110`); `$DC0E` (`EnemyRobots+142`); `$DC3E`-`$DC5E` (`EnemyRobots+190`); `$DC7E`-`$DC8E` (`EnemyRobots+254`); 3 more ranges |
 
 ### `InitNearestSearch` (`$B411`)
 
@@ -930,8 +924,7 @@ HL = our column, IY the robot, Side set. Runs KeepNearest over the 24 opponent r
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 426 calls, 1,194,459 t-states own (0.05 %) |
 | Called from | `SteerByOrder`, `FindTargetBuilding` (tail) |
 | Calls | `KeepNearest`, `InitNearestSearch` |
-| Reads | `$DA01`-`$DCF3` (`Robots`, `EnemyRobots`); `$FD51` (`work space $FD51+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFEE`-`$FFF1` (`work space $FFEE+`) |
+| Reads | `$DA01`-`$DCF3` (`Robots+1`, `EnemyRobots`); `$FD51` (`work space $FD51+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `RobotDirectControl` (`$B450`)
 
@@ -957,8 +950,8 @@ Experiment (DIRECT CONTROL on a new bipod + cannon robot at (22,14)): holding ri
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 1,217,275 t-states own (0.05 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
 | Calls | `StepPosition`, `GroundUnderFootprint` |
-| Reads | `$DA06`-`$DA5A` (`Robots`); `$DB86`-`$DBAA` (`EnemyRobots`); `$DBC6`-`$DBEA` (`EnemyRobots`); `$DC06`-`$DC5A` (`EnemyRobots`); `$DC76`-`$DCCA` (`EnemyRobots`); `$DCE6`-`$DCFA` (`EnemyRobots`); 1 more ranges |
-| Writes | `$DA06`-`$DA5D` (`Robots`); `$DB86`-`$DBAD` (`EnemyRobots`); `$DBC6`-`$DBED` (`EnemyRobots`); `$DC06`-`$DC5D` (`EnemyRobots`); `$DC76`-`$DCCD` (`EnemyRobots`); `$DCE6`-`$DCFD` (`EnemyRobots`); 1 more ranges |
+| Reads | `$DA06`-`$DA5A` (`Robots+6`); `$DB86`-`$DBAA` (`EnemyRobots+6`); `$DBC6`-`$DBEA` (`EnemyRobots+70`); `$DC06`-`$DC5A` (`EnemyRobots+134`); `$DC76`-`$DCCA` (`EnemyRobots+246`); `$DCE6`-`$DCFA` (`EnemyRobots+358`); 1 more ranges |
+| Writes | `$DA06`-`$DA5D` (`Robots+6`); `$DB86`-`$DBAD` (`EnemyRobots+6`); `$DBC6`-`$DBED` (`EnemyRobots+70`); `$DC06`-`$DC5D` (`EnemyRobots+134`); `$DC76`-`$DCCD` (`EnemyRobots+246`); `$DCE6`-`$DCFD` (`EnemyRobots+358`) |
 
 ### `StepPosition` (`$B4B9`)
 
@@ -973,8 +966,7 @@ Experiment: ADVANCE with 5 MILES (the robot menu stores miles * 2 into +`$0E` = 
 | Runs (the first recording's game window) | 85 calls, 6,127 t-states own (0.00 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 7,337 calls, 534,494 t-states own (0.02 %) |
 | Called from | `TurnOrStep` |
-| Reads | `$DA0B`-`$DA5B` (`Robots`); `$DB8B`-`$DBAB` (`EnemyRobots`); `$DBCB`-`$DBEB` (`EnemyRobots`); `$DC0B`-`$DC5B` (`EnemyRobots`); `$DC7B`-`$DCCB` (`EnemyRobots`); `$DCEB`-`$DCFB` (`EnemyRobots`); 1 more ranges |
-| Writes | `$FFF4`-`$FFF5` (`work space $FFF4+`) |
+| Reads | `$DA0B`-`$DA5B` (`Robots+11`); `$DB8B`-`$DBAB` (`EnemyRobots+11`); `$DBCB`-`$DBEB` (`EnemyRobots+75`); `$DC0B`-`$DC5B` (`EnemyRobots+139`); `$DC7B`-`$DCCB` (`EnemyRobots+251`); `$DCEB`-`$DCFB` (`EnemyRobots+363`); 1 more ranges |
 
 ### `CountDirections` (`$B505`)
 
@@ -988,7 +980,6 @@ Z: exactly one direction; carry: none; neither: two or more. Counts bits 0-3 of 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 4,938 calls, 770,442 t-states own (0.03 %) |
 | Called from | `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFF5` (`work space $FFF2+`) |
 
 ### `FreeDirections` (`$B513`)
 
@@ -1002,8 +993,7 @@ IY the robot, HL its anchor cell. A robot covers 2x2 cells: its anchor (X, Y) ca
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 3,349,343 t-states own (0.13 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
 | Calls | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp` |
-| Reads | `$DA07`-`$DA5D` (`Robots`); `$DB87`-`$DBAD` (`EnemyRobots`); `$DBC7`-`$DBED` (`EnemyRobots`); `$DC07`-`$DC5D` (`EnemyRobots`); `$DC77`-`$DCCD` (`EnemyRobots`); `$DCE7`-`$DCFD` (`EnemyRobots`); 2 more ranges |
-| Writes | `$FFF6`-`$FFF7` (`work space $FFF6+`) |
+| Reads | `$DA07`-`$DA5D` (`Robots+7`); `$DB87`-`$DBAD` (`EnemyRobots+7`); `$DBC7`-`$DBED` (`EnemyRobots+71`); `$DC07`-`$DC5D` (`EnemyRobots+135`); `$DC77`-`$DCCD` (`EnemyRobots+247`); `$DCE7`-`$DCFD` (`EnemyRobots+359`); 2 more ranges |
 
 ### `CanMoveRight` (`$B557`)
 
@@ -1017,8 +1007,7 @@ Terrain and objects at the column it enters, (X+2, Y-1) and (X+2, Y); an object 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 1,009,703 t-states own (0.04 %) |
 | Called from | `FreeDirections` |
 | Calls | `CellOffMapFree` (tail), `TestCell` |
-| Reads | `$E169`-`$E267` (`Map`); `$E28E`-`$E2CE` (`Map`); `$E368`-`$E467` (`Map`); `$E47B` (`Map`); `$E48E`-`$E4CE` (`Map`); `$E568`-`$E667` (`Map`); 3 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
+| Reads | `$E169`-`$E267` (`Map+1129`); `$E28E`-`$E2CE` (`Map+1422`); `$E368`-`$E467` (`Map+1640`); `$E47B` (`Map+1915`); `$E48E`-`$E4CE` (`Map+1934`); `$E568`-`$E667` (`Map+2152`); 3 more ranges |
 
 ### `CanMoveLeft` (`$B56F`)
 
@@ -1032,8 +1021,7 @@ Terrain and objects at (X-1, Y-1) and (X-1, Y); objects anchored at (X-2, Y-1), 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 1,305,050 t-states own (0.05 %) |
 | Called from | `FreeDirections` |
 | Calls | `CellOffMapFree` (tail), `TestCell` |
-| Reads | `$DD65`-`$DE63` (`Map`); `$DE8B`-`$DECA` (`Map`); `$DF64`-`$E077` (`Map`); `$E08B`-`$E0CA` (`Map`); `$E144`-`$E2CA` (`Map`); `$E31B`-`$FCE5` (`Map`, `MapTail`); 1 more ranges |
-| Writes | `$FFEA`-`$FFF3` (`work space $FFEA+`) |
+| Reads | `$DD65`-`$DE63` (`Map+101`); `$DE8B`-`$DECA` (`Map+395`); `$DF64`-`$E077` (`Map+612`); `$E08B`-`$E0CA` (`Map+907`); `$E144`-`$E2CA` (`Map+1092`); `$E31B`-`$FCE5` (`Map+1563`, `MapTail`); 1 more ranges |
 
 ### `CanMoveDown` (`$B58F`)
 
@@ -1047,8 +1035,7 @@ Blocked at the bottom row; terrain and objects at (X, Y+1) and (X+1, Y+1); objec
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 1,289,615 t-states own (0.05 %) |
 | Called from | `FreeDirections` |
 | Calls | `CellOffMapFree` (tail), `CellBlocked` (tail), `TestCell` |
-| Reads | `$E366`-`$E466` (`Map`); `$E48B`-`$E4CD` (`Map`); `$E565`-`$E666` (`Map`); `$E678`-`$E67A` (`Map`); `$E68B`-`$E6CD` (`Map`); `$E745`-`$FCE8` (`Map`, `MapTail`); 1 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
+| Reads | `$E366`-`$E466` (`Map+1638`); `$E48B`-`$E4CD` (`Map+1931`); `$E565`-`$E666` (`Map+2149`); `$E678`-`$E67A` (`Map+2424`); `$E68B`-`$E6CD` (`Map+2443`); `$E745`-`$FCE8` (`Map+2629`, `MapTail`); 1 more ranges |
 
 ### `CanMoveUp` (`$B5B1`)
 
@@ -1062,8 +1049,7 @@ Blocked when Y-2 is above the map (the footprint already covers Y-1); an object 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 1,044,460 t-states own (0.04 %) |
 | Called from | `FreeDirections` |
 | Calls | `CellBlocked` (tail), `TestCell` |
-| Reads | `$DD65`-`$DDBB` (`Map`); `$DDDC`-`$DE3A` (`Map`); `$DE5F`-`$DE64` (`Map`); `$DE78` (`Map`); `$DE8B`-`$DECB` (`Map`); `$DF45`-`$F8E6` (`Map`); 1 more ranges |
-| Writes | `$FFEA`-`$FFF3` (`work space $FFEA+`) |
+| Reads | `$DD65`-`$DDBB` (`Map+101`); `$DDDC`-`$DE3A` (`Map+220`); `$DE5F`-`$DE64` (`Map+351`); `$DE78` (`Map+376`); `$DE8B`-`$DECB` (`Map+395`); `$DF45`-`$F8E6` (`Map+581`); 1 more ranges |
 
 ### `CellOffMapFree` (`$B5C8`)
 
@@ -1077,7 +1063,6 @@ The shared exit of the probes for rows below the map.
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,104 calls, 43,475 t-states own (0.00 %) |
 | Called from | `CanMoveRight` (tail), `CanMoveLeft` (tail), `CanMoveDown` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF2`-`$FFF3` (`work space $FFF2+`) |
 
 ### `CellBlocked` (`$B5CA`)
 
@@ -1103,8 +1088,7 @@ HL a map cell, D the first terrain type the locomotion cannot enter (FreeDirecti
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 67,380 calls, 3,003,173 t-states own (0.12 %) |
 | Called from | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp` |
 | Calls | `CellBlocked` (tail) |
-| Reads | `$DD66`-`$DE3D` (`Map`); `$DE5F`-`$DE67` (`Map`); `$DE79`-`$DE7A` (`Map`); `$DE8B`-`$DECE` (`Map`); `$DF46`-`$FCE9` (`Map`, `MapTail`, `work space $FCE9+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF1` (`work space $FFF0+`) |
+| Reads | `$DD66`-`$DE3D` (`Map+102`); `$DE5F`-`$DE67` (`Map+351`); `$DE79`-`$DE7A` (`Map+377`); `$DE8B`-`$DECE` (`Map+395`); `$DF46`-`$FCE9` (`Map+582`, `MapTail`, `work space $FCE9+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `GroundUnderFootprint` (`$B5D6`)
 
@@ -1119,7 +1103,6 @@ HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1), th
 | Called from | `TurnOrStep`, `MoveShot` |
 | Calls | `TerrainTop`, `MapCell` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF3` (`work space $FFF0+`) |
 
 ### `SetStepDelay` (`$B5F3`)
 
@@ -1133,8 +1116,8 @@ The ground class from +`$0D`: 0 flat, 1-3 low, 4 and more high; the column from 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 2,060,673 t-states own (0.08 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
 | Calls | `AddAToHL` |
-| Reads | `$B61D`-`$B625` (`StepDelays`); `$DA07`-`$DA5D` (`Robots`); `$DB87`-`$DBED` (`EnemyRobots`); `$DC07`-`$DC5D` (`EnemyRobots`); `$DC77`-`$DCCD` (`EnemyRobots`); `$DCE7`-`$DCFD` (`EnemyRobots`); 1 more ranges |
-| Writes | `$DA0F`-`$DA5F` (`Robots`); `$DB8F`-`$DBAF` (`EnemyRobots`); `$DBCF`-`$DBEF` (`EnemyRobots`); `$DC0F`-`$DC5F` (`EnemyRobots`); `$DC7F`-`$DCCF` (`EnemyRobots`); `$DCEF`-`$DCFF` (`EnemyRobots`); 1 more ranges |
+| Reads | `$B61D`-`$B625` (`StepDelays`); `$DA07`-`$DA5D` (`Robots+7`); `$DB87`-`$DBED` (`EnemyRobots+7`); `$DC07`-`$DC5D` (`EnemyRobots+135`); `$DC77`-`$DCCD` (`EnemyRobots+247`); `$DCE7`-`$DCFD` (`EnemyRobots+359`); 1 more ranges |
+| Writes | `$DA0F`-`$DA5F` (`Robots+15`); `$DB8F`-`$DBAF` (`EnemyRobots+15`); `$DBCF`-`$DBEF` (`EnemyRobots+79`); `$DC0F`-`$DC5F` (`EnemyRobots+143`); `$DC7F`-`$DCCF` (`EnemyRobots+255`); `$DCEF`-`$DCFF` (`EnemyRobots+367`) |
 
 ### `SpotEnemies` (`$B626`)
 
@@ -1148,8 +1131,7 @@ IY the robot. For each direction (up, down, left, right: E's bits 3, 2, 1, 0 as 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,652 calls, 6,246,532 t-states own (0.25 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
 | Calls | `ScanLane` |
-| Reads | `$DA00`-`$DA58` (`Robots`); `$DB80`-`$DBE8` (`EnemyRobots`); `$DC00`-`$DC58` (`EnemyRobots`); `$DC70`-`$DCC8` (`EnemyRobots`); `$DCE0`-`$DCF8` (`EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFEC`-`$FFF5` (`work space $FFEC+`) |
+| Reads | `$DA00`-`$DA58` (`Robots`); `$DB80`-`$DBE8` (`EnemyRobots`); `$DC00`-`$DC58` (`EnemyRobots+128`); `$DC70`-`$DCC8` (`EnemyRobots+240`); `$DCE0`-`$DCF8` (`EnemyRobots+352`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `ScanLane` (`$B66E`)
 
@@ -1163,8 +1145,7 @@ The step comes from LaneSteps by D's bit. The scan stops at the map's top or bot
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 57,912 calls, 40,996,886 t-states own (1.63 %) |
 | Called from | `SpotEnemies` |
 | Calls | `FindRobot` |
-| Reads | `$B6B0`-`$B6B7` (`LaneSteps`); `$DA0A`-`$DA5C` (`Robots`); `$DB8A`-`$DBEC` (`EnemyRobots`); `$DC0A`-`$DC5C` (`EnemyRobots`); `$DC7A`-`$DCCC` (`EnemyRobots`); `$DCEA`-`$FCEF` (`EnemyRobots`, `Map`, `MapTail`, `work space $FCE9+`); 1 more ranges |
-| Writes | `$FFE4`-`$FFEF` (`work space $FFE4+`) |
+| Reads | `$B6B0`-`$B6B7` (`LaneSteps`); `$DA0A`-`$DA5C` (`Robots+10`); `$DB8A`-`$DBEC` (`EnemyRobots+10`); `$DC0A`-`$DC5C` (`EnemyRobots+138`); `$DC7A`-`$DCCC` (`EnemyRobots+250`); `$DCEA`-`$FCEF` (`EnemyRobots+362`, `Map`, `MapTail`, `work space $FCE9+`); 1 more ranges |
 
 ### `FindFreeShot` (`$B6B8`)
 
@@ -1176,7 +1157,7 @@ Each side has two shot records of 9 bytes: ours `$D7DC` and `$D7E5`, the enemy's
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 77 calls, 6,820 t-states own (0.00 %) |
 | Called from | `UpdateRobot` |
-| Reads | `$D7DD` (`Shots`); `$D7EF` (`Shots`); `$DA0A` (`Robots`); `$DA2A`-`$DA3A` (`Robots`); `$DA5A` (`Robots`); `$DB8A`-`$DB9A` (`EnemyRobots`); 4 more ranges |
+| Reads | `$D7DD` (`Shots+10`); `$D7EF` (`Shots+28`); `$DA0A` (`Robots+10`); `$DA2A`-`$DA3A` (`Robots+42`); `$DA5A` (`Robots+90`); `$DB8A`-`$DB9A` (`EnemyRobots+10`); 4 more ranges |
 
 ### `FireShot` (`$B6D6`)
 
@@ -1191,8 +1172,8 @@ When the shot survives the first step SoundFx (`$FD53`) = 1, the firing sound; w
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 51 calls, 14,464 t-states own (0.00 %) |
 | Called from | `UpdateRobot` |
 | Calls | `MoveShot` |
-| Reads | `$D7DD` (`Shots`); `$D7EF` (`Shots`); `$DA02`-`$DA08` (`Robots`); `$DA22`-`$DA38` (`Robots`); `$DB92`-`$DB98` (`EnemyRobots`); `$DBD2`-`$DBD8` (`EnemyRobots`); 4 more ranges |
-| Writes | `$D7E1`-`$D7F6` (`Shots`); `$FD53` (`work space $FD53+`); `$FFF2`-`$FFF3` (`work space $FFF2+`) |
+| Reads | `$D7DD` (`Shots+10`); `$D7EF` (`Shots+28`); `$DA02`-`$DA08` (`Robots+2`); `$DA22`-`$DA38` (`Robots+34`); `$DB92`-`$DB98` (`EnemyRobots+18`); `$DBD2`-`$DBD8` (`EnemyRobots+82`); 4 more ranges |
+| Writes | `$D7E1`-`$D7F6` (`Shots+14`); `$FD53` (`work space $FD53+`) |
 
 ### `UpdateShot` (`$B70D`)
 
@@ -1205,8 +1186,8 @@ Clears the object bit of the shot's cell, counts +`$06` down (0: the shot is gon
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 90 calls, 12,813 t-states own (0.00 %) |
 | Called from | `WorldTurn` |
 | Calls | `MoveShot`, `ShotGone` (tail) |
-| Reads | `$D7DC`-`$D7F4` (`Shots`); `$DF8F`-`$DF99` (`Map`); `$E3AB` (`Map`); `$E77E`-`$E7AB` (`Map`); `$E9AD`-`$ED82` (`Map`); `$EF7B` (`Map`); 3 more ranges |
-| Writes | `$D7E2` (`Shots`); `$D7F4` (`Shots`); `$DF8F`-`$DF99` (`Map`); `$E3AB` (`Map`); `$E77E`-`$E7AB` (`Map`); `$E9AD`-`$ED82` (`Map`); 4 more ranges |
+| Reads | `$D7DC`-`$D7F4` (`Shots+9`); `$DF8F`-`$DF99` (`Map+655`); `$E3AB` (`Map+1707`); `$E77E`-`$E7AB` (`Map+2686`); `$E9AD`-`$ED82` (`Map+3245`); `$EF7B` (`Map+4731`); 3 more ranges |
+| Writes | `$D7E2` (`Shots+15`); `$D7F4` (`Shots+33`); `$DF8F`-`$DF99` (`Map+655`); `$E3AB` (`Map+1707`); `$E77E`-`$E7AB` (`Map+2686`); `$E9AD`-`$ED82` (`Map+3245`); 4 more ranges |
 
 ### `MoveShot` (`$B724`)
 
@@ -1223,8 +1204,8 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 140 calls, 90,584 t-states own (0.00 %) |
 | Called from | `FireShot`, `UpdateShot` |
 | Calls | `GroundUnderFootprint`, `MapCell`, `FindRobot` |
-| Reads | `$D7E1`-`$D7F6` (`Shots`); `$DA09`-`$DA3D` (`Robots`); `$DA59`-`$DA5D` (`Robots`); `$DB89`-`$DB9D` (`EnemyRobots`); `$DBD9`-`$DBDD` (`EnemyRobots`); `$DC49`-`$DC4D` (`EnemyRobots`); 8 more ranges |
-| Writes | `$D7DC`-`$D7F2` (`Shots`); `$DA0C`-`$DA3C` (`Robots`); `$DA5C` (`Robots`); `$DB8C`-`$DB9C` (`EnemyRobots`); `$DBDC` (`EnemyRobots`); `$DC4C` (`EnemyRobots`); 13 more ranges |
+| Reads | `$D7E1`-`$D7F6` (`Shots+14`); `$DA09`-`$DA3D` (`Robots+9`); `$DA59`-`$DA5D` (`Robots+89`); `$DB89`-`$DB9D` (`EnemyRobots+9`); `$DBD9`-`$DBDD` (`EnemyRobots+89`); `$DC49`-`$DC4D` (`EnemyRobots+201`); 8 more ranges |
+| Writes | `$D7DC`-`$D7F2` (`Shots+9`); `$DA0C`-`$DA3C` (`Robots+12`); `$DA5C` (`Robots+92`); `$DB8C`-`$DB9C` (`EnemyRobots+12`); `$DBDC` (`EnemyRobots+92`); `$DC4C` (`EnemyRobots+204`); 12 more ranges |
 
 ### `ShotGone` (`$B7EA`)
 
@@ -1234,7 +1215,7 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 | --- | --- |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 49 t-states own (0.00 %) |
 | Called from | `UpdateShot` (tail) |
-| Writes | `$D7EF` (`Shots`); `$FD53` (`work space $FD53+`) |
+| Writes | `$D7EF` (`Shots+28`); `$FD53` (`work space $FD53+`) |
 
 ## enemy
 
@@ -1258,8 +1239,8 @@ The robot is set up facing down, 3 steps, order 0, strength `$64`, +`$0A` = `$80
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,415 calls, 1,599,757 t-states own (0.06 %) |
 | Called from | `WorldTurn` |
 | Calls | `FindTargetBuilding`, `TargetBuildingTable`, `CountDirections`, `CountRobots`, `PlaceRobot`, `MapCell`, `UpdateStatusPanel`, `AddAToHL`, `Random` |
-| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$D7B4`-`$D7BB` (`PartHeights`); `$DB81`-`$DCFB` (`EnemyRobots`); `$EE05` (`Map`); `$EE71` (`Map`); `$EEEE` (`Map`); 8 more ranges |
-| Writes | `$DB85`-`$DCFF` (`EnemyRobots`); `$FD29`-`$FD2F` (`work space $FD29+`); `$FD4A`-`$FD51` (`work space $FD4A+`); `$FFF2`-`$FFFB` (`work space $FFF2+`) |
+| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$D7B4`-`$D7BB` (`PartHeights`); `$DB81`-`$DCFB` (`EnemyRobots+1`); `$EE05` (`Map+4357`); `$EE71` (`Map+4465`); `$EEEE` (`Map+4590`); 8 more ranges |
+| Writes | `$DB85`-`$DCFF` (`EnemyRobots+5`); `$FD29`-`$FD2F` (`work space $FD29+`); `$FD4A`-`$FD51` (`work space $FD4A+`) |
 
 ### `NuclearBlast` (`$B99F`)
 
@@ -1310,7 +1291,7 @@ Called after every change of owner (the capture tick `$AE17`), after the blast (
 | Called from | `GameTurnEnd`, `BuildMap` |
 | Calls | `AddAToHL` |
 | Reads | `$FD3A`-`$FD48` (`work space $FD3A+`); `$FD73`-`$FDFA` (`work space $FD73+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD3A`-`$FD48` (`work space $FD3A+`); `$FFFA`-`$FFFB` (`work space $FFFA+`) |
+| Writes | `$FD3A`-`$FD48` (`work space $FD3A+`) |
 
 ### `CountRobots` (`$BB40`)
 
@@ -1335,8 +1316,7 @@ Counts the robot records whose +1 (the map cell's high byte) is not 0: slots 0-2
 | Runs (the first recording's game window) | 8 calls, 9,278 t-states own (0.00 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 80 calls, 92,334 t-states own (0.00 %) |
 | Called from | `CountRobots` |
-| Reads | `$DA01`-`$DCF1` (`Robots`, `EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF4`-`$FFF5` (`work space $FFF4+`) |
+| Reads | `$DA01`-`$DCF1` (`Robots+1`, `EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `GiveFactory` (`$BB61`)
 
@@ -1423,8 +1403,8 @@ Takes the first free record of Buildings (56 x 3 bytes: the cell, the type; a hi
 | Runs (the first recording's game window) | 29 calls, 23,142 t-states own (0.01 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 46 calls, 55,867 t-states own (0.00 %) |
 | Called from | `GiveFactory`, `GiveWarbase` (tail), `PlaceBases` |
-| Reads | `$DF35`-`$E0D4` (`Map`); `$E3A0`-`$E675` (`Map`); `$E6F2`-`$E716` (`Map`); `$E837`-`$E893` (`Map`); `$EBE3`-`$EBE5` (`Map`); `$ED3C`-`$ED3E` (`Map`); 3 more ranges |
-| Writes | `$DF35`-`$E0D4` (`Map`); `$E3A0`-`$E675` (`Map`); `$E6F2`-`$E716` (`Map`); `$E837`-`$E893` (`Map`); `$EBE3`-`$EBE5` (`Map`); `$ED3C`-`$ED3E` (`Map`); 3 more ranges |
+| Reads | `$DF35`-`$E0D4` (`Map+565`); `$E3A0`-`$E675` (`Map+1696`); `$E6F2`-`$E716` (`Map+2546`); `$E837`-`$E893` (`Map+2871`); `$EBE3`-`$EBE5` (`Map+3811`); `$ED3C`-`$ED3E` (`Map+4156`); 3 more ranges |
+| Writes | `$DF35`-`$E0D4` (`Map+565`); `$E3A0`-`$E675` (`Map+1696`); `$E6F2`-`$E716` (`Map+2546`); `$E837`-`$E893` (`Map+2871`); `$EBE3`-`$EBE5` (`Map+3811`); `$ED3C`-`$ED3E` (`Map+4156`); 3 more ranges |
 
 ### `RemoveBuilding` (`$BC5D`)
 
@@ -1454,7 +1434,7 @@ The resulting map: the player's warbase at (22,9), the enemy's at (261,8), (369,
 | Called from | `NewGameSetup` |
 | Calls | `PutShipOnMap`, `CountBases`, `GiveWarbase`, `PlaceScenery`, `PlaceBases` |
 | Reads | `$D800`-`$D8FE` (`RadarOwn`); `$DD00`-`$FCFE` (`Map`, `MapTail`, `work space $FCE9+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$D800`-`$D8FF` (`RadarOwn`); `$DD00`-`$FCFF` (`Map`, `MapTail`, `work space $FCE9+`); `$FD52` (`work space $FD52+`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Writes | `$D800`-`$D8FF` (`RadarOwn`); `$DD00`-`$FCFF` (`Map`, `MapTail`, `work space $FCE9+`); `$FD52` (`work space $FD52+`) |
 
 ### `PlaceScenery` (`$BCD6`)
 
@@ -1498,7 +1478,6 @@ A shape is a list of 3-byte steps: a tile (0 = none) drawn as a 2 x 2 block at t
 | Called from | `PlaceScenery`, `PlaceBases` |
 | Calls | `StepCell`, `PutBlock`, `TableWord` |
 | Reads | `$BFB2`-`$C08C` (`ShapeWarbase`, `ShapeFactory`, `ShapeLowTiles`, `ShapeMidTiles` and 7 more); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF5` (`work space $FFF0+`) |
 
 ### `StepCell` (`$BD7F`)
 
@@ -1512,7 +1491,6 @@ HL a map cell, C the columns (signed), B the rows (signed). HL += C sign-extende
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 477 calls, 41,905 t-states own (0.00 %) |
 | Called from | `DrawShape` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF1` (`work space $FFF0+`) |
 
 ### `PutBlock` (`$BD91`)
 
@@ -1526,7 +1504,7 @@ Writes the cells (x, y), (x+1, y), (x, y-1), (x+1, y-1): the first with the tile
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 620 calls, 197,856 t-states own (0.01 %) |
 | Called from | `UpdateRobot`, `PlaceScenery`, `DrawShape` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$DD0C`-`$EEDF` (`Map`); `$EEF7`-`$F0DF` (`Map`); `$F0F7`-`$F2E1` (`Map`); `$F2F7`-`$F4E1` (`Map`); `$F4F7`-`$F8F8` (`Map`); `$F90C`-`$FAF8` (`Map`); 3 more ranges |
+| Writes | `$DD0C`-`$EEDF` (`Map+12`); `$EEF7`-`$F0DF` (`Map+4599`); `$F0F7`-`$F2E1` (`Map+5111`); `$F2F7`-`$F4E1` (`Map+5623`); `$F4F7`-`$F8F8` (`Map+6135`); `$F90C`-`$FAF8` (`Map+7180`); 2 more ranges |
 
 ## mainmenu
 
@@ -1542,7 +1520,7 @@ Verified on the own instance: the menu reads 0..START GAME, 1..KEYBOARD (cyan), 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 16 calls (`load` 15, `play` 1) |
 
 ### `MainMenuTitle` (`$C103`)
 
@@ -1611,8 +1589,8 @@ Waits until no key is held (each frame cycling the title's colours, `$C820`), pl
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 326,132 t-states own (0.01 %) |
 | Called from | `PrintInline` |
 | Calls | `MainMenuOptions` (tail), `MenuMusic`, `TitleColourCycle` |
-| Reads | `$C193`-`$C1A2` (`MainMenuKeys`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$D3E4` (`Controls`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Reads | `$C193`-`$C1A2` (`MainMenuKeys+1`, `MenuWaitKey`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$D3E4` (`Controls`) |
 
 ### `PrintTitle` (`$C1E3`)
 
@@ -1645,7 +1623,7 @@ Not run in any recording; read from the code and the ROM's entry points. The blo
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
 
 ### `LoadError` (`$C282`)
 
@@ -1655,7 +1633,7 @@ Beep with A = `$FA` (about 530 Hz for 0.24 s, the game standing still), WaitAnyK
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
 
 ### `SaveGame` (`$C28D`)
 
@@ -1667,7 +1645,7 @@ Not run in any recording; read from the code and the ROM's entry points. LoadGam
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
 
 ### `SaveGameBlocks` (`$C2C9`)
 
@@ -1675,7 +1653,7 @@ Not run in any recording; read from the code and the ROM's entry points. LoadGam
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 6 calls (`load` 6) |
 
 ### `SaveChecksum` (`$C30F`)
 
@@ -1685,7 +1663,7 @@ Out: DE = the plain 16-bit sum of the `$24D1` (9425) bytes `$D92B-$FDFB`, HL = `
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 12 calls (`load` 12) |
 
 ### `WaitAnyKey` (`$C325`)
 
@@ -1695,7 +1673,7 @@ Reads all eight half rows at once (IN with A = 0: every address line A8-A15 low)
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 12 calls (`load` 12) |
 
 ### `ControlsOptionAttr` (`$C336`)
 
@@ -1741,7 +1719,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `RedefineKeysBody` (`$C36A`)
 
@@ -1749,7 +1727,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadUpKey` (`$C388`)
 
@@ -1757,7 +1735,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadDownKey` (`$C397`)
 
@@ -1765,7 +1743,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadLeftKey` (`$C3A6`)
 
@@ -1773,7 +1751,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadRightKey` (`$C3B5`)
 
@@ -1781,7 +1759,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadFireKey` (`$C3C4`)
 
@@ -1789,7 +1767,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadPauseKey` (`$C3D6`)
 
@@ -1797,7 +1775,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadAbortKey` (`$C3E5`)
 
@@ -1805,7 +1783,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `ReadSaveKey` (`$C3F4`)
 
@@ -1813,7 +1791,7 @@ Verified on the own instance: keys Q A O P M H B S gave KeyTable bf 10 48 / 7f 1
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 1 call (`load` 1) |
 
 ### `PrintKeyPrompt` (`$C40C`)
 
@@ -1823,7 +1801,7 @@ Called by the redefine-keys screen (`$C37F`, `$C38E`, ... `$C3EB`) once for each
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 calls (`load` 8) |
 
 ### `PrintKeyPromptName` (`$C424`)
 
@@ -1833,7 +1811,7 @@ The tail of PrintKeyPrompt: a JP to PrintInline with the caller's return address
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 calls (`load` 8) |
 
 ### `DefineKey` (`$C427`)
 
@@ -1847,7 +1825,7 @@ Experiment: key 4 at the menu, then Q, Q, A, O, P, SPACE, ENTER, CAPS SHIFT, SYM
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 calls (`load` 8) |
 
 ### `DefineKeyScan` (`$C430`)
 
@@ -1857,7 +1835,7 @@ Continues DefineKey after its inline text. On exit the entry is filled and the n
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 8 calls (`load` 8) |
 
 ### `KeyNameSymShiftEnd` (`$C479`)
 
@@ -1942,7 +1920,7 @@ The tone loop never returns: MenuInterrupt ends it by loading SP from `$FD08` wh
 | Called from | `MainMenuKeys` |
 | Calls | `BassIdlePad` |
 | Reads | `$C4C3` (`BassIdlePad`); `$FD0C` (`work space $FD0C+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD08`-`$FD0C` (`work space $FD08+`); `$FDFE`-`$FDFF` (`work space $FDFE+`); `$FFF8`-`$FFFB` (`work space $FFF8+`) |
+| Writes | `$FD08`-`$FD0C` (`work space $FD08+`); `$FDFE`-`$FDFF` (`work space $FDFE+`) |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `BassIdlePad` (`$C4C3`)
@@ -1957,7 +1935,7 @@ The tone loop runs LeadStep and BassStep in turn, about 122 T a turn. A step who
 | Called from | `MenuMusic`, `BassStep` (tail) |
 | Calls | `LeadStep` |
 | Reads | `$FD0C` (`work space $FD0C+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD0C` (`work space $FD0C+`); `$FFF8`-`$FFF9` (`work space $FFF8+`) |
+| Writes | `$FD0C` (`work space $FD0C+`) |
 
 ### `LeadStep` (`$C4CB`)
 
@@ -1971,7 +1949,6 @@ D counts the lead voice's period in loop turns. At 0 it reloads D with the note'
 | Called from | `BassIdlePad`, `BassStep` (tail) |
 | Calls | `LeadIdlePadTail`, `BassStep` (tail) |
 | Reads | `$FD0C` (`work space $FD0C+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF8`-`$FFFB` (`work space $FFF8+`) |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `LeadIdlePadTail` (`$C4E4`)
@@ -1986,7 +1963,7 @@ Write Input back and POP AF, then fall into BassStep. The recording of work/deep
 | Called from | `LeadStep` |
 | Calls | `BassStep` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD0C` (`work space $FD0C+`); `$FFF8`-`$FFF9` (`work space $FFF8+`) |
+| Writes | `$FD0C` (`work space $FD0C+`) |
 
 ### `BassStep` (`$C4E8`)
 
@@ -2000,7 +1977,6 @@ The bass voice's twin of LeadStep: E is its counter, the operands `$C4ED` (perio
 | Called from | `LeadStep` (tail), `LeadIdlePadTail` |
 | Calls | `BassIdlePad` (tail), `LeadStep` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 | Ports out | `$00FE` |
 
 ### `MenuInterrupt` (`$C4FD`)
@@ -2033,7 +2009,7 @@ HL' = the bass track position. A byte of 9 or more is a note: the byte is the pe
 | Called from | `MenuInterrupt`, `BassCall` (tail), `SetDrumTrack` (tail), `BassOn` (tail), `BassOff` (tail) |
 | Calls | `MusicDispatch` |
 | Reads | `$C678`-`$C67B` (`BassTrack`); `$C6BD`-`$C6C9` (`BassRiff`) |
-| Writes | `$C4ED`-`$C4F3` (`BassStep`) |
+| Writes | `$C4ED`-`$C4F3` (`BassStep+5`) |
 
 ### `LeadNextEvent` (`$C53B`)
 
@@ -2048,7 +2024,7 @@ The lead twin of BassNextEvent: DE' = the position, the note goes into `$C4D0` /
 | Called from | `MenuInterrupt`, `LeadCall` (tail), `LeadOn` (tail), `LeadOff` (tail) |
 | Calls | `MusicDispatch` |
 | Reads | `$C702` (`LeadTrack`); `$C789`-`$C7A6` (`LeadRiff`) |
-| Writes | `$C4D0`-`$C4D6` (`LeadStep`) |
+| Writes | `$C4D0`-`$C4D6` (`LeadStep+5`) |
 
 ### `BassCmd2` (`$C559`)
 
@@ -2109,7 +2085,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings run into, not called (`load`) |
 
 ### `LeadCommand` (`$C56E`)
 
@@ -2167,7 +2143,7 @@ A table entry: command 6 ends a pattern.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings run into, not called (`load`) |
 
 ### `BassCall` (`$C58D`)
 
@@ -2181,7 +2157,7 @@ One level only: the return position (the address operand's high byte) is kept in
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 66 t-states own (0.00 %) |
 | Called from | `BassCmd2` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Reads | `$C67C`-`$C67D` (`BassTrack`) |
+| Reads | `$C67C`-`$C67D` (`BassTrack+4`) |
 | Writes | `$FD54`-`$FD55` (`work space $FD54+`) |
 
 ### `LeadCall` (`$C599`)
@@ -2196,7 +2172,7 @@ The return position is kept in `$FD56`.
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 74 t-states own (0.00 %) |
 | Called from | `LeadCmd2` (tail) |
 | Calls | `LeadNextEvent` (tail) |
-| Reads | `$C703`-`$C704` (`LeadTrack`) |
+| Reads | `$C703`-`$C704` (`LeadTrack+1`) |
 | Writes | `$FD56`-`$FD57` (`work space $FD56+`) |
 
 ### `BassGoto` (`$C5A7`)
@@ -2225,7 +2201,7 @@ POP HL; EX DE,HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; EX DE,HL; JP `$C
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 2 calls (`load` 2) |
 
 ### `LeadReturn` (`$C5C3`)
 
@@ -2233,7 +2209,7 @@ POP HL; EX DE,HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; EX DE,HL; JP `$C
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | not reached in `game`, `deep`; in the other recordings 2 calls (`load` 2) |
 
 ### `SetDrumTrack` (`$C5CC`)
 
@@ -2247,7 +2223,7 @@ Writes aa into the main set's HL, the drum position (the frames left of the curr
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 76 t-states own (0.00 %) |
 | Called from | `BassCmd3` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Reads | `$C679`-`$C67A` (`BassTrack`) |
+| Reads | `$C679`-`$C67A` (`BassTrack+1`) |
 
 ### `DrumStep` (`$C5DB`)
 
@@ -2272,7 +2248,7 @@ HL = the drum position, called by MenuInterrupt when the drum's frames (C) run o
 | Runs (the first recording's game window) | 2 calls, 92 t-states own (0.00 %) |
 | Called from | `BassCmd4` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Writes | `$C4EF` (`BassStep`) |
+| Writes | `$C4EF` (`BassStep+7`) |
 
 ### `BassOff` (`$C63F`)
 
@@ -2284,7 +2260,7 @@ HL = the drum position, called by MenuInterrupt when the drum's frames (C) run o
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 43 t-states own (0.00 %) |
 | Called from | `BassCmd5` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Writes | `$C4EF` (`BassStep`) |
+| Writes | `$C4EF` (`BassStep+7`) |
 
 ### `LeadOn` (`$C648`)
 
@@ -2295,7 +2271,7 @@ HL = the drum position, called by MenuInterrupt when the drum's frames (C) run o
 | Runs (the first recording's game window) | 3 calls, 138 t-states own (0.00 %) |
 | Called from | `LeadCmd4` (tail) |
 | Calls | `LeadNextEvent` (tail) |
-| Writes | `$C4D2` (`LeadStep`) |
+| Writes | `$C4D2` (`LeadStep+7`) |
 
 ### `LeadOff` (`$C652`)
 
@@ -2307,7 +2283,7 @@ HL = the drum position, called by MenuInterrupt when the drum's frames (C) run o
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 43 t-states own (0.00 %) |
 | Called from | `LeadCmd5` (tail) |
 | Calls | `LeadNextEvent` (tail) |
-| Writes | `$C4D2` (`LeadStep`) |
+| Writes | `$C4D2` (`LeadStep+7`) |
 
 ### `MusicDispatch` (`$C65B`)
 
@@ -2371,7 +2347,7 @@ Continues ConstructionMenu after its text. The free slot's +8 is set to 4 and +`
 | Called from | `PrintInline` |
 | Calls | `PaintMenuCursor`, `PrintMenuResources`, `ShowRobotDesign` |
 | Reads | `$FD22`-`$FD28` (`work space $FD22+`) |
-| Writes | `$DA08`-`$DA5D` (`Robots`); `$FD1F`-`$FD2F` (`work space $FD1F+`) |
+| Writes | `$DA08`-`$DA5D` (`Robots+8`); `$FD1F`-`$FD2F` (`work space $FD1F+`) |
 
 ### `ConstructionMenuLoop` (`$CA0F`)
 
@@ -2389,7 +2365,7 @@ Experiment (general 10, electronics 1, chassis 2): bipod 3 -> chassis 0, general
 | Called from | `MenuPause` (tail) |
 | Calls | `MoveMenuCursor` (tail), `MenuPause` (tail), `StartRobot` (tail), `PrintMenuResources`, `ShowRobotDesign`, `Beep`, `AddAToHL`, `WaitKey` |
 | Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$FD0C` (`work space $FD0C+`); `$FD1F`-`$FD2F` (`work space $FD1F+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD21`-`$FD2F` (`work space $FD21+`); `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Writes | `$FD21`-`$FD2F` (`work space $FD21+`) |
 
 ### `RefundPart` (`$CAC1`)
 
@@ -2426,8 +2402,7 @@ The pause after every press (moves too); a shorter press falls into it and is lo
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 22 calls, 43,839,916 t-states own (1.74 %) |
 | Called from | `ConstructionMenuLoop` (tail) |
 | Calls | `ConstructionMenuLoop` (tail) |
-| Reads | `$CB4D` (`MenuPause`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFC`-`$FFFD` (`work space $FFFC+`) |
+| Reads | `$CB4D` (`MenuPauseLoop+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `StartRobot` (`$CB52`)
 
@@ -2441,7 +2416,7 @@ Refused (back to the menu after the pause) without a chassis (MenuParts bits 0-2
 | Called from | `ConstructionMenuLoop` (tail) |
 | Calls | `PlaceRobot`, `Beep`, `ClearViewBuffer`, `DrawPlayScreen` |
 | Reads | `$FD0D`-`$FD0F` (`work space $FD0D+`); `$FD21`-`$FD2F` (`work space $FD21+`) |
-| Writes | `$DA07`-`$DA5A` (`Robots`); `$FD22`-`$FD30` (`work space $FD22+`); `$FDFE`-`$FDFF` (`work space $FDFE+`) |
+| Writes | `$DA07`-`$DA5A` (`Robots+7`); `$FD22`-`$FD30` (`work space $FD22+`); `$FDFE`-`$FDFF` (`work space $FDFE+`) |
 
 ### `PaintMenuCursor` (`$CBA9`)
 
@@ -2467,7 +2442,7 @@ Also used by PaintMenuItem.
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 430 calls, 102,481 t-states own (0.00 %) |
 | Called from | `PaintMenuItem`, `PaintMenuCursor` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$5835`-`$583F` (screen); `$5895`-`$589F` (screen); `$58F5`-`$591E` (screen); `$5955`-`$59DE` (screen); `$59F7`-`$59FE` (screen); `$5A15`-`$5A3E` (screen); 3 more ranges |
+| Writes | `$5835`-`$583F` (screen); `$5895`-`$589F` (screen); `$58F5`-`$591E` (screen); `$5955`-`$59DE` (screen); `$59F7`-`$59FE` (screen); `$5A15`-`$5A3E` (screen); 2 more ranges |
 
 ### `PrintMenuResources` (`$CBE0`)
 
@@ -2505,7 +2480,7 @@ Called by `$CBE0` for each of the seven MenuResources (rows 9, 11-16). Patches t
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 203 calls, 9,135 t-states own (0.00 %) |
 | Called from | `PrintMenuResources` |
 | Calls | `PrintInline` |
-| Writes | `$CC11` (`MenuResourcePos`) |
+| Writes | `$CC11` (`MenuResourcePos+1`) |
 
 ### `PrintMenuResourceValue` (`$CC14`)
 
@@ -2528,8 +2503,8 @@ IY = the robot record being designed. Paints the attributes of the parts list (c
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 29 calls, 672,957 t-states own (0.03 %) |
 | Called from | `ConstructionMenuSetup`, `ConstructionMenuLoop` |
 | Calls | `DrawRobot`, `ClearViewBuffer`, `NextScreenLine`, `AddAToHL` |
-| Reads | `$6168`-`$666B` (`ViewBuffer`); `$667C`-`$667F` (`ViewBuffer`); `$6690`-`$6693` (`ViewBuffer`); `$66A4`-`$66A7` (`ViewBuffer`); `$66B8`-`$66BB` (`ViewBuffer`); `$66CC`-`$66CF` (`ViewBuffer`); 5 more ranges |
-| Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 10 more ranges |
+| Reads | `$6168`-`$666B` (`ViewBuffer+1640`); `$667C`-`$667F` (`ViewBuffer+2940`); `$6690`-`$6693` (`ViewBuffer+2960`); `$66A4`-`$66A7` (`ViewBuffer+2980`); `$66B8`-`$66BB` (`ViewBuffer+3000`); `$66CC`-`$66CF` (`ViewBuffer+3020`); 5 more ranges |
+| Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 9 more ranges |
 
 ### `PlaceRobot` (`$CC7C`)
 
@@ -2543,8 +2518,8 @@ Writes +`$02`/+`$03` = HL (x), +`$04` = B (y), +`$00`/+`$01` = the map cell (Map
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,681 calls, 2,081,662 t-states own (0.08 %) |
 | Called from | `UpdateRobot` (tail), `RobotStep` (tail), `EnemyCommander`, `StartRobot` |
 | Calls | `MapCell`, `ToggleRadarDot` (tail) |
-| Reads | `$DA04`-`$DA5A` (`Robots`); `$DB84`-`$DBAA` (`EnemyRobots`); `$DBC4`-`$DBEA` (`EnemyRobots`); `$DC04`-`$DC5A` (`EnemyRobots`); `$DC74`-`$DCCA` (`EnemyRobots`); `$DCE4`-`$DCFA` (`EnemyRobots`); 7 more ranges |
-| Writes | `$DA00`-`$DA54` (`Robots`); `$DB80`-`$DBE4` (`EnemyRobots`); `$DC00`-`$DC54` (`EnemyRobots`); `$DC70`-`$DCC4` (`EnemyRobots`); `$DCE0`-`$DCF4` (`EnemyRobots`); `$DF67`-`$E065` (`Map`); 6 more ranges |
+| Reads | `$DA04`-`$DA5A` (`Robots+4`); `$DB84`-`$DBAA` (`EnemyRobots+4`); `$DBC4`-`$DBEA` (`EnemyRobots+68`); `$DC04`-`$DC5A` (`EnemyRobots+132`); `$DC74`-`$DCCA` (`EnemyRobots+244`); `$DCE4`-`$DCFA` (`EnemyRobots+356`); 7 more ranges |
+| Writes | `$DA00`-`$DA54` (`Robots`); `$DB80`-`$DBE4` (`EnemyRobots`); `$DC00`-`$DC54` (`EnemyRobots+128`); `$DC70`-`$DCC4` (`EnemyRobots+240`); `$DCE0`-`$DCF4` (`EnemyRobots+352`); `$DF67`-`$E065` (`Map+615`); 5 more ranges |
 
 ### `ShipCell` (`$CCA0`)
 
@@ -2559,7 +2534,6 @@ Falls into MapCell. Used by `$A62D`, `$B01D` (clear the ship's bit 7) and `$B024
 | Called from | `NewGameSetup`, `PlayLoop`, `LiftShipFromMap`, `PutShipOnMap` |
 | Calls | `MapCell` |
 | Reads | `$FD0D`-`$FD0F` (`work space $FD0D+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF8`-`$FFF9` (`work space $FFF8+`) |
 
 ### `MapCell` (`$CCA6`)
 
@@ -2573,7 +2547,6 @@ H += 2*A + `$DD`. The map lookup of the whole game (127962 calls in the deep rec
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 127,962 calls, 3,712,513 t-states own (0.15 %) |
 | Called from | `GameTurnEnd`, `CheckShipMove`, `GroundUnderFootprint`, `MoveShot`, `EnemyCommander`, `SetBaseOwner` (tail), `PlaceRobot`, `ShipCell`, `DrawCellObject` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE6`-`$FFE7` (`work space $FFE6+`); `$FFF8`-`$FFF9` (`work space $FFF8+`) |
 
 ### `Beep` (`$CCAC`)
 
@@ -2586,7 +2559,6 @@ B = A is the DJNZ delay of each half-period, C = 0 counts 256 speaker toggles (b
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 259 calls, 51,902,621 t-states own (2.06 %) |
 | Called from | `ShowOrderMiles`, `SetOrder`, `ListMenu`, `ConstructionMenuLoop`, `MoveMenuCursor`, `StartRobot` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF4`-`$FFF9` (`work space $FFF4+`) |
 | Ports out | `$00FE`, `$10FE` |
 
 ## view
@@ -2622,8 +2594,8 @@ Clears the deferred ship position `$FD11` and draws the ship's shadow (sprite 1,
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,423 calls, 225,259,431 t-states own (8.94 %) |
 | Called from | `DrawView` |
 | Calls | `DrawCell`, `DrawSprite`, `AddAToHL` |
-| Reads | `$DD00`-`$EF24` (`Map`); `$F100`-`$F124` (`Map`); `$F300`-`$F324` (`Map`); `$F500`-`$F524` (`Map`); `$F700`-`$F724` (`Map`); `$F900`-`$F924` (`Map`); 3 more ranges |
-| Writes | `$CF3F` (`DrawSprite`); `$FD11`-`$FD12` (`work space $FD11+`); `$FFEE`-`$FFFB` (`work space $FFEE+`) |
+| Reads | `$DD00`-`$EF24` (`Map`); `$F100`-`$F124` (`Map+5120`); `$F300`-`$F324` (`Map+5632`); `$F500`-`$F524` (`Map+6144`); `$F700`-`$F724` (`Map+6656`); `$F900`-`$F924` (`Map+7168`); 3 more ranges |
+| Writes | `$CF3F` (`DrawSprite+18`); `$FD11`-`$FD12` (`work space $FD11+`) |
 
 ### `DrawCell` (`$CD18`)
 
@@ -2637,8 +2609,8 @@ Cell bits: 0-4 the block type, 5 the right half of a two-cell block (nothing dra
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 375,924 calls, 53,966,061 t-states own (2.14 %) |
 | Called from | `DrawMapObjects` |
 | Calls | `CheckObjectNeighbour`, `FindLatestBlock`, `DrawCellObject`, `DrawSprite` |
-| Reads | `$DD0C`-`$DD0D` (`Map`); `$DF0C`-`$EF24` (`Map`); `$F10C`-`$F524` (`Map`); `$F70C`-`$F724` (`Map`); `$F90C`-`$F924` (`Map`); `$FB0C`-`$FB22` (`Map`); 2 more ranges |
-| Writes | `$CF3F` (`DrawSprite`); `$E914` (`Map`); `$EB16` (`Map`); `$ED14`-`$ED18` (`Map`); `$F716` (`Map`); `$F916`-`$F918` (`Map`); 2 more ranges |
+| Reads | `$DD0C`-`$DD0D` (`Map+12`); `$DF0C`-`$EF24` (`Map+524`); `$F10C`-`$F524` (`Map+5132`); `$F70C`-`$F724` (`Map+6668`); `$F90C`-`$F924` (`Map+7180`); `$FB0C`-`$FB22` (`Map+7692`); 2 more ranges |
+| Writes | `$CF3F` (`DrawSprite+18`); `$E914` (`Map+3092`); `$EB16` (`Map+3606`); `$ED14`-`$ED18` (`Map+4116`); `$F716` (`Map+6678`); `$F916`-`$F918` (`Map+7190`); 1 more ranges |
 
 ### `CheckObjectNeighbour` (`$CD90`)
 
@@ -2652,8 +2624,7 @@ Used for the ship's neighbours: if HL has bit 6 (a robot, a building or a shot s
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 17,115 calls, 394,126 t-states own (0.02 %) |
 | Called from | `DrawCell` |
 | Calls | `KeepLaterCell` |
-| Reads | `$DD0D`-`$DD11` (`Map`); `$DF0D`-`$DF11` (`Map`); `$E10D`-`$F51B` (`Map`); `$F70D`-`$F71A` (`Map`); `$F90D`-`$F918` (`Map`); `$FB15`-`$FB17` (`Map`); 1 more ranges |
-| Writes | `$FFEE`-`$FFEF` (`work space $FFEE+`) |
+| Reads | `$DD0D`-`$DD11` (`Map+13`); `$DF0D`-`$DF11` (`Map+525`); `$E10D`-`$F51B` (`Map+1037`); `$F70D`-`$F71A` (`Map+6669`); `$F90D`-`$F918` (`Map+7181`); `$FB15`-`$FB17` (`Map+7701`); 1 more ranges |
 
 ### `FindLatestBlock` (`$CD96`)
 
@@ -2668,7 +2639,6 @@ Checks the blocks (bit 5 clear, type not 0) at (x-1,y+1), (x,y+1) (both only whe
 | Called from | `DrawCell`, `DrawCellObject` |
 | Calls | `CheckBlockNeighbour` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE6`-`$FFEF` (`work space $FFE6+`) |
 
 ### `CheckBlockNeighbour` (`$CDB8`)
 
@@ -2682,8 +2652,7 @@ Bit 5 set (the right half of a block) or type 0 (empty): nothing. Otherwise fall
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 19,379 calls, 666,365 t-states own (0.03 %) |
 | Called from | `FindLatestBlock` |
 | Calls | `KeepLaterCell` |
-| Reads | `$DF0D`-`$F522` (`Map`); `$F70D`-`$F722` (`Map`); `$F90D`-`$F922` (`Map`); `$FB15`-`$FB23` (`Map`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFEA`-`$FFED` (`work space $FFEA+`) |
+| Reads | `$DF0D`-`$F522` (`Map+525`); `$F70D`-`$F722` (`Map+6669`); `$F90D`-`$F922` (`Map+7181`); `$FB15`-`$FB23` (`Map+7701`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `KeepLaterCell` (`$CDBF`)
 
@@ -2708,7 +2677,6 @@ Walks the 48 records of Robots (16 bytes: slots 0-23 the player's, 24-47 the ene
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 12,724 calls, 46,728,007 t-states own (1.85 %) |
 | Called from | `NewGameSetup`, `GameTurnEnd`, `ObjectTop`, `ScanLane`, `MoveShot`, `DrawCellObject` |
 | Reads | `$DA00`-`$DCF1` (`Robots`, `EnemyRobots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE0`-`$FFF1` (`work space $FFE0+`) |
 
 ### `FindBuilding` (`$CDF5`)
 
@@ -2722,7 +2690,6 @@ Walks the 56 records of Buildings (3 bytes: the map cell address, the type) comp
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 7,301 calls, 17,552,864 t-states own (0.70 %) |
 | Called from | `NewGameSetup`, `ObjectTop`, `RemoveBuilding`, `DrawCellObject` |
 | Reads | `$FEFF`-`$FFA6` (`work space $FEFF+`) |
-| Writes | `$FFE6`-`$FFF3` (`work space $FFE6+`) |
 
 ### `DrawCellObject` (`$CE12`)
 
@@ -2736,8 +2703,8 @@ A robot whose +`$00`/+`$01` is HL goes to DrawMover. A building record goes to i
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 8,330 calls, 1,950,566 t-states own (0.08 %) |
 | Called from | `DrawCell` |
 | Calls | `MapCell`, `FindLatestBlock`, `FindRobot`, `FindBuilding`, `DrawMoverSprite` (tail), `DrawSprite`, `AddAToHL` |
-| Reads | `$CE56`-`$CE66` (`BuildingSprites`, `BuildingHeights`); `$DA02`-`$DA54` (`Robots`); `$F520` (`Map`); `$F922` (`Map`); `$FEFF`-`$FF00` (`work space $FEFF+`); `$FF4B`-`$FF4E` (`work space $FF4B+`) |
-| Writes | `$CF3F` (`DrawSprite`); `$DA20`-`$DA21` (`Robots`); `$F520` (`Map`); `$F922` (`Map`); `$FFE8`-`$FFF3` (`work space $FFE8+`) |
+| Reads | `$CE56`-`$CE66` (`BuildingSprites`, `BuildingHeights`); `$DA02`-`$DA54` (`Robots+2`); `$F520` (`Map+6176`); `$F922` (`Map+7202`); `$FEFF`-`$FF00` (`work space $FEFF+`); `$FF4B`-`$FF4E` (`work space $FF4B+`) |
+| Writes | `$CF3F` (`DrawSprite+18`); `$DA20`-`$DA21` (`Robots+32`); `$F520` (`Map+6176`); `$F922` (`Map+7202`) |
 
 ### `DrawMover` (`$CE68`)
 
@@ -2774,8 +2741,8 @@ Height starts at +`$0D` (the ground under the robot, 0 in the construction menu)
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1,496 calls, 527,522 t-states own (0.02 %) |
 | Called from | `ShowRobotDesign`, `DrawMoverSprite` (tail) |
 | Calls | `DrawRobotPart` |
-| Reads | `$DA07`-`$DA5D` (`Robots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$CF3F` (`DrawSprite`); `$FFE8`-`$FFF1` (`work space $FFE8+`) |
+| Reads | `$DA07`-`$DA5D` (`Robots+7`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$CF3F` (`DrawSprite+18`) |
 
 ### `DrawRobotPart` (`$CEFD`)
 
@@ -2788,8 +2755,8 @@ Sprite = `$16` + the parts table `$D6C8`[4 * part + direction], direction = the 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 4,380 calls, 1,254,224 t-states own (0.05 %) |
 | Called from | `DrawRobot` |
 | Calls | `DrawSprite`, `AddAToHL` |
-| Reads | `$CF3F` (`DrawSprite`); `$D6C8`-`$D6E7` (`PartSpriteTable`); `$D7B4`-`$D7BB` (`PartHeights`); `$DA08`-`$DA58` (`Robots`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$CF3F` (`DrawSprite`); `$FFE6`-`$FFEF` (`work space $FFE6+`) |
+| Reads | `$CF3F` (`DrawSprite+18`); `$D6C8`-`$D6E7` (`PartSpriteTable`); `$D7B4`-`$D7BB` (`PartHeights`); `$DA08`-`$DA58` (`Robots+8`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$CF3F` (`DrawSprite+18`) |
 
 ### `DrawSprite` (`$CF2D`)
 
@@ -2803,8 +2770,8 @@ The isometric projection: the half-byte column L = 2E + D - 24, the pixel row of
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 116,709 calls, 977,827,468 t-states own (38.82 %) |
 | Called from | `DrawMapObjects`, `DrawCell`, `DrawCellObject`, `DrawRobotPart` |
 | Calls | `TableWord`, `AddAToHL` |
-| Reads | `$5B09`-`$6777` (`ViewBuffer`); `$6980`-`$7C95` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 46 more); `$7D80`-`$8089` (`SprPhasersYp`, `SprPhasersYpRows`, `SprPhasersYpOdd`, `SprPhasersYpOddRows` and 4 more); `$8224`-`$88E1` (`SprElectronicsXp`, `SprElectronicsXpRows`, `SprElectronicsXpOdd`, `SprElectronicsXpOddRows` and 24 more); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); 2 more ranges |
-| Writes | `$5B09`-`$6777` (`ViewBuffer`); `$CFAF` (`DrawSprite`); `$FFDA`-`$FFF9` (`work space $FFDA+`) |
+| Reads | `$5B09`-`$6777` (`ViewBuffer+9`); `$6980`-`$7C95` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 46 more); `$7D80`-`$8089` (`SprPhasersYp`, `SprPhasersYpRows`, `SprPhasersYpOdd`, `SprPhasersYpOddRows` and 4 more); `$8224`-`$88E1` (`SprElectronicsXp`, `SprElectronicsXpRows`, `SprElectronicsXpOdd`, `SprElectronicsXpOddRows` and 24 more); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); 2 more ranges |
+| Writes | `$5B09`-`$612F` (`ViewBuffer+9`); `$6142`-`$618D` (`ViewBuffer+1602`); `$61A0`-`$61B9` (`ViewBuffer+1696`); `$61CC`-`$6777` (`ViewBuffer+1740`); `$CFAF` (`SpriteRowLoop+3`) |
 
 ### `DrawViewBackground` (`$CFD7`)
 
@@ -2819,7 +2786,6 @@ ClearViewBuffer, FillViewCorner (the solid top left corner), then the diagonal e
 | Called from | `NewGameSetup`, `DrawView` |
 | Calls | `ClearViewBuffer`, `FillViewCorner`, `DrawEdgeStrips` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 
 ### `ClearViewBuffer` (`$CFFE`)
 
@@ -2833,7 +2799,7 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,460 calls, 83,090,606 t-states own (3.30 %) |
 | Called from | `StartRobot`, `ShowRobotDesign`, `DrawViewBackground` |
 | Reads | `$5B00`-`$5B1E` (`ViewBuffer`); `$FD08`-`$FD09` (`work space $FD08+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$5B00`-`$609F` (`ViewBuffer`); `$60EE`-`$613F` (`ViewBuffer`); `$61BE`-`$621F` (`ViewBuffer`); `$627E`-`$63CF` (`ViewBuffer`); `$63EE`-`$647F` (`ViewBuffer`); `$64EE`-`$660F` (`ViewBuffer`); 4 more ranges |
+| Writes | `$5B00`-`$5B1F` (`ViewBuffer`); `$63F6`-`$6405` (`ViewBuffer+2294`); `$643C`-`$6443` (`ViewBuffer+2364`); `$6588`-`$658B` (`ViewBuffer+2696`); `$FD08`-`$FD09` (`work space $FD08+`) |
 
 ### `FillViewCorner` (`$D026`)
 
@@ -2847,8 +2813,8 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,424 calls, 34,191,334 t-states own (1.36 %) |
 | Called from | `DrawViewBackground` |
 | Calls | `AddAToHL` |
-| Reads | `$D038`-`$D041` (`FillViewCorner`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$5B00`-`$5D95` (`ViewBuffer`); `$5DA8`-`$5DA9` (`ViewBuffer`); `$5DBC`-`$5DBD` (`ViewBuffer`); `$5DD0`-`$5DD1` (`ViewBuffer`); `$5DE4`-`$5DE5` (`ViewBuffer`); `$5DF8`-`$5DF9` (`ViewBuffer`); 3 more ranges |
+| Reads | `$D038`-`$D041` (`CornerRowLoop+2`, `CornerByteLoop`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$5B00`-`$5D95` (`ViewBuffer`); `$5DA8`-`$5DA9` (`ViewBuffer+680`); `$5DBC`-`$5DBD` (`ViewBuffer+700`); `$5DD0`-`$5DD1` (`ViewBuffer+720`); `$5DE4`-`$5DE5` (`ViewBuffer+740`); `$5DF8`-`$5DF9` (`ViewBuffer+760`); 2 more ranges |
 
 ### `DrawEdgeStrips` (`$D057`)
 
@@ -2862,7 +2828,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 10,272 calls, 31,691,777 t-states own (1.26 %) |
 | Called from | `DrawViewBackground` (tail) |
 | Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$5B0A`-`$5EAD` (`ViewBuffer`); `$6512`-`$6717` (`ViewBuffer`); `$6728`-`$672B` (`ViewBuffer`); `$673C`-`$673F` (`ViewBuffer`); `$6750`-`$6753` (`ViewBuffer`); `$6764`-`$6767` (`ViewBuffer`); 2 more ranges |
+| Writes | `$5B0A`-`$5EAD` (`ViewBuffer+10`); `$6512`-`$6717` (`ViewBuffer+2578`); `$6728`-`$672B` (`ViewBuffer+3112`); `$673C`-`$673F` (`ViewBuffer+3132`); `$6750`-`$6753` (`ViewBuffer+3152`); `$6764`-`$6767` (`ViewBuffer+3172`); 1 more ranges |
 
 ### `CopyViewToScreen` (`$D071`)
 
@@ -2876,7 +2842,7 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 3,422 calls, 256,270,000 t-states own (10.17 %) |
 | Called from | `DrawView` (tail) |
 | Reads | `$5B00`-`$677F` (`ViewBuffer`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 2 more ranges |
+| Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 1 more ranges |
 
 ## screen
 
@@ -2895,7 +2861,7 @@ Clears the 6912 bytes of pixels and attributes from `$4000` and sets the border 
 | Called from | `ConstructionMenu`, `DrawPlayScreen` |
 | Calls | `ClearScreenFill` |
 | Reads | `$4000`-`$5AFE` (screen); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4000`-`$5AFF` (screen); `$FFF6`-`$FFFB` (`work space $FFF6+`) |
+| Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$00FE` |
 
 ### `ClearScreenFill` (`$D0C7`)
@@ -2909,7 +2875,7 @@ An entry only because the recording work/game started inside this LDIR; no code 
 | Runs (the first recording's game window) | 1 call, 324,839 t-states own (0.12 %) |
 | Called from | `ClearScreen` |
 | Reads | `$4000`-`$5AFE` (screen); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4001`-`$5AFF` (screen); `$FFFA`-`$FFFB` (`work space $FFFA+`) |
+| Writes | `$4001`-`$5AFF` (screen) |
 
 ### `DrawPlayScreen` (`$D0CA`)
 
@@ -2926,7 +2892,7 @@ PlayScreenText ends the code: PrintInline returns into ShowStatusPanel, so the p
 | Called from | `NewGameSetup`, `StartRobot` |
 | Calls | `DrawView`, `ClearScreen`, `NextScreenLine`, `AddAToHL`, `PrintInline` |
 | Reads | `$4000`-`$4014` (screen); `$4701`-`$4713` (screen); `$50A1`-`$50B3` (screen); `$57A0`-`$57B4` (screen); `$5800`-`$5AFE` (screen); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4000`-`$50B5` (screen); `$5100`-`$51A0` (screen); `$51B5` (screen); `$5200`-`$52A0` (screen); `$52B5` (screen); `$5300`-`$53A0` (screen); 10 more ranges |
+| Writes | `$4000`-`$50B5` (screen); `$5100`-`$51A0` (screen); `$51B5` (screen); `$5200`-`$52A0` (screen); `$52B5` (screen); `$5300`-`$53A0` (screen); 9 more ranges |
 
 ### `ShowStatusPanel` (`$D1E5`)
 
@@ -2970,7 +2936,6 @@ Seven lines from Resources (`$FD22`: general, electronics, nuclear, phasers, mis
 | Called from | `PrintInline` |
 | Calls | `PrintNumber2`, `PrintInline`, `PrintNewline` |
 | Reads | `$FD22`-`$FD28` (`work space $FD22+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 
 ### `PrintInsgCounts` (`$D2C1`)
 
@@ -3091,7 +3056,7 @@ Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScr
 | Called from | `ConstructionMenu` |
 | Calls | `PrevScreenLine` |
 | Reads | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4612` (screen); `$4630`-`$4712` (screen); 9 more ranges |
-| Writes | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4612` (screen); `$4630`-`$4712` (screen); 2 more ranges |
+| Writes | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4612` (screen); `$4630`-`$4712` (screen); 1 more ranges |
 
 ### `NextScreenLine` (`$D32A`)
 
@@ -3105,7 +3070,6 @@ The Spectrum's screen order: the line inside a character row is bits 0-2 of H, t
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 561,880 calls, 16,687,712 t-states own (0.66 %) |
 | Called from | `ShowRobotDesign`, `DrawPlayScreen`, `PrintBigChar`, `ShowRadar` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF6`-`$FFF7` (`work space $FFF6+`) |
 
 ### `PrevScreenLine` (`$D339`)
 
@@ -3130,8 +3094,7 @@ The sprite table lookup of DrawSprite, also ConstructionMenu (PartIconLoop `$C88
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 116,855 calls, 6,429,419 t-states own (0.26 %) |
 | Called from | `DrawShape`, `ConstructionMenu`, `DrawSprite` |
 | Calls | `AddAToHL` |
-| Reads | `$BF9C`-`$BFB1` (`ShapeTable`); `$D6E8`-`$D6FD` (`SpriteTable`); `$D724`-`$D79B` (`SpriteTable`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFE2`-`$FFF5` (`work space $FFE2+`) |
+| Reads | `$BF9C`-`$BFB1` (`ShapeTable`); `$D6E8`-`$D6FD` (`SpriteTable`); `$D724`-`$D79B` (`SpriteTable+60`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `AddAToHL` (`$D351`)
 
@@ -3145,7 +3108,6 @@ A changed to the new H; BC, DE kept. Used everywhere a table is indexed by a byt
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 434,037 calls, 14,328,446 t-states own (0.57 %) |
 | Called from | `PaintMenuItem`, `TerrainTop`, `ObjectTop`, `SteerByOrder`, `SetStepDelay`, `EnemyCommander`, `CountBases`, `SetBaseOwner`, `TitleColourCycle`, `ConstructionMenu`, `ConstructionMenuLoop`, `PrintMenuResources`, `ShowRobotDesign`, `DrawMapObjects`, `DrawCellObject`, `DrawRobotPart`, `DrawSprite`, `FillViewCorner`, `DrawPlayScreen`, `TableWord`, `PrintBigChar` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFDE`-`$FFF5` (`work space $FFDE+`) |
 
 ### `Random` (`$D358`)
 
@@ -3159,7 +3121,7 @@ A 32-bit shift register at RandomSeed `$FD00-$FD03` (big end first, seeded `$39`
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 43,256 calls, 8,393,927 t-states own (0.33 %) |
 | Called from | `GameTurn`, `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander`, `SoundEffect` |
 | Reads | `$FD00`-`$FD03` (`work space $FD00+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$D371` (`Random`); `$FD00`-`$FD03` (`work space $FD00+`); `$FFF2`-`$FFF9` (`work space $FFF2+`) |
+| Writes | `$D371` (`Random+25`); `$FD00`-`$FD03` (`work space $FD00+`) |
 
 ## controls
 
@@ -3190,7 +3152,7 @@ The eight keys of KeyTable are rotated into C one by one (RL C, starting from C 
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 9,814 calls, 6,969,784 t-states own (0.28 %) |
 | Called from | `WaitKey` |
 | Reads | `$D3CC`-`$D3E4` (`KeyTable`, `Controls`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD0C` (`work space $FD0C+`); `$FFF0`-`$FFFB` (`work space $FFF0+`) |
+| Writes | `$FD0C` (`work space $FD0C+`) |
 | Ports in | `$001F`, `$7FFE`, `$DFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
 
 ## print
@@ -3223,7 +3185,6 @@ The clock (`$AD90`, 6828 calls: "20.20") and the robot counts of the panel.
 | Called from | `GameTurnEnd`, `PrintInsgCounts`, `PrintHumnRobots` (tail) |
 | Calls | `PrintTensUnits` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 
 ### `PrintNumber5` (`$D3F3`)
 
@@ -3238,7 +3199,6 @@ Used by `$AD90` for the day number ("DAY:    4"). Falls into PrintNumber3.
 | Called from | `GameTurnEnd` |
 | Calls | `PrintDigit` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 
 ### `PrintNumber3` (`$D401`)
 
@@ -3252,7 +3212,6 @@ The operand `$FF9C` is -100 (the source writes it so with @isub; as a label it w
 | Called from | `ShowStrengthValue`, `PrintMenuTotal` (tail) |
 | Calls | `PrintDigit` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFFA`-`$FFFB` (`work space $FFFA+`) |
 
 ### `PrintTensUnits` (`$D407`)
 
@@ -3267,7 +3226,6 @@ HL = the value (0-99, else the tens "digit" runs past 9: 200 prints as "D0"), E 
 | Called from | `PrintNumber2` (tail), `PrintNumber2Zero` (tail) |
 | Calls | `PrintDigit`, `PrintCharKeep` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF4`-`$FFFB` (`work space $FFF4+`) |
 
 ### `PrintDigit` (`$D413`)
 
@@ -3282,7 +3240,6 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 | Called from | `PrintNumber5`, `PrintNumber3`, `PrintTensUnits` |
 | Calls | `PrintCharKeep` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF9` (`work space $FFF0+`) |
 
 ### `PrintCharKeep` (`$D427`)
 
@@ -3297,7 +3254,6 @@ PrintChar in the alternate registers: the caller's BC, DE, HL are kept (the numb
 | Called from | `ShowStrengthValue` (tail), `GameTurnEnd`, `PrintDigitColumn`, `PrintTensUnits` (tail), `PrintDigit` |
 | Calls | `PrintChar` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF8`-`$FFF9` (`work space $FFF8+`) |
 
 ### `PrintInline` (`$D42D`)
 
@@ -3312,7 +3268,6 @@ In: the string after the CALL. Pops the return address, takes a byte, pushes the
 | Called from | `RobotMenuShow`, `ShowOrder`, `ShowStrength`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `GameTurn`, `MainMenuOptions`, `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option`, `PrintTitle`, `ControlsOptionAttr`, `ConstructionMenu`, `PrintMenuResources`, `PrintMenuResource`, `DrawPlayScreen`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `ClearPanel`, `ClearPanelLine` |
 | Calls | `ShowOrder`, `ShowOrderMiles`, `ShowStrengthValue`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `GameTurnEnd`, `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option`, `MainMenuKeys`, `PrintTitleEnd`, `ControlsOptionPlain`, `ControlsOptionChosen`, `ConstructionMenuSetup`, `PrintMenuTotal`, `PrintMenuResourceValue`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `PrintHumnRobots`, `ClearPanelLines`, `ClearPanelNext`, `PrintControl` |
 | Reads | `$A738`-`$ABB8` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 35 more); `$AD88`-`$AD8F` (`ClockPos`); `$C109`-`$C191` (`MenuStartText`, `MenuKeyboardOption`, `MenuKeyboardText`, `MenuKempstonOption` and 3 more); `$C1E6`-`$C1FB` (`TitleText`); `$C33F`-`$C348` (`OptionAttrPlain`, `ControlsOptionPlain`, `OptionAttrChosen`); `$C8BE`-`$C9E6` (`ConstructionTitleText`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); 3 more ranges |
-| Writes | `$FFF4`-`$FFFD` (`work space $FFF4+`) |
 
 ### `PrintControl` (`$D43C`)
 
@@ -3326,8 +3281,8 @@ In: the string after the CALL. Pops the return address, takes a byte, pushes the
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 31,909 calls, 3,421,937 t-states own (0.14 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintNewline` (tail), `SetPrintPos` (tail), `PrintChar` (tail), `PrintBigChar` (tail) |
-| Reads | `$A739`-`$A831` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A978`-`$A98D` (`OrdersMenuText`); `$AAD9`-`$AB80` (`DestroyMenuText`, `DestroyMenuChoose`, `CaptureMenu`, `CaptureMenuText`); `$AD89`-`$AD8E` (`ClockPos`); `$C10A`-`$C16C` (`MenuStartText`, `MenuKeyboardOption`, `MenuKeyboardText`, `MenuKempstonOption` and 3 more); `$C1E7`-`$C1F5` (`TitleText`); 6 more ranges |
-| Writes | `$FD13`-`$FD17` (`work space $FD13+`); `$FD31`-`$FD32` (`work space $FD31+`); `$FFF0`-`$FFF9` (`work space $FFF0+`) |
+| Reads | `$A739`-`$A831` (`RobotMenuText+1`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A978`-`$A98D` (`OrdersMenuText+1`); `$AAD9`-`$AB80` (`DestroyMenuText+1`, `DestroyMenuChoose`, `CaptureMenu`, `CaptureMenuText`); `$AD89`-`$AD8E` (`ClockPos+1`); `$C10A`-`$C16C` (`MenuStartText+1`, `MenuKeyboardOption`, `MenuKeyboardText`, `MenuKempstonOption` and 3 more); `$C1E7`-`$C1F5` (`TitleText+1`); 6 more ranges |
+| Writes | `$FD13`-`$FD17` (`work space $FD13+`); `$FD31`-`$FD32` (`work space $FD31+`) |
 
 ### `PrintNewline` (`$D470`)
 
@@ -3342,7 +3297,7 @@ PrintRow + 1, then SetPrintPos. Reached by code 3 inside PrintInline and called 
 | Called from | `GameTurnEnd`, `PrintResourceValues`, `PrintDigitColumn`, `PrintControl` (tail) |
 | Calls | `SetPrintPos` (tail) |
 | Reads | `$FD31`-`$FD32` (`work space $FD31+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD31`-`$FD32` (`work space $FD31+`); `$FFF2`-`$FFFB` (`work space $FFF2+`) |
+| Writes | `$FD31`-`$FD32` (`work space $FD31+`) |
 
 ### `SetPrintPos` (`$D493`)
 
@@ -3356,7 +3311,7 @@ In: B = row 0-23, C = column 0-31. PrintAddr = `$4000` + (B AND `$18`) * 256 + (
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 11,419 calls, 1,473,697 t-states own (0.06 %) |
 | Called from | `PrintControl` (tail), `PrintNewline` (tail) |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FD04`-`$FD15` (`work space $FD04+`); `$FFF0`-`$FFFB` (`work space $FFF0+`) |
+| Writes | `$FD04`-`$FD15` (`work space $FD04+`) |
 
 ### `PrintChar` (`$D4B1`)
 
@@ -3369,8 +3324,8 @@ The font is at `$6680` + 8*code (`$6780` for the space, right after the view buf
 | Runs (the first recording's game window) | 4,374 calls, 2,238,956 t-states own (0.83 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 55,512 calls, 28,159,096 t-states own (1.12 %) |
 | Called from | `PrintCharKeep`, `PrintControl` (tail) |
-| Reads | `$6780`-`$6787` (`Font`); `$67A8`-`$67BF` (`Font`); `$67E8`-`$6857` (`Font`); `$6878`-`$694F` (`Font`); `$FD04`-`$FD15` (`work space $FD04+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4016`-`$483F` (screen); `$4855`-`$57DF` (screen); `$57F6`-`$57FF` (screen); `$5816`-`$583F` (screen); `$5856`-`$5A1F` (screen); `$5A36`-`$5A5F` (screen); 4 more ranges |
+| Reads | `$6780`-`$6787` (`Font`); `$67A8`-`$67BF` (`Font+40`); `$67E8`-`$6857` (`Font+104`); `$6878`-`$694F` (`Font+248`); `$FD04`-`$FD15` (`work space $FD04+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$4016`-`$483F` (screen); `$4855`-`$57DF` (screen); `$57F6`-`$57FF` (screen); `$5816`-`$583F` (screen); `$5856`-`$5A1F` (screen); `$5A36`-`$5A5F` (screen); 3 more ranges |
 
 ### `PrintBigChar` (`$D4DA`)
 
@@ -3384,8 +3339,8 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 180 calls, 444,730 t-states own (0.02 %) |
 | Called from | `PrintControl` (tail) |
 | Calls | `NextScreenLine`, `AddAToHL` |
-| Reads | `$6780`-`$6787` (`Font`); `$67F0`-`$6807` (`Font`); `$6850`-`$6857` (`Font`); `$6888`-`$68CF` (`Font`); `$68E8`-`$68FF` (`Font`); `$6910`-`$692F` (`Font`); 2 more ranges |
-| Writes | `$4003`-`$47F4` (screen); `$4868`-`$4F94` (screen); `$50C0`-`$57E5` (screen); `$5803`-`$580C` (screen); `$5823`-`$5875` (screen); `$58AB`-`$58B4` (screen); 7 more ranges |
+| Reads | `$6780`-`$6787` (`Font`); `$67F0`-`$6807` (`Font+112`); `$6850`-`$6857` (`Font+208`); `$6888`-`$68CF` (`Font+264`); `$68E8`-`$68FF` (`Font+360`); `$6910`-`$692F` (`Font+400`); 2 more ranges |
+| Writes | `$4003`-`$47F4` (screen); `$4868`-`$4F94` (screen); `$50C0`-`$57E5` (screen); `$5803`-`$580C` (screen); `$5823`-`$5875` (screen); `$58AB`-`$58B4` (screen); 6 more ranges |
 
 ## interrupts
 
@@ -3471,8 +3426,8 @@ Each map cell of the window is one pixel: set when its block type is `$0F` or mo
 | Runs (the first recording's game window) | 1 call, 142,587 t-states own (0.05 %) |
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 1 call, 142,587 t-states own (0.01 %) |
 | Called from | `PutShipOnMap`, `RefreshRadar` |
-| Reads | `$D800`-`$D8FF` (`RadarOwn`); `$DA01`-`$ED7F` (`Robots`, `EnemyRobots`, `Map`); `$EF00`-`$EF7F` (`Map`); `$F100`-`$F17F` (`Map`); `$F300`-`$F37F` (`Map`); `$F500`-`$F57F` (`Map`); 5 more ranges |
-| Writes | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`); `$FFF2`-`$FFF3` (`work space $FFF2+`) |
+| Reads | `$D800`-`$D8FF` (`RadarOwn`); `$DA01`-`$ED7F` (`Robots+1`, `EnemyRobots`, `Map`); `$EF00`-`$EF7F` (`Map+4608`); `$F100`-`$F17F` (`Map+5120`); `$F300`-`$F37F` (`Map+5632`); `$F500`-`$F57F` (`Map+6144`); 5 more ranges |
+| Writes | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |
 
 ### `ToggleRadarDot` (`$D65A`)
 
@@ -3486,8 +3441,8 @@ The dot covers (x, y), (x+1, y) and the line above. Nothing outside the window (
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 22,759 calls, 1,798,165 t-states own (0.07 %) |
 | Called from | `BlinkShipDot` (tail), `UpdateRobot`, `RobotStep`, `PlaceRobot` (tail) |
 | Calls | `RadarDotAddress` |
-| Reads | `$D801`-`$D8FF` (`RadarOwn`); `$D98F`-`$D9FF` (`SaveBuildings`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$D801`-`$D8FF` (`RadarOwn`); `$D98F`-`$D9FF` (`SaveBuildings`); `$FFF8`-`$FFF9` (`work space $FFF8+`) |
+| Reads | `$D801`-`$D8FF` (`RadarOwn+1`); `$D98F`-`$D9FF` (`SaveBuildings+55`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$D801`-`$D8FF` (`RadarOwn+1`); `$D98F`-`$D9FF` (`SaveBuildings+55`) |
 
 ### `RadarDotAddress` (`$D67D`)
 
@@ -3501,4 +3456,3 @@ Column x - `$FD1C` must be 0-126, else it pops the return address and returns fr
 | Runs (the bot's game: robots built, orders given, factories captured, fights) | 22,759 calls, 3,053,599 t-states own (0.12 %) |
 | Called from | `ToggleRadarDot` |
 | Reads | `$FD1C`-`$FD1D` (`work space $FD1C+`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$FFF0`-`$FFF7` (`work space $FFF0+`) |

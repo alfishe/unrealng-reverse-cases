@@ -25,7 +25,7 @@
 ; module out, else a fixed delay (src/disk/driver.ann RoundWaitMusic). The wait
 ; between rounds is the driver's, not 50 frames.
 EndOfPlay:
-  LD (EndCodeLoad+$0001),A ; GS: the end code into EndCodeLoad, then WaitFrames
+  LD (EndCodeLoad+1),A     ; GS: the end code into EndCodeLoad, then WaitFrames
                            ; (the driver's RoundWait at run time) with A = the
                            ; code
   CALL WaitFrames

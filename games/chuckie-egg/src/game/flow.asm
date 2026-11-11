@@ -443,7 +443,7 @@ PlayLevelMessage:
   CALL Message
   LD DE,LiveMap
   LD BC,$02A0
-  LD HL,LevelMaps-$02A0
+  LD HL,LevelMaps-672
   LD A,(Level)
   AND $07
   INC A
@@ -512,7 +512,7 @@ LifeLostSlot:
   LD A,(HL)
   ADD HL,DE
   LD (HL),A
-  LD HL,PlayerLives-$0001
+  LD HL,PlayerLives-1
   ADD HL,DE
   DEC (HL)
   JR NZ,LifeLostNext
@@ -535,7 +535,7 @@ LifeLostNextLoop:
 LifeLostNextPlayer:
   INC A
   LD (Player),A
-  LD HL,PlayerLives-$0001
+  LD HL,PlayerLives-1
   LD E,A
   LD D,$00
   ADD HL,DE

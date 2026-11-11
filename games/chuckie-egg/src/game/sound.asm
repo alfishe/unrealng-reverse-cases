@@ -167,7 +167,7 @@ StartPhrase:
   LD A,(PhraseTimer)
   CP $FF
   RET NZ
-  LD HL,PhraseTable-$0002
+  LD HL,PhraseTable-2
 StartPhraseFind:
   INC HL
   INC HL

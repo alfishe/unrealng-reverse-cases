@@ -276,7 +276,7 @@ PlayerDeath:
   DEC A
   LD (DeathTimer),A
   JR Z,DeathOver
-  LD HL,DeathLeap-$0001   ; the step of this pass
+  LD HL,DeathLeap-1       ; the step of this pass
   LD B,$00
   ADD HL,BC
   LD A,(HL)

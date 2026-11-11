@@ -32,17 +32,17 @@ LzHere:
   LD HL,LzPutByte-LzHere  ; DE = LzPutByte
   ADD HL,BC
   EX DE,HL
-  LD HL,LzMatchCall+$0001-LzHere ; over the three CALL operands
+  LD HL,LzMatchCall+1-LzHere     ; over the three CALL operands
   ADD HL,BC
   LD (HL),E
   INC HL
   LD (HL),D
-  LD HL,LzLiteralCall+$0001-LzHere
+  LD HL,LzLiteralCall+1-LzHere
   ADD HL,BC
   LD (HL),E
   INC HL
   LD (HL),D
-  LD HL,LzRunCall+$0001-LzHere
+  LD HL,LzRunCall+1-LzHere
   ADD HL,BC
   LD (HL),E
   INC HL

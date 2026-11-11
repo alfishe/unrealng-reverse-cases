@@ -476,7 +476,7 @@ HudLampGlyphLine:
                           ; lit
   CALL PrintText
   LD HL,Attributes+96             ; column 0 of rows 3, 2, 1: attributes 7, $16, $16
-  LD DE,-$0020
+  LD DE,-32
   LD (HL),$07
   ADD HL,DE
   LD (HL),$16
@@ -1131,7 +1131,7 @@ SceneryLine:
   POP BC
   DEC C
   JR NZ,SceneryCell
-  LD BC,-$007F
+  LD BC,-127
   ADD HL,BC
   EXX
   DJNZ SceneryColumn

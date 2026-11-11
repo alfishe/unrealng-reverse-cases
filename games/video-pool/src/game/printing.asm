@@ -34,7 +34,7 @@ DrawPocketMarks:
 ;
 ; Used by the routine at DrawPocketMarks.
 PrintPocketMark:
-  LD DE,CHAR_SET+$02C0    ; CHAR_SET+704: the ROM's "x"
+  LD DE,CHAR_SET+704      ; CHAR_SET+704: the ROM's "x"
   PUSH HL
   CALL CopyGlyph
   POP HL

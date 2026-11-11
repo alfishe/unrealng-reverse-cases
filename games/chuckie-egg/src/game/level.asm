@@ -113,7 +113,7 @@ SetupLevelHud:
   INC L
   INC DE
   DJNZ SetupLevelHud
-  LD HL,Screen-$0002
+  LD HL,Screen-2
   LD (ScoreScreenAddr),HL
   LD A,(Players)
   LD HL,PlayerScores
@@ -320,7 +320,7 @@ SetupLevelKeys:
   LD DE,KeyTable
   LDIR
   LD BC,$0007
-  LD HL,Screen-$0002
+  LD HL,Screen-2
   LD A,(Player)
 SetupLevelScoreAddr:
   ADD HL,BC
@@ -364,7 +364,7 @@ SetupLevelPauseLoop:
   LD A,(Player)
   LD L,A
   LD H,$00
-  LD DE,PlayerLives-$0001
+  LD DE,PlayerLives-1
   ADD HL,DE
   LD C,A
   LD A,(HL)
@@ -414,7 +414,7 @@ FillAttrRowCell:
 ;
 ; Witness: 35 calls.
 LevelPhrase:
-  LD HL,LevelPhrases-$0001
+  LD HL,LevelPhrases-1
   LD A,R
   AND $07
   INC A

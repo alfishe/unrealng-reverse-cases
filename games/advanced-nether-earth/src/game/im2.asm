@@ -29,7 +29,7 @@ ImTable:
 ; (FLAGS2 bit 3). Then JP DiskModule ($C000 in bank 4).
 GameSave:
   LD (SaveReturn+$0001),SP ; keep SP in SaveReturn's LD SP
-  LD SP,GlueStack+$0049   ; GlueStack: bank 4 covers the game's stack
+  LD SP,GlueStack+73      ; GlueStack: bank 4 covers the game's stack
   LD IX,DiskSave          ; the module's save entry
   LD A,$14                ; bank 4: the disk module
   EI

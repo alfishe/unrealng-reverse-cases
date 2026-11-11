@@ -207,7 +207,7 @@ UfoShot:
                           ; set
   LD (HL),$FF
   EXX
-  LD BC,-$0004
+  LD BC,-4
   ADD HL,BC
   LD (HL),$00
   DEC HL
@@ -242,7 +242,7 @@ UfoAnimate:
                           ; place
   INC HL
   LD D,(HL)
-  LD BC,-$0005
+  LD BC,-5
   ADD HL,BC
   LD A,(HL)
   CALL UfoSetColour
@@ -305,7 +305,7 @@ UfoExplodeNext:
   LD D,(HL)               ; the next frame: past the last one the UFO is gone
   DEC HL
   LD E,(HL)
-  LD BC,-$0004
+  LD BC,-4
   ADD HL,BC
   LD A,(HL)
   INC A
@@ -387,7 +387,7 @@ UfoBombKindSet:
   LD (HL),$08             ; not dropped yet: drop it now
   PUSH HL
   PUSH BC
-  LD BC,-$000C            ; the record's handler word: is the UFO gone?
+  LD BC,-12               ; the record's handler word: is the UFO gone?
   ADD HL,BC
   POP BC
   LD D,(HL)
@@ -399,11 +399,11 @@ UfoBombKindSet:
   POP HL
   JR NZ,UfoBombDrop
   POP HL
-  LD BC,-$000A            ; UFO and bomb both gone: the record is spent
+  LD BC,-10               ; UFO and bomb both gone: the record is spent
   JP UfoRecordSpent
 UfoBombDrop:
   PUSH BC                 ; under the UFO: y + 8 / + 16, x + 16
-  LD BC,-$0005
+  LD BC,-5
   ADD HL,BC
   LD D,(HL)
   DEC HL
@@ -595,7 +595,7 @@ UfoBombDraw:
   LD D,(HL)
   DEC HL
   LD E,(HL)
-  LD BC,-$0004
+  LD BC,-4
   ADD HL,BC
   EX DE,HL
   CALL ScrollAdjustIfAlive
@@ -608,7 +608,7 @@ UfoBombNext:
   RET
 UfoBombEnd:
   POP HL                  ; the bomb ended: is the UFO gone too?
-  LD BC,-$000A
+  LD BC,-10
   PUSH HL
   ADD HL,BC
   LD D,(HL)

@@ -369,7 +369,7 @@ PrintText:
 PrintTextLoop:
   PUSH HL
   PUSH DE
-  LD BC,Font-$0100
+  LD BC,Font-256
   LD A,(HL)
   LD L,A
   LD H,$00

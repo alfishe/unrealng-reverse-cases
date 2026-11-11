@@ -292,9 +292,10 @@ LdStripe:
 ;
 ; Reached by the RET of LoadBlock through the address it pushed (LD
 ; HL,LoadExit; PUSH HL). With carry set (the parity right) it returns to
-; LoadGame. With carry clear (a parity error, a wrong flag, a break) it falls
-; into LoadFailed, a loop that writes the border colours 1, 2, 3 ... with no
-; exit: a bad load hangs with a striped border.
+; LoadGame. With carry clear (a parity error, a wrong flag, or the signal lost
+; after the sync; SPACE is never tested, LdSample has no RET NC) it falls into
+; LoadFailed, a loop that writes the border colours 1, 2, 3 ... with no exit: a
+; bad load hangs with a striped border.
 ;
 ; c1: L1 3 at $FF9A and at the RET C; LoadFailed not executed in c1, the only
 ; recording that loads the tape (stage 1's docs/03 3.3 said a failed block runs

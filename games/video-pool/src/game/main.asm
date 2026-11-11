@@ -44,7 +44,7 @@ GameRestart:
   LD I,A
   IM 2
   LD HL,Im2Table
-  LD DE,Im2Table+$0001
+  LD DE,Im2Table+1
   LD BC,$0100
   LD (HL),$FC
   LDIR

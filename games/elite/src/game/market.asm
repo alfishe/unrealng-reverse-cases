@@ -742,7 +742,7 @@ EquipLaserView:
   LD A,B
   AND A
   JR Z,EquipLaserDone
-  LD HL,LaserItems-$0001
+  LD HL,LaserItems-1
   CALL AddAToHL
   LD A,(HL)
   CALL EquipPrice

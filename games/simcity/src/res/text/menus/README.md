@@ -1,13 +1,18 @@
 # Menus and windows
 
 Menu descriptions as DrawMenu `$67C3` reads them, one item a line (the syntax is in each file's header and in
-tools/res_formats.py): `header N`, then `text`, `number` (a selectable line with a field), `action $ADDR` (the
-routine a click runs), `toggle $FLAG` (ON / OFF after it), `separator`, `end`. In the text `{tab}` is code `$21`,
+tools/res_formats.py): `header N`, then `text`, `number` (a selectable line with a field), `action ADDR` (the
+routine a click runs), `toggle FLAG` (ON / OFF after it), `separator`, `end`. In the text `{tab}` is code `$21`,
 `{byte F V M}` code 7 (a field: flag, value, maximum; the value the player edits lives in the text itself),
 `{word ...}` code 6 and `{long ...}` code 5.
 
-The `$ADDR` and `$FLAG` operands stay numbers: they are addresses in the code, but inside an INCBIN resource the
-kit cannot write them as labels (work/stage2/NOTES.md, kit gaps). Moving code means editing them here.
+These files are the source the build assembles: `tools/res_formats.py build` writes each as
+`build/res/text/menus/NAME.inc` (DB lines, a `DW` for each address, kit/resinc.py) and the game INCLUDEs it
+(`@res text/menus/NAME.bin include` in game.ann). `ADDR` and `FLAG` are the game's labels (`action SpeedFast`,
+`toggle AutoBulldoze`), so sjasmplus puts in their addresses: a routine that moves is followed, and a text that grows
+moves the code after it. An address no label names stays a number (`action $6703`, inside MenuInput). The labels
+the code uses inside a menu are written here too: `label NAME` before an item, `{=SpeedMarkFast}` before a letter,
+`{byte 1 TaxRate=7 20}` on a field's value byte; the build fails when a name is no label.
 
 | File | Address | Bytes | Readers | What |
 | --- | --- | ---: | --- | --- |

@@ -1,9 +1,11 @@
 # 11. Data reference
 
 Every data entry of the game image `$60F8`-`$FFFF`, in address order by module (`src/game/<module>.asm`):
-tables, buffers, records, variables, graphics, text. The name, the title and the description are the
+tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
+its entry, its size up to the next label. The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
-(`work/game`, local and not in the repository).
+(`work/game`, local and not in the repository), and, marked
+"(code)", the routines whose `LD` through `(nn)` reads or writes it where the recordings did not see them do so.
 Written by `kit/refdocs.py`.
 
 ## leftover
@@ -11,6 +13,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$60F8` | `BuildLeftover` | 58 | Build leftover: 38 unidentified bytes, then a copy of the CODE header of the game block. Never read, written or executed (l1sum.py --reads 60F8-6131: no build reads a byte). The first 16 bytes (`$0F` `$E0` `$1F` `$E0` 0 ...) look like the first rows of TitleMoon `$6132`, the next 22 are not code that any path reaches. `$611E-$612E` is a 17-byte CODE header: type 3, the name "MOON" + `$AF` (the CODE token) + five spaces, length `$9F08` (the game block's 40712 bytes), start `$60F8`, parameter `$80F8`. The header on the tape (block 3) reads "MOON      " and parameter `$8000`, so this is a copy from the build, not the tape's. Stage 1 put the name at `$611D`; it is at `$611F`. | - | - |
+| `$611E` | `LeftoverHeader` (`BuildLeftover`+38) | 20 | CODE header copy: type 3 | - | - |
 
 ## graphicsa
 
@@ -58,7 +61,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$8866` | `HeroesTable` | 70 | The heroes: ten records of three initials and a four-byte BCD score, best first (MIK 1200 ... PJS 120 in the image). Drawn by HeroesDrawTables; the tenth score `$88A8` is HiScoreEntry's threshold, and records shift down from the insert place (HeroesInsert). Not part of the tape block. h1 put MPA (score 1260) at the top. | `HeroesPrintRow`, `HiScoreEntry`, `PrintBcd`, `PrintText`, `ScoreCompare` | `HiScoreEntry` |
-| `$88AC` | `GreatestPoint` | 1 | THE GREATEST's course point (1-25, A-Z without O): `$18` = Y. The first byte of the tape block `$88AC-$89D9`. Written by GreatestEntry from `$B27C`; the HUD prints it after the hi-score (`$91DD` with `$9258`). Read in every build that drew the HUD (i1 12 reads). | `HudDraw`, `PrintText` | - |
+| `$88AC` | `GreatestPoint` | 1 | THE GREATEST's course point (1-25, A-Z without O): `$18` = Y. The first byte of the tape block `$88AC-$89D9`. Written by GreatestEntry from `$B27C`; the HUD prints it after the hi-score (`$91DD` with `$9258`). Read in every build that drew the HUD (i1 12 reads). | `HudDraw`, `PrintText` | `GreatestEntry` (code) |
 | `$88AD` | `GreatestName` | 21 | THE GREATEST's name, 20 letters (SPIKE NOTWELL), ended by `$1F` for `$FFD0`. Printed by HeroesDrawTables; GreatestEntry edits it in place (h2 typed STAGE ONE over SPIKE NOTWELL: the untyped tail stays, "STAGE ONEWELL"). | `PrintText` | - |
 | `$88C2` | `GreatestScore` | 4 | THE GREATEST's score, BCD (00 05 00 00 = 50000): the hi-score of the HUD. Read by the HUD (`$91DD`), HeroesDrawTables and HiScoreEntry (the GreatestEntry test). i1 24 reads. | `PrintBcd`, `PrintText`, `ScoreCompare` | - |
 | `$88C6` | `GreatestInitials` | 3 | THE GREATEST's initials (JAS) | `HeroesDrawTables`, `PrintText` | - |
@@ -70,6 +73,20 @@ Written by `kit/refdocs.py`.
 | `$8D53` | `GreatestNameField` | 5 | Entry field descriptor: THE GREATEST's 20 letters at `$88AD`, y `$7C`, x `$44`. Used by GreatestEntry `$8E96` (h2). | - | - |
 | `$8D58` | `GreatestInitialsField` | 5 | Entry field descriptor: the initials after the name, 3 letters into `$B289` at y `$A0`, x `$77`. Used by GreatestEntry `$8EB6` (h2). | - | - |
 | `$8DB1` | `HiScoreTexts` | 157 | The texts of the hi-score entry, printed in pieces; first INK 6 BRIGHT 1, printed after the player number. All printed by HiScoreEntry and GreatestEntry with `$FFD0`; the pieces are reused ("3" + the tail of "20 LETTERS MAXIMUM", "YOU ARE " without its AT for THE GREATEST, "PLEASE ENTER YOUR " again after the name). CongratulationsText `$8DB6`: "CONGRATULATIONS PLAYER " (the player digit follows) YouAreText `$8DDE`: "YOU ARE " without the AT (THE GREATEST) AnAtariHeroText `$8DF4`: "AN ATARI MP HERO", AT, "PLEASE ENTER YOUR " AtariHeroText `$8DF6`: " ATARI MP HERO" and the rest (after THE GREATEST) PleaseEnterText `$8E07`: "PLEASE ENTER YOUR " without the AT (after the name) LettersAtText `$8E27`: AT, INK 5 for the letters line LettersMaximumText `$8E2F`: " LETTERS MAXIMUM" (after a "3") GreatestAtText `$8E40`: AT for "YOU ARE THE GREATEST" InitialsAtText `$8E44`: AT for the initials prompt after the name | `PrintText` | - |
+| `$8DB6` | `CongratulationsText` (`HiScoreTexts`+5) | 37 | - | `PrintText` | - |
+| `$8DDB` | `YouAreAtText` (`HiScoreTexts`+42) | 3 | AT, then "YOU ARE " | `PrintText` | - |
+| `$8DDE` | `YouAreText` (`HiScoreTexts`+45) | 9 | - | `PrintText` | - |
+| `$8DE7` | `TheGreatestText` (`HiScoreTexts`+54) | 13 | "THE GREATEST" | `PrintText` | - |
+| `$8DF4` | `AnAtariHeroText` (`HiScoreTexts`+67) | 2 | - | `PrintText` | - |
+| `$8DF6` | `AtariHeroText` (`HiScoreTexts`+69) | 17 | - | `PrintText` | - |
+| `$8E07` | `PleaseEnterText` (`HiScoreTexts`+86) | 19 | - | `PrintText` | - |
+| `$8E1A` | `InitialsText` (`HiScoreTexts`+105) | 9 | "INITIALS" | `PrintText` | - |
+| `$8E23` | `NameText` (`HiScoreTexts`+114) | 4 | "NAME", then AT, INK 5 | `PrintText` | - |
+| `$8E27` | `LettersAtText` (`HiScoreTexts`+118) | 6 | - | `PrintText` | - |
+| `$8E2D` | `TwentyLettersText` (`HiScoreTexts`+124) | 2 | "20 LETTERS MAXIMUM" | `PrintText` | - |
+| `$8E2F` | `LettersMaximumText` (`HiScoreTexts`+126) | 17 | - | `PrintText` | - |
+| `$8E40` | `GreatestAtText` (`HiScoreTexts`+143) | 4 | - | - | - |
+| `$8E44` | `InitialsAtText` (`HiScoreTexts`+147) | 10 | - | - | - |
 
 ## gamestart
 
@@ -125,7 +142,11 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$A9AF` | `RoadFeed` | 96 | The road's feed strips: 32 bytes a strip, one a line of 160-191: plain road, then the crater's two walls. ScrollRoad copies the strip at `$B232` to FeedRoad every 2 passes. The life start (`$90D3`) and the crater handler (`$9A92`, x = `$EC`) set the plain strip, the crater handler the wall strips as the crater comes in from the right (RoadFeedWallA or RoadFeedWallB). l1sum --reads: every byte read (game 667, i1 1727 times each). | `ScrollRoad` | - |
+| `$A9CF` | `RoadFeedWallA` (`RoadFeed`+32) | 32 | a crater wall: `$FF` `$FF` `$7F` `$7F` `$3F` ... down to line 175, then nothing | `ScrollRoad` | - |
+| `$A9EF` | `RoadFeedWallB` (`RoadFeed`+64) | 32 | the other wall: `$FF` `$FF` `$FE` `$FE` `$FC` ... down to line 175, then nothing | `ScrollRoad` | - |
 | `$AAF0` | `JumpArcs` | 71 | The three jump arcs: y steps a pass, `$80` ends; back position (short), centre, forward (long). SpeedGovernor sets `$B221` to one of them from the buggy's x (JumpSpeeds `$AF68`), BuggyUpdate adds a byte a pass. The sums are 0: the buggy lands where it took off. l1sum --reads: all 71 bytes read. | `BuggyUpdate` | - |
+| `$AAFD` | `JumpArcCentre` (`JumpArcs`+13) | 25 | x = `$38`: 24 steps, 19 pixels up | `BuggyUpdate` | - |
+| `$AB16` | `JumpArcForward` (`JumpArcs`+38) | 33 | x > `$38`: 32 steps, 20 pixels up | `BuggyUpdate` | - |
 | `$AC31` | `WheelPaths` | 192 | The wheels' paths: 32 steps of y up, x for the left, middle and right wheel. Read by WheelsFly. The y steps (up positive) fall from 11 or 12 to -7 (the outer wheels) or -2 (the middle one): arcs; x steps -3, 0, +4. l1sum --reads: read in game, a1, g1, p2, h1, h2 (the deaths). | `WheelsFly` | - |
 | `$AE2E` | `ControlHandlers` | 12 | The six control readers by `$B259` - 1, in the options page's order Z X C V B K. Read by ControlsRead (l1sum --reads: `$AE38` a1 28 753, g1 922, ... i1 7202: the keyboard; `$AE2E` game 2296, `$AE30` game 643: c1's random keys chose Sinclair and Kempston; every word a1 7-8: the options page). | `ControlsRead` | - |
 | `$AF68` | `JumpSpeeds` | 12 | Three records by the buggy's position: jump arc, delay count. l1sum --reads: forward `$AF68` i1 7056 of 7200 (the immune runs held fast), centre `$AF6C` game 2663, back `$AF70` game 228 only. | `SpeedGovernor` | - |
@@ -134,12 +155,12 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B212` | `BuggyY` | 1 | The buggy's pixel line (top of its sprite), `$92` at each life start. Set with BuggyX at the life start (`$90EB` LD HL,`$3892`; `$90EE`: y `$92`, x `$38`) and by the jump in the buggy routine at `$AA0F` (`$AA46`, `$AA79`); read as a pair with BuggyX by the main loop (`$96C5`), by the shots (`$AD0E`) and by every object handler that tests a hit against the buggy (`$99F0`, `$9E1F`, `$9EEA`, `$9FCA`, `$A0BB`, `$A1C4`, `$A34C`). | `BoxOverlap`, `BuggyAirborne`, `BuggyErase`, `BuggyUpdate`, `FireShots` +2 | `BuggyUpdate`, `LifeStart` |
-| `$B213` | `BuggyX` | 1 | The buggy's x in pixels (left edge), `$38` at each life start. Read by the object handlers to place or aim at the buggy (`$9A2F`, `$9ACA`, `$9B27`, `$9F29`, `$9FF7`, `$A10E`). | `BoxOverlap`, `BuggyErase`, `BuggyUpdate`, `FireShots`, `MainLoop` +4 | `BuggyUpdate`, `LifeStart` |
+| `$B212` | `BuggyY` | 1 | The buggy's pixel line (top of its sprite), `$92` at each life start. Set with BuggyX at the life start (`$90EB` LD HL,`$3892`; `$90EE`: y `$92`, x `$38`) and by the jump in the buggy routine at `$AA0F` (`$AA46`, `$AA79`); read as a pair with BuggyX by the main loop (`$96C5`), by the shots (`$AD0E`) and by every object handler that tests a hit against the buggy (`$99F0`, `$9E1F`, `$9EEA`, `$9FCA`, `$A0BB`, `$A1C4`, `$A34C`). | `BoxOverlap`, `BuggyAirborne`, `BuggyErase`, `BuggyUpdate`, `FireShots` +3 | `BuggyUpdate`, `LifeStart` |
+| `$B213` | `BuggyX` | 1 | The buggy's x in pixels (left edge), `$38` at each life start. Read by the object handlers to place or aim at the buggy (`$9A2F`, `$9ACA`, `$9B27`, `$9F29`, `$9FF7`, `$A10E`). | `BoxOverlap`, `BuggyErase`, `BuggyUpdate`, `FireShots`, `MainLoop` +11 | `BuggyUpdate`, `LifeStart` |
 | `$B214` | `BuggyBoxHeight` | 1 | The buggy's collision box height, `$0D`. Read with BuggyBoxWidth by the box test at `$A7FE`; never written. | `BoxOverlap` | - |
 | `$B215` | `BuggyBoxWidth` | 1 | The buggy's collision box width, `$1D`. Read by the box test at `$A7FE`; never written. | `BoxOverlap` | - |
-| `$B216` | `DeathStep` | 1 | `$FF` while the buggy lives; 0 when hit, then 1-8 through the explosion frames. Set to `$FF` at the life start (`$90E5`), to 0 by the routine at `$A7DD` (a hit). The buggy routine at `$AA0F` counts it up and draws sprite `$1E` + DeathStep; the main loop (`$96BE`) ends the life when it reaches 8. Every hazard handler reads it to stop hitting a dead buggy (`$99DE`, `$9A61`, `$9A9B` ...). | `BuggyErase`, `BuggyKill`, `BuggyUpdate`, `FireShots`, `MainLoop` +12 | `BuggyKill`, `BuggyUpdate`, `LifeStart`, `MainLoop` |
-| `$B217` | `WreckStep` | 1 | The wreck pieces' step after a death. Set to `$FF` at the life start (`$90E8`), set at a hit (`$A7E5`) and by the main loop (`$96D6`); counted by the wreck routine at `$AB37` (`$AB3C`, `$AC18`, `$AC1C`). | `WheelErase`, `WheelsFly` | `BuggyKill`, `LifeStart`, `MainLoop`, `WheelsFly` |
+| `$B216` | `DeathStep` | 1 | `$FF` while the buggy lives; 0 when hit, then 1-8 through the explosion frames. Set to `$FF` at the life start (`$90E5`), to 0 by the routine at `$A7DD` (a hit). The buggy routine at `$AA0F` counts it up and draws sprite `$1E` + DeathStep; the main loop (`$96BE`) ends the life when it reaches 8. Every hazard handler reads it to stop hitting a dead buggy (`$99DE`, `$9A61`, `$9A9B` ...). | `BuggyErase`, `BuggyKill`, `BuggyUpdate`, `FireShots`, `MainLoop` +22 | `BuggyKill`, `BuggyUpdate`, `LifeStart`, `MainLoop`, `MainLoopPass` (code) |
+| `$B217` | `WreckStep` | 1 | The wreck pieces' step after a death. Set to `$FF` at the life start (`$90E8`), set at a hit (`$A7E5`) and by the main loop (`$96D6`); counted by the wreck routine at `$AB37` (`$AB3C`, `$AC18`, `$AC1C`). | `WheelErase`, `WheelsFly` | `BuggyKill`, `LifeStart`, `MainLoop`, `WheelsFly`, `MainLoopPass` (code) |
 | `$B218` | `WreckPath` | 2 | Pointer into the wreck pieces' flight path at `$AC31`. Set at `$AB5C`, read through IX at `$AB5F`, moved on at `$AC14`. | `WheelsFly` | `WheelsFly` |
 | `$B21A` | `WreckPiece1` | 2 | Wreck piece 1's position (low byte y, high byte x). Set at `$AB4A`, read and moved at `$AB63-$AB92` by the wreck routine at `$AB37`. | `WheelsFly` | `WheelsFly` |
 | `$B21C` | `WreckPiece2` | 2 | Wreck piece 2's position. `$AB50`, `$AB9E-$ABCD`. | `WheelsFly` | `WheelsFly` |
@@ -155,57 +176,71 @@ Written by `kit/refdocs.py`.
 | `$B22A` | `MiddleColumn` | 2 | Pointer to the next column of the middle strip to feed in. Set at `$9561`; read and moved at `$A8A5`/`$A8BA`. | `ScrollMiddleBand` | `ScenerySetup`, `ScrollMiddleBand` |
 | `$B22C` | `MiddleStart` | 2 | The middle strip's first column: MountainsStrip `$E340` or MoonBaseStrip `$E780`. Set by the routine at `$9541` (`$9559`) from the scenery byte; read at `$957A` and `$A8B7` (the wrap). | `ScenerySetup`, `ScrollMiddleBand` | `ScenerySetup` |
 | `$B22E` | `MiddleEnd` | 2 | The middle strip's end, compared at `$A8AC`. Set at `$955D`. | `ScrollMiddleBand` | `ScenerySetup` |
-| `$B230` | `ColourScheme` | 2 | Pointer to the scenery's colour set at `$9617` or `$961C`. Set by the routine at `$95B0` (`$95BC`); read through IX by `$95F2` and by the handlers that colour sprites (`$A053`, `$A12C`, `$A148`, `$A165` ...). | `SceneryColoursRepaint` | `SceneryColours` |
+| `$B230` | `ColourScheme` | 2 | Pointer to the scenery's colour set at `$9617` or `$961C`. Set by the routine at `$95B0` (`$95BC`); read through IX by `$95F2` and by the handlers that colour sprites (`$A053`, `$A12C`, `$A148`, `$A165` ...). | `SceneryColoursRepaint`, `LowFlyerExplodeHandler` (code), `LowFlyerHandler` (code), `PlantColourOff` (code), `PlantColourOn` (code) | `SceneryColours` |
 | `$B232` | `GroundProfile` | 2 | Pointer to the ground's current height profile. Set at the life start (`$9111`) and by the crater handler (`$9AB4`, `$9AC5`); read by the ground scroller at `$A93D`. | `ScrollRoad` | `LifeStart`, `ObjCrater` |
 | `$B234` | `GroundCountdown` | 1 | The ground scroller's pass counter. Set at `$90FA`; read and written at `$A937`/`$A94B`. | `ScrollRoad` | `LifeStart`, `ScrollRoad` |
-| `$B235` | `GroundSpeed` | 1 | The ground's step in pixels a pass, 4; never written. Read by every handler that moves an object with the ground (`$99E4`, `$9A67`, `$9AA2`, `$9B1E`, `$9EDE`, `$9F71` ...). | `ObjCrater`, `ObjRock`, `ObjRockExplode` | - |
-| `$B236` | `UfoWave` | 1 | The UFO wave's state, set by the UFO commands and by the UFO handler. Written at `$9833` and `$9B84`; read at `$9862`, `$987F`, `$9C0E`, `$9C52` ... | `CmdUfos` | `CmdUfos` |
-| `$B237` | `UfosLeave` | 1 | `$FF`: the UFOs fly off (the course command at `$98AA`); 0 at the life start. Set at `$90F4`, `$9B99` and `$9EAF`; read by the UFO handler at `$9BE6`. | - | `LifeStart` |
-| `$B238` | `ObjectsOff` | 1 | Nonzero: the main loop does not run the object list. Set at `$819E` (the demo's start, `$80`) and `$969B`; read by `$9745`. | `ObjectListRun` | `MainLoop` |
+| `$B235` | `GroundSpeed` | 1 | The ground's step in pixels a pass, 4; never written. Read by every handler that moves an object with the ground (`$99E4`, `$9A67`, `$9AA2`, `$9B1E`, `$9EDE`, `$9F71` ...). | `ObjCrater`, `ObjRock`, `ObjRockExplode`, `BoulderExplodeHandler` (code), `BoulderHandler` (code) +8 | - |
+| `$B236` | `UfoWave` | 1 | The UFO wave's state, set by the UFO commands and by the UFO handler. Written at `$9833` and `$9B84`; read at `$9862`, `$987F`, `$9C0E`, `$9C52` ... | `CmdUfos`, `UfoBombHandler` (code), `UfoHandler` (code) | `CmdUfos`, `UfoBombHandler` (code), `UfoHandler` (code) |
+| `$B237` | `UfosLeave` | 1 | `$FF`: the UFOs fly off (the course command at `$98AA`); 0 at the life start. Set at `$90F4`, `$9B99` and `$9EAF`; read by the UFO handler at `$9BE6`. | `UfoHandler` (code) | `LifeStart`, `UfoHandler` (code), `UfoRetreatTimer` (code) |
+| `$B238` | `ObjectsOff` | 1 | Nonzero: the main loop does not run the object list. Set at `$819E` (the demo's start, `$80`) and `$969B`; read by `$9745`. | `ObjectListRun` | `MainLoop`, `DemoPage` (code) |
 | `$B239` | `TimeShown` | 1 | Nonzero once this second's time is on screen; cleared each second. Cleared by the interrupt routine at `$7FAE` when FrameCount reaches 50; set at `$9223` after the time is printed; tested at `$922A`. | `HudPrintTime` | `HudDraw`, `HudPrintTime`, `Im2Clock` |
-| `$B23A` | `TapeKey` | 1 | The key read by the tape menu at `$8282`, tested at `$8309` | - | - |
-| `$B23B` | `PassCount` | 1 | A pass counter; its bit 2 blinks the mines. Incremented by the main loop (`$96E3`); read by the mine handler (`$9B42`): sprite `$11` + bit 2. | `MainLoop` | `MainLoop` |
-| `$B23C` | `SegmentWait` | 2 | Passes left before the course script runs its next segment. Set by the script command at `$976C` (`$9770`); counted down by the main loop (`$96E7`/`$96EB`). | `MainLoop` | `MainLoop`, `SegmentLength` |
+| `$B23A` | `TapeKey` | 1 | The key read by the tape menu at `$8282`, tested at `$8309` | `TapeLoadDone` (code) | `MenuCheckTape` (code) |
+| `$B23B` | `PassCount` | 1 | A pass counter; its bit 2 blinks the mines. Incremented by the main loop (`$96E3`); read by the mine handler (`$9B42`): sprite `$11` + bit 2. | `MainLoop`, `ObjMine` (code) | `MainLoop` |
+| `$B23C` | `SegmentWait` | 2 | Passes left before the course script runs its next segment. Set by the script command at `$976C` (`$9770`); counted down by the main loop (`$96E7`/`$96EB`). | `MainLoop`, `MainLoopPass` (code) | `MainLoop`, `SegmentLength`, `MainLoopPass` (code) |
 | `$B23E` | `TunePointer` | 2 | The next word of Tune `$B4E6`. Set at the life start (`$9117`); read and moved by the interrupt routine (`$7F52`, `$7F60`), reset to the start at `$FFFF` (`$7F70`). | `TunePlayer` | `LifeStart`, `TunePlayer` |
 | `$B240` | `TuneDivider` | 1 | Interrupts left before the next note (one note every 3). Set at `$90FD`; counted at `$7F47` and `$7FA1`. | `Im2Clock`, `TunePlayer` | `LifeStart`, `TunePlayer` |
-| `$B241` | `SectorTime` | 2 | The sector's par time, a big-endian BCD word of seconds (`$0120` = 120 s; the clock never wraps at 60), from the SectorEnd command. Set at `$A4F2`; read at `$A531` and `$A584`. | - | - |
-| `$B243` | `BestTime` | 2 | The sector's best time so far (BCD), from the SectorEnd command. Set at `$A507`; read at `$A53D`, `$A632`, `$A64A`. | - | - |
-| `$B245` | `SectorBonusPoints` | 2 | The sector's bonus points (BCD hundreds) and the extra byte after it. Set at `$A4FA`; read at `$A54F`, `$A55B`, `$A5D0`; rewritten at `$A5B6`. `$A5BA` reads its second byte (`$B246`). | - | - |
-| `$B247` | `BlitTop` | 1 | The copier `$AFAB`'s first line. Set as a pair with BlitBottom (`$801B`, `$802D`, `$9157`); read at `$AFAB`. | `BlitRows` | `HudDraw`, `MenuEntry` |
-| `$B248` | `BlitBottom` | 1 | The copier's line after the last; read at `$AFD5` | `BlitRows` | `HudDraw`, `MenuEntry` |
-| `$B249` | `BlitX` | 1 | The copier's x in pixels (the byte column is BlitX / 8). Set with BlitWidth (`$8021`, `$8033`, `$915D`); read at `$AFB4`. | `BlitRows` | `HudDraw`, `MenuEntry` |
-| `$B24A` | `BlitWidth` | 1 | The copier's width in bytes; read at `$AFCD` | `BlitRows` | `HudDraw`, `MenuEntry` |
-| `$B24B` | `EntryLength` | 1 | The initials entry field: number of characters. The field `$B24B-$B24F` is filled from a 5-byte block by `$8C06` / `$8E99` / `$8EB9` (LD DE,`$B24B`; LDIR) and read at `$8CD0`, `$8D6F`, `$8D8A`. | `EntryFieldDraw` | `HiScoreEntry` |
-| `$B24C` | `EntryBuffer` | 2 | The entry field's buffer pointer; read at `$8CDA`, `$8D82`, `$8D87`, `$8DAC` | `EntryFieldDraw` | `HiScoreEntry` |
+| `$B241` | `SectorTime` | 2 | The sector's par time, a big-endian BCD word of seconds (`$0120` = 120 s; the clock never wraps at 60), from the SectorEnd command. Set at `$A4F2`; read at `$A531` and `$A584`. | `SectorBonus` (code) | `SectorBonus` (code) |
+| `$B243` | `BestTime` | 2 | The sector's best time so far (BCD), from the SectorEnd command. Set at `$A507`; read at `$A53D`, `$A632`, `$A64A`. | `SectorBonus` (code) | `SectorBonus` (code) |
+| `$B245` | `SectorBonusPoints` | 2 | The sector's bonus points (BCD hundreds) and the extra byte after it. Set at `$A4FA`; read at `$A54F`, `$A55B`, `$A5D0`; rewritten at `$A5B6`. `$A5BA` reads its second byte (`$B246`). | `SectorBonus` (code) | `SectorBonus` (code) |
+| `$B247` | `BlitTop` | 1 | The copier `$AFAB`'s first line. Set as a pair with BlitBottom (`$801B`, `$802D`, `$9157`); read at `$AFAB`. | `BlitRows` | `HudDraw`, `MenuEntry`, `TitlePage` (code) |
+| `$B248` | `BlitBottom` | 1 | The copier's line after the last; read at `$AFD5` | `BlitRows` | `HudDraw`, `MenuEntry`, `TitlePage` (code) |
+| `$B249` | `BlitX` | 1 | The copier's x in pixels (the byte column is BlitX / 8). Set with BlitWidth (`$8021`, `$8033`, `$915D`); read at `$AFB4`. | `BlitRows` | `HudDraw`, `MenuEntry`, `TitlePage` (code) |
+| `$B24A` | `BlitWidth` | 1 | The copier's width in bytes; read at `$AFCD` | `BlitRows` | `HudDraw`, `MenuEntry`, `TitlePage` (code) |
+| `$B24B` | `EntryLength` | 1 | The initials entry field: number of characters. The field `$B24B-$B24F` is filled from a 5-byte block by `$8C06` / `$8E99` / `$8EB9` (LD DE,`$B24B`; LDIR) and read at `$8CD0`, `$8D6F`, `$8D8A`. | `EntryFieldDraw`, `EditCursorLeft` (code) | `HiScoreEntry` |
+| `$B24C` | `EntryBuffer` | 2 | The entry field's buffer pointer; read at `$8CDA`, `$8D82`, `$8D87`, `$8DAC` | `EntryFieldDraw`, `EditCursorAddress` (code), `EditCursorLeft` (code) | `HiScoreEntry` |
 | `$B24E` | `EntryY` | 1 | The entry field's pixel line; read at `$8C9C`, `$8CCA` | `EntryFieldClear`, `EntryFieldDraw` | `HiScoreEntry` |
 | `$B24F` | `EntryX` | 1 | The entry field's x; read at `$8CC4` | `EntryFieldDraw` | `HiScoreEntry` |
 | `$B250` | `HeroSlot` | 2 | Pointer to the heroes table slot being written. Set at `$8C2E`, `$8C71`, `$8EE7`; read at `$8C44`, `$8C87`, `$8EEF`. | `HiScoreEntry`, `HiScoreFindSlot` | `HiScoreEntry`, `HiScoreFindSlot` |
 | `$B252` | `HeroCount` | 1 | Heroes table work byte; with HeroIndex it is saved as a word. `$8EE3` LD (`$B252`),DE and `$8EFB` LD DE,(`$B252`) keep DE here across the slot search loop `$8EEA-$8EFF`; `$8CD3` reads it through HL. | `EntryFieldDraw`, `HiScoreFindSlot` | `EntryFieldDraw`, `HiScoreFindSlot` |
 | `$B253` | `HeroIndex` | 1 | The heroes table's index; read at `$8CDE`, `$8D03` | `EntryFieldDraw`, `HiScoreFindSlot` | `EntryFieldDraw`, `HiScoreFindSlot` |
-| `$B254` | `EntryCursor` | 1 | The entry field's cursor position. Read and written at `$8CE1-$8D76`. | `EntryFieldDraw` | `EntryFieldEdit` |
+| `$B254` | `EntryCursor` | 1 | The entry field's cursor position. Read and written at `$8CE1-$8D76`. | `EntryFieldDraw`, `EditCursorAddress` (code), `EditCursorLeft` (code) | `EntryFieldEdit`, `EditCursorLeft` (code) |
 | `$B255` | `TitleColour` | 1 | The title frame's colour step, read and moved at `$884D`/`$8853` | `CycleFrameColours` | `CycleFrameColours` |
 | `$B256` | `TableRow` | 1 | The score advance table's row. `$8A52`, `$8A9C`, `$8AEF`, `$8B07`, `$8B50`, `$8B63`. | `PrintBcd` | `HeroesDrawTables` |
-| `$B257` | `Players` | 1 | Number of players, 1 or 2. Set by the options page (`$80DF`); read at `$8083`, `$80D3`, `$8F61`, `$8F8B`, `$8FB3` ... | `GameStart`, `HudDraw`, `HudPrintScore`, `OptionsPage` | `OptionsPage` |
+| `$B257` | `Players` | 1 | Number of players, 1 or 2. Set by the options page (`$80DF`); read at `$8083`, `$80D3`, `$8F61`, `$8F8B`, `$8FB3` ... | `GameStart`, `HudDraw`, `HudPrintScore`, `OptionsPage`, `GameAfterLife` (code) +1 | `OptionsPage` |
 | `$B258` | `Course` | 1 | The course: 1 Beginner, 2 Champion. Set at `$80F6`; read at `$808B`, `$80EA`, `$8F32`. | `GameStart`, `OptionsPage` | `OptionsPage` |
 | `$B259` | `Controls` | 1 | The control type, 1-6 (keys or a joystick). Set at `$810D`; read at `$8093`, `$8101`, `$8231` and by the controls reader at `$AE1C`. | `ControlsRead`, `MenuCheckStart`, `OptionsPage` | `OptionsPage` |
 | `$B25A` | `OptionColour1` | 1 | Colour of the players option line, moved through the cycle at `$8408` by `$8349`. Set at `$8076`; read at `$80B7` (LD DE,`$B25A`), `$80CF`. | `CycleColourRange`, `OptionsPage` | `CycleColourRange`, `OptionsPage` |
 | `$B25B` | `OptionColour2` | 1 | Colour of the course option line; `$807B`, `$80E6` | `CycleColourRange`, `OptionsPage` | `CycleColourRange`, `OptionsPage` |
 | `$B25C` | `OptionColour3` | 1 | Colour of the controls option line; `$8080`, `$80FD` | `CycleColourRange`, `OptionsPage` | `CycleColourRange`, `OptionsPage` |
-| `$B25D` | `BasicStack` | 2 | BASIC's stack pointer, saved at the start (`$8000`). Restored at `$8004`, `$8240`, `$8253`, `$831A` ...; `$80BA` reads it through IX. | `MenuCheckAnyKey`, `MenuCheckStart`, `MenuEntry` | `MenuEntry` |
-| `$B25F` | `LoopStack` | 2 | The main loop's stack pointer, saved at `$9696`. Restored at `$A689` (life end), `$BB1D` and `$BEE9` (the course switches BeginnerToChampion and ChampionToBeginner). | - | `MainLoop` |
-| `$B261` | `ObjectWrite` | 2 | Where the next object record is written in ObjectList `$BEF8`. Set at `$96A1`; moved by the script commands (`$96AA`/`$96B4`) and by `$9DAD`/`$9DC6`. | `MainLoop` | `MainLoop` |
-| `$B263` | `TapeStack` | 2 | The stack pointer saved around a tape load or save. Set at `$826B`; restored at `$827A`, `$82A4`, `$82B5`, `$8304`. | - | - |
-| `$B265` | `TapeErrSp` | 2 | BASIC's ERR_SP handler, saved around a tape load or save. Set at `$8277`; read at `$82A0`, `$82B1`, `$8300`. | - | - |
-| `$B267` | `UfoSeen` | 1 | Written by the UFO handler (`$9C75`); never read. The bytes `$B267-$B270` are write-only flags, one set by each object kind when it first runs; nothing reads them. `$B268`, `$B269` and `$B26B` are never touched. | - | - |
+| `$B25D` | `BasicStack` | 2 | BASIC's stack pointer, saved at the start (`$8000`). Restored at `$8004`, `$8240`, `$8253`, `$831A` ...; `$80BA` reads it through IX. | `MenuCheckAnyKey`, `MenuCheckStart`, `MenuEntry`, `MenuCheckHeroes` (code), `TapeLoadDone` (code) +1 | `MenuEntry` |
+| `$B25F` | `LoopStack` | 2 | The main loop's stack pointer, saved at `$9696`. Restored at `$A689` (life end), `$BB1D` and `$BEE9` (the course switches BeginnerToChampion and ChampionToBeginner). | `BeginnerToChampion` (code), `ChampionToBeginner` (code), `SectorBonus` (code) | `MainLoop` |
+| `$B261` | `ObjectWrite` | 2 | Where the next object record is written in ObjectList `$BEF8`. Set at `$96A1`; moved by the script commands (`$96AA`/`$96B4`) and by `$9DAD`/`$9DC6`. | `MainLoop`, `UfoBombHandler` (code) | `MainLoop`, `UfoBombHandler` (code) |
+| `$B263` | `TapeStack` | 2 | The stack pointer saved around a tape load or save. Set at `$826B`; restored at `$827A`, `$82A4`, `$82B5`, `$8304`. | `MenuCheckTape` (code), `TapeErrorHandler` (code) | `MenuCheckTape` (code) |
+| `$B265` | `TapeErrSp` | 2 | BASIC's ERR_SP handler, saved around a tape load or save. Set at `$8277`; read at `$82A0`, `$82B1`, `$8300`. | `MenuCheckTape` (code), `TapeErrorHandler` (code) | `MenuCheckTape` (code) |
+| `$B267` | `UfoSeen` | 1 | Written by the UFO handler (`$9C75`); never read. The bytes `$B267-$B270` are write-only flags, one set by each object kind when it first runs; nothing reads them. `$B268`, `$B269` and `$B26B` are never touched. | - | `UfoHandler` (code) |
 | `$B268` | `UnusedFlag1` | 2 | Never read or written | - | - |
-| `$B26A` | `PlantSeen` | 1 | Written by the plant handler (`$A390`); never read | - | - |
+| `$B26A` | `PlantSeen` | 1 | Written by the plant handler (`$A390`); never read | - | `PlantHandler` (code) |
 | `$B26B` | `UnusedFlag2` | 1 | Never read or written | - | - |
-| `$B26C` | `FlyerSeen` | 1 | Written by the low flyer handler (`$A107`); never read | - | - |
-| `$B26D` | `UfoWaveSeen` | 1 | Written by the UFO handler (`$9B96`); never read | - | - |
-| `$B26E` | `BoulderSeen` | 1 | Written by the boulder handler (`$A213`); never read | - | - |
+| `$B26C` | `FlyerSeen` | 1 | Written by the low flyer handler (`$A107`); never read | - | `LowFlyerHandler` (code) |
+| `$B26D` | `UfoWaveSeen` | 1 | Written by the UFO handler (`$9B96`); never read | - | `UfoHandler` (code) |
+| `$B26E` | `BoulderSeen` | 1 | Written by the boulder handler (`$A213`); never read | - | `BoulderHandler` (code) |
 | `$B26F` | `RockSeen` | 1 | Written by the rock handler (`$9A28`); never read | - | `ObjRock` |
-| `$B270` | `TankSeen` | 1 | Written by the tank handler (`$9F22`); never read | - | - |
-| `$B271` | `Player` | 27 | The current player's record, 27 bytes: number, score, extra-life mark, course state, lives, time, flags, initials. The player playing is always here; with two players the routine at `$9022` swaps it with OtherPlayer `$B28C` through SwapBuffer `$B2A7` (three LDIRs of 27 bytes). +0 is the player's number (1 or 2), printed at `$8F80`. | `EntryFieldDraw`, `FireShots`, `GameStart`, `HiScoreEntry`, `HoldCheck` +17 | `FireShots`, `GameStart`, `HoldCheck`, `Im2Clock`, `LifeStart` +4 |
+| `$B270` | `TankSeen` | 1 | Written by the tank handler (`$9F22`); never read | - | `TankHandler` (code) |
+| `$B271` | `Player` | 27 | The current player's record, 27 bytes: number, score, extra-life mark, course state, lives, time, flags, initials. The player playing is always here; with two players the routine at `$9022` swaps it with OtherPlayer `$B28C` through SwapBuffer `$B2A7` (three LDIRs of 27 bytes). +0 is the player's number (1 or 2), printed at `$8F80`. | `EntryFieldDraw`, `FireShots`, `GameStart`, `HiScoreEntry`, `HoldCheck` +24 | `FireShots`, `GameStart`, `HoldCheck`, `Im2Clock`, `LifeStart` +13 |
+| `$B272` | `PlayerScore` (`Player`+1) | 4 | +1: the score, 4 BCD bytes big-endian (8 digits) | `HiScoreEntry`, `PlayerSwap`, `PrintBcd`, `ScoreAddBcd`, `ScoreCompare` | `GameStart`, `PlayerSwap`, `ScoreAddBcd` |
+| `$B276` | `PlayerNextLife` (`Player`+5) | 4 | +5: the score of the next extra life, 4 BCD bytes (00 01 00 00 = 10000 at the start, +20000 after each; none once the score's second byte `$B273` reaches 6) | `PlayerSwap`, `ScoreAddBcd` | `GameStart`, `PlayerSwap` |
+| `$B27A` | `PlayerCourse` (`Player`+9) | 2 | +9: the course script pointer (word) | `MainLoop`, `PlayerSwap`, `MainLoopPass` (code), `SectorBonus` (code) | `GameStart`, `MainLoop`, `PlayerSwap`, `BeginnerToChampion` (code), `ChampionToBeginner` (code) +2 |
+| `$B27C` | `PlayerPoint` (`Player`+11) | 1 | +`$0B`: the point letter code reached (+`$20` on the Champion course) | `HudDraw`, `HudPrintPoint`, `HudPrintScore`, `HudProgress`, `PlayerSwap` +2 | `GameStart`, `PlayerSwap`, `BeginnerToChampion` (code), `ChampionToBeginner` (code), `ObjPoint` (code) |
+| `$B27D` | `PlayerScenery` (`Player`+12) | 1 | +`$0C`: the scenery, 0 mountains, `$FF` moon base city | `PlayerSwap`, `SceneryColours`, `ScenerySetup`, `DemoPage` (code) | `GameStart`, `PlayerSwap`, `DemoPage` (code), `ScoreAdvancePage` (code), `SectorBonus` (code) |
+| `$B27E` | `PlayerLights` (`Player`+13) | 1 | +`$0D`: the warning lights state, drawn by `$927E` | `HudLamps`, `PlayerSwap` | `GameStart`, `LifeStart`, `PlayerSwap`, `ObjLamps` (code) |
+| `$B27F` | `PlayerRestart` (`Player`+14) | 2 | +`$0E`: the script pointer a new life restarts from (word) | `MainLoop`, `PlayerSwap`, `MainLoopPass` (code) | `GameStart`, `MainLoop`, `PlayerSwap`, `ObjPoint` (code) |
+| `$B281` | `PlayerSegment` (`Player`+16) | 2 | +`$10`: the script pointer of the current point (word) | `PlayerSwap`, `ObjPoint` (code) | `GameStart`, `MainLoop`, `PlayerSwap`, `MainLoopPass` (code) |
+| `$B283` | `PlayerActive` (`Player`+18) | 1 | +`$12`: nonzero while this player still has lives (word; `$8F6B` clears the other player's in a one-player game) | `GameStart`, `PlayerSwap`, `GameAfterLife` (code) | `GameStart`, `PlayerSwap`, `GameAfterLife` (code) |
+| `$B284` | `PlayerLives` (`Player`+19) | 1 | +`$13`: lives left (4 at the start, decremented at `$8F74`) | `GameStart`, `HudLives`, `PlayerSwap`, `GameAfterLife` (code) | `GameStart`, `PlayerSwap` |
+| `$B285` | `PlayerTime` (`Player`+20) | 2 | +`$14`: the sector time, 2 BCD bytes | `Im2Clock`, `PlayerSwap`, `PrintBcd`, `SectorBonus` (code) | `GameStart`, `Im2Clock`, `PlayerSwap`, `DemoPage` (code), `SectorBonus` (code) |
+| `$B287` | `PlayerFrames` (`Player`+22) | 1 | +`$16`: interrupts counted to 50 for each second | `Im2Clock`, `PlayerSwap` | `GameStart`, `Im2Clock`, `PlayerSwap`, `DemoPage` (code), `SectorBonus` (code) |
+| `$B288` | `PlayerFlags` (`Player`+23) | 1 | +`$17`: bit 0 the T key's latch, bit 1 the fire latch, bit 3 set by the mine and plant handlers (`$9B15`, `$A30B`; read by the ground at `$A994`), bit 4 hold, bit 7 tune off (the T key toggles it, `$AF27`; the demo sets it, `$8199`) | `FireShots`, `GameStart`, `HoldCheck`, `PlayerSwap`, `ScrollRoad` +2 | `FireShots`, `GameStart`, `HoldCheck`, `PlayerSwap`, `TuneToggleCheck` +1 |
+| `$B289` | `PlayerInitials` (`Player`+24) | 3 | +`$18`: three initials ("JAS" in the image) | `EntryFieldDraw`, `HiScoreEntry`, `PlayerSwap` | `PlayerSwap` |
 | `$B28C` | `OtherPlayer` | 27 | The other player's record, same layout as Player `$B271` (player 2, initials "MIK" in the image) | `PlayerSwap` | `PlayerSwap` |
 | `$B2A7` | `SwapBuffer` | 27 | 27 bytes used by the routine at `$9022` to swap Player and OtherPlayer | `PlayerSwap` | `PlayerSwap` |
 
@@ -216,13 +251,94 @@ Written by `kit/refdocs.py`.
 | `$B2C2` | `BuildDate0245` | 20 | A print string with the build date 02:45 29/10/84, disabled like BuildDate0335 `$7F00`. Bytes: `$1F` (the end, where an AT `$16` would be), x 0, line `$31`, FONT 2 (`$1A` `$02`), "02:45 29/10/84", `$1F`. Printed by the life start at `$912C` (LD HL,`$B2C2`; CALL `$FFD0`): only the first byte is read (game 20, a1 4, g1 4, p2 8, h1 4, i1 6, i2 6), nothing appears. | `PrintText` | - |
 | `$B2D6` | `SpriteTable` | 528 | The sprite table: 132 entries of two words, drawer and graphics, indexed by sprite number. The sprite drawer `$A826` takes A = sprite number, reads the entry at `$B2D6` + 4A and jumps to the drawer (JP (IX)) with HL = graphics, H = x, L = y. The drawers and their formats: see the graphics A module. An entry with drawer 0 is empty. 472 of the 528 bytes are read (the empty entries and the never-drawn `$5C-$5F` are not). | `DrawSprite` | - |
 | `$B4E6` | `Tune` | 770 | The tune played through the game: 384 words, one note every 3 interrupts, `$FFFF` ends it. The interrupt routine (from `$7F47`) counts TuneDivider `$B240` down from 3; at 0 it takes the word at TunePointer `$B23E`. `$0000` is a rest; another word is the period HL for the ROM BEEPER, with the duration DE chosen so a note lasts about 12 ms. `$FFFF` sends the pointer back to `$B4E6` (`$7F70`). PlayerFlags bit 7 silences it. All 770 bytes (with the end word) are read in the runs. | `TunePlayer` | - |
+| `$B7E6` | `TuneEnd` (`Tune`+768) | 2 | `$FFFF`: start again | - | - |
 
 ## courses
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$B7E8` | `BeginnerCourse` | 799 | The Beginner course script, points A-Z in five sectors (E, J, P, U, Z). Chosen by the game start (`$8F2F` LD BC,`$B7E8`) and by ChampionToBeginner `$BED4`; i1 plays it to Z. The first segment (i1 frame 160): Wait 127; Craters 20 80; Rocks 50 110. BeginnerBestE `$B884`: the best time for the sector to E, BCD, rewritten when beaten BeginnerAfterE `$B886`: the segment after the sector end BeginnerBestJ `$B925`: the best time for the sector to J, BCD, rewritten when beaten BeginnerAfterJ `$B927`: the segment after the sector end BeginnerBestP `$B9AE`: the best time for the sector to P, BCD, rewritten when beaten BeginnerAfterP `$B9B0`: the segment after the sector end BeginnerBestU `$BA51`: the best time for the sector to U, BCD, rewritten when beaten BeginnerAfterU `$BA53`: the segment after the sector end BeginnerBestZ `$BB03`: the best time for the sector to Z, BCD, rewritten when beaten | `CmdCraters`, `CmdLamps`, `CmdPoint`, `CmdRocks`, `CmdUfos` +2 | - |
+| `$B7F8` | `BeginnerPointA` (`BeginnerCourse`+16) | 25 | point A | `CmdLamps`, `CmdPoint`, `CmdUfos`, `CourseRun`, `SegmentLength` | - |
+| `$B811` | `BeginnerPointB` (`BeginnerCourse`+41) | 28 | point B | - | - |
+| `$B82D` | `BeginnerPointC` (`BeginnerCourse`+69) | 34 | point C | - | - |
+| `$B84F` | `BeginnerPointD` (`BeginnerCourse`+103) | 28 | point D | - | - |
+| `$B86B` | `BeginnerPointE` (`BeginnerCourse`+131) | 19 | point E | - | - |
+| `$B87E` | `BeginnerSectorE` (`BeginnerCourse`+150) | 6 | SectorEnd after point E | - | - |
+| `$B884` | `BeginnerBestE` (`BeginnerCourse`+156) | 2 | - | - | - |
+| `$B886` | `BeginnerAfterE` (`BeginnerCourse`+158) | 16 | - | - | - |
+| `$B896` | `BeginnerPointF` (`BeginnerCourse`+174) | 34 | point F | - | - |
+| `$B8B8` | `BeginnerPointG` (`BeginnerCourse`+208) | 30 | point G | - | - |
+| `$B8D6` | `BeginnerPointH` (`BeginnerCourse`+238) | 31 | point H | - | - |
+| `$B8F5` | `BeginnerPointI` (`BeginnerCourse`+269) | 32 | point I | - | - |
+| `$B915` | `BeginnerPointJ` (`BeginnerCourse`+301) | 10 | point J | - | - |
+| `$B91F` | `BeginnerSectorJ` (`BeginnerCourse`+311) | 6 | SectorEnd after point J | - | - |
+| `$B925` | `BeginnerBestJ` (`BeginnerCourse`+317) | 2 | - | - | - |
+| `$B927` | `BeginnerAfterJ` (`BeginnerCourse`+319) | 15 | - | - | - |
+| `$B936` | `BeginnerPointK` (`BeginnerCourse`+334) | 18 | point K | - | - |
+| `$B948` | `BeginnerPointL` (`BeginnerCourse`+352) | 20 | point L | - | - |
+| `$B95C` | `BeginnerPointM` (`BeginnerCourse`+372) | 36 | point M | - | - |
+| `$B980` | `BeginnerPointN` (`BeginnerCourse`+408) | 21 | point N | - | - |
+| `$B995` | `BeginnerPointP` (`BeginnerCourse`+429) | 19 | point P | - | - |
+| `$B9A8` | `BeginnerSectorP` (`BeginnerCourse`+448) | 6 | SectorEnd after point P | - | - |
+| `$B9AE` | `BeginnerBestP` (`BeginnerCourse`+454) | 2 | - | - | - |
+| `$B9B0` | `BeginnerAfterP` (`BeginnerCourse`+456) | 17 | - | - | - |
+| `$B9C1` | `BeginnerPointQ` (`BeginnerCourse`+473) | 36 | point Q | - | - |
+| `$B9E5` | `BeginnerPointR` (`BeginnerCourse`+509) | 33 | point R | - | - |
+| `$BA06` | `BeginnerPointS` (`BeginnerCourse`+542) | 27 | point S | - | - |
+| `$BA21` | `BeginnerPointT` (`BeginnerCourse`+569) | 23 | point T | - | - |
+| `$BA38` | `BeginnerPointU` (`BeginnerCourse`+592) | 19 | point U | - | - |
+| `$BA4B` | `BeginnerSectorU` (`BeginnerCourse`+611) | 6 | SectorEnd after point U | - | - |
+| `$BA51` | `BeginnerBestU` (`BeginnerCourse`+617) | 2 | - | - | - |
+| `$BA53` | `BeginnerAfterU` (`BeginnerCourse`+619) | 27 | - | - | - |
+| `$BA6E` | `BeginnerPointV` (`BeginnerCourse`+646) | 21 | point V | - | - |
+| `$BA83` | `BeginnerPointW` (`BeginnerCourse`+667) | 21 | point W | - | - |
+| `$BA98` | `BeginnerPointX` (`BeginnerCourse`+688) | 32 | point X | - | - |
+| `$BAB8` | `BeginnerPointY` (`BeginnerCourse`+720) | 55 | point Y | - | - |
+| `$BAEF` | `BeginnerPointZ` (`BeginnerCourse`+775) | 14 | point Z | - | - |
+| `$BAFD` | `BeginnerSectorZ` (`BeginnerCourse`+789) | 6 | SectorEnd after point Z | - | - |
+| `$BB03` | `BeginnerBestZ` (`BeginnerCourse`+795) | 2 | - | - | - |
+| `$BB05` | `BeginnerSwitch` (`BeginnerCourse`+797) | 2 | the word `$BB07` | - | - |
 | `$BB24` | `ChampionCourse` | 944 | The Champion course script, points A-Z in five sectors. Chosen by the game start (`$8F3A` LD BC,`$BB24`) and by BeginnerToChampion `$BB07`; i2 plays it to Z. The first segment (i2 frame 340): Wait 127; Lights 15:1; UfosA 48 48 48; UfosB 48 48 48. ChampionBestE `$BBC7`: the best time for the sector to E, BCD, rewritten when beaten ChampionAfterE `$BBC9`: the segment after the sector end ChampionBestJ `$BC95`: the best time for the sector to J, BCD, rewritten when beaten ChampionAfterJ `$BC97`: the segment after the sector end ChampionBestP `$BD42`: the best time for the sector to P, BCD, rewritten when beaten ChampionAfterP `$BD44`: the segment after the sector end ChampionBestU `$BDF0`: the best time for the sector to U, BCD, rewritten when beaten ChampionAfterU `$BDF2`: the segment after the sector end ChampionBestZ `$BED0`: the best time for the sector to Z, BCD, rewritten when beaten | - | - |
+| `$BB3B` | `ChampionPointA` (`ChampionCourse`+23) | 23 | point A | - | - |
+| `$BB52` | `ChampionPointB` (`ChampionCourse`+46) | 28 | point B | - | - |
+| `$BB6E` | `ChampionPointC` (`ChampionCourse`+74) | 33 | point C | - | - |
+| `$BB8F` | `ChampionPointD` (`ChampionCourse`+107) | 27 | point D | - | - |
+| `$BBAA` | `ChampionPointE` (`ChampionCourse`+134) | 23 | point E | - | - |
+| `$BBC1` | `ChampionSectorE` (`ChampionCourse`+157) | 6 | SectorEnd after point E | - | - |
+| `$BBC7` | `ChampionBestE` (`ChampionCourse`+163) | 2 | - | - | - |
+| `$BBC9` | `ChampionAfterE` (`ChampionCourse`+165) | 38 | - | - | - |
+| `$BBEF` | `ChampionPointF` (`ChampionCourse`+203) | 37 | point F | - | - |
+| `$BC14` | `ChampionPointG` (`ChampionCourse`+240) | 40 | point G | - | - |
+| `$BC3C` | `ChampionPointH` (`ChampionCourse`+280) | 31 | point H | - | - |
+| `$BC5B` | `ChampionPointI` (`ChampionCourse`+311) | 33 | point I | - | - |
+| `$BC7C` | `ChampionPointJ` (`ChampionCourse`+344) | 19 | point J | - | - |
+| `$BC8F` | `ChampionSectorJ` (`ChampionCourse`+363) | 6 | SectorEnd after point J | - | - |
+| `$BC95` | `ChampionBestJ` (`ChampionCourse`+369) | 2 | - | - | - |
+| `$BC97` | `ChampionAfterJ` (`ChampionCourse`+371) | 21 | - | - | - |
+| `$BCAC` | `ChampionPointK` (`ChampionCourse`+392) | 29 | point K | - | - |
+| `$BCC9` | `ChampionPointL` (`ChampionCourse`+421) | 21 | point L | - | - |
+| `$BCDE` | `ChampionPointM` (`ChampionCourse`+442) | 40 | point M | - | - |
+| `$BD06` | `ChampionPointN` (`ChampionCourse`+482) | 35 | point N | - | - |
+| `$BD29` | `ChampionPointP` (`ChampionCourse`+517) | 19 | point P | - | - |
+| `$BD3C` | `ChampionSectorP` (`ChampionCourse`+536) | 6 | SectorEnd after point P | - | - |
+| `$BD42` | `ChampionBestP` (`ChampionCourse`+542) | 2 | - | - | - |
+| `$BD44` | `ChampionAfterP` (`ChampionCourse`+544) | 21 | - | - | - |
+| `$BD59` | `ChampionPointQ` (`ChampionCourse`+565) | 31 | point Q | - | - |
+| `$BD78` | `ChampionPointR` (`ChampionCourse`+596) | 29 | point R | - | - |
+| `$BD95` | `ChampionPointS` (`ChampionCourse`+625) | 24 | point S | - | - |
+| `$BDAD` | `ChampionPointT` (`ChampionCourse`+649) | 47 | point T | - | - |
+| `$BDDC` | `ChampionPointU` (`ChampionCourse`+696) | 14 | point U | - | - |
+| `$BDEA` | `ChampionSectorU` (`ChampionCourse`+710) | 6 | SectorEnd after point U | - | - |
+| `$BDF0` | `ChampionBestU` (`ChampionCourse`+716) | 2 | - | - | - |
+| `$BDF2` | `ChampionAfterU` (`ChampionCourse`+718) | 21 | - | - | - |
+| `$BE07` | `ChampionPointV` (`ChampionCourse`+739) | 26 | point V | - | - |
+| `$BE21` | `ChampionPointW` (`ChampionCourse`+765) | 35 | point W | - | - |
+| `$BE44` | `ChampionPointX` (`ChampionCourse`+800) | 47 | point X | - | - |
+| `$BE73` | `ChampionPointY` (`ChampionCourse`+847) | 64 | point Y | - | - |
+| `$BEB3` | `ChampionPointZ` (`ChampionCourse`+911) | 23 | point Z | - | - |
+| `$BECA` | `ChampionSectorZ` (`ChampionCourse`+934) | 6 | SectorEnd after point Z | - | - |
+| `$BED0` | `ChampionBestZ` (`ChampionCourse`+940) | 2 | - | - | - |
+| `$BED2` | `ChampionSwitch` (`ChampionCourse`+942) | 2 | the word `$BED4` | - | - |
 | `$BEF0` | `CourseLeftover` | 8 | Leftover: 8 bytes after the scripts (`$02` `$BB` `$5A` `$30` `$5F` `$EE` `$3D` `$A8`), never read | - | - |
 
 ## objectlist
@@ -231,7 +347,7 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$BEF8` | `ObjectList` | 669 | The live objects: one record per object, written by the course commands, run each pass. Each record starts with the handler's address (a word) and the handler's own bytes; the first of them is the countdown before the object appears. The script commands write records at ObjectWrite `$B261` (from `$96A1`: LD HL,`$BEF8`); the main loop runs the list through `$9745` (`$974A` LD HL,`$BEF8`) and the interpreter at `$9751`, which stops at the end word `$975E`. The tape menu also clears it (`$8288` LD IX,`$BEF8`, `$830F`). The record sizes the commands write: 20 bytes for a UFO (`$9B6B`), 14 a tank (`$9EBD`), 9 a low flyer (`$A03B`), 8 a boulder (`$A196`) or a plant (`$A2C6`). `$BEF8-$C194` is written in the runs. | `BoxOverlap`, `CourseRun`, `ObjCrater`, `ObjLamps`, `ObjPoint` +3 | `CmdCraters`, `CmdLamps`, `CmdPoint`, `CmdRocks`, `CmdUfos` +8 |
 | `$C195` | `FreeSpace` | 359 | Never written in the runs: free space between the object list and the stack (`$C195-$C2FB`), zero in the image | - | - |
-| `$C2FC` | `Stack` | 84 | The machine stack below BASIC's RAMTOP: the game keeps BASIC's stack (BasicStack `$B25D`); written from `$C2FC` to `$C34F` in the runs (`$C2FC-$C311` by the IM 2 handler, its pushes and BEEPER's, which the L1 counters miss; `$C312-$C337` seen by them) | - | `AllTimePrintRow`, `BlitRows`, `BoxOverlap`, `BreakKeyTest`, `BuggyAirborne` +58 |
+| `$C2FC` | `Stack` | 84 | The machine stack below BASIC's RAMTOP: the game keeps BASIC's stack (BasicStack `$B25D`); written from `$C2FC` to `$C34F` in the runs (`$C2FC-$C311` by the IM 2 handler, its pushes and BEEPER's, which the L1 counters miss; `$C312-$C337` seen by them) | - | `DrawSprite16x9` |
 
 ## graphicsb
 
@@ -262,21 +378,26 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$F000` | `PrintY` | 1 | The print position's pixel line (0-184), the top of the next glyph. Set by AT (`$FE8E`) and by a new line (`$FE21`: + line step, less `$B9` past the bottom); read at `$FF2A`. The menus read PrintY and PrintX as one word (`$8B20`, `$8CE7`). | `EntryFieldDraw`, `HeroesDrawTables`, `PrintCharNormal`, `PrintGlyph` | `PrintAtY`, `PrintCharNormal` |
-| `$F001` | `PrintX` | 1 | The print position's x in pixels. Set by AT (`$FE78`), TAB (`$FE9E`) and a new line (the left margin, `$FE15`); moved on by each glyph (`$FFCC`). | `EntryFieldDraw`, `HeroesDrawTables`, `PrintGlyph`, `PrintRowsOr` | `PrintAtX`, `PrintCharNormal`, `PrintRowsOr` |
+| `$F001` | `PrintX` | 1 | The print position's x in pixels. Set by AT (`$FE78`), TAB (`$FE9E`) and a new line (the left margin, `$FE15`); moved on by each glyph (`$FFCC`). | `EntryFieldDraw`, `HeroesDrawTables`, `PrintGlyph`, `PrintRowsOr`, `PrintTab` (code) | `PrintAtX`, `PrintCharNormal`, `PrintRowsOr`, `PrintTab` (code) |
 | `$F002` | `PrintShift` | 1 | PrintX AND 7: the glyph's shift within its byte (`$FF4B`, read at `$FF74`) | `PrintGlyph` | `PrintGlyph` |
 | `$F003` | `PrintCode` | 1 | The character being printed (`$FEF7`, read at `$FF5F`) | `PrintGlyph` | `PrintGlyph` |
 | `$F004` | `PrintAttr` | 1 | The attribute of the cells a glyph touches: set by INK, PAPER, FLASH, BRIGHT (`$FE33-$FE73`); stored at `$FFA0` | `PrintBright`, `PrintColour`, `PrintFlash`, `PrintInk`, `PrintPaper` | `PrintBright`, `PrintFlash`, `PrintInk`, `PrintPaper` |
-| `$F005` | `PrintMargin` | 1 | The left margin a new line returns to (code `$18`, `$FEAF`) | `PrintCharNormal` | `PrintMarginSet` |
+| `$F005` | `PrintMargin` | 1 | The left margin a new line returns to (code `$18`, `$FEAF`) | `PrintCharNormal`, `PrintNewline` (code) | `PrintMarginSet` |
 | `$F006` | `PrintLimit` | 1 | The right limit: a glyph that would pass it starts a new line (code `$19`, `$FEC3`; read at `$FF20`) | `PrintGlyph` | `PrintLimitSet` |
 | `$F007` | `PrintError` | 1 | Bit 0 is set when a parameter is out of range (`$FEBD`, `$FEEF`); never read | `PrintTakeParam` | `PrintTakeParam` |
 | `$F008` | `PrintFont` | 2 | The current font's base: glyph = base + 8 x code (set by FONT, `$FEE1`; read at `$FF65`). Bit 2 of its high byte (`$F009`) tells PrintAttrCheck `$F0F0` to leave the colours alone: set for FontPlain (`$F600`) and the ROM font (`$3C00`). | `PrintAttrCheck`, `PrintGlyph` | `PrintFontSet` |
-| `$F00A` | `PrintState` | 2 | The handler of the next code: PrintCharNormal `$FDE3`, or a control code's parameter handler. PrintChar `$FDCC` jumps through it (`$FDD9`). The control code handlers store themselves here (`$FE0A`) and put PrintCharNormal back when their parameter arrives (`$FEE6`). | `PrintChar` | `PrintAtX`, `PrintAtY`, `PrintCharNormal`, `PrintLimitSet`, `PrintTakeParam` |
+| `$F00A` | `PrintState` | 2 | The handler of the next code: PrintCharNormal `$FDE3`, or a control code's parameter handler. PrintChar `$FDCC` jumps through it (`$FDD9`). The control code handlers store themselves here (`$FE0A`) and put PrintCharNormal back when their parameter arrives (`$FEE6`). | `PrintChar` | `PrintAtX`, `PrintAtY`, `PrintCharNormal`, `PrintLimitSet`, `PrintTakeParam` +3 |
 | `$F00C` | `PrintWidth` | 6 | The current font's metrics, copied from its descriptor by FONT (`$FED6`): width of most characters | `PrintCharNormal`, `PrintGlyph`, `PrintRowsOr` | `PrintFontSet` |
+| `$F00D` | `PrintWidthI` (`PrintWidth`+1) | 1 | width of "I" (`$FF02`) | `PrintGlyph` | `PrintFontSet` |
+| `$F00E` | `PrintWidthMW` (`PrintWidth`+2) | 1 | width of "M" and "W" (`$FF14`) | `PrintGlyph` | `PrintFontSet` |
+| `$F00F` | `PrintWidthSpace` (`PrintWidth`+3) | 1 | width of a space (`$FF07`) | `PrintGlyph` | `PrintFontSet` |
+| `$F010` | `PrintLineStep` (`PrintWidth`+4) | 1 | pixel lines from one text line to the next (`$FE18`) | `PrintCharNormal` | `PrintFontSet` |
+| `$F011` | `PrintRows` (`PrintWidth`+5) | 1 | glyph rows drawn (`$FF51`, `$FF71`, `$FFAF`) | `PrintGlyph`, `PrintRowsOr` | `PrintFontSet` |
 | `$F012` | `PrintLines` | 16 | The screen addresses of the glyph's rows (one word a row, up to 8), filled at `$FF4E` from ScreenLineTable plus the byte column | `PrintAttrCheck`, `PrintRowsOr` | `PrintGlyph` |
 | `$F022` | `PrintShifted` | 16 | The glyph's rows shifted by PrintShift: two bytes a row, up to 8 rows (`$FF6E`), ORed onto the screen at `$FFB2` | `PrintGlyph`, `PrintRowsOr` | `PrintGlyph` |
 | `$F032` | `PrintSpare` | 78 | 78 zero bytes, never read or written | - | - |
 | `$F080` | `PrintCodeTable` | 22 | The handlers of the control codes `$10-$1A`, one word each, read at `$FDFD`. In order: `$10` INK `$FE2E`, `$11` PAPER `$FE3D`, `$12` FLASH `$FE52`, `$13` BRIGHT `$FE65`, `$14` / `$15` `$FE23`, `$16` AT `$FE78`, `$17` TAB `$FE92`, `$18` MARGIN `$FEAA`, `$19` LIMIT `$FEB3`, `$1A` FONT `$FEC7`. | `PrintCharNormal` | - |
-| `$F096` | `FontDescriptors` | 32 | Four font descriptors of 8 bytes: width, width of I, width of M/W, width of a space, line step, rows, base (word). FONT n copies descriptor n's six metrics to PrintWidth `$F00C` and its base to PrintFont `$F008` (`$FEC7`). Font 0: 4 4 6 2, step 6, 5 rows, base `$F000` (glyphs FontSmall `$F100`). Font 1: 6 5 6 5, step 9, 6 rows, base `$F300` (FontBold `$F400`); the title sets its step to 8 (`$800A` LD (`$F0A2`),A). Font 2: 6 6 6 6, step 8, 6 rows, base `$F600` (FontPlain `$F700`). Font 3: all 8, base `$3C00`, the ROM font; its descriptor is never read in the runs (no reads of `$F0AE-$F0B5`). | `PrintFontSet` | `MenuEntry` |
+| `$F096` | `FontDescriptors` | 32 | Four font descriptors of 8 bytes: width, width of I, width of M/W, width of a space, line step, rows, base (word). FONT n copies descriptor n's six metrics to PrintWidth `$F00C` and its base to PrintFont `$F008` (`$FEC7`). Font 0: 4 4 6 2, step 6, 5 rows, base `$F000` (glyphs FontSmall `$F100`). Font 1: 6 5 6 5, step 9, 6 rows, base `$F300` (FontBold `$F400`); the title sets its step to 8 (`$800A` LD (`$F0A2`),A). Font 2: 6 6 6 6, step 8, 6 rows, base `$F600` (FontPlain `$F700`). Font 3: all 8, base `$3C00`, the ROM font; its descriptor is never read in the runs (no reads of `$F0AE-$F0B5`). | `PrintFontSet` | `MenuEntry`, `TitlePage` (code) |
 | `$F0B6` | `PrintSpare2` | 58 | 58 zero bytes, never read or written | - | - |
 
 ## printing

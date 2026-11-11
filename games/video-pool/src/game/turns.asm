@@ -112,7 +112,7 @@ ShotsForFrame:
   LD L,$02
   JR ShotsVariation
 ShotsFromTable:
-  LD HL,ShotsPerFrame-$0001
+  LD HL,ShotsPerFrame-1
   ADD A,L
   LD L,A
   JR NC,ShotsTableRead

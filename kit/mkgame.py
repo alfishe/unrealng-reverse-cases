@@ -38,6 +38,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import toolpaths  # noqa: E402
+import resinc  # noqa: E402
 
 ROOT = None  # the case, set by main()
 LO, HI = 0x0000, 0x10000
@@ -264,18 +265,22 @@ class Annotations:
     """An annotation file (docs/ann-format.md): what the reverse knows, one line an address
 
         @module NAME [; title]    the entries from the next address on go to NAME.asm (NAME-module.asm when NAME is
-                                  the top file's own name: @module game beside game.asm); the title heads the file
+                                  the top file's own name: @module game beside game.asm); the title heads the file;
+                                  the same NAME again adds a stretch to the module (ORG before it in the one file)
         @about text               a paragraph of the current module's header (what it holds, how its parts work)
         $ADDR c|b|w|t|s NAME [N]  an entry: code, bytes (N a line), words (N a line), text, space; ; its title
         > text                    the entry's description, one paragraph a line
         @res FILE                 the entry's bytes are a resource: src/res/FILE, assembled with INCBIN (entries
                                   naming one file share it: it holds the bytes from the first to the end of the last);
-                                  a w entry's words that name data labels become ASSERT lines after the INCBINs
+                                  a w entry's words that name data labels become ASSERT lines after the INCBINs;
+        @res FILE include         ... assembled with INCLUDE "res/FILE.inc" (FILE's suffix .inc): DB / DW lines the
+                                  case's res tool writes from the editable form, words as label names (kit/resinc.py);
+                                  one entry a file, its inner labels inside the .inc
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment; inside a data entry the
                                   data line that starts at ADDR (the entry's rows are cut there)
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
                                   address: LD HL,-6, not a label + offset; a number stays one even when it is a
-                                  label's address)
+                                  label's address, a decimal number stays decimal)
         @inline $ADDR [N]         a routine that reads data placed after its CALL (a print routine with the string
                                   inline): no walk goes past a call to it, the bytes after it are data unless a
                                   recording ran them; with N (a fixed count of data bytes) the walk goes on after them
@@ -308,6 +313,7 @@ class Annotations:
         self.entries, self.inline, self.modules, self.descriptions = {}, {}, [], {}
         self.module_info = {}  # module name: [title, [paragraphs]]
         self.resources = {}  # entry address: the resource file under src/res
+        self.res_include = set()  # of those, the entries assembled by INCLUDE of a .inc (@res FILE include)
         self.isub = {}  # instruction address: the instruction as the source writes it
         self.equ = {}  # address outside the image: (name, size, comment)
         self.equ_at = {}  # of those, the ones named only in some instructions: address -> {instruction address}
@@ -380,7 +386,11 @@ class Annotations:
             if text.startswith('@module'):
                 body, _, title = text.partition(';')
                 name = body.split()[1]
-                self.module_info[name] = [title.strip(), []]
+                if name in self.module_info:  # the module again: another stretch of it (its title kept)
+                    if title.strip() and not self.module_info[name][0]:
+                        self.module_info[name][0] = title.strip()
+                else:
+                    self.module_info[name] = [title.strip(), []]
                 self.modules.append([None, name])
                 continue
             if text.startswith('@equ'):
@@ -420,7 +430,12 @@ class Annotations:
             if text.startswith('@res'):
                 if last is None or self.entries[last][0] == 'c':
                     sys.exit(f'{path}:{number}: @res after no data entry')
-                self.resources[last] = text.split(None, 1)[1].strip()
+                parts = text.split()
+                if len(parts) not in (2, 3) or (len(parts) == 3 and parts[2] != 'include'):
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                self.resources[last] = parts[1]
+                if len(parts) == 3:
+                    self.res_include.add(last)
                 continue
             if text.startswith('>'):
                 if last is None:
@@ -626,6 +641,9 @@ def word_checks(lines, a, label, inner, is_data):
     return out
 
 
+INCLUDED = {}  # resource file: the numeric .inc of an @res FILE include (installed for a case without a res hook)
+
+
 def write_resources(text, mem, extents, ann, out, word_asserts=True):
     """The resource entries of game.ann as files under out/res and INCBIN lines in the listing: (text, {file: (lo,
     hi)}). An entry's data lines (and the labels inside it) become INCBIN slices of its file, its label and comments
@@ -637,6 +655,11 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
             sys.exit('game.ann: @res %s on $%04X, which is no data entry' % (name, a))
         lo, hi = files.get(name, (a, a + extents[a]))
         files[name] = (min(lo, a), max(hi, a + extents[a]))
+    for a in ann.res_include:
+        name = ann.resources[a]
+        if files[name] != (a, a + extents[a]):
+            sys.exit('game.ann: @res %s include on $%04X: the file is shared with another entry (an INCLUDE takes '
+                     'one entry)' % (name, a))
     for name, (lo, hi) in files.items():
         path = os.path.join(out, 'res', name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -665,6 +688,16 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
                     sys.exit('game.ann: %s inside the resource %s has no address in it' % (m.group(1), name))
                 cuts.append((inner[m.group(1)], m.group(1)))
             end += 1
+        if a in ann.res_include:
+            # the numeric .inc: mkgame's own check (the case's res tool writes the one the build includes)
+            fields = {k - a: n for k, n in ann.fields().items() if k == a}
+            fields.update({k - a: n for k, n in cuts})
+            text_inc = resinc.numeric(mem[a:a + extents[a]], fields,
+                                      ['%s: %s (kit/mkgame.py, the image\'s bytes)' % (resinc.inc_name(name), label)])
+            open(os.path.join(out, 'res', resinc.inc_name(name)), 'w').write(text_inc)
+            INCLUDED[name] = text_inc
+            lines[at + 1:end] = ['  INCLUDE "res/%s"' % resinc.inc_name(name)]
+            continue
         body, start = [], a
         for cut, cut_label in cuts + [(a + extents[a], None)]:
             if cut > start:
@@ -698,7 +731,10 @@ def module_header(name, ann):
 
 
 def split_modules(text, ann):
-    """The listing cut into the modules of game.ann: ([(name, text)], the head before the first)"""
+    """The listing cut into the modules of game.ann: ([(name, text)], the head before the first). A module named
+    again further on (@module NAME a second time: an IM 2 handler and its vector table far apart) holds several
+    stretches of addresses in its one file; the files are included in the order of their first stretch, and a
+    stretch the assembly does not reach in that order starts with ORG at its address"""
     if not ann.modules:
         return [('code', text)], ''
     out_lines = text.splitlines()
@@ -710,12 +746,22 @@ def split_modules(text, ann):
         at = next(i for i, l in enumerate(out_lines) if l == label + ':')
         while at > 0 and out_lines[at - 1].startswith(';'):
             at -= 1
-        cuts.append((at, name))
-    parts = []
+        cuts.append((at, name, start))
     head = out_lines[:cuts[0][0]] if cuts else out_lines
-    for k, (at, name) in enumerate(cuts):
+    stretches = {}  # module name -> [(start, end address, lines)], in address order
+    for k, (at, name, start) in enumerate(cuts):
         end = cuts[k + 1][0] if k + 1 < len(cuts) else len(out_lines)
-        parts.append((name, module_header(name, ann) + '\n'.join(out_lines[at:end]).rstrip() + '\n'))
+        stop = cuts[k + 1][2] if k + 1 < len(cuts) else None
+        stretches.setdefault(name, []).append((start, stop, '\n'.join(out_lines[at:end]).rstrip()))
+    parts, here = [], cuts[0][2]
+    for name, pieces in stretches.items():  # dicts keep the order of the first stretches
+        body = []
+        for start, stop, lines in pieces:
+            if start != here:
+                lines = '  ORG $%04X\n\n' % start + lines
+            body.append(lines)
+            here = stop
+        parts.append((name, module_header(name, ann) + '\n\n'.join(body) + '\n'))
     return parts, '\n'.join(head).rstrip() + '\n'
 
 
@@ -910,11 +956,15 @@ def name_variables(text, equ, inner=None, order=None, isubs=(), equ_at=None):
     return ''.join(lines)
 
 
+# a decimal number in an instruction (not a hex digit run after $, not part of a name)
+DECIMAL = re.compile(r'(?<![$\w])\d+(?!\w)')
+
+
 def restore_isubs(text, order, isubs):
     """The @isub instructions as the .ann writes them where skool2asm put a label for a number (@isub $797F
-    LD BC,$7EFE written LD BC,ShiftGraphic4: the number is that label's address). order: instruction_order; isubs:
-    {address: instruction}. A name the .ann wrote stays, so does skool2asm's hex for a decimal number. Returns
-    (text, {address: the label skool2asm had put there})"""
+    LD BC,$7EFE written LD BC,ShiftGraphic4: the number is that label's address) or wrote a decimal number in hex
+    (@isub $XXXX LD DE,-10000 written LD DE,-$2710). order: instruction_order; isubs: {address: instruction}. A name
+    the .ann wrote stays. Returns (text, {address: the label skool2asm had put there})"""
     if not isubs:
         return text, {}
     lines = text.splitlines(True)
@@ -934,8 +984,10 @@ def restore_isubs(text, order, isubs):
             at = order[n] if n < len(order) else None
             n += 1
             want = isubs.get(at)
-            if want and names(code) - names(want):
-                restored[at] = ', '.join(sorted(names(code) - names(want)))
+            extra = names(code) - names(want) if want else set()
+            if want and (extra or DECIMAL.search(want)) and code.strip() != want:
+                if extra:
+                    restored[at] = ', '.join(sorted(extra))
                 body = '  ' + want
                 if not semi:
                     code = body + '\n'
@@ -1152,6 +1204,11 @@ def generate(seg, mem, args, out, top):
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
     text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
     text, files = write_resources(text, mem, extents, ann, out, seg.run == (seg.lo if seg.lo is not None else LO))
+    names = [name for _, name in ann.modules]
+    again = sorted({n for n in names if names.count(n) > 1})
+    if again and seg.run != (seg.lo if seg.lo is not None else LO):
+        sys.exit('%s: module %s named twice: a module of several stretches needs ORG, not a segment under DISP'
+                 % (os.path.relpath(seg.ann, ROOT), ', '.join(again)))
     modules, head = split_modules(text, ann)
     resources = {name: mem[a:b] for name, (a, b) in files.items()}
     labels = set(re.findall(r'^([A-Za-z_]\w*):$', text, flags=re.M))
@@ -1238,16 +1295,13 @@ def install_resources(part, resources, built=()):
         before = stamps(res, files)
         call_hook(part.get('res_install') or 'tools/res_formats.py', files)
         drop_stale_bins(res, files, before)
-    elif part.get('res'):
+    elif part.get('res') or part.get('game'):
         for name, data in files.items():
-            path = os.path.join(ROOT, part['res'], name)
+            path = os.path.join(ROOT, part.get('res') or os.path.join('src', 'res'), name)
             os.makedirs(os.path.dirname(path), exist_ok=True)
             open(path, 'wb').write(data)
-    elif part.get('game'):
-        for name, data in files.items():
-            path = os.path.join(ROOT, 'src', 'res', name)
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            open(path, 'wb').write(data)
+            if name in INCLUDED:
+                open(resinc.inc_name(path), 'w').write(INCLUDED[name])
     else:
         return 0
     return len(files)
@@ -1454,7 +1508,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
             for res, path in built.items():
                 body = body.replace('INCBIN "res/%s"' % res, 'INCBIN "%s"' % path)
             if prefix:
-                body = body.replace('INCBIN "res/', 'INCBIN "' + prefix)
+                body = body.replace('INCBIN "res/', 'INCBIN "' + prefix).replace('INCLUDE "res/', 'INCLUDE "' + prefix)
             if part.get('save'):
                 body = body.replace('SAVEBIN "%s"' % binary, 'SAVEBIN "%s"' % part['save'])
             files[os.path.join(dest, name + '.asm')] = body

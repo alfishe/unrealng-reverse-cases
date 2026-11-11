@@ -55,10 +55,10 @@ lines, but `kit/ann_names.py` only matches upper case, so write upper case.
 
 | Directive | Grammar | What the generator does with it |
 | --- | --- | --- |
-| `@module` | `@module NAME [; title]` | The entries from the next entry line on go to `NAME.asm`. The title heads that file and the `INCLUDE` line in `game.asm`. The module starts at its first entry, which must have a name, or `split_modules` fails. A module named like the top file that includes the modules (`@module game` beside `game.asm`) goes to `NAME-module.asm` (`game-module.asm`); its name stays `game` in the headers, docs 11 / 12 and the signatures. A module with no entry fails |
+| `@module` | `@module NAME [; title]` | The entries from the next entry line on go to `NAME.asm`. The title heads that file and the `INCLUDE` line in `game.asm`. The module starts at its first entry, which must have a name, or `split_modules` fails. A module named like the top file that includes the modules (`@module game` beside `game.asm`) goes to `NAME-module.asm` (`game-module.asm`); its name stays `game` in the headers, docs 11 / 12 and the signatures. A module with no entry fails. The same name again further on adds a stretch to that module (an IM 2 handler at `$F70B` and its jump and vector table at `$FCFC`-`$FE00` with other modules between): one file, the stretches in address order, the second and later ones opened by `ORG $ADDR` where the assembly does not already stand; `game.asm` includes the file where its first stretch lies, the title is the first `@module` line's (a later line's title only when the first had none), `@about` lines add to the one header, docs 11 / 12 give the module one section with all its stretches, `kit/sig_add.py` one signature entry a stretch. Not in a part segment assembled under `DISP` (mkgame refuses it there) |
 | `@about` | `@about text` | One paragraph of the current module's file header (wrapped at 116 columns between two rule lines). It is an error before any `@module` |
-| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. In a `w` entry, a word skool2asm wrote as a data label (`DEFW TileData`) is kept as a check after the `INCBIN`s, `ASSERT {TileGraphics} == TileData`, one line per `DEFW` line: the build fails when the label moves and the bytes do not (a word equal to a code label's address, `$0000` or `$FFFF` is taken for a number: data that matches an instruction's address, an end mark). The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install`; a `NAME.bin` an earlier install left beside the editable form it now writes is deleted |
-| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). A number equal to a label's address stays a number (skool2asm would write the label; the kit puts the instruction back as written). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
+| `@res` | `@res KIND/NAME.bin` | The last entry, which must be a data entry, is a resource. Its bytes go to `src/res/KIND/NAME.bin` and its data lines become `INCBIN "res/KIND/NAME.bin",offset,length` (their comments go with them, the lines a long comment wraps onto too). Several entries naming one file share it: the file holds the bytes from the first entry to the end of the last. In a `w` entry, a word skool2asm wrote as a data label (`DEFW TileData`) is kept as a check after the `INCBIN`s, `ASSERT {TileGraphics} == TileData`, one line per `DEFW` line: the build fails when the label moves and the bytes do not (a word equal to a code label's address, `$0000` or `$FFFF` is taken for a number: data that matches an instruction's address, an end mark). The case's `tools/res_formats.py install(files)` turns the bytes into the editable source (PNG, text) at `--install`; a `NAME.bin` an earlier install left beside the editable form it now writes is deleted. `@res KIND/NAME.bin include`: the entry's lines become `INCLUDE "res/KIND/NAME.inc"` instead, a file the case's `res_formats.py build` writes from the editable form with `kit/resinc.py` (`DB` lines, a `DW Label` for an address, so sjasmplus resolves it and a moved label is followed; the entry's inner labels as labels inside it): the text stays the source, an address in it can be a name. One entry a file. mkgame checks its own assembly with a numeric `.inc` of the image's bytes (and installs that one beside the bytes for a case without a res hook) |
+| `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). A number equal to a label's address stays a number (skool2asm would write the label; the kit puts the instruction back as written), and a decimal number stays decimal (`LD DE,-10000`, which skool2asm writes `LD DE,-$2710`; `LD DE,1*256+30`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
 | `@inline` | `@inline $ADDR [N]` | The routine at `ADDR` reads data placed after its `CALL` (a print routine with an inline string). The static walk stops at every call to it, so a string no recording printed is not taken for code. With `N`, the routine reads exactly `N` bytes (a one-byte code, a column): the walk goes on after them, and only those bytes are data |
 | `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead. Two operands are never named: the offset of a `Label+offset` (`LD HL,data_96FE+$4455` stays so inside `@equ $4000 Screen 6144`), and a port, the `LD BC,nn` whose `BC` feeds `IN` or `OUT (C)` (section 3.4; mkgame prints `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`); an `at` list that names the instruction still names it |
 
@@ -126,7 +126,9 @@ Without KIND the line names or comments an address **inside** an entry.
   after the entry's (`PlayerVars:` then `PocketTurn:`). An `LD` through memory at that address (`LD A,($9F43)`,
   `LD ($9F43),HL`) is written with the field's name, every other operand (`LD HL,$9F43`) with the entry's.
 - Inside an `@res` entry an inner label splits the `INCBIN` there. The label must lie inside the entry, or the
-  generator fails with `... inside the resource ... has no address in it`.
+  generator fails with `... inside the resource ... has no address in it`. In an `@res ... include` entry the label
+  goes inside the `.inc` (mkgame's numeric one at its offset; the case's res tool writes it from the editable form,
+  SimCity's menus as `label NAME`, `{=NAME}` or `NAME=V`).
 
 ```text
 $66E0 BigSpriteGlyphs ; 8-byte linear glyphs read by BuildBigSprite $8F0C when A = 1 (the operand at $8F15)
@@ -190,10 +192,11 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
    `@isub` rewrites (the ports of section 3.4 are `@isub`s of their own number), then `skool2asm.py -H`. After that:
    `IXl`/`IXh` are upper-cased, the first fields get their labels, `@equ` and `@var` names are applied (to every
    instruction but the `@isub` ones; an `@equ ... at` only to its own instructions; never to a `Label+offset`'s
-   offset), an `@isub` where skool2asm put a label for a number is written as the `.ann` has it, and the bare `;`
+   offset), an `@isub` where skool2asm put a label for a number or hex for a decimal number is written as the `.ann` has it, and the bare `;`
    SkoolKit leaves on continued data lines is removed.
 5. **Resources and modules.** Writes the `@res` files with their `INCBIN`s (and a `w` entry's `ASSERT`s, section
-   2; not in a segment assembled under `DISP`, where `{address}` reads other bytes), then splits the listing into one
+   2; not in a segment assembled under `DISP`, where `{address}` reads other bytes) or, for `@res ... include`, the
+   `INCLUDE` of the `.inc` and a numeric `.inc` of the image's bytes to assemble against, then splits the listing into one
    file per `@module`, each with its header. `game.asm` = the `case.json` `header` lines, `DEVICE`, the `EQU`s (`@const`,
    `@equ`, `@bank`, `@alias`), the head, one `INCLUDE` per module, and `SAVEBIN "game.bin",lo,hi-lo`.
 6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in the work folder and compares `game.bin` with the image.
@@ -207,7 +210,15 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
 
 `kit/refdocs.py --case C` then reads `work/mkgame/game.ctl` and the `.ann`, together with the `ref_builds` L1 files,
 and writes doc 11 (data: readers and writers) and doc 12 (routines: runs, own T-states, callers, callees, memory,
-ports, `docs/img/routines/<Label>.gif` when it exists). Run mkgame first. Doc 12 groups by `@module`.
+ports, `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` that exists). Run mkgame first. Doc 12 groups
+by `@module`. A memory range is named by the label at or below its first byte, inner labels included
+(`Label+offset`). The interrupt's acceptance (the IM 2 vector read, the return address pushed), which L1 books to the
+interrupted instruction, is given to the handler, which doc 12 shows "Entered by" the interrupt rather than called.
+A routine no `ref_builds` recording reached gets the calls the `read_builds` and `code_builds` recordings saw. Doc
+11 gives each inner label of a data entry a row under it (its size up to the next label, its comment as the line
+says it, its own readers and writers), and adds to the readers and writers, marked "(code)", the routines whose
+`LD r,(nn)` / `LD (nn),r` in `work/mkgame/game.skool` reach the bytes where no recording saw them do so (kit/README.md,
+"What refdocs.py writes").
 
 `kit/sig_add.py ann --case C ...` cuts the image into the `.ann`'s modules and writes one signature entry per module.
 The entry name is `<program>: <module>`, its entries are the named `c` entries with their titles, its labels the
@@ -279,7 +290,7 @@ source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per seg
 | `entries_in_code`, `no_entries` | keep only the recorded routine entries the walk made code / take none |
 | `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there |
 | `operands` | `LD BC,nn` as `Label+offset` (section 3.4): only the pointers read through `(BC)` by default, `"wide"` every one, `"narrow"` none |
-| `drop_data_refs`, `isub_as_written` | drop sna2skool's reference marks inside data rows; write `@isub` numbers as the `.ann` does (decimal), not as skool2asm's hex |
+| `drop_data_refs`, `isub_as_written` | drop sna2skool's reference marks inside data rows; write `@isub` numbers as the `.ann` does (decimal), not as skool2asm's hex (now always so: the key stays for the older part files) |
 | `res`, `res_install`, `built`, `save` | the resources: as bytes into `res` (the `INCBIN`s name it relative to `dest`), or through a hook `tools/x.py[:function]` called with `{name: bytes}`; `built` `{NAME: PATH}` is a resource the build makes (not installed, `INCBIN "PATH"`); `save` is the installed top file's `SAVEBIN` path |
 | `segments` | the segments layout: `{"ann", "piece", "lo", "hi", "run", "bases", "read_builds", "title", "load_label", "l1", ...}` (any key above may be set per segment) or `{"lo", "hi", "lines": [...]}` |
 | `external`, `subdir`, `include`, `before_assemble` | names other included sources define (no `EQU` for them); modules in `dest/<top>/` (default) or `dest/`; `-I` folders for sjasmplus; a hook `tools/x.py:function` called with the work folder before sjasmplus |

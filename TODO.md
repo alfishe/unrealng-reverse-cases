@@ -10,8 +10,8 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 1 | OCP Video Pool | complete 2026-11-09 ([case](games/video-pool/README.md), doc 14 the UKNC port) |
 | 2 | Chuckie Egg | complete 2026-11-10 ([case](games/chuckie-egg/README.md)) |
 | 3 | Tujad | complete 2026-11-10 ([case](games/tujad/README.md)); ZXDB 33911 (the POKE file's 5448 is another id) |
-| 4 | SimCity | stage 2 ([case](games/simcity/README.md)); ZXDB 4509 |
-| 5 | Earth Shaker | our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
+| 4 | SimCity | complete 2026-11-10 ([case](games/simcity/README.md)); ZXDB 4509 |
+| 5 | Earth Shaker | stage 1 ([case](games/earth-shaker/README.md)); ZXDB 1563; our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | ZXDB 451 |
 
 ## Planned ports
@@ -53,11 +53,11 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | `kit/memanim.py --layout wide` makes 1102 px pictures | Tujad docs (tjA) | the default compact layout (load-c1.gif, 574 x 848) | fixed: `--layout wide` keeps the screen beside the grid at 2 x when that fits `--width` (1050), else at 1 x (846 px with `--screen` at `--cell 2`); `--width 0` gives the old 1102 px picture. No case figure uses `wide` |
 | `re_session.py` is not in `kit/`: the docs call unreal-ng's `tools/verification/analysis/re_session.py` as `$RS` from `work/env.sh` | Tujad docs (tjA) | `$RS` | fixed: not vendored (it imports `corpus.py`, `mm_session.py` and the MCP client beside it and drives that checkout's unreal-qt, a copy would drift): `kit/rs.py ARGS` runs it from the checkout `kit/toolpaths.py` finds (`--unreal`, `$UNREAL_NG`, the submodule, a checkout nearby), `toolpaths.py re_session` prints its path; kit/README.md and docs/case-files.md say so and define `$RS` as `kit/rs.py`. Tujad's docs and WALKTHROUGH call `../../kit/rs.py` (8 commands) |
 | an `@isub` that writes a number equal to an image label's address (`LD BC,$7EFE`, a port, = ShiftGraphic4) is still renamed to the label by skool2asm | Tujad integration (`$797F`) | `@const KeysSpaceToB $7EFE` and `@isub $797F LD BC,KeysSpaceToB` | fixed: an `@isub` where skool2asm put a label is written back as the `.ann` has it (`restore_isubs`). Tujad's `@const` and `@isub` dropped: the port rule above keeps `LD BC,$7EFE` (a plain `@isub $797F LD BC,$7EFE` stays a number too, checked with the port rule off), doc 05 says so. It had struck twice more: Exolon's `@isub $75A5 LD HL,$7010` (X, Y, not an address) was written `DefineKeyNotEnter`, now `$7010`; the three Zynaps cases' `@isub $A376 LD BC,$B54F-$0400` was written `Glyphs-$0400`, which the `.ann`s now say themselves |
-| addresses inside an INCBIN'd menu table stay numbers | SimCity stage 2 | none | open |
-| an IM 2 handler and its vector table far apart (`$F70B`, `$FD00`) cannot share one `@module` | SimCity stage 2 | two modules | open |
-| `kit/memanim.py`'s `buffer:` view draws a stack or record as bits, so pushed words cannot be read as hex | SimCity doc 04 (scA, Interrupt.gif) | the caption says so | open |
-| `kit/refdocs.py` links `docs/img/routines/NAME.gif` by routine name, so two documents' animations of one routine share one file: the second writer's overwrites the first's | SimCity docs 04 and 10 (`SimTask.gif`) | doc 10 shows doc 04's animation; its own was lost | open |
-| an `@isub` written in decimal (`LD DE,-10000`) comes out as `-$2710` in the `.asm` | SimCity integration (Print5Digits, PrintNumber24) | none (the bytes are right) | open |
+| addresses inside an INCBIN'd menu table stay numbers | SimCity stage 2 | none | fixed (kit, `@res NAME.bin include`: the case's res tool writes a `.inc` of `DB` / `DW Label` lines with `kit/resinc.py`, the source INCLUDEs it, sjasmplus resolves the names). SimCity's 18 menus: `action SpeedFast`, `toggle AutoBulldoze`, inner labels as `{=SpeedMarkFast}` / `TaxRate=7`; a text edit and a moved label checked in a scratch copy (both followed); build identical, res 0 bad |
+| an IM 2 handler and its vector table far apart (`$F70B`, `$FD00`) cannot share one `@module` | SimCity stage 2 | two modules | fixed (kit, `@module NAME` again adds a stretch to the module, `ORG` before it; ann-format.md 2). SimCity with `@module tasks` before `$FCFC` assembles identical; the case keeps its two modules |
+| `kit/memanim.py`'s `buffer:` view draws a stack or record as bits, so pushed words cannot be read as hex | SimCity doc 04 (scA, Interrupt.gif) | the caption says so | fixed (kit, `routine_anim.py` (the view is its, not memanim's) `buffer:ADDR:WxH:hex` / `:words`: bytes or words in hex, a line an address). Interrupt.gif not redrawn |
+| `kit/refdocs.py` links `docs/img/routines/NAME.gif` by routine name, so two documents' animations of one routine share one file: the second writer's overwrites the first's | SimCity docs 04 and 10 (`SimTask.gif`) | doc 10 shows doc 04's animation; its own was lost | fixed (kit, refdocs links `NAME.gif` and every `NAME-what.gif`; routine_anim / memanim note an overwrite). SimCity doc 12 links `SimTask-growth.gif` too |
+| an `@isub` written in decimal (`LD DE,-10000`) comes out as `-$2710` in the `.asm` | SimCity integration (Print5Digits, PrintNumber24) | none (the bytes are right) | fixed (kit, `restore_isubs` writes a decimal `@isub` back as the `.ann` has it) |
 
 ## For unreal-ng
 

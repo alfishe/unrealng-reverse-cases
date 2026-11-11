@@ -260,7 +260,7 @@ AttrAddr:
   PUSH DE
   PUSH BC
   EX DE,HL
-  LD HL,Attributes+$0300
+  LD HL,Attributes+768
   LD BC,$0020
   INC D
 AttrAddrRow:

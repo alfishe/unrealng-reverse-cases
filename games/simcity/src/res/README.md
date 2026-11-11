@@ -1,7 +1,8 @@
 # Resources
 
 Every resource out of the code, in an editable format; `tools/res_formats.py build` turns them back into the bytes
-the source INCBINs (tools/build.sh), `tools/res_formats.py check` proves the round trip (54 editable files, 0 bad).
+the source INCBINs (tools/build.sh), the menus into the `.inc` files it INCLUDEs (their addresses by label name,
+[text/menus/](text/menus/README.md)), `tools/res_formats.py check` proves the round trip (54 editable files, 0 bad).
 
 | Folder | What |
 | --- | --- |

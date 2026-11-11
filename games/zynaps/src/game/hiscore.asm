@@ -63,14 +63,14 @@ HighScoreMoveDown:
   LDIR
   POP BC
   POP DE
-  LD HL,-$000E            ; the entry above
+  LD HL,-14               ; the entry above
   ADD HL,DE
   DJNZ HighScoreMoveDown
   POP HL                  ; the player's score into the free entry
   POP DE
   LD BC,$0004
   LDIR
-  LD HL,-$000A            ; HL = the free entry's initials
+  LD HL,-10               ; HL = the free entry's initials
   ADD HL,DE
   LD IX,$59AD             ; row 13, column 13
   LD B,$03

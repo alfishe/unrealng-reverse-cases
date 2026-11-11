@@ -45,6 +45,6 @@ PagedText:
 SetPage:
   DI                      ; no interrupt while the page changes
   OR $10                  ; bit 4: the 48 ROM
-  LD BC,Port7FFD             ; the paging port
+  LD BC,$7FFD             ; the paging port
   OUT (C),A
   RET

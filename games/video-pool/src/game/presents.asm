@@ -71,7 +71,7 @@ PresentsHold3:
 ; 500 calls of PresentsFrame $B91B (BC = 500). m1 ran it twice (frames 1237 and
 ; 3474, 1000 loop passes); no other build reached the end of the sequence.
 PresentsLongWait:
-  LD BC,$01F4
+  LD BC,500
 PresentsLongWaitLoop:
   CALL PresentsFrame
   DEC BC
@@ -163,7 +163,7 @@ BannerRollIn:
   LD BC,$011F
   LD (HL),$3B
   LDIR
-  LD HL,-$00F0
+  LD HL,-240
   LD DE,BannerData
   LD B,$20
 BannerFrameLoop:
@@ -193,7 +193,7 @@ BannerSkipRow:
   JR NZ,BannerSkipRow
 BannerNextRow:
   PUSH BC                 ; the next line's x: 20 pixels behind
-  LD BC,-$0014
+  LD BC,-20
   ADD HL,BC
   POP BC
   LD A,B
@@ -231,7 +231,7 @@ BannerRowLoop:
   PUSH HL
   CALL BannerRowEdges
   POP HL
-  LD BC,-$0014
+  LD BC,-20
   ADD HL,BC
   POP BC
   INC B

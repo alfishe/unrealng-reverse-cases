@@ -61,12 +61,12 @@ PrintNumber24:
   CALL Digit24
   EXX
   LD B,$FF
-  LD DE,-$2710
+  LD DE,-10000
   EXX
   CALL Digit24
   EXX
   LD B,$FF
-  LD DE,-$03E8
+  LD DE,-1000
   EXX
   CALL Digit24
   EXX

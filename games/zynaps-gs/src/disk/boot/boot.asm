@@ -51,9 +51,9 @@ Start:
   LD HL,Bank             ; bank 3: 64 sectors as they are
   LD BC,64*256+PAGE_BANK3
   CALL ReadSectors
-  LD BC,58*256+PAGE_BANK4 ; block 2: 58 sectors to $BED4 in bank 4
+  LD BC,58*256+PAGE_BANK4      ; block 2: 58 sectors to $BED4 in bank 4
   CALL ReadPackedAt
-  LD BC,49*256+PAGE_BANK6 ; block 3: 49 sectors to $BED4 in bank 6
+  LD BC,49*256+PAGE_BANK6      ; block 3: 49 sectors to $BED4 in bank 6
   CALL ReadPackedAt
   LD HL,Block4             ; block 4: 94 sectors to $607C with the 48 ROM and
                           ; bank 0: $61A8-$FFFF

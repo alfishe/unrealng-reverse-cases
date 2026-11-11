@@ -49,7 +49,7 @@ PrintNumber5:
   LD BC,$D8F0             ; -10000
   LD E,$20                ; leading zeros blank
   CALL PrintDigit         ; the ten thousands
-  LD BC,-$03E8            ; -1000
+  LD BC,-1000             ; -1000
   CALL PrintDigit         ; the thousands
 
 ; Print HL as three digits (E = $20: leading zeros blank, else printed)
@@ -57,7 +57,7 @@ PrintNumber5:
 ; The operand $FF9C is -100 (the source writes it so with @isub; as a label it
 ; would read Buildings+155, a false symbol). Used by PrintMenuTotal and $A833.
 PrintNumber3:
-  LD BC,-$0064            ; -100
+  LD BC,-100              ; -100
   CALL PrintDigit         ; the hundreds
 
 ; Print the tens and the units of HL
@@ -66,7 +66,7 @@ PrintNumber3:
 ; E = the leading-zero flag. The tens by PrintDigit, the units always printed.
 ; The tail of PrintNumber2, PrintNumber2Zero, PrintNumber3 and PrintNumber5.
 PrintTensUnits:
-  LD BC,-$000A            ; -10
+  LD BC,-10               ; -10
   CALL PrintDigit         ; the tens
   LD A,L                  ; the units digit, always printed
   ADD A,$30               ; as a digit

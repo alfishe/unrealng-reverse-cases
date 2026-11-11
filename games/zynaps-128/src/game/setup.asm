@@ -18,7 +18,7 @@
 ; byte is made $CD (CALL) first. The 15 mouse patch bytes are likewise one
 ; stream from MousePatches after the driver.
 SetUp:
-  LD HL,GameImage+GAME_LENGTH-1; the game: $6385-$FB84 to $6800-$FFFF
+  LD HL,GameImage+GAME_LENGTH-1     ; the game: $6385-$FB84 to $6800-$FFFF
                                     ; (from the end: the two overlap)
   LD DE,GameTop
   LD BC,GAME_LENGTH
@@ -39,16 +39,16 @@ SetUp:
   LD (SiteShot+1),DE      ; HookShot (5 bytes) at the player's shot
   LD C,$05
   LDIR
-  LD (SiteExtraLife+1),DE ; HookExtraLife (8)
+  LD (SiteExtraLife+1),DE     ; HookExtraLife (8)
   LD C,$08
   LDIR
-  LD (SiteBombBounce+1),DE; HookBombBounce (8)
+  LD (SiteBombBounce+1),DE     ; HookBombBounce (8)
   LD C,$08
   LDIR
-  LD (SiteHonour+1),DE    ; HookHonour (8)
+  LD (SiteHonour+1),DE     ; HookHonour (8)
   LD C,$08
   LDIR
-  LD (SiteHonourResult+1),DE; HookHonourResult (8)
+  LD (SiteHonourResult+1),DE     ; HookHonourResult (8)
   LD C,$08
   LDIR
   LD A,$CD                ; HookShipLost (8): the site's LD ($8072),A becomes
@@ -57,10 +57,10 @@ SetUp:
   LD (SiteShipLost+1),DE
   LD C,$08
   LDIR
-  LD (SiteHomingLaunch+1),DE; HookHomingLaunch (8)
+  LD (SiteHomingLaunch+1),DE     ; HookHomingLaunch (8)
   LD C,$08
   LDIR
-  LD (SitePodTaken+1),DE  ; HookPodTaken (8)
+  LD (SitePodTaken+1),DE     ; HookPodTaken (8)
   LD C,$08
   LDIR
   LD (SiteSpecialLaunch),A ; HookSpecialLaunch (8): the site's LD HL,$F36F
@@ -68,13 +68,13 @@ SetUp:
   LD (SiteSpecialLaunch+1),DE
   LD C,$08
   LDIR
-  LD (SiteEnemyMissile+1),DE; HookEnemyMissile (5)
+  LD (SiteEnemyMissile+1),DE     ; HookEnemyMissile (5)
   LD C,$05
   LDIR
-  LD (SiteWeaponSelect+1),DE; HookWeaponSelect (8)
+  LD (SiteWeaponSelect+1),DE     ; HookWeaponSelect (8)
   LD C,$08
   LDIR
-  LD (SitePodAppears+1),DE; HookPodAppears (5)
+  LD (SitePodAppears+1),DE     ; HookPodAppears (5)
   LD C,$05
   LDIR
   LD (SiteExplosion),A    ; HookExplosion (9): the site's LD HL,$D6ED becomes a
@@ -87,7 +87,7 @@ SetUp:
   LD (SiteSelections+1),DE
   LD C,$0D
   LDIR
-  LD (SiteScreenWipe1+1),DE; HookScreenWipe (13), for both wipe sites
+  LD (SiteScreenWipe1+1),DE     ; HookScreenWipe (13), for both wipe sites
   LD (SiteScreenWipe2+1),DE
   LD C,$0D
   LDIR

@@ -822,7 +822,7 @@ FindSlotLoop:
   POP BC
   LD HL,(HeroSlot)
   JR C,FindSlotDone
-  LD DE,-$0007            ; one record up
+  LD DE,-7                ; one record up
   ADD HL,DE
   LD (HeroSlot),HL
   LD DE,(HeroCount)

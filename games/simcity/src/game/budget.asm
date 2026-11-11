@@ -32,15 +32,7 @@ BudgetWindow:
 ; The numbers live inside the text (menu codes 5, 6, 7, section DrawMenu):
 ; TaxRate and the three funding percentages are the bytes the player edits.
 BudgetWindowText:
-  INCBIN "res/text/menus/Budget.bin",$0000,40
-TaxRate:
-  INCBIN "res/text/menus/Budget.bin",$0028,114
-TransportPercent:
-  INCBIN "res/text/menus/Budget.bin",$009A,25
-PolicePercent:
-  INCBIN "res/text/menus/Budget.bin",$00B3,25
-FirePercent:
-  INCBIN "res/text/menus/Budget.bin",$00CC,134
+  INCLUDE "res/text/menus/Budget.inc"
 
 ; 24 bits: last year's population / 100 x TaxRate
 TaxIncome:

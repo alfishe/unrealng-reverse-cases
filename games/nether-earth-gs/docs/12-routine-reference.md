@@ -120,9 +120,9 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | run into, not called, 822,659 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 73,269 t-states own (0.04 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 245,861 t-states own (0.03 %) |
-| Calls | `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `BuildMap`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `DrawViewBackground`, `DrawPlayScreen`, `UpdateStatusPanel`, `WaitKey`, `ImJump` |
-| Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E719` (`Map`); `$E914`-`$EB19` (`Map`); `$ED12`-`$ED19` (`Map`); `$EF12`-`$F119` (`Map`); 6 more ranges |
-| Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`Variables`, `ImJump`); `$FF01`-`$FFC9` (`Buildings`, `StackArea`); `$FFFE`-`$FFFF` (`StackArea`) |
+| Calls | `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `BuildMap`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `DrawViewBackground`, `DrawPlayScreen`, `UpdateStatusPanel`, `WaitKey` |
+| Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); 6 more ranges |
+| Writes | `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFF` (`PrintAddr`, `ImJump`); `$FF01`-`$FFC9` (`Buildings`, `StackArea`) |
 
 ### `EnterPlay` (`$A68E`)
 
@@ -167,7 +167,7 @@ IX = IY (the record), +`$0A` = 1 (the robot stands: UpdateRobot returns at once 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 440 t-states own (0.00 %) |
 | Called from | `NewGameSetup` |
 | Calls | `RobotMenuShow` |
-| Writes | `$DA0A`-`$DA7A` (`Robots`); `$DA9A`-`$DAAA` (`Robots`); `$FD1F` (`Variables`); `$FD39` (`Variables`) |
+| Writes | `$DA0A`-`$DA7A` (`Robots+10`); `$DA9A`-`$DAAA` (`Robots+154`); `$FD1F` (`MenuCursor`); `$FD39` (`PanelBusy`) |
 
 ### `RobotMenuShow` (`$A732`)
 
@@ -196,7 +196,7 @@ Copies the 27-byte name of order +`$0B` from OrderNames (`$A848` + 27 x order) i
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 10 calls, 7,210 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintInline` |
-| Reads | `$A848`-`$A862` (`OrderNames`); `$A899`-`$A8B3` (`OrderName3`); `$A8EA`-`$A91F` (`OrderName6`, `OrderName7`); `$DA0B`-`$DA7B` (`Robots`); `$DA9B`-`$DAAB` (`Robots`) |
+| Reads | `$A848`-`$A862` (`OrderNames`); `$A899`-`$A8B3` (`OrderName3`); `$A8EA`-`$A91F` (`OrderName6`, `OrderName7`); `$DA0B`-`$DA7B` (`Robots+11`); `$DA9B`-`$DAAB` (`Robots+155`) |
 | Writes | `$A7B2`-`$A7CC` (`OrderLine`) |
 
 ### `ShowOrderMiles` (`$A7CD`)
@@ -214,8 +214,8 @@ The printing tail after the inline position is ShowMilesCode (`$A7DC`). No Nethe
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 10 calls, 2,275 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
-| Reads | `$DA0B`-`$DA7B` (`Robots`); `$DA9B`-`$DAAB` (`Robots`); `$FD1F` (`Variables`) |
-| Writes | `$DA06`-`$DA7A` (`Robots`); `$DA96`-`$DAAA` (`Robots`); `$FD1F` (`Variables`); `$FD30`-`$FD39` (`Variables`) |
+| Reads | `$DA0B`-`$DA7B` (`Robots+11`); `$DA9B`-`$DAAB` (`Robots+155`); `$FD1F` (`MenuCursor`) |
+| Writes | `$DA06`-`$DA7A` (`Robots+6`); `$DA96`-`$DAAA` (`Robots+150`); `$FD1F` (`MenuCursor`); `$FD30`-`$FD39` (`ClimbTurns`, `PrintColumn`, `PrintRow`, `TitleColourPhase` and 3 more) |
 
 ### `ShowMilesCode` (`$A7DC`)
 
@@ -266,7 +266,7 @@ The tail of ShowStrength after its inline string: a negative strength is shown a
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 79 calls, 6,715 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintNumber3`, `PrintCharKeep` (tail) |
-| Reads | `$DA0C`-`$DA7C` (`Robots`); `$DA9C`-`$DAAC` (`Robots`) |
+| Reads | `$DA0C`-`$DA7C` (`Robots+12`); `$DA9C`-`$DAAC` (`Robots+156`) |
 
 ### `DirectControlItem` (`$A93B`)
 
@@ -424,8 +424,8 @@ The same list as DestroyMenuChoose; the item + 5 is the order (6 neutral factori
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3 calls, 195 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `RobotMenuShow` (tail), `ShowStrength`, `SetOrder`, `ListMenu`, `WaitRelease`, `FindTargetBuilding`, `Beep` |
-| Reads | `$DA02`-`$DA13` (`Robots`) |
-| Writes | `$DA0B`-`$DA1E` (`Robots`); `$FD51` (`Variables`) |
+| Reads | `$DA02`-`$DA13` (`Robots+2`) |
+| Writes | `$DA0B`-`$DA1E` (`Robots+11`); `$FD51` (`Side`) |
 
 ### `SetOrder` (`$ABC8`)
 
@@ -441,8 +441,8 @@ CombatMenu (`$AC00`) follows in the same block: the robot menu's item 3.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 1,202 t-states own (0.00 %) |
 | Called from | `DestroyMenuChoose` (tail), `CaptureMenuChoose` |
 | Calls | `RobotMenuShow` (tail), `WaitRelease`, `FindTargetBuilding`, `Beep` |
-| Reads | `$DA02`-`$DA73` (`Robots`); `$DA92`-`$DAA3` (`Robots`) |
-| Writes | `$DA0B`-`$DA7E` (`Robots`); `$DA9B`-`$DAAE` (`Robots`); `$FD51` (`Variables`) |
+| Reads | `$DA02`-`$DA73` (`Robots+2`); `$DA92`-`$DAA3` (`Robots+146`) |
+| Writes | `$DA0B`-`$DA7E` (`Robots+11`); `$DA9B`-`$DAAE` (`Robots+155`); `$FD51` (`Side`) |
 
 ### `CombatMenuCode` (`$AC7C`)
 
@@ -473,7 +473,7 @@ Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn, ShowSt
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 20 calls, 25,624 t-states own (0.00 %) |
 | Called from | `ShowOrderMiles`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose` |
 | Calls | `ShowStrength`, `PaintMenuItem`, `WaitRelease`, `GameTurn`, `MenuRadarTick`, `WorldTurn`, `Beep`, `DrawView`, `WaitKey` |
-| Reads | `$DA01`-`$DA71` (`Robots`); `$DA91`-`$DAA1` (`Robots`); `$FD0C` (`Variables`) |
+| Reads | `$DA01`-`$DA71` (`Robots+1`); `$DA91`-`$DAA1` (`Robots+145`); `$FD0C` (`Input`) |
 
 ### `PaintMenuItem` (`$AD3C`)
 
@@ -519,9 +519,9 @@ Called once a pass by PlayLoop and by every robot menu loop (3414 times in Nethe
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 208 calls, 18,288 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 100,668 t-states own (0.01 %) |
 | Called from | `NewGameSetup`, `ListMenu` |
-| Calls | `DailyProduction`, `Random`, `PrintInline`, `ImJump` |
-| Reads | `$FD35`-`$FD38` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD35`-`$FD38` (`Variables`); `$FFFC`-`$FFFD` (`StackArea`) |
+| Calls | `DailyProduction`, `Random`, `PrintInline` |
+| Reads | `$FD35`-`$FD38` (`Clock`) |
+| Writes | `$FD35`-`$FD38` (`Clock`) |
 
 ### `GameTurnEnd` (`$AD90`)
 
@@ -539,9 +539,9 @@ Last, the pacing (TurnPace): waits until PlayInterrupt has counted 10 frames in 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 208 calls, 20,685,202 t-states own (12.42 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 125,560,239 t-states own (14.51 %) |
 | Called from | `PrintInline` |
-| Calls | `CheckGameEnd`, `CountBases`, `GiveFactory`, `MapCell`, `FindRobot`, `UpdateStatusPanel`, `PrintNumber2Zero`, `PrintNumber5`, `PrintCharKeep`, `PrintNewline`, `ImJump` |
-| Reads | `$DA0A` (`Robots`); `$DB8A`-`$DBAA` (`EnemyRobots`); `$DBCA` (`EnemyRobots`); `$DC1A` (`EnemyRobots`); `$DC3A` (`EnemyRobots`); `$DC5A` (`EnemyRobots`); 11 more ranges |
-| Writes | `$FD34` (`Variables`); `$FD74`-`$FDFB` (`Variables`); `$FFF2`-`$FFFD` (`StackArea`) |
+| Calls | `CheckGameEnd`, `CountBases`, `GiveFactory`, `MapCell`, `FindRobot`, `UpdateStatusPanel`, `PrintNumber2Zero`, `PrintNumber5`, `PrintCharKeep`, `PrintNewline` |
+| Reads | `$DA0A` (`Robots+10`); `$DB8A`-`$DBAA` (`EnemyRobots+10`); `$DBCA` (`EnemyRobots+74`); `$DC1A` (`EnemyRobots+154`); `$DC3A` (`EnemyRobots+186`); `$DC5A` (`EnemyRobots+218`); 10 more ranges |
+| Writes | `$FD34` (`TurnFrames`); `$FD74`-`$FDFB` (`Warbases+4`, `Factories`) |
 
 ### `UnusedTapeCode` (`$AE29`)
 
@@ -578,7 +578,7 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 6 calls, 2,220 t-states own (0.00 %) |
 | Called from | `DailyProduction` |
 | Calls | `AddCapped` |
-| Reads | `$FD3A`-`$FD48` (`Variables`) |
+| Reads | `$FD3A`-`$FD48` (`PlayerBuildings`, `PlayerRobotCount`, `EnemyBuildings`) |
 
 ### `AddCapped` (`$AE62`)
 
@@ -591,9 +591,8 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 182 calls, 7,845 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 42 calls, 1,806 t-states own (0.00 %) |
 | Called from | `ProduceSide` |
-| Calls | `ImJump` |
-| Reads | `$FD22`-`$FD28` (`Variables`); `$FD4A`-`$FD50` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD22`-`$FD28` (`Variables`); `$FD4A`-`$FD50` (`Variables`); `$FFF6`-`$FFF7` (`StackArea`) |
+| Reads | `$FD22`-`$FD28` (`Resources`); `$FD4A`-`$FD50` (`EnemyResources`) |
+| Writes | `$FD22`-`$FD28` (`Resources`); `$FD4A`-`$FD50` (`EnemyResources`) |
 
 ### `CheckGameEnd` (`$AE6B`)
 
@@ -607,9 +606,7 @@ DE = the side's building counts (warbases, then the factories of electronics, nu
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 208 calls, 10,816 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 59,403 t-states own (0.01 %) |
 | Called from | `GameTurnEnd` |
-| Calls | `ImJump` |
-| Reads | `$FD3A`-`$FD42` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFA`-`$FFFB` (`StackArea`) |
+| Reads | `$FD3A`-`$FD42` (`PlayerBuildings`, `PlayerRobotCount`, `EnemyBuildings`) |
 
 ### `LostJump` (`$AEAF`)
 
@@ -668,8 +665,8 @@ Also the auto-climb (ClimbTurns), the altitude (fire +2 up to `$30`, else -1 dow
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,083 calls, 408,332 t-states own (0.05 %) |
 | Called from | `NewGameSetup` |
 | Calls | `ScrollRadar`, `LiftShipFromMap`, `PutShipOnMap`, `CheckShipMove` |
-| Reads | `$FD0A`-`$FD1E` (`Variables`); `$FD30` (`Variables`) |
-| Writes | `$FD06`-`$FD1E` (`Variables`); `$FD30` (`Variables`) |
+| Reads | `$FD0A`-`$FD1E` (`ViewX`, `Input`, `ShipY`, `ShipX` and 10 more); `$FD30` (`ClimbTurns`) |
+| Writes | `$FD06`-`$FD1E` (`MapView`, `SavedSP`, `ViewX`, `Input` and 12 more); `$FD30` (`ClimbTurns`) |
 
 ### `ScrollRadar` (`$AFE6`)
 
@@ -683,7 +680,7 @@ The radar shows 128 map columns: from column `$FD1B` x 8 (`$FD1C` = the same as 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 185 calls, 19,795 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,083 calls, 115,881 t-states own (0.01 %) |
 | Called from | `MoveShip` |
-| Reads | `$FD0E`-`$FD1B` (`Variables`) |
+| Reads | `$FD0E`-`$FD1B` (`ShipX`, `Altitude`, `ShipDrawPos`, `PrintAttr` and 5 more) |
 
 ### `LiftShipFromMap` (`$B01D`)
 
@@ -698,8 +695,8 @@ Called by MoveShip first thing each game turn, before the ship moves: the cell u
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,083 calls, 47,652 t-states own (0.01 %) |
 | Called from | `MoveShip` |
 | Calls | `BlinkShipDot` (tail), `ShipCell` |
-| Reads | `$E714`-`$E719` (`Map`); `$E914`-`$EB19` (`Map`); `$ED12`-`$ED19` (`Map`); `$EF12`-`$F119` (`Map`); `$F316`-`$F319` (`Map`); `$F516`-`$F518` (`Map`); 2 more ranges |
-| Writes | `$E714`-`$E719` (`Map`); `$E914`-`$EB19` (`Map`); `$ED12`-`$ED19` (`Map`); `$EF12`-`$F119` (`Map`); `$F316`-`$F319` (`Map`); `$F516`-`$F518` (`Map`); 2 more ranges |
+| Reads | `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); `$F316`-`$F319` (`Map+5654`); `$F516`-`$F518` (`Map+6166`); 2 more ranges |
+| Writes | `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); `$F316`-`$F319` (`Map+5654`); `$F516`-`$F518` (`Map+6166`); 2 more ranges |
 
 ### `PutShipOnMap` (`$B024`)
 
@@ -714,8 +711,8 @@ Called at the end of MoveShip (and by BuildMap). Sets bit 7 of the ship's cell, 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,084 calls, 34,688 t-states own (0.00 %) |
 | Called from | `MoveShip`, `BuildMap` |
 | Calls | `RefreshRadar`, `ShipCell` |
-| Reads | `$E714`-`$E719` (`Map`); `$E914`-`$EB19` (`Map`); `$ED12`-`$ED19` (`Map`); `$EF12`-`$F119` (`Map`); `$F316`-`$F319` (`Map`); `$F516`-`$F518` (`Map`); 2 more ranges |
-| Writes | `$E714`-`$E719` (`Map`); `$E914`-`$EB19` (`Map`); `$ED12`-`$ED19` (`Map`); `$EF12`-`$F119` (`Map`); `$F316`-`$F319` (`Map`); `$F516`-`$F518` (`Map`); 2 more ranges |
+| Reads | `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); `$F316`-`$F319` (`Map+5654`); `$F516`-`$F518` (`Map+6166`); 2 more ranges |
+| Writes | `$E714`-`$E719` (`Map+2580`); `$E914`-`$EB19` (`Map+3092`); `$ED12`-`$ED19` (`Map+4114`); `$EF12`-`$F119` (`Map+4626`); `$F316`-`$F319` (`Map+5654`); `$F516`-`$F518` (`Map+6166`); 2 more ranges |
 
 ### `RefreshRadar` (`$B029`)
 
@@ -730,8 +727,8 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,143 calls, 33,176 t-states own (0.00 %) |
 | Called from | `PutShipOnMap`, `MenuRadarTick` (tail) |
 | Calls | `BlinkShipDot`, `BuildRadar` |
-| Reads | `$FD52` (`Variables`) |
-| Writes | `$FD52` (`Variables`) |
+| Reads | `$FD52` (`RadarDirty`) |
+| Writes | `$FD52` (`RadarDirty`) |
 
 ### `BlinkShipDot` (`$B036`)
 
@@ -745,9 +742,8 @@ RadarBlink (`$FD1E`) counts the game turns (MoveShip increments it between LiftS
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 419 calls, 22,185 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,285 calls, 121,083 t-states own (0.01 %) |
 | Called from | `LiftShipFromMap` (tail), `RefreshRadar`, `MenuRadarTick` |
-| Calls | `ToggleRadarDot` (tail), `ImJump` |
-| Reads | `$FD0D`-`$FD1E` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF2`-`$FFFB` (`StackArea`) |
+| Calls | `ToggleRadarDot` (tail) |
+| Reads | `$FD0D`-`$FD1E` (`ShipY`, `ShipX`, `Altitude`, `ShipDrawPos` and 8 more) |
 
 ### `MenuRadarTick` (`$B048`)
 
@@ -762,8 +758,8 @@ Called by the robot menu loop (DirectControl) and ListMenu each pass, so the wor
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 59 calls, 2,832 t-states own (0.00 %) |
 | Called from | `ListMenu` |
 | Calls | `RefreshRadar` (tail), `BlinkShipDot` |
-| Reads | `$FD1E` (`Variables`) |
-| Writes | `$FD1E` (`Variables`) |
+| Reads | `$FD1E` (`RadarBlink`) |
+| Writes | `$FD1E` (`RadarBlink`) |
 
 ### `CheckShipMove` (`$B052`)
 
@@ -779,8 +775,8 @@ Out: carry set when Altitude < C (the ship would be inside something there), C =
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 167 calls, 50,267 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,045 calls, 314,545 t-states own (0.04 %) |
 | Called from | `MoveShip` |
-| Calls | `CellTop`, `ObjectTop`, `MapCell`, `ImJump` |
-| Reads | `$FD10` (`Variables`) |
+| Calls | `CellTop`, `ObjectTop`, `MapCell` |
+| Reads | `$FD10` (`Altitude`) |
 
 ### `TerrainTop` (`$B08A`)
 
@@ -794,9 +790,8 @@ DE a map cell. The cell's type (bits 0-4) indexes the ground height table Terrai
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 948 calls, 56,880 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,484 calls, 509,059 t-states own (0.06 %) |
 | Called from | `CellTop`, `GroundUnderFootprint` |
-| Calls | `KeepHigher` (tail), `AddAToHL`, `ImJump` |
-| Reads | `$D7BC`-`$D7CE` (`TerrainHeights`); `$DD23`-`$DE0D` (`Map`); `$DE2C`-`$DE6B` (`Map`); `$DEA4`-`$DEAF` (`Map`); `$DF23`-`$E00D` (`Map`); `$E02C`-`$E06B` (`Map`); 3 more ranges |
-| Writes | `$FFEE`-`$FFF1` (`StackArea`) |
+| Calls | `KeepHigher` (tail), `AddAToHL` |
+| Reads | `$D7BC`-`$D7CE` (`TerrainHeights`); `$DD23`-`$DE0D` (`Map+35`); `$DE2C`-`$DE6B` (`Map+300`); `$DEA4`-`$DEAF` (`Map+420`); `$DF23`-`$E00D` (`Map+547`); `$E02C`-`$E06B` (`Map+812`); 2 more ranges |
 
 ### `CellTop` (`$B096`)
 
@@ -824,9 +819,8 @@ When the cell has bit 6 (an object anchored there): a robot (FindRobot) counts w
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 835 calls, 56,869 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5,225 calls, 311,844 t-states own (0.04 %) |
 | Called from | `CheckShipMove` |
-| Calls | `KeepHigher`, `FindRobot`, `FindBuilding`, `AddAToHL`, `ImJump` |
-| Reads | `$B0C1`-`$B0C8` (`BuildingTops`); `$DA09`-`$DA7D` (`Robots`); `$DA99`-`$DAAD` (`Robots`); `$E513`-`$E51A` (`Map`); `$E712`-`$E91A` (`Map`); `$EB11`-`$EB1A` (`Map`); 7 more ranges |
-| Writes | `$FFF6`-`$FFF7` (`StackArea`) |
+| Calls | `KeepHigher`, `FindRobot`, `FindBuilding`, `AddAToHL` |
+| Reads | `$B0C1`-`$B0C8` (`BuildingTops`); `$DA09`-`$DA7D` (`Robots+9`); `$DA99`-`$DAAD` (`Robots+153`); `$E513`-`$E51A` (`Map+2067`); `$E712`-`$E91A` (`Map+2578`); `$EB11`-`$EB1A` (`Map+3601`); 6 more ranges |
 
 ### `KeepHigher` (`$B0AB`)
 
@@ -840,9 +834,6 @@ The common tail of TerrainTop and ObjectTop.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,052 calls, 26,486 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,697 calls, 218,623 t-states own (0.03 %) |
 | Called from | `TerrainTop` (tail), `ObjectTop` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE6`-`$FFEF` (`StackArea`) |
 
 ## world
 
@@ -860,9 +851,8 @@ Called once a game turn by the play loop (PlayLoop) and by the menus (DirectCont
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 209 calls, 1,035,746 t-states own (0.62 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 5,698,717 t-states own (0.66 %) |
 | Called from | `NewGameSetup`, `ListMenu` |
-| Calls | `UpdateRobot`, `UpdateShot`, `EnemyCommander`, `ImJump` |
-| Reads | `$D7D4`-`$D7F8` (`Shots`); `$DA01`-`$DCF1` (`Robots`, `EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF2`-`$FFFD` (`StackArea`) |
+| Calls | `UpdateRobot`, `UpdateShot`, `EnemyCommander` |
+| Reads | `$D7D4`-`$D7F8` (`Shots+1`); `$DA01`-`$DCF1` (`Robots+1`, `EnemyRobots`) |
 
 ### `UpdateRobot` (`$B0FA`)
 
@@ -876,9 +866,9 @@ IY = the robot record. Strength +`$0C` decides: positive, the robot acts (RobotS
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 616 calls, 24,640 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,949 calls, 357,979 t-states own (0.04 %) |
 | Called from | `WorldTurn` |
-| Calls | `RobotStep` (tail), `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `CountRobots`, `PutBlock`, `PlaceRobot` (tail), `UpdateStatusPanel`, `Random`, `ToggleRadarDot`, `ImJump` |
-| Reads | `$DA00`-`$DAAF` (`Robots`); `$DB80`-`$DC5F` (`EnemyRobots`); `$DC70`-`$DC8F` (`EnemyRobots`); `$DCA0`-`$DCFF` (`EnemyRobots`); `$DF23`-`$E00C` (`Map`); `$E02C`-`$E06A` (`Map`); 7 more ranges |
-| Writes | `$DA01`-`$DAAF` (`Robots`); `$DB85`-`$DC5F` (`EnemyRobots`); `$DC75`-`$DC8F` (`EnemyRobots`); `$DCA5`-`$DCFF` (`EnemyRobots`); `$DF23`-`$E00C` (`Map`); `$E02C`-`$E06A` (`Map`); 8 more ranges |
+| Calls | `RobotStep` (tail), `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `CountRobots`, `PutBlock`, `PlaceRobot` (tail), `UpdateStatusPanel`, `Random`, `ToggleRadarDot` |
+| Reads | `$DA00`-`$DAAF` (`Robots`); `$DB80`-`$DC5F` (`EnemyRobots`); `$DC70`-`$DC8F` (`EnemyRobots+240`); `$DCA0`-`$DCFF` (`EnemyRobots+288`); `$DF23`-`$E00C` (`Map+547`); `$E02C`-`$E06A` (`Map+812`); 6 more ranges |
+| Writes | `$DA01`-`$DAAF` (`Robots+1`); `$DB85`-`$DC5F` (`EnemyRobots+5`); `$DC75`-`$DC8F` (`EnemyRobots+245`); `$DCA5`-`$DCFF` (`EnemyRobots+293`); `$DF23`-`$E00C` (`Map+547`); `$E02C`-`$E06A` (`Map+812`); 7 more ranges |
 
 ### `RobotStep` (`$B154`)
 
@@ -895,9 +885,9 @@ Nether Earth's deep recording: 9652 steps; the shot records and strengths at fra
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 616 calls, 103,041 t-states own (0.06 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,949 calls, 1,560,043 t-states own (0.18 %) |
 | Called from | `UpdateRobot` (tail) |
-| Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot`, `ImJump` |
-| Reads | `$DA00`-`$DA4F` (`Robots`); `$DB80`-`$DB9F` (`EnemyRobots`); `$DC20`-`$DC2F` (`EnemyRobots`); `$DC40`-`$DC4F` (`EnemyRobots`); `$DCB0`-`$DCDF` (`EnemyRobots`); `$DF39`-`$DFE3` (`Map`); 8 more ranges |
-| Writes | `$DA05`-`$DA4F` (`Robots`); `$DB85`-`$DB9F` (`EnemyRobots`); `$DC25`-`$DC2F` (`EnemyRobots`); `$DC45`-`$DC4F` (`EnemyRobots`); `$DCB5`-`$DCDF` (`EnemyRobots`); `$DF39`-`$DFE3` (`Map`); 9 more ranges |
+| Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot` |
+| Reads | `$DA00`-`$DA4F` (`Robots`); `$DB80`-`$DB9F` (`EnemyRobots`); `$DC20`-`$DC2F` (`EnemyRobots+160`); `$DC40`-`$DC4F` (`EnemyRobots+192`); `$DCB0`-`$DCDF` (`EnemyRobots+304`); `$DF39`-`$DFE3` (`Map+569`); 7 more ranges |
+| Writes | `$DA05`-`$DA4F` (`Robots+5`); `$DB85`-`$DB9F` (`EnemyRobots+5`); `$DC25`-`$DC2F` (`EnemyRobots+165`); `$DC45`-`$DC4F` (`EnemyRobots+197`); `$DCB5`-`$DCDF` (`EnemyRobots+309`); `$DF39`-`$DFE3` (`Map+569`); 8 more ranges |
 
 ### `SteerByOrder` (`$B222`)
 
@@ -921,9 +911,9 @@ Bug (experiment, breakpoint at `$B2B8` after poking the target factory's owner):
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 30 calls, 8,010 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 424 calls, 219,735 t-states own (0.03 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `FindTargetBuilding`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `FindNearestOpponent`, `CountDirections`, `AddAToHL`, `Random`, `ImJump` |
-| Reads | `$DA01`-`$DAAB` (`Robots`); `$DAC1` (`Robots`); `$DAE1` (`Robots`); `$DB81`-`$DC5E` (`EnemyRobots`); `$DC72`-`$DC8E` (`EnemyRobots`); `$DCA2`-`$DCFE` (`EnemyRobots`); 3 more ranges |
-| Writes | `$DA06`-`$DA0E` (`Robots`); `$DA26`-`$DA4E` (`Robots`); `$DA76`-`$DA7E` (`Robots`); `$DB86`-`$DBDE` (`EnemyRobots`); `$DBF6`-`$DC1E` (`EnemyRobots`); `$DC36`-`$DC5E` (`EnemyRobots`); 3 more ranges |
+| Calls | `FindTargetBuilding`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `FindNearestOpponent`, `CountDirections`, `AddAToHL`, `Random` |
+| Reads | `$DA01`-`$DAAB` (`Robots+1`); `$DAC1` (`Robots+193`); `$DAE1` (`Robots+225`); `$DB81`-`$DC5E` (`EnemyRobots+1`); `$DC72`-`$DC8E` (`EnemyRobots+242`); `$DCA2`-`$DCFE` (`EnemyRobots+290`); 2 more ranges |
+| Writes | `$DA06`-`$DA0E` (`Robots+6`); `$DA26`-`$DA4E` (`Robots+38`); `$DA76`-`$DA7E` (`Robots+118`); `$DB86`-`$DBDE` (`EnemyRobots+6`); `$DBF6`-`$DC1E` (`EnemyRobots+118`); `$DC36`-`$DC5E` (`EnemyRobots+182`); 2 more ranges |
 
 ### `PickOneDirection` (`$B33E`)
 
@@ -947,9 +937,8 @@ A = the order (3 goes to FindNearestOpponent), HL = the robot's column, IY the r
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 5 calls, 7,124 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 32 calls, 32,740 t-states own (0.00 %) |
 | Called from | `CaptureMenuChoose`, `SetOrder`, `SteerByOrder`, `EnemyCommander` |
-| Calls | `ConsiderBuilding`, `TargetBuildingTable`, `InitNearestSearch`, `FindNearestOpponent` (tail), `ImJump` |
-| Reads | `$FD73`-`$FDFA` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF0`-`$FFF9` (`StackArea`) |
+| Calls | `ConsiderBuilding`, `TargetBuildingTable`, `InitNearestSearch`, `FindNearestOpponent` (tail) |
+| Reads | `$FD73`-`$FDFA` (`Warbases+3`, `Factories`) |
 
 ### `ConsiderBuilding` (`$B36C`)
 
@@ -963,9 +952,8 @@ HL = the record's owner byte (+`$03`), C its index, A' the order. Scans the 24 r
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 245,698 t-states own (0.15 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 348 calls, 888,742 t-states own (0.10 %) |
 | Called from | `FindTargetBuilding` |
-| Calls | `KeepNearest`, `ImJump` |
-| Reads | `$DA01`-`$DCFE` (`Robots`, `EnemyRobots`); `$FD51` (`Variables`); `$FD70`-`$FD71` (`Variables`); `$FD84`-`$FDF8` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE6`-`$FFF7` (`StackArea`) |
+| Calls | `KeepNearest` |
+| Reads | `$DA01`-`$DCFE` (`Robots+1`, `EnemyRobots`); `$FD51` (`Side`); `$FD70`-`$FD71` (`Warbases`); `$FD84`-`$FDF8` (`Factories`) |
 
 ### `KeepNearest` (`$B3B3`)
 
@@ -979,9 +967,7 @@ The comparison step of the nearest searches (InitNearestSearch sets it up): HL' 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 96 calls, 9,177 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 681 calls, 65,536 t-states own (0.01 %) |
 | Called from | `ConsiderBuilding`, `FindNearestOpponent` |
-| Calls | `ColumnDistance`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEC`-`$FFEF` (`StackArea`) |
+| Calls | `ColumnDistance` |
 
 ### `ColumnDistance` (`$B3CA`)
 
@@ -995,9 +981,6 @@ HL, DE two columns (0-511). A 16-bit absolute difference: SBC HL,DE and, when th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 96 calls, 3,690 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 748 calls, 30,702 t-states own (0.00 %) |
 | Called from | `SteerByOrder`, `KeepNearest` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEC`-`$FFED` (`StackArea`) |
 
 ### `TargetBuildingTable` (`$B3D5`)
 
@@ -1011,9 +994,7 @@ A = the order. Orders 5 and 8 (destroy / capture warbases): HL = `$FD73`, the ow
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 18 calls, 2,484 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 336 calls, 46,266 t-states own (0.01 %) |
 | Called from | `SteerByOrder`, `FindTargetBuilding`, `EnemyCommander` |
-| Calls | `ImJump` |
-| Reads | `$FD51` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF2`-`$FFF5` (`StackArea`) |
+| Reads | `$FD51` (`Side`) |
 
 ### `TargetRobotRecord` (`$B3F9`)
 
@@ -1026,9 +1007,7 @@ HL = `$DB80` + 16 * (+`$0E`) for our robots, `$DA00` + 16 * (+`$0E`) for the ene
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 1,638 calls, 186,528 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 139 calls, 16,107 t-states own (0.00 %) |
 | Called from | `SteerByOrder` |
-| Calls | `ImJump` |
-| Reads | `$DA2E`-`$DA4E` (`Robots`); `$DB8E`-`$DC0E` (`EnemyRobots`); `$DC3E`-`$DC5E` (`EnemyRobots`); `$DC7E`-`$DC8E` (`EnemyRobots`); `$DCAE` (`EnemyRobots`); `$DCCE`-`$DCFE` (`EnemyRobots`); 2 more ranges |
-| Writes | `$FFF4`-`$FFF5` (`StackArea`) |
+| Reads | `$DA2E`-`$DA4E` (`Robots+46`); `$DB8E`-`$DC0E` (`EnemyRobots+14`); `$DC3E`-`$DC5E` (`EnemyRobots+190`); `$DC7E`-`$DC8E` (`EnemyRobots+254`); `$DCAE` (`EnemyRobots+302`); `$DCCE`-`$DCFE` (`EnemyRobots+334`); 1 more ranges |
 
 ### `InitNearestSearch` (`$B411`)
 
@@ -1042,9 +1021,6 @@ DE' = HL (our column), BC' = `$2000` (no candidate yet), C = 0 (the first index)
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 5 calls, 334 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 104 calls, 6,571 t-states own (0.00 %) |
 | Called from | `FindTargetBuilding`, `FindNearestOpponent` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF8`-`$FFF9` (`StackArea`) |
 
 ### `FindNearestOpponent` (`$B41D`)
 
@@ -1057,9 +1033,8 @@ HL = our column, IY the robot, Side set. Runs KeepNearest over the 24 opponent r
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 603 calls, 1,715,908 t-states own (0.06 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 74 calls, 200,680 t-states own (0.02 %) |
 | Called from | `SteerByOrder`, `FindTargetBuilding` (tail) |
-| Calls | `KeepNearest`, `InitNearestSearch`, `ImJump` |
-| Reads | `$DA01`-`$DCF3` (`Robots`, `EnemyRobots`); `$FD51` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEE`-`$FFF1` (`StackArea`) |
+| Calls | `KeepNearest`, `InitNearestSearch` |
+| Reads | `$DA01`-`$DCF3` (`Robots+1`, `EnemyRobots`); `$FD51` (`Side`) |
 
 ### `RobotDirectControl` (`$B450`)
 
@@ -1085,9 +1060,9 @@ Experiment of the Nether Earth case (DIRECT CONTROL on a new bipod + cannon robo
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 10,724 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 182,454 t-states own (0.02 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `StepPosition`, `GroundUnderFootprint`, `ImJump` |
-| Reads | `$DA06`-`$DAAA` (`Robots`); `$DB86`-`$DC5A` (`EnemyRobots`); `$DC76`-`$DC8A` (`EnemyRobots`); `$DCA6`-`$DCFA` (`EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$DA06`-`$DAAD` (`Robots`); `$DB86`-`$DC5D` (`EnemyRobots`); `$DC76`-`$DC8D` (`EnemyRobots`); `$DCA6`-`$DCFD` (`EnemyRobots`); `$FFEE`-`$FFF7` (`StackArea`) |
+| Calls | `StepPosition`, `GroundUnderFootprint` |
+| Reads | `$DA06`-`$DAAA` (`Robots+6`); `$DB86`-`$DC5A` (`EnemyRobots+6`); `$DC76`-`$DC8A` (`EnemyRobots+246`); `$DCA6`-`$DCFA` (`EnemyRobots+294`) |
+| Writes | `$DA06`-`$DAAD` (`Robots+6`); `$DB86`-`$DC5D` (`EnemyRobots+6`); `$DC76`-`$DC8D` (`EnemyRobots+246`); `$DCA6`-`$DCFD` (`EnemyRobots+294`) |
 
 ### `StepPosition` (`$B4B9`)
 
@@ -1103,9 +1078,7 @@ Experiment: ADVANCE with 5 MILES (the robot menu stores miles * 2 into +`$0E` = 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 70 calls, 4,913 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,076 calls, 77,138 t-states own (0.01 %) |
 | Called from | `TurnOrStep` |
-| Calls | `ImJump` |
-| Reads | `$DA0B`-`$DA7B` (`Robots`); `$DA9B` (`Robots`); `$DB8B`-`$DC5B` (`EnemyRobots`); `$DC7B`-`$DC8B` (`EnemyRobots`); `$DCAB`-`$DCFB` (`EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF4`-`$FFF5` (`StackArea`) |
+| Reads | `$DA0B`-`$DA7B` (`Robots+11`); `$DA9B` (`Robots+155`); `$DB8B`-`$DC5B` (`EnemyRobots+11`); `$DC7B`-`$DC8B` (`EnemyRobots+251`); `$DCAB`-`$DCFB` (`EnemyRobots+299`) |
 
 ### `CountDirections` (`$B505`)
 
@@ -1119,9 +1092,6 @@ Z: exactly one direction; carry: none; neither: two or more. Counts bits 0-3 of 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 76 calls, 11,856 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 913 calls, 142,428 t-states own (0.02 %) |
 | Called from | `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF2`-`$FFF5` (`StackArea`) |
 
 ### `FreeDirections` (`$B513`)
 
@@ -1135,9 +1105,8 @@ IY the robot, HL its anchor cell. A robot covers 2x2 cells: its anchor (X, Y) ca
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 32,926 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 520,419 t-states own (0.06 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp`, `ImJump` |
-| Reads | `$DA07`-`$DAAD` (`Robots`); `$DB87`-`$DC5D` (`EnemyRobots`); `$DC77`-`$DC8D` (`EnemyRobots`); `$DCA7`-`$DCFD` (`EnemyRobots`); `$FD10` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF6`-`$FFF7` (`StackArea`) |
+| Calls | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp` |
+| Reads | `$DA07`-`$DAAD` (`Robots+7`); `$DB87`-`$DC5D` (`EnemyRobots+7`); `$DC77`-`$DC8D` (`EnemyRobots+247`); `$DCA7`-`$DCFD` (`EnemyRobots+295`); `$FD10` (`Altitude`) |
 
 ### `CanMoveRight` (`$B557`)
 
@@ -1151,9 +1120,8 @@ Terrain and objects at the column it enters, (X+2, Y-1) and (X+2, Y); an object 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 11,163 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 155,978 t-states own (0.02 %) |
 | Called from | `FreeDirections` |
-| Calls | `CellOffMapFree` (tail), `TestCell`, `ImJump` |
-| Reads | `$E125`-`$E2AF` (`Map`); `$E325`-`$E46C` (`Map`); `$E4A6`-`$E4AC` (`Map`); `$E52E`-`$E66C` (`Map`); `$E6A6`-`$E6AC` (`Map`); `$E71E`-`$E86C` (`Map`); 3 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`StackArea`) |
+| Calls | `CellOffMapFree` (tail), `TestCell` |
+| Reads | `$E125`-`$E2AF` (`Map+1061`); `$E325`-`$E46C` (`Map+1573`); `$E4A6`-`$E4AC` (`Map+1958`); `$E52E`-`$E66C` (`Map+2094`); `$E6A6`-`$E6AC` (`Map+2470`); `$E71E`-`$E86C` (`Map+2590`); 2 more ranges |
 
 ### `CanMoveLeft` (`$B56F`)
 
@@ -1167,9 +1135,8 @@ Terrain and objects at (X-1, Y-1) and (X-1, Y); objects anchored at (X-2, Y-1), 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 15,231 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 206,607 t-states own (0.02 %) |
 | Called from | `FreeDirections` |
-| Calls | `CellOffMapFree` (tail), `TestCell`, `ImJump` |
-| Reads | `$DD21`-`$DEAC` (`Map`); `$DF21`-`$E0AC` (`Map`); `$E121`-`$E2AC` (`Map`); `$E31B`-`$E469` (`Map`); `$E4A3`-`$E4AC` (`Map`); `$E51B`-`$FCC6` (`Map`); 1 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`StackArea`) |
+| Calls | `CellOffMapFree` (tail), `TestCell` |
+| Reads | `$DD21`-`$DEAC` (`Map+33`); `$DF21`-`$E0AC` (`Map+545`); `$E121`-`$E2AC` (`Map+1057`); `$E31B`-`$E469` (`Map+1563`); `$E4A3`-`$E4AC` (`Map+1955`); `$E51B`-`$FCC6` (`Map+2075`) |
 
 ### `CanMoveDown` (`$B58F`)
 
@@ -1183,9 +1150,8 @@ Blocked at the bottom row; terrain and objects at (X, Y+1) and (X+1, Y+1); objec
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 13,943 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 197,309 t-states own (0.02 %) |
 | Called from | `FreeDirections` |
-| Calls | `CellOffMapFree` (tail), `CellBlocked` (tail), `TestCell`, `ImJump` |
-| Reads | `$E322`-`$E40D` (`Map`); `$E42B`-`$E46B` (`Map`); `$E4A3`-`$E4AF` (`Map`); `$E522`-`$E60D` (`Map`); `$E62B`-`$E66B` (`Map`); `$E6A3`-`$E6AF` (`Map`); 2 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`StackArea`) |
+| Calls | `CellOffMapFree` (tail), `CellBlocked` (tail), `TestCell` |
+| Reads | `$E322`-`$E40D` (`Map+1570`); `$E42B`-`$E46B` (`Map+1835`); `$E4A3`-`$E4AF` (`Map+1955`); `$E522`-`$E60D` (`Map+2082`); `$E62B`-`$E66B` (`Map+2347`); `$E6A3`-`$E6AF` (`Map+2467`); 1 more ranges |
 
 ### `CanMoveUp` (`$B5B1`)
 
@@ -1199,9 +1165,8 @@ Blocked when Y-2 is above the map (the footprint already covers Y-1); an object 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 11,241 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 169,227 t-states own (0.02 %) |
 | Called from | `FreeDirections` |
-| Calls | `CellBlocked` (tail), `TestCell`, `ImJump` |
-| Reads | `$DD22`-`$DE0B` (`Map`); `$DE2B`-`$DE69` (`Map`); `$DEA3`-`$DEAD` (`Map`); `$DF22`-`$F3BA` (`Map`); `$F3EA`-`$F5BA` (`Map`); `$F5EA`-`$F870` (`Map`); 2 more ranges |
-| Writes | `$FFEA`-`$FFF3` (`StackArea`) |
+| Calls | `CellBlocked` (tail), `TestCell` |
+| Reads | `$DD22`-`$DE0B` (`Map+34`); `$DE2B`-`$DE69` (`Map+299`); `$DEA3`-`$DEAD` (`Map+419`); `$DF22`-`$F3BA` (`Map+546`); `$F3EA`-`$F5BA` (`Map+5866`); `$F5EA`-`$F870` (`Map+6378`); 1 more ranges |
 
 ### `CellOffMapFree` (`$B5C8`)
 
@@ -1215,9 +1180,6 @@ The shared exit of the probes for rows below the map.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 36 calls, 504 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 613 calls, 8,582 t-states own (0.00 %) |
 | Called from | `CanMoveRight` (tail), `CanMoveLeft` (tail), `CanMoveDown` (tail) |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF2`-`$FFF3` (`StackArea`) |
 
 ### `CellBlocked` (`$B5CA`)
 
@@ -1231,7 +1193,6 @@ The shared exit for an unpassable terrain type or a map edge.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 18 calls, 306 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,148 calls, 19,516 t-states own (0.00 %) |
 | Called from | `CanMoveDown` (tail), `CanMoveUp` (tail), `TestCell` (tail) |
-| Calls | `ImJump` |
 
 ### `TestCell` (`$B5CD`)
 
@@ -1245,9 +1206,8 @@ HL a map cell, D the first terrain type the locomotion cannot enter (FreeDirecti
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 752 calls, 34,400 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 10,625 calls, 475,214 t-states own (0.05 %) |
 | Called from | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp` |
-| Calls | `CellBlocked` (tail), `ImJump` |
-| Reads | `$DD22`-`$DE0E` (`Map`); `$DE2B`-`$DE6C` (`Map`); `$DEA3`-`$DEB0` (`Map`); `$DF22`-`$FC73` (`Map`); `$FCA6`-`$FCC9` (`Map`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE8`-`$FFF1` (`StackArea`) |
+| Calls | `CellBlocked` (tail) |
+| Reads | `$DD22`-`$DE0E` (`Map+34`); `$DE2B`-`$DE6C` (`Map+299`); `$DEA3`-`$DEB0` (`Map+419`); `$DF22`-`$FC73` (`Map+546`); `$FCA6`-`$FCC9` (`Map+8102`) |
 
 ### `GroundUnderFootprint` (`$B5D6`)
 
@@ -1261,9 +1221,7 @@ HL a column, B a row. TerrainTop over (X, Y), (X+1, Y), (X+1, Y-1), (X, Y-1), th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 70 calls, 12,320 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,076 calls, 189,395 t-states own (0.02 %) |
 | Called from | `TurnOrStep`, `MoveShot` |
-| Calls | `TerrainTop`, `MapCell`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF0`-`$FFF1` (`StackArea`) |
+| Calls | `TerrainTop`, `MapCell` |
 
 ### `SetStepDelay` (`$B5F3`)
 
@@ -1277,9 +1235,9 @@ The ground class from +`$0D`: 0 flat, 1-3 low, 4 and more high; the column from 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 19,285 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 317,734 t-states own (0.04 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `AddAToHL`, `ImJump` |
-| Reads | `$B61D`-`$B625` (`StepDelays`); `$DA07`-`$DAAD` (`Robots`); `$DB87`-`$DC5D` (`EnemyRobots`); `$DC77`-`$DC8D` (`EnemyRobots`); `$DCA7`-`$DCFD` (`EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$DA0F`-`$DAAF` (`Robots`); `$DB8F`-`$DC5F` (`EnemyRobots`); `$DC7F`-`$DC8F` (`EnemyRobots`); `$DCAF`-`$DCFF` (`EnemyRobots`); `$FFEA`-`$FFF3` (`StackArea`) |
+| Calls | `AddAToHL` |
+| Reads | `$B61D`-`$B625` (`StepDelays`); `$DA07`-`$DAAD` (`Robots+7`); `$DB87`-`$DC5D` (`EnemyRobots+7`); `$DC77`-`$DC8D` (`EnemyRobots+247`); `$DCA7`-`$DCFD` (`EnemyRobots+295`) |
+| Writes | `$DA0F`-`$DAAF` (`Robots+15`); `$DB8F`-`$DC5F` (`EnemyRobots+15`); `$DC7F`-`$DC8F` (`EnemyRobots+255`); `$DCAF`-`$DCFF` (`EnemyRobots+303`) |
 
 ### `SpotEnemies` (`$B626`)
 
@@ -1293,9 +1251,8 @@ IY the robot. For each direction (up, down, left, right: E's bits 3, 2, 1, 0 as 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 97 calls, 62,781 t-states own (0.04 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,512 calls, 978,016 t-states own (0.11 %) |
 | Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `ScanLane`, `ImJump` |
-| Reads | `$DA00`-`$DAA8` (`Robots`); `$DB80`-`$DC58` (`EnemyRobots`); `$DC70`-`$DC88` (`EnemyRobots`); `$DCA0`-`$DCF8` (`EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEC`-`$FFF5` (`StackArea`) |
+| Calls | `ScanLane` |
+| Reads | `$DA00`-`$DAA8` (`Robots`); `$DB80`-`$DC58` (`EnemyRobots`); `$DC70`-`$DC88` (`EnemyRobots+240`); `$DCA0`-`$DCF8` (`EnemyRobots+288`) |
 
 ### `ScanLane` (`$B66E`)
 
@@ -1309,9 +1266,8 @@ The step comes from LaneSteps by D's bit. The scan stops at the map's top or bot
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 582 calls, 389,497 t-states own (0.23 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 9,072 calls, 6,268,551 t-states own (0.72 %) |
 | Called from | `SpotEnemies` |
-| Calls | `FindRobot`, `ImJump` |
-| Reads | `$B6B0`-`$B6B7` (`LaneSteps`); `$DA0A`-`$DAAC` (`Robots`); `$DB8A`-`$DBFC` (`EnemyRobots`); `$DC1A`-`$DC5C` (`EnemyRobots`); `$DC8A`-`$DC8C` (`EnemyRobots`); `$DCAA`-`$FCEF` (`EnemyRobots`, `Map`, `MapTail`, `N1Leftover`); 1 more ranges |
-| Writes | `$FFE4`-`$FFEF` (`StackArea`) |
+| Calls | `FindRobot` |
+| Reads | `$B6B0`-`$B6B7` (`LaneSteps`); `$DA0A`-`$DAAC` (`Robots+10`); `$DB8A`-`$DBFC` (`EnemyRobots+10`); `$DC1A`-`$DC5C` (`EnemyRobots+154`); `$DC8A`-`$DC8C` (`EnemyRobots+266`); `$DCAA`-`$FCEF` (`EnemyRobots+298`, `Map`, `MapTail`, `N1Leftover`) |
 
 ### `FindFreeShot` (`$B6B8`)
 
@@ -1323,9 +1279,7 @@ Each side has two shot records of 9 bytes: ours `$D7DC` and `$D7E5`, the enemy's
 | --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 740 calls, 68,083 t-states own (0.00 %) |
 | Called from | `UpdateRobot` |
-| Calls | `ImJump` |
-| Reads | `$D7DD` (`Shots`); `$D7EF`-`$D7F8` (`Shots`); `$DA0A`-`$DA6A` (`Robots`); `$DB9A`-`$DBCA` (`EnemyRobots`); `$DC2A`-`$DC4A` (`EnemyRobots`); `$DCCA` (`EnemyRobots`); 1 more ranges |
-| Writes | `$FFF2`-`$FFF3` (`StackArea`) |
+| Reads | `$D7DD` (`Shots+10`); `$D7EF`-`$D7F8` (`Shots+28`); `$DA0A`-`$DA6A` (`Robots+10`); `$DB9A`-`$DBCA` (`EnemyRobots+26`); `$DC2A`-`$DC4A` (`EnemyRobots+170`); `$DCCA` (`EnemyRobots+330`) |
 
 ### `FireShot` (`$B6D6`)
 
@@ -1339,9 +1293,9 @@ When the shot survives the first step SoundFx (`$FD53`) = 1, the firing sound; w
 | --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 533 calls, 146,213 t-states own (0.01 %) |
 | Called from | `UpdateRobot` |
-| Calls | `MoveShot`, `ImJump` |
-| Reads | `$D7DD` (`Shots`); `$D7EF`-`$D7F8` (`Shots`); `$DA02`-`$DA28` (`Robots`); `$DA42`-`$DA68` (`Robots`); `$DB92`-`$DBC8` (`EnemyRobots`); `$DC22`-`$DC48` (`EnemyRobots`); 2 more ranges |
-| Writes | `$D7E1`-`$D7FF` (`Shots`); `$FD53` (`Variables`); `$FFF2`-`$FFF3` (`StackArea`) |
+| Calls | `MoveShot` |
+| Reads | `$D7DD` (`Shots+10`); `$D7EF`-`$D7F8` (`Shots+28`); `$DA02`-`$DA28` (`Robots+2`); `$DA42`-`$DA68` (`Robots+66`); `$DB92`-`$DBC8` (`EnemyRobots+18`); `$DC22`-`$DC48` (`EnemyRobots+162`); 1 more ranges |
+| Writes | `$D7E1`-`$D7FF` (`Shots+14`); `$FD53` (`SoundFx`) |
 
 ### `UpdateShot` (`$B70D`)
 
@@ -1354,8 +1308,8 @@ Clears the object bit of the shot's cell, counts +`$06` down (0: the shot is gon
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 114 calls, 16,302 t-states own (0.00 %) |
 | Called from | `WorldTurn` |
 | Calls | `MoveShot` |
-| Reads | `$D7DC`-`$D7FD` (`Shots`); `$E750`-`$E77F` (`Map`); `$E950`-`$E989` (`Map`); `$EB7B`-`$EB87` (`Map`); `$ED4F`-`$ED87` (`Map`); `$EF7B`-`$EF87` (`Map`); 3 more ranges |
-| Writes | `$D7E2` (`Shots`); `$D7F4`-`$D7FD` (`Shots`); `$E750`-`$E77F` (`Map`); `$E950`-`$E989` (`Map`); `$EB7B`-`$EB87` (`Map`); `$ED4F`-`$ED87` (`Map`); 4 more ranges |
+| Reads | `$D7DC`-`$D7FD` (`Shots+9`); `$E750`-`$E77F` (`Map+2640`); `$E950`-`$E989` (`Map+3152`); `$EB7B`-`$EB87` (`Map+3707`); `$ED4F`-`$ED87` (`Map+4175`); `$EF7B`-`$EF87` (`Map+4731`); 3 more ranges |
+| Writes | `$D7E2` (`Shots+15`); `$D7F4`-`$D7FD` (`Shots+33`); `$E750`-`$E77F` (`Map+2640`); `$E950`-`$E989` (`Map+3152`); `$EB7B`-`$EB87` (`Map+3707`); `$ED4F`-`$ED87` (`Map+4175`); 4 more ranges |
 
 ### `MoveShot` (`$B724`)
 
@@ -1371,9 +1325,9 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 | --- | --- |
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 647 calls, 219,652 t-states own (0.01 %) |
 | Called from | `FireShot`, `UpdateShot` |
-| Calls | `GroundUnderFootprint`, `MapCell`, `FindRobot`, `ImJump` |
-| Reads | `$D7E1`-`$D7FF` (`Shots`); `$DA09`-`$DA7D` (`Robots`); `$DA99`-`$DA9D` (`Robots`); `$DB99`-`$DBAD` (`EnemyRobots`); `$DC39`-`$DC3D` (`EnemyRobots`); `$DCC9`-`$DCCD` (`EnemyRobots`); 12 more ranges |
-| Writes | `$D7DC`-`$D7FB` (`Shots`); `$DA0C`-`$DA7C` (`Robots`); `$DA9C` (`Robots`); `$DB9C`-`$DBAC` (`EnemyRobots`); `$DC3C` (`EnemyRobots`); `$DCCC` (`EnemyRobots`); 10 more ranges |
+| Calls | `GroundUnderFootprint`, `MapCell`, `FindRobot` |
+| Reads | `$D7E1`-`$D7FF` (`Shots+14`); `$DA09`-`$DA7D` (`Robots+9`); `$DA99`-`$DA9D` (`Robots+153`); `$DB99`-`$DBAD` (`EnemyRobots+25`); `$DC39`-`$DC3D` (`EnemyRobots+185`); `$DCC9`-`$DCCD` (`EnemyRobots+329`); 11 more ranges |
+| Writes | `$D7DC`-`$D7FB` (`Shots+9`); `$DA0C`-`$DA7C` (`Robots+12`); `$DA9C` (`Robots+156`); `$DB9C`-`$DBAC` (`EnemyRobots+28`); `$DC3C` (`EnemyRobots+188`); `$DCCC` (`EnemyRobots+332`); 9 more ranges |
 
 ### `ShotGone` (`$B7EA`)
 
@@ -1405,9 +1359,9 @@ The robot is set up facing down, 3 steps, order 0, strength `$64`, +`$0A` = `$80
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 209 calls, 139,305 t-states own (0.08 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 670,871 t-states own (0.08 %) |
 | Called from | `WorldTurn` |
-| Calls | `FindTargetBuilding`, `TargetBuildingTable`, `CountDirections`, `CountRobots`, `PlaceRobot`, `MapCell`, `UpdateStatusPanel`, `AddAToHL`, `Random`, `ImJump` |
-| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$D7B4`-`$D7BB` (`PartHeights`); `$DB81`-`$DCFE` (`EnemyRobots`); `$EE05` (`Map`); `$EE71` (`Map`); `$EEEE` (`Map`); 8 more ranges |
-| Writes | `$DB85`-`$DCFF` (`EnemyRobots`); `$FD29`-`$FD2F` (`Variables`); `$FD4A`-`$FD51` (`Variables`) |
+| Calls | `FindTargetBuilding`, `TargetBuildingTable`, `CountDirections`, `CountRobots`, `PlaceRobot`, `MapCell`, `UpdateStatusPanel`, `AddAToHL`, `Random` |
+| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$D7B4`-`$D7BB` (`PartHeights`); `$DB81`-`$DCFE` (`EnemyRobots+1`); `$EE05` (`Map+4357`); `$EE71` (`Map+4465`); `$EEEE` (`Map+4590`); 8 more ranges |
+| Writes | `$DB85`-`$DCFF` (`EnemyRobots+5`); `$FD29`-`$FD2F` (`MenuResources`); `$FD4A`-`$FD51` (`EnemyResources`, `Side`) |
 
 ### `NuclearBlast` (`$B99F`)
 
@@ -1459,9 +1413,9 @@ Called after every change of owner (the capture tick `$AE17`), after the blast (
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 call, 3,479 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 17,559 t-states own (0.00 %) |
 | Called from | `GameTurnEnd`, `BuildMap` |
-| Calls | `AddAToHL`, `ImJump` |
-| Reads | `$FD3A`-`$FD48` (`Variables`); `$FD73`-`$FDFA` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD3A`-`$FD48` (`Variables`); `$FFFA`-`$FFFB` (`StackArea`) |
+| Calls | `AddAToHL` |
+| Reads | `$FD3A`-`$FD48` (`PlayerBuildings`, `PlayerRobotCount`, `EnemyBuildings`); `$FD73`-`$FDFA` (`Warbases+3`, `Factories`) |
+| Writes | `$FD3A`-`$FD48` (`PlayerBuildings`, `PlayerRobotCount`, `EnemyBuildings`) |
 
 ### `CountRobots` (`$BB40`)
 
@@ -1476,7 +1430,7 @@ Counts the robot records whose +1 (the map cell's high byte) is not 0: slots 0-2
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 12 calls, 960 t-states own (0.00 %) |
 | Called from | `NewGameSetup`, `UpdateRobot`, `EnemyCommander` |
 | Calls | `CountLiveRobots` |
-| Writes | `$FD41`-`$FD49` (`Variables`) |
+| Writes | `$FD41`-`$FD49` (`PlayerRobotCount`, `EnemyBuildings`, `EnemyRobotCount`) |
 
 ### `CountLiveRobots` (`$BB50`)
 
@@ -1488,7 +1442,7 @@ Counts the robot records whose +1 (the map cell's high byte) is not 0: slots 0-2
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 8 calls, 9,278 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 24 calls, 27,786 t-states own (0.00 %) |
 | Called from | `CountRobots` |
-| Reads | `$DA01`-`$DCF1` (`Robots`, `EnemyRobots`) |
+| Reads | `$DA01`-`$DCF1` (`Robots+1`, `EnemyRobots`) |
 
 ### `GiveFactory` (`$BB61`)
 
@@ -1534,8 +1488,8 @@ HL is `$FD73` (warbases) or `$FD87` (factories). Replaces bits 5-7 of the base's
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8 calls, 1,162 t-states own (0.00 %) |
 | Called from | `GiveFactory`, `GiveWarbase` |
 | Calls | `MapCell` (tail), `AddAToHL` |
-| Reads | `$FD70`-`$FDFA` (`Variables`) |
-| Writes | `$FD73`-`$FDFA` (`Variables`) |
+| Reads | `$FD70`-`$FDFA` (`Warbases`, `Factories`) |
+| Writes | `$FD73`-`$FDFA` (`Warbases+3`, `Factories`) |
 
 ### `DestroyFactory` (`$BBD8`)
 
@@ -1579,9 +1533,8 @@ Takes the first free record of Buildings (56 x 3 bytes: the cell, the type; a hi
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 29 calls, 23,142 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 33 calls, 29,568 t-states own (0.00 %) |
 | Called from | `GiveFactory`, `GiveWarbase` (tail), `PlaceBases` |
-| Calls | `ImJump` |
-| Reads | `$DF35`-`$E0D4` (`Map`); `$E3A0`-`$E675` (`Map`); `$E6F2`-`$E716` (`Map`); `$E837`-`$E893` (`Map`); `$EBE3`-`$EBE5` (`Map`); `$ED3C`-`$ED3E` (`Map`); 3 more ranges |
-| Writes | `$DF35`-`$E0D4` (`Map`); `$E3A0`-`$E675` (`Map`); `$E6F2`-`$E716` (`Map`); `$E837`-`$E893` (`Map`); `$EBE3`-`$EBE5` (`Map`); `$ED3C`-`$ED3E` (`Map`); 4 more ranges |
+| Reads | `$DF35`-`$E0D4` (`Map+565`); `$E3A0`-`$E675` (`Map+1696`); `$E6F2`-`$E716` (`Map+2546`); `$E837`-`$E893` (`Map+2871`); `$EBE3`-`$EBE5` (`Map+3811`); `$ED3C`-`$ED3E` (`Map+4156`); 3 more ranges |
+| Writes | `$DF35`-`$E0D4` (`Map+565`); `$E3A0`-`$E675` (`Map+1696`); `$E6F2`-`$E716` (`Map+2546`); `$E837`-`$E893` (`Map+2871`); `$EBE3`-`$EBE5` (`Map+3811`); `$ED3C`-`$ED3E` (`Map+4156`); 3 more ranges |
 
 ### `RemoveBuilding` (`$BC5D`)
 
@@ -1596,8 +1549,8 @@ Keeps IY and BC. Uses FindBuilding.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 20 calls, 1,780 t-states own (0.00 %) |
 | Called from | `GiveFactory`, `GiveWarbase` |
 | Calls | `FindBuilding` |
-| Reads | `$DF4D` (`Map`) |
-| Writes | `$DF4D` (`Map`); `$FF71` (`Buildings`) |
+| Reads | `$DF4D` (`Map+589`) |
+| Writes | `$DF4D` (`Map+589`); `$FF71` (`Buildings+112`) |
 
 ### `BuildMap` (`$BC6F`)
 
@@ -1613,9 +1566,9 @@ The resulting map: the player's warbase at (22,9), the enemy's at (261,8), (369,
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 call, 177,825 t-states own (0.11 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 177,825 t-states own (0.02 %) |
 | Called from | `NewGameSetup` |
-| Calls | `PutShipOnMap`, `CountBases`, `GiveWarbase`, `PlaceScenery`, `PlaceBases`, `ImJump` |
-| Reads | `$D800`-`$D8FE` (`RadarOwn`); `$DD00`-`$FCFE` (`Map`, `MapTail`, `N1Leftover`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$D800`-`$D8FF` (`RadarOwn`); `$DD00`-`$FCFF` (`Map`, `MapTail`, `N1Leftover`); `$FD52` (`Variables`); `$FFFC`-`$FFFD` (`StackArea`) |
+| Calls | `PutShipOnMap`, `CountBases`, `GiveWarbase`, `PlaceScenery`, `PlaceBases` |
+| Reads | `$D800`-`$D8FE` (`RadarOwn`); `$DD00`-`$FCFE` (`Map`, `MapTail`, `N1Leftover`) |
+| Writes | `$D800`-`$D8FF` (`RadarOwn`); `$DD00`-`$FCFF` (`Map`, `MapTail`, `N1Leftover`); `$FD52` (`RadarDirty`) |
 
 ### `PlaceScenery` (`$BCD6`)
 
@@ -1629,9 +1582,8 @@ A record with bit 7 clear is one 2 x 2 block of that tile (`$BD91`), with bit 7 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2 calls, 24,820 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2 calls, 24,820 t-states own (0.00 %) |
 | Called from | `BuildMap` |
-| Calls | `DrawShape`, `PutBlock`, `ImJump` |
-| Reads | `$BDA9`-`$BF45` (`SceneryWest`, `SceneryEast`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF6`-`$FFF7` (`StackArea`) |
+| Calls | `DrawShape`, `PutBlock` |
+| Reads | `$BDA9`-`$BF45` (`SceneryWest`, `SceneryEast`) |
 
 ### `PlaceBases` (`$BCF9`)
 
@@ -1647,7 +1599,7 @@ Type 0: a warbase. Its record goes to IX (the warbases' table) and ShapeWarbase 
 | Called from | `BuildMap` |
 | Calls | `AddBuilding`, `DrawShape` |
 | Reads | `$BF46`-`$BF9B` (`BaseListWest`, `BaseListEast`) |
-| Writes | `$FD70`-`$FDFB` (`Variables`) |
+| Writes | `$FD70`-`$FDFB` (`Warbases`, `Factories`) |
 
 ### `DrawShape` (`$BD61`)
 
@@ -1676,9 +1628,6 @@ HL a map cell, C the columns (signed), B the rows (signed). HL += C sign-extende
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 477 calls, 41,924 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 477 calls, 41,924 t-states own (0.00 %) |
 | Called from | `DrawShape` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF0`-`$FFF1` (`StackArea`) |
 
 ### `PutBlock` (`$BD91`)
 
@@ -1692,9 +1641,7 @@ Writes the cells (x, y), (x+1, y), (x, y-1), (x+1, y-1): the first with the tile
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 614 calls, 195,904 t-states own (0.12 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 614 calls, 195,904 t-states own (0.02 %) |
 | Called from | `UpdateRobot`, `PlaceScenery`, `DrawShape` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$DD0C`-`$F0DF` (`Map`); `$F0F7`-`$F2E1` (`Map`); `$F2F7`-`$F4E1` (`Map`); `$F4F7`-`$F8F8` (`Map`); `$F90C`-`$FAF8` (`Map`); `$FB0C`-`$FC92` (`Map`); 2 more ranges |
+| Writes | `$DD0C`-`$F0DF` (`Map+12`); `$F0F7`-`$F2E1` (`Map+5111`); `$F2F7`-`$F4E1` (`Map+5623`); `$F4F7`-`$F8F8` (`Map+6135`); `$F90C`-`$FAF8` (`Map+7180`); `$FB0C`-`$FC92` (`Map+7692`); 1 more ranges |
 
 ## mainmenu
 
@@ -1773,9 +1720,8 @@ Waits until no key is held (each frame cycling the title's colours, `$C820`), pl
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | run into, not called, 68,631 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 71,495 t-states own (0.04 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 23,795 t-states own (0.00 %) |
-| Calls | `TitleColourCycle`, `ImJump` |
-| Reads | `$C1A2` (`MenuWaitKey`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFC`-`$FFFD` (`StackArea`) |
+| Calls | `TitleColourCycle` |
+| Reads | `$C1A2` (`MenuWaitKey+1`) |
 
 ### `PrintTitle` (`$C1E3`)
 
@@ -2141,8 +2087,8 @@ The drum, the bass and lead note readers, the title colours; a number key ends M
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | run into, not called, 105 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | run into, not called, 168 t-states own (0.00 %) |
 | Calls | `BassNextEvent`, `LeadNextEvent`, `TitleColourCycle` |
-| Reads | `$FD08`-`$FD09` (`Variables`) |
-| Writes | `$FDFE`-`$FDFF` (`ImJump`) |
+| Reads | `$FD08`-`$FD09` (`SavedSP`) |
+| Writes | `$FDFE`-`$FDFF` (`ImJump+1`) |
 | Ports in | `$E7FE` |
 
 ### `BassNextEvent` (`$C528`)
@@ -2156,8 +2102,8 @@ HL' = the bass track position. A byte of 9 or more is a note: the byte is the pe
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3 calls, 199 t-states own (0.00 %) |
 | Called from | `MenuIntVoices`, `BassCall` (tail), `BassReturn` (tail) |
 | Calls | `MusicDispatch` |
-| Reads | `$C68D` (`BassTrack`); `$C6CC`-`$C6DC` (`BassWalk`) |
-| Writes | `$C4ED`-`$C4F3` (`BassStep`) |
+| Reads | `$C68D` (`BassTrack+21`); `$C6CC`-`$C6DC` (`BassWalk`) |
+| Writes | `$C4ED`-`$C4F3` (`BassStep+5`) |
 
 ### `LeadNextEvent` (`$C53B`)
 
@@ -2170,8 +2116,8 @@ The lead twin of BassNextEvent: DE' = the position, the note goes into `$C4D0` /
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3 calls, 203 t-states own (0.00 %) |
 | Called from | `MenuIntVoices`, `LeadCall` (tail), `LeadReturn` (tail) |
 | Calls | `MusicDispatch` |
-| Reads | `$C714` (`LeadTrack`); `$C7AA`-`$C7AB` (`LeadPhrase`); `$C7C4` (`LeadPhrase`) |
-| Writes | `$C4D0`-`$C4D6` (`LeadStep`) |
+| Reads | `$C714` (`LeadTrack+18`); `$C7AA`-`$C7AB` (`LeadPhrase`); `$C7C4` (`LeadPhrase+26`) |
+| Writes | `$C4D0`-`$C4D6` (`LeadStep+5`) |
 
 ### `BassCmd2` (`$C559`)
 
@@ -2292,8 +2238,8 @@ One level only: the return position (the address operand's high byte) is kept in
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 66 t-states own (0.00 %) |
 | Called from | `BassCmd2` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Reads | `$C68E`-`$C68F` (`BassTrack`) |
-| Writes | `$FD54`-`$FD55` (`Variables`) |
+| Reads | `$C68E`-`$C68F` (`BassTrack+22`) |
+| Writes | `$FD54`-`$FD55` (`BassReturnPos`) |
 
 ### `LeadCall` (`$C599`)
 
@@ -2306,8 +2252,8 @@ The return position is kept in `$FD56`.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 74 t-states own (0.00 %) |
 | Called from | `LeadCmd2` (tail) |
 | Calls | `LeadNextEvent` (tail) |
-| Reads | `$C715`-`$C716` (`LeadTrack`) |
-| Writes | `$FD56`-`$FD57` (`Variables`) |
+| Reads | `$C715`-`$C716` (`LeadTrack+19`) |
+| Writes | `$FD56`-`$FD57` (`LeadReturnPos`) |
 
 ### `BassGoto` (`$C5A7`)
 
@@ -2338,7 +2284,7 @@ POP HL; EX DE,HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; EX DE,HL; JP `$C
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 42 t-states own (0.00 %) |
 | Called from | `BassCmd6` (tail) |
 | Calls | `BassNextEvent` (tail) |
-| Reads | `$FD54`-`$FD55` (`Variables`) |
+| Reads | `$FD54`-`$FD55` (`BassReturnPos`) |
 
 ### `LeadReturn` (`$C5C3`)
 
@@ -2349,7 +2295,7 @@ POP HL; EX DE,HL; INC HL; LD A,(HL); INC HL; LD H,(HL); LD L,A; EX DE,HL; JP `$C
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 46 t-states own (0.00 %) |
 | Called from | `LeadCmd6` (tail) |
 | Calls | `LeadNextEvent` (tail) |
-| Reads | `$FD56`-`$FD57` (`Variables`) |
+| Reads | `$FD56`-`$FD57` (`LeadReturnPos`) |
 
 ### `SetDrumTrack` (`$C5CC`)
 
@@ -2436,7 +2382,7 @@ Counts `$FD33` 0-15 each call; on even counts it paints the attributes of rows 1
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2 calls, 2,869 t-states own (0.00 %) |
 | Called from | `MenuWaitKey`, `MenuIntVoices` |
 | Calls | `AddAToHL` |
-| Reads | `$FD33` (`Variables`) |
+| Reads | `$FD33` (`TitleColourPhase`) |
 | Writes | `$582A`-`$5835` (screen); `$584A`-`$5855` (screen); `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$58AA`-`$58B5` (screen); `$58CA`-`$58D5` (screen); 2 more ranges |
 
 ## construction
@@ -2459,9 +2405,9 @@ Returns (after LeaveConstructionMenu) with IY = the slot; PlayLoop then writes t
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2 calls, 7,878 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 20,130 t-states own (0.00 %) |
 | Called from | `NewGameSetup` |
-| Calls | `GsMenuSound`, `ClearScreen`, `DrawMaskedUp`, `TableWord`, `AddAToHL`, `PrintInline`, `ImJump` |
-| Reads | `$6A24`-`$6A25` (`SprTracksXOdd`); `$6D40`-`$6D41` (`SprBipodXOdd`); `$7058`-`$7059` (`SprAntiGravOdd`); `$7354`-`$7355` (`SprCannonXmOdd`); `$77F4`-`$77F5` (`SprMissilesXOdd`); `$7C96`-`$7C97` (`SprPhasersXmOdd`); 4 more ranges |
-| Writes | `$59E0`-`$5A03` (screen); `$5A20`-`$5A23` (screen); `$5A40`-`$5A43` (screen); `$5A60`-`$5A63` (screen); `$5A80`-`$5A83` (screen); `$5AA0`-`$5AA3` (screen); 4 more ranges |
+| Calls | `GsMenuSound`, `ClearScreen`, `DrawMaskedUp`, `TableWord`, `AddAToHL`, `PrintInline` |
+| Reads | `$6A24`-`$6A25` (`SprTracksXOdd`); `$6D40`-`$6D41` (`SprBipodXOdd`); `$7058`-`$7059` (`SprAntiGravOdd`); `$7354`-`$7355` (`SprCannonXmOdd`); `$77F4`-`$77F5` (`SprMissilesXOdd`); `$7C96`-`$7C97` (`SprPhasersXmOdd`); 3 more ranges |
+| Writes | `$59E0`-`$5A03` (screen); `$5A20`-`$5A23` (screen); `$5A40`-`$5A43` (screen); `$5A60`-`$5A63` (screen); `$5A80`-`$5A83` (screen); `$5AA0`-`$5AA3` (screen); 3 more ranges |
 
 ### `ConstructionMenuSetup` (`$C9E7`)
 
@@ -2476,8 +2422,8 @@ Continues ConstructionMenu after its text. The free slot's +8 is set to 4 and +`
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 1,555 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PaintMenuCursor`, `PrintMenuResources`, `ShowRobotDesign` |
-| Reads | `$FD22`-`$FD28` (`Variables`) |
-| Writes | `$DA08`-`$DAAD` (`Robots`); `$FD1F`-`$FD2F` (`Variables`) |
+| Reads | `$FD22`-`$FD28` (`Resources`) |
+| Writes | `$DA08`-`$DAAD` (`Robots+8`); `$FD1F`-`$FD2F` (`MenuCursor`, `MenuParts`, `Resources`, `MenuResources`) |
 
 ### `ConstructionMenuLoop` (`$CA0F`)
 
@@ -2495,9 +2441,9 @@ Experiment of the Nether Earth case (general 10, electronics 1, chassis 2): bipo
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 12 calls, 75,975 t-states own (0.05 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 39 calls, 178,004 t-states own (0.02 %) |
 | Called from | `MenuPause` (tail) |
-| Calls | `MoveMenuCursor` (tail), `MenuPause` (tail), `StartRobot` (tail), `PrintMenuResources`, `ShowRobotDesign`, `Beep`, `AddAToHL`, `WaitKey`, `ImJump` |
-| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$FD0C` (`Variables`); `$FD1F`-`$FD2F` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD21`-`$FD2F` (`Variables`); `$FFFC`-`$FFFD` (`StackArea`) |
+| Calls | `MoveMenuCursor` (tail), `MenuPause` (tail), `StartRobot` (tail), `PrintMenuResources`, `ShowRobotDesign`, `Beep`, `AddAToHL`, `WaitKey` |
+| Reads | `$CAF0`-`$CAFF` (`PartCosts`); `$FD0C` (`Input`); `$FD1F`-`$FD2F` (`MenuCursor`, `MenuParts`, `Resources`, `MenuResources`) |
+| Writes | `$FD21`-`$FD2F` (`MenuParts`, `Resources`, `MenuResources`) |
 
 ### `RefundPart` (`$CAC1`)
 
@@ -2522,8 +2468,8 @@ HL = MenuCursor (L the column, H the row), Input as WaitKey left it. Right adds 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 26 calls, 6,200 t-states own (0.00 %) |
 | Called from | `ConstructionMenuLoop` (tail) |
 | Calls | `PaintMenuCursor`, `Beep` |
-| Reads | `$FD0C` (`Variables`) |
-| Writes | `$FD1F`-`$FD20` (`Variables`) |
+| Reads | `$FD0C` (`Input`) |
+| Writes | `$FD1F`-`$FD20` (`MenuCursor`) |
 
 ### `MenuPause` (`$CB4A`)
 
@@ -2537,9 +2483,8 @@ The pause after every press (moves too); a shorter press falls into it and is lo
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 4 calls, 8,546,440 t-states own (5.13 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 13 calls, 27,721,512 t-states own (3.20 %) |
 | Called from | `ConstructionMenuLoop` (tail) |
-| Calls | `ConstructionMenuLoop` (tail), `ImJump` |
-| Reads | `$CB4D` (`MenuPause`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFC`-`$FFFD` (`StackArea`) |
+| Calls | `ConstructionMenuLoop` (tail) |
+| Reads | `$CB4D` (`MenuPauseLoop+1`) |
 
 ### `StartRobot` (`$CB52`)
 
@@ -2554,8 +2499,8 @@ Refused (back to the menu after the pause) without a chassis (MenuParts bits 0-2
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5 calls, 5,945 t-states own (0.00 %) |
 | Called from | `ConstructionMenuLoop` (tail) |
 | Calls | `PlaceRobot`, `Beep`, `ClearViewBuffer`, `DrawPlayScreen` |
-| Reads | `$FD0D`-`$FD0F` (`Variables`); `$FD21`-`$FD2F` (`Variables`) |
-| Writes | `$DA07`-`$DAAA` (`Robots`); `$FD22`-`$FD30` (`Variables`); `$FDFE`-`$FDFF` (`ImJump`) |
+| Reads | `$FD0D`-`$FD0F` (`ShipY`, `ShipX`); `$FD21`-`$FD2F` (`MenuParts`, `Resources`, `MenuResources`) |
+| Writes | `$DA07`-`$DAAA` (`Robots+7`); `$FD22`-`$FD30` (`Resources`, `MenuResources`, `ClimbTurns`); `$FDFE`-`$FDFF` (`ImJump+1`) |
 
 ### `PaintMenuCursor` (`$CBA9`)
 
@@ -2570,7 +2515,7 @@ Column 0 / 1: two rows of 5 cells, EXIT MENU at rows 21-22 columns 4-8, START RO
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 57 calls, 7,838 t-states own (0.00 %) |
 | Called from | `ConstructionMenuSetup`, `MoveMenuCursor` |
 | Calls | `FillAttributes` |
-| Reads | `$FD1F`-`$FD20` (`Variables`) |
+| Reads | `$FD1F`-`$FD20` (`MenuCursor`) |
 
 ### `FillAttributes` (`$CBDB`)
 
@@ -2584,9 +2529,7 @@ Also used by PaintMenuItem.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 116 calls, 25,644 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 298 calls, 66,750 t-states own (0.01 %) |
 | Called from | `PaintMenuItem`, `PaintMenuCursor` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$5835`-`$583F` (screen); `$5895`-`$589F` (screen); `$58F5`-`$591E` (screen); `$5955`-`$59DE` (screen); `$59F7`-`$5A3E` (screen); `$5A75`-`$5AAE` (screen); 2 more ranges |
+| Writes | `$5835`-`$583F` (screen); `$5895`-`$589F` (screen); `$58F5`-`$591E` (screen); `$5955`-`$59DE` (screen); `$59F7`-`$5A3E` (screen); `$5A75`-`$5AAE` (screen); 1 more ranges |
 
 ### `PrintMenuResources` (`$CBE0`)
 
@@ -2600,9 +2543,8 @@ The seven values at column 13: GENERAL row 9, ELECTRONICS-CHASSIS rows 11-16 (Pr
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 6 calls, 4,237 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 18 calls, 12,673 t-states own (0.00 %) |
 | Called from | `ConstructionMenuSetup`, `ConstructionMenuLoop` |
-| Calls | `PrintMenuResource`, `AddAToHL`, `PrintInline`, `ImJump` |
-| Reads | `$FD29`-`$FD2F` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFA`-`$FFFB` (`StackArea`) |
+| Calls | `PrintMenuResource`, `AddAToHL`, `PrintInline` |
+| Reads | `$FD29`-`$FD2F` (`MenuResources`) |
 
 ### `PrintMenuTotal` (`$CC03`)
 
@@ -2631,7 +2573,7 @@ Called by `$CBE0` for each of the seven MenuResources (rows 9, 11-16). Patches t
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 126 calls, 5,670 t-states own (0.00 %) |
 | Called from | `PrintMenuResources` |
 | Calls | `PrintInline` |
-| Writes | `$CC11` (`MenuResourcePos`) |
+| Writes | `$CC11` (`MenuResourcePos+1`) |
 
 ### `PrintMenuResourceValue` (`$CC14`)
 
@@ -2643,7 +2585,7 @@ Called by `$CBE0` for each of the seven MenuResources (rows 9, 11-16). Patches t
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 42 calls, 4,238 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 126 calls, 12,638 t-states own (0.00 %) |
 | Called from | `PrintInline` |
-| Calls | `PrintNumber2`, `ImJump` |
+| Calls | `PrintNumber2` |
 
 ### `ShowRobotDesign` (`$CC1F`)
 
@@ -2657,9 +2599,9 @@ IY = the robot record being designed. Paints the attributes of the parts list (c
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 6 calls, 137,844 t-states own (0.08 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 18 calls, 413,601 t-states own (0.05 %) |
 | Called from | `ConstructionMenuSetup`, `ConstructionMenuLoop` |
-| Calls | `DrawRobot`, `ClearViewBuffer`, `NextScreenLine`, `AddAToHL`, `ImJump` |
-| Reads | `$6168`-`$667F` (`ViewBufferTail`); `$6690`-`$6693` (`ViewBufferTail`); `$66A4`-`$66A7` (`ViewBufferTail`); `$66B8`-`$66BB` (`ViewBufferTail`); `$66CC`-`$66CF` (`ViewBufferTail`); `$66E0`-`$66E3` (`ViewBufferTail`); 4 more ranges |
-| Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 11 more ranges |
+| Calls | `DrawRobot`, `ClearViewBuffer`, `NextScreenLine`, `AddAToHL` |
+| Reads | `$6168`-`$667F` (`ViewBufferTail`); `$6690`-`$6693` (`ViewBufferTail+256`); `$66A4`-`$66A7` (`ViewBufferTail+276`); `$66B8`-`$66BB` (`ViewBufferTail+296`); `$66CC`-`$66CF` (`ViewBufferTail+316`); `$66E0`-`$66E3` (`ViewBufferTail+336`); 3 more ranges |
+| Writes | `$48E0`-`$54E3` (screen); `$5500`-`$55C3` (screen); `$55E0`-`$55E3` (screen); `$5600`-`$56C3` (screen); `$56E0`-`$56E3` (screen); `$5700`-`$57C3` (screen); 10 more ranges |
 
 ### `PlaceRobot` (`$CC7C`)
 
@@ -2673,9 +2615,9 @@ Writes +`$02`/+`$03` = HL (x), +`$04` = B (y), +`$00`/+`$01` = the map cell (Map
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 101 calls, 21,715 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,524 calls, 327,679 t-states own (0.04 %) |
 | Called from | `UpdateRobot` (tail), `RobotStep` (tail), `EnemyCommander`, `StartRobot` |
-| Calls | `MapCell`, `ToggleRadarDot` (tail), `ImJump` |
-| Reads | `$DA04`-`$DAAA` (`Robots`); `$DB84`-`$DC5A` (`EnemyRobots`); `$DC74`-`$DC8A` (`EnemyRobots`); `$DCA4`-`$DCFA` (`EnemyRobots`); `$DF23`-`$E00C` (`Map`); `$E02C`-`$E06A` (`Map`); 6 more ranges |
-| Writes | `$DA00`-`$DAA4` (`Robots`); `$DB80`-`$DC54` (`EnemyRobots`); `$DC70`-`$DC84` (`EnemyRobots`); `$DCA0`-`$DCF4` (`EnemyRobots`); `$DF23`-`$E00C` (`Map`); `$E02C`-`$E06A` (`Map`); 6 more ranges |
+| Calls | `MapCell`, `ToggleRadarDot` (tail) |
+| Reads | `$DA04`-`$DAAA` (`Robots+4`); `$DB84`-`$DC5A` (`EnemyRobots+4`); `$DC74`-`$DC8A` (`EnemyRobots+244`); `$DCA4`-`$DCFA` (`EnemyRobots+292`); `$DF23`-`$E00C` (`Map+547`); `$E02C`-`$E06A` (`Map+812`); 5 more ranges |
+| Writes | `$DA00`-`$DAA4` (`Robots`); `$DB80`-`$DC54` (`EnemyRobots`); `$DC70`-`$DC84` (`EnemyRobots+240`); `$DCA0`-`$DCF4` (`EnemyRobots+288`); `$DF23`-`$E00C` (`Map+547`); `$E02C`-`$E06A` (`Map+812`); 5 more ranges |
 
 ### `ShipCell` (`$CCA0`)
 
@@ -2690,7 +2632,7 @@ Falls into MapCell. Used by `$A62D`, `$B01D` (clear the ship's bit 7) and `$B024
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3,249 calls, 94,221 t-states own (0.01 %) |
 | Called from | `NewGameSetup`, `LiftShipFromMap`, `PutShipOnMap` |
 | Calls | `MapCell` |
-| Reads | `$FD0D`-`$FD0F` (`Variables`) |
+| Reads | `$FD0D`-`$FD0F` (`ShipY`, `ShipX`) |
 
 ### `MapCell` (`$CCA6`)
 
@@ -2704,9 +2646,6 @@ H += 2*A + `$DD`. The map lookup of the whole game (127962 calls in Nether Earth
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 7,114 calls, 206,325 t-states own (0.12 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 40,345 calls, 1,170,309 t-states own (0.14 %) |
 | Called from | `GameTurnEnd`, `CheckShipMove`, `GroundUnderFootprint`, `MoveShot`, `EnemyCommander`, `SetBaseOwner` (tail), `PlaceRobot`, `ShipCell`, `DrawCellObject` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE8`-`$FFF9` (`StackArea`) |
 
 ### `Beep` (`$CCAC`)
 
@@ -2742,7 +2681,7 @@ Called by PlayLoop, the menu loops that keep the game going (ListMenu's turn `$A
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 212 calls, 9,318 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,148 calls, 50,512 t-states own (0.01 %) |
 | Called from | `NewGameSetup`, `ListMenu`, `DrawPlayScreen` |
-| Calls | `DrawMapObjects`, `DrawViewBackground`, `CopyViewToScreen` (tail), `ImJump` |
+| Calls | `DrawMapObjects`, `DrawViewBackground`, `CopyViewToScreen` (tail) |
 
 ### `DrawMapObjects` (`$CCC6`)
 
@@ -2756,9 +2695,9 @@ Clears the deferred ship position `$FD11` and draws the ship's shadow (sprite 1,
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 212 calls, 13,890,915 t-states own (8.34 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,148 calls, 75,596,165 t-states own (8.74 %) |
 | Called from | `DrawView` |
-| Calls | `DrawCell`, `DrawSprite`, `AddAToHL`, `ImJump` |
-| Reads | `$DD00`-`$EF23` (`Map`); `$F100`-`$F123` (`Map`); `$F300`-`$F323` (`Map`); `$F500`-`$F523` (`Map`); `$F700`-`$F723` (`Map`); `$F900`-`$F923` (`Map`); 3 more ranges |
-| Writes | `$CF3F` (`DrawSprite`); `$FD11`-`$FD12` (`Variables`); `$FFEE`-`$FFFB` (`StackArea`) |
+| Calls | `DrawCell`, `DrawSprite`, `AddAToHL` |
+| Reads | `$DD00`-`$EF23` (`Map`); `$F100`-`$F123` (`Map+5120`); `$F300`-`$F323` (`Map+5632`); `$F500`-`$F523` (`Map+6144`); `$F700`-`$F723` (`Map+6656`); `$F900`-`$F923` (`Map+7168`); 2 more ranges |
+| Writes | `$CF3F` (`DrawSprite+18`); `$FD11`-`$FD12` (`ShipDrawPos`) |
 
 ### `DrawCell` (`$CD18`)
 
@@ -2772,9 +2711,9 @@ Cell bits: 0-4 the block type, 5 the right half of a two-cell block (nothing dra
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 21,643 calls, 3,095,760 t-states own (1.86 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 130,940 calls, 18,688,345 t-states own (2.16 %) |
 | Called from | `DrawMapObjects` |
-| Calls | `CheckObjectNeighbour`, `FindLatestBlock`, `DrawCellObject`, `DrawSprite`, `ImJump` |
-| Reads | `$DD0C`-`$DD0D` (`Map`); `$DF0C`-`$EF23` (`Map`); `$F10C`-`$F123` (`Map`); `$F30C`-`$F523` (`Map`); `$F70C`-`$F723` (`Map`); `$F90C`-`$F923` (`Map`); 3 more ranges |
-| Writes | `$CF3F` (`DrawSprite`); `$E716`-`$E918` (`Map`); `$EB16` (`Map`); `$ED14`-`$ED18` (`Map`); `$F116` (`Map`); `$F516`-`$F517` (`Map`); 4 more ranges |
+| Calls | `CheckObjectNeighbour`, `FindLatestBlock`, `DrawCellObject`, `DrawSprite` |
+| Reads | `$DD0C`-`$DD0D` (`Map+12`); `$DF0C`-`$EF23` (`Map+524`); `$F10C`-`$F123` (`Map+5132`); `$F30C`-`$F523` (`Map+5644`); `$F70C`-`$F723` (`Map+6668`); `$F90C`-`$F923` (`Map+7180`); 2 more ranges |
+| Writes | `$CF3F` (`DrawSprite+18`); `$E716`-`$E918` (`Map+2582`); `$EB16` (`Map+3606`); `$ED14`-`$ED18` (`Map+4116`); `$F116` (`Map+5142`); `$F516`-`$F517` (`Map+6166`); 3 more ranges |
 
 ### `CheckObjectNeighbour` (`$CD90`)
 
@@ -2788,9 +2727,8 @@ Used for the ship's neighbours: if HL has bit 6 (a robot, a building or a shot s
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,055 calls, 24,331 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 5,740 calls, 132,245 t-states own (0.02 %) |
 | Called from | `DrawCell` |
-| Calls | `KeepLaterCell`, `ImJump` |
-| Reads | `$E513`-`$E518` (`Map`); `$E713`-`$E718` (`Map`); `$E911`-`$F31A` (`Map`); `$F515`-`$F51A` (`Map`); `$F715`-`$F719` (`Map`); `$F915`-`$F918` (`Map`); 2 more ranges |
-| Writes | `$FFEE`-`$FFEF` (`StackArea`) |
+| Calls | `KeepLaterCell` |
+| Reads | `$E513`-`$E518` (`Map+2067`); `$E713`-`$E718` (`Map+2579`); `$E911`-`$F31A` (`Map+3089`); `$F515`-`$F51A` (`Map+6165`); `$F715`-`$F719` (`Map+6677`); `$F915`-`$F918` (`Map+7189`); 1 more ranges |
 
 ### `FindLatestBlock` (`$CD96`)
 
@@ -2804,9 +2742,7 @@ Checks the blocks (bit 5 clear, type not 0) at (x-1,y+1), (x,y+1) (both only whe
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 487 calls, 88,862 t-states own (0.05 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,082 calls, 377,467 t-states own (0.04 %) |
 | Called from | `DrawCell`, `DrawCellObject` |
-| Calls | `CheckBlockNeighbour`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE4`-`$FFEF` (`StackArea`) |
+| Calls | `CheckBlockNeighbour` |
 
 ### `CheckBlockNeighbour` (`$CDB8`)
 
@@ -2820,9 +2756,8 @@ Bit 5 set (the right half of a block) or type 0 (empty): nothing. Otherwise fall
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,918 calls, 74,926 t-states own (0.04 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 8,108 calls, 296,667 t-states own (0.03 %) |
 | Called from | `FindLatestBlock` |
-| Calls | `KeepLaterCell`, `ImJump` |
-| Reads | `$DF22` (`Map`); `$E122`-`$E124` (`Map`); `$E322`-`$E324` (`Map`); `$E51B`-`$F724` (`Map`); `$F915`-`$FB24` (`Map`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE4`-`$FFED` (`StackArea`) |
+| Calls | `KeepLaterCell` |
+| Reads | `$DF22` (`Map+546`); `$E122`-`$E124` (`Map+1058`); `$E322`-`$E324` (`Map+1570`); `$E51B`-`$F724` (`Map+2075`); `$F915`-`$FB24` (`Map+7189`) |
 
 ### `KeepLaterCell` (`$CDBF`)
 
@@ -2836,9 +2771,6 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 26 calls, 2,538 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 783 calls, 75,891 t-states own (0.01 %) |
 | Called from | `CheckObjectNeighbour`, `CheckBlockNeighbour` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEC`-`$FFED` (`StackArea`) |
 
 ### `FindRobot` (`$CDD8`)
 
@@ -2852,9 +2784,7 @@ Walks the 48 records of Robots (16 bytes: slots 0-23 the player's, 24-47 the ene
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 938 calls, 2,471,177 t-states own (1.48 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 4,319 calls, 13,656,841 t-states own (1.58 %) |
 | Called from | `NewGameSetup`, `GameTurnEnd`, `ObjectTop`, `ScanLane`, `MoveShot`, `DrawCellObject` |
-| Calls | `ImJump` |
-| Reads | `$DA00`-`$DCF1` (`Robots`, `EnemyRobots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFE0`-`$FFFD` (`StackArea`) |
+| Reads | `$DA00`-`$DCF1` (`Robots`, `EnemyRobots`) |
 
 ### `FindBuilding` (`$CDF5`)
 
@@ -2868,9 +2798,7 @@ Walks the 56 records of Buildings (3 bytes: the map cell address, the type) comp
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 534 calls, 1,305,821 t-states own (0.78 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,506 calls, 6,034,949 t-states own (0.70 %) |
 | Called from | `NewGameSetup`, `ObjectTop`, `RemoveBuilding`, `DrawCellObject` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FFA6` (`ImTable`, `Buildings`) |
-| Writes | `$FFE6`-`$FFFD` (`StackArea`) |
+| Reads | `$FF01`-`$FFA6` (`Buildings`) |
 
 ### `DrawCellObject` (`$CE12`)
 
@@ -2884,9 +2812,9 @@ A robot whose +`$00`/+`$01` is HL goes to DrawMover. A building record goes to i
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 698 calls, 179,146 t-states own (0.11 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3,230 calls, 766,652 t-states own (0.09 %) |
 | Called from | `DrawCell` |
-| Calls | `MapCell`, `FindLatestBlock`, `FindRobot`, `FindBuilding`, `DrawMoverSprite` (tail), `DrawRobot` (tail), `DrawSprite`, `AddAToHL`, `ImJump` |
-| Reads | `$CE56`-`$CE66` (`BuildingSprites`, `BuildingHeights`); `$DA02`-`$DAA4` (`Robots`); `$F122` (`Map`); `$F520`-`$F522` (`Map`); `$F922` (`Map`); `$FEFF`-`$FF00` (`ImTable`); 1 more ranges |
-| Writes | `$CF3F` (`DrawSprite`); `$DA10`-`$DA21` (`Robots`); `$DA40`-`$DA71` (`Robots`); `$F122` (`Map`); `$F520`-`$F522` (`Map`); `$F922` (`Map`); 1 more ranges |
+| Calls | `MapCell`, `FindLatestBlock`, `FindRobot`, `FindBuilding`, `DrawMoverSprite` (tail), `DrawRobot` (tail), `DrawSprite`, `AddAToHL` |
+| Reads | `$CE56`-`$CE66` (`BuildingSprites`, `BuildingHeights`); `$DA02`-`$DAA4` (`Robots+2`); `$F122` (`Map+5154`); `$F520`-`$F522` (`Map+6176`); `$F922` (`Map+7202`); `$FF4B`-`$FF4E` (`Buildings+74`) |
+| Writes | `$CF3F` (`DrawSprite+18`); `$DA10`-`$DA21` (`Robots+16`); `$DA40`-`$DA71` (`Robots+64`); `$F122` (`Map+5154`); `$F520`-`$F522` (`Map+6176`); `$F922` (`Map+7202`) |
 
 ### `DrawMover` (`$CE68`)
 
@@ -2909,9 +2837,7 @@ Records at `$D800` and up are robots: DrawRobot. A shot (records at `$D7D3`) is 
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 5,829 calls, 268,229 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 912 calls, 41,952 t-states own (0.00 %) |
 | Called from | `DrawCellObject` (tail) |
-| Calls | `DrawRobot` (tail), `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEC`-`$FFF3` (`StackArea`) |
+| Calls | `DrawRobot` (tail) |
 
 ### `DrawRobot` (`$CEE8`)
 
@@ -2925,9 +2851,9 @@ Height starts at +`$0D` (the ground under the robot, 0 in the construction menu)
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 282 calls, 97,549 t-states own (0.06 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 930 calls, 324,856 t-states own (0.04 %) |
 | Called from | `ShowRobotDesign`, `DrawCellObject` (tail), `DrawMoverSprite` (tail) |
-| Calls | `DrawRobotPart`, `ImJump` |
-| Reads | `$DA07`-`$DAAD` (`Robots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$CF3F` (`DrawSprite`); `$FFEA`-`$FFF1` (`StackArea`) |
+| Calls | `DrawRobotPart` |
+| Reads | `$DA07`-`$DAAD` (`Robots+7`) |
+| Writes | `$CF3F` (`DrawSprite+18`) |
 
 ### `DrawRobotPart` (`$CEFD`)
 
@@ -2941,9 +2867,9 @@ Sprite = `$16` + the parts table `$D6C8`[4 * part + direction], direction = the 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 558 calls, 166,890 t-states own (0.10 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,294 calls, 651,563 t-states own (0.08 %) |
 | Called from | `DrawRobot` |
-| Calls | `DrawSprite`, `AddAToHL`, `ImJump` |
-| Reads | `$CF3F` (`DrawSprite`); `$D6C8`-`$D6E7` (`PartSpriteTable`); `$D7B4`-`$D7BB` (`PartHeights`); `$DA08`-`$DAA8` (`Robots`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$CF3F` (`DrawSprite`); `$FFE6`-`$FFEF` (`StackArea`) |
+| Calls | `DrawSprite`, `AddAToHL` |
+| Reads | `$CF3F` (`DrawSprite+18`); `$D6C8`-`$D6E7` (`PartSpriteTable`); `$D7B4`-`$D7BB` (`PartHeights`); `$DA08`-`$DAA8` (`Robots+8`) |
+| Writes | `$CF3F` (`DrawSprite+18`) |
 
 ### `DrawSprite` (`$CF2D`)
 
@@ -2957,9 +2883,9 @@ The isometric projection: the half-byte column L = 2E + D - 24, the pixel row of
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 6,911 calls, 62,427,345 t-states own (37.47 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 39,562 calls, 321,800,423 t-states own (37.19 %) |
 | Called from | `DrawMapObjects`, `DrawCell`, `DrawCellObject`, `DrawRobotPart` |
-| Calls | `TableWord`, `AddAToHL`, `ImJump` |
-| Reads | `$5B08`-`$6777` (`ViewBufferTail`); `$6980`-`$8089` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 56 more); `$8224`-`$88E1` (`SprElectronicsXp`, `SprElectronicsXpRows`, `SprElectronicsXpOdd`, `SprElectronicsXpOddRows` and 24 more); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); `$A050`-`$A24B` (`SprPost`, `SprPostRows`, `SprBlockDoor`, `SprBlockDoorRows` and 2 more); 1 more ranges |
-| Writes | `$5B08`-`$6777` (`ViewBufferTail`); `$CFAF` (`DrawSprite`); `$FFDA`-`$FFF9` (`StackArea`) |
+| Calls | `TableWord`, `AddAToHL` |
+| Reads | `$5B08`-`$6777` (`ViewBufferTail`); `$6980`-`$8089` (`SprTracksX`, `SprTracksXRows`, `SprTracksXOdd`, `SprTracksXOddRows` and 56 more); `$8224`-`$88E1` (`SprElectronicsXp`, `SprElectronicsXpRows`, `SprElectronicsXpOdd`, `SprElectronicsXpOddRows` and 24 more); `$8E3A`-`$92F9` (`SprShip`, `SprShipRows`, `SprShipOdd`, `SprShipOddRows` and 11 more); `$9914`-`$9D9B` (`SprBlockLow`, `SprBlockLowRows`, `SprBlockLowOdd`, `SprBlockLowOddRows` and 4 more); `$A050`-`$A24B` (`SprPost`, `SprPostRows`, `SprBlockDoor`, `SprBlockDoorRows` and 2 more) |
+| Writes | `$5B08`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5DE5` (system); `$5DF8`-`$5E3F` (system); `$5E52`-`$5EFD` (system); 7 more ranges |
 
 ### `DrawViewBackground` (`$CFD7`)
 
@@ -2973,9 +2899,7 @@ ClearViewBuffer, FillViewCorner (the solid top left corner), then the diagonal e
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 213 calls, 33,867 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,149 calls, 182,786 t-states own (0.02 %) |
 | Called from | `NewGameSetup`, `DrawView` |
-| Calls | `ClearViewBuffer`, `FillViewCorner`, `DrawEdgeStrips` (tail), `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFA`-`$FFFB` (`StackArea`) |
+| Calls | `ClearViewBuffer`, `FillViewCorner`, `DrawEdgeStrips` (tail) |
 
 ### `ClearViewBuffer` (`$CFFE`)
 
@@ -2989,9 +2913,8 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 221 calls, 4,587,342 t-states own (2.75 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,172 calls, 24,328,977 t-states own (2.81 %) |
 | Called from | `StartRobot`, `ShowRobotDesign`, `DrawViewBackground` |
-| Calls | `ImJump` |
-| Reads | `$5B00`-`$5B1E` (system); `$FD08`-`$FD09` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$5B00`-`$5CAF` (system); `$5D0E`-`$611F` (system); `$61CE`-`$646F` (system); `$64AE`-`$64AF` (system); `$64EE`-`$669F` (`ViewBufferTail`); `$66FE`-`$677F` (`ViewBufferTail`); 2 more ranges |
+| Reads | `$5B00`-`$5B1E` (system); `$FD08`-`$FD09` (`SavedSP`) |
+| Writes | `$5B00`-`$5B1F` (system); `$5B40`-`$5B47` (system); `$5B86`-`$5B87` (system); `$5B9A`-`$5BA3` (system); `$5BB6`-`$5BD9` (system); `$5BEC`-`$5C1D` (system); 10 more ranges |
 
 ### `FillViewCorner` (`$D026`)
 
@@ -3005,9 +2928,9 @@ Pushes HL = 0 with SP at `$6780` (198 x 16 bytes, SP kept in `$FD08`), then clea
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 213 calls, 2,040,882 t-states own (1.23 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,149 calls, 11,009,795 t-states own (1.27 %) |
 | Called from | `DrawViewBackground` |
-| Calls | `AddAToHL`, `ImJump` |
-| Reads | `$D038`-`$D041` (`FillViewCorner`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$5B00`-`$5D95` (system); `$5DA8`-`$5DA9` (system); `$5DBC`-`$5DBD` (system); `$5DD0`-`$5DD1` (system); `$5DE4`-`$5DE5` (system); `$5DF8`-`$5DF9` (system); 3 more ranges |
+| Calls | `AddAToHL` |
+| Reads | `$D038`-`$D041` (`CornerRowLoop+2`, `CornerByteLoop`) |
+| Writes | `$5B00`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5D95` (system); `$5DA8`-`$5DA9` (system); `$5DBC`-`$5DBD` (system); 5 more ranges |
 
 ### `DrawEdgeStrips` (`$D057`)
 
@@ -3021,9 +2944,8 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 639 calls, 1,864,761 t-states own (1.12 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 3,447 calls, 10,058,243 t-states own (1.16 %) |
 | Called from | `DrawViewBackground` (tail) |
-| Calls | `ImJump` |
-| Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$5B0A`-`$5EAD` (system); `$6512`-`$6717` (`ViewBufferTail`); `$6728`-`$672B` (`ViewBufferTail`); `$673C`-`$673F` (`ViewBufferTail`); `$6750`-`$6753` (`ViewBufferTail`); `$6764`-`$6767` (`ViewBufferTail`); 2 more ranges |
+| Reads | `$D6A8`-`$D6C7` (`ViewEdgeA`, `ViewEdgeB`) |
+| Writes | `$5B0A`-`$5B2B` (system); `$5B3E`-`$5BD9` (system); `$5BEC`-`$5C2F` (system); `$5C42`-`$5DE5` (system); `$5DF8`-`$5E3F` (system); `$5E52`-`$5EAD` (system); 8 more ranges |
 
 ### `CopyViewToScreen` (`$D071`)
 
@@ -3037,9 +2959,8 @@ The diagonal edge of the map in the view. The patterns are at `$D6A8` (ink on th
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 211 calls, 13,026,277 t-states own (7.82 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,148 calls, 70,872,491 t-states own (8.19 %) |
 | Called from | `DrawView` (tail) |
-| Calls | `ImJump` |
-| Reads | `$5B00`-`$677F` (`ViewBufferTail`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 2 more ranges |
+| Reads | `$5B00`-`$677F` (`ViewBufferTail`) |
+| Writes | `$4021`-`$5194` (screen); `$5201`-`$5294` (screen); `$5301`-`$5394` (screen); `$5401`-`$5494` (screen); `$5501`-`$5594` (screen); `$5601`-`$5694` (screen); 1 more ranges |
 
 ## screen
 
@@ -3057,9 +2978,8 @@ Clears the 6912 bytes of pixels and attributes from `$4000` and sets the border 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 5 calls, 726,145 t-states own (0.44 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 11 calls, 1,597,519 t-states own (0.18 %) |
 | Called from | `ConstructionMenu`, `DrawPlayScreen` |
-| Calls | `ImJump` |
-| Reads | `$4000`-`$5AFE` (screen); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$4000`-`$5AFF` (screen); `$FFF6`-`$FFFB` (`StackArea`) |
+| Reads | `$4000`-`$5AFE` (screen) |
+| Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$00FE` |
 
 ### `DrawPlayScreen` (`$D0CA`)
@@ -3076,9 +2996,9 @@ PlayScreenText ends the code: PrintInline returns into ShowStatusPanel, so the p
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 3 calls, 143,097 t-states own (0.09 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 6 calls, 286,175 t-states own (0.03 %) |
 | Called from | `NewGameSetup`, `StartRobot` |
-| Calls | `DrawView`, `ClearScreen`, `NextScreenLine`, `AddAToHL`, `PrintInline`, `ImJump` |
-| Reads | `$4000`-`$4014` (screen); `$4701`-`$4713` (screen); `$50A1`-`$50B3` (screen); `$57A0`-`$57B4` (screen); `$5800`-`$5AFE` (screen); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$4000`-`$50B5` (screen); `$5100`-`$51A0` (screen); `$51B5` (screen); `$5200`-`$52A0` (screen); `$52B5` (screen); `$5300`-`$53A0` (screen); 10 more ranges |
+| Calls | `DrawView`, `ClearScreen`, `NextScreenLine`, `AddAToHL`, `PrintInline` |
+| Reads | `$4000`-`$4014` (screen); `$4701`-`$4713` (screen); `$50A1`-`$50B3` (screen); `$57A0`-`$57B4` (screen); `$5800`-`$5AFE` (screen) |
+| Writes | `$4000`-`$50B5` (screen); `$5100`-`$51A0` (screen); `$51B5` (screen); `$5200`-`$52A0` (screen); `$52B5` (screen); `$5300`-`$53A0` (screen); 9 more ranges |
 
 ### `ShowStatusPanel` (`$D1E5`)
 
@@ -3109,7 +3029,7 @@ The four parts are each a CALL PrintInline with a position string and the code a
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 30 calls, 1,170 t-states own (0.00 %) |
 | Called from | `NewGameSetup`, `GameTurnEnd`, `DailyProduction`, `UpdateRobot`, `EnemyCommander`, `PrintInline` |
 | Calls | `PrintInline` |
-| Reads | `$FD39` (`Variables`) |
+| Reads | `$FD39` (`PanelBusy`) |
 
 ### `PrintResourceValues` (`$D2A3`)
 
@@ -3124,7 +3044,7 @@ Seven lines from Resources (`$FD22`: general, electronics, nuclear, phasers, mis
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 30 calls, 26,700 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintNumber2`, `PrintInline`, `PrintNewline` |
-| Reads | `$FD22`-`$FD28` (`Variables`) |
+| Reads | `$FD22`-`$FD28` (`Resources`) |
 
 ### `PrintInsgCounts` (`$D2C1`)
 
@@ -3139,7 +3059,7 @@ The enemy's seven building counts EnemyBuildings (`$FD42`: warbases, then the si
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 30 calls, 2,040 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintDigitColumn`, `PrintNumber2Zero`, `PrintInline` |
-| Reads | `$FD49` (`Variables`) |
+| Reads | `$FD49` (`EnemyRobotCount`) |
 
 ### `PrintHumnCounts` (`$D2D2`)
 
@@ -3168,7 +3088,7 @@ PlayerRobotCount (`$FD41`, HL from PrintHumnCounts) as two digits with a leading
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 30 calls, 510 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintNumber2Zero` (tail) |
-| Reads | `$FD41` (`Variables`) |
+| Reads | `$FD41` (`PlayerRobotCount`) |
 
 ### `PrintDigitColumn` (`$D2E3`)
 
@@ -3182,9 +3102,8 @@ Each byte as "0" + n (a count of 10 or more would print ":" and the characters a
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 18 calls, 13,950 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 60 calls, 46,500 t-states own (0.01 %) |
 | Called from | `PrintInsgCounts`, `PrintHumnCounts` |
-| Calls | `PrintCharKeep`, `PrintNewline`, `ImJump` |
-| Reads | `$FD3A`-`$FD48` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF4`-`$FFF5` (`StackArea`) |
+| Calls | `PrintCharKeep`, `PrintNewline` |
+| Reads | `$FD3A`-`$FD48` (`PlayerBuildings`, `PlayerRobotCount`, `EnemyBuildings`) |
 
 ### `ClearPanel` (`$D2F6`)
 
@@ -3254,9 +3173,9 @@ Each line ANDs the mask and ORs the pixels; DE moves one screen line up (PrevScr
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 16 calls, 112,396 t-states own (0.07 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 40 calls, 280,971 t-states own (0.03 %) |
 | Called from | `ConstructionMenu` |
-| Calls | `PrevScreenLine`, `ImJump` |
-| Reads | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4612` (screen); `$4630`-`$4712` (screen); 9 more ranges |
-| Writes | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4712` (screen); `$4730`-`$57F3` (screen); 1 more ranges |
+| Calls | `PrevScreenLine` |
+| Reads | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4612` (screen); `$4630`-`$4712` (screen); 8 more ranges |
+| Writes | `$4030`-`$4212` (screen); `$4230`-`$4312` (screen); `$4330`-`$4412` (screen); `$4430`-`$4512` (screen); `$4530`-`$4712` (screen); `$4730`-`$57F3` (screen) |
 
 ### `NextScreenLine` (`$D32A`)
 
@@ -3270,9 +3189,6 @@ The Spectrum's screen order: the line inside a character row is bits 0-2 of H, t
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 35,996 calls, 1,070,683 t-states own (0.64 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 189,016 calls, 5,616,124 t-states own (0.65 %) |
 | Called from | `ShowRobotDesign`, `DrawPlayScreen`, `PrintBigChar`, `ShowRadar` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF6`-`$FFF7` (`StackArea`) |
 
 ### `PrevScreenLine` (`$D339`)
 
@@ -3286,9 +3202,6 @@ The reverse of NextScreenLine on DE: used only by DrawMaskedUp, which draws from
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 378 calls, 11,468 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 945 calls, 28,689 t-states own (0.00 %) |
 | Called from | `DrawMaskedUp` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF4`-`$FFF5` (`StackArea`) |
 
 ### `TableWord` (`$D348`)
 
@@ -3302,9 +3215,8 @@ The sprite table lookup of DrawSprite, also ConstructionMenu (PartIconLoop `$C88
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 7,017 calls, 386,068 t-states own (0.23 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 39,692 calls, 2,183,706 t-states own (0.25 %) |
 | Called from | `DrawShape`, `ConstructionMenu`, `DrawSprite` |
-| Calls | `AddAToHL`, `ImJump` |
-| Reads | `$BF9C`-`$BFB1` (`ShapeTable`); `$D6E8`-`$D6FD` (`SpriteTable`); `$D724`-`$D79B` (`SpriteTable`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFDC`-`$FFF5` (`StackArea`) |
+| Calls | `AddAToHL` |
+| Reads | `$BF9C`-`$BFB1` (`ShapeTable`); `$D6E8`-`$D6FD` (`SpriteTable`); `$D724`-`$D79B` (`SpriteTable+60`) |
 
 ### `AddAToHL` (`$D351`)
 
@@ -3318,9 +3230,6 @@ A changed to the new H; BC, DE kept. Used everywhere a table is indexed by a byt
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 26,328 calls, 868,938 t-states own (0.52 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 142,495 calls, 4,704,216 t-states own (0.54 %) |
 | Called from | `PaintMenuItem`, `TerrainTop`, `ObjectTop`, `SteerByOrder`, `SetStepDelay`, `EnemyCommander`, `CountBases`, `SetBaseOwner`, `TitleColourCycle`, `ConstructionMenu`, `ConstructionMenuLoop`, `PrintMenuResources`, `ShowRobotDesign`, `DrawMapObjects`, `DrawCellObject`, `DrawRobotPart`, `DrawSprite`, `FillViewCorner`, `DrawPlayScreen`, `TableWord`, `PrintBigChar` |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFD8`-`$FFF9` (`StackArea`) |
 
 ### `Random` (`$D358`)
 
@@ -3334,9 +3243,8 @@ A 32-bit shift register at RandomSeed `$FD00-$FD03` (big end first, seeded `$39`
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,103 calls, 214,001 t-states own (0.13 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 6,377 calls, 1,237,309 t-states own (0.14 %) |
 | Called from | `GameTurn`, `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander` |
-| Calls | `ImJump` |
-| Reads | `$FD00`-`$FD03` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$D371` (`Random`); `$FD00`-`$FD03` (`Variables`); `$FFEE`-`$FFF9` (`StackArea`) |
+| Reads | `$FD00`-`$FD03` (`Variables`) |
+| Writes | `$D371` (`Random+25`); `$FD00`-`$FD03` (`Variables`) |
 
 ## controls
 
@@ -3354,9 +3262,7 @@ In: nothing. Out: A = Input (also in Input `$FD0C`); the flags of the last OR A.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2,408 calls, 77,056 t-states own (0.05 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 6,441 calls, 206,131 t-states own (0.02 %) |
 | Called from | `NewGameSetup`, `ListMenu`, `WaitRelease`, `ConstructionMenuLoop` |
-| Calls | `ReadControls`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFA`-`$FFFB` (`StackArea`) |
+| Calls | `ReadControls` |
 
 ### `ReadControls` (`$D38A`)
 
@@ -3370,9 +3276,8 @@ The eight keys of KeyTable are rotated into C one by one (RL C, starting from C 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2,408 calls, 1,676,145 t-states own (1.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 6,441 calls, 4,483,120 t-states own (0.52 %) |
 | Called from | `WaitKey` |
-| Calls | `ImJump` |
-| Reads | `$D3CC`-`$D3E4` (`KeyTable`, `Controls`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD0C` (`Variables`); `$FFF0`-`$FFFB` (`StackArea`) |
+| Reads | `$D3CC`-`$D3E4` (`KeyTable`, `Controls`) |
+| Writes | `$FD0C` (`Input`) |
 | Ports in | `$7FFE`, `$DFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
 
 ## print
@@ -3391,9 +3296,7 @@ In: A. HL = A, E = `$20`, then PrintTensUnits: a space for a leading zero. Used 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 105 calls, 3,150 t-states own (0.00 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 336 calls, 10,080 t-states own (0.00 %) |
 | Called from | `PrintMenuResourceValue`, `PrintResourceValues` |
-| Calls | `PrintTensUnits` (tail), `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF0`-`$FFF1` (`StackArea`) |
+| Calls | `PrintTensUnits` (tail) |
 
 ### `PrintNumber2Zero` (`$D3EC`)
 
@@ -3407,9 +3310,7 @@ The clock (`$AD90`, 6828 calls: "20.20") and the robot counts of the panel.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 434 calls, 13,020 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,344 calls, 70,320 t-states own (0.01 %) |
 | Called from | `GameTurnEnd`, `PrintInsgCounts`, `PrintHumnRobots` (tail) |
-| Calls | `PrintTensUnits` (tail), `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF8`-`$FFFB` (`StackArea`) |
+| Calls | `PrintTensUnits` (tail) |
 
 ### `PrintNumber5` (`$D3F3`)
 
@@ -3423,9 +3324,7 @@ Used by `$AD90` for the day number ("DAY:    4"). Falls into PrintNumber3.
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 208 calls, 12,688 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1,142 calls, 69,681 t-states own (0.01 %) |
 | Called from | `GameTurnEnd` |
-| Calls | `PrintDigit`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFFA`-`$FFFB` (`StackArea`) |
+| Calls | `PrintDigit` |
 
 ### `PrintNumber3` (`$D401`)
 
@@ -3453,9 +3352,7 @@ HL = the value (0-99, else the tens "digit" runs past 9: 200 prints as "D0"), E 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 539 calls, 37,680 t-states own (0.02 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,680 calls, 188,169 t-states own (0.02 %) |
 | Called from | `PrintNumber2` (tail), `PrintNumber2Zero` (tail) |
-| Calls | `PrintDigit`, `PrintCharKeep` (tail), `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFF6`-`$FFFB` (`StackArea`) |
+| Calls | `PrintDigit`, `PrintCharKeep` (tail) |
 
 ### `PrintDigit` (`$D413`)
 
@@ -3469,9 +3366,7 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,447 calls, 124,909 t-states own (0.07 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 7,442 calls, 649,797 t-states own (0.08 %) |
 | Called from | `PrintNumber5`, `PrintNumber3`, `PrintTensUnits` |
-| Calls | `PrintCharKeep`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEE`-`$FFF9` (`StackArea`) |
+| Calls | `PrintCharKeep` |
 
 ### `PrintCharKeep` (`$D427`)
 
@@ -3485,9 +3380,7 @@ PrintChar in the alternate registers: the caller's BC, DE, HL are kept (the numb
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2,598 calls, 90,949 t-states own (0.05 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 13,002 calls, 455,260 t-states own (0.05 %) |
 | Called from | `ShowStrengthValue` (tail), `GameTurnEnd`, `PrintDigitColumn`, `PrintTensUnits` (tail), `PrintDigit` |
-| Calls | `PrintChar`, `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEE`-`$FFFB` (`StackArea`) |
+| Calls | `PrintChar` |
 
 ### `PrintInline` (`$D42D`)
 
@@ -3501,9 +3394,8 @@ In: the string after the CALL. Pops the return address, takes a byte, pushes the
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 691 calls, 563,106 t-states own (0.34 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,365 calls, 1,546,816 t-states own (0.18 %) |
 | Called from | `RobotMenuShow`, `ShowOrder`, `ShowStrength`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `GameTurn`, `ConstructionMenu`, `PrintMenuResources`, `PrintMenuResource`, `DrawPlayScreen`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `ClearPanel`, `ClearPanelLine` |
-| Calls | `ShowOrder`, `ShowOrderMiles`, `ShowStrengthValue`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `GameTurnEnd`, `ConstructionMenuSetup`, `PrintMenuTotal`, `PrintMenuResourceValue`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `PrintHumnRobots`, `ClearPanelLines`, `ClearPanelNext`, `PrintControl`, `ImJump` |
-| Reads | `$A738`-`$A832` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A977`-`$A9EB` (`OrdersMenuText`); `$AAD8`-`$ABB8` (`DestroyMenuText`, `DestroyMenuChoose`, `CaptureMenu`, `CaptureMenuText`); `$AD88`-`$AD8F` (`ClockPos`); `$C8BE`-`$C9E6` (`ConstructionTitleText`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); `$CBFF`-`$CC13` (`TotalPosition`, `PrintMenuTotal`, `PrintMenuResource`, `MenuResourcePos`); 2 more ranges |
-| Writes | `$FFF2`-`$FFFD` (`StackArea`) |
+| Calls | `ShowOrder`, `ShowOrderMiles`, `ShowStrengthValue`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `GameTurnEnd`, `ConstructionMenuSetup`, `PrintMenuTotal`, `PrintMenuResourceValue`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `PrintHumnRobots`, `ClearPanelLines`, `ClearPanelNext`, `PrintControl` |
+| Reads | `$A738`-`$A832` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A977`-`$A9EB` (`OrdersMenuText`); `$AAD8`-`$ABB8` (`DestroyMenuText`, `DestroyMenuChoose`, `CaptureMenu`, `CaptureMenuText`); `$AD88`-`$AD8F` (`ClockPos`); `$C8BE`-`$C9E6` (`ConstructionTitleText`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); `$CBFF`-`$CC13` (`TotalPosition`, `PrintMenuTotal`, `PrintMenuResource`, `MenuResourcePos`); 1 more ranges |
 
 ### `PrintControl` (`$D43C`)
 
@@ -3517,9 +3409,9 @@ In: the string after the CALL. Pops the return address, takes a byte, pushes the
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 6,972 calls, 666,933 t-states own (0.40 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 18,723 calls, 1,877,949 t-states own (0.22 %) |
 | Called from | `PrintInline` |
-| Calls | `PrintNewline` (tail), `SetPrintPos` (tail), `PrintChar` (tail), `PrintBigChar` (tail), `ImJump` |
-| Reads | `$A739`-`$A831` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A978`-`$A98D` (`OrdersMenuText`); `$AAD9`-`$AB04` (`DestroyMenuText`); `$AB55`-`$AB80` (`CaptureMenuText`); `$AD89`-`$AD8E` (`ClockPos`); `$C8BF`-`$C9E0` (`ConstructionTitleText`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); 4 more ranges |
-| Writes | `$FD13`-`$FD17` (`Variables`); `$FD31`-`$FD32` (`Variables`); `$FFF0`-`$FFFD` (`StackArea`) |
+| Calls | `PrintNewline` (tail), `SetPrintPos` (tail), `PrintChar` (tail), `PrintBigChar` (tail) |
+| Reads | `$A739`-`$A831` (`RobotMenuText+1`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 6 more); `$A978`-`$A98D` (`OrdersMenuText+1`); `$AAD9`-`$AB04` (`DestroyMenuText+1`); `$AB55`-`$AB80` (`CaptureMenuText+1`); `$AD89`-`$AD8E` (`ClockPos+1`); `$C8BF`-`$C9E0` (`ConstructionTitleText+1`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); 3 more ranges |
+| Writes | `$FD13`-`$FD17` (`PrintAttr`, `PrintAttrAddr`, `PrintHeight`, `PrintWidth`); `$FD31`-`$FD32` (`PrintColumn`, `PrintRow`) |
 
 ### `PrintNewline` (`$D470`)
 
@@ -3533,9 +3425,9 @@ PrintRow + 1, then SetPrintPos. Reached by code 3 inside PrintInline and called 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 910 calls, 49,140 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 2,996 calls, 161,784 t-states own (0.02 %) |
 | Called from | `GameTurnEnd`, `PrintResourceValues`, `PrintDigitColumn`, `PrintControl` (tail) |
-| Calls | `SetPrintPos` (tail), `ImJump` |
-| Reads | `$FD31`-`$FD32` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD31`-`$FD32` (`Variables`); `$FFF2`-`$FFFB` (`StackArea`) |
+| Calls | `SetPrintPos` (tail) |
+| Reads | `$FD31`-`$FD32` (`PrintColumn`, `PrintRow`) |
+| Writes | `$FD31`-`$FD32` (`PrintColumn`, `PrintRow`) |
 
 ### `SetPrintPos` (`$D493`)
 
@@ -3549,9 +3441,7 @@ In: B = row 0-23, C = column 0-31. PrintAddr = `$4000` + (B AND `$18`) * 256 + (
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1,378 calls, 177,800 t-states own (0.11 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 4,831 calls, 623,351 t-states own (0.07 %) |
 | Called from | `PrintControl` (tail), `PrintNewline` (tail) |
-| Calls | `ImJump` |
-| Reads | `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FD04`-`$FD15` (`Variables`); `$FFF2`-`$FFFB` (`StackArea`) |
+| Writes | `$FD04`-`$FD15` (`PrintAddr`, `MapView`, `SavedSP`, `ViewX` and 7 more) |
 
 ### `PrintChar` (`$D4B1`)
 
@@ -3565,9 +3455,8 @@ The font is at `$6680` + 8*code (`$6780` for the space, right after the view buf
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 7,928 calls, 3,948,828 t-states own (2.37 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 25,773 calls, 12,838,621 t-states own (1.48 %) |
 | Called from | `PrintCharKeep`, `PrintControl` (tail) |
-| Calls | `ImJump` |
-| Reads | `$6780`-`$6787` (`Font`); `$67A8`-`$67BF` (`Font`); `$67E8`-`$6857` (`Font`); `$6878`-`$694F` (`Font`); `$FD04`-`$FD15` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$4016`-`$57FF` (screen); `$5816`-`$581F` (screen); `$5835`-`$583F` (screen); `$5856`-`$5A5F` (screen); `$5A75`-`$5A7F` (screen); `$5A96`-`$5ADF` (screen); 3 more ranges |
+| Reads | `$6780`-`$6787` (`Font`); `$67A8`-`$67BF` (`Font+40`); `$67E8`-`$6857` (`Font+104`); `$6878`-`$694F` (`Font+248`); `$FD04`-`$FD15` (`PrintAddr`, `MapView`, `SavedSP`, `ViewX` and 7 more) |
+| Writes | `$4016`-`$57FF` (screen); `$5816`-`$581F` (screen); `$5835`-`$583F` (screen); `$5856`-`$5A5F` (screen); `$5A75`-`$5A7F` (screen); `$5A96`-`$5ADF` (screen); 2 more ranges |
 
 ### `PrintBigChar` (`$D4DA`)
 
@@ -3581,9 +3470,9 @@ Width 1: each glyph line written `$FD16` times (2: a character two rows high, "R
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 52 calls, 126,945 t-states own (0.08 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 121 calls, 303,909 t-states own (0.04 %) |
 | Called from | `PrintControl` (tail) |
-| Calls | `NextScreenLine`, `AddAToHL`, `ImJump` |
-| Reads | `$6850`-`$6857` (`Font`); `$6888`-`$68A7` (`Font`); `$68C8`-`$68CF` (`Font`); `$68F0`-`$68FF` (`Font`); `$6910`-`$692F` (`Font`); `$FD04`-`$FD17` (`Variables`); 1 more ranges |
-| Writes | `$4003`-`$402C` (screen); `$4042`-`$416D` (screen); `$4203`-`$422C` (screen); `$4242`-`$426D` (screen); `$4303`-`$432C` (screen); `$4342`-`$436D` (screen); 17 more ranges |
+| Calls | `NextScreenLine`, `AddAToHL` |
+| Reads | `$6850`-`$6857` (`Font+208`); `$6888`-`$68A7` (`Font+264`); `$68C8`-`$68CF` (`Font+328`); `$68F0`-`$68FF` (`Font+368`); `$6910`-`$692F` (`Font+400`); `$FD04`-`$FD17` (`PrintAddr`, `MapView`, `SavedSP`, `ViewX` and 9 more) |
+| Writes | `$4003`-`$402C` (screen); `$4042`-`$416D` (screen); `$4203`-`$422C` (screen); `$4242`-`$426D` (screen); `$4303`-`$432C` (screen); `$4342`-`$436D` (screen); 16 more ranges |
 
 ## interrupts
 
@@ -3602,8 +3491,8 @@ Installed by EnterPlay (`$A694`) and when the construction menu ends (`$CBA2`). 
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 11,491 calls, 2,516,321 t-states own (0.29 %) |
 | Called from | `ImJump` (tail) |
 | Calls | `StartInterrupt`, `ShowRadar`, `SoundEffect` |
-| Reads | `$FD1A` (`Variables`); `$FD34` (`Variables`); `$FD53` (`Variables`) |
-| Writes | `$FD1A` (`Variables`); `$FD34` (`Variables`); `$FD53` (`Variables`) |
+| Reads | `$FD1A` (`RadarPhase`); `$FD34` (`TurnFrames`); `$FD53` (`SoundFx`) |
+| Writes | `$FD1A` (`RadarPhase`); `$FD34` (`TurnFrames`); `$FD53` (`SoundFx`) |
 
 ### `StartInterrupt` (`$D59C`)
 
@@ -3661,7 +3550,7 @@ Seen in recording r1 only for the menus; the shots were checked in stage 1 with 
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 652 calls, 60,897 t-states own (0.00 %) |
 | Called from | `PlayInterrupt` |
 | Calls | `GsSound` |
-| Writes | `$FD53` (`Variables`) |
+| Writes | `$FD53` (`SoundFx`) |
 
 ### `SoundEffectKill` (`$D5DF`)
 
@@ -3683,9 +3572,8 @@ Each map cell of the window is one pixel: set when its block type is `$0F` or mo
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 1 call, 142,587 t-states own (0.09 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 1 call, 142,587 t-states own (0.02 %) |
 | Called from | `RefreshRadar` |
-| Calls | `ImJump` |
-| Reads | `$D800`-`$D8FF` (`RadarOwn`); `$DA01`-`$ED7F` (`Robots`, `EnemyRobots`, `Map`); `$EF00`-`$EF7F` (`Map`); `$F100`-`$F17F` (`Map`); `$F300`-`$F37F` (`Map`); `$F500`-`$F57F` (`Map`); 5 more ranges |
-| Writes | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`); `$FFF2`-`$FFF7` (`StackArea`) |
+| Reads | `$D800`-`$D8FF` (`RadarOwn`); `$DA01`-`$ED7F` (`Robots+1`, `EnemyRobots`, `Map`); `$EF00`-`$EF7F` (`Map+4608`); `$F100`-`$F17F` (`Map+5120`); `$F300`-`$F37F` (`Map+5632`); `$F500`-`$F57F` (`Map+6144`); 4 more ranges |
+| Writes | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |
 
 ### `ToggleRadarDot` (`$D65A`)
 
@@ -3699,9 +3587,9 @@ The dot covers (x, y), (x+1, y) and the line above. Nothing outside the window (
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 407 calls, 57,440 t-states own (0.03 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 4,178 calls, 475,457 t-states own (0.05 %) |
 | Called from | `BlinkShipDot` (tail), `UpdateRobot`, `RobotStep`, `PlaceRobot` (tail) |
-| Calls | `RadarDotAddress`, `ImJump` |
-| Reads | `$D804`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$D804`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`); `$FFF2`-`$FFF9` (`StackArea`) |
+| Calls | `RadarDotAddress` |
+| Reads | `$D804`-`$D9FF` (`RadarOwn+4`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |
+| Writes | `$D804`-`$D9FF` (`RadarOwn+4`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |
 
 ### `RadarDotAddress` (`$D67D`)
 
@@ -3715,9 +3603,7 @@ Column x - `$FD1C` must be 0-126, else it pops the return address and returns fr
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 407 calls, 87,471 t-states own (0.05 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 4,178 calls, 706,731 t-states own (0.08 %) |
 | Called from | `ToggleRadarDot` |
-| Calls | `ImJump` |
-| Reads | `$FD1C`-`$FD1D` (`Variables`); `$FEFF`-`$FF00` (`ImTable`) |
-| Writes | `$FFEA`-`$FFF7` (`StackArea`) |
+| Reads | `$FD1C`-`$FD1D` (`RadarColumn`) |
 
 ## workspace
 
@@ -3734,8 +3620,10 @@ With I = `$FE` and the table `$FE00-$FF00` all `$FD`, every interrupt jumps here
 | Runs (Hood's tape on Pentagon 128 + GS 512 KB from 48 BASIC (`USR 0`): the bot's game of 40134 frames, 13 robots built, the fights from frame 17441 on) | 40,121 calls, 401,210 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot plays 2324 frames) | 2,324 calls, 23,240 t-states own (0.01 %) |
 | Runs (the SCL on Pentagon 128 + GS 512 KB from the main menu: the bot builds 5 robots and gives their orders, 12073 frames) | 12,073 calls, 120,730 t-states own (0.01 %) |
-| Called from | `NewGameSetup`, `GameTurn`, `GameTurnEnd`, `AddCapped`, `CheckGameEnd`, `BlinkShipDot`, `CheckShipMove`, `TerrainTop`, `ObjectTop`, `KeepHigher`, `WorldTurn`, `UpdateRobot`, `RobotStep`, `SteerByOrder`, `FindTargetBuilding`, `ConsiderBuilding`, `KeepNearest`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `InitNearestSearch`, `FindNearestOpponent`, `TurnOrStep`, `StepPosition`, `CountDirections`, `FreeDirections`, `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp`, `CellOffMapFree`, `CellBlocked`, `TestCell`, `GroundUnderFootprint`, `SetStepDelay`, `SpotEnemies`, `ScanLane`, `FindFreeShot`, `FireShot`, `MoveShot`, `EnemyCommander`, `CountBases`, `AddBuilding`, `BuildMap`, `PlaceScenery`, `StepCell`, `PutBlock`, `MenuWaitKey`, `ConstructionMenu`, `ConstructionMenuLoop`, `MenuPause`, `FillAttributes`, `PrintMenuResources`, `PrintMenuResourceValue`, `ShowRobotDesign`, `PlaceRobot`, `MapCell`, `DrawView`, `DrawMapObjects`, `DrawCell`, `CheckObjectNeighbour`, `FindLatestBlock`, `CheckBlockNeighbour`, `KeepLaterCell`, `FindRobot`, `FindBuilding`, `DrawCellObject`, `DrawMoverSprite`, `DrawRobot`, `DrawRobotPart`, `DrawSprite`, `DrawViewBackground`, `ClearViewBuffer`, `FillViewCorner`, `DrawEdgeStrips`, `CopyViewToScreen`, `ClearScreen`, `DrawPlayScreen`, `PrintDigitColumn`, `DrawMaskedUp`, `NextScreenLine`, `PrevScreenLine`, `TableWord`, `AddAToHL`, `Random`, `WaitKey`, `ReadControls`, `PrintNumber2`, `PrintNumber2Zero`, `PrintNumber5`, `PrintTensUnits`, `PrintDigit`, `PrintCharKeep`, `PrintInline`, `PrintControl`, `PrintNewline`, `SetPrintPos`, `PrintChar`, `PrintBigChar`, `BuildRadar`, `ToggleRadarDot`, `RadarDotAddress` |
+| Entered by | the interrupt, 54,518 times in 102 routines |
 | Calls | `PlayInterrupt` (tail), `StartInterrupt` (tail) |
+| Reads | `$FEFF`-`$FF00` (`ImTable+255`) |
+| Writes | `$5B0E`-`$677F` (`ViewBufferTail`); `$FFC8`-`$FFFF` (`StackArea+31`) |
 
 ## The parts outside the game image
 

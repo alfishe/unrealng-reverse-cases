@@ -214,7 +214,7 @@ InterruptScrollLineDone:
   OR L
   JR Z,InterruptScrollEnd
   LD A,(ScrollLine)
-  LD DE,Font-$0101
+  LD DE,Font-257
   ADD A,E
   LD E,A
   LD B,$13
