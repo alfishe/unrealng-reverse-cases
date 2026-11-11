@@ -1,0 +1,5 @@
+# TeleportPads $B073: the three teleport pads.
+room,y,x
+$20,$58,$80
+$3D,$38,$60
+$30,$58,$60

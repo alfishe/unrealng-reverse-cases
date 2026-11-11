@@ -1,0 +1,4 @@
+# StartTapeText (selector, 48K): the message after the choice.
+"\x12\x00"
+"\x10\x08\x11\x08\x16\x01\x01EXPLORER\x16\x02\x01SELECTED\x16\x05\x00"
+"\x12\x01START TAPE\x0D"

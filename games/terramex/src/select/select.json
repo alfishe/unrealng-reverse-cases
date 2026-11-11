@@ -1,0 +1,18 @@
+{
+  "about": "Block 4 $7200-$9CF7: the 128K setup and the explorer selector, relocatable, run in RAM 1 at $C000: python3 ../../kit/mkgame.py --part src/select/select.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/select-c000.bin || python3 tools/parts.py"],
+  "image": "work/parts/select-c000.bin",
+  "org": "C000",
+  "ann": "src/select/select.ann",
+  "top": "select",
+  "bin": "select.bin",
+  "dest": "src/select",
+  "device": "ZXSPECTRUM128",
+  "bank": 1,
+  "bases": {"1": "C000"},
+  "header": ["; Terramex, Grandslam 1987: TZX block 4 $7200-$9CF7, the 128K setup and the explorer selector, assembled at $C000",
+             "; as the setup's relocation pass leaves them in RAM 1; tools/mktape.py undoes the relocation for the tape."],
+  "l1": ["work/stage1/c1/l1.json", "work/stage1/explorers/l1.json"],
+  "data_entries": "stop",
+  "work": "work/stage2/mkselect"
+}

@@ -1,0 +1,4 @@
+# JumpFrames $AE8D: the 17 frames of the jump, then the 17 Y steps (signed).
+12 12 13 13 14 14 14 14 14 15 15 15 15 15 15 2
+2 4 3 3 3 2 2 1 0 0 0 -1 -2 -2 -3 -3
+-3 -4

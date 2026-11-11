@@ -1,0 +1,2 @@
+# SolidTiles $A24B: the solid tiles of the base set, $00 ended.
+$07 $08 $09 $0A $0B $0D $0E $0F $10 $12 $13 $14 $16 $18 $59 $86 $87 $88 $89 $8A $8B $8F $90 $D2 $00

@@ -1,0 +1,2 @@
+# BridgeTiles $BB51: the bridge tiles of room $19, then of room $3A.
+$97 $9A $9D $9E $81 $81 $81 $81

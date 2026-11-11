@@ -1,0 +1,16 @@
+{
+  "about": "Block 4 $9CF8-$F6F7: the five explorer data sets: python3 ../../kit/mkgame.py --part src/explorers/explorers.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/sets-9cf8.bin || python3 tools/parts.py"],
+  "image": "work/parts/sets-9cf8.bin",
+  "org": "9CF8",
+  "ann": "src/explorers/explorers.ann",
+  "top": "explorers",
+  "bin": "explorers.bin",
+  "dest": "src/explorers",
+  "device": "ZXSPECTRUM128",
+  "header": ["; Terramex, Grandslam 1987: TZX block 4 $9CF8-$F6F7, the five explorer data sets of $1200 bytes, which the",
+             "; selector copies to $6000-$71FF for the explorer chosen (on the 128K from RAM 4 and 3)."],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkexplorers"
+}

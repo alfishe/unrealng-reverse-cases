@@ -1,0 +1,7 @@
+# Help48KText (selector): the 48K page of Help.
+" As you  have a 48K machine you must choose your explorer now   and then load in the rest of the program.\x0D"
+"\x0D"
+" Restart the tape when you have chosen your explorer.\x0D"
+"\x0D"
+" You will have to switch off andreload the tape to choose a new explorer.\x16\x00"
+"\x17<SPACE> Continue <ENTER> Returns\x00"

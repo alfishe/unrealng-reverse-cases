@@ -1,0 +1,12 @@
+# HelpPage2 (selector).
+" Also before departing for landsunknown the professor said he   may be able to solve the crisis when the time came.\x0D"
+"\x0D"
+"Your job then is to find him andconvince him to save the world.\x0D"
+"\x0D"
+" You are one of 5 explorers and must discover his whereabouts ina desert mountain range where   strange creatures live,and wherethings do not behave normally.  \x0D"
+" You find a VAC for example,thatcan fly because of strange powersources in the ground directly  beneath it.\x0D"
+"\x0D"
+" Guess who made it ?\x0D"
+"\x0D"
+"\x16\x00"
+"\x17<SPACE> Continue <ENTER> Returns\x00"

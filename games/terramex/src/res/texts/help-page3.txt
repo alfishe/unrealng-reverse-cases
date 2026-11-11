@@ -1,0 +1,11 @@
+# HelpPage3 (selector).
+"There are many things to help   in your quest and your invisiblebearers help you carry these,butto be able to use something you must be carrying it yourself.\x0D"
+"\x0D"
+"Your controls are:\x0D"
+"Z=Left   X=Right    O=Up  K=Down        <SPACE> -Jump  \x0D"
+"\x0D"
+"S=Swap item with another nearest1=Move bearers and objects right2=Move bearers and objects left \x0D"
+"Caps SHIFT Q quits and restarts \x0D"
+"Select joystick from titlepage  \x0D"
+"Use up down left right to move  the hand around and select your explorer with a FIRE key/button \x16\x00"
+"\x17<SPACE> Repeats <ENTER> Returns \x00"

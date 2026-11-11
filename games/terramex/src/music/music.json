@@ -1,0 +1,18 @@
+{
+  "about": "Block 4 $6000-$71FF: the AY music player and its tunes, run in RAM 6 at $C000: python3 ../../kit/mkgame.py --part src/music/music.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/music-c000.bin || python3 tools/parts.py"],
+  "image": "work/parts/music-c000.bin",
+  "org": "C000",
+  "ann": "src/music/music.ann",
+  "top": "music",
+  "bin": "music.bin",
+  "dest": "src/music",
+  "device": "ZXSPECTRUM128",
+  "bank": 6,
+  "bases": {"6": "C000"},
+  "header": ["; Terramex, Grandslam 1987: TZX block 4 $6000-$71FF, the AY music player and its tunes, which the 128K setup",
+             "; copies to RAM 6, where the IM 2 handler calls it at $C000 every frame."],
+  "l1": ["work/stage1/c1/l1.json", "work/stage1/explorers/l1.json", "work/stage1/gameover/l1.json", "work/stage1/rzx/r*/l1.json"],
+  "data_entries": "stop",
+  "work": "work/stage2/mkmusic"
+}

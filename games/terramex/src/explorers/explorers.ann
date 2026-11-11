@@ -1,0 +1,18 @@
+# The annotations of explorers/explorers (kit/mkgame.py --part src/explorers/explorers.json). Format: ../../../../docs/ann-format.md.
+# The five sets in the order of the selector's zones (SelectorEntry $C0D2 copies set n from $9CF8 + $1200 x n, n =
+# Explorer $5B70). Each set is the sprite frames $00-$3F of the sprite space ($6000 + 72 x F in play): 64 sprites of
+# 24 x 24, three columns of 24 bytes, the explorer's walk, jump, climb, fall, death and panel portrait frames.
+
+@module explorers ; The five explorers' sprite sets
+@about Block 4 carries the five sets after the selector; on a 128K the set-up copies sets 0-2 to RAM 4 ($C000, $D200, $E400) and sets 3-4 to RAM 3 ($C000, $D200), on a 48K the selector copies the chosen one straight from here. In play the chosen set is ExplorerSet $6000-$71FF: frames $00-$3F of the sprite space, followed by the creatures' frames $40-$7F of the game image ($7200).
+$9CF8 b FortisqueSmitheSet 8 ; Set 0: Fortisque-Smithe
+> Witness: the explorers recording plays all five explorers (Explorer $5B70 = 0-4 at frames 1000, 3500, 6000, 9000, 11 500) and reads each set in play at $6000.
+@res sprites/explorer-0.bin
+$AEF8 b HerrKruscheSet 8 ; Set 1: Herr Krusche
+@res sprites/explorer-1.bin
+$C0F8 b HenriBeaucoupSet 8 ; Set 2: Henri Beaucoup
+@res sprites/explorer-2.bin
+$D2F8 b BigJohnCaineSet 8 ; Set 3: Big John Caine
+@res sprites/explorer-3.bin
+$E4F8 b WuPongSet 8 ; Set 4: Wu Pong
+@res sprites/explorer-4.bin

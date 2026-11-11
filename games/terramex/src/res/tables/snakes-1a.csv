@@ -1,0 +1,5 @@
+# SnakeTemplate $B5D1: the snakes of room $1A.
+x,y,frame,flags
+$44,$60,$51,$00
+$70,$60,$52,$80
+$94,$60,$53,$00

@@ -1,0 +1,655 @@
+# The tunes of the AY player (src/music/music.ann; MUS format in src/res/music/README.md): the blocks in
+# address order from TuneTable $C967. TuneTable: four tunes, each the order lists of channels A B C;
+# PatternLo/PatternHi: the 27 patterns. Order lists: pattern N, transpose T, repeat N (the next
+# pattern N times), detune D, slot N R (SlotTable[8 x channel + N] = R), end. Patterns: note N D
+# (D frames; the name at transpose 0 after ";"), rest D, instr N, arp $XX, slideoff,
+# slide $CMD STEP COUNT, end. byte $XX: a byte that starts no event.
+
+block TuneTable
+  tune 0 Tune0OrderA Tune0OrderB Tune0OrderC
+  tune 1 Tune1OrderA Tune1OrderB Tune1OrderC
+  tune 2 Tune0OrderA Tune0OrderB Tune0OrderC
+  tune 3 Tune0OrderA Tune0OrderB Tune0OrderC
+
+block Tune0OrderA
+  repeat 3
+  pattern 0
+  pattern 3
+  transpose -7
+  repeat 4
+  pattern 5
+  transpose -12
+  repeat 8
+  pattern 5
+  transpose -9
+  pattern 5
+  transpose -7
+  pattern 5
+  transpose -4
+  pattern 5
+  transpose -6
+  pattern 5
+  transpose -12
+  repeat 12
+  pattern 5
+  transpose -9
+  pattern 5
+  transpose -7
+  pattern 5
+  transpose -4
+  pattern 5
+  transpose -6
+  pattern 5
+  transpose 0
+  repeat 6
+  pattern 10
+  transpose 2
+  pattern 10
+  pattern 10
+  transpose -10
+  pattern 15
+  end
+
+block Tune0OrderB
+  detune 10
+  repeat 3
+  pattern 0
+  pattern 3
+  transpose -7
+  repeat 4
+  pattern 5
+  transpose 0
+  detune 0
+  pattern 6
+  pattern 6
+  pattern 12
+  pattern 26
+  slot 0 72
+  repeat 4
+  pattern 13
+  transpose 2
+  pattern 13
+  pattern 13
+  pattern 16
+  transpose 0
+  pattern 18
+  pattern 18
+  pattern 19
+  slot 6 81
+  pattern 19
+  slot 6 90
+  pattern 19
+  pattern 0
+  pattern 0
+  end
+
+block Tune0OrderC
+  repeat 30
+  pattern 2
+  repeat 6
+  pattern 2
+  transpose 12
+  repeat 8
+  pattern 7
+  pattern 8
+  transpose 14
+  pattern 8
+  transpose 12
+  pattern 9
+  pattern 9
+  repeat 12
+  pattern 7
+  pattern 8
+  transpose 14
+  pattern 8
+  transpose 12
+  pattern 9
+  pattern 9
+  pattern 26
+  pattern 26
+  transpose 0
+  repeat 3
+  pattern 11
+  pattern 14
+  pattern 14
+  transpose 2
+  pattern 14
+  pattern 14
+  pattern 17
+  pattern 20
+  repeat 30
+  pattern 2
+  end
+
+block Tune1OrderA
+  repeat 6
+  pattern 10
+  transpose 2
+  pattern 10
+  pattern 10
+  transpose -10
+  pattern 15
+  end
+
+block Tune1OrderB
+  repeat 4
+  pattern 26
+  slot 0 72
+  repeat 4
+  pattern 13
+  transpose 2
+  pattern 13
+  pattern 13
+  pattern 16
+  transpose 0
+  pattern 18
+  pattern 18
+  pattern 19
+  pattern 19
+  slot 6 81
+  pattern 19
+  pattern 1
+  pattern 1
+  end
+
+block Tune1OrderC
+  pattern 26
+  pattern 26
+  repeat 3
+  pattern 11
+  pattern 14
+  pattern 14
+  transpose 2
+  pattern 14
+  pattern 14
+  pattern 17
+  pattern 20
+  repeat 30
+  pattern 2
+  end
+
+block TuneSpare
+  byte $FF
+  byte $FF
+
+block PatternLo
+  patterns
+
+block PatternHi
+  (the high bytes of the same addresses)
+
+block Pattern0
+  instr 0
+  note 9 108 ; F2
+  note 8 54 ; E2
+  note 4 54 ; C2
+  note 6 216 ; D2
+  end
+
+block Pattern1
+  instr 1
+  slide $E0 70 255
+  note 52 108 ; C6
+  note 51 54 ; B5
+  note 47 54 ; G5
+  note 49 216 ; A5
+  slideoff
+  end
+
+block Pattern2
+  instr 2
+  arp $93
+  note 18 18 ; D3
+  note 18 6 ; D3
+  note 18 6 ; D3
+  note 18 6 ; D3
+  note 18 18 ; D3
+  end
+
+block Pattern3
+  instr 0
+  note 9 108 ; F2
+  note 8 54 ; E2
+  note 4 54 ; C2
+  end
+
+block Pattern4
+  instr 1
+  slide $E0 70 255
+  note 52 108 ; C6
+  note 51 54 ; B5
+  note 47 54 ; G5
+  note 49 216 ; A5
+  note 49 216 ; A5
+  slideoff
+  end
+
+block Pattern5
+  instr 3
+  note 6 18 ; D2
+  note 18 6 ; D3
+  note 18 6 ; D3
+  note 18 6 ; D3
+  note 18 18 ; D3
+  note 6 18 ; D2
+  note 16 6 ; C3
+  note 16 6 ; C3
+  note 16 6 ; C3
+  note 18 18 ; D3
+  end
+
+block Pattern6
+  instr 4
+  note 52 108 ; C6
+  note 51 90 ; B5
+  note 49 9 ; A5
+  note 47 9 ; G5
+  note 49 216 ; A5
+  note 52 90 ; C6
+  note 54 9 ; D6
+  note 52 9 ; C6
+  note 51 90 ; B5
+  note 49 9 ; A5
+  note 47 9 ; G5
+  note 49 216 ; A5
+  note 52 108 ; C6
+  note 51 90 ; B5
+  note 49 9 ; A5
+  note 47 9 ; G5
+  note 45 90 ; F5
+  note 47 9 ; G5
+  note 45 9 ; F5
+  note 43 90 ; D#5
+  note 45 9 ; F5
+  note 43 9 ; D#5
+  note 42 18 ; D5
+  rest 198
+  rest 216
+  end
+
+block Pattern7
+  instr 5
+  arp $91
+  note 42 9 ; D5
+  note 49 9 ; A5
+  note 47 9 ; G5
+  note 45 9 ; F5
+  note 44 9 ; E5
+  note 42 9 ; D5
+  note 40 9 ; C5
+  note 42 9 ; D5
+  note 44 9 ; E5
+  note 45 9 ; F5
+  note 44 9 ; E5
+  note 40 9 ; C5
+  end
+
+block Pattern8
+  instr 5
+  arp $91
+  note 40 9 ; C5
+  note 49 9 ; A5
+  note 47 9 ; G5
+  note 45 9 ; F5
+  note 43 9 ; D#5
+  note 42 9 ; D5
+  note 40 9 ; C5
+  note 42 9 ; D5
+  note 43 9 ; D#5
+  note 45 9 ; F5
+  note 47 9 ; G5
+  note 45 9 ; F5
+  end
+
+block Pattern9
+  instr 5
+  arp $91
+  note 38 9 ; A#4
+  note 43 9 ; D#5
+  note 45 9 ; F5
+  note 50 9 ; A#5
+  note 52 9 ; C6
+  note 50 9 ; A#5
+  note 48 9 ; G#5
+  note 45 9 ; F5
+  note 43 9 ; D#5
+  note 40 9 ; C5
+  note 38 9 ; A#4
+  note 36 9 ; G#4
+  arp $90
+  end
+
+block Pattern10
+  instr 6
+  note 6 12 ; D2
+  note 9 12 ; F2
+  note 8 12 ; E2
+  note 6 12 ; D2
+  note 4 12 ; C2
+  note 6 12 ; D2
+  note 8 12 ; E2
+  note 4 12 ; C2
+  note 6 12 ; D2
+  note 9 12 ; F2
+  note 8 12 ; E2
+  note 6 12 ; D2
+  note 11 12 ; G2
+  note 9 12 ; F2
+  note 8 12 ; E2
+  note 6 12 ; D2
+  note 7 12 ; D#2
+  note 9 12 ; F2
+  note 11 12 ; G2
+  note 7 12 ; D#2
+  note 9 12 ; F2
+  note 7 12 ; D#2
+  note 6 12 ; D2
+  note 2 12 ; A#1
+  note 4 12 ; C2
+  note 6 12 ; D2
+  note 8 12 ; E2
+  note 4 12 ; C2
+  note 5 12 ; C#2
+  note 6 12 ; D2
+  note 8 12 ; E2
+  note 5 12 ; C#2
+  end
+
+block Pattern11
+  instr 6
+  note 9 12 ; F2
+  note 13 12 ; A2
+  note 11 12 ; G2
+  note 9 12 ; F2
+  note 8 12 ; E2
+  note 9 12 ; F2
+  note 11 12 ; G2
+  note 8 12 ; E2
+  note 9 12 ; F2
+  note 13 12 ; A2
+  note 11 12 ; G2
+  note 9 12 ; F2
+  note 15 12 ; B2
+  note 13 12 ; A2
+  note 11 12 ; G2
+  note 9 12 ; F2
+  note 11 12 ; G2
+  note 12 12 ; G#2
+  note 14 12 ; A#2
+  note 11 12 ; G2
+  note 14 12 ; A#2
+  note 11 12 ; G2
+  note 9 12 ; F2
+  note 6 12 ; D2
+  note 8 12 ; E2
+  note 9 12 ; F2
+  note 11 12 ; G2
+  note 8 12 ; E2
+  note 8 12 ; E2
+  note 9 12 ; F2
+  note 11 12 ; G2
+  note 8 12 ; E2
+  end
+
+block Pattern12
+  rest 144
+  end
+
+block Pattern13
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  note 42 6 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  arp $93
+  note 40 18 ; C5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $93
+  note 40 12 ; C5
+  arp $92
+  note 42 18 ; D5
+  note 42 6 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  arp $94
+  note 42 18 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $94
+  note 42 12 ; D5
+  arp $93
+  note 43 18 ; D#5
+  note 43 6 ; D#5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $93
+  note 43 18 ; D#5
+  arp $95
+  note 42 18 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $95
+  note 42 12 ; D5
+  arp $93
+  note 40 18 ; C5
+  note 40 6 ; C5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  arp $93
+  instr 6
+  note 40 18 ; C5
+  arp $95
+  note 41 18 ; C#5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $95
+  note 41 12 ; C#5
+  end
+
+block Pattern14
+  instr 7
+  note 49 36 ; A5
+  note 47 6 ; G5
+  note 45 6 ; F5
+  note 47 36 ; G5
+  note 45 6 ; F5
+  note 44 6 ; E5
+  note 45 36 ; F5
+  note 44 6 ; E5
+  note 42 6 ; D5
+  note 39 18 ; B4
+  note 40 18 ; C5
+  note 42 12 ; D5
+  note 43 36 ; D#5
+  note 45 6 ; F5
+  note 43 6 ; D#5
+  note 42 18 ; D5
+  note 40 18 ; C5
+  note 38 12 ; A#4
+  note 38 18 ; A#4
+  note 35 18 ; G4
+  note 38 12 ; A#4
+  note 37 48 ; A4
+  end
+
+block Pattern15
+  instr 0
+  note 18 48 ; D3
+  note 16 48 ; C3
+  note 14 48 ; A#2
+  note 13 48 ; A2
+  note 12 48 ; G#2
+  note 11 48 ; G2
+  note 9 48 ; F2
+  note 11 48 ; G2
+  note 16 96 ; C3
+  note 16 96 ; C3
+  note 16 108 ; C3
+  note 16 108 ; C3
+  note 16 216 ; C3
+  note 16 216 ; C3
+  note 16 216 ; C3
+  note 16 216 ; C3
+  end
+
+block Pattern16
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  note 42 6 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  arp $93
+  note 40 18 ; C5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $93
+  note 40 12 ; C5
+  arp $95
+  note 42 18 ; D5
+  note 42 6 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $95
+  note 42 18 ; D5
+  arp $94
+  note 40 18 ; C5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $94
+  note 40 12 ; C5
+  note 43 18 ; D#5
+  note 43 6 ; D#5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $94
+  note 43 18 ; D#5
+  arp $93
+  note 43 18 ; D#5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $93
+  note 43 12 ; D#5
+  arp $94
+  note 40 18 ; C5
+  note 40 6 ; C5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  arp $94
+  instr 6
+  note 40 18 ; C5
+  note 42 18 ; D5
+  instr 0
+  arp $96
+  note 18 12 ; D3
+  instr 6
+  arp $94
+  note 42 12 ; D5
+  end
+
+block Pattern17
+  instr 7
+  note 49 36 ; A5
+  note 47 6 ; G5
+  note 45 6 ; F5
+  note 47 36 ; G5
+  note 45 6 ; F5
+  note 44 6 ; E5
+  note 45 36 ; F5
+  note 44 6 ; E5
+  note 42 6 ; D5
+  note 40 18 ; C5
+  note 42 18 ; D5
+  note 45 12 ; F5
+  note 43 36 ; D#5
+  note 45 6 ; F5
+  note 43 6 ; D#5
+  note 47 18 ; G5
+  note 45 18 ; F5
+  note 43 12 ; D#5
+  note 40 18 ; C5
+  note 37 18 ; A4
+  note 40 12 ; C5
+  note 39 48 ; B4
+  end
+
+block Pattern18
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  note 42 18 ; D5
+  note 42 18 ; D5
+  note 42 18 ; D5
+  note 42 12 ; D5
+  note 42 12 ; D5
+  end
+
+block Pattern19
+  instr 6
+  arp $92
+  note 42 18 ; D5
+  note 42 18 ; D5
+  note 42 18 ; D5
+  note 42 18 ; D5
+  arp $90
+  end
+
+block Pattern20
+  instr 7
+  note 52 192 ; C6
+  end
+
+block Pattern21
+  end
+
+block Pattern22
+  end
+
+block Pattern23
+  end
+
+block Pattern24
+  end
+
+block Pattern25
+  end
+
+block Pattern26
+  rest 192
+  end

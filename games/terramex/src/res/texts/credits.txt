@@ -1,0 +1,6 @@
+# CreditsText $9579: the credits under the menu, rows 17-21.
+"BY  TEQUE SOFTWARE  DEV. LTD\x0D"
+"©   ARGUS PRESS SOFTWARE LTD\x0D"
+"PROGRAM   SHAUN HOLLINGWORTH\x0D"
+"          PETE  HARRAP\x0D"
+"+2 MUSIC  BEN DAGLISH\x00"

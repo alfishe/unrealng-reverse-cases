@@ -1,0 +1,2 @@
+# AltFloorTiles $A264: the floor tiles of the alternate set.
+$C6 $C7 $BF $C0 $1E $1F $31 $32 $33 $3C $3D $3E $3F

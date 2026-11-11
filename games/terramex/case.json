@@ -5,7 +5,7 @@
     "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
   ],
   "image": "work/mkgame/original.bin",
-  "lo": "6000",
+  "lo": "7200",
   "hi": "10000",
   "device": "ZXSPECTRUM128",
   "bases": {
@@ -14,7 +14,6 @@
     "0": "C000"
   },
   "read_builds": [
-    "stage1/c1",
     "stage1/explorers",
     "stage1/gameover",
     "stage1/rzx/r00000",
@@ -49,13 +48,45 @@
     "stage1/rzx/r48000",
     "stage1/rzx/r50000"
   ],
+  "code_builds": [
+    "stage1/c1"
+  ],
+  "overwritten": [
+    [
+      "7200",
+      "72AA"
+    ]
+  ],
   "ref_builds": [
     [
       "stage1/c1",
       "c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play"
     ]
   ],
+  "ref_parts": [
+    [
+      "src/tape/basic.json",
+      "Tape BASIC and loader"
+    ],
+    [
+      "src/select/select.json",
+      "The 128K setup and the explorer selector (RAM 1)"
+    ],
+    [
+      "src/music/music.json",
+      "The AY music player (RAM 6)"
+    ],
+    [
+      "src/explorers/explorers.json",
+      "The explorer data sets"
+    ],
+    [
+      "src/screen/screen.json",
+      "The loading screen"
+    ]
+  ],
   "header": [
-    "; Terramex, Grandslam Entertainments 1987 (Teque: Shaun Hollingworth, Pete Harrap, Ben Daglish): the image $6000-$FFFF as the ROM loader leaves it (block 4 at $6000, block 5 over it at $7200)."
+    "; Terramex, Grandslam Entertainments 1987 (Teque: Shaun Hollingworth, Pete Harrap, Ben Daglish): TZX block 5, the",
+    "; game $7200-$FFFF, as the loader's LD-BYTES leaves it over block 4 (tools/image.py)."
   ]
 }

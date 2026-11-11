@@ -1,0 +1,15 @@
+# The tape orig/Terramex.tzx as tools/mktape.py writes it: one line a TZX block, in order. Format:
+#   tzx MAJOR.MINOR                         the file header ("ZXTape!", $1A, the version)
+#   text TEXT                               a text description block ($30)
+#   header PAUSE TYPE NAME LENGTH P1 P2     a standard ($10) ROM header block: flag $00, type 0 (Program) or 3 (Bytes),
+#                                           the name padded to 10, the data length (or the file's: "@FILE"), P1, P2
+#   data PAUSE FILE [FILE ...]              a standard ($10) data block: flag $FF, the files' bytes in order, the XOR
+#                                           checksum; "unreloc:FILE" is FILE with its relocation undone (tools/parts.py)
+# PAUSE is the pause after the block in ms. FILE names are in build/ (the assembled parts) or build/res (resources).
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 989 0 TERRAMEX @basic.bin 0 58
+data 1703 basic.bin
+data 1150 screen.bin
+data 7777 music.bin unreloc:select.bin explorers.bin
+data 22475 game.bin

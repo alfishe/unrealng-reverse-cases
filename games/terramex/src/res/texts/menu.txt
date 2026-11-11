@@ -1,0 +1,8 @@
+# MenuText $9540: the device options, printed by PrintMenuText $94EF.
+"1 : KEYBOARD\x0D"
+"\x0D"
+"2 : KEMPSTON\x0D"
+"\x0D"
+"3 : SINCLAIR\x0D"
+"\x0D"
+"0 : START GAME\x00"

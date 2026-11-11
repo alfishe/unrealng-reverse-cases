@@ -1,0 +1,4 @@
+# VibratoTable $C906: byte 0 the delay (bit 7 clear) or cycles (set), then 7 signed
+# period deltas.
+head,d1,d2,d3,d4,d5,d6,d7
+$28,1,0,-1,0,1,0,-1

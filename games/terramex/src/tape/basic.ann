@@ -1,0 +1,87 @@
+# The annotations of tape/basic (kit/mkgame.py --part src/tape/basic.json). Format: ../../../../docs/ann-format.md.
+#
+# TZX block 2, the BASIC program "TERRAMEX" (header TZX block 1: LINE 0, program length 58, 302 bytes in all) at
+# PROG $5CCB: line 0 ($5CCB-$5D04) and the variables area from VARS $5D05, which holds one string variable, l$, of
+# 241 bytes: the machine-code loader. Witness: c1 (work/stage1/c1: power-on, the original TZX at ROM speed), whose
+# ROM loads the block (the L1 arrival: $5D08 written by $05AE from frame 696) and runs line 0. "Witness: L1 0 (c1)"
+# lines are placeholders the lead's --fix-witness fills.
+
+@equ $0556 LdBytes ; the ROM's LD-BYTES: IX = the address, DE = the length, A = the flag, carry set = load
+@equ $1601 ChanOpen ; the ROM's CHAN-OPEN: A = the stream
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 768 ; the screen attributes
+@equ $5B03 InfiniteLives ; 1 when the byte at $8000 was $C9 before the load: GameEntry then patches the lives decrement
+@equ $5C3A ErrNr at $5DA8 ; system variable ERR_NR, the ROM's IY base
+@equ $5C3D ErrSp ; system variable ERR_SP: where an error report returns
+@equ $5FE6 PagingStub ; the selector's paging stub; the loader's stack grows down from here
+@equ $5FFE Has128K 2 ; $11 on a 128K, 0 on a 48K; GameLoaded $5FFF after it
+@equ $6000 Block4 at $5D51 ; TZX block 4's load address: the music player, the selector, the explorer sets
+@equ $7200 GameImage at $5D73 ; TZX block 5's load address: the game (src/game)
+@equ $8000 CheatByte at $5D36 ; tested for $C9 before the load
+@equ $8F00 GameEntry at $5D80 ; the game's entry (src/game)
+@const SelectorSetup $7200 ; block 4's selector part as loaded: the 128K setup's entry (src/select)
+
+@isub $5D09 LD HL,BreakMessage-LoaderEntry
+@isub $5D0E LD HL,BreakMessagePtr+1-LoaderEntry
+@isub $5D15 LD HL,BreakHandler-LoaderEntry
+@isub $5DA5 LD HL,BreakMessage-LoaderEntry
+@isub $5D5E LD BC,SelectorSetup
+@isub $5D61 CALL SelectorSetup
+
+@module basic ; The BASIC: line 0, whose USR enters the loader hidden in the variables area
+@about The program is one line, numbered 0 and auto-run (the header's LINE 0): RANDOMIZE USR (3+PEEK 23627+256*PEEK 23628), that is VARS + 3. LIST shows the digits "0", "00000", "000" and "00000": the five-byte forms after them hold 3, 23627, 256 and 23628. The line's length field says $FF36, far past the program's 58 bytes, so the ROM's line walk (LIST, editing, deleting) treats everything after the line as part of it.
+@about VARS $5D05 holds one string variable, l$ ($4C: a string named l), 241 bytes long: the loader $5D08-$5DF8. USR leaves its own address in BC, which the loader uses to find its parts, so it runs wherever PROG lies.
+
+$5CCB b BasicLine0 ; Line 0: RANDOMIZE USR (0+(PEEK (00000)+000*PEEK (00000))), the hidden numbers 3, 23627, 256, 23628
+> USR (3 + PEEK VARS + 256 x PEEK (VARS + 1)): VARS is the system variable at $5C4B; the call goes to VARS + 3 = $5D08, LoaderEntry, the first byte of l$'s text. The digits printed are zeros and the hidden five-byte forms are the real numbers, so LIST shows nothing useful. c1: the ROM runs the line after the load (USR at $34BB enters $5D08 at frame 696).
+$5CCB ; the line number, 0 (high byte first)
+$5CCD ; the line's length, $FF36: runs past the program
+$5CCF ; RANDOMIZE ($F9) USR ($C0) "(" "0"
+$5CD3 ; $0E and 3
+$5CD9 ; "+(" PEEK ($BE) "(" "00000"
+$5CE2 ; $0E and 23627 = $5C4B (VARS)
+$5CE8 ; ")+" "000"
+$5CED ; $0E and 256
+$5CF3 ; "*" PEEK ($BE) "(" "00000"
+$5CFB ; $0E and 23628 = $5C4C
+$5D01 ; ")))" and ENTER
+
+$5D05 b LoaderString 3 ; The variables area: string variable l$, 241 bytes (the loader is its text)
+> $4C = a string variable named l (bits 7-5 = 010), then its length $00F1 = 241: $5D08-$5DF8, the rest of the block. The ROM never evaluates l$; it is only a place the BASIC keeps intact.
+
+$5D08 c LoaderEntry ; The loader: break trap, clear, cheat test, load the screen and block 4, the setup, load the game
+> Entered by line 0's USR with BC = $5D08 (its own address) and interrupts off by its DI. Position independent: it adds BC to three offsets: BreakMessage's address is patched into BreakHandler's LD HL operand ($5DA6), SP = $5FE6 and BreakHandler's address is pushed and ERR_SP pointed at it, so an error report (BREAK in LD-BYTES: "D BREAK - CONT repeats") lands in BreakHandler $5D83.
+> The screen and attributes $4000-$5AFF cleared, border 0. Has128K $5FFE and GameLoaded $5FFF set to 0. InfiniteLives $5B03 = 1 when the byte at $8000 is $C9 (RET), else 0: memory before the load, so a POKE 32768,201 typed before LOAD "" gives the cheat; GameEntry $8F00 then writes OR A ($B7) over the DEC (HL) of the lives at $A9FD instead of keeping $35.
+> LD-BYTES (flag $FF) the loading screen to $4000 ($1B00 bytes, TZX block 3) and block 4 to $6000 ($96F8 bytes, TZX block 4); the carry (a load error) is not tested. CALL $7200 with BC = $7200: the setup (src/select). On a 128K it returns through the paging stub at once; on a 48K after the explorer is chosen. Then KeyReleaseWait $5D64, LD-BYTES of block 5 to $7200 ($8E00 bytes) and JP $8F00 (GameEntry).
+> c1: one run from frame 696: the screen loads, block 4, the setup at frame 11841, the game block, GameEntry at frame 21597.
+> Witness: L1 1 (c1).
+$5D08 ; interrupts off; LD-BYTES turns them on again at its end
+$5D09 ; BreakMessage's address ...
+$5D0E ; ... into BreakHandler's LD HL operand
+$5D15 ; BreakHandler's address ...
+$5D19 ; ... on a new stack under $5FE6, ERR_SP pointing at it
+$5D21 ; clear the screen and the attributes to 0
+$5D2D ; border 0
+$5D30 ; Has128K and GameLoaded = 0
+$5D36 ; $C9 at $8000 before the load: infinite lives
+$5D40 SetInfiniteLives
+$5D44 ; the loading screen, TZX block 3
+$5D51 ; block 4: $6000-$F6F7
+$5D5E ; the 128K setup; on a 48K the selector too
+$5D64 KeyReleaseWait ; the border cycles through the colours while any key is down
+$5D73 ; the game, TZX block 5: $7200-$FFFF
+$5D80 ; GameEntry
+
+$5D83 c BreakHandler ; BREAK during the load: "User pressed break-reload!" on a blue screen, for ever
+> ERR_SP points at this address (LoaderEntry $5D08), so the ROM's error report on BREAK in LD-BYTES comes here. Bitmap cleared, attributes $0F (blue paper, white ink), border 1, stream 2 opened, BreakMessage $5DB7 printed by RST $10 up to its $FF; then back to the start, clearing and printing again with no way out but a reset. Not executed in any recording (c1 loads without BREAK); known only from the code.
+> Witness: L1 0 ().
+$5D8F ; attributes $0F, border 1
+$5DA0 ; stream 2, the upper screen
+$5DA5 BreakMessagePtr ; the operand LoaderEntry patches with BreakMessage's address
+$5DAC BreakPrintLoop ; RST $10 up to $FF, then clear and print again
+
+$5DB7 t BreakMessage ; AT 10,4; INK 7; PAPER 1; "User pressed break-reload!", $FF ends
+> Printed by BreakHandler $5D83 through RST $10: the control codes $16 (AT) 10,4, $10 (INK) 7, $11 (PAPER) 1, the text, $FF the end mark. Not read in any recording.
+@res texts/break-message.bin
+$5DD9 t StringPad ; 32 "*": the rest of l$'s 241 bytes, never read
+> Filler to the end of the block; no code reads it.

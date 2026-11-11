@@ -1,0 +1,9 @@
+# SlotTable $C11B: per channel row (8 x channel + slot) the record offset (9 x record).
+# Rows 0-2 are channels A, B, C; rows 3-5 are never indexed by a tune.
+row,slot0,slot1,slot2,slot3,slot4,slot5,slot6,slot7
+0,$00,$09,$12,$1B,$24,$2D,$36,$3F
+1,$00,$09,$12,$1B,$24,$2D,$36,$3F
+2,$00,$09,$12,$1B,$24,$2D,$36,$3F
+3,$00,$09,$12,$1B,$24,$2D,$36,$3F
+4,$00,$09,$12,$1B,$24,$2D,$36,$3F
+5,$00,$09,$12,$1B,$24,$2D,$36,$3F

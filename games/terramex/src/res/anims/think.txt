@@ -1,0 +1,5 @@
+# Hero frame lists (sprite frames $00-$3F of the explorer set, $40-$7E creatures), each $FF ended,
+# played one frame a pass (FrameListPlay / NextFrame); one list a line.
+$09 $0A $09 $0A $09 $0A $09 $0A $FF
+$1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $1F $07 $08 $07 $05 $07 $08 $07 $05 $07 $08 $07 $05 $FF
+$04 $05 $04 $02 $06 $02 $04 $05 $04 $02 $06 $02 $FF

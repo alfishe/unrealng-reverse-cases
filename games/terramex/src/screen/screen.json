@@ -1,0 +1,15 @@
+{
+  "about": "TZX block 3, the loading screen at $4000 (6912 bytes): python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/screen-4000.bin || python3 tools/parts.py"],
+  "image": "work/parts/screen-4000.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM128",
+  "header": ["; Terramex, Grandslam 1987: TZX block 3, the loading screen, loaded by the loader's LD-BYTES at $4000."],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

@@ -1,0 +1,18 @@
+{
+  "about": "TZX block 2, the BASIC program \"TERRAMEX\" at PROG $5CCB (302 bytes, LINE 0) with the loader in its variables area: python3 ../../kit/mkgame.py --part src/tape/basic.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/basic-5ccb.bin || python3 tools/parts.py"],
+  "image": "work/parts/basic-5ccb.bin",
+  "org": "5CCB",
+  "ann": "src/tape/basic.ann",
+  "top": "basic",
+  "bin": "basic.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "pages": [5],
+  "header": ["; Terramex, Grandslam 1987: TZX block 2, the BASIC program \"TERRAMEX\" (302 bytes at PROG $5CCB, LINE 0, the",
+             "; program 58 bytes): line 0 and, in the variables area at VARS $5D05, the machine-code loader entered at $5D08."],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5CCB", "hi": "5DF9", "reads": false}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic"
+}

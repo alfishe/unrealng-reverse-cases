@@ -1,0 +1,656 @@
+# The rooms of Terramex (tools/res_formats.py; src/res/rooms/README.md). Room R = level x 12 + column.
+# The rooms drawn with the alternate tiles $80-$FF (RoomsOnAltTiles), in the order of their list:
+alternate $12 $1E $1F $20 $2B $2C $37 $38 $39 $3A $3B $3C $43 $44 $45
+#
+# Each room: its header; 4 lines of 8 back-tile indices (RoomGrids, hex; back-tiles in backtiles.txt);
+# its three creatures (RoomCreatures, one line each, "-" an empty record): the type (CreatureHandlers),
+# the first sprite frame of its animation, the start X and Y, dir 1 = moving right or down, hit 1 =
+# only frame hitframe and later hit (AnimateCreature), else every frame (types 1-4, 6, 7).
+
+room $00 level 0 column 0
+  00 00 41 1A 00 00 1B 00
+  32 34 52 00 1B 41 00 00
+  00 35 38 36 36 38 39 3A
+  34 4C 4C 4C 4C 4C 4C 4C
+  creature walker frame=$60 x=$14 y=$06 dir=0 hit=1 hitframe=4
+  creature walker frame=$60 x=$C8 y=$32 dir=1 hit=1 hitframe=4
+  creature -
+
+room $01 level 0 column 1
+  00 00 1B 00 00 00 00 00
+  00 00 00 00 00 32 34 33
+  3D 3E 4F 00 00 00 00 00
+  4C 4C 33 00 00 1A 00 00
+  creature -
+  creature walker frame=$60 x=$28 y=$32 dir=1 hit=1 hitframe=4
+  creature -
+
+room $02 level 0 column 2
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  creature -
+  creature -
+  creature -
+
+room $03 level 0 column 3
+  00 00 00 32 34 34 33 00
+  00 1B 00 00 1B 00 00 00
+  00 00 00 00 00 00 09 02
+  00 00 00 1A 00 19 06 06
+  creature -
+  creature -
+  creature -
+
+room $04 level 0 column 4
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  02 02 02 02 02 02 0A 00
+  06 06 06 06 06 06 0B 00
+  creature scenery frame=$2C x=$8A y=$30 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $05 level 0 column 5
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  creature -
+  creature -
+  creature -
+
+room $06 level 0 column 6
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 01 15 02 15 02 02 15
+  00 05 06 06 06 06 06 06
+  creature -
+  creature -
+  creature -
+
+room $07 level 0 column 7
+  00 1A 00 00 00 00 00 00
+  00 00 00 00 1B 00 00 32
+  02 03 00 00 35 37 1B 00
+  06 06 04 1B 3F 46 00 00
+  creature rightflier frame=$60 x=$0A y=$10 dir=1 hit=1 hitframe=4
+  creature -
+  creature -
+
+room $08 level 0 column 8
+  40 00 1B 00 00 00 00 1B
+  34 33 00 1A 00 41 00 00
+  00 00 00 00 00 40 00 00
+  00 00 00 32 34 3B 3B 34
+  creature drop frame=$5C x=$C6 y=$00 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$68 y=$2E dir=0 hit=0 hitframe=0
+  creature -
+
+room $09 level 0 column 9
+  00 32 34 33 00 1B 00 00
+  1B 00 40 00 00 35 36 36
+  00 35 51 3A 3B 4C 4C 4C
+  34 4C 4C 4C 4C 4C 4C 4C
+  creature -
+  creature -
+  creature -
+
+room $0A level 0 column 10
+  00 1A 00 00 1B 00 41 1A
+  36 39 3E 36 36 39 F4 36
+  49 48 44 48 47 3F 40 3F
+  3D 3E 37 00 35 36 38 39
+  creature drop frame=$5C x=$AA y=$46 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$94 y=$46 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$8A y=$46 dir=0 hit=0 hitframe=0
+
+room $0B level 0 column 11
+  00 1B 00 1B 00 00 00 00
+  4B 60 00 00 00 00 1A 00
+  4A 50 4D 3C 3D 3E 37 00
+  39 3A 3B 4C 4C 4C 4C 34
+  creature drop frame=$5C x=$64 y=$16 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $0C level 1 column 0
+  49 48 47 4A 3F 3F 43 44
+  1E 1D 1C 1E 1E 1D 1C 26
+  21 21 11 21 1F 20 22 27
+  0F 14 10 14 12 0C 14 17
+  creature riser frame=$58 x=$A0 y=$60 dir=0 hit=1 hitframe=3
+  creature drop frame=$5C x=$2E y=$10 dir=0 hit=0 hitframe=0
+  creature -
+
+room $0D level 1 column 1
+  48 47 46 00 00 1A 00 00
+  1E 1E 1E 1D 16 16 16 16
+  2D 21 21 2A 21 21 2D 21
+  18 12 13 29 14 12 13 14
+  creature rightflier frame=$60 x=$02 y=$18 dir=0 hit=0 hitframe=0
+  creature leftflier frame=$60 x=$E6 y=$1C dir=0 hit=0 hitframe=0
+  creature scenery frame=$2C x=$86 y=$60 dir=0 hit=0 hitframe=0
+
+room $0E level 1 column 2
+  00 00 1B 00 00 00 00 1B
+  16 1C 1E 1E 1E 1E 2C 1C
+  21 0E 2D 21 0E 21 28 21
+  14 0D 13 0C 17 18 17 18
+  creature riser frame=$58 x=$60 y=$60 dir=0 hit=1 hitframe=3
+  creature walker frame=$60 x=$28 y=$40 dir=0 hit=1 hitframe=4
+  creature -
+
+room $0F level 1 column 3
+  00 1B 00 00 1A 07 06 06
+  1E 1D 1C 1E 2F 06 06 06
+  21 21 2A 21 2E 06 06 06
+  14 12 29 18 30 06 06 06
+  creature -
+  creature -
+  creature -
+
+room $10 level 1 column 4
+  06 06 06 06 06 06 0B 00
+  77 72 54 68 6E 8D 8C 1E
+  77 72 73 5D 81 74 75 76
+  06 06 55 55 80 7B 7B 21
+  creature still frame=$64 x=$16 y=$48 dir=0 hit=1 hitframe=4
+  creature -
+  creature -
+
+room $11 level 1 column 5
+  00 00 00 00 00 00 00 00
+  1E 1E 1D 1C 1E 1E 1C 1E
+  21 1F 22 20 21 21 1F 21
+  21 21 21 21 21 21 21 21
+  creature -
+  creature -
+  creature -
+
+room $12 level 1 column 6 alternate
+  00 9C 94 94 94 94 94 96
+  1E 9A 93 8E 99 99 8E 95
+  21 9B 92 92 97 92 98 95
+  21 2E 06 90 8F 95 06 06
+  creature -
+  creature -
+  creature -
+
+room $13 level 1 column 7
+  06 06 08 1A 00 00 1B 00
+  06 06 06 23 1D 2C 1C 1E
+  06 06 06 24 21 28 31 21
+  06 06 06 06 25 17 18 13
+  creature -
+  creature -
+  creature -
+
+room $14 level 1 column 8
+  00 1A 00 00 00 00 1A 00
+  1E 1D 1C 26 1E 1D 1C 1E
+  21 21 0E 2B 22 20 0E 21
+  12 14 0D 29 14 12 17 18
+  creature riser frame=$58 x=$68 y=$60 dir=0 hit=1 hitframe=3
+  creature leftflier frame=$60 x=$E6 y=$20 dir=0 hit=1 hitframe=4
+  creature -
+
+room $15 level 1 column 9
+  00 1A 00 00 42 43 44 48
+  1E 1D 1C 1D 16 16 16 1C
+  21 21 21 0E 21 1F 21 21
+  14 12 14 0D 0C 0F 0F 14
+  creature walker frame=$60 x=$C8 y=$1E dir=1 hit=1 hitframe=4
+  creature walker frame=$60 x=$0A y=$32 dir=0 hit=1 hitframe=4
+  creature riser frame=$58 x=$80 y=$60 dir=0 hit=1 hitframe=3
+
+room $16 level 1 column 10
+  47 3F 46 00 42 4A 43 44
+  1E 1E 1D 16 1C 1E 1D 1C
+  21 20 1F 22 20 21 1F 21
+  14 14 12 12 14 14 13 14
+  creature drop frame=$5C x=$82 y=$08 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$92 y=$08 dir=0 hit=0 hitframe=0
+  creature -
+
+room $17 level 1 column 11
+  49 48 47 3F 3F 3F 43 44
+  1D 1C 1E 2C 16 16 1C 1E
+  21 21 21 28 21 21 21 21
+  0F 13 13 0D 0F 13 14 13
+  creature -
+  creature still frame=$51 x=$94 y=$60 dir=0 hit=0 hitframe=0
+  creature still frame=$51 x=$A8 y=$60 dir=1 hit=0 hitframe=0
+
+room $18 level 2 column 0
+  06 62 53 61 06 06 06 67
+  06 62 53 68 54 5F 5E 55
+  55 68 53 55 55 55 55 65
+  63 6C 57 6B 59 66 64 06
+  creature riser frame=$58 x=$18 y=$60 dir=0 hit=1 hitframe=3
+  creature drop frame=$5C x=$70 y=$30 dir=0 hit=0 hitframe=0
+  creature -
+
+room $19 level 2 column 1
+  5E 68 54 54 56 68 56 56
+  55 55 55 55 55 55 55 55
+  63 63 55 55 55 55 63 63
+  06 62 55 55 55 55 61 06
+  creature drop frame=$5C x=$40 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$60 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$A8 y=$10 dir=0 hit=0 hitframe=0
+
+room $1A level 2 column 2
+  56 56 54 56 68 54 54 56
+  55 55 55 55 55 55 55 55
+  63 5B 5D 5D 5D 5D 5C 7E
+  06 69 63 63 63 63 6A 7F
+  creature drop frame=$5C x=$8E y=$18 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $1B level 2 column 3
+  5F 5E 6E 6F 06 06 06 06
+  55 55 55 70 56 54 54 68
+  7E 55 7A 7D 7E 7C 7E 7E
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature -
+  creature riser frame=$58 x=$60 y=$40 dir=0 hit=1 hitframe=3
+  creature -
+
+room $1C level 2 column 4
+  61 77 55 55 82 7B 84 21
+  54 78 55 55 7A 7B 85 21
+  7E 7C 55 7A 79 7B 83 21
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $1D level 2 column 5
+  21 21 21 21 21 21 21 21
+  21 21 21 21 2D 21 21 21
+  21 2D 21 21 21 21 21 8B
+  7B 7B CE CE CF 21 7B 7B
+  creature riser frame=$58 x=$30 y=$60 dir=1 hit=1 hitframe=3
+  creature riser frame=$58 x=$80 y=$60 dir=0 hit=1 hitframe=3
+  creature -
+
+room $1E level 2 column 6 alternate
+  21 7B 7B A1 8F 9D 9F 9E
+  8B 7B 7B A2 8F CD CD CD
+  7B 7B A1 A0 8F A4 A3 8E
+  7B 7B A2 A0 A0 A0 A0 A0
+  creature riser frame=$58 x=$08 y=$30 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $1F level 2 column 7 alternate
+  A0 A0 A0 A0 A5 A5 A7 A7
+  CD CD 99 97 92 91 97 A3
+  AD 8E 8E 8F 9E 9D 8F 8E
+  A0 8E A0 9F A0 9F A6 92
+  creature climber frame=$6B x=$44 y=$36 dir=0 hit=1 hitframe=4
+  creature -
+  creature -
+
+room $20 level 2 column 8 alternate
+  A5 A5 A7 A0 A0 A0 A7 9E
+  8E 8E 8E A8 A9 AA 8E A0
+  8E 93 99 8E AB 8E 99 A0
+  92 91 91 91 AC 91 91 9E
+  creature scenery frame=$2C x=$5C y=$60 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $21 level 2 column 9
+  7B 8A 86 86 88 86 88 86
+  7B 89 55 55 55 55 55 55
+  7B 55 7A 7B 7D 7E 55 55
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature drop frame=$5C x=$D2 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$8E y=$18 dir=0 hit=0 hitframe=0
+  creature -
+
+room $22 level 2 column 10
+  86 86 80 87 62 62 62 7F
+  55 55 55 68 6E 6F 62 62
+  55 55 55 55 55 70 54 68
+  7B 7D 7E 59 66 5A 63 63
+  creature riser frame=$58 x=$48 y=$68 dir=0 hit=1 hitframe=3
+  creature riser frame=$58 x=$28 y=$60 dir=1 hit=1 hitframe=3
+  creature -
+
+room $23 level 2 column 11
+  06 06 06 06 06 06 06 06
+  67 72 70 68 6E 6F 06 06
+  55 72 55 55 55 55 72 55
+  63 71 59 66 5A 6C 71 63
+  creature drop frame=$5C x=$5E y=$30 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$63 y=$2E dir=0 hit=0 hitframe=0
+  creature -
+
+room $24 level 3 column 0
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00
+  creature -
+  creature -
+  creature -
+
+room $25 level 3 column 1
+  06 62 55 55 55 55 61 06
+  06 62 55 55 55 55 61 06
+  06 62 58 58 58 58 61 06
+  06 06 06 06 06 06 06 06
+  creature -
+  creature -
+  creature -
+
+room $26 level 3 column 2
+  62 61 62 61 67 5E 56 54
+  62 67 5E 68 55 55 55 55
+  62 55 55 55 55 55 55 55
+  67 5E 55 55 7E D0 7B 7B
+  creature drop frame=$5C x=$E0 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$E0 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$70 y=$38 dir=0 hit=0 hitframe=0
+
+room $27 level 3 column 3
+  54 56 56 5F 6E 6F 62 62
+  55 55 55 55 55 70 68 6F
+  55 7E 7E 7E 55 55 55 D1
+  7B 7B 7B 7B 7B 81 5D D2
+  creature still frame=$64 x=$E0 y=$58 dir=1 hit=1 hitframe=4
+  creature riser frame=$58 x=$38 y=$48 dir=1 hit=1 hitframe=3
+  creature riser frame=$58 x=$5A y=$48 dir=0 hit=1 hitframe=3
+
+room $28 level 3 column 4
+  F2 55 55 55 55 55 F2 F3
+  55 F3 F2 55 F1 55 55 F1
+  55 F1 55 55 55 55 F2 55
+  55 55 55 55 55 55 F3 55
+  creature -
+  creature -
+  creature -
+
+room $29 level 3 column 5
+  56 D4 56 D4 56 55 D3 D3
+  55 55 55 55 55 55 72 72
+  55 7A 79 7D 7E 55 72 72
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature riser frame=$58 x=$48 y=$30 dir=0 hit=1 hitframe=3
+  creature -
+  creature -
+
+room $2A level 3 column 6
+  56 D3 56 56 68 6E 6F 62
+  55 72 55 55 55 55 55 55
+  55 72 65 6B 6D 55 7A 79
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature riser frame=$58 x=$60 y=$40 dir=0 hit=1 hitframe=3
+  creature drop frame=$5C x=$90 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$98 y=$18 dir=0 hit=0 hitframe=0
+
+room $2B level 3 column 7 alternate
+  A0 8E A0 A0 AE AE AE AE
+  CD 8E CD 93 CD 93 CD 93
+  A0 8E A0 A0 A0 A0 A0 A0
+  A0 8E A0 A0 A0 AE A0 A0
+  creature -
+  creature -
+  creature -
+
+room $2C level 3 column 8 alternate
+  9E A7 A5 A5 A5 A5 A7 A0
+  CD 99 8E A4 B0 8E 93 AF
+  9D B0 8E 93 8E 99 8E AF
+  9E 92 91 92 91 91 92 AE
+  creature walker frame=$78 x=$5C y=$4D dir=0 hit=1 hitframe=4
+  creature scenery frame=$2B x=$9A y=$12 dir=0 hit=0 hitframe=0
+  creature -
+
+room $2D level 3 column 9
+  7B 87 67 5E 54 54 56 54
+  7B 78 55 89 55 55 89 55
+  7B 7D 7E 55 55 55 55 55
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $2E level 3 column 10
+  7B 7B 7B 8A 88 86 86 86
+  7B 7B 7B 89 55 55 55 55
+  7B 7B 7B 7D 7E 55 55 55
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $2F level 3 column 11
+  7B 7B 7B 8A 88 88 8A 88
+  7B 8A 89 55 55 55 55 55
+  7B 7D 55 55 55 55 55 55
+  7B 7B 7B F0 F0 F0 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $30 level 4 column 0
+  62 67 6E 6F 62 62 67 5E
+  61 55 55 70 68 78 55 55
+  62 55 55 DB 55 55 55 55
+  61 5A D9 DA 63 63 63 63
+  creature drop frame=$5C x=$90 y=$38 dir=0 hit=0 hitframe=0
+  creature scenery frame=$2C x=$90 y=$60 dir=0 hit=0 hitframe=0
+  creature scenery frame=$2C x=$68 y=$60 dir=0 hit=0 hitframe=0
+
+room $31 level 4 column 1
+  56 56 5F 5E 68 54 56 68
+  55 55 55 55 55 55 55 55
+  55 55 55 55 55 55 55 55
+  63 63 59 64 7F 7B 7D 63
+  creature drop frame=$5C x=$90 y=$18 dir=0 hit=1 hitframe=4
+  creature rightflier frame=$60 x=$02 y=$1E dir=0 hit=1 hitframe=4
+  creature riser frame=$58 x=$90 y=$50 dir=0 hit=1 hitframe=3
+
+room $32 level 4 column 2
+  78 55 55 55 7B 7B 8A 86
+  55 55 55 55 55 86 55 55
+  55 55 55 65 59 66 66 66
+  63 59 64 62 62 62 61 62
+  creature still frame=$64 x=$DC y=$38 dir=1 hit=1 hitframe=4
+  creature scenery frame=$2C x=$D4 y=$38 dir=0 hit=0 hitframe=0
+  creature -
+
+room $33 level 4 column 3
+  86 80 8A 89 82 7B 55 D1
+  55 55 55 55 55 55 55 D1
+  66 5A 6D 7C 55 55 55 55
+  62 62 62 62 62 63 63 61
+  creature riser frame=$58 x=$60 y=$40 dir=0 hit=1 hitframe=3
+  creature -
+  creature walker frame=$78 x=$C8 y=$46 dir=0 hit=1 hitframe=4
+
+room $34 level 4 column 4
+  62 62 62 62 62 62 62 7F
+  61 67 5E 56 54 68 78 55
+  55 55 55 55 55 55 55 55
+  62 D5 5A 6C 63 63 63 63
+  creature drop frame=$5C x=$B0 y=$38 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$80 y=$38 dir=0 hit=0 hitframe=0
+  creature -
+
+room $35 level 4 column 5
+  7B 7B 89 82 7B 8A 88 88
+  55 88 55 55 88 55 55 55
+  55 55 55 7E D6 D7 D7 D7
+  7E DD 7B 7B 8A 55 55 55
+  creature -
+  creature -
+  creature -
+
+room $36 level 4 column 6
+  88 8A 88 86 80 7B 7B 7B
+  55 55 55 55 55 55 82 7B
+  D7 D7 D7 D7 D7 D8 55 55
+  55 55 55 55 55 82 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $37 level 4 column 7 alternate
+  A0 8E A0 A0 A0 A0 A0 A0
+  A0 8E A0 AA CD CD CD CD
+  CD 8E A0 8E 8E B3 A3 8E
+  A0 8E A0 B4 B1 B2 B1 91
+  creature still frame=$64 x=$6C y=$5D dir=1 hit=1 hitframe=4
+  creature still frame=$64 x=$88 y=$48 dir=0 hit=1 hitframe=4
+  creature still frame=$64 x=$A2 y=$30 dir=1 hit=1 hitframe=4
+
+room $38 level 4 column 8 alternate
+  A0 9E A0 A0 9E A0 A0 A0
+  A8 A9 AA A8 A9 AA A5 A7
+  8E 93 8E 8E 93 8E A4 8E
+  91 92 91 91 92 97 91 92
+  creature climber frame=$78 x=$52 y=$60 dir=0 hit=1 hitframe=4
+  creature -
+  creature -
+
+room $39 level 4 column 9 alternate
+  A0 A0 A0 9E A0 A0 9F A0
+  A7 CD A8 A9 AA A7 A7 A7
+  8E 97 92 91 91 91 92 91
+  91 A6 A0 A0 A0 A0 A0 A0
+  creature -
+  creature -
+  creature -
+
+room $3A level 4 column 10 alternate
+  A0 A0 9E A7 A7 A5 BA A5
+  A7 A5 CD 8E 93 8E B8 B9
+  91 92 8E 99 8E AD 91 92
+  9E A0 B6 B5 B5 B7 A0 A0
+  creature -
+  creature -
+  creature -
+
+room $3B level 4 column 11 alternate
+  BA A5 A5 A5 A5 A5 A7 AE
+  BB 99 99 99 99 99 99 AF
+  91 93 93 93 93 93 93 AF
+  A0 9E A0 A0 9F 9F A0 A0
+  creature -
+  creature -
+  creature -
+
+room $3C level 5 column 0 alternate
+  E6 E7 E9 E7 E9 EE EF EF
+  E5 93 E8 93 8E E2 E2 E2
+  E5 EB EC ED A4 99 99 99
+  E3 E4 E1 E4 E4 E1 E1 E1
+  creature -
+  creature -
+  creature -
+
+room $3D level 5 column 1
+  54 5F 6E 6F 62 67 5E 68
+  55 55 55 DB 55 55 55 55
+  55 55 65 DA 63 59 64 DC
+  66 64 62 62 62 62 62 62
+  creature drop frame=$5C x=$37 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$37 y=$18 dir=0 hit=0 hitframe=0
+  creature -
+
+room $3E level 5 column 2
+  68 86 86 88 86 88 86 86
+  55 55 55 55 55 55 55 55
+  DC DC DC DC DC DC DC DC
+  62 62 62 62 62 62 62 62
+  creature drop frame=$5C x=$70 y=$18 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$9A y=$10 dir=0 hit=0 hitframe=0
+  creature drop frame=$5C x=$AE y=$18 dir=0 hit=0 hitframe=0
+
+room $3F level 5 column 3
+  88 DE DF DF DF DF E0 82
+  55 55 55 55 55 55 55 55
+  DC 55 55 55 55 55 55 DC
+  62 58 58 58 58 58 58 62
+  creature -
+  creature -
+  creature -
+
+room $40 level 5 column 4
+  7B 7B 7B 7B 7B 7B 7B 7B
+  55 55 86 8A 88 86 72 82
+  DC D5 5A 6D 55 55 72 55
+  62 62 62 62 D5 5A 71 63
+  creature riser frame=$58 x=$50 y=$40 dir=0 hit=1 hitframe=3
+  creature drop frame=$5C x=$8E y=$38 dir=0 hit=0 hitframe=0
+  creature -
+
+room $41 level 5 column 5
+  7B 7B 7B 7B 89 55 55 55
+  7B 8A 55 55 55 55 55 55
+  72 55 55 55 55 7A 7D 7E
+  71 59 66 64 7F 7B 7B 7B
+  creature riser frame=$58 x=$B0 y=$38 dir=0 hit=1 hitframe=3
+  creature riser frame=$58 x=$C6 y=$38 dir=1 hit=1 hitframe=3
+  creature -
+
+room $42 level 5 column 6
+  55 55 55 55 55 82 7B 7B
+  55 55 55 55 55 55 7B 7B
+  7E 7E 55 55 7E 7A 7B 7B
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature scenery frame=$2C x=$28 y=$40 dir=0 hit=0 hitframe=0
+  creature scenery frame=$2C x=$50 y=$48 dir=0 hit=0 hitframe=0
+  creature scenery frame=$2C x=$06 y=$42 dir=1 hit=0 hitframe=0
+
+room $43 level 5 column 7 alternate
+  9E 8E A0 BD A5 A5 A5 A5
+  9D 8E A0 BC BE 97 92 91
+  A0 8E 9D A0 A0 8F A7 A7
+  9E 91 92 91 91 A6 91 92
+  creature walker frame=$6B x=$62 y=$60 dir=0 hit=0 hitframe=0
+  creature -
+  creature -
+
+room $44 level 5 column 8 alternate
+  A5 A5 A5 A5 A5 8F 9F A0
+  BF 91 BF 91 C0 A6 A0 9E
+  A7 A7 A7 A7 A7 A7 A7 CD
+  91 91 BF 91 92 92 C0 91
+  creature -
+  creature -
+  creature -
+
+room $45 level 5 column 9 alternate
+  A0 C8 C8 C8 C8 CC C8 C5
+  A0 CB CB CB CA C9 CB A0
+  CD CD CD CD 8F C7 C3 C4
+  92 92 91 91 A6 C6 C2 C1
+  creature walker frame=$78 x=$1A y=$60 dir=1 hit=1 hitframe=4
+  creature -
+  creature -
+
+room $46 level 5 column 10
+  7B 8A 88 86 86 88 86 88
+  7B 7D 55 55 55 55 55 55
+  7B 7B 7B 7B 7D 55 55 55
+  7B 7B 7B 7B 7B 7B 7B 7B
+  creature -
+  creature -
+  creature -
+
+room $47 level 5 column 11
+  71 55 55 72 55 72 70 68
+  62 55 55 72 55 72 55 55
+  62 55 55 72 55 72 55 55
+  62 66 5A 71 63 71 D0 79
+  creature -
+  creature -
+  creature -

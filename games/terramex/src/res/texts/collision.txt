@@ -1,0 +1,4 @@
+# CollisionText $B07C: the telescope view (TelescopeView $A7B9); the numbers
+# are printed into the gaps.
+"TIME REMAINING TO COLLISION \x0D"
+"DAYS:   HOURS:   MINUTES:   \x00"

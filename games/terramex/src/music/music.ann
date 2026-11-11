@@ -1,0 +1,1116 @@
+# The annotations of music/music (kit/mkgame.py --part src/music/music.json). Format: ../../../../docs/ann-format.md.
+#
+# The image: TZX block 4 $6000-$71FF, copied by the 128K setup ($7200 in page 5, c1 frames 11790-11841) to RAM 6
+# $C000-$D1FF and run there. Ben Daglish's AY player (the ZXDB AY rip, work/candidates/zxdb-info/Terramex.ay.zip,
+# names "Benn Daglish", one song, init = play = $C000) and its tunes.
+# Witness: "L1 N (builds)" is the runs of an entry's first instruction summed over the part's recordings (music.json
+# "l1": c1, explorers, gameover and the 31 rzx pieces); kit/mkgame.py --fix-witness writes the real counts.
+# "Known only from the code" marks what no recording ran or read. No instruction outside RAM 6 reads or writes these
+# bytes after the copy (every page-6 writer in the 34 recordings is a page-6 routine, the copy $7200 or, before it,
+# the ROM's power-on RAM clear $00C7).
+# Pitch: a pattern note n plays period-table index n + 20 + transpose; index i is MIDI note i + 12 (index 0 = C0,
+# 16.35 Hz at the 128K's AY clock of 1.7734 MHz), so note n at transpose 0 is MIDI n + 32 (note 0 = G#1).
+
+@isub $C51E LD BC,VibratoTable-8
+@isub $C631 LD BC,VibratoTable-8
+
+@module player ; The player's entry, the start and the end of a tune, the frame update
+@about MusicFrame $C000 is the only entry the game uses: the IM 2 handler $9491 pages RAM 6 ($7FFD = $16) and calls it at every interrupt when Has128K $5FFE is not 0 (no music on a 48K), from GameEntry $8F00 on (c1: GameEntry frame 21597, the first call frame 21599) through the selector, the play, the game over and the ending. MusicTick $C014 starts tune 0 (StartTune $C79F) when PlayerState $C027 is 0, else runs UpdateTune $C1E4. The image's PlayerState is 0, so the first call starts tune 0; EndTune $C780 sets it to 0 at the tune's end, so the next call starts tune 0 again.
+@about Who selects a tune: nobody. StartTune takes the tune number in A, but its only caller is the JP Z at $C018 with A = 0, and no code outside RAM 6 writes PlayerState, TuneNumberOp+1 or TunePointer (the game's only calls into $C000 are $94A0, the music, and $8F5E, which pages RAM 1 and calls the explorer selector). So Terramex plays tune 0 and only tune 0, in a loop of 9698 frames (9696 frames of notes, the end frame and the start frame; 3 min 14 s at 50 Hz): EndTune ran at frames 9581 (explorers), 1676 (r08000), 1374 (r18000), 1072 (r28000), 770 (r38000), 468 (r48000), 9698 frames apart through the RZX run. The tune table has four entries: 0, 2 and 3 are the same tune, 1 is a shorter tune made of tune 0's second half (known only from the code).
+@about Sound effects: the player plays none. Its AY writes are the only ones in the 34 recordings after the ROM's power-on set-up (AYWrite $CD56 is the one routine with ports $FFFD / $BFFD); the game's effects are beeper sounds through port $FE (the game's sound module).
+@about A frame (UpdateTune): for each channel whose note timer is 1 the note ends now (timer 0, NoteEndFlag $C14D up); then channels A, B and C in turn (UpdateChannel $C2E4 with IX = the channel record, DE = its pattern, the four self-modified order-list operands and SlotRowOp set for the channel); then WriteAY $C290, except on a frame where a note ended (NoteEndFlag not 0: the AY keeps the last frame's values and no channel runs its effects). 3590 T-states a frame on average (explorers: 54 533 870 T-states in 15 190 calls).
+
+$C000 c MusicFrame ; Play one frame of music: the IM 2 handler's call
+> Saves AF (in AF'), AF', DE, HL, IX and IY around MusicTick $C014 and returns with them. BC is not saved: the caller, the IM 2 handler $9491, saves it (PUSH BC at $9498) and pages RAM 6 before the CALL $C000 at $94A0 and the old page ($5FE5 Last7FFD) after it.
+> Called once a frame: c1 runs it 5029 times in the 5029 frames from 21599 to 26627; explorers 15 190 of 15 190, gameover 6000 of 6000.
+> Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C014 c MusicTick ; Start tune 0 if no tune is playing, else play one frame of it
+> PlayerState $C027 = 0: JP StartTune $C79F with A = 0 (the tune number), which returns to MusicFrame. Else UpdateTune $C1E4 with IY saved.
+> c1 runs StartTune once (frame 21599, the first call after GameEntry); explorers and the rzx pieces once after each EndTune.
+> Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C018 ; A = 0 here: the only tune StartTune is ever given
+$C01D ; IY = 0: not read; SetInstrument $C3D8 sets IY before every use
+
+@module state ; The player's state: the instruments, the instrument slots, the channel records
+@about Instruments $C028: 27 records of 9 bytes, of which records 0-10 are real and 11-26 blank. A record: +0, +1 not read (+1 is 8 in every record); +2 bit 7: noise (the channel's tone off, noise on; bit 7 clear: tone on, noise off; the other bits are not read: the values $11, $17, $21, $41, $81 are those of the C64 SID's waveform register, $81 noise); +3 the attack (high nibble) and decay (low nibble) rates, +4 the sustain level (high nibble) and the release rate (low nibble), each rate an index into AttackRates $CD36 or DecayRates $CD46 (0: the whole step, 15, in one frame); +5 the gate-off time: the release starts when the note timer reaches it (2 in every record); +6 not read; +7 the vibrato: an offset into VibratoTable-8 (0 none); +8 the peak volume (0-15) the attack climbs to.
+@about A pattern's instrument command $8n takes slot n of the channel: SlotTable $C11B + 8 x channel + n holds the record's offset (9 x record) from Instruments. SlotTable starts as records 0-7 in slots 0-7 for every channel; the order-list command $E0+n, m writes m into slot n of the channel and the change stays: StartTune does not reset SlotTable, so tune 0's second and later passes start with channel B's slot 0 = record 8 (noise) and slot 6 = record 10 (peak 12), where the first pass had records 0 and 6 (explorers writes $C123 and $C129 at frames 5621-8645, the first EndTune at 9581).
+@about A channel record (45 bytes: ChannelA $C153, ChannelB $C180, ChannelC $C1AD; StartTune clears all three): +$00 the order-list position, +$01 the transpose (signed, in semitones), +$02 the pattern position, +$03 the note timer (frames left; 0: read the next event), +$04 the pattern repeats left, +$06 the gate-off time, +$09 the detune (added to the period), +$0A the vibrato delay or cycles, +$0B the vibrato record offset, +$0C the vibrato step (bits 0-6, 1-7) and direction (bit 7), +$10 the arpeggio record offset (8n, 0 none), +$11 the slide count ($FF endless), +$12/$13 the slide step, +$14 the slide delay, +$15 the slide command byte (bit 5 the direction), +$16 the rest timer, +$17 the arpeggio step ($FF, $FE: ended), +$18 the arpeggio hold, +$1C the note's period-table index, +$1D/$1E the tone period, +$1F the volume (0-15), +$20 the sustain level, +$21/$22/$23 the decay step, rate (bit 7: done) and counter, +$24/$25/$26 the same for the attack, +$27/$28/$29 for the release, +$2A bit 0 the gate (1 attack/decay/sustain, 0 release), +$2B the peak volume. +$05, +$07, +$08, +$0D-$0F, +$19-$1B and +$2C are not used.
+
+$C027 b PlayerState 1 ; 0: start tune 0 at the next call; 1: a tune is playing
+> Read by MusicTick $C014 and UpdateTune $C1E4, set to 1 by StartTune $C79F, to 0 by EndTune $C780. The image holds 0, so the first call after the copy starts tune 0. Explorers writes it at frames 9581 and 9582 (the tune's end and the restart).
+
+$C028 b Instruments 9 ; The instruments: 27 records of 9 bytes (the shape in the module's header)
+> Selected through SlotTable by SetInstrument $C3D8 (IY = the record). Rates below are AttackRates/DecayRates entries: "n/f" n volume steps a frame, "1/nf" one step every n frames. Who uses a record is tune 0's use (the channel and pattern). Every real record has sustain 0, release index 10 (1/5f; with the gate off 2 frames before a note's end the release never steps: its code $C5F0 ran in no recording) and gate-off time 2.
+> Witness: the recordings read records 0 and 2-10 (records 1 and 11-26 are read in none).
+@res music/instruments.bin
+$C028 ; record 0: tone; attack instant; decay 13 (1/28f); peak 15. Channels A and B slot 0: the bass of patterns 0, 3 and 15
+$C031 ; record 1: tone ($17); decay 13; peak 15. Slot 1: only pattern 1 (tune 1) and pattern 4 (no tune) select it
+$C03A ; record 2: noise; decay 6 (2/f); peak 15. Channel C slot 2: the noise rhythm of pattern 2
+$C043 ; record 3: tone; decay 8 (1/f); peak 15. Slot 3: pattern 5
+$C04C ; record 4: tone; attack 7 (4/f); decay 12 (1/9f); vibrato 8; peak 15. Channel B slot 4: the melody of pattern 6
+$C055 ; record 5: tone ($21); decay 7 (1/f); vibrato 8; peak 15. Channel C slot 5: patterns 7-9
+$C05E ; record 6: tone; decay 9 (1/2f); peak 15. Slot 6: patterns 10, 11, 13, 16, 18, 19
+$C067 ; record 7: as record 4. Channel C slot 7: the melody of patterns 14, 17 and 20
+$C070 ; record 8: noise; decay 9 (1/2f); peak 15. Channel B slot 0 after E0 48: the noise beats of patterns 13 and 16 (with arpeggio 6)
+$C079 ; record 9: tone ($11); decay 9; peak 13. Channel B slot 6 after E6 51: pattern 19, the fade
+$C082 ; record 10: tone ($11); decay 9; peak 12. Channel B slot 6 after E6 5A: pattern 19, the fade
+$C08B ; records 11-26: blank (+2 = 0: tone; every rate 0; +8 = 15 in record 11, 0 in the rest)
+
+$C11B b SlotTable 8 ; The instrument slots: 8 x channel + slot -> the record's offset (9 x record) in Instruments
+> Read by SetInstrument $C3D8 (index 8 x channel + n, n 0-15), written by SetSlot $C7F7 (8 x channel + n, n 0-31), so 48 bytes: rows 0-2 are channels A, B and C, rows 3-5 are reached only by an n beyond the channel's 8 slots (no tune does).
+> Witness: the recordings read channel A slots 0, 3, 6, channel B 0, 3, 4, 6, channel C 2, 5, 6, 7; explorers writes $C123 (B slot 0: $48, record 8) and $C129 (B slot 6: $51, then $5A).
+@res music/slots.bin
+$C11B ; channel A slots 0-7
+$C123 ; channel B slots 0-7
+$C12B ; channel C slots 0-7
+$C133 ; past channel C: not read in any recording
+
+$C14B w TunePointer 1 ; The current tune's entry in TuneTable
+> Set by StartTune $C79F (TuneTable + 6 x tune), read by UpdateTune $C1E4 for each channel's order list.
+
+$C14D b NoteEndFlag 1 ; Not 0: a note ended this frame (no effects, no AY write)
+> UpdateTune $C1E4 adds 1 for each channel whose note timer is 1 at the frame's start (the timer is set to 0 there, so the channel reads its next event this frame). ChannelEffects $C56D returns before the envelope and the effects, UpdateTune skips WriteAY $C290, and UpdateTuneEnd $C2DF clears the flag. explorers: 1778 of 15 189 updates skip the AY write.
+
+$C14E b MixerImage 1 ; The AY mixer (register 7) the player writes: $B8 at the start
+> Bits 0-2 tone off, 3-5 noise off for channels A, B, C, set by SetInstrument $C3D8 from the instrument's +2 bit 7; bits 6-7 stay %10 from the image. Written to register 7 by WriteAY $C2CB.
+
+$C14F b PlayerSpare 4 ; Not used: $0F and three zeros
+> No instruction reads or writes it (known only from the code).
+
+$C153 b ChannelA 15 ; Channel A's record (45 bytes, the fields in the module's header)
+> IX for channel A in UpdateTune $C1E4; cleared by StartTune $C79F. WriteAY $C290 reads the period and the volume, EndTune $C780 zeroes the volume.
+$C156 ChannelATimer ; +$03 the note timer, tested by UpdateTune
+$C170 ChannelAPeriod ; +$1D/+$1E the tone period: AY registers 0 and 1
+$C172 ChannelAVolume ; +$1F the volume: AY register 8
+
+$C180 b ChannelB 15 ; Channel B's record
+> As ChannelA, AY registers 2, 3 and 9.
+$C183 ChannelBTimer ; +$03 the note timer
+$C19D ChannelBPeriod ; +$1D/+$1E the tone period: AY registers 2 and 3
+$C19F ChannelBVolume ; +$1F the volume: AY register 9
+
+$C1AD b ChannelC 15 ; Channel C's record
+> As ChannelA, AY registers 4, 5 and 10 (written only while tune 0 plays, TuneNumberOp $C2AE).
+$C1B0 ChannelCTimer ; +$03 the note timer
+$C1CA ChannelCPeriod ; +$1D/+$1E the tone period: AY registers 4 and 5
+$C1CC ChannelCVolume ; +$1F the volume: AY register 10
+
+$C1DA w PatternPointers 3 ; The pattern each channel is playing (A, B, C)
+> Set to EmptyPattern $C82D by StartTune $C79F, to a pattern by StartPattern $C34A (PatternLo/PatternHi), read by UpdateTune $C1E4 into DE.
+
+$C1E0 b CommandParam 1 ; A scratch byte: an order command's parameter, then a vibrato step's size
+> ReadOrderList $C32A writes the low 5 bits of an order-list command for SetRepeat $C81B and SetSlot $C7F7; VibratoStep $C636 keeps the step's size there.
+
+$C1E1 b PlayerSpare2 2 ; Not used: two zeros
+> No instruction reads or writes it (known only from the code).
+
+$C1E3 b ChannelIndex 1 ; The channel being updated: 0 A, 1 B, 2 C
+> Set by UpdateTune $C1E4, read by StartPattern $C34B (PatternPointers) and SetInstrument $C3F6 (the mixer bits).
+
+@module player
+$C1E4 c UpdateTune ; Play one frame of the tune: end the expiring notes, update channels A, B and C, write the AY
+> Called by MusicTick $C014 while PlayerState $C027 is 1 (the RET Z at $C1E8 is a second guard: it never returns there in any recording).
+> First, for each channel whose note timer (+$03) is 1: the timer becomes 0 and NoteEndFlag $C14D goes up, so the note lasts exactly its duration in frames and the channel reads its next event this frame. Then for each channel n = 0, 1, 2: ChannelIndex $C1E3 = n, SlotRowOp+1 = 8n, IX = the channel's record, the word n of the tune's entry (TunePointer $C14B) into the operands of OrderListOp1 $C315, OrderListOp2 $C7D6, OrderListOp3 $C7E9 and OrderListOp4 $C807, DE = PatternPointers[n]; CALL UpdateChannel $C2E4. Last, H = $FF and L = $BF (the high bytes of the AY ports $FFFD and $BFFD), C = $FD, and WriteAY $C290 unless NoteEndFlag is up.
+> Out: the channel records, PatternPointers and the AY registers updated, NoteEndFlag 0. When channel A meets its order list's end, EndTune $C780 drops UpdateChannel's return, so channels B and C are not updated that frame.
+> Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C1E9 ; HL = NoteEndFlag
+$C1EC ; channel A's timer 1: 0, and the flag up
+$C1F6 UpdateTuneB ; channel B's timer
+$C200 UpdateTuneC ; channel C's timer
+$C20A UpdateTuneChannels ; channel A: index 0, slot row 0
+$C215 ; the tune's word 0: channel A's order list, into the four self-modified operands
+$C228 ; DE = channel A's pattern
+$C22F ; channel B: index 1, the tune's word 1, slot row 8
+$C259 ; channel C: index 2, the tune's word 2, slot row 16
+$C285 ; the AY port high bytes in H and L, the low byte in C
+$C28A ; a note ended this frame: no AY write
+
+@module ay ; The AY registers: the frame's write and the port access
+@about WriteAY $C290 writes registers 0-5 (the tone periods of A, B, C), 10 (C's volume), 7 (MixerImage $C14E), 8 and 9 (the volumes of A and B), in that order, through AYWrite $CD56 (register select at port $FFFD, the value at $BFFD). Channel C's registers 4, 5 and 10 are written only for tune 0 (TuneNumberOp $C2AE: CP 1, JR NC), so a tune other than 0 would leave channel C free; tune 0 is the only one played. The noise period (6) and the envelope (11-13) are never written: noise instruments sound at the period the ROM's power-on set-up left (known only from the code). Volumes are 0-15, never the envelope mode bit (no peak is above 15).
+
+$C290 c WriteAY ; Write the periods, the mixer and the volumes to the AY
+> In: H = $FF, L = $BF, C = $FD (the ports for AYWrite $CD56). Reached from UpdateTune $C1E4 when NoteEndFlag $C14D is 0, and from EndTune $C780 (the silence at the tune's end; it jumps here whatever the flag). Falls into EndFrame $C2DF.
+> explorers: 13 411 writes in 15 190 frames (the other 1778 frames a note ended).
+> Witness: L1 73906 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C290 ; registers 0 and 1: channel A's period
+$C2A0 ; registers 2 and 3: channel B's period
+$C2AE TuneNumberOp ; LD A,n: n = the tune playing (self-modified by StartTune $C7A0; always 0): channel C only for tune 0
+$C2B4 ; registers 4 and 5: channel C's period
+$C2C1 ; register 10: channel C's volume
+$C2C9 WriteAYMixer ; register 7: the mixer
+$C2D1 ; registers 8 and 9: the volumes of A and B
+
+$C2DF c EndFrame ; Clear NoteEndFlag: the frame's update is over
+> Reached by WriteAY $C290 falling in and by UpdateTune's JR NZ at $C28E (a frame with no AY write). Returns to MusicTick $C014, UpdateTune's caller (after EndTune too, which dropped UpdateChannel's return).
+> Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+@module channel ; A channel's frame: the events of its order list and its patterns
+@about Each channel has an order list (the tune's entry gives its three addresses) of bytes: $00-$7F play pattern n (PatternLo $CA37 / PatternHi $CA52, 27 patterns); $80 t: transpose t (signed semitones) for the following patterns; $A0+n: play the next pattern n times (n 0: 256); $C0 d: detune d (0-255, added to the 16-bit period) for the following notes; $E0+n m: instrument slot n of this channel = record offset m (SlotTable); $FF: the tune's end (EndTune $C780, from whichever channel meets it first: channel A in tune 0). Bits 0-4 of a command byte are its parameter, bits 5-6 pick the handler (ReadOrderList $C310), so $81-$9F take a byte as $80 does, and $C1-$DF as $C0.
+@about A pattern (PatternEvent $C36D) is a string of events ended by $FF: $00-$7F n, d: a note (period-table index n + 20 + transpose) lasting d frames (d 0: 256); $A0 d: a rest of d frames (period 0, the volume left as it was); $80-$8F: instrument slot 0-15 (SetInstrument $C3D8: SlotTable row of the channel); $90-$9F, $A1-$BE: arpeggio n = the low nibble (record 8n of ArpeggioTable $C927, 0 off); $BF: the slide off; $C0-$FE s lo hi c: a slide (SlideEffect $C72F) with delay s & $1F frames after each note start, step hi:lo (halved), count c frames ($FF endless; a finite slide stops at the next note), direction bit 5 (1: period up, the pitch falls). Events other than notes and rests take no time: a channel reads on until a note or a rest.
+@about Timing: a note or rest of d frames is read on frame t, its timer counts down, and the next event is read on frame t + d (UpdateTune ends the note when the timer is 1). A channel starts on EmptyPattern $C82D ($FF), so its first frame goes to the order list. The tune is a fixed grid: tune 0's channels A and B take 9696 frames, its channel C 10 236 (its last 540 frames are never heard: channel A's end stops the tune first).
+
+$C2E4 c UpdateChannel ; Play one frame of the channel IX: the next event when its note is over, else the effects
+> In: IX = the channel record, DE = its pattern (PatternPointers), the order-list operands and SlotRowOp set by UpdateTune $C1E4. Timer (+$03) not 0: CheckGateOff $C555 (the effects). Timer 0: a slide whose count is not $FF ends (+$11 = 0), then ReadPatternEvent $C2F6.
+> Called 3 times a frame by UpdateTune (explorers: 45 565 = 3 x 15 189 less 2, the frame of EndTune).
+> Witness: L1 250815 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C2E8 ; a note or a rest is running
+$C2EB ; the slide count: $FF keeps it, any other value ends it
+
+$C2F6 c ReadPatternEvent ; Read the byte at the channel's pattern position: an event, or the pattern's end
+> HL = DE + the pattern position (+$02). Not $FF: PatternEvent $C36D. $FF: repeats left (+$04 not 0): one less, the position 0, read again; else ReadOrderList $C310. Reached from UpdateChannel $C2E4 and, after each event that takes no time, from PatternEvent's handlers and StartPattern $C34A.
+> Witness: L1 21280 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C2FD ; $FF: the pattern's end
+$C301 ; repeats left: the pattern again from its start
+
+$C310 c ReadOrderList ; Read the channel's next order-list byte: a pattern, a command or the tune's end
+> The byte at the order list (the self-modified operand of OrderListOp1) + the position (+$00), the position one on. $FF: EndTune $C780. $00-$7F: StartPattern $C34A. $80-$FE: CommandParam $C1E0 = the low 5 bits; bits 5-6 x 4 into the JR offset at OrderCommandJump+1: $80-$9F SetTranspose $C7E4, $A0-$BF SetRepeat $C81B (OrderJumpRepeat $C33F), $C0-$DF SetDetune $C7D1 (OrderJumpDetune $C343), $E0-$FE SetSlot $C7F7 (OrderJumpSlot $C347). Each handler comes back here for the next byte.
+> Witness: L1 873 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C315 OrderListOp1 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune; the image holds tune 0's channel A)
+$C31D ; $FF: the tune's end
+$C322 ; bit 7 clear: a pattern number
+$C327 ; a command: the parameter, then bits 5-6 as the jump
+$C339 OrderCommandJump ; JR d: d = 0, 4, 8 or 12 (self-modified at $C336; the image holds $FE, a jump to itself)
+$C33B ; d = 0, $80-$9F: SetTranspose
+
+$C33E b OrderJumpPad1 1 ; A filler byte: the jump table's entries are 4 bytes apart
+> Never executed or read: JR d lands on the JP after it (known only from the code).
+
+$C33F c OrderJumpRepeat ; d = 4, $A0-$BF: SetRepeat
+> Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C342 b OrderJumpPad2 1 ; A filler byte between the jumps
+> Never executed or read (known only from the code).
+
+$C343 c OrderJumpDetune ; d = 8, $C0-$DF: SetDetune
+> Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C346 b OrderJumpPad3 1 ; A filler byte between the jumps
+> Never executed or read (known only from the code).
+
+$C347 c OrderJumpSlot ; d = 12, $E0-$FE: SetSlot
+> Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C34A c StartPattern ; Start pattern A on the channel
+> A = the pattern number (0-26, from ReadOrderList $C310). PatternPointers[ChannelIndex] = DE = PatternLo[A] + 256 x PatternHi[A]; the pattern position (+$02) = 0; ReadPatternEvent $C2F6. A new entry: the cut had it inside OrderJumpSlot's block; it is ReadOrderList's JP Z target at $C324.
+> Witness: L1 479 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C34B ; E = 2 x the channel, the PatternPointers offset
+$C353 ; the pattern's address from PatternLo and PatternHi
+$C35D ; into PatternPointers, and DE
+$C366 ; from its first byte
+
+$C36D c PatternEvent ; Act on pattern byte A: a note, a rest, an instrument, an arpeggio or a slide
+> A = the byte (not $FF), from ReadPatternEvent $C2F6. $00-$7F: StartNote $C4C9. $A0 d: a rest: the rest timer (+$16) and the note timer = d, the period 0, then ChannelEffects $C55E counts the first frame. $80-$8F: SetInstrument $C3D8. $90-$BE (but $A0): the arpeggio record 8 x (A & $0F) into +$10; $BF: the slide count 0. $C0-$FE: the slide: +$15 = A, its delay +$14 = A & $1F, then the step low (+$12), high (+$13) and the count (+$11). Each but the note and the rest goes on to the next byte (ReadPatternEvent). A new entry: the cut had it inside OrderJumpSlot's block; it is ReadPatternEvent's JR NZ target at $C2FF.
+> The slide and the slide-off code ($C397-$C3C8) was not executed in any of the 34 recordings: only patterns 1 and 4 hold a slide, and tune 0 plays neither.
+> Witness: L1 19804 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C372 ; $A0: a rest, its duration next
+$C385 ; a rest plays period 0
+$C38F PatternEventCommand ; $80-$8F an instrument, $90-$BF an arpeggio, $C0-$FE a slide
+$C397 ; the slide: the command byte, the delay, the step and the count
+$C3C0 PatternEventArpeggio ; $BF: the slide off
+$C3CA PatternEventSetArp ; the arpeggio record: 8 x the low nibble
+$C3D2 PatternEventNext ; the next byte
+
+$C3D8 c SetInstrument ; Instrument slot A & $0F: set the channel's mixer bits, envelope, gate-off time and vibrato
+> A = $80-$8F (from PatternEvent $C36D). IY = Instruments + SlotTable[8 x channel + (A & $0F)] (SlotRowOp: the channel's 8 x n). The peak volume (+$2B) = record +8. MixerImage $C14E: record +2 bit 7 set: the channel's noise on, tone off; clear: tone on, noise off. The attack (step +$24, rate +$25) from the high nibble of +3 through AttackRates $CD36, the decay (+$21, +$22) from its low nibble, the sustain level (+$20) from the high nibble of +4, the release (+$27, +$28) from its low nibble, the last three through DecayRates $CD46; a rate byte with bit 7 is "one step every (byte & $7F) frames", the step 1, else "the byte's steps every frame"; nibble 0 is the step 15 every frame. +5 the gate-off time (+$06), +7 the vibrato record (+$0B). Then the next pattern byte (ReadPatternEvent $C2F6). A new entry, for the cut's l_C3D8 inside OrderJumpSlot's block (PatternEvent's JR C at $C391).
+> The slow attack ($C452) and the release with a step table entry below $80 ($C4A9) was not executed in any of the 34 recordings: no instrument has them.
+> Witness: L1 2250 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C3DA SlotRowOp ; ADD A,n: n = 8 x the channel (self-modified by UpdateTune $C212, $C24F, $C27B)
+$C3DF ; the slot's record offset
+$C3E6 ; IY = the record
+$C3ED ; +8: the peak volume
+$C3F3 ; the mixer: channel A bits 0 and 3
+$C40C SetInstrumentB ; channel B: bits 1 and 4
+$C41F SetInstrumentC ; channel C: bits 2 and 5
+$C42D SetInstrumentEnvelope ; the attack: +3's high nibble through AttackRates
+$C452 SetInstrumentSlowAttack ; bit 7: one step every n frames
+$C45B SetInstrumentSustain ; +4's high nibble: the sustain level; the decay: +3's low nibble
+$C485 SetInstrumentSlowDecay ; bit 7: one step every n frames
+$C48E SetInstrumentRelease ; the release: +4's low nibble through DecayRates
+$C4AE SetInstrumentSlowRelease ; bit 7: one step every n frames
+$C4B7 SetInstrumentTimes ; +5 the gate-off time, +7 the vibrato
+
+$C4C9 c StartNote ; Start note A: its period, the gate and the envelope, its duration, the vibrato, the arpeggio and the slide delay
+> A = the note (0-$7F), DE = the pattern, from PatternEvent $C36D. The period-table index (+$1C) = A + 20 + the transpose (+$01); the period (+$1D/+$1E) = PeriodLo/PeriodHi[index] + the detune (+$09). The gate on, the volume and the envelope counters 0, the done bits of attack, decay and release clear. The next byte is the duration: the note timer (+$03). With a vibrato (+$0B not 0): its delay or cycles (+$0A) = the record's first byte, the step (+$0C) 1. With an arpeggio (+$10 not 0): the first hold (+$18) = ((header & $78) >> 3) + 1, the step (+$17) 1. The slide delay (+$14) again from the slide command (+$15). Returns to UpdateChannel's caller: no effects on a note's first frame.
+> A new entry, for the cut's l_C4C9 inside OrderJumpSlot's block (PatternEvent's JP Z at $C36F).
+> Witness: L1 15424 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C4DF ; + the detune
+$C4E9 ; the gate on, the envelope from volume 0
+$C506 ; the duration, kept in A' to the end
+$C515 ; the vibrato: the record's first byte, from step 1
+$C52A StartNoteArpeggio ; the arpeggio: the hold of the base note
+$C548 StartNoteSlide ; the slide's delay again
+
+@module effects ; The per-frame effects: the gate, the rest, the envelope, the vibrato, the arpeggio and the slide
+@about The envelope (ChannelEffects $C55E) is the C64 ADSR in software: gate on, the volume climbs from 0 by the attack step at the attack rate to the instrument's peak, then falls by the decay step at the decay rate to the sustain level and holds; gate off (CheckGateOff $C555, when the note timer equals the gate-off time, 2 in every instrument: 2 frames before the note's end), it falls by the release step at the release rate to 0. With a release of 1 step every 5 frames the release never steps in tune 0 (its code $C5F0 was not executed in any of the 34 recordings).
+@about The vibrato (VibratoEffect $C609): the record (VibratoTable-8 + the instrument's +7) holds a first byte and 7 signed period deltas. First byte with bit 7 clear: a delay in frames before the vibrato starts, then it runs to the note's end; with bit 7: the number of full cycles (bits 0-6) it runs. Each frame adds the next delta (step 1-7) to the period, with its sign turned over on every other pass of 7 (bit 7 of the step), so one cycle is 14 frames. The arpeggio (ArpeggioEffect $C694): the record (ArpeggioTable + 8n) is a header (bit 7 loop, bits 3-6 the first hold, bits 0-2 the count of steps) and steps (bits 3-7 semitones over the note, bits 0-2 the hold in frames, 0: 256); each step sets the period to the note plus its semitones (and the detune); at the end it loops (the base note held (header >> 3) & 7 frames first) or returns to the base note. The slide (SlideEffect $C72F): after its delay, the period goes up or down by half the step each frame for the count. Each of the three overwrites or moves the period the note set; the arpeggio's step overwrites what the vibrato and the slide did.
+
+$C555 c CheckGateOff ; Gate off when the note timer reaches the gate-off time; then the effects
+> A = the note timer (from UpdateChannel $C2E4). A = +$06: the gate bit (+$2A bit 0) clear: the release. Falls into ChannelEffects.
+> Witness: L1 235309 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C55E c ChannelEffects ; The rest timer, the note timer and the envelope, then the vibrato, the arpeggio and the slide
+> A rest (timer +$16 not 0): one less; at 0 the note timer 0 (the next event next frame); no effects. Else the note timer one less; NoteEndFlag $C14D up: return. Gate on: the attack (every rate frames, the volume + the step, to the peak), then the decay (to the sustain level). Gate off: the release (to 0). Then VibratoEffect $C609 (fall through).
+> Witness: L1 235385 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C564 ; a rest: count it; at 0 its end
+$C56D ChannelEffectsNote ; the note's timer
+$C570 ; a note ended this frame: no effects
+$C575 ; the gate: off, the release
+$C57B ; the attack done: the decay
+$C5A7 EnvelopeAttackStore ; the attack's new volume
+$C5AC EnvelopeDecay ; the decay done: the sustain holds
+$C5C9 EnvelopeSustain ; at the sustain level: the decay done
+$C5D5 EnvelopeDecayStore ; not below the sustain level yet
+$C5DF EnvelopeRelease ; the release done: nothing
+$C606 EnvelopeReleaseStore ; the release's new volume
+
+$C609 c VibratoEffect ; The vibrato: after its delay, the next of 7 period deltas, its sign flipped every other pass
+> A new entry: the end of the envelope, where all its paths join (10 jumps to $C609 and the fall from $C606), and the start of the vibrato. No vibrato (+$0B = 0): ArpeggioEffect $C694. The delay or cycles byte (+$0A): bit 7 clear and not 0: one less, no step this frame; 0: step; bit 7 set: step until its low 7 bits are 0. A step: delta = (VibratoTable-8)[+$0B + (step & $7F)] (CommandParam $C1E0 holds its size): the period + delta while the step's bit 7 is clear, the period - delta while it is set. After step 7 the step becomes $81 (bit 7 flipped, step 1); after the flipped pass's step 7, 1 again: a cycle done, and a cycles count one less.
+> Records 4, 5 and 7 use it (VibratoTable's only record: delay 40). The cycles form ($C61A), and a delta that carries or borrows in the period ($C654, $C670) was not executed in any of the 34 recordings.
+> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C620 VibratoDelay ; the delay one less
+$C626 VibratoStep ; the delta of this step
+$C648 VibratoDown ; the period - the size
+$C659 VibratoPositive ; a positive delta: up unless the step's bit 7
+$C665 VibratoUp ; the period + the size
+$C673 VibratoNext ; the next step; after 7 the sign flips ($89)
+
+$C694 c ArpeggioEffect ; The arpeggio: when the hold ends, the next step's note and hold
+> No arpeggio (+$10 = 0): SlideEffect $C72F. The hold (+$18) one less; not 0: SlideEffect. Step (+$17) 1-7: the byte at ArpeggioTable + 8n + step: the hold = its bits 0-2, the period = the note (+$1C) + its bits 3-7 + the detune. Step 0 (a looped arpeggio's restart): the header's bits 3-5 as the hold of the base note (when not 0). After the last step (the header's bits 0-2): 0 when the header's bit 7 is set (loop), else $FF; $FF at the hold's end: the base note again and $FE, after which nothing.
+> Arpeggios 1-6 ran (patterns 2, 7-9, 13, 16, 18, 19). The end ($C70E) was not executed in any of the 34 recordings: arpeggio 1, the only one with no loop, plays on 9-frame notes, which end first.
+> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C6C1 ArpeggioByte ; the step's byte
+$C6C2 ArpeggioApply ; the hold and the semitones over the note
+$C6EC ; the next step; after the last: 0 (loop) or $FF (end)
+$C708 ArpeggioSetStep ; 0 or $FF
+$C70E ArpeggioEnd ; $FF: back to the base note, then $FE
+
+$C72F c SlideEffect ; The slide: after its delay, the period up or down by half the step, for the count
+> A new entry: ArpeggioEffect's paths join here (5 jumps to $C72F and the fall from $C72C). The delay (+$14) not 0: one less. Else with a count (+$11 not 0; $FF endless, else one less): the step (+$12/+$13) halved; the slide command's bit 5 (+$15) set: the period + step/2 (the pitch falls); clear: the period - step/2 - the step's bit 0 (SBC with the carry RR C left). Returns to UpdateTune $C1E4.
+> Ran in no recording past the delay test: tune 0 has no slide ($C735-$C77C not executed in any of the 34 recordings).
+> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C73A SlideCount ; the count: 0 none, $FF endless
+$C747 SlideApply ; the direction: bit 5 of the command
+$C767 SlideUp ; the period - step/2: the pitch rises
+$C77F SlideDone
+
+@module player
+$C780 c EndTune ; The order list's $FF: silence, PlayerState 0, the AY written, the frame over
+> From ReadOrderList $C31F. The three volumes (+$1F) 0 (each written twice), PlayerState $C027 = 0, UpdateChannel's return dropped (POP AF: the channels after this one are not updated), then WriteAY $C290 with H = $FF, L = $BF, C = $FD, whatever NoteEndFlag. MusicTick's next call starts tune 0 again (StartTune $C79F): the frame after.
+> Ran at frame 9581 in explorers and once in r08000, r18000, r28000, r38000 and r48000, 9698 frames apart.
+> Witness: L1 6 (explorers, rzx, rzx, rzx, rzx, rzx).
+
+$C79F c StartTune ; Start tune A: its entry, the empty patterns, the channel records cleared, PlayerState 1
+> A = the tune (0-3; always 0: MusicTick's JP Z at $C018 is the only way in). TuneNumberOp+1 = A (channel C is written only for tune 0); TunePointer $C14B = TuneTable $C967 + 6A; PatternPointers $C1DA = EmptyPattern $C82D for all three; ChannelA-ChannelC ($C153-$C1D9) zero; PlayerState $C027 = 1. A is kept. SlotTable, MixerImage and the AY are not touched; nothing sounds this frame.
+> Ran once in c1 (frame 21599), once in explorers (9582) and after each EndTune in the rzx pieces.
+> Witness: L1 7 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
+$C7A3 ; HL = 6 x A
+$C7B1 ; every channel on the empty pattern
+$C7BD ; the three channel records zero
+
+@module channel
+$C7D1 c SetDetune ; Order command $C0: the next byte is the channel's detune (+$09)
+> Then ReadOrderList $C310. Tune 0's channel B: $C0 10 at its start, $C0 0 after the intro (pattern 5); a constant added to every period (and so a lower pitch, a little, for the 10).
+> Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C7D6 OrderListOp2 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
+
+$C7E4 c SetTranspose ; Order command $80: the next byte is the channel's transpose (+$01, signed semitones)
+> Then ReadOrderList $C310. Reached by OrderCommandJump $C339 with offset 0.
+> Witness: L1 227 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C7E9 OrderListOp3 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
+
+$C7F7 c SetSlot ; Order command $E0+n: the next byte is the record offset of the channel's instrument slot n
+> SlotTable[8 x channel + n] = the byte (SlotRowOp+1 gives 8 x channel, CommandParam $C1E0 n), through the self-modified SlotIndexOp. Then ReadOrderList $C310. Tune 0 uses it three times on channel B: slot 0 = $48 (record 8), slot 6 = $51 (record 9), then $5A (record 10); the change outlives the tune (StartTune does not reset SlotTable).
+> Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+$C807 OrderListOp4 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
+$C80F SlotIndexOp ; LD L,n: n = 8 x channel + n (self-modified at $C7FF)
+
+$C81B c SetRepeat ; Order command $A0+n: play the next pattern n times
+> The repeats left (+$04) = n - 1 (n 0: 255, so 256 plays); ReadPatternEvent $C2F6 replays the pattern while it is not 0. Then ReadOrderList $C310.
+> Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+$C825 c FetchPatternByte ; A = the byte at the channel's pattern position: DE + (+$02)
+> Called by PatternEvent $C36D for a rest's duration and a slide's three bytes.
+> Witness: L1 76 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+@module tunes ; The tune data and the player's tables: periods, vibratos, arpeggios, tunes, order lists, patterns, envelope rates
+@about The tune format, for a converter (all of it in tunes, music/tunes, $C967-$CD35): TuneTable $C967 holds 4 entries of 3 little-endian words, each the address of a channel's order list (A, B, C). An order list is bytes read one after another: $00-$7F pattern n; $80 t transpose (t signed); $A0+n the next pattern n times (0: 256); $C0 d detune d; $E0+n m instrument slot n = record offset m (9 x record); $FF the tune's end (the first channel to meet it ends the tune; the next frame tune 0 starts again). A pattern, found through PatternLo $CA37 / PatternHi $CA52, is events ended by $FF: n d (n $00-$7F) a note of d frames; $A0 d a rest of d frames; $80+n instrument slot n; $90+n arpeggio n (0 off); $BF slide off; $C0+s lo hi c a slide (bit 5 of the command: period up). Note n sounds at period-table index n + 20 + the channel's transpose (MIDI n + 32 + transpose). A step of the text format is one event; the time of a note or rest is its d frames (0 = 256), every other event takes none.
+@about The instruments (Instruments $C028, music/instruments), the instrument slots (SlotTable $C11B, the state module), the vibratos (VibratoTable $C906), the arpeggios (ArpeggioTable $C927) and the envelope rates (AttackRates $CD36, DecayRates $CD46) belong to the tune too: a converter needs them to give each note its volume curve. The periods (PeriodLo $C82E, PeriodHi $C89A) are the player's equal-tempered table.
+@about Tune 0 (3 min 14 s): channel A plays the bass (patterns 0, 3, then pattern 5 transposed through -7, -12, -9, -7, -4, -6, then pattern 10, 15), channel B the same intro detuned by 10, then the melody (pattern 6), then the chords (13, 16, 18, 19 with arpeggios 2-6 and the noise beats of instrument 8), channel C the noise rhythm (pattern 2), the arpeggiated line (7-9, transposed +12 / +14), then 11, 14, 17, 20. Tune 1 is tune 0 from pattern 10 on.
+
+$C82D b EmptyPattern 1 ; A pattern of no events: every channel's pattern at a tune's start
+> StartTune $C79F points PatternPointers $C1DA at it, so a channel's first frame reads $FF and goes to its order list. Witness: read by every recording that starts a tune (c1, explorers, the rzx pieces with an EndTune).
+
+$C82E b PeriodLo 12 ; The tone periods' low bytes: 108 notes, C0 to B8
+> Index i (StartNote $C4C9: the note + 20 + the transpose; ArpeggioEffect adds the step's semitones) is MIDI note i + 12 at the AY clock of 1.7734 MHz: index 57 = 252 = A4 (439.8 Hz). The period is PeriodLo[i] + 256 x PeriodHi[i]. Two flaws: every C# (indices 1, 13, 25, ..., 85) is 0.38 semitone flat, and index 8 (G#0, 4526) is G0's period again. Tune 0 plays C# at indices 25 and 61 (7 notes). The recordings read indices 14-96.
+$C82E ; octave 0 (indices 0-11)
+$C83A ; octave 1
+$C846 ; octave 2
+$C852 ; octave 3
+$C85E ; octave 4
+$C86A ; octave 5
+$C876 ; octave 6
+$C882 ; octave 7
+$C88E ; octave 8
+
+$C89A b PeriodHi 12 ; The tone periods' high bytes: 108 notes
+> As PeriodLo. Its last 8 bytes ($C8FE-$C905, all 0) are also VibratoTable-8's record 0, which no instrument names (offset 0 is no vibrato).
+$C8A6 ; octave 1
+$C8B2 ; octave 2
+$C8BE ; octave 3
+$C8CA ; octave 4
+$C8D6 ; octave 5
+$C8E2 ; octave 6
+$C8EE ; octave 7
+$C8FA ; octave 8
+
+$C906 b VibratoTable 8 ; The vibrato record at offset 8: a delay of 40 frames, the deltas +1, 0, -1, 0, +1, 0, -1
+> Addressed as VibratoTable-8 + the instrument's +7 (StartNote $C51E, VibratoStep $C631): byte 0 the delay (bit 7 clear) or cycles (bit 7 set), bytes 1-7 the signed period deltas of one half cycle. Instruments 4, 5 and 7 name it. Witness: the recordings read all 8 bytes.
+@res music/vibratos.bin
+
+$C90E b VibratoSpare 8 ; 25 bytes after the vibrato record that nothing reads
+> No instrument's +7 points here and no recording reads them; as vibrato records their deltas would be 18 to 128 period units. Known only from the code: left over.
+
+$C927 b ArpeggioTable 8 ; The arpeggios: 8 records of 8 bytes, record n at ArpeggioTable + 8n (n 1-7; 0 is off)
+> A record: a header (bit 7: loop; bits 3-6: the hold of the base note at the note's start, + 1; bits 0-2: the number of steps), then the steps (bits 3-7: the semitones over the note, bits 0-2: the hold in frames, 0 = 256). Read by StartNote $C52A and ArpeggioEffect $C694. Witness: the recordings read records 1-6 (the header and the steps).
+@res music/arpeggios.bin
+$C927 ; record 0: not used (an arpeggio command with nibble 0 is "off"); not read in any recording
+$C92F ; record 1: once, first hold 6, steps +12 for 5 (patterns 7-9: an octave up from the 6th frame after the note's start)
+$C937 ; record 2: loop, first hold 2, steps +3 for 1, +7 for 1 (a minor chord: patterns 13, 16, 18, 19)
+$C93F ; record 3: loop, first hold 2, steps +4 for 1, +7 for 1 (a major chord: patterns 2, 13, 16)
+$C947 ; record 4: loop, first hold 2, steps +5 for 1, +9 for 1 (patterns 13, 16)
+$C94F ; record 5: loop, first hold 2, steps +3 for 1, +8 for 1 (patterns 13, 16)
+$C957 ; record 6: loop, first hold 2, steps +22 for 1 (+22 semitones: the noise beats of patterns 13 and 16)
+$C95F ; record 7: loop, first hold 1, steps +2 for 1, +6 for 2, +12 for 2, +20 for 2, +12 for 2, +6 for 2, +2 for 1 (no pattern selects it; not read in any recording)
+
+$C967 w TuneTable 3 ; The tunes: 4 entries of 3 words, the order lists of channels A, B and C
+> StartTune $C79F: TunePointer $C14B = TuneTable + 6 x tune. Tunes 0, 2 and 3 are the same entry; tune 1 has its own lists. Only tune 0 is ever started (the player module). Witness: the recordings read entry 0 ($C967-$C96C) only.
+@res music/tunes.bin
+$C967 ; tune 0: the title and in-game tune, the only one played
+$C96D ; tune 1: tune 0 from its pattern-10 section on (4728 frames on A and B); never played
+$C973 ; tune 2: tune 0 again; never played
+$C979 ; tune 3: tune 0 again; never played
+
+$C97F b Tune0OrderA 16 ; Tune 0, channel A: the order list (9696 frames)
+> Read by ReadOrderList $C310 and the order commands. Witness: the recordings read it whole.
+@res music/tunes.bin
+$C97F ; the next pattern 3 times
+$C980 ; pattern 0
+$C981 ; pattern 3
+$C982 ; transpose -7
+$C984 ; the next pattern 4 times
+$C985 ; pattern 5
+$C986 ; transpose -12
+$C988 ; the next pattern 8 times
+$C989 ; pattern 5
+$C98A ; transpose -9
+$C98C ; pattern 5
+$C98D ; transpose -7
+$C98F ; pattern 5
+$C990 ; transpose -4
+$C992 ; pattern 5
+$C993 ; transpose -6
+$C995 ; pattern 5
+$C996 ; transpose -12
+$C998 ; the next pattern 12 times
+$C999 ; pattern 5
+$C99A ; transpose -9
+$C99C ; pattern 5
+$C99D ; transpose -7
+$C99F ; pattern 5
+$C9A0 ; transpose -4
+$C9A2 ; pattern 5
+$C9A3 ; transpose -6
+$C9A5 ; pattern 5
+$C9A6 ; transpose +0
+$C9A8 ; the next pattern 6 times
+$C9A9 ; pattern 10
+$C9AA ; transpose +2
+$C9AC ; pattern 10
+$C9AD ; pattern 10
+$C9AE ; transpose -10
+$C9B0 ; pattern 15
+$C9B1 ; $FF: the tune's end
+
+$C9B2 b Tune0OrderB 16 ; Tune 0, channel B: the order list (9696 frames)
+> Read by ReadOrderList $C310 and the order commands. Witness: the recordings read it whole.
+@res music/tunes.bin
+$C9B2 ; detune 10
+$C9B4 ; the next pattern 3 times
+$C9B5 ; pattern 0
+$C9B6 ; pattern 3
+$C9B7 ; transpose -7
+$C9B9 ; the next pattern 4 times
+$C9BA ; pattern 5
+$C9BB ; transpose +0
+$C9BD ; detune 0
+$C9BF ; pattern 6
+$C9C0 ; pattern 6
+$C9C1 ; pattern 12
+$C9C2 ; pattern 26
+$C9C3 ; slot 0 = record 8
+$C9C5 ; the next pattern 4 times
+$C9C6 ; pattern 13
+$C9C7 ; transpose +2
+$C9C9 ; pattern 13
+$C9CA ; pattern 13
+$C9CB ; pattern 16
+$C9CC ; transpose +0
+$C9CE ; pattern 18
+$C9CF ; pattern 18
+$C9D0 ; pattern 19
+$C9D1 ; slot 6 = record 9
+$C9D3 ; pattern 19
+$C9D4 ; slot 6 = record 10
+$C9D6 ; pattern 19
+$C9D7 ; pattern 0
+$C9D8 ; pattern 0
+$C9D9 ; $FF: the tune's end
+
+$C9DA b Tune0OrderC 16 ; Tune 0, channel C: the order list (10 236 frames, cut at 9696 by channel A's end)
+> Read by ReadOrderList $C310 and the order commands. Witness: the recordings read it whole.
+@res music/tunes.bin
+$C9DA ; the next pattern 30 times
+$C9DB ; pattern 2
+$C9DC ; the next pattern 6 times
+$C9DD ; pattern 2
+$C9DE ; transpose +12
+$C9E0 ; the next pattern 8 times
+$C9E1 ; pattern 7
+$C9E2 ; pattern 8
+$C9E3 ; transpose +14
+$C9E5 ; pattern 8
+$C9E6 ; transpose +12
+$C9E8 ; pattern 9
+$C9E9 ; pattern 9
+$C9EA ; the next pattern 12 times
+$C9EB ; pattern 7
+$C9EC ; pattern 8
+$C9ED ; transpose +14
+$C9EF ; pattern 8
+$C9F0 ; transpose +12
+$C9F2 ; pattern 9
+$C9F3 ; pattern 9
+$C9F4 ; pattern 26
+$C9F5 ; pattern 26
+$C9F6 ; transpose +0
+$C9F8 ; the next pattern 3 times
+$C9F9 ; pattern 11
+$C9FA ; pattern 14
+$C9FB ; pattern 14
+$C9FC ; transpose +2
+$C9FE ; pattern 14
+$C9FF ; pattern 14
+$CA00 ; pattern 17
+$CA01 ; pattern 20
+$CA02 ; the next pattern 30 times
+$CA03 ; pattern 2
+$CA04 ; $FF: the tune's end
+
+$CA05 b Tune1OrderA 16 ; Tune 1, channel A: the order list (4728 frames)
+> Known only from the code: tune 1 is never started, no recording reads it.
+@res music/tunes.bin
+$CA05 ; the next pattern 6 times
+$CA06 ; pattern 10
+$CA07 ; transpose +2
+$CA09 ; pattern 10
+$CA0A ; pattern 10
+$CA0B ; transpose -10
+$CA0D ; pattern 15
+$CA0E ; $FF: the tune's end
+
+$CA0F b Tune1OrderB 16 ; Tune 1, channel B: the order list (4728 frames)
+> Known only from the code: tune 1 is never started, no recording reads it.
+@res music/tunes.bin
+$CA0F ; the next pattern 4 times
+$CA10 ; pattern 26
+$CA11 ; slot 0 = record 8
+$CA13 ; the next pattern 4 times
+$CA14 ; pattern 13
+$CA15 ; transpose +2
+$CA17 ; pattern 13
+$CA18 ; pattern 13
+$CA19 ; pattern 16
+$CA1A ; transpose +0
+$CA1C ; pattern 18
+$CA1D ; pattern 18
+$CA1E ; pattern 19
+$CA1F ; pattern 19
+$CA20 ; slot 6 = record 9
+$CA22 ; pattern 19
+$CA23 ; pattern 1
+$CA24 ; pattern 1
+$CA25 ; $FF: the tune's end
+
+$CA26 b Tune1OrderC 16 ; Tune 1, channel C: the order list (5268 frames)
+> Known only from the code: tune 1 is never started, no recording reads it.
+@res music/tunes.bin
+$CA26 ; pattern 26
+$CA27 ; pattern 26
+$CA28 ; the next pattern 3 times
+$CA29 ; pattern 11
+$CA2A ; pattern 14
+$CA2B ; pattern 14
+$CA2C ; transpose +2
+$CA2E ; pattern 14
+$CA2F ; pattern 14
+$CA30 ; pattern 17
+$CA31 ; pattern 20
+$CA32 ; the next pattern 30 times
+$CA33 ; pattern 2
+$CA34 ; $FF: the tune's end
+
+$CA35 b TuneSpare 2 ; Two $FF bytes after tune 1's channel C list
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CA37 b PatternLo 9 ; The 27 patterns' addresses: the low bytes
+> StartPattern $C353: pattern n is at PatternLo[n] + 256 x PatternHi[n]. Witness: the recordings read the entries of the patterns tune 0 plays.
+@res music/tunes.bin
+
+$CA52 b PatternHi 9 ; The 27 patterns' addresses: the high bytes
+> As PatternLo.
+@res music/tunes.bin
+
+$CA6D b Pattern0 16 ; Pattern 0: 432 frames (tune 0 A x3, tune 0 B x5)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CA6D ; instrument slot 0
+$CA6E ; note 9 (F2), 108 frames
+$CA70 ; note 8 (E2), 54 frames
+$CA72 ; note 4 (C2), 54 frames
+$CA74 ; note 6 (D2), 216 frames
+$CA76 ; $FF: the end
+
+$CA77 b Pattern1 16 ; Pattern 1: 432 frames (tune 1 B x2)
+> Known only from the code: no played tune holds it, no recording reads it.
+@res music/tunes.bin
+$CA77 ; instrument slot 1
+$CA78 ; slide: delay 0, step 70, count endless, period up
+$CA7C ; note 52 (C6), 108 frames
+$CA7E ; note 51 (B5), 54 frames
+$CA80 ; note 47 (G5), 54 frames
+$CA82 ; note 49 (A5), 216 frames
+$CA84 ; slide off
+$CA85 ; $FF: the end
+
+$CA86 b Pattern2 16 ; Pattern 2: 54 frames (tune 0 C x66, tune 1 C x30)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CA86 ; instrument slot 2
+$CA87 ; arpeggio 3
+$CA88 ; note 18 (D3), 18 frames
+$CA8A ; note 18 (D3), 6 frames
+$CA8C ; note 18 (D3), 6 frames
+$CA8E ; note 18 (D3), 6 frames
+$CA90 ; note 18 (D3), 18 frames
+$CA92 ; $FF: the end
+
+$CA93 b Pattern3 16 ; Pattern 3: 216 frames (tune 0 A x1, tune 0 B x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CA93 ; instrument slot 0
+$CA94 ; note 9 (F2), 108 frames
+$CA96 ; note 8 (E2), 54 frames
+$CA98 ; note 4 (C2), 54 frames
+$CA9A ; $FF: the end
+
+$CA9B b Pattern4 16 ; Pattern 4: 648 frames (no tune)
+> Known only from the code: no played tune holds it, no recording reads it.
+@res music/tunes.bin
+$CA9B ; instrument slot 1
+$CA9C ; slide: delay 0, step 70, count endless, period up
+$CAA0 ; note 52 (C6), 108 frames
+$CAA2 ; note 51 (B5), 54 frames
+$CAA4 ; note 47 (G5), 54 frames
+$CAA6 ; note 49 (A5), 216 frames
+$CAA8 ; note 49 (A5), 216 frames
+$CAAA ; slide off
+$CAAB ; $FF: the end
+
+$CAAC b Pattern5 16 ; Pattern 5: 108 frames (tune 0 A x32, tune 0 B x4)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CAAC ; instrument slot 3
+$CAAD ; note 6 (D2), 18 frames
+$CAAF ; note 18 (D3), 6 frames
+$CAB1 ; note 18 (D3), 6 frames
+$CAB3 ; note 18 (D3), 6 frames
+$CAB5 ; note 18 (D3), 18 frames
+$CAB7 ; note 6 (D2), 18 frames
+$CAB9 ; note 16 (C3), 6 frames
+$CABB ; note 16 (C3), 6 frames
+$CABD ; note 16 (C3), 6 frames
+$CABF ; note 18 (D3), 18 frames
+$CAC1 ; $FF: the end
+
+$CAC2 b Pattern6 16 ; Pattern 6: 1728 frames (tune 0 B x2)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CAC2 ; instrument slot 4
+$CAC3 ; note 52 (C6), 108 frames
+$CAC5 ; note 51 (B5), 90 frames
+$CAC7 ; note 49 (A5), 9 frames
+$CAC9 ; note 47 (G5), 9 frames
+$CACB ; note 49 (A5), 216 frames
+$CACD ; note 52 (C6), 90 frames
+$CACF ; note 54 (D6), 9 frames
+$CAD1 ; note 52 (C6), 9 frames
+$CAD3 ; note 51 (B5), 90 frames
+$CAD5 ; note 49 (A5), 9 frames
+$CAD7 ; note 47 (G5), 9 frames
+$CAD9 ; note 49 (A5), 216 frames
+$CADB ; note 52 (C6), 108 frames
+$CADD ; note 51 (B5), 90 frames
+$CADF ; note 49 (A5), 9 frames
+$CAE1 ; note 47 (G5), 9 frames
+$CAE3 ; note 45 (F5), 90 frames
+$CAE5 ; note 47 (G5), 9 frames
+$CAE7 ; note 45 (F5), 9 frames
+$CAE9 ; note 43 (D#5), 90 frames
+$CAEB ; note 45 (F5), 9 frames
+$CAED ; note 43 (D#5), 9 frames
+$CAEF ; note 42 (D5), 18 frames
+$CAF1 ; rest, 198 frames
+$CAF3 ; rest, 216 frames
+$CAF5 ; $FF: the end
+
+$CAF6 b Pattern7 16 ; Pattern 7: 108 frames (tune 0 C x20)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CAF6 ; instrument slot 5
+$CAF7 ; arpeggio 1
+$CAF8 ; note 42 (D5), 9 frames
+$CAFA ; note 49 (A5), 9 frames
+$CAFC ; note 47 (G5), 9 frames
+$CAFE ; note 45 (F5), 9 frames
+$CB00 ; note 44 (E5), 9 frames
+$CB02 ; note 42 (D5), 9 frames
+$CB04 ; note 40 (C5), 9 frames
+$CB06 ; note 42 (D5), 9 frames
+$CB08 ; note 44 (E5), 9 frames
+$CB0A ; note 45 (F5), 9 frames
+$CB0C ; note 44 (E5), 9 frames
+$CB0E ; note 40 (C5), 9 frames
+$CB10 ; $FF: the end
+
+$CB11 b Pattern8 16 ; Pattern 8: 108 frames (tune 0 C x4)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CB11 ; instrument slot 5
+$CB12 ; arpeggio 1
+$CB13 ; note 40 (C5), 9 frames
+$CB15 ; note 49 (A5), 9 frames
+$CB17 ; note 47 (G5), 9 frames
+$CB19 ; note 45 (F5), 9 frames
+$CB1B ; note 43 (D#5), 9 frames
+$CB1D ; note 42 (D5), 9 frames
+$CB1F ; note 40 (C5), 9 frames
+$CB21 ; note 42 (D5), 9 frames
+$CB23 ; note 43 (D#5), 9 frames
+$CB25 ; note 45 (F5), 9 frames
+$CB27 ; note 47 (G5), 9 frames
+$CB29 ; note 45 (F5), 9 frames
+$CB2B ; $FF: the end
+
+$CB2C b Pattern9 16 ; Pattern 9: 108 frames (tune 0 C x4)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CB2C ; instrument slot 5
+$CB2D ; arpeggio 1
+$CB2E ; note 38 (A#4), 9 frames
+$CB30 ; note 43 (D#5), 9 frames
+$CB32 ; note 45 (F5), 9 frames
+$CB34 ; note 50 (A#5), 9 frames
+$CB36 ; note 52 (C6), 9 frames
+$CB38 ; note 50 (A#5), 9 frames
+$CB3A ; note 48 (G#5), 9 frames
+$CB3C ; note 45 (F5), 9 frames
+$CB3E ; note 43 (D#5), 9 frames
+$CB40 ; note 40 (C5), 9 frames
+$CB42 ; note 38 (A#4), 9 frames
+$CB44 ; note 36 (G#4), 9 frames
+$CB46 ; arpeggio off
+$CB47 ; $FF: the end
+
+$CB48 b Pattern10 16 ; Pattern 10: 384 frames (tune 0 A x8, tune 1 A x8)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CB48 ; instrument slot 6
+$CB49 ; note 6 (D2), 12 frames
+$CB4B ; note 9 (F2), 12 frames
+$CB4D ; note 8 (E2), 12 frames
+$CB4F ; note 6 (D2), 12 frames
+$CB51 ; note 4 (C2), 12 frames
+$CB53 ; note 6 (D2), 12 frames
+$CB55 ; note 8 (E2), 12 frames
+$CB57 ; note 4 (C2), 12 frames
+$CB59 ; note 6 (D2), 12 frames
+$CB5B ; note 9 (F2), 12 frames
+$CB5D ; note 8 (E2), 12 frames
+$CB5F ; note 6 (D2), 12 frames
+$CB61 ; note 11 (G2), 12 frames
+$CB63 ; note 9 (F2), 12 frames
+$CB65 ; note 8 (E2), 12 frames
+$CB67 ; note 6 (D2), 12 frames
+$CB69 ; note 7 (D#2), 12 frames
+$CB6B ; note 9 (F2), 12 frames
+$CB6D ; note 11 (G2), 12 frames
+$CB6F ; note 7 (D#2), 12 frames
+$CB71 ; note 9 (F2), 12 frames
+$CB73 ; note 7 (D#2), 12 frames
+$CB75 ; note 6 (D2), 12 frames
+$CB77 ; note 2 (A#1), 12 frames
+$CB79 ; note 4 (C2), 12 frames
+$CB7B ; note 6 (D2), 12 frames
+$CB7D ; note 8 (E2), 12 frames
+$CB7F ; note 4 (C2), 12 frames
+$CB81 ; note 5 (C#2), 12 frames
+$CB83 ; note 6 (D2), 12 frames
+$CB85 ; note 8 (E2), 12 frames
+$CB87 ; note 5 (C#2), 12 frames
+$CB89 ; $FF: the end
+
+$CB8A b Pattern11 16 ; Pattern 11: 384 frames (tune 0 C x3, tune 1 C x3)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CB8A ; instrument slot 6
+$CB8B ; note 9 (F2), 12 frames
+$CB8D ; note 13 (A2), 12 frames
+$CB8F ; note 11 (G2), 12 frames
+$CB91 ; note 9 (F2), 12 frames
+$CB93 ; note 8 (E2), 12 frames
+$CB95 ; note 9 (F2), 12 frames
+$CB97 ; note 11 (G2), 12 frames
+$CB99 ; note 8 (E2), 12 frames
+$CB9B ; note 9 (F2), 12 frames
+$CB9D ; note 13 (A2), 12 frames
+$CB9F ; note 11 (G2), 12 frames
+$CBA1 ; note 9 (F2), 12 frames
+$CBA3 ; note 15 (B2), 12 frames
+$CBA5 ; note 13 (A2), 12 frames
+$CBA7 ; note 11 (G2), 12 frames
+$CBA9 ; note 9 (F2), 12 frames
+$CBAB ; note 11 (G2), 12 frames
+$CBAD ; note 12 (G#2), 12 frames
+$CBAF ; note 14 (A#2), 12 frames
+$CBB1 ; note 11 (G2), 12 frames
+$CBB3 ; note 14 (A#2), 12 frames
+$CBB5 ; note 11 (G2), 12 frames
+$CBB7 ; note 9 (F2), 12 frames
+$CBB9 ; note 6 (D2), 12 frames
+$CBBB ; note 8 (E2), 12 frames
+$CBBD ; note 9 (F2), 12 frames
+$CBBF ; note 11 (G2), 12 frames
+$CBC1 ; note 8 (E2), 12 frames
+$CBC3 ; note 8 (E2), 12 frames
+$CBC5 ; note 9 (F2), 12 frames
+$CBC7 ; note 11 (G2), 12 frames
+$CBC9 ; note 8 (E2), 12 frames
+$CBCB ; $FF: the end
+
+$CBCC b Pattern12 16 ; Pattern 12: 144 frames (tune 0 B x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CBCC ; rest, 144 frames
+$CBCE ; $FF: the end
+
+$CBCF b Pattern13 16 ; Pattern 13: 384 frames (tune 0 B x6, tune 1 B x6)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CBCF ; instrument slot 6
+$CBD0 ; arpeggio 2
+$CBD1 ; note 42 (D5), 18 frames
+$CBD3 ; note 42 (D5), 6 frames
+$CBD5 ; instrument slot 0
+$CBD6 ; arpeggio 6
+$CBD7 ; note 18 (D3), 12 frames
+$CBD9 ; instrument slot 6
+$CBDA ; arpeggio 2
+$CBDB ; note 42 (D5), 18 frames
+$CBDD ; arpeggio 3
+$CBDE ; note 40 (C5), 18 frames
+$CBE0 ; instrument slot 0
+$CBE1 ; arpeggio 6
+$CBE2 ; note 18 (D3), 12 frames
+$CBE4 ; instrument slot 6
+$CBE5 ; arpeggio 3
+$CBE6 ; note 40 (C5), 12 frames
+$CBE8 ; arpeggio 2
+$CBE9 ; note 42 (D5), 18 frames
+$CBEB ; note 42 (D5), 6 frames
+$CBED ; instrument slot 0
+$CBEE ; arpeggio 6
+$CBEF ; note 18 (D3), 12 frames
+$CBF1 ; instrument slot 6
+$CBF2 ; arpeggio 2
+$CBF3 ; note 42 (D5), 18 frames
+$CBF5 ; arpeggio 4
+$CBF6 ; note 42 (D5), 18 frames
+$CBF8 ; instrument slot 0
+$CBF9 ; arpeggio 6
+$CBFA ; note 18 (D3), 12 frames
+$CBFC ; instrument slot 6
+$CBFD ; arpeggio 4
+$CBFE ; note 42 (D5), 12 frames
+$CC00 ; arpeggio 3
+$CC01 ; note 43 (D#5), 18 frames
+$CC03 ; note 43 (D#5), 6 frames
+$CC05 ; instrument slot 0
+$CC06 ; arpeggio 6
+$CC07 ; note 18 (D3), 12 frames
+$CC09 ; instrument slot 6
+$CC0A ; arpeggio 3
+$CC0B ; note 43 (D#5), 18 frames
+$CC0D ; arpeggio 5
+$CC0E ; note 42 (D5), 18 frames
+$CC10 ; instrument slot 0
+$CC11 ; arpeggio 6
+$CC12 ; note 18 (D3), 12 frames
+$CC14 ; instrument slot 6
+$CC15 ; arpeggio 5
+$CC16 ; note 42 (D5), 12 frames
+$CC18 ; arpeggio 3
+$CC19 ; note 40 (C5), 18 frames
+$CC1B ; note 40 (C5), 6 frames
+$CC1D ; instrument slot 0
+$CC1E ; arpeggio 6
+$CC1F ; note 18 (D3), 12 frames
+$CC21 ; arpeggio 3
+$CC22 ; instrument slot 6
+$CC23 ; note 40 (C5), 18 frames
+$CC25 ; arpeggio 5
+$CC26 ; note 41 (C#5), 18 frames
+$CC28 ; instrument slot 0
+$CC29 ; arpeggio 6
+$CC2A ; note 18 (D3), 12 frames
+$CC2C ; instrument slot 6
+$CC2D ; arpeggio 5
+$CC2E ; note 41 (C#5), 12 frames
+$CC30 ; $FF: the end
+
+$CC31 b Pattern14 16 ; Pattern 14: 384 frames (tune 0 C x4, tune 1 C x4)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CC31 ; instrument slot 7
+$CC32 ; note 49 (A5), 36 frames
+$CC34 ; note 47 (G5), 6 frames
+$CC36 ; note 45 (F5), 6 frames
+$CC38 ; note 47 (G5), 36 frames
+$CC3A ; note 45 (F5), 6 frames
+$CC3C ; note 44 (E5), 6 frames
+$CC3E ; note 45 (F5), 36 frames
+$CC40 ; note 44 (E5), 6 frames
+$CC42 ; note 42 (D5), 6 frames
+$CC44 ; note 39 (B4), 18 frames
+$CC46 ; note 40 (C5), 18 frames
+$CC48 ; note 42 (D5), 12 frames
+$CC4A ; note 43 (D#5), 36 frames
+$CC4C ; note 45 (F5), 6 frames
+$CC4E ; note 43 (D#5), 6 frames
+$CC50 ; note 42 (D5), 18 frames
+$CC52 ; note 40 (C5), 18 frames
+$CC54 ; note 38 (A#4), 12 frames
+$CC56 ; note 38 (A#4), 18 frames
+$CC58 ; note 35 (G4), 18 frames
+$CC5A ; note 38 (A#4), 12 frames
+$CC5C ; note 37 (A4), 48 frames
+$CC5E ; $FF: the end
+
+$CC5F b Pattern15 16 ; Pattern 15: 1656 frames (tune 0 A x1, tune 1 A x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CC5F ; instrument slot 0
+$CC60 ; note 18 (D3), 48 frames
+$CC62 ; note 16 (C3), 48 frames
+$CC64 ; note 14 (A#2), 48 frames
+$CC66 ; note 13 (A2), 48 frames
+$CC68 ; note 12 (G#2), 48 frames
+$CC6A ; note 11 (G2), 48 frames
+$CC6C ; note 9 (F2), 48 frames
+$CC6E ; note 11 (G2), 48 frames
+$CC70 ; note 16 (C3), 96 frames
+$CC72 ; note 16 (C3), 96 frames
+$CC74 ; note 16 (C3), 108 frames
+$CC76 ; note 16 (C3), 108 frames
+$CC78 ; note 16 (C3), 216 frames
+$CC7A ; note 16 (C3), 216 frames
+$CC7C ; note 16 (C3), 216 frames
+$CC7E ; note 16 (C3), 216 frames
+$CC80 ; $FF: the end
+
+$CC81 b Pattern16 16 ; Pattern 16: 384 frames (tune 0 B x1, tune 1 B x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CC81 ; instrument slot 6
+$CC82 ; arpeggio 2
+$CC83 ; note 42 (D5), 18 frames
+$CC85 ; note 42 (D5), 6 frames
+$CC87 ; instrument slot 0
+$CC88 ; arpeggio 6
+$CC89 ; note 18 (D3), 12 frames
+$CC8B ; instrument slot 6
+$CC8C ; arpeggio 2
+$CC8D ; note 42 (D5), 18 frames
+$CC8F ; arpeggio 3
+$CC90 ; note 40 (C5), 18 frames
+$CC92 ; instrument slot 0
+$CC93 ; arpeggio 6
+$CC94 ; note 18 (D3), 12 frames
+$CC96 ; instrument slot 6
+$CC97 ; arpeggio 3
+$CC98 ; note 40 (C5), 12 frames
+$CC9A ; arpeggio 5
+$CC9B ; note 42 (D5), 18 frames
+$CC9D ; note 42 (D5), 6 frames
+$CC9F ; instrument slot 0
+$CCA0 ; arpeggio 6
+$CCA1 ; note 18 (D3), 12 frames
+$CCA3 ; instrument slot 6
+$CCA4 ; arpeggio 5
+$CCA5 ; note 42 (D5), 18 frames
+$CCA7 ; arpeggio 4
+$CCA8 ; note 40 (C5), 18 frames
+$CCAA ; instrument slot 0
+$CCAB ; arpeggio 6
+$CCAC ; note 18 (D3), 12 frames
+$CCAE ; instrument slot 6
+$CCAF ; arpeggio 4
+$CCB0 ; note 40 (C5), 12 frames
+$CCB2 ; note 43 (D#5), 18 frames
+$CCB4 ; note 43 (D#5), 6 frames
+$CCB6 ; instrument slot 0
+$CCB7 ; arpeggio 6
+$CCB8 ; note 18 (D3), 12 frames
+$CCBA ; instrument slot 6
+$CCBB ; arpeggio 4
+$CCBC ; note 43 (D#5), 18 frames
+$CCBE ; arpeggio 3
+$CCBF ; note 43 (D#5), 18 frames
+$CCC1 ; instrument slot 0
+$CCC2 ; arpeggio 6
+$CCC3 ; note 18 (D3), 12 frames
+$CCC5 ; instrument slot 6
+$CCC6 ; arpeggio 3
+$CCC7 ; note 43 (D#5), 12 frames
+$CCC9 ; arpeggio 4
+$CCCA ; note 40 (C5), 18 frames
+$CCCC ; note 40 (C5), 6 frames
+$CCCE ; instrument slot 0
+$CCCF ; arpeggio 6
+$CCD0 ; note 18 (D3), 12 frames
+$CCD2 ; arpeggio 4
+$CCD3 ; instrument slot 6
+$CCD4 ; note 40 (C5), 18 frames
+$CCD6 ; note 42 (D5), 18 frames
+$CCD8 ; instrument slot 0
+$CCD9 ; arpeggio 6
+$CCDA ; note 18 (D3), 12 frames
+$CCDC ; instrument slot 6
+$CCDD ; arpeggio 4
+$CCDE ; note 42 (D5), 12 frames
+$CCE0 ; $FF: the end
+
+$CCE1 b Pattern17 16 ; Pattern 17: 384 frames (tune 0 C x1, tune 1 C x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CCE1 ; instrument slot 7
+$CCE2 ; note 49 (A5), 36 frames
+$CCE4 ; note 47 (G5), 6 frames
+$CCE6 ; note 45 (F5), 6 frames
+$CCE8 ; note 47 (G5), 36 frames
+$CCEA ; note 45 (F5), 6 frames
+$CCEC ; note 44 (E5), 6 frames
+$CCEE ; note 45 (F5), 36 frames
+$CCF0 ; note 44 (E5), 6 frames
+$CCF2 ; note 42 (D5), 6 frames
+$CCF4 ; note 40 (C5), 18 frames
+$CCF6 ; note 42 (D5), 18 frames
+$CCF8 ; note 45 (F5), 12 frames
+$CCFA ; note 43 (D#5), 36 frames
+$CCFC ; note 45 (F5), 6 frames
+$CCFE ; note 43 (D#5), 6 frames
+$CD00 ; note 47 (G5), 18 frames
+$CD02 ; note 45 (F5), 18 frames
+$CD04 ; note 43 (D#5), 12 frames
+$CD06 ; note 40 (C5), 18 frames
+$CD08 ; note 37 (A4), 18 frames
+$CD0A ; note 40 (C5), 12 frames
+$CD0C ; note 39 (B4), 48 frames
+$CD0E ; $FF: the end
+
+$CD0F b Pattern18 16 ; Pattern 18: 96 frames (tune 0 B x2, tune 1 B x2)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CD0F ; instrument slot 6
+$CD10 ; arpeggio 2
+$CD11 ; note 42 (D5), 18 frames
+$CD13 ; note 42 (D5), 18 frames
+$CD15 ; note 42 (D5), 18 frames
+$CD17 ; note 42 (D5), 18 frames
+$CD19 ; note 42 (D5), 12 frames
+$CD1B ; note 42 (D5), 12 frames
+$CD1D ; $FF: the end
+
+$CD1E b Pattern19 16 ; Pattern 19: 72 frames (tune 0 B x3, tune 1 B x3)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CD1E ; instrument slot 6
+$CD1F ; arpeggio 2
+$CD20 ; note 42 (D5), 18 frames
+$CD22 ; note 42 (D5), 18 frames
+$CD24 ; note 42 (D5), 18 frames
+$CD26 ; note 42 (D5), 18 frames
+$CD28 ; arpeggio off
+$CD29 ; $FF: the end
+
+$CD2A b Pattern20 16 ; Pattern 20: 192 frames (tune 0 C x1, tune 1 C x1)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CD2A ; instrument slot 7
+$CD2B ; note 52 (C6), 192 frames
+$CD2D ; $FF: the end
+
+$CD2E b Pattern21 1 ; Pattern 21: empty ($FF only); no tune plays it
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CD2F b Pattern22 1 ; Pattern 22: empty ($FF only); no tune plays it
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CD30 b Pattern23 1 ; Pattern 23: empty ($FF only); no tune plays it
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CD31 b Pattern24 1 ; Pattern 24: empty ($FF only); no tune plays it
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CD32 b Pattern25 1 ; Pattern 25: empty ($FF only); no tune plays it
+> Not read in any recording (known only from the code).
+@res music/tunes.bin
+
+$CD33 b Pattern26 16 ; Pattern 26: 192 frames (tune 0 B x1, tune 0 C x2, tune 1 B x4, tune 1 C x2)
+> Read by ReadPatternEvent $C2F6, PatternEvent $C36D, StartNote $C4C9 and FetchPatternByte $C825. Witness: the recordings read it whole.
+@res music/tunes.bin
+$CD33 ; rest, 192 frames
+$CD35 ; $FF: the end
+
+$CD36 b AttackRates 16 ; The attack rates: an instrument's +3 high nibble 1-15 (0 is the default, 15 a frame)
+> Below $80: that many volume steps every frame; $80 + n: one step every n frames. Read by SetInstrument $C444. Witness: the recordings read entry 7 (4 a frame, instruments 4 and 7).
+@res music/envelope-rates.bin
+
+$CD46 b DecayRates 16 ; The decay and release rates: an instrument's +3 and +4 low nibbles 1-15
+> As AttackRates; read by SetInstrument $C477 (decay) and $C4A0 (release). Witness: the recordings read entries 6-10, 12 and 13.
+@res music/envelope-rates.bin
+
+@module ay
+$CD56 c AYWrite ; Write A to AY register D
+> In: D = the register, A = the value, H = $FF, L = $BF, C = $FD. OUT ($FFFD),D selects the register, OUT ($BFFD),A writes it; B is left $BF. Called by WriteAY $C290 10 times a frame (7 for a tune other than 0).
+> The recordings' only AY writer after the 128K ROM's power-on set-up (ports_out $FFFD, $BFFD in all 34). explorers: 134 110 calls in 13 411 writes (10 each).
+> Witness: L1 739060 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+
+@module tunes
+$CD5D b MusicLeftover 16 ; The rest of the block: 1187 bytes the player never reads
+> Known only from the code: no instruction reads $CD5D-$D1FF and no recording reads it in RAM 6; the copy brings it along with the player ($6D5D-$71FF on the tape). Bit patterns, not tune data (no pointer leads here).

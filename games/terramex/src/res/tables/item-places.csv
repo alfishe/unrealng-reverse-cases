@@ -1,0 +1,35 @@
+# ItemPlaces $B99D: where the items lie at the start (taken = 1: not there
+# until put in place); X and Y multiples of 8; the name column is
+# not read back.
+record,room,taken,item,x,y,name
+0,$00,0,5,$A0,$08,Umbrella
+1,$07,0,9,$80,$40,Barrel Medium
+2,$08,0,11,$A0,$08,ACME Bridge
+3,$04,0,22,$48,$30,Anti Rad. Pills
+4,$09,0,7,$80,$28,Party Manifesto
+5,$0A,0,13,$B0,$60,Silver Lining
+6,$0B,0,0,$60,$28,Unicycle
+7,$14,0,10,$80,$60,Vacuum Cleaner
+8,$16,0,12,$58,$60,Flute
+9,$0C,0,2,$C0,$60,Cricket Ball
+10,$10,0,6,$78,$38,Bellows
+11,$10,0,3,$B8,$40,Spurs
+12,$1C,0,14,$50,$48,Spring
+13,$1D,0,8,$08,$48,Cannon
+14,$1D,0,27,$28,$48,Barrel Big
+15,$21,0,28,$28,$48,Barrel Small
+16,$22,0,1,$80,$58,Flashgun
+17,$27,0,16,$88,$48,Switch
+18,$2A,0,4,$A8,$48,Beer Barrel
+19,$2C,0,24,$80,$38,Energy Crystal
+20,$30,0,24,$48,$60,Energy Crystal
+21,$31,0,19,$90,$48,Coat Hanger
+22,$33,0,20,$C0,$60,Trampoline
+23,$34,0,18,$88,$60,Battery
+24,$3C,0,21,$40,$58,Atomic Pile
+25,$42,0,17,$88,$28,Button
+26,$45,0,23,$28,$20,Cup of tea
+27,$2E,0,15,$80,$40,Formula
+28,$2F,0,15,$40,$48,Formula
+29,$46,0,15,$50,$28,Formula
+30,$47,0,15,$20,$58,Formula

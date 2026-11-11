@@ -1,0 +1,6 @@
+# LiftStops $A9E6: the lift's stop in each room of its shaft.
+room,y
+$1F,$50
+$2B,$30
+$37,$50
+$43,$68

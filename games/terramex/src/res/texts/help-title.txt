@@ -1,0 +1,2 @@
+# HelpTitle (selector).
+"\x16\x05\x0ATERRAMEX INSTRUCTIONS\x01"

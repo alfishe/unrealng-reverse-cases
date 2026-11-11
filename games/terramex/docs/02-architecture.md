@@ -85,14 +85,21 @@ GameEntry sets `SP` = `$5E00` (`LD SP,$5E00` at `$8F1C`). The lowest byte writte
 
 ## 2.5 The rooms in the data
 
-`tools/fig_rooms.py` draws every room from the image as loaded: room R's 32 back-tile indices at `$D600 + R * 32`
+`tools/fig_rooms.py` draws every room from the resources (src/res/rooms, src/res/tiles; stage 2), the same bytes as the image as loaded: room R's 32 back-tile indices at `$D600 + R * 32`
 (8 x 4), each back-tile 4 x 4 tile indices at `$C600 + index * 16`, each tile 8 bytes at `$F000 + tile * 8`
 (`$80-$FF` from `$F400`, or from `$FA00` for the 15 rooms listed at `$9AC6`) with its attribute at `$DF00 + tile`
 (`$DF80` or `$C580` for the upper half). The walk is the SkoolKit notes' (Room-Format.md); the check is ours: room
 `$14` drawn this way equals the background of `explorers` frame 750 cell for cell. The rooms sit at level * 12 +
-column (SK, `$AEEF`).
+column (SK, `$AEEF`). There are 72: the 70 of the map and `$46`, `$47` (level 5, columns 10 and 11), two explorers' own
+rooms reached through room `$29`'s left exit (stage 2). Each room also shows its creatures at their start places
+(white) and the items lying there at the start (yellow).
 
-![The 70 rooms drawn from the data, by level and column](img/maps/rooms.png)
+![The 72 rooms drawn from the resources, by level and column, with creatures and items](img/maps/rooms.png)
+
+The back buffer's tail `$E900-$EFFF` (a leftover on the tape: play writes it before reading it) holds twelve 24 x 24
+sprites at `$E930-$EC8F` that no frame number reaches (src/res/leftovers/README.md):
+
+![The twelve unused sprites of the back buffer](img/sprites/leftover-sprites.png)
 
 ## 2.6 The items
 

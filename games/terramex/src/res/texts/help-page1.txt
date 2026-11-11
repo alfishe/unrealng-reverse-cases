@@ -1,0 +1,10 @@
+# HelpPage1 (selector): PrintPage codes $16 c r (AT), $0D, $01 (pause), $00 (wait).
+" Over twenty years ago professorAlbert Eyestrain told the world that it  was in danger of being hit by an asteriod of gigantic  proportion!\x0D"
+"\x0D"
+" Of course everyone said he was a crank (as usual in such cases)and he faced ruin and ridicule  by all the world.\x0D"
+"\x0D"
+" It is twenty years later on andthe professor has not been heardof since.His last words -about aformula written by yet another  famous scientist and \"who finds\x0D"
+"it will be able to find me\".\x0D"
+"\x0D"
+" Well, like all good scientists he was of course right,and now  within less than a month the    asteriod will hit the Earth.\x16\x00"
+"\x17<SPACE> Continue <ENTER> Returns\x00"

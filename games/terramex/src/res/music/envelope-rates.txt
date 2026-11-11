@@ -1,0 +1,4 @@
+# AttackRates $CD36 (the first line) and DecayRates $CD46: by nibble 0-15;
+# < $80: steps a frame, $80 + n: one step every n frames.
+$0F $0F $0F $0D $08 $06 $05 $04 $03 $01 $82 $83 $83 $89 $90 $99
+$0F $0D $07 $04 $03 $02 $02 $01 $01 $82 $85 $88 $89 $9C $AE $CB
