@@ -1,0 +1,47 @@
+# RZX archive terramex.rzx (Bobby Lequay, Spectaculator; someone else's run), frames 22001-24000 as held keys, from tools/rzx_dump.py snap-22000.z80 (tools/rzx_script.py)
+0 KL
+139 KL KF
+284 KL
+299 KL KF
+424 KL
+455 -
+511 KL
+555 -
+606 KL
+629 -
+666 KL
+669 -
+680 KF
+689 -
+810 KL
+858 KL KF
+870 KL
+905 -
+916 KL
+929 KL KF
+1045 KL
+1060 KL KF
+1175 KL
+1213 -
+1235 KL
+1328 -
+1381 2
+1394 -
+1402 2
+1414 -
+1419 1
+1492 -
+1507 1
+1522 -
+1537 1
+1552 -
+1565 1
+1580 -
+1651 S
+1657 -
+1679 KL
+1747 -
+1835 KL
+1889 -
+1993 KL
+2000 END

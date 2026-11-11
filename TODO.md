@@ -13,7 +13,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 4 | SimCity | complete 2026-11-10 ([case](games/simcity/README.md)); ZXDB 4509 |
 | 5 | Earth Shaker | complete 2026-11-11 ([case](games/earth-shaker/README.md)); ZXDB 1563; our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | complete 2026-11-11 ([case](games/battle-command/README.md)); ZXDB 451 |
-| 7 | Terramex | ZXDB 5195 (Grand Slam 1987; tapes: Quicksilva, Bug-Byte Premier, Zafiro; an RZX in the archive); a detailed SkoolKit disassembly offered by the owner, github.com/nzeemin/skoolkit-game-revs `terramex-zx`: the starting point for names and structure (credited), every fact verified against the code and our recordings |
+| 7 | Terramex | stage 1 ([case](games/terramex/README.md)); ZXDB 5195 (Grand Slam 1987; tapes: Quicksilva, Bug-Byte Premier, Zafiro; an RZX in the archive); a detailed SkoolKit disassembly offered by the owner, github.com/nzeemin/skoolkit-game-revs `terramex-zx`: the starting point for names and structure (credited), every fact verified against the code and our recordings |
 
 ## Planned ports
 

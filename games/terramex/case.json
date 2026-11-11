@@ -1,0 +1,61 @@
+{
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+  ],
+  "image": "work/mkgame/original.bin",
+  "lo": "6000",
+  "hi": "10000",
+  "device": "ZXSPECTRUM128",
+  "bases": {
+    "5": "4000",
+    "2": "8000",
+    "0": "C000"
+  },
+  "read_builds": [
+    "stage1/c1",
+    "stage1/explorers",
+    "stage1/gameover",
+    "stage1/rzx/r00000",
+    "stage1/rzx/r02000",
+    "stage1/rzx/r04000",
+    "stage1/rzx/r06000",
+    "stage1/rzx/r06500",
+    "stage1/rzx/r08000",
+    "stage1/rzx/r10000",
+    "stage1/rzx/r12000",
+    "stage1/rzx/r14000",
+    "stage1/rzx/r14500",
+    "stage1/rzx/r16000",
+    "stage1/rzx/r18000",
+    "stage1/rzx/r20000",
+    "stage1/rzx/r22000",
+    "stage1/rzx/r23250",
+    "stage1/rzx/r24000",
+    "stage1/rzx/r24750",
+    "stage1/rzx/r26000",
+    "stage1/rzx/r28000",
+    "stage1/rzx/r30000",
+    "stage1/rzx/r32000",
+    "stage1/rzx/r32750",
+    "stage1/rzx/r34000",
+    "stage1/rzx/r36000",
+    "stage1/rzx/r38000",
+    "stage1/rzx/r40000",
+    "stage1/rzx/r42000",
+    "stage1/rzx/r44000",
+    "stage1/rzx/r46000",
+    "stage1/rzx/r48000",
+    "stage1/rzx/r50000"
+  ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, the original tape at ROM speed on the 128K, the menu, the selector and play"
+    ]
+  ],
+  "header": [
+    "; Terramex, Grandslam Entertainments 1987 (Teque: Shaun Hollingworth, Pete Harrap, Ben Daglish): the image $6000-$FFFF as the ROM loader leaves it (block 4 at $6000, block 5 over it at $7200)."
+  ]
+}

@@ -1,0 +1,47 @@
+# c1: after the tape (record-load from power-on on a 128K, the Tape Loader, ROM speed): the device menu,
+# 1 (keyboard), 3 (Sinclair), 2 (Kempston), 0 (start), the explorer selector (Kempston: right twice, fire),
+# then play with the Kempston stick: walk right through the first rooms, jumps, the bearer keys 1 and 2,
+# T (think), 5 (swap object), walk back left, then CAPS SHIFT + Q (abort) back to the menu
+0 -
++60 1
++25 -
++60 3
++25 -
++60 2
++25 -
++60 0
++25 -
++300 KR
++10 -
++40 KR
++10 -
++40 KF
++10 -
++400 KR
++300 KR KF
++12 KR
++150 KR KF
++12 KR
++300 -
++50 1
++10 -
++50 2
++10 -
++50 T
++10 -
++150 5
++10 -
++100 KR
++400 KR KF
++12 KR
++400 KL
++300 KL KF
++12 KL
++400 -
++100 KU
++30 -
++60 KD
++30 -
++200 CS Q
++20 -
++400 END

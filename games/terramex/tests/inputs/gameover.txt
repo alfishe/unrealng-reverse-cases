@@ -1,0 +1,44 @@
+# gameover: the RZX segment 10000-12000 (tools/rzx_script.py, someone else's keys) from work/stage1/probe/go/lives1.szx = rzx/snap-10000.z80 with POKE 23447,1 (lives `$5B97` = 1, said so): the RZX's death near frame 11750 is the last life, then game over, the high-score check and the menu, no key
+0 -
+2 KR KF
+45 KR
+122 KR KF
+139 KR
+289 KR KF
+304 KR
+403 -
+414 KF
+422 -
+547 KR
+694 -
+709 KL
+749 KL KF
+757 KL
+767 -
+999 1
+1014 -
+1028 1
+1042 -
+1098 S
+1101 -
+1186 KR
+1211 -
+1214 KL
+1234 -
+1257 KL
+1295 -
+1559 KL
+1568 -
+1686 1
+1701 -
+1717 2
+1758 -
+1774 2
+1788 -
+1809 S
+1815 -
+1823 KL
+1831 KL KF
+1839 KL
+2000 -
++4000 END

@@ -1,0 +1,51 @@
+# RZX archive terramex.rzx (Bobby Lequay, Spectaculator; someone else's run), frames 18001-20000 as held keys, from tools/rzx_dump.py snap-18000.z80 (tools/rzx_script.py)
+0 -
+250 KR
+291 KR KF
+315 KR
+336 -
+354 KR
+356 KR KF
+367 KR
+408 -
+466 KL
+469 -
+544 KR
+551 KR KF
+618 KR
+850 -
+864 KR
+933 KR KF
+954 KR
+958 -
+964 KL
+999 -
+1021 KR
+1026 -
+1054 KR
+1057 KR KF
+1121 KR
+1147 -
+1214 KR
+1269 KR KF
+1336 KR
+1355 KR KF
+1366 KR
+1430 -
+1464 KR
+1773 -
+1799 KR
+1829 -
+1833 KD
+1836 -
+1843 KD
+1855 -
+1876 KU
+1894 -
+1910 KD
+1928 -
+1931 KL
+1964 KL KU
+1968 KU
+1996 KL
+2000 END
