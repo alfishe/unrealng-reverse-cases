@@ -161,16 +161,21 @@ def devices_figure(out):
     f = kitlib.font(14)
     fb = kitlib.font(16)
     fs = kitlib.font(12)
+    at = {v: k for k, v in NAMES.items()}
+
+    def lab(key, title, name):
+        return f'{key} {title} ({name} ${at[name]:04X})'
+
     rows = [
-        ('5 Keyboard (ReadKeys $9842)', 'IN ($xxFE) per key: KeyTable $9862',
+        (lab(5, 'Keyboard', 'ReadKeys'), 'IN ($xxFE) per key: KeyTable $9862',
          ['O ($DF b1)', 'P ($DF b0)', 'A ($FD b0)', 'Q ($FB b0)', 'SPACE ($7F b0)']),
-        ('4 Kempston joystick (ReadKempston $982F)', 'IN ($1F): bits 0 R, 1 L, 2 D, 3 U, 4 fire, reordered',
+        (lab(4, 'Kempston joystick', 'ReadKempston'), 'IN ($1F): bits 0 R, 1 L, 2 D, 3 U, 4 fire, reordered',
          ['bit 1 left', 'bit 0 right', 'bit 2 down', 'bit 3 up', 'bit 4 fire']),
-        ('1 Sinclair (ReadSinclair $9726)', 'IN ($EFFE) = keys 6 7 8 9 0, inverted (CPL)',
+        (lab(1, 'Sinclair', 'ReadSinclair'), 'IN ($EFFE) = keys 6 7 8 9 0, inverted (CPL)',
          ['key 6', 'key 7', 'key 8', 'key 9', 'key 0']),
-        ('2 Cursor (ReadCursor $972D)', 'IN ($F7FE) key 5, IN ($EFFE) keys 6 7 8, IN ($7FFE) SPACE',
+        (lab(2, 'Cursor', 'ReadCursor'), 'IN ($F7FE) key 5, IN ($EFFE) keys 6 7 8, IN ($7FFE) SPACE',
          ['key 5', 'key 8', 'key 6', 'key 7', 'SPACE']),
-        ('3 Kempston mouse (ReadMouse $9822)', 'IN ($FBDF) X, IN ($FFDF) Y: deltas, no DecodeDirections',
+        (lab(3, 'Kempston mouse', 'ReadMouse'), 'IN ($FBDF) X, IN ($FFDF) Y: deltas, no DecodeDirections',
          ['-', '-', '-', '-', 'bit 0 of dX']),
     ]
     head = ['bit 4: left', 'bit 3: right', 'bit 2: down', 'bit 1: up', 'bit 0: fire']
@@ -179,9 +184,9 @@ def devices_figure(out):
     H = 120 + rh * len(rows) + 120
     im = Image.new('RGB', (W, H), (16, 16, 24))
     d = ImageDraw.Draw(im)
-    d.text((10, 8), 'The five control readers: each turns its port bits into one 5-bit code for DecodeDirections $9758',
-           fill=(255, 255, 255), font=fb)
-    x0, bw = 400, 126
+    d.text((10, 8), f'The five control readers: each turns its port bits into one 5-bit code for DecodeDirections '
+           f'${at["DecodeDirections"]:04X}', fill=(255, 255, 255), font=fb)
+    x0, bw = 450, 116
     for i, h in enumerate(head):
         box(d, x0 + i * (bw + 4), 44, bw, 34, h, cols[i], f)
     d.text((10, 52), 'reader (option key) and its port', fill=(200, 200, 200), font=f)
@@ -191,7 +196,7 @@ def devices_figure(out):
         d.text((10, y + 22), port, fill=(170, 170, 190), font=fs)
         for i, b in enumerate(bits):
             fill = cols[i] if b != '-' else (60, 60, 70)
-            box(d, x0 + i * (bw + 4), y, bw, 40, b, fill, fs if len(b) > 14 else f)
+            box(d, x0 + i * (bw + 4), y, bw, 40, b, fill, fs if len(b) > 12 else f)
     y = 96 + len(rows) * rh + 10
     notes = ['A pressed key reads 0 on the port; ReadKeys turns each into 1 (AND mask, DEC A, RLA: the carry is',
              'the pressed bit). ReadSinclair and ReadCursor end in CPL. ReadKempston\'s port is already active high.',
@@ -206,9 +211,9 @@ def devices_figure(out):
 ROWS = [(0xFEFE, 'CAPS Z X C V'), (0xFDFE, 'A S D F G'), (0xFBFE, 'Q W E R T'), (0xF7FE, '1 2 3 4 5'),
         (0xEFFE, '0 9 8 7 6'), (0xDFFE, 'P O I U Y'), (0xBFFE, 'ENT L K J H'), (0x7FFE, 'SPC SYM M N B')]
 ACTIONS = {
-    'E': 'sound off', 'M': 'map view', 'D': 'Dragonfly', '1': 'weapon 1', '2': 'weapon 2', '3': 'weapon 3',
+    'E': 'quit prompt', 'M': 'status view', 'D': 'damage board', '1': 'weapon 1', '2': 'weapon 2', '3': 'weapon 3',
     '4': 'weapon 4', 'H': 'Helicarrier', 'N': 'night sight', 'R': 'rear view', 'B': 'binoculars', 'Z': 'zoom',
-    'C': 'back to 3D', 'J': '(none)', 'K': '(none)', 'S': 'brake',
+    'C': 'back to 3D', 'J': 'aim (word 1)', 'K': 'aim (word 0)', 'S': 'brake',
     'Q': 'up', 'A': 'down', 'O': 'left', 'P': 'right', 'SPC': 'fire',
 }
 

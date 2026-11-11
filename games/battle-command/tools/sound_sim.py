@@ -50,9 +50,10 @@ EFFECTS = [
     ('random-tone', 0xD856, 0xD68A, 0x01, None, 'random tone, one frame'),
     ('message', 0xD84E, 0xD68B, 0x1E, 'MessageOnce (interrupt.asm)', 'message beep'),
     ('noise-11', 0xD841, 0xD68C, 0x11, None, 'steady noise, 17 frames'),
-    ('noise-23', 0xD845, 0xD68C, 0x23, None, 'steady noise, 35 frames'),
+    ('noise-23', 0xD846, 0xD68C, 0x23, None, 'steady noise, 35 frames'),
     ('sweep', 0xD839, 0xD68D, 0x1F, None, 'falling sweep'),
-    ('siren-60', 0xD88B, 0xD68E, 0x60, None, 'two-tone siren, 96 frames'),
+    # the entry's JR lands on the LD A,$40 of siren-40 (9.5, the siren bug): it stores 64, not $60
+    ('siren-60', 0xD88B, 0xD68E, '64 (meant 96)', None, 'two-tone siren, 64 frames'),
     ('siren-40', 0xD890, 0xD68E, 0x40, None, 'two-tone siren, 64 frames'),
 ]
 

@@ -141,14 +141,13 @@ l_737A:
   LD (l_737A+$0001),A
   JR l_734D
 
-; The nine weapon icons of the Dragonfly's panel ($834A records) with their
-; frames
+; The nine weapon icons of the damage board ($834A records) with their frames
 ;
 ; Witness: L1 1 (play).
-DrawDragonflyPanel:
+DrawDamagePanel:
   LD HL,GaugeRecords+$0002
   EXX
-  LD HL,DragonflyIcons
+  LD HL,DamageBoardRecords
   EXX
   LD B,$09
   LD DE,$0006
@@ -538,8 +537,9 @@ MissionLoaded:
 ; flags are set
 ;
 ; If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1`
-; are ANDed: if any is 0 the mission is refused (`RET Z`, recording m10: the
-; status screen). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe,
+; are ANDed: if any is 0 the mission is refused (`RET Z` back into the
+; catalogue's zone loop; recording m10: the catalogue stays on screen,
+; 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe,
 ; m2ocean, missions).
 LoadMissionIfAllowed:
   CALL MissionDone
@@ -594,16 +594,17 @@ IconTable:
   DEFW $F59C
 
 ; The 24 object records, 60 bytes each: 0 the player, 1-20 the mission's
-; objects, 21 the Helicarrier, 22-23 projectiles
+; objects, 21 the Helicarrier, 22 projectiles (23 never allocated)
 ;
 ; +0 list index, +1 type, +2 state (bit 7 present, 6 wreck, 5 drawn, 2 on the
 ; radar), +3 handler flags, +4 colour, +5 height, +7 speed, +8 wreck model,
 ; +`$0B` box half-sizes, +`$13` hit points, +`$14` damage, +`$16` radius,
 ; +`$18` step handler, +`$1A` collision handler, +`$1C` model, +`$1E` score,
 ; +`$22` heading, +`$23` X (24 bits), +`$26` Y (24 bits), +`$2A` pitch, +`$2B`
-; view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. Bytes +1
-; to +`$1E` come from the type's template. Read by RunObjectHandlers `$C026`,
-; written by the world code (frag of bank 2 / 0, docs 05-07).
+; view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. +1 is
+; the type, +2 to +`$1F` come from the type's template, +`$20` is the serial.
+; Read by RunObjectHandlers `$C026`, written by the world code (frag of bank 2
+; / 0, docs 05-07).
 ;
 ; Witness: every play build reads and writes `$75F0-$7B8F`.
 ObjectTable:

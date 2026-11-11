@@ -1,9 +1,9 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; panel.asm: The panel jobs of the play views: messages, the damage colours, the attributes, the bars
 ;
-; The play views keep part of their panel work in bank 6: StatusViewMessage $D3C9 (the status and Dragonfly views'
-; message), ShowDamageColours $D4A5 (the Dragonfly's damage board), PanelAttributes $D521 (PanelSetup $6B32) and the
-; bars of the cockpit, UpdatePanelBars $D58C (UpdateSlotBars $7327).
+; The play views keep part of their panel work in bank 6: StatusViewMessage $D3C9 (the message of the status view and
+; the damage board), ShowDamageColours $D4A5 (the damage board's boxes), PanelAttributes $D521 (PanelSetup $6B32) and
+; the bars of the cockpit, UpdatePanelBars $D58C (UpdateSlotBars $7327).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $D3C9

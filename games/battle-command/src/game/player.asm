@@ -8,19 +8,22 @@
 
   ORG $A8C7
 
-; The player's step handler: terrain, boundary, fuel, the turret
+; The player's step handler: terrain, brake, fuel, boundary, move, the turret
 ;
 ; Record 0's step handler (+$18 = `$A8C7`, run by RunObjectHandlers `$C026`
 ; with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the
 ; terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets
-; the handler to BounceDecay `$CC09`; 0 or 6 (rough ground) stores 1.25 x the
-; speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does
-; not change and nothing resident reads `$7E8E` (`$A8F0`-`$A934`,
-; docs/10-gameplay-logic.md 10.2). Then BoundaryCheck `$D4B8`, then the fuel:
-; `$7C57` -= (|speed| >> 4) OR 1; on an underflow `$A94E` sets the failure
-; reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`. The Infinite
-; Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`).
-; Then the turret and speed against the control state `$985F`.
+; the handler to BounceDecay `$CC09`; 0 or 6 (0 is the road, segment style 0)
+; stores 1.25 x the speed (signed) in `$7E8E`; IX+7 is restored at once, so the
+; tank's speed does not change and only bank 6 DrawSpeedBar `$D612` reads
+; `$7E8E` (the speed bar) (`$A8F0`-`$A934`, docs/10-gameplay-logic.md 10.2).
+; The S key branch `$A8F2` -> `$A9C0` makes BrakeKey `$A9C9` the step handler
+; and ends the pass. When the speed is not 0: the fuel, `$7C57` -= (|speed| >>
+; 4) OR 1 (on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED`
+; ("RAN OUT OF FUEL") and calls `$7047`), then BoundaryCheck `$D4B8` (`$A95B`),
+; then MoveObject. The Infinite Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL`
+; becomes `LD HL,($7C57)`). Then the turret and speed against the control state
+; `$985F`.
 ;
 ; Witness: L1 3503 (death, m2erbe, missions, play, play2).
 PlayerStep:
@@ -277,7 +280,7 @@ FireCannon:
   CALL ApiVector03
   CALL ApiVector04
   LD BC,$0008
-  LD HL,WorldVars+$0003
+  LD HL,WorldVars+$0002
   LDIR
   LD (IX+$31),$64
   CALL PrintAmmo
@@ -326,7 +329,7 @@ LaunchProjectile:
   CALL ApiVector03
   CALL ApiVector04
   LD BC,$0008
-  LD HL,WorldVars+$0003
+  LD HL,WorldVars+$0002
   LDIR
   LD A,$00
   EX AF,AF'
@@ -345,10 +348,11 @@ LaunchProjectile:
   SCF
   RET
 
-; Step of a mortar shell: ballistic flight, burst at the ground
+; Step of a mortar shell: ballistic flight, removed at the ground
 ;
-; Height += vertical speed (+$31), the speed falls each pass; at height 0 the
-; shell bursts (Explode `$B8AB`).
+; MoveObject, then height += vertical speed (+$31, signed); a negative height
+; removes the shell (RemoveObject `$B8B1`, no burst: only a hit damages); else
+; the vertical speed falls by 5 a pass, kept when the subtraction overflows.
 ;
 ; Witness: L1 68 (play).
 MortarShellStep:
@@ -686,7 +690,7 @@ l_C1CC:
 ;
 ; Witness: L1 28 (play, play2).
 TargetBearingCheck:
-  LD BC,(WorldVars+$000B)
+  LD BC,(WorldVars+$000A)
   AND A
   SBC HL,BC
   JP P,l_C1FA
@@ -846,7 +850,7 @@ LaunchDragonfly:
   CALL ApiVector03
   CALL ApiVector04
   LD BC,$0008
-  LD HL,WorldVars+$0003
+  LD HL,WorldVars+$0002
   LDIR
   LD A,(PlayerHeading)
   LD (IX+$22),A
@@ -864,7 +868,7 @@ LaunchDragonfly:
   LD A,(ObjectTable+$0003)
   AND $FE
   LD (ObjectTable+$0003),A
-  LD HL,MapLoop
+  LD HL,DragonflyViewLoop
   LD (NextView+$0008),HL
   LD A,$FF
   LD (ViewChangeFlag+$0001),A
@@ -1032,7 +1036,7 @@ l_C408:
   CALL ApiVector03
   CALL ApiVector04
   LD BC,$0008
-  LD HL,WorldVars+$0003
+  LD HL,WorldVars+$0002
   LDIR
   LD A,$00
   LD A,(PlayerHeading)
@@ -1048,7 +1052,7 @@ l_C408:
   LD (TargetInCone+$0001),A
   LD A,$10
   LD (FireCooldown),A
-  JP SoundEffect687
+  JP SoundMissile
 
 ; Missile step code no recording runs
 ;
@@ -1155,7 +1159,7 @@ SelectWeapon:
 l_C578:
   ADD HL,DE
   DJNZ l_C578
-  LD DE,DragonflyIcons+$0018
+  LD DE,DamageBoardRecords+$0018
   ADD HL,DE
   EX AF,AF'
   LD A,(HL)
@@ -1294,9 +1298,9 @@ PlayerHit:
   LD BC,$0030
   SBC HL,BC
   JR C,l_CAD1
-  LD A,(PlayVars+$0003)
+  LD A,(Armour+$0003)
   SUB (IY+$14)
-  LD (PlayVars+$0003),A
+  LD (Armour+$0003),A
   JR C,ArmourDestroyed
   JR l_CB1E
 l_CAD1:
@@ -1373,14 +1377,16 @@ ArmourDestroyed:
   JR l_CB46
 l_CB43:
   LD HL,l_CC98+$0013
+; This entry point is used by the routine at BridgeHit.
 l_CB46:
   LD (FailReason),HL
   JP ScreenSix
 
 ; Which side was hit (1-3) from the bearing
 ;
-; BearingTo the hitter minus the turret heading: front, left / right, rear
-; (play2: 25 runs).
+; From the hitter's view-space x (+`$2F`/+`$30`, negated when `$BA27` is set):
+; |x| <= `$60` is side 2 (the front), else positive x side 1 and negative side
+; 3; there is no rear side (play2: 25 runs).
 ;
 ; Witness: L1 25 (play2).
 HitSide:
@@ -1962,7 +1968,7 @@ FireDecoy:
   CALL ApiVector03
   CALL ApiVector04
   LD BC,$0006
-  LD HL,WorldVars+$0005
+  LD HL,WorldVars+$0004
   INC DE
   INC DE
   LDIR

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """The figures of doc 06 (rendering), drawn from the image, the bank 7 pictures and an access trace.
 
-    python3 tools/fig_rendering.py layout   docs/img/render/layout.png     # the back buffer rows on the screen, 3 blits
+    python3 tools/fig_rendering.py layout   docs/img/render/layout.png     # the back buffer rows on the screen, 4 blits
     python3 tools/fig_rendering.py patterns docs/img/render/patterns.png   # the 13 fill colours of FillPatterns $66D6
     python3 tools/fig_rendering.py pictures docs/img/render/pictures.png   # the 10 packed screens of bank 7, sizes
     python3 tools/fig_rendering.py tokens   docs/img/render/tokens.png     # the first tokens of PicTitle, bit by bit
     python3 tools/fig_rendering.py load     docs/img/render/load.png TRACE # T a pass by stage (death 8300-8450)
+    python3 tools/fig_rendering.py sight    docs/img/render/sight.png      # the sight overlay in play 8570
 
 The banks are the build's cuts (work/mkgame/bankN.bin); the pictures are build/bank7.bin decoded with
 tools/bank7pic.py; the cockpit is src/res/pictures/cockpit.png. `load` reads an access trace (`analysis trace`, e.g.
@@ -43,32 +44,36 @@ def zx(im, scale):
 def layout(out):
     """the cockpit with the screen rows each blit writes (raster.asm)"""
     cockpit = zx(Image.open(os.path.join(CASE, 'src', 'res', 'pictures', 'cockpit.png')), 2)
-    im = Image.new('RGB', (W, 470), BG)
+    im = Image.new('RGB', (W, 450), BG)
     d = ImageDraw.Draw(im)
     f, fs = kitlib.font(15), kitlib.font(12)
-    d.text((10, 8), 'Where the back buffer lands: the three blits over the cockpit picture (rows are screen lines)',
+    d.text((10, 8), 'Where the back buffer lands: the four blits over the cockpit picture (rows are screen lines)',
            fill=FG, font=f)
-    blits = [('ViewBlitFront $8999 (play)', [(0, 32, 256, 79), (0, 111, 88, 8), (168, 111, 88, 8), (0, 119, 16, 8),
-                                              (240, 119, 16, 8)], (255, 120, 120)),
-             ('ViewBlitWide $8A41 (menus, console)', [(0, 64, 256, 86)], (120, 200, 255)),
-             ('ViewBlitNarrow $8A98 (binoculars, rear)', [(48, 40, 176, 95)], (255, 220, 120))]
-    for k, (name, rects, col) in enumerate(blits):
-        x0 = 10 + k * 345
+    cockpit_rows = [(0, 111, 88, 8), (168, 111, 88, 8), (8, 119, 16, 8), (232, 119, 16, 8)]
+    blits = [('ViewBlitFront $8999', '(play, binoculars, rear view)', [(0, 32, 256, 79)] + cockpit_rows,
+              (255, 120, 120)),
+             ('ViewBlitWide $8A41', '(the title\'s turning model)', [(0, 64, 256, 86)], (120, 200, 255)),
+             ('ViewBlitNarrow $8A98', '(the Dragonfly\'s flight view)', [(48, 40, 176, 95)], (255, 220, 120)),
+             ('ViewBlitLow $898B', '(after a goal\'s pickup message)', [(0, 40, 256, 71)] + cockpit_rows,
+              (150, 240, 150))]
+    for k, (name, use, rects, col) in enumerate(blits):
+        x0 = 10 + k * 260
         pic = cockpit.copy()
         pd = ImageDraw.Draw(pic, 'RGBA')
         for x, y, w, h in rects:
             pd.rectangle((x * 2, y * 2, (x + w) * 2 - 1, (y + h) * 2 - 1), fill=col + (90,), outline=col + (255,),
                          width=2)
-        pic = pic.resize((330, 248))
+        pic = pic.resize((250, 188))
         im.paste(pic, (x0, 40))
-        d.text((x0, 296), name, fill=col, font=fs)
+        d.text((x0, 236), name, fill=col, font=fs)
+        d.text((x0, 254), use, fill=col, font=fs)
     notes = ['Front: buffer rows 0-78 to lines 32-110 full width; rows 79-86 only bytes 0-10 and 21-31 (the cockpit',
-             'top cut out); rows 87-94 only bytes 0-1 and 30-31. 2736 bytes, one ScreenRowTable entry a line ($6540 on).',
-             'Wide: buffer rows 0-85 to lines 64-149, 2752 bytes (the title model, the console and map views).',
-             'Narrow: buffer rows 0-94, bytes 5-26, to lines 40-134 at column 6: 2090 bytes (binoculars, rear view).',
-             'ViewBlitLow $898B (buffer rows 8-78 to lines 40-110) is not executed in any recording.']
+             'top cut out); rows 87-94 only bytes 1-2 and 29-30. 2736 bytes, one ScreenRowTable entry a line ($6540 on).',
+             'Wide: buffer rows 0-85 to lines 64-149, 2752 bytes. The console and the status map use bank 6\'s',
+             'BlitMapView $DBBD instead. Narrow: buffer rows 0-94, bytes 5-26, to lines 40-134 at column 6: 2090 bytes.',
+             'Low: buffer rows 8-78 to lines 40-110, then the cockpit rows of Front: 2480 bytes (m1complete from 16138).']
     for i, t in enumerate(notes):
-        d.text((10, 330 + i * 22), t, fill=DIM, font=fs)
+        d.text((10, 290 + i * 22), t, fill=DIM, font=fs)
     im.save(out)
     print(out, im.size)
 
@@ -318,6 +323,37 @@ def load(out, trace):
     print(out, im.size, [round(v * 100 / sum(tot), 1) for v in tot])
 
 
+def sight(out):
+    """the sight overlay: play frame 8570 (Banshee RRSS selected, SelectPlain set $C4DC), the view enlarged, the
+    16 rows x 2 bytes DrawSightOverlay masks into the buffer at $9000 (row 40, bytes 15-16) framed"""
+    shot = Image.open(os.path.join(CASE, 'work', 'stage1', 'rec', 'play', 'screens', '008570-Banshee RRSS-lock.png'))
+    shot = shot.convert('RGB').resize((256, 192), Image.NEAREST)
+    s = 4
+    view = zx(shot.crop((64, 32, 192, 96)), s)          # lines 32-95, columns 64-191 of the screen
+    im = Image.new('RGB', (W, view.height + 150), BG)
+    d = ImageDraw.Draw(im)
+    f, fs = kitlib.font(15), kitlib.font(12)
+    d.text((10, 8), 'The sight overlay: DrawSightOverlay $C4CD masks 16 rows x 2 bytes from $FD80 into the back buffer',
+           fill=FG, font=f)
+    im.paste(view, (10, 36))
+    # buffer row 40 = screen line 72, bytes 15-16 = pixels 120-135
+    x0, y0 = 10 + (120 - 64) * s, 36 + (72 - 32) * s
+    d.rectangle((x0 - 2, y0 - 2, x0 + 16 * s + 1, y0 + 16 * s + 1), outline=(255, 220, 0), width=2)
+    tx = 10 + view.width + 16
+    for i, t in enumerate(['play 8570, slot 1 (Banshee RRSS)', 'selected at 8425: SelectPlain', '$C12C wrote $FF to $C4DC.',
+                           '', 'Yellow: the 16 x 16 pixels at', 'buffer $9000 (row 40, bytes 15-16),',
+                           'screen line 72, x 120-135.', '', 'Each byte: (buffer AND mask) OR', 'picture, the pairs at $FD80.']):
+        d.text((tx, 40 + i * 20), t, fill=DIM, font=fs)
+    y = 36 + view.height + 14
+    notes = ['The view of the screenshot, lines 32-95 and columns 64-191, four times enlarged. DrawSightOverlay runs every pass',
+             'after the objects; it draws while $C4DC is set and its counter $C4CE is even. TargetInCone sets the counter to 16',
+             'when a target enters the cone, so the sight blinks for 16 passes, then shows steadily (the counter at 0).']
+    for i, t in enumerate(notes):
+        d.text((10, y + i * 20), t, fill=DIM, font=fs)
+    im.save(out)
+    print(out, im.size)
+
+
 def main():
     what, out = sys.argv[1], sys.argv[2]
     if what == 'layout':
@@ -328,6 +364,8 @@ def main():
         pictures(out)
     elif what == 'tokens':
         tokens(out)
+    elif what == 'sight':
+        sight(out)
     elif what == 'load':
         load(out, os.path.abspath(sys.argv[3]))
     else:

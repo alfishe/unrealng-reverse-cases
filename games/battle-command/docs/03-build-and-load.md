@@ -40,7 +40,7 @@ DIR` decodes every block with the loader's own keys; stage 2 compared each one w
 | --- | --- | --- | --- | --- |
 | 1, 2 | ROM header "BATTLE" (Program, `LINE 0`), ROM data | 4917 | 0-36.9 s | the BASIC area from PROG `$5CCB`, by the ROM's LD-BYTES |
 | 3-8 | group "Speedlock 7 Block 1": tone 1579 x 2165 T, 16 sync pulses, the 6-bit `$E8`, data | 196 | 44.6-46.5 s | the loader's second stage `$BF0D-$BFCF` and a check byte (3.5) |
-| 9-13 | group "Speedlock 7 Block 2": tone, sync, `$E8`, the bitmap | 6144 | 48.9-80.1 s | the screen `$4000-$57FF` |
+| 9-13 | group "Speedlock 7 Block 2": tone 1578 x 2165 T, sync, `$E8`, the bitmap | 6144 | 48.9-80.1 s | the screen `$4000-$57FF` |
 | 14, 15 | mark `07 FF 00`, data | 768 | 80.1-84.2 s | AttrBuffer `$8000`, copied to `$5800` by the reveal task (3.4) |
 | 16, 17 | mark, data | 2 | 84.2 s | `$BD9C`: `3E 86`, the new key of StoreByte (3.5) |
 | 18, 19 | mark, data | 4 | 84.3 s | `$BDD0`: `3E 86 AD C6`, the new key of StoreLast |
@@ -56,6 +56,28 @@ DIR` decodes every block with the loader's own keys; stage 2 compared each one w
 | 38, 39 | mark, data | 15 | 483.7 s | `$BF21`: TimeEnd over the stage's own end |
 | 40, 41 | mark, data | 54 | 484.0 s | `$8000`: the bootstrap |
 | 42, 43 | mark, data | 15 | 484.1 s | `$8036-$8043` and the check byte |
+
+### The static decode against the recording
+
+`mktape.py --decode` reads each `sl` block with the keys of `chain.bin` alone, with no emulator. Each decoded block
+was compared byte for byte with the memory of the recording c1 (TTD `memory_at` at the start of the frame named,
+`$C000` blocks against the bank dumps `work/stage1/img/entry-bankN.bin` of frame 23974, the game's entry):
+
+| Block | Decoded | c1 frame | Equal | Notes |
+| --- | --- | --- | --- | --- |
+| 7 | 195 bytes `$BF0D` | 2484 | yes | from 6000 on, the 49 bytes block 21 loads over `$BF30` differ |
+| 13 | 6144 bytes `$4000` | 6000 | all but 28 | the 28 are the countdown's digits (`$40ED-$46F2`), drawn over the bitmap; 26 at 23974 |
+| 15 | 768 bytes `$8000` | 6000 | yes | also equal to `$5800-$5AFF` at 23974, after the reveal |
+| 17, 19 | 2 bytes `$BD9C`, 4 bytes `$BDD0` | 6000 | yes | |
+| 21 | 75 bytes `$BF30` | 6000 | yes | |
+| 23 | 9472 bytes `$5B00` | 12 000 | yes | equal to the image XOR `$AD` at 23974, once Unxor5B00 has run (half done at 23966) |
+| 25 | 16 384 bytes, bank 0 | 23 974 | yes | |
+| 27 | 15 615 bytes, bank 1 `$C301` | 23 974 | yes | also equal to bank 2 `$8301-$BFFF` (the bootstrap's copy) |
+| 29, 31, 33, 35 | banks 3, 4, 6, 7 | 23 974 | yes | bank 7 is 42 bytes short at 23900: still loading |
+| 37, 39 | 115 bytes `$BE5D`, 15 bytes `$BF21` | 23 966 | yes | |
+| 41, 43 | 54 bytes `$8000`, 14 bytes `$8036` | 23 966 | yes | |
+
+So the decode of 3.5 is the loader's: every byte the loader stores, the static decode gives.
 
 The side 2 blocks are in 3.9.
 
@@ -129,7 +151,7 @@ bytes being decrypted, so the transform of each byte is fixed by its address and
 Layer000:                                   ; $AC38, entered by Stage1's RET
     DI
     R = 12                                  ; LD A,$0C / LD R,A: the key stream's seed
-    shift the 30 bytes $AC23..$AC41 down by one (LDDR)
+    move the 30 bytes $AC24..$AC41 down by one, to $AC23..$AC40 (LDDR)
     for HL = $AC5C to $BF0C:                ; 4785 bytes
         (HL) = NOT ((R XOR $F3) + (HL))     ; R as LD A,R reads it: 11 more for every pass
     fall into $AC5D, which is now Layer001
@@ -157,6 +179,13 @@ $AC50 Layer000Loop:  LD A,R                 ; the key: R, 11 M1 cycles later eac
                      OR C
                      JP NZ,Layer000Loop     ; falls into $AC5D
 ```
+
+The first byte Layer000 rewrites is the high byte of its own `JP NZ`. `$AC5C` is the last byte of the instruction at
+`$AC5A`. On the tape the instruction reads `C2 50 B0` (bytes `$22-$24` of `build/chain-tape.bin`), a jump to `$B050`.
+Pass 0 (R = 80, key 80 XOR `$F3` = `$A3`) rewrites `$B0` to NOT (`$A3` + `$B0`) = `$AC` before the `JP` is fetched,
+so the loop jumps back to `$AC50`. A disassembly of the tape bytes shows a loop that leaves after one pass, to
+`$B050`. The CPU never sees that jump. Layer001 and Layer002 start their sweeps the same way, at the high
+byte of their own `JP NZ` (`$AC6D`, `$AC90`).
 
 ```mermaid
 flowchart TD
@@ -217,8 +246,76 @@ predecessor, but 103 of them keyed by R stop anyone who cannot execute them exac
 LoaderStart `$B8F9` first checks for a Multiface. `IN A,($3F)` and `IN A,($9F)` page in a Multiface's ROM. If either
 does, the byte at `$0000` is no longer the 128K ROM's `DI` (`$F3`) and the loader jumps to `$0000`, which restarts
 the machine through the Multiface's own reset code. The `OUT`s to `$1F`, `$7B` and `$BB` then page such interfaces
-out again. The loader then prints the copyright notice and the FAST warning (PrintNotice `$B935`, the strings of
-NoticeText `$B9FB`, with the ROM font at `$3D00`).
+out again, and two block moves over `$0000-$3FFF` wipe any RAM an interface still keeps there. The loader then
+prints the copyright notice and the FAST warning (PrintNotice `$B935`, the strings of NoticeText `$B9FB`, with the
+ROM font at `$3D00`).
+
+```text
+LoaderStart:                          ; $B8F9
+    DI; SP = $BFFF
+    for port in $3F, $9F:             ; a Multiface's page-in ports
+        IN A,(port)
+        if (0) != $F3: JP $0000       ; not the ROM's DI: an interface's ROM is in
+    OUT ($1F),0; OUT ($7B),1; OUT ($BB),1     ; page such interfaces out
+    (0) = 0; copy $0000..$3FFE up to $0001..$3FFF, rising    ; LDIR: fills RAM with 0
+    OUT ($7F),$43                     ; SUSPECTED: pages another interface page in
+    copy $3FFE..$0000 to $3FFF..$0001, falling               ; LDDR: shifts RAM up by one
+    PrintNotice; JP LoaderMain
+```
+
+```text
+$B8F9 LoaderStart:  DI
+                    LD SP,$BFFF
+                    IN A,($3F)            ; Multiface page-in port
+                    LD A,($0000)
+                    CP $F3                ; the 128K ROM starts with DI
+$B904 l_B904:       JP NZ,$0000           ; an interface's ROM: its own reset
+                    IN A,($9F)            ; the other page-in port
+                    LD A,($0000)
+                    CP $F3
+                    JR NZ,l_B904
+                    XOR A
+                    LD L,A
+                    LD H,L                ; HL = $0000
+                    OUT ($1F),A
+                    INC A
+                    LD E,$01
+                    OUT ($7B),A
+                    LD D,L                ; DE = $0001
+                    OUT ($BB),A
+                    LD (HL),L             ; (0) = 0: lost on ROM
+                    LD A,$43
+                    LD BC,$3FFF
+                    LDIR                  ; (1) = (0), (2) = (1), ...: $0000-$3FFF all 0 on RAM
+                    DEC HL                ; HL = $3FFE
+                    OUT ($7F),A           ; A = $43
+                    LD BC,$3FFF
+                    DEC DE                ; DE = $3FFF
+                    LD A,C
+                    LDDR                  ; ($3FFF) = ($3FFE), ... ($0001) = ($0000)
+                    CALL PrintNotice
+                    JP LoaderMain
+```
+
+```mermaid
+flowchart TD
+    S[LoaderStart $B8F9: DI, SP = $BFFF] --> P1[IN A,$3F]
+    P1 --> C1{byte at $0000 = $F3?}
+    C1 -- no --> RST[JP $0000: the interface's reset]
+    C1 -- yes --> P2[IN A,$9F]
+    P2 --> C2{byte at $0000 = $F3?}
+    C2 -- no --> RST
+    C2 -- yes --> OUT[OUT $1F, $7B, $BB: page interfaces out]
+    OUT --> W1[LDIR: $0000-$3FFF filled with 0, no effect on ROM]
+    W1 --> P3[OUT $7F with $43]
+    P3 --> W2[LDDR: $0000-$3FFE moved up by one, no effect on ROM]
+    W2 --> N[PrintNotice, LoaderMain]
+```
+
+With the 128K ROM at `$0000` both moves do nothing: the CPU writes to ROM are lost. With a RAM page at `$0000` the
+`LDIR` clears it (each byte copies the zero before it) and the `LDDR` shifts whatever is paged after `OUT ($7F)` up
+by one byte, so a copier's resident code there no longer runs. What `OUT ($7F),$43` pages on which interface is
+SUSPECTED: the code shows only the port and the value. No recording has an interface attached (3.13).
 
 LoaderMain `$BEEA` wipes `$5D00-$BBF3` (the BASIC and every layer already run) and loads the 196-byte second stage to
 `$BF0D` through TimeCheck `$BE5D` and LoadBlocks `$BD13`. It then clears the screen and runs the stage. c1:
@@ -228,7 +325,7 @@ LoaderStart at frame 2288, the stage entered at frame 2484.
 
 | Part | ROM (LD-BYTES) | SpeedLock 7 |
 | --- | --- | --- |
-| pilot | 2168 T, 3223 or 8063 pulses | 2165 T, 1579 pulses, only before blocks 7 and 13 |
+| pilot | 2168 T, 3223 or 8063 pulses | 2165 T, only before blocks 7 and 13: 1579 pulses before block 7, 1578 before block 13 |
 | sync | 667 T, 735 T | 16 pulses: 714 x 4, 1428 x 2, 2147 x 6, 1428 x 2, 714 x 2 |
 | flag | the first byte | 6 bits of `$E8`: `111010` = `$3A` |
 | zero bit | 2 x 855 T | 2 x 714 T |
@@ -296,6 +393,82 @@ attributes a step with twelve `LDI`, so the loading screen appears in colour bit
 countdown: the minutes and seconds left, drawn at the top right with the digits of CountdownFont (in the stage at
 `$BF0D`). Each path through the task ends in a `DJNZ` wait of its own length and a few `NOP`s, so the paths are
 padded towards one length; the time a task takes is part of the bit timing.
+
+```text
+WaitTask:                             ; $BBF4, step 0, then the pointer at $BDB7 moves on
+    if AttrBuffer[767] == 0: wait; return to the edge     ; the attributes not yet in
+    pointer = $BC19; HL = $8000; DE = $5800; A' = $41
+Reveal:                               ; $BC19, one call a bit
+    A' -= 1
+    if A' == 0: goto CountdownSetup   ; after 64 calls: 64 x 12 = 768 bytes
+    12 x LDI                          ; AttrBuffer to the attributes
+CountdownSetup:                       ; $BC3C
+    pointer = $BC5A; A' = 1; patch the edge loop's delay operands ($BD0C = 0, $BD0E = 8)
+Countdown:                            ; $BC5A, the phase counter in A'
+    if A' >= $98:                     ; the draw phase: 4 digits x 3 calls
+        C -= 1
+        if C != 0: copy 4 rows of the glyph at HL to DE, D += 1 a row
+        else:
+            A' -= 1                   ; $9B, $9A, $99, $98: the next digit
+            if A' >= $98:
+                C = 3; HL = the digit's pointer ($BCF1 - (A' - $98))
+                DE = its screen byte ($40ED, $40EF, $40F0, $40F2)
+                HL = $BF00 + (HL)     ; the glyph in CountdownFont
+    else:                             ; the wait phase
+        A' -= 1
+        if A' == 0:                   ; one tenth gone
+            A' = $9C
+            tenths -= 1                   ; each step only when the one before wrapped
+            if it wrapped: tenths = 9;  seconds -= 1
+            if it wrapped: seconds = 9; tens -= 1
+            if it wrapped: tens = 5;    minutes -= 1
+            C = 1                         ; the next draw phase starts at once
+    pad with DJNZ; return to the edge
+```
+
+A digit is a pointer into CountdownFont `$BF80`: the byte `$80` + 8 x digit, so one step down is `ADD A,$F8` and
+the wrap test is `CP $78` (the pointer below digit 0). The four pointers `$BCEE-$BCF1` start as `B0 98 C0 B0`:
+6 minutes, 3 tens of seconds, 8 seconds, 6 tenths.
+
+```text
+$BC5A data_BC5A:  EXX                   ; DEFB $D9,$08,$FE,$98: code reached through the pointer
+                  EX AF,AF'
+                  CP $98
+$BC5E             JR C,l_BCBD           ; the wait phase
+                  DEC C
+                  JR Z,l_BC71           ; the next digit
+                  EX AF,AF'
+                  LD B,$04
+$BC66 l_BC66:     LD A,(HL)             ; 4 rows of the glyph
+                  LD (DE),A
+                  INC HL
+                  INC D
+                  DJNZ l_BC66
+                  ...
+$BCBD l_BCBD:     DEC A
+                  JR NZ,l_BCA7          ; not yet a tenth: pad and return
+                  LD A,$9C
+                  EX AF,AF'
+                  LD HL,data_BCEE+3     ; the tenths
+                  LD DE,$78F8           ; D: the wrap value, E: -8
+                  LD A,E
+                  ADD A,(HL)
+                  CP D
+                  LD B,$07
+                  JR NZ,l_BCB4          ; no wrap: store and return
+                  LD (HL),$C8           ; 9
+                  ...
+                  LD (HL),$A8           ; tens of seconds wrap to 5
+```
+
+The countdown counts bits, not time. One cycle of A' is 13 calls in the draw phase and 151 in the wait phase: 164
+bits, 164 x 2142 T = 351 288 T, 0.099 s at 3.5469 MHz with half the bits ones. So the tenth on the screen is a tenth
+of a second only for that mix of bits.
+
+![CountdownFont and the countdown's digit pointers](img/load/countdown-font.png)
+
+*Drawn by `python3 tools/fig_load_timeline.py countdown docs/img/load/countdown-font.png` from `build/stage2.bin` and
+`build/chain.bin`: the ten glyphs of CountdownFont `$BF80` and the four pointers `$BCEE-$BCF1` at the start of the countdown.*
 
 ![The load in c1: the screen, then bank 5, bank 2 and the bank at C000](img/routines/LoadBlocks.gif)
 
@@ -561,7 +734,8 @@ LoadMission:                          ; $84C1
             if LoadBlock() fails:
                 if SPACE is not held: goto LoadMissionBlock
                 return                ; SPACE: give up
-        copy the block to bank 3      ; for the next retry of the same mission
+        copy the part a reload restores to bank 3   ; MissionBlockLoaded $8579: from the object list
+                                      ; (header word $DBDA) to restore-end ($DBED); mission 1 $DCBC-$FB3E
         MissionSetup                  ; the parameters, the objects to bank 6
 ```
 
@@ -687,6 +861,28 @@ Two steps make the protection again from the plain source:
   `tools/speedlock.py tape` runs the chain backwards: it undoes the layers from Layer102 down to Layer000, each with its
   own key stream, R included. Running it forwards from the tape bytes gives the plain view back. The R key stream
   needs the exact fetch count, so both directions run in SkoolKit's simulator.
+```text
+tape_view(plain):                     ; tools/speedlock.py tape
+    run the chain forwards over plain in SkoolKit's simulator, R counted per fetch
+        every rewrite (layer, kind, key, post-step) of each byte noted, the byte left plain
+        ; the code that runs is the plain code, so the loops and R are those of the real run
+    for each byte b of $AC38-$BF0C:
+        x = plain[b]
+        for each noted rewrite of b, last first:
+            add, post CPL:   x = NOT x - key
+            add, post SUB n: x = x + n - key
+            add:             x = x - key
+            sub, post XOR n: x = key - (x XOR n)
+            dec:             x = x + 1
+        tape[b] = x
+```
+
+Worked through for `$B8F9` (`work/docs/bcA/chainex.py B8F9`): the forward run makes the tape's `$0C` into `$F7`
+(layer 0, add), `$F6` (layer 1, dec), `$25`, `$51`, `$0D` (layers 2-4, add), `$0C` (layer 5, dec), then `$C1`
+(layer 6, sub: key `$E2`, p = (`$E2` - `$0C`) XOR `$17` = `$D6` XOR `$17` = `$C1`). The backward run undoes them in
+the other order: layer 6, c = `$E2` - (`$C1` XOR `$17`) = `$E2` - `$D6` = `$0C`; layer 5, c = `$0C` + 1 = `$0D`;
+and so on down to layer 0, c = NOT `$F7` - `$FC` = `$08` - `$FC` = `$0C`, the tape's byte.
+
 - **The store cipher.** `tools/mktape.py` writes each `sl` block of `src/tape/side1.txt` as
   `((p - a) AND $FF) XOR k`, with k and a read from the loader's own bytes in `chain.bin`. When a block lands on `$BD9C-$BDD4` it changes the
   keys for the bytes after it, as the loader does. The stage block's last byte is a check byte that makes the XOR of

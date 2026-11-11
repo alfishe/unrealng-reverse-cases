@@ -41,9 +41,9 @@ HEADER = [
     ('object count', 0xDBD9, 1, (240, 150, 60), 'ActivateMissionObjects $BBF1'),
     ('object list', 0xDBDA, 2, (240, 150, 60), 'ActivateMissionObjects $BBF1'),
     ('segment count', 0xDBDC, 1, (100, 170, 240), 'SegmentVisibility $AD45'),
-    ('spare', 0xDBDD, 1, (80, 80, 90), 'not read'),
+    ('first switch object', 0xDBDD, 1, (100, 170, 240), 'list index, $B622 (0 none)'),
     ('first switchable segment', 0xDBDE, 1, (100, 170, 240), 'SegmentVisibility, $B61E'),
-    ('switch object', 0xDBDF, 2, (100, 170, 240), '$B61E (no recording)'),
+    ('switch table', 0xDBDF, 2, (100, 170, 240), 'KillSwitchObject $B61E'),
     ('goal hook', 0xDBE1, 2, (240, 90, 200), 'called every pass ($6A66)'),
     ('player: heading word, X, Y', 0xDBE3, 8, (90, 230, 230), 'to $7611 = record 0 +$21'),
     ('model library', 0xDBEB, 2, (190, 140, 240), 'fig_models.py'),
@@ -56,7 +56,7 @@ HEADER = [
 
 # Mission 1's object types by what the templates make of them (step and hit handlers, model, score)
 ROLES = {
-    'tree (KillTree)': ([0, 1], (60, 170, 60)),
+    'tree (KillTree $B612)': ([0, 1], (60, 170, 60)),
     'hill (BoxRect16)': ([20, 21, 22, 23], (110, 110, 70)),
     'building': ([4, 5, 6, 13, 15, 16, 17, 18, 32], (200, 200, 200)),
     'enemy vehicle': ([3, 7, 9, 26, 29, 30], (240, 80, 80)),
@@ -220,8 +220,9 @@ def fig_world(out, sample_path, slots, last):
         if o[1] not in (0, 1, 20, 21, 22, 23):
             dr.text((px + 6, py - 7), str(o[1]), font=F11, fill=c)
     pp = m['head']['pad-params']
-    hx = struct.unpack('<h', bytes(pp[7:9]))[0] / 256
-    hy = struct.unpack('<h', bytes(pp[10:12]))[0] / 256
+    # the pad words ($7E89 / $7E8C) are the mid and high bytes of X and Y: world = word x 256, coarse = word / 4
+    hx = struct.unpack('<h', bytes(pp[7:9]))[0] / 4
+    hy = struct.unpack('<h', bytes(pp[10:12]))[0] / 4
     a, b = pt(hx, hy)
     dr.rectangle([a - 7, b - 7, a + 7, b + 7], outline=(240, 120, 240), width=3)
     # paths

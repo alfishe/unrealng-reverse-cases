@@ -465,6 +465,9 @@ $BE47 c ReadMark ; Read the bits of a mark between two blocks
 
 $BE5D c TimeCheck ; Measure the tape's edges into TimeBuffer and compare them (replaced by tape block 37)
 
+$BED0 b TimeFailed ; Non-zero when the timing check failed (the mark check at $BE0D stores $7F when a mark's second group is not $7F; TimeCheck's $BECC stores 1)
+$BED1 EdgeLimits ; seven pairs read by LoadBlocks $BD4C: the edge counter's start value and the count it must pass
+
 $BEDF c LoadEnd ; The end of a stream of blocks: the XOR in H must be 0
 
 $BEEA c LoaderMain ; Clear $5D00-$BBF3 (the chain), load the stage at $BF0D, clear the screen and run it

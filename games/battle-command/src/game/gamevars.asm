@@ -6,13 +6,16 @@
 GameVars:
   DEFB $00
 MissionsDone:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00 ; nine flags, one per mission 1-9:
-                                           ; all non-zero unlock Grand Finale
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00 ; ten flags, one per mission 1-10
+  DEFB $00                                 ; (MissionCompleteScreen writes
+                                           ; $6799 + mission, EncodePassword
+                                           ; reads all ten); the first nine all
+                                           ; non-zero unlock Grand Finale
                                            ; (LoadMissionIfAllowed $759A)
 WorldVars:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00
+  DEFB $00
 ControlDevice:
   DEFB $04                ; the chosen device 0-4 (ReadControls)
 RepeatY:

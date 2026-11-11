@@ -3,7 +3,8 @@
 What this covers: the game as a player meets it. The premise; every screen from the title to the end of a mission and
 how they connect; the ten missions and their goals; the stores, the weapons and the payload limit; play and its views,
 the Dragonfly; how a mission ends, in success or in one of five failures; the entry string that carries progress; the
-Grand Finale and what unlocks it; the worlds of the ten missions side by side.
+Grand Finale and what unlocks it; the worlds of the ten missions side by side; the enemies and objects as the player
+meets them, with what each scores, and the key moments of a mission.
 
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)). All start from the title after
 c1's load of side 1, and the missions come from side 2 wound to their header:
@@ -11,9 +12,12 @@ c1's load of side 1, and the missions come from side 2 wound to their header:
 - `menu`: OPTIONS, LOAD GAME, the catalogue, the ten briefings and maps, STATUS, the entry string.
 - `missions`, `m2erbe`, `m10`: each mission started, driven, its map screen, paused and quit; mission 10 refused.
 - `play`, `play2`: Blast Em Mission with every store fired, the Dragonfly flown, every view. Both use the release's
-  No Weight Limit POKE (bank 6 `$C1C6` = `$3A`) and its Immunity POKE ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
+  No Weight Limit POKE (bank 6 `$C1C6` = `$3A`); their Immunity POKE landed in bank 6 and had no effect
+  ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
 - `search`: SEARCH on the mission tape.
 - `stage2/rec/fuel`: the fuel failure (a POKE: Fuel `$7C57` = 32 at frame 7704).
+- `armour` (`work/docs/bcC/rec/armour`): the armour POKEd to 1, the first hit destroys the tank.
+- `death`: Blast Em Mission driven for 12 000 frames: the enemies, their fire, TANK HIT.
 - `stage2/rec/m1complete`, `stage2/rec/m4complete`: Blast Em Mission completed, then Railway Ambush in the same
   campaign: the goal, the pickup, the COMPLETION REPORT, the status screen and the save code.
 
@@ -61,12 +65,14 @@ the map decide a mission before the first shot.
 *`python3 tools/fig_screens.py docs/img/design/screens-play.png 4 ...` from play frames 8365, 9675, 9805, 9870,
 10065, 10195, 10260, 10325, 10455, 9195 and missions frames 7889, 8019.*
 
-![The end of a mission: quit, failed, the completion report picture, Grand Finale refused](img/design/screens-end.png)
+![The end of a mission: quit, two failures, the completion report, Grand Finale refused](img/design/screens-end.png)
 
-*`python3 tools/fig_screens.py docs/img/design/screens-end.png 4 ...` from missions frame 8164 (after quit: the
-title), fuel frame 7904 (MISSION FAILED, RAN OUT OF FUEL), m1complete frame 21593 (the COMPLETION REPORT of Blast Em
-Mission, `work/stage2/rec/m1complete/screens/021593-complete-00.png`) and m10 frame 4972 (Grand Finale found but not
-loaded).*
+*`python3 tools/fig_screens.py docs/img/design/screens-end.png 3 work/stage1/rec/missions/screens/008164-mission-1-quit.png
+work/stage2/rec/fuel/screens/007904-drive-01.png work/docs/bcC/rec/armour/screens/018539-drive-53.png
+work/stage2/rec/m1complete/screens/021593-complete-00.png work/stage1/rec/m10/screens/004972-mission-10-after-load.png`:
+missions frame 8164 (after quit: the title), fuel frame 7904 (MISSION FAILED, RAN OUT OF FUEL), armour frame 18539
+(MISSION FAILED, UNIT DESTROYED), m1complete frame 21593 (the COMPLETION REPORT of Blast Em Mission) and m10 frame
+4972 (Grand Finale found but not loaded: SELECT leaves the catalogue on screen).*
 
 Every screen is a node of one graph, ScreenList `$74E6`; a screen leaves through SetScreen `$7060` with the number of
 one of its links ([doc 4.1](04-game-loop.md#41-the-states-of-the-program)). The player's path through them:
@@ -91,13 +97,13 @@ flowchart TD
     ST -- START MISSION --> P[Play: 3D view, map, status, Dragonfly]
     P -- goal, then pickup --> W[Completion report: success text, score]
     P -- destroyed, fuel, desertion, bridge, no pickup --> F[Completion report: MISSION FAILED]
-    P -- pause, quit --> T
+    P -- E, then Y --> T
     W --> S
     F --> T
 ```
 
 The failed path and the quit go back to the title: the fuel recording shows the failed screen at frame 7904 and the
-title at 11 704, and the missions recording the title at 8164 after quitting at 8019. Doc 4.1 follows the graph node
+title with its music at 8051 (doc 4.1), and the missions recording the title at 8164 after quitting at 8019. Doc 4.1 follows the graph node
 by node.
 
 The point: the catalogue is the centre. Everything a player does between missions (reading, searching the tape,
@@ -271,20 +277,22 @@ doc 5 has the readers and the joystick and mouse controls):
 | B | binoculars on or off | ToggleBinoculars `$CEA7` |
 | Z | binocular zoom x2, x4, x8 | CycleBinocularZoom `$CEE5` |
 | R | rear view | RearViewOff `$BA45`, ToggleRearView |
-| M | the map | `$705A` |
-| D | launch the Dragonfly | `$6BC2` |
+| M | the status view: the map, the grid position and the clock | ScreenZero `$705A` |
+| D | the damage board | SelectDamage `$6BC2` |
 | H | call the Helicarrier to the pad (once) | PlaceHelicarrier `$D52E` |
-| E | sound off | SoundOffKey `$843F` |
+| E | quit: silences the AY and prints "Are you sure you want to quit? Yes/No."; Y goes to the title (link 4), N back to play | QuitKey `$843F` (calls bank 6 QuitPrompt `$DA09`) |
 
-On the map view, B goes to the status view, C back to the 3D view and D to the Dragonfly (MapKeys `$6B95`).
+On the damage board, B goes to the status view, C back to the 3D view and D shows the board again (DamageKeys
+`$6B95`). The Dragonfly is not a key: it is fired like any store, SPACE with its slot chosen.
 
 The views in the play sheet above: the night sight paints the scene in one colour on white ("IR SIGHT"); the
-binoculars narrow and zoom the view; the rear view looks back ("REAR VIEW"); the damage board shows the tank's two
-outlines and each store's state; the map shows the roads, the rivers, the player's grid position and the mission clock,
-with the briefing's text behind its second button.
+binoculars narrow and zoom the view; the rear view looks back ("REAR VIEW"); the damage board (D) shows the tank's two
+outlines and each store's state; the status view (M) shows the map with the roads, the rivers, the player's grid
+position and the mission clock, with the briefing's text on its BRIEF page (B).
 
-The Dragonfly is a remote flying drone (500 kg, up to two in the slots, three rounds each). Launched with D, it takes
-over the screen with its own frame (play frames 9115-9320: launched, flying, a turn, back) and then returns to the
+The Dragonfly is a remote flying drone (500 kg, up to two in the slots, three rounds each). Fired with SPACE from its slot
+(play: SPACE at 9050 with slot 3 the Dragonfly), it takes over the screen with its own frame (play frames 9115-9320:
+launched, flying, a turn, back; DragonflyViewLoop `$6AB9`) and then returns to the
 tank's view. Doc 10 has its flight and doc 6 its view.
 
 The cost of a view is not the same for all ([doc 4.6](04-game-loop.md#46-frames-per-pass-in-every-view)): the normal
@@ -317,8 +325,9 @@ A mission ends in one of three ways:
 | fuel | RAN OUT OF FUEL | `$CCED` |
 | a bridge | TANK DESTROYED ON BRIDGE | `$CD01` |
 
-- **Quit.** Pause asks "Are you sure you want to quit? Yes/No."; Yes goes back to the title (missions frames 8019,
-  8164).
+- **Quit.** The key E silences the AY and asks "Are you sure you want to quit? Yes/No." (QuitKey `$843F`, bank 6
+  QuitPrompt `$DA09`); Y goes back to the title, N back to play with the sound effects on again (missions frames
+  8019, 8164).
 
 ![The fuel failure](img/play/fuel-failure.gif)
 
@@ -332,7 +341,7 @@ stateDiagram-v2
     GoalMet --> Success: on the pickup pad
     GoalMet --> Failed: no pickup
     Driving --> Failed: armour gone, fuel 0, desertion, bridge
-    Driving --> Quit: pause, Yes
+    Driving --> Quit: E, then Y
     Success --> Status: score, MissionsDone set
     Failed --> Title
     Quit --> Title
@@ -358,7 +367,7 @@ takes them back. The string packs the completion flags MissionsDone `$6799-$67A2
 (bank 6, the password module). EncodePassword `$CE2E` takes 4 bits of the score for each of eight values, with a
 mission's flag in bit 4; the last two values hold the flags of missions 9 and 10 and a 5-bit checksum of the score's
 bytes. PasswordToChars `$CF1C` maps each 5-bit value through PasswordAlphabet `$CF5F`,
-`9876543210ZYXWVUTSRQPONMLKJIHABCDE`.
+`9876543210ZYXWVUTSRQPONMLKJIHABC` (values 0-31; the table holds four more bytes, `DEFG`, that no value reaches).
 
 ```text
 EncodePassword:                           ; bank 6 $CE2E
@@ -377,10 +386,114 @@ agrees, so a mistyped string is refused. Doc 8 has the entry screen.
 
 The point: ten characters carry the whole campaign, because the campaign is only ten flags and a score.
 
-## 1.8 Known only from the code
+## 1.8 What the player meets: the enemies, the objects and the score
+
+Every thing in a world is an object of one kind, a 30-byte template of the mission block (doc 7.5). Its words say how
+it moves (the step handler), what a hit does (the hit handler), its hit points, the damage it does when it hits the
+tank, its model and its score. Mission 1's kinds, as the player meets them (the templates of
+`src/res/missions/01-blast-em-mission.txt`; the model column is the address on the sheet below):
+
+| Kind (types) | In the list | How it behaves | Hit points | Damage to the tank | Score | Model |
+| --- | --- | --- | --- | --- | --- | --- |
+| tree (0, 1) | 32 | stands; any weapon fells it (KillTree `$B612`) | 0 | 1 | 0 | `$F0D9`, `$F9A5` |
+| hill (20-23) | 18 | stands; hits do nothing (a `RET`) | 127 | 3 | 0 | `$ECB8`-`$ED80` |
+| hut, crate (15, 16) | 9 | stands | 1 | 3 | 250 | `$F754`, `$EDC1` |
+| building, shed (5, 17, 18) | 11 | stands | 2 | 3 | 500 | `$F25F`, `$F7D2`, `$F831` |
+| building (13, 32) | 7 | stands | 2 | 3 | 0 | `$F62A`, `$FA06` |
+| building with a garrison (4) | 4 | keeps three enemy units alive around the camera | 2 | 3 | 500 | `$F2E8` |
+| flag (19) | 1 | a spawner, like 4 | 127 | 3 | 0 | `$F8AF` |
+| depot (2) | 2 | stands | 32 | 3 | 3000 | `$EFBF` |
+| depot with a gun (11) | 2 | fires shells (type 12) | 32 | 4 | 4000 | `$EEFD` |
+| gun emplacement (14) | 1 | fires shells (type 24) | 10 | 1 | 3000 | `$F6C0` |
+| fuel dump (33), the goal | 2 | stands; both destroyed set the goal flag | 1 | 6 | 250 | `$FA56` |
+| enemy tank and vehicles (7, 9, 26, 29, 30) | 0 | made by the spawners; turn to the tank, fire when aligned, drive at up to 40; flee below 2 hit points; removed 3 coarse units from the camera | 2-3 (29: 1) | 2 | 2000 | `$F53F`, `$F17E`, `$F385`, `$F8EA`, `$F43C` |
+| light vehicle (3) | 0 | made by a spawner, drives | 1 | 1 | 500 | `$EE41` |
+| shells (8, 10, 12, 24, 31), homing shell (28) | 0 | fired by the units and the guns; fly until they hit or time out | 0 | 3 (28: 4) | 0 | `$F143`, `$F744`, `$EC57` |
+
+![The 28 models of mission 1](../src/res/models/01-blast-em-mission.png)
+
+*The models of mission 1, drawn from the block by `python3 tools/fig_models.py` (`src/res/models/01-blast-em-mission.png`,
+no recording), each labelled with its address, heading 0.*
+
+The player's weapons are objects too (doc 7.5, the resident types `$80-$8C`): a turret shell does 1 point of damage, a
+Banshee or Phoenix missile 2, the SLAM laser 4, a K-90 cluster or a Spectre / Phantasm 31, the Sleeper mine 127. So a
+hut falls to one cannon round, a depot needs 32, or one cluster and one round.
+
+What a hit does (HitTest `$B660`, AddKillScore `$B692`, [doc 10.6](10-gameplay-logic.md#106-kills-and-the-score)):
+
+```text
+HitTest(obj, hitter):                     ; $B660, the hit handler $67DC of buildings and units
+    if not hitter.is_weapon: return       ; +3 bit 6: enemy shells and collisions score nothing
+    obj.hp -= hitter.damage
+    if obj.hp > 0: return
+    debris; obj becomes a wreck (a list object) or is freed (a spawned unit)
+    MissionScore += obj.score             ; $68E2, 32 bits: the template word at +$1E
+```
+
+```text
+$B692 AddKillScore: CALL SoundKill
+                    LD L,(IX+$1E) / LD H,(IX+$1F)   ; the object's score
+                    LD BC,($68E2) / ADD HL,BC / LD ($68E2),HL
+                    LD BC,($68E4) / LD HL,$0000 / ADC HL,BC / LD ($68E4),HL
+```
+
+```mermaid
+flowchart TD
+    H[a weapon hits an object] --> W{a player's weapon?}
+    W -- no --> N[nothing]
+    W -- yes --> D[hit points minus the weapon's damage]
+    D --> K{at or below 0?}
+    K -- no --> N
+    K -- yes --> X[debris, wreck or freed]
+    X --> S[mission score plus the template's score]
+    S --> C{mission completed?}
+    C -- yes --> T[added to the score to date]
+    C -- no --> L[lost with the mission]
+```
+
+Worked example, m1complete: the two fuel dumps (type 33, 1 hit point, score 250) fall to the cannon; the mission
+score `$68E2` reads 250 from frame 15787 and 500 from 16137, and the goal flag follows (16138). The COMPLETION REPORT
+adds the 500 to the score to date: the status card shows SCORE TO DATE 500 (22100). In death a hut (type 15) falls to
+one turret shell at frame 8531 and the score goes from 0 to 250 (doc 10.6). m4complete scores 2000 from one enemy
+vehicle (8247), while the train, the points and the station of Railway Ambush score 0.
+
+The key moments of a mission, from the recordings:
+
+![Key moments: the enemy tank, TANK HIT, the fuel dumps, a dump destroyed, the pickup message, the Helicarrier on the pad, the last hit, UNIT DESTROYED](img/design/key-moments.png)
+
+*`python3 tools/fig_screens.py docs/img/design/key-moments.png 4 work/stage1/rec/death/screens/007939-drive-00.png
+work/stage1/rec/death/screens/008139-drive-01.png work/stage2/rec/m1complete/screens/015479-dumps-near.png
+work/stage2/rec/m1complete/screens/015799-dump55-destroyed.png work/stage2/rec/m1complete/screens/016216-pickup-text.png
+work/stage2/rec/m1complete/screens/021533-pad.png work/docs/bcC/rec/armour/screens/018339-drive-52.png
+work/docs/bcC/rec/armour/screens/018539-drive-53.png`. Top: the first enemy tank ahead (death 7939, made by a
+spawner at 7601), TANK HIT after its shell (death 8139, the hit at 8121), the two fuel dumps (m1complete 15479), the
+first destroyed (15799). Bottom: MISSION COMPLETE PROCEED TO PICKUP (16216, the goal at 16138), the Helicarrier on the
+pad (21533), the armour recording's tank before its last hit (18339) and its failed screen (18539, the hit at 18423).*
+
+How the enemies press the player ([doc 10.4](10-gameplay-logic.md#104-the-enemies)): the whole mission has one gun
+timer, so the units together fire about once every 24 passes however many there are, and the spawners refill the field
+wherever the tank goes. Witness: death, record 7 (the enemy tank) made at 7601 and freed at 9044, its shell's hit at
+8121 (animation 10.3, [enemy-attack.gif](img/play/enemy-attack.gif)).
+
+The maps: a search for published maps of the Spectrum missions (Spectrum Computing entry 451,
+<https://spectrumcomputing.co.uk/entry/451>; World of Spectrum,
+<https://worldofspectrum.org/archive/software/games/battle-command-ocean-software-ltd>) found reviews and instructions but no
+map of a mission. The comparison is therefore with the game's own briefing maps
+([briefing-maps.png](img/play/briefing-maps.png), menu frames of the ten briefings) and the previews of worlds.png above, drawn from
+the blocks' own segments; m2erbe's map screen in play (7386) shows the roads and rivers of mission 2's briefing map
+([WALKTHROUGH 0.2](../WALKTHROUGH.md#02-the-release-check)).
+
+The point: the score is what the player destroyed, weighted by danger: 2000 for a unit that shoots back, 3000-4000
+for the depots and the gun, 250-500 for buildings, nothing for hills, trees and shells, and it counts only when the
+mission is completed.
+
+## 1.9 Known only from the code
 
 - The success path of missions 2, 3 and 5-10 (missions 1 and 4: m1complete, m4complete).
-- The failures other than fuel: destroyed, no pickup, desertion, bridge (doc 10 records a death).
+- The failures no pickup, desertion and bridge. Destroyed is recorded: the armour recording ends in UNIT DESTROYED
+  (18423, the failed screen at 18539, [doc 10.5](10-gameplay-logic.md#105-damage-playerhit-the-armour-and-the-subsystems)).
+- The PAYLOAD EXCEEDED refusal: every recording that fits more than 1000 kg uses the No Weight Limit POKE, and the
+  others stay under the limit.
 - An entry string with progress typed in, and the Grand Finale played.
 - The refusal of a mission already done (the first test of LoadMissionIfAllowed).
 

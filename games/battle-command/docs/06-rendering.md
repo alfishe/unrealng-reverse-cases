@@ -11,8 +11,8 @@ What this covers:
 - the polygon filler (FillPolygon, EdgeWalk, FillSpans) and its 13 patterns;
 - lines and the ground dots;
 - the buffer clear and the copy to the screen, against the beam;
-- the views: day and night, the night sight, the binoculars and the zoom, the rear view, the Dragonfly, the console
-  and map screens;
+- the views: day and night, the night sight, the binoculars and the zoom, the rear view, the Dragonfly's flight
+  view, the damage board and the console;
 - the ten packed pictures of bank 7 and UnpackPicture, with the black shadow screen shown while they unpack;
 - the HUD drawn on the screen during a pass;
 - the frame rate against the load of the scene;
@@ -20,7 +20,7 @@ What this covers:
 
 The recordings it rests on (WALKTHROUGH 6.0):
 
-- `play` (10 967 frames): mission 1, the weapons, the Dragonfly, the views N, B, Z, R, H, D, C, M.
+- `play` (10 967 frames): mission 1, the weapons, the Dragonfly's flight, the views N, B, Z, R, H, D, C, M.
   Traces: `work/docs/bcB/play/traces/8440_0-8462_0.uatr` (three passes while driving),
   `8455_0-8456_0.uatr` (one blit).
 - `death` (20 039 frames): mission 1 driven for a long time with the armour POKE.
@@ -40,25 +40,29 @@ Frames and times:
 
 The 3D view is drawn into a back buffer of 96 rows of 32 bytes at `$8AF1-$96F0` (bank 2).
 Row r of the buffer starts at `$8AF1` + 32r, so the buffer is linear, not in the screen's interleaved order.
-The interrupt copies it to the screen with one of three blits.
+The interrupt copies it to the screen with one of four blits (the job MenuJobs names, its operand `$83E6`).
 Each blit points SP at the screen row table `$6500` (one address word a screen line) and pops one destination a row.
 
 | Blit | Address | Buffer rows | Screen lines | Bytes | Used by |
 | --- | --- | --- | --- | --- | --- |
 | ViewBlitFront | `$8999` | 0-94 | 32-126, with the cockpit cut out | 2736 | the 3D view |
-| ViewBlitWide | `$8A41` | 0-85 | 64-149, full width | 2752 | the title model, the console and map views |
-| ViewBlitNarrow | `$8A98` | 0-94, bytes 5-26 | 40-134 at column 6 | 2090 | the binoculars and the rear view |
+| ViewBlitWide | `$8A41` | 0-85 | 64-149, full width | 2752 | the title's turning model (TitleMenu, bank 6 `$C48D`) |
+| ViewBlitNarrow | `$8A98` | 0-94, bytes 5-26 | 40-134 at column 6 | 2090 | the Dragonfly's flight view (DragonflyViewLoop `$6AC9`, its only installer) |
 | ViewBlitLow | `$898B` | 8-94, with the cockpit cut out | 40-126 | 2480 | m1complete: 530 runs from frame 16138 (after the goal) |
 
 ![Where each blit puts the back buffer](img/render/layout.png)
 
-*The three blits over the cockpit picture. From `src/game/raster.asm` (ViewBlitFront to ClearBlitRequest);
+*The four blits over the cockpit picture. From `src/game/raster.asm` (ViewBlitFront to ClearBlitRequest);
 `python3 tools/fig_rendering.py layout docs/img/render/layout.png`.*
 
 ViewBlitFront copies the first 79 rows whole (lines 32-110).
 The next 8 rows keep only bytes 0-10 and 21-31, as the cockpit's top edge covers the middle.
-The last 8 rows keep only the two outer bytes on each side.
+The last 8 rows copy only bytes 1-2 and 29-30.
 So the cockpit picture is never overwritten, and the game never redraws it during play.
+The binoculars and the rear view keep ViewBlitFront: SetBinoculars `$CEAB` and ToggleRearView `$BA4A` never write
+the job.
+The status view and its console pages use bank 6's own blit, BlitMapView `$DBBD` (6.10), and the stores screen
+BlitStoresView.
 
 The point: the buffer is plain and linear, so the drawing code needs no screen address arithmetic.
 The interleaving is paid once, by the row table, in the copy.
@@ -93,7 +97,8 @@ In the `play` trace of frames 8440-8462 a pass runs like this:
 | RequestViewBlit | 8446:56 184 | 8454:31 924 |
 | ViewBlitFront, in the next interrupt | 8447:7 335 | 8455:8 215 |
 
-The pass of 8448-8455 is 7.4 frames.
+From StartViewPass to StartViewPass (8441:20 184 to 8448:55 120) the pass is 7.5 frames; from blit to blit (8447
+to 8455) it is 8.0.
 StartViewPass waits for the blit flag `$83BA` to be 0 before it clears, so the buffer is never cleared while the
 interrupt copies it.
 
@@ -530,7 +535,8 @@ EdgeWalk pushes, FillSpans pops, and nothing else is stored.
 
 ## 6.8 Lines and the ground dots
 
-DrawLine `$C9A7` (bank 3) draws a line from (H, L) to (D, E), x and y in bytes, into the back buffer with `OR`.
+DrawLine `$C9A7` (bank 3) draws a line from (H, L) to (D, E) into the back buffer with `OR`: x in pixels (its low 3
+bits pick the bit, the rest the byte), y in buffer rows.
 It is a Bresenham line with three special cases: vertical (`$CA60`), horizontal (`$CA4E`) and 45 degrees (`$CA74`).
 LinePixelBit `$CA89` holds the start pixel's bit.
 OpLines `$9AD8` reaches it through ClipLine2D and `$72B1` for each pair of points in front of the eye.
@@ -577,7 +583,8 @@ A moving grid of dots is enough to show speed and turning.
 
 ClearBackBuffer `$96F1` zeroes the buffer with 1536 `PUSH HL` (96 x 16) under `DI`.
 SP is saved at `$9711` and set to `$96F1`, the end of the buffer.
-At 11 T a push, the clear takes about 17 000 T, a quarter of a frame, and an interrupt in that time is lost (doc 04).
+At 11 T a push, 96 turns of 16 pushes and a `DJNZ` (189 T a turn) take about 18 200 T with the set-up, a quarter of
+a frame, and an interrupt in that time is lost (doc 04).
 Its animation is in doc 04: [ClearBackBuffer.gif](img/routines/ClearBackBuffer.gif).
 
 ```
@@ -600,7 +607,7 @@ l_89EE:
   ...
   LD A,$08
 l_8A27:
-  POP DE                  ; 8 rows: 2 bytes, skip 28, 2 bytes
+  POP DE                  ; 8 rows: skip 1, 2 bytes, skip 26, 2 bytes, skip 1
   ...
   LD SP,$0000
   RET
@@ -636,6 +643,10 @@ The white line is the beam.
 The copy starts at T 8 215 and ends at T 63 295: 55 080 T for 2736 bytes (16 T for each LDI, more where the ULA
 holds the bus).
 The beam overtakes the copy at line 70 (T about 30 300).
+The tear line depends on the T at which the interrupt reaches the blit: the earlier the copy starts, the lower the
+tear.
+[Doc 04, 4.5](04-game-loop.md#45-the-pass-against-the-beam) finds line 76 for a copy that starts at T 6456 (play
+8516) and line 71 for one that starts at T 8203 (the rear view), in line with line 70 here for T 8 215.
 1259 bytes land before the beam reaches their line, and 1477 after it.
 So the frame of 8455 shows the new view above line 70 and the old one below it: one torn frame each pass, then
 whole pictures until the next copy.
@@ -659,9 +670,12 @@ The play keys (doc 05) switch views by changing a few operands; the renderer is 
 | binoculars | B | SetBinoculars `$CEAB`: zoom `$9A93` = 1, the lamp `$5ACC`, StepFrames `$9719` = 32, "BINOC:X2" | 6.8 (9805-9995, with the zoom) |
 | zoom | Z | CycleBinocularZoom `$CEE5`: the zoom 1, 2, 3, back to 1 (x2, x4, x8) | |
 | rear view | R | `$BA27`: the camera heading + half a turn | 12 (10 065-10 125) |
-| Dragonfly | D | the camera record `$B9F4`, the Dragonfly's panel from bank 7 | 8.0 (9115-9315) |
-| console and map | M, then B | StatusLoop `$6BC7`, PicGridPanel, its own blit `$DBBD` (bank 6), SetClipWidth `$5F` | 11.1 (10 520-10 620) |
+| Dragonfly's flight | fire with the Dragonfly's slot selected | LaunchDragonfly: the camera record `$B9F4` = the Dragonfly, DragonflyViewLoop `$6AB9`, PicMapFrame, ViewBlitNarrow | 8.0 (9115-9315) |
+| damage board | D | DamageLoop `$6C93`: PicDamageBoard and DrawDamagePanel `$7383`; the world runs, no 3D picture | |
+| status view (console) | M | StatusLoop `$6BC7`, PicGridPanel, its own blit BlitMapView `$DBBD` (bank 6), SetClipWidth `$5F`; in it, M the MAP page and B the BRIEF page (doc 05, 5.7) | not measured |
 
+The binoculars and the rear view exclude each other: ToggleRearView `$BA4A` returns without a change while the
+binoculars flag (`$CEA8`) is set, and SetBinoculars `$CEAB` returns while the rear view `$BA27` is on.
 The zoom shifts the depth right before the division, so zoom 1 doubles every screen offset from the centre.
 The binoculars also slow the steps (StepFrames 32 instead of 4, doc 05), for fine aiming.
 With the rear view, SetCamera turns the camera, and nothing else knows.
@@ -676,26 +690,31 @@ stateDiagram-v2
   Binoc: binoculars, zoom 1
   Zoom: zoom 2, 3
   Rear: rear view
-  Console: console and map
-  Dragonfly: Dragonfly view
+  Console: status view and its MAP and BRIEF pages
+  Damage: damage board
+  Dragonfly: Dragonfly's flight view
   Normal --> Night: N
   Night --> Normal: N
   Normal --> Binoc: B
   Binoc --> Zoom: Z
   Zoom --> Binoc: Z after 3 wraps to 1
   Binoc --> Normal: B
-  Normal --> Rear: R
+  Normal --> Rear: R, refused with the binoculars on
   Rear --> Normal: R
   Normal --> Console: M
   Console --> Normal: C
-  Normal --> Dragonfly: D
-  Dragonfly --> Normal: C or the Dragonfly lands
+  Normal --> Damage: D
+  Damage --> Normal: C
+  Damage --> Console: B
+  Normal --> Dragonfly: fire with the Dragonfly selected
+  Dragonfly --> Normal: back to the tank, CameraToPlayer (doc 10)
 ```
 
 ![The views of the play recording](img/play/view-change.gif)
 
 *The screen that is shown over play frames 9600-10 500 (every 5th frame): the night sight, the binoculars and the
-zoom, the rear view, the helicarrier, the damage screen, the console with the map and the briefing. The black
+zoom, the rear view, the helicarrier, the damage board (D), the status view with the map (M) and its BRIEF page
+(B). The black
 frames are the shadow screen of bank 7, shown while a new screen is unpacked and drawn (6.11). `python3
 tools/fig_shownscreen.py --work work/docs/bcB/play --from 9600 --to 10500 --step 5 --label --delay 70
 docs/img/play/view-change.gif`.*
@@ -703,6 +722,9 @@ docs/img/play/view-change.gif`.*
 Witness: the keys of `tests/inputs/play.txt` at N 9610 and 9675, B 9740, Z 9805 and 9870, B 9935, R 10 000 and 10 065,
 H 10 130, D 10 195, C 10 260, M 10 325, B 10 390, C 10 455.
 At frame 10 606 the camera heading `$67A6` is `$98` while the player's `$7612` is `$18`: the rear view is still on.
+R does not write the key latch `$6B45`, so a held R toggles the view on every pass (doc 05, 5.10); the press at
+10 065-10 090 left it on, and play 10 520-10 620 (Q with P) is the 3D view with the rear view (the screenshot
+`010520-view-console2` shows REAR VIEW).
 
 The point: the views are operands, not code.
 The zoom is one shift count, the rear view one addition, the night one byte.
@@ -911,9 +933,76 @@ In the pass of death 8330 (the second writers figure of 6.2), it writes 226 byte
 
 DrawRadar runs every pass but the first (3483 runs over the recordings).
 The texts of the view (the night sight, the binoculars, the messages) are printed by PrintString (doc 08).
-DrawSightOverlay runs every pass (3507 runs).
-It copies the sight mask `$FD80` into the back buffer at `$9000` while `$C4DC` is set.
-Only SelectPhoenix sets it, the Phoenix sight of `play2` (2 runs); `play` and `death` never show it.
+DrawSightOverlay `$C4CD` runs every pass (3507 runs), after the objects and before the blit request.
+It masks a 16 x 16 pixel sight into the back buffer at `$9000` (row 40, bytes 15-16) while the operand at `$C4DC` is
+set:
+
+- SelectPhoenix `$C11E` (store types 1 and 5) and SelectPlain `$C12C` (types 2, 6 and 7: the two Banshees and the
+  Dragonfly) write `$FF` there;
+- PrintSlotStatus `$C51F` clears it before each select, and the mission load clears it at `$84D5`;
+- its counter, the operand at `$C4CE`, counts down once a pass; the sight is drawn only on even counts;
+- TargetInCone sets the counter to 16 when a target enters the missile's cone, so the sight blinks for 16 passes;
+  at 0, ResetSightTimer `$C506` re-arms the cone test and the sight shows on every pass.
+
+```
+DrawSightOverlay:
+  LD A,$00                ; operand $C4CE: the blink counter
+  AND A
+  JR Z,l_C4DB
+  DEC A
+  LD (DrawSightOverlay+$0001),A
+  JR NZ,l_C4DB
+  CALL ResetSightTimer    ; 0 reached: the cone test again
+l_C4DB:
+  LD A,$00                ; operand $C4DC: the sight on
+  AND A
+  RET Z
+  LD A,(DrawSightOverlay+$0001)
+  AND $01
+  RET NZ                  ; odd count: not this pass
+  LD HL,$FD80             ; mask, picture pairs
+  LD DE,$9000             ; buffer row 40, byte 15
+  LD BC,$001F
+  EXX
+  LD B,$10                ; 16 rows
+l_C4F1:
+  EXX
+  LD A,(DE)
+  AND (HL)                ; keep what the mask lets through
+  INC HL
+  OR (HL)                 ; add the sight
+  LD (DE),A
+  ...                     ; the second byte, then DE + 32
+  DJNZ l_C4F1
+  RET
+```
+
+```mermaid
+flowchart TD
+  A["DrawSightOverlay C4CD, every pass"] --> B{"counter C4CE"}
+  B -->|0| D{"sight flag C4DC"}
+  B -->|"not 0"| C["counter - 1; at 0 ResetSightTimer C506"]
+  C --> D
+  D -->|0| R["return"]
+  D -->|FF| E{"counter odd"}
+  E -->|yes| R
+  E -->|no| F["16 rows: buffer = buffer AND mask OR picture, from FD80 to 9000"]
+  S1["SelectPhoenix C11E, SelectPlain C12C"] -->|FF| D
+  S2["PrintSlotStatus C51F, mission load 84D5"] -->|0| D
+  T["TargetInCone: a target in the cone"] -->|16| B
+```
+
+![The sight overlay in play](img/render/sight.png)
+
+*Play frame 8570, the Banshee RRSS of slot 1 selected at 8425: the sight that DrawSightOverlay masks into the buffer.
+From the recording's screenshot `work/stage1/rec/play/screens/008570-Banshee RRSS-lock.png` and `build/game.lst`;
+`python3 tools/fig_rendering.py sight docs/img/render/sight.png`.*
+
+Worked example: key 1 at play 8425 selects slot 1, a Banshee RRSS (type 2).
+SelectWeapon calls SelectPlain, which sets `$C4DC`; from the next pass the sight stands at screen line 72, x 120-135,
+and the screenshots `008570-Banshee RRSS-lock` and `008655-Banshee RRSS-fired` show it.
+Key 2 at 8715 selects the K-40 Mortar, whose select routine does not set the flag after PrintSlotStatus cleared it:
+the mortar's screenshot `008860-K-40 Mortar-lock` has no sight.
 
 Doc 08 covers the panel, the bars and the texts in full.
 
@@ -939,10 +1028,10 @@ The views of `play` measured by WALKTHROUGH 1 (the count of ClearBackBuffer in a
 | play frames | On screen | Frames a pass |
 | --- | --- | --- |
 | 8370-8970 | the normal view | 7.7, 7.4, 7.1 |
-| 9115-9315 | the Dragonfly's view | 8.0 |
+| 9115-9315 | the Dragonfly's flight view | 8.0 |
 | 9805-9995 | binoculars and zoom | 6.8 |
 | 10 065-10 125 | the rear view | 12 |
-| 10 520-10 620 | the console after the map | 11.1 |
+| 10 520-10 620 | the rear view, left on, while turning | 11.1 |
 
 Worked example: in death 8304-8317, a pass of 12.94 frames (917 600 T) fills 20 faces and projects 17 vertex ranges.
 In death 8427, 14 faces take 10.61 frames.

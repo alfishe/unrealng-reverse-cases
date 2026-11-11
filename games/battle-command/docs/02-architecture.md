@@ -82,12 +82,42 @@ has 23 module names; several come back more than once, because the original layo
 ### Code that runs across a bank boundary
 
 MoveObject `$BFD1` (objects, bank 2) does not end at `$BFFF`. Its instruction `LD A,($BBC8)` sits at `$BFFF-$C001`,
-two bytes of its operand in bank 0, and the routine goes on to `RET` at `$C025` (`build/game.lst` lines 17726-17744).
+two bytes of its operand in bank 0, and the routine goes on to `RET` at `$C025`.
 MoveObject therefore works only while bank 0 is paged. In every other bank the bytes at `$C000-$C025` are something
 else and the CPU would run into them. The game keeps bank 0 paged during play (2.3), so the routine is safe there.
 The listing has to treat banks 2 and 0 as one 32 K image for this reason, and `game.asm` assembles them together.
 
 The point: bank 0 is part of the play program, not a library: the code of bank 2 runs on into it.
+
+### The call graph of play
+
+The main program and the interrupt are the two roots. PlayLoop `$6A0C` is one pass of the 3D view (doc 4.4); the
+interrupt handler runs the tick jobs and, when a pass asks, the blit (doc 4.2). The only link between them is the
+flag `$83BA`.
+
+```mermaid
+flowchart LR
+    subgraph main[main program]
+        PL[PlayLoop $6A0C] --> SVP[StartViewPass $9882: wait for $83BA = 0, ClearBackBuffer]
+        PL --> PK[PlayKeys $6B3B: views, weapons, SelectLoop $6BB4]
+        PL --> W[SetCamera, GroundDots, SegmentVisibility, ActivateMissionObjects, TransformObjects]
+        PL --> B3[Bank3Step $72A3: bank 3 DrawDebris $D08C, MoveAllDebris $D1EC]
+        PL --> DO[DrawObjectsInOrder $BF53: RunScript $990F per model]
+        PL --> RQ[RequestViewBlit: $83BA = $FF]
+        PL --> T[UpdateSlotBars, RunObjectHandlers $C026, the mission's goal hook]
+    end
+    subgraph int[interrupt, IM 2]
+        IH[InterruptHandler $8383] --> ST[SoundTick $7E6E: bank 0 SoundFrame $D692]
+        IH --> MT[Bank4Tick $72D2: bank 4 MusicTick $C0D2]
+        IH --> CT[ClockTick $7DFB, TimeOfDay, KeyRepeat, PointerTick $7D80, MessageTimer]
+        IH --> VB[ViewBlitFront $8999 when $83BA = $FF]
+        VB --> CB[ClearBlitRequest $8AEC: $83BA = 0]
+    end
+    RQ -. $83BA .-> VB
+    CB -. $83BA .-> SVP
+```
+
+Details: [the pass](04-game-loop.md#44-one-pass-of-the-3d-view), [the interrupt](04-game-loop.md#42-the-interrupt).
 
 ## 2.3 The paging
 
@@ -116,7 +146,7 @@ $729B RestoreBank: PUSH AF / LD A,$00      ; $729D: the bank SaveBank kept
 PageBank(n):                      ; PageBank0/3/4/6/7
     Current = n                   ; $728A
     OUT $7FFD = n OR ScreenBit    ; ScreenBit at $7284: 0 or 8
-PageShadowScreen / PageBank0Main: ; $7268 / $7262
+PageShadowScreen / PageBank0Main: ; $7268 / $725F, both through PageMain $7260
     ScreenBit = 8 or 0
     OUT $7FFD = Current OR ScreenBit
 SaveBank:    Saved = Current      ; $729D
@@ -161,6 +191,17 @@ the hardware cannot do anyway.
 The tables below are stage 2's: every range is an entry of the source. Stage 1's map (from the L1 classes alone) had
 bank 6 and bank 7 only as code and data; they are now named routine by routine.
 
+The same 64 K holds three programs one after another: the loader, the menus and the play. The figure puts the three
+stages side by side, each with the bank paged at `$C000` at that moment.
+
+![The memory map at the load, the title and in play](img/arch/memory-stages.png)
+
+*Drawn by `python3 tools/fig_modules.py stages docs/img/arch/memory-stages.png`: the load at c1 frame 2484 (the stage
+entered; drawn from `src/loader`), the title at frame 24508 (bank 6 at `$C000`) and play at frame 32999 (bank 0),
+from `src/*/*.ann`. The red strip in the title and play columns is the share of each 256-byte row that changed since
+the column before: the entry dump (frame 23974) against frame 24508, then frame 24508 against 32999
+(`work/stage1/img/entry-*.bin`, `f24508-*.bin`, `f32999-*.bin`). The load column has no dump.*
+
 ### Bank 5, `$4000-$7FFF`
 
 | Range | What | Source |
@@ -170,7 +211,7 @@ bank 6 and bank 7 only as code and data; they are now named routine by routine.
 | `$5C00-$64FF` | the 3D engine's tables: log2 fractions and integers, antilogs, squares, 16- and 8-bit sines, page-aligned | mathtables |
 | `$6500-$667F` | ScreenRowTable: the screen address of each pixel row | mathtables |
 | `$6680-$6797` | polygon work: the clipped lists, fill patterns, edge masks, PolyVerts | mathtables |
-| `$6798-$67BD` | the game's variables below the entry: MissionsDone `$6799-$67A1` and more | gamevars |
+| `$6798-$67BD` | the game's variables below the entry: MissionsDone `$6799-$67A2` (ten flags; LoadMissionIfAllowed tests the first nine), WorldVars `$67A3`, ControlDevice `$67B6` | gamevars |
 | `$67BE-$68F3` | ApiVectors: 22 `JP`s the mission code calls, and their targets | apivectors |
 | `$68F4-$694A` | Entry and ResetCollisionTables | boot |
 | `$694B-$6CE3` | StartMission, PlayLoop `$6A0C`, NextView `$6A91`, the play keys | missionflow |
@@ -178,7 +219,7 @@ bank 6 and bank 7 only as code and data; they are now named routine by routine.
 | `$71F1-$72F3` | LoadBlock and the paging block | tape, paging |
 | `$72F4-$7C58` | the panel; ScreenList `$74E6` (doc 4.1); the object table (24 records of 60 bytes at ObjectTable `$75F0`, the player first); PlayWorkspace `$7B90` with FailReason `$7BF9`, the interrupt's stack (top `$7C49`) and Fuel `$7C57` | hud |
 | `$7C59-$7D50` | SmallFont and SmallFontLeftover `$7D35` | text |
-| `$7D51-$7FFF` | the interrupt's jobs: PointerTick `$7D8D`, ClockTick `$7DFB`, the mouse | interrupt |
+| `$7D51-$7FFF` | the interrupt's jobs: PointerTick `$7D80`, ClockTick `$7DFB`, the mouse | interrupt |
 
 ### Bank 2, `$8000-$BFFF`
 
@@ -193,7 +234,7 @@ bank 6 and bank 7 only as code and data; they are now named routine by routine.
 | `$8383-$84C0` | the IM 2 handler | interrupt |
 | `$84C1-$8616` | LoadMission, LoadMissionHeader, LoadMissionBlock `$855B` | missionload |
 | `$8617-$87D5` | LdBytes, LdEdge2, LdEdge1, SaBytes (unused) | tape |
-| `$87D6-$898A` | MenuJobs, ScanKeyboard `$8910`, KeyCode `$8979` | interrupt |
+| `$87D6-$898A` | MessageTimer `$87D6`, BlankMessage `$87F0`, NightKey `$87FC`, TimeOfDay `$8836`, SkyColours `$885F`, HourTable `$88F8`, ScanKeyboard `$8910`, KeyCode `$8979`, CopyPointer `$897E` | interrupt |
 | `$898B-$9714` | the view blits, the back buffer `$8AF1-$96F0` (3072 bytes), ClearBackBuffer `$96F1` | raster |
 | `$9715-$9881` | the controls | input |
 | `$9882-$AD44` | StartViewPass `$9882`, RunScript `$990F`, the projection, clipping, the line and span rasteriser | render, raster |
@@ -214,7 +255,7 @@ bank 6 and bank 7 only as code and data; they are now named routine by routine.
 | --- | --- | --- |
 | 3 | `$C000-$CFEB` | raster3: FillSpans, EdgeWalk, ClipYInside (the polygon filler) |
 | 3 | `$CFEC-$D3FF` | debris: DrawDebris, MoveAllDebris; PushLeftover `$D203` |
-| 3 | `$DCBC-$FB3E` | the copy of the mission block, for a retry without the tape (c1: these bytes change when mission 1 loads) |
+| 3 | `$DCBC-$FB3E` | the copy of the part of the mission block a reload restores (MissionBlockLoaded `$8579`: from the object list, header word `$DBDA`, to restore-end `$DBED`; mission 1 shown), for a retry without the tape (c1: these bytes change when mission 1 loads) |
 | 4 | `$C000-$CDFF` | the music: the player and tune data |
 | 4 | `$CB64-$E737` | the catalogue from side 2: titles, briefings, maps (7124 bytes) |
 | 6 | `$C000-$D9B1` | the menus: title `$C409`, password, catalogue, briefing, stores, results, panel jobs |
@@ -261,9 +302,11 @@ The game uses two stacks.
 
 - **The main stack** grows down from `SP` = `$81FF`, set by Entry. The source names `$8184-$81FF` as its area.
 - **The interrupt's stack**: the handler saves the interrupted `SP` and sets `LD SP,$7C49` at `$8389`
-  ([doc 4.2](04-game-loop.md#42-the-interrupt)), so its pushes never land on the main stack. That is required: the
-  main program moves `SP` into the back buffer for its `PUSH` clears (ClearBackBuffer `$96F1`, doc 4.3), and an
-  interrupt then would push its return address into the picture.
+  ([doc 4.2](04-game-loop.md#42-the-interrupt)), so its 28 bytes of register saves go to its own stack, off the main
+  stack. It cannot protect a buffer that `SP` points into: the CPU's push of the return address and the handler's
+  first `EX (SP),HL` (`$8384`) land on the interrupted stack before `LD SP,$7C49` runs. So the routines that point `SP`
+  at data (ClearBackBuffer `$96F1`, `DI` at `$96F1`, `EI` at `$9713`; ClearRadar; OpVertexProgram) run with the
+  interrupts off, and an interrupt that falls in them is lost instead ([doc 4.3](04-game-loop.md#43-where-interrupts-are-off-and-the-interrupts-lost)).
 
 The depth of each, from the L1 builds (the bytes both pushed and popped, `byte_use` flags 2 and 3):
 
@@ -275,7 +318,7 @@ The depth of each, from the L1 builds (the bytes both pushed and popped, `byte_u
 | menu | `$8149` | 182 | `$7C2D-$7C48` | 28 |
 
 The interrupt's 28 bytes are the same in every recording: the handler's depth does not depend on the screen. The main
-stack goes deeper than the area the source names. In the menu recording it reaches `$8149`, 55 bytes below `$8184`,
+stack goes deeper than the area the source names. In the menu recording it reaches `$8149`, 59 bytes below `$8184`,
 across ImJump `$8181-$8183` and into LoadAttrLeftover. Losing ImJump is harmless to lose: with `I` = `$82` and the table full
 of `$83`, every interrupt vector is `$8383`, whatever the bus holds, and nothing ever jumps to `$8181`. The bytes
 below are unused attributes of the loading screen. The menus therefore have 443 bytes of stack between `$8044` and
@@ -287,22 +330,23 @@ flowchart TD
     V --> H[handler $8383: save SP, LD SP,$7C49]
     H --> J[jobs on the interrupt stack $7C2D-$7C48]
     J --> R[restore SP, EI, RETI]
-    M[main program, SP from $81FF down] -. may point into the back buffer during a clear .-> BB[$8AF1-$96F0]
+    M[main program, SP from $81FF down] -. points into the back buffer during a clear, under DI .-> BB[$8AF1-$96F0]
 ```
 
-The point: the interrupt has its own 28 bytes so that the main program can use `SP` as a fast pointer; the main stack
-has no guard and simply has room.
+The point: the interrupt keeps its 28 bytes of saves off the main stack, and the main program may use `SP` as a fast
+pointer only with the interrupts off; the main stack has no guard and simply has room.
 
 ## 2.7 The leftovers
 
-Code and data that no recording runs or reads, and that no path of the code reaches, from the source's entries:
+Code and data that no recording runs or reads, and that no path of the code reaches, from the source's entries (one
+exception, ClearMarkColumn, is called and runs only its first byte):
 
 | Address | Name | What it is |
 | --- | --- | --- |
 | `$5B00` | LoadLeftover5B00 | bytes of the load in the ROM's system area |
 | `$7D35` | SmallFontLeftover | 28 bytes after the small font |
 | `$8044-$8180` | LoadAttrLeftover | the loading screen's attributes beyond the copy |
-| `$83F1` | ClearMarkColumn | a `RET`, and behind it a clear of three bytes in 33 for 48 lines of the back buffer |
+| `$83F1` | ClearMarkColumn | called by the handler (`CALL` at `$83D0`) and run as a `RET` (L1 2959: death, m2erbe, missions, play, play2); the clear of three bytes in 33 for 48 lines of the back buffer behind it is never reached |
 | `$86C1` | SaBytes | the game's copy of the ROM's SA-BYTES: a save, never called |
 | `$8739` | SaveLeftover | bytes after SaBytes |
 | `$9893` | ClearBackBufferOld | an older buffer clear with a test pattern of `$AA`/`$55` rows |
@@ -378,8 +422,8 @@ Worked example, from the routines of the L1 window (entries and inclusive T-stat
 The multiply MulWordByte alone (8.15 %) costs as much as the screen copy: the 3D engine multiplies through tables and
 shifts, and its multiplications are the largest single cost of a frame.
 
-The point: two thirds of play is the 3D pipeline (projection, raster, filler, blit), a quarter is the simulation of the
-world. The menus spend their time waiting on the tape and drawing text.
+The point: more than half of play (54 %: raster with the blit 33.9 %, raster3 11.6 %, render 8.6 %) is the 3D
+pipeline (projection, raster, filler, blit), a quarter (objects and world, 25.5 %) is the simulation of the world. The menus spend their time waiting on the tape and drawing text.
 
 ## 2.9 Known only from the code
 

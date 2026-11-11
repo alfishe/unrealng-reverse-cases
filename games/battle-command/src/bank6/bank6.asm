@@ -7,7 +7,7 @@
   ORG $C000
   INCLUDE "pointer.asm"  ; The mouse pointer: its shapes, the saved background, the save, restore, shift and draw
   INCLUDE "catalogue.asm"  ; The mission catalogue screen: the list of the ten missions from the catalogue, the selection, the description
-  INCLUDE "statusview.asm"  ; The Dragonfly title box and the grid position of the status view
+  INCLUDE "statusview.asm"  ; The console's BRIEF page box and the grid position of the status view
   INCLUDE "stores.asm"  ; The stores screen: the weapons catalogue, the four launcher slots, the payload, the turning model
   INCLUDE "numbers.asm"  ; Numbers to decimal digits
   INCLUDE "title.asm"  ; The title menu: the title picture, the turning tank, the three choices

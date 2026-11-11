@@ -933,10 +933,10 @@ NearClipLine:
   PUSH HL
   PUSH DE
   CALL FetchVertexXY
-  LD (WorldVars+$0010),HL
+  LD (WorldVars+$000F),HL
   CALL FetchVertexDepth
   CALL FetchVertexXY
-  LD (WorldVars+$0012),HL
+  LD (WorldVars+$0011),HL
   CALL FetchVertexDepth
   PUSH BC
   EXX
@@ -966,13 +966,13 @@ l_A447:
   RR L
   EX DE,HL
   PUSH BC
-  LD HL,(WorldVars+$0010)
-  LD BC,(WorldVars+$0012)
+  LD HL,(WorldVars+$000F)
+  LD BC,(WorldVars+$0011)
   INC HL
   ADD HL,BC
   SRA H
   RR L
-  LD (WorldVars+$0010),HL
+  LD (WorldVars+$000F),HL
   POP BC
   EXX
   JP l_A447
@@ -988,19 +988,19 @@ l_A477:
   SRA H
   RR L
   PUSH HL
-  LD HL,(WorldVars+$0010)
-  LD BC,(WorldVars+$0012)
+  LD HL,(WorldVars+$000F)
+  LD BC,(WorldVars+$0011)
   INC HL
   ADD HL,BC
   SRA H
   RR L
-  LD (WorldVars+$0012),HL
+  LD (WorldVars+$0011),HL
   POP BC
   EXX
   JP l_A447
 l_A49A:
-  LD HL,(WorldVars+$0010)
-  LD BC,(WorldVars+$0012)
+  LD HL,(WorldVars+$000F)
+  LD BC,(WorldVars+$0011)
   INC HL
   ADD HL,BC
   SRA H
@@ -1204,7 +1204,7 @@ l_A5B7:
   LD (PolyClipVars+$0001),A
   LD B,C
   LD A,B
-  LD (WorldVars+$000F),A
+  LD (WorldVars+$000E),A
   SRL B
   SRL B
   EXX
@@ -1220,7 +1220,7 @@ l_A5B7:
   POP HL
   CALL AppendPolyVertex
   PUSH HL
-  LD A,(WorldVars+$000F)
+  LD A,(WorldVars+$000E)
   LD (GameVars),A
   LD L,A
   LD H,$FC

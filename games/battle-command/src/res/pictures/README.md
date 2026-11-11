@@ -14,7 +14,7 @@ screen as stored, without it.
 
 | File | Address | Block | Tokens | What | Unpacked by |
 | --- | --- | --- | --- | --- | --- |
-| damage-board | `$C000` | 1811 | 1327 | the damage board with the tank drawings (the Dragonfly view's panel) | DragonflyLoop `$6C9E` |
+| damage-board | `$C000` | 1811 | 1327 | the damage board with the tank drawings (the key D) | DamageLoop `$6C9E` |
 | stores | `$C713` | 1462 | 1052 | the stores and weapons folder | bank 6 `$CAAC` |
 | mission-select | `$CCC9` | 1628 | 1180 | the clipboard with the mission list | bank 6 `$C7AB` |
 | grid-panel | `$D325` | 1067 | 701 | TIME, GRID Y, GRID X panel (the status view) | StatusLoop `$6BD0` |
@@ -23,6 +23,6 @@ screen as stored, without it.
 | briefing | `$E949` | 825 | 553 | the briefing notes with the red star | bank 6 `$C9A5` |
 | mission-status | `$EC82` | 2143 | 1577 | the mission status card with the commander's photo | bank 6 `$CDC2` |
 | title | `$F4E1` | 1260 | 1066 | the BATTLE COMMAND lettering | bank 6 `$C431` |
-| map-frame | `$F9CD` | 1218 | 885 | the map view's monitor frame | MapLoop `$6AC3` |
+| map-frame | `$F9CD` | 1218 | 885 | the monitor frame of the Dragonfly's flight view | DragonflyViewLoop `$6AC3` |
 
 Bank 7 after the last block, `$D750`... is described in src/bank7/pictures.asm (Bank7Free).

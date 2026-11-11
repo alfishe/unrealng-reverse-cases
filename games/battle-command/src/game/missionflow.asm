@@ -3,8 +3,9 @@
 ;
 ; StartMission $694B sets the play state from the mission block's header ($DBD9-$DBDA), draws the panel through bank 7
 ; ($74AA), and then runs PlayLoop $6A0C until the flag at $6A6D (the operand of LD A,0 at $6A6C) says the view
-; changes. The three views each have their own loop: the 3D view (PlayLoop), the map view ($6AB9) and the status /
-; Dragonfly views ($6BC7, $6C93). The loops call the same world, object and enemy steps; only the drawing differs.
+; changes. The views each have their own loop: the 3D view (PlayLoop), the Dragonfly's flight view ($6AB9, after its
+; launch), the status view ($6BC7) and the damage board ($6C93, key D). The loops call the same world, object and
+; enemy steps; only the drawing differs.
 ;
 ; The key codes come from the interrupt's keyboard scan (ScanKeyboard $8910) in KeyCode $8979 with the new-key flag in
 ; bit 1 of KeyFlags $8978.
@@ -181,8 +182,8 @@ ViewChangeFlag:
 
 ; NextView
 ;
-; Used by the routines at MapLoop, StatusLoop, DragonflyStart and
-; DragonflyLoop.
+; Used by the routines at DragonflyViewLoop, StatusLoop, BriefPage and
+; DamageLoop.
 NextView:
   XOR A
   LD (ViewChangeFlag+$0001),A
@@ -227,16 +228,19 @@ FillPanelRows:
   LD E,$18
   JP ScreenRowFill
 
-; The map view's loop: the map picture from bank 7, then the world and objects
-; without the 3D frame
+; The Dragonfly's flight view: the monitor frame from bank 7, the narrow blit,
+; then the world and objects seen from the Dragonfly
 ;
-; Draws the map frame (`DrawBank7Picture` with DE = `$F9CD`), sets the blit to
-; `$8A98`, then per frame `$9882`, `$B9F6`, `ClearClipRow`, `$BAAC`, `$AD45`,
-; `$AEA0`, `$BBF1`, `$BD98`, `$BA40`, `$BF53`, `$C7BC`, `$C4CD`, `$988D`,
-; `$C026`, `$7256` until `$6A6D`; then the 3D blit again and `NextView`.
+; Entered only from LaunchDragonfly (`$C30F`, `LD HL,$6AB9` into NextView),
+; after the camera `$B9F4` points at the Dragonfly's record; ScreenList node
+; `$7572` names it, but no transition word leads there. Draws the monitor frame
+; (`DrawBank7Picture` with DE = `$F9CD`), sets the blit to `$8A98`, then per
+; frame `$9882`, `$B9F6`, `ClearClipRow`, `$BAAC`, `$AD45`, `$AEA0`, `$BBF1`,
+; `$BD98`, `$BA40`, `$BF53`, `$C7BC`, `$C4CD`, `$988D`, `$C026`, `$7256` until
+; `$6A6D`; then the 3D blit again and `NextView`.
 ;
 ; Witness: L1 1 (play).
-MapLoop:
+DragonflyViewLoop:
   CALL PageBank0
   CALL PageShadowScreen
   XOR A
@@ -308,10 +312,12 @@ PanelSetup:
 ; The play keys: a new key code in $8979 jumps to its action
 ;
 ; Returns unless bit 1 of `$8978` is set and the code differs from the last
-; (`$6B45`, the operand of `LD C,0`). E: `$843F` (sound off), J and K: nothing
-; (`$6BB0`), M: the map (`$705A`), D: the Dragonfly (`$6BC2`), 1-4: weapons
-; (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z: `$CEE5`,
-; C: remembered in `$6B45`.
+; (`$6B45`, the operand of `LD C,0`). E: `$843F` (the quit prompt), K and J:
+; the selected weapon's aim pair (the `JP` targets `$6B55` and `$6B50`, patched
+; by SelectWeapon from `$7B89` + 8 x type, words 0 and 1; `$6BB0` NoAction in
+; the image), M: the status view (`$705A`), D: the damage board (`$6BC2`), 1-4:
+; weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z:
+; `$CEE5`, C: remembered in `$6B45`.
 ;
 ; Witness: L1 3602 (death, m2erbe, missions, play, play2).
 PlayKeys:
@@ -323,7 +329,7 @@ PlayKeys:
   CP C
   RET Z
   CP $45
-  JP Z,SoundOffKey
+  JP Z,QuitKey
   CP $4A
   JP Z,NoAction
   CP $4B
@@ -331,7 +337,7 @@ PlayKeys:
   CP $4D
   JP Z,ScreenZero
   CP $44
-  JP Z,SelectDragonfly
+  JP Z,SelectDamage
   CP $31
   JP Z,SelectWeapon
   CP $32
@@ -355,11 +361,11 @@ PlayKeys:
   LD (PlayKeys+$000A),A
   RET
 
-; The keys of the map view: B to $6BC7, C back to the 3D view, D to the
-; Dragonfly
+; The keys of the damage board (called only from DamageLoop $6CB9): B to the
+; status view $6BC7, C back to the 3D view, D the damage board again
 ;
 ; Witness: L1 3 (play).
-MapKeys:
+DamageKeys:
   LD A,(KeyState)
   AND $02
   RET Z
@@ -373,35 +379,35 @@ MapKeys:
   CP $43
   JR Z,SelectPlay
   CP $44
-  JR Z,SelectDragonfly
+  JR Z,SelectDamage
 
 ; A RET: the action of the keys with nothing to do
 ;
 ; Witness: L1 14403 (death, m2erbe, missions, play, play2).
 NoAction:
   RET
-; This entry point is used by the routine at MapKeys.
+; This entry point is used by the routine at DamageKeys.
 SelectPlay:
   LD HL,StartMission
 
 ; SelectLoop
 ;
-; Used by the routine at SelectDragonfly.
+; Used by the routine at SelectDamage.
 SelectLoop:
   LD (NextView+$0008),HL  ; HL = the loop to run next ($6A99), A remembered,
                           ; then the view flag set
   LD (PlayKeys+$000A),A
   JP SetViewFlag
-; This entry point is used by the routine at MapKeys.
+; This entry point is used by the routine at DamageKeys.
 l_6BBD:
   LD HL,StatusLoop
   JR SelectLoop
 
-; HL = $6C93, the Dragonfly loop, then SelectLoop
+; The key D: HL = $6C93, the damage board's loop, then SelectLoop
 ;
 ; Witness: L1 1 (play).
-SelectDragonfly:
-  LD HL,DragonflyLoop
+SelectDamage:
+  LD HL,DamageLoop
   JR SelectLoop
 
 ; The status view's loop: the panel through bank 7 and the status texts, no 3D
@@ -431,7 +437,7 @@ StatusLoop:
   LD (PointerShown+$0001),A
   LD (PointerTick+$000A),A
   LD (FirstFrameHook),A
-  LD (DragonflyOnce),A
+  LD (BriefPageOnce),A
   CALL PageBank6
   CALL StatusMapFrame
 l_6BFF:
@@ -461,12 +467,12 @@ l_6BFF:
   LD (PointerTick+$000A),A
   JP NextView
 
-; The first pass of the Dragonfly view: its one-time set-up $6C56, then the
-; clock and keys loop
+; The console's BRIEF page (node $7544, key B in the status view): the briefing
+; text once ($6C56), then the clock and keys loop
 ;
 ; Witness: L1 1 (play).
-DragonflyStart:
-  CALL DragonflyOnce
+BriefPage:
+  CALL BriefPageOnce
 l_6C47:
   CALL PrintClock
   CALL StatusKeys
@@ -475,14 +481,15 @@ l_6C47:
   JR Z,l_6C47
   JP NextView
 
-; A NOP patched to RET after the first call of $70B6
+; A NOP patched to RET after the first call of $70B6; StatusLoop ($6BF6) puts
+; the NOP back on each visit
 ;
 ; Witness: L1 1 (play).
-DragonflyOnce:
+BriefPageOnce:
   NOP
-  CALL DragonflyTitle
+  CALL BriefPageText
   LD A,$C9
-  LD (DragonflyOnce),A
+  LD (BriefPageOnce),A
   RET
 
 ; The keys of the status view: C to the 3D view, B and M to $704E / $705E, then
@@ -520,11 +527,11 @@ PrintStatusHelp:
   LD A,$1A
   JP InvertPanelA
 
-; The Dragonfly's loop: the panel from bank 7 at $C000, the Dragonfly's bars,
-; then world and objects
+; The damage board's loop (key D): PicDamageBoard from bank 7 at $C000, the
+; weapon icons and bars, then world and objects
 ;
 ; Witness: L1 1 (play).
-DragonflyLoop:
+DamageLoop:
   CALL PageShadowScreen
   LD A,$C9
   LD (MessageOnce),A
@@ -532,14 +539,14 @@ DragonflyLoop:
   LD DE,l_BFEB+$0015
   CALL DrawBank7Picture
   CALL PageBank6
-  CALL DrawDragonflyPanel
+  CALL DrawDamagePanel
   CALL DrawSlotBarsLow
   CALL PageBank0Main
 l_6CB0:
   CALL DrawSlotBars
   CALL CopyHudGlyphs+$0001
   CALL PageBank0
-  CALL MapKeys
+  CALL DamageKeys
   CALL SetCamera
   CALL SegmentVisibility
   CALL ActivateMissionObjects
@@ -650,7 +657,7 @@ l_D584:
   INC HL
   LD (HL),D
   LD BC,$0008
-  LD HL,(WorldVars+$0006)
+  LD HL,(WorldVars+$0005)
   CALL AbsHL
   EX DE,HL
   LD HL,(MissionParams+$0007)
@@ -660,7 +667,7 @@ l_D584:
   AND A
   SBC HL,BC
   RET NC
-  LD HL,(WorldVars+$0009)
+  LD HL,(WorldVars+$0008)
   CALL AbsHL
   EX DE,HL
   LD HL,(MissionParams+$000A)
@@ -726,10 +733,10 @@ HelicarrierTemplate:
 ; The Helicarrier's collision handler: the tank drives into the parked
 ; Helicarrier
 ;
-; When the hitter is not present (+3 bit 7 clear) HitTest; when `$68E8` is set
-; JP `$67EE` (mission complete), else `$7047` with `$7BF9` = `$CC94` (failure).
-; Then `$DAC4` turns it over the pad, 8 a step, until its heading is near the
-; pad's (+`$31`, the CPL of the pad's heading).
+; Three branches on the hitter IY: +3 bit 7 clear (not the player's family) ->
+; HitTest `$67DC`; else the goal flag `$68E8` set -> `$67EE` (mission
+; complete); else ScreenSix `$7047` and `$7BF9` = `$CC94` (failure). There is
+; no parked test.
 ;
 ; Witness: m1complete frame 21558, m4complete 21299, one run each, then `$67EE`
 ; (work/stage2/complete-NOTES.md).
@@ -745,12 +752,22 @@ HelicarrierHit:
   LD (FailReason),HL
   RET
 
-; HelicarrierTurn
+; The arrival's turn over the pad: heading + 8 a pass until within 8 of +$31,
+; then the descent
+;
+; +`$22` += 8; |+`$22` - +`$31`| (`$67D6`) below 8 makes HelicarrierDescent
+; `$DADE` the step. Witness: m1complete 17109-17205 (11 runs).
 HelicarrierTurn:
-  DEFB $DD,$7E,$22,$C6,$08,$DD,$77,$22 ; the arrival's turn over the pad
-  DEFB $DD,$96,$31,$CD,$D6,$67,$FE,$08 ; (m1complete 17109-17205, 11 runs)
-  DEFB $D0,$DD,$36,$18,$DE,$DD,$36,$19
-  DEFB $DA,$C9
+  LD A,(IX+$22)
+  ADD A,$08
+  LD (IX+$22),A
+  SUB (IX+$31)
+  CALL ApiVector08
+  CP $08
+  RET NC
+  LD (IX+$18),$DE
+  LD (IX+$19),$DA
+  RET
 
 ; The Helicarrier's landing: down 8 a step to the pad, then parked
 ;
@@ -802,13 +819,18 @@ SetHelicarrierHandler:
   LD (IX+$19),$DB
   RET
 
-; A Helicarrier variant (not run)
+; Code whose address PlaceHelicarrier writes into +$31/+$32; no recording runs
+; it
 ;
-; `LD IY,$75F0` / `LD HL,$67A8` / `EXX` / `JR`: the variant aimed at the
-; player, not run.
+; `LD IY,$75F0` / `LD HL,$67A8` / `EXX` / `JR $DB2C` into HelicarrierWait with
+; the player as the target. PlaceHelicarrier stores `$DB1A` when |pad| -
+; |camera| is below 8 on both axes; whether anything jumps to it is SUSPECTED
+; (docs/10-gameplay-logic.md 10.9).
 HelicarrierCode:
-  DEFB $FD,$21,$F0,$75,$21,$A8,$67,$D9
-  DEFB $18,$08
+  LD IY,ObjectTable
+  LD HL,WorldVars+$0005
+  EXX
+  JR l_DB2C
 
 ; The Helicarrier waits for the player
 ;
@@ -823,6 +845,8 @@ HelicarrierWait:
   LD IY,l_7E56+$000F
   LD HL,MissionParams+$0007
   EXX
+; This entry point is used by the routine at HelicarrierCode.
+l_DB2C:
   CALL TurnToward
   CALL ApiVector00
   EXX

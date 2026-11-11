@@ -2,7 +2,7 @@
 
 What this covers: the rules of Battle Command as code. The player drives one Mauler tank through a mission's world,
 destroys the goal objects, and is picked up by the Helicarrier. The enemies are made around the tank and chase it.
-Damage comes off four armour gauges and nine subsystem gauges. A mission ends in success, or in one of five
+Damage comes off four armour gauges and nine subsystem gauges. A mission ends in success, or in one of six
 failures; there are no lives. This document gives:
 
 - the order of the work in a pass;
@@ -13,7 +13,7 @@ failures; there are no lives. This document gives:
 - every weapon, the Dragonfly and the payload limit;
 - debris;
 - the goals of the ten missions, the pickup and completion;
-- every failure and its cause;
+- every failure and its cause, and the mission clock, which causes none;
 - the Grand Finale, the total score and the load / save codes;
 - the notable features, and what no recording reached.
 
@@ -106,14 +106,17 @@ PlayerStep `$A8C7` is record 0's step handler. Each pass it does, in order:
    type in `$CE69` (3 when nothing is hit).
 2. **Walls.** Type 2 or `$80`: the speed is negated, the tank is moved back (MoveObject), and the step handler
    becomes BounceDecay `$CC09` for the next passes.
-3. **Rough ground.** Types 0 and 6 store 1.25 x |speed| (with the speed's sign) in `$7E8E`; other types store the
-   speed. IX+7 is written and restored around it, so the tank's own speed does not change (section 10.13).
-4. **Fuel.** When the speed is not 0: Fuel `$7C57` -= (|speed| >> 4) OR 1. A borrow goes to OutOfFuel `$A94E`.
-5. **Boundary.** BoundaryCheck `$D4B8` (section 10.3).
-6. **Move.** MoveObject `$BFD1`: X += speed x sin(heading), Y += speed x cos(heading).
-7. **Throttle.** speed = speed - StepY `$985F` (`$F8` = -8 while Q is held), clamped below `$30` forward and `$18`
+3. **Brake.** With the key S down (KeyState b1, KeyCode `$53`) `$A8F2` jumps to `$A9C0`, which makes BrakeKey
+   `$A9C9` the step handler; the rest of this pass is skipped ([doc 05](05-controls.md)).
+4. **Road.** Terrain 0 (a segment of style 0, the road; every segment of mission 1 is style 0) and style 6 store
+   1.25 x |speed| (with the speed's sign) in `$7E8E` (read only by the speed bar); other terrain stores the speed. IX+7 is written and
+   restored around it, so the tank's own speed does not change (section 10.13).
+5. **Fuel.** When the speed is not 0: Fuel `$7C57` -= (|speed| >> 4) OR 1. A borrow goes to OutOfFuel `$A94E`.
+6. **Boundary.** BoundaryCheck `$D4B8` (section 10.3).
+7. **Move.** MoveObject `$BFD1`: X += speed x sin(heading), Y += speed x cos(heading).
+8. **Throttle.** speed = speed - StepY `$985F` (`$F8` = -8 while Q is held), clamped below `$30` forward and `$18`
    backward (47 and -23).
-8. **Steering and fire** (PlayerSteering `$A985`): heading += turn / 2; the fire cooldown; the fire key calls the
+9. **Steering and fire** (PlayerSteering `$A985`): heading += turn / 2; the fire cooldown; the fire key calls the
    current store's fire routine (section 10.7).
 
 ```text
@@ -122,7 +125,8 @@ PlayerStep(tank):
     if terrain in (2, $80):
         tank.speed = -tank.speed; MoveObject(tank)
         tank.step = BounceDecay; return
-    rough_speed = 1.25 x tank.speed if terrain in (0, 6) else tank.speed   # to $7E8E only
+    if key S down: tank.step = BrakeKey; return     # $A9C0
+    road_speed = 1.25 x tank.speed if terrain in (0, 6) else tank.speed    # to $7E8E: the speed bar only
     if tank.speed != 0:
         cost = (|tank.speed| >> 4) | 1
         if Fuel < cost: FailReason = "RAN OUT OF FUEL"; ScreenSix(); return
@@ -232,7 +236,8 @@ pass, so the 16 128 of a full tank last about 5400 passes, about 15 minutes of d
 ## 10.3 The boundary: AWOL and desertion
 
 BoundaryCheck `$D4B8` compares the player's coarse X and Y (the operands `$BC12` and `$BC1D` that
-ActivateMissionObjects patched) with the mission's half extents (`$DBCF`, `$DBD0`):
+ActivateMissionObjects patched) with the mission's half extents (`$DBD0`, `$DBD1`). X is tested first; Y only when X
+is inside:
 
 - inside on both axes: the state `$7578` = 0, the warning line is cleared;
 - beyond the extent on an axis, up to 4 more: state 1, "GOING AWOL" is printed once;
@@ -240,11 +245,17 @@ ActivateMissionObjects patched) with the mission's half extents (`$DBCF`, `$DBD0
 
 ```text
 BoundaryCheck():
-    for axis in X, Y:
-        d = |player_coarse[axis]|; e = |extent[axis]|
-        if d > e + 4: if SetAwolState(2) changed: FailReason = "PLAYER DESERTION"; ScreenSix()
-        elif d > e:   if SetAwolState(1) changed: print "GOING AWOL"
-    if inside on both: if SetAwolState(0) changed: clear the warning
+    d = |player_coarse_x|; e = |extent_x|                  # ($BC12), ($DBD0)
+    if d > e:                                              # X beyond: Y is not looked at
+        if d > e + 4: Desert() else: Awol()
+        return
+    d = |player_coarse_y|; e = |extent_y|                  # ($BC1D), ($DBD1)
+    if d > e + 4: Desert()
+    elif d > e:   Awol()
+    elif SetAwolState(0) changed: clear the warning line   # inside on both axes
+
+Desert(): if SetAwolState(2) changed: FailReason = "PLAYER DESERTION"; ScreenSix()
+Awol():   if SetAwolState(1) changed: print "GOING AWOL"
 ```
 
 ```mermaid
@@ -275,11 +286,14 @@ work).
 The rules, in short:
 
 - **Supply.** A spawner (mission 1: types 4, 6 and the flag 19) keeps three children. A dead or removed child is
-  replaced at once, at a random place about 3 coarse units around the camera.
+  replaced on the next pass with a free record, one child a pass, 3 coarse units from the camera on one axis and
+  -1 to +3 on the other, as long as the spawner itself has a record (within 9 coarse units).
 - **Chase.** A unit turns toward the tank by at most 8 heading steps a pass. Only when it is aligned does it fire,
   speed up to its top speed (40) and move.
-- **Fire.** The whole mission has one gun timer (the operand at `$E7A9`). A shot resets it to 8-39 passes, so the
-  enemies together fire about once every 24 passes, whatever their number.
+- **Fire.** The whole mission has one gun timer (the operand of `LD A,n` at `$E7A9`). Every aligned firer
+  decrements it once a pass; a shot resets it to 8-15 or 24-31 calls (19.5 on average). So one aligned unit fires
+  about once every 20 passes, two about once every 10: the fire rate grows with the number of units aligned on the
+  tank.
 - **Leash.** A unit more than 3 coarse units from the camera on an axis is removed.
 - **Morale.** A unit with fewer than 2 hit points flees; with fewer than 4 near the tank it wanders and returns.
 
@@ -320,8 +334,9 @@ Worked example: record 7 between the samples of frames 7980 and 8057 (`death-1.j
 | 8029 | 243 | `$DF7D` | `$D014` |
 | 8057 | 241 | `$DF55` | `$D085` |
 
-The heading falls by one a pass as the bearing to the moving tank changes; Y grows by 38 a pass (`$26`), X falls by
-12: speed 40 on heading 245, about 17 degrees west of north (40 x cos 17 = 38, 40 x sin 17 = 12).
+The heading falls by one on most passes (six steps in the nine passes 7981-8057) as the bearing to the moving tank
+changes; between 7990 and 8000 Y grows by 38 (`$26`) and X falls by 11: speed 40 on heading 245, 11 steps of 256 west
+of north, 11 / 256 x 360 = 15.5 degrees (40 x cos 15.5 = 38.5, 40 x sin 15.5 = 10.7).
 
 The path of three units and the tank over the world is [figure 7.2](07-objects.md#73-the-road-map-vertices-and-segments).
 
@@ -329,8 +344,20 @@ Witness: the death samples, frames 7590-9600: record 7 (type 7, the tank of the 
 freed at 9044; record 8 (type 26) lives 7605-8963; record 12 holds type 9 from 7612 to 8625, then type 28 shells
 (8730-8863, 8897-9024), each freed when its lifetime ends or it hits; the shell hit on the tank is at 8121.
 
-The point: the enemies' pressure does not depend on how many there are: one timer paces all their fire, and the
-spawners refill the field around the tank wherever it goes.
+The point: one timer paces all the enemies' fire, but each aligned unit drains it, so the pressure grows with the
+number of units facing the tank; the spawners refill the field around the tank wherever it goes.
+
+**Missions 2-10** ([doc 07.14](07-objects.md#714-the-units-of-missions-2-10)) carry relocated copies of the same unit
+library, tuned by a few constants:
+
+- In missions 2 and 3 Close holds while a unit has 2 hit points or more, so their chase units stay near the tank and
+  fire (in mission 1 Close always falls through to Wander).
+- The homing carriers of missions 2, 3, 4 and 8 become fixed turrets at once (the sentry limit is `CP $04` and every
+  one has fewer than 4 hit points).
+- Mission 2's leash is `$1000` (4 coarse units).
+- The shells of missions 2, 3, 4 and 8 do 1 point of damage (mission 1: 3; its homing shell 4).
+- Every unit turns by up to 8 a pass: the D loaded before M1TurnToPlayer (8, 16, 1) is dead, `$E55E` loads
+  `LD D,$02`.
 
 ## 10.5 Damage: PlayerHit, the armour and the subsystems
 
@@ -341,9 +368,9 @@ PlayerHit `$CAA5` is the tank's collision handler, called by CollisionPass with 
 3. Otherwise SetMessage prints "TANK HIT".
 4. A hitter at height `$30` or more hits the top: `$8304` -= damage (+`$14`). The byte is stored before the test,
    so an underflow leaves the wrapped value.
-5. A lower hitter hits a side. HitSide `$CB4C` takes the hitter's view-space x (+`$2F`/+`$30`, negated in the rear
-   view): |x| < `$60` is side 2 (the front), else the sign gives side 1 or 3. `$8300` + side -= damage, tested before
-   the store.
+5. A lower hitter hits a side. HitSide `$CB4C` takes the hitter's view-space x (+`$2F`/+`$30`, negated when the
+   rear view is on), not a bearing: |x| <= `$60` is side 2 (the front), else a positive x is side 1 and a negative
+   x side 3. There is no rear side. `$8300` + side -= damage, tested before the store.
 6. Then a subsystem of that side: E = Random / `$55` (0, 1, 2, or 3 when Random is 255); the pointer is at
    `$8338 + 6 (side - 1) + 2E`; the gauge loses the damage, with a floor of 0; a gauge with b7 set is skipped.
 7. Unless the hitter's +3 b4 is set (shells have it), the tank's speed is negated, it is moved, and SetBounce runs:
@@ -396,6 +423,21 @@ flowchart TD
   L --> R
 ```
 
+The nine subsystem pointers `$8338-$8349` lead to the gauges `$68AB + 6k`, k = 0-8. StoresToGauges `$CC1B` (bank 6)
+sets gauge k from record k of DamageBoardRecords `$834A`: `$5F` when the record is not 0, else 0. Records 0-4 are the
+damage board's five fixed icons (`$10`, `$11`, `$12`, `$0F`, `$0E`), so gauges 0-4 always start at `$5F`; records
+5-8 are the four WeaponSlots, so gauges 5-8 (`$68C9-$68DB`) are the slots, `$5F` when a store is fitted.
+
+| Side (HitSide) | E = 0 | E = 1 | E = 2 | E = 3 (Random = 255) |
+| --- | --- | --- | --- | --- |
+| 1 (x > `$60`) | `$68AB` gauge 0 | `$68C3` gauge 4 | `$68C9` gauge 5, slot 1 | `$68CF` (side 2's first) |
+| 2, the front | `$68CF` gauge 6, slot 2 | `$68D5` gauge 7, slot 3 | `$68DB` gauge 8, slot 4 | `$68BD` (side 3's first) |
+| 3 (x < -`$60`) | `$68BD` gauge 3 | `$68B1` gauge 1 | `$68B7` gauge 2 | the word at `$834A`: `$0010`, a ROM address |
+
+A slot's gauge worn down to 0 disables its store: when the slot is selected, SelectWeapon reads SlotGauges `$68C9` +
+6 x slot (`$C5CA`), and at 0 prints DamagedText and installs NoAction as the fire and aim routines (`$C605`,
+[doc 05](05-controls.md)). The damage board (key D) draws all nine gauges with their icons.
+
 The top-armour path and the failure:
 
 ```text
@@ -406,9 +448,9 @@ $CABC  AND A
 $CABD  LD BC,$0030
 $CAC0  SBC HL,BC           ; hitter height - $30
 $CAC2  JR C,$CAD1          ; low: a side
-$CAC4  LD A,(PlayVars+3)   ; $8304, the top armour
+$CAC4  LD A,(Armour+3)     ; $8304, the top armour
 $CAC7  SUB (IY+$14)        ; - damage
-$CACA  LD (PlayVars+3),A   ; stored first
+$CACA  LD (Armour+3),A     ; stored first
 $CACD  JR C,ArmourDestroyed
 $CACF  JR $CB1E            ; to the knock-back test
 ArmourDestroyed:
@@ -438,8 +480,8 @@ docs/img/routines/PlayerHit.gif`.*
 
 How to read it:
 
-- Left: `$8300-$835F`: the armour at `$8301-$8304` (row 1), the subsystem pointers from `$8338`, the slot records
-  from `$834A`.
+- Left: `$8300-$835F`: the armour at `$8301-$8304` (row 1), the subsystem pointers from `$8338`, the damage-board
+  records from `$834A`.
 - `$8304` turns yellow when it goes from `$7F` to `$7B`.
 - Right: the code; SetMessage and the sound are "other".
 
@@ -475,8 +517,9 @@ recording). The side path and the subsystems: m1complete, PlayerHit 44 runs (fra
 (`$CAC4`) 4, the side branch (`$CAD1`, HitSide) 40, the subsystem damage (`$CAFA-$CB1D`) 40; the armour went from
 `7F 7F 7F 7F` to `54 7F 57 70` (`work/stage2/complete-NOTES.md`).
 
-The point: the top is the weak side. Every enemy shell flies at height 48 or more (types 10, 12, 28, 31), so in
-mission 1 only type 8 and 24 shells (heights 16 and 20) reach the side armour and the subsystems. The quirk at E = 3
+The point: the height of a shell picks the armour. In mission 1 the shells 10, 12, 28 and 31 fly at 48 or more and
+hit the top, which has no subsystems; the shells 8 and 24, at 16 and 20, hit a side and wear a subsystem gauge too.
+In m1complete 40 of the 44 hits were side hits (all 40 with a subsystem), 4 top hits. The quirk at E = 3
 is in [section 10.13](#1013-notable-features).
 
 ## 10.6 Kills and the score
@@ -565,61 +608,791 @@ and the station score 0. The score counts only when the mission is completed (se
 
 ## 10.7 The weapons
 
-The fire key, when the cooldown `$A9FD` is 0, calls the current slot's fire routine through the operand at `$A9B9`,
-set from the store-type table `$7B89` + 8 x type (word 3). Each fire routine takes one round (ConsumeAmmo `$B550`,
-returns M when empty) and spawns a resident projectile type ([doc 07.5](07-objects.md#75-the-templates-and-the-object-types)).
+The tank carries four slots ([doc 07.12](07-objects.md#712-the-weapon-slots-and-the-weapon-records)). A slot's store
+type indexes the store-type table `$7B89` + 8 x type: four routine words, read from `build/game.bin`.
 
-| Store type | Store | Aim | Aim 2 | Fire | Select | Projectile |
+| Store type | Store | K (word 0) | J (word 1) | Fire (word 2) | Select (word 3) | What it makes |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phoenix RRSA | `$B8FE` | `$B909` | `$C13E` | `$C11E` | `$83`, guided |
-| 2 | Banshee RRSS | `$6BB0` | `$6BB0` | `$C14D` | `$C12C` | `$82` |
-| 3 | K-40 Mortar | `$B8B9` | `$B8C4` | `$B59F` | `$B8CC` | `$80`, ballistic |
-| 4 | Turret | `$6BB0` | `$6BB0` | `$B568` | `$C510` | `$81` |
-| 5 | Phoenix IRSA | `$B8FE` | `$B909` | `$C20D` | `$C11E` | `$85`, guided |
-| 6 | Banshee IRSS | `$6BB0` | `$6BB0` | `$C21D` | `$C12C` | `$84` |
+| 1 | Phoenix RRSA | `$B8FE` IR view up | `$B909` IR view down | `$C13E` | `$C11E` | `$83`, radar lock |
+| 2 | Banshee RRSS | `$6BB0` | `$6BB0` | `$C14D` | `$C12C` | `$82`, radar lock |
+| 3 | K-40 Mortar | `$B8B9` elevation up | `$B8C4` elevation down | `$B59F` | `$B8CC` | `$80`, ballistic |
+| 4 | Turret | `$6BB0` | `$6BB0` | `$B568` | `$C510` | `$81`, straight |
+| 5 | Phoenix IRSA | `$B8FE` | `$B909` | `$C20D` | `$C11E` | `$85`, IR lock |
+| 6 | Banshee IRSS | `$6BB0` | `$6BB0` | `$C21D` | `$C12C` | `$84`, IR lock |
 | 7 | Dragonfly | `$6BB0` | `$6BB0` | `$C2BC` | `$C12C` | `$86`, flown |
-| 8 | K-90 Cluster | `$6BB0` | `$6BB0` | `$CF3F` | `$CF30` | `$88` |
-| 9 | Sleeper mine | `$CFF4` | `$CFE9` | `$D005` | `$CF26` | `$87` |
-| 10 | SLAM Laser | `$D0F5` | `$D104` | `$6BB0` | `$D45E` | `$89` |
-| 11 | Skeet bomb | `$6BB0` | `$6BB0` | `$D24C` | `$D24B` | `$8A` |
-| 12 | Phantasm | `$D2E4` | `$D30B` | `$D319` | `$D46A` | `$8B` |
-| 13 | Spectre | `$D2F7` | `$D30B` | `$D31F` | `$D34E` | `$8B` |
+| 8 | K-90 Cluster | `$6BB0` | `$6BB0` | `$CF3F` | `$CF30` | `$87`, parachute blast |
+| 9 | Sleeper mine | `$CFF4` timer up | `$CFE9` timer down | `$D005` | `$CF26` | `$88`, timed mine |
+| 10 | SLAM Laser | `$D0F5` on | `$D104` off | `$6BB0` | `$D45E` | no object: the laser |
+| 11 | Skeet bomb | `$6BB0` | `$6BB0` | `$D24C` | `$D24B` | `$89`, weaving bomb |
+| 12 | Phantasm | `$D2E4` auto on | `$D30B` auto off | `$D319` | `$D46A` | `$8A`, the decoy |
+| 13 | Spectre | `$D2F7` auto on | `$D30B` auto off | `$D31F` | `$D34E` | `$8B`, parachute bomb |
 
-`$6BB0` is NoAction, a `RET`. The names of `$C13E`, `$C21D` and the two selects in `game.ann` do not match the table:
-`$C13E` is fired by type 1 (Phoenix RRSA) and `$C21D` by type 6 (Banshee IRSS); bcC-src-changes lists the renames.
+How to read it:
+
+- `$6BB0` is NoAction, a `RET`.
+- K and J are the aim keys ([doc 05.10](05-controls.md#510-the-play-keys-and-the-weapon-keys)): SelectWeapon
+  patches words 0 and 1 into the `JP` operands `$6B55` (K) and `$6B50` (J).
+- The store names come from WeaponRecords (bank 6 `$C373`) and the stores texts: type 11 has 12 rounds and 200 kg
+  (the Skeet bomb), type 12 8 rounds and 100 kg (the Phantasm), type 13 12 rounds and 100 kg (the Spectre). The
+  model word of each record matches the template it fires (Sleeper `$8739` = `$88`'s model; K-90 and Spectre
+  `$7F5B`, the parachute model their bombs take at the top of the climb; Skeet `$7ECA` = `$89`'s).
+
+The resident templates ([doc 07.5](07-objects.md#75-the-templates-and-the-object-types), ShellTemplate80 `$B3CA`):
+
+| Type | Store | Height | Speed | Box | Damage | Step | Hit |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `$80` | K-40 Mortar | 40 | 96 | 32 | 1 | MortarShellStep `$B5E8` | Explode `$B8AB` |
+| `$81` | Turret | 56 | 96 | 32 | 1 | CannonShellStep `$B592` | Explode |
+| `$82` | Banshee RRSS | 48 | 120 | 16 | 2 | `$C453`, flat | `$B8A8` |
+| `$83` | Phoenix RRSA | 56 | 120 | 16 | 2 | `$C4A5`, follows the height | `$B8A8` |
+| `$84` | Banshee IRSS | 56 | 120 | 16 | 2 | `$C4A5`, follows the height | `$B8A8` |
+| `$85` | Phoenix IRSA | 56 | 120 | 16 | 2 | `$C453`, flat | `$B8A8` |
+| `$86` | Dragonfly | 64 | 120 | 16 | 2 | DragonflyStep `$C391` | `$C365` |
+| `$87` | K-90 Cluster | 56 | 96 | 32 | 127 | ClusterRise `$CF4A` | Explode |
+| `$88` | Sleeper mine | 56 | 127 | 32 | 31 | MineFall `$D048` | `$D0E9`, a `RET` |
+| `$89` | Skeet bomb | 64 | 64 | 32, 64, 32 | 4 | DecoyZigZag `$D2AE` | Explode |
+| `$8A` | Phantasm | 56 | 96 | 32 | 1 | PhantasmStep `$D405` | `$6BB0`, a `RET` |
+| `$8B` | Spectre | 56 | 96 | 64 | 31 | Cluster13Step `$D369` | Explode |
+
+All have flags `$57`: a step, no knock-back (b4), a weapon (b6, so HitTest counts their hits,
+[section 10.6](#106-kills-and-the-score)). Hit points 0, top speed 127, radius 10.
+
+### The fire path, the rounds and the slot hooks
+
+PlayerSteering counts the fire cooldown `$A9FD` down once a pass. At 0, the fire key (bit of `$6D43`) calls
+the slot's fire routine through the operand at `$A9B9`. Most fire routines run the same three steps:
+
+1. SelectAmmoPointer `$D3C6` puts the slot's rounds byte (`$836D` + 6 x slot) into ConsumeAmmo's operand `$B551`.
+2. ConsumeAmmo `$B550` returns M when the rounds are 0, else takes a projectile record
+   (FindProjectileSlot), plays SoundFire and stores the rounds less one.
+3. LaunchProjectile `$B5A7` (or a copy of it) sets the type (ObjectSetType, vector `$67C7`), registers the collision
+   (vector `$67CA`), copies 8 bytes from the camera `$67A5` (heading word, X, Y) to +`$21`-+`$28`, writes the
+   elevation's two speeds and calls SetFireCooldown `$A9F7` (8 passes).
+
+```text
+LaunchProjectile(type):                  # A = type, the slot's rounds pointer already in $B551
+    if rounds == 0: return M
+    rec = FindProjectileSlot();  if none: return
+    rounds -= 1
+    ObjectSetType(rec, type); RegisterCollision(rec)
+    rec.heading, rec.x, rec.y = camera.heading, camera.x, camera.y
+    rec.speed = |Sine8[elevation + $C0]|     # the operand $B5C8
+    rec.vz    = Sine8[elevation]             # the operand $B5C5, to +$31
+    rec.pitch = 0; rec.flags |= $40
+    PrintAmmo(); FireCooldown = 8
+```
+
+```text
+$B5C4  LD A,$00             ; operand $B5C5: Sine8[e], the vertical speed
+$B5C6  EX AF,AF'
+$B5C7  LD A,$00             ; operand $B5C8: Sine8[e + $C0]
+$B5C9  CALL ApiVector08     ; |A|
+$B5CC  LD (IX+$07),A        ; the speed
+$B5CF  EX AF,AF'
+$B5D0  LD (IX+$31),A        ; the vertical speed
+```
+
+The elevation e is one byte, 64 a right angle. SetElevation `$CF32` (and ShowMortarRange `$B8CC` for the mortar)
+reads SinCos8 `$A899` (through the vector `$67E8`) at e + `$C0` and writes the two operands; Sine8 at `$6300` peaks at
+127. The weapons that fly a curve set their own elevation:
+
+| e | Set by | Speed | Vertical speed |
+| --- | --- | --- | --- |
+| 32 | the mortar at the start (`$B8BA`) | 91 | 91 |
+| 28 | the mortar after four J (play) | 99 | 81 |
+| 20 | the K-90 select ElevationZero `$CF30` | 113 | 60 |
+| 30 | the Sleeper select PrintElevation `$CF26`, LaunchPhantasm, LaunchCluster13 | 95 | 86 |
+
+Four calls in PlayLoop (`$6A43`-`$6A56`), `LD A,slot` / `CALL NoAction` once per slot, are the **slot hooks**:
+SelectWeapon stores the address of the current slot's `CALL` operand (`$6A46` + 5 x slot) in `$C53D`, and a weapon
+that needs a routine every pass writes it there. The Sleeper's countdown display, the auto-fire of the Phantasm and
+the Spectre and the SLAM laser run through them. A hook keeps running when another slot is selected; it runs in the
+normal view only (DragonflyViewLoop `$6AB9` has no hooks).
 
 ```mermaid
 flowchart TD
-  K["fire key, cooldown 0"] --> F["CALL ($A9B9): the slot's fire routine"]
-  F --> A["ConsumeAmmo: rounds - 1"]
-  A -- empty --> R["no shot"]
-  A -- ok --> L["LaunchProjectile $B5A7:<br/>FindFreeObject, ObjectSetType $8n,<br/>the tank's heading and position"]
-  L --> G{"guided?"}
-  G -- "Phoenix" --> M["MissileLock: a target in the cone<br/>within 6 of the heading"]
-  G -- "Dragonfly" --> D["the camera follows it;<br/>fire again recalls it"]
-  G -- "shell, mortar" --> S["its step: move, lifetime"]
+  K["fire key, cooldown $A9FD = 0"] --> F["CALL ($A9B9): the slot's fire word"]
+  F --> T{"which store"}
+  T -- "Turret, Mortar, K-90,<br/>Sleeper, Skeet, Phantasm, Spectre" --> A["ConsumeAmmo: rounds 0? no shot"]
+  A --> L["LaunchProjectile: record, type,<br/>camera position, elevation speeds"]
+  L --> C["SetFireCooldown: 8 passes"]
+  T -- "Banshee, Phoenix" --> M["search or lock first;<br/>a second press launches (16 passes)"]
+  T -- "Dragonfly" --> D["LaunchDragonfly: the camera<br/>and the controls go to it"]
+  T -- "SLAM" --> N["NoAction: K switches it on"]
+  L --> S["the type's step each pass"]
   M --> S
   D --> S
-  S --> C["SetFireCooldown: 8 passes"]
 ```
 
-The projectiles:
+Witness: ConsumeAmmo L1 4 in play and 6 in play2; LaunchProjectile 3 and 4; SetFireCooldown 3 and 6
+(`work/stage1/play/l1.json`, `play2/l1.json`).
 
-- **Turret** (`$81`): straight, speed 96, 100 passes, damage 1.
-- **K-40 Mortar** (`$80`): ballistic; the elevation (the operand `$B8BA`, 32 at start, lowered and raised with the aim
-  keys) sets the vertical speed; height += vertical speed, which falls each pass; at the ground it bursts (Explode
-  `$B8AB`).
-- **Banshee** (`$82`, `$84`) and **Phoenix** (`$83`, `$85`): speed 120, damage 2. The Phoenix (store types 1 and 5)
-  locks: MissileLock hooks MissileSeek into the depth-tree walk and turns toward a target within 6 heading steps
-  (TargetInCone `$C197`). The IR variants (`$BA13`) also switch the IR view.
-- **Dragonfly** (`$86`): spawned with the camera record `$B9F4` set to it; the controls steer it (DragonflyStep:
-  turn, MoveObject, height from the up and down keys); the fire key recalls it and the camera returns to the tank.
-- **Sleeper mine** (`$87`): damage 127; **K-90 Cluster** (`$88`): damage 31 with its own hit handler `$D0E9`;
-  **SLAM Laser** (`$89`); **Skeet bomb** (`$8A`); **Spectre / Phantasm** (`$8B`), damage 31.
+The point: a weapon is a template plus a step. The engine gives every projectile the camera's place and the fire
+key's cooldown; what a weapon does after that lives in its step handler.
 
-The payload limit: FitOrRemoveWeapon `$C173` (bank 6), on the stores screen, counts the slots that already hold the
-store, refuses a store fitted "most fitted" times (MaxNumberExceeded), then adds its weight to the payload operand and
-refuses a total of 1001 kg or more (PayloadExceeded).
+### K-40 Mortar (`$80`)
+
+The elevation is the operand `$B8BA`, 32 in the image. K (MortarElevationUp `$B8B9`) raises it by one up to 63, J
+(MortarElevationDown `$B8C4`) lowers it down to 1; both end in ShowMortarRange `$B8CC`, which writes the two launch
+speeds and prints the elevation in degrees, e x 256 / 182 (32 is 45). FireMortar `$B59F` launches type `$80` at
+height 40.
+
+MortarShellStep `$B5E8` moves the shell, adds the vertical speed +`$31` to the height and takes 5 off the vertical
+speed (`RET PE` keeps it when the subtraction would overflow). A height below 0 frees the shell (RemoveObject
+`$B8B1`): the shell that reaches the ground vanishes without debris. Only a hit explodes it (Explode `$B8AB`, its
+collision handler).
+
+```text
+MortarShellStep(shell):
+    MoveObject(shell)                      # speed x sin, cos of the heading
+    shell.height += shell.vz
+    if shell.height < 0: RemoveObject(shell); return
+    shell.vz -= 5                          # gravity, kept at -128
+```
+
+```text
+$B5E8  CALL ApiVector00     ; MoveObject
+$B5EB  LD D,$00
+$B5ED  LD A,(IX+$31)        ; the vertical speed, signed
+$B5F0  AND A
+$B5F1  JP P,$B5F5
+$B5F4  DEC D
+$B5F5  LD E,A
+$B5F6  LD L,(IX+$05)
+$B5F9  LD H,(IX+$06)
+$B5FC  AND A
+$B5FD  ADC HL,DE            ; height + vz
+$B5FF  JP M,RemoveObject    ; below the ground: gone
+$B602  LD (IX+$05),L
+$B605  LD (IX+$06),H
+$B608  LD E,$05
+$B60A  AND A
+$B60B  SBC A,E              ; vz - 5
+$B60C  RET PE
+$B60D  LD (IX+$31),A
+```
+
+Worked example, the play recording's shells at e = 28 (39 degrees): speed 99, vertical speed 81. The heights after
+each pass are 121, 197, 268, 334, 395, ...; the top is 737; the 34th pass takes the height below 0. The shell flies 34
+passes x 99 = 3366 world units, 3.3 coarse units. At the start value e = 32 (45 degrees): 38 passes, 3458 units, top
+914.
+
+Witness: play, frames 8717-8864: the select (ShowMortarRange at 8717), J four times (MortarElevationDown 8761-8781),
+two shots (FireMortar 8800 and 8864). MortarShellStep runs 68 times, 2 x 34, as the example gives; RemoveObject runs
+twice (9044, 9136) and Explode never: both shells came down on open ground.
+
+The point: the mortar is the only aimed curve. Its reach is set by one byte, and the most it gives (3458 units at 45
+degrees) is about the radius in which the spawner keeps its units.
+
+### Banshee and Phoenix: the locks and the flight (`$82`-`$85`)
+
+The four missiles share one launch, LaunchMissile `$C3DE`, and differ in how they find a target and how they fly.
+None of them fires without a target: the first press searches, a second press after a lock launches.
+
+| Store | Lock | Height test at the lock | Flight step | Follows the target's height | Checks the target's serial |
+| --- | --- | --- | --- | --- | --- |
+| 2 Banshee RRSS | TargetInCone | yes | `$C453` | no | no |
+| 1 Phoenix RRSA | TargetInCone | yes | `$C4A5` | yes, 1/16 of the gap a pass | yes |
+| 6 Banshee IRSS | MissileSeek | no (`$C276` = 0) | `$C4A5` | yes | yes |
+| 5 Phoenix IRSA | MissileSeek | yes (`$C276` = `$FF`) | `$C453` | no | no |
+
+**The radar lock** (FireBansheeRr `$C14D`, FirePhoenixRr `$C13E`). The gate is the offset of `JR` at TargetInCone
+`$C197` (its operand `$C198`): 1 in the image (search allowed), 0 when a target is locked. The fire routine stores
+the type in LaunchMissile's operand `$C41D`. With the gate not 0 it sets the gate to `$39` (the `JR` then leads to
+the test at `$C1D2`), hooks TargetInCone into the depth-tree walk (`$BF40`) and runs FindMissileTarget `$BF24`. The
+walk takes the `+2` child first, so it visits the objects from near to far. The test takes the first object that:
+
+- overlaps the eye in height: |height - eye `$67AD`| < its half height + the tank's (TargetBearingCheck `$C1ED`);
+- is present (+2 not 0), within 6 heading steps of the tank's heading (BearingTo through `$67C1`);
+- is no shell or weapon (+3 AND `$50` = 0) and no wreck (+2 b6 clear).
+
+A hit closes the gate (0) and starts the sight timer `$C4CE` = 16: DrawSightOverlay `$C4CD` blinks the sight mask for
+16 passes, then ResetSightTimer `$C506` opens the gate (1) again. A press while the gate is 0 launches at the locked
+record (the operand `$C16F`). With nothing found the gate stays `$39` and the next press searches again; no round is
+used.
+
+**The IR lock** (FireBansheeIr `$C21D`, FirePhoenixIr `$C20D`, then MissileLock `$C227`). With the lock flag (the
+operand `$C22F`) 0, it hooks MissileSeek `$C267` into the walk and searches. MissileSeek tests the objects near to far:
+present, the height test when `$C276` is set, then on the screen (the view-space x +`$2F` >> 6 through OnScreenX).
+The first object on the screen ends the search: when it is a vehicle (+3 b5, the flags `$2F` of the enemy units) its
+record goes to `$C25A` and the lock flag is set; any other object blocks the line and gives no lock. With the lock
+flag set, a press goes to `$C252`: an IR missile prefers a Spectre (type `$8B`, FindTypeInCone `$C174`, present and in
+view) to the locked record, then launches. The IR lock does not expire.
+
+```text
+FireRadarMissile(type):                  # $C14D, $C13E
+    LaunchMissile.type = type
+    if gate == 0: LaunchMissile(locked); return
+    gate = $39; walk the depth tree, near to far, with:
+        if overlaps the eye in height and present and |bearing - heading| < 6
+           and not (shell or weapon) and not wreck:
+            locked = obj; gate = 0; SightTimer = 16          # the walk ignores the rest
+
+FireIrMissile(type, height_test):        # $C21D (no test), $C20D (test)
+    LaunchMissile.type = type
+    if lock_flag: LaunchMissile(Spectre in view or seek_target); lock_flag = 0; return
+    walk near to far with:
+        if present and (not height_test or overlaps the eye) and on the screen:
+            if obj.flags b5: seek_target = obj; lock_flag = set
+            stop the walk
+    if lock_flag: SightTimer = 16
+
+LaunchMissile(target):                   # $C3DE
+    if rounds == 0 or no record: return
+    rounds -= 1; IrViewHeight = the tank's height
+    m = new record of LaunchMissile.type at the camera, heading = the tank's
+    m.target = target (+$32); m.serial_seen = target.serial (+$35); m.life = 70 (+$31)
+    gate = 1; FireCooldown = 16; the missile sound
+```
+
+```text
+$C15A  EX AF,AF'            ; A' = $39
+$C15B  LD HL,TargetInCone
+$C15E  LD A,(TargetInCone+1); the gate
+$C161  AND A
+$C162  JR Z,$C16E           ; locked: launch
+$C164  LD ($BF40),HL        ; the walk calls TargetInCone
+$C167  EX AF,AF'
+$C168  LD (TargetInCone+1),A; gate = $39: the test at $C1D2
+$C16B  JP FindMissileTarget
+$C16E  LD DE,$0000          ; operand $C16F: the locked record
+$C171  JP LaunchMissile
+...
+$C1A8  LD A,(IY+$02)        ; present?
+$C1AB  AND A
+$C1AC  RET Z
+$C1AD  CALL ApiVector01     ; BearingTo the candidate
+$C1B0  LD C,A
+$C1B1  LD A,(PlayerHeading)
+$C1B4  AND A
+$C1B5  SBC A,C
+$C1B6  CALL ApiVector08     ; |heading - bearing|
+$C1B9  CP $06
+$C1BB  RET NC               ; outside the cone
+$C1BC  LD A,(IY+$03)
+$C1BF  AND $50              ; a shell or a weapon
+$C1C1  RET NZ
+$C1C2  LD A,(IY+$02)
+$C1C5  AND $40              ; a wreck
+$C1C7  RET NZ
+$C1C8  XOR A
+$C1C9  LD (TargetInCone+1),A; gate = 0: locked
+$C1CC  LD A,$10
+$C1CE  LD (DrawSightOverlay+1),A ; the sight blinks 16 passes
+```
+
+The flight. `$C453` (MissileCode, types `$82`, `$85`): MoveObject, TurnToward the target (`$C47C`, +`$32`, at most 4
+heading steps a pass), the lifetime +`$31` less one; at 0, or when the target's +2 is 0, the missile ends. `$C4A5`
+(types `$83`, `$84`) first compares the serial seen at the launch (+`$35`) with the target's +`$20`: a reused record
+ends the missile; then the same turn and lifetime, and the height moves 1/16 of the way to the target's height each
+pass (four `SRA H` / `RR L`), then MoveObject. A missile that ends calls `$B61E` (HitTest through `$67DC` with the
+target as the hitter: no weapon, so it returns at once) and clears +2; it is not unregistered from the collision table
+(SUSPECTED: the pair rows keep a freed record until the record is reused). The collision handler `$B8A8` calls
+ResetSightTimer (the gate opens) and falls into Explode.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Searching: fire, gate not 0
+  Searching --> Searching: nothing in the cone, gate stays $39
+  Searching --> Locked: a target passes the test, the sight blinks
+  Locked --> Searching: 16 passes, ResetSightTimer
+  Locked --> Flying: fire again, LaunchMissile
+  Flying --> Flying: turn by 4 to the target, lifetime - 1
+  Flying --> [*]: lifetime 0 or the target gone
+  Flying --> [*]: a hit, $B8A8: Explode
+```
+
+Worked example, from the templates and the code: a missile turns by at most 4 of 256 a pass at speed 120. A full
+circle takes 64 passes, 64 x 120 = 7680 world units, a turning radius of 7680 / 2 pi, about 1220 units: a target
+closer than that on the beam is missed and circled. Its 70 passes reach 8400 units, a little more than 8 coarse
+units (of 1024).
+
+Witness: no recording launches a missile. play: FireBansheeRr at 8509 and 8577, TargetInCone 7 runs,
+TargetBearingCheck 7, no lock. play2: FirePhoenixRr at 9016 and 9084 (TargetInCone 11 runs), FireBansheeIr at 8731
+and 8793 and FirePhoenixIr at 16065 and 16134 (MissileLock 4 runs, MissileSeek 19); LaunchMissile, `$C453` and
+`$C4A5` have no run. The launch, the flight and the hit are known only from the code.
+
+The point: the missiles need a target in front, and the two pairs aim differently: the radar pair takes any
+standing object in a 6-step cone at the eye's height, the IR pair only the first vehicle on the screen. The IR pair's
+steps are swapped against the RR pair's: the Banshee IRSS, a surface-to-surface missile, follows the target's height,
+the Phoenix IRSA, surface-to-air, flies flat. The Phoenix select (SelectPhoenix `$C11E`) turns on the IR view, whose
+eye height `$B8FF` K and J raise and lower by 8 ([doc 06](06-rendering.md)).
+
+### The Dragonfly (`$86`)
+
+LaunchDragonfly `$C2BC` takes a round and spawns type `$86` at the camera with the tank's heading, lifetime 100 at
++`$31` and +0 = `$FF`. It then hands the game to the Dragonfly:
+
+- the camera record `$B9F4` = the Dragonfly (the operand `$C302`, written with the new record);
+- the tank's +3 b0 is cleared: RunObjectHandlers skips PlayerStep, so the tank stands, spends no fuel and reads no
+  keys;
+- NextView = DragonflyViewLoop `$6AB9` and the view flag `$6A6D` is set: the view changes
+  ([doc 04](04-game-loop.md), [doc 05.9](05-controls.md#59-driving-turning-and-the-dragonfly));
+- the fire word `$A9B9` = DragonflyCode `$C31B`.
+
+DragonflyStep `$C391`, its step:
+
+```text
+DragonflyStep(fly):
+    if the fire key bit ($6D43): clear it; RecallDragonfly(); return
+    fly.life -= 1; if fly.life == 0: DragonflyEnd(fly); return       # $C365
+    fly.heading += StepX / 2
+    h = fly.height - 2 x StepY                    # Q: StepY = -8, so +16 a pass
+    if (going down and h >= 0) or (going up and h < 512): fly.height = h
+    MoveObject(fly)                               # speed 120
+
+RecallDragonfly():                                # $C33E
+    $A9B9 = LaunchDragonfly; fly.step = $67BE (MoveObject only)
+    NextView = StartMission; view flag set; CameraToPlayer()   # camera $B9F4 = $75F0, tank +3 b0 set
+```
+
+```text
+$C391  LD HL,PointerZones+1 ; the fire key bit
+$C394  LD A,(HL)
+$C395  AND A
+$C396  JR Z,$C39D
+$C398  LD (HL),$00
+$C39A  JP RecallDragonfly
+$C39D  LD A,(IX+$31)
+$C3A0  DEC A
+$C3A1  JR Z,$C365           ; lifetime over
+$C3A3  LD (IX+$31),A
+$C3A6  LD A,(StepX)
+$C3A9  SRA A
+$C3AB  ADD A,(IX+$22)       ; heading + StepX / 2
+$C3AE  LD (IX+$22),A
+$C3B1  LD L,(IX+$05)
+$C3B4  LD H,(IX+$06)
+$C3B7  LD A,(StepY)
+$C3BA  ADD A,A
+$C3BB  NEG                  ; -2 x StepY
+```
+
+DragonflyEnd `$C365`, also its collision handler: unregister, +2 = 0, RecallDragonfly when the Dragonfly view is
+still on, the fire word back to LaunchDragonfly, cooldown 8. After a recall the Dragonfly is not freed: its step is
+the bare MoveObject vector, so it flies straight on, with no lifetime, until it hits something (from the code).
+DragonflyCode `$C31B` takes the Dragonfly view back while one is out; the fire word leads there only while the tank
+steps with a Dragonfly in the air, and no recording runs it.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Flown: fire, LaunchDragonfly: camera and view to it, tank stopped
+  Flown --> Flown: steer by StepX / 2, climb 2 x StepY, MoveObject 120
+  Flown --> Straight: fire, RecallDragonfly: camera and view back to the tank
+  Flown --> [*]: 100 passes or a hit: $C365, freed, recalled
+  Straight --> [*]: a hit: $C365
+```
+
+Worked example: Q held gives StepY = -8, so the Dragonfly climbs 16 a pass from 64; the cap is 511, so 27 passes take
+it to 496 and the 28th is refused. 100 passes at speed 120 cover 12 000 world units, about 11.7 coarse units. The hit
+does damage 2.
+
+Witness: play: LaunchDragonfly at 9050, DragonflyStep 25 runs 9051-9237, RecallDragonfly and CameraToPlayer at 9237
+(the fire key in flight). `$C365` has no run: the recalled Dragonfly hit nothing while the recording lasted.
+
+The point: the Dragonfly is a guided shell with the camera on it. While it flies the tank is a parked object; it
+can still be hit.
+
+### Sleeper mine (`$88`)
+
+The timer is the operand `$CFF5`, 0 in the image: K (MineTimerCode `$CFF4`) counts it up 0-119 and wraps to 0, J
+(SetMineTimer `$CFE9`) down, from 0 to 120. The select PrintElevation `$CF26` sets e = 30. DropMine `$D005` launches
+type `$88` and halves both speeds, turns it to the tank's heading + 128 (thrown backwards) and keeps the slot hook's
+address at +`$34`.
+
+1. MineFall `$D048`: MoveObject, height += vertical speed, vertical speed - 5, until the height is below 0.
+2. Landed: height 32, the slot hook = MineHud `$D093` (it prints the mine's +`$31` when its slot is the current one),
+   step = MineCountdown `$D0B2`, +`$31` = the timer (MineArm `$D08C`).
+3. MineCountdown: +`$31` - 1 a pass; at 0 the hook goes back to NoAction, the high bytes of the box (+`$0C`, +`$10`)
+   and of the radius (+`$17`) become 8, Debris is thrown, b5 of +2 is cleared, and the step becomes `$D0EA`.
+4. `$D0EA`: 8 passes, then Explode.
+
+```text
+MineCountdown(mine):                     # $D0B2
+    if mine.timer: mine.timer -= 1; return
+    slot_hook(mine.+$34) = NoAction
+    mine.step = $D0EA
+    mine.box_x_hi = mine.box_y_hi = mine.radius_hi = 8; mine.timer = 8
+    Debris(mine); mine.state &= $DF
+
+MineBlast(mine):                          # $D0EA
+    mine.timer -= 1
+    if mine.timer == 0: Explode(mine)
+```
+
+```text
+$D0B2  LD A,(IX+$31)
+$D0B5  AND A
+$D0B6  JR Z,$D0BD
+$D0B8  DEC A
+$D0B9  LD (IX+$31),A
+$D0BC  RET
+$D0BD  LD L,(IX+$34)        ; the slot hook's operand
+$D0C0  LD H,(IX+$35)
+$D0C3  LD (HL),$B0          ; NoAction
+$D0C5  INC HL
+$D0C6  LD (HL),$6B
+$D0C8  LD (IX+$18),$EA
+$D0CC  LD (IX+$19),$D0      ; step $D0EA
+$D0D0  LD A,$08
+$D0D2  LD (IX+$0C),A        ; box x, high byte
+$D0D5  LD (IX+$10),A        ; box y, high byte
+$D0D8  LD (IX+$17),A        ; radius, high byte
+$D0DB  LD (IX+$31),A        ; 8 passes
+$D0DE  CALL ApiVector11     ; Debris
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> Falling: fire, DropMine: backwards, half speeds
+  Falling --> Armed: height below 0: height 32, the HUD hook, timer
+  Armed --> Armed: timer - 1, the countdown on the HUD
+  Armed --> Blast: timer 0: box and radius x 256, debris
+  Blast --> [*]: 8 passes, Explode
+```
+
+Worked example, play2: four J presses take the timer 0, 120, 119, 118, 117. With e = 30 the mine leaves at speed
+95 / 2 = 47 and vertical speed 86 / 2 = 43 from height 56; it lands on the 20th pass, 20 x 47 = 940 world units
+behind the tank, and waits 117 passes. The blast record has the box half sizes `$0820` = 2080 and the radius
+`$080A` = 2058: CollisionPass ([doc 07.10](07-objects.md#710-collisions-collisionpass)) finds overlaps up to about
+2058 units plus the other's radius, and every due pair in those 8 passes takes 31. Its own hit handler `$D0E9` is a
+`RET`: nothing sets a mine off early. Until the blast the mine lies with a box of 32 and damage 31, so a unit that
+drives over it takes 31 a test.
+
+Witness: play2: PrintElevation at 9229, SetMineTimer 4 runs (9273-9294), DropMine at 9307 and 9374, MineFall 40 runs
+(2 x 20), MineArm 2, MineCountdown 37 runs (9455-9687), MineHud 23. The play left the mission before either timer
+reached 0: the blast is known only from the code. PlayerHit has no weapon test, so the tank on its own mine, or in its
+blast, takes the damage on a side like any hit (from the code).
+
+The point: the Sleeper is a delayed area weapon, the only one whose blast enlarges its radius; it is left behind,
+for the chasing units.
+
+### K-90 Cluster (`$87`)
+
+FireClusterBomb `$CF3F` launches type `$87` at the elevation its select set (20). Damage 127: what it hits it kills
+(hit points up to 127). Three steps:
+
+1. ClusterRise `$CF4A`: the mortar's flight while the vertical speed is 0 or more; at the first negative one, the
+   step becomes ClusterParachute `$CF80` and the model `$7F5B` (the parachute).
+2. ClusterParachute: no move; height - 8 a pass; below 300 the step becomes ClusterBlast `$CFAE`, the model `$D5D0`.
+3. ClusterBlast: the box half sizes x and y + 200 a pass, height - 20 a pass; below 0, Explode.
+
+```text
+ClusterParachute(bomb):                  # $CF80
+    bomb.height -= 8
+    if bomb.height < 300:
+        bomb.step = ClusterBlast; bomb.model = $D5D0; bomb.+$31 = 8
+
+ClusterBlast(bomb):                      # $CFAE
+    bomb.box_x += 200; bomb.box_y += 200; bomb.+$31 += 8
+    bomb.height -= 20
+    if bomb.height < 0: Explode(bomb)
+```
+
+```text
+$CF80  LD L,(IX+$05)
+$CF83  LD H,(IX+$06)
+$CF86  LD BC,$0008
+$CF89  AND A
+$CF8A  SBC HL,BC            ; height - 8
+$CF8C  LD (IX+$05),L
+$CF8F  LD (IX+$06),H
+$CF92  LD BC,$012C          ; 300
+$CF95  AND A
+$CF96  SBC HL,BC
+$CF98  RET NC
+$CF99  LD (IX+$18),$AE      ; step ClusterBlast
+$CF9D  LD (IX+$19),$CF
+$CFA1  LD (IX+$1C),$D0      ; model $D5D0
+$CFA5  LD (IX+$1D),$D5
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> Rising: fire, e = 20
+  Rising --> Rising: move, height + vz, vz - 5
+  Rising --> Parachute: vz below 0
+  Parachute --> Parachute: height - 8, no move
+  Parachute --> Blast: height below 300
+  Blast --> Blast: box + 200, height - 20
+  Blast --> [*]: height below 0: Explode
+  Rising --> [*]: a hit: Explode
+```
+
+Worked example, e = 20 (speed 113, vertical speed 60): the climb adds 60, 55, ..., 5, 0 over 13 passes, and the 14th
+sees -5: the top is 56 + 390 = 446, reached 14 x 113 = 1582 world units ahead. The parachute takes 19 passes from 446
+to 294 (the 18th leaves 302). The blast takes 15 passes from 294 to -6, its box growing from 32 to 3032. The radius
+stays 10, so the pass tests the boxes only when the distance estimate is below 10 + the other's radius, and the
+heights must overlap: an object 64 high with a half height of 128 is reached from height 223 down.
+
+Witness: play2: ElevationZero at 16278, FireClusterBomb at 16355, ClusterRise 14 runs (16356-16465),
+ClusterParachute 19 (16473-16617), ClusterBlast 15 (16627-16762), Explode at 16762: the counts of the example.
+
+![The K-90 on screen](img/play/k90-cluster.gif)
+
+*Animation 10.8. The play2 recording, frames 16350-16770, every sixth frame: the view ahead while the K-90 fired at 16355
+climbs, hangs and bursts 1582 units in front (the black specks late in the run are in its blast phase, 16627-16762);
+the TANK HIT messages are enemy shells. Drawn by `python3 ../../kit/screen_anim.py --work work/docs/bcC/play2 --from 16350 --to 16770 --step 6 --scale
+2 --delay 90 --hold 2000 docs/img/play/k90-cluster.gif` (the instance opened on `work/stage1/rec/play2/session.ttd`).*
+
+The point: the K-90 is slow and sure. It stops 1582 units ahead, hangs for 19 passes, then kills whatever lies under
+it.
+
+### Phantasm and Spectre (`$8A`, `$8B`)
+
+Both fire one bomb per fire press, or one every 17 passes once K has armed the auto-fire: K (`$D2E4`, `$D2F7`) puts
+PhantasmCode `$D3D6` or Cluster13Code `$D324` into the slot hook with a counter of 16 (the operands `$D3EB`, `$D335`);
+the hook counts it down each pass and, at the wrap, launches. J (PrintSlotName `$D30B`) puts NoAction back. Both
+launch at e = 30 and climb like the mortar; at the top they part.
+
+- **Phantasm** (LaunchPhantasm `$D3F7`, PhantasmStep `$D405`): at the first negative vertical speed the step becomes
+  PhantasmSpin `$D43B` and the model `$D934`. It no longer moves: heading + 2 and height - 4 a pass; below 0 it is
+  unregistered and freed. Its hit handler is NoAction: nothing destroys it; damage 1.
+- **Spectre** (Cluster13Step `$D369`): at the top the step becomes Cluster13Burst `$D3AD`,
+  the model `$7F5B` (the parachute), a speed of Random AND 15 and a random heading. It drifts and falls 8 a pass;
+  below 0 RemoveObject. Damage 31, Explode on a hit.
+
+```text
+AutoFire(slot):                           # PhantasmCode $D3D6, Cluster13Code $D324, a slot hook
+    counter -= 1
+    if counter < 0: counter = 16; Launch(slot)      # one bomb every 17 passes, while rounds last
+
+PhantasmSpin(p):                          # $D43B
+    p.heading += 2; p.height -= 4
+    if p.height < 0: Unregister(p); p.state = 0
+
+Cluster13Burst(s):                        # $D3AD
+    MoveObject(s); s.height -= 8
+    if s.height < 0: RemoveObject(s)
+```
+
+```text
+$D38E  LD (IX+$18),$AD      ; the Spectre at the top: step Cluster13Burst
+$D392  LD (IX+$19),$D3
+$D396  LD (IX+$1C),$5B      ; model $7F5B, the parachute
+$D39A  LD (IX+$1D),$7F
+$D39E  CALL ApiVector06     ; Random
+$D3A1  AND $0F
+$D3A3  LD (IX+$07),A        ; speed 0-15
+$D3A6  CALL ApiVector06
+$D3A9  LD (IX+$22),A        ; any heading
+```
+
+**The decoy.** Mission 1's homing shell, type 28 (fired by type 26, [doc 07.9](07-objects.md)), runs `$EAAA` as its
+first step: it scans records 1-23 for a type byte `$8A`.
+
+```text
+$EAAA  CALL $EAF3           ; a record of type $8A?
+$EAAD  JR C,$EAC4           ; none
+$EAAF  LD DE,$0001
+$EAB2  AND A
+$EAB3  SBC HL,DE            ; HL = the record
+$EAB5  LD (IX+$32),L
+$EAB8  LD (IX+$33),H
+$EABB  LD (IX+$18),$CE      ; step $EACE for good
+$EABF  LD (IX+$19),$EA
+$EAC3  RET
+$EAC4  CALL M1ShellStep     ; none: home on the player
+$EAC7  LD IY,$75F0
+$EACB  JP TurnToward
+...
+$EAF3  LD HL,$762D          ; record 1, +1
+$EAF6  LD DE,$003C
+$EAF9  LD B,$17
+$EAFB  LD A,(HL)
+$EAFC  CP $8A               ; the type only, not +2
+$EAFE  RET Z
+$EAFF  ADD HL,DE
+$EB00  DJNZ $EAFB
+$EB02  SCF
+$EB03  RET
+```
+
+With no Phantasm the shell turns to the player every pass (TurnToward with IY = `$75F0`). Once one is found, its step
+is `$EACE` for good: M1ShellStep, TurnToward the Phantasm's record, and the height 1/32 of the way to its height a
+pass. The scan reads the type byte alone: a freed record keeps its type until another object takes it, so a
+Phantasm that has come down still draws the shells to where it was (from the code).
+
+The other missions' homing shells copy this step with their own decoy type: missions 1, 5, 6 and 10 look for `$8A`
+(the Phantasm), missions 3 and 4 for `$8B` (the Spectre: `$E978`, `$E90B`). In missions 2 and 8 the "homing" shell
+(types 18 and 20) runs the plain shell step (`$E7F7`, `$E96B`) and flies straight, so no decoy matters there
+([doc 07.14](07-objects.md#714-the-units-of-missions-2-10)).
+
+```mermaid
+stateDiagram-v2
+  [*] --> Climbing: fire or the auto-fire hook, e = 30
+  Climbing --> Climbing: move, height + vz, vz - 5
+  Climbing --> Spinning: Phantasm, vz below 0
+  Climbing --> Drifting: Spectre, vz below 0
+  Spinning --> Spinning: heading + 2, height - 4, no move
+  Spinning --> [*]: height below 0, freed
+  Drifting --> Drifting: random speed 0-15, height - 8
+  Drifting --> [*]: height below 0, or a hit: Explode
+```
+
+Worked example, e = 30 (speed 95, vertical speed 86): the climb adds 86, 81, ..., 1 over 18 passes and the 19th sees
+-4: the top is 56 + 783 = 839, reached 19 x 95 = 1805 world units ahead. The Phantasm then spins down 4 a pass: 210
+passes in place: at the 11 frames a pass of the play recording, about 2300 frames, 46 seconds. The Spectre falls 8 a
+pass: 105 passes, drifting up to 15 x 105 = 1575 units on a random heading.
+
+Witness: play (the Phantasm): its select `$D46A` at 9322, J four times (9365-9386), FirePhantasm at 9406, PhantasmStep
+19 runs (9407-9537), PhantasmSpin 104 runs (9545-10692): 104 x 4 = 416 of its 839, still in the air when the play
+ends. play2 (the Spectre): its select `$D34E` at 16563, J three times (16611-16627), FireCluster13 at 16644,
+Cluster13Step 19 runs (16646-16830), Cluster13Burst 47 runs (16840-17310), cut by the end of that game. No recording
+has a Phantasm and a homing shell at once; the decoy is known only from the code. No recording arms the auto-fire.
+
+The point: the Phantasm is the counter to the homing shell: it hangs in the air for most of a minute, cannot be shot
+down, and takes every homing shell fired while it exists. The Spectre is the slow-falling cousin of the K-90 with a
+smaller punch and a random drift.
+
+### Skeet bomb (`$89`)
+
+FireDecoy `$D24C` spawns type `$89` at the camera's X and Y, height 64, speed 64, heading the tank's + 128
+(backwards), with +`$31` = 8 (the leg), +`$32` = 8 (the turn a pass) and +`$33` = 10 (the legs). It alternates two
+steps:
+
+- DecoyZigZag `$D2AE` (the template's step): MoveObject, heading + the turn; at the end of the leg the turn's sign is
+  flipped, the next straight leg is 8 passes (the first) or 16, and the step becomes DecoyStart `$D28C`;
+- DecoyStart: MoveObject; at the end of the leg the legs count falls by one; below 0, Explode; else a turning leg of
+  17 passes.
+
+```text
+DecoyZigZag(b):                           # $D2AE
+    MoveObject(b); b.heading += b.turn
+    b.leg -= 1; if b.leg >= 0: return
+    b.leg = 7 if b.legs == 10 else 15
+    b.step = DecoyStart; b.turn = -b.turn
+
+DecoyStart(b):                            # $D28C
+    MoveObject(b)
+    b.leg -= 1; if b.leg >= 0: return
+    b.legs -= 1; if b.legs < 0: Explode(b); return
+    b.leg = 16; b.step = DecoyZigZag
+```
+
+```text
+$D2BB  LD A,(IX+$31)
+$D2BE  DEC A
+$D2BF  LD (IX+$31),A
+$D2C2  RET P                ; the leg goes on
+$D2C3  LD A,(IX+$33)
+$D2C6  CP $0A               ; the first leg?
+$D2C8  JR NZ,$D2CE
+$D2CA  LD A,$07
+$D2CC  JR $D2D0
+$D2CE  LD A,$0F
+$D2D0  LD (IX+$31),A
+$D2D3  LD (IX+$18),$8C      ; step DecoyStart
+$D2D7  LD (IX+$19),$D2
+$D2DB  LD A,(IX+$32)
+$D2DE  NEG                  ; the turn changes side
+$D2E0  LD (IX+$32),A
+```
+
+Worked example: the first turn lasts 9 passes (+72 heading steps, 101 degrees), the first straight 8; then ten
+rounds of a 17-pass turn (136 steps, 191 degrees, the side changing each time) and a 16-pass straight; the eleventh
+straight ends in Explode. 9 + 8 + 10 x (17 + 16) = 347 passes, at 64 units a pass about 22 000 units of a weaving
+path behind the tank. A hit on the way explodes it; damage 4.
+
+Witness: play2: its select `$D24B` (a `RET`) at 16853, FireDecoy at 16931, DecoyZigZag 26 runs (16932-17212) = 9 +
+17, DecoyStart 13 runs (17021-17310) = 8 + 5 of the second straight, cut by the end of that game at 17310.
+
+![The Skeet from above](img/gameplay/skeet-path.gif)
+
+*Animation 10.9. The Skeet's track in play2, seen from above: the object table sampled every 2 frames from 16920 to
+17250 (TTD `memory_at`), the tank (record 0, blue, standing until 17150) and the Skeet (record 19, type `$89`, amber)
+with their headings. It leaves backwards (heading = the tank's + 128), turns 9 passes, runs 8 straight, then turns
+the other way for 17. The front view does not show it (it flies behind the tank), so this is drawn from the samples:
+`python3 tools/sample_objects.py work/docs/bcC/play2 16920 17312 2 work/docs/bcC/skeet.jsonl`, then
+`python3 tools/fig_gameplay.py skeet --samples work/docs/bcC/skeet.jsonl --to 17250 docs/img/gameplay/skeet-path.gif`.
+The game is paused by the quit prompt from about 17250.*
+
+The point: the Skeet guards the tank's back. It leaves behind the tank and weaves for over a minute (347 passes at the
+10 frames a pass of play2) through the ground the chasing units must cross; nothing in the mission code aims at it.
+
+### SLAM Laser (store 10)
+
+The SLAM has no projectile and no fire routine (word 2 is NoAction). K (`$D0F5`) puts `$D115` into the slot hook and
+prints the "on" text `$FDD7`; J (PrintAimType10 `$D104`) puts NoAction back and prints `$FDE1`. The select
+SelectType10 `$D45E` prints the text that matches the hook. While it is on, the hook runs once a pass:
+
+1. RecordScanCode `$D1A0` lists, at `$D21B`, the collision rows (+`$3B`) of the present records 1-23 whose +3 AND `$50`
+   is `$10`: the enemy shells. No shell: nothing happens and no round is used.
+2. One round (the rounds byte - 1; 0 rounds: nothing).
+3. RecordScanCodeB `$D1CF`: for each, the pair timer of the shell's row with record 0, the tank (the first byte of
+   the row, through the row pointers `$C78C`), as |pass counter `$C7BD` - timer| into `$D233`.
+4. RecordSortCode `$D1F5`: the smallest, the pair due soonest: the nearest shell by the collision schedule.
+5. That record gets Debris and +2 = 0; its view-space position goes into the vertex work area (`$FD02`, `$FE02`,
+   `$FF02`) beside fixed points, RunScript `$990F` draws the beam with the script at `$FEBB`, and the sound `$D839`
+   plays.
+
+```text
+SlamHook():                               # $D115, a slot hook, once a pass while on
+    shells = [rec.row for rec in records 1..23 if rec.present and rec.flags & $50 == $10]
+    if not shells: return
+    if rounds == 0: return
+    rounds -= 1
+    r = argmin over shells of |pass - timer(row, tank)|
+    Debris(record[r]); record[r].state = 0
+    draw the beam from the fixed points to record[r]'s view position; sound
+```
+
+```text
+$D125  LD A,($D21B)         ; the first listed row, $FF when none
+$D128  AND A
+$D129  RET M
+$D12A  LD HL,($B551)        ; the rounds
+$D12D  LD A,(HL)
+$D12E  DEC A
+$D12F  RET M
+$D130  LD (HL),A
+$D131  LD ($C527),A
+$D134  CALL PrintAmmo
+$D137  CALL $D1CF           ; the timers
+$D13A  CALL $D1F5           ; the smallest
+$D13D  LD HL,$75F0
+$D140  LD B,A
+$D141  LD DE,$003C
+$D144  ADD HL,DE
+$D145  DJNZ $D144           ; record A
+$D147  PUSH HL
+$D148  PUSH HL
+$D149  POP IX
+$D14B  CALL ApiVector11     ; Debris
+$D14E  LD (IX+$02),$00      ; the shell is gone
+```
+
+```mermaid
+flowchart TD
+  A["slot hook $D115, once a pass"] --> B["list the enemy shells<br/>(+3 AND $50 = $10)"]
+  B --> C{"any?"}
+  C -- no --> Z["return, no round used"]
+  C -- yes --> D{"rounds left?"}
+  D -- no --> Z
+  D -- yes --> E["rounds - 1"]
+  E --> F["each: |pass - timer with the tank|"]
+  F --> G["the smallest: due soonest"]
+  G --> H["Debris, +2 = 0, the beam drawn, sound"]
+```
+
+Worked example, from the code: two shells in rows 15 and 16, the pass counter at 40, their timers with the tank 41
+and 52. The values are 1 and 12; row 15 is shot. Each round stops one shell; the laser reaches any shell in the record
+table, with no range.
+
+Witness: play2: SelectType10 at 23071 and PrintAimType10 (J) three times, 23118-23134; K never runs, so `$D115` has
+no run. Known only from the code. Two flaws of the code, not seen in a run: the shell is freed without
+UnregisterCollision; and the scan, after a match, goes on two bytes short (+`$3C` instead of +`$3E`), so the records
+after the first shell are read from their +0 and +1 (SUSPECTED: a wrong row may be listed when two shells are in the
+air).
+
+The point: the SLAM is the anti-shell weapon. It needs no aim and no key once on: every pass with an enemy shell in
+the air costs one round and removes the shell nearest in the collision schedule.
+
+### The payload limit
+
+FitOrRemoveWeapon `$C173` (bank 6), on the stores screen, counts the slots that already hold the store, refuses a
+store fitted "most fitted" times (MaxNumberExceeded), then adds its weight to the payload operand and refuses a total
+of 1001 kg or more (PayloadExceeded).
 
 ```text
 FitOrRemoveWeapon(slot, store):
@@ -648,38 +1421,107 @@ $C1C9  LD (PayloadWeightOp+1),BC  ; accepted
 Worked example: Turret (400 kg) and Dragonfly (500 kg) make 900 kg. A Phoenix RRSA (250 kg) would make 1150: refused.
 A Spectre (100 kg) makes exactly 1000: accepted.
 
-Witness: play and play2 fire every store once (L1 2-61 per fire routine); the play recording's POKE at `$C1C6` (the `JP NC`) lifts
-the payload test (WALKTHROUGH 6.0). The guided-missile launch `$C171` / `$C25C` after a lock ran in no recording.
+Witness: play and play2 fit every store; the play recording's POKE at `$C1C6` (the `JP NC`) lifts the payload test
+(WALKTHROUGH 6.0).
 
 The point: the weapons share one engine. A store is four routine words and a template; the payload limit of 1000 kg
 is the only balance between them, and the Turret alone weighs 400.
 
 ## 10.8 Debris
 
-Debris `$B6D1` throws the pieces of a destroyed object into bank 3's particle list at `$CFEC`: 8 records of 20 bytes
-(+0 flags, b7 live and b5 drawn; x, z, y with fractions; three speeds; two turn steps). Each piece gets the object's
-position and random speeds (DebrisVelocity `$B74B` / `$B75C`). Bank3Step runs MoveDebris `$D16B` for each live piece
-once a frame: the speeds are added, gravity takes 5 from the vertical speed, and a piece below the ground is freed.
-DrawDebris `$D08C` draws them.
+Debris `$B6D1` throws the pieces of a destroyed object into bank 3's particle list DebrisRecords `$CFEC`: 8 records
+of 20 bytes. It does nothing unless the object was in view this pass (+2 b5), so an object killed off the screen
+leaves no pieces.
+
+| Offset | Field | Set by Debris |
+| --- | --- | --- |
+| +0 | flags, `$FF` live, 0 free | `$FF` |
+| +1-+3 | X, 24-bit world units | the object's +`$23`-+`$25` |
+| +4-+6 | Y, 24-bit | the object's +`$26`-+`$28` |
+| +7, +8 | height | the object's +5, +6 |
+| +`$0A` | spin angle | |
+| +`$0F`, +`$10` | X and Y speed, signed | Random >> 2: -32 to 31 (DebrisVelocityB `$B75C`) |
+| +`$11` | vertical speed | 32 + (Random AND 31): 32 to 63 |
+| +`$12`, +`$13` | two spin steps | Random >> 2 OR 7, AND `$F8` when negative: 7, 15, 23, 31 or -8 to -32 (DebrisVelocity `$B74B`) |
+
+The number of pieces is the template's byte at +`$0A` of the object (4 for most mission 1 types); a piece that finds
+no free record of the eight is dropped. Bank3Step, called once a pass from PlayLoop (`$6A2A`), runs MoveAllDebris
+`$D1EC`, which calls MoveDebris `$D16B` for each live record:
 
 ```text
-MoveDebris(piece):
-    piece.x += piece.vx; piece.z += piece.vz; piece.y += piece.vy
-    piece.vy -= 5
-    if piece.y < 0: piece.flags = 0
+Debris(obj):                         # $B6D1, the kill path of HitTest and KillTree
+    if not obj.in_view: return       # +2 b5
+    repeat obj[$0A] times:
+        p = the first free record of DebrisRecords, else stop
+        p.x, p.y, p.height = obj.x, obj.y, obj.height; p.flags = $FF
+        p.vx = Random >> 2; p.vy = Random >> 2; p.vz = 32 + (Random AND 31)
+        p.spin1, p.spin2 = DebrisVelocity(), DebrisVelocity()
+
+MoveDebris(p):                       # once a pass for every live piece
+    p.x += p.vx; p.y += p.vy                     # 24-bit, the speed sign-extended
+    h = p.height + p.vz
+    if h < 0: p.flags = 0; return                # below the ground: freed
+    p.height = h
+    if p.vz - 5 overflows (below -128): p.flags = 0; return
+    p.vz -= 5                                    # gravity
+    p.angle += p.spin1 + p.spin2
+```
+
+```text
+MoveDebris (bank 3), the height:
+$D1AB  LD D,$00
+$D1AD  LD A,(IX+$11)     ; the vertical speed, sign-extended into DE
+...
+$D1B6  LD L,(IX+$07)
+$D1B9  LD H,(IX+$08)
+$D1BC  AND A
+$D1BD  ADC HL,DE         ; height + vz
+$D1BF  JP M,$D1CF        ; negative: freed
+$D1C2  LD (IX+$07),L
+$D1C5  LD (IX+$08),H
+$D1C8  LD E,$05
+$D1CA  AND A
+$D1CB  SBC A,E           ; vz - 5
+$D1CC  JP PO,$D1D4       ; no overflow: keep it
+$D1CF  XOR A
+$D1D0  LD (IX+$00),A     ; the piece is freed
+$D1D3  RET
+$D1D4  LD (IX+$11),A
 ```
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Flying: Debris, a kill in view
-  Flying --> Flying: speeds added, gravity 5
-  Flying --> [*]: below the ground
+  [*] --> Flying: Debris, a kill in view, a free record of eight
+  Flying --> Flying: x and y + speeds, height + vz, vz - 5, spin
+  Flying --> [*]: height below 0
+  Flying --> [*]: vz - 5 overflows
 ```
 
-Witness: MoveDebris runs 661 times in death and play2; the kill of death frame 8531 runs Debris from T 15 969
-(`pc-kill.txt`).
+Worked example: the hut of death frame 8531 (type 15, height 32, +`$0A` = 4 pieces). A piece thrown with vz = 40 and
+vx = 20:
 
-The point: debris is cosmetic and costs nothing out of sight: an object off the screen dies without pieces.
+1. Pass 1: height 32 + 40 = 72, vz 35, X + 20.
+2. Passes 2-8: 107, 137, 162, 182, 197, 207, 212 (vz 0 after pass 8).
+3. Pass 9: 212 + 0 = 212, vz -5; then 207, 197, ... down to 32 at pass 17 (vz -45).
+4. Pass 18: 32 - 45 = -13: below the ground, freed. The piece flew 18 passes and drifted 18 x 20 = 360 units.
+
+The overflow test frees a piece only after vz has fallen below -128, 33 or more passes after the throw; a piece
+thrown from the ground lands first (vz = 63 lands at pass 27), so that branch matters only for an object high up.
+
+![A debris piece's height, pass by pass](img/gameplay/debris-flight.png)
+
+*Figure 10.1. The height of one piece of the hut (start height 32) for four start speeds, computed from the code's
+rules, not from a recording: `python3 tools/fig_gameplay.py debris --height 32 --vz 32,40,48,63 --vx 20
+docs/img/gameplay/debris-flight.png`.*
+
+How to read it: one curve a start speed vz, one dot a pass; the curve ends at the last pass above the ground, and the
+legend gives the peak, the pass that frees the piece and the drift at vx = 20.
+
+Witness: MoveDebris runs 661 times in death and play2; the kill of death frame 8531 runs Debris from T 15 969
+(`pc-kill.txt`). The flight numbers are from the code: no sample of bank 3 was taken.
+
+The point: debris is cosmetic and costs nothing out of sight: an object off the screen dies without pieces, and at
+most eight pieces fly at once, each for 15 to 27 passes.
 
 ## 10.9 Goals, the Helicarrier and completion
 
@@ -705,11 +1547,11 @@ The ten goal hooks, disassembled from `src/res/missions` (the list index is (add
 | --- | --- | --- | --- |
 | 1 Blast Em Mission | destroy the two fuel dumps | `$EB60` | records 55 and 56 (type 33) destroyed |
 | 2 Missile Battery | find the missile base and destroy it | `$E2F4` | records 6 and 8 (type 10) destroyed |
-| 3 Hostage Rescue | rescue one of the northern hostages | `$E322` | record 2 (type 22) destroyed |
-| 4 Railway Ambush | ambush a supply train, then destroy the station | `$E927` | records 11 (type 13) and 2 (type 8) destroyed, and byte +7 of record 3 (type 9) equal to `$FB` |
+| 3 Hostage Rescue | rescue one of the northern hostages | `$E322` | record 2 (type 22, the hostage) destroyed: its hit handler `$E311` takes the tank's touch once the gate is down (doc 07.14) |
+| 4 Railway Ambush | ambush a supply train, then destroy the station | `$E927` | records 11 (type 13) and 2 (type 8, the station) destroyed, and byte +7 of record 3 equal to `$FB`: `$DCCF`, carriage 1's Y high byte on the siding's last leg. So: throw the points (`$E638`), wreck the train on the siding (the engine dies on the buffer stop's model `$F0A8`), destroy the station (doc 07.14) |
 | 5 Night Moves | attack an enemy airfield | `$EA0E` | records 0-4 all destroyed (AND over five) |
-| 6 Escort Duty | ensure the convoy's safe arrival | `$EB93` | a `RET`: the goal is set elsewhere in the mission code |
-| 7 Satellite Search | recover a lost satellite | `$EA6F` | `CALL $F03D`, mission code |
+| 6 Escort Duty | ensure the convoy's safe arrival | `$EB93` | a `RET`: the flag is set by `$E463` when a truck of the convoy touches the destination; losing the trucks fails nothing (doc 07.14) |
+| 7 Satellite Search | recover a lost satellite | `$EA6F` | `CALL $F03D` (inverts `$6758-$675F`); the flag is set by `$E3B2` when the tank touches the satellite while it is behind the camera; a weapon hit destroys the satellite through HitTest and the goal is lost (doc 07.14) |
 | 8 River Raid | destroy the supply vessels and the power station | `$E97F` | records 12, 16, 19, 23 (type 13) and 0 (type 6) destroyed |
 | 9 Hideout | demolish the secret hideout | `$E8B5` | `CALL $EC2E`, then record 39 (type 9) destroyed |
 | 10 Grand Finale | the final and toughest mission | `$EA07` | records 2 and 3 (type 12) destroyed |
@@ -718,19 +1560,85 @@ When the flag is set:
 
 1. PickupAnnounce `$DB71` (a `NOP` gate) prints "MISSION COMPLETE PROCEED TO PICKUP" once and writes `RET` over its
    gate.
-2. The key H calls the Helicarrier (PlaceHelicarrier `$D52E`): record 21, type `$8C`, height 104, spawned some
-   8 000-10 000 world units from the pad. HelicarrierWait `$DB24` flies it to the pad (`$DBF0`, copied to `$7E82`):
-   TurnToward and MoveObject toward the pseudo-record `$7E65`, whose X / Y at `$7E88` / `$7E8B` are the pad's. The
-   test is the Helicarrier's own position, not the tank's: within 3 units of X >> 8 and Y >> 8 (768 world units) on
-   both axes, HelicarrierArrival `$DB61` switches it to HelicarrierTurn `$DAC4`, which turns it 8 a step to the
-   pad's heading; then HelicarrierDescent `$DADE` lowers it 8 a step from 104 to 24 and the handler `$6BB0` parks it.
-   Pads: mission 1 world (0, 8192), mission 4 world (-20480, 4096).
-3. HelicarrierHit `$DAAB`, the Helicarrier's collision handler, runs when the tank drives into the parked
-   Helicarrier: with the goal flag set, JP `$67EE`: mission complete;
-   without it, `$7BF9` = `$CC94` (only "MISSION FAILED.") and ScreenSix.
-4. MissionCompleteScreen `$CD1E` (bank 6): Score `$CC79` += the mission score `$68E2`, MissionsDone `$6799` + n =
+2. The key H calls the Helicarrier (PlaceHelicarrier `$D52E`, once: it writes `RET` over its own `NOP` gate): record
+   21, type `$8C`, height 104. Its X and Y mid/high words are the pad's (`$DBF1`, copied to `$7E82`; the words at
+   `$7E89` / `$7E8C`) plus sin and cos of the player's heading divided by 4: 31 or 32 units of 256, so it appears
+   about 8 000 world units (7 936-8 192) from the pad, on the side the tank faces. When |pad| - |camera| < 8 units of
+   256 on both axes (a comparison of absolute values, not a distance: in mission 1, pad (0, 32), it holds whenever
+   the camera is more than 24 units of 256 north or south of the X axis), it also writes the word `$DB1A` into
+   +`$31`/+`$32`.
+3. HelicarrierWait `$DB24` (its step, set by HelicarrierInit `$DB00`) flies it each pass: TurnToward and MoveObject
+   toward the pseudo-record `$7E65`, whose X / Y at `$7E88` / `$7E8B` are the pad's. The test is the Helicarrier's own
+   position, not the tank's: within 3 units of 256 (768 world units) on both axes, HelicarrierArrival `$DB61` makes
+   HelicarrierTurn `$DAC4` the step and puts the CPL of the pad pseudo-record's heading at +`$31`.
+4. HelicarrierTurn adds 8 to the heading each pass until it is within 8 of +`$31`, then makes HelicarrierDescent
+   `$DADE` the step; the descent lowers it 8 a pass from 104 until the height is below 32 (24), and the step becomes
+   `$6BB0` (NoAction): parked. Pads: mission 1 world (0, 8192), mission 4 world (-20480, 4096).
+5. HelicarrierHit `$DAAB`, the Helicarrier's collision handler, has three branches, with no test of the parked
+   state:
+   - the other record's +3 b7 clear (not the player's family): HitTest, as for any target;
+   - the player (+3 = `$87`) with the goal flag set: JP `$67EE`, ScreenFour, mission complete;
+   - the player without the goal flag: ScreenSix and `$7BF9` = `$CC94` (only "MISSION FAILED.").
+   So the tank completes the mission by touching the Helicarrier at any moment after the goal, even in flight.
+6. MissionCompleteScreen `$CD1E` (bank 6): Score `$CC79` += the mission score `$68E2`, MissionsDone `$6799` + n =
    `$FF`, the mission's completion text, MissionsCompleted + 1. Score and MissionsDone are written 32 frames after
    HelicarrierHit, before the report is drawn.
+
+```text
+PlaceHelicarrier():                  # $D52E, the key H, once
+    gate = RET
+    h = record 21; Unregister(h); ObjectSetType(h, $8C); RegisterCollision(h)
+    s, c = SinCos8(player.heading)
+    h.x_mid = pad.x_mid + s / 4; h.y_mid = pad.y_mid + c / 4      # units of 256
+    if |pad.x_mid| - |camera.x_mid| < 8 and |pad.y_mid| - |camera.y_mid| < 8: h[$31] = $DB1A
+
+HelicarrierWait(h):                  # $DB24, each pass
+    TurnToward(h, pad); MoveObject(h)
+    if |pad.x_mid - h.x_mid| < 3 and |pad.y_mid - h.y_mid| < 3:
+        h.step = HelicarrierTurn; h[$31] = NOT pad.heading
+
+HelicarrierTurn(h):                  # $DAC4
+    h.heading += 8
+    if |h.heading - h[$31]| < 8: h.step = HelicarrierDescent
+
+HelicarrierDescent(h):               # $DADE
+    h.height -= 8
+    if h.height < 32: h.step = NoAction                          # parked at 24
+
+HelicarrierHit(h, other):            # $DAAB
+    if not other.flags b7: HitTest(h, other)                     # 0 hit points
+    elif GoalFlag: ScreenFour()                                  # $67EE: mission complete
+    else: ScreenSix(); FailReason = $CC94                        # "MISSION FAILED." alone
+```
+
+```text
+HelicarrierHit:
+$DAAB  LD A,(IY+$03)
+$DAAE  AND $80               ; the player's family?
+$DAB0  JP Z,ApiVector10      ; no: HitTest
+$DAB3  LD A,(GoalFlag)       ; $68E8
+$DAB6  AND A
+$DAB7  JP NZ,ApiVector16     ; ScreenFour: mission complete
+$DABA  CALL ScreenSix
+$DABD  LD HL,$CC94           ; "MISSION FAILED." alone
+$DAC0  LD (FailReason),HL
+$DAC3  RET
+HelicarrierTurn:
+$DAC4  LD A,(IX+$22)
+$DAC7  ADD A,$08             ; turn 8 a pass
+$DAC9  LD (IX+$22),A
+$DACC  SUB (IX+$31)          ; against the pad's heading
+$DACF  CALL ApiVector08      ; |difference|
+$DAD2  CP $08
+$DAD4  RET NC
+$DAD5  LD (IX+$18),$DE       ; the step becomes HelicarrierDescent $DADE
+$DAD9  LD (IX+$19),$DA
+$DADD  RET
+```
+
+The word `$DB1A` is HelicarrierCode: `LD IY,$75F0`, `LD HL,$67A8`, `EXX`, `JR $DB2C`, the flight of HelicarrierWait
+aimed at the player (IY = record 0) instead of the pad. No jump through +`$31`/+`$32` was found, and
+HelicarrierArrival overwrites +`$31`; whether the variant ever runs is not settled (SUSPECTED: not run).
 
 ```mermaid
 sequenceDiagram
@@ -744,7 +1652,7 @@ sequenceDiagram
   P->>T: MISSION COMPLETE PROCEED TO PICKUP
   T->>H: key H: the Helicarrier is called
   H->>H: flies to the pad, arrival within 768 units ($DB61), turn, descent
-  T->>H: drives into the parked Helicarrier
+  T->>H: touches the Helicarrier (parked or still flying)
   H->>C: collision with the goal flag: $67EE
   C->>C: Score += $68E2, MissionsDone[n] = $FF
 ```
@@ -789,7 +1697,7 @@ lives.
 | armour underflow after the goal | `$CCBE` FAILED TO MAKE PICKUP | ArmourDestroyed | known only from the code |
 | beyond the extent + 4 | `$CCD8` PLAYER DESERTION | BoundaryCheck `$D4CE` | known only from the code |
 | fuel | `$CCED` RAN OUT OF FUEL | OutOfFuel `$A94E` | fuel frame 7860 (POKE) |
-| the bridge | `$CD01` TANK DESTROYED ON BRIDGE | mission code (missions with a switch segment) | known only from the code |
+| the bridge | `$CD01` TANK DESTROYED ON BRIDGE | BridgeHit `$B64E` (resident), the hit handler of mission 2's type 3 | known only from the code |
 | the Helicarrier hit before the goal | `$CC94` alone | HelicarrierHit `$DAAB` | known only from the code |
 
 ```mermaid
@@ -797,15 +1705,89 @@ flowchart LR
   A["ArmourDestroyed"] --> R["$7BF9 = text"]
   B["BoundaryCheck"] --> R
   F["OutOfFuel"] --> R
-  M["mission code: bridge"] --> R
+  M["BridgeHit $B64E"] --> R
   H["HelicarrierHit"] --> R
   R --> S["ScreenSix $7047"]
   S --> X["MissionFailedScreen $CD84:<br/>MISSION FAILED. + text"]
   X --> T["title"]
 ```
 
+The bridge: BridgeHit `$B64E` follows KillSwitchObject `$B61E` in the resident code; mission 2's
+template 3 (the bridge) names it as its hit handler. It runs HitTest; on a kill it looks at `$A8C8`, the operand of
+PlayerStep's first `JR`. PlayLoop clears that byte before every collision pass (`$6A37`), and HitObstacle `$CB6C`
+writes `$25` there when the tank touches a type 4 object in the same pass. So a bridge destroyed while the tank is
+against such an object fails the mission:
+
+```text
+BridgeHit:                   ; $B64E, mission 2 type 3
+$B64E  LD A,(IX+$02)
+$B651  CALL HitTest          ; NC: not destroyed
+$B654  RET NC
+$B655  LD A,($A8C8)          ; the tank touched a type 4 object this pass?
+$B658  AND A
+$B659  RET Z
+$B65A  LD HL,$CD01           ; TANK DESTROYED ON BRIDGE
+$B65D  JP $CB46              ; FailReason = HL, ScreenSix
+```
+
+KillSwitchObject `$B61E` itself serves mission 5's type 29 and mission 8's types 8 and 9: on a kill it switches off
+the two segments that the switch table (`$DBDF`) gives for this object: c = its list index - `$DBDD` (the first
+switch object), the table's bytes c and c + 1 less `$DBDE` (the first switchable segment) index the switch flags at
+`$7BFD` ([doc 07.14](07-objects.md#714-the-units-of-missions-2-10)).
+
 The point: one pointer is the whole failure state. Every cause writes its text's address and jumps to the same
 screen.
+
+### No time limit: the mission clock
+
+The clock counts but never fails a mission. MissionTimeSetup `$85F5` copies the header's clock start (`$DBFE`: minutes,
+hours; mission 1 0 and 8) to MissionClock `$68EB` / `$68EC`, clears the seconds `$68EA`, and writes `RET` over
+ClockTick's `NOP` gate `$7DFB` until play. The interrupt calls ClockTick (`$83A4`) every frame it is taken:
+
+```text
+ClockTick():                     # $7DFB, from the interrupt
+    if gate == RET: return
+    divider -= 1                 # the operand $7DFD, 50 at the start
+    if divider != 0: return
+    divider = 1                  # so from now on every interrupt is a second
+    seconds += 1; at 60: seconds = 0, minutes += 1; at 60: minutes = 0, hours += 1; at 24: hours = 0
+```
+
+```text
+ClockTick:
+$7DFB  NOP               ; the gate: RET outside play
+$7DFC  LD A,$32          ; the divider (operand $7DFD)
+$7DFE  DEC A
+$7DFF  LD ($7DFD),A
+$7E02  RET NZ
+$7E03  LD A,$01          ; reloaded with 1, not 50
+$7E05  LD ($7DFD),A
+$7E08  LD HL,MissionClock
+$7E0B  LD A,(HL)
+$7E0C  CP $3B            ; 59 seconds?
+$7E0E  JR NC,$7E13
+$7E10  INC A
+$7E11  LD (HL),A
+$7E12  RET
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> Stopped: MissionTimeSetup, gate RET, clock = header start
+  Stopped --> FirstSecond: play opens the gate
+  FirstSecond --> Running: 50 interrupts, divider reloaded with 1
+  Running --> Running: one second per interrupt; 59 s, 59 min, 23 h wrap
+```
+
+Worked example: mission 1 starts at 08:00:00. After the first 50 interrupts the clock reads 08:00:01; from then on
+each interrupt taken adds a second, so a game minute is 60 interrupts, 1.2 s of real time when none is lost, and the
+clock passes 09:00 after about 3 650 interrupts, 73 s. After 24 game hours (about 29 real minutes) it wraps to
+00:00:00 and play goes on: nothing reads the clock to end the mission. The hours do matter elsewhere: TimeOfDay
+`$8836` looks the hour up in HourTable `$88F8`.
+
+Witness: ClockTick has L1 69 895 in eleven recordings (one a frame); m1complete reads `$68EB` going up about once
+every 62-66 frames (`work/stage2/complete-NOTES.md`, which names `$68EB` the seconds: it is the minutes, 60 taken
+interrupts plus the lost ones).
 
 ## 10.11 The Grand Finale
 
@@ -942,7 +1924,7 @@ Worked examples:
 
 ![The save code of the second example, bit by bit](img/gameplay/save-code.png)
 
-*Figure 10.1. The second worked example, score 4000 with mission 1 done, packed into "J99U9999HO": the four score
+*Figure 10.2. The second worked example, score 4000 with mission 1 done, packed into "J99U9999HO": the four score
 bytes, the checksum `$AF`, the ten 5-bit values coloured by what they carry, the characters. Computed from the code's
 rules, not from a recording: `python3 tools/fig_gameplay.py password --score 4000 --done 1
 docs/img/gameplay/save-code.png`.*
@@ -953,7 +1935,7 @@ How to read it: blue bits are the score's nibbles in order, orange the mission f
 Witness: EncodePassword and DecodePassword have L1 1 each in the menu recording (the code typed at frames
 1764-1962, the save code at 10 817). The second example was not typed in a recording.
 
-The point: the code holds the whole campaign: 32 bits of score, ten flags and a 5-bit checksum in 50 bits. The
+The point: the code holds the whole campaign: 32 bits of score, ten flags and an 8-bit checksum in 50 bits (32 + 10 + 8). The
 checksum covers only the score, so the mission flags of a code can be edited freely (section 10.13).
 
 ## 10.13 Notable features
@@ -965,7 +1947,8 @@ checksum covers only the score, so the mission flags of a code can be edited fre
 - the spawner's list pointer, count and index (`$BBF2`, `$BBF9`, `$BC33`);
 - the collision pass counter (`$C7BD`) and the dx, dy of the box test (`$C8BE`, `$C8D5`);
 - the three words of Random (`$A77C`, `$A77F`, `$A787`);
-- the gates `NOP` / `RET` at PickupAnnounce `$DB71`, PlaceHelicarrier `$D52E`, BoundaryCheck `$D4B8`;
+- the gates `NOP` / `RET` at PickupAnnounce `$DB71`, PlaceHelicarrier `$D52E`, BoundaryCheck `$D4B8`, ClockTick
+  `$7DFB`;
 - the mission code's shared gun timer at `$E7AA`.
 
 Witness: every one is written in the traces of death frames 7598, 8121 and 7980 (animations 7.1-7.3).
@@ -981,9 +1964,10 @@ despawned: each building destroyed holds one of the 20 general records until the
 16 000, the wreck of list record 26 in record 8, 16.6 coarse units from the tank.
 
 **The PlayerHit E = 3 quirk.** The subsystem index is Random / `$55`; for Random = 255 it is 3, one past the three
-pointers of the side. For side 1 and 2 it reads the next side's first pointer; for side 3 it reads `$834A`, the first
-slot record of the stores screen, as a pointer, and subtracts the damage from whatever byte it names, unless that
-byte has b7 set. Known only from the code.
+pointers of the side. For sides 1 and 2 it reads the next side's first pointer (the table in section 10.5); for side
+3 it reads the word at `$834A`, the first two bytes of DamageBoardRecords, `$0010`, as a gauge pointer. The byte at
+`$0010` is in ROM and has b7 set (`$C3` in the 48K ROM), so it is skipped, and a write there would be lost anyway: the
+quirk does nothing. Known only from the code; which ROM is paged at that moment is not checked.
 
 ```text
 $CAF3  SUB $55
@@ -998,9 +1982,10 @@ $CB0D  ADD HL,DE            ; $8338 + 6 (side - 1) + 2E
 **The `CP $06` that does nothing.** In CollisionPass both branches after `CP $06` (`$C897`) load A = L; a test meant
 to cap the delay at 6 was left without effect.
 
-**The rough-ground speed nobody reads.** PlayerStep writes 1.25 x |speed| into IX+7 and `$7E8E` on terrain 0 and 6,
-then restores IX+7 at once. Nothing resident reads `$7E8E`; the `.ann` says rough ground "slows by a quarter", but the
-tank's speed is not changed.
+**The road speed only the bar reads.** PlayerStep writes 1.25 x |speed| into IX+7 and `$7E8E` on terrain 0 (the
+road, style 0) and 6, then restores IX+7 at once. The only reader of `$7E8E` is bank 6 DrawSpeedBar `$D612`
+(`LD A,($7E8E)`, then |A| >> 1 lines), so on the road the speed bar is 1.25 x longer (up to 29 lines for 58 instead of
+23 for 47), while the move uses the plain speed: the road gives no speed bonus (BrakeKey writes `$7E8E` too).
 
 **The top armour stores before it tests.** The top path stores the wrapped value (armour frame 18423: `$FD`), the
 side path tests before storing.
@@ -1011,8 +1996,9 @@ the code path (doc 07.13).
 **Left by the authors.** DevMissionLoader `$CE68`, a tape loader for a file "MISSHDR:0:" that nothing calls; its
 second byte `$CE69` is reused as the terrain type, which is why the listing names the terrain type
 `DevMissionLoader+1`. PushLeftover `$D203` in bank 3 holds 509 bytes of `$E5`, the trace of a `PUSH HL` clear. The
-Helicarrier variant `$DB1A` aimed at the player is not called. Twelve `NOP`s at `$CF26` are room for a patch in the
-password code.
+Helicarrier variant HelicarrierCode `$DB1A`, aimed at the player, is only stored as a word by PlaceHelicarrier
+(section 10.9); no jump to it was found. Twelve `NOP`s at bank 6 `$CF26` (in PasswordToChars) are room for a patch in
+the password code; bank 0 `$CF26` is another routine, PrintElevation.
 
 ## 10.14 What no recording reached
 

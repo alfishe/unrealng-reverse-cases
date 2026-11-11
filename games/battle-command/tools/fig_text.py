@@ -395,7 +395,7 @@ PANEL = [
     ((0, 32, 255, 126), '3D view', 'the back buffer', 'copy l_89A8 (doc 06)'),
     ((96, 118, 159, 126), 'message', 'TANK:HIT, COLLIDED, views', 'MessageOnce $7D5D, MessageTimer $87D6'),
     ((32, 138, 55, 142), 'bearing', 'BearingTo - heading', 'DrawBearing $D637 (bank 6)'),
-    ((64, 144, 71, 175), 'speed bar', '$7E8E = |speed|', 'DrawSpeedBar $D612 (bank 6)'),
+    ((64, 144, 71, 175), 'speed bar', 'abs($7E8E) / 2 lines, at most 29', 'DrawSpeedBar $D612 (bank 6)'),
     ((80, 144, 87, 175), 'fuel bar', '$7C58 / 2 (fuel high byte)', 'DrawFuelBar $D629 (bank 6)'),
     ((176, 132, 215, 163), 'radar', 'blip list $6768', 'DrawRadar $C05E, PlotRadarPixel $A9FE'),
     ((176, 177, 207, 183), 'heading', '$7612 heading, shifted strip', 'DrawHeadingStrip $D598 (bank 6)'),

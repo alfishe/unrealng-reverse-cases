@@ -53,7 +53,7 @@ after the other, every frame.
 | Plays | the engine and 14 one-shot effects | the title tune (one tune, three channels) |
 | When it sounds | in play: StartMission clears the gate `$D689` | on the title and the menus: StartTune `$C000` |
 | Registers written | 0-13 from the shadow `$D674`; 11-13 only on a change | 11 down to 0 from AYShadow `$C47B`; never 12 or 13 |
-| Silenced by | SilenceAY `$D807` (sets the gate) | StopMusic `$C1A2`, MusicSilence `$C184` |
+| Silenced by | SilenceAY `$D807`: zeroes the shadow and the first seven counters, sets the gate | StopMusic `$C1A2`, MusicSilence `$C184` |
 | Cost (measured) | 50 T gated, 1649 T engine only, 1724 T with a shot | 307 T stopped, 4000-4613 T playing |
 
 The two never sound together. In the menus the effect driver's gate `$D689` is set (SilenceAY leaves `$0E` in it),
@@ -146,8 +146,8 @@ at `$D674-$D691`: AYRegs `$D674`, then the counters SelectCount `$D682` to Siren
 | `$D681` | R13, the envelope shape: `$0E` | EngineTone |
 | `$D682-$D687` | counters: select, explosion, kill, tone-c8, fire, missile | the triggers (9.6) |
 | `$D688` | a noise "priority": 0 each frame | the steady noise path (10) |
-| `$D689` | the gate: non-zero = silent | SilenceAY (`$0E`), StartMission and SoundOffKey (0) |
-| `$D68A-$D68E` | flag and counters: random tone, message, steady noise, sweep, siren | the triggers |
+| `$D689` | the gate: non-zero = silent | SilenceAY (`$0E`), StartMission and QuitKey (0) |
+| `$D68A-$D68E` | flag and counters: random tone, message, steady noise, sweep, siren | the triggers; SilenceAY leaves them |
 | `$D691` | the master gate: 1 in the image | nobody |
 
 A frame of the driver:
@@ -173,6 +173,13 @@ flowchart TD
     E10 --> E11["fire $D686: noise B"]
     E11 --> W["WriteAY loop $D7DC: registers 0 to count-1"]
 ```
+
+SilenceAY `$D807` is the driver's off switch, called by Bank4Tick's sound off `$72E4` and by QuitKey `$843F`. It
+zeroes 21 bytes from `$D674` (`LD B,$15`): the shadow and the counters `$D682-$D688`. It sets the mixer to `$3F`,
+writes all 14 registers to the chip, and stores `$0E` in the write count `$D7F0` and in the gate `$D689`. The
+flag and the counters from `$D68A` to `$D68E` (random tone, message, steady noise, sweep, siren) are not cleared.
+While the gate is set SoundFrame does not run, so they are frozen. When StartMission or QuitKey clears the gate
+they resume where they stopped: a message beep cut by E finishes after N.
 
 Each effect is a counter. A trigger sets it, and each frame the driver counts it down and writes the voice from what
 is left. The volume, the period or both come from the counter, so the counter is the envelope.
@@ -403,12 +410,14 @@ The effects one by one, n being the counter after the frame's decrement:
 
 The WAVs are 44 100 Hz, 16-bit mono, rendered from the simulation with the engine at speed 0 underneath, as in play.
 
-**Priority.** Channel B carries ten of the effects. They do not queue: each frame every running counter writes its
-voice in the order of the flowchart of 9.3, and the last one written wins. Fire comes last, so a shot drowns the
-select, the message and the missile while it lasts. The explosion and the kill share channel C through SetNoise, and
-the kill, written after, wins. The byte `$D688` looks like a noise priority: SetNoise skips a voice whose volume is
-not above it. But SoundFrame zeroes it at the start of every frame, and only the steady noise path, which comes after
-both SetNoise calls, sets it. So it never stops a voice.
+**Priority.** Channel B carries twelve of the fourteen entries (nine counters): only the explosion and the kill use C.
+They do not queue: each frame every running counter writes its voice in the order of the flowchart of 9.3, and the last
+one written wins. Fire comes last, so a shot drowns the select, the message and the missile while it lasts. The
+explosion and the kill share channel C through SetNoise, and the kill, written after, wins. R6 is one register for both
+channels: the missile (`$D718`), steady noise (`$D77A`) and fire (`$D7D0`) paths come later in the frame and write R6
+again, so a shot sets the noise pitch of a running explosion or kill too. The byte `$D688` looks like a noise priority:
+SetNoise skips a voice whose volume is not above it. But SoundFrame zeroes it at the start of every frame, and only the
+steady noise path, which comes after both SetNoise calls, sets it. So it never stops a voice.
 
 **The siren bug.** The two siren entries share one store, as the two steady noises do: the first entry jumps over the
 second entry's `PUSH AF` and `LD A,n`. The steady noise jumps 3 bytes; the siren jumps 1:
@@ -450,7 +459,7 @@ each trigger entry.
 flowchart LR
     K["weapon keys: SelectWeapon (player.asm)"] --> SEL["SoundSelect $D863"]
     F["FireCannon (player.asm)"] --> FIRE["SoundFire $D898"]
-    M["LaunchMissile (player.asm)"] -- "JP" --> MIS["SoundEffect687 $D883"]
+    M["LaunchMissile (player.asm)"] -- "JP" --> MIS["SoundMissile $D883"]
     H["PlayerHit (player.asm)"] --> EXP["SoundExplosion $D86B"]
     MO["MessageOnce $7D5D (interrupt)"] -- "bit 4 of the message attribute set" --> EXP
     MO -- "bit 4 clear" --> MSG["SoundEffectA $D84E"]
@@ -464,7 +473,7 @@ flowchart LR
 | explosion | the tank is hit; a hit message | `death` 8121-17 902; L1 27 (death, play2) |
 | kill | an object destroyed | `death` 8187-17 902 (5 runs) |
 | message | a message that is not a hit | `play2` 8700-17 195 (21 runs) |
-| missile | a missile launched | known only from the code: no recording runs SoundEffect687 |
+| missile | a missile launched | known only from the code: no recording runs SoundMissile |
 
 MessageOnce runs in the interrupt (9.2), so a hit message and its explosion start in the same frame. In `death` the
 message `TANK:HIT` is printed in frames 8121-8122 and SoundExplosion runs at frame 8121
@@ -838,7 +847,7 @@ The point: the tune and the effects of this document are the recorded ones, not 
 - **Command `$8D`** sets a flag that nothing reads.
 - **Eight effect triggers** with no caller (9.5), among them the siren with its jump one byte short.
 - **The master gate `$D691`**: 1 in the image and never written, so SoundFrame's first test always passes.
-- **The missile sound**: LaunchMissile jumps to SoundEffect687, but no recording fires a missile.
+- **The missile sound**: LaunchMissile jumps to SoundMissile, but no recording fires a missile.
 
 The source names the shadow and the counters `$D674-$D691` (AYRegs, SelectCount ... SirenCount, SoundMaster), the
 eight triggers as code entries (SoundNoise11 ... SoundSiren40, the siren's jump marked), and describes SetNoise as

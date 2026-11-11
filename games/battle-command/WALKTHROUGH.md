@@ -87,12 +87,17 @@ $841C POP the registers, SP back from $842B, return
 | play | 5510 in 10 967 frames | 0.50 | 14 073 | 10.0 % |
 
 In play the nine calls at `$839B` run on every entry (5510 times each), the block at `$83C4` on 3423 entries, the
-block at `$83DF` on 706. Half the interrupts of play are not taken: the code runs long stretches under `DI` (the
-back-buffer clear `$96F1`, which points `SP` at the buffer for its `PUSH` loop, and `$9941-$99C0`), and an interrupt
-that arrives under `DI` is lost.
+block at `$83DF` on 706. Half the interrupts of the play recording are not taken, and most of them are lost before
+the mission starts: LoadBlock `$71F1` reads side 2 with interrupts off (the catalogue from frame 150 to about 4200,
+the mission block from 4827, stored by 7327; [doc 3.9](docs/03-build-and-load.md#39-side-2-the-catalogue-and-the-mission-blocks)).
+In the 3D view itself 4 % are lost in the normal view and 13 % in the rear view, where the back-buffer clear `$96F1`
+(which points `SP` at the buffer for its `PUSH` loop) and the model code run under `DI`
+([doc 4.3](docs/04-game-loop.md#43-where-interrupts-are-off-and-the-interrupts-lost)). The share of each cause over
+the whole recording is not counted. The menu recording's 0.69 entries a frame has the same cause: it loads the
+catalogue too.
 
-**The paging.** One routine pages: `$7270-$7287` in bank 5 (`OUT (C),A` at `$727F`, 54 858 times in c1), with
-entries for banks 4, 7, 6 and 0 (doc 2). The other `OUT`s are `$D7E4` / `$D7EB` in bank 0 (10 907 times in c1, the
+**The paging.** One block pages: `$725F-$7287` in bank 5 (`OUT (C),A` at `$7285`, 54 858 times in c1), with
+entries for banks 3, 4, 7, 6 and 0 and the screen bit ([doc 2.3](docs/02-architecture.md#23-the-paging)). The other `OUT`s are `$D7E4` / `$D7EB` in bank 0 (10 907 times in c1, the
 AY candidates) and `$C16F` in bank 4.
 
 **The 3D frame.** A pass of the 3D view clears the back buffer once (`$96F1`) and runs `$C7BC` once, so the count
@@ -101,10 +106,10 @@ of `$96F1` in a window of the playx build (play, `re_session.py build --from-fra
 | play frames | On screen | Frames a pass |
 | --- | --- | --- |
 | 8370-8970 | the normal view, three windows of 200 frames | 7.7, 7.4, 7.1 |
-| 9115-9315 | the Dragonfly's view | 8.0 |
+| 9115-9315 | the Dragonfly's flight view (DragonflyViewLoop `$6AB9`, after SPACE at 9050) | 8.0 |
 | 9805-9995 | binoculars and zoom | 6.8 |
 | 10 065-10 125 | the rear view | 12 (the heaviest measured) |
-| 10 520-10 620 | the console after the map | 11.1 |
+| 10 520-10 620 | the 3D view with the rear view left on | 11.1 |
 
 Over play frames 8400-9400: 128 passes in 1000 frames, 7.8 frames a pass (6.4 passes a second). The main loop is
 not tied to the interrupt (no `HALT`); the pass takes as long as the scene needs.
@@ -117,7 +122,7 @@ Stage 2.
 
 The stages of c1 are in [doc 3](docs/03-build-and-load.md#38-from-power-on-to-the-title): the 103-layer decryption
 chain keyed by R (69 add, 22 dec, 12 sub; `python3 tools/speedlock.py layers`, [doc 3.3](docs/03-build-and-load.md#33-the-decryption-chain-103-layers-keyed-by-r))
-runs in c1 frames 2033-2048, then the SpeedLock loader reads the blocks from frame 2050 to about 24000
+runs in c1 frames 2033-2288 ([Layer000.gif](docs/img/routines/Layer000.gif) shows 2033-2048, layers 0-5), then the SpeedLock loader reads the blocks from frame 2050 to about 24000
 ([LoadBlocks.gif](docs/img/routines/LoadBlocks.gif)) and jumps into the game at frame 23974.
 
 ## 4. The medium from source
@@ -154,15 +159,15 @@ frames.
 | c1 | 33 299 | power-on | none | side 1 by its own loader, the title, OPTIONS, START GAME, the mission tape's catalogue, Blast Em Mission searched and loaded, the Turret fitted, a short drive with the cannon; it ends in play and completes no mission (MissionCompleteScreen and PicCompletion never run in its L1; corrected by docs, see doc 10.9) |
 | menu | 10 997 | title | none | OPTIONS with control systems 1 (Sinclair), 2 (cursor) and 5 (keyboard), the pointer moved with each; LOAD GAME with a code; the catalogue; the briefing text and map of all ten missions; STATUS; a save code |
 | controls | 406 | title | none | OPTIONS 4 (Kempston joystick): up, down, left and right each move the pointer (frames 152-194), and it reaches OPTIONS (221); OPTIONS 3 (Kempston mouse): the pointer does not follow the mouse, the pointer variables read 23 296, 72 at frame 335, and the machine resets to the 128K menu (frames 363, 406) |
-| missions | 35 998 | title | none | missions 1 and 3-10 wound to, searched, selected: 1 and 3-9 load, start, drive, map screen, quit; mission 10 goes back to the status screen (35 336) |
+| missions | 35 998 | title | none | missions 1 and 3-10 wound to, searched, selected: 1 and 3-9 load, start, drive, map screen, quit; mission 10 refused: SELECT leaves the catalogue on screen, the status card at 35 336 is the script's click on STATUS (cursor at 190, 183) |
 | m2ocean | 13 322 | title | none | Ocean mission 2 found (4767), selected: the block does not load, no stores screen in 6000 frames |
 | m2erbe | 7809 | title | none | the Erbe side 2's mission 2: loads, played (7201), its map (7386), quit |
-| m10 | 9029 | title | none | Grand Finale found (4717), SELECT: the status screen again (8349), no load |
+| m10 | 9029 | title | none | Grand Finale found (4717), SELECT refused: the catalogue stays (4972-7972); STATUS clicked (8349), no load |
 | search | 7196 | title | none | three SEARCHes after the catalogue: Blast Em, then Missile Battery, then Hostage Rescue light in turn |
 | play | 10 967 | title | `$C1C6`, `$C875` (bank 6) | Blast Em Mission with Banshee RRSS, K-40 Mortar, Dragonfly, Phantasm, each fired, the Dragonfly flown; the views N, B, Z, R, H, D, C, M and the map's briefing; pause; quit |
 | play2 | 23 666 | title | as play, three times | the other nine stores (Turret, Banshee IRSS, Phoenix RRSA, Sleeper mine; Phoenix IRSA, K-90 Cluster, Spectre, Skeet bomb; SLAM Laser), each fired |
 | death | 20 039 | title | none | Blast Em Mission with the Turret driven and fired for 12 000 frames: TANK HIT messages, no death |
-| fuel | 11 704 | title | Fuel `$7C57` = 32 at 7704 | Blast Em Mission with the Turret; the fuel runs out (0 at 7904), MissionFailedScreen at 7862: "RAN OUT OF FUEL.", then the title (8051) |
+| fuel | 11 704 | title | Fuel `$7C57` = 32 at 7704 | Blast Em Mission with the Turret; the fuel runs out (0 from 7852; the step that would go below zero at 7860), MissionFailedScreen at 7862: "RAN OUT OF FUEL.", then the title (8051) |
 | armour | 18 939 | title | armour `$8301-$8304` = 1 at 7704 | Blast Em Mission with the Turret, the death plan's keys; the first hit (18423) destroys the tank: "UNIT DESTROYED" |
 | m1complete | 22 303 | title | Immunity (bank 0 `$C875`) on the long drives only | Blast Em Mission completed: both fuel dumps destroyed, the goal, H, the Helicarrier lands (pickup 21533), HelicarrierHit 21558, the COMPLETION REPORT (21593), STATUS (MISSIONS COMPLETED 001, SCORE 500), the save code `C5989999PB` (22240) |
 | m4complete | 22 098 | m1complete's end | as m1complete | Railway Ambush completed after mission 1: the points, the engine on the siding, the station, H, the Helicarrier (HelicarrierHit 21299), the COMPLETION REPORT (21339), STATUS (002, 2500), the save code `H59K9999PK` (22035) |
@@ -184,8 +189,9 @@ The POKEs come from the release's `.pok` (6.3) and are written into bank 6 of th
 stores screen and at the mission start (frames in `record.json`); the image of the case is cut from c1, never from
 these.
 
-Grand Finale refuses SELECT in m10 and in missions: LoadMissionIfAllowed `$759A` needs all nine flags
-MissionsDone `$6799-$67A1` (doc 10.11). A failed mission ends at the title (fuel, armour): there are no lives and no
+Grand Finale refuses SELECT in m10 and in missions: LoadMissionIfAllowed `$759A` needs the first nine of the ten
+flags MissionsDone `$6799-$67A2` (doc 10.11); its `RET Z` returns into the catalogue's zone loop, so the catalogue
+stays on screen. A failed mission ends at the title (fuel, armour): there are no lives and no
 game over screen. Not reached by any recording: missions 2, 3 and 5-10 completed, the desertion, the bridge and the
 pickup failures, Grand Finale in play.
 
@@ -222,8 +228,8 @@ drawn from the mission data is stage 2's.*
 
 ![The mission tape](docs/img/play/mission-tape.png)
 
-*m2ocean: Ocean mission 2 found, then the same catalogue screen for 6000 frames; m10: Grand Finale found, then the
-status screen.*
+*m2ocean: Ocean mission 2 found, then the same catalogue screen for 6000 frames; m10: Grand Finale found, SELECT
+refused with the catalogue left on screen, then the status card the script clicks at 8349.*
 
 ![The missions in play](docs/img/play/missions.png)
 
@@ -313,9 +319,9 @@ main stack; over every recording it reaches down to `$8149` in menu and `$816B` 
 
 | Variable | Address | Witness |
 | --- | --- | --- |
-| slot 1's ammunition | `$836D` (bank 2) | death: 79 at frame 7939, 69 at 9939, 59 at 11 939, 49 at 13 939 (one cannon round every 200 frames); read by `$B550 LD HL,$836D / LD A,(HL) / DEC A` |
+| slot 1's ammunition | `$836D` (bank 2) | death: 79 at frame 7939, 69 at 9939, 59 at 11 939, 49 at 13 939 (one cannon round every 200 frames); read by `$B550 LD HL,n` (n the current slot's ammunition, `$836D` for slot 1, written by SelectAmmoPointer `$D3C6`) / `LD A,(HL)` / `DEC A` |
 | the pointer | X `$7C51`, Y `$7C53` (bank 5) | `tools/bcbot.py` reads them and its moves land where it aims (menu) |
-| the mission clock | the 0-59 counter stored at `$7E11` | the infinite time POKE (below) |
+| the mission clock | MissionClock `$68EA` seconds, `$68EB` minutes, `$68EC` hours | ClockTick `$7DFB` stores the seconds with `LD (HL),A` at `$7E11`; the Infinite Time POKE (below) makes it a `NOP` |
 | position, heading, speed | X `$7613`, Y `$7616` (24-bit), heading `$7612`, speed `$75F7` (record 0 at `$75F0`) | m1complete, m4complete steer on them (work/stage2/complete-NOTES.md); doc 7 |
 | fuel, armour | fuel `$7C57`, armour `$8301-$8304` | the fuel and armour recordings (POKEs at 7704); doc 10.2, 10.5 |
 | the score, the goal | score `$68E2`, goal flag `$68E8`, MissionsDone `$6799-$67A2` | m1complete, m4complete; doc 10.6, 10.9 |
@@ -326,8 +332,8 @@ code at the moment it applies (`Z 8` = whatever bank is paged at `$C000`):
 
 | Cheat | POKE | At that address | Result |
 | --- | --- | --- | --- |
-| Infinite Ammo | 46420 (`$B554`) = 0 | `DEC A` after `LD HL,$836D / LD A,(HL)` | the slot's ammunition is not decremented |
-| Infinite Time | 32273 (`$7E11`) = 0 | `LD (HL),A` in the 0-59 counter | the clock is not stored |
+| Infinite Ammo | 46420 (`$B554`) = 0 | `DEC A` after `LD HL,n / LD A,(HL)` (n the current slot's ammunition) | the slot's ammunition is not decremented |
+| Infinite Time | 32273 (`$7E11`) = 0 | ClockTick's `LD (HL),A`, the store of MissionClock's seconds | the seconds are not stored: the clock stands |
 | Immunity | 51317 (`$C875`) = 58 | bank 0 CollisionPass `JP M,$C8AF` becomes `LD A,(nn)`: no overlap is handled, the player's own shells included | play and play2 wrote it into bank 6 (inside `LD B,7`), which proves nothing; m1complete and m4complete wrote it into bank 0 for the long drives (corrected by docs, see doc 7.10) |
 | No Weight Limit | bank 6 49606 (`$C1C6`) = 58 | the stores screen's weight check | applied in play: a 1150 kg payload accepted |
 | Infinite Missiles | 50161 (`$C3F1`) = 0 | bank 0 LaunchMissile, `DEC A` of the missile count | from the code (stage 2) |

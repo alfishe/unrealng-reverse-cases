@@ -15,7 +15,7 @@ own code up to $BF0C, and runs into the bytes it has just rewritten, the next la
 SpeedLock loader at $B8F9. Each layer rewrites a byte in one of these ways (A the key, from `LD A,R` and a
 register or two; c the byte before, p after):
 
-    ADD A,(HL) then CPL / SUB D / SUB n     p = post(key + c)         (68 layers, `R XOR D` or R as the key)
+    ADD A,(HL) then CPL / SUB D / SUB n     p = post(key + c)         (69 layers, `R XOR D` or R as the key)
     SUB (HL) then XOR IXl / DEC DE          p = post(key - c)         (12 layers, `R XOR IXh` or `R XOR E`)
     DEC (HL)                                p = c - 1                 (22 layers, no key)
 

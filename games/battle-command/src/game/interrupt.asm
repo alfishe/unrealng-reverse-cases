@@ -419,11 +419,12 @@ PageBankKept:
   LD A,$00
   JP PageBankA
 
-; The key E: bank 0's sound off $D807, bank 6 $DA09, the flags $D689 and $DB71
-; cleared
+; The key E: silence the AY ($D807), ask "Are you sure you want to quit?" (bank
+; 6 QuitPrompt $DA09: Y to the title, N back), then clear SoundGate $D689 and
+; PickupAnnounce $DB71
 ;
 ; Witness: L1 13 (play2).
-SoundOffKey:
+QuitKey:
   CALL SilenceAY
   CALL SaveBank
   CALL PageBank6

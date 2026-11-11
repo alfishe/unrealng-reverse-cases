@@ -2,10 +2,11 @@
 ; objects.asm: The object table: 24 records of 60 bytes, spawning from the mission list, transform, depth sort, collisions, radar
 ;
 ; ObjectTable $75F0 (bank 5): 24 records of 60 bytes; record 0 is the player, 1-20 the general slots, 21 ($7ADC) the
-; Helicarrier, 22-23 weapons. +1 type, +2 state flags (bit7 present, bit6 wreck, bit2 on the radar), +3 handler flags
-; (bit0 step handler on), +5/+6 height, +7 speed, +$13 hit points, +$14 damage, +$16/+$17 radius, +$18/+$19 step
-; handler, +$1A/+$1B collision handler, +$1C/+$1D model, +$1E/+$1F score, +$22 heading, +$23-+$25 X, +$26-+$28 Y,
-; +$31-+$3A per-type state, +$3B collision slot. The first 30 bytes after +1 come from the type's template.
+; Helicarrier, 22 projectiles (FindProjectileSlot scans 1-22; 23 is never allocated). +1 type, +2 state flags (bit7
+; present, bit6 wreck, bit2 on the radar), +3 handler flags (bit0 step handler on), +5/+6 height, +7 speed, +$13 hit
+; points, +$14 damage, +$16/+$17 radius, +$18/+$19 step handler, +$1A/+$1B collision handler, +$1C/+$1D model,
+; +$1E/+$1F score, +$22 heading, +$23-+$25 X, +$26-+$28 Y, +$31-+$3A per-type state, +$3B collision slot. +1 is the
+; type, the 30 bytes +2..+$1F come from the type's template, +$20 is the serial.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $A9FE
@@ -58,13 +59,14 @@ l_AA23:
 ; bytes from $B3CA
 ;
 ; ObjectSetType `$BD41` copies record (type - `$80`) when the type has bit 7:
-; the 30 bytes become +1..+$1E of the object (flags, colour, height, speed,
-; box, hit points, damage, radius, step handler, collision handler, model,
-; score). `$80` K-40 mortar shell (step `$B5E8`), `$81` cannon shell (`$B592`),
-; `$82` / `$83` Banshee RR / IR, `$84` / `$85` Phoenix, `$86` Dragonfly, `$87`
-; cluster bomb (`$CF4A`), `$88` Sleeper mine, `$89` decoy, `$8A` Phantasm,
-; `$8B` cluster, `$8C` the Helicarrier. The byte at `$B3C9` (`$C9`) is the RET
-; of the routine before.
+; the 30 bytes become +2..+$1F of the object (the type itself is +1) (flags,
+; colour, height, speed, box, hit points, damage, radius, step handler,
+; collision handler, model, score). `$80` K-40 mortar shell (step `$B5E8`),
+; `$81` cannon shell (`$B592`), `$82` Banshee RR, `$83` Phoenix RR, `$84`
+; Banshee IR, `$85` Phoenix IR, `$86` Dragonfly, `$87` K-90 cluster bomb
+; (`$CF4A`), `$88` Sleeper mine, `$89` Skeet bomb, `$8A` Phantasm (the decoy of
+; the homing shell type 28), `$8B` Spectre, `$8C` the Helicarrier. The byte at
+; `$B3C9` (`$C9`) is the RET of the routine before.
 WeaponTemplates:
   DEFB $C9
 ShellTemplate80:
@@ -261,7 +263,7 @@ DrawModel:
   LD C,(IX+$2D)
   LD B,(IX+$2E)
   LD (l_9A9E+$0015),BC
-  LD A,(WorldVars+$0004)
+  LD A,(WorldVars+$0003)
   LD C,A
   LD A,(IX+$22)
   SUB C
@@ -725,9 +727,12 @@ FindFreeLoop:
   SCF
   RET
 
-; Find a slot for a list record
+; Find a slot for a list record: the first free or evictable record of 1-20
 ;
-; FindFreeObject `$BCDA`, then the list index to +0.
+; One scan of records 1-20 (it does not call FindFreeObject): the first record
+; that is free (+2 = 0) or holds an enemy shell (+3 AND `$50` = `$10`) is
+; taken; an evicted shell is unregistered (`$67CD`) and its +2 cleared. Then
+; the list index to +0. NC when none.
 ;
 ; Witness: L1 185 (death, m2erbe, missions, play, play2).
 FindSlot:
@@ -783,8 +788,8 @@ l_BD1C:
 ; Set the type and copy the 30-byte template (vector $67C7)
 ;
 ; Input A = type. Bit 7: the resident template `$B3CA` + 30 * (A - `$80`); else
-; the mission's template table (`$DBD7`) + 30 * A. Copies to +1..+$1E and sets
-; the serial +$20.
+; the mission's template table (`$DBD7`) + 30 * A. Stores the type at +1,
+; copies the 30 template bytes to +2..+$1F and the serial to +$20.
 ;
 ; Witness: L1 431 (death, m2erbe, missions, play, play2).
 ObjectSetType:
@@ -814,9 +819,11 @@ l_BD5C:
   INC DE
   RET
 
-; Is the list record within 9 coarse units of the player
+; Is the list record within range of the player (4 coarse units for type 0, 9
+; for the others)
 ;
-; |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below 9. Called for each list
+; |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below the range: 4 for type 0
+; (trees), 9 for every other type (type 1 trees included). Called for each list
 ; record (70 373 runs).
 ;
 ; Witness: L1 70373 (death, m2erbe, missions, play, play2).
@@ -897,11 +904,11 @@ l_BDB4:
   JP NC,l_BE83
   LD L,(IX+$23)
   LD H,(IX+$24)
-  LD BC,(WorldVars+$0005)
+  LD BC,(WorldVars+$0004)
   AND A
   SBC HL,BC
   LD (l_9A85+$0009),HL
-  LD A,(WorldVars+$0007)
+  LD A,(WorldVars+$0006)
   LD E,A
   LD A,(IX+$25)
   SBC A,E
@@ -923,11 +930,11 @@ l_BDF4:
 l_BDFA:
   LD L,(IX+$26)
   LD H,(IX+$27)
-  LD BC,(WorldVars+$0008)
+  LD BC,(WorldVars+$0007)
   AND A
   SBC HL,BC
   LD (l_9A5E+$000E),HL
-  LD A,(WorldVars+$000A)
+  LD A,(WorldVars+$0009)
   LD E,A
   LD A,(IX+$28)
   SBC A,E
@@ -949,7 +956,7 @@ l_BE26:
 l_BE2C:
   LD L,(IX+$05)
   LD H,(IX+$06)
-  LD BC,(WorldVars+$000B)
+  LD BC,(WorldVars+$000A)
   AND A
   SBC HL,BC
   LD (IX+$2D),L
@@ -1189,7 +1196,7 @@ DrawEntry:
   LD E,(IX+$0D)
   LD D,(IX+$0E)
   LD (l_9A9E+$0015),DE
-  LD A,(WorldVars+$0004)
+  LD A,(WorldVars+$0003)
   LD C,A
   LD A,(IX+$09)
   SUB C
@@ -2096,14 +2103,29 @@ l_CA6F:
   DJNZ l_CA6F
   RET
 
-; Collision code no recording runs
+; A unit strikes the tank with no shell: PlayerHit with the unit as the hitter,
+; damage doubled
 ;
-; A collision handler: the hitter's damage +$14 into IY, then HitTest; reached
-; only through a template.
-CollisionCode:
-  DEFB $DD,$4E,$03,$DD,$46,$14,$DD,$E5
-  DEFB $FD,$E1,$C5,$DD,$E5,$79,$F6,$10
-  DEFB $FD,$77,$03,$CB,$20,$FD,$70,$14
-  DEFB $DD,$21,$F0,$75,$CD,$A5,$CA,$DD
-  DEFB $E1,$C1,$DD,$71,$03,$DD,$70,$14
-  DEFB $C9
+; IX = the unit. Saves its +3 and +$14, sets +3 b4 and doubles +$14, calls
+; PlayerHit `$CAA5` with IY = the unit and IX = the tank (`$75F0`), then
+; restores both bytes. Called by mission 8's type 10 at `$E1FC` (a direct
+; strike while it is aligned, docs/07-objects.md 7.14); no recording runs it.
+StrikePlayer:
+  LD C,(IX+$03)
+  LD B,(IX+$14)
+  PUSH IX
+  POP IY
+  PUSH BC
+  PUSH IX
+  LD A,C
+  OR $10
+  LD (IY+$03),A
+  SLA B
+  LD (IY+$14),B
+  LD IX,ObjectTable
+  CALL PlayerHit
+  POP IX
+  POP BC
+  LD (IX+$03),C
+  LD (IX+$14),B
+  RET

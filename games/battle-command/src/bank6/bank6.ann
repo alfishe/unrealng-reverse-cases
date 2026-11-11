@@ -28,28 +28,28 @@ $C06F c WaitForClick ; Wait until the interrupt's fire test sets ClickFlag $6D43
 $C072 WaitClickLoop
 > Known only from the code: nothing calls it.
 
-@module statusview ; The Dragonfly title box and the grid position of the status view
-@about The Dragonfly view (DragonflyLoop $6C93) and the status view (StatusLoop $6BC7) are drawn by the resident code in bank 2; bank 6 holds the parts they borrow: the boxes behind the Dragonfly's title, the GRID Y / GRID X numbers (PrintStatusGrid $C0F7), the map of the status view (module map) and the message of the status views (module panel).
+@module statusview ; The console's BRIEF page box and the grid position of the status view
+@about The status view (StatusLoop $6BC7) and its BRIEF page (BriefPage $6C44) are drawn by the resident code in bank 2; bank 6 holds the parts they borrow: the boxes behind the briefing text of the BRIEF page, the GRID Y / GRID X numbers (PrintStatusGrid $C0F7), the map of the status view (module map) and the message of the status views (module panel).
 
-$C079 c DragonflyTitleBox ; The attribute box $C0B1 and 8 cleared pixel lines behind the Dragonfly's title
-> Called once by DragonflyTitle `$70B6`. AttrBox `$6CFB` with `$C0B1`, then ScreenRowFill `$6D22` of 8 lines of 18 bytes from line `$88`, column 7 (through DragonflyTitleFill). Witness: L1 1 (play).
+$C079 c BriefPageBox ; The attribute box $C0B1 and 8 cleared pixel lines behind the BRIEF page's text
+> Called once by BriefPageText `$70B6`. AttrBox `$6CFB` with `$C0B1`, then ScreenRowFill `$6D22` of 8 lines of 18 bytes from line `$88`, column 7 (through BriefPageFill). Witness: L1 1 (play).
 
-$C089 b DragonflyTitleBoxes 5 ; An attribute box record (width, height, column, attribute, row) for the unused variant $C08E
-> Read only by DragonflyTitleBoxSmall.
+$C089 b BriefPageBoxRecord 5 ; An attribute box record (width, height, column, attribute, row) for the unused variant $C08E
+> Read only by BriefPageBoxSmall.
 
-$C08E c DragonflyTitleBoxSmall ; Variant: the box $C089, then the fill of DragonflyTitleBoxLarge
+$C08E c BriefPageBoxSmall ; Variant: the box $C089, then the fill of BriefPageBoxLarge
 > Known only from the code: nothing calls it.
 
-$C096 c DragonflyTitleBoxLarge ; Variant: the box $C0AC and 40 cleared lines at column 10
-> Known only from the code: nothing calls it; its tail DragonflyTitleFill is the one DragonflyTitleBox jumps to.
-$C09C DragonflyTitleLarge
-$C0A4 DragonflyTitleFill ; A' = $FF, A lines, BC the column: ScreenRowFill of 18 bytes from line $88
+$C096 c BriefPageBoxLarge ; Variant: the box $C0AC and 40 cleared lines at column 10
+> Known only from the code: nothing calls it; its tail BriefPageFill is the one BriefPageBox jumps to.
+$C09C BriefPageLarge
+$C0A4 BriefPageFill ; A' = $FF, A lines, BC the column: ScreenRowFill of 18 bytes from line $88
 
-$C0AC b DragonflyBoxes 5 ; Four attribute box records of the Dragonfly title
-> `$C0AC` read by DragonflyTitleBoxLarge, `$C0B1` by DragonflyTitleBox, `$C0B6` by DragonflyTitle (`$70A9`); `$C0BB` is not read in bank 6.
-$C0B1 DragonflyBoxB
-$C0B6 DragonflyBoxC
-$C0BB DragonflyBoxD
+$C0AC b BriefPageBoxes 5 ; Four attribute box records of the briefing texts
+> `$C0AC` read by BriefPageBoxLarge, `$C0B1` by BriefPageBox, `$C0B6` by BriefingTextOnce (`$70A8`), `$C0BB` by BriefPageText (`$70C0`); none of the four is read inside bank 6.
+$C0B1 BriefPageBoxB
+$C0B6 BriefPageBoxC
+$C0BB BriefPageBoxD
 
 $C0C0 c FormatGridPosition ; Format the map position: the two numbers in the operands $C0C7 and $C0E2 into GridText
 > The operands are written by DrawStatusMap `$DB1C` from the view's position (`$9A6C` and `$9A8E`). Each goes through NumberToDigits `$C126` (leading zeros kept, C = `0`) into PaddedDigits `$D9AB`; digits 2-3 and 4-5 are copied around the colon of GridText. Witness: L1 40 (m2erbe, missions, play).
@@ -608,7 +608,7 @@ $D3C0 LongDigitDone
 > Witness: L1 36 (m10, menu, missions).
 
 @module panel ; The panel jobs of the play views: messages, the damage colours, the attributes, the bars
-@about The play views keep part of their panel work in bank 6: StatusViewMessage $D3C9 (the status and Dragonfly views' message), ShowDamageColours $D4A5 (the Dragonfly's damage board), PanelAttributes $D521 (PanelSetup $6B32) and the bars of the cockpit, UpdatePanelBars $D58C (UpdateSlotBars $7327).
+@about The play views keep part of their panel work in bank 6: StatusViewMessage $D3C9 (the message of the status view and the damage board), ShowDamageColours $D4A5 (the damage board's boxes), PanelAttributes $D521 (PanelSetup $6B32) and the bars of the cockpit, UpdatePanelBars $D58C (UpdateSlotBars $7327).
 
 $D3C9 c StatusViewMessage ; Once per message: "TANK HAS BEEN HIT" or "COLLISION OCCURED", then MessageOnce off
 $D3E1 StatusMessagePrint
@@ -717,7 +717,7 @@ $D9AB PaddedDigits ; five digits, written by NumberToDigits
 @res texts/payload-line-text.bin
 
 @module map ; The quit prompt and the maps of the status view and the briefing
-@about The status view (StatusLoop $6BC7) and the briefing show the mission's area from above in the 3D window: DrawStatusMap $DB1C sets a high view, draws every object of the mission's list (DrawMapObjects $E3F3, models MapModels $E512) and three markers (DrawMarker $DB6B, models MarkerModels $E5D5), and BlitMapView $DBBD copies the window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (SoundOffKey $843F).
+@about The status view (StatusLoop $6BC7) and the briefing show the mission's area from above in the 3D window: DrawStatusMap $DB1C sets a high view, draws every object of the mission's list (DrawMapObjects $E3F3, models MapModels $E512) and three markers (DrawMarker $DB6B, models MarkerModels $E5D5), and BlitMapView $DBBD copies the window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (QuitKey $843F).
 
 $D9B2 c ClearQuitArea ; Clear the screen lines of the quit prompt
 $D9B7 ClearQuitLines

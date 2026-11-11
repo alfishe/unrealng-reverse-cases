@@ -25,8 +25,8 @@ The recordings it rests on (WALKTHROUGH 6.0):
   - OPTIONS 4 (Kempston joystick) at 95, the stick up, down, left, right and fire at 138-224;
   - OPTIONS 3 (Kempston mouse) at 264;
   - the machine restarts in frame 331.
-- `play` (10 967 frames): mission 1 with Q for speed (8365-8425), the weapon keys 1-4, SPACE to fire, the Dragonfly,
-  the views N, B, Z, R, H, D, C, M, and Q with P to turn (10 520-10 620).
+- `play` (10 967 frames): mission 1 with Q for speed (8365-8425), the weapon keys 1-4, J to aim, SPACE to fire, the
+  Dragonfly, the views N, B, Z, R, H, D, C, M, Q with P to turn (10 520-10 620), then E and Y to quit.
 - `fuel` (stage 2, a POKE sets the fuel to 32): the mission-failed path.
 
 Frames and times:
@@ -73,7 +73,7 @@ flowchart TD
   P --> F["PointerFire 7DC2: fire bit"]
   F --> CL["click flag 6D43, ClickX 9715, ClickY 9716"]
   ST --> PP["pointer 7DC0, 7DC1 (menus only)"]
-  KC --> PK["PlayKeys 6B3B, MapKeys, StatusKeys, the options screen"]
+  KC --> PK["PlayKeys 6B3B, DamageKeys, StatusKeys, the options screen"]
   ST --> PS["PlayerStep A8C7: speed and heading"]
   CL --> PZ["PointerZones 6D42 (menus)"]
   CL --> FW["PlayerSteering A986: fire the weapon"]
@@ -207,8 +207,7 @@ Each axis works the same way:
   At zero, it is reset to 4 and the step grows by one in its direction, up to 8 or down to -8.
 
 The code of the call is kept in LastDirections `$67B8` for the next call.
-The repeat counts are swapped against their names.
-RepeatY `$67B7` serves the Y axis, and RepeatX `$67BA` the X axis (the names were swapped in stage 2's source).
+RepeatY `$67B7` serves the Y axis, and RepeatX `$67BA` the X axis.
 
 ```
 DecodeDirections:
@@ -301,16 +300,19 @@ tools/fig_controls.py timeline docs/img/controls/pointer-timeline.png --work wor
 
 The point: a tap moves the pointer one pixel, and a held direction accelerates to 8 pixels a frame.
 The same steps steer the vehicle.
-A tap turns it a little, and a long press turns it fast.
+PlayerSteering halves StepX with `SRA`, so a left tap (-1) turns it by one heading step, while a right tap (+1)
+does not turn it at all (`SRA` of 1 is 0); a long press turns it 4 steps a pass either way (5.9).
 
 ## 5.4 The pointer
 
 PointerTick `$7D80` runs in the interrupt in every screen.
-It reads the device and stores the code at `$66CE` (PolyClipVars + 2), where the play code reads it back.
+It reads the device and stores the code at `$66CE` (PolyClipVars + 2).
+Nothing reads that byte back: the only accesses in the main image and in banks 3, 4, 6 and 7 are the three writes
+`$7D83`, `$7E7B` and `$A9BC` (the mission blocks were not scanned).
 It calls PointerFire.
 Then it stops unless two flags allow the move:
 
-- the operand of `LD A,$FF` at `$7D88`;
+- the operand of `LD A,$FF` at `$7D8A` (the instruction is at `$7D89`; StatusLoop clears it at `$6BF0`);
 - the operand of PointerShown at `$83BF` (doc 04).
 
 The 3D view clears the second flag, so the pointer stays where it is while the steps steer the vehicle.
@@ -321,9 +323,9 @@ The pointer coordinates are screen pixels.
 ```
 PointerTick:
   CALL ReadControls
-  LD (PolyClipVars+$0002),A  ; the code, for the play code
+  LD (PolyClipVars+$0002),A  ; the code (no reader)
   CALL PointerFire
-  LD A,$FF                   ; operand $7D88: 0 freezes the pointer
+  LD A,$FF                   ; operand $7D8A: 0 freezes the pointer
   AND A
   RET Z
   LD A,(PointerShown+$0001)      ; $83BF: 0 in the 3D view
@@ -376,9 +378,9 @@ PointerFire `$7DC2` takes bit 0 of the code:
 So a held fire clicks once, then again after half a second, then every tenth of a second.
 Each click copies the pointer position into ClickX `$9715` and ClickY `$9716`.
 It takes the copy that CopyPointer `$897E` keeps at `$7C51` and `$7C53`.
-The flag stays set until the code that reads it clears it.
-PointerZones itself does not clear it.
-ClearPointerState `$7E7A` and PlayerSteering do.
+The flag stays set until a reader clears it.
+PointerZones clears it after its scan (`$6D7A`: `XOR A` / `LD (PointerZones+1),A`), ClearPointerState `$7E7A`
+clears it too, and PlayerSteering clears it whenever it reads a click and while the fire cooldown runs (5.9).
 
 ```
 PointerFire:
@@ -669,9 +671,10 @@ stateDiagram-v2
   Stores: Stores 7514
   Play: Play 751A
   Status: StatusLoop 7528
-  Node7536: 6BDE 7536
-  Node7544: DragonflyStart 7544
-  Dragonfly: DragonflyLoop 7552
+  Node7536: MAP page, StatusLoop 6BDE, 7536
+  Node7544: BRIEF page, BriefPage 7544
+  Damage: damage board, DamageLoop 7552
+  DView: Dragonfly flight view, DragonflyViewLoop 7572
   Complete: MissionComplete 755E
   Failed: MissionFailed 7564
   MStatus: MissionStatus 756A
@@ -688,14 +691,19 @@ stateDiagram-v2
   Briefing --> Catalogue: 0 CLOSE
   Stores --> Play: 0 START MISSION
   Play --> Status: 0 key M
-  Play --> Dragonfly: 1
+  Play --> Damage: 1 (key D, direct)
+  Play --> DView: Dragonfly launched (direct)
   Play --> Complete: 2 goal done
-  Play --> Failed: 3 fuel out
-  Play --> Title: 4 quit
+  Play --> Failed: 3 failure, any cause
+  Play --> Title: 4 quit, E then Y
   Status --> Play: 0 key C
   Status --> Node7536: 1 key M
+  Status --> Complete: 2
+  Status --> Failed: 3
   Status --> Node7544: 4 key B
-  Dragonfly --> Play: 0
+  Damage --> Play: 0 key C
+  Damage --> Complete: 2
+  Damage --> Failed: 3
   Complete --> MStatus: 0
   Failed --> Title: 0
   MStatus --> ShowPw: 0 SAVE GAME
@@ -704,14 +712,31 @@ stateDiagram-v2
 
 Nodes `$7536` and `$7544` have the same transitions as StatusLoop `$7528`.
 Their arrows are left out of the diagram.
-Node `$7572` (draw MapLoop `$6AB9`) is in the list, but no transition word names it.
-The play loop reaches MapLoop and the other in-play views through SelectLoop `$6BB4`, which writes the NextView
-operand directly (doc 06).
+The two are the console's pages:
+
+- Node `$7536` (M in the status view, through ScreenTwo) re-enters StatusLoop at `$6BDE`, past the picture and the
+  help: the MAP page.
+- Node `$7544` (B, through ScreenEight) is BriefPage `$6C44`.
+  It calls BriefPageOnce, which calls BriefPageText `$70B6` once: a box (bank 6 `$C079`), the briefing text at
+  (`$70A3`) and an attribute box.
+  StatusLoop `$6BF6` puts the `NOP` of BriefPageOnce back on each visit.
+  The screenshot `010455-view-map-brief` of the play recording shows the page, with its MAP and BRIEF buttons.
+
+The damage board's node `$7552` has transition 1 = `$0000`.
+Transition 3 is taken on any failure: the code that fails the mission stores its reason at FailReason `$7BF9` and
+calls ScreenSix (OutOfFuel in 5.9 is one of them).
+The key D does not use transition 1 of the play node: SelectDamage `$6BC2` writes DamageLoop `$6C93` into the
+NextView operand through SelectLoop `$6BB4`, and so do DamageKeys' B and C (StatusKeys' C takes transition 0).
+Only StartMission, StatusLoop and DamageLoop are entered through SelectLoop.
+Node `$7572` (draw DragonflyViewLoop `$6AB9`) is in the list, but no transition word names it.
+LaunchDragonfly reaches it: at `$C30F` it writes DragonflyViewLoop into NextView, after pointing the camera `$B9F4`
+at the Dragonfly's record (doc 06, 6.10).
 
 A screen with zones calls PointerZones `$6D42` on each turn of its loop.
 The click flag is its `LD A,n` operand, so with no click the routine returns at once.
 Otherwise it walks the zone table: 6-byte records x1, x2, y1, y2 and a routine, ended by a 0 byte.
-The first record with x1 <= ClickX < x2 and y1 <= ClickY < y2 has its routine called through a patched `CALL`.
+Each record with x1 <= ClickX < x2 and y1 <= ClickY < y2 has its routine called through a patched `CALL`; the scan
+does not stop at the first, and at the end byte it clears the click flag (`$6D7A`).
 
 ```
 PointerZones:
@@ -750,7 +775,13 @@ l_6D49:
   CALL $0000
 l_6D73:
   POP HL
-  ...                    ; the next record
+  LD BC,$0006
+  ADD HL,BC              ; the next record, match or not
+  JR l_6D49
+l_6D7A:
+  XOR A
+  LD (PointerZones+$0001),A ; the click is used up
+  RET
 ```
 
 ```mermaid
@@ -759,7 +790,8 @@ flowchart TD
   B -->|0| R["return"]
   B -->|set| C["HL = zone table, operand 6D47"]
   C --> D{"first byte 0"}
-  D -->|yes| R
+  D -->|yes| CL["click flag 6D43 = 0"]
+  CL --> R
   D -->|no| E{"x1 le ClickX lt x2 and y1 le ClickY lt y2"}
   E -->|no| N["next record, HL + 6"]
   E -->|yes| F["patch the CALL operand, call the zone routine"]
@@ -792,6 +824,8 @@ The zones of each screen:
 | Stores | four slots 136-167 or 216-247, 40-71 or 88-119 | SlotZoneA-D | fit or remove |
 | Stores | START MISSION 146-236, 179-184 | ScreenFromClick | play |
 | Mission complete, failed | 155-227, 51-76 | ScreenZero | status or title |
+| Mission status | SAVE GAME 155-236, 27-36 | ScreenZero | the save code |
+| Mission status | MISSION SELECTION 155-228, 51-76 | ScreenTwo | the catalogue |
 
 The password node `$74F8` has a zone table whose first byte is 0.
 It has no zone, because the code is typed.
@@ -800,8 +834,9 @@ It has no zone, because the code is typed.
 
 *The screen that is shown over menu frames 0-640 (every 4th frame). The pointer moves down, SPACE clicks OPTIONS,
 key 1 picks Sinclair and keys 6 and 9 move the pointer, then key 2 picks the cursor keys. The black frames are the
-shadow screen of bank 7, shown while a picture is unpacked (doc 06). `python3 tools/fig_shownscreen.py --work
-work/docs/bcB/menu --from 0 --to 640 --step 4 --label docs/img/controls/menu-options.gif`.*
+shadow screen of bank 7, shown while a picture is unpacked (doc 06). The band under the screen gives the frame and
+the screen bank.
+`python3 tools/fig_shownscreen.py --work work/docs/bcB/menu --from 0 --to 640 --step 4 --label docs/img/controls/menu-options.gif`.*
 
 The point: the whole front end is data.
 Six bytes of zone record make a new button, and a node of six bytes or more makes a new screen.
@@ -862,6 +897,14 @@ The 3D view uses the same steps.
 PlayerStep `$A8C7` is the handler of the player's object record (IX = `$75F0`, doc 07), run once a pass.
 The speed is record +7 (`$75F7`), and the heading is record +`$22` (`$7612`).
 
+- Terrain first (doc 10, 10.2): TerrainCollision `$CC3C` stores the terrain type at TerrainType `$CE69`.
+  - Type 2 or `$80` (a wall): the speed is negated, MoveObject moves the tank back, and the handler becomes
+    BounceDecay `$CC09`, which halves the speed each pass and then gives the handler back to `$A8C7`.
+    The pass ends there, with no throttle and no steering.
+  - Type 0 or 6: 1.25 x the speed goes to `$7E8E`, the speed bar's value (doc 08, 8.5); the record's speed is put
+    back at once, so the move uses the plain speed.
+    Any other type stores the plain speed there.
+- Speed 0: the fuel, BoundaryCheck and MoveObject are all skipped, and the step goes straight to the throttle.
 - Speed: speed = speed - StepY.
   Q (up, a negative step) speeds up, and A slows down and then reverses.
   The speed is held below `$30` forwards and below `$18` backwards, so the range is -23 to +47.
@@ -869,15 +912,56 @@ The speed is record +7 (`$75F7`), and the heading is record +`$22` (`$7612`).
   When the fuel would go below zero, OutOfFuel `$A94E` sets the failure text and calls ScreenSix, which leads to the
   mission-failed node (doc 10, the fuel recording).
 - Heading: PlayerSteering `$A986` adds StepX / 2 (`SRA A`) to the heading, so P turns right and O left.
-- Fire: PlayerSteering counts the cooldown `$A9FD` down.
-  At zero, a set click flag `$6D43` calls the weapon routine through the operand at `$A9B9` (set by the weapon
-  selection, doc 10), and the cooldown restarts at 8.
-- The brake: the key S (code `$53`) sets the record's handler to `$A9C9`.
-  That handler takes 8 from |speed| each pass.
+  `SRA` rounds down: StepX -1 turns by -1, StepX +1 by 0.
+- Fire: while the cooldown FireCooldown `$A9FD` is not 0, PlayerSteering counts it down and clears the click flag
+  `$6D43`.
+  At zero, a set click flag is cleared and fires only if the rear view `$BA27` is off and NextView is StartMission
+  (the front view): then the `CALL` at `$A9B8` calls the slot's fire routine through its operand `$A9B9` (set by
+  SelectWeapon, doc 10).
+  The fire routine itself restarts the cooldown at 8 through SetFireCooldown `$A9F7` (`$B58F`, `$B5E2`, `$D289`).
+  PlayerSteering then clears `$66CE`.
+- The brake: the key S (code `$53`) sets the record's handler to `$A9C9`; it is tested after the terrain, before
+  the fuel.
+  That handler takes 8 from |speed| each pass, ignores StepY, runs MoveObject and PlayerSteering, and uses no fuel.
   Below 8, it sets the speed to 0 and the handler back to `$A8C7`.
   It sits in the source as the routine BrakeKey `$A9C9` (stage 2 had kept it as data); known only from the code: no recording presses S in play (no L1 run of `$A9C9`).
 
 ```
+PlayerStep:
+  JR l_A8C9
+l_A8C9:
+  CALL ApiVector17      ; TerrainCollision: carry = a segment hit
+  JR NC,l_A8ED
+  LD A,(TerrainType)
+  CP $02
+  JR Z,l_A8D9
+  CP $80
+  JR NZ,l_A8F2
+l_A8D9:                 ; a wall: bounce
+  LD A,(IX+$07)
+  NEG
+  LD (IX+$07),A
+  CALL ApiVector00      ; MoveObject
+  LD (IX+$18),$09       ; handler = BounceDecay $CC09
+  LD (IX+$19),$CC
+  RET
+l_A8ED:
+  LD A,$03              ; nothing hit: type 3
+  LD (TerrainType),A
+l_A8F2:
+  ...                   ; S down: JP l_A9C0, the brake handler
+  ...                   ; type 0 or 6: $7E8E = 1.25 x speed, else the speed
+l_A935:
+  CALL ApiVector08      ; |speed|
+  JR Z,l_A961           ; 0: no fuel, no move
+  SRL A
+  SRL A
+  SRL A
+  SRL A
+  OR $01
+  ...                   ; fuel - cost, OutOfFuel on a borrow
+  CALL BoundaryCheck
+  CALL ApiVector00      ; MoveObject
 l_A961:
   LD A,(StepY)
   NEG
@@ -906,22 +990,58 @@ PlayerSteering:
   SRA A
   ADD A,(IX+$22)        ; heading + StepX / 2
   LD (IX+$22),A
+  LD A,(FireCooldown)
+  AND A
+  JR Z,l_A9A0
+  DEC A
+  LD (FireCooldown),A
+  XOR A
+  LD (PointerZones+$0001),A ; no click while it cools down
+  RET
+l_A9A0:
+  LD HL,PointerZones+$0001
+  LD A,(HL)
+  AND A
+  RET Z                 ; no click
+  LD (HL),$00
+  LD A,(l_BA1F+$0008)   ; $BA27: the rear view
+  AND A
+  RET NZ
+  LD HL,(NextView+$0008)
+  LD BC,StartMission
+  AND A
+  SBC HL,BC
+  JR NZ,l_A9BB          ; not the front view
+  CALL NoAction         ; operand $A9B9: the slot's fire routine
+l_A9BB:
+  XOR A
+  LD (PolyClipVars+$0002),A
+  RET
 ```
 
 ```mermaid
 flowchart TD
-  A["PlayerStep A8C7, once a pass"] --> B{"key S down"}
-  B -->|yes| BR["handler = A9C9: brake by 8 a pass"]
-  B -->|no| C["fuel 7C57 - (abs speed SRL 4 OR 1)"]
+  A["PlayerStep A8C7, once a pass"] --> T{"TerrainCollision: type CE69"}
+  T -->|"2 or 80, a wall"| W["speed negated, MoveObject, handler = BounceDecay CC09"]
+  T -->|other| B{"key S down"}
+  B -->|yes| BR["handler = A9C9: brake by 8 a pass, no fuel"]
+  B -->|no| RG["7E8E = 1.25 x speed on type 0 or 6, else the speed"]
+  RG --> Z{"speed 0"}
+  Z -->|yes| E
+  Z -->|no| C["fuel 7C57 - (abs speed SRL 4 OR 1)"]
   C --> D{"fuel below 0"}
   D -->|yes| F["OutOfFuel: ScreenSix, mission failed"]
-  D -->|no| E["speed = speed - StepY, limit -23 to 47"]
-  E --> G["heading = heading + StepX / 2"]
+  D -->|no| M["BoundaryCheck, MoveObject"]
+  M --> E["speed = speed - StepY, limit -23 to 47"]
+  E --> G["heading = heading + StepX SRA 1"]
   G --> H{"cooldown A9FD"}
   H -->|"not 0"| I["cooldown - 1, click flag 0"]
   H -->|0| J{"click flag 6D43"}
-  J -->|set| K["weapon routine through A9B9"]
   J -->|0| R["return"]
+  J -->|set| J2["click flag 0"]
+  J2 --> V{"rear view BA27 off and NextView = StartMission"}
+  V -->|no| R
+  V -->|yes| K["fire routine through A9B9; it sets the cooldown to 8"]
 ```
 
 Worked example, play frames 8360-8438 (Q held 8365-8425).
@@ -947,13 +1067,17 @@ The heading goes 0, 1, 4, 8, 12, 16, 20, 24, 28, 32: 4 a pass.
 `$75F7`, the heading `$7612` and the fuel used, sampled with `memory_at` at the start of every second frame.
 `python3 tools/fig_controls.py driving docs/img/controls/driving.png --work work/docs/bcB/play`.*
 
-The Dragonfly (key D, doc 10) has its own handler, DragonflyStep `$C391`.
+The Dragonfly is a weapon (store type 7, doc 10): with its slot selected, the fire key launches it (LaunchDragonfly
+`$C2BC`), and the view becomes DragonflyViewLoop `$6AB9`, seen from the Dragonfly (doc 06, 6.10).
+Its handler is DragonflyStep `$C391`.
 StepX turns it, and StepY changes its height.
-In play, Q held at 9115-9195 lifts it, and O at 9195-9235 turns it (the screenshots `009195-Dragonfly-flying` and
-`009235-Dragonfly-turn`).
+In play, key 3 at 9005 and SPACE at 9050 launch it; Q held at 9115-9195 lifts it, and O at 9195-9235 turns it (the
+screenshots `009195-Dragonfly-flying` and `009235-Dragonfly-turn`).
+The key D is not the Dragonfly: it shows the damage board (5.10).
 
-There is no separate turret control.
-The weapons fire along the heading, and the binoculars (5.10) only change the view.
+The turret has no key of its own: the weapons fire along the heading.
+J and K call the selected weapon's aim pair instead (5.10): the mortar's elevation, the mine's timer and the other
+pairs of doc 10.7.
 
 The point: the vehicle has inertia only through the steps.
 A tap gives StepY -1, one unit of speed a pass; a long press gives -8.
@@ -963,13 +1087,14 @@ A tap gives StepY -1, one unit of speed a pass; a long press gives -8.
 PlayKeys `$6B3B` runs once a pass in the play loop (doc 04).
 It acts while bit 1 of KeyState is set, so on each pass the key is down.
 It compares KeyCode with each key in turn.
+The two `JP Z` targets of J and K are patched by SelectWeapon, so these keys do what the selected weapon needs.
 
 | Key | Code | Routine | What it does |
 | --- | --- | --- | --- |
-| E | `$45` | SoundOffKey `$843F` | sound off |
-| J, K | `$4A`, `$4B` | NoAction | nothing |
-| M | `$4D` | ScreenZero | the status view (node `$7528`) |
-| D | `$44` | SelectDragonfly `$6BC2` | the Dragonfly view |
+| E | `$45` | QuitKey `$843F` → QuitPrompt `$DA09` (bank 6) | the quit prompt: Y abandons the mission (ScreenEight), N resumes; the sound effects are silenced while it waits |
+| J, K | `$4A`, `$4B` | the weapon's aim pair, patched into `$6B50` (J) and `$6B55` (K) by SelectWeapon from `$7B89` + 8 x type (words 1 and 0) | mortar elevation, mine timer and the other pairs of doc 10.7; NoAction when no weapon is selected or the slot is damaged |
+| M | `$4D` | ScreenZero | the status view (node `$7528`), whose screen shows the map |
+| D | `$44` | SelectDamage `$6BC2` | the damage board (DamageLoop `$6C93`) |
 | 1-4 | `$31`-`$34` | SelectWeapon `$C53F` | the weapon slot 1-4 |
 | H | `$48` | PlaceHelicarrier `$D52E` | the helicarrier |
 | N | `$4E` | NightKey `$87FC` | the night (infrared) view |
@@ -980,11 +1105,33 @@ It compares KeyCode with each key in turn.
 | S | `$53` | PlayerStep (5.9) | the brake |
 
 SelectWeapon stores the key at `$6B45`.
-It stores the slot 0-3 at CurrentSlot `$C53C` and the slot record address at `$C53D`.
+It stores the slot 0-3 at CurrentSlot `$C53C`, and at `$C53D` the address of the slot's `CALL` operand in PlayLoop
+(`$6A46` + 5 x slot, the `CALL`s at `$6A45`, `$6A4A`, `$6A4F` and `$6A54`), which the select code patches.
+It copies the four words of the store type's record at `$7B89` + 8 x type:
+
+| Word | Goes to | Use |
+| --- | --- | --- |
+| 0 | `$6B55` | the `JP Z` target of K |
+| 1 | `$6B50` | the `JP Z` target of J |
+| 2 | `$A9B9` | the fire routine (5.9) |
+| 3 | `$C600` | the select routine, called at once |
+
 Then it calls the store type's select routine (doc 10).
-A slot whose status is 0 prints "DAMAGED IN COMBAT".
-The status view has its own keys in StatusKeys `$6C60`: C back to play, B ScreenEight, M ScreenTwo.
-The map view has its own keys in MapKeys `$6B95`: B the status loop, C back to play, D the Dragonfly.
+A slot whose status is 0 prints "DAMAGED IN COMBAT" (`$C605`) and sets the J, K and fire targets to NoAction.
+The status view has its own keys in StatusKeys `$6C60`: C back to play, B ScreenEight (the BRIEF page), M ScreenTwo
+(the MAP page).
+The damage board has its own keys in DamageKeys `$6B95`, called only from DamageLoop: B the status view, C back to
+play, D the damage board again.
+
+E opens the quit prompt.
+QuitKey calls SilenceAY, pages bank 6 and calls QuitPrompt `$DA09`, which prints "Are you sure you want to quit?
+Yes/No." (QuitText `$DA5E`, doc 08) and waits for a key.
+On Y (QuitYes `$DA4E`) it stops the clock, calls SaveLoadedMission and jumps to ScreenEight `$704E`: the mission
+ends.
+On N it requests a blit and returns; QuitKey then clears SoundGate `$D689` (the effects come back, doc 09) and
+PickupAnnounce `$DB71`.
+The play recording presses E at 10 620 and Y at 10 685 (the screenshots `010685-mission-1-pause` and
+`010830-mission-1-quit`).
 
 ```
 PlayKeys:
@@ -996,7 +1143,11 @@ PlayKeys:
   CP C
   RET Z
   CP $45
-  JP Z,SoundOffKey
+  JP Z,QuitKey
+  CP $4A
+  JP Z,NoAction          ; operand $6B50: J, the weapon's aim word 1
+  CP $4B
+  JP Z,NoAction          ; operand $6B55: K, the weapon's aim word 0
   ...
   CP $31
   JP Z,SelectWeapon      ; 1, 2, 3, 4 alike
@@ -1013,10 +1164,10 @@ flowchart TD
   B -->|clear| R["return"]
   B -->|set| C{"KeyCode"}
   C -->|"0 or the remembered key"| R
-  C -->|E| E1["SoundOffKey"]
-  C -->|"J K"| E2["NoAction"]
+  C -->|E| E1["QuitKey: the quit prompt, Y ends the mission"]
+  C -->|"J K"| E2["the weapon's aim pair, 6B50 and 6B55"]
   C -->|M| E3["ScreenZero: status view"]
-  C -->|D| E4["SelectDragonfly"]
+  C -->|D| E4["SelectDamage: damage board"]
   C -->|"1 2 3 4"| E5["SelectWeapon C53F"]
   C -->|H| E6["PlaceHelicarrier"]
   C -->|N| E7["NightKey"]
@@ -1030,7 +1181,10 @@ flowchart TD
 The `LD C,n` operand at `$6B45` holds the last weapon or view key.
 SelectWeapon, NightKey, SelectLoop, the C key and the screen entries ScreenFour, ScreenSix, ScreenEight and
 ScreenFromClick write it.
-PlayKeys ignores a key equal to it, so these keys act once while they are held.
+PlayKeys ignores a key equal to it, so only these keys act once while they are held.
+R, B, Z, H, E, J and K do not write it: they act again on every pass while held.
+A held R toggles the rear view on each pass, so where it ends depends on how many passes the press spans; in play,
+R at 10 065-10 090 leaves the rear view on, and doc 06's witness at 10 606 still shows it (6.10).
 
 Worked example, play frame 8425: key 1 gives KeyCode `$31`.
 PlayKeys reaches `CP $31`, and SelectWeapon stores 0 at `$C53C`.
@@ -1039,8 +1193,8 @@ with SPACE.
 
 Witness:
 
-- The play recording presses 1 (8425), 2 (8715), 3 (9005), 4 (9320), N (9610), B (9740), Z (9805), R (10 000),
-  H (10 130), D (10 195), C (10 260), M (10 325) and E (10 620).
+- The play recording presses 1 (8425), J (8470, 8760, 9365), 2 (8715), 3 (9005), 4 (9320), N (9610), B (9740),
+  Z (9805), R (10 000), H (10 130), D (10 195), C (10 260), M (10 325), E (10 620) and Y (10 685).
 - SelectWeapon has 14 runs over the death, play and play2 recordings (the L1 count in `game.ann`).
 
 The point: the keys pick, and the fire button acts.
@@ -1050,5 +1204,5 @@ The same SPACE that clicks the menus fires the chosen weapon in play.
 
 - The brake: the key S and its handler `$A9C9`, because no recording presses S in play.
 - The four KeyTable entries after the five read keys (C, Z, X, S), which ReadKeys never reads.
-- The freeze operand of PointerTick (`$7D88`), which no recording runs with 0.
-- Node `$7572` (MapLoop) of ScreenList, which no transition word names.
+- The freeze operand of PointerTick (`$7D8A`) at 0: StatusLoop writes it, but no trace of mine samples a pass with
+  it cleared.

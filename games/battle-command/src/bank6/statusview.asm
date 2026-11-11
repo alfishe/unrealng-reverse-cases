@@ -1,75 +1,77 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; statusview.asm: The Dragonfly title box and the grid position of the status view
+; statusview.asm: The console's BRIEF page box and the grid position of the status view
 ;
-; The Dragonfly view (DragonflyLoop $6C93) and the status view (StatusLoop $6BC7) are drawn by the resident code in
-; bank 2; bank 6 holds the parts they borrow: the boxes behind the Dragonfly's title, the GRID Y / GRID X numbers
-; (PrintStatusGrid $C0F7), the map of the status view (module map) and the message of the status views (module panel).
+; The status view (StatusLoop $6BC7) and its BRIEF page (BriefPage $6C44) are drawn by the resident code in bank 2;
+; bank 6 holds the parts they borrow: the boxes behind the briefing text of the BRIEF page, the GRID Y / GRID X
+; numbers (PrintStatusGrid $C0F7), the map of the status view (module map) and the message of the status views (module
+; panel).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $C079
 
-; The attribute box $C0B1 and 8 cleared pixel lines behind the Dragonfly's
-; title
+; The attribute box $C0B1 and 8 cleared pixel lines behind the BRIEF page's
+; text
 ;
-; Called once by DragonflyTitle `$70B6`. AttrBox `$6CFB` with `$C0B1`, then
+; Called once by BriefPageText `$70B6`. AttrBox `$6CFB` with `$C0B1`, then
 ; ScreenRowFill `$6D22` of 8 lines of 18 bytes from line `$88`, column 7
-; (through DragonflyTitleFill). Witness: L1 1 (play).
-DragonflyTitleBox:
-  LD HL,DragonflyBoxB
+; (through BriefPageFill). Witness: L1 1 (play).
+BriefPageBox:
+  LD HL,BriefPageBoxB
   CALL $6CFB
   LD A,$FF
   EX AF,AF'
   LD A,$08
   LD BC,$0007
-  JR DragonflyTitleFill
+  JR BriefPageFill
 
 ; An attribute box record (width, height, column, attribute, row) for the
 ; unused variant $C08E
 ;
-; Read only by DragonflyTitleBoxSmall.
-DragonflyTitleBoxes:
+; Read only by BriefPageBoxSmall.
+BriefPageBoxRecord:
   DEFB $41,$0C,$0A,$12,$05
 
-; Variant: the box $C089, then the fill of DragonflyTitleBoxLarge
+; Variant: the box $C089, then the fill of BriefPageBoxLarge
 ;
 ; Known only from the code: nothing calls it.
-DragonflyTitleBoxSmall:
-  LD HL,DragonflyTitleBoxes
+BriefPageBoxSmall:
+  LD HL,BriefPageBoxRecord
   CALL $6CFB
-  JR DragonflyTitleLarge
+  JR BriefPageLarge
 
 ; Variant: the box $C0AC and 40 cleared lines at column 10
 ;
-; Known only from the code: nothing calls it; its tail DragonflyTitleFill is
-; the one DragonflyTitleBox jumps to.
-DragonflyTitleBoxLarge:
-  LD HL,DragonflyBoxes
+; Known only from the code: nothing calls it; its tail BriefPageFill is the one
+; BriefPageBox jumps to.
+BriefPageBoxLarge:
+  LD HL,BriefPageBoxes
   CALL $6CFB
-; This entry point is used by the routine at DragonflyTitleBoxSmall.
-DragonflyTitleLarge:
+; This entry point is used by the routine at BriefPageBoxSmall.
+BriefPageLarge:
   LD A,$FF
   EX AF,AF'
   LD A,$28
   LD BC,$000A
-; This entry point is used by the routine at DragonflyTitleBox.
-DragonflyTitleFill:
+; This entry point is used by the routine at BriefPageBox.
+BriefPageFill:
   EXX                     ; A' = $FF, A lines, BC the column: ScreenRowFill of
                           ; 18 bytes from line $88
   LD D,$12
   LD E,$88
   JP $6D22
 
-; Four attribute box records of the Dragonfly title
+; Four attribute box records of the briefing texts
 ;
-; `$C0AC` read by DragonflyTitleBoxLarge, `$C0B1` by DragonflyTitleBox, `$C0B6`
-; by DragonflyTitle (`$70A9`); `$C0BB` is not read in bank 6.
-DragonflyBoxes:
+; `$C0AC` read by BriefPageBoxLarge, `$C0B1` by BriefPageBox, `$C0B6` by
+; BriefingTextOnce (`$70A8`), `$C0BB` by BriefPageText (`$70C0`); none of the
+; four is read inside bank 6.
+BriefPageBoxes:
   DEFB $6D,$11,$0A,$12,$05
-DragonflyBoxB:
+BriefPageBoxB:
   DEFB $6D,$11,$07,$12,$01
-DragonflyBoxC:
+BriefPageBoxC:
   DEFB $45,$11,$0A,$12,$05
-DragonflyBoxD:
+BriefPageBoxD:
   DEFB $45,$11,$07,$12,$01
 
 ; Format the map position: the two numbers in the operands $C0C7 and $C0E2 into

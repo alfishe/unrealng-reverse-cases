@@ -27,14 +27,14 @@ SegmentVisibility:
   LD HL,MissionHeader+$00BB
   LD A,(MissionHeader+$0019)
   LD (l_ADEA+$0008),A
-  LD BC,(WorldVars+$0009)
+  LD BC,(WorldVars+$0008)
   SRA B
   RR C
   SRA B
   RR C
   LD A,C
   LD (l_BBFB+$0022),A
-  LD BC,(WorldVars+$0006)
+  LD BC,(WorldVars+$0005)
   SRA B
   RR C
   SRA B
@@ -453,12 +453,12 @@ l_AFD6:
 ;
 ; Witness: L1 702 (m2erbe, missions).
 ClipSegmentAxisX:
-  LD DE,(WorldVars+$0005)
+  LD DE,(WorldVars+$0004)
   AND A
   SBC HL,DE
   LD (l_9A85+$0009),HL
   EXX
-  LD DE,(WorldVars+$0008)
+  LD DE,(WorldVars+$0007)
   AND A
   SBC HL,DE
   LD (l_9A5E+$000E),HL
@@ -500,8 +500,8 @@ ClipSegmentAxisY:
 ;
 ; Witness: L1 744 (m2erbe, missions).
 ClipSegmentDiagonal:
-  LD DE,(WorldVars+$0005)
-  LD BC,(WorldVars+$0007)
+  LD DE,(WorldVars+$0004)
+  LD BC,(WorldVars+$0006)
   CALL ClipDiagonalEnd
   LD (SegmentScratch+$000A),HL
   LD (SegmentScratch+$000C),A
@@ -510,8 +510,8 @@ ClipSegmentDiagonal:
 l_B038:
   EXX
   EX AF,AF'
-  LD DE,(WorldVars+$0008)
-  LD BC,(WorldVars+$000A)
+  LD DE,(WorldVars+$0007)
+  LD BC,(WorldVars+$0009)
   CALL ClipDiagonalEnd
   LD (SegmentScratch+$000D),HL
   LD (SegmentScratch+$000F),A
@@ -543,8 +543,8 @@ l_B051:
   LD (SegmentScratch+$0015),A
   PUSH DE
   PUSH BC
-  LD BC,(WorldVars+$000A)
-  LD DE,(WorldVars+$0008)
+  LD BC,(WorldVars+$0009)
+  LD DE,(WorldVars+$0007)
   CALL ClipDiagonalEnd
   POP BC
   POP DE
@@ -556,8 +556,8 @@ l_B051:
   ADC A,C
   LD (SegmentScratch+$0010),HL
   LD (SegmentScratch+$0012),A
-  LD BC,(WorldVars+$0007)
-  LD DE,(WorldVars+$0005)
+  LD BC,(WorldVars+$0006)
+  LD DE,(WorldVars+$0004)
   JP ClipDiagonalEnd
 l_B0A9:
   LD HL,(SegmentScratch+$0004)
@@ -569,8 +569,8 @@ l_B0A9:
   LD (SegmentScratch+$0012),A
   PUSH DE
   PUSH BC
-  LD BC,(WorldVars+$0007)
-  LD DE,(WorldVars+$0005)
+  LD BC,(WorldVars+$0006)
+  LD DE,(WorldVars+$0004)
   CALL ClipDiagonalEnd
   POP BC
   POP DE
@@ -582,8 +582,8 @@ l_B0A9:
   SBC A,C
   LD (SegmentScratch+$0013),HL
   LD (SegmentScratch+$0015),A
-  LD BC,(WorldVars+$000A)
-  LD DE,(WorldVars+$0008)
+  LD BC,(WorldVars+$0009)
+  LD DE,(WorldVars+$0007)
   JP ClipDiagonalEnd
 
 ; Clip one side of a diagonal segment
@@ -606,8 +606,8 @@ ClipDiagonalSide:
   LD (SegmentScratch+$0015),A
   PUSH DE
   PUSH BC
-  LD BC,(WorldVars+$000A)
-  LD DE,(WorldVars+$0008)
+  LD BC,(WorldVars+$0009)
+  LD DE,(WorldVars+$0007)
   CALL ClipDiagonalEnd
   POP BC
   POP DE
@@ -619,8 +619,8 @@ ClipDiagonalSide:
   SBC A,C
   LD (SegmentScratch+$0010),HL
   LD (SegmentScratch+$0012),A
-  LD BC,(WorldVars+$0007)
-  LD DE,(WorldVars+$0005)
+  LD BC,(WorldVars+$0006)
+  LD DE,(WorldVars+$0004)
   JP ClipDiagonalEnd
 l_B12E:
   LD HL,(SegmentScratch+$0004)
@@ -632,8 +632,8 @@ l_B12E:
   LD (SegmentScratch+$0012),A
   PUSH DE
   PUSH BC
-  LD BC,(WorldVars+$0007)
-  LD DE,(WorldVars+$0005)
+  LD BC,(WorldVars+$0006)
+  LD DE,(WorldVars+$0004)
   CALL ClipDiagonalEnd
   POP BC
   POP DE
@@ -645,8 +645,8 @@ l_B12E:
   SBC A,C
   LD (SegmentScratch+$0013),HL
   LD (SegmentScratch+$0015),A
-  LD BC,(WorldVars+$000A)
-  LD DE,(WorldVars+$0008)
+  LD BC,(WorldVars+$0009)
+  LD DE,(WorldVars+$0007)
   CALL ClipDiagonalEnd
   RET
 
@@ -769,7 +769,7 @@ l_B21E:
   LD DE,$0070
   JP l_B1E0
 l_B22C:
-  LD DE,(WorldVars+$000B)
+  LD DE,(WorldVars+$000A)
   LD (MissionHeader+$223B),DE
   LD (MissionHeader+$223D),DE
   LD IX,data_FEBB+$00C5
@@ -784,11 +784,11 @@ l_B22C:
 ; Witness: L1 12554 (death, m2erbe, missions, play, play2).
 TransformVertex:
   LD H,D
-  LD BC,(WorldVars+$0005)
+  LD BC,(WorldVars+$0004)
   CALL VertexRelative
   LD (l_9A85+$0009),HL
   LD H,E
-  LD BC,(WorldVars+$0008)
+  LD BC,(WorldVars+$0007)
   CALL VertexRelative
   LD (l_9A5E+$000E),HL
   CALL RotateToView
@@ -935,7 +935,7 @@ l_B2DD:
 ; Witness: L1 13256 (death, m2erbe, missions, play, play2).
 StoreVertex:
   LD A,$01
-  LD BC,(WorldVars+$0004)
+  LD BC,(WorldVars+$0003)
   AND A
   SBC A,C
   LD (SegmentScratch+$0002),A
@@ -1087,7 +1087,7 @@ ResetViewOrigin:
   LD HL,$0000
   LD (l_9A85+$0009),HL
   LD (l_9A5E+$000E),HL
-  LD HL,(WorldVars+$000B)
+  LD HL,(WorldVars+$000A)
   CALL ApiVector07
   LD (l_9A9E+$0015),HL
   RET
@@ -1107,7 +1107,7 @@ SetCamera:
   PUSH HL
   LD BC,$0021
   ADD HL,BC
-  LD DE,WorldVars+$0003
+  LD DE,WorldVars+$0002
   LDI
   LDI
   LDI
@@ -1128,13 +1128,13 @@ l_BA1C:
 l_BA1F:
   LDI
   LDI
-  LD HL,(WorldVars+$0003)
+  LD HL,(WorldVars+$0002)
   LD A,$00
   AND A
   JR Z,CameraSinCos
   LD BC,Bootstrap
   ADD HL,BC
-  LD (WorldVars+$0003),HL
+  LD (WorldVars+$0002),HL
 
 ; The camera heading's sine and cosine
 ;
@@ -1156,7 +1156,7 @@ CameraSinCos:
 ;
 ; Witness: L1 3550 (death, m2erbe, missions, play, play2).
 CameraSinCosAgain:
-  LD HL,(WorldVars+$0003)
+  LD HL,(WorldVars+$0002)
   JR CameraSinCos
 
 ; Rear view off
@@ -1219,18 +1219,18 @@ ViewTextBlank:
 ;
 ; Witness: L1 3507 (death, m2erbe, missions, play, play2).
 GroundDots:
-  LD A,(WorldVars+$0005)
+  LD A,(WorldVars+$0004)
   CPL
   LD L,A
-  LD A,(WorldVars+$0006)
+  LD A,(WorldVars+$0005)
   CPL
   AND $01
   LD H,A
   LD (l_9A85+$0009),HL
-  LD A,(WorldVars+$0008)
+  LD A,(WorldVars+$0007)
   CPL
   LD L,A
-  LD A,(WorldVars+$0009)
+  LD A,(WorldVars+$0008)
   CPL
   AND $01
   LD H,A
@@ -1239,7 +1239,7 @@ GroundDots:
   LD (l_BB0A+$0004),HL
   EXX
   LD (l_BB0A+$0001),HL
-  LD HL,(WorldVars+$000B)
+  LD HL,(WorldVars+$000A)
   CALL NegHL
   LD (PlotGroundDot+$0016),HL
   LD L,$C0
@@ -1308,7 +1308,7 @@ l_BB3E:
 ;
 ; Witness: L1 14028 (death, m2erbe, missions, play, play2).
 GridVectors:
-  LD A,(WorldVars+$0004)
+  LD A,(WorldVars+$0003)
   NEG
   ADD A,L
   CALL ApiVector14

@@ -55,9 +55,9 @@
 
 @isub $708E CALL BriefingMap
 
-@bank $C079 DragonflyTitleBox 6
+@bank $C079 BriefPageBox 6
 
-@isub $70B7 CALL DragonflyTitleBox
+@isub $70B7 CALL BriefPageBox
 
 @bank $D27C DrawPointer 6
 
@@ -217,8 +217,8 @@ $6728 b FaceFlags 8 ; The visibility flag of each face slot 0..39: `$FF` front-f
 
 @module gamevars ; The game's variables in bank 5 below the entry
 $6798 b GameVars 9 ; Game variables: the completion flags, world values, the control device
-$6799 MissionsDone ; nine flags, one per mission 1-9: all non-zero unlock Grand Finale (LoadMissionIfAllowed $759A)
-$67A2 WorldVars
+$6799 MissionsDone ; ten flags, one per mission 1-10 (MissionCompleteScreen writes $6799 + mission, EncodePassword reads all ten); the first nine all non-zero unlock Grand Finale (LoadMissionIfAllowed $759A)
+$67A3 WorldVars
 $67B6 ControlDevice ; the chosen device 0-4 (ReadControls)
 $67B7 RepeatY ; frames to the next Y step (DecodeDirections, docs/05-controls.md 5.3)
 $67B8 LastDirections ; the last direction bits
@@ -273,7 +273,7 @@ $6928 c ResetCollisionTables ; Reset the collision tables of bank 0 before a mis
 > Witness: L1 15 (menu, missions, search).
 
 @module missionflow ; The mission's start, the play loops of the three views, the play keys
-@about StartMission $694B sets the play state from the mission block's header ($DBD9-$DBDA), draws the panel through bank 7 ($74AA), and then runs PlayLoop $6A0C until the flag at $6A6D (the operand of LD A,0 at $6A6C) says the view changes. The three views each have their own loop: the 3D view (PlayLoop), the map view ($6AB9) and the status / Dragonfly views ($6BC7, $6C93). The loops call the same world, object and enemy steps; only the drawing differs.
+@about StartMission $694B sets the play state from the mission block's header ($DBD9-$DBDA), draws the panel through bank 7 ($74AA), and then runs PlayLoop $6A0C until the flag at $6A6D (the operand of LD A,0 at $6A6C) says the view changes. The views each have their own loop: the 3D view (PlayLoop), the Dragonfly's flight view ($6AB9, after its launch), the status view ($6BC7) and the damage board ($6C93, key D). The loops call the same world, object and enemy steps; only the drawing differs.
 @about The key codes come from the interrupt's keyboard scan (ScanKeyboard $8910) in KeyCode $8979 with the new-key flag in bit 1 of KeyFlags $8978.
 $694B c StartMission ; Start the loaded mission: the play state from the header, the panel, the counters, then PlayLoop
 > Reads the mission block's header (`$DBDA` -> `$BBF2`, `$DBD9` -> `$BBFA`), clears `$BC33`, sets the 3D view's blit (`$83E6` = `$8999`), draws the panel (`DrawBank7Picture` `$74AA` with DE = `$DD75`), resets the view parameters at `$9A6C`-`$9ABB`, calls the bank-6 set-up `$D521`, the weapon bars (`$7336`, `$73BA`), `$C632`, `$AE42`; clears the play flags (`$8459`, `$6A6D`, `$87E0`, `$D689`, `$D4B8`), prints `$D520` if `$7578` is set, then runs `$BA4A`, `$CEAB` and the play keys and falls into PlayLoop.
@@ -293,8 +293,8 @@ $6A9D c ClearClipRow ; Fill the 32 bytes $90F1-$9110 with $FF
 $6AAB c FillPanelRows ; Fill 24 character rows of 6 bytes of the screen through ScreenRowFill
 > A = 0, C = 2, D = 6, E = `$18`, then `JP $6D22`. Called from bank 6 `$C53F` / `$D521`. Witness: L1 41 (death, m2erbe, missions, play, play2).
 
-$6AB9 c MapLoop ; The map view's loop: the map picture from bank 7, then the world and objects without the 3D frame
-> Draws the map frame (`DrawBank7Picture` with DE = `$F9CD`), sets the blit to `$8A98`, then per frame `$9882`, `$B9F6`, `ClearClipRow`, `$BAAC`, `$AD45`, `$AEA0`, `$BBF1`, `$BD98`, `$BA40`, `$BF53`, `$C7BC`, `$C4CD`, `$988D`, `$C026`, `$7256` until `$6A6D`; then the 3D blit again and `NextView`.
+$6AB9 c DragonflyViewLoop ; The Dragonfly's flight view: the monitor frame from bank 7, the narrow blit, then the world and objects seen from the Dragonfly
+> Entered only from LaunchDragonfly (`$C30F`, `LD HL,$6AB9` into NextView), after the camera `$B9F4` points at the Dragonfly's record; ScreenList node `$7572` names it, but no transition word leads there. Draws the monitor frame (`DrawBank7Picture` with DE = `$F9CD`), sets the blit to `$8A98`, then per frame `$9882`, `$B9F6`, `ClearClipRow`, `$BAAC`, `$AD45`, `$AEA0`, `$BBF1`, `$BD98`, `$BA40`, `$BF53`, `$C7BC`, `$C4CD`, `$988D`, `$C026`, `$7256` until `$6A6D`; then the 3D blit again and `NextView`.
 > Witness: L1 1 (play).
 
 $6B1D c FlickerPlayer ; Toggle the low nibble of object 0's byte +7 from a random number while $68BD is below 16
@@ -304,11 +304,11 @@ $6B32 c PanelSetup ; Page bank 6, call its panel set-up $D521, page bank 0 back
 > Witness: L1 27 (death, m2erbe, missions, play, play2).
 
 $6B3B c PlayKeys ; The play keys: a new key code in $8979 jumps to its action
-> Returns unless bit 1 of `$8978` is set and the code differs from the last (`$6B45`, the operand of `LD C,0`). E: `$843F` (sound off), J and K: nothing (`$6BB0`), M: the map (`$705A`), D: the Dragonfly (`$6BC2`), 1-4: weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z: `$CEE5`, C: remembered in `$6B45`.
+> Returns unless bit 1 of `$8978` is set and the code differs from the last (`$6B45`, the operand of `LD C,0`). E: `$843F` (the quit prompt), K and J: the selected weapon's aim pair (the `JP` targets `$6B55` and `$6B50`, patched by SelectWeapon from `$7B89` + 8 x type, words 0 and 1; `$6BB0` NoAction in the image), M: the status view (`$705A`), D: the damage board (`$6BC2`), 1-4: weapons (bank 6 `$C53F`), H: `$D52E`, N: `$87FC`, R: `$BA45`, B: `$CEA7`, Z: `$CEE5`, C: remembered in `$6B45`.
 > Witness: L1 3602 (death, m2erbe, missions, play, play2).
 $6B45 LastKey ; the operand of LD C,n: the last key code acted on
 
-$6B95 c MapKeys ; The keys of the map view: B to $6BC7, C back to the 3D view, D to the Dragonfly
+$6B95 c DamageKeys ; The keys of the damage board (called only from DamageLoop $6CB9): B to the status view $6BC7, C back to the 3D view, D the damage board again
 > Witness: L1 3 (play).
 
 $6BB0 c NoAction ; A RET: the action of the keys with nothing to do
@@ -316,17 +316,17 @@ $6BB0 c NoAction ; A RET: the action of the keys with nothing to do
 $6BB1 SelectPlay
 $6BB4 SelectLoop ; HL = the loop to run next ($6A99), A remembered, then the view flag set
 
-$6BC2 c SelectDragonfly ; HL = $6C93, the Dragonfly loop, then SelectLoop
+$6BC2 c SelectDamage ; The key D: HL = $6C93, the damage board's loop, then SelectLoop
 > Witness: L1 1 (play).
 
 $6BC7 c StatusLoop ; The status view's loop: the panel through bank 7 and the status texts, no 3D frame
 > Pages bank 6 for `$DBB6`, draws `DrawBank7Picture` DE = `$D325`, prints the help texts (`$6C8B`), sets the blit to `$DBBD`, then per frame the mission clock (`PrintClock` `$7E3A`), the world and objects and bank 6's `$DB15`, `$D3C9`, `$E5BE`, `$C0F7`, the keys (`StatusKeys` `$6C60`) until `$6A6D`.
 > Witness: L1 10 (play, play2).
 
-$6C44 c DragonflyStart ; The first pass of the Dragonfly view: its one-time set-up $6C56, then the clock and keys loop
+$6C44 c BriefPage ; The console's BRIEF page (node $7544, key B in the status view): the briefing text once ($6C56), then the clock and keys loop
 > Witness: L1 1 (play).
 
-$6C56 c DragonflyOnce ; A NOP patched to RET after the first call of $70B6
+$6C56 c BriefPageOnce ; A NOP patched to RET after the first call of $70B6; StatusLoop ($6BF6) puts the NOP back on each visit
 > Witness: L1 1 (play).
 
 $6C60 c StatusKeys ; The keys of the status view: C to the 3D view, B and M to $704E / $705E, then the help texts
@@ -335,7 +335,7 @@ $6C60 c StatusKeys ; The keys of the status view: C to the 3D view, B and M to $
 $6C8B c PrintStatusHelp ; Print the help text $6550 with attribute $1A through $B7AE
 > Witness: L1 10 (play, play2).
 
-$6C93 c DragonflyLoop ; The Dragonfly's loop: the panel from bank 7 at $C000, the Dragonfly's bars, then world and objects
+$6C93 c DamageLoop ; The damage board's loop (key D): PicDamageBoard from bank 7 at $C000, the weapon icons and bars, then world and objects
 > Witness: L1 1 (play).
 
 @module text ; The screen text and attribute primitives: the print engine with control codes
@@ -476,7 +476,7 @@ $7084 c ShowBriefingMapOnce ; Once: the briefing map (bank 6's BriefingMapFrame 
 > Witness: L1 10 (menu, play, play2).
 $709E BriefingTextOnce ; the briefing's TEXT button: the text at ($70A3), once
 
-$70B6 c DragonflyTitle ; Once: bank 6's $C079, the title string at ($70A3), the attribute box $C0BB
+$70B6 c BriefPageText ; Once: bank 6's box $C079, the briefing text at ($70A3) in the console's screen, the attribute box $C0BB
 > Witness: L1 1 (play).
 
 @module catalogue ; The mission catalogue: the directory load, the text of a mission
@@ -612,7 +612,7 @@ $7327 c UpdateSlotBars ; Bank 6 UpdatePanelBars $D58C (heading strip, bearing, s
 $7336 c UpdateAmmoBars ; For the four slots of $8368: a bar for each ammunition count that changed (records $68C9)
 > Witness: L1 3628 (death, m2erbe, missions, play, play2).
 
-$7383 c DrawDragonflyPanel ; The nine weapon icons of the Dragonfly's panel ($834A records) with their frames
+$7383 c DrawDamagePanel ; The nine weapon icons of the damage board ($834A records) with their frames
 > Witness: L1 1 (play).
 
 $73BA c DrawSlotIcons ; The icons of the four loaded slots ($8368 records, $68CD) with their frames
@@ -660,7 +660,7 @@ $7588 c MissionLoaded ; If a mission is loaded: bank 6 $CBF4, $D27C, $CA23, then
 > Witness: known only from the code (entered by a jump from `$75B8`).
 
 $759A c LoadMissionIfAllowed ; Load the mission the tape holds; mission 10 only when the nine completion flags are set
-> If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z`, recording m10: the status screen). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe, m2ocean, missions).
+> If the current mission (C) is 9 (Grand Finale), the nine bytes `$6799-$67A1` are ANDed: if any is 0 the mission is refused (`RET Z` back into the catalogue's zone loop; recording m10: the catalogue stays on screen, 4972-7972). Otherwise `LoadMission` `$84C1`. Witness: L1 18 (m10, m2erbe, m2ocean, missions).
 
 $75BB c MissionDone ; A = the completion flag of the current mission ($6799 + n): NZ when done
 > Witness: L1 28 (m10, m2erbe, m2ocean, missions, play).
@@ -668,8 +668,8 @@ $75BB c MissionDone ; A = the completion flag of the current mission ($6799 + n)
 $75CA w IconTable 2 ; The addresses of the 19 weapon icons (bank 6), read by DrawIcon
 > 19 words at `$75CA-$75EF`: icon n at word n-1.
 
-$75F0 b ObjectTable 30 ; The 24 object records, 60 bytes each: 0 the player, 1-20 the mission's objects, 21 the Helicarrier, 22-23 projectiles
-> +0 list index, +1 type, +2 state (bit 7 present, 6 wreck, 5 drawn, 2 on the radar), +3 handler flags, +4 colour, +5 height, +7 speed, +8 wreck model, +`$0B` box half-sizes, +`$13` hit points, +`$14` damage, +`$16` radius, +`$18` step handler, +`$1A` collision handler, +`$1C` model, +`$1E` score, +`$22` heading, +`$23` X (24 bits), +`$26` Y (24 bits), +`$2A` pitch, +`$2B` view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. Bytes +1 to +`$1E` come from the type's template. Read by RunObjectHandlers `$C026`, written by the world code (frag of bank 2 / 0, docs 05-07).
+$75F0 b ObjectTable 30 ; The 24 object records, 60 bytes each: 0 the player, 1-20 the mission's objects, 21 the Helicarrier, 22 projectiles (23 never allocated)
+> +0 list index, +1 type, +2 state (bit 7 present, 6 wreck, 5 drawn, 2 on the radar), +3 handler flags, +4 colour, +5 height, +7 speed, +8 wreck model, +`$0B` box half-sizes, +`$13` hit points, +`$14` damage, +`$16` radius, +`$18` step handler, +`$1A` collision handler, +`$1C` model, +`$1E` score, +`$22` heading, +`$23` X (24 bits), +`$26` Y (24 bits), +`$2A` pitch, +`$2B` view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. +1 is the type, +2 to +`$1F` come from the type's template, +`$20` is the serial. Read by RunObjectHandlers `$C026`, written by the world code (frag of bank 2 / 0, docs 05-07).
 > Witness: every play build reads and writes `$75F0-$7B8F`.
 $75F5 PlayerHeight
 $75F7 PlayerSpeed
@@ -742,9 +742,10 @@ $8184 b Stack 32 ; The main stack, top $8200 (SP = $81FF at the entry)
 
 $8200 b Im2Table 32 ; The IM 2 vector table: 257 bytes of $83 (I = $82), filled by Entry
 
-$8301 b PlayVars 16 ; Play variables, $8301-$8382: world pointers, the weapon icons and slots
+$8301 b Armour 4 ; The armour: $8301-$8303 the sides 1-3 (HitSide), $8304 the top; also Bootstrap's copy destination
 $8305 WorldWork
-$834A DragonflyIcons ; nine 6-byte records of the Dragonfly's weapons
+$834A b DamageBoardRecords 6 ; Nine 6-byte records of the damage board (icons $10, $11, $12, $0F, $0E, then the four slots)
+> Records 5-8 are the WeaponSlots `$8368`, written by FitOrRemoveWeapon. StoresToGauges sets gauge k (`$68AB` + 6k) to `$5F` when record k is not 0, else 0. 54 bytes, `$834A-$837F`.
 $8368 WeaponSlots ; four 6-byte slot records, the ammunition at +5
 
 @module interrupt
@@ -767,7 +768,7 @@ $8431 c PageBank6Kept ; Keep the current bank in $843B and page bank 6
 $843A c PageBankKept ; Page the bank PageBank6Kept kept
 > Witness: L1 195831 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
 
-$843F c SoundOffKey ; The key E: bank 0's sound off $D807, bank 6 $DA09, the flags $D689 and $DB71 cleared
+$843F c QuitKey ; The key E: silence the AY ($D807), ask "Are you sure you want to quit?" (bank 6 QuitPrompt $DA09: Y to the title, N back), then clear SoundGate $D689 and PickupAnnounce $DB71
 > Witness: L1 13 (play2).
 
 $8459 c BlinkWarning ; Every 12 frames flip the attribute bits $30 of $5758 and $5078 (a RET while off)
@@ -819,7 +820,10 @@ $86A3 c LdEdge1 ; One edge (the ROM's LD-EDGE-1), SPACE breaks
 $86C1 c SaBytes ; The game's copy of the ROM's SA-BYTES ($04C2): no recording runs it
 > Witness: known only from the code (no caller found).
 
-$8739 b SaveLeftover 16 ; Bytes after SaBytes up to the message timer: never read
+$8739 b ModelMine 16 ; The model of template $88, the Sleeper mine
+> Read by the model code (BoxRect, FillFaceList) through the template's model word.
+
+$8775 b ModelMissile 16 ; The model of templates $82-$86, the missiles and the Dragonfly
 
 @module interrupt
 $87D6 c MessageTimer ; Count $87D7 down; at 0 print the message line $7C06 (or the blank $87F0)
@@ -1197,8 +1201,8 @@ $A8B2 c SinCosHalf ; E = A = sine, A = cosine of the angle word HL (H the angle,
 
 @module player ; The player's tank: steering, fuel, armour, terrain and boundary checks, the weapons and their projectiles
 @about The player is record 0 ($75F0): speed $75F7, heading $7612, X $7613-$7615, Y $7616-$7618, height $75F5, step handler $7608 (PlayerStep $A8C7), collision handler PlayerHit $CAA5. Fuel $7C57, armour $8301-$8303 (sides) and $8304 (top), the four loaded weapon slots $8368 (6 bytes: +0 store type, +5 ammunition), the current slot $C53C.
-$A8C7 c PlayerStep ; The player's step handler: terrain, boundary, fuel, the turret
-> Record 0's step handler (+$18 = `$A8C7`, run by RunObjectHandlers `$C026` with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets the handler to BounceDecay `$CC09`; 0 or 6 (rough ground) stores 1.25 x the speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does not change and nothing resident reads `$7E8E` (`$A8F0`-`$A934`, docs/10-gameplay-logic.md 10.2). Then BoundaryCheck `$D4B8`, then the fuel: `$7C57` -= (|speed| >> 4) OR 1; on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`. The Infinite Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`). Then the turret and speed against the control state `$985F`.
+$A8C7 c PlayerStep ; The player's step handler: terrain, brake, fuel, boundary, move, the turret
+> Record 0's step handler (+$18 = `$A8C7`, run by RunObjectHandlers `$C026` with IX = `$75F0`). Calls TerrainCollision through `$67F1`; on a hit the terrain type `$CE69` decides: 2 or `$80` (a wall) negates the speed and sets the handler to BounceDecay `$CC09`; 0 or 6 (0 is the road, segment style 0) stores 1.25 x the speed (signed) in `$7E8E`; IX+7 is restored at once, so the tank's speed does not change and only bank 6 DrawSpeedBar `$D612` reads `$7E8E` (the speed bar) (`$A8F0`-`$A934`, docs/10-gameplay-logic.md 10.2). The S key branch `$A8F2` -> `$A9C0` makes BrakeKey `$A9C9` the step handler and ends the pass. When the speed is not 0: the fuel, `$7C57` -= (|speed| >> 4) OR 1 (on an underflow `$A94E` sets the failure reason `$7BF9` = `$CCED` ("RAN OUT OF FUEL") and calls `$7047`), then BoundaryCheck `$D4B8` (`$A95B`), then MoveObject. The Infinite Fuel POKE writes 42 at `$A958` (`LD ($7C57),HL` becomes `LD HL,($7C57)`). Then the turret and speed against the control state `$985F`.
 > Witness: L1 3503 (death, m2erbe, missions, play, play2).
 $A94E OutOfFuel ; fuel underflow: $7BF9 = $CCED "RAN OUT OF FUEL", CALL $7047 (witness: the fuel recording, POKE Fuel = 32, frame 7860, T 60 751-60 872)
 $A958 ; the Infinite Fuel POKE writes 42 here
@@ -1219,7 +1223,7 @@ $A9FD b FireCooldown 1 ; The fire cooldown, passes until the next shot
 > Counted down by PlayerSteering `$A986`, set by SetFireCooldown `$A9F7`.
 
 @module objects ; The object table: 24 records of 60 bytes, spawning from the mission list, transform, depth sort, collisions, radar
-@about ObjectTable $75F0 (bank 5): 24 records of 60 bytes; record 0 is the player, 1-20 the general slots, 21 ($7ADC) the Helicarrier, 22-23 weapons. +1 type, +2 state flags (bit7 present, bit6 wreck, bit2 on the radar), +3 handler flags (bit0 step handler on), +5/+6 height, +7 speed, +$13 hit points, +$14 damage, +$16/+$17 radius, +$18/+$19 step handler, +$1A/+$1B collision handler, +$1C/+$1D model, +$1E/+$1F score, +$22 heading, +$23-+$25 X, +$26-+$28 Y, +$31-+$3A per-type state, +$3B collision slot. The first 30 bytes after +1 come from the type's template.
+@about ObjectTable $75F0 (bank 5): 24 records of 60 bytes; record 0 is the player, 1-20 the general slots, 21 ($7ADC) the Helicarrier, 22 projectiles (FindProjectileSlot scans 1-22; 23 is never allocated). +1 type, +2 state flags (bit7 present, bit6 wreck, bit2 on the radar), +3 handler flags (bit0 step handler on), +5/+6 height, +7 speed, +$13 hit points, +$14 damage, +$16/+$17 radius, +$18/+$19 step handler, +$1A/+$1B collision handler, +$1C/+$1D model, +$1E/+$1F score, +$22 heading, +$23-+$25 X, +$26-+$28 Y, +$31-+$3A per-type state, +$3B collision slot. +1 is the type, the 30 bytes +2..+$1F come from the type's template, +$20 is the serial.
 $A9FE c PlotRadarPixel ; Plot one radar pixel through the row table $6600
 > Input: the blip's x and y on the radar. Looks up the screen row in the table `$6600`, ORs the pixel mask (E = `$49` + x AND 7 gives the bit) into the screen at the radar window `$5036`. Called by DrawRadar `$C05E` for each blip in the list `$6768`.
 > Witness: L1 14562 (death, m2erbe, missions, play, play2).
@@ -1393,7 +1397,7 @@ $B3B6 c ResetViewOrigin ; Reset the view origin before a segment is drawn
 
 @module objects
 $B3C9 b WeaponTemplates 30 ; The resident templates of the projectile types $80-$8C: 13 records of 30 bytes from $B3CA
-> ObjectSetType `$BD41` copies record (type - `$80`) when the type has bit 7: the 30 bytes become +1..+$1E of the object (flags, colour, height, speed, box, hit points, damage, radius, step handler, collision handler, model, score). `$80` K-40 mortar shell (step `$B5E8`), `$81` cannon shell (`$B592`), `$82` / `$83` Banshee RR / IR, `$84` / `$85` Phoenix, `$86` Dragonfly, `$87` cluster bomb (`$CF4A`), `$88` Sleeper mine, `$89` decoy, `$8A` Phantasm, `$8B` cluster, `$8C` the Helicarrier. The byte at `$B3C9` (`$C9`) is the RET of the routine before.
+> ObjectSetType `$BD41` copies record (type - `$80`) when the type has bit 7: the 30 bytes become +2..+$1F of the object (the type itself is +1) (flags, colour, height, speed, box, hit points, damage, radius, step handler, collision handler, model, score). `$80` K-40 mortar shell (step `$B5E8`), `$81` cannon shell (`$B592`), `$82` Banshee RR, `$83` Phoenix RR, `$84` Banshee IR, `$85` Phoenix IR, `$86` Dragonfly, `$87` K-90 cluster bomb (`$CF4A`), `$88` Sleeper mine, `$89` Skeet bomb, `$8A` Phantasm (the decoy of the homing shell type 28), `$8B` Spectre, `$8C` the Helicarrier. The byte at `$B3C9` (`$C9`) is the RET of the routine before.
 $B3CA ShellTemplate80 ; template $80, the K-40 mortar shell; 30 bytes a type up to $8C
 
 @module player
@@ -1418,8 +1422,8 @@ $B5A7 c LaunchProjectile ; Spawn projectile type A at the player with the aim's 
 > Input A = the template type (`$80`-`$8B`). ConsumeAmmo `$B550`, ObjectSetType `$BD41`, copies the player's heading and X / Y, the elevation from `$B5C5` / `$B5C8` (SetElevation `$CF32`). Returns M when out of rounds.
 > Witness: L1 7 (play, play2).
 
-$B5E8 c MortarShellStep ; Step of a mortar shell: ballistic flight, burst at the ground
-> Height += vertical speed (+$31), the speed falls each pass; at height 0 the shell bursts (Explode `$B8AB`).
+$B5E8 c MortarShellStep ; Step of a mortar shell: ballistic flight, removed at the ground
+> MoveObject, then height += vertical speed (+$31, signed); a negative height removes the shell (RemoveObject `$B8B1`, no burst: only a hit damages); else the vertical speed falls by 5 a pass, kept when the subtraction overflows.
 > Witness: L1 68 (play).
 
 @module enemies ; The resident enemy support: the hit test, kills, debris, the score of a kill
@@ -1427,12 +1431,15 @@ $B5E8 c MortarShellStep ; Step of a mortar shell: ballistic flight, burst at the
 $B611 b NullHandler 1 ; A RET used as a null handler
 > The collision handler of objects that ignore collisions; vector `$67EB` points here.
 
-$B612 c KillGunEmplacement ; The collision handler of type $0E (gun emplacement): hit, kill, debris
-> HitPoints `$B6B1`; on a kill unregisters the collision (`$67CD`), makes debris (`$67DF`) and joins the common kill path `$B677`. Witness: one kill in death.
+$B612 c KillTree ; The hit handler of the trees (types 0, 1) and some scenery: any collider kills it
+> HitPoints `$B6B1` with no weapon test, so any collider, the tank included (damage 0 against a tree's 0 hit points), knocks it down; on a kill unregisters the collision (`$67CD`), makes debris (`$67DF`) and joins `$B677` (+2 = 0, then AddKillScore), bypassing KillMissionObject, so the list record is not marked destroyed. Users: types 0 and 1 in all ten missions, mission 5 types 23-25, mission 6 types 27-29, mission 10 types 23-25, 30, 31, and the aircraft missiles at the end of their life (`$E632`) (docs/07-objects.md 7.5, 7.14).
 > Witness: L1 1 (death).
 
-$B61E b KillSwitchObject 8 ; A collision handler no recording runs: hit, then switch a segment off
-> Code: HitTest through `$67DC`; on a kill reads the segment pointer at ($DBDF) and the first switchable index ($DBDE) and clears a switch flag at `$7BFD`, so the bridge or gate it guards vanishes from the map. Reached only through a template's handler word.
+$B61E c KillSwitchObject ; A collision handler no recording runs: hit, then switch a segment off
+> HitTest through `$67DC`; on a kill, when the header's first switch object `$DBDD` is not 0: c = the list index (+0) - (`$DBDD`), two segment numbers from the table at ($DBDF) + c, each minus the first switchable segment ($DBDE), and the two switch flags at `$7BFD` + n cleared, so the bridge or post it guards vanishes from the map. Users: mission 5 type 29, mission 8 types 8 and 9 (the templates' hit handler word).
+
+$B64E c BridgeHit ; The bridge's hit handler (mission 2 type 3): hit, then TANK DESTROYED ON BRIDGE if the tank touches a type 4 object
+> HitTest `$B660`; no kill returns. On a kill, when PlayerStep's JR operand `$A8C8` is not 0 (HitObstacle `$CB6C` sets it to `$25` when the tank touches a type 4 object in the pass; PlayLoop clears it at `$6A37`), HL = `$CD01` ("TANK DESTROYED ON BRIDGE") and `JP $CB46`, the failure path of PlayerHit (docs/10-gameplay-logic.md 10.10).
 
 $B660 c HitTest ; Damage IX by IY's damage; on a kill score and remove (vector $67DC)
 > Input IX = the hit object, IY = the hitter. HitPoints `$B6B1` (+$13 -= the hitter's +$14); no kill returns NC. On a kill: UnregisterCollision `$CA3B`, Debris `$B6D1`; an object from the mission list (+0 != `$FF`) goes to KillMissionObject `$B67D`, the others are freed at `$B677`. Then AddKillScore `$B692`.
@@ -1624,16 +1631,16 @@ $BCF0 c FindFreeLoop ; The scan loop
 > Steps 60 bytes per record until +2 = 0 or the limit.
 > Witness: L1 415 (death, m2erbe, missions, play, play2).
 
-$BCFD c FindSlot ; Find a slot for a list record
-> FindFreeObject `$BCDA`, then the list index to +0.
+$BCFD c FindSlot ; Find a slot for a list record: the first free or evictable record of 1-20
+> One scan of records 1-20 (it does not call FindFreeObject): the first record that is free (+2 = 0) or holds an enemy shell (+3 AND `$50` = `$10`) is taken; an evicted shell is unregistered (`$67CD`) and its +2 cleared. Then the list index to +0. NC when none.
 > Witness: L1 185 (death, m2erbe, missions, play, play2).
 
 $BD41 c ObjectSetType ; Set the type and copy the 30-byte template (vector $67C7)
-> Input A = type. Bit 7: the resident template `$B3CA` + 30 * (A - `$80`); else the mission's template table (`$DBD7`) + 30 * A. Copies to +1..+$1E and sets the serial +$20.
+> Input A = type. Bit 7: the resident template `$B3CA` + 30 * (A - `$80`); else the mission's template table (`$DBD7`) + 30 * A. Stores the type at +1, copies the 30 template bytes to +2..+$1F and the serial to +$20.
 > Witness: L1 431 (death, m2erbe, missions, play, play2).
 
-$BD67 c InRange ; Is the list record within 9 coarse units of the player
-> |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below 9. Called for each list record (70 373 runs).
+$BD67 c InRange ; Is the list record within range of the player (4 coarse units for type 0, 9 for the others)
+> |X word >> 8 - `$BC12`| and |Y - `$BC1D`| below the range: 4 for type 0 (trees), 9 for every other type (type 1 trees included). Called for each list record (70 373 runs).
 > Witness: L1 70373 (death, m2erbe, missions, play, play2).
 
 $BD83 c WordToWorld ; A list word << 2 into a 24-bit coordinate
@@ -1873,8 +1880,8 @@ $CA3B c UnregisterCollision ; Free the record's collision slot (vector $67CD)
 > Returns the slot of +$3B to the list and marks the row's timers `$FF`.
 > Witness: L1 230 (death, m2erbe, missions, play, play2).
 
-$CA7C b CollisionCode 8 ; Collision code no recording runs
-> A collision handler: the hitter's damage +$14 into IY, then HitTest; reached only through a template.
+$CA7C c StrikePlayer ; A unit strikes the tank with no shell: PlayerHit with the unit as the hitter, damage doubled
+> IX = the unit. Saves its +3 and +$14, sets +3 b4 and doubles +$14, calls PlayerHit `$CAA5` with IY = the unit and IX = the tank (`$75F0`), then restores both bytes. Called by mission 8's type 10 at `$E1FC` (a direct strike while it is aligned, docs/07-objects.md 7.14); no recording runs it.
 
 @module player
 $CAA5 c PlayerHit ; The player's collision handler: armour and subsystem damage
@@ -1884,7 +1891,7 @@ $CB38 ArmourDestroyed ; armour underflow: the failure reason ($CCBE or $CCAB), J
 $CB6C HitObstacle ; a type 4 hitter (static)
 
 $CB4C c HitSide ; Which side was hit (1-3) from the bearing
-> BearingTo the hitter minus the turret heading: front, left / right, rear (play2: 25 runs).
+> From the hitter's view-space x (+`$2F`/+`$30`, negated when `$BA27` is set): |x| <= `$60` is side 2 (the front), else positive x side 1 and negative side 3; there is no rear side (play2: 25 runs).
 > Witness: L1 25 (play2).
 
 $CBBD b HitVars 9 ; Variables of PlayerHit
@@ -2219,7 +2226,7 @@ $D873 c SoundKill ; Kill sound
 $D87B c SoundToneC8 ; Effect trigger: ToneC8Count $D685 = 7
 > Known only from the code: no caller.
 
-$D883 c SoundEffect687 ; Missile sound trigger
+$D883 c SoundMissile ; Missile sound trigger
 > `$D687` = `$1E`; JP from `$C450` (the missile).
 > Known only from the code: no recording runs it (static walk).
 
@@ -2252,9 +2259,10 @@ $DA8C b HelicarrierTemplate 8 ; Bytes before the Helicarrier's collision handler
 > `$DA8C`-`$DA9E` data; `$DA9F`: `LD HL,$6760` / `LD B,8` / CPL each byte / RET (no recording runs it).
 
 $DAAB c HelicarrierHit ; The Helicarrier's collision handler: the tank drives into the parked Helicarrier
-> When the hitter is not present (+3 bit 7 clear) HitTest; when `$68E8` is set JP `$67EE` (mission complete), else `$7047` with `$7BF9` = `$CC94` (failure). Then `$DAC4` turns it over the pad, 8 a step, until its heading is near the pad's (+`$31`, the CPL of the pad's heading).
+> Three branches on the hitter IY: +3 bit 7 clear (not the player's family) -> HitTest `$67DC`; else the goal flag `$68E8` set -> `$67EE` (mission complete); else ScreenSix `$7047` and `$7BF9` = `$CC94` (failure). There is no parked test.
 > Witness: m1complete frame 21558, m4complete 21299, one run each, then `$67EE` (work/stage2/complete-NOTES.md).
-$DAC4 HelicarrierTurn ; the arrival's turn over the pad (m1complete 17109-17205, 11 runs)
+$DAC4 c HelicarrierTurn ; The arrival's turn over the pad: heading + 8 a pass until within 8 of +$31, then the descent
+> +`$22` += 8; |+`$22` - +`$31`| (`$67D6`) below 8 makes HelicarrierDescent `$DADE` the step. Witness: m1complete 17109-17205 (11 runs).
 
 $DADE c HelicarrierDescent ; The Helicarrier's landing: down 8 a step to the pad, then parked
 > The height goes 104, 96, ... 24 (one step a pass), then the handler `$6BB0` parks it. Witness: m1complete frames 17213-17311 (10 runs), m4complete 15510-15575 (10).
@@ -2267,8 +2275,8 @@ $DB15 c SetHelicarrierHandler ; The Helicarrier handler's high byte
 > `LD (IX+$19),$DB` / `RET`, the handler's high byte.
 > Witness: L1 1 (play).
 
-$DB1A b HelicarrierCode 8 ; A Helicarrier variant (not run)
-> `LD IY,$75F0` / `LD HL,$67A8` / `EXX` / `JR`: the variant aimed at the player, not run.
+$DB1A c HelicarrierCode ; Code whose address PlaceHelicarrier writes into +$31/+$32; no recording runs it
+> `LD IY,$75F0` / `LD HL,$67A8` / `EXX` / `JR $DB2C` into HelicarrierWait with the player as the target. PlaceHelicarrier stores `$DB1A` when |pad| - |camera| is below 8 on both axes; whether anything jumps to it is SUSPECTED (docs/10-gameplay-logic.md 10.9).
 
 $DB24 c HelicarrierWait ; The Helicarrier waits for the player
 > Flies the Helicarrier to the pad: IY = the pseudo-record `$7E65` (its X / Y at `$7E88` / `$7E8B` are the pad), TurnToward, MoveObject; when the Helicarrier itself (not the tank) is within 3 units of X >> 8 and Y >> 8 (768 world units) of the pad on both axes, the arrival at `$DB61` (play: 27 runs; m1complete 16239-17099, 85 runs).

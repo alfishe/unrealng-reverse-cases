@@ -73,19 +73,24 @@ The graph as the image holds it (`$74E8-$757B`, read from `build/game.lst`):
 | `$7504` | MissionCatalogueScreen `$C790` | CatalogueZones `$C851` | stores `$7514` | briefing `$750E` | status card `$756A` | | |
 | `$750E` | BriefingScreen `$C98A` | `$CA10` | catalogue | | | | |
 | `$7514` | StoresScreen `$CA8B` | StoresZones `$CBC4` | play `$751A` | | | | |
-| `$751A` | StartMission `$694B` (the 3D view) | none | status view `$7528` | Dragonfly `$7552` | complete `$755E` | failed `$7564` | title |
-| `$7528` | StatusLoop `$6BC7` | none | play | status view again `$7536` | complete | failed | Dragonfly `$7544` |
-| `$7536` | StatusLoop's re-entry `$6BDE` | none | play | itself | complete | failed | Dragonfly |
-| `$7544` | DragonflyStart `$6C44` | none | play | status view again | complete | failed | Dragonfly |
-| `$7552` | DragonflyLoop `$6C93` | none | play | (none) | complete | failed | |
+| `$751A` | StartMission `$694B` (the 3D view) | none | status view `$7528` | damage board `$7552` | complete `$755E` | failed `$7564` | title |
+| `$7528` | StatusLoop `$6BC7` | none | play | MAP page `$7536` | complete | failed | BRIEF page `$7544` |
+| `$7536` | StatusLoop's re-entry `$6BDE` (the MAP page) | none | play | itself | complete | failed | BRIEF page |
+| `$7544` | BriefPage `$6C44` (the briefing text in the console) | none | play | MAP page | complete | failed | BRIEF page |
+| `$7552` | DamageLoop `$6C93` (the damage board) | none | play | (none) | complete | failed | |
 | `$755E` | MissionCompleteScreen `$CD1E` | EndZones `$CD70` | status card | | | | |
 | `$7564` | MissionFailedScreen `$CD84` | EndZones | title | | | | |
 | `$756A` | MissionStatusScreen `$CDBF` | StatusScreenZones `$C4DC` | show the code `$74FE` | catalogue | | | |
-| `$7572` | MapLoop `$6AB9` | none | play | | | | |
+| `$7572` | DragonflyViewLoop `$6AB9` (the Dragonfly's flight view) | none | play | | | | |
 
-No link leads to `$7572`: MapLoop is entered directly, by the Dragonfly's launch (`LD HL,MapLoop` into NextView's
-operand in player.asm), not through SetScreen. The 3D view's node runs StartMission each time play is re-entered from
-the status or Dragonfly views (StartMission runs 27 times in the recordings, for 14 mission starts).
+No link leads to `$7572`: DragonflyViewLoop is entered directly, by the Dragonfly's launch (LaunchDragonfly `$C30F`,
+`LD HL,DragonflyViewLoop` into NextView's operand in player.asm), not through SetScreen. The play keys enter two more
+views the same way, without a link: D (SelectDamage `$6BC2`) writes DamageLoop into NextView through SelectLoop
+`$6BB4` and sets the view flag, and on the damage board DamageKeys `$6B95` sends B to StatusLoop, C to StartMission
+and D to DamageLoop again. SetScreen is not called, so the current node stays `$751A`: link 1 of `$751A` (`$7520` =
+`$7552`) is not what the key D takes, and which code takes it, if any, is not settled.
+The 3D view's node runs StartMission each time play is re-entered from the status view or the damage board
+(StartMission runs 27 times in the recordings, for 14 mission starts).
 
 ```mermaid
 flowchart TD
@@ -98,7 +103,8 @@ flowchart TD
     C -- "SELECT: the block loaded, link 0" --> ST["Stores 7514: four modules, 1000 kg"]
     ST -- "START, link 0" --> P["3D view 751A: PlayLoop"]
     P -- "M, link 0" --> SV["Status view 7528: map and clock"] -- "C, link 0" --> P
-    P -- "D, link 1" --> DF["Dragonfly view 7552"] -- "link 0" --> P
+    P -- "D: SelectDamage writes DamageLoop into NextView, no link" --> DF["Damage board 7552"] -- "C: StartMission, no link" --> P
+    P -- "fire the Dragonfly: LaunchDragonfly, no link" --> DV["Dragonfly flight view 7572"] --> P
     P -- "Helicarrier with the goal met, link 2" --> MC["Mission complete 755E"]
     P -- "fuel, armour, desertion, no pickup: link 3" --> MF["Mission failed 7564"]
     P -- "quit Y, link 4" --> T
@@ -108,9 +114,11 @@ flowchart TD
     SC -- "link 1" --> C
 ```
 
-Worked example, the fuel failure (`stage2/rec/fuel`). At frame 7704 the POKE leaves 32 units of fuel. The fuel reads 0
-at frame 7904 and FailReason `$7BF9` holds `$CCED` ("RAN OUT OF FUEL."). OutOfFuel (bank 2 `$A94E`, in PlayerStep `$A8C7`)
-stores the reason and calls ScreenSix `$7047` (E = 6): the current node is StartMission's (`$751A`), its links start at
+Worked example, the fuel failure (`stage2/rec/fuel`). At frame 7704 the POKE leaves 32 units of fuel. PlayerStep
+`$A8C7` takes C = (A >> 4) OR 1 a step (`$A93A-$A942`), 3 in this drive: the fuel reads 3 from frame 7842 and 0 from 7852 (an
+exact hit, `work/docs/bcC/fuel-player.jsonl`). In frame 7860 the next step's `SBC HL,BC` borrows, and OutOfFuel (bank
+2 `$A94E`) is taken instead of the store at `$A958`: Fuel `$7C57` keeps its 0 and FailReason `$7BF9` gets `$CCED`
+("RAN OUT OF FUEL.", read from frame 7861). OutOfFuel stores the reason and calls ScreenSix `$7047` (E = 6): the current node is StartMission's (`$751A`), its links start at
 `$751E`, and the word at `$751E` + 6 = `$7524` is `$7564`. SetScreen reads that node: routine `$CD84`
 (MissionFailedScreen), zones `$CD70`, links from `$7568`. The view flag ends PlayLoop, NextView runs `$CD84`:
 MissionFailedScreen starts at frame 7862 (L1 of fuel) and shows "MISSION FAILED." with the reason (screen at frame
@@ -119,9 +127,12 @@ frame 8051.
 
 There is no game over beyond that: a failed mission goes back to the title, and the player loads or replays a mission.
 Grand Finale (mission 10) is refused by LoadMissionIfAllowed `$759A` until the nine flags MissionsDone `$6799-$67A1`
-are all set: `m10` shows the status screen again at frame 8349 after SELECT.
+are all set: the refusal is `RET Z` at `$75AE` back into the catalogue's zone loop, so in `m10` SELECT leaves the
+catalogue on screen (4972 to 7972); the status card at 8349 is the script's click on STATUS (the cursor at 192, 181
+in CatalogueZones' STATUS zone).
 
-Witness: every node's routine is run by a recording except the Dragonfly's re-entry `$7544`. The completion is the
+Witness: every node's routine is run by a recording; BriefPage (`$7544`, `$6C44`) once, in play (L1 1, the BRIEF page
+of `010455-view-map-brief.png`, reached by StatusKeys' B and ScreenEight). The completion is the
 Helicarrier's collision handler (`JP $67EE`, ScreenFour, link 2) once the goal flag `$68E8` is set: m1complete runs
 HelicarrierHit `$DAAB` and `$67EE` at frame 21558 and MissionCompleteScreen `$CD1E` (page 6) at 21560-21721, then the
 status card (22100) and the save code (22240); m4complete the same at 21299 and 21301-21462
@@ -168,8 +179,10 @@ never reached as a vector (the table answers every bus byte), a guard the author
 
 ### The handler, line by line
 
-InterruptHandler `$8383` switches to its own stack, top `$7C49` in bank 5 (inside PlayWorkspace `$7B90`), because the
-main code often has `SP` pointed at data: the PUSH clear of the back buffer and the vertex program (4.3). It saves
+InterruptHandler `$8383` switches to its own stack, top `$7C49` in bank 5 (inside PlayWorkspace `$7B90`), so its 28
+bytes of register saves stay off the main stack. It cannot protect a buffer `SP` points into: the CPU's push of the
+return address and the handler's `EX (SP),HL` land on the interrupted stack first. That is why the main code points
+`SP` at data (the PUSH clear of the back buffer, the radar's clear, the vertex program) only under `DI` (4.3). It saves
 every register, both sets, and runs nine jobs on every interrupt. Then the blit request `$83BA` chooses between a
 short tail and the long one.
 
@@ -234,8 +247,8 @@ The two operands at `$83BA` and `$83BF` are flags written by other code and read
 - `$83BA`, the blit request: RequestViewBlit `$988D` writes `$FF` when a pass has finished drawing the back buffer,
   ClearBlitRequest `$8AEC` writes 0 after the blit. StartViewPass `$9882` waits for 0 before it clears the buffer.
 - `$83BF`, the pointer flag: non-zero while the menus show the pointer, 0 in the play views (DrawBank7Picture `$74AA`
-  clears it). PointerTick `$7D80` moves the pointer only when it is set (`$7D8D`). The `.ann` calls it PointerShown
-  ("non-zero in play"); the play traces read it 0 throughout ([bcA-src-changes](../work/docs/bcA-src-changes.md)).
+  clears it). PointerTick `$7D80` moves the pointer only when it is set (`$7D8D`). The play traces read it 0
+  throughout.
 
 ### What an interrupt costs
 
@@ -247,8 +260,8 @@ its RETI, with the two flags at the entry:
 | a quiet interrupt (`$83BA` = 0, `$83BF` = 0) | 15 | 4614 (4815 to 6402 in the first five, while a sound effect ran) | 6.5 % | 8509:1872 |
 | a blit interrupt (`$83BA` = `$FF`) | 3 | 60 398 to 62 169 | 85 to 88 % | 8516:1866, 60 398 T |
 
-The blit is the interrupt's heavy job: ViewBlitFront copies 79 rows of 32 bytes and 16 short rows with `LDI`, 2704
-bytes, inside the handler. A pass of 7.5 frames therefore spends one frame in its blit interrupt and about six quiet
+The blit is the interrupt's heavy job: ViewBlitFront copies 79 rows of 32 bytes, 8 rows of 22 and 8 rows of 4 with
+`LDI`, 2736 bytes (2528 + 176 + 32), inside the handler. A pass of 7.5 frames therefore spends one frame in its blit interrupt and about six quiet
 interrupts of 4614 T: 91 818 T of the 533 993 T of the trace's first pass (17 %).
 
 Witness: stage 1's `re_session.py interrupts` over all of play gives 14 073 T an entry and 10 % of the CPU
@@ -280,6 +293,12 @@ with IFF1 set.
 
 Over the 200 frames 8400:0-8600:0 the handler runs 192 times: 4 % of the interrupts of the normal view are lost. In
 the rear view (10070:0-10125:0) 48 of 55 are taken: 13 % lost.
+
+The same in another recording: `lost.py` over the death trace 8093:0-8160:0 (`work/docs/bcD/death/traces/`, normal
+view, the enemy tank firing) finds 63 handler entries in 67 frames. The frames without one are 8114, 8119, 8124 and
+8133: at their INT the CPU is in ClearBackBuffer's `PUSH` loop (8114 at `$9705`, 8124 at `$96FF`, 8133 at `$9709`)
+and in OpVertexProgram (8119 at `$9978`). Those four frames are also the four with no SoundFrame `$D692`
+([doc 9.3](09-sound.md#93-the-effect-driver-soundframe)): the AY effects and the music skip a tick with each lost interrupt.
 
 ### The back-buffer clear
 
@@ -432,7 +451,7 @@ sequenceDiagram
     L->>B: terrain, objects far to near, sight
     L->>I: RequestViewBlit: 83BA = FF
     L->>L: tail: bars, object handlers, goal hook
-    I->>B: next INT: ViewBlitFront reads 2704 bytes
+    I->>B: next INT: ViewBlitFront reads 2736 bytes
     I->>S: rows 32-126, 60 398 T
     I->>L: ClearBlitRequest: 83BA = 0
     L->>L: next pass: StartViewPass finds 83BA = 0
@@ -462,7 +481,7 @@ heaviest steady pass of the rear view (10098:18420-10110:14972):
 | CollisionPass | 16 907 | 24 821 | 17 696 | 0.25 |
 | UpdateSlotBars | 14 397 | 19 289 | 19 091 | 0.27 |
 | RunObjectHandlers | 65 565 | 48 459 | 29 512 | 0.42 |
-| the rest (keys, camera, sight, hooks) | 4510 | 4754 | 2580 | 0.04 |
+| the rest (keys, camera, sight, hooks) | 4510 | 4754 | 2560 | 0.04 |
 | the interrupts taken in the pass | 91 818 (7) | 83 468 (6) | 119 466 (10) | 1.68 |
 | **the pass** | **533 993 = 7.53 frames** | **533 503 = 7.52 frames** | **847 448 = 11.95 frames** | |
 
@@ -511,13 +530,14 @@ What it shows:
 
 - frames 8509-8515 have almost no screen write: the pass draws into the back buffer. The writes are the radar's clear
   and blips (8512, 8513) and the slot bars (8515);
-- the blit (8516, red) starts at frame T about 6370, while the beam is still in the top border, and writes rows 32 to
-  110 at about 512 T a row. The beam moves one line in 228 T, so it overtakes the blit at about line 82 (frame T
-  32 000): 1423 of the 2528 full-row writes land before the beam, 1105 after it;
-- the 16 short rows (green, `l_89EE`, and `l_8A27`) all land after the beam.
+- the blit (8516, red) writes its first byte at frame T 6456, while the beam is still in the top border, and writes
+  rows 32 to 110 at about 630 T a row (line 110 ends at 56 265). The beam moves one line in 228 T (the paper starts at
+  frame T 16 212), so it overtakes the blit in line 76 (frame T about 33 500): lines 32 to 75 (1408 writes) and 15
+  bytes of line 76 land before the beam, 1423 of the 2528 full-row writes; 1105 after it;
+- the 16 short rows (green: 8 rows of 22 bytes, `l_89EE`, and 8 of 4, `l_8A27`) all land after the beam.
 
-So the view tears in the blit frame: lines 32 to 82 show the new picture, lines 83 to 126 still the old one, until the
-next frame. A pass is 7.5 frames, so one frame in 7.5 shows a torn view. The game accepts it: it has one buffer and no
+So the view tears in the blit frame: lines 32 to 75 show the new picture, lines 77 to 126 still the old one, until the
+next frame (the counts per line from the trace, `--trace work/docs/bcA/play/traces/8509_65903-8517_32142.uatr`). A pass is 7.5 frames, so one frame in 7.5 shows a torn view. The game accepts it: it has one buffer and no
 frame sync.
 
 ![The end of the rear view's heaviest pass against the beam](img/loop/beam-rear.png)
@@ -526,8 +546,10 @@ frame sync.
 by `python3 ../../kit/beam_timeline.py --work work/docs/bcA/play --window 10106:0-10110:14972 --listing build/game.lst
 --machine 128k --frames 5`.*
 
-The blit is the same routine at the same moment of its frame: 1264 of its 2528 full-row writes before the beam, 1264
-after. The rear view tears at the same line; only the time between two blits is longer.
+The blit is the same routine, but its interrupt starts it about 1750 T later in the frame (first write at frame T
+8203): 1264 of its 2528 full-row writes before the beam, 1264 after, and the beam overtakes it in line 71 (lines 32 to
+70 and 16 bytes of line 71 before it). The rear view tears five lines higher, and the time between two blits is
+longer.
 
 The point: the copy of the view races the beam and loses half way down. That is the price of doing the blit in the
 interrupt as soon as a picture is ready.
@@ -547,10 +569,10 @@ passes from PlayLoop to PlayLoop:
 | binoculars and zoom (9805-9995) | 190 frames (stage 1) | 6.8 |
 | rear view, single passes | 10098:18420-10110:14972, 10110:14972-10122:22997 | 11.95, 12.11 |
 | rear view, the first pass after the key | 10083:65367-10098:18420 | 14.34 |
-| the console after the map (10520-10620) | 100 frames (stage 1) | 11.1 |
+| the 3D view with the rear view left on (10520-10620) | 100 frames (stage 1) | 11.1 |
 
-The binoculars are faster than the normal view: ViewBlitNarrow `$8A98` copies 95 rows of 22 bytes, and the narrower
-window holds fewer models. The first rear pass is longer than the next ones: the key (PlayKeys 16 589 T) and a
+The binoculars are faster than the normal view: the narrower view holds fewer models (the blit stays ViewBlitFront;
+ViewBlitNarrow `$8A98`, 95 rows of 22 bytes, is installed only by the Dragonfly's flight view). The first rear pass is longer than the next ones: the key (PlayKeys 16 589 T) and a
 DrawObjectsInOrder of 559 699 T while the newly visible objects enter the depth tree.
 
 The point: 7.5 frames a pass is the normal view of Blast Em Mission; the frame rate falls to 4 pictures a second when
@@ -566,7 +588,7 @@ the base is in view.
 | a click | PointerFire `$7DC2` | interrupts | fire held 25 interrupts gives a click, repeated every 5 |
 | the warning blinker | BlinkWarning `$8459` | interrupts | every 12, the attributes `$5758` and `$5078` |
 | the lamp blinker | BlinkLamp `$8475` | interrupts | every 8, four pixel lines at `$525C` |
-| the message line | MessageTimer `$87D6` | interrupts | 100 (MessageOnce `$7D5D` sets `$87D7`), then the blank line `$87F0` |
+| the message line | MessageTimer `$87D6` | interrupts | 100 (MessageOnce `$7D5D` sets `$87D7`), then the blank line `$87F0`; measured: 109 frames for the 100 ticks in death 8121-8230 ([doc 8.6](08-hud-and-text.md#86-the-messages)), the lost interrupts of 4.3 |
 | the play keys | PlayKeys `$6B3B` | passes | one key code a pass, and only a new one (LastKey `$6B45`): the scripts hold a key 25 frames |
 | Delay | bank 6 `$CD63` | CPU loops | 5 x 65 535 turns of `DEC HL / LD A,H / OR L / JR NZ` (26 T): 8 519 640 T, 120 frames of its own time plus the interrupts; used on the end screens, the code screen and the status card |
 

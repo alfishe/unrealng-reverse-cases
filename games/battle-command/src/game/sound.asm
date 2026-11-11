@@ -426,7 +426,7 @@ SoundToneC8:
 ; `$D687` = `$1E`; JP from `$C450` (the missile).
 ;
 ; Known only from the code: no recording runs it (static walk).
-SoundEffect687:
+SoundMissile:
   PUSH AF
   LD A,$1E
   LD (MissileCount),A

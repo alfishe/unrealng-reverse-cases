@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', '..', 'kit'))
 import kitlib  # noqa: E402
 import zxscreen  # noqa: E402
-from PIL import ImageDraw  # noqa: E402
+from PIL import Image, ImageDraw  # noqa: E402
 
 
 def read(session, space, frame, offset, length):
@@ -45,7 +45,7 @@ def main():
     p.add_argument('--scale', type=int, default=2)
     p.add_argument('--delay', type=int, default=80)
     p.add_argument('--hold', type=int, default=1500)
-    p.add_argument('--label', action='store_true', help='print the frame and the screen bank in the corner')
+    p.add_argument('--label', action='store_true', help='print the frame and the screen bank in a band below the screen')
     p.add_argument('out')
     args = p.parse_args()
     sys.path.insert(0, os.path.join(kitlib.unreal_root(None), 'tools', 'verification', 'analysis'))
@@ -56,10 +56,12 @@ def main():
         data, bank = shown_screen(session, f)
         im = zxscreen.render(data, args.scale).convert('RGB')
         if args.label:
+            # a band of its own under the screen, so the label never hides a button or a text
+            framed = Image.new('RGB', (im.width, im.height + 24), (0, 0, 0))
+            framed.paste(im, (0, 0))
+            im = framed
             d = ImageDraw.Draw(im)
-            text = f'frame {f}  {bank}'
-            d.rectangle((0, im.height - 22, 14 + 9 * len(text), im.height), fill=(0, 0, 0))
-            d.text((6, im.height - 19), text, fill=(255, 255, 255), font=kitlib.font(14))
+            d.text((6, im.height - 20), f'frame {f}  {bank}', fill=(255, 255, 255), font=kitlib.font(14))
         pictures.append(im.convert('P', palette=0, colors=32))
     durations = [args.delay] * (len(pictures) - 1) + [args.hold]
     pictures[0].save(args.out, save_all=True, append_images=pictures[1:], duration=durations, loop=0, optimize=True)

@@ -25,7 +25,7 @@ Bootstrap:
   LD A,$11
   OUT (C),A
   LD HL,LaunchDragonfly+$0045
-  LD DE,PlayVars
+  LD DE,Armour
   LD BC,$3CFF
   LDIR
   LD BC,$7FFD
@@ -83,27 +83,45 @@ Im2Table:
   DEFB $47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47,$47
   DEFB $00
 
-; Play variables, $8301-$8382: world pointers, the weapon icons and slots
-PlayVars:
+; The armour: $8301-$8303 the sides 1-3 (HitSide), $8304 the top; also
+; Bootstrap's copy destination
+Armour:
   DEFB $00,$00,$00,$00
 WorldWork:
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$AB,$68,$C3,$68,$C9,$68,$CF,$68,$D5,$68,$DB,$68,$BD
-  DEFB $68,$B1,$68,$B7,$68
-DragonflyIcons:
-  DEFB $10,$00,$00,$00,$00,$00,$11,$00,$00,$00,$00,$00,$12,$00,$00,$00 ; nine
-  DEFB $00,$00,$0F,$00,$00,$00,$00,$00,$0E,$00,$00,$00,$00,$00         ; 6-byte
-                                                                       ; records of
-                                                                       ; the
-                                                                       ; Dragonfly's
-                                                                       ; weapons
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$00
+  DEFB $00,$00,$00,$AB
+  DEFB $68,$C3,$68,$C9
+  DEFB $68,$CF,$68,$D5
+  DEFB $68,$DB,$68,$BD
+  DEFB $68,$B1,$68,$B7
+  DEFB $68
+
+; Nine 6-byte records of the damage board (icons $10, $11, $12, $0F, $0E, then
+; the four slots)
+;
+; Records 5-8 are the WeaponSlots `$8368`, written by FitOrRemoveWeapon.
+; StoresToGauges sets gauge k (`$68AB` + 6k) to `$5F` when record k is not 0,
+; else 0. 54 bytes, `$834A-$837F`.
+DamageBoardRecords:
+  DEFB $10,$00,$00,$00,$00,$00
+  DEFB $11,$00,$00,$00,$00,$00
+  DEFB $12,$00,$00,$00,$00,$00
+  DEFB $0F,$00,$00,$00,$00,$00
+  DEFB $0E,$00,$00,$00,$00,$00
 WeaponSlots:
-  DEFB $00,$00,$00,$12,$30,$00,$00,$00,$00,$1C,$30,$00,$00,$00,$00,$12 ; four
-  DEFB $60,$00,$00,$00,$00,$1C,$60,$00,$00,$00,$00                     ; 6-byte
-                                                                       ; slot
-                                                                       ; records,
-                                                                       ; the
-                                                                       ; ammunition
-                                                                       ; at +5
+  DEFB $00,$00,$00,$12,$30,$00 ; four 6-byte slot records, the ammunition at +5
+  DEFB $00,$00,$00,$1C,$30,$00
+  DEFB $00,$00,$00,$12,$60,$00
+  DEFB $00,$00,$00,$1C,$60,$00
+  DEFB $00,$00,$00

@@ -12,9 +12,9 @@
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; Packed screen: the damage board with the tank drawings and twelve boxes (the
-; Dragonfly view's panel)
+; key D, DamageLoop)
 ;
-; Unpacked by DragonflyLoop (`$6C9E`, `LD DE,$C000`). Block of 1811 bytes: size
+; Unpacked by DamageLoop (`$6C9E`, `LD DE,$C000`). Block of 1811 bytes: size
 ; word `$070F`, 1327 tokens.
 ;
 ; Witness: play (1808 bytes read), c1.
@@ -200,10 +200,11 @@ PicMissionStatus:
 PicTitle:
   INCBIN "res/pictures/title.bin",$0000,1260
 
-; Packed screen: the map view's monitor frame with its grey screen
+; Packed screen: the monitor frame with its grey screen around the Dragonfly's
+; flight view
 ;
-; Unpacked by MapLoop (`$6AC3`, `LD DE,$F9CD`). Block of 1218 bytes, 885
-; tokens.
+; Unpacked by DragonflyViewLoop (`$6AC3`, `LD DE,$F9CD`). Block of 1218 bytes,
+; 885 tokens.
 ;
 ; Witness: play (1215 bytes read).
 PicMapFrame:

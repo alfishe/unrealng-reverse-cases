@@ -14,7 +14,7 @@ The block (LoadMission `$84C1` copies the header's fields into the game, frag of
     $DBD2-6    five bytes the code does not read (known only from the code)
     $DBD7      word: the object templates (30 bytes each)
     $DBD9      the object count;  $DBDA word: the object list (and the start of the part a reload restores)
-    $DBDC      the segment count; $DBDD a byte; $DBDE the first switchable segment ($FF none);
+    $DBDC      the segment count; $DBDD the list index of the first switch object (KillSwitchObject $B622, 0 none); $DBDE the first switchable segment ($FF none);
     $DBDF      word: the switch object
     $DBE1      word: the goal hook, called every pass (`$6A66`); it sets `$68E8` when the goal is met
     $DBE3      8 bytes to `$7611`: the player's flags, heading, X (3 bytes), Y (3 bytes)
@@ -209,8 +209,9 @@ def figure(d, out_png, title=''):
     a, b = pt(px, py)
     dr.ellipse([a - 4, b - 4, a + 4, b + 4], outline=(80, 240, 240), width=2)
     pp = m['head']['pad-params']
-    hx = struct.unpack('<h', bytes(pp[7:9]))[0] * 4 / 1024
-    hy = struct.unpack('<h', bytes(pp[10:12]))[0] * 4 / 1024
+    # the pad words ($7E89 / $7E8C) are the mid and high bytes of X and Y: world = word x 256, coarse = word / 4
+    hx = struct.unpack('<h', bytes(pp[7:9]))[0] / 4
+    hy = struct.unpack('<h', bytes(pp[10:12]))[0] / 4
     a, b = pt(hx, hy)
     dr.rectangle([a - 4, b - 4, a + 4, b + 4], outline=(240, 120, 240), width=2)
     dr.text((4, 3), '%s: %d segments, %d objects; cyan the start, magenta the pickup pad, red the desertion line' % (

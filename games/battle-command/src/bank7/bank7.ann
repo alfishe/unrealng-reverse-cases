@@ -4,8 +4,8 @@
 @about Bank 7 holds ten whole screens (6912 bytes each, pixels and attributes) packed with an LZ-and-run scheme, one block after the other from $C000, and the routine that unpacks one straight onto the screen at $FE95. DrawBank7Picture ($74AA, bank 2) pages bank 7 and calls UnpackPicture with DE = the block. Each block is a resource, src/res/pictures/NAME.png with the packer's parse NAME.parse.txt beside it (tools/bank7pic.py has the format, tools/res_formats.py builds the block back).
 @about Which recording unpacks which block: the page-7 reads of UnpackPicture in each L1 (byte_counts), every byte of the block but the two padding bytes at its end.
 
-$C000 b PicDamageBoard 16 ; Packed screen: the damage board with the tank drawings and twelve boxes (the Dragonfly view's panel)
-> Unpacked by DragonflyLoop (`$6C9E`, `LD DE,$C000`). Block of 1811 bytes: size word `$070F`, 1327 tokens.
+$C000 b PicDamageBoard 16 ; Packed screen: the damage board with the tank drawings and twelve boxes (the key D, DamageLoop)
+> Unpacked by DamageLoop (`$6C9E`, `LD DE,$C000`). Block of 1811 bytes: size word `$070F`, 1327 tokens.
 > Witness: play (1808 bytes read), c1.
 @res pictures/damage-board.bin
 
@@ -52,8 +52,8 @@ $F4E1 b PicTitle 16 ; Packed screen: the BATTLE COMMAND title lettering over bla
 > Witness: m2erbe, menu, missions, play, play2 (1257 bytes read).
 @res pictures/title.bin
 
-$F9CD b PicMapFrame 16 ; Packed screen: the map view's monitor frame with its grey screen
-> Unpacked by MapLoop (`$6AC3`, `LD DE,$F9CD`). Block of 1218 bytes, 885 tokens.
+$F9CD b PicMapFrame 16 ; Packed screen: the monitor frame with its grey screen around the Dragonfly's flight view
+> Unpacked by DragonflyViewLoop (`$6AC3`, `LD DE,$F9CD`). Block of 1218 bytes, 885 tokens.
 > Witness: play (1215 bytes read).
 @res pictures/map-frame.bin
 

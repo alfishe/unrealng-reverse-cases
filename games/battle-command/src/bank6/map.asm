@@ -4,7 +4,7 @@
 ; The status view (StatusLoop $6BC7) and the briefing show the mission's area from above in the 3D window:
 ; DrawStatusMap $DB1C sets a high view, draws every object of the mission's list (DrawMapObjects $E3F3, models
 ; MapModels $E512) and three markers (DrawMarker $DB6B, models MarkerModels $E5D5), and BlitMapView $DBBD copies the
-; window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (SoundOffKey
+; window to the screen. The legend frames and texts are here too, and the quit prompt of the play keys (QuitKey
 ; $843F).
 ; --------------------------------------------------------------------------------------------------------------------
 

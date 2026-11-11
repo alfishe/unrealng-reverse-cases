@@ -47,7 +47,7 @@ ApiVector04:
 
 ; ApiVector05
 ;
-; Used by the routines at KillGunEmplacement, HitTest, RemoveObject,
+; Used by the routines at KillTree, HitTest, RemoveObject,
 ; ActivateMissionObjects, FindSlot, CameraToPlayer, PhantasmSpin and
 ; PlaceHelicarrier.
 ApiVector05:
@@ -71,7 +71,8 @@ ApiVector07:
 ;
 ; Used by the routines at PlayerStep, BrakeKey, TestVertexNearX,
 ; LaunchProjectile, ShowMortarRange, InRange, TargetInConeBody, TurnToward,
-; HitSide, TerrainDiagonal, BoundaryCheck, SetAwolState and EngineTone.
+; HitSide, TerrainDiagonal, BoundaryCheck, SetAwolState, EngineTone and
+; HelicarrierTurn.
 ApiVector08:
   JP AbsA
 
@@ -83,14 +84,13 @@ ApiVector09:
 
 ; ApiVector10
 ;
-; Used by the routine at HelicarrierHit.
+; Used by the routines at KillSwitchObject and HelicarrierHit.
 ApiVector10:
   JP HitTest
 
 ; ApiVector11
 ;
-; Used by the routines at KillGunEmplacement, HitTest, Explode and
-; MineCountdown.
+; Used by the routines at KillTree, HitTest, Explode and MineCountdown.
 ApiVector11:
   JP Debris
 

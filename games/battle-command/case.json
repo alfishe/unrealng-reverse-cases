@@ -12,7 +12,7 @@
                   "stage1/death", "stage1/m2ocean", "stage1/m2erbe", "stage1/search",
                   "stage1/m10"],
   "overwritten": [["5B00", "5C00"]],
-  "ref_builds": [["stage1/c1", "c1: power-on, side 1 at signal speed, the mission tape, Blast Em Mission played"]],
+  "ref_builds": [["stage1/c1g", "c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played"]],
   "header": ["; Battle Command, Ocean Software 1990 (Realtime Games; Spectrum by Stephen Hey): the game image at the",
              "; entry `$68F4` as the SpeedLock 7 loader and the bootstrap at `$8000` leave it (tools/image.py, c1",
              "; frame 23974): the Z80 view with banks 5, 2, 0 paged; all eight banks in work/mkgame/bankN.bin."]

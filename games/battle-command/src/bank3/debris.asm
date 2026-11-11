@@ -171,9 +171,10 @@ l_D169:
 ; the record below the ground
 ;
 ; x += the signed +`$0F` (with carry into the word), z += +`$10`, y += +`$11`;
-; y below 0: the record is freed (+0 = 0). Else the y speed drops by 5 (it
-; stays while the subtraction would overflow, `JP PO`) and the turn +`$0A`
-; grows by +`$12` and +`$13`.
+; y below 0: the record is freed (+0 = 0). Else the y speed drops by 5; when
+; that subtraction overflows (below -128, `JP PO` not taken) the record is
+; freed too. Then the turn +`$0A` grows by +`$12` and +`$13`
+; (docs/10-gameplay-logic.md 10.8).
 ;
 ; Witness: L1 661 (death, play2).
 MoveDebris:

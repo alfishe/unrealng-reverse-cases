@@ -14,7 +14,7 @@ MoveAllDebris  EQU $D1EC  ; bank 3
 StartTune      EQU $C000  ; bank 4
 MusicTick      EQU $C0D2  ; bank 4
 StopMusic      EQU $C1A2  ; bank 4
-DragonflyTitleBox EQU $C079  ; bank 6
+BriefPageBox   EQU $C079  ; bank 6
 PrintStatusGrid EQU $C0F7  ; bank 6
 TitleMenu      EQU $C409  ; bank 6
 CopyMissionTextB6 EQU $CA23  ; bank 6

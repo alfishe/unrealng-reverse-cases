@@ -108,12 +108,13 @@ BriefingTextOnce:
   DEFB $B3,$6F,$21,$B6,$C0,$CD,$FB,$6C ; at ($70A3), once
   DEFB $AF,$32,$84,$70,$3E,$C9,$18,$E4
 
-; Once: bank 6's $C079, the title string at ($70A3), the attribute box $C0BB
+; Once: bank 6's box $C079, the briefing text at ($70A3) in the console's
+; screen, the attribute box $C0BB
 ;
 ; Witness: L1 1 (play).
-DragonflyTitle:
+BriefPageText:
   NOP
-  CALL DragonflyTitleBox
+  CALL BriefPageBox
   LD HL,(BriefingTextOnce+$0005)
   CALL PrintString
   LD HL,RadarAddBlip+$0009

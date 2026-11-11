@@ -14,14 +14,20 @@
 NullHandler:
   DEFB $C9
 
-; The collision handler of type $0E (gun emplacement): hit, kill, debris
+; The hit handler of the trees (types 0, 1) and some scenery: any collider
+; kills it
 ;
-; HitPoints `$B6B1`; on a kill unregisters the collision (`$67CD`), makes
-; debris (`$67DF`) and joins the common kill path `$B677`. Witness: one kill in
-; death.
+; HitPoints `$B6B1` with no weapon test, so any collider, the tank included
+; (damage 0 against a tree's 0 hit points), knocks it down; on a kill
+; unregisters the collision (`$67CD`), makes debris (`$67DF`) and joins `$B677`
+; (+2 = 0, then AddKillScore), bypassing KillMissionObject, so the list record
+; is not marked destroyed. Users: types 0 and 1 in all ten missions, mission 5
+; types 23-25, mission 6 types 27-29, mission 10 types 23-25, 30, 31, and the
+; aircraft missiles at the end of their life (`$E632`) (docs/07-objects.md 7.5,
+; 7.14).
 ;
 ; Witness: L1 1 (death).
-KillGunEmplacement:
+KillTree:
   CALL HitPoints
   RET NC
   CALL ApiVector05
@@ -30,20 +36,62 @@ KillGunEmplacement:
 
 ; A collision handler no recording runs: hit, then switch a segment off
 ;
-; Code: HitTest through `$67DC`; on a kill reads the segment pointer at ($DBDF)
-; and the first switchable index ($DBDE) and clears a switch flag at `$7BFD`,
-; so the bridge or gate it guards vanishes from the map. Reached only through a
-; template's handler word.
+; HitTest through `$67DC`; on a kill, when the header's first switch object
+; `$DBDD` is not 0: c = the list index (+0) - (`$DBDD`), two segment numbers
+; from the table at ($DBDF) + c, each minus the first switchable segment
+; ($DBDE), and the two switch flags at `$7BFD` + n cleared, so the bridge or
+; post it guards vanishes from the map. Users: mission 5 type 29, mission 8
+; types 8 and 9 (the templates' hit handler word).
 KillSwitchObject:
-  DEFB $CD,$DC,$67,$D0,$21,$DD,$DB,$7E
-  DEFB $A7,$C8,$DD,$7E,$00,$96,$06,$00
-  DEFB $4F,$2A,$DF,$DB,$09,$7E,$23,$08
-  DEFB $7E,$21,$DE,$DB,$96,$08,$96,$01
-  DEFB $FD,$7B,$26,$00,$6F,$09,$36,$00
-  DEFB $08,$26,$00,$6F,$09,$36,$00,$C9
-  DEFB $DD,$7E,$02,$CD,$60,$B6,$D0,$3A
-  DEFB $C8,$A8,$A7,$C8,$21,$01,$CD,$C3
-  DEFB $46,$CB
+  CALL ApiVector10
+  RET NC
+  LD HL,MissionHeader+$0018
+  LD A,(HL)
+  AND A
+  RET Z
+  LD A,(IX+$00)
+  SUB (HL)
+  LD B,$00
+  LD C,A
+  LD HL,(MissionHeader+$001A)
+  ADD HL,BC
+  LD A,(HL)
+  INC HL
+  EX AF,AF'
+  LD A,(HL)
+  LD HL,MissionHeader+$0019
+  SUB (HL)
+  EX AF,AF'
+  SUB (HL)
+  LD BC,$7BFD
+  LD H,$00
+  LD L,A
+  ADD HL,BC
+  LD (HL),$00
+  EX AF,AF'
+  LD H,$00
+  LD L,A
+  ADD HL,BC
+  LD (HL),$00
+  RET
+
+; The bridge's hit handler (mission 2 type 3): hit, then TANK DESTROYED ON
+; BRIDGE if the tank touches a type 4 object
+;
+; HitTest `$B660`; no kill returns. On a kill, when PlayerStep's JR operand
+; `$A8C8` is not 0 (HitObstacle `$CB6C` sets it to `$25` when the tank touches
+; a type 4 object in the pass; PlayLoop clears it at `$6A37`), HL = `$CD01`
+; ("TANK DESTROYED ON BRIDGE") and `JP $CB46`, the failure path of PlayerHit
+; (docs/10-gameplay-logic.md 10.10).
+BridgeHit:
+  LD A,(IX+$02)
+  CALL HitTest
+  RET NC
+  LD A,(PlayerStep+$0001)
+  AND A
+  RET Z
+  LD HL,l_CCEB+$0016
+  JP l_CB46
 
 ; Damage IX by IY's damage; on a kill score and remove (vector $67DC)
 ;
@@ -65,7 +113,7 @@ HitTest:
   LD A,(IX+$00)
   AND A
   JP P,KillMissionObject
-; This entry point is used by the routine at KillGunEmplacement.
+; This entry point is used by the routine at KillTree.
 l_B677:
   LD (IX+$02),$00
   JR AddKillScore

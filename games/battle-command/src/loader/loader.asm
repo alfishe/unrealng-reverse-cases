@@ -478,7 +478,7 @@ l_BD39:
   CALL sub_BCF6
   JR NC,l_BD28
   LD E,$07
-  LD HL,data_BED0+$0001
+  LD HL,EdgeLimits
 l_BD4F:
   LD B,(HL)
   INC HL
@@ -597,7 +597,7 @@ l_BE00:
   LD A,$7F
   CP L
   JR Z,l_BE10
-  LD (data_BED0),A
+  LD (TimeFailed),A
 l_BE10:
   LD E,(IY+$02)
   LD D,(IY+$03)
@@ -734,13 +734,17 @@ l_BEAF:
   RET C
   LD A,$01
 l_BECC:
-  LD (data_BED0),A
+  LD (TimeFailed),A
   RET
 
-; data_BED0
-data_BED0:
-  DEFB $00,$E9,$EA,$D2,$E2,$B6,$E0,$B6
-  DEFB $E0,$B6,$E0,$D2,$E2,$EC,$ED
+; Non-zero when the timing check failed (the mark check at $BE0D stores $7F
+; when a mark's second group is not $7F; TimeCheck's $BECC stores 1)
+TimeFailed:
+  DEFB $00
+EdgeLimits:
+  DEFB $E9,$EA,$D2,$E2,$B6,$E0,$B6,$E0 ; seven pairs read by LoadBlocks $BD4C:
+  DEFB $B6,$E0,$D2,$E2,$EC,$ED         ; the edge counter's start value and the
+                                       ; count it must pass
 
 ; The end of a stream of blocks: the XOR in H must be 0
 ;

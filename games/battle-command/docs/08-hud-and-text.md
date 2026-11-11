@@ -146,8 +146,8 @@ PrintString(p):
 The string pointer lives in HL' while a glyph routine runs: `EXX` swaps it away and the routine works on HL, DE and
 BC. A control routine starts with `EXX` and reads its operands from the string with `LD A,(HL)` / `INC HL`.
 
-**The tokens are never used.** The table at `$9860` is labelled StepY+1 in the listing: its words are part of the
-pointer's step table, not string addresses. The branch at `$6FBA` is taken 0 times in 3797 runs of `play2` (L1), and no
+**The tokens are never used.** The word table at `$9860` would start with the spare bytes after StepY `$985F` and
+run on into KeyTable `$9862`, the five control keys of ReadKeys (doc 05): its words are no string addresses. The branch at `$6FBA` is taken 0 times in 3797 runs of `play2` (L1), and no
 string of the game has a byte from `$82` to `$FE` before its `$FF`.
 
 **Worked example: the goal of mission 1 on the catalogue.** PrintMissionDescription `$D06C` first prints DescriptionPos
@@ -455,7 +455,7 @@ How to read the figure:
 | 5 | 3D view | 0-255, 32-126 | the back buffer | bytes | ViewBlitFront's copy l_89A8 ([doc 6](06-rendering.md)) |
 | 6 | message | 96-159, 118-126 | the last hit | `TANK:HIT` (`$FFCF`), `COLLIDED` (`$FFDB`), blank (`$87F0`), small font line `$78` column `$11` | MessageOnce `$7D5D`, MessageTimer `$87D6` (8.6) |
 | 7 | bearing | 32-55, 138-142 | the bearing to the target less the heading | an arrow shape, 5 lines | DrawBearing `$D637` (bank 6) |
-| 8 | speed bar | 64-71, 144-175 | `$7E8E` = abs(speed) | a bar of 0-31 lines | DrawSpeedBar `$D612` (bank 6) |
+| 8 | speed bar | 64-71, 144-175 | `$7E8E`, the signed speed PlayerStep stores, 1.25 x on terrain 0 and 6 (doc 05, 5.9) | a bar of abs / 2 lines (`SRL`, `AND $1F`): at most 23 at speed 47, 29 on rough ground; redrawn only when the value changes (the `CP` operand `$D616`) | DrawSpeedBar `$D612` (bank 6) |
 | 9 | fuel bar | 80-87, 144-175 | `$7C58` / 2, the fuel's high byte | a bar of 0-31 lines | DrawFuelBar `$D629` (bank 6) |
 | 10 | radar | 176-215, 132-163 | the blip list `$6768` | pixels | DrawRadar `$C05E`, PlotRadarPixel `$A9FE` |
 | 11 | heading strip | 176-207, 177-183 | heading `$7612` | a shifted compass strip | DrawHeadingStrip `$D598` (bank 6) |
@@ -559,8 +559,9 @@ into `NOP`. The next PlayLoopTail runs MessageOnce `$7D5D` once:
 - it puts its `RET` back.
 
 MessageTimer `$87D6` runs in the interrupt. It counts the timer down. At 0 it prints the blank message `$87F0`
-(`{7 $78 $11}::::::::`), or the status view's blank line `$7C06` when the Dragonfly loop has set its other operand
-`$87E0`.
+(`{7 $78 $11}::::::::`), or the status view's blank line `$7C06` when its other operand `$87E0` is not 0.
+StatusLoop sets that operand to `$FF` (`$6BE6`) and clears it when it leaves (`$6C33`), DamageLoop sets it to `$C9`
+(`$6C9B`), and StartMission clears it (`$69D5`).
 
 ```mermaid
 stateDiagram-v2
@@ -598,7 +599,7 @@ MessageTimer:                   ; $87D6 (interrupt)
   DEC A
   LD (MessageTimer+$0001),A
   RET NZ
-  LD A,$00                      ; $87E0: set by the Dragonfly loop
+  LD A,$00                      ; $87E0: StatusLoop FF, DamageLoop C9, StartMission 0
   AND A
   JR Z,l_87EA
   LD HL,FailReason+$000D        ; $7C06
@@ -608,9 +609,11 @@ l_87EA:
   JP PrintString
 ```
 
-The status and Dragonfly views print their own message, `TANK HAS BEEN HIT` (`$D3EA`) or `COLLISION OCCURED`
+The status view and the damage board print their own message, `TANK HAS BEEN HIT` (`$D3EA`) or `COLLISION OCCURED`
 (`$D401`), in the 8 x 8 font at line `$B0`. StatusViewMessage `$D3C9` in bank 6 does it once per message, with the same
-timer.
+timer. It runs 43 times in the recordings (m2erbe 4, missions 34, play 5), but every run returns at its first test,
+as MessageOnce is already `RET`: the print at `$D3CF` never runs, so no screen of the recordings shows the two texts.
+They are drawn in their font on the text sheet of 8.9, and they are known only from the code (8.10).
 
 Worked example and witness: the hit of `death` frame 8121.
 
@@ -634,7 +637,7 @@ blanks, not a clear routine.
 The menus use the same printer on a cleared screen. Each screen is a node of the screen list
 ([doc 5](05-controls.md)). It draws a picture from bank 7, adds its strings and waits in PointerZones.
 
-**The catalogue.** MissionCatalogueScreen `$C790` prints the catalogue's title from CatalogueHead `$CF85`. Then
+**The catalogue.** MissionCatalogueScreen `$C790` prints the catalogue's title from CatalogueTitle `$CF85`. Then
 PrintMissionList `$CFA9` prints the ten names. Each name is 18 bytes at the pointers of `$93B9`. Its spaces are
 turned into `:`, the small font's blank, and an `$FF` is put after it. The list runs from line `$41`, 8 lines apart,
 at column 5. A click on a line runs SelectMissionLine `$D013`: it computes the mission from the pointer's Y, sets the
@@ -902,14 +905,18 @@ text. They are listed in `src/res/missions/catalogue.txt`.
 
 Witness: `tools/fig_text.py list` decodes the build. Every string above that a recording prints matches its screen:
 the menu strings in `menu`, the panel strings in `death` (`AMM:078` byte for byte, 8.3), the view names and messages
-in `play2`.
+in `play2`. The view names are on the screen in `play` too: `IR:SIGHT` in the screenshot `009675-view-night`,
+`REAR:VIEW` in `010520-view-console2`, and all three in the view animation of doc 06
+([6.10](06-rendering.md#610-the-views), play 9600-10 500).
 
 The point: the game's own text fits in about 1.5 K. Most of it sits in bank 6 with the menus that print it.
 
 ## 8.10 What is known only from the code
 
-- The tokens `$82-$FE` and their table at `$9860`: the branch is never taken, and the words there are the pointer's
-  step table, not strings.
+- The tokens `$82-$FE` and their table at `$9860`: the branch is never taken, and the words there are StepY's spare
+  bytes and KeyTable, not strings.
+- The status view's messages `TANK HAS BEEN HIT` and `COLLISION OCCURED` (8.6): StatusViewMessage never reaches its
+  print in a recording.
 - Codes 3 and 4 (a constant `$5E`), code 0, code 5 alone and code 12: no string of the game uses them.
 - Codes 14-17 would `CALL $0000`. Codes 18-31 would take their routine from PrintString's own bytes after the table.
 - PrintChar in column 31 writes no attribute and starts a new line. NextColumn `$6EE5` is never called.
