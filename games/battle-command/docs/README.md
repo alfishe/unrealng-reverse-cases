@@ -2,7 +2,7 @@
 
 | Doc | Contents |
 | --- | --- |
-| [1. Game design](01-game-design.md) | the premise, every screen and how they connect, the ten missions and the Grand Finale's lock, the stores and the 1000 kg payload, the play keys and views, the failure texts, the entry string |
+| [1. Game design](01-game-design.md) | the premise, every screen and how they connect, the ten missions and the Grand Finale's lock, the stores and the 1000 kg payload, the play keys and views, the six failure paths and the quit, the entry string, what the player meets (the enemies, the objects, the score: 1.8) and the worlds |
 | [2. Architecture](02-architecture.md) | the 128K banks, the module map, the paging block `$7225-$72F3`, the memory map per bank, heatmaps, the stacks, leftovers, where the time goes |
 | [3. Build and load](03-build-and-load.md) | both tape sides, the BASIC's hidden number, the 103-layer R-keyed chain, the SpeedLock 7 loader and store cipher, the BlockTable, the bootstrap, side 2's mission blocks, Ocean's broken mission 2, the Erbe release, the re-protecting build |
 | [4. Game loop](04-game-loop.md) | the program's states, the IM 2 handler, interrupts off and lost, one 3D pass, the pass against the beam, frames per pass, delays and timers |
@@ -40,7 +40,7 @@ Each term once, here; the documents link to it.
 | layer | one of the chain's 103 decryption loops (69 add, 22 dec, 12 sub), keyed by R | 03 |
 | light value | `$757A`; 0 makes every face solid ink (silhouettes) | 06 |
 | list record | one 8-byte entry of the mission's object list (`$DBDA`): flags (b7 alive, b6 spawned, b1 destroyed), template, heading, X, Y | 07 |
-| mark | a 3 x 7-bit timing group between blocks; a bad second group sets TimeFailed `$BED0` = `$7F` | 03 |
+| mark | a 3 x 7-bit timing group between blocks; a bad second group sets TimeFailed `$BED0` = `$7F`; a failed TimeCheck (edges where the tape should be silent after the stage block, doc 03 3.4) sets it too | 03 |
 | message timer | MessageTimer `$87D6`'s operand `$87D7`: 100 interrupts, then the blank message | 08 |
 | mission | one of the ten worlds of side 2: a mission block with its own goal hook, code and models; missions 1-9 in any order, each completed once (its flag set, LoadMissionIfAllowed refuses it), the tenth only after all nine | 01 |
 | mission block | the side 2 block loaded to bank 0 `$DBC5` (up to `$FB3E` for mission 1) by LoadMissionBlock `$855B` | 03 |
@@ -54,7 +54,7 @@ Each term once, here; the documents link to it.
 | raw printer | PrintRawString bank 6 `$C6FC`: 8 x 8 glyphs straight to a screen address, 0-terminated, no codes; the code editor's | 08 |
 | reader | the input routine DeviceReaders `$9723` selects (ReadSinclair, ReadCursor, ReadKeys, ReadKempston, ReadMouse) | 05 |
 | resident type | the types `$80-$8C` kept in the game code: the player's projectiles, the Dragonfly, the Helicarrier | 07 |
-| save code | ten characters from EncodePassword `$CE2E`: the 32-bit score, ten mission flags, a 5-bit checksum (recorded: `C5989999PB` after mission 1, `H59K9999PK` after mission 4) | 10 |
+| save code | ten characters from EncodePassword `$CE2E`: the 32-bit score, ten mission flags, an 8-bit checksum of the score (the XOR of its four bytes, split as 3 bits in value 8 and 5 bits in value 9) (recorded: `C5989999PB` after mission 1, `H59K9999PK` after mission 4) | 10 |
 | screen node | one state of the menu/play graph of doc 01 section 1.2 | 01 |
 | shadow screen | bank 7's screen, shown (bit 3 of `$7FFD`) while a bank 7 picture unpacks on bank 5; black, as its attributes lie in the zero area Bank7Free | 06 |
 | shift routine | one of the four small-font glyph routines of ShiftRoutines `$6E9F`, picked by the cell's pixel offset 0, 2, 4 or 6 | 08 |
@@ -62,5 +62,5 @@ Each term once, here; the documents link to it.
 | spawner | an invisible mission object whose step makes enemy units around the camera and keeps three alive | 07 |
 | store cipher | StoreByte's `(L XOR k) + a`, k rewritten by blocks 17 and 19 | 03 |
 | template | 30 bytes of a mission object type, copied into a record by ObjectSetType | 07 |
-| view | what the 3D window shows and the blit that copies it: the front view, the rear view, the binoculars and the zoom, the Dragonfly's flight view (the only one with ViewBlitNarrow), the night sight, the status view's map; each has its own frames a pass (doc 04 section 4.6) | 06 |
+| view | what the 3D window shows and the blit that copies it: the front view, the rear view, the binoculars and the zoom, the Dragonfly's flight view (the only one with ViewBlitNarrow), the night sight, the Phoenix camera (`$BA13`, set by SelectPhoenix `$C11E`: while a Phoenix is selected the eye height comes from `$B8FF`, K raises it, J lowers it), the status view's map; each has its own frames a pass (doc 04 section 4.6) | 06 |
 | wreck | a destroyed list object: record kept, +2 b6 set, drawn with the wreck model (+8) | 07 |

@@ -464,6 +464,12 @@ $BDD0 c StoreLast ; Store the last byte of a block the same way, with its own op
 $BE47 c ReadMark ; Read the bits of a mark between two blocks
 
 $BE5D c TimeCheck ; Measure the tape's edges into TimeBuffer and compare them (replaced by tape block 37)
+> After the stage (block 7): 255 samples of the EAR edges into TimeBuffer $9000 (TimeSample, 18 447 T each), then TimeCompare unless the ROM byte $006D is $28 (the +2A / +3 ROM 3). c1: TimeBuffer all zero at frame 2484 (the tape silent in the 2407 ms pause), passed.
+
+$BE78 c TimeSample ; Count the changes of EAR (port $FE bit 6) in 255 polls of 72 T into E
+> Both paths of a poll take 72 T (the NOP / NOP / JP of the no-change path pads it).
+
+$BE94 c TimeCompare ; S1 = samples 50-99, S2 = samples 205-254; TimeFailed = H when S2 >= $0D00, 1 when S2 - S1 >= 50
 
 $BED0 b TimeFailed ; Non-zero when the timing check failed (the mark check at $BE0D stores $7F when a mark's second group is not $7F; TimeCheck's $BECC stores 1)
 $BED1 EdgeLimits ; seven pairs read by LoadBlocks $BD4C: the edge counter's start value and the count it must pass

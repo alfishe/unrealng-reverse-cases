@@ -390,8 +390,10 @@ CatalogueListBox:
 ; Pack MissionsDone and Score into the ten 5-bit values at $CEFB
 ;
 ; Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag
-; of missions 1-8; the ninth and tenth: the flags of missions 9-10 and a 5-bit
-; checksum (XOR of the score's four bytes). Witness: L1 1 (menu).
+; of missions 1-8; the ninth and tenth: the flags of missions 9-10 (value 8
+; bits 0, 1) and an 8-bit checksum, the XOR of the score's four bytes, split as
+; its low 3 bits in value 8 (bits 2-4) and its high 5 bits in value 9. Witness:
+; L1 1 (menu).
 ;
 ; A non-zero score: m1complete frame 22160 ("C5989999PB", score 500, mission
 ; 1), m4complete 21956 ("H59K9999PK", score 2500, missions 1 and 4).

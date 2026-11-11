@@ -648,14 +648,17 @@ ReadMark:
 ; Measure the tape's edges into TimeBuffer and compare them (replaced by tape
 ; block 37)
 ;
-; Used by the routine at LoaderMain.
+; After the stage (block 7): 255 samples of the EAR edges into TimeBuffer $9000
+; (TimeSample, 18 447 T each), then TimeCompare unless the ROM byte $006D is
+; $28 (the +2A / +3 ROM 3). c1: TimeBuffer all zero at frame 2484 (the tape
+; silent in the 2407 ms pause), passed.
 TimeCheck:
   CALL LoadBlocks
   LD HL,TimeBuffer
   LD B,$FF
 l_BE65:
   PUSH BC
-  CALL sub_BE78
+  CALL TimeSample
   LD (HL),E
   INC HL
   POP BC
@@ -663,13 +666,14 @@ l_BE65:
   LD A,($006D)
   CP $28
   RET Z
-  CALL sub_BE94
+  CALL TimeCompare
   RET
 
-; sub_BE78
+; Count the changes of EAR (port $FE bit 6) in 255 polls of 72 T into E
 ;
-; Used by the routine at TimeCheck.
-sub_BE78:
+; Both paths of a poll take 72 T (the NOP / NOP / JP of the no-change path pads
+; it).
+TimeSample:
   LD E,$00
   LD C,E
   LD B,$FF
@@ -692,10 +696,11 @@ l_BE8F:
   NOP
   JP l_BE8C
 
-; sub_BE94
+; S1 = samples 50-99, S2 = samples 205-254; TimeFailed = H when S2 >= $0D00, 1
+; when S2 - S1 >= 50
 ;
 ; Used by the routine at TimeCheck.
-sub_BE94:
+TimeCompare:
   LD HL,$0000
   LD DE,TimeBuffer+50
   LD B,$32

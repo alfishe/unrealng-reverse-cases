@@ -650,9 +650,9 @@ The resident templates ([doc 07.5](07-objects.md#75-the-templates-and-the-object
 | `$86` | Dragonfly | 64 | 120 | 16 | 2 | DragonflyStep `$C391` | `$C365` |
 | `$87` | K-90 Cluster | 56 | 96 | 32 | 127 | ClusterRise `$CF4A` | Explode |
 | `$88` | Sleeper mine | 56 | 127 | 32 | 31 | MineFall `$D048` | `$D0E9`, a `RET` |
-| `$89` | Skeet bomb | 64 | 64 | 32, 64, 32 | 4 | DecoyZigZag `$D2AE` | Explode |
+| `$89` | Skeet bomb | 64 | 64 | 32, 64, 32 | 4 | SkeetZigZag `$D2AE` | Explode |
 | `$8A` | Phantasm | 56 | 96 | 32 | 1 | PhantasmStep `$D405` | `$6BB0`, a `RET` |
-| `$8B` | Spectre | 56 | 96 | 64 | 31 | Cluster13Step `$D369` | Explode |
+| `$8B` | Spectre | 56 | 96 | 64 | 31 | SpectreStep `$D369` | Explode |
 
 All have flags `$57`: a step, no knock-back (b4), a weapon (b6, so HitTest counts their hits,
 [section 10.6](#106-kills-and-the-score)). Hit points 0, top speed 127, radius 10.
@@ -701,7 +701,7 @@ reads SinCos8 `$A899` (through the vector `$67E8`) at e + `$C0` and writes the t
 | 32 | the mortar at the start (`$B8BA`) | 91 | 91 |
 | 28 | the mortar after four J (play) | 99 | 81 |
 | 20 | the K-90 select ElevationZero `$CF30` | 113 | 60 |
-| 30 | the Sleeper select PrintElevation `$CF26`, LaunchPhantasm, LaunchCluster13 | 95 | 86 |
+| 30 | the Sleeper select PrintElevation `$CF26`, LaunchPhantasm, LaunchSpectre | 95 | 86 |
 
 Four calls in PlayLoop (`$6A43`-`$6A56`), `LD A,slot` / `CALL NoAction` once per slot, are the **slot hooks**:
 SelectWeapon stores the address of the current slot's `CALL` operand (`$6A46` + 5 x slot) in `$C53D`, and a weapon
@@ -713,9 +713,15 @@ normal view only (DragonflyViewLoop `$6AB9` has no hooks).
 flowchart TD
   K["fire key, cooldown $A9FD = 0"] --> F["CALL ($A9B9): the slot's fire word"]
   F --> T{"which store"}
-  T -- "Turret, Mortar, K-90,<br/>Sleeper, Skeet, Phantasm, Spectre" --> A["ConsumeAmmo: rounds 0? no shot"]
+  T -- "Mortar, K-90,<br/>Sleeper, Phantasm, Spectre" --> A["ConsumeAmmo: rounds 0? no shot"]
   A --> L["LaunchProjectile: record, type,<br/>camera position, elevation speeds"]
   L --> C["SetFireCooldown: 8 passes"]
+  T -- "Turret" --> TC["FireCannon $B568: ConsumeAmmo,<br/>its own copy of the launch, type $81"]
+  TC --> C
+  T -- "Skeet" --> SK["SkeetFire $D24C: ConsumeAmmo,<br/>its own record set-up, type $89 behind"]
+  SK --> C
+  TC --> S
+  SK --> S
   T -- "Banshee, Phoenix" --> M["search or lock first;<br/>a second press launches (16 passes)"]
   T -- "Dragonfly" --> D["LaunchDragonfly: the camera<br/>and the controls go to it"]
   T -- "SLAM" --> N["NoAction: K switches it on"]
@@ -781,8 +787,8 @@ Witness: play, frames 8717-8864: the select (ShowMortarRange at 8717), J four ti
 two shots (FireMortar 8800 and 8864). MortarShellStep runs 68 times, 2 x 34, as the example gives; RemoveObject runs
 twice (9044, 9136) and Explode never: both shells came down on open ground.
 
-The point: the mortar is the only aimed curve. Its reach is set by one byte, and the most it gives (3458 units at 45
-degrees) is about the radius in which the spawner keeps its units.
+The point: the mortar is the only aimed curve. Its reach is set by one byte, and the most it gives, 3492 units at e = 29
+(about 41 degrees: 36 passes at speed 97, vertical speed 84; e = 32, 45 degrees, gives 3458), is about the radius in which the spawner keeps its units.
 
 ### Banshee and Phoenix: the locks and the flight (`$82`-`$85`)
 
@@ -792,7 +798,7 @@ None of them fires without a target: the first press searches, a second press af
 | Store | Lock | Height test at the lock | Flight step | Follows the target's height | Checks the target's serial |
 | --- | --- | --- | --- | --- | --- |
 | 2 Banshee RRSS | TargetInCone | yes | `$C453` | no | no |
-| 1 Phoenix RRSA | TargetInCone | yes | `$C4A5` | yes, 1/16 of the gap a pass | yes |
+| 1 Phoenix RRSA | TargetInCone | yes | `$C4A5` | yes, 1/16 of the gap left a pass | yes |
 | 6 Banshee IRSS | MissileSeek | no (`$C276` = 0) | `$C4A5` | yes | yes |
 | 5 Phoenix IRSA | MissileSeek | yes (`$C276` = `$FF`) | `$C453` | no | no |
 
@@ -881,14 +887,15 @@ $C1CC  LD A,$10
 $C1CE  LD (DrawSightOverlay+1),A ; the sight blinks 16 passes
 ```
 
-The flight. `$C453` (MissileCode, types `$82`, `$85`): MoveObject, TurnToward the target (`$C47C`, +`$32`, at most 4
-heading steps a pass), the lifetime +`$31` less one; at 0, or when the target's +2 is 0, the missile ends. `$C4A5`
+The flight. MissileStep `$C453` (types `$82`, `$85`): MoveObject, TurnToward the target (`$C47C`, +`$32`, at most 4
+heading steps a pass), the lifetime +`$31` less one; at 0, or when the target's +2 is 0, the missile ends. HomingMissileStep `$C4A5`
 (types `$83`, `$84`) first compares the serial seen at the launch (+`$35`) with the target's +`$20`: a reused record
-ends the missile; then the same turn and lifetime, and the height moves 1/16 of the way to the target's height each
-pass (four `SRA H` / `RR L`), then MoveObject. A missile that ends calls `$B61E` (HitTest through `$67DC` with the
+ends the missile; then the same turn and lifetime, and the height becomes target + gap / 16 each pass (four `SRA H` /
+`RR L` on own - target, then the target added): each pass leaves 1/16 of the gap and closes 15/16 of it, so the
+height nearly snaps to the target's; then SetHeightAndMove `$C4C4` stores it and moves. A missile that ends calls `$B61E` (HitTest through `$67DC` with the
 target as the hitter: no weapon, so it returns at once) and clears +2; it is not unregistered from the collision table
-(SUSPECTED: the pair rows keep a freed record until the record is reused). The collision handler `$B8A8` calls
-ResetSightTimer (the gate opens) and falls into Explode.
+(SUSPECTED: the pair rows keep a freed record until the record is reused). The collision handler MissileHit `$B8A8`
+calls ResetSightTimer (the gate opens) and falls into Explode.
 
 ```mermaid
 stateDiagram-v2
@@ -928,7 +935,7 @@ LaunchDragonfly `$C2BC` takes a round and spawns type `$86` at the camera with t
   keys;
 - NextView = DragonflyViewLoop `$6AB9` and the view flag `$6A6D` is set: the view changes
   ([doc 04](04-game-loop.md), [doc 05.9](05-controls.md#59-driving-turning-and-the-dragonfly));
-- the fire word `$A9B9` = DragonflyCode `$C31B`.
+- the fire word `$A9B9` = DragonflyRetake `$C31B`.
 
 DragonflyStep `$C391`, its step:
 
@@ -971,7 +978,7 @@ $C3BB  NEG                  ; -2 x StepY
 DragonflyEnd `$C365`, also its collision handler: unregister, +2 = 0, RecallDragonfly when the Dragonfly view is
 still on, the fire word back to LaunchDragonfly, cooldown 8. After a recall the Dragonfly is not freed: its step is
 the bare MoveObject vector, so it flies straight on, with no lifetime, until it hits something (from the code).
-DragonflyCode `$C31B` takes the Dragonfly view back while one is out; the fire word leads there only while the tank
+DragonflyRetake `$C31B` takes the Dragonfly view back while one is out; the fire word leads there only while the tank
 steps with a Dragonfly in the air, and no recording runs it.
 
 ```mermaid
@@ -984,7 +991,8 @@ stateDiagram-v2
 ```
 
 Worked example: Q held gives StepY = -8, so the Dragonfly climbs 16 a pass from 64; the cap is 511, so 27 passes take
-it to 496 and the 28th is refused. 100 passes at speed 120 cover 12 000 world units, about 11.7 coarse units. The hit
+it to 496 and the 28th is refused. Its 100 passes make 99 moves (the 100th pass ends it before MoveObject): 99 x 120 = 11 880 world units, about 11.6
+coarse units. The hit
 does damage 2.
 
 Witness: play: LaunchDragonfly at 9050, DragonflyStep 25 runs 9051-9237, RecallDragonfly and CameraToPlayer at 9237
@@ -1141,19 +1149,22 @@ it.
 ### Phantasm and Spectre (`$8A`, `$8B`)
 
 Both fire one bomb per fire press, or one every 17 passes once K has armed the auto-fire: K (`$D2E4`, `$D2F7`) puts
-PhantasmCode `$D3D6` or Cluster13Code `$D324` into the slot hook with a counter of 16 (the operands `$D3EB`, `$D335`);
-the hook counts it down each pass and, at the wrap, launches. J (PrintSlotName `$D30B`) puts NoAction back. Both
-launch at e = 30 and climb like the mortar; at the top they part.
+PhantasmCode `$D3D6` or SpectreCode `$D324` into the slot hook with a counter of 16 (the operands `$D3EB`, `$D335`);
+the hook counts it down each pass and, at the wrap, launches. J (AutoFireOff `$D30B`) puts NoAction back. Both
+launch at e = 30 and climb like the mortar; at the top they part. LaunchPhantasm (`$D3FA`) and LaunchSpectre
+(`$D344`) set e = 30 through SetElevation `$CF32`, which writes the launch operands `$B5C5` / `$B5C8` that every
+LaunchProjectile shares: after an auto-fire shot, the mortar's or the K-90's next shot flies at e = 30 too, whatever
+its own elevation shows, until its K, J or select writes the operands again (from the code; no recording shows it).
 
 - **Phantasm** (LaunchPhantasm `$D3F7`, PhantasmStep `$D405`): at the first negative vertical speed the step becomes
   PhantasmSpin `$D43B` and the model `$D934`. It no longer moves: heading + 2 and height - 4 a pass; below 0 it is
   unregistered and freed. Its hit handler is NoAction: nothing destroys it; damage 1.
-- **Spectre** (Cluster13Step `$D369`): at the top the step becomes Cluster13Burst `$D3AD`,
+- **Spectre** (SpectreStep `$D369`): at the top the step becomes SpectreDrift `$D3AD`,
   the model `$7F5B` (the parachute), a speed of Random AND 15 and a random heading. It drifts and falls 8 a pass;
   below 0 RemoveObject. Damage 31, Explode on a hit.
 
 ```text
-AutoFire(slot):                           # PhantasmCode $D3D6, Cluster13Code $D324, a slot hook
+AutoFire(slot):                           # PhantasmCode $D3D6, SpectreCode $D324, a slot hook
     counter -= 1
     if counter < 0: counter = 16; Launch(slot)      # one bomb every 17 passes, while rounds last
 
@@ -1161,13 +1172,13 @@ PhantasmSpin(p):                          # $D43B
     p.heading += 2; p.height -= 4
     if p.height < 0: Unregister(p); p.state = 0
 
-Cluster13Burst(s):                        # $D3AD
+SpectreDrift(s):                        # $D3AD
     MoveObject(s); s.height -= 8
     if s.height < 0: RemoveObject(s)
 ```
 
 ```text
-$D38E  LD (IX+$18),$AD      ; the Spectre at the top: step Cluster13Burst
+$D38E  LD (IX+$18),$AD      ; the Spectre at the top: step SpectreDrift
 $D392  LD (IX+$19),$D3
 $D396  LD (IX+$1C),$5B      ; model $7F5B, the parachute
 $D39A  LD (IX+$1D),$7F
@@ -1227,7 +1238,8 @@ stateDiagram-v2
   Spinning --> Spinning: heading + 2, height - 4, no move
   Spinning --> [*]: height below 0, freed
   Drifting --> Drifting: random speed 0-15, height - 8
-  Drifting --> [*]: height below 0, or a hit: Explode
+  Drifting --> [*]: height below 0: RemoveObject
+  Drifting --> [*]: a hit: Explode
 ```
 
 Worked example, e = 30 (speed 95, vertical speed 86): the climb adds 86, 81, ..., 1 over 18 passes and the 19th sees
@@ -1237,8 +1249,8 @@ pass: 105 passes, drifting up to 15 x 105 = 1575 units on a random heading.
 
 Witness: play (the Phantasm): its select `$D46A` at 9322, J four times (9365-9386), FirePhantasm at 9406, PhantasmStep
 19 runs (9407-9537), PhantasmSpin 104 runs (9545-10692): 104 x 4 = 416 of its 839, still in the air when the play
-ends. play2 (the Spectre): its select `$D34E` at 16563, J three times (16611-16627), FireCluster13 at 16644,
-Cluster13Step 19 runs (16646-16830), Cluster13Burst 47 runs (16840-17310), cut by the end of that game. No recording
+ends. play2 (the Spectre): its select `$D34E` at 16563, J three times (16611-16627), FireSpectre at 16644,
+SpectreStep 19 runs (16646-16830), SpectreDrift 47 runs (16840-17310), cut by the end of that game. No recording
 has a Phantasm and a homing shell at once; the decoy is known only from the code. No recording arms the auto-fire.
 
 The point: the Phantasm is the counter to the homing shell: it hangs in the air for most of a minute, cannot be shot
@@ -1247,27 +1259,27 @@ smaller punch and a random drift.
 
 ### Skeet bomb (`$89`)
 
-FireDecoy `$D24C` spawns type `$89` at the camera's X and Y, height 64, speed 64, heading the tank's + 128
+SkeetFire `$D24C` spawns type `$89` at the camera's X and Y, height 64, speed 64, heading the tank's + 128
 (backwards), with +`$31` = 8 (the leg), +`$32` = 8 (the turn a pass) and +`$33` = 10 (the legs). It alternates two
 steps:
 
-- DecoyZigZag `$D2AE` (the template's step): MoveObject, heading + the turn; at the end of the leg the turn's sign is
-  flipped, the next straight leg is 8 passes (the first) or 16, and the step becomes DecoyStart `$D28C`;
-- DecoyStart: MoveObject; at the end of the leg the legs count falls by one; below 0, Explode; else a turning leg of
+- SkeetZigZag `$D2AE` (the template's step): MoveObject, heading + the turn; at the end of the leg the turn's sign is
+  flipped, the next straight leg is 8 passes (the first) or 16, and the step becomes SkeetStraight `$D28C`;
+- SkeetStraight: MoveObject; at the end of the leg the legs count falls by one; below 0, Explode; else a turning leg of
   17 passes.
 
 ```text
-DecoyZigZag(b):                           # $D2AE
+SkeetZigZag(b):                           # $D2AE
     MoveObject(b); b.heading += b.turn
     b.leg -= 1; if b.leg >= 0: return
     b.leg = 7 if b.legs == 10 else 15
-    b.step = DecoyStart; b.turn = -b.turn
+    b.step = SkeetStraight; b.turn = -b.turn
 
-DecoyStart(b):                            # $D28C
+SkeetStraight(b):                            # $D28C
     MoveObject(b)
     b.leg -= 1; if b.leg >= 0: return
     b.legs -= 1; if b.legs < 0: Explode(b); return
-    b.leg = 16; b.step = DecoyZigZag
+    b.leg = 16; b.step = SkeetZigZag
 ```
 
 ```text
@@ -1282,7 +1294,7 @@ $D2CA  LD A,$07
 $D2CC  JR $D2D0
 $D2CE  LD A,$0F
 $D2D0  LD (IX+$31),A
-$D2D3  LD (IX+$18),$8C      ; step DecoyStart
+$D2D3  LD (IX+$18),$8C      ; step SkeetStraight
 $D2D7  LD (IX+$19),$D2
 $D2DB  LD A,(IX+$32)
 $D2DE  NEG                  ; the turn changes side
@@ -1294,8 +1306,8 @@ rounds of a 17-pass turn (136 steps, 191 degrees, the side changing each time) a
 straight ends in Explode. 9 + 8 + 10 x (17 + 16) = 347 passes, at 64 units a pass about 22 000 units of a weaving
 path behind the tank. A hit on the way explodes it; damage 4.
 
-Witness: play2: its select `$D24B` (a `RET`) at 16853, FireDecoy at 16931, DecoyZigZag 26 runs (16932-17212) = 9 +
-17, DecoyStart 13 runs (17021-17310) = 8 + 5 of the second straight, cut by the end of that game at 17310.
+Witness: play2: its select `$D24B` (a `RET`) at 16853, SkeetFire at 16931, SkeetZigZag 26 runs (16932-17212) = 9 +
+17, SkeetStraight 13 runs (17021-17310) = 8 + 5 of the second straight, cut by the end of that game at 17310.
 
 ![The Skeet from above](img/gameplay/skeet-path.gif)
 
@@ -1312,16 +1324,19 @@ The point: the Skeet guards the tank's back. It leaves behind the tank and weave
 
 ### SLAM Laser (store 10)
 
-The SLAM has no projectile and no fire routine (word 2 is NoAction). K (`$D0F5`) puts `$D115` into the slot hook and
-prints the "on" text `$FDD7`; J (PrintAimType10 `$D104`) puts NoAction back and prints `$FDE1`. The select
-SelectType10 `$D45E` prints the text that matches the hook. While it is on, the hook runs once a pass:
+The SLAM has no projectile and no fire routine (word 2 is NoAction). K (SlamOn `$D0F5`) puts SlamHook `$D115` into
+the slot hook and prints the "on" text `$FDD7`; J (SlamOff `$D104`) puts NoAction back and prints `$FDE1`. The select
+SelectSlam `$D45E` prints the text that matches the hook. While it is on, the hook runs once a pass (SlamHook saves the
+slot and calls SlamFire `$D11C`):
 
-1. RecordScanCode `$D1A0` lists, at `$D21B`, the collision rows (+`$3B`) of the present records 1-23 whose +3 AND `$50`
+1. SlamScan `$D1A0` lists, at `$D21B`, the collision rows (+`$3B`) of the present records 1-23 whose +3 AND `$50`
    is `$10`: the enemy shells. No shell: nothing happens and no round is used.
 2. One round (the rounds byte - 1; 0 rounds: nothing).
-3. RecordScanCodeB `$D1CF`: for each, the pair timer of the shell's row with record 0, the tank (the first byte of
+3. SlamTimers `$D1CF`: for each, the pair timer of the shell's row with record 0, the tank (the first byte of
    the row, through the row pointers `$C78C`), as |pass counter `$C7BD` - timer| into `$D233`.
-4. RecordSortCode `$D1F5`: the smallest, the pair due soonest: the nearest shell by the collision schedule.
+4. SlamPickShell `$D1F5` is meant to take the smallest, the pair due soonest, but its minimum search starts at 0
+   (`LD DE,$0000`; nothing writes the operand `$D1FD`) and takes a value only when `CP E` carries, which never happens
+   with E = 0: D stays 0, and the SLAM always shoots the first shell in the list (the lowest record).
 5. That record gets Debris and +2 = 0; its view-space position goes into the vertex work area (`$FD02`, `$FE02`,
    `$FF02`) beside fixed points, RunScript `$990F` draws the beam with the script at `$FEBB`, and the sound `$D839`
    plays.
@@ -1332,7 +1347,10 @@ SlamHook():                               # $D115, a slot hook, once a pass whil
     if not shells: return
     if rounds == 0: return
     rounds -= 1
-    r = argmin over shells of |pass - timer(row, tank)|
+    t = [|pass - timer(row, tank)| for row in shells]       # SlamTimers, computed and not used
+    best, r = 0, shells[0]                    # SlamPickShell: E = 0, D = 0
+    for i, v in enumerate(t):
+        if v < best: best, r = v, shells[i]   # CP E: never true, nothing is below 0
     Debris(record[r]); record[r].state = 0
     draw the beam from the fixed points to record[r]'s view position; sound
 ```
@@ -1348,8 +1366,8 @@ $D12F  RET M
 $D130  LD (HL),A
 $D131  LD ($C527),A
 $D134  CALL PrintAmmo
-$D137  CALL $D1CF           ; the timers
-$D13A  CALL $D1F5           ; the smallest
+$D137  CALL SlamTimers      ; the timers
+$D13A  CALL SlamPickShell   ; meant: the smallest; in fact the first listed
 $D13D  LD HL,$75F0
 $D140  LD B,A
 $D141  LD DE,$003C
@@ -1360,6 +1378,32 @@ $D148  PUSH HL
 $D149  POP IX
 $D14B  CALL ApiVector11     ; Debris
 $D14E  LD (IX+$02),$00      ; the shell is gone
+...
+SlamPickShell:
+$D1F5  LD HL,$D21B          ; the listed rows
+$D1F8  EXX
+$D1F9  LD HL,$D233          ; their values
+$D1FC  LD DE,$0000          ; E = the minimum so far: 0, D = its index: 0
+$D1FF  LD C,E               ; C = the index
+$D200  EXX
+$D201  LD A,(HL)
+$D202  INC HL
+$D203  EXX
+$D204  AND A
+$D205  JP M,$D212           ; $FF: the end of the list
+$D208  LD A,(HL)
+$D209  INC HL
+$D20A  CP E                 ; value < 0? never: no carry
+$D20B  JR NC,$D20F
+$D20D  LD E,A               ; never reached
+$D20E  LD D,C
+$D20F  INC C
+$D210  JR $D200
+$D212  LD HL,$D21B
+$D215  LD B,$00
+$D217  LD C,D               ; D = 0
+$D218  ADD HL,BC
+$D219  LD A,(HL)            ; the first listed row
 ```
 
 ```mermaid
@@ -1371,22 +1415,23 @@ flowchart TD
   D -- no --> Z
   D -- yes --> E["rounds - 1"]
   E --> F["each: |pass - timer with the tank|"]
-  F --> G["the smallest: due soonest"]
+  F --> G["minimum search from 0: never takes a value,<br/>so the first listed shell"]
   G --> H["Debris, +2 = 0, the beam drawn, sound"]
 ```
 
-Worked example, from the code: two shells in rows 15 and 16, the pass counter at 40, their timers with the tank 41
-and 52. The values are 1 and 12; row 15 is shot. Each round stops one shell; the laser reaches any shell in the record
+Worked example, from the code: two shells in rows 15 and 16, the pass counter at 40, their timers with the tank 52
+and 41. The values are 12 and 1: the shell of row 16 is due first, but the search compares 12 and 1 with E = 0, `CP E`
+never carries, D stays 0 and row 15, the first listed, is shot. Each round stops one shell; the laser reaches any shell in the record
 table, with no range.
 
-Witness: play2: SelectType10 at 23071 and PrintAimType10 (J) three times, 23118-23134; K never runs, so `$D115` has
+Witness: play2: SelectSlam at 23071 and SlamOff (J) three times, 23118-23134; K never runs, so `$D115` has
 no run. Known only from the code. Two flaws of the code, not seen in a run: the shell is freed without
 UnregisterCollision; and the scan, after a match, goes on two bytes short (+`$3C` instead of +`$3E`), so the records
 after the first shell are read from their +0 and +1 (SUSPECTED: a wrong row may be listed when two shells are in the
 air).
 
 The point: the SLAM is the anti-shell weapon. It needs no aim and no key once on: every pass with an enemy shell in
-the air costs one round and removes the shell nearest in the collision schedule.
+the air costs one round and removes the first shell in the record table; the schedule it computes is never used.
 
 ### The payload limit
 
@@ -1548,7 +1593,7 @@ The ten goal hooks, disassembled from `src/res/missions` (the list index is (add
 | 1 Blast Em Mission | destroy the two fuel dumps | `$EB60` | records 55 and 56 (type 33) destroyed |
 | 2 Missile Battery | find the missile base and destroy it | `$E2F4` | records 6 and 8 (type 10) destroyed |
 | 3 Hostage Rescue | rescue one of the northern hostages | `$E322` | record 2 (type 22, the hostage) destroyed: its hit handler `$E311` takes the tank's touch once the gate is down (doc 07.14) |
-| 4 Railway Ambush | ambush a supply train, then destroy the station | `$E927` | records 11 (type 13) and 2 (type 8, the station) destroyed, and byte +7 of record 3 equal to `$FB`: `$DCCF`, carriage 1's Y high byte on the siding's last leg. So: throw the points (`$E638`), wreck the train on the siding (the engine dies on the buffer stop's model `$F0A8`), destroy the station (doc 07.14) |
+| 4 Railway Ambush | ambush a supply train, then destroy the station | `$E927` | records 2 (type 8, the engine) and 11 (type 13, the station) destroyed, and byte +7 of record 3 equal to `$FB`: `$DCCF`, carriage 1's Y high byte on the siding's last leg. So: throw the points (`$E638`), wreck the train on the siding (the engine dies on the buffer stop's model `$F0A8`), destroy the station (doc 07.14) |
 | 5 Night Moves | attack an enemy airfield | `$EA0E` | records 0-4 all destroyed (AND over five) |
 | 6 Escort Duty | ensure the convoy's safe arrival | `$EB93` | a `RET`: the flag is set by `$E463` when a truck of the convoy touches the destination; losing the trucks fails nothing (doc 07.14) |
 | 7 Satellite Search | recover a lost satellite | `$EA6F` | `CALL $F03D` (inverts `$6758-$675F`); the flag is set by `$E3B2` when the tank touches the satellite while it is behind the camera; a weapon hit destroys the satellite through HitTest and the goal is lost (doc 07.14) |

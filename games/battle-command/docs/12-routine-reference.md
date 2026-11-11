@@ -30,11 +30,11 @@ Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py -
 | [`raster`](#raster) | `$898B`-`$9714`, `$A184`-`$A8C6`, `$AA27`-`$AA46` | 46 of 47 |
 | [`input`](#input) | `$9715`-`$9881` | 10 of 14 |
 | [`render`](#render) | `$9882`-`$A183`, `$AA47`-`$AD44` | 46 of 54 |
-| [`player`](#player) | `$A8C7`-`$A9FD`, `$B550`-`$B610`, `$B8AB`-`$B8B0`, `$B8B9`-`$B915`, `$BF24`-`$BF52`, `$C113`-`$C484`, `$C510`-`$C647`, `$CAA5`-`$CC3B`, `$CF26`-`$D52D` | 80 of 104 |
-| [`objects`](#objects) | `$A9FE`-`$AA26`, `$B3C9`-`$B54F`, `$B766`-`$B8AA`, `$B8B1`-`$B8B8`, `$B916`-`$B9F5`, `$BBF0`-`$BF23`, `$BF53`-`$C112`, `$C485`-`$C50F`, `$C648`-`$CAA4` | 49 of 56 |
+| [`player`](#player) | `$A8C7`-`$A9FD`, `$B550`-`$B610`, `$B8AB`-`$B8B0`, `$B8B9`-`$B915`, `$BF24`-`$BF52`, `$C113`-`$C484`, `$C510`-`$C647`, `$CAA5`-`$CC3B`, `$CF26`-`$D52D` | 99 of 115 |
+| [`objects`](#objects) | `$A9FE`-`$AA26`, `$B3C9`-`$B54F`, `$B766`-`$B8AA`, `$B8B1`-`$B8B8`, `$B916`-`$B9F5`, `$BBF0`-`$BF23`, `$BF53`-`$C112`, `$C485`-`$C50F`, `$C648`-`$CAA4` | 51 of 56 |
 | [`world`](#world) | `$AD45`-`$B3C8`, `$B9F6`-`$BBEF`, `$CC3C`-`$CE67`, `$CEA4`-`$CF25`, `$D8D4`-`$DA8B` | 52 of 56 |
 | [`enemies`](#enemies) | `$B611`-`$B765` | 11 of 12 |
-| [`sound`](#sound) | `$D674`-`$D8D3` | 17 of 20 |
+| [`sound`](#sound) | `$D674`-`$D8D3` | 18 of 20 |
 
 ## apivectors
 
@@ -52,7 +52,7 @@ Witness: L1 15082 (death, m2erbe, missions, play, play2).
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 632 calls, 9,006 t-states own (0.00 %) |
 | Runs (the other recordings) | 14,450 calls (`stage1/death` 8,892, `stage1/play2` 2,342, `stage1/play` 1,779 and 2 more) |
-| Called from | `PlayerStep`, `CannonShellStep` (tail), `MortarShellStep`, `RunObjectHandlers`, `DragonflyStep` (tail), `PlayerHit`, `BounceDecay`, `ClusterRise`, `MineFall`, `DecoyStart`, `DecoyZigZag`, `Cluster13Step`, `Cluster13Burst`, `PhantasmStep`, `HelicarrierWait`, `MissionHeader` (tail) |
+| Called from | `PlayerStep`, `CannonShellStep` (tail), `MortarShellStep`, `RunObjectHandlers`, `DragonflyStep` (tail), `PlayerHit`, `BounceDecay`, `ClusterRise`, `MineFall`, `SkeetStraight`, `SkeetZigZag`, `SpectreStep`, `SpectreDrift`, `PhantasmStep`, `HelicarrierWait`, `MissionHeader` (tail) |
 | Calls | `MoveObject` (tail) |
 | Reads | `$82FF`-`$8300` (`Im2Table+255`) |
 
@@ -87,7 +87,7 @@ Witness: L1 15082 (death, m2erbe, missions, play, play2).
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 357 t-states own (0.00 %) |
 | Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
-| Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `FireDecoy`, `PlaceHelicarrier`, `MissionHeader` |
+| Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `SkeetFire`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `ObjectSetType` (tail) |
 
 ### `ApiVector04` (`$67CA`)
@@ -98,7 +98,7 @@ Witness: L1 15082 (death, m2erbe, missions, play, play2).
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 28 calls, 360 t-states own (0.00 %) |
 | Runs (the other recordings) | 431 calls (`stage1/missions` 125, `stage1/death` 119, `stage1/play2` 103 and 2 more) |
-| Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `FireDecoy`, `PlaceHelicarrier`, `MissionHeader` |
+| Called from | `FireCannon`, `LaunchProjectile`, `ActivateMissionObjects`, `LaunchDragonfly`, `SkeetFire`, `PlaceHelicarrier`, `MissionHeader` |
 | Calls | `RegisterCollision` (tail) |
 
 ### `ApiVector05` (`$67CD`)
@@ -120,7 +120,7 @@ Witness: L1 15082 (death, m2erbe, missions, play, play2).
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 52 calls, 656 t-states own (0.00 %) |
 | Runs (the other recordings) | 532 calls (`stage1/play2` 168, `stage1/death` 159, `stage1/missions` 97 and 2 more) |
-| Called from | `Debris`, `DebrisVelocity`, `DebrisVelocityB`, `PlayerHit`, `Cluster13Step`, `MissionHeader` |
+| Called from | `Debris`, `DebrisVelocity`, `DebrisVelocityB`, `PlayerHit`, `SpectreStep`, `MissionHeader` |
 | Calls | `Random` (tail) |
 
 ### `ApiVector07` (`$67D3`)
@@ -468,7 +468,7 @@ Witness: L1 3602 (death, m2erbe, missions, play, play2).
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 119 calls, 20,428 t-states own (0.00 %) |
 | Runs (the other recordings) | 3,483 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 273 and 2 more) |
 | Called from | `StartMission`, `PlayLoop` |
-| Calls | `NoAction` (tail), `SelectDamage` (tail), `ScreenZero` (tail), `QuitKey` (tail), `NightKey` (tail), `MortarElevationDown` (tail), `AimLimit` (tail), `RearViewOff` (tail), `SelectWeapon` (tail), `ToggleBinoculars` (tail), `CycleBinocularZoom` (tail), `SetMineTimer` (tail), `PrintAimType10` (tail), `PrintSlotName` (tail), `PlaceHelicarrier` (tail) |
+| Calls | `NoAction` (tail), `SelectDamage` (tail), `ScreenZero` (tail), `QuitKey` (tail), `NightKey` (tail), `MortarElevationDown` (tail), `AimLimit` (tail), `RearViewOff` (tail), `SelectWeapon` (tail), `ToggleBinoculars` (tail), `CycleBinocularZoom` (tail), `SetMineTimer` (tail), `SlamOff` (tail), `AutoFireOff` (tail), `PlaceHelicarrier` (tail) |
 | Reads | `$82FF`-`$8300` (`Im2Table+255`); `$8978`-`$8979` (`KeyState`, `KeyCode`) |
 
 ### `DamageKeys` (`$6B95`)
@@ -1136,7 +1136,7 @@ Witness: L1 2130 (c1, death, m10, m2erbe, m2ocean, menu, missions, play, play2, 
 | --- | --- |
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 60 calls, 114,900 t-states own (0.02 %) |
 | Runs (the other recordings) | 2,068 calls (`stage1/play` 623, `stage1/missions` 446, `stage1/menu` 364 and 6 more) |
-| Called from | `CodeNumber`, `BriefPageText`, `LoadDirectory`, `PrintRewind` (tail), `BriefingMapLegend` (tail), `StatusMapLegend`, `MessageOnce`, `PrintClock` (tail), `MessageTimer` (tail), `ToggleNight` (tail), `ShowMortarRange` (tail), `ToggleRearView` (tail), `WeaponSelectText` (tail), `SelectPlain`, `PrintAmmo` (tail), `PrintAmmoAt` (tail), `SetBinoculars` (tail), `PrintElevation`, `SetMineTimer` (tail), `MineHud`, `PrintAimType10`, `PrintSlotName` (tail), `PrintSlotAmmo` (tail), `SelectType10` (tail), `PrintType10` (tail) |
+| Called from | `CodeNumber`, `BriefPageText`, `LoadDirectory`, `PrintRewind` (tail), `BriefingMapLegend` (tail), `StatusMapLegend`, `MessageOnce`, `PrintClock` (tail), `MessageTimer` (tail), `ToggleNight` (tail), `ShowMortarRange` (tail), `ToggleRearView` (tail), `WeaponSelectText` (tail), `SelectPlain`, `PrintAmmo` (tail), `PrintAmmoAt` (tail), `SetBinoculars` (tail), `PrintElevation`, `SetMineTimer` (tail), `MineHud`, `SlamOff`, `AutoFireOff` (tail), `SelectSpectre` (tail), `SelectSlam` (tail), `SelectPhantasm` (tail) |
 | Calls | `CodeSmallFont`, `PrintSmallChar`, `CodeAtColumn`, `CodeNumber`, `CodeNewLine`, `SmallNewLine`, `CodeLeftMargin`, `CodeInk`, `PrintChar` |
 | Reads | `$6F2D`-`$6F30` (`NumberText`); `$6F93`-`$6FAA` (`ControlCodes+4`); `$7E2F`-`$7E39` (`ClockText`); `$82FF`-`$8EAF` (`Im2Table+255`, `Armour`, `DamageBoardRecords`, `InterruptHandler` and 45 more); `$93D9`-`$9502` (`BackBuffer+2280`); `$BA6E`-`$BAAB` (`ViewTexts`, `IrSightBlank`, `RearViewText`, `BinocularText` and 1 more); 2 more ranges |
 | Writes | `$6FD7`-`$6FD8` (`CallControl+1`) |
@@ -2217,7 +2217,7 @@ Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, pl
 
 **The mission clock: the first second after 50 interrupts, then one second for every interrupt taken (the reload at `$7E03` is 1): 50 game seconds a real second**
 
-The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission header's loader puts `RET` here (`$8612`) until play. Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
+The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play, play2, search).
 
 | | |
 | --- | --- |
@@ -4087,7 +4087,7 @@ Witness: L1 3503 (death, m2erbe, missions, play, play2).
 
 **Steering and the fire key: heading += turn / 2, the fire cooldown**
 
-Adds half the turn input `$985E` to the heading `$7612`; counts down the fire cooldown `$A9FD`; when it is zero and the fire key bit of `$6D43` is set, calls the current weapon's fire routine through the operand at `$A9B9` (set from the store-type table `$7B89` + 8 * type, word 3). Output: a projectile record, the cooldown restarted.
+Adds half the turn input `$985E` to the heading `$7612`; counts down the fire cooldown `$A9FD`; when it is zero and the fire key bit of `$6D43` is set, calls the current weapon's fire routine through the operand at `$A9B9` (set from the store-type table StoreTypes `$7B89` + 8 * type, word 2). Output: a projectile record, the cooldown restarted.
 
 Witness: L1 3521 (death, m2erbe, missions, play, play2).
 
@@ -4096,7 +4096,7 @@ Witness: L1 3521 (death, m2erbe, missions, play, play2).
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 115 calls, 14,742 t-states own (0.00 %) |
 | Runs (the other recordings) | 409 calls (`stage1/play2` 409) |
 | Called from | `PlayerStep`, `BounceDecay` (tail) |
-| Calls | `NoAction`, `FireCannon`, `FirePhoenixRr`, `FirePhoenixIr`, `FireBansheeIr`, `FireClusterBomb`, `DropMine`, `FireDecoy`, `FireCluster13` |
+| Calls | `NoAction`, `FireCannon`, `FirePhoenixRr`, `FirePhoenixIr`, `FireBansheeIr`, `FireClusterBomb`, `DropMine`, `SkeetFire`, `FireSpectre` |
 | Reads | `$6A99`-`$6A9A` (`NextView+8`); `$6D43` (`PointerZones+1`); `$7612` (`PlayerHeading`); `$985E` (`StepX`); `$A9FD` (`FireCooldown`); `$BA27` (`l_BA1F+8`) |
 | Writes | `$66CE` (`PolyClipVars+2`); `$6D43` (`PointerZones+1`); `$7612` (`PlayerHeading`); `$A9FD` (`FireCooldown`) |
 
@@ -4123,7 +4123,7 @@ Witness: L1 69 (death, play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 69 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 3) |
-| Called from | `FireCannon` (tail), `LaunchProjectile`, `FireDecoy` (tail) |
+| Called from | `FireCannon` (tail), `LaunchProjectile`, `SkeetFire` (tail) |
 | Writes | `$A9FD` (`FireCooldown`) |
 
 ### `ConsumeAmmo` (`$B550`)
@@ -4137,7 +4137,7 @@ Witness: L1 70 (death, play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 70 calls (`stage1/death` 60, `stage1/play2` 6, `stage1/play` 4) |
-| Called from | `FireCannon`, `LaunchProjectile`, `LaunchDragonfly`, `FireDecoy` |
+| Called from | `FireCannon`, `LaunchProjectile`, `LaunchDragonfly`, `SkeetFire` |
 | Calls | `FindProjectileSlot`, `SoundFire` |
 | Reads | `$836D`-`$837F` (`WeaponSlots+5`) |
 | Writes | `$836D`-`$837F` (`WeaponSlots+5`); `$C527` (`WeaponVars`) |
@@ -4200,7 +4200,7 @@ Witness: L1 7 (play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 7 calls (`stage1/play2` 4, `stage1/play` 3) |
-| Called from | `FireMortar`, `FireClusterBomb` (tail), `DropMine`, `FireCluster13` (tail), `LaunchPhantasm` |
+| Called from | `FireMortar`, `FireClusterBomb` (tail), `DropMine`, `FireSpectre` (tail), `LaunchPhantasm` |
 | Calls | `ApiVector03`, `ApiVector04`, `ApiVector08`, `SetFireCooldown`, `ConsumeAmmo`, `PrintAmmo` |
 | Reads | `$67A5`-`$67AC` (`WorldVars+2`); `$784B` (`PlayerY+565`); `$79EF` (`PlayerY+985`); `$7A2B` (`PlayerY+1045`); `$7A67` (`PlayerY+1105`); `$7AA3` (`PlayerY+1165`); 1 more ranges |
 | Writes | `$784B`-`$784F` (`PlayerY+565`); `$7869`-`$7879` (`PlayerY+595`); `$79EF`-`$79F3` (`PlayerY+985`); `$7A0D`-`$7A2F` (`PlayerY+1015`); `$7A49`-`$7A6B` (`PlayerY+1075`); `$7A85`-`$7AA7` (`PlayerY+1135`); 3 more ranges |
@@ -4504,6 +4504,24 @@ Witness: L1 1 (play).
 | Reads | `$67A5`-`$67AC` (`WorldVars+2`); `$75F3` (`ObjectTable+3`); `$7612` (`PlayerHeading`); `$7AA3` (`PlayerY+1165`); `$C53C` (`CurrentSlot`) |
 | Writes | `$6A6D` (`ViewChangeFlag+1`); `$6A99`-`$6A9A` (`NextView+8`); `$75F3` (`ObjectTable+3`); `$7AA0`-`$7AA3` (`PlayerY+1162`); `$7AC1`-`$7AD1` (`PlayerY+1195`); `$A9B9`-`$A9BA` (`l_A9A0+25`); 2 more ranges |
 
+### `sub_C30F` (`$C30F`)
+
+**sub_C30F**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `DragonflyRetake` (`$C31B`)
+
+**Take the Dragonfly view back while a Dragonfly is out**
+
+The fire word LaunchDragonfly leaves in `$A9B9`: CALL `$C30F` (NextView = DragonflyViewLoop, the view flag), the fire word = RecallDragonfly `$C33E`, the camera `$B9F4` = the Dragonfly (the operand `$C302`), its step = DragonflyStep `$C391`, the tank's +3 b0 cleared (the tank stops). DragonflyEnd puts LaunchDragonfly back when the fire word is still this one.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
 ### `RecallDragonfly` (`$C33E`)
 
 **Recall the Dragonfly**
@@ -4563,6 +4581,40 @@ Known only from the code: no recording runs it (static walk).
 | --- | --- |
 | Runs | not reached in the recordings |
 
+### `MissileStep` (`$C453`)
+
+**The flat missiles' step (`$82`, `$85`): move, turn to the target, lifetime**
+
+MoveObject, MissileTurn `$C47C` (IY = the target +`$32`, TurnToward), MissileLife `$C465`: +`$31` less one; at 0, or when the target's +2 is 0, CALL `$B61E` and +2 = 0 (the missile ends). `$C45D` is the serial check HomingMissileStep calls: the serial seen at the launch (+`$35`) against the target's +`$20`; a reused record ends the missile.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `MissileSerialCheck` (`$C45D`)
+
+**MissileSerialCheck**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `MissileLife` (`$C465`)
+
+**MissileLife**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `MissileTurn` (`$C47C`)
+
+**MissileTurn**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
 ### `PrintAmmo` (`$C510`)
 
 **Print the current slot's rounds when it is the one shown**
@@ -4589,7 +4641,7 @@ Witness: L1 87 (death, play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 18 calls (`stage1/play2` 18) |
-| Called from | `PrintAmmo`, `FireDecoy` |
+| Called from | `PrintAmmo`, `SkeetFire` |
 | Calls | `PrintString` (tail) |
 
 ### `PrintSlotStatus` (`$C51F`)
@@ -4610,7 +4662,7 @@ Witness: L1 14 (death, play, play2).
 
 **Select a weapon slot with the keys 1-4**
 
-Writes `$C53C`, the slot record `$C53D`, the select routine of the store type (`$7B89` + 8 * type, word 4); a slot whose status `$68C9` + 6n is 0 prints "DAMAGED IN COMBAT" (`$C618`).
+Writes `$C53C`, `$C53D` = the address of the slot hook's CALL operand (`$6A46` + 5n), the store type's words 0-3 (StoreTypes `$7B89` + 8 * type: K, J, fire, then the select call, word 3); a slot whose status `$68C9` + 6n is 0 prints "DAMAGED IN COMBAT" (`$C618`).
 
 Witness: L1 14 (death, play, play2).
 
@@ -4618,7 +4670,7 @@ Witness: L1 14 (death, play, play2).
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 14 calls (`stage1/play2` 9, `stage1/play` 4, `stage1/death` 1) |
 | Called from | `PlayKeys` (tail) |
-| Calls | `FillPanelRows`, `InvertPanelB`, `ShowMortarRange`, `SelectPhoenix`, `SelectPlain`, `PrintAmmo` (tail), `PrintSlotStatus`, `PrintElevation`, `ElevationZero`, `RetType11`, `PrintSlotAmmo`, `SelectType10`, `PrintType10`, `SoundSelect` |
+| Calls | `FillPanelRows`, `InvertPanelB`, `ShowMortarRange`, `SelectPhoenix`, `SelectPlain`, `PrintAmmo` (tail), `PrintSlotStatus`, `PrintElevation`, `ElevationZero`, `RetType11`, `SelectSpectre`, `SelectSlam`, `SelectPhantasm`, `SoundSelect` |
 | Reads | `$68C9`-`$68DF` (`SlotGauges`); `$7B91`-`$7BF8` (`PlayWorkspace+1`); `$8368`-`$837F` (`WeaponSlots`); `$C529`-`$C53C` (`WeaponVars+2`, `AmmoPointers`, `CurrentSlot`) |
 | Writes | `$6B45`-`$6B56` (`PlayKeys+10`); `$A9B9`-`$A9BA` (`l_A9A0+25`); `$B551`-`$B552` (`ConsumeAmmo+1`); `$C527`-`$C52B` (`WeaponVars`); `$C53C`-`$C53E` (`CurrentSlot`); `$C5D2` (`l_C5AA+40`); 4 more ranges |
 
@@ -4770,7 +4822,7 @@ Witness: L1 4 (play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 4 calls (`stage1/play2` 3, `stage1/play` 1) |
-| Called from | `PrintElevation` (tail), `ElevationZero`, `FireCluster13`, `LaunchPhantasm` |
+| Called from | `PrintElevation` (tail), `ElevationZero`, `FireSpectre`, `LaunchPhantasm` |
 | Calls | `ApiVector14` |
 | Writes | `$B5C5`-`$B5C8` (`LaunchProjectile+30`) |
 
@@ -4939,11 +4991,31 @@ Witness: L1 37 (play2).
 | Reads | `$7A59` (`PlayerY+1091`); `$7A95` (`PlayerY+1151`) |
 | Writes | `$7A59` (`PlayerY+1091`); `$7A95` (`PlayerY+1151`) |
 
-### `PrintAimType10` (`$D104`)
+### `MineBlast` (`$D0EA`)
 
-**Print the aim of store type 10**
+**The mine's blast: lifetime +`$31` less one, then Explode**
 
-Prints `$FDE1`, the slot record (`$C53D`) = `$6BB0` (a RET: type 10 has no fire routine) (play2: 3 runs).
+The step the countdown leaves at +`$18`: +`$31` less one each pass; at 0 Explode `$B8AB`.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamOn` (`$D0F5`)
+
+**SLAM on (K): the slot hook = SlamHook**
+
+Writes SlamHook `$D115` into the slot hook whose CALL operand `$C53D` points at, prints `$FDD7` (on).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamOff` (`$D104`)
+
+**SLAM off (J): the slot hook = NoAction**
+
+Prints `$FDE1` (off); the slot hook (its CALL operand's address in `$C53D`) gets NoAction `$6BB0` (play2: 3 runs).
 
 Witness: L1 3 (play2).
 
@@ -4954,6 +5026,56 @@ Witness: L1 3 (play2).
 | Calls | `PrintString` |
 | Reads | `$C53D`-`$C53E` (`CurrentSlot+1`) |
 | Writes | `$6A46`-`$6A47` (`PlayLoop+58`) |
+
+### `SlamHook` (`$D115`)
+
+**The SLAM's slot hook, once a pass while on**
+
+`PUSH AF` (the slot), CALL SlamFire, then `JP $D3DF`: SlotShown restored, SelectAmmoPointer for the selected slot.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamFire` (`$D11C`)
+
+**The SLAM: shoot down one enemy shell**
+
+SlotShown = the slot, SelectAmmoPointer; SlamScan lists the shells; none (`$D21B` = `$FF`) or no round: return. Takes a round (PrintAmmo), SlamTimers, SlamPickShell; Debris (vector `$67DF`) and +2 = 0 for that record (no UnregisterCollision), the beam drawn to its view position (RunScript `$990F`, the script `$FEBB`), then the sound `$D839`.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamScan` (`$D1A0`)
+
+**List the enemy shells for the SLAM**
+
+Records 1-23 from `$762E` (+2 of record 1): present (+2 b7) and +3 AND `$50` = `$10` (a shell, not a weapon): +`$3B`, the collision slot, goes to the list `$D21B`; `$FF` ends it. After a match the scan goes on two bytes short (+`$3C` instead of +`$3E`: no `ADD HL,DE` on that path), so the next records are read from their +0 and +1.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamTimers` (`$D1CF`)
+
+**The shells' pair timers for the SLAM**
+
+For each slot in `$D21B`: its collision row (`$C78C` + 2 slot), |the row's timer - `$C7BD`| into `$D233`.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SlamPickShell` (`$D1F5`)
+
+**Pick the shell to shoot: A = its collision slot**
+
+Meant as the minimum of `$D233` over the list, but the search starts with `LD DE,$0000` (nothing writes the operand `$D1FD`) and takes a value only when `CP E` carries, never with E = 0: D stays 0 and the first listed shell is returned (`$D21B` + 0). `$D21B` (24) and `$D233` (24) are its work area.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 ### `RetType11` (`$D24B`)
 
@@ -4968,9 +5090,9 @@ Witness: L1 1 (play2).
 | Runs | not reached in `stage1/c1g`; in the other recordings 1 call (`stage1/play2` 1) |
 | Called from | `SelectWeapon` |
 
-### `FireDecoy` (`$D24C`)
+### `SkeetFire` (`$D24C`)
 
-**Fire store type 11: projectile `$89` behind**
+**Fire the Skeet (store 11): projectile `$89` behind**
 
 SelectAmmoPointer, ConsumeAmmo, spawns `$89` behind (play2: 1 run).
 
@@ -4984,9 +5106,9 @@ Witness: L1 1 (play2).
 | Reads | `$67A7`-`$67AC` (`WorldVars+4`); `$7612` (`PlayerHeading`); `$82FF`-`$8300` (`Im2Table+255`); `$C53C` (`CurrentSlot`) |
 | Writes | `$7A64` (`PlayerY+1102`); `$7A86`-`$7A97` (`PlayerY+1136`) |
 
-### `DecoyStart` (`$D28C`)
+### `SkeetStraight` (`$D28C`)
 
-**The decoy's first leg**
+**The Skeet's straight leg**
 
 MoveObject; +`$31` counts the leg, +`$33` the legs left; at 0 Explode.
 
@@ -5000,11 +5122,11 @@ Witness: L1 13 (play2).
 | Reads | `$7A95`-`$7A97` (`PlayerY+1151`) |
 | Writes | `$7A7C`-`$7A7D` (`PlayerY+1126`); `$7A95`-`$7A97` (`PlayerY+1151`) |
 
-### `DecoyZigZag` (`$D2AE`)
+### `SkeetZigZag` (`$D2AE`)
 
-**The decoy's zig-zag**
+**The Skeet's zig-zag**
 
-MoveObject; the heading += +`$32` each pass (the zig-zag), legs as DecoyStart.
+MoveObject; the heading += +`$32` each pass (the zig-zag), legs as SkeetStraight.
 
 Witness: L1 26 (play2).
 
@@ -5016,11 +5138,31 @@ Witness: L1 26 (play2).
 | Reads | `$7A86`-`$7A97` (`PlayerY+1136`) |
 | Writes | `$7A7C`-`$7A96` (`PlayerY+1126`) |
 
-### `PrintSlotName` (`$D30B`)
+### `PhantasmAutoOn` (`$D2E4`)
 
-**Mark a slot without a fire routine**
+**Phantasm auto-fire on (K): the slot hook = `$D3D6`**
 
-The slot record = `$6BB0`, prints `$FDCD`.
+Writes `$D3D6` (the Phantasm's auto-fire hook) into the slot hook, its counter `$D3EB` = 16, prints `$FDD7` (on).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `SpectreAutoOn` (`$D2F7`)
+
+**Spectre auto-fire on (K): the slot hook = SpectreCode**
+
+Writes SpectreCode `$D324` into the slot hook, its counter `$D335` = 16, prints `$FDD7` (on).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `AutoFireOff` (`$D30B`)
+
+**Auto-fire off (J, the Phantasm and the Spectre): the slot hook = NoAction**
+
+The slot hook = NoAction `$6BB0`, prints `$FDCD` (off).
 
 Witness: L1 7 (play, play2).
 
@@ -5047,11 +5189,11 @@ Witness: L1 1 (play).
 | Calls | `LaunchPhantasm` (tail) |
 | Reads | `$C53C` (`CurrentSlot`) |
 
-### `FireCluster13` (`$D31F`)
+### `FireSpectre` (`$D31F`)
 
-**Fire store type 13: projectile `$8B`**
+**Fire the Spectre (store 13): projectile `$8B`**
 
-A = the slot, JR LaunchCluster13 (play2: 1 run).
+A = the slot, JR LaunchSpectre (play2: 1 run).
 
 Witness: L1 1 (play2).
 
@@ -5062,9 +5204,27 @@ Witness: L1 1 (play2).
 | Calls | `LaunchProjectile` (tail), `SetElevation`, `SelectAmmoPointer` |
 | Reads | `$C53C` (`CurrentSlot`) |
 
-### `LaunchCluster13` (`$D341`)
+### `SpectreCode` (`$D324`)
 
-**Launch the type 13 cluster**
+**The Spectre's auto-fire hook, once a pass while on**
+
+Saves SlotShown, then `$D330`: SlotShown = the slot, the counter `$D335` less one; below 0 it reloads 16 and falls into LaunchSpectre (a shot every 17 passes); then `JP $D3DF` (SlotShown restored, SelectAmmoPointer for the selected slot).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `sub_D330` (`$D330`)
+
+**sub_D330**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `LaunchSpectre` (`$D341`)
+
+**Launch the Spectre**
 
 SelectAmmoPointer, the elevation `$1E` (SetElevation), A = `$8B`, LaunchProjectile.
 
@@ -5074,11 +5234,11 @@ Witness: L1 1 (play2).
 | --- | --- |
 | Runs | not reached in the recordings |
 
-### `PrintSlotAmmo` (`$D34E`)
+### `SelectSpectre` (`$D34E`)
 
-**Print a slot's name**
+**The Spectre's select: print its auto-fire on or off**
 
-When the slot record is not `$D324`, prints `$FDCD` (play2: 1 run).
+When the slot hook is not SpectreCode `$D324`, prints `$FDCD` (off), else `$FDD7` (on) (play2: 1 run).
 
 Witness: L1 1 (play2).
 
@@ -5089,9 +5249,9 @@ Witness: L1 1 (play2).
 | Calls | `PrintString` (tail) |
 | Reads | `$6A50`-`$6A51` (`PlayLoop+68`); `$C53D`-`$C53E` (`CurrentSlot+1`) |
 
-### `Cluster13Step` (`$D369`)
+### `SpectreStep` (`$D369`)
 
-**The type 13 cluster's flight**
+**The Spectre's climb**
 
 MoveObject; the height follows +`$31` (rising, then falling).
 
@@ -5105,11 +5265,11 @@ Witness: L1 19 (play2).
 | Reads | `$7A2D`-`$7A2E` (`PlayerY+1047`); `$7A59` (`PlayerY+1091`) |
 | Writes | `$7A2D`-`$7A2F` (`PlayerY+1047`); `$7A40`-`$7A59` (`PlayerY+1066`) |
 
-### `Cluster13Burst` (`$D3AD`)
+### `SpectreDrift` (`$D3AD`)
 
-**A submunition falls**
+**The Spectre drifts under its parachute**
 
-Height -= 8 each pass; below 0 RemoveObject (the submunitions).
+MoveObject, height -= 8 each pass; below height 0 it is removed (RemoveObject `$B8B1`). The same record: no submunition.
 
 Witness: L1 47 (play2).
 
@@ -5132,9 +5292,27 @@ Witness: L1 78 (death, play, play2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 78 calls (`stage1/death` 60, `stage1/play2` 12, `stage1/play` 6) |
-| Called from | `FireCannon`, `FireMortar`, `FirePhoenixRr`, `FireBansheeRr`, `FirePhoenixIr`, `FireBansheeIr`, `LaunchDragonfly`, `FireClusterBomb`, `DropMine`, `FireDecoy`, `FireCluster13`, `LaunchPhantasm` |
+| Called from | `FireCannon`, `FireMortar`, `FirePhoenixRr`, `FireBansheeRr`, `FirePhoenixIr`, `FireBansheeIr`, `LaunchDragonfly`, `FireClusterBomb`, `DropMine`, `SkeetFire`, `FireSpectre`, `LaunchPhantasm` |
 | Reads | `$82FF`-`$8300` (`Im2Table+255`); `$C534`-`$C53B` (`AmmoPointers`) |
 | Writes | `$B551`-`$B552` (`ConsumeAmmo+1`) |
+
+### `PhantasmCode` (`$D3D6`)
+
+**The Phantasm's auto-fire hook, once a pass while on**
+
+Saves SlotShown, then `$D3E6`: SlotShown = the slot, the counter `$D3EB` less one; below 0 it reloads 16 and falls into LaunchPhantasm (a shot every 17 passes); `$D3DF` puts SlotShown back and calls SelectAmmoPointer for the selected slot (SlamHook and SpectreCode end there too).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `sub_D3E6` (`$D3E6`)
+
+**sub_D3E6**
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 ### `LaunchPhantasm` (`$D3F7`)
 
@@ -5181,11 +5359,11 @@ Witness: L1 104 (play).
 | Reads | `$784D`-`$784E` (`PlayerY+567`); `$786A` (`PlayerY+596`) |
 | Writes | `$784D`-`$784E` (`PlayerY+567`); `$786A` (`PlayerY+596`) |
 
-### `SelectType10` (`$D45E`)
+### `SelectSlam` (`$D45E`)
 
-**Select store type 10**
+**The SLAM's select: print on or off**
 
-Prints `$FDE1` / `$FDD7` with the type 10 table `$D115` (play2: 1 run).
+Prints `$FDD7` (on) when the slot hook is SlamHook `$D115`, else `$FDE1` (off) (play2: 1 run).
 
 Witness: L1 1 (play2).
 
@@ -5196,11 +5374,11 @@ Witness: L1 1 (play2).
 | Calls | `PrintString` (tail) |
 | Reads | `$6A46`-`$6A47` (`PlayLoop+58`); `$C53D`-`$C53E` (`CurrentSlot+1`) |
 
-### `PrintType10` (`$D46A`)
+### `SelectPhantasm` (`$D46A`)
 
-**Print a slot's aim**
+**The Phantasm's select: print its auto-fire on or off**
 
-Prints `$FDCD` / `$FDD7` with `$D3D6` (play: 1 run).
+Prints `$FDD7` (on) when the slot hook is the Phantasm's `$D3D6`, else `$FDCD` (off) (play: 1 run).
 
 Witness: L1 1 (play).
 
@@ -5393,6 +5571,16 @@ Witness: L1 9194 (death, m2erbe, missions, play, play2).
 Loads the view x / depth (+`$2B`..+`$2E`) into `$9A8E` / `$9AB3`, the night-sight mode `$757A`, and calls the 3D engine (bank 2 `$990F`).
 
 Witness: L1 9194 (death, m2erbe, missions, play, play2).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+### `MissileHit` (`$B8A8`)
+
+**A missile's hit handler: reset the sight timer, then fall into Explode**
+
+The collision handler (template +`$1A`) of the missiles `$82`-`$85`: CALL ResetSightTimer `$C506` (the radar lock's gate opens again), then falls into Explode `$B8AB`. No recording launches a missile.
 
 | | |
 | --- | --- |
@@ -5781,7 +5969,7 @@ Witness: L1 3550 (death, m2erbe, missions, play, play2).
 | Runs (c1 from the game's entry at frame 23974, the loader left out: the title, the mission tape, Blast Em Mission played) | 118 calls, 445,594 t-states own (0.07 %) |
 | Runs (the other recordings) | 3,550 calls (`stage1/death` 2,510, `stage1/play2` 413, `stage1/missions` 307 and 2 more) |
 | Called from | `StartMission`, `PlayLoopTail`, `DragonflyViewLoop`, `StatusLoop`, `DamageLoop` |
-| Calls | `ApiVector00`, `PlayerStep`, `CannonShellStep`, `MortarShellStep`, `DragonflyStep`, `BounceDecay`, `ClusterRise`, `ClusterParachute`, `ClusterBlast`, `MineFall`, `MineCountdown`, `DecoyStart`, `DecoyZigZag`, `Cluster13Step`, `Cluster13Burst`, `PhantasmStep`, `PhantasmSpin`, `HelicarrierInit`, `HelicarrierWait`, `MissionHeader` |
+| Calls | `ApiVector00`, `PlayerStep`, `CannonShellStep`, `MortarShellStep`, `DragonflyStep`, `BounceDecay`, `ClusterRise`, `ClusterParachute`, `ClusterBlast`, `MineFall`, `MineCountdown`, `SkeetStraight`, `SkeetZigZag`, `SpectreStep`, `SpectreDrift`, `PhantasmStep`, `PhantasmSpin`, `HelicarrierInit`, `HelicarrierWait`, `MissionHeader` |
 | Reads | `$75F2`-`$7AB9` (`ObjectTable+2`, `PlayerHeight`, `PlayerSpeed`, `PlayerHandler` and 3 more); `$7ADE`-`$7ADF` (`HelicarrierRecord+2`); `$7AF4`-`$7AF5` (`HelicarrierRecord+24`); `$7B1A` (`HelicarrierRecord+62`); `$7B56` (`HelicarrierRecord+122`); `$82FF`-`$8300` (`Im2Table+255`) |
 | Writes | `$C04B`-`$C050` (`l_C030+27`, `l_C04F`) |
 
@@ -5889,7 +6077,7 @@ Witness: L1 48723 (death, m2erbe, missions, play, play2).
 
 **Turn IX toward IY by at most 4 per pass**
 
-Input IX, IY. BearingTo, the difference with +`$22`, |d| < 4 sets it, else +-4. Used by the Helicarrier (HelicarrierWait) and the missiles (545 runs).
+Input IX, IY. BearingTo, the difference with +`$22`; within 4 steps it leaves the heading as it is, else +-4. Used by the Helicarrier (HelicarrierWait) and the missiles (545 runs).
 
 Witness: L1 545 (death, missions, play, play2).
 
@@ -5901,6 +6089,16 @@ Witness: L1 545 (death, missions, play, play2).
 | Calls | `ApiVector01`, `ApiVector08` |
 | Reads | `$764E` (`PlayerY+56`); `$768A` (`PlayerY+116`); `$786A` (`PlayerY+596`); `$78E2` (`PlayerY+716`); `$791E` (`PlayerY+776`); `$795A` (`PlayerY+836`); 8 more ranges |
 | Writes | `$764E` (`PlayerY+56`); `$768A` (`PlayerY+116`); `$786A` (`PlayerY+596`); `$78E2` (`PlayerY+716`); `$791E` (`PlayerY+776`); `$795A` (`PlayerY+836`); 6 more ranges |
+
+### `HomingMissileStep` (`$C4A5`)
+
+**The height-following missiles' step (`$83`, `$84`)**
+
+MissileTurn `$C47C`, MissileSerialCheck `$C45D` (with the lifetime), then the height = target + (own - target) / 16 (four `SRA H` / `RR L`: each pass closes 15/16 of the gap), stored by SetHeightAndMove `$C4C4`, which falls into MoveObject.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 ### `SetHeightAndMove` (`$C4C4`)
 
@@ -7070,6 +7268,18 @@ Witness: L1 30 (m2erbe, menu, missions, play, play2).
 | Called from | `Bank0SoundOff`, `QuitKey` |
 | Writes | `$D674`-`$D689` (`AYRegs`, `SelectCount`, `ExplosionCount`, `KillCount` and 5 more); `$D7F0` (`l_D7E2+14`) |
 | Ports out | `$BFFD`, `$FFFD` |
+
+### `SoundSweep` (`$D839`)
+
+**Effect trigger: the sweep counter `$D68D` = `$1F`**
+
+`PUSH AF` / `LD A,$1F` / `LD ($D68D),A` / `POP AF` / `RET`. SoundFrame then sweeps tone B down in pitch (doc 09).
+
+Its one caller is SlamFire `$D11C` (`JP` at `$D19D`), when the SLAM laser shoots a shell. Known only from the code: no recording runs it.
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
 
 ### `SoundNoise11` (`$D841`)
 

@@ -34,8 +34,8 @@ battery, a hostage, a train, an airfield, a convoy, a satellite, river boats, a 
 picks up to four stores from thirteen weapons, drives in filled 3D, fights the enemy's vehicles and emplacements
 (doc 10), completes the objective and drives to the pickup pad.
 
-The game's sense of time is a mission clock that starts at 08:00 (the header's `time $0800`) and runs 50 game seconds
-for every real second ([doc 4.3](04-game-loop.md#what-a-lost-interrupt-costs-the-player)).
+The game's sense of time is a mission clock that starts at the header's time: 08:00 (`time $0800`) in every mission
+but Night Moves, which starts at 16:59 (`time $103B`). It runs 50 game seconds for every real second ([doc 4.3](04-game-loop.md#what-a-lost-interrupt-costs-the-player)).
 
 The point: it is a strategy game in the shape of a driving game. The briefing, the choice of stores and the route on
 the map decide a mission before the first shot.
@@ -96,7 +96,7 @@ flowchart TD
     LD -- yes --> ST[Stores: four slots, 1000 kg]
     ST -- START MISSION --> P[Play: 3D view, map, status, Dragonfly]
     P -- goal, then pickup --> W[Completion report: success text, score]
-    P -- destroyed, fuel, desertion, bridge, no pickup --> F[Completion report: MISSION FAILED]
+    P -- destroyed, fuel, desertion, bridge, no pickup, Helicarrier hit --> F[Completion report: MISSION FAILED]
     P -- E, then Y --> T
     W --> S
     F --> T
@@ -139,8 +139,11 @@ objects as dots (yellow the active ones), the start in cyan, the pickup pad in m
 Mission 2 is the Ocean block, whose second half is foreign data ([doc 3.10](03-build-and-load.md#310-oceans-mission-2-block-and-why-the-game-refuses-it)).*
 
 The worlds are small and open: a road or river network of 8 to 24 segments across a field of 50 to 132 objects.
-Night Moves is the one mission played at night (its sky is dark blue in the missions sheet,
-[missions.png](img/play/missions.png)), which is why its briefing asks for the night sight.
+Night Moves starts at 16:59, a game minute before dusk (its sky is dark blue in the missions sheet,
+[missions.png](img/play/missions.png)), which is why its briefing asks for the night sight. Dusk and night are not
+the mission's own: TimeOfDay with HourTable turns every world to dusk at 17:00 and to night at 18:00, so any mission
+played long enough (past 17:00, about 648 real seconds or 11 minutes after an 08:00 start) darkens too
+([doc 6](06-rendering.md)). No recording reaches 17:00 in another mission: this is known from the code.
 
 ### The Grand Finale
 
@@ -314,16 +317,20 @@ A mission ends in one of three ways:
   "C5989999PB" at 22240) and m4complete (Railway Ambush: "THE RESISTANCE HAVE MET WITH THE DIVERTED TRAIN. IT WAS A
   JOB WELL DONE AND COMMENDATIONS ARE IN ORDER." at 21339; MISSIONS COMPLETED 002, SCORE TO DATE 2500 at 21832; the
   save code "H59K9999PK" at 22035). Doc 10.9 has the frames.
-- **Failure.** The COMPLETION REPORT says "MISSION FAILED." and one of five reasons (bank 6 FailedTexts `$CC94`,
-  chosen by FailReason `$7BF9`, doc 10):
+- **Failure.** The COMPLETION REPORT says "MISSION FAILED." and the text FailReason `$7BF9` points at (bank 6
+  FailedTexts `$CC94`, doc 10). Six paths set it; four texts, the bridge's and the heading alone:
 
-| Reason | Text | Address |
-| --- | --- | --- |
-| destroyed | UNIT DESTROYED | `$CCAB` |
-| no pickup | FAILED TO MAKE PICKUP | `$CCBE` |
-| left the area | PLAYER DESERTION | `$CCD8` |
-| fuel | RAN OUT OF FUEL | `$CCED` |
-| a bridge | TANK DESTROYED ON BRIDGE | `$CD01` |
+| Path | Text | Address | Set by |
+| --- | --- | --- | --- |
+| the armour gone before the goal | UNIT DESTROYED | `$CCAB` | ArmourDestroyed `$CB38`, GoalFlag `$68E8` clear |
+| the armour gone after the goal | FAILED TO MAKE PICKUP | `$CCBE` | ArmourDestroyed `$CB38`, GoalFlag set |
+| left the area | PLAYER DESERTION | `$CCD8` | the desertion test (doc 10) |
+| fuel | RAN OUT OF FUEL | `$CCED` | OutOfFuel (doc 10) |
+| a bridge (mission 2) | TANK DESTROYED ON BRIDGE | `$CD01` | BridgeHit `$B64E` |
+| the Helicarrier hit before the goal | MISSION FAILED. (the heading only) | `$CC94` | HelicarrierHit `$DAAB` |
+
+  FAILED TO MAKE PICKUP is therefore not a missed pickup: the tank was destroyed after the goal, on the way to the
+  pad. The quit below is the seventh way out of play, with no report.
 
 - **Quit.** The key E silences the AY and asks "Are you sure you want to quit? Yes/No." (QuitKey `$843F`, bank 6
   QuitPrompt `$DA09`); Y goes back to the title, N back to play with the sound effects on again (missions frames
@@ -331,16 +338,16 @@ A mission ends in one of three ways:
 
 ![The fuel failure](img/play/fuel-failure.gif)
 
-*The fuel recording (stage 2), from the POKE Fuel `$7C57` = 32 at frame 7704 to the title: the tank stops, the
-failed screen, the title. Doc 10 has the command.*
+*The fuel recording (stage 2), from the POKE Fuel `$7C57` = 32 at frame 7704 to the mission-failed screen (the last
+picture, frame 7910): the tank stops, then the failed screen. Doc 10 has the command.*
 
 ```mermaid
 stateDiagram-v2
     [*] --> Driving
     Driving --> GoalMet: goal hook sets $68E8
     GoalMet --> Success: on the pickup pad
-    GoalMet --> Failed: no pickup
-    Driving --> Failed: armour gone, fuel 0, desertion, bridge
+    GoalMet --> Failed: armour gone (FAILED TO MAKE PICKUP), fuel 0, desertion
+    Driving --> Failed: armour gone (UNIT DESTROYED), fuel 0, desertion, bridge, Helicarrier hit
     Driving --> Quit: E, then Y
     Success --> Status: score, MissionsDone set
     Failed --> Title
@@ -365,8 +372,8 @@ to the pad.
 There is no save to tape. SAVE GAME on the status card shows ten characters, the entry string; LOAD GAME on the title
 takes them back. The string packs the completion flags MissionsDone `$6799-$67A2` and the 32-bit score `$CC79`
 (bank 6, the password module). EncodePassword `$CE2E` takes 4 bits of the score for each of eight values, with a
-mission's flag in bit 4; the last two values hold the flags of missions 9 and 10 and a 5-bit checksum of the score's
-bytes. PasswordToChars `$CF1C` maps each 5-bit value through PasswordAlphabet `$CF5F`,
+mission's flag in bit 4; the last two values hold the flags of missions 9 and 10 and an 8-bit checksum of the score (the XOR of its four
+bytes), split as 3 bits in value 8 (bits 2-4) and 5 bits in value 9. PasswordToChars `$CF1C` maps each 5-bit value through PasswordAlphabet `$CF5F`,
 `9876543210ZYXWVUTSRQPONMLKJIHABC` (values 0-31; the table holds four more bytes, `DEFG`, that no value reaches).
 
 ```text
@@ -374,15 +381,23 @@ EncodePassword:                           ; bank 6 $CE2E
     for i in 0..7:
         v[i] = 4 bits of the score OR (MissionsDone[i] AND $10)
     c = Score[0] XOR Score[1] XOR Score[2] XOR Score[3]
-    v[8], v[9] = the flags of missions 9 and 10, c spread over both
+    v[8] = (MissionsDone[8] AND 1) OR (MissionsDone[9] AND 2) OR ((c AND 7) << 2)  ; $CE4D-$CE7B: bits 2-4
+    v[9] = (c >> 3) AND $1F                                                       ; SRA x3, AND $1F
 PasswordToChars: char[i] = PasswordAlphabet[v[i]]
 ```
 
 Worked example, the menu recording (frame 10817): no mission done and a score of 0. Every value is 0, the checksum of
 four zero bytes is 0, and PasswordAlphabet[0] is `9`: the screen shows `9999999999`.
 
+Worked example, m1complete (frame 22240): `C5989999PB` after mission 1, score 500 = `$000001F4`. The characters are
+the values 31, 4, 0, 1, 0, 0, 0, 0, 20, 30. Values 0-3 carry the nibbles `F`, `4`, `0`, `1`: the score's bytes `$F4` and `$01`, each
+high nibble first; value 0 also has bit 4 set (mission 1 done). The checksum c = `$F4` XOR `$01` XOR `$00` XOR `$00` = `$F5`: value 8 = (c AND 7)
+<< 2 = 5 << 2 = 20 (`P`), value 9 = c >> 3 = 30 (`B`). m4complete's `H59K9999PK` (score 2500 = `$09C4`) gives c =
+`$C4` XOR `$09` = `$CD` the same way: 20 (`P`) and 25 (`K`).
+
 Decoding (DecodePassword `$CE8B`) runs the same way back and takes the flags and the score only when the checksum
-agrees, so a mistyped string is refused. Doc 8 has the entry screen.
+agrees: a string whose score does not match its checksum is refused; the mission flags are not checked, so a string
+with other flags and the same score is taken. Doc 8 has the entry screen.
 
 The point: ten characters carry the whole campaign, because the campaign is only ten flags and a score.
 
@@ -459,16 +474,16 @@ vehicle (8247), while the train, the points and the station of Railway Ambush sc
 
 The key moments of a mission, from the recordings:
 
-![Key moments: the enemy tank, TANK HIT, the fuel dumps, a dump destroyed, the pickup message, the Helicarrier on the pad, the last hit, UNIT DESTROYED](img/design/key-moments.png)
+![Key moments: the enemy tank, TANK HIT, the fuel dumps, the last dump destroyed, the Helicarrier on the pad, the completion report, the last hit, UNIT DESTROYED](img/design/key-moments.png)
 
 *`python3 tools/fig_screens.py docs/img/design/key-moments.png 4 work/stage1/rec/death/screens/007939-drive-00.png
 work/stage1/rec/death/screens/008139-drive-01.png work/stage2/rec/m1complete/screens/015479-dumps-near.png
-work/stage2/rec/m1complete/screens/015799-dump55-destroyed.png work/stage2/rec/m1complete/screens/016216-pickup-text.png
-work/stage2/rec/m1complete/screens/021533-pad.png work/docs/bcC/rec/armour/screens/018339-drive-52.png
+work/stage2/rec/m1complete/screens/016186-dump56-destroyed.png work/stage2/rec/m1complete/screens/021533-pad.png
+work/stage2/rec/m1complete/screens/021613-complete-02.png work/docs/bcC/rec/armour/screens/018339-drive-52.png
 work/docs/bcC/rec/armour/screens/018539-drive-53.png`. Top: the first enemy tank ahead (death 7939, made by a
 spawner at 7601), TANK HIT after its shell (death 8139, the hit at 8121), the two fuel dumps (m1complete 15479), the
-first destroyed (15799). Bottom: MISSION COMPLETE PROCEED TO PICKUP (16216, the goal at 16138), the Helicarrier on the
-pad (21533), the armour recording's tank before its last hit (18339) and its failed screen (18539, the hit at 18423).*
+second destroyed, its debris in the air under MISSION COMPLETE PROCEED TO PICKUP (16186, the goal at 16138). Bottom:
+the Helicarrier on the pad (21533), the COMPLETION REPORT with the catalogue's success text (21613), the armour recording's tank before its last hit (18339) and its failed screen (18539, the hit at 18423).*
 
 How the enemies press the player ([doc 10.4](10-gameplay-logic.md#104-the-enemies)): the whole mission has one gun
 timer, so the units together fire about once every 24 passes however many there are, and the spawners refill the field
@@ -490,7 +505,8 @@ mission is completed.
 ## 1.9 Known only from the code
 
 - The success path of missions 2, 3 and 5-10 (missions 1 and 4: m1complete, m4complete).
-- The failures no pickup, desertion and bridge. Destroyed is recorded: the armour recording ends in UNIT DESTROYED
+- The failures FAILED TO MAKE PICKUP (the armour gone after the goal), desertion, the bridge and the Helicarrier hit
+  before the goal. Destroyed is recorded: the armour recording ends in UNIT DESTROYED
   (18423, the failed screen at 18539, [doc 10.5](10-gameplay-logic.md#105-damage-playerhit-the-armour-and-the-subsystems)).
 - The PAYLOAD EXCEEDED refusal: every recording that fits more than 1000 kg uses the No Weight Limit POKE, and the
   others stay under the limit.

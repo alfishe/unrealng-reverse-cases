@@ -42,16 +42,16 @@ NAMES = ('C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B')
 EFFECTS = [
     ('select', 0xD863, 0xD682, 0x12, 'SelectWeapon (player.asm, the weapon keys)', 'weapon selected'),
     ('select-short', 0xD85E, 0xD682, 0x01, None, 'one-frame blip'),
-    ('explosion', 0xD86B, 0xD683, 0x20, 'PlayerHit (player.asm), MessageOnce (interrupt.asm)', 'explosion'),
+    ('explosion', 0xD86B, 0xD683, 0x20, 'Explode $B8AB (a projectile bursts), MessageOnce (interrupt.asm)', 'explosion'),
     ('kill', 0xD873, 0xD684, 0x80, 'KillGunEmplacement / the kill path (enemies.asm)', 'object destroyed'),
     ('tone-c8', 0xD87B, 0xD685, 0x07, None, 'short tone'),
-    ('fire', 0xD898, 0xD686, 0x14, 'FireCannon (player.asm)', 'cannon shot'),
+    ('fire', 0xD898, 0xD686, 0x14, 'ConsumeAmmo $B550 (every round fired)', 'round fired'),
     ('missile', 0xD883, 0xD687, 0x1E, 'LaunchMissile (player.asm, JP)', 'missile launched'),
     ('random-tone', 0xD856, 0xD68A, 0x01, None, 'random tone, one frame'),
     ('message', 0xD84E, 0xD68B, 0x1E, 'MessageOnce (interrupt.asm)', 'message beep'),
     ('noise-11', 0xD841, 0xD68C, 0x11, None, 'steady noise, 17 frames'),
     ('noise-23', 0xD846, 0xD68C, 0x23, None, 'steady noise, 35 frames'),
-    ('sweep', 0xD839, 0xD68D, 0x1F, None, 'falling sweep'),
+    ('sweep', 0xD839, 0xD68D, 0x1F, 'SlamFire $D11C (JP, the SLAM laser)', 'falling sweep'),
     # the entry's JR lands on the LD A,$40 of siren-40 (9.5, the siren bug): it stores 64, not $60
     ('siren-60', 0xD88B, 0xD68E, '64 (meant 96)', None, 'two-tone siren, 64 frames'),
     ('siren-40', 0xD890, 0xD68E, 0x40, None, 'two-tone siren, 64 frames'),
@@ -446,6 +446,7 @@ def cmd_table(args):
         out, costs = effect(name, 200, 0)
         n = summary(out)
         heard = out[:n] or out[:1]
+        audible = sum(1 for r, _ in heard if (r[9] & 15) or (r[10] & 15))  # frames with a voice not silent
         chans = set()
         for r, _ in heard:
             if (r[9] & 15) and (not r[7] & 2 or not r[7] & 16):
@@ -455,7 +456,7 @@ def cmd_table(args):
         tb = [r[2] | r[3] << 8 for r, _ in heard]
         nz = [r[6] for r, _ in heard]
         vol = [max(r[9] & 15, r[10] & 15) for r, _ in heard]
-        print(f'| {name} ({what}) | `${trig:04X}` | `${ctr:04X}` = {start} | {caller or "no caller"} | {n} | '
+        print(f'| {name} ({what}) | `${trig:04X}` | `${ctr:04X}` = {start} | {caller or "no caller"} | {audible} | '
               f'{", ".join(sorted(chans)) or "-"} | `${tb[0]:03X}`, `${tb[-1]:03X}` | {nz[0]}, {nz[-1]} | '
               f'{vol[0]}, {vol[-1]} | {max(costs[:max(n, 1)])} |')
 

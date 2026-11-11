@@ -388,8 +388,8 @@ def cmd_screens(out):
 # The cockpit's fields: (x0, y0, x1, y1) in Spectrum pixels, the label, what it shows, the routine. The boxes are the
 # bounding boxes of the writes in death 8093-8159 and 8600-8611 (writers_map traces), by routine.
 PANEL = [
-    ((16, 4, 63, 10), 'AMM:078', '$C527 rounds, code 8: 3 digits', 'PrintAmmo $C519, string $FDC0'),
-    ((16, 16, 63, 21), 'slot line', 'MANUAL/AUTO/OFF, range, timer', 'PrintSlotName $D313 ($FDCD...)'),
+    ((16, 4, 63, 10), 'AMM:078', '$C527 rounds, code 8: 3 digits', 'PrintAmmoAt $C519, string $FDC0'),
+    ((16, 16, 63, 21), 'slot line', 'MANUAL/AUTO/OFF, range, timer', 'AutoFireOff $D30B ($FDCD...)'),
     ((80, 0, 87, 23), 'ammo bar', 'slot rounds / 4, 24 lines', 'UpdateAmmoBars $7336, DrawBar $744F'),
     ((128, 0, 231, 23), 'slot icons', 'the four slots $8368', 'DrawSlotIcons $73BA'),
     ((0, 32, 255, 126), '3D view', 'the back buffer', 'copy l_89A8 (doc 06)'),

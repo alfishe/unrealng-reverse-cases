@@ -309,12 +309,13 @@ l_B895:
   LD (AwolState+$0002),A
   RET
 
-; A CALL $C506 no recording runs
+; A missile's hit handler: reset the sight timer, then fall into Explode
 ;
-; `CALL $C506` (ResetSightTimer) at the end of the routine before; no recording
-; takes that path.
-DrawModelTail:
-  DEFB $CD,$06,$C5
+; The collision handler (template +`$1A`) of the missiles `$82`-`$85`: CALL
+; ResetSightTimer `$C506` (the radar lock's gate opens again), then falls into
+; Explode `$B8AB`. No recording launches a missile.
+MissileHit:
+  CALL ResetSightTimer
 
   ORG $B8B1
 
@@ -1464,8 +1465,9 @@ l_C111:
 
 ; Turn IX toward IY by at most 4 per pass
 ;
-; Input IX, IY. BearingTo, the difference with +$22, |d| < 4 sets it, else +-4.
-; Used by the Helicarrier (HelicarrierWait) and the missiles (545 runs).
+; Input IX, IY. BearingTo, the difference with +$22; within 4 steps it leaves
+; the heading as it is, else +-4. Used by the Helicarrier (HelicarrierWait) and
+; the missiles (545 runs).
 ;
 ; Witness: L1 545 (death, missions, play, play2).
 TurnToward:
@@ -1488,14 +1490,28 @@ l_C49E:
 l_C4A4:
   RET
 
-; The rest of TurnToward, not run
+; The height-following missiles' step ($83, $84)
 ;
-; The missile's hit and lifetime code.
-TurnTowardTail:
-  DEFB $CD,$7C,$C4,$CD,$5D,$C4,$DD,$6E
-  DEFB $05,$DD,$66,$06,$FD,$4E,$05,$FD
-  DEFB $46,$06,$A7,$ED,$42,$3E,$04,$CB
-  DEFB $2C,$CB,$1D,$3D,$20,$F9,$09
+; MissileTurn `$C47C`, MissileSerialCheck `$C45D` (with the lifetime), then the
+; height = target + (own - target) / 16 (four `SRA H` / `RR L`: each pass
+; closes 15/16 of the gap), stored by SetHeightAndMove `$C4C4`, which falls
+; into MoveObject.
+HomingMissileStep:
+  CALL MissileTurn
+  CALL MissileSerialCheck
+  LD L,(IX+$05)
+  LD H,(IX+$06)
+  LD C,(IY+$05)
+  LD B,(IY+$06)
+  AND A
+  SBC HL,BC
+  LD A,$04
+l_C4BC:
+  SRA H
+  RR L
+  DEC A
+  JR NZ,l_C4BC
+  ADD HL,BC
 
 ; Store the height (HL) and move the object
 ;

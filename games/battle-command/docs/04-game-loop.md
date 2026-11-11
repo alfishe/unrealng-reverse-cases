@@ -83,7 +83,7 @@ The graph as the image holds it (`$74E8-$757B`, read from `build/game.lst`):
 | `$756A` | MissionStatusScreen `$CDBF` | StatusScreenZones `$C4DC` | show the code `$74FE` | catalogue | | | |
 | `$7572` | DragonflyViewLoop `$6AB9` (the Dragonfly's flight view) | none | play | | | | |
 
-No link leads to `$7572`: DragonflyViewLoop is entered directly, by the Dragonfly's launch (LaunchDragonfly `$C30F`,
+No link leads to `$7572`: DragonflyViewLoop is entered directly, by the Dragonfly's launch (LaunchDragonfly `$C2BC`,
 `LD HL,DragonflyViewLoop` into NextView's operand in player.asm), not through SetScreen. The play keys enter two more
 views the same way, without a link: D (SelectDamage `$6BC2`) writes DamageLoop into NextView through SelectLoop
 `$6BB4` and sets the view flag, and on the damage board DamageKeys `$6B95` sends B to StatusLoop, C to StartMission
@@ -106,7 +106,7 @@ flowchart TD
     P -- "D: SelectDamage writes DamageLoop into NextView, no link" --> DF["Damage board 7552"] -- "C: StartMission, no link" --> P
     P -- "fire the Dragonfly: LaunchDragonfly, no link" --> DV["Dragonfly flight view 7572"] --> P
     P -- "Helicarrier with the goal met, link 2" --> MC["Mission complete 755E"]
-    P -- "fuel, armour, desertion, no pickup: link 3" --> MF["Mission failed 7564"]
+    P -- "fuel, armour (destroyed; failed to make pickup after the goal), desertion, bridge, Helicarrier hit before the goal: link 3" --> MF["Mission failed 7564"]
     P -- "quit Y, link 4" --> T
     MC -- "link 0" --> SC
     MF -- "link 0" --> T
@@ -360,7 +360,8 @@ on every interrupt taken adds one second to MissionClock `$68EA` (seconds, minut
 50 game seconds to one real second, and an hour of the mission takes 72 real seconds.
 
 ```text
-7DFB  00             ClockTick: NOP               ; RET until play ($8612 writes it)
+7DFB  00             ClockTick: NOP               ; RET from the load ($8612) until START MISSION ($CBB1
+                                                ; writes NOP); QuitYes $DA55 writes NOP too
 7DFC  3E 32                  LD A,n               ; n = $7DFD: 50 at the load, then 1
 7DFE  3D                     DEC A
 7DFF  32 FD 7D               LD ($7DFD),A
@@ -531,7 +532,8 @@ What it shows:
 - frames 8509-8515 have almost no screen write: the pass draws into the back buffer. The writes are the radar's clear
   and blips (8512, 8513) and the slot bars (8515);
 - the blit (8516, red) writes its first byte at frame T 6456, while the beam is still in the top border, and writes
-  rows 32 to 110 at about 630 T a row (line 110 ends at 56 265). The beam moves one line in 228 T (the paper starts at
+  rows 32 to 110 at 538 T a row uncontended (`POP DE` 10, 32 `LDI` of 16, `DEC A` 4, `JR NZ` 12), about 630 on
+  average with the contention of the screen writes (line 110 ends at 56 265: 49 809 T over 79 rows). The beam moves one line in 228 T (the paper starts at
   frame T 16 212), so it overtakes the blit in line 76 (frame T about 33 500): lines 32 to 75 (1408 writes) and 15
   bytes of line 76 land before the beam, 1423 of the 2528 full-row writes; 1105 after it;
 - the 16 short rows (green: 8 rows of 22 bytes, `l_89EE`, and 8 of 4, `l_8A27`) all land after the beam.
@@ -585,7 +587,7 @@ the base is in view.
 | the mission clock | ClockTick `$7DFB` | interrupts | one game second an interrupt taken, after the first 50 (4.3) |
 | the time of day | TimeOfDay `$8836`, HourTable `$88F8` | the clock's hours | four rows: the hour at which the sky and ground colours and the light `$757A` change; SkyColours `$885F` repaints once per change |
 | a held key | KeyRepeat `$848F` | interrupts | a new key at once, then after 17 interrupts (`LD A,$11`), then every 2 |
-| a click | PointerFire `$7DC2` | interrupts | fire held 25 interrupts gives a click, repeated every 5 |
+| a click | PointerFire `$7DC2` | interrupts | a click on the press, the next after 25 interrupts, then every 5 |
 | the warning blinker | BlinkWarning `$8459` | interrupts | every 12, the attributes `$5758` and `$5078` |
 | the lamp blinker | BlinkLamp `$8475` | interrupts | every 8, four pixel lines at `$525C` |
 | the message line | MessageTimer `$87D6` | interrupts | 100 (MessageOnce `$7D5D` sets `$87D7`), then the blank line `$87F0`; measured: 109 frames for the 100 ticks in death 8121-8230 ([doc 8.6](08-hud-and-text.md#86-the-messages)), the lost interrupts of 4.3 |

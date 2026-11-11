@@ -16,7 +16,7 @@ LoadBlock:
   PUSH AF
   CALL PageBank6
   LD HL,l_BFEB+$0025
-  LD (FireDecoy+$0037),HL
+  LD (SkeetFire+$0037),HL
   CALL DrawPointer
   CALL RestoreBank
   POP AF
@@ -27,7 +27,7 @@ LoadBlock:
   CALL SaveBank
   CALL PageBank6
   LD HL,l_BFEB+$0015
-  LD (FireDecoy+$0037),HL
+  LD (SkeetFire+$0037),HL
   CALL RestoreBank
   CALL BorderBlack
   POP AF

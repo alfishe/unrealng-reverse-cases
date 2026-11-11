@@ -104,7 +104,7 @@ The fields, as `tools/res_missions.py` parses them:
 | `$DBE1` | 2 | goal hook | `$EB60` | MissionTimeSetup `$85F5`, to the play loop's `$6A67` |
 | `$DBE3` | 8 | player start: heading word, X, Y | heading 0, X `$FFE000`, Y `$FFD800` | MissionTimeSetup, to `$7611` |
 | `$DBEB` | 2 | models | `$EC57` | the model scripts |
-| `$DBED` | 2 | end of the part restored after a mission | `$FB3F` | MissionBlockLoaded `$8579` |
+| `$DBED` | 2 | end of the part restored after a mission | `$FB3F` | MissionBlockLoaded `$8570` |
 | `$DBEF` | 2 | `ef` | `$DE88` | |
 | `$DBF1` | 12 | Helicarrier pad, the pickup point | `00 58 00 00 48 00 ...` | PlaceHelicarrier `$D52E` (copied to `$7E82`) |
 | `$DBFD` | 1 | `cafe` | `$FF` | |
@@ -325,7 +325,7 @@ The resident types, from ShellTemplate80 `$B3CA` (read from `build/game.bin`):
 
 All have state `$85`, hit points 0, top speed 127, radius 10 and score 7; all but the Helicarrier have the flags
 `$57` (a step, no knock-back, a weapon); the Helicarrier has `$07`. The names follow the fire routines: FireClusterBomb
-`$CF3F` launches `$87`, DropMine `$D005` `$88`, the Skeet's FireDecoy `$D24C` `$89`, LaunchPhantasm `$D3F7` `$8A`,
+`$CF3F` launches `$87`, DropMine `$D005` `$88`, the Skeet's SkeetFire `$D24C` `$89`, LaunchPhantasm `$D3F7` `$8A`,
 the Spectre's `$D341` `$8B`; the SLAM laser fires no projectile. The K-40 shell (`$B5E8`) does not burst at the
 ground: a negative height removes it (RemoveObject `$B8B1`); only a hit explodes it (`$B8AB`). Which store fires which type is
 [doc 10.7](10-gameplay-logic.md#107-the-weapons).
@@ -1331,6 +1331,7 @@ The other objects with a behaviour of their own (the list records are counted fr
 | 4 | 13 | station (the goal) | `RET` | HitTest | 0 | 1 | 0 | 0 | list 11 |
 | 5 | 13 | flag | `$E98D` | HitTest | 127 | 3 | 0 | 0 | 1 record |
 | 5 | 26, 28 | airfield vehicles (the goal) | `RET` | HitTest | 2 | 3, 2 | 40 | 2000 | list 0, 1, 3, 4 |
+| 5 | 27 | airfield object at (19, 9), flags `$04`, model `$F736` (in the goal) | `RET` | HitTest | 0 | 4 | 0 | 0 | list 2 |
 | 5 | 29 | post of a span chain | `RET` | `$B61E` | 0 | 1 | 0 | 0 | list 7-14 |
 | 6 | 2 | convoy truck | `$E505` | `$E4A8` | 1 | 1 | 32 | 500 | list 0-2 |
 | 6 | 13 | convoy destination | `RET` | `$E463` | 2 | 3 | 0 | 500 | list 5 |
@@ -1348,7 +1349,8 @@ The other objects with a behaviour of their own (the list records are counted fr
 | 10 | 13 | flag | `$E8D5` | HitTest | 2 | 3 | 0 | 0 | 2 records |
 | 10 | 28 | aircraft | `$E8DE` | HitTest | 0 | 2 | 127 | 7 | fired by type 27 |
 
-"HitTest" is the vector `$67DC`. The guns of missions 5, 6 and 10 (types 8, 9 and 8, hp 32, score 4000) and the
+"HitTest" is the vector `$67DC`. Mission 5's goal hook GoalHook5 `$EA0E` ANDs the flags of list records 0-4 (`$DCFE`, five
+records), so the type 27 object of record 2 is part of the goal with the four vehicles. The guns of missions 5, 6 and 10 (types 8, 9 and 8, hp 32, score 4000) and the
 aircraft launcher of mission 7 (type 9, `$E403`) are templates no list record names.
 
 ### What differs from mission 1
@@ -1363,11 +1365,11 @@ Four constants and the shells' damage:
 | 4 | 4 hp | 4 hp | `$0C00` | 1 (1) |
 | 5, 6, 10 | 4 hp | 2 hp | `$0C00` | 3 (4) |
 | 7, 9 | (no chase unit) | (no homing carrier) | `$0C00` | 3 |
-| 8 | (no chase unit) | 4 hp | `$0C00` | 1 (1) |
+| 8 | 2 hp (type 10) | 4 hp | `$0C00` | 1 (1) |
 
 What the constants do:
 
-- **Close** (`CP $04` at `$E5F2` in mission 1). In missions 2 and 3 a chase unit near the camera stays in Close,
+- **Close** (`CP $04` at `$E5F2` in mission 1). In missions 2 and 3, and in mission 8 (type 10's step `$E229`, a copy of chase: `CP $02` at `$E25F`), a chase unit near the camera stays in Close,
   turning and firing, as long as it has 2 hit points or more. In mission 1 it falls through to the wander at
   once, because no unit there has 4 hit points. Of the missions that keep `CP $04` (4, 5, 6, 10), only mission
   4's type 23 (4 hit points) stays in Close.
@@ -1375,10 +1377,11 @@ What the constants do:
   hit points than the limit when it is made. It drives one pass, then stops for good as a turret (next section).
 - **Leash**. Mission 2 lets its units follow the camera 4 coarse units away instead of 3.
 
-The shells of missions 2, 3, 4 and 8 do 1 point of damage, a third of mission 1's. In mission 3 the shell
-templates have top speed 0 and the shell step sets the speed (96, the homing shell 120). The homing shells of
+The shells of missions 2, 3, 4 and 8 do 1 point of damage, a third of mission 1's. In missions 3 and 4 the shell
+templates carry speed 96 (the homing shell 120) at +7 and top speed 0; no shell step accelerates (m3 `$E980`, m4
+`$E913` count the lifetime down and call MoveObject). The homing shells of
 missions 3 and 4 are decoyed by a Spectre (`CP $8B` at `$E978` and `$E90B`); those of missions 1, 5, 6 and 10 by a
-Phantasm (`$8A`, section 7.9). In missions 2 and 8 the homing shell (types 18 and 20, speed 120) has the plain
+Phantasm (`$8A`, section 7.9). In missions 2 and 8 the homing shell (types 18 and 20, speed 64; top speed 120 is never reached) has the plain
 shells' step (`$E7F7`, `$E96B`): it does not home, it flies straight.
 Mission 3's fire tail also writes `LD (IX+0),$FF` (`$E735`).
 
@@ -1452,8 +1455,9 @@ Witness: in the m2erbe recording (`work/stage1/m2erbe/l1.json`, mission 2, frame
 The homing carrier drives at the player and fires the homing shell (`LD A,type; LD HL,$FFBA; JP M1Fire`: the
 muzzle is 70 units behind). As it drives, it fires whenever the shared timer allows, aligned or not. Hurt below the
 sentry limit, it stops for good: a turret that turns toward the player and fires only when aligned. Near the
-camera (`$2BC` = 700 world units on both axes) it veers once to a random heading. With fewer than 4 hit points it
-then also becomes a turret.
+camera (`$2BC` = 700 world units on both axes) it takes a random heading. With fewer than 4 hit points (every unit
+made) the first Veer pass turns it up to 8 steps toward that heading, moves it only if that turn already leaves it
+aligned, and then stops it as a sentry.
 
 ```text
 HomingCarrier(unit):              # M1 $E837
@@ -1492,7 +1496,7 @@ stateDiagram-v2
   Drive --> Drive: turn, fire homing when the timer allows, move
   Drive --> Sentry: hp below the limit (at once in missions 2, 3, 4, 8)
   Drive --> Veer: within 700 of the camera
-  Veer --> Sentry: hp below 4
+  Veer --> Sentry: hp below 4: one turn of up to 8 steps (a move only if aligned), then stop
   Veer --> Veer: hp 4 or more (no such unit)
   Sentry --> Sentry: speed 0, turn, fire homing when aligned
   Drive --> Removed: leash
@@ -1504,8 +1508,8 @@ Worked example: mission 2's type 17 has 3 hit points against the limit 4. On its
 gains speed 1, moves 1 unit, then becomes a sentry: from then on it stands where its spawner put it, 3 coarse units
 from the camera, and fires its shell (type 18, which in mission 2 flies straight) whenever it faces the player and
 the shared timer reaches 0. Mission 5's
-type 18 (also 3 hit points) has the limit 2. It drives at the player firing homing shells, veers once within 700
-units, and stops there as a turret because 3 is below 4.
+type 18 (also 3 hit points) has the limit 2. It drives at the player firing homing shells; within 700
+units it turns up to 8 steps toward a random heading, then stops there as a sentry because 3 is below 4.
 
 Witness: none for the homing carriers of missions 2-10 (mission 2's `$E612` does not run in m2erbe); from the code
 only.
@@ -1559,7 +1563,8 @@ Witness: none (`$E48F` does not run in m2erbe); from the code only.
 ### Spawners, spawner trees and mobile spawners
 
 The spawners are mission 1's (section 7.9: three triples, one child a pass, 3 coarse units from the camera). Each
-entry is `LD DE,table; JR` to the shared start; a table is the three child types and `$FF`:
+entry is `LD DE,table; JR` to the shared start; a table is the three child types, and the spawner writes the `$FF`
+end mark itself (`LD (HL),$FF`; in mission 3 the byte after the table `$E424` is the `RET` at `$E427`):
 
 | Mission | Spawner type: its children |
 | --- | --- |
@@ -1569,7 +1574,7 @@ entry is `LD DE,table; JR` to the shared start; a table is the three child types
 | 5 | trees 23 `$EA28`: 21, 18, 20; 24 `$EA23`: 4, 18, 6; 25 `$EA2D`: 4, 21, 20 |
 | 6 | trees 27 `$EB99`: 23, 19, 22; 28 `$EB94`: 5, 19, 7; 29 `$EB9E`: 5, 23, 22 |
 | 7 | 12 `$E65E`: 13, 15, 13; 17 `$E641`: 15, 13, 15; 27 `$E646`: 11, 15, 11; 31 `$E741`: 15, 13, 15; 30 `$E74E`: 28, 29, 11; mobile 26 `$E64F`: 15, 13, 15 |
-| 8 | 11 `$E47F`: 10, 10, 19; 21 `$E470`: 17, 17, 19; 22 `$E475`: 17, 19, 17; 23 `$E47A`: 10, 17, 19 |
+| 8 | 11 `$E47F`: 10, 10, 19; 21 `$E470`: 17, 19, 17; 22 `$E475`: 17, 19, 17; 23 `$E47A`: 10, 17, 19 |
 | 9 | 13 `$E58E`: 14, 16, 14; 18 `$E571`: 16, 14, 16; 28 `$E576`: 12, 16, 12; mobile 27 `$E57F`: 16, 14, 16; the hideout 9 `$E333`: 7, 7, 7 |
 | 10 | trees 23 `$EA2B`: 21, 18, 20; 24 `$EA26`: 4, 18, 6; 25 `$EA30`: 4, 21, 20; 30 `$EA21`: 28, 27, 18; 31 `$EA1C`: 28, 4, 20 |
 
@@ -1638,7 +1643,9 @@ Type 10's step (`$E229`) is a chase copy without the fire check. While the unit 
 runs at +4 from 8 down to 0, then a random wait (Random AND `$20`: 32 passes, or 256 when it is 0). At the end of
 the wait the variant is set to 8 again and the unit calls the resident `$CA7C`. `$CA7C` sets its own +3 b4,
 doubles its damage and calls PlayerHit `$CAA5` with IY = the unit, then puts both bytes back. So the hit lands
-with no shell and from any distance, 4 points at a time. When the unit is not aligned the variant is 0.
+with no shell and from any distance, 4 points at a time. When the unit is not aligned the step sets +4 to 0 and
+returns (`RET` at `$E23A`): an unaligned unit stands still. On realignment the count steps from 0 to 255, so 256
+passes run before the first wait; the count restarts from 8 only after a strike.
 
 ```text
 StrikePlayer $CA7C:              # resident; reached from mission 8's $E1FC
@@ -1664,17 +1671,21 @@ $E1FF  LD (IX+$3A),$00
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Count: aligned
-  Count --> Count: variant 8 down to 0
-  Count --> Wait: variant 0: wait 32 or 256
-  Wait --> Strike: wait over
-  Strike --> Count: variant 8, PlayerHit with damage 4
-  Count --> Idle: not aligned: variant 0
-  Idle --> Count: aligned again
+  [*] --> Idle: not aligned
+  Idle --> Idle: variant 0, no move
+  Idle --> Count256: aligned again: 0 - 1 = 255
+  Count256 --> Wait: 256 passes later, variant 0
+  Count256 --> Idle: not aligned
+  Wait --> Strike: wait over (32 or 256 passes)
+  Strike --> Count8: variant 8, PlayerHit with damage 4
+  Count8 --> Wait: 8 passes later, variant 0
+  Count8 --> Idle: not aligned
 ```
 
-Worked example: a type 10 that stays aligned strikes after 8 + 32 = 40 passes, or 8 + 256 = 264 passes when the
-wait is 0, half the time each: 152 passes on average, 4 points of damage each time.
+Worked example: a type 10 that turns to face the tank first counts 256 passes, then waits 32 or 256 (Random AND
+`$20`, half the time each): its first strike comes 288 or 512 passes after the alignment. Staying aligned, it strikes
+again after 8 + 32 = 40 passes or 8 + 256 = 264, 152 on average, 4 points of damage each time. Any pass out of line
+sets the count to 0 again, and the next strike is again at least 288 passes away.
 
 Witness: none; from the code only. The draw variants 8 to 0 are SUSPECTED to be a muzzle flash; the model was not
 drawn.
@@ -1888,19 +1899,25 @@ steps. TrainTurn turns by 4 while the difference is 8 or more: 32, 28, 24, 20, 1
 8, so the eighth pass snaps it. Vertex 1 turns from `$60` back to `$40` in 8 passes too. Three cars at two
 vertices make 3 x 2 x 8 = 48 runs of TrainTurn.
 
-![The train turns onto the siding](img/routines/M4TrainTurn.gif)
+![The train cars meet vertex 0](img/routines/M4TrainTurn.gif)
 
-*Animation 7.5. The step of the train at vertex 0 in the m4complete recording, one pass, frame 5598 from T 58 000
-(TrainTurn `$E707` runs at T 58 807), 60 pictures. Drawn by `python3 ../../kit/routine_anim.py --work
-work/docs/bcC/m4c --listing work/docs/bcC/m2-10/m4game.lst --window 5598:58000-5599:0 --pc E60F-E7C5,BFD1-C060 --view buffer:DCC0:8x3:hex --range
-DCB0-DCFF --pictures 60 --out docs/img/routines/M4TrainTurn.gif`. The listing is game.lst with mission 4's code
-put in, made by `python3 work/docs/bcC/m2-10/mlst.py 4` (run in that folder).*
+*Animation 7.5. M4TrainAtVertex `$E737` in the m4complete recording, frame 5598, T 61 763-64 862 (after the points
+were destroyed): the vertex test of two cars and the heading of their next leg, 40 pictures. The trace is the one of
+5598:58000-5599:0 (TrainTurn `$E707` ran before, at T 58 807), cut to the first and the last instruction of
+M4TrainAtVertex. Drawn by `MAP_NOTE='(the list records) in one row; the cars below' python3
+tools/anim_cut.py work/docs/bcC/m4c/traces/5598_58000-5599_0.uatr E737-E7C5 0 -- --listing
+work/docs/bcC/m2-10/m4game.lst --pc E60F-E7C5,BFD1-C060 --view buffer:DCC0:8x3:hex --range DCB0-DCFF --pictures 40
+--title 'M4TrainAtVertex: the vertex test, the heading of the next leg' --out docs/img/routines/M4TrainTurn.gif`. The
+listing is game.lst with mission 4's code put in, made by `python3 work/docs/bcC/m2-10/mlst.py 4` (run in that
+folder).*
 
 How to read it:
 
-- Left: list records 2, 3 and 4 (engine, carriage, carriage), 8 bytes a row: the flags (b7 cleared once the train
-  runs), the type, the heading, then the X and Y words that M4TrainToList rewrites every pass.
-- Right: M4TrainRun, M4TrainAtVertex and M4TrainTurn, with MoveObject `$BFD1`.
+- Top left, the thin row: the list records `$DC00-$DCFF` in one 256-byte row of the memory map.
+- Left, the buffer `$DCC0`, 8 x 3 bytes: list records 2, 3 and 4 (engine, carriage, carriage), 8 bytes a row: the
+  flags (b7 cleared once the train runs), the type, the heading, then the X and Y words that M4TrainToList rewrites
+  every pass (in the third row the byte at +4 goes from `$58` to `$60`, M4TrainToList's rewrite).
+- Right: M4TrainAtVertex, with M4TrainStep and M4TrainToList between the two cars.
 
 Witness: m4complete (`work/stage2/rec/m4complete/l1.json`):
 
@@ -2008,9 +2025,10 @@ The vertices with non-zero entries in `$E90B`:
 | 28 | (4, 14) | `80 80 80` | south |
 | 29 | (23, 11) | `C0 C0 C0` | west |
 
-The other vertices have `00 00 00` (north), among them v13 (-20, -26), the south end of the first river. So one
-vessel shuttles along the line v28-v9-v10-v11-v12-v13 and turns back at random on the way (a quarter of the time
-at v9-v12). Another shuttles east and west between v14 and v29 at Y = 11.
+The other vertices have `00 00 00` (north), among them v13 (-20, -26), the south end of the first river. So two
+vessels (list 12 and 16) shuttle along the line v28-v9-v10-v11-v12-v13 and turn back at random on the way (a quarter
+of the time at v9-v12). Two more (list 19 and 23) shuttle east and west between v14 and v29 at Y = 11. Vertex 31
+(4, 11) is never used: the walker tests 31 vertices, 0-30.
 
 Worked example: a vessel going south-west from v9 meets v10 after 8 coarse units in X and Y; at 8 a pass that is
 about 1450 passes (8 x 1024 x 1.41 / 8). There it goes back to v9 with probability 1/4 and on to v11 with 3/4.
@@ -2044,11 +2062,11 @@ $B627  RET Z             ; none in this mission
 $B628  LD A,(IX+$00)
 $B62B  SUB (HL)          ; c
 ...
-$B63E  LD BC,$7BFD       ; the switch flags
-$B641  LD H,$00
-$B643  LD L,A
-$B644  ADD HL,BC
-$B645  LD (HL),$00
+$B63D  LD BC,$7BFD       ; the switch flags
+$B640  LD H,$00
+$B642  LD L,A
+$B643  ADD HL,BC
+$B644  LD (HL),$00
 ```
 
 ```mermaid

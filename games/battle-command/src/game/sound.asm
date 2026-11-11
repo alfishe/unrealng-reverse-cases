@@ -303,9 +303,19 @@ l_D828:
   LD (SoundGate),A
   RET
 
-; data_D839
-data_D839:
-  DEFB $F5,$3E,$1F,$32,$8D,$D6,$F1,$C9
+; Effect trigger: the sweep counter $D68D = $1F
+;
+; `PUSH AF` / `LD A,$1F` / `LD ($D68D),A` / `POP AF` / `RET`. SoundFrame then
+; sweeps tone B down in pitch (doc 09).
+;
+; Its one caller is SlamFire `$D11C` (`JP` at `$D19D`), when the SLAM laser
+; shoots a shell. Known only from the code: no recording runs it.
+SoundSweep:
+  PUSH AF
+  LD A,$1F
+  LD (SweepCount),A
+  POP AF
+  RET
 
 ; Effect trigger: the steady noise counter $D68C = $11
 ;

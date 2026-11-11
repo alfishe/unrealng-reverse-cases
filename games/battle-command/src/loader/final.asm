@@ -8,8 +8,9 @@
 ; XOR the 9472 bytes of $5B00-$7FFF with $AD, then JP Bootstrap
 ;
 ; The tape's block 23 holds the game's $5B00-$7FFF XORed with $AD on top of the
-; loader's cipher: this loop takes it off. c1: the bank-5 bytes change at frame
-; 23974, the bootstrap entered the same frame.
+; loader's cipher: this loop takes it off. c1: the bank-5 bytes change in
+; frames 23962-23969 (memory_at every quarter frame), the game is entered at
+; frame 23974.
 Unxor5B00:
   LD HL,Bank5Code
   LD BC,$2500

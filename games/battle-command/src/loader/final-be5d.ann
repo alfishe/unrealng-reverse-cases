@@ -11,7 +11,7 @@
 @about Block 37 lands over TimeCheck at $BE5D, block 39 over the end of the stage at $BF21, so the stage runs into TimeEnd when the table is done.
 
 $BE5D c Unxor5B00 ; XOR the 9472 bytes of $5B00-$7FFF with $AD, then JP Bootstrap
-> The tape's block 23 holds the game's $5B00-$7FFF XORed with $AD on top of the loader's cipher: this loop takes it off. c1: the bank-5 bytes change at frame 23974, the bootstrap entered the same frame.
+> The tape's block 23 holds the game's $5B00-$7FFF XORed with $AD on top of the loader's cipher: this loop takes it off. c1: the bank-5 bytes change in frames 23962-23969 (memory_at every quarter frame), the game is entered at frame 23974.
 
 $BE70 b FinalLeftover ; Bytes no code runs: a test of TimeFailed, a wipe and a copy of the bootstrap
 > Never executed in c1. They look like an earlier version of TimeEnd and of the bootstrap at $8000 (the same LDIR of $3CFF bytes from bank 1 and JP $68F4); kept as bytes of the block.

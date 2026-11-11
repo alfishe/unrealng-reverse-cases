@@ -140,7 +140,7 @@ SetCamera copies:
 | +`$21`, +`$22` | 2 | `$67A5`, `$67A6` | the heading, a fraction byte and the heading byte (256 to a turn) |
 | +`$23`-`$25` | 3 | `$67A7`-`$67A9` | X: a fraction byte and a 16-bit integer |
 | +`$26`-`$28` | 3 | `$67AA`-`$67AC` | Y: a fraction byte and a 16-bit integer |
-| +5, +6 | 2 | `$67AD`, `$67AE` | the eye height (or IrViewHeight `$B8FF` while the IR view flag `$BA13` is set) |
+| +5, +6 | 2 | `$67AD`, `$67AE` | the eye height (or `$B8FF` while the Phoenix camera flag `$BA13` is set: 6.10) |
 
 For the player, these are `$7611`-`$7618` and `$75F5`, the variables the brief names.
 With the rear view on (the operand at `$BA27` not 0), SetCamera adds `$8000` to the heading word: half a turn.
@@ -666,12 +666,13 @@ The play keys (doc 05) switch views by changing a few operands; the renderer is 
 | View | Key | What changes | Frames a pass (WALKTHROUGH) |
 | --- | --- | --- | --- |
 | normal | | ViewBlitFront, zoom 0 | 7.7, 7.4, 7.1 (play 8370-8970) |
-| night sight | N | ToggleNight `$87FF`: the lamp `$5ACF`, the text `$BA6E` or `$BA7A`, `$757A` from HourTable | |
-| binoculars | B | SetBinoculars `$CEAB`: zoom `$9A93` = 1, the lamp `$5ACC`, StepFrames `$9719` = 32, "BINOC:X2" | 6.8 (9805-9995, with the zoom) |
+| night sight | N | NightKey `$87FC`: the lamp `$5ACF`, the text `$BA6E` or `$BA7A`, `$757A` from HourTable | |
+| binoculars | B | SetBinoculars `$CEAB`: zoom `$9A93` = the last zoom chosen (the operand `$CED4`, 1 at first), the lamp `$5ACC`, StepFrames `$9719` = 32, "BINOC:X2" | 6.8 (9805-9995, with the zoom) |
 | zoom | Z | CycleBinocularZoom `$CEE5`: the zoom 1, 2, 3, back to 1 (x2, x4, x8) | |
 | rear view | R | `$BA27`: the camera heading + half a turn | 12 (10 065-10 125) |
 | Dragonfly's flight | fire with the Dragonfly's slot selected | LaunchDragonfly: the camera record `$B9F4` = the Dragonfly, DragonflyViewLoop `$6AB9`, PicMapFrame, ViewBlitNarrow | 8.0 (9115-9315) |
 | damage board | D | DamageLoop `$6C93`: PicDamageBoard and DrawDamagePanel `$7383`; the world runs, no 3D picture | |
+| Phoenix camera | select a Phoenix (store types 1, 5) | SelectPhoenix `$C11E` sets `$BA13`; SetCamera (`$BA12-$BA1A`) then takes the eye height from `$B8FF`; K (`$B8FE`) raises it by 8, J (AimLimit `$B909`) lowers it by 8; any other select clears `$BA13` (SelectPlain `$C138`, PrintSlotStatus `$C520`) | not measured |
 | status view (console) | M | StatusLoop `$6BC7`, PicGridPanel, its own blit BlitMapView `$DBBD` (bank 6), SetClipWidth `$5F`; in it, M the MAP page and B the BRIEF page (doc 05, 5.7) | not measured |
 
 The binoculars and the rear view exclude each other: ToggleRearView `$BA4A` returns without a change while the
@@ -682,12 +683,23 @@ With the rear view, SetCamera turns the camera, and nothing else knows.
 The day and the dusk are TimeOfDay's: at 08:00 the light value `$757A` becomes `$FF` and the faces get their
 patterns; from 17:00 it is 0 and they are solid (6.7).
 SkyColours `$885F` repaints the sky and ground attributes once a change.
+The Phoenix camera is the code's "IR view": while `$BA13` is set, the eye height comes from `$B8FF`, which
+LaunchMissile sets to the tank's height (doc 10), not from the camera record.
+The N key's night sight (IR:SIGHT) does not touch `$BA13`.
+SelectWeapon calls PrintSlotStatus before each select, so selecting any weapon first clears the flag, and only
+SelectPhoenix sets it again; this is known only from the code (no recording of mine selects a Phoenix and moves the
+camera with K or J).
+
+The damage board is entered through SelectLoop, which leaves ScreenList on the play node's transitions (doc 05,
+5.7).
+The status view entered from it with B keeps them too: there C shows the status view again, M the damage board,
+and B goes straight to the title, without the quit prompt; known only from the code.
 
 ```mermaid
 stateDiagram-v2
   Normal: normal view
   Night: night sight
-  Binoc: binoculars, zoom 1
+  Binoc: binoculars, zoom 1 or the last Z
   Zoom: zoom 2, 3
   Rear: rear view
   Console: status view and its MAP and BRIEF pages
@@ -702,10 +714,11 @@ stateDiagram-v2
   Normal --> Rear: R, refused with the binoculars on
   Rear --> Normal: R
   Normal --> Console: M
-  Console --> Normal: C
+  Console --> Normal: C, when entered with M from play
   Normal --> Damage: D
   Damage --> Normal: C
-  Damage --> Console: B
+  Damage --> Console: B, play's transitions kept
+  Console --> Damage: M, after the damage board only
   Normal --> Dragonfly: fire with the Dragonfly selected
   Dragonfly --> Normal: back to the tank, CameraToPlayer (doc 10)
 ```
@@ -940,6 +953,8 @@ set:
 - SelectPhoenix `$C11E` (store types 1 and 5) and SelectPlain `$C12C` (types 2, 6 and 7: the two Banshees and the
   Dragonfly) write `$FF` there;
 - PrintSlotStatus `$C51F` clears it before each select, and the mission load clears it at `$84D5`;
+- SelectPhoenix also sets the Phoenix camera flag `$BA13` (`$C123`, 6.10); SelectPlain (`$C138`) and PrintSlotStatus
+  (`$C520`) clear it;
 - its counter, the operand at `$C4CE`, counts down once a pass; the sight is drawn only on even counts;
 - TargetInCone sets the counter to 16 when a target enters the missile's cone, so the sight blinks for 16 passes;
   at 0, ResetSightTimer `$C506` re-arms the cone test and the sight shows on every pass.
@@ -1020,6 +1035,7 @@ The interrupt, which includes the blit, takes 14 %.
 The camera, the rotations and the multiplies take 16 %, the projection 15 % and the fill 15 %.
 Clipping takes 9 % and the scripts and face tests 9 %.
 The clear takes 2 %, and the lines and dots 2 %.
+The game logic, the radar and the HUD take the remaining 18 %.
 As the flying enemy draws away, the faces filled go from 20 to 14 a pass and the pass from 12.9 to 10.6 frames.
 `python3 tools/fig_rendering.py load docs/img/render/load.png work/docs/bcB/death/traces/8300_0-8450_0.uatr`.
 

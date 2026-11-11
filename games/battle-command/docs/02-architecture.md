@@ -183,8 +183,47 @@ several times in every 3D pass. A play pass that calls Bank3Step `$72A3` writes:
 A switch costs 88 T with its `CALL` (`LD A,n` 7, `JR` 12, `LD (nn),A` 13, `LD BC,nn` 10, `OR n` 7, `OUT (C),A` 12,
 `RET` 10, `CALL` 17), small next to a polygon.
 
-The point: one variable and one `OUT` routine page everything. The paging block never needs to read `$7FFD`, which
-the hardware cannot do anyway.
+### The interrupt's own bank save
+
+The interrupt cannot use SaveBank: an interrupt that falls between a caller's SaveBank and its RestoreBank would
+overwrite `$729D`, and the caller would come back to the wrong bank. The handler keeps the bank in a second slot of
+its own, `$843B`:
+
+```text
+$8431 PageBank6Kept: LD A,($728A)        ; the current bank
+                     LD ($843B),A        ; into PageBankKept's operand
+                     JP PageBank6
+$843A PageBankKept:  LD A,$00            ; $843B: the bank PageBank6Kept kept
+                     JP PageBankA
+```
+
+```text
+PageBank6Kept: Kept = Current; PageBank(6)    ; $843B
+PageBankKept:  PageBank(Kept)
+```
+
+| Pair | Slot | Callers |
+| --- | --- | --- |
+| SaveBank `$7288` / RestoreBank `$729B` | `$729D` | the main program: Bank3SetObject `$7290`, Bank3Step `$72A3`, Bank3Lookup `$72B1`, Bank4Start `$72C6`, Bank0SoundOff `$72DE`, Bank4Call `$72E9`, Bank3Fill `$74CF`, LoadBlock `$71F1`, StartMission `$694B`, ShowBriefingMapOnce `$7084`, CopyCatalogueHead `$70C6`, CopyMissionText `$70F6`, UpdateSlotBars `$7327` |
+| PageBank6Kept `$8431` / PageBankKept `$843A` | `$843B` | the interrupt: Bank4Tick `$72D2` (the music), the pointer jobs `$83C4-$83DC`, the play jobs `$840A-$8419`, SoundTick `$7E6E-$7E77` |
+| Bank3Render `$72BE` | none | pages bank 3, runs RunScript `$990F`, leaves through PageBank6: its caller wants bank 6 afterwards, so it saves nothing |
+
+```mermaid
+flowchart TD
+    M[main: SaveBank, Saved = Current in $729D] --> W[main works in bank N]
+    W -. INT .-> K[PageBank6Kept: Kept = Current in $843B]
+    K --> J[interrupt jobs in banks 6, 4 and 0]
+    J --> PK[PageBankKept: back to bank N]
+    PK --> W
+    W --> R[RestoreBank: back to Saved]
+```
+
+Worked example, an interrupt during Bank3Step: SaveBank has put 0 in `$729D` and PageBank3 `$728A` = 3. The
+interrupt's Bank4Tick runs PageBank6Kept (`$843B` = 3, bank 6), PageBank4 (`$728A` = 4), MusicTick, then PageBankKept
+pages 3 again (`$728A` = 3). `$729D` still holds 0, so Bank3Step's RestoreBank goes back to bank 0 as it should.
+
+The point: one variable and one `OUT` routine page everything, with two save slots, one for the main program and
+one for the interrupt. The paging block never needs to read `$7FFD`, which the hardware cannot do anyway.
 
 ## 2.4 The memory map
 
@@ -233,7 +272,7 @@ the column before: the entry dump (frame 23974) against frame 24508, then frame 
 | `$8301-$8382` | the armour `$8301-$8304`, the weapon slots | bootstrap |
 | `$8383-$84C0` | the IM 2 handler | interrupt |
 | `$84C1-$8616` | LoadMission, LoadMissionHeader, LoadMissionBlock `$855B` | missionload |
-| `$8617-$87D5` | LdBytes, LdEdge2, LdEdge1, SaBytes (unused) | tape |
+| `$8617-$87D5` | LdBytes, LdEdge2, LdEdge1, SaBytes (unused), ModelMine, ModelMissile | tape |
 | `$87D6-$898A` | MessageTimer `$87D6`, BlankMessage `$87F0`, NightKey `$87FC`, TimeOfDay `$8836`, SkyColours `$885F`, HourTable `$88F8`, ScanKeyboard `$8910`, KeyCode `$8979`, CopyPointer `$897E` | interrupt |
 | `$898B-$9714` | the view blits, the back buffer `$8AF1-$96F0` (3072 bytes), ClearBackBuffer `$96F1` | raster |
 | `$9715-$9881` | the controls | input |
@@ -255,7 +294,7 @@ the column before: the entry dump (frame 23974) against frame 24508, then frame 
 | --- | --- | --- |
 | 3 | `$C000-$CFEB` | raster3: FillSpans, EdgeWalk, ClipYInside (the polygon filler) |
 | 3 | `$CFEC-$D3FF` | debris: DrawDebris, MoveAllDebris; PushLeftover `$D203` |
-| 3 | `$DCBC-$FB3E` | the copy of the part of the mission block a reload restores (MissionBlockLoaded `$8579`: from the object list, header word `$DBDA`, to restore-end `$DBED`; mission 1 shown), for a retry without the tape (c1: these bytes change when mission 1 loads) |
+| 3 | `$DCBC-$FB3E` | the copy of the part of the mission block a reload restores (MissionBlockLoaded `$8570`: from the object list, header word `$DBDA`, to restore-end `$DBED`; mission 1 shown), for a retry without the tape (c1: these bytes change when mission 1 loads) |
 | 4 | `$C000-$CDFF` | the music: the player and tune data |
 | 4 | `$CB64-$E737` | the catalogue from side 2: titles, briefings, maps (7124 bytes) |
 | 6 | `$C000-$D9B1` | the menus: title `$C409`, password, catalogue, briefing, stores, results, panel jobs |
@@ -302,7 +341,7 @@ The game uses two stacks.
 
 - **The main stack** grows down from `SP` = `$81FF`, set by Entry. The source names `$8184-$81FF` as its area.
 - **The interrupt's stack**: the handler saves the interrupted `SP` and sets `LD SP,$7C49` at `$8389`
-  ([doc 4.2](04-game-loop.md#42-the-interrupt)), so its 28 bytes of register saves go to its own stack, off the main
+  ([doc 4.2](04-game-loop.md#42-the-interrupt)), so its register saves (ten pushes, 20 bytes) and the returns of its nested calls (8 bytes, 28 at the deepest) go to its own stack, off the main
   stack. It cannot protect a buffer that `SP` points into: the CPU's push of the return address and the handler's
   first `EX (SP),HL` (`$8384`) land on the interrupted stack before `LD SP,$7C49` runs. So the routines that point `SP`
   at data (ClearBackBuffer `$96F1`, `DI` at `$96F1`, `EI` at `$9713`; ClearRadar; OpVertexProgram) run with the
@@ -317,9 +356,9 @@ The depth of each, from the L1 builds (the bytes both pushed and popped, `byte_u
 | c1 (load, title, catalogue, mission 1) | `$8199` | 102 | `$7C2D-$7C48` | 28 |
 | menu | `$8149` | 182 | `$7C2D-$7C48` | 28 |
 
-The interrupt's 28 bytes are the same in every recording: the handler's depth does not depend on the screen. The main
+The interrupt's 28 bytes (20 of saves, 8 of nested return addresses) are the same in every recording: the handler's depth does not depend on the screen. The main
 stack goes deeper than the area the source names. In the menu recording it reaches `$8149`, 59 bytes below `$8184`,
-across ImJump `$8181-$8183` and into LoadAttrLeftover. Losing ImJump is harmless to lose: with `I` = `$82` and the table full
+across ImJump `$8181-$8183` and into LoadAttrLeftover. Losing ImJump is harmless: with `I` = `$82` and the table full
 of `$83`, every interrupt vector is `$8383`, whatever the bus holds, and nothing ever jumps to `$8181`. The bytes
 below are unused attributes of the loading screen. The menus therefore have 443 bytes of stack between `$8044` and
 `$81FF` before they would reach the bootstrap.
@@ -333,7 +372,7 @@ flowchart TD
     M[main program, SP from $81FF down] -. points into the back buffer during a clear, under DI .-> BB[$8AF1-$96F0]
 ```
 
-The point: the interrupt keeps its 28 bytes of saves off the main stack, and the main program may use `SP` as a fast
+The point: the interrupt keeps its 20 bytes of saves and 8 of returns off the main stack, and the main program may use `SP` as a fast
 pointer only with the interrupts off; the main stack has no guard and simply has room.
 
 ## 2.7 The leftovers
@@ -348,7 +387,6 @@ exception, ClearMarkColumn, is called and runs only its first byte):
 | `$8044-$8180` | LoadAttrLeftover | the loading screen's attributes beyond the copy |
 | `$83F1` | ClearMarkColumn | called by the handler (`CALL` at `$83D0`) and run as a `RET` (L1 2959: death, m2erbe, missions, play, play2); the clear of three bytes in 33 for 48 lines of the back buffer behind it is never reached |
 | `$86C1` | SaBytes | the game's copy of the ROM's SA-BYTES: a save, never called |
-| `$8739` | SaveLeftover | bytes after SaBytes |
 | `$9893` | ClearBackBufferOld | an older buffer clear with a test pattern of `$AA`/`$55` rows |
 | bank 3 `$D203` | PushLeftover | 509 bytes of `$E5` (`PUSH HL`) |
 | bank 6 `$C88E` | ShowWrongDisk | "INCORRECT DISK": a disk version's message |
@@ -414,7 +452,7 @@ Worked example, from the routines of the L1 window (entries and inclusive T-stat
 
 1. StartViewPass `$9882` is entered 128 times in the 1000 frames: 7.8 frames a pass, a little slower than the 7.53 of
    the quiet normal view (doc 4.4), because the window holds three launches and the Dragonfly.
-2. ClearBackBuffer `$96F1`: 128 entries, 2 331 520 T, 18 215 T each, the 18 201 T of doc 4.3 plus the call.
+2. ClearBackBuffer `$96F1`: 128 entries, 2 331 520 T, 18 215 T each, the 18 201 T of doc 4.3 plus EI and RET (14 T).
 3. ViewBlitFront `$8999`: 104 entries, 5 725 368 T, 55 052 T each; the other passes are the Dragonfly's, blitted by
    ViewBlitNarrow.
 4. Per pass of 7.8 frames (553 000 T): the clear is 3.3 %, the blit 10 %.

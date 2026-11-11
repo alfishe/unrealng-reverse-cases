@@ -178,7 +178,7 @@ ViewChangeFlag:
   LD (BoundaryCheck),A
   CALL PageBank6
   LD HL,l_BFEB+$0015
-  LD (FireDecoy+$0037),HL
+  LD (SkeetFire+$0037),HL
 
 ; NextView
 ;
@@ -276,7 +276,7 @@ l_6ACF:
   LD HL,ViewBlitFront
   LD (MenuJobs+$0007),HL
   LD HL,l_BFEB+$0015
-  LD (FireDecoy+$0037),HL
+  LD (SkeetFire+$0037),HL
   JP NextView
 
 ; Toggle the low nibble of object 0's byte +7 from a random number while $68BD
@@ -423,7 +423,7 @@ StatusLoop:
   CALL PageBank6
   CALL SetStatusBlit
   CALL PageShadowScreen
-  LD DE,Cluster13Code+$0001
+  LD DE,SpectreCode+$0001
   CALL DrawBank7Picture
   CALL PrintStatusHelp
   LD A,$4D

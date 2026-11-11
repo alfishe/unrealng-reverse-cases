@@ -34,14 +34,14 @@ ApiVector02:
 ; ApiVector03
 ;
 ; Used by the routines at FireCannon, LaunchProjectile, ActivateMissionObjects,
-; LaunchDragonfly, LaunchMissile, FireDecoy and PlaceHelicarrier.
+; LaunchDragonfly, LaunchMissile, SkeetFire and PlaceHelicarrier.
 ApiVector03:
   JP ObjectSetType
 
 ; ApiVector04
 ;
 ; Used by the routines at FireCannon, LaunchProjectile, ActivateMissionObjects,
-; LaunchDragonfly, LaunchMissile, FireDecoy and PlaceHelicarrier.
+; LaunchDragonfly, LaunchMissile, SkeetFire and PlaceHelicarrier.
 ApiVector04:
   JP RegisterCollision
 
@@ -56,7 +56,7 @@ ApiVector05:
 ; ApiVector06
 ;
 ; Used by the routines at FlickerPlayer, Debris, DebrisVelocity,
-; DebrisVelocityB, DrawRadar, PlayerHit, Cluster13Step and SoundFrame.
+; DebrisVelocityB, DrawRadar, PlayerHit, SpectreStep and SoundFrame.
 ApiVector06:
   JP Random
 
@@ -71,8 +71,8 @@ ApiVector07:
 ;
 ; Used by the routines at PlayerStep, BrakeKey, TestVertexNearX,
 ; LaunchProjectile, ShowMortarRange, InRange, TargetInConeBody, TurnToward,
-; HitSide, TerrainDiagonal, BoundaryCheck, SetAwolState, EngineTone and
-; HelicarrierTurn.
+; HitSide, TerrainDiagonal, SlamTimers, BoundaryCheck, SetAwolState, EngineTone
+; and HelicarrierTurn.
 ApiVector08:
   JP AbsA
 
@@ -90,7 +90,8 @@ ApiVector10:
 
 ; ApiVector11
 ;
-; Used by the routines at KillTree, HitTest, Explode and MineCountdown.
+; Used by the routines at KillTree, HitTest, Explode, MineCountdown and
+; SlamFire.
 ApiVector11:
   JP Debris
 

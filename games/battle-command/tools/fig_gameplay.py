@@ -220,8 +220,8 @@ def fig_skeet(out, samples, end):
                    (s_['s31'], s_['s32'] - 256 if s_['s32'] > 127 else s_['s32'], s_['s33']), font=F12, fill=FG)
         else:
             d.text((tx, top + 104), 'not fired yet', font=F12, fill=DIM)
-        notes = ['FireDecoy: heading = tank + 128 (behind),', 'turn +8 a pass for 9 passes (DecoyZigZag),',
-                 'then 8 straight (DecoyStart); then turns of', '17 passes, the side changing, and straights',
+        notes = ['SkeetFire: heading = tank + 128 (behind),', 'turn +8 a pass for 9 passes (SkeetZigZag),',
+                 'then 8 straight (SkeetStraight); then turns of', '17 passes, the side changing, and straights',
                  'of 16; 64 world units a pass.', '', 'grid: 256 world units (1 coarse unit)',
                  'north is up: heading 0 = +Y']
         for k, line in enumerate(notes):

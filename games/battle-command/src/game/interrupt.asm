@@ -146,7 +146,8 @@ l_7DEB:
 ; second
 ;
 ; The seconds, minutes and hours are in `$68EA`. A `NOP` while it runs; the
-; mission header's loader puts `RET` here (`$8612`) until play. Witness: L1
+; mission load puts `RET` here (`$8612`); bank 6 writes the `NOP` back at START
+; MISSION (`$CBB1`, StoresScreen's exit) and in QuitYes (`$DA55`). Witness: L1
 ; 69895 (c1, controls, death, m10, m2erbe, m2ocean, menu, missions, play,
 ; play2, search).
 ClockTick:

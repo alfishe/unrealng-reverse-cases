@@ -701,9 +701,13 @@ stateDiagram-v2
   Status --> Complete: 2
   Status --> Failed: 3
   Status --> Node7544: 4 key B
-  Damage --> Play: 0 key C
-  Damage --> Complete: 2
-  Damage --> Failed: 3
+  Damage --> Play: key C (SelectLoop, play's list)
+  Damage --> Status: key B (SelectLoop, play's list)
+  Damage --> Complete: 2 of play's list
+  Damage --> Failed: 3 of play's list
+  Status --> Status: key C, after the damage board (play's 0)
+  Status --> Damage: key M, after the damage board (play's 1, node 7552)
+  Status --> Title: key B, after the damage board (play's 4, no prompt)
   Complete --> MStatus: 0
   Failed --> Title: 0
   MStatus --> ShowPw: 0 SAVE GAME
@@ -728,6 +732,22 @@ calls ScreenSix (OutOfFuel in 5.9 is one of them).
 The key D does not use transition 1 of the play node: SelectDamage `$6BC2` writes DamageLoop `$6C93` into the
 NextView operand through SelectLoop `$6BB4`, and so do DamageKeys' B and C (StatusKeys' C takes transition 0).
 Only StartMission, StatusLoop and DamageLoop are entered through SelectLoop.
+
+SelectLoop does not touch ScreenList: only SetScreen writes it (`$707B`; no other `LD ($74E6),HL` in any listing).
+The damage board, and the status view entered from it with B, keep the play node's transitions `$751E`.
+From there the status view's keys go elsewhere than from M in play:
+
+- C (ScreenZero) takes play's transition 0, `$7528`: the status view again, not play.
+- M (ScreenTwo) takes play's transition 1, `$7552`: the damage board, now through SetScreen.
+- B (ScreenEight) takes play's transition 4, `$74E8`: the title.
+  The mission is abandoned without QuitPrompt, without QuitYes's clock stop and without SaveLoadedMission.
+- StatusLoop sets its own latch to `$4D` (`$6BD9`), so a B still held from the damage board acts at once.
+
+Node `$7552`'s own list `$7556` (`$751A`, `$0000`, `$755E`, `$7564`) becomes current only through that M.
+A later quit (E, Y: transition 4) then reads the word `$CD1E` at `$755E`, the first word of the next node, as a node.
+The diagram's three edges marked "after the damage board" exist only on this path.
+This is known only from the code: the play recording presses D at 10 195 and then C at 10 260, never B on the
+damage board.
 Node `$7572` (draw DragonflyViewLoop `$6AB9`) is in the list, but no transition word names it.
 LaunchDragonfly reaches it: at `$C30F` it writes DragonflyViewLoop into NextView, after pointing the camera `$B9F4`
 at the Dragonfly's record (doc 06, 6.10).
@@ -918,11 +938,13 @@ The speed is record +7 (`$75F7`), and the heading is record +`$22` (`$7612`).
   At zero, a set click flag is cleared and fires only if the rear view `$BA27` is off and NextView is StartMission
   (the front view): then the `CALL` at `$A9B8` calls the slot's fire routine through its operand `$A9B9` (set by
   SelectWeapon, doc 10).
-  The fire routine itself restarts the cooldown at 8 through SetFireCooldown `$A9F7` (`$B58F`, `$B5E2`, `$D289`).
+  The fire routine itself restarts the cooldown: at 8 through SetFireCooldown `$A9F7` (`$B58F`, `$B5E2`, `$D289`),
+  at 16 after a missile (LaunchMissile `$C44D`), and at 8 when the Dragonfly hands back (`$C38D`).
   PlayerSteering then clears `$66CE`.
 - The brake: the key S (code `$53`) sets the record's handler to `$A9C9`; it is tested after the terrain, before
   the fuel.
   That handler takes 8 from |speed| each pass, ignores StepY, runs MoveObject and PlayerSteering, and uses no fuel.
+  It tests no terrain (no wall bounce) and no boundary, and writes |speed| to the speed bar's `$7E8E` (`$A9D1`).
   Below 8, it sets the speed to 0 and the handler back to `$A8C7`.
   It sits in the source as the routine BrakeKey `$A9C9` (stage 2 had kept it as data); known only from the code: no recording presses S in play (no L1 run of `$A9C9`).
 
@@ -1041,7 +1063,7 @@ flowchart TD
   J -->|set| J2["click flag 0"]
   J2 --> V{"rear view BA27 off and NextView = StartMission"}
   V -->|no| R
-  V -->|yes| K["fire routine through A9B9; it sets the cooldown to 8"]
+  V -->|yes| K["fire routine through A9B9; it sets the cooldown (8, 16 for a missile)"]
 ```
 
 Worked example, play frames 8360-8438 (Q held 8365-8425).
@@ -1092,7 +1114,7 @@ The two `JP Z` targets of J and K are patched by SelectWeapon, so these keys do 
 | Key | Code | Routine | What it does |
 | --- | --- | --- | --- |
 | E | `$45` | QuitKey `$843F` → QuitPrompt `$DA09` (bank 6) | the quit prompt: Y abandons the mission (ScreenEight), N resumes; the sound effects are silenced while it waits |
-| J, K | `$4A`, `$4B` | the weapon's aim pair, patched into `$6B50` (J) and `$6B55` (K) by SelectWeapon from `$7B89` + 8 x type (words 1 and 0) | mortar elevation, mine timer and the other pairs of doc 10.7; NoAction when no weapon is selected or the slot is damaged |
+| J, K | `$4A`, `$4B` | the weapon's aim pair, patched into `$6B50` (J) and `$6B55` (K) by SelectWeapon from `$7B89` + 8 x type (words 1 and 0) | mortar elevation, mine timer and the other pairs of doc 10.7; NoAction for a damaged slot and before any weapon is selected; an empty slot keeps the previous weapon's pair |
 | M | `$4D` | ScreenZero | the status view (node `$7528`), whose screen shows the map |
 | D | `$44` | SelectDamage `$6BC2` | the damage board (DamageLoop `$6C93`) |
 | 1-4 | `$31`-`$34` | SelectWeapon `$C53F` | the weapon slot 1-4 |
@@ -1117,6 +1139,12 @@ It copies the four words of the store type's record at `$7B89` + 8 x type:
 | 3 | `$C600` | the select routine, called at once |
 
 Then it calls the store type's select routine (doc 10).
+An empty slot (store type 0, read at `$C580` from the slot's record at WeaponSlots `$8368` + 6 x slot) returns at
+`$C585`, before the copy of the four words (`$C5D9-$C5F8`) and before `$C605`.
+It has only moved CurrentSlot and `$C53D`, written the latch and played the select sound: J, K and the fire key keep
+the previous weapon's routines, and ConsumeAmmo's pointer `$B551` keeps the previous slot.
+Whether SPACE then fires depends on the routine; FireCannon re-reads the ammunition of CurrentSlot and finds none
+(suspected, not traced).
 A slot whose status is 0 prints "DAMAGED IN COMBAT" (`$C605`) and sets the J, K and fire targets to NoAction.
 The status view has its own keys in StatusKeys `$6C60`: C back to play, B ScreenEight (the BRIEF page), M ScreenTwo
 (the MAP page).
@@ -1179,9 +1207,12 @@ flowchart TD
 ```
 
 The `LD C,n` operand at `$6B45` holds the last weapon or view key.
-SelectWeapon, NightKey, SelectLoop, the C key and the screen entries ScreenFour, ScreenSix, ScreenEight and
-ScreenFromClick write it.
-PlayKeys ignores a key equal to it, so only these keys act once while they are held.
+SelectWeapon, SelectLoop, the C key and the screen entries ScreenFour, ScreenSix, ScreenEight and ScreenFromClick
+write the key code there.
+PlayKeys ignores a key equal to it, so these keys act once while they are held.
+NightKey `$87FC` writes it too, but with its old flag value, not the key code: 0 when it turns the night sight on
+(`$8807`), `$FF` when it turns it off (`$881B`).
+So a held N toggles on every pass, and the write also cancels a remembered C or weapon key.
 R, B, Z, H, E, J and K do not write it: they act again on every pass while held.
 A held R toggles the rear view on each pass, so where it ends depends on how many passes the press spans; in play,
 R at 10 065-10 090 leaves the rear view on, and doc 06's witness at 10 606 still shows it (6.10).
@@ -1203,6 +1234,9 @@ The same SPACE that clicks the menus fires the chosen weapon in play.
 ## 5.11 What is known only from the code
 
 - The brake: the key S and its handler `$A9C9`, because no recording presses S in play.
+- The damage board's B and the status view after it, which keep the play node's transitions (5.7): no recording
+  presses B on the damage board.
+- An empty weapon slot (store type 0): SelectWeapon returns before the copy of the routines (5.10).
 - The four KeyTable entries after the five read keys (C, Z, X, S), which ReadKeys never reads.
 - The freeze operand of PointerTick (`$7D8A`) at 0: StatusLoop writes it, but no trace of mine samples a pass with
   it cleared.

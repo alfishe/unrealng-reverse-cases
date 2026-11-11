@@ -137,8 +137,8 @@ l_A983:
 ; Adds half the turn input `$985E` to the heading `$7612`; counts down the fire
 ; cooldown `$A9FD`; when it is zero and the fire key bit of `$6D43` is set,
 ; calls the current weapon's fire routine through the operand at `$A9B9` (set
-; from the store-type table `$7B89` + 8 * type, word 3). Output: a projectile
-; record, the cooldown restarted.
+; from the store-type table StoreTypes `$7B89` + 8 * type, word 2). Output: a
+; projectile record, the cooldown restarted.
 ;
 ; Witness: L1 3521 (death, m2erbe, missions, play, play2).
 PlayerSteering:
@@ -719,7 +719,7 @@ FirePhoenixIr:
   LD A,$85
   EX AF,AF'
   LD A,$FF
-  LD HL,TurnTowardTail
+  LD HL,HomingMissileStep
   JR MissileLock
 
 ; Fire the Banshee IRSS: projectile $84
@@ -861,28 +861,45 @@ LaunchDragonfly:
   LD A,$FF
   LD (IX+$00),A
   POP IX
-  LD HL,DragonflyCode
+  LD HL,DragonflyRetake
   LD (l_A9A0+$0019),HL
   LD HL,$0000
   LD (BearingTable+$0016),HL
   LD A,(ObjectTable+$0003)
   AND $FE
   LD (ObjectTable+$0003),A
+
+; sub_C30F
+;
+; Used by the routine at DragonflyRetake.
+sub_C30F:
   LD HL,DragonflyViewLoop
   LD (NextView+$0008),HL
   LD A,$FF
   LD (ViewChangeFlag+$0001),A
   RET
 
-; Dragonfly code no recording runs
+; Take the Dragonfly view back while a Dragonfly is out
 ;
-; The Dragonfly's set-up bytes: `$C33E` into `$A9B9`, handler `$C391`.
-DragonflyCode:
-  DEFB $CD,$0F,$C3,$21,$3E,$C3,$22,$B9
-  DEFB $A9,$2A,$02,$C3,$22,$F4,$B9,$E5
-  DEFB $FD,$E1,$FD,$36,$18,$91,$FD,$36
-  DEFB $19,$C3,$3A,$F3,$75,$E6,$FE,$32
-  DEFB $F3,$75,$C9
+; The fire word LaunchDragonfly leaves in `$A9B9`: CALL `$C30F` (NextView =
+; DragonflyViewLoop, the view flag), the fire word = RecallDragonfly `$C33E`,
+; the camera `$B9F4` = the Dragonfly (the operand `$C302`), its step =
+; DragonflyStep `$C391`, the tank's +3 b0 cleared (the tank stops).
+; DragonflyEnd puts LaunchDragonfly back when the fire word is still this one.
+DragonflyRetake:
+  CALL sub_C30F
+  LD HL,RecallDragonfly
+  LD (l_A9A0+$0019),HL
+  LD HL,(LaunchDragonfly+$0046)
+  LD (BearingTable+$0016),HL
+  PUSH HL
+  POP IY
+  LD (IY+$18),$91
+  LD (IY+$19),$C3
+  LD A,(ObjectTable+$0003)
+  AND $FE
+  LD (ObjectTable+$0003),A
+  RET
 
 ; Recall the Dragonfly
 ;
@@ -929,7 +946,7 @@ l_C365:
   CALL RecallDragonfly
 l_C37A:
   LD HL,(l_A9A0+$0019)
-  LD BC,DragonflyCode
+  LD BC,DragonflyRetake
   AND A
   SBC HL,BC
   JR NZ,l_C38B
@@ -1054,18 +1071,53 @@ l_C408:
   LD (FireCooldown),A
   JP SoundMissile
 
-; Missile step code no recording runs
+; The flat missiles' step ($82, $85): move, turn to the target, lifetime
 ;
-; Missile step: MoveObject, turn toward the target (TurnToward `$C485`),
-; lifetime +$31.
-MissileCode:
-  DEFB $CD,$BE,$67,$CD,$7C,$C4,$CD,$65
-  DEFB $C4,$C9,$DD,$7E,$35,$FD,$BE,$20
-  DEFB $20,$0F,$DD,$7E,$31,$3D,$DD,$77
-  DEFB $31,$CA,$74,$C4,$FD,$7E,$02,$A7
-  DEFB $C0,$CD,$1E,$B6,$DD,$36,$02,$00
-  DEFB $C9,$DD,$5E,$32,$DD,$56,$33,$D5
-  DEFB $FD,$E1
+; MoveObject, MissileTurn `$C47C` (IY = the target +`$32`, TurnToward),
+; MissileLife `$C465`: +`$31` less one; at 0, or when the target's +2 is 0,
+; CALL `$B61E` and +2 = 0 (the missile ends). `$C45D` is the serial check
+; HomingMissileStep calls: the serial seen at the launch (+`$35`) against the
+; target's +`$20`; a reused record ends the missile.
+MissileStep:
+  CALL ApiVector00
+  CALL MissileTurn
+  CALL MissileLife
+  RET
+
+; MissileSerialCheck
+;
+; Used by the routine at HomingMissileStep.
+MissileSerialCheck:
+  LD A,(IX+$35)           ; +$35 against the target's serial +$20
+  CP (IY+$20)
+  JR NZ,l_C474
+
+; MissileLife
+;
+; Used by the routine at MissileStep.
+MissileLife:
+  LD A,(IX+$31)           ; the lifetime +$31 less one; 0 or the target gone:
+                          ; the missile ends
+  DEC A
+  LD (IX+$31),A
+  JP Z,l_C474
+  LD A,(IY+$02)
+  AND A
+  RET NZ
+; This entry point is used by the routine at MissileSerialCheck.
+l_C474:
+  CALL KillSwitchObject
+  LD (IX+$02),$00
+  RET
+
+; MissileTurn
+;
+; Used by the routines at MissileStep and HomingMissileStep.
+MissileTurn:
+  LD E,(IX+$32)           ; IY = the target (+$32), then TurnToward
+  LD D,(IX+$33)
+  PUSH DE
+  POP IY
 
   ORG $C510
 
@@ -1106,7 +1158,8 @@ PrintSlotStatus:
 ; current slot $C53C
 ;
 ; `$C534` holds the four pointers `$836D`, `$8373`, `$8379`, `$837F` (+5 of
-; each slot), `$C53C` the slot 0-3, `$C53D` the slot record.
+; each slot), `$C53C` the slot 0-3, `$C53D` the address of the slot hook's CALL
+; operand (`$6A46` + 5n).
 WeaponVars:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00
@@ -1118,9 +1171,10 @@ CurrentSlot:
 
 ; Select a weapon slot with the keys 1-4
 ;
-; Writes `$C53C`, the slot record `$C53D`, the select routine of the store type
-; (`$7B89` + 8 * type, word 4); a slot whose status `$68C9` + 6n is 0 prints
-; "DAMAGED IN COMBAT" (`$C618`).
+; Writes `$C53C`, `$C53D` = the address of the slot hook's CALL operand
+; (`$6A46` + 5n), the store type's words 0-3 (StoreTypes `$7B89` + 8 * type: K,
+; J, fire, then the select call, word 3); a slot whose status `$68C9` + 6n is 0
+; prints "DAMAGED IN COMBAT" (`$C618`).
 ;
 ; Witness: L1 14 (death, play, play2).
 SelectWeapon:
@@ -1213,7 +1267,7 @@ l_C5AA:
   ADD A,A
   LD C,A
   LD B,$00
-  LD HL,HelicarrierRecord+$00AD
+  LD HL,StoreTypes
   ADD HL,BC
   LD E,(HL)
   INC HL
@@ -1862,20 +1916,37 @@ MineHandlerCode:
   LD (IX+$02),A
   RET
 
-; data_D0EA
-data_D0EA:
-  DEFB $DD,$7E,$31,$3D,$DD,$77,$31,$C0
-  DEFB $C3,$AB,$B8,$2A,$3D,$C5,$11,$15
-  DEFB $D1,$73,$23,$72,$21,$D7,$FD,$C3
-  DEFB $B3,$6F
-
-; Print the aim of store type 10
+; The mine's blast: lifetime +$31 less one, then Explode
 ;
-; Prints `$FDE1`, the slot record (`$C53D`) = `$6BB0` (a RET: type 10 has no
-; fire routine) (play2: 3 runs).
+; The step the countdown leaves at +`$18`: +`$31` less one each pass; at 0
+; Explode `$B8AB`.
+MineBlast:
+  LD A,(IX+$31)
+  DEC A
+  LD (IX+$31),A
+  RET NZ
+  JP Explode
+
+; SLAM on (K): the slot hook = SlamHook
+;
+; Writes SlamHook `$D115` into the slot hook whose CALL operand `$C53D` points
+; at, prints `$FDD7` (on).
+SlamOn:
+  LD HL,(CurrentSlot+$0001)
+  LD DE,SlamHook
+  LD (HL),E
+  INC HL
+  LD (HL),D
+  LD HL,MissionHeader+$2212
+  JP PrintString
+
+; SLAM off (J): the slot hook = NoAction
+;
+; Prints `$FDE1` (off); the slot hook (its CALL operand's address in `$C53D`)
+; gets NoAction `$6BB0` (play2: 3 runs).
 ;
 ; Witness: L1 3 (play2).
-PrintAimType10:
+SlamOff:
   LD HL,MissionHeader+$221C
   CALL PrintString
   LD HL,(CurrentSlot+$0001)
@@ -1885,61 +1956,203 @@ PrintAimType10:
   LD (HL),D
   RET
 
-; The slot whose rounds are shown ($D114), then weapon code no recording runs
+; The slot whose rounds are shown
 ;
-; PrintAmmo `$C510` compares `$D114` with the current slot `$C53C`; the code
-; after it stores it and calls SelectAmmoPointer `$D3C6`.
+; PrintAmmo `$C510` compares `$D114` with the current slot `$C53C`; the slot
+; hooks (SlamFire, SpectreCode, the Phantasm's `$D3E6`) store their slot here
+; and put the old value back after.
 SlotShown:
-  DEFB $00,$F5,$CD,$1C,$D1,$C3,$DF,$D3
-  DEFB $32,$14,$D1,$CD,$C6,$D3,$CD,$A0
-  DEFB $D1,$3A,$1B,$D2,$A7,$F8,$2A,$51
-  DEFB $B5,$7E,$3D,$F8,$77,$32,$27,$C5
-  DEFB $CD,$10,$C5,$CD,$CF,$D1,$CD,$F5
-  DEFB $D1,$21,$F0,$75,$47,$11,$3C,$00
-  DEFB $19,$10,$FD,$E5,$E5,$DD,$E1,$CD
-  DEFB $DF,$67,$DD,$36,$02,$00,$DD,$E1
-  DEFB $DD,$6E,$2B,$DD,$66,$2C,$22,$02
-  DEFB $FD,$DD,$6E,$2D,$DD,$66,$2E,$22
-  DEFB $02,$FE,$DD,$6E,$2F,$DD,$66,$30
-  DEFB $22,$02,$FF,$21,$D4,$FE,$22,$00
-  DEFB $FD,$21,$2C,$01,$22,$04,$FD,$21
-  DEFB $64,$00,$22,$00,$FE,$22,$04,$FE
-  DEFB $21,$00,$00,$22,$00,$FF,$22,$04
-  DEFB $FF,$22,$8E,$9A,$22,$B3,$9A,$22
-  DEFB $6C,$9A,$DD,$21,$BB,$FE,$CD,$0F
-  DEFB $99,$C3,$39,$D8
+  DEFB $00
 
-; Code no recording runs: LD HL,$762E / LD DE,60 / LD BC,$39, a pass over the
-; records
-RecordScanCode:
-  DEFB $21,$2E,$76,$11,$3C,$00,$01,$39
-  DEFB $00,$D9,$21,$1B,$D2,$06,$17,$D9
-  DEFB $7E,$E6,$80,$28,$14,$23,$7E,$E6
-  DEFB $50,$FE,$10,$2B,$20,$0B,$09,$7E
-  DEFB $23,$D9,$77,$23,$10,$E9,$36,$FF
-  DEFB $C9,$19,$D9,$10,$E2,$18,$F7
+; The SLAM's slot hook, once a pass while on
+;
+; `PUSH AF` (the slot), CALL SlamFire, then `JP $D3DF`: SlotShown restored,
+; SelectAmmoPointer for the selected slot.
+SlamHook:
+  PUSH AF
+  CALL SlamFire
+  JP l_D3DF
 
-; Code no recording runs (the scan's second part)
-RecordScanCodeB:
-  DEFB $01,$8C,$C7,$D9,$21,$1B,$D2,$11
-  DEFB $33,$D2,$7E,$23,$FE,$FF,$C8,$D9
-  DEFB $87,$6F,$26,$00,$09,$5E,$23,$56
-  DEFB $EB,$4E,$3A,$BD,$C7,$91,$CD,$D6
-  DEFB $67,$D9,$12,$13,$18,$E4
+; The SLAM: shoot down one enemy shell
+;
+; SlotShown = the slot, SelectAmmoPointer; SlamScan lists the shells; none
+; (`$D21B` = `$FF`) or no round: return. Takes a round (PrintAmmo), SlamTimers,
+; SlamPickShell; Debris (vector `$67DF`) and +2 = 0 for that record (no
+; UnregisterCollision), the beam drawn to its view position (RunScript `$990F`,
+; the script `$FEBB`), then the sound `$D839`.
+SlamFire:
+  LD (SlotShown),A
+  CALL SelectAmmoPointer
+  CALL SlamScan
+  LD A,(data_D21B)
+  AND A
+  RET M
+  LD HL,(ConsumeAmmo+$0001)
+  LD A,(HL)
+  DEC A
+  RET M
+  LD (HL),A
+  LD (WeaponVars),A
+  CALL PrintAmmo
+  CALL SlamTimers
+  CALL SlamPickShell
+  LD HL,ObjectTable
+  LD B,A
+  LD DE,$003C
+l_D144:
+  ADD HL,DE
+  DJNZ l_D144
+  PUSH HL
+  PUSH HL
+  POP IX
+  CALL ApiVector11
+  LD (IX+$02),$00
+  POP IX
+  LD L,(IX+$2B)
+  LD H,(IX+$2C)
+  LD (MissionHeader+$213D),HL
+  LD L,(IX+$2D)
+  LD H,(IX+$2E)
+  LD (MissionHeader+$223D),HL
+  LD L,(IX+$2F)
+  LD H,(IX+$30)
+  LD (data_FEBB+$0047),HL
+  LD HL,data_FEBB+$0019
+  LD (MissionHeader+$213B),HL
+  LD HL,$012C
+  LD (MissionHeader+$213F),HL
+  LD HL,$0064
+  LD (MissionHeader+$223B),HL
+  LD (MissionHeader+$223F),HL
+  LD HL,$0000
+  LD (data_FEBB+$0045),HL
+  LD (data_FEBB+$0049),HL
+  LD (l_9A85+$0009),HL
+  LD (l_9A9E+$0015),HL
+  LD (l_9A5E+$000E),HL
+  LD IX,data_FEBB
+  CALL RunScript
+  JP SoundSweep
 
-; Code no recording runs: a sort of the list at $D21B, then its work area
-RecordSortCode:
-  DEFB $21,$1B,$D2,$D9,$21,$33,$D2,$11
-  DEFB $00,$00,$4B,$D9,$7E,$23,$D9,$A7
-  DEFB $FA,$12,$D2,$7E,$23,$BB,$30,$02
-  DEFB $5F,$51,$0C,$18,$EE,$21,$1B,$D2
-  DEFB $06,$00,$4A,$09,$7E,$C9,$00,$00
+; List the enemy shells for the SLAM
+;
+; Records 1-23 from `$762E` (+2 of record 1): present (+2 b7) and +3 AND `$50`
+; = `$10` (a shell, not a weapon): +`$3B`, the collision slot, goes to the list
+; `$D21B`; `$FF` ends it. After a match the scan goes on two bytes short
+; (+`$3C` instead of +`$3E`: no `ADD HL,DE` on that path), so the next records
+; are read from their +0 and +1.
+SlamScan:
+  LD HL,PlayerY+$0018
+  LD DE,$003C
+  LD BC,$0039
+  EXX
+  LD HL,data_D21B
+  LD B,$17
+l_D1AF:
+  EXX
+  LD A,(HL)
+  AND $80
+  JR Z,l_D1C9
+  INC HL
+  LD A,(HL)
+  AND $50
+  CP $10
+  DEC HL
+  JR NZ,l_D1C9
+; This entry point is used by the routine at InterruptHandler.
+  ADD HL,BC
+  LD A,(HL)
+  INC HL
+  EXX
+  LD (HL),A
+  INC HL
+  DJNZ l_D1AF
+l_D1C6:
+  LD (HL),$FF
+  RET
+l_D1C9:
+  ADD HL,DE
+  EXX
+  DJNZ l_D1AF
+  JR l_D1C6
+
+; The shells' pair timers for the SLAM
+;
+; For each slot in `$D21B`: its collision row (`$C78C` + 2 slot), |the row's
+; timer - `$C7BD`| into `$D233`.
+SlamTimers:
+  LD BC,$C78C
+  EXX
+  LD HL,data_D21B
+  LD DE,data_D21B+$0018
+l_D1D9:
+  LD A,(HL)
+  INC HL
+  CP $FF
+  RET Z
+  EXX
+  ADD A,A
+  LD L,A
+  LD H,$00
+  ADD HL,BC
+  LD E,(HL)
+  INC HL
+  LD D,(HL)
+  EX DE,HL
+  LD C,(HL)
+  LD A,(CollisionPass+$0001)
+; This entry point is used by the routine at Bank3Step.
+  SUB C
+  CALL ApiVector08
+  EXX
+  LD (DE),A
+  INC DE
+  JR l_D1D9
+
+; Pick the shell to shoot: A = its collision slot
+;
+; Meant as the minimum of `$D233` over the list, but the search starts with `LD
+; DE,$0000` (nothing writes the operand `$D1FD`) and takes a value only when
+; `CP E` carries, never with E = 0: D stays 0 and the first listed shell is
+; returned (`$D21B` + 0). `$D21B` (24) and `$D233` (24) are its work area.
+SlamPickShell:
+  LD HL,data_D21B
+  EXX
+  LD HL,data_D21B+$0018
+  LD DE,$0000
+  LD C,E
+l_D200:
+  EXX
+  LD A,(HL)
+  INC HL
+  EXX
+  AND A
+  JP M,l_D212
+  LD A,(HL)
+  INC HL
+  CP E
+  JR NC,l_D20F
+  LD E,A
+  LD D,C
+l_D20F:
+  INC C
+  JR l_D200
+l_D212:
+  LD HL,data_D21B
+  LD B,$00
+  LD C,D
+  ADD HL,BC
+  LD A,(HL)
+  RET
+
+; data_D21B
+data_D21B:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
-  DEFB $00,$00,$00,$00,$00,$00
+  DEFB $00,$00,$00,$00,$00,$00,$00,$00
 
 ; The select routine of store type 11 (none)
 ;
@@ -1949,12 +2162,12 @@ RecordSortCode:
 RetType11:
   RET
 
-; Fire store type 11: projectile $89 behind
+; Fire the Skeet (store 11): projectile $89 behind
 ;
 ; SelectAmmoPointer, ConsumeAmmo, spawns `$89` behind (play2: 1 run).
 ;
 ; Witness: L1 1 (play2).
-FireDecoy:
+SkeetFire:
   LD A,(CurrentSlot)
   CALL SelectAmmoPointer
   CALL ConsumeAmmo
@@ -1982,12 +2195,12 @@ FireDecoy:
   CALL PrintAmmoAt
   JP SetFireCooldown
 
-; The decoy's first leg
+; The Skeet's straight leg
 ;
 ; MoveObject; +$31 counts the leg, +$33 the legs left; at 0 Explode.
 ;
 ; Witness: L1 13 (play2).
-DecoyStart:
+SkeetStraight:
   CALL ApiVector00
   LD A,(IX+$31)
   DEC A
@@ -2002,12 +2215,13 @@ DecoyStart:
   LD (IX+$19),$D2
   RET
 
-; The decoy's zig-zag
+; The Skeet's zig-zag
 ;
-; MoveObject; the heading += +$32 each pass (the zig-zag), legs as DecoyStart.
+; MoveObject; the heading += +$32 each pass (the zig-zag), legs as
+; SkeetStraight.
 ;
 ; Witness: L1 26 (play2).
-DecoyZigZag:
+SkeetZigZag:
   CALL ApiVector00
   LD C,(IX+$22)
   LD A,(IX+$32)
@@ -2033,20 +2247,41 @@ l_D2D0:
   LD (IX+$32),A
   RET
 
-; Code no recording runs: the slot record set to $D3D6, the HUD text $FDD7
-SlotSetupCode:
-  DEFB $2A,$3D,$C5,$36,$D6,$23,$36,$D3
-  DEFB $3E,$10,$32,$EB,$D3,$21,$D7,$FD
-  DEFB $C3,$B3,$6F,$2A,$3D,$C5,$11,$24
-  DEFB $D3,$73,$23,$72,$3E,$10,$32,$35
-  DEFB $D3,$21,$D7,$FD,$C3,$B3,$6F
-
-; Mark a slot without a fire routine
+; Phantasm auto-fire on (K): the slot hook = $D3D6
 ;
-; The slot record = `$6BB0`, prints `$FDCD`.
+; Writes `$D3D6` (the Phantasm's auto-fire hook) into the slot hook, its
+; counter `$D3EB` = 16, prints `$FDD7` (on).
+PhantasmAutoOn:
+  LD HL,(CurrentSlot+$0001)
+  LD (HL),$D6
+  INC HL
+  LD (HL),$D3
+  LD A,$10
+  LD (sub_D3E6+$0005),A
+  LD HL,MissionHeader+$2212
+  JP PrintString
+
+; Spectre auto-fire on (K): the slot hook = SpectreCode
+;
+; Writes SpectreCode `$D324` into the slot hook, its counter `$D335` = 16,
+; prints `$FDD7` (on).
+SpectreAutoOn:
+  LD HL,(CurrentSlot+$0001)
+  LD DE,SpectreCode
+  LD (HL),E
+  INC HL
+  LD (HL),D
+  LD A,$10
+  LD (sub_D330+$0005),A
+  LD HL,MissionHeader+$2212
+  JP PrintString
+
+; Auto-fire off (J, the Phantasm and the Spectre): the slot hook = NoAction
+;
+; The slot hook = NoAction `$6BB0`, prints `$FDCD` (off).
 ;
 ; Witness: L1 7 (play, play2).
-PrintSlotName:
+AutoFireOff:
   LD HL,(CurrentSlot+$0001)
   LD (HL),$B0
   INC HL
@@ -2063,47 +2298,69 @@ FirePhantasm:
   LD A,(CurrentSlot)
   JP LaunchPhantasm
 
-; Fire store type 13: projectile $8B
+; Fire the Spectre (store 13): projectile $8B
 ;
-; A = the slot, JR LaunchCluster13 (play2: 1 run).
+; A = the slot, JR LaunchSpectre (play2: 1 run).
 ;
 ; Witness: L1 1 (play2).
-FireCluster13:
+FireSpectre:
   LD A,(CurrentSlot)
-  JR LaunchCluster13
+  JR LaunchSpectre
 
-; Type 13 code no recording runs (the slot $D114 saved around $D330)
-Cluster13Code:
-  DEFB $08,$3A,$14,$D1,$F5,$08,$CD,$30
-  DEFB $D3,$C3,$DF,$D3,$32,$14,$D1,$08
-  DEFB $3E,$00,$3D,$32,$35,$D3,$F0,$3E
-  DEFB $10,$32,$35,$D3,$08
+; The Spectre's auto-fire hook, once a pass while on
+;
+; Saves SlotShown, then `$D330`: SlotShown = the slot, the counter `$D335` less
+; one; below 0 it reloads 16 and falls into LaunchSpectre (a shot every 17
+; passes); then `JP $D3DF` (SlotShown restored, SelectAmmoPointer for the
+; selected slot).
+SpectreCode:
+  EX AF,AF'
+  LD A,(SlotShown)
+  PUSH AF
+  EX AF,AF'
+  CALL sub_D330
+  JP l_D3DF
 
-; Launch the type 13 cluster
+; sub_D330
+;
+; Used by the routine at SpectreCode.
+sub_D330:
+  LD (SlotShown),A
+  EX AF,AF'
+  LD A,$00
+  DEC A
+  LD (sub_D330+$0005),A
+  RET P
+  LD A,$10
+  LD (sub_D330+$0005),A
+  EX AF,AF'
+
+; Launch the Spectre
 ;
 ; SelectAmmoPointer, the elevation `$1E` (SetElevation), A = `$8B`,
 ; LaunchProjectile.
 ;
 ; Witness: L1 1 (play2).
-LaunchCluster13:
+LaunchSpectre:
   CALL SelectAmmoPointer
   LD A,$1E
   CALL SetElevation
   LD A,$8B
   JP LaunchProjectile
 
-; Print a slot's name
+; The Spectre's select: print its auto-fire on or off
 ;
-; When the slot record is not `$D324`, prints `$FDCD` (play2: 1 run).
+; When the slot hook is not SpectreCode `$D324`, prints `$FDCD` (off), else
+; `$FDD7` (on) (play2: 1 run).
 ;
 ; Witness: L1 1 (play2).
-PrintSlotAmmo:
+SelectSpectre:
   LD HL,(CurrentSlot+$0001)
   LD E,(HL)
   INC HL
   LD D,(HL)
   EX DE,HL
-  LD BC,Cluster13Code
+  LD BC,SpectreCode
   AND A
   SBC HL,BC
   JR Z,l_D363
@@ -2113,12 +2370,12 @@ l_D363:
   LD HL,MissionHeader+$2212
   JP PrintString
 
-; The type 13 cluster's flight
+; The Spectre's climb
 ;
 ; MoveObject; the height follows +$31 (rising, then falling).
 ;
 ; Witness: L1 19 (play2).
-Cluster13Step:
+SpectreStep:
   CALL ApiVector00
   LD D,$00
   LD A,(IX+$31)
@@ -2149,12 +2406,13 @@ l_D38E:
   LD (IX+$22),A
   RET
 
-; A submunition falls
+; The Spectre drifts under its parachute
 ;
-; Height -= 8 each pass; below 0 RemoveObject (the submunitions).
+; MoveObject, height -= 8 each pass; below height 0 it is removed (RemoveObject
+; `$B8B1`). The same record: no submunition.
 ;
 ; Witness: L1 47 (play2).
-Cluster13Burst:
+SpectreDrift:
   CALL ApiVector00
   LD L,(IX+$05)
   LD H,(IX+$06)
@@ -2183,13 +2441,37 @@ SelectAmmoPointer:
   LD (ConsumeAmmo+$0001),DE
   RET
 
-; Phantasm code no recording runs (the slot $D114 saved around $D3E6)
+; The Phantasm's auto-fire hook, once a pass while on
+;
+; Saves SlotShown, then `$D3E6`: SlotShown = the slot, the counter `$D3EB` less
+; one; below 0 it reloads 16 and falls into LaunchPhantasm (a shot every 17
+; passes); `$D3DF` puts SlotShown back and calls SelectAmmoPointer for the
+; selected slot (SlamHook and SpectreCode end there too).
 PhantasmCode:
-  DEFB $08,$3A,$14,$D1,$F5,$08,$CD,$E6
-  DEFB $D3,$F1,$32,$14,$D1,$C3,$C6,$D3
-  DEFB $32,$14,$D1,$08,$3E,$00,$3D,$32
-  DEFB $EB,$D3,$F0,$3E,$10,$32,$EB,$D3
-  DEFB $08
+  EX AF,AF'
+  LD A,(SlotShown)
+  PUSH AF
+  EX AF,AF'
+  CALL sub_D3E6
+; This entry point is used by the routines at SlamHook and SpectreCode.
+l_D3DF:
+  POP AF
+  LD (SlotShown),A
+  JP SelectAmmoPointer
+
+; sub_D3E6
+;
+; Used by the routine at PhantasmCode.
+sub_D3E6:
+  LD (SlotShown),A
+  EX AF,AF'
+  LD A,$00
+  DEC A
+  LD (sub_D3E6+$0005),A
+  RET P
+  LD A,$10
+  LD (sub_D3E6+$0005),A
+  EX AF,AF'
 
 ; Launch the Phantasm
 ;
@@ -2256,29 +2538,31 @@ PhantasmSpin:
   LD (IX+$02),$00
   RET
 
-; Select store type 10
+; The SLAM's select: print on or off
 ;
-; Prints `$FDE1` / `$FDD7` with the type 10 table `$D115` (play2: 1 run).
+; Prints `$FDD7` (on) when the slot hook is SlamHook `$D115`, else `$FDE1`
+; (off) (play2: 1 run).
 ;
 ; Witness: L1 1 (play2).
-SelectType10:
+SelectSlam:
   LD DE,MissionHeader+$221C
   LD HL,MissionHeader+$2212
   EXX
-  LD BC,$D115
+  LD BC,SlamHook
   JR l_D474
 
-; Print a slot's aim
+; The Phantasm's select: print its auto-fire on or off
 ;
-; Prints `$FDCD` / `$FDD7` with `$D3D6` (play: 1 run).
+; Prints `$FDD7` (on) when the slot hook is the Phantasm's `$D3D6`, else
+; `$FDCD` (off) (play: 1 run).
 ;
 ; Witness: L1 1 (play).
-PrintType10:
+SelectPhantasm:
   LD DE,MissionHeader+$2208
   LD HL,MissionHeader+$2212
   EXX
   LD BC,PhantasmCode
-; This entry point is used by the routine at SelectType10.
+; This entry point is used by the routine at SelectSlam.
 l_D474:
   LD HL,(CurrentSlot+$0001)
   LD E,(HL)

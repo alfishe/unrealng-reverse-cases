@@ -220,17 +220,17 @@ DrawHeadingStrip:
   LD C,$22
   ADD HL,BC
   LD A,(HL)
-SpeedLastOp:
-  LD E,$00                ; LD E,n: n ($D5A2) the value last drawn
+HeadingLastOp:
+  LD E,$00                ; LD E,n: n ($D5A2) the heading value last drawn
   CP E
   RET Z
-  LD (SpeedLastOp+$0001),A
+  LD (HeadingLastOp+$0001),A
   SRL A
   SRL A
   LD E,A
   CPL
   AND $07
-  LD (SpeedBarLine+$000C),A
+  LD (HeadingStripLine+$000C),A
   LD A,E
   LD HL,$6664
   LD C,$16
@@ -242,8 +242,8 @@ SpeedLastOp:
   ADD A,$7F
   LD L,A
   LD A,$05
-  LD (SpeedBarStore+$001B),A
-SpeedBarLine:
+  LD (HeadingStripStore+$001B),A
+HeadingStripLine:
   PUSH HL
   LD D,(HL)
   INC L
@@ -258,19 +258,19 @@ SpeedBarLine:
   LD A,$00
   LD B,A
   AND A
-  JR NZ,SpeedBarShift
+  JR NZ,HeadingStripShift
   EX AF,AF'
-  JR SpeedBarStore
-SpeedBarShift:
+  JR HeadingStripStore
+HeadingStripShift:
   EX AF,AF'
-SpeedBarShiftLoop:
+HeadingStripShiftLoop:
   SRL D
   RR A
   RR E
   RR C
   RR L
-  DJNZ SpeedBarShiftLoop
-SpeedBarStore:
+  DJNZ HeadingStripShiftLoop
+HeadingStripStore:
   EXX
   LD E,(HL)
   INC L
@@ -300,11 +300,11 @@ SpeedBarStore:
   LD A,$00
   DEC A
   RET Z
-  LD (SpeedBarStore+$001B),A
+  LD (HeadingStripStore+$001B),A
   LD A,$0C
   ADD A,L
   LD L,A
-  JR SpeedBarLine
+  JR HeadingStripLine
 
 ; The speed bar: $7E8E = abs(speed), line $90 column 8, when it changed
 ;

@@ -181,7 +181,18 @@ The commands and the TTD sessions of the later recordings:
 | m1complete | `python3 tools/rec_complete.py m1 --work work/stage2/rec/m1complete --port-base 37390 --start work/stage1/explore/loaded.szx --inputs tests/inputs/m1complete.txt` | `work/stage2/rec/m1complete/session.ttd` |
 | m4complete | `python3 tools/rec_complete.py m4 --work work/stage2/rec/m4complete --port-base 37390 --start work/stage2/rec/m1complete/end.szx --inputs tests/inputs/m4complete.txt` | `work/stage2/rec/m4complete/session.ttd` |
 
-The stage 1 sessions are `work/stage1/rec/NAME/session.ttd`. The completion recordings steer in a closed loop on the
+The stage 1 sessions are `work/stage1/rec/NAME/session.ttd`.
+
+The statistics of docs 11 and 12 come from `work/stage1/c1g`, not from the whole of c1: a window of the c1 recording
+from the game's entry (frame 23974), so the SpeedLock loader at `$BCxx-$BFxx` is left out. It is built on an instance
+opened on c1's recording:
+
+```sh
+python3 ../../kit/rs.py open --work work/stage1/c1g --ttd work/stage1/c1/session.ttd --model 128K --ranges 4000-FFFF
+python3 ../../kit/rs.py build --work work/stage1/c1g --from-frame 23974
+python3 ../../kit/rs.py stop --work work/stage1/c1g
+```
+ The completion recordings steer in a closed loop on the
 player record (work/stage2/complete-NOTES.md); their Immunity POKE is written back to `$FA` before any shooting and
 before the Helicarrier.
 
@@ -234,7 +245,7 @@ refused with the catalogue left on screen, then the status card the script click
 ![The missions in play](docs/img/play/missions.png)
 
 *missions and m2erbe: the start of missions 1-9 and the map screen of each; mission 10 refused. Night Moves
-(mission 5) has a dark blue sky.*
+(mission 5) has a dark blue sky: it starts at 16:59, a minute before dusk.*
 
 ![The weapons](docs/img/play/weapons.png)
 
@@ -270,6 +281,8 @@ caption):
 | --- | --- | --- | --- |
 | [Layer000.gif](docs/img/routines/Layer000.gif) | 3.3 | c1 | 2033-2048, every quarter frame, 61 pictures |
 | [LoadBlocks.gif](docs/img/routines/LoadBlocks.gif) | 3.4 | c1 | 2050-24000, every 300 frames, 74 pictures |
+| [store-cipher.gif](docs/img/load/store-cipher.gif) | 3.5 | stage 2's store trace (`work/stage2/stores.txt`), checked against c1 2366-2378 | the first 20 bytes of block 7, one picture a byte |
+| [Unxor5B00.gif](docs/img/load/Unxor5B00.gif) | 3.7 | c1 | 23962-23970:35454, every quarter frame, 35 pictures |
 | [ClearBackBuffer.gif](docs/img/routines/ClearBackBuffer.gif) | 4.3 (and 6) | play | 8509:65990-8510:14000, 30 pictures |
 | [PlayLoop.gif](docs/img/routines/PlayLoop.gif) | 4.4 (and 12) | play | 8509:65903-8517:32142, 60 pictures |
 | [PointerTick.gif](docs/img/routines/PointerTick.gif) | 5 | menu | 0-60, 60 pictures |
@@ -280,18 +293,27 @@ caption):
 | [view-change.gif](docs/img/play/view-change.gif) | 6 | play | 9600-10500, every 5th frame, 181 pictures |
 | [UnpackPicture.gif](docs/img/routines/UnpackPicture.gif) | 6 | menu | 95:9000-124:40000, 60 pictures |
 | [ActivateMissionObjects.gif](docs/img/routines/ActivateMissionObjects.gif) | 7 (animation 7.1) | death | 7598:65000-7599:28500, 90 pictures |
-| [M1TankChase.gif](docs/img/routines/M1TankChase.gif) | 7 (animation 7.2) | death | 7980:68700-7981:700, 50 pictures |
-| [CollisionPass.gif](docs/img/routines/CollisionPass.gif) | 7.10 (animation 7.3) | death | 8121:42000-8121:68000, 80 pictures |
+| [M1Respawn.gif](docs/img/routines/M1Respawn.gif) | 7.9 (animation 7.2) | death | 7600:67300-7601:10100, 60 pictures |
+| [M1TankChase.gif](docs/img/routines/M1TankChase.gif) | 7.9 (animation 7.3) | death | 7980:68700-7981:700, 50 pictures |
+| [CollisionPass.gif](docs/img/routines/CollisionPass.gif) | 7.10 (animation 7.4) | death | 8121:42000-8121:68000, 80 pictures |
+| [M4TrainTurn.gif](docs/img/routines/M4TrainTurn.gif) | 7.14 (animation 7.5) | m4complete | 5598:58000-5599:0, 60 pictures |
 | [PrintString.gif](docs/img/routines/PrintString.gif) | 8 | menu | 6396-6403, 60 pictures |
 | [UpdateSlotBars.gif](docs/img/routines/UpdateSlotBars.gif) | 8 | death | 8093:28900-8093:65100, 60 pictures |
 | [MusicTick.gif](docs/img/routines/MusicTick.gif) | 9 | menu | 809:2640-809:7300, 60 pictures |
-| [fuel-failure.gif](docs/img/play/fuel-failure.gif) | 1 and 10.2 | fuel | 7700-7910, 49 pictures |
+| [fuel-failure.gif](docs/img/play/fuel-failure.gif) | 1 and 10.2 (animation 10.1) | fuel | 7700-7910, 49 pictures |
 | [PlayerStep.gif](docs/img/routines/PlayerStep.gif) | 10.2 (animation 10.2, and 12) | fuel | 7860:56900-7860:61300, 40 pictures |
 | [enemy-attack.gif](docs/img/play/enemy-attack.gif) | 10.4 (animation 10.3) | death | 7990-8135, every third frame, 37 pictures |
 | [PlayerHit.gif](docs/img/routines/PlayerHit.gif) | 10.5 (animation 10.4) | death | 8121:58400-8121:59400, 40 pictures |
 | [ArmourDestroyed.gif](docs/img/routines/ArmourDestroyed.gif) | 10.5 (animation 10.5) | armour | 18423:69900-18424:1200, 40 pictures |
 | [armour-death.gif](docs/img/play/armour-death.gif) | 10.5 (animation 10.6) | armour | 18330-18560, every third frame, 28 pictures |
 | [HitTest.gif](docs/img/routines/HitTest.gif) | 10.6 (animation 10.7) | death | 8531:14000-8531:17200, 50 pictures |
+| [k90-cluster.gif](docs/img/play/k90-cluster.gif) | 10.7 (animation 10.8) | play2 | 16350-16770, every sixth frame |
+| [skeet-path.gif](docs/img/gameplay/skeet-path.gif) | 10.7 (animation 10.9) | play2 | the object table every 2 frames, 16920-17250 (`tools/sample_objects.py`, then `tools/fig_gameplay.py skeet`) |
+
+Figures drawn from the code or the tape rather than a recording: [debris-flight.png](docs/img/gameplay/debris-flight.png)
+(doc 10.8, figure 10.1: `python3 tools/fig_gameplay.py debris --height 32 --vz 32,40,48,63 --vx 20
+docs/img/gameplay/debris-flight.png`) and [timecheck.png](docs/img/load/timecheck.png) (doc 3.4: `python3
+tools/fig_loader.py timecheck --c1 HEX docs/img/load/timecheck.png`, the TZX timing and c1's TimeBuffer at 2484).
 
 ### 6.2 The images
 

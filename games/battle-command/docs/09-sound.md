@@ -174,7 +174,7 @@ flowchart TD
     E11 --> W["WriteAY loop $D7DC: registers 0 to count-1"]
 ```
 
-SilenceAY `$D807` is the driver's off switch, called by Bank4Tick's sound off `$72E4` and by QuitKey `$843F`. It
+SilenceAY `$D807` is the driver's off switch, called by Bank0SoundOff `$72DE` (at `$72E4`) and by QuitKey `$843F`. It
 zeroes 21 bytes from `$D674` (`LD B,$15`): the shadow and the counters `$D682-$D688`. It sets the mixer to `$3F`,
 writes all 14 registers to the chip, and stores `$0E` in the write count `$D7F0` and in the gate `$D689`. The
 flag and the counters from `$D68A` to `$D68E` (random tone, message, steady noise, sweep, siren) are not cleared.
@@ -238,7 +238,7 @@ l_D7E2:
   RET
 ```
 
-Worked example and witness: the shot of `death` frame 8093. FireCannon calls SoundFire at frame 8093 T 46 034
+Worked example and witness: the shot of `death` frame 8093. FireCannon calls ConsumeAmmo `$B550`, which calls SoundFire at frame 8093 T 46 034
 (`$D686` = 20) and lowers the ammunition `$836D` from 79 to 78 at T 46 075. The SoundFrame of frame 8094 (T 2291) is
 the first that plays it: it writes 19 at T 3011. The bank 0 shadow read from the recording (`ram0` offset `$1674`, 14
 bytes) at the starts of frames 8095-8114 equals the simulation's frames 0-19 of the fire effect at speed 47, register
@@ -340,8 +340,8 @@ R13 written every frame, the triangle would restart 50 times a second and the en
 ## 9.5 Every effect
 
 There are 14 effect entries. Each is a five-instruction trigger (`PUSH AF`, `LD A,n`, `LD (counter),A`, `POP AF`,
-`RET`) that sets a counter, and SoundFrame plays the counter down. Six effects have a caller (9.6). Eight have no
-caller in any bank or mission block and are known only from the code.
+`RET`) that sets a counter, and SoundFrame plays the counter down. Seven effects have a caller (9.6). Seven have
+no caller in any bank or mission block and are known only from the code.
 
 The table is the simulation's (`python3 tools/sound_sim.py table`): each trigger called once, then SoundFrame once a
 frame with the engine at speed 0. "Frames heard" counts the frames whose effect voice is not silent.
@@ -350,16 +350,16 @@ frame with the engine at speed 0. "Frames heard" counts the frames whose effect 
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | select | `$D863` | `$D682` = 18 | SelectWeapon (player.asm) | 16 | B tone | `$050` | - | 7 to 1 | 1980 |
 | select-short | `$D85E` | `$D682` = 1 | no caller | 0 | - | - | - | - | 1978 |
-| explosion | `$D86B` | `$D683` = 32 | PlayerHit, MessageOnce | 30 | C noise | - | 31 to 2 | 15 to 1 | 2007 |
+| explosion | `$D86B` | `$D683` = 32 | Explode `$B8AB`, MessageOnce | 30 | C noise | - | 31 to 2 | 15 to 1 | 2007 |
 | kill | `$D873` | `$D684` = 128 | the kill path (enemies.asm) | 120 | C noise | - | 31 to 2 | 15 to 1 | 2023 |
 | tone-c8 | `$D87B` | `$D685` = 7 | no caller | 7 | B tone | `$0C8` | - | 8 | 1973 |
-| fire | `$D898` | `$D686` = 20 | FireCannon (player.asm) | 19 | B noise | - | 19 to 1 | 3 to 1, 15 to 1 | 1955 |
+| fire | `$D898` | `$D686` = 20 | ConsumeAmmo `$B550` (every round fired) | 18 | B noise | - | 19 to 1 | 3 to 1, 15 to 1 | 1955 |
 | missile | `$D883` | `$D687` = 30 | LaunchMissile (`JP`) | 30 | B noise | - | 29 to 0 | 1 to 15 | 1964 |
 | random-tone | `$D856` | `$D68A` = 1 | no caller | 1 | B tone | Random AND `$F0` | - | 8 | 2188 |
 | message | `$D84E` | `$D68B` = 30 | MessageOnce (interrupt) | 28 | B tone | `$FFF` | - | 14 to 1 | 1974 |
 | noise-11 | `$D841` | `$D68C` = 17 | no caller | 17 | B noise | - | 31 | 10 | 2002 |
 | noise-23 | `$D846` | `$D68C` = 35 | no caller | 35 | B noise | - | 31 | 10 | 2002 |
-| sweep | `$D839` | `$D68D` = 31 | no caller | 31 | B tone | `$083` to `$0FB` | - | 12 to 5 | 2019 |
+| sweep | `$D839` | `$D68D` = 31 | SlamFire (`JP`) | 31 | B tone | `$083` to `$0FB` | - | 12 to 5 | 2019 |
 | siren-60 | `$D88B` | `$D68E` = 64 (meant 96) | no caller | 64 | B tone | `$080` / `$180` | - | 8 | 1991 |
 | siren-40 | `$D890` | `$D68E` = 64 | no caller | 64 | B tone | `$080` / `$180` | - | 8 | 1991 |
 
@@ -373,7 +373,7 @@ from the case folder after `. work/env.sh`: `python3 tools/sound_sim.py fig-effe
 How to read the figure:
 
 - **Each panel** is one trigger, titled with its entry, its counter and the counter's start. "No caller" marks the
-  eight that nothing calls.
+  seven that nothing calls.
 - **Blue and red** are the volumes of B and C. Green is the tone B period while tone B is on. The dashed grey line is
   the noise period.
 - **x** is the frame after the trigger: frame 0 is the first SoundFrame that sees the counter.
@@ -401,7 +401,7 @@ The effects one by one, n being the counter after the frame's decrement:
 - **noise-11** `$D841` and **noise-23** `$D846`: noise B at period 31 and volume 10 for 17 or 35 frames, unless the
   priority byte `$D688` is already 10 or more. [effect-noise-11.wav](audio/effect-noise-11.wav),
   [effect-noise-23.wav](audio/effect-noise-23.wav).
-- **sweep** `$D839`: tone B period `$7F` + 4 × (n XOR 31), from `$083` to `$0FB`, so the pitch falls. Volume
+- **sweep** SoundSweep `$D839`: tone B period `$7F` + 4 × (n XOR 31), from `$083` to `$0FB`, so the pitch falls. Volume
   (n >> 2) + 5. [effect-sweep.wav](audio/effect-sweep.wav).
 - **siren** `$D88B` and `$D890`: tone B `$080` or `$180` by bit 4 of n, volume 8: two tones, each held 16 frames.
   [effect-siren-60.wav](audio/effect-siren-60.wav), [effect-siren-40.wav](audio/effect-siren-40.wav).
@@ -452,34 +452,48 @@ them are a library that nothing calls.
 
 ## 9.6 Which event starts which effect
 
-Six triggers have callers. They were found by scanning every bank and every mission block for a `CALL` or `JP` to
+Seven triggers have callers. They were found by scanning every bank and every mission block for a `CALL` or `JP` to
 each trigger entry.
 
 ```mermaid
 flowchart LR
     K["weapon keys: SelectWeapon (player.asm)"] --> SEL["SoundSelect $D863"]
-    F["FireCannon (player.asm)"] --> FIRE["SoundFire $D898"]
+    F["ConsumeAmmo B550: FireCannon, LaunchProjectile, LaunchDragonfly, SkeetFire"] --> FIRE["SoundFire $D898"]
     M["LaunchMissile (player.asm)"] -- "JP" --> MIS["SoundMissile $D883"]
-    H["PlayerHit (player.asm)"] --> EXP["SoundExplosion $D86B"]
+    H["Explode B8AB: a projectile bursts"] --> EXP["SoundExplosion $D86B"]
     MO["MessageOnce $7D5D (interrupt)"] -- "bit 4 of the message attribute set" --> EXP
     MO -- "bit 4 clear" --> MSG["SoundEffectA $D84E"]
     E["the kill path (enemies.asm)"] --> KILL["SoundKill $D873"]
+    S["SlamFire D11C: the SLAM laser shoots a shell"] -- "JP" --> SW["SoundSweep $D839"]
 ```
 
 | Effect | Event | Witness (stage 2, from the `.ann`) |
 | --- | --- | --- |
 | select | a weapon key | `death` frame 7705; L1 14 (death, play, play2) |
-| fire | a cannon shot | `death` 7897-19 694 (60 runs); `play` 8800-9406; `play2` 8442-16 931 |
-| explosion | the tank is hit; a hit message | `death` 8121-17 902; L1 27 (death, play2) |
+| fire | any weapon that takes a round | `death` 7897-19 694 (60 runs); `play` 8800-9406; `play2` 8442-16 931 |
+| explosion | a projectile bursts (Explode); a hit message | `death` 8121-17 902; L1 27 (death, play2) |
 | kill | an object destroyed | `death` 8187-17 902 (5 runs) |
 | message | a message that is not a hit | `play2` 8700-17 195 (21 runs) |
 | missile | a missile launched | known only from the code: no recording runs SoundMissile |
+| sweep | the SLAM laser shoots down a shell | known only from the code: no recording runs SlamFire |
+
+Two of the callers are shared routines, not one weapon's code:
+
+- SoundExplosion is called by MessageOnce `$7D69` and by Explode `$B8AB` (at `$B8AE`). Explode is the end routine
+  named in the projectile templates (the word `$B8AB` at `$B3E2`, `$B400`, `$B4B4`, `$B4F0` and `$B52C`), the
+  `JP M` target of ClusterBlast `$CFE5` and of the Skeet's SkeetStraight (`$D29E`), the `JP` target of the mine's
+  MineBlast (`$D0F2`), and the missiles' MissileHit `$B8A8` falls into it: a shell, a missile, a cluster, a Skeet or
+  a mine that bursts. PlayerHit `$CAA5` does not call it; a hit on the tank is heard through its message.
+- SoundFire is called only by ConsumeAmmo `$B550` (at `$B55C`), and ConsumeAmmo by FireCannon `$B56E`,
+  LaunchProjectile `$B5AA`, LaunchDragonfly `$C2C2` and SkeetFire (`$D252`): every round that leaves the tank sounds
+  the same.
 
 MessageOnce runs in the interrupt (9.2), so a hit message and its explosion start in the same frame. In `death` the
 message `TANK:HIT` is printed in frames 8121-8122 and SoundExplosion runs at frame 8121
 ([doc 8](08-hud-and-text.md)).
 
-The point: the game sounds for six events only: a select, a shot, a missile, a hit, a kill and a message. The engine
+The point: the game sounds for seven events only: a select, a shot, a missile, a burst or hit, a kill, a message
+and the SLAM's beam. The engine
 runs under all of them.
 
 ## 9.7 The music player: MusicTick
@@ -767,7 +781,7 @@ sounds as MIDI note i + 22 (index 0 = A#0), within 19 cents in the lower six oct
 | 0 | `$0EF8` = 3832 | 28.92 Hz | A#0, 13 cents flat |
 | 9 | `$08E0` = 2272 | 48.78 Hz | G1, 8 cents flat |
 | 48 | `$00EF` = 239 | 463.8 Hz | A#4, 9 cents flat |
-| 95 | `$000F` = 15 | 7389 Hz | A#8, 16 cents flat |
+| 95 | `$000F` = 15 | 7389 Hz | A8 by the table's rule, 84 cents sharp (nearer A#8, 16 cents flat) |
 
 The vibrato's swing is scaled by the octave. ChannelSound's loop at `$C409` doubles the vibrato's period offset once
 for every 24 notes below note 96: × 2 for notes 72-95, × 4 for 48-71, × 8 for 24-47, × 16 for 0-23. Two octaves
@@ -845,13 +859,14 @@ The point: the tune and the effects of this document are the recorded ones, not 
 - **CmdSpeedDead** `$C342`: the speed change in Command cannot be reached, because every byte below `$B0` goes to the
   command table first.
 - **Command `$8D`** sets a flag that nothing reads.
-- **Eight effect triggers** with no caller (9.5), among them the siren with its jump one byte short.
+- **Seven effect triggers** with no caller (9.5), among them the siren with its jump one byte short.
 - **The master gate `$D691`**: 1 in the image and never written, so SoundFrame's first test always passes.
 - **The missile sound**: LaunchMissile jumps to SoundMissile, but no recording fires a missile.
+- **The sweep**: SlamFire `$D11C` jumps to SoundSweep when the SLAM laser shoots a shell; no recording uses the SLAM.
 
 The source names the shadow and the counters `$D674-$D691` (AYRegs, SelectCount ... SirenCount, SoundMaster), the
-eight triggers as code entries (SoundNoise11 ... SoundSiren40, the siren's jump marked), and describes SetNoise as
-C the noise period, A >> 1 the volume of C.
+eight triggers as code entries (SoundSweep `$D839`, SoundNoise11 ... SoundSiren40, the siren's jump marked), and
+describes SetNoise as C the noise period, A >> 1 the volume of C.
 
 The point: Battle Command's sound is two small, separate machines. A counter mixer with an envelope engine plays the
 game. A tracker player, with an effect engine nobody starts, plays the one tune in the menus.

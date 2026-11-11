@@ -449,13 +449,13 @@ How to read the figure:
 | n | Field | Screen (x, y) | Value | Format | Routine |
 | --- | --- | --- | --- | --- | --- |
 | 1 | ammunition | 16-63, 4-10 | `$C527`, the current slot's rounds | `AMM:` and code 8, small font, line 5 column 3 (`$FDC0`) | PrintAmmoAt `$C519` (from the fire routines and SelectWeapon) |
-| 2 | slot line | 16-63, 16-21 | the slot's mode or numbers | `MANUAL`, `:AUTO:`, `:OFF::` (`$FDCD`, `$FDD7`, `$FDE1`), two numbers (`$FDEB`), one number (`$FDF9`), small font line `$10` | the weapon routines, PrintSlotName `$D30B` |
+| 2 | slot line | 16-63, 16-21 | the slot's mode or numbers | `MANUAL`, `:AUTO:`, `:OFF::` (`$FDCD`, `$FDD7`, `$FDE1`), two numbers (`$FDEB`), one number (`$FDF9`), small font line `$10` | the weapon routines, AutoFireOff `$D30B` |
 | 3 | ammunition bars | 80-87, 0-23 | the four slots' rounds | a bar of 24 lines | UpdateAmmoBars `$7336`, DrawBar `$744F` |
 | 4 | slot icons | 128-231, 0-23 | the four slots `$8368` | icons with frames | DrawSlotIcons `$73BA` |
 | 5 | 3D view | 0-255, 32-126 | the back buffer | bytes | ViewBlitFront's copy l_89A8 ([doc 6](06-rendering.md)) |
 | 6 | message | 96-159, 118-126 | the last hit | `TANK:HIT` (`$FFCF`), `COLLIDED` (`$FFDB`), blank (`$87F0`), small font line `$78` column `$11` | MessageOnce `$7D5D`, MessageTimer `$87D6` (8.6) |
 | 7 | bearing | 32-55, 138-142 | the bearing to the target less the heading | an arrow shape, 5 lines | DrawBearing `$D637` (bank 6) |
-| 8 | speed bar | 64-71, 144-175 | `$7E8E`, the signed speed PlayerStep stores, 1.25 x on terrain 0 and 6 (doc 05, 5.9) | a bar of abs / 2 lines (`SRL`, `AND $1F`): at most 23 at speed 47, 29 on rough ground; redrawn only when the value changes (the `CP` operand `$D616`) | DrawSpeedBar `$D612` (bank 6) |
+| 8 | speed bar | 64-71, 144-175 | `$7E8E`, the signed speed PlayerStep stores, 1.25 x on terrain 0 and 6 (doc 05, 5.9) | a bar of abs / 2 lines (`SRL`, `AND $1F`): at most 23 at speed 47, 29 on the road (terrain 0) and on terrain 6; redrawn only when the value changes (the `CP` operand `$D616`) | DrawSpeedBar `$D612` (bank 6) |
 | 9 | fuel bar | 80-87, 144-175 | `$7C58` / 2, the fuel's high byte | a bar of 0-31 lines | DrawFuelBar `$D629` (bank 6) |
 | 10 | radar | 176-215, 132-163 | the blip list `$6768` | pixels | DrawRadar `$C05E`, PlotRadarPixel `$A9FE` |
 | 11 | heading strip | 176-207, 177-183 | heading `$7612` | a shifted compass strip | DrawHeadingStrip `$D598` (bank 6) |
@@ -811,18 +811,18 @@ AlphabetFound:
 
 The alphabet has 36 characters for 32 values. The values 0-3 come out as `9`, `8`, `7`, `6`. The last four letters
 `D`, `E`, `F` and `G` (places 32-35) are never produced; typed, they mean 0-3 like `9876`. A character not in the
-alphabet leaves B = 0, so its value is 36 AND 31 = 4, the same as `5`. The `.ann` says 0; the code gives 4.
+alphabet leaves B = 0, so its value is 36 AND 31 = 4, the same as `5`.
 
 Worked example: a fresh game's save code is `9999999999` (the save code panel of the screens figure, menu 10 817).
+Each value is 0, and place 0 of the alphabet is `9`. Typed back on the load screen (menu 1874), each `9` is found at
+place 0: B = 36, A = 36 - 36 = 0.
 With progress: m1complete shows `C5989999PB` (mission 1, 500 points) at frame 22240 and m4complete `H59K9999PK`
 (missions 1 and 4, 2500 points) at 22035; doc 10.12 works both out bit by bit.
 
 ![m4complete frame 22035: the save code H59K9999PK](img/play/m4complete-022035-save-code.png)
 
-*m4complete frame 22035: THIS IS YOUR ENTRY STRING with `H59K9999PK`, printed by PrintRawString. Screenshot of the
-recording.*
-Each value is 0, and place 0 of the alphabet is `9`. Typed back on the load screen (menu 1874), each `9` is found at
-place 0: B = 36, A = 36 - 36 = 0.
+*m4complete frame 22035: THIS IS YOUR ENTRY STRING with `H59K9999PK`, printed by bank 6 ShowPassword `$C4FC` with PrintString
+(EntryStringText `$C72A`, then PasswordText `$CEF6`). Screenshot of the recording.*
 
 Witness: `menu` frames 1764-2025 type and enter `9999999999` (the screenshots `001874-load-typed.png` and
 `001962-load-entered.png`). Frames 10 817-10 880 show the save code. EditLine, PrintRawString and WaitKey run only in

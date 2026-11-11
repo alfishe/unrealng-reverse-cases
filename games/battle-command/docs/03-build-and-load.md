@@ -228,9 +228,10 @@ the first of Layer001, is rewritten only by Layer000: `$94` on the tape becomes 
 
 ![The chain rewriting AC38-BF0C, layers 0 to 5](img/routines/Layer000.gif)
 
-*memanim over c1, frames 2033-2048 every quarter frame (17 727 T), `$AC00-$BFFF`, 3 pixels a byte, 61 pictures:
-`python3 ../../kit/memanim.py --work work/docs/bcA/c1 --from 2033 --to 2048 --step 17727 --from-address AC00
---to-address BFFF --cell 3 --width 1050 docs/img/routines/Layer000.gif`. Yellow: written since the last picture.
+*c1, frames 2033-2048 every quarter of a 128K frame (17 727 T), `$AC00-$BFFF` at 128 bytes a row and 6 pixels a
+byte, 61 pictures, 860 x 326: `python3 tools/fig_loader.py memgrid --work W --from 2033 --to 2048 --step 17727 --range
+AC00-BFFF --row 128 --cell 6 --label '...' --delay 120 docs/img/routines/Layer000.gif` (W: an instance opened on
+`work/stage1/c1/session.ttd` with `kit/rs.py open`). Yellow: written since the last picture.
 Each layer is a yellow sweep from its own end to `$BF0C`; the start of the sweep creeps up as the layers get
 shorter.*
 
@@ -333,8 +334,9 @@ LoaderStart at frame 2288, the stage entered at frame 2484.
 | between blocks | a pilot and a pause | a mark: `07 FF 00`, 21 bits at 2 x 875 T / 2 x 1750 T |
 | rate, half the bits ones | 2565 T a bit: 171 bytes a second | 2142 T a bit: 204 bytes a second (bank 0: 16 384 in 80.1 s) |
 
-The speed gain is small: 20 %. The protection is in the format: the sync pulses must match a table, the flag is
-6 bits, and there is no pilot between the banks.
+The speed gain is small: 20 %. The protection is in the format and in a timing check of the tape's edges: the sync
+pulses must match a table, the flag is 6 bits, there is no pilot between the banks, and TimeCheck (below) wants the
+tape silent for more than a second after the stage block.
 
 ### The edge reader
 
@@ -474,12 +476,95 @@ of a second only for that mix of bits.
 
 *memanim over c1, frames 2050-24000 every 300 frames (21 272 400 T), `$5B00-$FFFF` with the screen beside, 2 pixels
 a byte, 74 pictures: `python3 ../../kit/memanim.py --work work/docs/bcA/c1 --from 2050 --to 24000 --step 21272400
---from-address 5B00 --to-address FFFF --screen --cell 2 --width 1050 docs/img/routines/LoadBlocks.gif`. The bitmap
+--from-address 5B00 --to-address FFFF --screen --cell 2 --width 1050 docs/img/routines/LoadBlocks.gif` (`--width` is
+the limit: the compact layout puts the screen under the grid, 574 x 794). The bitmap
 arrives in black and white, the attributes come in from the reveal task, and the countdown ("3m15s7" at frame 14225)
 runs at the top right while the banks fill.*
 
 The point: the loader does the screen effects inside its bit timing. A loader that only reads bits would leave the
 CPU idle; this one draws while it waits for the next edge.
+
+### TimeCheck: the tape speed check
+
+LoaderMain reads the stage through TimeCheck `$BE5D` (`build/chain.lst`). After LoadBlocks has read block 7, TimeCheck
+samples the EAR edges 255 times into TimeBuffer `$9000-$90FE`, then compares two windows of the samples:
+
+```text
+$BE5D TimeCheck:  CALL LoadBlocks                ; the stage, 196 bytes to $BF0D
+                  LD HL,$9000 / LD B,$FF         ; TimeBuffer, 255 samples
+$BE65             PUSH BC / CALL TimeSample / LD (HL),E / INC HL / POP BC
+                  DJNZ $BE65
+                  LD A,($006D) / CP $28 / RET Z  ; a ROM with $28 there: no check
+                  CALL TimeCompare / RET
+$BE78 TimeSample: LD E,$00 / LD C,E / LD B,$FF   ; E counts the edges of 255 polls
+$BE7D             LD A,$7F / IN A,($FE) / AND $40 / XOR C
+                  JR Z,$BE8F                     ; no change: NOP / NOP / JP $BE8C (the same 72 T)
+                  INC E / LD A,C / CPL / AND $40 / LD C,A
+$BE8C             DJNZ $BE7D / RET
+$BE94 TimeCompare: HL = sum of samples 50-99      ; LD DE,$9032, 50 x ADD HL,BC
+                  PUSH HL
+                  HL = sum of samples 205-254    ; LD DE,$90CD
+                  POP BC
+                  LD A,H / CP $0D / JR NC,$BECC  ; S2 >= $0D00: TimeFailed = H
+                  AND A / SBC HL,BC / RET C      ; S2 < S1: passed
+                  LD BC,$0032 / AND A / SBC HL,BC / RET C   ; S2 - S1 < 50: passed
+                  LD A,$01
+$BECC             LD (TimeFailed),A / RET
+```
+
+```text
+TimeCheck():
+    LoadBlocks()                              ; block 7: the stage
+    for i in 0..254:                          ; 18 447 T a sample: 255 polls of 72 T and the loop
+        TimeBuffer[i] = the changes of EAR (port $FE bit 6) in 255 polls
+    if ROM[$006D] == $28: return              ; no check
+    S1 = sum(TimeBuffer[50..99]);  S2 = sum(TimeBuffer[205..254])
+    if S2 >= $0D00:        TimeFailed = S2 >> 8
+    elif S2 - S1 >= 50:    TimeFailed = 1
+```
+
+```mermaid
+flowchart TD
+    LB[LoadBlocks: block 7, the stage] --> SM[255 samples of the EAR edges into $9000]
+    SM --> ROM{ROM byte $006D = $28?}
+    ROM -- yes --> OK[return: no check]
+    ROM -- no --> S["S1 = samples 50-99, S2 = samples 205-254"]
+    S --> H{"S2 >= $0D00?"}
+    H -- yes --> F1[TimeFailed = S2 / 256]
+    H -- no --> D{"S2 - S1 >= 50?"}
+    D -- yes --> F2[TimeFailed = 1]
+    D -- no --> OK2[passed]
+    F1 --> E[later: Stage2Start calls WaitTask, TimeEnd wipes the memory]
+    F2 --> E
+```
+
+Both paths of a poll take 72 T, so a sample is a fixed 18 383 T of polling (18 447 T with the outer loop) and the 255
+samples cover 1.326 s from the end of block 7. On the Ocean tape block 7 is followed by a pause of 2407 ms (the TZX),
+so both windows, 0.26-0.52 s and 1.07-1.33 s, fall in silence: the check wants the second window to hold no more
+edges than the first, plus 49. A copy that shortens the pause until block 9's pilot (2165 T a pulse, 8.5 edges a
+sample) reaches the second window fails it. A failed check only sets TimeFailed `$BED0`: Stage2Start calls WaitTask
+and TimeEnd (3.7) wipes the memory instead of starting the game, once every block has loaded.
+
+![TimeCheck's samples and windows after block 7](img/load/timecheck.png)
+
+*Drawn by `python3 tools/fig_loader.py timecheck --c1 HEX docs/img/load/timecheck.png` (HEX: the 255 bytes of
+`$9000-$90FE`, c1 frame 2484, read with TTD `memory_at`) from the TZX timing of side 1. Top: the tape after block 7.
+Middle: the 255 samples, the windows S1 (yellow) and S2 (red). Below: c1's counts, all zero, and the counts of a
+copy with the pause cut to 1.0 s, computed with the same timing: the pilot fills window S2.*
+
+Worked example, c1. The stage's bytes arrive in frames 2366-2378 and the stage is entered at frame 2484. TimeBuffer
+`$9000-$90FE` at frame 2484 holds 255 zeros: no edge in any sample, the tape silent. With the 128K ROM 1 the byte at
+`$006D` is `$20`, so the check runs: S1 = 0, S2 = 0; H = 0 is below `$0D`; `SBC HL,BC` gives 0 with no carry; 0 - 50
+borrows, `RET C`: passed, TimeFailed stays 0 (it reads 0 at frame 2484). The copy of the figure: the pilot from 1.0 s
+puts 8 or 9 edges in each sample of window S2, S2 = 424, S1 = 0, 424 - 50 leaves no borrow: TimeFailed = 1.
+
+The ROM test: `$006D` is inside the 48K BASIC ROM's NMI routine, `JR NZ` (`$20`) in the 48K, 128K and +2 ROMs and
+`JR Z` (`$28`) in the +2A / +3 ROM 3, which fixed the NMI bug (`data/rom/128.rom` page 1 and `plus3.rom` page 3 of
+unreal-ng). So the check is skipped on a +2A / +3, and on any ROM with that fix. Why the authors skip it there is
+SUSPECTED: the +2A / +3 read the tape input differently.
+
+The point: the second protection is a pause on the tape. A copier that cuts the silence after the stage block, or
+feeds the loader a signal where the tape is silent, makes the loader wipe the game after it has loaded it all.
 
 ## 3.5 The store cipher
 
@@ -536,6 +621,14 @@ flowchart LR
     B19[block 19 bytes to $BDD0] -. k of StoreLast .-> X
 ```
 
+![StoreByte storing the first 20 bytes of the stage](img/load/store-cipher.gif)
+
+*The first 20 bytes of block 7 through StoreByte, one picture a byte: the tape byte L, L XOR `$C1`, + `$11`, the
+address and the running XOR H, and the stage's code as its bytes come in (`XOR A`, `LD (AttrFlag),A`, `LD
+IX,Screen` ...). Drawn by `python3 tools/fig_loader.py cipher docs/img/load/store-cipher.gif` from the store trace
+`work/stage2/stores.txt` and `build/stage2.lst`; the stored bytes equal c1's memory at `$BF0D` (TTD `memory_at`,
+frames 2366-2378: `AF 32 FF 82 DD 21 00 40 ...`).*
+
 The checksum is the same idea: H is the XOR of every tape byte read, from the block reader's call in Stage2Start to
 the end of the stream. LoadEnd `$BEDF` wants H = 0 (`LD A,H / CP $01 / RET C`, else `CALL $C3EB`, outside the loader;
 no recording takes this path). Block 43's last byte is the check byte: the XOR of
@@ -561,7 +654,7 @@ $BF2B Stage2Wipe:   LD (HL),$00 / INC HL / JR Stage2Wipe   ; replaced by block 3
 
 A row of BlockTable is five bytes: the address, the length less one, the `$7FFD` value. After each block StoreLast
 reads a mark as three groups of 7 bits (ReadMark `$BE47`, L = `$02` each time: 21 bits, 8 + 8 + 5). The first group
-leads to the row's page byte (zero: the end). The second must read as `$7F`: anything else sets TimeFailed `$BED0` to
+leads to the row's page byte (zero: keep the current page and IX); a row length of zero ends the table. The second must read as `$7F`: anything else sets TimeFailed `$BED0` to
 `$7F`. The third precedes the next block. StoreLast then pages the bank with `OUT ($7FFD)`, takes the address and
 the length, and goes on storing.
 
@@ -633,6 +726,33 @@ $BE63              LD A,(HL) / XOR $AD / LD (HL),A / INC HL
 Block 23 carries the game's `$5B00-$7FFF` XORed with `$AD` on top of the store cipher, so even a dump taken right after
 bank 5 loads shows no game code there. Unxor5B00 takes the second layer off just before the jump.
 
+```text
+Unxor5B00():                         ; $BE5D, block 37
+    for HL in $5B00..$7FFF:          ; BC = $2500, 9472 bytes
+        (HL) = (HL) XOR $AD          ; 53 T a byte
+    JP $8000                         ; the bootstrap
+```
+
+```mermaid
+flowchart LR
+    T[TimeEnd $BF21] --> Q{TimeFailed?}
+    Q -- no --> U[Unxor5B00: 9472 bytes XOR $AD]
+    U --> B[JP $8000: the bootstrap]
+    Q -- yes --> W[TimeWipe from $C3EE down, for ever]
+```
+
+![Unxor5B00 sweeping bank 5 from 5B00 to 7FFF in c1](img/load/Unxor5B00.gif)
+
+*`python3 tools/fig_loader.py memgrid --work W --from 23962 --to 23970:35454 --step 17727 --range 5B00-7FFF --row 128
+--cell 5 --label '...' --delay 150 docs/img/load/Unxor5B00.gif` (W: an instance opened on `work/stage1/c1/session.ttd`
+with `kit/rs.py open`; every quarter of a 128K frame, 35 pictures). The sweep runs up from `$5B00` at about 330 bytes
+a picture (17 727 T / 53 T a byte = 334), from frame 23962 to 23969; the 35 pictures change 9472 bytes in all, every
+byte of the range once.*
+
+Worked example, c1 (TTD `memory_at`): at frame 23961 `$5B00-$5B07` read `AD AD AD AD AD AD FF A5`; at frame 23974
+they read `00 00 00 00 00 00 52 08`, the first bytes of `build/game.bin` (`$5B00`): `$AD` XOR `$AD` = `$00`, `$FF`
+XOR `$AD` = `$52`, `$A5` XOR `$AD` = `$08`. The six zeros of the system area went to tape as `$AD`.
+
 The bootstrap at `$8000` (`src/game/bootstrap.asm`, the listing `build/game.lst`):
 
 ```text
@@ -649,8 +769,8 @@ $8043             JP (HL)                        ; the game's entry
 The LDIR copies over the loader, which is safe: the bootstrap runs below `$8301`. `$8000-$8300` keeps the
 bootstrap, and the game then builds its IM 2 table at `$8200-$8300` (doc 4.2).
 
-c1: the last block is read by frame 23856; the bank-5 bytes change, the bootstrap runs and the game is entered
-(`JP $68F4`) at frame 23974. Bank 2 then differs from frame 23724 in 10 838 bytes. Bank 1 is never written again in
+c1: the last block is read by frame 23856; the bank-5 bytes change in frames 23962-23969 (Unxor5B00), the bootstrap's
+copy follows, and the game is entered (`JP $68F4`) at frame 23974. Bank 2 then differs from frame 23724 in 10 838 bytes. Bank 1 is never written again in
 any recording.
 
 The point: the last pieces of the loader come off the tape as the loader runs, so the code that starts the game
@@ -734,9 +854,11 @@ LoadMission:                          ; $84C1
             if LoadBlock() fails:
                 if SPACE is not held: goto LoadMissionBlock
                 return                ; SPACE: give up
-        copy the part a reload restores to bank 3   ; MissionBlockLoaded $8579: from the object list
+        copy the part a reload restores to bank 3   ; MissionBlockLoaded $8570: from the object list
                                       ; (header word $DBDA) to restore-end ($DBED); mission 1 $DCBC-$FB3E
-        MissionSetup                  ; the parameters, the objects to bank 6
+        MissionSetup                  ; $8598: the pad's 12 bytes to MissionParams $7E82; the map's
+                                      ; vertices (128 bytes from $DC00) and segments (6 a segment) to
+                                      ; bank 6, the segment count to bank 6 $DBF3
 ```
 
 ```text
@@ -903,7 +1025,10 @@ build makes the same 45 blocks Ocean mastered, bit for bit.
 ## 3.13 Known only from the code
 
 - The Multiface check of LoaderStart (no recording has a Multiface attached).
-- TimeFailed and TimeWipe: every mark in c1 reads correctly, so the wipe path never runs.
+- TimeFailed and TimeWipe: every mark in c1 reads correctly and TimeCheck passes (TimeBuffer all zero), so a bad
+  mark or a failed TimeCheck, and the wipe path after either, never run.
+- TimeCheck on a +2A / +3: the ROM byte `$006D` = `$28` skips it; no recording uses that ROM, and why it is skipped is
+  SUSPECTED.
 - The decoy rows of the stage's first table (`$6000`, `$4000`, `$FB00`): replaced before they are read.
 - The SPACE exit of LoadMissionBlock: m2ocean never presses SPACE.
 - The padding of WaitTask's paths towards one length: read from the code, not timed.

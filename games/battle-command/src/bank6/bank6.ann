@@ -442,7 +442,7 @@ $CE28 NumberObjectsLoop
 $CE2E c EncodePassword ; Pack MissionsDone and Score into the ten 5-bit values at $CEFB
 $CE3E EncodeLoop
 $CE5E ChecksumLoop
-> Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag of missions 1-8; the ninth and tenth: the flags of missions 9-10 and a 5-bit checksum (XOR of the score's four bytes). Witness: L1 1 (menu).
+> Eight values: 4 bits of the score (ScoreBits `$CF06`) and in bit 4 the flag of missions 1-8; the ninth and tenth: the flags of missions 9-10 (value 8 bits 0, 1) and an 8-bit checksum, the XOR of the score's four bytes, split as its low 3 bits in value 8 (bits 2-4) and its high 5 bits in value 9. Witness: L1 1 (menu).
 > A non-zero score: m1complete frame 22160 ("C5989999PB", score 500, mission 1), m4complete 21956 ("H59K9999PK", score 2500, missions 1 and 4).
 
 $CE7D b DecodedFlags 10 ; The ten completion flags DecodePassword makes
@@ -649,11 +649,11 @@ $D58C c UpdatePanelBars ; The four bars of the cockpit panel
 
 $D598 c DrawHeadingStrip ; Redraw the compass strip from the heading $7612 ($75F0 + $22) when it changed
 > Shapes from BarShapesB, shifted to the pixel, five lines 12 bytes apart. Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
-$D5A1 SpeedLastOp ; LD E,n: n ($D5A2) the value last drawn
-$D5CA SpeedBarLine
-$D5DE SpeedBarShift
-$D5DF SpeedBarShiftLoop
-$D5EB SpeedBarStore
+$D5A1 HeadingLastOp ; LD E,n: n ($D5A2) the heading value last drawn
+$D5CA HeadingStripLine
+$D5DE HeadingStripShift
+$D5DF HeadingStripShiftLoop
+$D5EB HeadingStripStore
 
 $D612 c DrawSpeedBar ; The speed bar: $7E8E = abs(speed), line $90 column 8, when it changed
 > Witness: L1 3601 (c1, death, m2erbe, missions, play, play2).
