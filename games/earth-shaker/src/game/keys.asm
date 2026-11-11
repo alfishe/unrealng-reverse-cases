@@ -2,11 +2,11 @@
 ; keys.asm: The keys: the key table, the redefinition, keyboard or joystick
 ;
 ; The keys are read by self-modified code: TryLeft $83C3, TryRight $8437, TryUp $84AD, TryDown $84F9 and KeysStep
-; $8759 each start LD A,row; OUT ($FF),A; IN A,($FE); AND mask (the OUT to port $FF only sets A's row for the IN).
-; RedefineKeys $8C30 takes a key with WaitKey $8C1D (KeyTable $A900: 40 records of half row, bit mask, character) and
-; writes its row and mask into the sites. Keys 3 and 4 of the menu copy whole 9-byte code fragments into the sites:
-; KeyboardControl $EBCA the copies saved at KeyboardCode $EB15, JoystickControl $EC2E the Kempston fragments
-; KempstonCode $EAC4 (IN A,($1F) and a bit test).
+; $8759 each start LD A,row; OUT ($FF),A; IN A,($FE); AND mask (the OUT to port $FF has no effect: no 48K device
+; decodes an odd port; IN A,($FE) puts A on the high address byte itself). RedefineKeys $8C30 takes a key with WaitKey
+; $8C1D (KeyTable $A900: 40 records of half row, bit mask, character) and writes its row and mask into the sites. Keys
+; 3 and 4 of the menu copy whole 9-byte code fragments into the sites: KeyboardControl $EBCA the copies saved at
+; KeyboardCode $EB15, JoystickControl $EC2E the Kempston fragments KempstonCode $EAC4 (IN A,($1F) and a bit test).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $8C0E
@@ -32,6 +32,9 @@ PauseSkip:
 ; Scans the 40 records over and over. Out: HL = the record's mask byte, the
 ; character at HL + 1.
 ;
+; No release wait: a key still down when WaitKey is called again is taken again
+; (the menu recording's redefinition took 2 for left, right and up).
+;
 ; Witness: L1 69199 (c1, hiscore, lives, menu, rzx x1).
 WaitKey:
   LD B,$28
@@ -53,6 +56,10 @@ WaitKeyLoop:
 ; ClearAndKeyboard $ECDC; for each prompt of KeyPrompts $A978: WaitKey, the
 ; key's character printed, its row and mask written into the key sites ($83C4 /
 ; $83CA, $876C / $8772 ...), RaspSound $90A0.
+;
+; Starts with ClearAndKeyboard: the keyboard code is back in the sites before
+; the keys are written, so a redefinition always selects the keyboard. The fire
+; prompt writes KeysStep only.
 ;
 ; Witness: L1 2 (c1, menu).
 RedefineKeys:
@@ -320,6 +327,10 @@ KeyboardControl:
   RET
 
 ; Key 4: the joystick code into the key sites
+;
+; SaveKeyboardCode first: key 4 pressed twice saves the Kempston code over
+; KeyboardCode, and key 3 then restores the Kempston code; a redefinition made
+; after the last key 4 is lost on key 3 (KeyboardCode changes only here).
 ;
 ; Witness: L1 2 (c1, menu).
 JoystickControl:

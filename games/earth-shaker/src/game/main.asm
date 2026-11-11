@@ -147,6 +147,9 @@ ShiftTimeBarLoop2:
 
 ; The time-out sound: a falling sweep
 ;
+; LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0
+; byte gives a 256-turn low half).
+;
 ; Witness: L1 14 (c1, hiscore, lives, timer, rzx x1).
 TimeOutSound:
   DI
@@ -213,8 +216,10 @@ TimerStep:
 
 ; The cave done: every remaining bar pixel is a point
 ;
-; Interrupts off. While $52C0 is not 0: BonusTick $871C (a beep, D its period,
-; rising), ShiftTimeBar, AddPoint, ShowScore.
+; DI at its start, but the first BEEPER's EI turns them on again: 41 of the 45
+; interrupts in the bonus are taken (rzx-earth01 3668-3713). While $52C0 is not
+; 0: BonusTick $871C (a beep, D its period, rising), ShiftTimeBar, AddPoint,
+; ShowScore.
 ;
 ; Witness: L1 31 (rzx x31).
 TimeBonus:
@@ -234,7 +239,8 @@ TimeBonusLoop:
   EI
   RET
 
-; One bonus beep: ROM BEEPER HL = D, DE = 1; D - 3
+; One bonus beep: ROM BEEPER HL = D, DE = 1; its three DEC D are lost to
+; TimeBonus's POP DE, so D falls by 1 a pixel (TimeBonus's own DEC D)
 ;
 ; Witness: L1 1983 (rzx x31).
 BonusTick:
@@ -499,6 +505,11 @@ CaveIntroSkip:
   ORG $93A5
 
 ; Key G (half row $FD, bit 4): back to the menu, the return addresses dropped
+;
+; The four POPs drop the returns of PlayCave, CavePlay, CaveStart and NewGame
+; ($889B, $89F3, $8A07, $8BE8, the CALL GameOver); the RET reaches $8B42 (JP
+; GameEntry): no game-over screen, no high-score check. Witness: c1, AbortKey
+; last at 15 244, GameOver never runs.
 ;
 ; Witness: L1 44099 (c1, hiscore, lives, timer, rzx x32).
 AbortKey:

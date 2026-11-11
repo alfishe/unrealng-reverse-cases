@@ -173,8 +173,8 @@ Two facts about the font are known only from the code:
 2. The key names on the redefine screen are printed with PrintText from the key's character in KeyTable `$A900`
    ([doc 5](05-controls.md)). Three keys have a non-letter character. CAPS SHIFT is `c`, so it shows the anti-gravity
    arrow. ENTER is `e`, so it shows the `g` shape. SYMBOL SHIFT is `s` (`$73`), so it prints the glyph at `$BF98`,
-   which is in FontUnused. Stage 2 said `$68-$7F` are never printed. `$73` is printed this way (sent to the lead in
-   `work/docs/esD-src-changes.md`).
+   which is in FontUnused. Stage 2 said `$68-$7F` are never printed. `$73` is printed this way (game.ann's FontUnused
+   now says so).
 
 ```mermaid
 flowchart TD
@@ -423,8 +423,8 @@ How to read the figure:
   The taken count goes up, not down.
 
 The gem field corrects two earlier descriptions. Stage 2's NOTES (3.4) and the `.ann` of CountGem say the gem digits
-count down. The code increments GemDigits (IncDigits, 8.6) and the screen shows the count rising. The `.ann` change
-is sent to the lead (`work/docs/esD-src-changes.md`).
+count down. The code increments GemDigits (IncDigits, 8.6) and the screen shows the count rising. Both are
+corrected (game.ann's CountGem, the stage 2 NOTES 3.4).
 
 ![Who wrote rows 22-23 in rzx-earth01 frames 691-830](img/text/panel-writers.png)
 

@@ -18,8 +18,8 @@
 ; forcefields, bubbles, elixirs, "jumping jelly beans"), the keys G (abort), H
 ; (quit screen) and F (map), and "(C) 1990 MICHAEL BATTY".
 ;
-; Witness: the menu build reads $6D42-$6D45 before its key press; the rest is
-; read only by the same loop (known only from the code).
+; Witness: the menu recording reads the whole text: 3472 ScrollBottomLine calls
+; = 434 x 8, frames 3284-5478, the last character the 0 end mark.
 ScrollerText:
   INCBIN "res/texts/scroller.bin",$0000,434
 

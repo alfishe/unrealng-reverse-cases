@@ -6,8 +6,8 @@
 ; USR 35616. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM
 ; reads. LINE 1 starts the program at the first line at or after 1, line 10.
 ;
-; c1: the ROM loads the block at signal speed and runs the line at once; the game's code runs first at frame 11 225,
-; the menu (WALKTHROUGH 1).
+; c1: the ROM loads the block at signal speed and runs the line at once; the game's code runs first at frame 11222 (T
+; 46761 in the frame: GameEntry $8B20 called from USR at $34BB), the menu (WALKTHROUGH 1).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; BASIC line 10: INK 7: PAPER 0: BORDER 0: CLEAR 27000: PRINT AT 0,0;"EARTH

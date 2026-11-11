@@ -1,10 +1,10 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; hud.asm: The HUD, the score, the time bar, the digits and the texts
 ;
-; The bottom line (row 23) shows the cave, the gems still needed, the lives (ShowCounters $85AD) and the score
-; (ShowScore $8342); the time bar is 4 pixel lines at $52C0 (row 22). Numbers are strings of decimal digits (0-9 a
-; byte) printed with the digit glyphs at $BD80 (PrintDigits $832A); texts are ASCII printed with the font, glyph $BC00
-; + 8 x code (PrintText $834F).
+; The bottom line (row 23) shows the cave, the gems needed and taken (needed : taken), the lives (ShowCounters $85AD)
+; and the score (ShowScore $8342); the time bar is 4 pixel lines at $52C0 (row 22). Numbers are strings of decimal
+; digits (0-9 a byte) printed with the digit glyphs at $BD80 (PrintDigits $832A); texts are ASCII printed with the
+; font, glyph $BC00 + 8 x code (PrintText $834F).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $8315
@@ -150,7 +150,10 @@ FaceLeft:
 ; Count a gem; open the exit when enough are taken
 ;
 ; GemCount $FD92 + 1; when it equals GemsNeeded $FD9A, ExitOpen $FD85 = $FF.
-; The gem digits GemsNeededDigits $FD9E count down.
+; Then GemDigits $FD82 + 1 (IncDigits $8315: the gems taken, counting up from
+; 00), printed at row 23 (PrintDigits, BC = $1709), and GemSound $82F9.
+;
+; Witness: rzx-earth01 frame 814, the panel goes from 00 to 01.
 ;
 ; Witness: L1 1680 (c1, rzx x32).
 CountGem:
@@ -204,6 +207,10 @@ ShowCounters:
 ; Fill the time bar (4 pixel lines of 32 bytes $FF from $52C0) and colour it
 ;
 ; Then BarColours $9224.
+;
+; 4 pixel lines of 32 bytes from $52C0: 256 pixels, one taken every 4th pass by
+; TimerStep, so a cave lasts 1024 passes (the timer recording: 5543 frames of
+; passes, 5.41 frames a pass).
 ;
 ; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 FillTimeBar:
@@ -346,6 +353,11 @@ AddPoints:
 
 ; 20 points
 ;
+; The PUSH BC at $A8E3 is never popped: the RET pops it. BC is $0038 after
+; PotionTune, so the RET jumps to the ROM's IM 1 routine at $0038, which scans
+; the keyboard and RETs to the true return $91DA in TakePotion. Witness:
+; rzx-earth09 frame 6397 ($A8F1 at T 67102, $0038 at 67112, $91DA at 67994).
+;
 ; Witness: L1 6 (rzx x6).
 PotionScore:
   CALL PotionTune
@@ -430,7 +442,8 @@ BarAttrsPad:
 HudLine:
   INCBIN "res/texts/hud-line.bin",$0000,32
 
-; The font: characters $20-$7F, 8 bytes each
+; The font: characters $20-$7F, 8 bytes each ($68-$7F unused but $73, the
+; SYMBOL SHIFT name)
 Font:
   INCBIN "res/graphics/font.bin",$0000,128
 DigitGlyphs:

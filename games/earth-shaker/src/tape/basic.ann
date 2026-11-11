@@ -5,7 +5,7 @@
 
 @module basic ; The BASIC: line 10, which sets the colours, clears RAMTOP below the game, prints the title, loads the CODE block and enters the menu
 @about TZX block 11 holds the program "EARTH" (header, TZX block 10: LINE 1, program length 107, no variables). The one line is 10 INK 7: PAPER 0: BORDER 0: CLEAR 27000: PRINT AT 0,0;"EARTH SHAKER by M.BATTY": LOAD "" CODE : RANDOMIZE USR 35616. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads. LINE 1 starts the program at the first line at or after 1, line 10.
-@about c1: the ROM loads the block at signal speed and runs the line at once; the game's code runs first at frame 11 225, the menu (WALKTHROUGH 1).
+@about c1: the ROM loads the block at signal speed and runs the line at once; the game's code runs first at frame 11222 (T 46761 in the frame: GameEntry $8B20 called from USR at $34BB), the menu (WALKTHROUGH 1).
 
 $5CCB b BasicLine10 ; BASIC line 10: INK 7: PAPER 0: BORDER 0: CLEAR 27000: PRINT AT 0,0;"EARTH SHAKER by M.BATTY": LOAD "" CODE : RANDOMIZE USR 35616
 > The whole program (the header's program length 107 covers it all): the line number 10 (two bytes, high byte first), the line's length (103, low byte first), then eight statements split by ":" ($3A) and closed by ENTER ($0D).

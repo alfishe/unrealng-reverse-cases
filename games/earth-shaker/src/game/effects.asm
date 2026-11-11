@@ -168,6 +168,9 @@ DeathLoopPad:
 
 ; The exit opens: a sweep
 ;
+; LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0
+; byte gives a 256-turn low half).
+;
 ; Witness: L1 32 (rzx x31).
 ExitOpenSound:
   DI

@@ -219,6 +219,9 @@ ClearMapFlag:
 
 ; Key F: the map, once per cave
 ;
+; Its last instruction, CALL DrawWindowAtOrigin $8D75, runs every pass: this is
+; where the window is drawn.
+;
 ; Witness: L1 44098 (c1, hiscore, lives, timer, rzx x32).
 MapKey:
   LD A,$FD

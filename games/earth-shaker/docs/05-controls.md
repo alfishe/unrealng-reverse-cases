@@ -114,8 +114,7 @@ So the `LD A,row` before the IN is all the row selection needs.
 The `OUT ($FF),A` does nothing for the read.
 Port `$FF` is odd, and the ULA answers only even ports, so no device of a 48K machine takes the write.
 The row reaches the keyboard through the IN instruction alone.
-The keys module header in game.ann says the OUT "only sets A's row for the IN"; that wording is corrected in
-`work/docs/esB-src-changes.md`.
+Stage 2's keys module header said the OUT "only sets A's row for the IN"; game.ann now says it has no effect.
 
 ```text
 key site, keyboard form:
@@ -637,7 +636,7 @@ The left key's code in full, from the site to MoveLeft:
 8421  00           NOP
 8422  3E 06        LD A,$06
 8424  BE           CP (HL)
-8425  DA D6 94     JP C,RightSpecial      ; codes 7-15
+8425  DA D6 94     JP C,LeftSpecial       ; codes 7-15
 8428  2A 9C FD     LD HL,(PlayerIndex)    ; MoveLeft
 842B  2B           DEC HL
 842C  22 9C FD     LD (PlayerIndex),HL
@@ -648,9 +647,8 @@ The left key's code in full, from the site to MoveLeft:
 8436  C9           RET
 ```
 
-TryLeft jumps to the handler labelled RightSpecial `$94D6`, and TryRight to LeftSpecial `$9494`.
-The two labels are swapped against the module header's description; `work/docs/esB-src-changes.md` asks the lead to
-check them.
+TryLeft jumps to LeftSpecial `$94D6` (continuation MoveLeft), and TryRight to RightSpecial `$9494` (continuation
+MoveRight). Stage 2 had the two labels the other way round; they were renamed after the listing (doc 10.8).
 
 Three consequences follow from KeyMoved being set before the tests:
 
@@ -953,5 +951,5 @@ The point: play input is sampled once per pass, and the pass time sets the feel 
 - The faults of the control save (cases A and B) are shown on a clone, not in a recording.
 - What the Kempston form reads when no interface is fitted depends on the machine's bus; the game does not test for
   the interface. No recording covers it.
-- The swapped special labels (TryLeft to RightSpecial, TryRight to LeftSpecial) are read from the generated asm; the
-  handlers' behaviour in each direction is doc 10's.
+- The special dispatchers (TryLeft to LeftSpecial `$94D6`, TryRight to RightSpecial `$9494`) are read from the
+  generated asm; the handlers' behaviour in each direction is doc 10's.

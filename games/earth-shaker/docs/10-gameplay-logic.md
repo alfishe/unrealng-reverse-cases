@@ -256,8 +256,8 @@ How to read the animation:
   docs/img/routines/ScanCells.gif`.
 
 **The point**: the bottom-up order makes the grid fall one row a pass. The vacated mark makes columns spread out and
-stops a rolled object from moving twice. Stage 2's note that "a falling column moves as one" is wrong; the logs show
-the gaps (requested in `work/docs/esC-src-changes.md`).
+stops a rolled object from moving twice. Stage 2's note that "a falling column moves as one" was wrong; the logs show
+the gaps (the stage 2 NOTES 3.1 are corrected).
 
 ## 10.3 Falling and crushing
 
@@ -774,9 +774,9 @@ flowchart LR
     D -->|"above 0F"| X
 ```
 
-The dispatcher that `TryLeft` uses is named `RightSpecial $94D6` and goes on with `MoveLeft`; `TryRight` uses
-`LeftSpecial $9494`, which goes on with `MoveRight`. The names are swapped against the moves they serve
-(requested in `work/docs/esC-src-changes.md`).
+The dispatcher that `TryLeft` uses is `LeftSpecial $94D6` and goes on with `MoveLeft`; `TryRight` uses
+`RightSpecial $9494`, which goes on with `MoveRight`. Stage 2 had the two names the other way round; they were
+renamed to the moves they serve.
 
 ### The jelly bean and the force field
 
@@ -1277,7 +1277,8 @@ because it holds more of the objects that cost time or block the way, not becaus
   the time for it to land above the player (10.3).
 - **Columns spread.** The vacated mark makes a falling column open one-cell gaps (10.2; 1930 cases in the RZX logs).
 - **The burst code `$10` is not skipped.** The scan's `CP $10`, `JR C` skips only codes above `$10` (doc 07.8).
-- **The dispatchers' names are swapped.** `TryLeft` jumps to `RightSpecial`, `TryRight` to `LeftSpecial` (10.8).
+- **One dispatcher per direction, the same tests.** `TryLeft` jumps to `LeftSpecial`, `TryRight` to `RightSpecial`;
+  they differ only in the continuation and the teleport (10.8). Stage 2 had their names swapped.
 - **Teleporting down moves the player up first.** `TeleportDown $941F` calls `MoveUp`, not `MoveDown`, then erases the
   teleporter below. With another teleporter left the player is moved there anyway, so it does not show. With none
   left, the player stays one cell above where he stood and `PutPlayer` writes him over whatever was there. Known only

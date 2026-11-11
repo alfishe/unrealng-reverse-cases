@@ -273,10 +273,12 @@ DrawWindowLoop:
   JR NZ,DrawWindowLoop
   RET
 
-; The window's first cell from the player's place; draw the window
+; The window's first cell from the player's place
 ;
 ; Row = PlayerIndex / 30, column the rest; the column clamped to 8-22, the row
-; to 5-14; ViewOrigin $FD70 = 30 x (row - 5) + column - 8; DrawWindow.
+; to 5-14; ViewOrigin $FD70 = 30 x (row - 5) + column - 8 (computed as 30 x
+; (row + 1) + column - 188). The window is drawn later, by MapKey's CALL
+; DrawWindowAtOrigin.
 ;
 ; Witness: L1 44155 (c1, hiscore, lives, timer, rzx x32).
 WindowOrigin:
@@ -324,9 +326,9 @@ WindowOriginLoop2:
 ; Draw cell code A at character row B, column C (2 x 2 characters)
 ;
 ; The graphic from CellGraphicsTable; its 4 attributes through AttrAddrDE
-; $8265, then 32 pixel bytes in zigzag order. Valid on even character rows (the
-; pixel address steps assume a cell inside one third... the rows 0-20 of the
-; window).
+; $8265, then 32 pixel bytes in zigzag order. Valid on even character rows: SET
+; 5,E for the lower half needs bit 5 of E clear. The graphic pointer steps with
+; INC L inside each 4-byte group, so no group may cross a 256-byte page.
 ;
 ; Witness: L1 7771378 (c1, hiscore, lives, timer, rzx x32).
 DrawCell:

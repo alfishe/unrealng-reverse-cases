@@ -59,6 +59,7 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | `kit/memanim.py`'s `buffer:` view draws a stack or record as bits, so pushed words cannot be read as hex | SimCity doc 04 (scA, Interrupt.gif) | the caption says so | fixed (kit, `routine_anim.py` (the view is its, not memanim's) `buffer:ADDR:WxH:hex` / `:words`: bytes or words in hex, a line an address). Interrupt.gif not redrawn |
 | `kit/refdocs.py` links `docs/img/routines/NAME.gif` by routine name, so two documents' animations of one routine share one file: the second writer's overwrites the first's | SimCity docs 04 and 10 (`SimTask.gif`) | doc 10 shows doc 04's animation; its own was lost | fixed (kit, refdocs links `NAME.gif` and every `NAME-what.gif`; routine_anim / memanim note an overwrite). SimCity doc 12 links `SimTask-growth.gif` too |
 | an `@isub` written in decimal (`LD DE,-10000`) comes out as `-$2710` in the `.asm` | SimCity integration (Print5Digits, PrintNumber24) | none (the bytes are right) | fixed (kit, `restore_isubs` writes a decimal `@isub` back as the `.ann` has it) |
+| `kit/routine_anim.py --view buffer:ADDR:WxH:hex` draws the hex view at its own size: a 30-byte-wide view gives a 1084 px picture, `--width 1050` is not applied to it (`fit_width` never scales below 1 x) | Earth Shaker docs (esB, `docs/img/routines/KeysStep.gif`, `buffer:FEF2:30x6:hex`) | none: the GIF stays 1084 px, the caption says so | open |
 
 ## For unreal-ng
 

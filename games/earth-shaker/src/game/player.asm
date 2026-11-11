@@ -9,7 +9,7 @@
 ; A move into earth (6) or empty (0) moves the player; earth sets DugEarth $E857 (the dig noise). A wall (5), a closed
 ; exit (1) and the cave's edge block. A boulder (2) moves left or right when the cell beyond is empty (PushBoulder
 ; $E81F); never up or down. A gem (7) is taken (CollectGem $8595). The codes 8-$0F have their handlers through
-; LeftSpecial $9494, RightSpecial $94D6, UpSpecial $9414, DownSpecial $93CE. With the fire key held (FireStep $8878)
+; LeftSpecial $94D6, RightSpecial $9494, UpSpecial $9414, DownSpecial $93CE. With the fire key held (FireStep $8878)
 ; the direction key acts on the next cell without moving the player.
 ; --------------------------------------------------------------------------------------------------------------------
 
@@ -20,8 +20,9 @@
 ; The key site LD A,row ($83C4) / AND mask ($83CA) is written by RedefineKeys
 ; $8C30 and the control choice. Pressed: PlayerFacing = 4, KeyMoved = $FF;
 ; column 0 stops; the exit (1) only when ExitOpen (then CaveDone); the wall
-; test BlockWall $E869, boulders PushBoulder $E81F, the codes > 7 LeftSpecial
-; $9494, a gem CollectGem; then MoveLeft $8428.
+; test BlockWall $E869, boulders PushBoulder $E81F, the codes > 6 LeftSpecial
+; $94D6 (which takes gems and the other specials, continuation MoveLeft); then
+; MoveLeft $8428.
 ;
 ; Witness: L1 42409 (c1, hiscore, lives, timer, rzx x32).
 TryLeft:
@@ -80,7 +81,7 @@ TryLeftSkip2:
   NOP
   LD A,$06
   CP (HL)
-  JP C,RightSpecial
+  JP C,LeftSpecial
 
 ; Move the player one cell left (the old cell 0)
 ;
@@ -98,7 +99,7 @@ MoveLeft:
 ; The right key: move or act to the right
 ;
 ; As TryLeft $83C3 with PlayerFacing = 3, column 29 the edge, RightSpecial
-; $94D6, MoveRight $849E.
+; $9494 (continuation MoveRight), MoveRight $849E.
 ;
 ; Witness: L1 36640 (c1, hiscore, lives, timer, rzx x32).
 TryRight:
@@ -159,7 +160,7 @@ TryRightSkip2:
   NOP
   LD A,$06
   CP (HL)
-  JP C,LeftSpecial
+  JP C,RightSpecial
 
 ; Move the player one cell right
 ;
@@ -284,8 +285,9 @@ MoveDown:
 ; One player step: the four keys in turn until one moves the player
 ;
 ; ClearStepFlags $E858 (DugEarth, KeyMoved, BoulderPushed 0). PlayerIndex 0
-; skips the keys (no recording has it). TryLeft, TryRight, TryUp, TryDown, each
-; only while KeyMoved is 0; DigNoiseIfDug $E860.
+; skips only TryLeft (JR Z,PlayerStepSkip lands on the TryRight call; no
+; recording has it). TryLeft, TryRight, TryUp, TryDown, each only while
+; KeyMoved is not $FF; DigNoiseIfDug $E860.
 ;
 ; Witness: L1 42421 (c1, hiscore, lives, timer, rzx x32).
 PlayerStep:
@@ -592,11 +594,14 @@ ForceFieldSkip:
 ; bubble BubbleUp $934F; fire WalkIntoFire $91AE (PlayerKilled $7FFD = $FF,
 ; Continue $9410).
 ;
-; Known only from the code: the fire test $9194 and the tail $919A (PlayerIndex
-; + 1 - 30, the old cell $20; no code $07-$0F is left to reach it) never ran:
-; no build walked up into fire. WalkIntoFire itself ran in the stage 2
-; recording death-fire (frame 279, from LeftSpecial $9494: cave 4, one step
-; left into fire).
+; Known only from the code: the fire test $9194 and the tail $919A never ran:
+; no build walked up into fire or a potion. The tail is reached after a potion
+; taken from above: CALL Z,TakePotion returns with HL at the $FF that ends
+; LifeTune, every later test fails, CP $0F leaves carry, and SBC gives
+; PlayerIndex - 30: the player moves up into the potion's cell, by luck of the
+; carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame
+; 279, from LeftSpecial $94D6, TryLeft's dispatcher: cave 4, one step left into
+; fire).
 ;
 ; Witness: L1 514 (rzx x32).
 UpSpecialCell:
@@ -642,8 +647,8 @@ UpSpecialCellSkip:
   ADD HL,DE
   LD (HL),$20
   RET
-; This entry point is used by the routines at DownSpecial, LeftSpecial and
-; RightSpecial.
+; This entry point is used by the routines at DownSpecial, RightSpecial and
+; LeftSpecial.
 WalkIntoFire:
   LD A,$FF
   LD (PlayerKilled),A
@@ -965,20 +970,21 @@ BubbleDownSkip2:
   POP HL
   JP Continue
 
-; The cell to the left is a special: its handler
+; The cell to the right is a special (TryRight $8437): its handler,
+; continuation MoveRight
 ;
 ; Witness: L1 957 (c1, rzx x32).
-LeftSpecial:
+RightSpecial:
   PUSH HL
   LD HL,MoveRight
   LD (Continuation),HL
   POP HL
   LD A,$07
   CP (HL)
-  JR NZ,LeftSpecialSkip
+  JR NZ,RightSpecialSkip
   CALL CollectGem
   JP MoveRight
-LeftSpecialSkip:
+RightSpecialSkip:
   LD A,$08
   CP (HL)
   JP Z,JellyBean
@@ -1005,20 +1011,21 @@ LeftSpecialSkip:
   JP Z,WalkIntoFire
   RET
 
-; The cell to the right is a special: its handler
+; The cell to the left is a special (TryLeft $83C3): its handler, continuation
+; MoveLeft
 ;
 ; Witness: L1 838 (rzx x32).
-RightSpecial:
+LeftSpecial:
   PUSH HL
   LD HL,MoveLeft
   LD (Continuation),HL
   POP HL
   LD A,$07
   CP (HL)
-  JR NZ,RightSpecialSkip
+  JR NZ,LeftSpecialSkip
   CALL CollectGem
   JP MoveLeft
-RightSpecialSkip:
+LeftSpecialSkip:
   LD A,$08
   CP (HL)
   JP Z,JellyBean

@@ -58,9 +58,9 @@ tools/fig_play.py --out docs/img/play REC:FRAME:NAME ...` (stage 1).*
 
 *The menu: recording `menu`, frame 250. Lines 3 and 4 are the control choice, keyboard or joystick.*
 
-![The menu after key 4](img/play/menu-joystick.png)
+![The menu drawn again after the redefinition](img/play/menu-joystick.png)
 
-*Recording `c1`, frame 12550, after key 4: Kempston joystick chosen.*
+*Recording `c1`, frame 12 550: the title drawn again after the redefinition (the sites hold the keyboard code; the screen shows no control choice; [doc 5.3](05-controls.md#53-two-copies-of-the-code-keyboard-and-kempston)).*
 
 ![The high-score table](img/play/hiscores.png)
 
@@ -272,7 +272,7 @@ The game over and a high score.
 
 ![A high score entered](img/play/hiscore-entered.png)
 
-*Recording `hiscore`, frame 5500: 009835 with the name "HH" (the H presses after the last life went into the name).*
+*Recording `hiscore`, frame 5500: 009835 with the name typed so far, "HH" (the H presses after the last life went into the name; H held 10 frames is typed twice, WaitKey has no release wait). The name ends as "HHAGENT", ENTER at frame 6685 ([doc 8.11](08-hud-and-text.md#811-the-high-score-table-the-insertion-and-the-name-entry)).*
 
 The win.
 

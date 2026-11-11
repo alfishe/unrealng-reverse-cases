@@ -3,9 +3,9 @@
 ;
 ; Once a pass ScanCells $8075 walks CaveGrid from row 18, column 29 back to row 0, column 0 (each row right to left,
 ; the rows upward), DE the cell below. Earth 6, empty 0, wall 5, force field 9, bubble $0E, teleporter $0D, the exit
-; 1, the switch box $0B, the player 3 / 4 and the animation codes $10-$1F are skipped; boulders 2, gems 7, jelly beans
-; 8, anti-gravity arrows $0A, potions $0C and fire $0F fall (MoveObject $80DB). Row 19 is never a source: nothing
-; falls out of the cave.
+; 1, the switch box $0B, the player 3 / 4 and the codes above $10 ($11-$1F) are skipped ($10 itself reaches MoveObject
+; $80DB); boulders 2, gems 7, jelly beans 8, anti-gravity arrows $0A, potions $0C and fire $0F fall (MoveObject
+; $80DB). Row 19 is never a source: nothing falls out of the cave.
 ;
 ; An object falls one cell when the cell below is empty; the cell it left gets $20 (just vacated: nothing falls or
 ; rolls into it this pass; ClearVacated $81AC clears the marks at the next pass). If the cell under the object's new
@@ -766,6 +766,9 @@ EarthAnimStepSkip:
   RET
 
 ; Patch the scan so earth falls in the caves whose earth graphic is $A4xx
+;
+; The earth graphic's page decides the rule: earth falls when word 6 points
+; into page $A4 (GfxFallingEarth).
 ;
 ; Witness: L1 48 (c1, hiscore, lives, timer, rzx x32).
 SetEarthFalls:

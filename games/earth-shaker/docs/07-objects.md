@@ -655,7 +655,7 @@ TryLeft:
 8421  NOP
 8422  LD A,$06
 8424  CP (HL)
-8425  JP C,RightSpecial     ; a code above 6
+8425  JP C,LeftSpecial      ; a code above 6
 8428  LD HL,(PlayerIndex)   ; MoveLeft
 842B  DEC HL
 842C  LD (PlayerIndex),HL
@@ -678,10 +678,9 @@ Four details decide the play:
   the old cell therefore falls in the same pass after a sideways step, and waits a pass after a step down. Doc 10.3
   shows why the second one kills.
 
-The dispatcher that `TryLeft` jumps to is `RightSpecial $94D6`, whose continuation is `MoveLeft`. `TryRight` jumps to
-`LeftSpecial $9494`, whose continuation is `MoveRight`. The two names say the opposite of the move they serve, and
-`TryLeft`'s `.ann` text names the wrong one; `work/docs/esC-src-changes.md`
-proposes swapping the names.
+The dispatcher that `TryLeft` jumps to is `LeftSpecial $94D6`, whose continuation is `MoveLeft`. `TryRight` jumps to
+`RightSpecial $9494`, whose continuation is `MoveRight`. Stage 2 had the two names the other way round; they were
+renamed to the moves they serve.
 
 Worked example, `death-crush` (cave 1, up, up, down), sampled as above:
 
@@ -713,8 +712,9 @@ place, not under the old one. That last choice is what lets an object rest on th
 There are none. No instruction reads the R register (no `LD A,R` in the listing), no routine reads the ROM's `FRAMES`
 counter `$5C78`, and no table is indexed by a pass counter. The caves come from the records, the objects move by fixed
 rules, and the only input is the keys. The same keys from the same state give the same game. The 32 RZX files replay
-on our instance from their start snapshots with nothing patched, 31 of them to the RZX's last frame
-([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)); cave 4 parts from the RZX at frame 2344 (stage 2 NOTES 3.10).
+on our instance from their start snapshots with nothing patched, all 32 to the RZX's last frame
+([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)); cave 4 did so once the aligner's tie at frame 2344 was fixed
+(stage 2 NOTES 3.10: an aligner fault, not a game difference).
 
 **The point**: a solution is a fixed sequence of moves. A player can learn a cave like a puzzle, because nothing changes
 from one try to the next.
