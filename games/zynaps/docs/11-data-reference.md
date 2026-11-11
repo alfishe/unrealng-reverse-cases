@@ -5,7 +5,7 @@ tables, buffers, records, variables, graphics, text; an inner label (a field, a 
 its entry, its size up to the next label. The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/c2`, `work/r1`, `work/zyB/w1`, `work/zyB/w2`, local and not in the repository), and, marked
-"(code)", the routines whose `LD` through `(nn)` reads or writes it where the recordings did not see them do so.
+"(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
 Written by `kit/refdocs.py`.
 
 ## tilecopy
@@ -77,11 +77,11 @@ Written by `kit/refdocs.py`.
 | `$7F76` | `SkipDraw` | 1 | Bit 0 set: DrawGroup places nothing (the catch-up loop `$AF6B`) | `DrawGroup` | `ReplayScroll`, `ReplayColumns` (code) |
 | `$7F77` | `PanelBurst` | 1 | Set to 6 by FireLaser `$9C1D` when 0; the panel (`$AB13`) counts it down, a pair of cells moving out | `FireLaser`, `PanelFrame` | `FireLaser`, `PanelFrame` |
 | `$7F78` | `SpinnerFrame` | 1 | The panel spinners' frame 0-15, +1 each odd pass (`$AB13`) | `PanelFrame` | `PanelFrame` |
-| `$7F79` | `SpinnerColour` | 1 | The spinners' ink, + SpinnerColourStep each odd pass, bouncing between 1 and 7 | `LockableHandler`, `PanelFrame`, `PlayerHandler`, `BigEnemyHandler` (code) | `PanelFrame` |
+| `$7F79` | `SpinnerColour` | 1 | The spinners' ink, + SpinnerColourStep each odd pass, bouncing between 1 and 7 | `LockableHandler`, `PanelFrame`, `PlayerHandler`, `BigEnemyFlash` (code) | `PanelFrame` |
 | `$7F7A` | `SpinnerColourStep` | 1 | +1 or -1 | `PanelFrame` | `PanelFrame` |
 | `$7F7B` | `DeathTimer` | 1 | `$FF` while the ship lives; `$16` at its death, counted down (PlayerDying); not `$FF` stops the scroll and the level script | `PlayerHandler`, `ScrollControl`, `WaveScriptStep` | `PlayerHandler`, `RoundPlaySetup`, `KillPlayer` (code) |
-| `$7F7C` | `EndPending` | 1 | The end of play asked for: 1 a life lost, 2 the level done (script op 5), 4 abort | `CheckPauseAndEnd` | `CmdLevelEnd`, `PlayLoop`, `PlayerHandler`, `Pause` (code) |
-| `$7F7D` | `EndCode` | 1 | EndPending moved here by `$ABD5`: ends the play loop (`$B1E9`) | `PlayLoopBranch`, `PlayLoopCheck`, `PlayLoopTest`, `PlayLoopAgain` (code) | `CheckPauseAndEnd`, `PlayLoop` |
+| `$7F7C` | `EndPending` | 1 | The end of play asked for: 1 a life lost, 2 the level done (script op 5), 4 abort | `CheckPauseAndEnd` | `CmdLevelEnd`, `PlayLoop`, `PlayerHandler`, `PauseDelay` (code) |
+| `$7F7D` | `EndCode` | 1 | EndPending moved here by `$ABD5`: ends the play loop (`$B1E9`) | `PlayLoopBranch`, `PlayLoopCheck`, `PlayLoopTest`, `PlayLoopEnd` (code) | `CheckPauseAndEnd`, `PlayLoop` |
 | `$7F7E` | `RowBeep` | 1 | The beeper bit toggled XOR `$18` per playfield row (one of the three explosion-noise toggles; silent while the mask is 0) | `RowStart` | `RowStart` |
 | `$7F7F` | `RowBeepMask` | 1 | Its AND mask: the bit shifted out of SoundPattern1 each pass (`$AA30`) | `RowStart` | `PlayInterrupt` |
 | `$7F80` | `SoundPattern1` | 2 | A 16-bit pattern shifted left each pass; `$FD00` for an explosion (StartExplosion `$A293`) | `PlayInterrupt` | `BigEnemyHandler`, `PlayInterrupt`, `StartExplosion` |
@@ -99,9 +99,9 @@ Written by `kit/refdocs.py`.
 | `$7F95` | `EffectFrames` | 1 | The frames left in the segment | `EffectAfterJobs`, `EffectRestore` | `EffectAfterJobs`, `EffectFirstLen`, `EffectPlay`, `EffectRestore` |
 | `$7F96` | `EffectTick` | 1 | `$80` from the title interrupt `$A9E4` and a new effect request, `$FF` from PlayInterrupt. The effect's tone loop runs until an interrupt changes it. | `EffectAfterJobs`, `EffectRestore`, `EffectTickCheck`, `EffectTickRead` | `EffectAfterJobs`, `EffectRestore`, `PlayInterrupt`, `RequestEffect`, `TitleInterrupt` |
 | `$7F97` | `CurrentEffect` | 1 | The effect playing (0 none, `$80` stop); a request lower than it is refused (RequestEffect `$B2F0`) | `EffectPlay`, `RequestEffect` | `EffectEnd`, `PlayLoop`, `RequestEffect` |
-| `$7F98` | `CurrentPlayer` | 1 | 1 or 2 (AddScore `$A495`, PrintPlayerScore `$A4BF`; XOR 3 at the change, `$B16D`) | `AddScore`, `PrintPlayerScore`, `RoundSetup`, `ScoreJob` | `PlayersSetup` (code) |
-| `$7F99` | `PlayerRecord` | 2 | The current player's record: `$7F9C` or `$7FCC` (10 readers in c1/c2) | `CmdCheckpoint`, `CmdLevelEnd`, `DrawLives`, `FireLaser`, `LevelDone` +12 | `NextPlayer` (code), `PlayersSetup` (code) |
-| `$7F9B` | `Players` | 1 | 1 or 2 (SelectPlayers `$A790`; ChangePlayer `$B149`) | `NextPlayer`, `PlayersSetup` (code), `SelectTwoPlayers` (code) | `SelectTwoPlayers` (code) |
+| `$7F98` | `CurrentPlayer` | 1 | 1 or 2 (AddScore `$A495`, PrintPlayerScore `$A4BF`; XOR 3 at the change, `$B16D`) | `AddScore`, `PrintPlayerScore`, `RoundSetup`, `ScoreJob`, `NextPlayer` (code) | `PlayersSetup` (code) |
+| `$7F99` | `PlayerRecord` | 2 | The current player's record: `$7F9C` or `$7FCC` (10 readers in c1/c2) | `CmdCheckpoint`, `CmdLevelEnd`, `DrawLives`, `FireLaser`, `LevelDone` +12 | `NextPlayerCheck` (code), `PlayersSetup` (code) |
+| `$7F9B` | `Players` | 1 | 1 or 2 (SelectPlayers `$A790`; ChangePlayer `$B149`) | `NextPlayer`, `PlayersSetup` (code), `SelectPlayers` (code) | `SelectPlayers` (code) |
 
 ## playerdata
 
@@ -158,16 +158,16 @@ Written by `kit/refdocs.py`.
 | `$8073` | `WavesAllowed` | 1 | Wave records that may be in use (6 at the level start); LaunchWave -1, the wave's end +1 | `EnemyGone`, `EnemyKilled`, `LaunchWave` | `EnemyGone`, `EnemyKilled`, `LaunchWave`, `LevelSetUp` |
 | `$8074` | `EnemyShotsLeft` | 1 | Enemy shots that may still start (3 at the level start; EnemyFire `$A113`) | `EnemyFire`, `FreeObject` | `EnemyFire`, `FreeObject`, `LevelSetUp` |
 | `$8075` | `WaveRecords` | 18 | 6 wave records of 3 bytes: the live count (`$FF` free, bit 7 one escaped), the bonus byte, the kind | `EnemyGone`, `EnemyKilled`, `LaunchWave` | `EnemyGone`, `EnemyKilled`, `LaunchWave`, `LevelSetUp` |
-| `$8087` | `SpriteCacheMask` | 1 | A bit per used sprite cache record (`$93A7`) | `EnemyGone`, `EnemyKilled`, `GetSpriteCache` | `EnemyGone`, `EnemyKilled`, `GetSpriteCache`, `LevelSetUp` |
+| `$8087` | `SpriteCacheMask` | 1 | A bit per used sprite cache record (`$93A7`) | `EnemyGone`, `EnemyKilled`, `GetSpriteCache`, `EvictSpriteCachePtr` (code) | `EnemyGone`, `EnemyKilled`, `GetSpriteCache`, `LevelSetUp`, `EvictSpriteCachePtr` (code) |
 | `$8088` | `SpriteCacheFree` | 16 | The free record of a use mask: low nibble, or the high one by bit 4 of the kind (`$93D8`) | `GetSpriteCache` | - |
 | `$8098` | `BigSpriteMap1` | 9 | A 7 x 9 cell map (one bit a cell) for BuildBigSprite with A = 1 | `BuildBigSprite` | - |
 | `$80A1` | `BigSpriteMap2` | 9 | The cell map for BuildBigSprite with A <> 1 | `BuildBigSprite` | - |
-| `$80AA` | `PrintPos` | 2 | The print position, an attribute address `$5800-$5AFF` (PrintChar `$A33B`, print codes 3-6) | `PrintChar`, `PrintCharKind`, `PrintSetColumn`, `PrintSetRow`, `PrintKeyName` (code) +1 | `PrintChar`, `PrintCharKind`, `PrintPlayerScore`, `PrintSetColumn`, `PrintSetRow` +3 |
-| `$80AC` | `PrintAttr` | 1 | The printed characters' attribute (print codes 0-2) | `PrintChar`, `PrintCharKind` | `PrintBcd`, `PrintBcdLeadNext`, `PrintBcdLeading`, `PrintPlayerScore`, `CreditsPage` (code) +1 |
+| `$80AA` | `PrintPos` | 2 | The print position, an attribute address `$5800-$5AFF` (PrintChar `$A33B`, print codes 3-6) | `PrintChar`, `PrintCharKind`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight` (code) +2 | `PrintChar`, `PrintCharKind`, `PrintPlayerScore`, `PrintSetColumn`, `PrintSetRow` +4 |
+| `$80AC` | `PrintAttr` | 1 | The printed characters' attribute (print codes 0-2) | `PrintChar`, `PrintCharKind`, `PrintSetInk` (code), `PrintSetPaper` (code) | `PrintBcd`, `PrintBcdLeadNext`, `PrintBcdLeading`, `PrintPlayerScore`, `CreditsPage` (code) +4 |
 | `$80AD` | `PrintPending` | 1 | Below `$20`: a print code waiting for its byte; `$20` none (PrintChar `$A326`) | `PrintChar`, `PrintCharSave`, `PrintString` | `PrintChar`, `PrintCharDone`, `PrintCodeDone` |
-| `$80AE` | `RasterTable` | 2 | The colour table of the menu raster interrupt (`$A520`): `$FC20` | `MenuRasterInterrupt` | `MenuScreenSetup`, `SelectTwoPlayers` (code) |
-| `$80B0` | `RasterLines` | 1 | The scan lines the menu raster colours: 168 or 112 | `MenuRasterInterrupt` | `LevelStart`, `MenuScreenSetup`, `SelectTwoPlayers` (code) |
-| `$80B1` | `RasterList` | 2 | The colour list ExpandNextColours takes (`$A5B0`) | `ExpandNextColours` (code) | `RedefineKeys` (code), `SelectTwoPlayers` (code) |
+| `$80AE` | `RasterTable` | 2 | The colour table of the menu raster interrupt (`$A520`): `$FC20` | `MenuRasterInterrupt` | `MenuScreenSetup`, `SelectPlayers` (code) |
+| `$80B0` | `RasterLines` | 1 | The scan lines the menu raster colours: 168 or 112 | `MenuRasterInterrupt` | `LevelStart`, `MenuScreenSetup`, `SelectPlayers` (code) |
+| `$80B1` | `RasterList` | 2 | The colour list ExpandNextColours takes (`$A5B0`) | `ExpandNextColours` (code) | `RedefineKeys` (code), `SelectPlayers` (code) |
 | `$80B3` | `RasterSpare` | 6 | Six bytes no routine reads or writes in c1/c2 | - | - |
 | `$80B9` | `RasterFrames` | 1 | Frames the menu raster still runs (-1 a frame, `$A578`) | `MenuRasterInterrupt`, `WaitMenuRasterEnd` | `LevelStart`, `MenuRasterInterrupt` |
 | `$80BA` | `LaserShotsFree` | 1 | Laser shots not in flight (4 at most, `$B2D1`); fire when it plus the laser level is 4 or more | `FireLaser`, `LaserHandler` | `FireLaser`, `LaserHandler`, `ShotsSetup` |
@@ -177,7 +177,7 @@ Written by `kit/refdocs.py`.
 | `$80BE` | `HarmlessMaskB` | 1 | See HarmlessMaskA | `ExplosionToPod`, `FreeEnemySlot`, `LaserHandler`, `PlayerHandler`, `StartExplosion` | `ExplosionToPod`, `FreeEnemySlot`, `LevelSetUp`, `StartExplosion` |
 | `$80BF` | `ShipHistoryIndex` | 1 | The index into ShipHistory (PlayerHandler `$9AF3`) | `PlaceSight`, `PlayerHandler` | `PlayerHandler`, `PlayerSetup` |
 | `$80C0` | `ShipHistory` | 32 | The ship's last 8 positions, 4 bytes each (X fraction, X, Y fraction, Y); the sight follows the oldest. PlayerSetUp `$B21C` fills it by pushing 16 words below `$80E0` (SP = `$80E0` at `$B253`). | `PlaceSight` | `PlayerHandler` |
-| `$80E0` | `LockTarget` | 2 | The enemy record the sight locked on (`$9FFC`) | `HomingFrame` | `LockableHandler`, `PodHoming`, `BigEnemyHandler` (code) |
+| `$80E0` | `LockTarget` | 2 | The enemy record the sight locked on (`$9FFC`) | `HomingFrame` | `LockableHandler`, `PodHoming`, `BigEnemyRowSet` (code) |
 | `$80E2` | `LockMask` | 1 | Its collision bit, 0 no lock | `BigEnemyHandler`, `HomingFrame`, `LockableHandler`, `MissileHandler`, `SightHandler` | `BigEnemyHandler`, `LockableHandler`, `PodHoming` |
 | `$80E3` | `MissileHitMask` | 1 | Per pass: the enemies the homing missile hits (cleared by RunObjects `$94B2`) | `BigEnemyHandler`, `LockableHandler` | `MissileHandler`, `RunObjects` |
 | `$80E4` | `SightMask` | 1 | Per pass: the enemies under the sight | `BigEnemyHandler`, `LockableHandler` | `RunObjects`, `SightHandler` |
@@ -204,22 +204,22 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$8184` | `FireHeld` | 1 | Passes fire has been held, 0 released (ReadControls `$A725`) | `HomingFrame`, `PlasmaFrame`, `PlayerHandler`, `PodStep`, `ReadControls` +2 | `ReadControls` |
 | `$8185` | `FireChanged` | 1 | `$FF` when fire was pressed or released since the last read (`$A73C`) | `PlayerHandler` | `ReadControls` |
-| `$8186` | `ControlBits` | 1 | Bit 0 right, 1 left, 2 down, 3 up (`$A742`) | `PlayerHandler`, `HighScoreEntry` (code) | `ReadControls` |
-| `$8187` | `JoystickFlags` | 1 | Bit 0 Kempston, bit 1 Sinclair rather than cursor | `ReadControls` | `ReadControls` |
-| `$8188` | `KeyTable` | 10 | 5 keys (fire up down left right) as port high byte and bit mask; P L SS A S by default | `ReadControls` | - |
+| `$8186` | `ControlBits` | 1 | Bit 0 right, 1 left, 2 down, 3 up (`$A742`) | `PlayerHandler`, `HighScoreLetterShow` (code) | `ReadControls` |
+| `$8187` | `JoystickFlags` | 1 | Bit 0 Kempston, bit 1 Sinclair rather than cursor | `ReadControls`, `TitleFireCheck` (code) | `ReadControls`, `TitleFireCheck` (code) |
+| `$8188` | `KeyTable` | 10 | 5 keys (fire up down left right) as port high byte and bit mask; P L SS A S by default | `ReadControls`, `TitleFireCheck` (code) | - |
 | `$8192` | `KeyScanRows` | 6 | The half-rows WaitKeyPress scans: `$FE` `$FD` `$FB` `$DF` `$BF` `$7F` | - | - |
 | `$8198` | `KeyNames` | 40 | The 40 key names in the order of the half-rows `$FEFE`..`$7FFE`; 0-3 = messages 9-12 (CS SS SP EN) | - | - |
 | `$81C0` | `LifeSteps` | 5 | The attribute steps between the life marks (DrawLives `$A4EF` reads 6 bytes: the 6th is EventRequests, unused) | `DrawLives` | - |
 | `$81C5` | `EventRequests` | 1 | A bit per job asked for (bit 7 first; EventDispatch `$AC07`) | `AddScore`, `DrawLives`, `EventPending`, `PlayLoop`, `PodStep` +2 | `AddScore`, `EventAny`, `PlayLoop`, `PodStep`, `QueueSpriteLoad` +1 |
 | `$81C6` | `EventMask` | 1 | The enabled jobs (`$FF` from the play loop's start) | `EffectJob`, `EventAny`, `EventEnabled`, `PodIconJob`, `ScoreJob` +1 | `EffectJob`, `EventDone`, `PlayLoop`, `PodIconJob`, `ScoreJob` +1 |
 | `$81C7` | `EventHandlers` | 16 | The 8 job routines, bit 7 first | `JumpTable` | - |
-| `$81D7` | `ScriptState` | 35 | The level script's state (35 bytes, `$AD56` from the player record, `$AED2` back). +0-+7 come from LevelTable, +8-+`$0C` from ScriptStateInit, the rest is the call stack. +0 (`$81D7`) is LevelTable's first byte (0 in every level; nothing reads it). | `CmdCheckpoint`, `CmdDecrement`, `CmdScrollStop`, `MoveStars`, `PlayInterrupt` +11 | `CmdDecrement`, `CmdScrollStop`, `CmdStore`, `ReplayScroll`, `RestoreCheckpoint` +9 |
+| `$81D7` | `ScriptState` | 35 | The level script's state (35 bytes, `$AD56` from the player record, `$AED2` back). +0-+7 come from LevelTable, +8-+`$0C` from ScriptStateInit, the rest is the call stack. +0 (`$81D7`) is LevelTable's first byte (0 in every level; nothing reads it). | `CmdCheckpoint`, `CmdDecrement`, `CmdScrollStop`, `MoveStars`, `PlayInterrupt` +13 | `CmdDecrement`, `CmdScrollStop`, `CmdStore`, `ReplayScroll`, `RestoreCheckpoint` +11 |
 | `$81D8` | `ScriptPC` (`ScriptState`+1) | 2 | the step being waited for (word) | `CmdCheckpoint`, `ScriptByte`, `ScriptWord`, `WaveScriptStep` | `RestoreCheckpoint`, `ScriptByte`, `ScriptWord`, `WaveScriptStep`, `CmdReturn` (code) |
-| `$81DA` | `PlayFlags` (`ScriptState`+3) | 1 | bit 5 the scroll on, bit 7 the stars shown | `CmdCheckpoint`, `CmdScrollStop`, `MoveStars`, `PlayInterrupt`, `ScrollControl` +2 | `CmdScrollStop`, `RestoreCheckpoint`, `ScrollControl` |
+| `$81DA` | `PlayFlags` (`ScriptState`+3) | 1 | bit 5 the scroll on, bit 7 the stars shown | `CmdCheckpoint`, `CmdScrollStop`, `MoveStars`, `PlayInterrupt`, `ScrollControl` +4 | `CmdScrollStop`, `RestoreCheckpoint`, `ScrollControl`, `CmdModeOff` (code), `CmdModeOn` (code) |
 | `$81DB` | `ScrollCount` (`ScriptState`+4) | 2 | word, +1 per scroll step (the level's start value from LevelTable) | `CmdCheckpoint`, `ReplayScroll`, `ScrollStep` | `ReplayScroll`, `RestoreCheckpoint`, `ScrollStep` |
 | `$81DD` | `ScriptNumber` (`ScriptState`+6) | 1 | the scenery script | `CmdCheckpoint`, `ScriptMain` | `RestoreCheckpoint` |
 | `$81DE` | `ScriptLevelBias` (`ScriptState`+7) | 1 | added to WeaponRating (`$9B9B`) | `CmdCheckpoint`, `WeaponRating` | `RestoreCheckpoint` |
-| `$81DF` | `ScriptStackPtr` (`ScriptState`+8) | 2 | word: the script's call stack (`$81F6` at the start, two bytes a call) | `CmdCheckpoint`, `CmdReturn` (code), `WaveScriptStep` (code) | `RestoreCheckpoint`, `CmdReturn` (code), `WaveScriptStep` (code) |
+| `$81DF` | `ScriptStackPtr` (`ScriptState`+8) | 2 | word: the script's call stack (`$81F6` at the start, two bytes a call) | `CmdCheckpoint`, `CmdReturn` (code), `ScriptDecode` (code) | `RestoreCheckpoint`, `CmdReturn` (code), `ScriptDecode` (code) |
 | `$81E1` | `ScriptWaitCount` (`ScriptState`+10) | 1 | the counts waited for the current step (one a WaveScriptStep run, 8 frames) | `CmdCheckpoint`, `WaveScriptStep` | `RestoreCheckpoint`, `WaveScriptStep` |
 | `$81E2` | `ScriptFlags` (`ScriptState`+11) | 1 | the flags of the last counter op (the conditions test them) | `CmdCheckpoint`, `ScriptTest` | `RestoreCheckpoint`, `ScriptSaveFlags` |
 | `$81E3` | `ScrollRestart` (`ScriptState`+12) | 1 | `$FF` (op 1): start the scroll again at phase 4 (ScrollControl `$A9A8`) | `CmdCheckpoint`, `ScriptTest`, `ScrollControl` | `RestoreCheckpoint`, `SetLevelStart`, `CmdSetFlag` (code) |
@@ -308,7 +308,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$B4A9` | `TuneSpare` | 4 | AND A; RET and two zeros no code reaches | - | - |
-| `$B4AD` | `TuneDuration` | 2 | the note length in loop passes: the high byte set by the `$C0`+ commands, the low byte 0 | `TitleTune` (code) | `TitleTune` (code) |
+| `$B4AD` | `TuneDuration` | 2 | the note length in loop passes: the high byte set by the `$C0`+ commands, the low byte 0 | `TuneNote` (code) | `TuneRead` (code) |
 
 ## icons
 

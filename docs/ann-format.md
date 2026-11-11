@@ -113,6 +113,16 @@ $6800 b PathStarts 14 ; The start of each of the 28 enemy paths: (address - $681
 @res levels/levels.bin
 ```
 
+**Witness counts.** In a `c` entry's description, `Witness: L1 N (builds)` is checked by mkgame on every run: N must
+be the runs of the entry's first instruction summed over the part's recordings (the game: `read_builds` and
+`code_builds` of `case.json`, less `witness_skip`), and the list the builds that ran it, each by its name
+(`stage1/c1` is `c1`, `stage2/rzx04/cap` is `rzx04`: the second part of the build's path, else the whole), sorted, a
+numbered family of two or more builds in the set as one item (`rzx x32`): `Witness: L1 90104 (c1, hiscore, lives,
+menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swaps a build, is printed:
+`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`;
+`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays). Other witness text
+(`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched.
+
 ### 3.3 An inner line: `$ADDR [NAME] [; comment]`
 
 Without KIND the line names or comments an address **inside** an entry.
@@ -214,10 +224,17 @@ ports, `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` that exist
 by `@module`. A memory range is named by the label at or below its first byte, inner labels included
 (`Label+offset`). The interrupt's acceptance (the IM 2 vector read, the return address pushed), which L1 books to the
 interrupted instruction, is given to the handler, which doc 12 shows "Entered by" the interrupt rather than called.
-A routine no `ref_builds` recording reached gets the calls the `read_builds` and `code_builds` recordings saw. Doc
-11 gives each inner label of a data entry a row under it (its size up to the next label, its comment as the line
-says it, its own readers and writers), and adds to the readers and writers, marked "(code)", the routines whose
-`LD r,(nn)` / `LD (nn),r` in `work/mkgame/game.skool` reach the bytes where no recording saw them do so (kit/README.md,
+The case's other recordings count too: their runs (a routine no `ref_builds` recording reached says "not reached in
+`c1`; in the other recordings ...", one that it did gets a row "Runs (the other recordings)"), callers, callees and
+ports (`read_builds` and `code_builds`), and their reads and writes (`read_builds` only: a `code_builds` recording's
+reads may be a depacker's input). Doc 11 gives each inner label of a data entry a row under it (its size up to the
+next label, its comment as the line says it, its own readers and writers). Its readers and writers are those of the
+`ref_builds`, then those only another recording saw, with the first such build in brackets (`` `DrawCell`
+(`stage2/rzx04/cap`) ``), then, marked "(code)", the routines whose `LD r,(nn)` / `LD (nn),r`, or an access through
+`(HL)`, `(DE)` or `(BC)` after `LD HL,nn` (`DE`, `BC`) in the same block (no jump target, branch or call between, the
+pair changed only by `INC` / `DEC`), in `work/mkgame/game.skool` reach the bytes where no recording saw them do so,
+each named by the label at or below the instruction (`WalkIntoFire`, a label inside `UpSpecialCell`; left out when a
+recording already names the routine it lies in) (kit/README.md,
 "What refdocs.py writes").
 
 `kit/sig_add.py ann --case C ...` cuts the image into the `.ann`'s modules and writes one signature entry per module.
@@ -297,7 +314,8 @@ source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per seg
 | `work`, `clean_work` | the work folder (default `work/mkpart/<top>`) |
 
 `case.json` takes the same keys for the game (`dest`, `work`, `res_install`, `operands`, `mode`, `no_entries`,
-`entries_in_code`, `overwritten`, ...).
+`entries_in_code`, `overwritten`, ...), and `witness_skip`: the builds left out of the witness counts (section 3.2;
+Earth Shaker's two death recordings, which its `.ann` names where it uses them).
 
 ### 5.3 One image on the command line
 

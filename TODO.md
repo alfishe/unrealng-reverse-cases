@@ -11,7 +11,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 2 | Chuckie Egg | complete 2026-11-10 ([case](games/chuckie-egg/README.md)) |
 | 3 | Tujad | complete 2026-11-10 ([case](games/tujad/README.md)); ZXDB 33911 (the POKE file's 5448 is another id) |
 | 4 | SimCity | complete 2026-11-10 ([case](games/simcity/README.md)); ZXDB 4509 |
-| 5 | Earth Shaker | stage 2 ([case](games/earth-shaker/README.md)); ZXDB 1563; our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
+| 5 | Earth Shaker | complete 2026-11-11 ([case](games/earth-shaker/README.md)); ZXDB 1563; our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | ZXDB 451 |
 | 7 | Terramex | ZXDB 5195 (Grand Slam 1987; tapes: Quicksilva, Bug-Byte Premier, Zafiro; an RZX in the archive); a detailed SkoolKit disassembly offered by the owner, github.com/nzeemin/skoolkit-game-revs `terramex-zx`: the starting point for names and structure (credited), every fact verified against the code and our recordings |
 
@@ -59,7 +59,7 @@ Found by the cases and worked around there; the status says whether `kit/` fixes
 | `kit/memanim.py`'s `buffer:` view draws a stack or record as bits, so pushed words cannot be read as hex | SimCity doc 04 (scA, Interrupt.gif) | the caption says so | fixed (kit, `routine_anim.py` (the view is its, not memanim's) `buffer:ADDR:WxH:hex` / `:words`: bytes or words in hex, a line an address). Interrupt.gif not redrawn |
 | `kit/refdocs.py` links `docs/img/routines/NAME.gif` by routine name, so two documents' animations of one routine share one file: the second writer's overwrites the first's | SimCity docs 04 and 10 (`SimTask.gif`) | doc 10 shows doc 04's animation; its own was lost | fixed (kit, refdocs links `NAME.gif` and every `NAME-what.gif`; routine_anim / memanim note an overwrite). SimCity doc 12 links `SimTask-growth.gif` too |
 | an `@isub` written in decimal (`LD DE,-10000`) comes out as `-$2710` in the `.asm` | SimCity integration (Print5Digits, PrintNumber24) | none (the bytes are right) | fixed (kit, `restore_isubs` writes a decimal `@isub` back as the `.ann` has it) |
-| `kit/routine_anim.py --view buffer:ADDR:WxH:hex` draws the hex view at its own size: a 30-byte-wide view gives a 1084 px picture, `--width 1050` is not applied to it (`fit_width` never scales below 1 x) | Earth Shaker docs (esB, `docs/img/routines/KeysStep.gif`, `buffer:FEF2:30x6:hex`) | none: the GIF stays 1084 px, the caption says so | open |
+| `kit/routine_anim.py --view buffer:ADDR:WxH:hex` draws the hex view at its own size: a 30-byte-wide view gives a 1084 px picture, `--width 1050` is not applied to it (`fit_width` never scales below 1 x) | Earth Shaker docs (esB, `docs/img/routines/KeysStep.gif`, `buffer:FEF2:30x6:hex`) | none: the GIF stays 1084 px, the caption says so | fixed (kit, a view wider than the left column at 1 x goes on a row of its own under the map and the listing, its numbers smaller down to 9 pt if needed: the picture stays `--width`; Earth Shaker's KeysStep.gif, UnpackCave-nibbles.gif and AnimateCellCodes.gif redrawn at 1050 px, the captions' `--width 1084` and gap notes dropped) |
 
 ## For unreal-ng
 

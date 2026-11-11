@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (c1's whole run (the load and 16 000 frames of seeded random play)). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (c1's whole run (the load and 16 000 frames of seeded random play)), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -66,10 +66,11 @@ Then ShowHallOfFame `$71F0`: non-zero after a name entry (h1: set by `$A13A`) go
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,473 t-states own (0.00 %) |
+| Runs (the other recordings) | 4 calls (`c128` 2, `x1` 1, `m1` 1) |
 | Called from | `GameOver` (tail) |
-| Calls | `MainMenu`, `BuildReverseTable`, `BuildLineTables` |
-| Reads | `$71F0` (`ShowHallOfFame`); `$AD8A`-`$AD8E` (`Score`) |
-| Writes | `$6E16` (`SoundIsAy`); `$7D67` (`TitleTunePending`); `$8523` (`ScreenNumber`); `$8E7A` (`Lives`); `$9CE2` (`DeathTimer`); `$9ED6`-`$9ED8` (`BonusTicks`, `ExoSuit`); 1 more ranges |
+| Calls | `MainMenu`, `MenuSparkles`, `ClearMenuStars`, `HighlightControl`, `StartGame` (tail), `BuildReverseTable`, `BuildLineTables`, `PlayTune`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `ReadKey`, `PrintString`, `ClearScreen`, `ClearWorkArea`, `TuneStart` |
+| Reads | `$5DBF`-`$5DDD` (system); `$6E16` (`SoundIsAy`); `$71F0` (`ShowHallOfFame`); `$7B97` (`ControlType`); `$7D67` (`TitleTunePending`); `$AD8A`-`$AD8E` (`Score`) |
+| Writes | `$5DC0`-`$5DDE` (system); `$6E16` (`SoundIsAy`); `$7B97` (`ControlType`); `$7D67` (`TitleTunePending`); `$8523` (`ScreenNumber`); `$8E7A` (`Lives`); 3 more ranges |
 | Ports out | `$00FE` |
 
 ### `MainMenu` (`$6DA1`)
@@ -87,8 +88,9 @@ MenuLoop runs `$09C4` = 2500 passes: one MenuSparkles step, one key read (`$ACD1
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 7 calls, 527,560 t-states own (0.03 %) |
-| Called from | `Start`, `DefineKeys` (tail) |
-| Calls | `MenuSparkles`, `ClearMenuStars`, `HighlightControl`, `DefineKeys` (tail), `StartGame` (tail), `PlayTune`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `ReadKey`, `PrintString`, `ClearScreen`, `ClearWorkArea`, `TuneStart` |
+| Runs (the other recordings) | 7 calls (`c128` 4, `m1` 3) |
+| Called from | `Start`, `DefineKeys` (tail), `HallOfFameRoll` (tail) |
+| Calls | `MenuSparkles`, `ClearMenuStars`, `HighlightControl`, `DefineKeys` (tail), `HallOfFameRoll` (tail), `StartGame` (tail), `PlayTune`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `ReadKey`, `PrintString`, `ClearScreen`, `ClearWorkArea`, `TuneStart` |
 | Reads | `$5DBF`-`$5DDD` (system); `$6E16` (`SoundIsAy`); `$7B97` (`ControlType`); `$7D67` (`TitleTunePending`) |
 | Writes | `$5DC0`-`$5DDE` (system); `$7B97` (`ControlType`); `$7D67` (`TitleTunePending`) |
 
@@ -103,7 +105,8 @@ Called once a MainMenu pass (c1: 3978 runs, 47 736 slot visits). Keeps every reg
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,978 calls, 16,711,132 t-states own (0.83 %) |
-| Called from | `MainMenu` |
+| Runs (the other recordings) | 10,702 calls (`c128` 3,975, `m1` 2,327, `w/000` 44 and 99 more) |
+| Called from | `Start`, `MainMenu` |
 | Calls | `DrawSparkle`, `ColourSprite`, `CellOffset`, `Random` |
 | Reads | `$6100`-`$63DF` (system); `$6F4E`-`$6F82` (`SparkleFrames`, `SparkleSlots`) |
 | Writes | `$6F5E`-`$6F81` (`SparkleSlots`) |
@@ -117,8 +120,9 @@ A = the frame, DE = x, y, BC = the old x, y, HL = the save buffer: DrawSprite `$
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 42,144 calls, 3,644,333 t-states own (0.18 %) |
+| Runs (the other recordings) | 112,819 calls (`c128` 42,220, `m1` 24,599, `w/000` 460 and 99 more) |
 | Called from | `MenuSparkles` |
-| Calls | `DrawSprite` |
+| Calls | `DrawSprite`, `TuneTick` |
 | Reads | `$6E16` (`SoundIsAy`) |
 
 ### `ClearMenuStars` (`$6F83`)
@@ -130,7 +134,8 @@ Called by MainMenu and DefineKeys. B is 0 after LD BC,`$0023` (B = 0): the first
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 10 calls, 11,475 t-states own (0.00 %) |
-| Called from | `MainMenu`, `DefineKeys` |
+| Runs (the other recordings) | 109 calls (`c128` 5, `m1` 4, `w/000` 1 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys` |
 | Reads | `$6F5E`-`$6F80` (`SparkleSlots`) |
 | Writes | `$6F5E`-`$6F81` (`SparkleSlots`) |
 
@@ -143,7 +148,8 @@ Row 15 + 2 ControlType `$7B97` (KEYBOARD, INTERFACE 2 or KEMPSTON), columns 11-2
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 13 calls, 7,054 t-states own (0.00 %) |
-| Called from | `MainMenu` |
+| Runs (the other recordings) | 213 calls (`c128` 7, `m1` 5, `x1` 3 and 99 more) |
+| Called from | `Start`, `MainMenu` |
 | Calls | `CellOffset` |
 | Reads | `$59EB`-`$59F7` (screen); `$5A2B`-`$5A37` (screen); `$5A6B`-`$5A77` (screen); `$7B97` (`ControlType`) |
 | Writes | `$59EB`-`$59F8` (screen); `$5A2B`-`$5A38` (screen); `$5A6B`-`$5A78` (screen) |
@@ -161,6 +167,7 @@ m1: P O Q A M; exA1: Z O R B A (the cheat), then CS SS Q A M (the shift names ra
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3 calls, 705,654 t-states own (0.04 %) |
+| Runs (the other recordings) | 2 calls (`c128` 1, `m1` 1) |
 | Called from | `MainMenu` (tail) |
 | Calls | `MainMenu` (tail), `ClearMenuStars`, `BeeperNoise`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `ReadKey`, `WaitNoKey`, `PrintChar`, `PrintString`, `ClearScreen`, `Delay`, `ClearWorkArea`, `AySilence` |
 | Reads | `$5DBF`-`$5DDD` (system); `$708B`-`$7090` (`TypedKeys`, `CheatWord`) |
@@ -227,6 +234,8 @@ Reached from MainMenu's timeout and from ShowHallOfFameFirst. h1: the whole roll
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1 call (`c128` 1) |
+| Called from | `MainMenu` (tail) |
+| Calls | `MainMenu` (tail), `ScrollHallOfFame`, `PrintNextHallEntry`, `ReadKey`, `PrintString`, `ClearScreenAttr` |
 
 ### `ScrollHallOfFame` (`$7522`)
 
@@ -237,6 +246,7 @@ SP walks the line address table `$6700` (the address of column 8 of each line) f
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1 call (`c128` 1) |
+| Called from | `HallOfFameRoll` |
 
 ### `PrintNextHallEntry` (`$7568`)
 
@@ -247,6 +257,8 @@ HallOfFamePtr `$7588`: at the end mark (`$FF`) only the wait (BC as the caller l
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1 call (`c128` 1) |
+| Called from | `HallOfFameRoll` |
+| Calls | `PrintCharAttr`, `Delay` (tail) |
 
 ## mainloop
 
@@ -265,7 +277,8 @@ At the end of a pass: ImmunityCount `$768D` down by one while non-zero, PassCoun
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 4,664,603 t-states own (0.23 %) |
-| Called from | `MainMenu` (tail) |
+| Runs (the other recordings) | 102 calls (`x2` 1, `c128` 1, `x1` 1 and 99 more) |
+| Called from | `Start` (tail), `MainMenu` (tail) |
 | Calls | `DrawHud`, `ReadControls`, `MovePlayer`, `FireControl`, `MoveShots`, `ScreenChangeCheck`, `BuildScreen`, `AnimateFlames`, `AnimateTurrets`, `MoveShells`, `ShellsHitPlayer`, `ColourCycle`, `Mines`, `ThrowGrenade`, `MoveGrenade`, `MoveDebris`, `AnimatePuffs`, `Teleports`, `Pods`, `AbortKeys`, `MoveBalls`, `BallsTouchPlayer`, `Traps`, `TrapContact`, `PlayerDeath`, `Guns`, `MoveGunShots`, `GunShotsVsPlayer`, `PadXorSprites`, `PadSlotSprites`, `PayBonusTick`, `RunSparkles`, `ExoSuitBooth`, `RunBlasts`, `HomingMissileStep`, `PickupsVsPlayer`, `AliensStep`, `AlienSpawn`, `AliensVsPlayer`, `FlickerPadStep`, `ZoneEnd`, `ForceFieldStep`, `IdleMissileStart`, `IdleMissileStep`, `PauseKey`, `ClearScreen`, `Delay`, `AySilence`, `SoundEffectsTick` |
 | Reads | `$768C`-`$768D` (`PassCount`, `ImmunityCount`); `$7BDA` (`PlayerFlipped`); `$925A` (`GrenadeTimer`); `$AC7B`-`$AC7C` (`IdleTime`) |
 | Writes | `$768C`-`$768D` (`PassCount`, `ImmunityCount`); `$8269` (`PlayerFrameShown`); `$82F3`-`$82FA` (`RestartX`, `RestartY`, `PlayerX`, `PlayerY` and 4 more); `$8E5A`-`$8E66` (`Ammo`, `PrintGrenades`, `Grenades`); `$9E98` (`XorSpriteCount`); `$9EAE` (`SlotSpriteCount`); 1 more ranges |
@@ -289,7 +302,8 @@ Prints HudText `$76A2`, then `$8E4F`, `$8E5B`, `$8E67` and `$8E7B` print the amm
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 426 t-states own (0.00 %) |
-| Called from | `StartGame` |
+| Runs (the other recordings) | 110 calls (`w/024` 2, `w/023` 2, `w/074` 2 and 99 more) |
+| Called from | `StartGame`, `ZoneEnd` |
 | Calls | `PrintAmmo`, `PrintGrenades`, `PrintLives`, `PrintZone` (tail), `PrintString` |
 
 ## sprites
@@ -309,7 +323,8 @@ Called by `$8229` (the player). c1: 980 draws, the warp runs 35 344.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 980 calls, 405,630 t-states own (0.02 %) |
-| Called from | `PlayerFrame` (tail) |
+| Runs (the other recordings) | 36,046 calls (`x2` 3,180, `c128` 702, `x1` 681 and 99 more) |
+| Called from | `MovePlayer` (tail), `PlayerFrame` (tail), `DrawPlayer` (tail) |
 | Calls | `BigSpriteRow` |
 | Reads | `$78CA`-`$78D7` (`BigShiftJumps`) |
 | Writes | `$78DA`-`$78DB` (`SpriteSavedSP`) |
@@ -323,6 +338,7 @@ The loop head of DrawBigSprite's shift: POP BC, POP DE, DEC SP takes three bytes
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 31,360 calls, 1,521,994 t-states own (0.08 %) |
+| Runs (the other recordings) | 1,153,437 calls (`x2` 101,760, `c128` 22,464, `x1` 21,792 and 99 more) |
 | Called from | `DrawBigSprite`, `BigShiftLeft2` (tail), `BigShiftNone` (tail) |
 | Calls | `BigShiftLeft4`, `BigShiftLeft2`, `BigShiftRight2`, `BigShiftNone` |
 
@@ -335,6 +351,7 @@ Four rounds of RL E / RL B / RL C / RL D, then the store (BigShiftLeft2's tail).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 333,617 t-states own (0.02 %) |
+| Runs (the other recordings) | run into, not called (`x2`, `m1`, `c128` and 94 more) |
 | Called from | `BigSpriteRow` |
 | Calls | `BigShiftLeft2` |
 
@@ -345,6 +362,7 @@ Four rounds of RL E / RL B / RL C / RL D, then the store (BigShiftLeft2's tail).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4,288 calls, 1,005,755 t-states own (0.05 %) |
+| Runs (the other recordings) | 186,608 calls (`m1` 5,344, `x2` 5,280, `c128` 5,152 and 94 more) |
 | Called from | `BigSpriteRow`, `BigShiftLeft4` |
 | Calls | `BigSpriteRow` (tail), `BigSpriteMask` (tail) |
 | Writes | `$78DC`-`$795B` (`ShiftBuffer`) |
@@ -368,6 +386,7 @@ The entry at `$7758` (1 right) is for odd shifts, never asked.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 252,524 t-states own (0.01 %) |
+| Runs (the other recordings) | run into, not called (`x2`, `c128`, `w/085` and 94 more) |
 | Called from | `BigSpriteRow` |
 | Calls | `BigShiftNone` |
 
@@ -378,8 +397,9 @@ The entry at `$7758` (1 right) is for odd shifts, never asked.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,328 calls, 2,012,339 t-states own (0.10 %) |
+| Runs (the other recordings) | 180,032 calls (`x2` 5,184, `c128` 4,000, `w/014` 3,584 and 94 more) |
 | Called from | `BigSpriteRow`, `BigShiftRight2` |
-| Calls | `BigSpriteRow` (tail), `BigSpriteMask` |
+| Calls | `BigSpriteRow` (tail), `BigSpriteMask`, `BigMaskRows8`, `BigMaskRows`, `PixelAddress` |
 | Writes | `$78DC`-`$795B` (`ShiftBuffer`) |
 
 ### `BigSpriteMask` (`$776C`)
@@ -395,10 +415,11 @@ Then BigXorLoop: 32 lines, the new image (POP from ShiftBuffer) XORed at the new
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 980 calls, 16,139,315 t-states own (0.80 %) |
+| Runs (the other recordings) | 35,799 calls (`x2` 3,180, `c128` 702, `x1` 681 and 94 more) |
 | Called from | `BigShiftLeft2` (tail), `BigShiftNone` |
 | Calls | `BigMaskRows8`, `BigMaskRows`, `PixelAddress` |
-| Reads | `$4844`-`$502B` (screen); `$5100`-`$512B` (screen); `$5200`-`$522B` (screen); `$5300`-`$532B` (screen); `$5400`-`$542B` (screen); `$5500`-`$552B` (screen); 12 more ranges |
-| Writes | `$4844`-`$502B` (screen); `$5100`-`$512B` (screen); `$5200`-`$522B` (screen); `$5300`-`$532B` (screen); `$5400`-`$542B` (screen); `$5500`-`$552B` (screen); 6 more ranges |
+| Reads | `$4844`-`$5034` (screen); `$5100`-`$5134` (screen); `$5200`-`$5234` (screen); `$5300`-`$5334` (screen); `$5400`-`$5434` (screen); `$5500`-`$5534` (screen); 5 more ranges |
+| Writes | `$4844`-`$5034` (screen); `$5100`-`$5134` (screen); `$5200`-`$5234` (screen); `$5300`-`$5334` (screen); `$5400`-`$5434` (screen); `$5500`-`$5534` (screen); 6 more ranges |
 
 ### `BigMaskRows8` (`$789E`)
 
@@ -407,7 +428,8 @@ Then BigXorLoop: 32 lines, the new image (POP from ShiftBuffer) XORed at the new
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,037 calls, 16,640 t-states own (0.00 %) |
-| Called from | `BigSpriteMask` |
+| Runs (the other recordings) | 64,071 calls (`x2` 7,860, `c128` 1,722, `x1` 1,200 and 99 more) |
+| Called from | `BigShiftNone`, `BigSpriteMask` |
 | Calls | `BigMaskRows` |
 
 ### `BigMaskRows` (`$78A0`)
@@ -419,8 +441,9 @@ HL = the map row: its 4 bytes are patched into the AND n of BigMaskLine (3) and 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,024 calls, 3,623,082 t-states own (0.18 %) |
-| Called from | `BigSpriteMask`, `BigMaskRows8` |
-| Reads | `$5C24`-`$5C27` (system); `$5C44`-`$5C47` (system); `$5C60`-`$5C8B` (system); `$5CA0`-`$5CAB` (system); `$5CC0`-`$5CCB` (system); `$5CE0`-`$5CEB` (system); 3 more ranges |
+| Runs (the other recordings) | 96,265 calls (`x2` 12,221, `c128` 2,451, `x1` 1,790 and 99 more) |
+| Called from | `BigShiftNone`, `BigSpriteMask`, `BigMaskRows8` |
+| Reads | `$5C24`-`$5C27` (system); `$5C44`-`$5D34` (system); `$78DC`-`$795B` (`ShiftBuffer`) |
 | Writes | `$78B2`-`$78BC` (`BigMask0+1`, `BigMask1`, `BigMask2`); `$78DC`-`$795B` (`ShiftBuffer`) |
 
 ### `DrawSprite` (`$795C`)
@@ -436,7 +459,8 @@ Callers: DrawSparkle (the menu stars), `$9E99`, `$9FBD`, `$A26B`, `$A367`, `$A62
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 61,703 calls, 23,396,110 t-states own (1.16 %) |
-| Called from | `DrawSparkle`, `PadSlotSprites` |
+| Runs (the other recordings) | 691,957 calls (`c128` 67,584, `x2` 60,700, `m1` 29,579 and 99 more) |
+| Called from | `DrawSparkle`, `PadSlotSprites`, `RunBlasts`, `HomingMissileStep`, `AliensStep`, `KillAlien`, `FlickerPadStep`, `IdleMissileStep` |
 | Calls | `SpriteRow` |
 | Reads | `$7AD9`-`$7ADA` (`SpriteShiftJumps`) |
 | Writes | `$78DA`-`$78DB` (`SpriteSavedSP`) |
@@ -448,8 +472,9 @@ Callers: DrawSparkle (the menu stars), `$9E99`, `$9FBD`, `$A26B`, `$A367`, `$A62
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 987,248 calls, 24,825,820 t-states own (1.24 %) |
-| Called from | `DrawSprite`, `ShiftNone` (tail) |
-| Calls | `ShiftNone` |
+| Runs (the other recordings) | 11,071,156 calls (`c128` 1,081,344, `x2` 971,200, `m1` 473,264 and 99 more) |
+| Called from | `DrawSprite`, `ShiftLeft4` (tail), `ShiftLeft2` (tail), `ShiftNone` (tail) |
+| Calls | `ShiftLeft4`, `ShiftLeft2`, `ShiftRight2`, `ShiftNone` |
 
 ### `ShiftLeft4` (`$7994`)
 
@@ -460,6 +485,8 @@ The entry at `$7999` (3 left) is for odd shifts, never asked.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`x2`, `w/022`, `w/079` and 85 more) |
+| Called from | `SpriteRow` |
+| Calls | `SpriteRow` (tail), `ShiftLeft2`, `SpriteMask` (tail) |
 
 ### `ShiftLeft2` (`$799E`)
 
@@ -470,6 +497,8 @@ The entry at `$79A3` (1 left) is for odd shifts.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 487,344 calls (`x2` 81,472, `w/022` 19,696, `w/079` 18,592 and 78 more) |
+| Called from | `SpriteRow`, `ShiftLeft4` |
+| Calls | `SpriteRow` (tail), `SpriteMask` (tail) |
 
 ### `ShiftRight3` (`$79B3`)
 
@@ -490,6 +519,8 @@ The entry at `$79BD` (1 right) is for odd shifts.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`x2`, `w/026`, `w/119` and 79 more) |
+| Called from | `SpriteRow` |
+| Calls | `ShiftNone` |
 
 ### `ShiftNone` (`$79C2`)
 
@@ -498,10 +529,11 @@ The entry at `$79BD` (1 right) is for odd shifts.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 473,112,825 t-states own (23.54 %) |
-| Called from | `SpriteRow` |
-| Calls | `SpriteRow` (tail), `MaskRows8`, `MaskRows`, `PixelAddress` |
-| Reads | `$4000`-`$51E0` (screen); `$5200`-`$52E0` (screen); `$5300`-`$53E0` (screen); `$5400`-`$54E0` (screen); `$5500`-`$55E0` (screen); `$5600`-`$56E0` (screen); 7 more ranges |
-| Writes | `$4000`-`$51E0` (screen); `$5200`-`$52E0` (screen); `$5300`-`$53E0` (screen); `$5400`-`$54E0` (screen); `$5500`-`$55E0` (screen); `$5600`-`$56E0` (screen); 5 more ranges |
+| Runs (the other recordings) | 363,054 calls (`x2` 40,928, `w/026` 14,464, `w/119` 11,792 and 79 more) |
+| Called from | `SpriteRow`, `ShiftRight2` |
+| Calls | `SpriteRow` (tail), `SpriteMask`, `MaskRows8`, `MaskRows`, `PixelAddress` |
+| Reads | `$4000`-`$57E0` (screen); `$5B00`-`$5C86` (system); `$5C9A`-`$5CA6` (system); `$5CBA`-`$5DE0` (system); `$78DA`-`$790B` (`SpriteSavedSP`, `ShiftBuffer`); `$B101`-`$B130` (`NoSaveBuffer`); 1 more ranges |
+| Writes | `$4000`-`$57E0` (screen); `$78DA`-`$790B` (`SpriteSavedSP`, `ShiftBuffer`); `$7A1A` (`SpriteMaskTail+1`); `$7A2B`-`$7A2C` (`SmallNewScreen+1`); `$B181`-`$B3C0` (`WorkArea`) |
 
 ### `SpriteMask` (`$79CA`)
 
@@ -512,6 +544,8 @@ As BigSpriteMask for 3 x 2 cells (3 rows when y is not a multiple of 8), without
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 604,078 calls (`c128` 67,584, `x2` 60,700, `w/119` 7,265 and 85 more) |
+| Called from | `ShiftLeft4` (tail), `ShiftLeft2` (tail), `ShiftNone` |
+| Calls | `MaskRows8`, `MaskRows`, `PixelAddress` |
 
 ### `MaskRows8` (`$7AB7`)
 
@@ -520,7 +554,8 @@ As BigSpriteMask for 3 x 2 cells (3 rows when y is not a multiple of 8), without
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 993 calls, 8,729 t-states own (0.00 %) |
-| Called from | `ShiftNone` |
+| Runs (the other recordings) | 116,391 calls (`x2` 11,200, `w/104` 5,243, `w/025` 5,018 and 99 more) |
+| Called from | `ShiftNone`, `SpriteMask` |
 | Calls | `MaskRows` |
 
 ### `MaskRows` (`$7AB9`)
@@ -532,7 +567,8 @@ HL = the map row: 2 bytes into the AND n of MaskLine and C the third; B lines of
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 1,986 calls, 1,988,605 t-states own (0.10 %) |
-| Called from | `ShiftNone`, `MaskRows8` |
+| Runs (the other recordings) | 282,694 calls (`x2` 29,923, `w/104` 12,073, `w/029` 10,709 and 99 more) |
+| Called from | `ShiftNone`, `SpriteMask`, `MaskRows8` |
 | Reads | `$5B06`-`$5B08` (system); `$5B26`-`$5B28` (system); `$5B46`-`$5B48` (system); `$5B66`-`$5B6A` (system); `$5B88`-`$5B8A` (system); `$5DBE`-`$5DC0` (system); 2 more ranges |
 | Writes | `$78DC`-`$790B` (`ShiftBuffer`); `$7AC6`-`$7ACB` (`Mask0+1`, `Mask1`) |
 
@@ -575,6 +611,7 @@ Bit 0 right, 1 left, 2 duck (down), 3 jump (up), 4 fire. ControlType 2. c1: 2820
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,820 calls, 605,976 t-states own (0.03 %) |
+| Runs (the other recordings) | 75,165 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `ReadControls` (tail) |
 | Calls | `NextInputBit` |
 | Writes | `$7B92`-`$7B96` (`ControlLeft`, `ControlRight`, `ControlJump`, `ControlDuck` and 1 more) |
@@ -587,6 +624,7 @@ Bit 0 right, 1 left, 2 duck (down), 3 jump (up), 4 fire. ControlType 2. c1: 2820
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,315 calls, 476,517 t-states own (0.02 %) |
+| Runs (the other recordings) | 375,825 calls (`x2` 32,770, `c128` 20,905, `x1` 5,295 and 99 more) |
 | Called from | `ReadInterface2`, `ReadKempston` |
 
 ### `ReadControls` (`$7B72`)
@@ -598,7 +636,8 @@ ControlType `$7B97`: 0 ReadKeyboard, 1 ReadInterface2, else ReadKempston. Called
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 307,002 t-states own (0.02 %) |
-| Called from | `StartGame` |
+| Runs (the other recordings) | 75,165 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
+| Called from | `StartGame`, `BonusScreen` |
 | Calls | `ReadInterface2` (tail), `ReadKempston` (tail), `ClearControls` |
 | Reads | `$7B97` (`ControlType`) |
 
@@ -609,6 +648,7 @@ ControlType `$7B97`: 0 ReadKeyboard, 1 ReadInterface2, else ReadKempston. Called
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 497,486 t-states own (0.02 %) |
+| Runs (the other recordings) | 75,165 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `ReadControls` |
 | Reads | `$7B92`-`$7B95` (`ControlLeft`, `ControlRight`, `ControlJump`, `ControlDuck`) |
 | Writes | `$7B92`-`$7B96` (`ControlLeft`, `ControlRight`, `ControlJump`, `ControlDuck` and 1 more) |
@@ -622,6 +662,7 @@ Called once by Start. Read by FlipPlayerFrames.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 325,051 t-states own (0.02 %) |
+| Runs (the other recordings) | 105 calls (`c128` 2, `x1` 2, `m1` 2 and 99 more) |
 | Called from | `Start` |
 | Writes | `$6400`-`$64FF` (system) |
 
@@ -634,6 +675,7 @@ Called once by Start. Read by FlipPlayerFrames.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 20 calls, 2,676,878 t-states own (0.13 %) |
+| Runs (the other recordings) | 24 calls (`c128` 24) |
 | Called from | `Fall`, `PlayerDeath` |
 | Reads | `$6400`-`$64FE` (system); `$7BDA` (`PlayerFlipped`); `$EF80`-`$F87F` (`PlayerFrames`) |
 | Writes | `$7BDA` (`PlayerFlipped`); `$EF80`-`$F87F` (`PlayerFrames`) |
@@ -657,6 +699,7 @@ LD HL,`$8000` / (`$81` x 257) / IM 2 / I = `$80`. The game runs with DI througho
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 181,720 t-states own (0.01 %) |
+| Runs (the other recordings) | 105 calls (`m1` 2, `x1` 2, `c128` 2 and 99 more) |
 | Called from | `Start` |
 | Calls | `NextPixelLine` |
 | Writes | `$6500`-`$65BF` (system); `$6600`-`$66BF` (system); `$6700`-`$687F` (system) |
@@ -684,7 +727,8 @@ Returns at once when SoundIsAy is set. Each of the B rounds: OUT (`$FE`) with R 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 644 calls, 14,247,634 t-states own (0.71 %) |
-| Called from | `DefineKeys`, `FireControl`, `FireShell` |
+| Runs (the other recordings) | 38,196 calls (`x2` 6,070, `w/007` 748, `w/048` 704 and 99 more) |
+| Called from | `DefineKeys`, `FireControl`, `MoveShots`, `FireShell`, `PayBonusTick` (tail), `RunBlasts`, `ZoneEnd` |
 | Reads | `$6E16` (`SoundIsAy`) |
 | Ports out | `$00FE`, `$08FE`, `$10FE`, `$18FE`, `$20FE`, `$28FE`, `$30FE`, `$38FE`, `$40FE`, `$48FE`, `$50FE`, `$58FE`, `$60FE`, `$68FE`, `$70FE`, `$78FE` |
 
@@ -697,6 +741,8 @@ Called by Pods `$9942` five times a pod (AmmoPodChirps `$9996`, GrenadePodChirps
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 460 calls (`w/076` 20, `w/089` 20, `w/108` 15 and 51 more) |
+| Called from | `Pods` |
+| Ports out | `$00FE`, `$10FE` |
 
 ## colour
 
@@ -711,7 +757,8 @@ Called by `$8229` with DrawBigSprite. C = the attribute, DE = x, y.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,291 calls, 476,123 t-states own (0.02 %) |
-| Called from | `PlayerFrame` |
+| Runs (the other recordings) | 75,073 calls (`x2` 6,553, `c128` 4,189, `x1` 1,067 and 99 more) |
+| Called from | `MovePlayer`, `PlayerFrame`, `DrawPlayer` |
 | Calls | `ColourCells` (tail) |
 | Writes | `$7CB6`-`$7CC8` (`ColourRowSkip+1`, `ColourWidth`, `ColourAligned`, `ColourHeight`) |
 
@@ -724,6 +771,9 @@ Callers: `$9291`, `$955D`, `$9835`, `$9A7F`, `$9DD6` (shots and small objects).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 383,508 calls (`x2` 69,499, `w/065` 8,826, `w/040` 8,474 and 96 more) |
+| Called from | `MoveGrenade`, `MoveDebris`, `AnimatePuffs`, `MoveBalls`, `MoveGunShots` |
+| Calls | `ColourCells` (tail) |
+| Writes | `$7CB6`-`$7CC8` (`ColourRowSkip+1`, `ColourWidth`, `ColourAligned`, `ColourHeight`) |
 
 ### `ColourSprite` (`$7C8F`)
 
@@ -734,7 +784,8 @@ Callers: MenuSparkles (`$47`), `$9FBD`, `$A26B`, `$A367`, `$A7D6`, `$AC7D`.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 42,144 calls, 6,096,832 t-states own (0.30 %) |
-| Called from | `MenuSparkles` |
+| Runs (the other recordings) | 240,044 calls (`c128` 42,498, `m1` 24,598, `x2` 20,847 and 99 more) |
+| Called from | `MenuSparkles`, `RunBlasts`, `HomingMissileStep` (tail), `AliensStep`, `FlickerPadStep` (tail), `IdleMissileStep` |
 | Calls | `ColourCells` |
 | Writes | `$7CB6`-`$7CC8` (`ColourRowSkip+1`, `ColourWidth`, `ColourAligned`, `ColourHeight`) |
 
@@ -747,7 +798,8 @@ DE = x (2-pixel steps), y. HL = `$5E00` + the cell (`$80DA`), the screen attribu
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 45,435 calls, 34,712,302 t-states own (1.73 %) |
-| Called from | `ColourBigSprite` (tail), `ColourSprite` |
+| Runs (the other recordings) | 698,625 calls (`x2` 96,899, `c128` 49,427, `m1` 25,537 and 99 more) |
+| Called from | `ColourBigSprite` (tail), `ColourCell` (tail), `ColourSprite` |
 | Calls | `AttrShadowCell` |
 | Reads | `$5E00`-`$60DF` (system) |
 | Writes | `$5800`-`$5ADF` (screen); `$7CD0`-`$7CDD` (`ColourRowCells+1`, `ColourBlackCell`, `ColourNextCell`, `ColourRowStep`) |
@@ -779,9 +831,10 @@ Callers: MainMenu (TitleTune, 48K only), ZorbaCheat (JingleTune), GAME OVER `$A0
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 7 calls, 38,808,955 t-states own (1.93 %) |
-| Called from | `MainMenu`, `GameOver` |
+| Runs (the other recordings) | 106 calls (`m1` 3, `x1` 3, `w/000` 1 and 99 more) |
+| Called from | `Start`, `MainMenu`, `GameOver` |
 | Calls | `PlayTwoTones` |
-| Reads | `$7D68`-`$7D88` (`JingleTune`); `$7DA3`-`$7E29` (`TitleTune`); `$7FEE`-`$7FF0` (`TuneNoteLength`, `TunePointer`); `$8072`-`$8094` (`NoteReloads+16`) |
+| Reads | `$7D68`-`$7FF0` (`JingleTune`, `TitleTune`, `TuneNoteLength`); `$8069`-`$8094` (`NoteReloads+7`) |
 | Writes | `$7FEE`-`$7FF0` (`TuneNoteLength`, `TunePointer`) |
 | Ports in | `$00FE` |
 
@@ -812,6 +865,7 @@ Never ran: neither tune holds a rest (both note numbers 0).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 133 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`c128`) |
 | Called from | `Sprites16` |
 | Writes | `$4000`-`$4001` (screen) |
 
@@ -822,6 +876,7 @@ Never ran: neither tune holds a rest (both note numbers 0).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 97 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`c128`) |
 | Calls | `PlayTwoTonesVoice2` |
 | Reads | `$800A` (`BeeperRest+6`) |
 | Ports out | `$00FE` |
@@ -849,6 +904,7 @@ The c1 and c128 L1 also list `$802D-$8061` as entries from frame 1808: that is t
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 451,582 calls, 8,128,488 t-states own (0.40 %) |
+| Runs (the other recordings) | 7,336 calls (`c128` 7,336) |
 | Called from | `BeeperRest`, `TwoTonesVoice1` |
 | Calls | `Voice2Toggle`, `Voice2Reload`, `TwoTonesNext` (tail) |
 | Writes | `$4000` (screen) |
@@ -860,6 +916,7 @@ The c1 and c128 L1 also list `$802D-$8061` as entries from frame 1808: that is t
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 6,759 calls, 101,414 t-states own (0.01 %) |
+| Runs (the other recordings) | 150 calls (`c128` 150) |
 | Called from | `PlayTwoTonesVoice2`, `TwoTonesVoice1` (tail) |
 | Calls | `Voice2Reload` |
 | Ports out | `$00FE`, `$10FE` |
@@ -871,6 +928,7 @@ The c1 and c128 L1 also list `$802D-$8061` as entries from frame 1808: that is t
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 6,760 calls, 298,684 t-states own (0.01 %) |
+| Runs (the other recordings) | 151 calls (`c128` 151) |
 | Called from | `PlayTwoTonesVoice2`, `Voice2Toggle` |
 | Calls | `PlayTwoTonesSetUp`, `TwoTonesStep` (tail), `TwoTonesVoice1` (tail) |
 | Reads | `$4000`-`$5AFE` (screen); `$8004`-`$8005` (`BeeperRest`) |
@@ -887,8 +945,10 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 79 calls, 316 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,585 calls (`m1` 226, `x1` 169, `w/000` 12 and 99 more) |
 | Called from | `PlayTune` |
 | Calls | `PlayTwoTonesSetUp` |
+| Ports out | `$00FE`, `$10FE` |
 
 ### `PlayTwoTonesSetUp` (`$803E`)
 
@@ -897,6 +957,7 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 80 calls, 2,853 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`c128` 3) |
 | Called from | `Voice2Reload`, `PlayTwoTones` |
 | Calls | `TwoTonesStep`, `TwoTonesStepPad` |
 | Reads | `$8006`-`$8007` (`BeeperRest+2`) |
@@ -908,6 +969,7 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 473,614 calls, 1,894,456 t-states own (0.09 %) |
+| Runs (the other recordings) | 7,652 calls (`c128` 7,652) |
 | Called from | `Voice2Reload` (tail), `PlayTwoTonesSetUp`, `TwoTonesNext` (tail) |
 | Calls | `TwoTonesStepPad` |
 
@@ -918,6 +980,7 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 473,615 calls, 1,894,467 t-states own (0.09 %) |
+| Runs (the other recordings) | 7,653 calls (`c128` 7,653) |
 | Called from | `PlayTwoTonesSetUp`, `TwoTonesStep` |
 | Calls | `TwoTonesVoice1` |
 
@@ -928,6 +991,7 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 475,393 calls, 18,497,045 t-states own (0.92 %) |
+| Runs (the other recordings) | 7,681 calls (`c128` 7,681) |
 | Called from | `Voice2Reload` (tail), `TwoTonesStepPad`, `TwoTonesNext` (tail) |
 | Calls | `PlayTwoTonesVoice2`, `Voice2Toggle` (tail), `TwoTonesNext` |
 | Reads | `$8008`-`$8009` (`BeeperRest+4`) |
@@ -940,6 +1004,7 @@ No border colour is kept (bits 0-2 of the OUT are 0). Called by the menu tune pl
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 468,634 calls, 15,970,570 t-states own (0.79 %) |
+| Runs (the other recordings) | 7,531 calls (`c128` 7,531) |
 | Called from | `PlayTwoTonesVoice2` (tail), `TwoTonesVoice1` |
 | Calls | `TwoTonesStep` (tail), `TwoTonesVoice1` (tail), `CellOffset` |
 | Reads | `$4002`-`$4867` (screen); `$4878`-`$4A67` (screen); `$4A78`-`$4B67` (screen); `$4B78`-`$4C67` (screen); `$4C78`-`$4D67` (screen); `$4D78`-`$5AFE` (screen); 1 more ranges |
@@ -959,7 +1024,8 @@ D the row (signed: SRA keeps a negative row negative), E the column 0-31. Output
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 76,848 calls, 5,609,883 t-states own (0.28 %) |
-| Called from | `MenuSparkles`, `HighlightControl`, `TwoTonesNext`, `BlockMapCell`, `AttrShadowCell`, `AnimateTurrets`, `ColourCycle`, `DrawStars` |
+| Runs (the other recordings) | 1,168,973 calls (`x2` 131,984, `c128` 86,546, `m1` 34,867 and 99 more) |
+| Called from | `MenuSparkles`, `HighlightControl`, `TwoTonesNext`, `BlockMapCell`, `AttrShadowCell`, `AnimateTurrets`, `ColourCycle`, `MineBlast`, `HomingMissileStart`, `HomingMissileStep`, `DrawStars`, `ForceFieldDraw`, `ForceFieldStep` |
 
 ### `BlockMapCell` (`$80C1`)
 
@@ -972,7 +1038,8 @@ Called by the four collision tests (`$80F3`, `$8122`, `$814E`, `$8179`), SpawnSh
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4,218 calls, 590,520 t-states own (0.03 %) |
-| Called from | `TestRight`, `TestLeft`, `TestBelow`, `TestAbove`, `SpawnShot`, `ProbeRight` |
+| Runs (the other recordings) | 227,636 calls (`x2` 32,218, `c128` 7,560, `w/094` 4,138 and 99 more) |
+| Called from | `TestRight`, `TestLeft`, `TestBelow`, `TestAbove`, `SpawnShot`, `ProbeRight`, `ProbeLeft`, `ProbeBelow`, `ProbeAbove`, `PrintString` |
 | Calls | `CellOffset` |
 
 ### `AttrShadowCell` (`$80DA`)
@@ -984,6 +1051,7 @@ As BlockMapCell with the base `$5E00`: the copy of the screen's attributes SaveA
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 45,435 calls, 6,360,900 t-states own (0.32 %) |
+| Runs (the other recordings) | 698,625 calls (`x2` 96,899, `c128` 49,427, `m1` 25,537 and 99 more) |
 | Called from | `ColourCells` |
 | Calls | `CellOffset` |
 
@@ -998,9 +1066,10 @@ The player is 3 cells wide and 4 high (24 x 32 pixels). Output A (the OR of the 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 60 calls, 10,172 t-states own (0.00 %) |
-| Called from | `Fall` |
+| Runs (the other recordings) | 47,914 calls (`x2` 5,126, `w/035` 554, `w/110` 554 and 99 more) |
+| Called from | `MovePlayer`, `Fall` |
 | Calls | `BlockMapCell` |
-| Reads | `$62C6`-`$62CB` (system); `$62E6`-`$62EB` (system); `$6306`-`$630B` (system); `$6326`-`$632B` (system) |
+| Reads | `$6269`-`$6274` (system); `$6288`-`$6294` (system); `$62A8`-`$62B4` (system); `$62C6`-`$62D4` (system); `$62E6`-`$62F4` (system); `$6306`-`$6314` (system); 1 more ranges |
 
 ### `TestLeft` (`$8122`)
 
@@ -1011,6 +1080,7 @@ X = 0: blocked (A = 1): the left edge is a wall, there is no way back to the pre
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 160 calls, 23,510 t-states own (0.00 %) |
+| Runs (the other recordings) | 194 calls (`c128` 194) |
 | Called from | `MovePlayer`, `Fall` |
 | Calls | `BlockMapCell` |
 | Reads | `$6280`-`$6281` (system); `$62A0`-`$62A1` (system); `$62C0`-`$62C6` (system); `$62E0`-`$62E6` (system); `$6300`-`$6306` (system); `$6320`-`$6326` (system) |
@@ -1024,9 +1094,10 @@ Y not a multiple of 8: no ground (the player is between rows, still falling or j
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4,421 calls, 967,068 t-states own (0.05 %) |
+| Runs (the other recordings) | 110,858 calls (`x2` 8,250, `c128` 7,294, `w/048` 1,346 and 99 more) |
 | Called from | `MovePlayer`, `Fall`, `PlayerDeath` |
 | Calls | `BlockMapCell` |
-| Reads | `$62C4`-`$62C6` (system); `$62E4`-`$62E6` (system); `$6300`-`$630B` (system); `$6320`-`$632B` (system); `$6340`-`$634B` (system) |
+| Reads | `$62C4`-`$62D3` (system); `$62E4`-`$6353` (system) |
 
 ### `TestAbove` (`$8179`)
 
@@ -1037,9 +1108,10 @@ As TestBelow with the row above the top (-`$20`): a jump stops when its head mee
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 72 calls, 10,669 t-states own (0.00 %) |
+| Runs (the other recordings) | 11,039 calls (`x2` 1,329, `x1` 159, `w/044` 112 and 99 more) |
 | Called from | `MovePlayer` |
 | Calls | `BlockMapCell` |
-| Reads | `$6260`-`$6266` (system); `$6282`-`$6286` (system); `$62A2`-`$62A6` (system) |
+| Reads | `$6260`-`$62B3` (system) |
 
 ### `MovePlayer` (`$81A4`)
 
@@ -1056,8 +1128,9 @@ c1 checked: a jump at frame 17492 takes Y `$70` -> `$5E` (18 pixels up) and back
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 451,733 t-states own (0.02 %) |
+| Runs (the other recordings) | 75,046 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `TestLeft`, `TestBelow`, `TestAbove`, `PlayerFrame`, `Fall` (tail), `AbortIfDying` |
+| Calls | `DrawBigSprite` (tail), `ColourBigSprite`, `TestRight`, `TestLeft`, `TestBelow`, `TestAbove`, `PlayerFrame`, `Fall` (tail), `AbortIfDying` |
 | Reads | `$7B94`-`$7B95` (`ControlJump`, `ControlDuck`); `$826A`-`$827F` (`JumpSteps`); `$8294` (`FallFlag`); `$82F5`-`$82F8` (`PlayerX`, `PlayerY`, `JumpStep`, `MoveDir`) |
 | Writes | `$82F2`-`$82FB` (`ScreenChanged`, `RestartX`, `RestartY`, `PlayerX` and 6 more) |
 
@@ -1072,8 +1145,9 @@ Called by MovePlayer and its branches, the teleport `$98BA`, the death `$9CAF` /
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,291 calls, 611,145 t-states own (0.03 %) |
-| Called from | `MovePlayer`, `Fall` (tail), `KillPlayer`, `PlayerDeath` (tail) |
-| Calls | `DrawBigSprite` (tail), `ColourBigSprite` |
+| Runs (the other recordings) | 54,404 calls (`x2` 6,555, `c128` 4,189, `x1` 1,067 and 67 more) |
+| Called from | `MovePlayer`, `Fall` (tail), `Teleports` (tail), `KillPlayer`, `PlayerDeath` (tail), `ExoSuitBooth` (tail) |
+| Calls | `DrawBigSprite` (tail), `ColourBigSprite`, `DrawPlayer`, `NextScreen` (tail) |
 | Reads | `$8269`-`$826A` (`PlayerFrameShown`, `JumpSteps`); `$82F5`-`$82F6` (`PlayerX`, `PlayerY`); `$9ED8` (`ExoSuit`) |
 | Writes | `$8269` (`PlayerFrameShown`); `$82F5`-`$82F6` (`PlayerX`, `PlayerY`) |
 
@@ -1086,6 +1160,8 @@ A the frame with the suit base (PickUpPods `$9942` enters here with the frame it
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 40,726 calls (`x2` 6,558, `w/118` 742, `w/009` 734 and 51 more) |
+| Called from | `PlayerFrame`, `Pods` |
+| Calls | `DrawBigSprite` (tail), `ColourBigSprite`, `NextScreen` (tail) |
 
 ### `NextScreen` (`$8253`)
 
@@ -1098,6 +1174,7 @@ x2 (WALKTHROUGH 6.0): NextScreen runs at frames 743, 1471, 1770, 2419 and 2944 (
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 16 calls (`w/072` 3, `w/074` 3, `w/023` 2 and 5 more) |
+| Called from | `PlayerFrame` (tail), `DrawPlayer` (tail), `ZoneEnd` |
 
 ### `Fall` (`$8280`)
 
@@ -1108,6 +1185,7 @@ FallFlag = 0; TestBelow: ground -> Walk (`$8295`). No ground: Y + 4, FallFlag = 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 1,528 calls, 199,096 t-states own (0.01 %) |
+| Runs (the other recordings) | 34,432 calls (`x2` 3,325, `c128` 3,292, `w/095` 539 and 67 more) |
 | Called from | `MovePlayer` (tail) |
 | Calls | `FlipPlayerFrames`, `TestRight`, `TestLeft`, `TestBelow`, `PlayerFrame` (tail) |
 | Reads | `$7B92`-`$7B93` (`ControlLeft`, `ControlRight`); `$7BDA` (`PlayerFlipped`); `$82F8`-`$82F9` (`MoveDir`, `WalkPhase`) |
@@ -1134,10 +1212,11 @@ AF, BC, DE, HL kept. Called by SpawnShot, MoveShots and the shot tests `$9B82`, 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 848 calls, 344,727 t-states own (0.02 %) |
-| Called from | `SpawnShot` (tail), `MoveShots` |
+| Runs (the other recordings) | 75,053 calls (`w/108` 1,896, `c128` 1,874, `x2` 1,826 and 91 more) |
+| Called from | `SpawnShot` (tail), `MoveShots`, `BallShot`, `ShotHitsAlien` |
 | Calls | `PixelAddress` |
-| Reads | `$4CA7`-`$4CB5` (screen); `$4EE7`-`$4EF5` (screen); `$5FA7`-`$5FB5` (system); `$5FE7`-`$5FF5` (system) |
-| Writes | `$4CA7`-`$4CB5` (screen); `$4EE7`-`$4EF5` (screen); `$59AA`-`$59B5` (screen); `$59EA`-`$59F5` (screen) |
+| Reads | `$4ACF`-`$4AD4` (screen); `$4AEC`-`$4AF7` (screen); `$4CA7`-`$4CB5` (screen); `$4ECD`-`$4ED4` (screen); `$4EE7`-`$4EF7` (screen); `$5FA7`-`$5FB5` (system); 2 more ranges |
+| Writes | `$4ACF`-`$4AD4` (screen); `$4AEC`-`$4AF7` (screen); `$4CA7`-`$4CB5` (screen); `$4ECD`-`$4ED4` (screen); `$4EE7`-`$4EF7` (screen); `$59AA`-`$59B5` (screen); 2 more ranges |
 
 ### `FireControl` (`$8338`)
 
@@ -1148,6 +1227,7 @@ Once a pass from the main loop. SkipIfDying `$9D78`. X >= `$76` (no room for a s
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 205,277 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,035 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `BeeperNoise`, `SpawnShot`, `PrintAmmo`, `AbortIfDying`, `PlaySfxShot` |
 | Reads | `$7B96` (`ControlFire`); `$82F5` (`PlayerX`); `$83DC` (`FireHeld`); `$8E5A` (`Ammo`); `$9ED8` (`ExoSuit`) |
@@ -1162,9 +1242,10 @@ No free slot (8 shots on the screen): nothing. The slot gets the direction Facin
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 9 calls, 2,865 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,610 calls (`x2` 298, `w/108` 29, `c128` 29 and 99 more) |
 | Called from | `FireControl` |
 | Calls | `BlockMapCell`, `XorShot` (tail) |
-| Reads | `$62A7`-`$62A8` (system); `$62E7`-`$62E8` (system); `$82F5`-`$82FB` (`PlayerX`, `PlayerY`, `JumpStep`, `MoveDir` and 3 more); `$845F`-`$8461` (`ShotList`) |
+| Reads | `$62A7`-`$62A8` (system); `$62CD`-`$62D0` (system); `$62E7`-`$62F5` (system); `$82F5`-`$82FB` (`PlayerX`, `PlayerY`, `JumpStep`, `MoveDir` and 3 more); `$845F`-`$8461` (`ShotList`) |
 | Writes | `$845F`-`$8461` (`ShotList`) |
 
 ### `MoveShots` (`$83DD`)
@@ -1176,8 +1257,9 @@ Called 5 times a main loop pass (so a shot moves 10 pixels a pass). First the hi
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 10,687,520 t-states own (0.53 %) |
+| Runs (the other recordings) | 375,078 calls (`x2` 32,770, `c128` 20,901, `x1` 5,291 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `XorShot`, `ProbeRight`, `ShotsHitBalls`, `GunShotsVsShots`, `AliensVsShots`, `ForceFieldVsShots` |
+| Calls | `BeeperNoise`, `XorShot`, `ProbeRight`, `ProbeLeft`, `AddPuff`, `ShotsHitBalls`, `GunShotsVsShots`, `AliensVsShots`, `ForceFieldVsShots`, `PlaySfxNoiseBurst` |
 | Reads | `$82F5` (`PlayerX`); `$845F`-`$8477` (`ShotList`) |
 | Writes | `$845F`-`$8461` (`ShotList`) |
 
@@ -1188,6 +1270,7 @@ Called 5 times a main loop pass (so a shot moves 10 pixels a pass). First the hi
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 2,100 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$845F`-`$8475` (`ShotList`) |
 | Writes | `$845F`-`$8476` (`ShotList`) |
@@ -1205,7 +1288,9 @@ ScreenChanged 0: return. Otherwise PlayerX = RestartX = 0 (the player enters on 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 91,364 t-states own (0.00 %) |
-| Called from | `StartGame` |
+| Runs (the other recordings) | 75,043 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
+| Called from | `StartGame`, `ZoneEnd` |
+| Calls | `PrintZone` |
 | Reads | `$82F2` (`ScreenChanged`) |
 
 ### `BuildScreen` (`$8494`)
@@ -1221,6 +1306,7 @@ At the end: IX's list closed, SaveAttributes, `$A2D5`, IndexObjectCells (the obj
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 9,116 t-states own (0.00 %) |
+| Runs (the other recordings) | 102 calls (`x2` 1, `w/076` 1, `w/006` 1 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `ClearShots`, `TableWord`, `ClearBlockMap`, `FillOpenMap`, `SaveAttributes`, `IndexObjectCells`, `ResetTurretList`, `ClearShellList`, `ArmMines`, `AddDestructible`, `ClearDebris`, `ClearPuffs`, `ClearBalls`, `SpawnBalls`, `ClearTraps`, `ClearGunShots`, `ClearSparkles`, `ClearBlasts`, `HomingMissileStart`, `DrawStars`, `ClearPickups`, `ClearAliens`, `AliensSetUp`, `ForceFieldDraw` (tail), `PrintString`, `ClearPlayArea`, `ClearWorkArea` |
 | Reads | `$8523` (`ScreenNumber`); `$C8EE`-`$C909` (`Screen000Layout`) |
@@ -1235,7 +1321,8 @@ Used for the screen table `$C7F4` and ElementTable by BuildScreen, and by `$93E2
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 40 calls, 2,680 t-states own (0.00 %) |
-| Called from | `BuildScreen` |
+| Runs (the other recordings) | 3,350 calls (`x2` 91, `w/076` 71, `w/000` 66 and 99 more) |
+| Called from | `BuildScreen`, `GrenadeBlast`, `SetPrinter` |
 | Reads | `$8532`-`$8549` (`ElementTable+4`); `$856A`-`$8571` (`ElementTable+60`); `$C7F4`-`$C7F5` (`ScreenTable`) |
 
 ## hud
@@ -1251,7 +1338,8 @@ Called by BuildScreen and by the menu (`$6DA1`) and the define-keys screen (`$6F
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 253,135 t-states own (0.01 %) |
-| Called from | `MainMenu`, `DefineKeys`, `BuildScreen` |
+| Runs (the other recordings) | 346 calls (`x2` 7, `c128` 6, `w/105` 5 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `BuildScreen` |
 | Reads | `$6100`-`$63BE` (system) |
 | Writes | `$6100`-`$63BF` (system) |
 
@@ -1264,7 +1352,8 @@ The printer writes 0 (or `$FF` after code `$EA`) into it for every glyph; the sp
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 251,698 t-states own (0.01 %) |
-| Called from | `MainMenu`, `DefineKeys`, `BuildScreen` |
+| Runs (the other recordings) | 346 calls (`x2` 7, `c128` 6, `w/018` 5 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `BuildScreen` |
 | Reads | `$5B00`-`$5DBE` (system) |
 | Writes | `$5B00`-`$5DBF` (system) |
 
@@ -1277,7 +1366,8 @@ The scenery's colours once a screen is built: the shot and shell drawers and the
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 287,046 t-states own (0.01 %) |
-| Called from | `MainMenu`, `DefineKeys`, `BuildScreen` |
+| Runs (the other recordings) | 345 calls (`x2` 7, `c128` 6, `w/105` 5 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `BuildScreen` |
 | Reads | `$5800`-`$5AFF` (screen) |
 | Writes | `$5E00`-`$60FF` (system) |
 
@@ -1290,6 +1380,7 @@ The hundreds are taken off without printing (`$8E37` with B = 100), then the ten
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 79 calls, 11,850 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,457 calls (`x2` 317, `c128` 52, `w/000` 39 and 99 more) |
 | Called from | `PrintAmmo` (tail), `PrintGrenades` (tail) |
 | Calls | `HudDigit` |
 | Writes | `$ADEF`-`$ADF0` (`PrintChar+14`) |
@@ -1301,6 +1392,7 @@ The hundreds are taken off without printing (`$8E37` with B = 100), then the ten
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 237 calls, 45,522 t-states own (0.00 %) |
+| Runs (the other recordings) | 10,371 calls (`x2` 951, `c128` 156, `x1` 117 and 99 more) |
 | Called from | `PrintTwoDigits` |
 | Calls | `PrintCharAttr` |
 
@@ -1313,7 +1405,8 @@ Called by the HUD `$7690`, FireControl, the pod pick-up `$9942` and the death `$
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 44 calls, 1,760 t-states own (0.00 %) |
-| Called from | `DrawHud`, `FireControl`, `PlayerDeath` |
+| Runs (the other recordings) | 2,796 calls (`x2` 300, `c128` 39, `x1` 29 and 99 more) |
+| Called from | `DrawHud`, `FireControl`, `Pods`, `PlayerDeath` |
 | Calls | `PrintTwoDigits` (tail) |
 | Reads | `$8E5A` (`Ammo`) |
 
@@ -1324,7 +1417,8 @@ Called by the HUD `$7690`, FireControl, the pod pick-up `$9942` and the death `$
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 35 calls, 1,400 t-states own (0.00 %) |
-| Called from | `DrawHud`, `PlayerDeath` |
+| Runs (the other recordings) | 661 calls (`x2` 17, `w/014` 14, `c128` 13 and 99 more) |
+| Called from | `DrawHud`, `ThrowGrenade` (tail), `Pods`, `PlayerDeath` |
 | Calls | `PrintTwoDigits` (tail) |
 | Reads | `$8E66` (`Grenades`) |
 
@@ -1335,6 +1429,7 @@ Called by the HUD `$7690`, FireControl, the pod pick-up `$9942` and the death `$
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 35 calls, 2,555 t-states own (0.00 %) |
+| Runs (the other recordings) | 137 calls (`c128` 10, `m1` 10, `x1` 10 and 99 more) |
 | Called from | `DrawHud`, `PlayerDeath` |
 | Calls | `PrintCharAttr` (tail) |
 | Reads | `$8E7A` (`Lives`) |
@@ -1349,7 +1444,8 @@ Called by the HUD `$7690` and ScreenChangeCheck.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 160 t-states own (0.00 %) |
-| Called from | `DrawHud` (tail) |
+| Runs (the other recordings) | 244 calls (`x2` 6, `w/072` 5, `w/074` 5 and 99 more) |
+| Called from | `DrawHud` (tail), `ScreenChangeCheck` |
 | Calls | `PrintNumber3` (tail) |
 | Reads | `$8523` (`ScreenNumber`) |
 
@@ -1366,6 +1462,7 @@ First empties the 16 lists of KindTable (an `$FF` at each list's start, the writ
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 164,001 t-states own (0.01 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/006` 4, `w/014` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Calls | `AddObjectCell` |
 | Reads | `$6100`-`$63BF` (system); `$8EF4`-`$8F4F` (`KindTable`) |
@@ -1382,6 +1479,7 @@ The cell's column and row: (HL - `$6100`) AND 31 and / 32 (`$8EB0` adds `$9F00` 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 36 calls, 15,068 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,793 calls (`w/006` 44, `w/030` 44, `w030` 44 and 98 more) |
 | Called from | `IndexObjectCells` |
 | Reads | `$8EF6`-`$8F05` (`KindTable+2`) |
 | Writes | `$61C1`-`$61C9` (system); `$6200`-`$620A` (system); `$6264`-`$6266` (system); `$62D4` (system); `$8EF6`-`$8F03` (`KindTable+2`); `$8F89`-`$8F8D` (`FlameList`); 2 more ranges |
@@ -1395,6 +1493,7 @@ Once a pass. FlamePhase steps 0, 1, 2; the glyphs `$15` + 2 phase and `$16` + 2 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 1,351,814 t-states own (0.07 %) |
+| Runs (the other recordings) | 75,001 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `Random`, `PrintCharAttr` |
 | Reads | `$8F89`-`$8F94` (`FlameList`, `FlamePhase`) |
@@ -1409,6 +1508,7 @@ Once a pass, font `$DDD8`. For each turret with a state (1-9; 0 = gone): its blo
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 990,552 t-states own (0.05 %) |
+| Runs (the other recordings) | 75,000 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `CellOffset`, `TurretFrame`, `FireShell`, `Random`, `XorCharAttr` |
 | Reads | `$62D4` (system); `$9019`-`$9025` (`TurretFrames`, `TurretList`) |
@@ -1423,6 +1523,7 @@ The table is read from `$9018` + A (`$9013` LD BC,`$9018`: the byte before Turre
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 500 calls, 24,500 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,923 calls (`w/007` 250, `m1` 151, `x1` 151 and 50 more) |
 | Called from | `AnimateTurrets` |
 | Reads | `$901A`-`$9021` (`TurretFrames+1`) |
 
@@ -1433,6 +1534,7 @@ The table is read from `$9018` + A (`$9013` LD BC,`$9018`: the byte before Turre
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,104 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9022`-`$902C` (`TurretList`) |
 | Writes | `$9022`-`$902D` (`TurretList`) |
@@ -1446,6 +1548,7 @@ The pair of bits `$C0` shifted to the X's 2-pixel phase on two pixel lines. When
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 6,818 calls, 2,227,684 t-states own (0.11 %) |
+| Runs (the other recordings) | 26,211 calls (`w/041` 2,754, `w/045` 2,131, `w/120` 2,131 and 48 more) |
 | Called from | `FireShell`, `MoveShells`, `ShellsHitPlayer` |
 | Calls | `PixelAddress` |
 | Reads | `$4BC0`-`$4BD4` (screen); `$4CC0`-`$4CD4` (screen); `$5FBF`-`$5FD4` (system) |
@@ -1460,6 +1563,7 @@ The first free slot of ShellList (none: no shell): direction C, Y = 8 row + 3, X
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 62 calls, 47,664 t-states own (0.00 %) |
+| Runs (the other recordings) | 359 calls (`w/007` 31, `m1` 19, `x1` 19 and 48 more) |
 | Called from | `AnimateTurrets` |
 | Calls | `BeeperNoise`, `XorShell`, `PlaySfxBlast` (tail) |
 | Reads | `$90CB`-`$90D3` (`ShellList`) |
@@ -1474,6 +1578,7 @@ Called twice a main loop pass. Shells do not stop at scenery.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 6,523 calls, 5,052,208 t-states own (0.25 %) |
+| Runs (the other recordings) | 150,032 calls (`x2` 13,108, `c128` 8,361, `x1` 2,117 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `XorShell` |
 | Reads | `$90CB`-`$90E9` (`ShellList`) |
@@ -1488,6 +1593,7 @@ For each live shell the box test `$9BD6` (BC = 0) against the player; a hit free
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,365,170 t-states own (0.12 %) |
+| Runs (the other recordings) | 74,977 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `XorShell`, `PlayerContact`, `KillPlayer` (tail) |
 | Reads | `$90CB`-`$90E9` (`ShellList`) |
@@ -1504,6 +1610,7 @@ c1: 4 runs (one per screen build).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 2,604 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$90CB`-`$90E7` (`ShellList`) |
 | Writes | `$90CB`-`$90E8` (`ShellList`) |
@@ -1519,6 +1626,7 @@ Screen 0: 6 cells (0,8) (5,8) (10,8) (4,11) (5,11) (6,11); screens 2, 6, 8: 8 ce
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,992,725 t-states own (0.15 %) |
+| Runs (the other recordings) | 75,016 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `CellOffset` |
 | Reads | `$768C` (`PassCount`); `$9135`-`$9141` (`ColourCycleList`) |
@@ -1543,7 +1651,9 @@ w030: 1 mine fired; 23 warp clones fired one each.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 309,700 t-states own (0.02 %) |
+| Runs (the other recordings) | 75,027 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `MineBlast`, `CellToPixels`, `ShieldedKill` (tail), `Random`, `PrintChar`, `PlaySfxBlast` |
 | Reads | `$91AF`-`$91B0` (`MineFlameToggle`, `MineList`) |
 | Writes | `$91AF` (`MineFlameToggle`); `$ADEF`-`$ADF0` (`PrintChar+14`) |
 
@@ -1558,6 +1668,8 @@ The text prints two spaces five times at the same place: each character XORed on
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 43 calls (`w/050` 4, `w/033` 3, `w/034` 3 and 21 more) |
+| Called from | `Mines` |
+| Calls | `CellOffset`, `SetPrinter` (tail), `PrintString` |
 
 ### `ArmMines` (`$91FA`)
 
@@ -1568,6 +1680,7 @@ Called by the screen builder `$8494` before the lists are built: fills `$91B0-$9
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 2,616 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$91B0`-`$91CC` (`MineList`) |
 | Writes | `$91B0`-`$91CD` (`MineList`) |
@@ -1589,8 +1702,9 @@ Thrown in c128 (3), x2 (14), w030 (8) and 78 warp clones.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 200,890 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,026 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `AbortIfDying` |
+| Calls | `PrintGrenades` (tail), `DrawSmallSprite`, `AbortIfDying`, `PlaySfxGrenade` |
 | Reads | `$82F5` (`PlayerX`); `$83DC` (`FireHeld`); `$8E66` (`Grenades`) |
 
 ### `ThrowFromCrouch` (`$9233`)
@@ -1626,7 +1740,9 @@ c128: 199 steps; x2: 396; the end in c128 3 times.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 9,780 calls, 273,840 t-states own (0.01 %) |
+| Runs (the other recordings) | 215,798 calls (`x2` 19,354, `c128` 12,462, `x1` 3,174 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `ColourCell`, `DrawSmallSprite`, `ProbeRight`, `ProbeBelow`, `GrenadeBlast` (tail), `AddPuff` (tail) |
 | Reads | `$925A` (`GrenadeTimer`) |
 
 ### `GrenadeLeftWall` (`$928A`)
@@ -1666,10 +1782,11 @@ c1: 52 160 calls, the most called routine of this range.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 52,160 calls, 54,140,681 t-states own (2.69 %) |
-| Called from | `PadXorSprites` |
+| Runs (the other recordings) | 1,469,585 calls (`x2` 147,851, `c128` 68,339, `w/065` 17,668 and 99 more) |
+| Called from | `ThrowGrenade`, `MoveGrenade`, `AddDebris`, `MoveDebris`, `AnimatePuffs`, `MoveBalls`, `SpawnBalls`, `BallHit`, `Guns`, `MoveGunShots`, `DestroyGunShot`, `PadXorSprites` |
 | Calls | `PixelAddress` |
-| Reads | `$4004`-`$4005` (screen); `$4104`-`$4105` (screen); `$4204`-`$4205` (screen); `$4304`-`$4305` (screen); `$4404`-`$4405` (screen); `$4504`-`$4505` (screen); 4 more ranges |
-| Writes | `$4004`-`$4005` (screen); `$4104`-`$4105` (screen); `$4204`-`$4205` (screen); `$4304`-`$4305` (screen); `$4404`-`$4405` (screen); `$4504`-`$4505` (screen); 4 more ranges |
+| Reads | `$4004`-`$4305` (screen); `$4404`-`$4405` (screen); `$4504`-`$4505` (screen); `$4604`-`$4605` (screen); `$4704`-`$4705` (screen); `$48F3`-`$48F4` (screen); 10 more ranges |
+| Writes | `$4004`-`$4305` (screen); `$4404`-`$4405` (screen); `$4504`-`$4505` (screen); `$4604`-`$4605` (screen); `$4704`-`$4705` (screen); `$48F3`-`$48F4` (screen); 10 more ranges |
 
 ### `ProbeRight` (`$9362`)
 
@@ -1680,9 +1797,10 @@ In: E = X (2-pixel units), D = Y. Out: A = the map (`$6100`) byte of the cell ri
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 424 calls, 52,622 t-states own (0.00 %) |
-| Called from | `MoveShots` |
+| Runs (the other recordings) | 133,754 calls (`x2` 20,424, `w/065` 3,799, `w/040` 3,660 and 96 more) |
+| Called from | `MoveShots`, `MoveGrenade`, `MoveBalls` |
 | Calls | `BlockMapCell` |
-| Reads | `$62A8`-`$62B5` (system); `$62E8`-`$62F5` (system) |
+| Reads | `$62A8`-`$62B5` (system); `$62CF`-`$62D4` (system); `$62E8`-`$62F7` (system) |
 
 ### `ProbeLeft` (`$9382`)
 
@@ -1693,6 +1811,8 @@ As ProbeRight with the cell on the left (L - 1). Callers: GrenadeLeftWall, MoveB
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 84,338 calls (`x2` 19,068, `w/065` 3,770, `w/040` 3,617 and 50 more) |
+| Called from | `MoveShots`, `MoveBalls` |
+| Calls | `BlockMapCell` |
 
 ### `ProbeBelow` (`$93A2`)
 
@@ -1703,6 +1823,8 @@ In: E = X, D = Y. Out: A = the map byte of the cell under the object, OR the one
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 109,761 calls (`x2` 22,594, `w/065` 4,420, `w/040` 4,235 and 89 more) |
+| Called from | `MoveGrenade`, `MoveBalls` |
+| Calls | `BlockMapCell` |
 
 ### `ProbeAbove` (`$93C2`)
 
@@ -1713,6 +1835,8 @@ As ProbeBelow one row up (HL - 32). Caller: MoveBalls (a ball going up).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 97,888 calls (`x2` 22,219, `w/065` 4,396, `w/040` 4,229 and 49 more) |
+| Called from | `MoveBalls` |
+| Calls | `BlockMapCell` |
 
 ### `GrenadeBlast` (`$93E2`)
 
@@ -1725,6 +1849,8 @@ A grenade that hits no such box ends silently. c128: 3 ends, x2 9 hits over 14 t
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 486 calls (`x2` 14, `w/014` 13, `w/035` 12 and 78 more) |
+| Called from | `MoveGrenade` (tail) |
+| Calls | `TableWord`, `SetPrinter`, `AddScore` (tail), `PrintString`, `PlaySfxBlast` |
 
 ### `AddDestructible` (`$9487`)
 
@@ -1737,6 +1863,7 @@ c1: 36 elements over its 4 builds of screen 0 (9 a build), 8 destructible (2 a b
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 36 calls, 24,452 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,502 calls (`w/076` 52, `x2` 52, `w/006` 50 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$94C6`-`$94F8` (`DestructibleKinds`) |
 | Writes | `$9437`-`$9444` (`DestructibleList`) |
@@ -1752,6 +1879,8 @@ c128: 98 pieces, x2 370.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5,362 calls (`x2` 370, `w/000` 282, `w/124` 250 and 66 more) |
+| Called from | `EraseBlockDebris` (tail) |
+| Calls | `DrawSmallSprite`, `DebrisSpeed`, `Random` |
 
 ### `DebrisSpeed` (`$9548`)
 
@@ -1762,6 +1891,7 @@ HL and BC kept.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 11,130 calls (`x2` 763, `w/000` 584, `w/124` 519 and 66 more) |
+| Called from | `AddDebris` |
 
 ### `MoveDebris` (`$955D`)
 
@@ -1774,8 +1904,11 @@ A piece leaves at the play area's edges only; it flies through walls.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 21,630,100 t-states own (1.08 %) |
+| Runs (the other recordings) | 75,015 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `ColourCell`, `DrawSmallSprite` |
 | Reads | `$95B6`-`$980E` (`DebrisList`) |
+| Ports out | `$00FE`, `$08FE`, `$10FE`, `$18FE`, `$20FE`, `$28FE`, `$30FE`, `$38FE`, `$40FE`, `$48FE`, `$50FE`, `$58FE`, `$60FE`, `$68FE`, `$70FE`, `$78FE`, `$80FE`, `$88FE`, `$90FE`, `$98FE`, `$A0FE`, `$A8FE`, `$B0FE`, `$B8FE`, `$C0FE`, `$C8FE`, `$D0FE`, `$D8FE`, `$E0FE`, `$E8FE`, `$F0FE`, `$F8FE` |
 
 ### `ClearDebris` (`$980F`)
 
@@ -1786,6 +1919,7 @@ Called by the screen builder `$8494`.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 50,496 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$95B6`-`$980C` (`DebrisList`) |
 | Writes | `$95B6`-`$980D` (`DebrisList`) |
@@ -1799,6 +1933,9 @@ In: E = X, D = Y (the small-sprite position). Takes the first record of PuffList
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 9,005 calls (`x2` 1,955, `w/000` 171, `w/007` 163 and 91 more) |
+| Called from | `MoveShots`, `MoveGrenade` (tail), `BallHit`, `DestroyGunShot`, `RunSparkles`, `IdleMissileStep` |
+| Reads | `$9870`-`$9872` (`PuffList`) |
+| Writes | `$9870`-`$9872` (`PuffList`) |
 
 ### `AnimatePuffs` (`$9835`)
 
@@ -1811,8 +1948,11 @@ x2: 1955 puffs started.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 4,550,960 t-states own (0.23 %) |
+| Runs (the other recordings) | 75,016 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Reads | `$9870`-`$98AC` (`PuffList`) |
+| Calls | `ColourCell`, `DrawSmallSprite` |
+| Reads | `$9865`-`$98AC` (`PuffFrames`, `PuffList`) |
+| Writes | `$9872` (`PuffList+2`) |
 
 ### `ClearPuffs` (`$98AD`)
 
@@ -1823,6 +1963,7 @@ Called by the screen builder `$8494`.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 5,124 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9870`-`$98AA` (`PuffList`) |
 | Writes | `$9870`-`$98AB` (`PuffList`) |
@@ -1842,7 +1983,9 @@ A screen has at most one pair (map value 6: TeleportPads, the map cell set to 1)
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 155,988 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,010 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `PlayerFrame` (tail), `CellToPixels`, `StartSparkle`, `PlaySfxPulse` |
 | Reads | `$7B94` (`ControlJump`); `$9930`-`$9935` (`TeleportPads`, `TeleportPad2`, `TeleportLatch`) |
 | Writes | `$9935` (`TeleportLatch`) |
 
@@ -1855,6 +1998,7 @@ Every register but DE kept. Callers: Mines, Teleports, Pods, SpawnBalls, Guns, T
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 136,674 calls (`w/050` 5,996, `w/049` 5,426, `w/116` 5,113 and 94 more) |
+| Called from | `Mines`, `Teleports`, `Pods`, `SpawnBalls`, `Guns`, `ExoSuitBooth`, `PickupsVsPlayer`, `FlickerPadStep`, `ZoneEnd`, `ForceFieldStep`, `ForceFieldVsShots`, `PrintString` |
 
 ### `Pods` (`$9942`)
 
@@ -1867,7 +2011,9 @@ w clones: 53 ammunition and 33 grenade pods taken.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 257,540 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,016 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `BeeperSweep`, `DrawPlayer`, `PrintAmmo`, `PrintGrenades`, `CellToPixels`, `SetPrinter`, `PrintString`, `PlaySfxAmmoRefill`, `PlaySfxGrenadeRefill` |
 | Reads | `$99F2`-`$99F6` (`AmmoPod`, `GrenadePod`) |
 
 ### `SetPrinter` (`$99F8`)
@@ -1879,6 +2025,8 @@ Patches the four CALL operands of PrintString `$AF2B` (`$AF33`, `$AFC0`, `$AFD2`
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 498 calls (`x2` 24, `w/000` 18, `w/010` 14 and 76 more) |
+| Called from | `MineBlast` (tail), `GrenadeBlast`, `Pods` |
+| Calls | `TableWord` |
 
 ### `AbortKeys` (`$9A19`)
 
@@ -1889,6 +2037,7 @@ Main loop, every pass (c1: 3260). Reads the keyboard half-row `$EFFE` (0 9 8 7 6
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 118,787 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Ports in | `$EFFE` |
 
@@ -1917,8 +2066,9 @@ The eight balls of a spawner start on the same spot: their first erases there ca
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 32,600 t-states own (0.00 %) |
+| Runs (the other recordings) | 75,021 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `MoveBallsLoop` |
+| Calls | `ColourCell`, `DrawSmallSprite`, `ProbeRight`, `ProbeLeft`, `ProbeBelow`, `ProbeAbove`, `MoveBallsLoop`, `Random` |
 
 ### `MoveBallsLoop` (`$9A26`)
 
@@ -1927,6 +2077,7 @@ The eight balls of a spawner start on the same spot: their first erases there ca
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 9,004,120 t-states own (0.45 %) |
+| Runs (the other recordings) | 36,893 calls (`c128` 4,180, `x1` 1,058, `m1` 830 and 47 more) |
 | Called from | `MoveBalls` |
 | Reads | `$9A99`-`$9AF9` (`BallList`) |
 
@@ -1959,6 +2110,7 @@ Called by the screen builder `$8494`.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 8,148 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9A99`-`$9AF7` (`BallList`) |
 | Writes | `$9A99`-`$9AF8` (`BallList`) |
@@ -1974,7 +2126,9 @@ The spawners are the scenery's hanging launchers (w030's screen 30: three of the
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 200 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/018` 4, `w/051` 4 and 99 more) |
 | Called from | `BuildScreen` |
+| Calls | `DrawSmallSprite`, `CellToPixels`, `Random` |
 | Reads | `$9B4B` (`BallSpawners`) |
 
 ### `ShotsHitBalls` (`$9B52`)
@@ -1986,7 +2140,9 @@ Called first by the player's shot routine `$83DD` (several times a pass). For ea
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 29,541,036 t-states own (1.47 %) |
+| Runs (the other recordings) | 375,077 calls (`x2` 32,770, `c128` 20,901, `x1` 5,291 and 99 more) |
 | Called from | `MoveShots` |
+| Calls | `BallHit`, `BallShot` |
 | Reads | `$9A99`-`$9AF9` (`BallList`) |
 
 ### `BallHit` (`$9B6B`)
@@ -2000,6 +2156,8 @@ w clones: 328 balls killed on 27 screens.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 336 calls (`w/018` 24, `w/066` 24, `w/019` 16 and 25 more) |
+| Called from | `ShotsHitBalls`, `BallsTouchPlayer` |
+| Calls | `DrawSmallSprite`, `AddPuff`, `AddScore` (tail), `PlaySfxExplosion` |
 
 ### `BallShot` (`$9B82`)
 
@@ -2010,6 +2168,8 @@ In: E = X, D = Y of a ball (or a gun's shot: `$9E37`). Walks the shot list `$845
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,062,847 calls (`x2` 222,400, `w/065` 44,045, `w/040` 42,326 and 61 more) |
+| Called from | `ShotsHitBalls`, `GunShotsVsShots` |
+| Calls | `XorShot` |
 
 ### `BallsTouchPlayer` (`$9BB4`)
 
@@ -2022,7 +2182,9 @@ w030: 7 touches (immune clones).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 5,907,120 t-states own (0.29 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `BallHit`, `PlayerContact`, `KillPlayer` (tail), `PlaySfxExplosion` |
 | Reads | `$9A99`-`$9AF9` (`BallList`) |
 
 ## death
@@ -2040,7 +2202,8 @@ Callers: the missiles `$90EA`, BallsTouchPlayer, TrapContact, the gun shots `$9E
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 1,719 calls, 174,849 t-states own (0.01 %) |
-| Called from | `ShellsHitPlayer` |
+| Runs (the other recordings) | 350,006 calls (`x2` 59,453, `w/065` 8,800, `w/098` 8,467 and 98 more) |
+| Called from | `ShellsHitPlayer`, `BallsTouchPlayer`, `GunShotsVsPlayer`, `HomingMissileStep`, `PickupsVsPlayer`, `AliensVsPlayer`, `IdleMissileStep` |
 | Reads | `$82F5`-`$82FB` (`PlayerX`, `PlayerY`, `JumpStep`, `MoveDir` and 3 more) |
 
 ### `Traps` (`$9C15`)
@@ -2056,6 +2219,7 @@ TrapContact kills the player on it.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 244,500 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,016 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Reads | `$9C70` (`TrapList`) |
 
@@ -2068,6 +2232,7 @@ Called by the screen builder `$8494` before the lists are built: `$5F` in `$9C70
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,104 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9C70`-`$9C7A` (`TrapList`) |
 | Writes | `$9C70`-`$9C7B` (`TrapList`) |
@@ -2081,6 +2246,7 @@ Main loop, every pass. For each trap with a counter of `$65` or more (rising, up
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 117,360 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Reads | `$9C70` (`TrapList`) |
 
@@ -2103,6 +2269,7 @@ In: the exoskeleton offset `$9ED8` (0, or `$0C` while it is worn: `$9F5D` toggle
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 43 calls (`w/050` 4, `w/033` 3, `w/034` 3 and 21 more) |
+| Called from | `Mines` (tail) |
 
 ### `KillPlayer` (`$9CAF`)
 
@@ -2117,7 +2284,8 @@ c1: 59 calls, 31 deaths (x1, m1 and h1: 9 each, their nine lives).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 59 calls, 8,894 t-states own (0.00 %) |
-| Called from | `ShellsHitPlayer` (tail) |
+| Runs (the other recordings) | 7,563 calls (`w/035` 689, `w/110` 689, `w/116` 559 and 93 more) |
+| Called from | `ShellsHitPlayer` (tail), `BallsTouchPlayer` (tail), `GunShotsVsPlayer` (tail), `HomingMissileStep`, `AliensVsPlayer`, `ForceFieldStep` (tail), `IdleMissileStep` |
 | Calls | `PlayerFrame` |
 | Reads | `$768D` (`ImmunityCount`); `$82F5`-`$82F6` (`PlayerX`, `PlayerY`); `$9CE2` (`DeathTimer`) |
 | Writes | `$768D` (`ImmunityCount`); `$82F7` (`JumpStep`); `$83DC` (`FireHeld`); `$9CE2` (`DeathTimer`); `$AC7B`-`$AC7C` (`IdleTime`) |
@@ -2137,6 +2305,7 @@ x1: 9 deaths, the ninth to GAME OVER.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,263 calls, 288,695 t-states own (0.01 %) |
+| Runs (the other recordings) | 75,030 calls (`x2` 6,554, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `FlipPlayerFrames`, `TestBelow`, `PlayerFrame` (tail), `PrintAmmo`, `PrintGrenades`, `PrintLives`, `GameOver` (tail) |
 | Reads | `$7BDA` (`PlayerFlipped`); `$82F3`-`$82F6` (`RestartX`, `RestartY`, `PlayerX`, `PlayerY`); `$8E7A` (`Lives`); `$9CE2` (`DeathTimer`); `$9D4B`-`$9D77` (`DeathLeap+1`) |
@@ -2161,6 +2330,7 @@ DeathTimer not 0: POP the return address, so the RET returns from the caller. Ca
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 13,046 calls, 444,276 t-states own (0.02 %) |
+| Runs (the other recordings) | 300,104 calls (`x2` 26,216, `c128` 16,722, `x1` 4,234 and 99 more) |
 | Called from | `MovePlayer`, `FireControl`, `ThrowGrenade`, `AlienSpawn` |
 | Reads | `$9CE2` (`DeathTimer`) |
 
@@ -2179,7 +2349,9 @@ The guns are the scenery's cannons (w030's screen 30: the green cannon on its pe
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 117,360 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,999 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `DrawSmallSprite`, `CellToPixels`, `Random`, `PlaySfxNoiseSweep` |
 | Reads | `$9DC1` (`GunList`) |
 
 ### `GunShotsFull` (`$9DA6`)
@@ -2213,7 +2385,9 @@ w clones: 16 331 steps, 224 shots off the left edge.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,464,560 t-states own (0.12 %) |
+| Runs (the other recordings) | 74,997 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `ColourCell`, `DrawSmallSprite` |
 | Reads | `$9E18`-`$9E36` (`GunShots`) |
 
 ### `ClearGunShots` (`$9E0A`)
@@ -2225,6 +2399,7 @@ Called by the screen builder `$8494`.
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 2,616 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9E18`-`$9E34` (`GunShots`) |
 | Writes | `$9E18`-`$9E35` (`GunShots`) |
@@ -2240,7 +2415,9 @@ The shells are launched by the guns of tile 11 (`$9D7F`) and moved left by `$9DD
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 11,672,948 t-states own (0.58 %) |
+| Runs (the other recordings) | 375,068 calls (`x2` 32,770, `c128` 20,901, `x1` 5,291 and 99 more) |
 | Called from | `MoveShots` |
+| Calls | `BallShot`, `DestroyGunShot` |
 | Reads | `$9E18`-`$9E36` (`GunShots`) |
 
 ### `DestroyGunShot` (`$9E4F`)
@@ -2252,6 +2429,8 @@ In: DE = the shell's X, Y; HL = the record's next byte (the shell's step + 1). X
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 174 calls (`w/048` 19, `w/123` 15, `w/122` 14 and 24 more) |
+| Called from | `GunShotsVsShots`, `GunShotsVsPlayer` |
+| Calls | `DrawSmallSprite`, `AddPuff`, `AddScore` (tail), `PlaySfxExplosion` |
 
 ### `GunShotsVsPlayer` (`$9E64`)
 
@@ -2262,7 +2441,9 @@ Main loop (c1: 3260 entries, one a pass). The same walk as GunShotsVsShots; `$9B
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,334,160 t-states own (0.12 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `PlayerContact`, `KillPlayer` (tail), `DestroyGunShot`, `PlaySfxExplosion` |
 | Reads | `$9E18`-`$9E36` (`GunShots`) |
 
 ## passtime
@@ -2278,6 +2459,7 @@ Main loop, at its end (`$766E`). XorSprite `$92FB` counts every draw in XorSprit
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 1,747,360 t-states own (0.09 %) |
+| Runs (the other recordings) | 74,973 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `DrawSmallSprite` |
 | Reads | `$9E98` (`XorSpriteCount`) |
@@ -2291,6 +2473,7 @@ Main loop (`$7671`), after PadXorSprites. SlotSpriteCount is zeroed at `$75C2` a
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 792,132 t-states own (0.04 %) |
+| Runs (the other recordings) | 74,969 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `DrawSprite` |
 | Reads | `$9EAE` (`SlotSpriteCount`) |
@@ -2304,6 +2487,8 @@ In: A = the ticks. BonusTicks += A; `$C12E` asks the AY for effect 5. PayBonusTi
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 82 calls (`w/045` 4, `w/080` 4, `w/120` 4 and 31 more) |
+| Called from | `HomingMissileStep`, `PickupsVsPlayer` (tail) |
+| Calls | `PlaySfxTrill` |
 
 ### `PayBonusTick` (`$9EC1`)
 
@@ -2314,7 +2499,9 @@ Main loop (`$7629`). While BonusTicks is not 0: BonusTicks - 1, AddScore Points2
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 114,100 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,997 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `BeeperNoise` (tail), `AddScore` |
 | Reads | `$9ED6`-`$9ED7` (`BonusTicks`) |
 
 ### `StartSparkle` (`$9ED9`)
@@ -2326,6 +2513,7 @@ In: DE = X, Y (pixels). Called twice by the teleport `$98BA`: one sparkle at the
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 76 calls (`w/036` 4, `w/037` 4, `w/056` 4 and 29 more) |
+| Called from | `Teleports` |
 
 ### `RunSparkles` (`$9EEE`)
 
@@ -2336,7 +2524,9 @@ Main loop (`$762C`). For each record with passes left: passes - 1, then an explo
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 1,004,080 t-states own (0.05 %) |
+| Runs (the other recordings) | 74,997 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `AddPuff`, `Random` |
 | Reads | `$9F13`-`$9F1F` (`SparkleList`) |
 
 ### `ClearSparkles` (`$9F20`)
@@ -2348,6 +2538,7 @@ Called by the screen set-up `$8494` (c1: 4 entries, the 4 games' first screens; 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,092 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$9F13`-`$9F1D` (`SparkleList`) |
 | Writes | `$9F13`-`$9F1E` (`SparkleList`) |
@@ -2363,7 +2554,9 @@ The same shape as the teleport `$98BA` (two booths of tile 6), which this agent 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 156,290 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,993 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `PlayerFrame` (tail), `CellToPixels`, `PlaySfxAmmoRefill` |
 | Reads | `$7B94` (`ControlJump`); `$9F6D`-`$9F6F` (`BoothUpLatch`, `ExoBoothList`) |
 | Writes | `$9F6D` (`BoothUpLatch`) |
 
@@ -2380,6 +2573,8 @@ In: DE = the alien's X, Y. Walks the shot list `$845F` (X, Y, live; `$FF` ends):
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 443,481 calls (`x2` 49,331, `w/119` 14,876, `w/055` 14,465 and 77 more) |
+| Called from | `AliensVsShots` |
+| Calls | `XorShot` |
 
 ### `StartBlast` (`$9FA3`)
 
@@ -2390,6 +2585,7 @@ In: DE = X, Y. AF and HL kept. Full list: nothing. Callers: HomingMissileStep, K
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,842 calls (`x2` 498, `w/026` 40, `w/042` 32 and 83 more) |
+| Called from | `HomingMissileStep`, `KillAlien`, `IdleMissileStep` (tail) |
 
 ### `RunBlasts` (`$9FBD`)
 
@@ -2400,7 +2596,9 @@ Main loop (`$7632`). Blast n uses the sprite slot `$B401` + `$30` n (5 slots). F
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,412,400 t-states own (0.12 %) |
+| Runs (the other recordings) | 74,997 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `DrawSprite`, `BeeperNoise`, `ColourSprite`, `Random` |
 | Reads | `$A00C`-`$A01B` (`BlastList`) |
 
 ### `ClearBlasts` (`$A01C`)
@@ -2412,6 +2610,7 @@ Called by the screen set-up `$8494` (c1: 4, warps: 223).
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,356 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$A00C`-`$A019` (`BlastList`) |
 | Writes | `$A00C`-`$A01A` (`BlastList`) |
@@ -2429,6 +2628,7 @@ Reached by the JP Z at `$9D38` when the last life is lost. Prints GameOverText (
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3 calls, 87,900 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`m1` 1, `x1` 1, `c128` 1) |
 | Called from | `PlayerDeath` (tail) |
 | Calls | `Start` (tail), `PlayTune`, `HallOfFameInsert`, `ReadKey`, `WaitNoKey`, `PrintString`, `Delay` |
 
@@ -2443,6 +2643,7 @@ c1 (3 game overs, scores below 1000): 153 entries of HofEntryLoop = 3 x 51 (50 e
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3 calls, 72 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`c128` 1, `m1` 1, `x1` 1) |
 | Called from | `GameOver` |
 | Calls | `HofEntryLoop` |
 
@@ -2453,6 +2654,7 @@ c1 (3 game overs, scores below 1000): 153 entries of HofEntryLoop = 3 x 51 (50 e
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 153 calls, 12,623 t-states own (0.00 %) |
+| Runs (the other recordings) | 153 calls (`x1` 51, `m1` 51, `c128` 51) |
 | Called from | `HallOfFameInsert`, `HofNextEntry` (tail) |
 | Calls | `HofDigitLoop` |
 | Reads | `$71F1`-`$7511` (`HallOfFame`) |
@@ -2464,6 +2666,7 @@ c1 (3 game overs, scores below 1000): 153 entries of HofEntryLoop = 3 x 51 (50 e
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 450 calls, 17,994 t-states own (0.00 %) |
+| Runs (the other recordings) | 450 calls (`x1` 150, `m1` 150, `c128` 150) |
 | Called from | `HofEntryLoop`, `HofNextDigit` (tail) |
 | Calls | `HofNextDigit` (tail), `HofNextEntry` (tail) |
 | Reads | `$71FB`-`$750D` (`HallOfFame+10`); `$AD8A`-`$AD8C` (`Score`) |
@@ -2489,6 +2692,7 @@ Evidence: h1 (E X O L O N, ENTER: the top entry EXOLON 009000). exD's d1 (work/a
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 300 calls, 9,000 t-states own (0.00 %) |
+| Runs (the other recordings) | 300 calls (`c128` 100, `m1` 100, `x1` 100) |
 | Called from | `HofDigitLoop` (tail) |
 | Calls | `HofDigitLoop` (tail) |
 
@@ -2499,6 +2703,7 @@ Evidence: h1 (E X O L O N, ENTER: the top entry EXOLON 009000). exD's d1 (work/a
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 150 calls, 7,350 t-states own (0.00 %) |
+| Runs (the other recordings) | 150 calls (`c128` 50, `m1` 50, `x1` 50) |
 | Called from | `HofDigitLoop` (tail) |
 | Calls | `HofEntryLoop` (tail) |
 
@@ -2515,7 +2720,9 @@ Called by the screen set-up `$8494` and by HomingMissileStep when no missile fli
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,264 calls, 182,784 t-states own (0.01 %) |
+| Runs (the other recordings) | 68,957 calls (`x2` 6,560, `c128` 4,181, `x1` 1,059 and 99 more) |
 | Called from | `BuildScreen`, `HomingMissileStep` (tail) |
+| Calls | `CellOffset`, `Random` |
 | Reads | `$A266`-`$A267` (`MissileLauncher`) |
 | Writes | `$A26A` (`MissileLive`) |
 
@@ -2528,8 +2735,9 @@ Main loop (`$7638`; c1: 3260). No missile: HomingMissileStart. The launcher gone
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 88,020 t-states own (0.00 %) |
+| Runs (the other recordings) | 74,993 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `HomingMissileStart` (tail) |
+| Calls | `DrawSprite`, `ColourSprite` (tail), `CellOffset`, `PlayerContact`, `KillPlayer`, `AddBonusTicks`, `StartBlast`, `HomingMissileStart` (tail) |
 | Reads | `$A26A` (`MissileLive`) |
 
 ### `DrawStars` (`$A2D5`)
@@ -2541,9 +2749,10 @@ Called by the screen set-up `$8494`. For rows 21 down to 0, three random columns
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 48,864 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/072` 4, `w/014` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Calls | `CellOffset`, `Random`, `PrintCharAttr` |
-| Reads | `$5E02`-`$6075` (system); `$6089`-`$60BE` (system) |
+| Reads | `$5E01`-`$60BF` (system) |
 | Writes | `$ADEF`-`$ADF0` (`PrintChar+14`) |
 
 ### `PickupsVsPlayer` (`$A30B`)
@@ -2555,7 +2764,9 @@ Main loop (`$763B`). Each live record of PickupList (column, row, live): the pix
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 117,360 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,991 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `CellToPixels`, `PlayerContact`, `AddBonusTicks` (tail), `PlaySfxTrill` |
 | Reads | `$A333` (`PickupList`) |
 
 ### `ClearPickups` (`$A352`)
@@ -2567,6 +2778,7 @@ The builder then overwrites the column and row of the records it fills and puts 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 1,104 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$A333`-`$A33D` (`PickupList`) |
 | Writes | `$A333`-`$A33E` (`PickupList`) |
@@ -2582,8 +2794,9 @@ Main loop (`$763E`; c1: 3260, AliensStepLoop 22 820). Alien n uses the slot `$B5
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 78,240 t-states own (0.00 %) |
+| Runs (the other recordings) | 74,991 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `AliensStepLoop` |
+| Calls | `DrawSprite`, `ColourSprite`, `AliensStepLoop` |
 
 ### `AliensStepLoop` (`$A367`)
 
@@ -2592,6 +2805,7 @@ Main loop (`$763E`; c1: 3260, AliensStepLoop 22 820). Alien n uses the slot `$B5
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 22,820 calls, 1,473,520 t-states own (0.07 %) |
+| Runs (the other recordings) | 130,865 calls (`c128` 29,260, `x1` 7,406, `m1` 5,810 and 19 more) |
 | Called from | `AliensStep`, `AliensNext` (tail) |
 | Calls | `AliensNext` (tail) |
 | Reads | `$A508`-`$A544` (`AlienList`) |
@@ -2603,6 +2817,7 @@ Main loop (`$763E`; c1: 3260, AliensStepLoop 22 820). Alien n uses the slot `$B5
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 19,560 calls, 1,290,960 t-states own (0.06 %) |
+| Runs (the other recordings) | 112,170 calls (`c128` 25,080, `x1` 6,348, `m1` 4,980 and 19 more) |
 | Called from | `AliensStepLoop` (tail) |
 | Calls | `AliensStepLoop` (tail) |
 
@@ -2613,6 +2828,7 @@ Main loop (`$763E`; c1: 3260, AliensStepLoop 22 820). Alien n uses the slot `$B5
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 5,136 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/000` 4, `w/006` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$A508`-`$A542` (`AlienList`) |
 | Writes | `$A508`-`$A543` (`AlienList`) |
@@ -2626,8 +2842,9 @@ Main loop (`$762F`). `$9D78` returns from here too while the player is dying. No
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 107,640 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,997 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
-| Calls | `AbortIfDying` |
+| Calls | `AbortIfDying`, `Random` |
 | Reads | `$A676` (`AliensHere`) |
 
 ### `AliensVsShots` (`$A5CA`)
@@ -2639,7 +2856,9 @@ Called by the shot step `$83DD`. ShotHitsAlien for each, KillAlien on a hit. x2:
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 14,607,488 t-states own (0.73 %) |
+| Runs (the other recordings) | 375,067 calls (`x2` 32,770, `c128` 20,901, `x1` 5,291 and 99 more) |
 | Called from | `MoveShots` |
+| Calls | `ShotHitsAlien`, `KillAlien` |
 | Reads | `$A508`-`$A544` (`AlienList`) |
 
 ### `AliensVsPlayer` (`$A5F4`)
@@ -2651,7 +2870,9 @@ Main loop (`$765C`). The box from X + 2, Y + 4 (B = 8, C = 4); then KillAlien an
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 2,920,960 t-states own (0.15 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `PlayerContact`, `KillPlayer`, `KillAlien` |
 | Reads | `$A508`-`$A544` (`AlienList`) |
 
 ### `KillAlien` (`$A62D`)
@@ -2663,6 +2884,8 @@ In: HL = the record, IY = its slot. BC = X, Y for the blast.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,398 calls (`x2` 205, `w/026` 40, `w/114` 32 and 77 more) |
+| Called from | `AliensVsShots`, `AliensVsPlayer` |
+| Calls | `DrawSprite`, `StartBlast`, `AddScore` (tail), `PlaySfxExplosion` |
 
 ### `AliensSetUp` (`$A645`)
 
@@ -2673,6 +2896,7 @@ Called by the screen set-up `$8494`. A screen not in the table: AliensHere = 0 a
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 20,436 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/006` 4, `w/105` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Reads | `$8523` (`ScreenNumber`); `$A677`-`$A7D5` (`AlienScreens`) |
 | Writes | `$A676` (`AliensHere`) |
@@ -2686,7 +2910,9 @@ Main loop (`$7641`). When the screen has one (FlickerPadList), draws frame `$1C`
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 117,360 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,980 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `DrawSprite`, `ColourSprite` (tail), `CellToPixels`, `Random` |
 | Reads | `$A814` (`FlickerPadList`) |
 
 ## zoneend
@@ -2704,7 +2930,9 @@ Warp runs: 9 runs (the starts 24, 49, 74, 99, 124 and the runs that walked into 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 127,140 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,978 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `DrawHud`, `BeeperNoise`, `NextScreen`, `ScreenChangeCheck`, `CellToPixels`, `BonusScreen`, `AddScore`, `PrintChar`, `PrintString`, `ClearScreen`, `Delay` |
 | Reads | `$AAEF`-`$AAF0` (`ZoneEndList`) |
 
 ### `ZoneAddLife` (`$A8A1`)
@@ -2736,6 +2964,8 @@ Six DelayBC of 65 536 (about 2.4 s; the zone's panel stays up 133 frames in w/12
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 9 calls (`w/023` 1, `w/049` 1, `w/074` 1 and 6 more) |
+| Called from | `ZoneEnd` |
+| Calls | `ReadControls`, `WaitNoKey`, `AddScore`, `PrintChar`, `PrintString`, `ClearScreen`, `Delay` |
 
 ### `DeadNextLineCall` (`$AB94`)
 
@@ -2760,7 +2990,9 @@ Jumped to at the end of the screen set-up (`$8520`). Font `$DAB8`; PrintChar's `
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 156 t-states own (0.00 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/089` 4, `w/000` 4 and 99 more) |
 | Called from | `BuildScreen` (tail) |
+| Calls | `CellOffset`, `PrintChar` |
 | Reads | `$ABCC`-`$ABCD` (`ForceFieldList`) |
 
 ### `ForceFieldStep` (`$ABCF`)
@@ -2772,7 +3004,9 @@ Main loop (`$7647`). Sounds `$C1A9` (AY effects 1 and `$0B`), ink = `$768C` AND 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 127,140 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,977 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `CellOffset`, `CellToPixels`, `KillPlayer` (tail), `PlaySfxHum` |
 | Reads | `$ABCC`-`$ABCD` (`ForceFieldList`) |
 
 ### `ForceFieldVsShots` (`$AC04`)
@@ -2784,7 +3018,9 @@ Called by the shot step `$83DD`. A live shot of `$845F` whose X equals the field
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 16,303 calls, 635,817 t-states own (0.03 %) |
+| Runs (the other recordings) | 375,066 calls (`x2` 32,770, `c128` 20,901, `x1` 5,291 and 99 more) |
 | Called from | `MoveShots` |
+| Calls | `CellToPixels` |
 | Reads | `$ABCC`-`$ABCD` (`ForceFieldList`) |
 
 ### `ForceFieldDestroy` (`$AC2B`)
@@ -2806,6 +3042,7 @@ Main loop (`$764A`). IdleTime (+1 each pass at `$7682`, 0 at a new screen `$8497
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 254,280 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,977 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Reads | `$AC78`-`$AC7C` (`IdleMissileLive`, `IdleMissilePosition`, `IdleTime`) |
 
@@ -2818,7 +3055,9 @@ Main loop (`$764D`). At X = 0: the end. X < `$6F`: half the passes (`$AD36` >= `
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 91,280 t-states own (0.00 %) |
+| Runs (the other recordings) | 74,977 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
+| Calls | `DrawSprite`, `ColourSprite`, `AddPuff`, `PlayerContact`, `KillPlayer`, `StartBlast` (tail), `Random` |
 | Reads | `$AC78` (`IdleMissileLive`) |
 
 ## utils
@@ -2834,7 +3073,8 @@ The rows `$FEFE` to `$7FFE` in turn, bits 0-4 of each; the first 0 bit gives Key
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 22,019 calls, 40,177,227 t-states own (2.00 %) |
-| Called from | `MainMenu`, `DefineKeys`, `GameOver` |
+| Runs (the other recordings) | 66,389 calls (`m1` 30,017, `x1` 20,044, `c128` 11,972 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `HallOfFameRoll`, `GameOver` |
 | Reads | `$ACF0`-`$AD17` (`KeyTable+1`) |
 | Ports in | `$7FFE`, `$BFFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE`, `$FEFE` |
 
@@ -2845,7 +3085,8 @@ The rows `$FEFE` to `$7FFE` in turn, bits 0-4 of each; the first 0 bit gives Key
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 18 calls, 55,733,542 t-states own (2.77 %) |
-| Called from | `DefineKeys`, `GameOver` |
+| Runs (the other recordings) | 22 calls (`c128` 6, `m1` 6, `w/023` 1 and 9 more) |
+| Called from | `DefineKeys`, `GameOver`, `BonusScreen` |
 | Ports in | `$00FE` |
 
 ### `PauseKey` (`$AD21`)
@@ -2857,6 +3098,7 @@ Main loop (`$765F`). The row `$F7FE` AND `$1F` = `$1B`: only "3" down. Then Paus
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,260 calls, 142,709 t-states own (0.01 %) |
+| Runs (the other recordings) | 74,976 calls (`x2` 6,554, `c128` 4,180, `x1` 1,058 and 99 more) |
 | Called from | `StartGame` |
 | Ports in | `$F7FE` |
 
@@ -2879,7 +3121,8 @@ The seed RandomSeed is a word; HL, DE, BC kept. The incoming A is XORed in (call
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 20,875 calls, 4,195,875 t-states own (0.21 %) |
-| Called from | `MenuSparkles`, `AnimateFlames`, `AnimateTurrets`, `DrawStars` |
+| Runs (the other recordings) | 652,778 calls (`x2` 107,635, `c128` 20,271, `w/065` 17,898 and 99 more) |
+| Called from | `MenuSparkles`, `AnimateFlames`, `AnimateTurrets`, `Mines`, `AddDebris`, `MoveBalls`, `SpawnBalls`, `Guns`, `RunSparkles`, `RunBlasts`, `HomingMissileStart`, `DrawStars`, `AlienSpawn`, `FlickerPadStep`, `IdleMissileStep` |
 | Reads | `$AD51`-`$AD52` (`RandomSeed`) |
 | Writes | `$AD51`-`$AD52` (`RandomSeed`) |
 
@@ -2892,6 +3135,8 @@ In: DE = the last digit of an addend of PointValues. The score's digits `$AD8A-$
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5,969 calls (`w/072` 223, `w/073` 222, `w/023` 216 and 87 more) |
+| Called from | `GrenadeBlast` (tail), `BallHit` (tail), `DestroyGunShot` (tail), `PayBonusTick`, `KillAlien` (tail), `ZoneEnd`, `BonusScreen` |
+| Calls | `PrintString` |
 
 ### `BoxOverlap` (`$ADCD`)
 
@@ -2920,7 +3165,8 @@ Plot mode 0 of Printers `$9A0F` (set by SetPrinter `$99F8` into the four CALLs o
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4,053 calls, 2,598,177 t-states own (0.13 %) |
-| Called from | `DefineKeys`, `PrintString` |
+| Runs (the other recordings) | 177,412 calls (`w/050` 5,301, `w/072` 3,558, `w/023` 3,471 and 99 more) |
+| Called from | `DefineKeys`, `Mines`, `ZoneEnd`, `BonusScreen`, `ForceFieldDraw`, `PrintString` |
 | Reads | `$D8E0`-`$D8E7` (`Font`); `$D950`-`$DAB7` (`Font+112`); `$DB38`-`$DB5F` (`TileGlyphs+128`); `$DBE8`-`$DE57` (`TileSetDBE8`, `TileSetDD38`, `TileSetDDD8`); `$DE68`-`$DE77` (`TileSetDDD8+144`); `$DED8`-`$E10F` (`TileSetDED8`, `TileSetDF78`, `TileSetE018`); 2 more ranges |
 | Writes | `$4003`-`$5DFF` (screen); `$6103`-`$63FF` (system) |
 
@@ -2933,9 +3179,10 @@ As PrintChar without the column test and the map writes: A the code, D the row, 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 13,392 calls, 7,710,927 t-states own (0.38 %) |
-| Called from | `HudDigit`, `PrintLives` (tail), `AnimateFlames`, `DrawStars`, `PrintDigit` |
+| Runs (the other recordings) | 165,413 calls (`c128` 16,892, `w/050` 7,089, `w/027` 6,383 and 99 more) |
+| Called from | `PrintNextHallEntry`, `HudDigit`, `PrintLives` (tail), `AnimateFlames`, `DrawStars`, `PrintDigit` |
 | Reads | `$ADEF`-`$ADF0` (`PrintChar+14`); `$D960`-`$D9AF` (`Font+128`); `$DB60`-`$DB8F` (`TileGlyphs+168`); `$E858`-`$E85F` (`TileSetE840+24`) |
-| Writes | `$4002`-`$5A33` (screen); `$5AE1`-`$5AFE` (screen) |
+| Writes | `$4001`-`$5A3A` (screen); `$5AE1`-`$5AFE` (screen) |
 
 ### `XorCharAttr` (`$AE5D`)
 
@@ -2946,6 +3193,7 @@ A the code, D the row, E the column, C the attribute, the glyph from GlyphBase. 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,000 calls, 1,267,913 t-states own (0.06 %) |
+| Runs (the other recordings) | 11,692 calls (`w/007` 1,000, `x1` 604, `m1` 604 and 50 more) |
 | Called from | `AnimateTurrets` |
 | Reads | `$48D4`-`$48D5` (screen); `$49D4`-`$49D5` (screen); `$4AD4`-`$4AD5` (screen); `$4BD4`-`$4BD5` (screen); `$4CD4`-`$4CD5` (screen); `$4DD4`-`$4DD5` (screen); 4 more ranges |
 | Writes | `$48D4`-`$48D5` (screen); `$49D4`-`$49D5` (screen); `$4AD4`-`$4AD5` (screen); `$4BD4`-`$4BD5` (screen); `$4CD4`-`$4CD5` (screen); `$4DD4`-`$4DD5` (screen); 3 more ranges |
@@ -2961,6 +3209,8 @@ Plot mode 3 of Printers, reached only through PrintString's CALLs (`$AF32`: 2681
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,681 calls (`x2` 185, `w/000` 141, `w/124` 125 and 66 more) |
+| Called from | `PrintString` |
+| Calls | `AddDebris` (tail) |
 
 ### `EraseBlock` (`$AEE4`)
 
@@ -2971,6 +3221,7 @@ As EraseBlockDebris without the column test and without the particles: A the cod
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 368 calls (`w/076` 16, `w/089` 16, `x2` 12 and 51 more) |
+| Called from | `PrintString` |
 
 ### `PrintString` (`$AF2B`)
 
@@ -2985,8 +3236,9 @@ Callers: the menu (`$6DB2`, `$6E06`), the define keys (`$6FC3`), `$7023`, the Ha
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 134 calls, 634,077 t-states own (0.03 %) |
-| Called from | `MainMenu`, `DefineKeys`, `DrawHud`, `BuildScreen`, `GameOver` |
-| Calls | `PrintChar` |
+| Runs (the other recordings) | 11,662 calls (`x2` 334, `w/023` 309, `w/072` 299 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `HallOfFameRoll`, `DrawHud`, `BuildScreen`, `MineBlast`, `GrenadeBlast`, `Pods`, `GameOver`, `ZoneEnd`, `BonusScreen`, `AddScore` |
+| Calls | `BlockMapCell`, `CellToPixels`, `PrintChar`, `EraseBlockDebris`, `EraseBlock` |
 | Reads | `$6E17`-`$6EA8` (`MenuText`); `$705B`-`$7144` (`KeyNames`, `TypedKeys`, `CheatWord`, `DefineKeysText` and 2 more); `$76A2`-`$76D9` (`HudText`); `$85E0`-`$87D4` (`ElementLandingCraft`, `ElementPlanetRed4`, `ElementPlanetMagenta2`, `ElementGunTurret` and 9 more); `$8A07`-`$8A6C` (`ElementPlanetGreen3`, `ElementSporePod`, `ElementSporePodStand`, `ElementFloorStripYellow`); `$A057`-`$A072` (`GameOverText`); 1 more ranges |
 | Writes | `$ADEF`-`$ADF0` (`PrintChar+14`); `$AE1B`-`$AE21` (`PrintCharLine+24`) |
 
@@ -2999,7 +3251,9 @@ C = 0, falls into ClearScreenAttr. Callers: the menu (`$6DA1`), the define keys 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 2,567,516 t-states own (0.13 %) |
-| Called from | `MainMenu`, `DefineKeys`, `StartGame` |
+| Runs (the other recordings) | 222 calls (`c128` 6, `m1` 5, `w/124` 4 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `StartGame`, `ZoneEnd`, `BonusScreen` |
+| Calls | `ClearScreenAttr` |
 | Reads | `$4002`-`$5AFF` (screen) |
 | Writes | `$4001`-`$5AFF` (screen) |
 
@@ -3012,6 +3266,7 @@ C = 0, falls into ClearScreenAttr. Callers: the menu (`$6DA1`), the define keys 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 7 calls (`c128` 7) |
+| Called from | `HallOfFameRoll`, `ClearScreen` |
 
 ### `ClearPlayArea` (`$B061`)
 
@@ -3022,6 +3277,7 @@ The attributes `$5800-$5ABF` = 0, then 176 pixel lines of 32 bytes from `$4000`,
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 733,843 t-states own (0.04 %) |
+| Runs (the other recordings) | 236 calls (`x2` 6, `w/018` 4, `w/089` 4 and 99 more) |
 | Called from | `BuildScreen` |
 | Calls | `NextPixelLine` |
 | Reads | `$4000`-`$50BE` (screen); `$5100`-`$51BE` (screen); `$5200`-`$52BE` (screen); `$5300`-`$53BE` (screen); `$5400`-`$54BE` (screen); `$5500`-`$55BE` (screen); 3 more ranges |
@@ -3036,7 +3292,8 @@ D the pixel line (0-191), E the X in 2-pixel units (0-127). HL = the address of 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 185,192 calls, 17,171,519 t-states own (0.85 %) |
-| Called from | `BigSpriteMask`, `ShiftNone`, `XorShot`, `XorShell`, `DrawSmallSprite` |
+| Runs (the other recordings) | 3,026,814 calls (`x2` 277,665, `c128` 208,007, `m1` 74,776 and 99 more) |
+| Called from | `BigShiftNone`, `BigSpriteMask`, `ShiftNone`, `SpriteMask`, `XorShot`, `XorShell`, `DrawSmallSprite` |
 | Reads | `$6500`-`$65A8` (system); `$6600`-`$66A8` (system) |
 
 ### `NextPixelLine` (`$B099`)
@@ -3048,6 +3305,7 @@ The standard step: H + 1; at a character row's end L + 32, and at a third's end 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,240 calls, 68,552 t-states own (0.00 %) |
+| Runs (the other recordings) | 81,856 calls (`x2` 1,440, `w/000` 1,088, `w/006` 1,088 and 99 more) |
 | Called from | `BuildLineTables`, `ClearPlayArea` |
 
 ### `PrevPixelLine` (`$B0A8`)
@@ -3069,7 +3327,8 @@ An LDIR of BC bytes from `$0000` to `$0000`: each byte copied onto itself (the R
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 3,272 calls, 50,184,765 t-states own (2.50 %) |
-| Called from | `DefineKeys`, `StartGame`, `GameOver` |
+| Runs (the other recordings) | 75,201 calls (`x2` 6,554, `c128` 4,185, `x1` 1,060 and 99 more) |
+| Called from | `DefineKeys`, `PrintNextHallEntry` (tail), `StartGame`, `GameOver`, `ZoneEnd`, `BonusScreen` |
 | Reads | `$4000`-`$FFFF` (`Start`, `MainMenu`, `SoundIsAy`, `MenuText` and 480 more) |
 | Writes | `$4000`-`$FFFF` (`Start`, `MainMenu`, `SoundIsAy`, `MenuText` and 480 more) |
 
@@ -3082,6 +3341,7 @@ GlyphBase = FontBase `$D7E0`, then the hundreds, the tens and the units by Print
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 4 calls, 600 t-states own (0.00 %) |
+| Runs (the other recordings) | 244 calls (`x2` 6, `w/072` 5, `w/074` 5 and 99 more) |
 | Called from | `PrintZone` (tail) |
 | Calls | `PrintDigit` |
 | Writes | `$ADEF`-`$ADF0` (`PrintChar+14`) |
@@ -3095,6 +3355,7 @@ L = A / B (subtraction), the glyph '0' + L printed by PrintCharAttr at D, E with
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 12 calls, 1,080 t-states own (0.00 %) |
+| Runs (the other recordings) | 732 calls (`x2` 18, `w/074` 15, `w/072` 15 and 99 more) |
 | Called from | `PrintNumber3` |
 | Calls | `PrintCharAttr` |
 
@@ -3107,7 +3368,8 @@ Called by the menu (`$6DD4`), the define keys (`$6FC9`) and the screen builder (
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 400,176 t-states own (0.02 %) |
-| Called from | `MainMenu`, `DefineKeys`, `BuildScreen` |
+| Runs (the other recordings) | 345 calls (`x2` 7, `c128` 6, `m1` 5 and 99 more) |
+| Called from | `Start`, `MainMenu`, `DefineKeys`, `BuildScreen` |
 | Reads | `$B181`-`$B6CF` (`WorkArea`) |
 | Writes | `$B181`-`$B6D0` (`WorkArea`) |
 
@@ -3124,6 +3386,7 @@ Channel record +8 (the volume ceiling): `$BED5` (B) = TuneVolume `$B6E0` (12), `
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 7 calls, 462 t-states own (0.00 %) |
+| Runs (the other recordings) | 108 calls (`c128` 4, `m1` 3, `x1` 2 and 99 more) |
 | Called from | `TuneStart` |
 | Reads | `$B6E0` (`TuneVolume`) |
 | Writes | `$BE85` (`TuneChannels+8`); `$BED5` (`TuneChannelB+8`); `$BF25` (`TuneChannelC+8`) |
@@ -3137,7 +3400,8 @@ TuneStopped = `$FF` while it works; the stream pointers = TuneStreamA `$BA01`, T
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 7 calls, 2,142 t-states own (0.00 %) |
-| Called from | `MainMenu` |
+| Runs (the other recordings) | 108 calls (`c128` 4, `m1` 3, `x1` 2 and 99 more) |
+| Called from | `Start`, `MainMenu` |
 | Calls | `TuneSetMaxVolumes`, `TuneInitChannel`, `AySilence` |
 | Writes | `$B6E4`-`$B6EB` (`TuneStopped`, `TuneMixer`, `TunePointerA`, `TunePointerB` and 1 more); `$BE7F` (`TuneChannels+2`); `$BECF` (`TuneChannelB+2`); `$BF1F` (`TuneChannelC+2`) |
 
@@ -3150,6 +3414,7 @@ TuneStopped = `$FF` while it works; the stream pointers = TuneStreamA `$BA01`, T
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 21 calls, 4,158 t-states own (0.00 %) |
+| Runs (the other recordings) | 324 calls (`c128` 12, `m1` 9, `x1` 6 and 99 more) |
 | Called from | `TuneStart` |
 | Reads | `$B6E0` (`TuneVolume`) |
 | Writes | `$BE7D`-`$BE8A` (`TuneChannels`); `$BECD`-`$BEDA` (`TuneChannelB`); `$BF1D`-`$BF2A` (`TuneChannelC`) |
@@ -3163,7 +3428,8 @@ TuneMixer = `$B8`; AY register 7 = `$B8`, registers 8, 9, 10 = 0 (AyWrite). Call
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 14 calls, 3,066 t-states own (0.00 %) |
-| Called from | `DefineKeys`, `StartGame`, `TuneStart` |
+| Runs (the other recordings) | 213 calls (`c128` 7, `m1` 5, `x1` 3 and 99 more) |
+| Called from | `DefineKeys`, `StartGame`, `TuneStart`, `TuneNextEvent` |
 | Calls | `AyWrite` |
 | Writes | `$B6E5` (`TuneMixer`) |
 
@@ -3176,6 +3442,8 @@ TuneStreamRead = 0; nothing while TuneStopped. Else channel A (IX = `$BE7D`, IY 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 10,554 calls (`c128` 10,554) |
+| Called from | `DrawSparkle` |
+| Calls | `TuneTickDone`, `TuneChannelStep` |
 
 ### `TuneTickDone` (`$B79E`)
 
@@ -3186,6 +3454,7 @@ TuneEnd (`$B9FE`) jumps here after dropping a return address, so the RET leaves 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 10,554 calls (`c128` 10,554) |
+| Called from | `TuneTick`, `TuneNextEvent` (tail) |
 
 ### `TuneChannelStep` (`$B79F`)
 
@@ -3200,6 +3469,8 @@ The volume envelope, the same with +`$36` (the ticks), +`$38` (the step), +`$37`
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 31,197 calls (`c128` 31,197) |
+| Called from | `TuneTick` |
+| Calls | `TuneNextEvent` (tail), `AyWrite` (tail) |
 
 ### `TuneNextEvent` (`$B88F`)
 
@@ -3216,6 +3487,8 @@ The tune's streams use only notes, `$64`, `$79`, `$75`/`$76` and `$8A` (tune.py 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,343 calls (`c128` 1,343) |
+| Called from | `TuneChannelStep` (tail) |
+| Calls | `AySilence`, `TuneTickDone` (tail), `AyWrite` |
 
 ### `TuneSetCeiling` (`$B93D`)
 
@@ -3328,7 +3601,8 @@ OUT (`$FFFD`),A selects the register, OUT (`$BFFD`),C writes it; AF, BC, HL kept
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 27,713 calls, 3,270,134 t-states own (0.16 %) |
-| Called from | `AySilence`, `SoundEffectsTick` (tail), `SfxWriteChannelA` (tail), `SfxWriteChannelB` (tail) |
+| Runs (the other recordings) | 1,139,322 calls (`c128` 87,813, `x2` 63,191, `w/035` 23,128 and 99 more) |
+| Called from | `AySilence`, `TuneChannelStep` (tail), `TuneNextEvent`, `SoundEffectsTick` (tail), `SfxWriteChannelA` (tail), `SfxWriteChannelB` (tail), `SfxWriteChannelC` (tail) |
 | Ports out | `$BFFD`, `$FFFD` |
 
 ### `SoundEffectsTick` (`$BF7E`)
@@ -3344,6 +3618,7 @@ Called three times a main loop pass (`$75C5`, `$7601`, `$766B`; 237 645 times ea
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 9,783 calls, 21,301,881 t-states own (1.06 %) |
+| Runs (the other recordings) | 225,032 calls (`x2` 19,662, `c128` 12,541, `x1` 3,175 and 99 more) |
 | Called from | `StartGame` |
 | Calls | `AyWrite` (tail), `SfxSlotStep` |
 | Reads | `$C5E7`-`$C6DB` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`, `SfxChannelIndex` and 1 more) |
@@ -3358,10 +3633,11 @@ IX the slot. +3 (the note's ticks) - 1, at 0 SfxReadStream. +6 (the decay counte
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,760 calls, 218,347 t-states own (0.01 %) |
+| Runs (the other recordings) | 225,166 calls (`x2` 8,542, `w/035` 6,969, `w/110` 6,969 and 99 more) |
 | Called from | `SoundEffectsTick` |
 | Calls | `SfxReadStream`, `SfxToAyChannel` (tail) |
-| Reads | `$C64E`-`$C653` (`SfxSlots+99`); `$C6DE`-`$C6E1` (`SfxSlots+243`) |
-| Writes | `$C64E`-`$C651` (`SfxSlots+99`); `$C6DE`-`$C6E1` (`SfxSlots+243`) |
+| Reads | `$C64E`-`$C653` (`SfxSlots+99`); `$C6BE`-`$C6C3` (`SfxSlots+211`); `$C6DE`-`$C6E1` (`SfxSlots+243`) |
+| Writes | `$C64E`-`$C651` (`SfxSlots+99`); `$C6BE`-`$C6C1` (`SfxSlots+211`); `$C6DE`-`$C6E1` (`SfxSlots+243`) |
 
 ### `SfxReadStream` (`$BFE1`)
 
@@ -3374,9 +3650,10 @@ The codes at +1/+2: `$FF` the effect's end (+0 = `$FF`, the slot free; the retur
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 1,458 calls, 649,203 t-states own (0.03 %) |
+| Runs (the other recordings) | 155,132 calls (`x2` 6,893, `w/035` 3,544, `w/110` 3,544 and 99 more) |
 | Called from | `SfxSlotStep` |
-| Reads | `$C305`-`$C33D` (`BlastSound`); `$C5A1`-`$C5B9` (`ShotSound`); `$C64C`-`$C657` (`SfxSlots+97`); `$C6DC`-`$C6E7` (`SfxSlots+241`); `$C703`-`$C73C` (`NotePeriods+24`, `NotePeriodsTune`) |
-| Writes | `$C5E8` (`SfxNoise`); `$C64B`-`$C657` (`SfxSlots+96`); `$C6DB`-`$C6E7` (`SfxSlots+240`) |
+| Reads | `$C264`-`$C27F` (`NoiseBurstSound`); `$C305`-`$C33D` (`BlastSound`); `$C5A1`-`$C5B9` (`ShotSound`); `$C64C`-`$C657` (`SfxSlots+97`); `$C6BC`-`$C6C7` (`SfxSlots+209`); `$C6DC`-`$C6EC` (`SfxSlots+241`, `NotePeriods`); 2 more ranges |
+| Writes | `$C5E8` (`SfxNoise`); `$C64B`-`$C657` (`SfxSlots+96`); `$C6BB`-`$C6C7` (`SfxSlots+208`); `$C6DB`-`$C6E7` (`SfxSlots+240`) |
 
 ### `SfxSetDecay` (`$C002`)
 
@@ -3405,9 +3682,10 @@ SfxChannelIndex + 1; its old value picks SfxChannelWriters `$C077` (0 A, 1 B, 2 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 2,697 calls, 426,126 t-states own (0.02 %) |
+| Runs (the other recordings) | 218,843 calls (`x2` 7,983, `w/035` 6,917, `w/110` 6,917 and 99 more) |
 | Called from | `SfxSlotStep` (tail) |
-| Calls | `SfxWriteChannelA`, `SfxWriteChannelB` |
-| Reads | `$C077`-`$C07A` (`SfxChannelWriters`); `$C5EA` (`SfxChannelIndex`); `$C64F`-`$C655` (`SfxSlots+100`); `$C6DF`-`$C6E5` (`SfxSlots+244`) |
+| Calls | `SfxWriteChannelA`, `SfxWriteChannelB`, `SfxWriteChannelC`, `SfxNoChannel` |
+| Reads | `$C077`-`$C07C` (`SfxChannelWriters`); `$C5EA` (`SfxChannelIndex`); `$C64F`-`$C655` (`SfxSlots+100`); `$C6BF`-`$C6C5` (`SfxSlots+212`); `$C6DF`-`$C6E5` (`SfxSlots+244`) |
 | Writes | `$C5EA` (`SfxChannelIndex`) |
 
 ### `SfxWriteChannelA` (`$C097`)
@@ -3419,9 +3697,10 @@ SfxMixer AND= (SfxChannelBits OR the slot's mask +`$0B`); register 8 = C, regist
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 327,180 t-states own (0.02 %) |
+| Runs (the other recordings) | run into, not called (`x2`, `w/035`, `w/110` and 99 more) |
 | Called from | `SfxToAyChannel` |
 | Calls | `AyWrite` (tail) |
-| Reads | `$C5E7`-`$C5E9` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`); `$C656` (`SfxSlots+107`); `$C6E6` (`SfxSlots+251`) |
+| Reads | `$C5E7`-`$C5E9` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`); `$C656` (`SfxSlots+107`); `$C6C6` (`SfxSlots+219`); `$C6E6` (`SfxSlots+251`) |
 | Writes | `$C5E9` (`SfxMixer`) |
 
 ### `SfxWriteChannelB` (`$C0B1`)
@@ -3431,9 +3710,10 @@ SfxMixer AND= (SfxChannelBits OR the slot's mask +`$0B`); register 8 = C, regist
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | run into, not called, 4,662 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`w/035`, `w/110`, `w/068` and 99 more) |
 | Called from | `SfxToAyChannel` |
 | Calls | `AyWrite` (tail) |
-| Reads | `$C5E7`-`$C5E9` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`); `$C6E6` (`SfxSlots+251`) |
+| Reads | `$C5E7`-`$C5E9` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`); `$C6C6` (`SfxSlots+219`); `$C6E6` (`SfxSlots+251`) |
 | Writes | `$C5E9` (`SfxMixer`) |
 
 ### `SfxWriteChannelC` (`$C0CC`)
@@ -3443,6 +3723,10 @@ SfxMixer AND= (SfxChannelBits OR the slot's mask +`$0B`); register 8 = C, regist
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`w/035`, `w/110`, `w/039` and 84 more) |
+| Called from | `SfxToAyChannel` |
+| Calls | `AyWrite` (tail) |
+| Reads | `$C5E7`-`$C5E9` (`SfxChannelBits`, `SfxNoise`, `SfxMixer`); `$C6E6` (`SfxSlots+251`) |
+| Writes | `$C5E9` (`SfxMixer`) |
 
 ### `PlaySfxNoiseBurst` (`$C0E7`)
 
@@ -3453,6 +3737,8 @@ A noise burst falling from volume 13 to 3. Called by MoveShots at `$8417` (419 c
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 407 calls (`w/048` 21, `x1` 19, `w/007` 15 and 83 more) |
+| Called from | `MoveShots` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxAmmoRefill` (`$C0F4`)
 
@@ -3463,6 +3749,8 @@ Called at `$9980` right after the ammunition `$8E5A` is set to 99 (a refill), an
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 56 calls (`w/108` 3, `w/010` 2, `w/058` 2 and 45 more) |
+| Called from | `Pods`, `ExoSuitBooth` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxGrenadeRefill` (`$C101`)
 
@@ -3473,6 +3761,8 @@ Called at `$99D6` right after the grenades `$8E66` are set to 10.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 37 calls (`w/030` 2, `w/076` 2, `w/089` 2 and 28 more) |
+| Called from | `Pods` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxJingleA` (`$C10E`)
 
@@ -3513,6 +3803,8 @@ Called by `$9EAF` (which adds A to the counter `$9ED6` the round end turns into 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 156 calls (`w/045` 8, `w/120` 8, `w/080` 7 and 31 more) |
+| Called from | `AddBonusTicks`, `PickupsVsPlayer` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxNoiseSweep` (`$C13B`)
 
@@ -3523,6 +3815,8 @@ Called at `$9DBB` right after small sprite 8 (the round shot of SmallSprites) is
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 429 calls (`w/048` 46, `w/123` 44, `w/067` 43 and 44 more) |
+| Called from | `Guns` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxBlast` (`$C148`)
 
@@ -3533,7 +3827,8 @@ Noise with a falling tone, volume 15 down to 1. Callers: `$909F` (after ten beep
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 62 calls, 5,332 t-states own (0.00 %) |
-| Called from | `FireShell` (tail) |
+| Runs (the other recordings) | 516 calls (`w/007` 32, `m1` 19, `x1` 19 and 77 more) |
+| Called from | `FireShell` (tail), `Mines`, `GrenadeBlast` |
 | Calls | `StartSoundEffect` |
 
 ### `PlaySfxExplosion` (`$C155`)
@@ -3545,6 +3840,8 @@ Called right after `$981D` and before a score is added (`$9B79`, `$9BD0`, `$9E5B
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,340 calls (`x2` 205, `w/066` 71, `w/048` 62 and 84 more) |
+| Called from | `BallHit`, `BallsTouchPlayer`, `DestroyGunShot`, `GunShotsVsPlayer`, `KillAlien` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxPulse` (`$C162`)
 
@@ -3555,6 +3852,8 @@ Called by Teleports (`$98F3`, `$9928`; 38 and 8 calls).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 38 calls (`w/036` 2, `w/037` 2, `w/056` 2 and 29 more) |
+| Called from | `Teleports` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxRise` (`$C16F`)
 
@@ -3575,6 +3874,7 @@ Called by the fire routine FireControl at `$8372`, right after the ammunition `$
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 9 calls, 243 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,604 calls (`x2` 298, `c128` 29, `w/000` 24 and 99 more) |
 | Called from | `FireControl` |
 | Calls | `StartSoundEffect` (tail) |
 
@@ -3607,6 +3907,8 @@ Two low notes (periods `$0384` and `$0392`, 10 ticks, volume 12) beating against
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 9,349 calls (`w/035` 823, `w/110` 823, `w/068` 698 and 18 more) |
+| Called from | `ForceFieldStep` |
+| Calls | `StartSoundEffect` |
 
 ### `PlaySfxGrenade` (`$C1BE`)
 
@@ -3617,6 +3919,8 @@ Called when a grenade is thrown (`$9254`, after the grenades `$8E66` are decreme
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 487 calls (`x2` 14, `w/014` 13, `w/035` 12 and 78 more) |
+| Called from | `ThrowGrenade` |
+| Calls | `StartSoundEffect` |
 
 ### `StartSoundEffect` (`$C1D3`)
 
@@ -3627,8 +3931,9 @@ IX = SfxSlots + 16A; +0 = `$FF` while it is set up, +1/+2 = BC, +3 = 1 (read at 
 | | |
 | --- | --- |
 | Runs (c1's whole run (the load and 16 000 frames of seeded random play)) | 71 calls, 29,110 t-states own (0.00 %) |
-| Called from | `PlaySfxBlast`, `PlaySfxShot` (tail) |
-| Writes | `$C64B`-`$C657` (`SfxSlots+96`); `$C6DB`-`$C6E7` (`SfxSlots+240`) |
+| Runs (the other recordings) | 26,255 calls (`w/035` 1,698, `w/110` 1,698, `w/050` 1,448 and 99 more) |
+| Called from | `PlaySfxNoiseBurst`, `PlaySfxAmmoRefill`, `PlaySfxGrenadeRefill`, `PlaySfxTrill`, `PlaySfxNoiseSweep`, `PlaySfxBlast`, `PlaySfxExplosion`, `PlaySfxPulse`, `PlaySfxShot` (tail), `PlaySfxHum`, `PlaySfxGrenade` |
+| Writes | `$C64B`-`$C657` (`SfxSlots+96`); `$C6BB`-`$C6C7` (`SfxSlots+208`); `$C6DB`-`$C6E7` (`SfxSlots+240`) |
 
 ## cpc
 
@@ -3653,6 +3958,7 @@ The CPC's standard matrix read through its PPI (ports `$F4`xx / `$F6`xx / `$F7`x
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`w/035`, `w/110`, `w/109` and 59 more) |
+| Called from | `SfxToAyChannel` |
 
 ## leftover
 

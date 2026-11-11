@@ -1,6 +1,6 @@
 # Earth Shaker (Your Sinclair, 1990)
 
-State: docs written, in review.
+State: complete 2026-11-11.
 
 | | |
 | --- | --- |

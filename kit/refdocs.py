@@ -5,10 +5,12 @@
 
 Every entry of the game (CASE/work/mkgame/game.ctl, written by kit/mkgame.py) with its name, title and description
 from src/game/game.ann; for code, what the recordings saw it do (the builds of case.json "ref_builds": work/<key>/
-l1.json): callers, callees, runs, own time, the memory it reads and writes, its ports, and a link to each of its
-animations, docs/img/routines/<Label>.gif and <Label>-<what>.gif (kit/routine_anim.py, kit/memanim.py). A routine no
-ref build reached gets the calls the case's other recordings (read_builds, code_builds) saw. For data, the routines
-that read and write it (the recordings', and the LD through (nn) of the code), each inner label a row of its own.
+l1.json, each its own Runs row, then the case's other recordings: read_builds and code_builds, their reads and
+writes from read_builds only): callers, callees, runs, own time, the memory it reads and writes, its ports, and a
+link to each of its animations, docs/img/routines/<Label>.gif and <Label>-<what>.gif (kit/routine_anim.py,
+kit/memanim.py). For data, the routines that read and write it (the ref builds', the other recordings' with the
+first that saw it, and the LD through (nn), or through HL / DE / BC loaded with nn, of the code, named by the label
+at or below the instruction), each inner label a row of its own.
 
 Memory ranges name the label at or below their first byte, inner labels included (Label+offset). The interrupt's
 acceptance (the IM 2 vector read, the return address pushed), which L1 books to the instruction it interrupted, is
@@ -124,16 +126,57 @@ def split(rs, take):
 # LD through memory: LD r,(nn) reads, LD (nn),r writes (1 byte with A, 2 with a register pair)
 LD_READ = re.compile(r'^LD (A|BC|DE|HL|SP|IX|IY),\(\$([0-9A-F]{4})\)$')
 LD_WRITE = re.compile(r'^LD \(\$([0-9A-F]{4})\),(A|BC|DE|HL|SP|IX|IY)$')
+# through a register pair loaded with nn: LD HL,nn ... LD (HL),n in one block
+LD_PAIR = re.compile(r'^LD (HL|DE|BC),\$([0-9A-F]{4})$')
+PAIR_PARTS = {'HL': ('HL', 'H', 'L'), 'DE': ('DE', 'D', 'E'), 'BC': ('BC', 'B', 'C')}
+BLOCK_END = re.compile(r'^(CALL|RST|RET|RETI|RETN|JP|JR|DJNZ|HALT)\b')
+CLOBBER_ALL = re.compile(r'^(EXX|LDI|LDIR|LDD|LDDR|CPI|CPIR|CPD|CPDR|INI|INIR|IND|INDR|OUTI|OTIR|OUTD|OTDR)$')
+
+
+def pair_access(text, pair):
+    """what an instruction does through (pair): 'reads', 'writes', 'both' or None"""
+    ref = '(%s)' % pair
+    if ref not in text:
+        return None
+    op, _, args = text.partition(' ')
+    first = args.split(',')[0]
+    if op == 'LD':
+        return 'writes' if first == ref else 'reads'
+    if op in ('INC', 'DEC', 'SET', 'RES', 'RLC', 'RRC', 'RL', 'RR', 'SLA', 'SRA', 'SLL', 'SRL', 'RLD', 'RRD'):
+        return 'both'
+    return 'reads'  # ADD / ADC / SUB / SBC / AND / OR / XOR / CP / BIT, JP (HL) never reaches here (block end)
+
+
+def clobbers(text, pair):
+    """the instruction changes the pair otherwise than INC / DEC of the whole pair"""
+    op, _, args = text.partition(' ')
+    if CLOBBER_ALL.match(text) or (op == 'EX' and pair in ('HL', 'DE') and args in ('DE,HL', '(SP),HL')):
+        return True
+    dest = args.split(',')[0] if args else ''
+    if op in ('LD', 'POP', 'INC', 'DEC', 'ADD', 'ADC', 'SBC', 'RL', 'RR', 'RLC', 'RRC', 'SLA', 'SRA', 'SLL', 'SRL',
+              'IN') or (op in ('SET', 'RES') and ',' in args):
+        if op in ('SET', 'RES'):
+            dest = args.split(',')[1]
+        return dest in PAIR_PARTS[pair]
+    return False
 
 
 def static_accesses(skool):
-    """[(instruction address, 'reads' | 'writes', lo, hi)] of the LDs through (nn) in mkgame's skool file"""
+    """[(instruction address, 'reads' | 'writes', lo, hi)] of the LDs through (nn) in mkgame's skool file, and of
+    the accesses through (HL), (DE) or (BC) after LD HL,nn (DE, BC) in the same block: no jump target, branch or
+    call between, the pair not changed but by INC / DEC"""
     out = []
+    pairs = {}
     for line in open(skool):
-        m = re.match(r'^[ c*]\$([0-9A-F]{4}) ([^;]*?)\s*(?:;.*)?$', line.rstrip('\n'))
-        if not m:
+        if line.startswith('@') or line.startswith(';'):
             continue
-        at, text = int(m.group(1), 16), m.group(2)
+        m = re.match(r'^([ c*])\$([0-9A-F]{4}) ([^;]*?)\s*(?:;.*)?$', line.rstrip('\n'))
+        if not m:
+            pairs = {}  # an entry's end, data
+            continue
+        if m.group(1) != ' ':
+            pairs = {}  # an entry's or a jump target's first instruction: what came before is not known here
+        at, text = int(m.group(2), 16), m.group(3)
         r, w = LD_READ.match(text), LD_WRITE.match(text)
         if r:
             a = int(r.group(2), 16)
@@ -141,6 +184,21 @@ def static_accesses(skool):
         elif w:
             a = int(w.group(1), 16)
             out.append((at, 'writes', a, a + (w.group(2) != 'A')))
+        for pair, a in list(pairs.items()):
+            kind = pair_access(text, pair)
+            if kind:
+                for k in (('reads', 'writes') if kind == 'both' else (kind,)):
+                    out.append((at, k, a, a))
+        load = LD_PAIR.match(text)
+        for pair in list(pairs):
+            if text in ('INC ' + pair, 'DEC ' + pair):
+                pairs[pair] = (pairs[pair] + (1 if text.startswith('INC') else -1)) & 0xFFFF
+            elif clobbers(text, pair):
+                del pairs[pair]
+        if load:
+            pairs[load.group(1)] = int(load.group(2), 16)
+        if BLOCK_END.match(text):
+            pairs = {}
     return out
 
 
@@ -241,14 +299,24 @@ def main():
 
     def new_seen():
         return {'callers': {}, 'callees': {}, 'runs': {}, 'reads': [], 'writes': [], 'ports_in': set(),
-                'ports_out': set(), 'interrupts': {}}
+                'ports_out': set(), 'interrupts': {}, 'by': {}}
 
-    builds = {key: Build(key) for key, _ in BUILDS}
+    # Every recording of the case: the ref builds (each its own Runs row), then read_builds (their reads and
+    # writes count too) and code_builds (runs, calls and callers only: their reads may be a depacker's input)
+    ref_keys = [k for k, _ in BUILDS]
+    read_keys = set(ref_keys) | set(config.get('read_builds', ()))
+    every = [k for k in dict.fromkeys(ref_keys + list(config.get('read_builds', ())) +
+                                      list(config.get('code_builds', ())))
+             if k in ref_keys or os.path.exists(os.path.join(ROOT, 'work', k, 'l1.json'))]
+    builds = {}  # the ref builds (their totals)
     # Per routine entry of the game: what each build saw
     seen = {}
-    users = {}  # data entry or inner label -> {'reads': set(names), 'writes': set(names)}
-    for key, _ in BUILDS:
-        b = builds[key]
+    users = {}  # data entry or inner label -> {'reads': set((name, source)), 'writes': ...}
+    for key in every:
+        b = Build(key)
+        if key in ref_keys:
+            builds[key] = b
+        data = key in read_keys
         # the interrupt's acceptance, booked by L1 to the interrupted instruction: the vector read (a word that
         # holds the handler's address) and the return address pushed (bytes the stack uses) go to the handler
         moved = {}  # handler routine index -> {'reads': [...], 'writes': [...]}
@@ -305,8 +373,12 @@ def main():
             runs = s['runs'].setdefault(key, [0, 0])
             runs[0] += p['entries'] if a == e[0] else 0
             runs[1] += p['tstates']
-            s['reads'] += r.get('_reads', ranges(p['reads'])) + moved.get(i, {}).get('reads', [])
-            s['writes'] += r.get('_writes', ranges(p['writes'])) + moved.get(i, {}).get('writes', [])
+            if data:
+                got = s['by'].setdefault(key, {'reads': [], 'writes': []})
+                for kind in ('reads', 'writes'):
+                    rs = r.get('_' + kind, ranges(p[kind])) + moved.get(i, {}).get(kind, [])
+                    s[kind] += rs
+                    got[kind] += rs
             s['ports_in'].update(x if isinstance(x, str) else x.get('port', str(x)) for x in p['ports_in'])
             s['ports_out'].update(x if isinstance(x, str) else x.get('port', str(x)) for x in p['ports_out'])
         for c in b.calls:
@@ -324,8 +396,9 @@ def main():
             seen[oa[0]]['callees'][oe[0]] = c['kind']
             seen[oe[0]]['callers'][oa[0]] = c['kind']
 
-    def touch(kind, lo, hi, name, static=False):
-        """name reads / writes lo..hi: each data entry and inner label it covers"""
+    def touch(kind, lo, hi, name, static=None):
+        """name reads / writes lo..hi: each data entry and inner label it covers; static: None (a ref build saw
+        it), the build key of another recording that did, or ('code', the routine) (the code says so)"""
         x = max(lo, LO)
         while x <= hi and x < HI:
             e = owner(x)
@@ -343,34 +416,23 @@ def main():
 
     for a, s in seen.items():
         name = owner(a)[2]
-        for kind in ('reads', 'writes'):
-            rs = s[kind] if in_buffer(a) else outside_buffer(s[kind])[0]
-            for lo, hi, _ in rs:
-                touch(kind, lo, hi, name)
-    # the code's LD through (nn): a reader or writer the recordings may not have seen
+        for key, got in s['by'].items():
+            for kind in ('reads', 'writes'):
+                rs = got[kind] if in_buffer(a) else outside_buffer(got[kind])[0]
+                for lo, hi, _ in rs:
+                    touch(kind, lo, hi, name, None if key in ref_keys else key)
+    # the code's LD through (nn) and through HL / DE / BC loaded with nn: a reader or writer the recordings may not
+    # have seen, named by the label at or below the instruction (a label inside the routine, WalkIntoFire, is its own)
     skool = os.path.join(ROOT, 'work', 'mkgame', 'game.skool')
     if os.path.exists(skool):
         for at, kind, lo, hi in static_accesses(skool):
             e = owner(at)
             if e and e[1] == 'c' and owner(lo):
-                touch(kind, lo, hi, e[2], True)
+                i = bisect.bisect_right(lstarts, at) - 1
+                touch(kind, lo, hi, labels[lstarts[i]] if i >= 0 and lstarts[i] >= e[0] else e[2], ('code', e[2]))
 
-    # The routines no ref build reached: the calls the case's other recordings saw
-    other_keys = [b for b in list(config.get('read_builds', ())) + list(config.get('code_builds', ()))
-                  if b not in builds]
-    other = {}  # entry -> {build key: calls}
-    missing = {e[0] for e in entries if e[1] == 'c' and e[0] not in seen}
-    if missing:
-        for key in dict.fromkeys(other_keys):
-            if not os.path.exists(os.path.join(ROOT, 'work', key, 'l1.json')):
-                continue
-            b = Build(key, full=False)
-            for r in b.routines:
-                a = int(r['entry'][1:], 16)
-                if a in missing:
-                    runs = other.setdefault(a, {}).setdefault(key, [0, 0])
-                    runs[0] += r['profile']['entries']
-                    runs[1] += r['profile']['tstates']
+    # The runs the case's other recordings (read_builds, code_builds) saw
+    other = {a: {k: v for k, v in s['runs'].items() if k not in ref_keys} for a, s in seen.items()}
 
     def merged(rs):
         rs = sorted((lo, hi) for lo, hi, _ in rs)
@@ -398,7 +460,10 @@ def main():
     out = ['# 12. Routine reference', '',
            'Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and',
            'the description are the source\'s (`src/game/game.ann`); the rest is what the recordings saw: '
-           + ', '.join(f'`work/{k}` ({t})' for k, t in BUILDS) + '. They are local, not in the repository; the WALKTHROUGH\'s commands rebuild them.',
+           + ', '.join(f'`work/{k}` ({t})' for k, t in BUILDS) + (
+               ', and the case\'s other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row'
+               ' of their own, their callers, callees, reads and writes (`read_builds` only) with the others\''
+               if len(every) > len(ref_keys) else '') + '. They are local, not in the repository; the WALKTHROUGH\'s commands rebuild them.',
            'Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share',
            'of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)',
            'and the entries they cover'
@@ -450,24 +515,31 @@ def main():
             out += [f'[Animation: `{label}` at work{", " + what if what else ""}](img/routines/{gif})', '']
         s = seen.get(a)
         rows = []
+
+        def others(runs):
+            calls = sum(n for n, _ in runs.values())
+            if calls:  # the builds that called it (one that only ran into it from another entry's code is left out)
+                runs = {k: v for k, v in runs.items() if v[0]}
+            ranked = sorted(runs.items(), key=lambda x: (-x[1][0], -x[1][1], x[0]))
+            called = f'{calls:,} call{"" if calls == 1 else "s"}' if calls else 'run into, not called'
+            shown = ', '.join(f'`{k}`' + (f' {n:,}' if calls else '') for k, (n, _) in ranked[:3]) + \
+                (f' and {len(ranked) - 3} more' if len(ranked) > 3 else '')
+            return called, shown
         if not s:
-            runs = other.get(a)
-            if runs:
-                ranked = sorted(runs.items(), key=lambda x: (-x[1][0], -x[1][1], x[0]))
-                calls = sum(n for n, _ in runs.values())
-                called = f'{calls:,} call{"" if calls == 1 else "s"}' if calls else 'run into, not called'
-                shown = ', '.join(f'`{k}`' + (f' {n:,}' if calls else '') for k, (n, _) in ranked[:3]) + \
-                    (f' and {len(ranked) - 3} more' if len(ranked) > 3 else '')
-                rows.append(('Runs', f'not reached in {ref_names}; in the other recordings {called} ({shown})'))
-            else:
-                rows.append(('Runs', 'not reached in the recordings'))
+            rows.append(('Runs', 'not reached in the recordings'))
         else:
+            if not any(k in s['runs'] for k in ref_keys):
+                called, shown = others(other[a])
+                rows.append(('Runs', f'not reached in {ref_names}; in the other recordings {called} ({shown})'))
             for key, text in BUILDS:
                 if key in s['runs']:
                     calls, t = s['runs'][key]
                     share = 100 * t / builds[key].total
                     called = f'{calls:,} call{"" if calls == 1 else "s"}' if calls else 'run into, not called'
                     rows.append((f'Runs ({text})', f'{called}, {t:,} t-states own ({share:.2f} %)'))
+            if any(k in s['runs'] for k in ref_keys) and other.get(a):
+                called, shown = others(other[a])
+                rows.append(('Runs (the other recordings)', f'{called} ({shown})'))
             if s['interrupts']:
                 n = sum(s['interrupts'].values())
                 rows.append(('Entered by', f'the interrupt, {n:,} time{"" if n == 1 else "s"} in '
@@ -502,8 +574,11 @@ def main():
            'its entry, its size up to the next label. The name, the title and the description are the',
            'source\'s (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it',
            '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + ', local and not in the repository'
-           + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '') + '), and, marked',
-           '"(code)", the routines whose `LD` through `(nn)` reads or writes it where the recordings did not see them do so.'
+           + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '') + ')'
+           + (', then those only the case\'s other recordings (`read_builds`) saw, with the first of them in brackets'
+              if len(read_keys & set(every)) > len(ref_keys) else '') + ', and, marked',
+           '"(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE`'
+           ' or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.'
            + (' ' + config['data_note'] if config.get('data_note') else ''),
            'Written by `kit/refdocs.py`.', '']
     current = None
@@ -517,10 +592,18 @@ def main():
             rows = []
 
     def fmt(found):
-        """the recordings' names, then the code's (marked)"""
-        run = {n for n, static in found if not static}
+        """the ref builds' names, then the other recordings' (with the first build that saw it), then the code's
+        (marked; not when a recording already names the routine it lies in)"""
+        run = {n for n, source in found if source is None}
+        seen_in = {}
+        for n, source in found:
+            if isinstance(source, str) and n not in run:
+                seen_in.setdefault(n, []).append(source)
+        order = {k: i for i, k in enumerate(every)}
         names = [f'`{n}`' for n in sorted(run)] + \
-            [f'`{n}` (code)' for n in sorted({n for n, static in found if static} - run)]
+            [f'`{n}` (`{min(seen_in[n], key=order.get)}`)' for n in sorted(seen_in)] + \
+            [f'`{n}` (code)' for n in sorted({n for n, source in found if isinstance(source, tuple) and
+                                              source[1] not in run and source[1] not in seen_in} - run - set(seen_in))]
         return ', '.join(names[:5]) + (f' +{len(names) - 5}' if len(names) > 5 else '') if names else '-'
 
     nothing = {'reads': set(), 'writes': set()}

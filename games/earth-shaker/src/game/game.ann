@@ -6,8 +6,9 @@
 # work/stage2/entry-runs.txt (work/stage2/execs.py). Cave 4 is counted from stage 2's rzx04, replayed to the cave's
 # end (work/stage2/rzx04/cap, the build case.json names); the stage-1 rzx04, whose replay lost the RZX at frame 2344,
 # is not counted (its counts were swapped for cap's in review round 1). Stage 2's death-crush and death-fire
-# (tests/inputs, tools/move_script.py) are not in the sums; their witnesses are named where used. "Known only from the code" marks what no
-# build ran or read.
+# (tests/inputs, tools/move_script.py) are not in the sums (case.json witness_skip); their witnesses are named where used.
+# kit/mkgame.py checks every such line against the builds and prints a stale one (--fix-witness rewrites it).
+# "Known only from the code" marks what no build ran or read.
 # Coordinates: the cave is 30 x 20 cells, CaveGrid $FDA8 + 30 x row + column (row 0 at the top); a cell is drawn
 # 2 x 2 characters, the window is 16 x 11 cells on character rows 0-21.
 

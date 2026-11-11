@@ -61,9 +61,17 @@ what the generator does with it, the part files); every file of a case and the c
 | `read_builds` | the `work/<build>` whose instructions and data reads count; the only recordings mkgame reads with `code_builds` |
 | `code_builds` | the `work/<build>` whose instructions count but not the reads (over a depacker's input), optional |
 | `dest`, `work`, `res_install`, `operands`, `no_entries`, ... | any key of a part file ([ann-format.md 5.2](../docs/ann-format.md#52-part-files)), optional |
-| `ref_builds` | `[key, text]` of the builds docs 11 and 12 report |
+| `ref_builds` | `[key, text]` of the builds docs 11 and 12 report first (each its own Runs row); the other recordings count after them |
+| `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
+
+Every run checks the `.ann`'s `Witness: L1 N (builds)` lines of the code entries against the recordings: N the runs
+of the entry's first instruction summed over `read_builds` and `code_builds` (less `witness_skip`), the list the
+builds that ran it (`c1, hiscore, rzx x29`), and prints each stale line
+(`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
+`--fix-witness` rewrites them in the `.ann`
+([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)).
 
 `--install` writes the modules, `game.asm` and the resources, and deletes only the modules the old `game.asm`
 included that the `.ann` no longer has (a hand-written `.asm` beside them stays) and a resource's `src/res/NAME.bin`
@@ -95,13 +103,21 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
   read), and the writes of the interrupted routine to the stack's slots (L1 `byte_use`: pushed and popped, never
   run). The handler says "Entered by: the interrupt, N times in M routines" instead of a "Called from" list,
   and no routine "Calls" it.
-- **Runs** of a routine no `ref_builds` recording reached: the calls the case's other recordings (`read_builds`,
-  `code_builds`) saw, "not reached in `c1`; in the other recordings 648 calls (`rec/growth` 600, ...)"; "not reached
-  in the recordings" only when none ran it.
+- **All the recordings.** Docs 11 and 12 read every recording of `case.json`: the `ref_builds` first, then
+  `read_builds` and `code_builds`. Their runs, callers, callees and ports count, their reads and writes only from
+  `ref_builds` and `read_builds` (a `code_builds` recording's reads may be a depacker's input). A routine no
+  `ref_builds` recording reached says "not reached in `c1`; in the other recordings 648 calls (`rec/growth` 600,
+  ...)", one it reached gets a row "Runs (the other recordings)" beside its `ref_builds` rows; "not reached in the
+  recordings" only when none ran it.
 - **Doc 11** gives each inner label of a data entry (a field, a row) a row of its own under the entry, `Name`
   (`Entry`+k), its size up to the next label, its comment, its readers and writers. The readers and writers are the
-  recordings' routines and, marked "(code)", the routines whose `LD r,(nn)` / `LD (nn),r` (`game.skool`) names the
-  bytes where no recording saw them do so.
+  `ref_builds`' routines, then those only another recording saw, with the first such build in brackets
+  (`` `DrawCell` (`stage2/rzx04/cap`) ``), then, marked "(code)", the routines whose `LD r,(nn)` / `LD (nn),r`, or an
+  access through `(HL)` / `(DE)` / `(BC)` after `LD HL,nn` (`DE`, `BC`) in the same block (no jump target, branch or
+  call between, the pair changed only by `INC` / `DEC`: `LD HL,ExitOpen`, `LD (HL),$FF`), names the bytes in
+  `game.skool` where no recording saw them do so. A "(code)" routine is named by the label at or below the
+  instruction: `WalkIntoFire`, the label inside `UpSpecialCell` that the write belongs to; it is left out when a
+  recording already names the routine it lies in.
 - **Animations**: every `docs/img/routines/<Label>.gif` and `<Label>-<what>.gif`. A second document's animation of a
   routine another already shows gets its own `<Label>-<what>.gif` (SimCity's `SimTask-growth.gif` beside
   `SimTask.gif`); `routine_anim.py` and `memanim.py` print a note when they write over an existing GIF.
@@ -155,7 +171,9 @@ linear bitmap), `:columns` (column by column, H bytes a column, top first), `:co
 the H.A.T.E. playfield's strips), `:screen` (whole thirds laid out like the screen's pixel lines, W 32: a
 back buffer), `:hex` (a stack or a record as numbers: H lines of W bytes in hex, each line headed by its address) and
 `:words` (the same as 16-bit words, W / 2 a line: pushed return addresses read as `$F75F`, not as bits). A byte
-written in the picture is drawn in the write colours, one read in blue. The GIFs share one palette and store each picture as its changes, so a routine
+written in the picture is drawn in the write colours, one read in blue; in `:hex` and `:words`, a number written
+earlier in the window keeps a dim rose trail after its fade (one only read, a dim blue one), as the memory map keeps
+its trails. The GIFs share one palette and store each picture as its changes, so a routine
 animation of 90 pictures stays near 1 MB.
 
 `--pc LO-HI` is the routine's code, the rest counts as "other"; several ranges (`--pc EAE3-EBA9,EC40-EC9F`, or
@@ -167,7 +185,9 @@ there the next time.
 The animations and the budget are 1050 px wide by default, so that they stay readable shown at 900 px (AGENTS.md, the
 figure check). `routine_anim.py` draws `--width` pixels (1050):
 the memory map above the view on the left, each at the largest whole scale that fits, the listing on the right, a long
-`--title` on two lines; `--layout wide` is the older picture with the three panels side by side (up to 2566 px).
+`--title` on two lines; a view wider than the left column at 1 x (a `:hex` view of 30 bytes a line) goes on a row of
+its own under the map and the listing, its numbers a point or two smaller (down to 9) when even that row is too
+narrow, so the picture stays `--width` wide; `--layout wide` is the older picture with the three panels side by side (up to 2566 px).
 `memanim.py --screen` puts the screen under the grid when beside it the picture would pass `--width` (1050); with
 `--layout wide` it stays beside the grid, at 1 x when 2 x would pass `--width`. `fig_budget.py` draws `--width` pixels
 (1050) and wraps a long `--note`. `writers_map.py` keeps within `--width` (1050): the two views side by side at

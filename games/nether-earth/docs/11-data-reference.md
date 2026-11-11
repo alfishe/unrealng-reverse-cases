@@ -5,7 +5,7 @@ tables, buffers, records, variables, graphics, text; an inner label (a field, a 
 its entry, its size up to the next label. The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/game`, `work/deep`, local and not in the repository), and, marked
-"(code)", the routines whose `LD` through `(nn)` reads or writes it where the recordings did not see them do so.
+"(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
 Written by `kit/refdocs.py`.
 
 ## viewbuffer
@@ -364,7 +364,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$D3CC` | `KeyTable` | 24 | the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu). The bytes as built: F7 01 31 (key 1, Input bit 7, pause), DF 04 49 (I, bit 6, abort), F7 10 35 (5, bit 5, save), 7F 02 82 (SYMBOL SHIFT, bit 4, fire), FB 01 51 (Q, bit 3, up), FD 01 41 (A, bit 2, down), DF 02 4F (O, bit 1, left), DF 01 50 (P, bit 0, right). A key is LD A,(port byte) / IN A,(`$FE`) / AND mask: Z when pressed. The code byte only serves the redefine screen (it prints the key and refuses one already taken). The ninth byte, `$D3E4`, is Controls: 1 in the image (the keyboard only); MainMenu sets 1-3 by the keys 1, 2, 3. | `ReadControls` | - |
+| `$D3CC` | `KeyTable` | 24 | the keys, eight of 3 bytes: the port high byte, the bit mask, the key code (shown by the redefine menu). The bytes as built: F7 01 31 (key 1, Input bit 7, pause), DF 04 49 (I, bit 6, abort), F7 10 35 (5, bit 5, save), 7F 02 82 (SYMBOL SHIFT, bit 4, fire), FB 01 51 (Q, bit 3, up), FD 01 41 (A, bit 2, down), DF 02 4F (O, bit 1, left), DF 01 50 (P, bit 0, right). A key is LD A,(port byte) / IN A,(`$FE`) / AND mask: Z when pressed. The code byte only serves the redefine screen (it prints the key and refuses one already taken). The ninth byte, `$D3E4`, is Controls: 1 in the image (the keyboard only); MainMenu sets 1-3 by the keys 1, 2, 3. | `ReadControls` | `RedefineKeysBody` (code) |
 | `$D3E4` | `Controls` | 1 | the menu's choice: 1 keyboard, 2 Kempston, 3 Interface 2 | `ControlsOptionAttr`, `ReadControls` | `MainMenuKeys` |
 
 ## tables

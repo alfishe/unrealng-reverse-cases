@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/c2` (the first play recording: level 1 from the start, 1500 frames), `work/r1` (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames), `work/zyB/w1` (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames), `work/zyB/w2` (tools/podbot.py with homing missiles to the end of level 0, 7600 frames). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/c2` (the first play recording: level 1 from the start, 1500 frames), `work/r1` (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames), `work/zyB/w1` (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames), `work/zyB/w2` (tools/podbot.py with homing missiles to the end of level 0, 7600 frames), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -76,6 +76,8 @@ c1: entered once by the loader's relocation code at `$5B00` (frame 12323), a tai
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `VectorTable` |
+| Calls | `Start` (tail) |
 
 ## system
 
@@ -94,6 +96,7 @@ Input: none. Output: A, B, DE, HL changed. Called once from the start-up (c1: 1 
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `InterruptSetup` |
 
 ### `Random` (`$8544`)
 
@@ -128,7 +131,8 @@ Input: none. Output: BC, DE, HL changed; interrupts enabled. c1: 4 entries (betw
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 459,088 t-states own (0.44 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 22 calls, 5,049,962 t-states own (0.10 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 459,088 t-states own (0.09 %) |
-| Called from | `MenuScreenSetup`, `RoundPlaySetup` |
+| Runs (the other recordings) | 4 calls (`c1` 4) |
+| Called from | `MenuScreenSetup`, `InterruptSetup`, `RoundPlaySetup`, `CreditsPage`, `HiScorePage` |
 | Calls | `FadeAttributes` |
 | Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 | Writes | `$4000`-`$5AFF` (screen) |
@@ -147,6 +151,7 @@ Output: BC, E, HL changed. Called by ClearScreen (c1: 4 entries).
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 3 calls, 2,513,000 t-states own (2.40 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 33 calls, 27,636,614 t-states own (0.53 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3 calls, 2,512,552 t-states own (0.47 %) |
+| Runs (the other recordings) | 4 calls (`c1` 4) |
 | Called from | `ClearScreen`, `EndOfPlay` |
 | Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 | Writes | `$5800`-`$5AFF` (screen) |
@@ -2668,8 +2673,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,774 calls, 110,266 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 848 calls, 616,985 t-states own (0.15 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 842 calls, 608,634 t-states own (0.11 %) |
+| Runs (the other recordings) | 1,566 calls (`c1` 1,566) |
 | Called from | `PrintString`, `PrintBcd`, `PrintBcdLeading`, `PrintBcdOut` |
-| Calls | `PrintCharSave`, `PrintSetColumn`, `PrintSetRow` |
+| Calls | `PrintCharSave`, `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight`, `PrintRowDown` |
 | Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`) |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); 12 more ranges |
 
@@ -2773,7 +2779,8 @@ The return of every print code routine (pushed by PrintChar): `$80AD` = `$20`, t
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 4 calls, 371 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 44 calls, 4,081 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 4 calls, 371 t-states own (0.00 %) |
-| Called from | `PrintSetColumn`, `PrintSetRow` |
+| Runs (the other recordings) | 404 calls (`c1` 404) |
+| Called from | `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight` |
 | Writes | `$80AD` (`PrintPending`) |
 
 ### `PrintSetAttr` (`$A3B1`)
@@ -2785,6 +2792,8 @@ C: the attribute byte for the next characters (`$80AC`).
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
+| Called from | `PrintChar` |
+| Calls | `PrintCodeDone` |
 
 ### `PrintSetInk` (`$A3B6`)
 
@@ -2817,6 +2826,7 @@ C: the column 0-31 of the print position.
 | Runs (the first play recording: level 1 from the start, 1500 frames) | run into, not called, 98 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | run into, not called, 1,078 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 98 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`c1`) |
 | Called from | `PrintChar`, `PrintCharSave` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
@@ -2833,7 +2843,8 @@ C: the row 0-23: the print position's high byte `$58` + C / 8, bits 5-7 of the l
 | Runs (the first play recording: level 1 from the start, 1500 frames) | run into, not called, 206 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | run into, not called, 2,266 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 206 t-states own (0.00 %) |
-| Called from | `PrintChar`, `PrintCharSave` |
+| Runs (the other recordings) | 132 calls (`c1` 132) |
+| Called from | `PrintChar`, `PrintCharSave`, `PrintRowDown` (tail) |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
 | Writes | `$80AA`-`$80AB` (`PrintPos`) |
@@ -2847,6 +2858,8 @@ C: the columns to add (a negative operand, `$FE`, moves left).
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
+| Called from | `PrintChar` |
+| Calls | `PrintCodeDone` |
 
 ### `PrintRowDown` (`$A3F4`)
 
@@ -2857,6 +2870,8 @@ C: the rows to add to the current row (the position's row from bits 5-9 of its o
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
+| Called from | `PrintChar` |
+| Calls | `PrintSetRow` (tail) |
 
 ### `PrintString` (`$A401`)
 
@@ -2871,7 +2886,8 @@ Callers: PrintMessage and the title loop (HiScorePage).
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 3,666 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 22 calls, 40,326 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 3,666 t-states own (0.00 %) |
-| Called from | `PrintMessage` |
+| Runs (the other recordings) | 103 calls (`c1` 103) |
+| Called from | `PrintMessage`, `HiScorePage` |
 | Calls | `PrintChar`, `PrintMessage` |
 | Reads | `$80AD` (`PrintPending`); `$84B2`-`$84D7` (`Messages+452`, `PlayerDigit`) |
 
@@ -2888,7 +2904,8 @@ Callers: PrintString, the menu screens (RedefineKeys, PrintKeyName, SelectPlayer
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 20,152 t-states own (0.02 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 22 calls, 221,672 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 20,152 t-states own (0.00 %) |
-| Called from | `PrintString`, `LevelStart` |
+| Runs (the other recordings) | 98 calls (`c1` 98) |
+| Called from | `PrintString`, `LevelStart`, `CreditsPage`, `HiScorePage` |
 | Calls | `PrintString` |
 | Reads | `$82ED`-`$84BC` (`MessageListBase`, `Messages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
 
@@ -2916,7 +2933,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 925 calls, 181,913 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 106 calls, 123,437 t-states own (0.03 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 101 calls, 117,400 t-states own (0.02 %) |
-| Called from | `PrintPlayerScore` |
+| Runs (the other recordings) | 9 calls (`c1` 9) |
+| Called from | `PrintPlayerScore`, `CreditsPage`, `HiScorePage` |
 | Calls | `PrintChar`, `PrintBcdLeading` |
 | Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$7FFC`-`$7FFF` (`BcdScratch`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`); `$80AC` (`PrintAttr`) |
@@ -3238,6 +3256,8 @@ Carry set when the Kempston reads exactly fire (`$10`: then `$8187` bit 0 stays 
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 875 calls (`c1` 875) |
+| Called from | `CreditsPage`, `HiScorePage`, `TitleTune` |
+| Ports in | `$001F`, `$081F`, `$0F1F`, `$DD1F`, `$DF1F`, `$E11F`, `$E31F`, `$E51F`, `$E71F`, `$E91F`, `$EB1F`, `$ED1F`, `$EF1F`, `$F11F`, `$F31F`, `$FF1F` |
 
 ## options
 
@@ -3252,6 +3272,8 @@ Carry set when the Kempston reads exactly fire (`$10`: then `$8187` bit 0 stays 
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `CreditsPage` |
+| Ports in | `$F7FE` |
 
 ### `SelectOnePlayer` (`$A788`)
 
@@ -3378,6 +3400,7 @@ Only sets the interrupt flag `$7F96` = `$80`. Installed by WaitMenuRasterEnd and
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 106 calls, 5,830 t-states own (0.01 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,089 calls, 59,895 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 99 calls, 5,445 t-states own (0.00 %) |
+| Runs (the other recordings) | 577 calls (`c1` 577) |
 | Called from | `InterruptJump` (tail) |
 | Writes | `$7F96` (`EffectTick`) |
 
@@ -4403,6 +4426,8 @@ SetUpInterrupts `$8516` (the IM 2 table) and ClearScreen `$858B`; called once by
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `MainLoop` |
+| Calls | `SetUpInterrupts`, `ClearScreen` |
 
 ### `PlayersSetup` (`$AFB7`)
 
@@ -4468,6 +4493,8 @@ ClearScreen `$858B`, PrintMessage `$15`, the scores of both players at `$5AA0` a
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 2 calls (`c1` 2) |
+| Called from | `MainLoop` |
+| Calls | `ClearScreen`, `PrintMessage`, `PrintBcd`, `TitleFireCheck`, `MenuKeys`, `TitleTune` |
 
 ### `HiScorePage` (`$B0C9`)
 
@@ -4478,6 +4505,8 @@ ClearScreen, PrintMessage `$16`, the five entries of HiScoreTable `$8261` (14 by
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `MainLoop` |
+| Calls | `ClearScreen`, `PrintString`, `PrintMessage`, `PrintBcd`, `TitleFireCheck` |
 
 ## mainloop
 
@@ -4654,6 +4683,8 @@ Entered from Start (`$B72C`). InterruptSetup, then the title pages until fire, P
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `Start` (tail) |
+| Calls | `InterruptSetup`, `CreditsPage`, `HiScorePage` |
 
 ### `MainLoopPlay` (`$B212`)
 
@@ -5080,6 +5111,10 @@ DI; for each of the 7 patterns of TuneOrder: the notes until `$FF`, the length c
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 2 calls (`c1` 2) |
+| Called from | `CreditsPage` |
+| Calls | `TitleFireCheck` |
+| Ports in | `$F7FE` |
+| Ports out | `$00FE`, `$10FE` |
 
 ## start
 
@@ -5094,3 +5129,5 @@ Entered by the loader's jump (`$B6FF`). DI, SP = `$5C00`; `$BC00-$C7FF` (3072 by
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
+| Called from | `GameEntry` (tail) |
+| Calls | `MainLoop` (tail) |

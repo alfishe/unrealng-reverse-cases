@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -51,6 +51,7 @@ Witness: game 11 644 entries (frames 1560-16 759), a1 2090, g1 3351, p2 4612, h1
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 11,644 calls, 4,298,176 t-states own (0.37 %) |
+| Runs (the other recordings) | 68,040 calls (`runs/i2` 28,601, `runs/i1` 25,747, `runs/p2` 4,612 and 4 more) |
 | Called from | `Im2Vector` (tail) |
 | Calls | `TunePlayer`, `Im2Clock` |
 | Reads | `$5C78`-`$5C79` (system) |
@@ -69,8 +70,9 @@ Witness: entered once per handler entry (i1 25 747); a word taken i1 8600 times,
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 11,644 calls, 20,445,695 t-states own (1.77 %) |
+| Runs (the other recordings) | 68,040 calls (`runs/i2` 28,601, `runs/i1` 25,747, `runs/p2` 4,612 and 4 more) |
 | Called from | `Im2Handler` |
-| Reads | `$B23E`-`$B240` (`TunePointer`, `TuneDivider`); `$B288` (`PlayerFlags`); `$B4E6`-`$B775` (`Tune`) |
+| Reads | `$B23E`-`$B240` (`TunePointer`, `TuneDivider`); `$B288` (`PlayerFlags`); `$B4E6`-`$B799` (`Tune`) |
 | Writes | `$B23E`-`$B240` (`TunePointer`, `TuneDivider`) |
 
 ### `Im2Clock` (`$7F98`)
@@ -86,6 +88,7 @@ Witness: one entry per handler entry; a second counted game 231 times, a1 41, i1
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 11,644 calls, 627,326 t-states own (0.05 %) |
+| Runs (the other recordings) | 68,040 calls (`runs/i2` 28,601, `runs/i1` 25,747, `runs/p2` 4,612 and 4 more) |
 | Called from | `Im2Handler` |
 | Reads | `$B240` (`TuneDivider`); `$B285`-`$B287` (`PlayerTime`, `PlayerFrames`) |
 | Writes | `$B239` (`TimeShown`); `$B285`-`$B287` (`PlayerTime`, `PlayerFrames`) |
@@ -105,7 +108,8 @@ Witness: game 1, a1 1, g1 1, t1 1, p2 1, h1 1, i1 1, i2 1.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 10,105 t-states own (0.00 %) |
-| Calls | `MenuDelay`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckTape`, `MenuCheckAnyKey`, `CycleScreenColours`, `DrawPixelFrame`, `CycleFrameColours`, `ClearScreen`, `BlitRows`, `PrintText` |
+| Runs (the other recordings) | run into, not called (`runs/t1`, `runs/i2`, `runs/p2` and 4 more) |
+| Calls | `TitlePage`, `OptionsPage`, `MenuDelay`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckTape`, `MenuCheckAnyKey`, `CycleScreenColours`, `DrawPixelFrame`, `CycleFrameColours`, `ClearScreen`, `BlitRows`, `PrintText` |
 | Reads | `$B25D`-`$B25E` (`BasicStack`) |
 | Writes | `$B247`-`$B24A` (`BlitTop`, `BlitBottom`, `BlitX`, `BlitWidth`); `$B25D`-`$B25E` (`BasicStack`); `$F0A2` (`FontDescriptors+12`) |
 
@@ -122,6 +126,10 @@ Entered from MenuEntry, from HeroesPage at its end (`$81FF`) and from the abort 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 4 calls (`runs/h1` 2, `runs/a1` 2) |
+| Called from | `MenuEntry`, `HeroesPage` (tail), `BuggyUpdate` (tail) |
+| Calls | `OptionsHighlightLine`, `MenuDelay`, `MenuBreakTest`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckTape`, `MenuCheckAnyKey`, `CycleScreenColours`, `CycleColourRange`, `DrawPixelFrame`, `CycleFrameColours`, `ClearScreen`, `BlitRows`, `PrintText` |
+| Reads | `$B257`-`$B25E` (`Players`, `Course`, `Controls`, `OptionColour1` and 3 more) |
+| Writes | `$B247`-`$B25C` (`BlitTop`, `BlitBottom`, `BlitX`, `BlitWidth` and 16 more); `$F0A2` (`FontDescriptors+12`) |
 
 ### `OptionsPage` (`$8064`)
 
@@ -138,10 +146,11 @@ Entered from TitlePage and from MenuCheckAnyKey (`$832F`). Witness: a1 21 entrie
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3 calls, 44,859 t-states own (0.00 %) |
-| Called from | `MenuCheckAnyKey` (tail) |
-| Calls | `OptionsHighlightLine`, `MenuDelay`, `MenuBreakTest`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckTape`, `CycleScreenColours`, `CycleColourRange`, `OptionsSelect`, `DrawPixelFrame`, `CycleFrameColours`, `ClearScreen`, `PrintText` |
-| Reads | `$B257`-`$B25C` (`Players`, `Course`, `Controls`, `OptionColour1` and 2 more) |
-| Writes | `$B257`-`$B25C` (`Players`, `Course`, `Controls`, `OptionColour1` and 2 more) |
+| Runs (the other recordings) | 25 calls (`runs/a1` 21, `runs/t1` 2, `runs/i2` 1 and 1 more) |
+| Called from | `MenuEntry`, `MenuCheckAnyKey` (tail) |
+| Calls | `OptionsHighlightLine`, `MenuDelay`, `MenuBreakTest`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckTape`, `MenuCheckAnyKey`, `CycleScreenColours`, `CycleColourRange`, `OptionsSelect`, `DrawPixelFrame`, `CycleFrameColours`, `ClearScreen`, `LifeStart`, `ScenerySetup`, `SceneryColours`, `MainLoopCalls`, `SetIm1`, `UnplotRun`, `DrawSprite`, `PrintText` |
+| Reads | `$83D8`-`$8407` (`ScoreTableSprites`); `$B257`-`$B25C` (`Players`, `Course`, `Controls`, `OptionColour1` and 2 more); `$B27D` (`PlayerScenery`) |
+| Writes | `$B238` (`ObjectsOff`); `$B257`-`$B25C` (`Players`, `Course`, `Controls`, `OptionColour1` and 2 more); `$B27D`-`$B288` (`PlayerScenery`, `PlayerLights`, `PlayerRestart`, `PlayerSegment` and 5 more) |
 
 ### `ScoreAdvancePage` (`$8118`)
 
@@ -182,8 +191,9 @@ Entered from MenuCheckHeroes (H), from DemoPage, from TapeLoadDone after a good 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4 calls, 620 t-states own (0.00 %) |
-| Called from | `GameStart` (tail) |
-| Calls | `MenuBreakTest`, `MenuCheckStart`, `MenuCheckTape`, `MenuCheckAnyKey`, `DrawPixelFrame`, `CycleFrameColours`, `HeroesDrawTables`, `ClearScreen` |
+| Runs (the other recordings) | 2 calls (`runs/h1` 1, `runs/a1` 1) |
+| Called from | `MenuCheckHeroes` (tail), `GameStart` (tail) |
+| Calls | `TitlePage` (tail), `MenuDelay`, `MenuBreakTest`, `MenuCheckStart`, `MenuCheckTape`, `MenuCheckAnyKey`, `CycleScreenColours`, `DrawPixelFrame`, `CycleFrameColours`, `HeroesDrawTables`, `ClearScreen` |
 
 ### `OptionsHighlightLine` (`$8202`)
 
@@ -194,7 +204,8 @@ Row = 8 A + B; LineAttrAddress, then HighlightLine28 (28 cells `$47` from the th
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 12 calls, 720 t-states own (0.00 %) |
-| Called from | `OptionsPage` |
+| Runs (the other recordings) | 104 calls (`runs/a1` 84, `runs/t1` 8, `runs/h1` 4 and 2 more) |
+| Called from | `TitlePage`, `OptionsPage` |
 | Calls | `LineAttrAddress`, `HighlightLine28` |
 
 ### `MenuDelay` (`$820D`)
@@ -206,7 +217,8 @@ B = 0, C counted down. Called once a pass by every page and by the bonus screen 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 191 calls, 63,789,269 t-states own (5.53 %) |
-| Called from | `MenuEntry`, `OptionsPage` |
+| Runs (the other recordings) | 3,410 calls (`runs/a1` 2,327, `runs/h1` 412, `runs/t1` 315 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage`, `SectorBonus` |
 
 ### `MenuBreakTest` (`$8215`)
 
@@ -217,7 +229,8 @@ Reads half-rows `$FE` (CAPS SHIFT) and `$7F` (SPACE), ORs them and keeps bit 0: 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 132 calls, 8,590 t-states own (0.00 %) |
-| Called from | `OptionsPage`, `HeroesPage` |
+| Runs (the other recordings) | 2,976 calls (`runs/a1` 2,424, `runs/h1` 296, `runs/t1` 216 and 2 more) |
+| Called from | `TitlePage`, `OptionsPage`, `HeroesPage` |
 | Ports in | `$7FFE`, `$FEFE` |
 
 ### `MenuBreakToBasic` (`$8222`)
@@ -239,7 +252,8 @@ Half-row `$FD` alone with S (bit 1) held starts the game. Otherwise, unless the 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 199 calls, 15,855 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesPage` |
+| Runs (the other recordings) | 3,292 calls (`runs/a1` 2,450, `runs/h1` 414, `runs/t1` 316 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage` |
 | Calls | `GameStart` (tail), `SetIm1`, `ControlsRead` |
 | Reads | `$B259`-`$B25E` (`Controls`, `OptionColour1`, `OptionColour2`, `OptionColour3` and 1 more) |
 | Ports in | `$FDFE` |
@@ -253,7 +267,10 @@ Witness: called a1 2365 times; taken a1 once (`$8250`, frame 153).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 192 calls, 8,422 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `OptionsPage` |
+| Runs (the other recordings) | 3,002 calls (`runs/a1` 2,365, `runs/t1` 316, `runs/h1` 213 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage` |
+| Calls | `HeroesPage` (tail), `SetIm1` |
+| Reads | `$B25D`-`$B25E` (`BasicStack`) |
 | Ports in | `$BFFE` |
 
 ### `MenuCheckTape` (`$825A`)
@@ -271,7 +288,10 @@ Witness: t1 J (SA_BYTES 153-479), L and G (LD_BYTES 1077-2650): `$826B` 3, `$829
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 194 calls, 15,232 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesPage` |
+| Runs (the other recordings) | 3,285 calls (`runs/a1` 2,448, `runs/h1` 413, `runs/t1` 316 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage` |
+| Reads | `$5C3D`-`$5C3E` (system); `$B263`-`$B266` (`TapeStack`, `TapeErrSp`) |
+| Writes | `$B23A` (`TapeKey`); `$B263`-`$B266` (`TapeStack`, `TapeErrSp`) |
 | Ports in | `$BFFE`, `$FDFE` |
 
 ### `TapeErrorHandler` (`$82F3`)
@@ -285,6 +305,8 @@ Witness: t1 twice (the L and the G load stopped with SPACE, frames 1390-2670), t
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/t1`) |
+| Reads | `$5C3D`-`$5C3E` (system); `$B263`-`$B266` (`TapeStack`, `TapeErrSp`) |
+| Ports in | `$7EFE` |
 
 ### `TapeLoadDone` (`$8309`)
 
@@ -305,7 +327,8 @@ Witness: called a1 445 times, h1 317; taken game 3, a1 21, t1 1, p2 1, i2 1 (`$8
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 69 calls, 2,732 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `HeroesPage` |
+| Runs (the other recordings) | 972 calls (`runs/a1` 445, `runs/h1` 317, `runs/t1` 140 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage` |
 | Calls | `OptionsPage` (tail), `SetIm1` |
 | Reads | `$B25D`-`$B25E` (`BasicStack`) |
 | Ports in | `$00FE` |
@@ -319,7 +342,8 @@ Witness: called a1 445 times, h1 317; taken game 3, a1 21, t1 1, p2 1, i2 1 (`$8
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 191 calls, 34,145,868 t-states own (2.96 %) |
-| Called from | `MenuEntry`, `OptionsPage` |
+| Runs (the other recordings) | 3,161 calls (`runs/a1` 2,327, `runs/h1` 413, `runs/t1` 315 and 4 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage` |
 | Reads | `$5800`-`$5AFF` (screen); `$8408`-`$8412` (`ColourCycle`) |
 | Writes | `$5842`-`$5ABD` (screen) |
 
@@ -332,9 +356,10 @@ Used by OptionsPage on its three normal colours `$B25A-$B25C`, by DemoPage on "D
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 125 calls, 83,029 t-states own (0.01 %) |
-| Called from | `OptionsPage` |
-| Reads | `$8408`-`$8412` (`ColourCycle`); `$B25A`-`$B25C` (`OptionColour1`, `OptionColour2`, `OptionColour3`) |
-| Writes | `$B25A`-`$B25C` (`OptionColour1`, `OptionColour2`, `OptionColour3`) |
+| Runs (the other recordings) | 2,662 calls (`runs/a1` 2,103, `runs/t1` 176, `runs/i2` 144 and 3 more) |
+| Called from | `TitlePage`, `OptionsPage`, `SectorBonus` |
+| Reads | `$58AE`-`$58B2` (screen); `$8408`-`$8412` (`ColourCycle`); `$B25A`-`$B25C` (`OptionColour1`, `OptionColour2`, `OptionColour3`) |
+| Writes | `$58AE`-`$58B1` (screen); `$B25A`-`$B25C` (`OptionColour1`, `OptionColour2`, `OptionColour3`) |
 
 ### `OptionsSelect` (`$8360`)
 
@@ -347,10 +372,11 @@ Witness: a1 2619 calls (537-18 573), a new choice a1 10 times (`$836E`), game 2,
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 166 calls, 15,157 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,640 calls (`runs/a1` 2,619, `runs/i2` 8, `runs/p2` 7 and 1 more) |
 | Called from | `OptionsPage` |
 | Calls | `OptionsFindEntry`, `LineAttrAddress`, `HighlightLine28` |
 | Reads | `$83BB`-`$83D7` (`OptionPlayerKeys+1`, `OptionCourseKeys`, `OptionControlKeys`) |
-| Writes | `$5942`-`$595D` (screen); `$59E2`-`$59FD` (screen) |
+| Writes | `$5882`-`$58BD` (screen); `$58E2`-`$591D` (screen); `$5942`-`$59FD` (screen) |
 
 ### `OptionsFindEntry` (`$8394`)
 
@@ -361,6 +387,7 @@ Witness: a1 2629 entries.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 168 calls, 23,215 t-states own (0.00 %) |
+| Runs (the other recordings) | 2,652 calls (`runs/a1` 2,629, `runs/i2` 9, `runs/p2` 8 and 1 more) |
 | Called from | `OptionsSelect` |
 | Reads | `$83BA`-`$83D6` (`OptionPlayerKeys`, `OptionCourseKeys`, `OptionControlKeys`) |
 
@@ -373,8 +400,9 @@ Witness: a1 104 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 16 calls, 1,440 t-states own (0.00 %) |
+| Runs (the other recordings) | 128 calls (`runs/a1` 104, `runs/t1` 8, `runs/i2` 6 and 2 more) |
 | Called from | `OptionsHighlightLine`, `OptionsSelect` |
-| Reads | `$FC42`-`$FC43` (`ScreenLineTable+66`); `$FC72`-`$FC73` (`ScreenLineTable+114`); `$FCA2`-`$FCB3` (`ScreenLineTable+162`); `$FCF2`-`$FCF3` (`ScreenLineTable+242`); `$FD32`-`$FD33` (`ScreenLineTable+306`) |
+| Reads | `$FC42`-`$FC53` (`ScreenLineTable+66`); `$FC72`-`$FC83` (`ScreenLineTable+114`); `$FCA2`-`$FCF3` (`ScreenLineTable+162`); `$FD32`-`$FD33` (`ScreenLineTable+306`) |
 
 ### `HighlightLine28` (`$83AF`)
 
@@ -385,8 +413,9 @@ Witness: a1 94 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 14 calls, 12,939 t-states own (0.00 %) |
+| Runs (the other recordings) | 116 calls (`runs/a1` 94, `runs/t1` 8, `runs/i2` 5 and 2 more) |
 | Called from | `OptionsHighlightLine`, `OptionsSelect` |
-| Writes | `$5882`-`$589D` (screen); `$58E2`-`$58FD` (screen); `$5942`-`$597D` (screen); `$59E2`-`$59FD` (screen); `$5A62`-`$5A7D` (screen) |
+| Writes | `$5882`-`$58BD` (screen); `$58E2`-`$591D` (screen); `$5942`-`$59FD` (screen); `$5A62`-`$5A7D` (screen) |
 
 ### `FrameHLine` (`$87AC`)
 
@@ -397,6 +426,7 @@ Witness: a1 400 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 144 calls, 2,047,887 t-states own (0.18 %) |
+| Runs (the other recordings) | 672 calls (`runs/a1` 400, `runs/h1` 80, `runs/t1` 48 and 5 more) |
 | Called from | `FrameRectangle` |
 | Calls | `PlotPixel` |
 
@@ -409,6 +439,7 @@ Witness: a1 400 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 144 calls, 1,513,281 t-states own (0.13 %) |
+| Runs (the other recordings) | 672 calls (`runs/a1` 400, `runs/h1` 80, `runs/t1` 48 and 5 more) |
 | Called from | `FrameRectangle` |
 | Calls | `PlotPixel` |
 
@@ -421,6 +452,7 @@ Top and bottom lines 256 - 2B wide, sides 192 - 2C high. Witness: a1 200 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 72 calls, 19,008 t-states own (0.00 %) |
+| Runs (the other recordings) | 336 calls (`runs/a1` 200, `runs/h1` 40, `runs/t1` 24 and 5 more) |
 | Called from | `FrameRectangles` |
 | Calls | `FrameHLine`, `FrameVLine` |
 
@@ -433,6 +465,7 @@ Witness: a1 200 entries (50 calls).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 18 calls, 4,554 t-states own (0.00 %) |
+| Runs (the other recordings) | 84 calls (`runs/a1` 50, `runs/h1` 10, `runs/p2` 6 and 5 more) |
 | Called from | `DrawPixelFrame` |
 | Calls | `FrameRectangle` |
 
@@ -445,7 +478,8 @@ Called by TitlePage, OptionsPage, HeroesPage, TapeShowMessage and HiScoreEntry. 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 9 calls, 702 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesPage`, `HiScoreEntry` |
+| Runs (the other recordings) | 42 calls (`runs/a1` 25, `runs/h1` 5, `runs/p2` 3 and 5 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage`, `HiScoreEntry` |
 | Calls | `FrameRectangles` |
 
 ### `PaintFrameAttrs` (`$880D`)
@@ -457,6 +491,7 @@ Witness: a1 2162 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 212 calls, 1,120,439 t-states own (0.10 %) |
+| Runs (the other recordings) | 2,987 calls (`runs/a1` 2,162, `runs/h1` 422, `runs/t1` 282 and 5 more) |
 | Called from | `CycleFrameColours` |
 | Writes | `$5800`-`$5A01` (screen); `$5A1E`-`$5A21` (screen); `$5A3E`-`$5A41` (screen); `$5A5E`-`$5A61` (screen); `$5A7E`-`$5A81` (screen); `$5A9E`-`$5AA1` (screen); 1 more ranges |
 
@@ -469,7 +504,8 @@ Called on every pass of TitlePage, OptionsPage, HeroesPage and the tape message,
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 212 calls, 26,288 t-states own (0.00 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesPage`, `HeroesDrawTables`, `HiScoreEntry` |
+| Runs (the other recordings) | 2,987 calls (`runs/a1` 2,162, `runs/h1` 422, `runs/t1` 282 and 5 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage`, `HeroesDrawTables`, `HiScoreEntry` |
 | Calls | `PaintFrameAttrs` |
 | Reads | `$883D`-`$884C` (`FrameColourPairs`); `$B255` (`TitleColour`) |
 | Writes | `$B255` (`TitleColour`) |
@@ -487,6 +523,7 @@ The rank through `$9369` (B = 1, C = 6), the score through `$9367` (C = 6). Witn
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 40 calls, 18,760 t-states own (0.00 %) |
+| Runs (the other recordings) | 30 calls (`runs/a1` 20, `runs/h1` 10) |
 | Called from | `HeroesDrawTables` |
 | Calls | `PrintBcd4`, `PrintBcd`, `PrintChar` |
 | Reads | `$8866`-`$88A7` (`HeroesTable`) |
@@ -500,6 +537,7 @@ As HeroesPrintRow with narrower spacing and C = 4 for the print calls. Witness: 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 156 calls, 73,203 t-states own (0.01 %) |
+| Runs (the other recordings) | 117 calls (`runs/a1` 78, `runs/h1` 39) |
 | Called from | `HeroesDrawTables` |
 | Calls | `PrintBcd4`, `PrintBcd`, `PrintChar` |
 | Reads | `$88C9`-`$89D5` (`AllTimeTable`) |
@@ -515,6 +553,7 @@ Called by HeroesPage only. Witness: game 4, a1 2 (174, 21 208), h1 1 (4545).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4 calls, 17,968 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`runs/a1` 2, `runs/h1` 1) |
 | Called from | `HeroesPage` |
 | Calls | `CycleFrameColours`, `HeroesPrintRow`, `AllTimePrintRow`, `PrintBcd4`, `PrintChar`, `PrintText` |
 | Reads | `$88C6`-`$88C8` (`GreatestInitials`); `$F000`-`$F001` (`PrintY`, `PrintX`) |
@@ -533,10 +572,11 @@ Witness: entries game 4, g1 1 (4144), p2 1 (7830), h1 1 (4144-4524), h2 1 (488).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4 calls, 1,826 t-states own (0.00 %) |
-| Called from | `GameStart` |
-| Calls | `DrawPixelFrame`, `CycleFrameColours`, `EntryFieldEdit`, `HiScoreFindSlot`, `ScoreCompare`, `ClearScreen`, `HudDraw`, `ClearCells`, `PrintChar`, `PrintText` |
-| Reads | `$5880` (screen); `$8890`-`$88A4` (`HeroesTable+42`); `$8D4E`-`$8D52` (`InitialsField`); `$B250`-`$B251` (`HeroSlot`); `$B271`-`$B275` (`Player`, `PlayerScore`); `$B289`-`$B28B` (`PlayerInitials`) |
-| Writes | `$5860` (screen); `$8890`-`$88AB` (`HeroesTable+42`); `$B24B`-`$B251` (`EntryLength`, `EntryBuffer`, `EntryY`, `EntryX` and 1 more) |
+| Runs (the other recordings) | 4 calls (`runs/h1` 1, `runs/p2` 1, `runs/g1` 1 and 1 more) |
+| Called from | `GameStart`, `GameAfterLife` |
+| Calls | `DrawPixelFrame`, `CycleFrameColours`, `EntryFieldEdit`, `GreatestEntry` (tail), `HiScoreFindSlot`, `ScoreCompare`, `ClearScreen`, `HudDraw`, `ClearCells`, `PrintChar`, `PrintText` |
+| Reads | `$5880` (screen); `$8866`-`$88A4` (`HeroesTable`); `$8D4E`-`$8D52` (`InitialsField`); `$B250`-`$B251` (`HeroSlot`); `$B271`-`$B275` (`Player`, `PlayerScore`); `$B289`-`$B28B` (`PlayerInitials`) |
+| Writes | `$5860` (screen); `$8866`-`$88AB` (`HeroesTable`); `$89D3`-`$89D9` (`AllTimeTable+266`); `$B24B`-`$B251` (`EntryLength`, `EntryBuffer`, `EntryY`, `EntryX` and 1 more) |
 
 ### `EntryFieldClear` (`$8C9C`)
 
@@ -547,6 +587,7 @@ Witness: g1 121 calls, h2 11.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 8,405 t-states own (0.00 %) |
+| Runs (the other recordings) | 751 calls (`runs/p2` 615, `runs/g1` 121, `runs/h2` 11 and 1 more) |
 | Called from | `EntryFieldDraw` |
 | Reads | `$B24E` (`EntryY`); `$FCF8`-`$FD0B` (`ScreenLineTable+248`) |
 | Writes | `$4CE2`-`$4DFD` (screen); `$4EE2`-`$4EFD` (screen); `$4FE2`-`$501D` (screen); `$5102`-`$511D` (screen); `$5202`-`$521D` (screen); `$5302`-`$531D` (screen); 2 more ranges |
@@ -560,6 +601,7 @@ The field descriptor is at `$B24B`: length, the buffer address, y, x (EntryField
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 1,084 t-states own (0.00 %) |
+| Runs (the other recordings) | 751 calls (`runs/p2` 615, `runs/g1` 121, `runs/h2` 11 and 1 more) |
 | Called from | `EntryFieldEdit` |
 | Calls | `EntryFieldClear`, `PlotPixel`, `PrintChar` |
 | Reads | `$B24B`-`$B254` (`EntryLength`, `EntryBuffer`, `EntryY`, `EntryX` and 4 more); `$B289`-`$B28B` (`PlayerInitials`); `$F000`-`$F001` (`PrintY`, `PrintX`) |
@@ -578,10 +620,11 @@ Witness: entries g1 1 (4172, never left: no ENTER), p2 1 (7859, never left), h1 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 2,195,655 t-states own (0.19 %) |
-| Called from | `HiScoreEntry` |
-| Calls | `EntryFieldDraw` |
-| Reads | `$5C08` (system); `$5C3B` (system); `$5C6A` (system) |
-| Writes | `$5C08` (system); `$5C3B`-`$5C41` (system); `$5C6A` (system); `$B254` (`EntryCursor`) |
+| Runs (the other recordings) | 5 calls (`runs/h2` 2, `runs/p2` 1, `runs/g1` 1 and 1 more) |
+| Called from | `HiScoreEntry`, `GreatestEntry` |
+| Calls | `EntryFieldDraw`, `EditCursorAddress` |
+| Reads | `$5C08` (system); `$5C3B` (system); `$5C6A` (system); `$B24B`-`$B254` (`EntryLength`, `EntryBuffer`, `EntryY`, `EntryX` and 4 more) |
+| Writes | `$5C08` (system); `$5C3B`-`$5C41` (system); `$5C6A` (system); `$B254` (`EntryCursor`); `$B289`-`$B28B` (`PlayerInitials`) |
 
 ### `EditCursorLeft` (`$8D5D`)
 
@@ -602,6 +645,8 @@ Witness: g1 120 calls, p2 614, h2 9.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 746 calls (`runs/p2` 614, `runs/g1` 120, `runs/h2` 9 and 1 more) |
+| Called from | `EntryFieldEdit` |
+| Reads | `$B24C`-`$B254` (`EntryBuffer`, `EntryY`, `EntryX`, `HeroSlot` and 3 more) |
 
 ### `GreatestEntry` (`$8E4E`)
 
@@ -614,6 +659,8 @@ Witness: h2 once (513-1141); the shift and the name ran (`$8E81` 266 bytes moved
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/h2` 1) |
+| Called from | `HiScoreEntry` (tail) |
+| Calls | `EntryFieldEdit`, `PrintText` |
 
 ### `HiScoreFindSlot` (`$8EE3`)
 
@@ -624,6 +671,7 @@ Each step ScoreCompare; a record with a higher score stops the walk and the plac
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 657 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`runs/h1` 2) |
 | Called from | `HiScoreEntry` |
 | Calls | `ScoreCompare` |
 | Reads | `$B250`-`$B253` (`HeroSlot`, `HeroCount`, `HeroIndex`) |
@@ -638,8 +686,9 @@ Witness: game 16 calls, g1 2, p2 3, h1 16, h2 2.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 16 calls, 1,964 t-states own (0.00 %) |
+| Runs (the other recordings) | 23 calls (`runs/h1` 16, `runs/p2` 3, `runs/g1` 2 and 1 more) |
 | Called from | `HiScoreEntry`, `HiScoreFindSlot` |
-| Reads | `$888C`-`$88AB` (`HeroesTable+38`); `$88C2`-`$88C3` (`GreatestScore`); `$89D6`-`$89D8` (`AllTimeTable+269`); `$B272`-`$B275` (`PlayerScore`) |
+| Reads | `$8869`-`$88AB` (`HeroesTable+3`); `$88C2`-`$88C3` (`GreatestScore`); `$89CF`-`$89D9` (`AllTimeTable+262`); `$B272`-`$B275` (`PlayerScore`) |
 
 ## gamestart
 
@@ -658,6 +707,7 @@ Witness: game 5 runs (1448-16318), a1 1 (1314), g1 1 (153), p2 1 (334), h1 1 (15
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 5 calls, 13,401 t-states own (0.00 %) |
+| Runs (the other recordings) | 6 calls (`runs/p2` 1, `runs/h1` 1, `runs/g1` 1 and 3 more) |
 | Called from | `MenuCheckStart` (tail) |
 | Calls | `HeroesPage` (tail), `HiScoreEntry`, `PlayerSwap`, `Wait100Frames`, `ClearScreen`, `LifePlay`, `ClearCells`, `PrintChar`, `PrintText` |
 | Reads | `$B257`-`$B258` (`Players`, `Course`); `$B271` (`Player`); `$B283`-`$B288` (`PlayerActive`, `PlayerLives`, `PlayerTime`, `PlayerFrames` and 1 more) |
@@ -676,6 +726,7 @@ Witness: game 19 runs, a1 2, g1 4, p2 8, h1 4, h2 1 (the immune runs never die).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/h2`) |
+| Calls | `HiScoreEntry`, `PlayerSwap`, `Wait100Frames`, `ClearCells`, `PrintText` |
 
 ### `PlayerSwap` (`$9022`)
 
@@ -688,7 +739,8 @@ Witness: game 100 runs (1448-16320), a1 16, g1 22, p2 30, h1 22, i1 28, i2 28, h
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 100 calls, 176,426 t-states own (0.02 %) |
-| Called from | `GameStart`, `HudDraw` |
+| Runs (the other recordings) | 150 calls (`runs/p2` 30, `runs/i1` 28, `runs/i2` 28 and 4 more) |
+| Called from | `GameStart`, `GameAfterLife`, `HudDraw` |
 | Reads | `$B271`-`$B2C1` (`Player`, `OtherPlayer`, `SwapBuffer`) |
 | Writes | `$B271`-`$B2C1` (`Player`, `OtherPlayer`, `SwapBuffer`) |
 
@@ -703,7 +755,8 @@ Witness: game 28 runs (1452-16316), a1 3, g1 6, p2 28, h1 6, i1 6, i2 6, h2 2. T
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 28 calls, 192,068,004 t-states own (16.65 %) |
-| Called from | `GameStart` |
+| Runs (the other recordings) | 57 calls (`runs/p2` 28, `runs/i2` 6, `runs/i1` 6 and 4 more) |
+| Called from | `GameStart`, `GameAfterLife`, `SectorBonus` |
 | Reads | `$9041` (`Wait100Loop+1`) |
 
 ### `ClearScreen` (`$9044`)
@@ -717,7 +770,8 @@ Called by the entry `$8000`, the title and menus (`$8064`, `$81D0`, `$825A`), th
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 49 calls, 9,158,698 t-states own (0.79 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesPage`, `HiScoreEntry`, `GameStart` |
+| Runs (the other recordings) | 126 calls (`runs/a1` 52, `runs/p2` 19, `runs/i2` 14 and 5 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesPage`, `HiScoreEntry`, `GameStart`, `SectorBonus` |
 | Reads | `$4000`-`$5AFF` (screen) |
 | Writes | `$4000`-`$5B00` (screen); `$5C48` (system); `$5C8D` (system); `$5CC6` (system) |
 | Ports out | `$00FE` |
@@ -731,6 +785,7 @@ Witness: game 20 runs (1554-16323), a1 3, g1 4, p2 8, h1 4, i1 1, i2 1.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 870 t-states own (0.00 %) |
+| Runs (the other recordings) | 21 calls (`runs/p2` 8, `runs/g1` 4, `runs/h1` 4 and 3 more) |
 | Called from | `GameStart` |
 | Calls | `LifeStart`, `MainLoop` |
 
@@ -755,7 +810,8 @@ Called by LifePlay, the title's demo `$8064` and the bonus screen `$A4EE` (after
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 17,915 t-states own (0.00 %) |
-| Called from | `LifePlay` |
+| Runs (the other recordings) | 32 calls (`runs/p2` 8, `runs/i2` 6, `runs/i1` 6 and 3 more) |
+| Called from | `OptionsPage`, `LifePlay`, `SectorBonus` |
 | Calls | `HudDraw`, `ScenerySetup`, `SceneryColours`, `SetIm2`, `DrawSprite`, `PrintText` |
 | Reads | `$9681`-`$9695` (`ShotBoxes`) |
 | Writes | `$5B60`-`$5B74` (system); `$B212`-`$B240` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 30 more); `$B27E` (`PlayerLights`) |
@@ -773,10 +829,11 @@ Called by LifeStart, the hi-score entry `$8B8F`, the bonus screen `$A4EE` and th
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 93,771 t-states own (0.01 %) |
-| Called from | `HiScoreEntry`, `LifeStart` |
+| Runs (the other recordings) | 48 calls (`runs/i2` 12, `runs/i1` 12, `runs/p2` 9 and 4 more) |
+| Called from | `HiScoreEntry`, `LifeStart`, `SectorBonus`, `BeginnerToChampion`, `ChampionToBeginner` |
 | Calls | `PlayerSwap`, `HudPrintTime`, `HudPrintPoint`, `HudPrintPointLetter`, `HudLives`, `HudLamps`, `HudProgress`, `HudPrintScore`, `PrintBcd4`, `ClearCells`, `BlitRows`, `PrintChar`, `PrintText` |
-| Reads | `$88AC` (`GreatestPoint`); `$9469`-`$9480` (`HudPlayerIcon`, `HudLampGlyph`); `$9621`-`$9680` (`HudAttributes`); `$B257` (`Players`); `$B27C` (`PlayerPoint`) |
-| Writes | `$4000`-`$4001` (screen); `$401B`-`$405B` (screen); `$4100`-`$4101` (screen); `$411B`-`$415B` (screen); `$4200`-`$4201` (screen); `$421B`-`$425B` (screen); 12 more ranges |
+| Reads | `$4020`-`$4041` (screen); `$4120`-`$4141` (screen); `$4220`-`$4241` (screen); `$4320`-`$4341` (screen); `$4420`-`$4441` (screen); `$4520`-`$4541` (screen); 7 more ranges |
+| Writes | `$4000`-`$4101` (screen); `$411B`-`$415B` (screen); `$4200`-`$4201` (screen); `$421B`-`$425B` (screen); `$4300`-`$4301` (screen); `$431B`-`$435B` (screen); 10 more ranges |
 
 ### `HudPrintTime` (`$922A`)
 
@@ -789,6 +846,7 @@ Called once a main-loop pass (`$96FA`) and by HudDraw. Witness: game 1597 runs, 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,597 calls, 74,664 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,566 calls (`runs/i2` 3,947, `runs/i1` 3,613, `runs/p2` 673 and 4 more) |
 | Called from | `HudDraw`, `MainLoopCalls` |
 | Calls | `PrintBcd`, `ClearCells` |
 | Reads | `$B239` (`TimeShown`) |
@@ -805,7 +863,8 @@ Called by HudDraw and when a point is passed (ObjPoint `$9980`). Witness: game 2
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 1,554 t-states own (0.00 %) |
-| Called from | `HudDraw` |
+| Runs (the other recordings) | 100 calls (`runs/i2` 39, `runs/i1` 37, `runs/p2` 9 and 4 more) |
+| Called from | `HudDraw`, `ObjPoint` |
 | Calls | `HudPrintPointLetter`, `ClearCells`, `PrintText` |
 | Reads | `$B27C` (`PlayerPoint`) |
 
@@ -818,7 +877,8 @@ A AND `$1F`, then `$40` added, plus 1 from 15 on: 1-14 are A-N, 15-25 are P-Z ('
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 88 calls, 4,576 t-states own (0.00 %) |
-| Called from | `HudDraw`, `HudPrintPoint`, `HudPrintScore` (tail) |
+| Runs (the other recordings) | 1,037 calls (`runs/i2` 519, `runs/i1` 382, `runs/p2` 52 and 4 more) |
+| Called from | `HudDraw`, `HudPrintPoint`, `HudPrintScore` (tail), `SectorBonus` |
 | Calls | `PrintChar` |
 
 ### `HudLives` (`$9263`)
@@ -830,7 +890,8 @@ Four pairs of cells on row 0 (columns 10-17, the icons of HudPanel): a pair whos
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 6,570 t-states own (0.00 %) |
-| Called from | `HudDraw` |
+| Runs (the other recordings) | 53 calls (`runs/i2` 15, `runs/i1` 14, `runs/p2` 9 and 4 more) |
+| Called from | `HudDraw`, `ScoreAddBcd` |
 | Reads | `$B284` (`PlayerLives`) |
 | Writes | `$580A`-`$5811` (screen) |
 
@@ -843,7 +904,8 @@ The pattern is HudLampColours + 15 x (`$B27E` AND 3): column 27 the lamp, column
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 17,940 t-states own (0.00 %) |
-| Called from | `HudDraw` |
+| Runs (the other recordings) | 101 calls (`runs/i2` 41, `runs/i1` 36, `runs/p2` 9 and 4 more) |
+| Called from | `HudDraw`, `ObjLamps` |
 | Reads | `$942D`-`$943B` (`HudLampColours`); `$B27E` (`PlayerLights`) |
 | Writes | `$581B`-`$581F` (screen); `$583B`-`$583F` (screen); `$585B`-`$585F` (screen) |
 
@@ -856,7 +918,9 @@ Nothing at point 0. Uses HudPlot `$92CD` (the OR plot `$FD80`, H = x, L = y). Ca
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 651 t-states own (0.00 %) |
-| Called from | `HudDraw` |
+| Runs (the other recordings) | 100 calls (`runs/i2` 39, `runs/i1` 37, `runs/p2` 9 and 4 more) |
+| Called from | `HudDraw`, `ObjPoint` |
+| Calls | `HudPlot` |
 | Reads | `$B27C` (`PlayerPoint`) |
 
 ### `HudPlot` (`$92CD`)
@@ -868,6 +932,8 @@ Witness: i1 1900 runs, i2 1912 (only from HudProgress, no dots at point 0).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 3,812 calls (`runs/i2` 1,912, `runs/i1` 1,900) |
+| Called from | `HudProgress` |
+| Calls | `PlotPixel` |
 
 ### `ScoreAdd` (`$92D3`)
 
@@ -882,7 +948,8 @@ Witness: game 25 runs (2029-16149), a1 4, g1 16, p2 16, h1 16, i1 291, i2 424, h
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 25 calls, 1,100 t-states own (0.00 %) |
-| Called from | `ObjRock`, `ObjCrater`, `BuggyKill` |
+| Runs (the other recordings) | 770 calls (`runs/i2` 424, `runs/i1` 291, `runs/g1` 16 and 4 more) |
+| Called from | `ObjRock`, `ObjCrater`, `ObjMine`, `UfoHandler`, `UfoBombHandler`, `TankHandler`, `TankShellHandler`, `LowFlyerHandler`, `BoulderHandler`, `PlantHandler`, `SectorBonus`, `BuggyKill` |
 | Calls | `HudPrintScore`, `ScoreAddBcd` |
 
 ### `HudPrintScore` (`$92DA`)
@@ -894,7 +961,8 @@ E = y: `$11` (row 2), or 9 (row 1) for player 1 of a two-player game; the record
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 67 calls, 10,737 t-states own (0.00 %) |
-| Called from | `HudDraw`, `ScoreAdd` |
+| Runs (the other recordings) | 918 calls (`runs/i2` 475, `runs/i1` 340, `runs/p2` 34 and 4 more) |
+| Called from | `HudDraw`, `ScoreAdd`, `ObjPoint` |
 | Calls | `HudPrintPointLetter` (tail), `HudPrintScoreDigits`, `ClearCells`, `PrintChar` |
 | Reads | `$B257` (`Players`); `$B271`-`$B27C` (`Player`, `PlayerScore`, `PlayerNextLife`, `PlayerCourse` and 1 more) |
 
@@ -909,7 +977,9 @@ Witness: game 25 runs, i1 291, i2 424; the extra life (`$9344-$935D`) i1 2, i2 3
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 25 calls, 6,320 t-states own (0.00 %) |
+| Runs (the other recordings) | 770 calls (`runs/i2` 424, `runs/i1` 291, `runs/g1` 16 and 4 more) |
 | Called from | `ScoreAdd` |
+| Calls | `HudLives` |
 | Reads | `$B272`-`$B277` (`PlayerScore`, `PlayerNextLife`) |
 | Writes | `$B272`-`$B275` (`PlayerScore`) |
 
@@ -922,6 +992,7 @@ Witness: game 46 runs, i1 328, i2 463.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 46 calls, 460 t-states own (0.00 %) |
+| Runs (the other recordings) | 879 calls (`runs/i2` 463, `runs/i1` 328, `runs/p2` 34 and 4 more) |
 | Called from | `HudPrintScore` |
 | Calls | `PrintBcd4` |
 
@@ -934,6 +1005,7 @@ Also called by the hi-score tables (`$8A4C`, `$8A96`, `$8AE0`) and HudDraw. Witn
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 267 calls, 1,869 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,077 calls (`runs/i2` 475, `runs/i1` 340, `runs/a1` 112 and 4 more) |
 | Called from | `HeroesPrintRow`, `AllTimePrintRow`, `HeroesDrawTables`, `HudDraw`, `HudPrintScoreDigits` |
 | Calls | `PrintBcd` |
 
@@ -946,7 +1018,8 @@ Each digit goes out as `$16` x y and the character through `$FDCC`. Called by Pr
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 711 calls, 418,246 t-states own (0.04 %) |
-| Called from | `HeroesPrintRow`, `AllTimePrintRow`, `HudPrintTime`, `PrintBcd4` |
+| Runs (the other recordings) | 2,964 calls (`runs/i2` 1,248, `runs/i1` 1,017, `runs/a1` 255 and 4 more) |
+| Called from | `HeroesPrintRow`, `AllTimePrintRow`, `HudPrintTime`, `PrintBcd4`, `SectorBonus` |
 | Calls | `PrintChar` |
 | Reads | `$8869`-`$88AB` (`HeroesTable+3`); `$88C2`-`$89D9` (`GreatestScore`, `GreatestInitials`, `AllTimeTable`); `$B256` (`TableRow`); `$B272`-`$B286` (`PlayerScore`, `PlayerNextLife`, `PlayerCourse`, `PlayerPoint` and 7 more) |
 
@@ -959,8 +1032,9 @@ Witness: game 345 runs, a1 61, g1 104, p2 156, h1 104, i1 1035, i2 1268, h2 15.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 345 calls, 346,897 t-states own (0.03 %) |
-| Called from | `HiScoreEntry`, `GameStart`, `HudDraw`, `HudPrintTime`, `HudPrintPoint`, `HudPrintScore` |
-| Writes | `$4000`-`$4873` (screen); `$494C`-`$4973` (screen); `$4A4C`-`$4A73` (screen); `$4B4C`-`$4B73` (screen); `$4C4C`-`$4C73` (screen); `$4D4C`-`$4D73` (screen); 2 more ranges |
+| Runs (the other recordings) | 2,743 calls (`runs/i2` 1,268, `runs/i1` 1,035, `runs/p2` 156 and 4 more) |
+| Called from | `HiScoreEntry`, `GameStart`, `GameAfterLife`, `HudDraw`, `HudPrintTime`, `HudPrintPoint`, `HudPrintScore`, `SectorBonus`, `BeginnerToChampion`, `ChampionToBeginner` |
+| Writes | `$4000`-`$4876` (screen); `$4949`-`$4976` (screen); `$4A49`-`$4A76` (screen); `$4B49`-`$4B76` (screen); `$4C49`-`$4C76` (screen); `$4D49`-`$4D76` (screen); 2 more ranges |
 
 ### `ScenerySetup` (`$9541`)
 
@@ -973,7 +1047,8 @@ Called by LifeStart and the title `$8064` (with `$B27D` = `$FF`). Witness: game 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 19,240 t-states own (0.00 %) |
-| Called from | `LifeStart` |
+| Runs (the other recordings) | 53 calls (`runs/a1` 24, `runs/p2` 8, `runs/i2` 6 and 4 more) |
+| Called from | `OptionsPage`, `LifeStart` |
 | Calls | `SceneryDrawRows` |
 | Reads | `$B22C`-`$B22D` (`MiddleStart`); `$B27D` (`PlayerScenery`) |
 | Writes | `$5080`-`$509F` (screen); `$B224`-`$B22F` (`FarCountdown`, `HillsSpeed`, `FarColumn`, `MiddleCountdown` and 4 more) |
@@ -987,8 +1062,9 @@ Witness: game 40 runs, i1 12 (two calls each ScenerySetup).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 40 calls, 1,917,788 t-states own (0.17 %) |
+| Runs (the other recordings) | 106 calls (`runs/a1` 48, `runs/p2` 16, `runs/i2` 12 and 4 more) |
 | Called from | `ScenerySetup` |
-| Reads | `$E340`-`$E73F` (`MountainsStrip`); `$EBC0`-`$EFBF` (`HillsStrip`) |
+| Reads | `$E340`-`$E73F` (`MountainsStrip`); `$E780`-`$EB7F` (`MoonBaseStrip`); `$EBC0`-`$EFBF` (`HillsStrip`) |
 | Writes | `$4800`-`$4FFF` (screen) |
 
 ### `SceneryColours` (`$95B0`)
@@ -1000,10 +1076,11 @@ Witness: game 40 runs, i1 12 (two calls each ScenerySetup).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 248,832 t-states own (0.02 %) |
-| Called from | `LifeStart` |
+| Runs (the other recordings) | 53 calls (`runs/a1` 24, `runs/p2` 8, `runs/i1` 6 and 4 more) |
+| Called from | `OptionsPage`, `LifeStart` |
 | Calls | `SceneryColoursRepaint` |
-| Reads | `$5860`-`$58FF` (screen); `$5980`-`$5ABF` (screen); `$9617`-`$961B` (`SceneryColourSets`); `$B27D` (`PlayerScenery`) |
-| Writes | `$5860`-`$5900` (screen); `$5980`-`$5AC0` (screen); `$B230`-`$B231` (`ColourScheme`) |
+| Reads | `$5860`-`$5AFF` (screen); `$9617`-`$9620` (`SceneryColourSets`); `$B230`-`$B231` (`ColourScheme`); `$B27D` (`PlayerScenery`) |
+| Writes | `$5860`-`$5B00` (screen); `$B230`-`$B231` (`ColourScheme`) |
 
 ### `SceneryColoursRepaint` (`$95F2`)
 
@@ -1014,8 +1091,9 @@ Called once a pass from MainLoopCalls `$96FA` (so the colours the sprites leave 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,596 calls, 8,333,974 t-states own (0.72 %) |
+| Runs (the other recordings) | 9,567 calls (`runs/i2` 3,940, `runs/i1` 3,606, `runs/p2` 672 and 4 more) |
 | Called from | `SceneryColours`, `MainLoopCalls` |
-| Reads | `$5900`-`$597E` (screen); `$5AC0`-`$5AFF` (screen); `$9618`-`$961B` (`SceneryColourSets+1`); `$B230`-`$B231` (`ColourScheme`) |
+| Reads | `$5900`-`$597E` (screen); `$5AC0`-`$5AFF` (screen); `$9618`-`$9620` (`SceneryColourSets+1`); `$B230`-`$B231` (`ColourScheme`) |
 | Writes | `$5900`-`$597F` (screen); `$5AC0`-`$5B00` (screen) |
 
 ## course
@@ -1035,7 +1113,8 @@ One pass has no frame sync: 3601 passes in about 30 175 frames of i1 (WALKTHROUG
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 206,769 t-states own (0.02 %) |
-| Called from | `LifePlay` |
+| Runs (the other recordings) | 33 calls (`runs/p2` 8, `runs/i2` 7, `runs/i1` 7 and 3 more) |
+| Called from | `LifePlay`, `SectorBonus` (tail), `BeginnerToChampion` (tail), `ChampionToBeginner` (tail) |
 | Calls | `MainLoopCalls`, `CourseRun`, `SetIm1`, `DrawSprite` |
 | Reads | `$B212`-`$B216` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 1 more); `$B23B`-`$B23D` (`PassCount`, `SegmentWait`); `$B261`-`$B262` (`ObjectWrite`); `$B27A`-`$B280` (`PlayerCourse`, `PlayerPoint`, `PlayerScenery`, `PlayerLights` and 1 more) |
 | Writes | `$B216`-`$B217` (`DeathStep`, `WreckStep`); `$B238`-`$B23D` (`ObjectsOff`, `TimeShown`, `TapeKey`, `PassCount` and 1 more); `$B25F`-`$B262` (`LoopStack`, `ObjectWrite`); `$B27A`-`$B282` (`PlayerCourse`, `PlayerPoint`, `PlayerScenery`, `PlayerLights` and 2 more) |
@@ -1047,6 +1126,7 @@ One pass has no frame sync: 3601 passes in about 30 175 frames of i1 (WALKTHROUG
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/h2`) |
+| Calls | `MainLoopCalls`, `SetIm1`, `DrawSprite` |
 
 ### `MainLoopCalls` (`$96FA`)
 
@@ -1059,7 +1139,8 @@ Called by MainLoopPass and the title's demo `$8064`. Witness: game 1576 runs (15
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 551,634 t-states own (0.05 %) |
-| Called from | `MainLoop` |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
+| Called from | `OptionsPage`, `MainLoop`, `MainLoopPass` |
 | Calls | `HudPrintTime`, `SceneryColoursRepaint`, `BreakKeyTest`, `ObjectListRun`, `ScrollFarBand`, `ScrollMiddleBand`, `ScrollNearBand`, `ScrollRoad`, `BuggyUpdate`, `BuggyErase`, `WheelsFly`, `FireShots`, `ShotsMove`, `HoldCheck`, `TuneToggleCheck`, `SpeedGovernor` |
 
 ### `BreakKeyTest` (`$9737`)
@@ -1071,6 +1152,7 @@ IN of port `$EFFE`, OR `$FE`, INC A: Z when '0' is up. MainLoopCalls never tests
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 68,603 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Ports in | `$EFFE` |
 
@@ -1083,6 +1165,7 @@ IN of port `$EFFE`, OR `$FE`, INC A: Z when '0' is up. MainLoopCalls never tests
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 93,098 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,516 calls (`runs/i2` 3,934, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `CourseRun` |
 | Reads | `$B238` (`ObjectsOff`) |
@@ -1100,8 +1183,9 @@ Witness: game 8038 runs, a1 967, g1 2799, p2 3352, h1 2799, i1 89827, i2 123263,
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 8,038 calls, 643,344 t-states own (0.06 %) |
-| Called from | `MainLoop`, `ObjectListRun`, `SegmentLength`, `CmdPoint`, `CmdLamps`, `CmdRocks`, `CmdCraters`, `CmdUfos`, `ObjPoint`, `ObjLamps`, `ObjRockDone`, `ObjCraterDone`, `UfoRecordSkip` |
-| Calls | `ListStop`, `SegmentEnd`, `SegmentLength`, `CmdPoint`, `CmdLamps`, `CmdRocks`, `CmdCraters`, `CmdUfos1`, `CmdUfos5`, `ObjPoint`, `ObjLamps`, `ObjRock`, `ObjRockExplode`, `ObjRockDone`, `ObjCrater`, `ObjCraterDone`, `UfoHandler` |
+| Runs (the other recordings) | 223,207 calls (`runs/i2` 123,263, `runs/i1` 89,827, `runs/p2` 3,352 and 4 more) |
+| Called from | `MainLoop`, `ObjectListRun`, `SegmentLength`, `CmdPoint`, `CmdLamps`, `CmdRocks`, `CmdCraters`, `CmdMines`, `CmdUfos`, `CmdUfosLeave`, `CmdTanks`, `CmdFlyers`, `CmdBoulders`, `CmdPlants`, `ObjPoint`, `ObjPointDone`, `ObjLamps`, `ObjLampsDone`, `ObjRockDone`, `ObjCraterDone`, `ObjMineDone`, `UfoBombHandler`, `UfoRecordSkip`, `UfoRetreatSkip`, `TankShellHandler`, `TankRecordSkip`, `LowFlyerRecordSkip`, `BoulderRecordSkip`, `PlantRecordSkip` |
+| Calls | `ListStop`, `SegmentEnd`, `SegmentLength`, `CmdPoint`, `CmdLamps`, `CmdRocks`, `CmdCraters`, `CmdMines`, `CmdUfos1`, `CmdUfos5`, `CmdUfos11`, `CmdUfosLeave`, `CmdTanks`, `CmdFlyers`, `CmdBoulders40`, `CmdBoulders44`, `CmdBoulders4C`, `CmdPlants`, `ObjPoint`, `ObjPointDone`, `ObjLamps`, `ObjLampsDone`, `ObjRock`, `ObjRockExplode`, `ObjRockDone`, `ObjCrater`, `ObjCraterDone`, `ObjMine`, `ObjMineDone`, `UfoHandler`, `UfoExplodeHandler`, `UfoBombHandler`, `UfoRecordSkip`, `UfoRetreatTimer`, `UfoRetreatSkip`, `TankHandler`, `TankExplodeHandler`, `TankShellHandler`, `LowFlyerHandler`, `LowFlyerExplodeHandler`, `LowFlyerRecordSkip`, `BoulderHandler`, `BoulderExplodeHandler`, `BoulderRecordSkip`, `PlantHandler`, `PlantExplodeHandler`, `PlantRecordSkip`, `SectorBonus`, `BeginnerToChampion`, `ChampionToBeginner` |
 | Reads | `$B7E8`-`$B810` (`BeginnerCourse`, `BeginnerPointA`); `$BEF8`-`$BF19` (`ObjectList`); `$BF2C`-`$BF2D` (`ObjectList+52`); `$BF40`-`$BF41` (`ObjectList+72`); `$BF54`-`$BF55` (`ObjectList+92`); `$BF68`-`$BF69` (`ObjectList+112`) |
 
 ### `ListStop` (`$975E`)
@@ -1113,6 +1197,7 @@ The word `$975E` ends the object list (SegmentEnd writes it). Witness: game 1598
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 22 calls, 31,960 t-states own (0.00 %) |
+| Runs (the other recordings) | 88 calls (`runs/i2` 34, `runs/i1` 31, `runs/p2` 8 and 3 more) |
 | Called from | `CourseRun`, `SegmentEnd` (tail) |
 
 ### `SegmentEnd` (`$9760`)
@@ -1124,6 +1209,7 @@ DE is not advanced: the next segment's objects go over the end word. Witness: ga
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,188 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/p2` and 3 more) |
 | Called from | `CourseRun` |
 | Calls | `ListStop` (tail) |
 | Writes | `$BF10`-`$BF11` (`ObjectList+24`); `$BF68`-`$BF69` (`ObjectList+112`) |
@@ -1137,6 +1223,7 @@ Every segment starts with it: `$7F` (127) passes, 63 or 64 in the short point se
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,232 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/p2` and 3 more) |
 | Called from | `CourseRun` |
 | Calls | `CourseRun` |
 | Reads | `$B7EA`-`$B7FB` (`BeginnerCourse+2`, `BeginnerPointA`) |
@@ -1153,6 +1240,7 @@ Witness: game 2 runs (8345-16173), g1 2, h1 2, i1 25 (A 1123 ... Z 28136: every 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,074 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
 | Calls | `CourseRun`, `PrintChar`, `PrintText` |
 | Reads | `$50DF` (screen); `$51DF` (screen); `$52DF` (screen); `$53DF` (screen); `$54DF` (screen); `$55DF` (screen); 3 more ranges |
@@ -1167,6 +1255,7 @@ Record: `$99A3`, the delay, the lamp value (0-3, HudLamps). Each point segment s
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 328 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
 | Calls | `CourseRun` |
 | Reads | `$B802`-`$B804` (`BeginnerPointA+10`) |
@@ -1181,6 +1270,7 @@ Record (8 bytes): `$99C3`, the delay, sprite `$0F`, y `$94`, x `$F4` (off the ri
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 7,720 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/p2` and 3 more) |
 | Called from | `CourseRun` |
 | Calls | `CourseRun` |
 | Reads | `$B7F3`-`$B7F5` (`BeginnerCourse+11`) |
@@ -1195,6 +1285,7 @@ Record (4 bytes): `$9A92`, the delay, x 0 (the right edge, before the first move
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 5,160 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/p2` and 3 more) |
 | Called from | `CourseRun` |
 | Calls | `CourseRun` |
 | Reads | `$B7EE`-`$B7F0` (`BeginnerCourse+6`) |
@@ -1209,6 +1300,8 @@ Record (6 bytes): `$9AEB`, the delay, the phase (`$00` or `$80`; the sprite goes
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `CourseRun` |
 
 ### `CmdUfos1` (`$9821`)
 
@@ -1219,6 +1312,7 @@ A' = 1 the type, `$B236` = 0; on at CmdUfos `$9832`. Witness: game 2, g1 2, h1 2
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 54 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
 | Calls | `CmdUfos` (tail) |
 
@@ -1231,6 +1325,7 @@ Witness: game 2, g1 2, h1 2, i1 10, i2 10.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 54 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
 | Calls | `CmdUfos` (tail) |
 
@@ -1243,6 +1338,8 @@ Witness: i1 6 (3828-27176: points D, H, M, T, X, Y), i2 7. The lamp set with the
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `CmdUfos` |
 
 ### `CmdUfos` (`$9832`)
 
@@ -1255,7 +1352,8 @@ Witness: game 4 runs, g1 4, h1 4, i1 26, i2 27; the cap to y `$30` (`$9868`) i1 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4 calls, 4,423 t-states own (0.00 %) |
-| Called from | `CmdUfos1` (tail), `CmdUfos5` (tail) |
+| Runs (the other recordings) | 61 calls (`runs/i2` 27, `runs/i1` 26, `runs/g1` 4 and 1 more) |
+| Called from | `CmdUfos1` (tail), `CmdUfos5` (tail), `CmdUfos11` |
 | Calls | `CourseRun` |
 | Reads | `$5C78` (system); `$B236` (`UfoWave`); `$B807`-`$B80E` (`BeginnerPointA+15`) |
 | Writes | `$B236` (`UfoWave`); `$BF18`-`$BF67` (`ObjectList+32`) |
@@ -1269,6 +1367,8 @@ Record (3 bytes): `$9EA5`, the delay. `$9EA5` (annotator 03) sets `$B237` = `$FF
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `CourseRun` |
 
 ### `CmdTanks` (`$98BE`)
 
@@ -1279,6 +1379,8 @@ Record: `$9EBD`, the delay, `$13`, `$8F`, `$E7`, `$11`, `$14`, `$08`, `$00`, `$9
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `CourseRun` |
 
 ### `CmdFlyers` (`$98F3`)
 
@@ -1289,6 +1391,8 @@ Record (9 bytes): `$A03B`, the delay, `$14`, (+4 not written), y `$91`, x 0 (fro
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `CourseRun` |
 
 ### `CmdBoulders40` (`$9917`)
 
@@ -1299,6 +1403,8 @@ Witness: i2 3 runs (3117-28218).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `CmdBoulders` (tail) |
 
 ### `CmdBoulders44` (`$991C`)
 
@@ -1309,6 +1415,8 @@ Witness: i2 5 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `CmdBoulders` (tail) |
 
 ### `CmdBoulders4C` (`$9921`)
 
@@ -1319,6 +1427,8 @@ Witness: i2 5 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `CmdBoulders` |
 
 ### `CmdBoulders` (`$9924`)
 
@@ -1329,6 +1439,8 @@ Size s = sprite - `$38` (- 4 more for `$4C`): 8, 12, 16. Record: `$A196`, the de
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 13 calls (`runs/i2` 13) |
+| Called from | `CmdBoulders40` (tail), `CmdBoulders44` (tail), `CmdBoulders4C` |
+| Calls | `CourseRun` |
 
 ### `CmdPlants` (`$9955`)
 
@@ -1339,6 +1451,8 @@ Record (8 bytes): `$A2C6`, the delay, 0, y `$90`, x `$E4`, 0, 0. Witness: i2 8 r
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `CourseRun` |
 
 ### `ObjPoint` (`$9978`)
 
@@ -1349,8 +1463,9 @@ HL = the delay. When out: `$B27C` = the point byte, the restart pointer `$B27F` 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 693 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
-| Calls | `CourseRun` |
+| Calls | `HudPrintPoint`, `HudProgress`, `HudPrintScore`, `CourseRun`, `ObjPointDone` |
 | Reads | `$BF12` (`ObjectList+26`) |
 | Writes | `$BF12` (`ObjectList+26`) |
 
@@ -1363,6 +1478,8 @@ Witness: i1 7930 runs (1595 entries from ObjPoint's word), i2 8495.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 3,381 calls (`runs/i2` 1,786, `runs/i1` 1,595) |
+| Called from | `CourseRun`, `ObjPoint` |
+| Calls | `CourseRun` |
 
 ### `ObjLamps` (`$99A3`)
 
@@ -1373,8 +1490,9 @@ The unmatched handler of stage 1: no enemy, the HUD's three lamps (HudLamps `$92
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 693 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
-| Calls | `CourseRun` |
+| Calls | `HudLamps`, `CourseRun`, `ObjLampsDone` |
 | Reads | `$BF16` (`ObjectList+30`) |
 | Writes | `$BF16` (`ObjectList+30`) |
 
@@ -1387,6 +1505,8 @@ Witness: i1 7278 runs, i2 10082.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,726 calls (`runs/i1` 885, `runs/i2` 841) |
+| Called from | `CourseRun`, `ObjLamps` |
+| Calls | `CourseRun` |
 
 ### `ObjRock` (`$99C3`)
 
@@ -1399,6 +1519,7 @@ The rock of the SCORE ADVANCE TABLE (100 / 80) and of NOTES' candidate 97C5: the
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 325,743 t-states own (0.03 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/p2` and 4 more) |
 | Called from | `CourseRun` |
 | Calls | `ScoreAdd`, `ObjRockExplode`, `ObjRockNext` (tail), `ObjRockDone` (tail), `ObjRockRemove` (tail), `BuggyKill`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 | Reads | `$B213`-`$B216` (`BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth`, `DeathStep`); `$B235` (`GroundSpeed`); `$BF02`-`$BF0D` (`ObjectList+10`) |
@@ -1413,10 +1534,11 @@ Erases the previous frame (none after `$2A`), moves with the scroll while the bu
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 2,212 t-states own (0.00 %) |
+| Runs (the other recordings) | 59 calls (`runs/i2` 28, `runs/i1` 17, `runs/p2` 4 and 4 more) |
 | Called from | `CourseRun`, `ObjRock` |
-| Calls | `ObjRockRemove` (tail), `DrawSprite`, `ScrollAdjustIfAlive` |
-| Reads | `$B216` (`DeathStep`); `$B235` (`GroundSpeed`); `$BF03`-`$BF05` (`ObjectList+11`) |
-| Writes | `$BF03`-`$BF05` (`ObjectList+11`) |
+| Calls | `ObjRockDone` (tail), `ObjRockRemove` (tail), `DrawSprite`, `ScrollAdjustIfAlive` |
+| Reads | `$B216` (`DeathStep`); `$B235` (`GroundSpeed`); `$BF03`-`$BF0D` (`ObjectList+11`) |
+| Writes | `$BF00`-`$BF0B` (`ObjectList+8`) |
 
 ### `ObjRockNext` (`$9A80`)
 
@@ -1427,6 +1549,7 @@ Reached by a jump from ObjRockMiss and by falling in from ObjRockExplode; an ent
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 526 calls, 5,340 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,460 calls (`runs/i2` 1,526, `runs/i1` 1,103, `runs/g1` 257 and 4 more) |
 | Called from | `ObjRock` (tail) |
 | Calls | `ObjRockDone` |
 
@@ -1439,7 +1562,8 @@ Witness: i1 12370 runs, i2 13379.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,068 calls, 97,807 t-states own (0.01 %) |
-| Called from | `CourseRun`, `ObjRock` (tail), `ObjRockNext`, `ObjRockRemove` (tail) |
+| Runs (the other recordings) | 11,089 calls (`runs/i2` 4,401, `runs/i1` 3,148, `runs/p2` 1,312 and 4 more) |
+| Called from | `CourseRun`, `ObjRock` (tail), `ObjRockExplode` (tail), `ObjRockNext`, `ObjRockRemove` (tail) |
 | Calls | `CourseRun` |
 
 ### `ObjRockRemove` (`$9A86`)
@@ -1451,9 +1575,10 @@ Witness: game 3 runs, a1 1, g1 6, p2 4, h1 6, i1 25, i2 37.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3 calls, 210 t-states own (0.00 %) |
+| Runs (the other recordings) | 74 calls (`runs/i2` 37, `runs/i1` 25, `runs/g1` 6 and 1 more) |
 | Called from | `ObjRock` (tail), `ObjRockExplode` (tail) |
 | Calls | `ObjRockDone` (tail) |
-| Writes | `$BF00`-`$BF01` (`ObjectList+8`) |
+| Writes | `$BF00`-`$BF09` (`ObjectList+8`) |
 
 ### `ObjCrater` (`$9A92`)
 
@@ -1466,6 +1591,7 @@ The crater of the SCORE ADVANCE TABLE (100 jumped) and of NOTES' candidate 97E8:
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 271,867 t-states own (0.02 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/p2` and 4 more) |
 | Called from | `CourseRun` |
 | Calls | `ScoreAdd`, `ObjCraterDone` |
 | Reads | `$B213`-`$B216` (`BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth`, `DeathStep`); `$B235` (`GroundSpeed`); `$BEFA`-`$BEFF` (`ObjectList+2`) |
@@ -1480,6 +1606,7 @@ Witness: i1 18646 runs, i2 10593.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,039 calls, 69,344 t-states own (0.01 %) |
+| Runs (the other recordings) | 11,638 calls (`runs/i1` 5,432, `runs/i2` 2,857, `runs/p2` 1,288 and 4 more) |
 | Called from | `CourseRun`, `ObjCrater` |
 | Calls | `CourseRun` |
 
@@ -1494,6 +1621,8 @@ The mines of the SCORE ADVANCE TABLE (50) and of NOTES: only in the segments aft
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `ScoreAdd`, `ObjMineDone`, `UnplotRun`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `ObjMineDone` (`$9B5A`)
 
@@ -1504,6 +1633,8 @@ Witness: i1 10169 runs, i2 19731.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 6,753 calls (`runs/i2` 4,455, `runs/i1` 2,298) |
+| Called from | `CourseRun`, `ObjMine` |
+| Calls | `CourseRun` |
 
 ## objects
 
@@ -1524,8 +1655,9 @@ Witness: game 44 runs, g1 / h1 204 (only the wait: no UFO reached the screen in 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,716 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i1`, `runs/i2`, `runs/g1` and 1 more) |
 | Called from | `CourseRun` |
-| Calls | `UfoRecordSkip` (tail) |
+| Calls | `ScoreAdd`, `UfoExplodeHandler`, `UfoBombPart` (tail), `UfoRecordSkip` (tail), `UfoSaucerGone` (tail), `UfoSetColour`, `BoxOverlap`, `DrawSprite` |
 | Reads | `$BF1A` (`ObjectList+34`); `$BF2E` (`ObjectList+54`); `$BF42` (`ObjectList+74`); `$BF56` (`ObjectList+94`) |
 | Writes | `$BF1A` (`ObjectList+34`); `$BF2E` (`ObjectList+54`); `$BF42` (`ObjectList+74`); `$BF56` (`ObjectList+94`) |
 
@@ -1540,6 +1672,8 @@ Put in the record by UfoHandler at a hit. Witness: i1 185 passes (frames 2236-30
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 65 calls (`runs/i1` 37, `runs/i2` 28) |
+| Called from | `CourseRun`, `UfoHandler` |
+| Calls | `UfoSaucerGone` (tail), `UfoSetColour`, `DrawSprite` |
 
 ### `UfoBombPart` (`$9CDF`)
 
@@ -1548,6 +1682,8 @@ Put in the record by UfoHandler at a hit. Witness: i1 185 passes (frames 2236-30
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 15,391 calls (`runs/i1` 8,099, `runs/i2` 7,292) |
+| Called from | `UfoHandler` (tail) |
+| Calls | `UfoBombHandler` |
 
 ### `UfoBombHandler` (`$9CE0`)
 
@@ -1566,6 +1702,8 @@ Witness: i1 9546 passes (8319 as the record's handler, frames 1560-30 439), i2 8
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 15,786 calls (`runs/i1` 8,319, `runs/i2` 7,467) |
+| Called from | `CourseRun`, `UfoBombPart`, `UfoSaucerGone` (tail) |
+| Calls | `ScoreAdd`, `CourseRun`, `UfoRecordSkip`, `BuggyKill`, `UnplotRun`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `UfoRecordSkip` (`$9E5F`)
 
@@ -1574,7 +1712,8 @@ Witness: i1 9546 passes (8319 as the record's handler, frames 1560-30 439), i2 8
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 44 calls, 1,364 t-states own (0.00 %) |
-| Called from | `UfoHandler` (tail) |
+| Runs (the other recordings) | 10,293 calls (`runs/i1` 5,652, `runs/i2` 4,233, `runs/g1` 204 and 1 more) |
+| Called from | `CourseRun`, `UfoHandler` (tail), `UfoBombHandler` |
 | Calls | `CourseRun` |
 
 ### `UfoSaucerGone` (`$9E81`)
@@ -1586,6 +1725,8 @@ Entered by a JP with the record +2 on the stack, from UfoHandler (the retreat pa
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 135 calls (`runs/i1` 72, `runs/i2` 63) |
+| Called from | `UfoHandler` (tail), `UfoExplodeHandler` (tail) |
+| Calls | `UfoBombHandler` (tail) |
 
 ### `UfoSetColour` (`$9E8E`)
 
@@ -1596,6 +1737,7 @@ A = the sprite: below 5 (saucer A) `$44` bright green, below 11 (saucer B) `$06`
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 31,296 calls (`runs/i1` 16,491, `runs/i2` 14,805) |
+| Called from | `UfoHandler`, `UfoExplodeHandler` |
 
 ### `UfoRetreatTimer` (`$9EA5`)
 
@@ -1608,6 +1750,8 @@ This is the unmatched handler of stage 1. Witness: the flag set i1 8 times, i2 1
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `UfoRetreatSkip` |
 
 ### `UfoRetreatSkip` (`$9EBB`)
 
@@ -1616,6 +1760,8 @@ This is the unmatched handler of stage 1. Witness: the flag set i1 8 times, i2 1
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 365 calls (`runs/i2` 198, `runs/i1` 167) |
+| Called from | `CourseRun`, `UfoRetreatTimer` |
+| Calls | `CourseRun` |
 
 ## enemies
 
@@ -1632,6 +1778,8 @@ Witness: i1 912 runs (frames 23 663-28 206, Beginner V W Y), i2 2503 (2241-28 70
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `ScoreAdd`, `TankExplodeHandler`, `TankShellPart` (tail), `TankRecordSkip` (tail), `BuggyKill`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `TankExplodeHandler` (`$9F4C`)
 
@@ -1642,6 +1790,8 @@ A shell still waiting to be fired (wait +8 not 0) is cancelled (`$FF`). Erases t
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 34 calls (`runs/i2` 25, `runs/i1` 9) |
+| Called from | `CourseRun`, `TankHandler` |
+| Calls | `TankGone` (tail), `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `TankShellPart` (`$9F8E`)
 
@@ -1650,6 +1800,8 @@ A shell still waiting to be fired (wait +8 not 0) is cancelled (`$FF`). Erases t
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 668 calls (`runs/i2` 546, `runs/i1` 122) |
+| Called from | `TankHandler` (tail) |
+| Calls | `TankShellHandler` |
 
 ### `TankShellHandler` (`$9F8F`)
 
@@ -1666,6 +1818,8 @@ Witness: i1 2961 runs (as the record's handler from frame 24 476), i2 5612. Fire
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 838 calls (`runs/i2` 671, `runs/i1` 167) |
+| Called from | `CourseRun`, `TankShellPart`, `TankGone` (tail) |
+| Calls | `ScoreAdd`, `CourseRun`, `BuggyKill`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `TankGone` (`$A022`)
 
@@ -1676,6 +1830,8 @@ Entered by a JP with the record +2 on the stack, from TankHandler (off the left 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 34 calls (`runs/i2` 25, `runs/i1` 9) |
+| Called from | `TankExplodeHandler` (tail) |
+| Calls | `TankShellHandler` (tail) |
 
 ### `TankRecordSkip` (`$A036`)
 
@@ -1686,6 +1842,8 @@ Reached from TankHandler while the wait +2 counts down. Witness: i1 781, i2 1932
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,713 calls (`runs/i2` 1,932, `runs/i1` 781) |
+| Called from | `TankHandler` (tail) |
+| Calls | `CourseRun` |
 
 ### `LowFlyerHandler` (`$A03B`)
 
@@ -1700,6 +1858,8 @@ Champion only. Witness: i2 430 runs (frames 1353-29 538; the command `$98F3` at 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `ScoreAdd`, `LowFlyerExplodeHandler`, `LowFlyerDone` (tail), `LowFlyerRecordSkip` (tail), `BuggyKill`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `LowFlyerExplodeHandler` (`$A13A`)
 
@@ -1710,6 +1870,8 @@ Erases the last frame (not the first, `$36`), steps the sprite and draws it at (
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 4 calls (`runs/i2` 4) |
+| Called from | `CourseRun`, `LowFlyerHandler` |
+| Calls | `LowFlyerRecordSkip` (tail), `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `LowFlyerDone` (`$A170`)
 
@@ -1718,6 +1880,8 @@ Erases the last frame (not the first, `$36`), steps the sprite and draws it at (
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 187 calls (`runs/i2` 187) |
+| Called from | `LowFlyerHandler` (tail) |
+| Calls | `LowFlyerRecordSkip` |
 
 ### `LowFlyerRecordSkip` (`$A171`)
 
@@ -1726,6 +1890,8 @@ Erases the last frame (not the first, `$36`), steps the sprite and draws it at (
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 446 calls (`runs/i2` 446) |
+| Called from | `CourseRun`, `LowFlyerHandler` (tail), `LowFlyerExplodeHandler` (tail), `LowFlyerDone` |
+| Calls | `CourseRun` |
 
 ### `BoulderHandler` (`$A196`)
 
@@ -1740,6 +1906,8 @@ Champion only. Witness: i2 3448 runs (frames 3118-29 354, Champion C G M W Y). E
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `ScoreAdd`, `BoulderExplodeHandler`, `BoulderDone` (tail), `BoulderRecordSkip` (tail), `BoulderGone` (tail), `BuggyKill`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `BoulderExplodeHandler` (`$A268`)
 
@@ -1750,6 +1918,8 @@ Frames small `$7F-$83`, medium `$57-$5B`, large `$5F-$63`; the frames `$60-$63` 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 26 calls (`runs/i2` 26) |
+| Called from | `CourseRun`, `BoulderHandler` |
+| Calls | `BoulderGone` (tail), `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `BoulderDone` (`$A2B4`)
 
@@ -1758,6 +1928,8 @@ Frames small `$7F-$83`, medium `$57-$5B`, large `$5F-$63`; the frames `$60-$63` 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,273 calls (`runs/i2` 1,273) |
+| Called from | `BoulderHandler` (tail) |
+| Calls | `BoulderRecordSkip` |
 
 ### `BoulderRecordSkip` (`$A2B5`)
 
@@ -1766,6 +1938,8 @@ Frames small `$7F-$83`, medium `$57-$5B`, large `$5F-$63`; the frames `$60-$63` 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 3,552 calls (`runs/i2` 3,552) |
+| Called from | `CourseRun`, `BoulderHandler` (tail), `BoulderDone`, `BoulderGone` (tail) |
+| Calls | `CourseRun` |
 
 ### `BoulderGone` (`$A2BA`)
 
@@ -1774,6 +1948,8 @@ Frames small `$7F-$83`, medium `$57-$5B`, large `$5F-$63`; the frames `$60-$63` 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 33 calls (`runs/i2` 33) |
+| Called from | `BoulderHandler` (tail), `BoulderExplodeHandler` (tail) |
+| Calls | `BoulderRecordSkip` (tail) |
 
 ### `PlantHandler` (`$A2C6`)
 
@@ -1790,6 +1966,8 @@ Champion only. Witness: i2 1497 runs (frames 4013-29 106, Champion D F K Q V X Y
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `ScoreAdd`, `PlantExplodeHandler`, `PlantDone` (tail), `PlantRecordSkip` (tail), `PlantGone` (tail), `PlantColourOn`, `PlantColourOff`, `BuggyKill`, `UnplotRun`, `BoxOverlap`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `PlantExplodeHandler` (`$A3ED`)
 
@@ -1800,6 +1978,8 @@ The first pass (frame `$7A`) draws sprite `$73` at (y + 16, x) instead of erasin
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 8 calls (`runs/i2` 8) |
+| Called from | `CourseRun`, `PlantHandler` |
+| Calls | `PlantGone` (tail), `PlantColourOn`, `DrawSprite`, `ScrollAdjustIfAlive` |
 
 ### `PlantDone` (`$A443`)
 
@@ -1808,6 +1988,8 @@ The first pass (frame `$7A`) draws sprite `$73` at (y + 16, x) instead of erasin
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 517 calls (`runs/i2` 517) |
+| Called from | `PlantHandler` (tail) |
+| Calls | `PlantRecordSkip` |
 
 ### `PlantRecordSkip` (`$A444`)
 
@@ -1816,6 +1998,8 @@ The first pass (frame `$7A`) draws sprite `$73` at (y + 16, x) instead of erasin
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,529 calls (`runs/i2` 1,529) |
+| Called from | `CourseRun`, `PlantHandler` (tail), `PlantDone`, `PlantGone` (tail) |
+| Calls | `CourseRun` |
 
 ### `PlantGone` (`$A449`)
 
@@ -1824,6 +2008,8 @@ The first pass (frame `$7A`) draws sprite `$73` at (y + 16, x) instead of erasin
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 12 calls (`runs/i2` 12) |
+| Called from | `PlantHandler` (tail), `PlantExplodeHandler` (tail) |
+| Calls | `PlantRecordSkip` (tail), `PlantColourOff` |
 
 ### `PlantColourOn` (`$A458`)
 
@@ -1834,6 +2020,8 @@ HL = (L y, H x). PlantAttrAddress gives the cell and the count; each cell of row
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 546 calls (`runs/i2` 546) |
+| Called from | `PlantHandler`, `PlantExplodeHandler` |
+| Calls | `PlantColourLoop`, `PlantAttrAddress` |
 
 ### `PlantColourLoop` (`$A474`)
 
@@ -1842,6 +2030,7 @@ HL = (L y, H x). PlantAttrAddress gives the cell and the count; each cell of row
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,110 calls (`runs/i2` 1,110) |
+| Called from | `PlantColourOn`, `PlantColourOff` (tail) |
 
 ### `PlantColourOff` (`$A48D`)
 
@@ -1852,6 +2041,8 @@ As PlantColourOn, with the one colour for every cell. Witness: i2 564 (frames 40
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 564 calls (`runs/i2` 564) |
+| Called from | `PlantHandler`, `PlantGone` |
+| Calls | `PlantColourLoop` (tail), `PlantAttrAddress` |
 
 ### `PlantAttrAddress` (`$A49F`)
 
@@ -1862,6 +2053,7 @@ In: H = x. HL = AttrRow18 `$5A40` + x / 8; B = 3, + 1 when bit 2 of x is set. Wi
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,110 calls (`runs/i2` 1,110) |
+| Called from | `PlantColourOn`, `PlantColourOff` |
 
 ## bonus
 
@@ -1888,6 +2080,9 @@ Witness: i1 5 and i2 5 runs (l1sum `$A4EE`, i1 frames 5176-29659, i2 5357-30694,
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `MenuDelay`, `CycleColourRange`, `Wait100Frames`, `ClearScreen`, `LifeStart`, `HudDraw`, `HudPrintPointLetter`, `ScoreAdd`, `PrintBcd`, `ClearCells`, `MainLoop` (tail), `BonusBeep`, `SetIm1`, `PrintText` |
+| Ports out | `$00FE`, `$18FE` |
 
 ### `BonusBeep` (`$A690`)
 
@@ -1898,6 +2093,7 @@ HL = the period, DE = the length, as for BEEPER `$03B5` (the ROM's). Called by S
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 10 calls (`runs/i1` 5, `runs/i2` 5) |
+| Called from | `SectorBonus` |
 
 ## play
 
@@ -1912,7 +2108,8 @@ DI, IM 1, I = `$3F`, EI. Called from the menu code (`$81CD`, `$823D`, `$8250`, `
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 27 calls, 1,134 t-states own (0.00 %) |
-| Called from | `MenuCheckStart`, `MenuCheckAnyKey`, `MainLoop` |
+| Runs (the other recordings) | 63 calls (`runs/a1` 28, `runs/p2` 10, `runs/i2` 7 and 5 more) |
+| Called from | `OptionsPage`, `MenuCheckStart`, `MenuCheckHeroes`, `MenuCheckAnyKey`, `MainLoop`, `MainLoopPass`, `SectorBonus`, `BuggyUpdate`, `HoldCheck` |
 
 ### `SetIm2` (`$A7D4`)
 
@@ -1923,7 +2120,8 @@ DI, I = `$3A`, IM 2, EI. Called from the life start (`$9132`) and the end of the
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 20 calls, 840 t-states own (0.00 %) |
-| Called from | `LifeStart` |
+| Runs (the other recordings) | 33 calls (`runs/p2` 8, `runs/i1` 6, `runs/i2` 6 and 3 more) |
+| Called from | `LifeStart`, `HoldCheck` |
 
 ### `BuggyKill` (`$A7DD`)
 
@@ -1940,7 +2138,8 @@ The crater and mine handlers (`$9A92`, `$9AEB`) and the UFO saucers (`$9B6B`) ne
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 19 calls, 2,204 t-states own (0.00 %) |
-| Called from | `ObjRock`, `BuggyUpdate` |
+| Runs (the other recordings) | 297 calls (`runs/i2` 170, `runs/i1` 108, `runs/p2` 8 and 4 more) |
+| Called from | `ObjRock`, `UfoBombHandler`, `TankHandler`, `TankShellHandler`, `LowFlyerHandler`, `BoulderHandler`, `PlantHandler`, `BuggyUpdate` |
 | Calls | `ScoreAdd` |
 | Reads | `$B216` (`DeathStep`) |
 | Writes | `$B216`-`$B217` (`DeathStep`, `WreckStep`) |
@@ -1954,6 +2153,8 @@ E = the count. Calls UnplotPixel `$FD99` for x, x + 1, ...; keeps L. Callers: `$
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 159 calls (`runs/i2` 63, `runs/a1` 60, `runs/i1` 33 and 1 more) |
+| Called from | `OptionsPage`, `ObjMine`, `UfoBombHandler`, `PlantHandler` |
+| Calls | `UnplotPixel` |
 
 ### `BoxOverlap` (`$A7FE`)
 
@@ -1964,7 +2165,8 @@ B, C, D, E = the box at HL, B', C', D', E' = the box at HL' (the buggy `$B212` o
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,055 calls, 185,574 t-states own (0.02 %) |
-| Called from | `ObjRock` |
+| Runs (the other recordings) | 110,955 calls (`runs/i2` 54,655, `runs/i1` 54,624, `runs/g1` 518 and 4 more) |
+| Called from | `ObjRock`, `UfoHandler`, `UfoBombHandler`, `TankHandler`, `TankShellHandler`, `LowFlyerHandler`, `BoulderHandler`, `PlantHandler` |
 | Reads | `$5B60`-`$5B63` (system); `$B212`-`$B215` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth`); `$BF04`-`$BF0F` (`ObjectList+12`) |
 
 ### `DrawSprite` (`$A826`)
@@ -1976,9 +2178,10 @@ The table `$B2D6` holds 4 bytes a sprite: the drawer (one of the sprites module'
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 7,358 calls, 1,450,001 t-states own (0.13 %) |
-| Called from | `LifeStart`, `MainLoop`, `ObjRock`, `ObjRockExplode`, `BuggyUpdate`, `BuggyErase`, `WheelsFly`, `WheelErase` |
-| Calls | `DrawSprite16x9`, `DrawSprite24x12`, `DrawSprite40x23` |
-| Reads | `$B2D6`-`$B2D9` (`SpriteTable`); `$B312`-`$B315` (`SpriteTable+60`); `$B352`-`$B371` (`SpriteTable+124`); `$B382`-`$B391` (`SpriteTable+172`); `$B3C6`-`$B3D1` (`SpriteTable+240`) |
+| Runs (the other recordings) | 87,281 calls (`runs/i2` 42,588, `runs/i1` 35,224, `runs/p2` 3,220 and 5 more) |
+| Called from | `OptionsPage`, `LifeStart`, `MainLoop`, `MainLoopPass`, `ObjRock`, `ObjRockExplode`, `ObjMine`, `UfoHandler`, `UfoExplodeHandler`, `UfoBombHandler`, `TankHandler`, `TankExplodeHandler`, `TankShellHandler`, `LowFlyerHandler`, `LowFlyerExplodeHandler`, `BoulderHandler`, `BoulderExplodeHandler`, `PlantHandler`, `PlantExplodeHandler`, `BuggyUpdate`, `BuggyErase`, `WheelsFly`, `WheelErase` |
+| Calls | `DrawShotForward`, `DrawSprite16x4`, `DrawSprite16x8`, `DrawSprite16x9`, `DrawSprite24x8Attr`, `DrawSprite24x8`, `DrawSprite24x12`, `DrawSprite24x16`, `DrawSprite24x16Attr`, `DrawSprite32x16`, `DrawSprite40x23` |
+| Reads | `$B2D6`-`$B2ED` (`SpriteTable`); `$B306`-`$B329` (`SpriteTable+48`); `$B34E`-`$B371` (`SpriteTable+120`); `$B382`-`$B391` (`SpriteTable+172`); `$B3C2`-`$B3E9` (`SpriteTable+236`); `$B406`-`$B409` (`SpriteTable+304`); 1 more ranges |
 
 ### `DrawSpriteDone` (`$A843`)
 
@@ -1987,7 +2190,8 @@ The table `$B2D6` holds 4 bytes a sprite: the drawer (one of the sprites module'
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 7,358 calls, 220,835 t-states own (0.02 %) |
-| Called from | `DrawSprite16x9`, `DrawSprite24x12`, `DrawSprite40x23` |
+| Runs (the other recordings) | 87,281 calls (`runs/i2` 42,588, `runs/i1` 35,224, `runs/p2` 3,220 and 5 more) |
+| Called from | `DrawShotForward`, `DrawSprite16x4`, `DrawSprite16x9`, `SpriteXor2Wide`, `DrawSprite24x12`, `SpriteXor3Wide`, `DrawSprite32x16`, `DrawSprite40x23` |
 
 ### `ScrollFarBand` (`$A846`)
 
@@ -2000,6 +2204,7 @@ Only while the buggy is alive (`$B216` = `$FF`). The counter `$B224` runs 8 pass
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 58,305,283 t-states own (5.05 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Reads | `$4800`-`$497F` (screen); `$4A00`-`$4A7F` (screen); `$4B00`-`$4B7F` (screen); `$4C00`-`$4C7F` (screen); `$4D00`-`$4D7F` (screen); `$4E00`-`$4E7F` (screen); 6 more ranges |
 | Writes | `$4800`-`$497F` (screen); `$4A00`-`$4A7F` (screen); `$4B00`-`$4B7F` (screen); `$4C00`-`$4C7F` (screen); `$4D00`-`$4D7F` (screen); `$4E00`-`$4E7F` (screen); 3 more ranges |
@@ -2015,8 +2220,9 @@ As ScrollFarBand with the counter `$B228` (4 passes), the source `$B22A` going f
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 112,319,432 t-states own (9.74 %) |
+| Runs (the other recordings) | 9,515 calls (`runs/i2` 3,934, `runs/i1` 3,600, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
-| Reads | `$4880`-`$49FF` (screen); `$4A80`-`$4AFF` (screen); `$4B80`-`$4BFF` (screen); `$4C80`-`$4CFF` (screen); `$4D80`-`$4DFF` (screen); `$4E80`-`$4EFF` (screen); 8 more ranges |
+| Reads | `$4880`-`$49FF` (screen); `$4A80`-`$4AFF` (screen); `$4B80`-`$4BFF` (screen); `$4C80`-`$4CFF` (screen); `$4D80`-`$4DFF` (screen); `$4E80`-`$4EFF` (screen); 7 more ranges |
 | Writes | `$4880`-`$49FF` (screen); `$4A80`-`$4AFF` (screen); `$4B80`-`$4BFF` (screen); `$4C80`-`$4CFF` (screen); `$4D80`-`$4DFF` (screen); `$4E80`-`$4EFF` (screen); 3 more ranges |
 
 ### `ScrollNearBand` (`$A8FD`)
@@ -2028,6 +2234,7 @@ Only while alive. BuggyAirborne `$AFA5` (buggy y < `$89`): the 32 lines from `$F
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 104,958,311 t-states own (9.10 %) |
+| Runs (the other recordings) | 9,515 calls (`runs/i2` 3,934, `runs/i1` 3,600, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `BuggyAirborne` |
 | Reads | `$5000`-`$517F` (screen); `$5200`-`$527F` (screen); `$5300`-`$537F` (screen); `$5400`-`$547F` (screen); `$5500`-`$557F` (screen); `$5600`-`$567F` (screen); 3 more ranges |
@@ -2046,7 +2253,9 @@ Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken insid
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 187,424,805 t-states own (16.25 %) |
+| Runs (the other recordings) | 9,515 calls (`runs/i2` 3,934, `runs/i1` 3,600, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
+| Calls | `RoadLine` |
 | Reads | `$5080`-`$51FF` (screen); `$5280`-`$52FF` (screen); `$5380`-`$53FF` (screen); `$5480`-`$54FF` (screen); `$5580`-`$55FF` (screen); `$5680`-`$56FF` (screen); 8 more ranges |
 | Writes | `$5080`-`$51FF` (screen); `$5280`-`$52FF` (screen); `$5380`-`$53FF` (screen); `$5480`-`$54FF` (screen); `$5580`-`$55FF` (screen); `$5680`-`$56FF` (screen); 3 more ranges |
 
@@ -2057,6 +2266,8 @@ Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken insid
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,013 calls (`runs/h2` 1,013) |
+| Called from | `ScrollRoad`, `RoadByteBits` (tail) |
+| Calls | `RoadByte` |
 
 ### `RoadByte` (`$A977`)
 
@@ -2065,6 +2276,8 @@ Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken insid
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 32,430 calls (`runs/h2` 32,430) |
+| Called from | `RoadLine`, `RoadByteBits` (tail) |
+| Calls | `RoadByteBits` |
 
 ### `RoadByteBits` (`$A981`)
 
@@ -2073,6 +2286,8 @@ Witness: same counts as ScrollFarBand (i1 3600). The h2 snapshot was taken insid
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 32,430 calls (`runs/h2` 32,430) |
+| Called from | `RoadByte` |
+| Calls | `RoadLine` (tail), `RoadByte` (tail) |
 
 ### `BuggyUpdate` (`$AA0F`)
 
@@ -2093,9 +2308,10 @@ Witness: game 1576, a1 292, g1 493, p2 664, h1 493, i1 3601, i2 3935, h2 40 entr
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 1,268,194 t-states own (0.11 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
-| Calls | `BuggyKill`, `DrawSprite`, `ControlsRead`, `ScrollAdjustIfAlive` |
-| Reads | `$5286`-`$528B` (screen); `$AAF0`-`$AB36` (`JumpArcs`, `JumpArcCentre`, `JumpArcForward`); `$B212`-`$B223` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 9 more); `$FA66`-`$FABB` (`PixelTable+102`) |
+| Calls | `TitlePage` (tail), `SetIm1`, `BuggyKill`, `DrawSprite`, `ControlsRead`, `ScrollAdjustIfAlive` |
+| Reads | `$5286`-`$528D` (screen); `$AAF0`-`$AB36` (`JumpArcs`, `JumpArcCentre`, `JumpArcForward`); `$B212`-`$B223` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 9 more); `$FA66`-`$FAD3` (`PixelTable+102`) |
 | Writes | `$B212`-`$B223` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 9 more) |
 | Ports in | `$7FFE`, `$FEFE` |
 
@@ -2108,6 +2324,7 @@ HL = (x, y - 9). Alive: sprite 0. `$B216` = 0 (killed this pass): the position t
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 173,683 t-states own (0.02 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `DrawSprite`, `ScrollAdjustX` |
 | Reads | `$B212`-`$B216` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 1 more) |
@@ -2123,6 +2340,7 @@ Witness: game 6303, a1 1164, g1 1972, p2 2656, h1 1972, i1 14 401, i2 15 737, h2
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 6,303 calls, 631,149 t-states own (0.05 %) |
+| Runs (the other recordings) | 38,063 calls (`runs/i2` 15,737, `runs/i1` 14,401, `runs/p2` 2,656 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `DrawSprite`, `WheelErase` |
 | Reads | `$AC31`-`$AD00` (`WheelPaths`, `FireShots`); `$B213`-`$B21F` (`BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth`, `DeathStep` and 5 more) |
@@ -2137,6 +2355,7 @@ Witness: game 1598, a1 176, g1 376, p2 716, h1 376, h2 88 entries (a1 frames 201
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,598 calls, 166,711 t-states own (0.01 %) |
+| Runs (the other recordings) | 1,732 calls (`runs/p2` 716, `runs/g1` 376, `runs/h1` 376 and 2 more) |
 | Called from | `WheelsFly` |
 | Calls | `DrawSprite` |
 | Reads | `$B217` (`WreckStep`) |
@@ -2150,10 +2369,11 @@ Only while alive. ControlsRead bit 0; up: `$B288` bit 1 cleared. A new press (bi
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 164,291 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `DrawShotForward`, `DrawShotUp`, `ControlsRead` |
 | Reads | `$5B60`-`$5B71` (system); `$B212`-`$B216` (`BuggyY`, `BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth` and 1 more); `$B288` (`PlayerFlags`) |
-| Writes | `$5B60`-`$5B6E` (system); `$B288` (`PlayerFlags`) |
+| Writes | `$5B60`-`$5B72` (system); `$B288` (`PlayerFlags`) |
 
 ### `ShotsMove` (`$AD61`)
 
@@ -2164,6 +2384,7 @@ ShotForwardMove then ShotsUpMove. Witness: game 1576, a1 291, g1 493, p2 664, h1
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 69,382 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,517 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Calls | `ShotForwardMove`, `ShotsUpMove` |
 
@@ -2176,8 +2397,9 @@ Erased (DrawShotForward), first through ScrollAdjustX when the buggy was killed 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 184,397 t-states own (0.02 %) |
+| Runs (the other recordings) | 9,517 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `ShotsMove` |
-| Calls | `DrawShotForward`, `ScrollAdjustIfAlive` |
+| Calls | `DrawShotForward`, `ScrollAdjustIfAlive`, `ScrollAdjustX` |
 | Reads | `$5B60`-`$5B64` (system); `$B216`-`$B220` (`DeathStep`, `WreckStep`, `WreckPath`, `WreckPiece1` and 3 more) |
 | Writes | `$5B60`-`$5B62` (system) |
 
@@ -2190,6 +2412,7 @@ Witness: same entry counts as ShotsMove.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 526,318 t-states own (0.05 %) |
+| Runs (the other recordings) | 9,517 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `ShotsMove` |
 | Calls | `ShotUpMove` |
 | Reads | `$5B65`-`$5B71` (system) |
@@ -2203,10 +2426,11 @@ As ShotForwardMove with height 4 and DrawShotUp. Witness: game 951, a1 271, g1 9
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 951 calls, 252,871 t-states own (0.02 %) |
+| Runs (the other recordings) | 19,966 calls (`runs/i2` 8,636, `runs/i1` 7,833, `runs/p2` 1,236 and 4 more) |
 | Called from | `ShotsUpMove` |
-| Calls | `DrawShotUp`, `ScrollAdjustIfAlive` |
-| Reads | `$5B65`-`$5B6F` (system); `$B216`-`$B220` (`DeathStep`, `WreckStep`, `WreckPath`, `WreckPiece1` and 3 more) |
-| Writes | `$5B65`-`$5B6F` (system) |
+| Calls | `DrawShotUp`, `ScrollAdjustIfAlive`, `ScrollAdjustX` |
+| Reads | `$5B65`-`$5B73` (system); `$B216`-`$B220` (`DeathStep`, `WreckStep`, `WreckPath`, `WreckPiece1` and 3 more) |
+| Writes | `$5B65`-`$5B73` (system) |
 
 ### `DrawShotForward` (`$ADF7`)
 
@@ -2217,8 +2441,9 @@ Also sprite `$3B` of the sprite table. Witness: game 936, a1 211, g1 709, p2 914
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 936 calls, 267,848 t-states own (0.02 %) |
-| Called from | `FireShots`, `ShotForwardMove` |
-| Calls | `ShotPlot` |
+| Runs (the other recordings) | 14,288 calls (`runs/i2` 6,103, `runs/i1` 5,642, `runs/p2` 914 and 3 more) |
+| Called from | `DrawSprite`, `FireShots`, `ShotForwardMove` |
+| Calls | `DrawSpriteDone`, `ShotPlot` |
 
 ### `DrawShotUp` (`$AE04`)
 
@@ -2229,6 +2454,7 @@ Witness: game 1913, a1 545, g1 1980, p2 2483, h1 1980, i1 15 680, i2 17 284, h2 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,913 calls, 375,043 t-states own (0.03 %) |
+| Runs (the other recordings) | 39,982 calls (`runs/i2` 17,284, `runs/i1` 15,680, `runs/p2` 2,483 and 4 more) |
 | Called from | `FireShots`, `ShotUpMove` |
 | Calls | `ShotPlot` |
 
@@ -2241,6 +2467,7 @@ Witness: game 13 268, a1 3566, i1 97 928 entries.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 13,268 calls, 637,168 t-states own (0.06 %) |
+| Runs (the other recordings) | 252,670 calls (`runs/i2` 111,286, `runs/i1` 97,928, `runs/p2` 15,416 and 5 more) |
 | Called from | `DrawShotForward`, `DrawShotUp` |
 | Calls | `FlipPixel` |
 
@@ -2255,9 +2482,10 @@ Jumps to ControlHandlers[`$B259` - 1]; each handler returns the five bits active
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,939 calls, 299,892 t-states own (0.03 %) |
-| Called from | `MenuCheckStart`, `BuggyUpdate`, `FireShots` |
-| Calls | `JoySinclair1`, `JoyKempston` |
-| Reads | `$AE2E`-`$AE31` (`ControlHandlers`); `$B259` (`Controls`) |
+| Runs (the other recordings) | 46,980 calls (`runs/a1` 28,792, `runs/i2` 7,870, `runs/i1` 7,202 and 4 more) |
+| Called from | `MenuCheckStart`, `BuggyUpdate`, `FireShots`, `HoldCheck` |
+| Calls | `JoySinclair1`, `JoySinclair2`, `JoyKempston`, `JoyCursor`, `JoyFuller`, `KeysQAOP` |
+| Reads | `$AE2E`-`$AE39` (`ControlHandlers`); `$B259` (`Controls`) |
 
 ### `ControlsReadDone` (`$AE2C`)
 
@@ -2266,7 +2494,8 @@ Jumps to ControlHandlers[`$B259` - 1]; each handler returns the five bits active
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,939 calls, 41,184 t-states own (0.00 %) |
-| Called from | `JoySinclair1`, `JoyKempston` |
+| Runs (the other recordings) | 46,980 calls (`runs/a1` 28,792, `runs/i2` 7,870, `runs/i1` 7,202 and 4 more) |
+| Called from | `JoySinclair1`, `JoySinclair2`, `JoyKempston`, `JoyCursor`, `JoyFuller`, `KeysQAOP` |
 
 ### `JoySinclair1` (`$AE3A`)
 
@@ -2277,6 +2506,7 @@ Port `$EFFE` (6 left, 7 right, 8 down, 9 up, 0 fire: bits 4-0 already in the com
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 445,111 t-states own (0.04 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`) |
 | Called from | `ControlsRead` |
 | Calls | `ControlsReadDone` |
 | Ports in | `$EFFE`, `$F7FE` |
@@ -2290,6 +2520,10 @@ One player (`$B257` = 1): as JoySinclair1. Two players: player 1 (`$B271` = 1) r
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/a1`) |
+| Called from | `ControlsRead` |
+| Calls | `ControlsReadDone` |
+| Reads | `$B257` (`Players`); `$B271` (`Player`) |
+| Ports in | `$EFFE` |
 
 ### `JoyKempston` (`$AE64`)
 
@@ -2300,6 +2534,7 @@ The five bits rotated through B into fire 0, up 1, down 2, right 3, left 4, then
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 71,430 t-states own (0.01 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`) |
 | Called from | `ControlsRead` |
 | Calls | `ControlsReadDone` |
 | Ports in | `$021F` |
@@ -2313,6 +2548,9 @@ Port `$F7FE` bit 4 (5) to bit 4 left; port `$EFFE` bit 0 (0) fire, bit 3 (7) to 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/a1`) |
+| Called from | `ControlsRead` |
+| Calls | `ControlsReadDone` |
+| Ports in | `$EFFE`, `$F7FE` |
 
 ### `JoyFuller` (`$AE9D`)
 
@@ -2323,6 +2561,9 @@ Rotated into fire 0, up 1, down 2, right 3, left 4 (the other bits 1). Witness: 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/a1`) |
+| Called from | `ControlsRead` |
+| Calls | `ControlsReadDone` |
+| Ports in | `$067F` |
 
 ### `KeysQAOP` (`$AEB2`)
 
@@ -2333,6 +2574,9 @@ Port `$FDFE` bit 0 (A) to bit 4, port `$FBFE` bit 0 (Q) to bit 3, port `$DFFE` b
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/a1`, `runs/i2`, `runs/i1` and 4 more) |
+| Called from | `ControlsRead` |
+| Calls | `ControlsReadDone` |
+| Ports in | `$DFFE`, `$FBFE`, `$FDFE` |
 
 ### `HoldCheck` (`$AECE`)
 
@@ -2345,10 +2589,12 @@ Witness: game 1575, a1 291, g1 493, p2 664, h1 493, i1 3600, i2 3934, h2 41 entr
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,575 calls, 128,249 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,516 calls (`runs/i2` 3,934, `runs/i1` 3,600, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
-| Reads | `$B288` (`PlayerFlags`) |
+| Calls | `SetIm1`, `SetIm2`, `ControlsRead` |
+| Reads | `$AEED` (`HoldWait+1`); `$AF0C` (`HoldResumeWait+1`); `$B288` (`PlayerFlags`) |
 | Writes | `$B288` (`PlayerFlags`) |
-| Ports in | `$BFFE` |
+| Ports in | `$BFFE`, `$FDFE` |
 
 ### `TuneToggleCheck` (`$AF15`)
 
@@ -2359,6 +2605,7 @@ Port `$FBFE` bit 4 (T). Up: `$B288` bit 0 cleared. A new press (bit 0 clear): bi
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,576 calls, 140,112 t-states own (0.01 %) |
+| Runs (the other recordings) | 9,518 calls (`runs/i2` 3,935, `runs/i1` 3,601, `runs/p2` 664 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Reads | `$B288` (`PlayerFlags`) |
 | Writes | `$B288` (`PlayerFlags`) |
@@ -2373,6 +2620,7 @@ x `$B213` against `$38`: forward (> `$38`) the index 0, centre 1, back (< `$38`)
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,151 calls, 110,417,797 t-states own (9.57 %) |
+| Runs (the other recordings) | 19,031 calls (`runs/i2` 7,868, `runs/i1` 7,200, `runs/p2` 1,328 and 4 more) |
 | Called from | `MainLoopCalls` |
 | Reads | `$AF68`-`$AF73` (`JumpSpeeds`); `$B213`-`$B216` (`BuggyX`, `BuggyBoxHeight`, `BuggyBoxWidth`, `DeathStep`) |
 | Writes | `$B221`-`$B222` (`JumpArc`) |
@@ -2386,8 +2634,9 @@ Witness: game 3474, a1 716, g1 2054, p2 2534, h1 2054, i1 19 540, i2 25 107, h2 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,474 calls, 79,165 t-states own (0.01 %) |
-| Called from | `ObjRock`, `ObjRockExplode`, `BuggyUpdate`, `ShotForwardMove`, `ShotUpMove` |
-| Calls | `ScrollAdjustX` |
+| Runs (the other recordings) | 52,096 calls (`runs/i2` 25,108, `runs/i1` 19,540, `runs/p2` 2,534 and 4 more) |
+| Called from | `ObjRock`, `ObjRockExplode`, `ObjMine`, `UfoBombHandler`, `TankHandler`, `TankExplodeHandler`, `TankShellHandler`, `LowFlyerHandler`, `LowFlyerExplodeHandler`, `BoulderHandler`, `BoulderExplodeHandler`, `PlantHandler`, `PlantExplodeHandler`, `BuggyUpdate`, `ShotForwardMove`, `ShotUpMove` |
+| Calls | `ScrollAdjustX`, `BuggyAirborne` |
 | Reads | `$B216` (`DeathStep`) |
 
 ### `ScrollAdjustX` (`$AF79`)
@@ -2399,7 +2648,8 @@ L = y: below `$40` nothing; `$40-$5F` the far band's step HillsSpeed `$B225` (1)
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,022 calls, 279,757 t-states own (0.02 %) |
-| Called from | `BuggyErase`, `ScrollAdjustIfAlive` |
+| Runs (the other recordings) | 6,891 calls (`runs/p2` 2,277, `runs/g1` 1,932, `runs/h1` 1,932 and 2 more) |
+| Called from | `BuggyErase`, `ShotForwardMove`, `ShotUpMove`, `ScrollAdjustIfAlive` |
 | Calls | `BuggyAirborne` |
 | Reads | `$B212` (`BuggyY`); `$B225`-`$B229` (`HillsSpeed`, `FarColumn`, `MiddleCountdown`, `MiddleSpeed`) |
 
@@ -2412,7 +2662,8 @@ Witness: game 4445, a1 946, g1 2389, p2 2873, h1 2389, i1 23 140, i2 29 041, h2 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4,445 calls, 133,445 t-states own (0.01 %) |
-| Called from | `ScrollNearBand`, `ScrollAdjustX` |
+| Runs (the other recordings) | 60,887 calls (`runs/i2` 29,041, `runs/i1` 23,140, `runs/p2` 2,873 and 4 more) |
+| Called from | `ScrollNearBand`, `ScrollAdjustIfAlive`, `ScrollAdjustX` |
 | Reads | `$B212` (`BuggyY`) |
 
 ## sprites
@@ -2428,7 +2679,8 @@ The line table `$FC00` gives each row's address, the pixel table `$FA00` x's byt
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 23 calls, 212,955 t-states own (0.02 %) |
-| Called from | `MenuEntry`, `HudDraw` |
+| Runs (the other recordings) | 66 calls (`runs/i2` 14, `runs/i1` 14, `runs/p2` 11 and 5 more) |
+| Called from | `MenuEntry`, `TitlePage`, `HudDraw` |
 | Reads | `$6132`-`$6389` (`TitleMoon`, `TitlePatrol`); `$9481`-`$9540` (`HudPanel`); `$B247`-`$B24A` (`BlitTop`, `BlitBottom`, `BlitX`, `BlitWidth`); `$FA90`-`$FAB0` (`PixelTable+144`); `$FC00`-`$FC9F` (`ScreenLineTable`) |
 | Writes | `$400A`-`$4936` (screen); `$4A09`-`$4A36` (screen); `$4B09`-`$4B36` (screen); `$4C09`-`$4C36` (screen); `$4D09`-`$4D36` (screen); `$4E09`-`$4E36` (screen); 1 more ranges |
 
@@ -2441,6 +2693,8 @@ Sprites `$11`, `$12`, `$1D`, `$1E`. Witness: a1, t1 (the score advance table), i
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i1`, `runs/i2`, `runs/a1` and 1 more) |
+| Called from | `DrawSprite` |
+| Calls | `DrawSpriteDone`, `SpriteXor2Wide` (tail) |
 
 ### `DrawSprite16x8` (`$B003`)
 
@@ -2451,6 +2705,8 @@ Sprites `$40-$43`. Witness: a1 20, t1 1, i2 670 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/a1`, `runs/t1`) |
+| Called from | `DrawSprite` |
+| Calls | `SpriteXor2Wide` (tail) |
 
 ### `DrawSprite16x9` (`$B02A`)
 
@@ -2461,10 +2717,11 @@ Sprites `$3C-$3E`. Witness: game 3118, a1 342, g1 728, p2 1392, h1 728, h2 170 r
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 4,135,488 t-states own (0.36 %) |
+| Runs (the other recordings) | run into, not called (`runs/p2`, `runs/g1`, `runs/h1` and 2 more) |
 | Called from | `DrawSprite` |
-| Calls | `DrawSpriteDone` |
-| Reads | `$4867`-`$57F0` (screen); `$6350`-`$6439` (`TitlePatrol+292`, `BuggyWreck1`, `BuggyWreck2`); `$644C`-`$645D` (`BuggyWreck2+108`); `$6470`-`$6481` (`BuggyWreck3`); `$6494`-`$64A5` (`BuggyWreck3+36`); `$64B8`-`$64C9` (`BuggyWreck3+72`); 8 more ranges |
-| Writes | `$4867`-`$57F0` (screen); `$6F75`-`$6F76` (`BuggyExplosion+2677`); `$77B5`-`$7D16` (`BurstLarge+437`, `Debris`, `BurstMedium`); `$8519`-`$851A` (`OptionsText+31`); `$C34C`-`$CB5C` (`Stack+80`, `BurstTiny`, `PlantFrames`) |
+| Calls | `DrawSpriteDone`, `SpriteXor2Wide` |
+| Reads | `$4867`-`$57F3` (screen); `$6350`-`$6481` (`TitlePatrol+292`, `BuggyWreck1`, `BuggyWreck2`, `BuggyWreck3`); `$6494`-`$64A5` (`BuggyWreck3+36`); `$64B8`-`$64C9` (`BuggyWreck3+72`); `$64DC`-`$64ED` (`BuggyWreck3+108`); `$6F75`-`$7D19` (`BuggyExplosion+2677`, `PlantScore`, `BurstLarge`, `Debris` and 1 more); 5 more ranges |
+| Writes | `$4867`-`$57F3` (screen); `$6F75`-`$6F79` (`BuggyExplosion+2677`); `$77B5`-`$7D19` (`BurstLarge+437`, `Debris`, `BurstMedium`); `$8519`-`$851D` (`OptionsText+31`); `$C338`-`$CB5F` (`Stack+60`, `BurstTiny`, `PlantFrames`) |
 
 ### `SpriteXor2Wide` (`$B052`)
 
@@ -2475,6 +2732,10 @@ Witness: game 28 062, i1 34 504 instructions at the entry.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 10,770 calls (`runs/i2` 10,323, `runs/a1` 442, `runs/t1` 5) |
+| Called from | `DrawSprite16x4` (tail), `DrawSprite16x8` (tail), `DrawSprite16x9` |
+| Calls | `DrawSpriteDone` |
+| Reads | `$44A3`-`$57F2` (screen); `$6350`-`$644B` (`TitlePatrol+292`, `BuggyWreck1`, `BuggyWreck2`); `$6470`-`$6481` (`BuggyWreck3`); `$6494`-`$64A5` (`BuggyWreck3+36`); `$64B8`-`$64C9` (`BuggyWreck3+72`); `$64DC`-`$64ED` (`BuggyWreck3+108`); 11 more ranges |
+| Writes | `$44A3`-`$57F2` (screen); `$6F77`-`$6F78` (`BuggyExplosion+2679`); `$77B7`-`$7D18` (`BurstLarge+439`, `Debris`, `BurstMedium`); `$851B`-`$851C` (`OptionsText+33`); `$C338`-`$CB5E` (`Stack+60`, `BurstTiny`, `PlantFrames`) |
 
 ### `DrawSprite24x8Attr` (`$B069`)
 
@@ -2485,6 +2746,10 @@ Sprites 1-`$0A`, `$27-$2A`, `$37-$3A`. Witness: a1 40, t1 2, i1 13 327, i2 10 72
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i1`, `runs/i2`, `runs/a1` and 1 more) |
+| Called from | `DrawSprite` |
+| Calls | `SpriteXor3Wide` (tail) |
+| Reads | `$FC38`-`$FC39` (`ScreenLineTable+56`) |
+| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen) |
 
 ### `DrawSprite24x8` (`$B0BA`)
 
@@ -2495,6 +2760,8 @@ Sprite `$14`. Witness: a1 20, t1 1, i2 374 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/a1`, `runs/t1`) |
+| Called from | `DrawSprite` |
+| Calls | `SpriteXor3Wide` (tail) |
 
 ### `DrawSprite24x12` (`$B0E2`)
 
@@ -2505,9 +2772,10 @@ Sprites `$0F`, `$2B-$2E`, `$44`, `$45`. Witness: game 1049, a1 163, g1 546, p2 4
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 2,240,858 t-states own (0.19 %) |
+| Runs (the other recordings) | run into, not called (`runs/g1`, `runs/h1`, `runs/p2` and 5 more) |
 | Called from | `DrawSprite` |
-| Calls | `DrawSpriteDone` |
-| Reads | `$5060`-`$5080` (screen); `$5160`-`$5180` (screen); `$5260`-`$5280` (screen); `$5360`-`$5480` (screen); `$5540`-`$5580` (screen); `$5640`-`$5680` (screen); 6 more ranges |
+| Calls | `DrawSpriteDone`, `SpriteXor3Wide` (tail) |
+| Reads | `$5060`-`$5080` (screen); `$5160`-`$5180` (screen); `$5260`-`$5280` (screen); `$5360`-`$5480` (screen); `$5540`-`$5580` (screen); `$5640`-`$5680` (screen); 7 more ranges |
 | Writes | `$5060`-`$5080` (screen); `$5160`-`$5180` (screen); `$5260`-`$5280` (screen); `$5360`-`$5480` (screen); `$5540`-`$5580` (screen); `$5640`-`$5680` (screen); 1 more ranges |
 
 ### `DrawSprite24x16` (`$B10D`)
@@ -2519,6 +2787,8 @@ Sprite `$10`. Witness: a1 40, t1 2, i1 15, i2 1072 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/a1`, `runs/i1` and 1 more) |
+| Called from | `DrawSprite` |
+| Calls | `SpriteSetup24`, `SpriteXor3Wide` (tail) |
 
 ### `DrawSprite24x16Attr` (`$B115`)
 
@@ -2529,6 +2799,10 @@ Sprites `$0B-$0E`, `$2F-$32`. Witness: a1 20, t1 1, i1 3164, i2 4112 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/i1`, `runs/a1` and 1 more) |
+| Called from | `DrawSprite` |
+| Calls | `SpriteSetup24`, `SpriteXor3Wide` (tail) |
+| Reads | `$FC30`-`$FC31` (`ScreenLineTable+48`) |
+| Writes | `$587C`-`$587E` (screen); `$589C`-`$589E` (screen); `$58BC`-`$58BE` (screen) |
 
 ### `SpriteSetup24` (`$B143`)
 
@@ -2539,6 +2813,7 @@ Witness: a1 60, t1 3, i1 3179, i2 5184 entries.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 8,426 calls (`runs/i2` 5,184, `runs/i1` 3,179, `runs/a1` 60 and 1 more) |
+| Called from | `DrawSprite24x16`, `DrawSprite24x16Attr` |
 
 ### `SpriteXor3Wide` (`$B168`)
 
@@ -2549,6 +2824,10 @@ Witness: game 12 588, i1 185 584 instructions at the entry.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 39,790 calls (`runs/i2` 20,651, `runs/i1` 18,848, `runs/a1` 283 and 1 more) |
+| Called from | `DrawSprite24x8Attr` (tail), `DrawSprite24x8` (tail), `DrawSprite24x12` (tail), `DrawSprite24x16` (tail), `DrawSprite24x16Attr` (tail) |
+| Calls | `DrawSpriteDone` |
+| Reads | `$407C`-`$479E` (screen); `$5059`-`$50A6` (screen); `$5150`-`$51A6` (screen); `$5250`-`$52A6` (screen); `$5350`-`$55A6` (screen); `$5641`-`$56A6` (screen); 10 more ranges |
+| Writes | `$407C`-`$479E` (screen); `$5059`-`$50A6` (screen); `$5150`-`$51A6` (screen); `$5250`-`$52A6` (screen); `$5350`-`$55A6` (screen); `$5641`-`$56A6` (screen); 1 more ranges |
 
 ### `DrawSprite32x16` (`$B184`)
 
@@ -2559,6 +2838,10 @@ No sprite of `$00-$45` uses it. Witness: a1 20, t1 1, i2 1524 runs.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`, `runs/a1`, `runs/t1`) |
+| Called from | `DrawSprite` |
+| Calls | `DrawSpriteDone` |
+| Reads | `$509C`-`$50BF` (screen); `$519C`-`$51BF` (screen); `$529C`-`$52BF` (screen); `$539C`-`$53BF` (screen); `$549C`-`$54BF` (screen); `$559C`-`$55BF` (screen); 4 more ranges |
+| Writes | `$509C`-`$50BF` (screen); `$519C`-`$51BF` (screen); `$529C`-`$52BF` (screen); `$539C`-`$53BF` (screen); `$549C`-`$54BF` (screen); `$559C`-`$55BF` (screen); 2 more ranges |
 
 ### `DrawSprite40x23` (`$B1C8`)
 
@@ -2571,10 +2854,11 @@ Sprite 0 (the buggy, `$E140`), `$13`, the death frames `$1F-$26` and `$33-$36`. 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 17,464,226 t-states own (1.51 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/p2` and 5 more) |
 | Called from | `DrawSprite` |
 | Calls | `DrawSpriteDone` |
-| Reads | `$48E7`-`$48EB` (screen); `$49E7`-`$49EB` (screen); `$4AE7`-`$4AEB` (screen); `$4BE7`-`$4BEB` (screen); `$4CE7`-`$4CEB` (screen); `$4DC7`-`$4DEB` (screen); 6 more ranges |
-| Writes | `$48E7`-`$48EB` (screen); `$49E7`-`$49EB` (screen); `$4AE7`-`$4AEB` (screen); `$4BE7`-`$4BEB` (screen); `$4CE7`-`$4CEB` (screen); `$4DC7`-`$576C` (screen) |
+| Reads | `$48C7`-`$4AEE` (screen); `$4BA7`-`$4BEE` (screen); `$4CA7`-`$4DEE` (screen); `$4EA7`-`$5770` (screen); `$6500`-`$74F2` (`BuggyExplosion`); `$D950`-`$D9C2` (`Tank+384`); 2 more ranges |
+| Writes | `$48C7`-`$48EE` (screen); `$49C7`-`$4BEE` (screen); `$4CA7`-`$5770` (screen) |
 
 ## courses
 
@@ -2589,6 +2873,8 @@ Run once, in i1 at frames 29659-29663, after point Z: LD A,`$20` into PlayerPoin
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i1`) |
+| Called from | `CourseRun` |
+| Calls | `HudDraw`, `ClearCells`, `MainLoop` (tail) |
 
 ### `ChampionToBeginner` (`$BED4`)
 
@@ -2599,6 +2885,8 @@ Run once, in i2 at frames 30694-30698: XOR A into PlayerPoint, the same two call
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/i2`) |
+| Called from | `CourseRun` |
+| Calls | `HudDraw`, `ClearCells`, `MainLoop` (tail) |
 
 ## printing
 
@@ -2613,6 +2901,7 @@ Entered from PrintGlyph `$FEF7` (`$FF92` JP `$F0F0`) with the first row's addres
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 5,268 calls, 279,768 t-states own (0.02 %) |
+| Runs (the other recordings) | 29,220 calls (`runs/a1` 10,044, `runs/i2` 6,607, `runs/i1` 5,051 and 5 more) |
 | Called from | `PrintGlyph` (tail) |
 | Calls | `PrintColour` (tail), `PrintRowsOr` (tail) |
 | Reads | `$F009`-`$F013` (`PrintFont+1`, `PrintState`, `PrintWidth`, `PrintLines`) |
@@ -2626,7 +2915,8 @@ Address from PixelTable and ScreenLineTable, then OR the mask. Run 61349 times i
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 61,349 calls, 7,732,772 t-states own (0.67 %) |
-| Called from | `FrameHLine`, `FrameVLine`, `EntryFieldDraw` |
+| Runs (the other recordings) | 293,839 calls (`runs/a1` 170,400, `runs/h1` 34,100, `runs/p2` 23,523 and 5 more) |
+| Called from | `FrameHLine`, `FrameVLine`, `EntryFieldDraw`, `HudPlot` |
 | Reads | `$4000`-`$53E0` (screen); `$53FF`-`$57FF` (screen); `$FA00`-`$FD7F` (`PixelTable`, `ScreenLineTable`) |
 | Writes | `$4000`-`$53E0` (screen); `$53FF`-`$57FF` (screen) |
 
@@ -2639,6 +2929,9 @@ Run in a1 (1160), t1 (58), i1 (420) and i2 (942): called from `$A7F5`.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,580 calls (`runs/a1` 1,160, `runs/i2` 942, `runs/i1` 420 and 1 more) |
+| Called from | `UnplotRun` |
+| Reads | `$5084`-`$5089` (screen); `$509B`-`$509F` (screen); `$FA44`-`$FA6B` (`PixelTable+68`); `$FA7E`-`$FA91` (`PixelTable+126`); `$FBBC`-`$FBF3` (`PixelTable+444`); `$FD40`-`$FD41` (`ScreenLineTable+320`) |
+| Writes | `$5084`-`$5089` (screen); `$509B`-`$509F` (screen) |
 
 ### `FlipPixel` (`$FDB3`)
 
@@ -2649,9 +2942,10 @@ Called from `$AE12`; run in i1 97928 times.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 13,268 calls, 1,692,832 t-states own (0.15 %) |
+| Runs (the other recordings) | 252,670 calls (`runs/i2` 111,286, `runs/i1` 97,928, `runs/p2` 15,416 and 5 more) |
 | Called from | `ShotPlot` |
-| Reads | `$4067`-`$5008` (screen); `$5107`-`$5116` (screen); `$5207`-`$5217` (screen); `$5307`-`$5308` (screen); `$5407`-`$5537` (screen); `$5607`-`$5608` (screen); 4 more ranges |
-| Writes | `$4067`-`$5008` (screen); `$5107`-`$5116` (screen); `$5207`-`$5217` (screen); `$5307`-`$5308` (screen); `$5407`-`$5537` (screen); `$5607`-`$5608` (screen); 1 more ranges |
+| Reads | `$4067`-`$5058` (screen); `$5107`-`$5116` (screen); `$5207`-`$5237` (screen); `$5307`-`$5338` (screen); `$5407`-`$5539` (screen); `$5607`-`$5639` (screen); 3 more ranges |
+| Writes | `$4067`-`$5116` (screen); `$5207`-`$5237` (screen); `$5307`-`$5338` (screen); `$5407`-`$5539` (screen); `$5607`-`$5639` (screen); `$5707`-`$5716` (screen) |
 
 ### `PrintChar` (`$FDCC`)
 
@@ -2662,8 +2956,9 @@ Keeps BC, DE, HL and IX; works in the other register set. Sets IX = `$F000` and 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 13,526 calls, 1,298,677 t-states own (0.11 %) |
+| Runs (the other recordings) | 65,980 calls (`runs/i2` 19,869, `runs/a1` 15,778, `runs/i1` 15,291 and 5 more) |
 | Called from | `HeroesPrintRow`, `AllTimePrintRow`, `HeroesDrawTables`, `HiScoreEntry`, `EntryFieldDraw`, `GameStart`, `HudDraw`, `HudPrintPointLetter`, `HudPrintScore`, `PrintBcd`, `CmdPoint`, `PrintText` |
-| Calls | `PrintCharNormal`, `PrintInk`, `PrintPaper`, `PrintFlash`, `PrintBright`, `PrintAtX`, `PrintAtY`, `PrintMarginSet`, `PrintLimitSet`, `PrintFontSet` |
+| Calls | `PrintCharNormal`, `PrintInk`, `PrintPaper`, `PrintFlash`, `PrintBright`, `PrintAtX`, `PrintAtY`, `PrintTab`, `PrintMarginSet`, `PrintLimitSet`, `PrintFontSet` |
 | Reads | `$F00A`-`$F00B` (`PrintState`) |
 
 ### `PrintCharDone` (`$FDDD`)
@@ -2673,7 +2968,8 @@ Keeps BC, DE, HL and IX; works in the other register set. Sets IX = `$F000` and 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 13,526 calls, 649,313 t-states own (0.06 %) |
-| Called from | `PrintCharNormal`, `PrintInk`, `PrintPaper`, `PrintFlash`, `PrintBright`, `PrintAtX`, `PrintAtY`, `PrintMarginSet`, `PrintLimitSet`, `PrintFontSet`, `PrintRowsOr` |
+| Runs (the other recordings) | 65,980 calls (`runs/i2` 19,869, `runs/a1` 15,778, `runs/i1` 15,291 and 5 more) |
+| Called from | `PrintCharNormal`, `PrintInk`, `PrintPaper`, `PrintFlash`, `PrintBright`, `PrintAtX`, `PrintAtY`, `PrintTab`, `PrintMarginSet`, `PrintLimitSet`, `PrintFontSet`, `PrintColour`, `PrintRowsOr` |
 
 ### `PrintCharNormal` (`$FDE3`)
 
@@ -2684,6 +2980,7 @@ Keeps BC, DE, HL and IX; works in the other register set. Sets IX = `$F000` and 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 705,408 t-states own (0.06 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/a1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintGlyph` (tail) |
 | Reads | `$F000`-`$F010` (`PrintY`, `PrintX`, `PrintShift`, `PrintCode` and 7 more); `$F080`-`$F095` (`PrintCodeTable`) |
@@ -2726,6 +3023,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 5,822 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/h1`, `runs/p2` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Reads | `$F004` (`PrintAttr`) |
@@ -2738,6 +3036,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 5,130 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/p2`, `runs/h1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Reads | `$F004` (`PrintAttr`) |
@@ -2750,6 +3049,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 385 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/h1`, `runs/g1` and 2 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Reads | `$F004` (`PrintAttr`) |
@@ -2762,6 +3062,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 6,209 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/p2`, `runs/h1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Reads | `$F004` (`PrintAttr`) |
@@ -2774,6 +3075,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 121,980 t-states own (0.01 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/a1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone` |
 | Writes | `$F001`-`$F00B` (`PrintX`, `PrintShift`, `PrintCode`, `PrintAttr` and 5 more) |
@@ -2785,6 +3087,7 @@ Not executed in any recording (game, a1, g1, t1, p2, h1, i1, i2, h2): known only
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 169,291 t-states own (0.01 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/a1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone` |
 | Writes | `$F000`-`$F00B` (`PrintY`, `PrintX`, `PrintShift`, `PrintCode` and 6 more) |
@@ -2798,6 +3101,10 @@ Run only in a1 (320) and t1 (16): the score advance table's columns.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`runs/a1`, `runs/t1`) |
+| Called from | `PrintChar` |
+| Calls | `PrintCharDone` |
+| Reads | `$F001` (`PrintX`) |
+| Writes | `$F001`-`$F00B` (`PrintX`, `PrintShift`, `PrintCode`, `PrintAttr` and 5 more) |
 
 ### `PrintMarginSet` (`$FEAA`)
 
@@ -2806,6 +3113,7 @@ Run only in a1 (320) and t1 (16): the score advance table's columns.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,175 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/i2`, `runs/i1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Writes | `$F005` (`PrintMargin`) |
@@ -2817,6 +3125,7 @@ Run only in a1 (320) and t1 (16): the score advance table's columns.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 1,700 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/a1`, `runs/i2`, `runs/i1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone` |
 | Writes | `$F006`-`$F00B` (`PrintLimit`, `PrintError`, `PrintFont`, `PrintState`) |
@@ -2828,6 +3137,7 @@ Run only in a1 (320) and t1 (16): the score advance table's columns.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 29,680 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`runs/i2`, `runs/i1`, `runs/a1` and 5 more) |
 | Called from | `PrintChar` |
 | Calls | `PrintCharDone`, `PrintTakeParam` |
 | Reads | `$F096`-`$F0AD` (`FontDescriptors`) |
@@ -2842,6 +3152,7 @@ Called by each control code handler that takes a number (game 354 runs).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 354 calls, 22,710 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,230 calls (`runs/a1` 506, `runs/i2` 179, `runs/i1` 164 and 5 more) |
 | Called from | `PrintInk`, `PrintPaper`, `PrintFlash`, `PrintBright`, `PrintMarginSet`, `PrintFontSet` |
 | Reads | `$F007` (`PrintError`) |
 | Writes | `$F007`-`$F00B` (`PrintError`, `PrintFont`, `PrintState`) |
@@ -2855,9 +3166,10 @@ The width: PrintWidthSpace for a space, PrintWidthI for "I", PrintWidthMW for "M
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 5,268 calls, 10,562,237 t-states own (0.92 %) |
+| Runs (the other recordings) | 29,220 calls (`runs/a1` 10,044, `runs/i2` 6,607, `runs/i1` 5,051 and 5 more) |
 | Called from | `PrintCharNormal` (tail) |
 | Calls | `PrintAttrCheck` (tail) |
-| Reads | `$F000`-`$F011` (`PrintY`, `PrintX`, `PrintShift`, `PrintCode` and 7 more); `$F022`-`$F02C` (`PrintShifted`); `$F108`-`$F10C` (`FontSmall+8`); `$F148`-`$F14C` (`FontSmall+72`); `$F180`-`$F1CC` (`FontSmall+128`); `$F208`-`$F2D4` (`FontSmall+264`); 5 more ranges |
+| Reads | `$F000`-`$F011` (`PrintY`, `PrintX`, `PrintShift`, `PrintCode` and 7 more); `$F022`-`$F02C` (`PrintShifted`); `$F108`-`$F10C` (`FontSmall+8`); `$F148`-`$F1CC` (`FontSmall+72`); `$F208`-`$F2D4` (`FontSmall+264`); `$F400`-`$F6CD` (`FontBold`); 3 more ranges |
 | Writes | `$F002`-`$F02D` (`PrintShift`, `PrintCode`, `PrintAttr`, `PrintMargin` and 7 more) |
 
 ### `PrintColour` (`$FF95`)
@@ -2869,10 +3181,11 @@ HL = the first row's screen address; the cell's attribute address from its high 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 4,055 calls, 497,280 t-states own (0.04 %) |
+| Runs (the other recordings) | 16,951 calls (`runs/a1` 9,828, `runs/p2` 2,645, `runs/h1` 1,481 and 5 more) |
 | Called from | `PrintAttrCheck` (tail) |
-| Calls | `PrintRowsOr` |
-| Reads | `$F004` (`PrintAttr`) |
-| Writes | `$581C`-`$5820` (screen); `$583C`-`$5ADD` (screen) |
+| Calls | `PrintCharDone`, `PrintRowsOr` |
+| Reads | `$4087`-`$40DA` (screen); `$4109`-`$46EE` (screen); `$4767`-`$47BA` (screen); `$4862`-`$4EE9` (screen); `$5008`-`$55DE` (screen); `$5601`-`$56DE` (screen); 3 more ranges |
+| Writes | `$4087`-`$46EE` (screen); `$4767`-`$47BA` (screen); `$4862`-`$4EE9` (screen); `$5008`-`$55DE` (screen); `$5601`-`$56DE` (screen); `$5701`-`$571E` (screen); 3 more ranges |
 
 ### `PrintRowsOr` (`$FFAD`)
 
@@ -2883,10 +3196,11 @@ Run 5268 times in game.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 5,268 calls, 3,949,600 t-states own (0.34 %) |
+| Runs (the other recordings) | 28,343 calls (`runs/a1` 10,044, `runs/i2` 6,607, `runs/i1` 5,051 and 4 more) |
 | Called from | `PrintAttrCheck` (tail), `PrintColour` |
 | Calls | `PrintCharDone` |
-| Reads | `$4084`-`$4119` (screen); `$4133`-`$46FD` (screen); `$4749`-`$4EFD` (screen); `$4F4C`-`$56BD` (screen); `$56DF`-`$56E0` (screen); `$5703`-`$577D` (screen); 1 more ranges |
-| Writes | `$4084`-`$4119` (screen); `$4133`-`$46FD` (screen); `$4749`-`$4EFD` (screen); `$4F4C`-`$56BD` (screen); `$56DF`-`$56E0` (screen); `$5703`-`$577D` (screen); 1 more ranges |
+| Reads | `$4084`-`$577D` (screen); `$57C1`-`$57DE` (screen); `$F001`-`$F02D` (`PrintX`, `PrintShift`, `PrintCode`, `PrintAttr` and 8 more) |
+| Writes | `$4084`-`$577D` (screen); `$57C1`-`$57DE` (screen); `$F001` (`PrintX`) |
 
 ### `PrintText` (`$FFD0`)
 
@@ -2899,9 +3213,10 @@ Run 4004 times in game. The build-date strings start with `$1F` and print nothin
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 238 calls, 209,384 t-states own (0.02 %) |
-| Called from | `MenuEntry`, `OptionsPage`, `HeroesDrawTables`, `HiScoreEntry`, `GameStart`, `LifeStart`, `HudDraw`, `HudPrintPoint`, `CmdPoint` |
+| Runs (the other recordings) | 644 calls (`runs/i2` 157, `runs/i1` 151, `runs/p2` 105 and 5 more) |
+| Called from | `MenuEntry`, `TitlePage`, `OptionsPage`, `HeroesDrawTables`, `HiScoreEntry`, `GreatestEntry`, `GameStart`, `GameAfterLife`, `LifeStart`, `HudDraw`, `HudPrintPoint`, `CmdPoint`, `SectorBonus` |
 | Calls | `PrintChar` |
-| Reads | `$7F00` (`BuildDate0335`); `$8413`-`$8A4B` (`TitleText`, `OptionsText`, `ScoreAdvanceText`, `DemoText` and 19 more); `$8DB1`-`$8E3F` (`HiScoreTexts`, `CongratulationsText`, `YouAreAtText`, `YouAreText` and 9 more); `$9073`-`$90B8` (`TextPlayer`, `TextGameOver`, `TextGameOverPlayer`, `TextNoDate`); `$93D3`-`$942C` (`HudTextLamps`, `HudText1P`, `HudText2P`, `HudTextTimePoint` and 3 more); `$97A7`-`$97AC` (`TextPointAt`); 2 more ranges |
+| Reads | `$7F00` (`BuildDate0335`); `$8413`-`$8A4B` (`TitleText`, `OptionsText`, `ScoreAdvanceText`, `DemoText` and 19 more); `$8DB1`-`$90B8` (`HiScoreTexts`, `GreatestEntry`, `HiScoreFindSlot`, `ScoreCompare` and 9 more); `$93D3`-`$942C` (`HudTextLamps`, `HudText1P`, `HudText2P`, `HudTextTimePoint` and 3 more); `$97A7`-`$97AC` (`TextPointAt`); `$A182` (`LifeStartDateText`); 1 more ranges |
 
 ### `PrintReset` (`$FFDA`)
 

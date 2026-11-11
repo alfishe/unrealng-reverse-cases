@@ -68,5 +68,9 @@
     "stage1/c1",
     "stage1/menu"
   ],
-  "no_entries": true
+  "no_entries": true,
+  "witness_skip": [
+    "stage2/death-crush",
+    "stage2/death-fire"
+  ]
 }

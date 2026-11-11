@@ -239,16 +239,17 @@ How to read the animation:
 
 - Top left: memory `$C000-$FFFF`, 256 bytes a row; the record of cave 2 (`$C13A-$C273`) is read, the grid at the
   bottom is written.
-- Below it: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes, so each row of the picture is a row of the cave. Yellow bytes
-  were written in this slice; they fade through red over the next few slices and then turn grey again (the hex view
-  keeps no trail), so the last picture colours only the last row written, and the 570 cells before it are grey. Two
+- Under the map and the listing: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes, so each row of the picture is a row of
+  the cave. Yellow bytes were written in this slice; they fade through red over the next few slices and then keep a
+  dim rose trail, so the last picture shows all 600 cells written, the last row still in the write colours. Two
   bytes appear for each record byte read: a code in the low nibble and one in the high.
 - Right: the listing with the instruction running; the loop at `$82C9-$82DB` runs 300 times, then the LDIR copies
   the parameters.
 - Recording and frames: `rzx-earth02` (the RZX player's play, replayed), frame 269, T 13 000 to T 44 200 (the routine
   runs from 269:13109 to 269:44113, 31 004 T). Command: `python3 ../../kit/routine_anim.py --work work/docs/esC/r02
   --window 269:13000-269:44200 --pictures 100 --listing build/game.lst --view buffer:FDA8:30x20:hex --range
-  C000-FFFF --pc 82B6-82E5 --out docs/img/routines/UnpackCave-nibbles.gif`.
+  C000-FFFF --pc 82B6-82E5 --title "rzx-earth02 frame 269 (RZX replay): UnpackCave splits cave 2's 300 record bytes
+  into 600 cells, then copies the 14 parameters" --out docs/img/routines/UnpackCave-nibbles.gif`.
 
 The cave it builds, drawn whole from the record by `tools/fig_caves.py`, and the same cave on the screen half way
 through the recording:
@@ -597,9 +598,9 @@ last step of the burst of `rzx-earth02`:
 
 How to read the animation:
 
-- Left: the grid `$FDA8-$FFFF` as 30 x 20 hex bytes. The loop reads every cell from the top left (blue); the one write
-  (yellow) is cell 50, row 1, column 20, where `$14` becomes `$20`, early in the walk. The write fades after a few
-  slices: the hex view keeps no trail.
+- Top left: memory `$FD00-$FFFF`; under it and the listing, the grid `$FDA8-$FFFF` as 30 x 20 hex bytes. The loop
+  reads every cell from the top left (blue); the one write (yellow) is cell 50, row 1, column 20, where `$14` becomes
+  `$20`, early in the walk. The write fades over a few slices and then keeps a dim rose trail to the last picture.
 - Right: the listing of `AnimateCellCodes`; the branch `$9395 LD A,$20` (the burst ends) runs once, `$939B` (the
   dissolve ends) not at all.
 - Recording and frames: `rzx-earth02` (the RZX player's play, replayed), 2485:33900 to 2485:68900, 80 pictures; the

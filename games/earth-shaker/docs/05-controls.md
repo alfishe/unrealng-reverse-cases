@@ -716,8 +716,8 @@ The animations of this walk, one as the cave buffer and one as the screen:
 *KeysStep, PlayerStep and the Try routines writing the cave grid: PlayerIndex and the cells as hex. Recording
 `rzx-earth01` (replayed RZX), window 2945:0-3030:0, cave rows 11-16 (`$FEF2`, 30 x 6). `python3 R/kit/routine_anim.py
 --work work/docs/esB/rzx01 --window 2945:0-3030:0 --listing build/game.lst --view buffer:FEF2:30x6:hex --pc
-83C3-8595,8759-8884,E81F-E86F --range 8000-FFFF --pictures 85 --hold 3000 --title ...`. The kit draws the hex view
-1084 px wide (a kit gap, R/TODO.md). The listing pane is the image as loaded (`build/game.lst`), with the keyboard
+83C3-8595,8759-8884,E81F-E86F --range 8000-FFFF --pictures 85 --hold 3000 --title ...`. The hex view runs under the
+memory map and the listing; a cell written earlier in the window keeps a dim rose trail. The listing pane is the image as loaded (`build/game.lst`), with the keyboard
 form at the key sites; in this recording the sites hold the Kempston code (5.3), so the instructions that really run
 are `NOP` x 4, `IN A,($1F)`, `AND $10`, `JR NZ` at KeysStep and `IN A,($1F)`, `AND` mask, `RET Z` at the Try sites.*
 

@@ -7,7 +7,8 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
     python3 kit/mkgame.py [--case CASE] --image BIN --org ADDR --ann FILE --top NAME --dest DIR     one image
                           [--range LO-HI] [--res DIR] [--l1 L1.json ...] [--l1-reads L1.json ...] [--blocks]
                           [--page N ...] [--bank N] [--built NAME=PATH ...] [--save PATH] [--title TEXT] [--install]
-    every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py)
+    every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py) and
+    --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints)
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only)
@@ -26,6 +27,7 @@ INCLUDEd that are gone now, and a resource's NAME.bin an earlier install left wh
 editable form.
 """
 import argparse
+import fnmatch
 import glob
 import importlib.util
 import json
@@ -131,6 +133,9 @@ class Source:
                       spec.get('optional', False))
 
 
+EXECS = {}  # l1.json path -> {address: the runs of the instruction there}, filled by read_sources
+
+
 def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=False):
     """(instruction starts, routine entries, data reads) of the image lo..hi-1 from its recordings.
 
@@ -149,6 +154,12 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             doc = json.load(open(path))
             wlo = lo if src.lo is None else max(lo, src.lo)
             whi = hi if src.hi is None else min(hi, src.hi)
+            if src.format == 'l1':  # the runs of each instruction, for the witness check
+                ran = EXECS.setdefault(path, {})
+                for z80, page, _code, _kind, n, *_ in doc['instructions']:
+                    if page in bases:
+                        a = int(z80[1:], 16)
+                        ran[a] = ran.get(a, 0) + n
             if src.format == 'trace':
                 for a, n in doc['starts'].items():
                     if decode(mem, int(a, 16))[0] == n:
@@ -1371,6 +1382,7 @@ def make_part(part, args):
         smem = bytearray(0x10000)
         smem[LO:HI] = original[lo - at:hi - at]
         results.append(generate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top))
+        check_witness(seg, part.get('witness_skip', ()), args.fix_witness)
         print(f'{os.path.relpath(seg.ann, ROOT)}{" " + seg.piece if seg.piece else ""}: {results[-1][5]}')
     every_label = set().union(*(r[4] for r in results if r), set(part.get('external', ())),
                               {s['load_label'] for s in segments if 'load_label' in s})
@@ -1464,6 +1476,79 @@ def assemble(part, args, out, top):
     run(cmd + ['--lst=%s.lst' % top, top + '.asm'], cwd=out)
 
 
+WITNESS = re.compile(r'Witness: L1 (\d+) \(([^)]*)\)')
+
+
+def build_name(build):
+    """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, timer -> timer"""
+    parts = build.split('/')
+    return parts[1] if len(parts) > 1 else parts[0]
+
+
+def witness_text(builds, address):
+    """'N (names)' of a code entry: the runs of its first instruction summed over the builds {build: runs}, and the
+    builds that ran it; names of a numbered family (rzx01 ... rzx32: two or more in the set) as 'rzx xK'"""
+    family = {}
+    for b in builds:
+        m = re.match(r'(.*?)(\d+)$', build_name(b))
+        if m:
+            family.setdefault(m.group(1), []).append(b)
+    singles, groups, total = [], {}, 0
+    for b, ran in builds.items():
+        n = ran.get(address, 0)
+        if not n:
+            continue
+        total += n
+        m = re.match(r'(.*?)(\d+)$', build_name(b))
+        if m and len(family[m.group(1)]) > 1:
+            groups[m.group(1)] = groups.get(m.group(1), 0) + 1
+        else:
+            singles.append(build_name(b))
+    return total, ', '.join(sorted(singles) + ['%s x%d' % (k, v) for k, v in sorted(groups.items())])
+
+
+def check_witness(seg, skip=(), fix=False):
+    """The "Witness: L1 N (builds)" lines of the .ann's code entries against the recordings: N is the runs of the
+    entry's first instruction summed over the segment's builds (the case's read_builds and code_builds, less
+    witness_skip), the list the builds that ran it. Prints each stale line; fix: rewrites N and the list in the .ann.
+    Returns the number of stale lines"""
+    if not seg.ann or not os.path.exists(seg.ann):
+        return 0
+    work = os.path.join(ROOT, 'work')
+    builds = {}
+    for path, ran in EXECS.items():
+        build = os.path.relpath(os.path.dirname(path), work)
+        if build not in skip and any(os.path.abspath(path) == os.path.abspath(s.path) or
+                                     ('*' in s.path and fnmatch.fnmatch(path, s.path)) for s in seg.sources):
+            builds[build] = ran
+    lines = open(seg.ann).read().split('\n')
+    entry, stale = None, 0
+    for i, line in enumerate(lines):
+        text = line.strip()
+        if text.startswith('$'):
+            m = ANNOTATION.match(text)
+            if m and m.group(2):
+                entry = (int(m.group(1), 16), m.group(2), m.group(3))
+            continue
+        if not text.startswith('>') or entry is None or entry[1] != 'c':
+            continue
+
+        def sub(w):
+            nonlocal stale
+            n, names = witness_text(builds, entry[0])
+            if (int(w.group(1)), w.group(2)) == (n, names):
+                return w.group(0)
+            stale += 1
+            print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s' % (
+                os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', w.group(1), w.group(2), n, names,
+                ': rewritten' if fix else ''))
+            return 'Witness: L1 %d (%s)' % (n, names)
+        lines[i] = WITNESS.sub(sub, line)
+    if fix and stale:
+        open(seg.ann, 'w').write('\n'.join(lines))
+    return stale
+
+
 def single_part(part, args, mem, original, at, top, out, device, built):
     """the single layout: the image's range lo..hi with one .ann (or one piece)"""
     global LO, HI
@@ -1476,6 +1561,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
         seg.bases = natural_bases([seg.bank], LO)
     result = generate(seg, mem, args, out, top)
     modules, head, resources, ann, _, stats = result
+    check_witness(seg, part.get('witness_skip', ()), args.fix_witness)
     if part.get('game'):
         print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
     print(f'{top}: {stats}')
@@ -1550,7 +1636,7 @@ def game_part(config, ann):
     if config.get('image_cmd'):
         part['image_cmd'] = config['image_cmd']
     for key in ('work', 'operands', 'res_install', 'mode', 'same_bytes', 'data_entries', 'overwritten',
-                'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code'):
+                'isub_as_written', 'drop_data_refs', 'no_entries', 'entries_in_code', 'witness_skip'):
         if key in config:
             part[key] = config[key]
     return part
@@ -1628,6 +1714,8 @@ def main():
     p.add_argument('--out', help='the work folder')
     p.add_argument('--ann', help='the annotations (the game: src/game/game.ann)')
     p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
+    p.add_argument('--fix-witness', action='store_true', help='rewrite the stale "Witness: L1 N (builds)" lines of '
+                   'the .ann from the recordings (mkgame prints them in any case)')
     args = p.parse_args()
     args.venv = toolpaths.skoolkit_venv(args.venv)
     args.sjasmplus = toolpaths.sjasmplus(args.sjasmplus)

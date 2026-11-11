@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/game` (the first recording's game window), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -56,6 +56,7 @@ Inputs: the hen records. Outputs: the record moved; the screen. Side effects: Ra
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 801 calls, 292,489 t-states own (0.12 %) |
+| Runs (the other recordings) | 37,357 calls (`stage1/rec/gameover-name` 14,565, `stage1/rec/levels-1-9` 7,426, `stage1/rec/idle-1p` 5,204 and 4 more) |
 | Called from | `MainLoop` |
 | Calls | `HenEatGrain`, `DrawHen`, `MapCellPeek` |
 | Reads | `$6EEB` (system); `$7356`-`$736D` (system) |
@@ -74,10 +75,11 @@ Known only from the code: when the peck's DrawHen finds Harry touching the hen, 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 87 calls, 14,763 t-states own (0.01 %) |
+| Runs (the other recordings) | 6,659 calls (`stage1/rec/gameover-name` 3,357, `stage1/rec/levels-1-9` 1,307, `stage1/rec/idle-1p` 676 and 4 more) |
 | Called from | `MoveHen` |
 | Calls | `DrawHen`, `MapCellAt` |
-| Reads | `$7359`-`$735D` (system) |
-| Writes | `$63D7` (system); `$7359` (system) |
+| Reads | `$7359`-`$7365` (system) |
+| Writes | `$61C9`-`$61E6` (system); `$6249`-`$625F` (system); `$62D0`-`$62DF` (system); `$6349`-`$634C` (system); `$63B3` (system); `$63CE`-`$63DB` (system); 1 more ranges |
 
 ### `DrawHen` (`$929C`)
 
@@ -96,10 +98,11 @@ Witness: 44 867 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 643 calls, 2,418,055 t-states own (0.95 %) |
+| Runs (the other recordings) | 44,224 calls (`stage1/rec/gameover-name` 22,271, `stage1/rec/levels-1-9` 8,902, `stage1/rec/idle-1p` 4,173 and 4 more) |
 | Called from | `MoveHen`, `HenEatGrain` |
 | Calls | `AttrAddrHen`, `MapCellAddrKeepA`, `ScreenAddr` |
-| Reads | `$40A8`-`$50E0` (screen); `$510A`-`$51E0` (screen); `$520A`-`$52E0` (screen); `$530A`-`$53E0` (screen); `$540A`-`$54E0` (screen); `$550A`-`$55E0` (screen); 14 more ranges |
-| Writes | `$4088`-`$51E0` (screen); `$520A`-`$52E0` (screen); `$530A`-`$53E0` (screen); `$540A`-`$54E0` (screen); `$550A`-`$55E0` (screen); `$560A`-`$56E0` (screen); 8 more ranges |
+| Reads | `$409B`-`$51E0` (screen); `$5201`-`$52E0` (screen); `$5301`-`$53E0` (screen); `$5401`-`$54E0` (screen); `$5501`-`$55E0` (screen); `$5601`-`$56E0` (screen); 7 more ranges |
+| Writes | `$407B`-`$52E0` (screen); `$5300`-`$53E0` (screen); `$5400`-`$54E0` (screen); `$5500`-`$55E0` (screen); `$5600`-`$56E0` (screen); `$5700`-`$57E0` (screen); 1 more ranges |
 
 ### `AttrAddrHen` (`$93DD`)
 
@@ -110,6 +113,7 @@ Input: L = x, H = y. Output: HL = `$5800` + x / 8 + 32 x ((191 - y) / 8). AF and
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 642 calls, 111,123 t-states own (0.04 %) |
+| Runs (the other recordings) | 44,214 calls (`stage1/rec/gameover-name` 22,266, `stage1/rec/levels-1-9` 8,902, `stage1/rec/idle-1p` 4,168 and 4 more) |
 | Called from | `DrawHen` |
 
 ### `MapCellAddrKeepA` (`$93FE`)
@@ -121,6 +125,7 @@ MapCellAt `$9E34` with AF saved: HL = the cell's address in LiveMap. Witness: 22
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 322 calls, 15,456 t-states own (0.01 %) |
+| Runs (the other recordings) | 22,152 calls (`stage1/rec/gameover-name` 11,140, `stage1/rec/levels-1-9` 4,473, `stage1/rec/idle-1p` 2,089 and 4 more) |
 | Called from | `DrawHen` |
 | Calls | `MapCellAt` |
 
@@ -133,6 +138,7 @@ Input: L = x, H = y (0 at the bottom). Output: HL = the display file byte of tha
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 642 calls, 167,458 t-states own (0.07 %) |
+| Runs (the other recordings) | 44,214 calls (`stage1/rec/gameover-name` 22,266, `stage1/rec/levels-1-9` 8,902, `stage1/rec/idle-1p` 4,168 and 4 more) |
 | Called from | `DrawHen` |
 
 ### `MapCellPeek` (`$9438`)
@@ -144,6 +150,7 @@ MapCellAt `$9E34` with HL saved. Witness: 19 822 calls (MoveHen's floor and ladd
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 282 calls, 13,555 t-states own (0.01 %) |
+| Runs (the other recordings) | 19,540 calls (`stage1/rec/gameover-name` 9,890, `stage1/rec/levels-1-9` 3,858, `stage1/rec/idle-1p` 1,836 and 4 more) |
 | Called from | `MoveHen` |
 | Calls | `MapCellAt` |
 
@@ -164,10 +171,11 @@ Callers: MainLoop before Harry moves, JumpStep before each step, JumpFall `$A2BE
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,837 calls, 4,436,128 t-states own (1.75 %) |
+| Runs (the other recordings) | 144,746 calls (`stage1/rec/gameover-name` 50,630, `stage1/rec/levels-1-9` 39,767, `stage1/rec/idle-1p` 16,900 and 4 more) |
 | Called from | `MainLoop`, `MoveDuck`, `JumpStep`, `JumpFall` |
 | Calls | `CellAttrAddr`, `MapCellAddr` |
-| Reads | `$61AF`-`$6240` (system); `$63C9`-`$63CB` (system); `$63E9`-`$63EB` (system); `$6409`-`$640B` (system); `$984F`-`$9854` (`CellAttributes`) |
-| Writes | `$5881`-`$5883` (screen); `$58A1`-`$58A3` (screen); `$58C1`-`$58C3` (screen); `$5A67`-`$5AFA` (screen) |
+| Reads | `$61A8`-`$645E` (system); `$646F`-`$647D` (system); `$984F`-`$9854` (`CellAttributes`) |
+| Writes | `$5827`-`$5835` (screen); `$5847`-`$5AFD` (screen) |
 
 ### `CellAttrAddr` (`$9584`)
 
@@ -178,6 +186,7 @@ As AttrAddrHen `$93DD`, the result in DE. Witness: 147 583 calls (PaintCells).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,837 calls, 502,187 t-states own (0.20 %) |
+| Runs (the other recordings) | 144,746 calls (`stage1/rec/gameover-name` 50,630, `stage1/rec/levels-1-9` 39,767, `stage1/rec/idle-1p` 16,900 and 4 more) |
 | Called from | `PaintCells` |
 
 ### `MapCellAddr` (`$95A6`)
@@ -189,6 +198,7 @@ Output: HL = LiveMap + x / 8 + 4 x (y AND `$F8`): row y / 8 from the bottom, 32 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,837 calls, 470,980 t-states own (0.19 %) |
+| Runs (the other recordings) | 144,746 calls (`stage1/rec/gameover-name` 50,630, `stage1/rec/levels-1-9` 39,767, `stage1/rec/idle-1p` 16,900 and 4 more) |
 | Called from | `PaintCells` |
 
 ## mainloop
@@ -212,11 +222,12 @@ Witness: 14 873 212 passes in the eight builds, 113 934 slow ticks (`$99D9`); 47
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 52,356,726 t-states own (20.68 %) |
+| Runs (the other recordings) | 2,027,644 calls (`stage1/rec/idle-1p` 2,027,615, `stage1/rec/levels-1-9` 11, `stage1/rec/gameover-name` 8 and 4 more) |
 | Called from | `SetupLevel` (tail) |
 | Calls | `MoveHen`, `PaintCells`, `TakeEggOrGrain`, `Beep`, `WalkHarry`, `HenTouches`, `ClimbLadder`, `LeaveLadder`, `MoveLifts`, `MoveDuck`, `CountDown`, `JumpStep`, `FallOffEdge` |
 | Reads | `$5C3D`-`$5C3E` (system); `$6EEB` (system); `$72D8`-`$72DC` (system); `$7325`-`$7370` (system) |
-| Writes | `$72DB`-`$72DC` (system); `$7325`-`$732A` (system); `$733C`-`$7355` (system); `$736B`-`$7370` (system) |
-| Ports in | `$7FFE`, `$DFFE`, `$F7FE`, `$FEFE` |
+| Writes | `$72D9`-`$72DC` (system); `$7325`-`$732A` (system); `$733C`-`$7355` (system); `$736B`-`$7370` (system) |
+| Ports in | `$7FFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FEFE` |
 
 ### `TakeEggOrGrain` (`$99DF`)
 
@@ -231,10 +242,11 @@ Witness: 114 442 calls; 16 levels completed (`$9A15`), 65 grains (`$9A1A`). The 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,401 calls, 246,755 t-states own (0.10 %) |
+| Runs (the other recordings) | 112,041 calls (`stage1/rec/gameover-name` 43,684, `stage1/rec/levels-1-9` 22,274, `stage1/rec/idle-1p` 15,602 and 4 more) |
 | Called from | `MainLoop` |
 | Calls | `MapCellAt`, `AddScore` |
-| Reads | `$72D8`-`$72D9` (system) |
-| Writes | `$61DD` (system); `$7345`-`$7346` (system); `$7370` (system) |
+| Reads | `$6EE6`-`$6EEB` (system); `$72D8`-`$72D9` (system) |
+| Writes | `$61C9`-`$61EE` (system); `$6212`-`$621C` (system); `$6230`-`$6275` (system); `$62A0`-`$62A1` (system); `$62B3`-`$62FF` (system); `$6321` (system); 5 more ranges |
 
 ## sprite
 
@@ -255,10 +267,11 @@ Witness: 134 270 calls (WalkHarry, ClimbLadder, JumpStep, MoveDuck, CatchLift); 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,942 calls, 72,384,045 t-states own (28.58 %) |
-| Called from | `WalkHarry`, `ClimbLadder`, `MoveDuck`, `DrawHarryFrame` |
+| Runs (the other recordings) | 131,328 calls (`stage1/rec/gameover-name` 51,046, `stage1/rec/levels-1-9` 26,350, `stage1/rec/idle-1p` 18,203 and 4 more) |
+| Called from | `WalkHarry`, `ClimbLadder`, `MoveDuck`, `CatchLift`, `DrawHarryFrame` |
 | Calls | `SpriteAttrAddr` |
-| Reads | `$61AF`-`$6240` (system); `$63C9`-`$63CB` (system); `$63E9`-`$63EB` (system); `$6409`-`$640B` (system); `$72A0`-`$7321` (system); `$7348` (system); 4 more ranges |
-| Writes | `$40A1`-`$47A3` (screen); `$5087`-`$51DA` (screen); `$5287`-`$52DA` (screen); `$5387`-`$53DA` (screen); `$5487`-`$55DA` (screen); `$5667`-`$56DA` (screen); 6 more ranges |
+| Reads | `$61A8`-`$645E` (system); `$646F`-`$647D` (system); `$72A0`-`$7321` (system); `$7348`-`$7349` (system); `$84F0`-`$851F` (`CharacterSet`); `$8A48`-`$8A9F` (`HudCharacters+104`); 1 more ranges |
+| Writes | `$4047`-`$4055` (screen); `$4067`-`$57DD` (screen); `$5827`-`$5835` (screen); `$5847`-`$5AE8` (screen); `$5AFA`-`$5AFD` (screen); `$72A0`-`$7324` (system) |
 
 ### `SpriteAttrAddr` (`$9BDE`)
 
@@ -269,6 +282,7 @@ As AttrAddrHen `$93DD`. Witness: 134 267 calls (DrawSprite).
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,942 calls, 509,194 t-states own (0.20 %) |
+| Runs (the other recordings) | 131,325 calls (`stage1/rec/gameover-name` 51,046, `stage1/rec/levels-1-9` 26,350, `stage1/rec/idle-1p` 18,203 and 4 more) |
 | Called from | `DrawSprite` |
 
 ## sound
@@ -286,8 +300,9 @@ Four NOPs (room for a patch), then: the screen address of character row H (0 = r
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,684 calls, 1,124,123 t-states own (0.44 %) |
-| Called from | `Start`, `TitlePage`, `DrawHiScores`, `SetupLevel` |
-| Reads | `$84F0`-`$851F` (`CharacterSet`); `$8548`-`$8597` (`CharacterSet+88`); `$85C8`-`$85DF` (`CharacterSet+216`); `$85F0`-`$8627` (`CharacterSet+256`); `$8650`-`$86BF` (`CharacterSet+352`); `$86E8`-`$87BF` (`CharacterSet+504`); 2 more ranges |
+| Runs (the other recordings) | 31,428 calls (`stage1/rec/idle-1p` 8,201, `stage1/rec/levels-1-9` 7,946, `stage1/rec/gameover-name` 6,998 and 4 more) |
+| Called from | `AddScore`, `Start`, `TitlePage`, `TitleLoop`, `StartGame`, `EnterHiScore`, `Message`, `RedefineKeys`, `RedefineOne`, `DrawHiScores`, `SetupLevel` |
+| Reads | `$84F0`-`$86BF` (`CharacterSet`); `$86E8`-`$87BF` (`CharacterSet+504`); `$87F8`-`$8B4F` (`CharacterSet+776`, `HudCharacters`) |
 | Writes | `$4000`-`$57FF` (screen) |
 
 ### `PhraseVector` (`$9C9C`)
@@ -299,7 +314,8 @@ VectorTable `$B200` holds `$9C9C` at every place (I = `$B2`, Start `$A410`), so 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,104 calls, 31,040 t-states own (0.01 %) |
-| Entered by | the interrupt, 3,035 times in 28 routines |
+| Runs (the other recordings) | 124,062 calls (`stage1/rec/gameover-name` 39,861, `stage1/rec/idle-1p` 28,802, `stage1/rec/levels-1-9` 25,251 and 4 more) |
+| Entered by | the interrupt, 126,786 times in 54 routines |
 | Calls | `PhraseInterrupt` (tail) |
 | Reads | `$B2FF`-`$B300` (`VectorTable+255`) |
 | Writes | `$FF1E`-`$FF3F` (`work space $FF1E+`) |
@@ -315,7 +331,8 @@ OUT (`$FE`) `$10` (the speaker bit, black border), wait H, OUT 0, wait H, L time
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 493 calls, 1,418,685 t-states own (0.56 %) |
-| Called from | `MainLoop`, `WalkHarry` |
+| Runs (the other recordings) | 47,184 calls (`stage1/rec/levels-1-9` 24,429, `stage1/rec/gameover-name` 10,224, `stage1/rec/levels-1-3` 6,464 and 4 more) |
+| Called from | `MainLoop`, `WalkHarry`, `ClimbLadder`, `StartGame` |
 | Ports out | `$00FE`, `$10FE` |
 
 ### `PhraseInterrupt` (`$9CC2`)
@@ -327,10 +344,11 @@ PhraseTimer `$FF`: nothing to do. Otherwise it counts down; at 0 it takes the ne
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3,104 calls, 298,629 t-states own (0.12 %) |
+| Runs (the other recordings) | 124,062 calls (`stage1/rec/gameover-name` 39,861, `stage1/rec/idle-1p` 28,802, `stage1/rec/levels-1-9` 25,251 and 4 more) |
 | Called from | `PhraseVector` (tail) |
-| Reads | `$7373`-`$7375` (system); `$C99C`-`$C9AA` (`PhraseTable+212`); `$CA78`-`$CABC` (`PhraseTable+432`); `$CAFA`-`$CB12` (`PhraseTable+562`) |
+| Reads | `$7373`-`$7375` (system); `$C92C`-`$C964` (`PhraseTable+100`); `$C980`-`$CA08` (`PhraseTable+184`); `$CA2E`-`$CABC` (`PhraseTable+358`); `$CAD4`-`$CB12` (`PhraseTable+524`); `$CB2A`-`$CB4E` (`PhraseTable+610`); 2 more ranges |
 | Writes | `$7373`-`$7375` (system) |
-| Ports out | `$009F`, `$079F`, `$099F`, `$0B9F`, `$0E9F`, `$119F`, `$149F`, `$159F`, `$179F`, `$1A9F`, `$289F`, `$2B9F`, `$2C9F`, `$2E9F`, `$2F9F`, `$379F` |
+| Ports out | `$009F`, `$079F`, `$089F`, `$099F`, `$0B9F`, `$0C9F`, `$0E9F`, `$0F9F`, `$119F`, `$139F`, `$149F`, `$159F`, `$179F`, `$1A9F`, `$229F`, `$239F`, `$279F`, `$289F`, `$299F`, `$2B9F`, `$2C9F`, `$2D9F`, `$2E9F`, `$2F9F`, `$329F`, `$379F`, `$399F` |
 
 ### `StartPhrase` (`$9CEB`)
 
@@ -341,8 +359,9 @@ Input: A the phrase number 1-33. When PhraseTimer is `$FF`: PhrasePtr = the phra
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3 calls, 1,628 t-states own (0.00 %) |
-| Called from | `TitlePage`, `LevelPhrase` (tail) |
-| Reads | `$7373` (system); `$C8D6`-`$C8D7` (`PhraseTable+14`); `$C8EE`-`$C8F7` (`PhraseTable+38`) |
+| Runs (the other recordings) | 103 calls (`stage1/rec/levels-1-9` 42, `stage1/rec/gameover-name` 24, `stage1/rec/levels-1-3` 14 and 4 more) |
+| Called from | `LiftPhrase` (tail), `TitlePage`, `TitleLoop`, `PlayerTurn`, `EnterHiScore`, `DeathPhrase` (tail), `LevelPhrase` (tail) |
+| Reads | `$7373` (system); `$C8C8`-`$C907` (`PhraseTable`) |
 | Writes | `$7373`-`$7375` (system) |
 
 ## harry
@@ -362,11 +381,12 @@ Witness: 95 138 calls; left steps `$9D59` 5 749, right `$9D95` 6 073, standing `
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,252 calls, 1,135,087 t-states own (0.45 %) |
+| Runs (the other recordings) | 92,886 calls (`stage1/rec/gameover-name` 40,580, `stage1/rec/idle-1p` 15,597, `stage1/rec/tour-redefine` 12,826 and 4 more) |
 | Called from | `MainLoop` |
 | Calls | `DrawSprite`, `Beep` |
-| Reads | `$61D0`-`$6202` (system); `$72D8`-`$72DB` (system); `$7332`-`$7335` (system); `$7355` (system) |
+| Reads | `$61C8`-`$62A7` (system); `$62B8`-`$631C` (system); `$6333`-`$6427` (system); `$72D8`-`$72DB` (system); `$7332`-`$7335` (system); `$7350`-`$7355` (system) |
 | Writes | `$72D8`-`$72DB` (system) |
-| Ports in | `$DFFE` |
+| Ports in | `$DFFE`, `$EFFE`, `$F7FE` |
 
 ### `MapCellAt` (`$9E34`)
 
@@ -377,8 +397,9 @@ Output: HL = LiveMap + x / 8 + 4 x (y AND `$F8`), A = the code there (0 empty, 1
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 5,252 calls, 968,431 t-states own (0.38 %) |
-| Called from | `HenEatGrain`, `MapCellAddrKeepA`, `MapCellPeek`, `TakeEggOrGrain`, `JumpFall`, `FallOffEdge` |
-| Reads | `$61B7`-`$6278` (system); `$6291`-`$6298` (system); `$62B2` (system); `$62D1`-`$62D4` (system); `$62F1`-`$62F4` (system); `$6311`-`$63F2` (system); 1 more ranges |
+| Runs (the other recordings) | 259,426 calls (`stage1/rec/gameover-name` 109,371, `stage1/rec/levels-1-9` 46,361, `stage1/rec/idle-1p` 35,794 and 4 more) |
+| Called from | `HenEatGrain`, `MapCellAddrKeepA`, `MapCellPeek`, `TakeEggOrGrain`, `JumpFall`, `JumpLand`, `FallOffEdge` |
+| Reads | `$61A8`-`$645C` (system); `$646F`-`$647A` (system) |
 
 ### `HenTouches` (`$9E66`)
 
@@ -389,6 +410,7 @@ The box test of DrawHen `$929C` (Harry's x within x - 7 .. x + 5, y within y + 1
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 184 calls, 19,886 t-states own (0.01 %) |
+| Runs (the other recordings) | 29,198 calls (`stage1/rec/levels-1-9` 20,359, `stage1/rec/gameover-name` 3,909, `stage1/rec/levels-1-3` 3,909 and 3 more) |
 | Called from | `MainLoop` |
 | Reads | `$72D8`-`$72D9` (system) |
 
@@ -403,10 +425,12 @@ Only at x AND 7 = 0 (Harry over a column). Up key with a ladder's left half (1) 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,396 calls, 193,734 t-states own (0.08 %) |
+| Runs (the other recordings) | 111,538 calls (`stage1/rec/gameover-name` 43,594, `stage1/rec/levels-1-9` 21,979, `stage1/rec/idle-1p` 15,597 and 4 more) |
 | Called from | `MainLoop` |
-| Calls | `DrawSprite` |
-| Reads | `$61B0`-`$61C0` (system); `$61D1`-`$61DF` (system); `$61F2`-`$61FE` (system); `$6210`-`$6220` (system); `$6232`-`$623E` (system); `$72D8`-`$72DB` (system); 1 more ranges |
-| Ports in | `$FBFE`, `$FDFE` |
+| Calls | `DrawSprite`, `Beep` |
+| Reads | `$61A9`-`$645C` (system); `$6470`-`$647B` (system); `$72D8`-`$72DB` (system); `$732E`-`$7331` (system) |
+| Writes | `$72D9`-`$72DB` (system); `$7325` (system) |
+| Ports in | `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
 
 ### `LeaveLadder` (`$9F60`)
 
@@ -417,10 +441,11 @@ Only when y + 1 is on a cell boundary. Left key: the cell to the left and the on
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,252 calls, 773,165 t-states own (0.31 %) |
+| Runs (the other recordings) | 98,408 calls (`stage1/rec/gameover-name` 41,733, `stage1/rec/idle-1p` 15,597, `stage1/rec/levels-1-9` 13,176 and 4 more) |
 | Called from | `MainLoop` |
-| Reads | `$61AF`-`$6202` (system); `$72D8`-`$72D9` (system); `$7332`-`$7335` (system) |
+| Reads | `$61A8`-`$6427` (system); `$72D8`-`$72D9` (system); `$7332`-`$7335` (system) |
 | Writes | `$72DB` (system) |
-| Ports in | `$DFFE` |
+| Ports in | `$DFFE`, `$EFFE`, `$F7FE` |
 
 ## lifts
 
@@ -437,8 +462,11 @@ Nothing when LiftX is `$FF`. For each platform: DrawLift with 0 (erase) at its a
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,199 calls, 38,870 t-states own (0.02 %) |
+| Runs (the other recordings) | 55,959 calls (`stage1/rec/gameover-name` 21,827, `stage1/rec/levels-1-9` 11,118, `stage1/rec/idle-1p` 7,791 and 4 more) |
 | Called from | `MainLoop` |
-| Reads | `$7350` (system) |
+| Calls | `DrawLift`, `LineUp` |
+| Reads | `$734E`-`$7354` (system); `$9787`-`$978A` (`LiftTable`) |
+| Writes | `$734E`-`$7354` (system) |
 
 ### `DrawLift` (`$A07B`)
 
@@ -451,6 +479,9 @@ Clears the byte left of HL and the byte right of the platform (unless that is co
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 109,600 calls (`stage1/rec/gameover-name` 80,928, `stage1/rec/levels-1-9` 22,844, `stage1/rec/levels-1-3` 5,828) |
+| Called from | `MoveLifts` |
+| Calls | `LineDown` |
+| Writes | `$4087`-`$41FF` (screen); `$4267`-`$42FF` (screen); `$4367`-`$43FF` (screen); `$4467`-`$44FF` (screen); `$4567`-`$46FF` (screen); `$4767`-`$57FF` (screen) |
 
 ### `LineDown` (`$A096`)
 
@@ -461,6 +492,7 @@ The display file's line order: H + 1, and across a character row or a third. Wit
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 438,400 calls (`stage1/rec/gameover-name` 323,712, `stage1/rec/levels-1-9` 91,376, `stage1/rec/levels-1-3` 23,312) |
+| Called from | `DrawLift` |
 
 ### `LineUp` (`$A0A9`)
 
@@ -471,6 +503,7 @@ Witness: 54 800 calls (MoveLifts).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 54,800 calls (`stage1/rec/gameover-name` 40,464, `stage1/rec/levels-1-9` 11,422, `stage1/rec/levels-1-3` 2,914) |
+| Called from | `MoveLifts` |
 
 ## duck
 
@@ -489,6 +522,7 @@ Witness: 9 553 calls; held in the cage `$A175` 9 418, free 135 (levels-1-9, leve
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 201 calls, 138,158 t-states own (0.05 %) |
+| Runs (the other recordings) | 9,352 calls (`stage1/rec/gameover-name` 3,643, `stage1/rec/levels-1-9` 1,861, `stage1/rec/idle-1p` 1,303 and 4 more) |
 | Called from | `MainLoop` |
 | Calls | `PaintCells`, `DrawSprite` |
 | Reads | `$6EEB` (system); `$72D8`-`$72D9` (system); `$7348`-`$734D` (system) |
@@ -511,9 +545,10 @@ Witness: 17 679 calls; 20 under-runs (`$A1CE`): 19 of the bonus (`$A1D2`), one o
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 260 calls, 394,782 t-states own (0.16 %) |
-| Called from | `MainLoop` |
+| Runs (the other recordings) | 17,419 calls (`stage1/rec/levels-1-9` 6,296, `stage1/rec/gameover-name` 5,526, `stage1/rec/idle-1p` 1,863 and 4 more) |
+| Called from | `MainLoop`, `StartGame` |
 | Reads | `$733F`-`$7344` (system); `$89E0`-`$8A2F` (`HudCharacters`) |
-| Writes | `$4053`-`$405F` (screen); `$4153`-`$415F` (screen); `$4253`-`$425F` (screen); `$4353`-`$435F` (screen); `$4453`-`$445F` (screen); `$4553`-`$455F` (screen); 3 more ranges |
+| Writes | `$4053`-`$415F` (screen); `$4253`-`$425F` (screen); `$4353`-`$435F` (screen); `$4453`-`$445F` (screen); `$4553`-`$455F` (screen); `$4653`-`$465F` (screen); 2 more ranges |
 
 ## jump
 
@@ -528,10 +563,11 @@ On the pass before the slow tick (PassCounter 1): PaintCells, x + JumpDx (bounci
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 19,048 calls, 1,009,552 t-states own (0.40 %) |
+| Runs (the other recordings) | 1,740,974 calls (`stage1/rec/levels-1-9` 1,165,466, `stage1/rec/gameover-name` 247,448, `stage1/rec/levels-1-3` 247,448 and 3 more) |
 | Called from | `MainLoop` |
-| Calls | `PaintCells`, `CatchLift`, `JumpFall` (tail) |
-| Reads | `$72D8`-`$72DC` (system); `$7325`-`$7326` (system) |
-| Writes | `$72D8` (system) |
+| Calls | `PaintCells`, `CatchLift`, `JumpFall` (tail), `JumpLand` (tail), `DrawHarryFrame` |
+| Reads | `$72D8`-`$72DC` (system); `$7325`-`$7327` (system) |
+| Writes | `$72D8` (system); `$7325`-`$732A` (system) |
 
 ### `CatchLift` (`$A256`)
 
@@ -544,8 +580,11 @@ Nothing without a lift. When HarryX is within LiftX - 9 .. LiftX + 9 and HarryY 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 288 calls, 9,320 t-states own (0.00 %) |
+| Runs (the other recordings) | 26,374 calls (`stage1/rec/levels-1-9` 17,670, `stage1/rec/gameover-name` 3,743, `stage1/rec/levels-1-3` 3,743 and 3 more) |
 | Called from | `JumpStep` |
-| Reads | `$7350` (system) |
+| Calls | `DrawSprite`, `LiftPhrase` |
+| Reads | `$72D8`-`$72D9` (system); `$7350`-`$7354` (system) |
+| Writes | `$72D9` (system); `$7325` (system); `$7355` (system) |
 
 ### `JumpDrift` (`$A294`)
 
@@ -570,8 +609,9 @@ Witness: the top `$A2F6` 243, the fall starts `$A2CC` 279.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 19,048 calls, 687,271 t-states own (0.27 %) |
+| Runs (the other recordings) | 1,708,164 calls (`stage1/rec/levels-1-9` 1,146,716, `stage1/rec/gameover-name` 241,718, `stage1/rec/levels-1-3` 241,718 and 3 more) |
 | Called from | `JumpStep` (tail) |
-| Calls | `PaintCells`, `MapCellAt`, `DrawHarryFrame` |
+| Calls | `PaintCells`, `MapCellAt`, `JumpLand`, `DrawHarryFrame` |
 | Reads | `$61B0`-`$61BD` (system); `$61D0`-`$61FF` (system); `$72D8`-`$72DB` (system); `$7326`-`$732A` (system) |
 | Writes | `$72D9` (system); `$7325`-`$732A` (system) |
 
@@ -584,6 +624,10 @@ Draws frame 1 of his direction (DrawHarryFrame). The cell under his feet (MapCel
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 10,285 calls (`stage1/rec/levels-1-9` 6,911, `stage1/rec/gameover-name` 1,472, `stage1/rec/levels-1-3` 1,472 and 1 more) |
+| Called from | `JumpStep` (tail), `JumpFall` |
+| Calls | `MapCellAt`, `DrawHarryFrame` |
+| Reads | `$61A9`-`$641E` (system); `$6430`-`$643C` (system); `$72D8`-`$72DB` (system); `$7326`-`$732A` (system) |
+| Writes | `$72DB` (system); `$7325`-`$7326` (system) |
 
 ### `DrawHarryFrame` (`$A37F`)
 
@@ -594,7 +638,8 @@ Witness: 10 532 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 92 calls, 6,083 t-states own (0.00 %) |
-| Called from | `JumpFall` |
+| Runs (the other recordings) | 10,440 calls (`stage1/rec/levels-1-9` 6,947, `stage1/rec/gameover-name` 1,483, `stage1/rec/levels-1-3` 1,483 and 3 more) |
+| Called from | `JumpStep`, `JumpFall`, `JumpLand` |
 | Calls | `DrawSprite` |
 | Reads | `$72D8`-`$72DB` (system) |
 
@@ -607,6 +652,9 @@ Witness: 50 calls (the lift landings).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 50 calls (`stage1/rec/levels-1-9` 30, `stage1/rec/gameover-name` 10, `stage1/rec/levels-1-3` 10) |
+| Called from | `CatchLift` |
+| Calls | `StartPhrase` (tail) |
+| Reads | `$A399`-`$A3A0` (`LiftPhrases`) |
 
 ## score
 
@@ -625,9 +673,11 @@ Witness: 5 659 calls; the 10 000s digit changed 6 times (`$A3C4`), one icon draw
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 5,444 t-states own (0.00 %) |
-| Called from | `TakeEggOrGrain`, `SetupLevel` |
-| Reads | `$6EC8`-`$6ECD` (system); `$733D`-`$733E` (system); `$736E` (system); `$8670`-`$8677` (`CharacterSet+384`); `$8698`-`$869F` (`CharacterSet+424`) |
-| Writes | `$4005`-`$400A` (screen); `$4105`-`$410A` (screen); `$4205`-`$420A` (screen); `$4305`-`$430A` (screen); `$4405`-`$440A` (screen); `$4505`-`$450A` (screen); 3 more ranges |
+| Runs (the other recordings) | 5,657 calls (`stage1/rec/levels-1-9` 4,379, `stage1/rec/gameover-name` 577, `stage1/rec/levels-1-3` 573 and 4 more) |
+| Called from | `TakeEggOrGrain`, `StartGame`, `SetupLevel` |
+| Calls | `PrintChar` |
+| Reads | `$6EC8`-`$6ECD` (system); `$6EF0` (system); `$733B`-`$733E` (system); `$736E` (system); `$8670`-`$86BF` (`CharacterSet+384`) |
+| Writes | `$4005`-`$411F` (screen); `$4205`-`$421F` (screen); `$4305`-`$431F` (screen); `$4405`-`$441F` (screen); `$4505`-`$451F` (screen); `$4605`-`$461F` (screen); 4 more ranges |
 
 ## flow
 
@@ -655,8 +705,10 @@ ClearScreen, TitleText at rows 2-23 columns 0-13, DrawHiScores, the colours of t
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 14,152,615 t-states own (5.59 %) |
-| Calls | `PrintChar`, `StartPhrase`, `LifeLost` (tail), `Delay`, `BoxWipe`, `WaitPhrase`, `FillAttrBlock`, `ScrollLine`, `ClearScreen`, `SetupLevel` |
-| Reads | `$6EC8`-`$6ECD` (system); `$6EE6` (system); `$732B`-`$733B` (system); `$7373` (system); `$8390`-`$84EF` (`InstructionsText`); `$AC7C`-`$AC9E` (`TitleScroller`); 3 more ranges |
+| Runs (the other recordings) | 2 calls (`stage1/rec/idle-1p` 1, `stage1/rec/gameover-name` 1) |
+| Called from | `StartGame` (tail), `LifeLost` (tail), `RedefineKeys` (tail) |
+| Calls | `PrintChar`, `StartPhrase`, `StartGame` (tail), `LifeLost` (tail), `Delay`, `BoxWipe`, `WaitPhrase`, `FillAttrBlock`, `RedefineKeys` (tail), `ScrollLine`, `ClearScreen`, `DrawHiScores`, `SetupLevel` |
+| Reads | `$6EC8`-`$6ECD` (system); `$6EE6` (system); `$732B`-`$733B` (system); `$736F`-`$7373` (system); `$8390`-`$84EF` (`InstructionsText`); `$9630`-`$9763` (`TitleText`); 3 more ranges |
 | Writes | `$4000`-`$57FF` (screen); `$5940`-`$595F` (screen); `$59C0`-`$59DF` (screen); `$5AE0`-`$5AFF` (screen); `$61A8`-`$6EF3` (system); `$732B`-`$733B` (system); 2 more ranges |
 | Ports in | `$DFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
 
@@ -669,6 +721,10 @@ ScrollLine at the bottom row, Delay 500; every 8 shifts the next of TitleScrolle
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings run into, not called (`stage1/rec/tour-type2`, `stage1/rec/fall-death`, `stage1/rec/levels-1-3` and 1 more) |
+| Calls | `PrintChar`, `StartPhrase`, `StartGame` (tail), `Delay`, `BoxWipe`, `WaitPhrase`, `Message`, `FillAttrBlock`, `ScrollLine`, `ClearScreen`, `SetupLevel` |
+| Reads | `$732B`-`$733B` (system); `$7373` (system); `$8390`-`$84EF` (`InstructionsText`); `$AC7C`-`$ACB9` (`TitleScroller`); `$ACCA`-`$ACF0` (`InstructionsScroller`); `$AD21`-`$AD3D` (`PlayersPrompt`); 1 more ranges |
+| Writes | `$4000`-`$57FF` (screen); `$5940`-`$595F` (screen); `$5980`-`$599F` (screen); `$61A8`-`$6EF3` (system); `$732B`-`$733B` (system); `$AD50`-`$AD59` (`PlayerMessage+7`, `LevelMessage`, `LevelDigits`) |
+| Ports in | `$DFFE`, `$F7FE`, `$FBFE`, `$FDFE` |
 
 ### `InstructionsPage` (`$A4C8`)
 
@@ -691,6 +747,11 @@ BoxWipe in colours, the screen cleared, BoxWipe in black; the players prompt scr
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5 calls (`stage1/rec/levels-1-9` 1, `stage1/rec/gameover-name` 1, `stage1/rec/levels-1-3` 1 and 2 more) |
+| Called from | `TitlePage` (tail), `TitleLoop` (tail) |
+| Calls | `PrintChar`, `Beep`, `CountDown`, `AddScore`, `TitlePage` (tail), `EnterHiScore`, `Delay`, `BoxWipe`, `WaitPhrase`, `BoxZoom`, `Message`, `DeathPhrase`, `PlayTune`, `ScrollLine`, `ClearScreen`, `SetupLevel` |
+| Reads | `$61A8`-`$66E7` (system); `$6EC8`-`$6EF0` (system); `$733A`-`$7347` (system); `$AD21`-`$AD3D` (`PlayersPrompt`); `$B3B0`-`$C8AF` (`LevelMaps`, `LevelMap2`, `LevelMap3`, `LevelMap4` and 4 more) |
+| Writes | `$4000`-`$57FF` (screen); `$61A8`-`$6EF3` (system); `$733A`-`$733B` (system); `$AD58`-`$AD59` (`LevelDigits`); `$AD72` (`Congratulations+11`) |
+| Ports in | `$F7FE` |
 
 ### `PlayerTurn` (`$A62C`)
 
@@ -701,6 +762,10 @@ With more than one player: phrase 25 + player, "PLAYER n" scrolled in (Message),
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5 calls (`stage1/rec/idle-1p` 4, `stage1/rec/tour-redefine` 1) |
+| Called from | `LifeLost` (tail) |
+| Calls | `StartPhrase`, `LifeLost` (tail), `Delay`, `WaitPhrase`, `Message`, `SetupLevel` |
+| Reads | `$6EC8`-`$6ECD` (system); `$6EE6` (system); `$733A`-`$733B` (system) |
+| Writes | `$6ECE`-`$6ED3` (system); `$AD50` (`PlayerMessage+7`) |
 
 ### `PlayLevel` (`$A653`)
 
@@ -725,8 +790,11 @@ Witness: 14 lives lost (`$A6FE`), out of time 1 (`$A725`, tour-redefine), game o
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 27 t-states own (0.00 %) |
-| Called from | `TitlePage` (tail) |
-| Calls | `PlayTune` |
+| Runs (the other recordings) | 6 calls (`stage1/rec/idle-1p` 5, `stage1/rec/tour-redefine` 1) |
+| Called from | `TitlePage` (tail), `PlayerTurn` (tail) |
+| Calls | `TitlePage` (tail), `PlayerTurn` (tail), `EnterHiScore`, `Delay`, `BoxWipe`, `WaitPhrase`, `Message`, `DeathPhrase`, `PlayTune`, `ClearScreen` |
+| Reads | `$61A8`-`$6987` (system); `$6ECE`-`$6EF1` (system); `$733A`-`$7344` (system) |
+| Writes | `$4000`-`$57FF` (screen); `$61A8`-`$66E7` (system); `$6EC8`-`$6EF0` (system); `$733B` (system); `$AD72` (`Congratulations+11`) |
 
 ### `GameOver` (`$A7BC`)
 
@@ -755,6 +823,10 @@ Witness: gameover-name (one entry, three characters `$A8D5`, ENTER `$A8E4`); 2 c
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2 calls (`stage1/rec/gameover-name` 1, `stage1/rec/idle-1p` 1) |
+| Called from | `StartGame`, `LifeLost` |
+| Calls | `PrintChar`, `StartPhrase`, `WaitPhrase`, `CompareScore`, `FillAttrBlock`, `DrawHiScores` |
+| Reads | `$5C04`-`$5C08` (system); `$6ECE`-`$6ED3` (system); `$97AF`-`$983E` (`HiScoreTable`); `$A8B1` (`EnterHiScoreWait+1`); `$AD67`-`$AE0B` (`Congratulations`) |
+| Writes | `$97AF`-`$984E` (`HiScoreTable`) |
 
 ## effects
 
@@ -769,7 +841,8 @@ Inputs: H, L a corner (row from the bottom, column), D the height, E the width. 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 24 calls, 46,788 t-states own (0.02 %) |
-| Called from | `BoxWipe` |
+| Runs (the other recordings) | 1,032 calls (`stage1/rec/levels-1-9` 456, `stage1/rec/gameover-name` 240, `stage1/rec/levels-1-3` 168 and 4 more) |
+| Called from | `BoxWipe`, `BoxZoom`, `BoxZoomBox` |
 | Calls | `AttrAddr` |
 | Reads | `$732C` (system) |
 | Writes | `$5800`-`$5AFF` (screen) |
@@ -783,7 +856,8 @@ Witness: 39 283 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,123 calls, 17,441,119 t-states own (6.89 %) |
-| Called from | `TitlePage`, `BoxWipe` |
+| Runs (the other recordings) | 38,160 calls (`stage1/rec/idle-1p` 33,099, `stage1/rec/gameover-name` 3,435, `stage1/rec/tour-type2` 880 and 4 more) |
+| Called from | `TitlePage`, `TitleLoop`, `StartGame`, `PlayerTurn`, `LifeLost`, `BoxWipe`, `BoxZoom` |
 
 ### `BoxWipe` (`$A929`)
 
@@ -794,7 +868,8 @@ Colours from `$12` stepping by 9 (IXh 2), or 3 throughout (IXh 1); Delay 5000 be
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 3,837 t-states own (0.00 %) |
-| Called from | `TitlePage` |
+| Runs (the other recordings) | 18 calls (`stage1/rec/gameover-name` 4, `stage1/rec/idle-1p` 4, `stage1/rec/fall-death` 2 and 4 more) |
+| Called from | `TitlePage`, `TitleLoop`, `StartGame`, `LifeLost` |
 | Calls | `DrawBox`, `Delay` |
 | Writes | `$732C` (system) |
 
@@ -807,7 +882,8 @@ Witness: 1 662 374 loops.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 3 calls, 113 t-states own (0.00 %) |
-| Called from | `TitlePage` |
+| Runs (the other recordings) | 53 calls (`stage1/rec/gameover-name` 16, `stage1/rec/levels-1-9` 12, `stage1/rec/idle-1p` 11 and 4 more) |
+| Called from | `TitlePage`, `TitleLoop`, `StartGame`, `PlayerTurn`, `LifeLost`, `EnterHiScore` |
 | Reads | `$7373` (system) |
 
 ### `BoxZoom` (`$A968`)
@@ -819,6 +895,9 @@ The first round in colours (from 9, + 9 a box), the pixels cleared, the second i
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 17 calls (`stage1/rec/levels-1-9` 9, `stage1/rec/gameover-name` 4, `stage1/rec/levels-1-3` 3 and 1 more) |
+| Called from | `StartGame` |
+| Calls | `DrawBox`, `Delay`, `BoxZoomBox` |
+| Writes | `$4000`-`$57FF` (screen); `$732C` (system) |
 
 ### `Message` (`$A9CE`)
 
@@ -829,6 +908,10 @@ Rows 11-14 green; ScrollLine at row 11 with the next character printed at column
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 22 calls (`stage1/rec/levels-1-9` 9, `stage1/rec/gameover-name` 4, `stage1/rec/tour-redefine` 3 and 4 more) |
+| Called from | `TitleLoop`, `StartGame`, `PlayerTurn`, `LifeLost` |
+| Calls | `PrintChar`, `ScrollLine` |
+| Reads | `$AD3F`-`$AD66` (`GameOverMessage`, `PlayerMessage`, `LevelMessage`, `LevelDigits` and 1 more) |
+| Writes | `$5960`-`$59DF` (screen) |
 
 ### `BoxZoomBox` (`$A9FA`)
 
@@ -839,6 +922,10 @@ Witness: 204 calls.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 204 calls (`stage1/rec/levels-1-9` 108, `stage1/rec/gameover-name` 48, `stage1/rec/levels-1-3` 36 and 1 more) |
+| Called from | `BoxZoom` |
+| Calls | `DrawBox` |
+| Reads | `$732C` (system) |
+| Writes | `$732C` (system) |
 
 ### `CompareScore` (`$AA0C`)
 
@@ -849,6 +936,8 @@ Six digits, the most significant first. Witness: 11 calls.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 11 calls (`stage1/rec/idle-1p` 10, `stage1/rec/gameover-name` 1) |
+| Called from | `EnterHiScore` |
+| Reads | `$6ECE`-`$6ED0` (system); `$97B9`-`$984B` (`HiScoreTable+10`) |
 
 ### `AttrAddr` (`$AA23`)
 
@@ -859,6 +948,7 @@ HL = `$5B00` - 32 x (H + 1) + L. Witness: 2 112 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 48 calls, 25,128 t-states own (0.01 %) |
+| Runs (the other recordings) | 2,064 calls (`stage1/rec/levels-1-9` 912, `stage1/rec/gameover-name` 480, `stage1/rec/levels-1-3` 336 and 4 more) |
 | Called from | `DrawBox` |
 
 ### `FillAttrBlock` (`$AA37`)
@@ -870,7 +960,8 @@ Witness: 24 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 7 calls, 32,943 t-states own (0.01 %) |
-| Called from | `Start`, `TitlePage` |
+| Runs (the other recordings) | 17 calls (`stage1/rec/gameover-name` 6, `stage1/rec/tour-redefine` 4, `stage1/rec/tour-type2` 4 and 1 more) |
+| Called from | `Start`, `TitlePage`, `TitleLoop`, `EnterHiScore` |
 | Writes | `$5800`-`$5AFF` (screen) |
 
 ## keys
@@ -886,6 +977,10 @@ ClearScreen, KeyType 3, ten bytes of KeySet3 cleared (the second jump key stays)
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1 call (`stage1/rec/tour-redefine` 1) |
+| Called from | `TitlePage` (tail) |
+| Calls | `PrintChar`, `TitlePage` (tail), `ReadAnyKey`, `RedefineOne`, `ClearScreen` |
+| Reads | `$AC02`-`$AC53` (`RedefinePrompt`, `KeyLabels`) |
+| Writes | `$58C0`-`$58DF` (screen); `$732D` (system); `$8268`-`$8271` (`KeySet3`) |
 
 ### `KeyUsed` (`$AABA`)
 
@@ -896,6 +991,8 @@ Finds the set's last stored pair (the first zero after it) and compares it with 
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5 calls (`stage1/rec/tour-redefine` 5) |
+| Called from | `RedefineOne` |
+| Reads | `$8265`-`$8271` (`KeySet2+9`, `KeySet3`) |
 
 ### `DeathPhrase` (`$AAE4`)
 
@@ -906,6 +1003,9 @@ Witness: 13 calls.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 13 calls (`stage1/rec/idle-1p` 5, `stage1/rec/gameover-name` 5, `stage1/rec/fall-death` 1 and 2 more) |
+| Called from | `StartGame`, `LifeLost` |
+| Calls | `StartPhrase` (tail) |
+| Reads | `$ABEA`-`$ABF1` (`DeathPhrases`) |
 
 ### `ReadAnyKey` (`$AAF4`)
 
@@ -916,6 +1016,8 @@ Scans the eight rows `$FEFE` .. `$7FFE`. Witness: 24 310 calls.
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 24,310 calls (`stage1/rec/tour-redefine` 24,310) |
+| Called from | `RedefineKeys`, `RedefineOne` |
+| Ports in | `$7FFE`, `$BFFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE`, `$FEFE` |
 
 ### `RedefineOne` (`$AB19`)
 
@@ -928,6 +1030,10 @@ The bar (13 bytes of attribute 3 at HL), a key (ReadAnyKey) stored as (mask, por
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5 calls (`stage1/rec/tour-redefine` 5) |
+| Called from | `RedefineKeys` |
+| Calls | `PrintChar`, `KeyUsed`, `ReadAnyKey` |
+| Reads | `$AC56`-`$AC72` (`KeyNames+2`) |
+| Writes | `$592A`-`$5936` (screen); `$596A`-`$5976` (screen); `$59AA`-`$59B6` (screen); `$59EA`-`$59F6` (screen); `$5A2A`-`$5A36` (screen); `$8268`-`$8271` (`KeySet3`); 1 more ranges |
 
 ## menudata
 
@@ -942,8 +1048,9 @@ Each note: C the duration in tenths of a second (0 ends), B the pitch in semiton
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 68 calls, 6,008 t-states own (0.00 %) |
-| Called from | `Start`, `LifeLost`, `PlayTuneNote` (tail) |
-| Reads | `$AE0C`-`$AE93` (`TitleTune`, `DeathTune`) |
+| Runs (the other recordings) | 325 calls (`stage1/rec/gameover-name` 125, `stage1/rec/idle-1p` 125, `stage1/rec/fall-death` 25 and 2 more) |
+| Called from | `Start`, `StartGame`, `LifeLost`, `PlayTuneNote` (tail) |
+| Reads | `$AE0C`-`$AE9B` (`TitleTune`, `DeathTune`) |
 
 ### `PlayTuneNote` (`$AB70`)
 
@@ -954,6 +1061,7 @@ Witness: 379 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 4,668 t-states own (0.00 %) |
+| Runs (the other recordings) | run into, not called (`stage1/rec/gameover-name`, `stage1/rec/idle-1p`, `stage1/rec/fall-death` and 2 more) |
 | Calls | `PlayTune` (tail) |
 
 ### `ScrollLine` (`$AB7B`)
@@ -965,7 +1073,8 @@ Eight lines, each byte takes bit 7 of the next. Registers kept. Witness: 49 502 
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1,571 calls, 29,051,944 t-states own (11.47 %) |
-| Called from | `TitlePage` |
+| Runs (the other recordings) | 47,931 calls (`stage1/rec/idle-1p` 33,838, `stage1/rec/gameover-name` 5,059, `stage1/rec/levels-1-9` 3,311 and 4 more) |
+| Called from | `TitlePage`, `TitleLoop`, `StartGame`, `Message` |
 | Reads | `$4861`-`$4F7F` (screen); `$50E1`-`$57FF` (screen) |
 | Writes | `$4861`-`$4F7E` (screen); `$50E1`-`$57FE` (screen) |
 
@@ -978,7 +1087,8 @@ Witness: 20 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 604,987 t-states own (0.24 %) |
-| Called from | `Start`, `TitlePage` |
+| Runs (the other recordings) | 18 calls (`stage1/rec/idle-1p` 6, `stage1/rec/gameover-name` 6, `stage1/rec/tour-redefine` 3 and 3 more) |
+| Called from | `Start`, `TitlePage`, `TitleLoop`, `StartGame`, `LifeLost`, `RedefineKeys` |
 | Writes | `$4000`-`$5AFF` (screen) |
 
 ### `DrawHiScores` (`$ABAD`)
@@ -990,7 +1100,8 @@ MenuTexts' title at row 23 column 16, the ten entries at rows 21, 19 .. 3, attri
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 19,114 t-states own (0.01 %) |
-| Called from | `Start` |
+| Runs (the other recordings) | 3 calls (`stage1/rec/gameover-name` 2, `stage1/rec/idle-1p` 1) |
+| Called from | `Start`, `TitlePage`, `EnterHiScore` |
 | Calls | `PrintChar` |
 | Reads | `$97AF`-`$984E` (`HiScoreTable`); `$ABF2`-`$AC01` (`MenuTexts`) |
 | Writes | `$5810`-`$59BF` (screen); `$59D0`-`$59DF` (screen); `$59F0`-`$59FF` (screen); `$5A10`-`$5A1F` (screen); `$5A30`-`$5A3F` (screen); `$5A50`-`$5A5F` (screen); 2 more ranges |
@@ -1016,9 +1127,10 @@ Witness: 35 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 8,223,603 t-states own (3.25 %) |
-| Called from | `TitlePage` |
+| Runs (the other recordings) | 34 calls (`stage1/rec/levels-1-9` 11, `stage1/rec/gameover-name` 8, `stage1/rec/idle-1p` 5 and 4 more) |
+| Called from | `TitlePage`, `TitleLoop`, `StartGame`, `PlayerTurn` |
 | Calls | `MainLoop` (tail), `PrintChar`, `AddScore`, `FillAttrRow`, `LevelPhrase` |
-| Reads | `$61A8`-`$6447` (system); `$6EC9`-`$6ED3` (system); `$6EEB`-`$6EF0` (system); `$732D`-`$734F` (system); `$8268`-`$8273` (`KeySet3`); `$9470`-`$9478` (`HenTable+21`); 2 more ranges |
+| Reads | `$61A8`-`$6447` (system); `$6EC9`-`$6EF3` (system); `$732D`-`$734F` (system); `$8250`-`$8273` (`KeySets`, `KeySet2`, `KeySet3`); `$9470`-`$950F` (`HenTable+21`); `$9764`-`$97AA` (`HudText`, `LiftTable`); 1 more ranges |
 | Writes | `$4000`-`$5AFF` (screen); `$6EC8`-`$6ECD` (system); `$72D8`-`$72DC` (system); `$7325`-`$7370` (system); `$976B`-`$978A` (`HudPlayer`, `LiftTable`) |
 
 ### `FillAttrRow` (`$B130`)
@@ -1030,8 +1142,9 @@ Witness: 252 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 7 calls, 2,707 t-states own (0.00 %) |
+| Runs (the other recordings) | 245 calls (`stage1/rec/levels-1-9` 77, `stage1/rec/gameover-name` 56, `stage1/rec/idle-1p` 35 and 4 more) |
 | Called from | `SetupLevel` |
-| Writes | `$5800`-`$580A` (screen); `$5820`-`$585F` (screen) |
+| Writes | `$5800`-`$585F` (screen) |
 
 ### `LevelPhrase` (`$B14F`)
 
@@ -1042,9 +1155,10 @@ Witness: 35 calls.
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 84 t-states own (0.00 %) |
+| Runs (the other recordings) | 34 calls (`stage1/rec/levels-1-9` 11, `stage1/rec/gameover-name` 8, `stage1/rec/idle-1p` 5 and 4 more) |
 | Called from | `SetupLevel` |
 | Calls | `StartPhrase` (tail) |
-| Reads | `$B160` (`LevelPhrases+1`) |
+| Reads | `$B15F`-`$B166` (`LevelPhrases`) |
 
 ## leveldata
 
@@ -1063,6 +1177,8 @@ Witness: 98 837 calls, 63 falls (`$B368`). This routine lies inside the leftover
 | | |
 | --- | --- |
 | Runs (the first recording's game window) | 2,252 calls, 242,949 t-states own (0.10 %) |
+| Runs (the other recordings) | 96,585 calls (`stage1/rec/gameover-name` 41,463, `stage1/rec/idle-1p` 15,597, `stage1/rec/tour-redefine` 12,825 and 4 more) |
 | Called from | `MainLoop` |
 | Calls | `MapCellAt` |
-| Reads | `$61B0`-`$61C1` (system); `$72D8`-`$72D9` (system) |
+| Reads | `$61A9`-`$61FC` (system); `$6220`-`$6263` (system); `$6280`-`$6283` (system); `$62A6`-`$62DC` (system); `$62F9`-`$62FC` (system); `$6313`-`$635B` (system); 2 more ranges |
+| Writes | `$7325`-`$7327` (system) |

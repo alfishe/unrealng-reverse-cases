@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on, the covertape side at ROM speed, the menu and play). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on, the covertape side at ROM speed, the menu and play), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -44,6 +44,10 @@ Witness: L1 1 (hiscore).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/hiscore` 1) |
+| Called from | `HiScoreInsert` |
+| Calls | `PrintText`, `WaitKey`, `KeyClick` |
+| Reads | `$A911`-`$A926` (`KeyTable+17`); `$A95C`-`$A96E` (`KeyTable+92`) |
+| Writes | `$FD47`-`$FD4D` (`HiScoreTable+51`) |
 
 ### `HiScoreCompare` (`$7F60`)
 
@@ -56,6 +60,8 @@ Witness: L1 9 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 9 calls (`stage1/lives` 5, `stage1/hiscore` 4) |
+| Called from | `HiScoreInsert` |
+| Reads | `$FD14`-`$FD52` (`HiScoreTable`); `$FD94`-`$FD96` (`ScoreDigits`) |
 
 ### `HiScoreInsert` (`$7F7A`)
 
@@ -70,6 +76,10 @@ Witness: L1 2 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/hiscore` 1, `stage1/lives` 1) |
+| Called from | `GameOver` |
+| Calls | `EnterName`, `HiScoreCompare`, `PrintText`, `ClearScreen`, `ColourHiScores` |
+| Reads | `$FD41`-`$FD4F` (`HiScoreTable+45`); `$FD94`-`$FD99` (`ScoreDigits`) |
+| Writes | `$FD41`-`$FD5E` (`HiScoreTable+45`) |
 
 ### `GameOver` (`$7FF3`)
 
@@ -82,6 +92,8 @@ Witness: L1 2 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/lives` 1, `stage1/hiscore` 1) |
+| Called from | `NewGame` |
+| Calls | `HiScoreInsert`, `GameOverScreen` |
 
 ### `ScrollBottomLine` (`$8AAC`)
 
@@ -92,6 +104,7 @@ Witness: L1 3472 (menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 3,472 calls (`stage1/menu` 3,472) |
+| Called from | `RunScroller` |
 
 ### `DrawTitle` (`$8AC8`)
 
@@ -104,6 +117,7 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 923,664 t-states own (0.08 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `GameEntry` |
 | Calls | `ShowMenuTexts`, `ColourMenuTexts`, `ShowLogo` |
 | Reads | `$4000`-`$5AFE` (screen) |
@@ -122,6 +136,10 @@ Witness: L1 1 (menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `ShowHiScores` |
+| Calls | `PrintText`, `ScrollBottomLine` |
+| Ports in | `$F7FE` |
+| Ports out | `$F7FF` |
 
 ### `PlayGameOverTune` (`$8B78`)
 
@@ -132,6 +150,8 @@ Witness: L1 2 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/lives` 1, `stage1/hiscore` 1) |
+| Called from | `GameOverScreen` |
+| Calls | `PlayTune` |
 
 ### `ShowGameOver` (`$8B7F`)
 
@@ -142,6 +162,8 @@ Witness: L1 2 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/hiscore` 1, `stage1/lives` 1) |
+| Called from | `GameOverScreen` |
+| Calls | `PrintDigits`, `PrintText`, `FillAttrs` |
 
 ### `GameOverScreen` (`$8BD5`)
 
@@ -154,6 +176,8 @@ Witness: L1 2 (hiscore, lives).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/hiscore` 1, `stage1/lives` 1) |
+| Called from | `GameOver` |
+| Calls | `ClearScreen`, `PlayGameOverTune`, `ShowGameOver` |
 
 ### `ShowHiScoreTable` (`$B26C`)
 
@@ -164,6 +188,8 @@ Witness: L1 2 (hiscore, menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/menu` 1, `stage1/hiscore` 1) |
+| Called from | `ShowHiScoreTitle` |
+| Calls | `PrintDigits`, `PrintText` |
 
 ### `ShowHiScoreTitle` (`$B294`)
 
@@ -174,6 +200,8 @@ Witness: L1 2 (hiscore, menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/hiscore` 1, `stage1/menu` 1) |
+| Called from | `ColourHiScores` |
+| Calls | `PrintText`, `ShowHiScoreTable` |
 
 ### `ColourHiScores` (`$B2A3`)
 
@@ -184,6 +212,8 @@ Witness: L1 2 (hiscore, menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/hiscore` 1, `stage1/menu` 1) |
+| Called from | `HiScoreInsert`, `ShowHiScores` |
+| Calls | `FillAttrs`, `ShowHiScoreTitle` |
 
 ### `ClearHiScoreArea` (`$B2C9`)
 
@@ -196,6 +226,8 @@ Witness: L1 2 (menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/menu` 2) |
+| Called from | `ShowHiScores` |
+| Calls | `PrintGlyph` |
 
 ### `ShowHiScores` (`$B2E4`)
 
@@ -208,6 +240,8 @@ Witness: L1 1 (menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `GameEntry` |
+| Calls | `ShowMenuTexts`, `ColourMenuTexts`, `RunScroller`, `ColourHiScores`, `ClearHiScoreArea` |
 
 ## music
 
@@ -226,8 +260,9 @@ Witness: L1 66 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 8 calls, 111,912,965 t-states own (10.23 %) |
-| Called from | `PlayTitleTune`, `PlayCaveTune` |
-| Reads | `$AD00`-`$ADB0` (`TitleTune`); `$BB80`-`$BBF9` (`CaveTune1`); `$BC2C`-`$BC53` (`NotePeriods+44`) |
+| Runs (the other recordings) | 60 calls (`stage1/lives` 7, `stage1/hiscore` 6, `stage1/menu` 4 and 35 more) |
+| Called from | `PlayTitleTune`, `PlayGameOverTune`, `PotionTune`, `PlayWinTune`, `PlayMapTune`, `PlayCaveTune` |
+| Reads | `$6EF4`-`$6F5F` (`WinTune`); `$AA00`-`$AA4D` (`GameOverTune`); `$AC5F`-`$B0A7` (`LifeTune`, `LifeTunePad`, `TitleTune`); `$BB80`-`$BBF9` (`CaveTune1`); `$BC18`-`$BC63` (`NotePeriods+24`); `$E8E8`-`$E9AD` (`MapTune`); 1 more ranges |
 | Ports in | `$F7FE` |
 | Ports out | `$00FE`, `$10FE`, `$F7FF` |
 
@@ -240,6 +275,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 30 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 5, `stage1/lives` 5, `stage1/rzx01` 2 and 33 more) |
 | Called from | `CavePlay` |
 | Calls | `PlayCaveTune` (tail) |
 
@@ -252,6 +288,7 @@ Witness: L1 10 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 175 t-states own (0.00 %) |
+| Runs (the other recordings) | 5 calls (`stage1/menu` 4, `stage1/lives` 1) |
 | Called from | `GameEntry` |
 | Calls | `PlayTune` |
 
@@ -264,9 +301,10 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 315 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/lives` 5, `stage1/hiscore` 5, `stage1/rzx01` 2 and 33 more) |
 | Called from | `PlayCaveTuneJump` (tail) |
 | Calls | `PlayTune` |
-| Reads | `$EE24`-`$EE25` (`CaveTunes`); `$FD91` (`CaveNumber`) |
+| Reads | `$EE24`-`$EE33` (`CaveTunes`); `$FD91` (`CaveNumber`) |
 
 ## effects
 
@@ -283,7 +321,8 @@ Witness: L1 3446 (c1, hiscore, rzx x29).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 240 t-states own (0.00 %) |
-| Called from | `PassSound` |
+| Runs (the other recordings) | 3,445 calls (`stage1/rzx23` 365, `stage1/rzx27` 214, `stage1/rzx14` 213 and 28 more) |
+| Called from | `FireLeft`, `FireRight`, `PassSound` |
 | Calls | `NoiseThud` |
 
 ### `PassSoundEntry` (`$8250`)
@@ -297,6 +336,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 2,640 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `FizzSound` |
 | Calls | `PassSoundJump` (tail) |
 
@@ -311,6 +351,7 @@ Witness: L1 40382 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 262 calls, 14,106 t-states own (0.00 %) |
+| Runs (the other recordings) | 40,126 calls (`stage1/rzx32` 3,355, `stage1/rzx26` 2,296, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PassSound` (tail) |
 | Calls | `FallSound` |
 | Reads | `$7FFE` (`ObjectFell`) |
@@ -326,6 +367,7 @@ Witness: L1 1692 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 270 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,690 calls (`stage1/rzx30` 100, `stage1/rzx21` 99, `stage1/rzx26` 88 and 29 more) |
 | Called from | `CountGem` |
 
 ### `DigNoiseLoop` (`$854A`)
@@ -361,6 +403,8 @@ Witness: L1 33 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 33 calls (`stage1/rzx30` 2, `stage1/rzx16` 1, `stage1/rzx09` 1 and 29 more) |
+| Called from | `CollectGem` |
+| Ports out | `$00FE`, `$18FE` |
 
 ### `RaspSound` (`$90A0`)
 
@@ -371,7 +415,8 @@ Witness: L1 146 (c1, menu, rzx x21).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 116,812 t-states own (0.01 %) |
-| Called from | `RedefineKeys` |
+| Runs (the other recordings) | 141 calls (`stage1/rzx24` 23, `stage1/rzx32` 21, `stage1/rzx31` 16 and 19 more) |
+| Called from | `RedefineKeys`, `BubbleScore` |
 
 ### `TeleportFlashOut` (`$9230`)
 
@@ -382,6 +427,9 @@ Witness: L1 928 (rzx x19).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 928 calls (`stage1/rzx26` 224, `stage1/rzx24` 80, `stage1/rzx32` 80 and 16 more) |
+| Called from | `TeleportOutEffect` |
+| Reads | `$7300`-`$7EFF` (`TeleportFrames`); `$FD72` (`AnimPhase`) |
+| Writes | `$5800`-`$5AFF` (screen); `$FD72` (`AnimPhase`) |
 
 ### `TeleportFlashIn` (`$924F`)
 
@@ -392,6 +440,9 @@ Witness: L1 928 (rzx x19).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 928 calls (`stage1/rzx26` 224, `stage1/rzx24` 80, `stage1/rzx32` 80 and 16 more) |
+| Called from | `TeleportInEffect` |
+| Reads | `$7300`-`$7EFF` (`TeleportFrames`); `$FD72` (`AnimPhase`) |
+| Writes | `$5800`-`$5AFF` (screen); `$FD72` (`AnimPhase`) |
 
 ### `Jingle` (`$A713`)
 
@@ -402,6 +453,7 @@ Witness: L1 81 (c1, menu, rzx x23).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 6 calls, 1,844,062 t-states own (0.17 %) |
+| Runs (the other recordings) | 75 calls (`stage1/menu` 6, `stage1/rzx15` 3, `stage1/rzx08` 3 and 21 more) |
 | Called from | `SwitchSound` |
 | Ports out | `$00FE`, `$18FE` |
 
@@ -414,7 +466,8 @@ Witness: L1 27 (c1, menu, rzx x23).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 372 t-states own (0.00 %) |
-| Called from | `ChooseControl` |
+| Runs (the other recordings) | 25 calls (`stage1/menu` 2, `stage1/rzx24` 1, `stage1/rzx22` 1 and 21 more) |
+| Called from | `SwitchScore`, `ChooseControl` |
 | Calls | `Jingle` |
 | Writes | `$A720` (`JingleHighShift+1`); `$A737` (`JingleLowShift+1`) |
 
@@ -427,9 +480,11 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 19,020 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Calls | `PassSoundEntry` |
 | Reads | `$7FFB` (`FizzCount`) |
+| Writes | `$7FFB` (`FizzCount`) |
 
 ### `NoiseBurst` (`$E740`)
 
@@ -440,7 +495,8 @@ Witness: L1 11006 (c1, hiscore, rzx x30).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 6 calls, 252,602 t-states own (0.02 %) |
-| Called from | `NoiseThud` |
+| Runs (the other recordings) | 11,003 calls (`stage1/rzx23` 1,103, `stage1/rzx24` 834, `stage1/rzx27` 662 and 29 more) |
+| Called from | `NoiseThud`, `DigInPlace` |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `NoiseThud` (`$E77C`)
@@ -452,6 +508,7 @@ Witness: L1 3446 (c1, hiscore, rzx x29).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 496 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,445 calls (`stage1/rzx23` 365, `stage1/rzx27` 214, `stage1/rzx14` 213 and 28 more) |
 | Called from | `ThudSound` |
 | Calls | `NoiseBurst` |
 | Writes | `$E74B` (`NoiseBurstPitch+1`) |
@@ -465,6 +522,7 @@ Witness: L1 3647 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 95,198 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,646 calls (`stage1/rzx24` 339, `stage1/rzx17` 240, `stage1/rzx22` 228 and 29 more) |
 | Called from | `FallSoundChoice` |
 | Ports out | `$00FE`, `$18FE` |
 
@@ -477,6 +535,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 2,640 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PassSoundEntry` (tail) |
 | Calls | `PassSound` (tail) |
 
@@ -489,6 +548,7 @@ Witness: L1 20264 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 49 calls, 2,340 t-states own (0.00 %) |
+| Runs (the other recordings) | 20,219 calls (`stage1/rzx32` 2,131, `stage1/rzx26` 1,642, `stage1/rzx05` 1,006 and 31 more) |
 | Called from | `PlayerStep` |
 | Calls | `DigNoise` |
 | Reads | `$E857` (`DugEarth`) |
@@ -502,6 +562,9 @@ Witness: L1 58 (rzx x19).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 58 calls (`stage1/rzx26` 14, `stage1/rzx24` 5, `stage1/rzx32` 5 and 16 more) |
+| Called from | `TeleportUp`, `TeleportDown`, `TeleportRight`, `TeleportLeft` |
+| Calls | `TeleportFlashOut` |
+| Ports out | `$00FE`, `$18FE` |
 
 ### `TeleportInEffect` (`$E8AE`)
 
@@ -512,6 +575,9 @@ Witness: L1 58 (rzx x19).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 58 calls (`stage1/rzx26` 14, `stage1/rzx32` 5, `stage1/rzx24` 5 and 16 more) |
+| Called from | `TeleportUp`, `TeleportDown`, `TeleportRight`, `TeleportLeft` |
+| Calls | `TeleportFlashIn` |
+| Ports out | `$00FE`, `$18FE` |
 
 ## cells
 
@@ -530,6 +596,7 @@ Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 3,710 t-states own (0.00 %) |
+| Runs (the other recordings) | 42,120 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `AntiGravPass` |
 | Calls | `ClearFallFlags` (tail) |
 
@@ -544,10 +611,11 @@ Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 18,445,922 t-states own (1.69 %) |
+| Runs (the other recordings) | 42,120 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `ClearFallFlags` (tail) |
 | Calls | `EarthFallGuard` |
-| Reads | `$FDA8`-`$FFFD` (`CaveGrid`) |
-| Writes | `$7FFE` (`ObjectFell`) |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$7FFB`-`$7FFE` (`FizzCount`, `SwitchHit`, `PlayerKilled`, `ObjectFell`); `$FDBA`-`$FDCF` (`CaveGrid+18`); `$FE05` (`CaveGrid+93`); `$FE1A`-`$FE29` (`CaveGrid+114`); `$FE3E`-`$FE65` (`CaveGrid+150`); `$FE7E`-`$FE86` (`CaveGrid+214`); 3 more ranges |
 
 ### `MoveObject` (`$80DB`)
 
@@ -560,10 +628,11 @@ Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 22,233 calls, 3,034,408 t-states own (0.28 %) |
+| Runs (the other recordings) | 4,489,990 calls (`stage1/rzx26` 404,799, `stage1/rzx29` 267,010, `stage1/rzx24` 260,436 and 34 more) |
 | Called from | `EarthFallGuard` (tail) |
 | Calls | `Crush` (tail), `BoulderLandCheck` |
-| Reads | `$FDD0`-`$FF41` (`CaveGrid+40`); `$FF56`-`$FF69` (`CaveGrid+430`); `$FF7D`-`$FFFE` (`CaveGrid+469`) |
-| Writes | `$7FFE` (`ObjectFell`); `$FEAB`-`$FEAE` (`CaveGrid+259`); `$FEC9`-`$FECC` (`CaveGrid+289`); `$FF7F` (`CaveGrid+471`); `$FF9D` (`CaveGrid+501`) |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$7FFC`-`$7FFE` (`SwitchHit`, `PlayerKilled`, `ObjectFell`); `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `MoveObjectLanded` (`$8104`)
 
@@ -600,6 +669,7 @@ Witness: L1 16 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage1/rzx11` 4, `stage1/rzx22` 4, `stage1/rzx03` 3 and 3 more) |
+| Called from | `AntiGravStart` |
 
 ### `SwitchClear` (`$817A`)
 
@@ -614,9 +684,11 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 16,643 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `AnimateCellCodes` |
-| Calls | `AntiGravPass` |
-| Reads | `$7FFC` (`SwitchHit`) |
+| Calls | `AntiGravPass`, `SwitchScore` |
+| Reads | `$7FFC` (`SwitchHit`); `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$7FFC` (`SwitchHit`); `$FDB4`-`$FDB5` (`CaveGrid+12`); `$FDCE`-`$FE48` (`CaveGrid+38`); `$FE5D`-`$FFFE` (`CaveGrid+181`) |
 
 ### `ClearVacated` (`$81AC`)
 
@@ -629,9 +701,10 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 7,451,252 t-states own (0.68 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
-| Writes | `$FDA8`-`$FF17` (`CaveGrid`); `$FF56`-`$FFFF` (`CaveGrid+430`) |
+| Writes | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `AnimateCellCodes` (`$937E`)
 
@@ -646,9 +719,11 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 9,236,453 t-states own (0.84 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `AbortKey` |
 | Calls | `SwitchClear` |
 | Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$FDB3`-`$FDDA` (`CaveGrid+11`); `$FDED`-`$FFFE` (`CaveGrid+69`) |
 
 ### `EarthFallGuard` (`$9AA6`)
 
@@ -659,9 +734,10 @@ Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 22,233 calls, 1,995,664 t-states own (0.18 %) |
+| Runs (the other recordings) | 4,489,990 calls (`stage1/rzx26` 404,799, `stage1/rzx29` 267,010, `stage1/rzx24` 260,436 and 34 more) |
 | Called from | `ScanCellsBody` |
 | Calls | `MoveObject` (tail) |
-| Reads | `$FDB2`-`$FDBB` (`CaveGrid+10`); `$FDDA`-`$FE2F` (`CaveGrid+50`); `$FE41`-`$FEB1` (`CaveGrid+153`); `$FEC3`-`$FEDE` (`CaveGrid+283`); `$FEF0`-`$FEF5` (`CaveGrid+328`); `$FF08`-`$FF23` (`CaveGrid+352`); 2 more ranges |
+| Reads | `$FDA8`-`$FFE1` (`CaveGrid`) |
 | Writes | `$9AA5` (`EarthFell`) |
 
 ### `Crush` (`$9ABC`)
@@ -675,6 +751,7 @@ Witness: L1 48 (c1, rzx x5): 47 falling earth in caves 13, 17, 22, 24, 26 (Earth
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 80 t-states own (0.00 %) |
+| Runs (the other recordings) | 48 calls (`stage1/rzx13` 20, `stage1/rzx22` 10, `stage1/rzx26` 6 and 3 more) |
 | Called from | `MoveObject` (tail) |
 | Reads | `$9AA5` (`EarthFell`) |
 | Writes | `$7FFD` (`PlayerKilled`) |
@@ -688,8 +765,11 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 10,364 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `AnimateTable` |
-| Reads | `$800C`-`$800D` (`CellEarthGfx`) |
+| Calls | `EarthAnimStep` |
+| Reads | `$800C`-`$800D` (`CellEarthGfx`); `$FD72` (`AnimPhase`) |
+| Writes | `$800C`-`$800D` (`CellEarthGfx`) |
 
 ### `AntiGravScan` (`$A655`)
 
@@ -700,6 +780,10 @@ Witness: L1 1397 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,397 calls (`stage1/rzx22` 396, `stage1/rzx11` 350, `stage1/rzx03` 297 and 3 more) |
+| Called from | `AntiGravPass` |
+| Calls | `AntiGravMove`, `SetBoulderFlags` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$7FFB`-`$7FFE` (`FizzCount`, `SwitchHit`, `PlayerKilled`, `ObjectFell`); `$FE29`-`$FE4B` (`CaveGrid+129`); `$FE61` (`CaveGrid+185`); `$FEBB` (`CaveGrid+275`); `$FEF5`-`$FEF8` (`CaveGrid+333`); `$FF18` (`CaveGrid+368`) |
 
 ### `AntiGravMove` (`$A6BB`)
 
@@ -710,6 +794,9 @@ Witness: L1 166974 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 166,974 calls (`stage1/rzx22` 50,150, `stage1/rzx11` 32,782, `stage1/rzx03` 31,545 and 3 more) |
+| Called from | `AntiGravScan` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
+| Writes | `$7FFE`-`$7FFF` (`ObjectFell`, `BoulderFell`); `$FDA9`-`$FFFE` (`CaveGrid+1`) |
 
 ### `AntiGravStartScan` (`$A7A0`)
 
@@ -720,6 +807,9 @@ Witness: L1 16 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage1/rzx22` 4, `stage1/rzx11` 4, `stage1/rzx03` 3 and 3 more) |
+| Called from | `CollectObject` (tail), `AntiGravTake` |
+| Calls | `PrintGlyph`, `PrintDigits`, `AntiGravStart` |
+| Writes | `$FD8B`-`$FD8D` (`AntiGravDigits`, `AntiGravSteps`) |
 
 ### `AntiGravTake` (`$A7C7`)
 
@@ -730,6 +820,8 @@ Witness: L1 15 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 15 calls (`stage1/rzx11` 4, `stage1/rzx22` 3, `stage1/rzx03` 3 and 3 more) |
+| Called from | `DownSpecial` (tail), `RightSpecial` (tail), `LeftSpecial` (tail) |
+| Calls | `Continue` (tail), `AntiGravStartScan` |
 
 ### `AntiGravPass` (`$A7CD`)
 
@@ -740,9 +832,11 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 14,529 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `SwitchClear` |
-| Calls | `ScanCells` |
-| Reads | `$FD8D` (`AntiGravSteps`) |
+| Calls | `PrintGlyph`, `ScanCells`, `PrintDigits`, `AntiGravScan` |
+| Reads | `$FD8B`-`$FD8D` (`AntiGravDigits`, `AntiGravSteps`) |
+| Writes | `$FD8B`-`$FD8D` (`AntiGravDigits`, `AntiGravSteps`) |
 
 ### `BoulderLandCheck` (`$E78C`)
 
@@ -753,8 +847,9 @@ Witness: L1 9340 (c1, hiscore, rzx x29).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 320 t-states own (0.00 %) |
+| Runs (the other recordings) | 9,339 calls (`stage1/rzx08` 767, `stage1/rzx27` 689, `stage1/rzx23` 680 and 28 more) |
 | Called from | `MoveObject` |
-| Reads | `$FEE7` (`CaveGrid+319`); `$FFBB` (`CaveGrid+531`) |
+| Reads | `$FDE4`-`$FFFF` (`CaveGrid+60`) |
 | Writes | `$7FFF` (`BoulderFell`); `$E7A8` (`BoulderLanded`) |
 
 ### `ClearFallFlags` (`$E7F5`)
@@ -766,6 +861,7 @@ Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 9,783 t-states own (0.00 %) |
+| Runs (the other recordings) | 42,120 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `ScanCells` (tail) |
 | Calls | `ScanCellsBody` (tail) |
 | Writes | `$7FFF` (`BoulderFell`); `$E7A8` (`BoulderLanded`) |
@@ -779,6 +875,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 20,056 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PassSoundJump` (tail) |
 | Calls | `ThudSound`, `FallSoundChoice` (tail) |
 | Reads | `$7FFF` (`BoulderFell`); `$E7A8` (`BoulderLanded`); `$E82E` (`BoulderPushed`) |
@@ -792,6 +889,8 @@ Witness: L1 1397 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,397 calls (`stage1/rzx22` 396, `stage1/rzx11` 350, `stage1/rzx03` 297 and 3 more) |
+| Called from | `AntiGravScan` |
+| Writes | `$7FFF` (`BoulderFell`); `$E7A8` (`BoulderLanded`) |
 
 ### `EarthAnimStep` (`$FB70`)
 
@@ -802,6 +901,9 @@ Witness: L1 6610 (rzx x5).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 6,610 calls (`stage1/rzx26` 2,423, `stage1/rzx24` 1,611, `stage1/rzx22` 1,526 and 2 more) |
+| Called from | `EarthAnim` |
+| Reads | `$FD72` (`AnimPhase`) |
+| Writes | `$8000`-`$8001` (`CellGraphicsTable`) |
 
 ### `SetEarthFalls` (`$FB81`)
 
@@ -814,6 +916,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 343 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx13` 1 and 33 more) |
 | Called from | `ResetCave` |
 | Calls | `CaveSetupAll` |
 | Reads | `$800D` (`CellEarthGfx+1`) |
@@ -834,9 +937,10 @@ Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1,110 calls, 440,188 t-states own (0.04 %) |
-| Called from | `PrintDigits`, `PrintText` |
-| Reads | `$BD00`-`$BD07` (`Font`); `$BD40`-`$BD4F` (`Font+64`); `$BD70`-`$BDB7` (`Font+112`, `DigitGlyphs`); `$BDC8`-`$BDD7` (`DigitGlyphs+72`); `$BDE8`-`$BDEF` (`DigitGlyphs+104`); `$BE08`-`$BECF` (`DigitGlyphs+136`); 1 more ranges |
-| Writes | `$4000`-`$421F` (screen); `$42C5`-`$431F` (screen); `$43C5`-`$441F` (screen); `$44C5`-`$451F` (screen); `$45C5`-`$461F` (screen); `$46C5`-`$471F` (screen); 1 more ranges |
+| Runs (the other recordings) | 89,139 calls (`stage1/rzx26` 8,424, `stage1/rzx32` 8,401, `stage1/rzx28` 5,937 and 35 more) |
+| Called from | `PrintDigits`, `PrintText`, `AntiGravStartScan`, `AntiGravPass`, `ClearHiScoreArea`, `MapCellGlyph`, `DrawMapFrame` |
+| Reads | `$9A00`-`$9A47` (`MapGlyphs`); `$9A70`-`$9A7F` (`MapGlyphs+112`); `$BD00`-`$BD0F` (`Font`); `$BD38`-`$BD4F` (`Font+56`); `$BD60`-`$BDEF` (`Font+96`, `DigitGlyphs`); `$BE08`-`$BECF` (`DigitGlyphs+136`); 2 more ranges |
+| Writes | `$4000`-`$57FF` (screen) |
 
 ### `AttrAddr` (`$81B9`)
 
@@ -849,7 +953,8 @@ Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 659 calls, 56,085 t-states own (0.01 %) |
-| Called from | `FillAttrs` |
+| Runs (the other recordings) | 3,269 calls (`stage1/timer` 738, `stage1/menu` 529, `stage1/lives` 323 and 35 more) |
+| Called from | `FillAttrs`, `MapCellAttr` |
 
 ### `AttrAddrDE` (`$8265`)
 
@@ -862,6 +967,7 @@ Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 46,640 calls, 3,834,085 t-states own (0.35 %) |
+| Runs (the other recordings) | 7,669,810 calls (`stage1/rzx32` 600,691, `stage1/rzx26` 428,912, `stage1/rzx29` 381,216 and 34 more) |
 | Called from | `DrawCell` |
 
 ### `LineAddr` (`$8964`)
@@ -873,6 +979,7 @@ Witness: L1 19296 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 10,720 calls, 951,401 t-states own (0.09 %) |
+| Runs (the other recordings) | 8,576 calls (`stage1/menu` 6,432, `stage1/lives` 2,144) |
 | Called from | `WipeInLogo`, `Pause` |
 
 ### `DrawPass` (`$8D46`)
@@ -886,6 +993,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 34,600 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `DrawWindowAtOrigin` |
 | Calls | `AnimateCells`, `AnimateTable` |
 | Reads | `$FD8F` (`ColourCycleInk`) |
@@ -900,6 +1008,7 @@ Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 46,640 calls, 1,609,973 t-states own (0.15 %) |
+| Runs (the other recordings) | 7,669,810 calls (`stage1/rzx32` 600,691, `stage1/rzx26` 428,912, `stage1/rzx29` 381,216 and 34 more) |
 | Called from | `DrawCell` |
 
 ### `DrawWindowAtOrigin` (`$8D75`)
@@ -911,8 +1020,10 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 5,314 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `MapKey` |
-| Calls | `DrawPass` |
+| Calls | `DrawPass`, `DrawCell` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `DrawWindow` (`$8D78`)
 
@@ -927,9 +1038,10 @@ Witness: L1 43834 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 8,681,448 t-states own (0.79 %) |
-| Called from | `DeathView` |
+| Runs (the other recordings) | 60 calls (`stage1/rzx26` 14, `stage1/rzx32` 5, `stage1/rzx24` 5 and 18 more) |
+| Called from | `DeathView`, `TeleportUp`, `TeleportDown`, `TeleportRight`, `TeleportLeft` |
 | Calls | `DrawCell` |
-| Reads | `$FE26`-`$FFFF` (`CaveGrid+126`) |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `WindowOrigin` (`$8DA6`)
 
@@ -942,7 +1054,8 @@ Witness: L1 43833 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 209,015 t-states own (0.02 %) |
-| Called from | `PlayCave` |
+| Runs (the other recordings) | 43,575 calls (`stage1/rzx32` 3,413, `stage1/rzx26` 2,437, `stage1/rzx29` 2,166 and 34 more) |
+| Called from | `PlayCave`, `TeleportUp`, `TeleportDown`, `TeleportRight`, `TeleportLeft` |
 | Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
 | Writes | `$FD70`-`$FD71` (`ViewOrigin`) |
 
@@ -957,9 +1070,10 @@ Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 46,640 calls, 45,101,285 t-states own (4.12 %) |
-| Called from | `DrawWindow` |
+| Runs (the other recordings) | 7,669,810 calls (`stage1/rzx32` 600,691, `stage1/rzx26` 428,912, `stage1/rzx29` 381,216 and 34 more) |
+| Called from | `DrawWindowAtOrigin`, `DrawWindow`, `WinScreen` |
 | Calls | `AttrAddrDE`, `CellGraphicAddr` |
-| Reads | `$8000`-`$801F` (`CellGraphicsTable`, `CellExitGfx`, `CellBoulderGfx`, `CellPlayerRightGfx` and 12 more); `$9B2C`-`$9CDB` (`GfxBoulder`, `GfxEarth`, `GfxGem`, `GfxPlayerRight` and 2 more); `$9DB4`-`$9DD7` (`GfxDeathRight`); `$9ED4`-`$9F63` (`GfxFire`); `$A114`-`$A1A3` (`GfxBubble`); `$A4E0`-`$A56F` (`GfxJellyBean`); 1 more ranges |
+| Reads | `$8000`-`$8037` (`CellGraphicsTable`, `CellExitGfx`, `CellBoulderGfx`, `CellPlayerRightGfx` and 14 more); `$9B08`-`$9D8F` (`CellGraphics`, `GfxBoulder`, `GfxEarth`, `GfxGem` and 8 more); `$9DB4`-`$9DFB` (`GfxDeathRight`, `GfxDeathLeft`); `$9E20`-`$A1A3` (`CellGraphics2`, `GfxSwitch`, `GfxFire`, `GfxTeleporter` and 1 more); `$A1C8`-`$A5FF` (`GfxDissolve+36`, `GfxForceField`, `GfxAntiGrav`, `GfxFallingEarth` and 2 more); `$AA72`-`$AA95` (`BlankGraphic`); 5 more ranges |
 | Writes | `$4000`-`$50BF` (screen); `$5100`-`$51BF` (screen); `$5200`-`$52BF` (screen); `$5300`-`$53BF` (screen); `$5400`-`$54BF` (screen); `$5500`-`$55BF` (screen); 3 more ranges |
 
 ### `AnimateCells` (`$900B`)
@@ -973,6 +1087,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 43,327 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `DrawPass` |
 | Reads | `$8006`-`$8009` (`CellPlayerRightGfx`, `CellPlayerLeftGfx`); `$FD70`-`$FD72` (`ViewOrigin`, `AnimPhase`) |
 | Writes | `$8006`-`$8009` (`CellPlayerRightGfx`, `CellPlayerLeftGfx`); `$FD72` (`AnimPhase`) |
@@ -990,6 +1105,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 257,953 t-states own (0.02 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `DrawPass` |
 | Calls | `EarthAnim` |
 | Reads | `$FD72`-`$FD74` (`AnimPhase`, `ForceFieldPhase`, `TeleporterPhase`) |
@@ -1010,6 +1126,9 @@ Witness: L1 1 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/timer` 1) |
+| Called from | `ShowMap` |
+| Calls | `MapCellGlyph` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `DrawMapCellsLoop` (`$8061`)
 
@@ -1034,6 +1153,9 @@ Witness: L1 1 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/timer` 1) |
+| Called from | `ShowMap` |
+| Calls | `MapCellAttr` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `PlayMapTune` (`$E8E1`)
 
@@ -1044,6 +1166,8 @@ Witness: L1 1 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/timer` 1) |
+| Called from | `ShowMap` |
+| Calls | `PlayTune` |
 
 ### `MapCellGlyph` (`$E9AE`)
 
@@ -1054,6 +1178,8 @@ Witness: L1 600 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 600 calls (`stage1/timer` 600) |
+| Called from | `DrawMapCells` |
+| Calls | `PrintGlyph` |
 
 ### `DrawMapFrame` (`$EA00`)
 
@@ -1064,6 +1190,8 @@ Witness: L1 1 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/timer` 1) |
+| Called from | `ShowMap` |
+| Calls | `PrintGlyph`, `FillAttrs` |
 
 ### `ShowMap` (`$EA80`)
 
@@ -1076,6 +1204,8 @@ Witness: L1 1 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/timer` 1) |
+| Called from | `MapKey` |
+| Calls | `DrawMapCells`, `ColourMapCells`, `PlayMapTune`, `DrawMapFrame` |
 
 ### `ClearMapFlag` (`$EA8E`)
 
@@ -1086,6 +1216,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 120 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx01` 1 and 33 more) |
 | Called from | `CaveInit` |
 | Writes | `$7FFD` (`PlayerKilled`); `$EA8D` (`MapShown`) |
 
@@ -1100,8 +1231,11 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 21,476 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
-| Calls | `DrawWindowAtOrigin` |
+| Calls | `DrawWindowAtOrigin`, `ShowMap` |
+| Reads | `$EA8D` (`MapShown`) |
+| Writes | `$EA8D` (`MapShown`) |
 | Ports in | `$FDFE` |
 | Ports out | `$FDFF` |
 
@@ -1114,6 +1248,10 @@ Witness: L1 600 (timer).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 600 calls (`stage1/timer` 600) |
+| Called from | `ColourMapCells` |
+| Calls | `AttrAddr` |
+| Reads | `$9A80`-`$9A8F` (`MapAttrs`) |
+| Writes | `$5821`-`$5A9E` (screen) |
 
 ## main
 
@@ -1130,6 +1268,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 37,076 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Calls | `ExitFlash` |
 | Reads | `$FD8E`-`$FD8F` (`ColourPhase`, `ColourCycleInk`) |
@@ -1146,9 +1285,10 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 68,497 t-states own (0.01 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `ResetAll` |
 | Reads | `$FD7A`-`$FFFF` (`ClearStart`, `VarsFD7B`, `TimerSub`, `CaveOver` and 29 more) |
-| Writes | `$FD7A`-`$FF17` (`ClearStart`, `VarsFD7B`, `TimerSub`, `CaveOver` and 29 more); `$FF56`-`$FFFF` (`CaveGrid+430`) |
+| Writes | `$FD7A`-`$FFFF` (`ClearStart`, `VarsFD7B`, `TimerSub`, `CaveOver` and 29 more) |
 
 ### `ResetGame` (`$82E6`)
 
@@ -1161,6 +1301,7 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 431 t-states own (0.00 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `ResetAll` |
 | Writes | `$FD8E`-`$FD93` (`ColourPhase`, `ColourCycleInk`, `Unused99`, `CaveNumber` and 2 more) |
 
@@ -1175,6 +1316,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 542 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage2/death-fire` 1 and 33 more) |
 | Called from | `CaveReset` |
 | Calls | `ShowScore`, `ShowHudLine`, `FaceLeft`, `ShowCounters`, `SetEarthFalls` |
 | Writes | `$FD82`-`$FD92` (`GemDigits`, `CaveDone`, `ExitOpen`, `PlayerFacing` and 9 more) |
@@ -1190,6 +1332,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 204 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx11` 1 and 33 more) |
 | Called from | `CaveStartState` |
 | Calls | `ResetCave`, `FillTimeBar`, `ResetAntiGrav` |
 
@@ -1204,7 +1347,8 @@ Witness: L1 15903 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 283 calls, 2,816,051 t-states own (0.26 %) |
-| Called from | `TimerStep`, `QuitKey` |
+| Runs (the other recordings) | 15,621 calls (`stage1/hiscore` 1,536, `stage1/lives` 1,280, `stage1/rzx32` 867 and 33 more) |
+| Called from | `TimerStep`, `TimeBonus`, `QuitKey` |
 | Reads | `$50C0`-`$50DF` (screen); `$51C0`-`$51DF` (screen); `$52C0`-`$52DF` (screen); `$53C0`-`$53DF` (screen); `$54C0`-`$54DF` (screen); `$55C0`-`$55DF` (screen); 2 more ranges |
 | Writes | `$50C0`-`$51DF` (screen); `$52C0`-`$52DF` (screen); `$53C0`-`$53DF` (screen); `$54C0`-`$54DF` (screen); `$55C0`-`$55DF` (screen); `$56C0`-`$56DF` (screen); 1 more ranges |
 
@@ -1219,7 +1363,8 @@ Witness: L1 13 (c1, hiscore, lives, timer).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 3,657,389 t-states own (0.33 %) |
-| Called from | `QuitKey` |
+| Runs (the other recordings) | 12 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/timer` 1) |
+| Called from | `TimerStep`, `QuitKey` |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `TimerStep` (`$86DE`)
@@ -1233,10 +1378,11 @@ Witness: L1 43907 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 18,494 t-states own (0.00 %) |
-| Called from | `PlayCave` |
-| Calls | `ShiftTimeBar` |
+| Runs (the other recordings) | 43,650 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,483, `stage1/rzx29` 2,163 and 34 more) |
+| Called from | `PlayCave`, `ForceField` |
+| Calls | `ShiftTimeBar`, `TimeOutSound` |
 | Reads | `$52C0` (screen); `$FD7C` (`TimerSub`) |
-| Writes | `$FD7C` (`TimerSub`) |
+| Writes | `$FD7C`-`$FD7D` (`TimerSub`, `CaveOver`) |
 
 ### `TimeBonus` (`$8702`)
 
@@ -1251,6 +1397,9 @@ Witness: L1 32 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 32 calls (`stage1/rzx17` 1, `stage1/rzx28` 1, `stage1/rzx25` 1 and 29 more) |
+| Called from | `PlayCave` |
+| Calls | `AddPoint`, `ShowScore`, `ShiftTimeBar`, `BonusTick` |
+| Reads | `$52C0` (screen) |
 
 ### `BonusTick` (`$871C`)
 
@@ -1261,6 +1410,7 @@ Witness: L1 2062 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2,062 calls (`stage1/rzx17` 212, `stage1/rzx28` 202, `stage1/rzx25` 195 and 29 more) |
+| Called from | `TimeBonus` |
 
 ### `QuitKey` (`$872D`)
 
@@ -1273,6 +1423,7 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 41,891 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Calls | `ShiftTimeBar`, `TimeOutSound` |
 | Reads | `$52C0` (screen) |
@@ -1295,8 +1446,9 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 81,415 t-states own (0.01 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx32` 1 and 33 more) |
 | Called from | `CavePlay` |
-| Calls | `ClearVacated`, `ColourCycle`, `PutPlayer`, `DeathSound`, `TimerStep`, `QuitKey`, `KeysStep`, `WindowOrigin`, `DeathView`, `CaveInit`, `AbortKey`, `FizzSound`, `MapKey` |
+| Calls | `ClearVacated`, `ColourCycle`, `PutPlayer`, `DeathSound`, `TimerStep`, `TimeBonus`, `QuitKey`, `KeysStep`, `WindowOrigin`, `DeathView`, `CaveInit`, `AbortKey`, `FizzSound`, `MapKey` |
 | Reads | `$7FFD` (`PlayerKilled`); `$FD7D`-`$FD84` (`CaveOver`, `CaveDigits`, `KeyMoved`, `VarsFD81` and 2 more) |
 | Writes | `$FD7D`-`$FD80` (`CaveOver`, `CaveDigits`, `KeyMoved`) |
 
@@ -1311,7 +1463,8 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 201 t-states own (0.00 %) |
-| Called from | `StartGameEntry` |
+| Runs (the other recordings) | 45 calls (`stage1/lives` 5, `stage1/hiscore` 5, `stage1/rzx01` 2 and 33 more) |
+| Called from | `StartGameEntry`, `CaveStart` |
 | Calls | `PlayCave`, `PlayCaveTuneJump`, `CaveIntro` |
 
 ### `StartGameEntry` (`$89F4`)
@@ -1323,8 +1476,9 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 408 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `NewGame` |
-| Calls | `StartGame`, `ClearScreen`, `CavePlay` |
+| Calls | `IncDigits`, `StartGame`, `ClearScreen`, `CavePlay` |
 | Reads | `$FD84`-`$FD93` (`CaveDone`, `ExitOpen`, `PlayerFacing`, `Continuation` and 9 more) |
 | Writes | `$7FFD` (`PlayerKilled`); `$FD7D`-`$FD93` (`CaveOver`, `CaveDigits`, `KeyMoved`, `VarsFD81` and 14 more) |
 
@@ -1338,7 +1492,11 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 33 calls (`stage1/rzx07` 1, `stage1/rzx06` 1, `stage1/rzx08` 1 and 31 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 33 calls (`stage1/rzx07` 1, `stage1/rzx06` 1, `stage1/rzx08` 1 and 30 more) |
+| Called from | `NextCave` (tail) |
+| Calls | `ClearScreen`, `CavePlay` |
+| Reads | `$FD84`-`$FD93` (`CaveDone`, `ExitOpen`, `PlayerFacing`, `Continuation` and 9 more) |
+| Writes | `$7FFD` (`PlayerKilled`); `$FD7D`-`$FD93` (`CaveOver`, `CaveDigits`, `KeyMoved`, `VarsFD81` and 14 more) |
 
 ### `NextCave` (`$8A07`)
 
@@ -1351,6 +1509,9 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx08`, `stage1/rzx16`, `stage1/rzx18` and 31 more) |
+| Calls | `IncDigits`, `CaveStart` (tail), `WinGame` |
+| Reads | `$FD84`-`$FD93` (`CaveDone`, `ExitOpen`, `PlayerFacing`, `Continuation` and 9 more) |
+| Writes | `$FD91`-`$FD93` (`CaveNumber`, `GemCount`, `Lives`) |
 
 ### `NewGame` (`$8BE5`)
 
@@ -1363,8 +1524,9 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 17 t-states own (0.00 %) |
-| Called from | `GameEntry` |
-| Calls | `StartGameEntry` |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
+| Called from | `GameEntry`, `MenuKeys` |
+| Calls | `GameOver`, `StartGameEntry` |
 
 ### `DeathView` (`$903F`)
 
@@ -1377,6 +1539,7 @@ Witness: L1 1 (c1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 101 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage2/death-crush` 1, `stage2/death-fire` 1) |
 | Called from | `PlayCave` |
 | Calls | `DrawWindow` |
 | Reads | `$FD70`-`$FD71` (`ViewOrigin`) |
@@ -1391,6 +1554,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 153 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx09` 1 and 33 more) |
 | Called from | `CaveInit` |
 | Calls | `CaveReset` |
 | Writes | `$FD72` (`AnimPhase`) |
@@ -1404,8 +1568,10 @@ Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 264 calls, 8,079 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,518 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `ColourCycle` |
-| Reads | `$FD85` (`ExitOpen`) |
+| Reads | `$FD85`-`$FD8F` (`ExitOpen`, `PlayerFacing`, `Continuation`, `SavedCell` and 4 more) |
+| Writes | `$9B08`-`$9B0B` (`CellGraphics`) |
 
 ### `CaveInit` (`$91B9`)
 
@@ -1416,6 +1582,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 169 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx10` 1 and 33 more) |
 | Called from | `PlayCave` |
 | Calls | `CaveStartState`, `ClearMapFlag` |
 
@@ -1428,9 +1595,10 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 812 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 5, `stage1/lives` 5, `stage1/rzx01` 2 and 33 more) |
 | Called from | `CavePlay` |
 | Calls | `PrintText`, `ColourLevelLivesScore` |
-| Reads | `$9713` (`CaveNames+19`); `$FD91` (`CaveNumber`) |
+| Reads | `$9713`-`$9727` (`CaveNames+19`); `$973A`-`$973B` (`CaveNames+58`); `$974D`-`$974F` (`CaveNames+77`); `$9760`-`$9777` (`CaveNames+96`); `$9788`-`$978B` (`CaveNames+136`); `$979E`-`$979F` (`CaveNames+158`); 15 more ranges |
 
 ### `AbortKey` (`$93A5`)
 
@@ -1443,6 +1611,7 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 18,867 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Calls | `AnimateCellCodes` |
 | Ports in | `$FDFE` |
@@ -1457,6 +1626,8 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx32` 1) |
+| Called from | `WinGame` |
+| Calls | `PlayTune` |
 
 ### `PlayWinTuneEnd` (`$A61B`)
 
@@ -1477,6 +1648,9 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx32` 1) |
+| Called from | `WinGame` |
+| Calls | `ClearScreen`, `DrawCell` |
+| Writes | `$8006`-`$8007` (`CellPlayerRightGfx`) |
 
 ### `ResetAntiGrav` (`$A64B`)
 
@@ -1487,6 +1661,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 159 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx07` 1 and 33 more) |
 | Called from | `CaveReset` |
 | Calls | `ResetAntiGravState` |
 | Writes | `$7FFB`-`$7FFC` (`FizzCount`, `SwitchHit`) |
@@ -1500,6 +1675,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 232 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx20` 1 and 33 more) |
 | Called from | `ResetAntiGrav` |
 | Calls | `ClearScreenCave` |
 | Writes | `$FD8B`-`$FD8D` (`AntiGravDigits`, `AntiGravSteps`) |
@@ -1513,6 +1689,8 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx32` 1) |
+| Called from | `WinGame` |
+| Calls | `PrintText` |
 
 ### `ColourWinTexts` (`$A86E`)
 
@@ -1523,6 +1701,8 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx32` 1) |
+| Called from | `WinGame` |
+| Calls | `FillAttrs` |
 
 ### `WinGame` (`$A8BF`)
 
@@ -1533,6 +1713,8 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rzx32` 1) |
+| Called from | `NextCave` |
+| Calls | `PlayWinTune`, `WinScreen`, `ShowWinTexts`, `ColourWinTexts` |
 
 ## unpack
 
@@ -1555,9 +1737,10 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 92,996 t-states own (0.01 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx32` 1 and 33 more) |
 | Called from | `CaveSetup` |
-| Reads | `$C000`-`$C139` (`CaveData`); `$FD91` (`CaveNumber`) |
-| Writes | `$FD9A`-`$FF17` (`CaveParams`, `GemValue`, `PlayerIndex`, `GemsNeededDigits` and 7 more); `$FF56`-`$FFFF` (`CaveGrid+430`) |
+| Reads | `$C000`-`$E73F` (`CaveData`); `$FD91` (`CaveNumber`) |
+| Writes | `$FD9A`-`$FFFF` (`CaveParams`, `GemValue`, `PlayerIndex`, `GemsNeededDigits` and 7 more) |
 
 ### `SetGraphicColour` (`$9305`)
 
@@ -1568,6 +1751,7 @@ Witness: L1 517 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 33 calls, 2,679 t-states own (0.00 %) |
+| Runs (the other recordings) | 495 calls (`stage1/hiscore` 66, `stage1/lives` 55, `stage1/rzx15` 11 and 33 more) |
 | Called from | `CaveSetup`, `CaveSetupAll` |
 | Writes | `$9B08`-`$9B53` (`CellGraphics`, `GfxBoulder`, `GfxEarth`); `$9CB8`-`$9CBB` (`GfxWall1`); `$A1A4`-`$A1CB` (`GfxDissolve`); `$A1EC`-`$A1EF` (`GfxDissolve+72`); `$A210`-`$A213` (`GfxDissolve+108`); `$A234`-`$A237` (`GfxDissolve+144`); 2 more ranges |
 
@@ -1582,6 +1766,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 884 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage2/death-fire` 1 and 33 more) |
 | Called from | `CaveSetupAll` |
 | Calls | `UnpackCave`, `SetGraphicColour` |
 | Reads | `$FDA0`-`$FDA7` (`EarthGraphic`, `WallGraphic`, `DoorColour`, `BoulderColour` and 2 more) |
@@ -1596,6 +1781,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 175 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx01` 1 and 33 more) |
 | Called from | `ResetAntiGravState` |
 | Calls | `ClearScreen` |
 | Writes | `$FD8F` (`ColourCycleInk`) |
@@ -1609,6 +1795,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 1,157 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/timer` 1 and 33 more) |
 | Called from | `SetEarthFalls` |
 | Calls | `SetGraphicColour`, `CaveSetup` |
 | Reads | `$9B2C` (`GfxBoulder`) |
@@ -1628,9 +1815,10 @@ Witness: L1 70724 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 22 calls, 926 t-states own (0.00 %) |
-| Called from | `AddPoint`, `CountGem` |
-| Reads | `$FD83` (`GemDigits+1`); `$FD98`-`$FD99` (`ScoreDigits+4`) |
-| Writes | `$FD83` (`GemDigits+1`); `$FD98`-`$FD99` (`ScoreDigits+4`) |
+| Runs (the other recordings) | 63,663 calls (`stage1/rzx32` 7,662, `stage1/rzx26` 6,106, `stage1/rzx18` 3,605 and 29 more) |
+| Called from | `AddPoint`, `CountGem`, `StartGameEntry`, `NextCave` |
+| Reads | `$FD7E`-`$FD83` (`CaveDigits`, `KeyMoved`, `VarsFD81`, `GemDigits`); `$FD95`-`$FD99` (`ScoreDigits+1`) |
+| Writes | `$FD7E`-`$FD83` (`CaveDigits`, `KeyMoved`, `VarsFD81`, `GemDigits`); `$FD95`-`$FD99` (`ScoreDigits+1`) |
 
 ### `AddPoint` (`$8321`)
 
@@ -1643,7 +1831,8 @@ Witness: L1 61961 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 20 calls, 937 t-states own (0.00 %) |
-| Called from | `AddGemValue` |
+| Runs (the other recordings) | 61,941 calls (`stage1/rzx32` 7,645, `stage1/rzx26` 6,017, `stage1/rzx18` 3,531 and 29 more) |
+| Called from | `AddGemValue`, `TimeBonus`, `AddPoints` |
 | Calls | `IncDigits` |
 
 ### `PrintDigits` (`$832A`)
@@ -1657,9 +1846,10 @@ Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 25 calls, 12,539 t-states own (0.00 %) |
-| Called from | `ShowScore`, `CountGem`, `ShowCounters`, `ShowLevelLivesScore` |
+| Runs (the other recordings) | 16,006 calls (`stage1/rzx26` 1,454, `stage1/rzx32` 1,375, `stage1/rzx25` 1,012 and 35 more) |
+| Called from | `ShowScore`, `CountGem`, `ShowCounters`, `ShowLevelLivesScore`, `ShowGameOver`, `AntiGravStartScan`, `AntiGravPass`, `ShowHiScoreTable` |
 | Calls | `PrintGlyph` |
-| Reads | `$FD7E`-`$FD9F` (`CaveDigits`, `KeyMoved`, `VarsFD81`, `GemDigits` and 18 more) |
+| Reads | `$FD14`-`$FD55` (`HiScoreTable`); `$FD7E`-`$FD9F` (`CaveDigits`, `KeyMoved`, `VarsFD81`, `GemDigits` and 18 more) |
 
 ### `ShowScore` (`$8342`)
 
@@ -1670,7 +1860,8 @@ Witness: L1 12605 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 312 t-states own (0.00 %) |
-| Called from | `CollectGem`, `ResetCave` |
+| Runs (the other recordings) | 12,601 calls (`stage1/rzx26` 1,360, `stage1/rzx32` 1,356, `stage1/rzx28` 961 and 33 more) |
+| Called from | `CollectGem`, `ResetCave`, `TimeBonus`, `BubbleScore`, `AddPoints`, `TimeRefill`, `SwitchScore`, `AntiGravStart` |
 | Calls | `PrintDigits` |
 
 ### `PrintText` (`$834F`)
@@ -1686,9 +1877,10 @@ Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 56 calls, 1,706,987 t-states own (0.16 %) |
-| Called from | `ShowHudLine`, `ShowLevelLivesScore`, `ShowMenuTexts`, `RedefineKeys`, `ShowPasswordPrompt`, `CaveIntro`, `ShowControlTexts` |
+| Runs (the other recordings) | 735 calls (`stage1/menu` 474, `stage1/hiscore` 43, `stage1/lives` 35 and 35 more) |
+| Called from | `EnterName`, `HiScoreInsert`, `ShowHudLine`, `ShowLevelLivesScore`, `ShowMenuTexts`, `RunScroller`, `ShowGameOver`, `RedefineKeys`, `ShowPasswordPrompt`, `CaveIntro`, `ShowWinTexts`, `ShowHiScoreTable`, `ShowHiScoreTitle`, `ShowControlTexts` |
 | Calls | `PrintGlyph` |
-| Reads | `$9700`-`$9713` (`CaveNames`); `$9AE8`-`$9B07` (`EnterPasswordText`); `$A91D`-`$A92C` (`KeyTable+29`); `$A956`-`$A9D6` (`KeyTable+86`, `KeyPrompts`); `$AB00`-`$AB68` (`MenuTexts`, `MenuRedefineText`, `MenuDemoText`, `MenuQuitText` and 1 more); `$BB00`-`$BB15` (`HudLabels`, `LivesLeftText`, `ScoreText`); 2 more ranges |
+| Reads | `$8D5D`-`$8D65` (`HiScoresTitle`); `$9700`-`$997F` (`CaveNames`); `$9AE8`-`$9B07` (`EnterPasswordText`); `$A91D`-`$A92C` (`KeyTable+29`); `$A956`-`$A9D6` (`KeyTable+86`, `KeyPrompts`); `$AA4E`-`$AA71` (`GameOverTexts`, `YouScoredText`, `ReachedLevelText`); 5 more ranges |
 
 ### `ShowHudLine` (`$836A`)
 
@@ -1699,6 +1891,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 180 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx06` 1 and 33 more) |
 | Called from | `ResetCave` |
 | Calls | `PrintText` |
 
@@ -1711,6 +1904,7 @@ Witness: L1 1692 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 1,188 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,690 calls (`stage1/rzx30` 100, `stage1/rzx21` 99, `stage1/rzx26` 88 and 29 more) |
 | Called from | `CollectGem` |
 | Calls | `AddPoint` |
 | Reads | `$FD9B` (`GemValue`) |
@@ -1726,9 +1920,10 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 18,319 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
 | Reads | `$FD86` (`PlayerFacing`); `$FD9C`-`$FD9D` (`PlayerIndex`) |
-| Writes | `$FEC4`-`$FECC` (`CaveGrid+284`); `$FEE2`-`$FEEA` (`CaveGrid+314`); `$FF00`-`$FF01` (`CaveGrid+344`); `$FF5A`-`$FF63` (`CaveGrid+434`); `$FF79` (`CaveGrid+465`); `$FF97`-`$FF9E` (`CaveGrid+495`) |
+| Writes | `$FDA8`-`$FFFF` (`CaveGrid`) |
 
 ### `FaceLeft` (`$838E`)
 
@@ -1739,6 +1934,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 120 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx01` 1 and 33 more) |
 | Called from | `ResetCave` |
 | Writes | `$FD86` (`PlayerFacing`) |
 
@@ -1757,10 +1953,11 @@ Witness: L1 1692 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 398 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,690 calls (`stage1/rzx30` 100, `stage1/rzx21` 99, `stage1/rzx26` 88 and 29 more) |
 | Called from | `CollectGem` |
 | Calls | `GemSound`, `IncDigits`, `PrintDigits` |
 | Reads | `$FD92`-`$FD9A` (`GemCount`, `Lives`, `ScoreDigits`, `CaveParams`) |
-| Writes | `$FD92` (`GemCount`) |
+| Writes | `$FD85`-`$FD92` (`ExitOpen`, `PlayerFacing`, `Continuation`, `SavedCell` and 7 more) |
 
 ### `ShowCounters` (`$85AD`)
 
@@ -1771,7 +1968,8 @@ Witness: L1 53 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 454 t-states own (0.00 %) |
-| Called from | `ResetCave` |
+| Runs (the other recordings) | 51 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx09` 2 and 33 more) |
+| Called from | `ResetCave`, `TakePotion` |
 | Calls | `PrintDigits` |
 
 ### `FillTimeBar` (`$8654`)
@@ -1787,6 +1985,7 @@ Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 12,768 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/hiscore` 6, `stage1/lives` 5, `stage1/rzx02` 1 and 33 more) |
 | Called from | `CaveReset` |
 | Calls | `BarColours` |
 | Reads | `$52C0`-`$52DE` (screen); `$53C0`-`$53DE` (screen); `$54C0`-`$54DE` (screen); `$55C0`-`$55DE` (screen) |
@@ -1803,6 +2002,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 856 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/lives` 5, `stage1/hiscore` 5, `stage1/rzx01` 2 and 33 more) |
 | Called from | `ColourLevelLivesScore` |
 | Calls | `PrintDigits`, `PrintText` |
 
@@ -1815,6 +2015,7 @@ Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 469 t-states own (0.00 %) |
+| Runs (the other recordings) | 45 calls (`stage1/lives` 5, `stage1/hiscore` 5, `stage1/rzx01` 2 and 33 more) |
 | Called from | `CaveIntro` |
 | Calls | `ShowLevelLivesScore`, `FillAttrs` |
 
@@ -1827,6 +2028,8 @@ Witness: L1 132 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 132 calls (`stage1/rzx32` 20, `stage1/rzx26` 17, `stage1/rzx29` 11 and 20 more) |
+| Called from | `UpSpecialCell` (tail), `DownSpecial` (tail), `RightSpecial` (tail), `LeftSpecial` (tail), `CollectObject` (tail) |
+| Calls | `Continue` (tail), `TimeRefill` |
 
 ### `BarColours` (`$9224`)
 
@@ -1837,7 +2040,8 @@ Witness: L1 105 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 5,550 t-states own (0.00 %) |
-| Called from | `FillTimeBar` |
+| Runs (the other recordings) | 103 calls (`stage1/rzx26` 15, `stage1/hiscore` 6, `stage1/rzx24` 6 and 33 more) |
+| Called from | `FillTimeBar`, `TeleportUp`, `TeleportDown`, `TeleportRight`, `TeleportLeft` |
 | Reads | `$BC92`-`$BCD1` (`BarAttrs`) |
 | Writes | `$5AC0`-`$5AFF` (screen) |
 
@@ -1850,6 +2054,8 @@ Witness: L1 31118 (rzx x29).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4,405 calls (`stage1/rzx32` 662, `stage1/rzx26` 546, `stage1/rzx29` 364 and 26 more) |
+| Called from | `BubbleScore`, `PotionScore`, `TimeRefill`, `SwitchScore`, `AntiGravStart` |
+| Calls | `AddPoint`, `ShowScore` |
 
 ### `PotionScore` (`$A8E0`)
 
@@ -1864,6 +2070,8 @@ Witness: L1 6 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rzx15` 1, `stage1/rzx19` 1, `stage1/rzx22` 1 and 3 more) |
+| Called from | `TakePotion` |
+| Calls | `PotionTune`, `AddPoints` |
 
 ### `TimeRefill` (`$A9D7`)
 
@@ -1874,6 +2082,8 @@ Witness: L1 4224 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4,224 calls (`stage1/rzx32` 640, `stage1/rzx26` 544, `stage1/rzx29` 352 and 20 more) |
+| Called from | `JellyBean` |
+| Calls | `ShowScore`, `TimeBarRefillStep`, `AddPoints` |
 
 ### `SwitchScore` (`$A9E3`)
 
@@ -1884,6 +2094,8 @@ Witness: L1 23 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 23 calls (`stage1/rzx26` 1, `stage1/rzx07` 1, `stage1/rzx24` 1 and 20 more) |
+| Called from | `SwitchClear` |
+| Calls | `ShowScore`, `SwitchSound`, `AddPoints` |
 
 ### `AntiGravStart` (`$A9EF`)
 
@@ -1894,6 +2106,8 @@ Witness: L1 16 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage1/rzx22` 4, `stage1/rzx11` 4, `stage1/rzx03` 3 and 3 more) |
+| Called from | `AntiGravStartScan` |
+| Calls | `AntiGravSound`, `ShowScore`, `AddPoints` |
 
 ## player
 
@@ -1910,11 +2124,12 @@ Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 25,032 t-states own (0.00 %) |
+| Runs (the other recordings) | 41,827 calls (`stage1/rzx32` 3,395, `stage1/rzx26` 2,348, `stage1/rzx29` 2,052 and 34 more) |
 | Called from | `PlayerStep` |
-| Calls | `PushBoulder`, `BlockWall` |
-| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEC3`-`$FEC4` (`CaveGrid+283`) |
+| Calls | `MoveLeft`, `LeftSpecial` (tail), `PushBoulder`, `BlockWall` |
+| Reads | `$FD85` (`ExitOpen`); `$FD9C`-`$FFFE` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
 | Writes | `$FD80`-`$FD86` (`KeyMoved`, `VarsFD81`, `GemDigits`, `CaveDone` and 2 more); `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEC5` (`CaveGrid+285`) |
-| Ports in | `$DFFE` |
+| Ports in | `$011F`, `$021F`, `$031F`, `$041F`, `$081F`, `$091F`, `$0A1F`, `$0B1F`, `$0C1F`, `$0D1F`, `$0E1F`, `$0F1F`, `$111F`, `$121F`, `$131F`, `$151F`, `$161F`, `$171F`, `$191F`, `$1A1F`, `$1B1F`, `$1D1F`, `$1E1F`, `$1F1F`, `$201F`, `$211F`, `$221F`, `$231F`, `$241F`, `$251F`, `$261F`, `$271F`, `$281F`, `$291F`, `$2A1F`, `$2B1F`, `$2C1F`, `$2D1F`, `$2E1F`, `$2F1F`, `$311F`, `$321F`, `$331F`, `$351F`, `$361F`, `$371F`, `$391F`, `$3B1F`, `$3C1F`, `$3D1F`, `$3E1F`, `$3F1F`, `$401F`, `$411F`, `$421F`, `$441F`, `$461F`, `$471F`, `$4A1F`, `$4B1F`, `$4D1F`, `$4E1F`, `$4F1F`, `$511F`, `$521F`, `$531F`, `$551F`, `$561F`, `$571F`, `$591F`, `$5A1F`, `$5B1F`, `$5C1F`, `$5D1F`, `$5E1F`, `$5F1F`, `$601F`, `$621F`, `$651F`, `$661F`, `$671F`, `$681F`, `$691F`, `$6B1F`, `$6D1F`, `$6F1F`, `$701F`, `$711F`, `$731F`, `$751F`, `$771F`, `$781F`, `$791F`, `$7A1F`, `$7B1F`, `$7C1F`, `$7D1F`, `$7E1F`, `$831F`, `$851F`, `$861F`, `$871F`, `$891F`, `$8B1F`, `$8D1F`, `$8E1F`, `$8F1F`, `$901F`, `$911F`, `$931F`, `$961F`, `$971F`, `$981F`, `$991F`, `$9A1F`, `$9B1F`, `$9C1F`, `$9D1F`, `$9E1F`, `$9F1F`, `$A01F`, `$A11F`, `$A31F`, `$A41F`, `$A51F`, `$A71F`, `$A91F`, `$AB1F`, `$AD1F`, `$AE1F`, `$AF1F`, `$B01F`, `$B11F`, `$B21F`, `$B51F`, `$B61F`, `$B71F`, `$B81F`, `$B91F`, `$BA1F`, `$BB1F`, `$BC1F`, `$BD1F`, `$BE1F`, `$BF1F`, `$C01F`, `$C11F`, `$C21F`, `$C31F`, `$C41F`, `$C51F`, `$C71F`, `$C91F`, `$CB1F`, `$CD1F`, `$CF1F`, `$D11F`, `$D21F`, `$D31F`, `$D41F`, `$D51F`, `$D61F`, `$D71F`, `$D81F`, `$D91F`, `$DA1F`, `$DB1F`, `$DC1F`, `$DD1F`, `$DE1F`, `$DF1F`, `$DFFE`, `$E01F`, `$E11F`, `$E21F`, `$E31F`, `$E41F`, `$E51F`, `$E71F`, `$E91F`, `$EB1F`, `$ED1F`, `$F01F`, `$F11F`, `$F21F`, `$F31F`, `$F41F`, `$F51F`, `$F71F`, `$F81F`, `$FA1F`, `$FB1F`, `$FC1F`, `$FD1F`, `$FF1F` |
 | Ports out | `$DFFF` |
 
 ### `MoveLeft` (`$8428`)
@@ -1925,7 +2140,10 @@ Witness: L1 4366 (c1, rzx x32).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 3,981 calls (`stage1/rzx32` 486, `stage1/rzx26` 400, `stage1/rzx29` 206 and 30 more) |
+| Runs | not reached in `stage1/c1`; in the other recordings 3,981 calls (`stage1/rzx32` 486, `stage1/rzx26` 400, `stage1/rzx29` 206 and 29 more) |
+| Called from | `TryLeft`, `Continue`, `LeftSpecial` (tail), `TeleportLeft` |
+| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
+| Writes | `$FD9C`-`$FFFF` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
 
 ### `TryRight` (`$8437`)
 
@@ -1938,11 +2156,12 @@ Witness: L1 36883 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 257 calls, 33,893 t-states own (0.00 %) |
+| Runs (the other recordings) | 36,631 calls (`stage1/rzx32` 2,815, `stage1/timer` 2,014, `stage1/rzx26` 1,893 and 34 more) |
 | Called from | `PlayerStep` |
-| Calls | `MoveRight`, `RightSpecial` (tail), `BlockWall` |
-| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEC6`-`$FECC` (`CaveGrid+286`); `$FF5B`-`$FF63` (`CaveGrid+435`); `$FF98`-`$FF9E` (`CaveGrid+496`) |
+| Calls | `MoveRight`, `RightSpecial` (tail), `PushBoulder`, `BlockWall` |
+| Reads | `$FD85` (`ExitOpen`); `$FD9C`-`$FFFF` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
 | Writes | `$FD80`-`$FD86` (`KeyMoved`, `VarsFD81`, `GemDigits`, `CaveDone` and 2 more) |
-| Ports in | `$DFFE` |
+| Ports in | `$001F`, `$DFFE`, `$FF1F` |
 | Ports out | `$DFFF` |
 
 ### `MoveRight` (`$849E`)
@@ -1954,9 +2173,10 @@ Witness: L1 4761 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 23 calls, 2,045 t-states own (0.00 %) |
-| Called from | `TryRight`, `RightSpecial` (tail) |
+| Runs (the other recordings) | 4,259 calls (`stage1/rzx26` 500, `stage1/rzx32` 254, `stage1/rzx29` 213 and 29 more) |
+| Called from | `TryRight`, `Continue`, `RightSpecial` (tail), `TeleportRight` |
 | Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
-| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEC5`-`$FECB` (`CaveGrid+285`); `$FF5A`-`$FF62` (`CaveGrid+434`); `$FF97`-`$FF9D` (`CaveGrid+495`) |
+| Writes | `$FD9C`-`$FFFE` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
 
 ### `TryUp` (`$84AD`)
 
@@ -1969,8 +2189,12 @@ Witness: L1 31376 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 234 calls, 11,370 t-states own (0.00 %) |
+| Runs (the other recordings) | 31,147 calls (`stage1/rzx32` 2,260, `stage1/timer` 2,014, `stage1/rzx29` 1,526 and 34 more) |
 | Called from | `PlayerStep` |
-| Ports in | `$FBFE` |
+| Calls | `MoveUp`, `UpSpecial` (tail), `BlockWall` |
+| Reads | `$FD85` (`ExitOpen`); `$FD9C`-`$FFE1` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
+| Writes | `$FD80`-`$FD84` (`KeyMoved`, `VarsFD81`, `GemDigits`, `CaveDone`); `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEA7` (`CaveGrid+255`); `$FEC5` (`CaveGrid+285`) |
+| Ports in | `$FBFE`, `$FF1F` |
 | Ports out | `$FBFF` |
 
 ### `MoveUp` (`$84E6`)
@@ -1982,6 +2206,9 @@ Witness: L1 3803 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 3,627 calls (`stage1/rzx32` 387, `stage1/rzx24` 208, `stage1/rzx26` 204 and 29 more) |
+| Called from | `TryUp`, `UpSpecialCell` (tail), `TeleportUp`, `Continue`, `TeleportDown` |
+| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
+| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDC5`-`$FFFF` (`CaveGrid+29`) |
 
 ### `TryDown` (`$84F9`)
 
@@ -1994,11 +2221,12 @@ Witness: L1 26738 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 234 calls, 15,445 t-states own (0.00 %) |
+| Runs (the other recordings) | 26,507 calls (`stage1/timer` 2,014, `stage1/rzx32` 1,792, `stage1/rzx29` 1,350 and 34 more) |
 | Called from | `PlayerStep` |
 | Calls | `MoveDown`, `DownSpecial` (tail), `BlockWall` |
-| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEE2`-`$FEEA` (`CaveGrid+314`); `$FF00`-`$FF08` (`CaveGrid+344`); `$FF1E`-`$FF1F` (`CaveGrid+374`); `$FF3C`-`$FF3D` (`CaveGrid+404`); `$FF5A`-`$FF5B` (`CaveGrid+434`); 2 more ranges |
-| Writes | `$FD80` (`KeyMoved`) |
-| Ports in | `$FDFE` |
+| Reads | `$FD85` (`ExitOpen`); `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDC6`-`$FFFF` (`CaveGrid+30`) |
+| Writes | `$FD80`-`$FD84` (`KeyMoved`, `VarsFD81`, `GemDigits`, `CaveDone`); `$FD9C`-`$FD9D` (`PlayerIndex`); `$FE89` (`CaveGrid+225`) |
+| Ports in | `$FDFE`, `$FF1F` |
 | Ports out | `$FDFF` |
 
 ### `MoveDown` (`$8535`)
@@ -2010,9 +2238,10 @@ Witness: L1 4052 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 12 calls, 1,468 t-states own (0.00 %) |
+| Runs (the other recordings) | 3,495 calls (`stage1/rzx26` 307, `stage1/rzx32` 281, `stage1/rzx05` 170 and 29 more) |
 | Called from | `TryDown`, `DownSpecial` (tail), `Continue` |
 | Reads | `$FD9C`-`$FD9D` (`PlayerIndex`) |
-| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FEC4`-`$FECC` (`CaveGrid+284`); `$FEE2`-`$FEE3` (`CaveGrid+314`); `$FF00`-`$FF01` (`CaveGrid+344`); `$FF1E`-`$FF1F` (`CaveGrid+374`); `$FF3C`-`$FF3D` (`CaveGrid+404`); 2 more ranges |
+| Writes | `$FD9C`-`$FFE1` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more) |
 
 ### `PlayerStep` (`$8556`)
 
@@ -2025,6 +2254,7 @@ Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 72,211 t-states own (0.01 %) |
+| Runs (the other recordings) | 41,839 calls (`stage1/rzx32` 3,395, `stage1/rzx26` 2,351, `stage1/rzx29` 2,059 and 34 more) |
 | Called from | `KeysStep` |
 | Calls | `TryLeft`, `TryRight`, `TryUp`, `TryDown`, `ClearStepFlags`, `DigNoiseIfDug` |
 | Reads | `$FD80` (`KeyMoved`); `$FD9C`-`$FD9D` (`PlayerIndex`) |
@@ -2041,8 +2271,9 @@ Witness: L1 1692 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 185 t-states own (0.00 %) |
-| Called from | `DownSpecial`, `RightSpecial` |
-| Calls | `ShowScore`, `AddGemValue`, `CountGem` |
+| Runs (the other recordings) | 1,690 calls (`stage1/rzx30` 100, `stage1/rzx21` 99, `stage1/rzx26` 88 and 29 more) |
+| Called from | `UpSpecialCell`, `DownSpecial`, `RightSpecial`, `LeftSpecial`, `CollectObject` (tail) |
+| Calls | `ShowScore`, `AddGemValue`, `CountGem`, `ExitOpenSound` |
 | Reads | `$FD85` (`ExitOpen`) |
 
 ### `KeysStep` (`$8759`)
@@ -2058,9 +2289,10 @@ Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 19,792 t-states own (0.00 %) |
+| Runs (the other recordings) | 43,517 calls (`stage1/rzx32` 3,408, `stage1/rzx26` 2,423, `stage1/rzx29` 2,163 and 34 more) |
 | Called from | `PlayCave` |
-| Calls | `PlayerStep` |
-| Ports in | `$7FFE` |
+| Calls | `PlayerStep`, `FireStep` |
+| Ports in | `$001F`, `$7FFE` |
 | Ports out | `$7FFF` |
 
 ### `FireLeft` (`$876B`)
@@ -2074,6 +2306,11 @@ Witness: L1 1678 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,678 calls (`stage1/rzx24` 323, `stage1/rzx21` 156, `stage1/rzx23` 122 and 20 more) |
+| Called from | `FireStep` |
+| Calls | `ThudSound`, `CollectLeft`, `DigInPlace` |
+| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDC2`-`$FDCB` (`CaveGrid+26`); `$FDE1`-`$FE02` (`CaveGrid+57`); `$FE1C`-`$FE20` (`CaveGrid+116`); `$FE34`-`$FE62` (`CaveGrid+140`); `$FE77`-`$FE85` (`CaveGrid+207`); 3 more ranges |
+| Writes | `$FDC7` (`CaveGrid+31`); `$FDEF`-`$FDF9` (`CaveGrid+71`); `$FE42` (`CaveGrid+154`); `$FE54`-`$FE61` (`CaveGrid+172`); `$FE82`-`$FE85` (`CaveGrid+218`); `$FE9A`-`$FE9B` (`CaveGrid+242`); 6 more ranges |
+| Ports in | `$101F` |
 
 ### `FireLeftBoulder` (`$879F`)
 
@@ -2096,6 +2333,11 @@ Witness: L1 1678 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,678 calls (`stage1/rzx24` 323, `stage1/rzx21` 156, `stage1/rzx23` 122 and 20 more) |
+| Called from | `FireStep` |
+| Calls | `ThudSound`, `CollectRight`, `DigInPlace` |
+| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDC4`-`$FDCD` (`CaveGrid+28`); `$FDEE`-`$FE1E` (`CaveGrid+70`); `$FE33`-`$FE99` (`CaveGrid+139`); `$FEAB`-`$FEE0` (`CaveGrid+259`); `$FEF4`-`$FF2D` (`CaveGrid+332`); 3 more ranges |
+| Writes | `$FDCD` (`CaveGrid+37`); `$FDF3`-`$FDF9` (`CaveGrid+75`); `$FE0F` (`CaveGrid+103`); `$FE63`-`$FE99` (`CaveGrid+187`); `$FEAB`-`$FEE0` (`CaveGrid+259`); `$FEF9` (`CaveGrid+337`); 5 more ranges |
+| Ports in | `$001F`, `$021F`, `$051F`, `$071F`, `$081F`, `$0A1F`, `$0F1F`, `$161F`, `$171F`, `$181F`, `$191F`, `$1A1F`, `$1B1F` |
 
 ### `FireUp` (`$881D`)
 
@@ -2106,6 +2348,11 @@ Witness: L1 1678 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,678 calls (`stage1/rzx24` 323, `stage1/rzx21` 156, `stage1/rzx23` 122 and 20 more) |
+| Called from | `FireStep` |
+| Calls | `CollectUp`, `DigInPlace` |
+| Reads | `$FD9C`-`$FDB4` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more); `$FDC8`-`$FDE0` (`CaveGrid+32`); `$FDFA`-`$FE11` (`CaveGrid+82`); `$FE27`-`$FE38` (`CaveGrid+127`); `$FE8F` (`CaveGrid+231`); `$FEB9` (`CaveGrid+273`); 7 more ranges |
+| Writes | `$FE06` (`CaveGrid+94`); `$FEE8` (`CaveGrid+320`) |
+| Ports in | `$001F`, `$011F`, `$021F`, `$061F`, `$071F`, `$081F`, `$171F`, `$181F`, `$1A1F`, `$1B1F` |
 
 ### `FireDown` (`$8849`)
 
@@ -2116,6 +2363,11 @@ Witness: L1 1678 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,678 calls (`stage1/rzx24` 323, `stage1/rzx21` 156, `stage1/rzx23` 122 and 20 more) |
+| Called from | `FireStep` |
+| Calls | `CollectDown`, `DigInPlace` |
+| Reads | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDE1` (`CaveGrid+57`); `$FDF5`-`$FDFD` (`CaveGrid+77`); `$FE17` (`CaveGrid+111`); `$FE4E`-`$FECD` (`CaveGrid+166`); `$FEDF`-`$FF68` (`CaveGrid+311`); 3 more ranges |
+| Writes | `$FE4E`-`$FE54` (`CaveGrid+166`); `$FE65`-`$FE6D` (`CaveGrid+189`); `$FE8A` (`CaveGrid+226`); `$FE9D`-`$FEA0` (`CaveGrid+245`); `$FEB9`-`$FECB` (`CaveGrid+273`); `$FEDF`-`$FEF3` (`CaveGrid+311`); 5 more ranges |
+| Ports in | `$001F`, `$051F`, `$071F`, `$081F`, `$181F` |
 
 ### `FireStep` (`$8878`)
 
@@ -2126,6 +2378,8 @@ Witness: L1 1678 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,678 calls (`stage1/rzx24` 323, `stage1/rzx21` 156, `stage1/rzx23` 122 and 20 more) |
+| Called from | `KeysStep` |
+| Calls | `FireLeft`, `FireRight`, `FireUp`, `FireDown` |
 
 ### `ForceField` (`$914C`)
 
@@ -2136,6 +2390,9 @@ Witness: L1 11 (rzx x5).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 11 calls (`stage1/rzx26` 5, `stage1/rzx24` 2, `stage1/rzx22` 2 and 2 more) |
+| Called from | `UpSpecialCell` (tail), `DownSpecial` (tail), `RightSpecial` (tail), `LeftSpecial` (tail) |
+| Calls | `TimerStep` |
+| Reads | `$FD7D` (`CaveOver`) |
 
 ### `UpSpecialCell` (`$915F`)
 
@@ -2150,6 +2407,10 @@ Witness: L1 517 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 517 calls (`stage1/rzx16` 60, `stage1/rzx31` 40, `stage1/rzx29` 35 and 29 more) |
+| Called from | `UpSpecialCheck` (tail), `LeftSpecial` (tail) |
+| Calls | `MoveUp` (tail), `CollectGem`, `ForceField` (tail), `JellyBean` (tail), `TeleportUp` (tail), `BubbleUp` (tail), `Continue` (tail) |
+| Reads | `$FDA9`-`$FFE0` (`CaveGrid+1`) |
+| Writes | `$7FFD` (`PlayerKilled`) |
 
 ### `PotionTune` (`$91C1`)
 
@@ -2160,6 +2421,8 @@ Witness: L1 6 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rzx27` 1, `stage1/rzx19` 1, `stage1/rzx22` 1 and 3 more) |
+| Called from | `PotionScore` |
+| Calls | `PlayTune` |
 
 ### `TakePotion` (`$91C9`)
 
@@ -2170,6 +2433,10 @@ Witness: L1 6 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 6 calls (`stage1/rzx28` 1, `stage1/rzx19` 1, `stage1/rzx27` 1 and 3 more) |
+| Called from | `PotionDown`, `RightSpecial` |
+| Calls | `ShowCounters`, `PotionScore` |
+| Reads | `$FD93` (`Lives`) |
+| Writes | `$FD93` (`Lives`) |
 
 ### `TimeBarRefillStep` (`$91DB`)
 
@@ -2180,6 +2447,9 @@ Witness: L1 4224 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4,224 calls (`stage1/rzx32` 640, `stage1/rzx26` 544, `stage1/rzx29` 352 and 20 more) |
+| Called from | `TimeRefill` |
+| Reads | `$52C0`-`$52DF` (screen); `$53C0`-`$53DF` (screen); `$54C0`-`$54DF` (screen); `$55C0`-`$55DF` (screen) |
+| Writes | `$52C0`-`$52DF` (screen); `$53C0`-`$53DF` (screen); `$54C0`-`$54DF` (screen); `$55C0`-`$55DF` (screen) |
 
 ### `TeleportUp` (`$926E`)
 
@@ -2190,6 +2460,10 @@ Witness: L1 16 (rzx x11).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 16 calls (`stage1/rzx26` 4, `stage1/rzx16` 2, `stage1/rzx32` 2 and 8 more) |
+| Called from | `UpSpecialCell` (tail) |
+| Calls | `MoveUp`, `DrawWindow`, `WindowOrigin`, `BarColours`, `TeleportOutEffect`, `TeleportInEffect` |
+| Reads | `$FD70`-`$FD71` (`ViewOrigin`); `$FDA8`-`$FFE8` (`CaveGrid`) |
+| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDEF` (`CaveGrid+71`); `$FE01` (`CaveGrid+89`); `$FE38` (`CaveGrid+144`); `$FE6C`-`$FE78` (`CaveGrid+196`); `$FEB5` (`CaveGrid+269`); 4 more ranges |
 
 ### `BubbleUp` (`$934F`)
 
@@ -2200,6 +2474,10 @@ Witness: L1 206 (rzx x16).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 206 calls (`stage1/rzx16` 52, `stage1/rzx31` 36, `stage1/rzx29` 28 and 13 more) |
+| Called from | `UpSpecialCell` (tail), `CollectUp` (tail) |
+| Calls | `BubbleBurst`, `Continue` (tail) |
+| Reads | `$FDB3`-`$FF98` (`CaveGrid+11`); `$FFAB`-`$FFB6` (`CaveGrid+515`) |
+| Writes | `$FDB8`-`$FF98` (`CaveGrid+16`); `$FFAB`-`$FFB6` (`CaveGrid+515`) |
 
 ### `BubbleBurst` (`$9378`)
 
@@ -2210,6 +2488,9 @@ Witness: L1 136 (rzx x21).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 136 calls (`stage1/rzx24` 23, `stage1/rzx32` 21, `stage1/rzx31` 16 and 18 more) |
+| Called from | `BubbleUp`, `BubbleDown`, `BubbleRight`, `BubbleLeft` |
+| Calls | `BubbleScore` |
+| Writes | `$FDB3`-`$FDDA` (`CaveGrid+11`); `$FDED`-`$FE21` (`CaveGrid+69`); `$FE36`-`$FEFC` (`CaveGrid+142`); `$FF0F`-`$FF69` (`CaveGrid+359`); `$FF89`-`$FFFE` (`CaveGrid+481`) |
 
 ### `BubbleScore` (`$93B6`)
 
@@ -2220,6 +2501,8 @@ Witness: L1 136 (rzx x21).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 136 calls (`stage1/rzx24` 23, `stage1/rzx32` 21, `stage1/rzx31` 16 and 18 more) |
+| Called from | `BubbleBurst` |
+| Calls | `ShowScore`, `RaspSound`, `AddPoints` |
 
 ### `UpSpecialCheck` (`$93C7`)
 
@@ -2230,6 +2513,9 @@ Witness: L1 523 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 523 calls (`stage1/rzx16` 60, `stage1/rzx31` 40, `stage1/rzx29` 35 and 29 more) |
+| Called from | `UpSpecial` (tail) |
+| Calls | `UpSpecialCell` (tail) |
+| Reads | `$FDA9`-`$FFE0` (`CaveGrid+1`) |
 
 ### `DownSpecial` (`$93CE`)
 
@@ -2240,9 +2526,10 @@ Witness: L1 1120 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 6 calls, 1,305 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,114 calls (`stage1/rzx32` 190, `stage1/rzx24` 115, `stage1/rzx18` 102 and 29 more) |
 | Called from | `TryDown` (tail) |
-| Calls | `MoveDown` (tail), `CollectGem`, `BubbleDown` (tail) |
-| Reads | `$FF1E` (`CaveGrid+374`); `$FF5A` (`CaveGrid+434`); `$FF78` (`CaveGrid+464`) |
+| Calls | `MoveDown` (tail), `CollectGem`, `ForceField` (tail), `JellyBean` (tail), `TeleportDown` (tail), `PotionDown` (tail), `BubbleDown` (tail), `AntiGravTake` (tail) |
+| Reads | `$FDC7`-`$FFFF` (`CaveGrid+31`) |
 | Writes | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `Continue` (`$9410`)
@@ -2254,8 +2541,9 @@ Witness: L1 1608 (c1, rzx x28).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 20 t-states own (0.00 %) |
-| Called from | `BubbleDown` (tail) |
-| Calls | `MoveDown` |
+| Runs (the other recordings) | 1,608 calls (`stage1/rzx32` 435, `stage1/rzx29` 132, `stage1/rzx24` 128 and 26 more) |
+| Called from | `UpSpecialCell` (tail), `JellyBean` (tail), `BubbleUp` (tail), `PotionDown` (tail), `BubbleDown` (tail), `RightSpecial` (tail), `BubbleRight` (tail), `BubbleLeft` (tail), `BubbleRightMove` (tail), `BubbleLeftMove` (tail), `AntiGravTake` (tail) |
+| Calls | `MoveLeft`, `MoveRight`, `MoveUp`, `MoveDown`, `CollectNone`, `CollectLeftClear`, `CollectRightClear`, `CollectUpClear`, `CollectDownClear` |
 | Reads | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `UpSpecial` (`$9414`)
@@ -2267,6 +2555,9 @@ Witness: L1 523 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 523 calls (`stage1/rzx16` 60, `stage1/rzx31` 40, `stage1/rzx29` 35 and 29 more) |
+| Called from | `TryUp` (tail) |
+| Calls | `UpSpecialCheck` (tail) |
+| Writes | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `TeleportDown` (`$941F`)
 
@@ -2279,6 +2570,10 @@ Witness: L1 11 (rzx x8).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 11 calls (`stage1/rzx24` 3, `stage1/rzx26` 2, `stage1/rzx05` 1 and 5 more) |
+| Called from | `DownSpecial` (tail) |
+| Calls | `MoveUp`, `DrawWindow`, `WindowOrigin`, `BarColours`, `TeleportOutEffect`, `TeleportInEffect` |
+| Reads | `$FD70`-`$FD71` (`ViewOrigin`); `$FDA8`-`$FFD2` (`CaveGrid`) |
+| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDE3`-`$FDE5` (`CaveGrid+59`); `$FE79` (`CaveGrid+209`); `$FE9A` (`CaveGrid+242`); `$FEE2` (`CaveGrid+314`); `$FF29` (`CaveGrid+385`); 3 more ranges |
 
 ### `PotionDown` (`$9465`)
 
@@ -2289,6 +2584,8 @@ Witness: L1 6 (rzx x6).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rzx28` 1, `stage1/rzx09` 1, `stage1/rzx22` 1 and 1 more) |
+| Called from | `DownSpecial` (tail), `RightSpecial` (tail), `LeftSpecial` (tail) |
+| Calls | `TakePotion`, `Continue` (tail) |
 
 ### `BubbleDown` (`$946B`)
 
@@ -2299,10 +2596,11 @@ Witness: L1 592 (c1, rzx x21).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 807 t-states own (0.00 %) |
-| Called from | `DownSpecial` (tail) |
-| Calls | `Continue` (tail) |
-| Reads | `$FF78` (`CaveGrid+464`); `$FF96` (`CaveGrid+494`) |
-| Writes | `$FF78` (`CaveGrid+464`) |
+| Runs (the other recordings) | 587 calls (`stage1/rzx32` 178, `stage1/rzx24` 78, `stage1/rzx18` 72 and 18 more) |
+| Called from | `DownSpecial` (tail), `CollectDown` (tail) |
+| Calls | `BubbleBurst`, `Continue` (tail) |
+| Reads | `$FDE5`-`$FFFE` (`CaveGrid+61`) |
+| Writes | `$FDE5`-`$FFFC` (`CaveGrid+61`) |
 
 ### `RightSpecial` (`$9494`)
 
@@ -2313,9 +2611,10 @@ Witness: L1 959 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 95 t-states own (0.00 %) |
+| Runs (the other recordings) | 958 calls (`stage1/rzx32` 275, `stage1/rzx26` 77, `stage1/rzx25` 59 and 29 more) |
 | Called from | `TryRight` (tail) |
-| Calls | `MoveRight` (tail), `CollectGem` |
-| Reads | `$FF5F` (`CaveGrid+439`) |
+| Calls | `MoveRight` (tail), `CollectGem`, `ForceField` (tail), `TakePotion`, `JellyBean` (tail), `Continue` (tail), `PotionDown` (tail), `TeleportRight` (tail), `BubbleRight` (tail), `AntiGravTake` (tail) |
+| Reads | `$FDAA`-`$FFFF` (`CaveGrid+2`) |
 | Writes | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `LeftSpecial` (`$94D6`)
@@ -2327,6 +2626,10 @@ Witness: L1 847 (rzx x32).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 848 calls (`stage1/rzx12` 90, `stage1/rzx29` 72, `stage1/rzx31` 58 and 30 more) |
+| Called from | `TryLeft` (tail) |
+| Calls | `MoveLeft` (tail), `CollectGem`, `ForceField` (tail), `UpSpecialCell` (tail), `JellyBean` (tail), `PotionDown` (tail), `TeleportLeft` (tail), `BubbleLeft` (tail), `AntiGravTake` (tail) |
+| Reads | `$FDA8`-`$FFFC` (`CaveGrid`) |
+| Writes | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `TeleportRight` (`$9518`)
 
@@ -2337,6 +2640,10 @@ Witness: L1 18 (rzx x10).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 18 calls (`stage1/rzx26` 4, `stage2/rzx04/cap` 3, `stage1/rzx24` 2 and 7 more) |
+| Called from | `RightSpecial` (tail) |
+| Calls | `MoveRight`, `DrawWindow`, `WindowOrigin`, `BarColours`, `TeleportOutEffect`, `TeleportInEffect` |
+| Reads | `$FD70`-`$FD71` (`ViewOrigin`); `$FDA8`-`$FFFB` (`CaveGrid`) |
+| Writes | `$FD9C`-`$FDB4` (`PlayerIndex`, `GemsNeededDigits`, `EarthGraphic`, `WallGraphic` and 5 more); `$FDE7` (`CaveGrid+63`); `$FDFD`-`$FDFF` (`CaveGrid+85`); `$FE76` (`CaveGrid+206`); `$FED2` (`CaveGrid+298`); `$FEFE` (`CaveGrid+342`); 4 more ranges |
 
 ### `TeleportLeft` (`$955E`)
 
@@ -2347,6 +2654,10 @@ Witness: L1 13 (rzx x9).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 13 calls (`stage1/rzx26` 4, `stage1/rzx28` 2, `stage1/rzx32` 1 and 6 more) |
+| Called from | `LeftSpecial` (tail) |
+| Calls | `MoveLeft`, `DrawWindow`, `WindowOrigin`, `BarColours`, `TeleportOutEffect`, `TeleportInEffect` |
+| Reads | `$FD70`-`$FD71` (`ViewOrigin`); `$FDA8`-`$FFF7` (`CaveGrid`) |
+| Writes | `$FD9C`-`$FD9D` (`PlayerIndex`); `$FDB4` (`CaveGrid+12`); `$FDC6`-`$FDC9` (`CaveGrid+30`); `$FE02` (`CaveGrid+90`); `$FE3B` (`CaveGrid+147`); `$FE5D` (`CaveGrid+181`); 5 more ranges |
 
 ### `BubbleRight` (`$95A4`)
 
@@ -2359,6 +2670,10 @@ Witness: L1 499 (rzx x19).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 499 calls (`stage1/rzx32` 260, `stage1/rzx25` 45, `stage1/rzx26` 39 and 16 more) |
+| Called from | `RightSpecial` (tail), `CollectRight` (tail) |
+| Calls | `BubbleBurst`, `Continue` (tail), `BubbleRightMove` (tail) |
+| Reads | `$FDB7`-`$FE54` (`CaveGrid+15`); `$FE66`-`$FEA5` (`CaveGrid+190`); `$FEC0`-`$FFE1` (`CaveGrid+280`); `$FFF7`-`$FFF9` (`CaveGrid+591`) |
+| Writes | `$FDBC`-`$FDFD` (`CaveGrid+20`); `$FE0E`-`$FE54` (`CaveGrid+102`); `$FE66`-`$FEA5` (`CaveGrid+190`); `$FEC0`-`$FFE1` (`CaveGrid+280`); `$FFF7`-`$FFF9` (`CaveGrid+591`) |
 
 ### `BubbleLeft` (`$95D5`)
 
@@ -2369,6 +2684,10 @@ Witness: L1 380 (rzx x20).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 380 calls (`stage1/rzx12` 61, `stage1/rzx31` 51, `stage1/rzx29` 46 and 17 more) |
+| Called from | `LeftSpecial` (tail), `CollectLeft` (tail) |
+| Calls | `BubbleBurst`, `Continue` (tail), `BubbleLeftMove` (tail) |
+| Reads | `$FDB5`-`$FFF5` (`CaveGrid+13`) |
+| Writes | `$FDB5`-`$FE47` (`CaveGrid+13`); `$FE58`-`$FF44` (`CaveGrid+176`); `$FF58`-`$FFF5` (`CaveGrid+432`) |
 
 ### `CollectObject` (`$9606`)
 
@@ -2379,6 +2698,8 @@ Witness: L1 302 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 302 calls (`stage1/rzx24` 42, `stage1/rzx21` 31, `stage1/rzx23` 28 and 20 more) |
+| Called from | `CollectLeft`, `CollectRight`, `CollectUp`, `CollectDown` |
+| Calls | `CollectGem` (tail), `JellyBean` (tail), `CollectAntiGrav`, `AntiGravStartScan` (tail) |
 
 ### `CollectNone` (`$9620`)
 
@@ -2389,6 +2710,7 @@ Witness: L1 24 (rzx x11).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx18`, `stage1/rzx25`, `stage1/rzx23` and 6 more) |
+| Called from | `Continue` |
 
 ### `CollectLeft` (`$9621`)
 
@@ -2399,6 +2721,10 @@ Witness: L1 126 (rzx x18).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 126 calls (`stage1/rzx24` 43, `stage1/rzx21` 13, `stage1/rzx23` 13 and 15 more) |
+| Called from | `FireLeft` |
+| Calls | `BubbleLeft` (tail), `CollectObject` |
+| Reads | `$FDC2`-`$FDCA` (`CaveGrid+26`); `$FDE1`-`$FDED` (`CaveGrid+57`); `$FE02` (`CaveGrid+90`); `$FE1C`-`$FE20` (`CaveGrid+116`); `$FE3A`-`$FE44` (`CaveGrid+146`); `$FE55`-`$FE62` (`CaveGrid+173`); 7 more ranges |
+| Writes | `$FD87`-`$FD8A` (`Continuation`, `SavedCell`); `$FDCA` (`CaveGrid+34`); `$FDE1`-`$FDED` (`CaveGrid+57`); `$FE02` (`CaveGrid+90`); `$FE1C`-`$FE20` (`CaveGrid+116`); `$FE3A`-`$FE44` (`CaveGrid+146`); 8 more ranges |
 
 ### `CollectLeftClear` (`$9648`)
 
@@ -2409,6 +2735,9 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Called from | `Continue` |
+| Reads | `$FD89`-`$FD8A` (`SavedCell`) |
+| Writes | `$FDC2` (`CaveGrid+26`) |
 
 ### `CollectRight` (`$964E`)
 
@@ -2419,6 +2748,10 @@ Witness: L1 94 (rzx x16).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 94 calls (`stage1/rzx21` 13, `stage1/rzx22` 13, `stage1/rzx23` 12 and 13 more) |
+| Called from | `FireRight` |
+| Calls | `BubbleRight` (tail), `CollectObject` |
+| Reads | `$FDC4`-`$FDCD` (`CaveGrid+28`); `$FDEE`-`$FE1E` (`CaveGrid+70`); `$FE33`-`$FE53` (`CaveGrid+139`); `$FE68`-`$FE97` (`CaveGrid+192`); `$FEB0`-`$FEE0` (`CaveGrid+264`); `$FEF4`-`$FF2D` (`CaveGrid+332`); 4 more ranges |
+| Writes | `$FD87`-`$FD8A` (`Continuation`, `SavedCell`); `$FDCC`-`$FDCD` (`CaveGrid+36`); `$FDEE`-`$FE1E` (`CaveGrid+70`); `$FE33`-`$FE3C` (`CaveGrid+139`); `$FE50`-`$FE53` (`CaveGrid+168`); `$FE68`-`$FE97` (`CaveGrid+192`); 6 more ranges |
 
 ### `CollectRightClear` (`$9675`)
 
@@ -2429,6 +2762,9 @@ Witness: L1 2 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Called from | `Continue` |
+| Reads | `$FD89`-`$FD8A` (`SavedCell`) |
+| Writes | `$FDC4` (`CaveGrid+28`); `$FE47` (`CaveGrid+159`) |
 
 ### `CollectUp` (`$967B`)
 
@@ -2439,6 +2775,10 @@ Witness: L1 37 (rzx x18).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 37 calls (`stage1/rzx29` 4, `stage1/rzx19` 4, `stage1/rzx26` 4 and 15 more) |
+| Called from | `FireUp` |
+| Calls | `BubbleUp` (tail), `CollectObject` |
+| Reads | `$FDAA`-`$FDB4` (`CaveGrid+2`); `$FDC8`-`$FDE0` (`CaveGrid+32`); `$FDFA`-`$FE11` (`CaveGrid+82`); `$FE27`-`$FE33` (`CaveGrid+127`); `$FE8F` (`CaveGrid+231`); `$FEB9` (`CaveGrid+273`); 7 more ranges |
+| Writes | `$FD87`-`$FD8A` (`Continuation`, `SavedCell`); `$FDAA`-`$FDB4` (`CaveGrid+2`); `$FDC8`-`$FDE0` (`CaveGrid+32`); `$FDFA`-`$FE11` (`CaveGrid+82`); `$FE27`-`$FE33` (`CaveGrid+127`); `$FE8F` (`CaveGrid+231`); 8 more ranges |
 
 ### `CollectUpClear` (`$96A2`)
 
@@ -2449,6 +2789,9 @@ Witness: L1 1 (rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx24`) |
+| Called from | `Continue` |
+| Reads | `$FD89`-`$FD8A` (`SavedCell`) |
+| Writes | `$FF14` (`CaveGrid+364`) |
 
 ### `CollectDown` (`$96A8`)
 
@@ -2459,6 +2802,10 @@ Witness: L1 55 (rzx x18).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 55 calls (`stage1/rzx16` 10, `stage1/rzx28` 6, `stage1/rzx22` 5 and 15 more) |
+| Called from | `FireDown` |
+| Calls | `BubbleDown` (tail), `CollectObject` |
+| Reads | `$FDE1` (`CaveGrid+57`); `$FDF5`-`$FDFD` (`CaveGrid+77`); `$FE17` (`CaveGrid+111`); `$FE4E`-`$FE56` (`CaveGrid+166`); `$FE6B`-`$FEB6` (`CaveGrid+195`); `$FECB`-`$FECD` (`CaveGrid+291`); 7 more ranges |
+| Writes | `$FD87`-`$FD8A` (`Continuation`, `SavedCell`); `$FDF5`-`$FDFD` (`CaveGrid+77`); `$FE17` (`CaveGrid+111`); `$FE4E`-`$FE56` (`CaveGrid+166`); `$FE6B`-`$FEB6` (`CaveGrid+195`); `$FECB`-`$FECD` (`CaveGrid+291`); 7 more ranges |
 
 ### `CollectDownClear` (`$96CF`)
 
@@ -2469,6 +2816,9 @@ Witness: L1 2 (rzx x2).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rzx22`, `stage1/rzx24`) |
+| Called from | `Continue` |
+| Reads | `$FD89`-`$FD8A` (`SavedCell`) |
+| Writes | `$FDE1` (`CaveGrid+57`); `$FF2F` (`CaveGrid+391`) |
 
 ### `BubbleRightMove` (`$9980`)
 
@@ -2481,6 +2831,10 @@ Witness: L1 400 (rzx x19). The edge ran 13 times: the JR at `$998E`, taken only 
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 400 calls (`stage1/rzx32` 213, `stage1/rzx26` 37, `stage1/rzx25` 31 and 16 more) |
+| Called from | `BubbleRight` (tail) |
+| Calls | `Continue` (tail) |
+| Reads | `$FDBD`-`$FDFE` (`CaveGrid+21`); `$FE0F`-`$FE55` (`CaveGrid+103`); `$FE67`-`$FEA6` (`CaveGrid+191`); `$FEC1`-`$FFDD` (`CaveGrid+281`); `$FFF8`-`$FFFA` (`CaveGrid+592`) |
+| Writes | `$FDD4`-`$FDD9` (`CaveGrid+44`); `$FE13`-`$FE14` (`CaveGrid+107`); `$FE25`-`$FE4E` (`CaveGrid+125`); `$FE67`-`$FEA4` (`CaveGrid+191`); `$FEC4` (`CaveGrid+284`); `$FED8`-`$FF1B` (`CaveGrid+304`); 4 more ranges |
 
 ### `BubbleLeftMove` (`$99A0`)
 
@@ -2493,6 +2847,10 @@ Witness: L1 306 (rzx x18). The edge ran 4 times: the JR at `$99AE`, taken only t
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 306 calls (`stage1/rzx12` 47, `stage1/rzx29` 38, `stage1/rzx18` 37 and 15 more) |
+| Called from | `BubbleLeft` (tail) |
+| Calls | `Continue` (tail) |
+| Reads | `$FDB4`-`$FDC0` (`CaveGrid+12`); `$FDE4`-`$FE46` (`CaveGrid+60`); `$FE57`-`$FF43` (`CaveGrid+175`); `$FF57`-`$FFF4` (`CaveGrid+431`) |
+| Writes | `$FDB5`-`$FDC0` (`CaveGrid+13`); `$FDE4`-`$FE10` (`CaveGrid+60`); `$FE28`-`$FE46` (`CaveGrid+128`); `$FE6A`-`$FEB0` (`CaveGrid+194`); `$FEE8`-`$FEFB` (`CaveGrid+320`); `$FF10`-`$FF3A` (`CaveGrid+360`); 2 more ranges |
 
 ### `CollectAntiGrav` (`$A63E`)
 
@@ -2503,6 +2861,8 @@ Witness: L1 302 (rzx x23).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 302 calls (`stage1/rzx24` 42, `stage1/rzx21` 31, `stage1/rzx23` 28 and 20 more) |
+| Called from | `CollectObject` |
+| Writes | `$FD87`-`$FD88` (`Continuation`) |
 
 ### `DigInPlace` (`$E7FE`)
 
@@ -2513,6 +2873,9 @@ Witness: L1 167 (rzx x16).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 167 calls (`stage1/rzx24` 84, `stage1/rzx26` 15, `stage1/rzx29` 13 and 13 more) |
+| Called from | `FireLeft`, `FireRight`, `FireUp`, `FireDown` |
+| Calls | `NoiseBurst` |
+| Writes | `$E74B` (`NoiseBurstPitch+1`) |
 
 ### `PushBoulder` (`$E81F`)
 
@@ -2523,8 +2886,10 @@ Witness: L1 434 (c1, rzx x29).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 7 calls, 266 t-states own (0.00 %) |
-| Called from | `TryLeft` |
-| Reads | `$FEC2` (`CaveGrid+282`) |
+| Runs (the other recordings) | 427 calls (`stage1/rzx14` 38, `stage1/rzx10` 34, `stage1/rzx26` 30 and 26 more) |
+| Called from | `TryLeft`, `TryRight` |
+| Reads | `$FDAF`-`$FFFF` (`CaveGrid+7`) |
+| Writes | `$E82E` (`BoulderPushed`); `$FDAF`-`$FDDF` (`CaveGrid+7`); `$FDF1`-`$FE43` (`CaveGrid+73`); `$FE5A`-`$FF36` (`CaveGrid+178`); `$FF48`-`$FFFF` (`CaveGrid+416`) |
 
 ### `ClearMoveFlags` (`$E82F`)
 
@@ -2535,6 +2900,7 @@ Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 14,206 t-states own (0.00 %) |
+| Runs (the other recordings) | 41,839 calls (`stage1/rzx32` 3,395, `stage1/rzx26` 2,351, `stage1/rzx29` 2,059 and 34 more) |
 | Called from | `ClearStepFlags` (tail) |
 | Writes | `$E82E` (`BoulderPushed`); `$FD80` (`KeyMoved`) |
 
@@ -2547,6 +2913,7 @@ Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 265 calls, 7,950 t-states own (0.00 %) |
+| Runs (the other recordings) | 41,839 calls (`stage1/rzx32` 3,395, `stage1/rzx26` 2,351, `stage1/rzx29` 2,059 and 34 more) |
 | Called from | `PlayerStep` |
 | Calls | `ClearMoveFlags` (tail) |
 | Writes | `$E857` (`DugEarth`) |
@@ -2560,8 +2927,9 @@ Witness: L1 19281 (c1, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 41 calls, 3,195 t-states own (0.00 %) |
-| Called from | `TryLeft`, `TryRight`, `TryDown` |
-| Reads | `$FEC4`-`$FECC` (`CaveGrid+284`); `$FEE2`-`$FEEA` (`CaveGrid+314`); `$FF00`-`$FF01` (`CaveGrid+344`); `$FF1E`-`$FF1F` (`CaveGrid+374`); `$FF3C`-`$FF3D` (`CaveGrid+404`); `$FF5A`-`$FF63` (`CaveGrid+434`); 2 more ranges |
+| Runs (the other recordings) | 19,244 calls (`stage1/rzx32` 2,093, `stage1/rzx26` 1,585, `stage1/rzx05` 969 and 31 more) |
+| Called from | `TryLeft`, `TryRight`, `TryUp`, `TryDown` |
+| Reads | `$FDA8`-`$FFFF` (`CaveGrid`) |
 | Writes | `$E857` (`DugEarth`) |
 
 ## menu
@@ -2579,6 +2947,7 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 255 t-states own (0.00 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `GameEntry` |
 | Calls | `ClearVars`, `ResetGame` |
 
@@ -2593,7 +2962,8 @@ Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 9 calls, 187,239 t-states own (0.02 %) |
-| Called from | `StartGameEntry`, `RedefineKeys`, `ShowPasswordPrompt`, `ClearScreenCave`, `ClearAndKeyboard` |
+| Runs (the other recordings) | 98 calls (`stage1/hiscore` 13, `stage1/lives` 12, `stage1/rzx01` 4 and 35 more) |
+| Called from | `HiScoreInsert`, `StartGameEntry`, `CaveStart`, `GameOverScreen`, `RedefineKeys`, `ShowPasswordPrompt`, `ClearScreenCave`, `WinScreen`, `ClearAndKeyboard` |
 | Calls | `WipeScreen` |
 | Reads | `$5800`-`$5AFE` (screen) |
 | Writes | `$5800`-`$5AFF` (screen) |
@@ -2609,6 +2979,7 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 10,968,479 t-states own (1.00 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `ShowLogo` |
 | Calls | `LineAddr`, `Pause` |
 | Reads | `$B300`-`$BAFF` (`LogoPixels`) |
@@ -2623,7 +2994,8 @@ Witness: L1 10 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 1,204 t-states own (0.00 %) |
-| Called from | `DrawTitle` |
+| Runs (the other recordings) | 5 calls (`stage1/menu` 4, `stage1/lives` 1) |
+| Called from | `DrawTitle`, `ShowHiScores` |
 | Calls | `PrintText`, `ShowControlTexts` |
 
 ### `FillAttrs` (`$8A74`)
@@ -2635,9 +3007,10 @@ Witness: L1 3260 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 40 calls, 80,451 t-states own (0.01 %) |
-| Called from | `ColourMenuTexts`, `ColourLevelLivesScore`, `RedefineKeys`, `ShowPasswordPrompt` |
+| Runs (the other recordings) | 237 calls (`stage1/timer` 47, `stage1/menu` 32, `stage1/hiscore` 24 and 35 more) |
+| Called from | `ColourMenuTexts`, `ShowGameOver`, `ColourLevelLivesScore`, `RedefineKeys`, `ShowPasswordPrompt`, `ColourWinTexts`, `ColourHiScores`, `DrawMapFrame` |
 | Calls | `AttrAddr` |
-| Writes | `$5800`-`$581F` (screen); `$58C5`-`$58D9` (screen); `$5905`-`$5919` (screen); `$5945`-`$59D9` (screen); `$5A24`-`$5A3B` (screen); `$5A64`-`$5A79` (screen) |
+| Writes | `$5800`-`$5ABF` (screen); `$5AF6`-`$5AFE` (screen) |
 
 ### `ColourMenuTexts` (`$8A83`)
 
@@ -2648,7 +3021,8 @@ Witness: L1 10 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 893 t-states own (0.00 %) |
-| Called from | `DrawTitle` |
+| Runs (the other recordings) | 5 calls (`stage1/menu` 4, `stage1/lives` 1) |
+| Called from | `DrawTitle`, `ShowHiScores` |
 | Calls | `FillAttrs` |
 
 ### `GameEntry` (`$8B20`)
@@ -2662,8 +3036,9 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 3 calls, 822 t-states own (0.00 %) |
-| Called from | `ChooseControl` (tail) |
-| Calls | `ResetAll`, `PlayTitleTune`, `DrawTitle`, `NewGame`, `RedefineKeys`, `ChooseControl` (tail) |
+| Runs (the other recordings) | 3 calls (`stage1/menu` 2, `stage1/lives` 1) |
+| Called from | `MenuKeys` (tail), `ChooseControl` (tail) |
+| Calls | `ResetAll`, `PlayTitleTune`, `DrawTitle`, `NewGame`, `RedefineKeys`, `ShowHiScores`, `ChooseControl` (tail) |
 | Ports in | `$F7FE` |
 | Ports out | `$F7FF` |
 
@@ -2678,6 +3053,9 @@ Witness: L1 11 (c1, lives, menu, rzx x1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/lives`, `stage1/rzx01`) |
+| Calls | `GameEntry` (tail), `NewGame` |
+| Ports in | `$F7FE` |
+| Ports out | `$F7FF` |
 
 ### `ResetMachine` (`$8B65`)
 
@@ -2688,6 +3066,9 @@ Witness: L1 1 (menu).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/menu` 1) |
+| Called from | `ChooseControl` (tail) |
+| Ports in | `$F7FE` |
+| Ports out | `$F7FF` |
 
 ### `WipeScreen` (`$8DE3`)
 
@@ -2698,6 +3079,7 @@ Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 9 calls, 13,851,327 t-states own (1.27 %) |
+| Runs (the other recordings) | 98 calls (`stage1/hiscore` 13, `stage1/lives` 12, `stage1/rzx01` 4 and 35 more) |
 | Called from | `ClearScreen` |
 | Reads | `$4000`-`$57FF` (screen) |
 | Writes | `$4000`-`$57FF` (screen) |
@@ -2711,6 +3093,7 @@ Witness: L1 9 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 28,373 t-states own (0.00 %) |
+| Runs (the other recordings) | 4 calls (`stage1/menu` 3, `stage1/lives` 1) |
 | Called from | `DrawTitle` |
 | Calls | `WipeInLogo` |
 | Reads | `$FC00`-`$FCFF` (`LogoAttrs`) |
@@ -2731,6 +3114,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 213 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `StartGameEntry` |
 | Calls | `Password` |
 | Reads | `$FD94`-`$FD98` (`ScoreDigits`) |
@@ -2745,6 +3129,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 117 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/rzx01` 1, `stage1/lives` 1) |
 | Called from | `EnterPassword` |
 | Calls | `PrintText`, `ClearScreen`, `FillAttrs` |
 
@@ -2757,6 +3142,8 @@ Witness: L1 7 (hiscore).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 7 calls (`stage1/hiscore` 7) |
+| Called from | `EnterName` |
+| Ports out | `$00FE`, `$18FE` |
 
 ### `EnterPassword` (`$8E2D`)
 
@@ -2769,6 +3156,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 23,476 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `Password` |
 | Calls | `WaitKey`, `ShowPasswordPrompt` |
 | Reads | `$A93B` (`KeyTable+59`); `$A968` (`KeyTable+104`); `$FD00`-`$FD12` (`PasswordBuffer`) |
@@ -2785,6 +3173,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 6,872 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `Password` |
 | Reads | `$9700`-`$9A48` (`CaveNames`, `BubbleRightMove`, `BubbleLeftMove`, `CaveNamesPad` and 1 more); `$9A5C` (`MapGlyphs+92`); `$9A70` (`MapGlyphs+112`); `$9A84` (`MapAttrs+4`); `$9A98` (`MapPatchLeftover+8`); `$9AAC` (`EarthFallGuard+6`); 3 more ranges |
 
@@ -2827,6 +3216,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 10 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `Password` |
 
 ### `Password` (`$8F29`)
@@ -2840,6 +3230,7 @@ Witness: L1 3 (c1, lives, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 125 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/lives` 1, `stage1/rzx01` 1) |
 | Called from | `StartGame` |
 | Calls | `EnterPassword`, `FindPassword`, `PasswordRejected` |
 | Writes | `$FD7E`-`$FD7F` (`CaveDigits`); `$FD91` (`CaveNumber`) |
@@ -2857,6 +3248,7 @@ Witness: L1 576 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 320 calls, 32,146,563 t-states own (2.94 %) |
+| Runs (the other recordings) | 256 calls (`stage1/menu` 192, `stage1/lives` 64) |
 | Called from | `WipeInLogo` |
 | Calls | `LineAddr` |
 
@@ -2873,7 +3265,8 @@ Witness: L1 69199 (c1, hiscore, lives, menu, rzx x1).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 162 calls, 17,164,713 t-states own (1.57 %) |
-| Called from | `RedefineKeys`, `EnterPassword` |
+| Runs (the other recordings) | 1,537 calls (`stage1/lives` 1,523, `stage1/hiscore` 8, `stage1/menu` 5 and 1 more) |
+| Called from | `EnterName`, `RedefineKeys`, `EnterPassword` |
 | Reads | `$A900`-`$A976` (`KeyTable`) |
 | Ports in | `$7FFE`, `$BFFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE`, `$FEFE` |
 | Ports out | `$7FFF`, `$BFFF`, `$DFFF`, `$EFFF`, `$F7FF`, `$FBFF`, `$FDFF`, `$FEFF` |
@@ -2893,6 +3286,7 @@ Witness: L1 2 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 1,773 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 call (`stage1/menu` 1) |
 | Called from | `GameEntry` |
 | Calls | `PrintText`, `ClearScreen`, `FillAttrs`, `WaitKey`, `RaspSound`, `ClearAndKeyboard` |
 | Reads | `$A91B`-`$A92B` (`KeyTable+27`); `$A954`-`$A958` (`KeyTable+84`); `$A96F`-`$A970` (`KeyTable+111`) |
@@ -2907,6 +3301,7 @@ Witness: L1 2 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 1,936 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 call (`stage1/menu` 1) |
 | Called from | `JoystickControl` |
 | Reads | `$83C3`-`$83CB` (`TryLeft`); `$8437`-`$843F` (`TryRight`); `$84AD`-`$84B5` (`TryUp`); `$84F9`-`$8501` (`TryDown`); `$8759`-`$8773` (`KeysStep`, `FireLeft`); `$87C3`-`$87CB` (`FireRight`); 2 more ranges |
 | Writes | `$EB15`-`$EB65` (`KeyboardCode`) |
@@ -2920,6 +3315,7 @@ Witness: L1 4 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 3,883 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/menu` 2) |
 | Called from | `ClearAndKeyboard`, `ChooseControl` |
 | Reads | `$EB15`-`$EB65` (`KeyboardCode`) |
 | Writes | `$83C3`-`$83CB` (`TryLeft`); `$8437`-`$843F` (`TryRight`); `$84AD`-`$84B5` (`TryUp`); `$84F9`-`$8501` (`TryDown`); `$8759`-`$8773` (`KeysStep`, `FireLeft`); `$87C3`-`$87CB` (`FireRight`); 2 more ranges |
@@ -2935,6 +3331,7 @@ Witness: L1 2 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 1,953 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 call (`stage1/menu` 1) |
 | Called from | `ChooseControl` |
 | Calls | `SaveKeyboardCode` |
 | Reads | `$EAC4`-`$EB14` (`KempstonCode`) |
@@ -2949,6 +3346,7 @@ Witness: L1 10 (c1, lives, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 5 calls, 522 t-states own (0.00 %) |
+| Runs (the other recordings) | 5 calls (`stage1/menu` 4, `stage1/lives` 1) |
 | Called from | `ShowMenuTexts` |
 | Calls | `PrintText` |
 
@@ -2961,6 +3359,7 @@ Witness: L1 2 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 1 call, 45 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 call (`stage1/menu` 1) |
 | Called from | `RedefineKeys` |
 | Calls | `ClearScreen`, `KeyboardControl` |
 
@@ -2973,7 +3372,8 @@ Witness: L1 5 (c1, menu).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the covertape side at ROM speed, the menu and play) | 2 calls, 222 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`stage1/menu` 3) |
 | Called from | `GameEntry` (tail) |
-| Calls | `GameEntry` (tail), `SwitchSound`, `KeyboardControl`, `JoystickControl` |
+| Calls | `GameEntry` (tail), `ResetMachine` (tail), `SwitchSound`, `KeyboardControl`, `JoystickControl` |
 | Ports in | `$F7FE` |
 | Ports out | `$F7FF` |

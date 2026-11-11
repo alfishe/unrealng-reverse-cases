@@ -1,7 +1,7 @@
 # 12. Routine reference
 
 Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and
-the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on, the tape at ROM speed, the menu and keyboard play), `work/stage1/rec/energy-out` (energy-out: 5001 frames of play from the RZX state after 47 000 frames). They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
+the description are the source's (`src/game/game.ann`); the rest is what the recordings saw: `work/stage1/c1` (c1: power-on, the tape at ROM speed, the menu and keyboard play), `work/stage1/rec/energy-out` (energy-out: 5001 frames of play from the RZX state after 47 000 frames), and the case's other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row of their own, their callers, callees, reads and writes (`read_builds` only) with the others'. They are local, not in the repository; the WALKTHROUGH's commands rebuild them.
 Runs count the calls of the entry itself; the time is its own t-states (callees excluded) and their share
 of the recording. Memory ranges name the label at or below their first byte (inner labels too, `Label+offset`)
 and the entries they cover. The interrupt's acceptance (the vector read, the return address pushed) is
@@ -78,7 +78,10 @@ ClearScreen `$7A9F`, Menu `$8854` (1, 2, 3 choose the controls, 0 starts), NewGa
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 3 calls (`stage1/rec/rzx-080000` 1, `stage1/rec/win` 1, `stage1/rec/game-over` 1) |
+| Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 3 calls (`stage1/rec/game-over` 1, `stage1/rec/rzx-080000` 1, `stage1/rec/win` 1) |
+| Called from | `WinTest` (tail), `EnergyOut` (tail) |
+| Calls | `HazardFlash`, `WinTest`, `EnergyOut`, `MovePatrollers`, `QueueMessage`, `MoveDroid`, `Pause`, `WaitFrame`, `NewGame`, `ClearScreen`, `PassTick`, `MoveObject`, `MoveShot`, `Menu`, `DroidExhaust`, `ExhaustStep`, `MoveEnemy` |
+| Writes | `$6704`-`$6707` (`EnemyBufferPtrs`) |
 
 ### `MainLoop` (`$6911`)
 
@@ -93,6 +96,7 @@ Witness: L1 18 585 passes. Most passes hold exactly two interrupts (the two HALT
 | | |
 | --- | --- |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | run into, not called, 2,104,052 t-states own (0.60 %) |
+| Runs (the other recordings) | run into, not called (`stage1/rec/rzx-065000`, `stage1/rec/rzx-070000`, `stage1/rec/rzx-074000` and 60 more) |
 | Calls | `HazardFlash`, `WinTest`, `EnergyOut`, `MovePatrollers`, `MoveDroid`, `Pause`, `WaitFrame`, `PassTick`, `MoveObject`, `MoveShot`, `DroidExhaust`, `ExhaustStep`, `MoveEnemy` |
 | Writes | `$6704`-`$6707` (`EnemyBufferPtrs`) |
 
@@ -105,6 +109,9 @@ Reached from MoveDroid's touch test (`$75E1`) when a cell under the droid has a 
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 53 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-035000` 1) |
+| Called from | `MoveDroid` (tail) |
+| Calls | `LoseLife` (tail) |
+| Reads | `$635B` (`DroidFlags`) |
 
 ### `HazardFlash` (`$699B`)
 
@@ -116,8 +123,12 @@ Only while DroidFlags bit 4 (the shield, down held alone; the energy drains fast
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 20,921 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 112,029 t-states own (0.03 %) |
-| Called from | `Setup`, `MainLoop` |
-| Reads | `$635B` (`DroidFlags`) |
+| Runs (the other recordings) | 15,605 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
+| Calls | `ScreenAddr` |
+| Reads | `$6359`-`$635D` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 1 more); `$6370`-`$6375` (`DeathColour`, `PatrollerTurn`, `EnergyReload`, `BorderSound`) |
+| Writes | `$590F`-`$5911` (screen); `$592B`-`$5931` (screen); `$594B`-`$5951` (screen); `$596B`-`$5971` (screen); `$598B`-`$5991` (screen); `$59AB`-`$59D0` (screen); 9 more ranges |
+| Ports out | `$00FE`, `$10FE` |
 
 ### `WinTest` (`$69E3`)
 
@@ -129,8 +140,11 @@ All ten EdFlags bytes `$1F` (L1 18 581 tests): the eleventh byte (EdFlagsEnd) is
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 33,776 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 225,795 t-states own (0.06 %) |
-| Called from | `Setup`, `MainLoop` |
-| Reads | `$6681`-`$6682` (`EdFlags`) |
+| Runs (the other recordings) | 15,612 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
+| Calls | `Restart` (tail), `QueueMessage` |
+| Reads | `$6363` (`Room`); `$6681`-`$668B` (`EdFlags`, `EdFlagsEnd`); `$6A27` (`WinWait+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$668B` (`EdFlagsEnd`) |
 
 ### `EnergyOut` (`$6A30`)
 
@@ -142,10 +156,11 @@ L1 18 582 tests, 2 with energy 0 (energy-out).
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 23,790 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 118,505 t-states own (0.03 %) |
-| Called from | `Setup`, `MainLoop` |
-| Calls | `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `PlaceDroid`, `DeathEffect`, `PrintBcd` |
-| Reads | `$635B` (`DroidFlags`); `$636D`-`$636E` (`Lives`, `Energy`) |
-| Writes | `$635B`-`$637F` (`DroidFlags`, `DroidFrame`, `DroidWidth`, `Shot` and 22 more) |
+| Runs (the other recordings) | 15,613 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
+| Calls | `Restart` (tail), `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `PlaceDroid`, `DeathEffect`, `PrintBcd`, `ProgressScreen` |
+| Reads | `$635B` (`DroidFlags`); `$636D`-`$636E` (`Lives`, `Energy`); `$6AA4` (`GameOverWait+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$5885`-`$5889` (screen); `$635B`-`$637F` (`DroidFlags`, `DroidFrame`, `DroidWidth`, `Shot` and 22 more); `$63CB` (`ScrollPriority`) |
 
 ### `LoseLife` (`$6A3C`)
 
@@ -158,6 +173,10 @@ Energy back to 99 and the timers to `$FA`; Lives - 1 (BCD); GEN 19 DESTROYED; De
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 53 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-035000` 1) |
+| Called from | `HazardDeath` (tail) |
+| Calls | `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `PlaceDroid`, `DeathEffect`, `PrintBcd` |
+| Reads | `$635B` (`DroidFlags`); `$636D` (`Lives`) |
+| Writes | `$635B`-`$637F` (`DroidFlags`, `DroidFrame`, `DroidWidth`, `Shot` and 22 more) |
 
 ### `MovePatrollers` (`$6AAD`)
 
@@ -169,7 +188,8 @@ PatrollerTurn cycles 0-2; PatrollerPtr = PatrollerPtrs[turn]; MovePatroller `$93
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 110,731 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 494,349 t-states own (0.14 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 15,614 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Calls | `MovePatroller` |
 | Reads | `$6353`-`$6358` (`PatrollerPtrs`); `$6373` (`PatrollerTurn`) |
 | Writes | `$6373` (`PatrollerTurn`); `$63A8`-`$63A9` (`PatrollerPtr`) |
@@ -184,8 +204,9 @@ In: HL a message (Messages). When (HL) > ScrollPriority: ScrollPriority = (HL), 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 78 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2 calls, 156 t-states own (0.00 %) |
-| Called from | `Setup`, `EnergyOut`, `EnergyTick` |
-| Reads | `$63CB`-`$63D2` (`ScrollPriority`, `Messages`); `$6422` (`MsgEnergyLow`); `$64B1` (`MsgGenDestroyed`) |
+| Runs (the other recordings) | 83 calls (`stage1/rec/room-tour` 54, `stage1/rec/rzx-052000` 4, `stage1/rec/game-over` 3 and 19 more) |
+| Called from | `Setup`, `Restart`, `WinTest`, `EnergyOut`, `LoseLife`, `MoveDroid`, `Teleport`, `EnergyTick` |
+| Reads | `$63CB`-`$63D2` (`ScrollPriority`, `Messages`); `$63E7` (`MsgEdsCompleted`); `$6422` (`MsgEnergyLow`); `$6437` (`MsgEnergyAbsorbed`); `$645F` (`MsgTransporting`); `$6474` (`MsgWeaponStored`); 3 more ranges |
 | Writes | `$63C9`-`$63CB` (`ScrollNext`, `ScrollPriority`) |
 
 ## rooms
@@ -204,9 +225,10 @@ Walks the room's record past the item and teleporter bytes (each 1 or 2 bytes, 0
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 4 calls, 1,457 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 304 t-states own (0.00 %) |
-| Called from | `EnergyOut`, `MoveDroid`, `EdPickup` |
-| Reads | `$6327`-`$6330` (`Objects`, `Object1Flags`); `$6363` (`Room`); `$DBEB`-`$DC0C` (`AlienMap+152`); `$DE75`-`$DE7B` (`AlienRecords+546`); `$DEE5`-`$DEEB` (`AlienRecords+658`); `$DF07`-`$DF15` (`AlienRecords+692`) |
-| Writes | `$6328` (`Object1Flags`); `$DF0B`-`$DF14` (`AlienRecords+696`) |
+| Runs (the other recordings) | 271 calls (`stage1/rec/room-tour` 117, `stage1/rec/rzx-065000` 12, `stage1/rec/rzx-074000` 11 and 44 more) |
+| Called from | `EnergyOut`, `LoseLife`, `MoveDroid`, `EdPickup`, `Teleport` |
+| Reads | `$6327`-`$633A` (`Objects`, `Object1Flags`, `Object2`, `Object2Flags`); `$6363` (`Room`); `$DB53`-`$DFFF` (`AlienMap`, `AlienRecords`) |
+| Writes | `$6328`-`$6332` (`Object1Flags`, `Object2`, `Object2Flags`); `$DC78`-`$DCC4` (`AlienRecords+37`); `$DD0F`-`$DD62` (`AlienRecords+188`); `$DD85`-`$DD8E` (`AlienRecords+306`); `$DDCF`-`$DDFF` (`AlienRecords+380`); `$DE37`-`$DE40` (`AlienRecords+484`); 4 more ranges |
 
 ### `DrawRoom` (`$6B22`)
 
@@ -222,10 +244,11 @@ Witness: L1 279 rooms drawn; 6 458 tiles; the attributes' loop 161 103 cells.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 5 calls, 6,911,417 t-states own (0.62 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 565,606 t-states own (0.16 %) |
-| Called from | `EnergyOut`, `MoveDroid`, `EdPickup`, `NewGame` |
+| Runs (the other recordings) | 273 calls (`stage1/rec/room-tour` 117, `stage1/rec/rzx-065000` 12, `stage1/rec/rzx-074000` 11 and 44 more) |
+| Called from | `EnergyOut`, `LoseLife`, `MoveDroid`, `EdPickup`, `Teleport`, `NewGame` |
 | Calls | `DrawItem`, `ItemCell`, `ClearPlayArea` |
-| Reads | `$40C0`-`$40FF` (screen); `$41C0`-`$41FF` (screen); `$42C0`-`$42FF` (screen); `$43C0`-`$43FF` (screen); `$44C0`-`$44FF` (screen); `$45C0`-`$45FF` (screen); 31 more ranges |
-| Writes | `$40C0`-`$57FF` (screen); `$58C0`-`$5AFF` (screen); `$60C0`-`$634B` (`CellTable`, `Start`, `Enemies`, `Objects` and 1 more); `$635E` (`Shot`); `$639C`-`$63A0` (`RoomVars`, `Item2Pos`, `Item1Kind`, `Item2Kind` and 1 more); `$63B1`-`$63B7` (`DrawMode`, `RoomRecordPtr`, `RoomEnemyPtr`, `TileAttrPtr`); 2 more ranges |
+| Reads | `$40C0`-`$57FF` (screen); `$58C0`-`$5AFF` (screen); `$633B`-`$634B` (`Patrollers`, `Patroller2`, `Patroller3`); `$6363` (`Room`); `$639C`-`$63A0` (`RoomVars`, `Item2Pos`, `Item1Kind`, `Item2Kind` and 1 more); `$63B1`-`$63B7` (`DrawMode`, `RoomRecordPtr`, `RoomEnemyPtr`, `TileAttrPtr`); 11 more ranges |
+| Writes | `$40C0`-`$57FF` (screen); `$58C0`-`$5AFF` (screen); `$60C0`-`$635E` (`CellTable`, `Start`, `Enemies`, `Objects` and 2 more); `$639C`-`$63B7` (`RoomVars`, `Item2Pos`, `Item1Kind`, `Item2Kind` and 12 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF02` (`work space $FF01+`) |
 
 ### `DrawItem` (`$6E0D`)
 
@@ -236,9 +259,11 @@ In: HL its cell (ItemCell), A its kind. The kind goes into the four cells; the g
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 896 t-states own (0.00 %) |
+| Runs (the other recordings) | 140 calls (`stage1/rec/room-tour` 76, `stage1/rec/rzx-052000` 7, `stage1/rec/rzx-065000` 5 and 26 more) |
 | Called from | `DrawRoom` |
 | Calls | `Blit16` |
-| Writes | `$5A6C`-`$5A6D` (screen); `$5A8C`-`$5A8D` (screen); `$626C`-`$626D` (`CellTable+428`); `$628C`-`$628D` (`CellTable+460`) |
+| Reads | `$65DA`-`$65DC` (`WeaponColours`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$5964`-`$5A15` (screen); `$5A2A`-`$5A35` (screen); `$5A4E`-`$5A4F` (screen); `$5A6A`-`$5AC9` (screen); `$6164`-`$6215` (`CellTable+164`); `$622A`-`$6235` (`CellTable+362`); 2 more ranges |
 
 ### `ItemCell` (`$6E88`)
 
@@ -250,7 +275,9 @@ In: HL the base (CellTable, or CellTable + 64 for the teleporter), A the positio
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 4 calls, 2,696 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 495 t-states own (0.00 %) |
+| Runs (the other recordings) | 316 calls (`stage1/rec/room-tour` 93, `stage1/rec/rzx-052000` 14, `stage1/rec/rzx-037000` 14 and 44 more) |
 | Called from | `DrawRoom`, `MoveDroid` |
+| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ## input
 
@@ -268,10 +295,11 @@ Called by the interrupt handler every frame (L1 54 811). Clears bits 0-4 of Cont
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,371 calls, 597,371 t-states own (0.05 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,880 calls, 517,280 t-states own (0.15 %) |
+| Runs (the other recordings) | 48,560 calls (`stage1/rec/room-tour` 4,265, `stage1/rec/rzx-065000` 3,491, `stage1/rec/rzx-070000` 2,690 and 65 more) |
 | Called from | `Interrupt` |
 | Reads | `$63C2` (`Controls`) |
 | Writes | `$63C2` (`Controls`) |
-| Ports in | `$001F`, `$7FFE`, `$BFFE`, `$DBFE`, `$E7FE`, `$FDFE`, `$FEFE` |
+| Ports in | `$001F`, `$7FFE`, `$BFFE`, `$DBFE`, `$E7FE`, `$EFFE`, `$F7FE`, `$FDFE`, `$FEFE` |
 
 ## droid
 
@@ -291,10 +319,11 @@ Witness: L1 18 557 calls.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 3,624,607 t-states own (0.33 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 12,670,604 t-states own (3.63 %) |
-| Called from | `Setup`, `MainLoop`, `TurnRound` (tail) |
-| Calls | `SaveRoomObjects`, `DrawRoom`, `ItemCell`, `StepBlockedLeft`, `StepBlockedRight`, `EdPickup` (tail), `PickupErase`, `TurnRound` (tail), `CellToScreen`, `ScreenAddr`, `CellAddr`, `CellBlockedRow`, `OrCells`, `Fire` |
-| Reads | `$60C4`-`$6127` (`CellTable+4`); `$613A`-`$6147` (`CellTable+122`); `$615A`-`$6167` (`CellTable+154`); `$617A`-`$6195` (`CellTable+186`); `$61B4`-`$61B5` (`CellTable+244`); `$61D4`-`$61E3` (`CellTable+276`); 11 more ranges |
-| Writes | `$58C4`-`$5927` (screen); `$593A`-`$5947` (screen); `$595A`-`$5967` (screen); `$597A`-`$5995` (screen); `$59B4`-`$59B5` (screen); `$59D4`-`$59E3` (screen); 11 more ranges |
+| Runs (the other recordings) | 15,588 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop`, `TurnRound` (tail) |
+| Calls | `HazardDeath` (tail), `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `ItemCell`, `StepBlockedLeft`, `StepBlockedRight`, `EdPickup` (tail), `Teleport` (tail), `PickupErase`, `TurnRound` (tail), `ShowWeapon`, `PrintBcd`, `CellToScreen`, `ScreenAddr`, `CellAddr`, `CellBlockedRow`, `OrCells`, `Fire` |
+| Reads | `$6000`-`$600B` (system); `$601C`-`$602B` (system); `$603C`-`$604B` (system); `$605C`-`$606B` (system); `$607C`-`$608B` (system); `$609C`-`$62FC` (`CellTable`); 29 more ranges |
+| Writes | `$5800`-`$580B` (screen); `$581C`-`$582B` (screen); `$583C`-`$584B` (screen); `$585C`-`$586B` (screen); `$587C`-`$588B` (screen); `$589D` (screen); 31 more ranges |
 
 ### `StepBlockedLeft` (`$76A1`)
 
@@ -305,6 +334,7 @@ In: HL DroidX after the step. When the column left of the droid holds a wall ove
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 19 calls, 5,214 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,407 calls (`stage1/rec/rzx-074000` 239, `stage1/rec/rzx-065000` 191, `stage1/rec/rzx-070000` 184 and 35 more) |
 | Called from | `MoveDroid` |
 | Calls | `CellAddr`, `CellBlockedColumn` |
 | Reads | `$6359`-`$635C` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame`) |
@@ -319,6 +349,7 @@ The same on the right, the column x + 2 (L1 1 742 tests, 373 undone).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 56 calls, 18,098 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,686 calls (`stage1/rec/room-tour` 312, `stage1/rec/rzx-063000` 93, `stage1/rec/menu-cursor` 87 and 41 more) |
 | Called from | `MoveDroid` |
 | Calls | `CellAddr`, `CellBlockedColumn` |
 | Reads | `$6359`-`$635C` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame`) |
@@ -333,6 +364,7 @@ In: A the item's kind (`$82-$B3`). ProgressScreen `$8F53` with A = the piece num
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 157 t-states own (0.00 %) |
+| Runs (the other recordings) | 34 calls (`stage1/rec/rzx-065000` 4, `stage1/rec/rzx-037000` 3, `stage1/rec/rzx-010000` 2 and 19 more) |
 | Called from | `MoveDroid` (tail) |
 | Calls | `SaveRoomObjects`, `DrawRoom`, `ProgressScreen` |
 | Writes | `$6378`-`$6379` (`DroidGraphic`) |
@@ -346,6 +378,10 @@ The droid's image is replaced by the beam frame (`$A0A0`, frame 10) in the sprit
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 8 calls (`stage1/rec/rzx-052000` 1, `stage1/rec/rzx-030000` 1, `stage1/rec/rzx-041000` 1 and 5 more) |
+| Called from | `MoveDroid` (tail) |
+| Calls | `QueueMessage`, `SaveRoomObjects`, `DrawRoom`, `ScreenAddr`, `FillAttr`, `BeamDown`, `BeamUp`, `TeleportFlash` |
+| Reads | `$6359`-`$635D` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 1 more); `$6378`-`$6379` (`DroidGraphic`); `$63A1`-`$63A3` (`TeleportRoom`, `TeleportColumn`, `TeleportRow`); `$63D0`-`$63D1` (`SpriteListEnd`); `$7780` (`Teleport+103`); `$7819` (`TeleportArrive+12`); 1 more ranges |
+| Writes | `$6359`-`$6363` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 5 more); `$6376`-`$6379` (`TeleportLatch`, `TouchTimer`, `DroidGraphic`); `$63C5`-`$63D1` (`BeamScreen`, `ScrollText`, `ScrollNext`, `ScrollPriority` and 4 more); `$FF01`-`$FF12` (`work space $FF01+`) |
 
 ### `PickupErase` (`$7837`)
 
@@ -356,9 +392,10 @@ In: DE the item's screen address. PickupTone, then 16 rows of two zero bytes. L1
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 1,185 t-states own (0.00 %) |
+| Runs (the other recordings) | 49 calls (`stage1/rec/rzx-065000` 4, `stage1/rec/rzx-052000` 4, `stage1/rec/rzx-002000` 4 and 24 more) |
 | Called from | `MoveDroid` |
 | Calls | `PickupTone` |
-| Writes | `$506C`-`$508D` (screen); `$516C`-`$518D` (screen); `$526C`-`$528D` (screen); `$536C`-`$538D` (screen); `$546C`-`$548D` (screen); `$556C`-`$558D` (screen); 2 more ranges |
+| Writes | `$4864`-`$57C9` (screen) |
 
 ### `PickupTone` (`$7856`)
 
@@ -369,7 +406,9 @@ L1 50 (12 859 toggles counted: one build stopped mid-tone).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 154,882 t-states own (0.01 %) |
+| Runs (the other recordings) | 49 calls (`stage1/rec/rzx-065000` 4, `stage1/rec/rzx-052000` 4, `stage1/rec/rzx-002000` 4 and 24 more) |
 | Called from | `PickupErase` |
+| Writes | `$6359`-`$6363` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 5 more) |
 | Ports out | `$00FE`, `$10FE` |
 
 ### `TurnRound` (`$7866`)
@@ -381,6 +420,7 @@ TurnStep walks TurnSequence (8, 9, 10, 9, 8). At frame 10 (the droid seen from t
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 18 calls, 517,159 t-states own (0.05 %) |
+| Runs (the other recordings) | 520 calls (`stage1/rec/rzx-065000` 54, `stage1/rec/rzx-019000` 36, `stage1/rec/rzx-048000` 30 and 35 more) |
 | Called from | `MoveDroid` (tail) |
 | Calls | `MoveDroid` (tail) |
 | Reads | `$635B` (`DroidFlags`); `$637A`-`$637D` (`TurnGraphic`, `TurnStep`); `$68B2`-`$68B7` (`TurnSequence`); `$9A4C`-`$9B4A` (`BitReverse`); `$9C40`-`$A09F` (`DroidGraphics`, `DroidWalk1`, `DroidWalk2`, `DroidWalk3` and 6 more); `$A0F0`-`$A4AF` (`DroidFly1`, `DroidMirrorSpare`) |
@@ -400,6 +440,7 @@ Every interrupt: while TouchTimer is not 0 it counts down; at 0 EnergyReload and
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,371 calls, 57,689 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,880 calls, 180,671 t-states own (0.05 %) |
+| Runs (the other recordings) | 48,574 calls (`stage1/rec/room-tour` 4,265, `stage1/rec/rzx-065000` 3,491, `stage1/rec/rzx-070000` 2,690 and 65 more) |
 | Called from | `Interrupt` |
 | Reads | `$6377` (`TouchTimer`) |
 | Writes | `$6366`-`$6377` (`EnergyTimer`, `EnemyKindTurn`, `Weapons`, `KeyLatches` and 10 more) |
@@ -414,6 +455,7 @@ Every interrupt: while TouchTimer is not 0 it counts down; at 0 EnergyReload and
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 3 calls, 518,068 t-states own (0.05 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 177,446 t-states own (0.05 %) |
+| Runs (the other recordings) | 142 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-065000` 8, `stage1/rec/rzx-037000` 7 and 31 more) |
 | Called from | `DrawRoom`, `ProgressScreen` |
 | Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$40C0`-`$57FF` (screen) |
@@ -428,7 +470,8 @@ ENTER pressed after a release (KeyLatches bit 1) toggles Controls bit 5; the rou
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 8,409,969 t-states own (0.76 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 314,170 t-states own (0.09 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 15,613 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Reads | `$6369` (`KeyLatches`); `$63C2` (`Controls`) |
 | Writes | `$6369` (`KeyLatches`); `$63C2` (`Controls`) |
 | Ports in | `$BFFE` |
@@ -443,9 +486,10 @@ Writes the zero word at SpriteListEnd, sets SpriteListEnd = SpriteList, EI, NOP,
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,071 calls, 34,132,217 t-states own (3.08 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 183,553,794 t-states own (52.53 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 31,220 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Reads | `$63D0`-`$63D1` (`SpriteListEnd`); `$796E` (`WaitFrame+17`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF22` (`work space $FF01+`) |
+| Writes | `$6359`-`$636E` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 13 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF42` (`work space $FF01+`) |
 
 ### `WeaponSelect` (`$7976`)
 
@@ -457,9 +501,10 @@ Every interrupt while no shot is in flight. SPACE (`$7EFE` bit 0) pressed after 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,371 calls, 175,640 t-states own (0.02 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,880 calls, 552,589 t-states own (0.16 %) |
+| Runs (the other recordings) | 48,573 calls (`stage1/rec/room-tour` 4,265, `stage1/rec/rzx-065000` 3,491, `stage1/rec/rzx-070000` 2,690 and 65 more) |
 | Called from | `Interrupt` |
 | Calls | `ShowWeapon` |
-| Reads | `$635E`-`$636A` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 6 more) |
+| Reads | `$635E`-`$636C` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 6 more) |
 | Writes | `$6368`-`$6369` (`Weapons`, `KeyLatches`) |
 | Ports in | `$7EFE` |
 
@@ -472,9 +517,10 @@ The 16 x 16 icon (HudIcons + 32 x weapon, Blit16 at `$4422`) with its colour (`$
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 468 t-states own (0.00 %) |
-| Called from | `WeaponSelect` |
-| Calls | `PrintBcd`, `Blit16` |
-| Reads | `$6368`-`$636A` (`Weapons`, `KeyLatches`, `Ammo`) |
+| Runs (the other recordings) | 57 calls (`stage1/rec/rzx-070000` 13, `stage1/rec/rzx-065000` 9, `stage1/rec/rzx-052000` 7 and 15 more) |
+| Called from | `MoveDroid`, `WeaponSelect` |
+| Calls | `PrintBcd`, `Print8`, `Blit16` |
+| Reads | `$6368`-`$636C` (`Weapons`, `KeyLatches`, `Ammo`) |
 | Writes | `$5822`-`$5823` (screen); `$5842`-`$5843` (screen); `$5862`-`$5863` (screen); `$5882`-`$5883` (screen) |
 
 ### `NewGame` (`$7A2F`)
@@ -486,7 +532,8 @@ ClearScreen; InitRooms `$7BCC` (every item present, the objects reset); Scramble
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 6,835 t-states own (0.00 %) |
-| Called from | `Setup` |
+| Runs (the other recordings) | 3 calls (`stage1/rec/game-over` 1, `stage1/rec/menu-cursor` 1, `stage1/rec/menu-kempston` 1) |
+| Called from | `Setup`, `Restart` |
 | Calls | `DrawRoom`, `PlaceDroid`, `ClearScreen`, `ScrambleRooms`, `InitRooms`, `Random`, `DrawHud` |
 | Reads | `$6380`-`$639B` (`InitialVars`); `$65E5`-`$668A` (`ExhaustRows`, `BlankGraphic`, `EdFlags`) |
 | Writes | `$6363`-`$637F` (`Room`, `ControlsLatch`, `EnergyTimer`, `EnemyKindTurn` and 16 more); `$65E5`-`$668B` (`ExhaustRows`, `BlankGraphic`, `EdFlags`) |
@@ -501,8 +548,9 @@ DroidFlags `$40` (facing right) or `$41` when the droid graphics are mirrored (b
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 367 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 335 t-states own (0.00 %) |
-| Called from | `EnergyOut`, `NewGame` |
-| Reads | `$6363` (`Room`); `$951C`-`$952D` (`StartPositions+152`); `$9C44` (`DroidGraphics+4`) |
+| Runs (the other recordings) | 57 calls (`stage1/rec/room-tour` 52, `stage1/rec/game-over` 2, `stage1/rec/rzx-035000` 1 and 2 more) |
+| Called from | `EnergyOut`, `LoseLife`, `NewGame` |
+| Reads | `$6363` (`Room`); `$9484`-`$9579` (`StartPositions`); `$9C44` (`DroidGraphics+4`) |
 | Writes | `$6359`-`$635E` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 2 more) |
 
 ### `ClearScreen` (`$7A9F`)
@@ -514,7 +562,8 @@ L1 8.
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 2 calls, 371,813 t-states own (0.03 %) |
-| Called from | `Setup`, `NewGame` |
+| Runs (the other recordings) | 6 calls (`stage1/rec/game-over` 2, `stage1/rec/rzx-080000` 1, `stage1/rec/win` 1 and 2 more) |
+| Called from | `Setup`, `Restart`, `NewGame` |
 | Reads | `$4000`-`$5AFE` (screen) |
 | Writes | `$4000`-`$5AFF` (screen) |
 
@@ -528,6 +577,7 @@ Every interrupt (L1 54 825). When EnergyTimer reaches 0 it reloads from EnergyRe
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,371 calls, 88,719 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,880 calls, 325,834 t-states own (0.09 %) |
+| Runs (the other recordings) | 48,574 calls (`stage1/rec/room-tour` 4,265, `stage1/rec/rzx-065000` 3,491, `stage1/rec/rzx-070000` 2,690 and 65 more) |
 | Called from | `Interrupt` |
 | Calls | `QueueMessage`, `PrintBcd` |
 | Reads | `$6366`-`$6374` (`EnergyTimer`, `EnemyKindTurn`, `Weapons`, `KeyLatches` and 7 more) |
@@ -542,10 +592,11 @@ KeyLatches bit 7 (no fire) while it runs. The droid's image lines are shifted ri
 | | |
 | --- | --- |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1 call, 84,522 t-states own (0.02 %) |
-| Called from | `EnergyOut` |
+| Runs (the other recordings) | 54 calls (`stage1/rec/room-tour` 52, `stage1/rec/rzx-035000` 1, `stage1/rec/game-over` 1) |
+| Called from | `EnergyOut`, `LoseLife` |
 | Calls | `ScreenAddr`, `FallSweep` |
-| Reads | `$40FA`-`$40FD` (screen); `$41FA`-`$41FD` (screen); `$42DA`-`$42FD` (screen); `$43DA`-`$43FD` (screen); `$44DA`-`$44FD` (screen); `$45DA`-`$45FD` (screen); 11 more ranges |
-| Writes | `$40FA`-`$40FD` (screen); `$41FA`-`$41FD` (screen); `$42DA`-`$42FD` (screen); `$43DA`-`$43FD` (screen); `$44DA`-`$44FD` (screen); `$45DA`-`$45FD` (screen); 11 more ranges |
+| Reads | `$401C`-`$40E7` (screen); `$40FA`-`$40FD` (screen); `$411C`-`$41E7` (screen); `$41FA`-`$41FD` (screen); `$421C`-`$42FD` (screen); `$431C`-`$43FD` (screen); 10 more ranges |
+| Writes | `$401C`-`$40E7` (screen); `$40FA`-`$40FD` (screen); `$411C`-`$41E7` (screen); `$41FA`-`$41FD` (screen); `$421C`-`$42FD` (screen); `$431C`-`$43FD` (screen); 9 more ranges |
 
 ### `PrintBcd` (`$7B3F`)
 
@@ -559,8 +610,10 @@ In: A the byte, HL the screen address. A leading 0 is a space (ROM font `$3D00`)
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 8 calls, 25,937 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 58 calls, 163,321 t-states own (0.05 %) |
-| Called from | `EnergyOut`, `ShowWeapon`, `EnergyTick`, `Fire`, `DrawHud` |
+| Runs (the other recordings) | 483 calls (`stage1/rec/room-tour` 112, `stage1/rec/rzx-070000` 43, `stage1/rec/rzx-074000` 38 and 46 more) |
+| Called from | `EnergyOut`, `LoseLife`, `MoveDroid`, `ShowWeapon`, `EnergyTick`, `Fire`, `DrawHud` |
 | Calls | `Print8` |
+| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Ports out | `$00FE`, `$10FE` |
 
 ## world
@@ -576,6 +629,7 @@ AlienMap + the word at AlienMap + 2 x C (the authors' lookup). L1 4 746.
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 749 calls, 81,165 t-states own (0.01 %) |
+| Runs (the other recordings) | 3,997 calls (`stage1/rec/menu-cursor` 2,499, `stage1/rec/game-over` 1,249, `stage1/rec/menu-kempston` 249) |
 | Called from | `ScrambleRooms`, `InitRooms` |
 | Reads | `$DB53`-`$DC4A` (`AlienMap`) |
 
@@ -588,6 +642,7 @@ B = the item of room `$7B`; then for rooms 0-`$7B` in turn, each present item wh
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 5 calls, 91,515 t-states own (0.01 %) |
+| Runs (the other recordings) | 29 calls (`stage1/rec/menu-cursor` 19, `stage1/rec/game-over` 9, `stage1/rec/menu-kempston` 1) |
 | Called from | `NewGame` |
 | Calls | `RoomRecord` |
 | Reads | `$DC53`-`$DECE` (`AlienRecords`); `$DEE5`-`$DFFB` (`AlienRecords+658`, `EmptyAlienRecord`) |
@@ -602,6 +657,7 @@ Rooms 0-`$7B`: bit 7 set on both item kinds; for each object record: the directi
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 29,883 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`stage1/rec/game-over` 1, `stage1/rec/menu-kempston` 1, `stage1/rec/menu-cursor` 1) |
 | Called from | `NewGame` |
 | Calls | `RoomRecord`, `ObjectKind` |
 | Reads | `$DC53`-`$DFFE` (`AlienRecords`, `EmptyAlienRecord`) |
@@ -616,6 +672,7 @@ In: B the kind (the record's first byte, bits 4-7). Bit 4: `$B049`, 3 frames, `$
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 25 calls, 3,526 t-states own (0.00 %) |
+| Runs (the other recordings) | 75 calls (`stage1/rec/menu-cursor` 25, `stage1/rec/game-over` 25, `stage1/rec/menu-kempston` 25) |
 | Called from | `InitRooms` |
 
 ## cellmath
@@ -631,6 +688,7 @@ L1 50.
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 61 t-states own (0.00 %) |
+| Runs (the other recordings) | 49 calls (`stage1/rec/rzx-065000` 4, `stage1/rec/rzx-052000` 4, `stage1/rec/rzx-002000` 4 and 24 more) |
 | Called from | `MoveDroid` |
 
 ### `ScreenAddrXY` (`$7C66`)
@@ -643,7 +701,8 @@ In: B the pixel row, C the pixel x (C / 8 the column). L1 34 302.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 676 calls, 84,286 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,579 calls, 290,562 t-states own (0.08 %) |
-| Called from | `MoveObject`, `MoveShotStraight`, `MoveEnemy` |
+| Runs (the other recordings) | 31,047 calls (`stage1/rec/rzx-065000` 3,076, `stage1/rec/rzx-070000` 2,970, `stage1/rec/rzx-074000` 2,348 and 61 more) |
+| Called from | `MoveObject`, `MoveShot`, `MoveShotStraight`, `MoveShot0`, `MoveEnemy` |
 
 ### `ScreenAddr` (`$7C7E`)
 
@@ -655,7 +714,8 @@ L1 68 943.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,952 calls, 230,840 t-states own (0.02 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 8,071 calls, 968,267 t-states own (0.28 %) |
-| Called from | `MoveDroid`, `DeathEffect`, `DroidExhaust` |
+| Runs (the other recordings) | 58,920 calls (`stage1/rec/rzx-065000` 4,662, `stage1/rec/rzx-070000` 4,248, `stage1/rec/rzx-074000` 3,510 and 63 more) |
+| Called from | `HazardFlash`, `MoveDroid`, `Teleport`, `DeathEffect`, `BeamDown`, `BeamUp`, `TeleportFlash`, `DroidExhaust`, `DrawPatroller` |
 
 ### `CellAddrXY` (`$7C94`)
 
@@ -667,7 +727,8 @@ L1 36 761.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 805 calls, 98,244 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 3,316 calls, 346,270 t-states own (0.10 %) |
-| Called from | `StepRight`, `StepDown`, `StepLeft`, `StepUp`, `MoveObject`, `MoveShotStraight`, `Fire`, `MoveEnemy` |
+| Runs (the other recordings) | 32,640 calls (`stage1/rec/rzx-070000` 3,519, `stage1/rec/rzx-065000` 3,375, `stage1/rec/rzx-074000` 2,062 and 61 more) |
+| Called from | `StepRight`, `StepDown`, `StepLeft`, `StepUp`, `MoveObject`, `MoveShot`, `MoveShotStraight`, `Fire`, `MoveShot0`, `MoveEnemy` |
 
 ### `CellAddr` (`$7CAA`)
 
@@ -679,7 +740,8 @@ CellTable rows from `$6000`: `$6000` + 32 x (B / 8) + C. L1 35 926.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 963 calls, 85,728 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 3,202 calls, 277,598 t-states own (0.08 %) |
-| Called from | `MoveDroid`, `StepBlockedLeft`, `StepBlockedRight` |
+| Runs (the other recordings) | 31,761 calls (`stage1/rec/rzx-065000` 2,541, `stage1/rec/rzx-070000` 2,308, `stage1/rec/rzx-074000` 2,001 and 63 more) |
+| Called from | `MoveDroid`, `StepBlockedLeft`, `StepBlockedRight`, `DrawPatroller` |
 
 ### `CellBlockedColumn` (`$7CBB`)
 
@@ -691,8 +753,9 @@ In: HL the top cell, A the cells, DE the y (when y AND 7 is not 0 one more cell 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 118 calls, 38,905 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 335 calls, 98,463 t-states own (0.03 %) |
+| Runs (the other recordings) | 5,120 calls (`stage1/rec/rzx-070000` 627, `stage1/rec/rzx-065000` 490, `stage1/rec/rzx-074000` 332 and 61 more) |
 | Called from | `StepBlockedLeft`, `StepBlockedRight`, `StepRight`, `StepLeft` |
-| Reads | `$60C2`-`$62E6` (`CellTable+2`); `$62F8`-`$630F` (`CellTable+568`, `Start`, `Enemies`); `$6321`-`$632A` (`Enemy4+3`, `Objects`); `$635A` (`DroidY`) |
+| Reads | `$6003`-`$600B` (system); `$6023`-`$602B` (system); `$6043`-`$604B` (system); `$6063`-`$606B` (system); `$6083`-`$608B` (system); `$60C2`-`$632A` (`CellTable+2`, `Start`, `Enemies`, `Objects`); 1 more ranges |
 | Writes | `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `CellBlockedRow` (`$7CF2`)
@@ -705,8 +768,10 @@ As CellBlockedColumn along a row (DE the x). L1 8 094.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 79 calls, 26,739 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 322 calls, 86,339 t-states own (0.02 %) |
+| Runs (the other recordings) | 3,651 calls (`stage1/rec/rzx-070000` 512, `stage1/rec/rzx-065000` 403, `stage1/rec/rzx-048000` 206 and 59 more) |
 | Called from | `MoveDroid`, `StepDown`, `StepUp` |
-| Reads | `$60C3`-`$6267` (`CellTable+3`); `$6278`-`$62A6` (`CellTable+440`); `$62B8`-`$62E7` (`CellTable+504`); `$62FA`-`$630E` (`CellTable+570`, `Start`, `Enemies`); `$6320`-`$6333` (`Enemy4+2`, `Objects`) |
+| Reads | `$60C3`-`$6333` (`CellTable+3`, `Start`, `Enemies`, `Objects`) |
+| Writes | `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `CellSolidColumn` (`$7D24`)
 
@@ -738,8 +803,9 @@ In: HL the top left, B rows, C columns, A the value. L1 12 535.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 340 calls, 211,876 t-states own (0.02 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1,270 calls, 563,460 t-states own (0.16 %) |
-| Called from | `MoveObject`, `MoveShotStraight`, `MoveEnemy` |
-| Writes | `$58C3`-`$58C7` (screen); `$58D8`-`$5A47` (screen); `$5A58`-`$5A67` (screen); `$5A78`-`$5A87` (screen); `$5A98`-`$5AA7` (screen); `$5AB8`-`$5AC7` (screen); 2 more ranges |
+| Runs (the other recordings) | 10,925 calls (`stage1/rec/rzx-070000` 1,117, `stage1/rec/rzx-065000` 1,049, `stage1/rec/room-tour` 654 and 59 more) |
+| Called from | `Teleport`, `MoveObject`, `MoveShot`, `MoveShotStraight`, `MoveEnemy`, `DrawPatroller` |
+| Writes | `$58C3`-`$5AFC` (screen) |
 
 ### `XorCells` (`$7D87`)
 
@@ -751,9 +817,10 @@ In: HL the top left cell, B rows, C columns, A the mark (2 an enemy, 4 an object
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 684 calls, 698,311 t-states own (0.06 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,643 calls, 1,866,828 t-states own (0.53 %) |
-| Called from | `MoveObject`, `MoveShotStraight`, `MoveEnemy` |
-| Reads | `$60C3`-`$60C7` (`CellTable+3`); `$60D8`-`$6247` (`CellTable+24`); `$6258`-`$6267` (`CellTable+408`); `$6278`-`$6287` (`CellTable+440`); `$6298`-`$62A7` (`CellTable+472`); `$62B8`-`$62C7` (`CellTable+504`); 2 more ranges |
-| Writes | `$60C3`-`$60C7` (`CellTable+3`); `$60D8`-`$6247` (`CellTable+24`); `$6258`-`$6267` (`CellTable+408`); `$6278`-`$6287` (`CellTable+440`); `$6298`-`$62A7` (`CellTable+472`); `$62B8`-`$62C7` (`CellTable+504`); 2 more ranges |
+| Runs (the other recordings) | 22,226 calls (`stage1/rec/rzx-070000` 2,320, `stage1/rec/rzx-065000` 2,243, `stage1/rec/room-tour` 1,340 and 58 more) |
+| Called from | `MoveObject`, `MoveShot`, `MoveShotStraight`, `MoveEnemy`, `DrawPatroller` |
+| Reads | `$60C3`-`$62FC` (`CellTable+3`) |
+| Writes | `$60C3`-`$62FC` (`CellTable+3`); `$6359`-`$6363` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 5 more) |
 
 ### `OrCells` (`$7DAE`)
 
@@ -765,8 +832,9 @@ In: HL the top left, B rows, C columns, DE the byte that collects (TouchBits, Ob
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 231 calls, 312,289 t-states own (0.03 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 76 calls, 140,032 t-states own (0.04 %) |
+| Runs (the other recordings) | 1,958 calls (`stage1/rec/rzx-070000` 236, `stage1/rec/rzx-065000` 194, `stage1/rec/rzx-074000` 181 and 37 more) |
 | Called from | `MoveDroid`, `MoveObject` |
-| Reads | `$60DA`-`$6229` (`CellTable+26`); `$63C3`-`$63C4` (`TouchBits`, `ObjectBits`) |
+| Reads | `$6000`-`$604B` (system); `$605C`-`$606B` (system); `$607C`-`$608B` (system); `$609C`-`$609E` (system); `$60C4`-`$62BE` (`CellTable+4`); `$62D1`-`$62DE` (`CellTable+529`); 2 more ranges |
 | Writes | `$63C3`-`$63C4` (`TouchBits`, `ObjectBits`) |
 
 ### `Random` (`$7DC9`)
@@ -779,6 +847,7 @@ RandomSeed's four bytes as an add-with-carry chain: C = `$29`, then for each byt
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 114,897 calls, 29,303,534 t-states own (2.64 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 1,142 calls, 332,056 t-states own (0.10 %) |
+| Runs (the other recordings) | 594,514 calls (`stage1/rec/game-over` 382,245, `stage1/rec/win` 168,469, `stage1/rec/menu-cursor` 17,440 and 64 more) |
 | Called from | `NewGame`, `Menu`, `ExhaustPick`, `MoveEnemy` |
 | Reads | `$63A4`-`$63A7` (`RandomSeed`) |
 | Writes | `$63A4`-`$63A7` (`RandomSeed`) |
@@ -797,10 +866,11 @@ L1 3 912.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 144 calls, 23,352 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 584 calls, 88,709 t-states own (0.03 %) |
+| Runs (the other recordings) | 3,184 calls (`stage1/rec/rzx-065000` 301, `stage1/rec/rzx-070000` 263, `stage1/rec/rzx-048000` 202 and 49 more) |
 | Called from | `MoveObject`, `MoveEnemy` |
 | Calls | `CellAddrXY`, `CellBlockedColumn` |
-| Reads | `$6305`-`$630F` (`Enemies+2`, `Enemy2`); `$6320`-`$632A` (`Enemy4+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BC`-`$63BE` (`StepX`, `StepY`, `StepWidth`) |
-| Writes | `$6305`-`$630E` (`Enemies+2`, `Enemy2`); `$6320`-`$6329` (`Enemy4+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
+| Reads | `$6305`-`$632A` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BC`-`$63BE` (`StepX`, `StepY`, `StepWidth`) |
+| Writes | `$6305`-`$6329` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `StepDown` (`$7E13`)
 
@@ -812,10 +882,11 @@ L1 4 688.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 119 calls, 22,050 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 579 calls, 98,581 t-states own (0.03 %) |
+| Runs (the other recordings) | 3,990 calls (`stage1/rec/rzx-065000` 447, `stage1/rec/rzx-070000` 409, `stage1/rec/rzx-048000` 231 and 52 more) |
 | Called from | `MoveObject`, `MoveEnemy` |
 | Calls | `CellAddrXY`, `CellBlockedRow` |
-| Reads | `$6305`-`$630F` (`Enemies+2`, `Enemy2`); `$6320`-`$6334` (`Enemy4+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BD`-`$63BF` (`StepY`, `StepWidth`, `StepHeight`) |
-| Writes | `$6306`-`$630F` (`Enemies+3`, `Enemy2`); `$6321`-`$6334` (`Enemy4+3`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
+| Reads | `$6305`-`$6334` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BD`-`$63BF` (`StepY`, `StepWidth`, `StepHeight`) |
+| Writes | `$6306`-`$6334` (`Enemies+3`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `StepLeft` (`$7E52`)
 
@@ -827,10 +898,11 @@ L1 4 138.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 24 calls, 3,488 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 622 calls, 79,047 t-states own (0.02 %) |
+| Runs (the other recordings) | 3,492 calls (`stage1/rec/rzx-070000` 560, `stage1/rec/rzx-065000` 428, `stage1/rec/rzx-048000` 232 and 48 more) |
 | Called from | `MoveObject`, `MoveEnemy` |
 | Calls | `CellAddrXY`, `CellBlockedColumn` |
-| Reads | `$6305`-`$630F` (`Enemies+2`, `Enemy2`); `$6329`-`$632A` (`Object1Flags+1`); `$63AA`-`$63AB` (`FoundItem`); `$63BC` (`StepX`) |
-| Writes | `$6305`-`$630E` (`Enemies+2`, `Enemy2`); `$6329` (`Object1Flags+1`); `$63AA`-`$63AB` (`FoundItem`) |
+| Reads | `$6305`-`$632A` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BC` (`StepX`) |
+| Writes | `$6305`-`$6329` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `StepUp` (`$7E83`)
 
@@ -842,10 +914,11 @@ L1 4 455.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 134 calls, 23,319 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 627 calls, 102,504 t-states own (0.03 %) |
+| Runs (the other recordings) | 3,694 calls (`stage1/rec/rzx-070000` 583, `stage1/rec/rzx-065000` 426, `stage1/rec/rzx-048000` 203 and 51 more) |
 | Called from | `MoveObject`, `MoveEnemy` |
 | Calls | `CellAddrXY`, `CellBlockedRow` |
-| Reads | `$6305`-`$630F` (`Enemies+2`, `Enemy2`); `$6320`-`$6334` (`Enemy4+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BD` (`StepY`) |
-| Writes | `$6306`-`$630F` (`Enemies+3`, `Enemy2`); `$6321`-`$6334` (`Enemy4+3`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
+| Reads | `$6305`-`$6334` (`Enemies+2`, `Objects`); `$63AA`-`$63AB` (`FoundItem`); `$63BD` (`StepY`) |
+| Writes | `$6306`-`$6334` (`Enemies+3`, `Objects`); `$63AA`-`$63AB` (`FoundItem`) |
 
 ### `ShiftGraphic3` (`$7EBB`)
 
@@ -859,8 +932,9 @@ In: HL the graphic's first byte (its current offset 0-7), A the offset wanted. T
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 211 calls, 475,013 t-states own (0.04 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,665 calls, 1,317,180 t-states own (0.38 %) |
-| Called from | `MoveEnemy` |
-| Reads | `$6609` (`BlankGraphic`); `$A74E`-`$AF54` (`EnemyGraphicsData`, `MaterialiseGraphics`) |
+| Runs (the other recordings) | 17,413 calls (`stage1/rec/rzx-070000` 1,867, `stage1/rec/rzx-065000` 1,838, `stage1/rec/rzx-048000` 1,042 and 58 more) |
+| Called from | `MoveShot`, `MoveEnemy` |
+| Reads | `$6609` (`BlankGraphic`); `$A74E`-`$AF54` (`EnemyGraphicsData`, `MaterialiseGraphics`); `$AFB6` (`Probe2`); `$AFE7` (`Probe3`); `$B83E`-`$B8D1` (`ProbeExplosion`, `ProbeExplosion2`, `ProbeExplosion3`, `ProbeExplosion4`) |
 | Writes | `$A74E`-`$AEC4` (`EnemyGraphicsData`, `EnemyKind2`, `EnemyKind3`, `EnemyKind4` and 9 more) |
 
 ### `ShiftGraphic4` (`$7EFE`)
@@ -872,9 +946,10 @@ As ShiftGraphic3 for the objects of width 4 (`$B413-$B6B9` and the others). L1 1
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 234 calls, 839,637 t-states own (0.08 %) |
+| Runs (the other recordings) | 1,531 calls (`stage1/rec/rzx-070000` 209, `stage1/rec/rzx-065000` 182, `stage1/rec/rzx-024000` 125 and 22 more) |
 | Called from | `MoveObject` |
-| Reads | `$B049`-`$B10B` (`ObjectGraphics`); `$B16C` (`ObjectKind5`); `$B1CD` (`ObjectKind5+97`); `$B22E` (`ObjectKind5+194`); `$B28F` (`ObjectKind5+291`); `$B597`-`$B6B9` (`ObjectKindNone`) |
-| Writes | `$B597`-`$B6B9` (`ObjectKindNone`) |
+| Reads | `$B049`-`$B2F0` (`ObjectGraphics`, `ObjectKind5`, `ObjectKind6`); `$B351` (`ObjectKind6+97`); `$B3B2` (`ObjectKind6+194`); `$B413`-`$B6B9` (`ObjectKind7`, `ObjectKindNone`); `$B71B`-`$B83D` (`ObjectDeath2`, `ObjectDeath3`, `ObjectDeath4`) |
+| Writes | `$B049`-`$B2EF` (`ObjectGraphics`, `ObjectKind5`); `$B413`-`$B6B9` (`ObjectKind7`, `ObjectKindNone`); `$B71B`-`$B83D` (`ObjectDeath2`, `ObjectDeath3`, `ObjectDeath4`) |
 
 ## sound
 
@@ -889,6 +964,8 @@ DI; the beeper bit toggled with delays `$DC` down to 1; EI. L1 209.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 209 calls (`stage1/rec/rzx-052000` 36, `stage1/rec/rzx-037000` 18, `stage1/rec/rzx-046000` 18 and 8 more) |
+| Called from | `TeleportFlash` |
+| Ports out | `$00FE`, `$10FE` |
 
 ### `FallSweep` (`$7F5D`)
 
@@ -901,7 +978,9 @@ DI; delays 0, 1, ... 255; EI. DeathEffect (8 a death) and TeleportFlash. L1 649.
 | | |
 | --- | --- |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 8 calls, 4,412,247 t-states own (1.26 %) |
-| Called from | `DeathEffect` |
+| Runs (the other recordings) | 641 calls (`stage1/rec/room-tour` 416, `stage1/rec/rzx-052000` 36, `stage1/rec/rzx-002000` 18 and 11 more) |
+| Called from | `DeathEffect`, `TeleportFlash` |
+| Writes | `$6359`-`$636D` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 12 more) |
 | Ports out | `$00FE`, `$10FE` |
 
 ### `PassTick` (`$7F6D`)
@@ -914,7 +993,8 @@ Called by MainLoop once a pass (L1 18 554). BorderSound = 0, then two writes: 0,
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 3,181,322 t-states own (0.29 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 14,180,070 t-states own (4.06 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 15,585 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Reads | `$6375` (`BorderSound`) |
 | Writes | `$6375` (`BorderSound`) |
 | Ports out | `$00FE`, `$10FE` |
@@ -930,6 +1010,11 @@ The attributes of columns +0 and +3 of the teleporter's 5 rows (10 cells) turn `
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 21 calls (`stage1/rec/rzx-052000` 3, `stage1/rec/rzx-007000` 2, `stage1/rec/rzx-037000` 2 and 9 more) |
+| Called from | `Teleport` |
+| Calls | `ScreenAddr` |
+| Reads | `$6375` (`BorderSound`); `$63A2`-`$63A3` (`TeleportColumn`, `TeleportRow`); `$63C5`-`$63C6` (`BeamScreen`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$4844`-`$48DB` (screen); `$4944`-`$49DB` (screen); `$4A44`-`$4ADB` (screen); `$4B44`-`$57C7` (screen); `$5944`-`$5987` (screen); `$5998`-`$59A7` (screen); 5 more ranges |
+| Ports out | `$00FE`, `$10FE` |
 
 ### `BeamUp` (`$8005`)
 
@@ -940,6 +1025,11 @@ L1 13.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 13 calls (`stage1/rec/rzx-052000` 2, `stage1/rec/rzx-063000` 1, `stage1/rec/rzx-044000` 1 and 9 more) |
+| Called from | `Teleport` |
+| Calls | `ScreenAddr` |
+| Reads | `$6375` (`BorderSound`); `$63A2`-`$63A3` (`TeleportColumn`, `TeleportRow`); `$63C5`-`$63C6` (`BeamScreen`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$4844`-`$48DB` (screen); `$4944`-`$49DB` (screen); `$4A44`-`$4ADB` (screen); `$4B44`-`$4BDB` (screen); `$4C44`-`$4CDB` (screen); `$4D44`-`$4DDB` (screen); 11 more ranges |
+| Ports out | `$00FE`, `$10FE` |
 
 ### `TeleportFlash` (`$8051`)
 
@@ -950,6 +1040,10 @@ The play area's 18 attribute rows become `$41` (blue ink on black, bright); then
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 11 calls (`stage1/rec/rzx-052000` 2, `stage1/rec/rzx-058000` 1, `stage1/rec/rzx-041000` 1 and 7 more) |
+| Called from | `Teleport` |
+| Calls | `ScreenAddr`, `RiseSweep`, `FallSweep` |
+| Reads | `$63A2`-`$63A3` (`TeleportColumn`, `TeleportRow`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$58C0`-`$5AFF` (screen) |
 
 ## objects
 
@@ -969,9 +1063,10 @@ Witness: L1 37 158 calls (2 for each of 18 579 passes), 1 777 moves, 13 hits, 11
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,070 calls, 442,245 t-states own (0.04 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 168,531 t-states own (0.05 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 31,220 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Calls | `ScreenAddrXY`, `CellAddrXY`, `FillAttr`, `XorCells`, `OrCells`, `StepRight`, `StepDown`, `StepLeft`, `StepUp`, `ShiftGraphic4` |
-| Reads | `$6327`-`$633A` (`Objects`, `Object1Flags`, `Object2`, `Object2Flags`); `$63B1`-`$63D1` (`DrawMode`, `RoomRecordPtr`, `RoomEnemyPtr`, `TileAttrPtr` and 18 more) |
+| Reads | `$6327`-`$633A` (`Objects`, `Object1Flags`, `Object2`, `Object2Flags`); `$63B1`-`$63D1` (`DrawMode`, `RoomRecordPtr`, `RoomEnemyPtr`, `TileAttrPtr` and 18 more); `$68E5`-`$68EA` (`ObjectDeathFrames+2`); `$FF03`-`$FF08` (`work space $FF03+`) |
 | Writes | `$6327`-`$6337` (`Objects`, `Object1Flags`, `Object2`, `Object2Flags`); `$63B1`-`$63D1` (`DrawMode`, `RoomRecordPtr`, `RoomEnemyPtr`, `TileAttrPtr` and 18 more); `$FF01`-`$FF10` (`work space $FF01+`) |
 
 ## weapons
@@ -988,9 +1083,11 @@ By Weapons: bit 7 MoveShot0 `$877E`; bits 6 and 5 MoveShotStraight `$84CC`; bit 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,070 calls, 50,872 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 169,864 t-states own (0.05 %) |
-| Called from | `Setup`, `MainLoop` |
-| Calls | `MoveShotStraight` (tail), `MoveShot0` (tail) |
-| Reads | `$6368` (`Weapons`) |
+| Runs (the other recordings) | 31,219 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
+| Calls | `ScreenAddrXY`, `CellAddrXY`, `FillAttr`, `XorCells`, `ShiftGraphic3`, `MoveShotStraight` (tail), `MoveShot0` (tail) |
+| Reads | `$6149`-`$614D` (`CellTable+137`); `$6269` (`CellTable+425`); `$635E`-`$6369` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 5 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$68EB`-`$68F2` (`Weapon3Frames`); `$FF03`-`$FF28` (`work space $FF03+`) |
+| Writes | `$6149`-`$614D` (`CellTable+137`); `$6269` (`CellTable+425`); `$635E`-`$6369` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 5 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF30` (`work space $FF01+`) |
 
 ### `MoveShotStraight` (`$84CC`)
 
@@ -1001,10 +1098,11 @@ The old image erased and its ShotMark XORed out; x - 4 or + 4 (to 0 or `$F8`); a
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 621 calls, 25,599 t-states own (0.00 %) |
+| Runs (the other recordings) | 4,026 calls (`stage1/rec/room-tour` 1,634, `stage1/rec/rzx-065000` 528, `stage1/rec/menu-kempston` 361 and 10 more) |
 | Called from | `MoveShot` (tail) |
 | Calls | `ScreenAddrXY`, `CellAddrXY`, `FillAttr`, `XorCells` |
-| Reads | `$623A`-`$623C` (`CellTable+378`); `$625B`-`$625C` (`CellTable+411`); `$635E`-`$6369` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 5 more); `$63C0`-`$63D1` (`ShotScratch`, `ShotMark`, `Controls`, `TouchBits` and 9 more) |
-| Writes | `$635E`-`$6369` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 5 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$FF11`-`$FF20` (`work space $FF11+`) |
+| Reads | `$614E` (`CellTable+142`); `$6172`-`$6196` (`CellTable+178`); `$61C4`-`$61D8` (`CellTable+260`); `$61E9`-`$61F8` (`CellTable+297`); `$623A`-`$623C` (`CellTable+378`); `$625B`-`$625C` (`CellTable+411`); 2 more ranges |
+| Writes | `$614E` (`CellTable+142`); `$6172` (`CellTable+178`); `$6187`-`$6196` (`CellTable+199`); `$61C6`-`$61D7` (`CellTable+262`); `$635E`-`$6369` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 5 more); `$63D0`-`$63D1` (`SpriteListEnd`); 1 more ranges |
 
 ### `Fire` (`$861C`)
 
@@ -1015,10 +1113,11 @@ Not while a shot is new (Shot bit 6) or fire has not been released (KeyLatches b
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 9 calls, 2,611 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,835 calls (`stage1/rec/rzx-074000` 207, `stage1/rec/rzx-065000` 184, `stage1/rec/rzx-070000` 123 and 51 more) |
 | Called from | `MoveDroid` |
 | Calls | `PrintBcd`, `CellAddrXY` |
-| Reads | `$6103` (`CellTable+67`); `$623C` (`CellTable+380`); `$625C` (`CellTable+412`); `$6359`-`$636A` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 11 more) |
-| Writes | `$635E`-`$636A` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 6 more); `$63C0`-`$63C1` (`ShotScratch`, `ShotMark`) |
+| Reads | `$6102`-`$629C` (`CellTable+66`); `$6359`-`$636C` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 11 more) |
+| Writes | `$635E`-`$636C` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 6 more); `$63C0`-`$63C1` (`ShotScratch`, `ShotMark`) |
 
 ### `MoveShot0` (`$877E`)
 
@@ -1030,8 +1129,11 @@ The old image erased; when the interrupt found ink under it (Shot bit 7) it ends
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 449 calls, 16,154 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 174,660 t-states own (0.05 %) |
+| Runs (the other recordings) | 26,710 calls (`stage1/rec/rzx-070000` 1,888, `stage1/rec/rzx-065000` 1,861, `stage1/rec/rzx-074000` 1,814 and 61 more) |
 | Called from | `MoveShot` (tail) |
-| Reads | `$635E` (`Shot`) |
+| Calls | `ScreenAddrXY`, `CellAddrXY` |
+| Reads | `$6100`-`$629F` (`CellTable+64`); `$635E`-`$6362` (`Shot`, `ShotPos`, `ShotGraphic`); `$63D0`-`$63D1` (`SpriteListEnd`) |
+| Writes | `$5900`-`$5A9F` (screen); `$635E`-`$635F` (`Shot`, `ShotPos`); `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF40` (`work space $FF01+`) |
 
 ## menu
 
@@ -1046,7 +1148,8 @@ A frame of 16 x 16 blocks (MenuFrameTopEdge `$BC02-$BD01`) round the screen, the
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 19,961,908 t-states own (1.80 %) |
-| Called from | `Setup` |
+| Runs (the other recordings) | 3 calls (`stage1/rec/game-over` 1, `stage1/rec/win` 1, `stage1/rec/rzx-080000` 1) |
+| Called from | `Setup`, `Restart` |
 | Calls | `Random`, `MenuLogo`, `Blit16`, `PrintText` |
 | Reads | `$5800`-`$5AFE` (screen); `$63C2` (`Controls`) |
 | Writes | `$5800`-`$5AFF` (screen); `$63C2` (`Controls`); `$8D35`-`$8D36` (`MenuLogoAt`) |
@@ -1062,6 +1165,7 @@ MenuLogoGraphic as three 16-row and two 8-row pieces, then MenuLogoAttrs (7 rows
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 2 calls, 4,139 t-states own (0.00 %) |
+| Runs (the other recordings) | 6 calls (`stage1/rec/game-over` 2, `stage1/rec/rzx-080000` 2, `stage1/rec/win` 2) |
 | Called from | `Menu` |
 | Calls | `Blit2` |
 | Reads | `$8D35`-`$8D36` (`MenuLogoAt`); `$8D96`-`$8DB1` (`MenuLogoAttrs`) |
@@ -1076,6 +1180,7 @@ L1 40.
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 10 calls, 11,853 t-states own (0.00 %) |
+| Runs (the other recordings) | 30 calls (`stage1/rec/game-over` 10, `stage1/rec/rzx-080000` 10, `stage1/rec/win` 10) |
 | Called from | `MenuLogo` |
 | Reads | `$8DB2`-`$8DD1` (`MenuLogoGraphic`, `MenuLogoLowerHalf`) |
 | Writes | `$4065`-`$483B` (screen); `$4924`-`$493B` (screen); `$4A24`-`$4A3B` (screen); `$4B24`-`$4B3B` (screen); `$4C24`-`$4C3B` (screen); `$4D24`-`$4D3B` (screen); 2 more ranges |
@@ -1090,9 +1195,10 @@ L1 1 758 (PrintBcd, PrintText, DrawHud, ShowWeapon).
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 165 calls, 91,812 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 116 calls, 64,481 t-states own (0.02 %) |
-| Called from | `PrintBcd`, `PrintText`, `DrawHud` |
-| Reads | `$8BFD`-`$8C54` (`HudGraphics`, `HudBottomEdge`, `HudLeftEdge`, `HudRightEdge` and 7 more); `$E002`-`$E009` (`Font`); `$E082`-`$E0D1` (`Font+128`); `$E10A`-`$E1B1` (`Font+264`); `$E1CA`-`$E1D1` (`Font+456`) |
-| Writes | `$4000`-`$408B` (screen); `$409F`-`$5173` (screen); `$5206`-`$5273` (screen); `$5306`-`$5373` (screen); `$5406`-`$5473` (screen); `$5506`-`$5573` (screen); 2 more ranges |
+| Runs (the other recordings) | 1,477 calls (`stage1/rec/room-tour` 224, `stage1/rec/game-over` 190, `stage1/rec/menu-cursor` 96 and 47 more) |
+| Called from | `ShowWeapon`, `PrintBcd`, `PrintText`, `DrawHud` |
+| Reads | `$6609`-`$6618` (`BlankGraphic`); `$8BFD`-`$8C54` (`HudGraphics`, `HudBottomEdge`, `HudLeftEdge`, `HudRightEdge` and 7 more); `$E002`-`$E009` (`Font`); `$E02A`-`$E031` (`Font+40`); `$E082`-`$E0D1` (`Font+128`); `$E10A`-`$E1D1` (`Font+264`); 1 more ranges |
+| Writes | `$4000`-`$5173` (screen); `$5206`-`$5273` (screen); `$5306`-`$5373` (screen); `$5406`-`$5473` (screen); `$5506`-`$5573` (screen); `$5606`-`$5673` (screen); 1 more ranges |
 
 ### `Blit16` (`$8A93`)
 
@@ -1103,9 +1209,10 @@ L1 1 214 (the items, the HUD icons, the menu frame, the ED pieces).
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 58 calls, 160,240 t-states own (0.01 %) |
+| Runs (the other recordings) | 1,156 calls (`stage1/rec/rzx-065000` 196, `stage1/rec/rzx-037000` 91, `stage1/rec/room-tour` 77 and 34 more) |
 | Called from | `DrawItem`, `ShowWeapon`, `Menu`, `DrawHud`, `ProgressScreen` |
-| Reads | `$8C55`-`$8C94` (`HudIcons`, `IconWeapon1`); `$8CD5`-`$8D14` (`IconGen19`, `IconEnergy`); `$BC02`-`$BD01` (`MenuFrameTopEdge`, `MenuFrameBottomEdge`, `MenuFrameLeftEdge`, `MenuFrameRightEdge` and 4 more); `$E802`-`$E821` (`EdPieces+1568`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$4000`-`$4FE1` (screen); `$4FFE`-`$5001` (screen); `$501E`-`$5021` (screen); `$503E`-`$5041` (screen); `$505E`-`$506D` (screen); `$507E`-`$50A1` (screen); 1 more ranges |
+| Reads | `$8C55`-`$8D34` (`HudIcons`, `IconWeapon1`, `IconWeapon2`, `IconWeapon3` and 3 more); `$BC02`-`$BD01` (`MenuFrameTopEdge`, `MenuFrameBottomEdge`, `MenuFrameLeftEdge`, `MenuFrameRightEdge` and 4 more); `$E1E2`-`$E821` (`EdPieces`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Writes | `$4000`-`$57FF` (screen); `$6359` (`DroidVars`) |
 
 ### `PrintText` (`$8AB4`)
 
@@ -1118,10 +1225,11 @@ Font characters (Font - `$100` + 8 x code: LD BC,Font - 256) through Print8, eac
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 5 calls, 18,078 t-states own (0.00 %) |
-| Called from | `Menu` |
+| Runs (the other recordings) | 16 calls (`stage1/rec/game-over` 6, `stage1/rec/win` 5, `stage1/rec/rzx-080000` 5) |
+| Called from | `Menu`, `ProgressPercent` |
 | Calls | `Print8` |
-| Reads | `$8D37`-`$8D83` (`PrintAttr`, `MenuTexts`) |
-| Writes | `$58CD`-`$58D1` (screen); `$5986`-`$5991` (screen); `$59C6`-`$59D8` (screen); `$5A06`-`$5A1A` (screen); `$5A66`-`$5A73` (screen); `$8D37` (`PrintAttr`) |
+| Reads | `$8D37`-`$8D83` (`PrintAttr`, `MenuTexts`); `$9072`-`$9091` (`ProgressText`) |
+| Writes | `$58CD`-`$58D1` (screen); `$5900`-`$591E` (screen); `$5986`-`$5991` (screen); `$59C6`-`$59D8` (screen); `$5A06`-`$5A1A` (screen); `$5A66`-`$5A73` (screen); 1 more ranges |
 
 ### `DrawHud` (`$8AE8`)
 
@@ -1134,6 +1242,7 @@ Corners, edges and the divider from HudGraphics, the attributes (`$43`, then Hud
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 13,795 t-states own (0.00 %) |
+| Runs (the other recordings) | 3 calls (`stage1/rec/menu-cursor` 1, `stage1/rec/menu-kempston` 1, `stage1/rec/game-over` 1) |
 | Called from | `NewGame` |
 | Calls | `PrintBcd`, `Print8`, `Blit16` |
 | Reads | `$5800`-`$58BE` (screen); `$636D`-`$636E` (`Lives`, `Energy`); `$8BF5`-`$8BFC` (`HudAttrs`) |
@@ -1153,10 +1262,11 @@ Five character rows under the droid's top (one column on when it faces left and 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,070 calls, 4,966,082 t-states own (0.45 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 18,730,421 t-states own (5.36 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 31,190 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Calls | `ScreenAddr` |
-| Reads | `$4884`-`$4888` (screen); `$489A`-`$489C` (screen); `$4984`-`$4A88` (screen); `$4B65`-`$4B88` (screen); `$4C65`-`$4C88` (screen); `$4D65`-`$4D88` (screen); 16 more ranges |
-| Writes | `$4884`-`$4888` (screen); `$489A`-`$489C` (screen); `$4984`-`$4A88` (screen); `$4B65`-`$4B88` (screen); `$4C65`-`$4C88` (screen); `$4D65`-`$4D88` (screen); 13 more ranges |
+| Reads | `$40A1`-`$41BE` (screen); `$42A1`-`$42BE` (screen); `$43A1`-`$43BE` (screen); `$44A1`-`$44BE` (screen); `$45A1`-`$45BE` (screen); `$46A1`-`$46BE` (screen); 10 more ranges |
+| Writes | `$40A1`-`$41BE` (screen); `$42A1`-`$42BE` (screen); `$43A1`-`$43BE` (screen); `$44A1`-`$44BE` (screen); `$45A1`-`$45BE` (screen); `$46A1`-`$46BE` (screen); 9 more ranges |
 
 ### `ExhaustStep` (`$8E7E`)
 
@@ -1168,7 +1278,8 @@ ExhaustRow for rows 1 and 3, ExhaustRowLeft for rows 2 and 4 (the patterns run a
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 153,476 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 694,397 t-states own (0.20 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 15,602 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Calls | `ExhaustRow`, `ExhaustRowLeft`, `ExhaustMask` |
 | Reads | `$65AE`-`$65B5` (`ExhaustPtrs`) |
 | Writes | `$63AE`-`$63AF` (`MoverScratch`); `$65AE`-`$65B5` (`ExhaustPtrs`) |
@@ -1183,6 +1294,7 @@ L1 5 012 tries, 3 134 picks: Random AND `$1C` picks one of the eight ExhaustPatt
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 92 calls, 17,328 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 412 calls, 76,705 t-states own (0.02 %) |
+| Runs (the other recordings) | 2,630 calls (`stage1/rec/rzx-065000` 205, `stage1/rec/rzx-070000` 203, `stage1/rec/rzx-074000` 149 and 62 more) |
 | Called from | `ExhaustRow`, `ExhaustRowLeft` |
 | Calls | `Random` |
 | Reads | `$65B6`-`$65D2` (`ExhaustPatterns`) |
@@ -1198,6 +1310,7 @@ L1 37 142.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,070 calls, 410,469 t-states own (0.04 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 1,863,754 t-states own (0.53 %) |
+| Runs (the other recordings) | 31,204 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
 | Called from | `ExhaustStep` |
 | Calls | `ExhaustPick` |
 | Reads | `$63AE`-`$63AF` (`MoverScratch`); `$65B6`-`$65D5` (`ExhaustPatterns`); `$65FD`-`$6605` (`ExhaustRaw`) |
@@ -1213,6 +1326,7 @@ L1 37 142.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,070 calls, 480,860 t-states own (0.04 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,868 calls, 2,183,517 t-states own (0.62 %) |
+| Runs (the other recordings) | 31,204 calls (`stage1/rec/rzx-065000` 2,450, `stage1/rec/rzx-070000` 2,268, `stage1/rec/rzx-074000` 1,814 and 63 more) |
 | Called from | `ExhaustStep` |
 | Calls | `ExhaustPick` |
 | Reads | `$63AE`-`$63AF` (`MoverScratch`); `$65B6`-`$65D5` (`ExhaustPatterns`); `$6600`-`$6608` (`ExhaustRaw+3`) |
@@ -1228,9 +1342,10 @@ Frame 12 (DroidFly2, in the air) takes ExhaustMasks + 2 (`$0F`, `$F0`), every ot
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 473,588 t-states own (0.04 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 2,161,478 t-states own (0.62 %) |
+| Runs (the other recordings) | 15,603 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
 | Called from | `ExhaustStep` |
 | Reads | `$635C` (`DroidFrame`); `$65D6`-`$65D9` (`ExhaustMasks`); `$65FD`-`$6608` (`ExhaustRaw`) |
-| Writes | `$65E8`-`$65FC` (`ExhaustRows+3`) |
+| Writes | `$6359`-`$6363` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 5 more); `$65E8`-`$65FC` (`ExhaustRows+3`) |
 
 ## progress
 
@@ -1249,10 +1364,11 @@ The delay loop at ProgressDelay (LD BC,`$C350`, 50 000 rounds) is the longest wa
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1 call, 11,737,595 t-states own (1.06 %) |
-| Called from | `EdPickup` |
-| Calls | `ClearPlayArea`, `Blit16`, `ProgressCell` |
+| Runs (the other recordings) | 35 calls (`stage1/rec/rzx-065000` 4, `stage1/rec/rzx-037000` 3, `stage1/rec/rzx-010000` 2 and 20 more) |
+| Called from | `EnergyOut`, `EdPickup` |
+| Calls | `ClearPlayArea`, `Blit16`, `ProgressPercent`, `ProgressCell` |
 | Reads | `$58C0`-`$5AFE` (screen); `$6374` (`EnergyReload`); `$63B1`-`$63B3` (`DrawMode`, `RoomRecordPtr`); `$6681`-`$668A` (`EdFlags`); `$9092` (`ProgressPercentBcd`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
-| Writes | `$58C0`-`$5AFF` (screen); `$635E`-`$6366` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 2 more); `$63B1`-`$63B3` (`DrawMode`, `RoomRecordPtr`); `$63D0`-`$63D1` (`SpriteListEnd`); `$668A` (`EdFlags+9`); `$9092` (`ProgressPercentBcd`); 1 more ranges |
+| Writes | `$58C0`-`$5AFF` (screen); `$635E`-`$6366` (`Shot`, `ShotPos`, `ShotGraphic`, `Room` and 2 more); `$63B1`-`$63B3` (`DrawMode`, `RoomRecordPtr`); `$63D0`-`$63D1` (`SpriteListEnd`); `$6681`-`$668A` (`EdFlags`); `$9092` (`ProgressPercentBcd`); 1 more ranges |
 
 ### `ProgressPercent` (`$9046`)
 
@@ -1263,6 +1379,10 @@ The two digits go into ProgressText + 19 and + 20 (`$9085`, `$9086`; a leading 0
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 1 call (`stage1/rec/game-over` 1) |
+| Called from | `ProgressScreen` |
+| Calls | `PrintText` |
+| Reads | `$9092` (`ProgressPercentBcd`) |
+| Writes | `$9085`-`$9086` (`ProgressText+19`) |
 
 ### `ProgressCell` (`$9093`)
 
@@ -1273,8 +1393,9 @@ L1 1 800.
 | | |
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 50 calls, 11,506 t-states own (0.00 %) |
+| Runs (the other recordings) | 1,750 calls (`stage1/rec/rzx-065000` 200, `stage1/rec/rzx-037000` 150, `stage1/rec/rzx-010000` 100 and 20 more) |
 | Called from | `ProgressScreen` |
-| Reads | `$63B2`-`$63B3` (`RoomRecordPtr`) |
+| Reads | `$63B2`-`$63B3` (`RoomRecordPtr`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
 | Writes | `$5986`-`$5AB9` (screen); `$63B2`-`$63B3` (`RoomRecordPtr`) |
 
 ## enemies
@@ -1291,6 +1412,7 @@ EnemyKindTurn cycles 1-9; DrawMode (`$63B1`) = EnemyFrameCounts[kind], HL = the 
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 2 calls, 308 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 18 calls, 2,682 t-states own (0.00 %) |
+| Runs (the other recordings) | 383 calls (`stage1/rec/room-tour` 38, `stage1/rec/rzx-065000` 35, `stage1/rec/rzx-074000` 28 and 44 more) |
 | Called from | `MoveEnemy` |
 | Reads | `$6367` (`EnemyKindTurn`); `$68B8`-`$68C0` (`EnemyFrameCounts`) |
 | Writes | `$6367` (`EnemyKindTurn`); `$63B1` (`DrawMode`) |
@@ -1309,10 +1431,11 @@ Witness: L1 74 324 calls, 7 790 flights, 1 071 explosion steps, 2 352 materialis
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 2,140 calls, 550,740 t-states own (0.05 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 9,736 calls, 5,945,297 t-states own (1.70 %) |
-| Called from | `Setup`, `MainLoop` |
+| Runs (the other recordings) | 62,448 calls (`stage1/rec/rzx-065000` 4,900, `stage1/rec/rzx-070000` 4,536, `stage1/rec/rzx-074000` 3,628 and 63 more) |
+| Called from | `Setup`, `Restart`, `MainLoop` |
 | Calls | `ScreenAddrXY`, `CellAddrXY`, `FillAttr`, `XorCells`, `Random`, `StepRight`, `StepDown`, `StepLeft`, `StepUp`, `ShiftGraphic3`, `EnemyKind` |
-| Reads | `$614E`-`$619B` (`CellTable+142`); `$61CC`-`$61DB` (`CellTable+268`); `$61EC`-`$61FB` (`CellTable+300`); `$6217`-`$621B` (`CellTable+343`); `$6303`-`$6326` (`Enemies`, `Enemy2`, `Enemy3`, `Enemy4`); `$63B1` (`DrawMode`); 6 more ranges |
-| Writes | `$6303`-`$6326` (`Enemies`, `Enemy2`, `Enemy3`, `Enemy4`); `$63AA`-`$63BF` (`FoundItem`, `MoverScratch`, `DrawMode`, `RoomRecordPtr` and 7 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$6708`-`$67C7` (`EnemyBuffers`, `EnemyBuffer1B`, `EnemyBuffer2A`, `EnemyBuffer2B`); `$6828`-`$6887` (`EnemyBuffer4A`, `EnemyBuffer4B`); `$FF01`-`$FF20` (`work space $FF01+`) |
+| Reads | `$6144`-`$619B` (`CellTable+132`); `$61C4`-`$621B` (`CellTable+260`); `$6303`-`$6326` (`Enemies`, `Enemy2`, `Enemy3`, `Enemy4`); `$63B1` (`DrawMode`); `$63D0`-`$63D1` (`SpriteListEnd`); `$660A`-`$6639` (`BlankGraphic+1`); 4 more ranges |
+| Writes | `$6303`-`$6326` (`Enemies`, `Enemy2`, `Enemy3`, `Enemy4`); `$6359`-`$6363` (`DroidVars`, `DroidY`, `DroidFlags`, `DroidFrame` and 5 more); `$63AA`-`$63BF` (`FoundItem`, `MoverScratch`, `DrawMode`, `RoomRecordPtr` and 7 more); `$63D0`-`$63D1` (`SpriteListEnd`); `$6708`-`$6887` (`EnemyBuffers`, `EnemyBuffer1B`, `EnemyBuffer2A`, `EnemyBuffer2B` and 4 more); `$FF01`-`$FF30` (`work space $FF01+`) |
 
 ## patrollers
 
@@ -1328,8 +1451,9 @@ Erase it (DrawPatroller) when it was drawn and is in the room; clear bit 7; Patr
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 128,468 t-states own (0.01 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 576,714 t-states own (0.17 %) |
+| Runs (the other recordings) | 15,614 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
 | Called from | `MovePatrollers` |
-| Calls | `PatrollerStep` |
+| Calls | `PatrollerStep`, `DrawPatroller` |
 | Reads | `$633B`-`$634E` (`Patrollers`, `Patroller2`, `Patroller3`); `$6363` (`Room`); `$63A8`-`$63A9` (`PatrollerPtr`) |
 | Writes | `$633B`-`$634B` (`Patrollers`, `Patroller2`, `Patroller3`); `$63B1` (`DrawMode`) |
 
@@ -1343,6 +1467,7 @@ Erase it (DrawPatroller) when it was drawn and is in the room; clear bit 7; Patr
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 535 calls, 38,493 t-states own (0.00 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 2,434 calls, 180,561 t-states own (0.05 %) |
+| Runs (the other recordings) | 15,614 calls (`stage1/rec/rzx-065000` 1,225, `stage1/rec/rzx-070000` 1,134, `stage1/rec/rzx-074000` 907 and 63 more) |
 | Called from | `MovePatroller` |
 | Reads | `$633B`-`$6352` (`Patrollers`, `Patroller2`, `Patroller3`) |
 | Writes | `$633B`-`$634E` (`Patrollers`, `Patroller2`, `Patroller3`) |
@@ -1356,6 +1481,10 @@ The frame from `$B902` (walking right) or `$BA82` (left), 96 bytes a frame (4 by
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`, `stage1/rec/energy-out`; in the other recordings 1,002 calls (`stage1/rec/rzx-041000` 278, `stage1/rec/rzx-019000` 203, `stage1/rec/rzx-036000` 157 and 6 more) |
+| Called from | `MovePatroller` |
+| Calls | `ScreenAddr`, `CellAddr`, `FillAttr`, `XorCells` |
+| Reads | `$633B`-`$634D` (`Patrollers`, `Patroller2`, `Patroller3`); `$63B1` (`DrawMode`); `$63D0`-`$63D1` (`SpriteListEnd`) |
+| Writes | `$63D0`-`$63D1` (`SpriteListEnd`); `$FF01`-`$FF30` (`work space $FF01+`) |
 
 ## interrupt
 
@@ -1387,6 +1516,7 @@ Witness: L1 54 811 interrupts; 123 658 list reads; the scroller 8 773 steps.
 | --- | --- |
 | Runs (c1: power-on, the tape at ROM speed, the menu and keyboard play) | 1,371 calls, 27,056,627 t-states own (2.44 %) |
 | Runs (energy-out: 5001 frames of play from the RZX state after 47 000 frames) | 4,880 calls, 85,437,598 t-states own (24.45 %) |
+| Runs (the other recordings) | 48,560 calls (`stage1/rec/room-tour` 4,265, `stage1/rec/rzx-065000` 3,491, `stage1/rec/rzx-070000` 2,690 and 65 more) |
 | Calls | `ReadControls`, `DrainTimer`, `WeaponSelect`, `EnergyTick` |
-| Reads | `$404C`-`$409E` (screen); `$40C3`-`$40C6` (screen); `$40D8`-`$57C7` (screen); `$57D8`-`$57E6` (screen); `$57F9`-`$57FD` (screen); `$6304`-`$630D` (`Enemies+1`, `Enemy2`); 17 more ranges |
-| Writes | `$402C`-`$409E` (screen); `$40C3`-`$40C6` (screen); `$40D8`-`$57C7` (screen); `$57D8`-`$57E6` (screen); `$57F9`-`$57FD` (screen); `$6304`-`$630D` (`Enemies+1`, `Enemy2`); 3 more ranges |
+| Reads | `$4000`-`$57FD` (screen); `$6304`-`$631F` (`Enemies+1`, `Enemy2`, `Enemy3`, `Enemy4`); `$635B`-`$635E` (`DroidFlags`, `DroidFrame`, `DroidWidth`, `Shot`); `$63AE` (`MoverScratch`); `$63C7`-`$65AD` (`ScrollText`, `Messages`); `$65DD`-`$6887` (`ShotGraphic0`, `ExhaustRows`, `BlankGraphic`, `EdFlags` and 3 more); 11 more ranges |
+| Writes | `$4000`-`$57FD` (screen); `$6304`-`$631F` (`Enemies+1`, `Enemy2`, `Enemy3`, `Enemy4`); `$635B`-`$635E` (`DroidFlags`, `DroidFrame`, `DroidWidth`, `Shot`); `$63AE` (`MoverScratch`); `$63C7`-`$63D1` (`ScrollText`, `ScrollNext`, `ScrollPriority`, `ScrollLine` and 3 more) |

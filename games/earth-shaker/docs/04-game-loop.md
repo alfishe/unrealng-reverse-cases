@@ -373,10 +373,11 @@ The same routine on cave 2, made in stage 2:
 The first picture has HL = `$C13B` (cave 2's record starts at `$C13A`) and the buffer `$FDA8` still holding the cells
 of the start snapshot; the 600 cells overwrite it row by row from `$FDA8`, and the last picture is the LDIR of the 14
 parameters. Read it as the cave 1 animation above: the memory map on top (reads at `$C13A-$C273`, writes at
-`$FDA8-$FFFF`), the buffer as 30 × 20 hex cells below it, the code on the right. The hex view colours only the latest
-writes, so the last picture shows only row 19 in colour (a kit gap, `work/review/kit-gaps.md`). Command: `python3
+`$FDA8-$FFFF`) and the code beside it, the buffer as 30 × 20 hex cells under both. A cell written earlier in the
+window keeps a dim rose trail, so the last picture shows all 600 cells written, row 19 still in the write colours.
+Command: `python3
 ../../kit/routine_anim.py --trace work/docs/esC/r02/traces/269_13000-269_44200.uatr --listing build/game.lst --view
-buffer:FDA8:30x20:hex --range C000-FFFF --pc 82B6-82E5 --pictures 100 --width 1084 --title "rzx-earth02 frame 269 (RZX
+buffer:FDA8:30x20:hex --range C000-FFFF --pc 82B6-82E5 --pictures 100 --title "rzx-earth02 frame 269 (RZX
 replay): UnpackCave splits cave 2's 300 record bytes into 600 cells, then copies the 14 parameters"` (the trace made by
 `--work work/docs/esC/r02 --window 269:13000-269:44200`).*
 

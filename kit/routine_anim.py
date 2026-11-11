@@ -11,7 +11,8 @@ Each picture has three panels:
     column by column, H bytes a column; `:columns-up` the same with each column's first byte at the bottom; `:screen` a back buffer laid out
     like the screen's pixel lines; `:hex` a stack or a record as numbers, W bytes a line in hex; `:words` the same
     as 16-bit words, W / 2 a line, low byte first in memory), `none` leaves it out.
-    Bytes written in the slice flash in the write colours.
+    Bytes written in the slice flash in the write colours; in `:hex` / `:words` a number written earlier in the
+    window keeps a dim rose trail (one only read, a dim blue one), as in the memory map.
   - the code: the listing round the instruction last executed, the lines run in the slice marked by how often, the
     registers, the moment and the routine's name.
 
@@ -24,7 +25,8 @@ Each picture has three panels:
 
 --layout compact (the default) draws the picture --width pixels wide (1050, the figure limit, readable at 900): the
 memory map and the view one above the other on the left, each at the largest whole scale that fits, the code on the
-right. --layout wide is the older picture, the three panels side by side at up to 4 x (up to 2566 px).
+right; a view wider than that column at 1 x (a hex view of 30 bytes a line) goes on a row of its own under both,
+its numbers a point or two smaller if it is wider than the picture. --layout wide is the older picture, the three panels side by side at up to 4 x (up to 2566 px).
 
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
 change memory but are counted as "other" in the code panel. Several ranges (comma-separated, or --pc repeated)
@@ -42,6 +44,7 @@ import kitlib as K  # noqa: E402
 GRID_HEIGHT = 512
 VIEW_HEIGHT = 512
 CODE_WIDTH = 470
+UNDER_CODE_HEIGHT = 360
 ROW = 15
 
 
@@ -99,7 +102,7 @@ def grid_picture(mem, ages, now, lo, hi):
     return image
 
 
-def view_picture(view, mem, ages, now):
+def view_picture(view, mem, ages, now, size=11):
     kind, base, width, height, order = view
     fade = K.WRITE_FADE
     if kind == 'screen':
@@ -123,7 +126,7 @@ def view_picture(view, mem, ages, now):
                 draw.rectangle([x, y, x + 7, y + 7], outline=fade[now - w])
         return image
     if order in ('hex', 'words'):
-        return numbers_picture(base, width, height, order == 'words', mem, ages, now)
+        return numbers_picture(base, width, height, order == 'words', mem, ages, now, size)
     image = Image.new('RGB', (width * 8, height))
     px = image.load()
     for row, column, a in K.buffer_cells(base, width, height, order):
@@ -136,17 +139,24 @@ def view_picture(view, mem, ages, now):
     return image
 
 
-def numbers_picture(base, width, height, words, mem, ages, now):
+# the hex view's trails: a number written (read) earlier in the window, after its fade
+NUMBER_WRITE_TRAIL = (190, 120, 140)
+NUMBER_READ_TRAIL = (120, 150, 200)
+
+
+def numbers_picture(base, width, height, words, mem, ages, now, size=11):
     """A buffer as numbers: H lines of W bytes from base, each line headed by its address, in hex (two digits a
     byte, or four a word with words: the high byte first as written, the low byte first in memory). A byte written in
-    the slice is drawn in the write colours, read in blue, the rest in grey"""
-    font = K.font(11)
+    the slice is drawn in the write colours, fading over the next slices, read in blue; after that a byte written
+    earlier in the window keeps a dim rose trail, one only read a dim blue one (as the memory map's trails), the rest
+    is grey. size: the font's"""
+    font = K.font(size)
     probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
     digit = max(1, int(probe.textlength('0', font=font)))
     step = 2 if words else 1
     cell = digit * (4 if words else 2) + digit  # the number and a gap
     head = digit * 6
-    line_h = 14
+    line_h = size + 3
     image = Image.new('RGB', (head + cell * (width // step) + 2, height * line_h + 2), (20, 20, 26))
     draw = ImageDraw.Draw(image)
     fade = K.WRITE_FADE
@@ -162,6 +172,10 @@ def numbers_picture(base, width, height, words, mem, ages, now):
                 colour = fade[min(written)]
             elif any(ages.read[c] == now for c in cells):
                 colour = K.READ
+            elif any(ages.write[c] >= 0 for c in cells):
+                colour = NUMBER_WRITE_TRAIL
+            elif any(ages.read[c] >= 0 for c in cells):
+                colour = NUMBER_READ_TRAIL
             else:
                 colour = (170, 170, 178)
             text = f'{mem[cells[-1]]:02X}{mem[a]:02X}' if words else f'{mem[a]:02X}'
@@ -298,21 +312,38 @@ def draw_compact(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other
     lines = wrap(title, big, width - 2 * gap)
     top = 34 + 19 * (len(lines) - 1)
     left = max(256, width - 3 * gap - CODE_WIDTH)
+    labels = panel_labels(view, lo, hi)
     panels = [fit_width(grid_picture(mem, ages, now, lo, hi), left, GRID_HEIGHT)]
+    under = None  # a view wider than the left column at 1 x (a hex view of 30 bytes a line): a row under all
     if view:
-        panels.append(fit_width(view_picture(view, mem, ages, now), left, VIEW_HEIGHT))
+        picture = view_picture(view, mem, ages, now)
+        if picture.width <= left:
+            panels.append(fit_width(picture, left, VIEW_HEIGHT))
+        else:
+            full = width - 2 * gap
+            size = 11
+            while picture.width > full and view[4] in ('hex', 'words') and size > 9:
+                size -= 1  # the numbers a point smaller, down to 9 (still readable at 900 px)
+                picture = view_picture(view, mem, ages, now, size)
+            under = fit_width(picture, full, VIEW_HEIGHT)
     column = max(p.width for p in panels)
     code_w = max(CODE_WIDTH, width - 3 * gap - column)
-    body = max(GRID_HEIGHT, sum(p.height + label_h for p in panels))
-    image = Image.new('RGB', (gap + column + gap + code_w + gap, top + body + 40), K.BACKGROUND)
+    # with the view under them the code beside the map needs only some 17 lines
+    body = max(UNDER_CODE_HEIGHT if under else GRID_HEIGHT, sum(p.height + label_h for p in panels))
+    extra = under.height + label_h if under else 0
+    image = Image.new('RGB', (max(gap + column + gap + code_w + gap, gap + (under.width if under else 0) + gap),
+                              top + body + extra + 40), K.BACKGROUND)
     draw = ImageDraw.Draw(image)
     for i, line in enumerate(lines):
         draw.text((gap, 8 + 19 * i), line, fill=K.TEXT, font=big)
     y = top
-    for panel, label in zip(panels, panel_labels(view, lo, hi)):
+    for panel, label in zip(panels, labels):
         image.paste(panel, (gap, y))
         draw.text((gap, y + panel.height + 4), label, fill=K.DIM, font=small)
         y += panel.height + label_h
+    if under:
+        image.paste(under, (gap, top + body))
+        draw.text((gap, top + body + under.height + 4), labels[1], fill=K.DIM, font=small)
     draw_code(draw, gap + column + gap, top, lst, last, run_here, other, trace, t, total, small, normal, code_w,
               body)
     draw_legend(draw, gap, image.height, small)
