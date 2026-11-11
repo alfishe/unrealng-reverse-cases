@@ -8,7 +8,8 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
                           [--range LO-HI] [--res DIR] [--l1 L1.json ...] [--l1-reads L1.json ...] [--blocks]
                           [--page N ...] [--bank N] [--built NAME=PATH ...] [--save PATH] [--title TEXT] [--install]
     every form also takes --venv VENV --sjasmplus BIN (else $SKOOLKIT_VENV / $SJASMPLUS, kit/toolpaths.py) and
-    --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints)
+    --fix-witness (rewrite the stale "Witness: L1 N (builds)" lines of the .ann, which every run prints, and write
+    the source again from the rewritten .ann: with --install one run leaves the .ann and the .asm current)
 
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
@@ -1492,7 +1493,9 @@ def make_part(part, args):
         smem = bytearray(0x10000)
         smem[LO:HI] = original[lo - at:hi - at]
         results.append(generate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top))
-        check_witness(seg, part.get('witness_skip', ()), args.fix_witness)
+        if check_witness(seg, part.get('witness_skip', ()), args.fix_witness) and args.fix_witness:
+            print(f'witness: {os.path.relpath(seg.ann, ROOT)} rewritten, its source written again from it')
+            results[-1] = regenerate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top)
         print(f'{os.path.relpath(seg.ann, ROOT)}{" " + seg.piece if seg.piece else ""}: {results[-1][5]}')
     every_label = set().union(*(r[4] for r in results if r), set(part.get('external', ())),
                               {s['load_label'] for s in segments if 'load_label' in s})
@@ -1593,7 +1596,7 @@ WITNESS_NAMES = {}  # case.json witness_names: {build: the name its witness line
 
 
 def build_name(build):
-    """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, timer -> timer, a
+    """the short name of a build in a witness line: stage1/c1 -> c1, stage2/rzx04/cap -> rzx04, stage1/rzx/r02000 -> rzx02000, timer -> timer, a
     recording kept under a rec folder by its own name (stage2/rec/fuel -> fuel, docs/bcC/rec/armour -> armour); case.json
     witness_names renames a build (a --from-frame window by its recording: "stage1/c1g": "c1")"""
     if build in WITNESS_NAMES:
@@ -1601,6 +1604,10 @@ def build_name(build):
     parts = build.split('/')
     if 'rec' in parts[1:-1]:
         return parts[len(parts) - 1 - parts[::-1].index('rec') + 1]
+    if len(parts) > 2 and not re.search(r'\d$', parts[1]):
+        m = re.search(r'\d+$', parts[2])
+        if m:  # a numbered family kept in one folder: stage1/rzx/r02000 -> rzx02000 (grouped as 'rzx xK')
+            return parts[1] + m.group()
     return parts[1] if len(parts) > 1 else parts[0]
 
 
@@ -1697,6 +1704,16 @@ def check_witness(seg, skip=(), fix=False):
     return stale
 
 
+def regenerate(seg, mem, args, out, top):
+    """generate again after --fix-witness rewrote the .ann, the recordings' runs (EXECS, which read_sources adds
+    to) as the first pass left them"""
+    saved = {path: dict(ran) for path, ran in EXECS.items()}
+    result = generate(seg, mem, args, out, top)
+    EXECS.clear()
+    EXECS.update(saved)
+    return result
+
+
 def single_part(part, args, mem, original, at, top, out, device, built):
     """the single layout: the image's range lo..hi with one .ann (or one piece)"""
     global LO, HI
@@ -1708,8 +1725,11 @@ def single_part(part, args, mem, original, at, top, out, device, built):
     if seg.bank is not None and 'bases' not in part and part.get('pages') is None:
         seg.bases = natural_bases([seg.bank], LO)
     result = generate(seg, mem, args, out, top)
+    if check_witness(seg, part.get('witness_skip', ()), args.fix_witness) and args.fix_witness:
+        # the .asm comes from the .ann: written again, so that one run (with --install) leaves both current
+        print(f'witness: {os.path.relpath(seg.ann, ROOT)} rewritten, its source written again from it')
+        result = regenerate(seg, mem, args, out, top)
     modules, head, resources, ann, _, stats = result
-    check_witness(seg, part.get('witness_skip', ()), args.fix_witness)
     if part.get('game'):
         print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
     print(f'{top}: {stats}')
@@ -1869,7 +1889,8 @@ def main():
     p.add_argument('--ann', help='the annotations (the game: src/game/game.ann)')
     p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
     p.add_argument('--fix-witness', action='store_true', help='rewrite the stale "Witness: L1 N (builds)" lines of '
-                   'the .ann from the recordings (mkgame prints them in any case)')
+                   'the .ann from the recordings (mkgame prints them in any case) and write the source again from '
+                   'the rewritten .ann (with --install both are current after one run)')
     args = p.parse_args()
     args.venv = toolpaths.skoolkit_venv(args.venv)
     args.sjasmplus = toolpaths.sjasmplus(args.sjasmplus)

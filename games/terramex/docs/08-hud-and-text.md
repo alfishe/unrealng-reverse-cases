@@ -752,9 +752,9 @@ flowchart TD
 *The routine animation of DrawPortrait and the blitter in `c1` from 23509:66000 to 23510:13000. It has 60 pictures,
 299 T each, and 2133 instructions. The view is the panel's bitmap `$5000` as 32 x 64 bytes; the memory grid is
 `$5B00-$5CFF`, the game variables and PanelColumns. Command: `python3 ../../kit/routine_anim.py --work
-work/docs/tmD/c1 --window 23509:66000-23510:13000 --listing build/game.lst --view buffer:5000:32x64:screen --pc
-9E5D-9EBC,9F6B-9FDD --range 5B00-5CFF --pictures 60 --out docs/img/routines/DrawPortrait.gif`
-(`work/docs/tmD/anim08.sh`).*
+work/docs/tmD/c1 --window 23509:66000-23510:13000 --listing build/game.lst --page 6=build/music.lst --view
+buffer:5000:32x64:screen --pc 9E5D-9EBC,9F6B-9FDD --range 5B00-5CFF --pictures 60 --out
+docs/img/routines/DrawPortrait.gif`, the title in `work/docs/tmD/anim08.sh`.*
 
 How to read the animation: the yellow bytes go down the portrait's three columns first, 24 lines each, then down the
 held item's. The blue reads in the grid are PanelColumns `$5BD6`, the six column pointers. The face is redrawn with the
@@ -877,17 +877,16 @@ flowchart TD
 *The routine animation of BearerKeys, DrawBearers and the blitter in `c1` from 23934:0 to 23946:0, the whole scroll
 of key 2. It has 80 pictures, 10 637 T each, and 119 347 instructions. The view is the panel's bitmap `$5000`; the
 memory grid is `$5B00-$5CFF`; the title is "BearerKeys `$BC1F` and DrawBearers `$9EBD`: key 2 held". Command:
-`python3 ../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23934:0-23946:0 --listing build/game.lst --view
-buffer:5000:32x64:screen --pc BC1F-BC72,9EBD-9F1D,9F6B-9FDD --range 5B00-5CFF --pictures 80 --title '...' --out
-docs/img/routines/DrawBearers.gif`.*
+`python3 ../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23934:0-23946:0 --listing build/game.lst`
+`--view buffer:5000:32x64:screen --pc BC1F-BC72,9EBD-9F1D,9F6B-9FDD --range 5B00-5CFF --pictures 80`
+`--title 'BearerKeys $BC1F and DrawBearers $9EBD: key 2 held' --out docs/img/routines/DrawBearers.gif`.*
 
 How to read the animation: the player holds key 2 over frames 23 934-23 944; the bearer box is at the right of the
 view (the loads above it are blank: the bearers shown carry nothing). The redraws flash yellow, then fade. The first
 pass (about picture 9, frame 23 935) redraws the row unchanged at phase 0; the next three (pictures 29, 45 and 64)
 each move it one column, 8 pixels, to the left; the pass that wraps the phase draws it twice in a row (pictures
 64-76), the second time identical. The last picture shows the row one bearer on: new poses in the same places. The
-kit's memory grid is one thin strip for 512 bytes and the view is single, so BearerPhase is not readable in the
-GIF; the samples of `$5C21-$5C23` at the frame starts are `01 00 1A` up to 23 935, `00 01 1A` at 23 936, `00 02 1A`
+memory grid (`$5B00-$5CFF`, 32 bytes a row) shows where BearerPhase `$5C22` is written, not its value; the samples of `$5C21-$5C23` at the frame starts are `01 00 1A` up to 23 935, `00 01 1A` at 23 936, `00 02 1A`
 at 23 939, `00 03 1A` at 23 942 and `00 00 00` at 23 945 (BearerIndex `$1A` wraps to 0).
 
 Worked example: BearerIndex = 0, BearerPhase = 2. DrawBearers adds the columns of bearers 0, 1, 2, 3 (poses 0-3): 12

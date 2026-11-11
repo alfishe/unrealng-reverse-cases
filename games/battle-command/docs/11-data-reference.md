@@ -2,7 +2,8 @@
 
 Every data entry of the game image `$5B00`-`$FFFF`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
-its entry, its size up to the next label. The name, the title and the description are the
+its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,
+of the whole entry's ("17 of 34"). The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/stage1/c1g`, local and not in the repository), then those only the case's other recordings (`read_builds`) saw, with the first of them in brackets, and, marked
 "(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
@@ -47,7 +48,7 @@ modules, its source, its annotations and its recordings.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$6798` | `GameVars` | 38 | Game variables: the completion flags, world values, the control device | `CameraSinCosAgain`, `ClipPolyNear`, `DrawObject`, `GridVectors`, `GroundDots` +27 | `ClipPolyNear`, `FillFaceListClipped`, `NearClipLine`, `OpFillPolysClipped`, `ReadKeys` +6 |
+| `$6798` | `GameVars` | 1 of 38 | Game variables: the completion flags, world values, the control device | `CameraSinCosAgain`, `ClipPolyNear`, `DrawObject`, `GridVectors`, `GroundDots` +27 | `ClipPolyNear`, `FillFaceListClipped`, `NearClipLine`, `OpFillPolysClipped`, `ReadKeys` +6 |
 | `$6799` | `MissionsDone` (`GameVars`+1) | 10 | ten flags, one per mission 1-10 (MissionCompleteScreen writes `$6799` + mission, EncodePassword reads all ten); the first nine all non-zero unlock Grand Finale (LoadMissionIfAllowed `$759A`) | `MissionDone`, `LoadMissionIfAllowed` (`stage1/missions`) | - |
 | `$67A3` | `WorldVars` (`GameVars`+11) | 19 | - | `CameraSinCosAgain`, `DrawObject`, `GridVectors`, `GroundDots`, `NearClipLine` +19 | `NearClipLine`, `SetCamera`, `ClipPolyNear` (`stage1/missions`) |
 | `$67B6` | `ControlDevice` (`GameVars`+30) | 1 | the chosen device 0-4 (ReadControls) | `ReadControls` | - |
@@ -63,7 +64,7 @@ modules, its source, its annotations and its recordings.
 | --- | --- | --- | --- | --- | --- |
 | `$67EB` | `ApiVector15` | 3 | ApiVector15 | - | - |
 | `$6800` | `PlayWork` | 168 | Play work area `$6800-$68A7` (play writes `$6800-$682F`) | `DepthInsert`, `DrawEntry`, `DrawObjectsInOrder`, `FindMissileTarget` (`stage1/play`), `MissileSeek` (`stage1/play2`) +1 | `ClearDepthTree`, `DepthInsert` |
-| `$68A8` | `PanelGauges` | 76 | The panel's gauges: five 6-byte records from `$68AB`, then the four slots' records from `$68C9`. DrawWeaponBars `$72F9` redraws a record whose first byte (the value) changed; FlickerPlayer `$6B1D` tests `$68BD` (record 3) below 16. | `BoxRect`, `BoxRect16`, `BoxSquare`, `ClipPolyNear`, `ClockTick` +23 | `ClockTick`, `DrawObject`, `FillFaceListClipped`, `MissionTimeSetup`, `OpFillFaces` +12 |
+| `$68A8` | `PanelGauges` | 3 of 76 | The panel's gauges: five 6-byte records from `$68AB`, then the four slots' records from `$68C9`. DrawWeaponBars `$72F9` redraws a record whose first byte (the value) changed; FlickerPlayer `$6B1D` tests `$68BD` (record 3) below 16. | `BoxRect`, `BoxRect16`, `BoxSquare`, `ClipPolyNear`, `ClockTick` +23 | `ClockTick`, `DrawObject`, `FillFaceListClipped`, `MissionTimeSetup`, `OpFillFaces` +12 |
 | `$68AB` | `GaugeRecords` (`PanelGauges`+3) | 30 | - | `DrawRadar`, `FlickerPlayer`, `PlayerHit`, `DrawDamagePanel` (`stage1/play`), `DrawWeaponBars` (`stage1/play`) | `PlayerHit`, `DrawWeaponBars` (`stage1/play`) |
 | `$68C9` | `SlotGauges` (`PanelGauges`+33) | 25 | - | `DrawSlotIcons`, `PlayerHit`, `UpdateAmmoBars`, `DrawDamagePanel` (`stage1/play`), `DrawWeaponBars` (`stage1/play`) +2 | `PlayerHit`, `UpdateAmmoBars`, `DrawWeaponBars` (`stage1/play`) |
 | `$68E2` | `MissionScore` (`PanelGauges`+58) | 6 | the mission's score, 4 bytes (AddKillScore `$B692` adds `$1E`) | `BoxRect`, `BoxRect16`, `BoxSquare`, `AddKillScore` (`stage1/death`), `BoxSquareTurret` (`stage1/missions`) +3 | `DrawObject`, `AddKillScore` (`stage1/death`), `BoxSquareTurret` (`stage1/missions`), `DrawEntry` (`stage1/play2`), `l_AA5B` (`stage1/missions`) +2 |
@@ -74,7 +75,7 @@ modules, its source, its annotations and its recordings.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$CE68` | `DevMissionLoader` | 60 | A development loader for "MISSHDR:0:" that nothing calls. `$CE68`-`$CEA3`: IX = `$CE93`, DE = 17, LD-BYTES through `$86C1` with A = `$FF`, and the 10-byte name "MISSHDR:0:". No routine calls it; a leftover of the development. | `PlayerStep` | `PlayerStep`, `TerrainCollision`, `TerrainScan` (`stage1/missions`), `l_CC98` (code) |
+| `$CE68` | `DevMissionLoader` | 1 of 60 | A development loader for "MISSHDR:0:" that nothing calls. `$CE68`-`$CEA3`: IX = `$CE93`, DE = 17, LD-BYTES through `$86C1` with A = `$FF`, and the 10-byte name "MISSHDR:0:". No routine calls it; a leftover of the development. | `PlayerStep` | `PlayerStep`, `TerrainCollision`, `TerrainScan` (`stage1/missions`), `l_CC98` (code) |
 | `$CE69` | `TerrainType` (`DevMissionLoader`+1) | 59 | TerrainCollision stores the terrain type here, PlayerStep reads it (a byte of the dead loader reused) | `PlayerStep` | `PlayerStep`, `TerrainCollision`, `TerrainScan` (`stage1/missions`), `l_CC98` (code) |
 | `$D5D0` | `HelicarrierData` | 164 | The Helicarrier's data. The Helicarrier's model and state bytes; `$D5D7` is CopyHelicarrierState's store. | `BoxHeights` (`stage1/play2`), `BoxRect` (`stage1/play2`), `FillFaceList` (`stage1/play2`), `OpNative` (`stage1/play2`), `OpProject` (`stage1/play2`) +5 | `CopyHelicarrierState` (`stage1/play2`), `StartMission` (code) |
 | `$DA8C` | `HelicarrierTemplate` | 31 | Bytes before the Helicarrier's collision handler: a small table, then a CPL loop over `$6760`. `$DA8C`-`$DA9E` data; `$DA9F`: `LD HL,$6760` / `LD B,8` / CPL each byte / RET (no recording runs it). | - | - |
@@ -122,10 +123,10 @@ modules, its source, its annotations and its recordings.
 | --- | --- | --- | --- | --- | --- |
 | `$733E` | `data_733E` | 5 | data_733E | - | - |
 | `$735E` | `data_735E` | 4 | data_735E | - | - |
-| `$74E6` | `ScreenList` | 150 | The menu screens: the current pointer, then pairs of words (draw routine, zone table). Read and moved by `SetScreen` `$7060`. | `DrawObject`, `SetAwolState`, `SetScreen`, `StartMission`, `ScreenZero` (`stage1/death`) +1 | `DrawObject`, `FillFaceListClipped`, `LoadMission`, `OpFillFaces`, `OpFillPolys` +12 |
+| `$74E6` | `ScreenList` | 146 of 150 | The menu screens: the current pointer, then pairs of words (draw routine, zone table). Read and moved by `SetScreen` `$7060`. | `DrawObject`, `SetAwolState`, `SetScreen`, `StartMission`, `ScreenZero` (`stage1/death`) +1 | `DrawObject`, `FillFaceListClipped`, `LoadMission`, `OpFillFaces`, `OpFillPolys` +12 |
 | `$7578` | `AwolState` (`ScreenList`+146) | 4 | the AWOL state: 0 inside, 1 beyond the extent (GOING AWOL), 2 more than 4 beyond (desertion); SetAwolState `$D4E9` | `DrawObject`, `SetAwolState`, `StartMission`, `DrawModel` (code) | `DrawObject`, `FillFaceListClipped`, `LoadMission`, `OpFillFaces`, `OpFillPolys` +10 |
 | `$75CA` | `IconTable` | 38 | The addresses of the 19 weapon icons (bank 6), read by DrawIcon. 19 words at `$75CA-$75EF`: icon n at word n-1. | `DrawIcon` | - |
-| `$75F0` | `ObjectTable` | 1440 | The 24 object records, 60 bytes each: 0 the player, 1-20 the mission's objects, 21 the Helicarrier, 22 projectiles (23 never allocated). +0 list index, +1 type, +2 state (bit 7 present, 6 wreck, 5 drawn, 2 on the radar), +3 handler flags, +4 colour, +5 height, +7 speed, +8 wreck model, +`$0B` box half-sizes, +`$13` hit points, +`$14` damage, +`$16` radius, +`$18` step handler, +`$1A` collision handler, +`$1C` model, +`$1E` score, +`$22` heading, +`$23` X (24 bits), +`$26` Y (24 bits), +`$2A` pitch, +`$2B` view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. +1 is the type, +2 to +`$1F` come from the type's template, +`$20` is the serial. Read by RunObjectHandlers `$C026`, written by the world code (frag of bank 2 / 0, docs 05-07). Witness: every play build reads and writes `$75F0-$7B8F`. | `ActivateMissionObjects`, `BearingTo`, `BounceDecay`, `CameraToPlayer`, `CollisionPass` +58 | `ActivateMissionObjects`, `BounceDecay`, `CameraToPlayer`, `CopyHeading`, `CopyPosition` +38 |
+| `$75F0` | `ObjectTable` | 5 of 1440 | The 24 object records, 60 bytes each: 0 the player, 1-20 the mission's objects, 21 the Helicarrier, 22 projectiles (23 never allocated). +0 list index, +1 type, +2 state (bit 7 present, 6 wreck, 5 drawn, 2 on the radar), +3 handler flags, +4 colour, +5 height, +7 speed, +8 wreck model, +`$0B` box half-sizes, +`$13` hit points, +`$14` damage, +`$16` radius, +`$18` step handler, +`$1A` collision handler, +`$1C` model, +`$1E` score, +`$22` heading, +`$23` X (24 bits), +`$26` Y (24 bits), +`$2A` pitch, +`$2B` view position, +`$31` timer, +`$32` AI state, +`$3B` collision slot. +1 is the type, +2 to +`$1F` come from the type's template, +`$20` is the serial. Read by RunObjectHandlers `$C026`, written by the world code (frag of bank 2 / 0, docs 05-07). Witness: every play build reads and writes `$75F0-$7B8F`. | `ActivateMissionObjects`, `BearingTo`, `BounceDecay`, `CameraToPlayer`, `CollisionPass` +58 | `ActivateMissionObjects`, `BounceDecay`, `CameraToPlayer`, `CopyHeading`, `CopyPosition` +38 |
 | `$75F5` | `PlayerHeight` (`ObjectTable`+5) | 2 | - | `CollisionPass`, `RecordByIndex`, `RegisterCollision`, `RunObjectHandlers`, `SetCamera` +2 | - |
 | `$75F7` | `PlayerSpeed` (`ObjectTable`+7) | 17 | - | `BounceDecay`, `CollisionPass`, `EngineTone`, `MoveObject`, `PlayerHit` +9 | `BounceDecay`, `PlayerHit`, `PlayerStep`, `ResetPlayerHandler` |
 | `$7608` | `PlayerHandler` (`ObjectTable`+24) | 10 | - | `CollisionPass`, `MoveObject`, `RecordByIndex`, `RegisterCollision`, `RunObjectHandlers` +2 | `MissionTimeSetup`, `ResetPlayerHandler`, `SetBounce`, `PlayerStep` (`stage1/missions`) |
@@ -134,7 +135,7 @@ modules, its source, its annotations and its recordings.
 | `$7616` | `PlayerY` (`ObjectTable`+38) | 1222 | - | `ActivateMissionObjects`, `BearingTo`, `CollisionPass`, `DrawObject`, `FindFreeObject` +45 | `ActivateMissionObjects`, `CopyHeading`, `CopyPosition`, `MissionTimeSetup`, `MoveObject` +28 |
 | `$7ADC` | `HelicarrierRecord` (`ObjectTable`+1260) | 173 | - | `RegisterCollision`, `RunObjectHandlers`, `TransformObjects`, `BearingTo` (`stage1/play`), `CollisionPass` (`stage1/play`) +10 | `TransformObjects`, `HelicarrierInit` (`stage1/play`), `LaunchProjectile` (`stage1/play`), `MortarShellStep` (`stage1/play`), `MoveObject` (`stage1/play`) +4 |
 | `$7B89` | `StoreTypes` (`ObjectTable`+1433) | 7 | the store-type table base: 8 bytes a type, types 1-13 from `$7B91` (words 0 K, 1 J, 2 fire, 3 select) | - | - |
-| `$7B90` | `PlayWorkspace` | 201 | The per-store-type table and play variables, then the interrupt's stack (top `$7C49`) and the fuel word `$7C57`. `$7B89` + 8 x type (type 1-13, from `$7B91`): the aim, fire and select routines of each weapon store; `$7BF9` the failure reason text pointer; the interrupt handler's stack below `$7C49`; `$7C57` the fuel (reset to `$3F00` by bank 6 `$CC1B`). | `DrawRadar`, `PlayerStep`, `PlotBackBuffer`, `PlotRadarPixel`, `PointerFire` +5 | `CopyMissionText`, `CopyPointer`, `PlayerStep`, `RadarAddBlip`, `TransformObjects` +4 |
+| `$7B90` | `PlayWorkspace` | 105 of 201 | The per-store-type table and play variables, then the interrupt's stack (top `$7C49`) and the fuel word `$7C57`. `$7B89` + 8 x type (type 1-13, from `$7B91`): the aim, fire and select routines of each weapon store; `$7BF9` the failure reason text pointer; the interrupt handler's stack below `$7C49`; `$7C57` the fuel (reset to `$3F00` by bank 6 `$CC1B`). | `DrawRadar`, `PlayerStep`, `PlotBackBuffer`, `PlotRadarPixel`, `PointerFire` +5 | `CopyMissionText`, `CopyPointer`, `PlayerStep`, `RadarAddBlip`, `TransformObjects` +4 |
 | `$7BF9` | `FailReason` (`PlayWorkspace`+105) | 94 | - | `DrawRadar`, `PlotBackBuffer`, `PlotRadarPixel`, `PointerFire`, `RadarAddBlip` +3 | `CopyMissionText`, `CopyPointer`, `RadarAddBlip`, `TransformObjects`, `HelicarrierHit` (code) +4 |
 | `$7C57` | `Fuel` (`PlayWorkspace`+199) | 2 | - | `PlayerStep` | `PlayerStep` |
 
@@ -143,7 +144,7 @@ modules, its source, its annotations and its recordings.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$7DC0` | `PointerPos` | 2 | The pointer's X and Y (copied to `$7C51` / `$7C53` by `$897E`) | `ClampStep`, `CopyPointer` | `ClampStep` |
-| `$7E2C` | `LoadedMission` | 3 | Two spare bytes and the mission loaded last (`$7E2E`, `$FF` none) | `LoadMission` | `LoadMission`, `MissionSetup` (`stage1/play2`) |
+| `$7E2C` | `LoadedMission` | 2 of 3 | Two spare bytes and the mission loaded last (`$7E2E`, `$FF` none) | `LoadMission` | `LoadMission`, `MissionSetup` (`stage1/play2`) |
 | `$7E2E` | `LastLoadedMission` (`LoadedMission`+2) | 1 | - | `LoadMission` | `LoadMission`, `MissionSetup` (`stage1/play2`) |
 | `$7E2F` | `ClockText` | 11 | The clock's string: position codes and "00:00", `$FF` | `CodeAt` (`stage1/missions`), `CodeAtColumn` (`stage1/missions`), `CodeInk` (`stage1/missions`), `PrintString` (`stage1/missions`) | `PrintClock` (`stage1/missions`) |
 | `$7E82` | `MissionParams` | 382 | 12 bytes of the mission header (`$DBF1`), copied by `$8598` | `BearingTo`, `BoxHeights` (`stage1/play`), `BoxRect` (`stage1/play`), `FillFaceList` (`stage1/play2`), `HelicarrierWait` (`stage1/play`) +9 | `LoadMission`, `PlayerStep`, `MissionSetup` (`stage1/play2`), `BrakeKey` (code) |
@@ -153,7 +154,7 @@ modules, its source, its annotations and its recordings.
 | `$88F8` | `HourTable` | 16 | Four rows: the hour, two attributes, the light value for `$757A` | `PrintString`, `SkyColours`, `TimeOfDay`, `ToggleNight`, `AttrBoxAt` (`stage1/play`) | - |
 | `$8908` | `SkyBoxes` | 8 | SkyBoxes | `AttrBoxAt`, `PrintString` | - |
 | `$8950` | `KeyCodes` | 40 | 40 key codes, by half row and bit | `PrintString`, `ScanKeyboard` | - |
-| `$8978` | `KeyState` | 6 | KeyFlags (bit 0 new or repeated, bit 1 a key is down), KeyCode, the repeat count, the raw key, the row | `KeyRepeat`, `PlayKeys`, `PlayerStep`, `PrintString`, `ScanKeyboard` +2 | `KeyRepeat`, `ScanKeyboard` |
+| `$8978` | `KeyState` | 1 of 6 | KeyFlags (bit 0 new or repeated, bit 1 a key is down), KeyCode, the repeat count, the raw key, the row | `KeyRepeat`, `PlayKeys`, `PlayerStep`, `PrintString`, `ScanKeyboard` +2 | `KeyRepeat`, `ScanKeyboard` |
 | `$8979` | `KeyCode` (`KeyState`+1) | 1 | - | `KeyRepeat`, `PlayKeys`, `PlayerStep`, `PrintString`, `DamageKeys` (`stage1/play`) +1 | `KeyRepeat` |
 | `$897A` | `KeyRepeatCount` (`KeyState`+2) | 4 | - | `KeyRepeat`, `PrintString` | `KeyRepeat`, `ScanKeyboard` |
 
@@ -164,10 +165,10 @@ modules, its source, its annotations and its recordings.
 | `$8044` | `LoadAttrLeftover` | 317 | The rest of the loading screen's attributes (`$8044-$8180`): never read in play. The loader loads the attributes to `$8000-$82FF` (tape block 15); the game's stack and vector table overwrite the end. | - | `InterruptHandler` (`stage1/menu`) |
 | `$8181` | `ImJump` | 3 | Unused: JP `$8383` at the IM 2 vector table's target; every vector byte is `$83`, so no interrupt jumps here. The menus' stack overwrites it (lowest `$8149`). | - | `Entry`, `InterruptHandler` (`stage1/missions`) |
 | `$8184` | `Stack` | 124 | The main stack, top `$8200` (SP = `$81FF` at the entry). Measured down to `$8149` (menu), `$816B` (play), `$8199` (c1 at the mission load): below `$8184` it runs over ImJump and the end of LoadAttrLeftover (L1 byte_use bit 3, docs/02-architecture.md 2.6). | - | `InterruptHandler` |
-| `$8200` | `Im2Table` | 257 | The IM 2 vector table: 257 bytes of `$83` (I = `$82`), filled by Entry | `AbsA`, `ActivateMissionObjects`, `ApiVector00`, `ApiVector08`, `ApiVector09` +192 | `Entry` |
-| `$8301` | `Armour` | 73 | The armour: `$8301-$8303` the sides 1-3 (HitSide), `$8304` the top; also Bootstrap's copy destination | `DrawSegments`, `PlayerHit`, `TerrainCollision`, `PrintString` (`stage1/death`), `TerrainScan` (`stage1/missions`) | `PlayerHit`, `SegmentVisibility`, `DrawSegments` (`stage1/missions`) |
+| `$8200` | `Im2Table` | 257 | The IM 2 vector table: 257 bytes of `$83` (I = `$82`), filled by Entry | `Entry`, `InterruptHandler` | `Entry` |
+| `$8301` | `Armour` | 4 of 73 | The armour: `$8301-$8303` the sides 1-3 (HitSide), `$8304` the top; also Bootstrap's copy destination | `DrawSegments`, `PlayerHit`, `TerrainCollision`, `PrintString` (`stage1/death`), `TerrainScan` (`stage1/missions`) | `PlayerHit`, `SegmentVisibility`, `DrawSegments` (`stage1/missions`) |
 | `$8305` | `WorldWork` (`Armour`+4) | 69 | - | `DrawSegments`, `PlayerHit`, `TerrainCollision`, `PrintString` (`stage1/death`), `TerrainScan` (`stage1/missions`) | `SegmentVisibility`, `DrawSegments` (`stage1/missions`) |
-| `$834A` | `DamageBoardRecords` | 57 | Nine 6-byte records of the damage board (icons `$10`, `$11`, `$12`, `$0F`, `$0E`, then the four slots). Records 5-8 are the WeaponSlots `$8368`, written by FitOrRemoveWeapon. StoresToGauges sets gauge k (`$68AB` + 6k) to `$5F` when record k is not 0, else 0. 54 bytes, `$834A-$837F`. | `DrawSlotIcons`, `UpdateAmmoBars`, `ConsumeAmmo` (`stage1/play`), `DrawDamagePanel` (`stage1/play`), `PrintString` (`stage1/death`) +1 | `ConsumeAmmo` (`stage1/play`) |
+| `$834A` | `DamageBoardRecords` | 30 of 57 | Nine 6-byte records of the damage board (icons `$10`, `$11`, `$12`, `$0F`, `$0E`, then the four slots). Records 5-8 are the WeaponSlots `$8368`, written by FitOrRemoveWeapon. StoresToGauges sets gauge k (`$68AB` + 6k) to `$5F` when record k is not 0, else 0. 54 bytes, `$834A-$837F`. | `DrawSlotIcons`, `UpdateAmmoBars`, `ConsumeAmmo` (`stage1/play`), `DrawDamagePanel` (`stage1/play`), `PrintString` (`stage1/death`) +1 | `ConsumeAmmo` (`stage1/play`) |
 | `$8368` | `WeaponSlots` (`DamageBoardRecords`+30) | 27 | four 6-byte slot records, the ammunition at +5 | `DrawSlotIcons`, `UpdateAmmoBars`, `ConsumeAmmo` (`stage1/play`), `DrawDamagePanel` (`stage1/play`), `PrintString` (`stage1/death`) +1 | `ConsumeAmmo` (`stage1/play`) |
 
 ## missionload
@@ -186,13 +187,13 @@ modules, its source, its annotations and its recordings.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9715` | `ClickState` | 5 | The click position (X, Y), the fire timer (on, count), the frames per step | `PointerFire`, `PointerZones`, `ReadKeys`, `DecodeDirections` (`stage1/menu`) | `PointerFire`, `SetBinoculars`, `StartMission` |
+| `$9715` | `ClickState` | 1 of 5 | The click position (X, Y), the fire timer (on, count), the frames per step | `PointerFire`, `PointerZones`, `ReadKeys`, `DecodeDirections` (`stage1/menu`) | `PointerFire`, `SetBinoculars`, `StartMission` |
 | `$9716` | `ClickY` (`ClickState`+1) | 1 | - | `PointerZones` | `PointerFire` |
 | `$9717` | `FireHeld` (`ClickState`+2) | 1 | - | `PointerFire` | `PointerFire` |
 | `$9718` | `FireCount` (`ClickState`+3) | 1 | - | `PointerFire` | `PointerFire` |
 | `$9719` | `StepFrames` (`ClickState`+4) | 1 | - | `ReadKeys`, `DecodeDirections` (`stage1/menu`) | `SetBinoculars`, `StartMission` |
 | `$9723` | `DeviceReaders` | 10 | Five readers: Sinclair, cursor, Kempston mouse, Kempston joystick, keyboard | `CallTableEntry` | - |
-| `$985C` | `InputState` | 6 | The mouse's last position, the X and Y steps, the token table base. `$9860`: PrintString's token table base (PrintString `$6FDB` uses StepY+1); its words are this table's bytes, not string pointers, and the token path is never taken (play2: the branch at `$6FBA` taken 0 of 3797). | `PlayerSteering`, `PlayerStep`, `PointerTick`, `ReadKeys`, `ClipBothEnds` (`stage1/missions`) +2 | `ReadKeys`, `ClipBothEnds` (`stage1/missions`), `ClipLineCodes` (`stage1/missions`), `DecodeDirections` (`stage1/menu`), `l_A201` (code) +2 |
+| `$985C` | `InputState` | 2 of 6 | The mouse's last position, the X and Y steps, the token table base. `$9860`: PrintString's token table base (PrintString `$6FDB` uses StepY+1); its words are this table's bytes, not string pointers, and the token path is never taken (play2: the branch at `$6FBA` taken 0 of 3797). | `PlayerSteering`, `PlayerStep`, `PointerTick`, `ReadKeys`, `ClipBothEnds` (`stage1/missions`) +2 | `ReadKeys`, `ClipBothEnds` (`stage1/missions`), `ClipLineCodes` (`stage1/missions`), `DecodeDirections` (`stage1/menu`), `l_A201` (code) +2 |
 | `$985E` | `StepX` (`InputState`+2) | 1 | - | `PlayerSteering`, `PointerTick`, `ReadKeys`, `DecodeDirections` (`stage1/menu`), `DragonflyStep` (`stage1/play`) +1 | `ReadKeys`, `DecodeDirections` (`stage1/menu`) |
 | `$985F` | `StepY` (`InputState`+3) | 3 | - | `PlayerStep`, `PointerTick`, `ReadKeys`, `DecodeDirections` (`stage1/menu`), `DragonflyStep` (`stage1/play`) | `ReadKeys`, `DecodeDirections` (`stage1/menu`) |
 | `$9862` | `KeyTable` | 18 | The five keys of ReadKeys: half-row high byte and bit mask | `ReadKeys` | - |
@@ -219,7 +220,7 @@ modules, its source, its annotations and its recordings.
 | `$B8FC` | `IrViewHeight` | 13 | The height used by the IR view, and its setter. `$B8FC`-`$B8FD` are spare, `$B8FE` `LD HL,0` (its operand `$B8FF` the IR camera height), `$B901` adds 8 and stores it: raise the IR view. AimLimit `$B909` lowers it. | `AimLimit` (`stage1/play2`), `CodeNumber` (`stage1/play`), `SetCamera` (`stage1/play2`) | `ShowMortarRange` (`stage1/play`), `AimLimit` (code), `LaunchMissile` (code) |
 | `$C113` | `WeightText` | 11 | A print of the weight and its text. `LD HL,$C119` / `JP $6FB3` then the string at `$C119`: code the recordings do not run, with the operand `$C11B` (the stores weight, used by bank 6's stores screen). | - | - |
 | `$C199` | `TargetInConeRet` | 1 | The RET the gate jumps to. `RET`. | - | - |
-| `$C527` | `WeaponVars` | 24 | The weapon variables: the rounds shown, the ammunition pointers `$C534`, the current slot `$C53C`. `$C534` holds the four pointers `$836D`, `$8373`, `$8379`, `$837F` (+5 of each slot), `$C53C` the slot 0-3, `$C53D` the address of the slot hook's CALL operand (`$6A46` + 5n). | `RefreshWeaponPanel`, `AutoFireOff` (`stage1/play`), `CodeNumber` (`stage1/play`), `DropMine` (`stage1/play2`), `FireBansheeIr` (`stage1/play2`) +21 | `LoadMission`, `ConsumeAmmo` (`stage1/play`), `DropMine` (`stage1/play2`), `MissionSetup` (`stage1/play2`), `SelectWeapon` (`stage1/play`) +2 |
+| `$C527` | `WeaponVars` | 13 of 24 | The weapon variables: the rounds shown, the ammunition pointers `$C534`, the current slot `$C53C`. `$C534` holds the four pointers `$836D`, `$8373`, `$8379`, `$837F` (+5 of each slot), `$C53C` the slot 0-3, `$C53D` the address of the slot hook's CALL operand (`$6A46` + 5n). | `RefreshWeaponPanel`, `AutoFireOff` (`stage1/play`), `CodeNumber` (`stage1/play`), `DropMine` (`stage1/play2`), `FireBansheeIr` (`stage1/play2`) +21 | `LoadMission`, `ConsumeAmmo` (`stage1/play`), `DropMine` (`stage1/play2`), `MissionSetup` (`stage1/play2`), `SelectWeapon` (`stage1/play`) +2 |
 | `$C534` | `AmmoPointers` (`WeaponVars`+13) | 8 | the four slots' ammunition bytes `$836D`, `$8373`, `$8379`, `$837F` | `SelectAmmoPointer` (`stage1/play`) | - |
 | `$C53C` | `CurrentSlot` (`WeaponVars`+21) | 3 | 0-3 | `AutoFireOff` (`stage1/play`), `DropMine` (`stage1/play2`), `FireBansheeIr` (`stage1/play2`), `FireBansheeRr` (`stage1/play`), `FireCannon` (`stage1/play2`) +18 | `SelectWeapon` (`stage1/play`) |
 | `$C618` | `DamagedText` | 26 | "DAMAGED IN COMBAT". PrintString text: `$07` position codes and "DAMAGED", "IN", "COMBAT". | - | - |
@@ -231,14 +232,14 @@ modules, its source, its annotations and its recordings.
 | `$D114` | `SlotShown` | 1 | The slot whose rounds are shown. PrintAmmo `$C510` compares `$D114` with the current slot `$C53C`; the slot hooks (SlamFire, SpectreCode, the Phantasm's `$D3E6`) store their slot here and put the old value back after. | `PrintAmmo` (`stage1/play`), `PhantasmCode` (code), `SpectreCode` (code) | `SelectWeapon` (`stage1/play`), `SlamFire` (code), `l_D3DF` (code), `sub_D330` (code), `sub_D3E6` (code) |
 | `$D21B` | `data_D21B` | 48 | data_D21B | `SlamFire` (code) | - |
 | `$D485` | `HudCopyCode` | 31 | Code no recording runs: copy 24 rows to `$FD00` through `$D49B` | - | - |
-| `$D512` | `AwolBlankText` | 28 | The blank that clears the AWOL warning, and the head of the warning. PrintString text: `$07` `$8D` `$10`, ten blanks, `$FF` (the warning cleared); `$D51F` starts "GOING AWOL" (`$07` `$8D` `$10` then the text at `$D521`). | - | - |
+| `$D512` | `AwolBlankText` | 13 of 28 | The blank that clears the AWOL warning, and the head of the warning. PrintString text: `$07` `$8D` `$10`, ten blanks, `$FF` (the warning cleared); `$D51F` starts "GOING AWOL" (`$07` `$8D` `$10` then the text at `$D521`). | - | - |
 | `$D51F` | `AwolWarningText` (`AwolBlankText`+13) | 15 | the start of "GOING AWOL"; its text from `$D521` on is taken as code by the walk (a bank 6 CALL target `$D521` from `$6B35`) | - | - |
 
 ## objects
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B3C9` | `WeaponTemplates` | 391 | The resident templates of the projectile types `$80-$8C`: 13 records of 30 bytes from `$B3CA`. ObjectSetType `$BD41` copies record (type - `$80`) when the type has bit 7: the 30 bytes become +2..+`$1F` of the object (the type itself is +1) (flags, colour, height, speed, box, hit points, damage, radius, step handler, collision handler, model, score). `$80` K-40 mortar shell (step `$B5E8`), `$81` cannon shell (`$B592`), `$82` Banshee RR, `$83` Phoenix RR, `$84` Banshee IR, `$85` Phoenix IR, `$86` Dragonfly, `$87` K-90 cluster bomb (`$CF4A`), `$88` Sleeper mine, `$89` Skeet bomb, `$8A` Phantasm (the decoy of the homing shell type 28), `$8B` Spectre, `$8C` the Helicarrier. The byte at `$B3C9` (`$C9`) is the RET of the routine before. | `ObjectSetType` (`stage1/play`) | - |
+| `$B3C9` | `WeaponTemplates` | 1 of 391 | The resident templates of the projectile types `$80-$8C`: 13 records of 30 bytes from `$B3CA`. ObjectSetType `$BD41` copies record (type - `$80`) when the type has bit 7: the 30 bytes become +2..+`$1F` of the object (the type itself is +1) (flags, colour, height, speed, box, hit points, damage, radius, step handler, collision handler, model, score). `$80` K-40 mortar shell (step `$B5E8`), `$81` cannon shell (`$B592`), `$82` Banshee RR, `$83` Phoenix RR, `$84` Banshee IR, `$85` Phoenix IR, `$86` Dragonfly, `$87` K-90 cluster bomb (`$CF4A`), `$88` Sleeper mine, `$89` Skeet bomb, `$8A` Phantasm (the decoy of the homing shell type 28), `$8B` Spectre, `$8C` the Helicarrier. The byte at `$B3C9` (`$C9`) is the RET of the routine before. | `ObjectSetType` (`stage1/play`) | - |
 | `$B3CA` | `ShellTemplate80` (`WeaponTemplates`+1) | 390 | template `$80`, the K-40 mortar shell; 30 bytes a type up to `$8C` | `ObjectSetType` (`stage1/play`) | - |
 | `$B9DE` | `BearingTable` | 24 | The arctangent table of BearingTo. 24 bytes of angles read by BearingLookup `$B95A`. | `BearingLookup`, `SetCamera` | `CameraToPlayer`, `LaunchDragonfly` (`stage1/play`), `DragonflyRetake` (code) |
 | `$BBF0` | `ActivateIndexSave` | 1 | Saved operand of ActivateMissionObjects. The byte before ActivateMissionObjects; its index operands are `$BBF2` / `$BBFA`. | `ActivateMissionObjects` | `ActivateMissionObjects`, `Bootstrap` |
@@ -251,7 +252,7 @@ modules, its source, its annotations and its recordings.
 | --- | --- | --- | --- | --- | --- |
 | `$AE5A` | `SegmentWalkCount` | 2 | The segments left in the walk and the walk index. Written by ResetSegmentWalk `$AE42`. | `SegmentVisibility` | `ResetSegmentWalk`, `SegmentVisibility` |
 | `$AE82` | `SegmentScratch` | 30 | 30 bytes of scratch for the segment draw. Zero in every image; the segment drawing keeps its working values here (the word at `$AE9E` is read by DrawSegmentTail `$B18A`). | `StoreVertex`, `TransformSegmentEnds`, `ClipDiagonalSide` (`stage1/m2erbe`), `ClipSegmentDiagonal` (`stage1/missions`), `DrawSegmentTail` (`stage1/missions`) +3 | `DrawSegments`, `StoreVertex`, `ClipDiagonalSide` (`stage1/m2erbe`), `ClipSegmentAxisY` (`stage1/missions`), `ClipSegmentDiagonal` (`stage1/missions`) +2 |
-| `$BA6E` | `ViewTexts` | 62 | The view labels: IR:SIGHT, REAR:VIEW, BINOC:X2 and their blanks. Strings for PrintString `$6FB3` (`$07` position code, `$FF` end): `$BA6E` "IR:SIGHT", `$BA7A` blank, `$BA86` "REAR:VIEW", `$BA93` "BINOC:X2" (the digit at `$BA9D`), `$BA9F` blank. | `CodeSmallAt`, `CodeSmallFont`, `PrintString` | `Bootstrap`, `l_CF18` (code) |
+| `$BA6E` | `ViewTexts` | 12 of 62 | The view labels: IR:SIGHT, REAR:VIEW, BINOC:X2 and their blanks. Strings for PrintString `$6FB3` (`$07` position code, `$FF` end): `$BA6E` "IR:SIGHT", `$BA7A` blank, `$BA86` "REAR:VIEW", `$BA93` "BINOC:X2" (the digit at `$BA9D`), `$BA9F` blank. | `CodeSmallAt`, `CodeSmallFont`, `PrintString` | `Bootstrap`, `l_CF18` (code) |
 | `$BA7A` | `IrSightBlank` (`ViewTexts`+12) | 12 | - | `CodeSmallAt`, `CodeSmallFont`, `PrintString` | - |
 | `$BA86` | `RearViewText` (`ViewTexts`+24) | 13 | "REAR:VIEW" | `CodeSmallAt`, `CodeSmallFont`, `PrintString` | - |
 | `$BA93` | `BinocularText` (`ViewTexts`+37) | 12 | "BINOC:X2", the digit at `$BA9D` set by ShowBinocularZoom | `CodeSmallAt`, `CodeSmallFont`, `PrintString` | `Bootstrap`, `l_CF18` (code) |
@@ -268,7 +269,7 @@ modules, its source, its annotations and its recordings.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$D674` | `AYRegs` | 30 | The AY register shadow R0-R13, written by WriteAY `$D7DC` | `EngineTone`, `SetNoise`, `SoundFrame` | `EngineTone`, `SetNoise`, `SilenceAY`, `SoundEffectA`, `SoundExplosion` +12 |
+| `$D674` | `AYRegs` | 14 of 30 | The AY register shadow R0-R13, written by WriteAY `$D7DC` | `EngineTone`, `SetNoise`, `SoundFrame` | `EngineTone`, `SetNoise`, `SilenceAY`, `SoundEffectA`, `SoundExplosion` +12 |
 | `$D682` | `SelectCount` (`AYRegs`+14) | 1 | the weapon select counter (SoundSelect) | `SoundFrame` | `SilenceAY`, `SoundFrame` (`stage1/play`), `SoundSelect` (`stage1/play`) |
 | `$D683` | `ExplosionCount` (`AYRegs`+15) | 1 | - | `SoundFrame` | `SilenceAY`, `SoundExplosion`, `SoundFrame` |
 | `$D684` | `KillCount` (`AYRegs`+16) | 1 | - | `SoundFrame` | `SilenceAY`, `SoundFrame` (`stage1/death`), `SoundKill` (`stage1/death`) |
@@ -322,20 +323,20 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$C05A` | `ChannelRecords` | 120 | The three channels' records, 39 bytes each: A at `$C05A`, B at `$C081`, C at `$C0A8`. Fields: +0 flags (bit 0 the vibrato's half phase, bit 1 set by command `$8D`, bit 2 slide, bit 3 bend, bit 5 the volume envelope runs, bit 7 bend up), +1 the pattern pointer, +3 the order list pointer, +5 the order list's start, +7 the slide's sum, +9 the ornament (start), +`$0B` the ornament (now), +`$0D` the slide step, +`$0E` the slide delay, +`$0F` the instrument's speed, +`$10` the frames left of the note, +`$11` the fixed duration, +`$12` the note, +`$13` the volume, +`$14` the instrument, +`$16` its envelope pointer, +`$18` its volume now, +`$19` its speed count, +`$1A` the vibrato depth, +`$1B` its step, +`$1C` its position, +`$1D` the vibrato mode (`$40` on, `$C0` every other frame, bit 5 the direction), +`$1E` noise follows the note, +`$1F` the drum (bit 7 a hit pending), +`$20` the pattern's transpose, +`$21` the repeat count, +`$22` the repeat's start, +`$24` durations inline, +`$25` take the next pattern, +`$26` the channel's mixer bits (`$09`, `$12`, `$24`). Zero at the entry but the mixer bits. | `ChannelSound`, `ChannelStep`, `CmdHold`, `CmdTone`, `CmdToneNoise` +8 | `ChannelSound`, `ChannelStep`, `CmdDrumOff`, `CmdHold`, `CmdInlineDurations` +18 |
+| `$C05A` | `ChannelRecords` | 39 of 120 | The three channels' records, 39 bytes each: A at `$C05A`, B at `$C081`, C at `$C0A8`. Fields: +0 flags (bit 0 the vibrato's half phase, bit 1 set by command `$8D`, bit 2 slide, bit 3 bend, bit 5 the volume envelope runs, bit 7 bend up), +1 the pattern pointer, +3 the order list pointer, +5 the order list's start, +7 the slide's sum, +9 the ornament (start), +`$0B` the ornament (now), +`$0D` the slide step, +`$0E` the slide delay, +`$0F` the instrument's speed, +`$10` the frames left of the note, +`$11` the fixed duration, +`$12` the note, +`$13` the volume, +`$14` the instrument, +`$16` its envelope pointer, +`$18` its volume now, +`$19` its speed count, +`$1A` the vibrato depth, +`$1B` its step, +`$1C` its position, +`$1D` the vibrato mode (`$40` on, `$C0` every other frame, bit 5 the direction), +`$1E` noise follows the note, +`$1F` the drum (bit 7 a hit pending), +`$20` the pattern's transpose, +`$21` the repeat count, +`$22` the repeat's start, +`$24` durations inline, +`$25` take the next pattern, +`$26` the channel's mixer bits (`$09`, `$12`, `$24`). Zero at the entry but the mixer bits. | `ChannelSound`, `ChannelStep`, `CmdHold`, `CmdTone`, `CmdToneNoise` +8 | `ChannelSound`, `ChannelStep`, `CmdDrumOff`, `CmdHold`, `CmdInlineDurations` +18 |
 | `$C081` | `ChannelB` (`ChannelRecords`+39) | 39 | - | `ChannelSound`, `ChannelStep`, `CmdHold`, `CmdTone`, `NextPattern` +3 | `ChannelSound`, `ChannelStep`, `CmdDrumOff`, `CmdHold`, `CmdInlineDurations` +11 |
 | `$C0A8` | `ChannelC` (`ChannelRecords`+78) | 39 | - | `ChannelSound`, `ChannelStep`, `CmdToneNoise`, `NextPattern`, `ReadStream` +3 | `ChannelSound`, `ChannelStep`, `CmdDrumOff`, `CmdInlineDurations`, `CmdToneNoise` +8 |
 | `$C0CF` | `SpeedCount` (`ChannelRecords`+117) | 1 | frames to the next step of the patterns | `MusicTick` | `MusicTick`, `StartTune` |
 | `$C0D0` | `MusicOn` (`ChannelRecords`+118) | 1 | - | `MusicTick` | `StartTune`, `StopMusicCore` |
 | `$C0D1` | `EffectOn` (`ChannelRecords`+119) | 1 | - | `EffectTick`, `MusicTick`, `l_C2F5` (code), `l_C5FD` (code) | `StartTune`, `StopMusicCore`, `EffectTick` (code), `StartEffect` (code), `l_C5FD` (code) |
 | `$C1C7` | `CommandOffsets` | 20 | The commands `$80-$93`: each byte the distance from itself to the command's routine. Read by Command (`$C362`: HL = `$C147` + the command byte, so `$80` reads `$C1C7`). | `Command` | - |
-| `$C47B` | `AYShadow` | 25 | The AY registers 0-11 as MusicTick writes them, then the effect's values. `$C47B`-`$C480` the three tone periods, `$C481` noise, `$C482` mixer, `$C483`-`$C485` the volumes, `$C486` register 11. `$C488`-`$C492` the effect's tone A, tone C, noise, mixer mask and volumes (StartEffect, EffectTick). | `ChannelSound`, `MusicTick`, `l_C68B` (code), `l_C6A5` (code), `l_C6B2` (code) +2 | `ChannelSound`, `MusicTick`, `StopMusicCore`, `l_C5FD` (code), `l_C674` (code) +5 |
+| `$C47B` | `AYShadow` | 6 of 25 | The AY registers 0-11 as MusicTick writes them, then the effect's values. `$C47B`-`$C480` the three tone periods, `$C481` noise, `$C482` mixer, `$C483`-`$C485` the volumes, `$C486` register 11. `$C488`-`$C492` the effect's tone A, tone C, noise, mixer mask and volumes (StartEffect, EffectTick). | `ChannelSound`, `MusicTick`, `l_C68B` (code), `l_C6A5` (code), `l_C6B2` (code) +2 | `ChannelSound`, `MusicTick`, `StopMusicCore`, `l_C5FD` (code), `l_C674` (code) +5 |
 | `$C481` | `AYNoise` (`AYShadow`+6) | 1 | - | `MusicTick` | `MusicTick` |
 | `$C482` | `AYMixer` (`AYShadow`+7) | 1 | - | `ChannelSound`, `MusicTick` | `ChannelSound`, `EffectMix` (code) |
 | `$C483` | `AYVolumes` (`AYShadow`+8) | 5 | - | `MusicTick` | `MusicTick`, `StopMusicCore` |
 | `$C488` | `EffectRegs` (`AYShadow`+13) | 12 | - | `EffectMix` (code), `l_C68B` (code), `l_C6A5` (code), `l_C6B2` (code), `l_C6C8` (code) +1 | `l_C5FD` (code), `l_C674` (code), `l_C68B` (code), `l_C6A5` (code), `l_C6B2` (code) +2 |
 | `$C494` | `NoteTable` | 192 | The AY tone periods of 96 notes, 8 octaves from `$0EF8` down to `$000F`. Read by ChannelSound (`$C3BD`). | `ChannelSound` | - |
-| `$C6DC` | `EffectTable` | 19 | The effects' addresses: one effect, at `$C6DE` | - | - |
+| `$C6DC` | `EffectTable` | 2 of 19 | The effects' addresses: one effect, at `$C6DE` | - | - |
 | `$C6DE` | `Effect0` (`EffectTable`+2) | 17 | 17 bytes: time, speed, tone A, tone C, envelope, mixer mask, slides, repeats | - | - |
 | `$C6EF` | `EffectState` | 19 | The running effect: a copy of its 17 bytes and the speed count `$C700` | `EffectTick` (code), `l_C5FD` (code), `l_C652` (code), `l_C674` (code), `l_C68B` (code) +3 | `l_C5FD` (code), `l_C652` (code), `l_C68B` (code) |
 | `$C71D` | `RandomSeed` | 4 | The generator's 32 bits | `NextRandom`, `l_C652` (code) | `NextRandom` |
@@ -362,11 +363,11 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$C000` | `PointerShapes` | 32 | The two pointer shapes: 8 lines of a mask byte and a pixel byte each. Line n is two bytes: the mask (`AND` with the screen, shifted in with ones) and the pixels (`OR`). ShiftPointer `$D282` reads the shape its operand `$D283` points at. The arrow at `$C000` is set by the catalogue, the briefing and the stores; the boxed shape at `$C010` by ShowWaitPointer `$CBF4` when a screen is left, so it shows while the next one is drawn. | `ShiftPointer` | - |
+| `$C000` | `PointerShapes` | 16 of 32 | The two pointer shapes: 8 lines of a mask byte and a pixel byte each. Line n is two bytes: the mask (`AND` with the screen, shifted in with ones) and the pixels (`OR`). ShiftPointer `$D282` reads the shape its operand `$D283` points at. The arrow at `$C000` is set by the catalogue, the briefing and the stores; the boxed shape at `$C010` by ShowWaitPointer `$CBF4` when a screen is left, so it shows while the next one is drawn. | `ShiftPointer` | - |
 | `$C010` | `WaitPointer` (`PointerShapes`+16) | 16 | the boxed shape shown between screens | `ShiftPointer` | - |
 | `$C020` | `PointerBackground` | 16 | The 8 x 2 screen bytes under the pointer. Written by SavePointerBackground `$D0CA` (from the screen) and CopyViewUnderPointer `$D142` (from the back buffer), put back by RestorePointerBackground `$D251`. | `RestorePointerBackground` | `CopyViewUnderPointer`, `SavePointerBackground` |
 | `$D2D1` | `ShiftedPointer` | 32 | The pointer shifted to the pixel: 8 lines of mask (2 bytes) and pixels (2 bytes). Written by ShiftPointer, read by PutPointer and DrawPointerInView. | `DrawPointerInView`, `PutPointer` | `ShiftPointer` |
-| `$D32B` | `PointerLimits` | 12 | Three records of the pointer's limits: X min, X max, Y min, Y max. Copied to `$7D99`, `$7D9B`, `$7DA4`, `$7DA6` by SetPointerLimits: `$D32B` the catalogue, `$D32F` the stores, `$D333` the title. | `SetPointerLimits`, `CataloguePointerLimits` (`stage1/m2ocean`) | - |
+| `$D32B` | `PointerLimits` | 4 of 12 | Three records of the pointer's limits: X min, X max, Y min, Y max. Copied to `$7D99`, `$7D9B`, `$7DA4`, `$7DA6` by SetPointerLimits: `$D32B` the catalogue, `$D32F` the stores, `$D333` the title. | `SetPointerLimits`, `CataloguePointerLimits` (`stage1/m2ocean`) | - |
 | `$D32F` | `StoresLimits` (`PointerLimits`+4) | 4 | - | `SetPointerLimits` | - |
 | `$D333` | `TitleLimits` (`PointerLimits`+8) | 4 | - | `SetPointerLimits` | - |
 
@@ -376,14 +377,14 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | --- | --- | --- | --- | --- | --- |
 | `$C851` | `CatalogueZones` | 31 | Zone table of the catalogue. LoadMissionHeader `$84FE`, LoadMissionIfAllowed `$759A`, ScreenOfMission `$757C`, `$67EE` (ScreenFour: the mission status), SelectMissionLine `$D013` (the list). | - | - |
 | `$C881` | `CatalogueMagic` | 13 | "MISSION:TAPE:": the first 7 bytes are compared with the catalogue's head. Read by IsCatalogueLoaded. | `IsCatalogueLoaded` | - |
-| `$C8A0` | `DiskTexts` | 216 | Texts: "INCORRECT DISK", "INSERT DISK AND PRESS SPACE", the tape messages. Small-font texts (code 7 at a line and column), `:` is the blank, `[` a full stop. `$C8A0` read by ShowWrongDisk; `$C8B2` and `$C90D` by nothing in bank 6. | - | - |
+| `$C8A0` | `DiskTexts` | 18 of 216 | Texts: "INCORRECT DISK", "INSERT DISK AND PRESS SPACE", the tape messages. Small-font texts (code 7 at a line and column), `:` is the blank, `[` a full stop. `$C8A0` read by ShowWrongDisk; `$C8B2` and `$C90D` by nothing in bank 6. | - | - |
 | `$C8B2` | `InsertDiskText` (`DiskTexts`+18) | 35 | - | - | - |
 | `$C8D5` | `CataloguePos` (`DiskTexts`+53) | 4 | code 7 to line `$20`, column 5 (MissionCatalogueScreen `$C825`) | - | - |
 | `$C8D9` | `RewindText` (`DiskTexts`+57) | 52 | "REWIND MISSION TAPE TO START AND PRESS PLAY" | - | - |
 | `$C90D` | `FoundCatalogueText` (`DiskTexts`+109) | 49 | "FOUND MISSION CATALOGUE AND NOW LOADING" | - | - |
 | `$C93E` | `BlankTapeText` (`DiskTexts`+158) | 58 | three blank lines: PrintRewind `$719B` | - | - |
 | `$C978` | `TickGraphic` | 8 | The tick of a completed mission, 1 x 8. CopyGraphic source of MissionCatalogueScreen `$C7F7`. | - | - |
-| `$C980` | `BriefingBoxes` | 10 | Two attribute box records of the briefing. Read by BriefingScreen `$C9AB` and `$C9B1`. | - | - |
+| `$C980` | `BriefingBoxes` | 5 of 10 | Two attribute box records of the briefing. Read by BriefingScreen `$C9AB` and `$C9B1`. | - | - |
 | `$C985` | `BriefingBoxB` (`BriefingBoxes`+5) | 5 | - | - | - |
 | `$CFEF` | `ListLinePos` | 4 | Text: code 7 to line `$41` (moved for every line), column 5. Written and printed by PrintMissionList. | `PrintMissionList` | `PrintMissionList` |
 | `$D00E` | `SelectedPos` | 5 | Text: code 7 to line `$2A`, column 5; a zero byte. Printed by PrintSelectedMission. | - | - |
@@ -394,7 +395,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$C089` | `BriefPageBoxRecord` | 5 | An attribute box record (width, height, column, attribute, row) for the unused variant `$C08E`. Read only by BriefPageBoxSmall. | - | - |
-| `$C0AC` | `BriefPageBoxes` | 20 | Four attribute box records of the briefing texts. `$C0AC` read by BriefPageBoxLarge, `$C0B1` by BriefPageBox, `$C0B6` by BriefingTextOnce (`$70A8`), `$C0BB` by BriefPageText (`$70C0`); none of the four is read inside bank 6. | - | - |
+| `$C0AC` | `BriefPageBoxes` | 5 of 20 | Four attribute box records of the briefing texts. `$C0AC` read by BriefPageBoxLarge, `$C0B1` by BriefPageBox, `$C0B6` by BriefingTextOnce (`$70A8`), `$C0BB` by BriefPageText (`$70C0`); none of the four is read inside bank 6. | - | - |
 | `$C0B1` | `BriefPageBoxB` (`BriefPageBoxes`+5) | 5 | - | - | - |
 | `$C0B6` | `BriefPageBoxC` (`BriefPageBoxes`+10) | 5 | - | - | - |
 | `$C0BB` | `BriefPageBoxD` (`BriefPageBoxes`+15) | 5 | - | - | - |
@@ -407,7 +408,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | `$C257` | `StoresMessageBox` | 5 | The attribute box of the error message line. Read by FitOrRemoveWeapon at `$C23E`. | - | - |
 | `$C2F9` | `PayloadLineBox` | 5 | The attribute box of the payload lines. Read by StoresMessageTimer `$C2DE`. | - | - |
 | `$C371` | `CurrentWeapon` | 2 | The record of the shown weapon (WeaponRecords + 1 + 11n). Set by StoresScreen `$CAE3`, moved by NextWeapon and PreviousWeapon, read by ShowWeapon and FitOrRemoveWeapon. | `ShowWeapon`, `SlotZoneA`, `FitOrRemoveWeapon` (`stage1/play`), `NextWeapon` (`stage1/play`), `PreviousWeapon` (code) | `StoresScreen`, `NextWeapon` (`stage1/play`), `PreviousWeapon` (code), `PreviousWeaponStep` (code) |
-| `$C373` | `WeaponRecords` | 145 | `$FF`, the 13 weapon records of 11 bytes, `$FF`. A record: +0 the type (1-13; IconTable `$75CA` entry type - 1), +1 the ammunition, +2 the most the four slots may hold, +3 the weight in kg (word), +5 the 3 x 24 icon, +7 the description text, +9 the model script (bank 3 `$CExx`, or bank 2). The `$FF` before and after stop NextWeapon and PreviousWeapon. The Sleeper mine's record says 300 kg, its text 290 KG. | `ShowWeapon`, `SlotZoneA`, `FitOrRemoveWeapon` (`stage1/play`), `NextWeapon` (`stage1/play`) | - |
+| `$C373` | `WeaponRecords` | 1 of 145 | `$FF`, the 13 weapon records of 11 bytes, `$FF`. A record: +0 the type (1-13; IconTable `$75CA` entry type - 1), +1 the ammunition, +2 the most the four slots may hold, +3 the weight in kg (word), +5 the 3 x 24 icon, +7 the description text, +9 the model script (bank 3 `$CExx`, or bank 2). The `$FF` before and after stop NextWeapon and PreviousWeapon. The Sleeper mine's record says 300 kg, its text 290 KG. | `ShowWeapon`, `SlotZoneA`, `FitOrRemoveWeapon` (`stage1/play`), `NextWeapon` (`stage1/play`) | - |
 | `$C374` | `WeaponTurret` (`WeaponRecords`+1) | 11 | type 4 Turret: ammo 80, max 1, 400 kg, icon `$F444` | `ShowWeapon`, `SlotZoneA`, `FitOrRemoveWeapon` (`stage1/play2`) | - |
 | `$C37F` | `WeaponBansheeRRSS` (`WeaponRecords`+12) | 11 | type 2: ammo 8, max 2, 300 kg | `FitOrRemoveWeapon` (`stage1/play`), `NextWeapon` (`stage1/play`), `ShowWeapon` (`stage1/play`) | - |
 | `$C38A` | `WeaponBansheeIRSS` (`WeaponRecords`+23) | 11 | type 6: ammo 6, max 2, 300 kg | `FitOrRemoveWeapon` (`stage1/play2`), `NextWeapon` (`stage1/play`), `ShowWeapon` (`stage1/play`) | - |
@@ -424,15 +425,15 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | `$C404` | `TitleBox` | 5 | The attribute box of the title menu's 3D window. Read by TitleMenu `$C4A7`. | - | - |
 | `$CBC4` | `StoresZones` | 43 | Zone table of the stores. ScreenFromClick `$7055` (start), NextWeapon, PreviousWeapon, SlotZoneA, SlotZoneB, SlotZoneC, SlotZoneD. | - | - |
 | `$CBEF` | `StoresSpareBox` | 5 | An attribute box record no routine reads. Known only from the code. | - | - |
-| `$D6DA` | `WeaponTexts` | 165 | The weapon descriptions (Phoenix RRSA, Phoenix IRSA, Banshee IRSS, Dragonfly): name, weight, ammo, max. Printed by ShowWeapon through the records' +7. Code 13 (attribute), code 2 (at a line and column), code 9, code 11 (new line). | - | - |
+| `$D6DA` | `WeaponTexts` | 42 of 165 | The weapon descriptions (Phoenix RRSA, Phoenix IRSA, Banshee IRSS, Dragonfly): name, weight, ammo, max. Printed by ShowWeapon through the records' +7. Code 13 (attribute), code 2 (at a line and column), code 9, code 11 (new line). | - | - |
 | `$D704` | `TextPhoenixIRSA` (`WeaponTexts`+42) | 42 | - | - | - |
 | `$D72E` | `TextBansheeIRSS` (`WeaponTexts`+84) | 42 | - | - | - |
 | `$D758` | `TextDragonfly` (`WeaponTexts`+126) | 39 | - | - | - |
 | `$D7BB` | `WeaponTextsB` | 42 | The Banshee RRSS description. Printed by ShowWeapon. | - | - |
-| `$D7E5` | `PanelBoxes` | 15 | Attribute box records of the panel. `$D7EA` and `$D7EF` read by PanelAttributes; `$D7E5` by nothing. | - | - |
+| `$D7E5` | `PanelBoxes` | 5 of 15 | Attribute box records of the panel. `$D7EA` and `$D7EF` read by PanelAttributes; `$D7E5` by nothing. | - | - |
 | `$D7EA` | `PanelBoxA` (`PanelBoxes`+5) | 5 | - | - | - |
 | `$D7EF` | `PanelBoxB` (`PanelBoxes`+10) | 5 | - | - | - |
-| `$D7F4` | `WeaponTextsC` | 322 | The descriptions of SLAM Laser, Sleeper mine, Skeet bomb, Spectre, K-40 Mortar, Turret, Phantasm, K-90 Cluster. Printed by ShowWeapon. | - | - |
+| `$D7F4` | `WeaponTextsC` | 41 of 322 | The descriptions of SLAM Laser, Sleeper mine, Skeet bomb, Spectre, K-40 Mortar, Turret, Phantasm, K-90 Cluster. Printed by ShowWeapon. | - | - |
 | `$D81D` | `TextSleeperMine` (`WeaponTextsC`+41) | 42 | - | - | - |
 | `$D847` | `TextSkeetBomb` (`WeaponTextsC`+83) | 41 | - | - | - |
 | `$D870` | `TextSpectre` (`WeaponTextsC`+124) | 38 | - | - | - |
@@ -440,7 +441,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | `$D8C0` | `TextTurret` (`WeaponTextsC`+204) | 37 | - | - | - |
 | `$D8E5` | `TextPhantasm` (`WeaponTextsC`+241) | 38 | - | - | - |
 | `$D90B` | `TextK90Cluster` (`WeaponTextsC`+279) | 43 | - | - | - |
-| `$D936` | `PayloadLineText` | 124 | Texts of the payload: "MAX PAYLOAD 1000KG", "PAYLOAD WGT 0KG", the two errors, the weight. `$D936` printed by StoresScreen and StoresMessageTimer, the errors by FitOrRemoveWeapon, PayloadText by PrintPayloadWeight. | `NumberToDigits`, `FormatGridPosition` (`stage1/missions`) | `DigitOf`, `NumberToDigits` |
+| `$D936` | `PayloadLineText` | 45 of 124 | Texts of the payload: "MAX PAYLOAD 1000KG", "PAYLOAD WGT 0KG", the two errors, the weight. `$D936` printed by StoresScreen and StoresMessageTimer, the errors by FitOrRemoveWeapon, PayloadText by PrintPayloadWeight. | `NumberToDigits`, `FormatGridPosition` (`stage1/missions`) | `DigitOf`, `NumberToDigits` |
 | `$D963` | `PayloadExceededText` (`PayloadLineText`+45) | 45 | - | - | - |
 | `$D990` | `MaxNumberText` (`PayloadLineText`+90) | 24 | - | - | - |
 | `$D9A8` | `PayloadText` (`PayloadLineText`+114) | 3 | - | - | - |
@@ -457,7 +458,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$C53E` | `PasswordMessages` | 58 | Texts: "INVALID PASSWORD", then two blank lines that clear it and the entry. Printed by PasswordScreen at `$C5A5`, `$C5AE` and `$C5B4`. | - | - |
+| `$C53E` | `PasswordMessages` | 22 of 58 | Texts: "INVALID PASSWORD", then two blank lines that clear it and the entry. Printed by PasswordScreen at `$C5A5`, `$C5AE` and `$C5B4`. | - | - |
 | `$C554` | `InvalidBlank` (`PasswordMessages`+22) | 22 | - | - | - |
 | `$C56A` | `EntryBlank` (`PasswordMessages`+44) | 14 | - | - | - |
 | `$C5EE` | `PasswordPrompt` | 32 | Text: "Type in your level entry:-". Printed by PasswordScreen `$C57B`. | - | - |
@@ -467,16 +468,16 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | `$C727` | `EditLineBuffer` | 2 | EditLine's buffer address. Written by EditLine `$C64E`, read at `$C673`. | `EditLine` (`stage1/menu`), `EditEnter` (code), `EditRedraw` (code) | `EditLine` (`stage1/menu`), `EditLineAt` (code) |
 | `$C729` | `PasswordZones` | 1 | Zone table of the password screen: empty. PointerZones finds the end at once. | - | - |
 | `$C72A` | `EntryStringText` | 32 | Text: "THIS IS YOUR ENTRY STRING.". Printed by ShowPassword. | - | - |
-| `$C74A` | `MenuBoxes` | 21 | Attribute box records: the whole menu screen and the catalogue's titles. `$C74A` read by ClearMenuScreen, `$C74F` and `$C754` by DrawCatalogueTitles, `$C759` by MissionCatalogueScreen. `$C75E` is a 0 byte. | - | - |
+| `$C74A` | `MenuBoxes` | 5 of 21 | Attribute box records: the whole menu screen and the catalogue's titles. `$C74A` read by ClearMenuScreen, `$C74F` and `$C754` by DrawCatalogueTitles, `$C759` by MissionCatalogueScreen. `$C75E` is a 0 byte. | - | - |
 | `$C74F` | `CatalogueTitleBoxA` (`MenuBoxes`+5) | 5 | - | - | - |
 | `$C754` | `CatalogueTitleBoxB` (`MenuBoxes`+10) | 5 | - | - | - |
 | `$C759` | `CatalogueListBox` (`MenuBoxes`+15) | 6 | - | - | - |
 | `$CE7D` | `DecodedFlags` | 10 | The ten completion flags DecodePassword makes. Copied to MissionsDone by PasswordScreen. | `PasswordScreen` (`stage1/menu`) | `DecodePassword` (`stage1/menu`) |
 | `$CE87` | `DecodedScore` | 4 | The score DecodePassword makes. Copied to Score by PasswordScreen. | `DecodePassword` (`stage1/menu`), `PasswordScreen` (`stage1/menu`) | `DecodePassword` (`stage1/menu`) |
-| `$CEF6` | `PasswordText` | 16 | Text: the password line; its ten characters at `$CEFB`. Written by EncodePassword, PasswordToChars and CharsToPassword (the values), printed by ShowPassword. | `DecodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) | `CharsToPassword` (`stage1/menu`), `EncodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) |
+| `$CEF6` | `PasswordText` | 5 of 16 | Text: the password line; its ten characters at `$CEFB`. Written by EncodePassword, PasswordToChars and CharsToPassword (the values), printed by ShowPassword. | `DecodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) | `CharsToPassword` (`stage1/menu`), `EncodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) |
 | `$CEFB` | `PasswordValues` (`PasswordText`+5) | 11 | - | `DecodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) | `CharsToPassword` (`stage1/menu`), `EncodePassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) |
 | `$CF5F` | `PasswordAlphabet` | 36 | The 36 password characters: "9876543210ZYXWVUTSRQPONMLKJIHABCDEFG". Read by PasswordToChars and CharsToPassword. | `CharsToPassword` (`stage1/menu`), `PasswordToChars` (`stage1/menu`) | - |
-| `$CF83` | `CatalogueHead` | 38 | Two zero bytes, then the catalogue's first 32 bytes copied by CopyCatalogueHead. `$CF85-$CFA4` is written by CopyCatalogueHead `$70C6`, compared by IsCatalogueLoaded and printed (the title) by MissionCatalogueScreen. The image holds leftover code bytes here; `$CFA5-$CFA8` are never read. | `IsCatalogueLoaded` | - |
+| `$CF83` | `CatalogueHead` | 2 of 38 | Two zero bytes, then the catalogue's first 32 bytes copied by CopyCatalogueHead. `$CF85-$CFA4` is written by CopyCatalogueHead `$70C6`, compared by IsCatalogueLoaded and printed (the title) by MissionCatalogueScreen. The image holds leftover code bytes here; `$CFA5-$CFA8` are never read. | `IsCatalogueLoaded` | - |
 | `$CF85` | `CatalogueTitle` (`CatalogueHead`+2) | 36 | - | `IsCatalogueLoaded` | - |
 
 ### Bank 6: briefing
@@ -492,14 +493,14 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | --- | --- | --- | --- | --- | --- |
 | `$CC79` | `Score` | 4 | The 32-bit score of the missions completed. Added to by MissionCompleteScreen, set from a password by PasswordScreen, printed by PrintScore, coded by EncodePassword. | `EncodePassword` (`stage1/menu`), `PrintScore` (`stage1/menu`), `ScoreBits` (`stage1/menu`), `MissionCompleteScreen` (code) | `PasswordScreen` (`stage1/menu`), `MissionCompleteScreen` (code) |
 | `$CC93` | `MissionsCompleted` | 1 | The number of missions completed. Counted by PasswordScreen and MissionCompleteScreen, printed through code 8 of StatusText. | `MissionCompleteScreen` (code) | `PasswordScreen` (`stage1/menu`), `MissionCompleteScreen` (code) |
-| `$CC94` | `FailedTexts` | 138 | Texts: "MISSION FAILED." and the five reasons. `$CC94` printed by MissionFailedScreen; the reason (the pointer `$7BF9`, set by the play code) is one of the five. | - | - |
+| `$CC94` | `FailedTexts` | 23 of 138 | Texts: "MISSION FAILED." and the five reasons. `$CC94` printed by MissionFailedScreen; the reason (the pointer `$7BF9`, set by the play code) is one of the five. | - | - |
 | `$CCAB` | `UnitDestroyedText` (`FailedTexts`+23) | 19 | - | - | - |
 | `$CCBE` | `NoPickupText` (`FailedTexts`+42) | 26 | - | - | - |
 | `$CCD8` | `DesertionText` (`FailedTexts`+68) | 21 | - | - | - |
 | `$CCED` | `OutOfFuelText` (`FailedTexts`+89) | 20 | - | - | - |
 | `$CD01` | `BridgeText` (`FailedTexts`+109) | 29 | - | - | - |
 | `$CD70` | `EndZones` | 7 | Zone table of the two mission end screens. ScreenZero. | - | - |
-| `$CDB5` | `StatusBoxes` | 10 | Two attribute box records of the mission status card. Read by MissionStatusScreen `$CDE6` and `$CDEC`. | - | - |
+| `$CDB5` | `StatusBoxes` | 5 of 10 | Two attribute box records of the mission status card. Read by MissionStatusScreen `$CDE6` and `$CDEC`. | - | - |
 | `$CDBA` | `StatusBoxB` (`StatusBoxes`+5) | 5 | - | - | - |
 | `$CE12` | `SpareZones` | 13 | A zone table no routine reads: ScreenZero and ScreenTwo. Known only from the code. | - | - |
 
@@ -507,11 +508,11 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$D3EA` | `StatusMessages` | 46 | Texts: "TANK HAS BEEN HIT", "COLLISION OCCURED". Read by StatusViewMessage. | - | - |
+| `$D3EA` | `StatusMessages` | 23 of 46 | Texts: "TANK HAS BEEN HIT", "COLLISION OCCURED". Read by StatusViewMessage. | - | - |
 | `$D401` | `CollisionText` (`StatusMessages`+23) | 23 | - | - | - |
-| `$D418` | `FinalScoreText` | 84 | Text: "MISSION COMPLETED:-", a blank line, "FINAL SCORE:-" and ten digits at `$D461`. Printed only by PrintFinalScore (unused). | - | - |
+| `$D418` | `FinalScoreText` | 73 of 84 | Text: "MISSION COMPLETED:-", a blank line, "FINAL SCORE:-" and ten digits at `$D461`. Printed only by PrintFinalScore (unused). | - | - |
 | `$D461` | `FinalScoreDigits` (`FinalScoreText`+73) | 11 | - | - | - |
-| `$D46C` | `StatusText` | 57 | Text: "MISSIONS COMPLETED" (code 8: MissionsCompleted), "SCORE TO DATE" and nine digits at `$D49A`. Printed by PrintScore; the digits by LongToDigits and DotLeadingZeros. | `DotLeadingZeros` (`stage1/menu`) | `DotLeadingZeros` (`stage1/menu`), `LongDigitOf` (`stage1/menu`), `LongToDigits` (`stage1/menu`) |
+| `$D46C` | `StatusText` | 46 of 57 | Text: "MISSIONS COMPLETED" (code 8: MissionsCompleted), "SCORE TO DATE" and nine digits at `$D49A`. Printed by PrintScore; the digits by LongToDigits and DotLeadingZeros. | `DotLeadingZeros` (`stage1/menu`) | `DotLeadingZeros` (`stage1/menu`), `LongDigitOf` (`stage1/menu`), `LongToDigits` (`stage1/menu`) |
 | `$D49A` | `ScoreDigits` (`StatusText`+46) | 11 | - | `DotLeadingZeros` (`stage1/menu`) | `DotLeadingZeros` (`stage1/menu`), `LongDigitOf` (`stage1/menu`), `LongToDigits` (`stage1/menu`) |
 | `$D501` | `DamageBoxes` | 28 | AttrBoxAt records of the damage board (height, column, attribute, row). Read by ShowDamageColours. | - | - |
 | `$D51D` | `DamageColourTable` | 4 | The values of the four damage steps. Read by DamageColour. | `DamageColour` (`stage1/play`) | - |
@@ -524,16 +525,16 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | --- | --- | --- | --- | --- | --- |
 | `$DA5E` | `QuitText` | 46 | Text: "Are you sure you want to quit?" and "Yes/No.". Printed by QuitPrompt. | - | - |
 | `$DAA1` | `StatusLegendText` | 32 | Text: the map's legend "Roads." and "Rivers." with their glyphs `$80` and `$81`. Printed by StatusMapLegend `$7241`. | - | - |
-| `$DAC1` | `StatusLegendBoxes` | 10 | Attribute box records of the status legend. `$DAC1` read by StatusMapLegend, `$DAC6` by StatusMapFrame. | - | - |
+| `$DAC1` | `StatusLegendBoxes` | 5 of 10 | Attribute box records of the status legend. `$DAC1` read by StatusMapLegend, `$DAC6` by StatusMapFrame. | - | - |
 | `$DAC6` | `StatusLegendBoxB` (`StatusLegendBoxes`+5) | 5 | - | - | - |
 | `$DAE1` | `BriefingLegendText` | 32 | Text: "Roads." and "Rivers." for the briefing map. Printed by BriefingMapLegend `$722C`. | - | - |
-| `$DB01` | `BriefingLegendBoxes` | 20 | Attribute box records of the briefing map and the status map. `$DB01` and `$DB0B` read by BriefingMapLegend, `$DB06` by BriefingMapFrame, `$DB10` by StatusMapLegend. | - | - |
+| `$DB01` | `BriefingLegendBoxes` | 5 of 20 | Attribute box records of the briefing map and the status map. `$DB01` and `$DB0B` read by BriefingMapLegend, `$DB06` by BriefingMapFrame, `$DB10` by StatusMapLegend. | - | - |
 | `$DB06` | `BriefingLegendBoxB` (`BriefingLegendBoxes`+5) | 5 | - | - | - |
 | `$DB0B` | `BriefingLegendBoxC` (`BriefingLegendBoxes`+10) | 5 | - | - | - |
 | `$DB10` | `StatusLegendBoxC` (`BriefingLegendBoxes`+15) | 5 | - | - | - |
 | `$DBA8` | `MapDepth` | 2 | The depth word of every vertex DrawMapObjects and DrawMarkerModel make. Written by DrawStatusMap. | `DrawMarkerModel` (`stage1/menu`), `ProjectMapPoint` (`stage1/menu`) | `DrawStatusMap` (`stage1/menu`) |
 | `$DBDF` | `Bank6FillA` | 20 | 20 fill bytes (`$E5`, one `$00`) of the tape block: never read | - | - |
-| `$DBF3` | `MissionData` | 2048 | The mission's catalogue entry: the number of map objects, the marker positions, the coordinate tables, the object list. Written by CopyMissionText `$70F6` (2048 bytes, zero in the image). `$DBF3` the number of objects, MarkerPosA and MarkerPosB two marker positions (3-byte X and Y), MapCoordX and MapCoordY the coordinates by index, MapObjects 6-byte object records (two indices, the angle, the model kind). | `StoresScreen`, `DrawMapObjects` (`stage1/menu`), `ReadMapCoord` (`stage1/menu`) | `StoresScreen`, `SaveLoadedMission` (`stage1/missions`) |
+| `$DBF3` | `MissionData` | 1 of 2048 | The mission's catalogue entry: the number of map objects, the marker positions, the coordinate tables, the object list. Written by CopyMissionText `$70F6` (2048 bytes, zero in the image). `$DBF3` the number of objects, MarkerPosA and MarkerPosB two marker positions (3-byte X and Y), MapCoordX and MapCoordY the coordinates by index, MapObjects 6-byte object records (two indices, the angle, the model kind). | `StoresScreen`, `DrawMapObjects` (`stage1/menu`), `ReadMapCoord` (`stage1/menu`) | `StoresScreen`, `SaveLoadedMission` (`stage1/missions`) |
 | `$DBF4` | `MarkerPosA` (`MissionData`+1) | 6 | - | `ReadMapCoord` (`stage1/menu`) | - |
 | `$DBFA` | `MarkerPosB` (`MissionData`+7) | 6 | - | `ReadMapCoord` (`stage1/menu`) | - |
 | `$DC00` | `MapCoordX` (`MissionData`+13) | 64 | - | `DrawMapObjects` (`stage1/menu`) | - |
@@ -546,16 +547,16 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$E512` | `MapModels` | 79 | The scripts of the map objects. Run by DrawMapObjects. `$E54F` is read by nothing. | - | - |
+| `$E512` | `MapModels` | 12 of 79 | The scripts of the map objects. Run by DrawMapObjects. `$E54F` is read by nothing. | - | - |
 | `$E51E` | `MapModelNegative` (`MapModels`+12) | 12 | - | - | - |
 | `$E52A` | `MapModelOther` (`MapModels`+24) | 10 | - | - | - |
 | `$E534` | `MapModelKind6` (`MapModels`+34) | 27 | - | - | - |
 | `$E54F` | `MapModelSpare` (`MapModels`+61) | 18 | - | - | - |
-| `$E5D5` | `MarkerModels` | 46 | The scripts of the markers. Run by DrawMarkerModel. | - | - |
+| `$E5D5` | `MarkerModels` | 10 of 46 | The scripts of the markers. Run by DrawMarkerModel. | - | - |
 | `$E5DF` | `MarkerModelB` (`MarkerModels`+10) | 14 | - | - | - |
 | `$E5ED` | `MarkerModelC` (`MarkerModels`+24) | 10 | - | - | - |
 | `$E5F7` | `MarkerModelD` (`MarkerModels`+34) | 12 | - | - | - |
-| `$E603` | `MarkerPoints` | 33 | The markers' points: a count, then X, Y byte pairs. Read by DrawMarkerModel. | `DrawMarkerModel` (`stage1/menu`) | - |
+| `$E603` | `MarkerPoints` | 9 of 33 | The markers' points: a count, then X, Y byte pairs. Read by DrawMarkerModel. | `DrawMarkerModel` (`stage1/menu`) | - |
 | `$E60C` | `MarkerPointsB` (`MarkerPoints`+9) | 15 | - | `DrawMarkerModel` (`stage1/menu`) | - |
 | `$E61B` | `MarkerPointsC` (`MarkerPoints`+24) | 9 | - | `DrawMarkerModel` (`stage1/menu`) | - |
 
@@ -577,7 +578,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 | `$EDE4` | `BriefingGraphicB` | 112 | 7 x 16 graphic of the briefing. BriefingScreen `$C9C6`. | - | - |
 | `$EE54` | `BriefingGraphicA` | 112 | 7 x 16 graphic of the briefing. BriefingScreen `$C9B7`. | - | - |
 | `$EEC4` | `SpareGraphicB` | 112 | 112 bytes no routine reads (a fourth 7 x 16 graphic by its size). Known only from the code. | - | - |
-| `$EF34` | `PanelIcons` | 1368 | The 3 x 24 icons: 18 of IconTable's 19 and one unused, 72 bytes each. IconTable `$75CA` entry t - 1 is the icon of type t; the weapon types 1-13 are the stores' too (WeaponRecords +5). Entry 19 lies apart, Icon19 `$F59C`. | `DrawSlotIcon` | - |
+| `$EF34` | `PanelIcons` | 72 of 1368 | The 3 x 24 icons: 18 of IconTable's 19 and one unused, 72 bytes each. IconTable `$75CA` entry t - 1 is the icon of type t; the weapon types 1-13 are the stores' too (WeaponRecords +5). Entry 19 lies apart, Icon19 `$F59C`. | `DrawSlotIcon` | - |
 | `$EF7C` | `IconSpare` (`PanelIcons`+72) | 72 | - | - | - |
 | `$EFC4` | `Icon17` (`PanelIcons`+144) | 72 | - | - | - |
 | `$F00C` | `Icon18` (`PanelIcons`+216) | 72 | - | - | - |
@@ -643,7 +644,7 @@ readers and writers from `work/stage1/c1g`, `work/stage1/menu`, `work/stage1/mis
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$FE8F` | `UnpackVars` | 6 | UnpackPicture's pointers: `$FE8F` and `$FE93` the common-byte table, `$FE91` the bit stream. Written by UnpackPicture `$FEA7`-`$FEB6`; `$FE93` is read for every common byte (`$FEF0`, `$FF70`), `$FE91` by StartBits; `$FE8F` is written and never read (known only from the code). Zero in the image. | `StartBits`, `UnpackPicture` | `UnpackPicture` |
+| `$FE8F` | `UnpackVars` | 2 of 6 | UnpackPicture's pointers: `$FE8F` and `$FE93` the common-byte table, `$FE91` the bit stream. Written by UnpackPicture `$FEA7`-`$FEB6`; `$FE93` is read for every common byte (`$FEF0`, `$FF70`), `$FE91` by StartBits; `$FE8F` is written and never read (known only from the code). Zero in the image. | `StartBits`, `UnpackPicture` | `UnpackPicture` |
 | `$FE91` | `StreamPtr` (`UnpackVars`+2) | 2 | - | `StartBits` | `UnpackPicture` |
 | `$FE93` | `TablePtr` (`UnpackVars`+4) | 2 | - | `UnpackPicture` | `UnpackPicture` |
 | `$FFF7` | `BitMasks` | 9 | The masks of 0-7 low bits: `$00`, `$01`, `$03` ... `$7F`. Read by StartBits. | `StartBits` | - |
@@ -679,7 +680,7 @@ readers and writers from `work/stage1/c1l`.
 | `$B9FB` | `NoticeText` | 505 | The copyright notice and the FAST warning, zero-ended strings. Read by PrintString (c1: L1 reads). Shown during the whole load. | `Layer000`, `LoaderMain`, `PrintString` | `Layer000`, `LoadBlocks`, `LoaderMain` |
 | `$BC5A` | `data_BC5A` | 4 | data_BC5A | `Layer000` | `Layer000`, `LoadBlocks` |
 | `$BCEE` | `data_BCEE` | 4 | data_BCEE | `Layer000`, `l_BCBD` (code) | `Layer000`, `LoadBlocks` |
-| `$BED0` | `TimeFailed` | 15 | Non-zero when the timing check failed (the mark check at `$BE0D` stores `$7F` when a mark's second group is not `$7F`; TimeCheck's `$BECC` stores 1) | `Layer000`, `LoadBlocks`, `LoaderMain` | `Layer000`, `LoadBlocks`, `l_BE00` (code), `l_BECC` (code) |
+| `$BED0` | `TimeFailed` | 1 of 15 | Non-zero when the timing check failed (the mark check at `$BE0D` stores `$7F` when a mark's second group is not `$7F`; TimeCheck's `$BECC` stores 1) | `Layer000`, `LoadBlocks`, `LoaderMain` | `Layer000`, `LoadBlocks`, `l_BE00` (code), `l_BECC` (code) |
 | `$BED1` | `EdgeLimits` (`TimeFailed`+1) | 14 | seven pairs read by LoadBlocks `$BD4C`: the edge counter's start value and the count it must pass | `Layer000`, `LoadBlocks` | `Layer000`, `LoadBlocks` |
 
 
@@ -693,7 +694,7 @@ the readers and writers from `work/stage1/c1l`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$BF30` | `BlockTable` | 80 | The first block table: five bytes a row, the address, the length less one, the `$7FFD` value. Rows: `$8000` 768 bytes (the attributes), `$BD9C` 2 (the body key), `$BDD0` 4 (the last-byte key), `$BF30` 75 (the table again, src/tape/side1.txt has the new rows), `$6000` 8192 and `$4000` 6912 with pages `$13` / `$12` and `$FB00` 512, never read (the new table replaces them first), and the end row of zeros. Read by the table walk in LoadBlocks (c1). | - | - |
+| `$BF30` | `BlockTable` | 40 of 80 | The first block table: five bytes a row, the address, the length less one, the `$7FFD` value. Rows: `$8000` 768 bytes (the attributes), `$BD9C` 2 (the body key), `$BDD0` 4 (the last-byte key), `$BF30` 75 (the table again, src/tape/side1.txt has the new rows), `$6000` 8192 and `$4000` 6912 with pages `$13` / `$12` and `$FB00` 512, never read (the new table replaces them first), and the end row of zeros. Read by the table walk in LoadBlocks (c1). | - | - |
 | `$BF58` | `BlockTablePad` (`BlockTable`+40) | 40 | zeros up to the font | - | - |
 | `$BF80` | `CountdownFont` | 80 | The countdown's digits 0-9, 8 bytes each. Read by WaitTask's countdown (c1: the digits at the top right of the screen during the load). | - | - |
 

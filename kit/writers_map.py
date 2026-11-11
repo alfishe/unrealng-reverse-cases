@@ -24,7 +24,9 @@ insets on a row of their own under them, enlarged as far as that row allows; a l
 --width 0 is the older picture: every panel on one row at --scale, the zoom as high as the views (up to 2620 px).
 
 --sources is a heuristic: it takes the data reads of the writing routine since its previous write, outside the
-stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values.
+stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values. A range
+gives its first and last byte read, both included, and its length: a loop that reads one byte past its graphic (an
+outline taken from each byte and its right neighbour) shows that byte too.
 """
 import argparse
 import os
@@ -165,10 +167,20 @@ def main():
             x += inset.width + gap
 
     small, normal = K.font(11), K.font(12)
-    legend_rows = len(order[:16]) * (3 if args.sources else 2) + 2
-    legend_h = 18 * legend_rows
     width = max(x + panel.width + gap for panel, _, x, _ in placed)
     width = min(max(width, 900), limit) if limit else max(width, 900)
+    froms = {}  # writer -> its "from" lines, wrapped to the picture's width
+    if args.sources:
+        for k in order[:16]:
+            spans = ranges(sources[k])
+            spans.sort(key=lambda r: -sum(sources[k][a] for a in range(r[0], r[1] + 1)))
+            # a range is the bytes read, both ends included, with its length: a routine that reads one byte past
+            # its data (an outline's right neighbour) shows it (72 bytes and one more: 73)
+            text = ', '.join(f'${lo:04X}-${hi:04X} ({lst.name(lo)}, {hi - lo + 1} bytes)' if hi > lo else f'${lo:04X}'
+                             for lo, hi in spans[:4]) or 'no data reads'
+            froms[k] = wrap(f'from {text}', small, width - 2 * gap - 18)
+    legend_rows = len(order[:16]) * 2 + sum(len(v) for v in froms.values()) + 2
+    legend_h = 18 * legend_rows
     t0 = f'{trace.from_frame}:{trace.from_t // max(1, trace.units_per_t)}'
     t1 = f'{trace.to_frame}:{trace.to_t // max(1, trace.units_per_t)}'
     title = wrap(args.title or f'Writers of ${view[1]:04X}, frames {t0} .. {t1}', K.font(15), width - 2 * gap)
@@ -203,12 +215,8 @@ def main():
         y += 17
         draw.text((gap + 18, y), f'by {pcs}', fill=K.DIM, font=small)
         y += 17
-        if args.sources:
-            spans = ranges(sources[k])
-            spans.sort(key=lambda r: -sum(sources[k][a] for a in range(r[0], r[1] + 1)))
-            text = ', '.join(f'${lo:04X}-${hi:04X} ({lst.name(lo)})' if hi > lo else f'${lo:04X}'
-                             for lo, hi in spans[:4]) or 'no data reads'
-            draw.text((gap + 18, y), f'from {text}', fill=K.DIM, font=small)
+        for line in froms.get(k, ()):
+            draw.text((gap + 18, y), line, fill=K.DIM, font=small)
             y += 17
     if len(order) > 16:
         draw.text((gap, y), f'and {len(order) - 16} more writers', fill=K.DIM, font=small)

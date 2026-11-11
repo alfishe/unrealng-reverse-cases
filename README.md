@@ -40,7 +40,7 @@ Each case is a full reverse of one game:
 | [SimCity](games/simcity/README.md) | Infogrames (Probe Software), 1990 | 48K, tape | complete 2026-11-10 | Maxis' city simulation on the Spectrum: a 96 x 96 map scrolled in a window, menus and dialogs, a tape loader that decrypts itself with the R register and then every byte it loads |
 | [Earth Shaker](games/earth-shaker/README.md) | Your Sinclair (Michael Batty), 1990 | 48K, tape | complete 2026-11-11 | a boulder-and-gems mine game given away on the Your Sinclair issue 63 covertape: 32 caves of 30 x 20 cells in a scrolling window, falling boulders and gems, a password per cave, a plain ROM-speed load |
 | [Battle Command](games/battle-command/README.md) | Ocean Software (Realtime Games), 1990 | 128K, tape (two sides) | complete 2026-11-11 | a 3D tank combat game: one Mauler tank in a filled-polygon world, ten missions on a mission tape, SpeedLock 7 |
-| [Terramex](games/terramex/README.md) | Grandslam Entertainments (Teque), 1987 | 48K / 128K, tape | in progress | an arcade adventure: five explorers, 70 flick-screen rooms, objects carried by invisible bearers, a countdown to an asteroid's impact; Ben Daglish's AY music on the 128K |
+| [Terramex](games/terramex/README.md) | Grandslam Entertainments (Teque), 1987 | 48K / 128K, tape | complete 2026-11-11 | an arcade adventure: five explorers, 70 flick-screen rooms, objects carried by invisible bearers, a countdown to an asteroid's impact; Ben Daglish's AY music on the 128K |
 
 Every case is one folder in `games/`:
 

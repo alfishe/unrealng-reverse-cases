@@ -2,7 +2,8 @@
 
 Every data entry of the game image `$6D60`-`$FFFF`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
-its entry, its size up to the next label. The name, the title and the description are the
+its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,
+of the whole entry's ("17 of 34"). The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/game`, local and not in the repository), then those only the case's other recordings (`read_builds`) saw, with the first of them in brackets, and, marked
 "(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
@@ -37,7 +38,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$768C` | `PassCount` | 2 | The main loop's pass count (8 bits): its low 3 bits cycle the flashing colours of `$912A` and `$ABE8`. Raised once a MainLoop pass (`$767E`). | `ColourCycle`, `Delay`, `KillPlayer`, `StartGame`, `ForceFieldColour` (code) | `BuildScreen`, `Delay`, `KillPlayer`, `StartGame` |
+| `$768C` | `PassCount` | 1 of 2 | The main loop's pass count (8 bits): its low 3 bits cycle the flashing colours of `$912A` and `$ABE8`. Raised once a MainLoop pass (`$767E`). | `ColourCycle`, `Delay`, `KillPlayer`, `StartGame`, `ForceFieldColour` (code) | `BuildScreen`, `Delay`, `KillPlayer`, `StartGame` |
 | `$768D` | `ImmunityCount` (`PassCount`+1) | 1 | passes of immunity left after a restart: set to `$42` by the death at `$9CCF`, zeroed by the screen build `$849E`; while non-zero `$9CB4` returns before the hit test (the ZXDB immunity POKE is the RET at `$9CB8`) | `Delay`, `KillPlayer`, `StartGame` | `BuildScreen`, `Delay`, `KillPlayer`, `StartGame` |
 | `$76A2` | `HudText` | 56 | The HUD text: the labels on row 22 in their colours, row 23 cleared, the score sub-string `$AD82`. AT 22,0, the font `$D7E0`, the occupancy value 1 and the foreground value 0 for these cells (`$E8` 01, `$E9`), AMMO bright cyan, GRENADES bright yellow, POINTS bright green, LIVES bright white, ZONES bright magenta; AT 23,0, 32 spaces, then the sub-string `$AD82` (the score digits `$AD8A` at their place). | `Delay`, `PrintString` | `Delay` |
 
@@ -54,7 +55,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$7B92` | `ControlLeft` | 7 | The controls as ReadControls left them: 1 = pressed. Left | `ClearControls`, `Delay`, `ExoSuitBooth`, `Fall`, `FireControl` +9 | `ClearControls`, `DefineKeys`, `Delay`, `MainMenu`, `ReadInterface2` +3 |
+| `$7B92` | `ControlLeft` | 1 of 7 | The controls as ReadControls left them: 1 = pressed. Left | `ClearControls`, `Delay`, `ExoSuitBooth`, `Fall`, `FireControl` +9 | `ClearControls`, `DefineKeys`, `Delay`, `MainMenu`, `ReadInterface2` +3 |
 | `$7B93` | `ControlRight` (`ControlLeft`+1) | 1 | right | `ClearControls`, `Delay`, `Fall`, `Walk` (code) | `ClearControls`, `Delay`, `ReadInterface2`, `ReadKempston` |
 | `$7B94` | `ControlJump` (`ControlLeft`+2) | 1 | jump (up) | `ClearControls`, `Delay`, `ExoSuitBooth`, `MovePlayer`, `Teleports` | `ClearControls`, `Delay`, `ReadInterface2`, `ReadKempston` |
 | `$7B95` | `ControlDuck` (`ControlLeft`+3) | 1 | duck (down) | `ClearControls`, `Delay`, `MovePlayer` | `ClearControls`, `Delay`, `ReadInterface2`, `ReadKempston` |
@@ -70,7 +71,7 @@ Written by `kit/refdocs.py`.
 | `$7D67` | `TitleTunePending` | 1 | 1 from Start to the first menu: the title tune is still to play (MainMenu clears it) | `Delay`, `MainMenu`, `Start` (`x1`) | `Delay`, `MainMenu`, `Start` |
 | `$7D68` | `JingleTune` | 59 | A short tune of 19 notes (length, note, note) and its end: the cheat's and GAME OVER's jingle. Notes 18 x (15, n, m): falling arpeggios over the notes `$1C-$17`, then (45, `$1C`, `$28`); a length 0 ends. PlayTune from ZorbaCheat and `$A030` (GAME OVER). | `Delay`, `PlayTune` | `Delay` |
 | `$7DA3` | `TitleTune` | 587 | The 48K title tune: 195 notes (length, note, note), lengths 18 to 90 in steps of 18, notes up to 50. PlayTune from MainMenu at the first menu after each entry to Start on a 48K, any key cuts it. The note numbers index the period table `$8062` (53 entries). | `Delay`, `PlayTune` | `Delay` |
-| `$7FEE` | `TuneNoteLength` | 3 | The current note's length (PlayTune), passed in A to the tone routine | `Delay`, `PlayTune`, `PlayTuneNote` (code), `PlayTuneRest` (code) | `Delay`, `PlayTune` |
+| `$7FEE` | `TuneNoteLength` | 1 of 3 | The current note's length (PlayTune), passed in A to the tone routine | `Delay`, `PlayTune`, `PlayTuneNote` (code), `PlayTuneRest` (code) | `Delay`, `PlayTune` |
 | `$7FEF` | `TunePointer` (`TuneNoteLength`+1) | 2 | the next note of the tune (PlayTune), a word | `Delay`, `PlayTune` | `Delay`, `PlayTune` |
 | `$8062` | `NoteReloads` | 53 | The counter reload of each note: 53 notes a semitone apart, lowest first. PlayTwoTones counts from the reload value to 256, so the period of note n is 256 - NoteReloads[n] loop steps: 255, 240, 227, 215, 204, ... 13, 12. Successive periods differ by a factor 1.055-1.065 (a semitone is 1.0595): about four and a half octaves. Read by the tune player `$7D4E` (LD DE,`$8062` and LD BC,`$8062`, index the note number). The c1 load ran code at `$8063-$8096` at frame 1808 (the loading screen's depacker that lived here before the game was moved in); in the game these bytes are only read. | `Delay`, `PlayTune` | `Delay` |
 
@@ -198,7 +199,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$925A` | `GrenadeTimer` | 5 | The grenade in flight: the flight timer `$20` down to 1 (0: none). The timer indexes GrenadeArc. It stops at 1 (the fall goes on until the grenade lands). The main loop runs MoveGrenade once more twice a pass while the timer is below `$13` (`$7609`, `$7620`): three steps a pass for the late flight. | `Delay`, `MoveGrenade`, `StartGame`, `GrenadeAdvance` (code), `GrenadeFall` (code) +2 | `BuildScreen`, `Delay`, `GrenadeAdvance` (code), `GrenadeEnd` (code), `GrenadeFall` (code) +4 |
+| `$925A` | `GrenadeTimer` | 1 of 5 | The grenade in flight: the flight timer `$20` down to 1 (0: none). The timer indexes GrenadeArc. It stops at 1 (the fall goes on until the grenade lands). The main loop runs MoveGrenade once more twice a pass while the timer is below `$13` (`$7609`, `$7620`): three steps a pass for the late flight. | `Delay`, `MoveGrenade`, `StartGame`, `GrenadeAdvance` (code), `GrenadeFall` (code) +2 | `BuildScreen`, `Delay`, `GrenadeAdvance` (code), `GrenadeEnd` (code), `GrenadeFall` (code) +4 |
 | `$925B` | `GrenadeX` (`GrenadeTimer`+1) | 1 | X, in 2-pixel units | `Delay`, `GrenadeErase` (code) | `Delay`, `GrenadeAdvance` (code), `GrenadeStart` (code) |
 | `$925C` | `GrenadeY` (`GrenadeTimer`+2) | 1 | Y, in pixels | `Delay`, `GrenadeAdvance` (code), `GrenadeErase` (code) | `Delay`, `GrenadeFall` (code), `GrenadeStart` (code) |
 | `$925D` | `GrenadeDir` (`GrenadeTimer`+3) | 1 | the direction: `$FF` left, 1 right (the player's facing at the throw) | `Delay`, `GrenadeErase` (code), `GrenadeFall` (code) | `Delay`, `GrenadeStart` (code) |
@@ -220,10 +221,10 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9930` | `TeleportPads` | 6 | The teleport pair of the screen: pad 1 (column, row), pad 2 (column, row), `$FF`, the latch. Built by `$8E86` from map value 6 (record 6 of `$8EF4`). `$FF` in the first byte: no teleports. | `Delay`, `Teleports` | `Delay`, `IndexObjectCells`, `Teleports` |
+| `$9930` | `TeleportPads` | 2 of 6 | The teleport pair of the screen: pad 1 (column, row), pad 2 (column, row), `$FF`, the latch. Built by `$8E86` from map value 6 (record 6 of `$8EF4`). `$FF` in the first byte: no teleports. | `Delay`, `Teleports` | `Delay`, `IndexObjectCells`, `Teleports` |
 | `$9932` | `TeleportPad2` (`TeleportPads`+2) | 3 | - | `Delay`, `TeleportFromPad2` (code), `TeleportPressed` (code) | `Delay`, `IndexObjectCells` |
 | `$9935` | `TeleportLatch` (`TeleportPads`+5) | 1 | non-zero while up is held after a teleport test | `Delay`, `Teleports` | `Delay`, `IndexObjectCells`, `Teleports` |
-| `$99F2` | `AmmoPod` | 6 | The ammunition pod (column, row), `$FF` after it; `$FF` in the first byte: taken or none | `Delay`, `Pods` | `Delay`, `IndexObjectCells`, `GrenadePodTest` (code), `Pods` (code) |
+| `$99F2` | `AmmoPod` | 3 of 6 | The ammunition pod (column, row), `$FF` after it; `$FF` in the first byte: taken or none | `Delay`, `Pods` | `Delay`, `IndexObjectCells`, `GrenadePodTest` (code), `Pods` (code) |
 | `$99F5` | `GrenadePod` (`AmmoPod`+3) | 3 | the grenade pod (column, row), `$FF` after it | `Delay`, `Pods` | `Delay`, `IndexObjectCells`, `GrenadePodTest` (code) |
 | `$9A0F` | `Printers` | 10 | The five character printers of SetPrinter: `$ADE1`, `$AE26`, `$AE5D`, `$AE95`, `$AEE4` | `Delay` | `Delay` |
 
@@ -286,7 +287,7 @@ Written by `kit/refdocs.py`.
 | `$A268` | `MissilePosition` | 2 | The missile's X, Y; the builder's `$FF` end mark of MissileLauncher lands here first | `Delay`, `HomingMissileStep` (code) | `Delay`, `IndexObjectCells`, `HomingMissileDraw` (code), `HomingMissileStart` (code) |
 | `$A26A` | `MissileLive` | 1 | `$0D` while the missile flies, 0 when not | `Delay`, `HomingMissileStep` | `Delay`, `HomingMissileStart`, `IndexObjectCells`, `HomingMissileRemove` (code) |
 | `$A333` | `PickupList` | 31 | The pick-ups of tile 14: up to 10 records of column, row, live (1); `$FF` at `$A351`. The builder writes the column and row (its record size is 3, so the live byte is left as ClearPickups set it: 1 for the first four records). | `ClearPickups`, `Delay`, `PickupsVsPlayer` | `ClearPickups`, `Delay`, `IndexObjectCells` |
-| `$A406` | `AlienPaths` | 258 | The 6 alien paths (`$A406`, `$A445`, `$A490`, `$A4C5`, `$A4CE`, `$A4E3`): dX dY pairs, `$C4` n hold, `$C3` loop. `$A406`: a sine wave left (31 pairs of dX -1, dY 0 to +-3); `$A445`: the same wave, then 15 x (-1, 0), 6 x (-2, 0), 100 x (-4, 0) (it speeds off); `$A490`: 34 x (-2, 0), then a loop up and down over 30 passes, 100 x (-2, 0); `$A4C5`: 40 x (-1, 0), 100 x (-4, 0); `$A4CE`: 18 x (-2, 0), 32 x (0, -1), 24 x (0, +1), 6 still, 100 x (-4, 0); `$A4E3`: zig-zag, a box, 100 x (-4, 0). X is in 2-pixel units (128 across), Y in pixels. Every path ends with `$C3`. | `Delay` | `Delay` |
+| `$A406` | `AlienPaths` | 63 of 258 | The 6 alien paths (`$A406`, `$A445`, `$A490`, `$A4C5`, `$A4CE`, `$A4E3`): dX dY pairs, `$C4` n hold, `$C3` loop. `$A406`: a sine wave left (31 pairs of dX -1, dY 0 to +-3); `$A445`: the same wave, then 15 x (-1, 0), 6 x (-2, 0), 100 x (-4, 0) (it speeds off); `$A490`: 34 x (-2, 0), then a loop up and down over 30 passes, 100 x (-2, 0); `$A4C5`: 40 x (-1, 0), 100 x (-4, 0); `$A4CE`: 18 x (-2, 0), 32 x (0, -1), 24 x (0, +1), 6 still, 100 x (-4, 0); `$A4E3`: zig-zag, a box, 100 x (-4, 0). X is in 2-pixel units (128 across), Y in pixels. Every path ends with `$C3`. | `Delay` | `Delay` |
 | `$A445` | `AlienPath2` (`AlienPaths`+63) | 75 | - | `Delay` | `Delay` |
 | `$A490` | `AlienPath3` (`AlienPaths`+138) | 53 | - | `Delay` | `Delay` |
 | `$A4C5` | `AlienPath4` (`AlienPaths`+191) | 9 | - | `Delay` | `Delay` |
@@ -326,9 +327,9 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$ACEF` | `KeyTable` | 41 | The 40 keys in the order of the rows `$FE` ... `$7F` and their bits 0-4, then 0 (no key). CAPS SHIFT is 1, SYMBOL SHIFT 2, ENTER 13, SPACE 32, the rest their characters: (CS) Z X C V, A S D F G, Q W E R T, 1 2 3 4 5, 0 9 8 7 6, P O I U Y, (ENTER) L K J H, (SPACE) (SS) M N B. The define-keys screen (`$7CF9`) uses it too. | `Delay`, `ReadKey` | `Delay` |
 | `$AD51` | `RandomSeed` | 2 | The random seed (Random) | `Delay`, `Random` | `Delay`, `Random` |
-| `$AD82` | `ScoreText` | 15 | The HUD score: attribute `$45`, font `$D7E0`, at 23,14, the six digits, `$FF` | `Delay`, `HofDigitLoop`, `PrintString`, `Start` | `Delay`, `Start` |
+| `$AD82` | `ScoreText` | 8 of 15 | The HUD score: attribute `$45`, font `$D7E0`, at 23,14, the six digits, `$FF` | `Delay`, `HofDigitLoop`, `PrintString`, `Start` | `Delay`, `Start` |
 | `$AD8A` | `Score` (`ScoreText`+8) | 7 | the score: 6 ASCII digits (000000 at a new game, `$6D88`) | `Delay`, `HofDigitLoop`, `PrintString`, `Start` | `Delay`, `Start` |
-| `$AD91` | `PointValues` | 60 | The ten addends of AddScore, 6 ASCII digits each: 25 50 100 125 150 200 250 300 350 1000 | `Delay` | `Delay` |
+| `$AD91` | `PointValues` | 6 of 60 | The ten addends of AddScore, 6 ASCII digits each: 25 50 100 125 150 200 250 300 350 1000 | `Delay` | `Delay` |
 | `$AD97` | `Points50` (`PointValues`+6) | 6 | - | `Delay` | `Delay` |
 | `$AD9D` | `Points100` (`PointValues`+12) | 6 | - | `Delay` | `Delay` |
 | `$ADA3` | `Points125` (`PointValues`+18) | 6 | - | `Delay` | `Delay` |
@@ -343,14 +344,14 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B101` | `NoSaveBuffer` | 1488 | A 128-byte sprite background buffer for the drawings that keep no background. The sprite drawers save the screen under a sprite into the buffer the caller gives (DE) and skip the copy when it is NoSaveBuffer (`$7867`: SBC HL,DE with HL = `$B101` for the 24-pixel frames, `$7A80` for the 16-pixel frames). `$9EA4` passes it. The draw routine `$79C2` reads `$B101-$B130` (16 rows of 3 bytes) in the warp runs. Zeros in the image. | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` |
+| `$B101` | `NoSaveBuffer` | 128 of 1488 | A 128-byte sprite background buffer for the drawings that keep no background. The sprite drawers save the screen under a sprite into the buffer the caller gives (DE) and skip the copy when it is NoSaveBuffer (`$7867`: SBC HL,DE with HL = `$B101` for the 24-pixel frames, `$7A80` for the 16-pixel frames). `$9EA4` passes it. The draw routine `$79C2` reads `$B101-$B130` (16 rows of 3 bytes) in the warp runs. Zeros in the image. | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` |
 | `$B181` | `WorkArea` (`NoSaveBuffer`+128) | 1360 | `$B181-$B6D0`: the per-screen work area cleared by ClearWorkArea; from `$B181` the player's background save (128 bytes: `$824D`, `$9C15`) and the menu's (`$6EAF`) | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` | `BigSpriteMask`, `ClearWorkArea`, `Delay`, `ShiftNone` |
 
 ## music
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B6DF` | `TuneState` | 13 | The title tune's player state. +0 (`$B6DF`) and +3/+4 (`$B6E2`, `$B6E3`) have no reader or writer in any recording or in the code. The stream pointers hold stale values in the image (TuneStart writes them). | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneCheckMixer` (code), `TuneNextEvent` (code) +1 | `AySilence`, `Delay`, `TuneStart`, `TuneChannelReads` (code), `TuneCheckMixer` (code) +2 |
+| `$B6DF` | `TuneState` | 1 of 13 | The title tune's player state. +0 (`$B6DF`) and +3/+4 (`$B6E2`, `$B6E3`) have no reader or writer in any recording or in the code. The stream pointers hold stale values in the image (TuneStart writes them). | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneCheckMixer` (code), `TuneNextEvent` (code) +1 | `AySilence`, `Delay`, `TuneStart`, `TuneChannelReads` (code), `TuneCheckMixer` (code) +2 |
 | `$B6E0` | `TuneVolume` (`TuneState`+1) | 1 | 12: the start volume and the ceiling (TuneSetMaxVolumes, TuneInitChannel) | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes` | `Delay` |
 | `$B6E1` | `TuneStreamRead` (`TuneState`+2) | 3 | 0 at each TuneTick; `$FF` once a channel has read its stream in this tick (TuneNextEvent) | `Delay`, `TuneNextEvent` (code) | `Delay`, `TuneChannelReads` (code), `TuneTick` (code) |
 | `$B6E4` | `TuneStopped` (`TuneState`+5) | 1 | `$FF`: no tune (set in TuneStart and at the tune's end, TuneEnd), 0 playing | `Delay`, `TuneTick` (code) | `Delay`, `TuneStart`, `TuneEnd` (code) |
@@ -358,14 +359,14 @@ Written by `kit/refdocs.py`.
 | `$B6E6` | `TunePointerA` (`TuneState`+7) | 2 | channel A's stream pointer (IY between the ticks) | `Delay`, `TuneTick` (code) | `Delay`, `TuneStart`, `TuneTick` (code) |
 | `$B6E8` | `TunePointerB` (`TuneState`+9) | 2 | channel B's stream pointer | `Delay`, `TuneTick` (code) | `Delay`, `TuneStart`, `TuneTick` (code) |
 | `$B6EA` | `TunePointerC` (`TuneState`+11) | 2 | channel C's stream pointer | `Delay`, `TuneTick` (code) | `Delay`, `TuneStart`, `TuneTick` (code) |
-| `$BA01` | `TuneStreamA` | 1148 | The title tune, channel A: the order list, then its patterns. The codes of TuneNextEvent. `$BA01-$BA57`: calls (`$75`) of the patterns and the envelope settings, ending with `$FF`; `$BA58-$BB7D` the patterns, each ending with `$76`. tune.py: 340 notes, 40 calls, 11 volume envelopes. | `Delay` | `Delay` |
+| `$BA01` | `TuneStreamA` | 87 of 1148 | The title tune, channel A: the order list, then its patterns. The codes of TuneNextEvent. `$BA01-$BA57`: calls (`$75`) of the patterns and the envelope settings, ending with `$FF`; `$BA58-$BB7D` the patterns, each ending with `$76`. tune.py: 340 notes, 40 calls, 11 volume envelopes. | `Delay` | `Delay` |
 | `$BA58` | `TunePatternsA` (`TuneStreamA`+87) | 294 | channel A's patterns (sub-streams, `$76` each) | `Delay` | `Delay` |
 | `$BB7E` | `TuneStreamB` (`TuneStreamA`+381) | 101 | channel B: the order list (`$FF` at `$BBE2`), 364 notes, 28 noise settings, 2 mixer toggles | `Delay` | `Delay` |
 | `$BBE3` | `TunePatternsB` (`TuneStreamA`+482) | 291 | - | `Delay` | `Delay` |
 | `$BD06` | `TuneStreamC` (`TuneStreamA`+773) | 88 | channel C: the order list (`$FF` at `$BD5D`), 90 notes, 29 volume envelopes | `Delay` | `Delay` |
 | `$BD5E` | `TunePatternsC` (`TuneStreamA`+861) | 131 | - | `Delay` | `Delay` |
 | `$BDE1` | `TuneEnvelopes` (`TuneStreamA`+992) | 156 | envelope sub-streams called by all three channels (`$8A` n ... `$76`) | `Delay` | `Delay` |
-| `$BE7D` | `TuneChannels` | 240 | The tune's three channel records, 80 bytes each: A, B, C. TuneTick passes IX = `$BE7D`, `$BECD`, `$BF1D`. +0/+1 the note's period, +2 the note's ticks left, +3 the volume, +4/+5 (5 at the start, +5 = 1 at a note: no reader), +6 the tone register (A 0, B 2, C 4), +7 the volume register (8, 9, 10), +8 the volume ceiling, +9 the transpose, +`$0A` the note length, +`$0B` the mixer bits (A `$09`, B `$12`, C `$24`), +`$0C` the call depth, +`$0D` the deferred read, +`$0E`-+`$18` the call return points (2 bytes each), +`$19` the pitch offset, +`$1A` the pitch envelope index, +`$1B`/+`$1C`/+`$1D`/+`$1E` the pitch counters, the step and the reload, +`$1F` the pitch table's length and +`$20` on its entries, +`$35` the volume envelope index, +`$36`/+`$37`/+`$38`/+`$39` the volume counters, the step and the reload, +`$3A` the volume table's length and +`$3B` on its entries. Only the fixed fields (+6, +7, +`$0B`) matter in the image; the rest is set by TuneStart and the streams (written in c128 only). | `Delay` | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneStart` |
+| `$BE7D` | `TuneChannels` | 80 of 240 | The tune's three channel records, 80 bytes each: A, B, C. TuneTick passes IX = `$BE7D`, `$BECD`, `$BF1D`. +0/+1 the note's period, +2 the note's ticks left, +3 the volume, +4/+5 (5 at the start, +5 = 1 at a note: no reader), +6 the tone register (A 0, B 2, C 4), +7 the volume register (8, 9, 10), +8 the volume ceiling, +9 the transpose, +`$0A` the note length, +`$0B` the mixer bits (A `$09`, B `$12`, C `$24`), +`$0C` the call depth, +`$0D` the deferred read, +`$0E`-+`$18` the call return points (2 bytes each), +`$19` the pitch offset, +`$1A` the pitch envelope index, +`$1B`/+`$1C`/+`$1D`/+`$1E` the pitch counters, the step and the reload, +`$1F` the pitch table's length and +`$20` on its entries, +`$35` the volume envelope index, +`$36`/+`$37`/+`$38`/+`$39` the volume counters, the step and the reload, +`$3A` the volume table's length and +`$3B` on its entries. Only the fixed fields (+6, +7, +`$0B`) matter in the image; the rest is set by TuneStart and the streams (written in c128 only). | `Delay` | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneStart` |
 | `$BECD` | `TuneChannelB` (`TuneChannels`+80) | 80 | - | `Delay` | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneStart` |
 | `$BF1D` | `TuneChannelC` (`TuneChannels`+160) | 80 | - | `Delay` | `Delay`, `TuneInitChannel`, `TuneSetMaxVolumes`, `TuneStart` |
 
@@ -374,7 +375,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$C077` | `SfxChannelWriters` | 32 | The writers of AY channels A, B, C, then 13 times SfxNoChannel. SfxToAyChannel's JP (HL): SfxWriteChannelA `$C097`, SfxWriteChannelB `$C0B1`, SfxWriteChannelC `$C0CC`, then `$C7F3` (a RET). | `Delay`, `SfxToAyChannel` | `Delay` |
-| `$C218` | `SoundEffects` | 1437 | The 23 sound effect streams (codes of SfxReadStream). Each starts at the address its trigger passes and ends with `$FF`; sfx.py decodes them. | `Delay`, `SfxReadStream`, `SfxSlotStep`, `SfxToAyChannel`, `SfxWriteChannelA` +3 | `Delay`, `SfxReadStream`, `SfxSlotStep`, `SfxToAyChannel`, `SfxWriteChannelA` +5 |
+| `$C218` | `SoundEffects` | 38 of 1437 | The 23 sound effect streams (codes of SfxReadStream). Each starts at the address its trigger passes and ends with `$FF`; sfx.py decodes them. | `Delay`, `SfxReadStream`, `SfxSlotStep`, `SfxToAyChannel`, `SfxWriteChannelA` +3 | `Delay`, `SfxReadStream`, `SfxSlotStep`, `SfxToAyChannel`, `SfxWriteChannelA` +5 |
 | `$C23E` | `GrenadeRefillSound` (`SoundEffects`+38) | 38 | slot 2: arpeggios 84-76-68-60 at volume 13 ... 3 | `Delay` | `Delay` |
 | `$C264` | `NoiseBurstSound` (`SoundEffects`+76) | 28 | slot 13: tone and noise, note 75, volume 13 down to 3 | `Delay`, `SfxReadStream` (`m1`) | `Delay` |
 | `$C280` | `TrillSound` (`SoundEffects`+104) | 71 | slot 5: note 60 and silence alternating, 3 ticks each, 34 times | `Delay` | `Delay` |
@@ -411,7 +412,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$C7F4` | `ScreenTable` | 250 | The 125 screens: the address of each screen's layout, by the screen number. The screen builder BuildScreen reads entry ScreenNumber `$8523` (`$84D7`: BC = `$C7F4`, TableWord HL = the word at BC + 2A). The words point at the layouts in ScreenLayouts, in screen order and packed with no gap (`$C8EE-$D8DF`). The round is screens 0-124 (screen 124 walked off ends it, `$A867`). | `Delay`, `TableWord` | `Delay` |
-| `$C8EE` | `Screen000Layout` | 4082 | The layouts (from screen 0's) of screens 0-124: the objects of each screen, 3 bytes an object, `$FF` the end. An object: the row, the column (signed: from `$E0` up the object starts off the left edge, its glyphs there clipped by PrintChar's bit 5 test), the object number. The builder (`$84E4-$8507`) takes D = row, E = column, the object's string from ObjectTable `$852E` (62 objects, 0-61), `$AE1B` = 1 (the cells solid), `$AE21` = 0 (drawn), C = 0, and PrintString draws it; the object's string sets its own glyph set (`$E6`) and colours. Objects per screen: 3-21 (1319 in all); every one of the 62 objects but [8, 9, 18, 56, 57] is used. | `BuildScreen`, `Delay` | `Delay` |
+| `$C8EE` | `Screen000Layout` | 28 of 4082 | The layouts (from screen 0's) of screens 0-124: the objects of each screen, 3 bytes an object, `$FF` the end. An object: the row, the column (signed: from `$E0` up the object starts off the left edge, its glyphs there clipped by PrintChar's bit 5 test), the object number. The builder (`$84E4-$8507`) takes D = row, E = column, the object's string from ObjectTable `$852E` (62 objects, 0-61), `$AE1B` = 1 (the cells solid), `$AE21` = 0 (drawn), C = 0, and PrintString draws it; the object's string sets its own glyph set (`$E6`) and colours. Objects per screen: 3-21 (1319 in all); every one of the 62 objects but [8, 9, 18, 56, 57] is used. | `BuildScreen`, `Delay` | `Delay` |
 | `$C90A` | `Screen001Layout` (`Screen000Layout`+28) | 31 | screen 1: 10 objects | `Delay` | `Delay` |
 | `$C929` | `Screen002Layout` (`Screen000Layout`+59) | 34 | screen 2: 11 objects | `Delay` | `Delay` |
 | `$C94B` | `Screen003Layout` (`Screen000Layout`+93) | 22 | screen 3: 7 objects | `Delay` | `Delay` |
@@ -543,7 +544,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$D8E0` | `Font` | 472 | The font: 59 glyphs of 8 bytes, codes `$20-$5A` (space to Z), one glyph a row. GlyphBase FontBase `$D7E0` (set at `$715D`, `$8E1F`, `$8E71`, `$A8DB`, PrintNumber3 `$B0C8`, PrintString `$E7` at `$AFF5`): code n at `$D7E0` + 8n. Thick 7-pixel letters and digits (glyphs.py). In the runs PrintChar and PrintCharAttr read the space, !, the digits, : and the letters. | `Delay`, `PrintChar`, `PrintCharAttr` | `Delay` |
-| `$DAB8` | `TileGlyphs` | 4744 | The scenery glyphs: 8 bytes each, one glyph a row, in 23 sets (GlyphBase values). The objects of ObjectTable `$852E` select a set with PrintString `$E6` lo hi and then print codes from 0: glyph n of a set at its base + 8n. A base is any address, the sets follow each other. The code sets three bases itself: `$DAB8` (Mines, `$AB9F`, `$AC2B`), `$DDD8` (AnimateTurrets, for the XOR plotter XorCharAttr), `$E840` (`$A2D5`). strings.py lists for each base the objects that use it and the codes they print; the runs read `$DAB8-$ED3F` as glyphs (PrintChar, EraseBlockDebris, EraseBlock, XorCharAttr), with unread holes at `$DBC0-$DBDF` and `$E5C0-$E5FF`. | `Delay`, `PrintChar`, `PrintCharAttr`, `XorCharAttr` | `Delay` |
+| `$DAB8` | `TileGlyphs` | 304 of 4744 | The scenery glyphs: 8 bytes each, one glyph a row, in 23 sets (GlyphBase values). The objects of ObjectTable `$852E` select a set with PrintString `$E6` lo hi and then print codes from 0: glyph n of a set at its base + 8n. A base is any address, the sets follow each other. The code sets three bases itself: `$DAB8` (Mines, `$AB9F`, `$AC2B`), `$DDD8` (AnimateTurrets, for the XOR plotter XorCharAttr), `$E840` (`$A2D5`). strings.py lists for each base the objects that use it and the codes they print; the runs read `$DAB8-$ED3F` as glyphs (PrintChar, EraseBlockDebris, EraseBlock, XorCharAttr), with unread holes at `$DBC0-$DBDF` and `$E5C0-$E5FF`. | `Delay`, `PrintChar`, `PrintCharAttr`, `XorCharAttr` | `Delay` |
 | `$DBE8` | `TileSetDBE8` (`TileGlyphs`+304) | 336 | the glyph set of objects 2 | `Delay`, `PrintChar` | `Delay` |
 | `$DD38` | `TileSetDD38` (`TileGlyphs`+640) | 160 | the glyph set of objects 3, 4, 35, 37 | `Delay`, `PrintChar` | `Delay` |
 | `$DDD8` | `TileSetDDD8` (`TileGlyphs`+800) | 256 | the glyph set of objects 5, 44 | `Delay`, `PrintChar`, `XorCharAttr` | `Delay` |
@@ -565,7 +566,7 @@ Written by `kit/refdocs.py`.
 | `$EAF0` | `TileSetEAF0` (`TileGlyphs`+4152) | 248 | the glyph set of objects 46, 47, 48, 49, 50 | `Delay` | `Delay` |
 | `$EBE8` | `TileSetEBE8` (`TileGlyphs`+4400) | 96 | the glyph set of objects 51 | `Delay` | `Delay` |
 | `$EC48` | `TileSetEC48` (`TileGlyphs`+4496) | 248 | the glyph set of objects 52, 53, 54 | `Delay` | `Delay` |
-| `$ED40` | `SmallSprites` | 576 | 9 small XOR sprites, 16 x 8 pixels, each in 4 pre-shifted copies: 64 bytes a sprite. DrawSmallSprite: A the sprite, D the pixel line, E the X (2-pixel units); the copy (E AND 3) at `$ED40` + 64A + 16 (E AND 3), 8 rows of 2 bytes XORed onto the screen at PixelAddress (POPs through SP, BC = `$0407`: 4 passes of 2 rows). Drawn twice it is gone. Each copy is shifted 2 pixels right of the one before (bitmap.py). | `Delay` | `Delay` |
+| `$ED40` | `SmallSprites` | 64 of 576 | 9 small XOR sprites, 16 x 8 pixels, each in 4 pre-shifted copies: 64 bytes a sprite. DrawSmallSprite: A the sprite, D the pixel line, E the X (2-pixel units); the copy (E AND 3) at `$ED40` + 64A + 16 (E AND 3), 8 rows of 2 bytes XORed onto the screen at PixelAddress (POPs through SP, BC = `$0407`: 4 passes of 2 rows). Drawn twice it is gone. Each copy is shifted 2 pixels right of the one before (bitmap.py). | `Delay` | `Delay` |
 | `$ED80` | `SmallSprite1` (`SmallSprites`+64) | 64 | the same pointing left | `Delay` | `Delay` |
 | `$EDC0` | `SmallSprite2` (`SmallSprites`+128) | 64 | a spark (the debris particle: `$9537`, A = 2) | `Delay` | `Delay` |
 | `$EE00` | `SmallSprite3` (`SmallSprites`+192) | 64 | a cluster of dots | `Delay` | `Delay` |
@@ -582,7 +583,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$FF18` | `LeftoverStack` | 96 | Leftover of the development machine: its BASIC machine stack. Words such as `$0DF3`, `$0BCE`, `$171E`, `$0ADC` (48K ROM addresses), `$50E2`, `$6D5F`, and at `$FF54` `$1303` (the address the 48K ROM keeps at the bottom of every BASIC stack, the error return to MAIN-4), then `$3E` at `$FF57`: the marker byte the ROM puts at RAMTOP, here `$FF57`, the 48K default. The image was saved from a 48K whose BASIC stack and user-defined graphics lay at the top of RAM. No reader in any recording. | `Delay` | `Delay` |
+| `$FF18` | `LeftoverStack` | 64 of 96 | Leftover of the development machine: its BASIC machine stack. Words such as `$0DF3`, `$0BCE`, `$171E`, `$0ADC` (48K ROM addresses), `$50E2`, `$6D5F`, and at `$FF54` `$1303` (the address the 48K ROM keeps at the bottom of every BASIC stack, the error return to MAIN-4), then `$3E` at `$FF57`: the marker byte the ROM puts at RAMTOP, here `$FF57`, the 48K default. The image was saved from a 48K whose BASIC stack and user-defined graphics lay at the top of RAM. No reader in any recording. | `Delay` | `Delay` |
 | `$FF58` | `LeftoverUdgs` (`LeftoverStack`+64) | 32 | `$FF58-$FF77`: the user-defined graphics A-D as the ROM sets them (copies of the ROM font's A, B, C, D) | `Delay` | `Delay` |
-| `$FFDB` | `SerialSum` | 37 | The downloader's checksum | `Delay`, `SerialBitWait` (code), `SerialDownloaderCheck` (code) | `Delay`, `SerialBitWait` (code), `SerialDownloader` (code) |
+| `$FFDB` | `SerialSum` | 1 of 37 | The downloader's checksum | `Delay`, `SerialBitWait` (code), `SerialDownloaderCheck` (code) | `Delay`, `SerialBitWait` (code), `SerialDownloader` (code) |
 | `$FFDC` | `LeftoverCode` (`SerialSum`+1) | 36 | `$FFDC-$FFFA`: an older copy of SerialReadByte's tail (the bytes of `$FFB3-$FFD1`, then CPL and RET: no checksum); `$FFFB-$FFFF` the end of UDG U | `Delay` | `Delay` |

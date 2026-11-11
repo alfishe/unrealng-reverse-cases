@@ -681,7 +681,7 @@ Recordings: `work/stage2/game98/deep` (the bot's '98 game, 30284 frames, 9 game 
 | `$C159` | `MenuMoreText` | 57 | "3..INTERFACE 2", then in yellow "4..REDEFINE KEYS", "5..LOAD NEW LEVEL!". ZS's text for option 5 in the place and length of NE's "5..LOAD SAVED GAME": the same 18 characters, the 0 at `$C191` where NE has it. | `PrintControl`, `PrintInline` | `PutBlock` |
 | `$C1E6` | `TitleText` | 22 | "ZS EDITION'98 " at (1,2), attribute `$47`, setting `$32` (triple height, double width). ZS's title in the first bytes of NE's two-line "NETHER" / "EARTH": one line of 14 characters, ended by 0 at `$C1FB`, so the RET of PrintTitleEnd stays at `$C1FC`. | `PrintControl`, `PrintInline` | `PutBlock` |
 | `$C26A` | `MenuLoadSpare` | 35 | 35 zero bytes: NE's LOADING ERROR! text and LoadError, cleared. `$C26A-$C28C`. Nothing reads or runs them (no recording touched them; no instruction addresses them). | - | `PutBlock` |
-| `$C291` | `MenuSaveSpare` | 148 | 148 zero bytes: NE's save prompt, SaveGameBlocks and SaveChecksum, cleared. `$C291-$C324`. Nothing reads or runs them. | - | `PutBlock` |
+| `$C291` | `MenuSaveSpare` | 142 of 148 | 148 zero bytes: NE's save prompt, SaveGameBlocks and SaveChecksum, cleared. `$C291-$C324`. Nothing reads or runs them. | - | `PutBlock` |
 | `$C31F` | `ChecksumNext` (`MenuSaveSpare`+142) | 6 | carry added into D; the next byte | - | `PutBlock` |
 | `$C33F` | `OptionAttrPlain` | 3 | PrintInline: attribute `$46` | `PrintControl`, `PrintInline` | `PutBlock` |
 | `$C346` | `OptionAttrChosen` | 3 | PrintInline: attribute `$45` | `PrintControl`, `PrintInline` | `PutBlock` |
@@ -795,11 +795,11 @@ Recordings: `work/stage2/intro98/w-intro` (r98's intro window).
 | `$C0E0` | `OrnamentPtrs` | 32 | 16 ornament pointers, right after the samples (page offset `$E0`). 16 ornament pointers, right after the samples (page offset `$E0`) | `ChAOrnSampleCmd`, `ChAOrnamentCmd`, `ChBOrnSampleCmd`, `ChBOrnamentCmd`, `ChCOrnSampleCmd` +1 | `Pt3Init` |
 | `$C100` | `VolumeTable` | 256 | 16 x 16 bytes at a page start: [channel volume * 16 + sample level] -> the AY volume (3.3x-3.4x form). 16 x 16 bytes at a page start: [channel volume * 16 + sample level] -> the AY volume. Pro Tracker 3.3x-3.4x's form of Ivan Roshin's table (row v, column l: 0 for v = 0, else l * (v + 1) / 16 rounded down; row 1 = 0 x 8, 1 x 8; row 2 = 0 x 6, 1 x 5, 2 x 5), written by the tracker for this 3.3 module; the signature's copy holds the 3.5x+ form (50 of the 256 bytes differ). Its first byte (0) is also the "end of pattern" InitState points channel A at. | `Pt3Play`, `WriteAy` | - |
 | `$C200` | `NoteTable` | 192 | 96 tone periods (words, notes C-1 .. B-8 of the tracker), at a page start: PT3's tone table #1 .... 96 tone periods (words, notes C-1 .. B-8 of the tracker), at a page start: PT3's tone table #1 (Sound Tracker's, `$0EF8` for the lowest note), the only one this player has. The effect tables follow it in the same page (the decoders index them by the low byte). | - | - |
-| `$C2C0` | `ChAEffects` | 54 | The effect routines of the three channels, effects 1-9 (6 and 7 unused: `$0052`, a RET in the 48 K .... The effect routines of the three channels, effects 1-9 (6 and 7 unused: `$0052`, a RET in the 48 K ROM). | `ChADecodeByte` | - |
+| `$C2C0` | `ChAEffects` | 18 of 54 | The effect routines of the three channels, effects 1-9 (6 and 7 unused: `$0052`, a RET in the 48 K .... The effect routines of the three channels, effects 1-9 (6 and 7 unused: `$0052`, a RET in the 48 K ROM). | `ChADecodeByte` | - |
 | `$C2D2` | `ChBEffects` (`ChAEffects`+18) | 18 | - | - | - |
 | `$C2E4` | `ChCEffects` (`ChAEffects`+36) | 18 | - | - | - |
 | `$C2F6` | `AyPad` | 10 | "-VORONEZH-": 10 bytes up to the page start the AY block needs, never read. The text "-VORONEZH-" (the town of the player's authors, Nick of GDC: "Golden Disk, Voronezh" in ANE's source of the player; who put it here is not known; ANE's copy holds zeros here). WriteAy needs the AY block at a page start, so these bytes are padding: no code reads or writes them (none in the window). | - | - |
-| `$C300` | `AyToneA` | 14 | The AY block, at a page start (WriteAy uses L as the register number): registers 0-12. The AY block, at a page start (WriteAy uses L as the register number): registers 0-12. | `WriteAy` | `Pt3Play`, `Pt3Stop` |
+| `$C300` | `AyToneA` | 2 of 14 | The AY block, at a page start (WriteAy uses L as the register number): registers 0-12. The AY block, at a page start (WriteAy uses L as the register number): registers 0-12. | `WriteAy` | `Pt3Play`, `Pt3Stop` |
 | `$C302` | `AyToneB` (`AyToneA`+2) | 2 | - | `WriteAy` | `Pt3Play` |
 | `$C304` | `AyToneC` (`AyToneA`+4) | 2 | - | `WriteAy` | `Pt3Play` |
 | `$C306` | `AyUnused` (`AyToneA`+6) | 2 | registers 6 and 7: WriteAy takes IXH and IXL instead | - | - |
@@ -855,7 +855,7 @@ Recordings: `work/stage2/front99/intro` (r99's intro window).
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$651D` | `PrintCol` | 6 | The print column, 0-63 | `PrintChar`, `PrintNewRow` | `PrintChar`, `PrintNewRow` |
+| `$651D` | `PrintCol` | 1 of 6 | The print column, 0-63 | `PrintChar`, `PrintNewRow` | `PrintChar`, `PrintNewRow` |
 | `$651E` | `PrintRow` (`PrintCol`+1) | 1 | the print row, 0-23 (more: not drawn) | `PrintChar`, `PrintNewRow` | `PrintChar`, `PrintNewRow` |
 | `$651F` | `PrintArgsLeft` (`PrintCol`+2) | 1 | the argument bytes still to come after `$16` or `$17` | `PrintChar` | `PrintChar` |
 | `$6520` | `PrintCode` (`PrintCol`+3) | 1 | the control code waiting for its arguments (`$16` or `$17`) | `PrintChar` | `PrintChar` |
@@ -896,18 +896,18 @@ Recordings: `work/stage2/front99/intro` (r99's intro window).
 | `$C010` | `PlayPad` | 1 | A padding byte after the JR (NOP) | - | - |
 | `$C013` | `MutePad` | 1 | A padding byte after the JR (NOP) | - | - |
 | `$C014` | `CompileText` | 56 | "SOUND TRACKER COMPILATION OF NE___MUS   BY KSA SOFTWARE" and the byte `$7F`. The compiler's signature with the module name ("NE___MUS") and the author field ("KSA SOFTWARE") filled in when compiling: other compiled blocks carry their own (the reference copy "SLIDE" with an empty author, "BURO NAHOD BY WILLIS SOFT"). Whether KSA Software is the musician or the author field of the copy of Sound Tracker used is not known from this block. `$7F` at `$C04B` ends it. | - | - |
-| `$C0C9` | `PositionsAddr` | 8 | The module's position list (past its count byte). The player's variables, `$C0C9-$C107`. Before Init they hold the compiler's leftovers (as on the disk); InitModule sets them. | `NextPosition`, `ReadRow`, `SetOrnament` | `InitModule` |
+| `$C0C9` | `PositionsAddr` | 2 of 8 | The module's position list (past its count byte). The player's variables, `$C0C9-$C107`. Before Init they hold the compiler's leftovers (as on the disk); InitModule sets them. | `NextPosition`, `ReadRow`, `SetOrnament` | `InitModule` |
 | `$C0CB` | `OrnamentsAddr` (`PositionsAddr`+2) | 2 | the module's ornaments | `SetOrnament` | `InitModule` |
 | `$C0CD` | `PatternsAddr` (`PositionsAddr`+4) | 2 | the module's pattern table | `NextPosition` | `InitModule` |
 | `$C0CF` | `SamplesAddr` (`PositionsAddr`+6) | 2 | the module's samples (module + 27) | `ReadRow` | `InitModule` |
-| `$C0D1` | `Tempo` | 3 | Frames a row (the module's first byte) | `NextPosition`, `PlayFrame` | `InitModule`, `PlayFrame` |
+| `$C0D1` | `Tempo` | 1 of 3 | Frames a row (the module's first byte) | `NextPosition`, `PlayFrame` | `InitModule`, `PlayFrame` |
 | `$C0D2` | `DelayCounter` (`Tempo`+1) | 1 | frames left until the next row | `PlayFrame` | `InitModule`, `PlayFrame` |
 | `$C0D3` | `PositionCount` (`Tempo`+2) | 1 | the number of positions (list byte + 1) | `NextPosition` | `InitModule` |
-| `$C0D4` | `PatternPtrA` | 6 | Channel A's pattern stream: the next row's byte | `PlayFrame` | `InitModule`, `NextPosition`, `PlayFrame` |
+| `$C0D4` | `PatternPtrA` | 2 of 6 | Channel A's pattern stream: the next row's byte | `PlayFrame` | `InitModule`, `NextPosition`, `PlayFrame` |
 | `$C0D6` | `PatternPtrB` (`PatternPtrA`+2) | 2 | channel B's pattern stream | `PlayFrame` | `NextPosition`, `PlayFrame` |
 | `$C0D8` | `PatternPtrC` (`PatternPtrA`+4) | 2 | channel C's pattern stream | `PlayFrame` | `NextPosition`, `PlayFrame` |
 | `$C0DA` | `PatternEnd` | 1 | `$FF`: channel A's stream points here after Init (an end of pattern: the first Play fetches a position) | `PlayFrame` | - |
-| `$C0DB` | `ChannelState` | 30 | Channel A's 10 bytes; IX points at +2 (ChannelA). Per channel (A `$C0DB`, B `$C0E5`, C `$C0EF`), IX = the channel + 2: IX-2 the envelope state (0 none, 1 set by the row, 2 written once), IX-1 the row length reload, IX+0 the sample line (0-31), IX+1 the note, IX+2 the rows left until the next note, IX+3/4 the sample's address, IX+5/6 the ornament's address, IX+7 the sample lines left (`$FF`: silent). | `EnvelopeFlag`, `InitModule`, `PlayFrameOut`, `RowCountdown`, `SampleStep` +1 | `ChannelOff`, `InitModule`, `ReadRow`, `RowCountdown`, `SampleStep` +1 |
+| `$C0DB` | `ChannelState` | 2 of 30 | Channel A's 10 bytes; IX points at +2 (ChannelA). Per channel (A `$C0DB`, B `$C0E5`, C `$C0EF`), IX = the channel + 2: IX-2 the envelope state (0 none, 1 set by the row, 2 written once), IX-1 the row length reload, IX+0 the sample line (0-31), IX+1 the note, IX+2 the rows left until the next note, IX+3/4 the sample's address, IX+5/6 the ornament's address, IX+7 the sample lines left (`$FF`: silent). | `EnvelopeFlag`, `InitModule`, `PlayFrameOut`, `RowCountdown`, `SampleStep` +1 | `ChannelOff`, `InitModule`, `ReadRow`, `RowCountdown`, `SampleStep` +1 |
 | `$C0DD` | `ChannelA` (`ChannelState`+2) | 8 | channel A: IX here | `EnvelopeFlag`, `InitModule`, `PlayFrameOut`, `RowCountdown`, `SampleStep` +1 | `InitModule`, `ReadRow`, `RowCountdown`, `SampleStep`, `SetOrnament` |
 | `$C0E5` | `ChannelStateB` (`ChannelState`+10) | 2 | channel B's 10 bytes | `EnvelopeFlag`, `InitModule`, `RowCountdown` | `InitModule`, `ReadRow`, `SetOrnament` |
 | `$C0E7` | `ChannelB` (`ChannelState`+12) | 8 | channel B: IX here | `EnvelopeFlag`, `InitModule`, `PlayFrameOut`, `RowCountdown`, `SampleStep` +1 | `InitModule`, `ReadRow`, `RowCountdown`, `SampleStep`, `SetOrnament` |
@@ -915,7 +915,7 @@ Recordings: `work/stage2/front99/intro` (r99's intro window).
 | `$C0F1` | `ChannelC` (`ChannelState`+22) | 8 | channel C: IX here | `EnvelopeFlag`, `InitModule`, `PlayFrameOut`, `RowCountdown`, `SampleStep` +1 | `ChannelOff`, `InitModule`, `ReadRow`, `RowCountdown`, `SampleStep` +1 |
 | `$C0F9` | `PositionIndex` | 1 | The next position to play | `InitModule`, `NextPosition` | `InitModule`, `NextPosition` |
 | `$C0FA` | `AYTone` | 6 | The AY registers 0-13 as WriteAY writes them (down from 13 or 10): tone A, B, C periods | `InitModule`, `WriteAY` | `InitModule`, `PlayFrameOut` |
-| `$C100` | `AYNoise` | 8 | Register 6: the noise period | `InitModule`, `PlayFrameOut`, `WriteAY` | `InitModule`, `NoiseFromSample`, `PlayFrameOut` |
+| `$C100` | `AYNoise` | 1 of 8 | Register 6: the noise period | `InitModule`, `PlayFrameOut`, `WriteAY` | `InitModule`, `NoiseFromSample`, `PlayFrameOut` |
 | `$C101` | `AYMixer` (`AYNoise`+1) | 1 | register 7: the mixer | `InitModule`, `PlayFrameOut`, `WriteAY` | `InitModule`, `PlayFrameOut` |
 | `$C102` | `AYVolume` (`AYNoise`+2) | 3 | registers 8-10: the volumes A, B, C (bit 4: the envelope) | `InitModule`, `WriteAY` | `InitModule`, `PlayFrameOut` |
 | `$C105` | `AYEnvPeriod` (`AYNoise`+5) | 2 | registers 11-12: the envelope period | `InitModule` | `InitModule` |
@@ -944,10 +944,10 @@ Recordings: `work/stage2/menu99/r99-s3a` (r99 2194-2300), `work/stage2/menu99/r9
 | `$674C` | `DriversText` | 12 | "Drivers... " | `PrintFF` | - |
 | `$6758` | `MenusText` | 10 | "Menus... " | `PrintFF` | - |
 | `$6762` | `RamDiskText` | 13 | "RAM-Disk... " | `PrintFF` | - |
-| `$676F` | `BattleText` | 27 | AT 20,5 INK 0 "Let the Battle begin!": nothing prints it. No code of stage 3, the game, the patches or the menu block names `$676F` (byte search); its tail from `$6780` is the game block's once loaded. | - | - |
+| `$676F` | `BattleText` | 17 of 27 | AT 20,5 INK 0 "Let the Battle begin!": nothing prints it. No code of stage 3, the game, the patches or the menu block names `$676F` (byte search); its tail from `$6780` is the game block's once loaded. | - | - |
 | `$6780` | `GameBlock` (`BattleText`+17) | 10 | the game block's first byte once read (ReadSectors, 68 sectors): its entry | - | - |
 | `$678A` | `TapeErrorText` | 38 | AT 20,3 INK 2 PAPER 6 BRIGHT 1 FLASH 1 "Tape Error. System Halted." | - | - |
-| `$67B0` | `MachineNames` | 60 | `$FF`, then "Scorpion" "Spectrum" "Spectrum" "ATM" "TURBO 2+" "PROFI" "KAY" "Spectrum": bits 7-0. SkipStrings from the `$FF` at `$67B0`: the B-th string is the name of bit 8-B. Bit 6 is never set; bits 5 and 0 are both "Spectrum", NameDefault is used for scheme 0. | `PrintFF`, `SkipStrings` | - |
+| `$67B0` | `MachineNames` | 1 of 60 | `$FF`, then "Scorpion" "Spectrum" "Spectrum" "ATM" "TURBO 2+" "PROFI" "KAY" "Spectrum": bits 7-0. SkipStrings from the `$FF` at `$67B0`: the B-th string is the name of bit 8-B. Bit 6 is never set; bits 5 and 0 are both "Spectrum", NameDefault is used for scheme 0. | `PrintFF`, `SkipStrings` | - |
 | `$67B1` | `NameScorpion` (`MachineNames`+1) | 50 | - | `PrintFF`, `SkipStrings` | - |
 | `$67E3` | `NameDefault` (`MachineNames`+51) | 9 | - | `PrintFF` | - |
 
@@ -961,7 +961,7 @@ Recordings: `work/stage2/menu99/r99-menu` (r99 2661-6462), `work/stage2/menu99/m
 | --- | --- | --- | --- | --- | --- |
 | `$D826` | `MenuText` | 236 | the menu's upper part through PrintInline (src/res/menu99/menu-strings.txt [menu]) | - | - |
 | `$D920` | `MenuBottomText` | 71 | the six items of rows 17 and 21 (menu-strings.txt [bottom]) | - | - |
-| `$DAE6` | `LevelPatches` | 36 | the bytes StartGame copies: EASY (the game's own), then MEDIUM and HARD. Six pieces copied in order: 3 bytes to SpawnResources, 6 to InsgRobotCount, 9 to EnemyProduce (EASY), then 3 and 6 (MEDIUM up) and 9 (HARD up). | `MenuRedraw` | - |
+| `$DAE6` | `LevelPatches` | 3 of 36 | the bytes StartGame copies: EASY (the game's own), then MEDIUM and HARD. Six pieces copied in order: 3 bytes to SpawnResources, 6 to InsgRobotCount, 9 to EnemyProduce (EASY), then 3 and 6 (MEDIUM up) and 9 (HARD up). | `MenuRedraw` | - |
 | `$DAE9` | `PatchEasyInsg` (`LevelPatches`+3) | 6 | CALL `$D3EC` (PrintNumber2Zero), CALL PrintInline | `MenuRedraw` | - |
 | `$DAEF` | `PatchEasyProduce` (`LevelPatches`+9) | 9 | LD HL,`$FD4A`, LD DE,`$FD42`, CALL `$AE4E` (ProduceSide) | `MenuRedraw` | - |
 | `$DAF8` | `PatchSpawn99` (`LevelPatches`+18) | 3 | CALL `$A5F2`: the enemy's resources 99 (game99's part) | `MenuRedraw` | - |
@@ -1058,7 +1058,7 @@ Recordings: `work/stage2/game99/r99-play` (the start-up menu, LOAD MAP, HARD + P
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$A57B` | `WaitFileText` | 22 | PrintInline text: "WAITING FILE n" at (11,8), attribute `$06`, setting `$21`. The bytes 1 11 8 (position (11,8)), 2 `$06` (yellow on black), 4 `$21` (double height), "WAITING FILE " and the digit LoadText writes at `$A58F`, 0. | - | - |
+| `$A57B` | `WaitFileText` | 20 of 22 | PrintInline text: "WAITING FILE n" at (11,8), attribute `$06`, setting `$21`. The bytes 1 11 8 (position (11,8)), 2 `$06` (yellow on black), 4 `$21` (double height), "WAITING FILE " and the digit LoadText writes at `$A58F`, 0. | - | - |
 | `$A58F` | `WaitFileDigit` (`WaitFileText`+20) | 2 | the file's digit (LoadText writes it) | - | - |
 
 ## The '99 patches block: `menu48` (`src/patches99`)

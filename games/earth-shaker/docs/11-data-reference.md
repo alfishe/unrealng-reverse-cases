@@ -2,7 +2,8 @@
 
 Every data entry of the game image `$6D42`-`$FFFF`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
-its entry, its size up to the next label. The name, the title and the description are the
+its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,
+of the whole entry's ("17 of 34"). The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/stage1/c1`, local and not in the repository), then those only the case's other recordings (`read_builds`) saw, with the first of them in brackets, and, marked
 "(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
@@ -15,7 +16,7 @@ Written by `kit/refdocs.py`.
 | `$6D42` | `ScrollerText` | 434 | The menu scroller's text: 433 ASCII characters and a 0 end mark. RunScroller `$8AEB` prints one character a step at the right end of the bottom line and scrolls the line left 8 pixels (ScrollBottomLine `$8AAC`) between characters. The text names the 1990 features (anti-gravity, 4D teleport, forcefields, bubbles, elixirs, "jumping jelly beans"), the keys G (abort), H (quit screen) and F (map), and "(C) 1990 MICHAEL BATTY". Witness: the menu recording reads the whole text: 3472 ScrollBottomLine calls = 434 x 8, frames 3284-5478, the last character the 0 end mark. | - | - |
 | `$8D5D` | `HiScoresTitle` | 9 | "HI-SCORES" | `PrintText` (`stage1/hiscore`) | - |
 | `$AA00` | `GameOverTune` | 78 | The game-over tune | `PlayTune` (`stage1/hiscore`) | - |
-| `$AA4E` | `GameOverTexts` | 36 | "GAME OVER", "YOU SCORED", "AND REACHED LEVEL" | `PrintText` (`stage1/hiscore`) | - |
+| `$AA4E` | `GameOverTexts` | 9 of 36 | "GAME OVER", "YOU SCORED", "AND REACHED LEVEL" | `PrintText` (`stage1/hiscore`) | - |
 | `$AA57` | `YouScoredText` (`GameOverTexts`+9) | 10 | - | `PrintText` (`stage1/hiscore`) | - |
 | `$AA61` | `ReachedLevelText` (`GameOverTexts`+19) | 17 | - | `PrintText` (`stage1/hiscore`) | - |
 | `$AA72` | `BlankGraphic` | 36 | The empty cell's graphic (36 zeros): table word 0, set by SetEarthFalls; also clears the high-score area | `DrawCell` | - |
@@ -80,7 +81,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$8000` | `CellGraphicsTable` | 64 | The graphic of each cell code 0-31: 32 addresses of 36-byte graphics. Read through CellGraphicAddr `$8D66` by DrawCell `$8F60` (every cell drawn, in every build). Words 3 and 4 (the player), 6 and 5 (earth, wall) and the animated words 8, 9, 10 and 12-15 are rewritten during play, and word 0 (the empty cell) in the falling-earth caves: EarthAnimStep `$FB70` points it at a frame of EmptyFrames `$FAE0` each pass, and SetEarthFalls `$FB84` puts BlankGraphic `$AA72` back at every cave start. Words 16 and 21 (`$8020`, `$802A`) are never read: the codes `$10` and `$15` step on (AnimateCellCodes `$937E`) before the window is drawn in the same pass. Words 1 (the exit: it flashes by its attributes, ExitFlash `$905B`), 2 (the boulder), 7 (the gem: DrawPass `$8D46` cycles its attribute bytes) and 11 (the switch) are never written (code and the state logs). Words 28-31 are `$0000`: no such cells. | `AnimateCells`, `DrawCell`, `EarthAnim`, `SetEarthFalls` | `AnimateCells`, `AnimateTable`, `CaveSetup`, `DeathView`, `SetEarthFalls` +3 |
+| `$8000` | `CellGraphicsTable` | 2 of 64 | The graphic of each cell code 0-31: 32 addresses of 36-byte graphics. Read through CellGraphicAddr `$8D66` by DrawCell `$8F60` (every cell drawn, in every build). Words 3 and 4 (the player), 6 and 5 (earth, wall) and the animated words 8, 9, 10 and 12-15 are rewritten during play, and word 0 (the empty cell) in the falling-earth caves: EarthAnimStep `$FB70` points it at a frame of EmptyFrames `$FAE0` each pass, and SetEarthFalls `$FB84` puts BlankGraphic `$AA72` back at every cave start. Words 16 and 21 (`$8020`, `$802A`) are never read: the codes `$10` and `$15` step on (AnimateCellCodes `$937E`) before the window is drawn in the same pass. Words 1 (the exit: it flashes by its attributes, ExitFlash `$905B`), 2 (the boulder), 7 (the gem: DrawPass `$8D46` cycles its attribute bytes) and 11 (the switch) are never written (code and the state logs). Words 28-31 are `$0000`: no such cells. | `AnimateCells`, `DrawCell`, `EarthAnim`, `SetEarthFalls` | `AnimateCells`, `AnimateTable`, `CaveSetup`, `DeathView`, `SetEarthFalls` +3 |
 | `$8002` | `CellExitGfx` (`CellGraphicsTable`+2) | 2 | cell 1 | `DrawCell` (`stage1/rzx01`) | - |
 | `$8004` | `CellBoulderGfx` (`CellGraphicsTable`+4) | 2 | cell 2 | `DrawCell` | - |
 | `$8006` | `CellPlayerRightGfx` (`CellGraphicsTable`+6) | 2 | cell 3 | `AnimateCells`, `DrawCell` | `AnimateCells`, `DeathView`, `WinScreen` (`stage1/rzx32`) |
@@ -101,7 +102,7 @@ Written by `kit/refdocs.py`.
 | `$8038` | `CellUnusedGfx` (`CellGraphicsTable`+56) | 8 | cell 28 (28-31: no such cells, `$0000`) | - | - |
 | `$8278` | `AttrAddrPad` | 62 | Leftover: 62 bytes, never run | - | - |
 | `$8D6D` | `CellGraphicAddrPad` | 8 | Leftover: 8 bytes, never run | - | - |
-| `$9B08` | `CellGraphics` | 756 | The cell graphics, slots 0-20 (36 bytes each) | `CaveSetupAll`, `DrawCell` | `DrawPass`, `SetGraphicColour`, `ExitFlash` (`stage1/rzx01`) |
+| `$9B08` | `CellGraphics` | 36 of 756 | The cell graphics, slots 0-20 (36 bytes each) | `CaveSetupAll`, `DrawCell` | `DrawPass`, `SetGraphicColour`, `ExitFlash` (`stage1/rzx01`) |
 | `$9B2C` | `GfxBoulder` (`CellGraphics`+36) | 36 | slot 1, cell 2: BoulderColour | `CaveSetupAll`, `DrawCell` | `SetGraphicColour` |
 | `$9B50` | `GfxEarth` (`CellGraphics`+72) | 36 | slot 2: the earth of 24 caves, EarthColour | `DrawCell` | `SetGraphicColour` |
 | `$9B74` | `GfxGem` (`CellGraphics`+108) | 36 | slot 3, cell 7: the ink cycles (DrawPass) | `DrawCell` | `DrawPass` |
@@ -117,7 +118,7 @@ Written by `kit/refdocs.py`.
 | `$9DB4` | `GfxDeathRight` (`CellGraphics`+684) | 36 | slot 19: the killed player (DeathView) | `DrawCell` | - |
 | `$9DD8` | `GfxDeathLeft` (`CellGraphics`+720) | 36 | slot 20: the killed player facing left (the stage 2 recordings death-crush and death-fire; the c1 crush faced right) | `DrawCell` (`stage2/death-crush`) | - |
 | `$9E1A` | `EarthAnimPad` | 6 | Leftover: 6 bytes after EarthAnim | - | - |
-| `$9E20` | `CellGraphics2` | 2016 | The cell graphics, slots 22-77 (36 bytes each) | `DrawCell` | `SetGraphicColour` |
+| `$9E20` | `CellGraphics2` | 144 of 2016 | The cell graphics, slots 22-77 (36 bytes each) | `DrawCell` | `SetGraphicColour` |
 | `$9EB0` | `GfxSwitch` (`CellGraphics2`+144) | 36 | slot 26, cell 11 | `DrawCell` (`stage1/rzx02`) | - |
 | `$9ED4` | `GfxFire` (`CellGraphics2`+180) | 144 | slots 27-30, cell 15 | `DrawCell` | - |
 | `$9F64` | `GfxTeleporter` (`CellGraphics2`+324) | 432 | slots 31-42, cell 13: twelve frames (TeleporterPhase) | `DrawCell` (`stage2/rzx04/cap`) | - |
@@ -128,7 +129,7 @@ Written by `kit/refdocs.py`.
 | `$A450` | `GfxFallingEarth` (`CellGraphics2`+1584) | 144 | slots 66-69: red sparks on black, the earth of caves 13, 17, 22, 24, 26 (it falls; EarthAnim `$9DFC` steps the frames) | `DrawCell` (`stage1/rzx13`) | - |
 | `$A4E0` | `GfxJellyBean` (`CellGraphics2`+1728) | 144 | slots 70-73, cell 8 | `DrawCell` | - |
 | `$A570` | `GfxBurst` (`CellGraphics2`+1872) | 144 | slots 74-77, cells `$10-$14` | `DrawCell` (`stage1/rzx02`) | - |
-| `$ED28` | `ExtraGraphics` | 180 | Five more cell graphics (36 bytes each) | `DrawCell` (`stage1/hiscore`) | - |
+| `$ED28` | `ExtraGraphics` | 36 of 180 | Five more cell graphics (36 bytes each) | `DrawCell` (`stage1/hiscore`) | - |
 | `$ED4C` | `GfxExtraWall2` (`ExtraGraphics`+36) | 36 | - | `DrawCell` (`stage2/rzx04/cap`) | - |
 | `$ED70` | `GfxExtraWall3` (`ExtraGraphics`+72) | 36 | - | `DrawCell` (`stage1/rzx18`) | - |
 | `$ED94` | `GfxExtraWall4` (`ExtraGraphics`+108) | 36 | - | `DrawCell` (`stage1/rzx07`) | - |
@@ -138,7 +139,7 @@ Written by `kit/refdocs.py`.
 | `$EF00` | `ExtraGraphic3` | 36 | One more cell graphic | `DrawCell` (`stage1/rzx02`) | - |
 | `$EF24` | `ExtraGraphic3Pad` | 476 | Leftover: 476 bytes | - | - |
 | `$FAE0` | `EmptyFrames` | 144 | Four frames of the empty cell in the falling-earth caves: all zeros. EarthAnimStep `$FB70` points table word 0 (the empty cell) at frame AnimPhase each pass when the earth is GfxFallingEarth; every byte is 0, so the empty cell looks as BlankGraphic `$AA72` does (an animation hook with no picture). Witness: L1 6610 entries of EarthAnimStep (the rzx builds of caves 13, 17, 22, 24, 26). | `DrawCell` (`stage1/rzx13`) | - |
-| `$FBA0` | `ExtraGraphic4` | 72 | Two more cell graphics | `DrawCell` (`stage1/rzx15`) | - |
+| `$FBA0` | `ExtraGraphic4` | 36 of 72 | Two more cell graphics | `DrawCell` (`stage1/rzx15`) | - |
 | `$FBC4` | `GfxExtraWall9` (`ExtraGraphic4`+36) | 36 | - | `DrawCell` (`stage1/rzx16`) | - |
 | `$FBE8` | `ExtraGraphic4Pad` | 24 | Zeros (24 bytes) | - | - |
 
@@ -162,7 +163,7 @@ Written by `kit/refdocs.py`.
 | `$8210` | `ColourCyclePad` | 10 | Leftover: CALL `$8059`, CALL `$81CC`, CALL `$81E7`, RET (10 bytes), never run | - | - |
 | `$86D3` | `TimeOutPad` | 11 | Leftover: 11 bytes, never run | - | - |
 | `$872B` | `TimeBonusPad` | 2 | Leftover: 2 bytes, never run | - | - |
-| `$AB6A` | `WinTexts` | 196 | The win screen's texts | `PrintText` (`stage1/rzx32`) | - |
+| `$AB6A` | `WinTexts` | 26 of 196 | The win screen's texts | `PrintText` (`stage1/rzx32`) | - |
 | `$AB84` | `WinText2` (`WinTexts`+26) | 31 | - | `PrintText` (`stage1/rzx32`) | - |
 | `$ABA3` | `WinText3` (`WinTexts`+57) | 8 | - | `PrintText` (`stage1/rzx32`) | - |
 | `$ABAB` | `WinText4` (`WinTexts`+65) | 32 | - | `PrintText` (`stage1/rzx32`) | - |
@@ -220,14 +221,14 @@ Written by `kit/refdocs.py`.
 | `$8671` | `FillTimeBarPad` | 22 | Leftover: 22 bytes, never run | - | - |
 | `$A8F2` | `AddPointsPad` | 14 | Zeros (14 bytes) | - | - |
 | `$A9FB` | `AntiGravStartPad` | 5 | Leftover: 5 bytes, never run | - | - |
-| `$BB00` | `HudLabels` | 22 | "LEVEL", "LIVES LEFT:", "SCORE:" | `PrintText` | - |
+| `$BB00` | `HudLabels` | 5 of 22 | "LEVEL", "LIVES LEFT:", "SCORE:" | `PrintText` | - |
 | `$BB05` | `LivesLeftText` (`HudLabels`+5) | 11 | - | `PrintText` | - |
 | `$BB10` | `ScoreText` (`HudLabels`+16) | 6 | - | `PrintText` | - |
 | `$BB16` | `HudLabelsPad` | 106 | Zeros (106 bytes) | - | - |
 | `$BC92` | `BarAttrs` | 64 | The time bar's attributes (2 lines of 32) | `BarColours` | - |
 | `$BCD2` | `BarAttrsPad` | 14 | Zeros (14 bytes) | - | - |
 | `$BCE0` | `HudLine` | 32 | The bottom line's text | `PrintText` | - |
-| `$BD00` | `Font` | 768 | The font: characters `$20-$7F`, 8 bytes each (`$68-$7F` unused but `$73`, the SYMBOL SHIFT name) | `PrintGlyph` | - |
+| `$BD00` | `Font` | 128 of 768 | The font: characters `$20-$7F`, 8 bytes each (`$68-$7F` unused but `$73`, the SYMBOL SHIFT name) | `PrintGlyph` | - |
 | `$BD80` | `DigitGlyphs` (`Font`+128) | 392 | the digits 0-9 (codes `$30-$39`), PrintDigits `$832A` | `PrintGlyph` | - |
 | `$BF08` | `IconGlyphs` (`Font`+520) | 16 | the HUD icons a-e (codes `$61-$65`) | `PrintGlyph` | - |
 | `$BF18` | `AntiGravIcon` (`Font`+536) | 8 | c: the anti-gravity arrow | `PrintGlyph` (`stage1/hiscore`) | - |
@@ -252,7 +253,7 @@ Written by `kit/refdocs.py`.
 | --- | --- | --- | --- | --- | --- |
 | `$8B58` | `MenuKeysPad` | 13 | Leftover: 13 bytes, never run | - | - |
 | `$8B75` | `ResetMachinePad` | 3 | Leftover: 3 bytes, never run | - | - |
-| `$AB00` | `MenuTexts` | 106 | The menu's lines | `PrintText` | - |
+| `$AB00` | `MenuTexts` | 18 of 106 | The menu's lines | `PrintText` | - |
 | `$AB12` | `MenuRedefineText` (`MenuTexts`+18) | 21 | "2 ..... REDEFINE KEYS" | `PrintText` | - |
 | `$AB27` | `MenuDemoText` (`MenuTexts`+39) | 17 | "3 ..... DEMO MODE": the 1988 line, no longer printed (the 1990 version prints ControlTexts `$EC95` instead; the call is NOPs at `$8A55`) | `PrintText` | - |
 | `$AB38` | `MenuQuitText` (`MenuTexts`+56) | 17 | "5 ..... QUIT GAME" | `PrintText` | - |
@@ -276,7 +277,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$A900` | `KeyTable` | 120 | 40 keys: half row, bit mask, character | `EnterPassword`, `PrintText`, `RedefineKeys`, `WaitKey`, `EnterName` (`stage1/hiscore`) | - |
-| `$A978` | `KeyPrompts` | 95 | The five prompts of RedefineKeys, 19 characters each | `PrintText` | - |
+| `$A978` | `KeyPrompts` | 19 of 95 | The five prompts of RedefineKeys, 19 characters each | `PrintText` | - |
 | `$A98B` | `PromptRight` (`KeyPrompts`+19) | 19 | - | `PrintText` | - |
 | `$A99E` | `PromptUp` (`KeyPrompts`+38) | 19 | - | `PrintText` | - |
 | `$A9B1` | `PromptDown` (`KeyPrompts`+57) | 19 | - | `PrintText` | - |
@@ -284,7 +285,7 @@ Written by `kit/refdocs.py`.
 | `$EAC3` | `MapCellAttrPad` | 1 | Leftover: one byte (RET) | - | - |
 | `$EAC4` | `KempstonCode` | 81 | The joystick code fragments, 9 bytes for each key site | `JoystickControl` | - |
 | `$EB15` | `KeyboardCode` | 81 | The saved keyboard code of each key site | `KeyboardControl` | `SaveKeyboardCode` |
-| `$EC95` | `ControlTexts` | 48 | "3 ..... KEYBOARD CONTROL", "4 ..... JOYSTICK CONTROL" | `PrintText` | - |
+| `$EC95` | `ControlTexts` | 24 of 48 | "3 ..... KEYBOARD CONTROL", "4 ..... JOYSTICK CONTROL" | `PrintText` | - |
 | `$ECAD` | `JoystickText` (`ControlTexts`+24) | 24 | - | `PrintText` | - |
 | `$ED0C` | `ChooseControlPad` | 28 | Leftover: 28 bytes | - | - |
 

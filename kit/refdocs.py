@@ -69,6 +69,10 @@ def outside_buffer(rs):
     return rest, ((min(x[0] for x in inside), max(x[1] for x in inside)) if inside else None)
 
 
+# how a caller reaches its callee, when it is no CALL: a tail jump, or running on into it (no call at all)
+KIND_NOTE = {'tail': ' (tail)', 'falls-into': ' (falls into)'}
+
+
 def entries_of(ctl):
     """[(address, kind, label, title)] in address order, and {address: label} of every label (inner ones too)"""
     out, label = [], {}
@@ -534,17 +538,24 @@ def reference(v, config):
             for page in hit:
                 pages[page] = pages.get(page, 0) + 1
         vector_page = max(pages, key=lambda k: (pages[k], k)) if pages else None
-        # without the image: the word pairs at least half the interrupted routines (3 or more) read
+        # the word pairs at least half the routines an IM 2 interrupt entered (3 or more) read: the vector without
+        # the image, or where the game fills its table at run time (Terramex's GameEntry: the image's words there
+        # are not the handler's address, a stray word elsewhere may be)
         common = set()
-        if not image and handlers_at:
+        if handlers_at:
             pairs = {}
-            for i in b.interrupted:
+            # the routines an IM 2 handler interrupted (an IM 1 interrupt at $0038 reads no vector)
+            im2 = [i for i, hs in b.interrupted.items()
+                   if {int(b.index[h]['entry'][1:], 16) for h in hs} - {0x38, 0x66}]
+            for i in im2:
                 read = {x for lo, hi, _ in ranges(b.index[i]['profile']['reads']) for x in range(lo, hi + 1)}
                 for x in read:
                     if x + 1 in read:
                         pairs[x] = pairs.get(x, 0) + 1
-            need = max(3, (len(b.interrupted) + 1) // 2)
-            common = {x for x, n in pairs.items() if n >= need}
+            need = max(3, (len(im2) + 1) // 2)
+            # with the image, only a pair at $xxFF (I * 256 + the idle bus's $FF): a variable a few interrupted
+            # routines share is no vector (Tujad's TeleportColumn, TeleportRow)
+            common = {x for x, n in pairs.items() if n >= need and (not image or x & 0xFF == 0xFF)}
         for i, handlers in b.interrupted.items():
             r = b.index[i]
             entries_ = {int(b.index[h]['entry'][1:], 16) for h in handlers}
@@ -553,8 +564,10 @@ def reference(v, config):
             def vector(a, entries_=entries_):
                 if not entries_ - {0x38, 0x66}:
                     return False
+                if a in common or a - 1 in common:
+                    return True
                 if not image:
-                    return a in common or a - 1 in common
+                    return False
                 return any(word(x) in entries_ and x >> 8 == vector_page for x in (a, a - 1)
                            if word(x) is not None)
             reads, vread = split(ranges(p['reads']), vector)
@@ -594,15 +607,25 @@ def reference(v, config):
                     not same(b, ca['page'], int(ca['entry'][1:], 16)) or not same(b, ce['page'], int(ce['entry'][1:], 16)):
                 continue
             oa, oe = owner(int(ca['entry'][1:], 16)), owner(int(ce['entry'][1:], 16))
-            if not oa or not oe or oa[0] == oe[0]:
+            if not oa or not oe:
                 continue
-            seen.setdefault(oa[0], new_seen())
-            seen.setdefault(oe[0], new_seen())
             if c['kind'] == 'interrupt':  # no call: the handler is entered by the interrupt, in these routines
-                seen[oe[0]]['interrupts'][oa[0]] = seen[oe[0]]['interrupts'].get(oa[0], 0) + c['count']
+                if oa[0] != oe[0]:
+                    seen.setdefault(oa[0], new_seen())
+                    seen.setdefault(oe[0], new_seen())
+                    seen[oe[0]]['interrupts'][oa[0]] = seen[oe[0]]['interrupts'].get(oa[0], 0) + c['count']
                 continue
-            seen[oa[0]]['callees'][oe[0]] = c['kind']
-            seen[oe[0]]['callers'][oa[0]] = c['kind']
+            # the caller is the entry that holds the call's site, not the L1 routine's entry: an L1 routine runs on
+            # through the entries its code falls into (GameEntry, NewGame, ... MainLoop) and through its tail jumps,
+            # so its entry would be named for a call that MainLoop makes
+            sites = [owner(int(x[1:], 16)) for x in c.get('sites', ())]
+            for oa in {x for x in sites if x} or {oa}:
+                if oa[0] == oe[0]:
+                    continue
+                seen.setdefault(oa[0], new_seen())
+                seen.setdefault(oe[0], new_seen())
+                seen[oa[0]]['callees'][oe[0]] = c['kind']
+                seen[oe[0]]['callers'][oa[0]] = c['kind']
 
     def touch(kind, lo, hi, name, static=None):
         """name reads / writes lo..hi: each data entry and inner label it covers; static: None (a ref build saw
@@ -737,7 +760,10 @@ def reference(v, config):
         if not s:
             rows.append(('Runs', 'not reached in the recordings'))
         else:
-            if not any(k in s['runs'] for k in ref_keys):
+            if not s['runs']:  # known only by a call site in it: run inside the code of an entry before it
+                rows.append(('Runs', 'ran within another entry\'s routine (reached by a jump or by running on, its '
+                                     'calls below), no runs of its own counted'))
+            elif not any(k in s['runs'] for k in ref_keys):
                 called, shown = others(other[a])
                 rows.append(('Runs', f'not reached in {ref_names}; in the other recordings {called} ({shown})'))
             for key, text in BUILDS:
@@ -754,10 +780,10 @@ def reference(v, config):
                 rows.append(('Entered by', f'the interrupt, {n:,} time{"" if n == 1 else "s"} in '
                                            f'{len(s["interrupts"])} routine{"" if len(s["interrupts"]) == 1 else "s"}'))
             if s['callers']:
-                rows.append(('Called from', ', '.join(f'`{owner(c)[2]}`' + (' (tail)' if k == 'tail' else '')
+                rows.append(('Called from', ', '.join(f'`{owner(c)[2]}`' + KIND_NOTE.get(k, '')
                                                        for c, k in sorted(s['callers'].items()))))
             if s['callees']:
-                rows.append(('Calls', ', '.join(f'`{owner(c)[2]}`' + (' (tail)' if k == 'tail' else '')
+                rows.append(('Calls', ', '.join(f'`{owner(c)[2]}`' + KIND_NOTE.get(k, '')
                                                 for c, k in sorted(s['callees'].items()))))
             for kind in ('reads', 'writes'):
                 rs, buffer = (s[kind], None) if in_buffer(a) else outside_buffer(s[kind])
@@ -780,7 +806,8 @@ def reference(v, config):
     head11 = ['# 11. Data reference', '',
            f'Every data entry of the game image `${LO:04X}`-`${HI - 1:04X}`, in address order by module (`src/game/<module>.asm`):',
            'tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under',
-           'its entry, its size up to the next label. The name, the title and the description are the',
+           'its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,',
+           'of the whole entry\'s ("17 of 34"). The name, the title and the description are the',
            'source\'s (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it',
            '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + ', local and not in the repository'
            + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '') + ')'
@@ -824,12 +851,14 @@ def reference(v, config):
             current = m
             out += [f'{v.h2} {v.heading(m)}', '']
         u = users.get(a, nothing)
-        size = ends[a] - a + 1
+        inner = [x for x in lstarts if a < x <= ends[a]]
+        # the entry's own bytes, up to its first inner label, of the whole entry's (JumpFrames 17 of 34, JumpRise
+        # the other 17 on its own row)
+        size = f'{inner[0] - a} of {ends[a] - a + 1}' if inner else ends[a] - a + 1
         what = md(title).replace('|', '\\|')
         if description(a):
             what += '. ' + description(a).replace('\n\n', ' ').replace('|', '\\|')
         rows.append(f'| `${a:04X}` | `{label}` | {size} | {what} | {fmt(u["reads"])} | {fmt(u["writes"])} |')
-        inner = [x for x in lstarts if a < x <= ends[a]]
         for k, x in enumerate(inner):
             u = users.get(x, nothing)
             nxt = inner[k + 1] if k + 1 < len(inner) else ends[a] + 1

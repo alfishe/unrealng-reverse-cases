@@ -130,9 +130,9 @@ Input: none. Output: BC, DE, HL changed; interrupts enabled. 48K c1: 4 entries (
 | --- | --- |
 | Runs (c1, the menu and six short games) | 54 calls, 10,275,128 t-states own (1.38 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 7 calls, 1,329,092 t-states own (0.24 %) |
-| Called from | `MenuScreenSetup`, `SelectOnePlayer`, `HighScoreDone`, `RoundPlaySetup`, `CreditsPage`, `HiScorePage` |
+| Called from | `MenuScreenSetup`, `SelectTwoPlayers`, `HighScoreDone`, `RoundPlaySetup`, `CreditsPage`, `HiScorePage` |
 | Calls | `FadeAttributes` |
-| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`) |
 | Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$00FE` |
 
@@ -149,7 +149,7 @@ Output: BC, E, HL changed. Called by ClearScreen (48K c1: 4 entries).
 | Runs (c1, the menu and six short games) | 71 calls, 58,847,233 t-states own (7.90 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 8 calls, 6,589,436 t-states own (1.19 %) |
 | Called from | `ClearScreen`, `EndOfPlay` |
-| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`) |
 | Writes | `$5800`-`$5AFF` (screen) |
 
 ## playfield
@@ -207,7 +207,7 @@ Input: IX = the row record, B = the screen pixel high byte of the row. Output: f
 | Runs (r1, the bot over level 1 with the weapons) | 62,244 calls, 5,926,313 t-states own (1.07 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 779,431 t-states own (1.09 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
-| Calls | `StripNext`, `RowStar` (tail) |
+| Calls | `StripNext` (falls into), `RowStar` (tail) |
 | Reads | `$F12F`-`$F363` (`RowRecords+3`) |
 
 ### `StripNext` (`$8602`)
@@ -221,7 +221,7 @@ SP points at a strip entry whose first word is StripDraw: the RET starts it. The
 | Runs (c1, the menu and six short games) | 28,797 calls, 287,970 t-states own (0.04 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 47,269 calls, 472,690 t-states own (0.09 %) |
 | Runs (r2, homing missiles at the guardian) | 4,818 calls, 48,180 t-states own (0.07 %) |
-| Called from | `RowEnd`, `StripDraw` (tail) |
+| Called from | `RowEnd` (falls into), `StripDraw` (tail) |
 | Calls | `StripDraw` |
 
 ### `StripDraw` (`$8603`)
@@ -242,7 +242,7 @@ A' (the row's glyph count) is incremented for every drawn cell, so the padding c
 | Runs (r1, the bot over level 1 with the weapons) | 47,269 calls, 36,802,408 t-states own (6.67 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,959,689 t-states own (5.52 %) |
 | Called from | `StripNext` |
-| Calls | `StripNext` (tail), `RowStar` |
+| Calls | `StripNext` (tail), `RowStar` (falls into) |
 | Reads | `$4062`-`$4065` (screen); `$4082`-`$4087` (screen); `$40A2`-`$40FF` (screen); `$4162`-`$4165` (screen); `$4182`-`$4187` (screen); `$41A2`-`$41FF` (screen); 34 more ranges |
 | Writes | `$4039`-`$403F` (screen); `$4052`-`$40FF` (screen); `$4139`-`$413F` (screen); `$4152`-`$41FF` (screen); `$4239`-`$423F` (screen); `$4252`-`$42FF` (screen); 20 more ranges |
 
@@ -263,8 +263,8 @@ Then the padding: A' - 4 left over is the new balance; a row cheaper than four g
 | Runs (c1, the menu and six short games) | 57,960 calls, 16,928,243 t-states own (2.27 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 62,244 calls, 27,766,757 t-states own (5.03 %) |
 | Runs (r2, homing missiles at the guardian) | 9,000 calls, 6,239,752 t-states own (8.70 %) |
-| Called from | `RowEnd` (tail), `StripDraw` |
-| Calls | `RenderDone` (tail), `RowStart` |
+| Called from | `RowEnd` (tail), `StripDraw` (falls into) |
+| Calls | `RenderDone` (tail), `RowStart` (falls into) |
 | Reads | `$435B`-`$43FF` (screen); `$4B01`-`$4BFF` (screen); `$5300`-`$531F` (screen); `$533F` (screen); `$5820`-`$5A5F` (screen); `$7F6F` (`RowsLeft`); 7 more ranges |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 12 more ranges |
 
@@ -287,7 +287,7 @@ On a 128K: the OUT (`$FE`),A at `$86D7` is made NOP: NOP: the row part of the ex
 | Runs (c1, the menu and six short games) | 57,960 calls, 40,803,840 t-states own (5.48 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 62,244 calls, 43,819,776 t-states own (7.94 %) |
 | Runs (r2, homing missiles at the guardian) | 9,000 calls, 6,336,000 t-states own (8.83 %) |
-| Called from | `DrawPlayfield` (tail), `RowStar` |
+| Called from | `DrawPlayfield` (tail), `RowStar` (falls into) |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$7F6A` (`ShiftPage`); `$7F7E`-`$7F7F` (`RowBeep`, `RowBeepMask`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`) |
 | Writes | `$7F7E` (`RowBeep`); `$867C`-`$867D` (`RowStar+1`) |
@@ -446,7 +446,7 @@ Called by NewSpanNode (48K c2: 307 entries).
 | Runs (c1, the menu and six short games) | 2,162 calls, 386,934 t-states own (0.05 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 761 calls, 136,109 t-states own (0.02 %) |
 | Called from | `NewSpanNode` |
-| Reads | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFF` (`ColumnFlags`) |
+| Reads | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`); `$FFE0`-`$FFFF` (`ColumnFlags`) |
 | Writes | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`) |
 
 ### `StartColumn` (`$894D`)
@@ -463,7 +463,7 @@ Called from the frame handler cycle (48K c2: 229 entries, one per scroll step).
 | Runs (r1, the bot over level 1 with the weapons) | 977 calls, 126,340 t-states own (0.02 %) |
 | Runs (r2, homing missiles at the guardian) | 125 calls, 4,797 t-states own (0.01 %) |
 | Called from | `l_A9FB`, `ReplayStep` |
-| Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`PlayFlags`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$801C`-`$801D` (`ScrollColumn`); `$81DA` (`PlayFlags`) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumn` (`$896D`)
@@ -482,8 +482,7 @@ The operands keep the state between calls: the record (IX), the map pointer (HL)
 | Runs (r1, the bot over level 1 with the weapons) | 2,931 calls, 140,223 t-states own (0.03 %) |
 | Runs (r2, homing missiles at the guardian) | 376 calls, 34,361 t-states own (0.05 %) |
 | Called from | `ChainBuildColumn1`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ReplayRoundEnd` |
-| Calls | `BuildColumnLoop`, `BuildCell` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `BuildColumnLoop` (falls into) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumnLoop` (`$897A`)
@@ -493,7 +492,7 @@ The operands keep the state between calls: the record (IX), the map pointer (HL)
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 15,120 calls, 423,417 t-states own (0.08 %) |
-| Called from | `BuildColumn`, `BuildColumnBack` (tail) |
+| Called from | `BuildColumn` (falls into), `BuildColumnBack` (tail) |
 | Calls | `BuildCell` |
 
 ### `BuildColumnBack` (`$897E`)
@@ -505,7 +504,6 @@ The operands keep the state between calls: the record (IX), the map pointer (HL)
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 1,511,331 t-states own (0.27 %) |
 | Called from | `l_8A28` |
 | Calls | `BuildColumnLoop` (tail), `ChainStep1End` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildCell` (`$899E`)
@@ -521,9 +519,9 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. 48K c2: 3948 
 | Runs (c1, the menu and six short games) | 33,642 calls, 2,530,194 t-states own (0.34 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 15,120 calls, 1,151,911 t-states own (0.21 %) |
 | Runs (r2, homing missiles at the guardian) | 114 calls, 10,419 t-states own (0.01 %) |
-| Called from | `BuildColumn`, `BuildColumnLoop` |
+| Called from | `BuildColumnLoop` |
 | Calls | `BuildGlyph` (tail) |
-| Reads | `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2CC` (`RowRecords`); `$F2DF`-`$F2EC` (`RowRecords+435`); `$F2FF`-`$F30C` (`RowRecords+467`); `$F31F`-`$F32C` (`RowRecords+499`); `$F33F`-`$F34C` (`RowRecords+531`); 2 more ranges |
+| Reads | `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2CC` (`RowRecords`); `$F2DF`-`$F2EC` (`RowRecords+435`); `$F2FF`-`$F30C` (`RowRecords+467`); `$F31F`-`$F32C` (`RowRecords+499`); `$F33F`-`$F34C` (`RowRecords+531`); 1 more ranges |
 | Writes | `$B702`-`$B92F` (`Start+3`, `MapRingSpace`); `$B94F`-`$B9A8` (`MapRingSpace+544`); `$B9D0`-`$BA28` (`MapRingSpace+673`); `$BA87`-`$BAA7` (`MapRingSpace+856`); `$BC37` (`TileSource+55`); `$BCEC` (`TileSource+236`); 9 more ranges |
 
 ### `BuildGlyph` (`$89C9`)
@@ -543,8 +541,8 @@ Writes the 8 lines at shift 0 (page `$C0` + line), shift 2 (SET 3,D), shift 4 (S
 | Runs (c1, the menu and six short games) | 7,118 calls, 14,836,425 t-states own (1.99 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2,509 calls, 844,123 t-states own (0.15 %) |
 | Called from | `BuildCell` (tail) |
-| Calls | `GlyphLine`, `NewSpanNode` |
-| Reads | `$5C00`-`$5E77` (system); `$5E98`-`$5F77` (system); `$5F98`-`$6077` (system); `$6098`-`$6177` (system); `$6198`-`$6277` (system); `$6298`-`$6377` (system); 18 more ranges |
+| Calls | `GlyphLine` (falls into), `NewSpanNode` |
+| Reads | `$5C00`-`$5E77` (system); `$5E98`-`$5F77` (system); `$5F98`-`$6077` (system); `$6098`-`$6177` (system); `$6198`-`$6277` (system); `$6298`-`$6377` (system); 17 more ranges |
 | Writes | `$8A1D`-`$8A1F` (`GlyphLineStep`, `GlyphMirror`); `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F220` (`RowRecords+15`); `$F29B`-`$F2C0` (`RowRecords+367`); `$F2DB`-`$F2E0` (`RowRecords+431`); `$F2FB`-`$F300` (`RowRecords+463`); 4 more ranges |
 
 ### `GlyphLine` (`$8A1C`)
@@ -554,9 +552,9 @@ Writes the 8 lines at shift 0 (page `$C0` + line), shift 2 (SET 3,D), shift 4 (S
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 20,072 calls, 140,523 t-states own (0.03 %) |
-| Called from | `BuildGlyph`, `l_8A28` (tail) |
-| Calls | `GlyphLineStep` |
-| Reads | `$5C00`-`$5E7E` (system); `$5E96`-`$5F7E` (system); `$5F96`-`$607E` (system); `$6096`-`$617E` (system); `$6196`-`$627E` (system); `$6296`-`$637E` (system); 2 more ranges |
+| Called from | `BuildGlyph` (falls into), `l_8A28` (tail) |
+| Calls | `GlyphLineStep` (falls into) |
+| Reads | `$5C00`-`$5E7E` (system); `$5E96`-`$5F7E` (system); `$5F96`-`$607E` (system); `$6096`-`$617E` (system); `$6196`-`$627E` (system); `$6296`-`$637E` (system); 1 more ranges |
 
 ### `GlyphLineStep` (`$8A1D`)
 
@@ -565,9 +563,9 @@ Writes the 8 lines at shift 0 (page `$C0` + line), shift 2 (SET 3,D), shift 4 (S
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 20,073 calls, 1,154,461 t-states own (0.21 %) |
-| Called from | `GlyphLine`, `l_AB07` |
-| Calls | `l_8A28` |
-| Reads | `$5C00`-`$5D00` (system); `$5E00` (system); `$5F00` (system); `$6000` (system); `$6100` (system); `$6200` (system); 8 more ranges |
+| Called from | `GlyphLine` (falls into), `l_AB07` |
+| Calls | `l_8A28` (falls into) |
+| Reads | `$5C00`-`$5D00` (system); `$5E00` (system); `$5F00` (system); `$6000` (system); `$6100` (system); `$6200` (system); 7 more ranges |
 | Writes | `$C000`-`$C7FE` (`GlyphCache`, `WaveCellSource`) |
 
 ### `l_8A28` (`$8A28`)
@@ -577,9 +575,9 @@ Writes the 8 lines at shift 0 (page `$C0` + line), shift 2 (SET 3,D), shift 4 (S
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 20,073 calls, 3,082,954 t-states own (0.56 %) |
-| Called from | `GlyphLineStep`, `l_AB07` |
+| Called from | `GlyphLineStep` (falls into), `l_AB07` |
 | Calls | `BuildColumnBack`, `GlyphLine` (tail) |
-| Reads | `$F13C`-`$F220` (`RowRecords+16`); `$F29C`-`$F2A0` (`RowRecords+368`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); 4 more ranges |
+| Reads | `$F13C`-`$F220` (`RowRecords+16`); `$F29C`-`$F2A0` (`RowRecords+368`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); 3 more ranges |
 | Writes | `$C800`-`$DFFE` (`GlyphCacheUpper`); `$F13C`-`$F220` (`RowRecords+16`); `$F29D`-`$F2A0` (`RowRecords+369`); `$F2BD`-`$F2C0` (`RowRecords+401`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); 4 more ranges |
 
 ### `NewSpanNode` (`$8A5A`)
@@ -598,7 +596,7 @@ Measures the run of tiles that follows in the map (up to 4) into +`$12` and rese
 | Runs (r1, the bot over level 1 with the weapons) | 761 calls, 570,764 t-states own (0.10 %) |
 | Called from | `BuildGlyph` |
 | Calls | `AllocGlyphs`, `PopNode` |
-| Reads | `$7F65` (`PassPhase`); `$B700`-`$B9FF` (`Start+1`, `MapRingSpace`); `$BA41`-`$BA68` (`MapRingSpace+786`); `$BAC1`-`$BAE7` (`MapRingSpace+914`); `$BC25`-`$BC2C` (`TileSource+37`); `$BC72`-`$BC77` (`TileSource+114`); 9 more ranges |
+| Reads | `$7F65` (`PassPhase`); `$B700`-`$B9FF` (`Start+1`, `MapRingSpace`); `$BA41`-`$BA68` (`MapRingSpace+786`); `$BAC1`-`$BAE7` (`MapRingSpace+914`); `$BC25`-`$BC2C` (`TileSource+37`); `$BC72`-`$BC77` (`TileSource+114`); 8 more ranges |
 | Writes | `$F132`-`$F21F` (`RowRecords+6`); `$F292`-`$F2BF` (`RowRecords+358`); `$F2D2`-`$F2DF` (`RowRecords+422`); `$F2F2`-`$F2FF` (`RowRecords+454`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); 2 more ranges |
 
 ### `PopNode` (`$8AD0`)
@@ -612,7 +610,7 @@ Output: DE = the node, NodeFreeList (`$7F68`) = the node's link. HL preserved. 4
 | Runs (c1, the menu and six short games) | 2,162 calls, 209,733 t-states own (0.03 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 761 calls, 73,817 t-states own (0.01 %) |
 | Called from | `NewSpanNode` |
-| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$7F68`-`$7F69` (`NodeFreeList`); `$F800`-`$FA19` (`NodePool`) |
 | Writes | `$7F68`-`$7F69` (`NodeFreeList`) |
 
 ### `PushNode` (`$8ADF`)
@@ -651,9 +649,9 @@ Called from the frame handler cycle (48K c2: 228 entries).
 | Runs (c1, the menu and six short games) | 1,945 calls, 14,922,404 t-states own (2.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 975 calls, 7,010,309 t-states own (1.27 %) |
 | Runs (r2, homing missiles at the guardian) | 125 calls, 51,349 t-states own (0.07 %) |
-| Called from | `l_A9FB`, `ReplayRoundEnd` |
+| Called from | `l_A9FB`, `ReplayColumns` |
 | Calls | `PushNode`, `SetSpanHandler` |
-| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA1E` (`NodePool+2`); 2 more ranges |
+| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA1E` (`NodePool+2`); 1 more ranges |
 | Writes | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA1E` (`NodePool+2`); 1 more ranges |
 
 ### `SetSpanHandler` (`$8C1C`)
@@ -668,7 +666,7 @@ Handler = SpanHandlers[(IY+6)] into the node's first word. 48K c2: 1559 entries.
 | Runs (r1, the bot over level 1 with the weapons) | 4,207 calls, 517,537 t-states own (0.09 %) |
 | Runs (r2, homing missiles at the guardian) | 8 calls, 984 t-states own (0.00 %) |
 | Called from | `ScrollStep` |
-| Reads | `$8C33`-`$8C3A` (`SpanHandlers+2`); `$F806`-`$FA1E` (`NodePool+6`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$8C33`-`$8C3A` (`SpanHandlers+2`); `$F806`-`$FA1E` (`NodePool+6`) |
 | Writes | `$F800`-`$FA19` (`NodePool`) |
 
 ## levels
@@ -693,7 +691,7 @@ Called from the level start `$AF49` (48K c2: 1 entry).
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 261,028 t-states own (0.05 %) |
 | Called from | `LevelStart` |
 | Calls | `InitStars`, `ClearHitGrid` |
-| Reads | `$B700`-`$BFFE` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
+| Reads | `$B700`-`$BFFE` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
 | Writes | `$7EFF`-`$7F4F` (`SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3`, `SpriteCacheRecord4` and 2 more); `$7F68`-`$7F69` (`NodeFreeList`); `$801C`-`$8025` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 4 more); `$8072`-`$8087` (`FreeEnemySlots`, `WavesAllowed`, `EnemyShotsLeft`, `WaveRecords` and 1 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); 3 more ranges |
 
 ## scenery
@@ -711,7 +709,7 @@ Script stack top `$FDFB` holds the entry ScriptMain, ScriptSP (`$801A`) = `$FDFB
 | Runs (c1, the menu and six short games) | 18 calls, 1,242 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 138 t-states own (0.00 %) |
 | Called from | `LevelStart` |
-| Calls | `ResumeScript` |
+| Calls | `ResumeScript` (falls into) |
 | Writes | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FDFB`-`$FDFC` (`ScriptStackTop`) |
 
 ### `ResumeScript` (`$8D45`)
@@ -727,7 +725,7 @@ Called from the frame handler cycle `$AA96` (48K c2: 524 entries) and from the c
 | Runs (c1, the menu and six short games) | 5,084 calls, 328,692 t-states own (0.04 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2,066 calls, 131,582 t-states own (0.02 %) |
 | Runs (r2, homing missiles at the guardian) | 251 calls, 14,809 t-states own (0.02 %) |
-| Called from | `StartScript`, `PlayPass`, `ReplayRound` |
+| Called from | `StartScript` (falls into), `PlayPass`, `ReplayRound` |
 | Calls | `ScriptMain` |
 | Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more) |
 | Writes | `$8018`-`$8020` (`MainSP`, `ScriptSP`, `ScrollColumn`, `ScriptColumn` and 2 more) |
@@ -782,7 +780,7 @@ HL = the script's address from the word table `$72E1`, then ScriptStep. 48K c2: 
 | Runs (c1, the menu and six short games) | 38 calls, 2,280 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 15 calls, 900 t-states own (0.00 %) |
 | Called from | `ScriptMain`, `ScriptStep` |
-| Calls | `ScriptStep` |
+| Calls | `ScriptStep` (falls into) |
 | Reads | `$72E3`-`$72E6` (`SceneryScriptTable+2`); `$7321`-`$7326` (`SceneryScriptTable+64`) |
 
 ### `ScriptStep` (`$8D86`)
@@ -795,7 +793,7 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 | --- | --- |
 | Runs (c1, the menu and six short games) | 40 calls, 20,406 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 19 calls, 7,290 t-states own (0.00 %) |
-| Called from | `RunScript`, `ScriptReturn` (tail) |
+| Called from | `RunScript` (falls into), `ScriptReturn` (tail) |
 | Calls | `YieldScript`, `ScriptMainAgain`, `RunScript`, `DrawGroup`, `ScriptSetCell` |
 | Reads | `$732F`-`$733C` (`SceneryScripts`); `$745B`-`$7475` (`SceneryScripts+300`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 | Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
@@ -829,7 +827,7 @@ For each object the shape's cells are written column by column (PlaceColumn), wi
 | Runs (r1, the bot over level 1 with the weapons) | 53 calls, 148,290 t-states own (0.03 %) |
 | Called from | `ScriptStep` |
 | Calls | `YieldScript`, `PlaceColumn` |
-| Reads | `$749A`-`$749B` (`GroupTable`); `$74D6`-`$74E7` (`GroupTable+60`); `$7514` (`ObjectGroups`); `$7615`-`$76DD` (`ObjectGroups+257`); `$7785`-`$77BE` (`ShapeTable+2`); `$783A` (`Shapes+25`); 13 more ranges |
+| Reads | `$749A`-`$749B` (`GroupTable`); `$74D6`-`$74E7` (`GroupTable+60`); `$7514` (`ObjectGroups`); `$7615`-`$76DD` (`ObjectGroups+257`); `$7785`-`$77BE` (`ShapeTable+2`); `$783A` (`Shapes+25`); 12 more ranges |
 | Writes | `$8E94` (`ObjectRowStep`); `$8EAD` (`PlaceFlags+1`); `$8EBF`-`$8EC0` (`PlaceStepE`, `PlaceStepC`) |
 
 ### `PlaceColumn` (`$8EA1`)
@@ -845,7 +843,7 @@ The column's header byte: bit 0 set = an attribute follows from the table at H =
 | Runs (c1, the menu and six short games) | 1,601 calls, 823,941 t-states own (0.11 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 431 calls, 217,109 t-states own (0.04 %) |
 | Called from | `DrawGroup` |
-| Reads | `$783B`-`$78A6` (`Shapes+26`); `$78BE`-`$7940` (`Shapes+157`); `$796A`-`$7A0F` (`Shapes+329`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
+| Reads | `$783B`-`$78A6` (`Shapes+26`); `$78BE`-`$7940` (`Shapes+157`); `$796A`-`$7A0F` (`Shapes+329`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
 | Writes | `$8EBB` (`PlaceAttr+1`); `$B700`-`$BA26` (`Start+1`, `MapRingSpace`); `$BA41`-`$BA66` (`MapRingSpace+786`); `$BA81`-`$BAA5` (`MapRingSpace+850`); `$BAC1`-`$BAE5` (`MapRingSpace+914`); `$BC25`-`$BC35` (`TileSource+37`); 4 more ranges |
 
 ### `ScriptSetCell` (`$8EC5`)
@@ -880,7 +878,7 @@ Input: HL = the source glyphs, DE = the destination, B = the cells a column, C =
 | Runs (r1, the bot over level 1 with the weapons) | 27 calls, 47,546 t-states own (0.01 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 2,540 t-states own (0.00 %) |
 | Called from | `LoadCellSprite` |
-| Calls | `FillBlankCell` |
+| Calls | `FillBlankCell` (falls into) |
 | Reads | `$6440`-`$645F` (system); `$64A0`-`$64FF` (system); `$6560`-`$657F` (system); `$65E0`-`$65FF` (system); `$66B0`-`$66DF` (system) |
 | Writes | `$E748`-`$E787` (`SpriteCacheImages`); `$E988`-`$E9AF` (`SpriteCacheImages+576`) |
 
@@ -895,7 +893,7 @@ A and BC preserved. 48K c2: 30 entries.
 | Runs (c1, the menu and six short games) | 186 calls, 47,616 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 163 calls, 41,728 t-states own (0.01 %) |
 | Runs (r2, homing missiles at the guardian) | 7 calls, 1,792 t-states own (0.00 %) |
-| Called from | `BuildCellSprite` |
+| Called from | `BuildCellSprite` (falls into) |
 | Writes | `$E740`-`$E747` (`BallSprite+248`); `$E758`-`$E75F` (`SpriteCacheImages+16`); `$E770`-`$E7A7` (`SpriteCacheImages+40`); `$E980`-`$E987` (`SpriteCacheImages+568`); `$E998`-`$E99F` (`SpriteCacheImages+592`); `$E9B0`-`$E9CF` (`SpriteCacheImages+616`) |
 
 ### `BuildBigSprite` (`$8F0C`)
@@ -931,8 +929,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | Runs (c1, the menu and six short games) | 217 calls, 2,387 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 189 calls, 2,079 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 7 calls, 77 t-states own (0.00 %) |
-| Called from | `SpriteBuildShifts`, `SpriteShiftCopy` |
-| Calls | `RotateLine` |
+| Called from | `SpriteShiftCopy` |
+| Calls | `RotateLine` (falls into) |
 
 ### `RotateLine` (`$8F5D`)
 
@@ -943,8 +941,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | Runs (c1, the menu and six short games) | 5,209 calls, 57,326 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 4,542 calls, 49,915 t-states own (0.01 %) |
 | Runs (r2, homing missiles at the guardian) | 168 calls, 4,368 t-states own (0.01 %) |
-| Called from | `RotateSprite`, `RotateNextByte` (tail), `l_8F6D` (tail), `l_AB07` |
-| Calls | `RotateLineSave`, `RotateByte` |
+| Called from | `RotateSprite` (falls into), `l_8F6D` (tail), `l_AB07` |
+| Calls | `RotateLineSave` (falls into) |
 
 ### `RotateLineSave` (`$8F5E`)
 
@@ -954,8 +952,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,210 calls, 57,326 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 4,537 calls, 68,040 t-states own (0.01 %) |
-| Called from | `RotateLine`, `l_AB07` |
-| Calls | `RotateLineCarry`, `RotateByte` |
+| Called from | `RotateLine` (falls into), `l_AB07` |
+| Calls | `RotateLineCarry` (falls into) |
 
 ### `RotateLineCarry` (`$8F5F`)
 
@@ -964,8 +962,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,210 calls, 20,832 t-states own (0.00 %) |
-| Called from | `RotateLineSave`, `l_AB07` |
-| Calls | `RotateByte` |
+| Called from | `RotateLineSave` (falls into), `l_AB07` |
+| Calls | `RotateByte` (falls into) |
 
 ### `RotateByte` (`$8F60`)
 
@@ -976,9 +974,9 @@ Called from `$AD44` (48K c2: 35 entries).
 | Runs (c1, the menu and six short games) | 15,626 calls, 62,515 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 13,783 calls, 55,142 t-states own (0.01 %) |
 | Runs (r2, homing missiles at the guardian) | 672 calls, 22,867 t-states own (0.03 %) |
-| Called from | `RotateLine`, `RotateLineSave`, `RotateLineCarry`, `RotateNextByte` (tail), `l_AB07` |
-| Calls | `RotateByteShift`, `RotateNextByte` |
-| Reads | `$E7A8`-`$EA47` (`SpriteCacheImages+96`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineCarry` (falls into), `RotateNextByte` (tail), `l_AB07` |
+| Calls | `RotateByteShift` (falls into) |
+| Reads | `$E7A8`-`$EA47` (`SpriteCacheImages+96`) |
 | Writes | `$E7A8`-`$EA47` (`SpriteCacheImages+96`) |
 
 ### `RotateByteShift` (`$8F61`)
@@ -989,9 +987,9 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 15,625 calls, 234,493 t-states own (0.03 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 13,778 calls, 206,697 t-states own (0.04 %) |
-| Called from | `RotateByte`, `l_AB07` |
-| Calls | `RotateByteOut` |
-| Reads | `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateByte` (falls into), `l_AB07` |
+| Calls | `RotateByteOut` (falls into) |
+| Reads | `$E790`-`$EBC7` (`SpriteCacheImages+72`) |
 | Writes | `$E790`-`$EBC7` (`SpriteCacheImages+72`) |
 
 ### `RotateByteOut` (`$8F63`)
@@ -1002,9 +1000,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 15,631 calls, 62,515 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 13,779 calls, 55,142 t-states own (0.01 %) |
-| Called from | `RotateByteShift`, `l_AB07` |
-| Calls | `l_8F64` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateByteShift` (falls into), `l_AB07` |
+| Calls | `l_8F64` (falls into) |
 
 ### `l_8F64` (`$8F64`)
 
@@ -1014,9 +1011,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 15,625 calls, 171,902 t-states own (0.02 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 13,778 calls, 151,669 t-states own (0.03 %) |
-| Called from | `RotateByteOut`, `l_AB07` |
-| Calls | `RotateNextByte` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateByteOut` (falls into), `l_AB07` |
+| Calls | `RotateNextByte` (falls into) |
 
 ### `RotateNextByte` (`$8F65`)
 
@@ -1027,9 +1023,9 @@ Called from `$AD44` (48K c2: 35 entries).
 | Runs (c1, the menu and six short games) | 15,625 calls, 229,209 t-states own (0.03 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 13,783 calls, 265,424 t-states own (0.05 %) |
 | Runs (r2, homing missiles at the guardian) | 672 calls, 17,339 t-states own (0.02 %) |
-| Called from | `RotateByte`, `l_8F64`, `l_AB07` |
-| Calls | `RotateLine` (tail), `RotateByte` (tail), `RotateLineMerge`, `RotateLineNext` |
-| Reads | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$E9FF` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 3 more ranges |
+| Called from | `l_8F64` (falls into), `l_AB07` |
+| Calls | `RotateByte` (tail), `RotateLineMerge` (falls into) |
+| Reads | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$E9FF` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 2 more ranges |
 | Writes | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$EA2F` (`SpriteCacheImages+648`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); `$EB38`-`$EB4F` (`SpriteCacheImages+1008`); 1 more ranges |
 
 ### `RotateLineMerge` (`$8F68`)
@@ -1039,9 +1035,9 @@ Called from `$AD44` (48K c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,209 calls, 72,969 t-states own (0.01 %) |
-| Called from | `RotateNextByte`, `l_AB07` |
-| Calls | `RotateLineNext` |
-| Reads | `$E790`-`$E957` (`SpriteCacheImages+72`); `$E9D0`-`$E9E7` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 3 more ranges |
+| Called from | `RotateNextByte` (falls into), `l_AB07` |
+| Calls | `RotateLineNext` (falls into) |
+| Reads | `$E790`-`$E957` (`SpriteCacheImages+72`); `$E9D0`-`$E9E7` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 2 more ranges |
 | Writes | `$E790`-`$E957` (`SpriteCacheImages+72`); `$E9D0`-`$EA2F` (`SpriteCacheImages+648`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); `$EB38`-`$EB4F` (`SpriteCacheImages+1008`); 1 more ranges |
 
 ### `RotateLineNext` (`$8F6A`)
@@ -1052,8 +1048,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,211 calls, 83,366 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 4,537 calls, 72,614 t-states own (0.01 %) |
-| Called from | `RotateNextByte`, `RotateLineMerge`, `l_AB07` |
-| Calls | `RotateLineCount` |
+| Called from | `RotateLineMerge` (falls into), `l_AB07` |
+| Calls | `RotateLineCount` (falls into) |
 
 ### `RotateLineCount` (`$8F6C`)
 
@@ -1063,9 +1059,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,210 calls, 20,851 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 4,538 calls, 18,163 t-states own (0.00 %) |
-| Called from | `RotateLineNext`, `l_AB07` |
-| Calls | `l_8F6D` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineNext` (falls into), `l_AB07` |
+| Calls | `l_8F6D` (falls into) |
 
 ### `l_8F6D` (`$8F6D`)
 
@@ -1075,9 +1070,8 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 5,209 calls, 61,449 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 4,537 calls, 53,620 t-states own (0.01 %) |
-| Called from | `RotateLineCount`, `l_AB07` |
-| Calls | `RotateLine` (tail), `l_8F6F` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineCount` (falls into), `l_AB07` |
+| Calls | `RotateLine` (tail), `l_8F6F` (falls into) |
 
 ### `l_8F6F` (`$8F6F`)
 
@@ -1087,7 +1081,7 @@ Called from `$AD44` (48K c2: 35 entries).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 218 calls, 2,170 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 190 calls, 1,890 t-states own (0.00 %) |
-| Called from | `l_8F6D`, `l_AB07` |
+| Called from | `l_8F6D` (falls into), `l_AB07` |
 | Calls | `SpriteShiftNext` |
 
 ### `ClearStripCounts` (`$8F70`)
@@ -1284,7 +1278,7 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 | Runs (r1, the bot over level 1 with the weapons) | 67 calls, 3,429 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 135 t-states own (0.00 %) |
 | Called from | `GetSpriteCache` |
-| Calls | `SpriteCacheRet` |
+| Calls | `SpriteCacheRet` (falls into) |
 
 ### `SpriteCacheRet` (`$9413`)
 
@@ -1295,7 +1289,7 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 | Runs (c1, the menu and six short games) | 71 calls, 710 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 94 calls, 940 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 2 calls, 20 t-states own (0.00 %) |
-| Called from | `GetSpriteCache` (tail), `SpriteCacheRecord` |
+| Called from | `GetSpriteCache` (tail), `SpriteCacheRecord` (falls into) |
 
 ### `EvictSpriteCache` (`$9414`)
 
@@ -1773,7 +1767,7 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | Runs (r1, the bot over level 1 with the weapons) | 88 calls, 2,288 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 456 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler` |
-| Calls | `EnemyGone`, `AddScore` |
+| Calls | `EnemyGone` (falls into) |
 | Reads | `$7F3F`-`$7F41` (`SpriteCacheRecord5+13`); `$8073`-`$8076` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`); `$8087` (`SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3BB` (`EnemyObjects+26`) |
 | Writes | `$7F3F` (`SpriteCacheRecord5+13`); `$8073`-`$8075` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`); `$8087` (`SpriteCacheMask`); `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); 2 more ranges |
 
@@ -1785,7 +1779,7 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | --- | --- |
 | Runs (c1, the menu and six short games) | 41 calls, 11,440 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 139 calls, 41,392 t-states own (0.01 %) |
-| Called from | `EnemyEscaped` (tail), `EnemyKilled` |
+| Called from | `EnemyEscaped` (tail), `EnemyKilled` (falls into) |
 | Calls | `AddScore` |
 | Reads | `$7EFF`-`$7F11` (`SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F3F`-`$7F41` (`SpriteCacheRecord5+13`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects+26`); `$F3DE`-`$F3F1` (`EnemyObjects+70`); 3 more ranges |
 | Writes | `$7EFF`-`$7F0F` (`SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F3F` (`SpriteCacheRecord5+13`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); 2 more ranges |
@@ -1924,7 +1918,7 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 3,362,222 t-states own (0.61 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 510,099 t-states own (0.71 %) |
 | Called from | `JumpTable` |
-| Calls | `JumpTable`, `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `ScatterDebris`, `FuelOut`, `FireLaser`, `ReadControls` |
+| Calls | `JumpTable`, `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `FuelOut`, `FireLaser`, `ReadControls` |
 | Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); `$8184`-`$8186` (`FireHeld`, `FireChanged`, `ControlBits`); 9 more ranges |
 | Writes | `$7F7B`-`$7F7C` (`DeathTimer`, `EndPending`); `$80BF`-`$80E6` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask` and 4 more); `$F371`-`$F4D4` (`PlayerObject+5`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); 4 more ranges |
 
@@ -1936,7 +1930,8 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ScatterDebris` |
 
 ### `WeaponRating` (`$9B75`)
 
@@ -1949,7 +1944,7 @@ L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 fro
 | Runs (c1, the menu and six short games) | 44 calls, 10,472 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 112 calls, 26,680 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 238 t-states own (0.00 %) |
-| Called from | `ScoreJob`, `ScoreJobRating`, `RoundPlaySetup` |
+| Called from | `ScoreJobRating`, `RoundPlaySetup` |
 | Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$81DE` (`ScriptLevelBias`) |
 | Writes | `$80E7`-`$80E9` (`WeaponRatingMask`, `WeaponRatingValue`, `WeaponRatingLevel`) |
 
@@ -1964,7 +1959,7 @@ On a 128K: the LD (`$8072`),A at `$9BFF` becomes CALL HookShipLost (`$B354`): th
 | | |
 | --- | --- |
 | Runs (c1, the menu and six short games) | 18 calls, 31,932 t-states own (0.00 %) |
-| Called from | `PlayerHandler` |
+| Called from | `KillPlayer` |
 | Calls | `Random`, `ClampRow`, `StartExplosion`, `l_B33C` |
 | Reads | `$F370`-`$F372` (`PlayerObject+4`); `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
 | Writes | `$F39C`-`$F3A0` (`EnemyObjects+4`); `$F3BE`-`$F3CC` (`EnemyObjects+38`); `$F3EA`-`$F3F8` (`EnemyObjects+82`); `$F416`-`$F424` (`EnemyObjects+126`); `$F442`-`$F450` (`EnemyObjects+170`); `$F46E`-`$F46F` (`EnemyObjects+214`) |
@@ -2015,7 +2010,6 @@ Fire held exactly 3 frames: `$F5D4` when free, else with the double plasma (+`$0
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 19,406 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `EffectTickRead` |
 | Reads | `$7FA5` (`Player1DoublePlasma`); `$8184` (`FireHeld`); `$F36F`-`$F372` (`PlayerObject+3`); `$F5DC` (`SideShot+8`) |
 | Writes | `$F5D7`-`$F5E7` (`SideShot+3`); `$F5FA` (`SideShot+38`) |
 
@@ -2095,7 +2089,7 @@ Not run in 48K c1/c2.
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 127 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `ResetPlasmaBall` |
+| Calls | `ResetPlasmaBall` (falls into) |
 | Reads | `$7FA4` (`Player1SideWeapon`); `$F608` (`SightObject+8`) |
 | Writes | `$7FA4` (`Player1SideWeapon`); `$F608` (`SightObject+8`) |
 
@@ -2108,7 +2102,7 @@ Inactive, kind 9, Vx = `$40`, the X acceleration 0, the Y acceleration `$10` (it
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 340 t-states own (0.00 %) |
-| Called from | `PodPlasma` |
+| Called from | `PodPlasma` (falls into) |
 | Reads | `$F5B0` (`PlasmaBall2+8`); `$F5DC` (`SideShot+8`) |
 | Writes | `$F5AF`-`$F5BD` (`PlasmaBall2+7`); `$F5DB`-`$F5E9` (`SideShot+7`) |
 
@@ -2147,7 +2141,7 @@ Colour `$78` without a lock, `$70` with one; its overlap mask +`$0D` into `$80E4
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 166,605 t-states own (0.03 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 120,712 t-states own (0.17 %) |
 | Called from | `JumpTable` |
-| Calls | `PlaceSight` |
+| Calls | `PlaceSight` (falls into) |
 | Reads | `$80BF`-`$80E2` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask`); `$F60D` (`SightObject+13`) |
 | Writes | `$80E4` (`SightMask`); `$F603`-`$F606` (`SightObject+3`); `$F625` (`SightObject+37`) |
 
@@ -2160,7 +2154,7 @@ The entry of the ring `$80C0` at the index `$80BF` (the oldest one: the sight la
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 1,916 calls, 295,064 t-states own (0.05 %) |
-| Called from | `PodHoming`, `SightHandler` |
+| Called from | `PodHoming`, `SightHandler` (falls into) |
 | Reads | `$80BF`-`$80DF` (`ShipHistoryIndex`, `ShipHistory`) |
 | Writes | `$F603`-`$F606` (`SightObject+3`) |
 
@@ -2419,9 +2413,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | Runs (c1, the menu and six short games) | 5,293 calls, 2,421,478 t-states own (0.33 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,527 calls, 428,892 t-states own (0.08 %) |
 | Runs (r2, homing missiles at the guardian) | 8 calls, 5,456 t-states own (0.01 %) |
-| Called from | `PrintString`, `PrintBcd`, `PrintBcdLeading`, `PrintBcdOut` |
-| Calls | `PrintCharRow`, `PrintCharDone` (tail), `PrintGlyph` (tail), `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight`, `PrintRowDown` |
-| Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A3`-`$A3B0` (`PrintControlTable`); `$B54F`-`$B6FE` (`Glyphs`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintString`, `PrintBcdLeading`, `PrintBcdOut` |
+| Calls | `PrintCharRow` (falls into), `PrintCharDone` (tail), `PrintGlyph` (tail) |
+| Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A3`-`$A3B0` (`PrintControlTable`); `$B54F`-`$B6FE` (`Glyphs`) |
 | Writes | `$4002`-`$5A57` (screen); `$5A6B`-`$5A74` (screen); `$5A8C`-`$5AFF` (screen); `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`) |
 
 ### `PrintCharRow` (`$A365`)
@@ -2431,9 +2425,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 6,547 calls, 72,044 t-states own (0.01 %) |
-| Called from | `PrintChar`, `l_A367` (tail), `l_AB07` |
-| Calls | `l_A367` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintChar` (falls into), `l_A367` (tail), `l_AB07` |
+| Calls | `l_A367` (falls into) |
 
 ### `l_A367` (`$A367`)
 
@@ -2442,9 +2435,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 6,547 calls, 249,877 t-states own (0.05 %) |
-| Called from | `PrintCharRow`, `l_AB07` |
-| Calls | `PrintCharRow` (tail), `PrintCharDone` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintCharRow` (falls into), `l_AB07` |
+| Calls | `PrintCharRow` (tail), `PrintCharDone` (falls into) |
 | Writes | `$4202`-`$421D` (screen); `$4253`-`$47F6` (screen); `$4A27`-`$4FF7` (screen); `$522C`-`$53F0` (screen); `$542C`-`$54F0` (screen); `$552C`-`$55F0` (screen); 2 more ranges |
 
 ### `PrintCharDone` (`$A36E`)
@@ -2454,7 +2446,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 1,382 calls, 87,066 t-states own (0.02 %) |
-| Called from | `PrintChar` (tail), `l_A367`, `PrintGlyph` (tail) |
+| Called from | `PrintChar` (tail), `l_A367` (falls into), `PrintGlyph` (tail) |
 | Calls | `PrintBcdLeadNext`, `PrintBcdRestNext` |
 | Writes | `$80AD` (`PrintPending`) |
 
@@ -2466,7 +2458,7 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 146 calls, 48,326 t-states own (0.01 %) |
 | Called from | `PrintChar` (tail) |
-| Calls | `PrintCharDone` (tail) |
+| Calls | `PrintCharDone` (tail), `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight`, `PrintRowDown` |
 | Reads | `$B54F`-`$B63E` (`Glyphs`) |
 | Writes | `$400D`-`$50F1` (screen); `$510A`-`$51F1` (screen); `$520A`-`$52F1` (screen); `$530A`-`$53F1` (screen); `$540A`-`$54F1` (screen); `$550A`-`$55F1` (screen); 2 more ranges |
 
@@ -2493,7 +2485,7 @@ C: the attribute byte for the next characters (`$80AC`).
 | --- | --- |
 | Runs (c1, the menu and six short games) | run into, not called, 4,158 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 486 t-states own (0.00 %) |
-| Called from | `PrintChar` |
+| Called from | `PrintGlyph` |
 | Calls | `PrintCodeDone` |
 | Writes | `$80AC` (`PrintAttr`) |
 
@@ -2527,7 +2519,7 @@ C: the column 0-31 of the print position.
 | --- | --- |
 | Runs (c1, the menu and six short games) | run into, not called, 7,875 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 855 t-states own (0.00 %) |
-| Called from | `PrintChar` |
+| Called from | `PrintGlyph` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
 | Writes | `$80AA` (`PrintPos`) |
@@ -2542,7 +2534,7 @@ C: the row 0-23: the print position's high byte `$58` + C / 8, bits 5-7 of the l
 | --- | --- |
 | Runs (c1, the menu and six short games) | 316 calls, 45,732 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 40 calls, 6,077 t-states own (0.00 %) |
-| Called from | `PrintChar`, `PrintRowDown` (tail) |
+| Called from | `PrintGlyph`, `PrintRowDown` (tail) |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
 | Writes | `$80AA`-`$80AB` (`PrintPos`) |
@@ -2557,7 +2549,7 @@ C: the columns to add (a negative operand, `$FE`, moves left).
 | --- | --- |
 | Runs (c1, the menu and six short games) | run into, not called, 12,806 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 1,862 t-states own (0.00 %) |
-| Called from | `PrintChar` |
+| Called from | `PrintGlyph` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
 | Writes | `$80AA` (`PrintPos`) |
@@ -2572,7 +2564,7 @@ C: the rows to add to the current row (the position's row from bits 5-9 of its o
 | --- | --- |
 | Runs (c1, the menu and six short games) | run into, not called, 25,280 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 3,200 t-states own (0.00 %) |
-| Called from | `PrintChar` |
+| Called from | `PrintGlyph` |
 | Calls | `PrintSetRow` (tail) |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
 
@@ -2590,7 +2582,7 @@ Callers: PrintMessage and the title loop (HiScorePage).
 | Runs (r1, the bot over level 1 with the weapons) | 45 calls, 61,575 t-states own (0.01 %) |
 | Called from | `PrintMessage`, `HiScorePage` |
 | Calls | `PrintChar`, `PrintMessage` |
-| Reads | `$80AD` (`PrintPending`); `$8261`-`$82A2` (`HiScoreTable`); `$82EE`-`$839D` (`Messages`); `$83FD`-`$84FD` (`Messages+271`, `PlayerDigit`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$80AD` (`PrintPending`); `$8261`-`$82A2` (`HiScoreTable`); `$82EE`-`$839D` (`Messages`); `$83FD`-`$84FD` (`Messages+271`, `PlayerDigit`) |
 
 ### `PrintMessage` (`$A423`)
 
@@ -2604,9 +2596,9 @@ Callers: PrintString, the menu screens (RedefineKeys, PrintKeyName, SelectPlayer
 | --- | --- |
 | Runs (c1, the menu and six short games) | 282 calls, 1,102,385 t-states own (0.15 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 40 calls, 134,481 t-states own (0.02 %) |
-| Called from | `PrintString`, `SelectOnePlayer`, `HighScoreEntry`, `LevelStart`, `CreditsPage`, `HiScorePage`, `l_B33C` |
+| Called from | `PrintString`, `SelectTwoPlayers`, `HighScoreEntry`, `LevelStart`, `CreditsPage`, `HiScorePage`, `l_B33C` |
 | Calls | `PrintString` |
-| Reads | `$82ED`-`$84F0` (`MessageListBase`, `Messages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$82ED`-`$84F0` (`MessageListBase`, `Messages`) |
 
 ### `PrintBcdSpaces` (`$A43C`)
 
@@ -2632,8 +2624,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | Runs (r1, the bot over level 1 with the weapons) | 119 calls, 3,708 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 996 t-states own (0.00 %) |
 | Called from | `PrintPlayerScore`, `CreditsPage`, `HiScorePage` |
-| Calls | `PrintChar`, `l_A445` |
-| Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$7FFC`-`$7FFF` (`BcdScratch`); `$826B`-`$82A6` (`HiScoreTable+10`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `l_A445` (falls into) |
+| Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$7FFC`-`$7FFF` (`BcdScratch`); `$826B`-`$82A6` (`HiScoreTable+10`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`); `$80AC` (`PrintAttr`) |
 
 ### `l_A445` (`$A445`)
@@ -2643,8 +2635,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 120 calls, 15,589 t-states own (0.00 %) |
-| Called from | `PrintBcd`, `l_AB07` |
-| Calls | `PrintBcdLeading` |
+| Called from | `PrintBcd` (falls into), `l_AB07` |
+| Calls | `PrintBcdLeading` (falls into) |
 | Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$826B`-`$82A6` (`HiScoreTable+10`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`) |
 
@@ -2655,7 +2647,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 616 calls, 53,770 t-states own (0.01 %) |
-| Called from | `l_A445`, `PrintBcdLeadNext` (tail) |
+| Called from | `l_A445` (falls into), `PrintBcdLeadNext` (tail) |
 | Calls | `PrintChar`, `PrintBcdOut` (tail) |
 | Reads | `$7FFC`-`$7FFF` (`BcdScratch`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`); `$80AC` (`PrintAttr`) |
@@ -2668,7 +2660,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 8,560 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
-| Calls | `PrintBcdLeading` (tail), `PrintBcdRest` |
+| Calls | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Writes | `$80AC` (`PrintAttr`) |
 
 ### `PrintBcdRest` (`$A474`)
@@ -2678,8 +2670,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 336 calls, 16,113 t-states own (0.00 %) |
-| Called from | `PrintBcdLeadNext`, `PrintBcdRestNext` (tail) |
-| Calls | `PrintBcdOut` |
+| Called from | `PrintBcdLeadNext` (falls into), `PrintBcdRestNext` (tail) |
+| Calls | `PrintBcdOut` (falls into) |
 | Reads | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
 | Writes | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
 
@@ -2690,7 +2682,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 452 calls, 9,492 t-states own (0.00 %) |
-| Called from | `PrintBcdLeading` (tail), `PrintBcdRest` |
+| Called from | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Calls | `PrintChar` |
 
 ### `PrintBcdRestNext` (`$A482`)
@@ -2722,7 +2714,7 @@ Callers: the enemy kill (EnemyGone), the enemy movers (EnemyHandler), PodStep.
 | Runs (c1, the menu and six short games) | 26 calls, 8,216 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 118 calls, 37,288 t-states own (0.01 %) |
 | Runs (r2, homing missiles at the guardian) | 2 calls, 632 t-states own (0.00 %) |
-| Called from | `EnemyKilled`, `EnemyGone`, `EnemyHandler`, `LockableHandler`, `PodStep`, `l_B33C` |
+| Called from | `EnemyGone`, `EnemyHandler`, `LockableHandler`, `PodStep`, `l_B33C` |
 | Reads | `$7F98`-`$7F9F` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$81C5` (`EventRequests`); `$8235`-`$8258` (`PointsTable+4`) |
 | Writes | `$7F9C`-`$7F9F` (`Player1`); `$81C5` (`EventRequests`) |
 
@@ -2820,7 +2812,7 @@ Writes `$A512` to the handler pointer `$FDFE`, EI. Callers: MenuScreenSetup, Sel
 | --- | --- |
 | Runs (c1, the menu and six short games) | 23 calls, 920 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 3 calls, 120 t-states own (0.00 %) |
-| Called from | `MenuScreenSetup`, `SelectOnePlayer` |
+| Called from | `MenuScreenSetup`, `SelectTwoPlayers` |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `WaitMenuRasterEnd` (`$A595`)
@@ -2833,9 +2825,9 @@ Waits (HALT) until `$80B9` is 0, clears the colour buffer, then installs TitleIn
 | --- | --- |
 | Runs (c1, the menu and six short games) | 23 calls, 16,042,625 t-states own (2.15 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 3 calls, 2,601,493 t-states own (0.47 %) |
-| Called from | `SelectOnePlayer`, `RoundPlaySetup`, `l_B33C` |
+| Called from | `SelectTwoPlayers`, `RoundPlaySetup`, `l_B33C` |
 | Calls | `ClearColourBuffer` |
-| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd+1`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `ClearColourBuffer` (`$A5A7`)
@@ -2848,7 +2840,7 @@ Callers: WaitMenuRasterEnd, MenuScreenSetup, SelectPlayers.
 | --- | --- |
 | Runs (c1, the menu and six short games) | 46 calls, 271,722 t-states own (0.04 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 6 calls, 35,442 t-states own (0.01 %) |
-| Called from | `WaitMenuRasterEnd`, `MenuScreenSetup`, `SelectOnePlayer` |
+| Called from | `WaitMenuRasterEnd`, `MenuScreenSetup`, `SelectTwoPlayers` |
 | Writes | `$FC00`-`$FCFF` (`HitGridX`, `MenuColours`) |
 
 ### `ExpandNextColours` (`$A5B0`)
@@ -2860,8 +2852,8 @@ As ExpandColours with HL from `$80B1`.
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 256 calls, 4,096 t-states own (0.00 %) |
-| Called from | `SelectOnePlayer` |
-| Calls | `ExpandColours` |
+| Called from | `SelectTwoPlayers` |
+| Calls | `ExpandColours` (falls into) |
 | Reads | `$80B1`-`$80B2` (`RasterList`) |
 
 ### `ExpandColours` (`$A5B3`)
@@ -2876,7 +2868,7 @@ Callers: MenuScreenSetup, SelectPlayers, RedefineKeys (by ExpandNextColours).
 | --- | --- |
 | Runs (c1, the menu and six short games) | 46 calls, 392,380 t-states own (0.05 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 262 calls, 382,817 t-states own (0.07 %) |
-| Called from | `ExpandNextColours`, `MenuScreenSetup`, `SelectOnePlayer` |
+| Called from | `ExpandNextColours` (falls into), `MenuScreenSetup`, `SelectTwoPlayers` |
 | Reads | `$82A7`-`$82EB` (`ColoursTop`, `ColoursMenu`, `ColoursHighlight`, `ColoursBar`) |
 | Writes | `$FC20`-`$FCC7` (`MenuColours`) |
 
@@ -2939,7 +2931,7 @@ A: the frames (HALT A times, interrupts enabled). Callers: RedefineKeys, HighSco
 | Runs (c1, the menu and six short games) | 17 calls, 58,038,176 t-states own (7.79 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 3,477,650 t-states own (0.63 %) |
 | Called from | `EndOfPlay` |
-| Reads | `$A6B2` (`WaitFramesLoop+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$A6B2` (`WaitFramesLoop+1`) |
 
 ## input
 
@@ -2977,7 +2969,7 @@ With K-MOUSE the start test at `$A74E` becomes LD A,`$FA`: IN A,(`$DF`): AND 2: 
 | --- | --- |
 | Runs (c1, the menu and six short games) | 411 calls, 75,240 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 185 calls, 34,016 t-states own (0.01 %) |
-| Called from | `HighScoreEntry`, `CreditsPage`, `l_B0C2`, `HiScorePage`, `TitleTune`, `TuneByte` |
+| Called from | `HighScoreEntry`, `l_B0C2`, `HiScorePage`, `TuneByte` |
 | Reads | `$8187`-`$8189` (`JoystickFlags`, `KeyTable`) |
 | Writes | `$8187` (`JoystickFlags`) |
 | Ports in | `$001F`, `$011F`, `$081F`, `$0F1F`, `$DB1F`, `$DD1F`, `$DF1F`, `$E11F`, `$E31F`, `$E51F`, `$E71F`, `$E91F`, `$EB1F`, `$ED1F`, `$EF1F`, `$F11F`, `$F31F` |
@@ -2996,7 +2988,7 @@ With K-MOUSE the start test at `$A74E` becomes LD A,`$FA`: IN A,(`$DF`): AND 2: 
 | --- | --- |
 | Runs (c1, the menu and six short games) | 6 calls, 924 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 161 t-states own (0.00 %) |
-| Called from | `CreditsPage`, `l_B0C2` |
+| Called from | `l_B0C2` |
 | Calls | `SelectOnePlayer` |
 | Ports in | `$F7FE` |
 
@@ -3010,8 +3002,7 @@ A = 1, then as SelectTwoPlayers.
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 6,185,118 t-states own (1.12 %) |
 | Called from | `MenuKeys` |
-| Calls | `ClearScreen`, `PrintMessage`, `SetMenuRaster`, `WaitMenuRasterEnd`, `ClearColourBuffer`, `ExpandNextColours`, `ExpandColours`, `l_B386` |
-| Reads | `$7F9B` (`Players`); `$A7D9`-`$A7DA` (`SelectPlayersStep+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$7F9B` (`Players`); `$A7D9`-`$A7DA` (`SelectPlayersStep+1`) |
 | Writes | `$7F9B` (`Players`); `$80AE`-`$80B2` (`RasterTable`, `RasterLines`, `RasterList`) |
 
 ### `SelectTwoPlayers` (`$A78D`)
@@ -3026,7 +3017,8 @@ Stores A in `$7F9B`, clears the screen, colours `$82A7` (48 lines) into `$FC20` 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ClearScreen`, `PrintMessage`, `SetMenuRaster`, `WaitMenuRasterEnd`, `ClearColourBuffer`, `ExpandNextColours`, `ExpandColours`, `l_B386` |
 
 ## hiscore
 
@@ -3049,7 +3041,7 @@ On a 128K: its first CALL `$A685` (at `$A7F7`) becomes CALL HookScreenWipe (`$B3
 | Runs (c1, the menu and six short games) | 5 calls, 27,570 t-states own (0.00 %) |
 | Called from | `PlayerDied` |
 | Calls | `PrintMessage`, `CompareScore`, `TitleFireCheck`, `HighScoreDone` (tail), `l_B33C`, `l_B39C` |
-| Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$A821` (`HighScoreUnranked+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$7F99`-`$7F9A` (`PlayerRecord`); `$A821` (`HighScoreUnranked+1`) |
 
 ### `HighScoreDone` (`$A8B7`)
 
@@ -3106,8 +3098,8 @@ The reverse of RestorePanel. Called at `$B1F9`.
 | --- | --- |
 | Runs (c1, the menu and six short games) | 17 calls, 789,296 t-states own (0.11 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 46,437 t-states own (0.01 %) |
-| Called from | `PlayLoopBranch` |
-| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayLoopAgain` |
+| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen) |
 | Writes | `$E748`-`$EFE7` (`SpriteCacheImages`) |
 
 ## interrupts
@@ -3191,7 +3183,7 @@ On a 128K: the glue makes the PUSH IX: PUSH IY at `$A9F7` JP PlayAtA9F7 (`$5B31`
 | Runs (r1, the bot over level 1 with the weapons) | 3,458 calls, 697,591 t-states own (0.13 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 272,373 t-states own (0.38 %) |
 | Called from | `RenderDone` |
-| Calls | `ResumeScript`, `ObjectStrips`, `MarkEnemyGrid`, `RunObjects`, `ScrollControl`, `PlayChain`, `ChainBuildColumn1`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd`, `CheckPauseAndEnd`, `WaveScriptStep` |
+| Calls | `ResumeScript`, `ObjectStrips`, `MarkEnemyGrid`, `RunObjects`, `ScrollControl`, `PlayChain` (falls into), `CheckPauseAndEnd`, `WaveScriptStep` |
 | Reads | `$7F64`-`$7F67` (`PassDepth`, `PassPhase`, `ChainStep`) |
 | Writes | `$7F66`-`$7F67` (`ChainStep`) |
 | Ports out | `$00FE` |
@@ -3206,7 +3198,7 @@ A wait, the border black, the chain step `$7F66` + 5. At depth 1 the step runs (
 | --- | --- |
 | Runs (c1, the menu and six short games) | 1,926 calls, 1,101,240 t-states own (0.15 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,928 calls, 1,182,664 t-states own (0.21 %) |
-| Called from | `YieldScript`, `PlayPass` |
+| Called from | `YieldScript`, `PlayPass` (falls into) |
 | Calls | `ChainBuildColumn1`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd`, `PlayInterruptExit` (tail) |
 | Reads | `$7F64`-`$7F67` (`PassDepth`, `PassPhase`, `ChainStep`) |
 | Writes | `$7F66`-`$7F67` (`ChainStep`); `$AAED`-`$AAEE` (`ChainStep1End`) |
@@ -3223,8 +3215,8 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (c1, the menu and six short games) | run into, not called, 25,141 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 14,705 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,875 t-states own (0.01 %) |
-| Called from | `PlayPass`, `PlayChain` |
-| Calls | `BuildColumn`, `PlayInterruptExit` |
+| Called from | `PlayChain` |
+| Calls | `BuildColumn` |
 
 ### `ChainStep1End` (`$AAED`)
 
@@ -3234,7 +3226,7 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 12,098 t-states own (0.00 %) |
 | Called from | `BuildColumnBack` |
-| Calls | `ChainBuildColumn2`, `PlayInterruptExit` |
+| Calls | `ChainBuildColumn2` (falls into), `PlayInterruptExit` |
 
 ### `ChainBuildColumn2` (`$AAEF`)
 
@@ -3245,7 +3237,7 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (c1, the menu and six short games) | run into, not called, 24,986 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 26,815 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,875 t-states own (0.01 %) |
-| Called from | `PlayPass`, `PlayChain`, `ChainStep1End` |
+| Called from | `PlayChain`, `ChainStep1End` (falls into) |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
 ### `ChainBuildColumn3` (`$AAF4`)
@@ -3257,7 +3249,7 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (c1, the menu and six short games) | run into, not called, 24,924 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 26,815 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,906 t-states own (0.01 %) |
-| Called from | `PlayPass`, `PlayChain` |
+| Called from | `PlayChain` |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
 ### `ChainEnd` (`$AAF9`)
@@ -3271,7 +3263,7 @@ DI, `$7F65` = 0, so the next interrupt starts a new pass.
 | Runs (c1, the menu and six short games) | run into, not called, 24,769 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 26,753 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,875 t-states own (0.01 %) |
-| Called from | `PlayPass`, `PlayChain` |
+| Called from | `PlayChain` |
 | Calls | `PlayInterruptExit` |
 | Writes | `$7F65` (`PassPhase`) |
 
@@ -3288,7 +3280,7 @@ On a 128K: the glue makes the POP IY: POP IX at `$AB03` JP PlayAtAB03 (`$5B3C`) 
 | Runs (c1, the menu and six short games) | 3,220 calls, 99,820 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 3,458 calls, 107,198 t-states own (0.02 %) |
 | Runs (r2, homing missiles at the guardian) | 125 calls, 15,531 t-states own (0.02 %) |
-| Called from | `PlayChain` (tail), `ChainBuildColumn1`, `ChainStep1End`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd` |
+| Called from | `PlayChain` (tail), `ChainStep1End`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd` |
 | Reads | `$7F64` (`PassDepth`) |
 | Writes | `$7F64` (`PassDepth`) |
 
@@ -3364,7 +3356,7 @@ Requests effect 0 (RequestEffect `$B2F0` takes 0 as `$80`: the stop), keeps Inte
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 81,367 t-states own (0.01 %) |
 | Called from | `CheckPauseAndEnd` |
 | Calls | `RequestEffect` |
-| Reads | `$AC00`-`$AC01` (`StopAndSettle+16`); `$FDFE`-`$FDFF` (`InterruptHandler`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$AC00`-`$AC01` (`StopAndSettle+16`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ## events
@@ -3383,8 +3375,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (r1, the bot over level 1 with the weapons) | 1,333,039 calls, 13,331,612 t-states own (2.42 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 2,898,359 t-states own (4.04 %) |
 | Called from | `l_AB07`, `PlayLoopPass` |
-| Calls | `EventPending` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `EventPending` (falls into) |
 
 ### `EventPending` (`$AC0A`)
 
@@ -3395,9 +3386,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (c1, the menu and six short games) | 1,270,996 calls, 16,526,784 t-states own (2.22 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,811 calls, 17,330,543 t-states own (3.14 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 3,767,937 t-states own (5.25 %) |
-| Called from | `l_AB07`, `EventDispatch` |
-| Calls | `EventEnabled` |
-| Reads | `$81C5` (`EventRequests`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `l_AB07`, `EventDispatch` (falls into) |
+| Calls | `EventEnabled` (falls into) |
+| Reads | `$81C5` (`EventRequests`) |
 
 ### `EventEnabled` (`$AC0D`)
 
@@ -3408,9 +3399,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (c1, the menu and six short games) | 1,271,093 calls, 8,899,184 t-states own (1.20 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,899 calls, 9,330,856 t-states own (1.69 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 2,028,876 t-states own (2.83 %) |
-| Called from | `l_AB07`, `EventPending` |
-| Calls | `EventAny` |
-| Reads | `$81C6` (`EventMask`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `l_AB07`, `EventPending` (falls into) |
+| Calls | `EventAny` (falls into) |
+| Reads | `$81C6` (`EventMask`) |
 
 ### `EventAny` (`$AC0E`)
 
@@ -3421,7 +3412,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (c1, the menu and six short games) | 1,270,904 calls, 13,997,790 t-states own (1.88 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,628 calls, 14,698,036 t-states own (2.66 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 3,188,447 t-states own (4.44 %) |
-| Called from | `l_AB07`, `EventEnabled` |
+| Called from | `l_AB07`, `EventEnabled` (falls into) |
 | Calls | `JumpTable`, `PlayLoopCheck` |
 | Reads | `$81C6` (`EventMask`) |
 | Writes | `$81C5`-`$81C6` (`EventRequests`, `EventMask`) |
@@ -3434,7 +3425,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | --- | --- |
 | Runs (c1, the menu and six short games) | 30 calls, 2,812 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 29 calls, 5,994 t-states own (0.00 %) |
-| Called from | `ScoreJobRating`, `SpriteBuildNext`, `l_ACB0` |
+| Called from | `ScoreJobRating`, `l_ACB0` |
 | Calls | `PlayLoopCheck` |
 | Writes | `$81C6` (`EventMask`) |
 
@@ -3457,7 +3448,7 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 | Runs (c1, the menu and six short games) | run into, not called, 4,256 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 5,600 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `IconRow` |
+| Calls | `IconRow` (falls into) |
 | Reads | `$7F99`-`$7FA3` (`PlayerRecord`, `Players`, `Player1`); `$81C6` (`EventMask`) |
 | Writes | `$5A86`-`$5A87` (screen); `$5AA6`-`$5AA7` (screen); `$81C6` (`EventMask`) |
 
@@ -3471,7 +3462,7 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 | --- | --- |
 | Runs (c1, the menu and six short games) | 38 calls, 26,220 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 50 calls, 34,500 t-states own (0.01 %) |
-| Called from | `PodIconJob` |
+| Called from | `PodIconJob` (falls into) |
 | Reads | `$B4AF`-`$B54E` (`PodIcons`) |
 | Writes | `$5086`-`$50A7` (screen); `$5186`-`$51A7` (screen); `$5286`-`$52A7` (screen); `$5386`-`$53A7` (screen); `$5486`-`$54A7` (screen); `$5586`-`$55A7` (screen); 2 more ranges |
 
@@ -3499,7 +3490,7 @@ On a 128K: the CALL `$A4EF` at `$ACA2`, after an extra life is given, becomes CA
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 6,710 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 182 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `WeaponRating`, `PrintPlayerScore` |
+| Calls | `PrintPlayerScore` |
 | Reads | `$7F98`-`$7FA8` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$800F` (`ExtraLifeScores`); `$81C6` (`EventMask`) |
 | Writes | `$81C6` (`EventMask`) |
 
@@ -3527,7 +3518,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 837 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 31 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `SpriteBuildNext` |
+| Calls | `SpriteBuildNext` (falls into) |
 | Reads | `$81C6` (`EventMask`) |
 | Writes | `$81C6` (`EventMask`) |
 
@@ -3540,9 +3531,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (c1, the menu and six short games) | 62 calls, 7,285 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 54 calls, 559 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 2 calls, 235 t-states own (0.00 %) |
-| Called from | `SpriteBuildJob`, `SpriteBuildDone` (tail) |
-| Calls | `EventDone`, `l_ACB0`, `LoadCellSprite`, `SpriteBuildShifts` |
-| Reads | `$8024`-`$8034` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `SpriteBuildJob` (falls into), `SpriteBuildDone` (tail) |
+| Calls | `l_ACB0` (falls into) |
+| Reads | `$8024`-`$8034` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
 | Writes | `$8024` (`DrawQueueRead`) |
 
 ### `l_ACB0` (`$ACB0`)
@@ -3552,7 +3543,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | | |
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 55 calls, 5,805 t-states own (0.00 %) |
-| Called from | `l_AB07`, `SpriteBuildNext` |
+| Called from | `l_AB07`, `SpriteBuildNext` (falls into) |
 | Calls | `EventDone`, `LoadCellSprite`, `SpriteBuildShifts` |
 | Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
 | Writes | `$8024` (`DrawQueueRead`) |
@@ -3582,7 +3573,7 @@ In: A the kind, HL the descriptor (+0/+1 the image's address). Kinds `$14` and u
 | Runs (c1, the menu and six short games) | 31 calls, 7,905 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 27 calls, 6,909 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 279 t-states own (0.00 %) |
-| Called from | `SpriteBuildNext`, `l_ACB0` |
+| Called from | `l_ACB0` |
 | Calls | `BuildCellSprite` |
 | Reads | `$7EF2`-`$7F03` (`SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F32`-`$7F33` (`SpriteCacheRecord5`) |
 
@@ -3597,8 +3588,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (c1, the menu and six short games) | 31 calls, 5,766 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 27 calls, 5,022 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 15,374 t-states own (0.02 %) |
-| Called from | `SpriteBuildNext`, `l_ACB0` |
-| Calls | `RotateSprite`, `SpriteShiftRound` |
+| Called from | `l_ACB0` |
+| Calls | `SpriteShiftRound` (falls into) |
 | Reads | `$7EF2`-`$7F0D` (`SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F32`-`$7F3D` (`SpriteCacheRecord5`); `$E748`-`$E9E7` (`SpriteCacheImages`) |
 | Writes | `$AD3E`-`$AD4B` (`SpriteShiftLength+1`, `SpriteShiftCopy`); `$E7A8`-`$EA47` (`SpriteCacheImages+96`) |
 
@@ -3610,8 +3601,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | --- | --- |
 | Runs (c1, the menu and six short games) | 217 calls, 12,803 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 189 calls, 11,151 t-states own (0.00 %) |
-| Called from | `SpriteBuildShifts`, `SpriteShiftNext` (tail) |
-| Calls | `SpriteShiftCopy` |
+| Called from | `SpriteBuildShifts` (falls into), `SpriteShiftNext` (tail) |
+| Calls | `SpriteShiftCopy` (falls into) |
 
 ### `SpriteShiftCopy` (`$AD44`)
 
@@ -3621,9 +3612,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | --- | --- |
 | Runs (c1, the menu and six short games) | 222 calls, 339,266 t-states own (0.05 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 196 calls, 299,068 t-states own (0.05 %) |
-| Called from | `l_AB07`, `SpriteShiftRound` |
+| Called from | `l_AB07`, `SpriteShiftRound` (falls into) |
 | Calls | `RotateSprite` |
-| Reads | `$E748`-`$EB7F` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$E748`-`$EB7F` (`SpriteCacheImages`) |
 | Writes | `$E790`-`$EBC7` (`SpriteCacheImages+72`) |
 
 ### `SpriteShiftNext` (`$AD50`)
@@ -4006,7 +3997,6 @@ LevelSetUp `$8C3B` (the playfield model, the map buffer), MenuScreenSetup `$A685
 | Runs (c1, the menu and six short games) | 18 calls, 2,358 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 287 t-states own (0.00 %) |
 | Called from | `YieldScript` |
-| Calls | `ReplayStep` (tail) |
 | Reads | `$81DB`-`$81DC` (`ScrollCount`) |
 | Writes | `$7F76` (`SkipDraw`); `$81DB`-`$81DC` (`ScrollCount`) |
 
@@ -4018,7 +4008,8 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ScrollStep`, `ReplayStep` (tail) |
 
 ### `ReplayStep` (`$AF9A`)
 
@@ -4028,8 +4019,8 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | --- | --- |
 | Runs (c1, the menu and six short games) | 18 calls, 27,648 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 2,688 t-states own (0.00 %) |
-| Called from | `ReplayScroll` (tail) |
-| Calls | `StartColumn`, `ReplayRound` |
+| Called from | `ReplayColumns` (tail) |
+| Calls | `StartColumn`, `ReplayRound` (falls into) |
 
 ### `ReplayRound` (`$AF9F`)
 
@@ -4039,7 +4030,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | --- | --- |
 | Runs (c1, the menu and six short games) | 3,456 calls, 96,768 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 336 calls, 9,408 t-states own (0.00 %) |
-| Called from | `ReplayStep`, `ReplayRoundEnd` (tail) |
+| Called from | `ReplayStep` (falls into), `ReplayRoundEnd` (tail) |
 | Calls | `ResumeScript` |
 
 ### `ReplayRoundEnd` (`$AFA3`)
@@ -4051,8 +4042,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (c1, the menu and six short games) | 450 calls, 205,832 t-states own (0.03 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 27 calls, 20,002 t-states own (0.00 %) |
 | Called from | `YieldScript` |
-| Calls | `BuildColumn`, `ScrollStep`, `ReplayRound` (tail), `RoundPlaySetup` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `BuildColumn`, `ReplayRound` (tail), `RoundPlaySetup` |
 
 ### `InterruptSetup` (`$AFB0`)
 
@@ -4078,7 +4068,7 @@ CurrentPlayer `$7F98` = 1, PlayerRecord `$7F99` = `$7F9C`; both records (96 byte
 | --- | --- |
 | Runs (c1, the menu and six short games) | 6 calls, 37,082 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 5,291 t-states own (0.00 %) |
-| Called from | `MainLoop`, `l_B207` |
+| Called from | `l_B207` |
 | Calls | `Random`, `SetLevelStart` |
 | Reads | `$7F9B`-`$800B` (`Players`, `Player1`, `Player2`, `BcdScratch` and 2 more) |
 | Writes | `$7F98`-`$800B` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1` and 4 more) |
@@ -4138,7 +4128,7 @@ ClearScreen `$858B`, PrintMessage `$15`, the scores of both players at `$5AA0` a
 | --- | --- |
 | Runs (c1, the menu and six short games) | 6 calls, 1,476 t-states own (0.00 %) |
 | Called from | `MainLoop` |
-| Calls | `ClearScreen`, `PrintMessage`, `PrintBcd`, `TitleFireCheck`, `MenuKeys`, `TitleTune` |
+| Calls | `ClearScreen`, `PrintMessage`, `PrintBcd`, `TitleTune` |
 | Writes | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`) |
 
 ### `l_B0C2` (`$B0C2`)
@@ -4160,9 +4150,9 @@ ClearScreen, PrintMessage `$16`, the five entries of HiScoreTable `$8261` (14 by
 | --- | --- |
 | Runs (c1, the menu and six short games) | 1 call, 25,611,282 t-states own (3.44 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 12,569,066 t-states own (2.28 %) |
-| Called from | `MainLoop`, `l_B207` |
+| Called from | `l_B207` |
 | Calls | `ClearScreen`, `PrintString`, `PrintMessage`, `PrintBcd`, `TitleFireCheck` |
-| Reads | `$B0F2` (`HiScoreWait+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$B0F2` (`HiScoreWait+1`) |
 | Writes | `$80AC` (`PrintAttr`) |
 
 ## mainloop
@@ -4258,8 +4248,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (c1, the menu and six short games) | 18 calls, 85,148 t-states own (0.01 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 9,160 t-states own (0.00 %) |
 | Called from | `MainLoopPlay` |
-| Calls | `PlayLoopPass` |
-| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop+42`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `PlayLoopPass` (falls into) |
+| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop+42`) |
 | Writes | `$7F64`-`$7F6B` (`PassDepth`, `PassPhase`, `ChainStep`, `NodeFreeList` and 2 more); `$7F7C`-`$7F7D` (`EndPending`, `EndCode`); `$7F97` (`CurrentEffect`); `$81C5`-`$81C6` (`EventRequests`, `EventMask`); `$974C` (`LandingFlag`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopPass` (`$B1E6`)
@@ -4271,7 +4261,7 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (c1, the menu and six short games) | 1,271,072 calls, 21,612,682 t-states own (2.90 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,849 calls, 22,662,893 t-states own (4.11 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 4,927,159 t-states own (6.87 %) |
-| Called from | `l_AB07`, `PlayLoop`, `PlayLoopAgain` (tail) |
+| Called from | `l_AB07`, `PlayLoop` (falls into), `PlayLoopAgain` (tail) |
 | Calls | `EventDispatch` |
 
 ### `PlayLoopCheck` (`$B1E9`)
@@ -4284,8 +4274,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (r1, the bot over level 1 with the weapons) | 2,091 calls, 17,330,847 t-states own (3.14 %) |
 | Runs (r2, homing missiles at the guardian) | run into, not called, 3,768,070 t-states own (5.25 %) |
 | Called from | `l_AB07`, `EventAny`, `EventDone` |
-| Calls | `PlayLoopTest` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `PlayLoopTest` (falls into) |
+| Reads | `$7F7D` (`EndCode`) |
 
 ### `PlayLoopTest` (`$B1EC`)
 
@@ -4296,9 +4286,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (c1, the menu and six short games) | 1,271,093 calls, 5,085,305 t-states own (0.68 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,915 calls, 5,332,314 t-states own (0.97 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 1,159,412 t-states own (1.62 %) |
-| Called from | `l_AB07`, `PlayLoopCheck` |
-| Calls | `PlayLoopBranch` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `l_AB07`, `PlayLoopCheck` (falls into) |
+| Calls | `PlayLoopBranch` (falls into) |
 
 ### `PlayLoopBranch` (`$B1ED`)
 
@@ -4309,9 +4298,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (c1, the menu and six short games) | 1,270,805 calls, 8,900,660 t-states own (1.20 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,561 calls, 9,332,531 t-states own (1.69 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 2,028,933 t-states own (2.83 %) |
-| Called from | `l_AB07`, `PlayLoopTest` |
-| Calls | `SavePanel`, `PlayLoopAgain`, `MainLoopEnd` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `l_AB07`, `PlayLoopTest` (falls into) |
+| Calls | `PlayLoopAgain` (falls into) |
+| Reads | `$7F7D` (`EndCode`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopAgain` (`$B1EF`)
@@ -4323,9 +4312,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (c1, the menu and six short games) | 1,270,894 calls, 15,255,483 t-states own (2.05 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1,332,711 calls, 15,997,139 t-states own (2.90 %) |
 | Runs (r2, homing missiles at the guardian) | 289,739 calls, 3,478,179 t-states own (4.85 %) |
-| Called from | `l_AB07`, `PlayLoopBranch` |
-| Calls | `PlayLoopPass` (tail) |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `l_AB07`, `PlayLoopBranch` (falls into) |
+| Calls | `SavePanel`, `PlayLoopPass` (tail), `MainLoopEnd` |
 
 ### `MainLoop` (`$B200`)
 
@@ -4341,7 +4329,7 @@ With K-MOUSE the CALL `$B1B4` at `$B212` becomes CALL MouseReset (`$FE00`) at a 
 | --- | --- |
 | Runs (c1, the menu and six short games) | 6 calls, 439 t-states own (0.00 %) |
 | Called from | `MainLoopEnd` (tail), `Start` (tail) |
-| Calls | `InterruptSetup`, `PlayersSetup`, `CreditsPage`, `HiScorePage` |
+| Calls | `InterruptSetup`, `CreditsPage` |
 
 ### `l_B207` (`$B207`)
 
@@ -4382,7 +4370,7 @@ With K-MOUSE the CALL `$B1B4` at `$B212` becomes CALL MouseReset (`$FE00`) at a 
 | --- | --- |
 | Runs (c1, the menu and six short games) | 17 calls, 528 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 1 call, 29 t-states own (0.00 %) |
-| Called from | `PlayLoopBranch` |
+| Called from | `PlayLoopAgain` |
 | Calls | `EndOfPlay`, `MainLoop` (tail), `MainLoopRound` (tail) |
 
 ### `PlayerSetup` (`$B21C`)
@@ -4411,7 +4399,7 @@ The five records of `$2C` bytes at `$F398`: inactive (bit 7 of +8), +`$26` = `$E
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 1,286 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
 | Calls | `PodsSetup` |
-| Reads | `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$F3A0` (`EnemyObjects+8`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
 | Writes | `$F3A0` (`EnemyObjects+8`); `$F3BE`-`$F3CC` (`EnemyObjects+38`); `$F3EA`-`$F3F8` (`EnemyObjects+82`); `$F416`-`$F424` (`EnemyObjects+126`); `$F442`-`$F450` (`EnemyObjects+170`); `$F46E`-`$F46F` (`EnemyObjects+214`) |
 
 ### `PodsSetup` (`$B2AA`)
@@ -4439,7 +4427,7 @@ Three records of `$2C` bytes at `$F474`: +`$25` = `$48`, kind +7 = 5, inactive, 
 | Runs (c1, the menu and six short games) | 18 calls, 9,487 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 2 calls, 1,052 t-states own (0.00 %) |
 | Called from | `RoundSetup` |
-| Reads | `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); `$F584` (`LaserShots+140`) |
 | Writes | `$80BA` (`LaserShotsFree`); `$F500`-`$F503` (`LaserShots+8`); `$F51D`-`$F52F` (`LaserShots+37`); `$F549`-`$F55B` (`LaserShots+81`); `$F575`-`$F587` (`LaserShots+125`); `$F5A1` (`LaserShots+169`) |
 
 ## effects
@@ -4511,7 +4499,7 @@ On a 128K: the glue makes its first byte a RET, and the set-up copies the hook s
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | 9 calls, 360 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 2 calls, 80 t-states own (0.00 %) |
-| Called from | `PlasmaFrame`, `PlaceAtPlayer` |
+| Called from | `PlaceAtPlayer` |
 | Calls | `EffectPlay` (tail) |
 
 ### `l_B374` (`$B374`)
@@ -4547,7 +4535,7 @@ On a 128K: the glue makes its first byte a RET, and the set-up copies the hook s
 | Runs (c1, the menu and six short games) | 115 calls, 4,370 t-states own (0.00 %) |
 | Runs (r1, the bot over level 1 with the weapons) | 88 calls, 3,403 t-states own (0.00 %) |
 | Runs (r2, homing missiles at the guardian) | 1 call, 38 t-states own (0.00 %) |
-| Called from | `StartExplosion`, `SelectOnePlayer` |
+| Called from | `StartExplosion`, `SelectTwoPlayers` |
 | Calls | `EffectPlay` (tail) |
 
 ### `l_B39C` (`$B39C`)
@@ -4576,8 +4564,7 @@ On a 128K: the glue makes its DI a NOP (the tune runs with the interrupts on, so
 | --- | --- |
 | Runs (c1, the menu and six short games) | 6 calls, 11,847,884 t-states own (1.59 %) |
 | Called from | `CreditsPage` |
-| Calls | `TitleFireCheck` |
-| Reads | `$B4AD`-`$B4AE` (`TuneDuration`); `$FEFF`-`$FF41` (`VectorTable+255`, `TunePeriods`, `TuneOrder`, `TunePatternA`) |
+| Reads | `$B4AD`-`$B4AE` (`TuneDuration`); `$FF02`-`$FF41` (`TunePeriods+1`, `TuneOrder`, `TunePatternA`) |
 | Writes | `$B4AE` (`TuneDuration+1`) |
 | Ports in | `$F7FE` |
 
@@ -4600,7 +4587,6 @@ On a 128K: the glue makes its DI a NOP (the tune runs with the interrupts on, so
 | --- | --- |
 | Runs (r1, the bot over level 1 with the weapons) | run into, not called, 576,202 t-states own (0.10 %) |
 | Calls | `TuneByte` (tail) |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ## start
 

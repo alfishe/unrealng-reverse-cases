@@ -12,7 +12,8 @@ strip shows which routine the CPU is in at each T-state.
     python3 beam_timeline.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/beam-pass.png
            [--screen 4000] [--machine 48k|128k|pentagon] [--int-t T] [--int-to-paper T] [--paper-t T]
-           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--title T] [--width 1050] [--unreal U]
+           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--title T] [--width 1050]
+           [--page N=LISTING ...] [--page-name N=NAME ...] [--unreal U]
 
 The beam comes from unreal-ng's timing (core/src/emulator/config.cpp, ApplyModelTimingDefaults): the INT rises at
 frame T intstart + 1 and the first paper pixel follows it by a fixed distance, so the paper starts at frame T
@@ -27,6 +28,11 @@ int-t + int-to-paper:
 --machine picks the row (by default from the trace's frame length); --int-t and --int-to-paper override a column
 (an emulator with another intstart), --paper-t gives the paper's frame T outright. The counts below the panel give
 each routine's writes before and after the beam.
+
+128K pages: --page N=LISTING names the code at `$C000-$FFFF` that runs while RAM N is paged in from that page's
+listing ("MusicFrame (RAM 6)"), --page-name N=NAME gives the whole page one name ("the music player (RAM 6)");
+--listing names the rest. Without them a 128K game's interrupt code in RAM 6 would take the names of the RAM 0
+data at its addresses. The page is the trace's start page, then each `OUT` to `$7FFD`; --pc N:LO-HI is RAM N's.
 
 The picture is --width pixels wide (1050, the figure limit, readable shown at 900; the frame's time axis gets what the
 labels leave of it), a long --title goes on several lines.
@@ -71,15 +77,20 @@ def main():
     p.add_argument('--paper-t', type=int, help='the first paper pixel\'s frame T (default int-t + int-to-paper)')
     p.add_argument('--line-t', type=int, help='T a line (default the machine\'s: 224, 228)')
     p.add_argument('--frames', type=int, default=3, help='at most this many frames, the first of the trace')
-    p.add_argument('--pc', help='only these instructions\' writes and time (hex range)')
+    p.add_argument('--pc', action='append',
+                   help='only these instructions\' writes and time: LO-HI, N:LO-HI for RAM N at $C000-$FFFF '
+                        '(comma-separated or repeated)')
     p.add_argument('--title')
     p.add_argument('--width', type=int, default=1050, help='the picture\'s width in pixels')
+    K.add_page_args(p)
     args = p.parse_args()
 
     trace = K.load_trace(args)
-    lst = K.listing(args.listing)
+    lst = K.code_listing(args)
+    paged = lst.paged or any(':' in v for v in args.pc or [])
+    locs = K.code_locations(trace, paged)
     base = K.hex_address(args.screen)
-    pc_lo, pc_hi = K.hex_range(args.pc) if args.pc else (0, 0xFFFF)
+    pc_ranges = K.code_ranges(args.pc)
     frame_t = trace.frame_t or 69888
     units = max(1, trace.units_per_t)
     int_t, paper_t, line_t = beam_timing(args, frame_t)
@@ -92,11 +103,11 @@ def main():
     totals = Counter()
     order = Counter()
     ahead, behind = Counter(), Counter()
-    for x in trace.instructions:
+    for x, loc in zip(trace.instructions, locs):
         if x.frame not in keep:
             continue
-        mine = pc_lo <= x.pc <= pc_hi
-        routine = lst.routine(x.pc) if mine else 'other'
+        mine = any(lo <= loc <= hi for lo, hi in pc_ranges)
+        routine = lst.routine(loc) if mine else 'other'
         spans[x.frame].append((x.t // units, routine))
         totals[routine] += 1
         if not mine:

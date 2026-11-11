@@ -122,7 +122,7 @@ Called by MainMenuTitle (`$C103`). Bank 3 lies over `$C000-$FFFF`, the game's st
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 3 calls, 345 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 115 t-states own (0.00 %) |
-| Called from | `MainMenu` |
+| Called from | `MainMenuTitle` |
 | Calls | `SetGameBank` |
 | Writes | `$67FA`-`$67FB` (`MenuPictureSP+1`) |
 
@@ -167,7 +167,7 @@ Reached by LoadGame's JP (`$C1FD`, key 5 of the main menu). The same steps as Ga
 | | |
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 2 calls, 138,442 t-states own (0.03 %) |
-| Called from | `MenuOptionsEnd` (tail) |
+| Called from | `LoadGame` (tail) |
 | Reads | `$5C6A` (system); `$A579` (`GameLoad+15`) |
 | Writes | `$5C08` (system); `$5C3B` (system); `$5C6A` (system); `$A591`-`$A592` (`LoadReturn+1`); `$A5EB`-`$A5EC` (`GameEntry+17`) |
 | Ports out | `$7FFD` |
@@ -197,7 +197,7 @@ The block's depacker ends with JP `$A5DA`. Interrupts off, SP = 0; pages bank 1 
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 1 call, 89 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 33,820 t-states own (0.01 %) |
-| Calls | `Restart`, `PlayLoop`, `BuildMap`, `MainMenu`, `DrawViewBackground`, `DrawPlayScreen` |
+| Calls | `Restart` (falls into) |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFB` (`PrintAddr`, `MapView`, `SavedSP`, `ViewX` and 33 more); `$FF01`-`$FFC8` (`Buildings`) |
 | Writes | `$6800`-`$6900` (`ImTable`); `$6969`-`$696B` (`ImJump`, `ImHandler`); `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD00`-`$FDFC` (`RandomSeed`, `PrintAddr`, `MapView`, `SavedSP` and 34 more); `$FF01`-`$FFC9` (`Buildings`) |
 | Ports out | `$7FFD` |
@@ -211,7 +211,7 @@ Entered from GameEntry and by JP from the abort key in play (`$A712`); the dead 
 | | |
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 3 calls, 20,700 t-states own (0.00 %) |
-| Called from | `GameEntry`, `PlayLoop` (tail) |
+| Called from | `GameEntry` (falls into), `PlayLoop` (tail) |
 | Calls | `MainMenu` |
 | Writes | `$6800`-`$6900` (`ImTable`); `$6969`-`$696B` (`ImJump`, `ImHandler`); `$FD00`-`$FD03` (`RandomSeed`) |
 | Ports out | `$7FFD` |
@@ -229,7 +229,7 @@ Zeroes the robot records `$DA00-$DCFF` (48 x 16), the variables `$FD04-$FDFC` (e
 | Runs (`work/docL/deep`, the bot's game) | run into, not called, 656,332 t-states own (0.03 %) |
 | Runs (`work/game-r2`, save and load) | 2 calls, 26,795 t-states own (0.01 %) |
 | Called from | `LoadReturn` (tail) |
-| Calls | `EnterPlay` (tail), `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `BuildMap`, `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `DrawViewBackground`, `DrawPlayScreen`, `UpdateStatusPanel`, `WaitKey` |
+| Calls | `EnterPlay` (tail), `BuildMap` |
 | Reads | `$D7D3`-`$D7FE` (`Shots`); `$DA00`-`$DCFE` (`Robots`, `EnemyRobots`); `$E714`-`$E716` (`Map`); `$E914`-`$EB18` (`Map`); `$ED12`-`$ED18` (`Map`); `$EF12`-`$F118` (`Map`); 6 more ranges |
 | Writes | `$696A`-`$696B` (`ImHandler`); `$D7D3`-`$D7FF` (`Shots`); `$DA00`-`$DCFF` (`Robots`, `EnemyRobots`); `$FD04`-`$FDFC` (`PrintAddr`, `MapView`, `SavedSP`, `ViewX` and 33 more); `$FF01`-`$FFC9` (`Buildings`) |
 
@@ -243,7 +243,7 @@ DrawViewBackground and DrawPlayScreen build the play screen (the view, its frame
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 3 calls, 240 t-states own (0.00 %) |
 | Called from | `NewGameSetup` (tail), `PlayRedraw` (tail) |
-| Calls | `PlayLoop`, `DrawViewBackground`, `DrawPlayScreen` |
+| Calls | `PlayLoop` (falls into), `DrawViewBackground`, `DrawPlayScreen` |
 | Writes | `$696A`-`$696B` (`ImHandler`) |
 
 ### `PlayLoop` (`$A69A`)
@@ -262,8 +262,8 @@ Last, the game keys: Input bit 6 (key I in the default KeyTable) abandons the ga
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 4 calls, 32,067 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 1 call, 52,043 t-states own (0.02 %) |
-| Called from | `GameEntry`, `EnterPlay` |
-| Calls | `Restart` (tail), `GameTurn`, `MoveShip`, `WorldTurn`, `SaveGameStage` (tail), `ShipCell`, `DrawView`, `WaitKey` |
+| Called from | `EnterPlay` (falls into) |
+| Calls | `Restart` (tail), `RobotMenu`, `GameTurn`, `MoveShip`, `WorldTurn`, `CountRobots`, `SaveGameStage` (tail), `ConstructionMenu`, `ShipCell`, `DrawView`, `FindRobot`, `FindBuilding`, `UpdateStatusPanel`, `WaitKey` |
 | Reads | `$F111` (`Map`); `$F2EE` (`Map`); `$FD0C` (`Input`) |
 
 ### `PlayRedraw` (`$A71D`)
@@ -289,8 +289,8 @@ IX = IY (the record), +`$0A` = 1 (the robot stands: UpdateRobot returns at once 
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 7 calls, 616 t-states own (0.00 %) |
-| Called from | `NewGameSetup` |
-| Calls | `RobotMenuShow` |
+| Called from | `PlayLoop` |
+| Calls | `RobotMenuShow` (falls into) |
 | Writes | `$DA0A`-`$DA5A` (`Robots`); `$FD1F` (`MenuCursor`); `$FD39` (`PanelBusy`) |
 
 ### `RobotMenuShow` (`$A732`)
@@ -302,7 +302,7 @@ Clears the side panel (ClearPanel) and prints ПРЯМОЕ УПРАВЛ. (direct
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 14 calls, 476 t-states own (0.00 %) |
-| Called from | `RobotMenu`, `SetOrder` (tail) |
+| Called from | `RobotMenu` (falls into), `SetOrder` (tail) |
 | Calls | `ClearPanel`, `PrintInline` |
 
 ### `ShowOrder` (`$A795`)
@@ -331,7 +331,6 @@ The printing tail after the inline position is ShowMilesCode (`$A7DC`).
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 14 calls, 3,204 t-states own (0.00 %) |
 | Called from | `PrintInline` |
-| Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 | Reads | `$DA0B`-`$DA5B` (`Robots`); `$FD1F` (`MenuCursor`) |
 | Writes | `$DA06`-`$DA5A` (`Robots`); `$FD1F` (`MenuCursor`); `$FD30`-`$FD39` (`ClimbTurns`, `PrintColumn`, `PrintRow`, `TurnFrames` and 2 more) |
 
@@ -355,7 +354,8 @@ CloseRobotMenu (`$A812`) clears the panel, sets `$FD39` = 0 and redraws the stat
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ShowStrength`, `OrdersMenu` (tail), `ListMenu`, `Beep`, `ShowStatusPanel`, `ClearPanel` |
 
 ### `ShowStrength` (`$A81D`)
 
@@ -366,7 +366,7 @@ Prints "СИЛА" (strength) at (22,23) and the value of +`$0C` at (23,25), thre
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 111 calls, 1,887 t-states own (0.00 %) |
-| Called from | `ShowOrderMiles`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `ListMenu` |
+| Called from | `RobotMenuChoose`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `ListMenu` |
 | Calls | `PrintInline` |
 
 ### `ShowStrengthValue` (`$A833`)
@@ -413,7 +413,7 @@ Clears the panel and prints SELECT ORDERS at (4,24) and the five items from (7,2
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 7 calls, 238 t-states own (0.00 %) |
-| Called from | `ShowOrderMiles` (tail) |
+| Called from | `RobotMenuChoose` (tail) |
 | Calls | `ClearPanel`, `PrintInline` |
 
 ### `OrdersMenuChoose` (`$A9EC`)
@@ -526,7 +526,7 @@ The same list as DestroyMenuChoose; the item + 5 is the order (6 neutral factori
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 4 calls, 260 t-states own (0.00 %) |
 | Called from | `PrintInline` |
-| Calls | `ShowStrength`, `SetOrder`, `ListMenu` |
+| Calls | `ShowStrength`, `SetOrder` (falls into), `ListMenu` |
 
 ### `SetOrder` (`$ABC8`)
 
@@ -539,7 +539,7 @@ CombatMenu (`$AC00`) follows in the same block: the robot menu's item 3.
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 7 calls, 1,680 t-states own (0.00 %) |
-| Called from | `DestroyMenuChoose` (tail), `CaptureMenuChoose` |
+| Called from | `DestroyMenuChoose` (tail), `CaptureMenuChoose` (falls into) |
 | Calls | `RobotMenuShow` (tail), `WaitRelease`, `FindTargetBuilding`, `Beep` |
 | Reads | `$DA02`-`$DA53` (`Robots`) |
 | Writes | `$DA0B`-`$DA5E` (`Robots`); `$FD51` (`Side`) |
@@ -567,7 +567,7 @@ Each pass is one game turn (WorldTurn, DrawView, MenuRadarTick, GameTurn, ShowSt
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 28 calls, 36,032 t-states own (0.00 %) |
-| Called from | `ShowOrderMiles`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose` |
+| Called from | `RobotMenuChoose`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose` |
 | Calls | `ShowStrength`, `PaintMenuItem`, `WaitRelease`, `GameTurn`, `MenuRadarTick`, `WorldTurn`, `Beep`, `DrawView`, `WaitKey` |
 | Reads | `$DA01`-`$DA51` (`Robots`); `$FD0C` (`Input`) |
 
@@ -610,7 +610,7 @@ Random steps the random generator `$FD00-$FD03`. Clock (`$FD35` minutes, `$FD36`
 | Runs (`work/docL/deep`, the bot's game) | 3,415 calls, 301,152 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 183 calls, 16,111 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 297 calls, 26,160 t-states own (0.01 %) |
-| Called from | `NewGameSetup`, `PlayLoop`, `ListMenu` |
+| Called from | `PlayLoop`, `ListMenu` |
 | Calls | `DailyProduction`, `Random`, `PrintInline` |
 | Reads | `$FD35`-`$FD38` (`Clock`) |
 | Writes | `$FD35`-`$FD38` (`Clock`) |
@@ -759,7 +759,7 @@ Also the auto-climb (ClimbTurns), the altitude (fire +2 up to `$30`, else -1 dow
 | Runs (`work/docL/deep`, the bot's game) | 3,333 calls, 1,199,580 t-states own (0.05 %) |
 | Runs (`work/game-r2`, save and load) | 184 calls, 56,892 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 298 calls, 87,258 t-states own (0.03 %) |
-| Called from | `NewGameSetup`, `PlayLoop` |
+| Called from | `PlayLoop` |
 | Calls | `ScrollRadar`, `LiftShipFromMap`, `PutShipOnMap`, `CheckShipMove` |
 | Reads | `$FD0A`-`$FD1E` (`ViewX`, `Input`, `ShipY`, `ShipX` and 10 more); `$FD30` (`ClimbTurns`) |
 | Writes | `$FD06`-`$FD1E` (`MapView`, `SavedSP`, `ViewX`, `Input` and 12 more); `$FD30` (`ClimbTurns`) |
@@ -806,7 +806,7 @@ Called at the end of MoveShip (and by BuildMap). Sets bit 7 of the ship's cell, 
 | Runs (`work/game-r2`, save and load) | 185 calls, 11,401 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 299 calls, 18,268 t-states own (0.01 %) |
 | Called from | `MoveShip`, `BuildMap` |
-| Calls | `RefreshRadar`, `BlinkShipDot`, `ShipCell`, `BuildRadar` |
+| Calls | `RefreshRadar` (falls into), `ShipCell` |
 | Reads | `$E714`-`$E716` (`Map`); `$E914`-`$EB18` (`Map`); `$ED12`-`$ED18` (`Map`); `$EF12`-`$F118` (`Map`); `$F2EE` (`Map`); `$F316`-`$F318` (`Map`); 4 more ranges |
 | Writes | `$E714`-`$E716` (`Map`); `$E914`-`$EB18` (`Map`); `$ED12`-`$ED18` (`Map`); `$EF12`-`$F118` (`Map`); `$F2EE` (`Map`); `$F316`-`$F318` (`Map`); 4 more ranges |
 
@@ -819,8 +819,8 @@ RadarDirty (`$FD52`) is set when the window moved (`$B017`) and by other code th
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 3,417 calls, 99,122 t-states own (0.00 %) |
-| Called from | `PutShipOnMap`, `MenuRadarTick` (tail) |
-| Calls | `BlinkShipDot`, `BuildRadar` |
+| Called from | `PutShipOnMap` (falls into), `MenuRadarTick` (tail) |
+| Calls | `BlinkShipDot` (falls into), `BuildRadar` |
 | Reads | `$FD52` (`RadarDirty`) |
 | Writes | `$FD52` (`RadarDirty`) |
 
@@ -835,7 +835,7 @@ RadarBlink (`$FD1E`) counts the game turns (MoveShip increments it between LiftS
 | Runs (`work/docL/deep`, the bot's game) | 6,833 calls, 362,165 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 369 calls, 19,535 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 597 calls, 31,619 t-states own (0.01 %) |
-| Called from | `LiftShipFromMap` (tail), `PutShipOnMap`, `RefreshRadar`, `MenuRadarTick` |
+| Called from | `LiftShipFromMap` (tail), `RefreshRadar` (falls into), `MenuRadarTick` |
 | Calls | `ToggleRadarDot` (tail) |
 | Reads | `$FD0D`-`$FD1E` (`ShipY`, `ShipX`, `Altitude`, `ShipDrawPos` and 8 more) |
 
@@ -909,7 +909,7 @@ When the cell has bit 6 (an object anchored there): a robot (FindRobot) counts w
 | Runs (`work/game-r2`, save and load) | 210 calls, 11,718 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 30 calls, 1,674 t-states own (0.00 %) |
 | Called from | `CheckShipMove` |
-| Calls | `KeepHigher`, `FindRobot`, `FindBuilding`, `AddAToHL` |
+| Calls | `KeepHigher` (falls into), `FindRobot` |
 | Reads | `$B0C1`-`$B0C8` (`BuildingTops`); `$DA09`-`$DA5D` (`Robots`); `$E513`-`$E517` (`Map`); `$E712`-`$E919` (`Map`); `$EB11`-`$EB19` (`Map`); `$ED11`-`$F319` (`Map`); 6 more ranges |
 
 ### `KeepHigher` (`$B0AB`)
@@ -921,7 +921,8 @@ The common tail of TerrainTop and ObjectTop.
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 41,554 calls, 1,039,970 t-states own (0.04 %) |
-| Called from | `TerrainTop` (tail), `ObjectTop` |
+| Called from | `TerrainTop` (tail), `ObjectTop` (falls into) |
+| Calls | `FindBuilding`, `AddAToHL` |
 
 ## world
 
@@ -938,7 +939,7 @@ First EnemyCommander (one enemy slot built or re-ordered), then UpdateRobot for 
 | Runs (`work/docL/deep`, the bot's game) | 3,416 calls, 17,224,780 t-states own (0.67 %) |
 | Runs (`work/game-r2`, save and load) | 184 calls, 912,053 t-states own (0.21 %) |
 | Runs (`work/game`, the first game) | 298 calls, 1,474,802 t-states own (0.50 %) |
-| Called from | `NewGameSetup`, `PlayLoop`, `ListMenu` |
+| Called from | `PlayLoop`, `ListMenu` |
 | Calls | `UpdateRobot`, `UpdateShot`, `EnemyCommander` |
 | Reads | `$D7D4`-`$D7F8` (`Shots`); `$DA01`-`$DCF1` (`Robots`, `EnemyRobots`) |
 
@@ -954,7 +955,7 @@ IY = the robot record.
 | Runs (`work/game-r2`, save and load) | 557 calls, 22,280 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 596 calls, 23,840 t-states own (0.01 %) |
 | Called from | `WorldTurn` |
-| Calls | `RobotStep` (tail), `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `CountRobots`, `PutBlock`, `PlaceRobot` (tail), `UpdateStatusPanel`, `Random`, `ToggleRadarDot` |
+| Calls | `RobotStep` (tail), `CountRobots`, `PutBlock`, `UpdateStatusPanel`, `Random`, `ToggleRadarDot` |
 | Reads | `$DA00`-`$DA5F` (`Robots`); `$DA7C` (`Robots`); `$DB80`-`$DC4F` (`EnemyRobots`); `$DC70`-`$DC8F` (`EnemyRobots`); `$DCA0`-`$DCBF` (`EnemyRobots`); `$DCD0`-`$DCFF` (`EnemyRobots`); 5 more ranges |
 | Writes | `$DA01`-`$DA5F` (`Robots`); `$DB81`-`$DC4F` (`EnemyRobots`); `$DC75`-`$DC8F` (`EnemyRobots`); `$DCA5`-`$DCBF` (`EnemyRobots`); `$DCD1`-`$DCFF` (`EnemyRobots`); `$DF3D`-`$E0BA` (`Map`); 5 more ranges |
 
@@ -971,7 +972,7 @@ Direct control (+`$0A` = 2): the stick decides (RobotDirectControl). Otherwise S
 | Runs (`work/game-r2`, save and load) | 557 calls, 138,987 t-states own (0.03 %) |
 | Runs (`work/game`, the first game) | 596 calls, 105,609 t-states own (0.04 %) |
 | Called from | `UpdateRobot` (tail) |
-| Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot` |
+| Calls | `SteerByOrder`, `TurnOrStep`, `CountDirections`, `FreeDirections`, `SetStepDelay`, `SpotEnemies`, `FindFreeShot`, `FireShot`, `PlaceRobot` (tail), `Random`, `ToggleRadarDot` |
 | Reads | `$DA00`-`$DA5F` (`Robots`); `$DA70`-`$DA7F` (`Robots`); `$DB80`-`$DB8F` (`EnemyRobots`); `$DC40`-`$DC4F` (`EnemyRobots`); `$DCB0`-`$DCBF` (`EnemyRobots`); `$E3F1` (`Map`); 12 more ranges |
 | Writes | `$DA05`-`$DA5F` (`Robots`); `$DA75`-`$DA7F` (`Robots`); `$DB85`-`$DB8F` (`EnemyRobots`); `$DC45`-`$DC4F` (`EnemyRobots`); `$DCB5`-`$DCBF` (`EnemyRobots`); `$E3F1` (`Map`); 13 more ranges |
 
@@ -996,8 +997,8 @@ FindTargetBuilding leaves HL past the table, not on the new target, so the step 
 | Runs (`work/docL/deep`, the bot's game) | 2,400 calls, 1,427,969 t-states own (0.06 %) |
 | Runs (`work/game-r2`, save and load) | 107 calls, 34,025 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 40 calls, 11,898 t-states own (0.00 %) |
-| Called from | `UpdateRobot`, `RobotStep` |
-| Calls | `FindTargetBuilding`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `FindNearestOpponent`, `CountDirections`, `AddAToHL`, `Random` |
+| Called from | `RobotStep` |
+| Calls | `FindTargetBuilding`, `ColumnDistance`, `TargetBuildingTable`, `TargetRobotRecord`, `FindNearestOpponent`, `AddAToHL`, `Random` |
 | Reads | `$DA01`-`$DA5E` (`Robots`); `$DA72`-`$DA7E` (`Robots`); `$DB81`-`$DC4E` (`EnemyRobots`); `$DC72`-`$DC8E` (`EnemyRobots`); `$DCA2`-`$DCBE` (`EnemyRobots`); `$DCD2`-`$DCFE` (`EnemyRobots`); 2 more ranges |
 | Writes | `$DA06`-`$DA4E` (`Robots`); `$DB86`-`$DBBE` (`EnemyRobots`); `$DBD6`-`$DBDE` (`EnemyRobots`); `$DC06`-`$DC4E` (`EnemyRobots`); `$DC86`-`$DC8E` (`EnemyRobots`); `$DCAE`-`$DCBE` (`EnemyRobots`); 1 more ranges |
 
@@ -1009,7 +1010,8 @@ Masks C with random bytes until exactly one bit is left (CountDirections); when 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `CountDirections`, `Random` |
 
 ### `FindTargetBuilding` (`$B34D`)
 
@@ -1142,7 +1144,7 @@ IY the robot, HL its column, B its row, A a direction bit (0: nothing). Facing +
 | Runs (`work/docL/deep`, the bot's game) | 10,304 calls, 1,257,772 t-states own (0.05 %) |
 | Runs (`work/game-r2`, save and load) | 156 calls, 6,858 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 101 calls, 10,378 t-states own (0.00 %) |
-| Called from | `UpdateRobot`, `RobotStep` |
+| Called from | `RobotStep` |
 | Calls | `StepPosition`, `GroundUnderFootprint` |
 | Reads | `$DA06`-`$DA5A` (`Robots`); `$DB86`-`$DC4A` (`EnemyRobots`); `$DC76`-`$DC8A` (`EnemyRobots`); `$DCA6`-`$DCBA` (`EnemyRobots`); `$DCD6`-`$DCFA` (`EnemyRobots`) |
 | Writes | `$DA06`-`$DA5D` (`Robots`); `$DB86`-`$DC4D` (`EnemyRobots`); `$DC76`-`$DC8D` (`EnemyRobots`); `$DCA6`-`$DCBD` (`EnemyRobots`); `$DCD6`-`$DCFD` (`EnemyRobots`) |
@@ -1174,7 +1176,7 @@ Z: exactly one direction; carry: none; neither: two or more. Counts bits 0-3 of 
 | Runs (`work/docL/deep`, the bot's game) | 5,009 calls, 781,499 t-states own (0.03 %) |
 | Runs (`work/game-r2`, save and load) | 157 calls, 24,492 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 93 calls, 14,508 t-states own (0.00 %) |
-| Called from | `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander` |
+| Called from | `RobotStep`, `PickOneDirection`, `EnemyCommander` |
 
 ### `FreeDirections` (`$B513`)
 
@@ -1187,7 +1189,7 @@ IY the robot, HL its anchor cell. A robot covers 2x2 cells: its anchor (X, Y) ca
 | Runs (`work/docL/deep`, the bot's game) | 10,304 calls, 3,584,980 t-states own (0.14 %) |
 | Runs (`work/game-r2`, save and load) | 156 calls, 54,456 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 101 calls, 34,154 t-states own (0.01 %) |
-| Called from | `UpdateRobot`, `RobotStep` |
+| Called from | `RobotStep` |
 | Calls | `CanMoveRight`, `CanMoveLeft`, `CanMoveDown`, `CanMoveUp` |
 | Reads | `$DA07`-`$DA5D` (`Robots`); `$DA77`-`$DA7D` (`Robots`); `$DB87`-`$DC4D` (`EnemyRobots`); `$DC77`-`$DC8D` (`EnemyRobots`); `$DCA7`-`$DCBD` (`EnemyRobots`); `$DCD7`-`$DCFD` (`EnemyRobots`); 1 more ranges |
 
@@ -1317,7 +1319,7 @@ The ground class from +`$0D`: 0 flat, 1-3 low, 4 and more high; the column from 
 | Runs (`work/docL/deep`, the bot's game) | 10,304 calls, 2,195,660 t-states own (0.09 %) |
 | Runs (`work/game-r2`, save and load) | 156 calls, 35,496 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 101 calls, 19,796 t-states own (0.01 %) |
-| Called from | `UpdateRobot`, `RobotStep` |
+| Called from | `RobotStep` |
 | Calls | `AddAToHL` |
 | Reads | `$B61D`-`$B625` (`StepDelays`); `$DA07`-`$DA5D` (`Robots`); `$DA77`-`$DA7D` (`Robots`); `$DB87`-`$DC4D` (`EnemyRobots`); `$DC77`-`$DC8D` (`EnemyRobots`); `$DCA7`-`$DCBD` (`EnemyRobots`); 1 more ranges |
 | Writes | `$DA0F`-`$DA5F` (`Robots`); `$DA7F` (`Robots`); `$DB8F`-`$DC4F` (`EnemyRobots`); `$DC7F`-`$DC8F` (`EnemyRobots`); `$DCAF`-`$DCBF` (`EnemyRobots`); `$DCDF`-`$DCFF` (`EnemyRobots`) |
@@ -1333,7 +1335,7 @@ IY the robot. For each direction (up, down, left, right:
 | Runs (`work/docL/deep`, the bot's game) | 10,304 calls, 6,666,876 t-states own (0.26 %) |
 | Runs (`work/game-r2`, save and load) | 156 calls, 101,232 t-states own (0.02 %) |
 | Runs (`work/game`, the first game) | 101 calls, 65,394 t-states own (0.02 %) |
-| Called from | `UpdateRobot`, `RobotStep` |
+| Called from | `RobotStep` |
 | Calls | `ScanLane` |
 | Reads | `$DA00`-`$DA58` (`Robots`); `$DA70`-`$DA78` (`Robots`); `$DB80`-`$DC48` (`EnemyRobots`); `$DC70`-`$DC88` (`EnemyRobots`); `$DCA0`-`$DCB8` (`EnemyRobots`); `$DCD0`-`$DCF8` (`EnemyRobots`) |
 
@@ -1361,7 +1363,7 @@ Each side has two shot records of 9 bytes: ours `$D7DC` and `$D7E5`, the enemy's
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 378 calls, 33,800 t-states own (0.00 %) |
-| Called from | `UpdateRobot` |
+| Called from | `RobotStep` |
 | Reads | `$D7DD` (`Shots`); `$D7EF` (`Shots`); `$DA0A` (`Robots`); `$DA2A` (`Robots`); `$DA4A`-`$DA5A` (`Robots`); `$DB8A`-`$DB9A` (`EnemyRobots`); 3 more ranges |
 
 ### `FireShot` (`$B6D6`)
@@ -1375,7 +1377,7 @@ When the shot survives the first step SoundFx (`$FD53`) = 1, the firing sound; w
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 294 calls, 80,667 t-states own (0.00 %) |
-| Called from | `UpdateRobot` |
+| Called from | `RobotStep` |
 | Calls | `MoveShot` |
 | Reads | `$D7DD` (`Shots`); `$D7EF` (`Shots`); `$DA02`-`$DA08` (`Robots`); `$DA22`-`$DA28` (`Robots`); `$DA42`-`$DA58` (`Robots`); `$DB82`-`$DB98` (`EnemyRobots`); 3 more ranges |
 | Writes | `$D7E1`-`$D7F6` (`Shots`); `$FD53` (`SoundFx`) |
@@ -1388,7 +1390,7 @@ When the shot survives the first step SoundFx (`$FD53`) = 1, the firing sound; w
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 58 calls, 8,294 t-states own (0.00 %) |
 | Called from | `WorldTurn` |
-| Calls | `MoveShot` |
+| Calls | `MoveShot` (falls into) |
 | Reads | `$D7DC`-`$D7F4` (`Shots`); `$E963`-`$E969` (`Map`); `$ED77` (`Map`); `$EF75`-`$EF7B` (`Map`); `$F17B`-`$F17C` (`Map`); `$F37B` (`Map`); 2 more ranges |
 | Writes | `$D7E2` (`Shots`); `$D7F4` (`Shots`); `$E963`-`$E969` (`Map`); `$ED77` (`Map`); `$EF75`-`$EF7B` (`Map`); `$F17B`-`$F17C` (`Map`); 3 more ranges |
 
@@ -1405,7 +1407,7 @@ The recorded hits agree: a missile (2) into a 19 high robot takes 10 * 3 = 30, a
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 352 calls, 116,022 t-states own (0.00 %) |
-| Called from | `FireShot`, `UpdateShot` |
+| Called from | `FireShot`, `UpdateShot` (falls into) |
 | Calls | `GroundUnderFootprint`, `MapCell`, `FindRobot` |
 | Reads | `$D7E1`-`$D7F6` (`Shots`); `$DA09`-`$DA0D` (`Robots`); `$DA29`-`$DA2D` (`Robots`); `$DB89`-`$DB8D` (`EnemyRobots`); `$DBF9`-`$DC0D` (`EnemyRobots`); `$DC49`-`$DC4D` (`EnemyRobots`); 10 more ranges |
 | Writes | `$D7DC`-`$D7F2` (`Shots`); `$DA0C` (`Robots`); `$DA2C` (`Robots`); `$DB8C` (`EnemyRobots`); `$DBFC`-`$DC0C` (`EnemyRobots`); `$DC4C` (`EnemyRobots`); 9 more ranges |
@@ -1505,7 +1507,7 @@ Counts the robot records whose +1 (the map cell's high byte) is not 0: slots 0-2
 | Runs (`work/docL/deep`, the bot's game) | 35 calls, 2,800 t-states own (0.00 %) |
 | Runs (`work/game-r2`, save and load) | 2 calls, 160 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 3 calls, 240 t-states own (0.00 %) |
-| Called from | `NewGameSetup`, `UpdateRobot`, `EnemyCommander` |
+| Called from | `PlayLoop`, `UpdateRobot`, `EnemyCommander` |
 | Calls | `CountLiveRobots` |
 | Writes | `$FD41`-`$FD49` (`PlayerRobotCount`, `EnemyBuildings`, `EnemyRobotCount`) |
 
@@ -1642,7 +1644,7 @@ The resulting map: the player's warbase at (22,9), the enemy's at (261,8), (369,
 | Runs (`work/docL/deep`, the bot's game) | 1 call, 177,825 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 1 call, 177,844 t-states own (0.04 %) |
 | Runs (`work/game`, the first game) | 1 call, 177,825 t-states own (0.06 %) |
-| Called from | `GameEntry`, `NewGameSetup` |
+| Called from | `NewGameSetup` |
 | Calls | `PutShipOnMap`, `CountBases`, `GiveWarbase`, `PlaceScenery`, `PlaceBases` |
 | Reads | `$D800`-`$D8FE` (`RadarOwn`); `$DD00`-`$FCFE` (`Map`) |
 | Writes | `$D800`-`$D8FF` (`RadarOwn`); `$DD00`-`$FCFF` (`Map`); `$FD52` (`RadarDirty`) |
@@ -1734,8 +1736,8 @@ Called by Restart (`$A62A`), which falls into NewGameSetup with Z when it return
 | --- | --- |
 | Runs (`work/game-r2`, save and load) | 3 calls, 153 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 51 t-states own (0.00 %) |
-| Called from | `GameEntry`, `Restart` |
-| Calls | `MenuPicture`, `ClearScreen`, `PrintInline` |
+| Called from | `Restart` |
+| Calls | `ClearScreen` |
 
 ### `MainMenuTitle` (`$C103`)
 
@@ -1743,7 +1745,8 @@ Called by Restart (`$A62A`), which falls into NewGameSetup with Z when it return
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MenuPicture` |
 
 ### `MainMenuOptions` (`$C106`)
 
@@ -1752,7 +1755,7 @@ Called by Restart (`$A62A`), which falls into NewGameSetup with Z when it return
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 1 call, 17 t-states own (0.00 %) |
-| Called from | `MenuOptionsEnd` (tail) |
+| Called from | `MainMenuKeys` (tail) |
 | Calls | `PrintInline` |
 
 ### `MenuKeyboardOption` (`$C120`)
@@ -1803,7 +1806,6 @@ PrintInline returns here past the 0 of MenuMoreText: a HALT and 6 NOPs (zero byt
 | Runs (`work/game-r2`, save and load) | 3 calls, 186,411,046 t-states own (43.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 54,167,808 t-states own (18.22 %) |
 | Called from | `PrintInline` |
-| Calls | `GameLoad` (tail), `MainMenuOptions` (tail) |
 | Reads | `$C18C` (`MenuOptionsEnd+1`); `$C1A2` (`MenuWaitKey+1`) |
 | Writes | `$D3E4` (`Controls`) |
 
@@ -1815,7 +1817,8 @@ Waits until no key is held (KEY-SCAN `$028E`), then reads a key every frame (one
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MainMenuOptions` (tail) |
 
 ### `PrintTitle` (`$C1E3`)
 
@@ -1833,7 +1836,8 @@ Waits until no key is held (KEY-SCAN `$028E`), then reads a key every frame (one
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `GameLoad` (tail) |
 
 ### `LoadTapePrompt` (`$C200`)
 
@@ -1962,6 +1966,7 @@ C = the option's Controls value (1-3). Prints an inline attribute code: `$45` (c
 | Runs (`work/game-r2`, save and load) | 6 calls, 60 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 2 calls, 20 t-states own (0.00 %) |
 | Called from | `PrintInline` |
+| Calls | `PrintInline` |
 
 ### `ControlsOptionChosen` (`$C349`)
 
@@ -2181,7 +2186,7 @@ Returns (after LeaveConstructionMenu) with IY = the slot; PlayLoop then writes t
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 7 calls, 28,307 t-states own (0.00 %) |
-| Called from | `NewGameSetup` |
+| Called from | `PlayLoop` |
 | Calls | `ClearScreen`, `DrawMaskedUp`, `TableWord`, `AddAToHL`, `PrintInline` |
 | Reads | `$6A24`-`$6A25` (`SprTracksXOdd`); `$6D40`-`$6D41` (`SprBipodXOdd`); `$7058`-`$7059` (`SprAntiGravOdd`); `$7354`-`$7355` (`SprCannonXmOdd`); `$77F4`-`$77F5` (`SprMissilesXOdd`); `$7C96`-`$7C97` (`SprPhasersXmOdd`); 4 more ranges |
 | Writes | `$59E0`-`$5A03` (screen); `$5A20`-`$5A23` (screen); `$5A40`-`$5A43` (screen); `$5A60`-`$5A63` (screen); `$5A80`-`$5A83` (screen); `$5AA0`-`$5AA3` (screen); 3 more ranges |
@@ -2279,7 +2284,7 @@ Column 0 / 1: two rows of 5 cells, ВЫХОД (exit) at rows 21-22 columns 4-8, 
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 91 calls, 12,530 t-states own (0.00 %) |
 | Called from | `ConstructionMenuSetup`, `MoveMenuCursor` |
-| Calls | `FillAttributes` |
+| Calls | `FillAttributes` (falls into) |
 | Reads | `$FD1F`-`$FD20` (`MenuCursor`) |
 
 ### `FillAttributes` (`$CBDB`)
@@ -2291,7 +2296,7 @@ Also used by PaintMenuItem.
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 430 calls, 97,107 t-states own (0.00 %) |
-| Called from | `PaintMenuItem`, `PaintMenuCursor` |
+| Called from | `PaintMenuItem`, `PaintMenuCursor` (falls into) |
 | Writes | `$5835`-`$583F` (screen); `$5895`-`$589F` (screen); `$58F5`-`$591E` (screen); `$5955`-`$59FE` (screen); `$5A15`-`$5A3E` (screen); `$5A75`-`$5AAE` (screen); 1 more ranges |
 
 ### `PrintMenuResources` (`$CBE0`)
@@ -2367,7 +2372,7 @@ Writes +`$02`/+`$03` = HL (x), +`$04` = B (y), +`$00`/+`$01` = the map cell (Map
 | Runs (`work/docL/deep`, the bot's game) | 10,332 calls, 2,221,722 t-states own (0.09 %) |
 | Runs (`work/game-r2`, save and load) | 158 calls, 33,970 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 104 calls, 22,360 t-states own (0.01 %) |
-| Called from | `UpdateRobot` (tail), `RobotStep` (tail), `EnemyCommander`, `StartRobot` |
+| Called from | `RobotStep` (tail), `EnemyCommander`, `StartRobot` |
 | Calls | `MapCell`, `ToggleRadarDot` (tail) |
 | Reads | `$DA04`-`$DA5A` (`Robots`); `$DA74`-`$DA7A` (`Robots`); `$DB84`-`$DC4A` (`EnemyRobots`); `$DC74`-`$DC8A` (`EnemyRobots`); `$DCA4`-`$DCBA` (`EnemyRobots`); `$DCD4`-`$DCFA` (`EnemyRobots`); 5 more ranges |
 | Writes | `$DA00`-`$DA54` (`Robots`); `$DA70`-`$DA74` (`Robots`); `$DB80`-`$DC44` (`EnemyRobots`); `$DC70`-`$DC84` (`EnemyRobots`); `$DCA0`-`$DCB4` (`EnemyRobots`); `$DCD0`-`$DCF4` (`EnemyRobots`); 5 more ranges |
@@ -2383,8 +2388,8 @@ Falls into MapCell. Used by `$A62D`, `$B01D` (clear the ship's bit 7) and `$B024
 | Runs (`work/docL/deep`, the bot's game) | 9,999 calls, 289,971 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 552 calls, 16,008 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 894 calls, 25,926 t-states own (0.01 %) |
-| Called from | `NewGameSetup`, `PlayLoop`, `LiftShipFromMap`, `PutShipOnMap` |
-| Calls | `MapCell` |
+| Called from | `PlayLoop`, `LiftShipFromMap`, `PutShipOnMap` |
+| Calls | `MapCell` (falls into) |
 | Reads | `$FD0D`-`$FD0F` (`ShipY`, `ShipX`) |
 
 ### `MapCell` (`$CCA6`)
@@ -2398,7 +2403,7 @@ H += 2*A + `$DD`.
 | Runs (`work/docL/deep`, the bot's game) | 128,844 calls, 3,737,521 t-states own (0.14 %) |
 | Runs (`work/game-r2`, save and load) | 6,057 calls, 175,672 t-states own (0.04 %) |
 | Runs (`work/game`, the first game) | 9,548 calls, 276,892 t-states own (0.09 %) |
-| Called from | `GameTurnEnd`, `CheckShipMove`, `GroundUnderFootprint`, `MoveShot`, `EnemyCommander`, `SetBaseOwner` (tail), `PlaceRobot`, `ShipCell`, `DrawCellObject` |
+| Called from | `GameTurnEnd`, `CheckShipMove`, `GroundUnderFootprint`, `MoveShot`, `EnemyCommander`, `SetBaseOwner` (tail), `PlaceRobot`, `ShipCell` (falls into), `DrawMover` |
 
 ### `Beep` (`$CCAC`)
 
@@ -2409,7 +2414,7 @@ B = A is the DJNZ delay of each half-period, C = 0 counts 256 speaker toggles (b
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 259 calls, 51,829,031 t-states own (2.01 %) |
-| Called from | `ShowOrderMiles`, `SetOrder`, `ListMenu`, `ConstructionMenuLoop`, `MoveMenuCursor`, `StartRobot` |
+| Called from | `RobotMenuChoose`, `SetOrder`, `ListMenu`, `ConstructionMenuLoop`, `MoveMenuCursor`, `StartRobot` |
 | Ports out | `$00FE`, `$10FE` |
 
 ## view
@@ -2429,7 +2434,7 @@ Called by PlayLoop, the menu loops that keep the game going (ListMenu's turn `$A
 | Runs (`work/docL/deep`, the bot's game) | 3,424 calls, 150,684 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 188 calls, 8,262 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 299 calls, 13,146 t-states own (0.00 %) |
-| Called from | `NewGameSetup`, `PlayLoop`, `ListMenu`, `DrawPlayScreen` |
+| Called from | `PlayLoop`, `ListMenu`, `DrawPlayScreen` |
 | Calls | `DrawMapObjects`, `DrawViewBackground`, `CopyViewToScreen` (tail) |
 
 ### `DrawMapObjects` (`$CCC6`)
@@ -2490,7 +2495,7 @@ Checks the blocks (bit 5 clear, type not 0) at (x-1,y+1), (x,y+1) (both only whe
 | Runs (`work/docL/deep`, the bot's game) | 4,772 calls, 868,337 t-states own (0.03 %) |
 | Runs (`work/game-r2`, save and load) | 242 calls, 44,044 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 298 calls, 54,236 t-states own (0.02 %) |
-| Called from | `DrawCell`, `DrawCellObject` |
+| Called from | `DrawCell`, `DrawMover` |
 | Calls | `CheckBlockNeighbour` |
 
 ### `CheckBlockNeighbour` (`$CDB8`)
@@ -2505,7 +2510,7 @@ Bit 5 set (the right half of a block) or type 0 (empty): nothing. Otherwise fall
 | Runs (`work/game-r2`, save and load) | 968 calls, 40,656 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 1,192 calls, 50,064 t-states own (0.02 %) |
 | Called from | `FindLatestBlock` |
-| Calls | `KeepLaterCell` |
+| Calls | `KeepLaterCell` (falls into) |
 | Reads | `$E51B`-`$E51D` (`Map`); `$E713`-`$E71F` (`Map`); `$E913`-`$F323` (`Map`); `$F4ED`-`$F4EF` (`Map`); `$F515`-`$F522` (`Map`); `$F715`-`$F722` (`Map`); 1 more ranges |
 
 ### `KeepLaterCell` (`$CDBF`)
@@ -2517,7 +2522,7 @@ The drawing order of DrawMapObjects: diagonals by falling x - y, along a diagona
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 2,857 calls, 277,070 t-states own (0.01 %) |
-| Called from | `CheckObjectNeighbour`, `CheckBlockNeighbour` |
+| Called from | `CheckObjectNeighbour`, `CheckBlockNeighbour` (falls into) |
 
 ### `FindRobot` (`$CDD8`)
 
@@ -2530,7 +2535,7 @@ Walks the 48 records of Robots (16 bytes: slots 0-23 the player's, 24-47 the ene
 | Runs (`work/docL/deep`, the bot's game) | 12,891 calls, 47,025,281 t-states own (1.82 %) |
 | Runs (`work/game-r2`, save and load) | 466 calls, 1,901,374 t-states own (0.44 %) |
 | Runs (`work/game`, the first game) | 611 calls, 2,777,640 t-states own (0.93 %) |
-| Called from | `NewGameSetup`, `GameTurnEnd`, `ObjectTop`, `ScanLane`, `MoveShot`, `DrawCellObject` |
+| Called from | `PlayLoop`, `GameTurnEnd`, `ObjectTop`, `ScanLane`, `MoveShot`, `DrawCellObject` |
 | Reads | `$DA00`-`$DCF1` (`Robots`, `EnemyRobots`) |
 
 ### `FindBuilding` (`$CDF5`)
@@ -2544,7 +2549,7 @@ Walks the 56 records of Buildings (3 bytes: the map cell address, the type) comp
 | Runs (`work/docL/deep`, the bot's game) | 7,308 calls, 17,570,431 t-states own (0.68 %) |
 | Runs (`work/game-r2`, save and load) | 336 calls, 859,643 t-states own (0.20 %) |
 | Runs (`work/game`, the first game) | 609 calls, 1,489,803 t-states own (0.50 %) |
-| Called from | `NewGameSetup`, `ObjectTop`, `RemoveBuilding`, `DrawCellObject` |
+| Called from | `PlayLoop`, `KeepHigher`, `RemoveBuilding`, `DrawCellObject` |
 | Reads | `$FF01`-`$FFA6` (`Buildings`) |
 
 ### `DrawCellObject` (`$CE12`)
@@ -2559,7 +2564,7 @@ A robot whose +`$00`/+`$01` is HL goes to DrawMover. A building record goes to i
 | Runs (`work/game-r2`, save and load) | 376 calls, 110,011 t-states own (0.03 %) |
 | Runs (`work/game`, the first game) | 597 calls, 137,348 t-states own (0.05 %) |
 | Called from | `DrawCell` |
-| Calls | `MapCell`, `FindLatestBlock`, `FindRobot`, `FindBuilding`, `DrawMoverSprite` (tail), `DrawRobotPart`, `DrawSprite`, `AddAToHL` |
+| Calls | `FindRobot`, `FindBuilding`, `DrawSprite`, `AddAToHL` |
 | Reads | `$CE56`-`$CE67` (`BuildingSprites`, `BuildingHeights`); `$DA02`-`$DA5D` (`Robots`); `$F520` (`Map`); `$F922` (`Map`); `$FF4B`-`$FF57` (`Buildings`) |
 | Writes | `$CF3F` (`DrawSprite+18`); `$DA20`-`$DA21` (`Robots`); `$F520` (`Map`); `$F922` (`Map`) |
 
@@ -2571,7 +2576,8 @@ Robots and shots keep their real position in +`$02`/+`$03` (x) and +`$04` (y) an
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MapCell`, `FindLatestBlock`, `DrawMoverSprite` (tail) |
 
 ### `DrawMoverSprite` (`$CEC3`)
 
@@ -2582,7 +2588,7 @@ Records at `$D800` and up are robots: DrawRobot. A shot (records at `$D7D3`) is 
 | | |
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 1,330 calls, 61,180 t-states own (0.00 %) |
-| Called from | `DrawCellObject` (tail) |
+| Called from | `DrawMover` (tail) |
 | Calls | `DrawRobot` (tail) |
 
 ### `DrawRobot` (`$CEE8`)
@@ -2609,7 +2615,7 @@ Sprite = `$16` + the parts table `$D6C8`[4 * part + direction], direction = the 
 | --- | --- |
 | Runs (`work/docL/deep`, the bot's game) | 3,915 calls, 1,120,374 t-states own (0.04 %) |
 | Runs (`work/game-r2`, save and load) | 270 calls, 89,427 t-states own (0.02 %) |
-| Called from | `DrawCellObject`, `DrawRobot` |
+| Called from | `DrawRobot` |
 | Calls | `DrawSprite`, `AddAToHL` |
 | Reads | `$CF3F` (`DrawSprite+18`); `$D6C8`-`$D6E7` (`PartSpriteTable`); `$D7B4`-`$D7BB` (`PartHeights`); `$DA08`-`$DA58` (`Robots`) |
 | Writes | `$CF3F` (`DrawSprite+18`) |
@@ -2641,7 +2647,7 @@ ClearViewBuffer, FillViewCorner (the solid top left corner), then the diagonal e
 | Runs (`work/docL/deep`, the bot's game) | 3,425 calls, 544,727 t-states own (0.02 %) |
 | Runs (`work/game-r2`, save and load) | 192 calls, 30,528 t-states own (0.01 %) |
 | Runs (`work/game`, the first game) | 300 calls, 47,700 t-states own (0.02 %) |
-| Called from | `GameEntry`, `NewGameSetup`, `EnterPlay`, `DrawView` |
+| Called from | `EnterPlay`, `DrawView` |
 | Calls | `ClearViewBuffer`, `FillViewCorner`, `DrawEdgeStrips` (tail) |
 
 ### `ClearViewBuffer` (`$CFFE`)
@@ -2744,7 +2750,7 @@ PlayScreenText ends the code: PrintInline returns into ShowStatusPanel, so the p
 | Runs (`work/docL/deep`, the bot's game) | 8 calls, 381,478 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 4 calls, 190,796 t-states own (0.04 %) |
 | Runs (`work/game`, the first game) | 1 call, 47,699 t-states own (0.02 %) |
-| Called from | `GameEntry`, `NewGameSetup`, `EnterPlay`, `StartRobot` |
+| Called from | `EnterPlay`, `StartRobot` |
 | Calls | `DrawView`, `ClearScreen`, `NextScreenLine`, `AddAToHL`, `PrintInline` |
 | Reads | `$4000`-`$4014` (screen); `$4701`-`$4713` (screen); `$50A1`-`$50B3` (screen); `$57A0`-`$57B4` (screen); `$5800`-`$5AFE` (screen) |
 | Writes | `$4000`-`$50B5` (screen); `$5100`-`$51A0` (screen); `$51B5` (screen); `$5200`-`$52A0` (screen); `$52B5` (screen); `$5300`-`$53A0` (screen); 9 more ranges |
@@ -2760,7 +2766,7 @@ ClearPanel, then StatusPanelText. Called when the robot menu ends (CloseRobotMen
 | Runs (`work/docL/deep`, the bot's game) | 15 calls, 510 t-states own (0.00 %) |
 | Runs (`work/game-r2`, save and load) | 4 calls, 136 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 34 t-states own (0.00 %) |
-| Called from | `ShowOrderMiles`, `PrintInline` |
+| Called from | `RobotMenuChoose`, `PrintInline` |
 | Calls | `ClearPanel`, `PrintInline` |
 
 ### `UpdateStatusPanel` (`$D293`)
@@ -2776,7 +2782,7 @@ The four parts are each a CALL PrintInline with a position string and the code a
 | Runs (`work/docL/deep`, the bot's game) | 78 calls, 3,042 t-states own (0.00 %) |
 | Runs (`work/game-r2`, save and load) | 7 calls, 273 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 5 calls, 195 t-states own (0.00 %) |
-| Called from | `NewGameSetup`, `GameTurnEnd`, `DailyProduction`, `UpdateRobot`, `EnemyCommander`, `PrintInline` |
+| Called from | `PlayLoop`, `GameTurnEnd`, `DailyProduction`, `UpdateRobot`, `EnemyCommander`, `PrintInline` |
 | Calls | `PrintInline` |
 | Reads | `$FD39` (`PanelBusy`) |
 
@@ -2865,7 +2871,7 @@ Called by ShowStatusPanel and by the robot menus (RobotMenuShow `$A732`, CloseRo
 | Runs (`work/docL/deep`, the bot's game) | 50 calls, 850 t-states own (0.00 %) |
 | Runs (`work/game-r2`, save and load) | 4 calls, 68 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 17 t-states own (0.00 %) |
-| Called from | `RobotMenuShow`, `ShowOrderMiles`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `ShowStatusPanel` |
+| Called from | `RobotMenuShow`, `RobotMenuChoose`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `ShowStatusPanel` |
 | Calls | `PrintInline` |
 
 ### `ClearPanelLines` (`$D301`)
@@ -2880,7 +2886,7 @@ B = 22: rows 2-23. B survives each PrintInline: it works in the alternate regist
 | Runs (`work/game-r2`, save and load) | 4 calls, 28 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 1 call, 7 t-states own (0.00 %) |
 | Called from | `PrintInline` |
-| Calls | `ClearPanelLine` |
+| Calls | `ClearPanelLine` (falls into) |
 
 ### `ClearPanelLine` (`$D303`)
 
@@ -2893,7 +2899,7 @@ One CALL PrintInline with PanelBlankLine; the code goes on at ClearPanelNext.
 | Runs (`work/docL/deep`, the bot's game) | 1,100 calls, 18,719 t-states own (0.00 %) |
 | Runs (`work/game-r2`, save and load) | 88 calls, 1,496 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 22 calls, 374 t-states own (0.00 %) |
-| Called from | `ClearPanelLines`, `ClearPanelNext` (tail) |
+| Called from | `ClearPanelLines` (falls into), `ClearPanelNext` (tail) |
 | Calls | `PrintInline` |
 
 ### `ClearPanelNext` (`$D312`)
@@ -2974,7 +2980,7 @@ A changed to the new H; BC, DE kept. Used everywhere a table is indexed by a byt
 | Runs (`work/docL/deep`, the bot's game) | 434,490 calls, 14,343,015 t-states own (0.56 %) |
 | Runs (`work/game-r2`, save and load) | 23,119 calls, 763,136 t-states own (0.18 %) |
 | Runs (`work/game`, the first game) | 31,577 calls, 1,042,421 t-states own (0.35 %) |
-| Called from | `PaintMenuItem`, `TerrainTop`, `ObjectTop`, `SteerByOrder`, `SetStepDelay`, `EnemyCommander`, `CountBases`, `SetBaseOwner`, `ConstructionMenu`, `ConstructionMenuLoop`, `PrintMenuResources`, `ShowRobotDesign`, `DrawMapObjects`, `DrawCellObject`, `DrawRobotPart`, `DrawSprite`, `FillViewCorner`, `DrawPlayScreen`, `TableWord`, `PrintBigChar` |
+| Called from | `PaintMenuItem`, `TerrainTop`, `KeepHigher`, `SteerByOrder`, `SetStepDelay`, `EnemyCommander`, `CountBases`, `SetBaseOwner`, `ConstructionMenu`, `ConstructionMenuLoop`, `PrintMenuResources`, `ShowRobotDesign`, `DrawMapObjects`, `DrawCellObject`, `DrawRobotPart`, `DrawSprite`, `FillViewCorner`, `DrawPlayScreen`, `TableWord`, `PrintBigChar` |
 
 ### `Random` (`$D358`)
 
@@ -2987,7 +2993,7 @@ A 32-bit shift register at RandomSeed `$FD00-$FD03` (big end first, seeded `$39`
 | Runs (`work/docL/deep`, the bot's game) | 54,815 calls, 10,634,528 t-states own (0.41 %) |
 | Runs (`work/game-r2`, save and load) | 1,021 calls, 198,131 t-states own (0.05 %) |
 | Runs (`work/game`, the first game) | 1,511 calls, 293,134 t-states own (0.10 %) |
-| Called from | `GameTurn`, `UpdateRobot`, `RobotStep`, `SteerByOrder`, `EnemyCommander`, `SoundEffect` |
+| Called from | `GameTurn`, `UpdateRobot`, `RobotStep`, `SteerByOrder`, `PickOneDirection`, `EnemyCommander`, `SoundEffect` |
 | Reads | `$FD00`-`$FD03` (`RandomSeed`) |
 | Writes | `$D371` (`Random+25`); `$FD00`-`$FD03` (`RandomSeed`) |
 
@@ -3006,7 +3012,7 @@ In: nothing. Out: A = Input (also in Input `$FD0C`); the flags of the last OR A.
 | Runs (`work/docL/deep`, the bot's game) | 10,056 calls, 321,849 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 184 calls, 5,888 t-states own (0.00 %) |
 | Runs (`work/game`, the first game) | 298 calls, 9,536 t-states own (0.00 %) |
-| Called from | `NewGameSetup`, `PlayLoop`, `ListMenu`, `WaitRelease`, `ConstructionMenuLoop` |
+| Called from | `PlayLoop`, `ListMenu`, `WaitRelease`, `ConstructionMenuLoop` |
 | Calls | `ReadControls` |
 
 ### `ReadControls` (`$D38A`)
@@ -3107,7 +3113,7 @@ Counts how often BC (a negative power of 10) can be added. A zero while E = `$20
 | Runs (`work/game-r2`, save and load) | 1,161 calls, 105,016 t-states own (0.02 %) |
 | Runs (`work/game`, the first game) | 1,827 calls, 160,168 t-states own (0.05 %) |
 | Called from | `PrintNumber5`, `PrintNumber3`, `PrintTensUnits` |
-| Calls | `PrintCharKeep` |
+| Calls | `PrintCharKeep` (falls into) |
 
 ### `PrintCharKeep` (`$D427`)
 
@@ -3120,7 +3126,7 @@ PrintChar in the alternate registers: the caller's BC, DE, HL are kept (the numb
 | Runs (`work/docL/deep`, the bot's game) | 37,583 calls, 1,315,671 t-states own (0.05 %) |
 | Runs (`work/game-r2`, save and load) | 2,054 calls, 71,947 t-states own (0.02 %) |
 | Runs (`work/game`, the first game) | 3,130 calls, 109,569 t-states own (0.04 %) |
-| Called from | `ShowStrengthValue` (tail), `GameTurnEnd`, `PrintDigitColumn`, `PrintTensUnits` (tail), `PrintDigit` |
+| Called from | `ShowStrengthValue` (tail), `GameTurnEnd`, `PrintDigitColumn`, `PrintTensUnits` (tail), `PrintDigit` (falls into) |
 | Calls | `PrintChar` |
 
 ### `PrintInline` (`$D42D`)
@@ -3134,7 +3140,7 @@ In: the string after the CALL. Pops the return address, takes a byte, pushes the
 | Runs (`work/docL/deep`, the bot's game) | 5,299 calls, 2,719,895 t-states own (0.11 %) |
 | Runs (`work/game-r2`, save and load) | 332 calls, 214,682 t-states own (0.05 %) |
 | Runs (`work/game`, the first game) | 349 calls, 131,032 t-states own (0.04 %) |
-| Called from | `RobotMenuShow`, `ShowOrder`, `ShowStrength`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `GameTurn`, `MainMenu`, `MainMenuOptions`, `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option`, `ControlsOptionAttr`, `ConstructionMenu`, `PrintMenuResources`, `PrintMenuResource`, `DrawPlayScreen`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `ClearPanel`, `ClearPanelLine` |
+| Called from | `RobotMenuShow`, `ShowOrder`, `ShowStrength`, `OrdersMenu`, `TargetMenu`, `CaptureMenu`, `GameTurn`, `MainMenuOptions`, `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option`, `ControlsOptionAttr`, `ControlsOptionPlain`, `ConstructionMenu`, `PrintMenuResources`, `PrintMenuResource`, `DrawPlayScreen`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `ClearPanel`, `ClearPanelLine` |
 | Calls | `ShowOrder`, `ShowOrderMiles`, `ShowStrengthValue`, `OrdersMenuChoose`, `DestroyMenuChoose`, `CaptureMenuChoose`, `GameTurnEnd`, `MenuKeyboardOption`, `MenuKempstonOption`, `MenuInterface2Option`, `MenuOptionsEnd`, `ControlsOptionPlain`, `ControlsOptionChosen`, `ConstructionMenuSetup`, `PrintMenuTotal`, `PrintMenuResourceValue`, `ShowStatusPanel`, `UpdateStatusPanel`, `PrintResourceValues`, `PrintInsgCounts`, `PrintHumnCounts`, `PrintHumnRobots`, `ClearPanelLines`, `ClearPanelNext`, `PrintControl` |
 | Reads | `$A738`-`$ABB8` (`RobotMenuText`, `ShowOrder`, `OrderLineHead`, `OrderLine` and 35 more); `$AD88`-`$AD8F` (`ClockPos`); `$C109`-`$C18A` (`MenuStartText`, `MenuKeyboardOption`, `MenuKeyboardText`, `MenuKempstonOption` and 3 more); `$C33F`-`$C348` (`OptionAttrPlain`, `ControlsOptionPlain`, `OptionAttrChosen`); `$C8BE`-`$C9E6` (`ConstructionTitleText`, `PartNamesText`, `ExitStartText`, `PartCostsText` and 1 more); `$CBFF`-`$CC13` (`TotalPosition`, `PrintMenuTotal`, `PrintMenuResource`, `MenuResourcePos`); 1 more ranges |
 
@@ -3270,7 +3276,7 @@ The interrupt alternates the two pictures `$D800` (terrain + the player's robots
 | Runs (`work/game-r2`, save and load) | 1,871 calls, 12,728,413 t-states own (2.94 %) |
 | Runs (`work/game`, the first game) | 2,973 calls, 20,225,319 t-states own (6.80 %) |
 | Called from | `PlayMusic` |
-| Calls | `NextScreenLine`, `FillAttr16` |
+| Calls | `NextScreenLine`, `FillAttr16` (falls into) |
 | Reads | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |
 | Writes | `$50C6`-`$50F5` (screen); `$51C6`-`$51F5` (screen); `$52C6`-`$52F5` (screen); `$53C6`-`$53F5` (screen); `$54C6`-`$54F5` (screen); `$55C6`-`$55F5` (screen); 2 more ranges |
 
@@ -3285,7 +3291,7 @@ In: HL, C. Out: HL past the 16 bytes, B = 0. The tail of ShowRadar (rows 22 and 
 | Runs (`work/docL/deep`, the bot's game) | 69,218 calls, 29,625,304 t-states own (1.15 %) |
 | Runs (`work/game-r2`, save and load) | 3,742 calls, 1,601,576 t-states own (0.37 %) |
 | Runs (`work/game`, the first game) | 5,946 calls, 2,544,888 t-states own (0.86 %) |
-| Called from | `ShowRadar` |
+| Called from | `ShowRadar` (falls into) |
 | Writes | `$5AC6`-`$5AD5` (screen); `$5AE6`-`$5AF5` (screen) |
 
 ### `SoundEffect` (`$D5C4`)
@@ -3314,7 +3320,7 @@ Each map cell of the window is one pixel: set when its block type is `$0F` or mo
 | Runs (`work/docL/deep`, the bot's game) | 1 call, 142,587 t-states own (0.01 %) |
 | Runs (`work/game-r2`, save and load) | 4 calls, 571,767 t-states own (0.13 %) |
 | Runs (`work/game`, the first game) | 1 call, 142,587 t-states own (0.05 %) |
-| Called from | `PutShipOnMap`, `RefreshRadar` |
+| Called from | `RefreshRadar` |
 | Calls | `ToggleRadarDot` |
 | Reads | `$D800`-`$D8FF` (`RadarOwn`); `$DA01`-`$EF7F` (`Robots`, `EnemyRobots`, `Map`); `$F080`-`$F17F` (`Map`); `$F280`-`$F37F` (`Map`); `$F480`-`$F57F` (`Map`); `$F680`-`$F77F` (`Map`); 4 more ranges |
 | Writes | `$D800`-`$D9FF` (`RadarOwn`, `RadarEnemy`, `SaveShots`, `SaveBuildings`) |

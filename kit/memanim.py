@@ -10,7 +10,8 @@ the screen's own geometry at the screen's size: each bitmap byte as its 8 pixels
 written attribute as a frame round its 8 x 8 cell, so a byte flashes at the same place as on the screen beside it.
 
     python3 memanim.py --work W --from F[:T] --to F[:T] --step TSTATES out.gif [--from-address 5B00] [--screen]
-           [--screen-geometry] [--label "text"] [--delay 80] [--cell 2] [--layout compact|wide] [--width 1050]
+           [--screen-geometry] [--label "text"] [--delay 80] [--cell 2|3|fit] [--row-bytes 256]
+           [--layout compact|wide] [--width 1050]
            [--unreal UNREAL_NG_CHECKOUT]
 
 Both layouts keep the picture within --width pixels (1050, the figure limit, readable at 900). --layout compact (the
@@ -19,7 +20,10 @@ at 2 x when that fits, else at 1 x (with --screen at --cell 2 the screen is 256 
 --width 0 takes the limit away (wide: the older 1102-pixel picture).
 
 --cell is the pixels a byte (2): at 2 a byte is 2 px, too small to read at 900 px. For an address range of up to 64
-pages (16 K) take --cell 3: the grid is 768 px, the compact picture 830 px.
+pages (16 K) take --cell 3: the grid is 768 px, the compact picture 830 px. --cell 4 would be 1086 px, over the limit:
+--cell fit makes the grid as wide as --width allows (988 px at 1050, a byte 3 or 4 px each way), the screen
+under it; a fraction (--cell 3.5) gives that size. A small range (fewer rows than make 96 px) is wrapped at 128, 64,
+32 or 16 bytes a row at a cell as many times larger, the grid as wide; --row-bytes fixes the count.
 
 A second animation of a routine another document already shows gets a file of its own, NAME-what.gif
 (SimTask-growth.gif beside SimTask.gif): kit/refdocs.py links both from doc 12. Writing over an existing GIF prints a
@@ -29,7 +33,7 @@ import argparse
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import zxscreen  # noqa: E402
@@ -115,9 +119,12 @@ def main():
     p.add_argument('--label', default='')
     p.add_argument('--delay', type=int, default=80, help='ms per picture')
     p.add_argument('--hold', type=int, default=1500, help='ms on the last picture')
-    p.add_argument('--cell', type=int, default=2,
+    p.add_argument('--cell', default='2',
                    help='pixels a byte (2: a byte is hard to read at 900 px); for a range of up to 64 pages (16 K) '
-                        'take 3: with the compact layout the picture is 830 px wide')
+                        'take 3: with the compact layout the picture is 830 px wide; "fit": the grid as wide as '
+                        '--width allows (988 px at 1050, a byte 3 or 4 px); a fraction such as 3.5 works too')
+    p.add_argument('--row-bytes', type=int, choices=(16, 32, 64, 128, 256),
+                   help='bytes a grid row (default 256, fewer for a small range: at least 96 px tall)')
     p.add_argument('--layout', choices=('compact', 'wide'), default='compact',
                    help='compact: the screen under the grid when beside it the picture is wider than --width; '
                         'wide: always beside (the older picture)')
@@ -133,9 +140,24 @@ def main():
     lo, hi = int(args.from_address, 16) & 0xFF00, int(args.to_address, 16) | 0xFF
     if args.screen_geometry:
         lo, hi = 0x4000, 0x5AFF
-    rows, cell = (hi - lo + 1) // 256, args.cell
-    font = ImageFont.load_default()
-    grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else (256 * cell, rows * cell)
+    if args.cell == 'fit':
+        if not args.width:
+            raise SystemExit('--cell fit needs a --width')
+        cell = (args.width - 52 - 10) / 256  # the grid alone across the picture: the screen goes under it
+    else:
+        cell = float(args.cell)
+    cell = int(cell) if cell == int(cell) else cell
+    row_bytes = args.row_bytes or 256
+    if not args.row_bytes and not args.screen_geometry:
+        # a small range: fewer bytes a row at a larger cell, the grid as wide, until it is at least 96 px tall
+        while row_bytes > 16 and (hi - lo + 1) // row_bytes * cell < 96:
+            row_bytes //= 2
+            cell *= 2
+    rows = -(-(hi - lo + 1) // row_bytes)
+    font = kitlib.font(12)  # the kit's monospaced font: PIL's default is about 9 px, hard to read at 900 px
+    LINE = 15
+    grid_w, grid_h = (256 * SCALE, 192 * SCALE) if args.screen_geometry else \
+        (round(row_bytes * cell), round(rows * cell))
     screen_scale = 2
     screen_w = 256 * screen_scale if args.screen else 0
     width = 52 + grid_w + (16 + screen_w if args.screen else 0) + 10
@@ -155,7 +177,7 @@ def main():
     status = '  frame 99999 t 99999   99999 bytes changed'
     if probe.textlength(label[-1] + status, font=font) > room:
         label.append('')
-    top = 30 + 12 * (len(label) + len(legend) - 2)  # the grid's top: 30 for one line of each
+    top = 36 + LINE * (len(label) + len(legend) - 2)  # the grid's top: 36 for one line of each
     if below:
         screen_at = (52, top + grid_h + 16)
         height = screen_at[1] + 192 * screen_scale + 22
@@ -176,31 +198,34 @@ def main():
                     age[a] = 0
                     written += 1
         image = Image.new('RGB', (width, height), (20, 20, 26))
-        grid = screen_heat(mem, age) if args.screen_geometry else Image.new('RGB', (grid_w, grid_h))
-        px = grid.load()
-        for a in ([] if args.screen_geometry else range(lo, hi + 1)):
-            v = mem[a]
-            g = 28 + v * 100 // 255
-            colour = (g, g, g + 6)
-            if a in age:
-                colour = FADE[min(age[a], len(FADE) - 1)]
-            x, y = (a & 0xFF) * cell, ((a - lo) >> 8) * cell
-            for dy in range(cell):
-                for dx in range(cell):
-                    px[x + dx, y + dy] = colour
+        if args.screen_geometry:
+            grid = screen_heat(mem, age)
+        else:
+            # a byte a pixel, then enlarged: a whole cell gives cell x cell squares, a fraction (--cell fit) cells
+            # of the two nearest whole sizes
+            bytes_ = Image.new('RGB', (row_bytes, rows), (20, 20, 26))
+            px = bytes_.load()
+            for a in range(lo, hi + 1):
+                v = mem[a]
+                g = 28 + v * 100 // 255
+                colour = (g, g, g + 6)
+                if a in age:
+                    colour = FADE[min(age[a], len(FADE) - 1)]
+                px[(a - lo) % row_bytes, (a - lo) // row_bytes] = colour
+            grid = bytes_.resize((grid_w, grid_h), Image.NEAREST)
         image.paste(grid, (52, top))
         d = ImageDraw.Draw(image)
         lines = label[:-1] + [f'{label[-1]}  frame {frame} t {t}   {written} bytes changed']
         for i, line in enumerate(lines):
-            d.text((52, 6 + 12 * i), line, fill=(235, 235, 235), font=font)
+            d.text((52, 6 + LINE * i), line, fill=(235, 235, 235), font=font)
         for i, line in enumerate(legend):
-            d.text((52, 6 + 12 * (len(lines) + i)), line, fill=(160, 160, 170), font=font)
+            d.text((52, 6 + LINE * (len(lines) + i)), line, fill=(160, 160, 170), font=font)
         if args.screen_geometry:  # the thirds of the bitmap
             for a in (0x4000, 0x4800, 0x5000):
                 d.text((4, top + screen_line(a) * SCALE), f'${a:04X}', fill=(170, 170, 180), font=font)
         else:
-            for a in range(lo, hi + 1, 0x1000):
-                y = top + ((a - lo) >> 8) * cell
+            for a in range(lo, hi + 1, 16 * row_bytes):  # every 16 rows (every 4 K at 256 bytes a row)
+                y = top + round((a - lo) // row_bytes * cell)
                 d.text((4, y - 4), f'${a:04X}', fill=(170, 170, 180), font=font)
         if args.screen:
             image.paste(zxscreen.render(mem[0x4000:0x5B00], screen_scale), screen_at)

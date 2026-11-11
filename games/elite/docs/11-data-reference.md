@@ -2,7 +2,8 @@
 
 Every data entry of the game image `$5B00`-`$FFA7`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
-its entry, its size up to the next label. The name, the title and the description are the
+its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,
+of the whole entry's ("17 of 34"). The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/d1`, `work/f1`, `work/w1`, local and not in the repository), and, marked
 "(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
@@ -97,7 +98,7 @@ Written by `kit/refdocs.py`.
 | `$70E4` | `RollRate` | 1 | The roll rate this frame (bit 7 the sign), copied from the high byte of RollControl (`$FF09`) | `MovePosition`, `Stardust`, `UpdateShip`, `StardustPass` (code) | `CopyRates`, `SceneDock` (code) |
 | `$70E5` | `PitchRate` | 1 | The pitch rate this frame, from the high byte of PitchControl (`$FF0B`) | `MovePosition`, `Stardust`, `UpdateShip`, `StardustPass` (code) | `CopyRates`, `SceneDock` (code) |
 | `$70E6` | `SpeedRate` | 1 | The speed this frame, from the high byte of SpeedControl (`$FF0D`) | `MovePosition`, `Stardust`, `ActionMissileShip` (code), `ActionPod` (code), `CollideStationCrash` (code) +1 | `CopyRates`, `TitleNext`, `TunnelFrame`, `TunnelFrameText`, `GameOver` (code) +3 |
-| `$70E7` | `BarDrawn` | 28 | The dashboard bars: 13 pairs of the length last drawn and the value, the fore shield first. DrawBars `$84D9` compares each value with the byte before it and draws only a changed bar; a value is 0-`$A0`, a quarter of it the length in pixels. The first 11 are solid bars (the shields, the fuel, the cabin and laser temperatures, the altitude, the speed, the four energy banks), the last two the roll and pitch markers. ResetDashboard `$9946` starts the shields, the altitude and the banks at `$A0`. | `ConditionLight`, `DashboardTick`, `DrainBanks`, `DrawBars`, `LaserCooling` +7 | `CopyRates`, `DashboardTick`, `DrainBanks`, `DrawBars`, `JumpEnd` +9 |
+| `$70E7` | `BarDrawn` | 1 of 28 | The dashboard bars: 13 pairs of the length last drawn and the value, the fore shield first. DrawBars `$84D9` compares each value with the byte before it and draws only a changed bar; a value is 0-`$A0`, a quarter of it the length in pixels. The first 11 are solid bars (the shields, the fuel, the cabin and laser temperatures, the altitude, the speed, the four energy banks), the last two the roll and pitch markers. ResetDashboard `$9946` starts the shields, the altitude and the banks at `$A0`. | `ConditionLight`, `DashboardTick`, `DrainBanks`, `DrawBars`, `LaserCooling` +7 | `CopyRates`, `DashboardTick`, `DrainBanks`, `DrawBars`, `JumpEnd` +9 |
 | `$70E8` | `BarForeShield` (`BarDrawn`+1) | 2 | The fore shield | `ConditionLight`, `DrawBars`, `ShieldGain`, `ShieldHit` | `DrawBars`, `ResetFlight`, `ShieldGain`, `ShieldHit` |
 | `$70EA` | `BarAftShield` (`BarDrawn`+3) | 2 | The aft shield | `ConditionLight`, `DrawBars`, `ShieldGain`, `ShieldHit` | `DrawBars`, `ResetFlight`, `ShieldHit` |
 | `$70EC` | `BarFuel` (`BarDrawn`+5) | 2 | The fuel | `DrawBars` | `SetFuel` |
@@ -171,7 +172,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$81A3` | `DashWork` | 6 | DashDistances' results: SunClose, PlanetClose, the compass x and y offsets, the compass behind flag | `DrawCompass`, `InSystemJump` (code) | `DashDistances`, `DashCompassPlanetXY` (code), `DashCompassSide` (code), `DashCompassStore` (code) |
+| `$81A3` | `DashWork` | 1 of 6 | DashDistances' results: SunClose, PlanetClose, the compass x and y offsets, the compass behind flag | `DrawCompass`, `InSystemJump` (code) | `DashDistances`, `DashCompassPlanetXY` (code), `DashCompassSide` (code), `DashCompassStore` (code) |
 | `$81A4` | `SunClose` (`DashWork`+1) | 1 | 1 when the sun's coordinates are all below `$0100` (its distance was measured) | `InSystemJump` (code) | `DashDistances` |
 | `$81A5` | `PlanetClose` (`DashWork`+2) | 1 | 1 when the planet's are all below `$0200` | `InSystemJump` (code) | `DashDistances` |
 | `$81A6` | `CompassX` (`DashWork`+3) | 1 | The compass dot's x offset (bit 7 the sign) | `DrawCompass` | `DashDistances`, `DashCompassPlanetXY` (code) |

@@ -79,7 +79,7 @@ L1 764 (the disasters recording: 127-255 calls a disaster), 30 406 random bits s
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 764 calls (`stage1/rec/disasters` 764) |
-| Called from | `NuclearMeltdown`, `FireNoise`, `FloodNoise`, `Earthquake` |
+| Called from | `CrashNoise`, `FireNoise`, `FloodNoise`, `Earthquake` |
 | Calls | `Random` |
 | Reads | `$A32D` (`SoundOn`) |
 | Ports out | `$00FE`, `$10FE` |
@@ -172,7 +172,7 @@ No other register changes but A. L1 451 620: every print and drawing routine cal
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 4,472 calls, 336,501 t-states own (0.02 %) |
 | Runs (the other recordings) | 447,188 calls (`stage1/rec/metro` 114,475, `stage1/rec/city` 83,815, `stage1/rec/city2` 77,045 and 7 more) |
-| Called from | `DrawIcon`, `DrawPointer`, `InvertBox`, `PrintInline`, `PrintNumberAt`, `DrawBoxRow`, `PrintPadded`, `DrawViewRowPass`, `PrintNumberHL`, `PrintNumberVar`, `PrintMenuText`, `MenuTab`, `PrintEditField`, `GreyIcon`, `DrawMover`, `PrintProblem`, `PrintPercent`, `ShowInput`, `Interrupt` |
+| Called from | `DrawIcon`, `DrawPointer`, `InvertBox`, `PrintNumberAt`, `PrintDigit`, `DrawBoxRow`, `PrintPadded`, `DrawViewRowPass`, `PrintNumberHL`, `PrintNumberVar`, `PrintMenuText`, `MenuTab`, `PrintEditField`, `GreyIcon`, `DrawMover`, `PrintProblem`, `PrintPercent`, `ShowInput`, `Interrupt` |
 | Calls | `DrawIcon`, `DrawPointer`, `InvertBox`, `DrawBoxRow`, `PrintPadded`, `PrintNumberVar` |
 
 ### `AttrAddr` (`$5C0D`)
@@ -255,7 +255,7 @@ L1 28.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | run into, not called, 180,822 t-states own (0.01 %) |
 | Runs (the other recordings) | 28 calls (`stage1/rec/bankrupt` 6, `stage1/rec/city2` 5, `stage1/rec/metro` 5 and 3 more) |
 | Called from | `ClearTopBlack` (tail), `ShowWindow`, `LoadCity`, `Interrupt` |
-| Calls | `ClearViewArea` |
+| Calls | `ClearViewArea` (falls into) |
 | Reads | `$4000`-`$47FE` (screen); `$5800`-`$58FE` (screen) |
 | Writes | `$4000`-`$47FF` (screen); `$5800`-`$58FF` (screen) |
 
@@ -269,7 +269,7 @@ The map view's area, cleared before a window or a dialog is drawn over it. L1 22
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 7 calls, 874,306 t-states own (0.06 %) |
 | Runs (the other recordings) | 216 calls (`stage1/rec/menus` 92, `stage1/rec/metro` 22, `stage1/rec/city2` 21 and 7 more) |
-| Called from | `ClearTopWhite`, `ShowInlineWindow`, `ShowWindow`, `ClearWindowArea`, `NewLandscape`, `Interrupt` |
+| Called from | `ClearTopWhite` (falls into), `ShowWindow`, `ClearWindowArea`, `NewLandscape`, `Interrupt` |
 | Calls | `ClearForMaps`, `MapsWindow` |
 | Reads | `$4800`-`$57FE` (screen); `$5900`-`$5AFE` (screen) |
 | Writes | `$4800`-`$57FF` (screen); `$5900`-`$5AFF` (screen) |
@@ -302,7 +302,7 @@ RandomSeed `$5CC4` holds the seed. The arithmetic: H = the seed's low byte, L = 
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 975 calls, 267,763 t-states own (0.02 %) |
 | Runs (the other recordings) | 342,369 calls (`stage1/rec/metro` 115,862, `stage1/rec/city2` 63,975, `stage1/rec/disasters` 61,796 and 7 more) |
-| Called from | `NoiseBurst`, `Discs`, `ParkTool`, `MoveTrain`, `StartTrain`, `Meltdown`, `StartTornado`, `MoveTornado`, `PickRouteStart`, `TripStep`, `RadiationCell`, `FireCell`, `Spread`, `PickFrameCell`, `ResidentialStep`, `ComBuildingStep`, `IndBuildingStep`, `Periodic`, `AnimateFire`, `AnimateFlood`, `StartFires`, `StartFlood`, `RandomDisaster`, `Poll`, `Interrupt` |
+| Called from | `NoiseBurst`, `Discs`, `ParkTool`, `MoveTrain`, `StartTrain`, `Meltdown`, `StartTornado`, `MoveTornado`, `PickRouteStart`, `TripStep`, `RadiationCell`, `FireCell`, `Spread`, `PickFrameCell`, `ResidentialStep`, `ComBuildingStep`, `IndBuildingStep`, `AnimateFire`, `AnimateFlood`, `StartFires`, `StartFlood`, `RandomDisaster`, `Poll`, `Interrupt` |
 | Calls | `AnimateFire`, `AnimateFlood`, `StartFires`, `StartFlood`, `RandomDisaster` |
 | Reads | `$5CC4`-`$5CC5` (`RandomSeed`) |
 | Writes | `$5CC4`-`$5CC5` (`RandomSeed`) |
@@ -352,7 +352,7 @@ Output: PointerInView, BoxCell, BoxShown; the box is the BoxSize cells from the 
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3,554 calls, 307,604 t-states own (0.02 %) |
 | Runs (the other recordings) | 312,633 calls (`stage1/rec/metro` 77,541, `stage1/rec/city2` 69,575, `stage1/rec/city` 62,794 and 7 more) |
 | Called from | `UiTask`, `Interrupt` |
-| Calls | `InvertBox`, `UiTask` |
+| Calls | `InvertBox` (falls into), `UiTask` |
 | Reads | `$5CFC`-`$5CFD` (`PointerX`, `PointerY`); `$5D4F`-`$5D50` (`BoxSize`) |
 | Writes | `$5D51`-`$5D54` (`BoxCell`, `PointerInView`, `BoxShown`) |
 
@@ -366,7 +366,7 @@ The tool palette's highlight (ShowTool) and the map cursor (TrackBox). L1 41 241
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 101 calls, 556,592 t-states own (0.04 %) |
 | Runs (the other recordings) | 41,145 calls (`stage1/rec/metro` 20,755, `stage1/rec/tools` 6,643, `stage1/rec/city` 4,673 and 7 more) |
-| Called from | `ScreenAddr`, `NextPixelLine`, `TrackBox`, `ShowTool`, `Interrupt` |
+| Called from | `ScreenAddr`, `NextPixelLine`, `TrackBox` (falls into), `ShowTool`, `Interrupt` |
 | Calls | `ScreenAddr`, `NextPixelLine`, `ShowTool`, `UiTask` |
 | Reads | `$4022`-`$51DF` (screen); `$5200`-`$52DF` (screen); `$5300`-`$53DF` (screen); `$5400`-`$54DF` (screen); `$5500`-`$55DF` (screen); `$5600`-`$56DF` (screen); 2 more ranges |
 | Writes | `$4022`-`$51DF` (screen); `$5200`-`$52DF` (screen); `$5300`-`$53DF` (screen); `$5400`-`$54DF` (screen); `$5500`-`$55DF` (screen); `$5600`-`$56DF` (screen); 2 more ranges |
@@ -394,7 +394,7 @@ L1 649 (each tool change redraws it).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 7 calls, 11,207 t-states own (0.00 %) |
 | Runs (the other recordings) | 642 calls (`stage1/rec/city` 174, `stage1/rec/metro` 168, `stage1/rec/growth` 94 and 7 more) |
-| Called from | `DrawStatusItems`, `ToolKeys`, `ToolClick`, `FundsChanged`, `Interrupt`, `PrintGlyph` |
+| Called from | `DrawStatusItems`, `ToolClick`, `FundsChanged`, `Interrupt`, `PrintGlyph` |
 | Calls | `DrawIcon2x2`, `DrawStatusItems`, `ToolClick`, `FundsChanged` |
 
 ## print
@@ -424,8 +424,8 @@ The codes: `$FF` row column (position), `$FB` attribute (PrintAttr), `$FD` row c
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 11 calls, 48,173 t-states own (0.00 %) |
 | Runs (the other recordings) | 360 calls (`stage1/rec/menus` 153, `stage1/rec/metro` 38, `stage1/rec/city2` 37 and 7 more) |
-| Called from | `PrintChar`, `PrintDigit` (tail), `DrawStatusPanel`, `DrawStatusBox`, `DrawNameFunds`, `ShowWindow`, `ClearWindowArea`, `DrawMenu`, `DrawMapsFrame`, `DrawMapsKeys`, `LoadCity`, `LoadHeader`, `PrintFound` |
-| Calls | `ScreenAddr`, `PrintChar`, `NextColumn`, `PrintDigit` (tail) |
+| Called from | `PrintChar`, `NextColumn` (tail), `PrintDigit` (tail), `DrawStatusPanel`, `DrawStatusBox`, `DrawNameFunds`, `ShowWindow`, `ClearWindowArea`, `DrawMenuToggle`, `DrawMenuToggleOn`, `DrawMapsFrame`, `DrawMapsKeys`, `LoadCity`, `LoadHeader`, `PrintFound` |
+| Calls | `PrintChar`, `NextColumn`, `PrintDigit` (tail) |
 | Reads | `$5F16`-`$5F7E` (`StatusBarText`, `DrawStatusBox`, `StatusBoxText`, `DrawStatusItems` and 2 more); `$671F`-`$6726` (`FullFrameText`); `$673E`-`$6745` (`WindowAreaText`); `$686E`-`$687C` (`OnText`, `DrawMenuToggleOn`, `OffText`); `$7AA4`-`$7B4E` (`MapsFrameText`, `DrawMapsKeys`, `MapsKeysText`); `$9E77`-`$9E88` (`SearchingText`); 2 more ranges |
 | Writes | `$F74F`-`$F753` (`PrintAddr`, `PrintCol`, `PrintRow`, `PrintAttr`) |
 
@@ -440,7 +440,7 @@ L1 450 406.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3,422 calls, 258,960 t-states own (0.02 %) |
 | Runs (the other recordings) | 447,036 calls (`stage1/rec/menus` 163,108, `stage1/rec/metro` 66,216, `stage1/rec/city` 60,853 and 7 more) |
 | Called from | `PrintInline`, `PrintPadded`, `PrintNumber24`, `PrintSign`, `PrintDigitB` (tail), `PrintMenuText` (tail), `PrintZero`, `PrintFileName`, `ShowInput`, `Interrupt` |
-| Calls | `PrintPadded`, `PrintNumber24` |
+| Calls | `PrintInline` (tail), `PrintPadded`, `PrintNumber24` |
 | Reads | `$F74F`-`$F751` (`PrintAddr`, `PrintCol`) |
 | Writes | `$F74F`-`$F751` (`PrintAddr`, `PrintCol`) |
 
@@ -454,7 +454,7 @@ L1 2 (the gene's 5 digits).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2 calls (`stage1/rec/menus` 2) |
 | Called from | `InputGene` |
-| Calls | `ScreenAddr`, `Print5Digits` |
+| Calls | `ScreenAddr`, `Print5Digits` (falls into) |
 | Reads | `$F751`-`$F752` (`PrintCol`, `PrintRow`) |
 | Writes | `$F74F`-`$F750` (`PrintAddr`) |
 
@@ -467,7 +467,7 @@ L1 4.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/menus` 4) |
-| Called from | `PrintNumberAt`, `PrintMenuText` |
+| Called from | `PrintNumberAt` (falls into), `PrintMenuText` |
 | Calls | `PrintDigitOf` |
 
 ### `Print4Digits` (`$5E47`)
@@ -505,7 +505,7 @@ L1 11 961.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 339 calls, 53,498 t-states own (0.00 %) |
 | Runs (the other recordings) | 33,513 calls (`stage1/rec/metro` 7,379, `stage1/rec/city2` 6,630, `stage1/rec/city` 6,175 and 7 more) |
 | Called from | `Print5Digits`, `Print4Digits`, `Print3Digits`, `Interrupt` |
-| Calls | `PrintDigit` |
+| Calls | `PrintDigit` (falls into) |
 
 ### `PrintDigit` (`$5E66`)
 
@@ -517,8 +517,8 @@ L1 45 808.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 452 calls, 57,838 t-states own (0.00 %) |
 | Runs (the other recordings) | 45,360 calls (`stage1/rec/metro` 9,854, `stage1/rec/city2` 8,855, `stage1/rec/city` 8,280 and 7 more) |
-| Called from | `PrintChar`, `PrintInline` (tail), `Print3Digits`, `PrintDigitOf`, `DrawBox`, `Interrupt` |
-| Calls | `PrintChar`, `PrintInline` (tail), `Print3Digits`, `DrawBox`, `DrawStatusBox`, `DrawStatusItems`, `DrawNameFundsEnd`, `ShowFullWindowItems`, `ClearWindowAreaEnd`, `DrawMenuToggleOn`, `DrawMenuToggleNext`, `DrawMapsKeys`, `DrawMapsEnd`, `LoadHeader`, `LoadMap`, `PrintFileName` |
+| Called from | `PrintChar`, `PrintInline` (tail), `Print3Digits`, `PrintDigitOf` (falls into), `DrawBox`, `Interrupt` |
+| Calls | `ScreenAddr`, `PrintChar`, `PrintInline` (tail), `Print3Digits`, `DrawBox`, `DrawStatusBox`, `DrawStatusItems`, `DrawNameFundsEnd`, `ShowFullWindowItems`, `ClearWindowAreaEnd`, `DrawMenuToggleOn`, `DrawMenuToggleNext`, `DrawMapsKeys`, `DrawMapsEnd`, `LoadHeader`, `LoadMap`, `PrintFileName` |
 | Reads | `$F74F`-`$F750` (`PrintAddr`) |
 | Writes | `$F74E`-`$F750` (`PrintCharCode`, `PrintAddr`) |
 
@@ -547,7 +547,7 @@ The three tiles are written into the operands of the three LD A,n below (self-mo
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 83 calls, 215,546 t-states own (0.01 %) |
 | Runs (the other recordings) | 3,071 calls (`stage1/rec/menus` 1,177, `stage1/rec/metro` 353, `stage1/rec/city2` 335 and 7 more) |
-| Called from | `ScreenAddr`, `DrawBox`, `DrawMenu`, `Interrupt`, `PrintGlyph` |
+| Called from | `ScreenAddr`, `DrawBox`, `AddMenuItem`, `Interrupt`, `PrintGlyph` |
 | Calls | `ScreenAddr`, `DrawIconHere`, `DrawBox` |
 | Reads | `$5E95` (`BoxDims`); `$F74F`-`$F752` (`PrintAddr`, `PrintCol`, `PrintRow`) |
 | Writes | `$5EE9`-`$5F07` (`BoxRowLeft+1`, `BoxRowMiddle`, `BoxRowFill`, `BoxRowRight`); `$F74F`-`$F752` (`PrintAddr`, `PrintCol`, `PrintRow`) |
@@ -844,7 +844,7 @@ So the view is redrawn every 16 passes of the UI loop, a row a pass, and the bli
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,038 calls (`stage1/rec/tools` 417, `stage1/rec/disasters` 207, `stage1/rec/ports` 178 and 4 more) |
-| Called from | `DrawCell` (tail), `DrawBuildingTile` (tail) |
+| Called from | `DrawBuildingTile` (tail) |
 | Calls | `DrawCell` (tail) |
 
 ### `DrawCell` (`$6468`)
@@ -858,7 +858,7 @@ A map byte below `$80` is a cell tile at CellTiles `$EA68` + 8 n with its attrib
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 58,912 calls, 36,494,172 t-states own (2.42 %) |
 | Runs (the other recordings) | 5,320,157 calls (`stage1/rec/metro` 1,333,458, `stage1/rec/city2` 1,119,597, `stage1/rec/city` 1,084,514 and 7 more) |
 | Called from | `DrawBlankCell` (tail), `BlinkCell`, `RoadTraffic`, `DrawBuildingTile` (tail), `DrawView`, `Interrupt` |
-| Calls | `DrawBlankCell` (tail), `BlinkCell`, `RoadTraffic`, `DrawBuildingTile`, `PrintGlyph` (tail) |
+| Calls | `BlinkCell`, `RoadTraffic`, `PrintGlyph` (tail) |
 | Reads | `$6462`-`$6463` (`TileIndex`); `$64D5` (`BuildingDummy`); `$6505`-`$6506` (`CellAttrPtr`); `$6558`-`$655A` (`BuildingLeft`, `BuildingTile`); `$8F9F` (`PassCount`); `$D261`-`$D553` (`CityMap+3601`); 10 more ranges |
 | Writes | `$4800`-`$57FF` (screen); `$6462`-`$6463` (`TileIndex`); `$6505`-`$6506` (`CellAttrPtr`); `$6558` (`BuildingLeft`); `$8F97`-`$8F99` (`Funds`) |
 
@@ -899,7 +899,7 @@ With PassCount bit 5, the first drawn cell of a building row whose start byte AN
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/city2`, `stage1/rec/metro`, `stage1/rec/city` and 1 more) |
-| Called from | `DrawCell`, `Interrupt` |
+| Called from | `Interrupt` |
 | Calls | `DrawBlankCell` (tail), `DrawCell` (tail) |
 | Reads | `$64D5` (`BuildingDummy`); `$6559`-`$655A` (`BuildingTile`); `$8F9F` (`PassCount`); `$D26A` (`CityMap+3610`); `$D2CA`-`$D50A` (`CityMap+3706`); `$D66F`-`$D747` (`CityMap+4639`); 4 more ranges |
 | Writes | `$6462`-`$6463` (`TileIndex`); `$6505`-`$6506` (`CellAttrPtr`) |
@@ -970,7 +970,7 @@ L1 34 254 (the buildings cut by the view's left edge).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 114 calls, 48,556 t-states own (0.00 %) |
 | Runs (the other recordings) | 17,239 calls (`stage1/rec/menus` 6,983, `stage1/rec/metro` 2,444, `stage1/rec/city` 2,394 and 7 more) |
 | Called from | `ScreenAddr`, `PrintFunds`, `PrintBudget`, `PrintEvalFigures`, `Interrupt` |
-| Calls | `ScreenAddr`, `PrintNumber24`, `PrintSign`, `Digit24` |
+| Calls | `ScreenAddr`, `PrintNumber24` (falls into) |
 | Reads | `$81E0`-`$81E2` (`CityValueLast`); `$8E8A`-`$8E8C` (`LastPop`); `$8F97`-`$8F99` (`Funds`); `$930E`-`$9328` (`TaxIncome`, `TransportCost`, `PoliceCost`, `FireCost` and 7 more); `$978F`-`$9791` (`Migration`) |
 | Writes | `$664D`-`$664E` (`NumberFlags`); `$F74F`-`$F750` (`PrintAddr`) |
 
@@ -984,7 +984,7 @@ Powers of ten from 1 000 000 down, each a 24-bit subtraction loop (Digit24). Use
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | run into, not called, 45,965 t-states own (0.00 %) |
 | Runs (the other recordings) | 27,236 calls (`stage1/rec/menus` 16,998, `stage1/rec/city` 3,009, `stage1/rec/metro` 2,449 and 3 more) |
-| Called from | `NextColumn`, `PrintNumberHL`, `PrintNumberVar`, `PrintSign`, `Digit24`, `PrintDigitB`, `Interrupt`, `PrintGlyph` |
+| Called from | `NextColumn`, `PrintNumberHL`, `PrintNumberVar` (falls into), `PrintSign`, `PrintDigitB`, `Interrupt`, `PrintGlyph` |
 | Calls | `NextColumn`, `PrintFunds`, `PrintSign`, `Digit24`, `PrintDigitB`, `PrintGlyph` |
 | Reads | `$664E` (`NumberFlags+1`); `$F74F`-`$F750` (`PrintAddr`) |
 | Writes | `$65A3`-`$65A4` (`NumberEnd`); `$664D`-`$664E` (`NumberFlags`) |
@@ -999,7 +999,7 @@ L1 7 (the budget's negative balances).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 114 calls, 2,233 t-states own (0.00 %) |
 | Runs (the other recordings) | 28,302 calls (`stage1/rec/menus` 16,998, `stage1/rec/city` 3,009, `stage1/rec/metro` 2,465 and 7 more) |
-| Called from | `PrintNumberVar`, `PrintNumber24`, `Interrupt` |
+| Called from | `PrintNumber24`, `Interrupt` |
 | Calls | `PrintChar`, `NextColumn`, `PrintNumber24` |
 
 ### `Digit24` (`$664F`)
@@ -1010,8 +1010,8 @@ L1 7 (the budget's negative balances).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 680 calls, 214,011 t-states own (0.01 %) |
 | Runs (the other recordings) | 169,764 calls (`stage1/rec/menus` 101,989, `stage1/rec/city` 18,073, `stage1/rec/metro` 14,700 and 7 more) |
-| Called from | `PrintNumberVar`, `PrintNumber24`, `Interrupt` |
-| Calls | `PrintNumber24`, `PrintDigitB` |
+| Called from | `PrintNumber24`, `Interrupt` |
+| Calls | `PrintDigitB` (falls into) |
 | Reads | `$664D`-`$664E` (`NumberFlags`) |
 | Writes | `$664D`-`$664E` (`NumberFlags`) |
 
@@ -1023,7 +1023,7 @@ L1 7 (the budget's negative balances).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 565 calls, 38,301 t-states own (0.00 %) |
 | Runs (the other recordings) | 97,235 calls (`stage1/rec/menus` 36,593, `stage1/rec/city2` 15,327, `stage1/rec/city` 15,310 and 7 more) |
-| Called from | `PrintChar`, `PrintNumber24`, `Digit24`, `Interrupt` |
+| Called from | `PrintChar`, `PrintNumber24`, `Digit24` (falls into), `Interrupt` |
 | Calls | `PrintChar`, `NextColumn` (tail), `PrintNumber24` |
 | Reads | `$664E` (`NumberFlags+1`) |
 | Writes | `$664E` (`NumberFlags+1`); `$F74E` (`PrintCharCode`) |
@@ -1038,7 +1038,7 @@ The one 24-bit subtraction: prices against Funds and the city class's thresholds
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 104 calls, 5,107 t-states own (0.00 %) |
 | Runs (the other recordings) | 25,159 calls (`stage1/rec/menus` 14,581, `stage1/rec/city` 3,590, `stage1/rec/metro` 2,769 and 7 more) |
-| Called from | `ToolKeys`, `ToolClick`, `GreyUnaffordable`, `Spend`, `BudgetTotals`, `CapTransport`, `CapPolice`, `CapFire`, `CategoryOf`, `PrintEvalFigures`, `Interrupt` |
+| Called from | `ToolClick`, `GreyUnaffordable`, `Spend`, `BudgetTotals`, `CapTransport`, `CapPolice`, `CapFire`, `CategoryOf`, `PrintEvalFigures`, `Interrupt` |
 | Calls | `GreyUnaffordable` |
 
 ### `Add24` (`$6687`)
@@ -1114,7 +1114,7 @@ L1 76.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 27 calls (`stage1/rec/menus` 20, `stage1/rec/levels` 2, `stage1/rec/bankrupt` 1 and 4 more) |
 | Called from | `Confirm`, `AboutWindow`, `LoadMenu`, `SaveMenu`, `FileNameWindow`, `TapeWindow`, `SpeedMenu`, `LevelMenu`, `SetLevel` |
-| Calls | `ClearViewArea`, `ShowWindow`, `ClearWindowArea`, `DrawMenu`, `RunMenu` (tail) |
+| Calls | `ShowWindow` (falls into) |
 | Reads | `$9FD3` (`ConfirmMenu`); `$A51C` (`LevelMenuText`) |
 
 ### `ShowWindow` (`$6706`)
@@ -1128,7 +1128,7 @@ L1 54.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 52 calls (`stage1/rec/menus` 23, `stage1/rec/bankrupt` 7, `stage1/rec/city2` 6 and 3 more) |
-| Called from | `ShowInlineWindow`, `BudgetWindow`, `EvaluationWindow` |
+| Called from | `ShowInlineWindow` (falls into), `BudgetWindow`, `EvaluationWindow` |
 | Calls | `ClearTopWhite`, `ClearViewArea`, `PrintInline`, `ClearWindowArea`, `DrawMenu`, `RunMenu` (tail) |
 | Reads | `$91BC` (`BudgetWindowText`); `$95D7` (`EvaluationText`); `$9FD3` (`ConfirmMenu`); `$A0CA` (`AboutText`); `$A1F6`-`$A30C` (`LoadMenuText`, `SaveMenu`, `SaveMenuText`, `FileNameWindow` and 6 more); `$A3AF` (`SpeedMenuText`); 2 more ranges |
 
@@ -1153,7 +1153,7 @@ L1 116.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3 calls, 102 t-states own (0.00 %) |
 | Runs (the other recordings) | 113 calls (`stage1/rec/menus` 55, `stage1/rec/growth` 10, `stage1/rec/metro` 9 and 7 more) |
-| Called from | `ShowMenu`, `ShowInlineWindow`, `ShowWindow`, `NewLandscape`, `UiTask` |
+| Called from | `ShowMenu`, `ShowWindow`, `NewLandscape`, `UiTask` |
 | Calls | `ClearViewArea`, `PrintInline` |
 
 ### `ClearWindowAreaEnd` (`$6746`)
@@ -1176,8 +1176,8 @@ Item kinds (first byte): 0 a text line, 1 a toggle (a flag address, then ON or O
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3 calls, 8,343 t-states own (0.00 %) |
 | Runs (the other recordings) | 140 calls (`stage1/rec/menus` 58, `stage1/rec/metro` 14, `stage1/rec/growth` 14 and 7 more) |
-| Called from | `ShowMenu`, `ShowInlineWindow`, `ShowWindow`, `ShowFullWindowItems`, `DrawMenuToggleOn` (tail), `DrawMenuToggleNext` (tail), `NewLandscape`, `UiTask` |
-| Calls | `PrintInline`, `DrawBoxRow`, `AddMenuItem`, `PrintMenuText`, `MenuTab` |
+| Called from | `ShowMenu`, `ShowWindow`, `ShowFullWindowItems`, `DrawMenuToggleOn` (tail), `DrawMenuToggleNext` (tail), `NewLandscape`, `UiTask` |
+| Calls | `AddMenuItem` |
 | Reads | `$6749` (`MenuLine`); `$684B` (`ToggleValue`); `$91BC`-`$930D` (`BudgetWindowText`, `TaxRate`, `TransportPercent`, `PolicePercent` and 1 more); `$95D7`-`$9736` (`EvaluationText`); `$9F41`-`$A5A8` (`PlantMenu`, `NoPlant`, `ChooseNuclear`, `Confirm` and 32 more); `$A5E5`-`$A671` (`OldLandscapeMenu`, `GeneShown`); 1 more ranges |
 | Writes | `$5E95` (`BoxDims`); `$6747`-`$6762` (`MenuState`, `MenuLine`, `MenuItems`); `$67C2` (`MenuCount`); `$684B` (`ToggleValue`); `$F751`-`$F752` (`PrintCol`, `PrintRow`) |
 
@@ -1189,7 +1189,8 @@ Item kinds (first byte): 0 a text line, 1 a toggle (a flag address, then ON or O
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 8 calls, 1,354 t-states own (0.00 %) |
 | Runs (the other recordings) | 554 calls (`stage1/rec/menus` 256, `stage1/rec/disasters` 48, `stage1/rec/bankrupt` 45 and 7 more) |
-| Called from | `DrawMenu` |
+| Called from | `DrawMenu`, `DrawMenuToggle` |
+| Calls | `DrawBoxRow`, `PrintMenuText` |
 | Reads | `$6749` (`MenuLine`); `$67C2` (`MenuCount`) |
 | Writes | `$674A`-`$6761` (`MenuItems`); `$67C2` (`MenuCount`) |
 
@@ -1199,7 +1200,8 @@ Item kinds (first byte): 0 a text line, 1 a toggle (a flag address, then ON or O
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `PrintInline`, `AddMenuItem`, `PrintMenuText`, `MenuTab` |
 
 ### `DrawMenuToggleOn` (`$6871`)
 
@@ -1209,7 +1211,7 @@ Item kinds (first byte): 0 a text line, 1 a toggle (a flag address, then ON or O
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/menus`, `stage1/rec/city`, `stage1/rec/growth` and 5 more) |
 | Called from | `PrintDigit` |
-| Calls | `DrawMenu` (tail) |
+| Calls | `PrintInline`, `DrawMenu` (tail) |
 
 ### `DrawMenuToggleNext` (`$687D`)
 
@@ -1231,7 +1233,7 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 27 calls, 42,486 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,650 calls (`stage1/rec/menus` 610, `stage1/rec/metro` 198, `stage1/rec/city2` 186 and 7 more) |
-| Called from | `DrawMenu` |
+| Called from | `AddMenuItem`, `DrawMenuToggle` |
 | Calls | `ScreenAddr`, `PrintChar`, `NextColumn` (tail), `Print5Digits`, `Print3Digits`, `MenuField`, `MenuTab` |
 | Reads | `$6749` (`MenuLine`); `$91BE`-`$930C` (`BudgetWindowText+2`, `TaxRate`, `TransportPercent`, `PolicePercent` and 1 more); `$95D9`-`$9735` (`EvaluationText+2`); `$9F43`-`$A2DA` (`PlantMenu+2`, `NoPlant`, `ChooseNuclear`, `Confirm` and 12 more); `$A30E`-`$A5A7` (`TapeText+2`, `AutoBulldoze`, `OptionsMenu`, `Speed` and 12 more); `$A5E7`-`$A670` (`OldLandscapeMenu+2`, `GeneShown`); 1 more ranges |
 | Writes | `$F74F`-`$F750` (`PrintAddr`) |
@@ -1243,7 +1245,7 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 41 calls (`stage1/rec/bankrupt` 25, `stage1/rec/menus` 10, `stage1/rec/city` 6) |
-| Called from | `MenuField`, `RunMenu` |
+| Called from | `MenuField`, `EditNumber` |
 
 ### `MenuField` (`$6910`)
 
@@ -1264,7 +1266,7 @@ Codes: `$21` moves to column 24 (MenuTab), 6 a 16-bit number (5 digits) at an ad
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 166 calls (`stage1/rec/menus` 79, `stage1/rec/bankrupt` 28, `stage1/rec/city` 15 and 6 more) |
-| Called from | `DrawMenu`, `PrintMenuText` |
+| Called from | `DrawMenuToggle`, `PrintMenuText` |
 | Calls | `ScreenAddr` |
 | Reads | `$6749` (`MenuLine`) |
 | Writes | `$F74F`-`$F752` (`PrintAddr`, `PrintCol`, `PrintRow`) |
@@ -1294,8 +1296,8 @@ L1 132. The menus are opened from Click (or BudgetWindow, EvaluationWindow), whi
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 2 calls, 46,767,785 t-states own (3.11 %) |
 | Runs (the other recordings) | 130 calls (`stage1/rec/menus` 54, `stage1/rec/metro` 14, `stage1/rec/growth` 13 and 7 more) |
-| Called from | `ShowMenu`, `ShowInlineWindow` (tail), `ShowWindow` (tail), `ShowFullWindowItems`, `UiTask`, `SetLevel` (tail), `InputGene` (tail) |
-| Calls | `MenuValueSlot`, `EditUp`, `EditDown`, `PrintEditField`, `CallMenuHook`, `NumberRepeat` (tail), `MenuUp`, `ToggleMenuLine`, `MenuDown`, `SelectedItem` |
+| Called from | `ShowMenu`, `ShowWindow` (tail), `ShowFullWindowItems`, `EditDown` (tail), `UiTask`, `SetLevel` (tail), `InputGene` (tail) |
+| Calls | `CallMenuHook`, `NumberRepeat` (tail), `MenuUp`, `ToggleMenuLine`, `MenuDown`, `SelectedItem` |
 | Reads | `$5B01`-`$5B07` (`KeyRowA`, `KeyRowQ`, `KeyRow1`, `KeyRow0` and 3 more); `$674A`-`$675E` (`MenuItems`); `$6783`-`$6785` (`MenuValues+9`); `$67C2` (`MenuCount`); `$6956` (`RunMenuHalt+1`); `$6995` (`EditRepeat`); 13 more ranges |
 | Writes | `$6990`-`$6995` (`EditMax`, `EditPtr`, `EditPos`, `EditRepeat`); `$6A7D` (`MenuSelected`); `$F753` (`PrintAttr`) |
 
@@ -1307,7 +1309,8 @@ L1 5 (the tax rate and the budget windows).
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MenuValueSlot`, `EditUp`, `EditDown`, `PrintEditField`, `CallMenuHook`, `NumberRepeat`, `ToggleMenuLine`, `SelectedItem` |
 
 ### `EditUp` (`$69EC`)
 
@@ -1316,7 +1319,7 @@ L1 5 (the tax rate and the budget windows).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,248 calls (`stage1/rec/menus` 1,241, `stage1/rec/city` 7) |
-| Called from | `RunMenu` |
+| Called from | `EditNumber` |
 | Reads | `$6990`-`$6992` (`EditMax`, `EditPtr`); `$91E4` (`TaxRate`) |
 | Writes | `$91E4` (`TaxRate`) |
 
@@ -1327,7 +1330,8 @@ L1 5 (the tax rate and the budget windows).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 45 calls (`stage1/rec/city` 25, `stage1/rec/bankrupt` 20) |
-| Called from | `RunMenu` |
+| Called from | `EditNumber` |
+| Calls | `RunMenu` (tail), `PrintEditField` |
 | Reads | `$6991`-`$6992` (`EditPtr`); `$91E4` (`TaxRate`) |
 | Writes | `$91E4` (`TaxRate`) |
 
@@ -1338,7 +1342,7 @@ L1 5 (the tax rate and the budget windows).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,842 calls (`stage1/rec/menus` 1,671, `stage1/rec/city` 106, `stage1/rec/bankrupt` 65) |
-| Called from | `RunMenu` |
+| Called from | `EditNumber`, `EditDown` |
 | Calls | `ScreenAddr`, `Print3Digits` |
 | Reads | `$6991`-`$6994` (`EditPtr`, `EditPos`); `$91E4` (`TaxRate`) |
 | Writes | `$F74F`-`$F750` (`PrintAddr`) |
@@ -1351,7 +1355,7 @@ L1 5 (the tax rate and the budget windows).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 2 calls, 95 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,959 calls (`stage1/rec/menus` 1,718, `stage1/rec/city` 114, `stage1/rec/bankrupt` 72 and 7 more) |
-| Called from | `RunMenu` |
+| Called from | `RunMenu`, `EditNumber` |
 | Calls | `BudgetHook`, `Evaluate` |
 | Reads | `$6942`-`$6943` (`MenuHook`) |
 
@@ -1363,7 +1367,7 @@ L1 5 (the tax rate and the budget windows).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | run into, not called, 68 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,837 calls (`stage1/rec/menus` 1,669, `stage1/rec/city` 104, `stage1/rec/bankrupt` 64) |
-| Called from | `RunMenu` (tail) |
+| Called from | `RunMenu` (tail), `EditNumber` |
 | Calls | `AnyKey`, `ShowMenu`, `BudgetWindow`, `EvaluationWindow`, `SaveCity`, `LoadCity`, `ChooseNuclear`, `ConfirmNo`, `ExitSimCity`, `AboutWindow`, `LoadMenu`, `SaveMenu`, `SpeedMenu`, `SetSpeedItem`, `PickDisaster`, `MapsItem`, `SetLevel`, `InputGene` |
 | Reads | `$6995` (`EditRepeat`); `$92F2`-`$92F3` (`FirePercent+106`); `$972C`-`$972D` (`EvaluationText+341`); `$9F62`-`$9F63` (`PlantMenu+33`); `$9F84`-`$9F85` (`PlantMenu+67`); `$9FF6`-`$A092` (`ConfirmMenu+35`, `ConfirmNo`, `SystemMenu`); 13 more ranges |
 | Writes | `$6995` (`EditRepeat`); `$A32B`-`$A32E` (`AutoBulldoze`, `AutoBudget`, `SoundOn`, `DemolishWait`); `$A43D` (`DisastersOff`) |
@@ -1377,7 +1381,7 @@ L1 5 (the tax rate and the budget windows).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 57 t-states own (0.00 %) |
 | Runs (the other recordings) | 4 calls (`stage1/rec/levels` 4) |
 | Called from | `RunMenu` |
-| Calls | `ToggleMenuLine` |
+| Calls | `ToggleMenuLine` (falls into) |
 | Reads | `$6A7D` (`MenuSelected`) |
 | Writes | `$6A7D` (`MenuSelected`) |
 
@@ -1389,7 +1393,7 @@ L1 5 (the tax rate and the budget windows).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 6 calls, 600 t-states own (0.00 %) |
 | Runs (the other recordings) | 598 calls (`stage1/rec/menus` 273, `stage1/rec/bankrupt` 73, `stage1/rec/city` 48 and 7 more) |
-| Called from | `RunMenu`, `MenuUp`, `MenuDown` (tail), `SetLevel`, `InputGene` |
+| Called from | `RunMenu`, `EditNumber`, `MenuUp` (falls into), `MenuDown` (tail), `SetLevel`, `InputGene` |
 | Calls | `HighlightLine`, `SelectedItem` |
 | Reads | `$674A`-`$675C` (`MenuItems`) |
 
@@ -1414,7 +1418,7 @@ L1 5 (the tax rate and the budget windows).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 8 calls, 626 t-states own (0.00 %) |
 | Runs (the other recordings) | 743 calls (`stage1/rec/menus` 330, `stage1/rec/bankrupt` 85, `stage1/rec/city` 65 and 7 more) |
-| Called from | `RunMenu`, `ToggleMenuLine` |
+| Called from | `RunMenu`, `EditNumber`, `ToggleMenuLine` |
 | Reads | `$6A7D` (`MenuSelected`) |
 
 ## landscape
@@ -1475,7 +1479,7 @@ L1 2 928 251.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 98,175 calls, 5,044,853 t-states own (0.34 %) |
 | Runs (the other recordings) | 2,830,076 calls (`stage1/rec/metro` 726,824, `stage1/rec/city` 437,394, `stage1/rec/city2` 425,624 and 7 more) |
 | Called from | `MakeCoast`, `Disc`, `IsLand`, `IsNetwork`, `DrawMovers`, `Irradiate`, `MoveTornado`, `ScanRingCell`, `ScanInsideCell`, `IsConductive`, `Interrupt` |
-| Calls | `MapAddr` |
+| Calls | `MapAddr` (falls into) |
 | Writes | `$6BDA` (`MapEdge`) |
 
 ### `MapAddr` (`$6BE6`)
@@ -1488,7 +1492,7 @@ L1 3 488 641.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 99,199 calls, 18,182,738 t-states own (1.21 %) |
 | Runs (the other recordings) | 3,389,442 calls (`stage1/rec/metro` 958,639, `stage1/rec/city2` 559,629, `stage1/rec/city` 538,535 and 7 more) |
-| Called from | `DrawViewRowPass`, `DrawView`, `MapAddrChecked`, `ClickMapAddr` (tail), `FixNetworkCell`, `PutZoneBuilding`, `NeighbourAddr`, `MoveTrain`, `StartTornado`, `MoveTornado`, `MakeTrip`, `Spread`, `GrowCell`, `DeclineCell`, `ComBuildingStep`, `IndBuildingStep`, `Interrupt` |
+| Called from | `DrawViewRowPass`, `DrawView`, `MapAddrChecked` (falls into), `ClickMapAddr` (tail), `FixNetworkCell`, `PutZoneBuilding`, `NeighbourAddr`, `MoveTrain`, `StartTornado`, `MoveTornado`, `MakeTrip`, `Spread`, `GrowCell`, `DeclineCell`, `ComRevert`, `IndRevert`, `Interrupt` |
 | Calls | `DrawMovers` |
 
 ### `Disc` (`$6C09`)
@@ -1603,7 +1607,7 @@ L1 158 072; 30 with SYMBOL SHIFT (the tools recording's shortcuts).
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 121,921 t-states own (0.01 %) |
 | Runs (the other recordings) | 156,323 calls (`stage1/rec/metro` 38,782, `stage1/rec/city2` 34,790, `stage1/rec/city` 31,397 and 7 more) |
 | Called from | `UiTask`, `Interrupt` |
-| Calls | `KeyToChar`, `DrawToolIcons`, `Sub24`, `ToolClick` (tail), `ToolPrice`, `UiTask` |
+| Calls | `KeyToChar`, `ToolClick` (tail), `UiTask` |
 | Reads | `$5B00`-`$5B07` (`KeyRows`, `KeyRowA`, `KeyRowQ`, `KeyRow1` and 4 more); `$6D50` (`CurrentTool`); `$8F97`-`$8F99` (`Funds`) |
 | Writes | `$6D50` (`CurrentTool`) |
 
@@ -1684,7 +1688,7 @@ L1 9176 (GreyUnaffordable and SelectTool).
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 103 calls, 8,819 t-states own (0.00 %) |
 | Runs (the other recordings) | 9,075 calls (`stage1/rec/city` 2,447, `stage1/rec/metro` 2,364, `stage1/rec/growth` 1,326 and 7 more) |
-| Called from | `ToolKeys`, `ToolClick`, `GreyUnaffordable`, `Interrupt` |
+| Called from | `ToolClick`, `GreyUnaffordable`, `Interrupt` |
 | Calls | `GreyUnaffordable` |
 | Reads | `$6E1E`-`$6E39` (`ToolPrices`); `$6E7E`-`$6E7F` (`ClickToMapBC+6`) |
 
@@ -1726,7 +1730,7 @@ L1 1713.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 3 calls, 430 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,710 calls (`stage1/rec/city` 531, `stage1/rec/metro` 499, `stage1/rec/growth` 243 and 4 more) |
 | Called from | `ClickMapAddr` |
-| Calls | `ClickToMapBC` |
+| Calls | `ClickToMapBC` (falls into) |
 | Reads | `$63C9`-`$63CA` (`ClickCell`); `$6507`-`$6508` (`ViewCol`, `ViewRow`); `$6E69` (`MapCoordsGiven`) |
 
 ### `ClickToMapBC` (`$6E78`)
@@ -1738,7 +1742,7 @@ L1 3978.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 3,904 calls (`stage1/rec/city` 1,281, `stage1/rec/metro` 1,193, `stage1/rec/growth` 564 and 3 more) |
-| Called from | `ClickToMap`, `FixNetworkCell` |
+| Called from | `ClickToMap` (falls into), `FixNetworkCell` |
 | Reads | `$6507`-`$6508` (`ViewCol`, `ViewRow`); `$6E69` (`MapCoordsGiven`) |
 
 ### `FixNetworkAt` (`$6E8A`)
@@ -1759,7 +1763,6 @@ Used by the bridge (L1 - : no recording built a bridge).
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 324 calls (`stage1/rec/city` 106, `stage1/rec/metro` 98, `stage1/rec/menus` 46 and 3 more) |
 | Called from | `CrossNetwork`, `PlaceNetwork`, `Bulldoze` |
-| Calls | `NetworkBit`, `FixNetworkCell` |
 | Reads | `$63C9`-`$63CA` (`ClickCell`) |
 | Writes | `$6F10` (`NetworkFlag`) |
 
@@ -1771,7 +1774,8 @@ A road, rail or power line cell takes the shape (kind + NetworkShapes[mask]) of 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `NetworkBit`, `FixNetworkCell` |
 
 ### `NetworkBit` (`$6EBE`)
 
@@ -1780,7 +1784,7 @@ A road, rail or power line cell takes the shape (kind + NetworkShapes[mask]) of 
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 324 calls (`stage1/rec/city` 106, `stage1/rec/metro` 98, `stage1/rec/growth` 46 and 3 more) |
-| Called from | `FixNetworkClick` |
+| Called from | `FixNetwork` |
 | Reads | `$6ED2` (`NetworkKind`) |
 
 ### `FixNetworkCell` (`$6EE3`)
@@ -1792,7 +1796,7 @@ L1 1620.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,620 calls (`stage1/rec/city` 530, `stage1/rec/metro` 490, `stage1/rec/menus` 230 and 3 more) |
-| Called from | `FixNetworkClick` |
+| Called from | `FixNetwork` |
 | Calls | `MapAddr`, `ClickToMapBC`, `IsNetwork`, `NeighbourMask`, `CellFlagsOf` |
 | Reads | `$6ED2`-`$6EE2` (`NetworkKind`, `NetworkShapes`); `$D24E`-`$D48F` (`CityMap+3582`); `$D4EE`-`$D4F5` (`CityMap+4254`); `$D54E`-`$D568` (`CityMap+4350`); `$D5AE`-`$D5C3` (`CityMap+4446`); `$D60E`-`$D66F` (`CityMap+4542`); 11 more ranges |
 | Writes | `$D24E`-`$D48E` (`CityMap+3582`); `$D4EE` (`CityMap+4254`); `$D54E`-`$D568` (`CityMap+4350`); `$D5AE`-`$D5C3` (`CityMap+4446`); `$D60E`-`$D66E` (`CityMap+4542`); `$D6CE` (`CityMap+4734`); 10 more ranges |
@@ -1887,7 +1891,7 @@ L1 145.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1 call, 1,127 t-states own (0.00 %) |
 | Runs (the other recordings) | 144 calls (`stage1/rec/metro` 37, `stage1/rec/city` 37, `stage1/rec/bankrupt` 23 and 4 more) |
-| Called from | `ResidentialTool`, `CommercialTool`, `IndustrialTool`, `PoliceTool`, `FireTool`, `StadiumTool`, `PowerPlantTool`, `SeaportTool`, `AirportTool`, `ComBuildingStep` (tail), `IndBuildingStep` (tail) |
+| Called from | `ResidentialTool`, `CommercialTool`, `IndustrialTool`, `PoliceTool`, `FireTool`, `StadiumTool`, `PowerPlantTool`, `SeaportTool`, `AirportTool`, `ComRevert` (tail), `IndRevert` (tail) |
 | Calls | `ToolSize`, `ClickMapAddr`, `ZoneStep` |
 | Reads | `$73F1`-`$742D` (`ResidentialZone`, `ResidentialTool`, `CommercialZone`, `CommercialTool` and 1 more); `$743F`-`$7447` (`PoliceBuilding`); `$7459`-`$7461` (`FireBuilding`); `$7473`-`$7482` (`StadiumBuilding`); `$7494`-`$74B3` (`CoalPlant`, `NuclearPlant`); `$74E6`-`$74F5` (`SeaportBuilding`); 3 more ranges |
 | Writes | `$71A5` (`PutBuildingRow+2`); `$D24F`-`$D4AD` (`CityMap+3583`); `$D4EF`-`$D749` (`CityMap+4255`); `$D860`-`$D93A` (`CityMap+5136`); `$D9E0`-`$D9FA` (`CityMap+5520`); `$DA40`-`$DA5A` (`CityMap+5616`); 3 more ranges |
@@ -2156,7 +2160,7 @@ L1 40 571.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 55,020 calls (`stage1/rec/metro` 23,596, `stage1/rec/city2` 13,179, `stage1/rec/city` 10,252 and 6 more) |
-| Called from | `StampPollution`, `StampPollutionIX`, `ZonePollution` |
+| Called from | `StampPollutionIX`, `ZonePollution` |
 | Calls | `Grid48` (tail) |
 | Reads | `$753C`-`$753D` (`GridBase`); `$B14B` (`Pollution+891`); `$B171`-`$B17B` (`Pollution+929`); `$B1D2`-`$B1DB` (`Pollution+1026`); `$B231`-`$B23B` (`Pollution+1121`) |
 | Writes | `$753C`-`$753D` (`GridBase`) |
@@ -2434,7 +2438,7 @@ The `$9312` compare's result is lost (AND A follows): a dead test. L1 134.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 134 calls (`stage1/rec/tools` 134) |
-| Called from | `CellStep` |
+| Called from | `RailCell` |
 | Calls | `Random` |
 | Reads | `$77D6` (`TrainOut`); `$8785`-`$8786` (`CurCell`); `$9312` (`TransportCost+1`) |
 | Writes | `$77D3`-`$77D6` (`TrainCell`, `TrainSprite`, `TrainOut`) |
@@ -2467,7 +2471,8 @@ L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `NoiseBurst` |
 
 ### `StartPlane` (`$78CA`)
 
@@ -2495,7 +2500,7 @@ L1 9884; the crash L1 0 in the disaster recording? see NOTES.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1 call (`stage1/rec/disasters` 1) |
 | Called from | `RunDisaster` (tail) |
-| Calls | `NoiseBurst`, `SetAdvice` |
+| Calls | `SetAdvice` |
 | Reads | `$84A0` (`LastNuclear`) |
 | Writes | `$7924` (`MeltdownPending`) |
 
@@ -2739,7 +2744,7 @@ No clipping at the map edge: the kernel origin is grid cell - 50 (Grid24) or - `
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 8,425 calls (`stage1/rec/metro` 3,401, `stage1/rec/city2` 1,979, `stage1/rec/city` 1,535 and 5 more) |
 | Called from | `RadiationCell` (tail), `IndBuildingStep` (tail), `CoalStep` (tail), `NuclearStep` (tail) |
-| Calls | `PollutionAt`, `StampPollutionIX`, `AddPollutionCell`, `ZoneStep` |
+| Calls | `StampPollutionIX` (falls into) |
 | Reads | `$8785`-`$8786` (`CurCell`) |
 
 ### `StampPollutionIX` (`$7CC8`)
@@ -2751,7 +2756,7 @@ L1 30 375.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 30,278 calls (`stage1/rec/metro` 13,730, `stage1/rec/city2` 7,659, `stage1/rec/city` 5,733 and 3 more) |
-| Called from | `StampPollution`, `AddTripTraffic` |
+| Called from | `StampPollution` (falls into), `AddTripTraffic` |
 | Calls | `PollutionAt`, `AddPollutionCell`, `ZoneStep`, `CellStep` |
 
 ### `AddPollutionCell` (`$7CE8`)
@@ -2761,7 +2766,7 @@ L1 30 375.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 1,093,483 calls (`stage1/rec/metro` 494,280, `stage1/rec/city2` 275,724, `stage1/rec/city` 206,388 and 5 more) |
-| Called from | `StampPollution`, `StampPollutionIX` |
+| Called from | `StampPollutionIX` |
 | Reads | `$7C77`-`$7CBF` (`PollutionKernel`, `TrafficKernel`, `PollutionStrength`); `$AF35`-`$B0CC` (`Pollution+357`); `$B0E1`-`$B4B8` (`Pollution+785`); `$BA3D`-`$BC2E` (`Traffic+877`); `$BC93`-`$BCC8` (`Traffic+1475`); `$BCF3`-`$BCF8` (`Traffic+1571`); 3 more ranges |
 | Writes | `$AF35`-`$B0CC` (`Pollution+357`); `$B0E1`-`$B4B8` (`Pollution+785`); `$BA3D`-`$BC2E` (`Traffic+877`); `$BC93`-`$BCC8` (`Traffic+1475`); `$BCF3`-`$BCF8` (`Traffic+1571`); `$BD23`-`$BD28` (`Traffic+1619`); 2 more ranges |
 
@@ -3040,7 +3045,7 @@ FloodPush silently drops a span when CellStack is full; a plant whose top cell a
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 640,716 calls (`stage1/rec/metro` 269,864, `stage1/rec/city2` 158,118, `stage1/rec/city` 124,710 and 5 more) |
 | Called from | `FloodFill` |
-| Calls | `FloodPush`, `IsConductive` |
+| Calls | `FloodPush` (falls into), `IsConductive` |
 | Reads | `$8015`-`$8016` (`FloodAbove`, `FloodBelow`) |
 | Writes | `$8015`-`$8016` (`FloodAbove`, `FloodBelow`) |
 
@@ -3051,7 +3056,7 @@ FloodPush silently drops a span when CellStack is full; a plant whose top cell a
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 18,267 calls (`stage1/rec/metro` 6,910, `stage1/rec/city2` 4,380, `stage1/rec/city` 3,559 and 5 more) |
-| Called from | `FloodFill`, `FloodMark` |
+| Called from | `FloodFill`, `FloodMark` (falls into) |
 | Writes | `$801D`-`$802E` (`CellStack`) |
 
 ### `FloodPop` (`$818F`)
@@ -3100,7 +3105,7 @@ L1 1089.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 16 calls, 8,192 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,073 calls (`stage1/rec/city2` 219, `stage1/rec/city` 215, `stage1/rec/metro` 205 and 6 more) |
 | Called from | `SimTask` |
-| Calls | `Mul16`, `AddValue` |
+| Calls | `Mul16`, `AddValue` (falls into) |
 | Reads | `$81DD`-`$81DF` (`CityValue`); `$844C`-`$846D` (`PoliceCount`, `FireCount`, `ChurchCount`, `HospitalCount` and 13 more) |
 | Writes | `$81DD`-`$81E2` (`CityValue`, `CityValueLast`) |
 
@@ -3112,7 +3117,7 @@ L1 1089.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 144 calls, 16,454 t-states own (0.00 %) |
 | Runs (the other recordings) | 9,657 calls (`stage1/rec/city2` 1,971, `stage1/rec/city` 1,935, `stage1/rec/metro` 1,845 and 6 more) |
-| Called from | `AssessCity` |
+| Called from | `AssessCity` (falls into) |
 | Calls | `Add24`, `Mul16` |
 | Reads | `$81DD`-`$81DF` (`CityValue`) |
 | Writes | `$81DD`-`$81DF` (`CityValue`) |
@@ -3424,8 +3429,8 @@ L1 36 698.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 14 calls, 3,108 t-states own (0.00 %) |
 | Runs (the other recordings) | 36,684 calls (`stage1/rec/metro` 14,688, `stage1/rec/city2` 8,339, `stage1/rec/city` 6,904 and 6 more) |
-| Called from | `PutBuilding`, `PutZoneBuilding`, `StampPollution`, `StampPollutionIX`, `ScanCity`, `GrowZone`, `DeclineZone`, `CommercialStep`, `ComBuildingStep`, `IndustrialStep`, `PoliceStep`, `FireStep`, `StadiumStep`, `SeaportStep`, `AirportStep` |
-| Calls | `CountPowered`, `WidenExtent`, `BuildingStep` (tail), `ResidentialStep` (tail), `CommercialStep` (tail), `IndustrialStep` (tail) |
+| Called from | `PutBuilding`, `PutZoneBuilding`, `StampPollutionIX`, `ScanCity`, `GrowZone`, `DeclineZone`, `CommercialStep`, `ComBuildingStep`, `IndustrialStep`, `PoliceStep`, `FireStep`, `StadiumStep`, `SeaportStep`, `AirportStep` |
+| Calls | `CountPowered`, `WidenExtent`, `BuildingStep` (tail) |
 | Reads | `$86C6`-`$86C8` (`CellKind`, `BuildingType`, `ZoneCentre`) |
 | Writes | `$8785`-`$8788` (`CurCell`, `CurAddr`); `$8869` (`Density`) |
 
@@ -3450,7 +3455,7 @@ L1 36 698.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 14 calls, 882 t-states own (0.00 %) |
 | Runs (the other recordings) | 36,684 calls (`stage1/rec/metro` 14,688, `stage1/rec/city2` 8,339, `stage1/rec/city` 6,904 and 6 more) |
 | Called from | `ZoneStep` |
-| Calls | `MinMax` |
+| Calls | `MinMax` (falls into) |
 | Reads | `$8785`-`$8786` (`CurCell`) |
 
 ### `MinMax` (`$87DB`)
@@ -3461,7 +3466,7 @@ L1 36 698.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 28 calls, 1,568 t-states own (0.00 %) |
 | Runs (the other recordings) | 73,368 calls (`stage1/rec/metro` 29,376, `stage1/rec/city2` 16,678, `stage1/rec/city` 13,808 and 6 more) |
-| Called from | `WidenExtent` |
+| Called from | `WidenExtent` (falls into) |
 | Reads | `$87C8`-`$87CB` (`ExtentCols`, `ExtentRows`) |
 | Writes | `$87C8`-`$87CB` (`ExtentCols`, `ExtentRows`) |
 
@@ -3471,7 +3476,8 @@ L1 36 698.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ResidentialStep` (tail), `CommercialStep` (tail), `IndustrialStep` (tail) |
 
 ### `BuildingStep` (`$886B`)
 
@@ -3495,8 +3501,8 @@ L1 10 084 463.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 153,148 calls, 30,948,037 t-states own (2.06 %) |
 | Runs (the other recordings) | 9,931,315 calls (`stage1/rec/city2` 2,021,395, `stage1/rec/city` 1,985,416, `stage1/rec/metro` 1,889,671 and 7 more) |
-| Called from | `StampPollutionIX`, `ScanCity`, `ToRubble`, `FloodCell`, `Spread` |
-| Calls | `CellFlagsOf`, `StartTrain`, `RadiationCell` (tail), `FireCell` (tail), `FloodCell` (tail) |
+| Called from | `StampPollutionIX`, `ScanCity`, `RoadCell`, `RailCell`, `ToRubble`, `ToLand`, `Spread` |
+| Calls | `CellFlagsOf`, `RadiationCell` (tail), `FireCell` (tail), `FloodCell` (tail) |
 | Reads | `$8464`-`$846D` (`TransportUpkeep`, `PoliceUpkeep`, `FireUpkeep`, `RoadCount` and 1 more); `$8787`-`$8788` (`CurAddr`); `$88C5` (`RoadDecay`); `$8902` (`RailDecay`); `$C450`-`$E84F` (`CityMap`) |
 | Writes | `$8464`-`$846D` (`TransportUpkeep`, `PoliceUpkeep`, `FireUpkeep`, `RoadCount` and 1 more); `$8785`-`$8788` (`CurCell`, `CurAddr`); `$8F97`-`$8F98` (`Funds`) |
 
@@ -3506,7 +3512,8 @@ L1 10 084 463.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `CellStep` |
 
 ### `RailCell` (`$8903`)
 
@@ -3514,7 +3521,8 @@ L1 10 084 463.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `StartTrain`, `CellStep` |
 
 ### `RadiationCell` (`$8942`)
 
@@ -3546,7 +3554,8 @@ L1 10 084 463.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `CellStep` |
 
 ### `FireCell` (`$8962`)
 
@@ -3568,7 +3577,7 @@ L1 10 084 463.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 146 calls (`stage1/rec/disasters` 146) |
 | Called from | `CellStep` (tail) |
-| Calls | `CellStep`, `Spread` (tail) |
+| Calls | `Spread` (tail) |
 | Reads | `$8787`-`$8788` (`CurAddr`); `$8985` (`FloodLeft`) |
 | Writes | `$8985` (`FloodLeft`); `$8998`-`$8999` (`SpreadCode`, `SpreadFlood`); `$C882` (`CityMap+1074`); `$C9BE`-`$CA7F` (`CityMap+1390`); `$CE37`-`$CF5A` (`CityMap+2535`); `$D45D`-`$D69F` (`CityMap+4109`); 4 more ranges |
 
@@ -3672,7 +3681,7 @@ Grows while Density < ResTile (ZoneScore / 2), else declines; a full zone (Densi
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 17,802 calls (`stage1/rec/metro` 6,798, `stage1/rec/city2` 3,731, `stage1/rec/city` 3,180 and 5 more) |
-| Called from | `ZoneStep` (tail) |
+| Called from | `ZoneByKind` (tail) |
 | Calls | `Random`, `ZonePollution`, `ScanRing`, `ResidentialScore`, `AddPopulation`, `MakeTrip`, `GrowZone` (tail), `DeclineZone` (tail) |
 | Reads | `$7E1A` (`RingTransport`); `$7F11` (`ResTile`); `$827C`-`$827D` (`ResDemand`); `$8446`-`$8447` (`ResPop`); `$8785`-`$8786` (`CurCell`); `$8869` (`Density`) |
 | Writes | `$7EC2`-`$7EC3` (`ZoneDemand`); `$8446`-`$8447` (`ResPop`); `$8568` (`TripMade`); `$865E`-`$865F` (`TripTargets`) |
@@ -3704,7 +3713,7 @@ L1 2575.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 2,575 calls (`stage1/rec/metro` 1,056, `stage1/rec/city2` 548, `stage1/rec/city` 541 and 4 more) |
-| Called from | `ZoneStep` (tail) |
+| Called from | `ZoneByKind` (tail) |
 | Calls | `ZoneStep`, `ComBuildingStep` (tail) |
 | Reads | `$8448`-`$8449` (`ComPop`); `$86C5` (`ZonePowered`); `$8785`-`$8786` (`CurCell`) |
 | Writes | `$8448`-`$8449` (`ComPop`); `$8785`-`$8786` (`CurCell`) |
@@ -3719,7 +3728,7 @@ A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/metro`, `stage1/rec/city2`, `stage1/rec/city` and 2 more) |
 | Called from | `BuildingStep`, `CommercialStep` (tail) |
-| Calls | `Random`, `MapAddr`, `PutBuilding` (tail), `PutZoneBuilding` (tail), `ZonePollution`, `ScanRing`, `CommercialScore`, `MakeTrip`, `ZoneStep`, `NoGrowthAlone` |
+| Calls | `Random`, `PutZoneBuilding` (tail), `ZonePollution`, `ScanRing`, `CommercialScore`, `MakeTrip`, `ZoneStep`, `NoGrowthAlone` |
 | Reads | `$7E1A` (`RingTransport`); `$7F43` (`ComLevel`); `$827E`-`$827F` (`ComDemand`); `$8448`-`$8449` (`ComPop`); `$8785`-`$8786` (`CurCell`); `$8869` (`Density`); 2 more ranges |
 | Writes | `$7EC2`-`$7EC3` (`ZoneDemand`); `$8448`-`$8449` (`ComPop`); `$8568` (`TripMade`); `$865E`-`$865F` (`TripTargets`) |
 
@@ -3731,7 +3740,8 @@ L1 126.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MapAddr`, `PutBuilding` (tail) |
 
 ### `IndustrialStep` (`$8C5B`)
 
@@ -3743,7 +3753,7 @@ L1 1795.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 14 calls, 1,134 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,781 calls (`stage1/rec/metro` 786, `stage1/rec/city` 372, `stage1/rec/city2` 342 and 4 more) |
-| Called from | `ZoneStep` (tail) |
+| Called from | `ZoneByKind` (tail) |
 | Calls | `ZoneStep`, `IndBuildingStep` (tail) |
 | Reads | `$844A`-`$844B` (`IndPop`); `$86C5` (`ZonePowered`); `$8785`-`$8786` (`CurCell`) |
 | Writes | `$844A`-`$844B` (`IndPop`); `$8785`-`$8786` (`CurCell`) |
@@ -3758,7 +3768,7 @@ A building that reverts mid-scan is counted twice in the pass: the reverted 3 x 
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/metro`, `stage1/rec/city2`, `stage1/rec/city` and 2 more) |
 | Called from | `BuildingStep`, `IndustrialStep` (tail) |
-| Calls | `Random`, `MapAddr`, `PutBuilding` (tail), `PutZoneBuilding`, `StampPollution` (tail), `ScanRing`, `IndustrialScore`, `MakeTrip`, `NoGrowthAlone` |
+| Calls | `Random`, `PutZoneBuilding`, `StampPollution` (tail), `ScanRing`, `IndustrialScore`, `MakeTrip`, `NoGrowthAlone` |
 | Reads | `$7E1A` (`RingTransport`); `$7F5D` (`IndLevel`); `$8280`-`$8281` (`IndDemand`); `$844A`-`$844B` (`IndPop`); `$8785`-`$8786` (`CurCell`); `$8869` (`Density`); 1 more ranges |
 | Writes | `$7CBF` (`PollutionStrength`); `$7EBF`-`$7EC3` (`ZonePollutionMax`, `ZoneTrafficMax`, `ZoneScore`, `ZoneDemand`); `$844A`-`$844B` (`IndPop`); `$8568` (`TripMade`); `$865E`-`$865F` (`TripTargets`) |
 
@@ -3780,7 +3790,8 @@ L1 719.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `MapAddr`, `PutBuilding` (tail) |
 
 ### `CoalStep` (`$8D0B`)
 
@@ -3966,7 +3977,7 @@ L1 158 073.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 1,777 calls, 287,075 t-states own (0.02 %) |
 | Runs (the other recordings) | 156,331 calls (`stage1/rec/metro` 38,769, `stage1/rec/city2` 34,793, `stage1/rec/city` 31,408 and 7 more) |
 | Called from | `PrintPadded`, `MoveTrain`, `UiTask`, `Interrupt` |
-| Calls | `Random`, `PrintFunds` (tail), `PrintDate` (tail), `UiTask`, `MoveDisasters`, `AnimateFire`, `AnimateFlood`, `RandomDisaster` (tail), `RunDisaster` (tail), `ShowAdvice` |
+| Calls | `PrintFunds` (tail), `PrintDate` (tail), `UiTask`, `MoveDisasters`, `AnimateFire` (tail), `AnimateFlood` (tail), `RandomDisaster` (tail), `RunDisaster` (tail), `ShowAdvice` |
 | Reads | `$8F9F` (`PassCount`); `$ED38`-`$ED57` (`CellTiles+720`) |
 | Writes | `$EC88`-`$EC97` (`CellTiles+544`) |
 
@@ -4004,7 +4015,7 @@ L1 158 073.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 112 calls, 30,179 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`stage1/rec/metro`, `stage1/rec/city2`, `stage1/rec/city` and 6 more) |
-| Called from | `Random`, `UiTask`, `Periodic`, `Interrupt` |
+| Called from | `Random`, `UiTask`, `Periodic` (tail), `Interrupt` |
 | Calls | `Random`, `UiTask` |
 | Reads | `$8F9F` (`PassCount`); `$ED38`-`$ED47` (`CellTiles+720`) |
 | Writes | `$EC90`-`$EC97` (`CellTiles+552`) |
@@ -4017,7 +4028,7 @@ L1 158 073.
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 113 calls, 30,179 t-states own (0.00 %) |
 | Runs (the other recordings) | 1,686 calls (`stage1/rec/growth` 1,387, `stage1/rec/menus` 299) |
-| Called from | `Random`, `UiTask`, `Periodic`, `Interrupt` |
+| Called from | `Random`, `UiTask`, `Periodic` (tail), `Interrupt` |
 | Calls | `Random`, `UiTask` |
 | Reads | `$8F9F` (`PassCount`); `$ED48`-`$ED57` (`CellTiles+736`) |
 | Writes | `$EC88`-`$EC8F` (`CellTiles+544`) |
@@ -4107,8 +4118,8 @@ L1 158 073.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/disasters`) |
-| Called from | `StartFires`, `RunDisaster`, `Interrupt` |
-| Calls | `NoiseBurst`, `StartFires`, `StartFlood` (tail) |
+| Called from | `StartFires`, `Interrupt` |
+| Calls | `NoiseBurst`, `StartFires`, `StartFlood` (tail), `SetAdvice` |
 
 ### `RandomDisaster` (`$9144`)
 
@@ -4131,7 +4142,7 @@ L1 158 073.
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 111 calls, 3,552 t-states own (0.00 %) |
 | Runs (the other recordings) | 9,771 calls (`stage1/rec/metro` 2,423, `stage1/rec/city2` 2,175, `stage1/rec/city` 1,962 and 7 more) |
 | Called from | `Periodic` (tail) |
-| Calls | `AirCrash` (tail), `NuclearMeltdown` (tail), `StartTornado` (tail), `UiTask`, `FireDisaster` (tail), `FloodDisaster` (tail), `Earthquake`, `SetAdvice` |
+| Calls | `AirCrash` (tail), `NuclearMeltdown` (tail), `StartTornado` (tail), `UiTask`, `FireDisaster` (tail), `FloodDisaster` (tail) |
 | Reads | `$916D` (`DisasterDue`) |
 | Writes | `$916D` (`DisasterDue`) |
 
@@ -4366,7 +4377,7 @@ POPULATION is LastPop (last month's), not the year's population.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 18 calls (`stage1/rec/city2` 5, `stage1/rec/metro` 5, `stage1/rec/growth` 4 and 2 more) |
 | Called from | `Evaluate` |
-| Calls | `FindText`, `PrintPadded`, `PrintNumberVar`, `Sub24`, `PrintZero` |
+| Calls | `FindText`, `PrintPadded`, `PrintNumberVar`, `Sub24`, `PrintZero` (falls into) |
 | Reads | `$65A3`-`$65A4` (`NumberEnd`); `$8E8D`-`$8E92` (`PopYearBefore`, `PopLastYear`); `$975F` (`Category`); `$A518` (`Level`) |
 | Writes | `$978F`-`$9791` (`Migration`); `$F74F`-`$F750` (`PrintAddr`) |
 
@@ -4377,7 +4388,7 @@ POPULATION is LastPop (last month's), not the year's population.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 54 calls (`stage1/rec/city2` 15, `stage1/rec/metro` 15, `stage1/rec/growth` 12 and 2 more) |
-| Called from | `PrintEvalFigures` |
+| Called from | `PrintEvalFigures` (falls into) |
 | Calls | `PrintChar`, `NextColumn` |
 
 ### `Problems` (`$9803`)
@@ -4495,7 +4506,7 @@ In order: R at most a quarter of all zones (1), C at most an eighth (2), I (3); 
 | --- | --- |
 | Runs (c1: power-on, the original tape at signal speed, the first play) | 16 calls, 368 t-states own (0.00 %) |
 | Runs (the other recordings) | 584 calls (`stage1/rec/metro` 367, `stage1/rec/bankrupt` 65, `stage1/rec/menus` 42 and 4 more) |
-| Called from | `NuclearMeltdown`, `StartTornado`, `FireDisaster`, `FloodDisaster`, `RunDisaster`, `Advise` (tail) |
+| Called from | `NuclearMeltdown`, `StartTornado`, `FireDisaster`, `FloodDisaster`, `Earthquake`, `Advise` (tail) |
 | Writes | `$9996` (`Advice`) |
 
 ## overview
@@ -4914,7 +4925,7 @@ L1 12.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rec/menus` 2, `stage1/rec/levels` 1) |
 | Called from | `SaveCity`, `LoadCity`, `SetLevel` |
-| Calls | `InputLine` |
+| Calls | `InputLine` (falls into) |
 | Reads | `$A6DD` (`InputDigits`) |
 | Writes | `$A6DC`-`$A6DE` (`InputCursor`, `InputDigits`, `InputLength`) |
 
@@ -4929,7 +4940,7 @@ L1 5.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/menus` 4) |
-| Called from | `InputGene`, `InputName` |
+| Called from | `InputGene`, `InputName` (falls into), `CursorLeft` |
 | Calls | `KeyToChar`, `ShowInput`, `NumberToInput`, `PutDigit` (tail), `ReadInput` |
 | Reads | `$5B00` (`KeyRows`); `$A6DA`-`$A6DE` (`InputBuffer`, `InputCursor`, `InputDigits`, `InputLength`); `$A6EF`-`$A6F0` (`InputDelay`) |
 | Writes | `$5F68`-`$5F6C` (`CityName`); `$A6DC`-`$A6F0` (`InputCursor`, `InputDigits`, `InputLength`, `InputText` and 1 more); `$A924`-`$A933` (`SaveName`, `SaveHeader`) |
@@ -4948,7 +4959,8 @@ L1 5.
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `InputLine` |
 
 ### `ShowInput` (`$A7A3`)
 
@@ -4994,7 +5006,7 @@ L1 5.
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 8 calls (`stage1/rec/menus` 8) |
 | Called from | `NumberDigits` |
-| Calls | `PutDigit` |
+| Calls | `PutDigit` (falls into) |
 
 ### `PutDigit` (`$A82A`)
 
@@ -5003,7 +5015,7 @@ L1 5.
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1`; in the other recordings 10 calls (`stage1/rec/menus` 10) |
-| Called from | `InputLine` (tail), `NumberDigits`, `NumberDigit` |
+| Called from | `InputLine` (tail), `NumberDigits`, `NumberDigit` (falls into) |
 | Calls | `InputToNumber` |
 | Reads | `$A6DD` (`InputDigits`); `$A7EB`-`$A7EC` (`NumberAt`) |
 | Writes | `$6A8C`-`$6A8D` (`Gene`); `$A6DF`-`$A6E3` (`InputText`); `$F74E` (`PrintCharCode`) |

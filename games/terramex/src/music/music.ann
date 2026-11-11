@@ -23,12 +23,12 @@
 $C000 c MusicFrame ; Play one frame of music: the IM 2 handler's call
 > Saves AF (in AF'), AF', DE, HL, IX and IY around MusicTick $C014 and returns with them. BC is not saved: the caller, the IM 2 handler $9491, saves it (PUSH BC at $9498) and pages RAM 6 before the CALL $C000 at $94A0 and the old page ($5FE5 Last7FFD) after it.
 > Called once a frame: c1 runs it 5029 times in the 5029 frames from 21599 to 26627; explorers 15 190 of 15 190, gameover 6000 of 6000.
-> Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 
 $C014 c MusicTick ; Start tune 0 if no tune is playing, else play one frame of it
 > PlayerState $C027 = 0: JP StartTune $C79F with A = 0 (the tune number), which returns to MusicFrame. Else UpdateTune $C1E4 with IY saved.
 > c1 runs StartTune once (frame 21599, the first call after GameEntry); explorers and the rzx pieces once after each EndTune.
-> Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 $C018 ; A = 0 here: the only tune StartTune is ever given
 $C01D ; IY = 0: not read; SetInstrument $C3D8 sets IY before every use
 
@@ -113,7 +113,7 @@ $C1E4 c UpdateTune ; Play one frame of the tune: end the expiring notes, update 
 > Called by MusicTick $C014 while PlayerState $C027 is 1 (the RET Z at $C1E8 is a second guard: it never returns there in any recording).
 > First, for each channel whose note timer (+$03) is 1: the timer becomes 0 and NoteEndFlag $C14D goes up, so the note lasts exactly its duration in frames and the channel reads its next event this frame. Then for each channel n = 0, 1, 2: ChannelIndex $C1E3 = n, SlotRowOp+1 = 8n, IX = the channel's record, the word n of the tune's entry (TunePointer $C14B) into the operands of OrderListOp1 $C315, OrderListOp2 $C7D6, OrderListOp3 $C7E9 and OrderListOp4 $C807, DE = PatternPointers[n]; CALL UpdateChannel $C2E4. Last, H = $FF and L = $BF (the high bytes of the AY ports $FFFD and $BFFD), C = $FD, and WriteAY $C290 unless NoteEndFlag is up.
 > Out: the channel records, PatternPointers and the AY registers updated, NoteEndFlag 0. When channel A meets its order list's end, EndTune $C780 drops UpdateChannel's return, so channels B and C are not updated that frame.
-> Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 83609 (c1, explorers, gameover, rzx x31).
 $C1E9 ; HL = NoteEndFlag
 $C1EC ; channel A's timer 1: 0, and the flag up
 $C1F6 UpdateTuneB ; channel B's timer
@@ -132,7 +132,7 @@ $C28A ; a note ended this frame: no AY write
 $C290 c WriteAY ; Write the periods, the mixer and the volumes to the AY
 > In: H = $FF, L = $BF, C = $FD (the ports for AYWrite $CD56). Reached from UpdateTune $C1E4 when NoteEndFlag $C14D is 0, and from EndTune $C780 (the silence at the tune's end; it jumps here whatever the flag). Falls into EndFrame $C2DF.
 > explorers: 13 411 writes in 15 190 frames (the other 1778 frames a note ended).
-> Witness: L1 73906 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 73906 (c1, explorers, gameover, rzx x31).
 $C290 ; registers 0 and 1: channel A's period
 $C2A0 ; registers 2 and 3: channel B's period
 $C2AE TuneNumberOp ; LD A,n: n = the tune playing (self-modified by StartTune $C7A0; always 0): channel C only for tune 0
@@ -143,7 +143,7 @@ $C2D1 ; registers 8 and 9: the volumes of A and B
 
 $C2DF c EndFrame ; Clear NoteEndFlag: the frame's update is over
 > Reached by WriteAY $C290 falling in and by UpdateTune's JR NZ at $C28E (a frame with no AY write). Returns to MusicTick $C014, UpdateTune's caller (after EndTune too, which dropped UpdateChannel's return).
-> Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 83609 (c1, explorers, gameover, rzx x31).
 
 @module channel ; A channel's frame: the events of its order list and its patterns
 @about Each channel has an order list (the tune's entry gives its three addresses) of bytes: $00-$7F play pattern n (PatternLo $CA37 / PatternHi $CA52, 27 patterns); $80 t: transpose t (signed semitones) for the following patterns; $A0+n: play the next pattern n times (n 0: 256); $C0 d: detune d (0-255, added to the 16-bit period) for the following notes; $E0+n m: instrument slot n of this channel = record offset m (SlotTable); $FF: the tune's end (EndTune $C780, from whichever channel meets it first: channel A in tune 0). Bits 0-4 of a command byte are its parameter, bits 5-6 pick the handler (ReadOrderList $C310), so $81-$9F take a byte as $80 does, and $C1-$DF as $C0.
@@ -153,19 +153,19 @@ $C2DF c EndFrame ; Clear NoteEndFlag: the frame's update is over
 $C2E4 c UpdateChannel ; Play one frame of the channel IX: the next event when its note is over, else the effects
 > In: IX = the channel record, DE = its pattern (PatternPointers), the order-list operands and SlotRowOp set by UpdateTune $C1E4. Timer (+$03) not 0: CheckGateOff $C555 (the effects). Timer 0: a slide whose count is not $FF ends (+$11 = 0), then ReadPatternEvent $C2F6.
 > Called 3 times a frame by UpdateTune (explorers: 45 565 = 3 x 15 189 less 2, the frame of EndTune).
-> Witness: L1 250815 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 250815 (c1, explorers, gameover, rzx x31).
 $C2E8 ; a note or a rest is running
 $C2EB ; the slide count: $FF keeps it, any other value ends it
 
 $C2F6 c ReadPatternEvent ; Read the byte at the channel's pattern position: an event, or the pattern's end
 > HL = DE + the pattern position (+$02). Not $FF: PatternEvent $C36D. $FF: repeats left (+$04 not 0): one less, the position 0, read again; else ReadOrderList $C310. Reached from UpdateChannel $C2E4 and, after each event that takes no time, from PatternEvent's handlers and StartPattern $C34A.
-> Witness: L1 21280 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 21280 (c1, explorers, gameover, rzx x31).
 $C2FD ; $FF: the pattern's end
 $C301 ; repeats left: the pattern again from its start
 
 $C310 c ReadOrderList ; Read the channel's next order-list byte: a pattern, a command or the tune's end
 > The byte at the order list (the self-modified operand of OrderListOp1) + the position (+$00), the position one on. $FF: EndTune $C780. $00-$7F: StartPattern $C34A. $80-$FE: CommandParam $C1E0 = the low 5 bits; bits 5-6 x 4 into the JR offset at OrderCommandJump+1: $80-$9F SetTranspose $C7E4, $A0-$BF SetRepeat $C81B (OrderJumpRepeat $C33F), $C0-$DF SetDetune $C7D1 (OrderJumpDetune $C343), $E0-$FE SetSlot $C7F7 (OrderJumpSlot $C347). Each handler comes back here for the next byte.
-> Witness: L1 873 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 873 (c1, explorers, gameover, rzx x31).
 $C315 OrderListOp1 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune; the image holds tune 0's channel A)
 $C31D ; $FF: the tune's end
 $C322 ; bit 7 clear: a pattern number
@@ -177,23 +177,23 @@ $C33E b OrderJumpPad1 1 ; A filler byte: the jump table's entries are 4 bytes ap
 > Never executed or read: JR d lands on the JP after it (known only from the code).
 
 $C33F c OrderJumpRepeat ; d = 4, $A0-$BF: SetRepeat
-> Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 123 (c1, explorers, gameover, rzx x26).
 
 $C342 b OrderJumpPad2 1 ; A filler byte between the jumps
 > Never executed or read (known only from the code).
 
 $C343 c OrderJumpDetune ; d = 8, $C0-$DF: SetDetune
-> Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 17 (c1, explorers, gameover, rzx x11).
 
 $C346 b OrderJumpPad3 1 ; A filler byte between the jumps
 > Never executed or read (known only from the code).
 
 $C347 c OrderJumpSlot ; d = 12, $E0-$FE: SetSlot
-> Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 21 (explorers, gameover, rzx x12).
 
 $C34A c StartPattern ; Start pattern A on the channel
 > A = the pattern number (0-26, from ReadOrderList $C310). PatternPointers[ChannelIndex] = DE = PatternLo[A] + 256 x PatternHi[A]; the pattern position (+$02) = 0; ReadPatternEvent $C2F6. A new entry: the cut had it inside OrderJumpSlot's block; it is ReadOrderList's JP Z target at $C324.
-> Witness: L1 479 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 479 (c1, explorers, gameover, rzx x31).
 $C34B ; E = 2 x the channel, the PatternPointers offset
 $C353 ; the pattern's address from PatternLo and PatternHi
 $C35D ; into PatternPointers, and DE
@@ -202,7 +202,7 @@ $C366 ; from its first byte
 $C36D c PatternEvent ; Act on pattern byte A: a note, a rest, an instrument, an arpeggio or a slide
 > A = the byte (not $FF), from ReadPatternEvent $C2F6. $00-$7F: StartNote $C4C9. $A0 d: a rest: the rest timer (+$16) and the note timer = d, the period 0, then ChannelEffects $C55E counts the first frame. $80-$8F: SetInstrument $C3D8. $90-$BE (but $A0): the arpeggio record 8 x (A & $0F) into +$10; $BF: the slide count 0. $C0-$FE: the slide: +$15 = A, its delay +$14 = A & $1F, then the step low (+$12), high (+$13) and the count (+$11). Each but the note and the rest goes on to the next byte (ReadPatternEvent). A new entry: the cut had it inside OrderJumpSlot's block; it is ReadPatternEvent's JR NZ target at $C2FF.
 > The slide and the slide-off code ($C397-$C3C8) was not executed in any of the 34 recordings: only patterns 1 and 4 hold a slide, and tune 0 plays neither.
-> Witness: L1 19804 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 19804 (c1, explorers, gameover, rzx x31).
 $C372 ; $A0: a rest, its duration next
 $C385 ; a rest plays period 0
 $C38F PatternEventCommand ; $80-$8F an instrument, $90-$BF an arpeggio, $C0-$FE a slide
@@ -214,7 +214,7 @@ $C3D2 PatternEventNext ; the next byte
 $C3D8 c SetInstrument ; Instrument slot A & $0F: set the channel's mixer bits, envelope, gate-off time and vibrato
 > A = $80-$8F (from PatternEvent $C36D). IY = Instruments + SlotTable[8 x channel + (A & $0F)] (SlotRowOp: the channel's 8 x n). The peak volume (+$2B) = record +8. MixerImage $C14E: record +2 bit 7 set: the channel's noise on, tone off; clear: tone on, noise off. The attack (step +$24, rate +$25) from the high nibble of +3 through AttackRates $CD36, the decay (+$21, +$22) from its low nibble, the sustain level (+$20) from the high nibble of +4, the release (+$27, +$28) from its low nibble, the last three through DecayRates $CD46; a rate byte with bit 7 is "one step every (byte & $7F) frames", the step 1, else "the byte's steps every frame"; nibble 0 is the step 15 every frame. +5 the gate-off time (+$06), +7 the vibrato record (+$0B). Then the next pattern byte (ReadPatternEvent $C2F6). A new entry, for the cut's l_C3D8 inside OrderJumpSlot's block (PatternEvent's JR C at $C391).
 > The slow attack ($C452) and the release with a step table entry below $80 ($C4A9) was not executed in any of the 34 recordings: no instrument has them.
-> Witness: L1 2250 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 2250 (c1, explorers, gameover, rzx x31).
 $C3DA SlotRowOp ; ADD A,n: n = 8 x the channel (self-modified by UpdateTune $C212, $C24F, $C27B)
 $C3DF ; the slot's record offset
 $C3E6 ; IY = the record
@@ -233,7 +233,7 @@ $C4B7 SetInstrumentTimes ; +5 the gate-off time, +7 the vibrato
 $C4C9 c StartNote ; Start note A: its period, the gate and the envelope, its duration, the vibrato, the arpeggio and the slide delay
 > A = the note (0-$7F), DE = the pattern, from PatternEvent $C36D. The period-table index (+$1C) = A + 20 + the transpose (+$01); the period (+$1D/+$1E) = PeriodLo/PeriodHi[index] + the detune (+$09). The gate on, the volume and the envelope counters 0, the done bits of attack, decay and release clear. The next byte is the duration: the note timer (+$03). With a vibrato (+$0B not 0): its delay or cycles (+$0A) = the record's first byte, the step (+$0C) 1. With an arpeggio (+$10 not 0): the first hold (+$18) = ((header & $78) >> 3) + 1, the step (+$17) 1. The slide delay (+$14) again from the slide command (+$15). Returns to UpdateChannel's caller: no effects on a note's first frame.
 > A new entry, for the cut's l_C4C9 inside OrderJumpSlot's block (PatternEvent's JP Z at $C36F).
-> Witness: L1 15424 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 15424 (c1, explorers, gameover, rzx x31).
 $C4DF ; + the detune
 $C4E9 ; the gate on, the envelope from volume 0
 $C506 ; the duration, kept in A' to the end
@@ -247,11 +247,11 @@ $C548 StartNoteSlide ; the slide's delay again
 
 $C555 c CheckGateOff ; Gate off when the note timer reaches the gate-off time; then the effects
 > A = the note timer (from UpdateChannel $C2E4). A = +$06: the gate bit (+$2A bit 0) clear: the release. Falls into ChannelEffects.
-> Witness: L1 235309 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 235309 (c1, explorers, gameover, rzx x31).
 
 $C55E c ChannelEffects ; The rest timer, the note timer and the envelope, then the vibrato, the arpeggio and the slide
 > A rest (timer +$16 not 0): one less; at 0 the note timer 0 (the next event next frame); no effects. Else the note timer one less; NoteEndFlag $C14D up: return. Gate on: the attack (every rate frames, the volume + the step, to the peak), then the decay (to the sustain level). Gate off: the release (to 0). Then VibratoEffect $C609 (fall through).
-> Witness: L1 235385 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 235385 (c1, explorers, gameover, rzx x31).
 $C564 ; a rest: count it; at 0 its end
 $C56D ChannelEffectsNote ; the note's timer
 $C570 ; a note ended this frame: no effects
@@ -267,7 +267,7 @@ $C606 EnvelopeReleaseStore ; the release's new volume
 $C609 c VibratoEffect ; The vibrato: after its delay, the next of 7 period deltas, its sign flipped every other pass
 > A new entry: the end of the envelope, where all its paths join (10 jumps to $C609 and the fall from $C606), and the start of the vibrato. No vibrato (+$0B = 0): ArpeggioEffect $C694. The delay or cycles byte (+$0A): bit 7 clear and not 0: one less, no step this frame; 0: step; bit 7 set: step until its low 7 bits are 0. A step: delta = (VibratoTable-8)[+$0B + (step & $7F)] (CommandParam $C1E0 holds its size): the period + delta while the step's bit 7 is clear, the period - delta while it is set. After step 7 the step becomes $81 (bit 7 flipped, step 1); after the flipped pass's step 7, 1 again: a cycle done, and a cycles count one less.
 > Records 4, 5 and 7 use it (VibratoTable's only record: delay 40). The cycles form ($C61A), and a delta that carries or borrows in the period ($C654, $C670) was not executed in any of the 34 recordings.
-> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 $C620 VibratoDelay ; the delay one less
 $C626 VibratoStep ; the delta of this step
 $C648 VibratoDown ; the period - the size
@@ -278,7 +278,7 @@ $C673 VibratoNext ; the next step; after 7 the sign flips ($89)
 $C694 c ArpeggioEffect ; The arpeggio: when the hold ends, the next step's note and hold
 > No arpeggio (+$10 = 0): SlideEffect $C72F. The hold (+$18) one less; not 0: SlideEffect. Step (+$17) 1-7: the byte at ArpeggioTable + 8n + step: the hold = its bits 0-2, the period = the note (+$1C) + its bits 3-7 + the detune. Step 0 (a looped arpeggio's restart): the header's bits 3-5 as the hold of the base note (when not 0). After the last step (the header's bits 0-2): 0 when the header's bit 7 is set (loop), else $FF; $FF at the hold's end: the base note again and $FE, after which nothing.
 > Arpeggios 1-6 ran (patterns 2, 7-9, 13, 16, 18, 19). The end ($C70E) was not executed in any of the 34 recordings: arpeggio 1, the only one with no loop, plays on 9-frame notes, which end first.
-> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 $C6C1 ArpeggioByte ; the step's byte
 $C6C2 ArpeggioApply ; the hold and the semitones over the note
 $C6EC ; the next step; after the last: 0 (loop) or $FF (end)
@@ -288,7 +288,7 @@ $C70E ArpeggioEnd ; $FF: back to the base note, then $FE
 $C72F c SlideEffect ; The slide: after its delay, the period up or down by half the step, for the count
 > A new entry: ArpeggioEffect's paths join here (5 jumps to $C72F and the fall from $C72C). The delay (+$14) not 0: one less. Else with a count (+$11 not 0; $FF endless, else one less): the step (+$12/+$13) halved; the slide command's bit 5 (+$15) set: the period + step/2 (the pitch falls); clear: the period - step/2 - the step's bit 0 (SBC with the carry RR C left). Returns to UpdateTune $C1E4.
 > Ran in no recording past the delay test: tune 0 has no slide ($C735-$C77C not executed in any of the 34 recordings).
-> Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 $C73A SlideCount ; the count: 0 none, $FF endless
 $C747 SlideApply ; the direction: bit 5 of the command
 $C767 SlideUp ; the period - step/2: the pitch rises
@@ -298,12 +298,12 @@ $C77F SlideDone
 $C780 c EndTune ; The order list's $FF: silence, PlayerState 0, the AY written, the frame over
 > From ReadOrderList $C31F. The three volumes (+$1F) 0 (each written twice), PlayerState $C027 = 0, UpdateChannel's return dropped (POP AF: the channels after this one are not updated), then WriteAY $C290 with H = $FF, L = $BF, C = $FD, whatever NoteEndFlag. MusicTick's next call starts tune 0 again (StartTune $C79F): the frame after.
 > Ran at frame 9581 in explorers and once in r08000, r18000, r28000, r38000 and r48000, 9698 frames apart.
-> Witness: L1 6 (explorers, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 6 (explorers, rzx x5).
 
 $C79F c StartTune ; Start tune A: its entry, the empty patterns, the channel records cleared, PlayerState 1
 > A = the tune (0-3; always 0: MusicTick's JP Z at $C018 is the only way in). TuneNumberOp+1 = A (channel C is written only for tune 0); TunePointer $C14B = TuneTable $C967 + 6A; PatternPointers $C1DA = EmptyPattern $C82D for all three; ChannelA-ChannelC ($C153-$C1D9) zero; PlayerState $C027 = 1. A is kept. SlotTable, MixerImage and the AY are not touched; nothing sounds this frame.
 > Ran once in c1 (frame 21599), once in explorers (9582) and after each EndTune in the rzx pieces.
-> Witness: L1 7 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 7 (c1, explorers, rzx x5).
 $C7A3 ; HL = 6 x A
 $C7B1 ; every channel on the empty pattern
 $C7BD ; the three channel records zero
@@ -311,27 +311,27 @@ $C7BD ; the three channel records zero
 @module channel
 $C7D1 c SetDetune ; Order command $C0: the next byte is the channel's detune (+$09)
 > Then ReadOrderList $C310. Tune 0's channel B: $C0 10 at its start, $C0 0 after the intro (pattern 5); a constant added to every period (and so a lower pitch, a little, for the 10).
-> Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 17 (c1, explorers, gameover, rzx x11).
 $C7D6 OrderListOp2 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
 
 $C7E4 c SetTranspose ; Order command $80: the next byte is the channel's transpose (+$01, signed semitones)
 > Then ReadOrderList $C310. Reached by OrderCommandJump $C339 with offset 0.
-> Witness: L1 227 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 227 (c1, explorers, gameover, rzx x28).
 $C7E9 OrderListOp3 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
 
 $C7F7 c SetSlot ; Order command $E0+n: the next byte is the record offset of the channel's instrument slot n
 > SlotTable[8 x channel + n] = the byte (SlotRowOp+1 gives 8 x channel, CommandParam $C1E0 n), through the self-modified SlotIndexOp. Then ReadOrderList $C310. Tune 0 uses it three times on channel B: slot 0 = $48 (record 8), slot 6 = $51 (record 9), then $5A (record 10); the change outlives the tune (StartTune does not reset SlotTable).
-> Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 21 (explorers, gameover, rzx x12).
 $C807 OrderListOp4 ; LD BC,nn: nn = the channel's order list (self-modified by UpdateTune)
 $C80F SlotIndexOp ; LD L,n: n = 8 x channel + n (self-modified at $C7FF)
 
 $C81B c SetRepeat ; Order command $A0+n: play the next pattern n times
 > The repeats left (+$04) = n - 1 (n 0: 255, so 256 plays); ReadPatternEvent $C2F6 replays the pattern while it is not 0. Then ReadOrderList $C310.
-> Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 123 (c1, explorers, gameover, rzx x26).
 
 $C825 c FetchPatternByte ; A = the byte at the channel's pattern position: DE + (+$02)
 > Called by PatternEvent $C36D for a rest's duration and a slide's three bytes.
-> Witness: L1 76 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 76 (c1, explorers, gameover, rzx x12).
 
 @module tunes ; The tune data and the player's tables: periods, vibratos, arpeggios, tunes, order lists, patterns, envelope rates
 @about The tune format, for a converter (all of it in tunes, music/tunes, $C967-$CD35): TuneTable $C967 holds 4 entries of 3 little-endian words, each the address of a channel's order list (A, B, C). An order list is bytes read one after another: $00-$7F pattern n; $80 t transpose (t signed); $A0+n the next pattern n times (0: 256); $C0 d detune d; $E0+n m instrument slot n = record offset m (9 x record); $FF the tune's end (the first channel to meet it ends the tune; the next frame tune 0 starts again). A pattern, found through PatternLo $CA37 / PatternHi $CA52, is events ended by $FF: n d (n $00-$7F) a note of d frames; $A0 d a rest of d frames; $80+n instrument slot n; $90+n arpeggio n (0 off); $BF slide off; $C0+s lo hi c a slide (bit 5 of the command: period up). Note n sounds at period-table index n + 20 + the channel's transpose (MIDI n + 32 + transpose). A step of the text format is one event; the time of a note or rest is its d frames (0 = 256), every other event takes none.
@@ -1111,7 +1111,7 @@ $CD46 b DecayRates 16 ; The decay and release rates: an instrument's +3 and +4 l
 $CD56 c AYWrite ; Write A to AY register D
 > In: D = the register, A = the value, H = $FF, L = $BF, C = $FD. OUT ($FFFD),D selects the register, OUT ($BFFD),A writes it; B is left $BF. Called by WriteAY $C290 10 times a frame (7 for a tune other than 0).
 > The recordings' only AY writer after the 128K ROM's power-on set-up (ports_out $FFFD, $BFFD in all 34). explorers: 134 110 calls in 13 411 writes (10 each).
-> Witness: L1 739060 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+> Witness: L1 739060 (c1, explorers, gameover, rzx x31).
 
 @module tunes
 $CD5D b MusicLeftover 16 ; The rest of the block: 1187 bytes the player never reads

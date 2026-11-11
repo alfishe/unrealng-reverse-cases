@@ -46,7 +46,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
-| `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked |
+| `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
 | `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
 
@@ -74,8 +74,9 @@ of the entry's first instruction summed over `ref_builds`, `read_builds`, `code_
 `witness_skip`; a `ref_builds` recording with a window counts only inside it), the list the builds that ran it (`c1,
 hiscore, rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
-`--fix-witness` rewrites them in the `.ann`, keeps a line that names a recording it did not load, and prints each
-name it drops (`menu, search ran no instruction there`)
+`--fix-witness` rewrites them in the `.ann`, keeps a line that names a recording it did not load, prints each
+name it drops (`menu, search ran no instruction there`), and writes the source again from the rewritten `.ann`, so
+that with `--install` one run leaves the `.ann` and the `.asm` current
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)).
 
 `--install` writes the modules, `game.asm` and the resources (through the json's `res_install`, else `case.json`'s,
@@ -109,10 +110,19 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
 - **The interrupt's acceptance** is the handler's. L1 books the IM 2 vector read and the return address the interrupt
   pushes to the instruction it interrupted; refdocs takes them from that routine and gives them to the handler (the
   callee of L1's `interrupt` edge): the read of a word holding the handler's address in the page the most interrupted
-  routines read it in (the I page; without the image, a scratch case's, the word pairs half the interrupted routines
-  read), and the writes of the interrupted routine to the stack's slots (L1 `byte_use`: pushed and popped, never
+  routines read it in (the I page), or of a word pair at least half the routines an IM 2 interrupt entered read
+  (without the image, a scratch case's; or a table the game fills at run time, Terramex's `$8EFF-$8F00`, whose
+  image words are not the handler's address: with the image only a pair at `$xxFF`, the idle bus's `$FF`, so a
+  variable some interrupted routines share stays theirs), and the writes of the interrupted routine to the stack's
+  slots (L1 `byte_use`: pushed and popped, never
   run). The handler says "Entered by: the interrupt, N times in M routines" instead of a "Called from" list,
   and no routine "Calls" it.
+- **Callers and callees** are the entries that hold the call's site (L1's `sites`), not the L1 routine's entry: an
+  L1 routine runs on through the entries its code falls into and jumps to (Terramex's GameEntry, NewGame, ...
+  MainLoop is one), so its entry would be named for a call MainLoop makes. A tail jump is marked "(tail)", running
+  on into the next entry "(falls into)". An entry known only by a call site in it (reached by a jump or by running
+  on, never an L1 routine of its own) says "Runs: ran within another entry's routine ..., no runs of its own
+  counted".
 - **All the recordings.** Docs 11 and 12 read every recording of `case.json`: the `ref_builds` first, then
   `read_builds` and `code_builds`. Their runs, callers, callees and ports count, their reads and writes only from
   `ref_builds` and `read_builds` (a `code_builds` recording's reads may be a depacker's input). A routine no
@@ -124,7 +134,8 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
   `"mode": "blocks"` part only those whose bytes are the part's); a call into the game's pages names the game's
   routine, a bank's address its bank.
 - **Doc 11** gives each inner label of a data entry (a field, a row) a row of its own under the entry, `Name`
-  (`Entry`+k), its size up to the next label, its comment, its readers and writers. The readers and writers are the
+  (`Entry`+k), its size up to the next label; the entry's row then gives its own bytes, up to its first inner label,
+  of the whole entry's (`JumpFrames` 17 of 34, `JumpRise` the other 17), its comment, its readers and writers. The readers and writers are the
   `ref_builds`' routines, then those only another recording saw, with the first such build in brackets
   (`` `DrawCell` (`stage2/rzx04/cap`) ``), then, marked "(code)", the routines whose `LD r,(nn)` / `LD (nn),r`, or an
   access through `(HL)` / `(DE)` / `(BC)` after `LD HL,nn` (`DE`, `BC`) in the same block (no jump target, branch or
@@ -188,10 +199,22 @@ back buffer), `:hex` (a stack or a record as numbers: H lines of W bytes in hex,
 written in the picture is drawn in the write colours, one read in blue; in `:hex` and `:words`, a number written
 earlier in the window keeps a dim rose trail after its fade (one only read, a dim blue one), as the memory map keeps
 its trails. The GIFs share one palette and store each picture as its changes, so a routine
-animation of 90 pictures stays near 1 MB.
+animation of 90 pictures stays near 1 MB (`kitlib.save_gif`: the unchanged pixels are the transparent index 255,
+which no colour is ever quantized to; it was black once, and showed the page through every pure black pixel).
 
 `--pc LO-HI` is the routine's code, the rest counts as "other"; several ranges (`--pc EAE3-EBA9,EC40-EC9F`, or
 `--pc` repeated) follow a routine and the routines it calls elsewhere in memory.
+
+128K pages (`routine_anim.py`, `beam_timeline.py`): `--page N=LISTING` names the code at `$C000-$FFFF` that runs
+while RAM N is paged in from that page's listing (`UpdateChannel (RAM 6)`; routine_anim shows that listing's lines),
+`--page-name N=NAME` gives the page one name (`the music player (RAM 6)`), `--listing` names the rest. The page is
+the trace's start page, then each `OUT` to `$7FFD`. With either option a plain `--pc` range at `$C000-$FFFF` is RAM
+0's and `--pc N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc 6:C000-CD60` follows
+Terramex's music player in RAM 6 while the game's code at the same addresses counts as "other".
+
+routine_anim's memory map is 256 bytes a row; a range too small to make 96 px that way (two rows of 2 px for
+`$5B00-$5CFF`) is wrapped at 128, 64, 32 or 16 bytes a row, at a scale as many times larger, the label says how
+many. `--row-bytes N` fixes the count, `--grid-height` caps the map's height (512; the listing beside it as tall).
 
 `--window F:T-F:T` is in TTD units, as `time_travel` gives them; the trace is kept in `W/traces/` and read from
 there the next time.
@@ -210,4 +233,10 @@ insets on a row of their own enlarged as far as it allows. `beam_timeline.py` dr
 axis taking what the labels leave. Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
 picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one. `memanim.py --cell` is
 the pixels a byte (2, too small to read at 900 px): for an address range of up to 64 pages (16 K) take `--cell 3`, the
-compact picture is 830 px wide.
+compact picture is 830 px wide; `--cell fit` makes the grid as wide as `--width` allows (988 px at 1050, a byte 3 or 4
+px; `--cell 4` would be 1086 px), a fraction (`--cell 3.5`) that size. A small range is wrapped at fewer bytes a row
+(at least 96 px tall, `--row-bytes` fixes it), and its text is in the kit's font, as the other figures'.
+`writers_map.py --sources` gives each source range its length, both ends included (`$86D0-$8718`
+`(ItemSprites+720, 73 bytes)`: a 72-byte item and the byte after it, which the last row's outline reads). `fig_budget.py`,
+`beam_timeline.py` and `writers_map.py` colour from 28 distinct colours (`kitlib.ROUTINE_COLOURS`), so up to 28
+modules or routines repeat none; `fig_budget.py --colour MODULE=#RRGGBB` (repeatable) picks a module's colour.

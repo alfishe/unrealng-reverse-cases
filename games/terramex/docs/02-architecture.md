@@ -235,14 +235,14 @@ the menu, the selector, Help and five games). Below: `rzx24000` (2000 frames of 
 Made with `python3 ../../kit/fig_budget.py work/stage1/explorers/l1.json docs/img/arch/budget.png`
 `--ann src/game/game.ann,page=0/2/5 --ann src/select/select.ann,page=1,label=select`
 `--ann src/music/music.ann,page=6,label=music --page-name '5=stubs $5F5F, $5FE6' --by module`
-`--label "explorers: ..." --state "rzx24000: play only (2000 frames)=work/stage1/rzx/r24000/l1.json"`
+`--label "explorers: menu, selector, Help, play (15 190 frames)"`
+`--state "rzx24000: play only (2000 frames)=work/stage1/rzx/r24000/l1.json"`
 `--title "Where the CPU's time goes, per module"`.*
 
 How to read it:
 
-- A bar is a module's share of all the frames' T-states. Each bar is named on its left: read the name, not the
-  colour. The kit's palette has fewer colours than there are modules, so colours repeat (render and select (print)
-  are both red, panel and select (help) both green); a module keeps its colour in both panels.
+- A bar is a module's share of all the frames' T-states, named on its left. Each of the 25 modules has a colour of
+  its own (the legend under the panels), and a module keeps its colour in both panels.
 - In play (below) render takes 80.4 % and player 10.3 %. All of the music together is 4.8 %. There is no HALT.
 - In `explorers` (above) HALT takes 17.3 %: the menu and the selector waiting for the frame.
 - select (help) is 9.4 % of `explorers`: PrintPage's pause between the Help pages is a busy loop of about 10.2 million

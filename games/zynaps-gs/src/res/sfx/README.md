@@ -5,10 +5,10 @@ effect byte for byte (`tools/disk_media.py`). The rate in the header (11025 Hz) 
 effect at the pitch of the note the driver sends with it (`#40`), not at a stored rate. Any sound editor that keeps
 8-bit unsigned mono edits them.
 
-Where they go on the disk ([3](../../docs/03-build-and-load.md)): `fx-start` and FX 1-10 in the boot banks (bank 1
+Where they go on the disk ([3](../../../docs/03-build-and-load.md)): `fx-start` and FX 1-10 in the boot banks (bank 1
 from `$D3CB`, then banks 3, 4 and 6), uploaded at every level change; FX 11-21 in four disk sets, uploaded only in
 effects-only mode (FX 21 only with SATURNS on). Which game event plays each, from the driver
-(`src/disk/driver.ann`) and witnessed in play ([9](../../docs/09-sound.md)):
+(`src/disk/driver.ann`) and witnessed in play ([9](../../../docs/09-sound.md)):
 
 | File | Bytes | Played by (driver entry) | Game event | Note |
 | --- | ---: | --- | --- | --- |

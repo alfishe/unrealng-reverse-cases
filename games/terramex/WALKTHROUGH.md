@@ -106,8 +106,10 @@ resource file converts back to the bytes it came from
 | --- | --- | --- |
 | On a 48K at ROM speed, `POST /tape/play` after a TZX `$2A` stop block (or after an explicit `POST /tape/pause`) answers "resumed" but the tape stays paused, so block 5 never loads and the 48K path cannot reach play (stage 2's 48K tries, `work/stage2/p48/`) | open, filed in `R/TODO.md` | none |
 
-The case's own tools gained `tools/beam_paged.py` (kit/beam_timeline.py and kit/routine_anim.py with the 128K pages
-told apart, so the music player in RAM 6 is not named after the RAM 0 data at its addresses).
+The case first wrote `tools/beam_paged.py` (kit/beam_timeline.py and kit/routine_anim.py with the 128K pages told
+apart, so the music player in RAM 6 is not named after the RAM 0 data at its addresses). The kit took it over at the
+case's close (`--page N=LISTING`, `--page-name N=NAME`, `--pc N:LO-HI`); the case tool is gone and doc 4's figures
+are drawn by the kit.
 
 ## 6. The game
 

@@ -2,7 +2,8 @@
 
 Every data entry of the game image `$8000`-`$E1A7`, in address order by module (`src/game/<module>.asm`):
 tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under
-its entry, its size up to the next label. The name, the title and the description are the
+its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,
+of the whole entry's ("17 of 34"). The name, the title and the description are the
 source's (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it
 (`work/game`, local and not in the repository), then those only the case's other recordings (`read_builds`) saw, with the first of them in brackets, and, marked
 "(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE` or `BC` loaded with `nn` in the same block, reads or writes it where the recordings did not see them do so.
@@ -28,7 +29,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$869E` | `DrawList` | 35 | The draw list: 7 entries of 4 bytes, then the cursor and the power. Written by BuildDrawList, read by BallRedraw: the ball's number, its y (the integer byte, the sort key), the record's address (2 bytes). Stage 1's "5 bytes an entry" was wrong: 7 x 4 = 28 bytes, `$869E-$86B9`. | `AimCursorDraw`, `AimCursorMove`, `AimPower`, `AimPowerReset`, `AimShot` +11 | `AimCursorDraw`, `AimCursorMove`, `AimCursorReset`, `AimPower`, `AimPowerReset` +8 |
+| `$869E` | `DrawList` | 28 of 35 | The draw list: 7 entries of 4 bytes, then the cursor and the power. Written by BuildDrawList, read by BallRedraw: the ball's number, its y (the integer byte, the sort key), the record's address (2 bytes). Stage 1's "5 bytes an entry" was wrong: 7 x 4 = 28 bytes, `$869E-$86B9`. | `AimCursorDraw`, `AimCursorMove`, `AimPower`, `AimPowerReset`, `AimShot` +11 | `AimCursorDraw`, `AimCursorMove`, `AimCursorReset`, `AimPower`, `AimPowerReset` +8 |
 | `$86BA` | `CursorX` (`DrawList`+28) | 1 | the cursor's x on the cushion line, 3..252 (read with CursorY as a word) | `AimCursorDraw`, `AimCursorMove`, `AimShot`, `AimStackDy`, `DrawCursor` +3 | `AimCursorDraw`, `AimCursorReset`, `EditorAimReset` (`runs/e1`), `EditorFire` (`runs/e1`), `EditorStart` (`runs/m1`) |
 | `$86BB` | `CursorY` (`DrawList`+29) | 1 | the cursor's y, 51..180 | `AimCursorDraw`, `AimCursorMove`, `AimStackDy`, `DrawCursor`, `EditorFire` (`runs/m1`) +2 | `AimCursorDraw`, `AimCursorReset`, `EditorAimReset` (`runs/e1`), `EditorFire` (`runs/e1`), `EditorStart` (`runs/m1`) |
 | `$86BC` | `CursorSpeed` (`DrawList`+30) | 1 | the signed speed round the cushions, -6..6 (0 at rest) | `AimCursorDraw`, `AimCursorMove` | `AimCursorMove`, `AimCursorReset`, `EditorAimReset` (`runs/e1`) |
@@ -41,7 +42,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$89B5` | `ContactVars` | 15 | The ball-contact work variables. Written and read by BallContacts `$87EF` (w1 18 997 reads over the block). BallHitFlag `$89BB` is cleared at the shot's start (`$84C8`) and read by the end-of-shot task (`$83CD`) to tell whether any ball was hit. | `BallContacts`, `ShotEnd` | `BallContacts`, `ShotReset` |
+| `$89B5` | `ContactVars` | 1 of 15 | The ball-contact work variables. Written and read by BallContacts `$87EF` (w1 18 997 reads over the block). BallHitFlag `$89BB` is cleared at the shot's start (`$84C8`) and read by the end-of-shot task (`$83CD`) to tell whether any ball was hit. | `BallContacts`, `ShotEnd` | `BallContacts`, `ShotReset` |
 | `$89B6` | `ContactSignsFound` (`ContactVars`+1) | 1 | the signs at the contact found | `BallContacts` (`runs/w1`) | `BallContacts` (`runs/w1`) |
 | `$89B7` | `ContactRecordPtr` (`ContactVars`+2) | 1 | the low byte of the CollisionRecords pointer | `BallContacts` (`runs/w1`) | `BallContacts` (`runs/w1`) |
 | `$89B8` | `ContactFound` (`ContactVars`+3) | 1 | the pointer's high byte (`$DE`), cleared before the scan: non-zero = a contact found | `BallContacts` | `BallContacts` |
@@ -65,7 +66,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$8A88` | `BallRecords` | 98 | The seven ball records of the player at the table: cue ball, balls 1-6. 14 bytes a ball: +0/+1 x and +2/+3 y, 8.8 fixed point in screen pixels, fraction first, the centre of the ball; +4/+5 vx and +6/+7 vy, 8.8 two's complement in pixels a tick; +8 / +9 the friction steps x / y, signed bytes in 1/256 pixel a tick (FrictionSteps `$90F5`, negated by the bounces `$8DCB` / `$8DFF`, swapped by `$8D7D`); +10/+11 the screen x / y of the sprite as last drawn (x - 7, y - 7: the corner of the 16 x 16 ball); +12 the pocket the ball fell into (1 top left, 2 top middle, 3 top right, 4 bottom right, 5 bottom middle, 6 bottom left, written by PocketStore `$8BE3`, 0 = none, cleared at each shot by `$84C7`); +13 flags. +13: bit 7 on the table, bit 6 moving, bit 5 potted (fallen, waiting for the redraw `$8297` to move it to the row of potted balls and clear the byte), bit 4 to be redrawn. `$80` at rest, `$D0` rolling (moving and redrawn), `$90` = on the table and to be redrawn. Positions from `$9D5D` by `$9D2C`. Read by every build; the cue ball's x pixel `$8A89` most (w1 28 930 reads). +12 of balls 1-6 read 29-42 times in w1 (the end-of-shot test `$83DC` and the wrong-pocket test `$8C37`), +12 of the cue ball once in p2 (the turn swap). | `AimShot`, `AimStackDy`, `AimStoreVx`, `BallContacts`, `BuildDrawList` +31 | `AimStoreVx`, `AimStoreVy`, `ClearBallMotion`, `FrictionSteps`, `MoveBall` +19 |
+| `$8A88` | `BallRecords` | 14 of 98 | The seven ball records of the player at the table: cue ball, balls 1-6. 14 bytes a ball: +0/+1 x and +2/+3 y, 8.8 fixed point in screen pixels, fraction first, the centre of the ball; +4/+5 vx and +6/+7 vy, 8.8 two's complement in pixels a tick; +8 / +9 the friction steps x / y, signed bytes in 1/256 pixel a tick (FrictionSteps `$90F5`, negated by the bounces `$8DCB` / `$8DFF`, swapped by `$8D7D`); +10/+11 the screen x / y of the sprite as last drawn (x - 7, y - 7: the corner of the 16 x 16 ball); +12 the pocket the ball fell into (1 top left, 2 top middle, 3 top right, 4 bottom right, 5 bottom middle, 6 bottom left, written by PocketStore `$8BE3`, 0 = none, cleared at each shot by `$84C7`); +13 flags. +13: bit 7 on the table, bit 6 moving, bit 5 potted (fallen, waiting for the redraw `$8297` to move it to the row of potted balls and clear the byte), bit 4 to be redrawn. `$80` at rest, `$D0` rolling (moving and redrawn), `$90` = on the table and to be redrawn. Positions from `$9D5D` by `$9D2C`. Read by every build; the cue ball's x pixel `$8A89` most (w1 28 930 reads). +12 of balls 1-6 read 29-42 times in w1 (the end-of-shot test `$83DC` and the wrong-pocket test `$8C37`), +12 of the cue ball once in p2 (the turn swap). | `AimShot`, `AimStackDy`, `AimStoreVx`, `BallContacts`, `BuildDrawList` +31 | `AimStoreVx`, `AimStoreVy`, `ClearBallMotion`, `FrictionSteps`, `MoveBall` +19 |
 | `$8A96` | `BallOne` (`BallRecords`+14) | 14 | ball 1 | `BallContacts`, `BuildDrawList`, `DrawAllBalls`, `DrawPottedRow`, `EraseBallsUnderBanner` +28 | `ClearBallMotion`, `ParkBalls`, `RackBalls`, `RackStep`, `ResetBallPositions` +15 |
 | `$8AA4` | `BallTwo` (`BallRecords`+28) | 14 | ball 2 | `BallContacts`, `BuildDrawList`, `DrawAllBalls`, `DrawPottedRow`, `EraseBallsUnderBanner` +26 | `ClearBallMotion`, `ParkBalls`, `RackBalls`, `RackStep`, `ResetBallPositions` +12 |
 | `$8AB2` | `BallThree` (`BallRecords`+42) | 14 | ball 3 | `BallContacts`, `BuildDrawList`, `DrawAllBalls`, `DrawPottedRow`, `EraseBallsUnderBanner` +24 | `ClearBallMotion`, `ParkBalls`, `RackBalls`, `RackStep`, `ResetBallPositions` +11 |
@@ -98,7 +99,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$969D` | `HudTexts` | 73 | The HUD's text records (PrintText format: row, column, attribute, length, text). All read: NewGameScreen prints `$969D`, `$96AB`, `$96B9`, `$96BF`, `$96D4`, `$96DD`; UpBlinkTask `$96E6` alternates `$969D` / `$96A4` and `$96AB` / `$96B2`; ShotsBlinkTask `$970E` reprints `$96DD`. | `PrintText` | - |
+| `$969D` | `HudTexts` | 7 of 73 | The HUD's text records (PrintText format: row, column, attribute, length, text). All read: NewGameScreen prints `$969D`, `$96AB`, `$96B9`, `$96BF`, `$96D4`, `$96DD`; UpBlinkTask `$96E6` alternates `$969D` / `$96A4` and `$96AB` / `$96B2`; ShotsBlinkTask `$970E` reprints `$96DD`. | `PrintText` | - |
 | `$96A4` | `HudOneUpBlank` (`HudTexts`+7) | 7 | row 0, col 0, attr `$39`, 3: "   " | `PrintText` | - |
 | `$96AB` | `HudTwoUp` (`HudTexts`+14) | 7 | row 0, col 23, attr `$38`, 3: "2up" | `PrintText` | - |
 | `$96B2` | `HudTwoUpBlank` (`HudTexts`+21) | 7 | row 0, col 23, attr `$39`, 3: "   " | `PrintText` | - |
@@ -106,14 +107,14 @@ Written by `kit/refdocs.py`.
 | `$96BF` | `HudRowOneBlank` (`HudTexts`+34) | 21 | 17 spaces at (1, 0), attr `$39`: the power box | `PrintText` | - |
 | `$96D4` | `HudFrame` (`HudTexts`+55) | 9 | row 1, col 17, attr `$38`, 5: "frame" | `PrintText` | - |
 | `$96DD` | `HudShots` (`HudTexts`+64) | 9 | row 1, col 26, attr `$38`, 5: "shots" | `PrintText` | - |
-| `$9740` | `HudLastShot` | 20 | The two halves of the "last shot" blink (PrintText records at row 1, col 26, attr `$38`, 6 characters). Printed by ShotsBlinkTask `$970E`; both read in game, w1, f1. | `PrintText` (`runs/f1`) | - |
+| `$9740` | `HudLastShot` | 10 of 20 | The two halves of the "last shot" blink (PrintText records at row 1, col 26, attr `$38`, 6 characters). Printed by ShotsBlinkTask `$970E`; both read in game, w1, f1. | `PrintText` (`runs/f1`) | - |
 | `$974A` | `HudShot` (`HudLastShot`+10) | 10 | row 1, col 26, attr `$38`, 6: "  shot" | `PrintText` (`runs/f1`) | - |
 
 ## gameover
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9890` | `GameOverTexts` | 37 | GAME OVER and the losing player (PrintText records, double width, attr `$60`). GameOverText read by game, w1, f1; the two player lines are not read in any build (the recordings' games over were one-player or ended by BREAK). | `PrintText` | - |
+| `$9890` | `GameOverTexts` | 13 of 37 | GAME OVER and the losing player (PrintText records, double width, attr `$60`). GameOverText read by game, w1, f1; the two player lines are not read in any build (the recordings' games over were one-player or ended by BREAK). | `PrintText` | - |
 | `$989D` | `GameOverPlayer1` (`GameOverTexts`+13) | 12 | row 11, col 8, attr `$E0`, 8: "PLAYER 1" | - | - |
 | `$98A9` | `GameOverPlayer2` (`GameOverTexts`+25) | 12 | row 11, col 8, attr `$E0`, 8: "PLAYER 2" | - | - |
 
@@ -121,7 +122,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9B2A` | `ScoreVars` | 12 | The tally's and the turns' variables. Readers and writers: the tally routines; CurrentPlayer by the game start `$8052`, TurnSwap `$9C34` and the hall of fame `$A79C` / `$A7C2` / `$AD1C`; UpBlink by StartAim `$8432` / `$8483`; LastShotBlink `$843E` / `$849F`. | `UpBlinkTask`, `AddScoreStep` (`runs/w1`), `AddTerm` (`runs/w1`), `MultiplyTerm` (`runs/w1`), `NextTurn` (`runs/p2`) +8 | `GameRestart`, `NewGameScreen`, `ScoreTally`, `StartAim`, `StopShotTasks` +9 |
+| `$9B2A` | `ScoreVars` | 2 of 12 | The tally's and the turns' variables. Readers and writers: the tally routines; CurrentPlayer by the game start `$8052`, TurnSwap `$9C34` and the hall of fame `$A79C` / `$A7C2` / `$AD1C`; UpBlink by StartAim `$8432` / `$8483`; LastShotBlink `$843E` / `$849F`. | `UpBlinkTask`, `AddScoreStep` (`runs/w1`), `AddTerm` (`runs/w1`), `MultiplyTerm` (`runs/w1`), `NextTurn` (`runs/p2`) +8 | `GameRestart`, `NewGameScreen`, `ScoreTally`, `StartAim`, `StopShotTasks` +9 |
 | `$9B2C` | `ShotScore` (`ScoreVars`+2) | 2 | word: the shot's score (without the x 10), counted down into the player's score | `AddTerm` (`runs/w1`), `ScoreTally` (`runs/w1`), `TallyTermTotal` (`runs/w1`) | `ScoreTally`, `AddTerm` (`runs/w1`) |
 | `$9B2E` | `PotMultiplier` (`ScoreVars`+4) | 1 | the pending term's pocket multiplier 1-6 | `AddTerm` (`runs/w1`), `PrintTerm` (`runs/w1`) | `ScoreTally` (`runs/w1`) |
 | `$9B2F` | `PotBall` (`ScoreVars`+5) | 1 | the pending term's ball number 1-6 | `AddTerm` (`runs/w1`), `PrintTerm` (`runs/w1`) | `ScoreTally` (`runs/w1`) |
@@ -135,12 +136,12 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9B8E` | `FrameBanner` | 42 | The FRAME banner and the blank line that wipes it (PrintText records; the row and column bytes are patched). Written by ShowFrameBanner (`$9B51`, `$9B5E`, `$9B7A`, `$9B85`) and NextTurn (`$9808`); read by PrintText. In the image `$9B8E` = row 11, col 9. | `PrintText` | `ShowFrameBanner`, `NextTurnResume` (code) |
+| `$9B8E` | `FrameBanner` | 10 of 42 | The FRAME banner and the blank line that wipes it (PrintText records; the row and column bytes are patched). Written by ShowFrameBanner (`$9B51`, `$9B5E`, `$9B7A`, `$9B85`) and NextTurn (`$9808`); read by PrintText. In the image `$9B8E` = row 11, col 9. | `PrintText` | `ShowFrameBanner`, `NextTurnResume` (code) |
 | `$9B98` | `FrameBannerBlank` (`FrameBanner`+10) | 32 | row (patched 9 / 11), col 2, attr `$60`, 28 spaces | `PrintText` | `ShowFrameBanner`, `NextTurnResume` (code) |
 | `$9C06` | `ShotsPerFrame` | 9 | The shots of frames 1-9: 5, 5, 4, 4, 4, 3, 3, 3, 3. Read by ShotsForFrame `$9BE6` (index frame - 1). Frames 1-4 read (w1 reached frame 4); `$9C0A-$9C0E` (frames 5-9) read by no build. | `ShotsForFrame` | - |
-| `$9C8F` | `PlayerBannerTexts` | 24 | PLAYER 1 / PLAYER 2 (PrintText records). Read by PlayerBanner (p2). Wiped by ShowFrameBanner's blank of row 9. | `PrintText` (`runs/p2`) | - |
+| `$9C8F` | `PlayerBannerTexts` | 12 of 24 | PLAYER 1 / PLAYER 2 (PrintText records). Read by PlayerBanner (p2). Wiped by ShowFrameBanner's blank of row 9. | `PrintText` (`runs/p2`) | - |
 | `$9C9B` | `PlayerBanner2` (`PlayerBannerTexts`+12) | 12 | row 9, col 8, attr `$E0`, 8: "PLAYER 2" | `PrintText` (`runs/p2`) | - |
-| `$9CFD` | `FoulTexts` | 47 | The three foul messages (PrintText records, double width, attr `$38`, row 3, centred). Read by MessagesTask `$9CB7` step 2. | `PrintText` | - |
+| `$9CFD` | `FoulTexts` | 14 of 47 | The three foul messages (PrintText records, double width, attr `$38`, row 3, centred). Read by MessagesTask `$9CB7` step 2. | `PrintText` | - |
 | `$9D0B` | `WrongOrderText` (`FoulTexts`+14) | 16 | row 3, col 4, attr `$B8`, 12: "WRONG ORDER!" | `PrintText` (`runs/v1`) | - |
 | `$9D1B` | `WrongPocketText` (`FoulTexts`+30) | 17 | row 3, col 3, attr `$B8`, 13: "WRONG POCKET!" | `PrintText` (`runs/v1`) | - |
 | `$9D5D` | `StartPositions` | 14 | The rack: x, y of the cue ball and balls 1-6. (40, 115), (190, 115), (205, 106), (205, 124), (221, 98), (221, 115), (221, 132): a triangle of six with its point at ball 1. Read by ResetBallPositions; the rack scripts end on the same points (RackScripts0). | `ResetBallPositions` | - |
@@ -155,7 +156,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$9F43` | `PlayerVars` | 38 | The players' scores, frames, shots, lives, the message step and the six rack script states. The pairs "current, other" (`$9F43` / `$9F44`, `$9F4B` / `$9F4C`, `$9F4E` / `$9F4F`) are swapped by TurnSwap `$9C15`; the scores stay by player. Set by NewGameScreen `$95DA`; the hi score is 300 (shown 3000) in the image, kept across games. | `DrawLives`, `GameOver`, `GameOverHallOfFame`, `LastShotBeepTask`, `LoseLife` +22 | `GameRestart`, `LoseLife`, `MessagesTask`, `NewGameScreen`, `PrintPocketMark` +12 |
+| `$9F43` | `PlayerVars` | 1 of 38 | The players' scores, frames, shots, lives, the message step and the six rack script states. The pairs "current, other" (`$9F43` / `$9F44`, `$9F4B` / `$9F4C`, `$9F4E` / `$9F4F`) are swapped by TurnSwap `$9C15`; the scores stay by player. Set by NewGameScreen `$95DA`; the hi score is 300 (shown 3000) in the image, kept across games. | `DrawLives`, `GameOver`, `GameOverHallOfFame`, `LastShotBeepTask`, `LoseLife` +22 | `GameRestart`, `LoseLife`, `MessagesTask`, `NewGameScreen`, `PrintPocketMark` +12 |
 | `$9F44` | `PocketTurnOther` (`PlayerVars`+1) | 1 | the other player's | `TurnSwap` (`runs/p2`) | `NewGameScreen`, `TurnSwap` (`runs/p2`) |
 | `$9F45` | `ScorePlayer1` (`PlayerVars`+2) | 2 | word, score / 10 | `GameOver`, `GameOverHallOfFame`, `PrintHudNumber`, `AddScoreStep` (`runs/w1`), `GameOverEnd` (code) | `NewGameScreen`, `AddScoreStep` (`runs/w1`) |
 | `$9F47` | `ScorePlayer2` (`PlayerVars`+4) | 2 | word | `GameOver`, `PrintHudNumber`, `AddScoreStep` (`runs/p2`), `GameOverScore2` (code), `TwoPlayers` (code) +2 | `NewGameScreen`, `AddScoreStep` (`runs/p2`) |
@@ -169,7 +170,7 @@ Written by `kit/refdocs.py`.
 | `$9F51` | `RackScriptState` (`PlayerVars`+14) | 24 | 6 x 4 bytes, balls 1-6: script pointer (word), wait count, move count | `RackStep` | `RackBalls`, `RackStep` |
 | `$A0C4` | `RackSets` | 12 | The six rack sets: pointers to six script pointers each (balls 1-6). Read by RackBalls (`$9F83`): sets 0 and 1 read; `$A0C8-$A0CF` (sets 2-5, frames 5-12) read by no build. Set 1 `$A162` and sets 2-5 (`$A1E4`, `$A29C`, `$A38E`, `$A4F8`) are past this fragment. | `RackBalls` | - |
 | `$A0D0` | `RackScripts0` | 12 | Set 0 (frames 1-2): the scripts of balls 1-6 | `RackBalls` | - |
-| `$A0DC` | `RackScript0Ball1` | 134 | Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end. The scripts of set 0 all start at a left corner pocket, (7, 175) or (7, 55), run diagonally to y 115, along the middle line, turn into their place and end exactly on StartPositions. Waits 75, 60, 45, 30, 15, 0: ball 6 rolls first. | `RackStep` | - |
+| `$A0DC` | `RackScript0Ball1` | 17 of 134 | Ball 1: wait 75; at (7, 175); 30 x (+2, -2); 61 x (+2, 0); at (190, 115); end. The scripts of set 0 all start at a left corner pocket, (7, 175) or (7, 55), run diagonally to y 115, along the middle line, turn into their place and end exactly on StartPositions. Waits 75, 60, 45, 30, 15, 0: ball 6 rolls first. | `RackStep` | - |
 | `$A0ED` | `RackScript0Ball2` (`RackScript0Ball1`+17) | 25 | ball 2: set0.ball2 | `RackStep` | - |
 | `$A106` | `RackScript0Ball3` (`RackScript0Ball1`+42) | 25 | ball 3: set0.ball3 | `RackStep` | - |
 | `$A11F` | `RackScript0Ball4` (`RackScript0Ball1`+67) | 25 | ball 4: set0.ball4 | `RackStep` | - |
@@ -181,35 +182,35 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$A162` | `RackSet1` | 12 | Rack-in set 1: the script of each object ball 1-6, the frames 3-4 rack (stage-1 w1 racked frames 3 and 4 with it). Read through the set table at `$A0C4` by the racking `$9F6F` (index ((frame - 1) / 2) mod 6, the frame from `$9F4B`): w1 read every byte of this set twice (frames 3 and 4 of its game; l1sum.py --reads A162-A1E3: w1 only, 1562 reads). No other recording reached frame 3. | `RackBalls` (`runs/w1`), `RackStep` (`runs/w1`) | - |
-| `$A16E` | `Rack1Ball1` | 118 | The scripts of rack-in set 1, ball 1 first. The six scripts of set 1 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | `RackStep` (`runs/w1`) | - |
+| `$A16E` | `Rack1Ball1` | 17 of 118 | The scripts of rack-in set 1, ball 1 first. The six scripts of set 1 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | `RackStep` (`runs/w1`) | - |
 | `$A17F` | `Rack1Ball2` (`Rack1Ball1`+17) | 21 | ball 2: wait 62 frames | `RackStep` (`runs/w1`) | - |
 | `$A194` | `Rack1Ball3` (`Rack1Ball1`+38) | 21 | ball 3: wait 62 frames | `RackStep` (`runs/w1`) | - |
 | `$A1A9` | `Rack1Ball4` (`Rack1Ball1`+59) | 21 | ball 4: wait 90 frames | `RackStep` (`runs/w1`) | - |
 | `$A1BE` | `Rack1Ball5` (`Rack1Ball1`+80) | 17 | ball 5: wait 0 frames | `RackStep` (`runs/w1`) | - |
 | `$A1CF` | `Rack1Ball6` (`Rack1Ball1`+97) | 21 | ball 6: wait 90 frames | `RackStep` (`runs/w1`) | - |
 | `$A1E4` | `RackSet2` | 12 | Rack-in set 2: the script of each object ball 1-6, the frames 5-6 rack. Reached only through the set table `$A0C4` (the word at `$A0C8`) when the racking `$9F6F` racks frame 5 or 6 (or 17-18 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position (`$9D5D`) (work/stage2/ann/04-scratch/racks.py). | - | - |
-| `$A1F0` | `Rack2Ball1` | 172 | The scripts of rack-in set 2, ball 1 first. The six scripts of set 2 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
+| `$A1F0` | `Rack2Ball1` | 26 of 172 | The scripts of rack-in set 2, ball 1 first. The six scripts of set 2 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
 | `$A20A` | `Rack2Ball2` (`Rack2Ball1`+26) | 30 | ball 2: wait 111 frames | - | - |
 | `$A228` | `Rack2Ball3` (`Rack2Ball1`+56) | 30 | ball 3: wait 46 frames | - | - |
 | `$A246` | `Rack2Ball4` (`Rack2Ball1`+86) | 30 | ball 4: wait 0 frames | - | - |
 | `$A264` | `Rack2Ball5` (`Rack2Ball1`+116) | 30 | ball 5: wait 65 frames | - | - |
 | `$A282` | `Rack2Ball6` (`Rack2Ball1`+146) | 26 | ball 6: wait 130 frames | - | - |
 | `$A29C` | `RackSet3` | 12 | Rack-in set 3: the script of each object ball 1-6, the frames 7-8 rack. Reached only through the set table `$A0C4` (the word at `$A0CA`) when the racking `$9F6F` racks frame 7 or 8 (or 19-20 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position (`$9D5D`) (work/stage2/ann/04-scratch/racks.py). | - | - |
-| `$A2A8` | `Rack3Ball6` | 230 | The scripts of rack-in set 3, ball 6 first. The six scripts of set 3 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
+| `$A2A8` | `Rack3Ball6` | 41 of 230 | The scripts of rack-in set 3, ball 6 first. The six scripts of set 3 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
 | `$A2D1` | `Rack3Ball4` (`Rack3Ball6`+41) | 41 | ball 4: wait 22 frames | - | - |
 | `$A2FA` | `Rack3Ball2` (`Rack3Ball6`+82) | 41 | ball 2: wait 44 frames | - | - |
 | `$A323` | `Rack3Ball5` (`Rack3Ball6`+123) | 33 | ball 5: wait 11 frames | - | - |
 | `$A344` | `Rack3Ball3` (`Rack3Ball6`+156) | 41 | ball 3: wait 33 frames | - | - |
 | `$A36D` | `Rack3Ball1` (`Rack3Ball6`+197) | 33 | ball 1: wait 55 frames | - | - |
 | `$A38E` | `RackSet4` | 12 | Rack-in set 4: the script of each object ball 1-6, the frames 9-10 rack. Reached only through the set table `$A0C4` (the word at `$A0CC`) when the racking `$9F6F` racks frame 9 or 10 (or 21-22 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position (`$9D5D`) (work/stage2/ann/04-scratch/racks.py). | - | - |
-| `$A39A` | `Rack4Ball5` | 350 | The scripts of rack-in set 4, ball 5 first. The six scripts of set 4 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
+| `$A39A` | `Rack4Ball5` | 55 of 350 | The scripts of rack-in set 4, ball 5 first. The six scripts of set 4 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
 | `$A3D1` | `Rack4Ball2` (`Rack4Ball5`+55) | 57 | ball 2: wait 18 frames | - | - |
 | `$A40A` | `Rack4Ball1` (`Rack4Ball5`+112) | 49 | ball 1: wait 36 frames | - | - |
 | `$A43B` | `Rack4Ball3` (`Rack4Ball5`+161) | 63 | ball 3: wait 0 frames | - | - |
 | `$A47A` | `Rack4Ball6` (`Rack4Ball5`+224) | 65 | ball 6: wait 18 frames | - | - |
 | `$A4BB` | `Rack4Ball4` (`Rack4Ball5`+289) | 61 | ball 4: wait 36 frames | - | - |
 | `$A4F8` | `RackSet5` | 12 | Rack-in set 5: the script of each object ball 1-6, the frames 11-12 rack. Reached only through the set table `$A0C4` (the word at `$A0CE`) when the racking `$9F6F` racks frame 11 or 12 (or 23-24 after the wrap). No recording read a byte (l1sum.py --reads A1E4-A701: game, w1, f1, p2, v1, m1 all zero; w1, the longest game, reached frame 4). Known only from the code; every script decodes cleanly and ends on its ball's rack position (`$9D5D`) (work/stage2/ann/04-scratch/racks.py). | - | - |
-| `$A504` | `Rack5Ball1` | 510 | The scripts of rack-in set 5, ball 1 first. The six scripts of set 5 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
+| `$A504` | `Rack5Ball1` | 79 of 510 | The scripts of rack-in set 5, ball 1 first. The six scripts of set 5 (commands: 0 end, 1 x y place, 2 n dx dy move n frames by dx,dy, 3 n wait n frames; see RackSet1). Interpreted by the racking step `$A05E`. | - | - |
 | `$A553` | `Rack5Ball2` (`Rack5Ball1`+79) | 87 | ball 2: wait 44 frames | - | - |
 | `$A5AA` | `Rack5Ball3` (`Rack5Ball1`+166) | 87 | ball 3: wait 33 frames | - | - |
 | `$A601` | `Rack5Ball4` (`Rack5Ball1`+253) | 87 | ball 4: wait 22 frames | - | - |
@@ -223,10 +224,10 @@ Written by `kit/refdocs.py`.
 | `$AA6A` | `ScoreBlank` | 10 | A text record: row, column (both patched by BlankScore), attribute `$0F`, 6 spaces. Read by `$9E65` from BlankScore only (w1 20 reads). The text record format: see MenuTexts `$B464`. | `PrintText` (`runs/w1`) | `BlankScore` (`runs/w1`) |
 | `$AAD8` | `SolidLine` | 7 | Seven `$FF` bytes: a solid 56-pixel line of a flag. Read by RestoreFlagLine through CopyNameLines (w1 2688 reads). | `CopyNameLines` (`runs/w1`) | - |
 | `$AB41` | `FlagTail` | 58 | The flag's ragged tail: 29 lines of 2 bytes (right byte, left byte), XORed at x + 48. Read by XorTailLines (w1 43558 reads). Lines 0-4: right `$00`, left `$FF` (the flag goes on 8 pixels); lines 5-23: left `$FF`, right `$7F` `$7E` `$7C` `$78` `$78` `$7C` `$7E` `$7F` repeating (the ragged edge, two notches and a part); lines 24-28 (`$AB71-$AB7A`): the curled bottom corner below the 24-line field. | `XorTailLines` (`runs/w1`) | - |
-| `$AC08` | `HofTable` | 213 | The hall of fame: 3 slots of 71 bytes; slot 1 centre top (james 300), slot 2 left (francis 200), slot 3 right (bill 100). Read by CountBeaten (the scores: game and f1 read only slot 3's score), InsertEntry, ShowHallOfFame and the slide routines; written by InsertEntry, RenderName (the bitmaps) and the slide routines (+9/+`$0A`, +`$0E`). In the image: +0/+1 score, +2..+8 the name (padded with spaces), +9/+`$0A` the flag's x / y (set by DrawFlag), +`$0B`/+`$0C` the pole's x / y in pixels, +`$0D` the flag's attribute, +`$0E` bit 0 = the flag moves, +`$0F`..+`$46` the name bitmap (56 bytes, rendered at the first draw). w1 wrote "vp" with 270 into slot 2 (screen w1 frame 14000: james 003000 centre, vp 002700 left, francis 002000 right). | `TestSlot`, `BlankScore` (`runs/w1`), `CopyNameLines` (`runs/w1`), `DrawFlag` (`runs/w1`), `DrawFlagTail` (`runs/w1`) +10 | `GameOverHallOfFame`, `DrawFlag` (`runs/w1`), `InsertEntry` (`runs/w1`), `RenderChar` (`runs/w1`), `SlideFlagDown` (`runs/w1`) +2 |
+| `$AC08` | `HofTable` | 71 of 213 | The hall of fame: 3 slots of 71 bytes; slot 1 centre top (james 300), slot 2 left (francis 200), slot 3 right (bill 100). Read by CountBeaten (the scores: game and f1 read only slot 3's score), InsertEntry, ShowHallOfFame and the slide routines; written by InsertEntry, RenderName (the bitmaps) and the slide routines (+9/+`$0A`, +`$0E`). In the image: +0/+1 score, +2..+8 the name (padded with spaces), +9/+`$0A` the flag's x / y (set by DrawFlag), +`$0B`/+`$0C` the pole's x / y in pixels, +`$0D` the flag's attribute, +`$0E` bit 0 = the flag moves, +`$0F`..+`$46` the name bitmap (56 bytes, rendered at the first draw). w1 wrote "vp" with 270 into slot 2 (screen w1 frame 14000: james 003000 centre, vp 002700 left, francis 002000 right). | `TestSlot`, `BlankScore` (`runs/w1`), `CopyNameLines` (`runs/w1`), `DrawFlag` (`runs/w1`), `DrawFlagTail` (`runs/w1`) +10 | `GameOverHallOfFame`, `DrawFlag` (`runs/w1`), `InsertEntry` (`runs/w1`), `RenderChar` (`runs/w1`), `SlideFlagDown` (`runs/w1`) +2 |
 | `$AC4F` | `HofSlot2` (`HofTable`+71) | 71 | slot 2: score 200, "francis" | `BlankScore` (`runs/w1`), `CopyNameLines` (`runs/w1`), `DrawFlag` (`runs/w1`), `DrawFlagTail` (`runs/w1`), `DrawNameBitmap` (`runs/w1`) +10 | `GameOverHallOfFame`, `DrawFlag` (`runs/w1`), `InsertEntry` (`runs/w1`), `RenderChar` (`runs/w1`), `SlideFlagDown` (`runs/w1`) +2 |
 | `$AC96` | `HofSlot3` (`HofTable`+142) | 71 | slot 3: score 100, " bill  " | `TestSlot`, `BlankScore` (`runs/w1`), `CopyNameLines` (`runs/w1`), `DrawFlag` (`runs/w1`), `DrawFlagTail` (`runs/w1`) +9 | `GameOverHallOfFame`, `DrawFlag` (`runs/w1`), `InsertEntry` (`runs/w1`), `RenderChar` (`runs/w1`), `SlideFlagDown` (`runs/w1`) +2 |
-| `$ACDD` | `NewEntry1` | 18 | The new entries: player 1's score and name, then player 2's (9 bytes each, the format of a slot's first 9). Written by GameOverHallOfFame (the score from `$9F45` / `$9F47`, the name from NameBuffer `$B227`), read by InsertEntry. w1 wrote and read NewEntry1 (11 reads); NewEntry2 is read and written only on the two-player path, which no recording ran. | `InsertEntry` (`runs/w1`) | `GameOverHallOfFame` |
+| `$ACDD` | `NewEntry1` | 2 of 18 | The new entries: player 1's score and name, then player 2's (9 bytes each, the format of a slot's first 9). Written by GameOverHallOfFame (the score from `$9F45` / `$9F47`, the name from NameBuffer `$B227`), read by InsertEntry. w1 wrote and read NewEntry1 (11 reads); NewEntry2 is read and written only on the two-player path, which no recording ran. | `InsertEntry` (`runs/w1`) | `GameOverHallOfFame` |
 | `$ACDF` | `NewEntryName1` (`NewEntry1`+2) | 7 | player 1's name | `InsertEntry` (`runs/w1`) | `GameOverHallOfFame` (`runs/w1`) |
 | `$ACE6` | `NewEntry2` (`NewEntry1`+9) | 2 | player 2's score | - | `TwoPlayersNameSecond` (code), `TwoPlayersSecond` (code) |
 | `$ACE8` | `NewEntryName2` (`NewEntry1`+11) | 7 | player 2's name | - | - |
@@ -236,7 +237,7 @@ Written by `kit/refdocs.py`.
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
 | `$AD3D` | `HofTextList` | 18 | The eight text records of the name page, then a zero word. Read by NameEntryPage (w1 18 reads). | `NameEntryPage` (`runs/w1`) | - |
-| `$AD4F` | `HofTitle` | 323 | "congratulations!" (row 0, column 8, attribute `$30`, 16 characters). The text records of the page (format: MenuTexts `$B464`), all attribute `$30`, read by NameEntryPage in w1 (the "player" titles by none). | `PrintText` (`runs/w1`) | - |
+| `$AD4F` | `HofTitle` | 20 of 323 | "congratulations!" (row 0, column 8, attribute `$30`, 16 characters). The text records of the page (format: MenuTexts `$B464`), all attribute `$30`, read by NameEntryPage in w1 (the "player" titles by none). | `PrintText` (`runs/w1`) | - |
 | `$AD63` | `HofTitleP1` (`HofTitle`+20) | 30 | at (0, 3), 26 chars | `PrintText` (`runs/w1`) | - |
 | `$AD81` | `HofTitleP2` (`HofTitle`+50) | 30 | at (0, 3), 26 chars | `PrintText` (`runs/w1`) | - |
 | `$AD9F` | `HofText1` (`HofTitle`+80) | 36 | at (2, 0), 32 chars | `PrintText` (`runs/w1`) | - |
@@ -257,11 +258,11 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B407` | `PromptLeft` | 93 | "select key for left ?" (row 21, column 2, attribute `$0F`, 27 characters, space-padded). The three prompts, read by RedefinePrompt (m1 186 reads); each covers the key line at row 21. | `PrintText` (`runs/m1`) | - |
+| `$B407` | `PromptLeft` | 31 of 93 | "select key for left ?" (row 21, column 2, attribute `$0F`, 27 characters, space-padded). The three prompts, read by RedefinePrompt (m1 186 reads); each covers the key line at row 21. | `PrintText` (`runs/m1`) | - |
 | `$B426` | `PromptRight` (`PromptLeft`+31) | 31 | "select key for right ?" | `PrintText` (`runs/m1`) | - |
 | `$B445` | `PromptFire` (`PromptLeft`+62) | 31 | "select key for fire ?" | `PrintText` (`runs/m1`) | - |
 | `$B464` | `MenuTexts` | 32 | The menu page's 15 text records, then a zero word. Read by MainMenu (every recording, m1 128 reads). | `MainMenu` | - |
-| `$B484` | `MenuTitle` | 385 | row 0 column 9, 14: "- video pool -". The records of MenuTexts, all attribute `$0F` (screen m1 frame 4620); read by MainMenu in every recording. | `PrintText` | - |
+| `$B484` | `MenuTitle` | 18 of 385 | row 0 column 9, 14: "- video pool -". The records of MenuTexts, all attribute `$0F` (screen m1 frame 4620); read by MainMenu in every recording. | `PrintText` | - |
 | `$B496` | `MenuSelect` (`MenuTitle`+18) | 20 | at (2, 0), 16 chars | `PrintText` | - |
 | `$B4AA` | `MenuOnePlayer` (`MenuTitle`+38) | 22 | at (4, 2), 18 chars | `PrintText` | - |
 | `$B4C0` | `MenuTwoPlayers` (`MenuTitle`+60) | 22 | at (5, 2), 18 chars | `PrintText` | - |
@@ -279,12 +280,12 @@ Written by `kit/refdocs.py`.
 | `$B5D0` | `VariationStandard` (`MenuTitle`+332) | 19 | (15, 16), 15 | `PrintText` | - |
 | `$B5E3` | `Variation1Line` (`MenuTitle`+351) | 17 | (15, 16), 13 | `PrintText` (`runs/w1`) | - |
 | `$B5F4` | `Variation2Line` (`MenuTitle`+368) | 17 | (15, 16), 13; no build reads it | `PrintText` (`runs/w1`) | - |
-| `$B65F` | `KeysLine` | 31 | "left=    right=    fire=   " (row 21, column 2, attribute `$0F`, 27 characters); the names filled in. Written by ShowKeys, read by `$9E65` (every recording). | `PrintText` | `KeyName` |
+| `$B65F` | `KeysLine` | 9 of 31 | "left=    right=    fire=   " (row 21, column 2, attribute `$0F`, 27 characters); the names filled in. Written by ShowKeys, read by `$9E65` (every recording). | `PrintText` | `KeyName` |
 | `$B668` | `KeysLineLeft` (`KeysLine`+9) | 10 | the left key's name (3 characters) | `PrintText` | `KeyName` |
 | `$B672` | `KeysLineRight` (`KeysLine`+19) | 9 | the right key's name | `PrintText` | `KeyName` |
 | `$B67B` | `KeysLineFire` (`KeysLine`+28) | 3 | the fire key's name | `PrintText` | `KeyName` |
 | `$B731` | `VariationTexts` | 28 | The variations page's 13 text records, then a zero word. Read by VariationsPage (v1 56, m1 28 reads). | `VariationsPage` (`runs/v1`) | - |
-| `$B74D` | `VariationsTitle` | 335 | row 0 column 6, 19: "- game variations -". The records of VariationTexts, attribute `$0F`, read by VariationsPage in v1 and m1. | `PrintText` (`runs/v1`) | - |
+| `$B74D` | `VariationsTitle` | 23 of 335 | row 0 column 6, 19: "- game variations -". The records of VariationTexts, attribute `$0F`, read by VariationsPage in v1 and m1. | `PrintText` (`runs/v1`) | - |
 | `$B764` | `VariationsSelect` (`VariationsTitle`+23) | 20 | at (2, 0), 16 chars | `PrintText` (`runs/v1`) | - |
 | `$B778` | `VariationsS1` (`VariationsTitle`+43) | 33 | at (4, 2), 29 chars | `PrintText` (`runs/v1`) | - |
 | `$B799` | `VariationsS2` (`VariationsTitle`+76) | 26 | at (5, 5), 22 chars | `PrintText` (`runs/v1`) | - |
@@ -297,7 +298,7 @@ Written by `kit/refdocs.py`.
 | `$B860` | `Variations24` (`VariationsTitle`+275) | 27 | at (14, 5), 23 chars | `PrintText` (`runs/v1`) | - |
 | `$B87B` | `VariationsBegin` (`VariationsTitle`+302) | 17 | at (17, 2), 13 chars | `PrintText` (`runs/v1`) | - |
 | `$B88C` | `VariationsMenu` (`VariationsTitle`+319) | 16 | at (19, 2), 12 chars | `PrintText` (`runs/v1`) | - |
-| `$B8BB` | `Players` | 10 | The menu's settings: first the players, 1 or 2 (keys 1 / 2), then pockets, control, the three keys, the timeout, the variation, the cheat. One byte each (MenuTimeout a word). Readers and writers in the comments. The defaults in the image: one player, large pockets, keyboard, keys M / SYMBOL SHIFT / SPACE, standard game. Players is read by GameOverHallOfFame, NameEntryPage and the play code (`$97AB`, `$97D0`, `$98D5`, `$9B36`, `$9C15`, `$9C7B`) | `CushionsBySize`, `DrawTable`, `EraseBallsUnderBanner`, `GameOver`, `GameOverHallOfFame` +16 | `MainMenu`, `EditorExit` (`runs/m1`), `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`), `VariationsPage` (`runs/v1`) +2 |
+| `$B8BB` | `Players` | 1 of 10 | The menu's settings: first the players, 1 or 2 (keys 1 / 2), then pockets, control, the three keys, the timeout, the variation, the cheat. One byte each (MenuTimeout a word). Readers and writers in the comments. The defaults in the image: one player, large pockets, keyboard, keys M / SYMBOL SHIFT / SPACE, standard game. Players is read by GameOverHallOfFame, NameEntryPage and the play code (`$97AB`, `$97D0`, `$98D5`, `$9B36`, `$9C15`, `$9C7B`) | `CushionsBySize`, `DrawTable`, `EraseBallsUnderBanner`, `GameOver`, `GameOverHallOfFame` +16 | `MainMenu`, `EditorExit` (`runs/m1`), `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`), `VariationsPage` (`runs/v1`) +2 |
 | `$B8BC` | `Pockets` (`Players`+1) | 1 | 0 small, 1 large (keys S / L); read by the table drawing and the pocket tests (`$8B71`, `$8C74`, `$9256-$9330`) | `CushionsBySize`, `DrawTable`, `MainMenu`, `PocketOrCushion` (`runs/w1`) | `MainMenu` (`runs/m1`) |
 | `$B8BD` | `Control` (`Players`+2) | 1 | 0 keyboard, 1 Interface 2, 2 Kempston, 3 cursor (keys K / I / J / C); the handler index of `$8106`; the editor sets 3 while it runs if it is 0 (`$C042`, `$C417`, `$C44E`) | `MainMenu`, `ReadInput`, `EditorStart` (`runs/m1`), `VariationsPage` (`runs/v1`) | `EditorExit` (`runs/m1`), `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`), `MainMenu` (`runs/m1`) |
 | `$B8BE` | `LeftKey` (`Players`+3) | 1 | K-TEST codes of the keyboard control's keys, read by `$8123`; set by RedefineKeys | `ReadKeyboard`, `ShowKeys` | `MainMenu` (`runs/m1`), `RedefineKeys` (code) |
@@ -311,7 +312,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B936` | `PresentsTexts` | 54 | The page's texts in the print format of `$9E65`: row, column, attribute, length, characters. Three records for the print routine `$9E65` (row, column, attribute, length, then the characters): "presents" (row 16, column 12, attribute `$38`), eight spaces over it, and "press any key to continue." (row 23, column 3, attribute `$38`, 26 characters). Read by PresentsPage `$B8C5`; the first 24 bytes in every build, the last record only in m1 (the only build that reached the end of the sequence). | `PrintText` | - |
+| `$B936` | `PresentsTexts` | 12 of 54 | The page's texts in the print format of `$9E65`: row, column, attribute, length, characters. Three records for the print routine `$9E65` (row, column, attribute, length, then the characters): "presents" (row 16, column 12, attribute `$38`), eight spaces over it, and "press any key to continue." (row 23, column 3, attribute `$38`, 26 characters). Read by PresentsPage `$B8C5`; the first 24 bytes in every build, the last record only in m1 (the only build that reached the end of the sequence). | `PrintText` | - |
 | `$B942` | `PresentsBlank` (`PresentsTexts`+12) | 12 | eight spaces | `PrintText` | - |
 | `$B94E` | `PressAnyKey` (`PresentsTexts`+24) | 30 | "press any key to continue." | `PrintText` (`runs/m1`) | - |
 | `$BA86` | `BannerData` | 141 | The OCP banner: 37 rows of run lengths, 240 pixels each (bit 7 ink, bits 0-6 half the length). One byte a run: bit 7 set = magenta ink, clear = paper; bits 0-6 = half the run's length in pixels. A row ends when its runs add up to 240 pixels: `$F8` alone is a full ink row, `$78` a full paper row. The letters O, C and P are the paper gaps in the ink stripes (WALKTHROUGH 6.1, m1 frame 300). Read by BannerRowEdges `$BA0A` (and BannerRollIn `$B96C`, BannerDrawRows `$B9E0` to skip rows); all 141 bytes in every build. | `BannerRollIn`, `BannerRowEdges` | - |
@@ -320,14 +321,14 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$BB98` | `FlipLetterO` | 121 | The letter O: 12 edge records (dx, dy, kind), `$FF`. Each letter: per stripe row (dy 0, 8, ... 40, the six stripe pairs) a record for the left edge (dx 0) and one for the right edge (dx 1, kind bit 1 set). Kind: bit 1 = the right edge, bit 2 = the 24-pixel width table, bit 3 = both tables (two edges drawn, 16 and 24); bit 0 is the phase LogoFlip adds. Read by FlipLetter `$BB74`: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the key during the narrowing, so the L is never read there). | `FlipLetter` | - |
+| `$BB98` | `FlipLetterO` | 37 of 121 | The letter O: 12 edge records (dx, dy, kind), `$FF`. Each letter: per stripe row (dy 0, 8, ... 40, the six stripe pairs) a record for the left edge (dx 0) and one for the right edge (dx 1, kind bit 1 set). Kind: bit 1 = the right edge, bit 2 = the 24-pixel width table, bit 3 = both tables (two edges drawn, 16 and 24); bit 0 is the phase LogoFlip adds. Read by FlipLetter `$BB74`: all 121 bytes in w1 and m1 (game, f1, p2, v1 stop at the key during the narrowing, so the L is never read there). | `FlipLetter` | - |
 | `$BBBD` | `FlipLetterC` (`FlipLetterO`+37) | 31 | The letter C: 10 records, `$FF` | `FlipLetter` | - |
 | `$BBDC` | `FlipLetterP` (`FlipLetterO`+68) | 31 | The letter P: 10 records, `$FF` | `FlipLetter` | - |
 | `$BBFB` | `FlipLetterL` (`FlipLetterO`+99) | 22 | The letter L: 7 records, `$FF` | `FlipLetter` (`runs/w1`) | - |
-| `$BC74` | `FlipWidths16` | 42 | Half-widths of a turning letter: 16 cos(4.5 k) for k = 0..20 (16 ... 1, 0). 21 bytes 16, 16, 16, 16, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1, 0: the projected half-width of a 16-pixel half letter turned by 4.5 degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge `$BC11`; all in w1 and m1. | `FlipEdge` | - |
+| `$BC74` | `FlipWidths16` | 21 of 42 | Half-widths of a turning letter: 16 cos(4.5 k) for k = 0..20 (16 ... 1, 0). 21 bytes 16, 16, 16, 16, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 1, 0: the projected half-width of a 16-pixel half letter turned by 4.5 degrees a step (16 cos 45 = 11.3, entry 10 = 11). Read by FlipEdge `$BC11`; all in w1 and m1. | `FlipEdge` | - |
 | `$BC89` | `FlipWidths24` (`FlipWidths16`+21) | 21 | the same for 24 pixels: 24 cos(4.5 k), 24 ... 2, 0 | `FlipEdge` | - |
 | `$BD04` | `VideoText` | 5 | "video", the five letters of VideoSlideIn. Read by VideoSlideIn `$BC9E` (w1, m1). | `VideoSlideIn` (`runs/w1`) | - |
-| `$BD09` | `PresentsSP` | 3 | SP at PresentsPage's entry: PresentsAbort `$B931` reloads it (written and read once in every build) | `PresentsFrame`, `PresentsPage` (`runs/m1`) | `GameStart`, `PresentsPage` |
+| `$BD09` | `PresentsSP` | 2 of 3 | SP at PresentsPage's entry: PresentsAbort `$B931` reloads it (written and read once in every build) | `PresentsFrame`, `PresentsPage` (`runs/m1`) | `GameStart`, `PresentsPage` |
 | `$BD0B` | `PresentsDone` (`PresentsSP`+2) | 1 | 0 while GameStart `$8000`'s first presents page runs (`$8006`), `$FF` after it (`$800E`): PresentsPage then also calls `$A8FD` (read twice in m1, both 0) | `PresentsPage` (`runs/m1`) | `GameStart` |
 
 ## signature
@@ -340,7 +341,7 @@ Written by `kit/refdocs.py`.
 | `$BFCC` | `PenNib` | 31 | The pen's nib: ten spans (dx, dy, length) from the pen point down-right, `$FF`. (0,0,2) (0,1,4) (1,2,5) (1,3,7) (2,4,8) (2,5,10) (3,6,10) (3,7,11) (4,8,11) (4,9,12): a wedge 10 lines high. Read by PenSpans `$BE79` (m1, all 31 bytes). | `PenSpans` (`runs/m1`) | - |
 | `$BFEB` | `PenCap` | 19 | The pen's end cap: six spans at (49..54, 54..59), lengths 11 down to 1, `$FF`. Read by PenSpans `$BE79` after the shaft (m1, all 19 bytes). | `PenSpans` (`runs/m1`) | - |
 | `$BFFE` | `PenShaftImage` | 64 | The shaft: 16 rows of 4 bytes, a 12-pixel bar moving one pixel right a row. Row r = the bar's 12 pixels starting at pixel r of the 32: PenShaftBlock `$BEDC` starts at row x AND 7 and takes one row a line. Read by PenShaftCopy4 `$BF33` (m1, 60 of 64 bytes: rows 15's last bytes never). | `PenShaftBlock` (`runs/m1`) | - |
-| `$C03E` | `PenBand` | 4 | The pen's state: the band flag (0; 1 / 2 only on the band paths, never run), pen down, the shaft position. PenBand `$C03E`: zeroed by SignatureWrite `$BD0C`, read by SigMove `$BD65` (m1 582 reads, always 0). | `PenShaft` (`runs/m1`), `PenShaftBlock` (`runs/m1`), `PenStep` (`runs/m1`), `SignatureCommand` (`runs/m1`) | `PenShaft` (`runs/m1`), `PenShape` (`runs/m1`), `SignatureCommand` (`runs/m1`), `SignatureWrite` (`runs/m1`) |
+| `$C03E` | `PenBand` | 1 of 4 | The pen's state: the band flag (0; 1 / 2 only on the band paths, never run), pen down, the shaft position. PenBand `$C03E`: zeroed by SignatureWrite `$BD0C`, read by SigMove `$BD65` (m1 582 reads, always 0). | `PenShaft` (`runs/m1`), `PenShaftBlock` (`runs/m1`), `PenStep` (`runs/m1`), `SignatureCommand` (`runs/m1`) | `PenShaft` (`runs/m1`), `PenShape` (`runs/m1`), `SignatureCommand` (`runs/m1`), `SignatureWrite` (`runs/m1`) |
 | `$C03F` | `PenIsDown` (`PenBand`+1) | 1 | 0 pen up, 1 pen down (SignatureCommand commands 1 / 2; read by PenStep, m1 1484 reads) | `PenStep` (`runs/m1`) | `SignatureCommand` (`runs/m1`), `SignatureWrite` (`runs/m1`) |
 | `$C040` | `PenShaftPos` (`PenBand`+2) | 2 | the shaft's start: x (+0), y (+1) (PenShape, PenShaft) | `PenShaft` (`runs/m1`), `PenShaftBlock` (`runs/m1`) | `PenShaft` (`runs/m1`), `PenShape` (`runs/m1`) |
 
@@ -348,14 +349,14 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$C518` | `EditorAimTasks` | 26 | The editor's aim task list (period, address): EditorPower, `$934D`, `$8546`, `$85EB`, ReadInput, `$FF`. Installed by EditorPlay `$C41D` and EditorShotEnd `$C46E`, removed by EditorPower `$C4D6`. All periods 0. Read in e1 (each byte 3 times, frames 844-1054). | `InstallTasks` (`runs/e1`), `RemoveTasks` (`runs/e1`) | - |
+| `$C518` | `EditorAimTasks` | 16 of 26 | The editor's aim task list (period, address): EditorPower, `$934D`, `$8546`, `$85EB`, ReadInput, `$FF`. Installed by EditorPlay `$C41D` and EditorShotEnd `$C46E`, removed by EditorPower `$C4D6`. All periods 0. Read in e1 (each byte 3 times, frames 844-1054). | `InstallTasks` (`runs/e1`), `RemoveTasks` (`runs/e1`) | - |
 | `$C528` | `EditorRollTasks` (`EditorAimTasks`+16) | 10 | the rolling list: `$827E` (ball redraw), `$86C1` (physics), EditorShotEnd, `$FF` | `InstallTasks` (`runs/e1`), `RemoveTasks` (`runs/e1`) | - |
-| `$C54E` | `EditorTexts` | 63 | The editor's texts for `$9E65` (row, column, attribute, length, characters). "- editor -" (row 0, column 11), "play" (row 3, column 19, attribute `$39`), "reset" (row 3, column 26), then two blanks: 10 spaces over the title and 14 spaces at column 18 whose row byte EditorStart / EditorPlay patch to 2, 3, 4 (and 5). The first three read once in m1 (6262); EditorButtonsBlank 4 times; EditorTitleBlank once, in e1 (EditorPlay, frame 840). | `PrintText` (`runs/m1`) | `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`) |
+| `$C54E` | `EditorTexts` | 14 of 63 | The editor's texts for `$9E65` (row, column, attribute, length, characters). "- editor -" (row 0, column 11), "play" (row 3, column 19, attribute `$39`), "reset" (row 3, column 26), then two blanks: 10 spaces over the title and 14 spaces at column 18 whose row byte EditorStart / EditorPlay patch to 2, 3, 4 (and 5). The first three read once in m1 (6262); EditorButtonsBlank 4 times; EditorTitleBlank once, in e1 (EditorPlay, frame 840). | `PrintText` (`runs/m1`) | `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`) |
 | `$C55C` | `EditorPlayText` (`EditorTexts`+14) | 8 | "play" | `PrintText` (`runs/m1`) | - |
 | `$C564` | `EditorResetText` (`EditorTexts`+22) | 9 | "reset" | `PrintText` (`runs/m1`) | - |
 | `$C56D` | `EditorTitleBlank` (`EditorTexts`+31) | 14 | ten spaces over "- editor -" | `PrintText` (`runs/m1`) | - |
 | `$C57B` | `EditorButtonsBlank` (`EditorTexts`+45) | 18 | row patched: 14 spaces at column 18 | `PrintText` (`runs/m1`) | `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`) |
-| `$C58D` | `EditorCursorSpeed` | 4 | The cursor's step counter: high nibble frames left, low nibble the speed (1-5), `$F1` at a start. Read and written by EditorStart's loop (m1 240 reads). | `EditorExit` (`runs/m1`), `EditorFire` (`runs/e1`), `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`) | `EditorFire` (`runs/e1`), `EditorStart` (`runs/m1`) |
+| `$C58D` | `EditorCursorSpeed` | 1 of 4 | The cursor's step counter: high nibble frames left, low nibble the speed (1-5), `$F1` at a start. Read and written by EditorStart's loop (m1 240 reads). | `EditorExit` (`runs/m1`), `EditorFire` (`runs/e1`), `EditorPlay` (`runs/e1`), `EditorStart` (`runs/m1`) | `EditorFire` (`runs/e1`), `EditorStart` (`runs/m1`) |
 | `$C58E` | `EditorBallSpeed` (`EditorCursorSpeed`+1) | 1 | the same for the moved ball (never used in a recording) | `EditorFire` (`runs/e1`) | `EditorFire` (`runs/e1`) |
 | `$C58F` | `EditorPickedBall` (`EditorCursorSpeed`+2) | 1 | the picked ball, 0 cue .. 6 | `EditorFire` (`runs/e1`) | `EditorFire` (`runs/e1`) |
 | `$C590` | `EditorSavedMode` (`EditorCursorSpeed`+3) | 1 | the input mode `$B8BD` at entry (m1: written at 6262, read at 6830) | `EditorExit` (`runs/m1`), `EditorPlay` (`runs/e1`) | `EditorStart` (`runs/m1`) |
@@ -393,7 +394,7 @@ Written by `kit/refdocs.py`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$DEF4` | `Font` | 288 | The font: 26 letters a-z, then 10 digits 0-9, 8 bytes each. Read by PrintChar `$9E7C` and the hall of fame's name printers: every byte read in w1 (l1sum.py --reads DEF4-E013: 288 of 288 bytes; game, f1, p2, v1, m1, j1 read the glyphs of their texts). | `CopyGlyph`, `PrintChar`, `PrintCharWide`, `DrawCharAt` (`runs/w1`), `RenderChar` (`runs/w1`) +1 | - |
+| `$DEF4` | `Font` | 208 of 288 | The font: 26 letters a-z, then 10 digits 0-9, 8 bytes each. Read by PrintChar `$9E7C` and the hall of fame's name printers: every byte read in w1 (l1sum.py --reads DEF4-E013: 288 of 288 bytes; game, f1, p2, v1, m1, j1 read the glyphs of their texts). | `CopyGlyph`, `PrintChar`, `PrintCharWide`, `DrawCharAt` (`runs/w1`), `RenderChar` (`runs/w1`) +1 | - |
 | `$DFC4` | `FontDigits` (`Font`+208) | 80 | the digits 0-9 (Font+208) | `CopyGlyph`, `PrintChar`, `PrintCharWide`, `DrawCharAt` (`runs/w1`) | - |
 
 ## devleftover

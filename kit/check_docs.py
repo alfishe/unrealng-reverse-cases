@@ -9,7 +9,9 @@ code_addresses.py fixes addresses).
 
 A case: every figure under docs/img (any subfolder but docs/img/res, the resource previews src/res/README.md links)
 must be linked by a document (GUIDE.md 4.2); the documents in docs/ subfolders (docs/texts, docs/audio) are checked
-too. Anchors follow GitHub's slugs: the heading's text with the Markdown marks dropped, lower case, every character
+too. The resource READMEs (src/res/README.md, src/res/**/README.md) are read for their links: a figure they link
+counts as linked, and a link of theirs to a file or heading that does not exist is a problem (their mermaid and
+prose are not checked). Anchors follow GitHub's slugs: the heading's text with the Markdown marks dropped, lower case, every character
 but letters, digits, '-', '_' and spaces removed, spaces as '-', a repeated slug numbered -1, -2. An explicit
 <a name="..."> or id="..." counts as well. Links inside code (fenced blocks, `spans`) are not links.
 """
@@ -138,6 +140,11 @@ def default_files(repo_mode):
     return [f for f in files if os.path.isfile(f)]
 
 
+def res_readmes():
+    """the case's resource READMEs: src/res/README.md and those of its subfolders"""
+    return sorted(glob.glob(os.path.join(here, 'src', 'res', '**', 'README.md'), recursive=True))
+
+
 def main():
     global here
     argv = sys.argv[1:]
@@ -162,6 +169,9 @@ def main():
             for n in code_addresses.bare_dollars(text):
                 bad += 1
                 print(f'{rel}:{n}: $ in prose renders as math on GitHub (code_addresses.py)')
+        if not argv and not repo_mode:
+            for path in res_readmes():
+                bad += check_links(path, open(path, encoding='utf-8').read(), linked, os.path.relpath(path, here))
     if not argv and not repo_mode:
         img = os.path.join(here, 'docs', 'img')
         for figure in sorted(glob.glob(os.path.join(img, '**', '*.*'), recursive=True)):

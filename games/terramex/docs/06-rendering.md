@@ -1413,17 +1413,17 @@ flowchart LR
 
 *Figure 6.13: DrawPortrait `$9E5D` after the first pickup of `c1`, frames 23509-23510: the explorer's frame 9 at
 `$5092` and the held item at `$5032`. This animation belongs to [doc 8](08-hud-and-text.md). Made with `python3
-../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23509:66000-23510:13000 --listing build/game.lst --view
-buffer:5000:32x64:screen --pc 9E5D-9EBC,9F6B-9FDD --range 5B00-5CFF --pictures 60 --out
+../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23509:66000-23510:13000 --listing build/game.lst --page
+6=build/music.lst --view buffer:5000:32x64:screen --pc 9E5D-9EBC,9F6B-9FDD --range 5B00-5CFF --pictures 60 --out
 docs/img/routines/DrawPortrait.gif`. The bearer row's scroll is in doc 8's DrawBearers animation
 (`img/routines/DrawBearers.gif`) and in doc 5's BearerKeys animation (5.8).*
 
 How to read:
 
-- Left: the panel, under a memory map of only two rows (`$5B00-$5CFF`). The portrait's three columns are written one
+- Left: the panel, under the memory map of `$5B00-$5CFF` (32 bytes a row). The portrait's three columns are written one
   after the other, each 24 rows from top to bottom, with the same bytes as before: the face does not change.
 - Then the held item's three columns are written above it: the cell goes from blank to the new item.
-- In the thin memory map, PanelColumns `$5BD6` lights up before each column is copied.
+- In the memory map, PanelColumns `$5BD6` (row `$5BC0`, byte 22) lights up before each column is copied.
 
 Worked example (`rzx02000`, frame 2, Figure 6.1): the portrait goes to `$5092`: third 2, character row 4, column 18,
 pixel (144, 160). Its source is frame 9: `$6000 + 72 x 9 = $6288`. The first column's first 8 bytes go to `$5092`,
@@ -1578,7 +1578,9 @@ What it shows:
 - 456 of the 6144 screen bytes are written in the pass, by 1032 writes.
 - CopyRectRows writes 960 times: 10 rectangles of 96 bytes. The red block at the top left is the empty slots'
   rectangle at `$4000`, copied twice by each call.
-- DrawItemRow writes the 72 bytes of the vacuum cleaner, read from `$86D0-$8717`, through OutlineMasks.
+- DrawItemRow writes the 72 bytes of the vacuum cleaner, read from `$86D0-$8717`, through OutlineMasks. The
+  legend's `$86D0-$8718` is 73 bytes: the last row's `OR (IX+$01)` at `$9E34` reads one byte past the item, the
+  next frame's first, for the outline.
 - Nothing else writes the screen: no flame, no panel change, no attribute.
 
 ![Code vs the beam: one pass](img/render/beam-pass.png)

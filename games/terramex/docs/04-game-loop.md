@@ -535,11 +535,11 @@ pass wherever it is, plays the music, and the pass goes on.
 
 *One main-loop pass of `rzx02000` (the RZX run, replayed), from `$9018` at frame 100 t 54365 to the next `$9018` at
 frame 103 t 10087 (168 446 T, 2.38 frames). The figure shows frames 100-102; the last 10 087 T, in frame 103, are the
-pass's last few hundred instructions of buffer work. Made with `python3 tools/beam_paged.py --page-name "6=the music
-player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r02000 --window 100:54365-103:10087 --listing
-build/game.lst --machine 128k --out docs/img/loop/beam-pass-r02000.png`. `tools/beam_paged.py` runs
-`kit/beam_timeline.py` with the 128K pages told apart: code at `$C000-$FFFF` that runs while RAM 6 is paged in is the
-music player, not the RAM 0 data at the same addresses.*
+pass's last few hundred instructions of buffer work. Made with `python3 ../../kit/beam_timeline.py --page-name "6=the
+music player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r02000 --window 100:54365-103:10087 --listing
+build/game.lst --machine 128k --out docs/img/loop/beam-pass-r02000.png`. `--page` and `--page-name` tell the 128K
+pages apart: code at `$C000-$FFFF` that runs while RAM 6 is paged in is the music player, not the RAM 0 data at the
+same addresses.*
 
 How to read it:
 
@@ -558,8 +558,8 @@ How to read it:
 ![The heaviest pass measured, in the lab 3B](img/loop/beam-pass-r46000.png)
 
 *The longest of the nine passes traced in frames 1-31 of `rzx46000` (the RZX run, replayed), room `$3B` (the lab):
-from frame 7 t 70304 to frame 11 t 8133, 221 461 T (3.12 frames). Made with `python3 tools/beam_paged.py --page-name
-"6=the music player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r46000 --window 7:70304-11:8133 --frames 5
+from frame 7 t 70304 to frame 11 t 8133, 221 461 T (3.12 frames). Made with `python3 ../../kit/beam_timeline.py
+--page-name "6=the music player (RAM 6)" --page 1=build/select.lst --work work/docs/tmA/r46000 --window 7:70304-11:8133 --frames 5
 --listing build/game.lst --machine 128k --out docs/img/loop/beam-pass-r46000.png`.*
 
 How to read it:
@@ -576,12 +576,12 @@ How to read it:
 
 *The same pass as an animation: 90 pictures of 2461 T from the cached trace of `rzx46000` frame 7 t 70304 to frame 11
 t 8133 (30 963 instructions). Left above: memory `$4000-$FFFF`; left below: the screen; right: the listing at the PC.
-Made with `python3 tools/beam_paged.py --tool routine_anim --page-name "6=the music player (RAM 6)"`
+Made with `python3 ../../kit/routine_anim.py --page 6=build/music.lst`
 `--trace work/docs/tmA/r46000/traces/7_70304-11_8133.uatr --listing build/game.lst --view screen`
 `--range 4000-FFFF --pc 5F00-C57F --pictures 90 --title 'MainLoop $9018: the heaviest pass, the lab $3B'`
-`--out docs/img/routines/MainLoop-heaviest.gif`. The screen view starts from the trace's memory at the pass's start;
-beam_paged.py saves the GIF with an opaque black (kitlib.save_gif's transparent index is black, which hid the
-screen's black in the first redraw).*
+`--out docs/img/routines/MainLoop-heaviest.gif`. The screen view starts from the trace's memory at the pass's start.
+`--page 6` shows the music player's own listing when the interrupt runs it in RAM 6 ("UpdateTuneChannels (RAM 6)");
+its instructions count as "other", outside `--pc`.*
 
 How to read it:
 
@@ -767,8 +767,8 @@ LifeLossOp:
 ![The status machine at work: the fall death, dying, and the last life lost](img/routines/StatusDispatch.gif)
 
 *StatusDispatch `$A6CC` and the handlers over `gameover` frames 1355-1512 (the RZX state at 10000, Lives poked to 1),
-90 pictures of about 123 700 T. Left above: memory `$5B00-$5DFF`, three rows of 256 bytes, a thin strip that shows
-only where the bytes change; the hex view below is the one to read. Left below: `$5B90-$5C3F` in hex, so that Lives
+90 pictures of about 123 700 T. Left above: memory `$5B00-$5DFF`, 64 bytes a row (the kit wraps a small range so that
+it is readable), which shows where the bytes change; the hex view below gives their values. Left below: `$5B90-$5C3F` in hex, so that Lives
 `$5B97`, the countdown `$5BFB-$5BFD`, GameOver `$5BFF`, Room `$5C01`, PassCount `$5C02`, Status `$5C06`, StatusTimer
 `$5C07`, LifeLost `$5C2A` and the respawn point `$5C2B-$5C33` are all in view. Right: the listing at the PC. Made with
 `python3 ../../kit/routine_anim.py --work work/docs/tmA/gameover --window 1355:0-1512:0 --listing build/game.lst

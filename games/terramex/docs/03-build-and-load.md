@@ -476,9 +476,9 @@ The stages from the L1 arrivals (`$RS stages`):
 ![Memory filling during the load](img/load/load-memory.gif)
 
 *The 64 K during the load in `c1`, frames 650-21700, one picture every 18 000 000 T (about 254 frames), 83 pictures,
-830 px wide (3 px a byte). Above: memory `$4000-$FFFF`, one row a page of 256 bytes, each byte's grey its value;
+1050 px wide (the grid 988 px, a byte 3 or 4 px). Above: memory `$4000-$FFFF`, one row a page of 256 bytes, each byte's grey its value;
 yellow is written since the last picture, fading through red. Below: the screen. Made with `python3
-../../kit/memanim.py --work W --from 650 --to 21700 --step 18000000 --from-address 4000 --screen --cell 3 --label
+../../kit/memanim.py --work W --from 650 --to 21700 --step 18000000 --from-address 4000 --screen --cell fit --label
 "c1: the ROM-speed load, blocks 3-5 and the set-up, the 64 K seen by the CPU" docs/img/load/load-memory.gif`, W an
 instance with `work/stage1/c1/session.ttd` open (`$RS open`).*
 

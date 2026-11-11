@@ -289,10 +289,12 @@ flowchart TD
 
 *The routine animation of the player (`$C000-$CD60`) in `c1` from 23004:1870 to 23004:6900, tune frame 1405. It has
 80 pictures, 63 T each, and 428 instructions. The view is the three channel records `$C153-$C1D9` as hex, 45 bytes a
-row. The memory grid is `$C900-$CDFF`: the period tables' end, the tune table, the order lists and the patterns.
-Command, from the case folder after `. work/env.sh`: `python3 ../../kit/routine_anim.py --work work/docs/tmD/c1
---window 23004:1870-23004:6900 --listing build/music.lst --view buffer:C153:45x3:hex --pc C000-CD60 --range
-C900-CDFF --pictures 80 --out docs/img/routines/MusicFrame.gif` (`work/docs/tmD/anim09.sh`).*
+row. The memory grid is `$C900-$CDFF`, 64 bytes a row: the period tables' end, the tune table, the order lists and
+the patterns. The player's code is RAM 6's (`--page 6`, `--pc 6:...`): the IM 2 handler round it, and the game's code
+at `$C000` in RAM 0 after it, count as "other" and show the game's listing. Command, from the case folder after `.
+work/env.sh`: `python3 ../../kit/routine_anim.py --work work/docs/tmD/c1 --window 23004:1870-23004:6900 --listing
+build/game.lst --page 6=build/music.lst --view buffer:C153:45x3:hex --pc 6:C000-CD60 --range C900-CDFF --pictures 80
+--out docs/img/routines/MusicFrame.gif`, the title in `work/docs/tmD/anim09.sh`.*
 
 How to read the animation:
 

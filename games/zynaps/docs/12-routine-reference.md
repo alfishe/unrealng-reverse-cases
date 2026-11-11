@@ -134,7 +134,7 @@ Input: none. Output: BC, DE, HL changed; interrupts enabled. c1: 4 entries (betw
 | Runs (the other recordings) | 4 calls (`c1` 4) |
 | Called from | `MenuScreenSetup`, `InterruptSetup`, `RoundPlaySetup`, `CreditsPage`, `HiScorePage` |
 | Calls | `FadeAttributes` |
-| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$4000`-`$5AFE` (screen); `$8599` (`ClearScreen+14`) |
 | Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$00FE` |
 
@@ -153,7 +153,7 @@ Output: BC, E, HL changed. Called by ClearScreen (c1: 4 entries).
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3 calls, 2,512,552 t-states own (0.47 %) |
 | Runs (the other recordings) | 4 calls (`c1` 4) |
 | Called from | `ClearScreen`, `EndOfPlay` |
-| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$5800`-`$5AFF` (screen); `$85B8`-`$85BA` (`FadeStep+6`, `FadeCell`) |
 | Writes | `$5800`-`$5AFF` (screen) |
 
 ## playfield
@@ -214,7 +214,7 @@ c2: 11592 entries (= 659 frames * 18 rows minus the frames cut short).
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 53,586 calls, 4,814,059 t-states own (1.15 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 66,546 calls, 6,133,374 t-states own (1.15 %) |
 | Called from | `RowStart`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
-| Calls | `StripNext`, `RowStar` (tail) |
+| Calls | `StripNext` (falls into), `RowStar` (tail) |
 | Reads | `$F12F`-`$F363` (`RowRecords+3`) |
 
 ### `StripNext` (`$8602`)
@@ -229,7 +229,7 @@ SP points at a strip entry whose first word is StripDraw: the RET starts it. The
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 502,608 calls, 5,026,080 t-states own (0.10 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 35,976 calls, 359,760 t-states own (0.09 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 48,513 calls, 485,130 t-states own (0.09 %) |
-| Called from | `RowEnd`, `StripDraw` (tail) |
+| Called from | `RowEnd` (falls into), `StripDraw` (tail) |
 | Calls | `StripDraw` |
 
 ### `StripDraw` (`$8603`)
@@ -251,7 +251,7 @@ c2: 7168 entries.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 35,865 calls, 27,914,455 t-states own (6.67 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 48,402 calls, 39,965,511 t-states own (7.52 %) |
 | Called from | `StripNext` |
-| Calls | `StripNext` (tail), `RowStar` |
+| Calls | `StripNext` (tail), `RowStar` (falls into) |
 | Reads | `$4022`-`$40FF` (screen); `$4122`-`$41FF` (screen); `$4222`-`$42FF` (screen); `$4322`-`$43FF` (screen); `$4422`-`$44FF` (screen); `$4522`-`$45FF` (screen); 10 more ranges |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 11 more ranges |
 
@@ -273,8 +273,8 @@ c2: 11592 entries (as RowEnd).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 657,756 calls, 322,107,180 t-states own (6.14 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 53,856 calls, 24,938,496 t-states own (5.96 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 66,816 calls, 32,403,624 t-states own (6.10 %) |
-| Called from | `RowEnd` (tail), `StripDraw` |
-| Calls | `RenderDone` (tail), `RowStart` |
+| Called from | `RowEnd` (tail), `StripDraw` (falls into) |
+| Calls | `RenderDone` (tail), `RowStart` (falls into) |
 | Reads | `$4321`-`$43FF` (screen); `$4B00`-`$4BFF` (screen); `$5300`-`$535F` (screen); `$5820`-`$5A5F` (screen); `$7F6F` (`RowsLeft`); `$F12F`-`$F271` (`RowRecords+3`); 7 more ranges |
 | Writes | `$4020`-`$40FF` (screen); `$4120`-`$41FF` (screen); `$4220`-`$42FF` (screen); `$4320`-`$43FF` (screen); `$4420`-`$44FF` (screen); `$4520`-`$45FF` (screen); 12 more ranges |
 
@@ -296,7 +296,7 @@ c2: 11862 entries.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 657,756 calls, 504,208,413 t-states own (9.62 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 53,856 calls, 41,204,649 t-states own (9.85 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 66,816 calls, 51,158,005 t-states own (9.63 %) |
-| Called from | `DrawPlayfield` (tail), `RowStar` |
+| Called from | `DrawPlayfield` (tail), `RowStar` (falls into) |
 | Calls | `RowEnd`, `SpanDraw4`, `SpanDraw3`, `SpanDraw2`, `SpanDraw1`, `SpanDraw0` |
 | Reads | `$7F6A` (`ShiftPage`); `$7F7E`-`$7F7F` (`RowBeep`, `RowBeepMask`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`) |
 | Writes | `$7F7E` (`RowBeep`); `$867C`-`$867D` (`RowStar+1`) |
@@ -466,7 +466,7 @@ Called by NewSpanNode (c2: 307 entries).
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 684 calls, 130,898 t-states own (0.03 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 684 calls, 130,806 t-states own (0.02 %) |
 | Called from | `NewSpanNode` |
-| Reads | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFF` (`ColumnFlags`, `work space $FFFF+`) |
+| Reads | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`); `$FFE0`-`$FFFF` (`ColumnFlags`, `work space $FFFF+`) |
 | Writes | `$8015`-`$8017` (`GlyphAlloc`, `GlyphAllocByte`, `GlyphAllocBit`) |
 
 ### `StartColumn` (`$894D`)
@@ -504,8 +504,7 @@ c2: 688 entries.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 2,244 calls, 110,762 t-states own (0.03 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,929 calls, 143,478 t-states own (0.03 %) |
 | Called from | `ChainBuildColumn1`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ReplayRoundEnd` |
-| Calls | `BuildColumnLoop`, `BuildCell` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `BuildColumnLoop` (falls into) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumnLoop` (`$897A`)
@@ -517,7 +516,7 @@ c2: 688 entries.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 138,858 calls, 4,979,328 t-states own (0.09 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 8,412 calls, 308,198 t-states own (0.07 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 12,048 calls, 438,180 t-states own (0.08 %) |
-| Called from | `BuildColumn`, `BuildColumnBack` (tail), `BuildColumnStep` (tail) |
+| Called from | `BuildColumn` (falls into), `BuildColumnStep` (tail) |
 | Calls | `BuildCell` |
 
 ### `BuildColumnBack` (`$897E`)
@@ -529,9 +528,8 @@ c2: 688 entries.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 5 calls, 6,720,140 t-states own (0.13 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1 call, 869,766 t-states own (0.21 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 1,241,542 t-states own (0.23 %) |
-| Called from | `BuildCellDone`, `GlyphShift2`, `GlyphMarkBits`, `GlyphBuilt` |
-| Calls | `BuildColumnLoop` (tail), `BuildColumnStep`, `ChainStep1End` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `BuildCellDone`, `GlyphBuilt` |
+| Calls | `BuildColumnStep` (falls into) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildColumnStep` (`$8987`)
@@ -541,9 +539,8 @@ c2: 688 entries.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 138,859 calls, 7,575,510 t-states own (0.14 %) |
-| Called from | `BuildColumnBack`, `PlayInterruptExit` |
+| Called from | `BuildColumnBack` (falls into), `PlayInterruptExit` |
 | Calls | `BuildColumnLoop` (tail), `ChainStep1End` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 | Writes | `$896F`-`$8975` (`BuildColumn+2`, `BuildColumnCell`, `BuildColumnLeft`) |
 
 ### `BuildCell` (`$899E`)
@@ -560,9 +557,9 @@ A tile: BuildGlyph. Input: IX = the row record, HL = the map cell. c2: 3948 entr
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 138,859 calls, 10,867,098 t-states own (0.21 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 8,412 calls, 663,742 t-states own (0.16 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 12,048 calls, 945,074 t-states own (0.18 %) |
-| Called from | `BuildColumn`, `BuildColumnLoop`, `PlayInterruptExit` |
+| Called from | `BuildColumnLoop`, `PlayInterruptExit` |
 | Calls | `BuildGlyph` (tail) |
-| Reads | `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2AC` (`RowRecords`); `$F2BF`-`$F2CC` (`RowRecords+403`); `$F2DF`-`$F2EC` (`RowRecords+435`); `$F2FF`-`$F30C` (`RowRecords+467`); `$F31F`-`$F32C` (`RowRecords+499`); 3 more ranges |
+| Reads | `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F2AC` (`RowRecords`); `$F2BF`-`$F2CC` (`RowRecords+403`); `$F2DF`-`$F2EC` (`RowRecords+435`); `$F2FF`-`$F30C` (`RowRecords+467`); `$F31F`-`$F32C` (`RowRecords+499`); 2 more ranges |
 | Writes | `$B702`-`$BFFE` (`Start+3`, `MapRingSpace`, `TileSource`); `$F13F`-`$F2A0` (`RowRecords+19`); `$F2BF`-`$F2C0` (`RowRecords+403`); `$F2DF`-`$F2E0` (`RowRecords+435`); `$F2FF`-`$F300` (`RowRecords+467`); `$F31F`-`$F320` (`RowRecords+499`); 2 more ranges |
 
 ### `BuildCellDone` (`$89C4`)
@@ -596,8 +593,8 @@ c2: 1025 entries.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 2,254 calls, 781,514 t-states own (0.19 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,254 calls, 781,848 t-states own (0.15 %) |
 | Called from | `BuildCell` (tail) |
-| Calls | `GlyphLine`, `NewSpanNode` |
-| Reads | `$5C00`-`$5DBA` (system); `$5E00`-`$5EBA` (system); `$5F00`-`$5FBA` (system); `$6000`-`$60BA` (system); `$6100`-`$61BA` (`TileCopyTail`); `$6200`-`$62BA` (`TileCopyTail+88`); 11 more ranges |
+| Calls | `GlyphLine` (falls into), `NewSpanNode` |
+| Reads | `$5C00`-`$5DBA` (system); `$5E00`-`$5EBA` (system); `$5F00`-`$5FBA` (system); `$6000`-`$60BA` (system); `$6100`-`$61BA` (`TileCopyTail`); `$6200`-`$62BA` (`TileCopyTail+88`); 10 more ranges |
 | Writes | `$8A1D`-`$8A1F` (`GlyphLineStep`, `GlyphMirror`); `$C000`-`$DFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`); `$F13B`-`$F2A0` (`RowRecords+15`); `$F2BB`-`$F2C0` (`RowRecords+399`); `$F2DB`-`$F2E0` (`RowRecords+431`); `$F2FB`-`$F300` (`RowRecords+463`); 4 more ranges |
 
 ### `GlyphLine` (`$8A1C`)
@@ -609,9 +606,9 @@ c2: 1025 entries.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 152,864 calls, 7,163,268 t-states own (0.14 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 18,032 calls, 1,466,891 t-states own (0.35 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 18,032 calls, 2,673,844 t-states own (0.50 %) |
-| Called from | `BuildGlyph`, `GlyphShift2` (tail), `GlyphShift4` (tail) |
-| Calls | `GlyphShift2`, `GlyphShift4` |
-| Reads | `$5C00`-`$5EDB` (system); `$5EF8`-`$5FDB` (system); `$5FF8`-`$60DB` (system); `$60F8`-`$61DB` (`TileCopyTail`); `$61F8`-`$62DB` (`TileCopyTail+80`); `$62F8`-`$63DB` (`TileCopyTail+336`); 8 more ranges |
+| Called from | `BuildGlyph` (falls into), `GlyphShift4` (tail) |
+| Calls | `GlyphShift2` (falls into) |
+| Reads | `$5C00`-`$5EDB` (system); `$5EF8`-`$5FDB` (system); `$5FF8`-`$60DB` (system); `$60F8`-`$61DB` (`TileCopyTail`); `$61F8`-`$62DB` (`TileCopyTail+80`); `$62F8`-`$63DB` (`TileCopyTail+336`); 7 more ranges |
 | Writes | `$C000`-`$CFFE` (`GlyphCache`, `WaveCellSource`, `GlyphCacheUpper`); `$D800`-`$DFFE` (`GlyphCacheUpper+4096`) |
 
 ### `GlyphShift2` (`$8A25`)
@@ -622,9 +619,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 152,865 calls, 15,439,416 t-states own (0.29 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 2,514,180 t-states own (0.60 %) |
-| Called from | `GlyphLine`, `PlayInterruptExit` |
-| Calls | `BuildColumnBack`, `GlyphLine` (tail), `GlyphShift4` |
-| Reads | `$F13C`-`$F220` (`RowRecords+16`); `$F29C`-`$F2A0` (`RowRecords+368`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); 4 more ranges |
+| Called from | `GlyphLine` (falls into), `PlayInterruptExit` |
+| Calls | `GlyphShift4` (falls into) |
+| Reads | `$F13C`-`$F220` (`RowRecords+16`); `$F29C`-`$F2A0` (`RowRecords+368`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); 3 more ranges |
 | Writes | `$C800`-`$DFFE` (`GlyphCacheUpper`); `$F13C`-`$F220` (`RowRecords+16`); `$F29D`-`$F2A0` (`RowRecords+369`); `$F2BD`-`$F2C0` (`RowRecords+401`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); 4 more ranges |
 
 ### `GlyphShift4` (`$8A34`)
@@ -635,9 +632,9 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 152,865 calls, 9,171,973 t-states own (0.17 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 18,033 calls, 1,081,939 t-states own (0.20 %) |
-| Called from | `GlyphLine`, `GlyphShift2`, `PlayInterruptExit` |
-| Calls | `GlyphLine` (tail), `GlyphMarkBits` |
-| Reads | `$F13C`-`$F29D` (`RowRecords+16`); `$F2BC`-`$F2BD` (`RowRecords+400`); `$F2DC`-`$F2DD` (`RowRecords+432`); `$F2FC`-`$F2FD` (`RowRecords+464`); `$F31C`-`$F31D` (`RowRecords+496`); `$F33C`-`$F33D` (`RowRecords+528`); 2 more ranges |
+| Called from | `GlyphShift2` (falls into), `PlayInterruptExit` |
+| Calls | `GlyphLine` (tail), `GlyphMarkBits` (falls into) |
+| Reads | `$F13C`-`$F29D` (`RowRecords+16`); `$F2BC`-`$F2BD` (`RowRecords+400`); `$F2DC`-`$F2DD` (`RowRecords+432`); `$F2FC`-`$F2FD` (`RowRecords+464`); `$F31C`-`$F31D` (`RowRecords+496`); `$F33C`-`$F33D` (`RowRecords+528`); 1 more ranges |
 | Writes | `$D000`-`$D7FE` (`GlyphCacheUpper+2048`) |
 
 ### `GlyphMarkBits` (`$8A46`)
@@ -648,8 +645,8 @@ c2: 1025 entries.
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 19,109 calls, 1,652,046 t-states own (0.03 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,255 calls, 222,945 t-states own (0.04 %) |
-| Called from | `GlyphShift4`, `PlayInterruptExit` |
-| Calls | `BuildColumnBack`, `GlyphBuilt` |
+| Called from | `GlyphShift4` (falls into), `PlayInterruptExit` |
+| Calls | `GlyphBuilt` (falls into) |
 | Reads | `$F13C`-`$F2A0` (`RowRecords+16`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); `$F33C`-`$F340` (`RowRecords+528`); 2 more ranges |
 | Writes | `$F13C`-`$F2A0` (`RowRecords+16`); `$F2BC`-`$F2C0` (`RowRecords+400`); `$F2DC`-`$F2E0` (`RowRecords+432`); `$F2FC`-`$F300` (`RowRecords+464`); `$F31C`-`$F320` (`RowRecords+496`); `$F33C`-`$F340` (`RowRecords+528`); 2 more ranges |
 
@@ -660,7 +657,7 @@ c2: 1025 entries.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 19,109 calls, 244,099 t-states own (0.00 %) |
-| Called from | `GlyphMarkBits`, `PlayInterruptExit` |
+| Called from | `GlyphMarkBits` (falls into), `PlayInterruptExit` |
 | Calls | `BuildColumnBack`, `BuildCellDone` |
 
 ### `NewSpanNode` (`$8A5A`)
@@ -681,7 +678,7 @@ c2: 307 entries.
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 684 calls, 542,113 t-states own (0.10 %) |
 | Called from | `BuildGlyph` |
 | Calls | `AllocGlyphs`, `PopNode` |
-| Reads | `$7F65` (`PassPhase`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F132`-`$F2FF` (`RowRecords+6`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); `$F352`-`$F35F` (`RowRecords+550`); 2 more ranges |
+| Reads | `$7F65` (`PassPhase`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F132`-`$F2FF` (`RowRecords+6`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); `$F352`-`$F35F` (`RowRecords+550`); 1 more ranges |
 | Writes | `$F132`-`$F2FF` (`RowRecords+6`); `$F312`-`$F31F` (`RowRecords+486`); `$F332`-`$F33F` (`RowRecords+518`); `$F352`-`$F35F` (`RowRecords+550`); `$F800`-`$FA36` (`NodePool`) |
 
 ### `PopNode` (`$8AD0`)
@@ -738,9 +735,9 @@ Called from the frame handler cycle (c2: 228 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 9,647 calls, 62,617,919 t-states own (1.19 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 748 calls, 4,185,653 t-states own (1.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 975 calls, 5,685,917 t-states own (1.07 %) |
-| Called from | `PlayInterrupt`, `ReplayRoundEnd` |
+| Called from | `PlayInterrupt`, `ReplayColumns` |
 | Calls | `PushNode`, `SetSpanHandler` |
-| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 2 more ranges |
+| Reads | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DA`-`$81DC` (`PlayFlags`, `ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 1 more ranges |
 | Writes | `$7F70` (`EmptyRows`); `$801C`-`$8022` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 2 more); `$81DB`-`$81DC` (`ScrollCount`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F360` (`RowRecords`); `$F802`-`$FA36` (`NodePool+2`); 1 more ranges |
 
 ### `SetSpanHandler` (`$8C1C`)
@@ -756,7 +753,7 @@ Handler = SpanHandlers[(IY+6)] into the node's first word. c2: 1559 entries.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3,860 calls, 474,791 t-states own (0.11 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,860 calls, 474,786 t-states own (0.09 %) |
 | Called from | `ScrollStep` |
-| Reads | `$8C33`-`$8C3A` (`SpanHandlers+2`); `$F806`-`$FA36` (`NodePool+6`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$8C33`-`$8C3A` (`SpanHandlers+2`); `$F806`-`$FA36` (`NodePool+6`) |
 | Writes | `$F800`-`$FA31` (`NodePool`) |
 
 ## levels
@@ -782,7 +779,7 @@ Called from the level start `$AF49` (c2: 1 entry).
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 130,873 t-states own (0.02 %) |
 | Called from | `LevelStart` |
 | Calls | `InitStars`, `ClearHitGrid` |
-| Reads | `$B700`-`$BFFE` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
+| Reads | `$B700`-`$BFFE` (`Start+1`, `MapRingSpace`, `TileSource`); `$F12C`-`$F36A` (`RowRecords`); `$FFE0`-`$FFFE` (`ColumnFlags`) |
 | Writes | `$7EFF`-`$7F4F` (`SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3`, `SpriteCacheRecord4` and 2 more); `$7F68`-`$7F69` (`NodeFreeList`); `$801C`-`$8025` (`ScrollColumn`, `ScriptColumn`, `ScriptRoom`, `ScriptBusy` and 4 more); `$8072`-`$8087` (`FreeEnemySlots`, `WavesAllowed`, `EnemyShotsLeft`, `WaveRecords` and 1 more); `$80BD`-`$80BE` (`HarmlessMaskA`, `HarmlessMaskB`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); 3 more ranges |
 
 ## scenery
@@ -801,7 +798,7 @@ Script stack top `$FDFB` holds the entry ScriptMain, ScriptSP (`$801A`) = `$FDFB
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 759 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 69 t-states own (0.00 %) |
 | Called from | `LevelStart` |
-| Calls | `ResumeScript` |
+| Calls | `ResumeScript` (falls into) |
 | Writes | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FDFB`-`$FDFC` (`ScriptStackTop`) |
 
 ### `ResumeScript` (`$8D45`)
@@ -818,9 +815,9 @@ Called from the frame handler cycle `$AA96` (c2: 524 entries) and from the catch
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 19,842 calls, 1,298,532 t-states own (0.02 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1,495 calls, 97,644 t-states own (0.02 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,000 calls, 129,958 t-states own (0.02 %) |
-| Called from | `StartScript`, `PlayPass`, `ReplayRound` |
+| Called from | `StartScript` (falls into), `PlayPass`, `ReplayRound` |
 | Calls | `ScriptMain` |
-| Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$801A`-`$8020` (`ScriptSP`, `ScrollColumn`, `ScriptColumn`, `ScriptRoom` and 1 more) |
 | Writes | `$8018`-`$8020` (`MainSP`, `ScriptSP`, `ScrollColumn`, `ScriptColumn` and 2 more) |
 
 ### `YieldScript` (`$8D69`)
@@ -879,7 +876,7 @@ HL = the script's address from the word table `$72E1`, then ScriptStep. c2: 4 en
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3 calls, 192 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 10 calls, 639 t-states own (0.00 %) |
 | Called from | `ScriptMain`, `ScriptStep` |
-| Calls | `ScriptStep` |
+| Calls | `ScriptStep` (falls into) |
 | Reads | `$72E3`-`$732E` (`SceneryScriptTable+2`) |
 
 ### `ScriptStep` (`$8D86`)
@@ -894,7 +891,7 @@ Below `$80`: DrawGroup n, ScriptBusy = 0, YieldScript, go on. `$FF`: return. `$8
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 160 calls, 68,851 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 37 calls, 3,916 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 14 calls, 5,637 t-states own (0.00 %) |
-| Called from | `RunScript`, `ScriptReturn` (tail) |
+| Called from | `RunScript` (falls into), `ScriptReturn` (tail) |
 | Calls | `YieldScript`, `ScriptMainAgain`, `RunScript`, `DrawGroup`, `ScriptSetCell` |
 | Reads | `$732F`-`$73DB` (`SceneryScripts`); `$7401`-`$7499` (`SceneryScripts+210`); `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
 | Writes | `$8020`-`$8021` (`ScriptBusy`, `ScriptVariant`) |
@@ -932,7 +929,7 @@ c2: 15 entries.
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 42 calls, 128,181 t-states own (0.02 %) |
 | Called from | `ScriptStep` |
 | Calls | `YieldScript`, `PlaceColumn` |
-| Reads | `$749A`-`$799B` (`GroupTable`, `ObjectGroups`, `ShapeTable`, `Shapes`); `$79CA`-`$7AC7` (`Shapes+425`); `$7AF2`-`$7B16` (`Shapes+721`); `$7B41`-`$7BA3` (`Shapes+800`); `$7BD9`-`$7C31` (`Shapes+952`); `$7C5E`-`$7DB5` (`Shapes+1085`); 5 more ranges |
+| Reads | `$749A`-`$799B` (`GroupTable`, `ObjectGroups`, `ShapeTable`, `Shapes`); `$79CA`-`$7AC7` (`Shapes+425`); `$7AF2`-`$7B16` (`Shapes+721`); `$7B41`-`$7BA3` (`Shapes+800`); `$7BD9`-`$7C31` (`Shapes+952`); `$7C5E`-`$7DB5` (`Shapes+1085`); 4 more ranges |
 | Writes | `$8E94` (`ObjectRowStep`); `$8EAD` (`PlaceFlags+1`); `$8EBF`-`$8EC0` (`PlaceStepE`, `PlaceStepC`) |
 
 ### `PlaceColumn` (`$8EA1`)
@@ -950,7 +947,7 @@ c2: 209 entries.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 374 calls, 190,935 t-states own (0.05 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 374 calls, 190,958 t-states own (0.04 %) |
 | Called from | `DrawGroup` |
-| Reads | `$7822`-`$78A6` (`Shapes+1`); `$78BE`-`$7DD9` (`Shapes+157`); `$7DFD`-`$7E33` (`Shapes+1500`); `$7E4A`-`$7E59` (`Shapes+1577`); `$FEFF`-`$FF00` (`VectorTable+255`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
+| Reads | `$7822`-`$78A6` (`Shapes+1`); `$78BE`-`$7DD9` (`Shapes+157`); `$7DFD`-`$7E33` (`Shapes+1500`); `$7E4A`-`$7E59` (`Shapes+1577`); `$FFD8`-`$FFDE` (`WorkGlyph`) |
 | Writes | `$8EBB` (`PlaceAttr+1`); `$B700`-`$BFFF` (`Start+1`, `MapRingSpace`, `TileSource`); `$FDE9`-`$FDEA` (`ScriptStack+89`) |
 
 ### `ScriptSetCell` (`$8EC5`)
@@ -986,7 +983,7 @@ Input: HL = the source glyphs, DE = the destination, B = the cells a column, C =
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 26 calls, 49,004 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 30 calls, 56,579 t-states own (0.01 %) |
 | Called from | `LoadCellSprite` |
-| Calls | `FillBlankCell` |
+| Calls | `FillBlankCell` (falls into) |
 | Reads | `$6400`-`$653F` (`TileCopyTail+600`); `$6560`-`$65BF` (`TileCopyTail+952`); `$65E0`-`$65FF` (`TileCopyTail+1080`); `$6620`-`$66DF` (`TileCopyTail+1144`) |
 | Writes | `$E748`-`$E787` (`SpriteCacheImages`); `$E988`-`$E9AF` (`SpriteCacheImages+576`); `$EBC8`-`$EC07` (`SpriteCacheImages+1152`); `$EE08`-`$EE2F` (`SpriteCacheImages+1728`) |
 
@@ -1002,7 +999,7 @@ A and BC preserved. c2: 30 entries.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,201 calls, 588,956 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 157 calls, 41,754 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 181 calls, 48,431 t-states own (0.01 %) |
-| Called from | `BuildCellSprite`, `BuildBigSprite` |
+| Called from | `BuildCellSprite` (falls into), `BuildBigSprite` |
 | Writes | `$C000`-`$C0B7` (`GlyphCache`); `$C0E0`-`$C0E7` (`GlyphCache+224`); `$C118`-`$C11F` (`GlyphCache+280`); `$C150`-`$C1FF` (`GlyphCache+336`); `$E740`-`$E7A7` (`BallSprite+248`, `SpriteCacheImages`); `$E980`-`$E9CF` (`SpriteCacheImages+568`); 2 more ranges |
 
 ### `BuildBigSprite` (`$8F0C`)
@@ -1047,8 +1044,7 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 182 calls, 2,002 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 210 calls, 2,310 t-states own (0.00 %) |
 | Called from | `SpriteShiftCopy` |
-| Calls | `RotateSpriteRows`, `RotateLine` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `RotateSpriteRows` (falls into) |
 
 ### `RotateSpriteRows` (`$8F5B`)
 
@@ -1057,8 +1053,8 @@ Called from `$AD44` (c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,409 calls, 16,856 t-states own (0.00 %) |
-| Called from | `RotateSprite`, `PlayInterruptExit` |
-| Calls | `RotateLine` |
+| Called from | `RotateSprite` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLine` (falls into) |
 
 ### `RotateLine` (`$8F5D`)
 
@@ -1070,8 +1066,8 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,140 calls, 687,177 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 4,368 calls, 117,663 t-states own (0.03 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 5,040 calls, 135,541 t-states own (0.03 %) |
-| Called from | `RotateSprite`, `RotateSpriteRows`, `RotateNextByte` (tail), `RotateLineNext` (tail), `RotateLineCount` (tail), `PlayInterruptExit` |
-| Calls | `RotateLineSave`, `RotateByte` |
+| Called from | `RotateSpriteRows` (falls into), `RotateLineCount` (tail), `PlayInterruptExit` |
+| Calls | `RotateLineSave` (falls into) |
 
 ### `RotateLineSave` (`$8F5E`)
 
@@ -1080,8 +1076,8 @@ Called from `$AD44` (c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,139 calls, 678,894 t-states own (0.01 %) |
-| Called from | `RotateLine`, `PlayInterruptExit` |
-| Calls | `RotateLineCarry` |
+| Called from | `RotateLine` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineCarry` (falls into) |
 
 ### `RotateLineCarry` (`$8F5F`)
 
@@ -1090,9 +1086,8 @@ Called from `$AD44` (c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,137 calls, 236,582 t-states own (0.00 %) |
-| Called from | `RotateLineSave`, `PlayInterruptExit` |
-| Calls | `RotateByte` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineSave` (falls into), `PlayInterruptExit` |
+| Calls | `RotateByte` (falls into) |
 
 ### `RotateByte` (`$8F60`)
 
@@ -1104,9 +1099,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 192,411 calls, 769,554 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 13,277 calls, 53,126 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 15,291 calls, 61,209 t-states own (0.01 %) |
-| Called from | `RotateLine`, `RotateLineCarry`, `RotateNextByte` (tail), `PlayInterruptExit` |
-| Calls | `RotateByteShift`, `RotateNextByte` |
-| Reads | `$E790`-`$E987` (`SpriteCacheImages+72`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineCarry` (falls into), `RotateNextByte` (tail), `PlayInterruptExit` |
+| Calls | `RotateByteShift` (falls into) |
+| Reads | `$E790`-`$E987` (`SpriteCacheImages+72`) |
 | Writes | `$E790`-`$E987` (`SpriteCacheImages+72`) |
 
 ### `RotateByteShift` (`$8F61`)
@@ -1118,9 +1113,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 192,366 calls, 2,886,008 t-states own (0.06 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 13,274 calls, 398,464 t-states own (0.10 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 15,291 calls, 229,377 t-states own (0.04 %) |
-| Called from | `RotateByte`, `PlayInterruptExit` |
-| Calls | `RotateByteOut`, `RotateNextByte` |
-| Reads | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateByte` (falls into), `PlayInterruptExit` |
+| Calls | `RotateByteOut` (falls into) |
+| Reads | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
 | Writes | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
 
 ### `RotateByteOut` (`$8F63`)
@@ -1131,9 +1126,8 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 192,392 calls, 2,890,036 t-states own (0.06 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 15,291 calls, 229,719 t-states own (0.04 %) |
-| Called from | `RotateByteShift`, `PlayInterruptExit` |
-| Calls | `RotateNextByte` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateByteShift` (falls into), `PlayInterruptExit` |
+| Calls | `RotateNextByte` (falls into) |
 
 ### `RotateNextByte` (`$8F65`)
 
@@ -1145,9 +1139,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 192,604 calls, 2,205,969 t-states own (0.04 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 13,288 calls, 150,810 t-states own (0.04 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 15,309 calls, 173,620 t-states own (0.03 %) |
-| Called from | `RotateByte`, `RotateByteShift`, `RotateByteOut`, `PlayInterruptExit` |
-| Calls | `RotateLine` (tail), `RotateByte` (tail), `RotateLineWrap`, `SpriteShiftNext` |
-| Reads | `$E790`-`$E7A7` (`SpriteCacheImages+72`); `$E7D8`-`$E7EF` (`SpriteCacheImages+144`); `$E820`-`$E837` (`SpriteCacheImages+216`); `$E868`-`$E87F` (`SpriteCacheImages+288`); `$E8B0`-`$E8C7` (`SpriteCacheImages+360`); `$E8F8`-`$E90F` (`SpriteCacheImages+432`); 2 more ranges |
+| Called from | `RotateByteOut` (falls into), `PlayInterruptExit` |
+| Calls | `RotateByte` (tail), `RotateLineWrap` (falls into) |
+| Reads | `$E790`-`$E7A7` (`SpriteCacheImages+72`); `$E7D8`-`$E7EF` (`SpriteCacheImages+144`); `$E820`-`$E837` (`SpriteCacheImages+216`); `$E868`-`$E87F` (`SpriteCacheImages+288`); `$E8B0`-`$E8C7` (`SpriteCacheImages+360`); `$E8F8`-`$E90F` (`SpriteCacheImages+432`); 1 more ranges |
 | Writes | `$E790`-`$E7A7` (`SpriteCacheImages+72`); `$E7D8`-`$E7EF` (`SpriteCacheImages+144`); `$E820`-`$E837` (`SpriteCacheImages+216`); `$E868`-`$E87F` (`SpriteCacheImages+288`); `$E8B0`-`$E8C7` (`SpriteCacheImages+360`); `$E8F8`-`$E90F` (`SpriteCacheImages+432`); 1 more ranges |
 
 ### `RotateLineWrap` (`$8F67`)
@@ -1159,9 +1153,9 @@ Called from `$AD44` (c2: 35 entries).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,138 calls, 804,476 t-states own (0.02 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 4,369 calls, 57,334 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 5,041 calls, 244,693 t-states own (0.05 %) |
-| Called from | `RotateNextByte`, `PlayInterruptExit` |
-| Calls | `RotateLineMerge`, `RotateLineCount` |
-| Reads | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$E9FF` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 3 more ranges |
+| Called from | `RotateNextByte` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineMerge` (falls into) |
+| Reads | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$E9FF` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 2 more ranges |
 | Writes | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$E9FF` (`SpriteCacheImages+648`); `$EA18`-`$EA2F` (`SpriteCacheImages+720`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); 2 more ranges |
 
 ### `RotateLineMerge` (`$8F68`)
@@ -1172,9 +1166,9 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,140 calls, 414,009 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 4,370 calls, 61,171 t-states own (0.01 %) |
-| Called from | `RotateLineWrap`, `PlayInterruptExit` |
-| Calls | `RotateLineStore`, `RotateLineNext` |
-| Reads | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 2 more ranges |
+| Called from | `RotateLineWrap` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineStore` (falls into) |
+| Reads | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 1 more ranges |
 | Writes | `$E790`-`$E99F` (`SpriteCacheImages+72`); `$E9D0`-`$EA2F` (`SpriteCacheImages+648`); `$EA60`-`$EA77` (`SpriteCacheImages+792`); `$EAA8`-`$EABF` (`SpriteCacheImages+864`); `$EAF0`-`$EB07` (`SpriteCacheImages+936`); `$EB38`-`$EB4F` (`SpriteCacheImages+1008`); 1 more ranges |
 
 ### `RotateLineStore` (`$8F69`)
@@ -1184,9 +1178,8 @@ Called from `$AD44` (c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,139 calls, 413,990 t-states own (0.01 %) |
-| Called from | `RotateLineMerge`, `PlayInterruptExit` |
-| Calls | `RotateLineNext` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineMerge` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineNext` (falls into) |
 | Writes | `$C200`-`$C42F` (`GlyphCache+512`, `WaveCellSource`); `$C5F0`-`$C627` (`WaveCellSource+496`); `$C7E8`-`$C81F` (`WaveCellSource+1000`, `GlyphCacheUpper`); `$C9E0`-`$CA17` (`GlyphCacheUpper+480`); `$CBD8`-`$CC0F` (`GlyphCacheUpper+984`); `$CDD0`-`$CE07` (`GlyphCacheUpper+1488`); 1 more ranges |
 
 ### `RotateLineNext` (`$8F6A`)
@@ -1197,9 +1190,8 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,138 calls, 354,873 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 4,369 calls, 146,834 t-states own (0.04 %) |
-| Called from | `RotateLineMerge`, `RotateLineStore`, `PlayInterruptExit` |
-| Calls | `RotateLine` (tail), `RotateLineRestore`, `SpriteShiftNext` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `RotateLineStore` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineRestore` (falls into) |
 
 ### `RotateLineRestore` (`$8F6B`)
 
@@ -1208,8 +1200,8 @@ Called from `$AD44` (c2: 35 entries).
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,139 calls, 686,844 t-states own (0.01 %) |
-| Called from | `RotateLineNext`, `PlayInterruptExit` |
-| Calls | `RotateLineCount` |
+| Called from | `RotateLineNext` (falls into), `PlayInterruptExit` |
+| Calls | `RotateLineCount` (falls into) |
 
 ### `RotateLineCount` (`$8F6C`)
 
@@ -1219,9 +1211,8 @@ Called from `$AD44` (c2: 35 entries).
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 59,137 calls, 958,947 t-states own (0.02 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 61,625 t-states own (0.01 %) |
-| Called from | `RotateLineWrap`, `RotateLineRestore`, `PlayInterruptExit` |
+| Called from | `RotateLineRestore` (falls into), `PlayInterruptExit` |
 | Calls | `RotateLine` (tail), `SpriteShiftNext` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `ClearStripCounts` (`$8F70`)
 
@@ -1427,7 +1418,7 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 30 calls, 1,338 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 52 calls, 2,460 t-states own (0.00 %) |
 | Called from | `GetSpriteCache` (tail) |
-| Calls | `SpriteCacheRet` |
+| Calls | `SpriteCacheRet` (falls into) |
 
 ### `SpriteCacheRet` (`$9413`)
 
@@ -1439,7 +1430,7 @@ A = the kind. From `$14` up: HL = `$7EE2` (record 0) with a load queued each tim
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 931 calls, 12,694 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 56 calls, 855 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 82 calls, 1,146 t-states own (0.00 %) |
-| Called from | `GetSpriteCache` (tail), `SpriteCacheRecord` |
+| Called from | `GetSpriteCache` (tail), `SpriteCacheRecord` (falls into) |
 
 ### `EvictSpriteCache` (`$9414`)
 
@@ -1608,7 +1599,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1 call, 5,616 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 3,872 t-states own (0.00 %) |
 | Called from | `JumpTable`, `PathOpHomeTarget` (tail) |
-| Calls | `PathHomeSetRate`, `PathOpHome` |
+| Calls | `PathHomeSetRate` (falls into) |
 | Writes | `$F3C1`-`$F3C3` (`EnemyObjects+41`); `$F3ED`-`$F3EF` (`EnemyObjects+85`); `$F419`-`$F41B` (`EnemyObjects+129`); `$F445`-`$F447` (`EnemyObjects+173`); `$F471`-`$F473` (`EnemyObjects+217`) |
 
 ### `PathHomeSetRate` (`$9605`)
@@ -1618,7 +1609,7 @@ The target +`$29`/+`$2A` = the player `$F36C`, the turn rate +`$2B` = P, then Pa
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 176 calls, 12,878 t-states own (0.00 %) |
-| Called from | `PathOpHomePlayer`, `PathOpHomeTarget` (tail) |
+| Called from | `PathOpHomePlayer` (falls into), `PathOpHomeTarget` (tail) |
 | Calls | `PathOpHome` |
 | Writes | `$F3C3` (`EnemyObjects+43`); `$F3EF` (`EnemyObjects+87`); `$F41B` (`EnemyObjects+131`); `$F447` (`EnemyObjects+175`); `$F473` (`EnemyObjects+219`) |
 
@@ -1775,7 +1766,7 @@ Every +`$28` frames (+`$27` counts down): the direction to the target (+`$29`/+`
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 10,266 calls, 943,249 t-states own (0.02 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1,818 calls, 214,367 t-states own (0.05 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1,380 calls, 134,375 t-states own (0.03 %) |
-| Called from | `PathOpHomePlayer`, `PathHomeSetRate`, `MissileHandler`, `SeekerHandler`, `EnemyShotStep` |
+| Called from | `PathHomeSetRate`, `MissileHandler`, `SeekerHandler`, `EnemyShotStep` |
 | Calls | `PathOpMove`, `DirectionTo`, `SetVelocity` |
 | Reads | `$F3AE`-`$F3EF` (`EnemyObjects+22`); `$F406`-`$F41B` (`EnemyObjects+110`); `$F432`-`$F447` (`EnemyObjects+154`); `$F45E`-`$F473` (`EnemyObjects+198`); `$F48A`-`$F49F` (`EnemyShots+22`); `$F4B6`-`$F4CB` (`EnemyShots+66`); 2 more ranges |
 | Writes | `$F3AE` (`EnemyObjects+22`); `$F3BF`-`$F3EB` (`EnemyObjects+39`); `$F406` (`EnemyObjects+110`); `$F417` (`EnemyObjects+127`); `$F432` (`EnemyObjects+154`); `$F443` (`EnemyObjects+171`); 10 more ranges |
@@ -1985,7 +1976,7 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 86 calls, 28,858 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 84 calls, 2,184 t-states own (0.00 %) |
 | Called from | `EnemyHandler`, `LockableHandler`, `BigEnemyHandler` |
-| Calls | `EnemyGone`, `AddScore` |
+| Calls | `EnemyGone` (falls into) |
 | Reads | `$7EFF`-`$7F11` (`SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F3F`-`$7F41` (`SpriteCacheRecord5+13`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects+26`); `$F3DE`-`$F3F1` (`EnemyObjects+70`); 3 more ranges |
 | Writes | `$7EFF`-`$7F0F` (`SpriteCacheUse1`, `SpriteCacheRecord2`); `$7F3F` (`SpriteCacheRecord5+13`); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); 2 more ranges |
 
@@ -1998,7 +1989,7 @@ C = `$FF`: the wave record gets bit 7 (an escape), so the wave pays no bonus. 7 
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 16 calls, 4,590 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,197 calls, 369,981 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 117 calls, 35,651 t-states own (0.01 %) |
-| Called from | `EnemyEscaped` (tail), `EnemyKilled` |
+| Called from | `EnemyEscaped` (tail), `EnemyKilled` (falls into) |
 | Calls | `AddScore` |
 | Reads | `$7ECA` (`LaserDescriptor+2`); `$7EEF`-`$7F51` (`SpriteCache+13`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F398`-`$F399` (`EnemyObjects`); `$F3B2`-`$F3C5` (`EnemyObjects+26`); `$F3DE`-`$F3F1` (`EnemyObjects+70`); 3 more ranges |
 | Writes | `$7EEF`-`$7F4F` (`SpriteCache+13`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more); `$8073`-`$8087` (`WavesAllowed`, `EnemyShotsLeft`, `WaveRecords`, `SpriteCacheMask`); `$F3BE` (`EnemyObjects+38`); `$F3EA` (`EnemyObjects+82`); `$F416` (`EnemyObjects+126`); `$F442` (`EnemyObjects+170`); 1 more ranges |
@@ -2064,7 +2055,7 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 5,996 calls, 447,976 t-states own (0.11 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 7,436 calls, 559,282 t-states own (0.11 %) |
 | Called from | `PathOpBounce`, `PathOpLand`, `PathOpBounceArena`, `PathOpDive`, `PathOpMoveFragile`, `PlayerHandler` |
-| Calls | `SceneryAt6Row2`, `SceneryCell` |
+| Calls | `SceneryAt6Row2` (falls into), `SceneryCell` |
 | Reads | `$B700`-`$BF10` (`Start+1`, `MapRingSpace`, `TileSource`); `$BF26`-`$BF27` (`TileSource+806`); `$BF50`-`$BFB7` (`TileSource+848`); `$BFCE`-`$BFD6` (`TileSource+974`); `$BFEB`-`$BFEC` (`TileSource+1003`); `$F372` (`PlayerObject+6`); 5 more ranges |
 
 ### `SceneryAt6Row2` (`$99E4`)
@@ -2077,7 +2068,7 @@ The ship's and most movers' test: rows Y, Y + 1, Y + 2 of columns X and X + 1 (a
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 134,520 calls, 17,253,141 t-states own (0.33 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 5,996 calls, 766,288 t-states own (0.18 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 7,436 calls, 952,975 t-states own (0.18 %) |
-| Called from | `SceneryAt6` |
+| Called from | `SceneryAt6` (falls into) |
 | Reads | `$B700`-`$C010` (`Start+1`, `MapRingSpace`, `TileSource`); `$C026`-`$C027` (`GlyphCache+38`); `$C050`-`$C0B7` (`GlyphCache+80`); `$C0CE`-`$C0D6` (`GlyphCache+206`); `$C0EB`-`$C0EC` (`GlyphCache+235`); `$F372` (`PlayerObject+6`); 5 more ranges |
 
 ### `SceneryCell` (`$99FF`)
@@ -2161,7 +2152,7 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 2,948,480 t-states own (0.70 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 3,718,481 t-states own (0.70 %) |
 | Called from | `JumpTable` |
-| Calls | `JumpTable`, `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `ScatterDebris`, `FuelOut`, `FireLaser`, `ReadControls` |
+| Calls | `JumpTable`, `PathOpAccelerate`, `SceneryAt6`, `ClampRow`, `ClampColumn`, `FuelOut`, `FireLaser`, `ReadControls` |
 | Reads | `$7F63` (`PassBit`); `$7F79`-`$7F7B` (`SpinnerColour`, `SpinnerColourStep`, `DeathTimer`); `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$80BD`-`$80BF` (`HarmlessMaskA`, `HarmlessMaskB`, `ShipHistoryIndex`); `$80E6` (`Fuel`); `$8184`-`$8186` (`FireHeld`, `FireChanged`, `ControlBits`); 9 more ranges |
 | Writes | `$7F7B`-`$7F7C` (`DeathTimer`, `EndPending`); `$80BF`-`$80E6` (`ShipHistoryIndex`, `ShipHistory`, `LockTarget`, `LockMask` and 4 more); `$F371`-`$F4D4` (`PlayerObject+5`, `EnemyObjects`, `EnemyShots`); `$F500` (`LaserShots+8`); `$F52C` (`LaserShots+52`); `$F558` (`LaserShots+96`); 4 more ranges |
 
@@ -2173,7 +2164,8 @@ The colour +`$25`: `$70`, or the flashing `$7F79` x 8 + `$40` while fire has bee
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ScatterDebris` |
 
 ### `WeaponRating` (`$9B75`)
 
@@ -2187,7 +2179,7 @@ L = laser level + side weapon: `$80E7` = `$FF`, `$30` from 4; `$80E9` = 0, 8 fro
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 914 calls, 229,050 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 106 calls, 26,241 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 100 calls, 24,875 t-states own (0.00 %) |
-| Called from | `ScoreJob`, `ScoreJobRating`, `RoundPlaySetup` |
+| Called from | `ScoreJobRating`, `RoundPlaySetup` |
 | Reads | `$7F99`-`$7FA7` (`PlayerRecord`, `Players`, `Player1`); `$81DE` (`ScriptLevelBias`) |
 | Writes | `$80E7`-`$80E9` (`WeaponRatingMask`, `WeaponRatingValue`, `WeaponRatingLevel`) |
 
@@ -2201,7 +2193,7 @@ Each at a random column X - 1 + 0-3 and a random row near Y, active, +`$26` = 0,
 | --- | --- |
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 3,767 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 5 calls, 8,971 t-states own (0.00 %) |
-| Called from | `PlayerHandler`, `BigEnemyHandler` |
+| Called from | `KillPlayer`, `BigEnemyHandler` |
 | Calls | `Random`, `ClampRow`, `StartExplosion` |
 | Reads | `$F370`-`$F372` (`PlayerObject+4`); `$F39C`-`$F3A0` (`EnemyObjects+4`); `$F3CC` (`EnemyObjects+52`); `$F3F8` (`EnemyObjects+96`); `$F424` (`EnemyObjects+140`); `$F450` (`EnemyObjects+184`) |
 | Writes | `$8072` (`FreeEnemySlots`); `$F39C`-`$F3A0` (`EnemyObjects+4`); `$F3BE`-`$F3CC` (`EnemyObjects+38`); `$F3EA`-`$F3F8` (`EnemyObjects+82`); `$F416`-`$F424` (`EnemyObjects+126`); `$F442`-`$F450` (`EnemyObjects+170`); 1 more ranges |
@@ -2253,7 +2245,7 @@ Fire held exactly 3 frames: `$F5D4` when free, else with the double plasma (+`$0
 | --- | --- |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 52,689 t-states own (0.01 %) |
 | Called from | `JumpTable` |
-| Calls | `PlaceAtPlayer` |
+| Calls | `PlaceAtPlayer` (falls into) |
 | Reads | `$7FA5` (`Player1DoublePlasma`); `$8184` (`FireHeld`); `$F5B0` (`PlasmaBall2+8`); `$F5DC` (`SideShot+8`) |
 | Writes | `$F5B0`-`$F5BB` (`PlasmaBall2+8`); `$F5CE`-`$F5E7` (`PlasmaBall2+38`, `SideShot`); `$F5FA` (`SideShot+38`) |
 
@@ -2267,7 +2259,7 @@ Copies the ship's X (+2 columns) and Y (+1 row) from `$F36F`. Used by PlasmaFram
 | --- | --- |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 42 calls, 6,514 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 153 t-states own (0.00 %) |
-| Called from | `PlasmaFrame`, `HomingFrame`, `SeekerFrame` |
+| Called from | `PlasmaFrame` (falls into), `HomingFrame`, `SeekerFrame` |
 | Reads | `$F36F`-`$F372` (`PlayerObject+3`) |
 | Writes | `$F5AB`-`$F5AE` (`PlasmaBall2+3`); `$F5D7`-`$F5DA` (`SideShot+3`) |
 
@@ -2336,7 +2328,7 @@ Not run in c1/c2.
 | --- | --- |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 268 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `ResetPlasmaBall` |
+| Calls | `ResetPlasmaBall` (falls into) |
 | Reads | `$7FA4` (`Player1SideWeapon`); `$F608` (`SightObject+8`) |
 | Writes | `$7FA4`-`$7FA5` (`Player1SideWeapon`, `Player1DoublePlasma`); `$F608` (`SightObject+8`) |
 
@@ -2349,7 +2341,7 @@ Inactive, kind 9, Vx = `$40`, the X acceleration 0, the Y acceleration `$10` (it
 | | |
 | --- | --- |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 4 calls, 689 t-states own (0.00 %) |
-| Called from | `PodPlasma` |
+| Called from | `PodPlasma` (falls into) |
 | Reads | `$F5B0` (`PlasmaBall2+8`); `$F5DC` (`SideShot+8`) |
 | Writes | `$F5AF`-`$F5BD` (`PlasmaBall2+7`); `$F5DB`-`$F5E9` (`SideShot+7`) |
 
@@ -2392,7 +2384,7 @@ Colour `$78` without a lock, `$70` with one; its overlap mask +`$0D` into `$80E4
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 42,282 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 245,669 t-states own (0.05 %) |
 | Called from | `JumpTable` |
-| Calls | `PlaceSight` |
+| Calls | `PlaceSight` (falls into) |
 | Reads | `$80E2` (`LockMask`); `$F60D` (`SightObject+13`) |
 | Writes | `$80E4` (`SightMask`); `$F625` (`SightObject+37`) |
 
@@ -2406,7 +2398,7 @@ The entry of the ring `$80C0` at the index `$80BF` (the oldest one: the sight la
 | --- | --- |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 487 calls, 75,655 t-states own (0.02 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,824 calls, 438,587 t-states own (0.08 %) |
-| Called from | `PodHoming`, `SightHandler` |
+| Called from | `PodHoming`, `SightHandler` (falls into) |
 | Reads | `$80BF`-`$80DF` (`ShipHistoryIndex`, `ShipHistory`) |
 | Writes | `$F603`-`$F606` (`SightObject+3`) |
 
@@ -2674,8 +2666,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 848 calls, 616,985 t-states own (0.15 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 842 calls, 608,634 t-states own (0.11 %) |
 | Runs (the other recordings) | 1,566 calls (`c1` 1,566) |
-| Called from | `PrintString`, `PrintBcd`, `PrintBcdLeading`, `PrintBcdOut` |
-| Calls | `PrintCharSave`, `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight`, `PrintRowDown` |
+| Called from | `PrintString`, `PrintBcdLeading`, `PrintBcdOut` |
+| Calls | `PrintCharSave` (falls into) |
 | Reads | `$80AA`-`$80AD` (`PrintPos`, `PrintAttr`, `PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`) |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); 12 more ranges |
 
@@ -2686,9 +2678,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,775 calls, 605,189 t-states own (0.01 %) |
-| Called from | `PrintChar`, `PlayInterruptExit` |
-| Calls | `PrintCharTest`, `PrintSetColumn`, `PrintSetRow` |
-| Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintChar` (falls into), `PlayInterruptExit` |
+| Calls | `PrintCharTest` (falls into) |
+| Reads | `$80AD` (`PrintPending`); `$A3A9`-`$A3AC` (`PrintControlTable+6`) |
 
 ### `PrintCharTest` (`$A32E`)
 
@@ -2697,9 +2689,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,731 calls, 54,129 t-states own (0.00 %) |
-| Called from | `PrintCharSave`, `PlayInterruptExit` |
-| Calls | `PrintCharKind` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintCharSave` (falls into), `PlayInterruptExit` |
+| Calls | `PrintCharKind` (falls into) |
 
 ### `PrintCharKind` (`$A330`)
 
@@ -2708,9 +2699,9 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,731 calls, 998,127 t-states own (0.02 %) |
-| Called from | `PrintCharTest`, `PlayInterruptExit` |
-| Calls | `PrintCharGlyph`, `PrintCharDone` (tail) |
-| Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintCharTest` (falls into), `PlayInterruptExit` |
+| Calls | `PrintCharGlyph` (falls into), `PrintCharDone` (tail) |
+| Reads | `$80AA`-`$80AC` (`PrintPos`, `PrintAttr`) |
 | Writes | `$5802`-`$581D` (screen); `$5927`-`$5938` (screen); `$596C`-`$5973` (screen); `$80AA`-`$80AB` (`PrintPos`) |
 
 ### `PrintCharGlyph` (`$A34D`)
@@ -2720,9 +2711,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,688 calls, 276,715 t-states own (0.01 %) |
-| Called from | `PrintCharKind`, `PlayInterruptExit` |
-| Calls | `PrintRomGlyph` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintCharKind` (falls into), `PlayInterruptExit` |
+| Calls | `PrintRomGlyph` (falls into) |
 
 ### `PrintRomGlyph` (`$A357`)
 
@@ -2731,8 +2721,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,687 calls, 576,364 t-states own (0.01 %) |
-| Called from | `PrintCharGlyph`, `PlayInterruptExit` |
-| Calls | `PrintCharRow` |
+| Called from | `PrintCharGlyph` (falls into), `PlayInterruptExit` |
+| Calls | `PrintCharRow` (falls into) |
 | Writes | `$4002`-`$401D` (screen); `$4102`-`$411D` (screen); `$4827`-`$4838` (screen); `$486C`-`$4873` (screen); `$4927`-`$4938` (screen); `$496C`-`$4973` (screen) |
 
 ### `PrintCharRow` (`$A365`)
@@ -2742,9 +2732,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 46,116 calls, 184,483 t-states own (0.00 %) |
-| Called from | `PrintRomGlyph`, `PrintCharBold` (tail) |
-| Calls | `PrintCharBold` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PrintRomGlyph` (falls into), `PrintCharBold` (tail) |
+| Calls | `PrintCharBold` (falls into) |
 
 ### `PrintCharBold` (`$A366`)
 
@@ -2753,8 +2742,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 46,117 calls, 2,184,763 t-states own (0.04 %) |
-| Called from | `PrintCharRow`, `PlayInterruptExit` |
-| Calls | `PrintCharRow` (tail), `PrintCharDone` |
+| Called from | `PrintCharRow` (falls into), `PlayInterruptExit` |
+| Calls | `PrintCharRow` (tail), `PrintCharDone` (falls into) |
 | Writes | `$4202`-`$461D` (screen); `$4702`-`$471D` (screen); `$4A27`-`$4A73` (screen); `$4B27`-`$4B73` (screen); `$4C27`-`$4C73` (screen); `$4D27`-`$4D73` (screen); 2 more ranges |
 
 ### `PrintCharDone` (`$A36E`)
@@ -2764,8 +2753,8 @@ Callers: PrintString, PrintBcd, PrintKeyName, HighScoreEntry.
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 7,730 calls, 646,051 t-states own (0.01 %) |
-| Called from | `PrintCharKind` (tail), `PrintCharBold` |
-| Calls | `PrintBcdLeadNext`, `PrintBcdRestNext` |
+| Called from | `PrintCharKind` (tail), `PrintCharBold` (falls into) |
+| Calls | `PrintSetAttr`, `PrintSetColumn`, `PrintSetRow`, `PrintColumnRight`, `PrintRowDown`, `PrintBcdLeadNext`, `PrintBcdRestNext` |
 | Writes | `$80AD` (`PrintPending`) |
 
 ### `PrintCodeDone` (`$A399`)
@@ -2792,7 +2781,7 @@ C: the attribute byte for the next characters (`$80AC`).
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
-| Called from | `PrintChar` |
+| Called from | `PrintCharDone` |
 | Calls | `PrintCodeDone` |
 
 ### `PrintSetInk` (`$A3B6`)
@@ -2827,7 +2816,7 @@ C: the column 0-31 of the print position.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | run into, not called, 1,078 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 98 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`c1`) |
-| Called from | `PrintChar`, `PrintCharSave` |
+| Called from | `PrintCharDone` |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA` (`PrintPos`) |
 | Writes | `$80AA` (`PrintPos`) |
@@ -2844,7 +2833,7 @@ C: the row 0-23: the print position's high byte `$58` + C / 8, bits 5-7 of the l
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | run into, not called, 2,266 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 206 t-states own (0.00 %) |
 | Runs (the other recordings) | 132 calls (`c1` 132) |
-| Called from | `PrintChar`, `PrintCharSave`, `PrintRowDown` (tail) |
+| Called from | `PrintCharDone`, `PrintRowDown` (tail) |
 | Calls | `PrintCodeDone` |
 | Reads | `$80AA`-`$80AB` (`PrintPos`) |
 | Writes | `$80AA`-`$80AB` (`PrintPos`) |
@@ -2858,7 +2847,7 @@ C: the columns to add (a negative operand, `$FE`, moves left).
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
-| Called from | `PrintChar` |
+| Called from | `PrintCharDone` |
 | Calls | `PrintCodeDone` |
 
 ### `PrintRowDown` (`$A3F4`)
@@ -2870,7 +2859,7 @@ C: the rows to add to the current row (the position's row from bits 5-9 of its o
 | | |
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings run into, not called (`c1`) |
-| Called from | `PrintChar` |
+| Called from | `PrintCharDone` |
 | Calls | `PrintSetRow` (tail) |
 
 ### `PrintString` (`$A401`)
@@ -2907,7 +2896,7 @@ Callers: PrintString, the menu screens (RedefineKeys, PrintKeyName, SelectPlayer
 | Runs (the other recordings) | 98 calls (`c1` 98) |
 | Called from | `PrintString`, `LevelStart`, `CreditsPage`, `HiScorePage` |
 | Calls | `PrintString` |
-| Reads | `$82ED`-`$84BC` (`MessageListBase`, `Messages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$82ED`-`$84BC` (`MessageListBase`, `Messages`) |
 
 ### `PrintBcdSpaces` (`$A43C`)
 
@@ -2935,7 +2924,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 101 calls, 117,400 t-states own (0.02 %) |
 | Runs (the other recordings) | 9 calls (`c1` 9) |
 | Called from | `PrintPlayerScore`, `CreditsPage`, `HiScorePage` |
-| Calls | `PrintChar`, `PrintBcdLeading` |
+| Calls | `PrintBcdLeading` (falls into) |
 | Reads | `$7F9C`-`$7F9F` (`Player1`); `$7FCC`-`$7FCF` (`Player2`); `$7FFC`-`$7FFF` (`BcdScratch`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`); `$80AC` (`PrintAttr`) |
 
@@ -2946,7 +2935,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 3,849 calls, 378,348 t-states own (0.01 %) |
-| Called from | `PrintBcd`, `PrintBcdLeadNext` (tail) |
+| Called from | `PrintBcd` (falls into), `PrintBcdLeadNext` (tail) |
 | Calls | `PrintChar`, `PrintBcdOut` (tail) |
 | Reads | `$7FFC`-`$7FFF` (`BcdScratch`) |
 | Writes | `$7FFC`-`$7FFF` (`BcdScratch`); `$80AC` (`PrintAttr`) |
@@ -2959,7 +2948,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 3 calls, 50,115 t-states own (0.00 %) |
 | Called from | `PrintCharDone` |
-| Calls | `PrintBcdLeading` (tail), `PrintBcdRest` |
+| Calls | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Writes | `$80AC` (`PrintAttr`) |
 
 ### `PrintBcdRest` (`$A474`)
@@ -2969,8 +2958,8 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 3,551 calls, 215,641 t-states own (0.00 %) |
-| Called from | `PrintBcdLeadNext`, `PrintBcdRestNext` (tail) |
-| Calls | `PrintBcdOut` |
+| Called from | `PrintBcdLeadNext` (falls into), `PrintBcdRestNext` (tail) |
+| Calls | `PrintBcdOut` (falls into) |
 | Reads | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
 | Writes | `$7FFD`-`$7FFF` (`BcdScratch+1`) |
 
@@ -2981,7 +2970,7 @@ Returns HL past the number. Callers: PrintPlayerScore and the title loop (Credit
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 4,465 calls, 107,937 t-states own (0.00 %) |
-| Called from | `PrintBcdLeading` (tail), `PrintBcdRest` |
+| Called from | `PrintBcdLeading` (tail), `PrintBcdRest` (falls into) |
 | Calls | `PrintChar` |
 
 ### `PrintBcdRestNext` (`$A482`)
@@ -3014,7 +3003,7 @@ Callers: the enemy kill (EnemyGone), the enemy movers (EnemyHandler), PodStep.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,003 calls, 324,270 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 113 calls, 37,622 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 111 calls, 36,710 t-states own (0.01 %) |
-| Called from | `EnemyKilled`, `EnemyGone`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler`, `PodStep` |
+| Called from | `EnemyGone`, `EnemyHandler`, `LockableHandler`, `BigEnemyHandler`, `PodStep` |
 | Reads | `$7F98`-`$7F9F` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$81C5` (`EventRequests`); `$8235`-`$825C` (`PointsTable+4`) |
 | Writes | `$7F9C`-`$7F9F` (`Player1`); `$81C5` (`EventRequests`) |
 
@@ -3066,7 +3055,7 @@ Six life marks from the attribute `$5AD8` (row 22, column 24), the steps between
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 1 call, 552 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 16 calls, 8,304 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 1,085 t-states own (0.00 %) |
-| Called from | `ScoreJob`, `ScoreJobRating`, `RoundPlaySetup` |
+| Called from | `ScoreJobRating`, `RoundPlaySetup` |
 | Reads | `$7F99`-`$7FA0` (`PlayerRecord`, `Players`, `Player1`); `$81C0`-`$81C5` (`LifeSteps`, `EventRequests`) |
 | Writes | `$5A98`-`$5A99` (screen); `$5AB8`-`$5AB9` (screen); `$5AD8`-`$5AD9` (screen) |
 
@@ -3119,7 +3108,7 @@ Waits (HALT) until `$80B9` is 0, clears the colour buffer, then installs TitleIn
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 1,928,326 t-states own (0.36 %) |
 | Called from | `RoundPlaySetup` |
 | Calls | `ClearColourBuffer` |
-| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$80B9` (`RasterFrames`); `$A596`-`$A5A0` (`WaitMenuRasterEnd+1`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `ClearColourBuffer` (`$A5A7`)
@@ -3222,7 +3211,7 @@ A: the frames (HALT A times, interrupts enabled). Callers: RedefineKeys, HighSco
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 38,349,918 t-states own (0.73 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 3,486,390 t-states own (0.66 %) |
 | Called from | `EndOfPlay` |
-| Reads | `$A6B2` (`WaitFramesLoop+1`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$A6B2` (`WaitFramesLoop+1`) |
 
 ## input
 
@@ -3349,7 +3338,7 @@ Callers: the panel update PanelFrame (`$AB97`, `$AB9F`).
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 623,381 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 56,671 t-states own (0.01 %) |
 | Called from | `RoundPlaySetup` |
-| Reads | `$E748`-`$EFE7` (`SpriteCacheImages`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$E748`-`$EFE7` (`SpriteCacheImages`) |
 | Writes | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen) |
 
 ### `SavePanel` (`$A98D`)
@@ -3363,8 +3352,8 @@ The reverse of RestorePanel. Called at `$B1F9`.
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 97,379 t-states own (0.09 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 532,107 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 48,374 t-states own (0.01 %) |
-| Called from | `PlayLoopTest`, `PlayLoopBranch` |
-| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayLoopAgain` |
+| Reads | `$5000`-`$57FF` (screen); `$5A60`-`$5AFF` (screen) |
 | Writes | `$E748`-`$EFE7` (`SpriteCacheImages`) |
 
 ## interrupts
@@ -3439,7 +3428,7 @@ Installed at `$B1DF`. Evidence: c2 L1 659 entries, 12 permille own time.
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 2,977 calls, 645,401 t-states own (0.15 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,697 calls, 802,476 t-states own (0.15 %) |
 | Called from | `RenderDone` |
-| Calls | `ResumeScript`, `ObjectStrips`, `MarkEnemyGrid`, `RunObjects`, `ScrollControl`, `PlayChain`, `CheckPauseAndEnd`, `WaveScriptStep` |
+| Calls | `ResumeScript`, `ObjectStrips`, `MarkEnemyGrid`, `RunObjects`, `ScrollControl`, `PlayChain` (falls into), `CheckPauseAndEnd`, `WaveScriptStep` |
 | Reads | `$7F64`-`$7F65` (`PassDepth`, `PassPhase`) |
 
 ### `PlayChain` (`$AAC3`)
@@ -3454,7 +3443,7 @@ A wait, the border black, the chain step `$7F66` + 5. At depth 1 the step runs (
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 19,761 calls, 12,957,520 t-states own (0.25 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1,673 calls, 1,052,068 t-states own (0.25 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2,044 calls, 1,304,733 t-states own (0.25 %) |
-| Called from | `YieldScript`, `PlayPass` |
+| Called from | `YieldScript`, `PlayPass` (falls into) |
 | Calls | `ChainBuildColumn1`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd`, `PlayInterruptExit` (tail) |
 | Reads | `$7F64`-`$7F67` (`PassDepth`, `PassPhase`, `ChainStep`) |
 | Writes | `$7F66`-`$7F67` (`ChainStep`); `$AAED`-`$AAEE` (`ChainStep1End`) |
@@ -3473,7 +3462,7 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 15,002 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 18,787 t-states own (0.00 %) |
 | Called from | `PlayChain` |
-| Calls | `BuildColumn`, `PlayInterruptExit` |
+| Calls | `BuildColumn` |
 
 ### `ChainStep1End` (`$AAED`)
 
@@ -3484,8 +3473,8 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 6 calls, 168,340 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1 call, 12,741 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 15,600 t-states own (0.00 %) |
-| Called from | `BuildColumnBack`, `BuildColumnStep` |
-| Calls | `ChainBuildColumn2`, `PlayInterruptExit` |
+| Called from | `BuildColumnStep` |
+| Calls | `ChainBuildColumn2` (falls into), `PlayInterruptExit` |
 
 ### `ChainBuildColumn2` (`$AAEF`)
 
@@ -3497,7 +3486,7 @@ CALL BuildColumn `$896D` then DI; RET (two NOPs when a nested pass chained step 
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 6 calls, 366,226 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 1 call, 28,616 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 35,339 t-states own (0.01 %) |
-| Called from | `PlayChain`, `ChainStep1End` |
+| Called from | `PlayChain`, `ChainStep1End` (falls into) |
 | Calls | `BuildColumn`, `PlayInterruptExit` |
 
 ### `ChainBuildColumn3` (`$AAF4`)
@@ -3541,7 +3530,7 @@ Depth `$7F64` down by one, all registers back, EI.
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 36,532 calls, 6,625,887 t-states own (0.13 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 2,981 calls, 517,189 t-states own (0.12 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,702 calls, 641,395 t-states own (0.12 %) |
-| Called from | `PlayChain` (tail), `ChainBuildColumn1`, `ChainStep1End`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd` |
+| Called from | `PlayChain` (tail), `ChainStep1End`, `ChainBuildColumn2`, `ChainBuildColumn3`, `ChainEnd` |
 | Calls | `BuildColumnStep`, `BuildCell`, `GlyphShift2`, `GlyphShift4`, `GlyphMarkBits`, `GlyphBuilt`, `RotateSpriteRows`, `RotateLine`, `RotateLineSave`, `RotateLineCarry`, `RotateByte`, `RotateByteShift`, `RotateByteOut`, `RotateNextByte`, `RotateLineWrap`, `RotateLineMerge`, `RotateLineStore`, `RotateLineNext`, `RotateLineRestore`, `RotateLineCount`, `PrintCharSave`, `PrintCharTest`, `PrintCharKind`, `PrintCharGlyph`, `PrintRomGlyph`, `PrintCharBold`, `EventDispatch`, `EventPending`, `EventEnabled`, `EventAny`, `IconLine`, `SpriteBuildEmpty`, `SpriteShiftTest`, `SpriteShiftCopy`, `SpriteShiftLoop`, `PlayLoopPass`, `PlayLoopCheck`, `PlayLoopTest`, `PlayLoopBranch`, `PlayLoopAgain`, `EffectFirstLen`, `EffectPeriod`, `EffectHalves`, `EffectSpeakerOn`, `EffectHalf`, `EffectOut`, `EffectWait`, `EffectWait1`, `EffectWait2`, `EffectWait3`, `EffectSwap`, `EffectLow`, `EffectHalfNext`, `EffectHalfLoop`, `EffectTickCheck`, `EffectTickRead`, `EffectTickTest`, `EffectTickBranch`, `EffectRestore` |
 | Reads | `$7F64` (`PassDepth`) |
 | Writes | `$7F64` (`PassDepth`) |
@@ -3608,7 +3597,7 @@ Requests effect 0 (RequestEffect `$B2F0` takes 0 as `$80`: the stop), keeps Inte
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 85,003 t-states own (0.02 %) |
 | Called from | `CheckPauseAndEnd` |
 | Calls | `RequestEffect` |
-| Reads | `$AC00`-`$AC01` (`StopAndSettle+16`); `$FDFE`-`$FDFF` (`InterruptHandler`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$AC00`-`$AC01` (`StopAndSettle+16`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ## events
@@ -3627,9 +3616,8 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,924,873 calls, 29,259,036 t-states own (0.56 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 323,437 calls, 3,235,774 t-states own (0.77 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 669,671 calls, 6,698,996 t-states own (1.26 %) |
-| Called from | `PlayInterruptExit`, `PlayLoopPass`, `EffectTickTest`, `EffectTickBranch` |
-| Calls | `EventPending` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `PlayLoopPass`, `EffectTickBranch` |
+| Calls | `EventPending` (falls into) |
 
 ### `EventPending` (`$AC0A`)
 
@@ -3641,9 +3629,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,924,937 calls, 38,029,390 t-states own (0.73 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 323,464 calls, 4,205,978 t-states own (1.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 669,689 calls, 8,708,102 t-states own (1.64 %) |
-| Called from | `PlayInterruptExit`, `EventDispatch` |
-| Calls | `EventEnabled` |
-| Reads | `$81C5` (`EventRequests`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EventDispatch` (falls into) |
+| Calls | `EventEnabled` (falls into) |
+| Reads | `$81C5` (`EventRequests`) |
 
 ### `EventEnabled` (`$AC0D`)
 
@@ -3655,9 +3643,9 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,924,872 calls, 20,467,383 t-states own (0.39 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 323,474 calls, 2,263,480 t-states own (0.54 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 669,728 calls, 4,686,318 t-states own (0.88 %) |
-| Called from | `PlayInterruptExit`, `EventPending` |
-| Calls | `EventAny` |
-| Reads | `$81C6` (`EventMask`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EventPending` (falls into) |
+| Calls | `EventAny` (falls into) |
+| Reads | `$81C6` (`EventMask`) |
 
 ### `EventAny` (`$AC0E`)
 
@@ -3669,7 +3657,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,923,881 calls, 40,855,638 t-states own (0.78 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 323,344 calls, 4,485,518 t-states own (1.07 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 669,462 calls, 9,255,619 t-states own (1.74 %) |
-| Called from | `PlayInterruptExit`, `EventEnabled` |
+| Called from | `PlayInterruptExit`, `EventEnabled` (falls into) |
 | Calls | `JumpTable`, `PlayLoopCheck`, `EffectAfterJobs` |
 | Reads | `$81C6` (`EventMask`) |
 | Writes | `$81C5` (`EventRequests`) |
@@ -3684,7 +3672,7 @@ In: EventRequests `$81C5`, EventMask `$81C6`. Out: NC (Z) when nothing was pendi
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,984 calls, 142,200 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 212 calls, 16,938 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 234 calls, 15,456 t-states own (0.00 %) |
-| Called from | `IconLine`, `EffectJobDone`, `ScoreJobRating`, `SpriteBuildNext`, `SpriteBuildEmpty` |
+| Called from | `IconLine`, `EffectJobDone`, `ScoreJobRating`, `SpriteBuildEmpty` |
 | Calls | `PlayLoopCheck`, `EffectAfterJobs` |
 | Writes | `$81C6` (`EventMask`) |
 
@@ -3721,7 +3709,7 @@ Allows only bit 7 meanwhile (EventMask AND `$80`). Attributes `$46` (bright yell
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1 call, 2,445 t-states own (0.00 %) |
 | Called from | `IconLine` |
-| Calls | `IconRow` |
+| Calls | `IconRow` (falls into) |
 
 ### `IconRow` (`$AC5E`)
 
@@ -3735,8 +3723,8 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 326 calls, 2,282 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 46 calls, 33,647 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 40 calls, 29,262 t-states own (0.01 %) |
-| Called from | `PodIconJob`, `IconLowerRow` |
-| Calls | `IconCell` |
+| Called from | `PodIconJob`, `IconLowerRow` (falls into) |
+| Calls | `IconCell` (falls into) |
 | Reads | `$B4AF`-`$B54E` (`PodIcons`) |
 | Writes | `$5086`-`$50A7` (screen); `$5186`-`$51A7` (screen); `$5286`-`$52A7` (screen); `$5386`-`$53A7` (screen); `$5486`-`$54A7` (screen); `$5586`-`$55A7` (screen); 2 more ranges |
 
@@ -3747,8 +3735,8 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 652 calls, 13,834 t-states own (0.00 %) |
-| Called from | `IconRow`, `IconLine` (tail) |
-| Calls | `IconLine` |
+| Called from | `IconRow` (falls into), `IconLine` (tail) |
+| Calls | `IconLine` (falls into) |
 
 ### `IconLine` (`$AC63`)
 
@@ -3757,9 +3745,9 @@ In: DE the bytes (8 of the left cell, then 8 of the right), HL the screen addres
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 653 calls, 220,189 t-states own (0.00 %) |
-| Called from | `PlayInterruptExit`, `IconCell` |
+| Called from | `PlayInterruptExit`, `IconCell` (falls into) |
 | Calls | `EventDone`, `IconLowerRow`, `IconCell` (tail) |
-| Reads | `$B4AF`-`$B54E` (`PodIcons`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$B4AF`-`$B54E` (`PodIcons`) |
 | Writes | `$5086`-`$50A7` (screen); `$5186`-`$51A7` (screen); `$5286`-`$52A7` (screen); `$5386`-`$53A7` (screen); `$5486`-`$54A7` (screen); `$5586`-`$55A7` (screen); 2 more ranges |
 
 ### `EffectJob` (`$AC6F`)
@@ -3805,7 +3793,7 @@ Allows only bit 7 meanwhile. Prints the current player's score (PrintPlayerScore
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 21,024 t-states own (0.01 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 19,661 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `WeaponRating`, `PrintPlayerScore`, `DrawLives` |
+| Calls | `PrintPlayerScore` |
 | Reads | `$7F98`-`$7FA8` (`CurrentPlayer`, `PlayerRecord`, `Players`, `Player1`); `$800F`-`$8010` (`ExtraLifeScores`); `$81C6` (`EventMask`) |
 | Writes | `$7FA0`-`$7FA8` (`Player1Lives`, `Player1LivesLost`, `Player1LevelIndex`, `Player1PodSelector` and 5 more); `$81C6` (`EventMask`) |
 
@@ -3834,7 +3822,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 806 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | run into, not called, 930 t-states own (0.00 %) |
 | Called from | `JumpTable` |
-| Calls | `SpriteBuildNext` |
+| Calls | `SpriteBuildNext` (falls into) |
 | Reads | `$81C6` (`EventMask`) |
 | Writes | `$81C6` (`EventMask`) |
 
@@ -3848,9 +3836,9 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 688 calls, 20,659 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 52 calls, 1,598 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60 calls, 7,604 t-states own (0.00 %) |
-| Called from | `SpriteBuildJob`, `SpriteBuildDone` (tail) |
-| Calls | `EventDone`, `SpriteBuildEmpty`, `LoadCellSprite`, `SpriteBuildShifts` |
-| Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `SpriteBuildJob` (falls into), `SpriteBuildDone` (tail) |
+| Calls | `SpriteBuildEmpty` (falls into) |
+| Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
 | Writes | `$8024` (`DrawQueueRead`) |
 
 ### `SpriteBuildEmpty` (`$ACB4`)
@@ -3861,7 +3849,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 689 calls, 66,342 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 54 calls, 5,035 t-states own (0.00 %) |
-| Called from | `PlayInterruptExit`, `SpriteBuildNext` |
+| Called from | `PlayInterruptExit`, `SpriteBuildNext` (falls into) |
 | Calls | `EventDone`, `LoadCellSprite`, `SpriteBuildShifts` |
 | Reads | `$8024`-`$803D` (`DrawQueueRead`, `DrawQueueWrite`, `DrawQueue`) |
 | Writes | `$8024` (`DrawQueueRead`) |
@@ -3876,7 +3864,7 @@ Sets the mask to 0 (nothing interrupts it), then builds every entry between Draw
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 343 calls, 21,914 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 26 calls, 1,606 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 30 calls, 1,869 t-states own (0.00 %) |
-| Called from | `SpriteShiftNext`, `SpriteShiftLoop` |
+| Called from | `SpriteShiftLoop` |
 | Calls | `SpriteBuildNext` (tail) |
 | Reads | `$7EF0`-`$7F50` (`SpriteCache+14`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
 | Writes | `$7EF0`-`$7F50` (`SpriteCache+14`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
@@ -3893,7 +3881,7 @@ In: A the kind, HL the descriptor (+0/+1 the image's address). Kinds `$14` and u
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 344 calls, 96,317 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 26 calls, 7,429 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 30 calls, 8,532 t-states own (0.00 %) |
-| Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
+| Called from | `SpriteBuildEmpty` |
 | Calls | `BuildCellSprite`, `BuildBigSprite` |
 | Reads | `$7EF2`-`$7F43` (`SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2`, `SpriteCacheRecord3` and 3 more) |
 
@@ -3909,8 +3897,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 344 calls, 68,350 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 26 calls, 5,126 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 30 calls, 5,922 t-states own (0.00 %) |
-| Called from | `SpriteBuildNext`, `SpriteBuildEmpty` |
-| Calls | `SpriteShiftRound` |
+| Called from | `SpriteBuildEmpty` |
+| Calls | `SpriteShiftRound` (falls into) |
 | Reads | `$7EE2`-`$7F4D` (`SpriteCache`, `SpriteCacheRecord1`, `SpriteCacheUse1`, `SpriteCacheRecord2` and 4 more) |
 | Writes | `$AD3E`-`$AD4B` (`SpriteShiftLength+1`, `SpriteShiftCopy`) |
 
@@ -3924,9 +3912,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,408 calls, 37,680 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 182 calls, 10,834 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 210 calls, 12,539 t-states own (0.00 %) |
-| Called from | `SpriteBuildShifts`, `SpriteShiftNext` (tail), `SpriteShiftLoop` (tail) |
-| Calls | `SpriteShiftTest`, `SpriteShiftCopy` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `SpriteBuildShifts` (falls into), `SpriteShiftLoop` (tail) |
+| Calls | `SpriteShiftTest` (falls into) |
 
 ### `SpriteShiftTest` (`$AD3A`)
 
@@ -3935,8 +3922,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,409 calls, 105,952 t-states own (0.00 %) |
-| Called from | `PlayInterruptExit`, `SpriteShiftRound` |
-| Calls | `SpriteShiftCopy` |
+| Called from | `PlayInterruptExit`, `SpriteShiftRound` (falls into) |
+| Calls | `SpriteShiftCopy` (falls into) |
 
 ### `SpriteShiftCopy` (`$AD44`)
 
@@ -3948,9 +3935,9 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,509 calls, 4,184,182 t-states own (0.08 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 193 calls, 289,679 t-states own (0.07 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 222 calls, 333,640 t-states own (0.06 %) |
-| Called from | `PlayInterruptExit`, `SpriteShiftRound`, `SpriteShiftTest` |
+| Called from | `PlayInterruptExit`, `SpriteShiftTest` (falls into) |
 | Calls | `RotateSprite` |
-| Reads | `$C008`-`$CDCF` (`GlyphCache+8`, `WaveCellSource`, `GlyphCacheUpper`); `$E748`-`$EB7F` (`SpriteCacheImages`); `$EBC8`-`$EFFF` (`SpriteCacheImages+1152`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Reads | `$C008`-`$CDCF` (`GlyphCache+8`, `WaveCellSource`, `GlyphCacheUpper`); `$E748`-`$EB7F` (`SpriteCacheImages`); `$EBC8`-`$EFFF` (`SpriteCacheImages+1152`) |
 | Writes | `$C200`-`$CFC7` (`GlyphCache+512`, `WaveCellSource`, `GlyphCacheUpper`); `$E790`-`$EBC7` (`SpriteCacheImages+72`); `$EC10`-`$F047` (`SpriteCacheImages+1224`) |
 
 ### `SpriteShiftNext` (`$AD50`)
@@ -3963,8 +3950,8 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 357 calls, 73,816 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 27 calls, 8,077 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 32 calls, 9,337 t-states own (0.00 %) |
-| Called from | `RotateNextByte`, `RotateLineNext`, `RotateLineCount` |
-| Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail), `SpriteShiftLoop` |
+| Called from | `RotateLineCount` |
+| Calls | `SpriteShiftLoop` (falls into) |
 
 ### `SpriteShiftLoop` (`$AD53`)
 
@@ -3973,7 +3960,7 @@ In: HL the descriptor. Its +4/+5 (the image's length), +9 (the shift pattern) an
 | | |
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,409 calls, 33,255 t-states own (0.00 %) |
-| Called from | `PlayInterruptExit`, `SpriteShiftNext` |
+| Called from | `PlayInterruptExit`, `SpriteShiftNext` (falls into) |
 | Calls | `SpriteBuildDone`, `SpriteShiftRound` (tail) |
 
 ### `RestoreCheckpoint` (`$AD56`)
@@ -4366,7 +4353,6 @@ LevelSetUp `$8C3B` (the playfield model, the map buffer), MenuScreenSetup `$A685
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 1,720 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 156 t-states own (0.00 %) |
 | Called from | `YieldScript` |
-| Calls | `ReplayStep` (tail) |
 | Reads | `$81DB`-`$81DC` (`ScrollCount`) |
 | Writes | `$7F76` (`SkipDraw`); `$81DB`-`$81DC` (`ScrollCount`) |
 
@@ -4378,7 +4364,8 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `ScrollStep`, `ReplayStep` (tail) |
 
 ### `ReplayStep` (`$AF9A`)
 
@@ -4389,8 +4376,8 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 1 call, 1,662 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 13,300 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 1,211 t-states own (0.00 %) |
-| Called from | `ReplayScroll` (tail) |
-| Calls | `StartColumn`, `ReplayRound` |
+| Called from | `ReplayColumns` (tail) |
+| Calls | `StartColumn`, `ReplayRound` (falls into) |
 
 ### `ReplayRound` (`$AF9F`)
 
@@ -4401,7 +4388,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 192 calls, 6,211 t-states own (0.01 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,560 calls, 50,549 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 144 calls, 4,705 t-states own (0.00 %) |
-| Called from | `ReplayStep`, `ReplayRoundEnd` (tail) |
+| Called from | `ReplayStep` (falls into), `ReplayRoundEnd` (tail) |
 | Calls | `ResumeScript` |
 
 ### `ReplayRoundEnd` (`$AFA3`)
@@ -4414,8 +4401,7 @@ A is stored in ReplayFast (`$7F76`, read by `$8DCA`: `$FF` skips the drawing). E
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 57 calls, 103,675 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 2 calls, 9,565 t-states own (0.00 %) |
 | Called from | `YieldScript` |
-| Calls | `BuildColumn`, `ScrollStep`, `ReplayRound` (tail), `RoundPlaySetup` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `BuildColumn`, `ReplayRound` (tail), `RoundPlaySetup` |
 
 ### `InterruptSetup` (`$AFB0`)
 
@@ -4452,7 +4438,7 @@ WaitMenuRasterEnd `$A595`, ClearHitGrid `$91C6` with interrupts off, Fuel = `$5A
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 1 call, 139 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 1,543 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 139 t-states own (0.00 %) |
-| Called from | `MainLoopEnd` |
+| Called from | `MainLoop` |
 | Calls | `RestoreCheckpoint`, `LevelStart`, `PlayerSetup`, `EnemiesSetup`, `ShotsSetup` |
 | Reads | `$7F98` (`CurrentPlayer`) |
 | Writes | `$84BB` (`PlayerDigit`) |
@@ -4600,8 +4586,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 237,768 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 21,602 t-states own (0.00 %) |
 | Called from | `MainLoopPlay` |
-| Calls | `PlayLoopPass` |
-| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop+42`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `PlayLoopPass` (falls into) |
+| Reads | `$81C5` (`EventRequests`); `$B1DE` (`PlayLoop+42`) |
 | Writes | `$7F64`-`$7F6B` (`PassDepth`, `PassPhase`, `ChainStep`, `NodeFreeList` and 2 more); `$7F7C`-`$7F7D` (`EndPending`, `EndCode`); `$7F97` (`CurrentEffect`); `$81C5`-`$81C6` (`EventRequests`, `EventMask`); `$974C` (`LandingFlag`); `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopPass` (`$B1E6`)
@@ -4614,7 +4600,7 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,894,567 calls, 58,001,436 t-states own (1.11 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 321,168 calls, 6,386,878 t-states own (1.53 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 667,362 calls, 13,369,997 t-states own (2.52 %) |
-| Called from | `PlayInterruptExit`, `PlayLoop`, `PlayLoopAgain` (tail) |
+| Called from | `PlayInterruptExit`, `PlayLoop` (falls into), `PlayLoopAgain` (tail) |
 | Calls | `EventDispatch` |
 
 ### `PlayLoopCheck` (`$B1E9`)
@@ -4628,8 +4614,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 598 calls, 4,520,452 t-states own (1.08 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1,045 calls, 9,428,971 t-states own (1.78 %) |
 | Called from | `PlayInterruptExit`, `EventAny`, `EventDone` |
-| Calls | `PlayLoopTest` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `PlayLoopTest` (falls into) |
+| Reads | `$7F7D` (`EndCode`) |
 
 ### `PlayLoopTest` (`$B1EC`)
 
@@ -4641,9 +4627,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,894,519 calls, 11,574,063 t-states own (0.22 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 321,154 calls, 1,284,186 t-states own (0.31 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 667,327 calls, 2,668,535 t-states own (0.50 %) |
-| Called from | `PlayInterruptExit`, `PlayLoopCheck` |
-| Calls | `SavePanel`, `PlayLoopBranch`, `PlayLoopAgain`, `MainLoopEnd` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `PlayLoopCheck` (falls into) |
+| Calls | `PlayLoopBranch` (falls into) |
+| Reads | `$7F7D` (`EndCode`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopBranch` (`$B1ED`)
@@ -4655,9 +4641,9 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,893,497 calls, 20,276,374 t-states own (0.39 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 321,039 calls, 2,249,539 t-states own (0.54 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 667,130 calls, 4,674,054 t-states own (0.88 %) |
-| Called from | `PlayInterruptExit`, `PlayLoopTest` |
-| Calls | `SavePanel`, `PlayLoopAgain`, `MainLoopEnd` |
-| Reads | `$7F7D` (`EndCode`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `PlayLoopTest` (falls into) |
+| Calls | `PlayLoopAgain` (falls into) |
+| Reads | `$7F7D` (`EndCode`) |
 | Writes | `$FDFE`-`$FDFF` (`InterruptHandler`) |
 
 ### `PlayLoopAgain` (`$B1EF`)
@@ -4670,9 +4656,8 @@ FrameRate `$7F6A` = `$C8`, `$7F6B` = 8; EventRequests = 0 and EventMask = `$FF`,
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 2,894,587 calls, 34,742,197 t-states own (0.66 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 321,157 calls, 3,854,933 t-states own (0.92 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 667,342 calls, 8,009,963 t-states own (1.51 %) |
-| Called from | `PlayInterruptExit`, `PlayLoopTest`, `PlayLoopBranch` |
-| Calls | `PlayLoopPass` (tail) |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `PlayLoopBranch` (falls into) |
+| Calls | `SavePanel`, `PlayLoopPass` (tail), `MainLoopEnd` |
 
 ### `MainLoop` (`$B200`)
 
@@ -4684,7 +4669,7 @@ Entered from Start (`$B72C`). InterruptSetup, then the title pages until fire, P
 | --- | --- |
 | Runs | not reached in `c2`, `r1`, `zyB/w1`, `zyB/w2`; in the other recordings 1 call (`c1` 1) |
 | Called from | `Start` (tail) |
-| Calls | `InterruptSetup`, `CreditsPage`, `HiScorePage` |
+| Calls | `InterruptSetup`, `RoundSetup`, `CreditsPage`, `HiScorePage` |
 
 ### `MainLoopPlay` (`$B212`)
 
@@ -4707,8 +4692,8 @@ Entered from Start (`$B72C`). InterruptSetup, then the title pages until fire, P
 | Runs (the first play recording: level 1 from the start, 1500 frames) | 2 calls, 63 t-states own (0.00 %) |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11 calls, 561 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 1 call, 46 t-states own (0.00 %) |
-| Called from | `PlayLoopTest`, `PlayLoopBranch` |
-| Calls | `RoundSetup`, `EndOfPlay` |
+| Called from | `PlayLoopAgain` |
+| Calls | `EndOfPlay` |
 
 ### `PlayerSetup` (`$B21C`)
 
@@ -4803,9 +4788,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 11,165 calls, 4,836,111 t-states own (0.09 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 634 calls, 269,188 t-states own (0.06 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 514 calls, 248,893 t-states own (0.05 %) |
-| Called from | `EffectJob`, `EffectAfterJobs` (tail), `EffectRestore` (tail) |
-| Calls | `EffectFirstLen`, `EffectPeriod`, `EffectEnd` (tail) |
-| Reads | `$7E5A`-`$7E89` (`EffectTable`); `$7F8A`-`$7F97` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 4 more); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `EffectJob`, `EffectRestore` (tail) |
+| Calls | `EffectFirstLen` (falls into), `EffectEnd` (tail) |
+| Reads | `$7E5A`-`$7E89` (`EffectTable`); `$7F8A`-`$7F97` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 4 more) |
 | Writes | `$7F8A`-`$7F95` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 2 more) |
 
 ### `EffectFirstLen` (`$B345`)
@@ -4816,8 +4801,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 10,850 calls, 733,667 t-states own (0.01 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 15,278 t-states own (0.00 %) |
-| Called from | `PlayInterruptExit`, `EffectPlay` |
-| Calls | `EffectPeriod` |
+| Called from | `PlayInterruptExit`, `EffectPlay` (falls into) |
+| Calls | `EffectPeriod` (falls into) |
 | Writes | `$7F95` (`EffectFrames`) |
 
 ### `EffectPeriod` (`$B358`)
@@ -4830,9 +4815,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,841 calls, 3,971,125 t-states own (0.08 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,187 calls, 232,739 t-states own (0.06 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,954 calls, 243,806 t-states own (0.05 %) |
-| Called from | `PlayInterruptExit`, `EffectPlay`, `EffectFirstLen`, `EffectTickTest` (tail), `EffectTickBranch` (tail), `EffectAfterJobs` (tail), `EffectRestore` (tail) |
-| Calls | `EffectHalves` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectFirstLen` (falls into), `EffectTickBranch` (tail), `EffectRestore` (tail) |
+| Calls | `EffectHalves` (falls into) |
 
 ### `EffectHalves` (`$B359`)
 
@@ -4844,9 +4828,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,680 calls, 6,950,604 t-states own (0.13 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,181 calls, 407,355 t-states own (0.10 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,944 calls, 426,879 t-states own (0.08 %) |
-| Called from | `PlayInterruptExit`, `EffectPeriod` |
-| Calls | `EffectSpeakerOn`, `EffectHalf` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectPeriod` (falls into) |
+| Calls | `EffectSpeakerOn` (falls into) |
 
 ### `EffectSpeakerOn` (`$B35B`)
 
@@ -4857,9 +4840,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,760 calls, 6,956,627 t-states own (0.13 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,185 calls, 407,602 t-states own (0.10 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,957 calls, 426,841 t-states own (0.08 %) |
-| Called from | `PlayInterruptExit`, `EffectHalves` |
-| Calls | `EffectHalf` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectHalves` (falls into) |
+| Calls | `EffectHalf` (falls into) |
 
 ### `EffectHalf` (`$B35D`)
 
@@ -4871,9 +4853,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,986,257 calls, 15,058,773 t-states own (0.29 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,399 calls, 882,394 t-states own (0.21 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,910 calls, 923,106 t-states own (0.17 %) |
-| Called from | `PlayInterruptExit`, `EffectHalves`, `EffectSpeakerOn`, `EffectHalfLoop` (tail) |
-| Calls | `EffectOut` |
-| Reads | `$7F93`-`$7F94` (`PitchA`, `PitchB`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectSpeakerOn` (falls into), `EffectHalfLoop` (tail) |
+| Calls | `EffectOut` (falls into) |
+| Reads | `$7F93`-`$7F94` (`PitchA`, `PitchB`) |
 
 ### `EffectOut` (`$B35E`)
 
@@ -4885,9 +4867,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,985,443 calls, 24,926,222 t-states own (0.48 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,372 calls, 1,473,233 t-states own (0.35 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,897 calls, 1,543,083 t-states own (0.29 %) |
-| Called from | `PlayInterruptExit`, `EffectHalf` |
-| Calls | `EffectWait` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectHalf` (falls into) |
+| Calls | `EffectWait` (falls into) |
 | Ports out | `$00FE`, `$18FE` |
 
 ### `EffectWait` (`$B360`)
@@ -4900,9 +4881,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 41,284,083 calls, 165,150,782 t-states own (3.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3,068,697 calls, 12,276,457 t-states own (2.93 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,030,241 calls, 12,123,029 t-states own (2.28 %) |
-| Called from | `PlayInterruptExit`, `EffectOut`, `EffectWait3` (tail) |
-| Calls | `EffectWait1` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectOut` (falls into), `EffectWait3` (tail) |
+| Calls | `EffectWait1` (falls into) |
 
 ### `EffectWait1` (`$B361`)
 
@@ -4914,9 +4894,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 41,273,629 calls, 165,147,894 t-states own (3.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3,067,931 calls, 12,275,830 t-states own (2.93 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,029,514 calls, 12,121,566 t-states own (2.28 %) |
-| Called from | `PlayInterruptExit`, `EffectWait` |
-| Calls | `EffectWait2` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectWait` (falls into) |
+| Calls | `EffectWait2` (falls into) |
 
 ### `EffectWait2` (`$B362`)
 
@@ -4928,9 +4907,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 41,273,480 calls, 165,163,816 t-states own (3.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3,067,896 calls, 12,276,096 t-states own (2.93 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,029,435 calls, 12,123,105 t-states own (2.28 %) |
-| Called from | `PlayInterruptExit`, `EffectWait1` |
-| Calls | `EffectWait3` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectWait1` (falls into) |
+| Calls | `EffectWait3` (falls into) |
 
 ### `EffectWait3` (`$B363`)
 
@@ -4942,9 +4920,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 41,274,317 calls, 526,847,808 t-states own (10.05 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 3,067,914 calls, 39,317,346 t-states own (9.40 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 3,029,520 calls, 38,789,916 t-states own (7.30 %) |
-| Called from | `PlayInterruptExit`, `EffectWait2` |
-| Calls | `EffectWait` (tail), `EffectSwap` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectWait2` (falls into) |
+| Calls | `EffectWait` (tail), `EffectSwap` (falls into) |
 
 ### `EffectSwap` (`$B365`)
 
@@ -4956,9 +4933,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,985,485 calls, 7,943,690 t-states own (0.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,369 calls, 465,565 t-states own (0.11 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,894 calls, 487,707 t-states own (0.09 %) |
-| Called from | `PlayInterruptExit`, `EffectWait3` |
-| Calls | `EffectLow` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectWait3` (falls into) |
+| Calls | `EffectLow` (falls into) |
 
 ### `EffectLow` (`$B366`)
 
@@ -4970,9 +4946,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,985,435 calls, 13,900,270 t-states own (0.27 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,365 calls, 814,753 t-states own (0.19 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,893 calls, 853,397 t-states own (0.16 %) |
-| Called from | `PlayInterruptExit`, `EffectSwap` |
-| Calls | `EffectHalfNext` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectSwap` (falls into) |
+| Calls | `EffectHalfNext` (falls into) |
 
 ### `EffectHalfNext` (`$B368`)
 
@@ -4984,9 +4959,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,985,470 calls, 7,942,987 t-states own (0.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,371 calls, 465,603 t-states own (0.11 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,895 calls, 487,783 t-states own (0.09 %) |
-| Called from | `PlayInterruptExit`, `EffectLow` |
-| Calls | `EffectHalfLoop` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectLow` (falls into) |
+| Calls | `EffectHalfLoop` (falls into) |
 
 ### `EffectHalfLoop` (`$B369`)
 
@@ -4998,9 +4972,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,985,398 calls, 18,872,807 t-states own (0.36 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 116,367 calls, 1,105,933 t-states own (0.26 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 121,897 calls, 1,158,259 t-states own (0.22 %) |
-| Called from | `PlayInterruptExit`, `EffectHalfNext` |
-| Calls | `EffectHalf` (tail), `EffectTickCheck` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectHalfNext` (falls into) |
+| Calls | `EffectHalf` (tail), `EffectTickCheck` (falls into) |
 
 ### `EffectTickCheck` (`$B36B`)
 
@@ -5012,9 +4985,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,778 calls, 3,978,474 t-states own (0.08 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,185 calls, 232,925 t-states own (0.06 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,948 calls, 243,882 t-states own (0.05 %) |
-| Called from | `PlayInterruptExit`, `EffectHalfLoop` |
-| Calls | `EffectTickRead`, `EffectTickTest` |
-| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectHalfLoop` (falls into) |
+| Calls | `EffectTickRead` (falls into) |
+| Reads | `$7F96` (`EffectTick`) |
 
 ### `EffectTickRead` (`$B36C`)
 
@@ -5025,9 +4998,9 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 993,066 calls, 14,559,330 t-states own (0.28 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,190 calls, 848,953 t-states own (0.20 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,948 calls, 889,273 t-states own (0.17 %) |
-| Called from | `PlayInterruptExit`, `EffectTickCheck` |
-| Calls | `EffectTickTest` |
-| Reads | `$7F96` (`EffectTick`); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectTickCheck` (falls into) |
+| Calls | `EffectTickTest` (falls into) |
+| Reads | `$7F96` (`EffectTick`) |
 
 ### `EffectTickTest` (`$B36F`)
 
@@ -5039,9 +5012,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,867 calls, 3,970,931 t-states own (0.08 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,192 calls, 232,754 t-states own (0.06 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,961 calls, 243,806 t-states own (0.05 %) |
-| Called from | `PlayInterruptExit`, `EffectTickCheck`, `EffectTickRead` |
-| Calls | `EventDispatch`, `EffectPeriod` (tail), `EffectTickBranch` |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Called from | `PlayInterruptExit`, `EffectTickRead` (falls into) |
+| Calls | `EffectTickBranch` (falls into) |
 
 ### `EffectTickBranch` (`$B370`)
 
@@ -5052,9 +5024,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 992,669 calls, 13,788,428 t-states own (0.26 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 58,181 calls, 832,259 t-states own (0.20 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 60,944 calls, 869,180 t-states own (0.16 %) |
-| Called from | `PlayInterruptExit`, `EffectTickTest` |
+| Called from | `PlayInterruptExit`, `EffectTickTest` (falls into) |
 | Calls | `EventDispatch`, `EffectPeriod` (tail) |
-| Reads | `$FEFF`-`$FF00` (`VectorTable+255`) |
 
 ### `EffectAfterJobs` (`$B379`)
 
@@ -5067,8 +5038,8 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 19 calls, 643,985 t-states own (0.15 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 19 calls, 732,018 t-states own (0.14 %) |
 | Called from | `EventAny`, `EventDone` |
-| Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectRestore` (tail), `EffectEnd` (tail) |
-| Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more); `$FEFF`-`$FF00` (`VectorTable+255`) |
+| Calls | `EffectRestore` (falls into) |
+| Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
 | Writes | `$7F8B`-`$7F96` (`EffectState+1`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
 
 ### `EffectRestore` (`$B37A`)
@@ -5079,7 +5050,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | --- | --- |
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 30,372 calls, 8,067,507 t-states own (0.15 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | run into, not called, 23,478 t-states own (0.01 %) |
-| Called from | `PlayInterruptExit`, `EffectAfterJobs` (tail) |
+| Called from | `PlayInterruptExit`, `EffectAfterJobs` (falls into) |
 | Calls | `EffectPlay` (tail), `EffectPeriod` (tail), `EffectEnd` (tail) |
 | Reads | `$7F8A`-`$7F96` (`EffectState`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
 | Writes | `$7F8B`-`$7F96` (`EffectState+1`, `SegLenA`, `SegLenB`, `PitchA` and 3 more) |
@@ -5094,7 +5065,7 @@ Entered from EffectJob (event bit 0; c2: 106 entries in 73 frames, 45 from Effec
 | Runs (all 12 levels, played by tools/bot.py with the developer switch `$FFD7` set, 75000 frames) | 1,941 calls, 60,442 t-states own (0.00 %) |
 | Runs (tools/podbot.py taking every weapon from work/run/play-imm.szx, 5986 frames) | 256 calls, 7,558 t-states own (0.00 %) |
 | Runs (tools/podbot.py with homing missiles to the end of level 0, 7600 frames) | 223 calls, 6,689 t-states own (0.00 %) |
-| Called from | `EffectPlay` (tail), `EffectAfterJobs` (tail), `EffectRestore` (tail) |
+| Called from | `EffectPlay` (tail), `EffectRestore` (tail) |
 | Calls | `EffectJobDone` |
 | Writes | `$7F97` (`CurrentEffect`) |
 

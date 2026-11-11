@@ -1,6 +1,6 @@
 # Terramex (Grandslam Entertainments, 1987)
 
-State: docs written, in review (12 documents, 69 PNG figures, 98 mermaid diagrams, 46 animations, 9 WAVs and tune 0 as MP3; counted on 2026-11-11 with `ls docs/[0-9][0-9]-*.md`, `find docs/img -name '*.png'`, `` grep -h '^```mermaid' docs/*.md | wc -l ``, `find docs/img -name '*.gif'`, `find docs -name '*.wav'`).
+State: complete 2026-11-11 (12 documents, 69 PNG figures, 107 mermaid diagrams, 46 animations, 9 WAVs and tune 0 as MP3; counted on 2026-11-11 with `ls docs/[0-9][0-9]-*.md`, `find docs/img -name '*.png'`, `` grep -h '^```mermaid' docs/*.md | wc -l ``, `find docs/img -name '*.gif'`, `find docs -name '*.wav'`).
 
 | | |
 | --- | --- |

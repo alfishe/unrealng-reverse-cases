@@ -122,7 +122,8 @@ is `rzx04`: the second part of the build's path, else the whole; the part after 
 numbered family of two or more builds in the set as one item (`rzx x32`): `Witness: L1 90104 (c1, hiscore, lives,
 menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swaps a build, is printed:
 `witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`;
-`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays); a line that names a
+`mkgame.py --fix-witness` rewrites N and the list in the `.ann` (the rest of the line stays) and writes the source
+again from it (with `--install` one run leaves the `.asm` current too); a line that names a
 build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), and a name it drops is
 printed as `NAME ran no instruction there`. Other witness text
 (`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched.

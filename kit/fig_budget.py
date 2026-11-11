@@ -28,7 +28,8 @@ The frame length: --frame, else the L1's T-states over its frames, taken as the 
 its whole window, so a state is its own build: re_session.py build --from-frame F --to-frame G --into W);
 --label names the first panel. The panels share the scale and the colours. The colours go to the modules by their
 share in the first panel, the biggest first; --colour-order names modules that take the first colours, so the
-figures of one case agree. --by module draws one bar a module instead of a routine.
+figures of one case agree. The palette has 28 distinct colours (kitlib.ROUTINE_COLOURS), so up to 28 modules repeat
+none; --colour MODULE=#RRGGBB (repeatable) gives a module a colour of the case's choosing. --by module draws one bar a module instead of a routine.
 
 The picture is --width pixels wide (1050, the figure limit) and as tall as its rows; a --note longer than the width
 wraps onto more lines.
@@ -189,7 +190,7 @@ def draw(panels, args):
                 colours_used.append(m)
     # colours in the order of the modules' shares in the first panel (the biggest gets the first colour);
     # --colour-order puts named modules first, so the figures of one case can keep a module's colour
-    palette = K.ROUTINE_COLOURS + [(255, 255, 255), (150, 110, 70), (90, 110, 200), (200, 200, 200)]
+    palette = K.ROUTINE_COLOURS  # 28 distinct colours: up to 28 modules repeat none
     share = {}
     for name, t in panels[0]['per'].items():
         m = panels[0]['module_of'][name]
@@ -197,7 +198,11 @@ def draw(panels, args):
     first = [m for m in args.colour_order if m != HALT_NAME]
     order = first + [m for m in sorted(share, key=lambda m: -share[m]) if m not in first and m != HALT_NAME]
     order += [m for m in colours_used if m not in order and m != HALT_NAME]
-    colour_of = {m: palette[i % len(palette)] for i, m in enumerate(order)}
+    chosen = dict(args.colour)  # --colour MODULE=#RRGGBB: the case's own pick, taken out of the palette's turn
+    free = [c for c in palette if c not in chosen.values()]
+    rest = [m for m in order if m not in chosen]
+    colour_of = {m: free[i % len(free)] for i, m in enumerate(rest)}
+    colour_of.update(chosen)
     colour_of[HALT_NAME] = K.DIM
     colours_used.sort(key=lambda m: order.index(m) if m in order else len(order))
     peak = max(t / b['total'] for b, rows in zip(panels, rows_of) for _, t in rows[:1])
@@ -284,6 +289,9 @@ def main():
     p.add_argument('--page-name', action='append', default=[], help='N=TEXT: the bar of page N\'s code in no .ann')
     p.add_argument('--colour-order', type=lambda v: v.split(','), default=[],
                    help='MODULE,MODULE,...: these modules take the first colours (the same colours in every figure)')
+    p.add_argument('--colour', action='append', default=[],
+                   type=lambda v: (v.rpartition('=')[0], K.parse_colour(v.rpartition('=')[2])),
+                   help='MODULE=#RRGGBB: this module\'s colour (repeatable; the others share the rest of the palette)')
     p.add_argument('--note', action='append', default=[],
                    help='a line under the figure (repeatable; a long one wraps at the picture\'s width)')
     p.add_argument('--width', type=int, default=1050, help='the picture\'s width in pixels (1050, the figure limit)')

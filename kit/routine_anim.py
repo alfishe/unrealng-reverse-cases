@@ -3,7 +3,7 @@
 
 Each picture has three panels:
 
-  - the memory map: the address space as a grid of 256 bytes a row. A byte executed in this slice is green, read
+  - the memory map: the address space as a grid of 256 bytes a row (a small range fewer, see below). A byte executed in this slice is green, read
     blue, written yellow, fading through red over the next slices; a byte touched earlier in the window keeps a dark
     trail of its colour, the rest is its value in grey. The routine's footprint builds up as it runs.
   - the view: what the routine draws, as it draws it. `screen` is the Spectrum screen (or `screen:C000` for a
@@ -21,7 +21,8 @@ Each picture has three panels:
            [--view screen | screen:C000 | buffer:8000:32x256[:columns|:columns-up|:screen|:hex|:words] | none]
            [--range 4000-FFFF] [--pictures 90]
            [--step TSTATES] [--pc EAE3-EBFF[,EC40-EC9F] ...] [--title "DrawSprites $EAE3"] [--delay 80]
-           [--layout compact|wide] [--width 1050] [--unreal U]
+           [--layout compact|wide] [--width 1050] [--grid-height 512] [--row-bytes 256]
+           [--page N=LISTING ...] [--page-name N=NAME ...] [--unreal U]
 
 --layout compact (the default) draws the picture --width pixels wide (1050, the figure limit, readable at 900): the
 memory map and the view one above the other on the left, each at the largest whole scale that fits, the code on the
@@ -31,6 +32,18 @@ its numbers a point or two smaller if it is wider than the picture. --layout wid
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
 change memory but are counted as "other" in the code panel. Several ranges (comma-separated, or --pc repeated)
 take a routine together with the routines it calls elsewhere in memory. GUIDE.md 4.1 says where these figures go.
+
+The memory map is 256 bytes a row at the largest whole scale; a range so small that this is less than 96 px tall
+(a few pages: two rows of 2 px for `$5B00-$5CFF`) is wrapped at 128, 64, 32 or 16 bytes a row until it is, the
+label says how many. --row-bytes fixes the count, --grid-height caps the map's height (512; the code panel beside
+it is as tall).
+
+128K pages: --page N=LISTING names the code at `$C000-$FFFF` that runs while RAM N is paged in from that page's
+listing ("UpdateChannel (RAM 6)"), --page-name N=NAME gives the whole page one name; --listing names the rest. The
+page is the trace's start page, then each `OUT` to `$7FFD`. With either option (or a `--pc N:LO-HI`) a plain --pc
+range at `$C000-$FFFF` is RAM 0's and `N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc
+6:C000-CD60` follows a player in RAM 6, and the game's code at the same addresses counts as "other", its listing
+shown from the game's.
 """
 import argparse
 import os
@@ -42,6 +55,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kitlib as K  # noqa: E402
 
 GRID_HEIGHT = 512
+GRID_MIN_HEIGHT = 96  # a smaller range is wrapped at fewer bytes a row until its map is at least this tall
 VIEW_HEIGHT = 512
 CODE_WIDTH = 470
 UNDER_CODE_HEIGHT = 360
@@ -72,7 +86,21 @@ class Ages:
         self.write = [-1] * 0x10000
 
 
-def grid_picture(mem, ages, now, lo, hi):
+def grid_rows(lo, hi, width, height, row_bytes=None, min_height=GRID_MIN_HEIGHT):
+    """(bytes a row, scale) of the memory map lo..hi in width x height pixels: 256 bytes a row at the largest
+    whole scale, or, while that is less than min_height tall, half as many bytes a row (down to 16) at twice the
+    rows, so that a few pages are a readable block, not a strip two pixels high. row_bytes: given"""
+    size = hi - lo + 1
+    candidates = [row_bytes] if row_bytes else [256, 128, 64, 32, 16]
+    for n in candidates:
+        rows = -(-size // n)
+        scale = max(1, min(width // n, height // rows))
+        if rows * scale >= min_height:
+            break
+    return n, scale
+
+
+def grid_picture(mem, ages, now, lo, hi, row_bytes=256):
     fade = K.WRITE_FADE
     out = []
     for a in range(lo, hi + 1):
@@ -96,8 +124,9 @@ def grid_picture(mem, ages, now, lo, hi):
         else:
             g = 18 + (mem[a] >> 5) * 4  # the value, coarse: 8 greys keep the GIF small
             out.append((g, g, g + 4))
-    rows = (hi - lo + 1) // 256
-    image = Image.new('RGB', (256, rows))
+    rows = -(-(hi - lo + 1) // row_bytes)
+    out += [K.BACKGROUND] * (rows * row_bytes - len(out))
+    image = Image.new('RGB', (row_bytes, rows))
     image.putdata(out)
     return image
 
@@ -215,22 +244,30 @@ def main():
                    help='compact: the memory map above the view, the code beside them, --width wide; wide: the '
                         'three panels side by side (the older, wider picture)')
     p.add_argument('--width', type=int, default=1050, help='the compact picture\'s width in pixels')
+    p.add_argument('--grid-height', type=int, default=GRID_HEIGHT,
+                   help='the memory map\'s largest height in pixels (512); the code panel beside it follows')
+    p.add_argument('--row-bytes', type=int, choices=(16, 32, 64, 128, 256),
+                   help='bytes a row of the memory map (default 256, fewer for a small range: at least '
+                        f'{GRID_MIN_HEIGHT} px tall)')
+    K.add_page_args(p)
     args = p.parse_args()
 
     trace = K.load_trace(args)
     if not trace.instructions:
         raise SystemExit(f'{args.trace}: no instructions')
-    lst = K.listing(args.listing)
+    lst = K.code_listing(args)
+    paged = lst.paged or any(':' in v for v in args.pc or [])
+    locs = K.code_locations(trace, paged)
     times = K.instruction_times(trace)
     total = times[-1] + 1
     step = args.step or max(1, -(-total // max(1, args.pictures)))
     lo, hi = K.hex_range(args.range)
     lo, hi = lo & 0xFF00, hi | 0xFF
-    pc_ranges = [K.hex_range(r) for arg in args.pc for r in arg.split(',') if r.strip()] if args.pc \
-        else [(0, 0xFFFF)]
+    pc_ranges = K.code_ranges(args.pc)
     view = parse_view(args.view)
     small, normal = K.font(11), K.font(12)
-    title = args.title or (lst.name(trace.instructions[0].pc) if args.listing else os.path.basename(args.trace or args.window))
+    title = args.title or (lst.name(locs[0]) if args.listing else os.path.basename(args.trace or args.window))
+    grid = (args.row_bytes, args.grid_height)
 
     mem = bytearray(trace.memory)
     ages = Ages()
@@ -240,13 +277,13 @@ def main():
         end = (slice_no + 1) * step
         run_here = {}
         other = 0
-        last = trace.instructions[index]
+        last, last_loc = trace.instructions[index], locs[index]
         while index < n and times[index] < end:
-            x = trace.instructions[index]
-            mine = any(lo_ <= x.pc <= hi_ for lo_, hi_ in pc_ranges)
+            x, loc = trace.instructions[index], locs[index]
+            mine = any(lo_ <= loc <= hi_ for lo_, hi_ in pc_ranges)
             if mine:
-                run_here[x.pc] = run_here.get(x.pc, 0) + 1
-                last = x
+                run_here[loc] = run_here.get(loc, 0) + 1
+                last, last_loc = x, loc
             else:
                 other += 1
             for c in x.cycles:
@@ -260,7 +297,7 @@ def main():
             index += 1
         draw = draw_picture if args.layout == 'wide' else draw_compact
         pictures.append(draw(trace, lst, mem, ages, slice_no, view, lo, hi, last, run_here, other,
-                             min(end, total), total, title, small, normal, args.width))
+                             min(end, total), total, title, small, normal, args.width, last_loc, grid))
         slice_no += 1
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
@@ -272,8 +309,8 @@ def main():
           f'{os.path.getsize(args.out) // 1024} KB')
 
 
-def panel_labels(view, lo, hi):
-    labels = [f'memory ${lo:04X}-${hi:04X}, 256 bytes a row']
+def panel_labels(view, lo, hi, row_bytes=256):
+    labels = [f'memory ${lo:04X}-${hi:04X}, {row_bytes} bytes a row']
     if view:
         kind, base, w, h, _ = view
         labels.append(f'screen ${base:04X}' if kind == 'screen' else f'buffer ${base:04X}, {w} x {h} bytes')
@@ -305,15 +342,18 @@ def wrap(text, font, width):
 
 
 def draw_compact(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other, t, total, title, small, normal,
-                 width):
+                 width, loc=None, grid=(None, GRID_HEIGHT)):
     """the memory map and the view one above the other on the left, the code on the right: width pixels wide"""
     gap, label_h = 12, 22
     big = K.font(15)
     lines = wrap(title, big, width - 2 * gap)
     top = 34 + 19 * (len(lines) - 1)
     left = max(256, width - 3 * gap - CODE_WIDTH)
-    labels = panel_labels(view, lo, hi)
-    panels = [fit_width(grid_picture(mem, ages, now, lo, hi), left, GRID_HEIGHT)]
+    row_bytes, grid_h = grid
+    row_bytes, scale = grid_rows(lo, hi, left, grid_h, row_bytes, min(GRID_MIN_HEIGHT, grid_h))
+    labels = panel_labels(view, lo, hi, row_bytes)
+    picture = grid_picture(mem, ages, now, lo, hi, row_bytes)
+    panels = [picture.resize((picture.width * scale, picture.height * scale), Image.NEAREST)]
     under = None  # a view wider than the left column at 1 x (a hex view of 30 bytes a line): a row under all
     if view:
         picture = view_picture(view, mem, ages, now)
@@ -329,7 +369,7 @@ def draw_compact(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other
     column = max(p.width for p in panels)
     code_w = max(CODE_WIDTH, width - 3 * gap - column)
     # with the view under them the code beside the map needs only some 17 lines
-    body = max(UNDER_CODE_HEIGHT if under else GRID_HEIGHT, sum(p.height + label_h for p in panels))
+    body = max(UNDER_CODE_HEIGHT if under else min(GRID_HEIGHT, grid_h), sum(p.height + label_h for p in panels))
     extra = under.height + label_h if under else 0
     image = Image.new('RGB', (max(gap + column + gap + code_w + gap, gap + (under.width if under else 0) + gap),
                               top + body + extra + 40), K.BACKGROUND)
@@ -345,16 +385,16 @@ def draw_compact(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other
         image.paste(under, (gap, top + body))
         draw.text((gap, top + body + under.height + 4), labels[1], fill=K.DIM, font=small)
     draw_code(draw, gap + column + gap, top, lst, last, run_here, other, trace, t, total, small, normal, code_w,
-              body)
+              body, loc)
     draw_legend(draw, gap, image.height, small)
     return image
 
 
 def draw_picture(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other, t, total, title, small, normal,
-                 width=None):
+                 width=None, loc=None, grid=(None, GRID_HEIGHT)):
     """--layout wide: the memory map, the view and the code side by side"""
-    grid = fit(grid_picture(mem, ages, now, lo, hi), GRID_HEIGHT)
-    panels = [grid]
+    row_bytes = grid[0] or 256
+    panels = [fit(grid_picture(mem, ages, now, lo, hi, row_bytes), GRID_HEIGHT)]
     if view:
         panels.append(fit(view_picture(view, mem, ages, now), VIEW_HEIGHT))
     top, gap = 34, 12
@@ -364,25 +404,26 @@ def draw_picture(trace, lst, mem, ages, now, view, lo, hi, last, run_here, other
     draw = ImageDraw.Draw(image)
     draw.text((gap, 8), title, fill=K.TEXT, font=K.font(15))
     x = gap
-    for panel, label in zip(panels, panel_labels(view, lo, hi)):
+    for panel, label in zip(panels, panel_labels(view, lo, hi, row_bytes)):
         image.paste(panel, (x, top))
         draw.text((x, top + panel.height + 4), label, fill=K.DIM, font=small)
         x += panel.width + gap
     code_x = x
-    draw_code(draw, code_x, top, lst, last, run_here, other, trace, t, total, small, normal)
+    draw_code(draw, code_x, top, lst, last, run_here, other, trace, t, total, small, normal, loc=loc)
     draw_legend(draw, gap, height, small)
     return image
 
 
 def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, normal, width=CODE_WIDTH,
-              height=GRID_HEIGHT):
+              height=GRID_HEIGHT, loc=None):
     frame_t = trace.frame_t or 69888
     absolute = trace.from_frame * frame_t + trace.from_t // max(1, trace.units_per_t) + t
     draw.text((x, y), f'frame {absolute // frame_t}  t {absolute % frame_t:5}', fill=K.TEXT, font=normal)
     bar_w = width - 10
     draw.rectangle([x, y + 18, x + bar_w, y + 24], outline=K.DIM)
     draw.rectangle([x, y + 18, x + int(bar_w * min(1.0, t / total)), y + 24], fill=K.DIM)
-    draw.text((x, y + 30), lst.name(last.pc), fill=K.EXEC, font=normal)
+    loc = last.pc if loc is None else loc  # the code location: the PC, with its RAM page in paged mode
+    draw.text((x, y + 30), lst.name(loc), fill=K.EXEC, font=normal)
     regs = (f'PC {last.pc:04X} SP {last.sp:04X} AF {last.af:04X} BC {last.bc:04X}\n'
             f'DE {last.de:04X} HL {last.hl:04X} IX {last.ix:04X} IY {last.iy:04X}')
     draw.multiline_text((x, y + 48), regs, fill=K.TEXT, font=small, spacing=3)
@@ -391,7 +432,7 @@ def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, no
               fill=K.DIM, font=small)
     top = y + 102
     rows = (height - (top - y)) // ROW
-    window = lst.window(last.pc, rows)
+    window = lst.window(loc, rows)
     if not window:
         draw.text((x, top), f'${last.pc:04X} (no listing line)', fill=K.DIM, font=small)
         return
@@ -407,7 +448,7 @@ def draw_code(draw, x, y, lst, last, run_here, other, trace, t, total, small, no
         if count:
             level = 0.35 + 0.65 * count / peak
             draw.rectangle([x, ry + 2, x + 6, ry + ROW - 4], fill=tuple(int(c * level) for c in K.EXEC))
-        draw.text((x + 10, ry), f'{address:04X}', fill=K.DIM, font=small)
+        draw.text((x + 10, ry), f'{address & 0xFFFF:04X}', fill=K.DIM, font=small)
         draw.text((x + 50, ry), text[:56 + (width - CODE_WIDTH) // 7], fill=K.TEXT if count else (150, 150, 160),
                   font=small)
 

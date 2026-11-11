@@ -43,8 +43,8 @@ closing phrase. Notes 3, 15, 22, 24 and 26 are never played (a c1 recording read
 one a level, 13 the title's. Each file is the module byte for byte as the card receives it (the stream was
 compared with the live port traffic in stage 1). `tools/disk_media.py build` copies them to `build/res/music/*.bin`;
 `tools/mkdisk.py` pads each to a whole sector, cuts it into 16384-byte parts and packs a part with Trush when that
-is safe and smaller (the rule in [3](../../docs/03-build-and-load.md)). Any tracker that saves ProTracker
-`M.K.` modules (OpenMPT, MilkyTracker) edits them. Their titles and sample names: [docs/texts/modules.md](../../docs/texts/modules.md).
+is safe and smaller (the rule in [3](../../../docs/03-build-and-load.md)). Any tracker that saves ProTracker
+`M.K.` modules (OpenMPT, MilkyTracker) edits them. Their titles and sample names: [docs/texts/modules.md](../../../docs/texts/modules.md).
 
 | File | Plays | Bytes | Volume (`ModuleVolumes`, `#2A`) |
 | --- | --- | ---: | --- |

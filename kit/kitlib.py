@@ -82,7 +82,12 @@ def buffer_cells(base, width, height, order='rows'):
 def save_gif(path, pictures, durations):
     """An animated GIF of RGB pictures, small: one palette for all (255 colours, no dithering) and, from the second
     picture on, every pixel that did not change since the previous picture written as the transparent index 255, so
-    each picture costs only what changed (a routine animation of 90 pictures is about 1 MB, not 10)"""
+    each picture costs only what changed (a routine animation of 90 pictures is about 1 MB, not 10).
+
+    No pixel is ever quantized to 255: the palette's unused entries and entry 255 repeat entry 0, and a pixel that
+    lands on 255 all the same is moved to 0 (the same colour). Index 255 used to be black, so a pure black pixel the
+    255 colours did not hold exactly (the Spectrum's black ink beside the kit's dark background) went to 255 and
+    showed the page through in the first picture and in every later one"""
     import numpy
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     picks = [pictures[i * (len(pictures) - 1) // 7] for i in range(8)] if len(pictures) > 8 else pictures
@@ -92,16 +97,19 @@ def save_gif(path, pictures, durations):
         sample.paste(picture, (0, i * height))
     palette = sample.quantize(colors=255, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
     entries = palette.getpalette()[:255 * 3]
-    palette.putpalette(entries + [0, 0, 0])
+    entries += entries[:3] * (255 - len(entries) // 3)  # unused entries: copies of entry 0, never nearer than it
+    entries += entries[:3]                              # the transparent index 255: entry 0's colour as well
+    palette.putpalette(entries)
     frames, previous = [], None
     for picture in pictures:
-        index = numpy.asarray(picture.quantize(palette=palette, dither=Image.Dither.NONE))
+        index = numpy.asarray(picture.quantize(palette=palette, dither=Image.Dither.NONE)).copy()
+        index[index == 255] = 0
         out = index.copy()
         if previous is not None:
             out[index == previous] = 255
         previous = index
         frame = Image.fromarray(out, 'P')
-        frame.putpalette(entries + [0, 0, 0])
+        frame.putpalette(entries)
         frames.append(frame)
     frames[0].save(path, save_all=True, append_images=frames[1:], duration=durations, loop=0, optimize=False,
                    disposal=1, transparency=255)
@@ -180,6 +188,94 @@ def listing(path):
 
 
 # ---------------------------------------------------------------------------------------------------------------
+# 128K pages: code at $C000-$FFFF told apart by the RAM page it ran in
+
+PAGED = 0x10000  # a code location: the address, plus PAGED x the page for $C000-$FFFF in paged mode
+
+
+def add_page_args(parser):
+    parser.add_argument('--page', action='append', default=[], metavar='N=LISTING',
+                        help='code at $C000-$FFFF run while RAM N is paged in is named from LISTING (repeatable)')
+    parser.add_argument('--page-name', action='append', default=[], metavar='N=NAME',
+                        help='code at $C000-$FFFF run while RAM N is paged in is NAME, one name for the page '
+                             '(repeatable)')
+
+
+def code_listing(args):
+    """--listing with the --page / --page-name of add_page_args: a PagedListing (paged mode when any is given)"""
+    pages = {int(n): Listing(path) for n, _, path in (v.partition('=') for v in getattr(args, 'page', []))}
+    names = {int(n): name for n, _, name in (v.partition('=') for v in getattr(args, 'page_name', []))}
+    return PagedListing(listing(args.listing), pages, names)
+
+
+def code_locations(trace, paged):
+    """Each instruction's code location: its PC, or in paged mode, for $C000-$FFFF, PC + PAGED x the RAM page there
+    as it ran (the trace's page at its start, then each OUT to the 128K's port $7FFD: A15 = 0, A14 = 1, A1 = 0, from
+    the next instruction on). RAM 0 keeps the plain PC"""
+    if not paged:
+        return [x.pc for x in trace.instructions]
+    page = trace.pages[3] & 7 if trace.pages and trace.pages[3] < 0x100 else 0
+    out = []
+    for x in trace.instructions:
+        out.append(x.pc + PAGED * page if x.pc >= 0xC000 else x.pc)
+        for c in x.cycles:
+            if c.tag == 'O' and c.address & 0xC002 == 0x4000:
+                page = c.value & 7
+    return out
+
+
+def code_ranges(texts, paged=False):
+    """--pc values (comma-separated, repeated) to [(lo, hi)] of code locations: LO-HI, or N:LO-HI for RAM N at
+    $C000-$FFFF. In paged mode a plain range at $C000-$FFFF is RAM 0's. None: every location"""
+    if not texts:
+        return [(0, 8 * PAGED - 1)]
+    out = []
+    for text in texts:
+        for r in text.split(','):
+            r = r.strip()
+            if not r:
+                continue
+            page, _, span = r.rpartition(':')
+            lo, hi = hex_range(span)
+            base = PAGED * int(page) if page else 0
+            out.append((base + lo, base + hi) if not page or lo >= 0xC000 else (lo, hi))
+    return out
+
+
+class PagedListing:
+    """A listing for code locations (code_locations): RAM N's code at $C000-$FFFF from --page N's listing (its
+    names with " (RAM N)" after them), or --page-name N's one name; everything else from the main listing (a page
+    with neither too). Without pages a location is the PC and this is the main listing"""
+
+    def __init__(self, main, pages=None, names=None):
+        self.main, self.pages, self.names = main, pages or {}, names or {}
+        self.paged = bool(self.pages or self.names)
+
+    def _of(self, loc):
+        page, address = divmod(loc, PAGED)
+        return page, address, (self.pages.get(page, self.main) if page else self.main)
+
+    def routine(self, loc):
+        page, address, lst = self._of(loc)
+        if page in self.names:
+            return self.names[page]
+        return f'{lst.routine(address)} (RAM {page})' if page in self.pages else lst.routine(address)
+
+    def name(self, loc):
+        page, address, lst = self._of(loc)
+        if page in self.names:
+            return f'{self.names[page]} ${address:04X}'
+        return f'{lst.name(address)} (RAM {page})' if page in self.pages else lst.name(address)
+
+    def window(self, loc, rows):
+        """as Listing.window, the addresses as code locations (so that counts by location find their line)"""
+        page, address, lst = self._of(loc)
+        if page in self.names:
+            return []
+        return [(a + PAGED * page if page and a >= 0xC000 else a, k, t, c) for a, k, t, c in lst.window(address, rows)]
+
+
+# ---------------------------------------------------------------------------------------------------------------
 # the Spectrum screen
 
 BASIC, BRIGHT = 0xCD, 0xFF
@@ -243,10 +339,23 @@ WRITE_TRAIL = (80, 34, 52)
 READ_TRAIL = (28, 46, 80)
 EXEC_TRAIL = (26, 64, 36)
 
-# Routine colours: distinct, readable on the dark background
+# Routine colours: distinct, readable on the dark background. 28 of them, so that a figure of up to 28 routines or
+# modules (Terramex's budget has 25) repeats none; the first 12 were the whole list once and keep their order
 ROUTINE_COLOURS = [(230, 90, 80), (90, 200, 120), (90, 150, 250), (240, 200, 70), (200, 110, 230), (70, 210, 220),
                    (250, 150, 60), (160, 220, 80), (240, 120, 180), (140, 140, 250), (200, 170, 120),
-                   (120, 230, 190)]
+                   (120, 230, 190),
+                   (255, 255, 255), (150, 110, 70), (175, 45, 65), (45, 140, 85), (55, 85, 190), (170, 150, 40),
+                   (130, 65, 190), (35, 145, 160), (195, 95, 35), (255, 190, 210), (185, 185, 185), (255, 235, 160),
+                   (80, 120, 120), (200, 220, 160), (220, 160, 220), (150, 200, 255)]
+
+
+def parse_colour(text):
+    """#RRGGBB, RRGGBB or R,G,B to an (r, g, b) tuple"""
+    text = text.strip()
+    if ',' in text:
+        return tuple(int(v) for v in text.split(','))
+    text = text.lstrip('#')
+    return tuple(int(text[i:i + 2], 16) for i in (0, 2, 4))
 
 
 def hex_address(text):

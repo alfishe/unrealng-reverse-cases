@@ -59,7 +59,7 @@ Entered once by the turbo loader's JP `$8000` (every build: game frame 5556, eac
 | --- | --- |
 | Runs (the first recording's game window) | run into, not called, 85 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`runs/e1`, `runs/f1`, `runs/j1` and 4 more) |
-| Calls | `GameRestart`, `ResetBallPositions`, `MainMenu`, `PresentsPage` |
+| Calls | `GameRestart` (falls into), `ResetBallPositions`, `PresentsPage` |
 | Reads | `$FE00`-`$FEFF` (`work space $FE00+`) |
 | Writes | `$BD0B` (`PresentsDone`); `$FCFC`-`$FCFF` (`work space $FCFC+`); `$FE00`-`$FF00` (`work space $FE00+`) |
 
@@ -73,8 +73,8 @@ Entered from GameStart and from BreakRestart (game 2 entries at frames 6060 and 
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 11,302 t-states own (0.00 %) |
 | Runs (the other recordings) | 14 calls (`runs/j1` 3, `runs/m1` 3, `runs/v1` 2 and 3 more) |
-| Called from | `GameStart`, `BreakRestart` (tail) |
-| Calls | `SoundLoop`, `StartAim`, `DrawAllBalls`, `NewGameScreen`, `DrawLives`, `ShotsForFrame`, `PlayerBanner`, `DrawPocketMarks`, `PrintHudNumber`, `Rack`, `MainMenu` |
+| Called from | `GameStart` (falls into), `BreakRestart` (tail) |
+| Calls | `SoundLoop` (falls into), `StartAim`, `DrawAllBalls`, `NewGameScreen`, `DrawLives`, `ShotsForFrame`, `PlayerBanner`, `DrawPocketMarks`, `PrintHudNumber`, `Rack`, `MainMenu` |
 | Reads | `$FE00`-`$FEFF` (`work space $FE00+`) |
 | Writes | `$827D` (`SoundRequest`); `$9B30` (`CurrentPlayer`); `$9F4D` (`ShotsLeft`); `$FCFC`-`$FCFF` (`work space $FCFC+`); `$FE00`-`$FF00` (`work space $FE00+`) |
 
@@ -94,9 +94,9 @@ A request written while a tone plays is lost (SoundDelay tests only for zero; th
 | --- | --- |
 | Runs (the first recording's game window) | 1,731,083 calls, 102,169,034 t-states own (34.37 %) |
 | Runs (the other recordings) | 15,216,348 calls (`runs/w1` 6,290,430, `runs/f1` 2,573,839, `runs/j1` 2,121,605 and 4 more) |
-| Called from | `GameRestart`, `SoundDelay` (tail), `Im2Handler`, `EditorPlay` (tail) |
+| Called from | `GameRestart` (falls into), `SoundDelay` (tail), `Im2Handler`, `EditorPlay` (tail) |
 | Calls | `SoundDelay`, `BreakRestart` (tail) |
-| Reads | `$827C`-`$827D` (`InputState`, `SoundRequest`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$827C`-`$827D` (`InputState`, `SoundRequest`) |
 | Writes | `$827D` (`SoundRequest`) |
 | Ports out | `$07FE`, `$17FE` |
 
@@ -112,7 +112,7 @@ Input B (saved). Each pass reads SoundRequest; at 0 it drops its own return addr
 | Runs (the other recordings) | 11,142 calls (`runs/w1` 3,922, `runs/p2` 2,560, `runs/v1` 1,616 and 4 more) |
 | Called from | `SoundLoop` |
 | Calls | `SoundLoop` (tail) |
-| Reads | `$827D` (`SoundRequest`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$827D` (`SoundRequest`) |
 | Ports out | `$07FE` |
 
 ### `BreakRestart` (`$80B0`)
@@ -125,7 +125,7 @@ Jumped to from SoundLoop when InputState bit 5 is set (game frame 9091, w1 14 23
 | --- | --- |
 | Runs (the first recording's game window) | 1 call, 37 t-states own (0.00 %) |
 | Runs (the other recordings) | 8 calls (`runs/j1` 2, `runs/m1` 2, `runs/f1` 1 and 3 more) |
-| Called from | `SoundLoop` (tail), `GameOver` (tail), `NextTurn` (tail), `EditorExit` (tail) |
+| Called from | `SoundLoop` (tail), `NextTurn` (tail), `EditorExit` (tail) |
 | Calls | `GameRestart` (tail), `ClearTasks` |
 
 ### `InstallTasks` (`$80B9`)
@@ -166,9 +166,9 @@ Writes RET (`$C9`) over the JP at Im2Jump+1 (`$FCFD`): the interrupt is then EI;
 | --- | --- |
 | Runs (the first recording's game window) | 21 calls, 1,305,178 t-states own (0.44 %) |
 | Runs (the other recordings) | 130 calls (`runs/w1` 58, `runs/f1` 30, `runs/p2` 17 and 3 more) |
-| Called from | `WaitMessages` (tail), `FoulJingle` (tail), `GameOver`, `WaitFramesOrKey`, `ScoreShot` (tail), `TurnSwapStart` (tail), `Rack` (tail) |
+| Called from | `WaitMessages` (tail), `FoulJingle` (tail), `NextTurn`, `WaitFramesOrKey`, `ScoreShot` (tail), `TurnSwapStart` (tail), `Rack` (tail) |
 | Calls | `WaitFrameCall`, `NextTurn` |
-| Reads | `$80E8` (`WaitFrameNoTasks+10`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$80E8` (`WaitFrameNoTasks+10`) |
 | Writes | `$FCFD` (`work space $FCFD+`) |
 
 ### `WaitFrameCall` (`$80EF`)
@@ -294,7 +294,7 @@ Looks A up in KeyTable with CPIR (40 bytes), turns the position into the half ro
 | Runs (the first recording's game window) | 5,175 calls, 5,087,159 t-states own (1.71 %) |
 | Runs (the other recordings) | 39,648 calls (`runs/w1` 19,221, `runs/f1` 8,379, `runs/p2` 4,125 and 3 more) |
 | Called from | `ReadKeyboard`, `ReadCursorKeys` |
-| Reads | `$8254`-`$8279` (`KeyTable`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$8254`-`$8279` (`KeyTable`) |
 | Ports in | `$7FFE`, `$EFFE`, `$F7FE` |
 
 ## shot
@@ -361,7 +361,7 @@ ScoreTally runs before LoseLife, so a foul pot still scores: v1 frames 3045-3375
 | Runs (the first recording's game window) | run into, not called, 42,082 t-states own (0.01 %) |
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/p2`, `runs/v1` and 3 more) |
 | Called from | `CallTask` |
-| Calls | `StartAim`, `WaitMessages`, `StopShotTasks`, `RespotCueBall`, `DrawBall`, `LoseLife`, `ScoreShot`, `NextFrame`, `PrintHudNumber`, `Rack` |
+| Calls | `StartAim` (falls into), `WaitMessages`, `StopShotTasks`, `RespotCueBall`, `DrawBall`, `LoseLife`, `ScoreShot`, `NextFrame`, `PrintHudNumber`, `Rack` |
 | Reads | `$89BB` (`BallHitFlag`); `$8A92`-`$8AE9` (`BallRecords+10`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$8E80` (`FoulCode`); `$9F4D`-`$9F4E` (`ShotsLeft`, `LivesLeft`) |
 | Writes | `$8E80` (`FoulCode`); `$95D8`-`$95D9` (`SpritePos`); `$9F4D` (`ShotsLeft`) |
 
@@ -375,7 +375,7 @@ AimCursorReset, AimPowerReset, InstallTasks AimTasks, then AddTask `$96E6` perio
 | --- | --- |
 | Runs (the first recording's game window) | 4 calls, 760 t-states own (0.00 %) |
 | Runs (the other recordings) | 49 calls (`runs/w1` 21, `runs/f1` 9, `runs/p2` 7 and 3 more) |
-| Called from | `GameRestart`, `ShotEnd`, `NextTurn` (tail) |
+| Called from | `GameRestart`, `ShotEnd` (falls into), `NextTurn` (tail) |
 | Calls | `InstallTasks`, `AimPowerReset`, `AimCursorReset`, `AddTask` (tail) |
 | Writes | `$9B31`-`$9B32` (`UpBlink`, `LastShotBlink`) |
 
@@ -404,7 +404,7 @@ With the tasks stopped (WaitFrameNoTasks): while the message counter `$9F50` is 
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/p2` and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `MessagesTask` |
-| Reads | `$847E` (`WaitMessagesHalt+1`); `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$8E80` (`FoulCode`); `$9F50` (`MessageStep`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$847E` (`WaitMessagesHalt+1`); `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$8E80` (`FoulCode`); `$9F50` (`MessageStep`) |
 
 ### `StopShotTasks` (`$8483`)
 
@@ -763,7 +763,7 @@ The bounce uses bit 7 of the point's coordinates in place of the normal's signs 
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 18 calls (`runs/m1` 8, `runs/w1` 7, `runs/v1` 3) |
 | Called from | `CushionsSmall` (tail), `CushionsLarge` (tail) |
-| Calls | `ReflectDiagonal`, `ReflectX` (tail), `ReflectY` (tail), `StepBack` |
+| Calls | `ReflectDiagonal` (falls into), `ReflectX` (tail), `ReflectY` (tail), `StepBack` |
 | Reads | `$8A89`-`$8A9D` (`BallRecords+1`, `BallOne`); `$8AC1`-`$8AE5` (`BallFour+1`, `BallFive`, `BallSix`); `$8B4D` (`EventCount`); `$DD10`-`$DD33` (`Table8x8+22`) |
 | Writes | `$827D` (`SoundRequest`); `$8A88`-`$8A98` (`BallRecords`, `BallOne`); `$8AC0`-`$8AE5` (`BallFour`, `BallFive`, `BallSix`); `$8B4D` (`EventCount`) |
 
@@ -776,7 +776,7 @@ Ran w1 10, f1 7, p2 1, v1 5, m1 2 times. (vx, vy, step x, step y) become (vy, vx
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 23 calls (`runs/w1` 10, `runs/f1` 7, `runs/v1` 5 and 1 more) |
-| Called from | `DiagonalJaw` (tail), `PointJaw` |
+| Called from | `DiagonalJaw` (tail), `PointJaw` (falls into) |
 | Reads | `$8A8C`-`$8AAD` (`BallRecords+4`, `BallOne`, `BallTwo`); `$8AC4`-`$8AE5` (`BallFour+4`, `BallFive`, `BallSix`); `$8B4D` (`EventCount`) |
 | Writes | `$827D` (`SoundRequest`); `$8A8C`-`$8AAD` (`BallRecords+4`, `BallOne`, `BallTwo`); `$8AC4`-`$8AE5` (`BallFour+4`, `BallFive`, `BallSix`); `$8B4D` (`EventCount`) |
 
@@ -983,7 +983,7 @@ Large pockets (`$B8BC` <> 0, the menu's L key; the default in the image): the lo
 | Runs (the other recordings) | 10 calls (`runs/m1` 2, `runs/j1` 2, `runs/v1` 2 and 4 more) |
 | Called from | `NewGameScreen`, `EditorStart` |
 | Calls | `XorLine` |
-| Reads | `$B8BC` (`Pockets`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$B8BC` (`Pockets`) |
 
 ### `PowerBarTask` (`$934D`)
 
@@ -996,7 +996,7 @@ A task of the aim list `$84AA`, period 0 (every interrupt while aiming): game 14
 | Runs (the first recording's game window) | run into, not called, 111,111 t-states own (0.04 %) |
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/j1` and 4 more) |
 | Called from | `CallTask` |
-| Calls | `DrawPowerBar` |
+| Calls | `DrawPowerBar` (falls into) |
 | Reads | `$86BF`-`$86C0` (`Power`, `PowerHigh`) |
 | Writes | `$86BF`-`$86C0` (`Power`, `PowerHigh`) |
 
@@ -1010,7 +1010,7 @@ Input B = the length. Lengths of 128 and more are drawn as 126 (the power runs 0
 | --- | --- |
 | Runs (the first recording's game window) | 2,893 calls, 569,933 t-states own (0.19 %) |
 | Runs (the other recordings) | 22,098 calls (`runs/w1` 8,835, `runs/f1` 4,082, `runs/j1` 3,344 and 4 more) |
-| Called from | `AimPowerReset` (tail), `PowerBarTask` |
+| Called from | `AimPowerReset` (tail), `PowerBarTask` (falls into) |
 | Calls | `XorLine` |
 
 ### `DrawCursor` (`$9371`)
@@ -1038,7 +1038,7 @@ The top y 8 and the bottom y 15, 130 pixels from x 2; the sides one pixel at x 2
 | Runs (the first recording's game window) | 1 call, 464 t-states own (0.00 %) |
 | Runs (the other recordings) | 9 calls (`runs/j1` 2, `runs/v1` 2, `runs/e1` 1 and 4 more) |
 | Called from | `NewGameScreen`, `EditorPlay` |
-| Calls | `XorLine` |
+| Calls | `XorLine` (falls into) |
 
 ### `XorLine` (`$93B3`)
 
@@ -1052,9 +1052,9 @@ The busiest drawing routine: game 14976 calls, w1 57235, f1 17840, p2 12040, v1 
 | --- | --- |
 | Runs (the first recording's game window) | 14,976 calls, 2,105,292 t-states own (0.71 %) |
 | Runs (the other recordings) | 144,416 calls (`runs/w1` 57,235, `runs/m1` 28,297, `runs/f1` 17,840 and 4 more) |
-| Called from | `DrawTable`, `DrawPowerBar`, `DrawCursor` (tail), `DrawPowerBox`, `SlideFlagDown`, `SlideFlagUp`, `DrawFlag`, `XorCursorBox`, `DrawLineList`, `XorTick`, `FlipEdge`, `EditorBox` |
+| Called from | `DrawTable`, `DrawPowerBar`, `DrawCursor` (tail), `DrawPowerBox` (falls into), `SlideFlagDown`, `SlideFlagUp`, `DrawFlag`, `XorCursorBox`, `DrawLineList`, `XorTick`, `FlipEdge`, `EditorBox` |
 | Calls | `ScreenCell` |
-| Reads | `$4020`-`$57FC` (screen); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4020`-`$57FC` (screen) |
 | Writes | `$4020`-`$57FC` (screen) |
 
 ## balldraw
@@ -1086,7 +1086,7 @@ Called by TurnSwap `$9C15` (p2 once, frame 1778). Ball 0..6: a ball whose sprite
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/p2` 1) |
 | Called from | `TurnSwap` |
 | Calls | `DrawBall`, `ScreenCell` |
-| Reads | `$4802`-`$519C` (screen); `$5202`-`$529C` (screen); `$5302`-`$539C` (screen); `$5402`-`$549C` (screen); `$5502`-`$559C` (screen); `$5602`-`$569C` (screen); 3 more ranges |
+| Reads | `$4802`-`$519C` (screen); `$5202`-`$529C` (screen); `$5302`-`$539C` (screen); `$5402`-`$549C` (screen); `$5502`-`$559C` (screen); `$5602`-`$569C` (screen); 2 more ranges |
 | Writes | `$4802`-`$519D` (screen); `$5202`-`$529D` (screen); `$5302`-`$539D` (screen); `$5402`-`$549D` (screen); `$5502`-`$559D` (screen); `$5602`-`$569D` (screen); 2 more ranges |
 
 ### `ClearMessageRows` (`$94EB`)
@@ -1134,7 +1134,7 @@ Input A = the ball 0-6, SpritePos = (x, y). Source = BallSprites `$D000` + 48 x 
 | Runs (the first recording's game window) | 1,827 calls, 740,491 t-states own (0.25 %) |
 | Runs (the other recordings) | 44,538 calls (`runs/w1` 15,290, `runs/p2` 10,210, `runs/v1` 7,119 and 4 more) |
 | Called from | `RedrawBall` (tail), `ShotEnd`, `RespotCueBall` (tail), `ClearTableForTurn`, `DrawAllBalls`, `LoseLife`, `DrawPottedRow`, `DrawLives`, `RackBalls` |
-| Calls | `XorSpriteLines`, `ScreenCell` |
+| Calls | `XorSpriteLines` (falls into), `ScreenCell` |
 | Reads | `$95D8`-`$95D9` (`SpritePos`) |
 
 ### `XorSpriteLines` (`$959F`)
@@ -1147,8 +1147,8 @@ DE advances 3 bytes a line (the sprite is stored line by line, 3 bytes each); L 
 | --- | --- |
 | Runs (the first recording's game window) | 5,230 calls, 3,209,942 t-states own (1.08 %) |
 | Runs (the other recordings) | 125,424 calls (`runs/w1` 42,910, `runs/p2` 28,693, `runs/v1` 20,096 and 4 more) |
-| Called from | `DrawBall` |
-| Reads | `$4000` (screen); `$4060`-`$55E0` (screen); `$5601`-`$56E0` (screen); `$5701`-`$57E0` (screen); `$D000`-`$DA7F` (`BallSprites`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Called from | `DrawBall` (falls into) |
+| Reads | `$4000` (screen); `$4060`-`$55E0` (screen); `$5601`-`$56E0` (screen); `$5701`-`$57E0` (screen); `$D000`-`$DA7F` (`BallSprites`) |
 | Writes | `$4000` (screen); `$4060`-`$55E0` (screen); `$5601`-`$56E0` (screen); `$5701`-`$57E0` (screen) |
 
 ### `ScreenCell` (`$95B3`)
@@ -1162,7 +1162,6 @@ H = `$40` + 8 x (y / 64), L = 32 x ((y / 8) AND 7) + x / 8. The caller adds y AN
 | Runs (the first recording's game window) | 9,793 calls, 1,047,883 t-states own (0.35 %) |
 | Runs (the other recordings) | 209,126 calls (`runs/w1` 80,306, `runs/m1` 35,836, `runs/p2` 33,877 and 4 more) |
 | Called from | `XorLine`, `ClearTableForTurn`, `ClearMessageRows`, `DrawBall`, `DrawFlagTail`, `DrawNameBitmap`, `RestoreFlagLine`, `DrawFlag`, `DrawPole`, `DrawCharAt` |
-| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `AttrFromScreen` (`$95CD`)
 
@@ -1194,7 +1193,7 @@ Prints the HUD words (HudTexts `$969D` "1up" ... HudShots), zeroes the scores (`
 | Runs (the other recordings) | 8 calls (`runs/v1` 2, `runs/j1` 2, `runs/f1` 1 and 3 more) |
 | Called from | `GameRestart` |
 | Calls | `DrawTable`, `DrawPowerBox`, `ParkBalls`, `PrintHudNumber`, `PrintText` |
-| Reads | `$4000`-`$5AFE` (screen); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4000`-`$5AFE` (screen) |
 | Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$86BF`-`$86C0` (`Power`, `PowerHigh`); `$9B33` (`Player2Racked`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more) |
 | Ports out | `$07FE` |
 
@@ -1287,7 +1286,7 @@ Two low notes: the ROM's BEEPER pitch 437500 / (HL + 30.125): about 52 Hz for DE
 | Runs (the first recording's game window) | run into, not called, 4,073,572 t-states own (1.37 %) |
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/f1`, `runs/v1` and 1 more) |
 | Called from | `WaitFrameCall` |
-| Reads | `$9789`-`$9797` (`JingleWaitOne+1`, `JingleWaitTwo`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$9789`-`$9797` (`JingleWaitOne+1`, `JingleWaitTwo`) |
 
 ### `GameOver` (`$97A2`)
 
@@ -1300,7 +1299,7 @@ From LoseLife `$9754` (game 1 at frame 8811, w1 11768, f1 4445). EraseBallsUnder
 | Runs (the first recording's game window) | 1 call, 268 t-states own (0.00 %) |
 | Runs (the other recordings) | 2 calls (`runs/f1` 1, `runs/w1` 1) |
 | Called from | `LoseLife` (tail) |
-| Calls | `BreakRestart` (tail), `WaitFrameNoTasks`, `EraseBallsUnderBanner`, `PrintHudNumber`, `PrintText` |
+| Calls | `EraseBallsUnderBanner`, `PrintText` |
 | Reads | `$9F45`-`$9F4A` (`ScorePlayer1`, `ScorePlayer2`, `HiScore`); `$B8BB` (`Players`) |
 
 ### `NextTurn` (`$97CD`)
@@ -1316,7 +1315,7 @@ Else (NextTurnResume `$9801`, known only from the code): wait 100 frames, blank 
 | Runs (the first recording's game window) | 3 calls, 135 t-states own (0.00 %) |
 | Runs (the other recordings) | 10 calls (`runs/w1` 3, `runs/f1` 3, `runs/v1` 3 and 1 more) |
 | Called from | `WaitFrameNoTasks`, `LoseLife` (tail) |
-| Calls | `BreakRestart` (tail), `StartAim` (tail), `DrawAllBalls`, `DrawLives`, `TurnSwapStart`, `Rack` |
+| Calls | `BreakRestart` (tail), `WaitFrameNoTasks`, `StartAim` (tail), `DrawAllBalls`, `DrawLives`, `TurnSwapStart`, `PrintHudNumber`, `Rack` |
 | Reads | `$8AA3`-`$8AE9` (`BallOne+13`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$9B33` (`Player2Racked`); `$B8BB` (`Players`) |
 | Writes | `$9B33` (`Player2Racked`) |
 
@@ -1331,7 +1330,7 @@ Run through WaitFrame `$80DE` by GameOverEnd (game 1 at frame 8811-9061, w1 1176
 | Runs (the first recording's game window) | run into, not called, 66 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`runs/f1`, `runs/w1`) |
 | Called from | `WaitFrameCall`, `SlideFlagsUp` |
-| Calls | `WaitFramesOrKey`, `GameOverHallOfFame` |
+| Calls | `WaitFramesOrKey` (falls into), `GameOverHallOfFame` |
 
 ### `WaitFramesOrKey` (`$9865`)
 
@@ -1343,9 +1342,9 @@ game 279 frames over 2 calls (8811-9090), w1 750, f1 750.
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 18,398,913 t-states own (6.19 %) |
 | Runs (the other recordings) | 4 calls (`runs/f1` 2, `runs/w1` 2) |
-| Called from | `GameOverWait` |
+| Called from | `GameOverWait` (falls into) |
 | Calls | `WaitFrameNoTasks`, `ReadInput` |
-| Reads | `$827C` (`InputState`); `$9866` (`WaitFramesOrKey+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$827C` (`InputState`); `$9866` (`WaitFramesOrKey+1`) |
 
 ### `WaitFramesBStopped` (`$9886`)
 
@@ -1415,7 +1414,7 @@ Returns at once when nothing was potted. Witness: AddScoreStep w1 287 calls (fra
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/v1`, `runs/p2` and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `ClearMessageRows`, `AddScoreStep`, `TallyTermPlus`, `TallyTermTotal`, `DrawPottedRow`, `TallyPause`, `ShotsForFrame` |
-| Reads | `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$999B` (`TallyCountStep+15`); `$99AD` (`TallyWaitRest+1`); `$99BE` (`TallyEndWait+1`); `$9B2C`-`$9B2D` (`ShotScore`); `$9F43`-`$9F50` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 7 more); 1 more ranges |
+| Reads | `$8AA2`-`$8AE8` (`BallOne+12`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$999B` (`TallyCountStep+15`); `$99AD` (`TallyWaitRest+1`); `$99BE` (`TallyEndWait+1`); `$9B2C`-`$9B2D` (`ShotScore`); `$9F43`-`$9F50` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 7 more) |
 | Writes | `$9B2C`-`$9B35` (`ShotScore`, `PotMultiplier`, `PotBall`, `CurrentPlayer` and 4 more); `$9F4D` (`ShotsLeft`) |
 
 ### `AddScoreStep` (`$99C1`)
@@ -1504,7 +1503,7 @@ After ClearMessageRows wiped rows 2-4: ScoreTally and MessagesTask step `$4F`. g
 | Runs (the first recording's game window) | 4 calls, 1,984 t-states own (0.00 %) |
 | Runs (the other recordings) | 35 calls (`runs/w1` 21, `runs/v1` 7, `runs/f1` 4 and 1 more) |
 | Called from | `ScoreTally`, `MessagesTask` (tail) |
-| Calls | `DrawBall`, `DrawLives` |
+| Calls | `DrawBall`, `DrawLives` (falls into) |
 | Reads | `$8AA0`-`$8AE9` (`BallOne+10`, `BallTwo`, `BallThree`, `BallFour` and 2 more) |
 | Writes | `$95D8`-`$95D9` (`SpritePos`) |
 
@@ -1518,7 +1517,7 @@ The first x = `$88` + 24 (4 - lives). Lives 0 or negative: nothing. Called by Dr
 | --- | --- |
 | Runs (the first recording's game window) | 5 calls, 1,564 t-states own (0.00 %) |
 | Runs (the other recordings) | 45 calls (`runs/w1` 22, `runs/v1` 9, `runs/p2` 6 and 3 more) |
-| Called from | `GameRestart`, `NextTurn`, `DrawPottedRow`, `TurnSwap` |
+| Called from | `GameRestart`, `NextTurn`, `DrawPottedRow` (falls into), `TurnSwap` |
 | Calls | `DrawBall`, `MessagesTask` |
 | Reads | `$95D8`-`$95D9` (`SpritePos`); `$9F4E` (`LivesLeft`) |
 | Writes | `$95D8`-`$95D9` (`SpritePos`) |
@@ -1531,7 +1530,7 @@ The first x = `$88` + 24 (4 - lives). Lives 0 or negative: nothing. Called by Dr
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 132 calls (`runs/w1` 89, `runs/v1` 24, `runs/p2` 10 and 1 more) |
 | Called from | `ScoreTally`, `TallyTermTotal`, `PrintTermFactor` |
-| Reads | `$9B0A` (`TallyPauseLoop+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$9B0A` (`TallyPauseLoop+1`) |
 
 ### `MultiplyTerm` (`$9B0D`)
 
@@ -1560,7 +1559,7 @@ Called by Rack `$9F6F` at each rack (game 1 at frame 6190, w1 4, p2 2). Two play
 | Runs (the other recordings) | 12 calls (`runs/w1` 4, `runs/j1` 2, `runs/v1` 2 and 3 more) |
 | Called from | `RackBalls` |
 | Calls | `PrintNumber`, `PrintText` (tail), `CellAddress` |
-| Reads | `$4828` (screen); `$4928` (screen); `$9B76` (`FrameBannerWait+1`); `$9F4B`-`$9F4C` (`FrameNumber`, `FrameOther`); `$B8BB` (`Players`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4828` (screen); `$4928` (screen); `$9B76` (`FrameBannerWait+1`); `$9F4B`-`$9F4C` (`FrameNumber`, `FrameOther`); `$B8BB` (`Players`) |
 | Writes | `$9B8E`-`$9B98` (`FrameBanner`, `FrameBannerBlank`) |
 
 ### `NextFrame` (`$9BB8`)
@@ -1615,7 +1614,7 @@ Then for one and two players: `$8539` (power 0), PrintHudNumber 4 (frame), Shots
 | Runs (the other recordings) | run into, not called (`runs/p2`, `runs/f1`, `runs/v1` and 1 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `AimPowerReset`, `ClearTableForTurn`, `DrawLives`, `ShotsForFrame`, `DrawPocketMarks`, `PrintHudNumber` |
-| Reads | `$8A88`-`$8B4B` (`BallRecords`, `OtherPlayerBalls`); `$9B30` (`CurrentPlayer`); `$9C1E` (`TurnSwapWait+1`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more); `$B8BB` (`Players`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$8A88`-`$8B4B` (`BallRecords`, `OtherPlayerBalls`); `$9B30` (`CurrentPlayer`); `$9C1E` (`TurnSwapWait+1`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more); `$B8BB` (`Players`) |
 | Writes | `$8A88`-`$8B4B` (`BallRecords`, `OtherPlayerBalls`); `$9B30` (`CurrentPlayer`); `$9F43`-`$9F4F` (`PlayerVars`, `PocketTurnOther`, `ScorePlayer1`, `ScorePlayer2` and 6 more) |
 
 ### `PlayerBanner` (`$9C7B`)
@@ -1689,7 +1688,7 @@ Cells: top row 5 (y 40) cols 0, 15, 30 then bottom row 23 (y 184) cols 30, 15, 0
 | Runs (the first recording's game window) | 4 calls, 580 t-states own (0.00 %) |
 | Runs (the other recordings) | 21 calls (`runs/w1` 7, `runs/v1` 5, `runs/f1` 4 and 3 more) |
 | Called from | `GameRestart`, `NextFrame`, `TurnSwap` |
-| Calls | `PrintPocketMark` |
+| Calls | `PrintPocketMark` (falls into) |
 
 ### `PrintPocketMark` (`$9D8C`)
 
@@ -1699,7 +1698,7 @@ Cells: top row 5 (y 40) cols 0, 15, 30 then bottom row 23 (y 184) cols 30, 15, 0
 | --- | --- |
 | Runs (the first recording's game window) | 24 calls, 4,484 t-states own (0.00 %) |
 | Runs (the other recordings) | 126 calls (`runs/w1` 42, `runs/v1` 30, `runs/f1` 24 and 3 more) |
-| Called from | `DrawPocketMarks` |
+| Called from | `DrawPocketMarks` (falls into) |
 | Calls | `CopyGlyph` |
 | Reads | `$9F43` (`PlayerVars`) |
 | Writes | `$9F43` (`PlayerVars`) |
@@ -1726,7 +1725,7 @@ Positions (row, column): score 1 (0, 3), score 2 (0, 26), hi (0, 14), shots (1, 
 | --- | --- |
 | Runs (the first recording's game window) | 15 calls, 2,022 t-states own (0.00 %) |
 | Runs (the other recordings) | 530 calls (`runs/w1` 322, `runs/v1` 92, `runs/p2` 50 and 3 more) |
-| Called from | `GameRestart`, `ShotEnd`, `NewGameScreen`, `ShotsBlinkTask`, `GameOver`, `AddScoreStep`, `NextFrame`, `TurnSwap` |
+| Called from | `GameRestart`, `ShotEnd`, `NewGameScreen`, `ShotsBlinkTask`, `NextTurn`, `AddScoreStep`, `NextFrame`, `TurnSwap` |
 | Calls | `PrintNumber` (tail), `PrintChar` (tail) |
 | Reads | `$9F45`-`$9F4E` (`ScorePlayer1`, `ScorePlayer2`, `HiScore`, `FrameNumber` and 3 more) |
 
@@ -1770,7 +1769,7 @@ No end marker: the length byte counts. Out: HL = row (H), column (L) after the t
 | Runs (the other recordings) | 1,356 calls (`runs/w1` 449, `runs/f1` 210, `runs/p2` 181 and 4 more) |
 | Called from | `NewGameScreen`, `UpBlinkTask`, `ShotsBlinkTask`, `GameOver`, `ShowFrameBanner` (tail), `PlayerBanner` (tail), `MessagesTask` (tail), `BlankScore` (tail), `NameEntryPage`, `MainMenu`, `RedefinePrompt`, `ShowKeys` (tail), `VariationsPage`, `PresentsPage`, `EditorStart`, `EditorPlay` |
 | Calls | `MessagesTask`, `PrintChar` |
-| Reads | `$969D`-`$96E5` (`HudTexts`, `HudOneUpBlank`, `HudTwoUp`, `HudTwoUpBlank` and 4 more); `$9740`-`$9753` (`HudLastShot`, `HudShot`); `$9890`-`$989C` (`GameOverTexts`); `$9B8E`-`$9BB7` (`FrameBanner`, `FrameBannerBlank`); `$9C8F`-`$9CA6` (`PlayerBannerTexts`, `PlayerBanner2`); `$9CFD`-`$9D2B` (`FoulTexts`, `WrongOrderText`, `WrongPocketText`); 8 more ranges |
+| Reads | `$969D`-`$96E5` (`HudTexts`, `HudOneUpBlank`, `HudTwoUp`, `HudTwoUpBlank` and 4 more); `$9740`-`$9753` (`HudLastShot`, `HudShot`); `$9890`-`$989C` (`GameOverTexts`); `$9B8E`-`$9BB7` (`FrameBanner`, `FrameBannerBlank`); `$9C8F`-`$9CA6` (`PlayerBannerTexts`, `PlayerBanner2`); `$9CFD`-`$9D2B` (`FoulTexts`, `WrongOrderText`, `WrongPocketText`); 7 more ranges |
 
 ### `PrintChar` (`$9E7C`)
 
@@ -1784,7 +1783,7 @@ Writes the attribute first (one or two cells), then the glyph (see the module te
 | Runs (the other recordings) | 13,776 calls (`runs/w1` 4,388, `runs/v1` 2,243, `runs/m1` 2,143 and 4 more) |
 | Called from | `TallyTermPlus` (tail), `TallyTermTotal` (tail), `PrintTermFactor`, `PrintHudNumber` (tail), `PrintDigit`, `PrintText`, `PrintScore` (tail) |
 | Calls | `PrintCharWide`, `CellAddress`, `CellAttr` |
-| Reads | `$9F2E`-`$9F35` (`CopyrightGlyph`); `$DEF4`-`$E013` (`Font`, `FontDigits`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$9F2E`-`$9F35` (`CopyrightGlyph`); `$DEF4`-`$E013` (`Font`, `FontDigits`) |
 | Writes | `$4000`-`$5A79` (screen); `$5AA2`-`$5ABC` (screen); `$5AE0`-`$5AFF` (screen) |
 
 ### `PrintCharWide` (`$9EDE`)
@@ -1798,7 +1797,7 @@ Each glyph byte's low four bits go, doubled, to the right byte, the high four to
 | Runs (the first recording's game window) | 56 calls, 107,218 t-states own (0.04 %) |
 | Runs (the other recordings) | 545 calls (`runs/w1` 285, `runs/v1` 108, `runs/f1` 67 and 3 more) |
 | Called from | `PrintChar` |
-| Reads | `$DFAC`-`$E013` (`Font+184`, `FontDigits`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$DFAC`-`$E013` (`Font+184`, `FontDigits`) |
 | Writes | `$4063`-`$407C` (screen); `$4163`-`$417C` (screen); `$4263`-`$427C` (screen); `$4363`-`$437C` (screen); `$4463`-`$447C` (screen); `$4563`-`$457C` (screen); 2 more ranges |
 
 ### `CellAddress` (`$9F14`)
@@ -1810,7 +1809,6 @@ Each glyph byte's low four bits go, doubled, to the right byte, the high four to
 | Runs (the first recording's game window) | 1,094 calls, 68,922 t-states own (0.02 %) |
 | Runs (the other recordings) | 13,778 calls (`runs/w1` 4,388, `runs/v1` 2,243, `runs/m1` 2,143 and 4 more) |
 | Called from | `ShowFrameBanner`, `PrintChar` |
-| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ### `CellAttr` (`$9F23`)
 
@@ -1821,7 +1819,6 @@ Each glyph byte's low four bits go, doubled, to the right byte, the high four to
 | Runs (the first recording's game window) | 1,094 calls, 54,700 t-states own (0.02 %) |
 | Runs (the other recordings) | 13,776 calls (`runs/w1` 4,388, `runs/v1` 2,243, `runs/m1` 2,143 and 4 more) |
 | Called from | `PrintChar` |
-| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ## racking
 
@@ -1869,7 +1866,7 @@ The cue ball: ClearBallMotion, x 40 / y 115 with a random fraction (R x 2 into b
 | Runs (the other recordings) | run into, not called (`runs/w1`, `runs/v1`, `runs/p2` and 3 more) |
 | Called from | `WaitFrameCall` |
 | Calls | `BuildDrawList`, `DrawBall`, `ShowFrameBanner`, `SpriteFromBall`, `ClearBallMotion`, `RackStep` |
-| Reads | `$869E`-`$86B9` (`DrawList`); `$8AA0`-`$8AE9` (`BallOne+10`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$9F4B` (`FrameNumber`); `$9FD3` (`RackStepBall+26`); `$A0C4`-`$A0DB` (`RackSets`, `RackScripts0`); `$A162`-`$A16D` (`RackSet1`); 1 more ranges |
+| Reads | `$869E`-`$86B9` (`DrawList`); `$8AA0`-`$8AE9` (`BallOne+10`, `BallTwo`, `BallThree`, `BallFour` and 2 more); `$9F4B` (`FrameNumber`); `$9FD3` (`RackStepBall+26`); `$A0C4`-`$A0DB` (`RackSets`, `RackScripts0`); `$A162`-`$A16D` (`RackSet1`) |
 | Writes | `$8A88`-`$8AE9` (`BallRecords`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$95D8`-`$95D9` (`SpritePos`); `$9F51`-`$9F68` (`RackScriptState`) |
 
 ### `ClearBallMotion` (`$A040`)
@@ -1982,7 +1979,7 @@ Witness: w1 1, frames 13368-13553 (`$A896` 129 frames).
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/w1` 1) |
 | Called from | `GameOverHallOfFame` |
 | Calls | `ShowHallOfFame`, `SlideFlagDown`, `BlankScore` |
-| Reads | `$A873` (`PauseDown+1`); `$A897` (`SlideDownLoop+1`); `$AC16` (`HofTable+14`); `$AC5D` (`HofSlot2+14`); `$ACA4` (`HofSlot3+14`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$A873` (`PauseDown+1`); `$A897` (`SlideDownLoop+1`); `$AC16` (`HofTable+14`); `$AC5D` (`HofSlot2+14`); `$ACA4` (`HofSlot3+14`) |
 
 ### `SlideFlagsUp` (`$A8C7`)
 
@@ -1997,7 +1994,7 @@ Witness: w1 1, frames 13368-13553 (`$A896` 129 frames).
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/w1` 1) |
 | Called from | `GameOverHallOfFame` (tail) |
 | Calls | `GameOverWait`, `SlideFlagUp` |
-| Reads | `$A8CA`-`$A8CD` (`PauseUp+1`, `SlideUpLoop`); `$AC16` (`HofTable+14`); `$AC5D` (`HofSlot2+14`); `$ACA4` (`HofSlot3+14`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$A8CA`-`$A8CD` (`PauseUp+1`, `SlideUpLoop`); `$AC16` (`HofTable+14`); `$AC5D` (`HofSlot2+14`); `$ACA4` (`HofSlot3+14`) |
 
 ### `ShowHallOfFame` (`$A8FD`)
 
@@ -2012,7 +2009,7 @@ Witness: w1 1, frames 13368-13374. The attract call: no recording ran `$B906` (l
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/w1` 1) |
 | Called from | `ShowAndSlideDown` |
 | Calls | `PrintScore`, `DrawFlag`, `DrawPole` |
-| Reads | `$4000`-`$5AFE` (screen); `$A918` (`ShowHallOfFame+27`); `$A92E` (`ShowHallOfFame+49`); `$A944` (`ShowHallOfFame+71`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4000`-`$5AFE` (screen); `$A918` (`ShowHallOfFame+27`); `$A92E` (`ShowHallOfFame+49`); `$A944` (`ShowHallOfFame+71`) |
 | Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$01FE` |
 
@@ -2056,7 +2053,7 @@ From the flag position (+9 x, +`$0A` y); nothing when y >= `$C0`. Draws the line
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 867 calls (`runs/w1` 867) |
 | Called from | `SlideFlagDown`, `SlideFlagUp`, `DrawFlag` |
-| Calls | `ScreenCell`, `XorTailLines` |
+| Calls | `ScreenCell`, `XorTailLines` (falls into) |
 | Reads | `$AC11`-`$AC12` (`HofTable+9`); `$AC58`-`$AC59` (`HofSlot2+9`); `$AC9F`-`$ACA0` (`HofSlot3+9`) |
 
 ### `XorTailLines` (`$AA12`)
@@ -2068,7 +2065,7 @@ DE: the tail data, HL: the screen. Called by DrawFlagTail and fallen into from `
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 3,372 calls (`runs/w1` 3,372) |
-| Called from | `DrawFlagTail` |
+| Called from | `DrawFlagTail` (falls into) |
 | Reads | `$4072`-`$51E8` (screen); `$51FD`-`$52E8` (screen); `$52FD`-`$53E8` (screen); `$53FD`-`$54E8` (screen); `$54FD`-`$55E8` (screen); `$55FD`-`$56E8` (screen); 3 more ranges |
 | Writes | `$4072`-`$51E8` (screen); `$51FD`-`$52E8` (screen); `$52FD`-`$53E8` (screen); `$53FD`-`$54E8` (screen); `$54FD`-`$55E8` (screen); `$55FD`-`$56E8` (screen); 2 more ranges |
 
@@ -2109,7 +2106,7 @@ Clipped at y `$C0`, split over two character rows when y + 8 is not a multiple o
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 435 calls (`runs/w1` 435) |
 | Called from | `SlideFlagDown` (tail), `SlideFlagUp` (tail), `DrawFlag` (tail) |
-| Calls | `ScreenCell`, `CopyNameLines` |
+| Calls | `ScreenCell`, `CopyNameLines` (falls into) |
 | Reads | `$AC11`-`$AC12` (`HofTable+9`); `$AC58`-`$AC59` (`HofSlot2+9`); `$AC9F`-`$ACA0` (`HofSlot3+9`) |
 
 ### `CopyNameLines` (`$AAAF`)
@@ -2121,7 +2118,7 @@ Witness: w1 1107 entries, 3480 lines (from DrawNameBitmap and RestoreFlagLine).
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,107 calls (`runs/w1` 1,107) |
-| Called from | `DrawNameBitmap`, `RestoreFlagLine` (tail) |
+| Called from | `DrawNameBitmap` (falls into), `RestoreFlagLine` (tail) |
 | Reads | `$AAD8`-`$AADE` (`SolidLine`); `$AC17`-`$ACDC` (`HofTable+15`, `HofSlot2`, `HofSlot3`) |
 | Writes | `$408C`-`$57FD` (screen) |
 
@@ -2220,7 +2217,7 @@ Witness: w1 1, frames 12018-12023 (the title HofTitle; HofTitleP1/P2 read by no 
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/w1` 1) |
 | Called from | `GameOverHallOfFame` |
 | Calls | `PrintText`, `NameEntry` (tail) |
-| Reads | `$4000`-`$5AFE` (screen); `$AD3D`-`$AD4E` (`HofTextList`); `$B8BB` (`Players`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4000`-`$5AFE` (screen); `$AD3D`-`$AD4E` (`HofTextList`); `$B8BB` (`Players`) |
 | Writes | `$4000`-`$5AFF` (screen); `$5C48` (system) |
 | Ports out | `$06FE` |
 
@@ -2237,7 +2234,7 @@ Witness: w1 1 (frame 12023); NameEntryLoop 1230 frames, 12025-13368; 51 cursor s
 | Runs | not reached in `game`; in the other recordings 1 call (`runs/w1` 1) |
 | Called from | `NameEntryPage` (tail), `XorCursorBox` |
 | Calls | `ReadInput`, `PickCell`, `NameCursorForward` (tail), `NameCursorBack` (tail), `XorCursorBox`, `DrawName`, `DrawCharacterGrid` |
-| Reads | `$827C` (`InputState`); `$AEB4` (`NameEntryLoop+1`); `$AF3F` (`NameEntryRelease+1`); `$B226`-`$B22C` (`RepeatDelay`, `NameBuffer`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$827C` (`InputState`); `$AEB4` (`NameEntryLoop+1`); `$AF3F` (`NameEntryRelease+1`); `$B226`-`$B22C` (`RepeatDelay`, `NameBuffer`) |
 | Writes | `$B226`-`$B22D` (`RepeatDelay`, `NameBuffer`) |
 
 ### `PickCell` (`$AF4E`)
@@ -2361,9 +2358,9 @@ Callers: `$8037` (every restart from `$8013`), the ends of the timeout (`$B2C3`,
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 50,575,185 t-states own (17.01 %) |
 | Runs (the other recordings) | 16 calls (`runs/m1` 4, `runs/j1` 3, `runs/w1` 2 and 4 more) |
-| Called from | `GameStart`, `GameRestart`, `VariationsPage` (tail) |
-| Calls | `ReadInput`, `PrintText`, `WaitNoKey`, `RedefinePrompt`, `ShowKeys`, `VariationsPage` (tail), `XorTick`, `PresentsPage`, `EditorStart` (tail) |
-| Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$B29D` (`MenuKeyLoop+1`); `$B464`-`$B483` (`MenuTexts`); `$B8BB`-`$B8C3` (`Players`, `Pockets`, `Control`, `LeftKey` and 4 more); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Called from | `GameRestart`, `VariationsPage` (tail) |
+| Calls | `ReadInput`, `PrintText`, `WaitNoKey`, `ShowKeys`, `VariationsPage` (tail), `XorTick`, `PresentsPage`, `EditorStart` (tail) |
+| Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$B29D` (`MenuKeyLoop+1`); `$B464`-`$B483` (`MenuTexts`); `$B8BB`-`$B8C3` (`Players`, `Pockets`, `Control`, `LeftKey` and 4 more) |
 | Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$B8BB`-`$B8C2` (`Players`, `Pockets`, `Control`, `LeftKey` and 3 more) |
 | Ports out | `$01FE` |
 
@@ -2381,7 +2378,7 @@ Witness: game 73, w1 14, f1 14, p2 24, v1 36, m1 202 calls; `$B3B8` asked game 7
 | Runs (the other recordings) | 45 calls (`runs/m1` 26, `runs/v1` 6, `runs/j1` 5 and 4 more) |
 | Called from | `MainMenu`, `RedefinePrompt`, `VariationsPage` |
 | Calls | `TestCheatKeys` |
-| Reads | `$B38F` (`WaitNoKey+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$B38F` (`WaitNoKey+1`) |
 
 ### `TestCheatKeys` (`$B3B8`)
 
@@ -2404,7 +2401,8 @@ RedefinePrompt `$B3F3` with PromptLeft `$B407`, PromptRight `$B426`, PromptFire 
 
 | | |
 | --- | --- |
-| Runs | not reached in the recordings |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `RedefinePrompt`, `ShowKeys` |
 
 ### `RedefinePrompt` (`$B3F3`)
 
@@ -2415,9 +2413,9 @@ Any key is taken, CAPS SHIFT alone (`$27`) and SYMBOL SHIFT alone (`$18`) too. W
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 6 calls (`runs/m1` 6) |
-| Called from | `MainMenu` |
+| Called from | `RedefineKeys` |
 | Calls | `PrintText`, `WaitNoKey` |
-| Reads | `$B3FA` (`RedefineWaitKey+1`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$B3FA` (`RedefineWaitKey+1`) |
 
 ### `ShowKeys` (`$B605`)
 
@@ -2429,7 +2427,7 @@ KeyName `$B626` for LeftKey to `$B668`, RightKey to `$B672`, FireKey to `$B67B`,
 | --- | --- |
 | Runs (the first recording's game window) | 2 calls, 280 t-states own (0.00 %) |
 | Runs (the other recordings) | 18 calls (`runs/m1` 6, `runs/j1` 3, `runs/f1` 2 and 4 more) |
-| Called from | `MainMenu` |
+| Called from | `MainMenu`, `RedefineKeys` |
 | Calls | `PrintText` (tail), `KeyName` |
 | Reads | `$B8BE`-`$B8C0` (`LeftKey`, `RightKey`, `FireKey`) |
 
@@ -2459,7 +2457,7 @@ Witness: v1 2 (frames 622-2595), m1 1 (5102-5372); screens m1 frame 5190, v1 fra
 | Runs | not reached in `game`; in the other recordings 3 calls (`runs/v1` 2, `runs/m1` 1) |
 | Called from | `MainMenu` (tail) |
 | Calls | `PrintText`, `MainMenu` (tail), `WaitNoKey`, `TickVariation` |
-| Reads | `$4000`-`$57FE` (screen); `$B6AC` (`VariationsKeyLoop+1`); `$B731`-`$B74C` (`VariationTexts`); `$B8BD`-`$B8C3` (`Control`, `LeftKey`, `RightKey`, `FireKey` and 2 more); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4000`-`$57FE` (screen); `$B6AC` (`VariationsKeyLoop+1`); `$B731`-`$B74C` (`VariationTexts`); `$B8BD`-`$B8C3` (`Control`, `LeftKey`, `RightKey`, `FireKey` and 2 more) |
 | Writes | `$4000`-`$57FF` (screen); `$B8C1`-`$B8C3` (`MenuTimeout`, `Variation`) |
 
 ### `TickVariation` (`$B71E`)
@@ -2487,7 +2485,6 @@ Two one-pixel steps down-right, then seven up-right (XorLine `$93B3`, length 1).
 | Runs (the other recordings) | 87 calls (`runs/m1` 39, `runs/j1` 13, `runs/v1` 12 and 4 more) |
 | Called from | `MainMenu`, `TickVariation` (tail) |
 | Calls | `XorLine` |
-| Reads | `$FEFF`-`$FF00` (`work space $FEFF+`) |
 
 ## presents
 
@@ -2535,7 +2532,7 @@ Witness: game 499 calls 5559-6060, w1 1084, m1 4353 (2-4500); the abort Presents
 | Runs (the first recording's game window) | 499 calls, 25,191,067 t-states own (8.47 %) |
 | Runs (the other recordings) | 7,922 calls (`runs/m1` 4,353, `runs/w1` 1,084, `runs/e1` 497 and 4 more) |
 | Called from | `PresentsPage`, `PresentsLongWait`, `BannerRollIn`, `LogoFlip`, `VideoSlideIn`, `SignatureCommand` |
-| Reads | `$B91C` (`PresentsFrame+1`); `$BD09`-`$BD0A` (`PresentsSP`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$B91C` (`PresentsFrame+1`); `$BD09`-`$BD0A` (`PresentsSP`) |
 
 ### `BannerRollIn` (`$B96C`)
 
@@ -2551,7 +2548,7 @@ Witness (l1sum.py B96C B9E0): 1 call per presents page, game 5556-5976; BannerDr
 | Runs (the other recordings) | 10 calls (`runs/m1` 3, `runs/w1` 2, `runs/e1` 1 and 4 more) |
 | Called from | `PresentsPage` |
 | Calls | `PresentsFrame`, `BannerDrawRows` |
-| Reads | `$4000`-`$5AFE` (screen); `$BA86`-`$BB11` (`BannerData`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$4000`-`$5AFE` (screen); `$BA86`-`$BB11` (`BannerData`) |
 | Writes | `$4000`-`$5AFF` (screen) |
 | Ports out | `$07FE` |
 
@@ -2669,7 +2666,7 @@ Witness: game 432 calls, w1 3628, m1 10 020 (6052-4055).
 | Runs (the other recordings) | 15,088 calls (`runs/m1` 10,020, `runs/w1` 3,628, `runs/e1` 288 and 4 more) |
 | Called from | `FlipLetter` |
 | Calls | `XorLine` |
-| Reads | `$BC74`-`$BC9D` (`FlipWidths16`, `FlipWidths24`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$BC74`-`$BC9D` (`FlipWidths16`, `FlipWidths24`) |
 
 ### `VideoSlideIn` (`$BC9E`)
 
@@ -2783,7 +2780,7 @@ PenSpans `$BE79` with PenNib `$BFCC`; returns at once if x + 5 passes 255 or y +
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,973 calls (`runs/m1` 2,973) |
 | Called from | `PenErase` |
-| Calls | `PenSpans`, `PenShaft` |
+| Calls | `PenSpans` (falls into), `PenShaft` |
 | Writes | `$C040`-`$C041` (`PenShaftPos`) |
 
 ### `PenSpans` (`$BE79`)
@@ -2795,7 +2792,7 @@ Each record: the span at (x + dx, y + dy) of the given length by PenSpan `$BF66`
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 5,946 calls (`runs/m1` 5,946) |
-| Called from | `PenShape` |
+| Called from | `PenShape` (falls into) |
 | Calls | `PenSpan` |
 | Reads | `$BFCC`-`$BFFD` (`PenNib`, `PenCap`) |
 
@@ -2809,7 +2806,7 @@ From PenShaftPos `$C040`: blocks of up to 8 lines (the first to the end of its c
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 2,973 calls (`runs/m1` 2,973) |
 | Called from | `PenShape` |
-| Calls | `PenShaftBlock`, `PenPixelAddress` |
+| Calls | `PenShaftBlock` (falls into), `PenPixelAddress` |
 | Reads | `$C040`-`$C041` (`PenShaftPos`) |
 | Writes | `$C040`-`$C041` (`PenShaftPos`) |
 
@@ -2822,7 +2819,7 @@ The JR at `$BEDC` is the switch: displacement 0 (PenDraw) runs the copy, `$63` (
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 18,215 calls (`runs/m1` 18,215) |
-| Called from | `PenShaft` |
+| Called from | `PenShaft` (falls into) |
 | Reads | `$BFFE`-`$C040` (`PenShaftImage`, `PenBand`) |
 | Writes | `$5022`-`$50FF` (screen); `$5122`-`$51FF` (screen); `$5222`-`$53DE` (screen); `$53F0`-`$54DE` (screen); `$54F0`-`$55DE` (screen); `$55F0`-`$56DE` (screen); 3 more ranges |
 
@@ -2876,7 +2873,7 @@ Writes OR (HL) into PenSpanOp1-3 and falls into PenSpan `$BF66` with one pixel. 
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 1,105 calls (`runs/m1` 1,105) |
 | Called from | `SignatureCommand`, `PenStep` |
-| Calls | `PenSpan` |
+| Calls | `PenSpan` (falls into) |
 | Writes | `$BF93`-`$BFAE` (`PenSpanOp1`, `PenSpanMiddle`, `PenSpanOp2`, `PenSpanTail` and 2 more) |
 
 ### `PenSpan` (`$BF66`)
@@ -2888,7 +2885,7 @@ Builds the left partial byte, the full bytes and the right partial byte; the NOP
 | | |
 | --- | --- |
 | Runs | not reached in `game`; in the other recordings 41,837 calls (`runs/m1` 41,837) |
-| Called from | `PenSpans`, `PenPlot` |
+| Called from | `PenSpans`, `PenPlot` (falls into) |
 | Calls | `PenPixelAddress` |
 | Reads | `$48E4`-`$48E8` (screen); `$49E3`-`$49E8` (screen); `$4AE3`-`$4AE8` (screen); `$4BE2`-`$4BE9` (screen); `$4CE2`-`$4CEA` (screen); `$4DE2`-`$4DEA` (screen); 2 more ranges |
 | Writes | `$48E4`-`$48E8` (screen); `$49E3`-`$49E8` (screen); `$4AE3`-`$4AE8` (screen); `$4BE2`-`$4BE9` (screen); `$4CE2`-`$4CEA` (screen); `$4DE2`-`$4DEA` (screen); 2 more ranges |
@@ -2923,7 +2920,7 @@ Witness (l1sum.py C042 C116 C196 C20B C414): m1 only: entered at 6262, the loop 
 | Runs | not reached in `game`; in the other recordings 2 calls (`runs/m1` 1, `runs/e1` 1) |
 | Called from | `MainMenu` (tail), `EditorFire` (tail) |
 | Calls | `ReadInput`, `DrawTable`, `DrawCursor`, `DrawAllBalls`, `PrintText`, `EditorCursorLeft`, `EditorCursorRight`, `EditorCursorUp`, `EditorCursorDown`, `EditorBox`, `EditorFire` (tail), `EditorExit` (tail) |
-| Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A95`-`$8AA3` (`BallRecords+13`, `BallOne`); `$B8BD` (`Control`); `$C117` (`EditorLoop+1`); 2 more ranges |
+| Reads | `$4000`-`$5AFE` (screen); `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A95`-`$8AA3` (`BallRecords+13`, `BallOne`); `$B8BD` (`Control`); `$C117` (`EditorLoop+1`); 1 more ranges |
 | Writes | `$4000`-`$5AFF` (screen); `$5C48` (system); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$B8BD` (`Control`); `$C57B` (`EditorButtonsBlank`); `$C58D`-`$C590` (`EditorCursorSpeed`, `EditorBallSpeed`, `EditorPickedBall`, `EditorSavedMode`) |
 | Ports out | `$07FE` |
 
@@ -3012,7 +3009,7 @@ Witness: m1 110 calls (6420-6769), every one without a ball in reach. e1 (stage 
 | Runs | not reached in `game`; in the other recordings 112 calls (`runs/m1` 110, `runs/e1` 2) |
 | Called from | `EditorStart` (tail) |
 | Calls | `ReadInput`, `RedrawBall`, `MoveBall`, `DrawCursor`, `EditorStart` (tail), `EditorInBox`, `EditorBallLeft`, `EditorWaitRelease`, `EditorPlay` (tail) |
-| Reads | `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A89`-`$8ADD` (`BallRecords+1`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$C302` (`EditorBallLoop+1`); `$C58E`-`$C58F` (`EditorBallSpeed`, `EditorPickedBall`); `$FEFF`-`$FF00` (`work space $FEFF+`) |
+| Reads | `$827C` (`InputState`); `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A89`-`$8ADD` (`BallRecords+1`, `BallOne`, `BallTwo`, `BallThree` and 3 more); `$C302` (`EditorBallLoop+1`); `$C58E`-`$C58F` (`EditorBallSpeed`, `EditorPickedBall`) |
 | Writes | `$86BA`-`$86BE` (`CursorX`, `CursorY`, `CursorSpeed`, `CursorAccel` and 1 more); `$8A96`-`$8AA3` (`BallOne`); `$9F50` (`MessageStep`); `$C58E`-`$C58F` (`EditorBallSpeed`, `EditorPickedBall`) |
 
 ### `EditorBallLeft` (`$C3EB`)
