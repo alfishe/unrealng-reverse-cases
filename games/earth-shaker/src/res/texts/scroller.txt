@@ -1,0 +1,15 @@
+# ScrollerText $6D42: the menu scroller (RunScroller $8AEB), printed one character at a
+# time at the right of the bottom line; the 0 ends it. Cut at 48 characters a line for
+# reading only.
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+" ... EARTH SHAKER - FEATURING ANTI-GRAVITY, 4D T"
+"ELEPORT, FORCEFIELDS, BUBBLES, ELIXIRS, JUMPING "
+"JELLY BEANS AND MUCH MUCH MORE .... CAN YOU SURV"
+"IVE 32 DEADLY DIAMOND MINES ? .... WELL - IT DEP"
+"ENDS IF YOU ARE SLY ENOUGH. BUT WATCH OUT YOU DO"
+"N'T BANG YOUR HEAD, BURN YOURSELF OR TAKE TOO LO"
+"NG ... KEYS ARE REDEFINABLE BUT DON'T USE G (ABO"
+"RT) , H (QUIT SCREEN) OR F (MAP)  .....  CODING,"
+" ARTWORK AND MUSIC    (C) 1990 MICHAEL BATTY    "
+"  "

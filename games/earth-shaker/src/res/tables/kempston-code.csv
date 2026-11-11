@@ -1,0 +1,13 @@
+# KempstonCode $EAC4: the joystick code JoystickControl $EC2E copies into the nine
+# key sites: NOP x 4, IN A,($1F), AND mask, RET Z (JR NZ for the fire site).
+# One site a line: the site, its 9 bytes in hex.
+site,bytes
+TryLeft $83C3,00 00 00 00 DB 1F E6 02 C8
+TryRight $8437,00 00 00 00 DB 1F E6 01 C8
+TryUp $84AD,00 00 00 00 DB 1F E6 08 C8
+TryDown $84F9,00 00 00 00 DB 1F E6 04 C8
+KeysStep $8759,00 00 00 00 DB 1F E6 10 20
+FireLeft $876B,00 00 00 00 DB 1F E6 02 C8
+FireRight $87C3,00 00 00 00 DB 1F E6 01 C8
+FireUp $881D,00 00 00 00 DB 1F E6 08 C8
+FireDown $8849,00 00 00 00 DB 1F E6 04 C8

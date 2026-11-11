@@ -57,7 +57,10 @@ def main():
             lab.run(1)
             got = lab.read(STATE, SIZE)
             best = None
-            for d in sorted(range(-WINDOW, WINDOW + 1), key=abs):
+            # Nearest first, a step forward before the same step back: while the state stands still (the player
+            # pushing a wall) RZX frames k - 1 and k + 1 can both match, and taking k - 1 every frame pinned the
+            # replay to one RZX frame and its keys for good (earth04 from frame 2344: work/stage2/NOTES.md)
+            for d in sorted(range(-WINDOW, WINDOW + 1), key=lambda d: (abs(d), d < 0)):
                 k = g + off + d
                 if 0 <= k < len(states):
                     n = diff(got, states[k])

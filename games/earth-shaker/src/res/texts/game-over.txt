@@ -1,0 +1,6 @@
+# GameOverTexts $AA4E: GAME OVER, YOU SCORED, AND REACHED LEVEL (ShowGameOver $8B7F).
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"GAME OVER"
+"YOU SCORED"
+"AND REACHED LEVEL"

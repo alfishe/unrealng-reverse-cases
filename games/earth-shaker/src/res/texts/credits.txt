@@ -1,0 +1,4 @@
+# Credits $AC2E: the 1988 credit line, read by no code (a leftover).
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"ARTWORK AND MUSIC    (C) 1988 MICHAEL BATTY      "

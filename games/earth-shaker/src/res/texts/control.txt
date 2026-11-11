@@ -1,0 +1,5 @@
+# ControlTexts $EC95: the two control lines of the 1990 menu (ShowControlTexts $ECC5).
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"3 ..... KEYBOARD CONTROL"
+"4 ..... JOYSTICK CONTROL"

@@ -1,0 +1,18 @@
+# MapAttrs $9A80: the map screen's attribute of each cell code 0-15 (MapCellAttr $EAB3).
+code,cell,attr
+0,empty,$40
+1,exit,$43
+2,boulder,$46
+3,player facing right,$47
+4,player facing left,$47
+5,wall,$42
+6,earth,$41
+7,gem,$47
+8,jelly bean,$42
+9,force field,$43
+10,anti-gravity arrow,$45
+11,switch box,$45
+12,potion (extra life),$46
+13,teleporter,$47
+14,bubble,$44
+15,fire,$47

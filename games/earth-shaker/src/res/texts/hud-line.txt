@@ -1,0 +1,5 @@
+# HudLine $BCE0: the bottom line (ShowHudLine $836A); a-e are the HUD icons of the font
+# (IconGlyphs $BF08); ShowCounters / ShowScore overwrite the digits.
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"L00 a00:00 b0 ed 00 SCORE:000000"

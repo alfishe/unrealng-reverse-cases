@@ -1,0 +1,14 @@
+# KeyboardCode $EB15: the keyboard code of the nine key sites as loaded (O, P, Q, A,
+# M): LD A,row, OUT ($FF),A, IN A,($FE), AND mask, RET NZ (JR Z for the fire site).
+# SaveKeyboardCode $EB66 copies the sites here, KeyboardControl $EBCA back.
+# One site a line: the site, its 9 bytes in hex.
+site,bytes
+TryLeft $83C3,3E DF D3 FF DB FE E6 02 C0
+TryRight $8437,3E DF D3 FF DB FE E6 01 C0
+TryUp $84AD,3E FB D3 FF DB FE E6 01 C0
+TryDown $84F9,3E FD D3 FF DB FE E6 01 C0
+KeysStep $8759,3E 7F D3 FF DB FE E6 04 28
+FireLeft $876B,3E DF D3 FF DB FE E6 02 C0
+FireRight $87C3,3E DF D3 FF DB FE E6 01 C0
+FireUp $881D,3E FB D3 FF DB FE E6 01 C0
+FireDown $8849,3E FD D3 FF DB FE E6 01 C0

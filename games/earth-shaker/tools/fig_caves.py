@@ -17,39 +17,60 @@ sprites/cells-cave01.png (each table entry with its value and address, x3).
 """
 import argparse
 import os
+import re
 import sys
 
 from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
-V = os.environ.get('SKOOLKIT_VENV', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit')
-for p in [os.path.join(V, 'lib', d, 'site-packages') for d in os.listdir(os.path.join(V, 'lib'))]:
-    sys.path.insert(0, p)
+sys.path.insert(0, HERE)
+import res_formats  # noqa: E402
+CELL_RES = ('cells-a', 'cells-b', 'extra-a', 'extra-b', 'extra-c', 'extra-d', 'blank')
 
 PAL = [(0, 0, 0), (0, 0, 205), (205, 0, 0), (205, 0, 205), (0, 205, 0), (0, 205, 205), (205, 205, 0), (205, 205, 205)]
 BRIGHT = [(0, 0, 0), (0, 0, 255), (255, 0, 0), (255, 0, 255), (0, 255, 0), (0, 255, 255), (255, 255, 0), (255, 255, 255)]
 W, H = 30, 20
-CAVE1 = os.path.join(CASE, 'work', 'stage1', 'probe', 'level1.szx')  # cave 1 in play (the RZX's earth01 starts at the menu)
 
 
 def memory(path):
-    if path.endswith('.bin'):
-        return open(path, 'rb').read()
-    if path.endswith('.szx'):
-        sys.path.insert(0, HERE)
-        import szx
-        return bytes(szx.read(path)[0])
-    from skoolkit.snapshot import Snapshot
-    return bytes(0x4000) + bytes(Snapshot.get(path).ram())
+    return open(path, 'rb').read()
 
 
-def cave_cells(m, n):
-    base = 0xBEC6 + n * 0x13A
-    cells = []
-    for b in m[base:base + 300]:
-        cells += [b & 15, b >> 4]
-    return cells, m[base + 300:base + 314]
+def res_addresses():
+    """{resource name: its entry's address} from the @res lines of src/game/game.ann"""
+    out, addr = {}, None
+    for ln in open(os.path.join(CASE, 'src', 'game', 'game.ann'), encoding='utf-8'):
+        m = re.match(r'\$([0-9A-F]{4}) [a-z]+ ', ln)
+        if m:
+            addr = int(m.group(1), 16)
+        elif ln.startswith('@res ') and addr is not None:
+            out[ln.split()[1]] = addr
+    return out
+
+
+def resource_memory():
+    """the loaded image with every cell graphics resource of src/res put back at its address"""
+    m = bytearray(memory(os.path.join(CASE, 'work', 'mkgame', 'original.bin')))
+    for name, addr in res_addresses().items():
+        if name.startswith('graphics/') and os.path.exists(os.path.join(res_formats.RES, name[:-4] + '.png')) \
+                and name[:-4].split('/')[1] in CELL_RES:
+            d = res_formats.read_cells(name)
+            m[addr:addr + len(d)] = d
+    return m
+
+
+def cave_setup(m, params):
+    """CaveSetup $9313: the cave's earth and wall graphics into the table, its four colours into four graphics
+    (SetGraphicColour $9305: attributes bright, plain, plain, bright)"""
+    m = bytearray(m)
+    m[0x800C:0x800E] = params['earth_graphic'].to_bytes(2, 'little')
+    m[0x800A:0x800C] = params['wall_graphic'].to_bytes(2, 'little')
+    for field, a in (('door_colour', 0x9B08), ('boulder_colour', 0x9B2C), ('wall1_colour', 0x9CB8),
+                     ('earth_colour', 0x9B50)):
+        c = params[field]
+        m[a:a + 4] = bytes((c | 0x40, c & 0x3F, c & 0x3F, c | 0x40))
+    return m
 
 
 def graphic(m, v):
@@ -74,8 +95,7 @@ def graphic(m, v):
     return img, a
 
 
-def draw_cave(m, n):
-    cells, _ = cave_cells(m, n)
+def draw_cave(m, cells):
     img = Image.new('RGB', (W * 16, H * 16))
     cache = {}
     for i, v in enumerate(cells):
@@ -89,25 +109,24 @@ def draw_cave(m, n):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=os.path.join(CASE, 'docs', 'img'))
-    ap.add_argument('--states', default=os.path.join(CASE, 'work', 'stage1', 'rzx', 'start'))
     a = ap.parse_args()
-    image = memory(os.path.join(CASE, 'work', 'mkgame', 'original.bin'))
+    base = resource_memory()
     os.makedirs(os.path.join(a.out, 'maps'), exist_ok=True)
     os.makedirs(os.path.join(a.out, 'sprites'), exist_ok=True)
-    names = [image[0x9700 + 20 * i:0x9714 + 20 * i].decode('ascii').strip() for i in range(32)]
+    names = [ln for ln in open(os.path.join(res_formats.RES, 'texts', 'cave-names.txt'), encoding='utf-8')
+             if ln.startswith('"')]
+    names = [res_formats.unquote(ln.strip()).decode('latin-1').strip() for ln in names]
     sheet = Image.new('RGB', (4 * 244, 8 * 182), (24, 24, 30))
     d = ImageDraw.Draw(sheet)
-    for n in range(1, 33):
-        st = CAVE1 if n == 1 else os.path.join(a.states, f'earth{n:02d}.rzx.001.z80')
-        m = memory(st) if os.path.exists(st) else image
-        m = m[:0xBEC6] + image[0xBEC6:0xE740] + m[0xE740:]  # the cave data as loaded
-        cave = draw_cave(m, n)
+    caves = res_formats.read_caves()
+    for n, (params, cells) in enumerate(caves, 1):
+        cave = draw_cave(cave_setup(base, params), cells)
         cave.save(os.path.join(a.out, 'maps', f'cave-{n:02d}.png'))
         x, y = (n - 1) % 4 * 244 + 2, (n - 1) // 4 * 182 + 2
         sheet.paste(cave.resize((240, 160)), (x, y + 18))
-        d.text((x, y + 2), f'{n:02d} {names[n - 1]}', fill=(235, 235, 235))
+        d.text((x, y + 2), f'{n:02d} {names[n - 1] if n <= len(names) else ""}', fill=(235, 235, 235))
     sheet.save(os.path.join(a.out, 'maps', 'caves.png'))
-    m = memory(CAVE1)
+    m = cave_setup(base, caves[0][0])
     tiles = Image.new('RGB', (8 * 80, 4 * 84), (24, 24, 30))
     d = ImageDraw.Draw(tiles)
     for v in range(32):
@@ -117,7 +136,7 @@ def main():
             tiles.paste(g.resize((48, 48), Image.NEAREST), (x, y))
         d.text((x - 8, y + 52), f'{v:2d} ${addr:04X}' if addr else f'{v:2d} none', fill=(235, 235, 235))
     tiles.save(os.path.join(a.out, 'sprites', 'cells-cave01.png'))
-    print('caves 1-32, cells sheet written under', a.out)
+    print('caves 1-%d, cells sheet written under' % len(caves), a.out)
 
 
 if __name__ == '__main__':

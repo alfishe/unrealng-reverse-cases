@@ -1,0 +1,25 @@
+# GameOverTune $AA00: the game over (PlayGameOverTune $8B78).
+# One note a line: DRUM N1 N2 LENGTH (decimal). PlayTune $88CE: DRUM 1 is a ROM BEEPER click with
+# HL = $020B, DE = 3 before the note, 2 one with HL = $0106, DE = 5, other values none; N1 and N2 are the
+# two voices' periods NotePeriods[N] (music/periods.txt); LENGTH x 256 loop turns. "end DRUM" is the
+# last record, its N1 255.
+1 24 31 20
+0 28 28 20
+0 31 31 20
+2 36 43 20
+0 28 28 20
+2 24 31 20
+1 21 28 20
+0 24 24 20
+0 28 28 20
+2 24 33 20
+0 28 28 20
+2 24 24 20
+1 17 24 20
+2 19 24 20
+2 19 24 20
+1 19 26 20
+0 26 26 20
+1 26 26 20
+2 24 31 80
+end 0

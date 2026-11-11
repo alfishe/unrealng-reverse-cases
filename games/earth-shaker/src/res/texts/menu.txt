@@ -1,0 +1,9 @@
+# MenuTexts $AB00: the menu's lines (ShowMenuTexts $8A3C): START GAME, REDEFINE KEYS, the
+# 1988 DEMO MODE line (no longer printed), QUIT GAME and the copyright line.
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"1 ..... START GAME"
+"2 ..... REDEFINE KEYS"
+"3 ..... DEMO MODE"
+"5 ..... QUIT GAME"
+"    (C) 1990 MICHAEL BATTY       "

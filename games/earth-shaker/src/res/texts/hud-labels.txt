@@ -1,0 +1,7 @@
+# HudLabels $BB00: LEVEL, LIVES LEFT:, SCORE: of the cave intro
+# (ShowLevelLivesScore $89A7).
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"LEVEL"
+"LIVES LEFT:"
+"SCORE:"

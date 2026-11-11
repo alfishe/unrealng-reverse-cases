@@ -1,0 +1,8 @@
+# KeyPrompts $A978: the five prompts of RedefineKeys $8C30, 19 characters each.
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"PRESS KEY FOR LEFT "
+"PRESS KEY FOR RIGHT"
+"PRESS KEY FOR UP   "
+"PRESS KEY FOR DOWN "
+"PRESS KEY FOR FIRE "

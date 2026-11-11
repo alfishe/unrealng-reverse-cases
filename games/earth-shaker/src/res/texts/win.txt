@@ -1,0 +1,11 @@
+# WinTexts $AB6A: the eight lines of the win screen (ShowWinTexts $A815).
+# UTF-8, one quoted string a line: printable ASCII as itself, \xNN any other byte, \" and \\
+# escaped. The build joins the strings.
+"WELL DONE ... AND THANKS !"
+"I MUST BE WORTH A SMALL FORTUNE"
+"BY NOW !"
+"UNFORTUNATELY YOU AREN'T GETTING"
+"ANY OF IT ! WELL, YOU DIDN'T"
+" RISK YOUR NECK COLLECTING IT ! "
+"HOPE YOU ENJOYED EARTHSHAKER ."
+"- M.BATTY"

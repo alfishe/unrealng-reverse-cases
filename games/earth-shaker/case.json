@@ -14,7 +14,43 @@
     "0": "C000"
   },
   "read_builds": [
-    "stage1/c1"
+    "stage1/hiscore",
+    "stage1/lives",
+    "stage1/rzx01",
+    "stage1/rzx02",
+    "stage1/rzx03",
+    "stage2/rzx04/cap",
+    "stage1/rzx05",
+    "stage1/rzx06",
+    "stage1/rzx07",
+    "stage1/rzx08",
+    "stage1/rzx09",
+    "stage1/rzx10",
+    "stage1/rzx11",
+    "stage1/rzx12",
+    "stage1/rzx13",
+    "stage1/rzx14",
+    "stage1/rzx15",
+    "stage1/rzx16",
+    "stage1/rzx17",
+    "stage1/rzx18",
+    "stage1/rzx19",
+    "stage1/rzx20",
+    "stage1/rzx21",
+    "stage1/rzx22",
+    "stage1/rzx23",
+    "stage1/rzx24",
+    "stage1/rzx25",
+    "stage1/rzx26",
+    "stage1/rzx27",
+    "stage1/rzx28",
+    "stage1/rzx29",
+    "stage1/rzx30",
+    "stage1/rzx31",
+    "stage1/rzx32",
+    "stage1/timer",
+    "stage2/death-crush",
+    "stage2/death-fire"
   ],
   "ref_builds": [
     [
@@ -25,5 +61,12 @@
   "header": [
     "; Earth Shaker, Your Sinclair 1990 (Michael Batty; the issue 63 covertape, March 1991): the game image $6D42-$FFFF as the ROM loader leaves it."
   ],
-  "work": "work/mkgame"
+  "work": "work/mkgame",
+  "dest": "src/game",
+  "res_install": "tools/res_formats.py:install",
+  "code_builds": [
+    "stage1/c1",
+    "stage1/menu"
+  ],
+  "no_entries": true
 }

@@ -1,0 +1,29 @@
+# The annotations of TZX block 11, the BASIC program "EARTH" at PROG $5CCB-$5D35 (107 bytes): the source of
+# src/tape/basic.asm and src/tape/basic-module.asm (../../kit/mkgame.py --part src/tape/basic.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1: power-on, the tape at ROM speed), whose ROM LOADs
+# this block and runs its line 10 (docs/03-build-and-load.md 3.1; tools/basic_list.py work/stage1/blocks/basic.bin).
+
+@module basic ; The BASIC: line 10, which sets the colours, clears RAMTOP below the game, prints the title, loads the CODE block and enters the menu
+@about TZX block 11 holds the program "EARTH" (header, TZX block 10: LINE 1, program length 107, no variables). The one line is 10 INK 7: PAPER 0: BORDER 0: CLEAR 27000: PRINT AT 0,0;"EARTH SHAKER by M.BATTY": LOAD "" CODE : RANDOMIZE USR 35616. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads. LINE 1 starts the program at the first line at or after 1, line 10.
+@about c1: the ROM loads the block at signal speed and runs the line at once; the game's code runs first at frame 11 225, the menu (WALKTHROUGH 1).
+
+$5CCB b BasicLine10 ; BASIC line 10: INK 7: PAPER 0: BORDER 0: CLEAR 27000: PRINT AT 0,0;"EARTH SHAKER by M.BATTY": LOAD "" CODE : RANDOMIZE USR 35616
+> The whole program (the header's program length 107 covers it all): the line number 10 (two bytes, high byte first), the line's length (103, low byte first), then eight statements split by ":" ($3A) and closed by ENTER ($0D).
+> CLEAR 27000 puts RAMTOP at $6978, below the game block (ScrollerText $6D42, src/game), so the machine stack sits under the game. LOAD "" CODE loads the next file, TZX blocks 12 and 13, at the address its header names, $6D42. RANDOMIZE USR 35616 calls $8B20 (GameEntry in src/game), which never returns.
+$5CCD ; the line's length, 103
+$5CCF ; INK ($D9) "7"
+$5CD1 ; $0E and 7
+$5CD7 ; ":" PAPER ($DA) "0"
+$5CDA ; $0E and 0
+$5CE0 ; ":" BORDER ($E7) "0"
+$5CE3 ; $0E and 0
+$5CE9 ; ":" CLEAR ($FD) "27000"
+$5CF0 ; $0E and 27000 = $6978 as a small integer (0, 0, low, high, 0)
+$5CF6 ; ":" PRINT ($F5) AT ($AC) "0"
+$5CFA ; $0E and 0, then "," and "0"
+$5D02 ; $0E and 0
+$5D08 ; ";" and the string "EARTH SHAKER by M.BATTY"
+$5D22 ; ":" LOAD ($EF) "" CODE ($AF)
+$5D27 ; ":" RANDOMIZE ($F9) USR ($C0) "35616"
+$5D2F ; $0E and 35616 = $8B20
+$5D35 ; ENTER

@@ -1,0 +1,22 @@
+# CaveTune3 $F1D0: caves 9-12.
+# One note a line: DRUM N1 N2 LENGTH (decimal). PlayTune $88CE: DRUM 1 is a ROM BEEPER click with
+# HL = $020B, DE = 3 before the note, 2 one with HL = $0106, DE = 5, other values none; N1 and N2 are the
+# two voices' periods NotePeriods[N] (music/periods.txt); LENGTH x 256 loop turns. "end DRUM" is the
+# last record, its N1 255.
+0 24 24 20
+0 24 27 20
+0 24 29 20
+0 24 31 100
+0 24 24 20
+0 24 27 20
+0 24 29 20
+0 24 31 60
+0 24 24 40
+0 29 34 60
+0 29 33 60
+0 24 29 40
+0 29 36 60
+0 29 34 60
+0 29 33 40
+0 24 31 100
+end 0

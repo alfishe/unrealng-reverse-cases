@@ -1,0 +1,11 @@
+# CaveTunes $EE24: the tune of each group of four caves, by name (PlayCaveTune $EE34 takes word
+# (CaveNumber - 1) / 4). An @res ... include: the build writes cave-tunes.inc with a DW line a
+# tune, so a moved tune is followed. One group a line: CAVES NAME.
+1-4 CaveTune1
+5-8 CaveTune2
+9-12 CaveTune3
+13-16 CaveTune4
+17-20 CaveTune5
+21-24 CaveTune6
+25-28 CaveTune7
+29-32 CaveTune8
