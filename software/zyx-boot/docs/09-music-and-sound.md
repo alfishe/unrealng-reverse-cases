@@ -95,11 +95,12 @@ Worked example: the IM 2 handler calls MusicPlay at `$676D` on every interrupt, 
 rate, 50 Hz on the Pentagon. The first tune loop is 7704 frames (9.8), 154.1 s at 50 Hz.
 
 Witness: L1 of c1 counts MusicInit once (frame 532), MusicPlay 7274 times (frames 543-7879), MusicStop never; SoundOff
-three times (frames 536, 6430 and 6436: the first page, SPACE, the new first page), 1519 T each; PlayBell never (c1
+three times (frames 536, 6375 and 6430: the first page, SPACE before its disk read, the new first page; L1 gives the first and last, the middle one is the
+`CALL SoundOff` at `$68FC` just before TrdosEntry's last entry, 6375), 1519 T each; PlayBell never (c1
 never launches). In c3 PlayBell runs once, at 2182:14196, also 1519 T.
 
-The point: the music has the AY to itself, except at two moments: a page draw, which silences it, and the launch, which
-replaces it with the bell. Neither the menu nor the player ever stops the music in any other way.
+The point: the music has the AY to itself, except at three moments: a page draw and SPACE's catalogue read, which
+silence it, and the launch, which replaces it with the bell. Neither the menu nor the player ever stops the music in any other way.
 
 ## 9.2 Timing and cost
 
@@ -121,8 +122,9 @@ between, never the whole tune loop.
 
 The menu takes two things from the player's timing:
 
-- **the start**: MusicInit runs at c1 frame 532, the first MusicPlay at 543. The first page is drawn in between
-  (ShowCatalogue at frame 536), with interrupts off. c1's page is NO EXE FILES !; c3's is 24 names, and its first
+- **the start**: MusicInit runs at c1 frame 532, the first MusicPlay at 543. DrawScreen runs in between, frames
+  532-542 with interrupts off: its own drawing to 536, then it falls into ShowCatalogue (536) and the list (539-541);
+  the first interrupt comes at the end of frame 542. c1's page is NO EXE FILES !; c3's is 24 names, and its first
   MusicPlay comes 9 frames later, at 552 (L1);
 - **a page costs 8 frames of music**: ShowCatalogue runs inside the interrupt with interrupts off. In c3 it runs from
   1879:16219 to 1887:28518, about 8.2 frames, so the interrupts of 8 frames are lost and 8 MusicPlay calls never
@@ -925,7 +927,7 @@ The point: the files let a reader hear the tune, the gap at a page and the bell 
 ## 9.12 The point
 
 The menu's music is a stock ASC Sound Master module with its compiled player, called once an interrupt and left
-alone. Its cost is a tenth of a frame; its only interruptions are the 8 silent frames of a page draw and the bell at
-the launch. The player patches its own instructions with the tune's tables at set-up, writes 13 registers a frame,
+alone. Its cost is a tenth of a frame; its only interruptions are the 8 silent frames of a page draw, the 61 of SPACE's
+catalogue read (c1 frames 6375-6436, 1.2 s) and the bell at the launch. The player patches its own instructions with the tune's tables at set-up, writes 13 registers a frame,
 and starts each position as soon as every channel has read its last event, which makes the first tune loop 7704 frames
 and every later one 7764.

@@ -20,8 +20,10 @@ profile's (`work/stage1/c1/l1.json`, `routines[].profile`).
 ## 2.1 The machine budget
 
 The boot needs a 48K Spectrum with TR-DOS and an AY: the code uses only `$5D3B-$FEAF` of the 48K map, no paging, and
-writes the AY through ports `$FFFD`/`$BFFD` (the music, the bell, the silence). On a machine with no AY the writes go
-nowhere and the menu works silent. It needs TR-DOS twice: to read the catalogue (Start, and SPACE) and to run the
+selects an AY register at port `$FFFD` and writes its value at `$BFFD` (the menu's own WriteAY `$6E50`: the bell, the
+silence) or at `$BEFD` (the player's WriteAY `$C15F`, whose `OUTD` decrements B from `$BF` before the write; the AY
+decodes both as its data port). On a machine with no AY the writes go nowhere and the menu works silent. It needs
+TR-DOS to load its own pieces (the Loader's three reads), to read the catalogue (Start, and SPACE) and to run the
 chosen file (the BASIC's line 1). The case runs a Pentagon 128K (`case.json` device `ZXSPECTRUM48` for the image,
 the recordings on the Pentagon): 71 680 T-states a frame, no contention.
 
@@ -42,7 +44,7 @@ How to read it:
   on c1's one-file disk), ScreenCopy (`$E000`), the stack and the IM 2 table at the top; the screen is drawn.
 - Frame 1000 (the idle menu) looks the same: after the set-up the menu only rewrites what it has already built.
 
-The point: the disk carries 11.5 K (the code, the graphics, the music); the set-up builds the rest in the gaps: the
+The point: the disk carries 11.25 K (45 sectors: the code, the graphics, the music); the set-up builds the rest in the gaps: the
 two phase sets (8.5 K), ScreenCopy (6.75 K), the catalogue (2 K) and the IM 2 table.
 
 | Range | Loaded | What | Module / part |
@@ -77,7 +79,7 @@ The loader clears `$61A8-$FEAF` before and after the menu, so every "never loade
 ```mermaid
 flowchart TD
     P["power-on, 128 menu, TR-DOS<br/>RUN boot (c1 frames 104-446)"] --> L["Loader $5D80: clear 447-459,<br/>three reads 459-515"]
-    L --> S["Start $61A8 (frame 516):<br/>catalogue, IM 2, MusicInit,<br/>DrawScreen frames 532-536"]
+    L --> S["Start $61A8 (frame 516):<br/>catalogue, IM 2, MusicInit,<br/>DrawScreen and the list<br/>frames 532-542, interrupts off"]
     S --> B["BuildRombPhases x2, mirrors, turns<br/>frames 542-823"]
     B --> R["DrawReflection frames 824-890"]
     R --> M["MainLoop from frame 890<br/>+ Interrupt every frame"]
@@ -86,34 +88,40 @@ flowchart TD
     Z --> T["TR-DOS runs the file"]
 ```
 
-The interrupt is on from frame 542 (its first run), so the music plays, the twinkles start and the keys are read (from
-frame 549) while the phases are still being built: the screen at frame 604 ([setup](img/play/setup.png)) still shows the
-help lines, which DrawReflection covers at frame 824-890 with the logo's mirror image ([menu
+The first interrupt comes at the end of frame 542 (its work, the first MusicPlay, in 543), so the music plays, the
+twinkles start and the keys are read (from frame 549) while the phases are still being built: the screen at frame 704
+([setup](img/play/setup.png)) still shows the help lines, which DrawReflection covers at frame 824-890 with the logo's mirror image ([menu
 idle](img/play/menu-idle.png)). The help lines are never seen again: the reflection is drawn into ScreenCopy too, and
 every page is drawn from it. BuildRombPhases takes 8 954 321 T-states for its two calls (125 frames), DrawReflection 4
 688 343.
 
 ## 2.4 The module map
 
-| Part | Module | What | Entries |
-| --- | --- | --- | --- |
-| `src/basic` | basic | the BASIC lines, Loader `$5D80`, the autostart mark, the sector's tail | 9 |
-| `src/main` | setup | Start `$61A8`, MainLoop `$627C` | 2 |
-| | rhombi | BuildRombPhases `$62F1` and its helpers, MirrorSprite, RotateSprite, PrintRombPhase, PrintSprite, the phase tables, RombSource | 13 |
-| | stars | SampleStars, MoveStars, TwinkleStar, NewRandoms, DrawTwinkle, CheckTwinkleSpot, EraseTwinkle, TwinkleSprites | 10 |
-| | screen | DrawScreen `$6510`, ShowCatalogue, ListCatalogue, ListTwoColumns, PrintColumn, CursorAttrAddr, ClearFilesArea, the cursor keys | 13 |
-| | font | PrintString `$6720`, MenuHelp, NoFilesText | 3 |
-| | catalogue | IsBootFile, SkipDeleted, BootName | 3 |
-| | interrupt | Interrupt `$6757`, RotateCursorName, ShowRotatedName, InterruptExit, CopyNameToScreen | 5 |
-| | keys | ReadKeyboard `$6864`, KeyTable | 2 |
-| | launcher | FireKey, RunLetter `$6A51` | 2 |
-| | fade | ColourCorners, ColourCornerRows, ColourCornerColumns, ExitFade | 4 |
-| | logo | LogoGlint `$6D04` and its helpers, DrawReflection, FlipSprite | 7 |
-| | sound | SoundOff, PlayBell, WriteAY, ExitSound | 4 |
-| | buffers | the never-loaded work space `$70A8-$A5FF` | 19 |
-| | graphics | Font, Logo, LogoAttributes, StarsA, Randoms, CornerColours | 7 |
-| `src/music` | player | the jump table, MusicInit `$C00B`, MusicPlay `$C00E`, MusicStop `$C011`, the channel state, the period table | 32 |
-| | tune | "Disco music" by Ant P in ASC Sound Master's format (`src/res/music/disco.txt`) and the sector's tail | 9 |
+Each module of `src/main` is split over several `ORG`s: `main.ann` keeps the image's order, and a module's routines
+lie where the original put them. The ranges are those of the `.ann` entries, each to the next entry of another module.
+
+| Part | Module | Ranges | What | Entries |
+| --- | --- | --- | --- | --- |
+| `src/basic` | basic | `$5D3B-$5E3A` | the BASIC lines, Loader `$5D80`, the autostart mark, the sector's tail | 9 |
+| `src/main` | setup | `$61A8-$62F0` | Start `$61A8`, MainLoop `$627C` | 2 |
+| | rhombi | `$62F1-$645D`, `$64DA-$650F`, `$6ADD-$6AFC`, `$6B74-$6BA4`, `$6E98-$6F5F` | BuildRombPhases `$62F1` and its helpers, MirrorSprite, RotateSprite, PrintRombPhase, PrintSprite, the phase tables, RombSource | 13 |
+| | stars | `$645E-$64D9`, `$6BA5-$6CA1`, `$6F60-$70A7` | SampleStars, MoveStars, TwinkleStar, NewRandoms, DrawTwinkle, CheckTwinkleSpot, EraseTwinkle, TwinkleSprites | 10 |
+| | screen | `$6510-$671F`, `$6848-$6863`, `$6930-$6A3E` | DrawScreen `$6510`, ShowCatalogue, ListCatalogue, ListTwoColumns, PrintColumn, CursorAttrAddr, ClearFilesArea, the cursor keys | 13 |
+| | font | `$6720-$6736`, `$6AFD-$6B52` | PrintString `$6720`, MenuHelp, NoFilesText | 3 |
+| | catalogue | `$6737-$6756`, `$6B6B-$6B73` | IsBootFile, SkipDeleted, BootName | 3 |
+| | interrupt | `$6757-$6847`, `$6CA2-$6CBE` | Interrupt `$6757`, RotateCursorName, ShowRotatedName, InterruptExit, CopyNameToScreen | 5 |
+| | keys | `$6864-$692F`, `$6B53-$6B6A` | ReadKeyboard `$6864`, KeyTable | 2 |
+| | launcher | `$6A3F-$6ADC` | FireKey, RunLetter `$6A51` | 2 |
+| | fade | `$6CBF-$6D03`, `$6E72-$6E97` | ColourCorners, ColourCornerRows, ColourCornerColumns, ExitFade | 4 |
+| | logo | `$6D04-$6E40` | LogoGlint `$6D04` and its helpers, DrawReflection, FlipSprite | 7 |
+| | sound | `$6E41-$6E71` | SoundOff, PlayBell, WriteAY, ExitSound | 4 |
+| | buffers | `$70A8-$A5FF` | the never-loaded work space | 19 |
+| | graphics | `$A600-$ADFF` | Font, Logo, LogoAttributes, StarsA, Randoms, CornerColours | 7 |
+| `src/music` | player | `$C000-$C477` | the jump table, MusicInit `$C00B`, MusicPlay `$C00E`, MusicStop `$C011`, the channel state, the period table | 32 |
+| | tune | `$C478-$D5FF` | "Disco music" by Ant P in ASC Sound Master's format (`src/res/music/disco.txt`) and the sector's tail | 9 |
+
+The variables above `$ADFF` (`$AFC8-$AFCE`, `$B3B0-$B3F4`, `$DEA8-$DEB0`), ScreenCopy, the stack and the IM 2 table
+are equates of `main.ann`, not part of any module's bytes (2.2).
 
 ## 2.5 The frame: a main loop that never waits, and the interrupt
 
@@ -173,13 +181,21 @@ Where the time goes, routine by routine and coloured by module, is the frame bud
 
 ![c1, 4000-FFFF hex, red written, green read, blue executed, log scale](img/arch/heatmap-composite.png)
 
-`$4000-$FFFF` over c1, one row 256 bytes (`kit/heatmap.py work/stage1/c1/l1.json ... --from 4000 --to FFFF
---regions work/stage2/regions.txt`, the composite panel). The screen at the top is written and read everywhere (the
+*`$4000-$FFFF` over c1, one row 256 bytes, the address on the left every `$1000`, the regions of
+`work/stage2/regions.txt` on the right. The composite panel of `kit/heatmap.py` over `work/stage1/c1/l1.json` (red
+written, green read, blue executed, log2 of the counts), made with `python3 tools/fig_arch.py` (all three figures of
+`img/arch/`).*
+
+How to read it: the screen at the top is written and read everywhere (the
 stars, the rhombi, the twinkles). The menu's code (`$61A8-$70A7`) is blue; the phase sets are the two wide green
 blocks below it (read by PrintRombPhase every pass), with the catalogue under them. The graphics piece is read once
 (DrawScreen, the star tables all the time). The music (`$C000`) is the player in blue and the tune read in green.
 ScreenCopy (`$E000-$FAFF`) is read in spots: the twinkles' and the glint's restores. The stack and the IM 2 table
 are the thin line at the bottom.
+
+The point: execution (blue) lives in two bands, the menu's code at `$6000-$70FF` and the player at `$C000-$C4FF`;
+everything else is data, and the heaviest data are the screen and the phase sets, which the main loop reads and writes
+every pass.
 
 ## 2.7 Vadim's decompilation and where this case differs
 

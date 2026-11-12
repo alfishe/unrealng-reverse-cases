@@ -28,7 +28,7 @@ folder and compares the result with the candidate file byte for byte.
 flowchart TD
     O["Original ZYX boot<br/>layout A, ASC player, Disco music"]
     O --> A["Layout A: the original's code<br/>30 variants"]
-    O --> B["Layout B: one more CALL into the music<br/>Fuxoft's player at $EB50, 18 variants"]
+    O --> B["Layout B: one more CALL into the music<br/>18 variants (16 with Fuxoft's player at $EB50)"]
     O --> OWN["Own loaders: the BASIC reads other pieces<br/>8 variants"]
     A --> A0["resources and music only<br/>21 variants"]
     A --> AS["code switches<br/>kempston, no-joystick, glint-add,<br/>music-after-screen, catalogue-safe"]
@@ -65,31 +65,31 @@ Identification and the readable form of each piece: `src/res/music/README.md` an
 | [zyxarbt](../variants/zyxarbt/README.md) | - | A | moved MenuStack | E.S.I. (Ziutek); Sound Tracker (compiled) | identical |
 | [zyxawbt](../variants/zyxawbt/README.md) | A.W. Studio, Taganrog, 1993 | A | BASIC, help text, logo, rhombus | Altered Beast (Paul Hiley), 1989; game rip: Altered Beast | identical |
 | [zyxboot-01](../variants/zyxboot-01/README.md) | - | A | own loader, BASIC, stars, code of its own (`parts/`), `kempston`, `catalogue-call` | Techno Project II (Heather), 1994; ASC Sound Master 1.x layout | identical |
-| [zyxboot-02](../variants/zyxboot-02/README.md) | - | B | resources only | Indiana Jones 3 - Title (AY) (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxboot-02](../variants/zyxboot-02/README.md) | - | B | tune only | Indiana Jones 3 - Title (AY) (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxboot-03](../variants/zyxboot-03/README.md) | - | B | `kempston`, `glint-daa` | Terra Cresta (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxboot-04](../variants/zyxboot-04/README.md) | - | B | `kempston` | F.I.R.E. (a variant of the rip) (Frantisek Fuka), 1988; Fuxoft (F. Fuka) | identical |
 | [zyxboot-05](../variants/zyxboot-05/README.md) | - | A | BASIC | Platoon Tunnel Network (David Whittaker); game rip: Platoon (David Whittaker) | identical |
-| [zyxboot-06](../variants/zyxboot-06/README.md) | - | B | resources only | Magnetic Fields IV (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
-| [zyxboot-07](../variants/zyxboot-07/README.md) | - | B | resources only | E.T. Flying (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxboot-06](../variants/zyxboot-06/README.md) | - | B | tune only | Magnetic Fields IV (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxboot-07](../variants/zyxboot-07/README.md) | - | B | tune only | E.T. Flying (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxboot-08](../variants/zyxboot-08/README.md) | - | A | BASIC | Platoon; game rip: Platoon (David Whittaker) | identical |
 | [zyxboot-09](../variants/zyxboot-09/README.md) | - | B | own loader, BASIC, code of its own (`parts/`) | Feud (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxboot-10](../variants/zyxboot-10/README.md) | - | A | `no-joystick` | Fantasy World Dizzy (David Whittaker); game rip: Fantasy World Dizzy (David Whittaker) | identical |
 | [zyxboot-11](../variants/zyxboot-11/README.md) | - | A | BASIC | Stormbringer Title/In-Game (David Whittaker); game rip: Stormbringer (David Whittaker) | identical |
 | [zyxboot-12](../variants/zyxboot-12/README.md) | - | A | `no-joystick` | Subway Vigilante Title (Ian Sheridan); game rip: Subway Vigilante (Ian Sheridan) | identical |
-| [zyxboot-13](../variants/zyxboot-13/README.md) | - | B | resources only | Magnetic Fields V (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxboot-13](../variants/zyxboot-13/README.md) | - | B | tune only | Magnetic Fields V (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxboot-14](../variants/zyxboot-14/README.md) | - | A | BASIC | AXEL-FORCE (OLEG KRASNOBAEV OKO); ASC Sound Master (later compilation) | identical |
 | [zyxboot-15](../variants/zyxboot-15/README.md) | - | A | BASIC | Great Commandment (Roman Samoilov, 1993, the player's text; the music index: ASC + OKO (New Edge)); ASC Sound Master (later compilation) | identical |
 | [zyxboot-16](../variants/zyxboot-16/README.md) | - | A | BASIC | N.S Beat (Ilya Pozdnyakov, 1993, the player's text; the music index: "Ritm4_II", ASC); ASC Sound Master (later compilation) | identical |
 | [zyxboot-17](../variants/zyxboot-17/README.md) | - | A | BASIC | RIPPED BY D.O.C. (ANDREW SENDETSKI ASC); ASC Sound Master (later compilation) | identical |
 | [zyxboot-18](../variants/zyxboot-18/README.md) | - | A | BASIC | LET'S DANCE, BABY ! (ANDREW SENDETSKI ASC); ASC Sound Master (later compilation) | identical |
 | [zyxdebt](../variants/zyxdebt/README.md) | Dima ("programs on disks") | A | help text, "NO EXE" text, logo, rhombus | The Lyra 2 Demo 05 (Ziutek (Ethanol)), 1992; Sound Tracker (compiled) | identical |
-| [zyxdimob](../variants/zyxdimob/README.md) | DIMO | B | BASIC, help text, logo, rhombus, twinkle, `kempston`, `no-music-init` | Mega Apocalypse (Rob Hubbard); game rip: Mega Apocalypse | identical |
+| [zyxdimob](../variants/zyxdimob/README.md) | DIMO | B | BASIC, help text, logo, rhombus, twinkle, `kempston`, `no-music-init` | Mega Apocalypse (Rob Hubbard / J.C. Brookes); game rip: Mega Apocalypse | identical |
 | [zyxermbt](../variants/zyxermbt/README.md) | - | A | own loader, BASIC, help text, stars, code of its own (`parts/`) | Disco music (Ant P); ASC Sound Master (the original's) | identical |
 | [zyxfp](../variants/zyxfp/README.md) | FP | A | rhombus | Disco music (Ant P); ASC Sound Master (the original's) | identical |
 | [zyxfp3bt](../variants/zyxfp3bt/README.md) | Fikus Pikus | A | corner colours, font, logo, logo colours, rhombus, twinkle | Marauder (Dave Rogers), 1988; game rip: Marauder | identical |
 | [zyxfp4bt](../variants/zyxfp4bt/README.md) | Paradise (Aleksei) | A | corner colours, logo, logo colours, rhombus, phase order, `kempston` | Part V (Ziutek of ESI); own player (Part V, Ziutek of ESI) | identical |
 | [zyxfzbt](../variants/zyxfzbt/README.md) | - | A | BASIC, help text, "NO EXE" text, rhombus, rhombus columns, `music-after-screen` | FREEZERO (Ironman); Sound Tracker (compiled) | identical |
-| [zyxgambt](../variants/zyxgambt/README.md) | GAM Graphics Ltd | B | corner colours, font, help text, logo, logo colours, twinkle | Magnetic Fields IV (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxgambt](../variants/zyxgambt/README.md) | GAM Graphics Ltd | B | corner colours, font, glint colours, help text, logo, logo colours, twinkle | Magnetic Fields IV (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxhsbt](../variants/zyxhsbt/README.md) | Logros; Hacker SMIR 1995-1999 | A | logo, logo colours, rhombus, `kempston`, `glint-add` | The Lyra 2 Demo 08 (Ziutek (Ethanol)), 1992; Sound Tracker (compiled) | identical |
 | [zyxisl](../variants/zyxisl/README.md) | - | B | own loader, BASIC, code of its own (`parts/`) | Feud (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxkisbt](../variants/zyxkisbt/README.md) | - | B | help text | Axel F. Theme (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
@@ -110,7 +110,7 @@ Identification and the readable form of each piece: `src/res/music/README.md` an
 | [zyxsiriu](../variants/zyxsiriu/README.md) | - | A | help text, keys (its KeyTable), `no-joystick` | In-Game (David Whittaker); game rip: Fantasy World Dizzy (David Whittaker) | identical |
 | [zyxskitb](../variants/zyxskitb/README.md) | SKIT (Bobi) | A | help text, "NO EXE" text, logo, logo colours, rhombus, stars | The Lyra 2 Demo 05 (Ziutek (Ethanol)), 1992; Sound Tracker (compiled) | identical |
 | [zyxskybt](../variants/zyxskybt/README.md) | Skynet Games | A | own loader, BASIC, corner colours, help text, logo, logo colours, rhombus, code of its own (`parts/`), `sky-rotate-buffer`, `sky-stars`, `sky-screen` | Stracker (Jaroslaw Byrczynski), 1990; Sound Tracker (compiled) | identical |
-| [zyxslbt](../variants/zyxslbt/README.md) | SLand | B | font, logo, rhombus | FIRE (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
+| [zyxslbt](../variants/zyxslbt/README.md) | SLand | B | font, logo, rhombus | F.I.R.E. (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxtribt](../variants/zyxtribt/README.md) | Trio Company | B | rhombus | Magnetic Fields IV (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
 | [zyxtvmbt](../variants/zyxtvmbt/README.md) | TVM | A | rhombus, code of its own (`parts/`), `catalogue-safe` | MARK 800 (notes); Sound Tracker (compiled), LZ-packed | identical |
 | [zyxzxtbt](../variants/zyxzxtbt/README.md) | - | B | help text | Fugue (Frantisek Fuka); Fuxoft (F. Fuka) | identical |
@@ -161,8 +161,11 @@ the ZYX logo and put their name only here (A.E. Service, Mega Soft, Roversoft, T
 
 ## 13.5 Layout B
 
-Layout B adds one CALL after the music's init. It is the 3 bytes the Fuxoft player needs (its init at `$EB53` sets
-the tune, its start at `$EB50` resets the channels); every later address of the code piece moves by 3:
+Layout B adds one CALL after the music's init. It is the 3 bytes a player with two entries needs: Fuxoft's player
+(its init at `$EB53` sets the tune, its start at `$EB50` resets the channels) in 16 of the 18 and in the three own
+loaders below, zyxalex's Hydrofool rip (`MusicInit` `$F42A`, `MusicStart` `$F42D`); zyxdimob's Mega Apocalypse rip
+at `$E505` needs no init, and `no-music-init` turns both CALLs into 6 zero bytes. Every later address of the code
+piece moves by 3:
 
 ```asm
 ; src/main/setup.asm, layout A (the original)       ; layout B (tools/variants.py add_start)
@@ -176,7 +179,7 @@ the rest of the source is unchanged. Every B variant (the 18 and the three own l
 zyxboot-09, zyxsdgrp) also moves two work areas to make room for the player at
 `$EB50-$F01B` and its data from `$F01C`: the stack (`MenuStack` `$BF68` for `$FCBC`) and the screen copy
 (`ScreenCopy` `$C000`, `ScreenCopyHigh` `$80`). zyxalex also moves the IM 2 table (`Im2Table`, `Im2Jump`),
-zyxgambt the glint's limits (`GlintEdge`, `GlintCentre`). These are `equ` values in `variant.json`, not code.
+zyxgambt the glint's colours (`GlintEdge`, `GlintCentre`: the attributes of its outer and middle cells). These are `equ` values in `variant.json`, not code.
 
 ## 13.6 The code switches
 
@@ -199,7 +202,8 @@ variant has its own copy of the code.
 
 **kempston.** The original reads no joystick: Joystick `$68B9` loads 0 and the five `CALL C` after it (ColumnKey
 twice, DownKey, UpKey, FireKey) never call. Eight variants read port `$1F`, so a Kempston joystick moves the cursor and
-its fire runs the file:
+its fire runs the file (the addresses below are layout A's; in the layout B zyxboot-03, -04 and zyxdimob each
+`CALL C` sits 3 bytes higher, `$68BF-$68CF`):
 
 ```asm
 Joystick:
@@ -219,8 +223,9 @@ Joystick:
 **no-joystick.** The 22 bytes of that block are zeros: the menu runs through 22 NOPs (`DEFS 22`).
 
 **glint-add.** GlintHalf `$6D1F` picks the logo (Z: even) or its reflection (NZ: odd) by bit 0 of the frame
-counter's high byte; LogoGlint runs only in the frames `$xx00-$xx3F`. `ADD A,$01` in place of `AND $01` gives Z only
-when the byte is `$FF`, so the logo itself glints only in frames `$FF00-$FF3F`, practically never (Frames is reset by
+counter's high byte; LogoGlint is entered only in the frames `$xx00-$xx3F` and draws in Frames 0-52 of them (at 54 its column count
+reaches 27 and it returns). `ADD A,$01` in place of `AND $01` gives Z only when the byte is `$FF`, so the logo itself
+glints only in frames `$FF00-$FF34` (the glint's Frames 0-52 within that block), practically never (Frames is reset by
 every page and reaches `$FF00` after 21.8 minutes), and the reflection glints in every 256-frame block:
 
 ```asm
@@ -231,7 +236,7 @@ GlintHalf:
   LD HL,Attributes+614    ; NZ: the reflection's (+614, +633, +736)
 ```
 
-**glint-daa.** One bit off at `$6D63` in LogoGlint: `DAA` (`$27`) for `AND A` (`$A7`), likely a damaged byte. The
+**glint-daa.** One bit off at `$6D66` in LogoGlint (zyxboot-03 is layout B; `$6D63` in layout A): `DAA` (`$27`) for `AND A` (`$A7`), likely a damaged byte. The
 carry before `SBC HL,BC` is then not always clear, so the glint sometimes lands one byte off:
 
 ```asm
@@ -426,7 +431,7 @@ from the whole memory image:
 | --- | --- | --- | --- |
 | zyxboot-01 | `$619B` x 16, `$A600` x 8, `$C000` x 21, `$FF14` x 1 | `launcher.ann`: a launcher at `$FF14` (its last piece runs past `$FFFF`) | 5 self-modified operands of the stars |
 | zyxermbt | `$7530` x 3, `$61A8` x 15, `$A600` x 8, `$C000` x 22 | `intro.ann`: an LZ depacker that puts a loading picture on the screen (`graphics/intro-picture.png`) | 17: code operands and the ASC player's state |
-| zyxisl, zyxboot-09 | `$61A8` x 15, `$A600` x 8, `$EB50` x 9, `$C350` x 21 | `pictures.ann`: two RLE screens (`$9D` escapes), each waiting for a key (`graphics/rle-picture-1.png`, `-2.png`) | none |
+| zyxisl, zyxboot-09 | `$61A8` x 15, `$A600` x 8, `$EB50` x 9, `$C350` x 21 | `pictures.ann`: two RLE screens (`$9D` escapes), each waiting for a key (`graphics/rle-picture-1.png`, `-2.png`), then a diagonal attribute wipe at `$5DEE` (128 frames) before the menu | none |
 | zyxsdgrp | `$61A8` x 15, `$A5F8` x 9, `$EB48` x 9 | none (`corners-plain`) | none |
 | zyxskybt | `$61A8` x 24, `$A600` x 8, `$BFFB` x 20 | `sky.ann`: the picture, the bars, the scroller, the set-up (13.9) | none |
 | zyxremix | `$61A8` x 55 (packed) | `depack.ann`: the LZ depacker head (13.9) | 9, and 4 state files: a snapshot of the running menu |
@@ -448,7 +453,7 @@ channel A on the envelope with noise, channel C a 38 Hz tone (period `$B3B`) at 
 with shape 6 (one 1.27 s rise, then 0). A buzz instead of silence, for the 8 frames of a page draw and for the disk
 read after SPACE. Witness: c7 (`tests/inputs/c7.txt`): TTD reads `$7530-$753D` as those bytes at frames 624, 1625
 and 1700, and L1 counts the menu's WriteAY `$6E4F` reading `$7530-$753D` 3 times in frames 624-1625. zyxskybt's code
-piece covers `$7530` too, but its SkyScrollSetup clears `$6FE0-$9BFF` (`LD BC,$2C1F` / `LDIR` at `$A843`) while
+piece covers `$7530` too, but its SkyScrollSetup clears `$6FE0-$9BFF` (`LD BC,$2C1F` / `LDIR` at `$A84E`) while
 DrawScreen runs, before any key; its ShowCatalogue no longer calls SoundOff (`sky-screen`), and SPACE's
 `CALL SoundOff` (`$68FC`) reads zeros.
 
@@ -458,9 +463,10 @@ and the build packs it again. zyxisl's and zyxboot-09's RLE packer: a run of 3 o
 byte, is a `$9D` run of up to 256; the rest are themselves. zyxermbt's LZ packer is `tools/lzpack.py --format intro`
 (4-bit lengths 3-18, 11-bit distances), run over the screen in the order PutByte writes it (a cell's 8 rows, the cells
 down each column of a third, then the attributes): greedy, the farthest of the longest matches, a match starting only
-where a literal or a match went or a fill starts, a fill winning an equal match. Those rules make 539 of the 547
-bytes; the other 8 choices of the original packer are hints in `tools/lzpack.py` (output position, token), used only
-while they still describe the bytes there. All three pack back byte for byte (`tools/res_formats.py check`). The formats, both directions, the first tokens of
+where a literal or a match went or a fill starts, a fill winning an equal match. Those rules make 196 of the stream's 204
+tokens; the other 8 (5 matches and 3 fills, 16 of the 547 bytes) are the original packer's choices, kept as hints in
+`tools/lzpack.py` (output position, token), used only while they still describe the bytes there; without them the
+rules pack the picture to 546 bytes. All three pack back byte for byte (`tools/res_formats.py check`). The formats, both directions, the first tokens of
 each real stream and the animations of the real runs: 13.9.
 
 ## 13.8 The players and the tunes
@@ -592,7 +598,9 @@ The three transforms of these variants, the two packers and the cipher, in detai
 ### The RLE pictures (zyxisl, zyxboot-09)
 
 Each of the two pictures at `$C350` and `$CD75` (`variants/zyxisl/parts/pictures.ann`) is a 53-byte unpacker followed
-by its stream; the loader calls the first, waits for a key, calls the second, waits again. The unpacker finds its own address
+by its stream; the loader calls the first, waits for a key, calls the second, waits again, then `$5DEE` wipes the
+screen diagonally (128 frames: a `HALT` each, E from `$F8`; `$5DFB` / `$5E17` paint a band of attributes stepped
+`$47` down to `$40`) before the menu at `$61A8`. The unpacker finds its own address
 through `CALL RomRet` (a `RET` in the ROM, `$1792`), so it runs wherever it is loaded, and writes `$1B00` bytes (the
 bitmap and the attributes) straight to `$4000` in address order.
 
@@ -660,7 +668,7 @@ flowchart TD
 
 Worked example, the first picture's stream at `$C385`: `9D 00 65 08 00 00 02 9D 00 05 08 9D 00 04 08 02 9D 00 17`:
 101 (`$65`) zeros, `08`, `00`, `00`, `02` (two zeros are no run: the packer runs only 3 or more), 5 zeros, `08`, 4
-zeros, `08`, `02`, 23 zeros: the first 141 bytes of the bitmap. The 6912 bytes take 2544 in the stream.
+zeros, `08`, `02`, 23 zeros: the first 140 bytes of the bitmap. The 6912 bytes take 2544 in the stream.
 
 ![ShowFirstPicture at work in c10](img/routines/ShowFirstPicture.gif)
 
@@ -729,7 +737,7 @@ pack(screen):                                    ; tools/lzpack.py --format intr
         match = the longest earlier copy of d[p...] (3-18 bytes, no longer than its distance, 1-2047 back),
                 the farthest of equals, starting only where a literal or a match went or a fill started
         run = the bytes equal to d[p], at most 66
-        if a hint names this position: take the hinted token     ; 8 of 547 bytes
+        if a hint names this position: take the hinted token     ; 8 of 204 tokens
         elif run >= 3 and run >= match: emit a fill
         elif match >= 3: emit the copy
         else: add d[p] to the literal run (63 at most)
@@ -759,7 +767,7 @@ pack(screen):                                    ; tools/lzpack.py --format intr
 757E  E5           PUSH HL                 ; then $757F-$7597 turn HL into its screen address
 ...
 7598  7E           LD A,(HL)
-7599  CD CB 75     CALL PutByte            ; ($74A6 on the disk, patched)
+7599  CD A6 74     CALL $74A6              ; patched to PutByte $75CB at run time
 759C  E1           POP HL
 759D  23           INC HL
 759E  10 DE        DJNZ $757E
@@ -785,12 +793,12 @@ flowchart TD
     F --> N
 ```
 
-Worked example, the stream at `$7658`, where the first letters begin (the 133 fills before it are mostly the black
+Worked example, the stream at `$7658`, where the first letters begin (the 42 fills before it are mostly the black
 background):
 
 | Stream | Token | Output (linear) | Screen | Bytes |
 | --- | --- | --- | --- | --- |
-| `87` + 7 | 7 literals | 2695-2701 | `$4F0A`, `$482A` ... `$4C2A` | `1F 0C 0C 0F 0C 0C 1E` |
+| `87` + 7 | 7 literals | 2695-2701 | `$4F0A`, `$482A` ... `$4D2A` | `1F 0C 0C 0F 0C 0C 1E` |
 | `C2 00` | fill 5 x `00` | 2702-2706 | `$4E2A` ... `$4A4A` | `00 00 00 00 00` |
 | `00 3F` | copy 3 from 63 back (`0000` + 3, `000 00111111`) | 2707-2709 | `$4B4A` ... `$4D4A` | `01 03 03`, from 2644-2646 |
 | `C2 83` | fill 5 x `83` | 2710-2714 | `$4E4A` ... `$4A6A` | `83 83 83 83 83` |
@@ -827,7 +835,12 @@ unpacks to the 40 535 bytes `$61A8-$FFFE`: the whole menu, its music and its wor
 was saved. The output overwrites the head and the stream itself, so the head first copies its last 100 bytes
 (DepackCopy) to the printer buffer `$5B8D` and runs them there; they move the stream up with `LDDR` so that it ends at
 `$FFFE`, and unpack forward from `$61A8`: the output runs up behind the read position and never catches it.
-zyxtvmbt's music (`$C000-$C9D6`) uses the same format behind the same head.
+zyxtvmbt's music (`$C000-$C9D6`) uses the same format behind the same head. In both variants DepackPatch is 9 zeros:
+the three patch writes put 0 at `$0000` (ROM) and change nothing (c9's L1 shows the 1-byte write to `$0000`).
+zyxtvmbt's `MusicInit` is the head at `$C000`, so the menu's `CALL MusicInit` unpacks the tune and the Sound Tracker
+init at `$C00B` is never called. The tune needs none: the image was saved after its init had run. Running the init on
+the unpacked bytes in the simulator changes none of `$C000-$C9D6`, and 600 frames of MusicPlay `$C00E` write the
+same AY values with and without it (`work/review/fixC2/tvminit.py`).
 
 | Byte(s) | Bits | Means |
 | --- | --- | --- |
@@ -849,7 +862,7 @@ Depack():                                        ; $61A8, called by the loader
         elif b == $80: break
         elif b AND $40: repeat (b AND $3F) + 3: (dst++) = (src + 1); src += 2
         else: copy b AND $3F bytes from src + 1 to dst; src += 1 + n  ; LDIR
-    3 times: (address) = byte, from DepackPatch
+    3 times: (address) = byte, from DepackPatch  ; 9 zeros in both variants: 0 to $0000 (ROM), no change
     restore SP; EI; return through the ROM's RET at $0052
 
 pack(image):                                     ; tools/lzpack.py
@@ -929,7 +942,7 @@ Worked example, the first tokens of zyxremix's stream (the file's byte 130 on):
 | `00 23` | copy 3 from 35 back (`000` + 3, `0000 00100011`) | `$61F7-$61F9` | `ED B0 21`, from `$61D4` (an earlier `LDIR` / `LD HL,`) |
 | `87` + 7 | 7 literals | `$61FA-$6200` | `74 6B 11 00 76 0E 28` |
 | `00 2D` | copy 3 from 45 back | `$6201-$6203` | `ED B0 21` again |
-| `50 28` | copy 8 (`101` + 3) from 40 back (after three more tokens) | `$623A-$6241` | `32 8E 76 CD F1 62 21 00` |
+| `50 28` | copy 8 (`101` + 3) from 40 back (after four more tokens) | `$623A-$6241` | `32 8E 76 CD F1 62 21 00` |
 
 The stream as a whole: 1178 literal runs, 1882 copies, 467 fills. The packer gives it back byte for byte with no
 hints (`python3 tools/lzpack.py check`).
@@ -971,11 +984,14 @@ gives other R values and garbage.
 | Loop | Bytes | Key byte for the byte at address a |
 | --- | --- | --- |
 | the loader, `$9C40` (`parts/loader.ann`) | `$9C7D-$A07C`, 1024 | R XOR a's high byte XOR a's low byte (IX) XOR `$40` XOR `$4C` (SP = `$404C`) XOR the count's high and low bytes (DE, `$0400` down) |
-| stage 2, `$FDE8` (`parts/stage2.ann`) | `$FE02-$FF01`, 256 | R XOR a's high and low bytes (HL) XOR the count's (DE, `$0100` down) |
-| the chosen file, `$FE4A` | the loaded program | R (set from TrackKey `$FFFF`) XOR the file name's first letter |
+| stage 2, `$FDE8` (`parts/stage2.ann`) | `$FE02-$FF01`, 256: 26 bytes past its own sector `$FDE8-$FEE7` | R XOR a's high and low bytes (HL) XOR the count's (DE, `$0100` down) |
+| the chosen file, `$FE4A` | the loaded program from Prog `$5D3B`, in whole sectors (`INC B`, `C` = 0: (high byte of the length + 1) x 256) | R (set from TrackKey `$FFFF`) XOR the file name's first letter |
 
 R starts at 2 in the loader and steps by 22 a byte (22 fetches a pass, bit 7 stays 0); in stage 2 it starts at `$DE`
-and steps by 13 (bit 7 stays 1). The cipher is an XOR, so encrypting runs the same loop.
+and steps by 13 (bit 7 stays 1). The cipher is an XOR, so encrypting runs the same loop. Two ranges overrun their
+data: stage 2's loop also XORs `$FEE8-$FF01`, 26 bytes its sector did not load, and the file layer decrypts whole
+sectors: it XORs the program's length rounded up to the next multiple of 256 (256 more when the length already is
+one), so the bytes past the program's end are XORed too.
 
 ```text
 decrypt(first, count):                           ; the loader, $9C40-$9C7C

@@ -80,7 +80,7 @@ Computed, not counted by hand (from the case folder, 2026-11-12):
 | What | Count | Command |
 | --- | ---: | --- |
 | documents | 13 | `ls docs/[0-9][0-9]-*.md \| wc -l` |
-| figures (PNG) | 40 | `find docs/img -name '*.png' \| wc -l` |
-| animations (GIF) | 17 | `find docs/img -name '*.gif' \| wc -l` |
+| figures (PNG) | 42 | `find docs/img -name '*.png' \| wc -l` |
+| animations (GIF) | 25 | `find docs/img -name '*.gif' \| wc -l` |
 | audio: WAV / MP3 | 3 / 43 | `find docs/audio -name '*.wav' \| wc -l`, the same with `*.mp3` |
 | variants identical | 56 of 56 | `tools/build.sh --all` (last line) |

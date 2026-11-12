@@ -62,8 +62,8 @@ The program's stages in c1, from the stage-1 L1 (`first_frame` and `last_frame` 
 | 447-459 | the BASIC's loader clears `$61A8-$FEAF` | Loader `$5D80` | TR-DOS's screen |
 | 459-515 | the loader reads the three pieces | Loader, TrdosEntry `$3D13` | unchanged |
 | 516-531 | the catalogue read (8 sectors of track 0) | Start `$61A8` | unchanged |
-| 532-536 | the screen | DrawScreen `$6510` | the logo, the rhombi, the help lines, NO EXE FILES ! |
-| 542-697 | the 34 rhombus phases | BuildRombPhases `$62F1` (twice) | the twinkle, the glint and the music start: the interrupt is on; the keys are read from 549 |
+| 532-542 | the screen, interrupts off (724 703 T) | DrawScreen `$6510` (its own drawing to 536), then ShowCatalogue `$6586` (536), ClearFilesArea `$6930` (538), ListCatalogue `$65C7` (539-541) | the logo, the rhombi, the help lines, then NO EXE FILES ! |
+| 542-697 | the 34 rhombus phases | BuildRombPhases `$62F1` (twice) | the twinkle, the glint and the music start: the first interrupt comes at the end of frame 542 (its work in 543); the keys are read from 549 |
 | 605-888 | the mirrors and the turns | MirrorSprite `$63D6`, RotateSprite `$6422` | unchanged |
 | 824-890 | the reflection | DrawReflection `$6DC6` | the help lines vanish under the logo's mirror image |
 | 890-7879 | the idle menu | MainLoop `$627C`, Interrupt `$6757` | the stars fall, the rhombi turn |
@@ -85,8 +85,8 @@ What Start keeps, and why:
 
 | Saved | Where | Why |
 | --- | --- | --- |
-| IY | SavedIY `$AFC8` | the ROM and TR-DOS reach the system variables through IY = `$5C3A`; the handler and PrintString put it back before they call the ROM |
-| H'L' | SavedHLAlt `$AFCA` | BASIC needs H'L' unchanged when a USR routine returns; the same two routines put it back |
+| IY | SavedIY `$AFC8` | the ROM and TR-DOS reach the system variables through IY = `$5C3A`; put back by the handler (`$6769`), PrintString, the SPACE read (`$68F8`) and the launch (`$6AC5`) before they call the ROM or return |
+| H'L' | SavedHLAlt `$AFCA` | BASIC needs H'L' unchanged when a USR routine returns; put back in the same four places (`$6763`, PrintString, `$68F4`, `$6AC1`) |
 | SP | SavedSP `$AFCC` | the launcher returns to the Loader by putting this SP back, wherever the menu's stack stands ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 | I | SavedI `$AFCE` | the I register as BASIC had it, put back before IM 1 |
 
@@ -126,6 +126,20 @@ The catalogue is read while the ROM's IM 1 is still on, because TR-DOS needs the
 (the same holds for SPACE, [doc 5, 5.6](05-keys.md#56-space-cs-and-ss-a-new-disk-and-the-pages);
 [doc 7, 7.1](07-catalogue-and-menu.md#71-reading-the-catalogue)).
 
+Worked example, what Start saves in c1 (TTD `memory_at` at frame 850, `work/docs/figcache/c1-850.bin`; the same bytes
+at c2 1500 and 3760, since nothing writes them again):
+
+| Address | Bytes | Value | What it is |
+| --- | --- | --- | --- |
+| `$AFC8` SavedIY | `3A 5C` | `$5C3A` | ERR NR, the ROM's IY |
+| `$AFCA` SavedHLAlt | `58 27` | `$2758` | the ROM address BASIC expects in H'L' after a USR |
+| `$AFCC` SavedSP | `2A FF` | `$FF2A` | below RAMTOP `$FF43`; the word at `$FF2A` is `$5DB7`, the Loader's `CALL MenuStart` return |
+| `$AFCE` SavedI | `00` | `$00` | the I the machine had at the USR (on this Pentagon set-up) |
+
+So when RunLetter puts SP back to `$FF2A` and returns (c2 frame 3785), the `RET` takes `$5DB7`: the Loader's second
+clear ([doc 3, 3.3](03-build-and-load.md#33-the-loader-how-the-code-arrives-in-memory)). The next word on that stack,
+`$2D2B`, is the ROM's return from the USR call, where BASIC goes on.
+
 Witness: c1, Start's single entry at frame 516; the catalogue is at `$9D00` by frame 532, when MusicInit runs (L1).
 
 ## 4.3 The set-up
@@ -138,7 +152,7 @@ flowchart TD
     A["SP = MenuStack $FCBC, DI"] --> B["Im2Table $FD00: 257 x $FC<br/>Im2Jump $FCFC: JP Interrupt"]
     B --> C["IM 2, I = $FD"]
     C --> D["MusicInit $C00B"]
-    D --> E["DrawScreen $6510, c1 frames 532-536"]
+    D --> E["DrawScreen $6510 and the page's list,<br/>c1 frames 532-542"]
     E --> F["EI: the interrupt runs from now on"]
     F --> G["copy RombSource, RombColumnOrder,<br/>RombPhaseOffsets to $7600-$77C7"]
     G --> H["BuildRombPhases: set A $7800, threshold $40<br/>MirrorSprite x 8 to $8100"]
@@ -188,21 +202,23 @@ interrupts from frame 542 to 7879, every one entering `$6757` (stage-1 L1).
 
 ### The screen, the phases, the reflection
 
-DrawScreen runs between the `DI` at `$61C8` and the `EI` at `$61ED`, so the first interrupt comes after it (c1
-frame 542). Then, with the interrupt playing the music and drawing the twinkle, Start builds the 34 rhombus phases
-([doc 6, 6.3](06-graphics.md#63-the-rhombi-34-phases-from-one-sprite)) and the reflection
-([doc 6, 6.2](06-graphics.md#62-the-reflection-the-logo-upside-down)).
+DrawScreen runs between the `DI` at `$61C8` and the `EI` at `$61ED`, and falls into ShowCatalogue, which lists the
+page: 724 703 T with no interrupt, c1 frames 532-542 (c2 and c3, with a 24-name page to list, to 551). The first
+interrupt comes right after the `EI`, at the end of c1 frame 542 (its work, the first MusicPlay, in 543). Then, with
+the interrupt playing the music and drawing the twinkle, Start builds the 34 rhombus phases ([doc 6,
+6.3](06-graphics.md#63-the-rhombi-34-phases-from-one-sprite)) and the reflection ([doc 6,
+6.2](06-graphics.md#62-the-reflection-the-logo-upside-down)).
 
 | Step (c1, stage-1 L1) | Calls | T-states each, with the interrupts inside | Frames |
 | --- | ---: | ---: | --- |
 | BuildRombPhases `$62F1` | 2 | 4 477 000 | 542-697 |
 | MirrorSprite `$63D6` (16 here, 4 in FlipSprite) | 20 | 69 080 | 605-888 |
-| RotateSprite `$6422` (3 + 17 here, 8 in FlipSprite) | 28 | 517 844 | 613-887 |
+| RotateSprite `$6422` (3 + 17 here, 8 in FlipSprite) | 28 | 517 844 (436 611 own) | 613-887 |
 | DrawReflection `$6DC6` (with its 4 FlipSprites) | 1 | 4 688 343 | 824-890 |
 
 The point: the four steps take 8.95 M + 1.38 M + 14.50 M + 4.69 M T (the FlipSprites counted in both of the last
-two), about 25 M T or 7 s of the 7.5 s set-up. RotateSprite alone is 14.5 M T: 28 turns of a 40 x 40 sprite, one
-bit at a time ([doc 6, 6.3](06-graphics.md#63-the-rhombi-34-phases-from-one-sprite)).
+two), about 25 M T or 7 s of the 7.5 s set-up. RotateSprite alone is 14.5 M T with the interrupts (12.2 M own,
+436 611 T a turn): 28 turns of a 40 x 40 sprite, one bit at a time ([doc 6, 6.3](06-graphics.md#63-the-rhombi-34-phases-from-one-sprite)).
 
 The last lines of Start set the four rhombi's steps apart (0, 5, 8 and 14, so that the four never show the same
 phase), set MainTick to `$FF` (the first pass makes it 0) and read the pixels under the 60 star records (SampleStars)
@@ -330,7 +346,7 @@ interrupt:
         paint the cursor's cells with CursorAttr, step CursorAttr      # doc 5, 5.4
     low = Frames low byte
     if low in (50, 60, 70, 80): turn the cursor's name 90 degrees and show it   # doc 8, 8.5
-    if low = 90: show the name (turned 360 degrees: as it was)
+    if low = 90: copy the name to the screen once more   # upright again since the turn at 80
     if Frames bits 0-2 = 7: ReadKeyboard()      # every 8th frame, doc 5
     restore everything, EI, RET
 ```
@@ -451,8 +467,8 @@ How to read it:
 - The blue base of every bar is the music: 6549-11 593 T, 6938 T on average.
 - The red steps are the twinkle: about 4 000 T on the frames that draw (every 4th, while a twinkle shows), about
   100 T on the others.
-- The purple steps on the even frames 2-52 are the glint (26 steps), 4 488 T each; Frames 0 paints the two corner
-  cells.
+- The purple steps on the even frames 2-52 are the glint (26 steps), 4 368-4 968 T each (4 968 on Frames
+  12-38, less where cells are clipped); Frames 0 paints the two corner cells.
 - The four tall yellow bars are the spin at 50, 60, 70 and 80: 29 740-29 773 T for 8 letters. The bar at 90 is the
   copy only (2 539 T).
 - The orange tops every 8th frame are the keys: 3 668 T when no key is held.
@@ -477,10 +493,10 @@ the four spin frames are heavy; the main loop, which has no deadline, absorbs th
 
 | Where | How long | Why |
 | --- | --- | --- |
-| Start `$61C8-$61ED` | DrawScreen, c1 frames 532-536 | the IM 2 table is built and DrawScreen draws the screen it saves as ScreenCopy |
+| Start `$61C8-$61ED` | DrawScreen and the page's list, c1 frames 532-542 (724 703 T, 10.1 frames) | the IM 2 table is built and DrawScreen draws the screen it saves as ScreenCopy |
 | DrawReflection `$6DDE-$6E33` | about 78 000 T, more than a frame | the handler's twinkle and glint restore from ScreenCopy: they must not read a half-printed copy |
 | the handler itself `$6757-$6847` | 7 352-45 755 T a frame; SPACE and the launch much longer | the IM 2 acknowledge clears IFF, and the only `EI` is at `$6846` |
-| SPACE, in ReadKeyboard `$68F4-$6914`, inside the handler | the TR-DOS read and ShowCatalogue, several frames | the `DI` at `$6908` and `$690E` only guard against TR-DOS's own `EI`: `IM 1` around the read, then `IM 2` again |
+| SPACE, in ReadKeyboard `$68F4-$6914`, inside the handler | the TR-DOS read and ShowCatalogue: about 61 frames (c1 6375-6436, 4.39 M T) | the `DI` at `$6908` and `$690E` only guard against TR-DOS's own `EI`: `IM 1` around the read, then `IM 2` again |
 | the launch, inside the handler (FireKey and RunLetter are called only from ReadKeyboard) | line 1, PlayBell, ExitFade: c2 frames 3763-3785 (ExitFade 1 564 652 T) | interrupts come back on at RunLetter's `IM 1`, `EI` (`$6AD9`, `$6ADB`) for BASIC ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 
 The point: the menu runs with interrupts on except where the handler would read a buffer that is being written, and
@@ -545,7 +561,7 @@ the handler's work included), and a frame has room for 2.2 passes of it.
 
 ## 4.7 Timers and delays
 
-Every speed of the menu, from the code and measured:
+Every speed of the menu, from the code and measured; the last six rows are the one-off waits:
 
 | What | Driven by | Rate | Witness |
 | --- | --- | --- | --- |
@@ -559,6 +575,12 @@ Every speed of the menu, from the code and measured:
 | the far stars | the main loop, every 4th pass | 1 row in 4 passes: a screen in about 349 frames, 7 s | the same |
 | a top rhombus's turn | the main loop, every 4th pass | 32 steps in 128 passes: about 58 frames, 1.2 s | the same |
 | a bottom rhombus's turn | the main loop, every 8th pass | 32 steps in 256 passes: about 117 frames, 2.3 s | the same |
+| the set-up | Start, once | 374 frames (7.5 s), c1 516-890, before the stars move | c1 L1 (4.1) |
+| the screen and the first list | DrawScreen, interrupts off | 10 frames, c1 532-542 (c2, c3: to 551) | c1 L1 DrawScreen `$6510` 724 703 T |
+| a page | ShowCatalogue inside the handler, on CS or SS | about 8 frames with no interrupt (c3 1879-1887) | [doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages) |
+| SPACE | the catalogue read and ShowCatalogue inside the handler | about 61 frames with no interrupt (c1 6375-6436): the music, the twinkle and the stars stop for 1.2 s | c1 L1: TrdosEntry last at 6375, ShowCatalogue to 6436; 7275 interrupts in 7338 frames (542-7879), 63 lost: 2 at DrawReflection, the rest here |
+| the launch | the bell and ExitFade inside the handler | 22 frames, c2 3763-3785 | c2 L1 ([doc 10](10-launcher-and-notes.md)) |
+| the Loader's clear | `LDIR` of `$9D08` | 12 frames, before the menu (c1 447-459) and after it (c2 to about 3796) | [doc 3, 3.3](03-build-and-load.md#33-the-loader-how-the-code-arrives-in-memory) |
 
 The point: the rows driven by the interrupt keep their speed on every machine; the rows driven by the main loop change
 with the CPU's speed and with what the interrupt leaves of each frame.
@@ -567,7 +589,7 @@ with the CPU's speed and with what the interrupt leaves of each frame.
 
 - The bus byte: every recording runs on a Pentagon, where the byte is `$FF`. That any other byte works is read from
   the 257-byte table, not seen.
-- The `IM 1` path of the launch and of SPACE: seen in c2 (the launch at frame 3785) and c1 (SPACE at frame 6430), but
+- The `IM 1` path of the launch and of SPACE: seen in c2 (the launch at frame 3785) and c1 (SPACE read at frame 6375), but
   whether TR-DOS lets an interrupt in during its read is not visible in the traces taken here.
 - A 48K with contended memory: the main loop's speed there is inferred from the cost table, not measured.
 - A key pressed during the set-up (frames 549-890): the handler reads it, and a launch would run RunLetter with the

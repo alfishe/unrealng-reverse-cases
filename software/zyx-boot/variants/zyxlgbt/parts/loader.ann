@@ -23,10 +23,10 @@
 $9C40 c Loader ; Clear the attributes, keep the BASIC stack, then decrypt $9C7D-$A07C: each byte XOR R, IX, SP and DE
 $9C61 ; R = 2 once: from here every instruction's fetches step it
 $9C63 c DecryptLoop ; One byte: A = R XOR the byte XOR IXh XOR IXl XOR H XOR L ($404C, the stack) XOR D XOR E
-$9C7E c Decrypted ; Clear $C000-$FA97, read 4 sectors of track 0 (sector 12) to $C524, the head to track 0
+$9C7E c Decrypted ; Clear $C000-$FA98, read 4 sectors of track 0 (sector 12) to $C524, the head to track 0
 $9CA4 ; Read Track ($E0 to the controller's command port $1F), then the track's bytes from its data port $7F to $C000
 $9CBF c FindGap ; Look in the 254 bytes from TrackTail+1 for three bytes equal to TrackGapByte
-$9CE1 c GapFound ; The byte to TrackKey, track 5 sector 0 to Stage2, the BASIC stack back with Stage2 as the return, wipe $9C40-$FA97 by the ROM's LDIR
+$9CE1 c GapFound ; The byte to TrackKey, track 5 sector 0 to Stage2, the BASIC stack back with Stage2 as the return, wipe $9C40-$FA98 by the ROM's LDIR
 $9D0A c NoGap ; Write 0 to ports $FF down to $01, then wipe and restart through the ROM
 $9D2A c RomCall ; Run the routine at IX inside the TR-DOS ROM (PUSH IX, JP TrdosRet)
 $9D2F b LoaderTail 8 ; leftover bytes, not run

@@ -55,7 +55,14 @@ autostart mark `$80 $AA $0A $00` at `$5DEF`:
 Line 10 sets the colours and RAMTOP (`$FF43`) and calls 23936, `$5D80`: Loader, the code in line 4's REM
 (`src/basic/basic.ann`). When the loader returns, line 10's `RUN` restarts the program at line 1:
 `RANDOMIZE USR 15619` is TR-DOS's entry for a command in a BASIC line, and the command after the `REM :` is the one
-the menu wrote there (3.4). Lines 2 and 3 are fallbacks no recording reaches. The 72 bytes after the autostart mark
+the menu wrote there (3.4). Lines 2 and 3 are fallbacks no recording reaches (what they do is read from TR-DOS's
+documented entries, not run):
+
+- line 2, `RANDOMIZE USR 15619: REM : RUN`, is TR-DOS's `RUN` with no name, which runs `boot` again: reached only if
+  line 1's command returns to BASIC;
+- line 3, `RANDOMIZE USR 15616` (`$3D00`), enters TR-DOS's own command line, `A>`.
+
+The 72 bytes after the autostart mark
 are what was in memory when the file was saved (`oot27" LINE 10` reads like the end of a `SAVE "boot27" LINE 10`);
 they stay on the disk, and the build reproduces them because the file holds them.
 
@@ -132,6 +139,11 @@ The stages, static decode against the recordings:
 | the second clear | the same `LDIR` | c2 to about frame 3796 (`$FE00` = `$FC` at 3794, `$00` at 3797) |
 | line 1 runs | `RUN "name"` or `GO TO "name" CODE` | c2 `TEST 03` by 3865, c3 `TEST 30`; c5 line 1 reads `GO TO "magic   " CODE` at frame 2513 |
 
+The error path. Nothing in the Loader tests what `$3D13` returns: the three `CALL TrdosEntry` at `$5D97`, `$5DA4`
+and `$5DB1` are each followed at once by the next step. The same holds for Start's catalogue read (`$61C2`) and SPACE's
+(`$690B`). A read that fails is handled by TR-DOS itself, through its own prompt and the BASIC error path, and never
+comes back to the boot as a result it could test. Known only from the code: no recording reads a bad disk.
+
 The original has no packer and no cipher: the three pieces are stored as they run, so there is nothing to unpack and
 no unpacking animation. The variants that pack their pieces are in [doc 13, 13.9](13-variants.md#139-the-three-hardest).
 
@@ -173,6 +185,21 @@ flowchart LR
     O -->|"sectors 0, 1-15, 16-23, 24-45"| D["tools/disk.py scl<br/>boot.scl"]
     D -->|cmp| X["orig/boot.scl"]
 ```
+
+The inputs:
+
+| Input | Becomes | By |
+| --- | --- | --- |
+| `src/basic/basic.ann`, `src/basic/basic.json` | `src/basic/basic.asm`, `basic-module.asm` | `kit/mkgame.py` |
+| `src/main/main.ann`, `case.json` | `src/main/main.asm` and its 14 module files | `kit/mkgame.py` |
+| `src/music/music.ann`, `src/music/music.json` | `src/music/music.asm`, `player.asm`, `tune.asm` | `kit/mkgame.py` |
+| `src/res/basic/*.txt` | `build/res/basic/launch-lines.bin`, `line-ten.bin` | `tools/res_formats.py build` |
+| `src/res/graphics/*.png` | `build/res/graphics/font.bin`, `logo.bin`, `rhombus.bin`, `twinkle.bin` | the same |
+| `src/res/tables/*.txt`, `src/res/texts/*.txt` | `build/res/tables/*.bin`, `build/res/texts/*.bin` | the same |
+| `src/res/music/disco.txt` | `build/res/music/disco.bin` | the same |
+| `src/res/spare/*.bin` | the sectors' tails, as they are | `INCBIN` |
+| the three `.asm`, `build/res` | `build/basic.bin` (256 bytes), `main.bin` (`$61A8-$ADFF`), `music.bin` (5632 bytes) | sjasmplus |
+| the three `.bin` | `build/boot.body` (46 sectors), `build/boot.scl` | `tools/build.sh`, `tools/disk.py scl` |
 
 The `.asm` files are written by `kit/mkgame.py` from the three `.ann` files (`case.json` for the menu,
 `src/basic/basic.json`, `src/music/music.json`); each run checks that the assembly gives the original bytes. The SCL

@@ -33,8 +33,8 @@ each column of a third, then the attributes). Its packer's rules, found the same
   other position of a fill);
 - a fill when its run is at least as long as the longest match (an equal fill wins).
 
-These rules make 539 of the picture's 547 bytes; INTRO_HINTS holds the 8 choices they do not explain (the original
-packer's choices at those output positions). A hint is taken only when it still describes the bytes there, so an
+These rules make 196 of the stream's 204 tokens; INTRO_HINTS holds the 8 they do not explain (5 matches and 3 fills,
+16 of the 547 bytes: the original packer's choices at those output positions; without them the stream is 546 bytes). A hint is taken only when it still describes the bytes there, so an
 edited picture packs to a valid stream all the same.
 """
 import argparse

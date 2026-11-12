@@ -20,7 +20,7 @@ The recordings (WALKTHROUGH 1, Pentagon 128K):
 
 | Recording | Disk | Keys | Used for |
 | --- | --- | --- | --- |
-| c1 | `orig/boot.scl` (NO EXE FILES !) | SPACE at frame 6430 | ReadKeyboard idle, SPACE |
+| c1 | `orig/boot.scl` (NO EXE FILES !) | SPACE read at frame 6375 (the read and ShowCatalogue run in that one interrupt to frame 6436) | ReadKeyboard idle, SPACE |
 | c2 | `tests/disks/many.scl` | SS, SS, CS, the cursor keys (frames 3195-3680), ENTER on T03 (frame 3763) | the cursor, the trace of frame 3203 |
 | c3 | `tests/disks/many.scl` | SS at frame 1879, F at frame 2182 | a letter key (the stage-1 L1 `work/stage1/c3/l1.json`) |
 
@@ -553,7 +553,9 @@ The page draw itself is in [doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages).
 - The wrap of DownKey and UpKey at the ends of a column and ColumnKey on a row the other column lacks: read from the
   code; c2 moves inside the columns only.
 - Two keys at once: the order of the reads decides, from the code: the letters A-X (a letter with a file launches it
-  and nothing else is read), the digits 1-5 then 0-9 (each one down acts: 3 + 4 cancel, 1 + 2 swap the column twice),
+  and nothing else is read), the digits 1-5 then 0-9 (each one down acts: 3 + 4 cancel; 1 + 2 swap the column twice,
+  back where it was, except on column 1's last name of an odd count, where the first swap goes to column 1's first
+  name (`$6995-$699C`) and the second to column 2's first),
   the silenced Kempston block, CS (on page 2 or later it shows page 1 and ends the read), ENTER, SPACE (ends the
   read), SS.
 

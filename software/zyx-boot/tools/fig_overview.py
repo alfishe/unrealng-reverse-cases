@@ -76,7 +76,7 @@ def fig_layout(works):
         ('reflection (purple)', ['rows 19-23, the logo upside', 'down over the help lines;', 'DrawReflection']),
         ('files (green)', ['rows 6-17, "A>  NAME";', '1-12: letters at column 10,', '13-24: at columns 2 and 18;',
                            'PrintColumn']),
-        ('cursor', ["the attribute of the name's", 'cells, a new ink every 4', 'frames; Interrupt']),
+        ('cursor', ["the attribute of the name's", 'cells: a new one every 4', 'frames, each ink plain then', 'bright (a new ink every 8);', 'Interrupt']),
         ('stars, twinkle', ['anywhere outside the text;', 'MoveStars, DrawTwinkle']),
     ]
     y = y0

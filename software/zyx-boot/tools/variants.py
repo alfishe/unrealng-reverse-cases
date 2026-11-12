@@ -540,7 +540,7 @@ CODE_SWITCHES = {
                     'Joystick:\n  DEFS 22                 ; variant: the dormant joystick block is zeros (NOPs)\n',
                     'has no joystick block: the 22 bytes at Joystick `$68B9` are zeros (NOPs)'),
     'glint-add': ('logo.asm', r'^GlintHalf:\n  AND \$01[^\n]*\n(?:  +;[^\n]*\n)*',
-                  'GlintHalf:\n  ADD A,$01               ; variant: Z only for $FF: the logo glints only in frames $FF00-$FF3F,\n                          ; the reflection in every 256-frame block\n',
+                  'GlintHalf:\n  ADD A,$01               ; variant: Z only for $FF: the logo glints only in frames $FF00-$FF34,\n                          ; the reflection in every 256-frame block\n',
                   'tests the glint\'s half with `ADD A,$01` at GlintHalf `$6D1F` (the original `AND $01`)'),
     'no-music-init': ('setup.asm', r'^  CALL MusicInit\n  CALL MusicStart\n',
                       '  DEFS 6                  ; variant: the two calls into the music piece are zeros (NOPs)\n',

@@ -504,6 +504,7 @@ by hand.
 | ReadLetterRow `$6875`+1 | ReadKeyboard `$6870` | the opcode of `RES n,A`: the keyboard half-row of the letter |
 | CursorAttrAddr `$6848`+2 | `$67C5`, `$6806` | the cursor's attribute address |
 | SpinCharacters `$67D8` | `$6820`, `$6828` | its first byte: `RET` (`$C9`) to stop the name's spin, `$3A` to run it |
+| DrawTwinkleSprite `$6C19` | TwinkleErase `$6BE9`, `$6BF1` | its first byte: `RET` (`$C9`) while TwinkleErase calls DrawTwinkle, so the sprite is skipped and only the old one is erased; `$3A` (`LD A,(TwinkleClock)`) back after it |
 | MoveStars `$6482`+2 | `$628F`, `$629B`, `$62C8` | the star table's address |
 | SampleStarBit `$6471`+1, MoveStarsPutBack `$64A1`+1, MoveStarsDraw `$64D4`+1 | `$646D`, `$649E`, `$64D1` | the `BIT`/`RES`/`SET` opcodes: which pixel bit |
 | ClearPhaseIndex `$634D`+2, MarkPhaseWrite `$635D`+2, ScaleTestBit `$6392`+3, ScaleWriteBit `$63AD`+3 | `$634A`, `$635A`, `$638E`, `$63AA` | the rhombus phase builder's index and bit opcodes |
@@ -532,7 +533,7 @@ by hand.
 | the Kempston read is `LD A,$00` | Joystick `$68B9` | `68B9 3E 00 LD A,$00` (not `IN A,($1F)`) | the five `CALL C` after it never call: no joystick (variants with `IN A,($1F)` read it) |
 | `LD E,$FF` before IsBootFile | `$6A62` | `6A62 1E FF LD E,$FF` | redundant: IsBootFile sets E itself |
 | ColumnsSpare `$B3BA` | ListCatalogue | `6603 22 BA B3 LD (ColumnsSpare),HL` | cleared with Columns, never read |
-| the keys are read inside the interrupt | ReadKeyboard | `6834 CC 64 68 CALL Z,ReadKeyboard` (in the IM 2 handler) | a page draw or the launch runs with interrupts off: 8 frames lost per page, 22 for the fade |
+| the keys are read inside the interrupt | ReadKeyboard | `6834 CC 64 68 CALL Z,ReadKeyboard` (in the IM 2 handler) | a page draw, SPACE's re-read or the launch runs with interrupts off: 8 frames lost per page (c3), about 61 for SPACE's catalogue read and its page (c1 frames 6375-6436), 22 for the fade |
 | MusicStop is never called | `$C011` | `C011 C3 95 C0 JP Silence` (no `CALL`/`JP` to it) | the music is never stopped; the bell replaces it |
 | the length test is "exactly 192 sectors" | `$65EC`, `$6A7A` | `65EC FE C0 CP $C0`, then `JR NZ` | a CODE file of any other size is not listed; Vadim's comment says "length >= C000" |
 | a page in patterns 6-9 | SoundOff | `6586 CD 41 6E CALL SoundOff` (R13 = 0) | R13 = 0 cuts the envelope until the next pattern (known only from the code: [doc 9, 9.11](09-music-and-sound.md#911-known-only-from-the-code)) |
@@ -556,7 +557,7 @@ by hand.
 
 ```mermaid
 flowchart LR
-    SMC["self-modifying code: 15 sites in the menu, 7 in the player"] --> W["the code holds its state"]
+    SMC["self-modifying code: 16 sites in the menu, 7 in the player"] --> W["the code holds its state"]
     TR["tricks: deleted marks, E = 0, ENTER as a letter, a BASIC line"] --> S["short code"]
     BQ["quirks: no joystick, interrupts off for pages and the fade"] --> C["visible costs"]
 ```

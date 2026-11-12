@@ -73,7 +73,7 @@ def fig_phases(img64, mem):
     scale = 3
     cell = 40 * scale + 12
     per_row = 8
-    out, d = Z.canvas(150 + 4 * (cell + 26) + 150)
+    out, d = Z.canvas(150 + 4 * (cell + 26) + 110)
     Z.title(d, 'The rhombus phases as BuildRombPhases, MirrorSprite and RotateSprite left them (c1 frame 1000)',
             'set A $7800 turns about the vertical axis, set B $8A00 about the horizontal one; phase n at set + n x 256;'
             ' 0-7 narrowing, 9-16 the mirrors')
@@ -101,10 +101,12 @@ def fig_phases(img64, mem):
         d.text((x + 6, y + 32), f'{p:2d}', fill=colour, font=Z.font(13))
         d.text((x + 6, y + 56), f'{i}', fill=Z.DIM, font=Z.font(10))
     d.text((20, y + 80), 'yellow: phases 0-7 (the front face narrowing); blue: 9-16 (the back face, MirrorSprite of '
-                         '0-7). Phase 8 ($8000, $9200), the edge-on one, is all zeros:', fill=Z.DIM, font=f)
-    d.text((20, y + 98), 'not drawn here; steps 8 and 24 show it, so the rhombus vanishes for one step twice a turn.',
+                         '0-7: left-right in set A,', fill=Z.DIM, font=f)
+    d.text((20, y + 98), 'top-bottom in set B, whose mirrors turn with it). Phase 8 ($8000, $9200), the edge-on one, '
+                         'is all zeros: not drawn here;', fill=Z.DIM, font=f)
+    d.text((20, y + 116), 'steps 8 and 24 show it, so the rhombus vanishes for one step twice a turn.',
            fill=Z.DIM, font=f)
-    y += 18
+    y += 36
     d.text((20, y + 98), 'drawn by tools/fig_graphics.py from the memory of c1 at frame 1000 (TTD memory_at)',
            fill=Z.DIM, font=f)
     Z.save(out, 'docs/img/graphics/rhombus-phases.png')
@@ -174,7 +176,7 @@ def fig_columns(img64):
 def fig_stars(img64, mem, frame):
     """The star field: 10 near stars of 2 x 2 pixels (StarsA + StarsB) and 20 far ones of 1 pixel (StarsC)"""
     scale = 3
-    out, d = Z.canvas(192 * scale + 150)
+    out, d = Z.canvas(192 * scale + 170)
     Z.title(d, f'The star field: 10 near stars (2 x 2 pixels) and 20 far ones (1 pixel), at the start and at c1 '
                f'frame {frame}',
             'circles: the start (the image); dots: the frame; near: StarsA $AC84 + StarsB $ACFC, far: StarsC $AD74')
@@ -209,10 +211,11 @@ def fig_stars(img64, mem, frame):
     for i, line in enumerate(lines):
         d.text((tx, y0 + i * 18), line, fill=Z.TEXT if i in (0, 7, 14) else Z.DIM, font=f)
     d.text((x0, y0 + 192 * scale + 10), f'The main loop runs from frame 890: by frame {frame} a near star has '
-                                        'fallen 4 times as far as a far one (2 rows every 2nd pass against 1 every '
-                                        '4th), wrapping', fill=Z.DIM, font=f)
-    d.text((x0, y0 + 192 * scale + 28), 'from the bottom row to the top. Drawn by tools/fig_graphics.py from the '
-                                        'image and c1 (TTD memory_at).', fill=Z.DIM, font=f)
+                                        'fallen 4 times as far as a far one', fill=Z.DIM, font=f)
+    d.text((x0, y0 + 192 * scale + 28), '(2 rows every 2nd pass against 1 every 4th), wrapping from the bottom row '
+                                        'to the top row of its column.', fill=Z.DIM, font=f)
+    d.text((x0, y0 + 192 * scale + 46), 'Drawn by tools/fig_graphics.py from the image and c1 (TTD memory_at).',
+           fill=Z.DIM, font=f)
     Z.save(out, 'docs/img/graphics/stars.png')
 
 

@@ -13,7 +13,7 @@ The recordings (WALKTHROUGH 1, Pentagon 128K, the disk booted from power-on), re
 
 | Recording | Disk | What happens |
 | --- | --- | --- |
-| c1 | `orig/boot.scl`: only `boot` | NO EXE FILES !; SPACE at frame 6430 |
+| c1 | `orig/boot.scl`: only `boot` | NO EXE FILES !; SPACE read at frame 6375 |
 | c2 | `tests/disks/many.scl`: `boot`, 30 BASIC programs T01-T30, `magic` (CODE, 192 sectors), `data` (CODE, 2 sectors) | SS, SS, CS, the cursor keys, ENTER on T03 |
 | c3 | the same | SS, then F on page 2: T30 |
 | c5 | `tests/disks/deep.scl`: `boot`, T01-T52 (T05 deleted), `magic` | SS, SS (page 3), then D: `magic` |
@@ -34,7 +34,7 @@ How a disk uses it:
 flowchart TD
     U["the user: RUN"] --> T["TR-DOS runs boot: one BASIC file of 46 sectors"]
     T --> L["line 10: CLEAR, RANDOMIZE USR: the Loader reads<br/>the code, the graphics and the music"]
-    L --> M["the menu: the catalogue read, the screen,<br/>7.5 s of set-up, then the list"]
+    L --> M["the menu: the catalogue read, the screen and the list,<br/>then 7.5 s of set-up (the keys work from frame 549)"]
     M -->|"a letter, or ENTER on a name"| W["the name written into BASIC line 1"]
     W --> R["RUN: line 1 has TR-DOS run the chosen file"]
     R --> P["the program"]
@@ -84,8 +84,9 @@ decoration and never collide with a name, because a star puts back what it cover
 
 How to read it, picture by picture:
 
-1. **The set-up** (c1 850). DrawScreen has drawn the screen at frames 532-536: the logo, the rhombi in phase 0, the
-   help lines (SPACE, SS, CS; the quote prints as a wave in the menu's font), NO EXE FILES !. The rhombi do not turn
+1. **The set-up** (c1 850). DrawScreen has drawn the screen at frames 532-542 (its own drawing to 536, then
+   ShowCatalogue lists the page, 539-541; 724 703 T with interrupts off): the logo, the rhombi in phase 0, the help
+   lines (SPACE, SS, CS; the quote prints as a wave in the menu's font), NO EXE FILES !. The rhombi do not turn
    yet: the phases are built (by frame 697), and the program is now drawing the reflection (DrawReflection's
    FlipSprites, frames 824-888); the main loop has not started ([doc 4, 4.3](04-program-cycle.md#43-the-set-up)). The
    text is caught mid-spin.
@@ -104,7 +105,7 @@ How to read it, picture by picture:
    is black.
 10. **The program** (c2 4300): TR-DOS has run T03, which prints `TEST 03`.
 
-The point: the user sees the full screen at frame 536 (10.7 s after power-on, most of it TR-DOS reading the disk),
+The point: the user sees the full screen at frame 542 (10.8 s after power-on, most of it TR-DOS reading the disk),
 and the menu reads the keys from frame 549, as soon as the interrupt runs; it only looks finished at frame 890: the
 7 s between are the rhombus and reflection set-up, and a key pressed then acts at once.
 
@@ -133,7 +134,8 @@ The cursor in motion:
 
 How to read it:
 
-- The cursor is the colour of one name, a new ink every 4 frames (2 to 7, each plain then bright).
+- The cursor is the colour of one name, a new attribute every 4 frames: each ink 2-7 shown plain, then bright (a
+  round of 12 in 48 frames, a new ink every 8).
 - It moves down, up and to the other column with the digit keys; the name it leaves returns to green.
 
 The point: the cursor is attributes only; the names are never redrawn to move it ([doc 5, 5.4](05-keys.md#54-the-cursor)).
@@ -145,8 +147,8 @@ When the disk has no listable file (c1), ListCatalogue prints NO EXE FILES ! at 
 SPACE reads a new disk, and CS and SS have no other page to go to
 ([doc 7, 7.7](07-catalogue-and-menu.md#77-no-exe-files-)).
 
-Witness: c1 SPACE at frame 6430 reads the catalogue again and redraws the same text (ShowCatalogue at 6436, stage-1
-L1).
+Witness: c1's SPACE is read at frame 6375 (TrdosEntry `$3D13`'s last call); the catalogue read and ShowCatalogue
+redraw the same text inside that one interrupt, to frame 6436 (stage-1 L1).
 
 ## 1.4 What the user can do
 

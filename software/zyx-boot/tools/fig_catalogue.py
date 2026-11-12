@@ -67,14 +67,29 @@ def verdicts(cat):
     return out
 
 
+def cached_catalogue(work, frame):
+    """The catalogue's 2 K from work/docs/figcache/<work>-<frame>-catalogue.bin, read once from the instance"""
+    cache = os.path.join(ROOT, 'work', 'docs', 'figcache')
+    name = os.path.basename(os.path.normpath(work))
+    path = os.path.join(cache, f'{name}-{frame}-catalogue.bin')
+    if os.path.isfile(path):
+        with open(path, 'rb') as f:
+            return f.read()
+    data = memory_at(work, frame, CATALOGUE, 0x800)
+    os.makedirs(cache, exist_ok=True)
+    with open(path, 'wb') as f:
+        f.write(data)
+    return data
+
+
 def cmd_entries(args):
-    cat = memory_at(args.work, args.frame, CATALOGUE, 0x800)
+    cat = cached_catalogue(args.work, args.frame)
     rows = verdicts(cat)
     show = rows if len(rows) <= args.count else rows[:args.count - 6] + [None] + rows[-5:]
     f, fb = K.font(13), K.font(15)
     lh = 21
     w = 1050
-    h = 92 + lh * (len(show) + 1) + 70
+    h = 92 + lh * (len(show) + 1) + 88
     im = Image.new('RGB', (w, h), BG)
     d = ImageDraw.Draw(im)
     d.text((12, 10), 'The TR-DOS catalogue of tests/disks/many.scl at Catalogue $9D00, as Start read it '
@@ -112,11 +127,11 @@ def cmd_entries(args):
         d.text((x0[3] + 40, y), text, font=f, fill=colour)
         y += lh
     listed = sum(1 for r in rows if r[3] in (GREEN, YELLOW))
-    d.text((12, y + 10), '%d entries read (the last one the end marker), %d listed: page 1 the first 24 (two columns, '
-                         '12 + 12), page 2 the rest (%d: one column).' % (len(rows), listed,
-                                                                        listed - 24 if listed > 24 else 0),
-           font=f, fill=FG)
-    d.text((12, y + 32), 'Drawn by: python3 tools/fig_catalogue.py entries %s --work %s --frame %d'
+    d.text((12, y + 10), '%d entries read (the last one the end marker), %d listed: page 1 the first 24' % (
+        len(rows), listed), font=f, fill=FG)
+    d.text((12, y + 28), '(two columns, 12 + 12), page 2 the rest (%d: one column).' % (
+        listed - 24 if listed > 24 else 0), font=f, fill=FG)
+    d.text((12, y + 50), 'Drawn by: python3 tools/fig_catalogue.py entries %s --work %s --frame %d'
            % (os.path.relpath(args.out, ROOT), args.work, args.frame), font=f, fill=DIM)
     im.save(args.out)
     print(args.out, im.size)

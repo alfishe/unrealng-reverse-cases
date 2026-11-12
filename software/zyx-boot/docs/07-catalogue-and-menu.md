@@ -20,7 +20,7 @@ comment at the `CP 0C0H` says "if length >= C000 then is a magic file"; the code
 The recordings are those of [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on), on a Pentagon 128K,
 reopened from their TTD sessions on this writer's own instance (port base 37450, muted):
 
-- c1: `orig/boot.scl`, which holds only `boot`: NO EXE FILES !, SPACE at frame 6430;
+- c1: `orig/boot.scl`, which holds only `boot`: NO EXE FILES !, SPACE read at frame 6375 (the catalogue read and ShowCatalogue run inside that one interrupt to frame 6436);
 - c2: `tests/disks/many.scl`: SYMBOL SHIFT, SYMBOL SHIFT again, CAPS SHIFT, the cursor keys, ENTER on T03;
 - c3: `tests/disks/many.scl`: SYMBOL SHIFT at frame 1879 (page 2), then F at frame 2182 (T30);
 - c4: `tests/disks/noexe.scl`: NO EXE FILES !, then A (frame 1879) and ENTER (frame 1983).
@@ -101,7 +101,7 @@ flowchart TD
 
 *The catalogue of `tests/disks/many.scl` at Catalogue `$9D00` in c3 frame 1000, read with TTD `memory_at` on the
 c3 instance. Command: `python3 tools/fig_catalogue.py entries docs/img/catalogue/entries.png --work work/docs/zbB/c3
---frame 1000`.*
+--frame 1000` (the 2 K are kept in `work/docs/figcache/c3-1000-catalogue.bin`, so a second run needs no instance).*
 
 How to read it:
 
@@ -118,8 +118,10 @@ Worked example, entry 1 at `$9D10`: `54 30 31 20 20 20 20 20` is `T01` and five 
 33 bytes (the program and the length); `01` is 1 sector; `0E 03` is sector 14 of track 3. Entry 31 at `$9EF0`: `magic`,
 `43` (`C`), start `$4000`, length `$C000`, `C0` = 192 sectors.
 
-Witness: c1 Start at frame 516 and MusicInit at 532, so the read lies between them; SPACE's second read in c1 ends
-with ShowCatalogue's call at frame 6436 (L1: ShowCatalogue's two entries, frames 536 and 6436). The memory is c3's at
+Witness: c1 Start at frame 516 and MusicInit at 532, so the read lies between them; SPACE's second read in c1 starts
+at frame 6375 (L1: TrdosEntry `$3D13`, 5 entries, the last at 6375) and runs, interrupts off, to 6430, where
+ShowCatalogue's second call begins with SoundOff (L1: SoundOff `$6E41` last at 6430); ShowCatalogue's last
+instruction is at 6436 (L1: two entries, frames 536 and 6436). The memory is c3's at
 frame 1000.
 
 ## 7.2 Which files are listed
@@ -241,7 +243,8 @@ Worked examples, from the figure above:
 | 33 | (zeros) | | | first byte 0: the end |
 
 Where this case and Vadim differ: his comment at `$66AF` ("if length >= C000 then is a magic file") reads the test as
-a length check. The test is `CP $C0` / `JR NZ` on byte +13, the sector count. So:
+a length check. The test is `CP $C0` on byte +13, the sector count, with `JR Z` here (`JR NZ` in the count at `$65EC-$65EE`,
+`JR Z` again in RunLetter at `$6A7A-$6A7C`): equality, not "greater or equal". So:
 
 - a CODE file of 193 sectors or more is not listed;
 - a CODE file of length `$BF01` to `$C000` is 192 sectors and is listed;
@@ -262,7 +265,7 @@ ListCatalogue `$65C7` counts the listed files from the page's first entry to the
 | --- | --- | --- | --- | --- |
 | 0 | NoFilesText at row 11, column 9 (7.7) | 0 | 14 cells on the text | none |
 | 1-12 | PrintColumn at row 6, column 10 | 1 | row 6, column 14 | A ... |
-| 13-24 | ListTwoColumns: column 1 at column 2, column 2 at column 18 | 2 | row 6, column 6 | A-L, then M-X |
+| 13-24 | ListTwoColumns: column 1 at column 2, column 2 at column 18 | 2 | row 6, column 6 | A ... in column 1, going on in column 2 (A-G, H-M for 13; A-L, M-X for 24) |
 | 25 or more | ListTwoColumns with 24, the rest on the next page (7.5) | 2 | row 6, column 6 | A-X |
 
 ListTwoColumns `$6648` splits the count with one RRA. RRA halves A and leaves the dropped bit in the carry; ADC adds
@@ -355,6 +358,20 @@ print_column(entry, row, col, letter, n):
         PrintString(line)
         entry += 16; row += 1; letter += 1
     return entry
+```
+
+```mermaid
+flowchart TD
+    S["PrintColumn $668E: HL = entry, B = column, C = row,<br/>E = letter, D = count"] --> AT["EntryLine+1 = BC: AT's row and column"]
+    AT --> N{"the next listed entry<br/>(the test of 7.2)"}
+    N --> I["EntryLine+12 = 4 (BASIC) or 6 (snapshot)"]
+    I --> C["8 name bytes to EntryLine+13:<br/>below $20 or from $80 up become '.'"]
+    C --> L["$FF after the name; letter, '>', two spaces, $10;<br/>the fixed $16, $13 $01, $10 $05"]
+    L --> P["PrintString(EntryLine): RST $10 up to $FF"]
+    P --> R["row + 1, letter + 1, HL = the next entry"]
+    R --> D{"D lines printed?"}
+    D -->|"no"| N
+    D -->|"yes"| E["return HL: the entry after the last printed"]
 ```
 
 ```text

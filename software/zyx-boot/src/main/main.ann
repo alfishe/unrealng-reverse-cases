@@ -390,7 +390,7 @@ $6BBC NewRandomNext
 > Witness: L1 244 (c x4).
 
 $6BFD c DrawTwinkle ; Erase the twinkle and draw its next frame at the place from Randoms
-> The place: the pair Randoms[2n], [2n+1], n = TwinkleClock bits 6-7; CheckTwinkleSpot $6C56 refuses a place on the menu's text or off the screen (new randoms and again). EraseTwinkle $6C71 sets TwinkleAddr. The frame: TwinkleClock bits 3-4, counted down when bit 5 is set: frames 0, 1, 2, 3, 3, 2, 1, 0; ORed onto the screen, 16 rows of 2 bytes.
+> The place: the pair Randoms[2n], [2n+1], n = TwinkleClock bits 6-7; CheckTwinkleSpot $6C56 refuses a place on a third's last character row or beside the rhombi (columns 6-25 in the top and bottom thirds, 1-30 in the middle one; new randoms and again). EraseTwinkle $6C71 sets TwinkleAddr. The frame: TwinkleClock bits 3-4, counted down when bit 5 is set: frames 0, 1, 2, 3, 3, 2, 1, 0; ORed onto the screen, 16 rows of 2 bytes.
 > Witness: L1 5864 (c x4).
 $6C19 DrawTwinkleSprite ; LD A,(TwinkleClock): a RET while TwinkleStar only erases
 $6C24 DrawTwinkleFrame

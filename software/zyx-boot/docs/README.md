@@ -3,8 +3,8 @@
 | Doc | Contents |
 | --- | --- |
 | [1. What you see](01-overview.md) | what the boot is for, the screen and its parts, every screen from the set-up to the launch, what the user can do |
-| [2. Architecture](02-architecture.md) | the machine budget, the memory map (a figure), stages from the medium to play, the frame, the main loop's call graph, the module map |
-| [3. Build and load](03-build-and-load.md) | the disk and its one file, the BASIC program and the loader in its REM, how the three pieces reach memory, how the menu runs a file, the source build |
+| [2. Architecture](02-architecture.md) | the machine budget, the memory map (a figure), stages from the medium to play, the module map with its ranges, the frame, the main loop's call graph, the heatmap |
+| [3. Build and load](03-build-and-load.md) | the disk and its one file, the BASIC program and the loader in its REM, how the three pieces reach memory (and the error path), how the menu runs a file, the source build and its inputs |
 | [4. The program cycle](04-program-cycle.md) | the entry and the set-up, the IM 2 table, the main loop with no wait, the interrupt and its 256-frame cycle, the cost per frame, every timer |
 | [5. The keys](05-keys.md) | ReadKeyboard every 8th frame, the letter keys, the two Sinclair joysticks, the cursor, the silenced Kempston read, SPACE, CS, SS |
 | [6. The graphics](06-graphics.md) | PrintSprite and the logo, the reflection, the 34 rhombus phases, the star field, the twinkle, the glint, the corner colours, ScreenCopy |
@@ -25,7 +25,7 @@ Each term once, here; the documents link to it.
 | deleted mark | a first byte 1 in a catalogue entry: a deleted file, or an entry RunLetter has walked past |
 | EntryLine | `$B3CE`, the 22-byte RST `$10` line PrintColumn builds for each name |
 | frame | 1/50 s, 71 680 T on the Pentagon; one interrupt |
-| Frames | the ROM's FRAMES `$5C78`, + 1 per interrupt, set to 0 by every page draw; its low byte times the glint, the spin, the cursor colour and the keys |
+| Frames | the ROM's FRAMES `$5C78`, + 1 per interrupt, set to 0 by every page draw; its low byte times the glint, the spin, the cursor colour and the keys; bit 0 of its high byte picks the glint's logo (even) or reflection (odd) |
 | glint | the two red diagonals that cross the logo or its reflection on Frames 0-52: the corner cells at 0, 26 steps at 2-52 (LogoGlint `$6D04`) |
 | near / far stars | StarsA + StarsB (10 stars of 2 x 2 pixels, 1 row a pass) / StarsC (20 of 1 pixel, a quarter row a pass) |
 | pass | one run of the main loop, MainLoop `$627C`; about 2.2 a frame in the idle menu. ExitFade's 8 passes over the screen are its own (doc 10); the tune's is a tune loop |

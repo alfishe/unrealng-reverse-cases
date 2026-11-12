@@ -7,8 +7,10 @@ The memory map draws `$4000-$FFFF`, one line of pixels per 256 bytes, coloured b
 is the share of its bytes that are not zero. The first column is the image the Loader leaves
 (`work/mkgame/original.bin`) with the BASIC that TR-DOS loads (`build/basic.bin`, its first 184 bytes at `$5D3B`);
 the other two are the c1 moments kept in `work/docs/figcache/` (written by `tools/fig_overview.py`). The medium figure
-draws the 46 sectors of `boot` from `build/basic.bin` and the part sizes. Writes docs/img/arch/memory-map.png and
-docs/img/arch/medium.png.
+draws the 46 sectors of `boot` from `build/basic.bin` and the part sizes. The heatmap is the composite panel of
+`kit/heatmap.py` (red written, green read, blue executed, log2 of the counts) over c1's L1
+(`work/stage1/c1/l1.json`), with an address axis every `$1000` and the regions of `work/stage2/regions.txt`. Writes
+docs/img/arch/memory-map.png, docs/img/arch/medium.png and docs/img/arch/heatmap-composite.png.
 """
 import os
 
@@ -141,9 +143,48 @@ def fig_medium():
     Z.save(out, 'docs/img/arch/medium.png')
 
 
+def fig_heatmap():
+    import heatmap as H
+    lo, hi, cell = 0x4000, 0xFFFF, 3
+    executes, reads, writes, _last, replay = H.load(os.path.join(Z.CASE, 'work/stage1/c1/l1.json'), H.BASES_48K)
+    fx, _ = H.scale(executes, lo, hi)
+    fr, _ = H.scale(reads, lo, hi)
+    fw, _ = H.scale(writes, lo, hi)
+    pan = H.panel(lo, hi, cell, lambda a: (int(255 * fw(a)), int(255 * fr(a)), int(255 * fx(a))))
+    x0, y0, label_w = 78, 74, 330
+    out, d = Z.canvas(y0 + pan.height + 74, x0 + pan.width + label_w)
+    Z.title(d, 'c1: what the program wrote (red), read (green) and executed (blue), $4000-$FFFF',
+            f'stage-1 L1, frames 104-7880; one row = 256 bytes, one column = the byte $xx00 + column; log2 of the counts')
+    out.paste(pan, (x0, y0))
+    fa = Z.font(15)
+    for a in range(lo, hi + 1, 0x1000):
+        y = y0 + ((a - lo) >> 8) * cell
+        d.text((10, y - 8), f'${a:04X}', fill=Z.TEXT, font=fa)
+        d.line([(x0 - 8, y), (x0 - 2, y)], fill=Z.TEXT)
+    for c in range(0, 256, 0x40):
+        x = x0 + c * cell
+        d.line([(x, y0 + pan.height + 2), (x, y0 + pan.height + 8)], fill=Z.DIM)
+        d.text((x - 8, y0 + pan.height + 10), f'+${c:02X}', fill=Z.DIM, font=Z.font(13))
+    regions = [(0x4000, 0x5AFF, 'the screen $4000-$5AFF')]
+    for line in open(os.path.join(Z.CASE, 'work/stage2/regions.txt')):
+        parts = line.split(None, 2)
+        if len(parts) == 3 and not line.startswith('#'):
+            a, b = int(parts[0], 16), int(parts[1], 16)
+            regions.append((a, b, f'{parts[2].strip()} ${a:04X}-${b:04X}'))
+    rx = x0 + pan.width + 8
+    fl = Z.font(15)
+    for a, b, name in regions:
+        ya = y0 + ((a - lo) >> 8) * cell
+        yb = y0 + ((b - lo) >> 8) * cell + cell - 1
+        d.line([(rx, ya), (rx + 6, ya), (rx + 6, yb), (rx, yb)], fill=(220, 220, 150))
+        d.text((rx + 12, max(ya, (ya + yb) // 2 - 9)), name, fill=(230, 230, 170), font=fl)
+    Z.save(out, 'docs/img/arch/heatmap-composite.png')
+
+
 def main():
     fig_memory_map()
     fig_medium()
+    fig_heatmap()
 
 
 if __name__ == '__main__':

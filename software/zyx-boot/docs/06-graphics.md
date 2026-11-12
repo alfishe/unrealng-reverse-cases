@@ -56,7 +56,7 @@ PrintSprite(DE = sprite, HL = screen address of the top-left cell):
 ```
 
 It never crosses a third of the screen: every place it is called for (rows 0-4 and 19-23) lies inside one third.
-Its cost, from the idle L1 (`work/docs/zbA/idle/l1.json`): 59.5 M own T-states in 8234 calls, about 7 200 T a
+Its cost, from the idle L1 (`work/docs/zbA/idle/l1.json`): 59.4 M own T-states (59 444 082) in 8234 calls, about 7 200 T a
 sprite.
 
 DrawScreen `$6510` prints the four rhombi in their phase 0 (RombSource) and the logo: Logo `$A900`, LogoPart2,
@@ -95,8 +95,8 @@ Worked example: LogoPart3 is at `$A900` + 2 x 200 = `$AA90`; its top-left cell i
 The first line takes bytes `$AA90-$AA94` to `$4010-$4014`; the second, `$AA95-$AA99` to `$4110-$4114`; the ninth
 (the second cell row) starts at `$4010` + 8 x 256 - 2048 + 32 = `$4030`.
 
-Witness: DrawScreen's one call at c1 frame 532; the logo is on the screen from c1 frame 536
-([screens](img/overview/screens.png), picture 1).
+Witness: DrawScreen's one call at c1 frame 532; the logo is on the screen after DrawScreen's own drawing (to c1
+frame 536 in the L1; [screens](img/overview/screens.png) picture 1 shows it at frame 850).
 
 ## 6.2 The reflection: the logo upside down
 
@@ -190,8 +190,8 @@ How to read it:
   top. RotateBuffer `$9C00` lights up in the map on every turn.
 - At the end the writes move to `$F000-$F7FF` (ScreenCopy's bottom third), then to the screen in one copy.
 
-The point: the reflection costs 4.7 M T, 1.3 s of the set-up, because it reuses two general routines (a 517 844 T
-turn, twice per sprite) where a direct flip (copy row 39 - y to row y) would take some 10 000 T. The help lines
+The point: the reflection costs 4.7 M T, 1.3 s of the set-up, because it reuses two general routines (a 436 611 T
+turn, 517 844 T including the interrupts it lets in, twice per sprite) where a direct flip (copy row 39 - y to row y) would take some 10 000 T. The help lines
 printed at frame 533 are on the screen for 7 s only.
 
 Witness: c1 frame 850 shows the help lines, c1 frame 1000 the reflection over them
@@ -208,7 +208,7 @@ phase: one of 17 sprites per set, at the set + phase x 256.
 | 0 | the whole rhombus, face on | BuildRombPhases keeps all 40 columns |
 | 1-7 | the face turning away: narrower and narrower | BuildRombPhases keeps 35, 30, ... 5 columns, packed and centred |
 | 8 | edge on: empty | BuildRombPhases's edge pass (below) writes nothing |
-| 9-16 | the back face: phases 0-7 mirrored left-right | MirrorSprite |
+| 9-16 | the back face: phases 0-7 mirrored, left-right in set A and top-bottom in set B (MirrorSprite runs before set B's last quarter turn) | MirrorSprite |
 
 The point: one 200-byte sprite (RombSource `$6E98`, `src/res/graphics/rhombus.png`) becomes 34 sprites, 6.8 K, at
 the start; the main loop only copies them.
@@ -316,11 +316,13 @@ How to read it:
   its left.
 - In the map, PhaseMask `$7698` flashes on every row (cleared and marked again) and RombColumns `$7600` is read.
 
-The point: a row costs about 14 000 T (8.95 M T for 16 phases of 40 rows; the mask is rebuilt for each row, though it
-is the same for all 40 rows of a phase), so a phase takes about 8 frames: set A's 8 phases run from frame 542 to 605.
+The point: a row costs about 14 000 T on average, interrupts included (8.95 M T for 16 phases of 40 rows; the mask
+is rebuilt for each row, though it is the same for all 40 rows of a phase). The rows differ: phase 0 marks 40 columns
+and writes 40 pixels a row, phase 7 marks and writes 5 (ScaleRombLine still tests all 40), so a phase-0 row costs
+about twice a phase-7 row. A phase takes about 8 frames: set A's 8 phases run from frame 542 to 605.
 The 156 frames 542-697 between BuildRombPhases's first and last call also hold set A's 8 mirrors (MirrorSprite from
-frame 605) and the three turns of RombWork (RotateSprite from frame 613, 517 844 T a turn, about 22 frames for the
-three) before set B (c1 stage-1 L1).
+frame 605) and the three turns of RombWork (RotateSprite from frame 613, 436 611 T a turn, 517 844 T with the interrupts that come in during it,
+about 22 frames for the three) before set B (c1 stage-1 L1).
 
 ### The edge pass: a line that is never drawn
 
@@ -345,7 +347,10 @@ start (the rhombus part):
 ```
 
 Set B is built from the source turned 270 degrees, so its columns are the source's rows: dropping them narrows the
-picture top to bottom. The 17 phases are then turned another 90 degrees, back to the source's orientation. MirrorSprite
+picture top to bottom. The 17 phases are then turned another 90 degrees, back to the source's orientation. Set B's
+mirrors are made before that last turn, so they turn with the phases: MirrorSprite maps (x, y) to (39 - x, y) and
+RotateSprite (x, y) to (39 - y, x), so mirror then turn gives (39 - y, 39 - x), the turned phase flipped top to
+bottom, as a turn about the horizontal axis needs. MirrorSprite
 reverses each row's 5 bytes and the bits of each byte (MirrorByte: 8 x `RR C`, `RLA`). RotateSprite turns 90 degrees
 one bit at a time: for each of the 40 source columns it shifts the bit out of every row (`RL (HL)`) into a 5-byte row
 of RotateBuffer `$9C00` (`RRA` along the row), then copies the buffer back.
@@ -412,7 +417,8 @@ the command under the logo figure).*
 
 How to read it:
 
-- Two rows of 8 per set: phases 0-7 (yellow labels) narrow, phases 9-16 (blue) are their mirrors.
+- Two rows of 8 per set: phases 0-7 (yellow labels) narrow, phases 9-16 (blue) are their mirrors: left-right in set
+  A, top-bottom in set B.
 - Set A narrows left to right; set B top to bottom.
 - Below: PhaseOrder `$6ADD`, the phase of each of the 32 steps of a turn.
 
@@ -493,7 +499,7 @@ on every 2nd pass (1 row a pass) and C once on every 4th pass (a quarter row a p
 MoveStars(IX = table):                          # the table is written into the LD IX,nn by MainLoop
     for each of 20 records:
         put back the pixel under the star: SET or RES n,(HL) by +5    # a self-written opcode
-        HL = the address one pixel row down (wrapping from the bottom row to $4000)
+        HL = the address one pixel row down (from the bottom row: the top row, same column, H = $40)
         save HL in +0, +1
         SampleStar: +5 = BIT n,(HL)              # the pixel the star now covers
         SET n,(HL)                               # draw the star
@@ -666,11 +672,14 @@ TwinkleStar:
 6C2A  AND $60                ; the frame x 32
 ```
 
-CheckTwinkleSpot `$6C56` (Vadim: `;???`) reads a pair as the low byte of a screen address and a byte whose bits 3-4
-pick the third. It refuses a place on the third's last character row (the low byte `$E0` or more: rows 7, 15 and
-23), where the twinkle's second cell row would wrap to the top of the same third, since the draw steps to the next cell
-row by adding `$20` to L only (`$6C4F-$6C52`); and it limits the column: 6-25 in the top and bottom thirds (over the logo and its reflection,
-clear of the rhombi) and 1-30 in the middle one. A third bits `11` (no such third) becomes the middle third.
+CheckTwinkleSpot `$6C56` (Vadim: `;???`) reads a pair as the low byte of a screen address and a byte whose bits 3-4 pick
+the third. It refuses a place on the third's last character row (the low byte `$E0` or more: rows 7, 15 and 23), where
+the twinkle's second cell row would wrap to the top of the same third, since the draw steps to the next cell row by
+adding `$20` to L only (`$6C4F-$6C52`); and it limits the column: 6-25 in the top and bottom thirds (clear of the
+rhombi; mostly over the logo and its reflection, but any character row 0-6 of a third passes, so the twinkle can also
+cover rows 5-7 and 16-19, the list's rows 6-7 and 16-17, erased again from ScreenCopy, which holds the list) and 1-30 in
+the middle one. Only the low byte and the column are tested (`$6C56-$6C70`): nothing looks at the menu's text. A third
+bits `11` (no such third) becomes the middle third.
 
 ![The twinkle's four frames and its clock](img/graphics/twinkle.png)
 
@@ -806,7 +815,11 @@ How to read it:
   like the sides of a roof; they meet in the middle and pass each other.
 - At the end NO EXE FILES ! turns (the spin starts at Frames 50).
 
-The point: a glint is 26 steps, Frames 2-52, after the corner cells at Frames 0, of pure attribute work: 4 488 T a step (4.5), no pixel touched.
+The point: a glint is 26 steps, Frames 2-52, after the corner cells at Frames 0, of pure attribute work: 4 368-4 968 T a
+step (4 968 on the middle ones, Frames 12-38, where no cell is clipped; 4 488 at Frames 2 and 48, 4 368 at Frames 52; c2
+interrupt profile, 4.5), no pixel touched. The last two steps are almost empty: Frames 50 paints two cells (row 4,
+columns 25 and 6), Frames 52 none (GlintRed and GlintBright clip every cell at column 26 or more, or 5 or less) and only
+puts back the step before.
 
 Worked example, Frames low 20 (c = 10): the bottom row (row 4) gets red at columns 10 and 12, bright red at 11, and
 the mirror at 21, 20 and 19; row 3 at 11-13 and 18-20; row 0 at 14-16 and 15-17 mirrored: the two stripes overlap on
@@ -886,6 +899,25 @@ ColourCorners:
 6CF8  LDIR                   ; the 5 colours across
 ```
 
+```mermaid
+flowchart TD
+    S["ColourCorners $6CBF"] --> R1["ColourCornerRows, HL = $5800<br/>top left"]
+    R1 --> R2["ColourCornerRows, HL = $5A7B<br/>bottom right"]
+    R2 --> C1["ColourCornerColumns, DE = $581B<br/>top right"]
+    C1 --> C2["ColourCornerColumns, DE = $5A60<br/>bottom left"]
+    R1 -.-> RR["rows: for n = 0..4, 5 cells of CornerColours[n],<br/>then HL + 27: the next row"]
+    C1 -.-> CC["columns: 5 times LDIR the 5 CornerColours across,<br/>then DE + 27: the next row"]
+```
+
+Worked example: the top-right corner starts at `$581B` (row 0, column 27). Its cell `$581D` is row 0, column 29, the
+third cell of the first LDIR: CornerColours[2] = `$46`, bright yellow ink on black. The bottom-right corner starts at
+`$5A7B` (row 19, column 27); its row 21 (`$5ABB-$5ABF`, n = 2) is all `$46`, and its row 19 all `$07` (white). So the
+same middle colour runs down column 29 at the top right and across row 21 at the bottom right.
+
+Witness: [corners](img/graphics/corners.png), read from c1 frame 1000: `$46` down the middle column of the top-right
+and bottom-left corners and across the middle row of the other two; ColourCorners runs once, inside DrawScreen (c1
+frame 533, stage-1 L1).
+
 ![The four corners' attributes](img/graphics/corners.png)
 
 *The four corners' attributes in c1 frame 1000, each cell with its value, and as they look (`tools/fig_graphics.py`).*
@@ -949,7 +981,7 @@ ScreenCopy.
 
 - The edge line of phase 8: never drawn by any of the recorded disks, since RombColumnOrder has no entry of `$40`
   or more; a variant with flagged entries would show it.
-- The star wrap from the bottom row to `$4000`: seen as stars reappearing at the top in [stars.gif](img/play/stars.gif),
+- The star wrap from the bottom row to the top row of the same column (`$40` + the column, `$64B5-$64BF`): seen as stars reappearing at the top in [stars.gif](img/play/stars.gif),
   not traced instruction by instruction.
 
 ## 6.10 The point

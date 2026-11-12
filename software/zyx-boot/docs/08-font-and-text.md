@@ -11,8 +11,8 @@ What this covers:
 
 The names are those of `src/main/main.ann` (modules font, catalogue, interrupt). Vadim's 2010 decompilation
 (`work/stage1/ZYXboot.utf8.mac`) is used here: his `PrString`, `CopyStringToScr_6CA2`, `ScrStringLen_B3EC` and
-`RotateNxtChar` are PrintString, CopyNameToScreen, RotateLength and RotateNextChar here; his comment at `RL (HL)`,
-"rotate 90 grad", is the spin of 8.5.
+`RotateNxtChar` are PrintString, CopyNameToScreen, RotateLength and RotateNextChar here; his comment at `RL (HL)`
+reads "rotate 90 grad cc", but the turn is clockwise (8.5).
 
 The recordings: c1 (`orig/boot.scl`, NO EXE FILES !) and c2 (`tests/disks/many.scl`) of WALKTHROUGH 1, Pentagon 128K,
 reopened on this writer's own instance (port base 37440, muted).
@@ -74,9 +74,11 @@ The point: the ROM's printer costs about 91 000 T for the 54 characters and 13 c
 some 1 700 T a character, but it needs no code of the menu's own. It is used only when a page is drawn, never per
 frame.
 
-Witness: PrintString from c1 frame 533 T 11 344 to frame 534 T 30 837 (the trace of those frames). Chars `$5C36`
-holds `$3C00` at the start of frame 533 (the trace `533:0-537:0` begins at T 20 with it) and `$A500` from T 11 321 of
-frame 533, when DrawScreen's `LD (Chars),HL` at `$6572` writes `00 A5`, 43 T before PrintString starts.
+Witness: PrintString from c1 frame 533 T 11 364 (its first instruction) to frame 534 T 30 837 (the return at
+`$657B`), 91 153 T (the trace of those frames). Chars `$5C36` holds `$3C00` at the start of frame 533 (the trace
+`533:0-537:0` begins at T 20 with it) and `$A500` from T 11 337 of frame 533, when DrawScreen's `LD (Chars),HL` at
+`$6572` (started at T 11 321) writes `00 A5` in its last two cycles, 27 T before PrintString starts (`LD HL,MenuHelp`
+10 T, `CALL PrintString` 17 T).
 
 ## 8.2 The font
 
@@ -124,6 +126,14 @@ menu-help.txt:
 
 no-files.txt:
 {AT 11,9}NO EXE FILES !{END}
+```
+
+```mermaid
+flowchart LR
+    T["menu-help.txt<br/>no-files.txt"] -->|"tools/res_formats.py"| B["MenuHelp $6AFD (68 bytes)<br/>NoFilesText $6B41 (18 bytes)"]
+    B -->|"DrawScreen: HL = MenuHelp<br/>ListCatalogue: HL = NoFilesText"| P["PrintString $6720:<br/>a byte, $FF ends"]
+    P -->|"RST $10"| R["the ROM printer:<br/>$16 AT, $13 BRIGHT, $10 INK act;<br/>a character from CHARS = $A500"]
+    R --> S["the screen cells and attributes"]
 ```
 
 The point: the help is printed once, at the start, and covered by the reflection 7 s later (6.2 in

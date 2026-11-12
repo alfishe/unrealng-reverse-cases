@@ -48,7 +48,7 @@ DecryptLoop:
   OR E
   JR NZ,DecryptLoop
 
-; Clear $C000-$FA97, read 4 sectors of track 0 (sector 12) to $C524, the head
+; Clear $C000-$FA98, read 4 sectors of track 0 (sector 12) to $C524, the head
 ; to track 0
 Decrypted:
   DI
@@ -103,7 +103,7 @@ l_9CD7:
   JR NZ,l_9CC5
 
 ; The byte to TrackKey, track 5 sector 0 to Stage2, the BASIC stack back with
-; Stage2 as the return, wipe $9C40-$FA97 by the ROM's LDIR
+; Stage2 as the return, wipe $9C40-$FA98 by the ROM's LDIR
 GapFound:
   LD A,(TrackGapByte)
   LD (TrackKey),A
