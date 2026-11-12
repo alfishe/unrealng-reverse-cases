@@ -1,0 +1,22 @@
+# c1: power-on on a 128K, the original tape by its own loader at signal speed, the menu, 4 (Protek), fire,
+# the intro story, then play: right through the first screens, a jump, fire held and let go (a punch, a kick),
+# up and down, and back left
+200 ENTER
+203 -
+16008 4
+16012 -
+16072 0
+16077 -
+17477 8
+17627 8+7
+17657 -
+17687 0
+17707 -
+17717 0
+17777 -
+17797 8
+18047 7
+18087 6
+18127 5
+18427 -
+18627 END

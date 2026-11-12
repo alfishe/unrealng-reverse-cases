@@ -1,0 +1,18 @@
+# opt2: from the menu after the load (explore/loaded.szx): option 2 (Joystick 2, the keys 1 left, 2 right,
+# 4 up, 5 fire), fire, the intro, then right, left, up (a jump), fire held (an attack), the quit (fire held, then P)
+0 2
+4 -
+64 5
+69 -
+1769 2
+1889 -
+1909 1
+1969 -
+1989 4
+2019 -
+2049 5
+2089 -
+2119 5
+2129 5+P
+2135 -
+2435 END

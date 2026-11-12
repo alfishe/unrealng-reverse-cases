@@ -1,0 +1,14 @@
+{
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || python3 tools/image.py work/mkgame"],
+  "image": "work/mkgame/original.bin",
+  "lo": "4000",
+  "hi": "10000",
+  "device": "ZXSPECTRUM128",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "banks": {"4": "work/mkgame/bank4.bin"},
+  "read_builds": ["stage1/rec/menu", "stage1/rec/opt2", "stage1/rec/opt3", "stage1/rec/opt4", "stage1/rec/deaths", "stage1/rec/gameover", "stage1/rec/rooms", "stage1/rec/c48"],
+  "ref_builds": [["stage1/c1", "c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk"]],
+  "header": ["; Switchblade, Gremlin Graphics 1991 (Jeff Calder; graphics John Smyth, music Ben Daglish): the game",
+             "; image at the jump into the game (`JP $4000` at `$60A2`) as the tape's own loader leaves it",
+             "; (tools/image.py): the Z80 view with banks 5, 2, 0 paged; bank 4 (128K only) in work/mkgame/bank4.bin."]
+}

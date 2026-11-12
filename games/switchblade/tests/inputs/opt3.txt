@@ -1,0 +1,17 @@
+# opt3: as opt2 with option 3 (the Kempston joystick: KL KR KU KF)
+0 3
+4 -
+64 KF
+69 -
+1769 KR
+1889 -
+1909 KL
+1969 -
+1989 KU
+2019 -
+2049 KF
+2089 -
+2119 KF
+2129 KF+P
+2135 -
+2435 END

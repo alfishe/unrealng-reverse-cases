@@ -1,0 +1,27 @@
+# c48: c1's plan on a 48K (run with --model 48K): LOAD "" typed, the tape at signal speed; the 8441-byte block
+# is not read; the menu, 4 (Protek), the intro, the same walk: the 48K's sound and what bank 4 leaves out
+200 J
+203 -
+208 SS+P
+211 -
+216 SS+P
+219 -
+224 ENTER
+227 -
+20532 4
+20536 -
+20596 0
+20601 -
+22001 8
+22151 8+7
+22181 -
+22211 0
+22231 -
+22241 0
+22301 -
+22321 8
+22571 7
+22611 6
+22651 5
+22951 -
+23151 END

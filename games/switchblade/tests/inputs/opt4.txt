@@ -1,0 +1,17 @@
+# opt4: as opt2 with option 4 (Protek or cursor: 5 left, 8 right, 7 up, 0 fire)
+0 4
+4 -
+64 0
+69 -
+1769 8
+1889 -
+1909 5
+1969 -
+1989 7
+2019 -
+2049 0
+2089 -
+2119 0
+2129 0+P
+2135 -
+2435 END
