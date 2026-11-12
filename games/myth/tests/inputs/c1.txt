@@ -1,0 +1,55 @@
+# c1: power-on on a 48K, LOAD "", the original tape at signal speed by its own loader (Speedlock 7), the logo,
+# SPACE, the credits, SPACE, the menu, START GAME, stage 1 loaded from the tape, then play: right, left, a jump,
+# fire with each direction, crouch, the item window (SPACE), pause (H)
+200 J
+203 -
+208 SS P
+211 -
+216 SS P
+219 -
+224 ENTER
+227 -
+7834 SPACE
+7838 -
+7938 SPACE
+7942 -
+8062 SPACE
+8066 -
+8186 SPACE
+8190 -
+8490 SPACE
+8494 -
+15476 W
+15536 Q
+15596 I
+15626 -
+15656 J
+15676 -
+15696 O
+15712 -
+15732 O W
+15748 -
+15768 O Q
+15784 -
+15804 O I
+15820 -
+15840 O J
+15856 -
+15876 O I W
+15892 -
+15912 O J W
+15928 -
+15948 SPACE
+15952 -
+15982 W
+15986 -
+16016 SPACE
+16020 -
+16050 H
+16054 -
+16104 H
+16108 -
+16158 W
+16358 Q
+16558 -
+16658 END

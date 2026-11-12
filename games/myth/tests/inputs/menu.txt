@@ -1,0 +1,28 @@
+# menu: from c1's menu state (STATE work/stage1/c1/menu.szx or a fresh load): DEFINE KEYS (the prompts, each
+# key typed: Z X K M SPACE-less fire L, pause P), SELECT JOYSTICK (each choice), then START GAME with the new
+# keys and a short walk
+6 SPACE
+10 -
+70 Z
+86 -
+146 X
+162 -
+222 K
+238 -
+298 M
+314 -
+374 L
+390 -
+450 P
+466 -
+1232 SPACE
+1236 -
+1296 SPACE
+1312 -
+1392 SPACE
+1408 -
+1488 SPACE
+1504 -
+1584 SPACE
+1600 -
+1880 END

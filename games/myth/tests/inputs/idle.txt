@@ -1,0 +1,2 @@
+# idle: no key from a stage's first state; the enemies take the lives one by one up to the game over
+20000 -
