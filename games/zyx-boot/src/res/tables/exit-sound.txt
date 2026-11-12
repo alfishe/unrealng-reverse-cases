@@ -1,0 +1,15 @@
+# ExitSound: the AY registers 0-13 PlayBell $6E48 writes when a file is chosen.
+R0: 48
+R1: 0
+R2: 1
+R3: 0
+R4: 80
+R5: 0
+R6: 0
+R7: 56
+R8: 16
+R9: 16
+R10: 16
+R11: 196
+R12: 80
+R13: 1

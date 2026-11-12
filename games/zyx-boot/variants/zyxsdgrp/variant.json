@@ -1,0 +1,11 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxsdgrp.scl",
+  "file": "B       ",
+  "header": {
+    "type": "B",
+    "start": 199,
+    "length": 199,
+    "sectors": 34
+  },
+  "loader": "own"
+}

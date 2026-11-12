@@ -1,0 +1,1943 @@
+# The ASC Sound Master tune of the ZYX boot menu (src/music/music.ann: TuneHeader $C478 to OrnamentData;
+# the format in src/res/music/README.md). The tables and the header offsets are rebuilt from the order of
+# the blocks below, so blocks may grow or shrink. "#" starts a comment line.
+
+delay 6
+positions 0 1 2 3 3 4 4 5 5 6 6 7 8 9 9 10 11 12 13 15 1 14
+
+pattern 0
+  A
+    s1 o1 v15 n0 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    end
+  B
+    len6 off
+    end
+  C
+    len6 off
+    end
+
+pattern 1
+  A
+    s1 o1 v15 n0 len4 A-4
+    s7 o7 len6 A-4
+    len16 rel
+    s1 o1 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    len4 A-4
+    s7 o7 len6 F-4
+    len16 rel
+    s1 o1 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    end
+
+pattern 2
+  A
+    s1 o1 v15 n0 len4 A-4
+    s7 o7 len6 G-4
+    len16 rel
+    s1 o1 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    len26 A-4
+    len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    end
+  B
+    s2 o2 v15 n0 len2 G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    rel
+    s8 o8 v12 len1 C-7
+    v14 C-7
+    v15 C-7
+    v14 C-7
+    v13 C-7
+    v12 C-7
+    v11 C-7
+    v10 C-7
+    v9 C-7
+    v8 C-7
+    v7 C-7
+    v6 C-7
+    s2 o2 v15 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 len4 C-4
+    C-4
+    C-4
+    C-4
+    len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    end
+
+pattern 3
+  A
+    s10 o10 v15 n0 len8 A-4
+    E-5
+    len4 C-5
+    len2 B-4
+    len4 A-4
+    len6 B-4
+    len8 A-4
+    E-5
+    len4 A-5
+    len2 A-5
+    len10 G-5
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    end
+
+pattern 4
+  A
+    s10 o10 v15 n0 len1 A-4
+    E-4
+    B-4
+    E-4
+    len10 C-5
+    len2 C-4
+    len1 F-4
+    C-4
+    G-4
+    C-4
+    len10 A-4
+    len2 A-4
+    len1 D-5
+    A-4
+    E-5
+    A-4
+    len12 F-5
+    len8 A-5
+    G-5
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    end
+
+pattern 5
+  A
+    s10 o10 v15 n0 len1 A-4
+    E-4
+    B-4
+    E-4
+    len2 C-5
+    s1 o1 E-4
+    len1 A-4
+    E-4
+    B-4
+    E-4
+    len2 C-5
+    s10 o10 C-4
+    len1 F-4
+    C-4
+    G-4
+    C-4
+    len2 A-4
+    s1 o1 C-4
+    len1 F-4
+    C-4
+    G-4
+    C-4
+    len2 A-4
+    s10 o10 A-4
+    len1 D-5
+    A-4
+    E-5
+    A-4
+    len2 F-5
+    s1 o1 A-4
+    len1 D-5
+    A-4
+    E-5
+    A-4
+    len4 F-5
+    s10 o10 len2 A-5
+    s1 o1 G-4
+    G-5
+    G-4
+    s10 o10 G-5
+    s1 o1 G-4
+    G-5
+    G-4
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    end
+
+pattern 6
+  A
+    s13 o13 env n0 shape14 len8 A-3 ep$2F
+    B-3 ep$2A
+    C-4 ep$28
+    D-4 ep$23
+    len12 B-3 ep$2A
+    len4 G-3 ep$35
+    len16 E-3 ep$3F
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 7
+  A
+    s13 o13 env n0 shape14 len8 C-4 ep$28
+    D-4 ep$23
+    E-4 ep$20
+    F-4 ep$1E
+    len12 D-4 ep$23
+    len4 B-3 ep$2A
+    len16 G-3 ep$35
+    end
+  B
+    s2 o2 v15 n0 len2 C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 8
+  A
+    s13 o13 env n0 shape14 len8 C-4 ep$28
+    D-4 ep$23
+    E-4 ep$20
+    F-4 ep$1E
+    len16 D-4 ep$23
+    len10 E-4 ep$20
+    len2 D-4 ep$23
+    C-4 ep$28
+    B-3 ep$2A
+    end
+  B
+    s2 o2 v15 n0 len2 C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 9
+  A
+    s13 o13 env n0 shape14 len10 A-3 ep$2F
+    s9 o9 v15 len2 C-5
+    C-5
+    B-4
+    len16 A-4
+    len2 B-4
+    len4 B-4
+    len2 B-4
+    C-5
+    len4 C-5
+    len2 C-5
+    D-5
+    s10 o10 E-5
+    E-5
+    D-5
+    len8 E-5
+    end
+  B
+    s2 o2 v15 n0 len2 F-2
+    F-3
+    F-2
+    F-3
+    F-2
+    F-3
+    F-2
+    F-3
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    D-2
+    D-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    E-2
+    E-3
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 10
+  A
+    s1 o1 v15 n0 len6 A-4
+    len2 E-4
+    len6 E-4
+    len2 E-4
+    A-4
+    E-4
+    B-4
+    E-4
+    C-5
+    E-4
+    D-5
+    E-4
+    len6 E-5
+    len2 C-5
+    len6 C-5
+    len2 G-4
+    C-5
+    G-4
+    D-5
+    G-4
+    E-5
+    G-4
+    F-5
+    G-4
+    end
+  B
+    s2 o2 v15 n0 len2 A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 11
+  A
+    s1 o1 v15 n0 len6 D-5
+    len2 G-4
+    len6 G-4
+    len2 D-4
+    G-4
+    D-4
+    A-4
+    D-4
+    B-4
+    D-4
+    C-5
+    D-4
+    len6 A-4
+    len2 E-4
+    len8 E-4
+    len6 G-4
+    len2 E-4
+    len8 E-4
+    end
+  B
+    s2 o2 v15 n0 len2 G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    A-1
+    A-2
+    E-1
+    E-2
+    E-1
+    E-2
+    E-1
+    E-2
+    E-1
+    E-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 12
+  A
+    s1 o1 v15 n0 len6 C-5
+    len2 G-4
+    len6 G-4
+    len2 G-4
+    C-5
+    G-4
+    D-5
+    G-4
+    E-5
+    G-4
+    F-5
+    G-4
+    len6 G-5
+    len2 D-5
+    len6 D-5
+    len2 D-4
+    G-4
+    D-4
+    A-4
+    D-4
+    B-4
+    D-4
+    C-5
+    D-4
+    end
+  B
+    s2 o2 v15 n0 len2 C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    C-2
+    C-3
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 13
+  A
+    s1 o1 v15 n0 len6 A#4
+    len2 F-4
+    len6 F-4
+    len2 F-4
+    A#4
+    F-4
+    C-5
+    F-4
+    D-5
+    F-4
+    D#5
+    F-4
+    len6 C-5
+    len2 F-4
+    len6 F-4
+    len2 C-4
+    F-4
+    C-4
+    G-4
+    C-4
+    A-4
+    C-4
+    A#4
+    C-4
+    end
+  B
+    s2 o2 v15 n0 len2 A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    A#1
+    A#2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    F-1
+    F-2
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    len1 C-5
+    C-5
+    end
+
+pattern 14
+  A
+    s1 o1 v15 n0 len4 A-4
+    s7 o7 len6 G-4
+    len16 rel
+    s1 o1 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    len4 A-4
+    s6 o6 v12 len1 C-6
+    v14 C-6
+    v15 C-6
+    v14 C-6
+    v13 C-6
+    v12 C-6
+    v11 C-6
+    v10 C-6
+    v9 C-6
+    v8 C-6
+    v7 C-6
+    v6 C-6
+    v5 C-6
+    v4 C-6
+    v3 C-6
+    v2 C-6
+    v1 C-6
+    len11 rel
+    end
+  B
+    s2 o2 v15 n0 len2 G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    G-1
+    G-2
+    len4 G-1
+    s8 o8 v12 len1 C-7
+    v14 C-7
+    v15 C-7
+    v14 C-7
+    v13 C-7
+    v12 C-7
+    v11 C-7
+    v10 C-7
+    v9 C-7
+    v8 C-7
+    v7 C-7
+    v6 C-7
+    v5 C-7
+    v4 C-7
+    v3 C-7
+    v2 C-7
+    s2 o2 v15 len2 A-1
+    len26 rel
+    end
+  C
+    s3 o3 v15 n0 len2 C-4
+    s4 o4 G-5
+    s5 o5 C-5
+    s4 o4 G-5
+    s3 o3 len1 C-4
+    s4 o4 G-5
+    G-5
+    G-5
+    s5 o5 len2 C-5
+    s4 o4 G-5
+    s3 o3 len4 C-4
+    C-4
+    C-4
+    C-4
+    len2 C-4
+    s4 o4 G-5
+    s3 o3 C-4
+    len26 rel
+    end
+
+pattern 15
+  A
+    len2 rel
+    s1 o1 v15 n0 len1 E-4
+    G-4
+    A-4
+    C-5
+    B-4
+    G-4
+    end
+  B
+    len8 rel
+    end
+  C
+    len8 rel
+    end
+
+sample 0
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 1
+  --- noise  +0 tone   +1 vol 12 T---
+  --- noise  +0 tone   +1 vol 13 T---
+  --- noise  +0 tone   -1 vol 15 T---
+  --- noise  +0 tone   -1 vol 14 T---
+  --- noise  +0 tone   -1 vol 12 T---
+  --- noise  +0 tone   -1 vol 12 T---
+  --- noise  +0 tone   +1 vol 11 T---
+  --- noise  +0 tone   +1 vol 11 T---
+  S-- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  -L- noise  +0 tone   +1 vol  9 T---
+  --- noise  +0 tone   +1 vol  8 T---
+  --- noise  +0 tone   +1 vol  7 T---
+  --- noise  +0 tone   -1 vol  6 T---
+  --- noise  +0 tone   -1 vol  5 T---
+  --- noise  +0 tone   -1 vol  4 T---
+  --- noise  +0 tone   -1 vol  3 T---
+  --- noise  +0 tone   +1 vol  2 T---
+  --X noise  +0 tone   +1 vol  1 T---
+
+sample 2
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 14 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  S-- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  -L- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   -2 vol  7 T---
+  --- noise  +0 tone   -2 vol  5 T---
+  --- noise  +0 tone   +2 vol  4 T---
+  --X noise  +0 tone   +2 vol  2 T---
+
+sample 3
+  --- noise  -2 tone   +2 vol 12 TN--
+  --- noise  +0 tone   -2 vol 13 TN--
+  --- noise  +0 tone   -2 vol 14 T---
+  --- noise  +0 tone   +2 vol 15 T---
+  --- noise  +0 tone   +2 vol 14 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  S-- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   -4 vol  9 T---
+  --- noise  +0 tone   -4 vol  9 T---
+  -LX noise  +0 tone   +4 vol  9 T---
+
+sample 4
+  --- noise  +2 tone   +0 vol 15 -N--
+  --- noise  +1 tone   +0 vol 12 TN--
+  --- noise  -2 tone   +0 vol  9 -N--
+  --- noise  +1 tone   +0 vol  7 TN--
+  --- noise  +1 tone   +0 vol  5 -N--
+  SLX noise  +0 tone   +0 vol  0 -N--
+
+sample 5
+  --- noise  -9 tone   +0 vol 14 -N--
+  --- noise  -3 tone   +0 vol 13 -N--
+  --- noise  +4 tone   +0 vol 12 -N--
+  --- noise  -5 tone   +0 vol 11 -N--
+  --- noise  +5 tone   +0 vol 10 -N--
+  --- noise  -6 tone   +0 vol  9 -N--
+  S-- noise  +6 tone   +0 vol  8 -N--
+  --- noise  -4 tone   +0 vol  8 -N--
+  --- noise  +6 tone   +0 vol  8 -N--
+  -L- noise  -8 tone   +0 vol  8 -N--
+  --- noise  +2 tone   +0 vol  8 -N--
+  --- noise  +2 tone   +0 vol  7 -N--
+  --- noise  +2 tone   +0 vol  6 -N--
+  --- noise  +2 tone   +0 vol  5 -N--
+  --- noise  +2 tone   +0 vol  4 -N--
+  --- noise  +2 tone   +0 vol  3 -N--
+  --- noise  +2 tone   +0 vol  2 -N--
+  --X noise  +2 tone   +0 vol  1 -N--
+
+sample 6
+  --- noise +12 tone   +0 vol 15 TN--
+  --- noise  +8 tone   +0 vol 15 -N--
+  --- noise  -8 tone   +0 vol 15 TN--
+  --- noise  +6 tone   +0 vol 15 -N--
+  --- noise  -4 tone   +0 vol 15 TN--
+  SLX noise  +0 tone   +0 vol 15 -N--
+
+sample 7
+  --- noise  +0 tone   +0 vol  8 T---
+  --- noise  +0 tone   +0 vol  8 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +1 vol 13 T---
+  --- noise  +0 tone   +1 vol 13 T---
+  --- noise  +0 tone   -1 vol 14 T---
+  --- noise  +0 tone   -1 vol 14 T---
+  --- noise  +0 tone   -1 vol 15 T---
+  --- noise  +0 tone   -1 vol 15 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   +2 vol 14 T---
+  --- noise  +0 tone   +2 vol 13 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  S-- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  -L- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  3 T---
+  --- noise  +0 tone   +4 vol  3 T---
+  --- noise  +0 tone   +4 vol  2 T---
+  --- noise  +0 tone   +4 vol  2 T---
+  --- noise  +0 tone   +4 vol  1 T---
+  --X noise  +0 tone   +4 vol  1 T---
+
+sample 8
+  --- noise  +5 tone   +0 vol 15 TN--
+  --- noise  +4 tone   +0 vol 15 -N--
+  --- noise  -3 tone   +0 vol 15 TN--
+  --- noise  +2 tone   +0 vol 15 -N--
+  --- noise  -1 tone   +0 vol 15 TN--
+  SLX noise  +0 tone   +0 vol 15 -N--
+
+sample 9
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 15 T---
+  --- noise  +0 tone   +0 vol 15 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   -1 vol 13 T---
+  --- noise  +0 tone   -1 vol 13 T---
+  --- noise  +0 tone   -1 vol 12 T---
+  --- noise  +0 tone   -1 vol 12 T---
+  --- noise  +0 tone   +1 vol 11 T---
+  --- noise  +0 tone   +1 vol 11 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   -1 vol  9 T---
+  --- noise  +0 tone   -1 vol  9 T---
+  S-- noise  +0 tone   +1 vol  8 T---
+  --- noise  +0 tone   +1 vol  8 T---
+  --- noise  +0 tone   +1 vol  8 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   +1 vol  8 T---
+  --- noise  +0 tone   +1 vol  8 T---
+  -LX noise  +0 tone   +1 vol  8 T---
+
+sample 10
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +1 vol 13 T---
+  --- noise  +0 tone   +1 vol 13 T---
+  --- noise  +0 tone   -1 vol 14 T---
+  --- noise  +0 tone   -1 vol 14 T---
+  --- noise  +0 tone   -1 vol 15 T---
+  --- noise  +0 tone   -1 vol 15 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   +1 vol 14 T---
+  --- noise  +0 tone   +2 vol 14 T---
+  --- noise  +0 tone   +2 vol 13 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  S-- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  -LX noise  +0 tone   +2 vol 11 T---
+
+sample 11
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 12
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 13
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +1 vol 13 T-E-
+  --- noise  +0 tone   +1 vol 13 T-E-
+  --- noise  +0 tone   -1 vol 14 T-E-
+  --- noise  +0 tone   -1 vol 14 T-E-
+  --- noise  +0 tone   -1 vol 15 T-E-
+  --- noise  +0 tone   -1 vol 15 T-E-
+  --- noise  +0 tone   +1 vol 14 T-E-
+  --- noise  +0 tone   +1 vol 14 T-E-
+  --- noise  +0 tone   +1 vol 14 T-E-
+  --- noise  +0 tone   +2 vol 14 T-E-
+  --- noise  +0 tone   +2 vol 13 T-E-
+  --- noise  +0 tone   -2 vol 13 T-E-
+  --- noise  +0 tone   -2 vol 13 T-E-
+  --- noise  +0 tone   -2 vol 13 T-E-
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 12 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   -2 vol 11 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   -2 vol 10 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  S-- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   +2 vol  9 T---
+  -L- noise  +0 tone   +2 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  9 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  8 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  7 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  6 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  5 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  4 T---
+  --- noise  +0 tone   +4 vol  3 T---
+  --- noise  +0 tone   +4 vol  2 T---
+  --X noise  +0 tone   +4 vol  1 T---
+
+sample 14
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 15
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 16
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 17
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 18
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 19
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 20
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 21
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 22
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 23
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 24
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 25
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 26
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 27
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 28
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 29
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 30
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 31
+  SLX noise  +0 tone   +0 vol 15 T---
+
+ornament 0
+  SLX noise  +0 note  +0
+
+ornament 1
+  --- noise  +0 note  +0
+  S-- noise  +0 note +12
+  --- noise  +0 note -12
+  -LX noise  +0 note  +0
+
+ornament 2
+  SLX noise  +0 note  +0
+
+ornament 3
+  --- noise  +0 note -12
+  SLX noise  +0 note  -2
+
+ornament 4
+  --- noise  +0 note +12
+  S-- noise  +0 note  +3
+  --- noise  +0 note  +0
+  -LX noise  +0 note  -3
+
+ornament 5
+  --- noise  +0 note -24
+  SLX noise  +0 note  +0
+
+ornament 6
+  S-- noise  +0 note  +5
+  --- noise  +0 note  -8
+  -LX noise  +0 note  +2
+
+ornament 7
+  --- noise  +0 note  +0
+  S-- noise  +0 note  +3
+  --- noise  +0 note  +4
+  -LX noise  +0 note  -7
+
+ornament 8
+  S-- noise  +0 note  +5
+  --- noise  +0 note  -8
+  -LX noise  +0 note  +2
+
+ornament 9
+  S-- noise  +0 note +12
+  --- noise  +0 note  +0
+  --- noise  +0 note -12
+  -LX noise  +0 note  +0
+
+ornament 10
+  SLX noise  +0 note  +0
+
+ornament 11
+  SLX noise  +0 note  +0
+
+ornament 12
+  SLX noise  +0 note  +0
+
+ornament 13
+  SLX noise  +0 note  +0
+
+ornament 14
+  SLX noise  +0 note  +0
+
+ornament 15
+  SLX noise  +0 note  +0
+
+ornament 16
+  SLX noise  +0 note  +0
+
+ornament 17
+  SLX noise  +0 note  +0
+
+ornament 18
+  SLX noise  +0 note  +0
+
+ornament 19
+  SLX noise  +0 note  +0
+
+ornament 20
+  SLX noise  +0 note  +0
+
+ornament 21
+  SLX noise  +0 note  +0
+
+ornament 22
+  SLX noise  +0 note  +0
+
+ornament 23
+  SLX noise  +0 note  +0
+
+ornament 24
+  SLX noise  +0 note  +0
+
+ornament 25
+  SLX noise  +0 note  +0
+
+ornament 26
+  SLX noise  +0 note  +0
+
+ornament 27
+  SLX noise  +0 note  +0
+
+ornament 28
+  SLX noise  +0 note  +0
+
+ornament 29
+  SLX noise  +0 note  +0
+
+ornament 30
+  SLX noise  +0 note  +0
+
+ornament 31
+  SLX noise  +0 note  +0

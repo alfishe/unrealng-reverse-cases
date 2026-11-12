@@ -1,0 +1,3 @@
+# CornerColours: the five attributes of the corner gradients (ColourCorners $6CBF): one a row in the
+# left corners, one a column in the right ones.
+$01 $41 $45 $41 $01

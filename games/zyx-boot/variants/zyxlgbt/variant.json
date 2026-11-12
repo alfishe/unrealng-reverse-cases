@@ -1,0 +1,11 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxlgbt.trd",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 376,
+    "length": 357,
+    "sectors": 2
+  },
+  "loader": "own"
+}

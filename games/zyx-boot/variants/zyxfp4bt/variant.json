@@ -1,0 +1,20 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxfp4bt.scl",
+  "file": "ZYXFP4bt",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 35
+  },
+  "code": [
+    "kempston"
+  ],
+  "equ": {
+    "MusicPiece": "$C780",
+    "MusicSectors": "11",
+    "MusicInit": "$0052",
+    "MusicPlay": "$C780"
+  },
+  "whole_image": true
+}

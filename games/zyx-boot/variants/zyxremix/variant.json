@@ -1,0 +1,11 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxremix.scl",
+  "file": "ZYXremix",
+  "header": {
+    "type": "B",
+    "start": 221,
+    "length": 221,
+    "sectors": 56
+  },
+  "loader": "own"
+}

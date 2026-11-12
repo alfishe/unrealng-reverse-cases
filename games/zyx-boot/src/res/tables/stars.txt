@@ -1,0 +1,66 @@
+# The falling stars: three tables of 20 stars (StarsA $AC84, StarsB $ACFC, StarsC $AD74).
+# A star: x (0-255), y (0-191) of its pixel, lit = whether the screen pixel under it was set (MoveStars
+# restores it). The record is the screen address, the RES / SET / BIT n,(HL) opcodes of its bit and lit.
+# table A
+195  25 0
+196  25 0
+244  58 0
+245  58 0
+ 20  35 0
+ 21  35 0
+ 99  46 0
+100  46 0
+216 112 0
+217 112 0
+ 67 121 0
+ 68 121 0
+ 40  78 0
+ 41  78 0
+152  86 0
+153  86 0
+118 166 0
+119 166 0
+ 11 174 0
+ 12 174 0
+# table B
+195  26 0
+196  26 0
+244  59 0
+245  59 0
+ 20  36 0
+ 21  36 0
+ 99  47 0
+100  47 0
+216 113 0
+217 113 0
+ 67 122 0
+ 68 122 0
+ 40  79 0
+ 41  79 0
+152  87 0
+153  87 0
+118 167 0
+119 167 0
+ 11 175 0
+ 12 175 0
+# table C
+110  43 0
+ 17  59 0
+ 83  59 0
+ 48  20 0
+127  72 0
+ 60 105 0
+ 86 121 0
+ 97  90 0
+166 107 0
+ 31 123 0
+208  77 0
+  5 101 0
+239 101 0
+133 109 0
+151 178 0
+106 139 0
+148 139 0
+187 132 0
+225 165 0
+ 73 167 0

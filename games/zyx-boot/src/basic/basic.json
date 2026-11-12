@@ -1,0 +1,20 @@
+{
+  "about": "Sector 0 of the file boot: the BASIC program at PROG $5D3B (180 bytes, autostart line 10) with the machine-code loader in line 4's REM, the TR-DOS autostart mark and the sector's leftover tail: python3 ../../kit/mkgame.py --part src/basic/basic.json --install",
+  "image_cmd": ["python3", "tools/image.py"],
+  "image": "work/parts/basic-5d3b.bin",
+  "org": "5D3B",
+  "ann": "src/basic/basic.ann",
+  "top": "basic",
+  "bin": "basic.bin",
+  "dest": "src/basic",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": ["; ZYX boot: sector 0 of the file boot (B, 180 bytes, 46 sectors), the BASIC program TR-DOS loads at PROG $5D3B.",
+             "; Line 4's REM holds the loader, entered at $5D80 by line 10's RANDOMIZE USR 23936."],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5D3B", "hi": "5E3B", "reads": false},
+         {"path": "work/stage1/c2/l1.json", "lo": "5D3B", "hi": "5E3B", "reads": false},
+         {"path": "work/stage1/c3/l1.json", "lo": "5D3B", "hi": "5E3B", "reads": false},
+         {"path": "work/stage1/c4/l1.json", "lo": "5D3B", "hi": "5E3B", "reads": false}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic"
+}

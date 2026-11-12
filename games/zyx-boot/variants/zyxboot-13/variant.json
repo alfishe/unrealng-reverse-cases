@@ -1,0 +1,22 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxboot.scl",
+  "file": "ZYX-13  ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 32
+  },
+  "start": true,
+  "equ": {
+    "MusicPiece": "$EB50",
+    "MusicSectors": "8",
+    "MusicInit": "$EB53",
+    "MusicPlay": "$EB56",
+    "MenuStack": "$BF68",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$EB50"
+  },
+  "whole_image": false
+}

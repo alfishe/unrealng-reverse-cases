@@ -1,0 +1,17 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxdebt.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 39
+  },
+  "equ": {
+    "MusicPiece": "$C0B7",
+    "MusicSectors": "15",
+    "MusicInit": "$C0B7",
+    "MusicPlay": "$C0BD"
+  },
+  "whole_image": true
+}

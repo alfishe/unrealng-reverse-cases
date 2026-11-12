@@ -1,0 +1,17 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxrover.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 42
+  },
+  "equ": {
+    "MusicPiece": "$BFFE",
+    "MusicSectors": "18",
+    "MusicInit": "$C003",
+    "MusicPlay": "$BFFE"
+  },
+  "whole_image": true
+}

@@ -1,0 +1,49 @@
+{
+  "about": "The music piece at $C000 (22 sectors of boot): the ASC Sound Master player and its tune: python3 ../../kit/mkgame.py --part src/music/music.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/image.py"
+  ],
+  "image": "work/parts/music-c000.bin",
+  "org": "C000",
+  "ann": "src/music/music.ann",
+  "top": "music",
+  "bin": "music.bin",
+  "dest": "src/music",
+  "device": "ZXSPECTRUM48",
+  "bases": {
+    "0": "C000"
+  },
+  "header": [
+    "; ZYX boot: the music piece at $C000, an ASC Sound Master compilation (player and tune) the menu calls at",
+    "; $C00B (init) and from its interrupt at $C00E (play)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "C000",
+      "hi": "D600",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/c2/l1.json",
+      "lo": "C000",
+      "hi": "D600",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/c3/l1.json",
+      "lo": "C000",
+      "hi": "D600",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/c4/l1.json",
+      "lo": "C000",
+      "hi": "D600",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkmusic"
+}

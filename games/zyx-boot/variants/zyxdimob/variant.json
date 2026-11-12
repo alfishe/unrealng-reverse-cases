@@ -1,0 +1,26 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxdimob.scl",
+  "file": "boot1   ",
+  "header": {
+    "type": "B",
+    "start": 201,
+    "length": 201,
+    "sectors": 34
+  },
+  "code": [
+    "kempston",
+    "no-music-init"
+  ],
+  "start": true,
+  "equ": {
+    "MusicPiece": "$E505",
+    "MusicSectors": "10",
+    "MusicInit": "$0000",
+    "MusicPlay": "$E505",
+    "MenuStack": "$BF68",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$0000"
+  },
+  "whole_image": true
+}

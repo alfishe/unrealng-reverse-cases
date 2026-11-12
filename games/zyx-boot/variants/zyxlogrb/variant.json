@@ -1,0 +1,21 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxlogrb.scl",
+  "file": "ZYX-L   ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 38
+  },
+  "code": [
+    "kempston",
+    "glint-add"
+  ],
+  "equ": {
+    "MusicPiece": "$C030",
+    "MusicSectors": "14",
+    "MusicInit": "$C030",
+    "MusicPlay": "$C036"
+  },
+  "whole_image": true
+}

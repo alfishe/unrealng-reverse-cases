@@ -1,0 +1,18 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxrusbt.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 48
+  },
+  "equ": {
+    "MusicPiece": "$C0B7",
+    "MusicSectors": "24",
+    "MusicInit": "$C0B7",
+    "MusicPlay": "$C0BD",
+    "MenuStack": "$BF68"
+  },
+  "whole_image": true
+}

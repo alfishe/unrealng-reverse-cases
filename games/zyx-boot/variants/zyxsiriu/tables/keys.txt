@@ -1,0 +1,26 @@
+# KeyTable: the 24 letter keys A-X. row: the keyboard half-row (the bit reset in the port's high byte,
+# 0 = $FEFE CAPS..V ... 7 = $7FFE SPACE..B); mask: the key's bit in the IN byte (bit 0 the outer key).
+A: 1 %00001
+B: 7 %10000
+C: 0 %01000
+D: 1 %00100
+E: 2 %00100
+F: 2 %10001
+G: 1 %10000
+H: 6 %10000
+I: 5 %00100
+J: 6 %01000
+K: 6 %00100
+L: 6 %00010
+M: 7 %00100
+N: 7 %01000
+O: 2 %10001
+P: 2 %10001
+Q: 2 %00001
+R: 2 %01000
+S: 1 %00010
+T: 2 %10000
+U: 5 %01000
+V: 0 %10000
+W: 2 %00010
+X: 0 %00100

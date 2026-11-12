@@ -1,0 +1,24 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxalex.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 34
+  },
+  "start": true,
+  "equ": {
+    "MusicPiece": "$F424",
+    "MusicSectors": "10",
+    "MusicInit": "$F42A",
+    "MusicPlay": "$F427",
+    "MenuStack": "$BF68",
+    "Im2Table": "$DC00",
+    "Im2Jump": "$DBDB",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$F42D"
+  },
+  "whole_image": true
+}

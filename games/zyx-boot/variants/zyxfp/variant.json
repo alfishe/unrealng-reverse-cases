@@ -1,0 +1,17 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxfp.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 46
+  },
+  "equ": {
+    "MusicPiece": "$C000",
+    "MusicSectors": "22",
+    "MusicInit": "$C00B",
+    "MusicPlay": "$C00E"
+  },
+  "whole_image": true
+}

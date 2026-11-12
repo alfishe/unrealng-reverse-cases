@@ -1,0 +1,38 @@
+# c2: tests/disks/many.scl (tools/mktestdisk.py: the boot, 30 BASIC programs T01-T30, a 192-sector CODE file listed
+# as a "magic" snapshot, a plain CODE file) booted from power-on as c1 (--disk-boot-frames 100). The first page holds
+# 24 of the 32 listed names. SS shows the next page (a second SS on the last page does nothing), CS the first; 8 and
+# 3 move the bar down, 9 and 4 up, 7 and 1 change the column; ENTER runs the name under the bar: the menu fades and
+# TR-DOS runs it. The menu reads the keys on every 8th interrupt, so each key is held 8 frames.
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++1500 ss
++8 -
++600 ss
++8 -
++300 cs
++8 -
++400 8
++8 -
++50 8
++8 -
++50 3
++8 -
++50 8
++8 -
++50 9
++8 -
++50 7
++8 -
++100 1
++8 -
++50 4
++8 -
++100 ENTER
++8 -
++800 END

@@ -1,0 +1,17 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxawbt.scl",
+  "file": "ZYXAWbt ",
+  "header": {
+    "type": "B",
+    "start": 201,
+    "length": 201,
+    "sectors": 43
+  },
+  "equ": {
+    "MusicPiece": "$BFFB",
+    "MusicSectors": "19",
+    "MusicInit": "$BFFB",
+    "MusicPlay": "$C000"
+  },
+  "whole_image": true
+}

@@ -1,0 +1,11 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxermbt.scl",
+  "file": "boot    ",
+  "header": {
+    "type": "B",
+    "start": 307,
+    "length": 307,
+    "sectors": 51
+  },
+  "loader": "own"
+}

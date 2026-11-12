@@ -1,0 +1,48 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxkombt.scl",
+  "file": "++      ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 45
+  },
+  "equ": {
+    "MusicPiece": "$C078",
+    "MusicSectors": "21",
+    "MusicInit": "$C078",
+    "MusicPlay": "$C07E"
+  },
+  "files": [
+    {
+      "file": "00.boot.B",
+      "name": "boot    ",
+      "type": "B",
+      "start": 140,
+      "length": 140
+    },
+    {
+      "file": "01.romb.C",
+      "name": "romb    ",
+      "type": "C",
+      "start": 40000,
+      "length": 105
+    },
+    {
+      "file": "02.comel.C",
+      "name": "comel   ",
+      "type": "C",
+      "start": 16384,
+      "length": 6912
+    },
+    {
+      "file": "03.+.B",
+      "name": "+       ",
+      "type": "B",
+      "start": 89,
+      "length": 89
+    },
+    "boot"
+  ],
+  "whole_image": true
+}

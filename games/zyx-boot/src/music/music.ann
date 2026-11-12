@@ -1,0 +1,262 @@
+# The annotations of the music piece at $C000 (kit/mkgame.py --part src/music/music.json). Format:
+# ../../../../docs/ann-format.md.
+#
+# The image: 22 sectors of the boot file that TR-DOS loads to $C000-$D5FF (the ROM's $3FD5 writes all 5632 bytes in
+# every recording), an "ASM compilation" of ASC Sound Master, the AY tracker by Andrew Sendetski (ASC): the compiled
+# player ($C000-$C477, with its note period table) and one tune module ($C478-$D592) in the ASC Sound Master 0.x
+# layout, then 109 bytes of sector filler. The player's text at $C014 says
+# "ASM COMPILATION OF DISCO MUSIC BY ANT P BY ANDREW SENDETSKI ASC": the compiler's "ASM COMPILATION OF " + the
+# tune's 20-character title "DISCO MUSIC BY ANT P" + " BY " + the 20-character author field "ANDREW SENDETSKI ASC".
+# So the tune is "Disco music" by "Ant P" (the title field is full: the name may be cut there), and the author field
+# holds the editor's own name.
+# The menu calls MusicInit $C00B once from its set-up and MusicPlay $C00E from its IM 2 handler (the CALL at $676D,
+# in the handler at $6757) at every interrupt; nobody calls MusicStop $C011. The program the menu launches then
+# loads over $C000 (the blocks moved by $5D80 / $5DB4 in c1-c4).
+# Witness: "L1 N (builds)" is the runs of an entry's first instruction summed over c1-c4 (music.json "l1");
+# kit/mkgame.py --fix-witness writes the real counts. "Known only from the code" marks what no recording ran.
+# Times are 50 Hz frames (one MusicPlay call an interrupt).
+
+@module player ; The ASC Sound Master player: the entry vectors, the set-up, the frame, the pattern reader, the samples and ornaments, the AY write
+@about The compiled player of ASC Sound Master (Andrew Sendetski, ASC). Three entry points: MusicInit $C00B (JP InitPlayer $C053) reads the module's header at TuneHeader $C478 into self-modified operands (the delay into DelayOp $C10A, the three table addresses into PatternTableOp $C1A8, SampleTableOp $C25E and CommandOrnament $C26B, the number of positions into PositionCountOp $C19A, the positions' address into NextPosition $C191), clears the channel records and silences the AY; MusicPlay $C00E (JP PlayFrame $C104) plays one frame; MusicStop $C011 (JP Silence $C095) silences the AY (known only from the code: nobody calls it).
+@about A frame (PlayFrame): DelayCounter $C103 counts the tune's delay (6 frames: a row every 6 frames, 8.33 rows a second). On a row frame, when all three channels have met the $FF that ends their stream in the current pattern, NextPosition $C191 starts the next position (after the last, position 0 again: the module has no loop byte); then ChannelRow $C1CE reads a channel's stream when its row counter runs out (an event lasts the length set by the $F0 command, in rows). On every frame ChannelSound $C2A0 runs for A, B and C: one row of the channel's sample (SampleStep $C308: volume, tone offset, noise offset, mixer bits) and of its ornament (OrnamentStep $C385: a note offset), then the tone period from PeriodTable $C3CA, the volume and the noise into AYRegisters $C0F4; the mixer from the three samples' bits; last WriteAY $C15F writes the registers (register 13, the envelope shape, only in a frame that set it).
+@about Cost: c1 calls MusicPlay 7274 times (frames 543-7879) for 49 741 659 T-states with all it calls, 6838 T-states a frame on average; MusicInit takes 3139 T-states.
+
+$C000 w PlayerVectors 4 ; The compiled player's header: the init, play, AY-write and AY-register addresses
+> DEFW MusicInit $C00B, MusicPlay $C00E, WriteAY $C15F, AYRegisters $C0F4: the addresses a program using the compilation may take from the header. No instruction in c1-c4 reads them (the menu calls $C00B and $C00E directly).
+
+$C008 b PlayerHeaderBytes 3 ; Three more bytes of the compilation's header: $80, $54, $1E
+> No instruction in c1-c4 reads them and the player's code does not refer to them (known only from the code); their meaning is not known.
+
+$C00B c MusicInit ; Set the player up for the tune (JP InitPlayer)
+> The init entry: the menu's set-up calls it once (c1 frame 532), before its IM 2 handler starts calling MusicPlay $C00E.
+> Witness: L1 4 (c x4).
+
+$C00E c MusicPlay ; Play one frame of the tune (JP PlayFrame)
+> The play entry: the menu's IM 2 handler calls it at $676D on every interrupt (c1: 7274 calls, frames 543-7879).
+> Witness: L1 13931 (c x4).
+
+$C011 c MusicStop ; Silence the AY (JP Silence)
+> The stop entry of the compilation. Known only from the code: no instruction in c1-c4 jumps or calls here (the menu never stops the music; the launched program loads over it).
+> Witness: L1 0 ().
+
+$C014 t PlayerText ; "ASM COMPILATION OF DISCO MUSIC BY ANT P BY ANDREW SENDETSKI ASC"
+> 63 bytes the compiler puts in the player: "ASM COMPILATION OF " (19), the tune's title "DISCO MUSIC BY ANT P" (20), " BY " (4), the author field "ANDREW SENDETSKI ASC" (20). No instruction in c1-c4 reads it; the menu never prints it.
+
+$C053 c InitPlayer ; Clear the channels, read the module's header into the player's operands, silence the AY
+> In: nothing. Clears ChannelA $C0A9 to the end of ChannelC $C0F3 (75 bytes), sets PositionOp+1 to 0 (the first position), and DelayCounter $C103 and the three row counters (+$0A of each record) to 1, so the first MusicPlay reads a row at once.
+> Then BC = DE = TuneHeader $C478: DelayOp+1 = the delay (byte 0: 6); through ReadOffsetDE $C189 the three offsets at +1, +3, +5 plus the module's address into PatternTableOp+1 ($C496), SampleTableOp+1 ($D074) and CommandOrnament+1 ($D4EF); PositionCountOp+1 = the number of positions (byte 7: 22); NextPosition+1 = the positions' address ($C480). Falls into Silence $C095.
+> c1 runs it once, at frame 532.
+> Witness: L1 4 (c x4).
+$C06F ; the module: DE the pointer into its header, BC the base its offsets add to
+
+$C095 c Silence ; Clear the AY register image, mixer $FF, write all 14 registers
+> AYRegisters $C0F4-$C101 = 0, then AYMixer $C0FB = $FF (tones and noise off), and JP WriteAY $C15F, which writes registers 13 to 0 (AYEnvelopeShape is 0 here, not $FF, so register 13 is written too). Reached by falling from InitPlayer $C053 (once a recording) and from MusicStop $C011 (known only from the code).
+> Witness: L1 4 (c x4).
+
+$C0A9 b ChannelA 8 ; Channel A's record (25 bytes)
+> The record PlayFrame $C104 hands to ChannelRow $C1CE and ChannelSound $C2A0 in IX. +$00 the flags: bit 0 the pattern stream goes on (cleared when the next byte is the $FF that ends it), bit 1 the sample ended (its X row: silence), bit 2 a note sounds (set by a note, cleared by off $7F), bit 3 released (set by $7E: the sample's loop no longer loops), bit 4 envelope mode (set by $C0, cleared by $C1-$CF), bit 5 the sample row's envelope bit. +$01 the sample row's mixer bits (bit 0 tone off, bit 3 noise off). +$02 the note (0-$55; the ornament adds to it). +$03/$04 the tone offset (the sum of the sample's tone deltas since the note). +$05 the noise base ($D0+n). +$06 the noise period (the base plus the noise deltas, 0-31). +$07 the volume of this frame. +$08 the channel volume ($C1-$CF). +$09 the row length ($F0 n). +$0A the rows left of the current event. +$0B/$0C the stream pointer. +$0D/$0E the sample's start, +$0F/$10 its row, +$11/$12 its loop row. +$13/$14 the ornament's start, +$15/$16 its row, +$17/$18 its loop row.
+> Cleared by InitPlayer $C053, which sets the row counter +$0A ($C0B3) to 1.
+
+$C0C2 b ChannelB 8 ; Channel B's record (25 bytes, as ChannelA)
+> Its +$01 ($C0C3) gives the mixer bits 1 and 4 (PlayFrame $C104).
+
+$C0DB b ChannelC 8 ; Channel C's record (25 bytes, as ChannelA)
+> Its +$01 ($C0DC) gives the mixer bits 2 and 5 (PlayFrame $C104).
+
+$C0F4 b AYRegisters 8 ; The image of AY registers 0-13 that WriteAY sends
+> Written by SetAYRegister $C17D (E = the register), ChannelSound $C2A0 (the noise), CommandLength $C294 (the shape) and ChannelRow $C1CE (the envelope period); cleared by Silence $C095.
+$C0F4 ; registers 0-5: the tone periods of A, B, C (low, high)
+$C0FA AYNoise ; register 6: the noise period (the last channel whose sample row has noise on)
+$C0FB AYMixer ; register 7: the mixer, from the three channels' +$01 bits
+$C0FC ; registers 8-10: the volumes of A, B, C (bit 4: the envelope)
+$C0FF AYEnvelopePeriod ; register 11: the envelope period's low byte (the byte after a note in envelope mode); register 12 stays 0
+$C101 AYEnvelopeShape ; register 13: the envelope shape ($F1-$FF sets 1-15); $FF: no new shape, not written
+
+$C102 b CurrentChannel 1 ; The channel ChannelSound is working on: 0 A, 1 B, 2 C
+> Set by ChannelSound $C2A0 from A; it selects the registers (2 x channel, 8 + channel).
+
+$C103 b DelayCounter 1 ; Frames left to the next row
+> PlayFrame $C104 decrements it each frame and reads a row when it reaches 0, then sets it to the delay (DelayOp $C10A: 6). InitPlayer $C053 sets it to 1.
+
+$C104 c PlayFrame ; Play one frame: on a row frame the next position and the channels' rows, then each channel's sound, the mixer, the AY write
+> In: nothing (reached from MusicPlay $C00E). DelayCounter $C103 - 1; at 0 it becomes the delay and, if bit 0 of all three records' flags is 0 (every stream met its $FF), NextPosition $C191 starts the next position; then ChannelRow $C1CE for A, B and C (IX = ChannelA $C0A9, ChannelB $C0C2, ChannelC $C0DB).
+> PlayFrameSound $C131, every frame: ChannelSound $C2A0 with A = 0, 1, 2 and IX = each record; the mixer (register 7) = channel C's +$01 bits << 2 | channel B's << 1 | channel A's (bits 0-2 tone off, 3-5 noise off) through SetAYRegister $C17D; falls into WriteAY $C15F.
+> c1: 7274 frames, 1213 of them row frames (the JR NZ at $C108), 21 new positions (the CALL Z at $C119).
+> Witness: L1 13931 (c x4).
+$C10A DelayOp ; LD (HL),n: n = the module's delay (self-modified by InitPlayer $C053)
+$C131 PlayFrameSound ; every frame: the three channels' sound and the mixer
+
+$C15F c WriteAY ; Write AYRegisters to the AY: registers 13 (when set) or 12 down to 0
+> In: AYRegisters $C0F4. Register 13 is written only when AYEnvelopeShape $C101 is not $FF (a shape command this frame, or Silence $C095), since writing it restarts the envelope; then AYEnvelopeShape = $FF. Each register: OUT ($FFFD) its number, OUTD its value (B = $BF goes to $BE first: port $BEFD, the AY data port).
+> Out: A = $FF. Reached by falling from PlayFrame $C104 and by JP from Silence $C095.
+> Witness: L1 13935 (c x4).
+$C16F WriteAYLoop ; select register A, write its value, down to register 0
+
+$C17D c SetAYRegister ; AYRegisters[E] = A
+> In: E = the register (0-13), A = the value. Keeps DE and HL.
+> Witness: L1 137602 (c x4).
+
+$C189 c ReadOffsetDE ; HL = BC + the word at (DE), DE + 2
+> EX DE,HL and falls into ReadOffset $C18A. Used by InitPlayer $C053 (the module's three table offsets) and NextPosition $C191 (the streams of channels B and C).
+> Witness: L1 98 (c x4).
+
+$C18A c ReadOffset ; HL = BC + the word at (HL); DE = HL + 2
+> In: HL = the word's address, BC = the base the offset is from. Out: HL = the address, DE = the address after the word.
+> Witness: L1 141 (c x4).
+
+$C191 c NextPosition ; Start the next position: the three channels' streams of its pattern
+> LD HL,n: n = the positions' address (set by InitPlayer $C053), plus the position (PositionOp+1); the next position = this one + 1, or 0 after the last (PositionCountOp+1 = 22): the tune loops to position 0. Then HL = PatternTableOp+1 + 6 x the pattern number (an 8-bit product: at most pattern 42), and ReadOffset $C18A / ReadOffsetDE $C189 put the three stream addresses into +$0B/$0C of ChannelA $C0A9, ChannelB $C0C2, ChannelC $C0DB, and bit 0 of their flags is set.
+> c1: 21 positions (0-20, frames 543-7602); position 21 (pattern 14) would start at row 1230, after c1's last row 1213.
+> Witness: L1 43 (c x4).
+$C194 PositionOp ; LD DE,n: n = the position to start (self-modified here; 0 by InitPlayer $C053)
+$C19A PositionCountOp ; CP n: n = the number of positions (self-modified by InitPlayer $C053)
+$C1A8 PatternTableOp ; LD BC,n: n = PatternTable $C496 (self-modified by InitPlayer $C053)
+
+$C1CE c ChannelRow ; One row of a channel: when its event ends, read the commands and the next event of its stream
+> In: IX = the channel record. +$0A - 1; while not 0 the current event goes on. At 0, the bytes at +$0B/$0C: each byte $80-$FF is a command (PatternCommand $C24C), then the event: $00-$55 a note (RowNote $C1F9), $56-$7D nothing new (the note goes on), $7E release (RowRelease $C1F3: the sample leaves its loop), $7F off (bit 2 cleared: silence).
+> RowDone $C238: +$0A = the length (+$09), the pointer kept; when the next byte is $FF the stream is over (bit 0 cleared). So the three streams of a pattern must end on the same row.
+> c1: 3639 calls in the 1213 row frames.
+> Witness: L1 6972 (c x4).
+$C1D8 ChannelRowLoop ; the next byte: a command ($80-$FF) or the event
+$C1F3 RowRelease ; $7E: released (bit 3), the sample's loop row no longer loops
+$C1F9 RowNote ; a note: sound on, the note, noise = the base, tone offset 0, the sample and the ornament from their start
+$C232 ; envelope mode: the byte after the note is the envelope period (register 11)
+$C238 RowDone ; the event lasts +$09 rows; bit 0 cleared when the next byte is $FF
+
+$C24C c PatternCommand ; A pattern command byte $80-$FF: sample, ornament, volume or envelope mode, noise, length or shape
+> In: A = the byte, IX = the record, DE = the stream after it. $80-$9F: the sample A - $80 (+$0D/$0E = SampleTable + its offset, through TableEntry $C278); $A0-$BF: the ornament (CommandOrnament $C26B, +$13/$14); $C0-$CF: CommandVolume $C283; $D0-$EF: CommandNoise $C290; $F0-$FF: CommandLength $C294.
+> Witness: L1 3520 (c x4).
+$C25E SampleTableOp ; LD BC,n: n = SampleTable $D074 (self-modified by InitPlayer $C053)
+$C26B CommandOrnament ; $A0-$BF: the ornament. LD BC,n: n = OrnamentTable $D4EF (self-modified by InitPlayer $C053)
+
+$C278 c TableEntry ; HL = BC + the word at BC + 2A (a sample or ornament address from its table)
+> In: A = the number (0-31), BC = SampleTable $D074 or OrnamentTable $D4EF.
+> Witness: L1 2522 (c x4).
+
+$C283 c CommandVolume ; $C0: envelope mode; $C1-$CF: the channel volume 1-15
+> In: A = the byte - $C0 (Z for $C0). $C0 sets bit 4 (envelope mode: each note is followed by the envelope period byte, and a sample row with E plays on the envelope); $C1-$CF clears it and +$08 = 1-15, the scale of the sample's volumes.
+> Witness: L1 173 (c x4).
+
+$C290 c CommandNoise ; $D0-$EF: the noise base 0-31
+> +$05 = A; a note copies it into the noise period +$06.
+> Witness: L1 119 (c x4).
+
+$C294 c CommandLength ; $F0 n: the row length n; $F1-$FF: the envelope shape 1-15
+> In: A = the byte - $F0 (Z for $F0). $F0: +$09 = the next byte (CommandLengthByte $C29A). $F1-$FF: AYEnvelopeShape $C101 = 1-15, written (and the envelope restarted) at this frame's WriteAY $C15F.
+> Witness: L1 706 (c x4).
+$C29A CommandLengthByte ; $F0: the next byte is the length in rows
+
+$C2A0 c ChannelSound ; One frame of a channel's sound: its sample and ornament rows, the period, the volume, the noise
+> In: A = the channel (0-2, into CurrentChannel $C102), IX = its record. When the sample ended (bit 1) or no note sounds (bit 2 clear): only the volume register, 0. Else SampleStep $C308 and OrnamentStep $C385; AYNoise $C0FA = +$06 unless the sample row has noise off; the note +$02 (above $55: $55, or 0 when an ornament took it below 0) indexes PeriodTable $C3CA, plus the tone offset +$03/$04: registers 2 x channel and 2 x channel + 1 (its low nibble); the volume +$07, with bit 4 (the envelope) when both bit 4 (envelope mode) and bit 5 (the row's E) are set: register 8 + channel.
+> c1: 21 822 calls (3 a frame); 224 with the sample ended, 72 with no note.
+> Witness: L1 41793 (c x4).
+$C2C2 ChannelSoundNote ; the note, clamped to 0-$55
+$C2CE ChannelSoundPeriod ; PeriodTable[note] + the tone offset: the channel's two period registers
+$C2FD ChannelSoundVolume ; register 8 + channel = A
+
+$C308 c SampleStep ; One row of the channel's sample: loop marks, tone offset, mixer, volume, noise offset
+> In: IX. The row at +$0F/$10, three bytes: F (flags and noise delta), T (tone delta), M (mixer and volume). F bit 7: this row is the loop row (+$11/$12); bit 6: the next row is the loop row, unless released (bit 3); bit 5 (checked only when not looping back): the sample ends here (bit 1: silence from the next frame). The tone offset += T (signed); +$01 = M AND 9 (bit 0 tone off, bit 3 noise off); bit 5 of the flags = M bit 1 (envelope); the volume +$07 = (M >> 4) x (the channel volume + 1) / 16. Then AddNoise $C3BB with F's low 5 bits.
+> Witness: L1 40939 (c x4).
+$C31E SampleLoopEnd ; bit 6: back to the loop row, unless released
+$C322 SampleEnd ; bit 5: the sample ends
+$C32C SampleLoopStart ; bit 7: this row is the loop row
+$C334 SampleLoopBack ; not released: the next row is the loop row
+$C340 SampleRow ; the next row kept; the tone delta, the mixer, the envelope bit, the volume
+$C36B SampleVolume ; the row's volume scaled by the channel volume + 1
+$C377 SampleVolumeLoop ; A = vol x (channel volume + 1)
+
+$C385 c OrnamentStep ; One row of the channel's ornament: loop marks, note offset, noise offset
+> In: IX. The row at +$15/$16, two bytes: F (flags and noise delta), N (note delta). F bit 7: this row is the loop row (+$17/$18); bit 6: the next row is the loop row (always, released or not). The note +$02 += N (signed): the deltas add up from the note's start. Falls into AddNoise $C3BB with F.
+> Witness: L1 40939 (c x4).
+$C399 OrnamentLoopEnd ; bit 6: back to the loop row
+$C3A5 OrnamentLoopStart ; bit 7: this row is the loop row
+$C3AD OrnamentRow ; the next row kept; the note delta
+
+$C3BB c AddNoise ; The noise period += the row's signed 5-bit noise delta
+> In: C = the row's first byte (bits 0-4 a signed delta, -16 to 15), IX. +$06 = (+$06 + the delta) AND 31. Reached from SampleStep $C308 and OrnamentStep $C385.
+> Witness: L1 81878 (c x4).
+
+$C3CA w PeriodTable 8 ; The AY tone period of each note 0-$55 (86 notes, A#0 to B7)
+> Read by ChannelSound $C2A0. At the 128K's AY clock of 1.7734 MHz note n is MIDI n + 22 (note 0 = $0EDC, A#0, 29.1 Hz; note 2 = C1), within 1 cent up to the fifth octave and up to 33 cents off at the top, where the periods are small.
+
+$C476 b PeriodPad 2 ; Two zero bytes after the table: a note $56 would read them, but the player clamps the note to $55
+> Known only from the code: no instruction reads them.
+
+@module tune ; The tune: the ASC Sound Master module "Disco music" by Ant P
+@about One module in the ASC Sound Master 0.x layout from TuneHeader $C478 to the end of OrnamentData ($D592, 4379 bytes), the resource src/res/music/disco.txt (tools/res_music.py; the format in src/res/music/README.md). Delay 6 (a row every 6 frames), 22 positions playing 16 patterns (0-15; patterns 1, 3, 4, 5, 6 and 9 twice), 32 samples and 32 ornaments, of which the streams use 1-10 and 13 (each sample with the ornament of its number).
+@about Length: position 0 (pattern 0) is 6 rows, position 19 (pattern 15) 8 rows, every other position 64 rows: 1294 rows, 7764 frames (2 min 35 s at 50 Hz), then position 0 again. c1 starts positions 0 to 20 in its 7274 frames of music (1213 rows); no recording reaches the loop.
+@about Channels: A the melody (samples 1, 6, 7, 9, 10, 13; patterns 6-9 open on the envelope: sample 13 with E rows, envelope mode, shape 14, an envelope period after each note following its pitch), B the bass (samples 2 and 8, octave jumps), C the drums (samples 3, 4, 5 with noise rows and falling ornaments).
+
+$C478 b TuneHeader 8 ; The module's header: delay, the three table offsets, the number of positions
+> Read by InitPlayer $C053: the delay (6), the pattern table (+$001E: $C496), the sample table (+$0BFC: $D074), the ornament table (+$1077: $D4EF), 22 positions. No loop byte: NextPosition $C191 loops to position 0.
+@res music/disco.bin
+
+$C480 b TunePositions 22 ; The 22 positions: the pattern of each
+> 0 1 2 3 3 4 4 5 5 6 6 7 8 9 9 10 11 12 13 15 1 14. Read by NextPosition $C191 (c1 reads positions 0-20).
+@res music/disco.bin
+
+$C496 w PatternTable 3 ; 16 patterns: the offsets of the streams of channels A, B and C from this table
+> Read by NextPosition $C191 (6 x the pattern).
+@res music/disco.bin
+
+$C4F6 b PatternData 16 ; The 48 channel streams (pattern 0 first): commands, events, $FF at each stream's end
+> Read by ChannelRow $C1CE and PatternCommand $C24C. Pattern 14 (position 21) is read in no recording.
+@res music/disco.bin
+$C50B Pattern1 ; pattern 1 (A $C50B, B $C53A, C $C561); each label is the pattern's stream A
+$C5DE Pattern2
+$C6AC Pattern3
+$C772 Pattern4
+$C840 Pattern5
+$C940 Pattern6
+$CA01 Pattern7
+$CAC2 Pattern8
+$CB87 Pattern9
+$CC5A Pattern10
+$CD2C Pattern11
+$CDFC Pattern12
+$CECE Pattern13
+$CFA0 Pattern14
+$D05C Pattern15
+
+$D074 w SampleTable 8 ; 32 samples: their offsets from this table
+> Read by TableEntry $C278 for a $80-$9F command.
+@res music/disco.bin
+
+$D0B4 b SampleData 15 ; The samples (sample 0 first): rows of 3 bytes (flags and noise, tone delta, mixer and volume)
+> Read by SampleStep $C308. Samples 0, 11, 12 and 14-31 are one row with S, L and X: a steady tone at volume 15 that loops on itself until a release ($7E), then ends. The streams use samples 1-10 and 13.
+@res music/disco.bin
+$D0B7 Sample1
+$D102 Sample2
+$D132 Sample3
+$D156 Sample4
+$D168 Sample5
+$D19E Sample6
+$D1B0 Sample7
+$D2B2 Sample8
+$D2C4 Sample9
+$D315 Sample10
+$D369 Sample11 ; samples 11 and 12: one row each
+$D36F Sample13
+$D4B9 Sample14 ; samples 14-31: one row each
+
+$D4EF w OrnamentTable 8 ; 32 ornaments: their offsets from this table
+> Read by TableEntry $C278 for an $A0-$BF command (through CommandOrnament $C26B).
+@res music/disco.bin
+
+$D52F b OrnamentData 16 ; The ornaments (ornament 0 first): rows of 2 bytes (flags and noise, note delta)
+> Read by OrnamentStep $C385. Ornaments 0, 2, 10 and 11-31 are one row of no change; the streams use 1-10 and 13.
+@res music/disco.bin
+$D531 Ornament1
+$D539 Ornament2
+$D53B Ornament3
+$D53F Ornament4
+$D547 Ornament5
+$D54B Ornament6
+$D551 Ornament7
+$D559 Ornament8
+$D55F Ornament9
+$D567 Ornament10
+$D569 Ornament11 ; ornaments 11-31: one row each
+
+$D593 b SectorTail 16 ; 109 bytes after the module to the end of the 22nd sector: older stream bytes, not read
+> Leftovers of the memory the compilation was saved from (they read like a pattern stream: $F0 $0C, notes, $7E, $FF, $85 $A5 $CF $D0 $F0 $01 ...). Known only from the code: the player's pointers end at $D592 and no instruction in c1-c4 reads these bytes.

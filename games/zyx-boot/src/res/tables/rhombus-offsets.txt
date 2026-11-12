@@ -1,0 +1,5 @@
+# RombPhaseOffsets: the pixel column where phase k's narrowed rhombus starts, at index 8 - k (phase 0, the
+# whole rhombus, at index 8: 0). Bits 7-3 the byte, bits 2-0 the pixel (ScaleRombLine $6364). Index 0 is not
+# read (BuildRombPhases $62F1 reads indices 8 down to 1).
+19 18 15 12 10  7  5  2
+ 0

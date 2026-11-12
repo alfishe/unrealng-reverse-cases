@@ -1,0 +1,35 @@
+{
+  "image": "work/candidates/owner-boots_zyx/zyxarbt.scl",
+  "file": "NO load ",
+  "header": {
+    "type": "B",
+    "start": 180,
+    "length": 180,
+    "sectors": 48
+  },
+  "equ": {
+    "MusicPiece": "$C0B7",
+    "MusicSectors": "24",
+    "MusicInit": "$C0B7",
+    "MusicPlay": "$C0BD",
+    "MenuStack": "$BF68"
+  },
+  "files": [
+    {
+      "file": "00.boot.B",
+      "name": "boot    ",
+      "type": "B",
+      "start": 81,
+      "length": 81
+    },
+    {
+      "file": "01.arb.scr.C",
+      "name": "arb.scr ",
+      "type": "C",
+      "start": 8224,
+      "length": 6912
+    },
+    "boot"
+  ],
+  "whole_image": true
+}

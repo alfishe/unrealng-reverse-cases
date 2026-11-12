@@ -1,0 +1,6 @@
+# PhaseOrder: the rhombus phase shown at each of the 32 steps of a turn (PrintRombPhase $64DA); a phase n
+# lies at the phase set + n x 256 (0-7 turning, 8 edge-on, 9-16 the mirrored phases).
+ 0  1  2  3  4  5  6  7
+ 8 15 14 13 12 11 10  9
+10 11 12 13 14 15  8  7
+ 6  5  4  3  2  1  1  1

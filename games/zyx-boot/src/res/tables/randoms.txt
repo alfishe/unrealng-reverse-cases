@@ -1,0 +1,3 @@
+# Randoms $ADEC: the places of the twinkles, 4 pairs (DrawTwinkle $6BFD takes pair n = TwinkleClock bits 6-7;
+# NewRandoms $6BAB refills all 8 from R, the ROM and MainTick).
+44 64  6 72 212 120 73 80

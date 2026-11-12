@@ -1,0 +1,15 @@
+# c4: tests/disks/noexe.scl (the boot and two CODE files) booted as c1: no name listed, NO EXE FILES !; the letter A
+# and ENTER (each held 8 frames) do nothing.
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++1500 A
++8 -
++100 ENTER
++8 -
++400 END
