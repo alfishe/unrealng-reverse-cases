@@ -1,0 +1,65 @@
+# Ben Daglish's music driver (a game rip), that zyxrover carries at $BFFE (kit/mkgame.py --part
+# variants/players/daglish/daglish.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1745 bytes of zyxrover's music piece ($BFFE-$C6CE, work/parts/player-daglish.bin, written by
+# python3 tools/variants_music.py image daglish). The code reads the tune's tables at fixed addresses, so the driver
+# never moves; the tune follows at $C6CF (patterns, the pattern table, the songs, the sequences, the instruments, more
+# patterns: the variant's music/daglish.txt, tools/res_daglish.py). The rip keeps the game's sound effect entry
+# (StartEffect, records at $CE4A). No recording runs a variant: every name and description here is from the code.
+
+@equ $CB83 PatternLow 52 ; the patterns' addresses, low bytes (the tune)
+@equ $CBB7 PatternHigh 52 ; the patterns' addresses, high bytes
+@equ $CBEB SongTable 24 ; 6 bytes a song: the three sequences
+@equ $CD72 Instruments ; 10-byte instrument records; a channel's slots hold offsets from here
+@equ $CE4A EffectRecords ; 13-byte sound effect records: an instrument, a period, a duration
+
+@module daglish ; Ben Daglish's driver: init, play, sequences and patterns, instruments (ADSR, vibrato), pitch tables
+@about MusicPlay $BFFE (C = the volume limit, then the JP to PlayWrapper) plays one frame, saving every register: VoiceFrames (each voice's envelope and vibrato into the AY) and, while the music plays, PlayFrame (each channel's sequence and pattern); MusicInit $C003 starts song 0 (LD A,n). Vectors at $C39E (Init), $C3A1 (PlayFrame), $C3A5 (StartEffect) and StopMusic $C3A8.
+@about A song is three sequences (SongTable). A sequence: a pattern number (PatternLow, PatternHigh), $80+N (the next pattern N times), $FE n (the transposition), $C0+K V (the channel's instrument slot K = offset V into Instruments), $FF (the channel stops). A pattern: a note and its frames, $7E lo hi d (a raw period), $7F d (a rest), $80+K (instrument slot K), $88+N (pitch table N), $C0-$FE (ignored, 1 or 4 bytes), $FF (the end). The format is in tools/res_daglish.py.
+
+$BFFE c MusicPlay ; LD C,n: the volume limit, then JP PlayWrapper
+$C000 c PlayVector ; JP PlayWrapper
+$C003 c MusicInit ; Start song 0 (LD A,n) through Init
+$C00B c Orphan ; The tail of a game routine: LD I,A, Init with E, restore; no code reaches it
+$C016 c PlayWrapper ; Save the registers, VolumeLimit = C, restart a finished song, PlayFrame, restore
+$C048 b PeriodPad 1 ; The byte before PeriodTable
+$C049 w PeriodTable 8 ; The AY tone period of notes 0-84 (a pattern's note + the transposition + 12)
+$C0F3 b MixerImage 1 ; The mixer (AY register 7) as the voices set it
+$C0F4 b Voices 9 ; The three voices' records (18 bytes each, IX), what the AY plays
+> +$00 / +$01 / +$02 the voice's tone, noise and both mixer bits; +$03 / +$04 the period; +$05 the volume; +$06 the frames to hold; +$07 the vibrato delay, +$08 its length, +$09 / +$0A its offset, +$0B / +$0C its step; +$0D / +$0E the envelope phase's routine; +$0F / +$10 the instrument; +$11 flags (bit 7: an effect owns the voice).
+$C0F4 VoiceA
+$C106 VoiceB
+$C118 VoiceC
+
+$C12A c StartVoice ; The voice at IX plays instrument IY with period HL for C frames: envelope, vibrato, mixer, noise
+$C1B1 c Silence ; The mixer off, the volumes and envelope period 0, the noise 0
+$C1E9 c VoiceFrames ; One frame of the three voices (VoiceFrame), then the mixer, periods (with vibrato), noise and volumes into the AY
+$C2AC b VolumeLimit 1 ; The highest volume (MusicPlay's C); each volume is the lower of the two, / 8
+$C2AD c VoiceFrame ; One frame of the voice at IX: the hold counter, Vibrato, then its envelope phase (JP (HL))
+$C2DF c Attack ; The volume rises by the attack step to the peak, then Decay
+$C2FE c Decay ; The volume falls by the decay step to the sustain level, then Sustain
+$C320 c Sustain ; Hold while the frames last, then Release
+$C32F c Release ; The volume falls by the release step to 0
+$C33C c VoiceOff ; Volume 0, the voice's mixer bits off
+$C34E c HardwareEnd ; An instrument on the AY envelope: off when its frames run out
+$C355 c Vibrato ; After its delay, the vibrato offset moves by its step; the step turns every length frames
+$C397 c SetAYRegister ; AY register E = A (HL = $FFBF, C = $FD)
+$C39E c InitVector ; JP Init
+$C3A1 c PlayFrameVector ; JP PlayFrame
+$C3A4 b MusicState 1 ; Not 0 while a channel plays; 1: the song ended and the voices fell silent
+$C3A5 c EffectVector ; JP StartEffect
+$C3A8 c StopMusic ; MusicState 0, Silence
+$C3AF c StartEffect ; Sound effect A: its 13-byte record (EffectRecords) plays on voice A, which the music leaves alone
+$C3D7 b Channels 21 ; The three channels' records (21 bytes each, IY), the sequencer
+> +$00 the first of its instrument slots (0, 8, 16); +$01 / +$02 the sequence pointer; +$03 / +$04 the pattern's start; +$05 / +$06 the pattern pointer; +$07 / +$08 the instrument; +$09 the repeats left; +$0A the transposition; +$0B the pattern ended; +$0C the frames left; +$0D 0: stopped; +$0E the note; +$0F the pitch table; +$10 / +$11 its pointer; +$12 / +$13 its frames and steps; +$14 its flags.
+$C3D7 ChannelA
+$C3EC ChannelB
+$C401 ChannelC
+$C416 b InstrumentSlots 8 ; 8 slots a channel: offsets into Instruments (Init: 0, 10, ... 70)
+$C42E c Init ; Start song A: Silence, the three sequences from SongTable, the channels and slots reset, MusicState $FF
+$C4B6 c PlayFrame ; One frame of the music: VoiceFrames, then each playing channel (ChannelFrame); MusicState 0 when all stopped
+$C4FE c ChannelFrame ; The channel at IY (voice IX): the pitch table, then the pattern when the frames run out
+$C51E ReadSequence ; The pattern ended: repeat it, or read the sequence: repeats, transposition, slots, a pattern
+$C583 ReadPattern ; The next pattern items: commands, then a note (PeriodTable), a raw period or a rest, and StartVoice
+$C605 c PatternCommand ; $80-$87 an instrument slot, $88-$BF a pitch table, $FF the end, $C0-$FE skipped
+$C63F c PitchFrame ; One frame of the pitch table: the note offset every few frames into the voice's period

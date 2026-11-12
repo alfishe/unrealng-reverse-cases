@@ -1,0 +1,12 @@
+# The music piece of variant zyxboot-05 (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/whittaker-platoon at MusicPiece $C000, the tune whittaker.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player whittaker-platoon
+tune whittaker.txt
+tail
+  00 00 00 AF 32 42 FB F3 D9 22 6A F9 D9 ED 73 67 F9 CD 39 FB 7E 32 CC F9 32 DC F9 32 8D FA 23 F9
+  E1 22 DA FA E1 22 F8 FA E1 22 18 FB ED 7B 67 F9 3E 00 32 ED F8 32 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

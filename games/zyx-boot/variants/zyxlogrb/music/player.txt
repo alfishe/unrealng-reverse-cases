@@ -1,0 +1,19 @@
+# The music piece of variant zyxlogrb (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/stc at MusicPiece $C030, the tune stc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player stc
+tune stc.txt
+at PlayerVariables A0 7C CC 7C 92 7D 87 79 06 02 16 FA 7D 21 7E 4F
+at StreamC+1 7E FF 00 01 05 17 01 EB 79 CD 7C 1B 00 3F 00 00
+at ChannelB+2 19 00 00 CD 7C FF 00 00 05 31 00 88 79 0F 7D 1B
+at PositionIndex 01 F0 03 00 00 96 00 02 28 0D 00 0B 00
+at ModuleBase 6C C4
+at OrnamentRow 04
+tail
+  66 CC CC 78 00 00 00 66 66 78 78 30 00 00 00 66 7E FC FC 78 00 00 00 66 3C 30 78 CC 00 00 00 66
+  66 CC 7C 0C 78 00 00 7E 0C 30 60 FC 00 00 0F 0C 38 18 18 1E 00 00 0C 0C 0C 18 18 18 00 00 78 18
+  0E 30 30 F0 00 00 1E 3C 00 00 00 00 00 3E 63 DD F1 E3 BB C6 7C 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00

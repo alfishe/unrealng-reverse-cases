@@ -1,0 +1,14 @@
+{
+  "about": "The game player of zyxawbt (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/awbt/awbt.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "awbt"],
+  "image": "work/parts/player-awbt.bin",
+  "org": "BFFB",
+  "ann": "variants/players/awbt/awbt.ann",
+  "top": "awbt",
+  "bin": "awbt.bin",
+  "dest": "variants/players/awbt",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the game player of zyxawbt (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-awbt"
+}

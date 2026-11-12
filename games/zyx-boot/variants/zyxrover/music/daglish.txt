@@ -1,0 +1,239 @@
+# The tunes of Ben Daglish's driver (tools/res_daglish.py): patterns (pN), the pattern table, the songs,
+# the sequences (sN), the instruments, more patterns; in the order they lie.
+org $C6CF
+p0: pattern
+  ins 0 rest/9 D-3/9 D#3/9 D#3/9 D-3/9 D#3/9 D#3/9 D#3/9 F#3/9 D-3/9 D#3/9
+  B-2/18 B-2/9 C#3/9 B-2/9 D-3/18 D-3/18 D-3/9 C#3/18 B-2/18 ins 2 D#4/18 D#4/18
+  B-3/9 B-3/9 G#3/9 ins 0 rest/9 D-3/9 D#3/9 D#3/9 D-3/9 D#3/9 D#3/9 D#3/9
+  F#3/9 G#3/9 F#3/9 D#3/18 B-2/9 C#3/9 B-2/9 F#3/18 F#3/18 F#3/9 G#3/18 E-3/18
+  ins 2 D#4/18 D#4/18 B-3/9 B-3/9 G#3/9 end
+p1: pattern
+  ins 1 B-0/18 ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9 B-0/18
+  ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9 A-0/18 ins 3 F#2/9
+  ins 1 E-0/9 A-0/18 ins 3 F#2/9 ins 1 E-0/9 G-0/18 ins 3 F#2/9 ins 1 D-0/9
+  G-0/18 ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3
+  F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1
+  F#0/9 A-0/18 ins 3 F#2/9 ins 1 E-0/9 A-0/18 ins 3 F#2/9 ins 1 E-0/9 E-1/18
+  ins 3 F#2/9 ins 1 B-0/9 E-1/18 ins 3 F#2/9 ins 1 B-0/9 end
+p2: pattern
+  ins 4 B-3/9 D-3/9 D#3/9 B-3/9 F-3/9 F#3/9 B-3/9 D-3/9 D#3/9 B-3/9 F-3/9
+  F#3/9 B-3/9 D#3/9 F#3/9 B-3/9 A-3/9 C#3/9 E-3/9 A-3/9 C#3/9 C#4/9 B-3/9
+  A-3/9 G-3/9 B-2/9 D-3/9 G-3/9 A-3/9 C#3/9 E-3/9 A-3/9 B-3/9 D-3/9 D#3/9
+  B-3/9 F-3/9 F#3/9 B-3/9 D-3/9 D#3/9 B-3/9 F-3/9 F#3/9 B-3/9 D#3/9 F#3/9
+  B-3/9 A-3/9 C#3/9 E-3/9 A-3/9 C#3/9 C#4/9 B-3/9 A-3/9 G#3/9 B-2/9 E-3/9
+  G#3/9 B-2/9 G#3/9 E-3/9 B-2/9 end
+p3: pattern
+  G-3/9 B-2/9 D-3/9 G-3/9 A-3/9 C#3/9 E-3/9 A-3/9 B-3/9 D#3/9 F#3/9 B-3/9
+  D#3/9 D#4/9 B-3/9 F#3/9 G-3/9 B-2/9 D-3/9 G-3/9 A-3/9 C#3/9 E-3/9 A-3/9
+  B-3/9 D#3/9 F#3/9 B-3/9 D#3/9 D#4/9 B-3/9 F#3/9 G-3/9 B-2/9 D-3/9 G-3/9
+  A-3/9 C#3/9 E-3/9 A-3/9 D#4/9 D-4/9 C#4/9 C-4/108 G#4/18 G#4/18 G#4/18 G#4/9
+  F#4/9 E-4/9 end
+p4: pattern
+  ins 0 B-2/18 B-2/18 C#3/9 C#3/18 B-2/9 D-3/5 D#3/4 B-2/36 G#2/9 F#2/9 G#2/9
+  B-2/9 B-2/9 B-2/9 B-2/9 C#3/9 C#3/18 B-2/9 D-3/5 D#3/4 F#3/9 D#3/9 B-2/18
+  F#2/18 F#2/9 B-2/9 B-2/9 B-2/9 B-2/9 C#3/9 C#3/18 B-2/9 D-3/5 D#3/4 F#3/9
+  D#3/9 G#3/108 G#3/18 G#3/18 D-3/9 C#3/9 B-2/9 G#2/9 F#2/9 end
+p5: pattern
+  ins 1 G-0/18 ins 3 F#2/9 ins 1 G-0/9 A-0/18 ins 3 F#2/9 ins 1 A-0/9 B-0/18
+  ins 3 F#2/9 ins 1 F#0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9 G-0/18 ins 3 F#2/9
+  ins 1 G-0/9 A-0/18 ins 3 F#2/9 ins 1 A-0/9 B-0/18 ins 3 F#2/9 ins 1 F#0/9
+  B-0/18 ins 3 F#2/9 ins 1 F#0/9 G-0/18 ins 3 F#2/9 ins 1 G-0/9 A-0/18 ins 3
+  F#2/9 ins 1 A-0/9 B-0/9 A#0/9 A-0/9 G#0/9 ins 2 F#0/18 ins 3 F#2/9 ins 2
+  F#0/9 F#0/18 ins 3 F#2/9 ins 2 F#0/9 F#2/18 ins 3 F#2/9 ins 2 F#0/9 ins 1
+  C#1/18 ins 3 F#2/9 ins 1 C#1/9 F#0/9 F#0/9 G#0/9 A#0/9 end
+p6: pattern
+  ins 1 B-0/18 F#0/18 B-0/18 F#0/18 B-0/18 F#0/18 B-0/5 B-0/13 B-0/18 A-0/18 E-0/18
+  A-0/18 E-0/18 A-0/18 E-0/18 A-0/3 A-0/13 A-0/18 B-0/18 F#0/18 B-0/18 F#0/18 B-0/18
+  F#0/18 B-0/5 B-3/13 B-0/18 A-0/18 E-0/18 A-0/18 E-0/18 end
+p7: pattern
+  ins 2 F#2/18 ins 3 F#2/18 ins 2 F#2/18 ins 3 F#2/18 ins 2 F#2/18 ins 3 F#2/18
+  ins 2 F#2/5 F#0/13 ins 3 F#2/18 end
+p8: pattern
+  ins 2 F#2/18 ins 3 F#2/18 ins 2 F#2/18 ins 3 F#2/18 end
+p9: pattern
+  ins 5 D#4/9 A#3/5 B-3/4 F-3/5 F#3/4 D-3/4 D#3/5 B-2/4 D-3/5 D#3/4 B-3/5
+  F#4/5 D-4/4 D#4/5 B-3/4 A-3/5 G#3/4 F#3/5 F#2/4 G-2/5 G#2/4 A-2/5 A#2/4
+  B-2/5 D#4/9 D#4/9 rest/4 D#4/5 D-4/4 end
+p10: pattern
+  D#4/3 D-4/3 C#4/3 B-3/3 C#4/3 D-4/3 end
+p11: pattern
+  D#4/5 B-3/9 B-3/9 rest/4 D#4/5 D-4/4 C#3/3 C#4/3 C#3/3 C#4/3 C#3/3 C#4/3
+  C#3/3 C#4/3 C#3/3 C#4/3 C#3/3 C#4/3 E-3/3 E-4/3 E-3/3 E-4/3 E-3/3 E-4/3
+  C#3/3 C#4/3 C#3/3 C#4/3 C#3/3 C#4/3 end
+p12: pattern
+  ins 1 B-0/18 C#1/9 D-1/9 D#1/9 B-0/9 B-1/9 A-1/18 F#1/18 E-1/18 D-1/9 D#1/9
+  B-0/9 A-0/18 B-0/9 C-1/9 C#1/9 A-0/9 B-1/9 A-1/81 B-0/18 C#1/9 D-1/9 D#1/9
+  B-0/9 B-1/9 D#2/18 B-1/18 F#0/18 D-1/9 D#1/9 B-0/9 A-0/18 B-0/9 C-1/9 C#1/9
+  A-0/9 B-1/9 A-1/81 end
+p13: pattern
+  rest/72 end
+p14: pattern
+  ins 2 F#0/18 ins 3 F#2/9 ins 2 F#0/9 end
+p15: pattern
+  ins 1 G-0/9 G-0/9 ins 3 F#2/9 ins 1 G-0/9 G-0/9 G-0/9 ins 3 F#2/9 ins 1
+  G-0/9 end
+p16: pattern
+  ins 0 B-3/54 C#4/13 D-4/5 C#4/54 D#4/13 E-4/5 D#4/144 end
+p17: pattern
+  ins 0 B-3/54 C#4/13 D-4/5 C#4/54 D#4/13 E-4/5 end
+p18: pattern
+  ins 0 D-4/54 E-4/13 F#4/5 E-4/54 F#4/13 G#4/5 F#4/144 end
+p19: pattern
+  ins 0 D-4/54 E-4/13 F#4/5 E-4/54 F#4/13 G#4/5 end
+p20: pattern
+  ins 2 F#0/5 F#0/4 F#0/5 F#0/4 F#0/5 F#0/4 F#0/5 F#0/4 F#0/9 F#2/18 F#0/5
+  F#0/4 end
+p21: pattern
+  ins 0 F#3/6 F#4/6 C#4/6 F#3/6 F#4/6 C#4/6 F#3/12 end
+p22: pattern
+  A#3/4 B-3/4 C-4/4 C#4/4 D-4/4 D#4/4 E-4/6 F-4/6 F#4/12 end
+p23: pattern
+  ins 7 pitch 9 F#2/36 F#2/12 G-2/36 G-2/12 F#2/48 end
+p24: pattern
+  ins 0 F#1/36 F#1/12 G-1/36 G-1/12 F#1/48 end
+p25: pattern
+  F#3/4 G-3/4 G#3/4 A-3/4 A#3/4 B-3/4 C-4/6 C#4/6 F#3/6 end
+patterns p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43 p44 p45 p46 p47 p48 p49 p50 p51
+song s6 s7 s8
+song s9 s10 s11
+song s3 s4 s5
+song s0 s1 s2
+s0: sequence
+  slot0 160 slot1 170 slot2 180 slot3 190 slot4 200 transp 252 rep 30 p43 rep 30 p43 rep 6 p43
+  end
+s1: sequence
+  slot0 160 slot1 170 slot2 180 slot3 190 slot4 200 transp 252 rep 4 p44 p45 p45 p44 p44
+  transp 0 p45 p45 p46 p44 p44 p48 p44 p44 p44 p51 p44
+  p44 end
+s2: sequence
+  slot0 160 slot1 170 slot2 180 slot3 190 slot4 200 rep 22 p44 p47 p47 p44 p44 p49
+  p44 p44 p50 p44 p44 end
+s3: sequence
+  slot0 100 slot1 110 slot2 120 slot3 130 slot4 140 slot5 150 transp 252 p26 transp 8 p29 p29 p31
+  transp 240 rep 4 p39 transp 235 rep 4 p39 transp 240 p40 p40 rep 3 p39 p41
+  end
+s4: sequence
+  slot0 100 slot1 110 slot2 120 slot3 130 slot4 140 slot5 150 transp 252 p27 transp 250 p27 transp 243 p27
+  transp 245 p27 transp 252 p27 transp 250 p27 transp 243 p27 transp 245 p27 transp 240 p28
+  transp 238 p28 transp 240 p28 transp 238 p28 transp 244 p27 p27 transp 246 p27 p27
+  transp 244 p27 p27 transp 246 p27 p27 transp 244 p27 p27 transp 246 p27 p27
+  transp 244 p27 p27 transp 246 p27 p27 transp 248 rep 4 p27 transp 252 rep 4 p39
+  transp 247 rep 4 p39 transp 252 p40 p40 rep 3 p39 p41 end
+s5: sequence
+  slot0 100 slot1 110 slot2 120 slot3 130 slot4 140 slot5 150 transp 252 p33 p33 p34 p34 p35
+  transp 254 p35 transp 252 p35 transp 254 p35 transp 252 p30 p30 p30 p36 rep 8
+  p37 rep 8 p38 rep 8 p32 p42 p42 rep 4 p32 end
+s6: sequence
+  transp 252 p0 p4 p9 transp 250 p9 rep 4 p10 transp 255 p10 p10 transp 252
+  p11 p0 p4 p12 p16 p16 p17 p20 p20 end
+s7: sequence
+  transp 252 p1 p5 p6 p1 p5 transp 240 p12 transp 252 p15 transp 254 p15
+  transp 0 p15 p15 transp 252 p15 transp 254 p15 transp 0 p15 p15 transp 252 p15
+  transp 254 p15 p20 p20 end
+s8: sequence
+  transp 240 p2 p3 transp 0 rep 3 p7 p8 transp 240 p2 p3 rep 16 transp 0
+  p14 transp 240 p18 p18 p19 p13 p13 end
+s9: sequence
+  slot0 80 p21 transp 1 p21 transp 0 p21 p22 end
+s10: sequence
+  p23 p25 end
+s11: sequence
+  slot0 90 p24 transp 232 p22 end
+instrument 20 250 90 255 127 0 6 1 0 1
+instrument 127 252 0 255 127 0 5 4 0 1
+instrument 127 245 0 255 127 0 0 60 0 1
+instrument 127 252 0 255 127 0 0 60 0 3
+instrument 127 254 90 255 90 0 3 1 0 1
+instrument 127 249 1 255 127 0 2 1 0 1
+instrument 127 255 101 255 127 104 134 3 0 1
+instrument 80 248 1 255 127 0 3 1 0 1
+instrument 80 251 1 255 100 0 3 1 0 1
+instrument 80 252 1 255 100 0 5 2 0 1
+instrument 127 252 1 255 127 6 5 2 0 1
+instrument 127 252 1 255 127 0 5 5 0 1
+instrument 127 252 1 255 100 0 0 60 0 3
+instrument 10 255 90 255 100 0 6 2 0 1
+instrument 10 255 90 255 127 25 6 2 0 1
+instrument 127 247 1 255 127 0 0 60 0 1
+instrument 127 157 80 255 127 0 6 6 0 1
+instrument 127 250 1 255 127 0 3 2 0 1
+instrument 20 252 80 255 100 0 5 1 0 1
+instrument 10 255 1 255 127 0 3 1 0 1
+instrument 138 33 57 0 0 0 0 0 153 99
+instrument 0 0 0 0 0 0 0
+p26: pattern
+  ins 0 B-1/8 B-1/8 B-1/8 A-1/4 F#1/4 B-1/8 D-2/16 D#2/8 B-1/8 B-1/8 B-1/8
+  A-1/4 F#1/4 B-1/8 A-1/16 F#1/8 B-1/8 B-1/8 B-1/8 A-1/4 F#1/4 B-1/8 D-2/8
+  D#2/8 E-2/8 F-2/8 B-2/16 D#2/8 E-2/8 B-2/16 D-2/8 B-1/8 B-1/8 B-1/8 A-1/4
+  F#1/4 B-1/8 D-2/16 D#2/8 B-1/8 B-1/8 B-1/8 A-1/4 F#1/4 B-1/8 A-1/8 F#1/8
+  F-1/8 B-1/4 A-1/4 F#1/4 B-1/4 A-1/4 F#1/4 B-1/4 A-1/4 F#1/4 B-1/4 A-1/4
+  F#1/4 B-1/4 A-1/4 F#1/4 F-1/4 E-1/16 D-1/8 E-1/24 F#1/16 end
+p27: pattern
+  ins 1 B-0/8 B-0/8 B-0/8 B-0/8 B-0/8 B-0/8 B-0/8 B-0/8 end
+p28: pattern
+  ins 1 G-1/8 B-1/8 D-2/8 B-1/8 G-1/8 F#1/8 E-1/8 D-1/8 D-1/8 F#1/8 A-1/8
+  F#1/8 D-1/8 D-1/8 E-1/8 E-1/8 end
+p29: pattern
+  ins 4 B-2/56 A-2/72 A-2/56 G-2/72 end
+p30: pattern
+  ins 3 A#2/8 ins 2 F#2/16 F#2/8 ins 3 A-2/8 ins 2 F#2/16 F#2/8 ins 3 G-2/8
+  ins 2 F#2/16 F#2/8 ins 3 A-2/8 ins 2 F#2/16 F#2/8 end
+p31: pattern
+  ins 4 G-2/128 A-2/128 A#2/64 G-2/64 A#2/64 A-2/64 D#2/128 F-2/128 D#2/128 F-2/128 D-3/128
+  D-3/128 end
+p32: pattern
+  ins 2 F#2/16 ins 5 F#0/16 F#0/16 F#0/8 ins 2 F#2/8 end
+p33: pattern
+  ins 1 B-1/8 ins 2 F#2/8 ins 1 B-1/8 ins 2 F#2/8 ins 1 B-1/8 ins 2 F#2/8
+  ins 1 B-1/8 ins 2 F#2/8 ins 1 A-1/8 ins 2 F#2/8 ins 1 A-1/8 ins 2 F#2/8
+  ins 1 A-1/8 ins 2 F#2/8 ins 1 A-1/8 ins 2 F#2/8 ins 1 D-1/8 ins 2 F#2/8
+  ins 1 D-1/8 ins 2 F#2/8 ins 1 D-1/8 ins 2 F#2/8 ins 1 D-1/8 ins 2 F#2/8
+  ins 1 E-1/8 ins 2 F#2/8 ins 1 E-1/8 ins 2 F#2/8 ins 1 E-1/8 ins 2 F#2/8
+  ins 1 E-1/8 ins 2 F#2/8 end
+p34: pattern
+  ins 3 G-2/8 ins 2 F#2/16 F#2/16 F#2/16 F#2/8 ins 3 F#2/8 ins 2 F#2/16 F#2/16
+  F#2/16 F#2/8 ins 3 F-2/8 ins 2 F#2/16 F#2/16 F#2/16 F#2/8 ins 3 E-2/8 ins 2
+  F#2/16 F#2/16 F#2/16 F#2/8 end
+p35: pattern
+  ins 3 D#3/8 ins 2 F#2/16 F#2/16 F#2/16 F#2/16 F#2/16 F#2/16 F#2/16 F#2/8 end
+p36: pattern
+  ins 3 A#2/8 ins 2 F#2/16 F#2/8 ins 3 A-2/8 ins 2 F#2/16 F#2/8 ins 3 A#2/8
+  ins 2 F#2/16 F#2/8 ins 3 C-3/8 ins 2 F#2/16 F#2/8 end
+p37: pattern
+  ins 3 C-4/8 ins 2 F#2/8 end
+p38: pattern
+  ins 3 B-3/8 ins 2 F#2/8 end
+p39: pattern
+  ins 1 B-0/8 B-1/8 A-1/8 F#1/16 F-1/8 E-1/8 D-1/8 end
+p40: pattern
+  F#0/16 E-0/8 F#0/8 A-0/16 F#0/8 C#0/8 E-0/8 F#0/8 A-0/8 F#0/8 A-0/16 B-0/16
+  end
+p41: pattern
+  C#1/8 C#1/8 C#1/8 C#1/8 F#0/8 F#0/8 F#0/8 F#0/8 end
+p42: pattern
+  ins 5 F#0/16 ins 2 F#2/8 ins 5 F#0/8 F#0/16 ins 2 F#2/8 ins 5 F#0/8 F#0/16
+  ins 2 F#2/8 ins 5 F#0/8 F#0/16 ins 2 F#2/8 F#2/8 end
+p43: pattern
+  ins 0 F#0/7 F#1/7 F#1/7 C-1/7 E-1/7 C-1/7 end
+p44: pattern
+  rest/42 end
+p45: pattern
+  ins 1 G#3/5 G#3/5 G#3/11 F#3/5 F#3/5 F#3/11 E-3/5 E-3/5 E-3/11 G#2/6 E-3/5
+  F#3/5 E-3/5 F#3/4 F#2/4 F#2/76 end
+p46: pattern
+  pitch 10 ins 2 G#2/84 D#3/84 F#3/84 C#3/84 end
+p47: pattern
+  ins 2 G#1/84 B-1/84 end
+p48: pattern
+  ins 2 pitch 8 rest/21 D#2/21 F#2/21 A#2/42 F#2/21 A#2/21 C#3/42 A#2/21 C#3/21 F-3/21
+  ins 3 G#3/42 F#3/42 E-3/21 G#2/42 E-3/21 F#3/21 F#2/21 ins 2 A#2/21 C#3/42 A#2/21
+  C#3/21 F-3/21 ins 3 G#3/42 F#3/42 E-3/21 G#2/42 E-3/21 F#3/21 end
+p49: pattern
+  rest/63 rest/84 rest/42 rest/63 rest/84 rest/84 rest/42 rest/42 ins 1 C-4/4 B-3/3 A#3/4
+  A-3/3 G#3/4 G-3/3 F#3/4 F-3/3 E-3/7 E-3/7 E-3/7 E-3/7 E-3/7 E-3/7 E-3/42
+  rest/56 A#1/4 B-1/3 C-2/4 C#2/3 D-2/4 D#2/3 E-2/4 F-2/3 F#2/4 G-2/3 G#2/4
+  A-2/3 A#2/4 B-2/3 C-3/4 C#3/3 D-3/4 D#3/3 E-3/4 F-3/3 F#3/56 rest/21 end
+p50: pattern
+  rest/21 ins 2 F-2/84 E-2/84 D#2/84 D-2/84 end
+p51: pattern
+  rest/21 ins 2 A-2/84 G#2/84 G-2/84 F#2/84 end

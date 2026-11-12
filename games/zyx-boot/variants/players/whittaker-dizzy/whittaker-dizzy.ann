@@ -1,0 +1,91 @@
+# David Whittaker's music driver as ripped from Fantasy World Dizzy, that zyxboot-10 and zyxsiriu carry at $BFFE
+# (kit/mkgame.py --part variants/players/whittaker-dizzy/whittaker-dizzy.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 2268 bytes of zyxboot-10's music piece ($BFFE-$C8D9, work/parts/player-whittaker-dizzy.bin,
+# written by python3 tools/variants_music.py image whittaker-dizzy). The code reads its tables and the tune at fixed
+# addresses, so the driver never moves; the tune follows at $C8DA (the variant's music/whittaker.txt,
+# tools/res_whittaker.py, version dizzy). The two variants differ only in the tune number (the operand at $BFFF,
+# their music/player.txt). The rip keeps the game's sound effects. No recording runs a variant: every name and
+# description here is from the code.
+
+@equ $C8DA SongTable ; the tune: 7 bytes a tune (tempo, three order lists)
+
+@module whittaker-dizzy ; David Whittaker's driver (Fantasy World Dizzy): init, play, the pattern reader, envelopes, effects
+@about Entries: MusicInit $BFFE (LD A,n, the tune, then the vectors' first JP) starts that tune; MusicPlay $C003 plays one frame; $C006 stops the music and the effect; $C009 starts sound effect A. A frame: EffectFrame, then while the music is on the tempo (a fraction: TempoStep added to TempoSum, a row on the carry) lets each channel whose duration ran out read its pattern (ChannelTick, ReadPattern); ChannelFrame gives each channel's tone period and volume into AYRegisters, the master volume (a fade) lowers them, a running effect takes channel A, and WriteAY sends registers 10 down to 0.
+@about A pattern: a note $00-$7F (PeriodTable index plus the transposition and the channel's own transposition), a command $80-$93 through CommandOffsets (rest, sweep off, sweep up, the end of the pattern, sweep, transposition, tone, stop, hold, the channel's transposition, a new order list), $C0-$CF a long duration (241-256 frames), $D0-$DF a volume envelope (EnvelopeTable), $E0-$FF a duration of 1-32 frames. The format is in tools/res_whittaker.py.
+
+$BFFE c MusicInit ; LD A,n: the tune (0 in zyxboot-10, 1 in zyxsiriu), then JP Init
+$C000 c InitVector ; JP Init
+$C003 c MusicPlay ; JP Play: play one frame
+$C006 c StopVector ; JP StopMusic
+$C009 c EffectVector ; JP StartEffect: start sound effect A
+
+$C00C c Init ; Start tune A: StopMusic, the tempo and the three channels' order lists from its 7-byte record
+> HL = SongTable + 7 * the tune: the tempo into TempoStep and Tempo, then for each channel (IX = ChannelA, ChannelB, ChannelC, 34 bytes apart) the order list (+$03 / +$04), its first pattern (+$01 / +$02), the order offset 2, the duration count 1, the flags, sweep and channel transposition cleared. Last the transposition 0, TempoSum $FF and MusicOn $FF.
+
+$C067 b ChannelRecords 11 ; The three channels' records (34 bytes each, IX)
+> As Platoon's driver's (variants/players/whittaker-platoon) with one more byte: +$00 flags, +$01 / +$02 the pattern pointer, +$03 / +$04 the order list, +$05 / +$06 the order offset, +$0F the envelope's speed, +$10 / +$11 the frames left and the duration, +$12 the note, +$13 the volume, +$14-+$19 the envelope, +$1A-+$1D the sweep, +$1E the notes set the noise, +$20 the channel's transposition (command $92), +$21 the channel's mixer bits.
+$C067 ChannelA
+$C089 ChannelB
+$C0AB ChannelC
+
+$C0CD c Play ; Play one frame: the effect, the tempo, the channels, the master volume, the effect over channel A, the AY
+$C0DE NoiseNote ; LD A,n: the noise channel's note (ReadPattern writes it)
+$C0E3 TempoStep ; LD A,n: the tempo, added to TempoSum every frame; a carry is a row
+$C12A NoisePeriod ; LD A,n: the noise period for AYRegisters
+$C145 MasterFade ; Each volume less 15 - MasterVolume
+$C16D EffectOverride ; While an effect runs: its period, noise and volume on channel A
+$C195 WriteAY ; Write AYRegisters to AY registers 10 down to 0
+
+$C1A9 c SetAYRegister ; AY register D = E
+$C1B3 c SilenceAY ; AY registers 10 down to 0 = 0, then the mixer (7) = $3F
+$C1D1 c StopMusic ; Music off, the effect off, the volumes 0, MasterVolume 15
+$C1E8 c StopEffect ; The effect off, the AY silent
+
+$C1EF b CommandOffsets 20 ; Commands $80-$93: each byte the offset of its routine from its own address (0: none)
+$C203 c CommandOrders ; $93 w: the channel goes on with the order list at w
+$C21B c CommandStop ; $8E: stop the music (StopMusic)
+$C21F c CommandEnd ; $87: the end of the pattern: the next order entry (a word 0: the order list again)
+$C24C c CommandTone ; $8A: the channel plays tone
+$C260 c CommandTranspose ; $89 n: the transposition (the operand at $C346) = n
+$C267 c CommandChannelTranspose ; $92 n: the channel's own transposition (+$20) = n
+$C26E c CommandSweep ; $88 s w: a sweep: step s, width w, going up
+$C27B CommandSweepUp ; $82: the sweep goes up
+$C281 c CommandSweepOff ; $81: no sweep
+$C286 c UnusedFlag ; Sets flag bit 1; no command leads here (Platoon's $8D)
+$C28C c CommandRest ; $80: a rest: volume 0, the envelope stopped, for the duration
+$C295 c CommandHold ; $8F: the note goes on for the duration
+
+$C297 c ChannelTick ; A row of the channel at IX: when its duration runs out, ReadPattern
+$C29E ReadPattern ; Read the pattern: commands and settings until a note, rest or hold
+$C2E0 c PatternCommand ; A byte $80-$FF: a command below $C0 (CommandOffsets), else a duration or an envelope
+$C2EC SetDuration ; $E0-$FF (and $C0-$CF): the duration
+$C2F3 SetEnvelope ; $D0-$DF: the envelope EnvelopeTable[n] (and the speed byte before it)
+$C30B Dispatch ; JP to the command's routine: CommandOffsets[A - $80] + its address
+
+$C313 c ChannelFrame ; One frame of the channel at IX: HL = its tone period, A = its volume
+> The envelope's next volume every +$0F frames (bit 7 set ends it), the note + the transposition (the operand at $C346) + the channel's transposition into PeriodTable, the sweep, the mixer bits into AYRegisters.
+$C345 Transposition ; LD A,n: the transposition (command $89)
+$C3B0 MixerBits ; LD A,n: the mixer bits of the tone command
+
+$C3CC b MusicOn 1 ; $FF while the music plays
+$C3CD b EffectOn 1 ; Not 0 while a sound effect plays
+$C3CE b MasterVolume 1 ; 15: full; less fades the music
+$C3CF b Tempo 1 ; The tune's tempo (Init)
+$C3D0 b TempoSum 1 ; TempoStep is added here every frame
+$C3D1 b AYRegisters 11 ; The image of AY registers 0-10 that WriteAY sends
+$C3DC b EffectRegisters 14 ; The effect's period ($C3DE), noise ($C3E4) and volume ($C3E6)
+$C3EA w PeriodTable 8 ; The AY tone period of notes 0-85
+$C496 w EnvelopeTable 8 ; Envelopes $D0-$DF: each the address of its volumes (the byte before it is the speed)
+$C4B6 b Envelopes 16 ; The envelopes: a speed byte, then volumes a step, $87 ends
+
+$C560 c StartEffect ; Start sound effect A: its 14-byte record into EffectState, its period, noise and volume table
+$C5BB c EffectFrame ; One frame of the running effect: the random number, the time, the repeats, the period sweep, the volume table
+$C675 w EffectTable 8 ; The 26 sound effects' records (14 bytes each)
+$C6A9 b Effects 14 ; The effects: time, repeat delay, period, sweep step and direction, repeats, the volume table, its speed
+$C817 w EffectVolumeTable 10 ; The effects' volume tables
+$C82B b EffectVolumes 16 ; Volumes a step: $FF ends, $80 starts the table again
+$C8A6 b EffectState 14 ; The running effect: a copy of its record
+$C8B4 b EffectCounters 7 ; Its delay counter, volume speed counter, volume table start and pointer, sweep counter
+$C8BB c Random ; A = the next pseudo-random number (a 32-bit shift register at RandomSeed)
+$C8D6 b RandomSeed 4 ; The shift register

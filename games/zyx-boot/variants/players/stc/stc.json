@@ -1,0 +1,14 @@
+{
+  "about": "The Sound Tracker compiled player of 12 variants (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/stc/stc.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "stc"],
+  "image": "work/parts/player-stc.bin",
+  "org": "C078",
+  "ann": "variants/players/stc/stc.ann",
+  "top": "stc",
+  "bin": "stc.bin",
+  "dest": "variants/players/stc",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the Sound Tracker player (assembled at each variant's MusicPiece by tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-stc"
+}

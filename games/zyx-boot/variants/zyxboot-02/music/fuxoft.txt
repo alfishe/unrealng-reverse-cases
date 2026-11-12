@@ -1,0 +1,103 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  code:code_F10F call:s_F115 call:s_F11B call:s_F0F5 call:s_F0F5 call:s_F11B call:s_F11B call:s_F0CB transp:0 instr:instr_F0AB orn:orn_F0B9 G-3/80
+  repeat:2 C-4/60 G-3/60 F-3/60 C-4/20 G-3/20 C-4/60 D-4/80 orn:orn_F0C2 E-4/20 orn:orn_F0B9 F#3/40
+  B-3/60 C-4/60 G-3/60 orn:orn_F0C2 F-4/60 C-4/100 orn:orn_F0B9 F-4/40 orn:orn_F0C2 C-4/20 F-4/20 C-4/40
+  orn:orn_F0B9 G-3/60 next G-3/20 instr:instr_F126 orn:orn_F132 call:s_F0CB call:s_F11B transp:0 goto:channelA
+instr_F0AB: instrument
+  14/1 13 12 11 10 9 8 7 6 5 goto:instr_F0AB
+orn_F0B9: ornament
+  notes 4 0 3 0 -7 goto:orn_F0B9
+orn_F0C2: ornament
+  notes 3 0 4 0 -7 goto:orn_F0C2
+s_F0CB: stream
+  repeat:2 transp:10 call:s_F11B transp+:2 call:s_F11B transp+:-2 call:s_F11B transp+:-2 call:s_F11B next repeat:2 transp+:2
+  call:s_F11B transp+:-2 call:s_F11B next transp+:-1 call:s_F11B ret
+s_F0F5: stream
+  repeat:5 call:s_F11B next transp+:1 call:s_F11B transp+:6 call:s_F11B call:s_F11B transp+:-7 ret
+code_F10B: bytes
+  3E 02 18 02
+code_F10F: bytes
+  3E 01 32 00 00 C9
+s_F115: stream
+  instr:instr_F126 orn:orn_F132
+s_F11B: stream
+  C-2/10 C-2/20 C-2/10 C-2/20 C-2/20 ret
+instr_F126: instrument
+  15/3 14/2 13 12 11 10 9 8 7/0
+orn_F132: ornament
+  noisemix 0 noisemix
+orn_F135: ornament
+  -5 5 7 -7 0 goto:orn_F135
+instr_F13D: instrument
+  13/3 12/3 11/2 10/2 9/2 8/0
+orn_F149: ornament
+  notes 7 -7 steps
+orn_F14D: ornament
+  2 2 -2 -2 -2 -2 2 2 goto:orn_F14D
+channelB: stream
+  instr:instr_F13D orn:orn_F149 repeat:7 C-3/10 C-3/20 C-3/10 C-3/20 C-3/20 next code:code_F10B call:s_F252 repeat:4
+  G-3/20 F-3/5 r/15 next C-3/20 call:s_F213 C-4/40 F-4/20 E-4/5 r/10 D-4/5 C-4/80
+  call:s_F1BF repeat:2 C-4/60 G-3/60 F-3/60 C-4/20 G-3/20 C-4/60 D-4/80 E-4/20 F#3/40 D#3/60
+  C-4/60 G-3/60 F-4/60 C-4/100 F-3/40 C-4/20 A#3/20 G#3/40 G-3/60 next G-3/20 call:s_F1BF
+  goto:channelB
+s_F1BF: stream
+  F-4/20 D-4/20 A#3/40 C-4/20 E-4/20 G-4/40 F-4/20 D-4/20 A#3/40 G#3/20 C-4/20 D#4/20
+  G-4/20 F-4/20 D-4/20 A#3/40 G-4/20 E-4/20 C-4/40 repeat:2 A#3/20 D-4/20 F-4/20 A#4/20
+  C-4/10 G#3/10 D#4/10 C-4/10 G#4/10 D#4/10 C-5/10 G#4/10 next A#3/20 D-4/20 F-4/20
+  A#4/20 G#3/20 C-4/20 D#4/20 G#4/20 G-4/160 ret
+s_F213: stream
+  orn:orn_F429 instr:instr_F435 E-3/15 F-3/5 G-3/5 r/5 C-4/50 D-3/5 r/10 E-3/5 F-3/60 G-3/15
+  A-3/5 B-3/5 r/5 F-4/30 C-4/20 G-3/20 C-3/60 E-3/15 F-3/5 G-3/5 r/5 C-4/30
+  call:s_F252 repeat:4 G-3/20 F-3/5 r/15 next ret
+s_F252: stream
+  orn:orn_F429 instr:instr_F435 C#3/7 F-3/6 G#3/7 C#4/7 F-4/6 G#4/7 C#5/40 ret
+channelC: stream
+  r/135 transp:12 instr:instr_F416 orn:orn_F41E r/5 call:s_F3CA E-4/15 D-4/5 call:s_F3CA F-4/20 E-4/5 r/10
+  D-4/5 C-4/80 F-2/20 E-2/5 r/10 D-2/5 C-2/20 call:s_F34F r/20 instr:instr_F2AA orn:orn_F2B8 call:s_F2C4
+  call:s_F2C4 call:s_F34F r/20 goto:channelC
+instr_F2AA: instrument
+  12/3 13/3 14/3 15/20 14/9 13/9 12/0
+orn_F2B8: ornament
+  0 0 0 0 0
+orn_F2BD: ornament
+  -1 1 1 -1 goto:orn_F2BD
+s_F2C4: stream
+  G-3/20 C-4/30 E-4/10 D-4/10 B-3/10 G-3/40 F-4/50 E-4/5 D-4/5 E-4/10 D-4/5 C-4/5
+  D-4/20 G-3/20 C-4/30 G-4/9 r/1 G-4/10 F#4/10 D-4/30 A-4/9 r/1 A-4/10 F#4/10
+  G-4/10 E-4/10 F#4/10 C#4/20 D#4/5 E-4/5 D#4/60 G-3/20 C-4/30 E-4/10 D-4/10 B-3/10
+  G-3/40 G#4/18 r/2 G#4/18 r/2 G#4/10 G-4/5 F-4/5 G-4/60 C-5/20 C-4/20 F-4/30
+  D#4/5 D-4/5 D#4/10 C-4/10 F-4/15 D-4/5 D#4/10 C-4/20 B-3/5 C-4/5 D-4/60 ret
+instr_F33B: instrument
+  15/3 14/3 13/3 12/3 11/0
+orn_F345: ornament
+  notes 24 -24 12 0 -12 0 goto:orn_F345
+s_F34F: stream
+  instr:instr_F33B orn:orn_F345 E-3/5 r/10 G-3/5 F-3/60 D-3/5 r/10 F-3/5 E-3/5 G-3/5 E-4/50
+  E-3/5 r/10 G-3/5 F-3/60 D-3/5 r/10 F-3/5 D#3/5 D-3/5 C-3/50 E-3/5 r/10
+  G-3/5 F-3/60 D-3/5 r/10 F-3/5 E-3/5 G-3/5 E-4/50 D-4/10 E-4/10 repeat:2 call:s_F3B6
+  D#4/5 D-4/5 D#4/80 next call:s_F3B6 D#4/5 D-4/5 transp+:-2 call:s_F3B6 transp:12 D#4/5 F-4/5
+  G-4/140 ret
+s_F3B6: stream
+  repeat:2 F-4/5 r/5 A#3/5 A-3/5 A#3/5 r/5 next F-4/5 r/5 ret
+s_F3CA: stream
+  E-3/15 F-3/5 G-3/5 r/5 C-4/50 D-3/5 r/10 E-3/5 F-3/60 G-3/15 A-3/5 B-3/5
+  r/5 F-4/50 A-3/5 r/10 B-3/5 C-4/20 D-4/20 E-4/20 E-3/15 F-3/5 G-3/5 r/5
+  C-4/50 D-4/5 r/10 E-4/5 F-4/60 G-3/5 r/10 G-3/5 repeat:3 E-4/20 D-4/5 r/10
+  G-3/5 next ret
+instr_F416: instrument
+  14/3 13/15 12/15 11/0
+orn_F41E: ornament
+  -1 -1 1 1 1 1 -1 -1 goto:orn_F41E
+orn_F429: ornament
+  notes 12 -12 steps
+orn_F42D: ornament
+  2 2 -2 -2 0 goto:orn_F42D
+instr_F435: instrument
+  14/2 13/2 12/2 11/2 10/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0
+  0/0

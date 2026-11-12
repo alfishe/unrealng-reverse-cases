@@ -1,0 +1,49 @@
+# The game-rip player of variant zyxdimob, the Mega Apocalypse tune (Rob Hubbard) (kit/mkgame.py --part
+# variants/players/megaapoc/megaapoc.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1115 bytes of zyxdimob's music piece ($E505-$E95F, work/parts/player-megaapoc.bin, written by
+# python3 tools/variants_music.py image megaapoc). The player reads its tune at fixed addresses: the order lists from
+# $E960, the arpeggio table at $EA76, the envelope table at $EA8F, the tempo and the song at $EB38, the sound effects
+# at $EE94; the tune is music/megaapoc.txt (tools/res_rip.py, format megaapoc). The variant calls only Play (switch
+# no-music-init): the disk holds the player as the game left it, playing. No recording runs the variant: every name
+# and description here is from the code.
+
+@module megaapoc ; The Mega Apocalypse game player: three channels of order lists and patterns, plus one sound effect on channel C
+@about Entry: MusicPlay $E505 (once a frame). Init $E5EA starts the song at $EB38 (the tempo, then three words: the order lists of channels A, B and C); Effect $E635 starts sound effect A (18 bytes at $EE94 + 18 * A).
+@about An order list: pattern addresses, a word 0 starts it again. A pattern: $00-$7F a note (ends the row), $80-$8C commands through CommandOffsets ($80 rest, $85 the next pattern, $88 stop, $82 and $86 two argument bytes, $89 and $8B one), $B0-$BF the arpeggio, $C0-$DF the volume envelope, $E0-$FF the note length.
+
+$E505 c MusicPlay ; One frame: when the music is on, each channel's row on a row frame and each channel's sound; the sound effect on channel C; the mixer; then the AY registers
+$E507 MusicOn ; (the CP operand) 1: the music plays
+$E518 Tempo ; (the LD operand) frames a row
+$E546 EffectFrame ; The sound effect's frame (the CP operand at $E547: 1 while one plays): its period sweep, noise and volume over channel C
+$E5AB Mixer ; The mixer from the channels' tone and noise bits
+$E5C3 WriteAY ; AY registers 12 (13 when the envelope shape changed) down to 0 from AYRegs
+$E5EA c Init ; Start the song at $EB38: clear the channel records, the tempo, each channel's order list and its first pattern
+$E635 c Effect ; Start sound effect A: its 15 parameter bytes to EffectParams, 3 to the AY image
+$E669 b CommandOffsets 13 ; Jump offsets of commands $80-$8C (target = the entry's address + its byte)
+$E676 c CommandStop ; $88: the music off, the volumes 0
+$E688 CommandEnd ; $85: the next pattern of the order list (a word 0: the list from its start)
+$E6A4 CommandTie ; $8C: the note byte to $8C (the next note ties)
+$E6A9 CommandTranspose ; $89 n: the channel's transposition
+$E6B0 CommandSweep ; $82 step count: the period sweep
+$E6C0 CommandVibrato ; $86 depth speed: the vibrato
+$E6D4 CommandDrumOn ; $83: flags 7 and 6
+$E6D8 CommandHold ; $84: flag 6
+$E6DE CommandPlain ; $81: every flag off
+$E6E3 CommandNoise ; $8B n: the noise period, flags 2 and 1
+$E6E8 CommandMixOn ; $8A: flags 2 and 1
+$E6EC CommandNoiseOn ; $87: flag 1
+$E6F2 c ChannelRowNext ; The next channel's row (IX + 1)
+$E6F4 ChannelRow ; A channel's row: count its row counter down, at 0 read the pattern's items up to a note or a rest
+$E707 ReadItem ; The next item of the stream: $E0-$FF length, $C0-$DF envelope, $B0-$BF arpeggio, $80-$AF commands, else a note
+$E737 BendStep ; The note's bend by one a row
+$E743 CommandRest ; $80: the envelope silent
+$E749 ItemNote ; A note: restart the envelope and the arpeggio (unless tied), noise notes from $54
+$E77E c ChannelSoundNext ; The next channel's sound (IX + 1)
+$E780 ChannelSound ; A channel's frame: the volume envelope row, the arpeggio row, the period with vibrato and sweep; the volume to (BC)
+$E851 b EffectParams 15 ; The sound effect: period, sweep steps and their counters, the noise pattern
+$E860 b EffectCounters 4 ; The sweep counters
+$E864 b Channels 23 ; The channel records, interleaved: field k of channel c at $E864 + k + c (fields every 3 bytes)
+$E8A9 b TempoCounter 1 ; Frames left to the next row
+$E8AA b AYRegs 14 ; The AY register image: three tone periods, the noise, the mixer, three volumes, the envelope
+$E8B8 w PeriodTable 12 ; The AY tone period of each note 0-$53 (84 notes)

@@ -1,0 +1,532 @@
+# A tune of the megaapoc player (tools/res_rip.py): its blocks in address order.
+format megaapoc
+org $E960
+Order1: order
+  Pattern2 Pattern2 Pattern4 Pattern2 Pattern2 Pattern16 Pattern16 Pattern16
+  Pattern16 Pattern7 Pattern8 Pattern7 Pattern8 Pattern2 Pattern11 Pattern12
+  Pattern11 Pattern13 Pattern18 Pattern18 Pattern18 Pattern18 Pattern18 Pattern18
+  Pattern22 Pattern23 Pattern7 Pattern8 Pattern7 Pattern8 Pattern7 Pattern8
+  Pattern7 Pattern8 Pattern11 Pattern12 Pattern11 Pattern13 Pattern18 Pattern18
+  Pattern18 Pattern18 Pattern7 Pattern8 $0000
+Order2: order
+  Pattern1 Pattern2 Pattern5 Pattern1 Pattern2 Pattern17 Pattern9 Pattern9
+  Pattern2 Pattern11 Pattern12 Pattern11 Pattern14 Pattern19 Pattern20 Pattern19
+  Pattern21 Pattern19 Pattern20 Pattern19 Pattern21 Pattern19 Pattern20 Pattern19
+  Pattern21 Pattern22 Pattern24 Pattern5 Pattern10 Pattern12 Pattern11 Pattern14
+  Pattern19 Pattern20 Pattern19 Pattern21 Pattern19 Pattern20 Pattern19 Pattern21
+  Pattern9 $0000
+Order3: order
+  Pattern3 Pattern3 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6
+  Pattern6 Pattern6 Pattern3 Pattern3 Pattern6 Pattern6 Pattern6 Pattern6
+  Pattern6 Pattern6 Pattern6 Pattern6 Pattern3 Pattern6 Pattern6 Pattern6
+  Pattern15 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6
+  Pattern25 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6 Pattern6
+  Pattern6 Pattern6 Pattern6 Pattern6 Pattern15 Pattern6 Pattern6 Pattern6
+  Pattern6 Pattern6 Pattern6 $0000
+Arpeggios: bytes
+  00 01 04 07 0A 0D 0F 80 00 04 87 04 07 8C 07 0C
+  90 07 0C 8F 00 8C 03 07 8C
+Envelopes: bytes
+  10 16 1F 23 2A 31 3C 4C 4E 59 63 6F 76 7C 82 93
+  0E 0D 0E 0D 2C 2B F9 0E 0D 0C 0B 0A 09 08 07 06
+  F7 0F 0D 0C 1B FA 0D 0C 0A 18 06 04 02 F0 0C 0B
+  09 17 05 03 01 F0 1C 0A 09 07 06 08 07 05 04 02
+  01 F0 0F 1D 0E 1C 0D 1B 0A 29 18 17 16 15 04 03
+  02 01 F0 0B 05 F0 37 38 39 3A 3B 3C 4D 7E 7D 7C
+  7B FA 0A 29 28 27 26 25 24 23 22 21 F0 0A 00 08
+  06 00 07 05 08 05 02 06 01 F4 47 48 49 7A 79 78
+  77 F6 0D 0E 0D 1C 1B 1A F9 0B 08 06 04 02 01 F0
+  0D 0E 0D 0C 0B 1A 0B 0A 09 18 17 08 07 06 15 14
+  05 F4 16 55 D5 D6 D7 D8 F9
+Tempo: bytes
+  06
+Song: words
+  Order1 Order2 Order3
+-: bytes
+  FF 80 80 85
+Pattern1: stream
+  transpose:0C
+Pattern2: stream
+  arp0 vibrato:04,08 env1 dur0 C-1
+  C-1
+  C-1
+  C-1
+  dur1 C-1
+  dur0 C-1
+  C-1
+  dur0 G-0
+  G-0
+  G-0
+  dur1 G-0
+  dur0 G-0
+  G-0
+  G-0
+  end
+Pattern3: stream
+  env13 dur0 D#8
+  D#8
+  D#8
+  D#8
+  dur1 D#8
+  dur0 D#8
+  D#8
+  dur0 D#8
+  D#8
+  D#8
+  dur1 D#8
+  dur0 D#8
+  D#8
+  D#8
+  end
+Pattern4: stream
+  env0 dur15 F-1
+  D#1
+  C-1
+  A-0
+  D-1
+  C-1
+  G-0
+  dur7 A-0
+  A#0
+  dur15 F-1
+  D#1
+  C-1
+  A-0
+  D-1
+  C-1
+  G-0
+  A-0
+  end
+Pattern5: stream
+  transpose:00 env2 arp0 vibrato:04,08 dur5 A#3
+  A-3
+  dur3 G-3
+  dur7 F-3
+  vibrato:08,10 tie F-3
+  vibrato:04,08 dur5 F-3
+  E-3
+  dur3 D-3
+  dur7 E-3
+  C-3
+  dur5 G-3
+  F-3
+  dur3 E-3
+  dur7 D-3
+  vibrato:08,10 tie D-3
+  vibrato:04,08 dur5 G-3
+  F-3
+  dur3 E-3
+  dur7 F-3
+  G-3
+  env14 dur1 D-2
+  C-2
+  env2 A#3
+  dur5 A-3
+  dur3 G-3
+  dur7 F-3
+  vibrato:08,10 tie F-3
+  vibrato:04,08 env14 dur1 D-2
+  C-2
+  env2 F-3
+  dur5 E-3
+  dur3 D-3
+  dur7 E-3
+  C-3
+  env14 dur1 D-2
+  C-2
+  env2 G-3
+  dur5 F-3
+  dur3 E-3
+  dur7 D-3
+  vibrato:08,10 tie D-3
+  vibrato:04,08 env14 dur1 D-2
+  C-2
+  env2 F-3
+  dur5 E-3
+  dur3 D-3
+  dur7 G-3
+  A-3
+  end
+Pattern6: stream
+  noise:07 plain arp0 dur0 env0 sweep:78,01 C-2
+  env7 D#7
+  G-7
+  G-7
+  dur1 env3 A-8
+  dur0 env0 sweep:78,01 mixon C-2
+  env7 G-7
+  G-7
+  D#7
+  G-7
+  G-7
+  dur1 env3 A-8
+  dur0 env7 G-7
+  G-7
+  env0 sweep:78,01 C-2
+  env7 D#7
+  G-7
+  G-7
+  dur1 env3 A-8
+  dur0 env0 sweep:78,01 mixon C-2
+  env7 G-7
+  G-7
+  D#7
+  G-7
+  G-7
+  dur1 env3 A-8
+  dur0 env7 D#7
+  env4 A-8
+  end
+Pattern7: stream
+  dur1 D-1
+  dur0 D-2
+  D-2
+  D-2
+  D-2
+  C-2
+  D-1
+  D-2
+  dur1 D-2
+  dur0 D-2
+  rest
+  D-2
+  D-1
+  E-1
+  dur1 F-1
+  dur0 F-2
+  F-2
+  F-2
+  F-2
+  E-2
+  E-1
+  F-1
+  dur1 F-2
+  dur0 F-1
+  G-2
+  G-1
+  G-2
+  G-2
+Pattern8: stream
+  dur1 A-0
+  dur0 A-1
+  A-1
+  A-1
+  A-1
+  G-1
+  A-0
+  A-1
+  dur1 A-1
+  dur0 A-1
+  rest
+  G-1
+  G-0
+  A-1
+  end
+Pattern9: stream
+  env14 arp5 vibrato:01,02 dur2 C-2
+  dur0 D-2
+  dur4 rest
+  env5 arp3 dur0 C-2
+  dur1 C-2
+  arp4 D-2
+  arp3 C-2
+  env14 arp5 dur2 G-2
+  dur0 F-2
+  dur4 rest
+  env5 arp2 dur0 F-2
+  dur1 F-2
+  G-2
+  F-2
+  env14 arp5 dur2 G-2
+  dur0 A-2
+  dur5 rest
+  env5 arp2 dur1 A-2
+  dur0 A-2
+  A-2
+  rest
+  rest
+  env14 arp5 A-2
+  dur1 A-2
+  dur0 G-2
+  dur1 C-3
+  dur0 G-2
+  A-2
+  dur3 rest
+  env5 arp2 dur0 A-2
+  A-2
+  dur1 rest
+  end
+Pattern10: stream
+  transpose:0C
+Pattern11: stream
+  env1 dur0 D-2
+  D-2
+  D-2
+  D-2
+  C-3
+  D-2
+  C-3
+  B-2
+  rest
+  dur1 D-2
+  dur0 D-2
+  dur1 D-3
+  C-3
+  D-2
+  dur0 D-2
+  D-2
+  dur1 C-3
+  dur0 G-2
+  F-2
+  dur7 rest
+  end
+Pattern12: stream
+  dur0 G-1
+  G-1
+  G-1
+  G-1
+  G-2
+  A-1
+  G-2
+  E-2
+  rest
+  dur1 A-1
+  dur0 A-1
+  dur1 G-2
+  A-2
+  dur0 rest
+  dur1 A-2
+  dur0 A-2
+  dur1 G-2
+  dur0 D-2
+  C-2
+  dur7 rest
+  end
+Pattern13: stream
+  dur0 rest
+  env14 dur2 D-1
+  E-1
+  F-1
+  F#1
+  F#1
+  end
+Pattern14: stream
+  arp2 vibrato:01,02 dur0 rest
+  dur2 env14 D-2
+  E-2
+  F-2
+  F#2
+  F#2
+  end
+Pattern15: stream
+  dur0 rest
+  env0 sweep:78,01 C-2
+  env3 dur1 D#8
+  dur2 D#8
+  D#8
+  D#8
+  dur0 D#8
+  D#8
+  D#8
+  end
+Pattern16: stream
+  dur1 D-1
+  dur0 D-2
+  D-2
+  D-2
+  D-2
+  C-2
+  D-1
+  D-2
+  dur1 D-2
+  dur0 D-2
+  rest
+  D-2
+  C-1
+  C#1
+  dur1 D-1
+  dur0 D-2
+  D-2
+  D-2
+  D-2
+  C-2
+  D-1
+  F-1
+  dur1 F-2
+  dur0 F-1
+  G-2
+  G-1
+  G-2
+  G-2
+  end
+Pattern17: stream
+  dur0 rest
+  vibrato:01,02 env6 arp0 D-2
+  dur1 D-2
+  D-2
+  dur0 C-2
+  D-2
+  dur8 rest
+  dur0 C-3
+  dur1 C-3
+  C-3
+  dur0 B-2
+  B-2
+  C-3
+  dur2 C-3
+  arp2 env14 G-2
+  arp4 dur0 D-2
+  dur15 arp0 rest
+  dur0 rest
+  env6 D-2
+  dur1 D-2
+  D-2
+  dur0 C-2
+  D-2
+  dur3 rest
+  arp3 env14 dur2 C-2
+  arp4 dur0 D-2
+  env6 arp0 rest
+  C-3
+  dur1 C-3
+  C-3
+  dur0 B-2
+  B-2
+  arp4 env14 dur2 D-2
+  arp2 C-2
+  dur1 arp6 D-2
+  env8 dur31 arp5 vibrato:28,28 sweep:08,30 D-3
+  dur15 rest
+  end
+Pattern18: stream
+  dur1 G-0
+  dur0 G-1
+  G-1
+  G-1
+  G-1
+  F-1
+  G-0
+  G-1
+  dur1 G-1
+  dur0 G-1
+  A-0
+  A-1
+  A#0
+  A#1
+  dur1 C-1
+  dur0 C-2
+  C-2
+  C-2
+  C-2
+  A#1
+  C-1
+  C-2
+  dur1 C-2
+  dur0 C-2
+  A#0
+  A#1
+  A-0
+  A-1
+  end
+Pattern19: stream
+  arp6 dur0 rest
+  G-2
+  dur1 G-2
+  G-2
+  arp2 F-2
+  arp6 dur2 E-2
+  dur0 D-2
+  dur3 rest
+  end
+Pattern20: stream
+  dur1 rest
+  arp2 C-2
+  C-2
+  A#1
+  dur2 arp6 D-2
+  arp2 C-2
+  dur1 A#1
+  end
+Pattern21: stream
+  arp2 dur0 A#2
+  A#2
+  dur1 arp6 A-2
+  G-2
+  dur0 A-2
+  G-2
+  dur7 rest
+  end
+Pattern22: stream
+  env1 arp0 dur1 G-2
+  G-2
+  F-2
+  dur0 G-2
+  dur1 E-2
+  dur2 D-2
+  dur1 rest
+  dur0 G-1
+  A#1
+  dur1 C-2
+  C-2
+  C-2
+  dur0 A#1
+  dur1 D-2
+  G-1
+  G-1
+  dur0 G-1
+  A#1
+  A#1
+  env8 end
+Pattern23: stream
+  dur4 sweep:C0,13 C-2
+  dur3 sweep:C0,0D tie C-2
+  sweep:C0,0D tie C-2
+  sweep:C0,0D tie C-2
+  env1 dur0 A-1
+  dur1 A-1
+  dur0 A-1
+  dur2 A-1
+  dur3 A-1
+  rest
+  end
+Pattern24: stream
+  dur3 sweep:C0,0D C-1
+  sweep:C0,0D tie C-1
+  sweep:C0,0D tie C-1
+  sweep:C0,0D tie C-1
+  env1 dur0 rest
+  arp2 A-2
+  dur1 A-2
+  dur0 A-2
+  dur2 A-2
+  dur3 A-2
+  rest
+  end
+Pattern25: stream
+  dur1 env0 sweep:78,01 C-2
+  rest
+  sweep:78,01 C-2
+  rest
+  sweep:78,01 C-2
+  rest
+  sweep:78,01 C-2
+  rest
+  dur0 env3 A-8
+  env7 G-7
+  dur1 G-7
+  dur0 G-7
+  dur2 G-7
+  dur3 G-7
+  dur0 G-7
+  G-7
+  G-7
+  G-7
+  end
+Effects: rows 18
+  D8 FF 72 02 00 01 55 3A 00 C6 FF 00 72 02 10 B0 1D 09
+  0C 00 2C 01 0E 01 55 04 00 FC FF 00 2C 01 1C 40 1F 09
+  24 00 8C 00 00 01 55 0C 00 F4 FF 00 8C 00 12 60 22 09
+  03 00 03 00 08 01 55 01 00 FF FF FF 02 00 32 40 1F 09
+  01 00 0F 00 0F 00 00 00 00 00 00 FF 0D 00 28 40 1F 09
+  05 00 0C 00 10 01 AB 02 00 FE FF FF 0C 00 32 10 27 09
+  00 00 00 00 00

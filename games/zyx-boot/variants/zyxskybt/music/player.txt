@@ -1,0 +1,20 @@
+# The music piece of variant zyxskybt (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/stc at MusicPiece $BFFB, the tune stc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player stc
+tune stc.txt
+at Init 00
+at Init+101 00
+at StreamA 45 E7 90 68 16 69 FF 00 00 00 00 00 00 00 90 F1
+at ChannelA+7 FF 00 00 00 00 00 00 00 90 F1 FF 00 00 00 00 00
+at ChannelC+3 00 00 90 F1 FF 00 00 00 00 00 00 00 00 00 00 00
+at AYMixer+3 00 00
+at OrnamentRow 03
+tail
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00

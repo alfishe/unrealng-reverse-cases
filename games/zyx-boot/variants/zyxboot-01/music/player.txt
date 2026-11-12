@@ -1,0 +1,13 @@
+# The music piece of variant zyxboot-01 (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/asc1 at MusicPiece $C000, the tune asc1.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player asc1
+tune asc1.txt
+tail
+  E0 00 E0 00 E0 00 E0 00 00 0C 00 F4 80 00 00 00 00 00 00 0C 00 00 00 00 00 00 00 F4 60 00 E0 00
+  EF 80 05 00 13 00 E1 00 13 00 05 60 EF 00 00 00 03 00 04 80 F9 00 03 60 04 00 0C 00 F4 00 00 00
+  00 00 00 00 00 00 00 00 00 00 0C 00 F4 E0 00 E0 0C E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0
+  00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0 00 E0
+  00 E0 00 00 0C 00 F4 80 00 00

@@ -1,0 +1,17 @@
+# The second music piece of variant zyxremix at $CB20 (variant.json music_extra; tools/variants_music.py): the
+# player variants/players/stc, the tune stc.txt ("KSA" by Ksa), then the tail (leftover pattern bytes). The menu's
+# interrupt calls its play at $CB26. "at" lines: the player's state as the saved memory held it.
+
+player stc
+tune stc.txt
+at Init+101 FB C9 F3 D2 2F D3 79 D4 77 CF 06 01 1E A1 CB 73
+at StreamB+1 F3 CF F2 FF 00 00 00 00 00 00 00 30 D3 FF 00 00
+at ChannelB 00 00 00 00 00 30 D3 FF 00 00 00 00 00 00 00 30
+at ChannelC+6 D3 FF 00 00 00 00 00 00 00 00 00 00 00 00 00
+at ModuleBase 5C CF
+at OrnamentRow 09
+tail
+  0A 61 0A 16 16 63 0C 61 0C 18 18 62 0C 61 0C 18 18 63 07 61 07 13 13 62 07 07 61 13 62 13 63 0E
+  61 0E 1A 1A 62 0E 61 0E 1A 1A 63 0A 61 0A 16 16 62 0A 61 0A 16 16 63 0C 61 0C 62 18 18 0C 0C 18
+  61 18 62 07 07 13 13 07 07 13 13 FF A1 68 76 1A A2 26 A1 1A A2 26 A1 1A A2 21 A1 1A A2 24 1F 21
+  D0 1A FF E0 67 70 18 FF

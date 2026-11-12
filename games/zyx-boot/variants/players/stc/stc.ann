@@ -1,0 +1,75 @@
+# The Sound Tracker compiled player that 12 variants carry in their music piece (kit/mkgame.py --part
+# variants/players/stc/stc.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1084 bytes of zyxalex2's music piece ($C078-$C4B3, work/parts/player-stc.bin, written by
+# python3 tools/variants_music.py image stc). The same code sits at $C000, $C030, $C078, $C0B7 or $C0C2 in the other
+# variants; tools/variants_music.py assembles this source at each variant's base (the labels move the addresses),
+# appends the STC module (the variant's music/stc.txt, tools/res_stc.py) and lays the variant's own state bytes over it
+# (music/player.txt: what the player's variables and self-modified operands held when the disk was saved).
+# The player is Sound Tracker's own compiled player (the "SONG BY ST COMPILE" module follows it). No recording runs a
+# variant: every name and description here is from the code (tools/ay_render.py runs it to render the WAVs).
+
+@equ $C4B4 Module ; the STC module right after the player (tools/variants_music.py sets it to the variant's address)
+
+@module stc ; The Sound Tracker player: init, play, the pattern reader, the samples and ornaments, the AY write
+@about Two entry points: MusicInit (the first byte, LD HL,Module and JP Init) reads the STC module's header into the player's variables, clears the channel records and silences the AY; MusicPlay (the JP at +6) plays one frame: on a row frame (Delay frames a row) each channel whose row counter ran out reads its pattern stream (ReadPattern), then for each channel one sample row (SampleRow) and one ornament step, the tone period from PeriodTable, the volume, the noise and the mixer into AYRegisters, last WriteAY.
+@about The module (STC): the delay, three offsets (positions, ornaments, patterns), the 18-byte identifier "SONG BY ST COMPILE", the size, then the samples (99 bytes each: 32 rows of 3 bytes and a loop pair), the positions (pattern and transposition pairs), the ornaments (33 bytes each), the pattern table (7 bytes each: number, three stream offsets) and the streams; the format is in src/res/music/README.md.
+
+$C078 c MusicInit ; Set the player up for the module at Module: LD HL,Module, then JP Init
+$C07B c InitJump ; JP Init
+$C07E c MusicPlay ; Play one frame (JP Play)
+
+$C081 c Init ; Read the module's header, clear the channels, silence the AY
+> Delay = byte 0; ModuleBase = HL (the self-modified operand of AddModuleBase); the three table pointers from the header's offsets plus the module's address; the positions' count + 1; clears the 45 bytes of the channel records; finds sample 0 (99-byte records) for the three channels; then WriteAY.
+
+$C0E8 b PlayerVariables 8 ; The player's variables: the module's tables, the delay and its counter, the stream pointers
+> +0 the positions' address, +2 the ornaments', +4 the patterns', +6 the samples', +8 Delay, +9 DelayCounter, +10 the positions' count + 1, +11, +13, +15 the three stream pointers, +17 $FF. Written by Init and Play: the bytes on a disk are what they held when it was saved.
+$C0F0 Delay
+$C0F1 DelayCounter
+$C0F2 PositionCount
+$C0F3 StreamA
+$C0F5 StreamB
+$C0F7 StreamC
+
+$C0FA b ChannelRecords 8 ; The three channels' records (10 bytes each, IX = +2), then AYRegisters
+> IX+$00 the sample row, +$01 the note, +$02 the row counter, +$03 / +$04 the sample's address, +$05 / +$06 the ornament's, +$07 the rows left of the sample, IX-$01 the row length, IX-$02 the envelope state.
+$C0FC ChannelA
+$C106 ChannelB
+$C110 ChannelC
+$C118 PositionIndex
+
+$C119 b AYRegisters 8 ; The image of AY registers 0-13 that WriteAY sends
+$C11F AYNoise
+$C120 AYMixer
+$C124 AYEnvelopePeriod
+$C126 AYEnvelopeShape
+
+$C127 c FindRecord ; HL = the first record from HL whose first byte is A (records of BC bytes)
+
+$C12D c ReadOffset ; DE = the word at (HL) plus ModuleBase, HL + 2
+
+$C132 c AddModuleBase ; HL += ModuleBase (the operand of LD BC,nn: written by Init), result in DE
+
+$C138 c SampleRow ; One row of a sample: A = the row; out B, C the mixer bits, D the noise and volume, E, HL the tone delta
+
+$C170 c NextPosition ; Start the next position: its transposition and the three streams of its pattern
+
+$C1B1 c CountRow ; Count down a channel's row counter; on 0 reload it from the row length
+
+$C1BC c Play ; Play one frame: on a row frame the three streams, then the sound of each channel and WriteAY
+
+$C210 c ReadPattern ; Read a channel's stream to its next note, rest or release: note, sample, ornament, envelope, row length
+
+$C2AD c SampleStep ; Step a channel's sample: the next row, its loop
+
+$C2E1 c NoiseFromSample ; The channel's noise period into AYNoise when its sample row has noise
+
+$C2E9 c EnvelopeStep ; The envelope bit of a channel's volume
+
+$C306 c ChannelSounds ; The three channels' sound: sample rows, ornament notes, periods, volumes, mixer
+
+$C3AA c TonePeriod ; HL = PeriodTable[note + the ornament's offset + the transposition] -/+ the sample's tone delta
+
+$C3D7 w PeriodTable 8 ; The AY tone period of each of the 96 notes
+
+$C497 c WriteAY ; Write AYRegisters to the AY: registers 13 (when a shape is set) or 12 down to 0

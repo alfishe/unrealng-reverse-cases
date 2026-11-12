@@ -1,0 +1,138 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  transp:12 repeat:4 call:s_F58D next transp:0 call:s_F23C call:s_F23C call:s_F28D call:s_F1F7 repeat:2 noise:9 mixer:1
+  D#1/2 r/6 D#1/1 mixer:8 r/7 call:s_F5ED call:s_F5ED mixer:1 D#1/1 r/7 D#1/1 mixer:8
+  r/7 call:s_F600 r/8 next call:s_F23C call:s_F23C call:s_F28D repeat:4 call:s_F1F7 next goto:channelA
+instr_F08B: instrument
+  0/1
+instr_F08D: instrument
+  13/20 12/30 goto:instr_F08D
+orn_F094: ornament
+  -1 -1 1 1 1 1 1 -1 -1 -1 goto:orn_F094
+orn_F0A1: ornament
+  10 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 goto:orn_F094
+orn_F0AF: ornament
+  -10 1 1 1 1 1 1 1 1 1 1 goto:orn_F094
+orn_F0BD: ornament
+  1 goto:orn_F0BD
+orn_F0C1: ornament
+  -1 goto:orn_F0C1
+s_F0C5: stream
+  instr:instr_F08B orn:orn_F0A1 D#6/48 D-6/16 D-6/48 C-6/16 C-6/96 orn:orn_F094 C-6/8 D-6/8 D#6/8 C-6/8
+  orn:orn_F0A1 G#6/64 orn:orn_F0AF G-6/24 orn:orn_F094 F-6/24 D-6/16 tie B-5/64 orn:orn_F0BD B-5/64 orn:orn_F094
+  untie D#6/48 D-6/16 D-6/48 C-6/16 C-6/96 orn:orn_F094 C-6/8 D-6/8 D#6/8 C-6/8 orn:orn_F0A1
+  A#6/64 orn:orn_F094 G#6/32 G-6/32 tie D-6/96 orn:orn_F0C1 D-6/32 untie orn:orn_F094 D#6/48 D-6/16
+  D-6/48 C-6/16 C-6/48 A#5/16 A#5/48 G#5/16 tie G#5/32 orn:orn_F0BD G#5/32 untie orn:orn_F094
+  G-5/160 D-5/8 D#5/8 F-5/8 D-5/8 repeat:2 G-5/24 G#5/24 D-5/16 next B-5/24 D-6/24
+  F-6/16 G#6/32 G-6/32 orn:orn_F0AF G-6/224 orn:orn_F0C1 G-6/32 orn:orn_F0AF C-6/96 orn:orn_F094 C-6/8 D-6/8
+  D#6/8 C-6/8 orn:orn_F0A1 G-6/96 orn:orn_F094 C-6/8 D-6/8 D#6/8 C-6/8 repeat:2 G#6/4 G-6/4
+  F-6/4 D-6/4 F-6/4 D#6/4 D-6/4 F-6/4 D-6/4 C-6/4 B-5/4 D-6/4 B-5/4 G#5/4
+  G-5/4 D-6/4 D#6/4 D-6/4 B-5/4 G-5/4 G#5/4 G-5/4 B-5/4 D-6/4 C-6/4 B-5/4
+  G#5/4 G-5/4 D-5/4 D#5/4 G-5/4 B-5/4 transp:-12 next transp:0 repeat:2 tie G#4/64
+  repeat:11 A-4/2 transp+:1 next transp:0 G#5/42 untie next orn:orn_F0A1 B-5/128 orn:orn_F0AF B-5/24
+  B-5/24 B-5/16 B-5/64 ret
+s_F1F7: stream
+  instr:instr_F225 orn:orn_F234 repeat:4 transp:12 repeat:2 repeat:2 r/8 C-4/8 C-4/8 C-4/8 C-4/8 C-4/16
+  C-4/8 C-4/8 C-4/8 C-4/8 C-4/16 C-4/24 next transp:11 next next transp:0 ret
+instr_F225: instrument
+  15/1 14/1 13/2 12/2 11/2 10/0 goto:instr_F225
+orn_F234: ornament
+  notes 3 0 -3 0 goto:orn_F234
+s_F23C: stream
+  r/16 orn:orn_F30A instr:instr_F2FF repeat:2 D#5/8 F-5/8 G-5/8 F-5/8 D#5/8 G-5/24 next repeat:2
+  D-5/8 D#5/8 F-5/8 D#5/8 D-5/8 F-5/24 next C-5/8 D-5/8 D#5/8 D-5/8 C-5/8
+  D#5/24 C-5/8 D-5/8 D#5/8 D-5/8 C-5/8 D#5/40 D-5/8 C-5/24 A#4/64 G#4/24 A#4/24
+  G#4/16 G-4/128 D-5/128 G#5/192 ret
+s_F28D: stream
+  r/16 orn:orn_F30A instr:instr_F2FF repeat:2 D#5/8 F-5/8 G-5/8 F-5/8 D#5/8 G-5/24 next repeat:2
+  D-5/8 D#5/8 F-5/8 D#5/8 D-5/8 F-5/24 next repeat:6 C-5/8 D-5/8 D#5/8 D-5/8
+  C-5/8 D#5/24 next C-5/8 D-5/8 D#5/8 D-5/8 C-5/8 D-5/72 call:s_F2DE transp:4 call:s_F2DE
+  transp:7 call:s_F2DE transp:0 ret
+s_F2DE: stream
+  orn:orn_F488 instr:instr_F47B G-3/24 G-3/24 G-3/24 G-3/24 G-3/16 G-4/2 G#4/2 A-4/2 A#4/2 B-4/2
+  C-5/2 C#5/2 D-5/2 ret
+instr_F2FF: instrument
+  14/2 13/2 12/2 11/0 goto:instr_F2FF
+orn_F30A: ornament
+  -1 -1 -1 1 1 1 1 1 1 -1 -1 -1
+  goto:orn_F30A
+channelB: stream
+  orn:orn_F51C instr:instr_F50F repeat:4 E-2/8 r/8 C#4/8 C#4/8 D#2/16 C#4/16 next call:s_F492 call:s_F492
+  call:s_F457 call:s_F3FE call:s_F365 transp:0 r/96 orn:orn_F51C instr:instr_F50F B-3/8 B-3/16 G-3/8 call:s_F492 call:s_F492
+  call:s_F457 call:s_F0C5 call:s_F0C5 call:s_F3FE call:s_F365 goto:channelB
+s_F365: stream
+  orn:orn_F3EF instr:instr_F3F6 repeat:2 D#5/8 D#6/8 D-6/8 D#6/8 D-6/8 C-6/8 G-5/8 G#5/8 F-5/8
+  G-5/8 G#5/8 F-5/8 G-5/8 D-5/8 D#5/8 C-5/8 D#5/8 D#6/8 D-6/8 D#6/8 D-6/8
+  C-6/8 G-5/8 G#5/8 F-5/8 G-5/8 D-5/8 D#5/8 C-5/8 G-5/8 G#5/8 G-5/8 D-5/8
+  D-6/8 C-6/8 D-6/8 C-6/8 B-5/8 G#5/8 G-5/8 D-5/8 D#5/8 F-5/8 G-5/8 G#5/8
+  G-5/8 F-5/8 G-5/8 D-5/8 D-6/8 C-6/8 D-6/8 C-6/8 B-5/8 G-5/8 G#5/8 F-5/8
+  G-5/8 D#5/8 G-5/8 D-5/8 G-5/8 G#5/8 G-5/8 next ret
+orn_F3EF: ornament
+  notes 12 0 -12 goto:orn_F3EF
+instr_F3F6: instrument
+  15/1 13 11 9 goto:instr_F3F6
+s_F3FE: stream
+  orn:orn_F427 instr:instr_F435 repeat:4 r/8 G-5/80 G#5/16 G-5/24 next repeat:2 G#4/88 A#4/16 G#4/24
+  next G-4/88 G#4/16 G-4/24 G-5/64 G#5/24 G-5/16 F-5/24 ret
+orn_F427: ornament
+  1 1 1 1 -1 -1 -1 -1 -1 -1 2 goto:orn_F427
+instr_F435: instrument
+  15/1 14 13 12 11 10 9 8 15 14 13 12
+  11/4 15 14 13 12 11 10 9 8 15 14 13
+  0 15 14 13 0 goto:instr_F435
+s_F457: stream
+  instr:instr_F5DE orn:orn_F4C1 D#3/128 A#2/128 C-3/128 G#2/128 F-2/128 G-2/0 G-2/128 orn:orn_F474 instr:instr_F4BC G-2/128
+  ret
+orn_F474: ornament
+  notes 17 -8 -8 goto:orn_F474
+instr_F47B: instrument
+  15/3 14/3 13/3 12/3 11/0 goto:instr_F47B
+orn_F488: ornament
+  notes 12 12 0 12 -48 12 goto:orn_F488
+s_F492: stream
+  instr:instr_F5DE orn:orn_F4C1 C-2/128 G-2/128 G#2/128 F-2/64 A#2/128 G-2/64 orn:orn_F30A instr:instr_F2FF B-4/128 F-5/192
+  tie G-5/32 orn:orn_F4B8 G-5/32 untie ret
+orn_F4B8: ornament
+  -3 goto:orn_F4B8
+instr_F4BC: instrument
+  15/0 goto:instr_F4BC
+orn_F4C1: ornament
+  -4 -4 -4 4 4 4 goto:orn_F4C1
+channelC: stream
+  transp:0 orn:orn_F51C instr:instr_F50F repeat:4 r/16 C-4/8 C-4/8 r/16 C-4/8 r/8 next call:s_F568
+  call:s_F568 call:s_F546 call:s_F520 transp:0 r/96 orn:orn_F51C instr:instr_F50F C-4/8 C-4/16 G#3/8 call:s_F568 call:s_F568
+  call:s_F546 repeat:4 call:s_F520 next goto:channelC
+instr_F50F: instrument
+  15/4 14/3 13/3 12/2 0/0 goto:instr_F50F
+orn_F51C: ornament
+  30 goto:orn_F51C
+s_F520: stream
+  repeat:2 transp:12 call:s_F58A call:s_F58A transp:7 call:s_F58A call:s_F58A transp:8 call:s_F58A transp:5 call:s_F58A transp:7
+  call:s_F58A call:s_F58A next ret
+s_F546: stream
+  transp:3 call:s_F58A transp:10 call:s_F58A transp:12 call:s_F58A transp:8 call:s_F58A transp:5 call:s_F58A transp:7 repeat:8
+  call:s_F58D next ret
+s_F568: stream
+  transp:12 call:s_F58A transp:7 call:s_F58A transp:8 call:s_F58A transp:5 call:s_F58D transp:10 call:s_F58A transp:7 repeat:7
+  call:s_F58D next ret
+s_F58A: stream
+  call:s_F58D
+s_F58D: stream
+  instr:instr_F5DE orn:orn_F5D1 noise:9 mixer:1 F-1/1 mixer:8 C-2/7 C-2/8 call:s_F5ED call:s_F5ED instr:instr_F5DE noise:15
+  mixer:1 F-1/1 mixer:8 C-2/7 noise:15 mixer:1 F-1/1 mixer:8 C-3/7 call:s_F600 instr:instr_F5DE C-3/8
+  ret
+instr_F5C5: instrument
+  15/1 14 13 12 11 10 9/0 goto:instr_F5C5
+orn_F5D1: ornament
+  notes 12 -12 steps -3 -3 3 3 3 -3 goto:orn_F5D1
+instr_F5DE: instrument
+  14/2 13/2 12/1 11/1 10/1 9/1 goto:instr_F5DE
+s_F5ED: stream
+  instr:instr_F5C5 noise:0 tie mixer:1 repeat:8 noise+:5 G#1/1 next untie mixer:8 ret
+s_F600: stream
+  instr:instr_F5C5 noise:9 tie mixer:1 repeat:8 noise+:22 F-1/1 next untie mixer:8 ret

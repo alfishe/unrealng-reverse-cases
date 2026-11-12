@@ -1,0 +1,14 @@
+{
+  "about": "David Whittaker's music driver from Fantasy World Dizzy (zyxboot-10, zyxsiriu) (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/whittaker-dizzy/whittaker-dizzy.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "whittaker-dizzy"],
+  "image": "work/parts/player-whittaker-dizzy.bin",
+  "org": "BFFE",
+  "ann": "variants/players/whittaker-dizzy/whittaker-dizzy.ann",
+  "top": "whittaker-dizzy",
+  "bin": "whittaker-dizzy.bin",
+  "dest": "variants/players/whittaker-dizzy",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: David Whittaker's music driver from Fantasy World Dizzy (zyxboot-10, zyxsiriu) at $BFFE (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-whittaker-dizzy"
+}

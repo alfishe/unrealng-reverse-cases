@@ -7,5 +7,73 @@
     "length": 357,
     "sectors": 2
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 2,
+  "equ": {
+    "MusicPiece": "$C0B7",
+    "MusicSectors": "24",
+    "MusicInit": "$C0B7",
+    "MusicPlay": "$C0BD",
+    "MenuStack": "$BF68"
+  },
+  "pieces": [
+    {
+      "at": "$61A8",
+      "sectors": 15
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$C0B7",
+      "sectors": 24
+    }
+  ],
+  "parts": [
+    "parts/loader.json",
+    "parts/stage2.json"
+  ],
+  "trd": {
+    "boot_lsn": 9,
+    "first_free": 11,
+    "free": 2549,
+    "catalogue_extra": "00524F54342B202042D604D604400001",
+    "pieces": [
+      {
+        "lsn": 80,
+        "at": "$FDE8",
+        "sectors": 1,
+        "encrypt": "stage2"
+      },
+      {
+        "lsn": 81,
+        "at": "$61A8",
+        "sectors": 15
+      },
+      {
+        "lsn": 96,
+        "at": "$A600",
+        "sectors": 8
+      },
+      {
+        "lsn": 104,
+        "at": "$C0B7",
+        "sectors": 24
+      }
+    ],
+    "files": [
+      {
+        "lsn": 15,
+        "file": "files/stale.bin"
+      }
+    ]
+  },
+  "notes": [
+    "The Lotus Group boot, a whole TRD (`trd` in variant.json, built by tools/lotus.py): its catalogue (the boot, then a stale 16-byte entry `ROT4+` after the end mark), the information sector, the boot file at track 0 sector 9, and the sectors the loader reads by track and sector: stage 2 (track 5 sector 0, `$FDE8`), the menu code (`$61A8` x 15), its graphics (`$A600` x 8) and the music (`$C0B7` x 24). The menu is the ZYX menu's code, layout A, with the stack at `$BF68`; its logo, logo colours and rhombus are Lotus Group's.",
+    "The cipher: two layers decrypt themselves with the refresh register R (set once by LD R,A, stepped by every fetch). The loader (`parts/loader.ann`, copied by line 1's REM from `$5D84` to `$9C40`) XORs each byte of `$9C7D-$A07C` with R (from 2), IX, SP (`$404C`) and DE (the count); its first byte decrypted is its own JR NZ's offset. Stage 2 (`parts/stage2.ann`) does the same over `$FE02-$FF01` with R from `$DE`, HL and DE. The sources hold the plain code; the build encrypts it by running each loop in SkoolKit's simulator in lockstep (`basic.txt` has `fill 256` where the encrypted loader goes).",
+    "The protection: the loader reads track 0 raw (the controller's Read Track) and needs three equal bytes of the last gap from the track's offset `$1783` on; the byte found (`$4E` on a standard format) becomes the R start that stage 2 decrypts the chosen program with (XOR R and the first letter of its name). The programs of a Lotus disk are encrypted; this disk holds only the boot.",
+    "The tune: \"E.S.I.\" by Ziutek (compiled Sound Tracker, init `$C0B7`, play `$C0BD`; the music index matches its AY stream exactly), as zyxarbt and zyxrusbt; `music/stc.txt`.",
+    "`files/stale.bin`: track 0 sectors 15 to track 4 sector 15, the bytes a deleted file left (the stale catalogue entry `ROT4+` points at track 1), kept as they are; the decoy read of track 0 sectors 12-15 lands in them."
+  ]
 }

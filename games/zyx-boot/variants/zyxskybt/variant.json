@@ -7,5 +7,39 @@
     "length": 201,
     "sectors": 53
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 1,
+  "equ": {
+    "MusicPiece": "$BFFB",
+    "MusicSectors": "20",
+    "MusicInit": "$BFFB",
+    "MusicPlay": "$C001"
+  },
+  "pieces": [
+    {
+      "at": "$61A8",
+      "sectors": 24
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$BFFB",
+      "sectors": 20
+    }
+  ],
+  "notes": [
+    "The tune: compiled Sound Tracker at `$BFFB` (init `$BFFB`, play `$C001`), as text (`music/stc.txt`, `music/player.txt`); the music index matches its notes to \"strackerrmxY\" (Yerzmyey and Kicia), three different hits: not identified for sure.",
+    "Skynet Games (Taganrog) edition: the menu's help text gives way to a picture at the bottom of the screen with a scroller of the firm's advertisement in Russian, the logo's pixel rows wave, stars and twinkles keep off the logo and the picture.",
+    "The 9 more sectors at `$6FE0-$79A7` (`parts/sky.ann`, four pieces): the picture, its attributes, the Cyrillic font (`graphics/sky-picture.png`, `tables/sky-picture-attrs.txt`, `graphics/font-cyrillic.png`), the bars run at `$FE0D`, the scroller and its enciphered text run at `$A500` (`texts/sky-scroll.txt`, tools/res_variants.py), the set-up. After `kit/mkgame.py --part ... --install` the four resources land as bytes in `parts/res/`: turn them into the editable files with tools/res_variants.py (res_formats converters) and delete `parts/res/`."
+  ],
+  "code": [
+    "sky-rotate-buffer",
+    "sky-stars",
+    "sky-screen"
+  ],
+  "parts": [
+    "parts/sky.json"
+  ]
 }

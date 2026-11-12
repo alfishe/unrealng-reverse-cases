@@ -1,0 +1,14 @@
+{
+  "about": "Variant zyxtvmbt: its catalogue read at $6FE0: python3 ../../kit/mkgame.py --part variants/zyxtvmbt/parts/safe.json --install",
+  "image_cmd": ["python3", "tools/variants.py", "image", "zyxtvmbt", "$6FE0", "56", "work/variants/zyxtvmbt-6fe0.bin"],
+  "image": "work/variants/zyxtvmbt-6fe0.bin",
+  "org": "6FE0",
+  "ann": "variants/zyxtvmbt/parts/safe.ann",
+  "top": "safe",
+  "bin": "safe.bin",
+  "dest": "variants/zyxtvmbt/parts",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot, variant zyxtvmbt: ReadCatalogueSafe in the menu's spare bytes at $6FE0."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxtvmbt-safe"
+}

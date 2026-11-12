@@ -7,5 +7,38 @@
     "length": 199,
     "sectors": 34
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 1,
+  "start": true,
+  "equ": {
+    "MusicPiece": "$EB50",
+    "MusicSectors": "9",
+    "MusicInit": "$EB53",
+    "MusicPlay": "$EB56",
+    "MenuStack": "$BF68",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$EB50"
+  },
+  "pieces": [
+    {
+      "at": "$61A8",
+      "sectors": 15
+    },
+    {
+      "at": "$A5F8",
+      "sectors": 9
+    },
+    {
+      "at": "$EB48",
+      "sectors": 9
+    }
+  ],
+  "code": [
+    "corners-plain"
+  ],
+  "notes": [
+    "The tune: \"Where Time Dropped Dead\" by Frantisek Fuka (Fuxoft's player; the music index matches its AY stream exactly).",
+    "Layout B; the graphics piece is read one sector lower (`$A5F8`) and the music 8 bytes lower (`$EB48`), so the loader's pieces overlap the original's addresses by a few bytes."
+  ]
 }

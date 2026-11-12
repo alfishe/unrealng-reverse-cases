@@ -1,0 +1,35 @@
+1 RANDOMIZE USR VAL "15619":REM :RUN "        "{20}
+2 RANDOMIZE USR VAL "15619":REM :RUN
+3 RANDOMIZE USR VAL "15616"
+4 REM
+  code 21 A8 61       ; $5D80 LD HL,$61A8
+  code 11 A9 61       ; $5D83 LD DE,$61A9
+  code 01 07 9D       ; $5D86 LD BC,$9D07
+  code 36 00          ; $5D89 LD (HL),$00
+  code ED B0          ; $5D8B LDIR
+  code 21 A8 61       ; $5D8D LD HL,$61A8
+  code ED 5B F4 5C    ; $5D90 LD DE,($5CF4)
+  code 01 05 0F       ; $5D94 LD BC,$0F05
+  code CD 13 3D       ; $5D97 CALL $3D13
+  code 21 00 A6       ; $5D9A LD HL,$A600
+  code ED 5B F4 5C    ; $5D9D LD DE,($5CF4)
+  code 01 05 08       ; $5DA1 LD BC,$0805
+  code CD 13 3D       ; $5DA4 CALL $3D13
+  code 21 00 C0       ; $5DA7 LD HL,$C000
+  code ED 5B F4 5C    ; $5DAA LD DE,($5CF4)
+  code 01 05 14       ; $5DAE LD BC,$1405
+  code CD 13 3D       ; $5DB1 CALL $3D13
+  code C9             ; $5DB4 RET
+  code A8             ; $5DB5 XOR B
+  code 61             ; $5DB6 LD H,C
+  code 21 A8 61       ; $5DB7 LD HL,$61A8
+  code 11 A9 61       ; $5DBA LD DE,$61A9
+  code 01 07 9D       ; $5DBD LD BC,$9D07
+  code 36 00          ; $5DC0 LD (HL),$00
+  code ED B0          ; $5DC2 LDIR
+  code C9             ; $5DC4 RET
+10 BORDER NOT PI :PAPER NOT PI :INK VAL "7":CLEAR VAL "65347":RANDOMIZE USR VAL "23936":RANDOMIZE USR VAL "25e3":RANDOMIZE USR VAL "23991":RUN
+end
+autostart 10
+tail 22 CA 31 30 0D 80 31 35 36 31 36 0E 00 00 00 3D 00 0D 80 CA 08 5F 01 00 00 00 08 5F 01 00 00 00
+tail 0A 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

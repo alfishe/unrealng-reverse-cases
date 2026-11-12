@@ -1,0 +1,7 @@
+# The end of the Sound Tracker 1 compilation's stop routine (variants/players/stc1-head), right after the Sound
+# Tracker player in zyxtvmbt's music piece. Format: ../../../../../docs/ann-format.md.
+
+@module stc1tail ; The stop routine's end
+@about Stop (in the head) selects AY register 12 and jumps here with A = 0: write A and count it up to 0 again (256 writes of the envelope period's high byte), then select register 7 and write $FF: tone and noise off on all three channels.
+
+$C495 c StopEnd ; Write 0-255 to the selected register, then $FF to the mixer (register 7)

@@ -1,0 +1,22 @@
+# The music piece of variant zyxlesbt (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/stc at MusicPiece $C0C2, the tune stc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player stc
+tune stc.txt
+at PlayerVariables 32 B7 52 B7 7B B8 19 B4 08 01 10 43 B0 9E F2 CF
+at StreamC+1 F2 FF 00 00 00 00 00 00 00 53 B7 FF 00 00 00 00
+at ChannelB+2 00 00 00 53 B7 FF 00 00 00 00 00 00 00 53 B7 FF
+at PositionIndex 00 00 00 00 00 00 00 00 00 00 00 00 00
+at ModuleBase FE C4
+at OrnamentRow 03
+tail
+  07 07 1F 1F 62 8A 24 09 09 21 21 09 09 21 21 09 09 21 21 09 09 21 21 61 8A 1E 0C 0C 24 24 0C 0C
+  24 24 8A 14 07 07 1F 1F 07 07 1F 1F FF A4 6E 70 21 6F 24 6E 21 6F 21 6E 21 6F 24 6E 21 6F 21 A2
+  6E 21 6D 39 6F 24 6D 39 6E 21 6D 39 6F 21 6D 39 6E 21 6D 39 6F 24 6D 39 6E 21 6D 39 6F 21 6D 39
+  FF 0E A2 62 77 39 3C 3E 40 39 3C 3E 40 3C 40 41 43 37 3B 61 2B A4 62 2D A2 39 3C 3E 40 39 3C 3E
+  40 3C 40 41 43 37 3B 37 FF A1 62 8A 24 09 09 21 21 09 09 21 21 09 09 21 21 09 09 21 21 61 8A 1E
+  0C 0C 24 24 0C 0C 24 24 8A 14 07 07 1F 1F 07 07 1F 1F 62 8A 24 09 09 21 21 09 09 21 21 09 09 21
+  21 09 09 21 21 61 8A 1E 0C 0C 24 24 0C 0C 24 24 8A 14 07 07 1F 1F 07 07 1F 1F FF A2 6E 70 21 A1
+  6D 39 39 A2 6F 21 6D 39 6E 21 6D 39 6F 21 6D 39 6E 21 6D 2D 6F 21 6D 2D

@@ -1,0 +1,87 @@
+# Ian Sheridan's music driver (a game rip), that zyxboot-12 carries at $C000 (kit/mkgame.py --part
+# variants/players/sheridan/sheridan.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 2016 bytes of zyxboot-12's music piece ($C000-$C7DF, work/parts/player-sheridan.bin, written by
+# python3 tools/variants_music.py image sheridan). The code reads the tune's tables at fixed addresses, so the driver
+# never moves; the tune follows at $C7E0 (the duration tables, the instruments, the pattern table, the songs, the
+# sequences and patterns: the variant's music/sheridan.txt, tools/res_sheridan.py). No recording runs a variant:
+# every name and description here is from the code.
+
+@equ $C7E0 DurationTables ; the tune: rows of 8 frame counts
+@equ $C821 Instruments ; 35-byte instrument records
+@equ $C97F PatternTable ; the patterns' addresses
+@equ $C997 SongTable 6 ; 6 bytes a song: the three sequences
+
+@module sheridan ; Ian Sheridan's driver: init, play, the sequences and patterns, the ADSR envelope, arpeggio, vibrato, fades
+@about Two vectors: MusicPlay $C000 (JP Play) plays one frame; MusicInit $C003 (JP Init) starts song Tune. Play first takes a request from Command (a song number + 1, $FE fade out and stop, $FF stop), runs the fade (FadeFrame), then for each running channel ChannelFrame: the next pattern item when the note's frames run out, the volume envelope (attack, decay, sustain, release), the arpeggio, the vibrato into AYRegisters; the master volume lowers the three volumes and WriteAY sends registers 0-10.
+@about A song is three sequences (SongTable, 6 bytes a song). A sequence: a pattern number and its repeat count (PatternTable), $FA n / $FB n (the note offset: + n / = n), $FC n (the duration table), $FD (the song again), $FE (the sequence again), $FF (stop). A pattern: a note byte (the note = the byte - the note offset) and a duration index (DurationTable), $60 d (a tie), $61 i (the instrument), $64 n (the noise period), $65 s (the envelope shape), $FC n / $FD n (fade in / out), $FF (silence), $FE (the end). The format is in tools/res_sheridan.py.
+
+$C000 c MusicPlay ; JP Play: play one frame
+$C003 c MusicInit ; JP Init: start song Tune
+
+$C006 b Command 1 ; A request for the next Play: a song number + 1, $FE fade out and stop, $FF stop (0: none)
+$C007 b Playing 1 ; 1 while the music plays
+$C008 b HardwareEnvelope 1 ; Not 0: channel C's instrument uses the AY envelope (its period follows the note)
+$C009 b Tune 1 ; The song Init starts ($FF: 0)
+$C00A w DurationTable 1 ; The duration table: 8 frame counts, picked by the sequence command $FC
+$C00C b Spare 9 ; Bytes no code reads
+$C015 b MasterVolume 1 ; 15 full; the fades move it, Play lowers the volumes by 15 - it
+$C016 b StopAfterFade 1 ; 1: stop the music when the fade ends
+$C017 b FadeStep 1 ; +1 fade in, $FF fade out, 0 no fade
+$C018 b FadeCounter 1 ; The frames left until the next fade step
+$C019 b FadeSpeed 1 ; Frames a fade step ($80: at once)
+$C01A b Spare2 1 ; A byte no code reads
+
+$C01B c FadeFrame ; One frame of the fade: MasterVolume one step every FadeSpeed frames, stop at 0 or 15
+$C05F c FadeIn ; Pattern command $FC n: fade in, n frames a step
+$C075 c FadeOut ; Pattern command $FD n: fade out, n frames a step
+$C07F c SetAYRegister ; AY register H = L
+
+$C089 b AYRegisters 11 ; The image of AY registers 0-10 (the periods, the noise, the mixer, the volumes)
+$C094 b ChannelRecords 11 ; The three channels' records (43 bytes each, IX)
+> +$00 / +$01 the pattern pointer; +$02 the frames left; +$03 the note; +$04 the volume; +$05 the peak; +$06 the sustain time; +$07 / +$08 the attack delay and step; +$09 / +$0A the decay delay and step; +$0B the attack counter; +$0C the phase (bits 0-1: 1 attack, 2 decay, 3 sustain, 0 release; bit 7 stopped); +$0D the offset of its period in AYRegisters, +$0F of its volume; +$10-+$14 the arpeggio (index, loop, end, table); +$15 / +$16 the pattern's start; +$17 the noise mask; +$19-+$1F the vibrato (delay, depth, period, direction, offset); +$20 / +$21 the sequence pointer; +$22 the repeats left; +$23 / +$24 the sequence's start; +$25-+$2A the decay, sustain and release counters.
+$C094 ChannelA
+$C0BF ChannelB
+$C0EA ChannelC
+$C115 b Spare3 5 ; Bytes no code reads
+
+$C11A c Restart ; Command n: MasterVolume 15, no fade, then Init
+$C126 c Init ; Start song Tune: silence, the three sequences from SongTable, their first patterns
+> Tune $FF is taken as 0. Every channel's frame counter 1, the note offset 0; the three words of SongTable + 6 * Tune go into the operands of the LD HL,(nn) below (the sequences' addresses), ChannelStart for A, B and C (IX = ChannelA, ChannelB, ChannelC), Playing = 1, the mixer $F8.
+$C193 c PlayToEnd ; HALT and Play until the music stops (no code calls it)
+$C19F c ChannelStart ; The channel at IX starts its sequence at HL: the first pattern (NextSequenceItem), counters cleared
+$C1C9 c StopMusic ; Silence, Playing = 0
+$C1D1 c Silence ; AYRegisters cleared, the mixer $F8, then WriteAY
+$C1EA WriteAY ; Write AYRegisters to AY registers 0-10
+
+$C1FD c Play ; Play one frame: Command, the fade, the three channels, the master volume, WriteAY
+$C290 c ChannelFrame ; One frame of the channel at IX: the next pattern item, the envelope, the arpeggio, the vibrato
+$C2B3 Attack ; Phase 1: the volume rises by the attack step every attack delay frames up to the peak
+$C2F3 Decay ; Phase 2: the volume falls by the decay step down to the sustain level
+$C33D Sustain ; Phase 3: the volume holds for the sustain time
+$C359 Release ; Phase 0: the volume falls to 0
+$C38A ChannelOutput ; The volume, the arpeggio's note offset (SetPeriod), the vibrato on the period
+
+$C41A c ReadPattern ; The channel's next pattern item: a note and its duration, or a command
+$C458 NoteOffset ; SUB n: the note = the byte - n (sequence commands $FA, $FB)
+$C499 c SetPeriod ; The period of the note (PeriodTable) into AYRegisters; channel C with the AY envelope: its period too
+$C4DD c NoisePeriod ; The noise period from the note
+$C4E8 c PatternNoise ; $64 n: the noise period
+$C4F1 c PatternSilence ; $FF: the volume 0
+$C4F9 c PatternShape ; $65 s: the AY envelope shape (register 13)
+$C507 c PatternEnd ; $FE: the pattern again until its repeats run out, then the next sequence item
+$C513 c PatternEndUnused ; JP to ReadPattern's loop; no code reaches it
+$C516 c PatternRepeat ; The pattern again from its start (+$15 / +$16)
+$C525 c PatternInstrument ; $61 i: copy instrument i (35-byte records at Instruments) into the channel
+$C5D0 c SequenceDurations ; $FC n: DurationTable = the n-th 8-byte table
+$C5E5 c SequenceOffset ; $FB n: the note offset = n
+$C5EE c SequenceOffsetAdd ; $FA n: the note offset += n
+$C5FB c ChannelStop ; Stop the channel (and the music when the next byte is not 0); no code reaches it
+$C613 c NextPattern ; The repeats ran out: the next sequence item, then ReadPattern
+$C619 c SequenceStop ; $FF: stop the music
+$C61D c SequenceRestart ; $FD: the song again (Init)
+$C621 c NextSequenceItem ; Read the sequence: commands, then a pattern number (PatternTable) and its repeat count
+$C66A SequenceLoop ; $FE: the sequence again from its start
+$C672 b Spare4 4 ; Bytes no code reads
+$C676 w PeriodTable 8 ; The AY tone period of notes -2 up (SetPeriod indexes it by the note + 2)
+$C750 w EnvelopePeriods 8 ; The AY envelope period of each note (PeriodTable + $DA), for channel C's hardware envelope

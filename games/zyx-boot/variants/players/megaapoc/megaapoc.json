@@ -1,0 +1,14 @@
+{
+  "about": "The Mega Apocalypse game player of zyxdimob (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/megaapoc/megaapoc.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "megaapoc"],
+  "image": "work/parts/player-megaapoc.bin",
+  "org": "E505",
+  "ann": "variants/players/megaapoc/megaapoc.ann",
+  "top": "megaapoc",
+  "bin": "megaapoc.bin",
+  "dest": "variants/players/megaapoc",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the Mega Apocalypse game player of zyxdimob (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-megaapoc"
+}

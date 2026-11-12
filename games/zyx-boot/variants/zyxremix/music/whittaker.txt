@@ -1,0 +1,128 @@
+# A tune of David Whittaker's driver (tools/res_whittaker.py): the song table, then the order lists
+# (oN) and the patterns (pN) where they lie.
+version storm
+org $C4EE
+song 4 o0 o1 o2
+o0: order
+  p0 p1 p1 p1 p1 p1 p1 p1
+  p1 p1 p1 p1 p1 p1 p1 p1
+  p1 p1 p1 p1 p1 p1 p1 p2
+  p2 p2 p2 p1 p1 p2 p2 p2
+  p2 p1 p1 p3 p3 p2 p2 p2
+  p2 p2 p2 p2 p2 p1 p1 p4
+  p4 p4 p4 p4 p4 p4 p4 p5
+  p2 p2 p2 p2 p1 p1 p5 loop
+o1: order
+  p6 p7 p7 p7 p7 p7 p7 p7
+  p7 p7 p7 p7 p7 p7 p7 p7
+  p7 p7 p7 p7 p7 p7 p7 p8
+  p8 p8 p8 p7 p7 p8 p8 p8
+  p8 p7 p7 p9 p9 p9 p9 p8
+  p8 p8 p8 p8 p8 p8 p8 p7
+  p7 p10 p10 p10 p10 p5 p8 p8
+  p8 p8 p7 p7 p5 loop
+o2: order
+  p11 p12 p12 p13 p13 p14 p14 p15
+  p16 p17 p17 p13 p13 p18 p18 p19
+  p19 p19 p19 p13 p13 p19 p19 p19
+  p19 p24 p13 p13 p23 p20 p20 p19
+  p19 p19 p19 p24 p19 p19 p19 p19
+  p13 p13 p23 p22 p21 p24 p22 p21
+  p23 p5 p24 p19 p19 p19 p19 p13
+  p13 p23 p5 loop
+p0: pattern
+  sweep 2 4 sweepup orn0 tone instr3,129,33,145 dur15 A-1 dur31 slide 244 1 hold end
+p1: pattern
+  sweep 1 2 sweepup orn0 dur1 instr15,0,33,4 tone A-1 A-1 A-1 A-1 noise instr12,0,17,5
+  flag D#3 flag B-2 dur3 flag G-2 dur1 instr15,0,33,5 tone A-1 E-2
+  E-2 E-2 noise instr12,0,17,4 flag D#3 flag B-2 flag G-2 D#2 instr15,0,33,5
+  tone D-2 D-2 D-2 D-2 noise instr12,0,17,4 flag D#3 flag B-2 flag
+  G-2 instr15,0,33,5 tone D-2 D-2 E-2 E-2 E-2 noise instr12,0,17,4 flag D#5
+  flag D#3 flag F-5 instr12,0,17,5 sweepoff both orn4 E-6 end
+p2: pattern
+  sweep 1 2 sweepup orn0 dur1 instr15,0,33,4 tone A#1 A#1 A#1 A#1 both F-2
+  tone F-2 F-2 F-2 E-2 E-2 E-2 D#2 both D#2 tone D#2
+  C#2 C#2 end
+p3: pattern
+  sweepoff orn0 tone instr8,81,113,52 dur31 D-6 C-6 F-5 hold end
+p4: pattern
+  sweep 1 2 sweepup instr15,0,33,4 orn0 dur1 tone F-1 F-2 F-1 F-2 F-1 F-2
+  both F-1 tone F-2 F-1 F-2 F-1 F-2 F-1 F-2 both F-1
+  tone F-2 end
+p5: pattern
+  sweep 1 2 sweepup orn0 dur5 both instr15,0,113,7 F-5 instr13,0,113,7 A-5 instr11,0,113,7 C#6 instr9,0,113,7
+  F-6 instr7,0,113,7 A-6 instr5,0,113,7 C#7 instr3,0,113,7 F-7 instr3,0,113,7 dur17 A-7 end
+p6: pattern
+  sweep 2 4 sweepup orn0 tone instr3,129,33,145 dur15 C-2 dur31 slide 245 1 hold end
+p7: pattern
+  sweep 1 2 sweepup tone instr13,0,18,3 dur1 orn1 A-4 A-4 A-4 dur9 A-4 dur1
+  A-4 A-4 A-4 dur9 A-4 dur1 orn6 D-4 D-4 D-4 dur7 D-4
+  dur1 D-4 D-4 D-4 D-4 dur7 D-4 dur1 orn1 A-4 end
+p8: pattern
+  sweep 1 2 sweepup tone instr12,0,17,1 orn1 dur31 slide 1 64 A#5 end
+p9: pattern
+  sweep 1 2 sweepup orn0 dur1 tone instr11,0,17,5 F-3 D-4 F-3 A#3 F-3 A-3
+  F-3 A#3 F-3 D-4 F-3 A#3 F-3 A-3 F-3 A#3 F-3 D-4
+  F-3 A#3 F-3 A-3 F-3 A#3 F-3 D-5 F-3 A#4 F-3 A-4
+  F-3 A#4 end
+p10: pattern
+  sweep 1 2 tone instr13,0,33,5 orn0 dur1 F-2 F-3 F-2 F-3 orn9 dur5 C#4
+  dur3 C#4 dur7 C-4 dur1 G#3 G#3 G-3 orn0 orn0 dur1 F-2
+  F-3 F-2 F-3 orn9 dur5 C#4 dur3 C#4 dur7 C-4 dur1 G#4
+  G#4 G-4 end
+p11: pattern
+  sweep 2 4 sweepup orn0 tone instr3,129,33,145 dur15 E-2 dur31 slide 246 1 hold end
+p12: pattern
+  sweep 1 2 sweepup orn12 tone instr9,81,33,54 dur31 E-6 dur15 D-6 dur7 slide 255 16 A-5
+  A-6 end
+p13: pattern
+  sweep 1 2 sweepup orn9 tone instr12,0,17,6 dur1 A-4 A-5 A-4 G-5 A-4 F#5
+  A-4 E-5 A-4 A-5 A-4 G-5 A-4 F#5 A-4 E-5 D-4 A-5
+  D-4 G-5 D-4 F#5 D-4 D-5 D-4 A-5 D-4 G-5 D-4 F#5
+  D-4 D-5 end
+p14: pattern
+  sweep 1 2 sweepup orn9 tone instr12,0,33,6 dur1 A-5 A-4 G-5 A-4 F#5 A-4
+  E-5 A-4 A-5 A-4 G-5 A-4 F#5 A-4 E-5 A-4 A-5 D-4
+  G-5 D-4 F#5 D-4 D-5 D-4 A-5 D-4 G-5 D-4 F#5 D-4
+  D-5 D-4 end
+p15: pattern
+  sweep 1 2 sweepup orn9 tone instr11,0,33,6 dur0 A-5 A-4 G-5 A-4 F#5 A-4
+  E-5 A-4 A-5 A-4 G-5 A-4 F#5 A-4 E-5 A-4 A-5 A-4
+  G-5 A-4 F#5 A-4 E-5 A-4 A-5 A-4 G-5 A-4 F#5 A-4
+  E-5 A-4 A-5 D-4 G-5 D-4 F#5 D-4 D-5 D-4 A-5 D-4
+  G-5 D-4 F#5 D-4 D-5 D-4 A-5 D-4 G-5 D-4 F#5 D-4
+  D-5 D-4 A-5 D-4 G-5 D-4 F#5 D-4 D-5 D-4 end
+p16: pattern
+  sweep 1 2 sweepup orn9 tone instr11,0,33,6 dur0 A-6 A-5 G-6 A-5 F#6 A-5
+  E-6 A-5 A-6 A-5 G-6 A-5 F#6 A-5 E-6 A-5 A-6 A-5
+  G-6 A-5 F#6 A-5 E-6 A-5 A-6 A-5 G-6 A-5 F#6 A-5
+  E-6 A-5 A-6 D-5 G-6 D-5 F#6 D-5 D-6 D-5 A-6 D-5
+  G-6 D-5 F#6 D-5 D-6 D-5 A-6 D-5 G-6 D-5 F#6 D-5
+  D-6 D-5 A-6 D-5 G-6 D-5 F#6 D-5 D-6 D-5 end
+p17: pattern
+  sweep 1 2 sweepup orn0 tone instr10,81,33,54 dur31 slide 1 112 E-6 dur15 slide 1 48 D-6 dur7
+  slide 255 16 A-5 A-6 dur31 slide 1 120 E-7 dur15 slide 1 48 D-7 dur7 slide 255 16 A-6
+  slide 1 16 A-7 end
+p18: pattern
+  sweep 1 2 sweepup orn0 tone instr10,17,49,53 dur0 C-6 D-6 dur5 D#6 dur23 E-6
+  dur0 F-6 G-6 dur5 G#6 dur19 A-6 dur3 D#7 dur31 E-7 bendup
+  hold sweep 2 4 dur0 C-5 D-5 dur5 D#5 dur19 E-5 sweep 4 8 dur3 G#4
+  dur27 F#4 dur3 G#4 dur31 E-4 bendup hold end
+p19: pattern
+  sweep 1 2 sweepup orn9 tone instr13,0,18,5 dur0 A#6 F-6 C#6 F-6 C#6 A#5
+  C#6 A#5 F-5 A#5 F-5 C#5 F-5 C#5 A#4 C#5 A#6 F-6
+  C#6 F-6 C#6 A#5 C#6 A#5 F-5 A#5 F-5 C#5 F-5 C#5
+  A#4 C#5 end
+p20: pattern
+  sweep 2 4 sweepup orn0 tone instr8,81,113,52 dur1 rest dur31 D-6 C-6 F-5 dur29
+  hold end
+p21: pattern
+  sweep 1 2 sweepup orn0 tone dur7 rest instr13,0,33,5 dur5 F#4 dur3 F#4 dur7
+  F-4 dur1 C#4 C#4 C-4 dur7 rest dur5 F#4 dur3 F#4 dur7
+  F-4 dur1 C#5 C#5 C-5 end
+p22: pattern
+  dur31 rest rest end
+p23: pattern
+  transpose 0 end
+p24: pattern
+  transpose 3 end

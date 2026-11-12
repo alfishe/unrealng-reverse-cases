@@ -1,0 +1,14 @@
+{
+  "about": "Variant zyxboot-01: the launcher sector its loader reads to $FF14: python3 ../../kit/mkgame.py --part variants/zyxboot-01/parts/launcher.json --install",
+  "image_cmd": ["python3", "tools/variants.py", "image", "zyxboot-01", "$FF14", "236", "work/variants/zyxboot-01-ff14.bin"],
+  "image": "work/variants/zyxboot-01-ff14.bin",
+  "org": "FF14",
+  "ann": "variants/zyxboot-01/parts/launcher.ann",
+  "top": "launcher",
+  "bin": "launcher.bin",
+  "dest": "variants/zyxboot-01/parts",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot, variant zyxboot-01: the launcher sector at $FF14 (zyxboot.scl, file ZYX-1)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxboot-01-launcher"
+}

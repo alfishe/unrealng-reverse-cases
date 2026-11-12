@@ -1,0 +1,92 @@
+# David Whittaker's sound driver as ripped from Platoon, that zyxboot-05 and zyxboot-08 carry at $C000 (kit/mkgame.py
+# --part variants/players/whittaker-platoon/whittaker-platoon.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 2285 bytes of zyxboot-05's music piece ($C000-$C8EC, work/parts/player-whittaker-platoon.bin,
+# written by python3 tools/variants_music.py image whittaker-platoon). The code reads its tables and the tune at
+# fixed addresses, so the driver never moves; the tune follows at $C8ED (the variant's music/whittaker.txt,
+# tools/res_whittaker.py, version platoon). The rip keeps the game's sound effects (StartEffect, EffectFrame).
+# No recording runs a variant: every name and description here is from the code.
+
+@equ $C8ED SongTable ; the tune: 7 bytes a tune (tempo, three order lists)
+
+@module whittaker-platoon ; David Whittaker's driver (Platoon): init, play, the pattern reader, envelopes, ornaments, effects
+@about Two entries: MusicInit $C000 starts the tune whose number is the operand of its first LD A,n ($C001): the tempo and the three order lists from its 7-byte record in the song table (SongTable, $C8ED), every channel's record reset; MusicPlay $C0C1 plays one frame: EffectFrame (a sound effect, if one runs), then while the music is on, on a tempo frame each channel whose duration ran out reads its pattern (ChannelTick, ReadPattern), and for each channel ChannelFrame gives the tone period and the volume into AYRegisters; a running effect overrides channels A and C; WriteAY sends registers 11 down to 0.
+@about A pattern: a note $00-$7F (PeriodTable index plus the transposition), a command $80-$91 through CommandOffsets (rest, sweep off / up / down, slide, bend up / down, end of the pattern, sweep, transposition, tone, noise, tone and noise, flag, stop, hold, lock, unlock), $B8-$BF the tempo, $C0-$CF an ornament (OrnamentOffsets), $D0-$DF a volume envelope (EnvelopeTable), $E0-$FF the duration of the notes after it. The format is in tools/res_whittaker.py.
+
+$C000 c MusicInit ; Start the tune (LD A,n: 3 in both variants): its tempo and the three channels' order lists
+> HL = SongTable + 7 * the tune: the tempo into TempoReload, then for each channel (IX = ChannelA, ChannelB, ChannelC, 33 bytes apart) the order list's address (+$03 / +$04), its first pattern (+$01 / +$02), the order offset 2 (+$05 / +$06), the duration count 1, the flags, sweep and lock cleared. Last the transposition 0, the tempo counter 1 and MusicOn = 1.
+
+$C05D b ChannelRecords 11 ; The three channels' records (33 bytes each, IX)
+> +$00 flags (bit 0 a frame toggle, 1 command $8D, 2 slide on, 3 bend on, 5 the envelope runs, 7 bend down); +$01 / +$02 the pattern pointer; +$03 / +$04 the order list; +$05 / +$06 the offset of the next order entry; +$07 / +$08 the slide's sum; +$09 / +$0A the ornament, +$0B / +$0C its pointer; +$0D the slide step, +$0E its delay; +$0F the envelope's speed; +$10 the frames left of the note, +$11 the duration; +$12 the note; +$13 the volume; +$14 / +$15 the envelope, +$16 / +$17 its pointer, +$18 its volume, +$19 the speed counter; +$1A the sweep width, +$1B its step, +$1C its position, +$1D the sweep mode; +$1E 1: the notes set the noise period; +$1F lock; +$20 the channel's mixer bits ($09, $12, $24).
+$C05D ChannelA
+$C07E ChannelB
+$C09F ChannelC
+$C0C0 b TempoCounter 1 ; The frames left until the next tempo frame
+
+$C0C1 c MusicPlay ; Play one frame: the effect, the channels on a tempo frame, the periods and volumes, the AY
+$C0CB NoiseNote ; LD A,n: the note of a noise channel (written by ReadPattern), the noise period of this frame
+$C0EC TempoReload ; LD A,n: the tempo (frames a row; SongTable, commands $B8-$BF)
+$C118 NoisePeriod ; LD A,n: the noise period for AYRegisters (ChannelFrame and the lock write it)
+$C11D EffectOverride ; While an effect runs: its tone periods, noise, mixer bits and volumes over channels A and C
+$C155 WriteAY ; Write AYRegisters to AY registers 11 down to 0 (when the music or an effect is on)
+
+$C169 c SetAYRegister ; AY register D = E
+$C173 c SilenceAY ; Every AY register 13 down to 0 = 0, then the mixer (7) = $3F
+
+$C191 c StopMusic ; Music and effect off, the AY silent, the three volumes 0
+$C1A6 b CommandOffsets 18 ; Commands $80-$91: each byte the offset of its routine from its own address
+
+$C1B8 c CommandStop ; $8E: stop the music (StopMusic)
+$C1BC c CommandEnd ; $87: the end of the pattern: the next order entry (a word 0: the order list again)
+$C1E9 c CommandNoise ; $8B: the channel plays noise (its mixer bits), its notes set the noise period
+$C1FE c CommandTone ; $8A: the channel plays tone
+$C212 c CommandBoth ; $8C: tone and noise
+$C222 c CommandSlide ; $84 s d: a slide: step s every d frames
+$C238 c CommandTranspose ; $89 n: the transposition (the operand at $C37C) = n
+$C23F c CommandSweep ; $88 s w: a sweep: step s, width w
+$C24E c CommandBendDown ; $86: the note bends down a step a frame
+$C252 c CommandBendUp ; $85: the note bends up
+$C258 c CommandSweepOff ; $81: no sweep
+$C25D c CommandSweepUp ; $82: the sweep goes up
+$C263 c CommandSweepDown ; $83: the sweep goes down
+$C269 c CommandFlag ; $8D: sets flag bit 1
+$C26F c CommandRest ; $80: a rest: volume 0, the envelope stopped, for the duration
+$C278 c CommandHold ; $8F: the note goes on for the duration (no new envelope)
+$C27E c CommandLock ; $90: lock the channel ($FF)
+$C284 c CommandUnlock ; $91: unlock it
+
+$C289 c ChannelTick ; A tempo frame of the channel at IX: when its duration runs out, ReadPattern; else the bend
+$C291 ReadPattern ; Read the pattern from the pointer: commands and settings until a note, rest or hold
+> A note (bit 7 clear): +$12 = the note (and NoiseNote when the channel sets the noise), the envelope from its start, the envelope running, the duration count reloaded, the pointer saved. Bit 7 set: PatternCommand.
+$C2E3 c Bend ; Bend on (flag bit 3): the note one up (bit 7 clear) or down (bit 7 set) a tempo frame
+$C2F4 c PatternCommand ; A byte $80-$FF: a command below $B8 (CommandOffsets), else the tempo, an ornament, an envelope or a duration
+$C304 SetOrnament ; $C0-$CF: the ornament OrnamentOffsets[n]
+$C31A SetTempo ; $B8-$BF: TempoReload = n + 1
+$C322 SetDuration ; $E0-$FF: the duration = n + 1
+$C329 SetEnvelope ; $D0-$DF: the envelope EnvelopeTable[n] (and the speed byte before it)
+$C341 Dispatch ; JP to the command's routine: CommandOffsets[A - $80] + its address
+
+$C349 c ChannelFrame ; One frame of the channel at IX: HL = its tone period, A = its volume
+> The envelope's next volume every +$0F frames (a byte with bit 7 set ends it), the ornament's next note offset (bit 7 set: the ornament again), the note + the transposition (the operand at $C37C) into PeriodTable, the sweep (a triangle of width +$1A, step +$1B, the period shifted by the note's octave), the slide (+$0D every +$0E frames), the mixer bits into AYRegisters, the lock.
+$C37B Transposition ; LD A,n: the transposition (command $89)
+$C424 MixerBits ; LD A,n: the mixer bits of the tone and noise commands
+
+$C45A b AYRegisters 12 ; The image of AY registers 0-11 that WriteAY sends: the periods, the noise, the mixer, the volumes
+$C466 b EffectRegisters 13 ; The effect's own image: tone periods A ($C467) and C ($C46B), the noise ($C46D), the mixer mask, the volumes
+$C473 w PeriodTable 8 ; The AY tone period of notes 0-95
+
+$C533 b OrnamentOffsets 14 ; Ornaments $C0-$CD: each byte the offset of its data from its own address
+$C541 b Ornaments 16 ; The ornaments: note offsets a frame, a byte with bit 7 set: the ornament again
+$C575 w EnvelopeTable 11 ; Envelopes $D0-$DA: each the address of its volumes (the byte before it is the speed)
+$C58B b Envelopes 16 ; The envelopes: a speed byte, then volumes a step, a byte with bit 7 set ends
+$C64E b MusicOn 1 ; 1 while the music plays
+$C64F b EffectOn 1 ; 1 while a sound effect plays
+
+$C650 c StartEffect ; Start sound effect A: its 17-byte record (EffectTable) into EffectState, its envelope into AY 12 and 13
+$C6A1 c EffectFrame ; One frame of the running effect: the random number, the time left, the repeats, the period sweeps of A and C
+$C73F w EffectTable 8 ; The 20 sound effects' records (17 bytes each)
+$C767 b Effects 17 ; The effects: time, repeat delay, tone A, noise, tone C, sweep directions and steps, repeats, envelope
+$C8BB b EffectState 17 ; The running effect: a copy of its record, then the delay counter
+$C8CC b EffectDelay 1 ; The frames left until the effect's next repeat
+$C8CE c Random ; A = the next pseudo-random number (a 32-bit shift register at RandomSeed)
+$C8E9 b RandomSeed 4 ; The shift register

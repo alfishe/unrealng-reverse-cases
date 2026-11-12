@@ -1,0 +1,27 @@
+# The music piece of variant zyxskitb (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/stc at MusicPiece $C0B7, the tune stc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player stc
+tune stc.txt
+at PlayerVariables ED 67 31 68 D6 68 0E 64 06 04 22 E6 69 44 6A 73
+at StreamC+1 6A FF 00 00 03 00 00 D5 64 32 68 1D 00 03 09 33
+at ChannelB+2 02 38 65 95 68 17 02 02 09 00 01 8A 67 32 68 17
+at PositionIndex 02 F8 0E C8 00 F8 0E 00 3C 00 0C 10 19
+at ModuleBase F3 C4
+at OrnamentRow 08
+tail
+  00 F3 CD 92 17 3B 3B E1 11 5F 00 19 E5 D9 D1 06 00 D9 21 00 40 01 00 18 D9 78 FE 00 20 12 1A 0E
+  00 FE FD 28 07 FE FE 13 20 08 1A 4F 13 1A 47 13 05 79 D9 21 6D 6D 11 04 5B 01 50 00 D5 ED B0 C9
+  00 21 BD 6D 11 00 40 01 64 00 ED B0 11 00 50 21 28 40 E5 01 FF 3F B7 ED 42 E1 28 0D 7E FE FF 28
+  0A FE FE 28 13 ED A8 18 E9 00 C9 2B 7E 2B 08 7E FE 01 28 16 4F 08 18 04 3E 00 2B 4E 0D 06 00 E5
+  62 6B 1B 77 ED B8 E1 2B 18 C8 2B 08 12 1B 18 C2 00 FE 00 66 FF 00 66 FF 00 FE 00 FE 00 66 FF 00
+  66 FF 00 FE 00 FE 00 66 FF 00 66 FF 00 FE 00 FE 00 66 FF 00 66 FF 00 FE 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00

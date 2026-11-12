@@ -1,0 +1,25 @@
+{
+  "about": "Variant zyxermbt: the loading picture its loader reads to $7530 and calls: python3 ../../kit/mkgame.py --part variants/zyxermbt/parts/intro.json --install, then the bins in parts/res to the variant's editable PNGs (tools/res_formats.py install, tools/res_screens.py) and parts/res deleted; tools/variants.py gives the part the built resources as res/",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxermbt",
+    "$7530",
+    "768",
+    "work/variants/zyxermbt-7530.bin"
+  ],
+  "image": "work/variants/zyxermbt-7530.bin",
+  "org": "7530",
+  "ann": "variants/zyxermbt/parts/intro.ann",
+  "top": "intro",
+  "bin": "intro.bin",
+  "dest": "variants/zyxermbt/parts",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxermbt: the loading picture at $7530 (zyxermbt.scl, file boot)."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxermbt-intro",
+  "res": "variants/zyxermbt/parts/res"
+}

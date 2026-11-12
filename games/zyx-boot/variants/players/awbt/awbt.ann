@@ -1,0 +1,41 @@
+# The game-rip player of variant zyxawbt (the tune is not identified) (kit/mkgame.py --part
+# variants/players/awbt/awbt.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1262 bytes of zyxawbt's music piece ($BFFB-$C4E8, work/parts/player-awbt.bin, written by
+# python3 tools/variants_music.py image awbt). The player reads its tune at fixed addresses: the song table at $C4E9
+# and what its words point to; the tune is music/awbt.txt (tools/res_rip.py, format awbt). The sound effects ($C40F)
+# stay with the player. No recording runs the variant: every name and description here is from the code.
+
+@module awbt ; A game's music and effects player: songs of sequence triples, sequences of voice numbers, voices of volume and pitch pairs
+@about Entries: the variant's start $BFFB (song 2), MusicPlay $C000 (JP Play, once a frame), MusicStart $C003 (song A, 1-5, from the next frame), Effect $C006 (sound effect A, 1-7), MusicStop $C009.
+@about A song ($C4E9 + 2 * song): two bytes an item; a second byte not 0: three words, the sequences of channels A, B and C; else a command: 1 the voice records of channels A and B (two words), 2 call (a word), 3 the transposition, 4 return, 5 the tempo, 0 stop. A sequence: its speed (frames a step), then voice numbers (0: none) up to $FF. A voice: base note, speed, step, then (volume, pitch) pairs up to a volume $FF.
+
+$BFFB c Start ; Song 2: LD A,2, then MusicStart
+$C000 c MusicPlay ; JP Play
+$C003 c MusicStart ; JP SetSong
+$C006 c Effect ; JP EffectEntry
+$C009 c MusicStop ; JP StopEntry
+$C00C b PlayerVars 8 ; Two RETs, the current song, the tempo
+$C014 c FirstFrame ; The first frame (Play's JR at $C029 points here until then): clear the flag, the mixer to $2A
+$C023 c Play ; One frame: a pending song start, the effects, the tempo counter, the song's next step, each channel's sequence and voice
+$C068 c StopEntry ; The music off: the song pointer to the table's start, every channel cleared
+$C07E b Channels 16 ; Two bytes $FF (the empty sequence), then the channel records: 18 bytes each at $C080, $C092, $C0A4 (+0 the voice row, +2 the note, +3 the step, +4 the AY register, +5 the volume register, +6 the sequence, +8 its counter, +9 its speed, +$0A the voice record, +$0C the speed, +$0D its counter, +$0E the effect priority, +$0F flags, +$10 the effect)
+$C0C6 c ChannelVoice ; A channel's sequence step, then its voice row: the volume, the period (note + step + pitch), noise when flagged
+$C13B c ChannelSequence ; A channel's sequence step on a tempo frame: the next voice number, the voice from the channel's voice record
+$C1B4 b TempoFlags 2 ; The tempo frame flag and the tempo counter
+$C1B6 c SongStep ; When channel A's sequence has ended: the song's next item (sequence triples and commands)
+$C244 w SongPointers 2 ; The song's position and the return position of a call
+$C248 c ReadSequence ; DE = the word at HL (a sequence), A = its speed byte, DE + 1
+$C24E c EffectEntry ; Sound effect A (1-7): its record at $C40F, onto its channel when its priority is not lower
+$C297 c Effects ; Each channel's effect step
+$C2D4 c SetSong ; Song A (below 6) to start on the next frame
+$C2E1 c StartSong ; A pending song: its song pointer, every counter 1, the mixer, the channels cleared, the volumes 0
+$C34E c NotePeriod ; DE = the AY period of note A (48 notes, shifted right an octave above)
+$C371 b Transpose 1 ; The song's transposition
+$C372 w PeriodTable 8 ; 48 AY tone periods (the lowest octaves)
+$C3D2 b PeriodTail 16 ; Bytes after the table, no code reads them
+$C3E2 c ReadWord ; DE = the word at HL, HL + 2
+$C3E7 c WriteAYPair ; AY register C = L, C + 1 = H
+$C3F4 c WriteVolume ; AY register C = A / 2 + 8 (0 stays 0)
+$C3FB c WriteAY ; AY register C = A
+$C40B b EffectTable 16 ; Bytes, then the sound effects from $C40F: 6 bytes each (channel, priority, the voice) and their voices

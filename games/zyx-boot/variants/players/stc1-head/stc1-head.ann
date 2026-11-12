@@ -1,0 +1,22 @@
+# The head of the Sound Tracker 1 compilation that zyxtvmbt's music piece holds (packed, tools/lzpack.py) at $C000:
+# the compiler's state bytes, three JRs (init, play, stop), the title text and the stop routine; the Sound Tracker
+# player itself follows at $C059 (variants/players/stc, the source the other STC variants use), then the stop
+# routine's end (variants/players/stc1-tail) and the module at $C4A8. tools/variants_music.py (kind stc1) puts
+# the three together. Format: ../../../../../docs/ann-format.md.
+
+@equ $C062 Init ; the Sound Tracker player's Init (variants/players/stc), assembled at $C059
+@equ $C19D Play ; the player's Play
+@equ $C495 StopEnd ; the rest of Stop (variants/players/stc1-tail)
+@equ $C4A8 Module ; the STC module after the player
+
+@module stc1head ; The Sound Tracker 1 compilation's head: entries, title, stop
+@about A compiled tune of Sound Tracker 1 ("SOUND TRACKER COMPILATION OF ... BY ...", name and author left blank here) starts with 11 bytes the compiler leaves (state the player does not read), then three entries: +11 init, +14 play one frame, +17 stop (silence the AY). The menu of zyxtvmbt calls +11 through its depacker's place: MusicInit `$C000` depacks, then the menu calls MusicPlay `$C00E` every frame.
+
+$C000 b CompileState 11 ; 11 bytes the compiler leaves before the entries (not read by the player)
+$C00B c MusicInit ; Init: JR to InitModule
+$C00E c MusicPlay ; Play one frame: JR to PlayJump
+$C011 c MusicStop ; Silence the AY: JR to Stop
+$C014 t Title 56 ; "SOUND TRACKER COMPILATION OF            BY            ": the title and author fields left blank
+$C04C c Stop ; Select AY register 12, write 0, then StopEnd writes 1-255 and closes the mixer
+$C059 c InitModule ; LD HL,Module, JP Init
+$C05F c PlayJump ; JP Play

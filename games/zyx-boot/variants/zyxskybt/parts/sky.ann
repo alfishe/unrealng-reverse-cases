@@ -1,0 +1,113 @@
+# Variant zyxskybt (Skynet Games, Taganrog): what its loader reads to $6FE0-$79A7 beyond the menu's code: a picture,
+# a scroller with a Cyrillic font, waving bars, star and twinkle clipping. Four pieces of one file: the picture and
+# its drawing run where they load; the bars run at $FE0D and the scroller at $A500, where SkySetup copies them; the
+# code switches sky-stars and sky-screen (tools/variants.py) call into them. Format: ../../../../../docs/ann-format.md.
+
+@equ $4046 BarRows 1 ; the screen bytes the bars wave: 24 pixel rows of 19 bytes from column 6
+@equ $5066 PictureScreen 1 ; the picture's screen place: pixel row 152 (char row 19), column 6
+@equ $5694 ScrollRow 1 ; the scroller's window: 10 bytes ending here (columns 11-20), 16 pixel rows from line 6 of char row 20, inside the picture's window
+@equ $5A66 PictureAttrs 1 ; the picture's attributes: rows 19-23, columns 6-25
+@equ $A600 MenuFont 1 ; where the menu's font loads (src/game/font.asm FontBase + $100)
+@equ $A984 MenuFontMoved 1 ; where SkySetup moves it, out of the scroller's way
+@equ $9900 CyrillicGlyphs 1 ; the glyph base for codes $60-$7F (CyrillicFont copied to $9C00 = $9900 + $60 x 8)
+@equ $9C00 CyrillicCopy 1 ; where SkyScrollSetup copies CyrillicFont
+@equ $A884 FontGlyphs 1 ; the menu font's base once SkySetup moved it to $A984 (code $20 at $A984)
+@equ $A974 ScrollVars 14 ; the scroller's variables (IX): +0/+1 the text pointer, +2 the pixel columns of this letter done (0-16), +3/+4 the glyph row pointer, +5 the glyph bit mask, +6/+7 the glyph base for $60-$7F, +8..+11 the two markers' screen addresses, +12 the gap counter, +13 its start ($AA)
+@equ $C001 MusicPlay ; the Sound Tracker player's frame entry (the music piece at $BFFB)
+@equ $648F MoveStarsLoaded ; MoveStars after it loaded HL (src/game/stars.asm)
+@equ $64AC MoveStarsHidden ; MoveStars' path for a star it does not draw (code switch sky-stars)
+
+@piece picture
+@module skypicture ; The Skynet picture, its attributes, its drawing and the Cyrillic font
+@about Loaded at $6FE0 (the menu's spare bytes and the 9 more sectors the variant's loader reads); SkySetup draws the picture at the bottom of the screen, under the catalogue, and SkyScrollSetup copies the font to $9C00 and then clears $6FE0-$9BFF.
+
+$6FE0 b SkyPicture 20 ; The picture: 40 pixel rows of 20 bytes (160x40), "SKYNET" in Taganrog's colours
+@res graphics/sky-picture.bin
+$7300 b SkyPictureAttrs 20 ; Its attributes: 5 rows of 20 cells
+@res tables/sky-picture-attrs.bin
+$7364 c CopyPixelRows ; Copy B rows of C bytes from HL to the screen at DE, one pixel row down after each
+> DE steps through the screen's layout: INC D, and at a cell's end on to the next character row (and the next third).
+$737F c CopyAttrRows ; Copy B rows of C bytes from HL to DE, 32 bytes apart (attribute rows)
+$7391 c DrawSkyPicture ; Draw SkyPicture at PictureScreen $5066 and its attributes at PictureAttrs $5A66
+$73A7 b CyrillicFont 8 ; 32 letters for the codes $60-$7F in KOI-7 order (Ю А Б Ц ... Ч, then ©), 8x8
+@res graphics/font-cyrillic.bin
+
+@piece bars
+@module skybars ; The waving bars
+@about Copied by SkySetup from $74A7 to $FE0D (after the menu's IM 2 jump at $FDFD); SkyFrame calls SkyBars once a frame.
+
+$FE0D c SkyBars ; Shift each of the 24 pixel rows of the logo (BarRows, char rows 2-4) one pixel left or right, as BarDirections says
+> BarPhase steps back one place a frame (mod 32); row n takes the direction at BarPhase + n (mod 32): 0 leaves the row, $FF shifts it right (the 18 bytes of columns 6-23), any other left (the 19 bytes of columns 7-25). The waves of 1s and $FFs in the table run down the logo as the phase turns. The two ADD A,n get the table's low byte first (self-modified, the same value they hold).
+$FE25 SkyBarsBase
+$FE28 SkyBarsRow
+$FE44 SkyBarsNext
+$FE48 SkyBarsNextBase
+$FE5E b BarDirections 16 ; 32 directions: 0 still, 1 left, $FF right
+$FE7E b BarPhase 1 ; The table's start this frame (0-31)
+
+@piece scroller
+@module skyscroller ; The scroll text and the code SkySetup copies to $A500
+@about Copied by SkySetup from $7519 to $A500 (over the menu font's old place: the font moved to $A984). Every frame SkyFrame scrolls the text one pixel through a 10-byte window in the picture (char row 20), moves two blinking markers up and down over it, waves the bars and plays the music.
+
+$A500 t ScrollText ; The scroll text, enciphered: ScrollInit turns each byte e into CPL(RRCA e) XOR $66 in place
+> The plain text is texts/sky-scroll.txt (tools/res_variants.py writes it and enciphers it back): the firm's advertisement in Russian (KOI-7: the codes $60-$7F are Cyrillic letters), Skynet in Taganrog, telephone 66-33-1, ending with the code $01 (the gap, then the text again). The plain bytes must sum to $AA (mod 256), or ScrollInit hangs: a changed text needs a balancing byte.
+@res texts/sky-scroll.bin
+$A6B0 c ScrollInit ; Set the scroller's variables, decipher ScrollText in place and check its sum
+> IX = ScrollVars; the gap counter and its start $AA; the text pointer one before ScrollText with 16 columns done (a new letter next), the mask $80. A sum other than $AA runs LD A,R / PUSH AF for ever: the stack runs down over the memory.
+@isub $A6BC LD HL,ScrollText-1
+$A6D3 ScrollDecipher
+$A6E6 ScrollHang
+$A6EB ScrollInitBase
+$A6EB ; the glyph base for $60-$7F
+$A6F5 c ScrollStep ; Scroll the window one pixel left and shift in the next pixel column of the current letter
+> Letters are drawn double size: each glyph row on two pixel rows, each glyph column twice (the mask turns every second step), 16 steps a letter. After 16 it takes the next text byte: a code below $60 is a glyph of the moved menu font (FontGlyphs + 8 x code), $60-$7F a Cyrillic one (CyrillicGlyphs + 8 x code). The code $01 counts the gap counter down and shows a space while it is not 0 (the text stays on the $01): $A9 spaces, then the counter is set again and the text starts over.
+$A704 ScrollNextLetter
+$A715 ScrollNextByte
+$A72E ScrollRestart
+$A73F ScrollGlyph
+$A753 ScrollMenuGlyph
+@isub $A753 LD DE,FontGlyphs
+$A756 ScrollGlyphAt
+$A758 ScrollColumn
+$A764 ScrollColumnRow
+$A767 ScrollColumnLine
+$A76A ; carry = the glyph's bit
+$A770 ScrollRollRow
+$A786 ScrollRowNext
+$A79A ScrollColumnNext
+$A7A6 c MarkersInit ; Put the two markers at their first places: column 7, line 4 of char row 21, going down; column 24, line 3 of row 21, going up ($D3B8: bit 7 set = up)
+$A7B9 c MoveMarkers ; Blink and move both markers one pixel row
+$A7DE c MarkerStep ; XOR $18 (two pixels) into the marker's byte (HL without bit 7), then one pixel row up (bit 7 set) or down
+> The XOR draws the dot on one pass and wipes it on the next: each marker draws a blinking two-pixel line as it moves.
+$A7EC c SkyRowUp ; HL one pixel row up the screen
+$A7FE SkyRowUpDone
+$A7FF c SkyRowDown ; HL one pixel row down the screen (also for the menu's StarStep, code switch sky-stars)
+$A80F SkyRowDownDone
+$A810 c MarkerTurn ; Turn a marker round at its ends: going up at line 2 of char row 20, going down at line 5 of char row 22 (the row bits only: the third is left as it is)
+$A826 MarkerTurnDown
+$A838 c SkyScrollSetup ; Copy CyrillicFont to CyrillicCopy $9C00, clear $6FE0-$9BFF (the picture, the font and the copied code: all used up), then ScrollInit and MarkersInit
+@isub $A838 LD HL,CyrillicFont
+@isub $A843 LD HL,SkyPicture
+@isub $A846 LD DE,SkyPicture+1
+$A857 s ScrollerSpare ; unused
+$A85C c SkyFrame ; The interrupt's work (code switch sky-screen calls it in place of MusicPlay): ScrollStep, MoveMarkers, SkyBars, then MusicPlay
+@isub $A866 CALL SkyBars
+$A86D c SkyStarClip ; MoveStars' first step: load the star's address; a star over the logo or the picture is moved but not drawn
+> Reached by JP from MoveStars (code switch sky-stars); it pushes the return to MoveStarsLoaded, so RET goes on as before. A star in columns 6-25 of char rows 0-4 (the logo) or 20-23 (the picture) drops that return and goes to MoveStarsHidden. The five NOPs are an emptied instruction.
+$A888 SkyStarTop
+$A891 SkyStarColumn
+$A89E c SkyTwinkleSpot ; In place of CheckTwinkleSpot (code switch sky-stars): carry set if the twinkle may go to the place (HL)
+> Allowed: not the last pixel line of a char row, not column 31, and char rows 5-6, 8-14 or 16-18: off the logo, the picture and their surroundings.
+$A8BD SkyTwinkleTop
+
+@piece setup
+@module skysetup ; Set the Skynet screen up
+$78DD c SkySetup ; Called by DrawScreen in place of printing the help text (code switch sky-screen): draw the picture, move the font, copy the bars and the scroller, set the scroller up
+> The menu font moves from MenuFont $A600 to MenuFontMoved $A984 and $A600-$A983 is cleared (LD (HL),L: L is 0); the bars go to $FE0D, the scroller's code and text to $A500; then JP SkyScrollSetup. The variant's switch sky-screen points the menu at the moved font (FontBase $A884).
+@isub $78DD CALL DrawSkyPicture
+@isub $78F7 LD HL,SkyBarsLoad
+@isub $78FA LD DE,SkyBars
+@isub $7902 LD HL,SkyScrollerLoad
+@isub $7905 LD DE,ScrollText
+@isub $790D JP SkyScrollSetup
+$7910 s SetupSpare ; zeros to the end of the loader's 24 sectors

@@ -1,0 +1,14 @@
+{
+  "about": "Ian Sheridan's music driver (zyxboot-12) (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/sheridan/sheridan.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "sheridan"],
+  "image": "work/parts/player-sheridan.bin",
+  "org": "C000",
+  "ann": "variants/players/sheridan/sheridan.ann",
+  "top": "sheridan",
+  "bin": "sheridan.bin",
+  "dest": "variants/players/sheridan",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: Ian Sheridan's music driver (zyxboot-12) at $C000 (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-sheridan"
+}

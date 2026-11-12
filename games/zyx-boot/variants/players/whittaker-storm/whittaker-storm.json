@@ -1,0 +1,14 @@
+{
+  "about": "David Whittaker's music driver from Stormbringer (zyxboot-11) (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/whittaker-storm/whittaker-storm.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "whittaker-storm"],
+  "image": "work/parts/player-whittaker-storm.bin",
+  "org": "C000",
+  "ann": "variants/players/whittaker-storm/whittaker-storm.ann",
+  "top": "whittaker-storm",
+  "bin": "whittaker-storm.bin",
+  "dest": "variants/players/whittaker-storm",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: David Whittaker's music driver from Stormbringer (zyxboot-11) at $C000 (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-whittaker-storm"
+}

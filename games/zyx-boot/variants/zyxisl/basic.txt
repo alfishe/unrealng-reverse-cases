@@ -1,0 +1,110 @@
+1 RANDOMIZE USR VAL "15619":REM :RUN "        "
+2 RANDOMIZE USR VAL "15619":REM :RUN
+3 RANDOMIZE USR VAL "15616"
+4 REM
+  code 21 A8 61       ; $5D7F LD HL,$61A8
+  code 11 A9 61       ; $5D82 LD DE,$61A9
+  code 01 40 9C       ; $5D85 LD BC,$9C40
+  code 36 00          ; $5D88 LD (HL),$00
+  code ED B0          ; $5D8A LDIR
+  code 21 A8 61       ; $5D8C LD HL,$61A8
+  code 06 0F          ; $5D8F LD B,$0F
+  code CD CC 5D       ; $5D91 CALL $5DCC
+  code 21 00 A6       ; $5D94 LD HL,$A600
+  code 06 08          ; $5D97 LD B,$08
+  code CD CC 5D       ; $5D99 CALL $5DCC
+  code 21 50 EB       ; $5D9C LD HL,$EB50
+  code 06 09          ; $5D9F LD B,$09
+  code CD CC 5D       ; $5DA1 CALL $5DCC
+  code 21 50 C3       ; $5DA4 LD HL,$C350
+  code 06 15          ; $5DA7 LD B,$15
+  code CD CC 5D       ; $5DA9 CALL $5DCC
+  code CD 50 C3       ; $5DAC CALL $C350
+  code CD D6 5D       ; $5DAF CALL $5DD6
+  code CD 75 CD       ; $5DB2 CALL $CD75
+  code CD D6 5D       ; $5DB5 CALL $5DD6
+  code CD EE 5D       ; $5DB8 CALL $5DEE
+  code CD A8 61       ; $5DBB CALL $61A8
+  code 21 A8 61       ; $5DBE LD HL,$61A8
+  code 11 A9 61       ; $5DC1 LD DE,$61A9
+  code 01 40 9C       ; $5DC4 LD BC,$9C40
+  code 36 00          ; $5DC7 LD (HL),$00
+  code ED B0          ; $5DC9 LDIR
+  code C9             ; $5DCB RET
+  code F3             ; $5DCC DI
+  code 0E 05          ; $5DCD LD C,$05
+  code ED 5B F4 5C    ; $5DCF LD DE,($5CF4)
+  code C3 13 3D       ; $5DD3 JP $3D13
+  code CD 8E 02       ; $5DD6 CALL $028E
+  code 7B             ; $5DD9 LD A,E
+  code FE FF          ; $5DDA CP $FF
+  code 20 F8          ; $5DDC JR NZ,$5DD6
+  code CD 8E 02       ; $5DDE CALL $028E
+  code 20 FB          ; $5DE1 JR NZ,$5DDE
+  code 16 00          ; $5DE3 LD D,$00
+  code CD 1E 03       ; $5DE5 CALL $031E
+  code 30 F4          ; $5DE8 JR NC,$5DDE
+  code 4F             ; $5DEA LD C,A
+  code AF             ; $5DEB XOR A
+  code 47             ; $5DEC LD B,A
+  code C9             ; $5DED RET
+  code 1E F8          ; $5DEE LD E,$F8
+  code CD FB 5D       ; $5DF0 CALL $5DFB
+  code 76             ; $5DF3 HALT
+  code 1C             ; $5DF4 INC E
+  code 7B             ; $5DF5 LD A,E
+  code FE 78          ; $5DF6 CP $78
+  code 20 F6          ; $5DF8 JR NZ,$5DF0
+  code C9             ; $5DFA RET
+  code D5             ; $5DFB PUSH DE
+  code F5             ; $5DFC PUSH AF
+  code 16 00          ; $5DFD LD D,$00
+  code D5             ; $5DFF PUSH DE
+  code 3E 47          ; $5E00 LD A,$47
+  code CD 17 5E       ; $5E02 CALL $5E17
+  code 1D             ; $5E05 DEC E
+  code 3D             ; $5E06 DEC A
+  code FE 3F          ; $5E07 CP $3F
+  code C2 02 5E       ; $5E09 JP NZ,$5E02
+  code D1             ; $5E0C POP DE
+  code 1D             ; $5E0D DEC E
+  code 14             ; $5E0E INC D
+  code 7A             ; $5E0F LD A,D
+  code FE 18          ; $5E10 CP $18
+  code 20 EB          ; $5E12 JR NZ,$5DFF
+  code F1             ; $5E14 POP AF
+  code D1             ; $5E15 POP DE
+  code C9             ; $5E16 RET
+  code 08             ; $5E17 EX AF,AF'
+  code 7B             ; $5E18 LD A,E
+  code FE 20          ; $5E19 CP $20
+  code 30 1B          ; $5E1B JR NC,$5E38
+  code 7A             ; $5E1D LD A,D
+  code FE 18          ; $5E1E CP $18
+  code 30 16          ; $5E20 JR NC,$5E38
+  code E5             ; $5E22 PUSH HL
+  code 21 00 58       ; $5E23 LD HL,$5800
+  code CB 3A          ; $5E26 SRL D
+  code CB 1D          ; $5E28 RR L
+  code CB 3A          ; $5E2A SRL D
+  code CB 1D          ; $5E2C RR L
+  code CB 3A          ; $5E2E SRL D
+  code CB 1D          ; $5E30 RR L
+  code 19             ; $5E32 ADD HL,DE
+  code 57             ; $5E33 LD D,A
+  code 08             ; $5E34 EX AF,AF'
+  code 77             ; $5E35 LD (HL),A
+  code E1             ; $5E36 POP HL
+  code C9             ; $5E37 RET
+  code 08             ; $5E38 EX AF,AF'
+  code C9             ; $5E39 RET
+5 BORDER BIN {0E}{00}{00}{00}{00}{00}:PAPER BIN {0E}{00}{00}{00}{00}{00}:INK VAL "5":CLEAR VAL "65347":RANDOMIZE USR 0{=23935}:RUN
+end
+autostart 5
+tail 4F 4F 54 22 CA 35 0D 80 80 31 35 36 31 36 0E 00 00 00 3D 00 0D 80 04 05 16 05 AC 09 10 00 00 20
+tail 20 20 20 20 20 20 20 20 00 00 30 20 20 20 20 20 20 20 00 00 00 58 00 00 01 1A 00 F9 C0 B0 22 31
+tail 35 36 31 39 22 3A EA 3A F7 22 20 20 20 20 20 20 20 20 22 20 0D 00 02 0F 00 F9 C0 B0 22 31 35 36
+tail 31 39 22 3A EA 3A F7 0D 00 03 0B 00 F9 C0 B0 22 31 35 36 31 36 22 0D 00 04 47 00 EA 21 A8 61 11
+tail A9 61 01 07 9D 36 00 ED B0 21 A8 61 ED 5B F4 5C 01 05 0F CD 13 3D 21 00 A6 ED 5B F4 5C 01 05 08
+tail CD 13 3D 21 50 EB ED 5B F4 5C 01 05 09 CD 13 3D CD A8 61 21 A8 61 11 A9 61 01 07 9D 36 00 ED B0
+tail C9 0D 00 0A 25 00 E7 C3 A7 3A

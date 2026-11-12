@@ -1,0 +1,80 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  instr:instr_F0B4 transp:24 orn:orn_F0C7 call:s_F1B9 transp:36 call:s_F1B9 transp:0 repeat:2 instr:instr_F0B4 orn:orn_F0C7 call:s_F09D call:s_F09D
+  repeat:2 r/20 transp:-12 C-6/40 G-5/40 C-6/40 G-5/40 A-5/40 E-5/40 A-5/40 E-5/40 A-5/40
+  C-6/40 A-5/40 F-5/40 A-5/20 E-5/20 A-5/20 D-5/20 A-5/20 E-5/20 A-5/20 transp:0 next
+  instr:$F45E orn:orn_F348 call:s_F2C4 orn:orn_F340 call:s_F2C4 next goto:channelA
+s_F09D: stream
+  transp:12 r/20 A-3/40 A-3/40 A-3/40 A-3/40 E-3/40 E-3/40 E-3/20 E-3/20 E-3/20 ret
+instr_F0B4: instrument
+  13/7 0/3 13/3 0/7 13/3 0/7 13/5 0/5 goto:instr_F0B4
+orn_F0C7: ornament
+  notes 7 5 -12 12 -12 goto:orn_F0C7
+instr_F0D0: instrument
+  14/2 0/255 goto:instr_F0D0
+channelB: stream
+  instr:instr_F0D0 orn:orn_F348 repeat:2 repeat:2 repeat:4 A-3/5 C-4/5 E-4/5 A-4/5 C-5/5 A-4/5 E-4/5
+  C-4/5 next transp:-5 next transp:0 next repeat:2 repeat:2 call:s_F1B3 next call:s_F1FA call:s_F1FA
+  instr:instr_F11B orn:orn_F125 call:s_F12B orn:orn_F348 call:s_F12B next goto:channelB
+instr_F11B: instrument
+  15/1 14 13 12 11/255 goto:instr_F11B
+orn_F125: ornament
+  notes 12 -12 goto:orn_F125
+s_F12B: stream
+  transp:24 repeat:2 G-2/5 E-2/5 C-2/5 E-2/5 C-2/5 E-2/5 G-2/5 C-3/5 E-3/5 G-3/5
+  C-4/5 G-3/5 C-2/5 E-2/5 G-2/5 C-3/5 E-3/5 G-3/5 C-4/5 G-3/5 F-2/5 A-2/5
+  C-3/5 F-3/5 C-3/5 A-2/5 F-2/5 A-2/5 G-2/5 B-2/5 D-3/5 G-3/5 D-3/5 B-2/5
+  G-2/5 B-2/5 C-2/5 E-2/5 G-2/5 C-3/5 E-3/5 G-3/5 C-4/5 G-3/5 C-2/5 E-2/5
+  G-2/5 C-3/5 E-3/5 G-3/5 C-4/5 G-3/5 F-2/5 A-2/5 C-3/5 F-3/5 G-2/5 B-2/5
+  D-3/5 G-3/5 C-2/5 E-2/5 G-2/5 C-3/5 next transp:0 ret
+s_F1B3: stream
+  instr:instr_F27B orn:orn_F288
+s_F1B9: stream
+  r/10 A-2/10 C-3/10 A-2/10 E-3/10 A-2/10 C-3/10 A-2/10 r/10 A-2/10 C-3/10 A-2/10
+  E-3/10 A-2/10 C-3/10 A-2/10 r/10 E-2/10 G-2/10 E-2/10 B-2/10 E-2/10 G-2/10 E-2/10
+  r/10 E-2/10 E-2/10 G-2/10 D#2/10 F#2/10 E-2/10 E-2/10 ret
+s_F1FA: stream
+  E-2/10 B-2/10 C-2/10 G-2/10 E-2/10 G-2/10 G-2/10 D-3/10 B-2/10 D-3/10 C-2/10 G-2/10
+  E-2/10 G-2/10 G-2/10 D-3/10 B-2/10 D-3/10 A-2/10 C-3/10 E-3/10 C-3/10 E-2/10 B-2/10
+  E-3/10 B-2/10 A-2/10 C-3/10 E-3/10 C-3/10 E-2/10 B-2/10 E-3/10 B-2/10 A-2/10 E-3/10
+  C-3/10 E-3/10 A-2/10 E-3/10 C-3/10 E-3/10 A-2/10 E-3/10 C-3/10 E-3/10 F-2/10 C-3/10
+  A-2/10 C-3/10 E-2/10 B-2/10 G#2/10 B-2/10 A-2/10 E-3/10 E-2/10 B-2/10 A-2/10 E-3/10
+  E-2/10 B-2/10 A-2/10 E-3/10 ret
+instr_F27B: instrument
+  15/4 14/1 12/1 11/1 10/255 goto:instr_F27B
+orn_F288: ornament
+  notes 12 0 -12 0 goto:orn_F288
+channelC: stream
+  instr:$F45E orn:$F46F r/200 r/120 call:s_F1B9 repeat:2 instr:$F45E orn:$F46F call:s_F352 call:s_F352 call:s_F3B9 orn:orn_F340
+  call:s_F3B9 orn:orn_F348 call:s_F302 orn:orn_F340 call:s_F302 next goto:channelC
+s_F2C4: stream
+  repeat:2 G-5/10 B-5/10 C-6/20 G-5/10 B-5/10 C-6/10 B-5/10 G-5/10 E-5/10 F-5/10 G-5/10
+  A-5/10 B-5/10 G-5/10 D-5/10 G-5/10 B-5/10 C-6/20 G-5/10 B-5/10 C-6/10 B-5/10 G-5/10
+  E-5/10 F-5/10 B-5/10 G-5/10 D-5/10 C-5/20 next ret
+s_F302: stream
+  repeat:2 C-6/10 D-6/10 E-6/20 C-6/10 D-6/10 E-6/10 D-6/10 C-6/10 B-5/10 A-5/10 B-5/10
+  C-6/10 D-6/10 B-5/10 G-5/10 C-6/10 D-6/10 E-6/20 C-6/10 D-6/10 E-6/10 D-6/10 C-6/10
+  B-5/10 A-5/10 D-6/10 B-5/10 G-5/10 C-6/20 next ret
+orn_F340: ornament
+  notes 12 -12 0 0 goto:orn_F340
+orn_F348: ornament
+  2 1 -1 -2 0 0 0 goto:orn_F348
+s_F352: stream
+  B-4/5 A-4/5 G#4/5 A-4/5 C-5/20 D-5/5 C-5/5 B-4/5 C-5/5 E-5/20 F-5/5 E-5/5
+  D#5/5 E-5/5 B-5/5 A-5/5 G#5/5 A-5/5 B-5/5 A-5/5 G#5/5 A-5/5 C-6/20 A-5/10
+  C-6/10 B-5/5 r/5 A-5/5 r/5 G-5/5 r/5 A-5/5 r/5 B-5/5 r/5 A-5/5
+  r/5 G-5/5 r/5 A-5/5 r/5 B-5/5 r/5 A-5/5 r/5 G-5/5 r/5 F#5/5
+  r/5 E-5/10 r/10 ret
+s_F3B9: stream
+  E-5/10 F-5/10 G-5/5 r/5 G-5/5 r/5 A-5/5 G-5/5 F-5/5 E-5/5 D-5/20 E-5/10
+  F-5/10 G-5/5 r/5 G-5/5 r/5 A-5/5 G-5/5 F-5/5 E-5/5 D-5/20 C-5/10 D-5/10
+  E-5/5 r/5 E-5/5 r/5 F-5/5 E-5/5 D-5/5 C-5/5 B-4/20 C-5/10 D-5/10 E-5/5
+  r/5 E-5/5 r/5 F-5/5 E-5/5 D-5/5 C-5/5 B-4/20 B-4/5 A-4/5 G#4/5 A-4/5
+  C-5/20 D-5/5 C-5/5 B-4/5 C-5/5 E-5/20 F-5/5 E-5/5 D#5/5 E-5/5 B-5/5 A-5/5
+  G#5/5 A-5/5 B-5/5 A-5/5 G#5/5 A-5/5 C-6/20 A-5/10 B-5/10 C-6/10 B-5/10 A-5/10
+  G#5/10 A-5/10 E-5/10

@@ -1,0 +1,52 @@
+# The game-rip player of variant zyxalex, the Hydrofool tune (Rob Hubbard) (kit/mkgame.py --part
+# variants/players/hydrofool/hydrofool.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1229 bytes of zyxalex's music piece ($F424-$F8F0, work/parts/player-hydrofool.bin, written by
+# python3 tools/variants_music.py image hydrofool). The player reads its tune at fixed addresses: the arpeggio table
+# at $F8F1, the song table at $F93A; the tune is music/hydrofool.txt (tools/res_rip.py, format hydrofool). No
+# recording runs the variant: every name and description here is from the code.
+
+@module hydrofool ; The Hydrofool game player: three channels, each an order list of patterns; per frame the volume envelope, the arpeggio, vibrato and slides
+@about Entries: MusicInit $F424 (JP Init: the song in A), MusicPlay $F427 (JP Play, once a frame), MusicStop $F42A (JP Stop), MusicStart $F42D (song 0).
+@about A song: three words at $F93A + 6 * song, the order lists of channels A, B and C. An order list: pattern addresses, a word 0 starts it again. A pattern: $00-$7F a note (ends the row), $80-$91 commands through CommandOffsets ($80 rest, $87 the next pattern, $8E stop, $84 and $88 two argument bytes, $89 one), $B8-$BF the tempo, $C0-$CF the arpeggio (from the table at $F8F1), $D0-$DF the volume envelope with three argument bytes, $E0-$FF the note length.
+
+$F424 c MusicInit ; JP Init
+$F427 c MusicPlay ; JP Play
+$F42A c MusicStop ; JP Stop
+$F42D c MusicStart ; Song 0: LD A,0, then Init
+$F432 c Stop ; Clear Playing and silence the AY
+$F439 c Init ; Start song A: each channel's order list from the song table, its first pattern, the counters; then set Playing
+$F48A b ChannelA 16 ; Channel A's record, 33 bytes: +0 flags, +1 the stream, +3 the order list, +5 its index, +7 the slide, +9 the arpeggio, +$0B its row, +$0D the slide step, +$10 the row counter, +$11 the length, +$12 the note, +$13 the volume, +$14 the envelope, +$19 the envelope's volume, +$1A the vibrato, +$1D its mode, +$1F the noise flag, +$20 the mixer mask
+$F4AB b ChannelB 16 ; Channel B's record
+$F4CC b ChannelC 16 ; Channel C's record
+$F4ED b TempoCounter 1 ; Frames left to the next row
+$F4EE c Play ; One frame: on a row frame (the tempo counter runs out) each channel's row; every frame each channel's sound into AYRegs; then write AYRegs to the AY
+$F519 FrameSound ; Each channel's sound: the period into AYRegs, the volume
+$F545 WriteAY ; AY registers 13 down to 0 from AYRegs
+$F559 c WriteRegister ; AY register D = E
+$F563 c Silence ; All AY registers 0, the mixer to $3F
+$F581 b CommandOffsets 18 ; Jump offsets of commands $80-$91 (target = the entry's address + its byte)
+$F593 c CommandStop ; $8E: clear Playing, leave the frame and silence
+$F59B c CommandEnd ; $87: the next pattern of the order list (a word 0: the list from its start)
+$F5C8 CommandNoise ; $8B: the channel's noise on (its tone mask from the mixer)
+$F5DD CommandTone ; $8A: the channel's tone on
+$F5F1 CommandBoth ; $8C: tone and noise on
+$F601 CommandSlide ; $84 step count: a slide of the period
+$F617 CommandTranspose ; $89 n: the transposition of every channel
+$F61E CommandSweep ; $88 step size: the vibrato
+$F62D CommandBendDown ; $86: bend down
+$F631 CommandBendUp ; $85: bend up
+$F637 CommandSweepOff ; $81: the vibrato off
+$F63C CommandSweepUp ; $82: vibrato mode $40
+$F642 CommandSweepDown ; $83: vibrato mode $C0
+$F648 CommandFlag ; $8D: flag bit 1
+$F64E CommandRest ; $80: volume 0 for the row
+$F651 CommandHold ; $8F: the row without a new note
+$F657 CommandLock ; $90: the next notes keep the envelope
+$F65D CommandUnlock ; $91: the noise flag
+$F663 c ChannelRow ; A channel's row: count its row counter down, at 0 read the pattern's items up to a note, a rest or a hold
+$F675 ReadItem ; The next item of the stream
+$F6C9 ItemRange ; $80-$B7 through CommandOffsets; $B8-$BF tempo, $C0-$CF arpeggio, $D0-$DF envelope, $E0-$FF length
+$F719 c ChannelSound ; A channel's frame: the volume envelope, the arpeggio row, the note's period with vibrato and slide, the mixer bits; HL = the period, A = the volume
+$F83B b AYRegs 14 ; The AY register image: three tone periods, the noise, the mixer, three volumes, the envelope
+$F849 w PeriodTable 12 ; The AY tone period of each note 0-$53 (84 notes)

@@ -1,0 +1,85 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  instr:instr_F284 orn:orn_F270 call:s_F132 call:s_F132 repeat:8 r/96 next orn:orn_F2BE instr:instr_F2C9 call:s_F132 call:s_F132 repeat:2
+  call:s_F0CE next call:s_F0B9 orn:orn_F2BE instr:instr_F2C9 call:s_F132 call:s_F132 instr:instr_F2FD repeat:2 repeat:4 G#4/18 D#4/18
+  G#4/18 D#4/18 G#4/12 D#4/12 next transp:12 next transp:0 orn:orn_F2E6 instr:instr_F291 repeat:2 repeat:4
+  D#5/6 C-5/6 A#4/6 G#4/12 A#4/12 C-5/6 D#5/12 C-5/12 A#4/12 G#4/12 next instr:instr_F2A8
+  transp:12 next transp:0 call:s_F0CE call:s_F0CE call:s_F0B9 goto:channelA
+s_F0B9: stream
+  orn:orn_F31F instr:instr_F308 G#5/36 F#5/60 D#5/36 C#5/36 B-4/24 G#4/96 r/96 ret
+s_F0CE: stream
+  orn:orn_F2ED instr:instr_F2FD transp+:12 r/12 C-4/12 C-4/12 C-4/6 D#4/18 D#4/12 orn:orn_F2F5 C#4/12 C#4/12
+  C#4/12 orn:orn_F2ED C-4/12 C-4/12 C-4/6 D#4/12 D#4/6 orn:orn_F2F5 C#4/12 orn:orn_F2ED C-4/12 orn:orn_F2F5
+  G#3/12 r/12 orn:orn_F2ED G#3/12 G#3/12 G#3/12 G#3/6 A#3/12 A#3/18 A#3/12 A#3/6 C-4/12
+  C-4/18 C-4/12 A#3/6 tie C-4/18 repeat:12 transp+:-1 C-4/2 next transp+:0 untie ret
+s_F132: stream
+  G#3/24 B-3/18 G#3/12 G#3/6 C#4/12 G#3/12 F#3/12 G#3/24 D#4/18 G#3/12 G#3/6 E-4/12
+  D#4/12 B-3/12 G#3/12 D#4/12 G#4/12 D#4/6 G#3/12 G#3/6 F#3/12 A#3/12 G#3/90 r/18
+  ret
+channelB: stream
+  instr:instr_F284 orn:orn_F27B call:s_F132 call:s_F132 repeat:9 call:s_F1B2 next repeat:4 call:s_F184 next repeat:3 call:s_F1B2
+  next goto:channelB
+s_F184: stream
+  instr:instr_F327 orn:orn_F2BE transp:0 call:s_F1A1 transp:-3 call:s_F1A1 transp:-2 call:s_F1A1 transp:-5 call:s_F1A1 transp:0 ret
+s_F1A1: stream
+  G#2/18 G#2/6 G#3/12 G#2/18 G#2/6 G#3/12 G#2/12 G#3/12 ret
+s_F1B2: stream
+  instr:instr_F2A8 orn:orn_F2B6 transp+:12 G#2/24 G#3/18 F#3/12 F#3/6 D#3/12 F#3/12 G#3/12 G#2/24 G#3/30
+  G#2/6 D#3/12 F#3/12 G#3/12 E-2/24 E-3/18 F#2/12 F#2/6 F#3/12 D#3/12 F#3/12 G#3/54
+  G#3/6 F#3/12 D#3/12 C#3/12 transp+:-12 ret
+channelC: stream
+  repeat:7 r/96 next r/24 call:s_F25B repeat:15 call:s_F236 next repeat:8 r/24 call:s_F20C r/18
+  next goto:channelC
+s_F20C: stream
+  instr:instr_F284 orn:orn_F2A4 tie noise:11 mixer:0 E-7/1 noise:0 E-7/1 untie mixer:8 r/4 ret
+s_F223: stream
+  instr:instr_F2DB tie noise:12 mixer:1 repeat:12 A-1/1 noise+:-1 next untie mixer:8 ret
+s_F236: stream
+  repeat:3 call:s_F20C r/18 call:s_F223 r/12 call:s_F20C call:s_F20C r/6 call:s_F20C call:s_F223 r/12 next
+  call:s_F20C r/18 goto:s_F25B
+s_F25B: stream
+  orn:orn_F2A4 instr:instr_F291 C#4/6 C#4/12 C#4/6 A#3/12 A#3/12 G-3/12 G-3/12 ret
+orn_F270: ornament
+  6 -1 -1 -1 -1 -1
+orn_F276: ornament
+  1 -1 goto:orn_F276
+orn_F27B: ornament
+  -6 1 1 1 1 1 goto:orn_F276
+instr_F284: instrument
+  12/3 11/3 10/3 9/3 8/255 goto:instr_F284
+instr_F291: instrument
+  15/1 14 13 12 11 10 9 8 7 6 5 4
+  3 0/255 goto:instr_F291
+orn_F2A4: ornament
+  19 goto:orn_F2A4
+instr_F2A8: instrument
+  13/3 12/2 11/2 10 9 8 7/255 goto:instr_F2A8
+orn_F2B6: ornament
+  notes -12 0 12 0 goto:orn_F2B6
+orn_F2BE: ornament
+  2 1 -1 -2 -2 -1 1 2 goto:orn_F2BE
+instr_F2C9: instrument
+  15/2 9 14/2 13/2 12/2 11/2 10/2 9/255 goto:instr_F2C9
+instr_F2DB: instrument
+  13/1 12 11 10 9 8/255 goto:instr_F2DB
+orn_F2E6: ornament
+  1 -1 -1 1 goto:orn_F2E6
+orn_F2ED: ornament
+  notes 3 0 -3 0 goto:orn_F2ED
+orn_F2F5: ornament
+  notes 4 0 -4 0 goto:orn_F2F5
+instr_F2FD: instrument
+  15/1 14 13 12 11 10/255 goto:instr_F2FD
+instr_F308: instrument
+  15/2 0 14/2 0 13/2 0 12/2 0 11/2 0 10/2
+instr_F319: instrument
+  0 9/2 goto:instr_F319
+orn_F31F: ornament
+  notes 7 5 7 -19 goto:orn_F31F
+instr_F327: instrument
+  0/1 15 14 13 12 11/255 goto:instr_F327

@@ -1,0 +1,19 @@
+# The LZ depacker head of variant zyxtvmbt: the first 130 bytes of what its loader reads to $C000. The packed stream
+# follows it, made by the build (tools/lzpack.py, the format and the packer's rules); a RET follows the stream (the
+# hook the head calls first). Format: ../../../../../docs/ann-format.md.
+
+@equ $0052 RomRet ; a RET in the 48K ROM (the end of MASK_INT): the head leaves through it to its caller
+@equ $5B8D DepackRun 1 ; the printer buffer: the depacker's 100 bytes run here, out of the way of the output
+
+@module depack ; Move the packed stream to the top, unpack it to its place, return
+@about Called once by the loader. It saves SP, copies its last 100 bytes (DepackCopy) to DepackRun $5B8D in the printer buffer and returns into them; they move the packed stream up with LDDR so that it ends at the top of the area, then unpack it forward from the head's own address, the output overwriting the head and running up behind the stream's read position; three patch bytes are written last and the routine returns to the loader with the saved SP. The format: a byte 0lllhhhh and the next one copy lll+3 bytes from hhhh*256+next back, $80+n copies n literal bytes, $C0+n repeats the next byte n+3 times, $80 ends.
+
+$C000 c Depack ; Call the hook (a RET after the stream), save SP, copy DepackCopy to DepackRun and return into it with the stream's end, the top and the length in HL, DE, BC
+$C01E c DepackCopy ; Runs at DepackRun $5B8D: move the stream up (LDDR), then unpack it from its first byte to the head's address
+$C028 DepackNext ; the next control byte
+$C029 DepackTest ; A holds it (a copy or a fill ends here with it already read)
+$C02D ; bit 7 clear: a copy from earlier output (RLD splits the byte; the stream byte is changed, it is not read again)
+$C04A ; bit 7 set: $80 ends, $81-$BF literals, $C0-$FF a fill
+$C058 ; a fill: B = count, A = the byte, C = the next control byte
+$C067 c DepackEnd ; Write the three patch bytes (address, byte), restore SP (its operand written by Depack), return through RomRet
+$C079 b DepackPatch 9 ; Three patches: address and byte (all zero: a byte 0 to $0000, the ROM)

@@ -1,0 +1,718 @@
+# A Sound Tracker module (STC); the format in src/res/music/README.md. Offsets are rebuilt from the block
+# order; "#" starts a comment line.
+
+delay 6
+id SONG BY ST COMPILE
+size 2113
+
+sample 1 loop 0 0
+  vol 12 noise  0 tone -$000 -N
+  vol 14 noise  0 tone -$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+sample 2 loop 0 0
+  vol 14 noise  4 tone +$080 TN
+  vol 14 noise  4 tone +$115 TN
+  vol 13 noise  4 tone +$1A3 TN
+  vol 13 noise  2 tone -$000 TN
+  vol 13 noise  2 tone -$000 TN
+  vol 12 noise  1 tone -$000 TN
+  vol 12 noise  1 tone -$000 TN
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+sample 3 loop 0 0
+  vol 14 noise 11 tone +$200 TN
+  vol 14 noise  0 tone +$400 T-
+  vol 13 noise  0 tone +$600 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+sample 7 loop 0 1
+  vol 14 noise  0 tone -$000 T-
+  vol 14 noise  0 tone +$000 T-
+  vol 13 noise  0 tone +$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  7 noise  0 tone -$000 T-
+  vol  7 noise  0 tone -$000 T-
+  vol  6 noise  0 tone -$000 T-
+  vol  6 noise  0 tone -$000 T-
+  vol  5 noise  0 tone -$000 T-
+  vol  5 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  3 noise  0 tone -$000 T-
+  vol  3 noise  0 tone -$000 T-
+  vol  2 noise  0 tone -$000 T-
+  vol  2 noise  0 tone -$000 T-
+  vol  1 noise  0 tone -$000 T-
+  vol  1 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+  vol  0 noise  0 tone -$000 T-
+sample 9 loop 20 11
+  vol 14 noise  0 tone -$000 T-
+  vol 14 noise  0 tone -$000 T-
+  vol 14 noise  0 tone +$000 T-
+  vol 13 noise  0 tone +$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$002 T-
+  vol 12 noise  0 tone -$002 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$002 T-
+  vol 12 noise  0 tone -$002 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone +$002 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$002 T-
+  vol 12 noise  0 tone -$002 T-
+sample 10 loop 20 11
+  vol 14 noise  0 tone -$000 T-
+  vol 14 noise  0 tone -$000 T-
+  vol 13 noise  0 tone +$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone +$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone +$003 T-
+  vol  8 noise  0 tone +$003 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$003 T-
+  vol  8 noise  0 tone -$003 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone +$003 T-
+  vol  8 noise  0 tone +$003 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$003 T-
+  vol  8 noise  0 tone -$003 T-
+  vol  8 noise  0 tone -$000 T-
+  vol  8 noise  0 tone -$000 T-
+sample 12 loop 0 0
+  vol 13 noise  0 tone +$000 T-
+  vol 13 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 12 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 11 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone +$000 T-
+  vol  9 noise  0 tone +$000 T-
+  vol  9 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone +$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone -$000 T-
+  vol  4 noise  0 tone +$000 T-
+sample 14 loop 20 11
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone +$002 T-
+  vol 10 noise  0 tone +$002 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$002 T-
+  vol 10 noise  0 tone -$002 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone +$002 T-
+  vol 10 noise  0 tone +$002 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$002 T-
+  vol 10 noise  0 tone -$002 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone -$000 T-
+  vol 10 noise  0 tone +$002 T-
+  vol 10 noise  0 tone +$002 T-
+sample 15 loop 1 0
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone +$002 --
+  vol  0 noise  0 tone +$001 --
+  vol  0 noise  0 tone +$000 --
+  vol  0 noise  0 tone -$002 --
+  vol  0 noise  0 tone -$001 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone +$002 --
+  vol  0 noise  0 tone +$001 --
+  vol  0 noise  0 tone +$000 --
+  vol  0 noise  0 tone -$002 --
+  vol  0 noise  0 tone -$001 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone +$002 --
+  vol  0 noise  0 tone +$001 --
+  vol  0 noise  0 tone +$000 --
+  vol  0 noise  0 tone -$002 --
+  vol  0 noise  0 tone -$001 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone +$002 --
+  vol  0 noise  0 tone +$001 --
+  vol  0 noise  0 tone +$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+  vol  0 noise  0 tone -$000 --
+
+positions 1:0 1:0 2:0 2:0 3:0 3:0 4:0 4:0 5:0 5:0 6:0 6:0 7:0 7:0 8:0 8:0 3:0 3:0 5:0 5:0 6:0 6:0 4:0 4:0 7:0 7:0 5:0 5:0 3:0 3:0
+
+ornament 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ornament 2 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12 0 12
+ornament 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7 3 0 7
+ornament 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7 4 0 7
+ornament 7 10 11 12 12 12 12 12 12 0 0 0 0 0 0 0 0 12 12 12 12 12 12 12 12 0 0 0 0 0 0 0 0
+ornament 9 12 0 12 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ornament 10 24 24 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ornament 11 18 18 18 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ornament 12 12 12 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ornament 15 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+pattern 1 s0 s1 s2
+pattern 2 s1 s3 s4
+pattern 3 s5 s6 s7
+pattern 4 s5 s8 s7
+pattern 5 s5 s9 s7
+pattern 6 s5 s10 s7
+pattern 7 s5 s11 s7
+pattern 8 s5 s12 s7
+patterns end
+
+stream 0
+  len1 s9 o0 G-3
+  F-3
+  G-3
+  F-3
+  len3 G#3
+  G-3
+  len1 D#3
+  len3 G-3
+  len1 F-3
+  len3 D#3
+  F-3
+  len1 G#3
+  G-3
+  G#3
+  G-3
+  len3 A#3
+  G#3
+  len1 F-3
+  len3 D#3
+  len1 D-3
+  len7 F-3
+  end
+
+stream 1
+  len15 s14 o0 G-5
+  D#5
+  G#5
+  F-5
+  end
+
+stream 2
+  len1 s1 o0 C-3
+  C-3
+  C-3
+  C-3
+  C-3
+  C-3
+  C-3
+  C-3
+  G#2
+  G#2
+  G#2
+  G#2
+  G#2
+  G#2
+  G#2
+  G#2
+  F-3
+  F-3
+  F-3
+  F-3
+  F-3
+  F-3
+  F-3
+  F-3
+  A#2
+  A#2
+  A#2
+  A#2
+  A#2
+  s3 o10 A#2
+  s2 o12 A#2
+  s3 o10 A#2
+  end
+
+stream 3
+  len3 s10 o7 D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  len3 G-4
+  D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  G-4
+  D#4
+  len3 D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  len3 G-4
+  D-4
+  len2 A#3
+  F-4
+  len1 F-4
+  D-4
+  A#3
+  end
+
+stream 4
+  len1 s3 o10 C-3
+  s1 o0 C-3
+  s2 o11 C-3
+  s1 o0 C-3
+  s3 o10 C-3
+  s1 o0 C-3
+  s2 o11 C-3
+  s1 o0 C-3
+  s3 o10 G#2
+  s1 o0 G#2
+  s2 o11 G#2
+  s1 o0 G#2
+  s3 o10 G#2
+  s1 o0 G#2
+  s2 o11 G#2
+  s1 o0 G#2
+  s3 o10 F-3
+  s1 o0 F-3
+  s2 o12 F-3
+  s1 o0 F-3
+  s3 o10 F-3
+  s1 o0 F-3
+  s2 o12 F-3
+  s1 o0 F-3
+  s3 o10 A#2
+  s1 o0 A#2
+  s2 o11 A#2
+  s1 o0 A#2
+  s3 o10 A#2
+  s1 o0 A#2
+  s2 o11 A#2
+  s3 o10 A#2
+  end
+
+stream 5
+  len0 s3 o10 C-2
+  s1 o0 C-2
+  C-3
+  C-3
+  s2 o10 C-2
+  s1 o0 C-2
+  C-3
+  C-3
+  s3 o10 C-2
+  s1 o0 C-2
+  C-3
+  C-3
+  s2 o10 C-2
+  s1 o0 C-2
+  C-3
+  C-3
+  s3 o10 G#1
+  s1 o0 G#1
+  G#2
+  G#2
+  s2 o10 G#1
+  s1 o0 G#1
+  G#2
+  G#2
+  s3 o10 G#1
+  s1 o0 G#1
+  G#2
+  G#2
+  s2 o10 G#1
+  s1 o0 G#1
+  G#2
+  G#2
+  s3 o10 F-2
+  s1 o0 F-2
+  F-3
+  F-3
+  s2 o11 F-2
+  s1 o0 F-2
+  F-3
+  F-3
+  s3 o10 F-2
+  s1 o0 F-2
+  F-3
+  F-3
+  s2 o11 F-2
+  s1 o0 F-2
+  F-3
+  F-3
+  s3 o10 A#1
+  s1 o0 A#1
+  A#2
+  A#2
+  s2 o10 A#1
+  s1 o0 A#1
+  A#2
+  A#2
+  s3 o10 A#1
+  s1 o0 A#1
+  A#2
+  A#2
+  s2 o10 A#1
+  s1 o0 A#1
+  s2 o10 A#2
+  A#2
+  end
+
+stream 6
+  len0 s9 o15 C-5
+  D#5
+  F-5
+  len12 G-5
+  len1 G-5
+  len0 F-5
+  len1 F-5
+  len0 D#5
+  len9 F-5
+  len0 G#5
+  G-5
+  F-5
+  len12 G#5
+  len1 F-5
+  len0 D#5
+  len1 D#5
+  len0 D-5
+  len9 F-5
+  end
+
+stream 7
+  len15 s14 o3 C-4
+  o4 G#3
+  o3 F-4
+  o4 A#3
+  end
+
+stream 8
+  len1 s12 o2 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  C-5
+  len1 C-5
+  len0 C-5
+  len1 C-5
+  len0 C-5
+  end
+
+stream 9
+  len15 s10 o9 C-5
+  len1 s12 o2 G#4
+  len0 G#4
+  len1 G#4
+  len0 G#4
+  len1 G#4
+  len0 G#4
+  G#4
+  len1 G#4
+  len0 G#4
+  len1 G#4
+  len0 G#4
+  len11 s10 F-5
+  len3 D#5
+  len1 s12 A#4
+  len0 A#4
+  len1 A#4
+  len0 A#4
+  len1 A#4
+  len0 D-5
+  D-5
+  len1 D-5
+  len0 D-5
+  len1 D-5
+  len0 D-5
+  end
+
+stream 10
+  len3 s10 o7 D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  len3 G-4
+  D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  G-4
+  D#4
+  len3 D#4
+  len2 C-4
+  G#4
+  len1 G#4
+  len3 G-4
+  len1 s15 env12,$36 D-3
+  rest
+  env12,$44 A#2
+  len0 rest
+  len1 env12,$2C F-3
+  len0 rest
+  len1 F-3
+  env12,$36 D-3
+  env12,$44 A#2
+  end
+
+stream 11
+  len3 s15 env12,$33 D#3
+  env12,$3C C-3
+  len1 env12,$33 D#3
+  len0 env12,$3C C-3
+  len2 env12,$33 D#3
+  len1 env12,$2C F-3
+  len3 env12,$33 D#3
+  env12,$3C C-3
+  len1 env12,$33 D#3
+  len0 env12,$3C C-3
+  len2 env12,$33 D#3
+  len1 env12,$2C F-3
+  len3 env12,$33 D#3
+  env12,$3C C-3
+  len1 env12,$33 D#3
+  len0 env12,$3C C-3
+  len2 env12,$33 D#3
+  len1 env12,$2C F-3
+  len3 env12,$33 D#3
+  env12,$3C C-3
+  len1 env12,$33 D#3
+  len0 env12,$3C C-3
+  len2 env12,$33 D#3
+  len1 env12,$2C F-3
+  end
+
+stream 12
+  len1 s7 o10 C-3
+  len0 C-3
+  D#3
+  G-3
+  F-3
+  D#3
+  D-3
+  len7 C-3
+  len2 G-3
+  len0 F-3
+  len1 G-3
+  F-3
+  G-3
+  len0 F-3
+  len1 G-3
+  len2 F-3
+  len1 G#3
+  len0 G-3
+  G#3
+  G-3
+  F-3
+  D#3
+  D-3
+  len7 C-3
+  len1 A#3
+  len0 G-3
+  len1 A#3
+  len0 G-3
+  len1 A#3
+  len0 G-3
+  A#3
+  C-4
+  A#3
+  G-3
+  F-3
+  D-3
+  C-3
+  end

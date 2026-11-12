@@ -1,0 +1,20 @@
+# The loading picture of variant zyxermbt: three sectors its BASIC loader reads to $7530 and calls before it reads the
+# menu (variants/zyxermbt/README.md). Format: ../../../../../docs/ann-format.md.
+
+@equ $0052 RomRet ; a RET in the 48K ROM: CALL RomRet leaves the caller's address just below SP
+@equ $4000 Screen 1 ; the screen
+
+@module intro ; Unpack a picture onto the screen while the menu loads
+@about The loader calls IntroPicture at $7530 with the screen cleared; it returns with the picture on the screen and the loader then reads the menu, fades the picture (its routine at $5DE7) and calls the menu. The routine is position independent: it finds its own address and writes the address of PutByte into its three CALLs, which hold $74A6 on the disk (the address it was assembled at).
+
+$7530 c IntroPicture ; Find our address, point the three CALLs at PutByte, unpack PackedScreen to Screen $4000 in the screen's third-row-column order
+> The packed stream: a byte with bit 7 clear is a copy of 3-18 bytes from earlier output (bits 3-6 the length - 3, bits 0-2 and the next byte the distance back); $80+n copies n literal bytes; $C0+n repeats the next byte n+3 times; $80 ends.
+$7534 ; BC = our address + 4
+$7551 ; HL = PackedScreen; the output position in DE' and the row counters
+$7564 UnpackLoop ; the next control byte
+$75A3 UnpackLiteral ; $80-$FF: literals or a run; $80 alone ends
+$75C4 ; done: HL' back to the ROM's value for BASIC
+$75CB c PutByte ; Store A at the output position and step it in the screen's order (8 pixel rows a cell, then the next cell, then the next third)
+$75F2 b PackedScreen 16 ; The packed picture (the screen and its attributes), up to its end mark (tools/res_screens.py packs it from its PNG)
+@res graphics/intro-picture.bin
+$7815 b IntroEnd 16 ; zeros to the third sector's end

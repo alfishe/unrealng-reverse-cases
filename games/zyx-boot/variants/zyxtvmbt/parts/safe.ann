@@ -1,0 +1,20 @@
+# Variant zyxtvmbt's catalogue read, in the menu's spare bytes at $6FE0 (TwinkleSpare, src/game/stars.asm): called by
+# Start and by the SPACE key (the code switch catalogue-safe, tools/variants.py). Format: ../../../../../docs/ann-format.md.
+
+@equ $02B9 TrdosMotorOff 1 ; a routine of the TR-DOS ROM the variant runs through TrdosRet ($02B9, entered with A the drive's system byte)
+@equ $3D13 TrdosEntry ; the TR-DOS ROM's entry for machine code: C = 5 reads B sectors from track D, sector E to HL
+@equ $3D30 TrdosRet ; the TR-DOS ROM's RET at $3D30: a JP there runs the address on the stack inside the TR-DOS ROM
+@equ $5C3A ErrNr 1 ; ERR_NR
+@equ $5C3D ErrSP 2 ; ERR_SP: where BASIC's error handler returns
+@equ $5D0F TrdosErrorFlags 2 ; TR-DOS: the two bytes cleared before the read
+@equ $5D16 TrdosSystemByte 1 ; TR-DOS: the last byte written to the drive's system port $FF
+@equ $9D00 Catalogue 1 ; the menu's catalogue buffer (src/game)
+
+@module safe ; Read the catalogue with an error trap, then stop the drive
+@about The original Start and SPACE call TrdosEntry directly: a disk error drops to TR-DOS's error message. This routine first points ERR_SP at a return to itself, so an error comes back here, then reads the 8 sectors of track 0 to Catalogue $9D00, then writes the drive's system byte twice through the TR-DOS ROM (with bits 0-1 set, then as it was) to stop the motor and the head.
+
+$6FE0 c ReadCatalogueSafe ; Trap errors through ERR_SP, read the catalogue (8 sectors of track 0) to Catalogue $9D00, stop the drive
+$6FFD ; back here also after an error: drop the trap
+$7003 c DriveIdle ; Write the drive's system byte with bits 0-1 set, then as it was, through the ROM's $02B9
+$700D c RomSystem ; Run the ROM's $02B9 with A, through TrdosRet
+$7014 t ReadText 4 ; "READ": leftover text, not read

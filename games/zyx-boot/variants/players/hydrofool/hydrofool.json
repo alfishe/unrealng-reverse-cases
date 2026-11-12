@@ -1,0 +1,14 @@
+{
+  "about": "The Hydrofool game player of zyxalex (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/hydrofool/hydrofool.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "hydrofool"],
+  "image": "work/parts/player-hydrofool.bin",
+  "org": "F424",
+  "ann": "variants/players/hydrofool/hydrofool.ann",
+  "top": "hydrofool",
+  "bin": "hydrofool.bin",
+  "dest": "variants/players/hydrofool",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the Hydrofool game player of zyxalex (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-hydrofool"
+}

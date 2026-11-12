@@ -13,8 +13,14 @@ data) -> bytes:
   frames, as indexed PNG sheets;
 - tools/res_tables.py: the star tables, the attribute and fade colours, the key table and the other tables, as text;
 - tools/res_text.py: the menu's strings (texts/*.txt, UTF-8);
-- tools/res_music.py: the ASC Sound Master tune (music/*.txt).
-Each folder's README.md lists its files. A kind whose module is missing stays its bytes.
+- tools/res_music.py: the ASC Sound Master tunes (music/disco.txt, a variant's music/asc.txt);
+- tools/res_stc.py, tools/res_fuxoft.py: a variant's Sound Tracker and Fuxoft tunes (music/stc.txt, music/fuxoft.txt);
+- tools/res_rip.py: the tunes of five one-off game-rip players (music/hydrofool.txt, megaapoc, ziutek, awbt, fp3bt);
+- tools/res_whittaker.py, tools/res_sheridan.py, tools/res_daglish.py: the tunes of the game rips' drivers (David
+  Whittaker, Ian Sheridan, Ben Daglish: a variant's music/whittaker.txt, sheridan.txt, daglish.txt);
+- tools/res_variants.py: the resources only a variant's own parts have (zyxskybt's picture, Cyrillic font, scroll text).
+Each folder's README.md lists its files. A kind whose module is missing stays its bytes. `check` also runs over every
+variant's tree (variants/NAME: its resources, its music and its BASIC listing basic.txt, tools/res_basic.py).
 """
 import argparse
 import importlib
@@ -27,21 +33,24 @@ RES = os.path.join(ROOT, 'src', 'res')
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
 # folder of the resource -> the converter module
-KINDS = {'graphics': 'res_gfx', 'tables': 'res_tables', 'texts': 'res_text', 'music': 'res_music'}
+KINDS = {'graphics': ['res_variants', 'res_screens', 'res_gfx'], 'tables': ['res_variants', 'res_tables'],
+         'texts': ['res_variants', 'res_text'],
+         'music': ['res_music', 'res_stc', 'res_fuxoft', 'res_whittaker', 'res_sheridan', 'res_daglish', 'res_rip']}
 
 
 def converter(name):
     kind = name.split('/')[0]
-    mod = KINDS.get(kind)
-    if not mod:
-        return None
-    try:
-        m = importlib.import_module(mod)
-    except ModuleNotFoundError as e:
-        if e.name == mod:
-            return None
-        raise
-    return m if m.handles(name) else None
+    mods = KINDS.get(kind)
+    for mod in [mods] if isinstance(mods, str) else mods or []:
+        try:
+            m = importlib.import_module(mod)
+        except ModuleNotFoundError as e:
+            if e.name == mod:
+                continue
+            raise
+        if m.handles(name):
+            return m
+    return None
 
 
 def install(files):
@@ -81,19 +90,49 @@ def build(out, res=RES):
             shutil.copyfile(src, dst)
 
 
-def check():
-    bad = n = 0
-    for name, src, m in sources():
-        if not m:
+def round_trip(name, src, m):
+    if hasattr(m, 'round_trip_text'):   # a BASIC listing: its fill lines are bytes only the build puts in
+        return m.round_trip_text(open(src).read())
+    data = m.from_editable(name, open(src, 'rb').read())
+    suffix, again = m.to_editable(name, data)
+    back = m.from_editable(name, again)
+    return back == data and again == open(src, 'rb').read()
+
+
+def variant_sources():
+    """(the .bin name, the source file, the converter) of every editable file of every variant (variants/NAME)"""
+    import res_basic
+    var = os.path.join(ROOT, 'variants')
+    for v in sorted(os.listdir(var)):
+        vdir = os.path.join(var, v)
+        if v == 'players' or not os.path.isfile(os.path.join(vdir, 'variant.json')):
             continue
+        for name, src, m in sources(vdir):
+            if name.split('/')[0] in KINDS and m:
+                yield name, src, m
+        if os.path.exists(os.path.join(vdir, 'basic.txt')):
+            yield 'basic.bin', os.path.join(vdir, 'basic.txt'), res_basic
+
+
+def check():
+    bad, n, nv, vs = 0, 0, 0, set()
+    files = [(name, src, m, False) for name, src, m in sources() if m]
+    files += [(name, src, m, True) for name, src, m in variant_sources()]
+    for name, src, m, in_variant in files:
         n += 1
-        data = m.from_editable(name, open(src, 'rb').read())
-        suffix, again = m.to_editable(name, data)
-        back = m.from_editable(name, again)
-        if back != data or again != open(src, 'rb').read():
+        if in_variant:
+            nv += 1
+            vs.add(os.path.relpath(src, os.path.join(ROOT, 'variants')).split(os.sep)[0])
+        try:
+            ok = round_trip(name, src, m)
+        except Exception as e:      # a file that does not read back is a failure, not a crash of the check
+            ok = False
+            print(f'res: {os.path.relpath(src, ROOT)}: {e}')
+        if not ok:
             print(f'res: {os.path.relpath(src, ROOT)} does not round-trip')
             bad += 1
-    print(f'res: {n} editable files round-trip' if not bad else f'res: {bad} of {n} files fail')
+    print(f'res: {n} editable files round-trip ({n - nv} in src/res, {nv} in {len(vs)} variants)' if not bad
+          else f'res: {bad} of {n} files fail')
     return 1 if bad else 0
 
 

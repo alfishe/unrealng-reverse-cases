@@ -7,5 +7,123 @@
     "length": 307,
     "sectors": 51
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 2,
+  "pieces": [
+    {
+      "at": "$7530",
+      "sectors": 3
+    },
+    {
+      "at": "$61A8",
+      "sectors": 15
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$C000",
+      "sectors": 22
+    }
+  ],
+  "equ": {
+    "MusicPiece": "$C000",
+    "MusicSectors": "22"
+  },
+  "parts": [
+    "parts/intro.json"
+  ],
+  "tail": "files/tail.bin",
+  "residue": [
+    {
+      "at": "ClearPhaseIndex+2",
+      "bytes": "05",
+      "why": "self-modified operand: the last phase offset index BuildRombPhases wrote"
+    },
+    {
+      "at": "MarkPhaseWrite+2",
+      "bytes": "1C",
+      "why": "self-modified operand: the last phase index marked"
+    },
+    {
+      "at": "ScaleTestBit+3",
+      "bytes": "5E",
+      "why": "self-modified opcode: the last BIT n,(IX) the phase builder used"
+    },
+    {
+      "at": "ScaleWriteBit+3",
+      "bytes": "8E",
+      "why": "self-modified opcode: the last RES/SET n,(IY) the phase builder used"
+    },
+    {
+      "at": "SampleStarBit+1",
+      "bytes": "76",
+      "why": "self-modified opcode: the last BIT n,(HL) SampleStars used"
+    },
+    {
+      "at": "ChannelA",
+      "bytes": "04082D01",
+      "why": "the player's channel record as the tune left it"
+    },
+    {
+      "at": "ChannelA+7",
+      "bytes": "0C0F010102C5B7D0BAD0000031D533D533D5",
+      "why": "the player's channel record as the tune left it"
+    },
+    {
+      "at": "ChannelB+9",
+      "bytes": "060106C5",
+      "why": "the player's channel record as the tune left it"
+    },
+    {
+      "at": "ChannelC+9",
+      "bytes": "06010AC5",
+      "why": "the player's channel record as the tune left it"
+    },
+    {
+      "at": "AYRegisters",
+      "bytes": "1C01",
+      "why": "the AY register image as the tune left it"
+    },
+    {
+      "at": "AYMixer",
+      "bytes": "080C",
+      "why": "the AY register image as the tune left it"
+    },
+    {
+      "at": "AYEnvelopeShape",
+      "bytes": "FF0206",
+      "why": "the AY image, CurrentChannel and DelayCounter as the tune left them"
+    },
+    {
+      "at": "NextPosition+1",
+      "bytes": "80C41101",
+      "why": "self-modified operand: the position the player starts next"
+    },
+    {
+      "at": "PositionCountOp+1",
+      "bytes": "16",
+      "why": "self-modified operand: the module's number of positions (InitPlayer)"
+    },
+    {
+      "at": "PatternTableOp+1",
+      "bytes": "96C4",
+      "why": "self-modified operand: the pattern table (InitPlayer)"
+    },
+    {
+      "at": "SampleTableOp+1",
+      "bytes": "74D0",
+      "why": "self-modified operand: the sample table (InitPlayer)"
+    },
+    {
+      "at": "CommandOrnament+1",
+      "bytes": "EFD4",
+      "why": "self-modified operand: the ornament table (InitPlayer)"
+    }
+  ],
+  "notes": [
+    "The tune: the original's (\"Disco music\" by Ant P, ASC Sound Master); its player state is residue: the file was saved after the tune had played.",
+    "Its first piece (`$7530` x 3, `parts/intro.ann`) is a position-independent LZ depacker that puts a loading picture on the screen before the menu."
+  ]
 }

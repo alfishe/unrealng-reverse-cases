@@ -7,5 +7,70 @@
     "length": 176,
     "sectors": 47
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 1,
+  "pieces": [
+    {
+      "at": "$619B",
+      "sectors": 16
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$C000",
+      "sectors": 21
+    },
+    {
+      "at": "$FF14",
+      "sectors": 1
+    }
+  ],
+  "equ": {
+    "MusicPiece": "$C000",
+    "MusicSectors": "21",
+    "MusicInit": "$C00B",
+    "MusicPlay": "$C00E"
+  },
+  "code": [
+    "kempston",
+    "catalogue-call"
+  ],
+  "parts": [
+    "parts/launcher.json"
+  ],
+  "residue": [
+    {
+      "at": "ClearPhaseIndex+2",
+      "bytes": "05",
+      "why": "LD A,(IY+d): the last phase offset index BuildRombPhases wrote"
+    },
+    {
+      "at": "MarkPhaseWrite+2",
+      "bytes": "1C",
+      "why": "LD (IX+d),1: the last phase index marked"
+    },
+    {
+      "at": "ScaleTestBit+3",
+      "bytes": "6E",
+      "why": "BIT n,(IX): the opcode of the last source bit tested (BIT 5)"
+    },
+    {
+      "at": "ScaleWriteBit+3",
+      "bytes": "B6",
+      "why": "RES/SET n,(IY): the opcode of the last pixel written (RES 6)"
+    },
+    {
+      "at": "SampleStarBit+1",
+      "bytes": "76",
+      "why": "BIT n,(HL): the opcode of the last star sampled (BIT 6)"
+    }
+  ],
+  "past_ffff": "files/past-ffff.bin",
+  "notes": [
+    "The tune: \"Techno Project II\" by Heather, 1994 (ASC Sound Master; the module's own title string; the music index matches its notes).",
+    "The menu code starts 13 bytes lower (`$619B`): ReadCatalogue, a subroutine the variant added before Start (code switch `catalogue-call`).",
+    "The residue shows the file was saved from memory after the menu had run: the stars' self-modified operands hold run-time values."
+  ]
 }

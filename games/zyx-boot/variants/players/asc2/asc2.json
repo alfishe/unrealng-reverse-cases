@@ -1,0 +1,14 @@
+{
+  "about": "The ASC Sound Master player of zyxboot-14..18 (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/asc2/asc2.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "asc2"],
+  "image": "work/parts/player-asc2.bin",
+  "org": "C000",
+  "ann": "variants/players/asc2/asc2.ann",
+  "top": "asc2",
+  "bin": "asc2.bin",
+  "dest": "variants/players/asc2",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the ASC Sound Master player of zyxboot-14..18 (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-asc2"
+}

@@ -1,0 +1,52 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  instr:instr_F283 orn:orn_F28E call:s_F0BA repeat:2 r/7 B-5/7 A#5/7 G#5/7 F#5/7 E-5/7 D#5/7 C#5/7
+  D#5/7 E-5/7 D#5/7 C#5/7 D#5/21 A#4/7 D#5/56 next r/7 E-5/7 D#5/7 C#5/7
+  B-4/7 A#4/7 G#4/7 A#4/7 B-4/7 C#5/7 B-4/7 G#4/7 A#4/21 G-4/7 A#4/56 A#4/21
+  F#4/7 A#4/42 A#4/14 repeat:2 A#4/7 B-4/7 next repeat:2 F-4/7 F#4/7 next A#4/7
+  B-4/7 F-4/7 F#4/7 repeat:2 A#4/7 B-4/7 next repeat:2 F#4/7 G-4/7 next A#4/7
+  B-4/7 F#4/7 G-4/7 goto:channelA
+s_F0BA: stream
+  G#4/28 D#5/28 C#5/7 C-5/7 A#4/7 C-5/7 G#4/28 D#4/56 F-4/28 F-5/28 D#5/7 D-5/7
+  C-5/7 D-5/7 A#4/28 G-5/56 A#4/28 G#5/28 G-5/7 F-5/7 D#5/7 C#5/7 B-4/28 G#4/56
+  B-4/28 G#4/28 G#5/21 G-5/5 r/2 G-5/70 r/14 G#4/28 D#5/28 A#4/7 C#5/7 C-5/7
+  A#4/7 G#4/28 D#4/56 F-4/28 F-5/28 D#5/7 D-5/7 C-5/7 D-5/7 A#4/28 G-5/56 A#4/28
+  G#5/28 G-5/7 F-5/7 D#5/7 C#5/7 B-4/28 G#4/42 G#4/3 G-4/4 G#4/3 A#4/4 B-4/28
+  G#4/28 G#5/21 G-5/5 r/2 G-5/70 r/14 ret
+channelB: stream
+  instr:instr_F29B orn:orn_F2A9 call:s_F1A0 repeat:3 transp:0 repeat:2 repeat:2 E-3/7 G#3/7 B-3/7 E-4/7 B-3/7
+  G#3/7 next transp:-1 next next transp:0 F#3/7 A#3/7 C#4/7 F#4/7 A#3/7 C#4/7
+  F#4/7 A#4/7 C#4/7 F#4/7 A#4/7 C#5/7 repeat:2 B-3/7 D#4/7 F#4/7 B-4/7 F#4/7
+  D#4/7 next repeat:2 G-3/7 C#4/7 G-4/7 C#4/7 next G-4/7 A#4/7 C#5/7 G-5/7
+  goto:channelB
+s_F1A0: stream
+  repeat:2 G#2/7 C-3/7 D#3/7 G#3/7 C-4/7 D#4/7 G#4/7 D#4/7 C-4/7 G#3/7 C-4/7
+  D#4/7 G#2/7 C-3/7 D#3/7 G#3/7 C-4/7 D#4/7 G#4/7 D#4/7 C-4/7 G#3/7 D#3/7
+  C-3/7 A#2/7 D-3/7 F-3/7 A#3/7 D-4/7 F-4/7 A#4/7 F-4/7 D-4/7 A#3/7 D-4/7
+  F-4/7 repeat:2 D#3/7 G-3/7 A#3/7 D#4/7 A#3/7 G-3/7 next C#3/7 F-3/7 G#3/7
+  C#4/7 F-4/7 G#4/7 C#5/7 G#4/7 F-4/7 C#4/7 F-4/7 G#4/7 repeat:4 E-3/7 G#3/7
+  B-3/7 E-4/7 B-3/7 G#3/7 next D#3/7 G-3/7 A#3/7 D#4/7 A#3/7 G-3/7 D#3/7
+  G-3/7 A#3/7 D#4/7 G-4/7 A#4/7 next ret
+channelC: stream
+  call:s_F25B repeat:2 E-3/84 D#3/70 D#3/14 next E-3/84 D#3/84 F#3/84 B-3/28 F#3/28 B-3/28
+  E-4/28 G-3/28 E-4/28 goto:channelC
+s_F25B: stream
+  instr:instr_F2B0 orn:orn_F2C4 repeat:2 G#3/126 G#4/14 D#4/14 C-4/14 A#3/84 D#4/42 A#4/14 G-4/14 D#4/14
+  C#4/84 E-4/84 E-5/84 D#5/28 A#4/28 G-4/28 next ret
+instr_F283: instrument
+  15/1 14 13/1 12 11/255 goto:instr_F283
+orn_F28E: ornament
+  1 1 1 -1 -1 -1 -1 -1 1 1 goto:orn_F28E
+instr_F29B: instrument
+  14/1 13 12 11 10 9 8 7 6/255 goto:instr_F29B
+orn_F2A9: ornament
+  -5 5 5 -5 goto:orn_F2A9
+instr_F2B0: instrument
+  14/2 8 13/2 8 12/2 8 11/2 8 10/2 8 9/255 goto:instr_F2B0
+orn_F2C4: ornament
+  notes 12 0 -12 0 goto:orn_F2C4

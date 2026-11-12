@@ -1,0 +1,14 @@
+{
+  "about": "The Sound Tracker 1 compilation of zyxtvmbt (tools/variants_music.py kind stc1): python3 ../../kit/mkgame.py --part variants/players/stc1-tail/stc1-tail.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "stc1-tail"],
+  "image": "work/parts/player-stc1-tail.bin",
+  "org": "C495",
+  "ann": "variants/players/stc1-tail/stc1-tail.ann",
+  "top": "stc1-tail",
+  "bin": "stc1-tail.bin",
+  "dest": "variants/players/stc1-tail",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the Sound Tracker 1 compilation's tail (zyxtvmbt; tools/variants_music.py kind stc1)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-stc1-tail"
+}

@@ -1,0 +1,14 @@
+{
+  "about": "David Whittaker's sound driver from Platoon (zyxboot-05, zyxboot-08) (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/whittaker-platoon/whittaker-platoon.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "whittaker-platoon"],
+  "image": "work/parts/player-whittaker-platoon.bin",
+  "org": "C000",
+  "ann": "variants/players/whittaker-platoon/whittaker-platoon.ann",
+  "top": "whittaker-platoon",
+  "bin": "whittaker-platoon.bin",
+  "dest": "variants/players/whittaker-platoon",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: David Whittaker's sound driver from Platoon (zyxboot-05, zyxboot-08) at $C000 (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-whittaker-platoon"
+}

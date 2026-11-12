@@ -1,0 +1,73 @@
+# David Whittaker's music driver as ripped from Stormbringer, that zyxboot-11 carries at $C000 (kit/mkgame.py --part
+# variants/players/whittaker-storm/whittaker-storm.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1262 bytes of zyxboot-11's music piece ($C000-$C4ED, work/parts/player-whittaker-storm.bin,
+# written by python3 tools/variants_music.py image whittaker-storm). The code reads its tables and the tune at fixed
+# addresses, so the driver never moves; the tune follows at $C4EE (the variant's music/whittaker.txt,
+# tools/res_whittaker.py, version storm). No sound effects in this rip. No recording runs a variant: every name and
+# description here is from the code.
+
+@equ $C4EE SongTable ; the tune: 7 bytes a tune (tempo, three order lists)
+@isub $C34A LD HL,PeriodTable-24
+
+@module whittaker-storm ; David Whittaker's driver (Stormbringer): init, play, the pattern reader, envelopes, ornaments
+@about Two entries: MusicInit $C000 starts the tune whose number is its LD A,n operand: the tempo and the three order lists from its 7-byte record in SongTable ($C4EE); MusicPlay $C0B9 plays one frame while the music is on: on a tempo frame (TempoCounter) each channel whose duration ran out reads its pattern (ChannelTick, ReadPattern), then for each channel ChannelFrame gives the tone period and volume into AYRegisters, and WriteAY sends registers 13 down to 0.
+@about A pattern: a note $00-$7F (PeriodTable index plus the transposition, from note 12 up), a command $80-$8F through CommandOffsets (rest, sweep off / up / down, slide, bend up / down, the end of the pattern, sweep, transposition, tone, noise, tone and noise, flag, stop, hold), $C0-$CF an ornament (OrnamentOffsets), $D0-$DF a start volume and three bytes of envelope (attack, decay, sustain), $E0-$FF the duration of the notes after it. The format is in tools/res_whittaker.py.
+
+$C000 c MusicInit ; Start the tune (LD A,n: 0 here): the tempo and the three channels' order lists
+> MusicOn = 0; HL = SongTable + 7 * the tune: the tempo into TempoReload, then for each channel (IX = ChannelA, ChannelB, ChannelC, 32 bytes apart) the order list (+$03 / +$04), its first pattern (+$01 / +$02), the order offset 2, the duration count 1, the flags and sweep cleared. Last the transposition 0, TempoCounter 1, MusicOn 1.
+
+$C058 b ChannelRecords 8 ; The three channels' records (32 bytes each, IX)
+> As Platoon's driver's (variants/players/whittaker-platoon) but the envelope: +$00 flags (bit 6 the attack), +$01 / +$02 the pattern pointer, +$03 / +$04 the order list, +$05 / +$06 the order offset, +$07 / +$08 the slide's sum, +$09-+$0C the ornament, +$0D / +$0E the slide, +$10 / +$11 the frames left and the duration, +$12 the note, +$13 the volume, +$14 the attack rate, +$15 the decay rate, +$16 the current rate, +$17 the sustain length, +$18 its counter, +$19 the start volume, +$1A-+$1D the sweep, +$1E the notes set the noise, +$1F the channel's mixer bits.
+$C058 ChannelA
+$C078 ChannelB
+$C098 ChannelC
+$C0B8 b TempoCounter 1 ; The frames left until the next tempo frame
+
+$C0B9 c MusicPlay ; Play one frame: the channels on a tempo frame, the periods and volumes, the AY
+$C0C0 NoiseNote ; LD A,n: the noise channel's note (ReadPattern writes it), the noise period of this frame
+$C0E4 TempoReload ; LD (HL),n: the tempo (frames a row, from SongTable)
+$C10D NoisePeriod ; LD A,n: the noise period for AYRegisters
+
+$C119 c StopMusic ; Music off, the AY silent, the three volumes 0
+$C12B c WriteAY ; Write AYRegisters to AY registers 13 down to 0
+$C13F c SetAYRegister ; AY register D = E
+$C149 c SilenceAY ; Every AY register 13 down to 0 = 0, then the mixer (7) = $3F
+
+$C167 b CommandOffsets 16 ; Commands $80-$8F: each byte the offset of its routine from its own address
+$C177 c CommandStop ; $8E: music off, the AY silent
+$C17F c CommandEnd ; $87: the end of the pattern: the next order entry (a word 0: the order list again)
+$C1AC c CommandNoise ; $8B: the channel plays noise, its notes set the noise period
+$C1C1 c CommandTone ; $8A: the channel plays tone
+$C1D5 c CommandBoth ; $8C: tone and noise
+$C1E5 c CommandSlide ; $84 s d: a slide: step s every d frames
+$C1FB c CommandTranspose ; $89 n: the transposition (the operand at $C32B) = n
+$C202 c CommandSweep ; $88 s w: a sweep: step s, width w
+$C211 c CommandBendDown ; $86: the note bends down a step a tempo frame
+$C215 c CommandBendUp ; $85: the note bends up
+$C21B c CommandSweepOff ; $81: no sweep
+$C220 c CommandSweepUp ; $82: the sweep goes up
+$C226 c CommandSweepDown ; $83: the sweep goes down
+$C22C c CommandFlag ; $8D: sets flag bit 1
+$C232 c CommandRest ; $80: a rest: volume 0 for the duration
+$C23B c CommandHold ; $8F: the note goes on for the duration
+
+$C241 c ChannelTick ; A tempo frame of the channel at IX: when its duration runs out, ReadPattern; else the bend
+$C249 ReadPattern ; Read the pattern: commands and settings until a note, rest or hold
+$C288 Bend ; Bend on (flag bit 3): the note one up or down
+$C299 PatternCommand ; A byte $80-$FF: a command below $C0 (CommandOffsets), else an ornament, an envelope or a duration
+$C2A5 SetOrnament ; $C0-$CF: the ornament OrnamentOffsets[n]
+$C2BC SetDuration ; $E0-$FF: the duration = n + 1
+$C2C2 SetEnvelope ; $D0-$DF v a d s: the start volume v, the attack and decay rates, the sustain length
+$C2D7 Dispatch ; JP to the command's routine: CommandOffsets[A - $80] + its address
+
+$C2DF c ChannelFrame ; One frame of the channel at IX: HL = its tone period, A = its volume
+> The envelope (the volume rises by the attack rate to 15, falls by the decay rate, holds for the sustain length, then falls), the ornament's next note offset ($87 or more: the ornament again), the note + the transposition into PeriodTable, the sweep, the slide, the mixer bits into AYRegisters.
+$C32A Transposition ; LD A,n: the transposition (command $89)
+$C3D2 MixerBits ; LD A,n: the mixer bits of the tone and noise commands
+
+$C3EE b AYRegisters 13 ; The image of AY registers 0-12 that WriteAY sends (register 13 is PeriodTable's first byte)
+$C3FB w PeriodTable 8 ; The AY tone period of notes 12-95 (ChannelFrame indexes it from 24 bytes before)
+$C4A3 b OrnamentOffsets 16 ; Ornaments $C0-$CF: each byte the offset of its data from its own address
+$C4B3 b Ornaments 16 ; The ornaments: note offsets a frame, $87 or more: the ornament again
+$C4ED b MusicOn 1 ; 1 while the music plays

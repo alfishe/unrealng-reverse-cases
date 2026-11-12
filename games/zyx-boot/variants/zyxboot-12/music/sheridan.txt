@@ -1,0 +1,63 @@
+# The tune of Ian Sheridan's driver (tools/res_sheridan.py): the duration tables, the instruments, the
+# pattern table, the songs, then the sequences (sN) and patterns (pN) where they lie.
+org $C7E0
+durations 1 2 3 4 6 8 12 16
+durations 2 4 6 8 12 16 24 32
+durations 3 6 9 12 18 24 36 48
+durations 4 8 12 16 24 32 48 64
+durations 5 10 15 20 30 40 60 80
+durations 6 12 18 24 36 48 72 84
+durations 96 7 14 21 28 42 56 84
+durations 112 8 16 24 32 48 64 96
+durations 128
+instrument 1 15 5 3 255 11 100 3 255 30 1 4 0 6 0 12 0 12 0 0 24 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 0 15 15 2 254 0 0 3 255 0 5 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 232 0 0 0 0
+instrument 0 15 15 1 255 0 0 3 255 255 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 0
+instrument 0 9 9 1 247 0 0 0 255 255 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 170 0 0 0 0
+instrument 0 15 15 1 255 0 0 3 255 0 2 3 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 1 15 5 3 255 11 100 3 255 255 0 0 0 3 0 3 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 1 15 5 3 255 11 100 3 255 255 0 0 0 3 0 4 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 1 15 5 3 255 11 100 3 255 255 0 0 0 3 0 5 7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 0 1 255 0 255 0 0 0 255 0 5 5 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+instrument 1 15 5 3 255 11 100 3 255 30 1 4 0 3 0 0 12 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+patterns p0 p1 p2 p3 p6 p9 p4 p7 p5 p8 p10 p11
+song s0 s1 s2
+song none none none
+song none none none
+song none none none
+bytes 00 00 00 00
+s0: sequence
+  speeds 5 offset 11 p6*4 p7*2 p8*2 p9*2 p10*2 p11*2 p0*8 loop
+s1: sequence
+  p2*7 p1*1 p2*7 p1*1 loop
+s2: sequence
+  p3*4 p4*2 p5*2 p3*4 p4*2 p5*2 p3*4 p4*2 p5*2 p3*4 p4*2 p5*2
+  p3*4 p4*2 p5*2 p3*4 p4*2 p5*2 p3*4 p4*2 p5*2 p3*4 p4*2 p5*2
+  p3*4 p4*2 p5*2 p0*4 p3*4 p4*2 p5*2 loop
+p0: pattern
+  instr 8 D-0/9 end
+p1: pattern
+  instr 1 noise 30 D-3/1 D-3/2 D-3/2 D-3/1 D-3/2 end
+p2: pattern
+  instr 3 noise 30 D-5/1 D-5/1 D-5/1 D-5/1 instr 1 noise 30 D-3/2 instr 3 noise 30 D-5/1
+  D-5/1 end
+p3: pattern
+  instr 2 shape 14 D-1/1 D-1/1 C-2/1 D-2/1 F-2/1 D-1/1 C-3/1 D-3/1 end
+p4: pattern
+  instr 2 C-1/1 C-1/1 A#1/1 C-2/1 E-2/1 C-1/1 A#2/1 C-3/1 end
+p5: pattern
+  instr 2 G-0/1 G-0/1 F-1/1 G-1/1 B-1/1 G-0/1 F-2/1 G-2/1 end
+p6: pattern
+  instr 4 D-1/1 D-1/1 C-2/1 D-2/1 F-2/1 D-1/1 C-3/1 D-3/1 end
+p7: pattern
+  instr 4 C-1/1 C-1/1 A#1/1 C-2/1 E-2/1 C-1/1 A#2/1 C-3/1 end
+p8: pattern
+  instr 4 G-0/1 G-0/1 F-1/1 G-1/1 B-1/1 G-0/1 F-2/1 G-2/1 end
+p9: pattern
+  instr 5 D-4/9 D-4/9 instr 6 C-4/9 G-3/5 instr 7 G-3/5 instr 6 G-3/4 end
+p10: pattern
+  instr 0 D-4/8 C-4/2 D-4/5 G-4/5 A-4/4 F-4/5 G-4/5 E-4/4 F-4/5 E-4/5 D-4/4
+  A-4/8 G-4/2 A-4/5 D-5/5 C-5/4 A-4/5 C-5/5 F-4/4 D-4/9 end
+p11: pattern
+  instr 0 D-5/8 E-5/2 F-5/7 C-5/2 F-5/2 E-5/7 F-5/2 G-5/2 A-5/2 A#5/2 G-5/6
+  F-5/4 end

@@ -1,0 +1,75 @@
+# The ASC Sound Master compiled player of variants zyxboot-14 to zyxboot-18 (kit/mkgame.py --part
+# variants/players/asc2/asc2.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1191 bytes of zyxboot-14's music piece ($C000-$C4A6, work/parts/player-asc2.bin, written by
+# python3 tools/variants_music.py image asc2). The five variants carry the same code at $C000; only the compilation's
+# header bytes ($C008-$C00A), the text at $C014 (the tune's title and author) and the variables differ, and
+# tools/variants_music.py lays each variant's own bytes over this source (music/player.txt) before the tune
+# (music/asc.txt, tools/res_music.py). The player is a later ASC Sound Master compilation than the menu's own
+# (src/music/music.ann): the same module header, 26-byte channel records, and the later command set of the pattern
+# streams (ChannelRow). No recording runs a variant: every name and description here is from the code.
+
+@equ $C4A7 Module ; the tune's module right after the player (tools/variants_music.py)
+
+@module asc2 ; The ASC Sound Master player (later command set): init, frame, pattern reader, samples, ornaments, AY
+@about Three entry points, as the menu's own ASC player: MusicInit $C00B (JP InitPlayer) clears the channels and reads the module's header at Module into the player's self-modified operands; MusicPlay $C00E (JP PlayFrame) plays one frame; MusicStop $C011 (JP Silence) silences the AY. A frame: DelayCounter counts the module's delay; on a row frame a new position starts when every channel's stream has ended (NextPosition), then ChannelRow reads each channel's stream; every frame ChannelSound turns each channel's sample and ornament rows into its period, volume and noise, then the mixer and WriteAY.
+@about The pattern stream (ChannelRow): $00-$55 a note (in envelope mode the envelope period byte follows), $56-$5D a hold, $5E release, $5F off; commands before it: $60-$9F the row length, $A0-$BF the sample, $C0-$DF the ornament, $E0 envelope mode, $E1-$EF the volume, $F0 n the noise base, $F1-$FF the envelope shape. Sample rows: bit 1 of the third byte alone is the envelope, bits 1-2 = 2 the volume +1 a row, = 4 the volume -1 a row (SampleRow).
+
+$C000 w PlayerVectors 4 ; The compiled player's header: the init, play, AY-write and AY-register addresses
+$C008 b PlayerHeaderBytes 3 ; Three more bytes of the compilation's header
+$C00B c MusicInit ; Set the player up for the tune (JP InitPlayer)
+$C00E c MusicPlay ; Play one frame of the tune (JP PlayFrame)
+$C011 c MusicStop ; Silence the AY (JP Silence)
+$C014 t PlayerText ; The compiler's "ASM COMPILATION OF " + the tune's title + " BY " + its author (each variant its own)
+
+$C053 c InitPlayer ; Clear the channels, read the module's header into the player's operands, silence the AY
+> Clears ChannelA to the end of ChannelC (78 bytes), the position (PositionOp+1) to 0, the three row counters (+$0B) and DelayCounter to 1; then the delay into DelayOp+1, the three offsets plus Module into PatternTableOp+1, CommandSample+1 and CommandOrnament+1, the number of positions into PositionCountOp+1 and the positions' address into NextPosition+1.
+
+$C095 c Silence ; Clear the AY register image, mixer $FF, write all 14 registers
+
+$C0A9 b ChannelA 8 ; Channel A's record (26 bytes)
+> +$00 flags (bit 0 the stream goes on, bit 1 the sample ended, bit 2 sound on, bit 3 released, bit 4 envelope mode, bit 5 envelope this frame); +$01 the mixer bits; +$02 the note; +$03 / +$04 the tone offset; +$05 the noise base; +$06 the noise; +$07 the volume; +$08 the volume slide; +$09 the channel volume; +$0A the row length; +$0B the row counter; +$0C / +$0D the stream pointer; +$0E / +$0F the sample; +$10 / +$11 the sample row; +$12 / +$13 the sample's loop row; +$14 / +$15 the ornament; +$16 / +$17 the ornament row; +$18 / +$19 the ornament's loop row.
+$C0C3 b ChannelB 8 ; Channel B's record (26 bytes, as ChannelA)
+$C0DD b ChannelC 8 ; Channel C's record (26 bytes, as ChannelA)
+$C0F7 b AYRegisters 8 ; The image of AY registers 0-13 that WriteAY sends
+$C0FD AYNoise ; register 6: the noise period
+$C0FE AYMixer ; register 7: the mixer
+$C102 AYEnvelopePeriod ; register 11: the envelope period's low byte
+$C104 AYEnvelopeShape ; register 13: the envelope shape; $FF: no new shape, not written
+$C105 b CurrentChannel 1 ; The channel ChannelSound is working on: 0 A, 1 B, 2 C
+$C106 b DelayCounter 1 ; Frames left to the next row
+
+$C107 c PlayFrame ; Play one frame: on a row frame the next position and the channels' rows, then each channel's sound, the mixer, the AY
+$C10D DelayOp ; LD (HL),n: n = the module's delay (InitPlayer writes it)
+$C134 PlayFrameSound ; every frame: the three channels' sound and the mixer
+
+$C162 c WriteAY ; Write AYRegisters to the AY: registers 13 (when set) or 12 down to 0
+$C180 c SetAYRegister ; AYRegisters[E] = A
+$C18C c ReadOffsetDE ; HL = BC + the word at (DE), DE + 2
+$C18D c ReadOffset ; HL = BC + the word at (HL); DE = HL + 2
+
+$C194 c NextPosition ; Start the next position: the three channels' streams of its pattern (LD HL,n: n = the positions)
+$C197 PositionOp ; LD DE,n: n = the position to start (written here; 0 by InitPlayer)
+$C19D PositionCountOp ; CP n: n = the number of positions (InitPlayer writes it)
+$C1AB PatternTableOp ; LD BC,n: n = the pattern table (InitPlayer writes it)
+
+$C1D1 c ChannelRow ; One row of a channel: when its row counter runs out, read the commands and the next event of its stream
+$C1DB ChannelRowLoop ; the next byte: an event ($00-$5F) or a command ($60-$FF; each returns here)
+$C1FB CommandSample ; $A0-$BF: the sample (LD BC,n: n = the sample table, InitPlayer writes it)
+$C208 CommandOrnament ; $C0-$DF: the ornament (LD BC,n: n = the ornament table, InitPlayer writes it)
+$C215 TableEntry ; HL = BC + the word at BC + 2A (a sample or ornament address from its table)
+$C220 CommandVolume ; $E0: envelope mode; $E1-$EF: the channel volume 1-15
+$C231 CommandShape ; $F1-$FF: the envelope shape; $F0 n: the noise base n
+$C23D RowEvent ; $56-$5D hold, $5E release, $5F off, else a note
+$C24D RowRelease ; $5E: released (bit 3)
+$C253 RowNote ; a note: sound on, the note, the noise base, tone offset 0, the sample and the ornament from their start
+$C295 RowDone ; the row counter from the row length; bit 0 cleared when the next byte is the $FF that ends the stream
+
+$C2A9 c ChannelSound ; One frame of a channel's sound: its sample and ornament rows, the period, the volume, the noise
+$C311 c SampleStep ; One row of the channel's sample: loop marks, tone offset, mixer, envelope or volume slide, volume
+$C349 SampleRow ; the next row kept; the tone delta, the mixer, the envelope or the volume slide
+$C38E SampleVolume ; the row's volume plus the slide, scaled by the channel volume
+$C3B4 c OrnamentStep ; One row of the channel's ornament: loop marks, note offset, noise offset
+$C3EA c AddNoise ; The noise period += the row's signed 5-bit noise delta
+$C3F9 w PeriodTable 8 ; The AY tone period of each note 0-$55 (86 notes)
+$C4A5 b PeriodPad 2 ; Two bytes after the table

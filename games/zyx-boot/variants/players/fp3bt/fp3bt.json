@@ -1,0 +1,14 @@
+{
+  "about": "The game player of zyxfp3bt (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/fp3bt/fp3bt.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "fp3bt"],
+  "image": "work/parts/player-fp3bt.bin",
+  "org": "C000",
+  "ann": "variants/players/fp3bt/fp3bt.ann",
+  "top": "fp3bt",
+  "bin": "fp3bt.bin",
+  "dest": "variants/players/fp3bt",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the game player of zyxfp3bt (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-fp3bt"
+}

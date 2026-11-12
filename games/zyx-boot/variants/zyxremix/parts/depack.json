@@ -1,0 +1,24 @@
+{
+  "about": "Variant zyxremix: the LZ depacker head: python3 ../../kit/mkgame.py --part variants/zyxremix/parts/depack.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxremix",
+    "$61A8",
+    "130",
+    "work/variants/zyxremix-depack.bin"
+  ],
+  "image": "work/variants/zyxremix-depack.bin",
+  "org": "61A8",
+  "ann": "variants/zyxremix/parts/depack.ann",
+  "top": "depack",
+  "bin": "depack.bin",
+  "dest": "variants/zyxremix/parts",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxremix: the LZ depacker head at $61A8."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxremix-depack"
+}

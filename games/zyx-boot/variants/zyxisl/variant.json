@@ -7,5 +7,42 @@
     "length": 306,
     "sectors": 55
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 2,
+  "start": true,
+  "equ": {
+    "MusicPiece": "$EB50",
+    "MusicSectors": "9",
+    "MusicInit": "$EB53",
+    "MusicPlay": "$EB56",
+    "MenuStack": "$BF68",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$EB50"
+  },
+  "pieces": [
+    {
+      "at": "$61A8",
+      "sectors": 15
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$EB50",
+      "sectors": 9
+    },
+    {
+      "at": "$C350",
+      "sectors": 21
+    }
+  ],
+  "parts": [
+    "parts/pictures.json"
+  ],
+  "notes": [
+    "The tune: Fuxoft's player; the music index matches its notes to \"Feud\" by Frantisek Fuka (\"Tune 8\").",
+    "Layout B (plain: the NOTES' \"Start changed\" was wrong). Before the menu, `parts/pictures.ann` unpacks two RLE screens (`$9D` escapes, unpackers at `$C350` and `$CD75`) and waits for a key after each."
+  ]
 }

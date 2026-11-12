@@ -1,0 +1,43 @@
+10 RANDOMIZE USR VAL "15619":REM :RUN "        "
+20 RANDOMIZE USR VAL "15619":REM :RUN
+30 RANDOMIZE USR VAL "15616"
+40 REM
+  code 21 A8 61       ; $5D7F LD HL,$61A8
+  code 11 A9 61       ; $5D82 LD DE,$61A9
+  code 01 07 9D       ; $5D85 LD BC,$9D07
+  code 36 00          ; $5D88 LD (HL),$00
+  code ED B0          ; $5D8A LDIR
+  code 21 A8 61       ; $5D8C LD HL,$61A8
+  code ED 5B F4 5C    ; $5D8F LD DE,($5CF4)
+  code 01 05 0F       ; $5D93 LD BC,$0F05
+  code CD 13 3D       ; $5D96 CALL $3D13
+  code 21 F8 A5       ; $5D99 LD HL,$A5F8
+  code ED 5B F4 5C    ; $5D9C LD DE,($5CF4)
+  code 01 05 09       ; $5DA0 LD BC,$0905
+  code CD 13 3D       ; $5DA3 CALL $3D13
+  code 21 48 EB       ; $5DA6 LD HL,$EB48
+  code ED 5B F4 5C    ; $5DA9 LD DE,($5CF4)
+  code 01 05 09       ; $5DAD LD BC,$0905
+  code CD 13 3D       ; $5DB0 CALL $3D13
+  code 3E C7          ; $5DB3 LD A,$C7
+  code 32 7F 5D       ; $5DB5 LD ($5D7F),A
+  code CD A8 61       ; $5DB8 CALL $61A8
+  code 21 A8 61       ; $5DBB LD HL,$61A8
+  code 11 A9 61       ; $5DBE LD DE,$61A9
+  code 01 07 9D       ; $5DC1 LD BC,$9D07
+  code 36 00          ; $5DC4 LD (HL),$00
+  code ED B0          ; $5DC6 LDIR
+  code C9             ; $5DC8 RET
+  code 20 20          ; $5DC9 JR NZ,$5DEB
+  code 20 20          ; $5DCB JR NZ,$5DED
+  code 20 20          ; $5DCD JR NZ,$5DEF
+  code 20 20          ; $5DCF JR NZ,$5DF1
+  code 20 20          ; $5DD1 JR NZ,$5DF3
+  code 20 20          ; $5DD3 JR NZ,$5DF5
+  code 20 20          ; $5DD5 JR NZ,$5DF7
+  code 20             ; $5DD7 DEFB $20
+50 BORDER NOT PI :PAPER NOT PI :INK VAL "7":CLEAR VAL "65347":RANDOMIZE USR VAL "23935":RUN
+end
+autostart 50
+tail 35 36 31 39 0E 00 00 03 3D 00 3A EA 3A F8 22 42 6F 6F 74 22 CA 35 30 0D 80 CA 16 5F 04 00 00 00
+tail 16 5F 04 00 00 00 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00

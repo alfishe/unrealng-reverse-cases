@@ -1,0 +1,25 @@
+{
+  "about": "Variant zyxisl: the two loading pictures its loader reads to $C350: python3 ../../kit/mkgame.py --part variants/zyxisl/parts/pictures.json --install, then the bins in parts/res to the variant's editable PNGs (tools/res_formats.py install, tools/res_screens.py) and parts/res deleted; tools/variants.py gives the part the built resources as res/",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxisl",
+    "$C350",
+    "5376",
+    "work/variants/zyxisl-c350.bin"
+  ],
+  "image": "work/variants/zyxisl-c350.bin",
+  "org": "C350",
+  "ann": "variants/zyxisl/parts/pictures.ann",
+  "top": "pictures",
+  "bin": "pictures.bin",
+  "dest": "variants/zyxisl/parts",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxisl: the two loading pictures at $C350."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxisl-pictures",
+  "res": "variants/zyxisl/parts/res"
+}

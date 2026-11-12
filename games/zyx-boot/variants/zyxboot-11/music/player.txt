@@ -1,0 +1,17 @@
+# The music piece of variant zyxboot-11 (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/whittaker-storm at MusicPiece $C000, the tune whittaker.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player whittaker-storm
+tune whittaker.txt
+tail
+  00 00 00 00 00 00 00 46 4F 52 4D 2C 20 61 43 55 54 45 20 4C 49 54 54 4C 45 20 54 45 44 44 59 20
+  42 45 41 52 21 00 08 1F 20 76 22 6F 50 41 53 53 57 4F 52 44 20 4E 55 4D 42 45 52 20 46 4F 52 20
+  54 4F 44 DD 6E 36 DD 66 37 09 DD 75 36 DD 74 37 C3 E1 E5 35 20 22 23 7E 2B 77 23 23 23 E5 4E 06
+  FF CB 79 20 01 04 DD 6E 36 DD 66 37 09 DD 75 36 DD 74 37 E1 2B C3 DB E5 23 23 35 20 03 DD 34 21
+  DD 7E 21 FE 04 20 28 DD 7E 09 FE 02 20 06 AF DD 77 09 18 1B DD 36 21 01 DD E5 E1 01 22 00 09 EB
+  3A DA E7 3C 21 83 E7 0E 14 09 3D 20 FC ED B0 DD 4E 36 3A DA E7 87 CD 82 E6 DD 4E 37 3C CD 82 E6
+  01 3B 00 DD 09 3A DA E7 3C FE 03 C2 CE E2 3A DC E7 B7 28 31 3D 32 DC E7 B7 20 2A 3A DD E7 32 DC
+  E7 3A E1 E7 21 E0 E7 86 32 E1 E7 4F 21 DE E7 BE 28 06 21 DF E7 BE 20 08 3A E0 E7 EE FE 32 E0 E7
+  3E 06 CD 82 E6 3A D3 E7 B7 20 06 3A CC E8 32 D3 E7 C9 0E 00 3E 08 CD 82 E6 3C CD

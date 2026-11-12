@@ -1,0 +1,1319 @@
+# A tune of the fp3bt player (tools/res_rip.py): its blocks in address order.
+format fp3bt
+org $C518
+Shapes: words base $C450
+  Shape1 Shape2 Shape3 Shape4 Shape5 Shape6 Shape7 Shape8
+  Shape9 Shape10 Shape11 Shape12 Shape13 Shape14 Shape15 Shape16
+  Shape17 Shape18 Shape19 Shape20 Shape21 Shape22 Shape23 Shape24
+  Shape25 Shape26 Shape27 Shape28 Shape29 Shape30 Shape31 Shape32
+  Shape33 Shape34 Shape35 Shape36 Shape37 Shape38 Shape39 Shape40
+  Shape42 Shape43 Shape41 Shape44
+Shapes2: words base $C450
+  Pattern2+8 Pattern2+37 Pattern2+116 Pattern11+31 Pattern11+32 Pattern14+27 Pattern25+3 Shape43+3
+  Shape44+15 Pattern1+95 Pattern2+62 Pattern2+91 Pattern3+29 Pattern3+109 Pattern3+110 Pattern5+13
+Streams: words base $C450
+  Pattern27 Pattern1 Pattern2 Pattern3 Pattern4 Pattern5 Pattern6 Pattern7
+  Pattern8 Pattern9 Pattern10 Pattern11 Pattern12 Pattern13 Pattern14 Pattern15
+  Pattern16 Pattern17 Pattern18 Pattern19 Pattern20 Pattern21 Pattern24 Pattern25
+  Pattern26 Pattern22 Pattern23 Pattern28 Pattern29 Pattern30 Pattern31 Pattern32
+  Pattern33 Pattern34 Pattern35 Pattern36 Pattern37 Pattern38 Pattern39 Pattern40
+  Pattern41 Pattern42 Pattern43 Pattern44 Pattern45 Pattern46 Pattern47 Pattern48
+  Pattern49 Pattern50 Pattern51 Pattern52 Pattern53 Pattern54 Pattern55 Pattern56
+  Pattern57 Pattern58 Pattern59 Pattern60 Pattern61 Pattern62 Pattern63 Pattern64
+  Pattern65 Pattern66 Pattern67 Pattern68 Pattern69 Pattern70 Pattern71 Pattern72
+  Pattern73 Pattern74 Pattern75 Pattern76
+-: bytes
+  C8 FF 01 84 02 01 83 01 16 7F 0C FF 01 8B 01 C8
+  80 C8 FF 01 8E 01 C8 80 C8 FF 01 8E 01 02 7F 02
+  08 7F 04 0E 7F 05 C8 80 C8 FF 01 8E 01 01 7F 01
+Shape1: shape
+  C8 80 C8 FF
+Shape2: shape
+  01 84 02 01 83 01 16 7F 0C FF
+Shape3: shape
+  01 8B 01 C8 80 C8 FF
+Shape4: shape
+  01 8E 01 C8 80 C8 FF
+Shape5: shape
+  01 8E 01 02 7F 02 08 7F 04 0E 7F 05 C8 80 C8 FF
+Shape6: shape
+  01 8E 01 01 7F 01 04 7F 04 C8 80 C8 FF
+Shape7: shape
+  01 8E 01 01 7E 04 01 7F 01 C8 80 C8 FF
+Shape8: shape
+  01 8F 01 C8 80 C8 FF
+Shape9: shape
+  01 8F 01 02 80 01 01 7E 01 03 73 01 FF
+Shape10: shape
+  01 83 02 C8 80 C8 FF
+Shape11: shape
+  01 08 02 01 D0 03 C8 80 C8 FF
+Shape12: shape
+  01 D0 02 01 6C 06 C8 80 C8 FF
+Shape13: shape
+  02 81 02 02 7F 03 02 81 01 FF
+Shape14: shape
+  01 82 01 01 7E 02 01 82 01 FF
+Shape15: shape
+  01 82 01 01 7C 01 01 82 01 FF
+Shape16: shape
+  01 AF 01 01 51 01 01 81 02 01 7F 03 01 81 03 01
+  7F 03 01 81 01 01 77 C8 FF
+Shape17: shape
+  02 81 01 FF
+Shape18: shape
+  01 8E 01 01 7E 02 01 7F 01 C8 80 C8 FF
+Shape19: shape
+  01 8C 01 02 7F 03 C8 80 C8 FF
+Shape20: shape
+  03 81 0C 08 7F 03 32 7F 09 C8 80 C8 FF
+Shape21: shape
+  01 71 01 01 8A 01 FF
+Shape22: shape
+  01 8D 01 03 7D 01 01 7B 01 02 7B 01 FF
+Shape23: shape
+  01 8F 01 07 7F 0F C8 80 C8 FF
+Shape24: shape
+  01 8F 01 01 7F 0F FF
+Shape25: shape
+  01 8F 01 02 7F 0F 0F 7F 0F FF
+Shape26: shape
+  01 8C 01 03 7F 03 0B 7F 09 C8 80 C8 FF
+Shape27: shape
+  01 8C 01 08 7F 0A C8 80 C8 FF
+Shape28: shape
+  01 83 02 01 81 05 09 7F 0B C8 80 C8 FF
+Shape29: shape
+  01 83 04 04 7F 04 02 81 04 03 7F 04 05 81 04 01
+  7D 04 FF
+Shape30: shape
+  01 8B 01 01 7E 01 C8 80 C8 FF
+Shape31: shape
+  01 84 02 01 82 01 09 7F 0A C8 80 C8 FF
+Shape32: shape
+  01 7A C8 FF
+Shape33: shape
+  02 81 01 02 7F 02 02 81 01 FF
+Shape34: shape
+  01 81 02 01 7F 03 01 81 01 FF
+Shape35: shape
+  01 08 03 01 F8 03 FF
+Shape36: shape
+  01 81 01 01 7F 01 01 81 02 01 7F 03 01 81 01 01
+  82 02 01 7E 03 01 82 01 01 83 02 01 7D 03 01 83
+  01 01 84 02 01 7C 03 01 84 01 01 85 02 01 7B 03
+  01 85 01 01 84 02 01 7C 03 01 84 01 01 82 02 01
+  7E 03 01 82 01 FF
+Shape37: shape
+  01 7D 01 01 81 01 FF
+Shape38: shape
+  01 C6 01 01 3A 01 01 85 01 FF
+Shape39: shape
+  03 81 0A 03 7F 0A FF
+Shape40: shape
+  05 80 01 01 E3 01
+Shape41: shape
+  FF
+Shape42: shape
+  01 8F 01 02 7F 07 01 78 01 FF
+Shape43: shape
+  01 89 01 04 7F 09 C8 80 C8 FF E9 13 EA 0E ED 00
+  EC 0F 3B A1 EC 00 EE 04 EE 04 EE 04 EE 04 EE 04
+  EE 04 EE 04 EE 04 EE 04 EE 04 EE 04 EE 04 EE 04
+  EC 13 EA 00 E9 07 ED 05 EE 0A ED 07 EE 0A ED 0C
+  EE 0A ED 05 EE 0A ED 07 EE 01 02 02 03 03 00 01
+  E9 13 EA 0E ED 00 EC 0F 3B A1 EC 00 EE 04 EE 04
+Shape44: shape
+  EE 04 EE 04 EE 04 EE 04 EE 04 EE 04 EE 04 EE 04
+  EE 04 EE 04 EE 04 EC 13 EA 00 E9
+Pattern1: stream
+  start0:02 start1:03 start2:E9 A#0:EA
+  F-0:ED
+  rest:EC
+  F#0:3B
+  n.A-2
+  detune:00 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04
+  call:04 call:04 detune:13 orn:00 env:07 transpose:05 call:0A transpose:07 call:0A transpose:0C call:0A transpose:05
+  call:0A transpose:07 call:0A transpose:00 call:04 call:04 call:13 call:04 detune:00 call:13 transpose:03 detune:13
+  env:07 transpose:11 call:0A transpose:13 call:0A transpose:14 call:0A transpose:16 call:0A start2:28 transpose:00 call:04
+  call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 call:04 transpose:05
+  call:0A transpose:07 call:0A transpose:0C call:14 start2:28 call:06 ret
+Pattern2: bytes
+  E9 13 EA 0F ED 0C EC 13 00 15 4D FC EC 0F E9 01
+  3C E0 EE 15 00 70 00 1C E9 11 EC 0C EA 0F EE 05
+  E9 11 EE 05 EC 18 E9 03 ED 05 EE 0B ED 07 EE 0E
+  ED 0C EE 0B ED 05 EE 0E ED 07 EE 0E EC 18 ED 00
+  30 1C 00 54 30 1C 00 54 ED 0C EE 14 30 1C EE 15
+  EE 14 03 0F EC 00 EA 0D E9 03 ED 05 EE 0B ED 07
+  EE 0E ED 08 EE 0B ED 0A EE 0E E9 11 ED 0C 00 1C
+  03 06 00 54 EC 0C 00 70 00 70 00 70 EE 08 EE 08
+  ED 05 EE 0B ED 07 EE 0E ED 18 EE 13 FE
+Pattern3: stream
+  env:13 orn:0E transpose:0C detune:0F rest:2A
+  F#4:E7
+  env:02 detune:00 call:06 call:06 call:06 call:06 call:06 call:06 call:06 call:06 call:06 call:06
+  call:06 call:06 detune:0C orn:0D env:03 noise:01 G#3:1C
+  env:02 call:06 transpose:13 call:06 transpose:00 call:06 transpose:11 call:06 transpose:13 call:06 transpose:0C call:06
+  call:06 call:06 transpose:14 call:06 transpose:13 call:06 transpose:0C call:06 transpose:14 call:06 transpose:0C call:06
+  ret
+-: bytes
+  06 ED 0C EE 06 ED 14 EE 06 ED 0C EE 06 E9 03 EA
+  0E ED
+Pattern4: stream
+  orn:0A env:07 D#1:23
+  rest:07
+  env:16 F-1:07
+  rest:07
+  env:07 orn:0A F#1:23
+  rest:07
+  orn:0D A-1:07
+  A#1:07
+  ret
+Pattern5: stream
+  D#3:0E
+  A#2:1C
+  F#3:07
+  rest:07
+  G#3:07
+  F#3:07
+  G#3:07
+  F#3:07
+  G#3:0E
+  A#3:07
+  B-3:07
+  A#3:0E
+  F#3:1C
+  F#3:07
+  F#3:07
+  F-3:07
+  F#3:07
+  F-3:07
+  C#3:07
+  A#2:0E
+  D#3:07
+  F-3:07
+  D#3:0E
+  A#2:1C
+  F#3:07
+  rest:07
+  G#3:07
+  F#3:07
+  G#3:07
+  F#3:07
+  G#3:0E
+  A#3:07
+  B-3:07
+  A#3:1C
+  env:01 F#3:1C
+  F-3:1C
+  C#3:0E
+  D#3:07
+  F-3:07
+  ret
+Pattern6: stream
+  env:04 vib:10 noise:01 D#3:1C
+  env:06 noise:06 F#3:07
+  noise:0E D#3:07
+  noise:06 C#4:07
+  noise:0E D#5:07
+  env:04 vib:10 noise:06 D#4:0E
+  env:06 noise:06 F#4:07
+  noise:0E D#4:07
+  noise:06 D#3:07
+  noise:01 F#3:07
+  noise:06 D#4:07
+  noise:01 rest:07
+  ret
+-: bytes
+  35 07 33 07 35 07 33 07 35
+Pattern7: stream
+  ret
+Pattern8: stream
+  rest:0E
+  A#3:07
+  B-3:07
+  C#4:0E
+  B-3:0E
+  A#3:0E
+  B-3:0E
+  F#3:07
+  rest:07
+  A#3:07
+  G#3:07
+  F#3:07
+  G#3:07
+  A#3:07
+  G#3:07
+  F#3:0E
+  F-3:0E
+  F#3:0E
+  D#3:07
+  rest:07
+  D-4:07
+  D#3:07
+  C#3:07
+  D#3:07
+  C-3:07
+  D#3:07
+  B-2:07
+  D#3:07
+  B-2:0E
+  D#3:0E
+  A#2:07
+  rest:07
+  A#2:07
+  B-2:07
+  C#3:07
+  B-2:07
+  A#2:07
+  G#2:07
+  A#2:07
+  B-2:07
+  A#2:07
+  B-2:07
+  F#2:0E
+  B-2:0E
+  A#2:15
+  rest:07
+  A#2:0E
+  G#2:0E
+  ret
+Pattern9: stream
+  ret
+-: bytes
+  0E 33 07 00 07 37 07 35 07 33 07
+Pattern10: stream
+  detune:0C D#1:07
+  rest:07
+  C#1:07
+  rest:07
+  D#1:0E
+  detune:00 orn:0D F#1:07
+  F-1:07
+  D#1:2A
+  detune:00 A-1:07
+  A#1:07
+  ret
+Pattern11: stream
+  env:02 detune:00 F#3:07
+  rest:07
+  F-3:07
+  rest:07
+  F#3:0E
+  detune:13 env:03 D#3:07
+  F-3:07
+  F#3:07
+  rest:07
+  C#4:07
+  rest:07
+  C#4:1C
+  ret
+Pattern12: stream
+  orn:00 detune:00 env:06 D#6:07
+  rest:15
+  ret
+-: bytes
+  FF 07 33 07 00 07 FF EB 00
+Pattern13: stream
+  ret
+Pattern14: stream
+  env:02 detune:00 F#3:07
+  rest:07
+  F-3:07
+  rest:07
+  F#3:0E
+  detune:13 env:03 D#3:07
+  F-3:07
+  F#3:07
+  rest:07
+  C#4:07
+  rest:07
+  A#3:07
+  G#3:07
+  F#3:07
+  rest:07
+  ret
+Pattern15: stream
+  vib:00 env:04 noise:01 rest:15
+  rest:07
+  ret
+-: bytes
+  33 07 00 07 32 07 00 07 33
+Pattern16: stream
+  ret
+Pattern17: stream
+  ret
+Pattern18: stream
+  ret
+-: bytes
+  E9 03 30 07 32 07 33 07 00
+Pattern19: stream
+  env:08 orn:0D detune:00 D#2:38
+  B-1:38
+  G#1:38
+  G#1:38
+  A#1:38
+  ret
+Pattern20: stream
+  env:05 orn:00 detune:0C D#3:07
+  D#3:07
+  D#3:07
+  C#3:07
+  F-3:0E
+  F#3:0E
+  D#3:07
+  A#2:07
+  B-2:07
+  G#2:07
+  A#2:07
+  F#2:07
+  G#2:07
+  F-2:07
+  F-2:07
+  F-2:07
+  F-2:07
+  D#2:07
+  F-2:0E
+  G#2:0E
+  F-2:07
+  F-2:07
+  F-2:07
+  D#2:07
+  F-2:0E
+  G#2:0E
+  A#2:07
+  F#2:07
+  G#2:07
+  F-2:07
+  F#2:07
+  D#2:07
+  F-2:07
+  rest:07
+  ret
+Pattern21: stream
+  detune:00 orn:14 env:15 A#3:54
+  ret
+-: bytes
+  30 07 2B 07 2C 07 29 07 2B 07 27 07 29 07 26
+Pattern22: stream
+  start0:02 F-1:03
+  G-2:E9
+  G-2:EA
+  C-2:EB
+  F#2:EC
+  D#0:ED
+  D#0:EE
+  G-1:EE
+  G-1:EE
+  G-1:EE
+  G-1:EE
+  G-1:ED
+  C#0:EE
+  G-1:ED
+  D#0:EE
+  G-1:EE
+  G-1:EE
+  G-1:EE
+  G-1:EE
+  G-1:EE
+  G-1:ED
+  C#0:EE
+  G-1:ED
+  D#0:EE
+  G-1:EA
+  A#1:E9
+  start1:EC rest:18
+  G-4:EA
+  C-2:E9
+  G-2:03
+  C-2:ED
+  rest:EE
+  A#1:EE
+  A#1:EE
+  A#1:EE
+  A#1:EE
+  A#1:03
+  G-2:ED
+  D#0:EE
+  G-1:EE
+  G-1:EE
+  G-1:ED
+  C#0:EE
+  G-1:ED
+  G#0:EE
+  G-1:03
+  F#2:EE
+  E-2:EE
+  E-2:E9
+  G-2:ED
+  rest:EC
+  D#0:03
+  A-2:EE
+  A#2:03
+  C-3:EE
+  A#2:EE
+  A#2:EE
+  A#2:EE
+  A#2:EE
+  A#2:01
+  E-1:FF
+Pattern23: stream
+  env:19 orn:23 vib:27 detune:00 transpose:0C rest:78
+  call:1D A#1:28
+  call:24 call:1D A#1:28
+  D#2:08
+  A#1:10
+  D#2:08
+  A#1:10
+  D#2:08
+  A#1:08
+Pattern24: bytes
+  EE 1E EE 24 00 08 00 78 EE 1D 1F 28 EE 24 EE 1D
+  2B 28 EE 24 00 08 EE 1E EA 1F E9
+Pattern25: stream
+  start1:0C n.C-0
+  orn:23 env:19 transpose:0C detune:0C call:20 transpose:18 call:22 detune:00 transpose:0C rest:40
+  call:24 call:1D A#1:28
+  A#5:40
+  call:1E
+Pattern26: bytes
+  EE 24 00 08 EE 26 EE 26 EE 29 EE
+Pattern27: stream
+  G#2:EC
+  D#0:ED
+  D#0:E9
+  F-1:EE
+  B-2:EE
+  B-2:EE
+  B-2:FF
+Pattern28: stream
+  env:1D orn:00 vib:27 detune:00 transpose:0C ret
+-: bytes
+  03 30 07 32 07 33 07 00 07
+Pattern29: stream
+  D#0:20
+  D#0:20
+  D#0:20
+  D#0:20
+  ret
+Pattern30: stream
+  A#1:08
+  D#2:08
+  A#1:08
+  D#2:08
+  F#2:20
+  A#1:08
+  D#2:08
+  A#1:08
+  D#2:08
+  F#2:10
+  F#2:08
+  F-2:04
+  F#2:04
+  F-2:08
+  D#2:18
+  ret
+Pattern31: stream
+  C#2:10
+  C#2:10
+  B-1:08
+  C#2:10
+  B-1:08
+  C#2:10
+  C#2:10
+  B-1:08
+  C#2:08
+  F#2:10
+  D#2:40
+  ret
+-: bytes
+  23 E8
+Pattern32: stream
+  D#2:04
+  D#1:04
+  D#2:04
+  D#1:04
+  noise:06 C#2:04
+  D#2:04
+  C#2:04
+  A#1:04
+  D#2:04
+  D#1:04
+  D#2:04
+  D#1:04
+  noise:06 C#2:04
+  D#2:04
+  C#2:04
+  A#1:04
+  D#2:04
+  D#1:04
+  D#2:04
+  D#1:04
+  noise:06 C#2:04
+  D#2:04
+  C#2:04
+  A#1:04
+  D#2:04
+  D#1:04
+  D#2:04
+  D#1:04
+  noise:06 C#2:04
+  D#2:04
+  C#2:04
+  A#1:04
+  C#2:04
+  C#1:04
+  C#2:04
+  C#1:04
+  noise:06 B-1:04
+  C#2:04
+  B-1:04
+  G#1:04
+  C#2:04
+  C#1:04
+  C#2:04
+  C#1:04
+  noise:06 B-1:04
+  C#2:04
+  B-1:04
+  G#1:04
+  G#1:04
+  G#0:04
+  G#1:04
+  G#0:04
+  noise:06 F#1:04
+  G#1:04
+  F#1:04
+  D#1:04
+  G#1:04
+  G#0:04
+  G#1:04
+  G#0:04
+  noise:06 F#1:04
+  G#1:04
+  F#1:04
+  D#1:04
+  ret
+Pattern33: stream
+  D#2:04
+  A#1:04
+  D#2:04
+  F#2:14
+  D#2:04
+  A#1:04
+  D#2:04
+  F#2:08
+  F#2:04
+  F-2:04
+  F#2:04
+  D#2:10
+  A#1:10
+  rest:20
+  D#2:04
+  C#2:04
+  D#2:04
+  F-2:14
+  D#2:04
+  C#2:04
+  D#2:04
+  F-2:08
+  F#2:04
+  F-2:04
+  F#2:04
+  D#2:40
+  D#2:04
+  A#1:04
+  D#2:04
+  F#2:0C
+  F-2:04
+  F#2:04
+  D#2:04
+  A#1:04
+  D#2:04
+  F#2:08
+  A#2:04
+  G#2:04
+  A#2:04
+  G#2:10
+  D#2:30
+  F-2:04
+  C#2:04
+  F-2:04
+  G#2:0C
+  F#2:04
+  G#2:04
+  F-2:04
+  C#2:04
+  F-2:04
+  G#2:08
+  F#2:04
+  F-2:04
+  D#2:10
+  G#1:34
+  A#2:08
+  G#2:04
+  F#2:04
+  A#2:08
+  G#2:04
+  F#2:04
+  C#3:04
+  A#2:04
+  G#2:04
+  F#2:04
+  G#2:04
+  F#2:04
+  G#2:04
+  A#2:04
+  G#2:08
+  F#2:04
+  D#2:34
+  C#2:04
+  G#1:04
+  C#2:04
+  F-2:08
+  C#2:04
+  F-2:04
+  G#2:08
+  F-2:04
+  G#2:04
+  C#3:08
+  G#2:04
+  F#2:04
+  F-2:04
+  D#2:40
+  ret
+Pattern34: stream
+  env:1D transpose:0C detune:0C D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  G#4:04
+  G#4:04
+  G#3:04
+  G#4:04
+  G#3:04
+  G#4:04
+  G#4:04
+  G#3:04
+  G#4:04
+  G#4:04
+  G#3:04
+  G#4:04
+  G#4:04
+  G#4:04
+  G#3:04
+  G#4:04
+  ret
+-: bytes
+  0C 3C 04 B0 BC BC B0 BC BC
+Pattern35: stream
+  D#2:18
+  F#2:18
+  G#2:10
+  A#2:18
+  G#2:18
+  F#2:10
+  F-2:0C
+  C#2:0C
+  G#1:08
+  C#2:0C
+  G#1:0C
+  F-1:08
+  G#2:04
+  F#2:04
+  D#2:04
+  A#1:04
+  D#2:04
+  C#2:04
+  A#1:04
+  F#1:04
+  C#2:04
+  A#1:04
+  G#1:04
+  F#1:04
+  G#1:04
+  F#1:04
+  D#1:04
+  A#0:04
+  D#2:18
+  F#2:18
+  F-2:10
+  G#2:18
+  F#2:18
+  F-2:10
+  F-2:0C
+  G#2:0C
+  C#3:08
+  F-3:0C
+  C#3:0C
+  F-3:08
+  G#3:04
+  F#3:04
+  D#3:04
+  A#2:04
+  D#3:04
+  C#3:04
+  A#2:04
+  F#2:04
+  C#3:04
+  A#2:04
+  G#2:04
+  F#2:04
+  G#2:04
+  F#2:04
+  D#2:04
+  A#1:04
+  ret
+Pattern36: stream
+  rest:04
+  ret
+Pattern37: stream
+  env:26 orn:00 D#3:38
+  env:19 orn:23 ret
+-: bytes
+  F0 03 E9 06 EA 03 EB 17 4F
+Pattern38: stream
+  env:1B detune:00 orn:20 transpose:00 D#4:20
+  C#4:20
+  D#4:20
+  D#4:20
+  ret
+Pattern39: stream
+  env:1B detune:00 orn:20 transpose:00 F#4:20
+  F-4:20
+  G#4:20
+  F#4:20
+  ret
+Pattern40: stream
+  env:1E detune:00 orn:20 transpose:00 A#4:20
+  G#4:20
+  B-4:18
+  A#4:04
+  G#4:04
+  A#4:04
+  G#4:04
+  A#4:18
+  ret
+-: bytes
+  00 00 00 EF EF EF 00 00 00
+Pattern41: bytes
+  FE
+Pattern42: stream
+  F#4:20
+  F#4:20
+  F#4:20
+  C#4:20
+  ret
+Pattern43: stream
+  A#4:20
+  B-4:20
+  G#4:20
+  F-4:20
+  ret
+-: bytes
+  00 00 00 00 00 00 00 00 00
+Pattern44: stream
+  D#2:08
+  D#2:08
+  noise:06 C#2:04
+  D#2:08
+  C#2:04
+  D#2:04
+  C#2:04
+  A#1:08
+  D#1:10
+  C#2:08
+  C#2:08
+  noise:06 B-1:04
+  C#2:08
+  B-1:04
+  D#2:04
+  C#2:04
+  G#1:08
+  C#1:10
+  D#2:08
+  D#2:08
+  noise:06 C#2:04
+  D#2:08
+  C#2:04
+  D#2:04
+  C#2:04
+  A#1:08
+  D#2:10
+  G#1:08
+  G#1:08
+  noise:06 F#1:04
+  G#1:08
+  F#1:04
+  G#1:04
+  F#1:04
+  D#1:08
+  noise:01 G#0:04
+  noise:01 G#1:04
+  noise:01 G#0:04
+  G#1:04
+  ret
+Pattern45: stream
+  D#3:18
+  F#3:18
+  G#3:10
+  F-3:20
+  G#3:20
+  D#3:18
+  F#3:18
+  A#3:10
+  G#3:20
+  D#3:20
+  A#3:08
+  F#3:04
+  D#3:04
+  A#3:08
+  F#3:04
+  D#3:04
+  A#3:08
+  F#3:04
+  D#3:04
+  A#3:08
+  F#3:04
+  D#3:04
+  C#3:0C
+  F-3:0C
+  G#3:08
+  C#4:0C
+  A#3:0C
+  G#3:08
+  F#3:08
+  F-3:04
+  F#3:0C
+  F-3:04
+  F#3:0C
+  F-3:04
+  F#3:0C
+  F-3:04
+  C#3:04
+  G#2:18
+  A#2:04
+  G#2:04
+  F#2:04
+  G#2:04
+  F#2:04
+  G#2:04
+  A#2:04
+  G#2:08
+  F#2:04
+  D#2:34
+  C#2:04
+  G#1:04
+  C#2:04
+  F-2:08
+  C#2:04
+  F-2:04
+  G#2:08
+  F-2:04
+  G#2:04
+  C#3:08
+  G#2:04
+  F#2:04
+  F-2:08
+  ret
+Pattern46: stream
+  env:1D transpose:0C detune:0C D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  env:19 noise:0E D#3:04
+  noise:0E D#4:04
+  env:1D D#3:04
+  D#4:04
+  C#3:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#4:04
+  C#3:04
+  C#4:04
+  C#3:04
+  C#4:04
+  env:19 noise:0E C#3:04
+  noise:0E C#4:04
+  env:1D C#4:04
+  C#3:04
+  D#4:04
+  D#3:04
+  D#4:04
+  D#3:04
+  D#3:04
+  D#4:04
+  D#3:04
+  D#3:04
+  D#4:04
+  D#4:04
+  D#3:04
+  D#4:04
+  env:19 noise:0E D#4:04
+  noise:0E D#4:04
+  env:1D D#3:04
+  D#4:04
+  G#3:04
+  G#3:04
+  G#2:04
+  G#3:04
+  G#2:04
+  G#3:04
+  G#3:04
+  G#2:04
+  G#3:04
+  G#2:04
+  G#3:04
+  G#3:04
+  G#2:04
+  G#3:04
+  G#2:04
+  G#3:04
+  ret
+-: bytes
+  00 00 00 00 00 00 00 00 00
+Pattern47: bytes
+  04 F4 07 E9 1B EA 15 EB 26 E6 01 44 7E FE
+Pattern48: stream
+  start3:F4 start6:E9 start4:EA start1:EB C#2:E6
+  start5:24 A-0:FE
+Pattern49: bytes
+  04 F4 07 E9 06 EA 03 EB 17 E6 06 4F 09 FE 00 00
+  00 00 00 00 00 00 00
+Pattern50: bytes
+  01 F4 07 02 32 03 33 E8 E9 1A EA 14 EB 01 E6 01
+  32 63 FE
+Pattern51: bytes
+  02 F4 09 E8 E9 1B EA 08 4D 63 FE
+Pattern52: stream
+  start2:F4 C-0:E8
+  env:05 orn:14 vib:17 A#5:04
+  env:1B noise:01 E-2:55
+  stopb15:20
+-: bytes
+  38 1D 38 1D 38 1F 38 EF
+Pattern53: stream
+  start0:F4 start3:03 G#3:E9
+  A-1:EA
+  rest:16
+  start1:FE
+Pattern54: stream
+  start2:F4 start3:E9 A-1:EA
+  E-0:17
+  start1:FE
+Pattern55: bytes
+  04 F4 07 E9 05 EA 0B EB 00 E6 01 00 09 1F 16 FE
+  26 07 24 07 26 0E 29 0E 26
+Pattern56: stream
+  start2:F4 start6:E9 start5:EA D-0:EB
+  start6:E6 start0:3A C-0:FE
+Pattern57: stream
+  start2:F4 start6:E9 start5:EA E-2:EB
+  D#2:E6
+  F-0:00
+  start6:FE
+Pattern58: stream
+  start2:F4 start6:E9 start5:EA E-2:EB
+  D#2:E6
+  start5:59 start4:FE stopb0:E9
+-: bytes
+  05 EA E9 08 EA 0D EC
+Pattern59: bytes
+  01 F4 07 E9 18 EA 13 EB 0E E8 04 3B E6 07 11 19
+  FE
+Pattern60: stream
+  start1:F4 start6:E9 D#1:EA
+  A#0:EB
+  F-0:E6
+  F-0:0C
+  E-1:FE
+Pattern61: stream
+  start0:F4 start6:04 D-4:00
+  start4:E9 D#1:EA
+  A#0:EB
+  G-0:E8
+  noise:01 E-0:19
+  stopb15:26
+-: bytes
+  07 24 07 26 0E 29 0E 26
+Pattern62: bytes
+  04 F4 07 E9 1A EA 22 28 6E FE
+Pattern63: stream
+  start0:F4 start6:02 F#4:E9
+  F#1:EA
+  D-0:4A
+  start7:4A start7:4A start7:FE
+Pattern64: bytes
+  02 F4 07 E9 1B EA 0B 3E 08 3E 08 3E 08 FE 00 00
+  00 00 00 00 00 00 00
+Pattern65: stream
+  start0:02 G#4:03
+  A-4:E9
+  A-0:EA
+  E-0:EC
+  rest:ED
+  D#0:EE
+  A#4:EE
+  A#4:EE
+  A#4:EE
+  A#4:EE
+  C#5:EE
+  C#5:E9
+  start1:EE E-5:25
+  D#3:EE
+  E-5:ED
+  D-1:EA
+  rest:36
+  start5:37 start5:38 start5:39 start5:3A start5:3B start5:3C start5:3D start5:01 G-4:FF
+Pattern66: stream
+  env:1D orn:23 detune:0C transpose:00 call:44 call:44 env:1D detune:00 call:47 env:1B transpose:18 call:4A
+  transpose:24 call:4A rest:C0
+  ret
+Pattern67: stream
+  env:1E orn:00 transpose:00 call:45 call:45 transpose:0C call:45 call:45 transpose:00 call:48 call:48 detune:00
+  env:1D transpose:00 call:4B transpose:07 call:4B transpose:05 call:4B transpose:07 call:4B transpose:0C call:4B transpose:07
+  call:4B transpose:05 call:4B transpose:07 call:4B rest:C0
+  ret
+-: bytes
+  00 00 00 00 00 00 00 00 00
+Pattern68: stream
+  F-1:0C
+  F-1:06
+  F-1:12
+  F-1:06
+  F-1:06
+  C-2:0C
+  C-2:06
+  C-2:12
+  C-2:06
+  C-2:06
+  A#1:0C
+  A#1:06
+  A#1:12
+  A#1:06
+  A#1:06
+  C-2:0C
+  C-2:06
+  C-2:12
+  C-2:06
+  C-2:06
+  ret
+Pattern69: stream
+  detune:0C F-3:0C
+  A-3:06
+  C-4:12
+  F-4:0C
+  E-4:0C
+  C-4:0C
+  G-3:0C
+  E-3:0C
+  F-3:0C
+  A#3:06
+  D-4:12
+  F-4:0C
+  E-4:30
+  C-5:0C
+  A-4:06
+  F-4:12
+  C-4:0C
+  E-4:0C
+  G-4:0C
+  E-4:0C
+  C-4:0C
+  F-4:0C
+  D-4:0C
+  F-4:06
+  A#4:12
+  C-5:30
+  ret
+Pattern70: stream
+  detune:03 A-2:30
+  E-3:30
+  D-3:30
+  E-3:30
+  ret
+-: bytes
+  00 00 00 00 00 00 00 00 00
+Pattern71: stream
+  F-1:0C
+  F-1:06
+  F-1:12
+  F-1:06
+  F-1:06
+  D-2:0C
+  D-2:06
+  D-2:12
+  D-2:06
+  D-2:06
+  A#1:0C
+  A#1:06
+  A#1:12
+  A#1:06
+  A#1:06
+  C-2:0C
+  C-2:06
+  C-2:12
+  C-2:06
+  C-2:06
+  ret
+Pattern72: stream
+  F-4:0C
+  C-4:06
+  F-4:0C
+  G-4:06
+  A-4:0C
+  G-4:0C
+  F-4:0C
+  D-4:0C
+  A-3:0C
+  A#3:0C
+  D-4:06
+  F-4:0C
+  D-4:06
+  F-4:06
+  A#4:06
+  C-5:06
+  F-4:06
+  G-4:06
+  A-4:06
+  G-4:0C
+  F-4:0C
+  F-4:06
+  C-4:06
+  A-3:06
+  F-3:06
+  C-5:0C
+  A-4:0C
+  F-4:06
+  D-4:06
+  A-3:06
+  F-3:06
+  F-4:0C
+  A-4:0C
+  F-4:06
+  D-4:06
+  A#3:06
+  D-4:06
+  F-4:06
+  A#4:0C
+  F-4:06
+  G-4:12
+  F-4:06
+  E-4:06
+  C-4:0E
+  ret
+Pattern73: stream
+  detune:03 A-2:30
+  detune:04 F-3:30
+  detune:03 D-3:30
+  E-3:30
+  ret
+-: bytes
+  0C 21 06 21 12 21 06 21 06
+Pattern74: stream
+  F-1:60
+  C-2:54
+  A-1:0C
+  A#1:54
+  D-2:0C
+  C-2:30
+  ret
+Pattern75: stream
+  detune:04 F-2:30
+  detune:03 A-2:30
+  detune:04 C-2:30
+  detune:03 E-2:30
+  detune:04 A#2:30
+  detune:03 D-3:30
+  detune:03 E-3:30
+  detune:04 C-3:30
+  ret
+Pattern76: stream
+  F-2:06
+  F-3:06
+  D-3:06
+  F-2:06
+  F-3:06
+  F-3:06
+  D-3:06
+  F-3:06
+  F-2:06
+  F-3:06
+  G-3:06
+  F-2:06
+  F-3:06
+  F-3:06
+  F-2:06
+  F-3:06
+  ret
+-: bytes
+  30 31 30 2F 30 31 30 FF 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00

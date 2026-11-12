@@ -1,0 +1,7 @@
+# The music piece of variant zyxdimob (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/megaapoc at MusicPiece $E505, the tune megaapoc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player megaapoc
+tune megaapoc.txt

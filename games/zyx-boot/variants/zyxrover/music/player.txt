@@ -1,0 +1,12 @@
+# The music piece of variant zyxrover (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/daglish at MusicPiece $BFFE, the tune daglish.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player daglish
+tune daglish.txt
+tail
+  00 00 00 00 00 00 00 00 00 00 00 00 00 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27
+  84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27 84 14 01 27
+  84 14 01 27 84 14 01 27 D2 E1 84 14 01 27 84 14 01 27 84 14 01 27 D5 E3 84 14 01 27 84 14 01 27
+  84 14 01 27 E5 84 14 01 27 E7 84 14 01 27 87 D1 E1 8D 3F 8D 3F D2 E0 8A 8D

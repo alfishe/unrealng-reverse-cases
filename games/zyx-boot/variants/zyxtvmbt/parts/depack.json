@@ -1,0 +1,24 @@
+{
+  "about": "Variant zyxtvmbt: the LZ depacker head: python3 ../../kit/mkgame.py --part variants/zyxtvmbt/parts/depack.json --install",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxtvmbt",
+    "$C000",
+    "130",
+    "work/variants/zyxtvmbt-depack.bin"
+  ],
+  "image": "work/variants/zyxtvmbt-depack.bin",
+  "org": "C000",
+  "ann": "variants/zyxtvmbt/parts/depack.ann",
+  "top": "depack",
+  "bin": "depack.bin",
+  "dest": "variants/zyxtvmbt/parts",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxtvmbt: the LZ depacker head at $C000."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxtvmbt-depack"
+}

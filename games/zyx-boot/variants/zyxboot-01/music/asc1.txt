@@ -1,0 +1,1660 @@
+# An ASC Sound Master 1.x tune (the module after the player of variants/players/asc1: a loop position in
+# the header, commands $F0-$FF with operands; the format in src/res/music/README.md). The tables and
+# the header offsets are rebuilt from the order of the blocks below. "#" starts a comment line.
+
+layout asc1
+commands asc1
+
+delay 6
+loop 0
+positions 0 1 8 3 3 4 4 2 2 3 3 5 5 6 6 4 4 7 7 2 2 3 3 5 5 6 6 2 2 4 4 5 5 7 7 8 8
+
+pattern 0
+  A
+    s31 o0 v15 len3 E-4
+    E-4
+    len7 E-5
+    len3 E-4
+    E-4
+    len7 E-5
+    len3 D-4
+    len5 D-4
+    D-4
+    len3 D-4
+    D-4
+    len7 D-5
+    end
+  B
+    len0 off
+    s31 o0 v15 len3 B-4
+    len4 D-5
+    len6 E-4
+    len3 B-4
+    len4 D-5
+    len6 E-4
+    len3 A-4
+    len2 C-5
+    D-5
+    len5 A-4
+    len3 A-4
+    len4 C-5
+    len5 D-4
+    end
+  C
+    len1 off
+    s31 o0 v15 len4 E-5
+    len3 E-4
+    len6 B-4
+    len4 E-5
+    len3 E-4
+    len6 B-4
+    len4 D-5
+    len10 D-4
+    len4 D-5
+    len3 D-4
+    len4 A-4
+    end
+
+pattern 1
+  A
+    s31 o3 v15 len1 E-4
+    E-5
+    len2 E-4
+    E-4
+    len1 E-4
+    v12 E-5
+    v11 B-4
+    v15 E-4
+    len2 E-5
+    D-5
+    E-5
+    B-4
+    v12 len1 A-4
+    v15 D-4
+    len2 D-5
+    C-5
+    D-5
+    len1 A-4
+    v12 len2 D-4
+    v15 len1 D-4
+    len2 D-5
+    C-5
+    D-5
+    A-4
+    v12 len1 D-4
+    end
+  B
+    len0 ---$5D
+    s31 o3 v15 len3 B-4
+    len2 D-5
+    E-5
+    len1 B-4
+    v11 len3 A-4
+    v15 len2 B-4
+    E-4
+    E-4
+    len1 E-4
+    v12 len2 E-5
+    len1 B-4
+    v15 len2 A-4
+    D-4
+    D-4
+    len1 D-4
+    v12 D-5
+    len2 A-4
+    v15 A-4
+    D-4
+    D-4
+    len1 D-4
+    v12 len2 D-5
+    len0 A-4
+    end
+  C
+    s3 o0 v15 len3 E-4
+    s5 len1 D-4
+    s4 len0 D-4
+    len2 D-4
+    len1 D-4
+    s5 D-4
+    s4 D-4
+    len0 D-4
+    len2 D-4
+    s5 D-4
+    s4 len0 D-4
+    D-4
+    D-4
+    D-4
+    s6 D-4
+    s5 D-4
+    s4 D-4
+    s6 D-4
+    s4 D-4
+    v14 D-4
+    v15 D-3
+    len1 D-3
+    s5 len0 D-4
+    s4 D-3
+    D-3
+    D-4
+    len1 D-4
+    len0 D-4
+    D-3
+    s5 len1 D-4
+    s4 len0 D-4
+    D-3
+    s5 D-3
+    D-3
+    s4 D-3
+    s5 len1 D-3
+    s6 len0 D-3
+    s4 D-3
+    s6 D-3
+    s8 len7 E-4
+    end
+
+pattern 2
+  A
+    s30 o1 v15 len2 E-3
+    E-3
+    len1 E-3
+    s31 len0 E-3
+    s30 o30 v14 F-4
+    E-4
+    F-4
+    A-4
+    B-4
+    D-5
+    E-5
+    o1 v15 len2 E-3
+    E-3
+    len0 E-3
+    len1 E-3
+    o30 v14 len0 E-4
+    F-4
+    D-4
+    E-4
+    A-4
+    B-4
+    C-5
+    s31 o1 v15 len2 D-3
+    D-3
+    D-3
+    o3 v14 A-4
+    len0 A-4
+    A-5
+    A-4
+    D-4
+    len3 E-4
+    s30 o2 len0 E-3
+    len1 E-3
+    E-3
+    s4 o0 v15 len0 D-3
+    D-3
+    len1 D-3
+    len0 D-3
+    s6 D-3
+    s4 D-3
+    end
+  B
+    s25 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 len1 B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    s28 len0 B-3 ep$1C
+    end
+  C
+    s1 o0 v15 len0 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s5 D-3
+    s7 v15 D-3
+    s5 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s7 D-3
+    D-3
+    s4 D-3
+    s5 D-3
+    D-3
+    s4 D-3
+    s5 D-3
+    end
+
+pattern 3
+  A
+    s30 o3 v14 len0 B-3
+    B-3
+    o30 v12 E-4
+    o3 v14 B-3
+    o30 v12 F-4
+    o3 v14 B-3
+    o30 v12 E-4
+    o3 v14 len1 B-3
+    B-3
+    len0 B-3
+    B-3
+    C-4
+    B-3
+    C-4
+    B-3
+    B-3
+    o30 v12 E-4
+    o3 v14 B-3
+    o30 v12 F-4
+    o3 v14 B-3
+    o30 v12 E-4
+    o3 v14 len1 B-3
+    B-3
+    len0 B-3
+    B-3
+    C-4
+    B-3
+    C-4
+    A-3
+    A-3
+    o30 v12 D-4
+    o3 v14 A-3
+    o30 v12 F-4
+    o3 v14 A-3
+    o30 v12 D-4
+    o3 v14 len1 A-3
+    A-3
+    len0 A-3
+    A-3
+    A-3
+    C-4
+    A-3
+    B-3
+    B-3
+    o30 v12 E-4
+    E-4
+    o3 v14 B-3
+    o30 v12 E-4
+    o3 v14 A-4
+    len1 B-4
+    o30 v13 len0 F-4
+    v14 E-4
+    F-4
+    v13 E-4
+    F-4
+    v12 E-4
+    F-4
+    end
+  B
+    s27 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 len1 B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    len0 B-3 ep$1C
+    end
+  C
+    s1 o0 v15 len0 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s5 D-3
+    s7 v15 D-3
+    s5 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    D-3
+    s4 v14 D-3
+    s7 v15 D-3
+    end
+
+pattern 4
+  A
+    s30 o30 v14 len0 E-4
+    B-4
+    E-5
+    E-4
+    B-4
+    D-5
+    s29 E-4
+    s30 B-4
+    E-5
+    s29 E-4
+    s30 B-4
+    D-5
+    s29 E-4
+    s31 o3 E-4
+    F-4
+    D-4
+    E-4
+    s30 o30 B-4
+    E-5
+    E-4
+    B-4
+    D-5
+    s29 E-4
+    s30 B-4
+    E-5
+    s29 E-4
+    s30 B-4
+    D-5
+    s29 E-4
+    s31 o3 D-4
+    A-4
+    B-4
+    C-5
+    s29 o30 D-4
+    s30 B-4
+    s29 D-4
+    s30 D-4
+    A-4
+    s29 D-4
+    s30 D-4
+    C-5
+    D-4
+    B-4
+    A-4
+    s29 D-4
+    s30 E-4
+    B-4
+    D-5
+    E-5
+    s29 E-4
+    s30 D-5
+    s29 E-4
+    s30 C-5
+    s31 E-4
+    s30 B-4
+    s29 E-4
+    E-4
+    s31 o3 len1 A-5
+    s29 o30 len0 E-4
+    s31 o3 len1 B-5
+    s29 o30 len0 E-4
+    E-4
+    end
+  B
+    s27 o0 env shape14 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 shape8 len1 B-3 ep$38
+    B-3 ep$38
+    B-3 ep$38
+    B-3 ep$38
+    len0 B-3 ep$38
+    end
+  C
+    s1 o0 v15 len0 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s5 D-3
+    s7 v15 D-3
+    s5 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    D-3
+    s4 v14 D-3
+    s7 v15 D-3
+    end
+
+pattern 5
+  A
+    s24 o2 v15 len15 E-3
+    E-3
+    D-3
+    len7 E-3
+    len2 E-3
+    s31 o3 v10 len0 E-3
+    v11 E-3
+    v12 E-3
+    v13 E-3
+    v14 E-3
+    end
+  B
+    s25 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 len1 B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    len0 B-3 ep$1C
+    end
+  C
+    s1 o0 v15 len0 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s5 D-3
+    s7 v15 D-3
+    s5 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    D-3
+    s4 v14 D-3
+    s7 v15 D-3
+    end
+
+pattern 6
+  A
+    s30 o30 v14 len0 E-5
+    E-6
+    s29 E-6
+    s30 E-5
+    D-6
+    s29 E-6
+    s30 E-5
+    E-6
+    s29 E-6
+    s30 E-5
+    D-6
+    s29 E-6
+    s30 o3 A-3
+    B-3
+    D-4
+    E-4
+    o30 E-5
+    E-6
+    s29 E-6
+    s30 E-5
+    D-6
+    s29 E-6
+    s30 E-5
+    E-6
+    s29 E-6
+    s30 E-5
+    D-6
+    s29 E-6
+    s31 C-4
+    s30 o3 B-3
+    D-4
+    E-4
+    o30 D-5
+    D-6
+    s29 D-5
+    s30 D-5
+    C-6
+    s29 D-5
+    s30 D-5
+    B-5
+    s29 len3 D-5
+    s3 D-4
+    s30 len0 D-5
+    D-6
+    s29 E-5
+    s30 D-5
+    C-6
+    s29 E-5
+    s30 D-5
+    B-5
+    s29 len2 B-5
+    s3 v15 D-3
+    len1 D-3
+    end
+  B
+    s25 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 len1 B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    B-3 ep$1C
+    len0 B-3 ep$1C
+    end
+  C
+    s1 o0 v15 len0 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s5 D-3
+    s7 v15 D-3
+    s5 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s4 D-3
+    s6 D-3
+    s1 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    s6 v14 D-3
+    s7 v15 D-3
+    D-3
+    s4 v14 D-3
+    s7 v15 D-3
+    end
+
+pattern 7
+  A
+    s24 o3 v15 len15 E-3
+    E-3
+    A-3
+    B-3
+    end
+  B
+    s25 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    A-3 ep$20
+    s26 len1 B-3 ep$1C
+    B-3 ep$1C
+    noise20 B-3 ep$1C
+    noise0 B-3 ep$1C
+    s28 len0 B-3 ep$1C
+    end
+  C
+    s3 o0 v15 len3 E-4
+    s5 len1 D-4
+    s4 len0 D-4
+    len2 D-4
+    len1 D-4
+    s5 D-4
+    s4 D-4
+    len0 D-4
+    len2 D-4
+    s5 D-4
+    s4 len0 D-4
+    D-4
+    D-4
+    D-4
+    s6 D-4
+    s5 D-4
+    s4 D-4
+    s6 D-4
+    s4 D-4
+    v14 D-4
+    v15 D-3
+    len1 D-3
+    s5 len0 D-4
+    s4 D-3
+    D-3
+    D-4
+    len1 D-4
+    len0 D-4
+    D-3
+    s5 len1 D-4
+    s4 len0 D-4
+    D-3
+    s5 D-3
+    D-3
+    s4 D-3
+    s5 len1 D-3
+    s6 len0 D-3
+    s4 D-3
+    s6 D-3
+    s3 o30 len1 B-3
+    s5 o0 len0 D-3
+    s7 v14 noise20 D-3
+    s5 v15 noise0 D-3
+    D-3
+    s7 v14 noise20 D-3
+    s6 v15 noise0 D-3
+    end
+
+pattern 8
+  A
+    s24 o3 v15 len15 E-3
+    E-3
+    A-3
+    len11 B-3
+    s3 o0 len3 E-3
+    end
+  B
+    s25 o0 env shape10 len0 E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    E-3 ep$2A
+    F-3 ep$28
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-2 ep$5E
+    D-3 ep$2F
+    D-3 ep$2F
+    D-3 ep$2F
+    F-3 ep$28
+    D-3 ep$2F
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-2 ep$54
+    E-3 ep$2A
+    E-3 ep$2A
+    F-3 ep$28
+    A-3 ep$20
+    B-3 ep$1C
+    end
+  C
+    s31 o0 v12 len0 E-4
+    B-4
+    E-5
+    E-4
+    B-4
+    len1 D-5
+    len0 E-4
+    len1 E-5
+    len0 E-4
+    len4 B-4
+    len0 E-4
+    B-4
+    E-5
+    E-4
+    B-4
+    len1 D-5
+    len0 E-4
+    len1 E-5
+    len0 E-4
+    len4 B-4
+    len0 D-4
+    A-4
+    D-5
+    D-4
+    A-4
+    len1 C-5
+    len0 D-4
+    len1 D-5
+    len0 D-4
+    len2 A-4
+    len0 C-5
+    A-4
+    o30 len15 B-4
+    end
+
+sample 0
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 1
+  --- noise  +0 tone +127 vol 15 TN--
+  --- noise  +0 tone +127 vol 14 T---
+  --- noise  +0 tone +127 vol 12 T---
+  --- noise  +0 tone +127 vol 11 T---
+  --- noise  +0 tone +127 vol  9 T---
+  --- noise  +0 tone +127 vol  8 T---
+  --- noise  +0 tone +127 vol  6 T---
+  --- noise  +0 tone +127 vol  5 T---
+  --- noise  +0 tone  +35 vol  3 T---
+  --- noise  +0 tone  +30 vol  2 T---
+  --- noise  +0 tone -127 vol  0 T---
+  SLX noise  +0 tone   +0 vol  0 T---
+
+sample 2
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 3
+  S-- noise  +0 tone  -12 vol 15 TN-4
+  --- noise  +0 tone  +12 vol 15 TN--
+  --- noise  +0 tone   +0 vol 15 -N--
+  --- noise  +0 tone   +0 vol 15 -N-4
+  --- noise  +0 tone   +0 vol 15 -N--
+  --- noise  +0 tone   +0 vol 15 -N--
+  --- noise  +0 tone   +0 vol 15 -N-4
+  -LX noise  +0 tone   +0 vol 15 -N--
+
+sample 4
+  --- noise  +0 tone   +0 vol 13 -N--
+  --- noise  +0 tone   +0 vol 11 -N--
+  --- noise  +0 tone   +0 vol  9 -N--
+  --- noise  +0 tone   +0 vol  7 -N--
+  --- noise  +0 tone   +0 vol  6 -N--
+  --- noise  +0 tone   +0 vol  5 -N--
+  --- noise  +0 tone   +0 vol  3 TN--
+  --- noise  +0 tone   +0 vol  2 TN--
+  SLX noise  +0 tone   +0 vol  0 TN--
+
+sample 5
+  --- noise  +7 tone   +0 vol 15 -N--
+  --- noise  +4 tone   +0 vol 13 -N--
+  --- noise  +4 tone   +0 vol 11 -N--
+  --- noise  +4 tone   +0 vol  9 -N--
+  --- noise  +4 tone   +0 vol  7 -N--
+  --- noise  +4 tone   +0 vol  5 -N--
+  --- noise  +4 tone   +0 vol  4 -N--
+  --- noise  -4 tone   +0 vol  6 -N--
+  --- noise  -5 tone   +0 vol  8 -N--
+  --- noise -11 tone   +0 vol  6 -N--
+  --- noise -13 tone   +0 vol  4 -N--
+  --- noise  +0 tone   +0 vol  2 -N--
+  SLX noise  +0 tone   +0 vol  0 TN--
+
+sample 6
+  --- noise  +1 tone   +0 vol 15 -N--
+  --- noise  +1 tone   +0 vol 12 -N--
+  --- noise  +1 tone   +0 vol  9 -N--
+  --- noise  +1 tone   +0 vol  6 -N--
+  --- noise  +1 tone   +0 vol  3 -N--
+  SLX noise  +0 tone   +0 vol  0 TN--
+
+sample 7
+  --- noise  +4 tone   +0 vol 15 TN--
+  --- noise  +1 tone  +47 vol 14 TN--
+  --- noise  +0 tone  +47 vol 13 TN--
+  --- noise  +1 tone  +47 vol 12 TN--
+  --- noise  +1 tone  +47 vol 11 TN--
+  --- noise  +0 tone  +47 vol 10 TN--
+  --- noise  +0 tone  +47 vol  9 -N--
+  --- noise  +0 tone  +47 vol  8 -N--
+  --- noise  +0 tone  +47 vol  6 -N--
+  --- noise  +0 tone  +47 vol  5 -N--
+  --- noise  +0 tone  +47 vol  4 -N--
+  --- noise  +0 tone  +47 vol  3 -N--
+  --- noise  +0 tone  +47 vol  2 -N--
+  --- noise  -9 tone  +47 vol  1 -N--
+  --- noise  +0 tone -127 vol  0 TN--
+  SLX noise  +0 tone   +0 vol  0 TN--
+
+sample 8
+  S-- noise  +1 tone   +0 vol  0 -NE4
+  --- noise  +0 tone   +0 vol  0 -N--
+  -LX noise  +0 tone   +0 vol  0 -N--
+
+sample 9
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 10
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 11
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 12
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 13
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 14
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 15
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 16
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 17
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 18
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 19
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 20
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 21
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 22
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 23
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 24
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  S-- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  -LX noise  +0 tone   +0 vol  9 T---
+
+sample 25
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  S-- noise  +0 tone   +1 vol 10 T--4
+  --- noise  +0 tone   +1 vol 10 T---
+  --- noise  +0 tone   -1 vol 10 T--4
+  --- noise  +0 tone   -1 vol 10 T---
+  -LX noise  +0 tone   +0 vol 10 T---
+
+sample 26
+  --- noise  +0 tone   +0 vol 14 T-E-
+  --- noise  +0 tone   +0 vol 14 T-E-
+  SLX noise  +0 tone   +0 vol 14 T-E-
+
+sample 27
+  --- noise  +0 tone  +12 vol 15 --E-
+  --- noise  +0 tone  -12 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  --- noise  +0 tone   +0 vol 15 T-E-
+  SLX noise  +0 tone   +0 vol  0 ----
+
+sample 28
+  SLX noise  +0 tone   +0 vol 15 T---
+
+sample 29
+  SLX noise  +0 tone   +0 vol 10 T---
+
+sample 30
+  --- noise  +0 tone   +0 vol 15 T---
+  --- noise  +0 tone   +0 vol 15 T---
+  --- noise  +0 tone   +0 vol 14 T---
+  --- noise  +0 tone   +0 vol 14 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 13 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 12 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 11 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol 10 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  9 T---
+  --- noise  +0 tone   +0 vol  8 T---
+  --- noise  +0 tone   +0 vol  8 T---
+  --- noise  +0 tone   +0 vol  7 T---
+  --- noise  +0 tone   +0 vol  7 T---
+  --- noise  +0 tone   +0 vol  6 T---
+  --- noise  +0 tone   +0 vol  6 T---
+  --- noise  +0 tone   +0 vol  5 T---
+  --- noise  +0 tone   +0 vol  5 T---
+  --- noise  +0 tone   +0 vol  4 T---
+  --- noise  +0 tone   +0 vol  4 T---
+  --- noise  +0 tone   +0 vol  3 T---
+  --- noise  +0 tone   +0 vol  3 T---
+  --- noise  +0 tone   +0 vol  2 T---
+  --- noise  +0 tone   +0 vol  2 T---
+  --- noise  +0 tone   +0 vol  1 T---
+  --- noise  +0 tone   +0 vol  1 T---
+  --- noise  +0 tone   +0 vol  0 T---
+  SLX noise  +0 tone   +0 vol  0 T---
+
+sample 31
+  --- noise  +0 tone   +0 vol 15 T---
+  --- noise  +0 tone   +2 vol 15 T---
+  --- noise  +0 tone   +2 vol 14 T---
+  --- noise  +0 tone   -2 vol 13 T---
+  --- noise  +0 tone   -2 vol 12 T---
+  --- noise  +0 tone   +2 vol 11 T---
+  --- noise  +0 tone   +2 vol 10 T---
+  --- noise  +0 tone   -2 vol  9 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   +2 vol  7 T---
+  --- noise  +0 tone   +2 vol  6 T---
+  --- noise  +0 tone   -2 vol  5 T---
+  --- noise  +0 tone   -2 vol  4 T---
+  --- noise  +0 tone   +2 vol  6 T---
+  --- noise  +0 tone   +2 vol  8 T---
+  --- noise  +0 tone   -2 vol  8 T---
+  --- noise  +0 tone   -2 vol  7 T---
+  --- noise  +0 tone   +2 vol  6 T---
+  --- noise  +0 tone   +2 vol  5 T---
+  --- noise  +0 tone   -2 vol  4 T---
+  --- noise  +0 tone   -2 vol  3 T---
+  --- noise  +0 tone   +2 vol  2 T---
+  --- noise  +0 tone   +2 vol  1 T---
+  --- noise  +0 tone   -2 vol  3 T---
+  --- noise  +0 tone   -2 vol  5 T---
+  --- noise  +0 tone   +2 vol  5 T---
+  --- noise  +0 tone   +2 vol  4 T---
+  --- noise  +0 tone   -2 vol  4 T---
+  --- noise  +0 tone   +2 vol  3 T---
+  --- noise  +0 tone   -2 vol  3 T---
+  S-- noise  +0 tone   +2 vol  3 T---
+  -LX noise  +0 tone   -2 vol  3 T---
+
+ornament 0
+  SLX noise  +0 note  +0
+
+ornament 1
+  --- noise  +0 note  -7
+  --- noise  +0 note +19
+  --- noise  +0 note -31
+  --- noise  +0 note +19
+  --- noise  +0 note  +5
+  --- noise  +0 note -17
+  S-- noise  +0 note  +5
+  --- noise  +0 note +19
+  --- noise  +0 note -31
+  --- noise  +0 note +19
+  --- noise  +0 note  +5
+  -LX noise  +0 note -17
+
+ornament 2
+  --- noise  +0 note  +0
+  --- noise  +0 note  +3
+  --- noise  +0 note  +4
+  S-- noise  +0 note  -7
+  --- noise  +0 note  +3
+  -LX noise  +0 note  +4
+
+ornament 3
+  --- noise  +0 note +12
+  --- noise  +0 note -12
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note +12
+  --- noise  +0 note -12
+  SLX noise  +0 note  +0
+
+ornament 4
+  SLX noise  +0 note +12
+
+ornament 5
+  SLX noise  +0 note  +0
+
+ornament 6
+  SLX noise  +0 note  +0
+
+ornament 7
+  SLX noise  +0 note  +0
+
+ornament 8
+  SLX noise  +0 note  +0
+
+ornament 9
+  SLX noise  +0 note  +0
+
+ornament 10
+  SLX noise  +0 note  +0
+
+ornament 11
+  SLX noise  +0 note  +0
+
+ornament 12
+  SLX noise  +0 note  +0
+
+ornament 13
+  SLX noise  +0 note  +0
+
+ornament 14
+  SLX noise  +0 note  +0
+
+ornament 15
+  SLX noise  +0 note  +0
+
+ornament 16
+  SLX noise  +0 note  +0
+
+ornament 17
+  SLX noise  +0 note  +0
+
+ornament 18
+  SLX noise  +0 note  +0
+
+ornament 19
+  SLX noise  +0 note  +0
+
+ornament 20
+  SLX noise  +0 note  +0
+
+ornament 21
+  SLX noise  +0 note  +0
+
+ornament 22
+  SLX noise  +0 note  +0
+
+ornament 23
+  SLX noise  +0 note  +0
+
+ornament 24
+  SLX noise  +0 note  +0
+
+ornament 25
+  SLX noise  +0 note  +0
+
+ornament 26
+  SLX noise  +0 note  +0
+
+ornament 27
+  SLX noise  +0 note  +0
+
+ornament 28
+  SLX noise  +0 note  +0
+
+ornament 29
+  SLX noise  +0 note  +0
+
+ornament 30
+  --- noise  +0 note +12
+  --- noise  +0 note -12
+  S-- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note +12
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note  +0
+  --- noise  +0 note -12
+  -LX noise  +0 note  +0
+
+ornament 31
+  SLX noise  +0 note  +0

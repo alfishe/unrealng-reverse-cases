@@ -142,7 +142,7 @@ def set_equ(path, equ):
 
 def run_asm(asm, path, work):
     r = subprocess.run([asm, '--nologo', '--msg=war', '-I' + work, '--lst=' + os.path.splitext(path)[0] + '.lst',
-                        path], cwd=work, capture_output=True, text=True)
+                        '--sym=' + os.path.splitext(path)[0] + '.sym', path], cwd=work, capture_output=True, text=True)
     if r.returncode or r.stdout.strip() or r.stderr.strip():
         raise SystemExit('%s: %s%s' % (os.path.basename(path), r.stdout, r.stderr))
 
@@ -277,7 +277,7 @@ def write_variant(vdir, name, cfg, notes, changed):
             lines.append('- %s at `%s` (%s `%s` in the original).' % (WHERE[k][0].upper() + WHERE[k][1:],
                                                                      cfg['equ'][k], k, ORIG_EQU[k]))
     for sw in cfg.get('code', []):
-        lines.append('- Code: %s (`%s` in variant.json, tools/variants.py CODE_SWITCHES).' % (CODE_SWITCHES[sw][3], sw))
+        lines.append('- Code: %s (`%s` in variant.json, tools/variants.py CODE_SWITCHES).' % (switch_what(sw), sw))
     for c in changed:
         lines.append('- `%s` differs from the original.' % c if not c.startswith('files/') else
                      '- `%s`: another file of the disk, kept as its bytes.' % c)
@@ -305,7 +305,7 @@ def build(name, asm):
     """build variants/NAME; returns (identical, message)"""
     vdir = os.path.join(VAR, name)
     cfg = json.load(open(os.path.join(vdir, 'variant.json')))
-    if cfg.get('loader') == 'own':
+    if cfg.get('loader') == 'own' and not cfg.get('pieces'):
         return False, 'its own loader: not built from the source yet'
     work = os.path.join(ROOT, 'build', 'variants', name)
     shutil.rmtree(work, ignore_errors=True)
@@ -321,19 +321,27 @@ def build(name, asm):
     if cfg.get('start'):
         add_start(work)
     apply_code(work, cfg.get('code', []))
+    if cfg.get('pieces'):
+        open(os.path.join(work, 'game.asm'), 'a').write('  SAVEBIN "image.bin",$4000,$C000  ; variants: the whole memory\n')
     run_asm(asm, os.path.join(work, 'game.asm'), work)
     game = open(os.path.join(work, 'game.bin'), 'rb').read()
-    if os.path.exists(os.path.join(vdir, 'basic.bin')):
+    if os.path.exists(os.path.join(vdir, 'basic.txt')):
+        import res_basic
+        basic = res_basic.from_text(open(os.path.join(vdir, 'basic.txt')).read())
+    elif os.path.exists(os.path.join(vdir, 'basic.bin')):
         basic = open(os.path.join(vdir, 'basic.bin'), 'rb').read()
     else:
         run_asm(asm, os.path.join(work, 'basic.asm'), work)
         basic = open(os.path.join(work, 'basic.bin'), 'rb').read()
-    if os.path.exists(os.path.join(vdir, 'music', 'piece.bin')):
-        music = open(os.path.join(vdir, 'music', 'piece.bin'), 'rb').read()
+    music = music_piece(vdir, cfg, work, asm)
+    if cfg.get('trd'):   # a whole TRD its loader reads by track and sector, encrypted (zyxlgbt, tools/lotus.py)
+        import lotus
+        return lotus.compare(cfg, lotus.build(vdir, cfg, pieces_body(vdir, cfg, work, asm, music, image=True), basic),
+                             work)
+    if cfg.get('pieces'):
+        body = basic + pieces_body(vdir, cfg, work, asm, music)
     else:
-        run_asm(asm, os.path.join(work, 'music.asm'), work)
-        music = open(os.path.join(work, 'music.bin'), 'rb').read()
-    body = basic + game[:CODE_END - CODE] + game[GFX - CODE:GFX_END - CODE] + music
+        body = basic + game[:CODE_END - CODE] + game[GFX - CODE:GFX_END - CODE] + music
     h = cfg['header']
     want_files, _ = disk.read(os.path.join(ROOT, cfg['image']))
     want = next(g for g in want_files if g['name'] == cfg['file'])
@@ -359,6 +367,148 @@ def build(name, asm):
             return False, 'the boot file is identical, the image is not'
         return True, 'identical to %s' % os.path.basename(cfg['image'])
     return True, 'identical to the file %s on %s' % (cfg['file'].rstrip(), os.path.basename(cfg['image']))
+
+
+def symbols(path):
+    """{label: address} from an sjasmplus --sym file"""
+    out = {}
+    if os.path.exists(path):
+        for line in open(path):
+            m = re.match(r'([\w.]+): EQU 0x([0-9A-Fa-f]+)', line)
+            if m:
+                out[m.group(1)] = int(m.group(2), 16) & 0xFFFF
+    return out
+
+
+def address(text, syms):
+    """$XXXX, or Label, or Label+N (the variant's own assembly's labels)"""
+    m = re.match(r'\$([0-9A-Fa-f]{4})$', text)
+    if m:
+        return int(m.group(1), 16)
+    m = re.match(r'([\w.]+)(?:\+(\d+))?$', text)
+    if not m or m.group(1) not in syms:
+        raise SystemExit('variants: no label %s' % text)
+    return syms[m.group(1)] + int(m.group(2) or 0)
+
+
+def pieces_body(vdir, cfg, work, asm, music, image=False):
+    """the boot file after its BASIC sectors for a variant with its own loader: the memory the menu's source
+    assembles to (with the variant's resources, constants and switches), its music piece at MusicPiece, its parts
+    (variant .ann pieces, assembled), the residues of self-modified operands and work bytes the saved file kept; then
+    the sectors the loader reads, in its order ("pieces"), and the sectors it never reads ("tail", bytes)"""
+    img = bytearray(65536)
+    img[0x4000:] = open(os.path.join(work, 'image.bin'), 'rb').read()
+    syms = symbols(os.path.join(work, 'game.sym'))
+    syms.update(symbols(os.path.join(work, 'music.sym')))   # the original's music piece, when the variant keeps it
+    base = int(cfg['equ'].get('MusicPiece', '$C000')[1:], 16)
+    img[base:base + len(music)] = music[:65536 - base]
+    for extra in cfg.get('music_extra', []):
+        a = int(extra['at'][1:], 16)
+        if extra.get('music'):   # a second piece in the readable form: music/SUB (tools/variants_music.py)
+            import variants_music
+            d = variants_music.build_piece(vdir, cfg, work, asm, extra['music'], a)
+        else:
+            d = open(os.path.join(vdir, extra['file']), 'rb').read()
+        img[a:a + len(d)] = d[:65536 - a]
+    for part in cfg.get('parts', []):
+        pj = json.load(open(os.path.join(vdir, part)))
+        src = os.path.join(vdir, os.path.dirname(part))
+        pw = os.path.join(work, 'part-' + pj['top'])
+        shutil.copytree(src, pw)
+        if pj.get('res') and not os.path.exists(os.path.join(pw, 'res')):
+            # a part whose resources are the variant's editable files: the built ones (work/res) as its res/
+            shutil.copytree(os.path.join(work, 'res'), os.path.join(pw, 'res'))
+        run_asm(asm, os.path.join(pw, pj['top'] + '.asm'), pw)
+        d = open(os.path.join(pw, pj['bin']), 'rb').read()
+        a = int(pj.get('org') or pj['at'], 16)
+        img[a:a + len(d)] = d[:65536 - a]
+        syms.update(symbols(os.path.join(pw, pj['top'] + '.sym')))
+    for r in cfg.get('residue', []):
+        a = address(r['at'], syms)
+        d = bytes.fromhex(r['bytes'])
+        img[a:a + len(d)] = d
+    for st in cfg.get('state', []):   # work areas the saved memory held (buffers the menu fills as it runs)
+        a = address(st['at'], syms)
+        d = open(os.path.join(vdir, st['file']), 'rb').read()
+        img[a:a + len(d)] = d[:65536 - a]
+    if cfg.get('packed'):
+        packed_piece(vdir, cfg, work, asm, img, syms)
+    if image:   # the whole memory (a TRD variant cuts its sectors itself, tools/lotus.py)
+        return img
+    out = bytearray()
+    for p in cfg['pieces']:
+        a = int(p['at'][1:], 16)
+        out += img[a:a + 256 * p['sectors']]
+        if a + 256 * p['sectors'] > 65536:   # the read runs past $FFFF onto the ROM: those bytes are only on the disk
+            out += open(os.path.join(vdir, cfg['past_ffff']), 'rb').read()
+    if cfg.get('tail'):
+        out += open(os.path.join(vdir, cfg['tail']), 'rb').read()
+    return bytes(out)
+
+
+def packed_piece(vdir, cfg, work, asm, img, syms):
+    """variant.json "packed": the memory from..to packed by tools/lzpack.py behind the depacker head (a part, at the
+    head's address), the hook's RET after the stream, then the piece's other bytes ("fill", else zeros)"""
+    import lzpack
+    pk = cfg['packed']
+    lo, hi = address(pk['from'], syms), address(pk['to'], syms)
+    raw = pk.get('raw_tail', 0)   # the last bytes stay raw after the end mark: the stream's move up puts them in place
+    stream = lzpack.pack(img[lo:hi + 1 - raw]) + bytes(img[hi + 1 - raw:hi + 1])
+    pj = json.load(open(os.path.join(vdir, pk['head'])))
+    pw = os.path.join(work, 'part-' + pj['top'])
+    shutil.copytree(os.path.join(vdir, os.path.dirname(pk['head'])), pw)
+    run_asm(asm, os.path.join(pw, pj['top'] + '.asm'), pw)
+    head = open(os.path.join(pw, pj['bin']), 'rb').read()
+    a = int(pj['org'], 16)
+    hook = a + len(head) + len(stream)
+    if word(head, 1) != hook or word(head, 27) != len(stream):
+        raise SystemExit('variants: %s: the head calls $%04X and moves %d bytes; the stream needs $%04X and %d' % (
+            pk['head'], word(head, 1), word(head, 27), hook, len(stream)))
+    blob = head + stream + b'\xc9'
+    piece = next(p for p in cfg['pieces'] if int(p['at'][1:], 16) == a)
+    end = a + 256 * piece['sectors']
+    if pk.get('rest') == 'unpacked':   # the packer wrote into memory that held the unpacked data: its bytes stay after
+        img[a:a + len(blob)] = blob
+    else:                              # zeros after the hook's RET
+        img[a:end] = blob + bytes(end - a - len(blob))
+
+
+def candidate_memory(name, unpacked=False):
+    """the memory a variant's own loader fills from its candidate file (variant.json pieces), and the file's body;
+    unpacked: with a "packed" piece's data unpacked to its place"""
+    cfg = json.load(open(os.path.join(VAR, name, 'variant.json')))
+    f = next(g for g in disk.read(os.path.join(ROOT, cfg['image']))[0] if g['name'] == cfg['file'])
+    body = f['body'][:f['sectors'] * 256]
+    mem, off = bytearray(65536), cfg['basic_sectors'] * 256
+    for p in cfg['pieces']:
+        a, n = int(p['at'][1:], 16), 256 * p['sectors']
+        d = body[off:off + n][:65536 - a]
+        mem[a:a + len(d)] = d
+        off += n
+    if unpacked and cfg.get('packed'):   # the memory after the depacker ran (tools/lzpack.py)
+        import lzpack
+        pk = cfg['packed']
+        head = json.load(open(os.path.join(VAR, name, pk['head'])))
+        lo, hi = int(pk['from'][1:], 16), int(pk['to'][1:], 16)
+        out, end = lzpack.unpack(mem, int(head['org'], 16) + 130)
+        raw = pk.get('raw_tail', 0)
+        tail = bytes(mem[end:end + raw])
+        mem[lo:lo + len(out)] = out
+        mem[hi + 1 - raw:hi + 1] = tail
+    return mem, body
+
+
+def music_piece(vdir, cfg, work, asm):
+    """the bytes of a variant's music piece: music/piece.bin as it is, the readable form (tools/variants_music.py:
+    a player's .ann piece and its tune as text) when the folder has one, else the original's src/music"""
+    mdir = os.path.join(vdir, 'music')
+    if os.path.exists(os.path.join(mdir, 'piece.bin')):
+        return open(os.path.join(mdir, 'piece.bin'), 'rb').read()
+    if os.path.isdir(mdir) and os.listdir(mdir):
+        import variants_music
+        return variants_music.build_piece(vdir, cfg, work, asm)
+    run_asm(asm, os.path.join(work, 'music.asm'), work)
+    return open(os.path.join(work, 'music.bin'), 'rb').read()
 
 
 def where(off, cfg):
@@ -391,17 +541,113 @@ CODE_SWITCHES = {
     'music-after-screen': ('setup.asm', r'^  CALL MusicInit\n  CALL DrawScreen\n',
                            '  CALL DrawScreen\n  CALL MusicInit\n',
                            'starts the music after DrawScreen (the two calls at `$61E7` swapped)'),
+    'catalogue-call': ('setup.asm', r'^Start:\n((?:.*\n){6})  LD DE,\$0000\n  LD HL,Catalogue\n  LD BC,\$0805\n  CALL TrdosEntry\n',
+                       '  ORG $619B\n'
+                       'ReadCatalogue:          ; variant: the catalogue read moved into a routine just before Start\n'
+                       '  LD DE,$0000\n  LD HL,Catalogue\n  LD BC,$0805\n  CALL TrdosEntry\n  RET\n'
+                       'Start:\n\\1'
+                       '  LD A,($FF14)            ; variant: the launcher\'s flag (zyxboot-01 parts/launcher.ann)\n'
+                       '  OR A\n  JR NZ,CatalogueRead\n  CALL ReadCatalogue\n  NOP\n  NOP\n  NOP\n'
+                       'CatalogueRead:\n',
+                       'reads the catalogue through ReadCatalogue, a 13-byte routine just before Start at `$619B`, '
+                       'and only while the byte at `$FF14` (the launcher\'s flag) is 0'),
+    'corners-plain': ('fade.asm', r'^ColourCorners:\n  LD HL,Attributes\n  CALL ColourCornerRows\n  LD HL,Attributes\+635\n'
+                      r'  CALL ColourCornerRows\n  LD DE,Attributes\+27\n  CALL ColourCornerColumns\n  LD DE,Attributes\+608\n'
+                      r'  CALL ColourCornerColumns\n  RET\n((?:\n|;[^\n]*\n)*)ColourCornerRows:\n  LD B,\$05\n  LD DE,CornerColours\n'
+                      r'CornerRowsNext:\n  LD C,\$05\n  LD A,\(DE\)\n',
+                      'ColourCorners:\n  LD HL,Attributes\n  CALL ColourCornerRows\n  LD HL,Attributes+635\n  CALL ColourCornerRows\n'
+                      '  LD HL,Attributes+27     ; variant: all four corners through ColourCornerRows\n  CALL ColourCornerRows\n'
+                      '  LD HL,Attributes+608\n  CALL ColourCornerRows\n  RET\n\\1ColourCornerRows:\n  LD B,$05\n'
+                      '  LD A,$04                ; variant: one colour, green ink, for every cell\n  NOP\n'
+                      'CornerRowsNext:\n  LD C,$05\n  NOP\n',
+                      'colours the four corners plain green (`LD A,$04` in ColourCornerRows, which draws all four): '
+                      'no gradient, CornerColours is not read'),
+    'catalogue-safe': ([
+        ('setup.asm', r'^  LD DE,\$0000\n  LD HL,Catalogue\n  LD BC,\$0805\n  CALL TrdosEntry\n',
+         '  CALL MusicInit           ; variant: the music first, then the catalogue through ReadCatalogueSafe\n'
+         '  DI\n  CALL $6FE0              ; ReadCatalogueSafe (variants/zyxtvmbt/parts/safe.ann)\n  DEFS 5\n'),
+        ('setup.asm', r'^  CALL MusicInit\n  CALL DrawScreen\n', '  DEFS 3                  ; variant: no second init\n  CALL DrawScreen\n'),
+        ('interrupt.asm', r'^  LD IY,\(SavedIY\)\n  CALL MusicPlay\n',
+         '  CALL MusicPlay           ; variant: the music before IY is set\n  LD IY,(SavedIY)\n'),
+        ('keys.asm', r'^  LD HL,Catalogue\n  LD DE,\$0000\n  LD BC,\$0805\n  DI\n  IM 1\n  CALL TrdosEntry\n  DI\n  IM 2\n'
+                     r'  CALL ShowCatalogue\n  RET\n',
+         '  DI                      ; variant: SPACE reads the catalogue through ReadCatalogueSafe\n  IM 1\n'
+         '  CALL $6FE0\n  DI\n  IM 2\n  CALL ShowCatalogue\n  RET\n'
+         '  DEFB $2D,$2D,$52,$45,$52,$45,$41,$44,$20  ; "--REREAD ": leftover text, not read\n')],
+        'reads the catalogue through its own ReadCatalogueSafe at `$6FE0` (an error trap on ERR_SP, then the drive '
+        'stopped through the TR-DOS ROM), from Start and from SPACE; inits the music before that read instead of '
+        'before DrawScreen; calls the music before it loads IY in the interrupt'),
+    'sky-rotate-buffer': ([
+        ('rhombi.asm', r'^  LD DE,RotateBuffer\n',
+         '  LD DE,$60E0             ; variant: RotateBuffer below the code ($9C00 holds the Cyrillic font)\n'),
+        ('rhombi.asm', r'^  INC E\n  DJNZ RotateShiftRow\n', '  INC DE                  ; variant: the buffer crosses a page\n  DJNZ RotateShiftRow\n'),
+        ('rhombi.asm', r'^  DJNZ RotateSourceRow\n  INC E\n  INC E\n  INC E\n  INC E\n  INC E\n',
+         '  DJNZ RotateSourceRow\n  INC DE\n  INC DE\n  INC DE\n  INC DE\n  INC DE\n'),
+        ('rhombi.asm', r'^  LD HL,RotateBuffer\n', '  LD HL,$60E0\n')],
+        'turns the rhombi through a buffer at `$60E0` (`INC DE` for `INC E`: it crosses a page) instead of RotateBuffer '
+        '`$9C00`, which the scroller\'s Cyrillic font takes'),
+    'sky-stars': ([
+        ('font.asm', r'^PrintString:\n(?:.*\n)*?  JR PrintStringNext\n',
+         'StarStep:                ; variant: PrintString moved to $6DC6 (logo.asm); a star one pixel row down\n'
+         '  CALL $A7FF              ; SkyRowDown (variants/zyxskybt/parts/sky.ann)\n'
+         '  LD A,H\n  AND $18\n  CP $18\n  JR NZ,StarStepStore\n  LD H,$40\n'
+         'StarStepStore:\n  LD (IX+$00),L\n  LD (IX+$01),H\n  LD B,$01\n  RET\n'
+         '  DEFB $18,$F8            ; leftover: the original JR PrintStringNext\n'),
+        ('logo.asm', r'^DrawReflection:\n(?:.*\n)*?  LD DE,Logo\n',
+         'DrawReflection:          ; variant: never called; its first 28 bytes hold PrintString\n'
+         'PrintString:\n  PUSH HL\n  LD HL,(SavedHLAlt)\n  EXX\n  LD IY,(SavedIY)\n  LD A,$02\n  CALL RomChanOpen\n'
+         '  POP HL\nPrintStringNext:\n  LD A,(HL)\n  CP $FF\n  RET Z\n  RST $10\n  INC HL\n  JR PrintStringNext\n'
+         '  DEFS 5\n'),
+        ('setup.asm', r'^  CALL DrawReflection\n', '  DEFS 3                  ; variant: no reflection (the scroller runs there)\n'),
+        ('stars.asm', r'^  LD L,\(IX\+\$00\)\n  LD H,\(IX\+\$01\)\n  LD D,',
+         '  JP $A86D                ; variant: SkyStarClip (parts/sky.ann) loads HL and skips the picture\n'
+         '  LD H,(IX+$01)\n  LD D,'),
+        ('stars.asm', r'^  INC H\n  LD A,H\n  AND \$07\n  JR NZ,MoveStarsMoved\n(?:.*\n)*?  ADD A,\$08\n',
+         '  CALL StarStep            ; variant: the star a row down\n  CALL SampleStar\n  JP MoveStarsMoved+11\n'
+         'MoveStarsHidden:         ; SkyStarClip comes here for a star over the picture or the scroller: no draw\n'
+         '  CALL StarStep\n  CALL SampleStar\n  JP MoveStarsDraw+2\n  DEFS 3\n'),
+        ('stars.asm', r'^  CALL CheckTwinkleSpot\n',
+         '  CALL $A89E              ; variant: SkyTwinkleSpot (parts/sky.ann): also off the picture\n'),
+        ('stars.asm', r'^EraseTwinkle:\n  INC HL\n',
+         'EraseTwinkle:\n  NOP                     ; variant: SkyTwinkleSpot has stepped HL already\n')],
+        'moves the stars and twinkles around the new picture and scroller: MoveStars goes through SkyStarClip '
+        '(`$A86D`) and StarStep (at `$6720`, where PrintString was: PrintString moves over the start of the unused '
+        'DrawReflection, `$6DC6`), the twinkle spots through SkyTwinkleSpot (`$A89E`); no reflection'),
+    'sky-screen': ([
+        ('screen.asm', r'^  LD HL,FontBase\n  LD \(Chars\),HL\n  LD HL,MenuHelp\n  CALL PrintString\n',
+         '  LD HL,$A884             ; variant: the font as SkySetup moves it ($A984)\n  LD (Chars),HL\n'
+         '  LD HL,MenuHelp\n  CALL $78DD              ; SkySetup (parts/sky.ann): the picture, the font, the scroller\n'),
+        ('screen.asm', r'^ShowCatalogue:\n  CALL SoundOff\n',
+         'ShowCatalogue:\n  DEFS 3                  ; variant: no SoundOff\n'),
+        ('keys.asm', r'^  IM 2\n  CALL ShowCatalogue\n', '  IM 2\n  CALL ShowCatalogue+3\n'),
+        ('interrupt.asm', r'^  CALL MusicPlay\n',
+         '  CALL $A85C              ; variant: SkyFrame (parts/sky.ann): the scroller, the bars, then MusicPlay\n'),
+        ('setup.asm', r'(every 8th pass: the bottom rhombi\n)  AND \$07\n  CP \$07\n',
+         '\\1  AND $05                 ; variant: passes with bits 0 and 2 set\n  CP $05\n')],
+        'hooks the Skynet screen in: DrawScreen calls SkySetup (`$78DD`) where it printed the help text, the '
+        'interrupt calls SkyFrame (`$A85C`) for the music, the font is at `$A984`, ShowCatalogue has no SoundOff, '
+        'the bottom rhombi turn on passes with bits 0 and 2 set'),
 }
+
+
+def switch_edits(sw):
+    """[(file, regex, replacement)] of a code switch (one edit, or a list of edits in several modules)"""
+    v = CODE_SWITCHES[sw]
+    return v[0] if isinstance(v[0], list) else [v[:3]]
+
+
+def switch_what(sw):
+    return CODE_SWITCHES[sw][-1]
 
 
 def apply_code(work, switches):
     for sw in switches:
-        fn, old, new, _what = CODE_SWITCHES[sw]
-        p = os.path.join(work, fn)
-        s, n = re.subn(old, new, open(p).read(), count=1, flags=re.M)
-        if n != 1:
-            raise SystemExit('variants: code switch %s does not match %s' % (sw, fn))
-        open(p, 'w').write(s)
+        for fn, old, new in switch_edits(sw):
+            p = os.path.join(work, fn)
+            s, n = re.subn(old, new, open(p).read(), count=1, flags=re.M)
+            if n != 1:
+                raise SystemExit('variants: code switch %s does not match %s' % (sw, fn))
+            open(p, 'w').write(s)
 
 
 def code_switches(v, start):
@@ -435,6 +681,51 @@ def add_start(work):
         open(p, 'w').write(re.sub(r'^  ORG \$([0-9A-F]{4})', move, s, flags=re.M))
 
 
+def write_own_readme(name, same, msg):
+    """README.md of a variant with its own loader (variant.json pieces) or a whole-image one: written from
+    variant.json (pieces, parts, residue, notes) by tools/variants.py index"""
+    vdir = os.path.join(VAR, name)
+    cfg = json.load(open(os.path.join(vdir, 'variant.json')))
+    h = cfg['header']
+    lines = ['# Variant %s' % name, '',
+             'From `%s`, file `%s` (B, start %d, length %d, %d sectors). Built by `tools/build.sh --variant %s`: '
+             '**%s**.' % (cfg['image'], cfg['file'].rstrip(), h['start'], h['length'], h['sectors'], name,
+                          'identical' if same else msg), '']
+    if cfg.get('pieces'):
+        lines.append('- Its loader (%s) reads %d sector%s of BASIC, then: %s.' % (
+            '`basic.txt`, the BASIC as text, `tools/res_basic.py`' if os.path.exists(os.path.join(vdir, 'basic.txt'))
+            else 'the original\'s BASIC with the variant\'s music address and count',
+            cfg.get('basic_sectors', 1), '' if cfg.get('basic_sectors', 1) == 1 else 's',
+            ', '.join('`%s` x %d' % (p['at'], p['sectors']) for p in cfg['pieces'])))
+    e = cfg.get('equ', {})
+    if 'MusicPiece' in e:
+        lines.append('- The music piece at `%s`, %s sectors%s; play `%s`%s.' % (
+            e['MusicPiece'], e['MusicSectors'], ', init `%s`' % e['MusicInit'] if 'MusicInit' in e else '',
+            e.get('MusicPlay', '?'), ', start `%s` (layout B)' % e['MusicStart'] if 'MusicStart' in e else ''))
+    for sw in cfg.get('code', []):
+        lines.append('- Code: %s (`%s`, tools/variants.py CODE_SWITCHES).' % (switch_what(sw), sw))
+    for part in cfg.get('parts', []):
+        pj = json.load(open(os.path.join(vdir, part)))
+        ann = pj.get('ann') or pj['segments'][0]['ann']   # the segments layout: one .ann in pieces
+        lines.append('- Code of its own, described in `%s` (built by kit/mkgame.py from `%s`, placed at `$%s`).' % (
+            os.path.relpath(os.path.join(ROOT, ann), vdir), part, pj.get('org') or pj['at']))
+    if cfg.get('residue'):
+        lines.append('- Residue (bytes the saved file kept from a run, put back after the build):')
+        lines += ['  - `%s`: `%s`%s' % (r['at'], r['bytes'], ' (%s)' % r['why'] if r.get('why') else '')
+                  for r in cfg['residue']]
+    for k in ('tail', 'past_ffff'):
+        if cfg.get(k):
+            lines.append('- `%s`: %s, kept as its bytes.' % (cfg[k], 'the file\'s sectors after the last piece' if k == 'tail'
+                                                         else 'the last piece\'s bytes past `$FFFF`'))
+    files = sorted(os.path.relpath(os.path.join(t, f), vdir) for t, _d, fs in os.walk(vdir) for f in fs
+                   if f not in ('README.md', 'variant.json') and '/parts/' not in os.path.join(t, f) + '/'
+                   and not os.path.join(t, f).startswith(os.path.join(vdir, 'parts')))
+    if files:
+        lines.append('- Files that differ from the original: %s.' % ', '.join('`%s`' % f for f in files))
+    lines += ['- ' + n for n in cfg.get('notes', [])]
+    open(os.path.join(vdir, 'README.md'), 'w').write('\n'.join(lines) + '\n')
+
+
 def index(asm):
     rows, ok, total = [], 0, 0
     for n in sorted(os.listdir(VAR)):
@@ -444,6 +735,8 @@ def index(asm):
         same, msg = build(n, asm)
         ok += same
         total += 1
+        if cfg.get('pieces') or cfg.get('loader') == 'own':
+            write_own_readme(n, same, msg)
         files = []
         for top, _d, names in os.walk(os.path.join(VAR, n)):
             for f in names:
@@ -451,7 +744,7 @@ def index(asm):
                 if rel not in ('README.md', 'variant.json') and not rel.startswith('files/'):
                     files.append(rel)
         if cfg.get('loader') == 'own':
-            layout, code = 'own loader', ''
+            layout, code = 'own loader' + (', B' if cfg.get('start') else ''), ', '.join(cfg.get('code', []))
         else:
             layout = 'B' if cfg.get('start') else 'A'
             code = ', '.join(cfg.get('code', []))
@@ -479,17 +772,24 @@ def index(asm):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('command', choices=['extract', 'build', 'index'])
+    p.add_argument('command', choices=['extract', 'build', 'index', 'image'])
     p.add_argument('names', nargs='*')
     p.add_argument('--all', action='store_true')
     p.add_argument('--sjasmplus', default='')
     a = p.parse_args()
     asm = subprocess.run([sys.executable, os.path.join(ROOT, '..', '..', 'kit', 'toolpaths.py'), 'sjasmplus',
                           a.sjasmplus], capture_output=True, text=True).stdout.strip()
-    if not asm:
+    if not asm and a.command != 'image':
         raise SystemExit('variants: no sjasmplus')
     if a.command == 'extract':
         extract(a.names, asm)
+        return 0
+    if a.command == 'image':   # image NAME $ADDR LENGTH OUT: the candidate's bytes a variant .ann piece describes
+        name, addr, length, out = a.names[:4]   # a fifth word "unpacked": after a packed piece's depacker ran
+        mem, _ = candidate_memory(name, a.names[4:] == ['unpacked'])
+        os.makedirs(os.path.dirname(os.path.join(ROOT, out)), exist_ok=True)
+        start = int(addr.lstrip('$'), 16)
+        open(os.path.join(ROOT, out), 'wb').write(bytes(mem[start:start + int(length)]))
         return 0
     if a.command == 'index':
         index(asm)

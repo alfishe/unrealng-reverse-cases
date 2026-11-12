@@ -1,0 +1,27 @@
+1 INK 7:PAPER 0:BORDER 0:CLEAR 65470:RANDOMIZE USR 15616{=23926}:REM
+  code F3             ; $5D76 DI
+  code 21 84 5D       ; $5D77 LD HL,$5D84
+  code 11 40 9C       ; $5D7A LD DE,$9C40
+  code 01 00 01       ; $5D7D LD BC,$0100
+  code D5             ; $5D80 PUSH DE
+  code ED B0          ; $5D81 LDIR
+  code C9             ; $5D83 RET
+  fill 256            ; $5D84 the loader (parts/loader.ann, run at $9C40), encrypted by the build (tools/lotus.py)
+  code E6 F5          ; $5E84 AND $F5
+  code CD C3 D6       ; $5E86 CALL $D6C3
+  code E2 9D A3       ; $5E89 JP PO,$A39D
+  code B9             ; $5E8C CP C
+  code C3 E9 F3       ; $5E8D JP $F3E9
+  code 81             ; $5E90 ADD A,C
+  code AB             ; $5E91 XOR E
+  code A9             ; $5E92 XOR C
+  code C3 E9 F3       ; $5E93 JP $F3E9
+  code 99             ; $5E96 SBC A,C
+  code A3             ; $5E97 AND E
+  code 20             ; $5E98 DEFB $20
+0 {len=0,open}
+tail EA 0D F8 00 00 8C 5D 00 00 00 E8 FD 00 00 00 01 00 00 0A 00 02 80 AA 01 00 6F 6F 74 20 22 CA 31
+tail 0D 80 00 6F 6F 74 31 22 CA 31 0D 80 31 35 36 31 36 0E 00 00 00 3D 00 0D 80 CA B7 5F 05 00 00 00
+tail B7 5F 05 00 00 00 01 00 00 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68
+tail 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 68 0D 80 00 00 76 5D 00 00 0A 00 00 00 00
+tail F3 21 7D 9C 22 08 6D 21 60 EA 11 08 00 06 01 0E 05 CD 13 3D ED 5B 41 EB ED 53 9D 6D ED

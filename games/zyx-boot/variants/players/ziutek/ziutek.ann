@@ -1,0 +1,37 @@
+# The player of variant zyxfp4bt, the Part V tune (Ziutek) (kit/mkgame.py --part variants/players/ziutek/ziutek.json).
+# Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 771 bytes of zyxfp4bt's music piece ($C780-$CA82, work/parts/player-ziutek.bin, written by
+# python3 tools/variants_music.py image ziutek). A Sound Tracker-like compilation with its own pattern bytes; it has
+# no init: the channel records hold the first patterns' streams. It reads its tune at fixed addresses: the streams
+# from $CA83, the positions at $CCFF, the patterns at $CD37, the samples at $CD61, the ornaments at $D0D3; the tune
+# is music/ziutek.txt (tools/res_rip.py, format ziutek). No recording runs the variant: every name and description
+# here is from the code.
+
+@module ziutek ; The Part V player: positions of patterns, three pattern streams, samples of 32 rows and ornaments of 32 notes
+@about Entry: MusicPlay $C780 (once a frame; there is no init). Every 5th frame a row: each channel's next items; every frame each channel's sample and ornament row, then the AY registers. On the other frames delay loops keep the frame's length even.
+@about The positions ($CCFF): 28 pairs (pattern number from 1, transposition); a pattern ($CD37 + 6 * (number - 1)): the streams of channels A, B and C. A stream: $00-$0D the next position, $0E-$1D the envelope shape with its period byte, $1E-$34 off, $35-$44 the ornament, $45-$84 the row length, $85-$8E the row without a new note, $8F-$EE a note, $EF-$FE the sample (ranges from ItemRanges).
+
+$C780 c MusicPlay ; One frame: count the frame counter down (the LD operand at $C781; 5 frames a row), on a row frame each channel's row, then the sound
+$C7A1 SoundFrame ; Each channel's sound into AYRegs, the mixer from their tone and noise bits
+$C7D4 WriteAY ; AY registers 12 down to 0 from AYRegs (13 only when the shape changed)
+$C7F7 IdleFrame ; Not a row frame: three delay loops in place of the rows
+$C802 NextPosition ; The next position (the LD operand at $C803; after $1C, position 1): its pattern's three streams and the transposition
+$C845 b ItemRanges 16 ; The stream item ranges: pairs (first byte above the range, the handler's JR offset at $C878)
+$C855 c ChannelRow ; A channel's row: count its row counter down, at 0 read items up to a note, off or a hold
+$C861 ReadItem ; The next item: find its range in ItemRanges, A = the byte less the range's first, jump through the JR at $C877
+$C879 ItemSample ; $EF-$FE: the sample (98 bytes from $CD61)
+$C88D ItemOrnament ; $35-$44: the ornament (32 bytes from $D0D3)
+$C8A5 ItemEnvelope ; $0E-$1D: the envelope shape and the period byte that follows, ornament 0
+$C8B4 ItemLength ; $45-$84: the row length
+$C8B9 ItemOff ; $1E-$34: the channel off
+$C8BF ItemNote ; $8F-$EE: a note: the sample from its first row
+$C8CA ItemHold ; $85-$8E: the row length again, no new note
+$C8DA c Delay ; A delay loop of 30 steps
+$C8E4 DelayLong ; A delay loop of 33 steps (a channel that is off)
+$C8E9 c ChannelSound ; A channel's frame: its sample row (period offset, mixer bits, volume, noise), its ornament's note, the period; HL = the period, A = the volume, B = the mixer bits
+$C991 b ChannelA 12 ; Channel A's record: +0 the note, +1 the sample row, +2 rows left, +3 the row counter, +4 the length, +5 the sample, +7 the ornament, +9 the stream, +$0B envelope on
+$C99D b ChannelB 12 ; Channel B's record
+$C9A9 b ChannelC 12 ; Channel C's record
+$C9B5 b AYRegs 14 ; The AY register image: three tone periods, the noise, the mixer, three volumes, the envelope
+$C9C3 w PeriodTable 12 ; The AY tone period of each note 0-$5F (96 notes)

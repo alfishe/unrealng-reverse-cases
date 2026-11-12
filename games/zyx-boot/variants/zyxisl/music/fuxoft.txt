@@ -1,0 +1,79 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+: bytes
+  00 C8 80 3B F0
+channelA: stream
+  instr:instr_F304 orn:orn_F317 repeat:6 transp:-3 call:s_F073 transp:-5 call:s_F073 transp:-7 call:s_F073 transp:-8 call:s_F073 next
+  orn:orn_F317 instr:instr_F354 transp:0 repeat:6 F-2/160 D#2/160 C#2/160 C-2/160 next goto:channelA
+s_F073: stream
+  G#2/10 G#2/10 G#2/20 noise:14 mixer:1 instr:instr_F2E5 C#7/20 instr:instr_F304 mixer:8 G#2/10 G#2/10 D#3/20
+  G#2/20 mixer:1 instr:instr_F2E5 C#7/20 instr:instr_F304 mixer:8 F#2/10 G-2/10 ret
+channelB: stream
+  instr:instr_F322 orn:orn_F32D call:s_F0E9 call:s_F0E9 call:s_F0E9 instr:instr_F322 orn:orn_F32D repeat:2 call:s_F17F G-4/40 next instr:instr_F354
+  repeat:2 F-3/40 F-4/40 C-4/40 G#3/40 D#3/40 D#4/40 A#3/40 G-3/40 C#3/40 C#4/40 G#3/40
+  F-3/40 C-3/40 C-4/40 G-3/40 E-3/40 instr:instr_F304 next goto:channelB
+s_F0E9: stream
+  C-5/20 G#4/10 F-4/10 C-5/10 G#4/10 F-4/10 C-5/30 C#5/20 C-5/20 G#4/20 A#4/20 G-4/10
+  D#4/10 A#4/10 G-4/10 D#4/10 A#4/90 G#4/20 F-4/10 C#4/10 G#4/10 F-4/10 C#4/10 G#4/30
+  A#4/20 G#4/20 F-4/20 repeat:2 G-4/10 E-4/10 C-4/10 G-4/20 E-4/10 C-4/20 next C-5/20
+  G#4/10 F-4/10 C-5/10 C#5/10 C-5/10 G#4/10 F-4/10 G#4/10 C-5/10 C#5/20 C-5/10 G#4/10
+  F-4/10 A#4/30 G#4/10 G-4/10 F-4/10 G-4/10 G#4/10 A#4/30 D#4/50 G#4/30 F-4/10 C#4/20
+  G#4/10 G-4/10 F-4/10 G-4/20 G#4/10 F-4/50 E-4/20 C-4/10 G-4/20 C-4/10 A#4/30 C-4/10
+  A#4/20 G#4/20 G-4/10 ret
+s_F17F: stream
+  F-4/10 G#4/10 C-5/10 F-5/50 orn:orn_F383 F-5/40 orn:orn_F32D G-5/20 G#5/20 G-5/20 D#5/10 orn:orn_F313
+  A#4/20 orn:orn_F32D G#4/10 G-4/80 A#4/20 repeat:4 G#4/5 A#4/5 G#4/5 G-4/5 next G#4/20
+  A#4/20 C-5/30 G#4/10 orn:orn_F383 G-4/120 orn:orn_F313 G-4/40 orn:orn_F32D F-4/10 G#4/10 C-5/10 F-5/50
+  F-4/5 G#4/5 C-5/5 F-5/14 r/1 F-5/10 G-5/20 orn:orn_F383 G#5/20 orn:orn_F32D G-5/20 D#5/10
+  A#4/130 G#4/10 F-4/10 C#4/10 G#4/10 F-4/10 C#4/10 G#4/10 F-4/10 C#5/20 C-5/20 A#4/30
+  G#4/10 repeat:20 G-4/3 G#4/3 next ret
+channelC: stream
+  transp:0 instr:instr_F3CA orn:orn_F349 call:s_F0E9 orn:orn_F2DC instr:instr_F338 repeat:2 repeat:5 F-5/10 G#5/10 C-6/10 next
+  F-5/10 repeat:5 D#5/10 G-5/10 A#5/10 next D#5/10 repeat:5 C#6/10 F-6/10 G#6/10 next
+  C#6/10 repeat:5 C-6/10 E-6/10 G-6/10 next C-6/10 next instr:instr_F2E5 repeat:2 call:s_F27F next
+  noise:30 mixer:1 instr:instr_F39B repeat:8 C#7/160 next mixer:8 instr:instr_F3CA r/40 transp:0 orn:orn_F32D call:s_F17F
+  instr:instr_F2E5 orn:orn_F2DC call:s_F27F instr:instr_F3CA call:s_F27F goto:channelC
+s_F27F: stream
+  transp:-3 call:s_F2B8 transp:-5 call:s_F294 transp:5 call:s_F294 transp:4 call:s_F294 ret
+s_F294: stream
+  G#4/5 C-5/5 D#5/5 G#5/5 C-5/5 D#5/5 G#5/5 C-6/5 D#5/5 G#5/5 C-6/5 D#6/5
+  repeat:5 G#5/5 C-6/5 D#6/5 G#6/5 next ret
+s_F2B8: stream
+  G#4/5 B-4/5 D#5/5 G#5/5 B-4/5 D#5/5 G#5/5 B-5/5 D#5/5 G#5/5 B-5/5 D#6/5
+  repeat:5 G#5/5 B-5/5 D#6/5 G#6/5 next ret
+orn_F2DC: ornament
+  0 0 0 0 0 0 goto:orn_F2DC
+instr_F2E5: instrument
+  14/1 0/1 13/2 0/1 12/2 0/1 11/2 0/1 10/2 0/1 9/2 0/1
+  8/2 0/1 goto:instr_F2E5
+instr_F304: instrument
+  0/1 14/5 13/5 12/5 11/5 10/222 goto:instr_F304
+orn_F313: ornament
+  2 goto:orn_F313
+orn_F317: ornament
+  -10 -5 5 10 10 5 -5 -10 goto:orn_F317
+instr_F322: instrument
+  15/4 14/4 13/4 12/240 goto:instr_F322
+orn_F32D: ornament
+  -2 -1 1 2 2 1 -1 -2 goto:orn_F32D
+instr_F338: instrument
+  15/1 13/1 11/1 9/1 7/1 5/1 3/4 goto:instr_F338
+orn_F349: ornament
+  2 1 -1 -2 -2 -1 1 2 goto:orn_F349
+instr_F354: instrument
+  13/3 0/2 13/3 0/2 13/3 0/2 13/3 0/2 13/8 0/2 13/3 0/2
+  13/8 0/2 13/3 0/2 13/8 0/2 13/8 0/2 13/8 0/2 goto:instr_F354
+orn_F383: ornament
+  20 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+  -1 -1 -1 -1 -1 -1 -1 -1 -1 goto:orn_F32D
+instr_F39B: instrument
+  3/13 4/13 5/13 6/13 7/13 8/13 9/13 10/13 11/13 12/13 13/8 12/5
+  11/5 10/5 9/5 8/5 7/5 6/5 5/5 4/5 3/199
+instr_F3C5: instrument
+  13/170 goto:instr_F3C5
+instr_F3CA: instrument
+  12/250 goto:instr_F3CA

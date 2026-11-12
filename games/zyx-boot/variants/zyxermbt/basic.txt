@@ -1,0 +1,121 @@
+1 RANDOMIZE USR VAL "15619":REM :RUN "        "{20}
+2 RANDOMIZE USR VAL "15619":REM :RUN
+3 RANDOMIZE USR VAL "15616"
+10 CLEAR VAL "65347":RANDOMIZE USR VAL "23959":RUN :REM
+  code AF             ; $5D97 XOR A
+  code D3 FE          ; $5D98 OUT ($FE),A
+  code 21 00 40       ; $5D9A LD HL,$4000
+  code 11 01 40       ; $5D9D LD DE,$4001
+  code 01 FF 1A       ; $5DA0 LD BC,$1AFF
+  code 75             ; $5DA3 LD (HL),L
+  code ED B0          ; $5DA4 LDIR
+  code 32 3D 5C       ; $5DA6 LD ($5C3D),A
+  code 21 30 75       ; $5DA9 LD HL,$7530
+  code 01 05 03       ; $5DAC LD BC,$0305
+  code CD DF 5D       ; $5DAF CALL $5DDF
+  code CD 30 75       ; $5DB2 CALL $7530
+  code 21 A8 61       ; $5DB5 LD HL,$61A8
+  code 01 05 0F       ; $5DB8 LD BC,$0F05
+  code CD DF 5D       ; $5DBB CALL $5DDF
+  code 21 00 A6       ; $5DBE LD HL,$A600
+  code 01 05 08       ; $5DC1 LD BC,$0805
+  code CD DF 5D       ; $5DC4 CALL $5DDF
+  code 21 00 C0       ; $5DC7 LD HL,$C000
+  code 01 05 16       ; $5DCA LD BC,$1605
+  code CD DF 5D       ; $5DCD CALL $5DDF
+  code 3E 07          ; $5DD0 LD A,$07
+  code 32 8D 5C       ; $5DD2 LD ($5C8D),A
+  code 32 48 5C       ; $5DD5 LD ($5C48),A
+  code CD E7 5D       ; $5DD8 CALL $5DE7
+  code CD A8 61       ; $5DDB CALL $61A8
+  code C9             ; $5DDE RET
+  code ED 5B F4 5C    ; $5DDF LD DE,($5CF4)
+  code CD 13 3D       ; $5DE3 CALL $3D13
+  code C9             ; $5DE6 RET
+  code 00             ; $5DE7 NOP
+  code 01 18 20       ; $5DE8 LD BC,$2018
+  code 21 00 58       ; $5DEB LD HL,$5800
+  code 1E 07          ; $5DEE LD E,$07
+  code D5             ; $5DF0 PUSH DE
+  code E5             ; $5DF1 PUSH HL
+  code C5             ; $5DF2 PUSH BC
+  code C5             ; $5DF3 PUSH BC
+  code E5             ; $5DF4 PUSH HL
+  code 11 00 00       ; $5DF5 LD DE,$0000
+  code 7E             ; $5DF8 LD A,(HL)
+  code E6 38          ; $5DF9 AND $38
+  code 28 03          ; $5DFB JR Z,$5E00
+  code D6 08          ; $5DFD SUB $08
+  code 5F             ; $5DFF LD E,A
+  code 7E             ; $5E00 LD A,(HL)
+  code E6 07          ; $5E01 AND $07
+  code 28 02          ; $5E03 JR Z,$5E07
+  code 3D             ; $5E05 DEC A
+  code 57             ; $5E06 LD D,A
+  code 7A             ; $5E07 LD A,D
+  code B3             ; $5E08 OR E
+  code 77             ; $5E09 LD (HL),A
+  code 2C             ; $5E0A INC L
+  code 10 E8          ; $5E0B DJNZ $5DF5
+  code E1             ; $5E0D POP HL
+  code 01 20 00       ; $5E0E LD BC,$0020
+  code 09             ; $5E11 ADD HL,BC
+  code C1             ; $5E12 POP BC
+  code 0D             ; $5E13 DEC C
+  code 20 DD          ; $5E14 JR NZ,$5DF3
+  code 21 20 4E       ; $5E16 LD HL,$4E20
+  code 18 08          ; $5E19 JR $5E23
+  code 00             ; $5E1B NOP
+  code C1             ; $5E1C POP BC
+  code E1             ; $5E1D POP HL
+  code D1             ; $5E1E POP DE
+  code 1D             ; $5E1F DEC E
+  code 20 CE          ; $5E20 JR NZ,$5DF0
+  code C9             ; $5E22 RET
+  code 11 FF FF       ; $5E23 LD DE,$FFFF
+  code 19             ; $5E26 ADD HL,DE
+  code 38 FD          ; $5E27 JR C,$5E26
+  code 18 F1          ; $5E29 JR $5E1C
+  code 00             ; $5E2B NOP
+  code 20 20          ; $5E2C JR NZ,$5E4E
+  code 20 20          ; $5E2E JR NZ,$5E50
+  code 20 20          ; $5E30 JR NZ,$5E52
+  code 20 20          ; $5E32 JR NZ,$5E54
+  code 20 20          ; $5E34 JR NZ,$5E56
+  code 20 20          ; $5E36 JR NZ,$5E58
+  code 20 20          ; $5E38 JR NZ,$5E5A
+  code 20 20          ; $5E3A JR NZ,$5E5C
+  code 20 20          ; $5E3C JR NZ,$5E5E
+  code 20 20          ; $5E3E JR NZ,$5E60
+  code 20 20          ; $5E40 JR NZ,$5E62
+  code 20 20          ; $5E42 JR NZ,$5E64
+  code 20 20          ; $5E44 JR NZ,$5E66
+  code 20 20          ; $5E46 JR NZ,$5E68
+  code 20 20          ; $5E48 JR NZ,$5E6A
+  code 20 20          ; $5E4A JR NZ,$5E6C
+  code 20 20          ; $5E4C JR NZ,$5E6E
+  code 20 20          ; $5E4E JR NZ,$5E70
+  code 20 20          ; $5E50 JR NZ,$5E72
+  code 20 20          ; $5E52 JR NZ,$5E74
+  code 20 20          ; $5E54 JR NZ,$5E76
+  code 20 20          ; $5E56 JR NZ,$5E78
+  code 20 20          ; $5E58 JR NZ,$5E7A
+  code 20 20          ; $5E5A JR NZ,$5E7C
+  code 20 20          ; $5E5C JR NZ,$5E7E
+  code 20 20          ; $5E5E JR NZ,$5E80
+  code 20 20          ; $5E60 JR NZ,$5E82
+  code 20 20          ; $5E62 JR NZ,$5E84
+  code 20 20          ; $5E64 JR NZ,$5E86
+  code 20 20          ; $5E66 JR NZ,$5E88
+  code 20 20          ; $5E68 JR NZ,$5E8A
+  code 20 20          ; $5E6A JR NZ,$5E8C
+  code 20             ; $5E6C DEFB $20
+end
+autostart 10
+tail 4F 4F 54 33 22 CA 31 30 0D 80 31 35 36 31 36 0E 00 00 00 3D 00 0D 80 CA 72 5F 05 00 00 00 72 5F
+tail 05 00 00 00 0A 00 00 5F 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+tail 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+tail 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+tail 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+tail 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+tail 00 00 00 00 00 00 00 00 00

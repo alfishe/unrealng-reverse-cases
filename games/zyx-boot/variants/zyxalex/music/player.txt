@@ -1,0 +1,7 @@
+# The music piece of variant zyxalex (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/hydrofool at MusicPiece $F424, the tune hydrofool.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player hydrofool
+tune hydrofool.txt

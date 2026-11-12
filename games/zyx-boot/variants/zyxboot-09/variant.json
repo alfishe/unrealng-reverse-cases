@@ -7,5 +7,43 @@
     "length": 306,
     "sectors": 84
   },
-  "loader": "own"
+  "loader": "own",
+  "basic_sectors": 2,
+  "start": true,
+  "equ": {
+    "MusicPiece": "$EB50",
+    "MusicSectors": "9",
+    "MusicInit": "$EB53",
+    "MusicPlay": "$EB56",
+    "MenuStack": "$BF68",
+    "ScreenCopy": "$C000",
+    "ScreenCopyHigh": "$80",
+    "MusicStart": "$EB50"
+  },
+  "pieces": [
+    {
+      "at": "$61A8",
+      "sectors": 15
+    },
+    {
+      "at": "$A600",
+      "sectors": 8
+    },
+    {
+      "at": "$EB50",
+      "sectors": 9
+    },
+    {
+      "at": "$C350",
+      "sectors": 21
+    }
+  ],
+  "parts": [
+    "parts/pictures.json"
+  ],
+  "tail": "files/tail.bin",
+  "notes": [
+    "The tune: the same as zyxisl's (Fuxoft's player; notes match \"Feud\" by Frantisek Fuka).",
+    "Layout B and the same loader and pictures as zyxisl; 29 more sectors of the file (`files/tail.bin`) are never read by the loader."
+  ]
 }

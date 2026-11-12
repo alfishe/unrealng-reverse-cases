@@ -1,0 +1,101 @@
+# The tune of Fuxoft's player (the format in src/res/music/README.md). Labels stand for addresses;
+# "#" starts a comment line.
+
+org $F035
+channels channelA channelB channelC
+
+channelA: stream
+  instr:instr_F41E orn:orn_F42D F-4/40 G#4/40 G-4/40 C-4/40 C#4/40 A#3/40 C-4/40 E-4/40 F-4/40 G#4/40
+  G-4/40 D#4/40 F-4/80 instr:instr_F457 orn:orn_F453 C-5/10 C-5/20 G-4/10 G-4/10 G-4/10 D-4/20 instr:instr_F480
+  orn:orn_F42D repeat:8 F-4/10 F-5/10 F-4/10 D#5/10 F-4/10 C-5/10 D#4/10 G-4/10 next orn:orn_F42D
+  instr:instr_F4B6 call:s_F188 call:s_F188 transp:5 call:s_F188 call:s_F188 transp:-2 repeat:2 call:s_F188 next transp:0 F-4/10
+  F#4/10 G#4/10 F-4/20 F#4/10 G#4/20 F#4/10 G#4/10 A-4/10 F#4/20 G#4/10 A-4/20 G#4/10
+  A-4/10 B-4/10 G#4/20 A-4/10 B-4/20 C#5/80 orn:orn_F4AE call:s_F148 orn:orn_F43C instr:instr_F49B repeat:3 repeat:2
+  repeat:4 F#5/5 A#5/5 C#6/5 A#5/5 next repeat:4 F#5/5 B-5/5 D#6/5 B-5/5 next
+  repeat:4 F-5/5 G#5/5 C#6/5 G#5/5 next repeat:4 C#5/5 F#5/5 A#5/5 F#5/5 next
+  next repeat:2 repeat:4 D#5/5 F#5/5 A#5/5 F#5/5 next repeat:4 D#5/5 G#5/5 B-5/5
+  G#5/5 next repeat:4 C#5/5 F-5/5 G#5/5 F-5/5 next repeat:4 C#5/5 F#5/5 A#5/5
+  F#5/5 next next transp:-24 next instr:instr_F4B6 orn:orn_F47A transp:0 E-7/100 F#6/220 goto:channelA
+s_F148: stream
+  repeat:2 F#4/20 A#4/20 C#5/20 E-5/20 D#5/20 B-4/10 C#5/20 A#4/10 F#4/20 F#4/10 A#4/10
+  C#5/10 F#5/10 E-5/10 D#5/20 C#5/90 F#4/20 A#4/20 C#5/20 E-5/20 D#5/20 B-4/10 C#5/20
+  A#4/10 F#4/20 C#5/20 D-5/20 D#5/20 F-5/20 F#5/80 next ret
+s_F188: stream
+  F-4/10 G#4/10 C-5/10 F-4/50 F-4/10 G#4/10 C-5/10 F-4/20 C-5/10 F-5/20 D#5/20 A#4/20
+  D#4/10 F-4/10 G-4/10 F-4/10 orn:orn_F4C5 F-4/80 orn:orn_F42D ret
+channelB: stream
+  instr:instr_F440 orn:orn_F42D r/20 F-4/40 G#4/40 G-4/40 C-4/40 C#4/40 A#3/40 C-4/40 E-4/40 F-4/40
+  G#4/40 G-4/40 D#4/40 F-4/60 orn:orn_F453 instr:instr_F457 C-4/10 C-4/20 G-3/10 G-3/10 G-3/10 D-3/20
+  instr:instr_F457 noise:23 orn:orn_F43C transp:9 repeat:20 call:s_F34F next transp:7 call:s_F34F call:s_F34F transp:9 repeat:6
+  call:s_F34F next transp:7 call:s_F34F call:s_F34F transp:9 call:s_F34F call:s_F34F repeat:2 transp:2 call:s_F34F call:s_F34F
+  call:s_F34F call:s_F34F transp:0 call:s_F34F call:s_F34F transp:2 call:s_F34F call:s_F34F next repeat:2 transp:7 call:s_F34F
+  call:s_F34F call:s_F34F call:s_F34F transp:5 call:s_F34F call:s_F34F transp:7 call:s_F34F call:s_F34F next transp:9 call:s_F34F
+  call:s_F34F transp:10 call:s_F34F call:s_F34F transp:0 call:s_F34F call:s_F34F instr:instr_F4C9 orn:orn_F4C5 C#5/80 orn:orn_F42D instr:instr_F4B6
+  call:s_F148 instr:instr_F4D6 orn:orn_F42D F#4/80 B-4/80 C#5/80 F#4/80 F#4/80 B-4/80 C#5/80 F#4/80 D#4/80
+  G#4/80 C#4/80 F#4/80 D#4/80 G#4/80 C#4/80 F#4/80 instr:instr_F4B6 orn:orn_F4AE repeat:2 C#5/9 A#4/10
+  B-4/10 C-5/10 C#5/40 D#5/10 B-4/10 C#5/10 D-5/10 D#5/40 F-5/10 C#5/10 D#5/10 E-5/10
+  F-5/20 C#5/20 F#5/10 C#5/10 D#5/10 F-5/10 F#5/40 C#5/10 A#4/10 B-4/10 C-5/10 C#5/10
+  A#5/10 C#5/20 D#5/10 B-4/10 C#5/10 D-5/10 D#5/10 B-5/10 D#5/20 F-5/10 C#5/10 D#5/10
+  E-5/10 F-5/10 C#5/10 D#5/10 F-5/10 F#5/10 A#5/10 G#5/10 F-5/10 F#5/40 D#5/20 F#5/20
+  A#5/20 F#5/20 D#5/20 G#5/20 B-5/20 G#5/20 A#5/30 G#5/10 G#5/30 A#5/10 A#5/80 D#5/20
+  F#5/20 A#5/20 F#5/20 D#5/20 G#5/20 B-5/20 G#5/20 A#5/30 G#5/10 G#5/30 F#5/10 F#5/81
+  next transp:0 orn:orn_F42D E-7/160 E-7/160 goto:channelB
+s_F34F: stream
+  G#2/9 r/1 G#2/10 mixer:1 C-4/10 mixer:8 G#2/9 r/1 ret
+channelC: stream
+  instr:instr_F41E noise:1 mixer:1 repeat:56 F-1/1 r/9 next instr:instr_F480 mixer:21 noise:0 C#7/40 C#7/40
+  repeat:8 repeat:3 instr:instr_F49B orn:orn_F47A mixer:8 F#6/20 B-6/10 D#6/10 F-6/10 D#7/30 next orn:orn_F453
+  instr:instr_F457 r/10 C-4/20 C-4/10 A#3/10 A#3/10 A#3/20 next instr:instr_F440 orn:orn_F4C5 repeat:24 D#7/10
+  next noise:15 mixer:1 instr:instr_F4B6 C#7/80 noise:0 instr:instr_F480 repeat:8 r/20 D#1/2 r/8 D#1/2
+  r/8 r/20 D#1/10 r/10 next noise:9 mixer:8 transp:10 instr:instr_F457 repeat:16 call:s_F34F next
+  mixer:1 repeat:192 noise:9 D#1/1 r/9 noise:0 D#1/1 r/4 D#1/1 r/4 next instr:instr_F457
+  repeat:3 noise:5 D#1/20 noise:10 D#1/15 noise:5 D#1/5 D#1/10 D#1/10 noise:10 D#1/20 next
+  noise:20 D#1/10 D#1/20 D#1/20 D#1/10 D#1/20 transp:0 goto:channelC
+instr_F41E: instrument
+  13/9 12/9 11/9 10/9 9/9
+instr_F428: instrument
+  8/99 goto:instr_F428
+orn_F42D: ornament
+  -2 -2 -1 1 2 2 2 2 1 -1 -2 -2
+  goto:orn_F42D
+orn_F43C: ornament
+  0 goto:orn_F43C
+instr_F440: instrument
+  9/12 8/12 7/12 6/12 5/12 4/12 3/12
+instr_F44E: instrument
+  3/124 goto:instr_F44E
+orn_F453: ornament
+  15 goto:orn_F453
+instr_F457: instrument
+  15/2 14/1 13/2 12/1 11/2 10/1 9/2 8/1 7/2 6/1 5/2 4/1
+  3/2 2/1 1/1
+instr_F475: instrument
+  0/101 goto:instr_F475
+orn_F47A: ornament
+  -16 20 25 goto:orn_F47A
+instr_F480: instrument
+  15/2 0/1 15/2 0/1 15/1 0/1 13/1 0/1 11/1 0/1
+instr_F494: instrument
+  9/1 0/1 goto:instr_F494
+instr_F49B: instrument
+  15/1 13/1 11/1 9/1 7/1 5/1 3/1
+instr_F4A9: instrument
+  0/133 goto:instr_F4A9
+orn_F4AE: ornament
+  32 -8 -8 -8 -8 goto:orn_F42D
+instr_F4B6: instrument
+  15/8 14/8 13/8 12/8 11/8
+instr_F4C0: instrument
+  10/79 goto:instr_F4C0
+orn_F4C5: ornament
+  9 goto:orn_F4C5
+instr_F4C9: instrument
+  15/1 0/1 goto:instr_F4C9
+: bytes
+  FD 06 FD 80 D0 F4
+instr_F4D6: instrument
+  1/2 2/2 3/2 4/2 5/2 6/2 7/2 8/2 9/4 10/5 11/5 12/9
+  13/15 12/5 11/4 10/3 9/2 8/2 7/2 6/2 5/2 4/2 3/2 2/2
+  1/2
+instr_F508: instrument
+  0/223 goto:instr_F508

@@ -1,0 +1,25 @@
+{
+  "about": "Variant zyxboot-09: the two loading pictures its loader reads to $C350: python3 ../../kit/mkgame.py --part variants/zyxboot-09/parts/pictures.json --install, then the bins in parts/res to the variant's editable PNGs (tools/res_formats.py install, tools/res_screens.py) and parts/res deleted; tools/variants.py gives the part the built resources as res/",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxboot-09",
+    "$C350",
+    "5376",
+    "work/variants/zyxboot-09-c350.bin"
+  ],
+  "image": "work/variants/zyxboot-09-c350.bin",
+  "org": "C350",
+  "ann": "variants/zyxboot-09/parts/pictures.ann",
+  "top": "pictures",
+  "bin": "pictures.bin",
+  "dest": "variants/zyxboot-09/parts",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxboot-09: the two loading pictures at $C350."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxboot-09-pictures",
+  "res": "variants/zyxboot-09/parts/res"
+}

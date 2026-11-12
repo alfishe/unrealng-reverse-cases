@@ -1,0 +1,9 @@
+# The music piece of variant zyxkombt (tools/variants_music.py; the format in src/res/music/README.md):
+# the player variants/players/stc at MusicPiece $C078, the tune stc.txt, then the tail.
+# "at LABEL+N" lines: the bytes the saved disk holds there in place of the source's (the player's
+# variables, self-modified operands and buffers as they were when the disk was saved).
+
+player stc
+tune stc.txt
+tail
+  94 B5 91 27 94 B5 91 27 92 B5 90 27 91 B6 8F 29 8A B7 8D 2B 8C B5 8D 2A

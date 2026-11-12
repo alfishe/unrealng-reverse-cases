@@ -1,0 +1,19 @@
+# The two loading pictures of variant zyxisl: 21 sectors its BASIC loader reads to $C350 after the menu and the
+# music. The loader calls ShowFirstPicture, waits for a key, calls ShowSecondPicture, waits for a key, fades the
+# screen (its routine at $5DEE) and calls the menu. Format: ../../../../../docs/ann-format.md.
+
+@equ $1792 RomRet ; a RET in the 48K ROM: CALL RomRet leaves the caller's address just below SP
+@equ $4000 Screen 1 ; the screen
+
+@module pictures ; Two run-length packed screens, each with its own unpacker
+@about Each unpacker is position independent (it finds its own address through CALL RomRet) and unpacks the bytes that follow it onto the whole screen and its attributes ($1B00 bytes). The packed stream: a byte other than $9D is itself; $9D, a byte and a count is that byte count times.
+
+$C350 c ShowFirstPicture ; Unpack FirstPicture onto Screen $4000-$5AFF
+$C367 UnpackFirst ; the next output byte: the run in progress, or the next packed byte ($9D: a new run)
+$C385 b FirstPicture 16 ; The first picture, packed ($9D runs; tools/res_screens.py packs it from its PNG)
+@res graphics/rle-picture-1.bin
+$CD75 c ShowSecondPicture ; Unpack SecondPicture onto Screen $4000-$5AFF (the same code as ShowFirstPicture)
+$CD8C UnpackSecond ; the next output byte
+$CDAA b SecondPicture 16 ; The second picture, packed
+@res graphics/rle-picture-2.bin
+$D75B b PicturesEnd 16 ; zeros to the 21st sector's end

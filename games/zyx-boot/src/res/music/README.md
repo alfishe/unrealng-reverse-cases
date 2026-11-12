@@ -79,3 +79,117 @@ Edit `disco.txt`, then `python3 tools/res_formats.py check` (the text must parse
 (`python3 ../../kit/mkgame.py --part src/music/music.json`). An edited module no longer matches the original bytes,
 so the part's comparison will report the first difference; the labels inside the module in `src/music/music.ann`
 (Pattern1, Sample1, ...) are the original addresses and need moving if their blocks move.
+
+# The variants' music
+
+A variant's music piece (variants/NAME/music) is kept readable when its player is one of the three shared players in
+`variants/players` (kit/mkgame.py pieces, one source for every variant that has the player); else it stays
+`music/piece.bin` (work/docs/zbV-music.md lists every variant, its player, its tune and why). `tools/variants.py`
+builds the piece through `tools/variants_music.py`: the player assembled at the variant's `MusicPiece`, the variant's
+own bytes laid over it, the tune converted from its text, then the tail. `python3 tools/variants_music.py convert NAME`
+writes the readable form from the piece and keeps it only when the variant still builds identical;
+`python3 tools/res_formats.py check` proves every variant's text gives its bytes back.
+
+| Player | Variants | Player source | Tune file | Converter |
+| --- | --- | --- | --- | --- |
+| Sound Tracker (compiled) | zyxalex2, zyxarbt, zyxdebt, zyxfzbt, zyxhsbt, zyxkombt, zyxlebt, zyxlesbt, zyxlogrb, zyxm94bt, zyxrusbt, zyxskitb | `variants/players/stc` (at the variant's base, the module at +`$43C`) | `stc.txt` | `tools/res_stc.py` |
+| ASC Sound Master, later compilation | zyxboot-14 to zyxboot-18 | `variants/players/asc2` (`$C000`, the module at `$C4A7`) | `asc.txt` | `tools/res_music.py` |
+| Fuxoft (Frantisek Fuka) | zyxae, zyxamebt, zyxboot-02, -03, -04, -06, -07, -09, -13, zyxgambt, zyxisl, zyxkisbt, zyxmegbt, zyxmixmb, zyxsdbot, zyxsdgrp, zyxslbt, zyxtribt, zyxzxtbt | `variants/players/fuxoft` (`$EB50`, the tune at `$F035`) | `fuxoft.txt` | `tools/res_fuxoft.py` |
+
+## player.txt
+
+- `player KIND`: `stc`, `asc2` or `fuxoft` (the folder in `variants/players`).
+- `tune FILE`: the tune's text in the same folder.
+- `at LABEL+N HEX...`: bytes that differ from the player's source: what the player's variables, stacks and
+  self-modified operands held when the disk was saved, the ASC player's text (the tune's title and author) and its
+  header bytes, the Fuxoft player's noise mask. LABEL is a label of the player's source, or a self-modified operand
+  `tools/variants_music.py` names (`ModuleBase`, `OrnamentRow`, `Transposition` in the STC player, `NoiseMask` in
+  Fuxoft's); N counts bytes from it.
+- `at +N HEX...`: the same, N an offset from the piece's start. It names no label, so the line keeps working when the
+  shared player's labels are renamed; zyxremix uses it (its piece borrows zyxboot-11's player, which another session
+  may edit). An `at` line naming a label the player no longer has stops the build with the label's name.
+- `tail`, then indented hex lines: the bytes after the tune to the end of the piece's last sector (sector filler).
+
+## asc.txt
+
+As `disco.txt`, with `commands v2` after the comment: the later compilation's player reads other command bytes. Notes
+`$00-$55`, `ep$NN` and `end` are as above; the rest:
+
+| Token | Byte | Does |
+| --- | --- | --- |
+| `---` | `$56` | no new note (`---$NN` keeps `$57-$5D`) |
+| `rel` | `$5E` | release |
+| `off` | `$5F` | silence the channel |
+| `lenN` | `$60+N` | the row length 0-63 |
+| `sN` | `$A0+N` | sample N |
+| `oN` | `$C0+N` | ornament N |
+| `env` | `$E0` | envelope mode (each note is followed by `ep$NN`) |
+| `vN` | `$E0+N` | the channel volume 1-15; ends envelope mode |
+| `noiseN` | `$F0 N` | the noise base |
+| `shapeN` | `$F0+N` | the envelope shape 1-15 |
+
+Sample rows keep the letters of `disco.txt`; this player reads the third byte's bits 1-2 as a whole: `E` alone (2) is
+the envelope, `4` alone (4) the volume -1 a row, `E4` (6) the volume +1 a row.
+
+## stc.txt (Sound Tracker module)
+
+The module the compiled player reads: `+0` the delay, `+1`, `+3`, `+5` the offsets of the positions, the ornaments
+and the pattern table, `+7` the identifier `SONG BY ST COMPILE`, `+25` the module's size, `+27` the samples (99
+bytes each), then the positions, the ornaments (33 bytes each), the pattern table (7 bytes each, `$FF` after the
+last) and the streams. The text keeps the blocks in the order of the bytes and rebuilds the offsets from it.
+
+- `delay N`, `id TEXT` (`{XX}` for a byte that is not plain text), `size N` (written as it is).
+- `sample N loop P L`, then 32 rows `vol V noise N tone ±$DDD TN`: the volume, the noise (0-31), the tone offset (sign
+  and 12 bits), `T` tone on, `N` noise on (`-` off). `loop P L`: the loop row and its length.
+- `positions P:T ...`: the pattern and the transposition of each position.
+- `ornament N D1 ... D32`: the note offsets.
+- `pattern N sA sB sC`: the pattern's three streams by their numbers; `patterns end` writes the table's `$FF`.
+- `stream K`, then the events (indented): a note `C-1` (note 0) to `B-8`, `sN` sample, `oN` ornament, `rest` (`$80`),
+  `---` empty (`$81`), `noenv` (`$82`: ornament 0, envelope off), `envN,$PP` (`$80+N` with N 3-14 and the envelope
+  period), `lenN` (`$A1+N`, the row length), `end` (`$FF`), `$XX` any other byte.
+- `bytes HEX...`: bytes no block covers, where they lie.
+
+## fuxoft.txt (Fuxoft's player)
+
+The player reads its tune at fixed addresses: three words at `$F035` (the start of the streams of channels A, B and
+C), then whatever they point to. The text names every address a word points to: a label line `NAME: KIND` (KIND
+`stream`, `instrument`, `ornament` or `bytes`) starts a block, `: KIND` switches the kind without a label; text ->
+bytes assembles the blocks in order and resolves the labels, so a block may grow or shrink.
+
+- `org $F035`, `channels A B C`: the labels of the three streams.
+- A stream: `NOTE/D` a note and its frames (`A-0` is note byte 1; `r/D` silence), `goto:L` (`$80`), `call:L` (`$81`,
+  a sub-stream ending with `ret`), `repeat:N` ... `next` (`$82 N` ... `$83`), `noise:N` (`$84`, the noise period),
+  `mixer:N` (`$85`, the channel's mixer bits: 8 tone only, 0 tone and noise), `orn:L` (`$86`), `instr:L` (`$87`),
+  `transp:N` (`$88`), `ret` (`$89`), `tie` / `untie` (`$8A` / `$8B`: a note keeps the volume stream running),
+  `code:L` (`$8C`, a machine code routine), `noise+:N` (`$8D`, masked by the player's noise mask), `transp+:N`
+  (`$8E`), `$XX` another byte.
+- An instrument: `V/D` a volume and its frames (the first item always has this form; a byte below `$1E`), `V` a
+  volume for one frame (the byte `V + $32`), `goto:L`.
+- An ornament, one item a frame: `notes` (`$82`: the items add notes to the note), `steps` (`$83`: the items add to the
+  tone period), `noisemix` (`$84`: toggle the channel's tone and noise, its mixer bits XOR 9), a signed number, `goto:L`.
+- `bytes`: hex bytes no walk reaches (an unused instrument, a code routine).
+
+## The one-off players' tunes
+
+The game-rip players read their tunes at addresses fixed in their code, so their tunes stay where the code reads
+them; the text keeps every byte in its order and names what the code points to. Each player is a shared `.ann`
+part in `variants/players/KIND` (named and described; `kit/mkgame.py` assembles it identical); its tune is text in
+the variant's `music/` (`tools/variants_music.py convert NAME` splits a piece, `build_piece` puts it back):
+
+| Text | Converter | Players (variants) |
+| --- | --- | --- |
+| `whittaker.txt` | `tools/res_whittaker.py` (`version platoon`, `dizzy` or `storm`) | David Whittaker's driver: Platoon (zyxboot-05, -08), Fantasy World Dizzy (zyxboot-10, zyxsiriu), Stormbringer (zyxboot-11, zyxremix) |
+| `sheridan.txt` | `tools/res_sheridan.py` | Ian Sheridan's Subway Vigilante (zyxboot-12) |
+| `daglish.txt` | `tools/res_daglish.py` | Ben Daglish's Pac-Mania (zyxrover) |
+| `hydrofool.txt`, `megaapoc.txt`, `ziutek.txt`, `awbt.txt`, `fp3bt.txt` | `tools/res_rip.py` (`format KIND`) | Hydrofool (zyxalex), Mega Apocalypse (zyxdimob), Ziutek's Part V (zyxfp4bt), Altered Beast (zyxawbt), Marauder (zyxfp3bt) |
+| `asc1.txt` | `tools/res_music.py` (`layout asc1`, `commands asc1`) | ASC Sound Master 1.x module layout (zyxboot-01) |
+
+- `whittaker.txt`: `version`, `org` (the song table), then the songs (tempo and three order lists), the order lists
+  (pattern words, ending with 0) and the patterns: note names, the version's named commands with their argument
+  bytes, durations, instruments, ornaments, `end` / `stop`.
+- `res_rip.py` texts: `format KIND`, `org $XXXX`, then labelled blocks in address order (`NAME: KIND [base $XXXX]`):
+  `bytes`, `words` (labels or raw values), `offsets`, `stream` (the player's own items: note names, named commands
+  with `:XX` arguments), and for awbt `song`, `seq` and `voice`; `-: bytes` for bytes nothing points to. Text ->
+  bytes checks that each table the code reads lands back at its address.
+- Packed music: zyxtvmbt's compiled STC (and zyxremix's whole image) are packed by `tools/lzpack.py` in the build
+  (the variant's `packed` key); the tune itself is `stc.txt` like the others.

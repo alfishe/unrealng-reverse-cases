@@ -1,0 +1,58 @@
+# The music player of Frantisek Fuka (Fuxoft) that 16 variants carry at $EB50 (kit/mkgame.py --part
+# variants/players/fuxoft/fuxoft.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1253 bytes of zyxae's music piece ($EB50-$F034, work/parts/player-fuxoft.bin, written by
+# python3 tools/variants_music.py image fuxoft). Every variant has the code at $EB50 and its tune from $F035 (the
+# tune's words are absolute addresses, so this player is never moved); tools/variants_music.py lays each variant's
+# own bytes over this source (music/player.txt: the variables, the stacks and the noise mask as saved) before the
+# tune (music/fuxoft.txt, tools/res_fuxoft.py). No recording runs a variant: every name and description here is from
+# the code (tools/ay_render.py runs it to render the WAVs).
+
+@module fuxoft ; Fuxoft's player: three entry vectors, the channel streams with calls and loops, instruments, ornaments
+@about Three vectors: MusicStart $EB50 (JP Init) points the three channels at the tune's streams (the words at $F035, $F037, $F039), sets their duration counters to 1, mixer bits to tone off, their call stacks and clears the instruments and ornaments; MusicInit $EB53 (JP Silence) turns the mixer off and writes the AY; MusicPlay $EB56 (JP PlayFrame) plays one frame: ChannelFrame for channels A, B and C, the mixer from their bits, WriteAY.
+@about A channel (ChannelFrame, SP on the channel's own stack): when its note's duration runs out, ReadStream reads the stream: a note byte $01-$7F (+ the transposition indexes PeriodTable; 0 is silence) and its duration, or a command $80-$8E through CommandTable (goto, call, repeat, next, noise, mixer, ornament, instrument, transposition, return, tie on, tie off, machine code, noise +, transposition +). Every frame the instrument's volume stream (a volume and its frames, or a short volume for one frame, or $80 goto) and the ornament (a note offset or a period step a frame, or $80 goto) shape the sound. The format is in src/res/music/README.md.
+
+$EB50 c MusicStart ; JP Init: start the tune
+$EB53 c MusicInit ; JP Silence: the mixer off
+$EB56 c MusicPlay ; JP PlayFrame: play one frame
+$EB59 c Init ; Point the channels at the tune's three streams, reset their records and stacks, the noise to 0
+$EBAD b InitPad 8 ; 45 zero bytes (unused)
+$EBDA c Silence ; The mixer off ($FF into register 7 of AYImage), then WriteAY
+
+$EBE6 b AYImage 8 ; The image of AY registers 0-13 that WriteAY sends (13 first)
+$EBF4 b Noise 1 ; The noise period (commands $84 and $8D)
+$EBF5 b Channel 1 ; The channel ChannelFrame is working on: 1 A, 2 B, 3 C
+$EBF6 w SavedSP 1 ; The caller's stack pointer while ChannelFrame runs on a channel's stack
+$EBF8 w WorkPointer 1 ; A work word: the stream pointer while a command or a note is read
+$EBFA w StackPointers 3 ; Each channel's stack pointer (its calls and repeats): $EC20, $EC40, $EC60 at Init
+$EC00 b Stacks 8 ; The three channels' stacks (32 bytes each, growing down from $EC20, $EC40, $EC60)
+$EC60 b ChannelRecords 8 ; The three channels' records (20 bytes each: A $EC60, B $EC74, C $EC88; IX)
+> +$00 / +$01 the stream pointer; +$02 the note's frames left; +$03 the mixer bits; +$04 / +$05 the volume stream pointer; +$06 the volume's frames left; +$07 / +$08 the tone period; +$09 the volume; +$0A / +$0B the instrument; +$0C / +$0D the ornament pointer; +$0E flags (bit 0 tie, bit 1 tied note running, bit 2 the note's first frame, bit 3 the ornament adds notes); +$0F the transposition; +$10 / +$11 the ornament; +$12 the note.
+$EC74 ChannelB
+$EC88 ChannelC
+$EC9C w PeriodTable 8 ; The AY tone period of notes 1-84 (A-0 up)
+
+$ED44 c PlayFrame ; Play one frame: ChannelFrame for A, B and C, the mixer from their bits, WriteAY
+$ED85 c WriteAY ; Write AYImage to AY registers 13 down to 0
+$ED9B c SetAYRegister ; AYImage[D] = A
+$EDA4 c ChannelFrameEnd ; Back to the caller's stack (SavedSP) with HL = the channel's stack pointer
+$EDB0 c ChannelFrame ; One frame of the channel at IX (A its number, HL its stack pointer): the stream, the volume, the ornament, the AY registers
+$EEB8 c SaveStream ; The stream pointer (+$00) = HL
+$EEBF c ReadStream ; Read the stream: a note and its duration, or a command (CommandTable)
+$EF3C c StreamCommand ; A command byte $80-$8E: jump through CommandTable
+$EF52 w CommandTable 8 ; The 15 command routines ($80-$8E)
+$EF70 c CommandGoto ; $80 w: goto
+$EF7C c CommandCall ; $81 w: call a sub-stream (the return address on the channel's stack)
+$EF8A c CommandRepeat ; $82 n: repeat up to $83 n times
+$EF94 c CommandNext ; $83: the end of a repeat
+$EFA6 c CommandNoise ; $84 n: the noise period
+$EFB1 c CommandMixer ; $85 n: the channel's mixer bits
+$EFBC c CommandInstrument ; $87 w: the instrument
+$EFCC c CommandTranspose ; $88 n: the transposition
+$EFD7 c CommandReturn ; $89: return from a call
+$EFDE c CommandOrnament ; $86 w: the ornament
+$EFEE c CommandTie ; $8A: tie on (a note keeps the volume stream running)
+$EFFC c CommandUntie ; $8B: tie off
+$F00A c CommandCode ; $8C w: call machine code
+$F017 c CommandNoiseAdd ; $8D n: noise += n (AND the noise mask: the operand at $F01C, $1F or $0F in the variants)
+$F027 c CommandTransposeAdd ; $8E n: transposition += n

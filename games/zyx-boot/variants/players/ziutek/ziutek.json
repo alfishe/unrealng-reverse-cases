@@ -1,0 +1,14 @@
+{
+  "about": "The Part V player of zyxfp4bt (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/ziutek/ziutek.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "ziutek"],
+  "image": "work/parts/player-ziutek.bin",
+  "org": "C780",
+  "ann": "variants/players/ziutek/ziutek.ann",
+  "top": "ziutek",
+  "bin": "ziutek.bin",
+  "dest": "variants/players/ziutek",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: the Part V player of zyxfp4bt (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-ziutek"
+}

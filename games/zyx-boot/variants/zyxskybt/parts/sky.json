@@ -1,0 +1,61 @@
+{
+  "about": "Variant zyxskybt: its picture, bars, scroller and set-up at $6FE0-$79A7: python3 ../../kit/mkgame.py --part variants/zyxskybt/parts/sky.json --install, then the four bins in parts/res to the variant's editable files (res_formats converters, tools/res_variants.py) and parts/res deleted; tools/variants.py gives the part the built resources as res/",
+  "image_cmd": [
+    "python3",
+    "tools/variants.py",
+    "image",
+    "zyxskybt",
+    "$6FE0",
+    "2504",
+    "work/variants/zyxskybt-6fe0.bin"
+  ],
+  "image": "work/variants/zyxskybt-6fe0.bin",
+  "at": "6FE0",
+  "org": "6FE0",
+  "name": "sky",
+  "out": "sky.bin",
+  "bin": "sky.bin",
+  "top": "sky",
+  "dest": "variants/zyxskybt/parts",
+  "res": "variants/zyxskybt/parts/res",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; ZYX boot, variant zyxskybt (Skynet Games): its picture, bars, scroller and set-up, loaded at $6FE0-$79A7."
+  ],
+  "data_entries": "stop",
+  "work": "work/variants/mk-zyxskybt-sky",
+  "segments": [
+    {
+      "title": "the picture and the Cyrillic font, run where they load",
+      "ann": "variants/zyxskybt/parts/sky.ann",
+      "piece": "picture",
+      "lo": "6FE0",
+      "hi": "74A7"
+    },
+    {
+      "title": "the bars, copied to and run at $FE0D",
+      "ann": "variants/zyxskybt/parts/sky.ann",
+      "piece": "bars",
+      "lo": "74A7",
+      "hi": "7519",
+      "run": "FE0D",
+      "load_label": "SkyBarsLoad"
+    },
+    {
+      "title": "the scroller, copied to and run at $A500",
+      "ann": "variants/zyxskybt/parts/sky.ann",
+      "piece": "scroller",
+      "lo": "7519",
+      "hi": "78DD",
+      "run": "A500",
+      "load_label": "SkyScrollerLoad"
+    },
+    {
+      "title": "the set-up, run where it loads",
+      "ann": "variants/zyxskybt/parts/sky.ann",
+      "piece": "setup",
+      "lo": "78DD",
+      "hi": "79A8"
+    }
+  ]
+}

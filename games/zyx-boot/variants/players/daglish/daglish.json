@@ -1,0 +1,14 @@
+{
+  "about": "Ben Daglish's music driver (zyxrover) (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/daglish/daglish.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "daglish"],
+  "image": "work/parts/player-daglish.bin",
+  "org": "BFFE",
+  "ann": "variants/players/daglish/daglish.ann",
+  "top": "daglish",
+  "bin": "daglish.bin",
+  "dest": "variants/players/daglish",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: Ben Daglish's music driver (zyxrover) at $BFFE (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-daglish"
+}

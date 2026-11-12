@@ -1,0 +1,901 @@
+# A tune of the awbt player (tools/res_rip.py): its blocks in address order.
+format awbt
+org $C4E9
+Songs: words
+  $0000 Song1 Song6 Song15 Song22 Song23
+Voice1: voice
+  head D0 00 00
+  00:01
+  FF
+Voice2: voice
+  head D0 01 00
+  10:00
+  FF
+Voice3: voice
+  head D0 01 00
+  10:00 10:00 0A:00 07:00 06:00 02:00 02:00 01:00
+  00:01
+  FF
+Voice4: voice
+  head 00 01 00
+  0A:02 0A:FF 09:00 0A:00 09:00 0A:01 07:00 06:00
+  06:00 04:FF 06:00 04:00 05:00 03:01 05:00 03:00
+  04:00 02:FF 04:00 01:00 03:00 02:01 03:00 02:00
+  03:00 02:FF 02:00 01:00 02:00 01:01 02:00 01:00
+  01:00 01:FF 01:00 01:00 01:00 01:00 00:01
+  FF
+Voice5: voice
+  head 00 01 00
+  09:30 08:30 07:00 07:30 07:00 05:30 06:00 04:30
+  06:00 04:30 06:00 04:30 05:00 03:30 05:00 03:30
+  04:00 03:30 04:00 02:30 03:00 02:30 03:00 01:30
+  03:00 01:30 02:00 01:30 02:00 01:30 02:00 01:30
+  01:00 01:30 01:00 01:30 01:00 01:30 00:01
+  FF
+Voice6: voice
+  head 00 01 00
+  10:00
+  FF
+Voice7: voice
+  head 00 01 00
+  04:FE 06:FF 09:00 09:01 09:02 09:01 08:00 08:FF
+  08:FE 08:FF 07:00 07:01 06:04 06:01 05:00 05:FF
+  04:FE 04:FF 04:00 04:01 03:02 03:01 03:00 03:FF
+  02:FE 02:FF 02:00 02:01 01:02 01:01 00:01
+  FF
+-: bytes
+  00 01 00 04 FE 0C FF 08 01 06 FF 04 01 03 FF 03
+  FC 08 FF 05 01 03 FF 03 01 02 FF 02 01 01 FF 01
+  01 00 01 FF 69 C6 28 14 69 C6 28 44 A5 C6 2A 00
+  88 C6 2A 00 C2 C6 2A 00 56 C6 28 14 43 C6 28 14
+  01 00 0D 18 03 18 06 18 03 18 02 18 01 18 02 18
+  00 01 FF 01 00 0D 0C 03 0C 07 0C 03 0C 02 0C 01
+  0C 01 0C 00 01 FF 01 FE 0C 06 06 04 05 03 04 03
+  03 02 02 01 04 06 03 04 02 03 02 03 01 02 01 02
+  01 01 00 01 FF 01 00 0C 1E 07 1A 05 18 02 16 02
+  16 02 16 05 1E 02 1A 02 18 01 16 01 16 01 16 00
+  01 FF 01 00 0C 14 07 0F 05 0E 02 0C 02 0C 02 0C
+  04 14 02 0F 02 0E 01 0C 01 0C 01 0C 00 01 FF 02
+  00 0B 1F 09 1E 08 1D 08 1C 07 1B 07 1A 06 19 06
+  18 05 17 04 16 03 15 03 15 02 14 02 14 02 14 02
+  14 01 14 01 14 00 01 FF
+Song1: song
+  transpose 48 00
+  tempo 32 00
+  voices Voice2 Voice1
+  play Seq2 Seq2 Seq3
+Song2: song
+  voices Voice5 Voice3
+  transpose 48 00
+  call Song3
+  transpose 5C 00
+  call Song3
+  transpose 48 00
+  call Song4
+  voices Voice5 Voice2
+  play Seq1 Seq38 Seq42
+  play Seq1 Seq39 Seq42
+  play Seq1 Seq40 Seq44
+  play Seq1 Seq41 Seq43
+  voices Voice4 Voice3
+  call Song5
+  call Song5
+  call Song5
+  call Song2
+Song3: song
+  play Seq4 Seq32 Seq42
+  play Seq5 Seq32 Seq42
+  play Seq4 Seq32 Seq42
+  play Seq5 Seq32 Seq43
+  ret
+Song4: song
+  play Seq6 Seq33 Seq44
+  play Seq7 Seq34 Seq44
+  play Seq8 Seq35 Seq44
+  play Seq9 Seq33 Seq44
+  play Seq10 Seq34 Seq44
+  play Seq11 Seq35 Seq44
+  play Seq12 Seq36 Seq44
+  play Seq13 Seq33 Seq42
+  play Seq14 Seq33 Seq44
+  play Seq15 Seq34 Seq44
+  play Seq16 Seq35 Seq44
+  play Seq17 Seq33 Seq44
+  play Seq18 Seq34 Seq44
+  play Seq19 Seq35 Seq44
+  play Seq20 Seq36 Seq44
+  play Seq21 Seq36 Seq42
+  play Seq22 Seq33 Seq44
+  play Seq23 Seq34 Seq44
+  play Seq24 Seq35 Seq44
+  play Seq25 Seq33 Seq44
+  play Seq26 Seq34 Seq44
+  play Seq27 Seq35 Seq44
+  play Seq28 Seq36 Seq44
+  play Seq29 Seq37 Seq43
+  ret
+Song5: song
+  play Seq30 Seq33 Seq44
+  play Seq31 Seq34 Seq44
+  play Seq31 Seq35 Seq44
+  play Seq30 Seq33 Seq43
+  ret
+Seq1: seq
+  speed 10
+  00 FF
+Seq2: seq
+  speed 01
+  11 0F 0D 0C 0A 0D 11 16 FF
+Seq3: seq
+  speed 08
+  00 FF
+Seq4: seq
+  speed 02
+  11 11 11 11 11 11 00 16 FF
+Seq5: seq
+  speed 02
+  00 14 00 00 00 00 00 00 FF
+Seq6: seq
+  speed 01
+  00 00 18 00 13 00 0F 00 16 00 00 14 00 00 13 00 FF
+Seq7: seq
+  speed 02
+  00 11 13 14 13 00 0F 00 FF
+Seq8: seq
+  speed 02
+  11 00 00 0F 00 00 11 00 FF
+Seq9: seq
+  speed 02
+  13 00 00 00 00 13 14 16 FF
+Seq10: seq
+  speed 02
+  18 00 00 16 00 00 1D 00 FF
+Seq11: seq
+  speed 02
+  00 1B 19 18 19 00 00 16 FF
+Seq12: seq
+  speed 02
+  00 00 18 00 00 19 18 13 FF
+Seq13: seq
+  speed 10
+  1D FF
+Seq14: seq
+  speed 02
+  18 00 00 00 00 00 13 18 FF
+Seq15: seq
+  speed 02
+  16 00 00 00 00 00 11 16 FF
+Seq16: seq
+  speed 02
+  14 00 00 13 00 00 0A 00 FF
+Seq17: seq
+  speed 02
+  0C 00 00 14 00 00 13 00 FF
+Seq18: seq
+  speed 02
+  11 00 00 00 00 00 0F 11 FF
+Seq19: seq
+  speed 04
+  18 00 00 14 FF
+Seq20: seq
+  speed 10
+  1D FF
+Seq21: seq
+  speed 01
+  00 00 00 00 00 00 00 00 13 00 00 14 00 00 16 00 FF
+Seq22: seq
+  speed 04
+  18 00 00 13 FF
+Seq23: seq
+  speed 04
+  16 00 00 11 FF
+Seq24: seq
+  speed 04
+  14 00 00 11 FF
+Seq25: seq
+  speed 02
+  13 00 00 00 00 0F 11 18 FF
+Seq26: seq
+  speed 02
+  16 00 00 14 00 00 11 00 FF
+Seq27: seq
+  speed 02
+  0C 00 00 14 00 00 13 00 FF
+Seq28: seq
+  speed 02
+  11 00 00 00 00 00 0F 11 FF
+Seq29: seq
+  speed 10
+  1D FF
+Seq30: seq
+  speed 01
+  18 14 11 18 14 11 18 14 11 18 14 11 18 14 11 00 FF
+Seq31: seq
+  speed 01
+  16 13 0F 16 13 0F 16 13 0F 16 13 0F 16 13 0F 00 FF
+-: bytes
+  02 13 00 00 00 00 0F 11 18 FF 02 16 00 00 14 00
+  00 11 00 FF 02 0C 00 00 14 00 00 13 00 FF 02 11
+  00 00 00 00 00 0F 11 FF 10 1D FF
+Seq32: seq
+  speed 01
+  05 07 08 0C 05 07 08 0C 05 07 08 0C 0D 0A 08 07 FF
+Seq33: seq
+  speed 01
+  0C 00 0C 0C 0C 00 0C 0C 0C 00 0C 0C 0C 00 0C 0C FF
+Seq34: seq
+  speed 01
+  0A 00 0A 0A 0A 00 0A 0A 0A 00 0A 0A 0A 00 0A 0A FF
+Seq35: seq
+  speed 01
+  03 00 03 03 03 00 03 03 03 00 03 03 03 00 03 03 FF
+Seq36: seq
+  speed 01
+  05 00 05 05 05 00 05 05 05 00 05 05 05 00 05 05 FF
+Seq37: seq
+  speed 01
+  11 00 11 11 11 00 11 11 11 00 11 11 11 00 11 11 FF
+Seq38: seq
+  speed 10
+  0C FF
+Seq39: seq
+  speed 10
+  0A FF
+Seq40: seq
+  speed 10
+  03 FF
+Seq41: seq
+  speed 10
+  05 FF
+Seq42: seq
+  speed 01
+  02 00 01 00 07 00 06 00 02 00 01 01 07 00 06 00 FF
+Seq43: seq
+  speed 01
+  02 00 01 00 06 00 01 00 01 00 07 06 07 06 07 06 FF
+Seq44: seq
+  speed 01
+  02 00 01 00 04 00 03 00 02 00 01 00 07 06 07 00 FF
+Song6: song
+  transpose 48 00
+  tempo 3E 00
+  voices Voice2 Voice2
+  call Song8
+Song7: song
+  voices Voice7 Voice2
+  call Song9
+  voices Voice7 Voice3
+  call Song10
+  call Song11
+  voices Voice7 Voice2
+  call Song12
+  call Song12
+  call Song13
+  call Song12
+  call Song12
+  call Song13
+  call Song14
+  play Seq119 Seq119 Seq127
+  call Song14
+  play Seq120 Seq120 Seq126
+  voices Voice1 Voice2
+  call Song12
+  call Song12
+  call Song13
+  call Song7
+Song8: song
+  play Seq45 Seq50 Seq121
+  play Seq46 Seq53 Seq121
+  play Seq47 Seq54 Seq121
+  play Seq48 Seq55 Seq121
+  play Seq49 Seq56 Seq121
+  play Seq49 Seq56 Seq122
+  play Seq49 Seq56 Seq122
+  ret
+Seq45: seq
+  speed 02
+  00 0C 00 00 0C 11 FF
+Seq46: seq
+  speed 04
+  00 00 0F FF
+Seq47: seq
+  speed 04
+  11 18 16 FF
+Seq48: seq
+  speed 04
+  00 00 0F FF
+Seq49: seq
+  speed 0C
+  11 FF
+Seq50: bytes
+  02
+Seq51: bytes
+  00
+Seq52: seq
+  speed 11
+  00 00 11 18 FF
+Seq53: seq
+  speed 04
+  00 00 14 FF
+Seq54: seq
+  speed 04
+  18 1D 1B FF
+Seq55: seq
+  speed 04
+  00 00 16 FF
+Seq56: seq
+  speed 0C
+  18 FF
+Song9: song
+  play Seq57 Seq57 Seq123
+  play Seq58 Seq58 Seq124
+  play Seq59 Seq59 Seq123
+  play Seq60 Seq60 Seq124
+  play Seq61 Seq61 Seq123
+  play Seq62 Seq62 Seq124
+  play Seq63 Seq63 Seq122
+  play Seq121 Seq121 Seq125
+  play Seq64 Seq64 Seq123
+  play Seq65 Seq65 Seq124
+  play Seq66 Seq66 Seq123
+  play Seq67 Seq67 Seq124
+  play Seq68 Seq68 Seq123
+  play Seq69 Seq69 Seq124
+  play Seq70 Seq70 Seq126
+  play Seq121 Seq121 Seq126
+  ret
+Seq57: seq
+  speed 03
+  11 00 00 11 FF
+Seq58: seq
+  speed 03
+  18 00 00 16 FF
+Seq59: seq
+  speed 0C
+  18 FF
+Seq60: seq
+  speed 03
+  00 16 18 1D FF
+Seq61: seq
+  speed 0C
+  1B FF
+Seq62: seq
+  speed 03
+  19 00 00 16 FF
+Seq63: seq
+  speed 0C
+  18 FF
+Seq64: seq
+  speed 0C
+  20 FF
+Seq65: seq
+  speed 03
+  00 1F 20 24 FF
+Seq66: seq
+  speed 02
+  22 00 00 00 00 1F FF
+Seq67: seq
+  speed 06
+  00 1B FF
+Seq68: seq
+  speed 0C
+  20 FF
+Seq69: seq
+  speed 03
+  00 1F 1D 1B FF
+Seq70: seq
+  speed 0C
+  1D FF
+Song10: song
+  play Seq71 Seq84 Seq127
+  play Seq72 Seq84 Seq127
+  play Seq73 Seq84 Seq127
+  play Seq121 Seq84 Seq127
+  play Seq74 Seq85 Seq127
+  play Seq75 Seq85 Seq127
+  play Seq76 Seq85 Seq127
+  play Seq121 Seq85 Seq127
+  play Seq77 Seq84 Seq127
+  play Seq78 Seq84 Seq127
+  play Seq79 Seq85 Seq127
+  play Seq80 Seq85 Seq127
+  play Seq81 Seq84 Seq127
+  play Seq82 Seq84 Seq127
+  play Seq83 Seq86 Seq123
+  play Seq121 Seq86 Seq126
+  ret
+Seq71: seq
+  speed 06
+  0C 0D FF
+Seq72: seq
+  speed 03
+  00 0C 0A 08 FF
+Seq73: seq
+  speed 06
+  00 0C FF
+Seq74: seq
+  speed 06
+  0A 0C FF
+Seq75: seq
+  speed 03
+  00 0A 08 07 FF
+Seq76: seq
+  speed 06
+  00 0A FF
+Seq77: seq
+  speed 06
+  0C 05 FF
+Seq78: seq
+  speed 03
+  00 07 08 00 FF
+Seq79: seq
+  speed 06
+  0A 03 FF
+Seq80: seq
+  speed 03
+  00 05 07 00 FF
+Seq81: seq
+  speed 06
+  08 01 FF
+Seq82: seq
+  speed 03
+  00 03 05 00 FF
+Seq83: seq
+  speed 0C
+  0C FF
+Seq84: seq
+  speed 03
+  0C 0C 0C 0C FF
+Seq85: seq
+  speed 03
+  0A 0A 0A 0A FF
+Seq86: seq
+  speed 03
+  11 11 11 11 FF
+Song11: song
+  play Seq87 Seq95 Seq127
+  play Seq88 Seq95 Seq127
+  play Seq89 Seq96 Seq127
+  play Seq90 Seq96 Seq127
+  play Seq87 Seq98 Seq127
+  play Seq91 Seq98 Seq127
+  play Seq92 Seq96 Seq127
+  play Seq121 Seq96 Seq127
+  play Seq87 Seq95 Seq127
+  play Seq88 Seq95 Seq127
+  play Seq89 Seq96 Seq127
+  play Seq90 Seq96 Seq127
+  play Seq87 Seq98 Seq127
+  play Seq93 Seq98 Seq127
+  play Seq94 Seq96 Seq123
+  play Seq121 Seq96 Seq126
+  ret
+Seq87: seq
+  speed 02
+  0D 00 00 00 00 11 FF
+Seq88: seq
+  speed 06
+  00 14 FF
+Seq89: seq
+  speed 02
+  13 00 00 00 00 11 FF
+Seq90: seq
+  speed 03
+  0F 0E 0F 0E FF
+Seq91: seq
+  speed 06
+  00 14 FF
+Seq92: seq
+  speed 0C
+  13 FF
+Seq93: seq
+  speed 06
+  00 14 FF
+Seq94: seq
+  speed 0C
+  18 FF
+Seq95: seq
+  speed 03
+  0D 0D 0D 0D FF
+Seq96: seq
+  speed 03
+  0C 0C
+Seq97: seq
+  speed 0C
+  0C FF
+Seq98: seq
+  speed 03
+  0A 0A 00 0A FF
+Song12: song
+  play Seq99 Seq101 Seq127
+  play Seq121 Seq102 Seq127
+  play Seq100 Seq103 Seq127
+  play Seq121 Seq104 Seq127
+  ret
+Seq99: seq
+  speed 03
+  16 18 18 00 FF
+Seq100: seq
+  speed 03
+  14 16 16 00 FF
+Seq101: seq
+  speed 03
+  18 16 18 11 FF
+Seq102: seq
+  speed 03
+  00 11 13 14 FF
+Seq103: seq
+  speed 03
+  16 14 16 0F FF
+Seq104: seq
+  speed 03
+  00 0F 11 13 FF
+Song13: song
+  play Seq105 Seq106 Seq127
+  play Seq121 Seq107 Seq127
+  play Seq121 Seq108 Seq127
+  play Seq121 Seq109 Seq127
+  play Seq121 Seq110 Seq127
+  play Seq121 Seq121 Seq127
+  play Seq121 Seq111 Seq127
+  play Seq121 Seq121 Seq127
+  ret
+Seq105: seq
+  speed 03
+  16 18 18 00 FF
+Seq106: seq
+  speed 03
+  18 16 18 1D FF
+Seq107: seq
+  speed 03
+  00 1B 19 18 FF
+Seq108: seq
+  speed 03
+  16 14 16 18 FF
+Seq109: seq
+  speed 03
+  00 16 14 13 FF
+Seq110: seq
+  speed 0C
+  11 FF
+Seq111: seq
+  speed 0C
+  1D FF
+Song14: song
+  play Seq112 Seq112 Seq127
+  play Seq113 Seq113 Seq127
+  play Seq114 Seq114 Seq127
+  play Seq115 Seq115 Seq127
+  play Seq116 Seq116 Seq127
+  play Seq117 Seq117 Seq127
+  play Seq118 Seq118 Seq127
+  ret
+Seq112: seq
+  speed 03
+  16 14 16 14 FF
+Seq113: seq
+  speed 03
+  13 14 13 14 FF
+Seq114: seq
+  speed 03
+  18 16 18 16 FF
+Seq115: seq
+  speed 03
+  14 16 14 16 FF
+Seq116: seq
+  speed 03
+  19 18 19 18 FF
+Seq117: seq
+  speed 03
+  16 18 16 18 FF
+Seq118: seq
+  speed 03
+  1B 19 1B 19 FF
+Seq119: seq
+  speed 03
+  18 19 18 19 FF
+Seq120: seq
+  speed 03
+  20 1F 1D 1B FF
+Seq121: seq
+  speed 0C
+  00 FF
+Seq122: seq
+  speed 02
+  07 06 06 07 06 06 FF
+Seq123: seq
+  speed 02
+  01 00 00 07 07 07 FF
+Seq124: seq
+  speed 06
+  07 01 FF
+Seq125: seq
+  speed 02
+  07 07 07 06 06 06 FF
+Seq126: seq
+  speed 02
+  06 06 06 07 07 07 FF
+Seq127: seq
+  speed 03
+  06 07 06 07 FF
+Seq128: seq
+  speed 0C
+  00 FF
+Song15: song
+  transpose 18 00
+  tempo 48 00
+  call Song17
+Song16: song
+  call Song18
+  call Song19
+  call Song18
+  call Song19
+  call Song20
+  call Song21
+  call Song16
+Song17: song
+  voices Voice4 Voice6
+  play Seq129 Seq129 Seq128
+  play Seq130 Seq130 Seq128
+  play Seq128 Seq128 Seq128
+  play Seq131 Seq131 Seq128
+  play Seq132 Seq132 Seq128
+  play Seq128 Seq128 Seq128
+  play Seq133 Seq133 Seq128
+  play Seq128 Seq128 Seq128
+  play Seq128 Seq128 Seq128
+  play Seq128 Seq128 Seq128
+  play Seq128 Seq128 Seq128
+  ret
+Seq129: seq
+  speed 02
+  13 00 00 00 00 14 FF
+Seq130: seq
+  speed 0C
+  13 FF
+Seq131: seq
+  speed 02
+  11 00 00 00 00 13 FF
+Seq132: seq
+  speed 0C
+  11 FF
+Seq133: seq
+  speed 0C
+  0C FF
+Song18: song
+  voices Voice5 Voice1
+  play Seq134 Seq134 Seq128
+  voices Voice5 Voice6
+  play Seq135 Seq128 Seq165
+  play Seq134 Seq128 Seq128
+  play Seq135 Seq128 Seq165
+  play Seq134 Seq136 Seq128
+  play Seq135 Seq128 Seq165
+  play Seq134 Seq137 Seq128
+  play Seq135 Seq138 Seq165
+  play Seq134 Seq139 Seq128
+  play Seq135 Seq128 Seq165
+  play Seq134 Seq128 Seq128
+  play Seq135 Seq140 Seq165
+  play Seq134 Seq141 Seq128
+  play Seq135 Seq128 Seq165
+  play Seq134 Seq128 Seq128
+  play Seq135 Seq128 Seq165
+  ret
+Seq134: seq
+  speed 03
+  0C 0C 18 0C FF
+Seq135: seq
+  speed 03
+  0C 16 0C 14 FF
+Seq136: seq
+  speed 0C
+  18 FF
+Seq137: seq
+  speed 0C
+  16 FF
+Seq138: seq
+  speed 03
+  00 00 11 13 FF
+Seq139: seq
+  speed 0C
+  0C FF
+Seq140: seq
+  speed 01
+  00 00 00 00 00 00 00 00 00 00 11 13 FF
+Seq141: seq
+  speed 0C
+  18 FF
+Song19: song
+  play Seq134 Seq146 Seq128
+  play Seq135 Seq128 Seq165
+  play Seq142 Seq147 Seq128
+  play Seq143 Seq148 Seq165
+  play Seq144 Seq149 Seq128
+  play Seq145 Seq128 Seq165
+  play Seq134 Seq150 Seq128
+  play Seq135 Seq128 Seq165
+  ret
+Seq142: seq
+  speed 03
+  0D 0D 19 0D FF
+Seq143: seq
+  speed 03
+  0D 18 0D 16 FF
+Seq144: seq
+  speed 03
+  0C 0C 16 0C FF
+Seq145: seq
+  speed 03
+  0C 16 0D 18 FF
+Seq146: seq
+  speed 0C
+  11 FF
+Seq147: seq
+  speed 0C
+  0F FF
+Seq148: seq
+  speed 03
+  00 00 0D 0C FF
+Seq149: seq
+  speed 0C
+  0D FF
+Seq150: seq
+  speed 0C
+  0C FF
+Song20: song
+  play Seq151 Seq128 Seq166
+  play Seq151 Seq128 Seq167
+  play Seq152 Seq155 Seq166
+  play Seq152 Seq128 Seq167
+  play Seq152 Seq156 Seq166
+  play Seq152 Seq157 Seq167
+  play Seq153 Seq155 Seq166
+  play Seq153 Seq128 Seq167
+  play Seq153 Seq128 Seq166
+  play Seq153 Seq128 Seq167
+  play Seq152 Seq155 Seq166
+  play Seq152 Seq128 Seq167
+  play Seq153 Seq156 Seq166
+  play Seq153 Seq158 Seq167
+  play Seq154 Seq159 Seq166
+  play Seq154 Seq128 Seq167
+  ret
+Seq151: seq
+  speed 01
+  0D 0C 0D 0C 0D 0C 0D 0C 0D 0C 0D 0C FF
+Seq152: seq
+  speed 06
+  0C 0C FF
+Seq153: seq
+  speed 06
+  0D 0D FF
+Seq154: seq
+  speed 06
+  0F 0F FF
+Seq155: seq
+  speed 0C
+  0D FF
+Seq156: seq
+  speed 0C
+  0F FF
+Seq157: seq
+  speed 03
+  00 00 00 0C FF
+Seq158: seq
+  speed 03
+  00 00 00 11 FF
+Seq159: seq
+  speed 03
+  0C 00 00 FF
+-: bytes
+  0C 07 FF
+Song21: song
+  play Seq160 Seq161 Seq166
+  play Seq160 Seq162 Seq167
+  play Seq160 Seq161 Seq166
+  play Seq160 Seq163 Seq167
+  play Seq160 Seq164 Seq168
+  play Seq160 Seq128 Seq169
+  play Seq160 Seq128 Seq168
+  play Seq160 Seq128 Seq169
+  ret
+Seq160: seq
+  speed 06
+  11 11 FF
+Seq161: seq
+  speed 03
+  18 16 18 11 FF
+Seq162: seq
+  speed 03
+  00 18 00 16 FF
+Seq163: seq
+  speed 03
+  00 1B 00 1D FF
+Seq164: seq
+  speed 0C
+  1F FF
+Seq165: seq
+  speed 02
+  00 00 00 00 07 07 FF
+Seq166: seq
+  speed 06
+  07 07 FF
+Seq167: seq
+  speed 03
+  07 07 07 07 FF
+Seq168: seq
+  speed 02
+  07 07 00 00 00 00 FF
+Seq169: seq
+  speed 03
+  00 00 07 07 FF
+Song22: song
+  transpose 48 00
+  tempo 78 00
+  voices Voice5 Voice2
+  play Seq128 Seq171 Seq175
+  play Seq128 Seq171 Seq175
+  play Seq128 Seq171 Seq175
+  play Seq128 Seq171 Seq175
+  play Seq172 Seq171 Seq175
+  play Seq173 Seq171 Seq175
+  play Seq172 Seq171 Seq175
+  play Seq174 Seq171 Seq176
+  voices Voice5 $0000
+  stop0
+-: bytes
+  00 00 00 00 00 00 00 00
+Seq170: seq
+  speed 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 48 00 02 00 A0 D1 02 00 6D D1 03 00 50 00 02 00 6D D1 03 00 5C 00 02 00 6D D1 03 00 48 00 02 00 A0 D1 02 00 86 D0
+Seq171: seq
+  speed 03
+  02 07 02 02 FF
+Seq172: seq
+  speed 02
+  1D 1B 17 1D 1B 17 FF
+Seq173: seq
+  speed 02
+  1D 00 1D 1B 17 17 FF
+Seq174: seq
+  speed 02
+  1D 1B 17 17 00 00 FF
+-: bytes
+  F9 CD 5E D1 CC D1 64 D1 5E D1 CC D1 67 D1 5E D1
+  CC D1 6A D1 5E D1 CC D1 04 00 03 0F 0F 0F 0F FF
+  0C 0F FF 0C 14 FF 0C 17 FF 8D D1 87 D1 D2 D1 90
+  D1 87 D1 D2 D1 96 D1 87 D1 D2 D1 9C D1 87 D1 D2
+  D1 04 00 03 0F 17 14 0F FF 0C 17 FF 03 00 00 17
+  17 FF 03 17 17 17 00 FF 06 17 17 FF C6 D1 BA D1
+  D2 D1 F9 CD BA D1 D2 D1 C9 D1 C0 D1 D2 D1 F9 CD
+  C0 D1 D2 D1 04 00 03 13 1B 18 13 FF 00 00 00 00
+  00 00 00 00 00 00 00 00
+Seq175: seq
+  speed 00
+  00 00 00 00 00
+Seq176: seq
+  speed 00
+  00 00 00 00 00
+Song23: song
+  stop0
+-: bytes
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 48 D2 48 D2 17 C8 01 00 F5 C4
+  F5 C4 17 C8 38 D2 17 C8 00 00 22 D2 22 D2 17 C8
+  2A D2 2A D2 17 C8 04 00 02 16 1D 1B 1D 18 00 FF
+  02 19 16 00 18 19 1B FF 38 D2 38 D2 17 C8 02 16
+  18 19 1B 1C 1D FF 02 16 18 19 1B 1D 1F FF 02 20
+  22 00 00 00 00 FF 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00

@@ -1,0 +1,14 @@
+{
+  "about": "Fuxoft's music player of 16 variants (tools/variants_music.py): python3 ../../kit/mkgame.py --part variants/players/fuxoft/fuxoft.json --install",
+  "image_cmd": ["python3", "tools/variants_music.py", "image", "fuxoft"],
+  "image": "work/parts/player-fuxoft.bin",
+  "org": "EB50",
+  "ann": "variants/players/fuxoft/fuxoft.ann",
+  "top": "fuxoft",
+  "bin": "fuxoft.bin",
+  "dest": "variants/players/fuxoft",
+  "device": "ZXSPECTRUM48",
+  "header": ["; ZYX boot variants: Fuxoft's music player at $EB50 (tools/variants_music.py)."],
+  "data_entries": "stop",
+  "work": "work/variants/mk-player-fuxoft"
+}

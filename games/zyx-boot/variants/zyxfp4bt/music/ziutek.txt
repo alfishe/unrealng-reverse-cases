@@ -1,0 +1,412 @@
+# A tune of the ziutek player (tools/res_rip.py): its blocks in address order.
+format ziutek
+org $CA83
+Pattern1: stream
+  dur1 smp1 orn1 F-1
+  smp0 orn0 F-2
+  smp2 orn1 F-1
+  smp0 orn0 F-2
+  smp1 orn1 F-1
+  smp0 orn0 F-2
+  smp2 orn1 F-1
+  smp0 orn0 F-2
+  smp1 orn1 G#1
+  smp0 orn0 G#2
+  smp2 orn1 G#1
+  smp0 orn0 G#2
+  smp1 orn1 G#1
+  smp0 orn0 G#2
+  smp2 orn1 G#1
+  smp0 orn0 G#2
+  smp1 orn1 C#1
+  smp0 orn0 C#2
+  smp2 orn1 C#1
+  smp0 orn0 C#2
+  smp1 orn1 C#1
+  smp0 orn0 C#2
+  smp2 orn1 C#1
+  smp0 orn0 C#2
+  smp1 orn1 D#1
+  smp0 orn0 D#2
+  smp2 orn1 D#1
+  smp0 orn0 D#2
+  smp1 orn1 D#1
+  smp0 orn0 D#2
+  smp2 orn1 D#1
+  smp0 orn0 D#2
+  next12
+Pattern2: stream
+  dur63 hold5
+  next8
+Pattern3: stream
+  dur0 smp4 orn2 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 A#4
+  dur1 A#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  next10
+Pattern4: stream
+  dur5 smp3 orn7 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur3 C-4
+  dur5 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur3 C-4
+  next11
+Pattern5: stream
+  dur0 hold5
+  dur5 smp3 orn7 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur3 C-4
+  dur5 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur2 C-4
+  next10
+Pattern6: stream
+  dur0 smp8 env12:2C F-4
+  off10
+  F-4
+  off1
+  F-4
+  off8
+  F-4
+  off8
+  env12:25 G#4
+  off8
+  env12:32 A#4
+  dur2 env12:2C F-4
+  dur1 off6
+  dur0 F-4
+  off8
+  F-4
+  off1
+  F-4
+  off6
+  env12:1E C-5
+  off2
+  env12:21 A#4
+  off9
+  env12:25 G#4
+  dur2 env12:2C F-4
+  dur1 off6
+  dur0 F-4
+  off1
+  F-4
+  off11
+  F-4
+  off7
+  F-4
+  off9
+  env12:25 G#4
+  off6
+  env12:21 A#4
+  dur2 env12:2C F-4
+  dur1 off5
+  dur0 F-4
+  off11
+  F-4
+  off10
+  F-4
+  off7
+  F-4
+  env12:32 D#4
+  off8
+  D#4
+  dur1 env12:3D C-4
+  env12:32 D#4
+  dur0 env12:2C F-4
+  off4
+  next4
+Pattern7: stream
+  dur0 smp4 orn2 F-4
+  dur1 F-4
+  dur0 F-4
+  dur1 F-4
+  dur0 F-4
+  dur1 F-4
+  dur0 F-4
+  dur1 F-4
+  F-4
+  F-4
+  dur0 orn3 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  C#4
+  C#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  D#4
+  D#4
+  next9
+Pattern8: stream
+  dur3 hold4
+  dur1 smp5 orn4 F-4
+  F-4
+  dur3 F-4
+  dur1 D#4
+  dur3 G#4
+  dur1 F-4
+  F-4
+  dur3 F-4
+  dur1 F-4
+  D#4
+  dur5 C-5
+  dur1 F-4
+  F-4
+  F-4
+  F-4
+  D#4
+  dur3 C-5
+  A#4
+  G-4
+  dur1 F-4
+  dur3 D#4
+  next9
+Pattern9: stream
+  dur3 hold3
+  C-5
+  C-5
+  dur1 A#4
+  dur3 G#4
+  dur1 G#4
+  dur3 A#4
+  C-5
+  dur1 C-5
+  C-5
+  dur3 C-5
+  dur1 C-5
+  A#4
+  G#4
+  G#4
+  A#4
+  dur3 C-5
+  A#4
+  dur1 G#4
+  G#4
+  G#4
+  dur3 A#4
+  next11
+Pattern10: stream
+  dur3 hold8
+  dur1 smp5 orn5 F-4
+  F-4
+  dur3 F-4
+  dur1 D#4
+  dur3 G#4
+  dur1 F-4
+  F-4
+  dur3 F-4
+  dur1 F-4
+  D#4
+  dur5 C-5
+  dur1 F-4
+  F-4
+  F-4
+  F-4
+  D#4
+  dur3 C-5
+  A#4
+  G-4
+  dur1 F-4
+  dur3 D#4
+  next10
+Pattern11: stream
+  dur5 smp3 orn4 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur3 C-4
+  dur5 F-3
+  F-3
+  dur3 G#3
+  dur5 F-3
+  F-3
+  dur3 C-4
+  next1
+Pattern12: stream
+  dur3 smp5 orn6 F-5
+  F-5
+  dur0 smp6 orn0 C-3
+  C-3
+  C-3
+  C-3
+  dur9 C-3
+  dur1 smp5 orn5 F-4
+  G#4
+  A#4
+  C-5
+  dur3 A#4
+  G#4
+  dur7 G-4
+  dur3 G#4
+  G-4
+  dur5 F-4
+  dur1 D#4
+  F-4
+  next7
+Pattern13: stream
+  dur3 smp5 orn4 F-3
+  F-3
+  dur0 smp7 orn0 C-3
+  C-3
+  C-3
+  C-3
+  dur3 C-3
+  dur0 smp4 orn3 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  dur0 G#4
+  dur1 G#4
+  G#4
+  G#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  dur0 C#4
+  dur1 C#4
+  C#4
+  C#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  dur0 D#4
+  dur1 D#4
+  D#4
+  D#4
+  next5
+Positions: rows 2
+  01 00
+  01 00
+  02 00
+  02 00
+  03 00
+  03 00
+  04 00
+  04 00
+  05 00
+  05 00
+  06 00
+  06 00
+  07 00
+  07 00
+  07 00
+  07 00
+  03 00
+  03 00
+  04 00
+  04 00
+  05 00
+  05 00
+  06 00
+  06 00
+  07 00
+  07 00
+  07 00
+  07 00
+Patterns: words
+  Pattern1 Pattern2 Pattern3 Pattern1 Pattern4 Pattern5 Pattern1 Pattern6
+  Pattern7 Pattern1 Pattern8 Pattern3 Pattern1 Pattern9 Pattern3 Pattern1
+  Pattern10 Pattern11 Pattern1 Pattern12 Pattern13
+Samples: rows 98
+  0F 00 00 0F 80 00 0E 80 00 0E 80 00 0D 80 00 0D 80 00 0C 80 00 0C 80 00 0B 80 00 0B 80 00 0A 80 00 0A 80 00 09 80 00 09 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  2F 3F 00 4F A0 00 6E A0 00 0E 80 00 0D 80 00 0D 80 00 0C 80 00 0C 80 00 0B 80 00 0B 80 00 0A 80 00 0A 80 00 09 80 00 09 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  0F 22 80 1F 22 00 1E 21 80 0E 01 00 0D 00 00 0D 00 00 0C 80 00 0C 80 00 0B 80 00 0B 80 00 0A 80 00 0A 80 00 09 80 00 09 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  0F 80 00 0F 80 02 0F 80 04 0F 80 02 0E 80 00 0E A0 02 0E A0 04 0E A0 02 0D 80 00 0D 80 02 0D 80 04 0D 80 02 0C 80 00 0C A0 02 0C A0 04 0C A0 02 0B 80 00 0B 80 02 0B 80 04 0B 80 02 0A 80 00 0A A0 02 0A A0 04 0A A0 02 09 80 00 09 80 02 09 80 04 09 80 02 08 80 00 08 A0 02 08 A0 04 08 A0 02 1C 03
+  0D 05 00 0D 80 00 0C 80 00 0B 80 00 0B 80 00 0A 80 00 09 80 00 09 80 00 08 80 00 07 80 00 07 80 00 06 80 00 05 80 00 05 80 00 04 80 00 03 80 00 03 80 00 02 80 00 01 80 00 01 80 00 01 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  0F 80 00 0F 80 00 0E 80 00 0D 80 00 0D 80 00 0D 80 00 0D 80 00 0D 80 00 0D 80 00 0D 80 02 0D 80 04 0D 80 02 0D 80 00 0D A0 02 0D A0 04 0D A0 02 0D 80 00 0D 80 02 0D 80 04 0D 80 02 0D 80 00 0D A0 02 0D A0 04 0D A0 02 0D 80 00 0D 80 02 0D 80 04 0D 80 02 0D 80 00 0D A0 02 0D A0 04 0D A0 02 18 07
+  0F 24 80 1F 29 00 1F 2F 80 2E 20 00 2D 29 80 3C 30 00 3A 37 80 46 3F 00 01 00 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  2F A0 00 4F A0 00 6E A0 00 8E A0 00 AD A0 00 CB A0 00 E9 A0 00 F6 A0 80 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 80 00 00 00
+  00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 C0 00 00 00
+Ornaments: rows 32
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0C 0C 0C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07 00 07
+  00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07 04 00 07
+  0C 00 00 00 0C 00 00 00 0C 00 00 00 0C 00 00 00 0C 00 00 00 0C 00 00 00 0C 00 00 00 0C 00 00 00
+  F4 FB 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0C 00 F4 00 0C 00 F4 00 0C 00 F4 00 0C 00 F4 00 0C 00 F4 00 0C 00 F4 00 0C 00 F4 00 0C 00 F4 00
+  FB FC FD FE FE FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 04 38 3C 70 74 88 8C 20 58 90 18 44 84 A4 1C 30 34 50 6C 60 48 54 4C 24 94 68 A8 14 40 78
+  98 0C 7C 28 10 A0 64 80 2C 9C 08 5C 00 21 B4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  00 00 00 00 00 00 00 00 00 00 00 00 00

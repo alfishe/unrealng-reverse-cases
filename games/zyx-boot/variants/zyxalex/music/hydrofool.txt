@@ -1,0 +1,582 @@
+# A tune of the hydrofool player (tools/res_rip.py): its blocks in address order.
+format hydrofool
+org $F8F1
+Arpeggios: offsets
+  Arpeggio1 Arpeggio2 Arpeggio3 Arpeggio4 Arpeggio5 Arpeggio6 Arpeggio7 Arpeggio8
+  Arpeggio9 Arpeggio10 Arpeggio11 Arpeggio12 Arpeggio13 Arpeggio14 Arpeggio15
+Arpeggio1: arp
+  00
+Arpeggio2: arp
+  87 00 03
+Arpeggio3: arp
+  07 87 00
+Arpeggio4: arp
+  04 07 87 00
+Arpeggio5: arp
+  03 07 0C 87
+Arpeggio6: arp
+  00 04 07
+Arpeggio7: arp
+  0C 87 07
+Arpeggio8: arp
+  0C 0F 87
+Arpeggio9: arp
+  07 0C 10
+Arpeggio10: arp
+  87 03
+Arpeggio11: arp
+  07 0C
+Arpeggio12: arp
+  87 04
+Arpeggio13: arp
+  07 0C
+Arpeggio14: arp
+  87 00
+Arpeggio15: arp
+  0C 87 00 04 87 00 03 87 00 05 87 00 07 87 00 0C
+  00 00 00 87
+Playing: bytes
+  00
+Songs: words
+  Order1 Order2 Order3 $FE40 $FE42 $FE44 $FE84 $FE86
+  $FE44 $FE88 $FE8A $FE44 $FE8C $FE8E $FE44 $FE90
+  $FE92 $FE44 $FE94 $FE98 $FE44 $FE9C $FE9E $FE44
+  $FEA0 $FEA2 $FE44 $FEA4 $FEA6 $FE44
+Order1: order
+  Pattern1 Pattern2 Pattern1 Pattern3 Pattern4 Pattern5 Pattern6 Pattern5
+  Pattern7 Pattern8 Pattern9 Pattern10 Pattern10 Pattern11 Pattern11 Pattern1
+  Pattern2 Pattern1 Pattern3 Pattern4 Pattern12 Pattern13 Pattern12 Pattern14
+  Pattern15 Pattern15 Pattern16 Pattern17 Pattern17 Pattern18 Pattern18 Pattern19
+  Pattern18 Pattern18 Pattern19 $0000
+Order2: order
+  Pattern20 Pattern20 Pattern20 Pattern20 Pattern20 Pattern20 Pattern21 Pattern20
+  Pattern22 Pattern22 Pattern21 Pattern21 Pattern22 Pattern22 Pattern21 Pattern21
+  Pattern22 Pattern22 Pattern22 Pattern22 Pattern20 Pattern20 Pattern20 Pattern20
+  Pattern22 Pattern22 Pattern22 Pattern22 Pattern21 Pattern21 Pattern21 Pattern21
+  Pattern23 Pattern23 Pattern23 Pattern23 Pattern24 Pattern24 Pattern24 Pattern24
+  Pattern22 Pattern22 Pattern22 Pattern22 Pattern20 Pattern20 Pattern20 Pattern20
+  Pattern20 Pattern20 Pattern20 Pattern20 Pattern20 Pattern20 Pattern21 Pattern20
+  Pattern22 Pattern22 Pattern21 Pattern21 Pattern22 Pattern22 Pattern21 Pattern21
+  Pattern23 Pattern23 Pattern23 Pattern23 Pattern23 Pattern23 Pattern23 Pattern23
+  Pattern24 Pattern24 Pattern24 Pattern24 Pattern24 Pattern24 Pattern24 Pattern24
+  Pattern25 Pattern25 Pattern26 Pattern26 Pattern20 Pattern20 Pattern20 Pattern20
+  Pattern22 Pattern22 Pattern21 Pattern21 Pattern20 Pattern20 Pattern20 Pattern20
+  Pattern22 Pattern22 Pattern21 Pattern21 $0000
+Order3: order
+  Pattern27 Pattern27 Pattern27 Pattern27 Pattern28 Pattern28 Pattern28 Pattern28
+  Pattern28 Pattern28 Pattern27 Pattern27 Pattern28 Pattern28 Pattern28 Pattern28
+  Pattern29 Pattern29 Pattern29 Pattern29 Pattern30 Pattern30 Pattern30 Pattern30
+  Pattern31 Pattern31 Pattern31 Pattern31 Pattern31 Pattern31 Pattern31 Pattern31
+  Pattern27 Pattern27 Pattern27 Pattern27 Pattern28 Pattern28 Pattern28 Pattern28
+  Pattern29 Pattern29 Pattern29 Pattern29 Pattern29 Pattern29 Pattern29 Pattern29
+  Pattern30 Pattern30 Pattern30 Pattern30 Pattern30 Pattern30 Pattern30 Pattern30
+  Pattern28 Pattern28 Pattern28 Pattern28 Pattern28 Pattern28 Pattern32 Pattern32
+  Pattern32 Pattern32 Pattern32 Pattern32 $FE2B $FE2B Pattern32 Pattern32
+  Pattern32 Pattern32 Pattern32 Pattern32 $FE2B $FE2B $0000
+-: bytes
+  89 FC 87 89 00 87 89 02 87
+Pattern1: stream
+  tempo4 orn0 tone instr14:00,31,05 sweep:01,02 sweepdown dur3 rest
+  A#4
+  dur1 A-4
+  G-4
+  A-4
+  F-4
+  rest
+  rest
+  D#4
+  F-4
+  D#4
+  D-4
+  D#4
+  F-4
+  end
+Pattern2: stream
+  dur3 rest
+  D-4
+  dur1 D#4
+  D-4
+  A#3
+  dur17 F-3
+  end
+Pattern3: stream
+  dur1 rest
+  D-4
+  D#4
+  D-4
+  dur3 A#3
+  dur1 G-3
+  F-3
+  dur15 A#3
+  end
+Pattern4: stream
+  dur5 D#4
+  F-4
+  G-4
+  A#4
+  dur3 A-4
+  G-4
+  dur1 A#4
+  dur29 F-4
+  dur5 G-4
+  A-4
+  A#4
+  C-5
+  dur3 A#4
+  A-4
+  dur5 A#4
+  dur9 A-4
+  dur5 G-4
+  dur9 F-4
+  end
+Pattern5: stream
+  dur3 rest
+  D#4
+  dur1 D-4
+  D#4
+  rest
+  dur3 G#4
+  dur1 G#4
+  dur3 G-4
+  C-5
+  A#4
+  rest
+  D#4
+  dur1 D-4
+  D#4
+  rest
+  dur3 G#4
+  dur1 G#4
+  dur3 G-4
+  F-4
+  dur1 D#4
+  C-4
+  end
+Pattern6: stream
+  dur3 rest
+  A#3
+  dur1 A-3
+  A#3
+  rest
+  dur3 D#4
+  dur1 D#4
+  dur3 D-4
+  C-4
+  A#3
+  rest
+  dur1 D#4
+  D-4
+  dur3 D#4
+  dur1 G-4
+  F-4
+  A#4
+  A#4
+  dur3 F-4
+  D#4
+  dur1 D-4
+  A#3
+  end
+Pattern7: stream
+  dur3 rest
+  F-4
+  dur1 D#4
+  D-4
+  D#4
+  C-4
+  rest
+  rest
+  A#3
+  C-4
+  A#3
+  A-3
+  A#3
+  C-4
+  dur3 rest
+  F-4
+  dur1 D#4
+  F-4
+  rest
+  dur3 A#4
+  dur1 A#4
+  dur3 A-4
+  G-4
+  A-4
+  end
+Pattern8: stream
+  sweepoff dur1 orn11 C#3
+  C#3
+  rest
+  C#4
+  rest
+  rest
+  C#3
+  rest
+  orn10 D-4
+  D-4
+  rest
+  D-5
+  rest
+  rest
+  D-4
+  rest
+  E-4
+  E-4
+  E-5
+  rest
+  E-4
+  E-5
+  rest
+  D-4
+  rest
+  D-4
+  D-5
+  rest
+  D-4
+  D-5
+  rest
+  D-4
+  end
+Pattern9: stream
+  dur1 orn11 E-4
+  E-4
+  rest
+  E-5
+  rest
+  rest
+  E-4
+  rest
+  orn10 F-4
+  F-4
+  rest
+  F-5
+  rest
+  rest
+  F-4
+  rest
+  G-4
+  G-4
+  G-5
+  rest
+  G-4
+  G-5
+  rest
+  F-4
+  rest
+  F-4
+  F-5
+  rest
+  F-4
+  F-5
+  rest
+  F-4
+  end
+Pattern10: stream
+  orn11 G-5
+  G-5
+  rest
+  G-4
+  orn10 F-4
+  rest
+  F-5
+  orn11 G-5
+  orn10 F-5
+  F-5
+  rest
+  F-4
+  D#4
+  rest
+  D#5
+  F-5
+  end
+Pattern11: stream
+  orn11 G-5
+  G-5
+  G-4
+  rest
+  orn10 F-5
+  F-4
+  rest
+  D#5
+  rest
+  D#4
+  D#4
+  rest
+  orn11 D-5
+  C-5
+  rest
+  D-5
+  end
+Pattern12: stream
+  sweepoff orn14 dur1 E-4
+  E-4
+  B-4
+  rest
+  A-4
+  rest
+  D-5
+  C#5
+  rest
+  rest
+  A-4
+  B-4
+  rest
+  rest
+  C#5
+  A-4
+  end
+Pattern13: stream
+  E-4
+  E-4
+  B-4
+  rest
+  A-4
+  rest
+  D-5
+  C#5
+  rest
+  F#5
+  E-5
+  rest
+  D-5
+  C#5
+  rest
+  rest
+  end
+Pattern14: stream
+  E-4
+  E-4
+  B-4
+  rest
+  A-4
+  rest
+  F#5
+  E-5
+  A-5
+  A-4
+  dur3 A-4
+  A-4
+  rest
+  end
+Pattern15: stream
+  dur1 E-5
+  E-5
+  A-5
+  rest
+  G-5
+  rest
+  E-5
+  F-5
+  rest
+  D-5
+  E-5
+  rest
+  C-5
+  D-5
+  rest
+  B-4
+  C-5
+  rest
+  A-4
+  B-4
+  rest
+  A-4
+  G-4
+  rest
+  C-5
+  C-4
+  dur3 C-4
+  C-4
+  rest
+  end
+Pattern16: stream
+  dur1 orn0 D#3
+  D#2
+  dur3 D#2
+  D#2
+  sweepoff rest
+  dur23 orn4 bendup D#6
+  benddown D#4
+  orn0 dur1 D#3
+  D#2
+  dur3 D#2
+  D#2
+  rest
+  dur15 rest
+  dur31 orn4 slide:02,50 G#4
+  end
+Pattern17: stream
+  orn0 dur1 F-3
+  F-2
+  dur3 F-2
+  F-2
+  rest
+  rest
+  rest
+  dur1 orn4 F-4
+  F-4
+  rest
+  rest
+  end
+Pattern18: stream
+  dur1 orn8 A#4
+  dur3 A#4
+  dur5 orn6 F-4
+  orn8 dur3 F-4
+  dur1 orn6 D#4
+  dur3 D#4
+  dur9 orn2 A#4
+  end
+Pattern19: stream
+  dur1 orn6 D#4
+  dur3 D#4
+  dur5 orn8 G#4
+  dur3 orn6 D#4
+  dur1 orn8 A#4
+  dur3 A#4
+  dur9 orn6 F-4
+  dur1 orn6 D#4
+  dur3 D#4
+  dur5 orn8 G#4
+  dur1 orn6 D#4
+  orn8 F-4
+  rest
+  F-4
+  dur3 F-4
+  F-4
+  rest
+  end
+Pattern20: stream
+  tempo4 orn0 tone instr15:00,21,0B dur1 A#1
+  A#2
+  noise flag C-1
+  tone A#1
+  A#1
+  A#2
+  noise flag C-1
+  tone A#1
+  end
+Pattern21: stream
+  F-1
+  F-2
+  noise flag C-1
+  tone F-1
+  F-1
+  F-2
+  noise flag C-1
+  tone F-1
+  end
+Pattern22: stream
+  D#1
+  D#2
+  noise flag C-1
+  tone D#1
+  D#1
+  D#2
+  noise flag C-1
+  tone D#1
+  end
+Pattern23: stream
+  A-1
+  A-2
+  noise flag C-1
+  tone A-1
+  A-1
+  A-2
+  noise flag C-1
+  tone A-1
+  end
+Pattern24: stream
+  C-1
+  C-2
+  noise flag C-1
+  tone C-1
+  C-1
+  C-2
+  noise flag C-1
+  tone C-1
+  end
+Pattern25: stream
+  dur1 D#1
+  D#1
+  dur3 D#1
+  D#1
+  noise flag C-1
+  dur11 rest
+  dur1 flag C-1
+  flag E-1
+  dur11 rest
+  dur1 flag C-1
+  flag E-1
+  dur11 rest
+  dur1 flag C-1
+  flag E-1
+  end
+Pattern26: stream
+  dur1 tone F-1
+  F-1
+  dur3 F-1
+  F-1
+  noise flag C-1
+  flag G-2
+  rest
+  rest
+  dur1 flag C-1
+  flag E-1
+  end
+Pattern27: stream
+  tone instr15:00,12,10 orn14 dur1 unlock sweepoff F-3
+  unlock D-3
+  unlock C-3
+  unlock F-3
+  unlock D-3
+  unlock C-3
+  unlock F-3
+  unlock D-3
+  unlock C-3
+  unlock F-3
+  unlock D-3
+  unlock C-3
+  unlock F-3
+  unlock D-3
+  unlock C-3
+  unlock D-3
+  end
+Pattern28: stream
+  unlock A#3
+  unlock G-3
+  unlock F-3
+  unlock A#3
+  unlock G-3
+  unlock F-3
+  unlock A#3
+  unlock G-3
+  unlock F-3
+  unlock A#3
+  unlock G-3
+  unlock F-3
+  unlock A#3
+  unlock G-3
+  unlock F-3
+  unlock G-3
+  end
+Pattern29: stream
+  sweep:01,01 sweepup unlock E-3
+  unlock B-2
+  unlock A-2
+  unlock E-3
+  unlock B-2
+  unlock A-2
+  unlock E-3
+  unlock A-2
+  end
+Pattern30: stream
+  unlock G-3
+  unlock D-3
+  unlock C-3
+  unlock G-3
+  unlock dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31
+Pattern31: stream
+  dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31
+  dur31 dur31 dur31 dur31 dur31
+Pattern32: stream
+  dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31 dur31

@@ -1,0 +1,33 @@
+# The Lotus Group boot's loader (variant zyxlgbt, a TRD): the 256 bytes line 1's REM copies from $5D84 to $9C40 and
+# runs. On the disk all but its first 61 bytes are encrypted; the build encrypts them (tools/lotus.py). Format:
+# ../../../../../docs/ann-format.md.
+
+@equ $2A53 RomWdCommand ; the TR-DOS ROM's OUT (C),A / RET: a command to the disk controller (C = $1F)
+@equ $33C3 RomLdirRet ; the 48K ROM's LDIR / RET
+@equ $3D13 TrdosEntry ; the TR-DOS ROM's entry for machine code: C = 5 reads B sectors from track D, sector E to HL; C = 2 moves the head to track A
+@equ $3D2F TrdosRet ; the TR-DOS ROM's RET at $3D2F: a JP there runs the address on the stack inside the TR-DOS ROM
+@equ $3FD5 RomReadData ; the TR-DOS ROM's INI loop: reads the controller's data port (C = $7F) to HL until the command ends
+@equ $404C KeyStack 2 ; the stack while the loop runs: SP is part of the key
+@equ $4650 SavedSP 2 ; the BASIC stack, kept in the screen
+@equ $5800 Attributes 768 ; the screen's attributes, cleared to black
+@equ $C000 TrackBuffer 6250 ; the raw track 0 the controller's Read Track command returns
+@equ $C524 DecoyBuffer 1024 ; four sectors read before the track read overwrites them
+@equ $D782 TrackTail 3 ; where the search for the gap bytes starts (the track's offset $1782)
+@equ $D7B6 TrackGapByte 1 ; the track's byte at offset $17B6: the end of the track's last gap
+@equ $FDE8 Stage2 1 ; track 5 sector 0: the second stage (variants/zyxlgbt/parts/stage2.ann)
+@equ $FFFF TrackKey 1 ; the gap byte found: the key the second stage's file decryption starts R with
+
+@module loader ; Decrypt itself, read track 0 raw and look for its gap bytes, then load the second stage and run it
+@about The loader is a copy-protection check. It decrypts its own 1024 bytes from $9C7D with R, IX, SP and DE (the first byte it writes is its JR NZ's offset), reads 4 sectors of track 0 (a decoy: the track read overwrites them), reads the whole of track 0 raw with the controller's Read Track command and looks, from TrackTail on, for three bytes equal to TrackGapByte: a copy whose track 0 is not formatted as the original's has no such run. Found: the byte goes to TrackKey, track 5 sector 0 to Stage2, the loader wipes itself with LDIR in the ROM and returns into Stage2. Not found: every port 1-255 is written 0 and the machine restarts.
+
+$9C40 c Loader ; Clear the attributes, keep the BASIC stack, then decrypt $9C7D-$A07C: each byte XOR R, IX, SP and DE
+$9C61 ; R = 2 once: from here every instruction's fetches step it
+$9C63 c DecryptLoop ; One byte: A = R XOR the byte XOR IXh XOR IXl XOR H XOR L ($404C, the stack) XOR D XOR E
+$9C7E c Decrypted ; Clear $C000-$FA97, read 4 sectors of track 0 (sector 12) to $C524, the head to track 0
+$9CA4 ; Read Track ($E0 to the controller's command port $1F), then the track's bytes from its data port $7F to $C000
+$9CBF c FindGap ; Look in the 254 bytes from TrackTail+1 for three bytes equal to TrackGapByte
+$9CE1 c GapFound ; The byte to TrackKey, track 5 sector 0 to Stage2, the BASIC stack back with Stage2 as the return, wipe $9C40-$FA97 by the ROM's LDIR
+$9D0A c NoGap ; Write 0 to ports $FF down to $01, then wipe and restart through the ROM
+$9D2A c RomCall ; Run the routine at IX inside the TR-DOS ROM (PUSH IX, JP TrdosRet)
+$9D2F b LoaderTail 8 ; leftover bytes, not run
+$9D37 t Signature 9 ; "SCORPIONS", not read

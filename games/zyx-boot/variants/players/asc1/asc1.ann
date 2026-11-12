@@ -1,0 +1,62 @@
+# The ASC Sound Master 1.x compiled player of variant zyxboot-01 (kit/mkgame.py --part
+# variants/players/asc1/asc1.json). Format: ../../../../../docs/ann-format.md.
+#
+# The image: the first 1649 bytes of zyxboot-01's music piece ($C000-$C670, work/parts/player-asc1.bin, written by
+# python3 tools/variants_music.py image asc1). The compilation is relocatable: its absolute operands are stored as
+# offsets from the player's start ($0535 for $C535) and the first CALL of MusicInit adds the player's address to the
+# 101 words that RelocTable lists, then turns MusicInit into JR InitPlayer. The disk holds the player before that
+# first call. The tune follows at $C671 (music/asc1.txt, tools/res_music.py, `layout asc1`). No recording runs the
+# variant: every name and description here is from the code.
+
+@module asc1 ; The relocatable ASC Sound Master 1.x player: relocation, init, frame, rows with the 1.x commands, samples, ornaments
+@about Entries: MusicInit $C00B (the first time JR Relocate, after that JR InitPlayer), MusicPlay $C00E (JP PlayFrame), MusicStop $C011 (JP Silence). Every absolute operand is an offset from $C000 until Relocate has run.
+@about The module (ASC Sound Master 1.x): +0 delay, +1 the loop position, +2/+4/+6 the pattern, sample and ornament tables (offsets from the module), +8 the number of positions, +9 the positions. The pattern stream: $00-$55 a note, $56-$5D hold, $5E release, $5F off; $60-$9F the row length, $A0-$BF the sample, $C0-$DF the ornament, $E0 envelope mode, $E1-$EF the volume; $F0-$FF sixteen commands through CommandOffsets, some with an operand byte (noise, delay, glissando, slides, volume slide, envelope shapes 8, 10, 12, 14).
+
+$C000 w PlayerVectors 4 ; The compiled player's header: MusicInit, MusicPlay, WriteAY and AYRegisters (absolute: the compiler wrote them for $C000)
+$C008 b PlayerHeaderBytes 3 ; Three more bytes of the compilation's header
+$C00B c MusicInit ; JR Relocate; Relocate rewrites the offset so that later calls go to InitPlayer
+$C00D b InitPad 1 ; One zero byte
+$C00E c MusicPlay ; JP PlayFrame (an offset until relocated)
+$C011 c MusicStop ; JP Silence (an offset until relocated)
+$C014 t PlayerText ; "ASM COMPILATION OF " + the tune's title + " BY " + its author
+$C053 c Relocate ; Find the player's own address (CALL $0052, the ROM's RET, leaves it on the stack) and jump to Relocator
+
+$C05E c InitPlayer ; Clear the channels and the counters, read the module's header into the player's operands, then Silence
+$C0A5 c Silence ; Clear the AY register image, the mixer to $FF, then WriteAY
+$C0B9 c PlayFrame ; Play one frame: on a row frame the next position and each channel's row, every frame each channel's sound and the mixer
+$C12C c WriteAY ; Write the AY register image to the AY: register 13 only when set, then 12 down to 0
+$C15B c ReadOffsetDE ; HL = BC + the word at (DE), DE + 2
+$C15C ReadOffset ; HL = BC + the word at (HL)
+$C163 c NextPosition ; Start the next position (after the last, the loop position): the pattern's three streams into the channels
+$C1AB c ChannelRow ; One row of a channel: when its row counter runs out, the commands and the next event of its stream
+$C1E5 CommandSample ; $A0-$BF: the sample from the sample table
+$C1F2 CommandOrnament ; $C0-$DF: the ornament from the ornament table
+$C1FF c ShiftRight4 ; BC = BC / 16 (signed)
+$C20E c TableEntry ; HL = BC + the word at BC + 2A
+$C219 CommandVolume ; $E0: envelope mode (volume 15); $E1-$EF: the volume
+$C22A CommandF ; $F0-$FF: jump through CommandOffsets
+$C235 b CommandOffsets 8 ; Sixteen jump offsets (target = the entry's address + its byte); the last one is the first byte of CommandNoise
+$C244 c CommandNoise ; $F0 n: the noise base
+$C24A CommandContinue ; $F3: continue the sample and the ornament
+$C24D CommandContSample ; $F1: continue the sample (the next note does not restart it)
+$C252 CommandContOrnament ; $F2: continue the ornament
+$C257 CommandDelay ; $F4 n: the delay (frames a row)
+$C260 CommandGlissDown ; $F5 n: glissando down by n a frame
+$C274 CommandGlissUp ; $F6 n: glissando up
+$C277 CommandSlide ; $F7 n: slide to the next note in n frames, the sample continues
+$C281 CommandSlideNote ; $F9 n: slide to the next note in n frames
+$C2F4 CommandVolumeSlide ; $FB n: the volume slide
+$C306 CommandShape ; $F8, $FA, $FC, $FE: the envelope shape
+$C30A RowEvent ; $56-$5D hold, $5E release, $5F off, else a note
+$C320 RowNote ; a note: the sample and the ornament from their start unless continued, the envelope period byte in envelope mode
+$C380 RowDone ; the row counter from the row length; bit 0 cleared when the next byte is the $FF that ends the stream
+
+$C394 c ChannelSound ; One frame of a channel's sound: its sample and ornament rows, the period with its slide, the volume
+$C408 c SampleStep ; One row of the channel's sample: loop marks, tone offset, mixer, envelope or volume slide, volume
+$C4D2 c AdjustVolume ; The volume slide += A, kept within -15..15
+$C4E6 c OrnamentStep ; One row of the channel's ornament: loop marks, note offset, noise offset
+$C529 c NotePeriod ; DE = the AY tone period of note A
+
+$C535 c Relocator ; Add the player's address to the 101 words RelocTable lists, point MusicInit at InitPlayer and run it (the channel records and the AY image are cleared over this code afterwards)
+$C55F b RelocTable 16 ; The relocation list: each byte the distance from the last patched word to the next, 0 ends it
+$C5C5 w PeriodTable 8 ; The AY tone period of each note 0-$55 (86 notes)
