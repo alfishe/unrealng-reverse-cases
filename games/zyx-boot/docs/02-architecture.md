@@ -67,7 +67,7 @@ flowchart TD
 ```
 
 The interrupt is on from frame 542 (its first run), so the music plays and the twinkles start while the phases are
-still being built: the screen at frame 500 ([setup](img/play/setup.png)) still shows the help lines, which
+still being built: the screen at frame 604 ([setup](img/play/setup.png)) still shows the help lines, which
 DrawReflection covers at frame 824-890 with the logo's mirror image ([menu idle](img/play/menu-idle.png)). The help
 lines are never seen again: the reflection is drawn into ScreenCopy too, and every page is drawn from it. BuildRombPhases
 takes 8 954 321 T-states for its two calls (125 frames), DrawReflection 4 688 343.

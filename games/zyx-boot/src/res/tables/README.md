@@ -14,3 +14,4 @@ hex, a plain number decimal, `%bbbbb` binary. Each file's header says what its n
 | `rhombus-offsets.txt` | RombPhaseOffsets `$6B9C` | 9 | start columns (index 0 not read) | Start (to RombOffsets `$765C`), BuildRombPhases |
 | `exit-sound.txt` | ExitSound `$6E64` | 14 | `Rn: value`, AY registers 0-13 | PlayBell `$6E48` |
 | `randoms.txt` | Randoms `$ADEC` | 8 | 4 pairs of numbers | DrawTwinkle `$6BFD`; NewRandoms `$6BAB` refills it |
+| `note-periods.txt` | PeriodTable `$C3CA` (src/music) | 172 | one period a line, 86 notes A#0-B7 (the note in a comment), the AY tone period in decimal (two bytes each, low first) | ChannelSound `$C2A0` |

@@ -460,6 +460,11 @@ flowchart TD
     T -->|"GO TO name CODE (192 sectors)"| M["TR-DOS restores the Magic snapshot"]
 ```
 
+The GO TO path is witnessed in c5 (`tests/disks/deep.scl`, WALKTHROUGH 6.0): D on page 3 runs RunLetter at frame 2490,
+and line 1 then reads `$EC 22 6D 61 67 69 63 20 20 20 22 AF` from `$5D4C`: GO TO, `"magic   "`, CODE (TTD
+`memory_at` at frame 2513; at frame 2489 it was still `RUN "        "`). TR-DOS then loads the 192 sectors; the test
+file is zeros, so the machine resets into the 128 menu (the screen from c5 frame 2851).
+
 ![The launch in c3: the fade, the black screen, TEST 30](img/play/launch.gif)
 
 *The screen every second frame, c3 frames 2178-2296: the menu's page 2, the F pressed at 2182, ExitFade, the black
@@ -524,7 +529,7 @@ by hand.
 | MusicStop is never called | `$C011` | the music is never stopped; the bell replaces it |
 | the length test is "exactly 192 sectors" | `$65EC`, `$6A7A` | a CODE file of any other size is not listed; Vadim's comment says "length >= C000" |
 | a page in patterns 6-9 | SoundOff | R13 = 0 cuts the envelope until the next pattern (known only from the code: [doc 9, 9.11](09-music-and-sound.md#911-known-only-from-the-code)) |
-| the position rule | PlayFrame `$C117` | a position ends when the last events are read, not finished: pass 1 is 7704 frames, later ones 7764 ([doc 9, 9.4](09-music-and-sound.md#94-playframe-the-delay-the-rows-and-the-next-position)) |
+| the position rule | PlayFrame `$C117` | a position ends when the last events are read, not finished: the first tune loop is 7704 frames, later ones 7764 ([doc 9, 9.4](09-music-and-sound.md#94-playframe-the-delay-the-rows-and-the-next-position)) |
 | no "previous page" | ReadKeyboard | CAPS SHIFT goes to the first page, not one back ([doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages)) |
 
 ```mermaid
@@ -547,13 +552,12 @@ the work inside the interrupt) cost nothing a user of the menu would notice exce
 
 ## 10.8 Known only from the code
 
-- The GO TO path: no recording chooses `magic`. The token `$EC`, the suffix `$AF` and TR-DOS's snapshot load are
-  read from the code and TR-DOS's command set.
+- TR-DOS's snapshot load itself: c5 runs `magic`, but its body is zeros, so what TR-DOS restores is not a real
+  snapshot (the machine resets); the GO TO path up to TR-DOS is witnessed (10.6).
 - The letter check on page 1: FileCount counts the listed files to the catalogue's end (31 on `many.scl`), not only the
   page's 24, so every letter A-X passes the first test on a full page; the walk always finds the file.
-- A deleted entry on the disk (first byte 1) in front of the chosen file: the test disks have none; SkipDeleted
-  handles it as it handles the marks.
-- A third page: `many.scl` has two.
+- A deleted entry on the disk (first byte 1) in front of the chosen file: c5's deleted T05 lies on page 1, before
+  the page RunLetter walks from; SkipDeleted handles it as it handles the marks.
 - What the launched program does with FRAMES = 0: nothing in T03 or T30 reads it.
 
 ## 10.9 The point

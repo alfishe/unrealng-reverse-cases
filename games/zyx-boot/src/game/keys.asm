@@ -3,9 +3,10 @@
 ;
 ; ReadKeyboard $6864: the letters A-X (KeyTable $6B53, src/res/tables/keys.txt) run the file with that letter at once
 ; (RunLetter $6A51); 1, 2, 6, 7 change the column, 3 and 8 move down, 4 and 9 up, 5, 0 and ENTER run the file under
-; the cursor (the cursor keys of a Sinclair and a cursor joystick); CAPS SHIFT shows the first page, SYMBOL SHIFT the
-; next one, SPACE reads the catalogue again (a new disk). A Kempston read is replaced by LD A,0: its five CALL C never
-; call. The keys repeat while held: at 8 frames a read, a held key moves the cursor 6 times a second.
+; the cursor (the two Sinclair joysticks: 1-5 and 6-0 are left, right, down, up, fire); CAPS SHIFT shows the first
+; page, SYMBOL SHIFT the next one, SPACE reads the catalogue again (a new disk). A Kempston read is replaced by LD
+; A,0: its five CALL C never call. The keys repeat while held: at 8 frames a read, a held key moves the cursor 6 times
+; a second.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $6864

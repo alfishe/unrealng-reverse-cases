@@ -1,0 +1,18 @@
+# c5: tests/disks/deep.scl booted as c2 (each key held 8 frames): 52 names listed (T05 is a deleted entry, skipped),
+# so three pages of 24, 24 and 4. SS twice (pages 2 and 3), then D: the 4th name of page 3, the 192-sector CODE file
+# magic, which RunLetter writes as GO TO "magic" CODE; TR-DOS then loads the (all zero) snapshot.
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++1500 ss
++8 -
++300 ss
++8 -
++300 D
++8 -
++800 END

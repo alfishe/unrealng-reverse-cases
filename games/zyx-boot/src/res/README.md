@@ -1,8 +1,8 @@
 # Resources
 
 Every resource out of the code, in an editable format; `tools/res_formats.py build` turns them back into the bytes
-the sources INCBIN, `tools/res_formats.py check` proves the round trip (16 editable files; the 3 files of `spare/`
-are bytes). kit/mkgame.py `--install` writes them from the images through `install()`. The parts: the menu
+the sources INCBIN, `tools/res_formats.py check` proves the round trip (20 editable files here, 216 with the
+variants'; the 4 files of `spare/` are bytes). kit/mkgame.py `--install` writes them from the images through `install()`. The parts: the menu
 (`src/game`), the music (`src/music`) and the BASIC sector (`src/basic`).
 
 These files are what the variants change: a variant folder (`variants/NAME/`) holds the ones that differ, under the
@@ -26,16 +26,23 @@ same names and in the same formats, and `tools/build.sh --variant NAME` builds i
 | `tables/randoms.txt` | the twinkles' first places | numbers | Randoms `$ADEC` (8 bytes) |
 | `texts/menu-help.txt` | the three help lines | UTF-8 with `{AT y,x}` `{INK n}` controls | MenuHelp `$6AFD` (68 bytes) |
 | `texts/no-files.txt` | NO EXE FILES ! | the same | NoFilesText `$6B41` (18 bytes) |
+| `texts/player-text.txt` | the ASC compiler's credit in the player, never printed | the same | PlayerText `$C014` (63 bytes, src/music) |
+| `tables/note-periods.txt` | the AY tone period of each of the player's 86 notes | one decimal period a line | PeriodTable `$C3CA` (172 bytes, src/music) |
+| `basic/launch-lines.txt` | the BASIC's lines 1-3, line 1 the launch line the menu rewrites | BASIC listing (`tools/res_basic.py`) | LaunchLine `$5D3B` (64 bytes, src/basic) |
+| `basic/line-ten.txt` | line 10 (the autostart line), the end mark and the autostart line number | the same | LineTen `$5DC6` (45 bytes, src/basic) |
 | `music/disco.txt` | the ASC Sound Master module "Disco music" by Ant P | text (positions, patterns, samples, ornaments) | TuneHeader `$C478` (4379 bytes, src/music) |
 | `spare/code-tail.bin` | the code piece's last bytes, not read | bytes | TwinkleSpare `$6FE0` (200 bytes) |
 | `spare/graphics-tail.bin` | the graphics piece's last bytes, not read | bytes | GraphicsSpare `$ADF9` (7 bytes) |
 | `spare/basic-tail.bin` | the BASIC sector after the program, not read | bytes | SectorTail `$5DF3` (72 bytes, src/basic) |
+| `spare/music-tail.bin` | the music piece after the tune, not read | bytes | SectorTail `$D593` (109 bytes, src/music) |
 
 Each folder's README.md gives the readers and the formats.
 
 ## What stays bytes in the `.ann`, and why
 
 - `BootName` `$6B6B` (`t`, 9 bytes): the name and type IsBootFile compares against, part of the code's logic.
-- The BASIC lines of `src/basic` (LaunchLine, LineTwo, LineThree, LineFour, LineTen, AutostartMark): the program
-  itself, with the loader's code in line 4; a variant with other lines keeps its whole sector as `basic.bin`.
-- The player's own tables in `src/music` (PeriodTable `$C3CA`, the channel records, the AY image): the player's.
+- Line 4's header and end (LineFour `$5D7B`, LineFourEnd `$5DC5`, 6 bytes): the REM frame around the loader's code,
+  which is a code entry; the other lines are `basic/`. A variant with other lines keeps its whole sector as its own
+  `basic.txt` (`tools/res_basic.py`).
+- The player's header and working state in `src/music` (PlayerVectors, PlayerHeaderBytes, the channel records, the
+  AY image, CurrentChannel, DelayCounter, PeriodPad): set or overwritten when the player runs, not data anyone edits.

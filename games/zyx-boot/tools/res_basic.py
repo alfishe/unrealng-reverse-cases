@@ -46,7 +46,8 @@ PROG = 0x5D3B
 
 
 def handles(name):
-    return name.endswith('basic.bin')
+    """a variant's whole sector (basic.bin) or the original's program lines (src/res/basic/*.bin)"""
+    return name.endswith('basic.bin') or name.startswith('basic/')
 
 
 # ----------------------------------------------------------------------------------------------- bytes -> text

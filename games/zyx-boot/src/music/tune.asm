@@ -6,9 +6,13 @@
 ; every 6 frames), 22 positions playing 16 patterns (0-15; patterns 1, 3, 4, 5, 6 and 9 twice), 32 samples and 32
 ; ornaments, of which the streams use 1-10 and 13 (each sample with the ornament of its number).
 ;
-; Length: position 0 (pattern 0) is 6 rows, position 19 (pattern 15) 8 rows, every other position 64 rows: 1294 rows,
-; 7764 frames (2 min 35 s at 50 Hz), then position 0 again. c1 starts positions 0 to 20 in its 7274 frames of music
-; (1213 rows); no recording reaches the loop.
+; Length: the streams add up to 1294 rows (7764 frames), but a position starts as soon as all three channels have read
+; their last event (PlayFrame $C117), and a channel whose last event still runs delays the next pattern's stream. So
+; the first tune loop from MusicInit is 7704 frames (154.1 s: position 21, pattern 14, ends 10 rows early), and every
+; later tune loop 7764 frames (155.3 s: position 0 waits those 10 rows, 96 frames instead of 36). Positions 3 (378
+; frames), 9 (390), 19 (48) and 21 (324) are the odd lengths (python3 tools/sound_sim.py loop). c1 starts positions 0
+; to 20 in its 7274 frames of music (1213 rows); c6 plays on into the third tune loop: position 0 restarts at frames
+; 8249 and 16013 (TTD memory_at of PositionOp+1).
 ;
 ; Channels: A the melody (samples 1, 6, 7, 9, 10, 13; patterns 6-9 open on the envelope: sample 13 with E rows,
 ; envelope mode, shape 14, an envelope period after each note following its pitch), B the bass (samples 2 and 8,
@@ -161,10 +165,4 @@ Ornament11:
 ; only from the code: the player's pointers end at $D592 and no instruction in
 ; c1-c4 reads these bytes.
 SectorTail:
-  DEFB $D0,$F8,$F0,$0C,$28,$2F,$F0,$14,$7E,$FF,$85,$A5,$CF,$D0,$F0,$01
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39,$36,$85,$A5
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39,$36,$85,$A5
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39,$36,$85,$A5
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39,$36,$85,$A5
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39,$36,$85,$A5
-  DEFB $36,$87,$A7,$36,$39,$36,$85,$A5,$36,$87,$A7,$36,$39
+  INCBIN "res/spare/music-tail.bin",$0000,109

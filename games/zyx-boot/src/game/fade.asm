@@ -2,8 +2,9 @@
 ; fade.asm: The corner gradients and the exit fade
 ;
 ; The four 5x5 corners of the attributes are gradients from CornerColours $ADF4 (src/res/tables/corner-colours.txt):
-; the left corners a colour a row, the right ones a colour a column. At the launch ExitFade $6E72 shifts every pixel
-; row out of its bytes in 8 passes, alternately in and out, until the screen is black.
+; the top-left and bottom-right corners a colour a row, the top-right and bottom-left ones a colour a column. At the
+; launch ExitFade $6E72 shifts every pixel row out of its bytes in 8 passes, alternately in and out, until the screen
+; is black.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $6CBF

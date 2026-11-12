@@ -11,7 +11,7 @@ frame, the bell, their WAV renders (written, never played) and the figures of do
     python3 tools/sound_sim.py fig-regs OUT.png --from F --frames N   the registers WriteAY sends, frame by frame
     python3 tools/sound_sim.py fig-samples OUT.png        the samples and ornaments the tune uses, row by row
     python3 tools/sound_sim.py fig-bell OUT.png           the bell (ExitSound) and SoundOff as the AY makes them
-    python3 tools/sound_sim.py wavs DIR                   the tune's first pass (WAV 22 kHz and MP3), the bell, the cut
+    python3 tools/sound_sim.py wavs DIR                   the tune's first tune loop (WAV 22 kHz and MP3), the bell, the cut
 
 The music: build/music.bin at $C000; MusicInit $C00B once, then MusicPlay $C00E once a frame, as Start and the IM 2
 handler do. The AY writes go through WriteAY $C15F: OUT ($FFFD) selects, OUTD to $BEFD writes. The state after a
@@ -280,11 +280,11 @@ def exit_sound():
 
 
 FIRST_PASS = 7704   # MusicInit to the second start of position 0 (cmd loop)
-LOOP = 7764         # every later pass: position 0 waits 10 rows for pattern 14's releases
+LOOP = 7764         # every later tune loop: position 0 waits 10 rows for pattern 14's releases
 
 
 def player_loop():
-    """the first pass from MusicInit: what the menu plays"""
+    """the first tune loop from MusicInit: what the menu plays"""
     return Player().run(FIRST_PASS + 12, keep=True), FIRST_PASS
 
 
@@ -296,15 +296,15 @@ def cmd_loop(args):
     n = len(m['positions'])
     p, st = position_starts(FIRST_PASS + 2 * LOOP + 10)
     print('delay', m['delay'], 'positions', m['positions'])
-    print('position  pattern  pass 1: start, frames   pass 2: start, frames')
+    print('position  pattern  loop 1: start, frames   loop 2: start, frames')
     for k in range(n):
         a, b = st[k], st[k + 1]
         c, d = st[n + k], st[n + k + 1]
         print('%8d %8d %10d %6d %12d %6d' % (k, m['positions'][k], a, b - a, c, d - c))
-    print('pass 1: %d frames, pass 2: %d frames, pass 3: %d frames' % (st[n], st[2 * n] - st[n],
+    print('tune loop 1: %d frames, tune loop 2: %d frames, tune loop 3: %d frames' % (st[n], st[2 * n] - st[n],
                                                                      st[3 * n] - st[2 * n]))
     same = sum(p.regs[i] == p.regs[i + LOOP] for i in range(st[n], st[2 * n]))
-    print('registers of pass 3 = pass 2 in %d of %d frames' % (same, st[2 * n] - st[n]))
+    print('registers of tune loop 3 = tune loop 2 in %d of %d frames' % (same, st[2 * n] - st[n]))
 
 
 def cmd_costs(args):
@@ -431,7 +431,7 @@ def cmd_fig_tune(args):
         if nz.any() or env.any():
             ax.legend(loc='lower right', fontsize=10, markerscale=4)
     axes[-1].set_xlabel('seconds from MusicInit (50 frames a second)')
-    fig.suptitle('"Disco music" by Ant P, the first pass from MusicInit: %d frames, %.1f s\n'
+    fig.suptitle('"Disco music" by Ant P, the first tune loop from MusicInit: %d frames, %.1f s\n'
                  'numbers over A: the pattern of each position (grey lines)' % (frames, frames / 50), y=0.998)
     fig.tight_layout()
     fig.savefig(args.out)

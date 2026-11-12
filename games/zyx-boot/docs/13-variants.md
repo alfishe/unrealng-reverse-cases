@@ -462,7 +462,7 @@ tools/build.sh --variant NAME       # one variant, compared with its candidate f
 tools/build.sh --all                # all 56: "56 of 56 identical"
 python3 tools/variants.py index     # variants/README.md and the own loaders' README.md
 python3 tools/res_formats.py check  # every resource, tune and BASIC text round-trips
-python3 tools/fig_variants.py shots|sheets|logos|audio|players   # this document's figures and WAVs
+python3 tools/fig_variants.py shots|sheets|logos|audio|players   # this document's figures and MP3s
 ```
 
 `tools/variants.py extract` wrote the first folders from the candidates; the own loaders' `pieces`, `parts` and

@@ -695,9 +695,9 @@ The point: the bands follow the rhombi's axes. The set A rhombi (top left, botto
 a horizontal band; the set B ones narrow top to bottom and get a vertical band. Each band stays across the middle of
 a turning rhombus.
 
-The `.ann` header of module fade and the comment of `src/res/tables/corner-colours.txt` say "the left corners a
-colour a row, the right ones a colour a column". The code and Vadim's comments ("ATTR left up", "right down" for
-Fade1ATTR) say rows for top left and bottom right; the change is sent to the lead (`work/docs/zbA-src-changes.md`).
+The `.ann` header of module fade and the comment of `src/res/tables/corner-colours.txt` once said "the left corners
+a colour a row, the right ones a colour a column". The code and Vadim's comments ("ATTR left up", "right down" for
+Fade1ATTR) say rows for top left and bottom right, and both now say so.
 
 ## 6.8 ScreenCopy: the clean screen
 

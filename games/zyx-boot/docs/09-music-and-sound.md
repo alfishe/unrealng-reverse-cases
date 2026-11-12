@@ -80,7 +80,7 @@ flowchart LR
 ```
 
 Worked example: the IM 2 handler calls MusicPlay at `$676D` on every interrupt, so the tune runs at the interrupt
-rate, 50 Hz on the Pentagon. One pass of the tune is 7704 frames (9.8), 154.1 s at 50 Hz.
+rate, 50 Hz on the Pentagon. The first tune loop is 7704 frames (9.8), 154.1 s at 50 Hz.
 
 Witness: L1 of c1 counts MusicInit once (frame 532), MusicPlay 7274 times (frames 543-7879), MusicStop never; SoundOff
 three times (frames 536, 6430 and 6436: the first page, SPACE, the new first page), 1519 T each; PlayBell never (c1
@@ -92,7 +92,7 @@ replaces it with the bell. Neither the menu nor the player ever stops the music 
 ## 9.2 Timing and cost
 
 MusicPlay runs inside the IM 2 handler, so its cost comes out of every frame of the menu. The model gives it over the
-first pass (7704 frames):
+first tune loop (7704 frames):
 
 | Calls | Mean T | Max T | Share of a Pentagon frame (71 680 T) |
 | --- | ---: | ---: | ---: |
@@ -101,11 +101,11 @@ first pass (7704 frames):
 | the 6420 other frames | 6557 | 6974 | 9.1 % mean |
 | MusicInit, once | 3139 | | |
 
-Command: `python3 tools/sound_sim.py costs`. The cheapest frame in the pass takes 1597 T.
+Command: `python3 tools/sound_sim.py costs`. The cheapest frame in the tune loop takes 1597 T.
 
 The recordings agree: in c1 MusicPlay and all it calls take 49 741 659 T over 7274 calls, 6838 T a call. That is 0.8 %
 more than the model's mean because c1 plays a different stretch of the tune: positions 0-20 with the SPACE re-read in
-between, never the whole pass.
+between, never the whole tune loop.
 
 The menu takes two things from the player's timing:
 
@@ -370,7 +370,7 @@ Worked example, the position change at the end of the tune. Pattern 14 (position
 A (read at row 53) and `len26 rel` in B and C (read at row 38). At row 53 all three have read their last event, so at
 row 54 (frame 7380 + 324 = 7704) NextPosition starts position 0 again: position 21 lasted only 54 rows. But A's counter
 still has 10 rows to run, B's and C's as well. Pattern 0's streams wait for them: they start 10 rows into position 0,
-so on every later pass position 0 lasts 6 + 10 = 16 rows (96 frames) instead of 6 (36).
+so on every later tune loop position 0 lasts 6 + 10 = 16 rows (96 frames) instead of 6 (36).
 
 Witness: the c3 trace `973:150-973:13000` (the animation); the model's position starts, `python3 tools/sound_sim.py
 loop` (9.8).
@@ -548,7 +548,7 @@ The point: the sound of each instrument lives in its sample and ornament, frame 
 ## 9.7 ChannelSound and WriteAY: the registers
 
 ChannelSound `$C2A0` turns a record into registers. If a note is on and its sample has not ended, it steps the sample
-and the ornament, takes the noise period, looks the note up in PeriodTable `$C3CA` (86 words, notes 0 to `$55`), adds the tone offset,
+and the ornament, takes the noise period, looks the note up in PeriodTable `$C3CA` (86 words, notes 0 to `$55`; the resource `src/res/tables/note-periods.txt`), adds the tone offset,
 and stores the tone period (R0-R5) and the volume (R8-R10) into the register image AYRegisters `$C0F4`. A note past
 `$55` is clamped: below 0 to 0, above `$55` to `$55`. If the channel is in envelope mode and the sample row has E, the
 volume gets bit 4: the AY plays the envelope. Otherwise (no note, or the sample ended) only the volume is written, as
@@ -653,7 +653,7 @@ to `$3F` per note).
 
 The positions and their lengths, from the model (`python3 tools/sound_sim.py loop`):
 
-| Position | Pattern | Pass 1: start, frames | Later passes: frames |
+| Position | Pattern | Tune loop 1: start, frames | Later tune loops: frames |
 | ---: | ---: | --- | ---: |
 | 0 | 0 | 0, 36 | 96 |
 | 1, 2 | 1, 2 | 36, 384; 420, 384 | 384 |
@@ -666,13 +666,13 @@ The positions and their lengths, from the model (`python3 tools/sound_sim.py loo
 | 21 | 14 | 7380, 324 | 324 |
 
 ```text
-pass 1: 7704 frames, pass 2: 7764 frames, pass 3: 7764 frames
-registers of pass 3 = pass 2 in 7764 of 7764 frames
+tune loop 1: 7704 frames, tune loop 2: 7764 frames, tune loop 3: 7764 frames
+registers of tune loop 3 = tune loop 2 in 7764 of 7764 frames
 ```
 
-So the first pass, from MusicInit, is 7704 frames (154.1 s); every later pass is 7764 frames (155.3 s) and repeats
-exactly. The patterns' streams add up to 1294 rows (7764 frames). The first pass is 10 rows shorter because position 21
-ends 10 rows early (9.4), and the next pass's position 0 is where those rows are played. The other odd lengths come
+So the first tune loop, from MusicInit, is 7704 frames (154.1 s); every later tune loop is 7764 frames (155.3 s) and repeats
+exactly. The patterns' streams add up to 1294 rows (7764 frames). The first tune loop is 10 rows shorter because position 21
+ends 10 rows early (9.4), and the next tune loop's position 0 is where those rows are played. The other odd lengths come
 from the same rule: pattern 3's A reads its last event (`len10 G-5`) at row 54 and B and C theirs at row 62, so
 position 3 changes at row 63 (378 frames), while A's note still runs to row 64; the 1-row delay stays until pattern 6
 (position 9), which waits one row more (390 frames) for its last 1-row event.
@@ -685,9 +685,9 @@ flowchart LR
     P21 -->|"no loop byte: position 0"| P0
 ```
 
-![The tune as a piano roll: A, B and C over the first pass](img/sound/tune.png)
+![The tune as a piano roll: A, B and C over the first tune loop](img/sound/tune.png)
 
-*The tune over the first pass, from MusicInit: each channel's tone period as a MIDI note, frame by frame, coloured by
+*The tune over the first tune loop, from MusicInit: each channel's tone period as a MIDI note, frame by frame, coloured by
 the volume; pink: on the envelope; the grey lines and numbers: the position starts and their patterns. Command:
 `python3 tools/sound_sim.py fig-tune docs/img/sound/tune.png`.*
 
@@ -701,8 +701,12 @@ How to read it:
 Worked example, the frame of position 2's start: position 0 lasts 36 frames, position 1 384, so position 2 starts at
 model frame 420, c3 frame 973. The PlayFrame animation (9.4) is that frame.
 
-Witness: c1 plays frames 543-7879 (7274 calls), reaching position 20 (model frame 6996) but not position 21 (7380); no
-recording reaches the second pass. The second pass's lengths are the model's alone.
+Witness: c1 plays frames 543-7879 (7274 calls), reaching position 20 (model frame 6996) but not position 21 (7380).
+c6 (`orig/boot.scl` idle for 16 566 frames, WALKTHROUGH 6.0) plays three tune loops' starts: PositionOp's operand
+`$C195` (the next position) becomes 1 at frames 544, 8249 and 16013 (TTD `memory_at` at T 0 of each frame), 7705 and
+7764 frames apart, and 2 at 580 and 8345: position 0 lasts 36 frames the first time and 96 the second, as the model
+says. Position 21 starts at frame 7926 (the operand `$15` to 0) and lasts 323 frames to 8249 (324 in the model, the
+1 frame from sampling at T 0).
 
 The point: the menu's music is a 2.5-minute tune that never stops; the first time round it is a minute fraction
 shorter than every later time, because of the position rule.
@@ -777,7 +781,7 @@ tools/sound_sim.py wavs docs/audio`:
 
 | File | What | Length |
 | --- | --- | --- |
-| [disco-music.wav](audio/disco-music.wav) | the tune's first pass from MusicInit, 22 050 Hz | 154.08 s |
+| [disco-music.wav](audio/disco-music.wav) | the tune's first tune loop from MusicInit, 22 050 Hz | 154.08 s |
 | [disco-music.mp3](audio/disco-music.mp3) | the same, MP3 128 kbit/s | 154.08 s |
 | [bell.wav](audio/bell.wav) | the bell, ExitSound held for 175 frames | 3.5 s |
 | [soundoff-page.wav](audio/soundoff-page.wav) | 2 s of the tune (from model frame 1336), SoundOff's 8 silent frames, then the tune again | 4.16 s |
@@ -788,7 +792,6 @@ The point: the files let a reader hear the tune, the gap at a page and the bell 
 
 - MusicStop `$C011` and Silence after set-up: no recording calls them. The menu never stops the music; the bell
   replaces it.
-- The second pass of the tune and its 7764 frames: no recording plays that long; the model plays it.
 - Envelope mode: the `env` command, `ep` bytes and shape 14 run in patterns 6-9, model frames 3102-5412. c1 plays them
   (frames 3645-5955), but no trace of them was examined; the model gives their registers.
 - A page during patterns 6-9: SoundOff writes R13 = 0 (and R11 = R12 = 0), which restarts the envelope with shape
@@ -803,5 +806,5 @@ The point: the files let a reader hear the tune, the gap at a page and the bell 
 The menu's music is a stock ASC Sound Master module with its compiled player, called once an interrupt and left
 alone. Its cost is a tenth of a frame; its only interruptions are the 8 silent frames of a page draw and the bell at
 the launch. The player patches its own instructions with the tune's tables at set-up, writes 13 registers a frame,
-and starts each position as soon as every channel has read its last event, which makes the first pass 7704 frames
+and starts each position as soon as every channel has read its last event, which makes the first tune loop 7704 frames
 and every later one 7764.

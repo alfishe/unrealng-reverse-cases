@@ -81,7 +81,7 @@ What Start keeps, and why:
 | --- | --- | --- |
 | IY | SavedIY `$AFC8` | the ROM and TR-DOS reach the system variables through IY = `$5C3A`; the handler and PrintString put it back before they call the ROM |
 | H'L' | SavedHLAlt `$AFCA` | BASIC needs H'L' unchanged when a USR routine returns; the same two routines put it back |
-| SP | SavedSP `$AFCC` | the launcher returns to the Loader by putting this SP back, wherever the menu's stack stands ([doc 10](10-launcher-and-notes.md)) |
+| SP | SavedSP `$AFCC` | the launcher returns to the Loader by putting this SP back, wherever the menu's stack stands ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 | I | SavedI `$AFCE` | the I register as BASIC had it, put back before IM 1 |
 
 The point: the menu borrows the machine and gives back exactly what BASIC needs (IY, H'L', SP, I, IM 1). The rest
@@ -471,7 +471,7 @@ the four spin frames are heavy; the main loop, which has no deadline, absorbs th
 | Start `$61C8-$61ED` | the IM 2 table is built and DrawScreen draws the screen it saves as ScreenCopy |
 | DrawReflection `$6DDE-$6E33` | the handler's twinkle and glint restore from ScreenCopy: they must not read a half-printed copy |
 | SPACE, in ReadKeyboard `$6908-$690F` | `DI`, `IM 1` around the TR-DOS read, then `DI`, `IM 2` again |
-| the launch, RunLetter `$6AD9` | `IM 1`, `EI` for BASIC ([doc 10](10-launcher-and-notes.md)) |
+| the launch, RunLetter `$6AD9` | `IM 1`, `EI` for BASIC ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 
 The point: the menu runs with interrupts on except where the handler would read a buffer that is being written, or
 where TR-DOS and BASIC need the ROM's IM 1. Witness: c1 frame 890 has no interrupt (DrawReflection's copy), so

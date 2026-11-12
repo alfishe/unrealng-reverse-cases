@@ -248,9 +248,10 @@ a length check. The test is `CP $C0` / `JR NZ` on byte +13, the sector count. So
 - the length field (+11) is never read.
 
 Witness: c2 and c3 list T01-T30 and `magic` and not `data` (the figure, and the screens of 7.3). c4 lists nothing from
-`noexe.scl`, whose `screen` (27 sectors) and `data` (2) are CODE files of other sizes (7.7). No test disk holds a
-deleted entry: SkipDeleted's step over a deleted file is known only from the code. Its other use, by RunLetter, is seen
-in c3 ([doc 10](10-launcher-and-notes.md)).
+`noexe.scl`, whose `screen` (27 sectors) and `data` (2) are CODE files of other sizes (7.7). c5 (`tests/disks/deep.scl`,
+WALKTHROUGH 6.0) holds a deleted entry: T05's first byte is `$01` (`$9D50`, TTD `memory_at` at c5 frame 1500), and page
+1 lists T04 then T06 (the screen from c5 frame 1000): SkipDeleted steps over it. Its other use, by RunLetter, is seen
+in c3 ([doc 10](10-launcher-and-notes.md)). c5 also lists `magic` on page 3 and runs it (10.6).
 
 ## 7.3 The count and the three layouts
 
@@ -452,7 +453,9 @@ stateDiagram-v2
 ```
 
 The menu has no "previous page": CAPS SHIFT always goes back to the first. A disk of 49 or more listed files has a
-third page, reached with SYMBOL SHIFT twice.
+third page, reached with SYMBOL SHIFT twice. c5 shows one: 52 listed names on `deep.scl`, page 2 drawn at frame 1883
+(ListTwoColumns' last call), page 3 at frame 2185 (ListCatalogue's last call) with one column of 4 names, T50, T51,
+T52 and `magic` (WALKTHROUGH 6.0).
 
 Worked example, c2 on `many.scl`:
 
@@ -628,10 +631,8 @@ NO EXE FILES ! asks for.
 
 ## 7.8 Known only from the code
 
-- A deleted entry (first byte 1) in the list: no test disk has one. The step over it in a walk is seen in c3, where
-  RunLetter's own marks make entries deleted ([doc 10](10-launcher-and-notes.md)).
 - The `.` for an unprintable byte in a name.
-- A third page (49 or more listed files) and SYMBOL SHIFT on it.
+- SYMBOL SHIFT on a third page (c5 reaches page 3 but does not press SYMBOL SHIFT there).
 - A CODE file of 193 sectors or more (not listed), and one of length `$BF01-$BFFF` (192 sectors, listed).
 - A full catalogue of 128 entries, where the count stops at `$A500`.
 

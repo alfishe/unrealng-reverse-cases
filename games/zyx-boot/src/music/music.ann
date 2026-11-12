@@ -41,6 +41,7 @@ $C011 c MusicStop ; Silence the AY (JP Silence)
 
 $C014 t PlayerText ; "ASM COMPILATION OF DISCO MUSIC BY ANT P BY ANDREW SENDETSKI ASC"
 > 63 bytes the compiler puts in the player: "ASM COMPILATION OF " (19), the tune's title "DISCO MUSIC BY ANT P" (20), " BY " (4), the author field "ANDREW SENDETSKI ASC" (20). No instruction in c1-c4 reads it; the menu never prints it.
+@res texts/player-text.bin
 
 $C053 c InitPlayer ; Clear the channels, read the module's header into the player's operands, silence the AY
 > In: nothing. Clears ChannelA $C0A9 to the end of ChannelC $C0F3 (75 bytes), sets PositionOp+1 to 0 (the first position), and DelayCounter $C103 and the three row counters (+$0A of each record) to 1, so the first MusicPlay reads a row at once.
@@ -178,13 +179,14 @@ $C3BB c AddNoise ; The noise period += the row's signed 5-bit noise delta
 
 $C3CA w PeriodTable 8 ; The AY tone period of each note 0-$55 (86 notes, A#0 to B7)
 > Read by ChannelSound $C2A0. At the 128K's AY clock of 1.7734 MHz note n is MIDI n + 22 (note 0 = $0EDC, A#0, 29.1 Hz; note 2 = C1), within 1 cent up to the fifth octave and up to 33 cents off at the top, where the periods are small.
+@res tables/note-periods.bin
 
 $C476 b PeriodPad 2 ; Two zero bytes after the table: a note $56 would read them, but the player clamps the note to $55
 > Known only from the code: no instruction reads them.
 
 @module tune ; The tune: the ASC Sound Master module "Disco music" by Ant P
 @about One module in the ASC Sound Master 0.x layout from TuneHeader $C478 to the end of OrnamentData ($D592, 4379 bytes), the resource src/res/music/disco.txt (tools/res_music.py; the format in src/res/music/README.md). Delay 6 (a row every 6 frames), 22 positions playing 16 patterns (0-15; patterns 1, 3, 4, 5, 6 and 9 twice), 32 samples and 32 ornaments, of which the streams use 1-10 and 13 (each sample with the ornament of its number).
-@about Length: position 0 (pattern 0) is 6 rows, position 19 (pattern 15) 8 rows, every other position 64 rows: 1294 rows, 7764 frames (2 min 35 s at 50 Hz), then position 0 again. c1 starts positions 0 to 20 in its 7274 frames of music (1213 rows); no recording reaches the loop.
+@about Length: the streams add up to 1294 rows (7764 frames), but a position starts as soon as all three channels have read their last event (PlayFrame $C117), and a channel whose last event still runs delays the next pattern's stream. So the first tune loop from MusicInit is 7704 frames (154.1 s: position 21, pattern 14, ends 10 rows early), and every later tune loop 7764 frames (155.3 s: position 0 waits those 10 rows, 96 frames instead of 36). Positions 3 (378 frames), 9 (390), 19 (48) and 21 (324) are the odd lengths (python3 tools/sound_sim.py loop). c1 starts positions 0 to 20 in its 7274 frames of music (1213 rows); c6 plays on into the third tune loop: position 0 restarts at frames 8249 and 16013 (TTD memory_at of PositionOp+1).
 @about Channels: A the melody (samples 1, 6, 7, 9, 10, 13; patterns 6-9 open on the envelope: sample 13 with E rows, envelope mode, shape 14, an envelope period after each note following its pitch), B the bass (samples 2 and 8, octave jumps), C the drums (samples 3, 4, 5 with noise rows and falling ornaments).
 
 $C478 b TuneHeader 8 ; The module's header: delay, the three table offsets, the number of positions
@@ -260,3 +262,4 @@ $D569 Ornament11 ; ornaments 11-31: one row each
 
 $D593 b SectorTail 16 ; 109 bytes after the module to the end of the 22nd sector: older stream bytes, not read
 > Leftovers of the memory the compilation was saved from (they read like a pattern stream: $F0 $0C, notes, $7E, $FF, $85 $A5 $CF $D0 $F0 $01 ...). Known only from the code: the player's pointers end at $D592 and no instruction in c1-c4 reads these bytes.
+@res spare/music-tail.bin

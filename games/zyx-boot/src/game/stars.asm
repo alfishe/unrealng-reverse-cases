@@ -114,10 +114,11 @@ MoveStarsDraw:
 ; The twinkle at each frame: new randoms at TwinkleClock 0, erase at the end of
 ; a twinkle, a frame every 4th frame
 ;
-; TwinkleClock $DEAC (+2 a frame, 128 frames a round): 0: NewRandoms $6BAB.
-; Bits 0-5 = $3E (the twinkle's last frame): EraseTwinkle without a new frame,
-; and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame
-; pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
+; TwinkleClock $DEAC (+2 a frame; 32 frames a twinkle plus the 7 held frames at
+; $3E: 39 frames a twinkle, 156 a round of 4): 0: NewRandoms $6BAB. Bits 0-5 =
+; $3E (the twinkle's last frame): EraseTwinkle without a new frame, and for 7
+; of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame pause.
+; Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
 ;
 ; Witness: L1 13931 (c x4).
 TwinkleStar:

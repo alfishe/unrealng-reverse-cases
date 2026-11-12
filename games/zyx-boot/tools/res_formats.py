@@ -13,6 +13,7 @@ data) -> bytes:
   frames, as indexed PNG sheets;
 - tools/res_tables.py: the star tables, the attribute and fade colours, the key table and the other tables, as text;
 - tools/res_text.py: the menu's strings (texts/*.txt, UTF-8);
+- tools/res_basic.py: the BASIC sector's program lines (basic/launch-lines.txt, basic/line-ten.txt) as a listing;
 - tools/res_music.py: the ASC Sound Master tunes (music/disco.txt, a variant's music/asc.txt);
 - tools/res_stc.py, tools/res_fuxoft.py: a variant's Sound Tracker and Fuxoft tunes (music/stc.txt, music/fuxoft.txt);
 - tools/res_rip.py: the tunes of five one-off game-rip players (music/hydrofool.txt, megaapoc, ziutek, awbt, fp3bt);
@@ -34,7 +35,7 @@ sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
 # folder of the resource -> the converter module
 KINDS = {'graphics': ['res_variants', 'res_screens', 'res_gfx'], 'tables': ['res_variants', 'res_tables'],
-         'texts': ['res_variants', 'res_text'],
+         'texts': ['res_variants', 'res_text'], 'basic': ['res_basic'],
          'music': ['res_music', 'res_stc', 'res_fuxoft', 'res_whittaker', 'res_sheridan', 'res_daglish', 'res_rip']}
 
 

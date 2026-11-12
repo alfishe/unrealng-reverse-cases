@@ -24,19 +24,13 @@
 ; Witness: c2 ran TEST 03 and c3 ran TEST 30 after the menu wrote RUN "T03 "
 ; and RUN "T30     " here (the screens at the end of the recordings).
 LaunchLine:
-  DEFB $00,$01,$1A,$00,$F9,$C0,$B0,$22
-  DEFB $31,$35,$36,$31,$39,$22,$3A,$EA
-  DEFB $3A
+  INCBIN "res/basic/launch-lines.bin",$0000,17
 LaunchToken:
-  DEFB $F7                ; the command token: RUN ($F7) in the image
-  DEFB $22                ; the opening quote
+  INCBIN "res/basic/launch-lines.bin",$0011,2
 LaunchName:
-  DEFB $20,$20,$20,$20,$20,$20,$20,$20 ; the file name, 8 characters, spaces in
-                                       ; the image
-  DEFB $22                ; the closing quote
+  INCBIN "res/basic/launch-lines.bin",$0013,9
 LaunchSuffix:
-  DEFB $20                ; a space, or the token CODE ($AF) for a GO TO
-  DEFB $0D                ; the line's end ($0D)
+  INCBIN "res/basic/launch-lines.bin",$001C,2
 
 ; Line 2: RANDOMIZE USR VAL "15619": REM : RUN (15 bytes; not reached in any
 ; recording)
@@ -44,16 +38,13 @@ LaunchSuffix:
 ; A TR-DOS RUN without a name runs "boot" again. The program only gets here if
 ; line 1's command returns to BASIC without an error; no recording does.
 LineTwo:
-  DEFB $00,$02,$0F,$00,$F9,$C0,$B0,$22
-  DEFB $31,$35,$36,$31,$39,$22,$3A,$EA
-  DEFB $3A,$F7,$0D
+  INCBIN "res/basic/launch-lines.bin",$001E,19
 
 ; Line 3: RANDOMIZE USR VAL "15616" (11 bytes; not reached in any recording)
 ;
 ; USR 15616 enters TR-DOS's command line (the A> prompt).
 LineThree:
-  DEFB $00,$03,$0B,$00,$F9,$C0,$B0,$22
-  DEFB $31,$35,$36,$31,$36,$22,$0D
+  INCBIN "res/basic/launch-lines.bin",$0031,15
 
 ; Line 4: the header (line number, length 71) and the REM token before the
 ; loader
@@ -87,21 +78,22 @@ Loader:
   LD BC,$9D07
   LD (HL),$00
   LDIR
-  LD HL,MenuStart
+  LD HL,MenuStart             ; the code: 15 sectors from the sector after the
+                          ; BASIC
   LD DE,(TrdosNextSector)
   LD BC,$0F05
   CALL TrdosEntry
-  LD HL,MenuGraphics
+  LD HL,MenuGraphics             ; the font and the graphics: 8 sectors
   LD DE,(TrdosNextSector)
   LD BC,$0805
   CALL TrdosEntry
-  LD HL,MusicPiece
+  LD HL,MusicPiece             ; the music: 22 sectors
   LD DE,(TrdosNextSector)
   LD BC,MusicSectors*256+5
   CALL TrdosEntry
-  CALL MenuStart              ; the music: 22 sectors
-  LD HL,MenuStart
-  LD DE,$61A9             ; run the menu; it returns when a file is chosen
+  CALL MenuStart              ; the menu: returns once a file is chosen (RunLetter)
+  LD HL,MenuStart             ; clear the menu's memory again, then RET to BASIC
+  LD DE,$61A9
   LD BC,$9D07
   LD (HL),$00
   LDIR
@@ -118,19 +110,14 @@ LineFourEnd:
 ; menu's stack $FCBC and IM 2 table $FD00-$FE00 lie below it), the loader
 ; $5D80, then RUN, which clears the variables and runs line 1.
 LineTen:
-  DEFB $00,$0A,$25,$00,$E7,$C3,$A7,$3A
-  DEFB $DA,$C3,$A7,$3A,$D9,$B0,$22,$37
-  DEFB $22,$3A,$FD,$B0,$22,$36,$35,$33
-  DEFB $34,$37,$22,$3A,$F9,$C0,$B0,$22
-  DEFB $32,$33,$39,$33,$36,$22,$3A,$F7
-  DEFB $0D
+  INCBIN "res/basic/line-ten.bin",$0000,41
 
 ; The program's end ($80) and TR-DOS's autostart mark: $AA and the line, 10
 ;
 ; TR-DOS writes the line number after $AA when a program is saved with LINE;
 ; RUN "boot" starts the program there.
 AutostartMark:
-  DEFB $80,$AA,$0A,$00
+  INCBIN "res/basic/line-ten.bin",$0029,4
 
 ; The sector's leftover bytes after the program: not loaded as BASIC, not read
 ;

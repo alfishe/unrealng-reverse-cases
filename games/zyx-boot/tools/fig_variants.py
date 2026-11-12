@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The figures and the audio of doc 13 (the variants): every variant's menu, the logos and the rhombi, a WAV of each
+"""The figures and the audio of doc 13 (the variants): every variant's menu, the logos and the rhombi, an MP3 of each
 distinct tune and the register timelines of the player kinds.
 
     python3 tools/fig_variants.py shots [NAME ...] [--port-base 37460]   # boot each variant, save its menu

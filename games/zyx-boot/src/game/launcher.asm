@@ -36,7 +36,7 @@ FireKey:
 ; $EC (GO TO) for a 192-sector C file; the name's 8 bytes after the quote;
 ; after the closing quote a space or $AF (CODE). Frames = 0; I, HL', IY and SP
 ; from Start; Chars = $3C00; PlayBell $6E48; ExitFade $6E72; IM 1; EI; RET to
-; the loader's $5DBD.
+; the loader's $5DB7 (after its CALL MenuStart at $5DB4).
 ;
 ; Witness: L1 3 (c x3).
 RunLetter:
@@ -64,7 +64,9 @@ RunNextEntry:
   POP AF
   JR NZ,RunSkipEntry
   LD A,(HL)
-  CP $C0
+  CP $C0                  ; exactly 192 sectors ($C0): a 48K Magic snapshot.
+                          ; Vadim's comment reads 'length >= C000'; the test is
+                          ; CP $C0 with JR Z, equality only
   JR Z,RunCheckLetter
 RunSkipEntry:
   INC HL

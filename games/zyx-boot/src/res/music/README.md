@@ -40,8 +40,9 @@ through an 8-bit product, patterns 0-42).
 - `delay N`: frames a row.
 - `positions P0 P1 ...`: the pattern of each position.
 - `pattern N`, then `A`, `B`, `C` (indented), each followed by its stream (indented more), one line a row event with the
-  commands before it on the same line. The three streams of a pattern must last the same number of rows: the next
-  position starts when all three have met their `end`.
+  commands before it on the same line. The three streams of a pattern should last the same number of rows. The
+  next position starts on the first row frame after all three have read their last event (the byte after it is `end`),
+  even if that event still runs; a channel then reads the new pattern only when its last event's rows are over.
 
 | Token | Byte | Does |
 | --- | --- | --- |

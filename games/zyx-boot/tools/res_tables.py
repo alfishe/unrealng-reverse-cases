@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The menu's tables as text (tools/res_formats.py calls it for src/res/tables/*).
+"""The menu's tables and the player's note periods as text (tools/res_formats.py calls it for src/res/tables/*).
 
 Every table is lines of numbers: `#` starts a comment, a word ending in `:` is a row label, `$XX` is hex, a plain
 number decimal, `%bbbbb` binary. The stars are written as points (x y lit) and the keys as (letter row mask): the
@@ -17,13 +17,14 @@ TABLES = {
     'tables/rhombus-offsets.bin': 'numbers',
     'tables/exit-sound.bin': 'ay',
     'tables/randoms.bin': 'numbers',
+    'tables/note-periods.bin': 'periods',
 }
 
 HEAD = {
     'tables/logo-attrs.bin': '# The logo''s attributes: 5 rows of 20 cells, copied by DrawScreen $6510 to $5806 (columns 6-25, rows 0-4).\n'
                              '# A cell is FBPPPIII: flash, bright, paper, ink ($47 bright white on black, $07 white, $45 bright cyan).\n',
     'tables/corner-colours.bin': '# CornerColours: the five attributes of the corner gradients (ColourCorners $6CBF): one a row in the\n'
-                                 '# left corners, one a column in the right ones.\n',
+                                 '# top-left and bottom-right corners, one a column in the top-right and bottom-left ones.\n',
     'tables/stars.bin': '# The falling stars: three tables of 20 stars (StarsA $AC84, StarsB $ACFC, StarsC $AD74).\n'
                         '# A star: x (0-255), y (0-191) of its pixel, lit = whether the screen pixel under it was set (MoveStars\n'
                         '# restores it). The record is the screen address, the RES / SET / BIT n,(HL) opcodes of its bit and lit.\n',
@@ -39,6 +40,8 @@ HEAD = {
     'tables/exit-sound.bin': '# ExitSound: the AY registers 0-13 PlayBell $6E48 writes when a file is chosen.\n',
     'tables/randoms.bin': '# Randoms $ADEC: the places of the twinkles, 4 pairs (DrawTwinkle $6BFD takes pair n = TwinkleClock bits 6-7;\n'
                           '# NewRandoms $6BAB refills all 8 from R, the ROM and MainTick).\n',
+    'tables/note-periods.bin': '# PeriodTable $C3CA (src/music): the AY tone period of each note the player plays, 86 words (note 0 = A#0,\n'
+                               '# MIDI 22, to note $55 = B7), read by ChannelSound $C2A0. A line: the period (decimal), the note in the comment.\n',
 }
 
 
@@ -71,6 +74,10 @@ def to_editable(name, data):
     elif kind == 'numbers':
         for i in range(0, len(data), 8):
             out.append(' '.join('%2d' % b for b in data[i:i + 8]) + '\n')
+    elif kind == 'periods':
+        from res_music import note_name
+        for i in range(0, len(data), 2):
+            out.append('%5d  # note %d, %s\n' % (data[i] | data[i + 1] << 8, i // 2, note_name(i // 2)))
     elif kind == 'ay':
         for i, b in enumerate(data):
             out.append('R%d: %d\n' % (i, b))
@@ -113,6 +120,9 @@ def from_editable(name, raw):
         if kind == 'keys':
             _letter, row, mask = l.split()
             out.append(int(row) << 5 | int(mask[1:], 2))
+        elif kind == 'periods':
+            for v in numbers(l):
+                out += bytes([v & 255, v >> 8])
         elif kind == 'stars' and not l.startswith('raw:'):
             x, y, lit = (int(v) for v in l.split())
             a, bit = screen_addr(x, y), 7 - (x & 7)

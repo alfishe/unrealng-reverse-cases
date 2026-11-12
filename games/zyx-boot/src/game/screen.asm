@@ -156,7 +156,9 @@ CountCode:
   POP AF
   JR NZ,CountSkip
   LD A,(HL)
-  CP $C0
+  CP $C0                  ; exactly 192 sectors ($C0): a 48K Magic snapshot.
+                          ; Vadim's comment reads 'length >= C000'; the test is
+                          ; CP $C0 with JR NZ, equality only
   JR NZ,CountSkip
   INC D
 CountSkip:
@@ -275,7 +277,9 @@ PrintColumnEntry:
   POP AF
   JR NZ,PrintColumnSkip
   LD A,(HL)
-  CP $C0
+  CP $C0                  ; exactly 192 sectors ($C0): a 48K Magic snapshot.
+                          ; Vadim's comment reads 'length >= C000'; the test is
+                          ; CP $C0 with JR Z, equality only
   JR Z,PrintColumnName
 PrintColumnSkip:
   INC HL

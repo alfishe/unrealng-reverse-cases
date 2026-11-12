@@ -1,0 +1,11 @@
+# c6: orig/boot.scl booted as c1 (NO EXE FILES !); the menu idles long enough for the tune's second tune loop: MusicInit
+# near frame 532, the first tune loop 7704 frames, the second 7764, so the recording runs to about frame 16 670.
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++16400 END

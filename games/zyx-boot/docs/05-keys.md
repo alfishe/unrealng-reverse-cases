@@ -128,7 +128,7 @@ port read per letter: 24 reads, 8 of them repeated, where 8 reads would do.
 
 RunLetter `$6A51` takes the letter as the position on the page: `C - $40` is 1 for A. It returns at once when that is
 more than FileCount (the listed files from this page's first one on); otherwise it walks the listed entries from
-PagePointer to that one and launches it ([doc 10](10-launcher-and-notes.md)), and never returns.
+PagePointer to that one and launches it ([doc 10, 10.2](10-launcher-and-notes.md#102-runletter-the-walk-and-the-command)), and never returns.
 
 ```text
 6A51  LD A,(FileCount)       ; RunLetter
@@ -188,10 +188,10 @@ The routines keep A (they push and pop AF), so the next `RRA` sees the next bit.
 | 5, 0 | fire | FireKey: run the name under the cursor |
 
 The point: the mapping is exactly the two Sinclair (Interface 2) joysticks, 1-5 left, right, down, up, fire and 6-0
-the same. With two columns, left and right both mean "the other one". The `.ann` comment that calls these "the cursor
-keys of a Sinclair and a cursor joystick" is half right: a cursor joystick (5 left, 6 down, 7 up, 8 right, 0 fire)
-would run the file on left and change the column on down and up. The change goes to the lead
-(`work/docs/zbA-src-changes.md`).
+the same. With two columns, left and right both mean "the other one". The stage-2 `.ann` comment called these "the
+cursor keys of a Sinclair and a cursor joystick", which was half right: a cursor joystick (5 left, 6 down, 7 up,
+8 right, 0 fire) would run the file on left and change the column on down and up. The module's header now names the
+two Sinclair joysticks.
 
 FireKey `$6A3F` does nothing when no file is listed; otherwise it makes the cursor's letter (`CursorIndex + $40`)
 and falls into RunLetter: 5, 0 and ENTER are the letter under the cursor.

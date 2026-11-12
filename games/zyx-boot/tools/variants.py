@@ -512,6 +512,16 @@ def music_piece(vdir, cfg, work, asm):
 
 
 def where(off, cfg):
+    if cfg.get('pieces'):   # an own loader: the BASIC sectors, then the pieces in file order
+        base = cfg.get('basic_sectors', 1) * 256
+        if off < base:
+            return 'BASIC $%04X' % (0x5D3B + off)
+        for p in cfg['pieces']:
+            n = p['sectors'] * 256
+            if off < base + n:
+                return 'piece %s +$%04X ($%04X)' % (p['at'], off - base, int(p['at'][1:], 16) + off - base)
+            base += n
+        return 'past the pieces +$%04X' % (off - base)
     if off < 256:
         return 'BASIC $%04X' % (0x5D3B + off)
     if off < 4096:

@@ -73,7 +73,7 @@ MusicStop:
 ; "ANDREW SENDETSKI ASC" (20). No instruction in c1-c4 reads it; the menu never
 ; prints it.
 PlayerText:
-  DEFM "ASM COMPILATION OF DISCO MUSIC BY ANT P BY ANDREW SENDETSKI ASC"
+  INCBIN "res/texts/player-text.bin",$0000,63
 
 ; Clear the channels, read the module's header into the player's operands,
 ; silence the AY
@@ -803,17 +803,7 @@ AddNoise:
 ; the fifth octave and up to 33 cents off at the top, where the periods are
 ; small.
 PeriodTable:
-  DEFW $0EDC,$0E07,$0D3E,$0C80,$0BCC,$0B22,$0A82,$09EC
-  DEFW $095C,$08D6,$0858,$07E0,$076E,$0704,$069F,$0640
-  DEFW $05E6,$0591,$0541,$04F6,$04AE,$046B,$042C,$03F0
-  DEFW $03B7,$0382,$034F,$0320,$02F3,$02C8,$02A1,$027B
-  DEFW $0257,$0236,$0216,$01F8,$01DC,$01C1,$01A8,$0190
-  DEFW $0179,$0164,$0150,$013D,$012C,$011B,$010B,$00FC
-  DEFW $00EE,$00E0,$00D4,$00C8,$00BD,$00B2,$00A8,$009F
-  DEFW $0096,$008D,$0085,$007E,$0077,$0070,$006A,$0064
-  DEFW $005E,$0059,$0054,$0050,$004B,$0047,$0043,$003F
-  DEFW $003C,$0038,$0035,$0032,$002F,$002D,$002A,$0028
-  DEFW $0026,$0024,$0022,$0020,$001E,$001C
+  INCBIN "res/tables/note-periods.bin",$0000,172
 
 ; Two zero bytes after the table: a note $56 would read them, but the player
 ; clamps the note to $55

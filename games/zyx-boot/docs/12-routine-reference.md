@@ -62,6 +62,8 @@ MainTick `$B3B0` + 1 each pass. Every 2nd pass: MoveStars `$6482` twice on Stars
 
 Witness: L1 27670 (c x4).
 
+[Animation: `MainLoop` at work](img/routines/MainLoop.gif)
+
 | | |
 | --- | --- |
 | Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
@@ -80,6 +82,8 @@ In: DE = the set's base (PhasesA `$7800` or PhasesB `$8A00`), RombThreshold `$76
 Then phase 8 at DE: for each row k, `$18` at byte 2 when RombColumns[k] >= the threshold (never: see the module's header).
 
 Witness: L1 8 (c x4).
+
+[Animation: `BuildRombPhases` at work](img/routines/BuildRombPhases.gif)
 
 | | |
 | --- | --- |
@@ -270,7 +274,7 @@ Witness: L1 62246 (c x4).
 
 **The twinkle at each frame: new randoms at TwinkleClock 0, erase at the end of a twinkle, a frame every 4th frame**
 
-TwinkleClock `$DEAC` (+2 a frame, 128 frames a round): 0: NewRandoms `$6BAB`. Bits 0-5 = `$3E` (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause `$DEB0` counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle `$6BFD`.
+TwinkleClock `$DEAC` (+2 a frame; 32 frames a twinkle plus the 7 held frames at `$3E`: 39 frames a twinkle, 156 a round of 4): 0: NewRandoms `$6BAB`. Bits 0-5 = `$3E` (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause `$DEB0` counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle `$6BFD`.
 
 Witness: L1 13931 (c x4).
 
@@ -372,6 +376,8 @@ SoundOff `$6E41`; ScreenCopy back to the screen; ClearFilesArea `$6930`; CursorA
 Called from DrawScreen (falling in), ReadKeyboard for CAPS SHIFT, SYMBOL SHIFT and SPACE.
 
 Witness: L1 8 (c x4).
+
+[Animation: `ShowCatalogue` at work](img/routines/ShowCatalogue.gif)
 
 | | |
 | --- | --- |
@@ -545,6 +551,8 @@ Puts back HL' and IY for the ROM (SavedHLAlt, SavedIY), opens channel 2 (RomChan
 
 Witness: L1 93 (c x4).
 
+[Animation: `PrintString` at work](img/routines/PrintString.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 3 calls, 5,178 t-states own (0.00 %) |
@@ -592,6 +600,8 @@ Witness: L1 234 (c x4).
 **The IM 2 handler**
 
 Witness: L1 13932 (c x4).
+
+[Animation: `Interrupt` at work](img/routines/Interrupt.gif)
 
 | | |
 | --- | --- |
@@ -670,6 +680,8 @@ Witness: L1 276 (c x4).
 
 Witness: L1 1741 (c x4).
 
+[Animation: `ReadKeyboard` at work](img/routines/ReadKeyboard.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 909 calls, 3,334,347 t-states own (0.60 %) |
@@ -702,9 +714,11 @@ Witness: L1 2 (c x2).
 
 **Run the page's file with letter C (A for the first): write the launch line, restore the caller's state, bell, fade, return to the loader**
 
-Returns at once when C is past the page's last file. Walks the catalogue from PagePointer `$B3C1` counting the listed files; each entry passed has its first byte set to 1 (deleted), so the walk's SkipDeleted steps over it, and the chosen one gets its byte back. LaunchToken `$5D4C` = `$F7` (RUN) for a B file, `$EC` (GO TO) for a 192-sector C file; the name's 8 bytes after the quote; after the closing quote a space or `$AF` (CODE). Frames = 0; I, HL', IY and SP from Start; Chars = `$3C00`; PlayBell `$6E48`; ExitFade `$6E72`; IM 1; EI; RET to the loader's `$5DBD`.
+Returns at once when C is past the page's last file. Walks the catalogue from PagePointer `$B3C1` counting the listed files; each entry passed has its first byte set to 1 (deleted), so the walk's SkipDeleted steps over it, and the chosen one gets its byte back. LaunchToken `$5D4C` = `$F7` (RUN) for a B file, `$EC` (GO TO) for a 192-sector C file; the name's 8 bytes after the quote; after the closing quote a space or `$AF` (CODE). Frames = 0; I, HL', IY and SP from Start; Chars = `$3C00`; PlayBell `$6E48`; ExitFade `$6E72`; IM 1; EI; RET to the loader's `$5DB7` (after its CALL MenuStart at `$5DB4`).
 
 Witness: L1 3 (c x3).
+
+[Animation: `RunLetter` at work](img/routines/RunLetter.gif)
 
 | | |
 | --- | --- |
@@ -762,6 +776,8 @@ Witness: L1 8 (c x4).
 **Shift every pixel row out of its bytes in 8 passes: the screen goes black**
 
 Witness: L1 2 (c x2).
+
+[Animation: `ExitFade` at work](img/routines/ExitFade.gif)
 
 | | |
 | --- | --- |
@@ -850,6 +866,8 @@ FlipSprite `$6E35` on each of the four logo sprites (they stay flipped), PrintSp
 
 Witness: L1 4 (c x4).
 
+[Animation: `DrawReflection` at work](img/routines/DrawReflection.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 1 call, 49,266 t-states own (0.01 %) |
@@ -908,6 +926,8 @@ Witness: L1 2 (c x2).
 **Write 14 bytes from HL to the AY registers 0-13**
 
 Witness: L1 11 (c x4).
+
+[Animation: `WriteAY` at work](img/routines/WriteAY.gif)
 
 | | |
 | --- | --- |
@@ -1055,6 +1075,8 @@ c1: 7274 frames, 1213 of them row frames (the JR NZ at `$C108`), 21 new position
 
 Witness: L1 13931 (c x4).
 
+[Animation: `PlayFrame` at work](img/routines/PlayFrame.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 7,274 calls, 1,878,160 t-states own (0.34 %) |
@@ -1073,6 +1095,8 @@ In: AYRegisters `$C0F4`. Register 13 is written only when AYEnvelopeShape `$C101
 Out: A = `$FF`. Reached by falling from PlayFrame `$C104` and by JP from Silence `$C095`.
 
 Witness: L1 13935 (c x4).
+
+[Animation: `WriteAY` at work](img/routines/WriteAY.gif)
 
 | | |
 | --- | --- |
