@@ -21,9 +21,7 @@
 ; day rolls over (`$936B`, 13 runs, one in every segment of about 4000 frames)
 ; every 1440 passes, so a pass is about 2.8 frames (WALKTHROUGH 1: 2.4 to 3.3).
 ;
-; Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 MainLoop:
   LD A,$01                ; $5BA0 = 1 every pass ($AF81 clears it)
   LD (NotOnLift),A
@@ -77,7 +75,7 @@ FreezeWhileA:
 ; back (not executed in any recording: every game ended in a base-set room);
 ; `JP $8F47`.
 ;
-; Witness: L1 8 (c1, explorers, gameover, rzx).
+; Witness: L1 8 (c1, explorers, gameover, rzx x1).
 EndGame:
   CALL NewHiScore
   LD HL,Screen+4096             ; the panel's bitmap to $E000
@@ -107,7 +105,7 @@ EndGame:
 ; `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up
 ; `$9855`; `$5B9B` = `$FE`; back to MainLoop.
 ;
-; Witness: L1 5 (gameover, rzx, rzx, rzx, rzx).
+; Witness: L1 5 (gameover, rzx x4).
 Respawn:
   XOR A
   LD (LifeLost),A

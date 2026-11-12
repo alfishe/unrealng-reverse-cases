@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A first .ann from unreal-ng's L2 draft: the SkoolKit control file `re_session.py export` writes (draft/draft.ctl).
 
-    python3 kit/ctl2ann.py work/<build>/draft [--out src/game/game.ann] [--lo ADDR --hi ADDR] [--module NAME]
+    python3 kit/ctl2ann.py work/<build>/draft [--out src/<main>/<main>.ann] [--lo ADDR --hi ADDR] [--module NAME]
                            [--names drop|keep|pascal] [--fields] [--force] [--case CASE [--config FILE]]
 
 The argument is the draft folder or its draft.ctl. What the draft says becomes the .ann's lines

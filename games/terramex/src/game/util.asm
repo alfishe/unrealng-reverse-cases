@@ -11,8 +11,7 @@
 ; Callers: PrintString `$94F9` (the menu), `$BD75`/`$BD78` (the score and high
 ; score), PrintDigitAt `$9136`.
 ;
-; Witness: L1 1933 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1933 (c1, explorers, gameover, rzx x18).
 PrintChar:
   PUSH BC
   PUSH DE
@@ -143,9 +142,7 @@ PrintDigitAt:
 ; the touch test of the hero against items and creatures. The SkoolKit title
 ; ("classify object type") names only its first lines.
 ;
-; Witness: L1 67291 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 67291 (c1, explorers, gameover, rzx x31).
 Near:
   PUSH BC
   LD A,(IX+$02)
@@ -184,9 +181,7 @@ NearDone:
 ;
 ; The only caller is `$BFA9` in `$BFA0` (382 calls over all builds).
 ;
-; Witness: L1 382 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx).
+; Witness: L1 382 (c1, explorers, gameover, rzx x23).
 Random:
   PUSH HL
   PUSH DE

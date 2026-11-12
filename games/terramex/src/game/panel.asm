@@ -16,9 +16,7 @@
 ; $B735 at $B759 (tail), $B9FA at $BA30 and $BA71, $BB6C at $BC0A: 81 runs in
 ; 30 builds.
 ;
-; Witness: L1 81 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 81 (c1, explorers, gameover, rzx x27).
 DrawPortrait:
   LD HL,ExplorerSet+9*72
   LD IY,PanelColumns
@@ -51,7 +49,7 @@ DrawPortraitItem:
 ; Callers: InitGame at $8FF0, $A9EE at $AA01 (tail, the life lost): 11 runs in
 ; 7 builds; the blank icon ran in r06000, r10000, r24000, r32000.
 ;
-; Witness: L1 11 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 11 (c1, explorers, rzx x5).
 DrawSpareLives:
   LD A,(Lives)
   OR A
@@ -88,9 +86,7 @@ DrawSpareLivesStore:
 ; Callers: InitGame at $8FE8, $B9FA at $BA6E, $BB6C at $BC1C (tail), $BC1F at
 ; $BC50, $BC64, $BC69, $BC70 (scroll): 1139 runs in 29 builds.
 ;
-; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 1139 (c1, explorers, gameover, rzx x26).
 DrawBearers:
   CALL DrawBearerItems
   LD B,$04
@@ -120,9 +116,7 @@ DrawBearersNext:
 ; drawn at $5036 (row 17, columns 22-30) by BearerItemsShow $9F70. The wrap ran
 ; in c1, explorers, r16000 and r34000.
 ;
-; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 1139 (c1, explorers, gameover, rzx x26).
 DrawBearerItems:
   LD B,$04
   LD A,(BearerIndex)
@@ -158,7 +152,7 @@ DrawBearerItemsNext:
 
 ; DrawSpareLives: blit the 9 columns at $5081
 ;
-; Witness: L1 11 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 11 (c1, explorers, rzx x5).
 SpareLivesShow:
   LD IY,PanelColumns
   LD HL,Screen+4225
@@ -168,9 +162,7 @@ SpareLivesShow:
 
 ; DrawBearers: the bearer figures at $5096, scrolled by BearerPhase
 ;
-; Witness: L1 1139 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 1139 (c1, explorers, gameover, rzx x26).
 BearerRowShow:
   LD HL,Screen+4246
   JR ShowScrolled
@@ -180,9 +172,7 @@ BearerItemsShow:
 
 ; Skip BearerPhase $5C22 columns of the column list, then blit 9
 ;
-; Witness: L1 2278 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 2278 (c1, explorers, gameover, rzx x26).
 ShowScrolled:
   LD IY,PanelColumns
   LD A,(BearerPhase)
@@ -196,9 +186,7 @@ ShowScrolledSkip:
 
 ; Blit 9 columns of the column list
 ;
-; Witness: L1 2289 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2289 (c1, explorers, gameover, rzx x28).
 Blit9Columns:
   LD B,$09
 
@@ -209,9 +197,7 @@ Blit9Columns:
 ; The panel's 24 x 24 icons go through it. Callers: DrawPortrait,
 ; DrawMenuGlobes, and the shows above (63 594 NextCharRow calls).
 ;
-; Witness: L1 21217 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 21217 (c1, explorers, gameover, rzx x29).
 BlitColumns:
   PUSH HL
   PUSH BC
@@ -241,9 +227,7 @@ BlitColumnsNext:
 
 ; HL = DE + 72 * A: sprite A of the table at DE
 ;
-; Witness: L1 8130 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 8130 (c1, explorers, gameover, rzx x29).
 SpriteAddress:
   PUSH DE
   LD L,A
@@ -266,9 +250,7 @@ SpriteAddress:
 ;
 ; Out: IY 6 on, HL + 48. Builds PanelColumns $5BD6 for BlitColumns.
 ;
-; Witness: L1 9352 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 9352 (c1, explorers, gameover, rzx x29).
 AddColumnPointers:
   LD (IY+$00),L
   LD (IY+$01),H

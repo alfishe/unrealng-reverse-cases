@@ -42,9 +42,18 @@ Each case is a full reverse of one game:
 | [Battle Command](games/battle-command/README.md) | Ocean Software (Realtime Games), 1990 | 128K, tape (two sides) | complete 2026-11-11 | a 3D tank combat game: one Mauler tank in a filled-polygon world, ten missions on a mission tape, SpeedLock 7 |
 | [Terramex](games/terramex/README.md) | Grandslam Entertainments (Teque), 1987 | 48K / 128K, tape | complete 2026-11-11 | an arcade adventure: five explorers, 70 flick-screen rooms, objects carried by invisible bearers, a countdown to an asteroid's impact; Ben Daglish's AY music on the 128K |
 | [Switchblade](games/switchblade/README.md) | Gremlin Graphics, 1991 | 48K / 128K, tape | in progress (stage 1) | Jeff Calder's conversion of Simon Phipps' flip-screen platform game: Hiro rebuilds the Fireblade in a 127-room Undercity revealed as he walks |
-| [ZYX boot](games/zyx-boot/README.md) | ZYX Software, 1993-1994 | 48K + AY, TR-DOS | in progress (stage 2: the source rebuilds the disk; docs 02, 03) | a TR-DOS boot menu, not a game: the catalogue as a menu of up to 24 files a page, the ZYX logo with its reflection, four rhombi turning in 3D, falling stars, ASC Sound Master music; runs the file by rewriting its own BASIC line |
 
-Every case is one folder in `games/`:
+### Software
+
+Programs that are not games (boot menus, utilities): `software/<name>`, the same layout, the main program's source
+in `src/main`.
+
+| Program | Publisher, year | Machine, medium | State | What it is |
+| --- | --- | --- | --- | --- |
+| [ZYX boot](software/zyx-boot/README.md) | ZYX Software, 1993-1994 | 48K + AY, TR-DOS | in progress (stage 2: the source rebuilds the disk; docs 02, 03) | a TR-DOS boot menu, not a game: the catalogue as a menu of up to 24 files a page, the ZYX logo with its reflection, four rhombi turning in 3D, falling stars, ASC Sound Master music; runs the file by rewriting its own BASIC line |
+
+Every case is one folder in `games/` (or `software/` for a program that is not a game, its main program's source in
+`src/main`, not `src/game`):
 
 | Path | What it holds |
 | --- | --- |

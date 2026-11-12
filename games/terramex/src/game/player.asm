@@ -34,9 +34,7 @@ HeroProbes:
 ; tests, no match); $BC / $BD matched 26 passes in one rzx segment, the 50-pass
 ; sink never came ($A15A not executed).
 ;
-; Witness: L1 21714 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 21714 (c1, explorers, gameover, rzx x31).
 HeroTileChecks:
   LD IY,HeroProbes
   PUSH DE
@@ -109,9 +107,7 @@ HeroTileChecksEnd:
 ; 23), both read from the tile map $F800 through PixelToTileMap $A293. Called
 ; only from HeroTileChecks $A102, which compares both with $A5.
 ;
-; Witness: L1 11772 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 11772 (c1, explorers, gameover, rzx x23).
 DeadlyTileProbe:
   LD L,(IX+$00)
   LD H,(IX+$01)
@@ -144,9 +140,7 @@ DeadlyTileProbe:
 ; down and up move the hero 2 pixels a pass only while it is Z, with the frames
 ; $20-$23 (ClimbFrame $A4E8): 439 climbing passes in 8 rzx segments.
 ;
-; Witness: L1 16548 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 16548 (c1, explorers, gameover, rzx x31).
 OnLadder:
   LD A,(IX+$00)
   ADD A,$0C
@@ -200,7 +194,7 @@ LadderAltSet:
 ; back. Called only from FloatInRoom2C $A34B ($A3B4): a rising hero bounces off
 ; a tile at its head.
 ;
-; Witness: L1 69 (rzx, rzx).
+; Witness: L1 69 (rzx x2).
 HeadroomRows:
   PUSH BC
   LD A,(IY+$03)
@@ -233,9 +227,7 @@ HeadroomRows:
 ; HeroUpdate $A3E1 reads (IY+3): 0 stand or land, 1-4 fall, 5 or more refuse
 ; the drop (RefuseDrop $A545) unless the umbrella is in use.
 ;
-; Witness: L1 21714 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 21714 (c1, explorers, gameover, rzx x31).
 FloorDistance:
   LD A,(IX+$00)
   ADD A,$0C
@@ -254,9 +246,7 @@ FloorNone:
 ; A = the start Y, L = the X; IY+3 counts the rows. Entered from FloorDistance
 ; $A1F4 and HeadroomRows $A1D3. BC keeps the current point.
 ;
-; Witness: L1 21782 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 21782 (c1, explorers, gameover, rzx x31).
 FloorScanFrom:
   LD H,A
   PUSH HL
@@ -333,9 +323,7 @@ AltSolidTiles:
 ; tile map (32 x 16). DE kept. The one lookup of every probe here and of the
 ; creatures' probes. 241661 calls in all recordings.
 ;
-; Witness: L1 241661 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 241661 (c1, explorers, gameover, rzx x31).
 PixelToTileMap:
   PUSH DE
   SRL L
@@ -362,9 +350,7 @@ PixelToTileMap:
 ; and runs WallColumnCheck $A2B2: (IY+0) = 1 when a solid tile is there. Called
 ; from HeroTileChecks $A102 and the creature code $C0FD.
 ;
-; Witness: L1 26266 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26266 (c1, explorers, gameover, rzx x31).
 LeftWallCheck:
   LD L,(IX+$00)
   LD H,(IX+$01)
@@ -376,9 +362,7 @@ LeftWallCheck:
 ; (AltSolidTiles $A271 with the other set); from room $18 on the list starts at
 ; ExtraSolidTiles $A242 (AltExtraSolidTiles $A268). Any match sets (IY+0) = 1.
 ;
-; Witness: L1 49704 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 49704 (c1, explorers, gameover, rzx x31).
 WallColumnCheck:
   LD (IY+$00),$00
   LD B,$03
@@ -432,9 +416,7 @@ WallColumnNext:
 ; with IY moved up one: the result goes to (IY+1). Called from HeroTileChecks
 ; $A102 and the creature code $C109.
 ;
-; Witness: L1 23438 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 23438 (c1, explorers, gameover, rzx x31).
 RightWallCheck:
   LD A,(IX+$00)
   ADD A,$17
@@ -451,8 +433,7 @@ RightWallCheck:
 ; IY moved up one. Called only from the creature code $C121 (3402 calls, 21 rzx
 ; segments).
 ;
-; Witness: L1 3402 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3402 (rzx x21).
 CreatureFloorBelow:
   LD A,(IX+$00)
   ADD A,$0C
@@ -470,7 +451,7 @@ CreatureFloorBelow:
 ; IX = the object, IY = its record. SolidTileAt $A328 at (X + 12, Y). Called
 ; only from the creature code $C115.
 ;
-; Witness: L1 138 (rzx, rzx, rzx).
+; Witness: L1 138 (rzx x3).
 CreatureSolidAt:
   LD A,(IX+$00)
   ADD A,$0C
@@ -483,8 +464,7 @@ CreatureSolidAt:
 ; (AltExtraSolidTiles $A268 with the other set) or the solid list after it,
 ; else 0.
 ;
-; Witness: L1 3540 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3540 (rzx x21).
 SolidTileAt:
   LD (IY+$00),$00
   CALL PixelToTileMap
@@ -528,7 +508,7 @@ SolidTileDone:
 ; the screen there shows the hero floating in a lab of floating objects.
 ; Reached only through the room handler table.
 ;
-; Witness: L1 149 (rzx, rzx).
+; Witness: L1 149 (rzx x2).
 FloatInRoom2C:
   POP AF
   CALL ClearStatus
@@ -656,9 +636,7 @@ FloatMove:
 ; ($A5B9); a drop of 1-4 rows: fall 4 pixels a pass ($A570); 5 or more: refuse
 ; (RefuseDrop $A545).
 ;
-; Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 HeroUpdate:
   CALL RunRoomScript
   LD IY,HeroProbes        ; IY = the probe record $A0FE for the whole update
@@ -932,9 +910,7 @@ HeroSinkIn:
 ; in place and only animates; it is set by RopeTrick $BC73 ($BCB4, a note of
 ; the Flute in room $10).
 ;
-; Witness: L1 15541 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 15541 (c1, explorers, gameover, rzx x31).
 HeroWalkFrames:
   XOR A
   LD (RefuseCount),A
@@ -998,8 +974,7 @@ HeroStandFrame:
 ; Evidence: 30 exits in 17 rzx segments, 3 of them wrapping; the room $29 path
 ; once (rzx, explorer 0).
 ;
-; Witness: L1 30 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 30 (rzx x17).
 ExitLeft:
   LD A,(Room)
   CP $29
@@ -1046,8 +1021,7 @@ ExplorerRooms:
 ; Evidence: 38 exits in gameover and 18 rzx segments; the explorer room path
 ; once.
 ;
-; Witness: L1 38 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 38 (gameover, rzx x18).
 ExitRight:
   LD HL,ExplorerRooms
   LD B,$05
@@ -1081,7 +1055,7 @@ ExitRightToRoom29:
 ; $A3E1, BalloonRide $AC35, BounceUp $AD17, Hover $AD32, JumpStepY $AE37 and
 ; LiftUp $A96B. Evidence: 13 calls, 5 of them blocked.
 ;
-; Witness: L1 13 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 13 (gameover, rzx x8).
 ExitUp:
   CALL RoomToLevelColumn
   LD A,B
@@ -1099,7 +1073,7 @@ ExitUp:
 ; HeroUpdate $A3E1, BalloonRide $AC35, Hover $AD32, LiftDown $A9C4,
 ; JumpHoleCheck $AF09 and ExitDownSaved $AE6A.
 ;
-; Witness: L1 13 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 13 (gameover, rzx x9).
 ExitDown:
   CALL RoomToLevelColumn
   LD A,B
@@ -1124,8 +1098,7 @@ ExitBlocked:
 ; A = the step; only step $10. OverHole $AF22 with status 2: SP back to SavedSP
 ; $AF39 and ExitDown $A6AE. Evidence: once in an rzx segment.
 ;
-; Witness: L1 2366 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2366 (gameover, rzx x23).
 JumpHoleCheck:
   CP $10
   RET NZ
@@ -1146,9 +1119,7 @@ JumpHoleDone:
 ; $5BA2 = 0: carry. Else its column x 8 against the hero's X: no carry when X
 ; is within 8 pixels right of it. Also called by WellFront $9A09.
 ;
-; Witness: L1 26583 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26583 (c1, explorers, gameover, rzx x31).
 OverHole:
   LD HL,(WellHole)
   LD A,H
@@ -1189,9 +1160,7 @@ InputBits:
 ; every pass ($A3F4), by $A34B ($A356), by $AF81 ($AFBA, which tests E: up +
 ; down there gives down, status 20) and by TelescopeRoom $B16A ($B17F).
 ;
-; Witness: L1 26612 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). The cancel branches
+; Witness: L1 26612 (c1, explorers, gameover, rzx x31). The cancel branches
 ; ($B887, $B890) are not executed in any recording (c1, explorers, gameover,
 ; the 31 rzx builds).
 ReadControls:
@@ -1224,9 +1193,7 @@ ReadControlsDone:
 ; Witness: explorers reads all three (keyboard 849 and Sinclair 853 passes,
 ; Kempston in every build).
 ;
-; Witness: L1 26612 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26612 (c1, explorers, gameover, rzx x31).
 ReadDevice:
   LD HL,InputBits
   LD (HL),$00
@@ -1339,9 +1306,7 @@ KeyK:
 
 ; A = InputBits: the end of every reader
 ;
-; Witness: L1 26612 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26612 (c1, explorers, gameover, rzx x31).
 InputBitsOut:
   LD A,(HL)
   RET

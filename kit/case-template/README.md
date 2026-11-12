@@ -18,3 +18,5 @@ tools/build.sh [SJASMPLUS]     # builds build/GAME.TAP and compares it with orig
 
 The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are
 `src/res/` (`src/res/README.md`).
+<!-- A program that is not a game: the case is software/<name>, the source src/main from src/main/main.ann
+     (case.json "main": "main"); recipes/01-start-a-case.md step 1. -->

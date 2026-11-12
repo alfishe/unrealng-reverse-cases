@@ -37,7 +37,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `tapblocks.py list FILE.tap` | the blocks of a tape: lengths, header fields, the play time at ROM speed, checksums |
 | `tapblocks.py FILE.tap N OUT` | one block's data |
 | `tap.py` | writes a tape of standard ROM blocks (the build's last step); a `basic` header's program length is the program without its variables, found as SAVE writes it (or given: `basic:NAME:LINE:FILE:LENGTH`) |
-| `mkgame.py --case C` | `src/game/*.asm` from `game.ann` ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
+| `mkgame.py --case C` | `src/game/*.asm` from `game.ann` (`src/main`, `main.ann` in a case whose `case.json` names `"main": "main"`) ([format](../docs/ann-format.md)), the recordings' `l1.json` and the image `case.json` names; refuses to install unless sjasmplus gives the image's bytes |
 | `mkgame.py --part F.json` / `--image BIN --org A ...` | any other code image the same way: a loader, a menu, a bank, an image of several segments or pieces ([part files](../docs/ann-format.md#5-parts-banks-and-pieces)) |
 | `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; `Symbols(case).add(ann, lo, hi)` writes and reads an address of an editable form as a name (`word($CCDA)` is `SharedModels+591`, `value()` the address again); the case's `res_formats.py build` calls it |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
@@ -54,6 +54,7 @@ what the generator does with it, the part files); every file of a case and the c
 
 | Key | Meaning |
 | --- | --- |
+| `main` | the main part's name: `src/<main>/<main>.ann`, `<main>.asm`, `work/mkgame/<main>.ctl`; `game` when absent, `main` for a program that is not a game (`software/<name>`), optional |
 | `image` / `image_cmd` | the 64 K image as the loader leaves it; the command (run in the case) that writes it |
 | `lo`, `hi` | the bytes of the image that are the game (hex; `hi` exclusive) |
 | `device` | sjasmplus `DEVICE` |

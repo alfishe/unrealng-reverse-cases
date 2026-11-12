@@ -30,9 +30,7 @@ CreatureRecord3:
 ; +3 = byte0 >> 4 & 7, +4 = byte1, +5 = byte2, +6 = byte3 & $7F, +7 = byte3 &
 ; $80. Called by $9855 (the room set-up) on every room entry.
 ;
-; Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 105 (c1, explorers, gameover, rzx x28).
 DecodeRoomCreatures:
   PUSH AF
   LD HL,CreatureRecords
@@ -106,9 +104,7 @@ DecodeCreatureLoop:
 ; the handler is word +0 of CreatureHandlers $BECA, called through JumpHL
 ; $BEC9. Called by the main loop every pass ($903D); IX kept.
 ;
-; Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26514 (c1, explorers, gameover, rzx x31).
 RunCreatures:
   LD B,$03
   LD DE,CreatureRecords
@@ -143,9 +139,7 @@ RunCreaturesLoop:
 
 ; JP (HL): the call into a creature handler
 ;
-; Witness: L1 79544 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 79544 (c1, explorers, gameover, rzx x31).
 JumpHL:
   JP (HL)
 
@@ -168,9 +162,7 @@ CreatureHandlers:
 
 ; Type 0: an empty record, RET
 ;
-; Witness: L1 41598 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 41598 (c1, explorers, gameover, rzx x31).
 NoCreature:
   RET
 
@@ -181,7 +173,7 @@ NoCreature:
 ; down to 0, the ground under it tested (TestBelow $C0FD). A test flag not 0,
 ; or the edge, turns it (+7 bit 7 flipped). Then AnimateCreature $C0AC.
 ;
-; Witness: L1 2454 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2454 (rzx x11).
 WalkerCreature:
   BIT 0,(IY+$08)
   JR NZ,WalkerMove
@@ -222,7 +214,7 @@ WalkerRightTest:
 ; TestBelowRight $C121; clear: Y - 2 down to 0, tested by TestAhead $C115. Then
 ; AnimateCreature $C0AC.
 ;
-; Witness: L1 266 (rzx, rzx, rzx).
+; Witness: L1 266 (rzx x3).
 ClimberCreature:
   BIT 0,(IY+$08)
   JR NZ,ClimberMove
@@ -266,7 +258,7 @@ ClimberDownTest:
 ; until it leaves the room (not executed in any recording). Then
 ; AnimateCreature $C0AC.
 ;
-; Witness: L1 5796 (c1, explorers, rzx, rzx).
+; Witness: L1 5796 (c1, explorers, rzx x2).
 LeftFlier:
   LD C,$01
   CALL CreatureTimer
@@ -301,9 +293,7 @@ LeftFlierBlocked:
 ; the new value stored, Z clear. So after the wait the creature acts every pass
 ; until its handler clears the timer.
 ;
-; Witness: L1 31152 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 31152 (c1, explorers, gameover, rzx x23).
 CreatureTimer:
   LD A,(IY+$08)
   OR A
@@ -327,7 +317,7 @@ CreatureTimerDown:
 ; by TestRight $C109 (a flag not 0 subtracts 1 from the type: it becomes a
 ; LeftFlier; not executed in any recording).
 ;
-; Witness: L1 989 (rzx, rzx, rzx, rzx).
+; Witness: L1 989 (rzx x4).
 RightFlier:
   LD C,$01
   CALL CreatureTimer
@@ -360,8 +350,7 @@ RightFlierBlocked:
 ; CreatureTimer $BFA0 (C = 1): the drop is unseen (frame $7F) while it waits,
 ; at its start place. Then DropFall $C000.
 ;
-; Witness: L1 12834 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 12834 (rzx x20).
 DropCreature:
   LD C,$01
   CALL CreatureTimer
@@ -380,9 +369,7 @@ DropCreature:
 ; sound 5 (PlaySound $C4B2). The drop always tests the explorer (HitExplorer
 ; $C0DA), with no hit flag.
 ;
-; Witness: L1 3288 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx). 105 splashes with sound 5 in 18 builds
-; ($C04F).
+; Witness: L1 3288 (rzx x19). 105 splashes with sound 5 in 18 builds ($C04F).
 DropFall:
   LD A,(IX+$01)
   ADD A,$02
@@ -429,7 +416,7 @@ DropSplash:
 ; SnakeBite $B5C8): a still creature they have struck or removed stops. Else
 ; AnimateCreature $C0AC.
 ;
-; Witness: L1 2107 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2107 (gameover, rzx x9).
 StillCreature:
   BIT 0,(IY+$08)
   JR NZ,StillCreatureFrame
@@ -451,8 +438,7 @@ StillCreatureFrame:
 ; (+2 bit 7) the explorer is tested (HitExplorer $C0DA) at the frame index +3
 ; (3: the riser fully up), or at every frame when +3 is 4 or more.
 ;
-; Witness: L1 11533 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 11533 (c1, explorers, gameover, rzx x17).
 RiserCreature:
   LD C,$11
   CALL CreatureTimer
@@ -497,8 +483,7 @@ RiserSetFrame:
 ; the hit frame +3 is 4 or more, else only at frame index +3 (no room record
 ; has a hit frame below 4 for these types: not executed in any recording).
 ;
-; Witness: L1 8663 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 8663 (c1, explorers, gameover, rzx x18).
 AnimateCreature:
   LD A,(IY+$07)
   INC A
@@ -529,10 +514,9 @@ AnimateCreature:
 ; $A101 is 0, status $1A (FallDeath $A888) instead. During the statuses $0F and
 ; above (the scripted events) creatures do not hit.
 ;
-; Witness: L1 10981 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx). 23 contacts in 4 builds ($C0E6), 4 of them set a
-; status ($C0F9: rzx06000, rzx22000, rzx24000, rzx32000), $1A once (rzx24000).
+; Witness: L1 10981 (c1, explorers, gameover, rzx x26). 23 contacts in 4 builds
+; ($C0E6), 4 of them set a status ($C0F9: rzx06000, rzx22000, rzx24000,
+; rzx32000), $1A once (rzx24000).
 HitExplorer:
   PUSH IY
   LD IY,Hero
@@ -556,8 +540,7 @@ HitExplorerStatus:
 ; Test the tiles under the creature with $A2AC (SK: under the feet), the flag
 ; in TileScanFlags+0
 ;
-; Witness: L1 4553 (c1, explorers, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx).
+; Witness: L1 4553 (c1, explorers, rzx x12).
 TestBelow:
   PUSH IY
   LD IY,TileScanFlags
@@ -568,8 +551,7 @@ TestBelow:
 ; Test the tiles right of the creature with $A2FA (SK: X + 23), the flag in
 ; TileScanFlags+1
 ;
-; Witness: L1 1724 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 1724 (rzx x14).
 TestRight:
   PUSH IY
   LD IY,TileScanFlags
@@ -580,7 +562,7 @@ TestRight:
 ; Test a tile with $A31F (SK: X + 12, the special tiles), the flag in
 ; TileScanFlags+4
 ;
-; Witness: L1 138 (rzx, rzx, rzx).
+; Witness: L1 138 (rzx x3).
 TestAhead:
   PUSH IY
   LD IY,TileScanSecond
@@ -590,8 +572,7 @@ TestAhead:
 
 ; Test a tile with $A30B (SK: X + 12, Y + 24), the flag in TileScanFlags+5
 ;
-; Witness: L1 3402 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3402 (rzx x21).
 TestBelowRight:
   PUSH IY
   LD IY,TileScanSecond
@@ -617,9 +598,7 @@ TileScanSecond:
 ; it never moves or animates), and called by the other handlers at their first
 ; pass.
 ;
-; Witness: L1 2377 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 2377 (c1, explorers, gameover, rzx x26).
 PlaceCreature:
   SET 0,(IY+$08)
   LD A,(IY+$05)

@@ -1,0 +1,41 @@
+# The launcher of variant zyxboot-01 (zyxboot.scl, file ZYX-1): one sector its BASIC loader reads to $FF14 and jumps to
+# when the menu returns (variants/zyxboot-01/README.md). Format: ../../../../../docs/ann-format.md.
+# The sector runs past $FFFF: its last 20 bytes would land on the ROM at $0000-$0013 and are lost; the build takes
+# them from files/past-ffff.bin.
+
+@equ $3D2F TrdosRet ; the TR-DOS ROM's RET at $3D2F: a JP there runs the address on the stack inside the TR-DOS ROM
+@equ $5C3D ErrSP 2 ; ERR_SP: the BASIC error return address on the stack
+@equ $5C3A ErrNr 1 ; ERR_NR
+@equ $5CD6 TrdosFileType 1 ; TR-DOS: a work byte the launcher clears
+@equ $5CDD TrdosDescriptor 9 ; TR-DOS: the current file's name and type (9 bytes of its catalogue entry)
+@equ $5CE5 TrdosStartHigh 1 ; TR-DOS: the file type byte the launcher sets to "B"
+@equ $5CE6 TrdosStart 2 ; TR-DOS: the file's start (parameter 1)
+@equ $5CE8 TrdosLength 2 ; TR-DOS: the file's length (parameter 2)
+@equ $5CEA TrdosSectors 1 ; TR-DOS: the file's sectors
+@equ $5CEB TrdosSector 1 ; TR-DOS: the file's first sector
+@equ $5CEC TrdosTrack 1 ; TR-DOS: the file's track
+@equ $5D10 TrdosFlag10 1 ; TR-DOS: the error flag
+@equ $5D15 TrdosFlag15 1 ; TR-DOS: a work byte set to $FF
+@equ $5D1A TrdosWord1A 2 ; TR-DOS: set to $0201
+@equ $5D1C TrdosSaveSP 2 ; TR-DOS: the stack pointer it returns to
+@equ $5D1F TrdosFlag1F 1 ; TR-DOS: a work byte set to $FF
+@equ $5D4E LaunchName 8 ; the BASIC's line 1: the chosen file's name the menu wrote
+@equ $61A8 MenuStart 1 ; the menu (src/main: Start)
+@equ $9D00 Catalogue 1 ; the menu's copy of the catalogue (src/main)
+
+@module launcher ; The launcher: the flag the menu tests, then find the chosen file in the catalogue and run it through the TR-DOS ROM
+@about Variant zyxboot-01 starts the chosen BASIC file itself instead of returning to the loader's RUN: its loader ends with CALL $61A8 (the menu) and JP Launcher. LauncherFlag is 0 on the disk; the menu's Start reads the catalogue only while it is 0 (the code switch catalogue-call, tools/variants.py).
+
+$FF14 b LauncherFlag 1 ; 0: the menu reads the catalogue itself (Start tests this byte)
+$FF15 c Launcher ; Find the name the menu wrote into line 1 in the catalogue copy, load that file's header into TR-DOS's descriptor, clear the menu's memory and run the file through the TR-DOS ROM
+> Every catalogue entry whose name differs from LaunchName $5D4E is marked $FD (deleted) as it is passed, so the ROM's search stops at the chosen one.
+$FF2E ; found: back to the entry's start, its 9 bytes of name and type to TrdosDescriptor $5CDD, type "B"
+$FF40 ; start, length, sectors, sector and track into TR-DOS's variables, each marked $FD in the copy
+$FF70 ; clear the menu's memory $61A8-$FF13 and take the BASIC stack back
+$FF8C ; the TR-DOS variables of a LOAD, then the ROM's routines at $021D and $294A through TrdosRet
+$FFBF c LauncherRun ; Run the loaded program: the ROM's routine $012A through TrdosRet, with the saved return address
+$FFCC c RomCall ; Run the routine at IX inside the TR-DOS ROM (PUSH IX, JP TrdosRet)
+$FFD1 c RomRun ; Run the ROM's $2920 with $01D3 as its return
+$FFDB w SavedReturn 1 ; The return address the launcher takes from the BASIC stack
+$FFDD w LauncherWords 7 ; Seven words $147B-$148D left by the program that saved the file; not read
+$FFEB b LauncherJunk 8 ; Leftover bytes of the saving machine's memory (part of an assembler line, DEFB and a hex number); not read

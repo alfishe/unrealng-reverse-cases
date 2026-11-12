@@ -1,9 +1,10 @@
 # Briefs: the templates
 
-The lead gives each agent one brief and a short prompt (its id, its port base, its share of the work). These are
-the templates, distilled from the briefs the nine cases ran with. After `cp -R kit/case-template games/<game>`, move
-this folder into the git-ignored `work/` (`mv games/<game>/briefs games/<game>/work/briefs`), copy the brief a stage
-needs next to its output (`work/stage1/BRIEF.md`, `work/docs/BRIEF.md`) and fill in every `<...>`.
+The lead gives each agent one brief and a short prompt (its id, its port base, its share of the work). These are the
+templates, distilled from the briefs the nine cases ran with. After `cp -R kit/case-template games/<game>`
+(`software/<name>` for a program that is not a game), move this folder into the git-ignored `work/` (`mv
+games/<game>/briefs games/<game>/work/briefs`), copy the brief a stage needs next to its output
+(`work/stage1/BRIEF.md`, `work/docs/BRIEF.md`) and fill in every `<...>`.
 [recipes/11-agents.md](../../../recipes/11-agents.md) says who gets which and how they share the machine.
 
 | Brief | Stage | Agents | Came from |

@@ -36,9 +36,7 @@
 ; Called once a frame: c1 runs it 5029 times in the 5029 frames from 21599 to
 ; 26627; explorers 15 190 of 15 190, gameover 6000 of 6000.
 ;
-; Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 MusicFrame:
   EX AF,AF'
   PUSH AF
@@ -63,9 +61,7 @@ MusicFrame:
 ; c1 runs StartTune once (frame 21599, the first call after GameEntry);
 ; explorers and the rzx pieces once after each EndTune.
 ;
-; Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 MusicTick:
   LD A,(PlayerState)
   OR A
@@ -99,9 +95,7 @@ MusicTick:
 ; NoteEndFlag 0. When channel A meets its order list's end, EndTune $C780 drops
 ; UpdateChannel's return, so channels B and C are not updated that frame.
 ;
-; Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 83609 (c1, explorers, gameover, rzx x31).
 UpdateTune:
   LD A,(PlayerState)
   OR A
@@ -197,7 +191,7 @@ UpdateTuneChannels:
 ; Ran at frame 9581 in explorers and once in r08000, r18000, r28000, r38000 and
 ; r48000, 9698 frames apart.
 ;
-; Witness: L1 6 (explorers, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 6 (explorers, rzx x5).
 EndTune:
   XOR A
   LD (ChannelAVolume),A
@@ -225,7 +219,7 @@ EndTune:
 ; Ran once in c1 (frame 21599), once in explorers (9582) and after each EndTune
 ; in the rzx pieces.
 ;
-; Witness: L1 7 (c1, explorers, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 7 (c1, explorers, rzx x5).
 StartTune:
   PUSH AF
   LD (TuneNumberOp+$0001),A

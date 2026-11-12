@@ -83,12 +83,13 @@ def numeric(data, marks=None, header=None):
 
 
 def symbols(case_root, ann_path=None):
-    """The names of the case's annotations (src/game/game.ann unless ann_path): ({address: name}, {name: address},
+    """The names of the case's annotations (the main part's src/<main>/<main>.ann unless ann_path): ({address: name}, {name: address},
     {resource file: {offset: inner label}}), the inner labels of every @res entry by their offset in its file"""
     sys.path.insert(0, HERE)
     import mkgame
     mkgame.load_case(case_root)  # LO, HI: an @equ inside the image is refused
-    ann = mkgame.Annotations(ann_path or os.path.join(case_root, 'src', 'game', 'game.ann'))
+    main = mkgame.main_name()
+    ann = mkgame.Annotations(ann_path or os.path.join(case_root, 'src', main, main + '.ann'))
     names = {}
     for a in set(ann.entries) | set(ann.inline):
         n = ann.name(a)

@@ -9,8 +9,9 @@
         --program "Advanced Nether Earth" [--nth N] [--image FILE --image-origin ADDR] [--bank N]
     python3 kit/sig_add.py sources [signatures/sources.json]     # every addition the file lists, in order
 
-ann: one entry per module of the case's annotations (case.json's game.ann and image, or a part file's image and
-.ann: --part, one segment of it with --segment), under programs/games/<case>/<module> (<prefix>-<module> with
+ann: one entry per module of the case's annotations (case.json's main part, src/<main>/<main>.ann (src/game/game.ann
+in a game), and image, or a part file's image and .ann: --part, one segment of it with --segment), under
+programs/<family>/<case>/<module> (games for a case in games/, utilities for one in software/; <prefix>-<module> with
 --prefix, for the parts of a case whose module names repeat). The instruction starts come from the build's listing (--lst) when given, else from
 the annotations' code entries decoded in a line; the mask from the 16-bit operands (inside the module rel16, the ROM
 unmasked, the rest ext16, named by the annotations) and from the word entries that point inside the module.
@@ -120,6 +121,8 @@ def module_segments(ann, hi):
 def add_ann(args):
     case = os.path.abspath(args.case)
     mk = S.kit_import('mkgame')
+    if args.family is None:
+        args.family = 'utilities' if os.path.basename(os.path.dirname(case)) == 'software' else 'games'
     if args.part:
         # a part file (docs/ann-format.md 5.2): its image at its address, its .ann (or one segment's) and range
         mk.ROOT = case
@@ -134,7 +137,9 @@ def add_ann(args):
         hi = mk.hexa(seg.get('hi') or part.get('hi') or '%X' % (at + len(data)))
         mk.LO, mk.HI = lo, hi
         nested = part.get('segments') and part.get('subdir', True)  # the modules in a folder of their own
-        top = None if nested else (part.get('top') or part.get('name') or 'game')
+        config = json.load(open(os.path.join(case, 'case.json'))) if os.path.exists(os.path.join(case, 'case.json')) \
+            else {}
+        top = None if nested else (part.get('top') or part.get('name') or mk.main_name(config))
         ann = mk.Annotations(os.path.join(case, ann_path), piece=seg.get('piece'), top=top)
         args.ann = ann_path
         module_dir = part.get('dest') or os.path.dirname(ann_path)
@@ -148,7 +153,10 @@ def add_ann(args):
         if not os.path.exists(image_path):
             subprocess.run(config['image_cmd'], cwd=case, check=True)  # the command runs in the case, as mkgame's
         mem = open(image_path, 'rb').read()
-        ann = mk.Annotations(os.path.join(case, args.ann), top='game')
+        main = mk.main_name(config)
+        if args.ann is None:
+            args.ann = os.path.join('src', main, main + '.ann')
+        ann = mk.Annotations(os.path.join(case, args.ann), top=main)
     lo, hi = mk.LO, mk.HI
     rows = S.read_listing(os.path.join(case, args.lst)) if args.lst else None
     listed_starts = {r['address'] for r in rows if r['instruction'] and lo <= r['address'] < hi} if rows else None
@@ -284,7 +292,7 @@ def add_sources(args):
 
 
 DEFAULTS = {
-    'ann': {'ann': 'src/game/game.ann', 'config': 'case.json', 'family': 'games', 'image': None, 'lst': None, 'bank': None, 'modules': None, 'authors': None,
+    'ann': {'ann': None, 'config': 'case.json', 'family': None, 'image': None, 'lst': None, 'bank': None, 'modules': None, 'authors': None,
             'year': None, 'part': None, 'segment': 0, 'prefix': None},
     'lst': {'nth': 1, 'image': None, 'image_origin': None, 'bank': None},
 }
@@ -298,9 +306,10 @@ def main():
     a.add_argument('--program', required=True)
     a.add_argument('--authors')
     a.add_argument('--year', type=int)
-    a.add_argument('--ann', default='src/game/game.ann')
+    a.add_argument('--ann', help='the annotations (default the main part\'s: src/<main>/<main>.ann, case.json "main")')
     a.add_argument('--config', default='case.json', help='the case.json, relative to the case')
-    a.add_argument('--family', default='games', help='games, demos or utilities')
+    a.add_argument('--family', help='games, demos or utilities (default games for a case in games/, utilities for '
+                   'one in software/)')
     a.add_argument('--image')
     a.add_argument('--lst')
     a.add_argument('--bank', type=int)

@@ -2,7 +2,7 @@
 """Write the source of a code image from its annotations (.ann) and the recordings, and check it assembles to the
 image's bytes: a case's game, or any other part of the medium (a loader, a menu, a driver, a bank, several pieces).
 
-    python3 kit/mkgame.py [--case CASE] [--config FILE] [--ann FILE] [--out DIR] [--install]      the case's game
+    python3 kit/mkgame.py [--case CASE] [--config FILE] [--ann FILE] [--out DIR] [--install]      the case's main part
     python3 kit/mkgame.py [--case CASE] --part FILE.json [--install]                               a part file
     python3 kit/mkgame.py [--case CASE] --image BIN --org ADDR --ann FILE --top NAME --dest DIR     one image
                           [--range LO-HI] [--res DIR] [--l1 L1.json ...] [--l1-reads L1.json ...] [--blocks]
@@ -14,7 +14,8 @@ image's bytes: a case's game, or any other part of the medium (a loader, a menu,
 The game: CASE/case.json (or --config) names the 64 K image, the range that is the game, the banks, the recordings
 (read_builds: work/<build>/l1.json whose instructions and data reads count; code_builds: whose instructions only;
 the witness lines count ref_builds and witness_builds too, witness_names renames a windowed build) and the header;
-the source goes to src/game, the resources through tools/res_formats.py (case.json res_install names another; a part
+the source goes to src/<main> (case.json "main": the main part's name, "game" when absent; a case that is no game,
+under software/, says "main": src/main/main.ann, main.asm), the resources through tools/res_formats.py (case.json res_install names another; a part
 file without res_install or res inherits case.json's, and a part whose resources nothing installs says so). Several
 part files may share one .ann (clip_to_image keeps each part's entries). A part: a JSON part file (one image, or
 segments of one image each with its own .ann, run address and banks), or the command line for one image at its ORG.
@@ -1063,10 +1064,11 @@ def restore_isubs(text, order, isubs):
     return ''.join(out), restored
 
 
-def equates(equ, title='; The variables past the loaded image (game.ann @equ)'):
+def equates(equ, title=None):
     """The variables outside the image (@equ), as EQU lines"""
     if not equ:
         return ''
+    title = title or '; The variables past the loaded image (%s.ann @equ)' % main_name()
     lines = ['', title]
     for address, (name, size, comment) in sorted(equ.items()):
         lines.append('%-14s EQU $%04X%s' % (name, address, ('  ; ' + comment) if comment else ''))
@@ -1254,8 +1256,9 @@ def generate(seg, mem, args, out, top):
     if seg.entries_in_code:
         # a CALL a recording saw into code that is no longer this image's (copied over it later) is no entry
         entries = {a for a in entries if a in code}
-    # the single layout's control file is work/.../game.ctl, as kit/refdocs.py and the cases' doc tools read it
-    tag = 'game' if seg.single else seg.tag()
+    # the single layout's control file is work/.../<main>.ctl (game.ctl in a game's case), as kit/refdocs.py and the
+    # cases' doc tools read it
+    tag = main_name() if seg.single else seg.tag()
     ctl = os.path.join(out, tag + '.ctl')
     extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)
     image = os.path.join(out, tag + '-image.bin')
@@ -1469,7 +1472,7 @@ def make_part(part, args):
     bytes are the image's"""
     global LO, HI
     mem, original, at = part_image(part)
-    top = part.get('top') or part.get('name') or 'game'
+    top = part.get('top') or part.get('name') or main_name()
     default_work = os.path.join('work', 'mkgame' if part.get('game') else os.path.join('mkpart', top))
     out = os.path.join(ROOT, part.get('work') or default_work)
     if part.get('clean_work', True):
@@ -1754,7 +1757,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
           if diff is None else 'assembled: first difference at $%04X: %02X, image %02X'
           % (diff, got[diff - LO] if diff - LO < len(got) else 0, mem[diff]))
     if diff is None and args.install:
-        dest = os.path.join(ROOT, part.get('dest') or os.path.join('src', 'game'))
+        dest = os.path.join(ROOT, part.get('dest') or os.path.join('src', main_name()))
         prefix = os.path.relpath(os.path.join(ROOT, part['res']), dest) + '/' if part.get('res') else None
         files = {}
         for name in [module_file(n, top) for n, _ in modules] + [top]:
@@ -1772,14 +1775,21 @@ def single_part(part, args, mem, original, at, top, out, device, built):
     return 0 if diff is None else 1
 
 
-# ------------------------------------------------------------------------------------------------- the case's game
+# -------------------------------------------------------------------------------------------- the case's main part
+
+
+def main_name(config=None):
+    """the name of the case's main part (case.json "main", else "game"): its source src/<name>/<name>.asm, written
+    from src/<name>/<name>.ann; a case that is no game (software/<case>) names it "main\""""
+    return (CASE if config is None else config).get('main', 'game')
 
 
 def load_case(case, config_path=None):
-    """case.json (or config_path) of the case: sets ROOT, LO, HI, BASES, READ_BUILDS"""
-    global ROOT, LO, HI, BASES, READ_BUILDS
+    """case.json (or config_path) of the case: sets ROOT, CASE, LO, HI, BASES, READ_BUILDS"""
+    global ROOT, CASE, LO, HI, BASES, READ_BUILDS
     ROOT = os.path.abspath(case)
     config = json.load(open(config_path or os.path.join(ROOT, 'case.json')))
+    CASE = config
     LO, HI = int(config['lo'], 16), int(config.get('hi', '10000'), 16)
     BASES = {int(k): int(v, 16) for k, v in config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}).items()}
     READ_BUILDS = tuple(config.get('read_builds', ()))
@@ -1796,12 +1806,13 @@ def case_builds(config):
 
 
 def game_part(config, ann):
-    """case.json as a part: the 64 K image, lo..hi, into src/game"""
+    """case.json as a part: the 64 K image, lo..hi, into src/<main> (src/game in a game's case)"""
+    main = main_name(config)
     part = {'game': True, 'image': config['image'], 'at': '0', 'lo': config['lo'], 'hi': config.get('hi', '10000'),
             'bases': config.get('bases', {'5': '4000', '2': '8000', '0': 'C000'}), 'l1': case_builds(config),
-            'ann': os.path.relpath(ann, ROOT), 'top': 'game', 'device': config.get('device', 'ZXSPECTRUM48'),
+            'ann': os.path.relpath(ann, ROOT), 'top': main, 'device': config.get('device', 'ZXSPECTRUM48'),
             'header': config.get('header') or ['; The game image $%04X-$%04X.' % (LO, HI - 1)],
-            'dest': config.get('dest', os.path.join('src', 'game')), 'clean_work': False}
+            'dest': config.get('dest', os.path.join('src', main)), 'clean_work': False}
     if config.get('image_cmd'):
         part['image_cmd'] = config['image_cmd']
     # the witness lines also count the ref builds (a --from-frame window such as c1g) and witness_builds: the
@@ -1862,7 +1873,7 @@ def main():
     global ROOT, CASE
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--case', default='.', help='the case folder (default: here)')
-    p.add_argument('--config', help='the game\'s config instead of CASE/case.json')
+    p.add_argument('--config', help='the main part\'s config instead of CASE/case.json')
     p.add_argument('--part', help='a part file (JSON, docs/ann-format.md 5)')
     p.add_argument('--image', help='one image: its bytes')
     p.add_argument('--org', help='the address of the image\'s first byte')
@@ -1886,7 +1897,7 @@ def main():
     p.add_argument('--venv', help='a virtualenv with SkoolKit (else $SKOOLKIT_VENV, kit/toolpaths.py)')
     p.add_argument('--sjasmplus', help='sjasmplus (else $SJASMPLUS, kit/toolpaths.py)')
     p.add_argument('--out', help='the work folder')
-    p.add_argument('--ann', help='the annotations (the game: src/game/game.ann)')
+    p.add_argument('--ann', help='the annotations (the main part: src/<main>/<main>.ann, src/game/game.ann in a game)')
     p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
     p.add_argument('--fix-witness', action='store_true', help='rewrite the stale "Witness: L1 N (builds)" lines of '
                    'the .ann from the recordings (mkgame prints them in any case) and write the source again from '
@@ -1912,7 +1923,8 @@ def main():
         return make_part(cli_part(args), args)
     config = load_case(args.case, args.config)
     CASE = config
-    ann = os.path.abspath(args.ann) if args.ann else os.path.join(ROOT, 'src', 'game', 'game.ann')
+    main = main_name(config)
+    ann = os.path.abspath(args.ann) if args.ann else os.path.join(ROOT, 'src', main, main + '.ann')
     part = game_part(config, ann)
     if args.out:
         part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)

@@ -10,9 +10,7 @@
 ; $AA3C). Else in the balloon's room $5C27 within 2 pixels of $5C25 / $5C26:
 ; status 7.
 ;
-; Witness: L1 16719 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 16719 (c1, explorers, gameover, rzx x31).
 StatusZeroTriggers:
   LD HL,Room
   LD A,(HL)
@@ -58,7 +56,7 @@ BarrelSpotTest:
 ; 20, down gives status 20, up 19. Object 4 frame $9F. Evidence: 1406 calls in
 ; 6 rzx segments.
 ;
-; Witness: L1 1406 (rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1406 (rzx x6).
 LiftPlatform:
   LD A,$24
   LD (ObjectSlot4),A
@@ -112,7 +110,7 @@ LiftDraw:
 ; hero); the envelope $9A, hidden ($7F) in status 9. Evidence: rzx14000,
 ; rzx14500 (1017 passes).
 ;
-; Witness: L1 1017 (rzx, rzx).
+; Witness: L1 1017 (rzx x2).
 BalloonRoom:
   LD HL,Room
   LD A,(BalloonInRoom)
@@ -164,9 +162,7 @@ BalloonBurst:
 ; Port $FBFE is the half row Q W E R T; bit 4 is T (the instructions' Think).
 ; SK took it for ENTER. Not taken in any recording.
 ;
-; Witness: L1 16037 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 16037 (c1, explorers, gameover, rzx x31).
 ThinkKey:
   LD BC,$FBFE
   IN A,(C)
@@ -181,9 +177,7 @@ ThinkKey:
 ; status 22 (Teleport $A8EA) unless PadLatch $B072 is set; off every pad
 ; PadLatch = 0.
 ;
-; Witness: L1 16714 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 16714 (c1, explorers, gameover, rzx x31).
 TeleportPadCheck:
   LD B,$03
   LD HL,TeleportPads
@@ -242,7 +236,7 @@ CollisionText:
 ;
 ; Called by the room $2D handler $B370.
 ;
-; Witness: L1 346 (rzx, rzx).
+; Witness: L1 346 (rzx x2).
 KeyRoomDoneFlag:
   LD A,(BallThrown)
   OR A
@@ -553,7 +547,7 @@ Room46Dead:
 ; Witness: rzx16000 runs stages 0-2 (the throw at $B3A1 once, the hit at $B3DB
 ; once), rzx18000 stage 3 ($B3F5 once): the RZX run gets the Formula here.
 ;
-; Witness: L1 346 (rzx, rzx).
+; Witness: L1 346 (rzx x2).
 CricketBallScript:
   CALL KeyRoomDoneFlag
   RET NZ
@@ -644,7 +638,7 @@ CricketFormulaFalls:
 ; Witness: rzx28000 and rzx32750 each run stage 0 and the ride ($B44E once
 ; each), rzx28000 and rzx34000 the arrival ($B471).
 ;
-; Witness: L1 870 (rzx, rzx, rzx).
+; Witness: L1 870 (rzx x3).
 BasketScript:
   LD IY,ObjectSlot4
   LD HL,RoomStage
@@ -716,7 +710,7 @@ BasketRide:
 ; Returns at once (E unchanged) when LeverState $5C42 is not 0; else
 ; BasketRight $B483. Called by BasketScript $B409 in stage 1.
 ;
-; Witness: L1 209 (rzx).
+; Witness: L1 209 (rzx x1).
 BasketToRight:
   LD A,(LeverState)
   OR A
@@ -729,7 +723,7 @@ BasketToRight:
 ; rises 2 pixels a pass (Y - 2, not above Y 8); from X $C8 on it sinks 2 a pass
 ; back to Y $30 (BasketRightTail $B4A3); between them it keeps its height.
 ;
-; Witness: L1 418 (rzx, rzx).
+; Witness: L1 418 (rzx x2).
 BasketRight:
   LD E,$00
   LD A,(IY+$00)
@@ -760,7 +754,7 @@ BasketPad1:
 ;
 ; Entered from BasketRight $B483 with A = the new X, B = Y.
 ;
-; Witness: L1 322 (rzx, rzx).
+; Witness: L1 322 (rzx x2).
 BasketRightTail:
   CP $C8
   RET C
@@ -775,7 +769,7 @@ BasketRightTail:
 ;
 ; Returns at once when LeverState $5C42 is 0; else BasketLeft $B4B5.
 ;
-; Witness: L1 209 (rzx).
+; Witness: L1 209 (rzx x1).
 BasketToLeft:
   LD A,(LeverState)
   OR A
@@ -788,7 +782,7 @@ BasketToLeft:
 ; a pass, not above Y 8 (BasketLeftTail $B4D5); from $1C to $7A it keeps its
 ; height.
 ;
-; Witness: L1 418 (rzx, rzx, rzx).
+; Witness: L1 418 (rzx x3).
 BasketLeft:
   LD E,$00
   LD A,(IY+$00)
@@ -822,7 +816,7 @@ BasketPad2:
 ; frames 527-1096, the basket from X $D8 at Y $30 up to Y 8 at X $C4, level
 ; down to X $1C, then down to Y $2E at X 8.
 ;
-; Witness: L1 376 (rzx, rzx, rzx).
+; Witness: L1 376 (rzx x3).
 BasketLeftTail:
   CP $7B
   RET C
@@ -849,7 +843,7 @@ BasketLeftTail:
 ; ($B540) 33 times, the score ($B538) once. The attack branch ($B518) is not
 ; executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 ;
-; Witness: L1 273 (rzx).
+; Witness: L1 273 (rzx x1).
 SilverCrossScript:
   LD IY,ObjectSlot3
   LD HL,RoomStage
@@ -915,7 +909,7 @@ CrossGone:
 ; (the room's two still creatures, frames $51, RoomCreatures $C266). Witness:
 ; rzx04000 and rzx06000 run it 297 times.
 ;
-; Witness: L1 297 (rzx, rzx).
+; Witness: L1 297 (rzx x2).
 SnakesRoom17:
   LD IY,ObjectSlot2
   LD B,$02
@@ -937,7 +931,7 @@ SnakesRoom17:
 ; Witness: rzx08000, rzx10000, rzx12000 run it 437 times; the strike ($B5C2)
 ; and the bite ($B5C8) once each, in rzx10000.
 ;
-; Witness: L1 437 (rzx, rzx, rzx).
+; Witness: L1 437 (rzx x3).
 SnakesRoom1A:
   LD IY,ObjectSlot2
   LD HL,RoomStage
@@ -1034,7 +1028,7 @@ SnakeTemplate:
 ; the gifts ($B5EF) 6 times (rzx44000 2, rzx46000 2, rzx48000 1, rzx50000 1),
 ; the ending once (rzx50000).
 ;
-; Witness: L1 2293 (rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2293 (rzx x5).
 ProfessorScript:
   LD IY,ObjectSlot4
   CALL Near
@@ -1186,7 +1180,7 @@ LabStep:
 ; GameOver $5BFF), $5B06 = $7F. Called by ProfessorScript $B5DD. Witness:
 ; rzx50000 runs it once, before the ending at frame 729.
 ;
-; Witness: L1 1 (rzx).
+; Witness: L1 1 (rzx x1).
 ProfessorEnding:
   LD A,$28
   LD (Room),A
@@ -1207,7 +1201,7 @@ ProfessorEnding:
 ; trigger ($B71E) is not executed in any recording (c1, explorers, gameover,
 ; the 31 rzx builds).
 ;
-; Witness: L1 737 (rzx, rzx, rzx).
+; Witness: L1 737 (rzx x3).
 SilverLiningScript:
   LD A,(IX+$01)
   CP $20
@@ -1231,7 +1225,7 @@ SilverLiningScript:
 ; The room script of room $40: slot $5B14 at X 8, then LeverScript $B735.
 ; Witness: rzx28000-rzx32750 run it 1036 times.
 ;
-; Witness: L1 1036 (rzx, rzx, rzx, rzx).
+; Witness: L1 1036 (rzx x4).
 LeverRoom40:
   LD IY,ObjectSlot4
   LD (IY+$00),$08
@@ -1242,7 +1236,7 @@ LeverRoom40:
 ; The room script of room $3E: slot $5B14 at X $DC, then LeverScript $B735.
 ; Witness: rzx26000, rzx28000, rzx34000 run it 571 times.
 ;
-; Witness: L1 571 (rzx, rzx, rzx).
+; Witness: L1 571 (rzx x3).
 LeverRoom3E:
   LD IY,ObjectSlot4
   LD (IY+$00),$DC
@@ -1262,7 +1256,7 @@ LeverRoom3E:
 ; Witness: the Switch is fitted once ($B751, rzx28000), the lever pulled twice
 ; ($B770, rzx28000 and rzx32750).
 ;
-; Witness: L1 1607 (rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1607 (rzx x6).
 LeverScript:
   LD (IY+$01),$12
   LD C,$56
@@ -1305,7 +1299,7 @@ LeverTouch:
 ; A = LeverState $5C42, IY = the lever slot. Out: IY+3 bit 7 set when A = 0.
 ; Called from LeverScript $B735 ($B75F) and fallen into after a flip ($B778).
 ;
-; Witness: L1 1338 (rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1338 (rzx x5).
 LeverMirror:
   OR A
   SET 7,(IY+$03)
@@ -1322,7 +1316,7 @@ LeverMirror:
 ; set (rzx14500 picks the pills up, $BB96 once); the death branch ($B796) is
 ; not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 ;
-; Witness: L1 214 (rzx).
+; Witness: L1 214 (rzx x1).
 RadiationScript:
   LD HL,RoomStage
   LD A,(HL)
@@ -1345,7 +1339,7 @@ RadiationCheck:
 ; B = 21 tiles from the tile map's $F940 (row 10), then FlickerFloor $B7A8.
 ; Witness: rzx20000 runs it 155 times.
 ;
-; Witness: L1 155 (rzx).
+; Witness: L1 155 (rzx x1).
 FloorRoom36:
   LD B,$15
   LD HL,TileMap+$0140
@@ -1356,7 +1350,7 @@ FloorRoom36:
 ; B = 11 tiles from $F954, then FlickerFloor $B7A8. Witness: rzx20000 runs it
 ; 187 times.
 ;
-; Witness: L1 187 (rzx).
+; Witness: L1 187 (rzx x1).
 FloorRoom35:
   LD B,$0B
   LD HL,TileMap+$0154
@@ -1373,7 +1367,7 @@ FloorRoom35:
 ; SinkInMud $AA04). What slot $5B14 shows here is known only from the code (a
 ; run request).
 ;
-; Witness: L1 5312 (rzx).
+; Witness: L1 5312 (rzx x1).
 FlickerFloor:
   XOR A
   LD (ObjectSlot1+1),A
@@ -1411,9 +1405,7 @@ FlickerTile:
 ; 0), with DE kept. Called every pass by $A3E1 with IX = the explorer object
 ; $5B04.
 ;
-; Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 RunRoomScript:
   LD A,(Room)
   LD L,A
@@ -1506,7 +1498,7 @@ RoomScripts:
 ; Witness: the bridge starts 3 times ($BACC: rzx08000, rzx12000, rzx42000);
 ; rzx08000 and rzx42000 cross forward ($BB37), rzx12000 in reverse ($BB4E).
 ;
-; Witness: L1 857 (rzx, rzx, rzx, rzx).
+; Witness: L1 857 (rzx x4).
 BridgeEffect:
   LD C,A
   LD HL,BridgeState
@@ -1658,7 +1650,7 @@ BridgeTiles3A:
 ; recording (c1, explorers, gameover, the 31 rzx builds). SK called it a
 ; seesaw.
 ;
-; Witness: L1 674 (gameover, rzx, rzx).
+; Witness: L1 674 (gameover, rzx x2).
 RopeTrick:
   LD HL,RopeCount
   LD A,(HL)

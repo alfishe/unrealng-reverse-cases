@@ -3,8 +3,8 @@
 
     python3 kit/refdocs.py --case CASE
 
-Every entry of the game (CASE/work/mkgame/game.ctl, written by kit/mkgame.py) with its name, title and description
-from src/game/game.ann; for code, what the recordings saw it do (the builds of case.json "ref_builds": work/<key>/
+Every entry of the main part (CASE/work/mkgame/<main>.ctl, written by kit/mkgame.py; <main> is case.json "main",
+"game" when absent) with its name, title and description from src/<main>/<main>.ann; for code, what the recordings saw it do (the builds of case.json "ref_builds": work/<key>/
 l1.json, each its own Runs row, then the case's other recordings: read_builds and code_builds, their reads and
 writes from read_builds only): callers, callees, runs, own time, the memory it reads and writes, its ports, and a
 link to each of its animations, docs/img/routines/<Label>.gif and <Label>-<what>.gif (kit/routine_anim.py,
@@ -48,6 +48,8 @@ LO, HI = 0, 0x10000
 # of the code it covers. None: no overlay
 BUFFER_LO, BUFFER_HI = 0x10000, 0x10000
 OVERLAY_NAME, OVERLAY_WHY = '', ''
+# the case's main part (case.json "main", "game" when absent) and how the documents call it
+MAIN, WHOLE, WHOLE_IMAGE = 'game', 'the game', 'the game image'
 
 
 def in_buffer(a):
@@ -239,7 +241,7 @@ def plain_span(lo, hi):
 
 class View:
     """One image whose entries refdocs writes: the case's game, or a part of the medium (case.json "ref_parts": a part
-    file of kit/mkgame.py, single layout, whose work folder holds game.ctl, game.skool and game-image.bin)
+    file of kit/mkgame.py, single layout, whose work folder holds <main>.ctl, <main>.skool and <main>-image.bin)
 
         game          True for the game
         title         the part's heading ("Bank 3"); its modules' headings are "TITLE: MODULE"
@@ -260,10 +262,11 @@ class View:
     @staticmethod
     def game(config):
         work = os.path.join(ROOT, 'work', 'mkgame')
-        return View(game=True, name='game', title='the game', lo=mkgame.LO, hi=mkgame.HI, bases=dict(mkgame.BASES),
-                    pages=(0, 2, 5), ctl=os.path.join(work, 'game.ctl'), skool=os.path.join(work, 'game.skool'),
-                    image_path=os.path.join(work, 'game-image.bin'),
-                    ann_path=os.path.join(ROOT, 'src', 'game', 'game.ann'), piece=None, top='game', src='src/game',
+        main = mkgame.main_name(config)
+        return View(game=True, name=main, title=WHOLE, lo=mkgame.LO, hi=mkgame.HI, bases=dict(mkgame.BASES),
+                    pages=(0, 2, 5), ctl=os.path.join(work, main + '.ctl'), skool=os.path.join(work, main + '.skool'),
+                    image_path=os.path.join(work, main + '-image.bin'),
+                    ann_path=os.path.join(ROOT, 'src', main, main + '.ann'), piece=None, top=main, src='src/' + main,
                     ref_builds=[tuple(b) for b in config.get('ref_builds', [])],
                     read_builds=tuple(config.get('read_builds', ())), code_builds=tuple(config.get('code_builds', ())),
                     windows={}, outside=None, h2='##', blocks=False)
@@ -306,8 +309,9 @@ class View:
             read, code, windows = [], list(part['other_builds']), {}
         v = View(game=False, name=name, title=title or (f'Bank {seg.bank}' if seg.bank is not None else top),
                  path=path, header=part.get('header') or [], lo=lo, hi=hi, bases=bases, pages=tuple(bases),
-                 ctl=os.path.join(work, 'game.ctl'), skool=os.path.join(work, 'game.skool'),
-                 image_path=os.path.join(work, 'game-image.bin'), ann_path=os.path.join(ROOT, part['ann']),
+                 ctl=os.path.join(work, mkgame.main_name(config) + '.ctl'),
+                 skool=os.path.join(work, mkgame.main_name(config) + '.skool'),
+                 image_path=os.path.join(work, mkgame.main_name(config) + '-image.bin'), ann_path=os.path.join(ROOT, part['ann']),
                  piece=part.get('piece'), top=top, src=part.get('dest') or os.path.dirname(part['ann']),
                  ref_builds=ref, read_builds=tuple(read), code_builds=tuple(code), windows=windows,
                  outside=game_namer(game, lo) if seg.bank is not None else plain_span, h2='###',
@@ -333,7 +337,7 @@ class View:
         return module.lower() if self.game else check_docs.github_slug(self.heading(module))
 
     def module_path(self, module):
-        return f'src/game/{module}.asm' if self.game else f'{self.src}/{mkgame.module_file(module, self.top)}.asm'
+        return f'{self.src}/{module}.asm' if self.game else f'{self.src}/{mkgame.module_file(module, self.top)}.asm'
 
     def in_window(self, key, a):
         w = self.windows.get(key)
@@ -382,7 +386,7 @@ def game_namer(game, lo_part):
 
 
 def main():
-    global ROOT, BUILDS, LO, HI, BUFFER_LO, BUFFER_HI, OVERLAY_NAME, OVERLAY_WHY
+    global ROOT, BUILDS, LO, HI, BUFFER_LO, BUFFER_HI, OVERLAY_NAME, OVERLAY_WHY, MAIN, WHOLE, WHOLE_IMAGE
     import argparse
     p = argparse.ArgumentParser()
     p.add_argument('--case', required=True)
@@ -399,15 +403,18 @@ def main():
         OVERLAY_NAME, OVERLAY_WHY = overlay.get('name', 'the buffer'), overlay.get('why', 'laid over code')
     docs = args.docs or os.path.join(ROOT, 'docs')
     os.makedirs(docs, exist_ok=True)
-    ctl = os.path.join(ROOT, 'work', 'mkgame', 'game.ctl')
+    MAIN = mkgame.main_name(config)
+    if MAIN != 'game':
+        WHOLE, WHOLE_IMAGE = 'the main program', 'the main program\'s image'
+    ctl = os.path.join(ROOT, 'work', 'mkgame', MAIN + '.ctl')
     if not os.path.exists(ctl):
-        sys.exit('run kit/mkgame.py first (it writes work/mkgame/game.ctl)')
+        sys.exit(f'run kit/mkgame.py first (it writes work/mkgame/{MAIN}.ctl)')
     game = View.game(config)
     head12, head11, doc12, doc11 = reference(game, config)
     parts = [View.part(spec, config, game) for spec in config.get('ref_parts', ())]
     if parts:
         note = textwrap.wrap('The parts of the medium (`case.json` `ref_parts`: ' + ', '.join(
-            md(x.title) for x in parts) + ') follow the game, each under its own heading with its modules, its '
+            md(x.title) for x in parts) + ') follow ' + WHOLE + ', each under its own heading with its modules, its '
             'source, its annotations and its recordings.', 116)
         head12[-2:-1] = [head12[-2]] + note
         head11[-2:-1] = [head11[-2]] + note
@@ -689,8 +696,8 @@ def reference(v, config):
     ref_names = ', '.join(f'`{k}`' for k, _ in BUILDS)
     # Doc 12: the routines (the header is main's)
     head12 = ['# 12. Routine reference', '',
-           'Every code entry of the game, in address order by module (`src/game/<module>.asm`). The name, the title and',
-           'the description are the source\'s (`src/game/game.ann`); the rest is what the recordings saw: '
+           f'Every code entry of {WHOLE}, in address order by module (`src/{MAIN}/<module>.asm`). The name, the title and',
+           f'the description are the source\'s (`src/{MAIN}/{MAIN}.ann`); the rest is what the recordings saw: '
            + ', '.join(f'`work/{k}` ({t})' for k, t in BUILDS) + (
                ', and the case\'s other recordings (`case.json` `read_builds`, `code_builds`): their calls in a Runs row'
                ' of their own, their callers, callees, reads and writes (`read_builds` only) with the others\''
@@ -702,7 +709,7 @@ def reference(v, config):
               if OVERLAY_NAME else '') + '. The interrupt\'s acceptance (the vector read, the return address pushed) is',
            'the handler\'s, not the interrupted routine\'s. An entry no recording reached says so; one the case\'s other',
            'recordings ran gives their calls.',
-           'Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`',
+           f'Written by `kit/refdocs.py`; edit `src/{MAIN}/{MAIN}.ann`, then run `kit/mkgame.py --case . --install`',
            '(see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.', '']
     out = []
     out.append('| Module | Entries | Code entries |')
@@ -804,11 +811,11 @@ def reference(v, config):
 
     # Doc 11: the data (the header is main's)
     head11 = ['# 11. Data reference', '',
-           f'Every data entry of the game image `${LO:04X}`-`${HI - 1:04X}`, in address order by module (`src/game/<module>.asm`):',
+           f'Every data entry of {WHOLE_IMAGE} `${LO:04X}`-`${HI - 1:04X}`, in address order by module (`src/{MAIN}/<module>.asm`):',
            'tables, buffers, records, variables, graphics, text; an inner label (a field, a row) is a row of its own under',
            'its entry, its size up to the next label; an entry with inner labels gives its own bytes, up to the first,',
            'of the whole entry\'s ("17 of 34"). The name, the title and the description are the',
-           'source\'s (`src/game/game.ann`); the readers and writers are the routines the recordings saw touch it',
+           f'source\'s (`src/{MAIN}/{MAIN}.ann`); the readers and writers are the routines the recordings saw touch it',
            '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + ', local and not in the repository'
            + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '') + ')'
            + (', then those only the case\'s other recordings (`read_builds`) saw, with the first of them in brackets'

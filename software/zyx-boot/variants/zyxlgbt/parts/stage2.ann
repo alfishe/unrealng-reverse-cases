@@ -1,0 +1,34 @@
+# The Lotus Group boot's second stage (variant zyxlgbt): track 5, sector 0, at $FDE8. Its bytes from $FE02 are
+# encrypted on the disk; the build encrypts them (tools/lotus.py). Format: ../../../../../docs/ann-format.md.
+
+@equ $0063 RomStart ; the 48K ROM's $0063: a RET the program's run returns through
+@equ $0DAF RomClAll ; the 48K ROM's CL-ALL: clear the screen
+@equ $1B8A RomLineRun ; the 48K ROM's LINE-RUN: run the edit line
+@equ $3D13 TrdosEntry ; the TR-DOS ROM's entry for machine code: C = 5 reads B sectors from track D, sector E to HL; C = $13 copies a 16-byte descriptor from HL; C = $0E loads the file it names
+@equ $5C3D ErrSP 2 ; ERR_SP
+@equ $5C59 ELine 2 ; E_LINE: the edit line
+@equ $5C8C ScrCt 1 ; SCR_CT: the scroll count
+@equ $5CC2 TrdosHook 1 ; TR-DOS's hook, set to RET
+@equ $5CDD TrdosDescriptor 16 ; TR-DOS: the current file's name, type, start, length
+@equ $5CE5 TrdosType 1 ; TR-DOS: the file's type, set to "B"
+@equ $5CE6 TrdosLength 2 ; TR-DOS: the file's length
+@equ $5CF4 TrdosNextSector 2 ; TR-DOS: the sector after the last one read
+@equ $5D10 TrdosError 1 ; TR-DOS: the error flag
+@equ $5D3B Prog 1 ; the BASIC program
+@equ $5D4E LaunchName 16 ; the BASIC's line 1: the descriptor of the file the menu chose
+@equ $61A8 MenuStart 1 ; the menu (src/main: Start)
+@equ $A600 MenuGraphics 1 ; the menu's font and graphics (src/res)
+@equ $C0B7 Music 1 ; the music piece (compiled Sound Tracker)
+@equ $FFFF TrackKey 1 ; the gap byte the loader found on track 0
+
+@module stage2 ; Decrypt itself, load and run the menu, then load the chosen program and decrypt it with the track's gap byte
+@about The Lotus Group disks hold their programs encrypted. Stage 2 decrypts its own bytes $FE02-$FF01 like the loader (R = $DE, then the byte, HL and DE), reads the menu's three pieces from the sectors after it (code, graphics, music), runs the menu, loads the BASIC file the menu chose and decrypts it: each byte XOR R (started from TrackKey) XOR the first letter of its name. Then it runs the program as RUN would.
+
+$FDE8 c Stage2 ; Decrypt $FE02-$FF01: each byte XOR R XOR H XOR L XOR D XOR E
+$FDF5 c Stage2Loop ; One byte
+$FE03 c LoadMenu ; Read 15 sectors to MenuStart, 8 to MenuGraphics, 24 to Music, each from TrdosNextSector; run the menu
+$FE33 c LoadChosen ; The chosen file's descriptor from LaunchName, load it as "B"
+$FE4A c DecryptProgram ; Decrypt the loaded program: each byte XOR R (from TrackKey) XOR the first letter of its name
+$FE70 c RunProgram ; Put RUN in the edit line, TR-DOS's hook to RET, then the ROM's CL-ALL and LINE-RUN
+$FEBA b Stage2Tail 13 ; leftover code, not run
+$FEC7 b Stage2Zeros 33 ; zeros to the sector's end

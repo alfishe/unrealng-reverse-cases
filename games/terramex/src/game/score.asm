@@ -38,8 +38,7 @@ NegateNumber:
 ; IY, HL, BC, AF and the alternate HL, BC, DE; AddToScore $BD11, PrintScore
 ; $BD75.
 ;
-; Witness: L1 46 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 46 (c1, explorers, gameover, rzx x18).
 AddScore:
   PUSH IX
   PUSH IY
@@ -71,8 +70,7 @@ AddScore:
 ; else 0; the low word + DE, the high word + BC with the carry. Out: HL the new
 ; high word.
 ;
-; Witness: L1 46 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 46 (c1, explorers, gameover, rzx x18).
 AddToScore:
   LD IX,Score
 ; This entry point is used by the routine at NegateNumber.
@@ -101,7 +99,7 @@ AddToNumberLow:
 ; from NewHiScore $BD72 only; split off as its own entry here (the cut ran it
 ; on from AddToScore's RET at $BD3A).
 ;
-; Witness: L1 4 (c1, explorers, gameover, rzx).
+; Witness: L1 4 (c1, explorers, gameover, rzx x1).
 PrintHiScore:
   LD HL,(PrintNumberSource+$0001)
   PUSH HL
@@ -120,7 +118,7 @@ PrintHiScore:
 ; copied and PrintHiScore $BD3B prints it. Called at the end of a game by
 ; $906D.
 ;
-; Witness: L1 8 (c1, explorers, gameover, rzx). c1, explorers, gameover and
+; Witness: L1 8 (c1, explorers, gameover, rzx x1). c1, explorers, gameover and
 ; rzx50000 each set a high score once ($BD67).
 NewHiScore:
   LD HL,Score+3
@@ -150,8 +148,7 @@ NewHiScoreTake:
 ;
 ; HL = $5029, then PrintNumber $BD78.
 ;
-; Witness: L1 46 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 46 (c1, explorers, gameover, rzx x18).
 PrintScore:
   LD HL,Screen+4137
 
@@ -164,8 +161,7 @@ PrintScore:
 ; leading zeros as nothing (DigitShown $5C20), a last 0 always. A thousands
 ; quotient above 9 prints the character after '9' (known only from the code).
 ;
-; Witness: L1 50 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 50 (c1, explorers, gameover, rzx x18).
 PrintNumber:
   PUSH HL
   LD B,$04
@@ -234,8 +230,7 @@ PrintNumberZero:
 ; value. Out: C + the count (C = 0 on entry from PrintNumber), the number at IX
 ; the remainder.
 ;
-; Witness: L1 501 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 501 (c1, explorers, gameover, rzx x18).
 DivideNumber:
   LD L,(IX+$00)
   LD H,(IX+$01)

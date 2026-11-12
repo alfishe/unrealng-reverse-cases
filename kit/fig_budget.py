@@ -12,7 +12,7 @@ that entry. A bar is a routine's share of all the recording's T-states (frames x
 its module, cut as kit/mkgame.py cuts the source: a @module runs from the first entry written after it up to the
 next module's first entry, by address.
 
---ann PATH[,page=N[/N..]][,range=LO-HI][,delta=D][,label=L], one per part (default src/game/game.ann). The first
+--ann PATH[,page=N[/N..]][,range=LO-HI][,delta=D][,label=L], one per part (default src/<main>/<main>.ann). The first
 is the game: its modules are named as they are; the others' as "L (module)" (L defaults to the file's stem). An
 instruction goes to the first part, filtered ones first, whose page (the L1's page of the instruction: on a 128K
 the bank at $C000; give page=0/2/5 to the game of a 128K image) and range (hex, both ends included, default the
@@ -296,7 +296,8 @@ def main():
                    help='a line under the figure (repeatable; a long one wraps at the picture\'s width)')
     p.add_argument('--width', type=int, default=1050, help='the picture\'s width in pixels (1050, the figure limit)')
     args = p.parse_args()
-    specs = args.ann or ['src/game/game.ann']
+    main = json.load(open('case.json')).get('main', 'game') if os.path.exists('case.json') else 'game'
+    specs = args.ann or [f'src/{main}/{main}.ann']
     parts = [Part(s, i == 0) for i, s in enumerate(specs)]
     page_names = {int(k): v for k, _, v in (n.partition('=') for n in args.page_name)}
     parts.sort(key=lambda q: not q.filtered)  # filtered parts first, the order given kept otherwise

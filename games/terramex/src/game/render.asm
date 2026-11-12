@@ -33,9 +33,7 @@
 ; RestoreActorBackgrounds $9D3C repaints the buffer under the five actors from
 ; the tile map, ready for the next pass.
 ;
-; Witness: L1 26515 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26515 (c1, explorers, gameover, rzx x31).
 RenderPass:
   LD IX,Hero
   LD B,$05
@@ -152,9 +150,7 @@ RenderPassNext:
 ;
 ; Called by RenderPass at $9BCB and $9BD2 (53 020 calls).
 ;
-; Witness: L1 53020 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 53020 (c1, explorers, gameover, rzx x31).
 CopyRects:
   LD B,$05
 
@@ -163,9 +159,7 @@ CopyRects:
 ; The loop head of CopyRects $9BEB (the tail jump at $9C66 comes back here for
 ; each record).
 ;
-; Witness: L1 265094 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 265094 (c1, explorers, gameover, rzx x31).
 CopyRectsLoop:
   LD L,(IX+$40)
   LD H,(IX+$41)
@@ -175,9 +169,7 @@ CopyRectsLoop:
 ; HL = the buffer address, B = the rectangles to go (1 from EraseItem $9D21 at
 ; $9D39), IX the record (stepped by 4 at the end).
 ;
-; Witness: L1 265129 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 265129 (c1, explorers, gameover, rzx x31).
 CopyRect:
   LD A,H
   AND $5F                 ; DE = the screen address: $E0xx -> $40xx, $E8xx ->
@@ -271,9 +263,7 @@ CopyRectRows:
 ; times. Called by RenderPass 6 call sites, 397 715 calls (three a slot a
 ; pass).
 ;
-; Witness: L1 397715 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 397715 (c1, explorers, gameover, rzx x31).
 DrawSpriteColumn:
   EXX
   LD BC,$0000             ; no byte above the first row
@@ -282,25 +272,19 @@ DrawSpriteColumn:
 
 ; DrawSpriteColumn: 12 rows (twice 6)
 ;
-; Witness: L1 795428 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 795428 (c1, explorers, gameover, rzx x31).
 DrawSprite12Rows:
   CALL DrawSprite6Rows
 
 ; DrawSpriteColumn: 6 rows (twice 3)
 ;
-; Witness: L1 1590856 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1590856 (c1, explorers, gameover, rzx x31).
 DrawSprite6Rows:
   CALL DrawSprite3Rows
 
 ; DrawSpriteColumn: 3 rows
 ;
-; Witness: L1 3181707 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3181707 (c1, explorers, gameover, rzx x31).
 DrawSprite3Rows:
   CALL DrawSpriteRow
   CALL DrawSpriteRow
@@ -316,9 +300,7 @@ DrawSprite3Rows:
 ; column. Out to the plotter (alternate set): L = the sprite byte, D = the
 ; mask, A = $FF and H = 0 for the shift, BC = the buffer address; JP (IY).
 ;
-; Witness: L1 9545126 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 9545126 (c1, explorers, gameover, rzx x31).
 DrawSpriteRow:
   LD H,$FF                ; H' = the mask table's page
   EXX
@@ -366,7 +348,7 @@ PlotShiftUnused:
 ; NextBufferRow $9CC2. Entered by JP (IY) from DrawSpriteRow (73 368 times in 7
 ; builds for k = 1).
 ;
-; Witness: L1 73368 (gameover, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 73368 (gameover, rzx x6).
 PlotRowShift1:
   ADD HL,HL
   SLL D
@@ -374,9 +356,7 @@ PlotRowShift1:
 
 ; Plot one sprite row shifted right 2 pixels (6 steps)
 ;
-; Witness: L1 1334322 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1334322 (c1, explorers, gameover, rzx x31).
 PlotRowShift2:
   ADD HL,HL
   SLL D
@@ -384,9 +364,7 @@ PlotRowShift2:
 
 ; Plot one sprite row shifted right 3 pixels (5 steps)
 ;
-; Witness: L1 1368305 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1368305 (c1, explorers, gameover, rzx x31).
 PlotRowShift3:
   ADD HL,HL
   SLL D
@@ -394,9 +372,7 @@ PlotRowShift3:
 
 ; Plot one sprite row shifted right 4 pixels (4 steps)
 ;
-; Witness: L1 3338410 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3338410 (c1, explorers, gameover, rzx x31).
 PlotRowShift4:
   ADD HL,HL
   SLL D
@@ -404,9 +380,7 @@ PlotRowShift4:
 
 ; Plot one sprite row shifted right 5 pixels (3 steps)
 ;
-; Witness: L1 3350866 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3350866 (c1, explorers, gameover, rzx x31).
 PlotRowShift5:
   ADD HL,HL
   SLL D
@@ -414,9 +388,7 @@ PlotRowShift5:
 
 ; Plot one sprite row shifted right 6 pixels (2 steps)
 ;
-; Witness: L1 4967450 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 4967450 (c1, explorers, gameover, rzx x31).
 PlotRowShift6:
   ADD HL,HL
   SLL D
@@ -425,9 +397,7 @@ PlotRowShift6:
 ; Plot one sprite row shifted right 7 pixels (1 step), then the two buffer
 ; bytes
 ;
-; Witness: L1 5146153 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 5146153 (c1, explorers, gameover, rzx x31).
 PlotRowShift7:
   ADD HL,HL
   SLL D
@@ -453,9 +423,7 @@ PlotRowShift7:
 ; B is set to $E0, so a sprite past row 127 would wrap to the top (known only
 ; from the code). Returns to the DrawSpriteRow call chain.
 ;
-; Witness: L1 9545124 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 9545124 (c1, explorers, gameover, rzx x31).
 NextBufferRow:
   INC B
   LD A,B
@@ -488,9 +456,7 @@ NextBufferThird:
 
 ; Plot one masked sprite row at a byte-aligned X: (BC) = (BC) AND D OR L
 ;
-; Witness: L1 4398977 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 4398977 (c1, explorers, gameover, rzx x31).
 PlotRowAligned:
   LD A,(BC)
   AND D
@@ -509,9 +475,7 @@ PlotRowAligned:
 ; Callers: RenderPass at $9B2F (132 575 calls), DrawItem $9DF8 at $9E0C,
 ; EraseItem $9D21 at $9D2B.
 ;
-; Witness: L1 136425 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 136425 (c1, explorers, gameover, rzx x31).
 BufferAddress:
   LD A,L
   PUSH AF
@@ -562,8 +526,7 @@ BufferAddress:
 ; Evidence: 35 runs in 17 builds (an item picked up; the respawn's $FE in $5B9B
 ; at $90BE).
 ;
-; Witness: L1 35 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 35 (c1, explorers, gameover, rzx x14).
 EraseItem:
   LD (IX+$02),$FF
   LD L,(IX+$00)
@@ -588,18 +551,14 @@ EraseItem:
 ; removes the sprites drawn this pass, after CopyRects has shown them. Called
 ; by RenderPass at $9BE7 (26 510 calls).
 ;
-; Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26510 (c1, explorers, gameover, rzx x31).
 RestoreActorBackgrounds:
   LD IX,Hero
   LD B,$05
 
 ; RestoreActorBackgrounds: the next actor's rectangle
 ;
-; Witness: L1 132558 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 132558 (c1, explorers, gameover, rzx x31).
 RestoreActorsLoop:
   LD L,(IX+$40)
   LD H,(IX+$41)
@@ -609,9 +568,7 @@ RestoreActorsLoop:
 ; Entry of RestoreActorBackgrounds for one record (EraseItem $9D21 calls it
 ; with B = 1).
 ;
-; Witness: L1 132593 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 132593 (c1, explorers, gameover, rzx x31).
 RestoreRect:
   PUSH BC
   LD A,H
@@ -707,8 +664,7 @@ RestoreRectNextRow:
 ; Called by DrawItem $9DF8 at $9E50 (34 342 calls). Out: DE the fixed address,
 ; HL the screen counterpart.
 ;
-; Witness: L1 34342 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 34342 (c1, explorers, gameover, rzx x16).
 NextCharRowDE:
   EX DE,HL
   CALL NextCharRow
@@ -724,9 +680,7 @@ NextCharRowDE:
 ; back-buffer address (a screen address stays itself). Callers: CopyRects (6
 ; sites, 795 385 calls), BlitColumns $9F86 at $9F9A, NextCharRowDE.
 ;
-; Witness: L1 893376 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 893376 (c1, explorers, gameover, rzx x31).
 NextCharRow:
   DEC H
   LD A,L
@@ -763,9 +717,7 @@ NextCharRowThird:
 ; table $B99D) and, running on, for the record $5B99 (X, Y, frame; $5B9B = $FE
 ; set by the respawn at $90BE). Called by RenderPass at $9BC4 (26 510 calls).
 ;
-; Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26510 (c1, explorers, gameover, rzx x31).
 DrawItems:
   LD IX,ItemSlot1
   LD B,$02
@@ -787,9 +739,7 @@ DrawItemsLoop:
 ; items are drawn after the actors, so they stand in front of them, and are not
 ; repainted by RestoreActorBackgrounds: they stay in the buffer.
 ;
-; Witness: L1 79532 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 79532 (c1, explorers, gameover, rzx x31).
 DrawItem:
   LD A,(IX+$02)
   CP $FF

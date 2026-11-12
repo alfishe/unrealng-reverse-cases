@@ -1,7 +1,8 @@
 # The files of a case
 
 Every file a case has: what makes it, what reads it, and whether git keeps it. Paths are relative to the case,
-`games/<game>/` (`$C`). `$K` is `kit/`, `$U` the unreal-ng checkout, and `$RS` is
+`games/<game>/` (`$C`), or `software/<name>/` for a program that is not a game, whose main part is `src/main`
+(`main.ann`, `main.asm`, `case.json` `"main": "main"`) where a game's is `src/game`. `$K` is `kit/`, `$U` the unreal-ng checkout, and `$RS` is
 `$U/tools/verification/analysis/re_session.py`, run as `python3 $K/rs.py` (from a case `../../kit/rs.py`), which finds
 `$U` itself (section 10). The `.ann` format is in [ann-format.md](ann-format.md). The steps
 that make these files are in [recipes/](../recipes/README.md).

@@ -14,7 +14,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 5 | Earth Shaker | complete 2026-11-11 ([case](games/earth-shaker/README.md)); ZXDB 1563; our own reverse; Bedazzle's disassembly (github.com/Bedazzle/Earth-shaker) is not a source of names, compare with it at the end at most |
 | 6 | Battle Command | complete 2026-11-11 ([case](games/battle-command/README.md)); ZXDB 451 |
 | 7 | Terramex | complete 2026-11-11 ([case](games/terramex/README.md)); ZXDB 5195 (Grand Slam 1987; tapes: Quicksilva, Bug-Byte Premier, Zafiro; an RZX in the archive); a detailed SkoolKit disassembly offered by the owner, github.com/nzeemin/skoolkit-game-revs `terramex-zx`: the starting point for names and structure (credited), every fact verified against the code and our recordings |
-| 8 | ZYX boot | stage 2 done: the source rebuilds `orig/boot.scl`, docs 02-03 ([case](games/zyx-boot/README.md)); next docs 01, 04-10 and 13; a TR-DOS boot (disk menu), not a game: the original (ZYX Software, 1991-1993) as a full case with the docs adapted, then doc 13 on the owner's 39 variants (`Boots(1)/boots_zyx.zip` on the NAS: expected to differ only in sprites and music) |
+| 8 | ZYX boot | stage 2 done: the source rebuilds `orig/boot.scl`, docs 02-03 ([case](software/zyx-boot/README.md)); next docs 01, 04-10 and 13; a TR-DOS boot (disk menu), not a game: the original (ZYX Software, 1991-1993) as a full case with the docs adapted, then doc 13 on the owner's 39 variants (`Boots(1)/boots_zyx.zip` on the NAS: expected to differ only in sprites and music) |
 | 9 | Switchblade | stage 2 ([case](games/switchblade/README.md)); Gremlin Graphics 1991 (Simon Phipps); TZX 48K/128K in the local packs |
 
 ## Planned ports

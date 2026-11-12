@@ -19,11 +19,11 @@ the standard in [GUIDE.md](GUIDE.md), the steps phase by phase in [recipes/](rec
 
 | Phase | What you do | Done when | Recipe |
 | --- | --- | --- | --- |
-| 0. Start | Put the original in `orig/` with its hashes. List the medium block by block. Write the case README. Pick the game's profile (section 4.0). | every block named, with its size, address and time; the profile in the README | [01](recipes/01-start-a-case.md) |
+| 0. Start | Make the case folder: `games/<name>`, or `software/<name>` for a program that is not a game (its main program's source `src/main`, `main.ann`, `case.json` `"main": "main"`). Put the original in `orig/` with its hashes. List the medium block by block. Write the case README. Pick the game's profile (section 4.0). | every block named, with its size, address and time; the profile in the README | [01](recipes/01-start-a-case.md) |
 | 1. Capture | Record from power-on with the load. Take a start image. Make recordings that reach every part of the game: a bot, input scripts, warp clones. | every zone, level and mode reached by a recording, or listed as reached only from the code | [02](recipes/02-capture.md) |
 | 2. Stages and packers | Name every code arrival with its window. Reimplement every packer and cipher in both directions. | each stage proved against the recording byte for byte | [03](recipes/03-stages-and-packers.md) |
 | 3. Analysis | Build L1 / L2 per stage window. Work down the review queue. | no unknown left outside the ROM, or each one explained | [04](recipes/04-analysis.md) |
-| 4. Source | Write `game.ann` and generate the `.asm` from it with `kit/mkgame.py`. | `tools/build.sh` prints identical | [05](recipes/05-source.md) |
+| 4. Source | Write `game.ann` (`main.ann` in `software/`) and generate the `.asm` from it with `kit/mkgame.py`. | `tools/build.sh` prints identical | [05](recipes/05-source.md) |
 | 5. Resources | Extract every graphic, font, map, level, tune, text and table into an editable format that builds back. | `res_formats.py check` passes and the build is identical | [06](recipes/06-resources.md) |
 | 6-7. Documents with their figures | Write docs 01-10 by hand, each section with its diagram, figure and animation in the same step; docs 11-12 are generated. Starts the moment the source is identical. | `check_docs.py` prints docs: ok, the animation minimum (section 4) and the profile items (section 4.0) are met, **and** the completeness audit (section 5) finds no P1 or P2 | [07](recipes/07-figures.md), [08](recipes/08-documents.md) |
 | 8. Review | Run two rounds by fresh agents: facts plus completeness, then both again with the halves swapped. | round 2's findings fixed and committed | [09](recipes/09-review.md) |

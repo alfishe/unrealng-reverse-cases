@@ -14,6 +14,10 @@
    cd games/<game> && md5 orig/* && shasum orig/*
    ```
 
+   A program that is not a game (a boot menu, a utility) goes to `software/<name>` instead, its main program's
+   source in `src/main`: rename `src/game` to `src/main` and `game.ann` to `main.ann`, add `"main": "main"` to
+   `case.json` (the kit reads the part's name there) and change `tools/build.sh` to match.
+
    The README gets the title, the publisher, the year, the authors, the machine the version targets, and the md5
    and SHA-1 of every file. `work/` and `build/` are git-ignored by the repository's `.gitignore`.
 

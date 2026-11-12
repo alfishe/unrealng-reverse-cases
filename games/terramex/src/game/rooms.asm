@@ -12,9 +12,7 @@
 ; in the image. Called by the room set-up at `$990B` on every room entry (106
 ; runs over all builds).
 ;
-; Witness: L1 106 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 106 (c1, explorers, gameover, rzx x28).
 ClearPartySlots:
   LD HL,$007F
   LD (ObjectSlot1+2),HL
@@ -43,7 +41,7 @@ AltTileset:
 ; rzx20000 858, rzx26000 463 and 1075, rzx34000 1481, rzx50000 183), EndGame at
 ; `$908A`.
 ;
-; Witness: L1 6 (rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 6 (rzx x5).
 SwapTileset:
   LD A,(AltTileset)
   PUSH AF
@@ -118,9 +116,7 @@ SwapTileAttrs:
 ; later in the pass. Rooms with tile `$8C`: `$12`, `$20`, `$2B`, `$2C`, `$38`,
 ; `$3A`, `$3B` (six: the lab, rzx46000 frame 500), `$3C`, `$44`.
 ;
-; Witness: L1 26513 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26513 (c1, explorers, gameover, rzx x31).
 RoomEffects:
   LD B,$02
   LD HL,EffectCellsA
@@ -264,8 +260,7 @@ BeamLoop:
 ; address of `$9AE5` and the next, in the map and the background copy
 ; (`$9A4D`).
 ;
-; Witness: L1 5581 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx).
+; Witness: L1 5581 (rzx x12).
 Capsules:
   LD A,(PassCount)            ; the frame for the capsules: 3 2 1 0 0 1 2 3
   LD C,A
@@ -314,9 +309,7 @@ CapsulesLoop:
 ; copies the cell and the one to its right from the background copy (`$E000`)
 ; to the screen through CopyBackCell `$92D6` (33546 calls, rzx18000-rzx50000).
 ;
-; Witness: L1 26510 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26510 (c1, explorers, gameover, rzx x31).
 ShowCapsules:
   LD A,(AltTileset)
   OR A
@@ -343,8 +336,7 @@ ShowCapsulesLoop:
 ; cell. HL and DE kept. The SkoolKit note ("menu border strip") does not fit:
 ; the only caller is ShowCapsules `$92BD`.
 ;
-; Witness: L1 33546 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx).
+; Witness: L1 33546 (rzx x12).
 CopyBackCell:
   PUSH DE
   PUSH HL
@@ -376,7 +368,7 @@ CopyBackCellLoop:
 ; `$5B04`/`$5B05`. Called twice by Beams `$9208` (3646 calls). The SkoolKit
 ; title ("attribute address") does not fit what it returns.
 ;
-; Witness: L1 3646 (rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 3646 (rzx x6).
 MapToPixels:
   LD A,H
   AND $03
@@ -430,9 +422,7 @@ FlameFrames:
 ; $9874 71 times (27 builds), so 34 room entries were in rooms not listed or
 ; while falling.
 ;
-; Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 105 (c1, explorers, gameover, rzx x28).
 SetUpRoom:
   PUSH AF
   CALL DecodeRoomCreatures
@@ -491,9 +481,7 @@ SetUpRoomTail:
 ; r10000 and r14500; the room-$1C column ($98F7-$9906) did not run in any of
 ; the 34 builds (no build entered room $1C with $5C24 set).
 ;
-; Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 105 (c1, explorers, gameover, rzx x28).
 SetUpRoomTiles:
   PUSH AF
   LD HL,AltTilesetRooms
@@ -587,9 +575,7 @@ SetUpRoomTilesDone:
 ; back-tile $10 (index 26: row 3, column 2), drawn in docs/img/maps/rooms.png
 ; as the well; WellRecord ran 3 times, in r06000 and r12000.
 ;
-; Witness: L1 105 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 105 (c1, explorers, gameover, rzx x28).
 BuildTileMap:
   LD L,A
   LD H,$00
@@ -695,9 +681,7 @@ BuildTileMapCell:
 ; Called only by SetUpRoomTiles at $990E (106 runs, 31 builds). Stops when n
 ; reaches 512 (BIT 1,H).
 ;
-; Witness: L1 106 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 106 (c1, explorers, gameover, rzx x28).
 DrawRoom:
   LD HL,$0000
   LD DE,TileMap
@@ -772,7 +756,7 @@ DrawRoomRow:
 ;
 ; Witness: 3 runs (r06000, r12000), the room-$0C set-ups.
 ;
-; Witness: L1 3 (rzx, rzx).
+; Witness: L1 3 (rzx x2).
 WellRecord:
   PUSH HL
   PUSH IX
@@ -805,9 +789,7 @@ WellRecord:
 ; $9A1F in r06500, Status 3 in r12000. What the screen shows is not yet checked
 ; (run request R1).
 ;
-; Witness: L1 26517 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 WellFront:
   CALL OverHole
   RET C
@@ -840,7 +822,7 @@ WellFrontDraw:
 ; of four cells through DrawTileBuffer $9A62, the second row 32 cells on.
 ; Called only by WellFront at $9A28 (11 runs, r06500 and r12000).
 ;
-; Witness: L1 11 (rzx, rzx).
+; Witness: L1 11 (rzx x2).
 DrawWellFront:
   LD HL,(WellHole)
   LD A,H
@@ -869,8 +851,7 @@ DrawWellFrontCell:
 ; Callers: the alternate set's effect $9282 at $92B0 and $92B7, and $B7A8 at
 ; $B7D4 (25 904 and 5312 calls).
 ;
-; Witness: L1 38860 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx).
+; Witness: L1 38860 (rzx x12).
 SetTileBuffer:
   PUSH HL
   POP DE
@@ -888,8 +869,7 @@ SetTileBuffer:
 ; at $BB19, and the room-$1C column $BC73 (tiles $98, $99; not reached in any
 ; build).
 ;
-; Witness: L1 5349 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 5349 (gameover, rzx x14).
 SetTile:
   PUSH HL
   POP DE
@@ -909,8 +889,7 @@ SetTile:
 ; C = $E0 (the back buffer's page), then DrawTileAt $9A64. Entered by
 ; SetTileBuffer, by SetTile (running on) and called by DrawWellFront at $9A3F.
 ;
-; Witness: L1 44297 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 44297 (gameover, rzx x23).
 DrawTileBuffer:
   LD C,$E0
 
@@ -923,8 +902,7 @@ DrawTileBuffer:
 ; (TilePixelsPtr $5B72) + 8 * tile go to the 8 pixel rows of the cell. Out: L +
 ; 1 (the next cell), DE + 1; BC kept.
 ;
-; Witness: L1 49646 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 49646 (gameover, rzx x23).
 DrawTileAt:
   PUSH HL
   PUSH BC
@@ -974,9 +952,7 @@ DrawTileAtRow:
 ; 4 tiles $DD (room $38) and 6 tiles $8C (room $3B), counted from the room
 ; data, so neither list overflows.
 ;
-; Witness: L1 124 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 124 (c1, explorers, gameover, rzx x28).
 FindTileCells:
   LD BC,$01FF
   LD HL,TileMap
@@ -1008,9 +984,7 @@ FindTileCellsNext:
 ; builds. A life lost in an unlisted room restarts in the last listed room
 ; entered.
 ;
-; Witness: L1 78 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 78 (c1, explorers, gameover, rzx x24).
 SaveRespawnPoint:
   LD A,(Room)
   LD (RespawnRoom),A

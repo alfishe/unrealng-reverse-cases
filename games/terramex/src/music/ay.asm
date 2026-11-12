@@ -21,9 +21,7 @@
 ; explorers: 13 411 writes in 15 190 frames (the other 1778 frames a note
 ; ended).
 ;
-; Witness: L1 73906 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 73906 (c1, explorers, gameover, rzx x31).
 WriteAY:
   LD D,$00                ; registers 0 and 1: channel A's period
   LD A,(ChannelAPeriod)
@@ -69,9 +67,7 @@ WriteAYMixer:
 ; frame with no AY write). Returns to MusicTick $C014, UpdateTune's caller
 ; (after EndTune too, which dropped UpdateChannel's return).
 ;
-; Witness: L1 83609 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 83609 (c1, explorers, gameover, rzx x31).
 EndFrame:
   XOR A
   LD (NoteEndFlag),A
@@ -89,9 +85,7 @@ EndFrame:
 ; (ports_out $FFFD, $BFFD in all 34). explorers: 134 110 calls in 13 411 writes
 ; (10 each).
 ;
-; Witness: L1 739060 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 739060 (c1, explorers, gameover, rzx x31).
 AYWrite:
   LD B,H
   OUT (C),D

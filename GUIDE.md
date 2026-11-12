@@ -5,7 +5,9 @@ What a finished case in this repository is, and how to get there with unreal-ng.
 without wasting time or tokens is unreal-ng's
 [game-reverse-case recipe](https://github.com/alfishe/unreal-ng/blob/master/.recipe/articles/game-reverse-case.md).
 [H.A.T.E.](games/hate/README.md) is the first case and the worked example; what it lacked is said below, and a new case
-does better there.
+does better there. A case lives in `games/<name>`; a program that is not a game (a boot menu, a utility) lives in
+`software/<name>`, with its main program's source in `src/main` (`src/main/main.ann`, `case.json` `"main": "main"`)
+where a game has `src/game`.
 
 ## 1. The deliverable
 
@@ -20,10 +22,10 @@ does better there.
 | `WALKTHROUGH.md` | how the reverse was done: each step's question, the emulator capability that answered it, the command, the result; the tool gaps found and how unreal-ng was fixed | read by a reviewer who did not do the case |
 | `work/` | recordings and analysis builds, local only (git-ignored); every one rebuilt by a WALKTHROUGH command | |
 
-The source is generated, not typed: one annotation file (`src/game/game.ann`: module, entry kind, name,
-description, comments, data shapes, `@isub`, `@res`) is the single source of truth, `kit/mkgame.py` writes the
-`.asm` from it, the image and the recordings, and installs it only when sjasmplus gives the original bytes. Edit
-the annotation, never the generated `.asm`.
+The source is generated, not typed: one annotation file (`src/game/game.ann`, `src/main/main.ann` in `software/`:
+module, entry kind, name, description, comments, data shapes, `@isub`, `@res`) is the single source of truth,
+`kit/mkgame.py` writes the `.asm` from it, the image and the recordings, and installs it only when sjasmplus gives
+the original bytes. Edit the annotation, never the generated `.asm`.
 
 ## 2. Evidence
 

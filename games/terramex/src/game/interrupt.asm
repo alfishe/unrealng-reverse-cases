@@ -12,9 +12,7 @@
 ; and pages back the value in Last7FFD `$5FE5`; AF and BC are kept, the player
 ; keeps the rest. On a 48K it only enables the interrupts again: no music.
 ;
-; Witness: L1 83616 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 83616 (c1, explorers, gameover, rzx x31).
 Im2Handler:
   PUSH AF
   LD A,(Has128K)

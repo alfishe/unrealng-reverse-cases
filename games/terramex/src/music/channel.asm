@@ -35,9 +35,7 @@
 ; Called 3 times a frame by UpdateTune (explorers: 45 565 = 3 x 15 189 less 2,
 ; the frame of EndTune).
 ;
-; Witness: L1 250815 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 250815 (c1, explorers, gameover, rzx x31).
 UpdateChannel:
   LD A,(IX+$03)
   OR A
@@ -56,9 +54,7 @@ UpdateChannel:
 ; ReadOrderList $C310. Reached from UpdateChannel $C2E4 and, after each event
 ; that takes no time, from PatternEvent's handlers and StartPattern $C34A.
 ;
-; Witness: L1 21280 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 21280 (c1, explorers, gameover, rzx x31).
 ReadPatternEvent:
   LD L,(IX+$02)
   LD H,$00
@@ -84,9 +80,7 @@ ReadPatternEvent:
 ; (OrderJumpDetune $C343), $E0-$FE SetSlot $C7F7 (OrderJumpSlot $C347). Each
 ; handler comes back here for the next byte.
 ;
-; Witness: L1 873 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 873 (c1, explorers, gameover, rzx x31).
 ReadOrderList:
   LD L,(IX+$00)
   LD H,$00
@@ -124,9 +118,7 @@ OrderJumpPad1:
 
 ; d = 4, $A0-$BF: SetRepeat
 ;
-; Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 123 (c1, explorers, gameover, rzx x26).
 OrderJumpRepeat:
   JP SetRepeat
 
@@ -138,8 +130,7 @@ OrderJumpPad2:
 
 ; d = 8, $C0-$DF: SetDetune
 ;
-; Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 17 (c1, explorers, gameover, rzx x11).
 OrderJumpDetune:
   JP SetDetune
 
@@ -151,8 +142,7 @@ OrderJumpPad3:
 
 ; d = 12, $E0-$FE: SetSlot
 ;
-; Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 21 (explorers, gameover, rzx x12).
 OrderJumpSlot:
   JP SetSlot
 
@@ -163,9 +153,7 @@ OrderJumpSlot:
 ; pattern position (+$02) = 0; ReadPatternEvent $C2F6. A new entry: the cut had
 ; it inside OrderJumpSlot's block; it is ReadOrderList's JP Z target at $C324.
 ;
-; Witness: L1 479 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 479 (c1, explorers, gameover, rzx x31).
 StartPattern:
   LD C,A
   LD A,(ChannelIndex)     ; E = 2 x the channel, the PatternPointers offset
@@ -204,9 +192,7 @@ StartPattern:
 ; The slide and the slide-off code ($C397-$C3C8) was not executed in any of the
 ; 34 recordings: only patterns 1 and 4 hold a slide, and tune 0 plays neither.
 ;
-; Witness: L1 19804 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 19804 (c1, explorers, gameover, rzx x31).
 PatternEvent:
   BIT 7,A
   JP Z,StartNote
@@ -276,9 +262,7 @@ PatternEventNext:
 ; The slow attack ($C452) and the release with a step table entry below $80
 ; ($C4A9) was not executed in any of the 34 recordings: no instrument has them.
 ;
-; Witness: L1 2250 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2250 (c1, explorers, gameover, rzx x31).
 SetInstrument:
   AND $0F
 SlotRowOp:
@@ -419,9 +403,7 @@ SetInstrumentTimes:
 ; A new entry, for the cut's l_C4C9 inside OrderJumpSlot's block
 ; (PatternEvent's JP Z at $C36F).
 ;
-; Witness: L1 15424 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 15424 (c1, explorers, gameover, rzx x31).
 StartNote:
   ADD A,$14
   ADD A,(IX+$01)
@@ -498,8 +480,7 @@ StartNoteSlide:
 ; after the intro (pattern 5); a constant added to every period (and so a lower
 ; pitch, a little, for the 10).
 ;
-; Witness: L1 17 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 17 (c1, explorers, gameover, rzx x11).
 SetDetune:
   LD L,(IX+$00)
   LD H,$00
@@ -517,9 +498,7 @@ OrderListOp2:
 ;
 ; Then ReadOrderList $C310. Reached by OrderCommandJump $C339 with offset 0.
 ;
-; Witness: L1 227 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 227 (c1, explorers, gameover, rzx x28).
 SetTranspose:
   LD L,(IX+$00)
   LD H,$00
@@ -541,8 +520,7 @@ OrderListOp3:
 ; (record 8), slot 6 = $51 (record 9), then $5A (record 10); the change
 ; outlives the tune (StartTune does not reset SlotTable).
 ;
-; Witness: L1 21 (explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 21 (explorers, gameover, rzx x12).
 SetSlot:
   LD A,(SlotRowOp+$0001)
   LD C,A
@@ -571,9 +549,7 @@ SlotIndexOp:
 ; The repeats left (+$04) = n - 1 (n 0: 255, so 256 plays); ReadPatternEvent
 ; $C2F6 replays the pattern while it is not 0. Then ReadOrderList $C310.
 ;
-; Witness: L1 123 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 123 (c1, explorers, gameover, rzx x26).
 SetRepeat:
   LD A,(CommandParam)
   DEC A
@@ -584,8 +560,7 @@ SetRepeat:
 ;
 ; Called by PatternEvent $C36D for a rest's duration and a slide's three bytes.
 ;
-; Witness: L1 76 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 76 (c1, explorers, gameover, rzx x12).
 FetchPatternByte:
   LD L,(IX+$02)
   LD H,$00

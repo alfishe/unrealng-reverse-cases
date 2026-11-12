@@ -26,9 +26,7 @@
 ; A = the note timer (from UpdateChannel $C2E4). A = +$06: the gate bit (+$2A
 ; bit 0) clear: the release. Falls into ChannelEffects.
 ;
-; Witness: L1 235309 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 235309 (c1, explorers, gameover, rzx x31).
 CheckGateOff:
   CP (IX+$06)
   JR NZ,ChannelEffects
@@ -43,9 +41,7 @@ CheckGateOff:
 ; peak), then the decay (to the sustain level). Gate off: the release (to 0).
 ; Then VibratoEffect $C609 (fall through).
 ;
-; Witness: L1 235385 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 235385 (c1, explorers, gameover, rzx x31).
 ChannelEffects:
   LD A,(IX+$16)
   OR A
@@ -134,9 +130,7 @@ EnvelopeReleaseStore:
 ; form ($C61A), and a delta that carries or borrows in the period ($C654,
 ; $C670) was not executed in any of the 34 recordings.
 ;
-; Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 VibratoEffect:
   LD A,(IX+$0B)
   OR A
@@ -217,9 +211,7 @@ VibratoNext:
 ; executed in any of the 34 recordings: arpeggio 1, the only one with no loop,
 ; plays on 9-frame notes, which end first.
 ;
-; Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 ArpeggioEffect:
   LD A,(IX+$10)
   OR A
@@ -317,9 +309,7 @@ ArpeggioEnd:
 ; Ran in no recording past the delay test: tune 0 has no slide ($C735-$C77C not
 ; executed in any of the 34 recordings).
 ;
-; Witness: L1 208864 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 208864 (c1, explorers, gameover, rzx x31).
 SlideEffect:
   LD A,(IX+$14)
   OR A

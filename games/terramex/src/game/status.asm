@@ -12,9 +12,7 @@
 ; update is skipped. Called only from HeroUpdate ($A40C): 9430 dispatches in
 ; c1, explorers, gameover and 26 rzx segments.
 ;
-; Witness: L1 26144 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26144 (c1, explorers, gameover, rzx x31).
 StatusDispatch:
   LD A,(Status)
   OR A
@@ -34,9 +32,7 @@ StatusDispatch:
 ; else jumps to it. Shared by StatusDispatch $A6CC and the room handler
 ; dispatch $B7DD.
 ;
-; Witness: L1 35947 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 35947 (c1, explorers, gameover, rzx x31).
 JumpThroughWord:
   LD E,(HL)
   INC HL
@@ -233,7 +229,7 @@ LookIntoTelescope:
 ; timer is cleared. Evidence: rzx16000 frames 1721-1821 (43 passes, once to the
 ; end).
 ;
-; Witness: L1 43 (rzx).
+; Witness: L1 43 (rzx x1).
 Room2DAnim:
   POP HL
   LD DE,Room2DFrames
@@ -257,7 +253,7 @@ Room2DFrames:
 ; at the end $5B98 = $1D, $9E5D, $BCF2 with DE = $004B (75), status 0.
 ; Evidence: rzx38000 frames 2-135 (50 passes).
 ;
-; Witness: L1 50 (rzx).
+; Witness: L1 50 (rzx x1).
 Room43Anim:
   POP HL
   LD DE,Room43Frames
@@ -283,7 +279,7 @@ Room43Frames:
 ; FallDeathFrames $A8BF, then sound 0 and status 18 (StartDying $AAF0).
 ; Evidence: gameover frames 1363-1371 (the last life), rzx10000, rzx24000.
 ;
-; Witness: L1 9 (gameover, rzx, rzx).
+; Witness: L1 9 (gameover, rzx x2).
 FallDeath:
   LD DE,FallDeathFrames
   LD C,$00
@@ -297,7 +293,7 @@ FallDeath:
 ; $1A = $0C, then Room1ADeathFrames $A8E6, sound 4, status 18. Evidence:
 ; rzx10000 frames 1943-1958.
 ;
-; Witness: L1 7 (rzx).
+; Witness: L1 7 (rzx x1).
 Room1ADeath:
   LD A,$0C
   LD (ThinkHints+$0017),A
@@ -313,7 +309,7 @@ Room1ADeath:
 ; 4). CreatureDeathFrames $A8E0 with sound 3 each pass, then status 18.
 ; Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
 ;
-; Witness: L1 33 (rzx, rzx, rzx).
+; Witness: L1 33 (rzx x3).
 CreatureDeath:
   LD DE,CreatureDeathFrames
   LD A,$03
@@ -340,7 +336,7 @@ SilentDeath:
 ;
 ; DE = the list, C = the sound. Shared by statuses 23-26.
 ;
-; Witness: L1 49 (gameover, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 49 (gameover, rzx x5).
 DeathFrames:
   CALL NextFrame
   POP HL
@@ -371,7 +367,7 @@ Room1ADeathFrames:
 ; 22 kept, and every pass resets the lift again); the destination goes into
 ; TeleportDest $A959. Room $20: status 23 (SilentDeath $A8A8).
 ;
-; Witness: L1 36 (rzx, rzx).
+; Witness: L1 36 (rzx x2).
 Teleport:
   LD A,(StatusTimer)
   OR A
@@ -397,7 +393,7 @@ Teleport:
 ; ExplorerRoom46 $B2EB; Room2DAnim $A828 steps into it. Evidence: 413 passes in
 ; gameover and 3 rzx segments.
 ;
-; Witness: L1 413 (gameover, rzx, rzx, rzx).
+; Witness: L1 413 (gameover, rzx x3).
 Frozen:
   POP HL
   RET
@@ -412,7 +408,7 @@ Frozen:
 ; frames 1461-1512). The cut puts an entry here so that Frozen $A90E holds only
 ; its two instructions.
 ;
-; Witness: L1 2 (rzx, rzx).
+; Witness: L1 2 (rzx x2).
 TeleportStep:
   LD A,(CrystalPlaced)
   OR A
@@ -470,7 +466,7 @@ TeleportFramesArrive:
 ; Set by BasketScript $B409 ($B45A). The hero's X, Y = object 4's ($5B14) every
 ; pass. Evidence: 418 passes (rzx28000, rzx32750, rzx34000).
 ;
-; Witness: L1 418 (rzx, rzx, rzx).
+; Witness: L1 418 (rzx x3).
 RideObject4:
   LD HL,(ObjectSlot4)
   LD (Hero),HL
@@ -510,7 +506,7 @@ LiftUpMove:
 
 ; The lift is in the hero's room ($5B9E = $5C01)
 ;
-; Witness: L1 4 (rzx, rzx).
+; Witness: L1 4 (rzx x2).
 LiftSetRoom:
   LD A,(Room)
   LD (LiftRoom),A
@@ -526,7 +522,7 @@ LiftMoveY:
 ; LiftStops $A9E6 gives a stop Y for rooms $1F, $2B, $37, $43: when the room is
 ; listed and $5B9F equals it, status 0 (Z); not listed returns NZ.
 ;
-; Witness: L1 263 (rzx, rzx).
+; Witness: L1 263 (rzx x2).
 LiftAtStop:
   LD HL,LiftStops
   LD B,$04
@@ -553,7 +549,7 @@ LiftStopFound:
 ; $68. Y + 2; at $62 the room below (ExitDown $A6AE). Evidence: rzx20000 frames
 ; 628-805, rzx36000 frames 334-937 (220 passes).
 ;
-; Witness: L1 220 (rzx, rzx).
+; Witness: L1 220 (rzx x2).
 LiftDown:
   POP HL
   LD A,(Room)
@@ -586,7 +582,7 @@ LiftStops:
 ; 1374-1502 (the last life), 5 rzx segments. The POKE 43517,182 (SK, the
 ; "infinite lives" POKE) changes DEC (HL) at $A9FD.
 ;
-; Witness: L1 292 (gameover, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 292 (gameover, rzx x5).
 LoseLifeWait:
   POP HL
   LD HL,StatusTimer
@@ -634,7 +630,7 @@ SinkFrames:
 ; status 14, item $1C status 15, item $1B status 16 (sound 1); any other item
 ; waits. Evidence: rzx16000 frames 479-491 (item 9).
 ;
-; Witness: L1 6 (rzx).
+; Witness: L1 6 (rzx x1).
 BarrelSpot:
   POP HL
   LD (IX+$02),$17
@@ -670,7 +666,7 @@ BarrelGo:
 ; from pass 40 frame $1A. At pass 84 status 0. Evidence: rzx16000 frames
 ; 508-745.
 ;
-; Witness: L1 85 (rzx).
+; Witness: L1 85 (rzx x1).
 BarrelRide:
   POP HL
   LD DE,BarrelArc
@@ -753,14 +749,14 @@ BarrelLongEnd:
 
 ; Status 18: the hero dies (LoseLifeWait counts down)
 ;
-; Witness: L1 7 (gameover, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 7 (gameover, rzx x5).
 StartDying:
   LD A,$12
   LD (Status),A
 
 ; $5C07 = 0
 ;
-; Witness: L1 8 (gameover, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 8 (gameover, rzx x6).
 ClearStatusTimer:
   XOR A
   LD (StatusTimer),A
@@ -829,7 +825,7 @@ ThinkResult:
 
 ; (IX+2) = A
 ;
-; Witness: L1 133 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 133 (gameover, rzx x7).
 SetHeroFrame:
   LD (IX+$02),A
   RET
@@ -865,7 +861,7 @@ NoIdea:
 ; A = DE[$5C07 / 2], $5C07 + 1: each frame lasts 2 passes; the lists end with
 ; $FF.
 ;
-; Witness: L1 178 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 178 (gameover, rzx x9).
 NextFrame:
   LD HL,StatusTimer
 
@@ -873,8 +869,7 @@ NextFrame:
 ;
 ; Called by ProfessorScript $B5DD ($B638) with its own counter.
 ;
-; Witness: L1 2050 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 2050 (gameover, rzx x14).
 NextFrameAt:
   LD A,(HL)
   INC (HL)
@@ -930,7 +925,7 @@ BalloonCrash:
 ; rzx14000 frames 696-1104 (item $0B, then none: no rise); 452 passes; the
 ; screen of rzx14000 frame 750 shows the balloon.
 ;
-; Witness: L1 452 (rzx, rzx).
+; Witness: L1 452 (rzx x2).
 BalloonRide:
   POP HL
   LD A,(Room)
@@ -1055,7 +1050,7 @@ BalloonStepLeft:
 ; find a floor under the feet: status 2 (JumpArc $ADAC). Evidence: gameover,
 ; rzx10000, rzx22000 (67 passes).
 ;
-; Witness: L1 67 (gameover, rzx, rzx).
+; Witness: L1 67 (gameover, rzx x2).
 BounceUp:
   POP HL
   LD A,(IX+$01)
@@ -1082,7 +1077,7 @@ BounceUp:
 ; play in room $14 (explorers frame 963); the frames are known from the code,
 ; what $1D shows needs the screen.
 ;
-; Witness: L1 4908 (c1, explorers, rzx, rzx).
+; Witness: L1 4908 (c1, explorers, rzx x2).
 Hover:
   POP HL
   LD A,(HeldItem)
@@ -1157,8 +1152,7 @@ HoverDownExit:
 ; of room $18's ladder top (no direction). Evidence: 2391 passes in gameover
 ; and 23 rzx segments.
 ;
-; Witness: L1 2391 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2391 (gameover, rzx x23).
 JumpArc:
   POP HL
   LD DE,JumpFrames
@@ -1238,8 +1232,7 @@ JumpLeftWall:
 ; room below (ExitDownSaved $AE6A). Then the probes: a floor under the feet
 ; ends the jump early (frame 2, status 0).
 ;
-; Witness: L1 2366 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2366 (gameover, rzx x23).
 JumpStepY:
   CALL JumpHoleCheck
   LD L,A
@@ -1286,8 +1279,7 @@ ExitDownSaved:
 
 ; (IX+2) = DE[$5C07]
 ;
-; Witness: L1 2391 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 2391 (gameover, rzx x23).
 FrameFromTable:
   LD A,(StatusTimer)
   PUSH HL
@@ -1301,8 +1293,7 @@ FrameFromTable:
 
 ; Status 0 (SK, renamed)
 ;
-; Witness: L1 332 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 332 (gameover, rzx x25).
 ClearStatus:
   XOR A
 
@@ -1313,9 +1304,7 @@ ClearStatus:
 ; StartDying $AAF0 ($AAF2), BasketScript's $B45A, PickUpItem's $BBD5 and
 ; RopeTrick's $BCB4) goes through here.
 ;
-; Witness: L1 360 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx).
+; Witness: L1 360 (gameover, rzx x26).
 SetStatus:
   LD (Status),A
   XOR A
@@ -1334,7 +1323,7 @@ JumpRise:
 
 ; FrameListPtr = HL: a frame list replaces the hero's update until $FF
 ;
-; Witness: L1 7 (rzx, rzx, rzx).
+; Witness: L1 7 (rzx x3).
 StartFrameList:
   LD (FrameListPtr),HL
   RET
@@ -1354,7 +1343,7 @@ FrameListStep:
 
 ; One frame of the list at HL; $FF ends it
 ;
-; Witness: L1 224 (rzx, rzx, rzx).
+; Witness: L1 224 (rzx x3).
 FrameListPlay:
   LD A,(HL)
   CP $FF
@@ -1382,9 +1371,7 @@ FrameListPtr:
 
 ; B = room / 12 (the level), C = room mod 12 (the column) (SK)
 ;
-; Witness: L1 92 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 92 (gameover, rzx x27).
 RoomToLevelColumn:
   LD A,(Room)
   LD B,$FF
@@ -1398,9 +1385,7 @@ RoomToLevelLoop:
 
 ; Room = B * 12 + C (SK)
 ;
-; Witness: L1 87 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx).
+; Witness: L1 87 (gameover, rzx x27).
 LevelColumnToRoom:
   INC B
   LD A,$F4

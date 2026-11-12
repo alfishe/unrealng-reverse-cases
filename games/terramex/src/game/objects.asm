@@ -10,7 +10,7 @@
 ; Crystal of room $30 taken ($8F86). Witness: c1 once, explorers 5 times,
 ; rzx00000 once (the new games).
 ;
-; Witness: L1 7 (c1, explorers, rzx).
+; Witness: L1 7 (c1, explorers, rzx x1).
 ResetItems:
   LD B,$1F
   LD HL,ItemPlaces
@@ -31,9 +31,7 @@ ResetItemsLoop:
 ; room set-up), after a gift to the professor ($B5F8) and after the crystal is
 ; placed ($BA27).
 ;
-; Witness: L1 113 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 113 (c1, explorers, gameover, rzx x31).
 SpawnRoomItems:
   LD IX,ItemSlot1
   LD (IX+$02),$FF
@@ -59,9 +57,8 @@ SpawnRoomItemsLoop:
 ; address in its bytes +3 and +4, for PickUpItem $BB6C to mark it taken. Out: C
 ; + 1; HL, AF, B kept.
 ;
-; Witness: L1 42 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). The second slot ($B96A) is used 3
-; times (gameover, rzx10000, rzx14500).
+; Witness: L1 42 (c1, explorers, gameover, rzx x15). The second slot ($B96A) is
+; used 3 times (gameover, rzx10000, rzx14500).
 PlaceItem:
   BIT 1,C
   RET NZ
@@ -142,10 +139,8 @@ CrystalPlace:
 ; spawned again ($B93F), +75 score, the hand icon redrawn. In every other room
 ; PickUpItems $BB5D runs.
 ;
-; Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). The crystal is placed once
-; ($BA1A, rzx24750).
+; Witness: L1 26514 (c1, explorers, gameover, rzx x31). The crystal is placed
+; once ($BA1A, rzx24750).
 ItemsPass:
   LD A,(Room)
   CP $30
@@ -187,10 +182,8 @@ ItemsPickUp:
 ; ($9EBD, $9E5D) and SwapLatch is set until S is released. Then BridgeEffect
 ; $BA97 in rooms $19 and $3A (A = the room) and RopeTrick $BC73 in room $10.
 ;
-; Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). The swap runs 34 times in
-; 21 builds ($BA5B).
+; Witness: L1 26514 (c1, explorers, gameover, rzx x31). The swap runs 34 times
+; in 21 builds ($BA5B).
 ItemsKeys:
   LD A,(BearerPhase)
   OR A
@@ -254,7 +247,7 @@ SwapLatch:
 ; Called by BridgeEffect $BA97 ($BA9F) before its start test, which returns
 ; when Z is clear: never. A test left empty (known only from the code).
 ;
-; Witness: L1 489 (rzx, rzx, rzx, rzx).
+; Witness: L1 489 (rzx x4).
 AlwaysZero:
   PUSH HL
   CP A
@@ -266,9 +259,7 @@ AlwaysZero:
 ; IX = the explorer $5B04; PickUpItem $BB6C for slot $5C0E, then for slot $5C13
 ; (fallen into). Called by ItemsPass $B9FA every pass except in room $30.
 ;
-; Witness: L1 26330 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26330 (c1, explorers, gameover, rzx x31).
 PickUpItems:
   LD IX,Hero
   LD IY,ItemSlot1
@@ -293,9 +284,7 @@ PickUpItems:
 ; marked taken (bit 7 of the room byte through slot +3, +4). The icon rows are
 ; redrawn ($9E5D, $9EBD).
 ;
-; Witness: L1 52660 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx). 30 pickups in 15 builds
+; Witness: L1 52660 (c1, explorers, gameover, rzx x31). 30 pickups in 15 builds
 ; ($BBDA), 22 of them with an item in hand ($BBE4); the bounce 3 times ($BBC1:
 ; gameover, rzx10000, rzx22000).
 PickUpItem:
@@ -386,9 +375,7 @@ PickUpDone:
 ; BearerIndex $5C23 = C - 2 (0 for C 0 and 1), then the bearer row is drawn
 ; ($9EBD).
 ;
-; Witness: L1 52660 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 52660 (c1, explorers, gameover, rzx x31).
 PickUpRedraw:
   PUSH DE
   LD A,D
@@ -425,9 +412,7 @@ PickUpShowBearer:
 ; Witness: c1 presses 1 and 2 (tests/inputs/c1.txt); key 1 runs 128 times in 21
 ; builds ($BC2F), key 2 113 times in 21 ($BC43).
 ;
-; Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26514 (c1, explorers, gameover, rzx x31).
 BearerKeys:
   JR NZ,BearerScrollStep
   LD BC,$F7FE

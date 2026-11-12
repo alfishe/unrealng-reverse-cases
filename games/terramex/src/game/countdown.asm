@@ -14,9 +14,7 @@
 ; LoseGame `$9372` (not executed in any recording: the rzx run ended with 18
 ; days left).
 ;
-; Witness: L1 26514 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 26514 (c1, explorers, gameover, rzx x31).
 CountDown:
   LD HL,CountdownMinutes
   DEC (HL)

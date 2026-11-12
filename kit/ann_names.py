@@ -3,7 +3,8 @@
 
     python3 kit/ann_names.py --case CASE [--ann FILE] CF65=SetRestart $cf8a=FreeRecordsLoop ...
 
---ann defaults to CASE/src/game/game.ann (a part's .ann is given relative to the case). Addresses in either case,
+--ann defaults to the main part's CASE/src/<main>/<main>.ann (case.json "main"; src/game/game.ann in a game; a part's
+.ann is given relative to the case). Addresses in either case,
 with or without the $. The lines are read with kit/mkgame.py's grammar (docs/ann-format.md 1): a kind is a lone
 lower-case c, b, w, t or s; a one-letter name (X, Y) is a name, never a kind; the width of a data entry is not a name.
 
@@ -11,12 +12,13 @@ An address with a comment line ("$CF65 ; text") gets the name on that line; othe
 after the annotation line of the nearest address below it. A name already used, or an address that is an entry, is
 refused. Then run kit/mkgame.py --case CASE --install (it checks the source still assembles to the original image).
 """
+import json
 import os
 import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from mkgame import ANNOTATION as LINE  # noqa: E402  (address, kind, name, width, comment)
+from mkgame import ANNOTATION as LINE, main_name  # noqa: E402  (address, kind, name, width, comment)
 
 ANN = None
 
@@ -26,7 +28,9 @@ def main():
     argv = sys.argv[1:]
     if argv[:1] != ['--case'] or len(argv) < 3:
         sys.exit(__doc__)
-    ANN = os.path.join(argv[1], 'src', 'game', 'game.ann')
+    config = os.path.join(argv[1], 'case.json')
+    main = main_name(json.load(open(config)) if os.path.exists(config) else {})
+    ANN = os.path.join(argv[1], 'src', main, main + '.ann')
     rest = argv[2:]
     if rest[:1] == ['--ann']:
         if len(rest) < 3:

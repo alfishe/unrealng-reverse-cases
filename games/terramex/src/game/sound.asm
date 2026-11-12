@@ -15,9 +15,7 @@
 ; c1 frame 23 509), and in the paper area the ULA's contention adds about 23 %
 ; (`EX (SP),HL` on the stack in RAM 5, `OUT ($FE)`); doc 9, 9.11.
 ;
-; Witness: L1 339 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 339 (c1, explorers, gameover, rzx x26).
 PlaySound:
   PUSH HL
   PUSH DE
@@ -33,9 +31,7 @@ PlaySound:
 ;
 ; A of 7 and more: nothing. The player's address is pushed and RET jumps to it.
 ;
-; Witness: L1 339 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx).
+; Witness: L1 339 (c1, explorers, gameover, rzx x26).
 SoundDispatch:
   CP $07
   RET NC
@@ -58,8 +54,7 @@ SoundDispatch:
 ; 4 after each burst. Played by PickUpItem $BBF2 (and 1 more, 31 runs in 16
 ; builds).
 ;
-; Witness: L1 31 (c1, explorers, gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 31 (c1, explorers, gameover, rzx x13).
 SoundChirp:
   LD H,$7F
 SoundChirpBurst:
@@ -91,7 +86,7 @@ SoundChirpDelay:
 ; as B does; then SoundRise $C506. Witness: gameover and rzx16000 play it once
 ; each.
 ;
-; Witness: L1 2 (gameover, rzx).
+; Witness: L1 2 (gameover, rzx x1).
 SoundRomFall:
   LD HL,$0000
   LD BC,$2328
@@ -123,7 +118,7 @@ SoundRomFallByte:
 ; 3, 7, $0F, $1F, $3F, $7F. Played alone and at the end of SoundRomFall $C4E9.
 ; Witness: gameover (twice), rzx10000, rzx16000, rzx24000.
 ;
-; Witness: L1 5 (gameover, rzx, rzx, rzx).
+; Witness: L1 5 (gameover, rzx x3).
 SoundRise:
   LD H,$03
 SoundRiseBurst:
@@ -152,7 +147,7 @@ SoundRiseDelay:
 ; Witness: rzx06000, rzx22000, rzx32000 play it 11 times each (the status $18
 ; handler CreatureDeath $A89E).
 ;
-; Witness: L1 33 (rzx, rzx, rzx).
+; Witness: L1 33 (rzx x3).
 SoundHiss:
   LD B,$64
 SoundHissLoop:
@@ -171,8 +166,7 @@ SoundHissLoop:
 ; HL = $03C8 (H the waves, L the half-wave), then SoundTone $C53A. Played by
 ; $A3E1 at $A484 (164 runs in 24 builds).
 ;
-; Witness: L1 164 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 164 (gameover, rzx x23).
 SoundBeepLow:
   LD HL,$03C8
   JR SoundTone
@@ -182,15 +176,13 @@ SoundBeepLow:
 ; HL = $0564, then SoundTone $C53A (fallen into). Played by DropFall $C051, 105
 ; times.
 ;
-; Witness: L1 105 (rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 105 (rzx x18).
 SoundBeepHigh:
   LD HL,$0564
 
 ; H square waves of 2 x L loop turns on the speaker (E the speaker bit)
 ;
-; Witness: L1 1017 (gameover, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx,
-; rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx, rzx).
+; Witness: L1 1017 (gameover, rzx x24).
 SoundTone:
   XOR A
   LD B,L
@@ -211,7 +203,7 @@ SoundToneHigh:
 ; HL = $0000 (LD HL,$0000: SK took its operand for NOPs), B = 0: 256 x 5 bytes,
 ; each AND E sent. Witness: rzx10000 plays it once.
 ;
-; Witness: L1 1 (rzx).
+; Witness: L1 1 (rzx x1).
 SoundRomBurst:
   LD HL,$0000
   LD B,L

@@ -217,7 +217,8 @@ python3 kit/mkgame.py [--case C] --image BIN --org ADDR --ann FILE --top NAME --
 6. **Check.** Runs `sjasmplus --nologo --msg=war game.asm` in the work folder and compares `game.bin` with the image.
    It prints `assembled: identical to the original image` or the first differing address.
 7. **Install** (`--install`, only when identical). Writes the modules and `game.asm` into `src/game` (`case.json`
-   `dest`), and the resources through the json's `res_install`, else (a part file with no `res` folder of its own)
+   `dest`; a case whose `case.json` names `"main": "main"`, a program in `software/`, has `main.ann`, `main.asm` and
+   `src/main`), and the resources through the json's `res_install`, else (a part file with no `res` folder of its own)
    `case.json`'s `res_install`, else the case's `tools/res_formats.py install`, or as bytes when the case has none
    of these. A part with resources and no way to install them prints `WARNING: N resources not installed`. It never deletes a file it does not write: only the modules the old `game.asm`
    included and the `.ann` no longer has, and a resource's `src/res/NAME.bin` that the case's hook did not write
