@@ -112,8 +112,9 @@ def cmd_entries(args):
         d.text((x0[3] + 40, y), text, font=f, fill=colour)
         y += lh
     listed = sum(1 for r in rows if r[3] in (GREEN, YELLOW))
-    d.text((12, y + 10), '%d entries read, %d listed: page 1 the first 24 (two columns, 12 + 12), page 2 the rest '
-                         '(%d: one column).' % (len(rows) - 1, listed, listed - 24 if listed > 24 else 0),
+    d.text((12, y + 10), '%d entries read (the last one the end marker), %d listed: page 1 the first 24 (two columns, '
+                         '12 + 12), page 2 the rest (%d: one column).' % (len(rows), listed,
+                                                                        listed - 24 if listed > 24 else 0),
            font=f, fill=FG)
     d.text((12, y + 32), 'Drawn by: python3 tools/fig_catalogue.py entries %s --work %s --frame %d'
            % (os.path.relpath(args.out, ROOT), args.work, args.frame), font=f, fill=DIM)

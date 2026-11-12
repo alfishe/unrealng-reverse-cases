@@ -1,0 +1,12 @@
+# c9: variant zyxremix booted as c1, from a copy of build/variants/zyxremix/variant.scl whose file ZYXremix is
+# renamed boot (the boot keys run "boot"): the loader reads 55 sectors to $61A8 and calls them; the LZ depacker head
+# moves the stream up and unpacks the whole memory $61A8-$FFFE over itself, then the menu runs (doc 13, 13.9).
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++1200 END

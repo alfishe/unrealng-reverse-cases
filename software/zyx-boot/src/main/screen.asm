@@ -417,8 +417,9 @@ ClearAttrs:
 ; 1, 2, 6, 7: move the cursor to the other column (two columns only)
 ;
 ; From column 1 to column 2 the cursor keeps its row, but from column 1's last
-; file it goes to column 2's first when the columns differ in length (13-23
-; files odd); from column 2 to column 1 it keeps the row.
+; file, when column 2 is one shorter (13-23 files odd), it goes to column 1's
+; first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1
+; it keeps the row.
 ;
 ; Witness: L1 2 (c x1).
 ColumnKey:
@@ -485,15 +486,16 @@ CursorMoved:
   POP AF
   RET
 
-; 3, 8: the cursor down one file (B = 0), wrapping from the column's end to the
-; other column or the top
+; 3, 8: the cursor down one file (B = 0), wrapping from the column's last file
+; to its first
 ;
 ; Witness: L1 4 (c x1).
 DownKey:
   PUSH AF
   LD B,$00
 
-; Move the cursor down (B = 0) or up (B = 1), from column to column at the ends
+; Move the cursor down (B = 0) or up (B = 1), wrapping within its column;
+; nothing with a single file
 ;
 ; Puts back the old cells' attribute first. The positions run down column 1
 ; (CursorIndex 1 to ColumnOneCount) and on down column 2.

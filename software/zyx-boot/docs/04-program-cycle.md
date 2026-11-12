@@ -28,9 +28,10 @@ The point: c1 has the least on the screen (one short text, no list), so its idle
 c2 adds a list and a cursor on an 8-letter name.
 
 Times are T-states. A trace gives the T at which each instruction starts, counted in its frame. The handler's first
-instruction runs about 5 T before the recording's frame boundary (it shows as T 71 675 of the frame before), so the
-work of "frame N's interrupt" is at the start of frame N. TTD `memory_at` with a frame alone gives the memory at the
-end of that frame. A **frame** is 1/50 s, 71 680 T on the Pentagon; a **pass** is one run of MainLoop `$627C`.
+instruction runs about 5 T before the recording's frame boundary (it shows as T 71 675 of the frame before), so the work
+of "frame N's interrupt" is at the start of frame N. TTD `memory_at` with a frame alone gives the memory at the frame's
+start (T 0), when that frame's handler has only just begun (Frames not yet counted). A **frame** is 1/50 s, 71 680 T on
+the Pentagon; a **pass** is one run of MainLoop `$627C`.
 
 ## 4.1 The shape of the program
 
@@ -44,6 +45,8 @@ stateDiagram-v2
     Basic --> Loader: line 10, RANDOMIZE USR 23936
     Loader --> SetUp: CALL Start (c1 frame 516)
     SetUp --> Idle: SampleStars, MainLoop (c1 frame 890)
+    SetUp --> Launch: a key read by the interrupt (from c1 frame 549)
+    SetUp --> NewPage: CS, SS or SPACE (from c1 frame 549)
     Idle --> Idle: the interrupt every frame, 2.2 passes a frame
     Idle --> NewPage: CS, SS or SPACE
     NewPage --> Idle: ShowCatalogue, Frames = 0
@@ -56,16 +59,19 @@ The program's stages in c1, from the stage-1 L1 (`first_frame` and `last_frame` 
 
 | c1 frames | Stage | Routine | What the screen shows |
 | --- | --- | --- | --- |
-| 447-515 | the BASIC's loader reads the three pieces | Loader `$5D80` | TR-DOS's screen |
+| 447-459 | the BASIC's loader clears `$61A8-$FEAF` | Loader `$5D80` | TR-DOS's screen |
+| 459-515 | the loader reads the three pieces | Loader, TrdosEntry `$3D13` | unchanged |
 | 516-531 | the catalogue read (8 sectors of track 0) | Start `$61A8` | unchanged |
 | 532-536 | the screen | DrawScreen `$6510` | the logo, the rhombi, the help lines, NO EXE FILES ! |
-| 542-697 | the 34 rhombus phases | BuildRombPhases `$62F1` (twice) | the twinkle, the glint and the music start: the interrupt is on |
+| 542-697 | the 34 rhombus phases | BuildRombPhases `$62F1` (twice) | the twinkle, the glint and the music start: the interrupt is on; the keys are read from 549 |
 | 605-888 | the mirrors and the turns | MirrorSprite `$63D6`, RotateSprite `$6422` | unchanged |
 | 824-890 | the reflection | DrawReflection `$6DC6` | the help lines vanish under the logo's mirror image |
 | 890-7879 | the idle menu | MainLoop `$627C`, Interrupt `$6757` | the stars fall, the rhombi turn |
 
 The point: the user waits 7.5 s (frames 516-890) before the stars move. Most of it is the phase builder and the 28
-calls of RotateSprite, work that could have been done once and stored on the disk.
+calls of RotateSprite, work that could have been done once and stored on the disk. The keys work long before that:
+the interrupt runs ReadKeyboard from c1 frame 549 (c2: 558), so a letter, ENTER, SPACE, CS or SS acts during the
+set-up. What a launch in mid-set-up does is known only from the code (4.8).
 
 ## 4.2 The BASIC and the entry
 
@@ -84,7 +90,9 @@ What Start keeps, and why:
 | SP | SavedSP `$AFCC` | the launcher returns to the Loader by putting this SP back, wherever the menu's stack stands ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 | I | SavedI `$AFCE` | the I register as BASIC had it, put back before IM 1 |
 
-The point: the menu borrows the machine and gives back exactly what BASIC needs (IY, H'L', SP, I, IM 1). The rest
+The point: the menu borrows the machine and gives back what BASIC needs: IY, H'L', SP, I and IM 1, and at the launch
+also CHARS = `$3C00` (the ROM font; the menu had pointed CHARS at its own font) and FRAMES = 0
+([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)). The rest
 of RAM from `$61A8` up is the menu's own.
 
 ```text
@@ -280,7 +288,7 @@ each pass's length less the interrupts that fell inside it; the cycles repeated 
 | 3 | 4 x MoveStars, the two top rhombi, StarsC | 63 300 - 63 400 |
 | 7 | 4 x MoveStars, all four rhombi, StarsC | 78 350 - 78 450 |
 
-The point: a cycle of 8 passes costs about 4 x 147 + 2 x 39 400 + 63 300 + 78 400 = 220 700 T, 3.1 frames of CPU,
+The point: a cycle of 8 passes costs about 4 x 147 + 2 x 39 400 + 63 300 + 78 400 = 221 100 T, 3.1 frames of CPU,
 3.6 frames once the interrupts are counted. Worked example, the idle window c1 1000-6000: MoveStars ran 24 703 times
 (18 calls in 8 passes) and PrintRombPhase 8234 times (6 in 8). 24 703 / 18 x 8 = 10 979 passes in 5000 frames:
 **2.2 passes a frame**.
@@ -301,8 +309,8 @@ How to read it:
 - The jump to the music's code at `$C000` in the middle is the interrupt, which lands wherever the loop is.
 
 The point: the loop draws as fast as the CPU allows. On a slower machine (a 48K with contended memory) the stars fall
-and the rhombi turn more slowly, while the music, the twinkle and the cursor, which the interrupt drives, keep their
-speed.
+and the rhombi turn more slowly (known only from the code, 4.8), while the music, the twinkle and the cursor, which the
+interrupt drives, keep their speed.
 
 ## 4.5 The interrupt
 
@@ -317,7 +325,7 @@ interrupt:
     Frames = Frames + 1                         # the ROM's FRAMES $5C78, 16 bits
     TwinkleClock = TwinkleClock + 2
     TwinkleStar()                               # doc 6, 6.5
-    LogoGlint()                                 # Frames low 0-63 only, doc 6, 6.6
+    LogoGlint()                                 # draws on Frames low 0-52 only, doc 6, 6.6
     if Frames bits 0-1 = 3:                     # every 4th frame
         paint the cursor's cells with CursorAttr, step CursorAttr      # doc 5, 5.4
     low = Frames low byte
@@ -388,7 +396,7 @@ flowchart TD
     S --> M["MusicPlay $C00E"]
     M --> F["Frames + 1, TwinkleClock + 2"]
     F --> T["TwinkleStar"]
-    T --> G["LogoGlint: Frames low 0-63"]
+    T --> G["LogoGlint: Frames low 0-52"]
     G --> C{"Frames bits 0-1 = 3?"}
     C -->|yes| P["paint the cursor, next CursorAttr"]
     C -->|no| R
@@ -443,7 +451,8 @@ How to read it:
 - The blue base of every bar is the music: 6549-11 593 T, 6938 T on average.
 - The red steps are the twinkle: about 4 000 T on the frames that draw (every 4th, while a twinkle shows), about
   100 T on the others.
-- The purple steps on the even frames 2-54 are the glint, 4 488 T each.
+- The purple steps on the even frames 2-52 are the glint (26 steps), 4 488 T each; Frames 0 paints the two corner
+  cells.
 - The four tall yellow bars are the spin at 50, 60, 70 and 80: 29 740-29 773 T for 8 letters. The bar at 90 is the
   copy only (2 539 T).
 - The orange tops every 8th frame are the keys: 3 668 T when no key is held.
@@ -455,7 +464,7 @@ The handler's own frame of work, by part, over the whole cycle:
 | the music | 1 776 125 | 6 938 | all |
 | the twinkle | 339 134 | 1 325 | all (draws on 1 in 4) |
 | the spin | 144 914 | 566 | 50, 60, 70, 80, 90 |
-| the glint | 138 596 | 541 | 0-63 (draws on the even ones 2-54) |
+| the glint | 138 596 | 541 | 0-63 (draws on the even ones 2-52) |
 | the keys | 117 376 | 459 | 32 (bits 0-2 = 7) |
 | the cursor's colour | 54 195 | 212 | 64 (bits 0-1 = 3) |
 | saving and restoring, the tests | 118 418 | 463 | all |
@@ -466,16 +475,19 @@ the four spin frames are heavy; the main loop, which has no deadline, absorbs th
 
 ### Where interrupts are off
 
-| Where | Why |
-| --- | --- |
-| Start `$61C8-$61ED` | the IM 2 table is built and DrawScreen draws the screen it saves as ScreenCopy |
-| DrawReflection `$6DDE-$6E33` | the handler's twinkle and glint restore from ScreenCopy: they must not read a half-printed copy |
-| SPACE, in ReadKeyboard `$6908-$690F` | `DI`, `IM 1` around the TR-DOS read, then `DI`, `IM 2` again |
-| the launch, RunLetter `$6AD9` | `IM 1`, `EI` for BASIC ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
+| Where | How long | Why |
+| --- | --- | --- |
+| Start `$61C8-$61ED` | DrawScreen, c1 frames 532-536 | the IM 2 table is built and DrawScreen draws the screen it saves as ScreenCopy |
+| DrawReflection `$6DDE-$6E33` | about 78 000 T, more than a frame | the handler's twinkle and glint restore from ScreenCopy: they must not read a half-printed copy |
+| the handler itself `$6757-$6847` | 7 352-45 755 T a frame; SPACE and the launch much longer | the IM 2 acknowledge clears IFF, and the only `EI` is at `$6846` |
+| SPACE, in ReadKeyboard `$68F4-$6914`, inside the handler | the TR-DOS read and ShowCatalogue, several frames | the `DI` at `$6908` and `$690E` only guard against TR-DOS's own `EI`: `IM 1` around the read, then `IM 2` again |
+| the launch, inside the handler (FireKey and RunLetter are called only from ReadKeyboard) | line 1, PlayBell, ExitFade: c2 frames 3763-3785 (ExitFade 1 564 652 T) | interrupts come back on at RunLetter's `IM 1`, `EI` (`$6AD9`, `$6ADB`) for BASIC ([doc 10, 10.4](10-launcher-and-notes.md#104-what-is-put-back)) |
 
-The point: the menu runs with interrupts on except where the handler would read a buffer that is being written, or
-where TR-DOS and BASIC need the ROM's IM 1. Witness: c1 frame 890 has no interrupt (DrawReflection's copy), so
-Frames does not change from the end of frame 890 to the end of 891.
+The point: the menu runs with interrupts on except where the handler would read a buffer that is being written, and
+everything the keys start runs inside the handler itself, with no interrupt: a new disk's catalogue and the whole
+launch. Witnesses: DrawReflection's DI section is longer than a frame, so c1 loses two interrupts (the ones due at the
+ends of frames 888 and 889): Frames stays `$015A` from frame 888 T 10 000 to frame 891 T 0, and is `$015B` at 891
+T 10 000. And c2's last interrupt is at frame 3763: the bell and the fade that follow run inside it.
 
 ## 4.6 The cost per frame
 
@@ -527,8 +539,9 @@ How to read it:
 - PrintSprite (the rhombi) takes 16.6 %; the music player's routines 9.6 % together.
 - RotateCursorName, the spin, is 1.1 %: heavy on its four frames, cheap over the cycle. ReadKeyboard is 0.64 %.
 
-The point: the menu is a star-field demo with a file list. 90 % of the CPU draws stars and rhombi, and a frame has
-room for 2.2 passes of it.
+The point: the menu is a star-field demo with a file list. About 85 % of the CPU draws stars and rhombi (MoveStars,
+SampleStar, PrintSprite, MainLoop and PrintRombPhase's own T; the footer's "game 90.4 %" is everything but the music,
+the handler's work included), and a frame has room for 2.2 passes of it.
 
 ## 4.7 Timers and delays
 
@@ -537,15 +550,15 @@ Every speed of the menu, from the code and measured:
 | What | Driven by | Rate | Witness |
 | --- | --- | --- | --- |
 | the music | the interrupt, every frame | 50 ticks a second | c1: MusicPlay 7274 calls in 7275 interrupts |
-| the keys | the interrupt, Frames bits 0-2 = 7 | every 8 frames: 6.25 reads a second; a held key repeats at that rate | c1: ReadKeyboard 909 calls in 7275 interrupts |
+| the keys | the interrupt, Frames bits 0-2 = 7 | every 8 frames: 6.25 reads a second; a held key repeats at that rate; from the first interrupts of the set-up | c1: ReadKeyboard 909 calls in 7275 interrupts, the first at frame 549 |
 | the cursor's colour | the interrupt, Frames bits 0-1 = 3 | a new attribute every 4 frames; a round of 12 in 48 frames | c2 frames 1500-1556, CursorAttr `$B3BF` ([doc 5, 5.4](05-keys.md#54-the-cursor)) |
-| the glint | Frames low 0-54 | a step every 2 frames, once every 256 frames; the top logo and the reflection in turn | c1 frames 1055-1112 ([doc 6, 6.6](06-graphics.md#66-the-glint)) |
+| the glint | Frames low 0-52 | the corner cells at 0, then 26 steps on the even frames 2-52, once every 256 frames; the top logo and the reflection in turn (each every 512) | c1 frames 1055-1112 ([doc 6, 6.6](06-graphics.md#66-the-glint)) |
 | the name's spin | Frames low 50, 60, 70, 80, 90 | a quarter turn every 10 frames, once every 256 frames (5.12 s) | c1 frames 1106-1146 ([doc 8, 8.5](08-font-and-text.md#85-the-name-spin)) |
-| the twinkle | TwinkleClock `$DEAC`, + 2 a frame | a new frame every 4 frames, 8 frames a twinkle, then 8 frames erased: 39 frames a twinkle | c1 idle: DrawTwinkle 2053 calls in 5000 frames ([doc 6, 6.5](06-graphics.md#65-the-twinkle)) |
+| the twinkle | TwinkleClock `$DEAC`, + 2 a frame | 8 pictures over 31 frames (one every 4, the clock 0 to `$3E`), then 8 frames held by TwinklePause and erased: 39 frames, 16 DrawTwinkle calls a twinkle (5000 / 39 x 16 = 2051) | c1 idle: DrawTwinkle 2053 calls in 5000 frames ([doc 6, 6.5](06-graphics.md#65-the-twinkle)) |
 | the near stars | the main loop, every 2nd pass | 1 row a pass: a screen (192 rows) in about 87 frames, 1.7 s | c1 idle, 2.2 passes a frame |
 | the far stars | the main loop, every 4th pass | 1 row in 4 passes: a screen in about 349 frames, 7 s | the same |
 | a top rhombus's turn | the main loop, every 4th pass | 32 steps in 128 passes: about 58 frames, 1.2 s | the same |
-| a bottom rhombus's turn | the main loop, every 8th pass | 32 steps in 256 passes: about 116 frames, 2.3 s | the same |
+| a bottom rhombus's turn | the main loop, every 8th pass | 32 steps in 256 passes: about 117 frames, 2.3 s | the same |
 
 The point: the rows driven by the interrupt keep their speed on every machine; the rows driven by the main loop change
 with the CPU's speed and with what the interrupt leaves of each frame.
@@ -557,6 +570,8 @@ with the CPU's speed and with what the interrupt leaves of each frame.
 - The `IM 1` path of the launch and of SPACE: seen in c2 (the launch at frame 3785) and c1 (SPACE at frame 6430), but
   whether TR-DOS lets an interrupt in during its read is not visible in the traces taken here.
 - A 48K with contended memory: the main loop's speed there is inferred from the cost table, not measured.
+- A key pressed during the set-up (frames 549-890): the handler reads it, and a launch would run RunLetter with the
+  phase build or DrawReflection interrupted; read from the code only, no recording presses a key then.
 
 ## 4.9 The point
 

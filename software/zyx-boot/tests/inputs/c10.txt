@@ -1,0 +1,15 @@
+# c10: variant zyxisl (build/variants/zyxisl/variant.scl) booted as c1: after the menu's pieces the loader reads the
+# two RLE pictures to $C350 and unpacks the first; SPACE shows the second, SPACE again runs the menu (doc 13, 13.9).
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++700 SPACE
++10 -
++200 SPACE
++10 -
++300 END

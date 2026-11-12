@@ -193,6 +193,8 @@ The phase is PhaseOrder[(BC)], its sprite DE + 256 x phase; PrintSprite `$64F4`.
 
 Witness: L1 20744 (c x4).
 
+[Animation: `PrintRombPhase` at work](img/routines/PrintRombPhase.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 11,424 calls, 1,680,069 t-states own (0.30 %) |
@@ -261,6 +263,8 @@ The table's address is the operand of the LD IX at `$6482` (MainLoop writes it).
 
 Witness: L1 62246 (c x4).
 
+[Animation: `MoveStars` at work](img/routines/MoveStars.gif)
+
 | | |
 | --- | --- |
 | Runs (c1: the original disk from power-on, the menu idle (NO EXE FILES !), SPACE) | 34,273 calls, 222,767,059 t-states own (39.97 %) |
@@ -274,9 +278,11 @@ Witness: L1 62246 (c x4).
 
 **The twinkle at each frame: new randoms at TwinkleClock 0, erase at the end of a twinkle, a frame every 4th frame**
 
-TwinkleClock `$DEAC` (+2 a frame; 32 frames a twinkle plus the 7 held frames at `$3E`: 39 frames a twinkle, 156 a round of 4): 0: NewRandoms `$6BAB`. Bits 0-5 = `$3E` (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause `$DEB0` counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle `$6BFD`.
+TwinkleClock `$DEAC` (+2 a frame; 32 frames a twinkle plus the 7 held frames at `$3E`: 39 frames a twinkle, lit 30 and dark 9, 156 a round of 4): 0: NewRandoms `$6BAB`. Bits 0-5 = `$3E` (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause `$DEB0` counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle `$6BFD`.
 
 Witness: L1 13931 (c x4).
+
+[Animation: `TwinkleStar` at work](img/routines/TwinkleStar.gif)
 
 | | |
 | --- | --- |
@@ -468,7 +474,7 @@ Witness: L1 8 (c x4).
 
 **1, 2, 6, 7: move the cursor to the other column (two columns only)**
 
-From column 1 to column 2 the cursor keeps its row, but from column 1's last file it goes to column 2's first when the columns differ in length (13-23 files odd); from column 2 to column 1 it keeps the row.
+From column 1 to column 2 the cursor keeps its row, but from column 1's last file, when column 2 is one shorter (13-23 files odd), it goes to column 1's first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1 it keeps the row.
 
 Witness: L1 2 (c x1).
 
@@ -503,7 +509,7 @@ Witness: L1 8 (c x1).
 
 ### `DownKey` (`$69C0`)
 
-**3, 8: the cursor down one file (B = 0), wrapping from the column's end to the other column or the top**
+**3, 8: the cursor down one file (B = 0), wrapping from the column's last file to its first**
 
 Witness: L1 4 (c x1).
 
@@ -515,7 +521,7 @@ Witness: L1 4 (c x1).
 
 ### `MoveCursor` (`$69C3`)
 
-**Move the cursor down (B = 0) or up (B = 1), from column to column at the ends**
+**Move the cursor down (B = 0) or up (B = 1), wrapping within its column; nothing with a single file**
 
 Puts back the old cells' attribute first. The positions run down column 1 (CursorIndex 1 to ColumnOneCount) and on down column 2.
 
@@ -792,9 +798,11 @@ Witness: L1 2 (c x2).
 
 **Frames 0-63 of every 256: the glint across the logo or its reflection**
 
-At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 53 a glint step: 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells `$6D6A`) and three cells red, bright red, red drawn (DrawGlintRow `$6D8A`), mirrored about the screen's centre, the row above one cell further on.
+At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 52 a glint step (26 steps): 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells `$6D6A`) and three cells red, bright red, red drawn (DrawGlintRow `$6D8A`), mirrored about the screen's centre, the row above one cell further on.
 
 Witness: L1 13931 (c x4).
+
+[Animation: `LogoGlint` at work](img/routines/LogoGlint.gif)
 
 | | |
 | --- | --- |

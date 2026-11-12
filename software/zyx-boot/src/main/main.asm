@@ -20,7 +20,7 @@ Chars          EQU $5C36  ; ROM variable CHARS: the font's address - 256
 Frames         EQU $5C78  ; ROM variable FRAMES: the menu's interrupt counter (Interrupt $6757 adds 1, the menu resets it)
 LaunchToken    EQU $5D4C  ; in the BASIC: line 1's command token (src/basic: LaunchLine)
 SavedIY        EQU $AFC8  ; IY at the entry (the ROM's $5C3A), put back for every ROM call
-SavedHLAlt     EQU $AFCA  ; HL' at the entry, which the ROM's interrupt handler needs, put back for every ROM call
+SavedHLAlt     EQU $AFCA  ; HL' at the entry, which BASIC needs unchanged when the USR returns, put back for every ROM call
 SavedSP        EQU $AFCC  ; SP at the entry: the launcher returns to the loader with it
 SavedI         EQU $AFCE  ; I at the entry
 MainTick       EQU $B3B0  ; the main loop's pass counter

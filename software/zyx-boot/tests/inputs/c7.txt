@@ -1,0 +1,14 @@
+# c7: variant zyxermbt (build/variants/zyxermbt/variant.scl) booted as c1: its loader reads IntroPicture to $7530 and
+# runs it (the LZ depacker draws the loading picture), then the menu (NO EXE FILES !). SPACE then re-reads the
+# catalogue: SoundOff writes the 14 bytes at $7530, which here are IntroPicture's code, not zeros (doc 13, 13.7).
+0 cs 7
+6 -
+14 ENTER
+20 -
+144 R
+150 -
+160 ENTER
+166 -
++1200 SPACE
++10 -
++400 END

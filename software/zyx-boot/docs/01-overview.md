@@ -16,8 +16,10 @@ The recordings (WALKTHROUGH 1, Pentagon 128K, the disk booted from power-on), re
 | c1 | `orig/boot.scl`: only `boot` | NO EXE FILES !; SPACE at frame 6430 |
 | c2 | `tests/disks/many.scl`: `boot`, 30 BASIC programs T01-T30, `magic` (CODE, 192 sectors), `data` (CODE, 2 sectors) | SS, SS, CS, the cursor keys, ENTER on T03 |
 | c3 | the same | SS, then F on page 2: T30 |
+| c5 | `tests/disks/deep.scl`: `boot`, T01-T52 (T05 deleted), `magic` | SS, SS (page 3), then D: `magic` |
 
-The point: c1 is the disk as found, an empty menu; c2 and c3 fill it with 31 listable names, enough for two pages.
+The point: c1 is the disk as found, an empty menu; c2 and c3 fill it with 31 listable names, enough for two pages;
+c5 has 52, three pages.
 
 ## 1.1 What the boot is for
 
@@ -44,9 +46,10 @@ The menu lists two kinds of file: BASIC programs, and CODE files of exactly 192 
 BASIC's line 1 and returns; BASIC goes on with `RUN`, and line 1 has TR-DOS load the file
 ([doc 3, 3.4](03-build-and-load.md#34-how-the-menu-runs-a-file), [doc 10](10-launcher-and-notes.md)).
 
-Worked example, c2: the user presses ENTER on T03 at frame 3763. The menu rings the bell, fades the screen out
-(frames 3763-3785), puts the name `T03` into line 1 and returns; TR-DOS loads T03, which prints `TEST 03` (on the
-screen by frame 3790).
+Worked example, c2: the user presses ENTER on T03 at frame 3763. The menu writes the name `T03` into line 1, rings
+the bell, fades the screen out (frames 3763-3785) and returns. The Loader clears its memory again (to about frame
+3796), BASIC runs line 1, and TR-DOS loads T03, which prints `TEST 03` (on the screen by frame 3865: the first pixel
+row of the text, `$4100`, is still zero at frame 3860).
 
 The point: the menu is a front end to TR-DOS's own `RUN "name"`. It adds a list and a key per file, and leaves the
 loading to TR-DOS.
@@ -76,19 +79,20 @@ decoration and never collide with a name, because a star puts back what it cover
 
 ![Every screen of ZYX boot](img/overview/screens.png)
 
-*Ten moments of c1 and c2, read with TTD `memory_at` at the end of each named frame; from `tools/fig_overview.py`
-(the command under the layout figure).*
+*Ten moments of c1 and c2, read with TTD `memory_at` at the start (T 0) of each named frame; from
+`tools/fig_overview.py` (the command under the layout figure).*
 
 How to read it, picture by picture:
 
 1. **The set-up** (c1 850). DrawScreen has drawn the screen at frames 532-536: the logo, the rhombi in phase 0, the
    help lines (SPACE, SS, CS; the quote prints as a wave in the menu's font), NO EXE FILES !. The rhombi do not turn
-   yet: the program is still building their phases ([doc 4, 4.3](04-program-cycle.md#43-the-set-up)). The text is
-   caught mid-spin.
+   yet: the phases are built (by frame 697), and the program is now drawing the reflection (DrawReflection's
+   FlipSprites, frames 824-888); the main loop has not started ([doc 4, 4.3](04-program-cycle.md#43-the-set-up)). The
+   text is caught mid-spin.
 2. **The menu idle** (c1 1000). From frame 890 the reflection covers the help lines for good; the stars fall, the
    rhombi turn; NO EXE FILES ! in the cursor's colour.
-3. **The glint** (c1 1075). Two red diagonals cross the logo, once every 256 frames
-   ([doc 6, 6.6](06-graphics.md#66-the-glint)). Here the twinkle shows too, left of the text.
+3. **The glint** (c1 1075). Two red diagonals cross the logo or its reflection in turn, one of them every 256 frames
+   (each one every 512) ([doc 6, 6.6](06-graphics.md#66-the-glint)). Here the twinkle shows too, left of the text.
 4. **The spin** (c1 1110). Every letter of the cursor's text lies on its side: four quarter turns every 256 frames
    ([doc 8, 8.5](08-font-and-text.md#85-the-name-spin)).
 5. **Page 1** (c2 1500). 24 of the 31 names in two columns, A-L and M-X, BASIC in green.
@@ -100,8 +104,9 @@ How to read it, picture by picture:
    is black.
 10. **The program** (c2 4300): TR-DOS has run T03, which prints `TEST 03`.
 
-The point: the user sees the full screen at frame 536 (10.7 s after power-on, most of it TR-DOS reading the disk), but
-the menu answers keys only from frame 890: the 7 s between are the rhombus and reflection set-up.
+The point: the user sees the full screen at frame 536 (10.7 s after power-on, most of it TR-DOS reading the disk),
+and the menu reads the keys from frame 549, as soon as the interrupt runs; it only looks finished at frame 890: the
+7 s between are the rhombus and reflection set-up, and a key pressed then acts at once.
 
 The menu idle in motion:
 
@@ -113,7 +118,8 @@ The menu idle in motion:
 How to read it:
 
 - The near stars (2 x 2 pixels) fall about 2 rows a frame, the far ones (1 pixel) a quarter as fast.
-- The top rhombi turn twice as fast as the bottom ones: a top turn takes 1.2 s, a bottom one 2.3 s.
+- The top rhombi turn twice as fast as the bottom ones: a top turn takes about 58 frames (1.2 s), a bottom one about
+  117 (2.3 s; [doc 4, 4.7](04-program-cycle.md#47-timers-and-delays)).
 
 The point: everything that moves in the idle menu is decoration; the list itself never changes until a key is
 pressed.
@@ -159,8 +165,10 @@ are read every 8th frame, so a held key repeats 6 times a second.
 
 ## 1.5 Known only from the code
 
-- A disk with more than 48 listable files (three pages): the test disks reach two pages; that SS goes on page by page
-  is read from the code ([doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages)).
+- A disk with more than 72 listable files (four pages): c5 shows page 3 (drawn by frame 2185, T50-T52 and `magic`);
+  that SS goes on past it page by page is read from the code ([doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages)).
+- A key pressed during the set-up (frames 549-890): the interrupt reads it, and what a launch then does is read from
+  the code; no recording presses one.
 - The screen on a machine other than a Pentagon: the decoration's speed depends on the CPU's
   ([doc 4, 4.7](04-program-cycle.md#47-timers-and-delays)); not recorded.
 

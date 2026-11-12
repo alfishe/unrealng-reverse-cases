@@ -1,8 +1,8 @@
 # The annotations of the BASIC sector (kit/mkgame.py --part src/basic/basic.json). Format: ../../../../docs/ann-format.md.
 #
 # The image: sector 0 of the file boot (orig/boot.scl, file 0: B, start 180, length 180, 46 sectors), 256 bytes at
-# PROG $5D3B, where TR-DOS's RUN "boot" loads the program (the whole file: 46 sectors, only the program's 180 bytes are
-# BASIC). The other 45 sectors are the menu's code, graphics and music, which the loader in line 4 reads from the disk
+# PROG $5D3B, where TR-DOS's RUN "boot" loads the program: only the program's 180 bytes and the 4-byte autostart mark
+# ($5D3B-$5DF2); TR-DOS leaves TrdosNextSector $5CF4 at the next sector (c1 frame 446: 01 01). The other 45 sectors are the menu's code, graphics and music, which the loader in line 4 reads from the disk
 # itself (docs/03-build-and-load.md).
 # Line 10 runs first (the autostart): CLEAR 65347, RANDOMIZE USR 23936 (the loader at $5D80), then RUN, which starts
 # the program again at line 1 and so runs the TR-DOS command the menu's launcher wrote into line 1.
@@ -63,6 +63,6 @@ $5DEF b AutostartMark 4 ; The program's end ($80) and TR-DOS's autostart mark: $
 > TR-DOS writes the line number after $AA when a program is saved with LINE; RUN "boot" starts the program there.
 @res basic/line-ten.bin
 
-$5DF3 b SectorTail 8 ; The sector's leftover bytes after the program: not loaded as BASIC, not read
-> 72 bytes that were in memory after the program when it was saved: `oot27" LINE 10` reads like the end of a `SAVE "boot27" LINE 10` statement, followed by number bytes and zeros. TR-DOS loads them to $5DF3-$5E3A with the program, but BASIC never reads them; the build reproduces them because the file holds them. A resource (spare/basic-tail.bin, bytes): in most variants they name another SAVE (`boot12`, `boot32`).
+$5DF3 b SectorTail 8 ; The sector's leftover bytes after the program: not loaded, not read
+> 72 bytes that were in memory after the program when it was saved: `oot27" LINE 10` reads like the end of a `SAVE "boot27" LINE 10` statement, followed by number bytes and zeros. TR-DOS does not load them (it loads only the program and the autostart mark, $5D3B-$5DF2: at c1 frame 446 $5E07-$5E3A are zeros), and the Loader starts at the next sector, so they stay on the disk; the build reproduces them because the file holds them. A resource (spare/basic-tail.bin, bytes): in most variants they name another SAVE (`boot12`, `boot32`).
 @res spare/basic-tail.bin

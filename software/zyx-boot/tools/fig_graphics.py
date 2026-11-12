@@ -221,8 +221,7 @@ def fig_twinkle(img64):
     scale = 10
     out, d = Z.canvas(16 * scale + 250)
     Z.title(d, 'The twinkle: TwinkleSprites $6F60, four 16 x 16 frames ORed onto the screen',
-            'a twinkle: frames 0 1 2 3 3 2 1 0, one every 4 interrupts (32 frames), then erased and held for 8 '
-            'frames; 39 frames a twinkle')
+            'frames 0 1 2 3 3 2 1 0, one every 4 interrupts: lit 30 frames, then 9 dark (erased at $3E, held 8): 39')
     f = Z.font(13)
     for i in range(4):
         data = img64[TWINKLE + 32 * i:TWINKLE + 32 * i + 32]
@@ -236,7 +235,7 @@ def fig_twinkle(img64):
     for i, s in enumerate(seq):
         x = 20 + i * 120
         d.rectangle([x, y + 22, x + 112, y + 60], fill=(30, 30, 40), outline=(70, 70, 90))
-        d.text((x + 6, y + 26), f'clock ${i * 8 + 2:02X}-${i * 8 + 8:02X}', fill=Z.DIM, font=Z.font(11))
+        d.text((x + 6, y + 26), f'clock ${i * 8 + 2:02X}-${min(i * 8 + 8, 0x3C):02X}', fill=Z.DIM, font=Z.font(11))
         d.text((x + 6, y + 42), f'frame {s}', fill=(240, 220, 80), font=f)
     d.text((20, y + 70), 'bits 3-4 of the clock pick the frame, bit 5 counts it back down; bits 6-7 pick one of the '
                          'four places in Randoms $ADEC.', fill=Z.DIM, font=Z.font(12))
@@ -309,10 +308,10 @@ def fig_screencopy(mem, frame):
     y = 70 + 192 * big + 26
     out.paste(diff, (10, y))
     n = sum(1 for yy in range(192) for xx in range(256) if pd[xx, yy] == (255, 80, 60))
-    d.text((280, y + 10), f'the difference: {n} pixels (red), all of them', fill=Z.TEXT, font=f)
+    d.text((280, y + 10), f'the difference: {n} pixels (red) whose colour differs', fill=Z.TEXT, font=f)
     d.text((280, y + 30), 'the stars, the rhombi in their current phase', fill=Z.DIM, font=f)
     d.text((280, y + 48), '(ScreenCopy keeps phase 0 of each), the twinkle', fill=Z.DIM, font=f)
-    d.text((280, y + 66), 'and the cursor colour.', fill=Z.DIM, font=f)
+    d.text((280, y + 66), 'and the cursor colour (the text is in both).', fill=Z.DIM, font=f)
     d.text((280, y + 96), 'drawn by tools/fig_graphics.py (TTD memory_at)', fill=Z.DIM, font=Z.font(12))
     Z.save(out, 'docs/img/graphics/screencopy.png')
 

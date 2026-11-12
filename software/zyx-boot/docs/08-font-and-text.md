@@ -70,12 +70,13 @@ How to read it:
 - The lines appear at rows 19, 20 and 21, a character at a time; the map shows Font `$A600-$A8FF` read, 8 bytes per
   character.
 
-The point: the ROM's printer costs about 91 000 T for the 54 characters and 14 control bytes of the help lines,
+The point: the ROM's printer costs about 91 000 T for the 54 characters and 13 control bytes of the help lines,
 some 1 700 T a character, but it needs no code of the menu's own. It is used only when a page is drawn, never per
 frame.
 
-Witness: PrintString from c1 frame 533 T 11 344 to frame 534 T 30 837 (the trace of those frames); Chars `$5C36`
-reads `$3C00` at the end of frame 533 and `$A500` at the end of frame 534 (TTD `memory_at`).
+Witness: PrintString from c1 frame 533 T 11 344 to frame 534 T 30 837 (the trace of those frames). Chars `$5C36`
+holds `$3C00` at the start of frame 533 (the trace `533:0-537:0` begins at T 20 with it) and `$A500` from T 11 321 of
+frame 533, when DrawScreen's `LD (Chars),HL` at `$6572` writes `00 A5`, 43 T before PrintString starts.
 
 ## 8.2 The font
 
@@ -174,7 +175,7 @@ Each name is printed from EntryLine `$B3CE`, a 22-byte line that PrintColumn `$6
 | 21 | `FF` | the end |
 
 ```text
-PrintColumn(HL = the first entry, B = row, C = column, D = count, E = the first letter):
+PrintColumn(HL = the first entry, B = column, C = row, D = count, E = the first letter):
     EntryLine[1..2] = row, column
     for each of D listed entries:
         EntryLine[12] = 4 (BASIC) or 6 (CODE); EntryLine[13..20] = the name, unprintable bytes as "."
@@ -291,7 +292,7 @@ How to read it:
 
 - Frame 1106 (Frames 50): every letter lies on its side.
 - 1116: upside down; 1126: on its other side; 1136: upright again. Each pose holds for 10 frames.
-- The glint's last steps (to Frames 54) show on the logo at the start.
+- The glint's last steps (to Frames 52) show on the logo at the start.
 
 The point: the spin turns each letter in its own cell, not the word: the word stays readable in its place, and the
 letters tumble.

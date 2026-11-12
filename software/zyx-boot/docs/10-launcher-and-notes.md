@@ -4,7 +4,7 @@ What this covers:
 
 - the chain from a key to the chosen program running (10.1);
 - RunLetter: the catalogue walk, the deleted marks, the command it writes into line 1 (10.2);
-- the keys that lead to it: a letter, or ENTER on the cursor (10.3);
+- the keys that lead to it: a letter, or ENTER, 5 or 0 on the cursor (10.3);
 - what is put back before the menu returns: SP, IY, HL', I, CHARS, FRAMES, IM 1 (10.4);
 - the bell and ExitFade, the screen's fade (10.5);
 - the loader's end and TR-DOS running the file (10.6);
@@ -21,6 +21,8 @@ reopened from their TTD sessions on this writer's own instance (port base 37450,
 - c2: `tests/disks/many.scl`: ENTER on T03 (the cursor on the third file of page 1) at frame 3763;
 - c3: `tests/disks/many.scl`: SYMBOL SHIFT at frame 1879 (page 2), then F at frame 2182: T30 runs;
 - c4: `tests/disks/noexe.scl`: NO EXE FILES !, then A (frame 1879) and ENTER (frame 1983), which do nothing.
+- c5: `tests/disks/deep.scl`: two SYMBOL SHIFTs to page 3, then D at frame 2490: `magic`, the GO TO ... CODE path (10.6,
+  10.8); made at the integration.
 
 c3 has traces of the launch: `2182:9000-2182:15800` (RunLetter) and `2182:15700-2205:0` (ExitFade).
 
@@ -235,8 +237,9 @@ Two ways reach RunLetter, both from ReadKeyboard in the interrupt ([doc 5](05-ke
 
 - **a letter key**: ReadKeyboard scans the 24 letters A-X with KeyTable `$6B53` and calls RunLetter with C = the
   letter's code, `$41`-`$58`;
-- **ENTER (or the joystick's fire, never read: 10.7)**: FireKey `$6A3F` returns if the page has no files
-  (ColumnOneCount OR ColumnTwoCount is 0), else it sets C = CursorIndex + `$40` and falls into RunLetter.
+- **ENTER, 5 or 0** (5 and 0 are the fire of the two Sinclair joysticks, `$689E` and `$68A6`; the Kempston fire at
+  `$68CC` is never read, 10.7): FireKey `$6A3F` returns if the page has no files (ColumnOneCount OR ColumnTwoCount is
+  0), else it sets C = CursorIndex + `$40` and falls into RunLetter.
 
 ```text
 FireKey():
@@ -260,7 +263,7 @@ FireKey():
 ```mermaid
 flowchart LR
     L["letter key A-X"] -->|"C = $41-$58"| R["RunLetter"]
-    E["ENTER"] --> F["FireKey"]
+    E["ENTER, 5 or 0"] --> F["FireKey"]
     F -->|"no files"| N["KeyDone: nothing"]
     F -->|"C = CursorIndex + $40"| R
     R -->|"letter past FileCount"| N2["RET: nothing"]
@@ -286,7 +289,7 @@ IY, HL', SP and I. RunLetter puts them back, with two system variables, and leav
 
 | What | Value in c3 | Why |
 | --- | --- | --- |
-| FRAMES `$5C78` | 0 | the menu used it as its clock (the cursor spin, the twinkles); the launched program finds it at 0 |
+| FRAMES `$5C78` | 0 | the menu used it as its clock (the cursor spin, the twinkles); from the EI on the ROM's interrupt counts it again, so the launched program finds it counting from the launch (`$15`, 21, when T30 starts in c3, 10.6) |
 | I | SavedI `$AFCE` = `$00` | the menu set I = `$FD` for its IM 2 table |
 | HL' | SavedHLAlt `$AFCA` = `$2758` | the 48K ROM expects HL' = `$2758` when BASIC resumes |
 | IY | SavedIY `$AFC8` = `$5C3A` | the ROM's interrupt and BASIC address the system variables through IY |
@@ -294,8 +297,10 @@ IY, HL', SP and I. RunLetter puts them back, with two system variables, and leav
 | CHARS `$5C36` | `$3C00` | the ROM's font (the menu printed with its own, [doc 8](08-font-and-text.md)) |
 | the interrupt mode | IM 1, EI | the ROM's interrupt at `$0038`; the IM 2 table and Im2Jump are about to be cleared |
 
-The order matters at the end: IM 1 comes before EI and the `RET`. The loader clears `$61A8-$FEAF` after the menu
-returns, which wipes Im2Table `$FD00` and Im2Jump `$FCFC`; in IM 2 the next interrupt would jump through zeros.
+The order matters at the end: IM 1 must come before EI. I already holds its saved value (`$00` in c3, from `$6ABF`), so
+an IM 2 interrupt would no longer use the menu's table at `$FD00`: it would vector through the ROM's word at
+I x 256 + `$FF`, `$00FF`. The menu's table would not help either: the loader clears `$61A8-$FEAF` after the menu
+returns, Im2Table `$FD00` and Im2Jump `$FCFC` with it.
 
 ```text
 6AB6  21 00 00     LD HL,$0000
@@ -333,8 +338,9 @@ lands in the loader.
 Witness: the c3 trace `2182:9000-2182:15800` (the registers in the animation); `memory_at` on c3 of `$AFC8-$AFCE`
 and `$FF2A` at frame 2183; `build/basic.lst` for the `CALL` at `$5DB4`.
 
-The point: the menu borrows the machine and returns it as it found it: the only lasting changes are line 1 and the
-bell still ringing.
+The point: the menu borrows the machine and returns it as BASIC expects it. The lasting changes are line 1, the bell
+still ringing (the AY holds ExitSound's registers), a black bitmap under the menu's colours (ExitFade, 10.5) and
+`$61A8-$FEAF` zeroed by the loader (10.6).
 
 ## 10.5 The bell and ExitFade
 
@@ -514,23 +520,39 @@ by hand.
 - ENTER becomes a letter: FireKey adds `$40` to the cursor's index and falls into RunLetter (10.3).
 - The launch is a BASIC line saved with the program and patched in three places; TR-DOS does the loading (10.6).
 - SoundOff silences the AY by writing 14 bytes from `$7530`, a part of the code file's never-loaded gap that the loader
-  zeroes ([doc 9, 9.9](09-music-and-sound.md#99-soundoff-and-playbell)).
+  zeroes ([doc 9, 9.9](09-music-and-sound.md#99-soundoff-and-playbell)). It holds for the original's loader only:
+  zyxermbt loads code there and its SoundOff buzzes ([doc 13, 13.7](13-variants.md#137-the-own-loaders)).
 - The player writes R13 only when a pattern sets a shape, keeping `$FF` as "none" in the same byte
   ([doc 9, 9.7](09-music-and-sound.md#97-channelsound-and-writeay-the-registers)).
 
 **Bugs and quirks.**
 
-| What | Where | Effect |
-| --- | --- | --- |
-| the Kempston read is `LD A,$00` | Joystick `$68B9` | the five `CALL C` after it never call: no joystick (variants with `IN A,($1F)` read it) |
-| `LD E,$FF` before IsBootFile | `$6A62` | redundant: IsBootFile sets E itself |
-| ColumnsSpare `$B3BA` | ListCatalogue | cleared with Columns, never read |
-| the keys are read inside the interrupt | ReadKeyboard | a page draw or the launch runs with interrupts off: 8 frames lost per page, 22 for the fade |
-| MusicStop is never called | `$C011` | the music is never stopped; the bell replaces it |
-| the length test is "exactly 192 sectors" | `$65EC`, `$6A7A` | a CODE file of any other size is not listed; Vadim's comment says "length >= C000" |
-| a page in patterns 6-9 | SoundOff | R13 = 0 cuts the envelope until the next pattern (known only from the code: [doc 9, 9.11](09-music-and-sound.md#911-known-only-from-the-code)) |
-| the position rule | PlayFrame `$C117` | a position ends when the last events are read, not finished: the first tune loop is 7704 frames, later ones 7764 ([doc 9, 9.4](09-music-and-sound.md#94-playframe-the-delay-the-rows-and-the-next-position)) |
-| no "previous page" | ReadKeyboard | CAPS SHIFT goes to the first page, not one back ([doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages)) |
+| What | Where | Code | Effect |
+| --- | --- | --- | --- |
+| the Kempston read is `LD A,$00` | Joystick `$68B9` | `68B9 3E 00 LD A,$00` (not `IN A,($1F)`) | the five `CALL C` after it never call: no joystick (variants with `IN A,($1F)` read it) |
+| `LD E,$FF` before IsBootFile | `$6A62` | `6A62 1E FF LD E,$FF` | redundant: IsBootFile sets E itself |
+| ColumnsSpare `$B3BA` | ListCatalogue | `6603 22 BA B3 LD (ColumnsSpare),HL` | cleared with Columns, never read |
+| the keys are read inside the interrupt | ReadKeyboard | `6834 CC 64 68 CALL Z,ReadKeyboard` (in the IM 2 handler) | a page draw or the launch runs with interrupts off: 8 frames lost per page, 22 for the fade |
+| MusicStop is never called | `$C011` | `C011 C3 95 C0 JP Silence` (no `CALL`/`JP` to it) | the music is never stopped; the bell replaces it |
+| the length test is "exactly 192 sectors" | `$65EC`, `$6A7A` | `65EC FE C0 CP $C0`, then `JR NZ` | a CODE file of any other size is not listed; Vadim's comment says "length >= C000" |
+| a page in patterns 6-9 | SoundOff | `6586 CD 41 6E CALL SoundOff` (R13 = 0) | R13 = 0 cuts the envelope until the next pattern (known only from the code: [doc 9, 9.11](09-music-and-sound.md#911-known-only-from-the-code)) |
+| the position rule | PlayFrame `$C117` | `C117 CB 47 BIT 0,A` / `C119 CC 91 C1 CALL Z,NextPosition` (bit 0 of the three records ORed) | a position ends when the last events are read, not finished: the first tune loop is 7704 frames, later ones 7764 ([doc 9, 9.4](09-music-and-sound.md#94-playframe-the-delay-the-rows-and-the-next-position)) |
+| no "previous page" | ReadKeyboard | `6929 21 00 9D LD HL,Catalogue` / `692C 22 9E 65 LD (ShowCatalogueAt+2),HL` | CAPS SHIFT goes to the first page, not one back ([doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages)) |
+
+**What the authors left.** Bytes that are in the files but that nothing uses:
+
+- The BASIC sector's tail, SectorTail `$5DF3` (72 bytes): `oot27" LINE 10`, the end of a `SAVE "boot27" LINE 10`
+  that was in memory when the program was saved, then number bytes and zeros. TR-DOS does not load it and the Loader
+  starts at the next sector; most variants carry another name there (`boot12`, `boot32`).
+- BASIC lines 2 and 3 (`$5D59`, `$5D6C`): `RANDOMIZE USR VAL "15619": REM : RUN` (run "boot" again) and `RANDOMIZE
+  USR VAL "15616"` (TR-DOS's command line). The program reaches them only if line 1's command came back to BASIC
+  without an error; no recording does.
+- The player's text, PlayerText `$C014` (63 bytes): "ASM COMPILATION OF DISCO MUSIC BY ANT P BY ANDREW SENDETSKI
+  ASC". The menu never prints it, and no instruction reads it.
+- The compilation header's three bytes `$80 $54 $1E` at `$C008`: no instruction reads them; their meaning is not known.
+- The gaps in the work area: Unused1 `$70A8-$75FF` (1368 bytes, of which SoundOff reads 14 at `$7530`), Unused2
+  `$76C1-$76FF` (63), Unused3 `$77C8-$77FF` (56), Unused4 `$8900-$89FF` (256), Unused5 `$9B00-$9BFF` (256), Unused6
+  `$9CC8-$9CFF` (56): room between buffers aligned to 256 bytes, cleared by the Loader and never written.
 
 ```mermaid
 flowchart LR
@@ -558,7 +580,6 @@ the work inside the interrupt) cost nothing a user of the menu would notice exce
   page's 24, so every letter A-X passes the first test on a full page; the walk always finds the file.
 - A deleted entry on the disk (first byte 1) in front of the chosen file: c5's deleted T05 lies on page 1, before
   the page RunLetter walks from; SkipDeleted handles it as it handles the marks.
-- What the launched program does with FRAMES = 0: nothing in T03 or T30 reads it.
 
 ## 10.9 The point
 

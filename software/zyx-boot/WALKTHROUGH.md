@@ -27,7 +27,8 @@ files), an older `ZYX.SCL` and a damaged Hobeta (`owner-BOOT.zip`), and Vadim's 
 So the original is Vadim's `boot.scl`, put unchanged in `orig/boot.scl`; the reasons are in
 [README, the release check](README.md#the-release-check-why-this-file-is-the-original).
 
-**The disk.** One file `boot`, B, 46 sectors: the BASIC sector, then three pieces the BASIC's loader reads itself
+**The disk.** One file `boot`, B, 46 sectors: the BASIC sector (TR-DOS loads only its first 184 bytes, the program and
+the autostart mark), then three pieces the BASIC's loader reads itself
 ([doc 3, 3.1](docs/03-build-and-load.md#31-the-disk)). `tools/image.py` writes the menu's 64 K image
 (`work/mkgame/original.bin`, the pieces at `$61A8` and `$A600`) and the two parts' images (`work/parts/`).
 
@@ -62,14 +63,19 @@ screen files' numbers as frames.
 | c4 | `tests/disks/noexe.scl` | NO EXE FILES !, A and ENTER do nothing | 2182 | 109 |
 | c5 | `tests/disks/deep.scl` | SS, SS (page 3), then D: `magic`, GO TO "magic" CODE | 3090 | 101 |
 | c6 | `orig/boot.scl` | the menu idles to the tune's third tune loop | 16566 | 101 |
+| c7 | `build/variants/zyxermbt/variant.scl` | the variant's intro picture (LZ), the menu, SPACE: SoundOff reads IntroPicture's bytes | 1776 | 105 |
+| c8 | `build/variants/zyxlgbt/variant.trd` | the R-register cipher decrypts the loader and the second stage, then the menu | 1666 | 102 |
+| c9 | `build/variants/zyxremix/variant.scl`, its file `ZYXremix` renamed `boot` | the LZ depacker unpacks `$61A8-$FFFE` over itself, then the menu | 1366 | 102 |
+| c10 | `build/variants/zyxisl/variant.scl` | the two RLE pictures, SPACE, SPACE, the menu | 1386 | 102 |
 
-c1 in order (the L1 profile, `work/stage1/c1/l1.json`, frames 104-7880, 7716 interrupts): TR-DOS loads `boot` and the
-Loader `$5D80` runs at frame 447; Start `$61A8` at 516; DrawScreen at 532-536 ([setup](docs/img/play/setup.png),
-frame 604: the logo, the rhombi, the help lines, NO EXE FILES !); the interrupt from frame 542 with the music; the
-rhombus phases at 542-697 and the set-up's turns until DrawReflection at 824-890, which covers the help lines with the
-logo's mirror image ([menu idle](docs/img/play/menu-idle.png), frame 1104); from frame 890 the main loop. At frame
-4104 the cursor's text is caught upside down ([spin](docs/img/play/name-spin.png)): the spin at Frames 50-90 of every
-256 turns it a quarter at a time. SPACE reads the catalogue again (ShowCatalogue's second call, frame 6436).
+c1 in order (the L1 profile, `work/stage1/c1/l1.json`, frames 104-7880, 7716 interrupts): TR-DOS loads `boot`'s program
+and the Loader `$5D80` runs at frame 447 (the clear to 459, the three reads to 515); Start `$61A8` at 516; DrawScreen at
+532-536 ([setup](docs/img/play/setup.png), frame 604: the logo, the rhombi, the help lines, NO EXE FILES !); the
+interrupt from frame 542 with the music; the rhombus phases at 542-697 and the set-up's turns until DrawReflection at
+824-890, which covers the help lines with the logo's mirror image ([menu idle](docs/img/play/menu-idle.png), frame
+1104); from frame 890 the main loop. At frame 4104 the cursor's text is caught upside down
+([spin](docs/img/play/name-spin.png)): the spin at Frames 50-90 of every 256 turns it a quarter at a time. SPACE reads
+the catalogue again (ShowCatalogue's second call, frame 6436).
 
 ![c1 frame 604: the screen DrawScreen draws, before the reflection](docs/img/play/setup.png)
 
@@ -103,7 +109,7 @@ python3 $RS open --work W --ttd work/stage1/cN/session.ttd --port-base B
 
  The writers reopened c1
 and c2 (zbA, into `work/docs/zbA/c1`, `c2`) and c3 (zbB, into `work/docs/zbB/c3`); they made no new recording. c5 and c6
-were made at the integration for what no recording had shown (zbB's list).
+were made at the integration for what no recording had shown (zbB's list). c7-c10 were made at review round 1 (fixC) for the variants' packers, the cipher and SoundOff (doc 13, 13.7 and 13.9).
 
 | Recording | Command (from the case folder, `. work/env.sh`) | Session |
 | --- | --- | --- |
@@ -113,6 +119,7 @@ were made at the integration for what no recording had shown (zbB's list).
 | c4 | the same with `--work work/stage1/c4 --media tests/disks/noexe.scl --inputs tests/inputs/c4.txt` | `work/stage1/c4/session.ttd` |
 | c5 | `python3 tools/mktestdisk.py`, then the same with `--work work/stage1/c5 --media tests/disks/deep.scl --inputs tests/inputs/c5.txt --port-base 37440` | `work/stage1/c5/session.ttd` |
 | c6 | the same with `--work work/stage1/c6 --media orig/boot.scl --inputs tests/inputs/c6.txt --port-base 37440` | `work/stage1/c6/session.ttd` |
+| c7-c10 | `sh tools/build.sh $SJASMPLUS --variant NAME` for each variant, then the same as c1 with `--work work/stage1/cN --media <the disk in the table above> --inputs tests/inputs/cN.txt --port-base 37460` (c9: a copy of the disk with `ZYXremix` renamed `boot`, `work/review/rvC-fix/media/`) | `work/stage1/c7/session.ttd` ... `c10` |
 
 What c5 and c6 showed (TTD `memory_at`, `work/docs/integrate/mem.py` and `changes.py`):
 

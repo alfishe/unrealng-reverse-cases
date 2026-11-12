@@ -8,8 +8,8 @@
 ; menu without damaging it. From the bottom row a star goes back to the top.
 ;
 ; The twinkle is one 16x16 star sprite (TwinkleSprites $6F60, src/res/graphics/twinkle.png) at a random place: it
-; grows through 4 frames and shrinks back, one frame every 4 interrupts, a new place every 32 interrupts with a pause
-; of 8 (TwinkleStar $6BA5).
+; grows through 4 frames and shrinks back, one frame every 4 interrupts, lit 30 frames and dark 9: a new place every
+; 39 interrupts (TwinkleStar $6BA5).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $645E
@@ -115,10 +115,10 @@ MoveStarsDraw:
 ; a twinkle, a frame every 4th frame
 ;
 ; TwinkleClock $DEAC (+2 a frame; 32 frames a twinkle plus the 7 held frames at
-; $3E: 39 frames a twinkle, 156 a round of 4): 0: NewRandoms $6BAB. Bits 0-5 =
-; $3E (the twinkle's last frame): EraseTwinkle without a new frame, and for 7
-; of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame pause.
-; Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
+; $3E: 39 frames a twinkle, lit 30 and dark 9, 156 a round of 4): 0: NewRandoms
+; $6BAB. Bits 0-5 = $3E (the twinkle's last frame): EraseTwinkle without a new
+; frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an
+; 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
 ;
 ; Witness: L1 13931 (c x4).
 TwinkleStar:

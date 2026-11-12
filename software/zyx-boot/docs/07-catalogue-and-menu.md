@@ -469,7 +469,7 @@ SHIFT drew nothing.
 
 ![ShowCatalogue for SYMBOL SHIFT in c3: the clean screen back, the 7 files counted and printed](img/routines/ShowCatalogue.gif)
 
-*The routine animation of ShowCatalogue in c3, from 1879:16200 to 1888:0 (TTD units; 90 pictures of 7168 T). The view
+*The routine animation of ShowCatalogue in c3, from 1879:16200 to 1888:0 (TTD units; 90 pictures of 6 988 T). The view
 is the screen. The memory grid is the catalogue `$9D00-$A4FF`, 64 bytes a row. The code is ShowCatalogue, ListCatalogue,
 ListTwoColumns, PrintColumn, PrintString, IsBootFile, SkipDeleted, CursorAttrAddr, ClearFilesArea and SoundOff; the
 ROM's printing counts as "other". Command, from the case folder after `. work/env.sh`: `python3
@@ -567,9 +567,10 @@ The key is read inside the interrupt handler, so the whole page is drawn with in
 The page takes 8.2 frames, about 590 000 T-states. The 8 interrupts that fall inside it are lost, and the music
 silenced by SoundOff misses 8 frames. It goes on afterwards from where it stopped, 8 frames late
 ([doc 9](09-music-and-sound.md)). The 24-name first page of `many.scl` holds the music back the same way at the start:
-DrawScreen lists it before the EI, and the first MusicPlay of c3 is 10 frames later than c1's, whose page is NO EXE
-FILES !. The model of doc 9 places c3's frame 963 at the player's frame 410: 553 frames after the start, against
-c1's 543.
+DrawScreen lists it before the EI, and the first MusicPlay of c3 is 9 frames later than c1's, whose page is NO EXE
+FILES ! (stage-1 L1: MusicPlay `$C00E` first at frame 552 against 543, Interrupt `$6757` at 551 against 542; Start
+runs at frame 516 in both, so the 9 frames are the 24-name page). The model of doc 9 places c3's frame 963 at the
+player's frame 410, which counts 553 by its own frame convention.
 
 ## 7.7 NO EXE FILES !
 
@@ -635,6 +636,10 @@ NO EXE FILES ! asks for.
 - SYMBOL SHIFT on a third page (c5 reaches page 3 but does not press SYMBOL SHIFT there).
 - A CODE file of 193 sectors or more (not listed), and one of length `$BF01-$BFFF` (192 sectors, listed).
 - A full catalogue of 128 entries, where the count stops at `$A500`.
+- A deleted last entry: SkipDeleted `$674D` has no bound (only CountSkip tests `$A5` at `$65F5`), so a deleted entry
+  127, or deleted entries up to the end, send the walk to `$A500`, FontBase, and on by what that memory holds. It holds
+  zeros (`$A500-$A5FF` all 0 in c1 frame 1000 and c2 frame 1500, `work/docs/figcache/`): the byte 0 there ends the
+  catalogue, so the count stops as if the catalogue ended. No recording has such a disk.
 
 ## 7.9 The point
 

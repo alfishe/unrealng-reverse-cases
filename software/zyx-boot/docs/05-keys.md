@@ -53,7 +53,7 @@ flowchart TD
     D2 --> K["LD A,$00: no Kempston"]
     K --> CS{"CAPS SHIFT?"}
     CS -->|"down, page 2 or later"| F["ShowCatalogue: the first page"]
-    CS -->|"no"| EN{"ENTER?"}
+    CS -->|"not down, or the first page"| EN{"ENTER?"}
     EN -->|"down"| FK["FireKey"]
     EN --> SP{"SPACE?"}
     FK --> SP
@@ -123,8 +123,9 @@ Worked example, F: KeyTable's 6th byte is row 1, mask `%01000`, so `$28`. `$28` 
 A = `$FD`: port `$FDFE`, the half-row A S D F G. F is its bit 3: `$08`. A down F reads as bit 3 clear; after `CPL`
 it is set, the `AND` is non-zero, and RunLetter is called with C = `$46`.
 
-The point: one table and one self-modified instruction read 24 keys on 8 half-rows with one loop. The cost is a
-port read per letter: 24 reads, 8 of them repeated, where 8 reads would do.
+The point: one table and one self-modified instruction read 24 keys on 6 half-rows with one loop (the letters sit on
+half-rows 0, 1, 2, 5, 6 and 7; rows 3 and 4 are the digits, read apart in 5.3). The cost is a port read per letter:
+24 reads where 6 would do.
 
 RunLetter `$6A51` takes the letter as the position on the page: `C - $40` is 1 for A. It returns at once when that is
 more than FileCount (the listed files from this page's first one on); otherwise it walks the listed entries from
@@ -254,7 +255,7 @@ stateDiagram-v2
     ink7b --> ink2: ink 8 becomes 2
 ```
 
-Worked example, c2 frames 1500-1556 (CursorAttr `$B3BF` read with TTD `memory_at` every 4 frames):
+Worked example, c2 frames 1500-1548 (CursorAttr `$B3BF` read with TTD `memory_at` every 4 frames):
 `$45 $06 $46 $07 $47 $02 $42 $03 $43 $04 $44 $05 $45`. Twelve steps, 48 frames, back to `$45`; ink 1 (and 0) never comes back:
 ShowCatalogue starts the cycle at `$01`, and after `$47` the ink jumps to 2.
 
@@ -267,9 +268,164 @@ DownKey:  index = index + 1; past the column's last name: to its first (row 6)
 UpKey:    index = index - 1; before the column's first name: to its last
 ColumnKey (two columns only): the same row in the other column (index + or - ColumnOneCount);
           on column 1's last row when column 2 has no name there: column 1's first name (row 6)
+MoveCursor (DownKey, UpKey): nothing with a single name (ColumnTwoCount 0, ColumnOneCount 0 or 1)
 ```
 
-The point: the cursor can never leave the listed names, and every move is one key press per read.
+The positions run down column 1 (CursorIndex 1 to ColumnOneCount, CursorRow 6 on) and on down column 2 (CursorColumn
+22). MoveCursor `$69C3` is DownKey with B = 0 and UpKey with B = 1; with E = ColumnOneCount, D = ColumnTwoCount, C =
+CursorIndex and L = CursorRow it sets H (the new index) and A (the new row):
+
+```text
+69C3  LD A,(ColumnTwoCount)  ; MoveCursor
+69C6  AND A
+69C7  JR NZ,MoveCursorGo
+69C9  LD A,(ColumnOneCount)  ; one column:
+69CC  AND A
+69CD  JR Z,KeyDone           ;   no name: nothing
+69CF  DEC A
+69D0  JR Z,KeyDone           ;   one name: nothing
+69D2  PUSH BC                ; MoveCursorGo
+69D3  CALL CursorAttrAddr
+...                          ; CursorLength cells back to CursorSavedAttr
+69E2  LD A,(CursorIndex)
+69E5  LD C,A
+69E6  LD DE,(ColumnOneCount) ; E = column 1's names, D = column 2's
+69EA  LD A,(CursorRow)
+69ED  LD L,A
+69EE  LD A,(CursorColumn)
+69F1  CP $16
+69F3  JR Z,MoveColumnTwo
+69F5  LD A,B                 ; column 1
+69F6  AND A
+69F7  JR NZ,MoveUpColumnOne
+69F9  LD A,C
+69FA  CP E                   ; down on column 1's last name?
+69FB  LD A,$06
+69FD  LD H,$01
+69FF  JR Z,MoveSetRow        ;   yes: index 1, row 6
+6A01  LD H,C                 ; MoveDownOne: index + 1, row + 1
+6A02  INC H
+6A03  LD A,L
+6A04  INC A
+6A05  JR MoveSetRow
+6A07  LD A,C                 ; MoveUpColumnOne
+6A08  CP $01
+6A0A  JR NZ,MoveUpOne
+6A0C  LD H,E                 ;   up on the first: index E,
+6A0D  LD A,E
+6A0E  JR MoveToLast          ;   row E + 5
+6A10  LD H,C                 ; MoveUpOne: index - 1, row - 1
+6A11  DEC H
+6A12  LD A,L
+6A13  DEC A
+6A14  JR MoveSetRow
+6A16  LD A,B                 ; MoveColumnTwo
+6A17  AND A
+6A18  JR NZ,MoveUpColumnTwo
+6A1A  LD A,E
+6A1B  ADD A,D
+6A1C  CP C                   ; down on the last name (E + D)?
+6A1D  JR NZ,MoveDownOne
+6A1F  LD H,E                 ;   yes: index E + 1, row 6
+6A20  INC H
+6A21  LD A,$06
+6A23  JR MoveSetRow
+6A25  LD A,E                 ; MoveUpColumnTwo
+6A26  INC A
+6A27  CP C                   ; up on column 2's first (E + 1)?
+6A28  JR NZ,MoveUpOne
+6A2A  LD A,E                 ;   yes: index E + D,
+6A2B  ADD A,D
+6A2C  LD H,A
+6A2D  LD A,D                 ;   row D + 5
+6A2E  ADD A,$05              ; MoveToLast
+6A30  LD (CursorRow),A       ; MoveSetRow
+6A33  LD A,H
+6A34  LD (CursorIndex),A
+6A37  JP CursorMoved         ; save the colour under the new place
+```
+
+ColumnKey `$6967` returns at once with one column (ColumnTwoCount 0); otherwise it puts the old colour back and
+decides on `CursorIndex - 1 - ColumnOneCount`:
+
+```text
+697E  LD A,(ColumnOneCount)
+6981  LD B,A
+6982  LD A,(CursorIndex)
+6985  LD C,A
+6986  DEC A
+6987  SUB B                  ; index - 1 - ColumnOneCount
+6988  JR NC,ToColumnOne      ; 0 or more: the cursor is in column 2
+698A  CP $FF
+698C  JR NZ,ToColumnTwo      ; not column 1's last name
+698E  LD HL,(ColumnOneCount)
+6991  LD A,H
+6992  CP L
+6993  JR Z,ToColumnTwo       ; the columns are as long: the same row exists
+6995  LD A,$01               ; column 2 is one shorter:
+6997  LD (CursorIndex),A     ;   index 1,
+699A  LD A,$06
+699C  LD (CursorRow),A       ;   row 6, the column unchanged: column 1's first name
+699F  JR CursorMoved
+69A1  LD A,C                 ; ToColumnTwo: index + ColumnOneCount, column 22
+69A2  ADD A,B
+69A3  LD (CursorIndex),A
+69A6  LD A,$16
+69A8  LD (CursorColumn),A
+69AB  JR CursorMoved
+69AD  LD A,C                 ; ToColumnOne: index - ColumnOneCount, column 6
+69AE  SUB B
+69AF  LD (CursorIndex),A
+69B2  LD A,$06
+69B4  LD (CursorColumn),A
+```
+
+```mermaid
+flowchart TD
+    K{"the key"} -->|"3, 8: B = 0"| M{"ColumnTwoCount 0 and<br/>ColumnOneCount 0 or 1?"}
+    K -->|"4, 9: B = 1"| M
+    M -->|"yes"| NO["KeyDone: nothing"]
+    M -->|"no"| R["the old cells back to CursorSavedAttr"]
+    R --> COL{"CursorColumn 22?"}
+    COL -->|"no: column 1"| D1{"B"}
+    D1 -->|"0, down"| L1{"index = E?"}
+    L1 -->|"yes"| T1["index 1, row 6"]
+    L1 -->|"no"| DN["index + 1, row + 1"]
+    D1 -->|"1, up"| F1{"index = 1?"}
+    F1 -->|"yes"| B1["index E, row E + 5"]
+    F1 -->|"no"| UP["index - 1, row - 1"]
+    COL -->|"yes: column 2"| D2{"B"}
+    D2 -->|"0, down"| L2{"index = E + D?"}
+    L2 -->|"yes"| T2["index E + 1, row 6"]
+    L2 -->|"no"| DN
+    D2 -->|"1, up"| F2{"index = E + 1?"}
+    F2 -->|"yes"| B2["index E + D, row D + 5"]
+    F2 -->|"no"| UP
+    T1 --> SV["CursorMoved: save the colour<br/>under the new place"]
+    DN --> SV
+    B1 --> SV
+    UP --> SV
+    T2 --> SV
+    B2 --> SV
+    C{"1, 2, 6, 7: ColumnKey"} -->|"ColumnTwoCount 0"| NO
+    C -->|"index > E: column 2"| C1["index - E, column 6"]
+    C -->|"index < E"| C2["index + E, column 22"]
+    C -->|"index = E"| EQ{"E = D?"}
+    EQ -->|"yes"| C2
+    EQ -->|"no"| C3["index 1, row 6, column 1"]
+    C1 --> SV
+    C2 --> SV
+    C3 --> SV
+```
+
+Worked example, c2 frame 3203 (the trace `3203:14900-3203:20130`, 8 down): ColumnOneCount 12, ColumnTwoCount 12, so
+MoveCursor goes on. It writes CursorSavedAttr `$44` back into `$58C6-$58CD` (row 6, column 6: T01's cells), then
+reads C = CursorIndex 1, E = D = 12, L = CursorRow 6, CursorColumn 6: column 1, B = 0. `CP E` compares 1 with 12: not
+equal, so MoveDownOne: H = 2, A = 7. CursorRow becomes 7 and CursorIndex 2 (`$6A30`, `$6A34` at T 19 261 and 19 278),
+and CursorMoved saves the colour at `$58E6`, `$44`, as the new CursorSavedAttr.
+
+The point: the cursor can never leave the listed names, and every move is one key press per read. With a single name
+listed, 3, 4, 8 and 9 do nothing, and so do 1, 2, 6 and 7 with one column.
 
 ![The cursor moving and changing colour](img/play/cursor.gif)
 
@@ -283,7 +439,7 @@ How to read it:
   3659, ColumnKey at 3491 and 3595: the stage-1 L1 of c2).
 - The name it leaves gets its own colour back at once.
 
-The point: the cursor costs 14 attribute writes every 4th frame and never touches the pixels.
+The point: the cursor costs 8 attribute writes every 4th frame (14 on NO EXE FILES !) and never touches the pixels.
 
 ![ReadKeyboard with 8 down: the letters, the digit rows, DownKey](img/routines/ReadKeyboard.gif)
 
@@ -297,7 +453,9 @@ How to read it:
 - The first two thirds: the letter loop, the listing jumping between `$6869` and `$6887`, KeyTable `$6B53` read a
   byte at a time.
 - Then the digit rows; 8 is down, so DownKey runs: CursorAttrAddr, the old cells' attributes put back, the new place.
-- The cursor's attributes on the screen move one row down.
+- DownKey gives T01 its own colour back and saves T02's: the last picture shows T01-T12 all green, no name
+  highlighted. The cursor is gone from the screen until the next paint, 4 frames later (Frames bits 0-1 = 3), puts it
+  on T02: in the interrupt the paint at `$678E` runs before InterruptExit's `CALL Z,ReadKeyboard` at `$6834`.
 
 The point: a held key acts once per read; a key held for a second moves the cursor 6 names.
 
@@ -394,8 +552,10 @@ The page draw itself is in [doc 7, 7.5](07-catalogue-and-menu.md#75-the-pages).
   standard one for those key rows.
 - The wrap of DownKey and UpKey at the ends of a column and ColumnKey on a row the other column lacks: read from the
   code; c2 moves inside the columns only.
-- Two keys at once: the order of the reads decides (a letter first, then the digits, CS, ENTER, SPACE, SS), from the
-  code.
+- Two keys at once: the order of the reads decides, from the code: the letters A-X (a letter with a file launches it
+  and nothing else is read), the digits 1-5 then 0-9 (each one down acts: 3 + 4 cancel, 1 + 2 swap the column twice),
+  the silenced Kempston block, CS (on page 2 or later it shows page 1 and ends the read), ENTER, SPACE (ends the
+  read), SS.
 
 ## 5.8 The point
 

@@ -25,6 +25,8 @@ The recordings are those of [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-fr
 - c1: `orig/boot.scl`: the music from frame 543 to 7879 (L1: 7274 MusicPlay calls);
 - c3: `tests/disks/many.scl`: traces of frames 963-1009 (the player at work), 1879-1888 (a page) and 2182-2205 (the
   bell and the launch).
+- c2 (`tests/disks/many.scl`) and c4 (`tests/disks/noexe.scl`): MusicInit's L1 count (9.3);
+- c6: `orig/boot.scl` idle for 16 566 frames, into the tune's third loop (9.8); made at the integration.
 
 Beside the recordings there is a model: `tools/sound_sim.py` runs `build/music.bin` in SkoolKit's Z80 simulator,
 MusicInit once and then MusicPlay once a frame, as the menu does. It keeps each frame's AY writes, the 14 registers
@@ -79,6 +81,16 @@ flowchart LR
 6E62  18 EC        JR WriteAYNext
 ```
 
+```text
+SoundOff():  WriteAY($7530)          ; 14 zeros on the original's disk (9.9)
+PlayBell():  WriteAY(ExitSound)      ; the bell, 9.9
+
+WriteAY(table):                      ; the menu's, $6E4F: registers 0-13 in order, R13 last
+    for r in 0 .. 13:
+        OUT $FFFD, r                 ; select
+        OUT $BFFD, table[r]          ; write (R13 restarts the envelope)
+```
+
 Worked example: the IM 2 handler calls MusicPlay at `$676D` on every interrupt, so the tune runs at the interrupt
 rate, 50 Hz on the Pentagon. The first tune loop is 7704 frames (9.8), 154.1 s at 50 Hz.
 
@@ -111,7 +123,7 @@ The menu takes two things from the player's timing:
 
 - **the start**: MusicInit runs at c1 frame 532, the first MusicPlay at 543. The first page is drawn in between
   (ShowCatalogue at frame 536), with interrupts off. c1's page is NO EXE FILES !; c3's is 24 names, and its first
-  MusicPlay comes 10 frames later, at 553;
+  MusicPlay comes 9 frames later, at 552 (L1);
 - **a page costs 8 frames of music**: ShowCatalogue runs inside the interrupt with interrupts off. In c3 it runs from
   1879:16219 to 1887:28518, about 8.2 frames, so the interrupts of 8 frames are lost and 8 MusicPlay calls never
   happen. SoundOff has silenced the AY first, so the tune goes quiet for those 8 frames and then carries on where it
@@ -414,6 +426,54 @@ A stream is a sequence of row events, each with the commands that change the cha
 `$FF` is both "shape 15" and "end": the player never meets it as a command, because RowDone looks one byte ahead after
 each event and stops reading the stream when it sees `$FF`.
 
+PatternCommand finds the range by subtracting the start of the highest range and adding back the width of the next
+one down: the carry says the byte was in the range just passed, and A is left as the offset into it.
+
+```text
+C24C  D6 F0        SUB $F0                 ; PatternCommand: $F0-$FF?
+C24E  30 44        JR NC,CommandLength     ; A = 0-15
+C250  C6 20        ADD A,$20               ; $D0-$EF?
+C252  38 3C        JR C,CommandNoise       ; A = 0-31
+C254  C6 10        ADD A,$10               ; $C0-$CF?
+C256  38 2B        JR C,CommandVolume      ; A = 0-15, Z for $C0
+C258  C6 20        ADD A,$20               ; $A0-$BF?
+C25A  38 0F        JR C,CommandOrnament    ; A = 0-31
+C25C  C6 20        ADD A,$20               ; $80-$9F: A = 0-31, the sample
+C25E  01 00 00     LD BC,$0000             ; SampleTableOp: InitPlayer sets SampleTable $D074
+C261  CD 78 C2     CALL TableEntry         ; HL = BC + word at BC + 2A
+C264  DD 75 0D     LD (IX+$0D),L
+C267  DD 74 0E     LD (IX+$0E),H           ; the channel's sample
+C26A  C9           RET
+...
+C283  DD CB 00 E6  SET 4,(IX+$00)          ; CommandVolume: envelope mode
+C287  C8           RET Z                   ; $C0: that is all
+C288  DD CB 00 A6  RES 4,(IX+$00)          ; $C1-$CF: mode off
+C28C  DD 77 08     LD (IX+$08),A           ; the channel volume 1-15
+C28F  C9           RET
+C290  DD 77 05     LD (IX+$05),A           ; CommandNoise: the noise base
+C293  C9           RET
+C294  28 04        JR Z,CommandLengthByte  ; CommandLength: $F0 takes a byte
+C296  32 01 C1     LD (AYEnvelopeShape),A  ; $F1-$FF: the shape, written at WriteAY
+C299  C9           RET
+C29A  1A           LD A,(DE)               ; CommandLengthByte
+C29B  13           INC DE
+C29C  DD 77 09     LD (IX+$09),A           ; the row length
+C29F  C9           RET
+```
+
+```text
+PatternCommand(b, ch):                   ; b = $80-$FF, ch = the channel's record IX
+    if b >= $F0:                         ; CommandLength
+        if b == $F0: ch.length = next(stream)
+        else: AYEnvelopeShape = b - $F0   ; written (envelope restarted) at this frame's WriteAY
+    elif b >= $D0: ch.noise_base = b - $D0
+    elif b >= $C0:                       ; CommandVolume
+        if b == $C0: ch.flags |= ENVELOPE
+        else: ch.flags &= ~ENVELOPE; ch.volume = b - $C0
+    elif b >= $A0: ch.ornament = OrnamentTable + word(OrnamentTable + 2 x (b - $A0))
+    else:          ch.sample   = SampleTable   + word(SampleTable   + 2 x (b - $80))
+```
+
 ```mermaid
 flowchart LR
     H["header $C478"] --> PO["positions $C480"]
@@ -511,6 +571,23 @@ OrnamentStep(ch):
     ch.noise = (ch.noise + signed5(row.noise)) & 31
 ```
 
+SampleStep's three ways on from a row:
+
+```mermaid
+flowchart TD
+    R["read the row: F, T, M"] --> S{"F bit 7: S?"}
+    S -->|"yes"| SL["the loop row = this row"] --> L
+    S -->|"no"| L{"F bit 6: L, and not released?"}
+    L -->|"yes: loop"| LB["the next row = the loop row"] --> A
+    L -->|"no"| X{"F bit 5: X?"}
+    X -->|"yes: end"| E["bit 1 set: silent from the next frame"] --> A
+    X -->|"no"| N["the next row = this row + 3"] --> A
+    A["tone offset += T; mixer, E, volume from M; noise += F's low 5 bits"]
+```
+
+The `rel` event sets the released bit, so a looping sample runs on through its L row to the rows after it, and ends at
+its X row: this is how a note fades out after a release.
+
 ```text
 C36B  78           LD A,B                  ; SampleVolume: the row's byte 2
 C36C  0F 0F 0F 0F  RRCA x 4
@@ -553,6 +630,39 @@ and stores the tone period (R0-R5) and the volume (R8-R10) into the register ima
 `$55` is clamped: below 0 to 0, above `$55` to `$55`. If the channel is in envelope mode and the sample row has E, the
 volume gets bit 4: the AY plays the envelope. Otherwise (no note, or the sample ended) only the volume is written, as
 0.
+
+```text
+ChannelSound(n, ch):                             ; $C2A0, n = 0-2
+    if ch.sample_ended or not ch.note_on: R[8+n] = 0; return
+    SampleStep(ch); OrnamentStep(ch)
+    if not ch.row_noise_off: AYNoise = ch.noise
+    note = ch.note
+    if note > $55: note = 0 if note >= $80 else $55   ; below 0 (an ornament's minus) or too high
+    period = PeriodTable[note] + ch.tone_offset
+    R[2n] = period & $FF; R[2n+1] = (period >> 8) & $0F
+    vol = ch.volume
+    if ch.envelope_mode and ch.row_E: vol |= $10     ; the AY's envelope bit
+    R[8+n] = vol
+```
+
+The two places the pseudocode hides, the clamp without a branch per case and the test of two bits at once:
+
+```text
+C2C2  DD 7E 02     LD A,(IX+$02)           ; ChannelSoundNote: the note
+C2C5  FE 56        CP $56
+C2C7  38 05        JR C,ChannelSoundPeriod ; 0-$55: as it is
+C2C9  17           RLA                     ; bit 7 into the carry: negative?
+C2CA  9F           SBC A,A                 ; $FF if negative, else 0
+C2CB  2F           CPL                     ; 0 if negative, else $FF
+C2CC  E6 55        AND $55                 ; 0 or $55
+...
+C2F0  DD 7E 00     LD A,(IX+$00)           ; the flags
+C2F3  2F           CPL
+C2F4  E6 30        AND $30                 ; Z only when bit 4 (mode) and bit 5 (row E) are both 1
+C2F6  DD 7E 07     LD A,(IX+$07)           ; the volume (LD keeps the flags)
+C2F9  20 02        JR NZ,ChannelSoundVolume
+C2FB  F6 10        OR $10                  ; on the envelope
+```
 
 WriteAY `$C15F` then writes the image to the AY, from the top register down, with OUTD: B is `$BF` before OUTD
 decrements it, so the data goes to port `$BEFD`. Register 13 (the envelope shape) is written only when a `shapeN`
@@ -597,7 +707,7 @@ flowchart TD
     OS --> NZ["R6 = the noise (unless the row has noise off)"]
     NZ --> PER["period = PeriodTable[note] + tone offset: R(2n), R(2n+1)"]
     PER --> ENV{"envelope mode and row E?"}
-    ENV -->|"yes"| VE["R8+n = 16: the envelope"]
+    ENV -->|"yes"| VE["R8+n = the volume OR 16: the envelope"]
     ENV -->|"no"| VV["R8+n = the volume"]
 ```
 
@@ -611,7 +721,8 @@ How to read it:
 - R0/R1 (channel A) change every frame: the ornament's octave jumps and the sample's vibrato.
 - R4/R5 (channel C) slide down between row frames: a drum hit with a falling ornament.
 - R6 and R7 change only around the drum hits: the noise period and the mixer.
-- R11-R13 stay 0: patterns 2 and 3 do not use the envelope.
+- R11-R13 stay 0: pattern 2, which all these frames play, does not use the envelope. R13 is the AY's own value, last
+  written (0) by MusicInit's Silence; the image byte AYEnvelopeShape is `$FF` at that moment (the animation below).
 
 ![The register image AYRegisters as WriteAY sends it, c3 frames 973-1008](img/routines/WriteAY.gif)
 
@@ -647,8 +758,8 @@ the frame a pattern asks for it.
 ## 9.8 The tune
 
 "Disco music" by Ant P: 22 positions over 16 patterns, a row every 6 frames (8.33 rows a second). Channel A plays the
-melody (samples 1, 6, 7, 9, 10, 13), B the bass (sample 2, with octave jumps), C the drums (samples 3, 4, 5: noise rows
-and falling ornaments). Patterns 6-9 open with sample 13 on the envelope (`env shape14`: the triangle, `ep` from `$23`
+melody (samples 1, 7, 9, 10, 13; drum hits of sample 6 in pattern 14), B the bass (sample 2, with octave jumps; sample 8
+in patterns 2 and 14), C the drums (samples 3, 4, 5: noise rows and falling ornaments). Patterns 6-9 open with sample 13 on the envelope (`env shape14`: the triangle, `ep` from `$23`
 to `$3F` per note).
 
 The positions and their lengths, from the model (`python3 tools/sound_sim.py loop`):
@@ -693,8 +804,9 @@ the volume; pink: on the envelope; the grey lines and numbers: the position star
 
 How to read it:
 
-- A, the melody, is the busy top panel: the arpeggios show as vertical streaks. The low lines in patterns 6-9 (60-100 s)
-  are sample 13 on the envelope.
+- A, the melody, is the busy top panel: the arpeggios show as vertical streaks. The low lines in patterns 6-9 are sample 13 on the envelope: 62-93 s
+  (positions 9-12), and the first 1.2 s of each pattern 9 (93 s and 101 s), which goes on with sample 9 off the
+  envelope.
 - B, the bass, alternates a note and its octave in 2-row steps.
 - C, the drums, is the dense band at the bottom (noise hits) and the high line (the hi-hat tone).
 
@@ -704,9 +816,12 @@ model frame 420, c3 frame 973. The PlayFrame animation (9.4) is that frame.
 Witness: c1 plays frames 543-7879 (7274 calls), reaching position 20 (model frame 6996) but not position 21 (7380).
 c6 (`orig/boot.scl` idle for 16 566 frames, WALKTHROUGH 6.0) plays three tune loops' starts: PositionOp's operand
 `$C195` (the next position) becomes 1 at frames 544, 8249 and 16013 (TTD `memory_at` at T 0 of each frame), 7705 and
-7764 frames apart, and 2 at 580 and 8345: position 0 lasts 36 frames the first time and 96 the second, as the model
-says. Position 21 starts at frame 7926 (the operand `$15` to 0) and lasts 323 frames to 8249 (324 in the model, the
-1 frame from sampling at T 0).
+7764 frames apart, and 2 at 580 and 8345: position 0 lasts 36 frames the first time and 96 the second. Position 21
+starts at frame 7926 (the operand `$15` to 0) and lasts 323 frames to 8249. Against the model the three changes sit
+544, 546 and 545 frames late (positions 0, 21 and the second loop's 0: model frames 0, 7380, 7704): within 1 frame of
+the model. Sampling at T 0 sees a change only in the frame after the handler's MusicPlay made it, and MusicPlay does
+not run at the same T in every frame, so the 7705 against the model's 7704 and the 323 against its 324 are that
+sampling jitter, not lost or extra frames; the 7764 of the later loops matches exactly.
 
 The point: the menu's music is a 2.5-minute tune that never stops; the first time round it is a minute fraction
 shorter than every later time, because of the position rule.
@@ -717,7 +832,8 @@ The menu has two sounds of its own, both written with the menu's WriteAY `$6E4F`
 
 - **SoundOff** `$6E41` writes 14 bytes from `$7530` (30000 in the source). That is inside Unused1, which the loader
   clears and nobody writes, so all 14 are 0: no volume, and R13 = 0. ShowCatalogue calls it before each page,
-  ReadKeyboard before SPACE's disk read.
+  ReadKeyboard before SPACE's disk read. That holds for the original's loader; zyxermbt loads code at `$7530`, and its
+  SoundOff buzzes ([doc 13, 13.7](13-variants.md#137-the-own-loaders)).
 - **PlayBell** `$6E48` writes ExitSound `$6E64`, once, from RunLetter, after the launch line is written
   ([doc 10](10-launcher-and-notes.md)).
 
@@ -735,7 +851,9 @@ ExitSound's 14 bytes, decoded:
 | R13 | 1 | shape 1: one fall, then silence |
 
 One fall of the envelope takes 256 x 20 676 / 1 750 000 = 3.02 s. Nothing writes the AY after PlayBell: ExitFade,
-the loader and TR-DOS run while the bell dies away, and the launched program finds a silent AY.
+the loader and TR-DOS run while the bell dies away. In c3 TEST 30 starts 104 frames (2.08 s) after PlayBell, after 11
+of the envelope's 16 steps (level 4 of 15), so the bell sounds on for another 0.94 s under the launched program. The
+AY stays as ExitSound left it: its periods and mixer, the three channels on the envelope, which ends at 0.
 
 ```text
 6AD3  CD 48 6E     CALL PlayBell           ; RunLetter, the launch line written
@@ -753,6 +871,8 @@ sequenceDiagram
     M->>AY: PlayBell: ExitSound (the launch)
     Note over AY: two tones on envelope shape 1, 3.0 s fall
     M->>M: ExitFade, the loader, TR-DOS (nobody writes the AY)
+    Note over AY: T30 starts 2.08 s after PlayBell, the bell at level 4
+    Note over AY: 3.02 s: the envelope at 0, ExitSound's other registers kept
 ```
 
 ![The bell: the envelope's fall over 3 s, and the two squares](img/sound/bell.png)
@@ -767,11 +887,12 @@ How to read it:
 
 Worked example: the bell's first step lasts 20 676 x 16 / 1 750 000 = 0.19 s, the stair width in the top curve.
 
-Witness: c3: RunLetter at 2182:9016, PlayBell at 2182:14196, ExitFade from 2182:15732. SoundOff before the page:
+Witness: c3: RunLetter at 2182:9016, PlayBell at 2182:14196, ExitFade from 2182:15732, TEST 30's first pixels at
+frame 2286 ([doc 10, 10.6](10-launcher-and-notes.md#106-the-loaders-end-and-tr-dos)). SoundOff before the page:
 ShowCatalogue at 1879:16219 (the trace `1879:16200-1888:0`).
 
 The point: the bell is a chord on a falling envelope, set once and left to the AY: it costs the menu 14 OUTs, and it
-covers the time the launch takes.
+covers the time the launch takes, and a little more.
 
 ## 9.10 The audio files
 

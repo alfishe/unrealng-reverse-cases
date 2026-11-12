@@ -119,13 +119,15 @@ LineTen:
 AutostartMark:
   INCBIN "res/basic/line-ten.bin",$0029,4
 
-; The sector's leftover bytes after the program: not loaded as BASIC, not read
+; The sector's leftover bytes after the program: not loaded, not read
 ;
 ; 72 bytes that were in memory after the program when it was saved: `oot27"
 ; LINE 10` reads like the end of a `SAVE "boot27" LINE 10` statement, followed
-; by number bytes and zeros. TR-DOS loads them to $5DF3-$5E3A with the program,
-; but BASIC never reads them; the build reproduces them because the file holds
-; them. A resource (spare/basic-tail.bin, bytes): in most variants they name
-; another SAVE (`boot12`, `boot32`).
+; by number bytes and zeros. TR-DOS does not load them (it loads only the
+; program and the autostart mark, $5D3B-$5DF2: at c1 frame 446 $5E07-$5E3A are
+; zeros), and the Loader starts at the next sector, so they stay on the disk;
+; the build reproduces them because the file holds them. A resource
+; (spare/basic-tail.bin, bytes): in most variants they name another SAVE
+; (`boot12`, `boot32`).
 SectorTail:
   INCBIN "res/spare/basic-tail.bin",$0000,72

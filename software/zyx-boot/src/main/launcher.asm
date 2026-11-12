@@ -3,9 +3,9 @@
 ;
 ; The menu does not load the file itself: it writes a TR-DOS command into line 1 of its own BASIC program (src/basic,
 ; LaunchLine $5D3B): RUN "name" for a BASIC file, GO TO "name" CODE for a 192-sector CODE file, puts the caller's I,
-; HL', IY and SP back, plays the bell, fades the screen and returns, IM 1, to the loader (src/basic, Loader $5D80),
-; which clears its memory and returns to BASIC. Line 10's RUN then starts line 1: RANDOMIZE USR 15619: REM : RUN
-; "name" hands the command to TR-DOS.
+; HL', IY and SP back, Frames = 0 and CHARS = $3C00 (the ROM font), plays the bell, fades the screen and returns, IM
+; 1, to the loader (src/basic, Loader $5D80), which clears its memory and returns to BASIC. Line 10's RUN then starts
+; line 1: RANDOMIZE USR 15619: REM : RUN "name" hands the command to TR-DOS.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $6A3F

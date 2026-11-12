@@ -21,7 +21,7 @@
 @equ $5C78 Frames 2 ; ROM variable FRAMES: the menu's interrupt counter (Interrupt $6757 adds 1, the menu resets it)
 @equ $5D4C LaunchToken 1 ; in the BASIC: line 1's command token (src/basic: LaunchLine)
 @equ $AFC8 SavedIY 2 ; IY at the entry (the ROM's $5C3A), put back for every ROM call
-@equ $AFCA SavedHLAlt 2 ; HL' at the entry, which the ROM's interrupt handler needs, put back for every ROM call
+@equ $AFCA SavedHLAlt 2 ; HL' at the entry, which BASIC needs unchanged when the USR returns, put back for every ROM call
 @equ $AFCC SavedSP 2 ; SP at the entry: the launcher returns to the loader with it
 @equ $AFCE SavedI 1 ; I at the entry
 @equ $B3B0 MainTick 1 ; the main loop's pass counter
@@ -149,7 +149,7 @@ $6436 RotateShiftRow
 
 @module stars ; The falling stars and the twinkles
 @about 60 stars fall down the screen, one pixel row at a time: three tables of 20 (StarsA $AC84 and StarsB $ACFC moved twice every 2nd pass of MainLoop, StarsC $AD74 once every 4th pass: the third group falls 4 times slower), each star one pixel, the tables' stars in pairs side by side (src/res/tables/stars.txt). A star is drawn by setting its pixel; before it moves, the screen pixel under it is put back (SET if it was lit, RES if not), so the stars pass over the menu without damaging it. From the bottom row a star goes back to the top.
-@about The twinkle is one 16x16 star sprite (TwinkleSprites $6F60, src/res/graphics/twinkle.png) at a random place: it grows through 4 frames and shrinks back, one frame every 4 interrupts, a new place every 32 interrupts with a pause of 8 (TwinkleStar $6BA5).
+@about The twinkle is one 16x16 star sprite (TwinkleSprites $6F60, src/res/graphics/twinkle.png) at a random place: it grows through 4 frames and shrinks back, one frame every 4 interrupts, lit 30 frames and dark 9: a new place every 39 interrupts (TwinkleStar $6BA5).
 
 $645E c SampleStars ; Read the screen pixel under each of the 60 stars into its record
 > Falls into SampleStar with IX = StarsA $AC84, B = 60 (the three tables follow each other).
@@ -297,7 +297,7 @@ $6959 ClearAttrs
 > Witness: L1 8 (c x4).
 
 $6967 c ColumnKey ; 1, 2, 6, 7: move the cursor to the other column (two columns only)
-> From column 1 to column 2 the cursor keeps its row, but from column 1's last file it goes to column 2's first when the columns differ in length (13-23 files odd); from column 2 to column 1 it keeps the row.
+> From column 1 to column 2 the cursor keeps its row, but from column 1's last file, when column 2 is one shorter (13-23 files odd), it goes to column 1's first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1 it keeps the row.
 > Witness: L1 2 (c x1).
 
 $696E c KeyDone ; Pop the caller's AF and return: the key had nothing to do
@@ -310,10 +310,10 @@ $69AD ToColumnOne
 $69B7 c CursorMoved ; CursorSavedAttr = the attribute at the cursor's new place; pop AF, return
 > Witness: L1 8 (c x1).
 
-$69C0 c DownKey ; 3, 8: the cursor down one file (B = 0), wrapping from the column's end to the other column or the top
+$69C0 c DownKey ; 3, 8: the cursor down one file (B = 0), wrapping from the column's last file to its first
 > Witness: L1 4 (c x1).
 
-$69C3 c MoveCursor ; Move the cursor down (B = 0) or up (B = 1), from column to column at the ends
+$69C3 c MoveCursor ; Move the cursor down (B = 0) or up (B = 1), wrapping within its column; nothing with a single file
 $69D2 MoveCursorGo
 $69DD MoveRestoreAttr
 $6A01 MoveDownOne
@@ -330,7 +330,7 @@ $6A3A c UpKey ; 4, 9: the cursor up one file
 > Witness: L1 2 (c x1).
 
 @module launcher ; Running the chosen file: the BASIC's launch line, the bell, the fade, back to the loader
-@about The menu does not load the file itself: it writes a TR-DOS command into line 1 of its own BASIC program (src/basic, LaunchLine $5D3B): RUN "name" for a BASIC file, GO TO "name" CODE for a 192-sector CODE file, puts the caller's I, HL', IY and SP back, plays the bell, fades the screen and returns, IM 1, to the loader (src/basic, Loader $5D80), which clears its memory and returns to BASIC. Line 10's RUN then starts line 1: RANDOMIZE USR 15619: REM : RUN "name" hands the command to TR-DOS.
+@about The menu does not load the file itself: it writes a TR-DOS command into line 1 of its own BASIC program (src/basic, LaunchLine $5D3B): RUN "name" for a BASIC file, GO TO "name" CODE for a 192-sector CODE file, puts the caller's I, HL', IY and SP back, Frames = 0 and CHARS = $3C00 (the ROM font), plays the bell, fades the screen and returns, IM 1, to the loader (src/basic, Loader $5D80), which clears its memory and returns to BASIC. Line 10's RUN then starts line 1: RANDOMIZE USR 15619: REM : RUN "name" hands the command to TR-DOS.
 
 $6A3F c FireKey ; 5, 0, ENTER: run the file under the cursor (none with no files)
 > C = "@" + CursorIndex: the letter of the file.
@@ -379,7 +379,7 @@ $6B9C b RombPhaseOffsets 9 ; Per phase, where its narrowed rhombus starts (the p
 
 @module stars
 $6BA5 c TwinkleStar ; The twinkle at each frame: new randoms at TwinkleClock 0, erase at the end of a twinkle, a frame every 4th frame
-> TwinkleClock $DEAC (+2 a frame; 32 frames a twinkle plus the 7 held frames at $3E: 39 frames a twinkle, 156 a round of 4): 0: NewRandoms $6BAB. Bits 0-5 = $3E (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
+> TwinkleClock $DEAC (+2 a frame; 32 frames a twinkle plus the 7 held frames at $3E: 39 frames a twinkle, lit 30 and dark 9, 156 a round of 4): 0: NewRandoms $6BAB. Bits 0-5 = $3E (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
 > Witness: L1 13931 (c x4).
 $6BCB TwinkleEnd ; the end of a twinkle: the pause
 $6BE7 TwinkleErase
@@ -438,7 +438,7 @@ $6D40 GlintCornerRight
 $6D44 GlintStep
 $6D53 GlintRowStart
 $6D56 GlintRow
-> At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 53 a glint step: 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells $6D6A) and three cells red, bright red, red drawn (DrawGlintRow $6D8A), mirrored about the screen's centre, the row above one cell further on.
+> At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 52 a glint step (26 steps): 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells $6D6A) and three cells red, bright red, red drawn (DrawGlintRow $6D8A), mirrored about the screen's centre, the row above one cell further on.
 > Witness: L1 13931 (c x4).
 
 $6D6A c RestoreGlintCells ; Copy 3 attribute cells at the glint's column and their mirror image from ScreenCopy

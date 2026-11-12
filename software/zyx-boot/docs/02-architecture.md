@@ -12,7 +12,8 @@ What this covers:
 
 The recordings it rests on: c1 (the original disk from power-on on a Pentagon 128K, TR-DOS chosen from the 128 menu,
 the menu idle with NO EXE FILES !, then SPACE; L1 frames 104-7880, 557 383 670 T-states, 7716 interrupts), c2 and c3
-(the test disk `tests/disks/many.scl`: pages, cursor keys, a file run), c4 (`tests/disks/noexe.scl`). Frame numbers
+(the test disk `tests/disks/many.scl`: pages, cursor keys, a file run), c4 (`tests/disks/noexe.scl`), c5
+(`tests/disks/deep.scl`: three pages, a CODE file run). Frame numbers
 below are c1's ([WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on)). The routine costs are the L1
 profile's (`work/stage1/c1/l1.json`, `routines[].profile`).
 
@@ -26,11 +27,29 @@ the recordings on the Pentagon): 71 680 T-states a frame, no contention.
 
 ## 2.2 The memory map
 
+![The memory map as loaded, at c1 frame 850 and at c1 frame 1000](img/arch/memory-map.png)
+
+*`$4000-$FFFF`, one line per 256 bytes, coloured by region, brighter where more bytes are not zero. Left: the image
+the Loader leaves (`work/mkgame/original.bin`) with the 184 bytes TR-DOS loads at `$5D3B`; middle and right: c1 at
+frames 850 and 1000 (TTD `memory_at`, the frame's start, cached in `work/docs/figcache/`). Made with `python3
+tools/fig_arch.py`.*
+
+How to read it:
+
+- As loaded, only four bands hold bytes: the BASIC, the code at `$61A8`, the graphics at `$A600` and the music at
+  `$C000`. Everything else is the Loader's zeros.
+- By frame 850 the set-up has filled the yellow phase sets (`$7800`, `$8A00`), the catalogue (`$9D00`, almost all zeros
+  on c1's one-file disk), ScreenCopy (`$E000`), the stack and the IM 2 table at the top; the screen is drawn.
+- Frame 1000 (the idle menu) looks the same: after the set-up the menu only rewrites what it has already built.
+
+The point: the disk carries 11.5 K (the code, the graphics, the music); the set-up builds the rest in the gaps: the
+two phase sets (8.5 K), ScreenCopy (6.75 K), the catalogue (2 K) and the IM 2 table.
+
 | Range | Loaded | What | Module / part |
 | --- | --- | --- | --- |
 | `$4000-$5AFF` | | the screen | |
 | `$5C00-$5D3A` | | the ROM's and TR-DOS's variables (FRAMES `$5C78`, CHARS `$5C36`, `$5CF4`) | |
-| `$5D3B-$5E3A` | sector 0 | the BASIC program and the Loader in line 4's REM | `src/basic` |
+| `$5D3B-$5DF2` | sector 0 (184 of its 256 bytes, by TR-DOS) | the BASIC program, the Loader in line 4's REM, the autostart mark | `src/basic` |
 | `$61A8-$6ADC` | sectors 1-15 | the code: set-up, main loop, rhombi, stars, screen, catalogue, interrupt, keys, launcher | `src/main` |
 | `$6ADD-$6BA4` | | the small tables: PhaseOrder, MenuHelp, NoFilesText, KeyTable, BootName, RombColumnOrder, RombPhaseOffsets | `src/main` |
 | `$6BA5-$6E97` | | the code: twinkles, corners, glint, reflection, sound, exit fade | `src/main` |
@@ -57,20 +76,22 @@ The loader clears `$61A8-$FEAF` before and after the menu, so every "never loade
 
 ```mermaid
 flowchart TD
-    P["power-on, 128 menu, TR-DOS<br/>RUN boot (c1 frames 104-446)"] --> L["Loader $5D80: three reads<br/>frames 447-515"]
+    P["power-on, 128 menu, TR-DOS<br/>RUN boot (c1 frames 104-446)"] --> L["Loader $5D80: clear 447-459,<br/>three reads 459-515"]
     L --> S["Start $61A8 (frame 516):<br/>catalogue, IM 2, MusicInit,<br/>DrawScreen frames 532-536"]
     S --> B["BuildRombPhases x2, mirrors, turns<br/>frames 542-823"]
     B --> R["DrawReflection frames 824-890"]
     R --> M["MainLoop from frame 890<br/>+ Interrupt every frame"]
     M -->|"a letter, 5, 0 or ENTER"| X["RunLetter: line 1, bell,<br/>ExitFade, RET to the Loader"]
-    X --> T["TR-DOS runs the file"]
+    X --> Z["Loader: the same clear again (12 frames)"]
+    Z --> T["TR-DOS runs the file"]
 ```
 
-The interrupt is on from frame 542 (its first run), so the music plays and the twinkles start while the phases are
-still being built: the screen at frame 604 ([setup](img/play/setup.png)) still shows the help lines, which
-DrawReflection covers at frame 824-890 with the logo's mirror image ([menu idle](img/play/menu-idle.png)). The help
-lines are never seen again: the reflection is drawn into ScreenCopy too, and every page is drawn from it. BuildRombPhases
-takes 8 954 321 T-states for its two calls (125 frames), DrawReflection 4 688 343.
+The interrupt is on from frame 542 (its first run), so the music plays, the twinkles start and the keys are read (from
+frame 549) while the phases are still being built: the screen at frame 604 ([setup](img/play/setup.png)) still shows the
+help lines, which DrawReflection covers at frame 824-890 with the logo's mirror image ([menu
+idle](img/play/menu-idle.png)). The help lines are never seen again: the reflection is drawn into ScreenCopy too, and
+every page is drawn from it. BuildRombPhases takes 8 954 321 T-states for its two calls (125 frames), DrawReflection 4
+688 343.
 
 ## 2.4 The module map
 
@@ -99,33 +120,54 @@ takes 8 954 321 T-states for its two calls (125 frames), DrawReflection 4 688 34
 MainLoop `$627C` has no HALT. It counts MainTick and on every 2nd pass moves StarsA and StarsB two rows, on every 4th
 turns the two top rhombi one step and moves StarsC, on every 8th turns the two bottom rhombi. In c1, from frame 890
 to 7879 (6990 frames), MoveStars ran 34 273 times and PrintRombPhase 11 424 times: 15 232 passes, 2.2 passes a frame.
-A top rhombus makes its 32-step turn in about 59 frames, a bottom one in about 118. On a slower machine (contended
+A top rhombus makes its 32-step turn in about 58 frames, a bottom one in about 117 (at the idle window's 2.2 passes a
+frame, c1 1000-6000; [doc 4, 4.7](04-program-cycle.md#47-timers-and-delays)). On a slower machine (contended
 memory, a 48K) everything in the main loop runs slower; nothing in it is tied to the frame.
 
 ```mermaid
 flowchart LR
-    I["IM 2: Im2Jump $FCFC"] --> A["save all, HL' and IY for the ROM"]
+    I["IM 2: Im2Jump $FCFC<br/>(interrupts off until the EI)"] --> A["save all, HL' and IY for the ROM"]
     A --> M["CALL $C00E: the music"]
     M --> F["Frames + 1<br/>TwinkleClock + 2"]
     F --> T["TwinkleStar"]
-    T --> G["LogoGlint<br/>(Frames 0-63 of 256)"]
+    T --> G["LogoGlint<br/>(Frames 0-52 of 256)"]
     G --> C["every 4th: the cursor's colour"]
     C --> R["Frames 50/60/70/80/90:<br/>the name's spin"]
     R --> K["every 8th: ReadKeyboard"]
     K --> E["restore, EI, RET"]
 ```
 
-The interrupt's main costs in c1 (7274 calls each unless said, inclusive T-states):
+The interrupt's main costs in c1 (7274 calls each unless said, inclusive T-states except ReadKeyboard's):
 
 | Routine | T-states | A frame | Share of the 71 680 |
 | --- | ---: | ---: | ---: |
 | the music, `$C00E` | 49 741 659 | 6838 | 9.5 % |
 | TwinkleStar `$6BA5` | 9 811 510 | 1349 | 1.9 % |
-| ReadKeyboard `$6864` (909 calls) | 7 729 110 | 1063 | 1.5 % |
+| ReadKeyboard `$6864` (909 calls, own T) | 3 334 347 | 458 | 0.64 % |
 | LogoGlint `$6D04` | 4 079 700 | 561 | 0.8 % |
 
-So the interrupt takes about a seventh of the frame; the main loop has the rest, and MoveStars alone takes 397 066 343
-T-states of c1 (71 %), PrintRombPhase 99 599 773 (18 %).
+ReadKeyboard's own T is 3668 a call; its inclusive 7 729 110 adds the one SPACE of c1 (the TR-DOS read and
+ShowCatalogue, about 4.4 M T), which runs inside the handler.
+
+So the interrupt takes about a seventh of the frame and the main loop has the rest. In own T-states over the idle
+window (c1 1000-6000, `work/docs/zbA/idle/l1.json`), MoveStars takes 44.8 % of the CPU, SampleStar (which it calls)
+22.2 % and PrintSprite (the rhombi) 16.6 %: about 85 % for the stars and the rhombi together. The inclusive counts
+(MoveStars 397 066 343 T over c1) are larger, because they include the interrupts that land inside each routine.
+
+The main loop's calls:
+
+```mermaid
+flowchart LR
+    ML["MainLoop $627C"] -->|"every 2nd pass, x4"| MS["MoveStars $6482<br/>StarsA, StarsB"]
+    ML -->|"every 4th pass"| MC["MoveStars $6482<br/>StarsC"]
+    MS --> SS["SampleStar $6464<br/>the pixel under the new place"]
+    MC --> SS
+    ML -->|"every 4th pass, x2 (top)<br/>every 8th, x2 (bottom)"| PR["PrintRombPhase $64DA"]
+    PR --> PS["PrintSprite $64F4<br/>40 x 40, one phase"]
+```
+
+Where the time goes, routine by routine and coloured by module, is the frame budget of
+[doc 4, 4.6](04-program-cycle.md#46-the-cost-per-frame) (`img/loop/budget.png`).
 
 ## 2.6 The heatmap
 
@@ -141,9 +183,10 @@ are the thin line at the bottom.
 
 ## 2.7 Vadim's decompilation and where this case differs
 
-Vadim's `ZYXboot.mac` (M80 syntax, Russian comments, "Decompiled by Vadim (C) July 2010, (C) Unknown Author
-1991-1993") covers the menu `$61A8-$705F` and lists the graphics piece's layout as equates; it assembles with
-sjasmplus (after renaming five case-mismatched labels, `work/stage2/vadim.asm`) to this image's bytes exactly. Its
+Vadim's `ZYXboot.mac` (M80 syntax, Russian comments; its line 6 reads `;(C) Unkown Autor 1991-1993` [sic]) covers the
+menu `$61A8-$705F` and lists the graphics piece's layout as equates; it assembles with sjasmplus (after converting
+its M80 directives and the `.` and `?` in its labels to sjasmplus syntax, `work/stage2/vadim.asm`) to this image's
+bytes exactly. Its
 `61A8.MAC` is not a music player: it is a raw disassembler listing of the same piece
 (`ORG 61A8H`, its code, storage and table ranges up to `$70A7`, an unresolved-symbol table), the decompilation's
 first step. The decompilation has

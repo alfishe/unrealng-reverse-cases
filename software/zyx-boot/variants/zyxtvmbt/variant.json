@@ -37,7 +37,7 @@
   ],
   "notes": [
     "The tune: compiled Sound Tracker (\"MARK 800\", STC, collection XMX2 by the music index) in the music piece at `$C000`, kept as text (`music/`, kind stc1: head, the shared stc player, the stop's tail, stc.txt). The build packs it with tools/lzpack.py (byte-exact, no hints) behind the depacker head `parts/depack.ann`; the init depacks in place through the printer buffer `$5B8D` and leaves through `JP $0052`, the 48K ROM's RET.",
-    "The BASIC still reads 10 sectors of music (the original's count with the music at `$C000`); the file holds 8, so the read takes 2 sectors past the file's end.",
+    "The BASIC reads 10 sectors of music (`MusicSectors` 10: the unpacked tune's size, `$C000-$C9D6`, 2519 bytes; the original reads 22); the file holds the 8 of the packed tune, so the read takes 2 sectors past the file's end.",
     "ReadCatalogueSafe (`parts/safe.ann`, at `$6FE0` in the menu's spare bytes) traps disk errors through ERR_SP and stops the drive after reading; Start and the SPACE key call it (code switch `catalogue-safe`)."
   ],
   "packed": {

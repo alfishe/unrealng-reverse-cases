@@ -11,10 +11,10 @@
 ; Frames 0-63 of every 256: the glint across the logo or its reflection
 ;
 ; At Frames low byte 0 the corner cells by the logo turn red (2). Then on every
-; even frame up to 53 a glint step: 5 rows, each row's three cells left of the
-; step restored from ScreenCopy's attributes (RestoreGlintCells $6D6A) and
-; three cells red, bright red, red drawn (DrawGlintRow $6D8A), mirrored about
-; the screen's centre, the row above one cell further on.
+; even frame up to 52 a glint step (26 steps): 5 rows, each row's three cells
+; left of the step restored from ScreenCopy's attributes (RestoreGlintCells
+; $6D6A) and three cells red, bright red, red drawn (DrawGlintRow $6D8A),
+; mirrored about the screen's centre, the row above one cell further on.
 ;
 ; Witness: L1 13931 (c x4).
 LogoGlint:

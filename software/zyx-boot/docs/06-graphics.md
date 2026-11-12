@@ -5,7 +5,7 @@ What this covers:
 - PrintSprite and the logo: four 40 x 40 sprites side by side (6.1);
 - the reflection: the logo turned upside down by two turns and a mirror (6.2);
 - the rhombi: 34 phases built at the start from one 40 x 40 sprite, by dropping columns, mirroring and turning (6.3);
-- the star field: 30 records, near stars of 2 x 2 pixels and far ones of 1, moved with self-written bit opcodes (6.4);
+- the star field: 60 records (30 stars), near stars of 2 x 2 pixels and far ones of 1, moved with self-written bit opcodes (6.4);
 - the twinkle: a 16 x 16 sprite that grows and shrinks in a random place (6.5);
 - the glint: two red diagonals that cross the logo once every 256 frames (6.6);
 - the corner colours, Vadim's "FadeATTR" (6.7);
@@ -166,6 +166,16 @@ DrawReflection:
 6E40  RET
 ```
 
+```mermaid
+flowchart TD
+    F["FlipSprite x 4: Logo ... LogoPart4<br/>RotateSprite, RotateSprite, MirrorSprite"] --> DI["DI"]
+    DI --> P["PrintSprite x 4 into ScreenCopy<br/>row 19, columns 6, 11, 16, 21"]
+    P --> A["5 attribute rows of ScreenCopy:<br/>row 23 - n = row n, columns 6-25"]
+    A --> C1["ScreenCopy $F000-$F7FF to $5000:<br/>the bottom third"]
+    C1 --> C2["ScreenCopy attribute rows 19-23 to $5A60"]
+    C2 --> EI["EI"]
+```
+
 ![DrawReflection: the logo turned and printed into ScreenCopy](img/routines/DrawReflection.gif)
 
 *DrawReflection `$6DC6` over c1 frames 823-891, 90 pictures. Left above: memory `$9C00-$FFFF`; left below: the
@@ -256,6 +266,20 @@ BuildRombPhases(DE = the set):
 ...
 ```
 
+```mermaid
+flowchart TD
+    S["C = 8, IY = RombOffsets"] --> PH["BuildPhase: HL = RombWork, B = 40 rows"]
+    PH --> R["BuildPhaseRow: ClearPhaseMask,<br/>PhaseOffset = RombOffsets[C]"]
+    R --> M["MarkColumns: the first 5 x C entries<br/>of RombColumns, AND $3F, into PhaseMask"]
+    M --> SC["ScaleRombLine: the marked pixels<br/>packed from PhaseOffset"]
+    SC --> RB{"40 rows done?"}
+    RB -->|"no"| R
+    RB -->|"yes"| NX["D + 1: the next phase; C - 1"]
+    NX --> CB{"C = 0?"}
+    CB -->|"no"| PH
+    CB -->|"yes"| E["the edge pass on phase 8: for each of the 40 entries<br/>at or above RombThreshold, byte 2 of the row = $18"]
+```
+
 ScaleRombLine writes the pixels with self-written instructions: it builds `BIT n,(IX+0)` for the source pixel and
 `SET n,(IY+0)` or `RES n,(IY+0)` for the target pixel (the opcode byte `$86 | n << 3`, plus `$40` for SET).
 
@@ -293,8 +317,10 @@ How to read it:
 - In the map, PhaseMask `$7698` flashes on every row (cleared and marked again) and RombColumns `$7600` is read.
 
 The point: a row costs about 14 000 T (8.95 M T for 16 phases of 40 rows; the mask is rebuilt for each row, though it
-is the same for all 40 rows of a phase), so one phase takes 8 to 11 frames and the 16 phases fill the 156 frames of
-BuildRombPhases.
+is the same for all 40 rows of a phase), so a phase takes about 8 frames: set A's 8 phases run from frame 542 to 605.
+The 156 frames 542-697 between BuildRombPhases's first and last call also hold set A's 8 mirrors (MirrorSprite from
+frame 605) and the three turns of RombWork (RotateSprite from frame 613, 517 844 T a turn, about 22 frames for the
+three) before set B (c1 stage-1 L1).
 
 ### The edge pass: a line that is never drawn
 
@@ -323,6 +349,61 @@ picture top to bottom. The 17 phases are then turned another 90 degrees, back to
 reverses each row's 5 bytes and the bits of each byte (MirrorByte: 8 x `RR C`, `RLA`). RotateSprite turns 90 degrees
 one bit at a time: for each of the 40 source columns it shifts the bit out of every row (`RL (HL)`) into a 5-byte row
 of RotateBuffer `$9C00` (`RRA` along the row), then copies the buffer back.
+
+```text
+6419  LD B,$08               ; MirrorByte: the bits of C reversed into A
+641B  RR C                   ; MirrorByteBit: bit 0 of C out ...
+641D  RLA                    ; ... and into bit 0 of A, A moving left
+641E  DJNZ MirrorByteBit
+6420  LD C,A
+6421  RET
+
+6422  PUSH HL                ; RotateSprite(HL)
+6423  LD DE,RotateBuffer
+6426  LD B,$05               ; 5 source bytes across
+6428  PUSH BC                ; RotateColumnByte
+6429  PUSH HL
+642A  LD B,$08               ; 8 pixel columns a byte, the leftmost first
+642C  PUSH BC                ; RotateColumnBit
+642D  PUSH HL
+642E  LD B,$28               ; 40 source rows, top to bottom
+6430  PUSH BC                ; RotateSourceRow
+6431  RL (HL)                ; the row's leftmost unread pixel into carry
+6433  PUSH DE
+6434  LD B,$05
+6436  LD A,(DE)              ; RotateShiftRow: the carry in at the left of a
+6437  RRA                    ; 40-pixel buffer row, the row moving right
+6438  LD (DE),A
+6439  INC E
+643A  DJNZ RotateShiftRow
+643C  POP DE
+643D  LD BC,$0005
+6440  ADD HL,BC              ; the next source row
+6441  POP BC
+6442  DJNZ RotateSourceRow
+6444  INC E                  ; x 5: the next buffer row
+...
+6450  DJNZ RotateColumnByte
+6452  POP DE
+6453  PUSH DE
+6454  LD HL,RotateBuffer
+6457  LD BC,$00C8
+645A  LDIR                   ; 200 bytes back over the sprite
+645C  POP HL
+645D  RET
+```
+
+RotateSprite turns clockwise. Source column x becomes buffer row x; its pixels enter at the row's left one by one and
+move right, so source row 0's pixel ends at pixel 39 and row 39's at pixel 0: pixel (x, y) goes to (39 - y, x). The
+top-left corner goes to the top right, the top-right to the bottom right: a quarter turn clockwise. Two turns are a
+half turn, (x, y) to (39 - x, 39 - y), and MirrorSprite, (x, y) to (39 - x, y), then gives (x, 39 - y): the
+top-bottom flip of FlipSprite.
+
+Worked example, MirrorByte on `$28` (`%00101000`): `RR C` sends out bits 0, 1, 2 (0, 0, 0), then 1, 0, 1, 0, 0; `RLA`
+shifts them into A from the right, so the first bit out ends in bit 7: A = `%00010100` = `$14`. In MirrorSprite the
+5 bytes of a row change places too (byte 0 to 4, 1 to 3, 2 stays), so pixel 2 (in byte 0, bit 5) goes to pixel 37
+(byte 4, bit 2). RotateSprite on one column: source column 0 holds the leftmost pixel of rows 0-39; after its 40
+`RL`/`RRA` rounds, buffer row 0 holds row 39's pixel at the left and row 0's at the right.
 
 ![The rhombus phases as the menu built them](img/graphics/rhombus-phases.png)
 
@@ -369,6 +450,22 @@ PrintRombPhase(HL = screen place, DE = the set, BC = the step's variable):
 
 Worked example: Start sets PhaseTopRight to 5. On its first print (pass 3) PhaseOrder[5] = 5, so the top-right
 rhombus shows set B phase 5 from `$8A00` + 5 x 256 = `$8F00` at screen `$401B`, and its step becomes 6.
+
+![PrintRombPhase printing a rhombus phase](img/routines/PrintRombPhase.gif)
+
+*PrintRombPhase `$64DA` in c1 frame 1300 (T 45 200 to 52 620): one call, 60 pictures. Left above: memory
+`$4000-$9FFF` (the screen, then PhasesA `$7800` to MirrorsB); left below: the screen; right: the listing at the PC.
+Made with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window 1300:45200-1300:52620 --listing
+build/main.lst --view screen --pc 64DA-650F --range 4000-9FFF --pictures 60 --title PrintRombPhase --out
+docs/img/routines/PrintRombPhase.gif`.*
+
+How to read it:
+
+- First PhaseOrder `$6ADD` is read once (the step's phase), then PrintSprite's `LDIR` runs 40 times: a 5-byte read in
+  the phases' page and a 5-byte write on the screen each.
+- The top-left rhombus on the screen is rewritten from its top line down, a cell row at a time.
+
+The point: a rhombus step is one 200-byte copy, about 7 400 T; the turning was paid for at the start.
 
 The point: the four rhombi share two sets and start 0, 5, 8 and 14 steps apart, so they never look alike; the top
 pair turns at twice the bottom pair's rate (4.4).
@@ -449,6 +546,26 @@ flowchart LR
     D --> E["SET n,(HL): the star"]
     E --> A
 ```
+
+![MoveStars moving StarsA](img/routines/MoveStars.gif)
+
+*MoveStars `$6482` on StarsA `$AC84` in c1 frame 1300 (T 16 200 to 25 830), one call, 60 pictures. Left above: memory
+`$4000-$AFFF`; left below: the 20 records of StarsA, 6 bytes a line, as numbers; right: the listing at the PC. Made
+with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window 1300:16200-1300:25830 --listing
+build/main.lst --view buffer:AC84:6x20:hex --pc 6482-64D9,645E-6481 --range 4000-AFFF --pictures 60 --title
+MoveStars --out docs/img/routines/MoveStars.gif`.*
+
+How to read it:
+
+- The records change a line at a time, top to bottom: bytes +0, +1 (the address, one pixel row on) and +5 (the pixel
+  now under the star) written, +2 to +4 only read.
+- In the listing, `$64A1` (MoveStarsPutBack) and `$64D4` (MoveStarsDraw) are the two opcodes the routine writes before
+  it runs them: the code panel shows them as `RES 0,(HL)` / `SET 0,(HL)`, the bytes as assembled; the map shows
+  their operand bytes `$64A2` and `$64D5` written (by `$649E` and `$64D1`).
+- In the screen part of the map, a dot written at the put-back and another one row lower at the draw, 20 times.
+
+The point: a star costs about 480 T a move (9 630 T for 20 records), of which the self-written opcodes save the
+shift and mask a bit-by-number draw would need.
 
 ![The star field at the start and at frame 1000](img/graphics/stars.png)
 
@@ -550,8 +667,9 @@ TwinkleStar:
 ```
 
 CheckTwinkleSpot `$6C56` (Vadim: `;???`) reads a pair as the low byte of a screen address and a byte whose bits 3-4
-pick the third. It refuses a place in a character row's last line (the low byte `$E0` or more: the 16 lines would
-run into the next third) and limits the column: 6-25 in the top and bottom thirds (over the logo and its reflection,
+pick the third. It refuses a place on the third's last character row (the low byte `$E0` or more: rows 7, 15 and
+23), where the twinkle's second cell row would wrap to the top of the same third, since the draw steps to the next cell
+row by adding `$20` to L only (`$6C4F-$6C52`); and it limits the column: 6-25 in the top and bottom thirds (over the logo and its reflection,
 clear of the rhombi) and 1-30 in the middle one. A third bits `11` (no such third) becomes the middle third.
 
 ![The twinkle's four frames and its clock](img/graphics/twinkle.png)
@@ -563,7 +681,8 @@ How to read it:
 - Top: the four frames, a dot growing into a star with rays.
 - Below: TwinkleClock values `$02`-`$3A`, every 8 (4 frames), and the frame each draws: 0 1 2 3, then 3 2 1 0.
 
-The point: a twinkle is 8 draws over 32 frames, then 8 frames dark; 39 frames from one start to the next. The place
+The point: a twinkle is 8 draws, lit for 30 frames (clock `$02` to `$3C`), then 9 frames dark (the erase at clock
+`$3E`, held 8 frames, then clock `$40`, which draws nothing): 39 frames from one start to the next. The place
 comes from 4 pairs refilled every 4 twinkles (at clock 0), from the R register, a walk through the ROM and MainTick.
 
 Worked example, from the code: Randoms holds `44 64 6 72 212 120 73 80` (`src/res/tables/randoms.txt`). At clock
@@ -573,9 +692,60 @@ inside 6-25; the low byte is under `$E0`. Allowed: the twinkle is at `$402C`, ro
 Witness: c1 idle, DrawTwinkle 2053 calls in 5000 frames: 16 a twinkle (8 draws and 8 erases) in 39 frames gives
 5000 / 39 x 16 = 2051.
 
+```mermaid
+stateDiagram-v2
+    direction LR
+    Refill: clock 0: NewRandoms
+    Draw: bits 0-2 = 2: DrawTwinkle, the next frame
+    Wait: other clocks: nothing
+    End: bits 0-5 = $3E: erase
+    Hold: TwinklePause + 1 not 0: clock - 2
+    Try: CheckTwinkleSpot
+    Refill --> Wait
+    Wait --> Draw: clock + 2
+    Draw --> Try
+    Try --> Try: refused: NewRandoms, again
+    Try --> Wait: allowed: EraseTwinkle, OR the frame
+    Wait --> End: clock $3E
+    End --> Hold: 7 times
+    Hold --> End: the next frame
+    End --> Wait: the 8th time: clock $40, then $42 draws at the next place
+```
+
+CheckTwinkleSpot refuses 2-3 % of the places tried, each refusal followed by NewRandoms and a new try; which places
+were refused is not traced. The stage-1 L1 counts give it: CheckTwinkleSpot `$6C56` runs once a try, EraseTwinkle
+`$6C71` once a place accepted.
+
+| Recording | Tries | Accepted | Refused |
+| --- | ---: | ---: | ---: |
+| c1 | 3 061 | 2 981 | 80 (2.6 %) |
+| c2 | 1 346 | 1 305 | 41 |
+| c3 | 687 | 663 | 24 |
+| c4 | 770 | 756 | 14 |
+| idle (5000 frames) | 2 113 | 2 053 | 60 |
+
+NewRandoms `$6BAB` runs 126 times in c1: the 80 retries and about 46 refills at clock 0 (frames 543-7879, one refill a
+round of 4 twinkles, 156 frames: 47).
+
+![TwinkleStar drawing a twinkle frame](img/routines/TwinkleStar.gif)
+
+*TwinkleStar `$6BA5` in c1 frame 1302 (T 6 900 to 10 930), a draw frame: 60 pictures. Left above: memory
+`$4000-$FFFF`; left below: the screen; right: the listing at the PC. Made with `python3 ../../kit/routine_anim.py
+--work work/docs/zbA/c1 --window 1302:6900-1302:10930 --listing build/main.lst --view screen --pc 6BA5-6CBE --range
+4000-FFFF --pictures 60 --title TwinkleStar --out docs/img/routines/TwinkleStar.gif`.*
+
+How to read it:
+
+- First the clock tests, then DrawTwinkle: Randoms `$ADEC` read (a blue dot in the map), CheckTwinkleSpot.
+- EraseTwinkle copies the 2 x 2 cells' 16 rows from ScreenCopy `$E000` (reads high in the map) to the screen.
+- DrawTwinkleRow ORs the frame's 32 bytes from TwinkleSprites `$6F60` onto the screen, row by row, below the logo's Z.
+
+The point: a twinkle frame costs about 4 000 T in the interrupt (T 6 903 to 10 927): a check, a 32-byte copy and a
+32-byte OR.
+
 ## 6.6 The glint
 
-On frames 0-54 of each 256-frame cycle, LogoGlint `$6D04` sweeps two red diagonals across the logo's attributes, one
+On Frames 0-52 of each 256-frame cycle, LogoGlint `$6D04` sweeps two red diagonals across the logo's attributes, one
 from each side, crossing in the middle; on alternate cycles it does the same on the reflection.
 
 ```text
@@ -636,7 +806,7 @@ How to read it:
   like the sides of a roof; they meet in the middle and pass each other.
 - At the end NO EXE FILES ! turns (the spin starts at Frames 50).
 
-The point: a glint is 27 steps, 54 frames, of pure attribute work: 4 488 T a step (4.5), no pixel touched.
+The point: a glint is 26 steps, Frames 2-52, after the corner cells at Frames 0, of pure attribute work: 4 488 T a step (4.5), no pixel touched.
 
 Worked example, Frames low 20 (c = 10): the bottom row (row 4) gets red at columns 10 and 12, bright red at 11, and
 the mirror at 21, 20 and 19; row 3 at 11-13 and 18-20; row 0 at 14-16 and 15-17 mirrored: the two stripes overlap on
@@ -644,6 +814,40 @@ the top row.
 
 Witness: c1 frame 1075 (Frames low 19) shows the stripes ([screens](img/overview/screens.png), picture 3); c1 frame
 1106 is Frames `$0232`, high byte 2: the top logo, and the next cycle (from frame 1312) the reflection.
+
+```mermaid
+flowchart TD
+    A{"Frames low < 64?"} -->|"no"| R["return"]
+    A -->|"yes"| H{"Frames high bit 0"}
+    H -->|"0"| T["the logo's addresses:<br/>corners $5806 $5819, rows from $5880"]
+    H -->|"1"| B["the reflection's:<br/>corners $5A66 $5A79, rows from $5AE0"]
+    T --> Z{"Frames low = 0?"}
+    B --> Z
+    Z -->|"yes"| C["the two corner cells red; return"]
+    Z -->|"no"| O{"odd?"}
+    O -->|"yes"| R
+    O -->|"no"| S{"c = Frames low / 2 < 27?"}
+    S -->|"no"| R
+    S -->|"yes"| G["5 rows, bottom up, c + 1 a row:<br/>RestoreGlintCells at c - 1, DrawGlintRow at c"]
+```
+
+![LogoGlint at Frames 20](img/routines/LogoGlint.gif)
+
+*LogoGlint `$6D04` in c1 frame 1076 (Frames `$0214`: low 20, c = 10), T 11 050 to 16 080, 60 pictures. Left above:
+memory `$5800-$FAFF` (the attributes at the top, ScreenCopy's at the bottom); left below: the screen; right: the
+listing at the PC. Made with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window 1076:11050-1076:16080
+--listing build/main.lst --view screen --pc 6D04-6DC5 --range 5800-FAFF --pictures 60 --title LogoGlint --out
+docs/img/routines/LogoGlint.gif`.*
+
+How to read it:
+
+- Five rounds of the listing, one a row from row 4 up: RestoreGlintCells reads ScreenCopy's attributes (`$F800` on,
+  at the bottom of the map) and writes the screen's, then DrawGlintRow writes red and bright red.
+- On the screen the two stripes move one cell in from each side compared with the step before: the worked example's
+  cells.
+
+The point: this step takes about 5 000 T (T 11 101 to 16 069) of attribute reads and writes: 30 cells painted and 30
+put back.
 
 ## 6.7 The corner colours
 
@@ -708,11 +912,12 @@ never touch it.
 
 ![The screen against ScreenCopy at c1 frame 1000](img/graphics/screencopy.png)
 
-*The screen `$4000` and ScreenCopy `$E000` at c1 frame 1000, and the pixels that differ (`tools/fig_graphics.py`).*
+*The screen `$4000` and ScreenCopy `$E000` at c1 frame 1000, and the pixels whose colour differs (`tools/fig_graphics.py`).*
 
 How to read it:
 
-- Left: the screen; middle: the copy; the red pixels are those only on the screen.
+- Above: the screen and the copy; below: the red pixels are those whose colour differs between the screen and the
+  copy (NO EXE FILES ! is in both: it differs only in its cursor colour).
 - All the differences are the stars, the rhombi in their current phase (the copy keeps phase 0), the twinkle and the
   cursor colour.
 
@@ -732,7 +937,7 @@ How to read it:
 - Red, the corners: PrintSpriteLine, the rhombi (780 bytes, 1200 writes).
 - Green and blue dots: MoveStarsDraw and MoveStarsPutBack, the stars falling (444 writes each).
 - Yellow, the middle: CopyNameRow, NO EXE FILES ! turned a quarter (the spin of frame 1106).
-- Purple, a staircase of cells along the top: RestoreGlintCells putting back the glint's last steps (Frames 50-54).
+- Purple, a staircase of cells along the top: RestoreGlintCells putting back the glint's last steps (Frames 50 and 52).
   The put-back is not clipped to columns 6-25 like the paint, so it also rewrites corner cells, with the values they
   already hold.
 - Orange, in the reflection: DrawTwinkleRow; light green, the name's attributes: PaintCursor.
@@ -744,8 +949,6 @@ ScreenCopy.
 
 - The edge line of phase 8: never drawn by any of the recorded disks, since RombColumnOrder has no entry of `$40`
   or more; a variant with flagged entries would show it.
-- CheckTwinkleSpot's refusals and the NewRandoms retry: the recordings show allowed places only; how often a place is
-  refused is not measured.
 - The star wrap from the bottom row to `$4000`: seen as stars reappearing at the top in [stars.gif](img/play/stars.gif),
   not traced instruction by instruction.
 
