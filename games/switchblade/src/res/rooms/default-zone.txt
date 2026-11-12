@@ -1,0 +1,3 @@
+# EmptyObjectList $75FB: the zone record of a room with none (one rectangle, cells 0-$DB), and two zero
+# bytes.
+$75FB: 10 00 DB 00 00

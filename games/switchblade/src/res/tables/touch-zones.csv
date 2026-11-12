@@ -1,0 +1,8 @@
+# TouchZoneRecords $6C82 (the touch zones $5FAC at run time): Hiro's place relative to an actor, [from, to),
+# read by HiroInZone $9529 for the actor's +$11.
+zone,y_from,y_to,x_from,x_to
+0,-16,1,-39,41
+1,-36,36,-31,31
+2,-48,16,-48,48
+3,-1,32,-16,16
+4,-16,32,-16,16

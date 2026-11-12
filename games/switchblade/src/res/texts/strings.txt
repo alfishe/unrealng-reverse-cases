@@ -1,0 +1,51 @@
+# The menu, high-score entry, panel and end strings (PrintString $837B records).
+
+# MusicIconText $821E: the note icon (glyphs $65 $66), 128K glue
+text $B8 $1E $07 $47
+  "\x65\x66"
+
+# EffectsIconText $8225: the effects icon (glyphs $2A $26)
+text $B8 $1E $07 $47
+  "*&"
+
+# HighScoreMessage $822C
+text $14 $00 $06 $46
+  "WELL DONE! YOU HAVE A HIGH SCORE"
+  ""
+  "\x05PLEASE ENTER YOUR NAME"
+
+# NameGridText $826A: < deletes, + ends
+text $3C $14 $07 $47
+  "A B C D E F"
+  ""
+  "G H I J K L"
+  ""
+  "M N O P Q R"
+  ""
+  "S T U V W X"
+  ""
+  "Y Z !   < +"
+
+# NameCursorText $82AE: the 3 x 3 frame of glyphs $22-$29
+text $74 $26 $47 $07
+  "\"#$"
+  "%\x01%"
+  "'()"
+
+# NameEntryText $82BE: the ten letters typed (NameEntryLetters $82C2)
+text $96 $14 $07 $04
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# NameEntryMark $82CD
+text $A0 $12 $07 $47
+  " / "
+
+# FirebladePanelText $82D5: six glyph codes from FirebladeIcons (FirebladeGlyphs $82D9)
+text $00 $34 $46 $46
+  "000000"
+
+# EndText $82E0: printed by HavokFade $872B
+text $20 $04 $07 $47
+  "THE DAWN HAS COME AND MY"
+  "WORLD IS SAFE,"
+  "\x06FOR NOW....."

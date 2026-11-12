@@ -1,0 +1,13 @@
+# RoomPatterns $7310-$7329: the outline shapes, a byte a step: bit 7 two tiles (2, 3) else tile 1, bit 6
+# back to the style's first shape, bits 0-5 the step to the next cell. One line a style's list as
+# RoomPatternStarts cuts them.
+$7310: 01 C1
+$7312: 13 D4
+$7314: 14 D3
+$7316: 54
+$7317: 41
+$7318: 14 92 D4
+$731B: 01 81 C1
+$731E: 81 81 01 41
+$7322: 93 01 92 81 C1
+$7327: 93 01 53

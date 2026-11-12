@@ -1,0 +1,9 @@
+# MeterGradient $FFB7 (the partial byte for value AND 3), MeterStrip $FFBB: 7 full bytes, MeterPartial (a
+# variable), 8 empty bytes; DrawMeter $FF7C shows 8 of them from $FF00 + C.
+$FFB7: 55 D5 F5 FD
+# MeterStrip
+$FFBB: FF FF FF FF FF FF FF
+# MeterPartial
+$FFC2: FF
+# MeterEmpty
+$FFC3: 55 55 55 55 55 55 55 55

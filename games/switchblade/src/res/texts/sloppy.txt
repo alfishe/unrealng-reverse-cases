@@ -1,0 +1,4 @@
+# SpareName $8214: 10 letters, no record header.
+
+# SpareName $8214: the 11th name; a high-score name SLOPPY is the cheat (keys 1-4 choose the start room)
+raw "SLOPPY    "

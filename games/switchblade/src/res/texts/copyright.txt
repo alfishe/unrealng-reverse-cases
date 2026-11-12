@@ -1,0 +1,5 @@
+# The title page's copyright line.
+
+# CopyrightText $81F0
+text $B5 $02 $07 $04
+  "COPYRIGHT GREMLIN GRAPHICS 1990"

@@ -1,0 +1,114 @@
+# The annotations of boot (kit/mkgame.py --part src/boot/boot.json). Format: ../../../../docs/ann-format.md.
+#
+# TZX block 5's first $146 bytes, loaded by stage 2 to $4000 (into the screen, behind black attributes): the
+# bootstrap $4000-$40A3 and the 162-byte AY glue $40A4-$4145, which the bootstrap copies to $853F-$85E0 on a 128K
+# (over the 48K effect player). The rest of block 5 is the game's ($4146 -> $5C00, $5093 -> $FF01; src/game).
+# Witness: c1 (128K) and c48 (48K) from power-on; the glue in the 128K recordings. "Witness: L1 0 (c1)" lines are
+# placeholders the lead's --fix-witness fills.
+
+@equ $4146 ResidentSource ; block 5's bytes for $5C00-$6B4C (the game's start code, src/game)
+@equ $5093 PanelSource ; block 5's bytes for $FF01-$FFFE (the game's panel code)
+@equ $5C00 GlobalsInit ; the game's lowest address: the copy's target and the top of the stack
+@equ $5C9A NewGameIntroHook ; hook site 5: three NOPs in NewGame
+@equ $5CFA GameEntry ; the game's entry
+@equ $5CFD GameEntryIntro ; hook site 1: CALL Intro48 in GameEntry
+@equ $8452 TuneRequest ; the game's sound variables (src/game, $8450-$8455)
+@equ $8450 Last7FFD ; the last value written to $7FFD, which the glue restores
+@equ $8453 TuneState ; the tune playing, bit 7 = loop
+@equ $8454 EffectRequest ; the effect to start, $FF none
+@equ $8455 SoundMode ; 0 music, 1 effects (128K)
+@equ $821E MusicIconText ; the note icon's text record
+@equ $8225 EffectsIconText ; the effects icon's text record
+@equ $837B PrintString ; the game's print routine
+@equ $8456 InterruptHandler ; the game's IM 2 handler
+@equ $850E DecodeDirection ; D = right +1 / left -1, NC when no direction
+@equ $8529 ReadInput ; Z = fire pressed
+@equ $9BA3 EffectBusy ; the operand the footstep effect tests: the AY channel A volume on a 128K
+@equ $A6EF ShowHighScoresHook ; hook site 2: CALL ReadInput in ShowHighScores
+@equ $A75C TitleColourHook ; hook site 4: three NOPs in TitleSequence after the clear
+@equ $A76F TitleStepHook ; hook site 3: CALL ReadInput in TitleSequence
+@equ $FDFD Im2Jump 3 ; JP InterruptHandler, the target of every IM 2 vector
+@equ $FE00 Im2Table 257 ; 257 bytes $FD: the IM 2 vector table for I = $FE
+@equ $FF01 PanelWeapon ; the game's panel code (over the tape loader)
+
+@const MusicState $C006 ; bank 4: $FF a tune playing, 1 dying away, 0 stopped (src/bank4)
+@const PlayEffect $C011 ; bank 4: start sound effect A
+@const StartTune $C0D7 ; bank 4: start tune A
+@const PlayFrame $C17D ; bank 4: one frame of the player
+@const AyChannelA $D09D ; bank 4: the AY record of channel A (+5 the volume)
+@const Silence $D182 ; bank 4: silence the AY
+@const StoryPages $D3D0 ; bank 4: the 128K intro story
+
+@isub $408A LD DE,AyGlue
+@isub $8549 LD A,(AyChannelA+5)
+@isub $856A CALL StartTune
+@isub $856D LD A,(MusicState)
+@isub $8571 JP NZ,PlayFrame
+@isub $8589 LD A,(MusicState)
+@isub $858D CALL NZ,Silence
+@isub $8597 JP Z,PlayFrame
+@isub $859B JP PlayEffect
+@isub $85D1 CALL StoryPages
+
+@module boot ; The bootstrap: IM 2, the copies of the game's resident parts, the 128K hooks and glue
+@about Run by stage 2's JP $4000 after block 5 is loaded into the screen. It sets the IM 2 vector table, copies the game's start code from $4146 to $5C00 and the panel code from $5093 to $FF01 (over the tape loader), and on a 128K patches five hook sites in the game and copies the AY glue to $853F. Then JP $5CFA, the game's entry. The 48K and 128K games are the same program: only these five sites and the code at $853F differ.
+@about The five hook sites, three bytes each from HookBytes $4095 (LDI x 3 each, in this order): 1. $5CFD (GameEntry's CALL $5D4F, the 48K intro) <- 00 00 00: no 48K intro. 2. $A6EF (ShowHighScores, the fire test CD 29 85 = CALL $8529) <- CD 9E 85 = CALL $859E, GlueMenuInput. 3. $A76F (TitleSequence, CD 29 85) <- CD 9E 85 = CALL $859E. 4. $A75C (TitleSequence after each clear, 00 00 00) <- CD B3 85 = CALL $85B3, GlueSoundIcon. 5. $5C9A (NewGame before the globals, 00 00 00) <- CD C5 85 = CALL $85C5, GlueIntro. At sites 2 and 3 only the middle byte differs from the 48K game ($A6F0, $A770: $29 -> $9E).
+$4000 c Bootstrap ; Set IM 2, copy the game's resident parts, on a 128K patch the hooks and copy the glue, enter the game
+> 1. DI, SP = `$5C00`, border black.
+> 2. BootModel `$4051`'s operand (written by stage 2's Has128K: 1 on a 128K) chooses: a 128K first runs SetVectors with A = `$14` (bank 4 at `$C000`), so bank 4 gets the vector table too (the interrupt can come while the glue has it paged in); then on every machine SetVectors with A = `$10` (bank 0, the 48K BASIC ROM). I = `$FE`, IM 2: whatever byte is on the bus, the vector read from the table is `$FDFD`, which holds `JP $8456` (InterruptHandler).
+> 3. ResidentSource `$4146` -> `$5C00` (`$F4D` bytes, to `$6B4C`), PanelSource `$5093` -> `$FF01` (`$FE` bytes, to `$FFFE`).
+> 4. 48K: `JP Z,$5CFA`. 128K: the five hooks (see the module header), the glue `$40A4` -> `$853F` (`$A2` bytes), `JP $5CFA`.
+> Interrupts stay off: the game turns them on (the first `EI` in its waits).
+> Witness: L1 2 (c x2).
+$4007 ; stage 2's answer: 1 on a 128K
+$4012 BootVectors0 ; bank 0 (and the 48K ROM) at $C000: its vector table
+$4017 ; I = $FE, IM 2
+$401F c SetVectors ; Page A into $7FFD, write JP $8456 at $FDFD and 257 bytes $FD from $FE00
+> A = the `$7FFD` value. `$C3` at `$FDFD`, the address of InterruptHandler `$8456` at `$FDFE`; the table `$FE00-$FF00` (B = 0: 256 bytes, then one more) all `$FD`, so any byte on the bus gives the vector `$FDFD`. The byte at `$FF00` (the tape loader's first) is overwritten too.
+> Witness: L1 3 (c x2).
+$4035 SetVectorsLoop
+$403B BootCopy ; the game's start code to $5C00, the panel code to $FF01
+$4051 BootModel ; LD A,$01: the operand at $4052 is written by stage 2 (0 on a 48K)
+$4057 ; 128K: the five hook sites
+$4063 ; site 2: ShowHighScores' fire test
+$406C ; site 3: TitleSequence's fire test
+$4075 ; site 4: TitleSequence after the clear
+$407E ; site 5: NewGame before the globals
+$4087 ; the glue to $853F
+$4095 b HookBytes 3 ; The three bytes written to each hook site, in the order of the LDIs
+> Not code: the mechanical cut read them as instructions. 15 bytes, five sites.
+$4095 ; site 1, $5CFD: 00 00 00 over CALL $5D4F (no 48K intro)
+$4098 ; site 2, $A6EF: CALL $859E (GlueMenuInput)
+$409B ; site 3, $A76F: CALL $859E (GlueMenuInput)
+$409E ; site 4, $A75C: CALL $85B3 (GlueSoundIcon)
+$40A1 ; site 5, $5C9A: CALL $85C5 (GlueIntro)
+
+@module glue ; The AY glue: the 128K's sound player entry, the menu's music / effects toggle, the 128K intro
+@about Copied from $40A4 to $853F-$85E0 by the bootstrap on a 128K, over the 48K version's effect player (the beeper). The game's sound interface stays the same: TuneRequest $8452, EffectRequest $8454 and the call to $853F from InterruptHandler; the glue pages bank 4 and drives its AY player (src/bank4), whose names are @const here. The menu entries GlueMenuInput, GlueSoundIcon and GlueIntro are reached only through the hook sites.
+$853F c AyGlue ; One frame of the 128K sound: page bank 4, the requests and the player, the volume gate, page back
+> Called by InterruptHandler `$8456` every frame. Bank 4 (`$14`) at `$C000`; GlueRequests; EffectBusy `$9BA3` = AY channel A's volume (`$D0A2`), so the footstep effect waits while channel A sounds; then `$7FFD` = Last7FFD `$8450` (the paging the interrupted code had).
+> Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+$8558 c GlueRequests ; The tune and effect requests: start a tune, loop it, follow the jingle with the music, play an effect, or one frame
+> - TuneRequest `$8452` = `$FF`: Silence when MusicState is not 0 (the game's stop, `$5C45`).
+> - `$FE`: no request. Else the number (bit 7 = loop) goes to TuneState `$8453`, StartTune with A AND 15, and the request becomes `$FE`.
+> - While a tune plays (MusicState not 0): `JP PlayFrame`.
+> - When it has ended: TuneState bit 7 restarts it (the request is set again); tune 2 (the start jingle) is followed by `$81` (tune 1, looped, the in-game music) when SoundMode `$8455` is 0 (music).
+> - Then EffectRequest `$8454` (`$FF` after reading it): none -> `JP PlayFrame` (the envelopes), else `JP PlayEffect` with A = the effect.
+> Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+$855B GlueTune
+$856D GlueTunePlaying
+$8586 GlueRequestAgain
+$8589 GlueStop
+$8590 GlueEffect
+$859E c GlueMenuInput ; Hook sites 2 and 3: the fire test, and left / right choose music or effects
+> Replaces `CALL $8529` (ReadInput) in ShowHighScores and TitleSequence. ReadInput, EI: Z (fire) returns Z. Else DecodeDirection `$850E`: no direction or no left / right (D = 0) returns NZ; right (D = +1) sets SoundMode `$8455` = 1 (effects), left 0 (music), and GlueSoundIcon shows it; returns NZ (A = 1).
+> Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
+$85B0 GlueSetMode
+$85B3 c GlueSoundIcon ; Hook site 4: print the music or effects icon at Y $B8, X $1E by SoundMode
+> SoundMode bit 0: EffectsIconText `$8225`, else MusicIconText `$821E`, through PrintString `$837B`. Then A = 1, NZ.
+> Witness: L1 957 (c1, deaths, gameover, menu, opt2).
+$85BF GlueSoundIconPrint
+$85C3 GlueNoFire ; A + 1: NZ
+$85C5 c GlueIntro ; Hook site 5: the 128K intro (StoryPages in bank 4), then bank 0
+> DI, bank 4 (`$14`) paged and kept in Last7FFD (so the interrupt's AyGlue pages it back), EI, StoryPages `$D3D0`; then DI, bank 0 (`$10`) and Last7FFD, EI. Called by NewGame `$5C9A` before every game.
+> Witness: L1 8 (c1, deaths, gameover, menu, opt2).

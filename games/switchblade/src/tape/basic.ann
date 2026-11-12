@@ -1,0 +1,87 @@
+# The annotations of tape/basic (kit/mkgame.py --part src/tape/basic.json). Format: ../../../../docs/ann-format.md.
+#
+# TZX block 2, the BASIC program "( Switch )" (LINE 0, 361 bytes) at PROG $5CCB: line 0 ($5CCB-$5D06), whose USR
+# enters the machine code at $5D07, and the tape loader $5D37-$5E33, which that code copies to $FF00-$FFFC and runs
+# there. Witness: c1 (power-on, the original TZX at ROM speed) and c48 (the same on a 48K). "Witness: L1 0 (c1)"
+# lines are placeholders the lead's --fix-witness fills.
+
+@equ $0555 RomRet ; a RET in the 48K BASIC ROM (the end of SA/LD-RET, the byte before LD-BYTES $0556)
+@equ $4000 Screen 6144 ; the display file
+@equ $5800 Attributes 768 ; the screen attributes
+
+@module basic ; The BASIC: line 0, whose USR enters the code that ends the line
+@about The program is one line, numbered 0 and auto-run: LET X=PEEK 23635+256*PEEK 23636: LET x=x+60: RANDOMIZE USR x, that is USR (PROG + 60) = $5D07. LIST shows the digits "66666", "770", "60877" and "87": the five-byte forms after them hold the real numbers 23635 (PROG), 256, 23636 and 60. The ROM's variable names are case-blind, so X and x are one variable.
+@about The line has no ENTER: its length field (57) runs to $5D07, whose byte $F3 is both the token NEXT (where the ROM would look for the end of the statement) and the DI that starts the machine code. USR is evaluated first, so the line never ends.
+
+$5CCB b BasicLine0 ; Line 0: LET X=PEEK 66666+770*PEEK 60877: LET x=x+87: RANDOMIZE USR x, the hidden numbers 23635, 256, 23636, 60
+> X = PEEK PROG + 256 x PEEK (PROG + 1) = `$5CCB`, the line's own address; x + 60 = `$5D07`, the code after the line. The digits shown are decoys: the five-byte forms (each after `$0E`) are what the ROM uses, so LIST shows nonsense numbers.
+> c1 and c48: the ROM runs the line after the load and USR enters `$5D07`.
+$5CCB ; the line number, 0 (high byte first)
+$5CCD ; the line's length, 57: to $5D07, the first byte of the code
+$5CCF ; LET ($F1) X = PEEK ($BE)
+$5CD3 ; "66666", $0E and 23635 = $5C53 (PROG)
+$5CDE ; "+" "770", $0E and 256
+$5CE8 ; "*" PEEK "60877", $0E and 23636 = $5C54
+$5CF5 ; ":" LET x = x "+"
+$5CFB ; "87", $0E and 60
+$5D03 ; ":" RANDOMIZE ($F9) USR ($C0) x; no ENTER: the line goes on into the code
+
+$5D07 c BasicCode ; Line 0's code: 48K ROM, black screen, find its own address, copy the loader to $FF00 and run it
+> Entered by USR with interrupts on; its first byte `$F3` (DI) is also the end of the BASIC line (the token NEXT).
+> 1. `$10` to the 128K paging port `$7FFD`: the 48K BASIC ROM, RAM bank 0 at `$C000`, paging not locked (a 48K ignores the write). Border black; Screen and Attributes cleared to 0 (the LDIR copies the stored A = 0).
+> 2. Its own address: SP = 0, CALL RomRet `$0555` (a RET), so the return address `$5D24` is left at `$FFFE`; two DEC SP and POP HL read it back, + `$13` = `$5D37`, the loader's bytes. SP = `$5D37` (the stack grows down into the line, which is no longer needed).
+> 3. LDIR the `$FD` bytes `$5D37-$5E33` to `$FF00-$FFFC` and `JP $FFEE` (LoaderStart).
+> Witness: L1 11 (c1).
+$5D08 ; the 48K BASIC ROM, bank 0
+$5D0F ; border black, the screen and attributes cleared
+$5D1E ; the return address of a CALL to a RET: this code's address
+$5D27 ; + $13: the loader's bytes
+$5D2C ; copy the loader to $FF00 and run it
+
+@module loader ; The tape loader at $FF00: the ROM's LD-BYTES with red stripes and its own end
+@about Copied by BasicCode to $FF00-$FFFC (from $5D37) and run from LoaderStart $FFEE, which loads TZX block 3 (stage 2, $080C bytes) to $609C and jumps to it. Stage 2 then calls LoadBlock $FF00 for the blocks 4-6. The page stays until the bootstrap copies the game's panel code over $FF01-$FFFE.
+@about LdBytes $FF02 is the 48K ROM's LD-BYTES ($0556) moved here with four changes: SCF first (always a load, the caller needs no carry), the border $0A (red, MIC) at the start instead of $0F, the return address LoadEnd $FFB2 pushed instead of SA/LD-RET $053F, and AND $02 instead of AND $07 in LD-SAMPLE, so the border stripes are red and black for the pilot and the data alike. The rest (LD-START, LD-LEADER, LD-SYNC, LD-8-BITS, LD-EDGE-2 / LD-EDGE-1 with their timing constants) is byte for byte the ROM's.
+$FF00 c LoadBlock ; Load a block with flag $FF: IX = the address, DE = the length
+> A = `$FF`, then LdBytes. Called by stage 2 for the blocks 4, 5 and (on a 128K) 6.
+> Witness: L1 8 (c x2).
+$FF02 c LdBytes ; The ROM's LD-BYTES with red / black stripes; returns through LoadEnd
+> A = the flag byte, IX = the address, DE = the length. The carry is set by the routine itself (`SCF` at `$FF02`: a load, never a verify). The border goes to `$0A` (red); LoadEnd `$FFB2` is pushed as the return address; then the ROM's code: an edge, the leader (`$9C`/`$C6` timing), the sync, the flag byte, the data bytes with the parity in H, the stripes from C (`AND $02`: red / black).
+> Every return (an error, BREAK or the end) goes to LoadEnd, with carry set for a good load.
+> Witness: L1 11 (c x2).
+$FF03 ; the ROM's LD-BYTES from here (INC D; EX AF,AF'; DEC D: the flag kept in A')
+$FF07 ; border red (the ROM: white), the return to LoadEnd
+$FF0F ; C = the current EAR level and the stripe colour 2
+$FF18 LdBreak
+$FF19 LdStart ; an edge within the timeout, then about 1 s of silence
+$FF21 LdWait
+$FF2D LdLeader ; 256 leader pulses in a row
+$FF3C LdSync ; the sync pulse
+$FF4C ; the data's stripes: C XOR 3 (AND $02 leaves red / black)
+$FF56 LdLoop ; the flag byte first, then the data
+$FF60 LdFlag ; the flag: compare with A'
+$FF6A LdVerify ; not reached: the carry is always set
+$FF6F LdNext
+$FF71 LdDec
+$FF75 LdMarker ; one byte of 8 bits
+$FF77 Ld8Bits
+$FF8C ; the parity: carry set when the load is good
+$FF90 c LdEdge2 ; The ROM's LD-EDGE-2: two edges
+> Witness: L1 1196411 (c x2).
+$FF94 c LdEdge1 ; The ROM's LD-EDGE-1: wait 358 T, then count B up to the next edge; the border stripe
+> Out: carry = an edge found; NC = timeout (B wrapped) or BREAK (SPACE, `$7FFE` bit 0, as in the ROM). The stripe colour is C AND `$02` (the ROM: AND `$07`), with MIC.
+> Witness: L1 2405444 (c x2).
+$FF96 LdDelay
+$FF9A LdSample
+$FFB2 c LoadEnd ; LD-BYTES returns here: on a good load border black, EI, return; else TAPE LOADING ERROR
+> Carry set (good): border 0, EI, then LoadReturn (POP AF, RET to the caller of LdBytes, the flags kept). Carry clear: LoadError, which never returns.
+> Witness: L1 647 (c x2).
+$FFBB LoadError ; border red, the attributes $47 (white on black), print TapeErrorText with RST $10, then hang
+$FFD1 LoadErrorPrint
+$FFD6 LoadErrorHang
+$FFD8 t TapeErrorText ; The error message: ENTER "TAPE LOADING ERROR" ENTER (20 bytes, printed by RST $10)
+@res texts/tape-error.bin
+$FFEC c LoadReturn ; POP AF and return: the end of LoadEnd
+> Witness: L1 11 (c x2).
+$FFEE c LoaderStart ; The loader's entry: load stage 2 (TZX block 3, $080C bytes) to $609C and run it
+> From BasicCode's `JP $FFEE`. LdBytes with A = `$FF`, IX = `$609C`, DE = `$080C`, then `JP $609C` (stage 2, src/stage2). The stack is still SP = `$5D37` from BasicCode.
+> Witness: L1 5 (c x2).

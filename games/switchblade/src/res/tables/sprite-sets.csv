@@ -1,0 +1,28 @@
+# PageTail60 $6CD6 (SizeClasses $6082 at run time): the 24 picture sets, 5 bytes: the width in half
+# columns (2 x units), the rows, the bytes of a frame, the address (InitActor $A65D copies a record to
+# +$15-+$19). Set 0 is the tiles.
+set,half_cols,rows,bytes,address,_note
+0,8,16,24,$D104,Tiles
+1,8,16,24,$E154,EnemyFrames
+2,16,32,96,$E5BC,GiantFrames
+3,8,32,48,$E97C,HiroFrames
+4,10,32,60,$F30C,HiroFrames15
+5,12,32,72,$F4B0,HiroFrames18
+6,14,32,84,$F660,HiroFrames21
+7,4,8,6,$F708,SparkFrames
+8,6,8,9,$F78C,ShotFrames
+9,10,8,15,$F7E6,ScoreFrames
+10,18,16,54,$F87C,MessageFrames
+11,22,16,66,$F954,GremlinLogo
+12,4,32,24,$F996,TitlePiece12
+13,4,40,30,$F9AE,TitlePiece13
+14,4,48,36,$F9EA,TitlePiece14
+15,10,40,75,$FA0E,TitlePiece15
+16,12,24,54,$FAA4,TitlePiece16
+17,12,32,72,$FADA,TitlePiece17
+18,12,40,90,$FB6A,TitlePiece18
+19,16,8,24,$FBC4,TitlePiece19
+20,16,24,72,$FBDC,TitlePiece20
+21,16,40,120,$FC6C,TitlePiece21
+22,8,8,12,$FCE4,TitlePiece22
+23,28,32,168,$FCF0,TitlePiece23

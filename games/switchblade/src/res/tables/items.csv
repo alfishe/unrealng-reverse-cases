@@ -1,0 +1,39 @@
+# ItemRecords $6BAC-$6C35 (page tails of $5D00 and $5E00): a pickup kind's record (KindTemplates $7200
+# points at it): the frame (Tiles), the score record ($82 + 4n of score-table.csv), two bytes
+# (CollectPickup $98B6, SetWeapon $98F3).
+_at,frame,score,b2,b3,_note
+$6BAC,$9A,$82,$00,$00,run time $5DD2: kind $01 gem 50
+$6BB0,$9B,$86,$00,$00,run time $5DD6: kind $02 gem 100
+$6BB4,$9C,$8A,$00,$00,run time $5DDA: kind $03 gem 200
+$6BB8,$9D,$8E,$00,$00,run time $5DDE: kind $04 gem 400
+$6BBC,$9E,$92,$00,$00,run time $5DE2: kind $05 gem 700
+$6BC0,$8B,$A2,$00,$00,run time $5DE6: kind $06 flask
+$6BC4,$97,$96,$00,$00,run time $5DEA: kind $20 orb
+$6BC8,$98,$9A,$00,$00,run time $5DEE: kind $21 orb
+$6BCC,$99,$9E,$00,$00,run time $5DF2: kind $22 orb
+$6BD0,$9F,$00,$5B,$00,run time $5DF6: kind $11 weapon shield 0
+$6BD4,$A0,$00,$5D,$01,run time $5DFA: kind $12 weapon shield 1
+$6BD8,$00,$00,,,spare (run time $5DFE-$5DFF)
+$6BDA,$AC,$00,$5F,$02,run time $5E82: kind $13 weapon shield 2
+$6BDE,$A4,$00,$3D,$06,run time $5E86: kind $17 weapon shield 6
+$6BE2,$AD,$C2,$3F,$07,run time $5E8A: kind $18 Fireblade fragment
+$6BE6,$A3,$00,$3A,$05,run time $5E8E: kind $16 weapon shield 5
+$6BEA,$A1,$00,$61,$03,run time $5E92: kind $14 weapon shield 3
+$6BEE,$A2,$00,$63,$04,run time $5E96: kind $15 weapon shield 4
+$6BF2,$A5,$82,$00,$00,run time $5E9A: kind $1B bullet shield
+$6BF6,$AA,$00,$00,$00,run time $5E9E: kind $1E vitality
+$6BFA,$AB,$00,$00,$00,run time $5EA2: kind $1F invulnerability
+$6BFE,$8D,$00,$45,$E9,run time $5EA6: kind $07 E
+$6C02,$8E,$00,$58,$EA,run time $5EAA: kind $08 X
+$6C06,$8F,$00,$54,$EB,run time $5EAE: kind $09 T
+$6C0A,$90,$00,$52,$EC,run time $5EB2: kind $0A R
+$6C0E,$91,$00,$41,$ED,run time $5EB6: kind $0B A
+$6C12,$92,$00,$42,$F2,run time $5EBA: kind $0C B
+$6C16,$93,$00,$4F,$F3,run time $5EBE: kind $0D O
+$6C1A,$94,$00,$4E,$F4,run time $5EC2: kind $0E N
+$6C1E,$95,$00,$55,$F5,run time $5EC6: kind $0F U
+$6C22,$96,$00,$53,$F6,run time $5ECA: kind $10 S
+$6C26,$A6,$00,$00,$00,run time $5ECE: kind $19 power-up shield
+$6C2A,$A8,$00,$00,$00,run time $5ED2: kind $1A speed-up shield
+$6C2E,$A7,$8E,$1C,$00,run time $5ED6: kind $1C power-up reset
+$6C32,$A9,$8E,$1D,$00,run time $5EDA: kind $1D speed-up reset

@@ -1,0 +1,18 @@
+# Instruments $CED4: 14 x 10 bytes: the attack step, decay step, sustain level, release step, peak (volume
+# 0-$7F), the vibrato delay, width and step (a word), the flags (bit 0 tone, 1 noise, 2 the hardware
+# envelope). StartNote $D0DA, the envelope phases.
+n,attack,decay,sustain,release,peak,vib_delay,vib_width,vib_step,flags
+0,127,-5,0,-1,$6D,0,$03,$0001,$01
+1,127,-4,0,-1,$57,0,$03,$0001,$01
+2,127,-5,0,-1,$7F,0,$00,$0040,$03
+3,127,-4,0,-1,$70,0,$00,$003B,$01
+4,67,-4,0,-1,$7F,0,$03,$0006,$01
+5,127,-4,0,-1,$7F,0,$03,$0004,$01
+6,80,-1,69,-1,$7C,20,$04,$0003,$01
+7,67,-2,0,-1,$7F,1,$03,$0006,$01
+8,127,-21,0,-1,$75,255,$00,$0000,$03
+9,127,-1,0,-1,$75,12,$03,$0001,$01
+10,8,-1,0,-1,$65,0,$05,$FFFA,$01
+11,127,-8,0,-1,$64,254,$00,$0000,$02
+12,127,-1,58,-2,$78,0,$03,$0001,$01
+13,127,-2,0,-2,$75,0,$03,$0002,$01

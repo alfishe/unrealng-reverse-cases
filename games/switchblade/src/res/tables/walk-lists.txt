@@ -1,0 +1,11 @@
+# WalkLists $6C36-$6C50 (page tail of $5E00, run time $5EDE): walk frame lists, [n] then n frames
+# (an actor's +$05; $9BF2).
+$6C36: 04 11 12 13 14
+$6C3B: 03 09 09 09
+$6C3F: 03 0B 0C 0D
+$6C43: 01 00
+$6C45: 01 15
+$6C47: 03 01 02 03
+$6C4B: 01 0E
+$6C4D: 01 0F
+$6C4F: 01 10

@@ -1,0 +1,10 @@
+# The panel's two lines as GlobalsInit holds them: NewGame copies $5C00-$5C37 to $6642 (ScoreLine $6657,
+# StatusLine $6667 at run time).
+
+# ScoreLineInit $5C15: the score digits, \x07 skips 7 cells, the lives
+text $00 $00 $07 $47
+  "00000000\x0705"
+
+# StatusLineInit $5C25: EXTRA, the weapon bar glyphs $85 $5B $5C $86, BONUS
+text $B8 $12 $FF $FF
+  "EXTRA\x85\x5B\\\x86BONUS"

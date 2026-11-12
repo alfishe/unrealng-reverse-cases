@@ -1,0 +1,7 @@
+# RoomPatternsMore $732E-$7344: the outline shapes of styles 9-13 and 15 (after DrawColumnPos).
+$732E: C1
+$732F: 81 12 01 C1
+$7333: 81 81 81 81 01 81 01 C1
+$733B: 01 81 01 81 C1
+$7340: D3
+$7341: 81 12 01 D2

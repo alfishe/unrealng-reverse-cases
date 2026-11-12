@@ -1,0 +1,20 @@
+{
+  "about": "TZX block 6, bank 4 (128K only): the AY player, its tunes and the story pages, 8441 bytes at $C000: python3 ../../kit/mkgame.py --part src/bank4/bank4.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/bank4-c000.bin || python3 tools/parts.py > /dev/null"],
+  "image": "work/parts/bank4-c000.bin",
+  "org": "C000",
+  "ann": "src/bank4/bank4.ann",
+  "top": "bank4",
+  "bin": "bank4.bin",
+  "dest": "src/bank4",
+  "device": "ZXSPECTRUM128",
+  "bank": 4,
+  "bases": {"4": "C000"},
+  "header": ["; Switchblade, Gremlin Graphics 1991: TZX block 6, loaded on a 128K only into bank 4 at $C000 (8441 bytes): the",
+             "; AY music player, its tunes and the intro's story pages; the glue at $853F pages it in once a frame."],
+  "l1": ["work/stage1/c1/l1.json", "work/stage1/rec/menu/l1.json", "work/stage1/rec/opt2/l1.json", "work/stage1/rec/opt3/l1.json",
+         "work/stage1/rec/opt4/l1.json", "work/stage1/rec/deaths/l1.json", "work/stage1/rec/gameover/l1.json",
+         "work/stage1/rec/rooms/l1.json"],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbank4"
+}

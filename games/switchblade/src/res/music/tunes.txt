@@ -1,0 +1,122 @@
+# The tunes of bank 4 (Ben Daglish; tools/res_formats.py, src/res/music/README.md), $C4B8-$CE8B.
+# Patterns in address order from Pattern00 $C4B8, then the order lists (tune 0 A, B, C, tune 1 ...).
+# PatternAddrLo/Hi and TuneTable are written from them. Pattern events: NOTE:frames (NoteTable index
+# n named as MIDI 40 + n, E2 = 0, as channels B and C play it; channel A sounds an octave lower),
+# r:frames a rest, per$XXXX:frames a raw period, iN instrument slot N, arpN arpeggio N, port(a,b,c)
+# a slide (after a frames, over b frames, c semitones), portoff, drum(len,noise), drumoff, $XX a byte
+# the player skips. Order events: Pnn a pattern, xN the next pattern N times, trN the transpose
+# (semitones, stays), slotS=insI, fd(a,b) (ignored), $XX. Every list and pattern ends at the end of
+# its line. Sizes must stay (the source INCBINs the file at fixed offsets).
+
+pattern 00 ; $C4B8
+  drum(2,100) i0 arp1 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp1 i0 A#5:7 A#5:7 i0 arp1 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp1 i0 A#5:7 A#5:7 i0 arp2 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp2 i0 A#5:7 A#5:7 i0 arp2 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp2 i0 A#5:7 A#5:7
+pattern 01 ; $C51C
+  i3 A#4:2 A#4:5 A#4:7 A#4:7 G4:7 G4:7 G4:7 D#4:2 D#4:5 D#4:7 D#4:7 C4:7 C4:7 C4:7
+pattern 02 ; $C53A
+  i1 A#6:7 A#6:7 A#6:7 arp0 i4 C#3:7 F3:7 A#3:7
+pattern 03 ; $C54A
+  drumoff arp0 i4 G3:21 i3 G4:7 G4:7 G4:7 D#4:2 D#4:5 D#4:7 D#4:7 C4:7 C4:7 C4:7 i4 C#3:21 i3 G4:7 G4:7 G4:7 D#4:2 D#4:5 D#4:7 D#4:7 C4:7 C4:7 C4:7
+pattern 04 ; $C57D
+  i1 A#6:7 A#6:7 A#6:7 A#6:7 A#6:7 A#6:7
+pattern 05 ; $C58B
+  i3 C5:2 C5:5 C5:7 C5:14 C5:2 C5:5 C5:7 C5:21 C5:2 C5:5 C5:7 C5:7
+pattern 06 ; $C5A5
+  i4 G3:21 i3 G4:7 G4:7 G4:7 D#4:2 D#4:5 D#4:7 D#4:7 C4:7 C4:7 C4:7 i4 C#3:21 i3 G4:7 G4:7 G4:7 D#4:2 D#4:5 D#4:7 D#4:7 i4 C#3:7 G3:7 C#4:7
+pattern 07 ; $C5D7
+  drum(1,100) i0 arp3 C#6:7 i1 C#6:7 i0 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) arp3 i0 C#6:7 C#6:7 i0 arp3 C#6:7 i1 C#6:7 i0 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) arp3 i0 C#6:7 C#6:7 i0 arp4 C#6:7 i1 C#6:7 i0 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) arp4 i0 C#6:7 C#6:7 i0 arp4 C#6:7 i1 C#6:7 i0 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) arp4 i0 C#6:7 C#6:7
+pattern 08 ; $C63B
+  i6 port(7,7,1) G5:126 port(3,3,-1) G#5:14 portoff F5:14 G5:14
+pattern 09 ; $C64E
+  i6 port(3,3,2) G#5:126 port(2,2,2) C#6:14 portoff C#6:14 A#5:7 G#5:7 port(3,3,2) G#5:126 port(2,2,2) C#6:7 portoff C#6:7 A#5:7 C#6:7 A#5:7 G#5:7
+pattern 10 ; $C67A
+  drum(1,100) i0 arp5 C#6:7 i1 C#6:7 i0 C#6:7 i1 C#6:7 i0 C#6:7 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) i1 arp5 C#6:7 i0 C#6:7 i1 C#6:7 i0 C#6:7 C#6:7
+pattern 11 ; $C6A7
+  drum(1,100) i0 arp6 C6:7 i1 C6:7 i0 C6:7 i1 C6:7 i0 C6:7 C6:7 arp0 drumoff i2 F4:7 drum(1,100) i1 arp6 C6:7 i0 C6:7 i1 C6:7 i0 C6:7 C6:7 drum(1,100) i0 arp7 C6:7 i1 C6:7 i0 C6:7 i1 C6:7 i0 C6:7 C6:7 arp0 drumoff i2 F4:7 drum(1,100) i1 arp7 C6:7 i0 C6:7 arp0 drumoff i2 F4:7 drum(1,100) arp7 i0 C6:7 C6:7 drumoff
+pattern 12 ; $C707
+  i5 C#3:14 C#3:7 G#3:7 B3:7 C#4:7 C#3:14 G#3:14 B3:7 C#4:7
+pattern 13 ; $C71B
+  i5 G#3:14 G#3:7 F#3:7 D#3:7 G#2:7 G#3:14 F#3:14 C#3:7 G#2:7 F2:14 F2:7 F3:7 D#3:7 F3:7 F2:14 F2:7 F3:7 D#3:7 F3:7
+pattern 14 ; $C743
+  i6 F5:42 port(2,3,2) D#5:14 D#5:14 portoff D#5:7 C#5:7 D#5:70 C#5:7 D#5:7 port(2,3,1) D#5:14 portoff D#5:14 C#5:14 D#5:14 C#5:14 D#5:14 port(2,3,2) D#5:84 D#5:42 port(2,3,2) D#5:14 portoff G#5:7 port(2,3,2) D#5:7 portoff D#5:7 C#5:7 D#5:70 C#5:7 D#5:7 port(2,3,1) D#5:14 portoff D#5:14 C#5:14 D#5:14 C#5:14 D#5:14 port(2,3,2) D#5:14 portoff D#5:14 C#5:14 D#5:14 C#5:14 A#4:7 G#4:7 A#4:21
+pattern 15 ; $C7B3
+  arp0 i4 A#2:14 A#3:14 A#2:7 A#2:7 A#2:14 A#3:14 A#2:7 A#2:7 A#2:14 A#3:14 A#2:7 A#2:7 A#2:14 A#3:14 G#3:7 F3:7
+pattern 16 ; $C7D6
+  i8 A#6:21
+pattern 17 ; $C7DA
+  i2 F4:14
+pattern 18 ; $C7DE
+  i2 F4:14 F4:7 F4:7
+pattern 19 ; $C7E6
+  arp0 i4 A#2:14 A#3:14 A#2:7 A#2:7 A#2:14 A#3:14 A#2:7 A#2:7 A#2:14 A#3:14 A#2:7 A#2:7 i3 A#4:7 A#4:7 A#4:7 F4:7 F4:7 F4:7
+pattern 20 ; $C80E
+  i0 port(4,4,2) A#6:77 G#6:77 F6:77 D#6:35 D#6:5 C6:5 D#6:35 D#6:5 C6:5 D#6:35 D#6:5 C6:5 G#5:138 portoff A#5:7 C6:7 D#6:7 C6:7 D#6:7 F6:7 D#6:7 F6:7 G6:7 A#6:7 C7:7 D#7:7 F7:7 D#7:7 C7:7 D#7:7 C7:7 A#6:7 G6:7 F6:7 D#6:7 C6:7 F5:7 G5:7 G5:42 port(3,3,2) F5:14 F5:14 portoff F5:7 D#5:7 F5:42 port(3,3,2) F5:7 portoff F5:7 D#5:7 F5:7 D#5:7 C5:7 C5:84 r:84 G5:42 port(3,3,2) F5:14 portoff A#5:7 port(3,3,2) F5:7 portoff F5:7 D#5:7 F5:42 port(3,3,2) F5:7 portoff F5:7 D#5:7 F5:7 D#5:7 C5:7 C5:84 r:84 G5:42 port(3,3,2) F5:14 portoff A#5:7 port(3,3,2) F5:7 portoff F5:7 D#5:7 F5:42 port(3,3,2) F5:7 portoff F5:7 D#5:7 F5:7 D#5:7 C5:7 C5:42 i3 C5:7 C5:7 C5:7 G4:7 G4:7 G4:7
+pattern 21 ; $C8EA
+  drum(2,100) i0 arp7 G#5:7 i1 G#5:7 i0 G#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp7 i0 G#5:7 G#5:7 i0 arp7 G#5:7 i1 G#5:7 i0 G#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp7 i0 G#5:7 G#5:7 i0 arp7 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp7 i0 A#5:7 A#5:7 i0 arp7 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp7 i0 A#5:7 A#5:7
+pattern 22 ; $C94E
+  i0 arp6 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp6 i0 A#5:7 A#5:7 i0 arp6 A#5:7 i1 A#5:7 i0 A#5:7 arp0 drumoff i2 F4:7 drum(1,100) arp6 i0 A#5:7 A#5:7
+pattern 23 ; $C97F
+  drum(1,100) i0 arp5 D#6:7 i1 D#6:7 i0 D#6:7 i1 D#6:7 i0 D#6:7 D#6:7 arp0 drumoff i2 F4:7 drum(1,100) i1 arp5 D#6:7 i0 D#6:7 i1 D#6:7 i0 D#6:7 D#6:7 i0 arp5 C#6:7 i1 C#6:7 i0 C#6:7 i1 C#6:7 i0 C#6:7 C#6:7 arp0 drumoff i2 F4:7 drum(1,100) i1 arp6 C6:7 i0 C6:7 i1 C6:7 i0 C6:7 C6:7
+pattern 24 ; $C9D5
+  arp0 i4 D#3:14 D#4:14 D#3:7 D#3:7 D#3:14 D#4:14 D#3:7 D#3:7 C#3:14 C#4:14 C#3:7 C#3:7 C3:14 C4:14 C3:7 C3:7
+pattern 25 ; $C9F8
+  i4 A#2:10 A#2:10 A#2:10 A#2:10
+pattern 26 ; $CA02
+  i7 A#2:10 A#2:10 i0 F7:10 i7 A#2:10
+pattern 27 ; $CA0E
+  arp6 i0 F6:40 G#6:40 C7:40 A#6:40
+pattern 28 ; $CA19
+  i1 arp5 C#6:160 C6:160 B5:160 A#5:160 C#6:160 C6:160 B5:160 G#5:160 arp6 G5:160 arp5 G#5:160 arp6 G5:140 arp0 i2 C5:5 C5:5 G4:5 G4:5
+pattern 29 ; $CA3F
+  i4 A#2:10 A#2:10 drum(2,20) A#2:10 drumoff A#2:10
+pattern 30 ; $CA4D
+  i0 F6:40 G#6:40 C7:40 A#6:20 i2 F4:10 F4:5 F4:5
+pattern 31 ; $CA5E
+  i4 A#2:10 A#2:10 i2 F4:10 i4 C3:10 C3:10 C3:10 i2 F4:10 i4 C#3:10 C#3:10 C#3:10 i2 F4:10 i4 D#3:10 D#3:10 D#3:10 i2 F4:10 F4:10 i4 F3:10 F3:10 i2 F4:10 i4 F#3:10 F#3:10 F#3:10 i2 F4:10 i4 G#3:10 G#3:10 G#3:10 i2 F4:10 i4 D#3:20 G2:10 G#2:5 A2:15
+pattern 32 ; $CAAC
+  i1 r:20 i0 arp1 A#4:10 i1 arp5 G#4:40 arp6 F4:30 F4:10 i0 F4:10 G4:10 i1 G4:20 F4:30 F4:10 F4:10 i0 arp3 F#4:10 i1 F#4:30 arp5 G#4:10 arp6 F4:10 arp7 D#4:10 arp5 D#4:30 i2 F4:10 F4:5 F4:5
+pattern 33 ; $CAE5
+  i1 arp1 A#5:10 A#5:10 A#5:10 arp5 G#5:10 G#5:10 G#5:10 G#5:10 arp6 F5:10 F5:10 F5:10 F5:10 G5:10 G5:10 G5:10 G5:10 F5:10 F5:10 F5:10 F5:10 arp3 F#5:10 F#5:10 F#5:10 F#5:10 arp5 G#5:10 G#5:10 G#5:10 G#5:10 arp6 G5:10 G5:10 G5:10 G5:10 G5:10
+pattern 34 ; $CB2D
+  i0 arp3 C#6:10 C#6:10 C#6:10 arp5 arp9 C6:10 C6:10 C6:10 C6:10 arp3 C#6:10 C#6:10 C#6:10 C#6:10 arp5 D#6:10 D#6:10 D#6:10 D#6:10 arp3 C#6:10 C#6:10 C#6:10 C#6:10 arp7 C#6:10 C#6:10 C#6:10 C#6:10 arp9 C6:10 C6:10 C6:10 C6:10 arp5 D#6:10 D#6:10 D#6:10 D#6:10 D#6:10
+pattern 35 ; $CB78
+  arp1 A#5:160 r:160 arp0 i6 F4:120 D#4:13 G#4:13 D#4:14 F4:120 D#4:13 G#4:13 C5:14 A#4:120 C5:13 G#4:13 D#5:14 A#4:120 C5:13 G#4:13 D#4:14 F4:120 D#4:13 G#4:13 F4:14 G4:120 A#4:13 G4:13 D#4:14
+pattern 36 ; $CBB0
+  arp0 i7 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 A#2:10 i3 C5:5 C5:5 C5:5 A4:5 A4:5 A4:5 F4:5 F4:5
+pattern 37 ; $CBDC
+  i1 arp1 A#5:120 C#6:15 G#5:15 i0 A#5:10 r:120 i1 C#6:15 D#6:15 i0 A#5:10 r:120 i1 C#6:15 G#5:15 i0 A#5:10 r:120 i1 C#6:15 D#6:15 arp6 i0 C6:10 r:120 i1 C#6:15 D#6:15 arp6 i0 C6:10 r:120 i1 C6:15 arp7 A#5:15 arp1 i0 A#5:10 r:120 i1 C6:15 arp7 A#5:15 arp1 i0 A#5:10 r:120 i1 C#6:15 D#6:15 arp6 i0 C6:10 r:120 i1 C#6:15 D#6:15 arp6 i0 C6:10 r:120 i1 C6:15 arp7 A#5:15 arp1 i0 A#5:10
+pattern 38 ; $CC4C
+  i4 C#3:10 C#3:10 drum(2,20) D#3:10 drumoff G#2:10
+pattern 39 ; $CC5A
+  i4 G#2:10 G#2:10 drum(2,20) D#3:10 drumoff A#2:10
+pattern 40 ; $CC68
+  i4 A#2:12 A#2:4 A#2:4 A#2:4 A#2:12 A#2:12
+pattern 41 ; $CC76
+  i0 arp5 C#5:12 C#5:4 C#5:4 C#5:4 C#5:12 C#5:12 D#5:12 D#5:4 D#5:4 D#5:4 D#5:12 arp3 C#5:34 r:2
+pattern 42 ; $CC94
+  -
+pattern 43 ; $CC95
+  -
+pattern 44 ; $CC96
+  -
+
+# tune 0: the title
+order 0 A ; $CD03
+  x3 P00 tr-3 x4 P00 tr+0 x4 P07 P10 tr+2 P10 tr+0 P11 P10 tr+2 P10 tr+0 P11 tr-12 slot4=ins7 x3 P15 P19 slot4=ins4 tr-10 x4 P15 P12 tr-8 P12 tr-10 P15 P12 tr-8 P12 tr-10 P15 P12 tr-8 P12 tr-5 P12 tr+0 x4 P07 tr+2 x4 P07 P10 tr+4 P10 tr+2 P11 P10 tr+4 P10 tr+2 P11 P23 P00 P23 P00 P23 P00 P23 P00 P23 P00
+order 0 B ; $CD5E
+  x5 P01 P05 x16 P04 P08 P08 P09 P14 x29 P16 P17 P18 tr+2 x4 P00 P21 P00 P21 P00 P21 P22 tr+3 x4 P03 tr+5 x4 P03 tr+2 P12 tr+4 P12 tr+2 P13 P12 tr+4 P12 tr+2 P13 P24 tr+5 P03 tr+2 P24 tr+5 P03 tr+2 P24 tr+5 P03 tr+2 P24 tr+5 P03 tr+2 P24 tr+5 P03
+order 0 C ; $CDAA
+  x11 P04 P02 x3 P03 P06 tr+3 x4 P03 tr+0 P12 tr+2 P12 tr+0 P13 P12 tr+2 P12 tr+0 P13 tr-12 x4 P15 tr+0 slot0=ins9 P20 tr+3 slot4=ins7 x4 P03 slot4=ins4 tr+2 P08 P08 P09 P14
+# tune 1: the in-game music
+order 1 A ; $CDDC
+  x8 P25 x28 P29 tr-7 x4 P29 x12 P29 tr+0 x4 P31 x24 P29 tr+3 x4 P29 tr+5 x4 P29 tr+0 P31 P31 tr+2 P31 P31 x15 P29 P38 tr+0 x7 P29 tr+2 P39 x7 P29 P38 tr+0 x7 P29 tr+2 P39 x24 P29 tr+5 x4 P29 tr+7 x4 P29 tr+2 P31 P31 tr+4 P31 P31
+order 1 B ; $CE23
+  slot0=ins11 slot1=ins12 x8 P26 P28 slot0=ins0 tr+12 x4 P32 P35 P32 P32 tr+14 P32 P32 tr+2 P37 P35 tr+14 P32 P32 tr+16 P32 P32
+order 1 C ; $CE44
+  tr+12 slot0=ins10 x12 P27 P30 tr+0 slot0=ins0 P33 P33 P34 P34 slot0=ins10 x7 P27 P30 slot0=ins0 P33 P33 tr+2 P34 P34 x4 P36 tr+0 P36 P36 tr+2 P36 P36 tr+0 P36 P36 tr+2 slot0=ins10 x7 P27 P30 slot0=ins0 P33 P33 tr+4 P34 P34
+# tune 2: the start jingle
+order 2 A ; $CE7E
+  P40 P40
+order 2 B ; $CE81
+  tr+17 slot4=ins2 P40 P40
+order 2 C ; $CE88
+  slot0=ins13 P41

@@ -1,0 +1,4 @@
+# ShapeTilesA $73BD (4 bytes) and ShapeTilesB $73C1 (4): the decor rows of command $E (RoomOpLedge $A357): the
+# tile, the tile put over tiles 3 and 4, those two tiles.
+$73BD: 70 71 57 56
+$73C1: 72 73 75 74

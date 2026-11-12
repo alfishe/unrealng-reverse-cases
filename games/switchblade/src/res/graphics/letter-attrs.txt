@@ -1,0 +1,4 @@
+# ExtraBonusUnlit $5C38 and ExtraBonusLit $5C3D: the attribute of an unlit and a lit EXTRA / BONUS letter
+# (the letter check $999F).
+$5C38: 42 42 42 42 42
+$5C3D: 47 47 47 47 47

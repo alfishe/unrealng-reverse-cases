@@ -1,0 +1,19 @@
+# RoomPatternStarts $7300: the low byte in page $73 of each placement style's outline shapes (BuildMap
+# $9F63: style = the low nibble of a placement's first byte).
+style,start
+0,$10
+1,$12
+2,$14
+3,$16
+4,$17
+5,$18
+6,$1B
+7,$1E
+8,$22
+9,$2E
+10,$2F
+11,$33
+12,$3B
+13,$40
+14,$27
+15,$41

@@ -1,0 +1,4 @@
+# The tape loader's error message.
+
+# TapeErrorText $FFD8 (printed by RST $10)
+raw "\x0DTAPE LOADING ERROR\x0D"

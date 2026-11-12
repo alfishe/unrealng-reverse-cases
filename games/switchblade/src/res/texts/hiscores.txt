@@ -1,0 +1,26 @@
+# The high-score table as one print record (PrintStringTall $836E): JEFF C ...
+# KEV; NewGame moves the entries when a score enters.
+
+# HiScoreTableHead $8119 and HiScoreEntries $811D: ten entries, 8 score digits, \x04 (skip 4), 10 name letters, two lines down
+text $14 $14 $07 $47
+  "00100400\x04JEFF C    "
+  ""
+  "00094010\x04LINDA     "
+  ""
+  "00089050\x04SIMES     "
+  ""
+  "00087470\x04DANGERSTU "
+  ""
+  "00060360\x04GREGGS    "
+  ""
+  "00060290\x04JAMIE     "
+  ""
+  "00048540\x04RAY       "
+  ""
+  "00033760\x04MONTY     "
+  ""
+  "00009200\x04FUNGUS    "
+  ""
+  "00005010\x04KEV       "
+  ""
+  ""

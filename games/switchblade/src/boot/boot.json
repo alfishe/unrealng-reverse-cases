@@ -1,0 +1,27 @@
+{
+  "about": "TZX block 5 $4000-$4145: the bootstrap (run in the screen at $4000) and the AY glue it copies to $853F on a 128K; block 5's other bytes are the game's (src/game, $5C00-$6B4C and $FF01-$FFFE): python3 ../../kit/mkgame.py --part src/boot/boot.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/boot-4000.bin || python3 tools/parts.py > /dev/null"],
+  "image": "work/parts/boot-4000.bin",
+  "at": "4000",
+  "top": "boot",
+  "out": "boot.bin",
+  "dest": "src/boot",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": ["; Switchblade, Gremlin Graphics 1991: TZX block 5's first $146 bytes, loaded to $4000 (into the screen): the",
+             "; bootstrap $4000-$40A3 and the 162-byte AY glue $40A4-$4145, which the bootstrap copies to $853F on a 128K."],
+  "segments": [
+    {"title": "the bootstrap", "ann": "src/boot/boot.ann", "lo": "4000", "hi": "40A4",
+     "l1": [{"path": "work/stage1/c1/l1.json", "lo": "4000", "hi": "40A4", "reads": false},
+            {"path": "work/stage1/rec/c48/l1.json", "lo": "4000", "hi": "40A4", "reads": false}]},
+    {"title": "the AY glue", "ann": "src/boot/boot.ann", "lo": "40A4", "hi": "4146", "run": "853F",
+     "l1": [{"path": "work/stage1/rec/menu/l1.json", "lo": "853F", "hi": "85E1", "reads": false},
+            {"path": "work/stage1/rec/deaths/l1.json", "lo": "853F", "hi": "85E1", "reads": false},
+            {"path": "work/stage1/rec/gameover/l1.json", "lo": "853F", "hi": "85E1", "reads": false},
+            {"path": "work/stage1/rec/rooms/l1.json", "lo": "853F", "hi": "85E1", "reads": false},
+            {"path": "work/stage1/rec/opt2/l1.json", "lo": "853F", "hi": "85E1", "reads": false},
+            {"path": "work/stage1/c1/l1.json", "lo": "853F", "hi": "85E1", "reads": false}]}
+  ],
+  "work": "work/stage2/mkboot"
+}

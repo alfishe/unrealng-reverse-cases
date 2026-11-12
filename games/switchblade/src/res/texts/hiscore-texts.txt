@@ -1,0 +1,16 @@
+# The high-score page's strings (PrintString $837B records: text Y X style style, the lines). The
+# Havok room stash (HavokRoomEnter) moves $80EB-$817A away while Hiro is in room 123.
+
+# CursorEraseText $80EB: erases the name cursor
+text $74 $26 $FF $FF
+  "   "
+  " \x01 "
+  "   "
+
+# HiScoreHeading $80FB
+text $04 $02 $06 $46
+  "RANK\x05SCORE\x07NAME"
+
+# HiScoreRankText $810F: the rank, the two digits are written in
+text $14 $02 $07 $47
+  "NO.\x00\x00"

@@ -1,0 +1,41 @@
+# SolidTiles $7292-$72D7 and TopTiles $72D8-$72DD: (plane page, tile) pairs. TestCellSolid $A334 reads 33
+# pairs from $7292 or 34 from $7294, 3 from LedgeTiles $72B4; FillBackRow $A265 the three of TopTiles.
+_at,page,tile,_note
+$7292,$68,$2E,SolidTiles
+$7294,$69,$7F,from $7294 (SolidTiles + 2)
+$7296,$69,$80,
+$7298,$69,$40,
+$729A,$69,$42,
+$729C,$69,$3F,
+$729E,$69,$41,
+$72A0,$69,$4C,
+$72A2,$69,$4F,
+$72A4,$6A,$54,
+$72A6,$6A,$55,
+$72A8,$6A,$40,
+$72AA,$6A,$42,
+$72AC,$6A,$3F,
+$72AE,$6A,$41,
+$72B0,$6A,$4C,
+$72B2,$6A,$4F,
+$72B4,$6B,$50,LedgeTiles
+$72B6,$6B,$51,
+$72B8,$6B,$52,
+$72BA,$6B,$32,
+$72BC,$6B,$30,
+$72BE,$6B,$27,
+$72C0,$6B,$28,
+$72C2,$6B,$29,
+$72C4,$6B,$2A,
+$72C6,$6B,$2B,
+$72C8,$6B,$2C,
+$72CA,$6B,$57,
+$72CC,$6B,$56,
+$72CE,$6B,$81,
+$72D0,$6B,$82,
+$72D2,$6B,$83,
+$72D4,$6B,$31,
+$72D6,$68,$2D,
+$72D8,$6B,$57,TopTiles
+$72DA,$69,$80,
+$72DC,$6A,$55,

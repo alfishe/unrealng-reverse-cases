@@ -1,0 +1,13 @@
+# Arpeggios $CE8C: arpeggios 1-9 (arpeggio 0 is none; its place is the end of the order lists): the head
+# (bit 7 loop, bits 3-5 the note's own frames, bits 0-2 + 1 the steps), steps (bits 3-7 semitones, bits
+# 0-2 frames). UpdateArpeggio $C390.
+n,head,s1,s2,s3,s4,s5,s6,s7
+0,$8A,$19,$39,$00,$00,$00,$00,$00
+1,$8A,$19,$31,$00,$00,$00,$00,$00
+2,$8A,$21,$49,$00,$00,$00,$00,$00
+3,$8A,$19,$49,$00,$00,$00,$00,$00
+4,$8A,$21,$39,$00,$00,$00,$00,$00
+5,$8A,$19,$41,$00,$00,$00,$00,$00
+6,$8A,$29,$49,$00,$00,$00,$00,$00
+7,$89,$61,$00,$00,$00,$00,$00,$00
+8,$8A,$19,$51,$00,$00,$00,$00,$00

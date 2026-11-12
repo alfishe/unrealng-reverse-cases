@@ -1,0 +1,516 @@
+# The annotations of bank 4 (kit/mkgame.py --part src/bank4/bank4.json). Format: ../../../../docs/ann-format.md.
+#
+# The image: TZX block 6, 8441 bytes, loaded on a 128K only into RAM bank 4 at $C000-$E0F8 (stage 2 swaps $8000-$A0F8
+# with bank 4 around the load, doc 03). It holds Ben Daglish's AY music player, its three tunes and fourteen sound
+# effects (the AY rips in work/candidates/ay/ are this player and data: tune 0 title, 1 in-game, 2 start), and the
+# 128K's intro story pages, which on a 48K live in the actor pages and run from $5D4F.
+# The game reaches it only through the glue at $853F (the bootstrap copies it from $40A4) and the hook $85C5: the glue
+# pages bank 4 in ($7FFD = $14) at every interrupt and calls StartTune $C0D7, PlayFrame $C17D, PlayEffect $C011 or
+# Silence $D182 directly (never the jump table at $C000); $85C5 calls StoryPages $D3D0. Full notes:
+# work/stage2/ann/BANK4.md.
+# Witness: "L1 N (builds)" is the runs of an entry's first instruction summed over bank4.json's recordings;
+# kit/mkgame.py --fix-witness writes the real counts. c48 (the 48K) never pages bank 4.
+
+@equ $5800 Attributes 768 ; the screen's attributes
+@equ $5B01 BoxString 64 ; DrawStoryBox's string record for PrintString (in the buffer page $5B00)
+@equ $831F WaitFireLong 1 ; main memory: wait 40 x 5 frames or until key 0 (fire) is pressed (H = 40, then WaitFire)
+@equ $8321 WaitFire 1 ; main memory: wait H x 5 frames (HALTs) or until key 0 is pressed; Z set when pressed
+@equ $8333 DelayBC 1 ; main memory: a busy loop of BC passes
+@equ $8339 ClearScreen 1 ; main memory: clear the pixels, fill the attributes with A
+@equ $837B PrintString 1 ; main memory: print a string record (Y, X, two style bytes, text, 0) in the game font
+@equ $83C6 PrintNextLine 2 ; main memory: the position of the next text line (PrintPosition sets it, $FF in a string moves there)
+@equ $83CD PrintPosition 1 ; main memory: B = Y in pixels, C = X in half columns -> DE = the screen address
+@equ $83F9 PrintGlyph 1 ; main memory: draw the 8-byte glyph at HL at DE (the style bytes set by PrintString)
+
+@isub $C3D8 LD HL,Arpeggios-$708
+@isub $D467 LD BC,StoryFont
+
+@module player ; The AY player's entries, the tune start, the frame update and the sequencer
+@about Ben Daglish's AY player, a later relative of the one in Terramex (1987): three sequencer records (SeqChannelA-C, one per AY channel) read order lists and patterns; three AY channel records (AyChannelA-C) run the volume envelope (attack, decay, sustain, release), the vibrato and the pitch slide and are written to the AY every frame by AyUpdate $D1C3. Channel A doubles its tone period, so it sounds an octave below B and C (the bass).
+@about The glue at $853F (main memory) drives it at every interrupt, with bank 4 paged in: a tune request in $8452 ($FF stop, $FE none, else the tune number, bit 7 = loop) starts StartTune $C0D7 with A AND 15 and is kept in $8453; while MusicState $C006 is not 0 the glue tail-jumps to PlayFrame $C17D. When a tune has ended (MusicState 0) the glue restarts it if $8453 bit 7 is set, follows tune 2 (the start jingle) with $81 (tune 1 looped, the in-game music) when the title page's sound toggle $8455 is 0 (music), and otherwise plays the effect request $8454 through PlayEffect $C011 (JP, A = the effect) or, with no effect, runs PlayFrame for the envelopes. $8452 = $FF silences through Silence $D182. The requests: $80 title ($5FC0 from $5C4D), 2 at the start of play ($5CDA), $FF at the end ($5C45). After the call the glue copies AyChannelA's volume ($D0A2) to $9BA3, the operand that keeps the footstep effect 7 from being requested while channel A sounds.
+@about c1: StartTune runs 3 times (title $80, start 2, in-game $81), PlayFrame at every interrupt from the title on (2614 times in c1, 18045 in menu). Only the menu recording sets the toggle to effects and plays effects (PlayEffect 10 times).
+
+$C000 c StartTuneVector ; JP StartTune: the player's entry table, slot 0
+> The entry table of the player as Daglish built it: $C000 start a tune (A = the tune), $C003 play one frame, $C006 the state byte, $C007 start an effect, $C00A stop. The AY rips use $C000 and $C003 (init and interrupt). Switchblade's glue jumps to the routines themselves, so no recording runs the table.
+> Not run in the keyed recordings. Witness: L1 0 ().
+
+$C003 c PlayFrameVector ; JP PlayFrame: the entry table, slot 1
+> Not run in the keyed recordings. Witness: L1 0 ().
+
+$C006 b MusicState 1 ; $FF a tune is playing, 1 the last notes are dying away, 0 stopped
+> Set to $FF by StartTune $C0D7; PlayFrame $C17D sets it to 0 when the three order lists have ended and to 1 for as long as a channel still sounds. Cleared by StopMusic $C00A. Read by the glue at $856D and $8589: 0 lets it restart a looped tune or play effects.
+
+$C007 c PlayEffectVector ; JP PlayEffect: the entry table, slot 2
+> Not run in the keyed recordings. Witness: L1 0 ().
+
+$C00A c StopMusic ; Stop the tune: MusicState 0, then Silence
+> The entry table's slot 3. No code in the game calls it (the glue silences with Silence $D182 directly and leaves MusicState alone).
+> Not run in the keyed recordings. Witness: L1 0 ().
+
+$C011 c PlayEffect ; Start sound effect A on channel A
+> A = the effect number (0-13). IY = Effects $CF60 + 13 x A, the record: its first ten bytes are an instrument, +$0A/+$0B the tone period, +$0C the gate time. StartNote $D0DA starts it on AyChannelA (IX = $D09D) with HL = the period and C = the gate time, then bit 7 of the channel's flags (+$11) locks the channel against the tune until the release ends (EnvRelease $D358 clears it).
+> Called only by the glue's JP at $859B, with no tune playing (MusicState 0) and the request $8454 not $FF. menu runs it 10 times (the records of effects 7, 10 and 11 are read), after its title page set the toggle $8455 to effects.
+> Witness: L1 10 (menu).
+$C015 ; IX = the AY record of channel A: effects play on channel A only
+$C019 ; HL = 13 x A
+$C023 ; IY = the effect's record
+$C02A ; HL = the period, C = the gate time
+$C036 ; lock channel A: the sequencer leaves it alone, the arpeggio does not touch it
+
+@module state ; The sequencer's state: the channel records, the instrument slots, the drum
+@about A sequencer record (33 bytes, SeqChannelA $C03F, SeqChannelB $C060, SeqChannelC $C081): +$00 the channel's base in SlotTables (0, 16, 32; never written), +$01/+$02 the order-list pointer, +$03/+$04 the current pattern's start, +$05/+$06 the pattern pointer, +$07/+$08 the instrument (a pointer into Instruments), +$09 the pattern's repeats left, +$0A the transpose (signed semitones), +$0B the pattern-end flag ($FF: read the order list), +$0C the frames left of the current event, +$0D the channel's order list is running ($FF) or has ended (0), +$0E the note playing (with transpose), +$0F the arpeggio number, +$10/+$11 the arpeggio pointer, +$12 the frames left of the arpeggio step, +$13 the steps left, +$14 the arpeggio state ($C0 + n at a note: bit 7 on, bit 6 first frame), +$15 the slide switch ($FF on), +$16/+$17/+$18 the slide's delay, steps and interval, +$19 the slide state ($FF to set up, 1 sliding, 0 off), +$1A the delay left, +$1B the steps left, +$1C/+$1D the step, +$1E/+$1F the whole change of period, +$20 the drum switch ($FF: every note starts a noise burst).
+@about The image's bytes in the three records are leftovers of the assembly (StartTune sets every field it needs); the AY rips, snapshots taken while playing, differ from the image only in these records, MusicState and the state bytes below.
+
+$C03F b SeqChannelA 11 ; The sequencer record of channel A (33 bytes, the fields in the module's header)
+> Written by StartTune $C0D7 and SequenceChannel $C1C5 (IY = $C03F), read by UpdateArpeggio $C390 and UpdatePortamento $C420. +$00 = 0: channel A's slots are SlotTables +0-15.
+$C060 SeqChannelB ; the sequencer record of channel B; +$00 = $10
+$C081 SeqChannelC ; the sequencer record of channel C; +$00 = $20
+
+$C0A2 b SlotTables 16 ; The instrument slots: 16 a channel, each the offset (10 x instrument) of a record in Instruments
+> A pattern's command $80 + n plays instrument slot n of its channel: SlotTables + the channel's base + n gives the offset from Instruments $CED4 (ReadPatternCommand $C31F). StartTune $C0D7 fills every channel's slots with 0, 10, ..., 150 (slot n = instrument n); an order list's command $C0 + n, m sets slot n to instrument m (10 x m) until the next tune.
+$C0B2 ; channel B's slots
+$C0C2 ; channel C's slots
+
+$C0D2 b DrumPending 1 ; The started note's channel has the drum on: StartNote turns its noise on
+> SequenceChannel $C1C5 copies the channel's +$20 here before StartNote $D0DA; StartNote clears it and starts the burst.
+$C0D3 b DrumLength 1 ; The noise burst's frames (pattern command $FD, first byte)
+$C0D4 b DrumTimer 1 ; Frames left of the noise burst, $FF none
+> Set from DrumLength by StartNote $D0DA, counted down by AyUpdate $D1C3, which turns the noise off when it passes 0 and takes the noise period from DrumNoise while it runs. StartTune sets $FF.
+$C0D5 b DrumNoise 1 ; The burst's noise period (pattern command $FD, second byte; the AY gets it rotated right three times)
+$C0D6 b DrumChannel 1 ; The burst's channel: its noise-enable mask (AY register 7)
+
+@module player
+$C0D7 c StartTune ; Start tune A: silence the AY, point the three channels at the tune's order lists, reset the state
+> A = the tune (0 title, 1 in-game, 2 start; the glue passes the request AND 15). Silence $D182 first. The three order-list pointers of TuneTable $CCF1 + 6 x A go to the records' +$01/+$02. Per channel: the transpose, the arpeggio, the slide switch and state and the drum switch cleared; the pattern-end flag $FF, the repeat count 1 and the event timer 1, so the first PlayFrame reads the order list at once; every slot of SlotTables set to instrument n; the instrument pointer at Instruments $CED4 (record 0); the order list running ($FF); MusicState $FF and DrumTimer $FF.
+> Called by the glue at $856A (c1: 3 times, the title, the start jingle and the in-game tune).
+> Witness: L1 27 (c1, deaths, gameover, menu, opt x3).
+$C0E0 ; HL = TuneTable + 6 x A
+$C0E8 SetOrderPointers ; the three order-list pointers to +$01/+$02 of each record
+$C100 ; transpose, arpeggio, slide switch, slide state and drum switch = 0 on the three channels
+$C12E ; pattern-end flags = $FF
+$C138 ; repeat counts and event timers = 1
+$C14C ; three channels: slot n = 10 x n
+$C152 ResetSlotsChannel
+$C153 ResetSlotsLoop
+$C15F ; instrument 0 on every channel
+$C16B ; order lists running, MusicState $FF, no noise burst
+
+$C17D c PlayFrame ; Play one frame: update and write the AY, then step the three sequencers
+> The glue's every-frame call (JP at $8571 or $8597; its RET returns to the glue at $8549). AyUpdate $D1C3 first (envelopes, vibrato, the registers). Then, if MusicState $C006 is not 0: MusicState = the three records' +$0D ORed (0 when every order list has ended); while some list runs, SequenceChannel $C1C5 for A, B and C; when all have ended, MusicState stays 1 as long as a channel still sounds (AyMixer has a channel on) and becomes 0 when all are off.
+> Witness: L1 49267 (c1, deaths, gameover, menu, rooms, opt x3).
+$C185 ; all three order lists ended?
+$C195 ; yes: MusicState 0, or 1 while a channel still sounds
+$C1A7 SequenceChannels ; IY = the sequencer record, IX = the AY record, for A, B, C
+$C1BD ; channel C falls into SequenceChannel
+
+$C1C5 c SequenceChannel ; Step one channel's sequencer by a frame: the arpeggio, the slide, the patterns
+> IY = the sequencer record, IX = the AY record. UpdateArpeggio $C390 and UpdatePortamento $C420 first. When the pattern has ended (+$0B not 0): one repeat less; while repeats remain the pattern starts again, else ReadOrderList reads the order list. Then the event timer +$0C counts down; while it runs, one pending command byte is taken ahead (so a pattern's end mark $FF is seen on the frame before the last note ends); at 0 the commands are read up to the next event: a note (0-$7D, then its length), $7E (a raw period word, then the length) or $7F (a rest: the length only; the playing note runs on to its release).
+> A note: the index + the transpose (+$0E) picks the period from NoteTable $D016; with the slide on, the slide's target is the note + interval (+$18) and its whole change goes to +$1E/+$1F. The arpeggio state becomes $C0 + the arpeggio, the length goes to +$0C, IY becomes the instrument and, unless an effect holds the channel, StartNote $D0DA starts it (DrumPending = the drum switch).
+> The order list (ReadOrderList): $00-$7F play pattern n (PatternAddrLo/Hi $CC97/$CCC4), $80-$BF the next pattern n times (low five bits), $C0-$FB n, m slot n (low four bits) = instrument m, $FC one byte skipped, $FD a, b three bytes skipped, $FE t the transpose t, $FF the end (+$0D = 0, the channel stops reading). $FC and $FD are in no tune (the code at $C1FC and $C206 ran in no recording).
+> Witness: L1 137559 (c1, deaths, gameover, menu, rooms, opt x3).
+$C1D2 PatternEnded ; the pattern's end: repeat it or read the order list
+$C1E9 ReadOrderList ; the repeat count 1 unless the list says otherwise
+$C1F3 OrderListLoop
+$C1F8 ; $FD a b: skipped
+$C202 OrderNotFD
+$C20A OrderNotFC ; $FE t: the transpose
+$C217 OrderNotFE ; $FF: the channel's order list ends
+$C220 OrderNotEnd ; $80-$BF: the repeat count
+$C22D OrderSetSlot ; $C0-$FB n, m: slot n of this channel = 10 x m
+$C23A OrderSlotAddressed
+$C246 OrderPattern ; $00-$7F: the pattern's address from PatternAddrLo / PatternAddrHi
+$C266 ContinuePattern ; DE = the pattern pointer
+$C26C CountEvent ; the event timer: still running?
+$C271 ; yes: take one command byte ahead
+$C27E ReadEvent ; read commands up to the next event
+$C28C ; a $FF read here (not ahead): the end at once. Ran in no recording: the look-ahead always finds it
+$C28F ReadEventKind ; $7F: a rest
+$C294 ; $7E lo hi: a raw tone period
+$C2A1 EventNoteIndex ; a note: +$0E = index + transpose, HL = its period
+$C2B3 ; the slide on: set it up for this note
+$C2CB ; the target: the note + the slide interval
+$C2DB ; +$1E/+$1F = target period - the note's period
+$C2E5 EventStart ; the arpeggio state, the length, the pattern pointer, IY = the instrument
+$C304 ; an effect holds the channel: no note
+$C309 ; DrumPending = the drum switch
+$C30F ; start the note
+$C312 EventRest ; a rest: the length only
+
+$C31F c ReadPatternCommand ; Take one pattern command byte at DE
+> DE = the pattern pointer, A = (DE) >= $80. $80-$8B: instrument slot n (low four bits): +$07/+$08 = Instruments $CED4 + the slot's offset (SlotTables). $FF: the pattern's end (+$0B = $FF, DE stays on it). $8C-$BF: the arpeggio, low four bits (the tunes use $90 + n). $C0 a b c: the slide on, delay a, steps b, interval c semitones; $C1: the slide off. $FC: the drum off; $FD a b: the drum on, a burst of a frames at noise period b (DrumLength, DrumNoise; every note of the channel from now on). Others ($C2-$FB, $FE): skipped (the RET at $C38F ran in no recording).
+> Called by SequenceChannel $C1C5 at $C274 (ahead) and $C283.
+> Witness: L1 11309 (c1, deaths, gameover, menu, rooms, opt x3).
+$C324 ; $80-$8B: the instrument in slot n
+$C33D CommandNotInstrument ; $FF: the pattern's end
+$C346 CommandNotEnd ; $8C-$BF: the arpeggio number
+$C351 CommandC0Up ; $C0 and up: past the command byte; $C1 the slide off
+$C35B CommandNotC1 ; $C0 a b c: the slide on
+$C373 CommandNotC0 ; $FC: the drum off
+$C37C CommandNotFC ; $FD a b: the drum on
+$C38F CommandUnknown ; any other byte: skipped
+
+$C390 c UpdateArpeggio ; Step the channel's arpeggio: a list of semitone offsets played over the note
+> IY = the sequencer record, IX = the AY record. Nothing while an effect holds the channel or the state +$14 has bit 7 clear. Arpeggio 0: none (bit 7 cleared). The first frame of a note (bit 6) and the end of a looping list start the list at Arpeggios-8 + 8 x n: its header byte gives the first step's frames (bits 3-5), the steps (bits 0-2, + 1) and the loop (bit 7); the first step plays the note itself. Each later step is one byte: bits 3-7 the offset in semitones, bits 0-2 the frames. A step writes the tone period of note + offset (NoteTable) to the AY record's +$03/+$04.
+> Every arpeggio of the tunes is a three-note chord stepped one frame a note (header $8A: the note, then two offsets).
+> Witness: L1 137559 (c1, deaths, gameover, menu, rooms, opt x3).
+$C39B ; arpeggio 0: off
+$C3A4 ArpeggioRunning ; D = 7: the frame mask, and the high byte of $700 below
+$C3AC ; the step's frames
+$C3B0 ; the steps left: at 0 start the list again
+$C3B6 ; the next step
+$C3C7 ArpeggioStep ; frames = bits 0-2, note offset = bits 3-7
+$C3D8 ArpeggioStart ; HL = Arpeggios-8 + 8n: A = (n + $80 or $C0) x 8 drops the $80 / $C0, D = 7 adds $700
+$C3E7 ; no loop: start only on the note's first frame. Ran in no recording (every list loops)
+$C3ED ; else hold the last step
+$C3F2 ArpeggioHeader ; the first step's frames and the step count from the header
+$C40A ; the first step: the note itself
+$C40D SetNotePeriod ; A = the note: the period from NoteTable to the AY record's +$03/+$04
+$C416 SetNotePeriodHigh
+
+$C420 c UpdatePortamento ; Step the channel's pitch slide
+> IY = the sequencer record, IX = the AY record. State +$19: 0 off. $FF (set at the note): the step = the whole change +$1E/+$1F divided by the steps +$1B (a signed 16 by 8 bit division, done on the magnitude), state 1. Then the delay +$1A counts down; after it, each frame adds the step to the AY record's slide offset +$12/+$13 until the steps run out; then the offset is the whole change exactly and the state 0. StartNote $D0DA clears the offset at every note.
+> Witness: L1 137559 (c1, deaths, gameover, menu, rooms, opt x3).
+$C428 ; set up: DE = the steps, CA = the change
+$C43A ; a positive change: CA / E
+$C43C DivideLoop
+$C446 DivideNoAdd
+$C449 ; the quotient's last bit; the step to +$1C/+$1D
+$C458 DivideNegative ; a negative change: divide the magnitude, negate the quotient
+$C461 DivideNegativeLoop
+$C46B DivideNegativeNoAdd
+$C481 PortamentoDelay ; the delay first
+$C48B PortamentoStep ; a step: the offset += the step
+$C4A7 PortamentoDone ; the end: the offset = the whole change, the slide off
+
+@module tunes ; The tunes: patterns, order lists, the tune table, arpeggios, instruments, effects, the note table
+@about Three tunes (TuneTable $CCF1): 0 the title (8484 frames, then looped by the glue), 1 the in-game music (10080 frames, looped), 2 the start jingle (120 frames). They match the AY rips' songs 1, 3 and 2 (title, in-game, start; the rips are memory snapshots of this bank: 166 bytes differ, all in the player's state). 45 patterns, of which 42-44 (one $FF each) are in no order list.
+@about Every tune is exported as text by work/stage2/ann/BANK4-tmp/tune2txt.py; the format is in BANK4.md.
+
+$C4B8 b Patterns 8 ; The 45 patterns: byte streams of notes and commands, each ended by $FF
+> Read by SequenceChannel $C1C5 and ReadPatternCommand $C31F through PatternAddrLo / PatternAddrHi. An event: a note index 0-$7D then the length in frames; $7E lo hi length (a raw period); $7F length (a rest). Commands before it: $80-$8B instrument slot, $90-$9F arpeggio, $C0 a b c slide on, $C1 slide off, $FC drum off, $FD a b drum on. Which tune and channel plays each pattern: BANK4.md.
+$C4B8 Pattern00 ; tune 0 A, B: the bass and noise drum loop, arpeggios 1 and 2
+$C51C Pattern01 ; tune 0 B
+$C53A Pattern02 ; tune 0 C
+$C54A Pattern03 ; tune 0 B, C
+$C57D Pattern04 ; tune 0 B, C: the high noise beat
+$C58B Pattern05 ; tune 0 B
+$C5A5 Pattern06 ; tune 0 C
+$C5D7 Pattern07 ; tune 0 A: bass and drums, arpeggios 3 and 4
+$C63B Pattern08 ; tune 0 B, C: melody with slides
+$C64E Pattern09 ; tune 0 B, C: melody with slides
+$C67A Pattern10 ; tune 0 A: bass and drums, arpeggio 5
+$C6A7 Pattern11 ; tune 0 A: bass and drums, arpeggios 6 and 7
+$C707 Pattern12 ; tune 0 A, B, C: the bass riff
+$C71B Pattern13 ; tune 0 B, C
+$C743 Pattern14 ; tune 0 B, C: the long melody with slides
+$C7B3 Pattern15 ; tune 0 A, C: the low riff
+$C7D6 Pattern16 ; tune 0 B: one high note (instrument 8)
+$C7DA Pattern17 ; tune 0 B
+$C7DE Pattern18 ; tune 0 B
+$C7E6 Pattern19 ; tune 0 A
+$C80E Pattern20 ; tune 0 C: the lead melody, 220 bytes
+$C8EA Pattern21 ; tune 0 B: chords and drums, arpeggio 7
+$C94E Pattern22 ; tune 0 B: chords and drums, arpeggio 6
+$C97F Pattern23 ; tune 0 A
+$C9D5 Pattern24 ; tune 0 B: the octave bass
+$C9F8 Pattern25 ; tune 1 A: the bass pulse
+$CA02 Pattern26 ; tune 1 B
+$CA0E Pattern27 ; tune 1 C: the intro chords (instrument 10)
+$CA19 Pattern28 ; tune 1 B: long arpeggio chords
+$CA3F Pattern29 ; tune 1 A: the bass with a drum
+$CA4D Pattern30 ; tune 1 C
+$CA5E Pattern31 ; tune 1 A: the bass run
+$CAAC Pattern32 ; tune 1 B: the melody
+$CAE5 Pattern33 ; tune 1 C: arpeggio chords
+$CB2D Pattern34 ; tune 1 C: arpeggio chords
+$CB78 Pattern35 ; tune 1 B: the second melody
+$CBB0 Pattern36 ; tune 1 C
+$CBDC Pattern37 ; tune 1 B: the third melody
+$CC4C Pattern38 ; tune 1 A
+$CC5A Pattern39 ; tune 1 A
+$CC68 Pattern40 ; tune 2 A, B: the jingle's bass
+$CC76 Pattern41 ; tune 2 C: the jingle's tune
+$CC94 Pattern42 ; patterns 42-44: $FF each, in no order list
+$CC95 Pattern43
+$CC96 Pattern44
+@res music/tunes.bin
+
+$CC97 b PatternAddrLo 15 ; The patterns' addresses, low bytes (45)
+> SequenceChannel $C1C5 at $C254: the address of pattern n is PatternAddrLo[n] + 256 x PatternAddrHi[n].
+@res music/tunes.bin
+$CCC4 b PatternAddrHi 15 ; The patterns' addresses, high bytes (45)
+@res music/tunes.bin
+
+$CCF1 w TuneTable 3 ; The three tunes: the order lists of channels A, B and C
+> StartTune $C0D7 reads TuneTable + 6 x the tune.
+$CCF1 ; tune 0: the title
+$CCF7 ; tune 1: the in-game music
+$CCFD ; tune 2: the start jingle
+@res music/tunes.bin
+
+$CD03 b OrderLists 8 ; The nine order lists: pattern numbers, repeat counts, instrument slots, transposes, $FF the end
+> Read by SequenceChannel $C1C5 (ReadOrderList $C1E9). The lists and what they play are in BANK4.md (tune2txt.py prints them). The ends of tune 1's three lists ($CE12-$CE22, $CE3B-$CE43, $CE74-$CE7D) are read in no recording: none plays the in-game music for its 10080 frames.
+$CD03 Tune0OrderA
+$CD5E Tune0OrderB
+$CDAA Tune0OrderC
+$CDDC Tune1OrderA
+$CE23 Tune1OrderB
+$CE44 Tune1OrderC
+$CE7E Tune2OrderA
+$CE81 Tune2OrderB
+$CE88 Tune2OrderC ; also the last four bytes of arpeggio 0's place (Arpeggios-8), never read as an arpeggio
+@res music/tunes.bin
+
+$CE8C b Arpeggios 8 ; Arpeggios 1-9: 8 bytes each, a header and up to seven steps (two or one used, the rest 0)
+> UpdateArpeggio $C390 reads arpeggio n at Arpeggios-8 + 8 x n; arpeggio 0 means none, so its place ($CE84-$CE8B) is the end of the order lists. Header: bit 7 loop, bits 3-5 the first step's frames (the note itself), bits 0-2 + 1 the steps. A step: bits 3-7 semitones above the note, bits 0-2 frames. All nine loop with one frame a step: 1 (0, 3, 7) minor, 2 (0, 3, 6) diminished, 3 (0, 4, 9), 4 (0, 3, 9), 5 (0, 4, 7) major, 6 (0, 3, 8), 7 (0, 5, 9), 8 (0, 12) the octave, 9 (0, 3, 10).
+> Read: the first three bytes of each used one; arpeggio 8 is in no pattern.
+$CE8C ; 1: 0, +3, +7
+$CE94 ; 2: 0, +3, +6
+$CE9C ; 3: 0, +4, +9
+$CEA4 ; 4: 0, +3, +9
+$CEAC ; 5: 0, +4, +7
+$CEB4 ; 6: 0, +3, +8
+$CEBC ; 7: 0, +5, +9
+$CEC4 ; 8: 0, +12 (unused)
+$CECC ; 9: 0, +3, +10
+@res music/arpeggios.bin
+
+$CED4 b Instruments 10 ; The 14 instruments: 10 bytes, the volume envelope, the vibrato and the mixer
+> A record: +0 the attack step, +1 the decay step (signed), +2 the sustain level, +3 the release step (signed), +4 the peak, all on the volume scale 0-$7F (the AY gets volume / 8); +5 the vibrato delay (frames), +6 the vibrato width (frames a sweep: 0 one endless sweep, a pitch drop; bit 7 one half sweep then stop; else back and forth, the first sweep half as long), +7/+8 the vibrato step added to the period each frame; +9 flags: bit 0 tone, bit 1 noise (noise period from the tone period), bit 2 the AY's hardware envelope (shape +0, period +4; no instrument uses it).
+> StartNote $D0DA and the envelope phases $D308-$D358 read it (IY). SlotTables gives the instrument for a pattern's $80 + n.
+$CED4 ; 0: tone; instant attack, decay -5 to 0, peak $6D; vibrato 3 x 1
+$CEDE ; 1: tone; decay -4, peak $57; vibrato 3 x 1
+$CEE8 ; 2: tone + noise; decay -5, peak $7F; endless period drop $40 a frame: the snare
+$CEF2 ; 3: tone; decay -4, peak $70; endless drop 59 a frame
+$CEFC ; 4: tone; attack $43, decay -4, peak $7F; vibrato 3 x 6: the bass
+$CF06 ; 5: tone; decay -4, peak $7F; vibrato 3 x 4
+$CF10 ; 6: tone; attack $50, decay -1 to sustain $45, peak $7C; vibrato after 20 frames, 4 x 3: the slow melody
+$CF1A ; 7: tone; attack $43, decay -2, peak $7F; vibrato after 1 frame, 3 x 6
+$CF24 ; 8: tone + noise; decay -21, peak $75; vibrato off (delay $FF): a noise hit
+$CF2E ; 9: tone; decay -1, peak $75; vibrato after 12 frames, 3 x 1
+$CF38 ; 10: tone; attack 8, decay -1, peak $65; vibrato 5 x -6
+$CF42 ; 11: noise; decay -8, peak $64; no vibrato (delay $FE): tune 1's noise beat
+$CF4C ; 12: tone; decay -1 to $3A, release -2, peak $78; vibrato 3 x 1
+$CF56 ; 13: tone; decay -2, release -2, peak $75; vibrato 3 x 2: the start jingle's lead
+@res music/instruments.bin
+
+$CF60 b Effects 13 ; The 14 sound effects: an instrument (10 bytes), the tone period (word), the gate time
+> PlayEffect $C011 plays effect n from Effects + 13 x n on channel A (an octave below the period's pitch, as channel A doubles the period). The game requests them through $8454 (BANK4.md lists the sites). Read in the recordings: 7, 10 and 11 (menu); the rest are known only from the code.
+$CF60 ; 0: period 75, gate 34
+$CF6D ; 1: period 225, gate 12
+$CF7A ; 2: period 7, gate 63
+$CF87 ; 3: period 64, gate 50
+$CF94 ; 4: period 257, gate 1
+$CFA1 ; 5: period 83, gate 40 (tone only)
+$CFAE ; 6: period 114, gate 87
+$CFBB ; 7: period 127, gate 20: the footstep ($9BB2)
+$CFC8 ; 8: period 44, gate 59 (tone only)
+$CFD5 ; 9: period 150, gate 103
+$CFE2 ; 10: period 7, gate 70
+$CFEF ; 11: period 44, gate 0 (noise only)
+$CFFC ; 12: period 93, gate 20
+$D009 ; 13: period 406, gate 30
+@res music/effects.bin
+
+$D016 w NoteTable 8 ; The 67 tone periods: index n is MIDI note 40 + n (E2) on channels B and C, an octave lower on A
+> At the 128K's AY clock 1.7734 MHz (f = 110 837 / period). Three entries are off the scale: 2 (1236, between F2 and F#2), 6 (988, about A2 where A#2 would be 951) and 66 (24, near D8 where A#7 would be 30). Read by SequenceChannel $C1C5 and SetNotePeriod $C40D (HL = NoteTable + 2 x the note).
+@res music/notes.bin
+
+$D09C b AyMixer 1 ; The copy of AY register 7 (the mixer): bits set = tone / noise off; bits 0-5 all set = silent
+> Written by StartNote $D0DA, EnvRelease $D358, Silence $D182 and AyUpdate $D1C3 (the drum's end), sent to the AY by AyUpdate.
+
+$D09D b AyChannelA 10 ; The AY record of channel A (20 bytes)
+> A record: +$00 the tone-enable mask (AND), +$01 the noise-enable mask, +$02 the channel's off bits (OR), +$03/+$04 the tone period, +$05 the volume 0-$7F, +$06 the gate timer (frames to the release; 0 or $FF stay), +$07 the vibrato delay ($FF stopped), +$08 the frames of the sweep, +$09/+$0A the vibrato offset, +$0B/+$0C the vibrato step, +$0D/+$0E the envelope phase (EnvAttack, EnvDecay, EnvSustain, EnvRelease), +$0F/+$10 the instrument, +$11 the instrument's flags (bit 7: an effect holds the channel), +$12/+$13 the slide offset. Masks of A: $FE, $F7, $09.
+> The glue reads +$05 ($D0A2), the volume, every frame into $9BA3.
+$D0B1 AyChannelB ; channel B: masks $FD, $EF, $12
+$D0C5 AyChannelC ; channel C: masks $FB, $DF, $24
+
+$D0D9 b NoisePeriod 1 ; The noise period from the last noise channel's tone period (low byte), sent rotated right three times
+
+@module ay ; Starting a note on a channel, the envelope phases, the vibrato, the AY writes
+@about The AY side of the player. StartNote $D0DA sets a channel up from an instrument; at every frame AyUpdate $D1C3 runs UpdateChannel $D2D6 for A, B and C (the gate timer, UpdateVibrato $D37E, the envelope phase through the record's +$0D/+$0E) and writes the registers 0-10: tone periods (A doubled; base + vibrato offset + slide offset), the noise period, the mixer, the volumes (volume / 8). WriteAyRegister $D3C6 is the one routine with ports $FFFD / $BFFD.
+
+$D0DA c StartNote ; Start a note or an effect on an AY channel
+> IX = the AY record, IY = the instrument (Instruments or Effects), HL = the tone period, C = the gate time. Sets the instrument, the period, the gate timer, the vibrato (delay +5, the first sweep half of +6, at least 1, step +7/+8, the offset 0) and clears the slide offset. The mixer: the channel off, then tone on if flags bit 0, noise on if bit 1, or noise on for a burst when DrumPending $C0D2 is set (DrumChannel, DrumTimer = DrumLength). Flags bit 2 (hardware envelope, no instrument) sets the AY envelope: shape = +0, period high = +4, low 0, volume $FF (31: bit 4 = envelope mode) and leaves the phase alone; otherwise the phase is EnvAttack $D308.
+> Called by SequenceChannel $C1C5 (JP at $C30F) and PlayEffect $C011.
+> Witness: L1 13915 (c1, deaths, gameover, menu, rooms, opt x3).
+$D0ED ; the vibrato: delay, half the width (at least 1), the step
+$D0FE SetSweepFrames
+$D10D ; the volume, the vibrato offset and the slide offset from 0
+$D11A ; the mixer: this channel off, then on as the flags say
+$D12D MixerDrum ; a drum burst pending?
+$D135 ; no: noise as the flags say
+$D13E MixerDrumStart ; the burst: DrumChannel, DrumTimer = DrumLength, noise on
+$D152 MixerSet
+$D155 ; flags bit 2: the hardware envelope
+$D159 ; the envelope phase starts at EnvAttack
+$D163 HardEnvelope ; registers 13 (shape), 11 and 12 (period), the volume $FF. Ran in no recording
+
+$D182 c Silence ; Silence the AY: every channel off, the volumes 0, the effect locks off
+> Mixer (register 7) all off ($3F set in AyMixer), registers 8-10 (volumes) 0, 11 = 1, 12 and 13 = 0; the AY records' flags (+$11) and volumes (+$05) to 0. Called by StartTune $C0D7, StopMusic $C00A and the glue at $858D (a request $FF while a tune plays; ran in no recording).
+> Witness: L1 27 (c1, deaths, gameover, menu, opt x3).
+
+$D1C3 c AyUpdate ; Update the three AY channels by a frame and write registers 0-10
+> Nothing when AyMixer has all six channel bits set (silent). UpdateChannel $D2D6 for A, B, C; DrumTimer counts down and at its end turns the burst's noise off in AyMixer. Then the registers: 7 = AyMixer bits 0-5; 0/1 = 2 x (A's period + vibrato offset + slide offset); 2/3 and 4/5 the same for B and C without the doubling; for a channel with noise (flags bit 1) its period's low byte becomes NoisePeriod; 6 = DrumNoise while a burst runs, else NoisePeriod, rotated right three times; 8-10 = the volumes / 8. The LD HL,$FFBF lines are leftovers: HL is loaded again before it is read.
+> Called by PlayFrame $C17D at every frame of the glue.
+> Witness: L1 49267 (c1, deaths, gameover, menu, rooms, opt x3).
+$D1E0 ; the drum burst's timer
+$D1F5 WriteAy ; register 7: the mixer
+$D202 ; channel A: (period + vibrato + slide) x 2
+$D226 ; noise on A: its period's low byte is the noise period
+$D230 WriteAyToneA
+$D239 ; channel B: period + vibrato + slide
+$D25E WriteAyToneB
+$D267 ; channel C
+$D28C WriteAyToneC
+$D295 ; register 6: the drum's or the channel's noise period
+$D2A2 NoiseFromChannel
+$D2A5 WriteAyNoise
+$D2AB ; registers 8-10: the volumes / 8
+
+$D2D6 c UpdateChannel ; One AY channel's frame: the gate timer, the vibrato, the envelope phase
+> IX = the AY record. Nothing when the channel is off in AyMixer. IY = its instrument. The gate timer +$06 counts down (0 and $FF stay); UpdateVibrato $D37E; then the phase routine at +$0D/+$0E (JP (HL)), or for a hardware-envelope instrument the wait at $D377.
+> Witness: L1 138756 (c1, deaths, gameover, menu, rooms, opt x3).
+$D2F7 UpdateChannelPhase
+$D307 ; the envelope phase: EnvAttack, EnvDecay, EnvSustain or EnvRelease
+
+$D308 c EnvAttack ; The attack: volume + instrument +0 up to the peak (+4), then the decay
+> Reached through the AY record's +$0D/+$0E (JP (HL) at $D307).
+> Witness: L1 14765 (c1, deaths, gameover, menu, rooms, opt x3).
+$D317 EnvAttackPeak
+
+$D327 c EnvDecay ; The decay: volume + instrument +1 down to the sustain level (+2), then the sustain
+> Witness: L1 111733 (c1, deaths, gameover, menu, rooms, opt x3).
+$D339 EnvDecayDone
+
+$D349 c EnvSustain ; The sustain: hold until the gate timer is 0, then the release
+> Witness: L1 7336 (c1, deaths, gameover, menu, rooms, opt x3).
+
+$D358 c EnvRelease ; The release: volume + instrument +3 down to 0, then the channel off
+> At 0: the channel's off bits into AyMixer and the effect lock (flags bit 7) cleared: the tune may use channel A again.
+> Witness: L1 199 (c1, deaths, gameover, menu, rooms, opt x3).
+$D365 ChannelOff
+$D377 HardEnvelopeWait ; a hardware-envelope note: off when the gate timer ends. Ran in no recording
+
+$D37E c UpdateVibrato ; Step the channel's vibrato: the offset + the step, the step reversed at each sweep's end
+> IX = the AY record, IY = the instrument. The delay +$07 first ($FF: stopped). Each frame: offset +$09/+$0A += step +$0B/+$0C; at the end of a sweep (+$08 = 0): instrument +6 = 0 goes on (an endless slide), +6 negative stops ($FF), else +$08 = +6 and the step is negated.
+> Witness: L1 134033 (c1, deaths, gameover, menu, rooms, opt x3).
+$D38B VibratoStep
+$D3A2 ; the sweep's end
+$D3AA ; width negative: stop. Ran in no recording
+$D3AF VibratoReverse
+
+$D3C0 c AyPrepare ; Leftover set-up before AY writes: C = $FD, HL = $FFBF; falls into AyDone
+> Neither value is read: WriteAyRegister loads BC itself. Called by StartNote, Silence and AyUpdate.
+> Witness: L1 46279 (c1, deaths, gameover, menu, rooms, opt x3).
+
+$D3C5 c AyDone ; RET: the end of a batch of AY writes
+> The tail of StartNote, Silence and AyUpdate jumps here; AyPrepare falls into it.
+> Witness: L1 92558 (c1, deaths, gameover, menu, rooms, opt x3).
+
+$D3C6 c WriteAyRegister ; Write A to AY register E
+> OUT ($FFFD),E then OUT ($BFFD),A. BC is lost, E and A kept.
+> Witness: L1 508961 (c1, deaths, gameover, menu, rooms, opt x3).
+
+@module story ; The 128K's intro story pages
+@about On a 48K the intro (Hiro's awakening, the Fireblade's fall, Havok) is shown once at the boot ($5CFD CALL $5D4F) from texts in the actor pages, which the play then overwrites. On a 128K the bootstrap puts NOPs at $5CFD and a CALL $85C5 at $5C9A (after the key choice, before every new game); $85C5 pages bank 4 in and calls StoryPages $D3D0, so the intro is shown before each game, from these bytes. The code is the 48K's $5D4F-$5E4C with its own copies of the helpers and of the texts.
+@about The text stream StoryEyesClosed $D4CB-$D862 is read in order through IY: picture strings in the story font StoryFont (two header bytes: Y, X; codes 1-$ED are glyphs code - 1; $FF the next line) and text strings in the game font (PrintString: Y, X, two style bytes, ASCII, $FF the next line), each ended by 0.
+
+$D3D0 c StoryPages ; Show the intro story: boxed pages of pictures and text, each waiting for key 0 or a time
+> Page 1: the screen cleared to attribute 7, a box at Y $90 X $30 (8 x 5 characters), Hiro's closed eyes and "FOR 10000 YEARS HE SLEPT..."; after the wait "NOW HE HAS AWAKENED" over it, the eyes open in three frames five frames apart (attribute $42 at $5A9C before the last), the wait. Page 2: StoryAttrs1 at $5882, a box at Y 8 X 0 (7 x 19), the whole Fireblade and "AS THE NIGHT BLED CRIMSON...", the wait; a flash (border 7, StoryAttrs2, a delay of $2000 passes, border 0), the shattered blade and "THEN THE SLAUGHTER BEGAN.", the wait. Page 3: PortraitAttrs at $5828, a box at Y 0 X $0F (18 x 15), Havok's portrait and "THEY NEVER THOUGHT HE WOULD RETURN. NOW HAVOK REIGNS THE UNDERCITY.", the wait; "I AM HIRO, ... AND BRING THE DAWN...", the wait, and 300 frames more (WaitFire, H = $3C). A wait is WaitFireLong: 200 frames or key 0.
+> Called by the hook $85C5 (main memory) at $85D1: c1 once, menu and gameover twice (two games).
+> Witness: L1 9 (c1, deaths, gameover, menu, opt x3).
+$D3D5 ; IY = the first string
+$D3E2 ; "NOW HE HAS AWAKENED" over the first text
+$D3E5 ; the eyes open: three pictures
+$D3F6 ; page 2
+$D410 ; the flash: border white, the bright attributes, a delay
+$D42D ; page 3: Havok
+$D447 ; Hiro's vow, the wait, then 300 frames more
+
+$D450 c StoryBoxPage ; Draw a box, then a picture, a text and wait
+> DE = the box's position (E = Y in pixels, D = X in half columns), B = its width, C = its height in characters. DrawStoryBox $D479, then falls into StoryPicturePage.
+> Witness: L1 27 (c1, deaths, gameover, menu, opt x3).
+
+$D453 c StoryPicturePage ; Print the next picture string, then the next text and wait
+> Witness: L1 36 (c1, deaths, gameover, menu, opt x3).
+
+$D456 c StoryTextPage ; Print the next text string and wait for key 0 or 200 frames
+> Witness: L1 45 (c1, deaths, gameover, menu, opt x3).
+
+$D45C c StoryFrame ; Print the next picture string and wait 5 frames (one frame of the eyes' opening)
+> Witness: L1 27 (c1, deaths, gameover, menu, opt x3).
+
+$D464 c PrintStoryPicture ; Print the picture string at IY in the story font; IY = the next string
+> Witness: L1 63 (c1, deaths, gameover, menu, opt x3).
+
+$D46F c PrintStoryText ; Print the text string at IY with PrintString; IY = the next string
+> Witness: L1 54 (c1, deaths, gameover, menu, opt x3).
+
+$D475 c NextStoryString ; IY = HL: the string after the one printed
+> Witness: L1 117 (c1, deaths, gameover, menu, opt x3).
+
+$D479 c DrawStoryBox ; Build and print a box frame of B x C characters at DE
+> Builds a PrintString record in BoxString $5B01: the position DE, style bytes 6 and 6, the top row ($22, $23 x (B - 2), $24), C - 2 middle rows ($25, a skip of B - 2 columns, $25), the bottom row ($27, $28 x (B - 2), $29), rows ended by $FF, the record by 0, and prints it: the frame glyphs $22-$29 of the game font.
+> Witness: L1 27 (c1, deaths, gameover, menu, opt x3).
+$D492 ; the end of the top row
+$D498 BoxMiddleRows
+$D4A0 ; the bottom row
+
+$D4B2 c BoxEdgeRow ; Write a box row: E, then A x (B - 2), then D
+> HL = the buffer; returns HL past the row.
+> Witness: L1 54 (c1, deaths, gameover, menu, opt x3).
+$D4B6 BoxEdgeLoop
+
+$D4BD c BoxMiddleRow ; Write a box middle row: $25, a skip of B - 2, $25, $FF
+> A code below $20 in a PrintString text moves the print position by that many columns: the box's inside is left as it is.
+> Witness: L1 297 (c1, deaths, gameover, menu, opt x3).
+
+$D4CB b StoryEyesClosed 8 ; Picture: Hiro's closed eyes, 6 x 3 glyphs at Y $98 X $32
+@res texts/story.bin
+$D4E2 b StoryText1 16 ; "FOR 10000 YEARS HE SLEPT. / HIS MIND FEEDING... / ON THE NIGHTMARES OF THE WEAK."
+> A PrintString record: Y $60, X 2, style $07 $47, the text, $FF line breaks, 0.
+@res texts/story.bin
+$D533 b StoryText2 16 ; "NOW HE HAS AWAKENED", blank lines around it to rub out the first text
+@res texts/story.bin
+$D584 b StoryEyesOpen1 10 ; Picture: the eyes opening, frame 1 (3 x 2 glyphs at Y $98 X $34)
+@res texts/story.bin
+$D58E b StoryEyesOpen2 10 ; Picture: the eyes opening, frame 2
+@res texts/story.bin
+$D598 b StoryEyesOpen3 10 ; Picture: the eyes open
+@res texts/story.bin
+$D5A2 b StoryFireblade 15 ; Picture: the whole Fireblade, 3 x 12 glyphs at Y $20 X 4
+@res texts/story.bin
+$D5D4 b StoryText3 16 ; "AS THE NIGHT BLED CRIMSON / THE FIREBLADE SHATTERED / AND ITS POWER DIED."
+@res texts/story.bin
+$D61E b StoryBladeShattered 15 ; Picture: the shattered Fireblade, 3 x 12 glyphs
+@res texts/story.bin
+$D650 b StoryText4 16 ; "THEN THE SLAUGHTER BEGAN."
+@res texts/story.bin
+$D69C b StoryPortrait 17 ; Picture: Havok's portrait, 16 x 13 glyphs at Y 8 X $10
+@res texts/story.bin
+$D77B b StoryText5 16 ; "THEY NEVER / THOUGHT HE WOULD RETURN. / NOW HAVOK REIGNS THE UNDERCITY."
+@res texts/story.bin
+$D7DF b StoryText6 16 ; "I AM HIRO, / THE LAST OF THE BLADEKNIGHTS. / I MUST REBUILD THE FIREBLADE, / AND BRING THE DAWN..."
+@res texts/story.bin
+
+$D863 c PrintStoryString ; Print a picture string in the font at BC
+> HL = the string (Y, X, then glyph codes: 0 the end, $FF the next line, n glyph n - 1 of the font), BC = the font. Uses PrintPosition and PrintGlyph of the main memory; returns HL past the 0.
+> Witness: L1 63 (c1, deaths, gameover, menu, opt x3).
+$D86E PrintStoryLoop
+$D883 PrintStoryNext
+$D887 PrintStoryNewLine ; $FF: the next line (PrintNextLine)
+
+$D890 c CopyAttrBlock ; Copy a block of C x B attributes from HL to the screen at DE
+> C bytes a row, B rows, DE + 32 a row.
+> Witness: L1 207 (c1, deaths, gameover, menu, opt x3).
+
+$D8A3 b StoryAttrs1 3 ; Attributes, 3 x 5: the Fireblade's colours (page 2)
+@res graphics/story-attrs.bin
+$D8B2 b StoryAttrs2 3 ; Attributes, 3 x 5: the flash (page 2)
+@res graphics/story-attrs.bin
+$D8C1 b PortraitAttrs 16 ; Attributes, 16 x 13: Havok's portrait (page 3)
+@res graphics/story-attrs.bin
+$D991 b StoryFont 8 ; The story font: 237 glyphs of 8 bytes (codes 1-$ED), the pictures' tiles
+> Read through PrintStoryString $D863 (BC = StoryFont): every glyph is read when the intro runs.
+@res graphics/story-font.bin

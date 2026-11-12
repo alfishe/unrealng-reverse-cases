@@ -1,0 +1,4 @@
+# PanelAttrs $FFCB: the panel's attribute row at $5AE0 (PanelAttrsRoom $FFEB): the meters, EXTRA, the
+# weapon bar, BONUS.
+$FFCB: 4F 4F 4F 4F 4F 4F 4F 4F 00 42 42 42 42 42 44 07
+$FFDB: 07 44 42 42 42 42 42 00 17 17 17 17 17 17 17 17

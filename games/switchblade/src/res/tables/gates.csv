@@ -1,0 +1,9 @@
+# GateRooms $76D2: the six rooms with an invisible gate (BarrierFind $8F28), GateClosed (set by NewGame,
+# cleared by BarrierOpen $8F22), GateX (Hiro's X) and GateSide (bit 0: 0 blocks left, 1 right).
+gate,room,closed,x,side
+0,123,$01,$34,$00
+1,93,$01,$28,$00
+2,58,$01,$30,$00
+3,8,$01,$48,$01
+4,39,$01,$88,$01
+5,136,$01,$88,$01

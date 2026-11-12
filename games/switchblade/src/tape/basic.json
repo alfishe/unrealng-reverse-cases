@@ -1,0 +1,23 @@
+{
+  "about": "TZX block 2, the BASIC program \"( Switch )\" at PROG $5CCB (361 bytes, LINE 0): line 0, its machine code, and the tape loader the code copies to $FF00: python3 ../../kit/mkgame.py --part src/tape/basic.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/basic-5ccb.bin || python3 tools/parts.py > /dev/null"],
+  "image": "work/parts/basic-5ccb.bin",
+  "at": "5CCB",
+  "top": "basic",
+  "out": "basic.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": ["; Switchblade, Gremlin Graphics 1991: TZX block 2, the BASIC program \"( Switch )\" (361 bytes at PROG $5CCB,",
+             "; LINE 0): line 0 at $5CCB-$5D06, the code it enters at $5D07, and the loader $5D37-$5E33, which runs at $FF00."],
+  "l1": [{"path": "work/stage1/c1/l1.json", "reads": false}],
+  "segments": [
+    {"title": "line 0 and its code", "ann": "src/tape/basic.ann", "lo": "5CCB", "hi": "5D37",
+     "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5CCB", "hi": "5D37", "reads": false}]},
+    {"title": "the tape loader", "ann": "src/tape/basic.ann", "lo": "5D37", "hi": "5E34", "run": "FF00",
+     "l1": [{"path": "work/stage1/c1/l1.json", "lo": "FF00", "hi": "FFFD", "reads": false},
+            {"path": "work/stage1/rec/c48/l1.json", "lo": "FF00", "hi": "FFFD", "reads": false}]}
+  ],
+  "work": "work/stage2/mkbasic"
+}

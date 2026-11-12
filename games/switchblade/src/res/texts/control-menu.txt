@@ -1,0 +1,11 @@
+# The control menu, printed tall ($836E) before the 48K intro.
+
+# ControlMenuText $6ACB (ControlMenu $6A7B)
+text $34 $0E $07 $47
+  "1.JOYSTICK 1"
+  ""
+  "2.JOYSTICK 2"
+  ""
+  "3.KEMPSTON"
+  ""
+  "4.PROTEK OR CURSOR"

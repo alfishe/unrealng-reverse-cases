@@ -1,0 +1,19 @@
+# The tape orig/Switchblade.tzx.zip holds ("Switch Blade.tzx"), as tools/mktape.py writes it: one line a TZX block,
+# in order. Format:
+#   tzx MAJOR.MINOR                         the file header ("ZXTape!", $1A, the version)
+#   text TEXT                               a text description block ($30)
+#   header PAUSE TYPE NAME LENGTH P1 P2     a standard ($10) ROM header block: flag $00, type 0 (Program), the name
+#                                           padded to 10 ("_" for a space), the data length ("@FILE": the file's),
+#                                           P1 (the auto-run LINE), P2 (the program length; "=" the data length)
+#   data PAUSE ITEM [ITEM ...]              a standard ($10) data block: flag $FF, the items' bytes in order, the XOR
+#                                           checksum; an ITEM is a file of build/ or NAME@ORG:LO-HI, the bytes LO..HI-1
+#                                           of NAME, whose first byte is at ORG (hex)
+# PAUSE is the pause after the block in ms, as the original has it. The blocks: docs/03-build-and-load.md 3.1.
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 2048 0 (_Switch_) @basic.bin 0 =
+data 2051 basic.bin
+data 6159 stage2.bin
+data 4104 game.bin@5C00:6B5C-FDFD
+data 2059 boot.bin game.bin@5C00:5C00-6B4D game.bin@5C00:FF01-FFFF
+data 16029 bank4.bin

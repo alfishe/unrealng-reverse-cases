@@ -1,0 +1,3299 @@
+# The rooms of Switchblade (tools/res_formats.py; src/res/rooms/README.md): one block a record, in address order
+# from Room1 $A928 (the room table $7100 points at them; rooms 122 and 123 share one record). A cell is @row.column
+# (cell = 20 x row + column; rows 0-10 are the room, 12 holds the row above). The lines of a block, in order:
+#   groups G0 G1 G2      the header: the placements in the groups 0, 1, 2 (0-7, 0-7, 0-3)
+#   place G nN styleS @c  a wall outline: count N (0 = 256 steps), style S (RoomPatternStarts), first cell
+#   strings $PG @c=$EE ... tile strings (RoomShapes $7345) on plane $PG ($68-$6B: command code 0-3)
+#   surface xN           the open-air rows (code 4), N times
+#   barC sS nN @c ; ...  a bar of code C (5, 6, 7, 8, 9, A, C), style S, N cells (1-16) from @c
+#   piece kK nN @c ; ... code $B: sub-command K (RoomCodeHandlersB $75EF), N its count nibble
+#   walls styleS @c [@c] code $D: fill and shade the walls from one or two cells, wall tile $1A + S
+#   decor setH nN @c ; ... code $E: a row of N front tiles (set 2: ShapeTilesA, else ShapeTilesB)
+#   nop $XX              a command byte whose repeat nibble is 0 (does nothing)
+#   end xN               code $F (RoomPatch): the end of the map commands
+#   zones default        no zone records (the whole room is zone 0: EmptyObjectList $75FB), or
+#   zone @a-b.c ... @c ... [last]  a reveal zone: rectangles (first cell - last cell), single cells
+#   pickup tT nN @c      a pickup of type T (ObjectTilePlaces $7BD8), N its taken bit, its cell
+#   enemy $KK @c         an enemy start: kind $KK (KindTemplates $7200), its cell
+# The counts byte (enemies << 4 | pickups) is written from the pickup and enemy lines. A record must keep its
+# size (the source INCBINs it at fixed offsets).
+
+room 1 ; $A928, 85 bytes
+  groups 2 2 0
+  place 0 n11 style0 @7.4
+  place 0 n3 style0 @10.16
+  place 1 n3 style1 @7.0
+  place 1 n10 style0 @10.1
+  surface x1
+  barA s5 n2 @4.0 ; s0 n2 @5.0 ; s11 n2 @6.0 ; s11 n5 @6.4
+  bar9 s1 n2 @8.5 ; s1 n2 @8.9 ; s1 n2 @8.13 ; s1 n2 @8.17 ; s5 n1 @3.0 ; s5 n2 @4.16
+  strings $6B @9.4=$5D @8.7=$45 @8.12=$49 @5.4=$65 @5.10=$6B @5.17=$71
+  piece k5 n1 @6.2 ; k5 n1 @6.3
+  walls style1 @7.2
+  decor set2 n1 @7.2 ; set2 n1 @8.2 ; set2 n1 @9.2
+  end x12
+  zone @0.0-6.19
+  zone @7.0-10.19 last
+  pickup t0 n0 @8.19
+  pickup t0 n0 @9.19
+  enemy $2B @5.13
+  enemy $35 @5.1
+  enemy $35 @5.8
+  enemy $81 @8.7
+  enemy $81 @8.16
+  enemy $85 @8.11
+  enemy $85 @8.15
+
+room 2 ; $A97D, 51 bytes
+  groups 1 2 0
+  place 0 n2 style3 @8.10
+  place 1 n7 style0 @7.0
+  place 1 n7 style0 @10.0
+  surface x1
+  barA s3 n2 @5.8
+  bar9 s1 n2 @8.1 ; s1 n2 @8.5
+  strings $6B @8.0=$53 @8.3=$4B @8.7=$49 @9.7=$5D
+  strings $6A @8.4=$4F
+  piece k3 n1 @9.8
+  walls style1 @8.1
+  end x12
+  zone @0.0-6.19
+  zone @7.0-10.19 last
+  pickup t4 n12 @4.8
+  pickup t1 n25 @9.8
+  pickup t1 n28 @9.9
+  enemy $35 @5.14
+  enemy $14 @8.6
+
+room 3 ; $A9B0, 22 bytes
+  groups 0 0 0
+  surface x1
+  barA s3 n4 @5.6 ; s0 n2 @5.10 ; s3 n2 @5.12 ; s3 n2 @4.10
+  bar9 s5 n2 @3.12
+  strings $6B @5.2=$65 @5.14=$75
+  end x12
+  zones default
+
+room 4 ; $A9C6, 18 bytes
+  groups 0 0 0
+  surface x1
+  strings $6B @5.2=$6B @5.8=$65 @5.12=$75 @5.14=$71 @5.17=$77
+  end x12
+  zones default
+  pickup t3 n2 @5.11
+
+room 5 ; $A9D8, 12 bytes
+  groups 0 0 0
+  surface x1
+  strings $6B @5.3=$71 @5.14=$7B
+  end x12
+  zones default
+  enemy $2B @5.11
+
+room 6 ; $A9E4, 30 bytes
+  groups 0 0 0
+  surface x1
+  barA s3 n2 @5.4 ; s0 n4 @5.6 ; s3 n4 @5.10 ; s3 n6 @4.6
+  bar8 s10 n2 @4.2
+  strings $6B @5.1=$75 @5.13=$71 @5.18=$75
+  end x12
+  zones default
+  pickup t1 n30 @5.3
+  enemy $2B @3.6
+  enemy $2B @5.14
+
+room 7 ; $AA02, 21 bytes
+  groups 0 0 0
+  surface x1
+  barA s3 n7 @5.12 ; s0 n1 @5.19 ; s3 n2 @4.18
+  strings $6B @5.2=$7B @5.12=$77
+  end x12
+  zones default
+  enemy $2B @4.13
+  enemy $81 @0.19
+
+room 8 ; $AA17, 46 bytes
+  groups 0 2 0
+  place 1 n4 style1 @7.7
+  place 1 n4 style2 @7.12
+  bar9 s10 n10 @1.10 ; s5 n5 @1.12
+  surface x1
+  barA s3 n2 @4.0 ; s0 n1 @5.0 ; s3 n3 @5.1
+  piece k5 n1 @6.9 ; k5 n1 @6.10 ; k5 n1 @6.11
+  strings $6B @5.3=$71 @5.8=$75 @5.17=$65 @3.9=$83
+  walls style1 @7.9
+  end x12
+  zone @0.0-6.19
+  zone @7.0-10.19 last
+  enemy $2B @5.4
+
+room 9 ; $AA45, 74 bytes
+  groups 5 2 0
+  place 0 n5 style0 @3.2
+  place 0 n3 style1 @1.1
+  place 0 n5 style3 @1.19
+  place 0 n7 style1 @4.8
+  place 0 n4 style5 @7.15
+  place 1 n6 style0 @0.0
+  place 1 n5 style0 @0.12
+  strings $6B @1.3=$45 @1.5=$49 @4.13=$4B
+  bar9 s3 n5 @1.16 ; s4 n2 @4.12 ; s10 n11 @0.10
+  barA s4 n3 @3.9 ; s4 n7 @3.12 ; s4 n6 @6.14 ; s4 n3 @7.9 ; s4 n3 @10.12
+  piece k2 n1 @2.5 ; k2 n1 @2.13 ; k4 n0 @1.6
+  walls style1 @0.9
+  end x12
+  zone @0.0-3.7
+  zone @0.8-3.19
+  zone @4.0-10.19 last
+  pickup t0 n0 @1.8
+  pickup t0 n0 @2.8
+  pickup t0 n0 @8.14
+  enemy $2B @2.10
+  enemy $2B @5.14
+  enemy $1E @2.5
+  enemy $82 @7.14
+
+room 10 ; $AA8F, 90 bytes
+  groups 7 2 1
+  place 0 n3 style3 @3.19
+  place 0 n3 style3 @7.19
+  place 0 n3 style3 @7.0
+  place 0 n3 style6 @2.15
+  place 0 n2 style0 @10.6
+  place 0 n1 style4 @10.14
+  place 0 n1 style9 @10.18
+  place 1 n8 style1 @0.7
+  place 1 n2 style2 @0.15
+  place 2 n5 style6 @7.1
+  strings $6A @9.8=$5B @9.12=$5B @7.12=$45 @7.14=$4F @7.15=$49 @3.16=$4B @3.18=$53 @8.4=$45
+  strings $6B @8.5=$4F
+  bar9 s0 n2 @8.6 ; s2 n1 @9.14 ; s3 n3 @8.2 ; s10 n11 @0.10
+  barA s4 n3 @2.9 ; s4 n3 @6.9 ; s4 n4 @6.12 ; s4 n2 @6.18 ; s4 n6 @10.0 ; s4 n5 @10.9 ; s4 n3 @10.15
+  piece k2 n2 @8.16 ; k4 n1 @7.17 ; k4 n0 @4.12
+  walls style1 @0.9
+  end x7
+  zone @0.6-10.19
+  zone @7.0-10.5 last
+  pickup t3 n25 @5.9
+  enemy $39 @8.3
+  enemy $39 @8.17
+  enemy $3F @7.13
+
+room 11 ; $AAE9, 100 bytes
+  groups 5 3 1
+  place 0 n3 style9 @6.9
+  place 0 n1 style3 @10.2
+  place 0 n1 style13 @10.13
+  place 0 n1 style13 @10.18
+  place 0 n6 style11 @2.1
+  place 1 n7 style2 @0.18
+  place 1 n2 style1 @0.13
+  place 1 n7 style1 @3.0
+  place 2 n8 style15 @2.12
+  barA s4 n7 @6.2 ; s4 n10 @10.3 ; s4 n3 @10.15 ; s7 n3 @8.15 ; s7 n3 @9.15
+  bar9 s6 n6 @4.4 ; s6 n3 @8.11 ; s0 n3 @7.14 ; s11 n3 @3.3 ; s11 n3 @3.8 ; s11 n3 @7.3 ; s11 n3 @7.8 ; s10 n11 @0.16
+  strings $6B @7.19=$57 @5.6=$5B @5.9=$5B
+  bar7 s12 n3 @3.10 ; s1 n1 @5.11 ; s12 n2 @7.13
+  walls style1 @3.2 @0.15
+  end x6
+  zone @6.0-10.14
+  zone @0.14-10.19 @0.13 @2.13 @4.13
+  zone @2.0-5.13 last
+  pickup t3 n19 @5.7
+  enemy $22 @0.15
+  enemy $22 @0.16
+  enemy $22 @0.17
+  enemy $22 @0.15
+  enemy $22 @0.16
+  enemy $38 @4.2
+  enemy $38 @4.11
+  enemy $38 @8.3
+  enemy $38 @8.16
+  enemy $32 @10.3
+
+room 12 ; $AB4D, 91 bytes
+  groups 4 4 1
+  place 0 n6 style11 @10.0
+  place 0 n2 style9 @5.5
+  place 0 n2 style0 @4.8
+  place 0 n3 style6 @3.10
+  place 1 n3 style6 @9.9
+  place 1 n2 style0 @8.13
+  place 1 n3 style6 @7.15
+  place 1 n3 style0 @3.15
+  place 2 n4 style6 @6.0
+  barA s8 n3 @7.10 ; s10 n4 @8.1 ; s10 n4 @9.1 ; s9 n3 @8.6 ; s9 n3 @9.6
+  bar9 s0 n3 @4.15 ; s14 n1 @8.11
+  bar8 s12 n2 @4.13 ; s11 n2 @4.18 ; s1 n1 @5.14 ; s0 n2 @5.16
+  bar7 s9 n3 @7.5 ; s9 n1 @4.17 ; s12 n1 @6.17 ; s1 n2 @6.18
+  strings $6B @7.0=$61 @7.1=$49 @7.2=$45 @4.12=$5F
+  walls style1 @4.11 @9.1
+  end x5
+  zone @3.0-10.15 @3.16 @7.16
+  zone @3.16-7.19 last
+  pickup t0 n1 @7.14
+  pickup t5 n1 @9.5
+  pickup t5 n1 @9.6
+  pickup t5 n1 @9.7
+  pickup t5 n1 @9.8
+  enemy $38 @5.15
+  enemy $07 @5.9
+  enemy $1A @8.12
+
+room 13 ; $ABA8, 69 bytes
+  groups 7 1 0
+  place 0 n2 style9 @3.0
+  place 0 n2 style9 @2.3
+  place 0 n9 style12 @1.6
+  place 0 n3 style9 @7.0
+  place 0 n3 style6 @7.6
+  place 0 n3 style9 @6.8
+  place 0 n1 style4 @5.13
+  place 1 n4 style7 @5.14
+  bar9 s14 n1 @6.4 ; s14 n2 @5.6
+  barA s8 n3 @5.9 ; s8 n3 @3.9
+  bar8 s12 n2 @2.18 ; s1 n1 @3.19
+  bar7 s1 n2 @6.0 ; s11 n3 @4.2
+  strings $6B @4.0=$45 @3.5=$4B
+  strings $6A @3.6=$53 @3.5=$4F @6.6=$5D @6.7=$5D
+  strings $69 @3.4=$45
+  walls style1 @2.7
+  end x2
+  zones default
+  pickup t0 n21 @5.12
+  enemy $39 @3.16
+  enemy $39 @3.18
+  enemy $39 @4.9
+  enemy $37 @5.5
+
+room 14 ; $ABED, 116 bytes
+  groups 6 6 1
+  place 0 n2 style9 @9.2
+  place 0 n1 style4 @10.5
+  place 0 n1 style4 @10.10
+  place 0 n1 style9 @5.0
+  place 0 n2 style9 @5.15
+  place 0 n1 style4 @6.15
+  place 1 n5 style6 @9.10
+  place 1 n3 style1 @6.1
+  place 1 n3 style2 @2.18
+  place 1 n3 style2 @6.18
+  place 1 n3 style0 @4.15
+  place 1 n4 style12 @1.0
+  place 2 n7 style6 @1.7
+  barA s4 n4 @10.6 ; s8 n3 @3.8 ; s8 n3 @4.8
+  bar9 s6 n3 @8.7 ; s1 n3 @7.9 ; s1 n2 @6.12 ; s14 n1 @6.9
+  piece k2 n1 @8.12 ; k3 n1 @8.11
+  bar8 s1 n3 @3.0 ; s11 n2 @2.3
+  bar7 s12 n2 @2.17
+  strings $6B @2.1=$49 @2.2=$55 @8.17=$5D @6.10=$5D @2.7=$5F @2.11=$5F
+  walls style1 @2.6 @6.16
+  decor set2 n4 @6.11 ; set2 n6 @7.8
+  end x11
+  zone @1.0-10.15 @4.16-5.16 @9.16 @1.16
+  zone @5.16-9.19
+  zone @1.16-4.19 last
+  pickup t0 n25 @2.15
+  pickup t0 n0 @3.15
+  pickup t0 n0 @4.14
+  pickup t0 n30 @5.13
+  pickup t0 n0 @5.14
+  pickup t0 n0 @7.15
+  pickup t0 n25 @8.15
+  enemy $38 @2.16
+  enemy $38 @2.17
+  enemy $39 @7.4
+  enemy $9A @6.16
+  enemy $85 @6.17
+
+room 15 ; $AC61, 99 bytes
+  groups 7 0 2
+  place 0 n6 style0 @0.11
+  place 0 n1 style4 @1.11
+  place 0 n2 style3 @3.0
+  place 0 n1 style9 @5.0
+  place 0 n3 style3 @7.0
+  place 0 n1 style3 @7.1
+  place 0 n1 style9 @9.18
+  place 2 n13 style11 @10.0
+  place 2 n7 style6 @2.0
+  strings $6B @1.14=$4F @1.15=$53 @5.8=$5B @3.9=$4B
+  strings $6A @3.10=$49
+  bar9 s0 n3 @3.11 ; s1 n7 @3.5 ; s1 n3 @7.11 ; s1 n2 @7.18 ; s2 n1 @5.2 ; s2 n3 @7.2 ; s2 n2 @8.3 ; s15 n1 @6.1
+  barA s4 n5 @6.1 ; s4 n12 @6.8 ; s7 n7 @9.1 ; s7 n10 @9.8
+  piece k2 n3 @3.14 ; k2 n3 @3.16 ; k2 n2 @8.7 ; k2 n1 @9.9 ; k3 n2 @4.17
+  bar8 s3 n2 @4.1 ; s9 n1 @3.2
+  walls style1 @1.12
+  end x11
+  zone @2.0-10.11 @6.12-10.19
+  zone @0.11-5.19 last
+  pickup t1 n16 @4.1
+  pickup t0 n25 @8.1
+  pickup t0 n2 @9.1
+  pickup t0 n25 @9.17
+  enemy $18 @2.14
+  enemy $39 @4.3
+  enemy $39 @8.9
+
+room 16 ; $ACC4, 87 bytes
+  groups 6 2 1
+  place 0 n1 style4 @1.8
+  place 0 n2 style3 @3.19
+  place 0 n1 style4 @6.8
+  place 0 n1 style9 @7.18
+  place 0 n1 style9 @9.0
+  place 0 n4 style10 @8.17
+  place 1 n7 style11 @2.8
+  place 1 n12 style0 @10.0
+  place 2 n6 style11 @0.0
+  strings $6B @3.11=$4F @3.12=$45 @3.14=$53 @7.7=$49 @7.3=$45 @7.17=$5D
+  bar9 s0 n7 @3.8 ; s1 n9 @1.5 ; s1 n2 @7.1 ; s2 n1 @9.13
+  barA s4 n3 @6.0 ; s4 n5 @6.3 ; s7 n15 @9.2
+  piece k2 n2 @7.12 ; k2 n2 @7.14 ; k2 n1 @3.1 ; k3 n2 @4.1 ; k3 n1 @5.3 ; k3 n1 @9.11 ; k3 n1 @9.14
+  walls style1 @6.9 @1.1
+  end x5
+  zone @2.8-10.19
+  zone @6.0-10.7
+  zone @0.0-5.9 last
+  pickup t3 n25 @5.7
+  pickup t2 n25 @5.8
+  enemy $83 @1.6
+  enemy $39 @8.2
+  enemy $36 @9.9
+
+room 17 ; $AD1B, 105 bytes
+  groups 7 2 1
+  place 0 n5 style3 @0.0
+  place 0 n1 style3 @0.12
+  place 0 n3 style2 @8.16
+  place 0 n3 style9 @2.0
+  place 0 n5 style8 @7.0
+  place 0 n7 style0 @10.2
+  place 0 n1 style3 @3.13
+  place 1 n8 style0 @3.1
+  place 1 n8 style2 @0.18
+  place 2 n4 style7 @7.12
+  barA s7 n3 @2.9
+  bar9 s0 n3 @0.8 ; s0 n3 @4.12 ; s2 n2 @3.16 ; s3 n2 @0.2 ; s3 n3 @8.13 ; s9 n3 @0.10
+  piece k2 n2 @8.5 ; k2 n2 @8.9 ; k2 n3 @7.7 ; k2 n1 @4.15 ; k2 n2 @5.14 ; k3 n1 @9.10 ; k3 n1 @5.16 ; k3 n1 @6.15 ; k5 n0 @5.15 ; k5 n0 @5.16 ; k5 n0 @6.16
+  strings $6B @4.2=$4B @4.5=$45 @6.17=$59 @4.4=$49 @2.7=$5B
+  walls style1 @0.14 @0.2
+  walls style1 @7.4
+  decor set2 n4 @10.12
+  end x2
+  zone @0.0-2.3 @0.4-3.8
+  zone @0.9-3.12
+  zone @0.12-7.19
+  zone @3.0-10.19 last
+  pickup t0 n25 @1.12
+  pickup t0 n0 @2.12
+  enemy $39 @0.5
+  enemy $39 @6.2
+  enemy $39 @8.11
+
+room 18 ; $AD84, 88 bytes
+  groups 5 2 1
+  place 0 n11 style2 @0.18
+  place 0 n1 style3 @2.14
+  place 0 n4 style14 @5.13
+  place 0 n8 style1 @0.6
+  place 0 n3 style6 @7.2
+  place 1 n2 style1 @0.13
+  place 1 n3 style1 @8.1
+  place 2 n5 style12 @10.7
+  barA s4 n4 @10.3 ; s4 n3 @10.15 ; s4 n6 @7.7 ; s4 n3 @5.15 ; s8 n3 @9.7 ; s7 n3 @4.15 ; s7 n4 @9.14
+  bar9 s3 n3 @8.4 ; s6 n5 @5.11 ; s6 n4 @1.8 ; s3 n3 @0.11 ; s1 n1 @5.8 ; s9 n11 @0.16
+  piece k3 n1 @6.7
+  bar7 s11 n2 @3.14 ; s13 n6 @4.13
+  walls style1 @0.7 @0.16
+  decor set2 n6 @3.7 ; set2 n3 @5.7
+  end x1
+  zone @0.5-4.19 @5.5-6.12 @6.13
+  zone @5.0-10.19 last
+  pickup t3 n12 @4.15
+  enemy $83 @0.17
+  enemy $83 @6.7
+  enemy $39 @1.9
+  enemy $39 @1.12
+  enemy $37 @3.17
+  enemy $37 @8.8
+  enemy $36 @9.14
+
+room 19 ; $ADDC, 80 bytes
+  groups 5 3 2
+  place 0 n9 style3 @2.0
+  place 0 n8 style2 @3.18
+  place 0 n2 style9 @10.5
+  place 0 n6 style0 @10.9
+  place 0 n5 style6 @2.12
+  place 1 n3 style0 @2.1
+  place 1 n2 style1 @0.4
+  place 1 n3 style2 @0.10
+  place 2 n10 style15 @5.5
+  place 2 n4 style15 @5.8
+  bar9 s3 n5 @0.7 ; s3 n7 @3.13 ; s3 n8 @3.2 ; s4 n2 @3.16 ; s0 n2 @3.10 ; s14 n1 @9.11 ; s11 n2 @8.17 ; s11 n2 @8.12 ; s11 n7 @3.15
+  walls style1 @0.6 @5.1
+  walls style1 @5.11
+  decor set2 n4 @6.1 ; set2 n3 @9.1 ; set1 n5 @5.11 ; set1 n6 @8.12
+  end x4
+  zone @2.11-10.19 @6.7-10.10 @7.6 @9.6
+  zone @0.0-10.11 last
+  pickup t2 n30 @4.15
+  pickup t2 n25 @9.8
+  pickup t2 n25 @9.13
+  enemy $3D @4.5
+  enemy $3D @7.16
+  enemy $3D @9.10
+  enemy $3D @9.16
+
+room 20 ; $AE2C, 100 bytes
+  groups 5 4 0
+  place 0 n8 style2 @0.16
+  place 0 n4 style2 @7.18
+  place 0 n3 style1 @6.2
+  place 0 n5 style12 @1.3
+  place 0 n2 style13 @5.10
+  place 1 n2 style1 @9.10
+  place 1 n5 style0 @9.2
+  place 1 n4 style1 @1.1
+  place 1 n3 style1 @0.10
+  strings $6B @4.4=$5B @4.7=$5B @4.9=$5B
+  bar9 s2 n2 @8.13 ; s2 n1 @8.5 ; s2 n1 @8.6 ; s3 n2 @0.13 ; s6 n4 @3.13 ; s3 n3 @8.16 ; s15 n1 @5.2
+  barA s4 n3 @5.2 ; s4 n3 @5.7 ; s4 n6 @10.12
+  piece k2 n2 @7.4 ; k2 n1 @9.13 ; k3 n1 @8.8
+  walls style1 @0.12 @2.3
+  walls style1 @5.5
+  decor set2 n2 @2.12 ; set2 n3 @7.13 ; set2 n4 @5.12 ; set2 n1 @3.15 ; set2 n1 @4.15
+  end x3
+  zone @0.11-10.19 @5.10-6.10 @0.10 @2.10 @9.10
+  zone @1.0-10.11 last
+  pickup t0 n0 @3.11
+  pickup t0 n0 @4.11
+  pickup t0 n0 @7.11
+  pickup t1 n18 @8.5
+  pickup t0 n25 @8.11
+  enemy $39 @3.4
+  enemy $39 @3.12
+  enemy $39 @8.14
+
+room 21 ; $AE90, 70 bytes
+  groups 3 3 0
+  place 0 n11 style2 @0.15
+  place 0 n3 style9 @9.2
+  place 0 n1 style0 @10.7
+  place 1 n10 style1 @0.0
+  place 1 n2 style2 @8.14
+  place 1 n8 style12 @0.2
+  strings $6B @4.11=$53 @4.12=$4F @4.13=$45
+  bar9 s1 n6 @4.9 ; s1 n2 @7.4 ; s2 n1 @8.3 ; s3 n6 @1.3 ; s6 n3 @8.11 ; s11 n2 @1.5 ; s11 n2 @1.8 ; s11 n2 @1.11 ; s11 n2 @1.14
+  barA s4 n7 @10.8 ; s4 n13 @3.2
+  piece k3 n1 @8.4
+  walls style1 @1.9
+  decor set2 n9 @7.2
+  end x2
+  zone @0.0-2.19
+  zone @3.0-10.19 last
+  pickup t3 n8 @2.13
+  pickup t3 n5 @7.14
+  enemy $39 @1.10
+  enemy $37 @5.10
+  enemy $39 @7.6
+
+room 22 ; $AED6, 78 bytes
+  groups 3 2 1
+  place 0 n10 style1 @1.1
+  place 0 n6 style2 @5.16
+  place 0 n2 style9 @4.16
+  place 1 n7 style0 @0.0
+  place 1 n3 style0 @1.15
+  place 2 n4 style6 @0.11
+  bar9 s1 n1 @5.13 ; s6 n6 @4.7 ; s6 n3 @8.12 ; s4 n10 @1.10
+  barA s4 n14 @10.2 ; s4 n14 @6.2
+  bar7 s9 n1 @1.8 ; s9 n1 @1.13 ; s3 n2 @2.12 ; s0 n1 @8.2 ; s2 n2 @8.4 ; s10 n2 @9.5
+  bar8 s8 n3 @3.16 ; s13 n3 @8.15 ; s9 n1 @1.11 ; s3 n10 @2.2 ; s2 n2 @4.2 ; s10 n2 @5.3 ; s9 n4 @7.3
+  walls style1 @1.2
+  decor set2 n3 @5.13
+  end x14
+  zone @6.0-10.19
+  zone @0.0-5.19 last
+  pickup t1 n6 @9.15
+  enemy $9A @1.3
+  enemy $39 @2.16
+  enemy $32 @10.2
+  enemy $33 @6.15
+
+room 23 ; $AF24, 74 bytes
+  groups 7 7 0
+  place 0 n2 style9 @1.8
+  place 0 n2 style9 @4.0
+  place 0 n2 style9 @5.3
+  place 0 n1 style9 @6.6
+  place 0 n1 style9 @7.7
+  place 0 n3 style11 @5.14
+  place 0 n1 style9 @2.11
+  place 1 n5 style0 @1.0
+  place 1 n3 style0 @8.8
+  place 1 n5 style0 @9.12
+  place 1 n1 style6 @3.12
+  place 1 n2 style6 @4.13
+  place 1 n3 style5 @1.16
+  place 1 n2 style1 @1.18
+  bar9 s1 n3 @5.9 ; s14 n1 @4.18
+  barA s8 n3 @3.1 ; s8 n3 @3.7 ; s8 n3 @7.16
+  bar8 s9 n3 @2.5 ; s2 n2 @8.13
+  walls style1 @2.10 @2.17
+  walls style1 @8.13
+  decor set2 n4 @5.7
+  end x5
+  zone @1.15-4.19
+  zone @1.0-9.19 last
+  pickup t3 n25 @4.17
+  pickup t3 n25 @4.18
+  pickup t3 n3 @6.8
+  enemy $38 @3.9
+  enemy $38 @6.12
+  enemy $37 @7.16
+
+room 24 ; $AF6E, 101 bytes
+  groups 7 4 0
+  place 0 n1 style4 @9.0
+  place 0 n2 style9 @9.16
+  place 0 n3 style0 @5.10
+  place 0 n8 style12 @1.0
+  place 0 n1 style4 @2.0
+  place 0 n3 style3 @2.10
+  place 0 n3 style3 @2.11
+  place 1 n4 style6 @5.0
+  place 1 n2 style0 @5.17
+  place 1 n5 style11 @0.10
+  place 1 n4 style2 @1.18
+  strings $6A @1.13=$49 @1.14=$4F @1.15=$4B
+  strings $6B @1.14=$45 @1.17=$55 @1.16=$45 @4.17=$5D @4.4=$5D
+  barA s8 n3 @7.1 ; s8 n3 @7.11 ; s4 n15 @9.1 ; s4 n3 @5.7 ; s4 n3 @5.14
+  piece k4 n0 @3.12 ; k2 n1 @3.12
+  bar9 s3 n7 @2.8 ; s6 n6 @3.15 ; s4 n3 @1.17 ; s2 n1 @4.2 ; s14 n1 @4.1 ; s14 n2 @3.4
+  bar8 s6 n2 @8.18
+  walls style1 @2.1 @1.16
+  end x4
+  zone @5.0-9.19
+  zone @1.0-4.10
+  zone @0.10-4.19 last
+  enemy $37 @3.2
+  enemy $37 @3.5
+  enemy $37 @7.17
+  enemy $9A @1.14
+  enemy $92 @1.16
+  enemy $32 @9.1
+  enemy $33 @9.15
+
+room 25 ; $AFD3, 101 bytes
+  groups 5 5 1
+  place 0 n5 style12 @9.8
+  place 0 n1 style13 @9.16
+  place 0 n6 style6 @5.0
+  place 0 n5 style1 @0.2
+  place 0 n2 style13 @4.13
+  place 1 n5 style2 @0.18
+  place 1 n5 style2 @5.18
+  place 1 n2 style0 @10.7
+  place 1 n1 style13 @10.1
+  place 1 n1 style13 @9.0
+  place 2 n5 style6 @0.7
+  barA s8 n4 @2.7 ; s8 n4 @4.7 ; s8 n4 @7.7 ; s8 n4 @7.1 ; s7 n3 @3.15 ; s7 n3 @8.15 ; s4 n3 @4.15 ; s4 n3 @5.10 ; s4 n4 @10.3
+  bar9 s3 n3 @0.4 ; s6 n6 @3.11 ; s6 n3 @8.5 ; s10 n9 @0.16
+  piece k2 n1 @4.4
+  bar8 s1 n1 @8.0 ; s8 n1 @8.1
+  bar7 s12 n2 @1.13 ; s15 n7 @2.14
+  walls style1 @0.3 @0.15
+  walls style1 @5.15 @9.2
+  decor set2 n4 @3.3
+  end x7
+  zone @4.13-9.19 @5.0-10.12
+  zone @0.1-4.19 last
+  pickup t0 n17 @9.7
+  enemy $39 @1.3
+  enemy $99 @1.12
+  enemy $39 @2.17
+  enemy $9A @5.17
+  enemy $39 @7.12
+  enemy $37 @7.16
+  enemy $3F @6.3
+  enemy $3F @6.9
+
+room 26 ; $B038, 86 bytes
+  groups 6 7 1
+  place 0 n1 style9 @7.2
+  place 0 n5 style12 @3.10
+  place 0 n2 style13 @3.18
+  place 0 n1 style9 @3.8
+  place 0 n2 style9 @8.16
+  place 0 n2 style1 @9.16
+  place 1 n12 style12 @0.1
+  place 1 n7 style1 @1.0
+  place 1 n3 style8 @6.4
+  place 1 n2 style5 @4.7
+  place 1 n2 style2 @5.10
+  place 1 n2 style2 @7.9
+  place 1 n2 style1 @9.8
+  place 2 n4 style6 @4.11
+  bar9 s6 n4 @7.12 ; s1 n3 @3.4 ; s1 n2 @1.6 ; s4 n2 @1.5 ; s11 n6 @5.14
+  barA s8 n3 @2.10 ; s8 n3 @2.16
+  strings $6B @7.16=$5B @7.18=$5B
+  walls style1 @1.8 @5.12
+  walls style3 @3.2
+  decor set2 n5 @3.2 ; set1 n6 @9.10
+  end x2
+  zone @0.0-7.8 @0.9-3.19
+  zone @4.8-10.19 last
+  pickup t0 n21 @6.3
+  enemy $18 @1.2
+  enemy $38 @1.8
+  enemy $38 @1.13
+  enemy $38 @6.16
+  enemy $38 @7.13
+  enemy $3F @5.16
+  enemy $3F @5.18
+
+room 27 ; $B08E, 80 bytes
+  groups 5 4 1
+  place 0 n1 style4 @0.0
+  place 0 n3 style0 @0.14
+  place 0 n1 style9 @3.11
+  place 0 n1 style4 @4.0
+  place 0 n4 style9 @4.1
+  place 1 n3 style0 @7.14
+  place 1 n7 style2 @0.18
+  place 1 n6 style0 @0.5
+  place 1 n7 style0 @3.0
+  place 2 n9 style6 @8.0
+  bar9 s3 n3 @0.2 ; s3 n6 @1.16 ; s0 n2 @1.7 ; s0 n2 @1.8 ; s0 n3 @5.2 ; s0 n3 @5.3 ; s7 n2 @1.12 ; s11 n6 @1.14
+  strings $6B @1.13=$49
+  bar8 s8 n7 @6.6 ; s10 n1 @7.6 ; s10 n1 @7.12
+  bar7 s9 n1 @5.10 ; s9 n1 @7.10
+  walls style1 @0.1 @3.13
+  decor set1 n5 @3.13
+  end x7
+  zone @0.0-3.7
+  zone @0.3-8.19
+  zone @4.0-8.2 last
+  enemy $38 @1.6
+  enemy $37 @1.13
+  enemy $99 @4.10
+  enemy $38 @5.15
+  enemy $37 @6.5
+
+room 28 ; $B0DE, 105 bytes
+  groups 7 5 0
+  place 0 n7 style0 @1.2
+  place 0 n2 style2 @0.18
+  place 0 n4 style9 @10.12
+  place 0 n3 style2 @8.7
+  place 0 n5 style0 @6.13
+  place 0 n4 style14 @5.7
+  place 0 n4 style14 @5.9
+  place 1 n1 style6 @0.10
+  place 1 n4 style6 @5.13
+  place 1 n10 style1 @1.0
+  place 1 n2 style0 @9.10
+  place 1 n1 style0 @8.10
+  strings $6B @6.12=$55 @2.9=$57 @4.8=$5D @2.8=$4F
+  bar9 s0 n3 @2.10 ; s1 n3 @2.5 ; s1 n3 @2.17 ; s1 n1 @4.15 ; s2 n1 @8.6 ; s3 n2 @0.16 ; s6 n8 @3.3 ; s14 n1 @4.7
+  strings $68 @8.17=$B5
+  piece k2 n2 @7.5 ; k2 n1 @3.15
+  bar8 s0 n2 @5.11
+  bar7 s9 n3 @7.14
+  walls style1 @0.12 @8.13
+  walls style1 @5.2
+  decor set2 n4 @2.15 ; set2 n5 @4.14 ; set2 n5 @5.2 ; set2 n5 @9.2
+  end x1
+  zone @0.10-5.19 @1.9 @5.9
+  zone @6.10-10.19 @7.9
+  zone @1.0-10.9 last
+  pickup t3 n1 @9.13
+  pickup t2 n19 @6.6
+  enemy $99 @0.12
+  enemy $39 @2.17
+  enemy $39 @3.4
+  enemy $39 @7.6
+
+room 29 ; $B147, 87 bytes
+  groups 4 4 1
+  place 0 n7 style9 @5.0
+  place 0 n4 style0 @5.14
+  place 0 n6 style11 @1.0
+  place 0 n2 style13 @3.13
+  place 1 n6 style11 @0.10
+  place 1 n10 style0 @6.0
+  place 1 n9 style12 @10.0
+  place 1 n3 style6 @4.15
+  place 2 n4 style6 @9.13
+  strings $68 @8.1=$B5 @8.5=$B5 @8.9=$B5 @7.17=$B5 @3.1=$B5 @3.5=$B5 @3.9=$B5 @2.17=$B5
+  strings $6B @7.10=$45
+  bar9 s4 n2 @7.12 ; s1 n8 @1.13
+  piece k2 n1 @4.5 ; k3 n1 @4.4
+  walls style1 @1.11 @3.15
+  walls style1 @6.15 @9.1
+  end x4
+  zone @0.0-5.13 @0.14-4.19
+  zone @5.0-10.19 last
+  pickup t0 n0 @2.12
+  pickup t0 n0 @3.12
+  pickup t0 n25 @4.12
+  enemy $39 @2.16
+  enemy $39 @3.10
+  enemy $18 @3.15
+  enemy $39 @8.5
+  enemy $39 @8.10
+  enemy $3F @7.1
+  enemy $3F @7.9
+  enemy $3F @7.14
+
+room 30 ; $B19E, 86 bytes
+  groups 7 4 1
+  place 0 n10 style12 @0.0
+  place 0 n5 style0 @10.4
+  place 0 n3 style0 @10.16
+  place 0 n2 style9 @8.12
+  place 0 n10 style0 @4.0
+  place 0 n4 style15 @4.17
+  place 0 n8 style11 @5.0
+  place 1 n3 style0 @9.0
+  place 1 n5 style0 @9.10
+  place 1 n3 style14 @4.15
+  place 1 n1 style10 @5.14
+  place 2 n3 style7 @0.16
+  strings $69 @2.1=$95 @2.7=$95 @2.13=$95 @7.1=$95 @7.7=$95
+  strings $6B @6.13=$53 @6.14=$49 @6.15=$4F @7.12=$5D @1.14=$4B @1.16=$45
+  bar9 s1 n8 @1.4 ; s1 n3 @1.18
+  piece k3 n1 @3.9
+  walls style1 @1.1 @6.6
+  walls style1 @8.18
+  end x5
+  zone @5.0-10.19
+  zone @0.0-4.19 last
+  pickup t0 n19 @8.11
+  enemy $9B @1.9
+  enemy $39 @2.4
+  enemy $39 @2.13
+  enemy $39 @6.11
+  enemy $37 @7.4
+  enemy $3E @7.13
+  enemy $36 @9.7
+
+room 31 ; $B1F4, 94 bytes
+  groups 5 4 0
+  place 0 n1 style9 @2.17
+  place 0 n2 style0 @5.15
+  place 0 n4 style0 @10.13
+  place 0 n3 style0 @4.0
+  place 0 n2 style9 @5.0
+  place 1 n3 style2 @0.15
+  place 1 n7 style2 @3.18
+  place 1 n3 style0 @10.0
+  place 1 n5 style0 @0.0
+  strings $6B @3.2=$5B @9.2=$5B
+  bar9 s1 n5 @5.12 ; s1 n4 @1.5 ; s1 n3 @7.5 ; s1 n2 @0.9 ; s2 n2 @5.6 ; s2 n1 @6.10 ; s3 n2 @0.11 ; s6 n3 @8.10 ; s4 n4 @1.7
+  barA s4 n8 @10.5
+  piece k2 n1 @6.10 ; k2 n1 @8.14 ; k2 n1 @9.15 ; k4 n0 @3.13 ; k3 n2 @5.4 ; k3 n1 @9.14
+  walls style1 @0.8
+  decor set2 n6 @2.8 ; set2 n11 @7.4 ; set2 n5 @5.10
+  end x10
+  zone @3.16-4.19 @2.17-2.19
+  zone @0.0-10.19 last
+  pickup t0 n0 @3.15
+  pickup t0 n0 @4.15
+  pickup t0 n26 @4.17
+  enemy $37 @0.9
+  enemy $99 @1.7
+  enemy $39 @3.13
+  enemy $39 @8.8
+  enemy $39 @8.14
+
+room 32 ; $B252, 81 bytes
+  groups 2 1 0
+  place 0 n10 style1 @0.1
+  place 0 n11 style2 @0.17
+  place 1 n5 style0 @10.1
+  strings $6B @9.3=$57
+  bar9 s1 n7 @3.7 ; s1 n7 @3.14 ; s1 n3 @7.5 ; s3 n6 @0.12 ; s6 n3 @8.11 ; s4 n6 @0.10 ; s2 n2 @8.8 ; s14 n1 @7.3
+  barA s4 n6 @8.2 ; s4 n8 @10.9 ; s4 n11 @2.6
+  piece k2 n1 @9.8
+  bar8 s3 n2 @3.2 ; s9 n3 @0.3 ; s2 n3 @5.2 ; s10 n3 @6.4 ; s9 n1 @9.4 ; s12 n2 @0.16
+  bar7 s0 n1 @1.2 ; s3 n2 @1.4 ; s9 n1 @0.5
+  walls style1 @0.2
+  decor set2 n7 @4.2 ; set2 n3 @6.6 ; set2 n4 @7.5 ; set2 n5 @6.12
+  end x1
+  zones default
+  pickup t1 n25 @9.4
+  pickup t1 n4 @3.2
+  enemy $38 @0.12
+  enemy $39 @4.14
+  enemy $39 @6.4
+
+room 33 ; $B2A3, 95 bytes
+  groups 5 7 1
+  place 0 n6 style12 @10.2
+  place 0 n5 style1 @0.2
+  place 0 n5 style6 @3.3
+  place 0 n4 style0 @5.11
+  place 0 n3 style4 @6.17
+  place 1 n7 style1 @4.0
+  place 1 n5 style11 @10.11
+  place 1 n5 style0 @0.7
+  place 1 n3 style6 @0.15
+  place 1 n6 style11 @4.3
+  place 1 n3 style7 @5.7
+  place 1 n4 style0 @6.11
+  place 2 n3 style11 @7.15
+  bar9 s3 n3 @0.5 ; s11 n3 @5.6 ; s2 n1 @9.5
+  barA s7 n5 @9.2 ; s7 n12 @9.7 ; s8 n2 @7.8
+  piece k2 n2 @7.3 ; k3 n1 @9.3 ; k2 n1 @8.5 ; k3 n2 @8.6
+  strings $6B @1.11=$45 @1.13=$53 @1.10=$5F
+  bar7 s12 n3 @1.14 ; s1 n5 @3.15
+  walls style1 @0.3 @3.17
+  walls style1 @5.2
+  end x2
+  zone @0.1-3.19 @4.10-4.19 @5.12-5.19 @6.16-6.19
+  zone @4.0-10.19 last
+  pickup t2 n21 @6.4
+  pickup t2 n31 @9.3
+  enemy $39 @1.10
+  enemy $38 @3.16
+  enemy $39 @8.4
+  enemy $38 @8.13
+  enemy $36 @9.9
+
+room 34 ; $B302, 85 bytes
+  groups 3 5 1
+  place 0 n12 style0 @0.0
+  place 0 n5 style12 @10.0
+  place 0 n3 style9 @6.9
+  place 1 n11 style2 @0.18
+  place 1 n2 style0 @0.9
+  place 1 n5 style11 @6.0
+  place 1 n4 style12 @7.0
+  place 1 n5 style0 @7.7
+  place 2 n4 style6 @10.8
+  bar9 s6 n9 @2.16 ; s1 n2 @4.13 ; s1 n2 @8.6 ; s0 n2 @8.14 ; s14 n1 @3.12 ; s15 n1 @10.16
+  barA s7 n4 @9.1 ; s7 n4 @9.9 ; s8 n3 @2.8
+  piece k2 n1 @5.7 ; k3 n1 @5.6 ; k3 n1 @5.9
+  strings $6B @3.13=$5D
+  bar7 s1 n5 @3.0 ; s11 n3 @1.5
+  walls style1 @0.16
+  decor set2 n6 @4.12 ; set2 n3 @7.15 ; set2 n3 @10.15
+  end x15
+  zone @7.0-10.12 @8.13-9.13
+  zone @0.0-10.19 last
+  pickup t3 n13 @3.17
+  pickup t2 n5 @5.7
+  pickup t2 n5 @5.10
+  enemy $38 @2.15
+  enemy $39 @4.4
+  enemy $38 @8.9
+
+room 35 ; $B357, 89 bytes
+  groups 4 6 1
+  place 0 n5 style12 @5.8
+  place 0 n1 style4 @4.15
+  place 0 n6 style0 @9.1
+  place 0 n1 style9 @10.9
+  place 1 n4 style2 @0.15
+  place 1 n5 style2 @6.15
+  place 1 n7 style1 @2.0
+  place 1 n3 style7 @2.2
+  place 1 n3 style7 @2.6
+  place 1 n2 style1 @0.8
+  place 2 n4 style6 @6.8
+  bar9 s3 n5 @0.12 ; s6 n3 @8.12 ; s3 n4 @3.6 ; s0 n2 @3.8 ; s0 n2 @3.9 ; s8 n5 @0.14 ; s11 n3 @2.11 ; s11 n6 @3.3 ; s11 n2 @3.5
+  barA s12 n3 @4.3
+  strings $6B @7.13=$45 @7.12=$53
+  walls style1 @0.10 @5.2
+  walls style1 @9.10
+  decor set1 n6 @5.2 ; set1 n5 @7.2 ; set1 n2 @8.2 ; set1 n4 @2.11 ; set1 n4 @10.11
+  end x13
+  zone @1.9-5.15 @0.8-0.16 @2.16
+  zone @2.0-10.16 last
+  enemy $82 @0.10
+  enemy $37 @3.3
+  enemy $37 @3.14
+  enemy $94 @6.2
+  enemy $37 @7.8
+  enemy $9F @7.14
+
+room 36 ; $B3B0, 80 bytes
+  groups 1 3 1
+  place 0 n9 style14 @5.7
+  place 1 n11 style1 @0.0
+  place 1 n9 style2 @2.18
+  place 1 n3 style2 @0.7
+  place 2 n6 style12 @2.9
+  strings $6B @3.9=$55 @3.8=$5F
+  bar9 s1 n5 @3.16 ; s1 n4 @3.10 ; s3 n2 @0.3 ; s6 n6 @0.5 ; s6 n4 @7.4 ; s6 n3 @8.13 ; s4 n3 @3.14 ; s15 n1 @10.9
+  barA s7 n7 @6.11
+  piece k2 n1 @9.16 ; k3 n1 @9.15
+  walls style1 @0.2 @5.9
+  decor set2 n9 @10.9 ; set2 n5 @2.2 ; set2 n3 @6.4 ; set2 n4 @9.2 ; set2 n1 @6.9 ; set2 n6 @7.9 ; set2 n2 @8.16
+  end x8
+  zones default
+  pickup t0 n2 @6.17
+  pickup t0 n2 @7.17
+  pickup t0 n2 @9.9
+  pickup t0 n2 @9.10
+  pickup t0 n2 @9.11
+  pickup t0 n2 @9.12
+  enemy $99 @2.2
+  enemy $39 @5.12
+  enemy $39 @7.9
+
+room 37 ; $B400, 104 bytes
+  groups 7 3 0
+  place 0 n3 style2 @0.13
+  place 0 n3 style6 @1.15
+  place 0 n2 style1 @0.4
+  place 0 n6 style3 @2.0
+  place 0 n3 style14 @7.1
+  place 0 n4 style0 @9.5
+  place 0 n7 style12 @5.7
+  place 1 n5 style2 @5.18
+  place 1 n2 style0 @1.0
+  place 1 n2 style1 @8.3
+  strings $69 @6.10=$4B
+  strings $6A @6.11=$45
+  strings $6B @0.6=$53 @0.7=$49 @0.8=$45 @8.7=$5B @8.10=$5B @6.12=$4F @6.10=$53
+  bar9 s1 n3 @6.8 ; s1 n4 @6.13 ; s3 n2 @0.10 ; s6 n3 @8.16 ; s6 n4 @3.2 ; s15 n1 @10.11 ; s15 n1 @5.0
+  barA s4 n4 @5.0 ; s4 n9 @10.10
+  bar8 s6 n3 @4.17 ; s12 n2 @6.17 ; s5 n2 @2.15
+  bar7 s9 n2 @2.18
+  walls style1 @0.5 @2.14
+  walls style1 @9.11
+  decor set2 n6 @2.7
+  end x1
+  zone @2.14-4.19 @1.15-1.19
+  zone @0.0-10.19 last
+  pickup t0 n0 @3.13
+  pickup t0 n0 @4.13
+  enemy $10 @0.5
+  enemy $2B @4.8
+  enemy $2B @4.15
+  enemy $39 @6.3
+  enemy $39 @8.13
+
+room 38 ; $B468, 101 bytes
+  groups 7 4 1
+  place 0 n6 style9 @1.0
+  place 0 n4 style9 @0.11
+  place 0 n1 style9 @1.18
+  place 0 n1 style4 @2.9
+  place 0 n3 style0 @5.0
+  place 0 n4 style1 @6.3
+  place 0 n2 style3 @5.7
+  place 1 n6 style6 @7.7
+  place 1 n3 style2 @7.17
+  place 1 n7 style11 @10.3
+  place 1 n7 style11 @5.8
+  place 2 n2 style12 @10.15
+  strings $6B @1.13=$45 @4.13=$5D
+  bar9 s0 n3 @2.10 ; s2 n1 @4.2 ; s2 n1 @4.3 ; s6 n7 @3.5 ; s14 n1 @4.12
+  barA s4 n3 @5.4
+  bar8 s7 n2 @4.0 ; s9 n2 @2.1 ; s3 n6 @2.11 ; s9 n1 @1.16
+  bar7 s9 n1 @1.15 ; s9 n2 @3.15 ; s9 n2 @8.15 ; s9 n3 @2.8 ; s9 n2 @8.8
+  strings $68 @3.19=$A5 @8.11=$B5
+  walls style1 @2.4 @1.15
+  end x2
+  zone @1.0-5.10 @5.11 @1.11
+  zone @0.11-5.19
+  zone @6.0-10.19 last
+  pickup t0 n0 @3.9
+  pickup t0 n20 @4.9
+  pickup t0 n0 @8.16
+  pickup t5 n0 @9.15
+  pickup t0 n18 @9.16
+  enemy $2B @4.4
+  enemy $2B @4.11
+  enemy $37 @8.14
+
+room 39 ; $B4CD, 76 bytes
+  groups 6 5 0
+  place 0 n8 style11 @1.0
+  place 0 n2 style0 @5.0
+  place 0 n1 style9 @6.2
+  place 0 n1 style9 @7.3
+  place 0 n2 style9 @8.4
+  place 0 n5 style6 @9.11
+  place 1 n3 style2 @2.13
+  place 1 n4 style6 @5.13
+  place 1 n2 style0 @6.13
+  place 1 n4 style7 @9.5
+  place 1 n2 style1 @8.18
+  strings $6B @7.14=$4B @2.2=$53 @6.17=$49
+  bar9 s0 n2 @6.19 ; s7 n3 @2.12 ; s4 n2 @2.12 ; s12 n1 @6.5 ; s12 n1 @6.9
+  bar8 s12 n4 @2.10 ; s1 n2 @5.11 ; s12 n2 @2.3 ; s11 n2 @2.4
+  bar7 s9 n6 @2.7 ; s12 n2 @2.9 ; s0 n2 @3.11
+  strings $68 @3.0=$A9
+  walls style3 @8.8
+  walls style1 @2.5 @6.18
+  end x5
+  zones default
+  pickup t0 n0 @7.5
+  pickup t0 n0 @7.6
+  enemy $2A @6.18
+  enemy $26 @7.16
+
+room 40 ; $B519, 86 bytes
+  groups 4 4 1
+  place 0 n2 style3 @7.19
+  place 0 n4 style0 @0.4
+  place 0 n5 style9 @0.10
+  place 0 n2 style9 @5.0
+  place 1 n2 style2 @8.0
+  place 1 n7 style0 @9.1
+  place 1 n5 style0 @9.12
+  place 1 n5 style1 @0.2
+  place 2 n7 style12 @6.9
+  bar9 s1 n5 @1.12 ; s1 n8 @1.16 ; s1 n2 @7.8 ; s1 n1 @7.7 ; s1 n1 @8.6
+  strings $6B @6.0=$45 @6.2=$5F
+  bar8 s3 n2 @5.4 ; s9 n4 @1.5 ; s12 n2 @1.18 ; s1 n1 @2.19
+  bar7 s0 n1 @3.4 ; s3 n5 @3.6 ; s9 n2 @1.10 ; s8 n3 @8.11
+  walls style1 @1.4
+  decor set2 n3 @7.6 ; set2 n3 @8.5 ; set2 n5 @4.15
+  end x7
+  zone @9.12-9.19 @7.11-8.19
+  zone @0.0-9.19 last
+  pickup t0 n0 @7.10
+  pickup t0 n0 @8.10
+  enemy $95 @1.7
+  enemy $39 @2.16
+  enemy $39 @4.14
+  enemy $39 @7.16
+  enemy $1F @8.18
+
+room 41 ; $B56F, 94 bytes
+  groups 7 0 0
+  place 0 n6 style7 @0.0
+  place 0 n6 style6 @0.10
+  place 0 n4 style6 @6.0
+  place 0 n4 style1 @7.5
+  place 0 n10 style15 @6.9
+  place 0 n3 style14 @6.18
+  place 0 n1 style9 @10.18
+  bar9 s1 n5 @1.2 ; s1 n1 @5.3 ; s4 n4 @1.6 ; s6 n7 @4.16 ; s12 n1 @5.7 ; s12 n1 @5.13
+  strings $69 @1.7=$4F
+  barA s4 n3 @6.15 ; s4 n3 @10.15 ; s7 n3 @10.6
+  bar8 s9 n2 @1.9 ; s9 n2 @1.12 ; s5 n4 @3.9 ; s9 n1 @1.4 ; s9 n1 @1.8 ; s5 n5 @2.4 ; s11 n2 @1.0 ; s12 n2 @1.18 ; s1 n1 @2.19 ; s13 n2 @9.8
+  bar7 s12 n2 @1.11 ; s3 n3 @2.13 ; s9 n1 @1.15
+  walls style1 @1.1 @6.6
+  walls style1 @6.12
+  decor set2 n4 @4.0 ; set2 n4 @5.1
+  end x5
+  zone @7.19-9.19
+  zone @0.0-10.19 last
+  pickup t0 n0 @8.18
+  pickup t0 n0 @9.18
+  enemy $3F @1.3
+  enemy $3F @1.17
+  enemy $83 @2.9
+
+room 42 ; $B5CD, 93 bytes
+  groups 3 7 0
+  place 0 n10 style11 @6.0
+  place 0 n6 style6 @0.0
+  place 0 n4 style14 @1.7
+  place 1 n4 style11 @10.0
+  place 1 n4 style11 @10.7
+  place 1 n3 style0 @10.14
+  place 1 n3 style2 @7.18
+  place 1 n6 style7 @7.0
+  place 1 n5 style11 @7.9
+  place 1 n6 style2 @0.16
+  bar9 s0 n2 @4.7 ; s1 n3 @3.10 ; s3 n3 @0.11 ; s11 n3 @0.13 ; s6 n5 @1.14 ; s12 n2 @4.1 ; s12 n1 @9.1 ; s12 n2 @4.4 ; s12 n1 @9.4
+  bar8 s7 n5 @2.0 ; s9 n1 @1.4
+  bar7 s6 n2 @5.9 ; s2 n2 @5.11 ; s9 n2 @8.9 ; s12 n2 @8.12 ; s1 n2 @9.13
+  barC s2 n3 @9.15
+  walls style1 @1.1 @0.10
+  walls style1 @8.1
+  decor set2 n7 @3.9
+  end x2
+  zone @0.8-0.9 @0.0-6.7 @1.8 @3.8 @6.8
+  zone @0.8-6.19
+  zone @7.0-10.19 last
+  pickup t3 n26 @9.14
+  pickup t2 n18 @5.6
+  enemy $38 @4.13
+  enemy $9E @8.6
+  enemy $38 @8.10
+
+room 43 ; $B62A, 83 bytes
+  groups 4 5 0
+  place 0 n6 style2 @0.18
+  place 0 n4 style0 @6.13
+  place 0 n8 style6 @1.2
+  place 0 n1 style4 @0.14
+  place 1 n3 style2 @7.18
+  place 1 n2 style0 @5.15
+  place 1 n4 style6 @10.12
+  place 1 n9 style1 @1.0
+  place 1 n3 style0 @10.1
+  bar9 s3 n5 @0.16 ; s6 n3 @8.7 ; s1 n4 @2.4 ; s1 n4 @2.12 ; s1 n1 @8.3 ; s2 n1 @7.2 ; s2 n1 @9.3 ; s2 n1 @9.13 ; s2 n1 @9.14
+  barA s7 n4 @5.4 ; s7 n4 @5.10 ; s8 n2 @3.8 ; s8 n2 @8.15 ; s4 n9 @6.4
+  strings $6B @2.11=$55 @7.17=$5F
+  piece k3 n1 @9.4
+  bar7 s0 n1 @9.2
+  walls style1 @0.15 @5.6
+  decor set2 n3 @8.2 ; set2 n3 @10.6
+  end x5
+  zones default
+  pickup t0 n0 @9.12
+  enemy $83 @2.9
+  enemy $18 @7.12
+  enemy $1B @9.2
+  enemy $32 @6.4
+  enemy $33 @6.12
+
+room 44 ; $B67D, 95 bytes
+  groups 6 4 2
+  place 0 n6 style0 @1.2
+  place 0 n1 style4 @0.10
+  place 0 n1 style4 @0.15
+  place 0 n2 style2 @5.5
+  place 0 n5 style0 @6.13
+  place 0 n6 style0 @10.11
+  place 1 n9 style1 @1.0
+  place 1 n3 style0 @1.15
+  place 1 n5 style11 @5.6
+  place 1 n3 style0 @5.15
+  place 2 n4 style7 @6.7
+  place 2 n6 style6 @10.1
+  bar9 s3 n5 @0.12 ; s6 n6 @3.3 ; s0 n3 @2.5 ; s0 n3 @2.6 ; s7 n2 @7.7 ; s11 n3 @2.10 ; s11 n2 @3.14 ; s11 n3 @7.6 ; s11 n3 @7.12 ; s11 n3 @7.13
+  piece k0 n8 @9.12
+  strings $6B @2.4=$57 @7.8=$53 @7.9=$49 @4.8=$5B
+  walls style1 @0.11 @5.2
+  decor set1 n5 @3.10 ; set1 n3 @5.2 ; set1 n5 @9.2
+  end x5
+  zone @0.6-5.15 @1.16 @5.16
+  zone @1.16-5.19
+  zone @1.0-10.19 last
+  pickup t0 n25 @2.15
+  pickup t0 n0 @3.15
+  pickup t0 n0 @4.15
+  enemy $38 @3.4
+  enemy $38 @3.16
+  enemy $38 @7.2
+  enemy $38 @8.10
+
+room 45 ; $B6DC, 84 bytes
+  groups 2 7 1
+  place 0 n3 style4 @0.17
+  place 0 n1 style9 @5.18
+  place 1 n5 style11 @1.0
+  place 1 n5 style11 @0.8
+  place 1 n2 style2 @5.0
+  place 1 n2 style0 @6.1
+  place 1 n9 style11 @6.4
+  place 1 n4 style12 @10.0
+  place 1 n5 style0 @10.7
+  place 2 n3 style6 @10.15
+  bar9 s11 n3 @2.2 ; s11 n3 @7.2
+  barA s8 n8 @8.12 ; s4 n16 @5.2
+  piece k0 n3 @9.0
+  strings $6B @4.1=$5B @4.18=$5B
+  bar8 s9 n1 @2.6 ; s9 n2 @1.12 ; s5 n7 @3.6
+  bar7 s8 n7 @9.4 ; s12 n2 @1.10 ; s1 n1 @2.11 ; s0 n7 @2.13
+  walls style1 @1.9 @7.1
+  end x5
+  zone @0.0-5.19
+  zone @6.0-10.19 last
+  pickup t3 n29 @9.5
+  pickup t3 n26 @9.11
+  enemy $3F @2.1
+  enemy $3F @2.4
+  enemy $3F @1.15
+  enemy $3F @1.18
+  enemy $32 @5.3
+  enemy $33 @5.17
+  enemy $33 @5.13
+
+room 46 ; $B730, 125 bytes
+  groups 4 6 2
+  place 0 n1 style9 @10.0
+  place 0 n5 style6 @10.11
+  place 0 n6 style15 @7.11
+  place 0 n5 style12 @6.6
+  place 1 n5 style2 @0.18
+  place 1 n4 style2 @6.18
+  place 1 n4 style7 @10.5
+  place 1 n4 style7 @6.0
+  place 1 n5 style0 @0.10
+  place 1 n6 style12 @0.0
+  place 2 n4 style7 @5.0
+  place 2 n4 style6 @5.6
+  bar9 s6 n7 @3.16 ; s6 n3 @8.3 ; s7 n3 @1.12 ; s7 n2 @1.17 ; s4 n3 @1.17
+  barA s8 n2 @8.0 ; s4 n3 @10.2 ; s4 n6 @5.13
+  strings $69 @7.6=$53 @7.9=$4B @1.15=$4B @4.13=$5B
+  strings $6B @1.17=$55 @1.16=$45 @1.15=$49
+  bar8 s9 n2 @1.4 ; s9 n2 @1.8 ; s9 n1 @1.10 ; s9 n1 @1.13 ; s5 n5 @3.4 ; s5 n4 @2.10
+  bar7 s1 n4 @2.0 ; s0 n1 @2.5 ; s11 n2 @1.6 ; s9 n2 @1.7 ; s9 n1 @4.7 ; s12 n2 @7.7 ; s1 n3 @8.8 ; s0 n1 @8.14
+  walls style1 @1.1 @6.14
+  walls style1 @7.1
+  end x1
+  zone @6.0-10.11 @7.12 @9.12
+  zone @0.0-5.19
+  zone @6.12-10.19 last
+  enemy $38 @3.2
+  enemy $38 @3.15
+  enemy $37 @8.4
+  enemy $37 @8.7
+  enemy $21 @6.14
+  enemy $21 @8.15
+  enemy $21 @6.15
+  enemy $21 @6.17
+  enemy $21 @6.16
+
+room 47 ; $B7AD, 72 bytes
+  groups 6 1 0
+  place 0 n8 style1 @0.1
+  place 0 n3 style9 @7.2
+  place 0 n2 style9 @8.7
+  place 0 n6 style14 @0.7
+  place 0 n3 style2 @0.15
+  place 0 n2 style9 @2.16
+  place 1 n6 style12 @9.10
+  strings $6B @3.16=$45 @3.18=$4F @3.19=$57
+  bar9 s1 n4 @5.12 ; s2 n2 @5.3 ; s3 n2 @0.4 ; s3 n2 @0.13 ; s6 n4 @1.10
+  piece k2 n1 @5.3 ; k3 n1 @6.4
+  strings $68 @7.15=$95
+  walls style1 @0.11 @0.2
+  decor set2 n10 @5.10 ; set2 n3 @2.4 ; set2 n2 @2.13 ; set2 n3 @3.9
+  end x14
+  zones default
+  pickup t3 n27 @8.11
+  pickup t3 n1 @6.2
+  pickup t2 n14 @6.3
+  enemy $37 @0.6
+  enemy $0A @1.12
+  enemy $39 @3.14
+  enemy $39 @5.5
+  enemy $39 @7.17
+
+room 48 ; $B7F5, 49 bytes
+  groups 2 2 0
+  place 0 n8 style0 @9.0
+  place 0 n7 style9 @8.10
+  place 1 n9 style0 @2.0
+  place 1 n4 style0 @2.14
+  strings $6B @3.0=$61
+  bar9 s1 n4 @5.7 ; s1 n3 @5.18
+  piece k2 n3 @5.12 ; k2 n2 @6.10 ; k3 n1 @7.13
+  strings $69 @7.1=$95
+  walls style1 @3.1
+  decor set2 n10 @5.0 ; set2 n3 @5.17
+  end x5
+  zones default
+  pickup t0 n26 @8.9
+  enemy $37 @3.7
+  enemy $99 @3.12
+  enemy $39 @6.13
+  enemy $39 @6.16
+  enemy $39 @7.6
+
+room 49 ; $B826, 104 bytes
+  groups 7 4 2
+  place 0 n6 style7 @10.7
+  place 0 n2 style0 @10.17
+  place 0 n2 style0 @2.0
+  place 0 n2 style4 @9.11
+  place 0 n3 style4 @6.11
+  place 0 n1 style0 @1.2
+  place 0 n6 style0 @5.11
+  place 1 n2 style1 @8.0
+  place 1 n4 style0 @10.1
+  place 1 n4 style0 @6.14
+  place 1 n7 style12 @0.1
+  place 2 n3 style7 @1.11
+  place 2 n3 style12 @1.15
+  strings $6B @1.8=$53 @2.14=$45 @2.19=$57 @2.13=$5F
+  piece k3 n1 @4.17
+  bar9 s0 n2 @7.12 ; s0 n7 @2.11 ; s1 n5 @5.3 ; s1 n5 @5.9 ; s1 n1 @7.8 ; s1 n1 @8.7 ; s1 n1 @9.6 ; s4 n4 @1.7
+  strings $68 @8.15=$95 @3.15=$95
+  walls style1 @1.3 @9.13
+  decor set2 n5 @5.0 ; set2 n3 @5.8 ; set2 n3 @6.8 ; set2 n3 @7.7 ; set2 n3 @8.6 ; set2 n3 @9.5
+  end x4
+  zone @0.0-10.11
+  zone @0.12-5.19
+  zone @6.12-10.19 last
+  pickup t3 n25 @9.10
+  pickup t2 n13 @4.17
+  enemy $9A @2.18
+  enemy $37 @3.3
+  enemy $39 @3.10
+  enemy $37 @3.14
+  enemy $39 @8.8
+  enemy $39 @8.16
+
+room 50 ; $B88E, 99 bytes
+  groups 3 7 2
+  place 0 n8 style11 @10.0
+  place 0 n7 style12 @1.0
+  place 0 n1 style4 @0.10
+  place 1 n2 style0 @9.11
+  place 1 n2 style0 @8.12
+  place 1 n2 style0 @7.13
+  place 1 n2 style6 @6.14
+  place 1 n2 style6 @5.15
+  place 1 n5 style2 @0.18
+  place 1 n3 style14 @5.8
+  place 2 n5 style11 @5.0
+  place 2 n5 style12 @6.0
+  strings $6B @2.0=$61 @2.4=$53 @7.6=$4F @4.6=$5D @2.7=$55 @2.6=$49
+  strings $6A @2.7=$4F @2.5=$4B @7.5=$45
+  bar9 s0 n8 @2.8 ; s0 n3 @2.9 ; s0 n3 @7.7 ; s1 n2 @0.13 ; s2 n2 @3.1 ; s3 n5 @0.16 ; s14 n1 @4.5
+  piece k2 n1 @4.1
+  strings $68 @8.1=$95
+  walls style1 @0.11 @9.1
+  decor set2 n6 @2.12
+  end x7
+  zone @0.0-5.8
+  zone @6.0-10.7
+  zone @0.8-10.19 last
+  pickup t0 n2 @5.14
+  pickup t0 n26 @6.13
+  pickup t0 n2 @7.12
+  pickup t0 n2 @8.11
+  enemy $39 @3.6
+  enemy $39 @3.17
+  enemy $39 @8.7
+  enemy $3F @2.5
+
+room 51 ; $B8F1, 138 bytes
+  groups 7 7 2
+  place 0 n2 style9 @1.0
+  place 0 n3 style1 @0.5
+  place 0 n3 style3 @2.0
+  place 0 n8 style3 @1.19
+  place 0 n5 style11 @10.8
+  place 0 n4 style0 @5.5
+  place 0 n2 style13 @5.0
+  place 1 n3 style5 @7.18
+  place 1 n1 style1 @9.16
+  place 1 n1 style1 @0.18
+  place 1 n3 style5 @7.2
+  place 1 n2 style0 @10.1
+  place 1 n1 style15 @10.7
+  place 1 n6 style0 @6.2
+  place 2 n6 style15 @0.9
+  place 2 n7 style11 @7.2
+  strings $6B @4.9=$5D
+  strings $69 @6.12=$5D
+  barA s4 n3 @10.4 ; s7 n3 @0.6 ; s7 n3 @1.6
+  bar9 s3 n4 @0.16 ; s3 n3 @8.5 ; s1 n3 @4.18 ; s1 n5 @2.13 ; s0 n2 @3.10 ; s0 n2 @8.11 ; s14 n2 @5.12
+  bar8 s14 n3 @0.8 ; s3 n2 @3.1 ; s9 n1 @2.2
+  bar7 s12 n2 @8.9 ; s1 n1 @9.10 ; s2 n2 @9.12
+  walls style1 @0.14 @2.1
+  walls style1 @5.2 @0.6
+  decor set2 n3 @4.16 ; set2 n2 @5.17 ; set2 n2 @6.17 ; set2 n3 @2.12
+  end x4
+  zone @0.5-5.9 @6.5-6.6 @1.4-1.10
+  zone @1.0-6.4
+  zone @0.10-7.19 @8.11-10.19
+  zone @6.0-10.10 last
+  pickup t0 n0 @3.5
+  pickup t0 n0 @4.5
+  pickup t0 n0 @3.9
+  pickup t0 n26 @4.9
+  pickup t0 n0 @9.15
+  enemy $3E @6.11
+  enemy $0E @3.18
+  enemy $39 @5.18
+  enemy $39 @8.8
+  enemy $20 @2.1
+  enemy $20 @2.2
+  enemy $20 @2.3
+  enemy $20 @2.4
+  enemy $20 @2.2
+
+room 52 ; $B97B, 75 bytes
+  groups 3 5 0
+  place 0 n1 style9 @6.18
+  place 0 n3 style6 @6.2
+  place 0 n6 style0 @0.2
+  place 1 n7 style1 @0.0
+  place 1 n4 style1 @7.13
+  place 1 n4 style2 @7.18
+  place 1 n5 style0 @6.7
+  place 1 n6 style0 @0.11
+  bar9 s6 n7 @4.16 ; s11 n5 @1.3 ; s11 n2 @4.7 ; s11 n5 @1.11 ; s11 n5 @1.13 ; s11 n5 @1.18 ; s11 n1 @5.10 ; s11 n2 @4.7
+  barA s8 n1 @5.5
+  piece k0 n10 @3.2
+  strings $6B @1.8=$5F @1.12=$5F @1.16=$5F
+  walls style1 @1.15
+  decor set1 n2 @2.2 ; set1 n6 @4.2 ; set1 n6 @3.13 ; set1 n3 @4.11 ; set1 n4 @5.10 ; set2 n1 @4.19 ; set2 n3 @7.15
+  end x4
+  zones default
+  pickup t3 n27 @5.2
+  enemy $0B @1.2
+  enemy $3D @2.17
+  enemy $3D @3.4
+
+room 53 ; $B9C6, 52 bytes
+  groups 3 1 1
+  place 0 n11 style2 @0.17
+  place 0 n4 style0 @0.0
+  place 0 n4 style1 @7.9
+  place 1 n3 style0 @0.12
+  place 2 n6 style11 @6.0
+  bar9 s6 n9 @2.15 ; s3 n3 @0.7 ; s1 n5 @1.5 ; s1 n5 @1.1 ; s11 n10 @1.13 ; s11 n7 @4.11
+  piece k0 n4 @6.10 ; k0 n5 @7.10 ; k0 n6 @8.10
+  strings $6B @1.0=$5F @1.4=$5F
+  walls style1 @0.10
+  decor set1 n4 @10.10 ; set1 n6 @4.11 ; set2 n4 @3.4 ; set2 n7 @4.0
+  end x5
+  zones default
+  pickup t0 n25 @9.10
+
+room 54 ; $B9FA, 44 bytes
+  groups 0 7 0
+  place 1 n11 style1 @0.0
+  place 1 n5 style2 @0.5
+  place 1 n3 style2 @8.5
+  place 1 n4 style12 @7.5
+  place 1 n5 style12 @7.12
+  place 1 n5 style0 @4.5
+  place 1 n4 style12 @4.13
+  bar9 s3 n11 @0.3 ; s0 n2 @5.5
+  barA s9 n6 @6.6 ; s10 n6 @6.14
+  walls style1 @0.2
+  decor set1 n3 @7.2
+  end x5
+  zone @5.6-6.6 @4.7-7.19
+  zone @0.0-10.6 last
+  enemy $3D @6.10
+  enemy $99 @0.2
+
+room 55 ; $BA26, 58 bytes
+  groups 2 5 1
+  place 0 n4 style1 @0.9
+  place 0 n1 style4 @0.16
+  place 1 n7 style0 @7.0
+  place 1 n5 style6 @7.11
+  place 1 n4 style2 @3.18
+  place 1 n4 style2 @0.17
+  place 1 n4 style7 @0.10
+  place 2 n6 style12 @4.0
+  bar9 s3 n6 @1.14 ; s14 n2 @5.16 ; s11 n6 @1.11 ; s11 n6 @1.13 ; s11 n1 @6.9
+  barA s10 n5 @6.3 ; s10 n1 @6.0
+  strings $6A @6.16=$5D @6.17=$5D
+  walls style1 @1.10
+  decor set1 n7 @3.10 ; set1 n3 @6.9
+  end x2
+  zones default
+  pickup t3 n19 @2.12
+  enemy $38 @5.6
+  enemy $38 @5.13
+  enemy $85 @3.10
+  enemy $82 @3.16
+
+room 56 ; $BA60, 106 bytes
+  groups 6 6 1
+  place 0 n7 style9 @9.6
+  place 0 n3 style9 @0.12
+  place 0 n1 style9 @1.17
+  place 0 n1 style9 @2.18
+  place 0 n1 style9 @1.6
+  place 0 n9 style6 @5.5
+  place 1 n7 style1 @2.0
+  place 1 n3 style6 @9.1
+  place 1 n3 style0 @2.2
+  place 1 n3 style12 @0.7
+  place 1 n3 style6 @6.8
+  place 1 n4 style11 @6.13
+  place 2 n4 style6 @4.9
+  strings $6B @1.9=$45 @6.6=$4B @7.17=$5F @7.13=$5F
+  barA s7 n7 @4.2 ; s7 n3 @5.2 ; s7 n4 @4.16
+  bar9 s0 n3 @1.15 ; s0 n2 @3.5 ; s12 n1 @7.6 ; s12 n1 @8.6
+  bar8 s3 n2 @7.2 ; s9 n4 @3.3 ; s8 n4 @8.10
+  bar7 s9 n8 @1.11 ; s10 n1 @8.3 ; s12 n2 @1.13 ; s1 n1 @2.14 ; s0 n2 @2.16
+  walls style1 @1.8 @5.2
+  walls style1 @4.16
+  end x15
+  zone @0.15-5.19 @0.14 @4.14
+  zone @0.5-4.14 @5.5-5.10 @5.13-5.14
+  zone @2.0-10.19 last
+  pickup t0 n25 @4.8
+  pickup t0 n25 @8.2
+  pickup t5 n25 @8.3
+  enemy $37 @2.10
+  enemy $37 @7.14
+  enemy $37 @7.16
+  enemy $18 @8.15
+
+room 57 ; $BACA, 102 bytes
+  groups 7 4 1
+  place 0 n2 style0 @9.0
+  place 0 n10 style12 @10.2
+  place 0 n6 style11 @0.7
+  place 0 n1 style9 @2.0
+  place 0 n6 style0 @5.0
+  place 0 n2 style9 @5.9
+  place 0 n2 style0 @4.10
+  place 1 n11 style2 @0.18
+  place 1 n3 style1 @0.2
+  place 1 n3 style14 @3.8
+  place 1 n1 style6 @7.11
+  place 2 n8 style6 @6.0
+  strings $6B @4.17=$55 @3.2=$4B @7.10=$5F
+  barA s4 n6 @7.13
+  bar9 s3 n5 @0.5 ; s6 n5 @5.16 ; s0 n2 @1.8 ; s2 n2 @5.13 ; s15 n1 @7.18 ; s11 n3 @7.5 ; s11 n3 @7.9 ; s11 n2 @8.12 ; s11 n2 @8.14
+  piece k2 n1 @6.13 ; k0 n5 @8.5 ; k0 n6 @9.9
+  bar8 s12 n3 @1.15 ; s1 n2 @3.16
+  bar7 s12 n2 @1.13 ; s1 n1 @2.14 ; s0 n2 @2.16
+  walls style1 @0.4 @3.15
+  walls style1 @7.1
+  end x11
+  zone @0.0-5.8 @4.9
+  zone @6.0-10.11 @7.12-10.19
+  zone @0.9-6.19 last
+  pickup t3 n25 @9.4
+  pickup t3 n15 @6.13
+  enemy $39 @2.10
+  enemy $37 @8.8
+  enemy $39 @8.14
+
+room 58 ; $BB30, 113 bytes
+  groups 5 5 1
+  place 0 n7 style3 @3.0
+  place 0 n3 style9 @2.0
+  place 0 n2 style1 @0.5
+  place 0 n1 style9 @5.4
+  place 0 n9 style11 @6.4
+  place 1 n9 style0 @10.0
+  place 1 n2 style0 @10.17
+  place 1 n3 style2 @0.18
+  place 1 n3 style0 @0.6
+  place 1 n2 style0 @7.17
+  place 2 n3 style7 @0.11
+  bar9 s3 n4 @0.16 ; s3 n7 @3.2 ; s3 n4 @7.15 ; s1 n3 @7.6 ; s1 n3 @7.11 ; s4 n4 @1.7 ; s0 n2 @3.4 ; s15 n1 @7.16 ; s15 n1 @8.15 ; s15 n1 @9.14 ; s15 n1 @10.16 ; s11 n3 @3.19 ; s11 n2 @4.15 ; s11 n1 @5.14
+  barA s10 n2 @8.5 ; s10 n2 @9.5 ; s10 n2 @8.10 ; s10 n2 @9.10 ; s9 n1 @8.7 ; s9 n1 @9.7 ; s9 n1 @8.12 ; s9 n1 @9.12
+  strings $6B @1.8=$4B @1.10=$45
+  walls style1 @0.15 @5.1
+  walls style2 @7.16
+  decor set1 n3 @6.1 ; set1 n3 @10.14 ; set1 n5 @4.15 ; set1 n2 @5.14
+  end x5
+  zone @0.4-6.19
+  zone @7.19-10.19 @8.18-9.18
+  zone @2.0-10.18 last
+  pickup t0 n0 @8.17
+  pickup t0 n0 @9.17
+  enemy $2A @3.5
+  enemy $27 @4.6
+  enemy $3D @9.12
+  enemy $22 @8.19
+
+room 59 ; $BBA1, 114 bytes
+  groups 7 5 1
+  place 0 n5 style0 @6.0
+  place 0 n7 style0 @6.7
+  place 0 n2 style0 @6.17
+  place 0 n1 style4 @7.19
+  place 0 n5 style7 @10.5
+  place 0 n4 style6 @10.13
+  place 0 n1 style4 @10.19
+  place 1 n6 style0 @0.1
+  place 1 n2 style2 @1.0
+  place 1 n2 style0 @0.17
+  place 1 n7 style0 @7.0
+  place 1 n3 style0 @10.0
+  place 2 n5 style11 @7.11
+  bar9 s3 n3 @0.15 ; s4 n3 @1.9 ; s11 n3 @3.0 ; s11 n5 @1.5 ; s11 n5 @1.8 ; s8 n6 @0.11 ; s8 n6 @0.13 ; s11 n5 @1.18 ; s11 n3 @3.12 ; s11 n3 @3.14 ; s11 n3 @3.16 ; s11 n2 @4.4
+  barA s8 n2 @9.6 ; s8 n2 @9.10 ; s8 n2 @9.14 ; s8 n2 @9.18 ; s14 n2 @2.18
+  piece k0 n4 @5.16
+  strings $6B @1.3=$4B @1.6=$45
+  walls style1 @0.10
+  walls style2 @8.2
+  decor set1 n10 @4.0 ; set1 n8 @3.12 ; set1 n3 @5.12
+  end x7
+  zone @0.0-6.19
+  zone @7.0-10.19 last
+  pickup t3 n21 @5.3
+  enemy $3D @2.16
+  enemy $3D @3.1
+  enemy $37 @4.13
+  enemy $3D @9.12
+  enemy $99 @8.4
+  enemy $99 @8.13
+  enemy $99 @8.17
+  enemy $20 @8.2
+  enemy $22 @8.6
+  enemy $21 @8.10
+  enemy $20 @8.19
+
+room 60 ; $BC13, 110 bytes
+  groups 3 4 2
+  place 0 n5 style12 @6.12
+  place 0 n3 style0 @7.16
+  place 0 n2 style0 @10.17
+  place 1 n5 style12 @0.0
+  place 1 n8 style0 @6.0
+  place 1 n7 style0 @10.0
+  place 1 n4 style7 @10.11
+  place 2 n8 style7 @0.8
+  place 2 n9 style11 @7.0
+  bar9 s14 n1 @2.5 ; s11 n5 @1.0 ; s11 n5 @1.1 ; s11 n5 @1.3 ; s11 n5 @1.4 ; s11 n5 @1.6 ; s11 n5 @1.7 ; s11 n5 @1.9 ; s11 n5 @1.10 ; s11 n5 @1.12
+  barA s8 n2 @9.2 ; s8 n2 @9.18 ; s10 n5 @2.15 ; s10 n5 @3.15 ; s10 n5 @4.15 ; s10 n5 @5.15 ; s12 n3 @2.1 ; s12 n3 @2.7 ; s12 n3 @2.10 ; s13 n1 @2.0
+  piece k0 n8 @5.0
+  bar7 s9 n2 @8.14 ; s6 n6 @5.14
+  walls style1 @1.14
+  walls style2 @8.2
+  decor set1 n13 @3.0 ; set1 n3 @5.10
+  end x1
+  zone @0.0-6.19
+  zone @7.0-10.19 last
+  pickup t2 n15 @2.5
+  pickup t2 n30 @2.11
+  enemy $3D @2.8
+  enemy $3D @5.3
+  enemy $3D @5.13
+  enemy $99 @8.2
+  enemy $99 @8.14
+  enemy $20 @8.4
+  enemy $21 @8.10
+  enemy $21 @8.11
+  enemy $20 @8.15
+  enemy $20 @8.18
+
+room 61 ; $BC81, 108 bytes
+  groups 7 2 2
+  place 0 n1 style4 @0.0
+  place 0 n6 style0 @0.11
+  place 0 n3 style0 @6.10
+  place 0 n4 style6 @7.0
+  place 0 n5 style12 @7.6
+  place 0 n3 style5 @8.10
+  place 0 n1 style4 @8.13
+  place 1 n6 style11 @0.1
+  place 1 n6 style0 @10.0
+  place 2 n6 style6 @6.0
+  place 2 n5 style11 @9.12
+  bar9 s11 n8 @1.19 ; s11 n8 @1.18 ; s11 n8 @1.16
+  barA s8 n2 @9.2 ; s10 n4 @2.0 ; s10 n4 @3.0 ; s10 n4 @4.0 ; s9 n5 @2.5 ; s9 n5 @3.5 ; s9 n5 @4.5 ; s9 n5 @5.5 ; s9 n2 @2.11 ; s9 n2 @3.11 ; s9 n2 @4.11 ; s9 n2 @5.11 ; s14 n1 @4.19 ; s12 n3 @4.16
+  piece k0 n6 @7.14
+  bar7 s1 n4 @5.0 ; s11 n5 @1.4 ; s9 n5 @1.10
+  walls style1 @1.14
+  walls style2 @8.2
+  decor set1 n4 @5.16
+  end x11
+  zone @7.0-10.11
+  zone @0.0-9.19 last
+  pickup t3 n26 @8.15
+  enemy $3D @4.16
+  enemy $3D @5.5
+  enemy $3D @5.11
+  enemy $3D @9.9
+  enemy $99 @8.6
+  enemy $9A @8.9
+  enemy $20 @8.4
+  enemy $21 @8.6
+  enemy $21 @8.7
+  enemy $20 @8.8
+  enemy $20 @8.9
+
+room 62 ; $BCED, 92 bytes
+  groups 4 2 0
+  place 0 n5 style6 @9.12
+  place 0 n8 style0 @0.5
+  place 0 n1 style9 @0.0
+  place 0 n1 style9 @0.17
+  place 1 n8 style0 @9.0
+  place 1 n8 style2 @1.18
+  bar9 s3 n9 @0.3 ; s6 n6 @3.16 ; s4 n3 @1.15 ; s7 n2 @1.12 ; s7 n3 @1.17 ; s11 n8 @1.1 ; s11 n6 @3.5 ; s11 n6 @3.8 ; s11 n8 @1.10 ; s11 n8 @1.14
+  strings $6B @1.8=$4B @1.16=$53 @1.17=$55 @8.0=$5B @8.2=$5B @8.13=$5B @8.15=$5B
+  strings $6A @1.10=$45 @1.13=$49
+  barA s12 n4 @4.5 ; s13 n2 @4.0
+  piece k0 n6 @8.5 ; k0 n13 @6.5 ; k0 n6 @4.9
+  walls style1 @0.2
+  decor set1 n2 @5.0 ; set1 n6 @5.5 ; set1 n4 @5.14 ; set1 n4 @3.5
+  end x4
+  zones default
+  pickup t2 n18 @8.10
+  enemy $9E @1.12
+  enemy $18 @2.8
+  enemy $3D @4.6
+  enemy $3D @8.17
+  enemy $3F @1.7
+
+room 63 ; $BD49, 86 bytes
+  groups 2 6 1
+  place 0 n1 style4 @10.17
+  place 0 n1 style4 @9.5
+  place 1 n5 style1 @6.0
+  place 1 n5 style0 @5.1
+  place 1 n4 style1 @1.7
+  place 1 n9 style2 @2.18
+  place 1 n7 style6 @10.5
+  place 1 n2 style0 @9.9
+  place 2 n6 style11 @1.9
+  bar9 s6 n4 @7.3 ; s1 n2 @6.17 ; s1 n2 @8.16 ; s1 n1 @8.10 ; s15 n7 @2.12 ; s15 n7 @2.15
+  bar7 s12 n4 @6.7 ; s1 n1 @9.8 ; s0 n5 @9.12 ; s0 n1 @9.17
+  barC s14 n2 @2.10 ; s5 n8 @4.10
+  bar6 s7 n2 @2.16
+  walls style2 @2.9 @9.6
+  walls style2 @2.11
+  walls style1 @2.12 @5.12
+  walls style2 @2.15 @5.15
+  walls style2 @9.2
+  decor set2 n3 @9.2 ; set2 n3 @8.9 ; set2 n3 @8.15 ; set2 n2 @6.16
+  end x5
+  zones default
+  enemy $81 @2.9
+  enemy $18 @5.17
+  enemy $3F @6.5
+  enemy $36 @9.7
+  enemy $36 @9.14
+  enemy $30 @7.15
+
+room 64 ; $BD9F, 46 bytes
+  groups 3 1 0
+  place 0 n11 style12 @2.3
+  place 0 n4 style9 @7.12
+  place 0 n3 style2 @8.12
+  place 1 n9 style1 @2.1
+  bar9 s3 n8 @3.8 ; s15 n1 @7.2 ; s13 n4 @3.12
+  barA s4 n8 @7.2
+  strings $69 @4.16=$63
+  bar7 s9 n5 @3.5 ; s9 n1 @8.5 ; s3 n3 @9.3
+  bar5 s7 n5 @6.14
+  bar6 s7 n3 @8.7 ; s7 n3 @8.4
+  walls style2 @3.3
+  end x5
+  zones default
+  enemy $2E @6.9
+  enemy $9A @3.7
+
+room 65 ; $BDCD, 42 bytes
+  groups 2 2 1
+  place 0 n4 style0 @7.0
+  place 0 n5 style6 @7.12
+  place 1 n7 style0 @3.9
+  place 1 n4 style7 @7.6
+  place 2 n6 style6 @2.0
+  barA s8 n2 @5.12
+  bar9 s13 n4 @3.0 ; s13 n4 @3.8 ; s13 n3 @4.18
+  bar5 s7 n5 @6.2 ; s7 n7 @6.10
+  strings $69 @4.1=$63 @4.7=$63
+  walls style2 @3.1
+  end x7
+  zones default
+  pickup t2 n9 @6.6
+  enemy $3D @6.2
+  enemy $3D @6.11
+
+room 66 ; $BDF7, 48 bytes
+  groups 4 4 1
+  place 0 n4 style0 @7.0
+  place 0 n2 style0 @3.0
+  place 0 n1 style4 @2.8
+  place 0 n1 style4 @0.13
+  place 1 n5 style2 @0.17
+  place 1 n4 style6 @6.5
+  place 1 n4 style0 @2.2
+  place 1 n4 style7 @1.8
+  place 2 n4 style6 @5.11
+  bar9 s3 n5 @0.15 ; s13 n3 @4.2 ; s13 n3 @3.6 ; s13 n3 @2.12
+  barA s8 n1 @4.4 ; s8 n2 @4.8
+  bar5 s7 n3 @5.8
+  walls style2 @0.14 @5.1
+  end x7
+  zones default
+  pickup t3 n26 @4.16
+  enemy $3D @4.12
+  enemy $3D @5.7
+
+room 67 ; $BE27, 68 bytes
+  groups 4 3 2
+  place 0 n5 style2 @0.5
+  place 0 n2 style1 @9.7
+  place 0 n1 style9 @8.15
+  place 0 n2 style3 @9.15
+  place 1 n9 style1 @0.0
+  place 1 n2 style5 @3.7
+  place 1 n5 style2 @3.16
+  place 2 n4 style7 @8.2
+  place 2 n4 style6 @3.9
+  strings $6B @7.6=$5B
+  bar9 s3 n7 @0.3 ; s6 n5 @6.13 ; s1 n1 @4.8 ; s0 n3 @5.7
+  bar6 s7 n4 @4.11
+  walls style3 @10.8
+  walls style2 @4.8 @0.2
+  decor set2 n3 @7.2 ; set2 n5 @8.10 ; set2 n2 @5.8
+  end x5
+  zone @0.0-3.6 @4.0-8.5 @5.6-7.6
+  zone @3.6-10.17 last
+  pickup t3 n11 @7.2
+  enemy $99 @0.4
+  enemy $2F @4.9
+  enemy $3F @4.10
+  enemy $3F @4.14
+
+room 68 ; $BE6B, 68 bytes
+  groups 2 4 1
+  place 0 n3 style0 @6.17
+  place 0 n2 style0 @10.17
+  place 1 n9 style1 @2.0
+  place 1 n2 style0 @1.1
+  place 1 n11 style7 @1.4
+  place 1 n6 style6 @10.7
+  place 2 n7 style12 @6.6
+  strings $6B @9.8=$5B
+  bar9 s6 n7 @4.4 ; s13 n3 @7.6 ; s13 n3 @7.10
+  barA s8 n2 @4.8 ; s4 n4 @6.2 ; s4 n5 @10.2
+  barC s1 n6 @5.14 ; s4 n6 @9.14
+  bar6 s7 n8 @2.12 ; s7 n7 @2.16 ; s7 n7 @2.18
+  walls style2 @2.2
+  end x1
+  zone @6.0-10.19
+  zone @1.0-5.19 last
+  pickup t3 n1 @9.13
+  pickup t3 n27 @5.2
+  enemy $38 @3.17
+  enemy $38 @4.12
+  enemy $3D @8.15
+  enemy $3D @9.4
+  enemy $3D @9.10
+
+room 69 ; $BEAF, 91 bytes
+  groups 5 2 1
+  place 0 n15 style11 @5.4
+  place 0 n5 style9 @6.10
+  place 0 n7 style7 @10.9
+  place 0 n4 style6 @1.12
+  place 0 n1 style9 @7.8
+  place 1 n4 style2 @1.18
+  place 1 n7 style6 @1.0
+  place 2 n6 style12 @10.0
+  bar9 s1 n3 @7.10
+  barA s8 n2 @8.14
+  bar5 s6 n2 @4.4 ; s6 n2 @8.4
+  bar5 s8 n8 @9.12
+  barC s1 n6 @4.11 ; s15 n3 @2.17 ; s3 n6 @9.0 ; s9 n4 @5.0
+  bar6 s7 n3 @2.1 ; s7 n2 @2.13 ; s7 n2 @2.15
+  walls style2 @2.1 @7.7
+  walls style2 @7.11
+  end x4
+  zone @6.9-10.19 @7.8 @10.8
+  zone @6.0-10.8
+  zone @1.0-5.19 last
+  pickup t0 n0 @8.9
+  pickup t0 n0 @9.9
+  pickup t0 n0 @4.6
+  pickup t0 n25 @4.7
+  pickup t0 n0 @4.8
+  pickup t0 n25 @4.9
+  pickup t0 n9 @4.10
+  enemy $13 @3.16
+  enemy $38 @2.12
+  enemy $38 @3.4
+  enemy $3D @8.2
+  enemy $3D @9.12
+  enemy $3D @9.15
+
+room 70 ; $BF0A, 78 bytes
+  groups 6 4 0
+  place 0 n1 style4 @6.0
+  place 0 n3 style6 @9.10
+  place 0 n2 style9 @8.14
+  place 0 n1 style4 @7.17
+  place 0 n2 style2 @2.13
+  place 0 n2 style0 @3.15
+  place 1 n7 style1 @0.1
+  place 1 n7 style11 @10.0
+  place 1 n5 style2 @3.18
+  place 1 n2 style1 @0.12
+  bar9 s3 n4 @0.8 ; s1 n6 @4.9 ; s1 n2 @7.11 ; s1 n2 @6.14 ; s12 n1 @8.8
+  strings $6B @9.5=$5B @9.7=$5B
+  barC s0 n5 @6.3
+  bar5 s7 n1 @9.0
+  bar6 s7 n6 @0.7 ; s7 n6 @0.4
+  walls style2 @0.8
+  decor set2 n3 @4.8 ; set2 n4 @5.8 ; set2 n8 @7.8 ; set2 n6 @6.12
+  end x2
+  zones default
+  enemy $21 @0.3
+  enemy $20 @0.6
+  enemy $38 @4.17
+  enemy $3D @5.3
+  enemy $3D @6.9
+  enemy $3D @9.4
+  enemy $18 @5.17
+  enemy $01 @8.13
+
+room 71 ; $BF58, 47 bytes
+  groups 2 0 0
+  place 0 n11 style1 @0.7
+  place 0 n11 style2 @0.15
+  bar9 s3 n5 @0.13 ; s6 n5 @6.13
+  barA s8 n2 @2.10 ; s8 n2 @6.10
+  walls style3 @9.8
+  walls style2 @1.8
+  walls style3 @0.8
+  decor set2 n1 @2.8 ; set2 n3 @2.12 ; set2 n2 @5.8 ; set2 n2 @5.13 ; set2 n1 @6.8 ; set2 n2 @7.8 ; set2 n4 @8.11
+  end x5
+  zones default
+  enemy $31 @1.12
+  enemy $2F @4.9
+  enemy $30 @4.13
+  enemy $18 @1.8
+
+room 72 ; $BF87, 87 bytes
+  groups 7 3 1
+  place 0 n10 style1 @0.1
+  place 0 n8 style11 @10.1
+  place 0 n8 style2 @3.18
+  place 0 n1 style9 @6.16
+  place 0 n1 style4 @2.18
+  place 0 n4 style14 @2.7
+  place 0 n3 style0 @5.7
+  place 1 n2 style0 @9.7
+  place 1 n2 style2 @0.7
+  place 1 n2 style11 @6.7
+  place 2 n7 style11 @1.8
+  bar9 s3 n10 @0.4 ; s6 n6 @4.12 ; s6 n3 @8.16
+  barA s4 n5 @6.11
+  barC s14 n1 @2.15 ; s5 n3 @3.15
+  walls style2 @0.2 @2.11
+  walls style2 @2.16 @9.10
+  bar6 s7 n4 @2.16
+  decor set2 n4 @3.3 ; set2 n4 @6.2 ; set2 n2 @3.9 ; set2 n3 @10.15
+  end x10
+  zone @1.9-5.19 @1.8 @3.8 @5.8
+  zone @0.0-10.19 last
+  pickup t3 n25 @9.2
+  pickup t2 n25 @5.16
+  enemy $2F @2.10
+  enemy $3D @2.6
+  enemy $3D @5.2
+  enemy $3D @8.8
+  enemy $3D @9.3
+  enemy $3D @9.12
+  enemy $3D @9.15
+  enemy $1F @2.9
+
+room 73 ; $BFDE, 97 bytes
+  groups 3 1 0
+  place 0 n1 style9 @1.0
+  place 0 n1 style9 @3.0
+  place 0 n1 style9 @5.0
+  place 1 n4 style7 @1.8
+  bar6 s0 n4 @7.17 ; s1 n4 @7.18 ; s2 n7 @2.0 ; s3 n7 @2.1
+  bar9 s1 n7 @2.11 ; s1 n1 @7.3 ; s1 n1 @7.5 ; s1 n1 @7.7 ; s6 n3 @8.14 ; s0 n3 @2.17 ; s15 n3 @2.17
+  barA s0 n16 @1.2 ; s0 n2 @1.18 ; s3 n6 @8.2 ; s3 n4 @9.8 ; s5 n1 @5.17 ; s3 n2 @5.18 ; s2 n3 @6.17 ; s1 n2 @10.10 ; s1 n2 @9.6 ; s11 n2 @9.4 ; s11 n2 @10.8 ; s4 n5 @10.12 ; s4 n7 @6.10
+  barC s0 n5 @5.2
+  bar6 s7 n3 @2.3 ; s7 n3 @2.5
+  walls style5 @2.12
+  walls style3 @2.18
+  decor set2 n7 @7.2
+  end x5
+  zone @1.18-6.19
+  zone @1.0-10.18 last
+  enemy $3A @3.17
+  enemy $3A @7.9
+  enemy $9E @7.16
+  enemy $99 @6.2
+  enemy $99 @6.4
+  enemy $32 @6.10
+  enemy $33 @6.16
+
+room 74 ; $C03F, 56 bytes
+  groups 5 0 0
+  place 0 n1 style9 @1.4
+  place 0 n1 style9 @1.8
+  place 0 n1 style9 @1.12
+  place 0 n1 style9 @5.4
+  place 0 n3 style9 @5.8
+  barA s0 n12 @1.0 ; s0 n6 @1.14 ; s3 n8 @5.0 ; s3 n6 @5.14 ; s0 n2 @5.10 ; s11 n2 @6.2 ; s11 n2 @6.6 ; s11 n2 @6.10 ; s11 n2 @6.17
+  bar5 s6 n2 @3.4 ; s6 n2 @3.8 ; s6 n2 @3.12
+  walls style3 @2.1
+  end x4
+  zones default
+  pickup t3 n23 @4.10
+  pickup t3 n15 @4.18
+  enemy $3A @3.5
+  enemy $3A @3.9
+  enemy $3F @2.5
+  enemy $3F @2.9
+  enemy $3F @2.13
+
+room 75 ; $C077, 108 bytes
+  groups 3 0 0
+  place 0 n2 style4 @0.18
+  place 0 n1 style9 @7.15
+  place 0 n1 style9 @6.7
+  bar9 s6 n3 @8.12 ; s1 n2 @3.13 ; s15 n2 @8.15
+  bar5 s6 n1 @3.2 ; s6 n1 @3.5
+  barA s0 n9 @1.0 ; s1 n11 @0.7 ; s3 n9 @5.0 ; s3 n2 @5.14 ; s0 n1 @6.14 ; s3 n5 @6.15 ; s0 n6 @7.14 ; s0 n1 @10.14 ; s3 n5 @10.15 ; s11 n2 @6.1 ; s11 n2 @6.4 ; s1 n2 @7.7 ; s1 n2 @8.7 ; s1 n2 @10.7 ; s0 n1 @9.8
+  walls style3 @2.1
+  walls style1 @1.12 @5.16
+  walls style1 @5.10
+  walls style4 @8.17
+  decor set2 n8 @3.12 ; set2 n2 @5.12 ; set2 n2 @7.12 ; set2 n2 @6.9 ; set2 n2 @8.9 ; set2 n1 @9.9 ; set2 n5 @10.9
+  end x8
+  zone @7.15-10.19
+  zone @0.0-10.19 last
+  pickup t1 n0 @8.14
+  pickup t1 n0 @9.14
+  enemy $3A @1.18
+  enemy $3A @3.7
+  enemy $3A @4.19
+  enemy $3A @8.10
+  enemy $17 @2.15
+  enemy $81 @1.11
+  enemy $9E @9.16
+  enemy $22 @8.15
+  enemy $20 @8.16
+  enemy $21 @8.17
+  enemy $22 @8.19
+
+room 76 ; $C0E3, 112 bytes
+  groups 5 1 0
+  place 0 n1 style0 @0.0
+  place 0 n1 style0 @0.10
+  place 0 n1 style9 @9.3
+  place 0 n1 style9 @7.2
+  place 0 n1 style9 @8.13
+  place 1 n2 style2 @0.13
+  barA s0 n12 @0.1 ; s0 n6 @1.14 ; s0 n2 @7.0 ; s3 n3 @10.0 ; s3 n6 @6.0 ; s3 n5 @7.6 ; s3 n3 @8.10 ; s3 n5 @8.15 ; s2 n2 @10.3 ; s2 n2 @8.3 ; s1 n2 @7.4 ; s11 n2 @8.5 ; s1 n2 @8.8 ; s11 n2 @9.11 ; s11 n2 @9.14
+  bar9 s1 n4 @3.7 ; s1 n1 @6.9 ; s1 n2 @6.15 ; s0 n6 @2.13
+  strings $69 @4.15=$63 @4.19=$63
+  walls style4 @8.1
+  walls style1 @5.11
+  walls style3 @2.1
+  walls style1 @1.1
+  decor set2 n9 @3.0 ; set2 n3 @4.6 ; set2 n3 @5.6 ; set2 n5 @6.6 ; set2 n6 @6.14
+  end x11
+  zone @7.0-7.3 @8.0-10.4
+  zone @1.14-7.19 @8.15-8.19 @9.14-9.15
+  zone @0.0-9.14 last
+  pickup t3 n5 @9.0
+  pickup t3 n4 @9.1
+  pickup t3 n5 @9.2
+  pickup t3 n27 @2.0
+  pickup t3 n30 @2.7
+  pickup t3 n26 @7.18
+  enemy $3C @5.16
+  enemy $3C @7.13
+  enemy $3C @7.16
+
+room 77 ; $C153, 68 bytes
+  groups 2 0 0
+  place 0 n2 style4 @1.6
+  place 0 n2 style0 @0.13
+  barA s0 n10 @1.0 ; s1 n12 @0.8 ; s3 n12 @8.0 ; s6 n9 @7.11 ; s2 n2 @8.12 ; s11 n2 @9.2 ; s11 n2 @9.6 ; s11 n2 @9.11
+  bar9 s1 n3 @4.11 ; s1 n3 @4.12 ; s1 n3 @5.6
+  strings $69 @4.3=$63
+  walls style1 @5.1
+  walls style3 @2.1
+  walls style1 @1.11
+  decor set2 n8 @6.0 ; set2 n9 @5.5 ; set2 n10 @4.10
+  end x11
+  zones default
+  pickup t3 n30 @3.12
+  pickup t3 n4 @7.7
+  enemy $3C @3.16
+  enemy $3C @3.18
+  enemy $3C @4.12
+  enemy $3C @5.2
+  enemy $3C @5.6
+  enemy $3C @6.15
+  enemy $3C @7.4
+  enemy $3C @7.9
+
+room 78 ; $C197, 89 bytes
+  groups 4 1 0
+  place 0 n1 style0 @0.1
+  place 0 n1 style9 @0.14
+  place 0 n1 style9 @8.9
+  place 0 n1 style9 @9.15
+  place 1 n3 style0 @1.4
+  barA s2 n5 @0.0 ; s0 n10 @1.3 ; s1 n9 @0.11 ; s6 n11 @7.0 ; s6 n4 @7.16 ; s2 n2 @8.16 ; s2 n2 @10.15 ; s1 n2 @9.9 ; s1 n2 @10.9 ; s3 n4 @6.5 ; s5 n1 @8.15
+  bar9 s1 n5 @2.3 ; s1 n6 @1.18 ; s3 n6 @1.16 ; s6 n5 @6.13
+  strings $6B @3.11=$5B @3.13=$5B
+  walls style1 @5.1
+  walls style3 @2.1
+  walls style1 @1.1 @1.14
+  walls style4 @8.11
+  walls style1 @6.11
+  decor set1 n3 @8.12 ; set2 n15 @4.0 ; set2 n5 @4.15
+  end x11
+  zones default
+  pickup t3 n2 @3.10
+  pickup t3 n2 @6.9
+  pickup t3 n2 @5.6
+  enemy $3C @3.4
+  enemy $3C @3.8
+  enemy $3C @3.11
+  enemy $3C @3.14
+  enemy $3C @3.18
+  enemy $3C @6.2
+  enemy $3C @6.4
+
+room 79 ; $C1F0, 91 bytes
+  groups 3 0 0
+  place 0 n2 style0 @0.4
+  place 0 n2 style2 @3.10
+  place 0 n1 style9 @4.13
+  bar6 s0 n4 @7.5 ; s1 n3 @8.6 ; s2 n3 @8.0 ; s3 n3 @8.1
+  barA s6 n2 @7.0 ; s6 n3 @7.9 ; s0 n4 @0.0 ; s2 n4 @1.6 ; s2 n4 @2.8 ; s2 n2 @3.11 ; s0 n8 @4.12 ; s3 n3 @8.11 ; s0 n4 @8.14 ; s3 n2 @8.18 ; s3 n3 @7.6 ; s3 n2 @6.5 ; s11 n2 @9.17 ; s11 n2 @9.13
+  bar9 s0 n2 @5.11 ; s1 n2 @4.5 ; s3 n10 @1.3
+  walls style4 @8.2
+  walls style1 @5.2 @6.12
+  walls style3 @2.1
+  walls style1 @1.1
+  decor set2 n7 @4.0
+  end x11
+  zone @4.12-8.13 @4.14 @8.11
+  zone @4.13-9.19
+  zone @0.0-10.12 last
+  pickup t1 n9 @5.13
+  pickup t1 n18 @6.13
+  pickup t1 n0 @7.13
+  enemy $3C @3.1
+  enemy $3C @3.5
+  enemy $3C @6.11
+  enemy $3B @6.17
+
+room 80 ; $C24B, 89 bytes
+  groups 0 0 0
+  bar6 s0 n3 @0.13 ; s1 n3 @0.14 ; s2 n3 @0.8 ; s3 n3 @0.9
+  barA s1 n5 @3.5 ; s0 n4 @3.13 ; s0 n7 @4.0 ; s0 n4 @4.16 ; s3 n6 @8.0 ; s5 n1 @8.6 ; s3 n3 @8.7 ; s4 n3 @8.10 ; s3 n3 @8.13 ; s5 n1 @8.16 ; s3 n3 @8.17 ; s11 n2 @9.4 ; s11 n2 @9.8 ; s11 n2 @9.13
+  bar9 s1 n3 @5.6 ; s1 n4 @4.9 ; s1 n4 @4.13 ; s1 n3 @5.16 ; s10 n8 @0.11 ; s15 n1 @8.11 ; s15 n4 @4.9 ; s15 n4 @4.13
+  walls style1 @4.7
+  walls style2 @0.11
+  walls style1 @4.14
+  end x5
+  zones default
+  enemy $3B @6.5
+  enemy $3B @6.13
+  enemy $3F @5.4
+  enemy $3F @5.18
+  enemy $20 @0.10
+  enemy $20 @0.12
+  enemy $20 @0.10
+  enemy $21 @0.11
+  enemy $21 @0.12
+  enemy $21 @0.11
+  enemy $22 @0.12
+  enemy $22 @0.10
+
+room 81 ; $C2A4, 52 bytes
+  groups 2 0 0
+  place 0 n1 style9 @4.10
+  place 0 n1 style9 @8.11
+  barA s0 n10 @4.0 ; s0 n8 @4.12 ; s3 n10 @8.0 ; s0 n5 @8.10 ; s3 n5 @8.15 ; s11 n2 @9.9 ; s11 n2 @9.14
+  bar9 s0 n3 @5.8
+  strings $69 @6.1=$63 @6.6=$63 @6.12=$63 @6.17=$63
+  walls style1 @5.1
+  end x1
+  zone @4.0-8.8 @4.9 @8.9
+  zone @4.9-9.19 last
+  enemy $3B @6.4
+  enemy $3B @6.12
+  enemy $3C @7.2
+  enemy $3C @7.17
+
+room 82 ; $C2D8, 66 bytes
+  groups 0 0 0
+  barA s0 n7 @4.0 ; s0 n2 @4.7 ; s0 n11 @4.9 ; s3 n6 @8.0 ; s3 n3 @8.7 ; s3 n8 @9.8 ; s3 n5 @10.15 ; s1 n2 @9.6 ; s11 n2 @10.13 ; s5 n1 @7.5 ; s5 n1 @7.7
+  bar6 s0 n3 @7.6
+  bar9 s1 n4 @5.10 ; s1 n5 @5.16
+  walls style1 @5.1 @7.9
+  walls style3 @8.17
+  decor set2 n6 @7.14
+  end x4
+  zone @4.0-8.6
+  zone @4.6-10.19 last
+  pickup t1 n23 @5.6
+  pickup t1 n0 @6.6
+  enemy $3B @5.18
+  enemy $3B @6.3
+  enemy $3C @6.5
+  enemy $3C @6.7
+  enemy $3C @6.16
+  enemy $3C @8.12
+  enemy $3B @7.15
+
+room 83 ; $C31A, 85 bytes
+  groups 5 1 0
+  place 0 n2 style9 @4.2
+  place 0 n1 style9 @4.17
+  place 0 n1 style9 @7.17
+  place 0 n1 style9 @10.17
+  place 0 n1 style9 @10.11
+  place 1 n3 style0 @4.10
+  barA s0 n10 @4.0 ; s0 n2 @4.15 ; s3 n7 @10.0 ; s0 n1 @10.7 ; s3 n3 @9.6 ; s0 n1 @9.9 ; s11 n2 @10.8 ; s3 n3 @8.8 ; s0 n2 @8.11 ; s1 n2 @9.11 ; s6 n3 @7.9 ; s4 n5 @7.12
+  bar6 s0 n5 @5.17 ; s1 n5 @5.18
+  bar9 s1 n5 @5.4 ; s3 n6 @5.14
+  walls style3 @8.1 @8.13
+  walls style1 @5.1
+  decor set2 n6 @7.0
+  end x5
+  zone @8.11-10.18
+  zone @4.12-7.18
+  zone @4.0-10.11 last
+  pickup t1 n0 @5.11
+  pickup t1 n0 @6.11
+  enemy $3B @5.14
+  enemy $3B @5.16
+  enemy $3C @6.2
+  enemy $3C @6.12
+  enemy $3C @7.8
+  enemy $3C @8.7
+  enemy $82 @5.3
+
+room 84 ; $C36F, 90 bytes
+  groups 7 5 1
+  place 0 n4 style9 @10.12
+  place 0 n1 style4 @10.8
+  place 0 n3 style0 @5.6
+  place 0 n1 style4 @5.16
+  place 0 n2 style9 @6.16
+  place 0 n3 style6 @4.2
+  place 0 n4 style14 @2.15
+  place 1 n3 style0 @9.8
+  place 1 n4 style1 @7.1
+  place 1 n5 style0 @6.2
+  place 1 n5 style1 @0.0
+  place 1 n2 style1 @0.15
+  place 2 n8 style12 @0.2
+  bar9 s6 n6 @3.12 ; s6 n3 @8.6 ; s1 n3 @1.4 ; s1 n8 @1.10
+  barA s4 n6 @5.10 ; s8 n2 @3.7
+  bar7 s5 n8 @1.8 ; s0 n1 @1.11
+  bar6 s7 n4 @7.4
+  walls style2 @1.10 @9.3
+  walls style2 @9.13
+  decor set2 n3 @10.5
+  end x6
+  zone @5.9-10.19 @6.8 @9.8
+  zone @6.0-10.8
+  zone @0.0-5.16 last
+  pickup t0 n0 @7.9
+  pickup t0 n0 @8.9
+  pickup t0 n22 @3.2
+  pickup t0 n1 @3.3
+  pickup t0 n25 @3.14
+  pickup t0 n25 @4.14
+  enemy $31 @1.15
+  enemy $38 @3.7
+  enemy $38 @7.10
+  enemy $38 @8.13
+
+room 85 ; $C3C9, 78 bytes
+  groups 5 4 0
+  place 0 n4 style9 @9.3
+  place 0 n2 style9 @10.0
+  place 0 n4 style0 @2.2
+  place 0 n6 style11 @6.7
+  place 0 n1 style9 @6.18
+  place 1 n6 style12 @10.10
+  place 1 n5 style1 @2.0
+  place 1 n2 style1 @0.6
+  place 1 n6 style2 @0.15
+  bar9 s3 n3 @0.13 ; s6 n5 @4.5 ; s1 n4 @5.9 ; s1 n3 @3.12
+  barA s4 n5 @6.2
+  barC s4 n7 @9.13
+  bar6 s7 n2 @7.15 ; s7 n2 @7.17
+  walls style2 @3.2 @9.11
+  walls style3 @0.8
+  decor set2 n4 @3.11 ; set2 n3 @4.11 ; set2 n6 @5.8
+  end x5
+  zone @6.0-10.6 @7.7-8.7
+  zone @6.7-10.19
+  zone @0.0-5.19 last
+  pickup t0 n0 @7.8
+  pickup t0 n0 @8.8
+  enemy $3D @3.12
+  enemy $3D @5.14
+  enemy $2E @8.10
+  enemy $9E @5.2
+  enemy $0E @3.13
+
+room 86 ; $C417, 89 bytes
+  groups 4 5 0
+  place 0 n5 style6 @6.0
+  place 0 n6 style11 @10.4
+  place 0 n7 style0 @9.14
+  place 0 n4 style9 @0.12
+  place 1 n5 style1 @1.0
+  place 1 n3 style0 @7.7
+  place 1 n5 style6 @6.11
+  place 1 n7 style12 @0.1
+  place 1 n9 style0 @3.6
+  bar9 s3 n5 @1.3 ; s1 n2 @8.11
+  barA s8 n2 @2.18 ; s4 n4 @3.2
+  barC s3 n5 @9.0
+  strings $6A @8.14=$5B @8.16=$5B @8.18=$5B
+  bar6 s7 n2 @7.0 ; s7 n2 @7.2
+  walls style2 @1.2 @7.6
+  walls style2 @7.12 @6.8
+  end x4
+  zone @0.0-3.19
+  zone @4.0-6.19 @7.7-7.11
+  zone @7.0-10.19 last
+  pickup t0 n0 @9.10
+  enemy $07 @4.9
+  enemy $3F @1.10
+  enemy $3F @4.10
+  enemy $3F @8.10
+  enemy $3D @2.8
+  enemy $3D @2.14
+  enemy $3D @5.6
+  enemy $3D @5.12
+  enemy $3D @5.16
+  enemy $3D @8.3
+  enemy $3D @8.14
+  enemy $3D @9.11
+
+room 87 ; $C470, 94 bytes
+  groups 7 4 1
+  place 0 n10 style2 @0.18
+  place 0 n7 style11 @10.6
+  place 0 n2 style9 @9.0
+  place 0 n1 style4 @9.17
+  place 0 n3 style0 @6.0
+  place 0 n5 style9 @6.4
+  place 0 n2 style0 @0.0
+  place 1 n2 style0 @10.3
+  place 1 n5 style0 @3.0
+  place 1 n5 style0 @3.8
+  place 1 n8 style0 @0.3
+  place 2 n2 style11 @3.16
+  bar9 s3 n3 @0.16 ; s3 n6 @4.15 ; s1 n9 @1.9
+  barA s8 n2 @2.4
+  barC s2 n4 @9.4
+  strings $6A @8.0=$5B @8.2=$5B @5.3=$5B
+  bar6 s7 n2 @7.5
+  walls style2 @0.15 @4.14
+  decor set2 n3 @6.14
+  end x4
+  zone @0.0-3.19
+  zone @4.0-6.8 @6.9
+  zone @4.0-10.19 last
+  pickup t0 n0 @4.8
+  pickup t0 n0 @5.8
+  enemy $1E @4.17
+  enemy $3F @1.11
+  enemy $3F @4.11
+  enemy $3F @7.11
+  enemy $36 @9.12
+  enemy $3D @2.2
+  enemy $3D @2.6
+  enemy $3D @2.10
+  enemy $3D @5.3
+  enemy $3D @5.7
+  enemy $3D @5.12
+  enemy $3D @8.4
+
+room 88 ; $C4CE, 120 bytes
+  groups 7 2 0
+  place 0 n2 style9 @4.18
+  place 0 n3 style3 @7.0
+  place 0 n1 style9 @10.0
+  place 0 n2 style0 @10.17
+  place 0 n2 style0 @1.2
+  place 0 n1 style4 @1.7
+  place 0 n1 style9 @1.10
+  place 1 n1 style8 @5.7
+  place 1 n1 style0 @10.6
+  bar6 s0 n8 @2.18 ; s1 n8 @2.19 ; s2 n4 @1.0 ; s3 n4 @1.1 ; s0 n1 @6.0 ; s0 n2 @6.7
+  bar9 s3 n4 @2.5 ; s3 n4 @0.14 ; s6 n3 @8.9 ; s0 n2 @8.7 ; s1 n7 @3.16 ; s1 n5 @5.13
+  barA s3 n4 @10.2 ; s3 n3 @10.14 ; s0 n2 @10.12 ; s4 n4 @10.8 ; s4 n5 @4.2 ; s4 n8 @4.10 ; s0 n5 @1.5 ; s1 n2 @0.10 ; s2 n2 @0.17 ; s2 n3 @1.17 ; s0 n3 @4.7 ; s8 n2 @6.11
+  barC s7 n2 @7.1 ; s8 n3 @8.2 ; s7 n5 @9.1
+  bar6 s7 n3 @5.3
+  walls style5 @0.12 @8.2
+  walls style3 @5.3
+  decor set2 n3 @6.4 ; set2 n3 @8.15 ; set2 n6 @9.12 ; set2 n5 @3.13
+  end x7
+  zone @4.7-10.19 @10.6
+  zone @4.0-10.6
+  zone @0.0-3.19 last
+  pickup t3 n19 @8.14
+  pickup t3 n27 @5.6
+  enemy $3A @1.16
+  enemy $3A @6.17
+  enemy $3A @8.7
+  enemy $99 @3.17
+  enemy $99 @5.10
+
+room 89 ; $C546, 59 bytes
+  groups 2 0 0
+  place 0 n5 style13 @2.3
+  place 0 n2 style0 @2.12
+  barA s0 n15 @2.5 ; s3 n10 @7.4 ; s3 n6 @7.14 ; s11 n2 @8.18 ; s1 n2 @3.3 ; s1 n2 @5.3
+  bar9 s0 n4 @3.14
+  barC s14 n1 @3.18 ; s5 n2 @4.18 ; s4 n1 @6.9 ; s9 n1 @6.10 ; s3 n2 @6.11
+  bar6 s7 n3 @3.11 ; s7 n3 @3.10
+  walls style1 @3.19
+  walls style1 @3.5 @6.13
+  end x14
+  zone @2.14-8.19 @2.13
+  zone @2.3-7.13 last
+  pickup t1 n0 @6.14
+  enemy $3A @5.7
+  enemy $3A @5.14
+  enemy $18 @3.6
+
+room 90 ; $C581, 105 bytes
+  groups 4 1 0
+  place 0 n2 style0 @2.6
+  place 0 n1 style9 @0.14
+  place 0 n1 style9 @9.4
+  place 0 n1 style9 @8.17
+  place 1 n2 style0 @2.14
+  bar9 s3 n6 @0.12 ; s1 n3 @3.7 ; s1 n2 @3.15 ; s1 n3 @6.9 ; s1 n1 @8.16
+  barA s0 n6 @2.0 ; s3 n6 @7.0 ; s3 n3 @7.16 ; s1 n2 @0.7 ; s1 n2 @1.7 ; s1 n2 @10.4 ; s1 n2 @8.4 ; s11 n2 @8.2 ; s11 n2 @8.0 ; s2 n2 @10.17 ; s2 n2 @9.17 ; s2 n3 @2.17 ; s2 n2 @1.14 ; s4 n5 @2.9
+  barC s15 n2 @3.3 ; s9 n3 @4.0 ; s7 n2 @10.6
+  bar6 s0 n4 @3.18 ; s1 n4 @3.19 ; s7 n4 @3.1
+  walls style3 @8.8
+  walls style1 @0.9 @3.1
+  decor set2 n6 @5.11 ; set2 n8 @6.6 ; set2 n2 @8.15 ; set2 n3 @9.14 ; set2 n7 @9.6
+  end x5
+  zone @0.7-2.15
+  zone @2.0-10.19 last
+  pickup t3 n25 @4.16
+  pickup t3 n30 @5.9
+  pickup t3 n26 @8.8
+  pickup t3 n25 @8.12
+  enemy $3A @0.9
+  enemy $84 @3.5
+  enemy $84 @5.14
+  enemy $36 @6.5
+
+room 91 ; $C5EA, 101 bytes
+  groups 5 0 0
+  place 0 n2 style1 @6.2
+  place 0 n1 style9 @3.4
+  place 0 n2 style9 @3.7
+  place 0 n1 style9 @3.15
+  place 0 n1 style9 @1.15
+  bar6 s0 n6 @0.15 ; s1 n6 @0.16 ; s2 n3 @0.9 ; s3 n3 @0.10
+  barA s0 n5 @6.15 ; s1 n6 @3.1 ; s1 n2 @4.1 ; s1 n2 @5.1 ; s3 n6 @9.2 ; s0 n4 @9.8 ; s3 n2 @9.12 ; s0 n2 @9.14 ; s3 n4 @9.16 ; s3 n6 @8.7 ; s11 n2 @10.7 ; s6 n1 @8.2 ; s4 n6 @6.9
+  bar9 s3 n6 @0.13 ; s3 n4 @4.10 ; s0 n4 @4.7
+  walls style4 @0.13 @8.3
+  decor set1 n2 @7.3 ; set1 n3 @5.12 ; set1 n1 @2.11
+  end x1
+  zone @3.1-9.6 @10.7-10.8 @9.7
+  zone @0.7-9.19 last
+  pickup t3 n8 @8.4
+  pickup t3 n10 @4.14
+  enemy $3C @1.11
+  enemy $3C @4.12
+  enemy $3C @5.14
+  enemy $3C @6.4
+  enemy $3C @7.7
+  enemy $3C @7.10
+  enemy $3C @7.12
+  enemy $3C @8.16
+  enemy $81 @0.12
+  enemy $81 @4.3
+  enemy $81 @8.6
+
+room 92 ; $C64F, 129 bytes
+  groups 0 1 0
+  place 1 n2 style0 @1.5
+  bar6 s0 n2 @2.18 ; s1 n1 @2.19 ; s2 n6 @0.0 ; s3 n6 @0.1
+  barA s3 n5 @9.0 ; s5 n1 @9.5 ; s3 n13 @9.6 ; s3 n2 @5.6 ; s5 n1 @5.8 ; s3 n2 @5.9 ; s5 n1 @5.11 ; s3 n2 @5.12 ; s5 n1 @5.14 ; s3 n4 @5.15 ; s0 n2 @6.0 ; s0 n1 @6.5 ; s2 n14 @6.6 ; s2 n2 @0.5 ; s2 n12 @1.8
+  barA s6 n1 @8.18 ; s6 n1 @4.18 ; s0 n1 @7.18 ; s4 n3 @5.3 ; s11 n2 @10.3 ; s11 n2 @10.5 ; s11 n2 @10.8
+  bar9 s3 n5 @0.3 ; s0 n3 @2.5 ; s0 n2 @7.5 ; s1 n3 @2.8 ; s1 n3 @2.11 ; s1 n3 @2.14 ; s15 n3 @2.5 ; s15 n2 @7.5
+  walls style4 @0.2
+  walls style2 @2.5 @7.6
+  end x1
+  zone @0.0-1.6 @2.0-9.5 @10.3-10.4
+  zone @1.6-5.19
+  zone @6.5-10.19 last
+  pickup t3 n7 @4.13
+  pickup t3 n19 @4.15
+  enemy $3C @4.9
+  enemy $3C @4.11
+  enemy $3C @4.16
+  enemy $3C @8.2
+  enemy $3C @8.8
+  enemy $3C @8.10
+  enemy $3C @8.13
+  enemy $22 @2.7
+  enemy $21 @2.9
+  enemy $20 @2.14
+  enemy $21 @2.15
+  enemy $99 @7.8
+  enemy $99 @7.12
+  enemy $99 @7.16
+  enemy $96 @7.15
+
+room 93 ; $C6D0, 72 bytes
+  groups 1 2 0
+  place 0 n6 style11 @1.3
+  place 1 n2 style0 @1.0
+  place 1 n7 style1 @2.0
+  barA s3 n4 @6.2 ; s6 n2 @9.4 ; s1 n2 @10.5 ; s3 n2 @10.7 ; s5 n2 @10.9 ; s3 n2 @10.11 ; s2 n2 @10.13 ; s6 n6 @9.14 ; s3 n1 @8.19 ; s2 n2 @2.12 ; s0 n8 @3.12 ; s6 n4 @9.0
+  bar9 s1 n7 @2.5 ; s1 n5 @4.15 ; s1 n5 @4.16 ; s15 n8 @2.7 ; s15 n8 @2.11
+  walls style3 @2.6
+  walls style5 @2.7
+  walls style3 @2.11
+  decor set2 n6 @6.14 ; set2 n4 @7.14 ; set2 n4 @8.14
+  end x5
+  zone @7.0-9.3
+  zone @1.0-10.19 last
+  enemy $2A @7.4
+  enemy $29 @5.7
+  enemy $0B @8.3
+  enemy $18 @8.2
+
+room 94 ; $C718, 53 bytes
+  groups 0 0 0
+  barA s0 n10 @3.10 ; s0 n11 @3.0 ; s11 n2 @9.4 ; s3 n2 @9.7 ; s5 n4 @9.9 ; s3 n2 @9.13 ; s3 n2 @8.14 ; s11 n2 @8.17 ; s3 n13 @7.15
+  bar9 s1 n2 @4.1 ; s1 n2 @4.7
+  walls style3 @4.8
+  decor set2 n11 @6.0
+  end x6
+  zones default
+  pickup t3 n30 @5.5
+  pickup t3 n23 @5.10
+  enemy $36 @8.11
+  enemy $3B @4.6
+  enemy $3C @5.2
+  enemy $3C @6.17
+  enemy $3C @7.1
+  enemy $3C @7.7
+  enemy $3C @8.12
+  enemy $09 @4.11
+
+room 95 ; $C74D, 86 bytes
+  groups 4 0 0
+  place 0 n2 style0 @3.10
+  place 0 n1 style9 @2.17
+  place 0 n1 style9 @4.17
+  place 0 n1 style9 @6.17
+  barA s0 n10 @3.0 ; s3 n2 @7.0 ; s3 n2 @8.1 ; s3 n2 @9.2 ; s3 n6 @10.3 ; s3 n2 @9.8 ; s3 n2 @8.9 ; s3 n2 @7.10 ; s3 n6 @7.12
+  bar6 s2 n3 @0.11 ; s3 n3 @0.12 ; s0 n6 @0.17 ; s1 n6 @0.18
+  bar9 s3 n3 @0.14 ; s1 n3 @4.16 ; s1 n6 @4.6 ; s0 n3 @4.12
+  walls style3 @0.13 @7.4
+  decor set1 n3 @3.13 ; set2 n2 @4.15 ; set2 n2 @5.15 ; set2 n3 @6.14 ; set2 n3 @6.5
+  end x1
+  zone @0.11-3.18 @4.12-7.19
+  zone @3.0-10.11 last
+  pickup t2 n23 @6.16
+  pickup t2 n18 @5.6
+  enemy $3C @2.13
+  enemy $3B @5.1
+  enemy $3C @6.10
+  enemy $3C @8.3
+  enemy $3C @9.6
+  enemy $81 @4.5
+
+room 96 ; $C7A3, 98 bytes
+  groups 7 6 1
+  place 0 n1 style9 @0.1
+  place 0 n2 style2 @0.8
+  place 0 n3 style0 @1.14
+  place 0 n3 style9 @4.5
+  place 0 n1 style4 @7.5
+  place 0 n3 style9 @7.6
+  place 0 n2 style3 @6.12
+  place 1 n9 style1 @1.0
+  place 1 n5 style6 @10.1
+  place 1 n2 style0 @10.10
+  place 1 n10 style2 @1.18
+  place 1 n3 style14 @4.11
+  place 1 n2 style2 @5.5
+  place 2 n3 style7 @1.10
+  bar9 s3 n4 @0.6 ; s3 n9 @2.16 ; s0 n2 @8.5 ; s0 n2 @8.6 ; s0 n2 @2.11 ; s0 n2 @8.11 ; s0 n8 @2.12 ; s15 n1 @2.1 ; s15 n2 @8.6 ; s15 n2 @8.11
+  barA s4 n4 @2.1 ; s4 n5 @10.13
+  barC s1 n2 @7.3
+  bar6 s7 n7 @0.4
+  walls style2 @0.3 @4.13
+  walls style2 @7.2
+  walls style1 @8.6
+  decor set2 n5 @4.13 ; set2 n3 @7.15
+  end x13
+  zone @7.6-10.11
+  zone @0.0-4.11 @5.0-10.6
+  zone @0.11-10.19 last
+  pickup t3 n12 @9.8
+  enemy $38 @2.9
+  enemy $38 @2.15
+  enemy $38 @5.17
+  enemy $38 @8.9
+  enemy $9A @2.17
+
+room 97 ; $C805, 91 bytes
+  groups 4 1 0
+  place 0 n3 style4 @0.2
+  place 0 n5 style13 @0.0
+  place 0 n3 style0 @0.11
+  place 0 n4 style13 @6.9
+  place 1 n3 style0 @5.13
+  barA s0 n15 @0.5 ; s1 n2 @1.0 ; s1 n2 @3.0 ; s3 n2 @4.2 ; s5 n1 @4.11 ; s5 n1 @4.19 ; s1 n11 @5.9 ; s1 n2 @7.9 ; s1 n2 @8.9 ; s3 n5 @10.10 ; s3 n2 @10.18
+  barA s4 n7 @4.4 ; s4 n7 @4.12 ; s4 n3 @10.15 ; s8 n2 @2.6 ; s8 n2 @2.15
+  bar9 s6 n3 @8.16 ; s13 n3 @1.3 ; s13 n3 @1.19 ; s13 n4 @6.14 ; s13 n4 @6.18 ; s0 n3 @1.11
+  walls style5 @1.3
+  walls style2 @6.11
+  end x13
+  zone @0.0-4.10
+  zone @0.11-4.19
+  zone @5.9-10.19 last
+  pickup t3 n21 @9.11
+  enemy $3A @2.3
+  enemy $3A @2.11
+  enemy $3A @8.12
+  enemy $18 @3.2
+  enemy $32 @4.4
+  enemy $32 @4.12
+  enemy $33 @4.10
+  enemy $33 @4.18
+
+room 98 ; $C860, 85 bytes
+  groups 6 0 0
+  place 0 n1 style4 @0.2
+  place 0 n1 style9 @0.6
+  place 0 n1 style9 @4.6
+  place 0 n1 style9 @1.12
+  place 0 n1 style9 @4.12
+  place 0 n2 style0 @5.2
+  bar6 s0 n4 @0.12 ; s1 n4 @0.13
+  barA s3 n6 @10.0 ; s3 n14 @9.6 ; s3 n4 @4.0 ; s0 n6 @0.0 ; s0 n2 @4.4 ; s0 n8 @5.0 ; s0 n8 @5.12 ; s2 n2 @10.6 ; s11 n2 @10.8 ; s11 n2 @10.14 ; s8 n2 @2.3
+  bar9 s3 n9 @0.9 ; s13 n3 @6.6 ; s13 n3 @6.14 ; s0 n3 @1.7
+  walls style2 @6.0
+  walls style5 @0.8
+  decor set2 n4 @5.8
+  end x2
+  zone @0.0-4.5 @1.6-3.6
+  zone @0.0-10.19 last
+  pickup t3 n27 @9.3
+  pickup t3 n1 @8.16
+  pickup t3 n1 @8.18
+  pickup t2 n1 @8.14
+  enemy $3A @2.1
+  enemy $3A @3.11
+  enemy $3A @7.15
+  enemy $3A @8.4
+  enemy $38 @7.10
+
+room 99 ; $C8B5, 58 bytes
+  groups 0 1 0
+  place 1 n3 style0 @5.5
+  bar6 s0 n3 @6.4 ; s0 n4 @6.5
+  barA s0 n5 @5.0 ; s1 n12 @4.8 ; s3 n5 @9.0 ; s3 n10 @9.10 ; s1 n2 @10.3 ; s2 n2 @10.10 ; s11 n2 @10.12 ; s4 n5 @10.5
+  bar9 s3 n5 @6.8 ; s13 n3 @6.2
+  bar5 s6 n1 @7.3 ; s10 n3 @5.13
+  walls style2 @6.1
+  walls style3 @5.10 @9.6
+  end x7
+  zone @5.0-9.4
+  zone @4.5-10.19 last
+  pickup t3 n30 @8.1
+  enemy $3A @7.12
+  enemy $1F @6.3
+  enemy $99 @6.6
+  enemy $99 @5.10
+
+room 100 ; $C8EF, 71 bytes
+  groups 2 0 0
+  place 0 n1 style9 @3.4
+  place 0 n1 style9 @6.17
+  bar6 s0 n6 @0.17 ; s1 n6 @0.18 ; s2 n3 @0.4 ; s3 n3 @0.5
+  barA s0 n6 @4.0 ; s3 n8 @9.0 ; s3 n8 @8.7 ; s3 n5 @7.13 ; s2 n2 @9.8
+  bar9 s1 n4 @5.5
+  bar5 s6 n1 @0.10 ; s6 n1 @0.13 ; s6 n1 @4.10
+  barC s13 n3 @0.7 ; s10 n2 @3.6 ; s0 n3 @4.6 ; s4 n4 @2.13 ; s13 n1 @3.13 ; s11 n2 @4.12 ; s12 n2 @0.16 ; s14 n4 @3.16
+  walls style3 @0.9 @0.6
+  walls style3 @3.15 @8.1
+  end x7
+  zones default
+  enemy $3A @5.14
+  enemy $3A @6.8
+  enemy $3A @7.2
+  enemy $96 @0.8
+  enemy $08 @5.1
+
+room 101 ; $C936, 46 bytes
+  groups 2 5 1
+  place 0 n1 style9 @6.13
+  place 0 n3 style9 @5.14
+  place 1 n7 style11 @1.1
+  place 1 n3 style1 @2.0
+  place 1 n2 style0 @4.2
+  place 1 n3 style1 @5.3
+  place 1 n5 style11 @7.5
+  place 2 n5 style7 @1.13
+  bar9 s1 n3 @2.14
+  barA s8 n2 @4.6 ; s8 n2 @4.10
+  barC s7 n2 @5.5 ; s8 n4 @6.6
+  walls style2 @4.10 @5.5
+  walls style3 @3.5
+  walls style2 @2.5
+  end x2
+  zones default
+  enemy $2E @4.5
+  enemy $2E @5.9
+  enemy $18 @3.2
+
+room 102 ; $C964, 71 bytes
+  groups 5 5 0
+  place 0 n5 style7 @1.0
+  place 0 n8 style0 @1.8
+  place 0 n3 style9 @7.1
+  place 0 n2 style0 @8.6
+  place 0 n4 style9 @10.12
+  place 1 n5 style6 @4.11
+  place 1 n3 style0 @6.11
+  place 1 n3 style6 @7.15
+  place 1 n2 style1 @5.0
+  place 1 n3 style6 @9.8
+  barA s0 n1 @5.11
+  bar9 s1 n6 @2.8 ; s1 n2 @5.6 ; s1 n2 @8.17 ; s1 n3 @7.14 ; s15 n2 @8.16
+  strings $6A @8.11=$5B
+  walls style2 @4.2 @7.13
+  walls style1 @8.16
+  walls style3 @3.1
+  walls style2 @2.1
+  decor set2 n4 @4.7 ; set2 n6 @5.5 ; set2 n6 @6.5
+  end x1
+  zones default
+  pickup t3 n17 @4.0
+  pickup t2 n25 @5.10
+  pickup t2 n21 @9.14
+  enemy $2E @4.1
+  enemy $38 @2.11
+  enemy $38 @5.3
+  enemy $38 @7.11
+
+room 103 ; $C9AB, 92 bytes
+  groups 2 5 2
+  place 0 n2 style1 @6.1
+  place 0 n1 style4 @4.17
+  place 1 n11 style2 @0.18
+  place 1 n5 style0 @1.0
+  place 1 n2 style1 @0.11
+  place 1 n2 style1 @4.0
+  place 1 n7 style11 @4.5
+  place 2 n4 style6 @10.0
+  place 2 n4 style6 @10.7
+  bar9 s3 n4 @0.16 ; s6 n4 @7.16 ; s3 n5 @2.3 ; s1 n3 @7.3 ; s1 n3 @7.6 ; s15 n3 @7.6
+  barA s4 n3 @4.2 ; s8 n2 @7.10 ; s0 n4 @1.8 ; s0 n1 @1.18
+  barC s1 n10 @5.8 ; s4 n3 @9.8 ; s3 n1 @9.11 ; s3 n2 @9.12
+  bar6 s7 n4 @6.9 ; s7 n4 @6.12 ; s7 n3 @6.15
+  walls style1 @7.2
+  walls style3 @3.6 @10.14
+  walls style2 @0.13 @5.6
+  walls style2 @9.14
+  decor set2 n6 @7.2 ; set2 n3 @9.15
+  end x5
+  zone @0.0-4.19
+  zone @5.0-10.19 last
+  pickup t3 n8 @6.7
+  enemy $38 @2.5
+  enemy $38 @2.11
+  enemy $38 @5.7
+  enemy $3A @8.4
+  enemy $30 @8.15
+
+room 104 ; $CA07, 79 bytes
+  groups 5 2 0
+  place 0 n1 style3 @1.8
+  place 0 n1 style3 @5.11
+  place 0 n1 style3 @4.5
+  place 0 n1 style9 @8.4
+  place 0 n1 style9 @5.17
+  place 1 n3 style0 @1.13
+  place 1 n2 style0 @1.4
+  bar6 s2 n2 @2.4 ; s2 n3 @5.4 ; s3 n6 @2.5
+  barA s0 n13 @1.7 ; s0 n10 @5.10 ; s3 n8 @4.10 ; s3 n2 @4.18 ; s3 n7 @9.5 ; s1 n2 @10.10 ; s3 n2 @10.18 ; s4 n6 @10.12 ; s4 n4 @5.6
+  bar9 s6 n6 @3.8 ; s6 n3 @8.15 ; s15 n3 @6.11
+  walls style2 @2.7
+  walls style3 @6.13
+  end x5
+  zone @5.4-10.19
+  zone @1.18-4.19 @2.17-3.17
+  zone @1.4-4.17 last
+  pickup t1 n25 @2.16
+  pickup t1 n10 @3.16
+  enemy $38 @2.13
+  enemy $3A @2.18
+  enemy $38 @7.9
+  enemy $38 @8.18
+  enemy $99 @6.14
+
+room 105 ; $CA56, 103 bytes
+  groups 3 2 0
+  place 0 n2 style9 @1.9
+  place 0 n3 style4 @1.16
+  place 0 n2 style0 @5.17
+  place 1 n3 style0 @1.1
+  place 1 n3 style0 @5.6
+  barA s0 n9 @1.0 ; s0 n7 @1.13 ; s3 n9 @4.0 ; s3 n11 @4.9 ; s0 n6 @5.0 ; s0 n6 @5.11 ; s3 n14 @10.0 ; s3 n6 @9.14 ; s2 n2 @10.14
+  bar9 s1 n1 @9.7 ; s1 n1 @9.12 ; s15 n3 @6.14 ; s13 n3 @6.14
+  strings $6B @3.3=$5B @3.11=$5B @8.6=$7B @8.10=$7B @8.15=$71 @8.17=$6B
+  strings $69 @7.2=$63
+  walls style3 @6.1
+  walls style5 @6.14
+  walls style2 @2.1
+  decor set2 n8 @9.6
+  end x1
+  zone @1.9-4.19 @2.8-3.8
+  zone @1.0-4.8
+  zone @5.0-10.19 last
+  pickup t1 n0 @2.7
+  pickup t1 n22 @3.7
+  enemy $3A @2.4
+  enemy $3A @2.17
+  enemy $3A @7.18
+  enemy $3A @8.7
+  enemy $3F @6.3
+  enemy $3F @6.11
+  enemy $99 @6.1
+  enemy $99 @6.9
+  enemy $99 @6.12
+  enemy $9A @6.10
+  enemy $10 @6.15
+
+room 106 ; $CABD, 89 bytes
+  groups 4 1 0
+  place 0 n1 style9 @4.11
+  place 0 n1 style9 @5.2
+  place 0 n3 style0 @5.5
+  place 0 n1 style9 @5.16
+  place 1 n4 style12 @1.6
+  barA s0 n6 @1.0 ; s0 n7 @1.13 ; s3 n11 @4.0 ; s3 n7 @4.13 ; s0 n5 @5.0 ; s0 n11 @5.9 ; s3 n6 @8.5 ; s3 n6 @8.14 ; s3 n5 @9.0 ; s2 n2 @9.5 ; s5 n1 @8.11 ; s0 n2 @8.12 ; s11 n2 @9.7 ; s11 n2 @9.13
+  strings $6B @8.0=$71 @8.2=$6B
+  bar6 s4 n2 @6.5 ; s4 n2 @6.11 ; s4 n2 @6.17
+  walls style5 @6.1
+  walls style2 @2.1
+  end x3
+  zone @5.0-9.19
+  zone @1.13-4.19 @2.12-3.12
+  zone @1.0-4.12 last
+  pickup t1 n0 @2.11
+  pickup t1 n27 @3.11
+  enemy $38 @2.13
+  enemy $38 @2.15
+  enemy $38 @2.17
+  enemy $38 @6.10
+  enemy $3A @6.17
+  enemy $04 @3.7
+  enemy $9A @6.3
+  enemy $99 @6.18
+
+room 107 ; $CB16, 102 bytes
+  groups 4 1 0
+  place 0 n2 style0 @5.14
+  place 0 n1 style9 @7.18
+  place 0 n1 style9 @5.4
+  place 0 n1 style4 @5.9
+  place 1 n3 style2 @0.10
+  barA s1 n10 @0.0 ; s0 n2 @1.0 ; s2 n2 @1.10 ; s3 n6 @3.5 ; s3 n5 @4.0 ; s2 n2 @4.5 ; s0 n14 @5.0 ; s0 n1 @7.17 ; s3 n6 @8.0 ; s5 n1 @8.6 ; s3 n6 @8.7 ; s5 n1 @8.6 ; s1 n2 @9.11 ; s3 n2 @9.13 ; s1 n2 @10.13
+  barA s3 n2 @10.15 ; s5 n1 @10.17 ; s3 n2 @10.18 ; s11 n2 @9.3 ; s11 n2 @9.6 ; s11 n2 @9.8 ; s9 n2 @9.18 ; s2 n2 @5.17 ; s2 n2 @6.17
+  bar9 s0 n2 @8.17
+  bar6 s4 n2 @6.0 ; s4 n2 @6.6 ; s4 n2 @6.12
+  walls style5 @6.16
+  walls style2 @1.2
+  end x9
+  zone @7.18-10.19
+  zone @5.0-10.18
+  zone @0.0-4.11 last
+  pickup t1 n27 @3.4
+  enemy $3A @1.9
+  enemy $38 @6.2
+  enemy $38 @6.8
+  enemy $38 @6.12
+  enemy $38 @8.19
+  enemy $18 @2.8
+  enemy $9A @6.15
+
+room 108 ; $CB7C, 103 bytes
+  groups 6 0 0
+  place 0 n1 style9 @7.0
+  place 0 n1 style4 @7.5
+  place 0 n1 style9 @1.13
+  place 0 n1 style9 @2.11
+  place 0 n1 style9 @1.18
+  place 0 n1 style9 @3.18
+  bar6 s0 n5 @0.18 ; s1 n5 @0.19
+  barA s3 n6 @10.0 ; s3 n3 @10.6 ; s3 n3 @9.8 ; s3 n3 @8.10 ; s3 n2 @7.13 ; s5 n1 @7.12 ; s3 n3 @6.14 ; s3 n3 @5.16 ; s0 n3 @7.2 ; s1 n3 @6.4 ; s1 n4 @5.5 ; s1 n4 @4.7 ; s1 n4 @3.9 ; s0 n2 @2.13 ; s1 n2 @0.13
+  barA s11 n2 @9.11 ; s11 n2 @8.13 ; s11 n2 @7.15 ; s10 n6 @9.0
+  bar9 s0 n2 @8.5 ; s0 n3 @4.12 ; s3 n5 @0.16 ; s13 n3 @6.8 ; s13 n3 @5.10 ; s13 n3 @3.14 ; s15 n2 @8.5
+  walls style5 @8.1
+  walls style2 @0.15 @6.7
+  end x5
+  zone @7.0-10.5
+  zone @3.4-10.12
+  zone @0.11-8.19 last
+  pickup t2 n7 @9.5
+  pickup t3 n30 @7.11
+  pickup t2 n7 @4.16
+  enemy $38 @3.17
+  enemy $38 @4.15
+  enemy $38 @6.11
+  enemy $38 @8.4
+
+room 109 ; $CBE3, 43 bytes
+  groups 5 0 0
+  place 0 n1 style9 @2.3
+  place 0 n1 style9 @9.4
+  place 0 n1 style9 @9.10
+  place 0 n1 style9 @5.10
+  place 0 n1 style9 @2.10
+  barA s1 n2 @0.4 ; s1 n3 @1.3 ; s1 n2 @10.4
+  bar6 s2 n6 @3.3 ; s3 n6 @3.4 ; s0 n11 @0.10 ; s1 n11 @0.11
+  bar9 s3 n11 @0.8
+  barC s7 n2 @3.5 ; s13 n7 @4.6
+  walls style3 @0.6
+  walls style2 @3.7 @4.5
+  end x5
+  zones default
+
+room 110 ; $CC0E, 92 bytes
+  groups 6 2 0
+  place 0 n6 style2 @0.18
+  place 0 n3 style1 @0.13
+  place 0 n5 style12 @2.3
+  place 0 n1 style9 @2.11
+  place 0 n2 style9 @5.11
+  place 0 n8 style15 @6.12
+  place 1 n7 style1 @2.1
+  place 1 n4 style0 @10.14
+  bar9 s3 n5 @0.16 ; s3 n6 @3.4 ; s1 n3 @7.17 ; s1 n2 @3.13 ; s15 n1 @5.2
+  barA s4 n9 @5.2 ; s4 n10 @9.2 ; s15 n6 @9.3
+  barC s1 n2 @7.9 ; s15 n2 @6.11
+  bar6 s7 n6 @3.10
+  walls style2 @3.3 @5.15
+  walls style3 @0.14
+  decor set2 n2 @5.16 ; set2 n2 @6.15 ; set2 n3 @7.16 ; set2 n5 @8.15 ; set2 n3 @9.16
+  end x14
+  zone @2.1-5.10 @3.11-4.11
+  zone @6.1-9.12 @6.13 @8.13
+  zone @0.11-10.19 last
+  pickup t0 n0 @3.12
+  pickup t0 n0 @4.12
+  enemy $3A @3.3
+  enemy $99 @6.7
+  enemy $99 @9.15
+  enemy $17 @8.8
+  enemy $17 @8.17
+  enemy $0D @9.17
+  enemy $32 @9.3
+
+room 111 ; $CC6A, 82 bytes
+  groups 6 4 0
+  place 0 n1 style4 @10.0
+  place 0 n3 style0 @10.1
+  place 0 n5 style0 @9.4
+  place 0 n2 style9 @3.11
+  place 0 n1 style4 @2.14
+  place 0 n1 style4 @5.10
+  place 1 n6 style12 @8.10
+  place 1 n4 style0 @5.0
+  place 1 n4 style12 @4.5
+  place 1 n4 style12 @1.13
+  strings $6B @7.18=$5B @7.13=$5B
+  bar9 s1 n2 @8.0 ; s15 n4 @6.2 ; s15 n4 @4.13
+  barC s1 n4 @5.14 ; s15 n4 @2.18
+  bar6 s7 n6 @2.16 ; s7 n1 @4.14
+  walls style2 @6.1
+  walls style5 @5.6 @9.2
+  walls style5 @4.12
+  walls style2 @3.13 @2.15
+  walls style2 @2.19
+  decor set2 n2 @8.0
+  end x1
+  zone @4.0-10.10 @4.11 @8.11
+  zone @1.1-8.19 last
+  pickup t0 n0 @6.10
+  pickup t0 n0 @7.10
+  pickup t0 n30 @8.9
+  enemy $3A @6.14
+  enemy $3A @7.6
+  enemy $3A @8.1
+  enemy $83 @2.19
+
+room 112 ; $CCBC, 109 bytes
+  groups 7 2 1
+  place 0 n4 style7 @8.0
+  place 0 n4 style9 @8.6
+  place 0 n4 style0 @7.14
+  place 0 n1 style9 @6.18
+  place 0 n1 style9 @3.18
+  place 0 n2 style0 @1.17
+  place 0 n5 style0 @0.2
+  place 1 n2 style0 @7.11
+  place 1 n2 style0 @1.0
+  place 2 n6 style12 @0.9
+  barA s2 n2 @2.18 ; s3 n6 @10.14 ; s0 n2 @9.13 ; s0 n1 @8.14
+  strings $6B @3.4=$5B @3.8=$5B
+  bar9 s1 n2 @2.1 ; s1 n3 @1.5 ; s1 n3 @1.9 ; s1 n3 @5.5 ; s1 n3 @5.9 ; s1 n1 @7.3 ; s0 n2 @4.19 ; s15 n6 @2.2 ; s15 n7 @1.7 ; s15 n7 @1.8 ; s15 n7 @1.10 ; s15 n6 @1.11 ; s15 n6 @1.13
+  walls style5 @2.1
+  walls style2 @1.3
+  walls style5 @1.7
+  walls style2 @1.8
+  walls style5 @1.10
+  walls style2 @1.11
+  walls style5 @1.13 @8.15
+  decor set2 n5 @4.1 ; set2 n3 @4.8 ; set2 n7 @5.4 ; set2 n4 @6.3 ; set2 n4 @6.8 ; set2 n5 @7.2
+  end x7
+  zone @8.14-10.19 @9.13
+  zone @0.0-8.19 last
+  pickup t3 n30 @9.17
+  enemy $2A @4.18
+  enemy $28 @2.13
+  enemy $99 @8.15
+  enemy $99 @8.19
+
+room 113 ; $CD29, 111 bytes
+  groups 3 1 0
+  place 0 n2 style2 @6.0
+  place 0 n1 style9 @1.18
+  place 0 n1 style9 @5.18
+  place 1 n3 style7 @3.0
+  bar6 s0 n3 @0.18 ; s1 n3 @0.19 ; s0 n3 @7.17 ; s1 n3 @7.18
+  barA s3 n13 @6.1 ; s5 n2 @10.0 ; s3 n16 @10.2 ; s0 n2 @6.17 ; s1 n10 @1.2 ; s4 n3 @6.14 ; s4 n5 @3.14 ; s2 n2 @4.18 ; s1 n2 @0.10 ; s1 n2 @2.2
+  bar9 s3 n10 @0.15 ; s15 n1 @3.18 ; s15 n2 @4.2 ; s15 n2 @8.2 ; s15 n8 @2.5 ; s15 n8 @2.8 ; s15 n8 @2.12
+  strings $6B @5.6=$5B @5.12=$5B
+  walls style5 @4.1 @8.1
+  walls style1 @2.4 @7.2
+  walls style5 @2.5 @7.5
+  walls style1 @2.8 @7.8
+  walls style5 @0.15
+  end x4
+  zone @0.0-6.19
+  zone @7.1-10.18 @7.0
+  zone @8.0-10.0 last
+  pickup t1 n0 @8.1
+  pickup t1 n0 @9.1
+  enemy $3A @1.17
+  enemy $3A @4.8
+  enemy $3A @4.16
+  enemy $38 @8.4
+  enemy $99 @0.12
+  enemy $99 @7.3
+  enemy $95 @7.14
+  enemy $36 @9.2
+  enemy $36 @9.5
+  enemy $36 @9.8
+  enemy $36 @9.11
+
+room 114 ; $CD98, 64 bytes
+  groups 0 0 0
+  bar6 s2 n4 @0.4 ; s3 n4 @0.5 ; s4 n3 @2.12 ; s4 n2 @2.18
+  barA s3 n5 @4.5 ; s3 n4 @5.8 ; s5 n1 @5.12 ; s3 n5 @5.13 ; s5 n1 @5.18 ; s3 n1 @5.19 ; s3 n2 @4.18 ; s2 n2 @0.10 ; s0 n10 @1.10 ; s11 n2 @6.12
+  bar9 s3 n4 @0.8 ; s15 n3 @2.12
+  bar5 s10 n3 @2.14
+  barC s13 n4 @0.6
+  walls style2 @0.7 @4.10
+  walls style4 @2.13
+  end x5
+  zones default
+  pickup t3 n25 @4.11
+  pickup t3 n1 @4.15
+  enemy $2C @3.9
+  enemy $2C @3.19
+  enemy $2C @4.12
+  enemy $2C @4.17
+  enemy $0A @0.7
+
+room 115 ; $CDD8, 60 bytes
+  groups 0 0 0
+  barA s0 n10 @1.10 ; s0 n11 @1.0 ; s3 n3 @4.0 ; s0 n3 @5.0 ; s5 n1 @5.3 ; s3 n5 @5.4 ; s5 n1 @5.9 ; s3 n5 @5.10 ; s5 n1 @5.15 ; s3 n3 @5.16 ; s5 n1 @5.19 ; s11 n2 @6.3 ; s11 n2 @6.9 ; s11 n2 @6.15
+  bar9 s11 n2 @2.9 ; s11 n2 @2.15
+  bar5 s7 n11 @4.9 ; s10 n3 @2.11
+  bar6 s4 n2 @2.2
+  walls style4 @2.3
+  end x5
+  zones default
+  pickup t2 n26 @4.12
+  enemy $2C @3.2
+  enemy $30 @4.9
+  enemy $2C @4.13
+  enemy $2C @4.15
+  enemy $2C @4.18
+
+room 116 ; $CE14, 78 bytes
+  groups 0 0 0
+  barA s2 n10 @1.10 ; s0 n11 @1.0 ; s3 n3 @5.0 ; s1 n2 @6.0 ; s3 n3 @6.2 ; s1 n2 @7.2 ; s3 n3 @7.4 ; s5 n1 @7.7 ; s4 n7 @7.8 ; s5 n1 @7.15 ; s1 n3 @8.14 ; s3 n3 @8.17 ; s2 n2 @2.18 ; s0 n2 @3.18
+  bar9 s11 n2 @2.1 ; s11 n2 @2.5 ; s11 n2 @2.17
+  bar6 s4 n5 @2.7 ; s4 n5 @2.15
+  piece k1 n1 @4.7 ; k1 n1 @4.15
+  bar5 s9 n2 @4.0
+  walls style4 @2.16
+  decor set1 n2 @4.5 ; set1 n7 @4.8 ; set1 n2 @4.16
+  end x5
+  zones default
+  pickup t3 n1 @3.10
+  pickup t3 n20 @3.16
+  pickup t3 n1 @7.17
+  enemy $2C @3.8
+  enemy $2C @3.11
+  enemy $2C @3.14
+  enemy $30 @6.13
+  enemy $33 @7.14
+
+room 117 ; $CE62, 77 bytes
+  groups 0 0 0
+  barA s2 n11 @3.0 ; s0 n11 @4.9 ; s3 n8 @8.0 ; s1 n2 @9.4 ; s3 n3 @9.6 ; s5 n1 @9.9 ; s3 n5 @9.10 ; s11 n2 @10.11 ; s3 n5 @10.13 ; s5 n1 @10.18 ; s3 n1 @10.19 ; s10 n3 @5.3 ; s10 n3 @6.3 ; s10 n3 @7.3
+  bar9 s11 n3 @4.8
+  bar6 s4 n4 @5.9 ; s4 n5 @5.18
+  piece k1 n1 @7.9 ; k1 n1 @7.18
+  bar5 s10 n3 @5.13
+  walls style4 @4.8 @9.15
+  decor set1 n1 @7.8 ; set1 n8 @7.10 ; set1 n1 @7.19
+  end x5
+  zones default
+  enemy $2C @6.12
+  enemy $2C @6.16
+  enemy $2C @6.19
+  enemy $2C @7.7
+  enemy $2C @8.12
+  enemy $2C @9.18
+  enemy $99 @4.6
+  enemy $99 @5.15
+  enemy $30 @7.6
+
+room 118 ; $CEAF, 57 bytes
+  groups 0 0 0
+  bar6 s0 n6 @4.13 ; s1 n6 @4.14 ; s4 n5 @5.5 ; s8 n8 @3.8
+  barA s0 n6 @4.0 ; s1 n5 @3.4 ; s2 n7 @3.8 ; s3 n7 @10.0 ; s3 n3 @10.11 ; s3 n2 @7.10
+  bar9 s11 n3 @4.10 ; s11 n3 @4.11 ; s11 n2 @8.11
+  piece k1 n1 @7.5
+  bar5 s10 n3 @5.1
+  walls style4 @3.7 @6.12
+  decor set1 n5 @7.0 ; set1 n1 @7.6
+  end x5
+  zones default
+  pickup t3 n30 @9.4
+  enemy $30 @6.10
+  enemy $3F @4.8
+  enemy $3F @4.9
+  enemy $9A @4.12
+
+room 119 ; $CEE8, 54 bytes
+  groups 0 0 0
+  bar6 s2 n5 @0.5 ; s3 n5 @0.6 ; s2 n4 @7.5 ; s3 n4 @7.6 ; s0 n11 @0.13 ; s1 n2 @0.14 ; s1 n6 @3.14 ; s1 n1 @10.14 ; s4 n4 @3.10 ; s5 n3 @8.9 ; s8 n5 @0.8
+  barA s3 n3 @5.6 ; s1 n4 @6.5 ; s3 n4 @7.7 ; s3 n4 @2.10 ; s5 n2 @9.12
+  bar9 s11 n2 @0.12 ; s11 n6 @3.12
+  walls style4 @0.7 @5.11
+  end x4
+  zones default
+  enemy $34 @3.9
+  enemy $34 @6.12
+  enemy $34 @7.11
+  enemy $84 @3.12
+
+room 120 ; $CF1E, 47 bytes
+  groups 0 0 0
+  bar6 s2 n3 @0.5 ; s3 n3 @0.6 ; s2 n6 @5.5 ; s3 n6 @5.6 ; s0 n11 @0.13 ; s1 n8 @0.14 ; s1 n2 @9.14 ; s6 n3 @0.9 ; s5 n2 @9.11
+  barA s3 n6 @3.6 ; s1 n5 @4.5 ; s3 n6 @8.8
+  bar9 s11 n2 @5.8
+  bar5 s10 n2 @9.9 ; s7 n5 @7.8
+  walls style4 @0.12 @8.7
+  end x14
+  zones default
+  enemy $34 @3.12
+  enemy $34 @8.7
+  enemy $18 @5.9
+
+room 121 ; $CF4D, 59 bytes
+  groups 0 0 0
+  bar6 s2 n2 @0.5 ; s3 n2 @0.6 ; s2 n7 @4.5 ; s3 n7 @4.6 ; s0 n5 @0.13 ; s1 n5 @0.14 ; s6 n2 @0.11 ; s5 n1 @10.8
+  barA s3 n6 @2.6 ; s1 n3 @3.5 ; s3 n5 @5.9 ; s2 n4 @6.11 ; s2 n3 @7.12 ; s2 n3 @8.12 ; s3 n6 @9.8 ; s2 n2 @10.13
+  bar9 s11 n2 @3.10 ; s11 n2 @3.11 ; s11 n2 @6.10
+  bar5 s7 n3 @8.8
+  walls style4 @0.12 @5.7
+  end x1
+  zones default
+  pickup t1 n30 @7.11
+  pickup t1 n1 @8.11
+  enemy $34 @7.7
+  enemy $3F @3.9
+
+room 122 123 ; $CF88, 41 bytes
+  groups 0 0 0
+  surface x2
+  barA s3 n1 @0.19 ; s3 n1 @4.19 ; s0 n1 @5.19 ; s3 n2 @6.18 ; s3 n2 @7.17 ; s0 n1 @7.19 ; s3 n2 @8.16 ; s0 n2 @8.18 ; s3 n2 @9.14 ; s0 n1 @9.16 ; s0 n2 @9.17 ; s0 n1 @9.19 ; s3 n1 @10.14 ; s0 n3 @10.15 ; s0 n2 @10.18
+  bar9 s0 n3 @1.19
+  end x5
+  zones default
+  enemy $25 @1.2
+
+room 124 ; $CFB1, 122 bytes
+  groups 2 0 0
+  place 0 n4 style0 @3.9
+  place 0 n1 style9 @4.8
+  barA s3 n10 @0.0 ; s2 n3 @1.8 ; s2 n3 @2.8 ; s0 n12 @3.8 ; s3 n3 @4.0 ; s4 n5 @4.3 ; s0 n2 @5.0 ; s3 n2 @5.2 ; s0 n2 @6.0 ; s0 n1 @6.2 ; s3 n2 @6.3 ; s0 n1 @7.0 ; s0 n3 @7.1 ; s3 n2 @7.4 ; s0 n2 @8.0
+  barA s0 n4 @8.2 ; s3 n2 @8.6 ; s0 n5 @9.0 ; s0 n2 @9.5 ; s3 n2 @9.7 ; s5 n1 @9.9 ; s0 n2 @10.0 ; s0 n1 @10.2 ; s0 n6 @10.3 ; s0 n1 @10.9 ; s4 n7 @10.10 ; s2 n3 @10.17 ; s2 n3 @9.17 ; s3 n2 @8.17 ; s5 n1 @8.19
+  bar9 s11 n2 @1.1 ; s11 n2 @1.7 ; s11 n3 @5.7 ; s11 n3 @4.17 ; s0 n4 @5.9
+  bar5 s7 n3 @3.1 ; s7 n3 @3.5 ; s8 n3 @7.17 ; s10 n3 @4.12
+  walls style3 @9.10
+  walls style4 @1.7 @4.10
+  walls style4 @8.8
+  end x5
+  zone @3.9-10.19 @4.8
+  zone @4.0-10.8
+  zone @0.0-3.10 last
+  enemy $32 @10.10
+  enemy $33 @10.16
+  enemy $20 @4.10
+  enemy $21 @4.11
+  enemy $20 @4.13
+  enemy $22 @4.14
+  enemy $20 @4.16
+  enemy $18 @1.6
+
+room 125 ; $D02B, 60 bytes
+  groups 0 0 0
+  barA s0 n10 @3.10 ; s0 n11 @3.0 ; s5 n4 @8.0 ; s3 n2 @8.4 ; s1 n2 @9.3 ; s3 n2 @9.5 ; s5 n1 @9.7 ; s3 n2 @9.8 ; s4 n7 @9.10 ; s3 n2 @9.17 ; s5 n1 @9.19 ; s11 n2 @10.4
+  bar9 s11 n3 @4.5
+  bar5 s9 n6 @7.0
+  strings $69 @6.11=$63 @6.15=$63
+  walls style3 @8.6
+  walls style4 @4.6
+  end x5
+  zones default
+  pickup t2 n4 @8.13
+  enemy $2C @7.1
+  enemy $2C @7.4
+  enemy $2C @8.7
+  enemy $2C @8.9
+  enemy $3F @4.13
+  enemy $32 @9.10
+  enemy $33 @9.16
+
+room 126 ; $D067, 62 bytes
+  groups 0 0 0
+  barA s0 n10 @3.10 ; s0 n11 @3.0 ; s3 n6 @8.14 ; s3 n2 @9.14 ; s2 n2 @9.16 ; s4 n7 @9.0 ; s4 n7 @9.7 ; s15 n13 @9.1
+  bar6 s4 n4 @4.14
+  strings $6B @4.11=$5F
+  piece k1 n1 @6.14
+  bar5 s10 n3 @4.2 ; s10 n3 @4.7 ; s10 n3 @4.16
+  walls style3 @8.1
+  walls style4 @4.1
+  decor set1 n1 @6.13 ; set1 n5 @6.15
+  end x5
+  zones default
+  pickup t3 n30 @5.15
+  enemy $2C @5.13
+  enemy $2C @5.17
+  enemy $2C @7.15
+  enemy $2C @8.1
+  enemy $9A @4.4
+  enemy $32 @9.7
+  enemy $33 @9.6
+
+room 127 ; $D0A5, 84 bytes
+  groups 0 0 0
+  bar6 s2 n2 @0.5 ; s3 n2 @0.6 ; s0 n4 @0.13 ; s1 n4 @0.14 ; s6 n2 @0.8 ; s4 n3 @3.8 ; s4 n4 @4.0
+  barA s3 n3 @2.6 ; s0 n7 @3.0 ; s3 n3 @4.11 ; s3 n3 @5.10 ; s2 n2 @5.13 ; s3 n5 @6.7 ; s2 n3 @6.12 ; s5 n1 @7.4 ; s3 n5 @7.5 ; s2 n3 @7.10 ; s3 n1 @8.0 ; s5 n3 @8.1 ; s3 n3 @8.4 ; s2 n3 @8.7 ; s11 n2 @8.10
+  barA s11 n2 @9.1 ; s11 n2 @9.6 ; s7 n4 @2.9
+  bar9 s11 n4 @4.3 ; s11 n2 @4.4 ; s11 n2 @4.6
+  bar5 s7 n3 @6.4
+  piece k1 n1 @6.0
+  walls style4 @0.9 @6.1
+  decor set1 n1 @6.1
+  end x5
+  zones default
+  enemy $2C @3.12
+  enemy $34 @2.9
+  enemy $2C @5.0
+  enemy $99 @3.7

@@ -1,0 +1,10 @@
+# WeaponRecords $6C51-$6C81: the thrown weapons' records (kinds $40-$46, KindTemplates $7200),
+# 7 bytes, patched into WeaponTemplate $64EE by HiroAttack $926E.
+_at,state_lo,state_hi,b2,b3,b4,b5,b6,_note
+$6C51,$EF,$5E,$FC,$02,$40,$03,$08,run time $5EF9: kind $41
+$6C58,$F3,$5E,$FE,$01,$50,$00,$07,run time $5F82: kind $44
+$6C5F,$EB,$5E,$FC,$01,$48,$03,$08,run time $5F89: kind $40
+$6C66,$DE,$5E,$FE,$01,$50,$03,$07,run time $5F90: kind $45
+$6C6D,$E3,$5E,$FA,$01,$2F,$03,$09,run time $5F97: kind $46
+$6C74,$ED,$5E,$FE,$01,$50,$01,$07,run time $5F9E: kind $42
+$6C7B,$E7,$5E,$FE,$01,$50,$03,$07,run time $5FA5: kind $43

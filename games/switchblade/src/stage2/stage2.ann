@@ -1,0 +1,79 @@
+# The annotations of stage2 (kit/mkgame.py --part src/stage2/stage2.json). Format: ../../../../docs/ann-format.md.
+#
+# TZX block 3, the loader's second stage: 2060 bytes ($080C) loaded to $609C-$68A7 by LoaderStart ($FFEE, src/tape)
+# and run from $609C. Witness: c1 (128K) and c48 (48K), both from power-on with the original TZX. "Witness: L1 0 (c1)"
+# lines are placeholders the lead's --fix-witness fills.
+
+@equ $4000 Bootstrap ; block 5's load address: the bootstrap (src/boot) starts there, the rest of the screen holds the game's resident bytes
+@equ $4052 BootIs128K ; the operand of the bootstrap's LD A,$01 at $4051: 1 on a 128K, 0 on a 48K
+@equ $4800 ScreenMiddle 2048 ; the middle third of the screen
+@equ $5800 Attributes 768 ; the screen attributes
+@equ $5FA9 ToolStep ; a routine of the tape tool TapeWriter belongs to (not in this block; A = 1)
+@equ $6B5C Block4 ; block 4's load address (the game, src/game)
+@equ $8000 Block6Buffer ; block 6 is loaded here and swapped into bank 4 at $C000
+@equ $C000 BankWindow ; the paged bank's address
+@equ $FE00 ToolInit ; the tape tool's set-up (not in this block)
+@equ $FE4D ToolRead ; the tape tool's block routine of the first pass: IX = the address, DE = the length
+@equ $FECC ToolSaveBlock ; the tape tool's save with flag $FF (two bytes before ToolSaBytes, like LoadBlock / LdBytes)
+@equ $FECE ToolSaBytes ; the tape tool's save: A = the flag, IX = the address, DE = the length
+@equ $FF00 LoadBlock ; the tape loader's block load, flag $FF (src/tape)
+@equ $68A8 HeaderTemplate 17 ; a tape header (type, name, length, two parameters) just past this block
+@equ $68B9 HeaderData ; the data saved after HeaderTemplate (its parameter 2 bytes)
+
+@module stage2 ; The loader's second stage: the title scroll, the load of blocks 4-6, the 128K test
+@about Stage 2 shows the SWITCHBLADE logo and scrolls "COPYRIGHT GREMLIN GRAPHICS 1991 ... LOADING" (Stage2Title), then loads block 4 (the game, $92A1 bytes to $6B5C-$FDFC) and block 5 ($1191 bytes to $4000: the bootstrap, the AY glue and the resident code, into the screen) with the tape loader's LoadBlock, tests for a 128K (Has128K, which also tells the bootstrap), and on a 128K loads block 6 ($20F9 bytes, the AY player and the 128K intro) through $8000 into bank 4. Then JP $4000, the bootstrap.
+@about Bank 4 cannot be loaded directly: paging it in at $C000 would page out the loader at $FF00. So SwapBank swaps $8000-$A0F8 with bank 4's $C000-$E0F8 before the load and again after it: the game's bytes at $8000 go back, block 6 ends in bank 4.
+@about TapeWriter $60A5 is a leftover of the mastering tool that wrote the tape: never called, it uses routines and a header outside this block.
+$609C c Stage2 ; The second stage: the title scroll, the load of the game, then the bootstrap
+> From LoaderStart `$FFEE` (`JP $609C`). Stage2Title `$61B2`, LoadGame `$612F`, `JP $4000` (the bootstrap, block 5).
+> Witness: L1 2 (c x2).
+$60A5 c TapeWriter ; A leftover of the mastering tool: read the blocks, then save the whole tape (never run)
+> Not called from anywhere in the tape's code. HL, DE (pushed twice) are a block's address and length (stage 2 itself, by the order). First pass: ToolInit `$FE00`, ToolRead `$FE4D` on that block, a wait (Delay `$621F`, E = 6), then ToolRead on block 4 (`$6B5C`, `$92A1`), block 5 (`$4000`, `$1191`) and, between two SwapBank calls (bank 4), block 6 (`$8000`, `$20F9`). Then ToolStep `$5FA9` with A = 1.
+> Second pass, the tape in its order: a header (ToolSaBytes `$FECE`, flag 0, HeaderTemplate `$68A8`, 17 bytes), its data (ToolSaveBlock `$FECC` from `$68B9`, length = the header's parameter 2), the first block (the pushed HL, DE), block 4, block 5, block 6 (swapped through bank 4 again). The same addresses and lengths as LoadGame: this is how the tape was written.
+> What `$FE00`, `$FE4D`, `$5FA9` do is not known (they are not on the tape); the names are guesses from the calls.
+> Witness: L1 0 (). Not run in the keyed recordings.
+$60B2 ; wait about 3 s
+$60DF ; the second pass: the header, its data, then the blocks
+$612F c LoadGame ; Load block 4 to $6B5C, block 5 to $4000 and, on a 128K, block 6 into bank 4
+> 1. LoadBlock `$FF00`: IX = `$6B5C`, DE = `$92A1` (block 4, the game from `$6B5C` to `$FDFC`: just past stage 2, which ends at `$68A7`, and below the tape loader at `$FF00`; the stack is still below `$5D37`).
+> 2. The attributes cleared to 0 (the screen goes black), LoadBlock IX = `$4000`, DE = `$1191` (block 5 into the screen: the bootstrap and glue `$4000-$4145`, the resident code `$4146-$5092`, the panel code `$5093-$5190`).
+> 3. Has128K `$618E`: on a 48K return. On a 128K: SwapBank (A = `$14`), LoadBlock IX = `$8000`, DE = `$20F9` (block 6), SwapBank again.
+> Witness: L1 2 (c x2).
+$6139 ; black attributes: block 5 loads into a hidden screen
+$6150 ; a 128K: block 6 through $8000 into bank 4
+$6169 LoadGameEnd
+$616A c SwapBank ; Page bank A, swap $8000-$A0F8 with $C000-$E0F8, page bank 0 and the 48K ROM ($10)
+> A = the `$7FFD` value (`$14`: bank 4, the 48K BASIC ROM). DI first. SwapBlock `$617B`, then `$10` to `$7FFD`.
+> Witness: L1 2 (c x1). Ran only in c1 (the 128K).
+$617B c SwapBlock ; Swap the $20F9 bytes at $8000 with those at $C000
+> Witness: L1 2 (c x1). Ran only in c1.
+$6184 SwapBlockLoop
+$618E c Has128K ; Is there a 128K's paging? Z on a 48K; the answer also goes to the bootstrap (BootIs128K $4052)
+> Takes the byte at `$C000`, pages bank 4 (`$14`), writes its complement, pages bank 0 (`$10`) and compares: unchanged means bank 4 is another bank (a 128K, E = 1); on a 48K the port does nothing, the byte read back is the complement (E = 0). The byte is put back; E is stored at `$4052`, the operand of the bootstrap's `LD A,$01` (block 5 was just loaded there), and A = E, Z on a 48K.
+> Witness: L1 2 (c x2).
+$61AA Has128KStore
+$61B2 c Stage2Title ; The loading screen: the logo, then "COPYRIGHT GREMLIN GRAPHICS 1991" scrolls out and "LOADING" in
+> Attributes all `$47` (white on black). Logo `$622B` at `$4803` (26 bytes x 48 rows, Blit with A = 6 character rows); Blit's source step (`$620B`) = `$1B`, so a row of ScrollText (59 bytes) shows 32 bytes; ScrollShow, a wait (Delay E = 5, about 2.4 s), then 80 steps: every row of ScrollText is shifted 4 pixels left (RLD from its right end, a 0 nibble in) and shown again. After 320 pixels "LOADING" stands in the window.
+> Witness: L1 2 (c x2).
+$61CD ; the text window: 32 of the 59 bytes a row
+$61DB ; 80 steps of 4 pixels
+$61DD Stage2TitleStep
+$61E3 Stage2TitleRow
+$61E6 Stage2TitleShift
+$61F5 c ScrollShow ; Show 32 bytes of each of the 7 rows of ScrollText at $48E0
+> HL = ScrollText `$670B`, DE = `$48E0`, B = 7 rows, C = 32 bytes, A = 1 character row; falls into Blit.
+> Witness: L1 872 (c x2).
+$6200 c Blit ; Copy A character rows of B pixel rows x C bytes from HL to the screen at DE; HL += the step at $620B a row
+> The inner loop copies one pixel row (LDIR), adds the source step (the operand at `$620B`, 0 for the logo, `$1B` for the scroll) and goes one pixel row down (INC D); after B rows E + 32, the next character row.
+> Witness: L1 806 (c x2).
+$6206 BlitRow
+$620A BlitStep ; the operand: the source bytes skipped after each row (Stage2Title writes $1B)
+$621F c Delay ; Wait E x 65536 loops (about 0.49 s each at 3.5 MHz)
+> Witness: L1 48 (c x2).
+$6222 DelayLoop
+$622B b Logo 26 ; The SWITCHBLADE logo: 48 pixel rows of 26 bytes, drawn by Blit at $4803
+> A graphics resource (1248 bytes, plain rows top to bottom; the attribute is `$47`).
+@res graphics/loader-logo.bin
+$670B b ScrollText 59 ; The scroll's text in pixels: 7 rows of 59 bytes, "COPYRIGHT GREMLIN GRAPHICS 1991", spaces, "LOADING"
+> A graphics resource (413 bytes, to `$68A7`, the last byte of the block). Stage2Title shifts it in place.
+@res graphics/loader-scroll.bin

@@ -1,0 +1,107 @@
+# IntroScript $5E4D-$61E4: the 48K intro (Intro48 $5D4F) in the order it shows them: picture records
+# (glyph numbers 1-$ED of IntroGlyphs, the rows) and text records (PrintString). From $5FC0 on the bytes
+# are under the run-time code of the page tails (SetTune ...): the labels there stay.
+
+# the eyes (IntroGlyphs glyph numbers)
+picture $98 $32
+  CE CF D0 D1 D2 01
+  D3 D4 D5 D6 D7 D8
+  D9 DA DB DC DD DE
+
+# scene 1
+text $60 $02 $07 $47
+  "FOR 10000 YEARS HE SLEPT."
+  "HIS MIND FEEDING..."
+  "ON THE NIGHTMARES OF THE WEAK."
+
+# scene 1, second text
+text $60 $02 $07 $47
+  "                         "
+  "NOW HE HAS AWAKENED"
+  "                              "
+
+# the eyes open, frame 1
+picture $98 $34
+  CF D0 D1
+  DF E0 E1
+
+# frame 2
+picture $98 $34
+  E2 E3 E4
+  E5 E6 E7
+
+# frame 3
+picture $98 $34
+  E8 E9 EA
+  EB EC ED
+
+# the Fireblade
+picture $20 $04
+  01 02 01
+  03 04 05
+  06 07 08
+  09 0A 0B
+  0C 0D 0E
+  0F 10 11
+  01 12 01
+  01 12 01
+  13 14 15
+  16 17 18
+  01 19 01
+  01 1A 01
+
+# scene 2
+text $40 $0E $07 $47
+  "AS THE NIGHT BLED CRIMSON"
+  "THE FIREBLADE SHATTERED"
+  "AND ITS POWER DIED."
+
+# the shattered Fireblade
+picture $20 $04
+  01 02 01
+  03 1B 05
+  06 1C 08
+  09 1D 0B
+  1E 1F 0E
+  20 21 22
+  23 24 25
+  26 27 28
+  29 2A 2B
+  2C 2D 2E
+  01 2F 01
+  01 30 01
+
+# scene 2, second text
+text $40 $0E $07 $47
+  "                         "
+  "THEN THE SLAUGHTER BEGAN."
+  "                   "
+
+# Havok
+picture $08 $10
+  31 32 10 33 34 35 36 37 38 39 3A 3B 3C 3D 3E 3F
+  40 41 42 43 44 45 01 46 47 48 49 4A 4B 4C 10 10
+  4D 4E 4F 01 01 01 01 01 01 50 51 52 10 10 53 54
+  55 56 01 57 58 59 5A 01 01 01 5B 5C 5D 5E 5F 60
+  61 62 63 64 65 66 67 68 69 01 6A 6B 6C 10 10 10
+  6D 6E 6F 70 71 72 73 74 75 76 77 78 79 7A 7B 7C
+  7D 7E 7F 80 81 82 83 84 85 86 87 88 89 8A 8B 8C
+  8D 8E 8F 90 91 92 92 92 92 93 94 95 96 97 98 99
+  10 10 10 9A 9B 9C 92 92 92 9D 01 9E 9F A0 A1 A2
+  A3 A4 A5 A6 A7 A8 A9 92 92 AA AB AC AD AE 01 AF
+  B0 B1 B2 B3 B4 B5 B6 92 B7 B8 B9 BA BB BC 01 01
+  01 01 01 01 01 BD BE BF C0 C1 C2 C3 10 C4 01 C5
+  01 01 01 01 01 01 C6 C7 C8 C9 CA CB CC 01 01 CD
+
+# scene 3
+text $90 $00 $07 $47
+  "           THEY NEVER          "
+  "    THOUGHT HE WOULD RETURN.   "
+  "NOW HAVOK REIGNS THE UNDERCITY."
+
+# scene 4
+text $90 $00 $07 $47
+  "           I AM HIRO,          "
+  " THE LAST OF THE BLADEKNIGHTS. "
+  " I MUST REBUILD THE FIREBLADE, "
+  "     AND BRING THE DAWN...     "

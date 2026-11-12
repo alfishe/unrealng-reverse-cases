@@ -1,0 +1,10 @@
+# ObjectTilePlaces $7BD8: per pickup type, the tile and the plane page (RoomObjects
+# $A41E puts it at the pickup's cell); $7BE4 one zero byte nothing reads.
+_at,tile,page,_note
+$7BD8,$19,$69,type 0
+$7BDA,$1A,$69,type 1
+$7BDC,$8C,$69,type 2
+$7BDE,$8C,$6A,type 3
+$7BE0,$8D,$6A,type 4
+$7BE2,$19,$6A,type 5
+$7BE4,$00,,unread

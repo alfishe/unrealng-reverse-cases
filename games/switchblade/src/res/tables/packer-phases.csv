@@ -1,0 +1,35 @@
+# PackerPhases $FD98: PackRow $8CE5's records: 0-7 the packer entry for a window starting at unit p of a
+# group and the left mask; 8-30 the INC H where the window ends (a RET is planted) and the right mask. The
+# addresses are code (PackUnits0 $8D45 ...): they move if the packer moves.
+n,address,mask
+0,$8D45,$00
+1,$8D4A,$E0
+2,$8D50,$FC
+3,$8D5C,$80
+4,$8D64,$F0
+5,$8D69,$FE
+6,$8D79,$C0
+7,$8D80,$F8
+8,$8D49,$1F
+9,$8D4F,$03
+10,$8D5B,$7F
+11,$8D63,$0F
+12,$8D68,$01
+13,$8D78,$3F
+14,$8D7F,$07
+15,$8D81,$00
+16,$8D88,$1F
+17,$8D8E,$03
+18,$8D9A,$7F
+19,$8DA2,$0F
+20,$8DA7,$01
+21,$8DB7,$3F
+22,$8DBE,$07
+23,$8DC0,$00
+24,$8DC7,$1F
+25,$8DCD,$03
+26,$8DD9,$7F
+27,$8DE1,$0F
+28,$8DE6,$01
+29,$8DF6,$3F
+30,$8DFD,$07

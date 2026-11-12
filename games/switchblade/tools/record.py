@@ -285,7 +285,46 @@ def plan_rooms(r):
         right = not right
 
 
-PLANS = {'c1': plan_c1, 'c48': plan_c48, 'menu': plan_menu, 'gameover': plan_gameover, 'rooms': plan_rooms, 'opt2': plan_opt2, 'opt3': plan_opt3, 'opt4': plan_opt4}
+def plan_play48(r):
+    """play48: the 48K game played from the keyboard (run with --model 48K --start work/stage1/rec/c48/end.szx, c48's
+    title): 4 (Protek or cursor), fire, the intro, then play for about 3000 frames: right through the first rooms,
+    jumps, fire held and let go (punch, kick), up and down, back left and right again until enemies hit; the 48K effect
+    player at `$853F` is the sound"""
+    r.shot('title')
+    r.tap('4', 4, 60)
+    r.shot('title-4')
+    r.tap(F, 5, 200)
+    r.shot('intro-1')
+    for k in range(12):
+        r.wait(150)
+        if r.lab.read(0x845F, 1)[0] == 0 and r.lab.read(0x5D02, 1)[0] & 1:
+            break
+    r.wait(100)
+    r.shot('play-start')
+    walk(r, R, 150, 'right-1')
+    walk(r, UR, 30, 'jump-right')
+    r.wait(30)
+    walk(r, F, 20)
+    walk(r, '', 10, 'punch')
+    walk(r, F, 60)
+    walk(r, '', 20, 'kick')
+    walk(r, R, 250, 'right-2')
+    walk(r, U, 40, 'up')
+    walk(r, D, 40, 'down')
+    for i in range(10):
+        walk(r, R, 80)
+        walk(r, UR, 30)
+        walk(r, F, 25)
+        walk(r, '', 15, f'fight-{i}' if i % 3 == 0 else None)
+    walk(r, L, 300, 'left')
+    for i in range(6):
+        walk(r, L, 60)
+        walk(r, D, 40, f'down-{i}' if i % 2 == 0 else None)
+    r.wait(200)
+    r.shot('end')
+
+
+PLANS = {'play48': plan_play48, 'c1': plan_c1, 'c48': plan_c48, 'menu': plan_menu, 'gameover': plan_gameover, 'rooms': plan_rooms, 'opt2': plan_opt2, 'opt3': plan_opt3, 'opt4': plan_opt4}
 
 
 def main():
