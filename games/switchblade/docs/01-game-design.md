@@ -20,7 +20,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `gameover` | 128K, from c1's menu; lives `$664D` = 0 and energy `$6642` = 1 poked at frame 1869 (a POKE) | GAME OVER (2 429), the high-score table without an entry (6 729) |
 | `deaths` | 128K, from c1's menu | lives lost to enemies and a fall |
 | the RZX run | 48K, RZX Archive, 142 989 frames, "recorded by xmikex and Jamie Angus (with rollback)" | another player's complete game: the rooms in order, the lives, Havok (RZX frame 135 605), the end text (about 140 000), the name entry (142 000). Read in SkoolKit (`work/stage2/rzx/state.tsv`); the screens are from stage 1's playback (`work/stage1/rzx/`) |
-| the POKE probes | 48K, RZX state at 2015, the map row and column poked | the 15 rooms no play reached (`work/stage2/rec/poke-roomNNN/`) |
+| the POKE probes | 48K, RZX state at 2015, the map row and column poked | 15 probes: the 13 rooms no play reached, and 54 and 109 again (`work/stage2/rec/poke-roomNNN/`) |
 | `bossgate`, `havok` | 48K, from the RZX snapshots at 62 000 and 136 000; the boss's hit points POKEd to 1 | a giant killed and its gate opened (435), Havok killed and the game won (29), doc 10.17 |
 | `throw`, `hiscore` | 128K, from stage 1's loaded state; the weapon, or the score and the last life, POKEd at 1869 | weapons thrown (1893-3039); a name entered in the table (2517-3229), doc 10.17 |
 
@@ -52,10 +52,11 @@ flowchart LR
     NE --> T
 ```
 
-![Twelve screens from c1 and the RZX run: the menu, the title, the story, play, Havok, the end, the name entry](img/play/screens.png)
+![Eleven screens from c1 and the RZX run: the menu, the title, the story, play, Havok, the end, the name entry](img/play/screens.png)
 
-*Twelve screens from our 128K recording c1 and from the RZX run (48K, another player's game, stage 1's playback). Each
-caption gives the recording and the frame. Assembled in stage 1 from `work/stage1/c1/screens/` and `work/stage1/rzx/`.*
+*Eleven screens from our 128K recording c1 and from the RZX run (48K, another player's game, stage 1's playback). Each
+caption gives the recording and the frame. Made with `python3 tools/fig_screens.py docs/img/play/screens.png --set
+main` from `work/stage1/c1/screens/` and `work/stage1/rzx/`.*
 
 ![More screens from our recordings: the load, the title, the 128K sound sign, the 48K story, a fight, GAME OVER](img/play/screens-more.png)
 
@@ -85,6 +86,27 @@ How to read them:
 
 The 48K and the 128K show the same screens with two differences: the 48K tells its story once, at the boot, and the
 128K before every game; and only the 128K's title has the music/effects switch (doc 3.3).
+
+![Moments of play: room 5's patroller, a life lost, the pause, the four giants, a giant beaten, a thrown spinblade](img/play/screens-moments.png)
+
+*Nine moments of play, each with its recording and frame; the RZX pictures are the screens of stage 2's RZX snapshots,
+read in SkoolKit. Made with `python3 tools/fig_screens.py docs/img/play/screens-moments.png --set moments`.*
+
+How to read it:
+
+- Top row: the first enemy a game meets (room 5's patroller, right of Hiro); a life just lost (the lives go from 04 to
+  03 between frames 2 869 and 3 149); the pause, which draws nothing: the room simply stops.
+- Middle and bottom rows: the four giants in their rooms, 39, 58, 112 and 93, each a large figure in the room's right
+  or middle part. bossgate 492 is room 58 after the giant's hit points were POKEd to 1 and one strike: the giant and
+  the gate on the right are gone.
+- Bottom right: a thrown spinblade in flight (the `throw` recording, the weapon POKEd).
+
+The moving moments are animated in the later documents: the energy ball after a lost life
+([doc 10.9](10-gameplay-logic.md#109-lives-and-the-energy-ball), `play48-life-lost.gif`), a pickup and a fragment
+taken ([doc 10.10](10-gameplay-logic.md#1010-pickups), [10.11](10-gameplay-logic.md#1011-fragments-and-the-fireblade)),
+the enemies as the player meets them, with their movement, what kills them and their score
+([doc 10.12](10-gameplay-logic.md#1012-the-enemies), [doc 7.13](07-objects.md#713-the-behaviours): a patroller, two
+chasers), and Havok's fade and the end text ([doc 10.14](10-gameplay-logic.md#1014-the-end)).
 
 ### The panel
 
@@ -134,7 +156,7 @@ flowchart TD
     D --> F["16th fragment: the Fireblade, 50 000"]
     F --> H["room 123: Havok"]
     G --> H
-    H --> I["Havok fades: 20 000 for each life left"]
+    H --> I["Havok fades: 50 000 + 20 000 for each life left"]
     I --> J["the end text, fire"]
     J --> K["name entry, the title"]
 ```
@@ -158,7 +180,7 @@ all, because the game ends only when the count goes below 0.
 | the stalactite falls on him | -4 | TouchKind36 `$986C` |
 | a fall of 20 steps (80 pixels) or more | -6 to -28 | FallDamageStep `$920A` |
 | the vitality pickup | back to `$20` | CollectPickup `$98B6` |
-| energy at 0 | a life: the energy ball for 170 frames, energy `$20`, back to the fist | LoseLife `$962A` |
+| energy at 0 | a life: the energy ball for 170 frames, energy `$20`, back to the fist (in a giant's fight the weapon and its shots are kept: 7 bytes of GlobalsInit reloaded, not 10); none while EndFlags `$6652` is set | LoseLife `$962A` |
 | lives below 0 | game over | `JP M,GameOver` at `$9651` |
 
 No tile hurts: only actors and falls. While the energy ball is on (after a lost life, or for 853 frames from the
@@ -183,9 +205,11 @@ The score is eight BCD digits (Score `$6653-$6656`, AddScore `$99E7`).
 | bullets, taken with the fist | 50 |
 | BONUS, all five letters | 10 000 |
 | a Fireblade fragment | 10 000; the sixteenth 50 000 |
-| Havok killed | 20 000 for each life left |
+| Havok killed | 50 000 (his own score), plus 20 000 for each life left |
 
-Worked example: at RZX frame 72 000 the run's score is 00092060. At the end it has 1 life left, so Havok adds 20 000.
+Worked example: at RZX frame 72 000 the run's score is 00092060. At the end it has 1 life left, so Havok adds 70 000:
+his own 50 000 (KillScore `$97EA`, the target's +`$0B`) and one life bonus of 20 000 (LifeBonusLoop `$97D7`). The
+screens show 00272890 at RZX 136 000 and 00342890 at 139 000.
 
 ### The pickups
 
@@ -231,9 +255,20 @@ How to read it:
   with 123.
 
 The RZX run enters 107 rooms in play. The 20 it never enters are 1, 2, 3, 11, 12, 13, 14, 18, 19, 21, 36, 47-50, 52,
-55, 91, 92 and 122. Our recordings enter all 127: stage 1's rooms recording walked into rooms 1-3 and wrote its way
-into 11, 14 and 18; the POKE probes entered the other 13 by writing MapRow `$69DF` and MapColumn `$69E0`
-(WALKTHROUGH 6.0, stage 2). The map with each room in its grid place is in [doc 2.4](02-architecture.md#24-the-map).
+55, 91, 92 and 122. Stage 1's rooms recording walked into rooms 1-3 and wrote its way into 11, 14 and 18; the POKE
+probes entered 13 more (12, 13, 19, 21, 36, 47-50, 52, 55, 91, 92) by writing MapRow `$69DF` and MapColumn `$69E0`
+(WALKTHROUGH 6.0, stage 2): 126 rooms entered in play. Room 122 is built only by the end sequence (Room = 122 from RZX
+frame 141 007, with the map row 19 and column 20 unchanged: not an edge crossing). The map with each room in its grid
+place is in [doc 2.4](02-architecture.md#24-the-map).
+
+The published maps agree. Spectrum Computing's two screenshot maps of the whole game
+(<https://spectrumcomputing.co.uk/pub/sinclair/games-maps/s/Switchblade_3.png>, 7 200 x 3 520, and
+<https://spectrumcomputing.co.uk/pub/sinclair/games-maps/s/Switchblade_2.gif>, "The Map by Sherwin", 7 199 x 3 550)
+are 30 x 20 rooms of 240 x 176 pixels, our grid. `python3 -I tools/pub_map.py build/game.bin MAP` finds 126 of the 127
+rooms in their places on both and no room elsewhere (the second map's four extra cells are its title, key and FINISH
+label); the one missing is room 122, which no player walks into. The entry page
+(<https://spectrumcomputing.co.uk/entry/5089/ZX-Spectrum/Switchblade>) also lists two smaller maps and the magazine
+maps of Your Sinclair 66 (p. 30) and MicroHobby 211 (pp. 54, 56), not compared.
 
 **The point**: the rooms share one look. They are built from one tile set by one builder, so the player navigates by
 shape, not by landmarks; the self-mapping (a zone appears only when entered) is what keeps that hard.
@@ -264,7 +299,7 @@ The route in stages (RZX frames of the first entry into each room):
 | 2, the first giant | 15 252-32 677 | 28-31, 37-41, 51, 57 | fragment in 29 (15 771); the first giant in 39 (25 678); lives 4 (20 649, room 29), 3 (32 490, room 51) |
 | 3, the middle rows | 32 870-54 105 | 56, 42, 32, 22-25, 33-35, 43, 53, 59-62, 54, 44-46, 26, 27 | fragments in 56, 43, 62, 26 |
 | 4, the giant of room 58 | 62 254-76 991 | 58, 64-72, 85-87, 63 | the second giant (62 254); fragments in 70, 71, 63; lives 2 (65 132, room 65) |
-| 5, the giant of room 112 | 79 721-96 961 | 84, 96, 101-113 | fragments in 101, 107; the giant of room 112 (87 539) |
+| 5, the giant of room 112 | 79 721-96 961 | 84, 96, 101-108, 110-113 | fragments in 101, 107; the giant of room 112 (87 539) |
 | 6, the giant of room 93 | 98 305-112 597 | 97-99, 88, 73-83, 95, 94, 93 | fragment in 97; the giant and fragment of room 93 (112 597); lives 1 (119 128, room 83) |
 | 7, to Havok | 126 161-135 605 | 90, 89, 100, 109, 114-121, 127-124, 123 | fragments in 89, 120, 124; EXTRA (128 606); lives 1 (132 358, room 120); Havok's room 123 |
 | 8, the end | 135 605-142 989 | 123 | Havok fades (136 000-139 000), the end text (about 140 000), the name entry "XMIKEX J" (142 000), the title (142 500) |

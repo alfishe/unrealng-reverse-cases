@@ -43,9 +43,9 @@ the main loop's pass).
 | kind | the actor's byte +`$1C`, `$00-$48`; picks the template through KindTemplates `$7200` (doc 7.10) |
 | ladder | the special tiles `$55` (a rung) and `$54` in plane `$6A`, `$53` its top; GrabLadder `$906C` takes it, LeaveLadder `$9078` leaves it (doc 10.4) |
 | light pass | a pass in which no actor is due: about 1 400 T (128K, room 4) to 4 500 T (48K, five active pages) (doc 4.3) |
-| MeterStrip | the 20 bytes `$FFB7-$FFCA` that DrawMeter copies an 8-byte window from (doc 8.7) |
+| meter strip | the 20 bytes `$FFB7-$FFCA` that DrawMeter copies an 8-byte window from; MeterStrip `$FFBB` its 7 full bytes (doc 8.7) |
 | outline | the one-pixel black rim MaskedColumn makes from OutlineMask `$6F00` round every sprite and front tile (doc 6.4) |
-| pass | one turn of the main loop, from the fetch of `$8DFE` to the next; 0.02 to 11 frames (doc 4.3) |
+| pass | one turn of the main loop, from the fetch of `$8DFE` to the next; 0.02 to 11.6 frames outside a room change (the r004000 reveal), up to 72 with a room build (doc 4.3, 4.5) |
 | plane | one of six 220-byte tables at `$6700`-`$6CDB`: zone bits, two back tiles, two front tiles, shade and colour (doc 6.3) |
 | PrintString record | Y (pixels), X (half columns), two attributes, glyph codes; 1-`$1F` skip, `$FF` new line, 0 end (doc 8.2) |
 | r-segments | our own 2000-frame replays of the RZX run's keys from its snapshots (`work/stage2/rzx/rFFFFFF`); they drift from the RZX (WALKTHROUGH 6.0) |
@@ -56,14 +56,14 @@ the main loop's pass).
 | sequence slot | one of nine bytes +`$30-$38` (jump, fall or hurt, pose, turn, action, hard landing, ladder grab, death, rise): the steps left of a script; the first busy slot runs instead of the handler (doc 7.12, 10.1) |
 | shown copy | the byte after a panel variable that holds the value last drawn; the panel redraws on a difference (doc 8.6) |
 | SLOPPY | the cheat: MatchCheatName `$5C68` turns the name typed into a start point (BC per key `$0D06`, `$1209`, `$0E0F`, `$140F`; none gives `$0300`), stored at MapRow `$69DF` by NewGameSetStart `$5C96` (doc 5.10) |
-| stall | a run of frames with no pass start: a room build (60-72 frames) or a reveal (10-27 frames) (doc 4.5) |
+| stall | a run of frames with no pass start: at a room change 27-72 frames (median 45), the room build itself 25-71 (median 43); a zone reveal 10-27 frames (doc 4.5) |
 | step delay | an actor's +`$1D`, counted down by GameTick every frame and reloaded from +`$1A` when the actor steps (Hiro: 3 frames) (doc 4.7) |
 | strike | the fist's move or a weapon's throw, FireRequest `$6650` / Strike `$69E1` 1-3; also the fist's damage (doc 10.6) |
 | surface noise | the ground tiles of the surface rooms, picked by bytes of the 48K ROM from `$0000` + 257 - room (doc 6.9) |
-| tall mode | PrintStringTall's one-record patch of PrintGlyph: at an aligned Y glyph row 4 is drawn twice and row 7 dropped (doc 8.3) |
+| tall mode | PrintStringTall's one-record patch of PrintGlyph: at an aligned Y (only the panel's status line) glyph row 4 is drawn twice and row 7 dropped; at a straddling Y (the menu, the high-score and name-entry texts) the 9-row branch repeats the upper cell's last row (doc 8.3) |
 | template | the 18 bytes InitActor copies to +`$03-$14`: the handler, the scripts, the score, the delay, the hit points (doc 7.10) |
 | touch zone | one of five boxes round an actor in which Hiro wakes a trap, a trigger or the stalactite (doc 7.10) |
-| unit | 3 pixels across, one byte of the chunk buffer; a cell is 4 units, the play window 80 (doc 6.1) |
+| unit | 3 pixels across, one byte of the chunk buffer; a cell is 4 units, the play window 80; an actor's X counts half units, so an X step of 2 is one unit (doc 6.1) |
 | value | 3 bits: one line of one unit, bit 2 the left pixel; eight values packed in three bytes (doc 6.2) |
 | window | the unit and row box redrawn by BlitWindow `$8C68`: an actor's old and new place, or one cell (doc 6.5, 6.6) |
 | zone | a group of a room's cells sharing a bit in the top six bits of their plane-`$67` flag byte, written by the room's zone records (rectangles and single cells); drawn only once revealed, and tested by the spawner (doc 4.5, 7.5) |

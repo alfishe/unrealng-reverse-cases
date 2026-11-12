@@ -43,7 +43,8 @@ at Font + 8 (n - `$20`). Beyond the letters and digits it holds the game's small
 | `$2A`, `$26` | the effects sign of the title ("FX", 128K) |
 | `$2B` | the END sign of the name grid |
 | `$3C` | the delete sign of the name grid |
-| `$5B`, `$5C` | the weapon icon on the panel (WeaponIcon `$6671`) |
+| `$5B`/`$5C`, `$5D`/`$5E`, `$5F`/`$60`, `$61`/`$62`, `$63`/`$64` | the weapon icons on the panel (WeaponIcon `$6671`), a pair each: weapon 0 the fist, 1 the blade, 2 the scorchball, 3 the dart, 4 the spinblade |
+| `$3A`/`$3B`, `$3D`/`$3E`, `$3F`/`$40` | the weapon icons of weapon 5 (needle bolts), 6 (trispike) and 7 (the Fireblade): codes inside the signs' range, used only as icons |
 | `$65`, `$66` | the music sign of the title (a note, 128K) |
 | `$67-$84` | the pieces of the Fireblade on the panel |
 | `$85`, `$86` | the weapon bar's two glyphs: their bytes are rewritten in play (8.8) |
@@ -73,7 +74,9 @@ PrintGlyph(glyph HL, screen DE):
     c = D AND 7                               (the pixel line inside the cell)
     draw 8 - c rows: (DE) = (HL); HL + 1; D + 1
     if c = 0: done
-    DE = the cell below (E + 32; across a third: D from the saved D AND F8)
+    E = E + 32                                (the next character row)
+    if no carry (the same third): D = the saved D AND F8 (the cell's top line)
+    else (a third crossed): D kept (the row loop has already moved it into the next third)
     draw c rows
     SetCellAttr(DE, lower attribute)
     DE = the start + 1                        (the next column)
@@ -105,8 +108,11 @@ flowchart TD
     A --> C{"Y AND 7"}
     C -->|"0: inside one cell"| T8["8 rows into the cell"]
     C -->|"c from 1 to 7"| T["8 - c rows into the upper cell"]
-    T --> L["DE = the cell below; a third crossed: D from the saved D"]
-    L --> B["c rows into the lower cell"]
+    T --> L{"E + 32: a carry?"}
+    L -->|"no: the same third"| LS["D = the saved D AND F8"]
+    L -->|"yes: a third crossed"| LK["D kept: the row loop moved it into the next third"]
+    LS --> B["c rows into the lower cell"]
+    LK --> B
     B --> LA["SetCellAttr: the lower attribute, unless FF"]
     T8 --> N["DE + 1: the next column"]
     LA --> N
@@ -201,8 +207,8 @@ case folder after `. work/env.sh`: `python3 ../../kit/routine_anim.py --work wor
 docs/img/routines/PrintString.gif`.*
 
 How to read it: the listing's green bar runs PrintGlyph's two loops for each letter; the grid lights the record's
-byte being read and the glyph's 8 bytes; the screen grows a letter at a time. A glyph costs about 1000 T, so the
-63-byte menu takes more than a frame.
+byte being read and the glyph's 8 bytes; the screen grows a letter at a time. The menu's record is 63 bytes, of which
+52 are glyphs; at about 1150 T a glyph the whole menu takes the window's 59 908 T: most of a frame (70 908 T).
 
 ## 8.3 The tall mode
 
@@ -271,7 +277,20 @@ The point:
 - The mode costs little: 3167 T against 3121 for three glyphs.
 
 The panel's status line is printed tall at Y `$B8`, an aligned Y. So its glyphs lose their row 7. That costs the
-weapon bar one unit (8.8).
+weapon bar one unit (8.8). The panel is the only aligned tall text. Every other tall record straddles and takes the
+9-row branch (the operand `$841D`):
+
+| Record | Y | Y AND 7 |
+| --- | --- | --- |
+| ControlMenuText `$6ACB` (the control menu) | `$34` | 4 |
+| HiScoreTableHead `$8119` (the table) | `$14` | 4 |
+| its copyright line `$81F0` | `$B5` | 5 |
+| HighScoreMessage `$822C` (the name entry's two lines) | `$14` | 4 |
+| NameEntryText `$82BE` (the name being typed) | `$96` | 6 |
+
+Witness: the branch's `INC C` `$8421` ran 52 times in `c1` (the control menu's 52 glyphs), 263 in `c48`, 3376 in
+`menu`, 1688 in `gameover`, 506 in `hiscore`, 64 in `havok`, and in six RZX segments (r080000 134, r094000 54,
+r122000 64, r134000 74, r140000 144, r142000 231). The aligned branch `$8415` runs in every build that shows the panel.
 
 Command: `python3 tools/fig_text.py tall docs/img/text/tall.png`.
 
@@ -392,7 +411,7 @@ them.
 | 23 | 0-7 | the vitality meter | DrawMeter at `$51E0` |
 | 23 | 9-13 | EXTRA | PrintPanelLine `$836B`, tall (StatusLine `$6667`, Y `$B8`, X `$12`) |
 | 23 | 14 | the weapon bar's left glyph `$85` | the same record |
-| 23 | 15-16 | the weapon icon, glyphs `$5B` / `$5C` | the same record (WeaponIcon `$6671`) |
+| 23 | 15-16 | the weapon icon, a glyph pair (`$5B` / `$5C` for the fist; the pairs in 8.1) | the same record (WeaponIcon `$6671`) |
 | 23 | 17 | the weapon bar's right glyph `$86` | the same record |
 | 23 | 18-22 | BONUS | the same record |
 | 23 | 24-31 | the charge meter | DrawMeter at `$51F8` |
@@ -405,7 +424,8 @@ game by PanelAttrsRoom; the letters of EXTRA and BONUS then change one attribute
 How to read the figure:
 
 - **The two strips** are rows 0 and 23 of a screen shot of `menu`, frame 2050 (128K, play), scaled 4 times.
-- **The arrows** name each field and its variable.
+- **The arrows** name each field and its variable: Lives `$664D` (its two digits at `$6664`), Fragments `$664E` (the
+  Fireblade), WeaponIcon `$6671`. EXTRA and BONUS are letters of StatusLine `$6667` itself (8.10).
 - **The x axis** counts the character columns.
 
 The point: the score and the lives share one record. The weapon and its bar sit inside the status line between EXTRA
@@ -437,19 +457,24 @@ flowchart TD
     S["a pickup, a kill, a life lost"] --> PS["PrintScore $8365: the score line, then the status line"]
 ```
 
-![Who drew the panel as a game starts, c1 frames 17650-17652](img/text/panel-writers.png)
+![Who drew the panel as a game starts, c1 window 17650:65000-17653:0](img/text/panel-writers.png)
 
 How to read the figure:
 
-- **The picture** is the bottom row of the screen (pixel lines 184-191), magnified, at c1 frame 17 653.
-- **Each pixel** is coloured by the routine that last wrote its byte in the window 17650:65000-17653:0, and the
-  legend names the routines.
+- **The two views** are the screen at the window's end (the start of c1 frame 17 653) and the same screen with each
+  byte coloured by the routine that last wrote it in the window 17650:65000-17653:0.
+- **The zoom** (x4) is columns 9-22 of the bottom row (pixel lines 184-191): EXTRA, the weapon, BONUS.
+- **The legend** names the innermost label of the writing instruction: PrintGlyphTop is PrintGlyph's row loop
+  (`$8408`), run for PrintPanelLine and PrintScore; DrawMeterRow is DrawMeter's row loop (`$FFAE`); FillAttrRun is the
+  attribute fill of FillAttributes `$834A` (ClearScreen, BlackAttributes).
 
 The point: four routines build the panel's bottom row as a game starts. PrintPanelLine draws EXTRA, the weapon and
 BONUS; DrawMeter draws the two meters; PanelAttrsRoom colours the row.
 
 Command: `python3 ../../kit/writers_map.py --work work/docs/zsD/c1 --window 17650:65000-17653:0 --listing
-build/game.lst --view screen --by routine --sources --zoom 0,184,256,8 --out docs/img/text/panel-writers.png`.
+build/game.lst --view screen --by routine --sources --zoom 72,184,112,8 --title "Who drew the panel as a game starts:
+PrintScore, PrintPanelLine (PrintGlyph's row loop PrintGlyphTop), PanelAttrsRoom, DrawMeter (its row loop
+DrawMeterRow); c1 window 17650:65000-17653:0" --out docs/img/text/panel-writers.png`.
 
 ## 8.7 The meters: DrawMeter
 
@@ -708,7 +733,7 @@ The panel figure of 8.6 shows both words unlit (red). MatchLetters ran only in t
 
 ## 8.11 The score and the lives
 
-Score `$6653-$6656` is 4 BCD bytes. AddScore `$99E7` adds a score record from Hiro's page (`$5D82` + E: a score sprite
+Score `$6653-$6656` is 4 BCD bytes. AddScore `$99E7` adds a score record from Hiro's page (`$5D00` + E, E = `$82` + 4 n: a score sprite
 number and 3 BCD bytes) with DAA, then BcdToDigits `$9A11` writes the 8 ASCII digits into ScoreLine at `$665B`. The
 caller then calls PrintScore, which prints the score line and falls into PrintPanelLine.
 
@@ -744,18 +769,18 @@ AddScoreLoop:              ; $99F9
 
 ```mermaid
 flowchart TD
-    E["a kill, a pickup, a bonus"] --> A["AddScore $99E7: the record at 5D82 + E"]
+    E["a kill, a pickup, a bonus"] --> A["AddScore $99E7: the record at 5D00 + E (E = 82 + 4 n)"]
     A --> S["the score sprite to the actor"]
     S --> D["3 BCD bytes added with DAA, the carry into the top"]
     D --> B["BcdToDigits: 8 ASCII digits to 665B"]
     B --> P["the caller: PrintScore $8365"]
     P --> P1["PrintString: score and lives"]
     P1 --> P2["PrintPanelLine: the status line, tall"]
-    L["LoseEnergy: a life lost; LetterPickup: EXTRA"] --> LB["BcdToDigits: 1 byte to 6664, the lives"]
+    L["LoseLife $962A: a life lost; LetterPickup: EXTRA"] --> LB["BcdToDigits: 1 byte to 6664, the lives"]
     LB --> P
 ```
 
-The lives are one BCD byte, Lives `$664D`. LoseEnergy (a life lost) and LetterPickup write its 2 digits to `$6664` with the same
+The lives are one BCD byte, Lives `$664D`. LoseLife `$962A` (a life lost, at `$9654`) and LetterPickup write its 2 digits to `$6664` with the same
 BcdToDigits, inside the same ScoreLine record. So the score and the lives are always printed together.
 
 Worked example, deaths frame 3536 (48K):
@@ -783,18 +808,29 @@ at the bottom, glyph by glyph.
 ## 8.12 The banners are sprites
 
 PAUSE GAME, GAME OVER and EXTRA LIFE are not text. They are sprites (MessageFrames `$F87C`), drawn by ShowMessage,
-whose run-time code is at `$66C8` (doc 06). The main loop asks for one through MessageRequest `$79FF`.
+whose run-time code is at `$66C8` (doc 06). Only EXTRA and BONUS go through a request: the bonus code writes
+MessageRequest `$79FF` (1 at `$99B4`, 2 at `$99D2`), and the main loop (`$8E1C`) calls PendingMessage `$66B6`, which
+shows it and clears the request. The other two are direct calls:
+
+- PAUSE GAME: PauseGame `$6682` (run-time code of page `$66`) calls ShowMessage with A = 3 (`$6694`).
+- GAME OVER: ShowGameOverWait `$831A` calls ShowMessage with A = 4. It is called from GameOver `$5C42` (the last life
+  lost) and from the quit while paused (fire, `$668E`). `menu` frame 2200 shows GAME OVER with 5 lives left: the quit.
 
 ```mermaid
 flowchart LR
-    R["pause, the last life lost, EXTRA or BONUS complete"] --> M["MessageRequest 79FF"]
-    M --> S["ShowMessage: a sprite from MessageFrames F87C"]
+    X["EXTRA complete, 99B4"] --> M["MessageRequest 79FF = 1 or 2"]
+    BN["BONUS complete, 99D2"] --> M
+    M --> PM["the main loop 8E1C: PendingMessage 66B6"]
+    PM --> S["ShowMessage 66C8: a sprite from MessageFrames F87C"]
+    PA["pause: PauseGame 6694, A = 3"] --> S
+    GO["GameOver 5C42, or fire while paused 668E"] --> GW["ShowGameOverWait 831A, A = 4"]
+    GW --> S
     T["the title, the high scores, the end"] --> P["PrintString records"]
 ```
 
 ![Six screens with text and banners](img/text/screens.png)
 
-How to read the figure: six screen shots, each titled with its recording and frame.
+How to read the figure: six screen shots, each titled with its recording and frame, and two banners enlarged.
 
 - **menu 2000:** PAUSE GAME, a sprite.
 - **menu 2200:** GAME OVER, a sprite.
@@ -802,6 +838,8 @@ How to read the figure: six screen shots, each titled with its recording and fra
 - **menu 3000:** the high-score table (8.13).
 - **r140000 1000:** the end text over the faded picture (EndText, another player's run).
 - **r140000 1500:** the name entry (8.14).
+- **The last row:** the banner band of the first two shots (pixels 200-327 across, 164-215 down of the 512 x 384
+  shot), magnified three times: the banner's letters are a sprite drawn over the landscape, not glyphs of the font.
 
 The point: the font's letters print the menus, the tables and the end; the banners in play are drawn as sprites, with
 the play area's own sprite code.
@@ -815,7 +853,9 @@ python3 ../../kit/screen_shot.py --work work/docs/zsD/r140000 --out-dir $D/r140 
 python3 tools/fig_text.py screens docs/img/text/screens.png --shots \
   "$D/s2000.png:menu 2000: PAUSE GAME (a sprite)" "$D/s2200.png:menu 2200: GAME OVER (a sprite)" \
   "$D/s3300.png:menu 3300: the title, the FX icon" "$D/s3000.png:menu 3000: the high-score table" \
-  "$D/r140/s1000.png:r140000 1000: the end text, EndText" "$D/r140/s1500.png:r140000 1500: the name entry"
+  "$D/r140/s1000.png:r140000 1000: the end text, EndText" "$D/r140/s1500.png:r140000 1500: the name entry" \
+  --zoom "0=200,164,128,52:menu 2000, the banner x3: PAUSE GAME" \
+  --zoom "1=200,164,128,52:menu 2200, the banner x3: GAME OVER"
 ```
 
 ## 8.13 The high-score table
@@ -1043,8 +1083,6 @@ line under the grid, with the underline one place on. MoveNameBox runs 25 times 
 
 ## 8.15 Known only from the code
 
-- **The tall mode at a straddling Y** (8.3): the panel, the menu, the table and the name entry all print tall at an
-  aligned Y. The 9-row branch (the operand `$841D`) is only in the code and in the simulated figure.
 - **The invisible weapon units** (8.8): units 1 and 9 fall on row 7, which the tall mode drops. Found by running the
   code; no recording was searched for a frame with WeaponCount 1.
 - **EXTRA and BONUS complete** (8.10): MatchLetters ran only in the RZX segments; no keyed recording completes a word.

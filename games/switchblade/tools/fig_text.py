@@ -223,9 +223,9 @@ def cmd_panel(args):
     bot = im[23 * 8 * s:24 * 8 * s, :, :]
     fig, axes = plt.subplots(2, 1, figsize=(10.5, 2.9))
     for ax, part, row, labels in (
-            (axes[0], top, 0, [(0, 8, 'score: ScoreLine $6657, 8 digits'), (15, 2, 'lives'),
-                               (26, 6, 'Fireblade')]),
-            (axes[1], bot, 23, [(0, 8, 'vitality $6642'), (9, 5, 'EXTRA'), (14, 4, 'weapon'),
+            (axes[0], top, 0, [(0, 8, 'score: ScoreLine $6657, 8 digits'), (15, 2, 'lives $664D, digits $6664'),
+                               (26, 6, 'Fireblade: $664E')]),
+            (axes[1], bot, 23, [(0, 8, 'vitality $6642'), (9, 5, 'EXTRA'), (14, 4, 'weapon $6671'),
                                 (18, 5, 'BONUS'), (24, 8, 'charge $6645')])):
         ax.imshow(part, interpolation='nearest', extent=(0, 32, 1, 0), aspect='auto')
         ax.set_xticks(range(0, 33, 2))
@@ -243,18 +243,35 @@ def cmd_panel(args):
 
 
 def cmd_screens(args):
+    """The shots, three a row; each --zoom N=X,Y,W,H:CAPTION (shot N from 0, a box in the shot's pixels) adds a
+    magnified crop of that shot in a last row, so a small banner reads at 900 px."""
     plt = plt_setup()
     from PIL import Image
     shots = [a.split(':', 1) for a in args.shots]
+    zooms = []
+    for z in args.zoom or []:
+        head, caption = z.split(':', 1)
+        n, box = head.split('=')
+        x, y, w, h = (int(v) for v in box.split(','))
+        zooms.append((int(n), (x, y, x + w, y + h), caption))
     cols = 3
     rows = (len(shots) + cols - 1) // cols
-    fig, axes = plt.subplots(rows, cols, figsize=(10.5, 2.95 * rows + 0.2))
-    for ax in axes.flat:
+    zh = 2.0 if zooms else 0
+    fig = plt.figure(figsize=(10.5, 2.95 * rows + zh + 0.2))
+    gs = fig.add_gridspec(rows + (1 if zooms else 0), cols * 2,
+                          height_ratios=[2.95] * rows + ([zh] if zooms else []))
+    for i, (path, title) in enumerate(shots):
+        ax = fig.add_subplot(gs[i // cols, (i % cols) * 2:(i % cols) * 2 + 2])
         ax.axis('off')
-    for ax, (path, title) in zip(axes.flat, shots):
         ax.imshow(np.array(Image.open(path).convert('RGB')), interpolation='nearest')
         ax.set_title(title, fontsize=10)
-    fig.subplots_adjust(left=0.005, right=0.995, top=0.94, bottom=0.005, wspace=0.03, hspace=0.18)
+    for j, (n, box, caption) in enumerate(zooms):
+        span = (cols * 2) // len(zooms)
+        ax = fig.add_subplot(gs[rows, j * span:(j + 1) * span])
+        ax.axis('off')
+        ax.imshow(np.array(Image.open(shots[n][0]).convert('RGB').crop(box)), interpolation='nearest')
+        ax.set_title(caption, fontsize=10)
+    fig.subplots_adjust(left=0.005, right=0.995, top=0.95, bottom=0.005, wspace=0.06, hspace=0.18)
     fig.savefig(args.out, dpi=100)
     print('wrote', args.out)
 
@@ -265,6 +282,7 @@ def main():
     ap.add_argument('out')
     ap.add_argument('--shot')
     ap.add_argument('--shots', nargs='*')
+    ap.add_argument('--zoom', action='append', help='screens: N=X,Y,W,H:CAPTION, a magnified crop of shot N')
     args = ap.parse_args()
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     globals()['cmd_' + args.what](args)

@@ -24,7 +24,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   `r138000-sum.jsonl`.
 - The L1 execution counts of every build, printed by `python3 tools/l1q.py ADDR` and summed by
   `work/docs/zsC/l1sum.sh`: the keyed recordings (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`, `opt2-4`,
-  `play48`, the 15 POKE probes) and the 71 RZX segments.
+  `play48`, the 15 POKE probes) and the 91 RZX segments (72 long, 19 room-entry).
 
 Two cautions hold for every example:
 
@@ -69,7 +69,7 @@ HiroStep:                                  ; Hiro's step, when +$1D is due
         if EndFlags: HiroEndWalk           ; the end: the game steers him
         D, E = ReadDirection()             ; -1, 0, +1 each
         if no key: StopActor; return
-        HiroMove(D * 2, E * 4)             ; X 2 units, Y 4 pixels
+        HiroMove(D * 2, E * 4)             ; X + 2 (one unit, 3 pixels), Y 4 pixels
 ```
 
 ```asm
@@ -160,8 +160,10 @@ Worked example: `play48` frame 1095. Hiro stands in room 5 at Y `$40`, X `$52`, 
 all slots 0. The up key is held. The step of frame 1097 runs HiroControl: D = 0, E = -1, so HiroMove gets Y step -4
 and ActorJump starts StandScript in +`$30`. The sample of 1098 shows +`$30` = `0B` (11 steps) and Y `$3C`.
 
-Witness: HiroControl `$9333` ran 629 times in `play48`, 4375 in the other keyed builds and 24 579 times in all 71
-RZX segments. The FireRequest branch `$9AE9` ran 637 times in `play48`.
+Witness: HiroControl `$9333` ran 629 times in `play48`, 5495 in the other keyed and integration recordings (c1,
+deaths, gameover, menu, opt2-4, bossgate, havok, hiscore, throw), 438 in the 15 POKE probes and 26 329 times in 90 of
+the 91 RZX segments (72 long, 19 room-entry). The FireRequest test `$9AE9` ran 637 times in `play48`; its branch was
+taken 9 times (HiroAttack `$926E` ran 9 times).
 
 ## 10.2 Walk and turn
 
@@ -263,7 +265,7 @@ flowchart TD
 ```
 
 Worked example: `play48` frames 938-942, room 5. The samples read X `$50`, `$52` at 939 and `$54` at 942: one
-step of 2 units every 3 frames. The run counter +`$24` reads `1F`, `20`, `21`: Hiro has walked right for 33 steps
+step of X + 2 (one unit, 3 pixels) every 3 frames. The run counter +`$24` reads `1F`, `20`, `21`: Hiro has walked right for 33 steps
 without a stop, so a jump now would be the long one.
 
 Witness: StartTurn `$90B1` ran 43 times in `play48` (TurnStep's flip `$91E6` 42 times), 1062 times in 69 RZX
@@ -362,8 +364,11 @@ The three scripts, from `src/res/tables/scripts-7a.txt` (the step bytes are fram
 | Script | Count, delay | Steps |
 | --- | --- | --- |
 | StandScript `$7B00` | 11, 2 | 6 x (Y -4), then 5 x (Y 0) |
-| WalkScript `$7A51` | 12, 2 | 4 x (Y -4), 1 x (Y -4, X 2), 5 x (X 2), 2 x (Y 4, X 2) |
-| RunScript `$7A7A` | 16, 2 | 4 x (Y -4), 1 x (Y -4, X 2), 9 x (X 2), 2 x (Y 4, X 2) |
+| WalkScript `$7A51` | 12, 2 | 4 x (Y -4), 1 x (Y -4, X 2), 4 x (X 2), 3 x (Y 4, X 2) |
+| RunScript `$7A7A` | 16, 2 | 4 x (Y -4), 1 x (Y -4, X 2), 8 x (X 2), 3 x (Y 4, X 2) |
+
+An X step of 2 is one unit, 3 pixels (actor X counts half units). WalkScript rises 20 pixels, moves 8 units (24
+pixels) across, and drops 12 pixels; RunScript the same rise and drop with 12 units (36 pixels) across.
 
 ```mermaid
 flowchart TD
@@ -418,9 +423,11 @@ Worked example: the standing jump of `play48` frames 1096-1116 (room 5).
 5. Sample 1116: Hiro is on the floor at Y `$40`. HiroLanded saw 6 fall steps (fewer than 20) and started LandScript:
    +`$32` = 1, a one-step crouch.
 
-The walking jump of frames 1549-1576 (room 6): WalkScript from 1551 (+`$30` = `0C`), four rises to Y `$2C`, then X
-`$1A` to `$28` in steps of 2 at the same height. Its last step is reached at 1573 (+`$30` = 1); at 1575 Hiro falls
-one step and lands at 1576 (+`$32` = 1).
+The walking jump of frames 1549-1576 (room 6), from Y `$40`, X `$18`: WalkScript from 1551 (+`$30` = `0C`, Y `$3C`),
+five rises to Y `$2C` (1551-1559; the fifth, at 1559, with X + 2 to `$1A`), then X `$1C` to `$28` in steps of 2 (one
+unit, 3 pixels) at the same height: the four glides and the three descents, whose Y + 4 ProbeFloorCell `$9D0A` cuts
+to 0 (a floor under the new position). Its last step is reached at 1573 (+`$30` = 1); at 1575 the count runs out, Hiro falls one step (flags
+`07`, Y `$30`) and lands at 1576 (+`$32` = 1) on the higher floor at Y `$30`, 16 pixels above the take-off.
 
 ![The screen of play48 frames 1096-1126: the standing jump](img/play/play48-jump.gif)
 
@@ -437,8 +444,9 @@ and crouches for one step.
 ../../kit/screen_anim.py --work work/docs/zsC/play48 --from 1549 --to 1590 --step 1 --delay 80
 docs/img/play/play48-running-jump.gif`.*
 
-How to read it: from a stand with right held, Hiro rises 20 pixels, glides right along the top of WalkScript, drops
-from its end and crouches for one step.
+How to read it: from a stand with right held, Hiro rises 20 pixels, glides right 7 units (21 pixels) at the top,
+the script's descents held level by the floor under him, drops 4 pixels from its end onto the higher floor and
+crouches for one step.
 
 ![JumpStep running the standing jump, play48 frames 1098-1111](img/routines/JumpStep.gif)
 
@@ -455,8 +463,10 @@ How to read it:
 - Y drops by 4 and the count by 1 every second frame. In the slice of frame 1109 the path takes
   `JP Z,StartFallEndJump` at `$922F`.
 
-Witness: ActorJump ran 12 times in `play48` (WalkScript 10, RunScript 7 of them), 51 times in the other keyed
-builds and 733 times in 64 RZX segments. JumpStep ran 160 times in `play48`.
+Witness: ActorJump ran 12 times in `play48`: StandScript 2, WalkScript 3, RunScript 7 (`$9035 LD BC,WalkScript` ran
+10 times, `$903F LD BC,RunScript` 7, and every run jump passes `$9035` first). It ran 116 times in the other keyed
+and integration recordings (havok 70, deaths 31) and 757 times in 74 of the 91 RZX segments. JumpStep ran 160 times
+in `play48`.
 
 ## 10.4 Ladders
 
@@ -464,7 +474,8 @@ The stage-2 source first called them ledges; they are ladders (GrabLadder, Leave
 `$6A` (doc 7, 7.1) marks a ladder's cells with the special tiles `$55` (a rung under the feet) and `$54`, and a ladder's top
 with `$53`. Hiro takes a ladder in two ways:
 
-- up with no side key, when the cell 20 pixels above holds `$55` or `$54` (LadderAbove `$9CA7`);
+- up with no side key, when the map cell one row above the cell under the feet (B - `$14`: 20 cells a row, 16 pixels
+  up) holds `$55` or `$54` (LadderAbove `$9CA7`);
 - down with no side key, when the cell below holds one (LadderBelow `$9CA1`).
 
 Both need Hiro on the ladder's column: X mod 16 = 0 or 8. GrabLadder `$906C` sets +`$02` bit 3 (on a ladder) and
@@ -476,11 +487,14 @@ plays LadderGrabScript `$7AAF` (2 steps) in slot +`$36`. From then on HiroMove s
 - a side key at a stop: the facing is set and LeaveLadder `$9078` leaves the ladder: bit 3 cleared, X + 2,
   LadderLeaveScript `$7AE8` (2 steps) in +`$32`.
 
+On a ladder Hiro steps every 4 frames, not the walk's 3: in `r014000` (frames 1217-1295) +`$1D` reads 4 and Y
+goes `$80`, `$84`, `$88`, ... a step of 4 pixels every fourth frame.
+
 A fall that starts on a ladder (FallSequenceStart with bit 3 set) also goes to LeaveLadder: Hiro does not fall
 off a ladder.
 
 ```text
-LadderTest(cell):                          ; LadderAbove: the cell 20 above; LadderBelow: the cell below
+LadderTest(cell):                          ; LadderAbove: cell B - 14 (one row up); LadderBelow: the cell below
     return plane6A[cell] in (55, 54) and X mod 16 in (0, 8)
 
 ClimbMove(D, E):
@@ -783,7 +797,7 @@ times in 7 RZX segments. The soft crouch `$90E4` ran 42 times in `play48`.
 
 Fire is read once a frame by TickInput (doc 5, [5.5](05-controls.md#55-gameticks-input-the-latch-the-charge-and-the-strike)).
 While fire is held, the charge meter Charge `$6645` grows by ChargeStep `$6644` a frame, up to 32. When fire is
-released, Charge goes back to ChargeReset `$6647`. If Hiro is not busy and no weapon is in flight, the old charge
+released, Charge goes back to ChargeReset `$6647`. If Hiro is not busy and page `$66` is free (no weapon in flight and no message banner, `$6602` bit 0), the old charge
 goes to FireHeld and FireRequest `$6650` is set by it:
 
 | Charge at the release | FireRequest | With the fist | Script |
@@ -804,7 +818,7 @@ TickInput (fire):                           ; once a frame
     if fire held: Charge = min(Charge + ChargeStep, 32); return
     if fire released:
         old = Charge; Charge = ChargeReset
-        if Hiro busy or a weapon in flight: return
+        if Hiro busy or page 66 busy (weapon or banner): return
         FireHeld = old
         FireRequest = 1 if old < 9 else (2 if old < 25 else 3)
 
@@ -841,7 +855,7 @@ $84EF  LD C,(HL)
 $84F0  LD (HL),A
 $84F1  CALL HiroBusy
 $84F4  RET NZ
-$84F5  LD A,(WeaponActor+$0002)  ; a weapon in flight: no strike
+$84F5  LD A,(WeaponActor+$0002)  ; page $66 busy (a weapon or the banner): no strike
 $84F8  RRA
 $84F9  RET C
 $84FA  LD A,C
@@ -890,7 +904,7 @@ $91FE  JP SequenceNextFrame
 flowchart TD
     H["fire held"] --> C["Charge + ChargeStep, at most 32"]
     R["fire released"] --> O["old = Charge; Charge = ChargeReset"]
-    O --> B{"Hiro busy, or a weapon in flight?"}
+    O --> B{"Hiro busy, or page 66 busy (weapon or banner)?"}
     B -->|"yes"| X["no strike"]
     B -->|"no"| Q{"old charge"}
     Q -->|"0 to 8"| F1["FireRequest 1"]
@@ -910,7 +924,7 @@ Worked example: the strike of `play48` frames 744-768 (room 5).
 1. Samples 744-749: Charge `$0F`, `$10`, ... `$14`: fire is held, ChargeStep is 1, one more a frame.
 2. In frame 749 fire is released with Charge 20 (`$14`): 20 is at least 9 and below 25, so FireRequest = 2, and
    Charge goes back to ChargeReset 0.
-3. Sample 750: +`$34` = 8, flags `11`, X `$12` (StrikeScript2's frame offset `$FE` moved the frame 2 units left),
+3. Sample 750: +`$34` = 8, flags `11`, X `$12` (from `$14`: StrikeScript2's frame offset `$FE` moved the frame back X 2, one unit, 3 pixels),
    Charge 0. HiroAttack and HiroMelee ran in frame 749, after the input.
 4. Samples 753, 756, 759: +`$34` = 7, 6, 5: a step every 3 frames. Fire is held again (Charge 1 at 760).
 
@@ -947,7 +961,7 @@ its damage at the release.
 A weapon shield (10.10) sets Weapon `$664B` to 1-6 with 16 shots in WeaponCount `$6649`; the sixteenth Fireblade
 fragment gives weapon 7. With a weapon, HiroAttack throws a shot instead of striking:
 
-1. Not during the end (EndFlags), and only one shot at a time: WeaponActor `$6600` must be free.
+1. Not during the end (EndFlags), and only one shot at a time: page `$66` (WeaponActor `$6600`, which holds Hiro's weapon or the message banner) must be free.
 2. The kind is `$40` + Weapon - 1. Its 7-byte record (`src/res/tables/weapons.csv`, `$6C51-$6C81`) is patched into
    WeaponTemplate `$64EE`: the walk list (+`$05`, +`$06`), a byte for +`$0B` that is also the X offset facing left
    (-4, -2 or -6), the step delay +`$0C`, the death script +`$0F`, the damage +`$13` and the size class +`$14`.
@@ -960,7 +974,7 @@ fragment gives weapon 7. With a weapon, HiroAttack throws a shot instead of stri
 6. One shot is spent (WeaponCount - 1), except in a boss fight, where shots are free.
 7. The throw script `$7AEF` plays in +`$34`.
 
-WeaponControl `$9514` flies the shot: +`$3F` - 1 (0: it expires), then a step of 2 units along its facing through
+WeaponControl `$9514` flies the shot: +`$3F` - 1 (0: it expires), then a step of X + 2 (one unit, 3 pixels) along its facing through
 MoveProbeWalls, which stops it at a wall. The strike code treats it like Hiro's strike (doc 7, 7.14): the damage is
 its +`$13`, or the strike number when that is 0. Kind `$41` goes on through the actors it hits; the others expire
 at the first hit. A shot does hurt the bosses.
@@ -978,7 +992,7 @@ at the first hit. A shot does hurt the bosses.
 ```text
 HiroAttack(strike) with Weapon w:
     if EndFlags: HiroControl; return
-    if WeaponActor active: return
+    if page 66 active (a weapon or the banner): return
     kind = 40 + w - 1
     patch WeaponTemplate from the kind's record
     x = Hiro.X + (6 if facing right else WeaponTemplate[8]); y = Hiro.Y + 10
@@ -1006,7 +1020,7 @@ $9279  LD C,A
 $927A  LD A,(EndFlags)
 $927D  OR A
 $927E  JP NZ,RunHandler
-$9281  LD A,(WeaponActor+$0002)  ; one weapon in flight at a time
+$9281  LD A,(WeaponActor+$0002)  ; page $66 busy: a weapon or the banner
 $9284  RRA
 $9285  RET C
 $9286  LD A,C                    ; the kind $40 + Weapon - 1
@@ -1074,7 +1088,7 @@ $9520  JP MoveProbeWalls
 flowchart TD
     A["HiroAttack 926E, Weapon w > 0"] --> E{"EndFlags?"}
     E -->|"yes"| RH["HiroControl"]
-    E -->|"no"| F{"a shot in flight?"}
+    E -->|"no"| F{"page 66 busy (a shot or the banner)?"}
     F -->|"yes"| RET["return: FireRequest waits"]
     F -->|"no"| K["kind = 40 + w - 1; patch WeaponTemplate"]
     K --> I["InitActor on page 66 at Y + 10"]
@@ -1095,24 +1109,102 @@ flowchart TD
     D --> T["throw script 7AEF in +34"]
 ```
 
-Worked example: the code, with weapon 2 and a release at Charge 20 (the `throw` recording throws the spinblade and the blade, below). Take the code with weapon 2 and a release at Charge 20:
-FireRequest 2, FireHeld 20. HiroAttack finds the kind `$41`, patches WeaponTemplate from `$6C51` 
-(`EF 5E FC 02 40 03 08`: walk list `$5EEF`, delay 2, damage 3, size 8), places the scorchball 10 pixels below Hiro's Y, sets its
-life to 20 x 4 = 80 steps, and WeaponCount goes from 16 to 15. At 2 units a step the scorchball flies 160 units
-(about 240 pixels, more than a room's width), unless a wall stops it.
+The life in steps: WeaponControl takes 1 from +`$3F` before each step and expires the shot at 0, so a life of n
+moves the shot n - 1 steps. A blade, scorchball or dart let go at Charge 20 lives 80 steps: it flies 79 steps of X + 2,
+158 X, just under a room's width (160 X, 240 pixels), unless a wall or an actor stops it. A spinblade starts at
++`$3F` = 0, so the first `DEC` gives `$FF`: 256 steps, more than any room.
 
-Witness: the throw (InitActor at `$92C7`) ran 141 times in 26 RZX segments, WeaponControl 2184 times in the same
-26. Kinds `$40-$42` (`$9302`) 43 times in 12 segments, kind `$43` 14 times and kind `$44` 19 times, each in 2
+When WeaponCount reaches 0, PanelWeapon `$FF01` gives the default weapon back: the fist.
+
+```asm
+PanelWeapon:
+$FF01  LD HL,WeaponCount
+$FF04  LD A,(HL)
+$FF05  INC L
+$FF06  CP (HL)                   ; WeaponCountShown
+$FF07  JR Z,PanelFragments
+$FF09  LD (HL),A
+$FF0A  OR A
+$FF0B  JR NZ,PanelWeaponBar
+$FF0D  LD HL,WeaponDefaultItem   ; $5DF8: the fist's shield record + 2
+$FF10  CALL SetWeapon            ; the icon $5B/$5C, Weapon 0
+```
+
+Worked example: two throws of our `throw` recording (128K; Weapon `$664B` and WeaponCount `$6649` POKEd at frame
+1869, Weapon 1 at 2575; Hiro on the floor at Y `$40`). The samples are TTD `memory_at` of Hiro's page, the shot's page
+`$6600` and the globals, every frame (`work/docs/fixC/throw-shots.jsonl`).
+
+1. The spinblade, released at frame 2061 with Charge `$14` (20), facing right, Hiro at X `$48`. Sample 2062: the shot
+   on page `$66` at Y `$4A` (Hiro's Y + 10) and X `$4E` (his X + 6), +`$0C` = 5 - ((20 / 8) AND 7) = 3, +`$3F` = 0;
+   WeaponCount `$0F` -> `$0E`; +`$34` = 8, the throw script.
+2. From 2063 the shot steps X + 2 every third frame (`$50` at 2063, `$52` at 2066, ... `$9C` at 2177) while +`$3F`
+   counts `$FF`, `$FE`, ... At 2180 it is at X `$9E` with flags 0: gone at the room's right side after 40 steps,
+   +`$3F` `$D8`, most of its 256 steps unused.
+3. The blade, released at 2607 with Charge `$0C` (12), facing left, Hiro at X `$46`. Sample 2608: X `$42` (his X +
+   the record's left offset `$FC`, -4), +`$3F` = 12 x 4 = 48 (`$30`), delay 1: a step of X - 2 at nearly every frame
+   (`$40` at 2609, `$3E` at 2610, ...). WeaponCount `$0C` -> `$0B`.
+4. It crosses X 0 at 2649 and is gone at 2652 (X `$FA`, flags 0), with +`$3F` `$0C` left: it left the room before
+   its life ran out (36 of its 47 steps).
+
+![The shot's X and its life a frame, two throws of the throw recording](img/gameplay/throw.png)
+
+How to read the figure:
+
+- **Top**: the shot's X (dots, signed: below 0 it has passed the left edge) and Hiro's X (grey), against the frames
+  after the release. Left the spinblade (a step every 3 frames, the delay 3 of Charge 20), right the blade (a step
+  nearly every frame).
+- **Bottom**: +`$3F`, the life left, signed. The spinblade counts down from 0 (256 steps); the blade from 48 (Charge
+  12 x 4).
+- **The point**: the charge sets the blade's range (its life) and the spinblade's speed (its delay); neither shot
+  here used up its life.
+
+```bash
+python3 tools/fig_gameplay.py --only throw
+```
+
+Witness: the throw (InitActor at `$92C7`) ran 143 times in 28 RZX segments (26 long, 2 room-entry), WeaponControl
+2186 times in the same 28. Kinds `$40-$42` (`$9302`) 44 times in 13 segments, kind `$43` 14 times and kind `$44` 19 times, each in 2
 segments. Our own `throw` recording (128K, Weapon `$664B` and WeaponCount `$6649` POKEd at frame 1869) throws
 eight times from the keys, frames 1893-3039: HiroAttack 8 runs, the throw `$92C7` 8, WeaponControl 268
-(the figure in 10.17); `bossgate` throws 10 times.
+(the figure above and the screen in 10.17); `bossgate` throws 10 times.
 
 **The point**: a weapon is a second actor that Hiro launches. The charge sets its range, its speed or its path
 depending on the weapon, and only the boss fights make shots free.
 
 ## 10.8 Hurts and energy
 
-The collision pass (doc 7, 7.14) calls TouchHiro when an enemy's box meets Hiro's, then HurtHiro `$9860`:
+The collision pass (doc 7, 7.14) calls TouchHiro `$9801` for every actor that is not a shot. It filters before
+anything hurts (doc 7, 7.14 has the rest of the kinds):
+
+- **During Hiro's combat move** (+`$34` not 0: a strike or a throw) only kind `$2D`, the boss's shot, is tested at
+  all; every other actor passes through him.
+- **A pickup** (a kind below `$23`) is taken (TouchPickup `$98AD`) before the harm tests, so pickups are still taken
+  under the energy ball.
+- **No harm** while Invulnerable `$6651` is set (the energy ball, the death wait), nor while Hiro is already hurt
+  (his +`$10` bit 4, the push-back not yet started).
+
+```asm
+TouchHiro:
+$9801  LD L,$1C
+$9803  LD A,(HL)
+$9804  CP $2D                    ; kind $2D touches even during a combat move
+$9806  JR Z,TouchHiroTest
+$9808  LD A,(Hiro+$0034)         ; Hiro's combat move runs: no touch
+$980B  OR A
+$980C  RET NZ
+...
+$981F  CP $23                    ; kind below $23: a pickup
+$9821  JP C,TouchPickup
+$9824  LD A,(Invulnerable)       ; the energy ball or the death wait: no harm
+$9827  OR A
+$9828  RET NZ
+$9829  LD E,$10                  ; Hiro already hurt
+$982B  LD A,(DE)
+$982C  AND $10
+$982E  RET NZ
+```
+
+Then, for a harmful kind (below `$35`, or `$35` / `$36` by their pose), HurtHiro `$9860`:
 
 1. The push-back: the attacker's facing against Hiro's. Opposite facings choose script `$7A18` (pushed back),
    the same facing `$7A2F` (pushed forward). The low byte goes to HiroFallScript `$69DC`.
@@ -1121,7 +1213,7 @@ The collision pass (doc 7, 7.14) calls TouchHiro when an enemy's box meets Hiro'
 4. In a jump (+`$30` AND 7 not 0): the jump count is cut to its low three bits, and the flags become `03` (active,
    in the air): the jump goes on, shorter, and a strike in progress is disarmed.
 5. Otherwise +`$10` bit 4 is set. At Hiro's next step ActorUpdate starts the push-back script from HiroFallScript
-   in slot +`$31` (FallSequenceStart `$904A`): 6 steps of 3 frames, 2 units each. On a ladder LeaveLadder runs
+   in slot +`$31` (FallSequenceStart `$904A`): 6 steps of 3 frames, X 2 each (one unit, 3 pixels). On a ladder LeaveLadder runs
    instead.
 
 Between steps 4 and 5 stands a loop of 8 rounds at `$9895`. It enters with A = 0 and tests `AND $01`, which is
@@ -1132,6 +1224,13 @@ FireRequest (a hurt cancels a pending strike) and subtracts the damage from Vita
 LoseLife (10.9).
 
 ```text
+TouchHiro(actor):
+    if actor.kind != 2D and Hiro.+34: return          ; a combat move: only the boss's shot touches
+    if not BoxesOverlap(actor, Hiro with his top + 1): return
+    if actor.kind < 23: TouchPickup; return            ; taken even under the energy ball
+    if Invulnerable or Hiro.+10 & 10: return           ; the ball, or already hurt
+    kind < 35: HurtHiro; 35, 36: by pose; 37-3D: stand on; else nothing
+
 HurtHiro(attacker):
     HiroFallScript = 18 if sign(attacker.facing) != sign(Hiro.facing) else 2F
     sound 0
@@ -1209,7 +1308,15 @@ $9629  RET
 
 ```mermaid
 flowchart TD
-    T["TouchHiro: the boxes meet"] --> H["HurtHiro 9860"]
+    T0["TouchHiro 9801"] --> CM{"Hiro's combat move +34, and not kind 2D?"}
+    CM -->|"yes"| NO["no touch"]
+    CM -->|"no"| T{"the boxes meet?"}
+    T -->|"no"| NO
+    T -->|"yes"| PK{"kind below 23?"}
+    PK -->|"yes"| TP["TouchPickup: taken, even under the ball"]
+    PK -->|"no"| IV{"Invulnerable, or +10 bit 4 already?"}
+    IV -->|"yes"| NO
+    IV -->|"no, a harmful kind"| H["HurtHiro 9860"]
     H --> F{"facings opposite?"}
     F -->|"yes"| S1["push-back script 7A18"]
     F -->|"no"| S2["push-forward script 7A2F"]
@@ -1233,8 +1340,8 @@ Worked example: `play48` frames 938-948 (room 5).
 
 1. Samples 938-942: Hiro walks right (facing `01`), X `$50` to `$54`, energy `$20`.
 2. In frame 942 an enemy's box meets his. The sample of 943 shows energy `$1C` (28): 4 taken.
-3. Sample 945: +`$31` = 6, X `$52`. The push-back script started at his next step; its steps move him 2 units
-   against his facing.
+3. Sample 945: +`$31` = 6, X `$52`. The push-back script started at his next step; its steps move him X 2 (one unit, 3
+   pixels) against his facing.
 4. Sample 948: +`$31` = 5, X `$50`.
 
 ![The screen of play48 frames 938-962: a touch, 4 energy, the push-back](img/play/play48-hurt.gif)
@@ -1770,8 +1877,10 @@ Worked example: `play48` frame 2219, room 7 (doc 7, 7.14). Hiro's strike 3 meets
 +`$13` is 0, so the damage is Strike = 3; 2 - 3 = -1, and KillActor pays the patroller's 50 points. Doc 7 shows it
 in its Animation 7.5 (the code) and Animation 7.6 (the screen).
 
-Witness: KillActor ran twice in `play48` and 49 times in 27 RZX segments. A boss was struck (`$9761`) 36 times in 6
-RZX segments, but no boss died in any build of ours (`$97B9` 0 runs). The RZX run itself kills the giants and Havok
+Witness: KillActor ran twice in `play48` and 54 times in 32 RZX segments (27 long, 5 room-entry). A boss was struck
+(`$9761`) 36 times in 6 RZX segments. No boss died in a replayed segment; the two integration recordings kill one each,
+with its hit points POKEd to 1: `bossgate` a giant (KillActor's boss path `$97B9` 1 run, OpenGate's sound 3 `$97E8`
+1), `havok` Havok (`$97B9` 1, GameWonSound `$97DE` 1); 10.14 and 10.17. The RZX run itself kills the giants and Havok
 (the `rzx-c` recording reaches the end text, [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 
 **The point**: most enemies die to a strike or two, and they are worth little. The weight of the game is in the five
@@ -1871,8 +1980,8 @@ state of `r138000` holds 342 890 with 1 life left, after Havok's 50 000 and one 
 
 Witness: AddScore ran 4 times in `play48`: the block broken at frame 1458 (10), the patrollers killed at 1775 and
 2219 (50 each) and the gem at 2318 (50); the samples read the score 10, 60, 110 and 160 after them. Once in the keyed
-builds, and 111 times in 47 RZX
-segments. The RZX run's score at RZX frame 72 000 is 00092060 ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
+builds (`deaths`), twice in each integration recording (`bossgate`, `havok`), and 120 times in 56 RZX segments (47
+long, 9 room-entry). The RZX run's score at RZX frame 72 000 is 00092060 ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
 
 ## 10.14 The end
 
@@ -1882,8 +1991,15 @@ EndFlags `$6652` = 1, adds 20 000 for each life left (the low BCD digit of Lives
 
 1. Havok fades: HavokFadeStep `$8738` redraws his 48 x 80 picture ANDed with a shrinking mask, with sound 4 every
    16 steps.
-2. At the end of the fade it spawns the energy ball, sets EndFlags bit 6 and prints EndText "THE DAWN HAS COME AND MY
-   WORLD IS SAFE, FOR NOW....".
+2. At the end of the fade it frees Havok's page and calls DelayBC with BC = 0: 65 536 rounds of 26 T, 1 703 936 T,
+   about 24 frames in which the main loop stands still (the interrupts still run). Then it spawns the energy ball
+   with BC = 0 as its timer: the IM 2 tick counts a timer only while it is not 0 (`$8497`), so this ball never
+   expires and Invulnerable `$6651` stays set: nothing can hurt Hiro after the win. It sets EndFlags bit 6 and
+   prints EndText (`$82E0`, `src/res/texts/strings.txt`), three lines, the third indented six columns by the skip
+   `$06`:
+   - "THE DAWN HAS COME AND MY"
+   - "WORLD IS SAFE,"
+   - "      FOR NOW....." (five dots)
 3. While EndFlags is set, HiroControl hands Hiro to HiroEndWalk `$9321`. With bit 6 clear (the fade), Hiro jumps
    again and again (E = -1) and walks left while his X is at least `$58`. With bit 6 set, he stands still. LoseLife
    returns at once, and HiroAttack hands a pending throw back to HiroControl.
@@ -1898,7 +2014,10 @@ KillActor(Havok):                          ; no gate kind 2A in the pages
 HavokFadeStep:                             ; Havok's step, after his death
     mask -= 1; if mask & 0F == 0: sound 4
     DrawHavok(mask)
-    if mask == 0: SpawnShield; EndFlags |= 40; PrintString(EndText)
+    if mask == 0:
+        DelayBC(0)                         ; 65 536 x 26 T: about 24 frames
+        SpawnShield(timer 0)               ; a timer of 0 is never counted: the ball stays
+        EndFlags |= 40; PrintString(EndText)
 HiroEndWalk:                               ; HiroControl while EndFlags
     if EndFlags & 40: D = E = 0
     else: E = -1; D = -1 if X >= 58 else 0
@@ -1922,13 +2041,17 @@ $97DE  LD E,$04                  ; sound 4
 $97E0  JR KillScore
 ...
 $874F  LD (IY+$02),$00           ; the fade is over: Havok's page free
-$8753  LD BC,$0000
+$8753  LD BC,$0000               ; DelayBC with 0: 65 536 rounds of 26 T
 $8756  CALL DelayBC
-$8759  CALL SpawnShield
+$8759  CALL SpawnShield           ; BC = 0: the ball's timer 0, never counted down
 $875C  LD HL,EndFlags
 $875F  SET 6,(HL)
 $8761  LD HL,EndText
 $8764  CALL PrintString
+...
+$8495  LD A,E                    ; the IM 2 tick: an actor's timer +$1E/+$1F
+$8496  OR D
+$8497  JR Z,TickNextActor        ; 0: not counted, never expires
 ...
 HiroEndWalk:
 $9321  AND $40                   ; the end: no keys
@@ -1957,7 +2080,7 @@ stateDiagram-v2
     [*] --> Fight: room 123, Havok's boss fight
     Fight --> Won: KillActor, no gate: EndFlags 1, 20000 per life, 50000
     Won --> Fade: HavokFadeStep 8738, Hiro jumps on the spot
-    Fade --> Text: the mask is 0: the ball, EndFlags bit 6, EndText
+    Fade --> Text: the mask is 0: DelayBC 0 (24 frames), the ball for ever, EndFlags bit 6, EndText
     Text --> Text: Hiro stands; LoseLife ignored
     Text --> HighScore: fire: EndFlags bit 7, EndOfGame 5C45
     HighScore --> [*]
@@ -2066,7 +2189,7 @@ bytes shows how central LoseEnergy, LoseLife and the WeaponCount decrement are.
 ## 10.17 What no recording reached
 
 The builds checked are `play48`, the other keyed builds (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`, `opt2-4`,
-the 15 POKE probes), the 71 RZX segments, and the four witness recordings made at integration (`bossgate`,
+the 15 POKE probes), the 91 RZX segments (72 long, 19 room-entry), and the four witness recordings made at integration (`bossgate`,
 `throw`, `hiscore`, `havok`; WALKTHROUGH 6.0), each with a POKE that sets the scene.
 
 ![The four witness recordings: a giant killed, a throw, Havok killed, a name entered](img/play/witness-recordings.png)
@@ -2097,9 +2220,9 @@ and sits at the top of the table.
 | BONUS complete | `$99CB` | not executed in any build |
 | the power reset shield | `$9943` | not executed in any build |
 | a struck shield transformed | TransformShield `$973F` | not executed in any build |
-| a throw seen on our screen | HiroAttack `$92C7` | `throw` frames 1893-3039 (Weapon POKEd), the figure in 10.17 |
+| a throw seen on our screen | HiroAttack `$92C7` | `throw` frames 1893-3039 (Weapon POKEd), the figure above and `throw.png` (10.7) |
 | a boss's shot hurting Hiro (8) | `$9889` | only in 7 RZX segments (20 runs); no sample of ours |
-| a hurt on a ladder (LeaveLadder from FallSequenceStart) | `$9058` | not checked by a sample of ours |
+| a hurt on a ladder (LeaveLadder from FallSequenceStart) | `$9058` taken | once, in the room-entry segment `e102685` (L1 of `$9058` 1 more than `$905B`); LeaveLadder `$9078` ran 20 times, ClimbLeave `$9C9E` 19 and this one; no sample of ours |
 
 Our segment replays diverge from the RZX run, so the boss fights they reach go otherwise: `r136000` reaches Havok
 with 16 fragments and the Fireblade, but he does not die in our 2000 frames; `havok` kills him by a POKE.

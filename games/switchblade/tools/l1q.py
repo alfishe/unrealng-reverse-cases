@@ -21,6 +21,7 @@ def builds():
     paths = sorted(glob.glob(os.path.join(CASE, 'work', 'stage1', 'c1', 'l1.json')) +
                    glob.glob(os.path.join(CASE, 'work', 'stage1', 'rec', '*', 'l1.json')) +
                    glob.glob(os.path.join(CASE, 'work', 'stage2', 'rzx', '*', 'l1.json')) +
+                   glob.glob(os.path.join(CASE, 'work', 'stage2', 'rzx', 'rooms', '*', 'l1.json')) +
                    glob.glob(os.path.join(CASE, 'work', 'stage2', 'rec', '*', 'l1.json')))
     return [p for p in paths if '-old' not in p and '-lost' not in p]
 

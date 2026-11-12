@@ -40,7 +40,7 @@ its recordings.
 
 **The game is lost: the GAME OVER banner, then the high-score entry and the title**
 
-From LoseEnergy `$9651` (`JP M` when the lives run out). CALL `$831A`: ShowMessage `$66C8` with A = 4 (GAME OVER) and a wait of up to 40 x 5 frames or fire. Falls into EndOfGame.
+From LoseLife `$9651` (`JP M` when the lives run out). CALL `$831A`: ShowMessage `$66C8` with A = 4 (GAME OVER) and a wait of up to 40 x 5 frames or fire. Falls into EndOfGame.
 
 Witness: L1 6 (gameover, hiscore, rzx x4). Ran once in gameover.
 
@@ -847,6 +847,8 @@ Witness: L1 1316 (bossgate, deaths, gameover, havok, hiscore, menu, play48, room
 Plane `$6C` cells 0-`$77` = `$20`; plane `$68` rows 0-3 = tiles `$33`, `$34`, `$35`, `$36`; row 4 = 20 bytes from `$74F5` + room (the horizon moves with the room); tile `$37` at cell 9 - room (rooms below 10), tile `$43` at `$54` - room (rooms from 5); a row of tiles `$3C-$3E` and a row of `$81-$83` in plane `$6B` (solid, attribute `$20`), each tile differing from the one before, the choice taken from the bytes of the ROM from `$0000` + 257 - room, the 48K keyword table (NextGroundVariant). Room 123 (Havok's) gets only the second row, 14 cells from `$C8`. 19 runs (c1 and the play recordings: rooms 1-7).
 
 Witness: L1 41 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, rzx x2, rzxroom x6).
+
+[Animation: `BuildSurface` at work](img/routines/BuildSurface.gif)
 
 | | |
 | --- | --- |
@@ -1803,7 +1805,7 @@ Witness: L1 183808 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 **Draw the 8-byte glyph at HL at the screen address DE (any pixel line): DE + 1 on return**
 
-The cell's attribute from the operand at `$83FB` (SetCellAttr). C = D AND 7: 8 - C rows into this cell, C rows into the cell below (DE + 32, a third crossed through the saved D); the lower cell's attribute from `$8436`. Tall mode: the operands at `$8411` / `$841D` (PrintStringTall). Callers: PrintString, `$6200`.
+The cell's attribute from the operand at `$83FB` (SetCellAttr). C = D AND 7: 8 - C rows into this cell, C rows into the cell below (E + 32; in the same third, no carry, D = the saved D AND `$F8`; a third crossed, the carry, D kept, already moved into the next third by the row loop); the lower cell's attribute from `$8436`. Tall mode: the operands at `$8411` / `$841D` (PrintStringTall). Callers: PrintString, `$6200`.
 
 Witness: L1 34287 (bossgate, deaths, gameover, havok, hiscore, menu, play48, throw, c x2, opt x3, rzx x67, rzxroom x12).
 
@@ -2191,11 +2193,11 @@ Witness: L1 239246 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 ### `RunActorSteps` (`$9A4B`)
 
-**Run the next due actor step: the shot or the boss's shot, Hiro, the fallers, actor H**
+**Run the next due actor step: page `$66` or the boss's shot, Hiro, the fallers, actor H**
 
 Called by the actor update `$8E2B` with H = an active actor's page (562 575 runs). IY = that page.
 
-Every other call (the operand at `$9A51` rotates `$AA`) the shot in page `$66` steps when it is active and due (the cyber-arm's shot moves at twice the rate); on the calls between, when a boss fight is on (`$9A59`), the actor in page `$60` (the boss's shot, BossFire). Bit 7 of `$6602` stops here. Then Hiro when due; then every page `$5E-$65` that is falling (+2 bit 2) and due; then actor H when due. Each "due" step (`$9A8E`) pops its caller's return, so the call ends after one step.
+Every other call (the operand at `$9A51` rotates `$AA`) page `$66` (Hiro's thrown weapon or the message banner) steps when it is active and due (the cyber-arm's shot moves at twice the rate); on the calls between, when a boss fight is on (`$9A59`), the actor in page `$60` (the boss's shot, BossFire). Bit 7 of `$6602` (the banner) stops here. Then Hiro when due; then every page `$5E-$65` that is falling (+2 bit 2) and due; then actor H when due. Each "due" step (`$9A8E`) pops its caller's return, so the call ends after one step.
 
 Witness: L1 3898691 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 
@@ -3343,7 +3345,7 @@ Witness: L1 540685 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 **The 48K sound, every frame: step the effect, copy its level to `$9BA3`**
 
-Calls EffectFrame, then `$9BA3` (the operand of `$9BA2` LD A,n) = the current level (the operand at `$85CA`): `$9BA2` lets the footstep effect 7 start only while no effect sounds. On a 128K the bootstrap overwrites `$853F-$85E0` with the 162-byte glue to the AY player in bank 4 (AyGlue): the 48K bytes from `$85E1` and the table EffectTable stay but are not run.
+Calls EffectFrame, then `$9BA3` (the operand of `$9BA2` LD A,n) = the current level (the operand at `$85CA`): `$9BA2` lets the footstep effect 7 start only while that level is 0: never over an audible effect, but over the zero-level sustain of effects 4, 7, 11, 12 and 13 (sustain 0) it does. On a 128K the bootstrap overwrites `$853F-$85E0` with the 162-byte glue to the AY player in bank 4 (AyGlue): the 48K bytes from `$85E1` and the table EffectTable stay but are not run.
 
 Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19). The 128K recordings' runs at `$853F-$85E0` are the glue's; the 48K player runs in c48 and the RZX builds.
 
@@ -4354,7 +4356,7 @@ Witness: L1 16 (deaths, play48, rzx x8, rzxroom x1).
 
 BC = the frames. The position: the ball's own (`$6500`) when it is already there, else Hiro's Y and X + 8. SpawnActor `$A65D` with the template `$6594`, kind `$48`; `$6651` = `$48` (LoseEnergy `$9615` and TouchHiro `$9824` ignore harm while it is set; the IM 2 tick clears it when the page-`$65` timer runs out, `$84AB`, and so does `$91CB`). Then the 16-bit timer (SetActorTimer `$9991`).
 
-Callers: LoseEnergy `$9632` (170 frames after a lost life), CollectPickup `$98E8` (the invulnerability pickup, `$355` = 853 frames, 17 s at 50 Hz: the manual's "sixteen second period"), RestoreShield `$995C`, `$872B`. deaths and gameover 7 runs.
+Callers: LoseLife `$9632` (170 frames after a lost life), CollectPickup `$98E8` (the invulnerability pickup, `$355` = 853 frames, 17 s at 50 Hz: the manual's "sixteen second period"), RestoreShield `$995C`, `$872B`. deaths and gameover 7 runs.
 
 Witness: L1 113 (deaths, gameover, havok, hiscore, play48, rzx x53, rzxroom x2).
 
@@ -4556,7 +4558,7 @@ Witness: L1 160342 (bossgate, deaths, gameover, havok, hiscore, menu, play48, ro
 
 **Hiro's footstep: sound 7 on frames `$26` and `$28`**
 
-The operand at `$9BA3` is the effect player's busy flag (written at `$8545`): no footstep over another effect. Frames `$26`, `$28` are the walk frames with a foot down. 2348 runs, 10 footsteps (c1, deaths, menu).
+The operand at `$9BA3` is the effect's current level (written at `$8545`; on a 128K AY channel A's volume): no footstep while it is not 0, so never over an audible effect (a sustain of 0 does not stop it). Frames `$26`, `$28` are the walk frames with a foot down. 2348 runs, 10 footsteps (c1, deaths, menu).
 
 Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 
@@ -5360,7 +5362,7 @@ Witness: L1 130 (bossgate, deaths, havok, play48, throw, rzx x47, rzxroom x9).
 
 **Write B BCD bytes at HL as 2B ASCII digits at DE**
 
-HL = the BCD bytes, high first; DE = the text. Out: HL, DE past them. Callers: AddScore (the score, 4 bytes to `$665B`), LoseEnergy and LetterPickup (the lives, 1 byte to `$6664`).
+HL = the BCD bytes, high first; DE = the text. Out: HL, DE past them. Callers: AddScore (the score, 4 bytes to `$665B`), LoseLife `$9659` and LetterPickup (the lives, 1 byte to `$6664`).
 
 Witness: L1 609 (bossgate, deaths, havok, play48, throw, rzx x63, rzxroom x10).
 
@@ -5375,7 +5377,7 @@ Witness: L1 609 (bossgate, deaths, havok, play48, throw, rzx x63, rzxroom x10).
 
 **The weapon bar and the fragment count, when they change**
 
-WeaponCount `$6649` against WeaponCountShown: on a change it is stored; at 0 the default weapon comes back (`$98F3` with HL = WeaponDefaultItem `$5DF8`). The bar: 16 bytes at `$7F0D` (the pixel rows of glyphs `$85`/`$86`): 16 - count rows cleared, then count rows of `$0E` (count >= 9) or `$E0`, shifted one place on odd rows; StatusLine printed (`$836B`). The status line is printed tall at the aligned Y `$B8`, so row 7 of glyphs `$85`/`$86` is never drawn: units 1 and 9 of the bar are invisible (doc 08, 8.8).
+WeaponCount `$6649` against WeaponCountShown: on a change it is stored; at 0 the default weapon comes back (`$98F3` with HL = WeaponDefaultItem `$5DF8`). The bar: 16 bytes at `$7F0D` (the pixel rows of glyphs `$85`/`$86`): 16 - count rows cleared, then count rows of `$0E` (count >= 9) or `$E0`, shifted right one place (`$07`, `$70`) when B is even (B = count down to 1; the rows 0, 2, 4 ... of the 16, counted from the top); StatusLine printed (`$836B`). The status line is printed tall at the aligned Y `$B8`, so row 7 of glyphs `$85`/`$86` is never drawn: units 1 and 9 of the bar are invisible (doc 08, 8.8).
 
 Witness: L1 2036417 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 
@@ -5612,9 +5614,9 @@ Witness: L1 49267 (c1, deaths, gameover, menu, rooms, opt x3).
 
 IY = the sequencer record, IX = the AY record. UpdateArpeggio `$C390` and UpdatePortamento `$C420` first. When the pattern has ended (+`$0B` not 0): one repeat less; while repeats remain the pattern starts again, else ReadOrderList reads the order list. Then the event timer +`$0C` counts down; while it runs, one pending command byte is taken ahead (so a pattern's end mark `$FF` is seen on the frame before the last note ends); at 0 the commands are read up to the next event: a note (0-`$7D`, then its length), `$7E` (a raw period word, then the length) or `$7F` (a rest: the length only; the playing note runs on to its release).
 
-A note: the index + the transpose (+`$0E`) picks the period from NoteTable `$D016`; with the slide on, the slide's target is the note + interval (+`$18`) and its whole change goes to +`$1E`/+`$1F`. The arpeggio state becomes `$C0` + the arpeggio, the length goes to +`$0C`, IY becomes the instrument and, unless an effect holds the channel, StartNote `$D0DA` starts it (DrumPending = the drum switch).
+A note: the index + the transpose (+`$0A`), stored as the note playing (+`$0E`), picks the period from NoteTable `$D016`; with the slide on, the slide's target is the note + interval (+`$18`) and its whole change goes to +`$1E`/+`$1F`. The arpeggio state becomes `$C0` + the arpeggio, the length goes to +`$0C`, IY becomes the instrument and, unless an effect holds the channel, StartNote `$D0DA` starts it (DrumPending = the drum switch).
 
-The order list (ReadOrderList): `$00-$7F` play pattern n (PatternAddrLo/Hi `$CC97`/`$CCC4`), `$80-$BF` the next pattern n times (low five bits), `$C0-$FB` n, m slot n (low four bits) = instrument m, `$FC` one byte skipped, `$FD` a, b three bytes skipped, `$FE` t the transpose t, `$FF` the end (+`$0D` = 0, the channel stops reading). `$FC` and `$FD` are in no tune (the code at `$C1FC` and `$C206` ran in no recording).
+The order list (ReadOrderList): `$00-$7F` play pattern n (PatternAddrLo/Hi `$CC97`/`$CCC4`), `$80-$BF` the next pattern n times (low five bits), `$C0-$FB` n, m slot n (low four bits) = instrument m, `$FC` one byte skipped, `$FD` a, b three bytes skipped, `$FE` t the transpose t, `$FF` the end (+`$0D` = 0, the channel stops reading). As order-list codes `$FC` and `$FD` are in no tune (the code at `$C1FC` and `$C206` ran in no recording); as pattern commands they are the drums (ReadPatternCommand).
 
 Witness: L1 137559 (c1, deaths, gameover, menu, rooms, opt x3).
 

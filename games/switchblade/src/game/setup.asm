@@ -17,7 +17,7 @@
 ;
 ; NewGame `$5CA9` copies these 56 bytes (LDIR, BC = `$38`) to `$6642-$6679`;
 ; the first 10 (7 when a boss kind is set, `$9A59`) are copied again when a
-; life is lost (LoseEnergy `$9615`).
+; life is lost (LoseLife `$962A`).
 ;
 ; Each shown copy (`$6643`, `$6646`, `$664A`, `$664F`) starts unequal to its
 ; value, so the first pass of the panel jobs ($FF01, $FF64) draws everything.
@@ -60,7 +60,7 @@ ExtraBonusLit:
 ; The game is lost: the GAME OVER banner, then the high-score entry and the
 ; title
 ;
-; From LoseEnergy `$9651` (`JP M` when the lives run out). CALL `$831A`:
+; From LoseLife `$9651` (`JP M` when the lives run out). CALL `$831A`:
 ; ShowMessage `$66C8` with A = 4 (GAME OVER) and a wait of up to 40 x 5 frames
 ; or fire. Falls into EndOfGame.
 ;

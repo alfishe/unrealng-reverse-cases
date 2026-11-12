@@ -70,25 +70,27 @@ The game's sixteen modules, from `src/game/game.ann` (340 code entries, 236 data
 
 ![The module map: each byte of the game, `5C00`-`FFFF` hex, by its source module; R1-R7 what the regions hold at run time](img/arch/modules.png)
 
-*Every byte of `$5B00-$FFFF`, 256 bytes a row, coloured by the module of its `.ann` entry. Made with `python3
+*Every byte of `$5C00-$FFFF`, 256 bytes a row, coloured by the module of its `.ann` entry (R1 marks `$5B00-$5BFF`
+beside it). Made with `python3
 tools/fig_modules.py src/game/game.ann docs/img/arch/modules.png`.*
 
 How to read it:
 
 - A row is one 256-byte page; `$5C00` at the top, `$FFFF` at the bottom. A colour is a module (the key below).
-- The code is the band `$7BE5-$A927`: text, mainloop, render, player, enemies, rooms and panel interleaved. Their
+- The code is the band `$80EB-$A927` (`$7BE5-$80EA` above it is graphics, orange): text, mainloop, render, player, enemies, rooms and panel interleaved. Their
   interleaving is the original's order; the modules are a reading of it.
 - `$A928-$FD97` is data: the room records (dark green), then the graphics (orange).
 - R1-R7 on the right mark regions whose bytes at load time are not what they hold in play (2.3).
 
 **The point**: the rooms and the pictures are more than half of the game (22 891 of 41 984 bytes). The code modules
-with their own small tables are about 15 000 bytes, and a quarter of those (the start-up code and the menu) is
-overwritten by play.
+with their own small tables are about 15 000 bytes, and about a quarter of those (Intro48, the control menu and the
+boot-time code at `$5D07-$6B5B`, 3 669 bytes) is overwritten by play.
 
 ## 2.3 The memory map
 
-The image as it runs, after the bootstrap's copies (`work/mkgame/original.bin` at c1's `JP $4000`, frame 15 503), with
-what each region holds in play. Stage 2 corrected the stage-1 draft: the room records are at `$A928-$D0F8`, the graphics
+The image as it runs, after the bootstrap's copies (`build/game.bin`, `$5C00-$FFFF`, built from the sources; the
+memory at c1's `JP $4000`, frame 15 503, before the copies, is `work/mkgame/original.bin`), with what each region holds
+in play. Stage 2 corrected the stage-1 draft: the room records are at `$A928-$D0F8`, the graphics
 at `$D104-$FD97`, and `$6651` is Invulnerable, not an end flag.
 
 | Range | Bytes | At the load | In play | Witness |
@@ -97,7 +99,7 @@ at `$D104-$FD97`, and `$6651` is Invulnerable, not an end flag.
 | `$5B00-$5BFF` | 256 | | RoomObjectList `$5B01` (the room's item and enemy records, 2 bytes each); ColumnValues `$5B50-$5B7F` (one picture column as 3-bit values, read back with `POP` after `LD SP,$5B50`); the stack, `SP` = `$5C00` at every pass, low mark `$5BBA` | SetupRoomObjects `$A41E`, MaskedColumn `$8C0F`, 2.6 |
 | `$5C00-$5D06` | 263 | setup: GlobalsInit `$5C00` (56 bytes), GameOver `$5C42`, EndOfGame `$5C45`, NewGame `$5C4D`, GameEntry `$5CFA` | the same: the code stays | copied from `$4146` |
 | `$5D00-$65FF` | 2 304 | Intro48, its texts (`$5E6C` "FOR 10000 YEARS HE SLEPT", `$6170` "I AM HIRO"), the menu code | nine actor pages of 256 bytes, Hiro at `$5D00`; +`$82-$FF` of each page holds a table tail (BuildPageTails) | GameTick `$8472`, MainLoop `$8DFE` |
-| `$6600-$66FF` | 256 | menu code and data; PauseGame and PendingMessage, which stay | the weapon page `$6600` (WeaponActor); the globals `$6642-$667F`: Vitality `$6642`, ChargeStep `$6644`, Charge `$6645`, PauseFlag `$664C`, Lives `$664D`, FireRequest `$6650`, Invulnerable `$6651`, EndFlags `$6652`, the score; code: PauseGame `$6682`, PendingMessage `$66B6` | WALKTHROUGH 6.3 |
+| `$6600-$66FF` | 256 | menu code and the intro's glyphs (`$6682` holds intro-glyphs-1 bytes); PauseGame `$6682` and PendingMessage `$66B6` are written there by BuildPageTails `$5D07` from PageTailTemplate row 9 (`$6FCA`) | the weapon page `$6600` (WeaponActor); the globals `$6642-$667F`: Vitality `$6642`, ChargeStep `$6644`, Charge `$6645`, PauseFlag `$664C`, Lives `$664D`, FireRequest `$6650`, Invulnerable `$6651`, EndFlags `$6652`, the score; code: PauseGame `$6682`, PendingMessage `$66B6` | WALKTHROUGH 6.3 |
 | `$6700-$6CFF` | 1 536 | menu code, ControlMenu `$6A7B`; the vars template from `$6B5C` | the six cell planes `$67-$6C` (220 cells each: flags and zones, layers, colours) and the room variables after them: RoomAbove `$6BDC`, Room `$6BDD`, MapRow `$69DF`, MapColumn `$69E0`, EnemyCount `$6ADD` | BuildRoomPlanes `$9F34` |
 | `$6D00-$6EFF` | 512 | vars templates | the kept room states: HavokStashB `$6D00`, TakenItems `$6DFE`, RevealedZones `$6DFF`, HavokStashA `$6E00`, GoneEnemies `$6EFE` | SaveRoomState `$A58A` |
 | `$6F00-$7047` | 328 | templates | OutlineMask `$6F00`, RowBase `$7000`, NameBoxPlaces `$700C`, built by GameEntry | BuildPageTails `$5D07` |
@@ -146,6 +148,22 @@ flowchart LR
     L3 -- "bootstrap copy" --> P4
 ```
 
+![The memory at the load and in play side by side, 5B00-FFFF hex: play rewrites the low pages, the rest stays](img/arch/memory-load-play.png)
+
+*Left: `build/game.bin`, the image after the bootstrap's copies; right: c1 in play (128K, frame 18 627, room 4, banks
+5, 2 and 0), orange where play holds another value. Made with `python3 tools/fig_memplay.py build/game.bin
+work/stage1/c1/end.szx docs/img/arch/memory-load-play.png`.*
+
+How to read it:
+
+- A row is 256 bytes, `$5B00` at the top; grey is the byte's value (black 0). The labels give each region of the
+  table above, at the load and in play.
+- 5 012 bytes differ. Nearly all are below `$7048`: 2 024 in the actor pages `$5D07-$65FF`, 1 375 in the cell planes,
+  389 in the kept room states, 283 in OutlineMask and RowBase, 237 in the globals page, 196 in the stack and buffers.
+- In the code band only 226 bytes change: the 128K glue's 162 bytes at `$853F` (written over the 48K player by the
+  bootstrap's hooks), 14 at `$852D` and single operands the code rewrites. `$A928-$FDFC` (rooms and graphics) does
+  not change at all; `$FDFD-$FF00` becomes Im2Jump and the 257-byte Im2Table.
+
 **The point**: the low memory is used twice. The code that starts the game and shows the menu lives exactly where
 play later keeps its actors and cell planes, so nothing of it survives the first room.
 
@@ -158,18 +176,26 @@ Hiro crosses to the next row when his Y (`$5D00`) reaches `$A0` (down) or `$EC` 
 (`$5D01`, corrected by the animation offset) reaches `$9E` or `$FA` (CheckRoomExit `$955A`, doc 4.5). The game starts
 in room 4 (row 0, column 3); Havok is in room 123 (row 19, column 20). Rooms 122 and 123 share one record.
 
-![The map: 127 rooms in a 30 x 20 grid, as the RZX run saw them](img/maps/map-rzx.png)
+![The map's western half, columns 0-14: the rooms from src/res, numbered, outlined by the recording that entered them](img/maps/map-west.png)
 
-*Every room of the map tables in its grid cell, filled with the screen the RZX run (48K, another player's game) left on
-its last frame in that room. Made with `python3 tools/fig_map.py work/mkgame/original.bin work/stage1/rzxtrace
-docs/img/maps/map-rzx.png work/stage1/roomshots` (stage 1).*
+![The map's eastern half, columns 15-29: the rooms from src/res, numbered, outlined by the recording that entered them](img/maps/map-east.png)
+
+*The 127 rooms of the map tables in their grid cells, each drawn from `src/res` by `tools/fig_rooms.py --map` (every
+zone revealed, no actors), split into two halves of 15 columns. Made with `python3 tools/fig_route.py --map
+work/stage2/fig/rooms/map.png --state work/stage2/rzx/state.tsv --out docs/img/maps` (it writes map-west.png and
+map-east.png beside the route).*
 
 How to read it:
 
-- Blue outlines: rooms the RZX run entered. Green: rooms the stage-1 rooms recording added (1, 11, 14, 18).
-- Grey cells: the 13 rooms no stage-1 recording showed. Stage 2 entered all of them by POKE probes and drew them from
-  the resources ([doc 1.4](01-game-design.md#14-the-127-rooms)).
-- Black inside a room is a zone never revealed: the run left before walking there.
+- Each cell is a room at a quarter of its play window; its number is in the corner (F a fragment, G a giant, H Havok).
+  An empty grid cell holds no room.
+- Blue outline: the RZX run entered the room in play (107 rooms). Green: stage 1's rooms recording (1, 2, 3, 11, 14,
+  18). Orange: only a POKE probe entered it (13 rooms). Red: room 122, built only by the end sequence.
+- Room 4 (row 0, column 3) is the start; the surface is row 0. Havok's room 123 is at row 19, column 20, beside 122.
+
+The stage-1 map, drawn from the RZX run's screenshots before the rooms could be drawn from the resources, is
+[img/maps/map-rzx.png](img/maps/map-rzx.png) (WALKTHROUGH, stage 1); its grey cells are the 16 rooms with no stage-1
+screenshot (2 and 3 walked through without a shot, 122 shown only at the end, and the 13 of the POKE probes).
 
 **The point**: the map is a sparse grid, a list of columns per row. A room has no exits of its own; walking off an
 edge simply looks up the neighbour cell of the grid.
@@ -211,14 +237,22 @@ player's tail 330 bytes on a 128K, 13 bytes of padding) and none of them is reac
 menu (menu, opt2, opt3, opt4, deaths, gameover, rooms: 46 693 frames; c1 and c48 are left out, their tape loads touch
 every byte), drawn by `kit/heatmap.py` with `work/stage1/regions.txt`:
 
-![Executed, read and written bytes above the ROM over seven recordings, log2 scale, with the screen insets](img/memory-heatmap.png)
+![Executed and read bytes of 4000-FFFF hex over seven recordings, log2 scale, with the screen insets](img/arch/memory-heatmap-a.png)
+
+![Written bytes and the composite (red write, green read, blue execute), with the region labels](img/arch/memory-heatmap-b.png)
 
 *Executed, read and written counts for each byte of `$4000-$FFFF`, log2 scale, over the seven 128K recordings that
-start at the menu (46 693 frames). Made with `python3 ../../kit/heatmap.py` over `work/stage1/l1-all.json` (stage 1).*
+start at the menu (46 693 frames). The 64 K view: banks 5, 2 and 0 as paged in play; bank 4 (the AY player, 7.9 % of
+deaths' CPU) is not drawn. Made with `python3 ../../kit/heatmap.py work/stage1/l1-all.json
+work/stage2/fig/memory-heatmap.png --cell 2 --regions work/stage1/regions.txt --title '...'`, then cut in two with
+`python3 tools/fig_split.py work/stage2/fig/memory-heatmap.png 1105 docs/img/arch/memory-heatmap-a.png
+docs/img/arch/memory-heatmap-b.png`.*
 
 How to read it:
 
-- Three panels: executed, read, written. Brightness is the log2 of the count.
+- Four panels: executed, read (first figure), written, and the three as one RGB picture, red write, green read, blue
+  execute (second figure). Brightness is the log2 of the count. A row is 256 bytes, `$4000` at the top.
+- Under each panel an inset shows `$4000-$57FF` in the screen's geometry and `$5800-$5AFF` as its cells.
 - **Execution**: 71.5 % of the instructions run in `$8000-$8FFF` (the handler, the loop, the render), 21.5 % in
   `$9000-$9FFF` (the player), 3.1 % in `$A000-$AFFF`, 3.7 % in `$F000-$FFFF` (the panel code at `$FF01`, called on
   every pass). Above `$A927` only Im2Jump `$FDFD` (every interrupt) and the panel code run.
@@ -249,7 +283,8 @@ therefore vary with what is due:
 
 - c1, room 4 at the start (128K): 25 068 passes in 975 frames, 26 a frame; 43 a frame at frames 17 700-17 701.
 - The RZX run (48K, RZX frames 1 500-30 000, `tools/rzx_passes.py`): 12.7 a frame on average, from 0 to 49; 8 232
-  frames start no pass. A zone reveal stalls 10-27 frames, a room build 60-72 (doc 4.5).
+  frames start no pass. A zone reveal stalls 10-27 frames; a room build takes 25-71 frames (median 43), and the stall
+  at a room change 27-72 (median 45) (doc 4.5).
 
 ![Where the CPU time goes, by module: the loop polling the actors and the drawing take 70-90 %](img/arch/budget-modules.png)
 
@@ -257,7 +292,7 @@ therefore vary with what is due:
 work/stage1/rec/deaths/l1.json docs/img/arch/budget-modules.png --ann src/game/game.ann,page=0/2/5 --ann
 src/bank4/bank4.ann,page=4,label=bank4 --by module --label "deaths (128K, 7829 frames: title, story, play)" --state
 "r004000 (48K, RZX segment, 2000 frames of play)=work/stage2/rzx/r004000/l1.json" --state "play48 (48K, 3769 frames:
-menu, intro, play)=work/stage2/rec/play48/l1.json" --title "..."`.*
+about 100 of the title, then play)=work/stage2/rec/play48/l1.json" --title "Where the CPU time goes, by module"`.*
 
 How to read it:
 
@@ -265,7 +300,10 @@ How to read it:
 - deaths (128K): mainloop 42.9 %, render 25.6 %, `HALT` 17.7 % (the title, the story and the game-over screens), the
   AY player in bank 4 7.9 % (ay 5.3 %, player 2.6 %).
 - r004000 (48K, play only): mainloop 54.7 %, render 36.1 %, panel 4.5 %, player 2.3 %, sound 2.0 %. No `HALT`.
-- play48 (48K, menu, intro and play): mainloop 46.4 %, render 44.2 %; `HALT` 0 %: the 48K menu and intro poll too.
+- play48 (48K: about 100 frames of the title, then play): mainloop 46.4 %, render 44.2 %; `HALT` 0 %: the title's
+  logo build (TitleSequence's piece moves, frames 0-101) polls ReadInput through its fire test `$A76F` without `HALT`,
+  and play has none. MainLoop `$8DFE` first runs in frame 102. (The 48K intro does `HALT`, WaitFireLong `$8327`, but
+  play48 starts at c48's title and shows no story.)
 
 Worked example, one 48K frame of r004000 (69 888 T): the interrupt takes about 2 960 T (4 %); the rest is passes. In a
 quiet stretch that is about 15 light passes of 4 200-4 500 T; when Hiro is due, one redraw pass of 45 000-90 000 T takes

@@ -9,7 +9,12 @@ The scripts are read from work/stage2/rec/play48/end.szx (StandScript $7B00, Wal
 positions come from work/docs/zsC/play48-hiro.jsonl (TTD memory_at, the state at the start of each frame; frames
 519-3768 of play48: $5D00 66 bytes, $6642 24 bytes, $6BDD).
 
-Names: jumps, fall, slots, points.
+The throw figure reads work/docs/fixC/throw-shots.jsonl: the `throw` recording sampled the same way (frames 1885-2240
+and 2590-2750: $5D00 66 bytes, the shot's page $6600 66 bytes, $6642 24 bytes), made with
+`python3 work/docs/fixC/sample.py --work W --from F --to G --range 5D00:66 --range 6600:66 --range 6642:24 --out OUT`
+on an instance holding work/stage2/rec/throw/session.ttd.
+
+Names: jumps, fall, slots, points, throw.
 """
 import argparse
 import json
@@ -24,7 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 SAMPLES = os.path.join(CASE, 'work', 'docs', 'zsC')
-plt.rcParams.update({'font.size': 11})
+plt.rcParams.update({'font.size': 11, 'text.parse_math': False})  # '$' is a hex sign here, never math
 
 SCRIPTS = [(0x7B00, 'StandScript $7B00 (11 steps)', 'tab:blue', 1098),
            (0x7A51, 'WalkScript $7A51 (12 steps)', 'tab:green', 1551),
@@ -163,6 +168,8 @@ def fig_points(out):
         ax.text(max(vals) * 1.25, i, ', '.join('%d' % v for v in vals), va='center', fontsize=10)
     ax.set_xscale('log')
     ax.set_xlim(5, 400000)
+    from matplotlib.ticker import FuncFormatter
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: '%d' % v))  # no mathtext (parse_math is off)
     ax.set_yticks(range(len(POINTS)))
     ax.set_yticklabels([p[0] for p in POINTS], fontsize=10)
     ax.invert_yaxis()
@@ -174,7 +181,38 @@ def fig_points(out):
     fig.savefig(out, dpi=100)
 
 
-FIGS = {'jumps': fig_jumps, 'fall': fig_fall, 'slots': fig_slots, 'points': fig_points}
+def fig_throw(out):
+    rows = {}
+    for line in open(os.path.join(CASE, 'work', 'docs', 'fixC', 'throw-shots.jsonl')):
+        d = json.loads(line)
+        rows[d['frame']] = (bytes.fromhex(d['5D00']), bytes.fromhex(d['6600']), bytes.fromhex(d['6642']))
+    throws = [(2061, 2186, 'the spinblade (kind $43), Charge 20 at 2061, facing right', 'tab:red'),
+              (2607, 2656, 'the blade (kind $40), Charge 12 at 2607, facing left', 'tab:blue')]
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.4), dpi=100, sharex='col')
+    for col, (f0, f1, title, c) in enumerate(throws):
+        fr = [f for f in range(f0, f1 + 1) if f in rows]
+        live = [f for f in fr if rows[f][1][2] & 1]
+        ax = axes[0][col]
+        ax.plot([f - f0 for f in live], [sgn(rows[f][1][1]) if rows[f][1][1] > 0xC0 else rows[f][1][1] for f in live],
+                '.-', color=c, ms=4, lw=1)  # X below 0 (past the left edge) as negative
+        ax.plot([f - f0 for f in fr], [rows[f][0][1] for f in fr], '-', color='grey', lw=1)
+        ax.set_ylabel('X (half units, 1.5 px; 160 a room)')
+        ax.set_title(title, fontsize=10)
+        ax.grid(alpha=0.3)
+        ax.text(0.02, 0.92 if col == 0 else 0.08, 'dots: the shot (page $66), grey: Hiro', transform=ax.transAxes, fontsize=9)
+        ax = axes[1][col]
+        ax.step([f - f0 for f in live], [(rows[f][1][0x3F] - 256) if rows[f][1][0x3F] > 127 else rows[f][1][0x3F]
+                                         for f in live], where='post', color=c)
+        ax.set_ylabel('+$3F, the life left (signed)')
+        ax.set_xlabel('frames after the release (frame %d)' % f0)
+        ax.grid(alpha=0.3)
+    fig.suptitle('Two throws of the throw recording: the shot\'s X and its life, a frame', fontsize=13,
+                 fontweight='bold')
+    fig.tight_layout()
+    fig.savefig(out, dpi=100)
+
+
+FIGS = {'jumps': fig_jumps, 'fall': fig_fall, 'slots': fig_slots, 'points': fig_points, 'throw': fig_throw}
 
 
 def main():

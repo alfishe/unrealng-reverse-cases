@@ -202,8 +202,9 @@ How to read:
 right, and each value goes through ReverseCodes `$7A00` (`0 4 2 6 1 5 3 7`, the three pixels reversed). There are no
 mirrored copies in memory.
 
-The point: 3 bits a line pack a 12-pixel-wide sprite into 4.5 bytes a line instead of 1.5 bytes of pixels and 1.5 of
-mask. The format carries no mask: the outline is computed when drawing (6.4).
+The point: 3 bits for a unit of 3 pixels pack a 12-pixel line of a sprite into 1.5 bytes (4 units x 3 bits = 12
+bits), the same as plain pixels; a stored mask would add 1.5 bytes more a line. The format carries no mask: the outline
+is computed when drawing (6.4), so a 12 x 32 frame costs 48 bytes instead of 96.
 
 ## 6.3 The cell planes and the room build
 
@@ -215,7 +216,7 @@ A room is held as six planes of 220 bytes, one byte per cell, at `$6700`-`$6CDB`
 | `$68` | the back tile (walls, sky, ground) |
 | `$69` | a second back tile, drawn over `$68` |
 | `$6A` | the front tile, drawn over the actors |
-| `$6B` | a second front tile (solid tiles `$81`-`$86` of the floor) |
+| `$6B` | a second front tile (for example the floor's solid tiles `$81`-`$86`; cell 37 of room 46 holds `$5C`) |
 | `$6C` | low nibble: the shade (tile `$43` + n ANDed over the cell); high nibble: the colour index into CellColours `$66F7` |
 
 EnterRoom `$95C3` builds and draws a room:
@@ -247,8 +248,12 @@ Each tile is composed by ComposeTile:
 - tiles `$4B` and up (things that stand in front: ladders, pipes, crates) through MaskedColumns `$8C0A`, with their
   outline (6.4);
 - tiles below `$4B` plain, through the unpacker straight into the buffer;
-- tiles `$1B` and up with a shade nibble n: the tile, then the shade tile `$43` + n ANDed over it (ComposeOverlay
-  `$8A06`, AndTileColumns `$8A2F`): a dot pattern that darkens the wall.
+- tiles `$1B`-`$4A` with a shade nibble n: the tile, then the shade tile `$43` + n ANDed over it at once
+  (ComposeTileOverlay `$89D2`, ComposeOverlay `$8A06`, AndTileColumns `$8A2F`): a dot pattern that darkens the wall.
+  The shade is per tile, not per cell: tiles `$4B` and up are never shaded.
+
+Each layer pair is composed in order: ComposeBackCell `$898C` composes plane `$68`, then plane `$69` over it
+(ComposeTwoTiles `$89B2`); ComposeFrontCell `$8943` then plane `$6A` and `$6B` the same way.
 
 Pseudocode:
 
@@ -268,7 +273,9 @@ RedrawCellMask(L, a):                          ; $8868
 
 DrawCellLayers(L):
     if plane68[L] | plane69[L] | plane6A[L] | plane6B[L] == 0: EraseCell(L); return
-    ComposeCell(L)                             ; back ($68, $69), then front ($6A, $6B), shade
+    for t in plane68[L], plane69[L], plane6A[L], plane6B[L] (the non-zero ones):  ; ComposeCell $88DB
+        ComposeTile(t)                         ; >= $4B: outlined (MaskedColumns)
+        if $1B <= t <= $4A and plane6C[L] AND $0F: AND tile $43 + n over it
     if colour flag: attributes(2 x 2) = CellColours[plane6C[L] >> 4]
     BlitWindowAt(cell's screen address)        ; $8C72
 ```
@@ -350,8 +357,8 @@ How to read:
 
 Worked example (cell 37 of room 46, row 1, column 17): plane `$67` = `$40` (zone `$40`), `$68` = `$1B` (a wall), `$69`
 = `$62`, `$6A` = `$60`, `$6B` = `$5C` (three tiles of `$4B` and up: drawn with an outline), `$6C` = `$03` (shade 3,
-colour 0). ComposeCell draws `$1B`, then `$62`, the shade tile `$46` ANDed over the wall, then `$60` and `$5C` in
-front.
+colour 0). ComposeCell draws `$1B`, the shade tile `$46` ANDed over it at once, then `$62`, `$60` and `$5C` (tiles
+`$4B` and up are drawn with their outline and not shaded).
 
 ![EnterRoom: room 4 built](img/routines/EnterRoom.gif)
 
@@ -369,13 +376,14 @@ How to read:
 - Right: the code, the frame and T.
 
 The point: a room is never drawn as a picture. Each cell is composed from up to four tiles, shaded and coloured, then
-blitted alone; drawing room 4's 140 revealed cells takes 36 frames (17615-17651). The player waits on a black screen
-that fills in.
+blitted alone; drawing room 4's 140 revealed cells takes 36 frames (17615-17651) of a room build of 40 frames
+(17612-17652). Over the RZX run a room build takes 25-71 frames, median 43, mostly this redraw (doc 4.5). The player
+waits on a black screen that fills in.
 
-**The colour flag.** NewGame `$5CD2` sets the operand at `$88AE` to 0, then calls EnterRoom. Only after the first
-room is drawn does it call PanelAttrsRoom (6.8), which stores the room number there; nothing else writes it. So the
-first room of a game is drawn without cell colours, and FillPlayAttributes then paints the whole window `$46` (room 4)
-or 7. Every room entered later colours each cell it draws.
+**The colour flag.** NewGame `$5C4D` (the write at `$5CD2`) sets the operand at `$88AE` to 0, then calls EnterRoom. Only
+after the first room is drawn does it call PanelAttrsRoom (6.8), which stores the room number there; nothing else writes
+it. So the first room of a game is drawn without cell colours, and FillPlayAttributes then paints the whole window `$46`
+(room 4) or 7. Every room entered later colours each cell it draws.
 
 ## 6.4 MaskedColumn `$8C0F`: the values through the stack
 
@@ -405,7 +413,8 @@ How to read:
 **Why `DI` round each `POP`.** While SP points into ColumnValues, an interrupt would push its return address at SP - 2
 and SP - 1. Between `POP BC` and `DEC SP` those two bytes are v(k) and v(k + 1), and v(k + 1) is read again by the next
 `POP`. After `DEC SP` they are bytes already read. So the code disables the interrupts for exactly those two
-instructions. The IM 2 handler's own pushes (six registers, 14 bytes in all) land on values already used.
+instructions. The IM 2 handler's pushes (its return address and six registers, 14 bytes) and those of the calls it
+makes (GameTick, EffectPlayer) land below SP: on values already used, or below the table.
 
 Pseudocode:
 
@@ -415,7 +424,7 @@ MaskedColumn(de = the buffer line, n = lines):  ; $8C0F
     SP = ColumnValues + first                 ; $8C1D, set by SetColumnClip
     a = $FF
     DI; c, b = POP; SP -= 1; EI               ; c = v(0), b = v(1)
-    (de) = (de) AND M[b] AND a OR c ... (line 0 leaves M[v(-1)] out)
+    (de) = (de) AND M[b] AND a OR c            ; line 0: buf AND M[v(1)] OR v(0); M[v(-1)] and M[v(0)] left out
     repeat n times:                           ; $8C2D
         a = M[b] AND M[c]                     ; M[v(k)] AND M[v(k-1)]
         DI; c, b = POP; SP -= 1; EI           ; the next pair
@@ -504,7 +513,9 @@ Witness: DrawActor L1 1440 in `c1`, 132 818 over the stage-1 recordings: every v
 
 ## 6.5 The chunk buffer and the blit
 
-The game draws nothing straight on the screen except the panel and the messages. It composes a window of whole cells
+The game draws nothing straight on the screen except the panel, the title and the text screens (the printer of
+[doc 8](08-hud-and-text.md)); the in-play messages are the banner actor of page `$66`, drawn through the window like any
+actor (6.10). It composes a window of whole cells
 in the **chunk buffer** and copies the window to the screen:
 
 - page `$5D` + n holds unit column n of the window (`$5D`-`$66`: up to 10 units; a cell is 4);
@@ -754,7 +765,8 @@ How to read:
 - One panel a frame; across is T in the frame, down the 192 paper lines. The diagonal is the beam.
 - The strip above each panel is the routine running: purple UnpackGroupsLoop and yellow MaskedColumnPop fill most of
   frame 17829.
-- The dots in frame 17830 are the 96 screen writes of BlitRows, lines 64-95 of the paper, at T 11 500-16 200.
+- The dots in frame 17830 are the 96 screen writes of BlitRows, lines 72-103 of the paper (the window of 6.5's worked
+  example), at frame T 12 590-17 444 (from the trace: `work/docs/zsB/c1/traces/17829_0-17831_0.uatr`).
 
 The point: the game does not wait for the beam. Here all 96 writes land before the beam reaches their lines (the
 paper starts at T 16 212), so the frame shows the new picture whole. That is luck of the timing: a blit that ran later
@@ -825,7 +837,7 @@ A589 C9           RET                        ; Z
 ```mermaid
 flowchart TD
     A[Hiro moved, not at an edge] --> B[ActorScreenBox]
-    B --> C[the cell under his front edge]
+    B --> C[the cell one row below his box's first row, at his front column]
     C --> D[D = its zone bits]
     D --> E{D already revealed?}
     E -- yes --> Z[return]
@@ -840,11 +852,14 @@ flowchart TD
     K -- no --> L[SpawnZoneEnemies]
 ```
 
-Worked example (`deaths`, room 8): the sample of frame 3780 shows RevealedZones `$80`, Hiro at X `$60`. In frame 3780
-he steps to X `$64`, over the hole in the ground; the cell under his front edge is in zone `$40`, the underground
-(rows 7-10 of the room, 80 cells). The sample of 3781 shows RevealedZones `$C0`. RedrawCellsMasked then draws the 80
-cells of zone `$40` one by one; the other 140 are left. Hiro's X stays `$64` from sample 3781 to 3789 and moves again
-at 3790: a stall of 9 frames.
+Worked example (`deaths`, room 8): Hiro is falling down the shaft at X `$46`, facing right (`$5D1B` = 1), flags `$07`
+(active, in the air, falling); his Y grows 4 a step. The sample of frame 3780 shows RevealedZones `$80` and Y `$60`. In
+frame 3780 he falls to Y `$64`: his box's first 8-pixel row is `$0C`, cell row 6, and the operand at `$A56E` holds the
+cells `$80` (first column) and `$81` (last). RevealZone tests `$81` + 20 = `$95`, row 7, the cell of his lower half at
+his front column: zone `$40`, the underground (rows 7-10 of the room, 80 cells). The sample of 3781 shows
+RevealedZones `$C0`. RedrawCellsMasked then draws the 80 cells of zone `$40` one by one; the other 140 are left. Hiro's
+Y stays `$64` from sample 3781 to 3789 and moves again at 3790: a stall of 9 frames (the RZX run's reveals take 10-27,
+doc 4.5).
 
 ![Room 8 before and after the reveal](img/render/reveal.png)
 
@@ -856,7 +871,8 @@ reveal-before=3780:0 reveal-after=3790:0`, the instance opened on `work/stage1/r
 
 How to read:
 
-- Left: the surface of room 8 drawn, the rows below the ground black.
+- Left: the surface of room 8 drawn, the rows below the ground black. Hiro is not to be seen: he is entering the
+  shaft, his lower half in cells of zone `$40`, and those are covered (below).
 - Right: the cells of zone `$40` that hold tiles (the shaft, the stone ledges); its empty cells stay black.
 - The panel and the zone `$80` part are the same bytes in both.
 
@@ -877,6 +893,34 @@ How to read:
 The point: a reveal is the most expensive thing the renderer does after a room change. It draws each cell alone (its
 own compose and blit), so a zone of 80 cells costs 9 frames, during which nothing moves. The RZX run has twelve
 long stalls that are not room builds, and all twelve are reveals ([doc 4](04-game-loop.md)).
+
+**An actor in an unrevealed zone is hidden.** When an actor is drawn, ComposeActorCells `$8907` composes the cells
+under it: the back layers, the actor, then the front layers through ComposeFrontCell `$8943`. For a cell whose zone
+bits are not in RevealedZones, ComposeFrontCell composes the blank tile `$43` instead of the cell's front tiles, and a
+plain tile overwrites the buffer: whatever was composed there, the actor included, comes out black. So Hiro, an enemy
+or a pickup in an unrevealed zone is invisible until the zone opens, and the reveal is what shows them. Figure 6.9's
+left shot is the witness: at 3780 Hiro's box covers cell rows 6 and 7 at the shaft's top (Y `$60`); row 7 is zone
+`$40`, covered by tile `$43`, row 6 is the ground's noise, and he shows nowhere. At 3790 he is in the drawn shaft.
+
+```text
+ComposeFrontCell(L):                           ; $8943
+    if plane67[L] AND $FC AND RevealedZones == 0:
+        ComposeTile($43)                       ; not revealed: blank, over the actor
+    else: compose plane6A[L], then plane6B[L]  ; the front tiles
+```
+
+```text
+8943 E5           PUSH HL                    ; ComposeFrontCell
+8944 26 67        LD H,$67
+8946 7E           LD A,(HL)
+8947 E6 FC        AND $FC                    ; the cell's zone bits
+8949 67           LD H,A
+894A 3A FF 6D     LD A,(RevealedZones)
+894D A4           AND H
+894E 20 04        JR NZ,ComposeFrontTiles    ; revealed: its front tiles
+8950 3E 43        LD A,$43                   ; else the blank tile
+8952 18 2A        JR ComposeFrontTile
+```
 
 Known only from the code: a cell with no zone bits under Hiro would give D = 0 and Z, and the 220-cell walk would run
 with A = 0: it would redraw nothing and erase again every cell not in a revealed zone (already black), on every
@@ -935,6 +979,26 @@ flowchart LR
 
 Worked example: in `c1` room 4, row 23 shows a white meter, red EXTRA, the weapon in white and red BONUS (figure
 6.1); the play window is yellow on black (`$46`, bright yellow ink), so the sky's dither reads as yellow.
+
+![The panel drawn at the start of play](img/routines/PanelDraw.gif)
+
+*Animation 6.5: `c1` frames 17650-17653, the end of NewGame and the first passes: PrintScore `$8365` prints the score
+and the lives in row 0, then the status line (EXTRA, the weapon box, BONUS) in row 23; PanelAttrsRoom colours row 23;
+FillPlayAttributes paints the window `$46`; then the per-pass jobs PanelWeapon `$FF01` and PanelMeters `$FF64` draw
+the weapon and the two meters. `python3 kit/routine_anim.py --work work/docs/fixB/c1 --window 17650:0-17654:0
+--listing build/game.lst --view screen --range 5B00-FFFF --pc 834A-8454,FF01-FFFE --pictures 40 --title "..." --out
+docs/img/routines/PanelDraw.gif`, the instance opened on `work/stage1/c1/session.ttd` with `re_session.py open --model
+128K`.*
+
+How to read:
+
+- Bottom left: the screen. Row 0 fills first (the score, the lives), then row 23's text, its colours, the window's
+  yellow, and last the meters (the energy bar white, the second meter red).
+- Top left: memory; the writes into the attribute rows show as one line each.
+- Right: the code: PrintString and the glyph printer, FillAttrRun's `LDIR`, then PanelMeters and DrawMeter.
+
+The samples agree: the sample of 17651 holds row 0's first glyph bytes (`$6C`), that of 17652 row 23's text, and that
+of 17653 the meters (`FF` and `55`, the strip of [doc 8](08-hud-and-text.md)).
 
 The point: the panel is never redrawn by the window renderer, so no actor's blit can damage it; the per-pass jobs
 redraw only what changed ([doc 8](08-hud-and-text.md)).
@@ -1020,12 +1084,13 @@ flowchart TD
     J -- yes --> K[the room's objects]
 ```
 
-**Why it needs the 48K ROM.** The bytes at `$00FD`-`$0140` of the 48K ROM are the start of the BASIC keyword table
-("BIN", "OR", "AND", "<=", ">=", "<>", "LINE", "THEN", "TO", "STEP", "DEF FN", "CAT", "FORMAT", "MOVE", ...). On the
-48K they are always there. On the 128K the game runs with `$7FFD` = `$10`: ROM 1, the 48K BASIC, is paged in, and
-the 128K's ROM 1 matches the 48K ROM in this range. So the surface is the same on both. With ROM 0 (the 128K
-editor) or any other ROM, the ground changes; a ROM of zeros would hang, since every byte gives 1 and 1 = D loops for
-ever.
+**Why it needs the 48K ROM.** The bytes at `$00FD`-`$0140` of the 48K ROM lie in the BASIC keyword table, which starts
+at `$0095` ("BIN", "OR", "AND", "<=", ">=", "<>", "LINE", "THEN", "TO", "STEP", "DEF FN", "CAT", "FORMAT", "MOVE", ...).
+On the 48K they are always there. On the 128K the game runs with `$7FFD` = `$10`: ROM 1, the 48K BASIC, is paged in, and
+the 128K's ROM 1 matches the 48K ROM in this range. So the surface is the same on both. With ROM 0 (the 128K editor) or
+any other ROM, the ground changes. A ROM of zeros would not hang: every byte gives 1, and when D is 1 NextGroundVariant
+goes on (`INC BC`, a 16-bit pointer with no bound) past `$3FFF` into RAM, the screen and the system area, until a byte
+differs; the ground then comes from whatever is there.
 
 ![The surface noise](img/render/surface.png)
 
@@ -1044,6 +1109,23 @@ How to read:
 Worked example (room 4, 48K ROM): BC starts at `$00FC`; the first read is `$00FD` = `$42` ("B"): AND 3 = 2, D = 2,
 tile `$3D`. Next `$49` ("I"): 1, tile `$3C`. Next `$CE` ("N" with bit 7): 2. Next `$4F` ("O"): 3, tile `$3E`. Row 5
 of room 4 in `c1` reads `3D 3C 3D 3E ...`, as the figure's first row of variants (2 1 2 3 ...).
+
+![BuildSurface at work](img/routines/BuildSurface.gif)
+
+*Animation 6.6: `c1` frame 17614 T 60 000 to 17615 T 20 000, room 4 built at the start of play. `python3
+kit/routine_anim.py --work work/docs/fixB/c1 --window 17614:60000-17615:20000 --listing build/game.lst --view
+buffer:6800:20x11:hex --range 0000-01FF --row-bytes 32 --pc A039-A0B8 --pictures 30 --title "..." --out
+docs/img/routines/BuildSurface.gif`, the instance opened on `work/stage1/c1/session.ttd`.*
+
+How to read:
+
+- Top: memory `$0000`-`$01FF`, 32 bytes a row: the ROM bytes NextGroundVariant reads light up from `$00FD` (257 - 4)
+  on, one or two a cell.
+- Middle: plane `$68` as 11 rows of 20 bytes. Rows 0-4 take the sky tiles `$33`-`$36` and the horizon; row 5 then
+  fills left to right with `$3D 3C 3D 3E ...`, `$3B` + the variants 2, 1, 2, 3 of the example above. Row 6 (the floor
+  tiles `$80` + variant) goes to plane `$6B`, outside this view; the sample of 17640 holds it: `82 83 81 82 83 82 81
+  83 ...`.
+- Right: the code: NextGroundVariant's `INC BC; LD A,(BC); AND 3` for each cell.
 
 The point: the "noise" of the ground is the BASIC keyword table seen through AND 3. It looks random, it is the same
 every time, and it is the same on the 48K and the 128K only because both page in the same ROM.
@@ -1093,4 +1175,5 @@ says.
 
 - A torn window: possible when a blit runs while the beam crosses it; no recording was checked for it.
 - A cell with no zone bits under Hiro would trigger a 220-cell walk on every move; no room we dumped has one.
-- A surface room built with another ROM paged in would get other ground, and a ROM of zeros would hang.
+- A surface room built with another ROM paged in would get other ground; with a ROM of zeros the variants would come
+  from RAM past `$3FFF`.

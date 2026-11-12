@@ -633,19 +633,20 @@ Multiply8Done:
 
   ORG $9A4B
 
-; Run the next due actor step: the shot or the boss's shot, Hiro, the fallers,
+; Run the next due actor step: page $66 or the boss's shot, Hiro, the fallers,
 ; actor H
 ;
 ; Called by the actor update `$8E2B` with H = an active actor's page (562 575
 ; runs). IY = that page.
 ;
-; Every other call (the operand at `$9A51` rotates `$AA`) the shot in page
-; `$66` steps when it is active and due (the cyber-arm's shot moves at twice
-; the rate); on the calls between, when a boss fight is on (`$9A59`), the actor
-; in page `$60` (the boss's shot, BossFire). Bit 7 of `$6602` stops here. Then
-; Hiro when due; then every page `$5E-$65` that is falling (+2 bit 2) and due;
-; then actor H when due. Each "due" step (`$9A8E`) pops its caller's return, so
-; the call ends after one step.
+; Every other call (the operand at `$9A51` rotates `$AA`) page `$66` (Hiro's
+; thrown weapon or the message banner) steps when it is active and due (the
+; cyber-arm's shot moves at twice the rate); on the calls between, when a boss
+; fight is on (`$9A59`), the actor in page `$60` (the boss's shot, BossFire).
+; Bit 7 of `$6602` (the banner) stops here. Then Hiro when due; then every page
+; `$5E-$65` that is falling (+2 bit 2) and due; then actor H when due. Each
+; "due" step (`$9A8E`) pops its caller's return, so the call ends after one
+; step.
 ;
 ; Witness: L1 3898691 (bossgate, deaths, gameover, havok, hiscore, menu,
 ; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
@@ -661,11 +662,11 @@ RunActorSteps:
                           ; (SpawnActor $A69D, KillActor $97BA, $A47A)
   OR A
   JR Z,StepHiroFirst
-  LD D,$60                ; the boss in page $60
+  LD D,$60                ; the boss's shot in page $60
   CALL StepIfActive
   JR StepHiroFirst
 StepBulletPage:
-  LD D,$66                ; the shot in page $66
+  LD D,$66                ; page $66: Hiro's weapon or the banner
   CALL StepIfActive
 StepHiroFirst:
   LD DE,WeaponActor+$0002 ; $6602 bit 7: no more this call

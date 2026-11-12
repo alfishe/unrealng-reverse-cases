@@ -265,19 +265,20 @@ SequenceChannels:
 ; period word, then the length) or $7F (a rest: the length only; the playing
 ; note runs on to its release).
 ;
-; A note: the index + the transpose (+$0E) picks the period from NoteTable
-; $D016; with the slide on, the slide's target is the note + interval (+$18)
-; and its whole change goes to +$1E/+$1F. The arpeggio state becomes $C0 + the
-; arpeggio, the length goes to +$0C, IY becomes the instrument and, unless an
-; effect holds the channel, StartNote $D0DA starts it (DrumPending = the drum
-; switch).
+; A note: the index + the transpose (+$0A), stored as the note playing (+$0E),
+; picks the period from NoteTable $D016; with the slide on, the slide's target
+; is the note + interval (+$18) and its whole change goes to +$1E/+$1F. The
+; arpeggio state becomes $C0 + the arpeggio, the length goes to +$0C, IY
+; becomes the instrument and, unless an effect holds the channel, StartNote
+; $D0DA starts it (DrumPending = the drum switch).
 ;
 ; The order list (ReadOrderList): $00-$7F play pattern n (PatternAddrLo/Hi
 ; $CC97/$CCC4), $80-$BF the next pattern n times (low five bits), $C0-$FB n, m
 ; slot n (low four bits) = instrument m, $FC one byte skipped, $FD a, b three
 ; bytes skipped, $FE t the transpose t, $FF the end (+$0D = 0, the channel
-; stops reading). $FC and $FD are in no tune (the code at $C1FC and $C206 ran
-; in no recording).
+; stops reading). As order-list codes $FC and $FD are in no tune (the code at
+; $C1FC and $C206 ran in no recording); as pattern commands they are the drums
+; (ReadPatternCommand).
 ;
 ; Witness: L1 137559 (c1, deaths, gameover, menu, rooms, opt x3).
 SequenceChannel:

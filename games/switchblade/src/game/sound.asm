@@ -36,9 +36,11 @@ SoundMode:
 ;
 ; Calls EffectFrame, then $9BA3 (the operand of $9BA2 LD A,n) = the current
 ; level (the operand at $85CA): $9BA2 lets the footstep effect 7 start only
-; while no effect sounds. On a 128K the bootstrap overwrites $853F-$85E0 with
-; the 162-byte glue to the AY player in bank 4 (AyGlue): the 48K bytes from
-; $85E1 and the table EffectTable stay but are not run.
+; while that level is 0: never over an audible effect, but over the zero-level
+; sustain of effects 4, 7, 11, 12 and 13 (sustain 0) it does. On a 128K the
+; bootstrap overwrites $853F-$85E0 with the 162-byte glue to the AY player in
+; bank 4 (AyGlue): the 48K bytes from $85E1 and the table EffectTable stay but
+; are not run.
 ;
 ; Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
 ; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19). The 128K

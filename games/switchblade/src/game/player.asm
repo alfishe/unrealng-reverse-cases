@@ -1689,7 +1689,7 @@ RestoreShield:
 ; out, `$84AB`, and so does `$91CB`). Then the 16-bit timer (SetActorTimer
 ; `$9991`).
 ;
-; Callers: LoseEnergy `$9632` (170 frames after a lost life), CollectPickup
+; Callers: LoseLife `$9632` (170 frames after a lost life), CollectPickup
 ; `$98E8` (the invulnerability pickup, `$355` = 853 frames, 17 s at 50 Hz: the
 ; manual's "sixteen second period"), RestoreShield `$995C`, `$872B`. deaths and
 ; gameover 7 runs.
@@ -2038,14 +2038,16 @@ MarkMoved:
 
 ; Hiro's footstep: sound 7 on frames $26 and $28
 ;
-; The operand at `$9BA3` is the effect player's busy flag (written at `$8545`):
-; no footstep over another effect. Frames `$26`, `$28` are the walk frames with
-; a foot down. 2348 runs, 10 footsteps (c1, deaths, menu).
+; The operand at `$9BA3` is the effect's current level (written at `$8545`; on
+; a 128K AY channel A's volume): no footstep while it is not 0, so never over
+; an audible effect (a sustain of 0 does not stop it). Frames `$26`, `$28` are
+; the walk frames with a foot down. 2348 runs, 10 footsteps (c1, deaths, menu).
 ;
 ; Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
 ; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 FootstepSound:
-  LD A,$00                ; LD A,n: n = the effect player's busy flag
+  LD A,$00                ; LD A,n: n = the effect's level (0: no effect
+                          ; sounds)
   OR A
   RET NZ
   LD L,$23

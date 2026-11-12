@@ -48,7 +48,7 @@ and `LD A,(HL)`: the plane is picked by one load.
 | `$6700` | flags: bits 7-2 the zone mask (one bit a zone), bit 1 a hidden item (a breakable block), bit 0 a tile mark | BuildZones `$A4D1`, SetupRoomObjects `$A41E`, PutTileMarkA, BreakReveal `$9ED7` | RevealZone `$A569`, SpawnEnemy `$A5BF`, the probes |
 | `$6800` | the back tiles: the wall outlines of 7.3, the strings of code 0 | DecodeRoom, the commands | the probes, RedrawCell (doc 6) |
 | `$6900`, `$6A00`, `$6B00` | three more tile planes: the strings of codes 1-3, the bars, the pieces; the ladders `$53-$55` are in `$6A00` | the commands, SetupRoomObjects | LadderAbove `$9CA7`, ClimbMove `$9C4A`, RedrawCell |
-| `$6C00` | the colour: the ink in the high nibble, the shade in the low | the commands | RedrawCell |
+| `$6C00` | the colour: the colour index into CellColours `$66F7` in the high nibble, the shade in the low | the commands | RedrawCell |
 
 Cells `$DC-$FF` of each plane are outside the room. BuildRoomPlanes `$9F34` copies the bottom row of the room above
 (cells `$C8-$DB` of its decode) to cells `$EC-$FF` of the four planes `$68-$6B`. Hiro can then stand on the floor
@@ -96,10 +96,10 @@ cells of that sample read `$6ADC` = `00 01 01 5B 02 3C`: no item, one enemy, the
 
 ## 7.2 The room record
 
-Each of the 126 records lives in the room data, Room1 `$A928` to Room127 `$D0F8` (`src/res/rooms/rooms.txt`, the
-format in [src/res/rooms/README.md](../src/res/rooms/README.md)). RoomDataAddress `$A3C9` finds a room's record
-through the table at `$7100`. Rooms 122 and 123 share one record, Room122And123 `$CF88`: Havok's room is the same
-picture twice. A record has five parts, read in order by one pointer BC:
+Each of the 126 records lives in the room data, Room1 `$A928` to the end of Room127 (`$D0A5`-`$D0F8`)
+(`src/res/rooms/rooms.txt`, the format in [src/res/rooms/README.md](../src/res/rooms/README.md)). RoomDataAddress
+`$A3C9` finds a room's record through the table at `$7100`. Rooms 122 and 123 share one record, Room122And123 `$CF88`:
+Havok's room is the same picture twice. A record has five parts, read in order by one pointer BC:
 
 1. The header byte: the number of wall outlines in each of three groups (7.3).
 2. The outlines, two bytes each.
@@ -255,11 +255,11 @@ Witness: DecodeRoom runs at every room entry, and once more for the room above w
 
 ## 7.4 The commands
 
-After the outlines comes a list of commands. NextObjectGroup `$9FD6` takes the code from the low nibble and stores
-the high nibble + 1 as the count; for code `$D` the count is (high nibble AND 1) + 2. The loop decrements the count
-before each operand, so a command runs its handler "high nibble" times. A command with a high nibble of 0 does
-nothing. JumpViaTable `$A00F` finds the handler in RoomCodeHandlers `$73C7`, a word a code. Code `$B` has its own
-table, RoomCodeHandlersB `$75EF`, picked by the operand's bits 4-7.
+After the outlines comes a list of commands. NextObjectGroup `$9FD6` takes the code from the low nibble and stores the
+high nibble + 1 as the count; for code `$D` the count is (high nibble AND 1) + 2. The loop decrements the count before
+each operand, so a command runs its handler "high nibble" times. A command with a high nibble of 0 does nothing, except
+code `$D`, whose count is (n AND 1) + 2 and so runs once. JumpViaTable `$A00F` finds the handler in RoomCodeHandlers
+`$73C7`, a word a code. Code `$B` has its own table, RoomCodeHandlersB `$75EF`, picked by the operand's bits 4-7.
 
 | Code | Operand of one item | What it builds |
 | --- | --- | --- |
@@ -530,7 +530,8 @@ How to read it:
 
 Witness: in `play48` Hiro leaves room 7 for room 8 at frame 2389, and the sample of 2391 equals the swroom build. Hiro
 does not move from the sample of 2391 to that of 2427. The build, the masked redraw and the spawn take 38 frames
-without a pass; doc 4.5 measures these stalls on the RZX run.
+without a pass. Over the RZX run a room build takes 25-71 frames, median 43, and the whole stall at a room change
+27-72, median 45 (doc 4.5).
 
 ## 7.7 The map and the room change
 
@@ -734,7 +735,8 @@ timed gem of room 7 was taken at frame 2318.
 ## 7.9 The actor record
 
 An actor is 66 bytes at the start of a page. Hiro is `$5D00`. The seven pages `$5E00-$6400` hold the enemies, pickups
-and sparks. `$6500` (ActorPage9) holds the energy ball, and `$6600` (WeaponActor) the thrown weapon or a boss's shot.
+and sparks. `$6500` (ActorPage9) holds the energy ball, and `$6600` (WeaponActor) Hiro's thrown weapon or the message
+banner (7.10). In a boss fight page `$6000` holds the boss's shot (7.13); the boss itself is an ordinary enemy page.
 The code reaches a field with H = the page and `LD L,field`, so every routine works on any actor. The rest of each
 page holds the actor's sprite buffers (doc 6) and, below `$6600`, the templates.
 
@@ -780,7 +782,7 @@ python3 tools/fig_objects.py --only page
 | `+$24`, `+$25` | run, steps | the walk counters (a run of 4 steps or more makes a long jump) |
 | `+$26` | falls | the fall steps (doc 10) |
 | `+$27` | scratch | a chaser's wander count, a trap's zone |
-| `+$28` | hold | frames to wait before the first step |
+| `+$28` | hold | a count-down: while it is not 0, each step only reloads the due counter with it, so a hold h delays the first move by about h(h-1)/2 frames (`$0B` → 55) |
 | `+$29` | slot | the enemy record's number, 0 for none |
 | `+$2A-+$2D` | box | left, right, top, bottom: X / 2 (3-pixel columns) and Y / 8 (8-pixel rows) |
 | `+$30-+$38` | slots | jump, fall or hurt, pose, turn, action, hard landing, hang (ladder), death, rise: steps left, 0 idle |
@@ -836,6 +838,7 @@ python3 tools/fig_objects.py --only kinds
 | `$40-$46` | Hiro's weapons | WeaponControl `$9514` | | | WeaponTemplate `$64EE`, doc 10 |
 | `$47` | a spark | PathControl | | | lives 170 frames |
 | `$48` | the energy ball | PathControl, with ShieldFollow `$94E1` | | | Invulnerable while it lives |
+| `$00` | the message banner | PathControl | | 0 | KindTemplates holds 0 for it: ShowMessage `$66C8` passes template 30 at `$65A6` itself; page `$66` only (below) |
 
 The touch zones (`src/res/tables/touch-zones.csv`, at `$5FAC` in play) are four bytes each: Hiro's place relative to
 the actor, Y from, Y to, X from, X to.
@@ -851,6 +854,115 @@ the actor, Y from, Y to, X from, X to.
 Witness: the templates are the bytes of `$6182-$65FF` in every play recording; InitActor ran for every spawn
 (SpawnEnemy `$A5BF` ran 30 times in `play48`).
 
+### The message banner: page `$66` shared with the weapon
+
+The four in-play messages (EXTRA LIFE, BONUS POINTS, PAUSE GAME, GAME OVER) are not printed. Each is an actor: the
+**message banner**, template 30 at `$65A6` (row 9 of the page tails), kind `$00` (its KindTemplates word is 0:
+ShowMessage passes the template itself), run by PathControl like a flier.
+It lives in page `$66`, the page of Hiro's thrown weapon, so the two never coexist, and while it is up Hiro cannot
+strike ([doc 5](05-controls.md) 5.5 tests `$6602` bit 0).
+
+The code is in the page tail of `$6600` (PageTail66 `$6FCA`, copied to `$6682-$66F6`; decoded in
+`tools/runtime66.asm`):
+
+1. **ShowMessage `$66C8`** (A = the message 1-4): if page `$66` is busy (a weapon in the air), ExpireActor `$97A3`
+   and RunBanner run it out. Then MessageNumber `$7B63` = A - 1 (the frame of MessageFrames `$F87C`), and InitActor
+   `$A65D` starts the template at `$65A6` with Y `$F0`, X `$48` (above the window, in the middle), kind 0. It sets
+   `$6602` = `$81`: active, and bit 7, which makes RunActorSteps return after the page-`$66` step (7.12), so nothing
+   else moves. It then calls ActorUpdate until the segment count +`$40` (`$6640`) is 2, and waits in PauseLong
+   `$8330` (about 9 frames).
+2. **RunBanner `$66BD`** calls ActorUpdate on page `$66` until `$6602` bit 0 clears: the path's end.
+3. **PendingMessage `$66B6`**, called by MainLoop when MessageRequest `$79FF` is set (1 for an extra life, 2 for the
+   10 000 bonus, from the score checks at `$99AF` / `$99CB`): ShowMessage, clear the request, RunBanner. PauseGame
+   calls ShowMessage 3 and RunBanner; ShowGameOverWait `$831A` calls ShowMessage 4 and then waits for fire with the
+   banner held.
+
+The path at `$7B62` (template bytes +`$05`/+`$06` = `$62`, `$7B`): a byte 1, the frame (MessageNumber), 9 segments,
+then 9 records of (steps, Y step, X step): down 24 x 4 lines (from Y `$F0` to `$50`), a bounce of 5 up, 5 down, 2 up,
+2 down, 1 up, 1 down (4 lines each), 16 steps still, and up 24 x 4. The step delay is 1: a step every frame it is
+due.
+
+Pseudocode:
+
+```text
+ShowMessage(a):                                ; $66C8, run time
+    if WeaponActor+2 bit 0: ExpireActor(page $66); RunBanner()
+    MessageNumber = a - 1                      ; $7B63: the banner's frame
+    InitActor(page $66, template $65A6, Y $F0, X $48, kind 0)
+    WeaponActor+2 = $81                        ; active; bit 7: it moves alone
+    repeat ActorUpdate(page $66) until +$40 == 2   ; flown in, about to hold
+    PauseLong()                                ; $8330
+
+RunBanner():                                   ; $66BD
+    repeat ActorUpdate(page $66) while WeaponActor+2 bit 0
+
+PendingMessage(a = MessageRequest):            ; $66B6, from MainLoop
+    ShowMessage(a); MessageRequest = 0; RunBanner()
+```
+
+From `build/runtime66.lst` (the bytes of PageTail66 at their run-time addresses):
+
+```text
+66BD 21 02 66     LD HL,$6602                ; RunBanner
+66C0 CD 2B 8E     CALL ActorUpdate           ; RunBannerLoop
+66C3 7E           LD A,(HL)
+66C4 1F           RRA
+66C5 38 F9        JR C,RunBannerLoop         ; still active
+66C7 C9           RET
+66C8 F5           PUSH AF                    ; ShowMessage
+66C9 21 02 66     LD HL,$6602
+66CC 7E           LD A,(HL)
+66CD 1F           RRA
+66CE 30 06        JR NC,ShowMessageStart     ; page $66 free
+66D0 CD A3 97     CALL ExpireActor           ; a weapon in the air: end it
+66D3 CD BD 66     CALL RunBanner             ; and run it out
+66D6 F1           POP AF                     ; ShowMessageStart
+66D7 3D           DEC A
+66D8 32 63 7B     LD (MessageNumber),A
+66DB 01 F0 48     LD BC,$48F0                ; X $48, Y $F0
+66DE 11 A6 65     LD DE,BannerTemplate       ; $65A6
+66E1 AF           XOR A                      ; kind 0
+66E2 CD 5D A6     CALL InitActor
+66E5 EB           EX DE,HL
+66E6 2E 02        LD L,$02
+66E8 36 81        LD (HL),$81                ; active, bit 7
+66EA CD 2B 8E     CALL ActorUpdate           ; ShowMessageLoop
+66ED 3A 40 66     LD A,($6640)               ; the segments left
+66F0 FE 02        CP $02
+66F2 20 F6        JR NZ,ShowMessageLoop
+66F4 C3 30 83     JP PauseLong
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Clear: ShowMessage, a weapon in page 66 is run out
+    Clear --> Down: InitActor 65A6, Y F0, 6602 = 81
+    Down --> Bounce: 24 steps of 4 lines, Y 50
+    Bounce --> Hold: 6 short segments, +40 = 2, ShowMessage returns
+    Hold --> Up: 16 still steps (PauseLong, then RunBanner)
+    Up --> [*]: 24 steps up, 6602 bit 0 clear, RunBanner returns
+```
+
+Worked example (`menu`, the pause of [doc 5](05-controls.md) 5.7): P at frame 1931. The sample of 1932 holds the
+banner: `$6600`-`$6602` = `F4 48 81`, segments (+`$40`) 9, steps (+`$3E`) `$18`. Y grows by 4 a frame to `$50` (1955),
+bounces until 1977, holds from 1978 (+`$40` = 2), moves up from 2006, and the sample of 2031 shows `$6602` = 0: 99
+frames from the press to the end. In the quit at 2109 the same banner with message 4 holds from 2156 and stays frozen
+in mid-window while WaitFireLong waits its 200 frames (the title at 2367).
+
+![The message banner in the pause](img/routines/PauseGame.gif)
+
+*The banner in `menu` frames 1931-2048: the animation of [doc 5](05-controls.md) (Animation 5.4, its command there),
+shown again here: it comes down from the top of the window, bounces, holds, goes back up and is gone, and only then does
+the pause's poll start.*
+
+**The point**: one actor page serves two jobs that cannot happen at once from the player's side, a thrown weapon and
+a message, and bit 7 of its flags turns the scheduler into a one-actor show: the game freezes while the message flies,
+with no separate drawing code for messages.
+
+Witness: the samples of `menu` frames 1931-2048 and 2108-2380 above (`memory_at` on `work/stage1/rec/menu`).
+ShowGameOverWait `$831A` L1 10 (gameover, hiscore, menu, opt x3, rzx x4); the run-time code itself has no listing in
+the game image, so its runs are counted at the bytes' run-time addresses (GlyphBytesAsCode `$66CD`, L1 13).
+
 ## 7.11 The spawner
 
 An enemy record becomes an actor only when three things hold: its cell is in a zone Hiro has seen, its slot in
@@ -864,7 +976,9 @@ SpawnEnemy `$A5BF` takes a free page (FindFreeActor `$9F2C` looks for active bit
 number into its slot. It turns the cell into a pixel place (CellPixel) and finds the template (TemplateForKind
 `$A652`). A pickup kind (`$01-$22`) uses SharedEnemyTemplate `$65B8`, patched with its item record's frame and score.
 InitActor `$A65D` fills the page, and +`$29` keeps the record's number. A kind with bit 7 (a timed pickup) or a kind
-from `$40` gets a hold: +`$28` = Random AND +`$0D`. It waits that many steps before its first move.
+from `$40` gets a hold: +`$28` = Random AND +`$0D`. Each step then counts the hold down and waits as many frames as
+it has left (StepActor, 7.12), so a hold h delays the first move by about h + (h - 1) + ... + 1 = h(h-1)/2 frames:
+`$0B` gives 55.
 
 ```text
 SpawnRoomEnemies(C = the zone mask, RevealedZones for a whole room):
@@ -1068,9 +1182,9 @@ Witness: BreakReveal ran once in `play48` (frame 1458) and 44 times in 25 RZX se
 A pass of the main loop calls ActorUpdate `$8E2B` once for each active page (doc 4). ActorUpdate calls RunActorSteps
 `$9A4B` with H = the page. RunActorSteps runs at most one actor's step, picked by priority:
 
-1. On every other call, the shot page `$66` when it is active. On the calls between, the boss in page `$60`, when the
-   operand at `$9A59` holds a boss kind (a boss fight).
-2. If bit 7 of `$6602` is set, nothing more.
+1. On every other call, page `$66` (Hiro's weapon or the message banner) when it is active. On the calls between,
+   page `$60` (the boss's shot, BossFire 7.13) when the operand at `$9A59` holds a boss kind (a boss fight).
+2. If bit 7 of `$6602` is set (the message banner), nothing more: the banner moves alone.
 3. Hiro, if his due counter +`$1D` is 0.
 4. Each of the eight other pages that is falling (+2 bit 2) and due.
 5. The page H itself, if due.
@@ -1179,8 +1293,8 @@ decrements the slot (the step routines are in doc 10). The nine slots and what f
 ```mermaid
 flowchart TD
     A["ActorUpdate 8E2B: RunActorSteps 9A4B, H = page"] --> B{"odd call?"}
-    B -- yes --> C["the shot page 66, if active"]
-    B -- no --> D["the boss page 60, in a boss fight"]
+    B -- yes --> C["page 66: Hiro's weapon or the banner, if active"]
+    B -- no --> D["page 60: the boss's shot, in a boss fight"]
     C --> E{"6602 bit 7?"}
     D --> E
     E -- yes --> R["return"]
@@ -1618,6 +1732,12 @@ while Hiro is hurt. Kinds below `$35` hurt (HurtHiro `$9860`, doc 10); `$35` hur
 count `$0D`; `$37-$3D` can be stood on (+`$10` bit 3 on both), and crush Hiro when his Y offset matches their +`$11`
 or +`$12`; `$3E` and up do nothing.
 
+A keyed witness of the stand-on, in the RZX segment `r032000` (room 51, `memory_at` on its `session.ttd`): in the
+sample of frame 1640 Hiro (Y `$70`, X `$76`) and the chaser `$39` in page `$60` (Y `$80`, X `$70`; no boss fight, so
+page `$60` is an ordinary enemy page here) both have +`$10` = `$03`; in the sample of 1641 both have `$0B`: bit 3, on
+an object. Hiro's Y offset `$70` - `$80` = `$F0` matches neither +`$11` (0) nor +`$12` (`$10`), so no crush flag is
+set. The two pictures of those frames differ by no pixel worth a figure: the stand-on is a flag, not a drawing.
+
 ```text
 ActorInteractions(H = the actor that moved):
     if H+$10 AND $30: return
@@ -1916,4 +2036,6 @@ and the score 29 270 → 39 270 at frame 529.
 - The window release `$8ABB` ran only in 3 RZX segments; the top exit of a room `$95A4` only in 3.
 - What a trigger `$3F` does besides freezing its frame (+`$0A` = 1): known only from the code.
 - The stand-on and crush of kinds `$37-$3D` (`$983B`, `$984F`) ran only in RZX segments (46-47 segments); no keyed
-  recording shows it, and no figure of this document.
+  recording of ours shows it. The stand-on is sampled in `r032000` (7.14); the crush flag `$984F` ran in the same
+  segments (`$984A` taken 6 times in `r032000`) but is not sampled, and no figure shows either (the flags change, the
+  picture does not).

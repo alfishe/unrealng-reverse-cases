@@ -56,7 +56,7 @@ flowchart LR
         H --> T["GameTick $8472: delays, P, controls, fire charge"]
         T --> S["$853F: beeper effects (48K) or AyGlue to bank 4 (128K)"]
     end
-    subgraph pass["every pass, 0.02 to 11 frames"]
+    subgraph pass["every pass, 0.02 to 72 frames"]
         L["MainLoop $8DFE: SP = $5C00"] --> A["ActorUpdate $8E2B for each active page"]
         A --> J["end, pause, message, PanelWeapon, PanelMeters"]
         J --> L
@@ -107,7 +107,8 @@ GameEntry does the work that is done once per load:
    hook 1 wrote `00 00 00` over it, because bank 4 shows the story before every game instead (hook 5, doc 3.3).
 3. BuildPageTails `$5D07` copies ten blocks of `$7E` bytes from PageTailTemplate `$6B5C` to offset `$82` of the pages
    `$5D-$66`, then fills the tables OutlineMask `$6F00`, RowBase `$7000` and NameBoxPlaces `$700C`.
-4. It falls into NewGame `$5C4D`.
+4. ClearRoomCells `$70EF` (`LD BC,$24DC` at `$5D46`) clears cells `$DC-$FF` of the six planes; then `JP NewGame`
+   `$5D4C` (`$5C4D`).
 
 Witness: c1 (128K): the bootstrap jumps at frame 15 505; the control menu is on the screen at 16 008. GameEntry and
 ControlMenu have L1 count 2 (c1 and c48); Intro48 runs only in c48.
@@ -222,7 +223,8 @@ Witnesses:
   no entry (the score is too low).
 - `menu` (128K): P, then fire in the pause: the game returns to the title, no entry.
 - The RZX run (48K, another player): the end text at about RZX frame 140 000, the name entry ("XMIKEX J") at 142 000,
-  the title at 142 500. GameOver and EndOfGame have L1 count 5 each (gameover and four RZX segments); InsertHighScore 6.
+  the title at 142 500. GameOver and EndOfGame have L1 count 6 each (gameover, hiscore, four RZX segments);
+  InsertHighScore 8 (the listing's Witness lines).
 
 **The point**: the program is a ring of four routines with no state variable. Losing and winning share EndOfGame; only
 the quit bypasses it, so a quit never enters the high-score table.
@@ -365,8 +367,9 @@ A pass with six active pages offers Hiro six times, but he takes at most one ste
 delay at 0: in c1, 398 of 28 339 calls ran logic (1.4 %) and 308 redrew (1.1 %); in deaths, 4 222 of 225 247 ran logic
 and 2 980 redrew.
 
-Witness: MainLoopActors L1 15 644 549, ActorUpdate and RunActorSteps 3 553 005 each, in every play recording (deaths,
-gameover, menu, play48, rooms, c1, opt2-4, the 15 POKE probes, 71 RZX segments, 18 room-entry segments).
+Witness: MainLoopActors L1 18 327 840, ActorUpdate 3 898 690 and RunActorSteps 3 898 691, in every play recording
+(bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c1, opt2-4, the 15 POKE probes, 71 RZX
+segments, 18 room-entry segments; the listing's Witness lines).
 
 ### The steps and their cost
 
@@ -440,9 +443,22 @@ Worked example, the same pass (r004000, the trace `543_69558-545_22264.uatr`):
 ### The set-up
 
 The bootstrap (doc 3.3) sets I = `$FE` and fills Im2Table `$FE00-$FF00` with `$FD`. Whatever byte the bus holds, the
-vector is `$FDFD`, where Im2Jump holds `JP InterruptHandler`. It selects IM 2 and enables interrupts. The game never
-changes the mode again. c1's play state has IM 2, I = `$FE`, interrupts on, SP = `$5BF6`
+vector is `$FDFD`, where Im2Jump holds `JP InterruptHandler`. It selects IM 2 (`$401B`) and leaves interrupts off: the
+first `EI` is the game's own, in its input waits (WaitFireFrames `$8324` for the 48K story, ShowHighScoresHold `$A6F2`
+on the title). The game never changes the mode again. c1's play state has IM 2, I = `$FE`, interrupts on, SP = `$5BF6`
 ([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing)).
+
+### Where interrupts are off
+
+| Code | Where | Why |
+| --- | --- | --- |
+| BasicCode | `$5D07` (`DI`), until LoadEnd `$FFB8` (`EI`) | the tape loader times the signal's edges in T; an interrupt would break the count |
+| LdBytes | `$FF06`, inside the loader | the ROM's LD-BYTES does the same `DI` |
+| SwapBank | `$616A` (stage 2, 128K) | `$7FFD` is switched and `$8000-$A0F8` swapped with bank 4; no interrupt may run while the code is moved |
+| Bootstrap | `$4000`, until the game's first `EI` (`$8324`, `$A6F2`) | I, IM 2 and Im2Table are set and the copies made; the vector table is not ready before |
+| GlueIntro | `$85C5-$85D0`, `$85D4-$85DF` (128K) | bank 4 is paged and Last7FFD written as one step, so that AyGlue in the interrupt pages back the right bank |
+| MaskedColumn | `$8C20-$8C23`, `$8C32-$8C35`: `DI` / `POP BC` / `DEC SP` / `EI` | SP points into ColumnValues `$5B50`, read two values a `POP` and then one back (`DEC SP`), so each value is read twice. Between the `POP` and the `DEC SP` the value v(k+1) lies just below SP, and an interrupt's push would overwrite it; after `DEC SP` the push lands only on values already used |
+| InterruptHandler | the whole handler; `EI` / `RETI` at `$846F` | IM 2 entry disables interrupts until the handler ends |
 
 ### InterruptHandler `$8456`
 
@@ -611,7 +627,8 @@ How to read it:
   WriteAyRegister for each register. The memory rows of `$C000-$D3FF` light up while the screen stays still.
 - At the end AyGlue writes Last7FFD back, and the handler pops and returns.
 
-Witness: InterruptHandler L1 206 326 and GameTick L1 167 059 over every recording with play; `$853F` runs on all 2 614
+Witness: InterruptHandler L1 222 542 and GameTick L1 177 113 over every recording with play (the listing's Witness
+lines); `$853F` runs on all 2 614
 entries of c1 from the menu on, GameTick on 975 (frames 17 652 to 18 626, every frame of play).
 
 **The point**: the interrupt is small and steady: 3-10 % of a frame. It holds the game's time (the delays) and the
@@ -677,11 +694,11 @@ flowchart TD
     C -- "$A0" --> E["row + 1, Y = $F0"]
     C -- "$EC" --> F["row - 1, Y = $9C"]
     C -- no --> D{"X + C = $9E or $FA?"}
-    D -- "$9E" --> G["column + 1, X = $FC"]
-    D -- "$FA" --> H["column - 1, X = $9C"]
+    D -- "$9E" --> G["column + 1, X = $FC, Y as before the move"]
+    D -- "$FA" --> H["column - 1, X = $9C, Y as before the move"]
     D -- no --> I["ActorScreenBox, RevealZone $A569"]
     I -- "zone known: NZ" --> R["return"]
-    I -- "new zone: Z" --> J["RedrawCellsMasked $8855: 220 cells"]
+    I -- "new zone, or a cell with no zone bits: Z" --> J["RedrawCellsMasked $8855: 220 cells"]
     J --> K["SpawnZoneEnemies $A59E"]
     E --> L["room 123? HavokRoomLeave $5FCB; SaveRoomState $A58A"]
     F --> L
@@ -693,8 +710,9 @@ flowchart TD
 ### The room build: EnterRoom `$95C3`
 
 When Hiro crosses an edge, CheckRoomExit moves him to the opposite edge and changes MapRow `$69DF` or MapColumn
-`$69E0`. SaveRoomState `$A58A` keeps the old room's reveal and item bytes. EnterRoom then finds the new room and builds
-it:
+`$69E0`. A column crossing also puts his Y back to its value before the move (`$95B3 LD A,n`, the operand written by
+ApplyMove). SaveRoomState `$A58A` keeps the old room's reveal and item bytes. EnterRoom then finds the new room and
+builds it:
 
 1. FindRoom `$95F9` searches the row's list of columns (`$70C7` counts, `$70DB` starts, `$7048` columns) with `CPIR`:
    RoomAbove `$6BDC` and Room `$6BDD` (doc 7).
@@ -703,11 +721,79 @@ it:
 4. SetupRoomObjects `$A41E`, RedrawRoomMasked `$8852` (the 220 cells with the room's kept reveal mask),
    SpawnRoomEnemies `$A59B`, RestoreShield `$995C`.
 
-The RZX run has eleven room builds of 60 to 72 frames without a pass, among them 72 frames from RZX frame 17 393 (the
-entry into room 31) ([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing), `tools/rzx_passes.py`). The build
-itself is animated in [doc 6, 6.3](06-rendering.md#63-the-cell-planes-and-the-room-build) (EnterRoom, room 4) and
-[doc 7, 7.6](07-objects.md#76-a-room-decoded-room-8-command-by-command) (Animation 7.1, BuildRoomPlanes, room 8). Witness: EnterRoom L1 201 in every play
-recording.
+How long it takes, split by `tools/rzx_room_stalls.py` over the 31 room changes of the RZX run in RZX frames
+1 500-28 500 (48K; `work/stage2/stalls/room-stalls.tsv`, beside `stalls.json`):
+
+| Part | Frames | Median |
+| --- | ---: | ---: |
+| BuildRoomPlanes (and the room above's bottom row) | 0-17 | 13 |
+| SetupRoomObjects | under 1 | 0 |
+| RedrawRoomMasked: the 220 cells, drawing the zones already revealed | 12-53 | 35 |
+| **the room build**, EnterRoom `$95C3` to its `RET` | **25-71** | **43** |
+| **the stall at a room change**, frames with no MainLoop fetch | **27-72** | **45** |
+
+The stall is the build plus 0-4 frames of the rest of the pass (Hiro's redraw, the other steps). No room change in
+that range is followed by a zone reveal within 120 frames. The length follows what RedrawRoomMasked draws: the 17
+first visits take 25-71 frames (median 38), the 14 returns, with more zones kept revealed, 38-71 (median 58). The
+longest stalls, 72 frames, are both entries into room 31 (RZX frame 17 393, the first, and 22 203); the shortest build
+is the first entry into room 9 at 3 917, 25 frames. The same split for the doc 6 and doc 7 builds: `c1` room 4 at the
+start, 40 frames (17 612-17 652, 128K); `play48` room 7 to room 8, 38 frames (2 389-2 427, 48K).
+
+```text
+EnterRoom:                                   ; one pass, 25-71 frames
+    RoomAbove = FindRoom(MapRow - 1) or 0; Room = FindRoom(MapRow)
+    if Room = 123: HavokRoomEnter
+    BuildRoomPlanes()                        ; 0-17 frames: the record into planes $67-$6C
+    SetupRoomObjects()                       ; items and enemy records into RoomObjectList $5B01
+    RedrawRoomMasked()                       ; 12-53 frames: RedrawCellsMasked with RevealedZones,
+                                             ; every cell of a kept zone drawn, the others masked
+    SpawnRoomEnemies(); if Invulnerable: RestoreShield
+```
+
+```mermaid
+flowchart LR
+    A["edge crossed: CheckRoomExit"] --> B["SaveRoomState $A58A"]
+    B --> C["FindRoom x2: under 1 frame"]
+    C --> D["BuildRoomPlanes $9F34: 0-17 frames"]
+    D --> E["SetupRoomObjects $A41E"]
+    E --> F["RedrawRoomMasked $8852: 12-53 frames"]
+    F --> G["SpawnRoomEnemies $A59B"]
+    G --> H["the rest of the pass: 0-4 frames"]
+    H --> I["MainLoop $8DFE: the stall ends, 27-72 frames after the crossing"]
+```
+
+#### Worked example: room 8 in play48, against the beam
+
+`play48` (48K) walks from room 7 into room 8 at frame 2 389; SpawnRoomEnemies runs in 2 427 (doc 7.6). Our trace of
+frames 2 389-2 427 (`work/stage2/traces/play48-2389_0-2428_0.uatr`, 386 041 instructions) holds 7 632 screen writes:
+
+| Writer | Writes | Before the beam | After it |
+| --- | ---: | ---: | ---: |
+| MaskCellRowsLoop (a cell masked to its half-character) | 2 560 | 1 750 | 810 |
+| BlitRowsLeftMask | 2 240 | 919 | 1 321 |
+| BlitRowsRightMask | 2 240 | 920 | 1 320 |
+| DrawCellLayers | 560 | 224 | 336 |
+| BlitColumnMask | 32 | 0 | 32 |
+
+![A room build against the beam: play48 frames 2389-2393, the planes built, then the cells drawn row by row](img/loop/beam-build-play48.png)
+
+*The first five of the build's 39 frames (48K). Made with `python3 ../../kit/beam_timeline.py --trace
+work/stage2/traces/play48-2389_0-2428_0.uatr --listing build/game.lst --machine 48k --frames 5 --title '...' --out
+docs/img/loop/beam-build-play48.png`; the trace was taken with `--work` on play48's recording (port base 37400) over
+`--window 2389:0-2428:0`.*
+
+How to read it:
+
+- Frames 2 389-2 390: no screen write. The bar above is BuildRoomPlanes' loops (ClearRoomCellsLoop, TestCellSolidLoop,
+  UnpackGroupsLoop): the room is decoded into the planes first.
+- From 2 391: the redraw. Each cell is a short slanted run of writes (BlitRows, eight lines of one cell) and a pair of
+  DrawCellLayers marks; five cells a frame, all near the top rows, independent of where the beam is.
+- The rest of the 39 frames go on the same way down the room. A quarter to a half of the writes fall ahead of the beam,
+  so a build shows the room growing cell by cell over most of a second.
+
+Witness: EnterRoom L1 206 in every play recording (the listing's Witness line). The build itself is animated in
+[doc 6, 6.3](06-rendering.md#63-the-cell-planes-and-the-room-build) (EnterRoom, room 4) and
+[doc 7, 7.6](07-objects.md#76-a-room-decoded-room-8-command-by-command) (Animation 7.1, BuildRoomPlanes, room 8).
 
 ### The zone reveal
 
@@ -762,6 +848,12 @@ RedrawCell `$8867` and RedrawCellMask `$8868` decide each cell. A cell of the ne
 to its half-character (EraseCell `$8873`, MaskCellRows `$888D`). SpawnZoneEnemies `$A59E` then starts the enemies
 whose cells lie in the new zone (doc 10).
 
+A cell with no zone bits under Hiro's feet also returns Z: D = 0, so `AND C` is 0, and RevealedZones is left as it
+was. CheckRoomExit then runs RedrawCellsMasked with zone 0 (the 220-cell walk, drawing nothing new) and
+SpawnZoneEnemies on every move Hiro makes over such a cell. Whether any of the 127 rooms has such a cell where Hiro can
+stand is not checked (doc 6.7); each of the RZX run's 12 long stalls away from a room change begins with a new
+zone, so none of them is such a walk.
+
 ```text
 RevealZone:
     cell = (Hiro+$1B bit 7 ? L : H of the operand at $A56D) + 20
@@ -779,7 +871,7 @@ on Z, CheckRoomExit:
 ```mermaid
 flowchart LR
     A["RevealZone $A569: zone under the feet"] -->|"known"| R["return NZ: a normal pass"]
-    A -->|"new"| B["RevealedZones $6DFF OR zone"]
+    A -->|"new, or no zone bits"| B["RevealedZones $6DFF OR zone"]
     B --> C["RedrawCellsMasked $8855"]
     C --> D{"cell zone"}
     D -- "the new zone" --> E["DrawCellLayers $889C"]
@@ -839,19 +931,21 @@ How to read it:
 - The PC sits in the cell composer and MaskCellRowsLoop `$8890` for most of the GIF. RevealZone and SpawnZoneEnemies
   are a few pictures at the two ends.
 
-![The reveal pass against the beam: frames 552-557 of r004000](img/loop/beam-reveal-r004000.png)
+![The reveal pass against the beam: frames 552-564 of r004000](img/loop/beam-reveal-r004000.png)
 
-*Frames 552-557 of r004000 (48K): every screen write of the reveal pass at its line and frame T. Made with `python3
-../../kit/beam_timeline.py --trace work/docs/zsA/r004000/traces/552_0-568_0.uatr --listing build/game.lst --machine
-48k --frames 6 --title '...' --out docs/img/loop/beam-reveal-r004000.png`.*
+*Frames 552-564 of r004000 (48K): every screen write of the reveal pass (552:68563 to 564:38771) at its line and
+frame T. Made with `python3 ../../kit/beam_timeline.py --trace work/docs/zsA/r004000/traces/552_0-568_0.uatr --listing
+build/game.lst --machine 48k --frames 13 --title '...' --out docs/img/loop/beam-reveal-r004000.png`.*
 
 How to read it:
 
 - Each band is one frame; the diagonal is the beam drawing the paper; the vertical line is the INT.
-- The coloured points are screen writes by routine: BlitRowsLeftMask and BlitRowsRightMask (352 writes each),
-  DrawCellLayers (84), MaskCellRowsLoop (32).
-- About a quarter of the writes fall before the beam reaches their line (91 of 352 for BlitRowsLeftMask), the rest
-  after it: the new cells show up over two frames.
+- The coloured points are screen writes by routine: MaskCellRowsLoop (4 544 writes: the cells still dark masked to
+  their half-character), BlitRowsLeftMask and BlitRowsRightMask (544 each: the cells of the new zone), DrawCellLayers
+  (120), BlitRowsLdiTail (32).
+- The cells appear row by row over ten frames (553-563), in reading order. Of the new zone's writes about three in ten
+  fall before the beam reaches their line (158 of 544 for BlitRowsLeftMask); the masking writes, mostly ahead of it
+  (3 017 of 4 544), change nothing on the screen that was not already dark.
 
 The twelve long stalls of the RZX run that are not room builds are all reveals. Each begins within one frame of a frame
 where RevealedZones gains a bit in the same room (`tools/rzx_reveals.py`, `work/stage2/stalls/reveals.tsv`):
@@ -863,7 +957,7 @@ where RevealedZones gains a bit in the same room (`tools/rzx_reveals.py`, `work/
 The length follows the number of cells drawn. At 7 594 the 48K beeper burst of the reveal's sound (BeeperDelay
 `$8662`) adds to it.
 
-Witness: RevealZone L1 40 336 and CheckRoomExit 40 325 (it runs on nearly every move); RedrawCellsMasked 307, in every
+Witness: RevealZone L1 42 139 and CheckRoomExit 42 125 (it runs on nearly every move); RedrawCellsMasked 313, in every
 play recording.
 
 **The point**: the self-mapping costs a stall each time a zone opens. The test is 177 T; the redraw walks all 220

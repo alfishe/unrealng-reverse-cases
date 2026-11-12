@@ -16,7 +16,7 @@ The recordings it rests on (WALKTHROUGH 6.0; all on the 128K):
 | Recording | Load | Used for |
 | --- | --- | --- |
 | `c1` | power-on, the original tape by its own loader at signal speed | the control menu (frame 16008), option 4 (Protek) chosen, play from frame 17651 in room 4: fire held 17687-17707 and 17717-17777, then 8 (right) 17797-18047, 7 (up) 18047-18087, 6 (down) 18087-18127, 5 (left) 18127-18427 |
-| `menu` | `work/stage1/explore/loaded.szx` (the menu after the load) | option 1; the title's left (6, frames 64-110) and right (7, 110-156); in play a pause (P at 1931, P again at 2035) and the quit (fire from 2100, P at 2110) |
+| `menu` | `work/stage1/explore/loaded.szx` (the menu after the load) | option 1; on the title 6 (left) tapped for 6 frames at 64 (64-69) and 7 (right) at 110 (110-115); in play a pause (P tapped 1931-1934, again 2035-2038) and the quit (fire held from 2099, fire and P 2109-2114) |
 | `opt2`, `opt3`, `opt4` | the same state | options 2, 3 and 4, each with right, left, up, fire and the quit; `opt3` runs the Kempston reader |
 | `deaths`, `gameover` | the same state | option 4 again |
 
@@ -71,7 +71,7 @@ Every `IN` instruction of `build/game.lst` and `build/boot.lst`:
 | `$6A8A` | `IN A,($FE)` | `$F7FE` | ControlMenu: keys 1-4 (5.2) |
 | `$84B4` | `IN A,(C)` | `$DFFE` | GameTick: P sets PauseFlag `$664C` (5.7) |
 | `$852B` | `IN A,($FE)` | `$EFFE` as loaded | ReadInput, rewritten by the menu (5.3) |
-| `$669F` | `IN A,(C)` | `$DFFE` | PauseGame (run-time code): P again ends the pause (5.7) |
+| `$669F` (run address; the bytes at `$6FE7` in PageTail66) | `IN A,(C)` | `$DFFE` | PauseGame (run-time code): P again ends the pause (5.7) |
 
 The three readers in the records (`$6B11`, `$6B1F`, `$6B2D`) run only after the copy to `$8529`. Every other input
 goes through ReadInput `$8529`: the tick, the title, the high-score entry and the waits for fire.
@@ -203,7 +203,7 @@ reads 0. HL steps three times to `$6B0A` + 42 = `$6B34`, record 4: `01 1E 1F 15 
 direction mask is `$1E`, `$8513` = `RRA`, and the opcodes `DEC D`, `INC D`, `DEC E`, `INC E` go to `$851A`-`$8526`.
 
 Witness: ControlMenu L1 2 (`c1` and `c48`, one run each). The other recordings start from a state taken after the
-menu (`loaded.szx`), where the menu is waiting: they run ControlMenuKey (L1 9 813 576) and the patch, but not the
+menu (`loaded.szx`), where the menu is waiting: they run ControlMenuKey (L1 9 813 588) and the patch, but not the
 menu's first lines.
 
 The menu is shown once per load. GameEntry calls it before the first title, and NewGame `$5C4D` never returns to it.
@@ -376,8 +376,9 @@ Worked example (option 1, 7 and 9 held: right and up):
 4. The old bit 2 (8) = 1: skip. The old bit 3 (7) = 0: `INC D`, D = +1. The old bit 4 (6) = 1: skip.
 5. `SCF`: D = +1, E = -1, a running jump to the right (5.6).
 
-Witness: DecodeDirection L1 498 658, in every play recording. Its other two callers are the name entry `$A861`
-([doc 8](08-hud-and-text.md)) and the 128K title's toggle `$85A3` (5.8).
+Witness: DecodeDirection L1 680 151, in every play recording. Its other two callers are EnterName `$A861` (the call
+at `$A899`, [doc 8](08-hud-and-text.md)) and GlueMenuInput `$859E`, the 128K title's toggle (the call at `$85A3`,
+5.8).
 
 The point: the record's opcodes put each device's bit order through one decoder. A new device would need only a new
 record.
@@ -394,9 +395,9 @@ in TickInput `$84BF`:
 4. **Fire down:** if EndFlags `$6652` bit 6 is set (the end text is up), set bit 7 (the main loop leaves for the end)
    and return. Else Charge `$6645` += ChargeStep `$6644`, at most `$20`.
 5. **Fire up:** if it was up last frame too, return. It was let go this frame: C = Charge, Charge = ChargeReset
-   `$6647`. If HiroBusy `$8E77` returns NZ (Hiro cannot strike now), or WeaponActor `$6602` bit 0 is set (a weapon is
-   in the air), return. Else FireHeld `$69E3` = C, and FireRequest `$6650` = 3 when C is `$19` or more, 2 for
-   `$09`-`$18`, 1 below.
+   `$6647`. If HiroBusy `$8E77` returns NZ (Hiro cannot strike now), or WeaponActor `$6602` bit 0 is set (page `$66`
+   is busy: a thrown weapon or a message banner, [doc 7](07-objects.md) 7.10), return. Else FireHeld `$69E3` = C,
+   and FireRequest `$6650` = 3 when C is `$19` or more, 2 for `$09`-`$18`, 1 below.
 
 Pseudocode:
 
@@ -414,7 +415,7 @@ TickInput:                                     ; $84BF, in the interrupt
     if a == e: return                          ; up, and up before
     c = Charge; Charge = ChargeReset           ; let go this frame
     if HiroBusy() != Z: return
-    if WeaponActor+2 bit 0: return
+    if WeaponActor+2 bit 0: return             ; page $66 busy: a weapon or a banner
     FireHeld = c
     FireRequest = 3 if c >= $19 else 2 if c >= $09 else 1
 ```
@@ -451,7 +452,7 @@ The code, from `build/game.lst`:
 84F0 77           LD (HL),A
 84F1 CD 77 8E     CALL HiroBusy
 84F4 C0           RET NZ
-84F5 3A 02 66     LD A,(WeaponActor+$0002)
+84F5 3A 02 66     LD A,(WeaponActor+$0002)   ; page $66: a weapon or a banner?
 84F8 1F           RRA
 84F9 D8           RET C
 84FA 79           LD A,C
@@ -478,7 +479,7 @@ flowchart TD
     D -- no --> H{up last frame too?}
     H -- yes --> R[return]
     H -- no --> I[C = Charge, Charge = ChargeReset]
-    I --> J{HiroBusy Z and no weapon in the air?}
+    I --> J{HiroBusy Z and page 66 free?}
     J -- no --> R
     J -- yes --> K[FireHeld = C]
     K --> L{"C at least 19h?"}
@@ -675,9 +676,14 @@ copied to `$6682` at run time. It:
 1. If EndFlags is not 0 (the end), clears PauseFlag and returns: no pause in the end sequence.
 2. Calls ReadInput. **Fire down: the quit.** ShowGameOverWait `$831A` shows message 4, GAME OVER, and waits up to 200
    frames for fire. Then `JP NewGame` `$5C4D`: the title, with no high-score entry.
-3. Else it shows message 3, PAUSE GAME (ShowMessage `$66C8`), and the banner (RunBanner `$66BD`).
-4. It polls P every 5 frames (`HALT` x 5) until P is down again.
-5. It waits in DelayBC with BC = `$4000`, a few frames, so that the same press does not pause again at once.
+3. Else it shows message 3, PAUSE GAME. The message is not printed: it is the **message banner**, an actor in page
+   `$66` ([doc 7](07-objects.md) 7.10). ShowMessage `$66C8` starts it above the play window and steps it until it
+   holds in place; RunBanner `$66BD` steps it on until its path ends and its active bit clears. The banner flies in,
+   holds, and flies out; nothing else moves meanwhile (bit 7 of `$6602`).
+4. Only then does it poll P: one sample, then 5 `HALT`s, until a sample sees P down. A tap shorter than 5 frames can
+   fall between two samples and be missed. The poll does not wait for P to be released first: a P still held when the
+   banner ends is seen at the first sample.
+5. It waits in DelayBC with BC = `$4000` (about 6 frames), so that the same press does not pause again at once.
 6. It clears PauseFlag.
 
 Pseudocode:
@@ -688,8 +694,8 @@ PauseGame:                                     ; $6682 (run-time copy of $6FCA)
     if ReadInput() == Z:                       ; fire down with P: quit
         ShowGameOverWait()                     ; GAME OVER, wait for fire (at most 40 x 5 frames)
         goto NewGame                           ; $5C4D: the title again
-    ShowMessage(3)                             ; PAUSE GAME
-    RunBanner()
+    ShowMessage(3)                             ; PAUSE GAME: the banner flies in and holds
+    RunBanner()                                ; ... and flies out, to its end
     repeat:
         p = IN($DFFE) AND 1
         HALT x 5
@@ -737,8 +743,9 @@ flowchart TD
     D -- no --> E{fire down?}
     E -- yes --> F[GAME OVER, wait for fire]
     F --> G[NewGame: the title, no high score]
-    E -- no --> H[PAUSE GAME, the banner]
-    H --> I[read P, HALT x5]
+    E -- no --> H[ShowMessage 3: the PAUSE GAME banner flies in]
+    H --> H2[RunBanner: it flies out, to its end]
+    H2 --> I[read P, HALT x5]
     I --> J{P down?}
     J -- no --> I
     J -- yes --> K["DelayBC 4000h"]
@@ -747,13 +754,17 @@ flowchart TD
 
 Worked example (`menu`, option 1):
 
-1. P is pressed at frame 1931. The sample of frame 1932 shows PauseFlag `$80`.
-2. The screen of frame 1990 shows PAUSE GAME.
-3. P again at 2035: the poll sees it within 5 frames, the delay follows, and the sample of frame 2048 shows
-   PauseFlag 0.
-4. Fire is held from 2100 and P pressed at 2110. The sample of 2110 shows PauseFlag `$80` and the latch `$BE` (fire,
-   bit 0, down).
-5. PauseGame takes the quit: GAME OVER on the screen at frame 2130.
+1. P is tapped at frame 1931 (4 frames). The sample of frame 1932 shows PauseFlag `$80`, and page `$66` already
+   holds the banner: `$6602` = `$81`, Y (`$6600`) = `$F4`, X `$48`.
+2. The banner comes down 4 lines a frame, from Y `$F0` to `$50` (1932-1969), wobbles there, and holds from 1978 (its
+   segment count `$6640` = 2: ShowMessage returns). The screen of frame 1990 shows PAUSE GAME in mid-window.
+3. RunBanner moves it up again from 2006; the sample of 2031 shows `$6602` = 0: the banner has ended, 99 frames after
+   the P press, and the poll starts.
+4. P is tapped again at 2035 (4 frames, 2035-2038): a sample falls inside the tap, the delay follows, and the sample of
+   frame 2047 shows PauseFlag 0.
+5. Fire is held from 2099; fire and P together from 2109 to 2114. The sample of 2110 shows PauseFlag `$80`, the latch
+   `$BE` (fire, bit 0, down) and the GAME OVER banner just started (Y `$F4`).
+6. PauseGame takes the quit: GAME OVER on the screen at frame 2130; the rest is 5.9's worked example.
 
 ![The pause and the quit](img/controls/pause-quit.png)
 
@@ -764,20 +775,29 @@ work/docs/zsB/out/p1990.png=... --shot work/docs/zsB/out/q2130.png=... --out doc
 
 How to read:
 
-- Left: the play window with the PAUSE GAME box over it; nothing moves.
-- Right: GAME OVER over the same room. The quit shows the message of a game lost, then the title follows.
+- Left: the PAUSE GAME banner at frame 1990, holding in mid-window. It is an actor in page `$66`, drawn through the
+  window renderer: it flew in from the top (1932-1977) and flies out again (2006-2030) before the P poll starts. Only
+  the banner moves; Hiro and the enemies wait (bit 7 of `$6602`).
+- Right: GAME OVER over the same room, the same banner actor with message 4, still on its way down at 2130. The quit
+  shows the message of a game lost, then the title follows.
 
 ![PauseGame at work](img/routines/PauseGame.gif)
 
-*Animation 5.4: `menu` frames 1931-1935: the tick sets PauseFlag, the main loop calls PauseGame, the message is drawn
-and the poll begins. `python3 kit/routine_anim.py --work work/docs/zsB/menu --window 1931:0-1936:0 --listing
-build/game.lst --view screen --range 5B00-FFFF --pc 6682-66FF,66C8-6700,831A-8340 --pictures 50 --out
-docs/img/routines/PauseGame.gif`.*
+*Animation 5.4: `menu` frames 1931-2048: the tick sets PauseFlag, the main loop calls PauseGame, the banner actor
+flies in (ShowMessage `$66C8`), holds and flies out (RunBanner `$66BD`), then the poll reads P once every 5 frames
+until the second tap. The code panel names the run-time code at `$6682-$66F6` from `tools/runtime66.asm` (the bytes of
+PageTail66 `$6FCA`, assembled at their run-time addresses and checked identical): `sjasmplus --nologo
+--lst=build/runtime66.lst --raw=build/runtime66.bin tools/runtime66.asm`, then `python3 kit/routine_anim.py --work
+work/docs/fixB/menu --window 1931:0-2049:0 --listing build/runtime66.lst --listing build/game.lst --view screen
+--range 5B00-FFFF --pc 6682-66F6 --pictures 60 --title "..." --out docs/img/routines/PauseGame.gif`, the instance
+opened on `work/stage1/rec/menu/session.ttd` with `re_session.py open --model 128K`.*
 
 How to read:
 
-- The screen panel shows the message drawn into the play window.
-- Once the message is up, the code panel stays in the `HALT` loop: each picture is a frame or two of waiting.
+- The screen panel: the banner comes down from the top, holds in mid-window, goes back up and is gone; the room under
+  it is redrawn as it passes.
+- The code panel: ShowMessageLoop and RunBannerLoop while the banner moves (most of each picture is "other": the
+  actor's draw), then PausePoll and PauseHalt, one sample and five `HALT`s a turn, from frame 2031.
 
 The point: the pause is a loop inside the main loop, not a state. The interrupt goes on: the frame counter, the
 actors' short timers (+`$1D`) and the fire charge keep counting. Only the actors' long timers (+`$1E`, held by
@@ -785,7 +805,8 @@ PauseFlag bit 7) stop. The quit is a pause entered with fire down: it needs both
 
 Known only from the code:
 
-- Holding P past the pause's delay pauses again: the tick sets PauseFlag on the next frame.
+- Holding P past the pause's delay pauses again: the tick sets PauseFlag on the next frame. Holding P from the first
+  press to the banner's end (99 frames) ends the pause at the first sample.
 - The quit skips the high-score entry, whatever the score.
 
 ## 5.8 The 128K title: music or effects
@@ -855,8 +876,9 @@ flowchart TD
     H --> N
 ```
 
-Worked example (`menu`, option 1): 6 (left on Sinclair 1) is held from frame 64 to 110: SoundMode stays 0, the note.
-7 (right) is held from 110: the sample of frame 112 shows SoundMode 1, and the screen of frame 150 shows FX.
+Worked example (`menu`, option 1): 6 (left on Sinclair 1) is tapped for 6 frames at 64 (64-69): SoundMode stays 0,
+the note. 7 (right) is tapped for 6 frames at 110 (110-115): the sample of frame 112 shows SoundMode 1, and the screen
+of frame 150 shows FX.
 
 ![The title's sound choice](img/controls/title-sound.png)
 
@@ -923,8 +945,11 @@ flowchart LR
     F -- yes --> G[return NZ]
 ```
 
-Worked example: ShowGameOverWait in the quit of 5.7 calls WaitFireLong. With no fire it reads the control 40 times,
-once every 5 frames: 200 frames of GAME OVER, then the title.
+Worked example (`menu`, the quit of 5.7): ShowGameOverWait starts the GAME OVER banner at 2109, and ShowMessage
+steps it until it holds (segment count `$6640` = 2 in the sample of 2156), then PauseLong `$8330`. Fire was let go at
+2115, long before, so WaitFireLong's first read (about 2165) sees no fire: it reads the control 40 times, once every 5
+frames, with the banner frozen in mid-window. The sample of 2367 shows the title's flag (the operand at `$845F` = 1):
+200 frames of waiting, then the title.
 
 The point: the waits test fire once every five frames, before the five `HALT`s. A tap shorter than five frames can be
 missed. The `menu` script's note that a fire press late in the title cycle "did not" start the game fits this.
@@ -1042,8 +1067,9 @@ SLOPPY in the table, so the match and the key branch are known only from the cod
 The point: the cheat hides in a compare that runs at every game. The name has ten bytes with four spaces at the end,
 so it must be exactly SLOPPY in the table.
 
-A side effect, harmless: the match jumps into NewGame without returning, so the name loop's pushed BC stays on the
-stack. NewGame never returns, and the stack is reset at the next game.
+A side effect, harmless: the match jumps on into NewGame without returning, so two words stay on the stack: the name
+loop's pushed BC and the return address of the `CALL MatchCheatName` at `$5C5C`. NewGame never returns, and MainLoop
+sets SP to `$5C00` at the start of each pass.
 
 ## 5.11 Where the readings differed
 

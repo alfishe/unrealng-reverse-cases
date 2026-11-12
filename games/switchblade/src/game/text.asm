@@ -281,9 +281,11 @@ ScreenAddress:
 ; on return
 ;
 ; The cell's attribute from the operand at $83FB (SetCellAttr). C = D AND 7: 8
-; - C rows into this cell, C rows into the cell below (DE + 32, a third crossed
-; through the saved D); the lower cell's attribute from $8436. Tall mode: the
-; operands at $8411 / $841D (PrintStringTall). Callers: PrintString, $6200.
+; - C rows into this cell, C rows into the cell below (E + 32; in the same
+; third, no carry, D = the saved D AND $F8; a third crossed, the carry, D kept,
+; already moved into the next third by the row loop); the lower cell's
+; attribute from $8436. Tall mode: the operands at $8411 / $841D
+; (PrintStringTall). Callers: PrintString, $6200.
 ;
 ; Witness: L1 34287 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
 ; throw, c x2, opt x3, rzx x67, rzxroom x12).

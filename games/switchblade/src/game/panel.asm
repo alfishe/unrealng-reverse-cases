@@ -129,7 +129,7 @@ AddScoreLoop:
 ; Write B BCD bytes at HL as 2B ASCII digits at DE
 ;
 ; HL = the BCD bytes, high first; DE = the text. Out: HL, DE past them.
-; Callers: AddScore (the score, 4 bytes to `$665B`), LoseEnergy and
+; Callers: AddScore (the score, 4 bytes to `$665B`), LoseLife `$9659` and
 ; LetterPickup (the lives, 1 byte to `$6664`).
 ;
 ; Witness: L1 609 (bossgate, deaths, havok, play48, throw, rzx x63, rzxroom
@@ -161,9 +161,11 @@ BcdToDigits:
 ; the default weapon comes back (`$98F3` with HL = WeaponDefaultItem `$5DF8`).
 ; The bar: 16 bytes at `$7F0D` (the pixel rows of glyphs `$85`/`$86`): 16 -
 ; count rows cleared, then count rows of `$0E` (count >= 9) or `$E0`, shifted
-; one place on odd rows; StatusLine printed (`$836B`). The status line is
-; printed tall at the aligned Y `$B8`, so row 7 of glyphs `$85`/`$86` is never
-; drawn: units 1 and 9 of the bar are invisible (doc 08, 8.8).
+; right one place (`$07`, `$70`) when B is even (B = count down to 1; the rows
+; 0, 2, 4 ... of the 16, counted from the top); StatusLine printed (`$836B`).
+; The status line is printed tall at the aligned Y `$B8`, so row 7 of glyphs
+; `$85`/`$86` is never drawn: units 1 and 9 of the bar are invisible (doc 08,
+; 8.8).
 ;
 ; Witness: L1 2036417 (bossgate, deaths, gameover, havok, hiscore, menu,
 ; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).

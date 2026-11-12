@@ -48,18 +48,20 @@ blocks, the loader, the paging test and the bootstrap: [doc 3, 3.1](docs/03-buil
 ### 0.4 The machine: 48K and 128K
 
 One tape for both. Stage 2's `$618E` tests the paging; a 128K gets block 6 in bank 4, the bootstrap's hooks
-(`$5CFD`, `$A6EF`, `$A76F`, `$A75C`, `$5C9A`) and the 162-byte music glue at `$853F` (doc 3.1). What bank 4 holds
+(`$5CFD`, `$A6EF`, `$A76F`, `$A75C`, `$5C9A`) and the 162-byte music glue at `$853F` ([doc 3.3](docs/03-build-and-load.md#33-the-bootstrap-4000-and-the-128k-set-up)). What bank 4 holds
 (`work/mkgame/bank4.bin`): the AY music player (`LD BC,$FFFD` at `$D3C7`, `$DB27`, `$DC2D`, `$DD53`, `$DEC2`,
 `$DF7C`; `OUT (C),A` at `$D3CD`) and its tunes, and the intro story's pages ("...THE NIGHT BLED CRIMSON",
 "I AM HIRO, THE LAST OF THE BLADEKNIGHTS. I MUST REBUILD THE FIREBLADE, AND BRING THE DAWN...", `$D514-$D862`).
 
 The RZX run is a 48K recording: its start snapshot (the menu, PC `$6A91`) equals c1's 128K memory at the menu except
 322 bytes (`work/stage1/rzxprobe.py`), nearly all of them `$853F-$85E0` (the music glue: absent on the 48K), the
-three hook sites `$A6F0`, `$A75C`, `$A770`, `$5B00` and the stack areas. The game program is the same on both.
+five hook sites (`$5CFD` 48K `CD 4F 5D` / 128K `00 00 00`, `$5C9A` `00 00 00` / `CD C5 85`, `$A6EF` and `$A76F`
+`CD 29 85` / `CD 9E 85`, `$A75C` `00 00 00` / `CD B3 85`; stage 1's probe named only the last three), `$5B00` and the
+stack areas (re-read in the review from `work/stage2/rzx/snap-000000.z80` and `work/stage1/explore/loaded.szx`). The game program is the same on both.
 
 ## 1. Interrupts and timing
 
-**The mode.** The bootstrap (doc 3.1) sets `I` = `$FE`, fills `$FE00-$FEFD` with `$FD`, puts `JP $8456` at `$FDFD`
+**The mode.** The bootstrap ([doc 3.3](docs/03-build-and-load.md#33-the-bootstrap-4000-and-the-128k-set-up)) sets `I` = `$FE`, fills `$FE00-$FF00` (257 bytes) with `$FD`, puts `JP $8456` at `$FDFD`
 and selects `IM 2`: every vector reads `$FDFD`. c1's play state (`work/stage1/c1/end.szx`, `snapinfo.py`) has IM 2,
 `I` = `$FE`, interrupts on, `SP` = `$5BF6`.
 
@@ -84,7 +86,7 @@ all 2614 entries from frame 16 013 (the menu) on, `$8472` on 975 entries, every 
 | --- | --- |
 | `$8DFE` | `LD SP,$5C00`: the stack is reset on every pass |
 | `$8E01` | for the nine actors `$5D00`-`$6500` (`B` = 9, `INC H`): if byte +`$02` bit 0 is set, `CALL $8E2B` (the actor's update) |
-| `$8E0E` | `$6652` bit 7 (the game over or the end): `JP $5C45` |
+| `$8E0E` | `$6652` bit 7 (the end after Havok; game over goes through LoseLife `$9651`, `JP M,$5C42`): `JP $5C45` |
 | `$8E15` | `$664C` bit 7 (the pause): `CALL $6682` |
 | `$8E1C` | `$79FF` non-zero: `CALL $66B6` |
 | `$8E23` | `CALL $FF01`, `CALL $FF64` (the code copied over the loader), `JR $8DFE` |
@@ -101,9 +103,10 @@ frame 1473): 362 027 passes in 28 500 frames, 12.7 a frame on average, from 0 to
 no pass: a pass then runs longer than a frame. Of the runs of frames with no pass, 3065 last one frame, 809 two, 258
 three, and 44 last 10 frames or more, from 10 to 72: 31 of those 44 begin within 3 frames of a room change (the room
 variable `$6BDD` in `work/stage1/rzxtrace/trace.tsv`): the room is built while the loop waits. **The heaviest frames**
-are those room builds: 72 frames without a pass from frame 17 393 (the entry into room 31) and from 22 203; eleven room builds take 60 to
-72 frames. The other 13 stalls of 10 frames or more (10 to 27) start away from a room change: not explained in
-stage 1.
+are those room builds: 72 frames without a pass from frame 17 393 (the entry into room 31) and from 22 203. The other
+13 stalls of 10 frames or more (10 to 27) start away from a room change: not explained in stage 1. Stage 2's trace
+supersedes these counts (`work/stage2/stalls/stalls.json`): 43 stalls, 31 at a room change (27-72 frames, median 45;
+the room build itself 25-71, median 43, `tools/rzx_room_stalls.py`) and 12 zone reveals (10-27), doc 4.5.
 
 ## 2. Static pass over the medium
 
@@ -111,7 +114,7 @@ Stage 2.
 
 ## 3. The stages and the packers
 
-No packer: the stages are the BASIC's code, stage 2 and the bootstrap (doc 3.1).
+No packer: the stages are the BASIC's code, stage 2 and the bootstrap ([doc 3.2](docs/03-build-and-load.md#32-the-loader) for the first two, [doc 3.3](docs/03-build-and-load.md#33-the-bootstrap-4000-and-the-128k-set-up) for the bootstrap).
 
 ## 4. The medium from source
 
@@ -149,8 +152,10 @@ frame, `work/stage1/rzxtrace/trace.tsv`) and `tools/rzx_passes.py`. All are in `
 | rzx-b | 48K, RZX frames 47 000-95 000 | 48 000 | none | 36 more rooms (to 94 000), lives 3 to 2, the score (RZX 72 000: 00092060) |
 | rzx-c | 48K, RZX frames 94 000-142 989 | 48 989 | none | 37 more rooms, EXTRA (lives 1 to 2 at 128 606), Havok in room 123 (135 605), the end text (about 140 000), the high-score entry (142 000), the title (142 500); finished with no desync |
 
-Together the RZX run enters 108 rooms, the rooms recording adds 1, 2, 3, 11, 14 and 18: 114 of 127. Not entered:
-12, 13, 19, 21, 36, 47-50, 52, 55, 91, 92 (doc 2.4). Sound: no audio was played; every 128K recording runs bank 4's
+Together the RZX run enters 107 rooms in play, and room 122 in its end sequence (Room = 122 from RZX frame 141 007,
+not an edge crossing; the three parts' 35 + 36 + 37 = 108 count it); the rooms recording adds 1, 2, 3, 11, 14 and 18:
+113 of 127 entered in play. Not entered in stage 1: 12, 13, 19, 21, 36, 47-50, 52, 55, 91, 92; stage 2's POKE probes
+entered those 13 (doc 1.4, 2.4). Sound: no audio was played; every 128K recording runs bank 4's
 AY player (`OUT (C),A` at `$D3CD`: 165 607 times in menu, 86 052 in deaths, 108 268 in gameover, 40 150 in rooms,
 26 714 in opt2, from the L1s) through the glue at `$853F`, called once a frame (`$853F` x 18 055 in menu's 18 060
 frames); the title's toggle picks music or effects (menu). The 48K effect player at `$853F` runs in c48 and the RZX run.
@@ -162,7 +167,8 @@ frame N is the RZX run's frame FFFFFF + N - 1 (`record.json` `diverged`: frame 1
 start is the snapshot `snap-FFFFFF.z80`); the segments drift from the RZX after a while. A moment inside a frame is "frame F T t", t from the frame's start.
 
 The menu recording's keys, for replaying doc 5's figures: SoundMode 1 (effects) at frame 112, pause held at frames
-1932-2048, fire with P (the quit) at 2100-2110, GAME OVER at 2130.
+1931-2047 (P tapped 1931-1934, the PAUSE GAME banner 1932-2031, P again 2035-2038), fire held from 2099, fire and P
+2109-2114 (the quit), the GAME OVER banner from 2110 (held from 2156), the title at 2367.
 
 **The witness recordings made at integration** (`tools/record.py`, plans `bossgate`, `throw`, `hiscore`, `havok`; each
 POKE is in `record.json`, on the machine only):
@@ -318,7 +324,8 @@ viewer instances (`kit/re_session.py`) over the TTDs below.
 
 ### 6.1 Screens
 
-[docs/img/play/screens.png](docs/img/play/screens.png) (`tools/fig_sheet.py`): c1's menu, title, intro and the first
+[docs/img/play/screens.png](docs/img/play/screens.png) (now `python3 tools/fig_screens.py docs/img/play/screens.png
+--set main`, the same eleven screens): c1's menu, title, intro and the first
 room in play; from the RZX run (SkoolKit's `rzxplay.py --stop N`, `work/stage1/rzx/`) a room of the Undercity,
 Havok in room 123, the end text "THE DAWN HAS COME AND MY WORLD IS SAFE, FOR NOW.....", the high-score entry and the
 title after it. Every recording's own screens are in its `screens/` folder.
@@ -338,19 +345,24 @@ Every screenshot and still figure the documents show, with the recording and fra
 
 | Image | Document | What it shows | Recording | Frames |
 | --- | --- | --- | --- | --- |
-| [screens.png](docs/img/play/screens.png) | [01](docs/01-game-design.md) | Twelve screens from c1 and the RZX run: the menu, the title, the story, play, Havok, the end, the name entry |  |  |
+| [screens.png](docs/img/play/screens.png) | [01](docs/01-game-design.md) | Eleven screens from c1 and the RZX run: the menu, the title, the story, play, Havok, the end, the name entry |  |  |
 | [screens-more.png](docs/img/play/screens-more.png) | [01](docs/01-game-design.md) | More screens from our recordings: the load, the title, the 128K sound sign, the 48K story, a fight, GAME OVER |  |  |
+| [screens-moments.png](docs/img/play/screens-moments.png) | [01](docs/01-game-design.md) | Moments of play: room 5's patroller, a life lost, the pause, the four giants, a giant beaten, a thrown spinblade |  |  |
 | [panel-writers.png](docs/img/text/panel-writers.png) | [01](docs/01-game-design.md) | Who drew the panel as a game starts |  |  |
 | [rooms-sheet.png](docs/img/maps/rooms-sheet.png) | [01](docs/01-game-design.md) | The 127 rooms from src/res: number, map row:column, the RZX run's first entry |  |  |
 | [route-rzx.png](docs/img/maps/route-rzx.png) | [01](docs/01-game-design.md) | The RZX run's route over the map: 107 rooms, 195 room entries, room 4 to Havok's room 123 |  |  |
 | [modules.png](docs/img/arch/modules.png) | [02](docs/02-architecture.md) | The module map: each byte of the game, `5C00`-`FFFF` hex, by its source module; R1-R7 what the regions hold at run time |  |  |
-| [map-rzx.png](docs/img/maps/map-rzx.png) | [02](docs/02-architecture.md) | The map: 127 rooms in a 30 x 20 grid, as the RZX run saw them |  |  |
-| [memory-heatmap.png](docs/img/memory-heatmap.png) | [02](docs/02-architecture.md) | Executed, read and written bytes above the ROM over seven recordings, log2 scale, with the screen insets |  |  |
+| [memory-load-play.png](docs/img/arch/memory-load-play.png) | [02](docs/02-architecture.md) | The memory at the load and in play side by side | c1 | 18627 |
+| [map-west.png](docs/img/maps/map-west.png) | [02](docs/02-architecture.md) | The map's western half, columns 0-14, outlined by the recording that entered each room |  |  |
+| [map-east.png](docs/img/maps/map-east.png) | [02](docs/02-architecture.md) | The map's eastern half, columns 15-29, outlined by the recording that entered each room |  |  |
+| [memory-heatmap-a.png](docs/img/arch/memory-heatmap-a.png) | [02](docs/02-architecture.md) | Executed and read bytes of 4000-FFFF hex over seven recordings, log2 scale, with the screen insets |  |  |
+| [memory-heatmap-b.png](docs/img/arch/memory-heatmap-b.png) | [02](docs/02-architecture.md) | Written bytes and the composite, with the region labels |  |  |
 | [budget-modules.png](docs/img/arch/budget-modules.png) | [02](docs/02-architecture.md) | Where the CPU time goes, by module: the loop polling the actors and the drawing take 70-90 % |  |  |
 | [tape.png](docs/img/load/tape.png) | [03](docs/03-build-and-load.md) | The tape: one ROM header, five headerless blocks at ROM speed, 336 s; where each block goes |  |  |
 | [budget-routines.png](docs/img/arch/budget-routines.png) | [04](docs/04-game-loop.md) | Play on the 48K, routine by routine: a third of the time is the loop asking actors whether they are due |  |  |
 | [reveal-room9.png](docs/img/loop/reveal-room9.png) | [04](docs/04-game-loop.md) | Room 9 before and after the reveal of zone 80 hex | r004000 |  |
-| [beam-reveal-r004000.png](docs/img/loop/beam-reveal-r004000.png) | [04](docs/04-game-loop.md) | The reveal pass against the beam: frames 552-557 of r004000 |  |  |
+| [beam-build-play48.png](docs/img/loop/beam-build-play48.png) | [04](docs/04-game-loop.md) | A room build against the beam: play48 frames 2389-2393 | play48 | 2389-2428 |
+| [beam-reveal-r004000.png](docs/img/loop/beam-reveal-r004000.png) | [04](docs/04-game-loop.md) | The reveal pass against the beam: frames 552-564 of r004000 | r004000 | 552-568 |
 | [beam-typical-r004000.png](docs/img/loop/beam-typical-r004000.png) | [04](docs/04-game-loop.md) | Frames 543-545 of r004000: ten light passes, then two passes that redraw an actor | r004000 | 543-546 |
 | [beam-c1-128k.png](docs/img/loop/beam-c1-128k.png) | [04](docs/04-game-loop.md) | Frames 17700-17701 of c1 on the 128K: 43 light passes a frame, the AY player in bank 4 at the INT | c1 | 17700-17702 |
 | [keys.png](docs/img/controls/keys.png) | [05](docs/05-controls.md) | The four controls |  |  |
@@ -421,7 +433,7 @@ Bank 4 changes a little in both (the AY player's variables). The levels: the map
 | Variable | Address | Witness |
 | --- | --- | --- |
 | map row, column | `$69DF`, `$69E0` | `$9560-$95B0`: Hiro's Y (`$5D00`) at `$A0` or `$EC` steps the row, his X (`$5D01`) at `$9E` or `$FA` the column; walking right from `work/stage1/probe/play0.szx` takes `$69E0` from 3 to 4 |
-| room | `$6BDD` (1-127) | written at `$95D8` from the lookup `$95F9`; play0 room 4, after the walk 5; the RZX trace (`tools/rzx_trace.py`) passes 108 rooms |
+| room | `$6BDD` (1-127) | written at `$95D8` from the lookup `$95F9`; play0 room 4, after the walk 5; the RZX trace (`tools/rzx_trace.py`) passes 107 rooms in play and room 122 in the end sequence |
 | Hiro | actor page `$5D00`: Y +0, X +1, flags +2 (bit 0: active), kind/state +`$1C`, timers +`$1D`, +`$1E` | the handler `$8472`, the main loop `$8E01`; the other actors at `$5E00`-`$6500` |
 | energy | `$6642` (`$20` at the start) | `$9615`: `SUB C`; at zero or below, a life |
 | lives | `$664D`, BCD | `$9649-$9651`: `SUB $01` / `DAA` / `JP M,$5C42`; the RZX trace: 5 at frame 1473, 4 at 20 649, 3 at 32 490, 2 at 65 132, 1 at 119 128, 2 at 128 606 (EXTRA), 1 at 132 358 |

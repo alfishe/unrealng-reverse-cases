@@ -10,7 +10,7 @@ What this covers:
 - the 128K glue: the tune and effect requests, the loop, the music / effects switch (9.7);
 - the AY player: PlayFrame and the sequencer (9.8), the order lists (9.9), the patterns with one worked by hand
   (9.10), the instruments and the software envelope (9.11), the vibrato, the arpeggio and the slide (9.12), the drums
-  `$FC` / `$FD` and the hardware envelope (9.13), AyUpdate and the registers it writes each interrupt (9.14);
+  (the pattern commands `$FC` / `$FD`) and the hardware envelope (9.13), AyUpdate and the registers it writes each interrupt (9.14);
 - the three tunes (9.15) and the 14 AY effects, rendered and checked against menu (9.16);
 - the model checked against c1 write for write (9.17), the audio files (9.18), what is known only from the code
   (9.19) and the point (9.20).
@@ -145,8 +145,12 @@ The recording: none; the model runs `build/` (checked against c1 in 9.17).
 ## 9.3 The 48K player: EffectPlayer and StartEffect
 
 EffectPlayer `$853F` has three lines. EffectFrame does the work, and the current level is copied into the operand of
-`LD A,n` at FootstepSound `$9BA2`. The footstep (effect 7) starts only while that operand is 0: a step never cuts
-another effect.
+`LD A,n` at FootstepSound `$9BA2`. The footstep (effect 7) starts only while that operand, the envelope's level, is
+0. So a step never cuts an audible effect, but it does cut a silent one: effects 4, 7, 11, 12 and 13 have sustain 0
+(`effects-48k.csv`), so their level is 0 through the whole sustain while EffectTime still runs (effect 13 about 130
+of its 152 frames, effect 4 for ever, 9.19), the flat zero tails of `effects48.png`. A footstep there replaces them.
+On the 128K the gate is AY channel A's volume (+`$05`, `$D0A2`), copied by the glue: the same rule. No recording
+shows such a cut; it is read from the code and the table.
 
 EffectFrame `$8549` takes EffectRequest and sets it back to `$FF` at once. A request goes to StartEffect; none goes
 to EffectSound. So the frame of a request is silent: the new effect sounds from the next frame on.
@@ -233,7 +237,7 @@ EffectEnvelope():
 flowchart TD
     A["attack: level + step +7"] -->|"level reaches the peak +11"| D["decay: level + step +8"]
     A -->|"below the peak"| A
-    D -->|"level at or below the sustain +9"| S["sustain: hold"]
+    D -->|"level below the sustain +9, or negative"| S["sustain: hold"]
     D -->|"above"| D
     S -->|"EffectTime counted down to 0"| R["release: level + step +10"]
     S -->|"EffectTime not 0, or FF: hold"| S
@@ -348,24 +352,26 @@ nothing but toggling the speaker, with the interrupts off.
 
 The game requests the effects from 15 sites. The event of each comes from its site (stage 2, NOTES "Doc 09"):
 
-| # | Event | Request site | Witness (keyed recordings; RZX segments) |
+| # | Event | Request site | Witness (our recordings; RZX segments, of 91) |
 | ---: | --- | --- | --- |
-| 0 | Hiro hurt | HurtHiroSet `$9878` | deaths, gameover, play48; 59 segments |
-| 1 | a hard landing | HiroLandedHard `$90D4` | deaths, play48; 7 |
-| 2 | an enemy killed | KillScore `$97EA` (E = 2) | play48; 27 |
-| 3 | a boss killed, its gate opens | KillScore (E = 3) | the RZX segments (with 2) |
-| 4 | Havok killed; the end picture's fade every 16 steps | KillScore (E = 4), HavokFadeStep `$8738` | r138000 |
-| 5 | a fragment counted | PanelFragments `$FF3C` | c48; r034000, r056000, r116000 |
-| 6 | a boss shot; a shield struck | BossFireSpawn `$94BD`, TransformShield `$973F` | 9 segments (the boss) |
-| 7 | a footstep, only while the level is 0 | FootstepPlay `$9BB0` | deaths, menu, play48; 69 |
-| 8 | a pickup taken | CollectPickup `$98B6` (`$98B9`) | deaths, play48; 31 |
-| 9 | an enemy turns to face Hiro | TurnToHiroSet `$9094` | 6 POKE probes; 54 |
-| 10 | the strike or the throw | StartActionSeq `$9104` | menu, opt2-4, play48; 66 |
-| 11 | a title piece arrives | TitleMovePiece `$A775` | c48, deaths, menu, play48 |
-| 12 | an enemy hit, still alive | StrikeDamageC `$9777` | 43 segments |
-| 13 | a block broken | BreakBlock `$9E78` | play48; 25 |
+| 0 | Hiro hurt | HurtHiroSet `$9878` (`$987D`) | deaths, gameover, hiscore, play48, rooms; 64 |
+| 1 | a hard landing | HiroLandedHard `$90D4` (`$90D8`) | deaths, play48; 8 |
+| 2 | an enemy killed | KillScore `$97EA` (E = 2, from `$97B7`) | play48; 32 |
+| 3 | a boss killed, its gate opens | KillScore (E = 3, OpenGate `$97E8`) | bossgate (1); none |
+| 4 | Havok killed; the end picture's fade every 16 steps | KillScore (E = 4, GameWonSound `$97DE`), HavokFadeStep `$8738` (`$8744`) | havok (1 and 16); r138000 (the fade, 16) |
+| 5 | a fragment counted | PanelFragments `$FF3C` (`$FF4C`) | c1, c48; 4 |
+| 6 | a boss shot; a shield struck | BossFireSpawn `$94BD` (`$94D6`), TransformShield `$973F` (`$9752`) | bossgate (the shot, 2); 9 (the shot). `$9752` ran in no build: the shield's sound is unwitnessed |
+| 7 | a footstep, only while the level is 0 | FootstepPlay `$9BB0` | bossgate, c1, deaths, havok, menu, play48; 83 |
+| 8 | a pickup taken | CollectPickup `$98B6` (`$98B9`) | bossgate, deaths, play48; 33 |
+| 9 | an enemy turns to face Hiro | TurnToHiroSet `$9094` (`$9099`) | bossgate, rooms, 6 POKE probes; 61 |
+| 10 | the strike or the throw | StartActionSeq `$9104` (`$910A`) | bossgate, c1, havok, menu, opt2-4, play48, throw, the 15 POKE probes; 76 |
+| 11 | a title piece arrives | TitleMovePiece `$A775` (`$A784`) | c1, c48, deaths, gameover, havok, hiscore, menu, opt2-4, play48, throw; 3 |
+| 12 | an enemy hit, still alive | StrikeDamageC `$9777` (`$9783`) | none; 43 |
+| 13 | a block broken | BreakBlock `$9E78` (`$9E82`) | bossgate, play48, throw; 29 |
 
-The witness column lists the recordings whose L1 runs the request's address. HiroMeleeArm `$90FB` also writes 11,
+The witness column lists the recordings whose L1 runs the request's address (in brackets), over every build of
+case.json: the keyed and integration recordings, the POKE probes, and the 72 long and 19 room-entry RZX segments
+(`python3 tools/l1q.py ADDR`). HiroMeleeArm `$90FB` also writes 11,
 but StartActionSeq overwrites it with 10 four instructions later: 11 is never heard from a strike.
 
 ![The 14 beeper effects: the level and the burst a frame](img/sound/effects48.png)
@@ -572,8 +578,11 @@ flowchart TD
 
 The sequencer record of a channel (SeqChannelA `$C03F`, B and C 33 bytes apart) holds the order-list pointer
 (+`$01`), the pattern pointer and its start (+`$03`-+`$06`), the instrument (+`$07`), the repeat count (+`$09`),
-the pattern-end flag (+`$0B`), the event timer (+`$0C`), the list-running flag (+`$0D`), the transpose (+`$0E`), the
-arpeggio state (+`$14`) and the slide (+`$18`-+`$1F`).
+the transpose (+`$0A`, written by the order list's `$FE` t at `$C210`), the pattern-end flag (+`$0B`), the event
+timer (+`$0C`), the list-running flag (+`$0D`), the note playing (+`$0E` = the pattern's index + the transpose,
+`$C2A1`-`$C2A4`), the arpeggio number (+`$0F`) and its pointer, timers and state (+`$10`-+`$14`), the slide (+`$15`
+the switch, +`$16`-+`$18` its delay, steps and interval, +`$19`-+`$1F` its state and change) and the drum switch
+(+`$20`). The header of `src/bank4/state.asm` lists every byte.
 
 Because the event timer takes one command byte ahead, a pattern's end mark `$FF` is seen on the frame before its last
 note ends, and the next pattern's first note starts on time.
@@ -616,7 +625,8 @@ The bytes of tune 2, the jingle (TuneTable + 12 = `7E CE 81 CE 88 CE`):
 | B | `$CE81` | `FE 11 C4 02 28 28 FF` | tr+17 slot4=ins2 P40 P40 |
 | C | `$CE88` | `C0 0D 29 FF` | slot0=ins13 P41 |
 
-The codes `$FC` and `$FD` are in no tune. The code that skips them (`$C1FC`, `$C206`) ran in no recording.
+The order-list codes `$FC` and `$FD` are in no tune's order list (the same bytes as pattern commands are the drums,
+9.13, which tune 0 uses). The code that skips them in an order list (`$C1FC`, `$C206`) ran in no recording.
 
 ## 9.10 The patterns, and the jingle worked by hand
 
@@ -816,7 +826,7 @@ The worked example is tune 0's first frames (the registers figure of 9.14). Chan
 minor chord A#-C#-F, one frame a note, the comb at 160-250 of R0-R1. Channel B plays ins 3 on A#4 with its endless
 slide: the saw-tooth rising from about 300 to 700 in each note's frames, until the next note restarts it.
 
-## 9.13 The drums `$FC` / `$FD`, and the hardware envelope
+## 9.13 The drums: the pattern commands `$FC` / `$FD`, and the hardware envelope
 
 **The drums.** Pattern command `$FD` a b turns the drum on for the channel: every following note sets DrumPending
 `$C0D2`, and StartNote then opens the channel's noise for a burst. DrumLength `$C0D3` = a frames; DrumNoise `$C0D5`
@@ -1120,13 +1130,18 @@ that the checks of 9.6, 9.16 and 9.17 compared with the machine.
 
 - **The 128K hardware envelope** (HardEnvelope `$D163`, HardEnvelopeWait `$D377`): no instrument or effect sets flags
   bit 2; it ran in no recording (9.13).
-- **The order-list codes `$FC` and `$FD`**: in no tune; the skips at `$C1FC` / `$C206` ran in no recording (9.9).
+- **The order-list codes `$FC` and `$FD`** (not the pattern commands `$FC` / `$FD`, the drums of 9.13): in no
+  tune's order list; the skips at `$C1FC` / `$C206` ran in no recording (9.9).
 - **The raw period `$7E`**: in no pattern of the three tunes.
 - **The 128K stop `$FF`** (TuneRequest `$FF`, the glue's Silence at `$858D`): the game writes it at its end, but in
   no recording was a tune still playing then (MusicState 0), so Silence was not called from there.
-- **Effect 4 never ends**, on both machines. Its release step is 0 (48K +10, 128K +3): the level stays and the effect
-  sounds until another effect replaces it (48K) or Silence (128K). Havok's death (KillScore E = 4) and the end
-  picture's fade request it; r138000 is the only segment that runs it.
+- **Effect 4 never ends**, on both machines. Its release step is 0 (48K +10, 128K +3). On the 48K the decay (-1 a
+  frame) takes the level from the peak 111 down to the sustain 0; the sustain passes to the release at once
+  (EffectTime 1), and a release of 0 keeps the level at 0, never negative, so the effect never goes idle. What is left
+  is a quiet tick: LevelToBurst gives 4 toggles at level 0, at B = 7 (pitch `$FF`), every frame, until another effect
+  replaces it; a footstep can, since its gate is the level 0 (9.3). On the 128K it holds until Silence. Havok's death
+  (KillScore E = 4, GameWonSound `$97DE`) and the end picture's fade (`$8744`) request it: havok runs the requests 17
+  times (1 and 16), r138000 16 times (the fade).
 - **The music-mode silence of the effects** (9.7): in music mode the glue never reaches the effect branch, so a 128K
   in music mode plays no effects. It is the glue's logic; no recording plays in music mode long enough to show a
   request lost (menu chose effects).

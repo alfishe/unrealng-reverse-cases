@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """The route of the RZX Archive run (another player's complete game) over the map drawn from src/res: the rooms in the
 order the run entered them, coloured from the start (blue) to Havok (red); the Fireblade rooms, the giants' rooms, the
-lives lost. Also writes the contact sheet of the 127 rooms, rooms-sheet.png.
+lives lost. Also writes the contact sheet of the 127 rooms, rooms-sheet.png, and the map in two halves readable at
+900 px, map-west.png (columns 0-14) and map-east.png (columns 15-29): each room drawn from src/res with its number and
+an outline for the recording that entered it (the RZX run in play, stage 1's rooms recording, a POKE probe of
+work/stage2/rec/poke-roomNNN/, or for room 122 only the end sequence).
 
     python3 tools/fig_route.py --map work/stage2/fig/rooms/map.png --state work/stage2/rzx/state.tsv --out docs/img/maps
 
@@ -9,6 +12,7 @@ state.tsv (tools/rzx_snap.py): one line a frame of the RZX, the room `$6BDD`, th
 `$664D`, energy `$6642`, read in SkoolKit's simulator at the frame's end.
 """
 import argparse
+import glob
 import os
 import sys
 
@@ -156,6 +160,50 @@ def main():
     p2 = os.path.join(a.out, 'rooms-sheet.png')
     sheet.save(p2)
     print(p2, sheet.size, 'never entered by the RZX:', [r for r in range(1, 128) if r not in first])
+    # the map in two halves, 60 x 44 pixels a room (a quarter of the play window), numbers and coverage outlines
+    probes = {int(os.path.basename(q)[9:]) for q in glob.glob(os.path.join(HERE, '..', 'work', 'stage2', 'rec',
+                                                                           'poke-room[0-9]*'))}
+    walked = {1, 2, 3, 11, 14, 18}
+    full = Image.open(a.map).convert('RGB')
+    kinds = [('RZX run, in play', (90, 160, 255)), ('stage 1 rooms recording', (80, 220, 110)),
+             ('POKE probe only', (255, 160, 40)), ('end sequence only (122)', (255, 70, 70))]
+    for name, c0 in (('west', 0), ('east', 15)):
+        cw2, ch2, top2 = 60, 44, 28
+        half = Image.new('RGB', (15 * cw2, top2 + 20 * ch2 + 40), (16, 16, 20))
+        hd = ImageDraw.Draw(half)
+        hd.text((8, 6), f'The map, columns {c0}-{c0 + 14} (of 30), rows 0-19: the rooms from src/res, '
+                        'outlined by the recording that entered them', fill='white', font=f12)
+        for room, (r, c) in pos.items():
+            if not c0 <= c < c0 + 15:
+                continue
+            x0, y0 = (c - c0) * cw2, top2 + r * ch2
+            cell = full.crop((c * 120, r * 88, c * 120 + 120, r * 88 + 88)).resize((cw2, ch2), Image.LANCZOS)
+            half.paste(Image.eval(cell, lambda v: int(v * 0.6)), (x0, y0))
+            if room in first:
+                k = 0
+            elif room in walked:
+                k = 1
+            elif room in probes:
+                k = 2
+            else:
+                k = 3
+            hd.rectangle([x0, y0, x0 + cw2 - 1, y0 + ch2 - 1], outline=kinds[k][1], width=2)
+            tag = 'F' if room in FRAGMENTS else ''
+            tag += 'G' if room in GIANTS else ''
+            tag += 'H' if room == HAVOK else ''
+            hd.rectangle([x0 + 2, y0 + 2, x0 + 2 + 9 * len(f'{room}{tag}'), y0 + 17], fill=(0, 0, 0))
+            hd.text((x0 + 3, y0 + 2), f'{room}{tag}', fill=(255, 230, 120) if tag else 'white', font=f14)
+        yk = top2 + 20 * ch2 + 8
+        x = 8
+        for label, colour in kinds:
+            hd.rectangle([x, yk + 2, x + 14, yk + 14], outline=colour, width=2)
+            hd.text((x + 20, yk), label, fill=(210, 210, 210), font=f12)
+            x += 30 + 8 * len(label)
+        hd.text((8, yk + 16), 'F fragment, G giant, H Havok. Empty grid cells hold no room.', fill=(210, 210, 210),
+                font=f12)
+        p3 = os.path.join(a.out, f'map-{name}.png')
+        half.save(p3)
+        print(p3, half.size)
 
 if __name__ == '__main__':
     main()

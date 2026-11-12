@@ -429,7 +429,7 @@ Every copy found was compared block by block with the original (C/README, Other 
 | --- | --- | --- |
 | ZXDB 31610, WoS, TOSEC 45124 | the Gremlin tape | the original (`orig/`) |
 | ZXDB 31612, TOSEC 45123 | the GBH budget re-release | the same six blocks; the TZX differs in 7 bytes, pause lengths only |
-| ZXDB 31611 `SWITCHBL.TAP`, TOSEC 45129 | a TAP with a patched loader | header "SW.BLADE"; `JP $0562` in the BASIC block at offset 123, which is LdBytes' `IN A,($FE) / RRA` at `$FF0F`. The loader jumps into the ROM's own edge loop, so an emulator's ROM trap reads the blocks |
+| ZXDB 31611 `SWITCHBL.TAP`, TOSEC 45129 | a TAP with a patched loader | header "SW.BLADE"; `JP $0562` in the BASIC block at offset 123, which replaces LdBytes' `IN A,($FE) / RRA` at `$FF0F`. After its own border and `PUSH` of LoadEnd `$FFB2` (`$FF0E`), the loader jumps into the ROM's LD-BYTES at `$0562`, the same `IN A,($FE)` just past the ROM's border and return set-up and before LD-START `$056C`: the ROM reads the block (so an emulator's ROM trap catches it) and returns to LoadEnd |
 | TOSEC `(128K)[a]` 45125 | a dump of a played tape | block 4 differs in 26 bytes, `$8127-$816D`: the high-score names JEFF C, LINDA, SIMES, DANGERSTU replaced by JOSE LUIS, RUI, CARLOS, FC PORTO (the scores are the original's) |
 | TOSEC `(48K-128K)[a]` 45130 | a cheat | header "Sw.Blade+"; one byte of block 4 at offset 10 958, `$962A`: `$C9` (`RET`) for `$3A`, the first byte of LoseLife `$962A`. Losing all energy then costs no life |
 | NVG `SWITCBLD.TAP`, TOSEC 45127-45128 | Ramsoft's "Switchblade & Trainer" | headers "SWITCH", "BladeIntro", "BladeCode" (38 750 bytes), "BladePage4" (the original's block 6) |
