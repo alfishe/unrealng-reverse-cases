@@ -211,7 +211,8 @@ def add_page_args(parser):
                         help='code at $C000-$FFFF run while RAM N is paged in is named from LISTING (repeatable)')
     parser.add_argument('--page-name', action='append', default=[], metavar='N=NAME',
                         help='code at $C000-$FFFF run while RAM N is paged in is NAME, one name for the page '
-                             '(repeatable)')
+                             '(repeatable); with --page N=LISTING as well, the listing names the code and NAME '
+                             'stands for "RAM N" after each name')
 
 
 def code_listing(args):
@@ -257,8 +258,10 @@ def code_ranges(texts, paged=False):
 
 class PagedListing:
     """A listing for code locations (code_locations): RAM N's code at $C000-$FFFF from --page N's listing (its
-    names with " (RAM N)" after them), or --page-name N's one name; everything else from the main listing (a page
-    with neither too). Without pages a location is the PC and this is the main listing"""
+    names with " (RAM N)" after them), or --page-name N's one name; both for one page combine: the listing names the
+    code (and gives its lines) and the page name stands for "RAM N" ("AyFrame (bank 4: the AY player)"). Everything
+    else from the main listing (a page with neither too). Without pages a location is the PC and this is the main
+    listing"""
 
     def __init__(self, main, pages=None, names=None):
         self.main, self.pages, self.names = main, pages or {}, names or {}
@@ -268,22 +271,30 @@ class PagedListing:
         page, address = divmod(loc, PAGED)
         return page, address, (self.pages.get(page, self.main) if page else self.main)
 
+    def _page(self, page):
+        return self.names.get(page, f'RAM {page}')
+
     def routine(self, loc):
         page, address, lst = self._of(loc)
+        if page in self.pages:
+            return f'{lst.routine(address)} ({self._page(page)})'
         if page in self.names:
             return self.names[page]
-        return f'{lst.routine(address)} (RAM {page})' if page in self.pages else lst.routine(address)
+        return lst.routine(address)
 
     def name(self, loc):
         page, address, lst = self._of(loc)
+        if page in self.pages:
+            return f'{lst.name(address)} ({self._page(page)})'
         if page in self.names:
             return f'{self.names[page]} ${address:04X}'
-        return f'{lst.name(address)} (RAM {page})' if page in self.pages else lst.name(address)
+        return lst.name(address)
 
     def window(self, loc, rows):
-        """as Listing.window, the addresses as code locations (so that counts by location find their line)"""
+        """as Listing.window, the addresses as code locations (so that counts by location find their line); a page
+        with a name only has no lines"""
         page, address, lst = self._of(loc)
-        if page in self.names:
+        if page in self.names and page not in self.pages:
             return []
         return [(a + PAGED * page if page and a >= 0xC000 else a, k, t, c) for a, k, t, c in lst.window(address, rows)]
 

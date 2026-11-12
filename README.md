@@ -41,7 +41,7 @@ Each case is a full reverse of one game:
 | [Earth Shaker](games/earth-shaker/README.md) | Your Sinclair (Michael Batty), 1990 | 48K, tape | complete 2026-11-11 | a boulder-and-gems mine game given away on the Your Sinclair issue 63 covertape: 32 caves of 30 x 20 cells in a scrolling window, falling boulders and gems, a password per cave, a plain ROM-speed load |
 | [Battle Command](games/battle-command/README.md) | Ocean Software (Realtime Games), 1990 | 128K, tape (two sides) | complete 2026-11-11 | a 3D tank combat game: one Mauler tank in a filled-polygon world, ten missions on a mission tape, SpeedLock 7 |
 | [Terramex](games/terramex/README.md) | Grandslam Entertainments (Teque), 1987 | 48K / 128K, tape | complete 2026-11-11 | an arcade adventure: five explorers, 70 flick-screen rooms, objects carried by invisible bearers, a countdown to an asteroid's impact; Ben Daglish's AY music on the 128K |
-| [Switchblade](games/switchblade/README.md) | Gremlin Graphics, 1991 | 48K / 128K, tape | in progress (docs written, in review) | Jeff Calder's conversion of Simon Phipps' flip-screen platform game: Hiro rebuilds the Fireblade in a 127-room Undercity revealed as he walks |
+| [Switchblade](games/switchblade/README.md) | Gremlin Graphics, 1991 | 48K / 128K, tape | complete 2026-11-12 | Jeff Calder's conversion of Simon Phipps' flip-screen platform game: Hiro rebuilds the Fireblade in a 127-room Undercity revealed as he walks |
 
 ### Software
 

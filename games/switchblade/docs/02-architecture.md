@@ -237,21 +237,18 @@ player's tail 330 bytes on a 128K, 13 bytes of padding) and none of them is reac
 menu (menu, opt2, opt3, opt4, deaths, gameover, rooms: 46 693 frames; c1 and c48 are left out, their tape loads touch
 every byte), drawn by `kit/heatmap.py` with `work/stage1/regions.txt`:
 
-![Executed and read bytes of 4000-FFFF hex over seven recordings, log2 scale, with the screen insets](img/arch/memory-heatmap-a.png)
-
-![Written bytes and the composite (red write, green read, blue execute), with the region labels](img/arch/memory-heatmap-b.png)
+![Executed, read and written bytes of 4000-FFFF hex over seven recordings and the composite, log2 scale, with the screen insets and the region labels](img/arch/memory-heatmap.png)
 
 *Executed, read and written counts for each byte of `$4000-$FFFF`, log2 scale, over the seven 128K recordings that
 start at the menu (46 693 frames). The 64 K view: banks 5, 2 and 0 as paged in play; bank 4 (the AY player, 7.9 % of
 deaths' CPU) is not drawn. Made with `python3 ../../kit/heatmap.py work/stage1/l1-all.json
-work/stage2/fig/memory-heatmap.png --cell 2 --regions work/stage1/regions.txt --title '...'`, then cut in two with
-`python3 tools/fig_split.py work/stage2/fig/memory-heatmap.png 1105 docs/img/arch/memory-heatmap-a.png
-docs/img/arch/memory-heatmap-b.png`.*
+docs/img/arch/memory-heatmap.png --cell 2 --regions work/stage1/regions.txt --title '...'` (two rows of two panels,
+the regions beside the second of each row).*
 
 How to read it:
 
-- Four panels: executed, read (first figure), written, and the three as one RGB picture, red write, green read, blue
-  execute (second figure). Brightness is the log2 of the count. A row is 256 bytes, `$4000` at the top.
+- Four panels: executed and read (top row), written and the three as one RGB picture, red write, green read, blue
+  execute (bottom row). Brightness is the log2 of the count. A row is 256 bytes, `$4000` at the top.
 - Under each panel an inset shows `$4000-$57FF` in the screen's geometry and `$5800-$5AFF` as its cells.
 - **Execution**: 71.5 % of the instructions run in `$8000-$8FFF` (the handler, the loop, the render), 21.5 % in
   `$9000-$9FFF` (the player), 3.1 % in `$A000-$AFFF`, 3.7 % in `$F000-$FFFF` (the panel code at `$FF01`, called on

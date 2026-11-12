@@ -170,14 +170,26 @@
     "stage2/rzx/rooms/e131414": "rzxroom131414",
     "stage2/rzx/rooms/e133252": "rzxroom133252"
   },
+  "ref_load_end": {
+    "stage1/c1": 15505,
+    "stage1/rec/c48": 13280
+  },
   "ref_parts": [
     [
       "src/bank4/bank4.json",
       "Bank 4: the AY player, the tunes, the story pages (128K only)"
     ],
     [
+      "src/tape/basic.json",
+      "The tape BASIC (TZX block 2)"
+    ],
+    [
       "src/stage2/stage2.json",
       "The loader's second stage"
+    ],
+    [
+      "src/boot/boot.json",
+      "Block 5's head (TZX block 5)"
     ]
   ]
 }

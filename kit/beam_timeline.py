@@ -12,7 +12,7 @@ strip shows which routine the CPU is in at each T-state.
     python3 beam_timeline.py (--trace pass.uatr | --work W --window F:T-F:T)
            --listing build/game.lst --out docs/img/beam-pass.png
            [--screen 4000] [--machine 48k|128k|pentagon] [--int-t T] [--int-to-paper T] [--paper-t T]
-           [--line-t 224] [--frames 3] [--pc 8000-FFFF] [--title T] [--width 1050]
+           [--line-t 224] [--frames 3 | --frames A-B] [--pc 8000-FFFF] [--title T] [--width 1050]
            [--page N=LISTING ...] [--page-name N=NAME ...] [--unreal U]
 
 The beam comes from unreal-ng's timing (core/src/emulator/config.cpp, ApplyModelTimingDefaults): the INT rises at
@@ -29,8 +29,13 @@ int-t + int-to-paper:
 (an emulator with another intstart), --paper-t gives the paper's frame T outright. The counts below the panel give
 each routine's writes before and after the beam.
 
+--frames N draws the trace's first N frames (3); --frames A-B draws the trace's frames A to B (the emulator's frame
+numbers, as the panels are labelled), a window from the middle of a long trace: `--frames 2400-2404` of a trace
+over 2389-2428. Only the frames drawn count in the legend.
+
 128K pages: --page N=LISTING names the code at `$C000-$FFFF` that runs while RAM N is paged in from that page's
 listing ("MusicFrame (RAM 6)"), --page-name N=NAME gives the whole page one name ("the music player (RAM 6)");
+both for one page combine: the listing names the code and NAME stands for "RAM N" ("MusicFrame (the music player)").
 --listing names the rest. Without them a 128K game's interrupt code in RAM 6 would take the names of the RAM 0
 data at its addresses. The page is the trace's start page, then each `OUT` to `$7FFD`; --pc N:LO-HI is RAM N's.
 
@@ -81,7 +86,8 @@ def main():
     p.add_argument('--int-to-paper', type=int, help='T from the INT to the first paper pixel (14340, 14366, 17988)')
     p.add_argument('--paper-t', type=int, help='the first paper pixel\'s frame T (default int-t + int-to-paper)')
     p.add_argument('--line-t', type=int, help='T a line (default the machine\'s: 224, 228)')
-    p.add_argument('--frames', type=int, default=3, help='at most this many frames, the first of the trace')
+    p.add_argument('--frames', default='3',
+                   help='N: the first N frames of the trace (3); A-B: the trace\'s frames A to B (frame numbers)')
     p.add_argument('--pc', action='append',
                    help='only these instructions\' writes and time: LO-HI, N:LO-HI for RAM N at $C000-$FFFF '
                         '(comma-separated or repeated)')
@@ -101,7 +107,14 @@ def main():
     int_t, paper_t, line_t = beam_timing(args, frame_t)
     print(f'frame {frame_t} T: the INT at frame T {int_t}, the paper at frame T {paper_t}, {line_t} T a line')
 
-    frames = sorted({x.frame for x in trace.instructions})[:args.frames]
+    frames = sorted({x.frame for x in trace.instructions})
+    if '-' in args.frames:
+        first, _, last = args.frames.partition('-')
+        frames = [f for f in frames if int(first) <= f <= int(last)]
+        if not frames:
+            sys.exit(f'--frames {args.frames}: the trace has no frame in it')
+    else:
+        frames = frames[:int(args.frames)]
     keep = set(frames)
     spans = defaultdict(list)     # frame -> (t, routine) at each instruction start
     dots = defaultdict(list)      # frame -> (t, line, routine, is_attr)

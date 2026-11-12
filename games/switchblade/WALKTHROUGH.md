@@ -356,8 +356,7 @@ Every screenshot and still figure the documents show, with the recording and fra
 | [memory-load-play.png](docs/img/arch/memory-load-play.png) | [02](docs/02-architecture.md) | The memory at the load and in play side by side | c1 | 18627 |
 | [map-west.png](docs/img/maps/map-west.png) | [02](docs/02-architecture.md) | The map's western half, columns 0-14, outlined by the recording that entered each room |  |  |
 | [map-east.png](docs/img/maps/map-east.png) | [02](docs/02-architecture.md) | The map's eastern half, columns 15-29, outlined by the recording that entered each room |  |  |
-| [memory-heatmap-a.png](docs/img/arch/memory-heatmap-a.png) | [02](docs/02-architecture.md) | Executed and read bytes of 4000-FFFF hex over seven recordings, log2 scale, with the screen insets |  |  |
-| [memory-heatmap-b.png](docs/img/arch/memory-heatmap-b.png) | [02](docs/02-architecture.md) | Written bytes and the composite, with the region labels |  |  |
+| [memory-heatmap.png](docs/img/arch/memory-heatmap.png) | [02](docs/02-architecture.md) | Executed, read and written bytes of 4000-FFFF hex over seven recordings and the composite, log2 scale, with the screen insets and the region labels |  |  |
 | [budget-modules.png](docs/img/arch/budget-modules.png) | [02](docs/02-architecture.md) | Where the CPU time goes, by module: the loop polling the actors and the drawing take 70-90 % |  |  |
 | [tape.png](docs/img/load/tape.png) | [03](docs/03-build-and-load.md) | The tape: one ROM header, five headerless blocks at ROM speed, 336 s; where each block goes |  |  |
 | [budget-routines.png](docs/img/arch/budget-routines.png) | [04](docs/04-game-loop.md) | Play on the 48K, routine by routine: a third of the time is the loop asking actors whether they are due |  |  |

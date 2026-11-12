@@ -319,9 +319,10 @@ pictures. Only bank 0 behaves as part of the main program.
 
 ![Play, frames 8400-9400, over the 64 K the CPU sees](img/arch/heatmap-play.png)
 
-*`python3 ../../kit/heatmap.py work/docs/bcA/play/w8400/l1.json OUT --from 4000 --to FFFF --cell 3 --regions
-work/docs/bcA/regions.txt`, the composite panel (red written, green read, blue executed, log2 of the counts) of the
-play window 8400-9400 with bank 0 at `$C000`; the screen inset below.*
+*`python3 ../../kit/heatmap.py work/docs/bcA/play/w8400/l1.json docs/img/arch/heatmap-play.png --from 4000 --to FFFF
+--cell 3 --regions work/docs/bcA/regions.txt --panels composite --title '...'`, the composite panel (red written, green
+read, blue executed, log2 of the counts) of the play window 8400-9400 with bank 0 at `$C000`; the screen inset
+below.*
 
 What they show:
 

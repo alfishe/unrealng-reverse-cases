@@ -621,13 +621,14 @@ between effects.
 
 *One interrupt of c1 (128K, room 4), frame 17 700 from t 1840 to t 9100: 60 pictures of 121 T, 658 instructions.
 Made with `python3 ../../kit/routine_anim.py --work work/docs/zsA/c1 --window 17700:1840-17700:9100 --listing
-build/game.lst --page 4=build/bank4.lst --range 5B00-FFFF --pc 8456-8528,853F-85E0,4:C000-E0F8 --pictures 60 --title
-'...' --out docs/img/routines/InterruptHandler.gif`.*
+build/game.lst --page 4=build/bank4.lst --page-name '4=bank 4: the AY player' --range 5B00-FFFF --pc
+8456-8528,853F-85E0,4:C000-E0F8 --pictures 60 --title '...' --out docs/img/routines/InterruptHandler.gif`; bank 4's
+code is named from its listing with "bank 4: the AY player" after each name.*
 
 How to read it:
 
 - Right: the routine at the PC, named from the game's listing or, while bank 4 is paged in, from bank 4's ("WriteAy
-  (RAM 4)"). The bar is the time inside the window.
+  (bank 4: the AY player)"). The bar is the time inside the window.
 - The first eighth is GameTick: the ten pages' delays, the P key, ReadInput.
 - Then AyGlue `$853F` writes `$14` to `$7FFD`, and the PC moves into bank 4: the sequencer, then AyPrepare and
   WriteAyRegister for each register. The memory rows of `$C000-$D3FF` light up while the screen stays still.
@@ -786,8 +787,9 @@ frames 2 389-2 427 (`work/stage2/traces/play48-2389_0-2428_0.uatr`, 386 041 inst
 
 *The first five of the build's 38 frames (48K; the trace runs one frame on, to 2 428). Made with `python3
 ../../kit/beam_timeline.py --trace work/stage2/traces/play48-2389_0-2428_0.uatr --listing build/game.lst --machine 48k
---frames 5 --title '...' --out docs/img/loop/beam-build-play48.png`; the trace was taken with `--work` on play48's
-recording (port base 37400) over `--window 2389:0-2428:0`.*
+--frames 2389-2393 --title '...' --out docs/img/loop/beam-build-play48.png` (`--frames A-B` picks any window of the
+whole build's trace); the trace was taken with `--work` on play48's recording (port base 37400) over `--window
+2389:0-2428:0`.*
 
 How to read it:
 

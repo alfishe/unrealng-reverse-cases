@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the documentation: every mermaid diagram renders (mmdc), every relative link and image exists, every
+"""Check the documentation: every mermaid diagram renders (mmdc, all of them in one run), every relative link and image exists, every
 #anchor names a heading of its file, and no $ is left in prose (GitHub reads a pair of them as LaTeX math;
 code_addresses.py fixes addresses).
 
@@ -89,18 +89,42 @@ def anchors(path):
     return _anchors[path]
 
 
-def check_mermaid(path, text, tmp, rel):
+def mermaid_blocks(text):
+    return re.findall(r'```mermaid\n(.*?)```', text, re.S)
+
+
+def check_entities(text, rel):
     bad = 0
-    for n, block in enumerate(re.findall(r'```mermaid\n(.*?)```', text, re.S)):
+    for n, block in enumerate(mermaid_blocks(text)):
         # GitHub decodes HTML entities before mermaid parses the block, so &quot; becomes a bare quote that ends
         # the label; mmdc accepts it. Mermaid's own escapes are #quot; #amp; #lt; #gt; #NN;.
         for ent in re.findall(r'&(?:[a-z]+|#\d+);', block):
             bad += 1
             print(f'{rel}: mermaid diagram {n + 1}: HTML entity {ent} (GitHub breaks on it; write #{ent[1:]})')
-        src = os.path.join(tmp, f'd{n}.mmd')
-        open(src, 'w').write(block)
-        r = subprocess.run(['mmdc', '-q', '-i', src, '-o', os.path.join(tmp, f'd{n}.svg')],
-                           capture_output=True, text=True)
+    return bad
+
+
+def mmdc(source, out):
+    return subprocess.run(['mmdc', '-q', '-i', source, '-o', out], capture_output=True, text=True)
+
+
+def check_mermaid(blocks, tmp):
+    """blocks: [(rel, n, text)]. Every mmdc run starts a headless browser (1-2 s, far more on a busy machine, most of
+    it waiting), so all the diagrams are rendered in one run: one Markdown file of them all. Only when that fails is
+    each diagram rendered on its own, to name the broken ones"""
+    if not blocks:
+        return 0
+    together = os.path.join(tmp, 'all.md')
+    with open(together, 'w', encoding='utf-8') as f:
+        for _, _, block in blocks:
+            f.write('```mermaid\n' + block + '```\n\n')
+    if mmdc(together, os.path.join(tmp, 'all-out.md')).returncode == 0:
+        return 0
+    bad = 0
+    for i, (rel, n, block) in enumerate(blocks):
+        src = os.path.join(tmp, f'd{i}.mmd')
+        open(src, 'w', encoding='utf-8').write(block)
+        r = mmdc(src, os.path.join(tmp, f'd{i}.svg'))
         if r.returncode != 0:
             bad += 1
             print(f'{rel}: mermaid diagram {n + 1}: {r.stderr.strip()[:400]}')
@@ -160,15 +184,18 @@ def main():
     files = [os.path.abspath(f) for f in argv] or default_files(repo_mode)
     bad = 0
     linked = set()
+    blocks = []
     with tempfile.TemporaryDirectory() as tmp:
         for path in files:
             text = open(path, encoding='utf-8').read()
             rel = os.path.relpath(path, here)
-            bad += check_mermaid(path, text, tmp, rel)
+            bad += check_entities(text, rel)
+            blocks += [(rel, n, block) for n, block in enumerate(mermaid_blocks(text))]
             bad += check_links(path, text, linked, rel)
             for n in code_addresses.bare_dollars(text):
                 bad += 1
                 print(f'{rel}:{n}: $ in prose renders as math on GitHub (code_addresses.py)')
+        bad += check_mermaid(blocks, tmp)
         if not argv and not repo_mode:
             for path in res_readmes():
                 bad += check_links(path, open(path, encoding='utf-8').read(), linked, os.path.relpath(path, here))

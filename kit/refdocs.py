@@ -23,11 +23,16 @@ case.json keys read here (beside mkgame.py's):
                 "why": "laid over the title player and the start-up"},     a buffer laid over code (optional)
     "data_note": "The object records are laid out in [7. Objects](07-objects.md)."   (optional, doc 11)
     "ref_parts": ["src/bank3/bank3.json", ["src/loader/chain.json", "Decryption chain and loader"]]   (optional)
+    "ref_load_end": {"stage1/c1": 15505}     (optional) per recording, the frame from which it runs the game's
+                               image: a routine first run before it ran during the load (a loader at the game's
+                               addresses), its writes are the blocks landing and are no entry's "Written by"
 
-ref_parts: after the game's sections, one section a part file (single layout), from its .ann, its image and its
+ref_parts: after the game's sections, one section a part file of the single layout, from its .ann, its image and its
 recordings: the part's "ref_builds" (else the case's) first, then its other l1 sources ("other_builds" overrides
 them), each counted inside the part's window only; a "mode": "blocks" part counts an instruction only where its bytes
-are the part's.
+are the part's. A part of segments (kit/mkgame.py's "segments") gets one section a segment with an .ann ("Title:
+segment title"), at its run addresses, from the segment's work files (kit/mkgame.py names them after the .ann and
+the piece, with "-RUN" when two segments share both) and the segment's l1 sources.
 """
 import bisect
 import json
@@ -273,26 +278,49 @@ class View:
 
     @staticmethod
     def part(spec, config, game):
-        """a part of case.json "ref_parts": "src/PART.json" or ["src/PART.json", "Title"]"""
+        """a part of case.json "ref_parts": "src/PART.json" or ["src/PART.json", "Title"]: [View], one for a part
+        of the single layout, one a segment (with an .ann) for a part of segments"""
         path, title = (spec, None) if isinstance(spec, str) else (spec[0], spec[1])
         part = json.load(open(os.path.join(ROOT, path)))
         name = os.path.splitext(os.path.basename(path))[0]
-        if part.get('segments'):
-            sys.exit(f'{path}: a part of segments: refdocs takes the single layout only')
         top = part.get('top') or part.get('name') or name
         data = open(os.path.join(ROOT, part['image']), 'rb').read() if os.path.exists(os.path.join(ROOT, part['image'])) \
             else None
         if data is None:
             sys.exit(f'{path}: no image {part["image"]} (run kit/mkgame.py --part {path} first)')
         at = hexa(part['at']) if 'at' in part else (0 if len(data) == 0x10000 else hexa(part['org']))
-        lo = hexa(part['lo']) if 'lo' in part else at
-        hi = hexa(part['hi']) if 'hi' in part else at + len(data)
-        mkgame.LO, mkgame.HI = lo, hi
-        seg = mkgame.Segment(part, part)
+        work = os.path.join(ROOT, part.get('work') or os.path.join('work', 'mkpart', top))
+        if not part.get('segments'):
+            lo = hexa(part['lo']) if 'lo' in part else at
+            hi = hexa(part['hi']) if 'hi' in part else at + len(data)
+            mkgame.LO, mkgame.HI = lo, hi
+            seg = mkgame.Segment(part, part)
+            v = View.of_segment(seg, part, config, game, path, title or (f'Bank {seg.bank}' if seg.bank is not None
+                                                                         else top), name, top, lo, hi, work,
+                                mkgame.main_name(config), part['ann'], part.get('piece'), top)
+            return [v]
+        views = []
+        segs = mkgame.segment_tags(part['segments'], part)
+        for spec_s, seg in zip(part['segments'], segs):
+            if seg is None or not seg.ann:
+                continue
+            lo, hi = seg.run, seg.run + seg.hi - seg.lo
+            mkgame.LO, mkgame.HI = lo, hi
+            v = View.of_segment(seg, part, config, game, path, f'{title or top}: {seg.title or seg.tag()}', name,
+                                top, lo, hi, work, seg.tag(), spec_s['ann'], seg.piece,
+                                None if part.get('subdir', True) else top)
+            v.segment = (seg.lo, seg.hi, seg.run)
+            v.part_title = title or top
+            views.append(v)
+        return views
+
+    @staticmethod
+    def of_segment(seg, part, config, game, path, title, name, top, lo, hi, work, tag, ann, piece, ann_top):
+        """the View of one run of mkgame (a part of the single layout, or one segment of a part): its work files
+        TAG.ctl, TAG.skool, TAG-image.bin; its recordings the segment's l1 sources"""
         bases = seg.bases
         if seg.bank is not None and 'bases' not in part and part.get('pages') is None:
             bases = mkgame.natural_bases([seg.bank], lo)
-        work = os.path.join(ROOT, part.get('work') or os.path.join('work', 'mkpart', top))
         ref = [tuple(b) for b in part.get('ref_builds', config.get('ref_builds', []))]
         keys = {k for k, _ in ref}
         read, code, windows = [], [], {}
@@ -307,15 +335,14 @@ class View:
                 windows[key] = (src.lo if src.lo is not None else 0, src.hi if src.hi is not None else 0x10000)
         if 'other_builds' in part:
             read, code, windows = [], list(part['other_builds']), {}
-        v = View(game=False, name=name, title=title or (f'Bank {seg.bank}' if seg.bank is not None else top),
+        v = View(game=False, name=name, title=title,
                  path=path, header=part.get('header') or [], lo=lo, hi=hi, bases=bases, pages=tuple(bases),
-                 ctl=os.path.join(work, mkgame.main_name(config) + '.ctl'),
-                 skool=os.path.join(work, mkgame.main_name(config) + '.skool'),
-                 image_path=os.path.join(work, mkgame.main_name(config) + '-image.bin'), ann_path=os.path.join(ROOT, part['ann']),
-                 piece=part.get('piece'), top=top, src=part.get('dest') or os.path.dirname(part['ann']),
+                 ctl=os.path.join(work, tag + '.ctl'), skool=os.path.join(work, tag + '.skool'),
+                 image_path=os.path.join(work, tag + '-image.bin'), ann_path=os.path.join(ROOT, ann),
+                 piece=piece, top=top, ann_top=ann_top, src=part.get('dest') or os.path.dirname(ann),
                  ref_builds=ref, read_builds=tuple(read), code_builds=tuple(code), windows=windows,
                  outside=game_namer(game, lo) if seg.bank is not None else plain_span, h2='###',
-                 blocks=seg.mode == 'blocks' or seg.same_bytes)
+                 blocks=seg.mode == 'blocks' or seg.same_bytes, segment=None, part_title=title)
         if not os.path.exists(v.ctl):
             sys.exit(f'run kit/mkgame.py --part {path} first (it writes {os.path.relpath(v.ctl, ROOT)})')
         return v
@@ -325,9 +352,10 @@ class View:
             return mkgame.Annotations(self.ann_path)
         import contextlib
         import io
-        ann = mkgame.Annotations(self.ann_path, self.piece, self.top)
+        ann = mkgame.Annotations(self.ann_path, self.piece, self.ann_top)
         with contextlib.redirect_stdout(io.StringIO()):
             mkgame.clip_to_image(ann)  # an .ann shared by several parts: this image's entries
+        self.module_top = ann.top
         return ann
 
     def heading(self, module):
@@ -337,7 +365,7 @@ class View:
         return module.lower() if self.game else check_docs.github_slug(self.heading(module))
 
     def module_path(self, module):
-        return f'{self.src}/{module}.asm' if self.game else f'{self.src}/{mkgame.module_file(module, self.top)}.asm'
+        return f'{self.src}/{module}.asm' if self.game else f'{self.src}/{mkgame.module_file(module, self.module_top)}.asm'
 
     def in_window(self, key, a):
         w = self.windows.get(key)
@@ -356,6 +384,14 @@ class View:
                                      if k in self.windows else '') for k in others) if others else '')
                 if doc == 12 else 'the readers and writers from ' + ', '.join(
                     [f'`work/{k}`' for k, _ in self.ref_builds] + [f'`work/{k}`' for k in self.read_builds])) + '.'
+        if self.segment:
+            lo, hi, run = self.segment
+            text += ' This section is the segment `$%04X-$%04X` of the image' % (lo, hi - 1) + (
+                ', run at `$%04X-$%04X`' % (run, run + hi - lo - 1) if run != lo else '') + '.'
+            # a segment's intro is longer: keep each code span on one line (check_docs reads prose by line)
+            text = re.sub(r'`[^`]*`', lambda m: m.group(0).replace(' ', '\x00'), text)
+            return ['', f'## {md(self.title)} (`{self.path}`)', ''] + [
+                line.replace('\x00', ' ') for line in textwrap.wrap(text, 116)] + ['']
         return ['', f'## {md(self.title)} (`{self.path}`)', ''] + textwrap.wrap(text, 116) + ['']
 
 
@@ -411,11 +447,12 @@ def main():
         sys.exit(f'run kit/mkgame.py first (it writes work/mkgame/{MAIN}.ctl)')
     game = View.game(config)
     head12, head11, doc12, doc11 = reference(game, config)
-    parts = [View.part(spec, config, game) for spec in config.get('ref_parts', ())]
+    parts = [v for spec in config.get('ref_parts', ()) for v in View.part(spec, config, game)]
     if parts:
         note = textwrap.wrap('The parts of the medium (`case.json` `ref_parts`: ' + ', '.join(
-            md(x.title) for x in parts) + ') follow ' + WHOLE + ', each under its own heading with its modules, its '
-            'source, its annotations and its recordings.', 116)
+            md(t) for t in dict.fromkeys(x.part_title for x in parts)) + ') follow ' + WHOLE + ', each under its own '
+            'heading' + (' (a part of segments one a segment)' if any(x.segment for x in parts) else '') +
+            ' with its modules, its source, its annotations and its recordings.', 116)
         head12[-2:-1] = [head12[-2]] + note
         head11[-2:-1] = [head11[-2]] + note
     for part in parts:
@@ -530,6 +567,10 @@ def reference(v, config):
         b = Build(key)
         if key in ref_keys:
             builds[key] = b
+        # case.json "ref_load_end" (the game only): the frame from which this recording runs the game's image; a
+        # routine first run before it ran during the load (a loader at the game's addresses): its writes are the
+        # blocks landing, not the writes of the entry that holds its address
+        load_end = config.get('ref_load_end', {}).get(key) if v.game else None
         data = key in read_keys
         # the interrupt's acceptance, booked by L1 to the interrupted instruction: the vector read (a word that
         # holds the handler's address) and the return address pushed (bytes the stack uses) go to the handler
@@ -601,6 +642,8 @@ def reference(v, config):
             if data:
                 got = s['by'].setdefault(key, {'reads': [], 'writes': []})
                 for kind in ('reads', 'writes'):
+                    if kind == 'writes' and load_end is not None and p['first_frame'] < load_end:
+                        continue
                     rs = r.get('_' + kind, ranges(p[kind])) + moved.get(i, {}).get(kind, [])
                     s[kind] += rs
                     got[kind] += rs

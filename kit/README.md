@@ -46,7 +46,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
-| `check_docs.py --case C` | mermaid renders, links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
+| `check_docs.py --case C` | mermaid renders (every diagram in one `mmdc` run: one headless browser, not one a diagram; each on its own only when that run fails, to name the broken one), links and `#anchors` resolve (GitHub slugs), no `$` in prose, every figure in `docs/img` and its subfolders is linked; the resource READMEs (`src/res/README.md`, `src/res/**/README.md`) are read for their links too: a figure they link counts, a broken link of theirs is a problem |
 | `check_docs.py --repo` | the same for the repository's own documents: README, GUIDE, recipes, docs, kit |
 | `code_addresses.py FILE.md` | puts hex addresses in prose into code spans |
 
@@ -66,7 +66,8 @@ what the generator does with it, the part files); every file of a case and the c
 | `witness_skip` | builds of `read_builds` / `code_builds` left out of the `.ann`'s witness counts, optional |
 | `witness_builds` | recordings that count in the witness lines only (a fuel failure, an armour test), optional |
 | `witness_names` | `{build: name}` for a witness list: a windowed copy of a recording under its recording's name (Battle Command `{"stage1/c1g": "c1"}`), optional |
-| `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each, optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
+| `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each (a part of segments a section a segment with an `.ann`, "Title: segment title"), optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
+| `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`), optional |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
 
@@ -143,7 +144,14 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
 - **The parts.** `case.json` `ref_parts` adds a section a part after the game's (`## Bank 3 (`src/bank3`)`), each
   from the part's `.ann`, image and recordings (only the instructions inside the part's window, and for a
   `"mode": "blocks"` part only those whose bytes are the part's); a call into the game's pages names the game's
-  routine, a bank's address its bank.
+  routine, a bank's address its bank. A part of segments gets a section a segment with an `.ann` (`## Title: the
+  tape loader`), at its run addresses, from the segment's own work files (`<ann>[-<piece>][-<RUN>].ctl`, `.skool`,
+  `-image.bin`: mkgame adds the run address when two segments share an `.ann` and piece) and its `l1` sources.
+- **The load.** A recording that loads the game runs the loader's code at addresses the game takes later, and L1
+  keeps one routine an entry address: the loader's block writes would be the game entry's there. `case.json`
+  `ref_load_end` `{build: frame}` leaves the writes of that recording's routines first run before the frame out of
+  "Written by" (doc 11) and the Writes rows (doc 12). A routine that ran in the load and again in play loses that
+  recording's writes; the other recordings still give them.
 - **Doc 11** gives each inner label of a data entry (a field, a row) a row of its own under the entry, `Name`
   (`Entry`+k), its size up to the next label; the entry's row then gives its own bytes, up to its first inner label,
   of the whole entry's (`JumpFrames` 17 of 34, `JumpRise` the other 17), its comment, its readers and writers. The readers and writers are the
@@ -188,7 +196,7 @@ yellow fading through red, trails dark.
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
 | `screen_anim.py` | the screen over frames | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
-| `heatmap.py` | executed / read / written per byte over a build | `l1.json` |
+| `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), TrueType text that reads at 900 px | `l1.json` |
 | `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |
 
@@ -218,7 +226,9 @@ which no colour is ever quantized to; it was black once, and showed the page thr
 
 128K pages (`routine_anim.py`, `beam_timeline.py`): `--page N=LISTING` names the code at `$C000-$FFFF` that runs
 while RAM N is paged in from that page's listing (`UpdateChannel (RAM 6)`; routine_anim shows that listing's lines),
-`--page-name N=NAME` gives the page one name (`the music player (RAM 6)`), `--listing` names the rest. The page is
+`--page-name N=NAME` gives the page one name (`the music player (RAM 6)`), `--listing` names the rest. Both for one
+page combine: the listing names the code (routine_anim shows its lines) and NAME stands for `RAM N` after each name
+(`--page 4=build/bank4.lst --page-name '4=bank 4: the AY player'` gives `WriteAy (bank 4: the AY player)`). The page is
 the trace's start page, then each `OUT` to `$7FFD`. With either option a plain `--pc` range at `$C000-$FFFF` is RAM
 0's and `--pc N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc 6:C000-CD60` follows
 Terramex's music player in RAM 6 while the game's code at the same addresses counts as "other".
@@ -247,7 +257,11 @@ narrow, so the picture stays `--width` wide; `--layout wide` is the older pictur
 `--scale` (2; two screens fit with narrower gaps) or the largest whole scale that fits, else stacked, the `--zoom`
 insets on a row of their own enlarged as far as it allows. `beam_timeline.py` draws `--width` pixels (1050), the time
 axis taking what the labels leave; no tick label is drawn within 60 px before the axis title "frame T" (the 70000 of a
-128K or Pentagon frame). Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
+128K or Pentagon frame); `--frames N` draws the trace's first N frames, `--frames A-B` its frames A to B (a window
+from the middle of a long trace, no cut by hand). `heatmap.py` sets its text in the kit's TrueType font, 13 px up
+to 1050 px wide and larger in proportion beyond (about 11 px or more shown at 900 px): its four panels are two rows
+of two (`--columns`), `--panels composite` draws the composite alone, region labels that would overlap are pushed
+apart and joined to their bracket by a leader. Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
 picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one. `memanim.py --cell` is
 the pixels a byte (2, too small to read at 900 px): for an address range of up to 64 pages (16 K) take `--cell 3`, the
 compact picture is 830 px wide; `--cell fit` makes the grid as wide as `--width` allows (988 px at 1050, a byte 3 or 4

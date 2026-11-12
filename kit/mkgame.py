@@ -1304,9 +1304,22 @@ class Segment:
         self.no_entries = bool(get('no_entries', self.mode == 'blocks'))
         self.entries_in_code = bool(get('entries_in_code'))
         self.single = False  # set by single_part
+        self.suffix = ''  # set by make_part: '-RUN' when another segment of the part has the same .ann and piece
 
     def tag(self):
-        return os.path.splitext(os.path.basename(self.ann))[0] + ('-' + self.piece if self.piece else '')
+        """the name of the segment's work files (TAG.ctl, TAG.skool, TAG-image.bin): the .ann's name and the piece,
+        and the run address in hex when two segments share both (kit/refdocs.py reads them)"""
+        return os.path.splitext(os.path.basename(self.ann))[0] + ('-' + self.piece if self.piece else '') + self.suffix
+
+
+def segment_tags(segments, part):
+    """the Segment of each spec of a part's segments (None for raw lines), their work files' tags made unique"""
+    segs = [None if 'lines' in spec else Segment(spec, part) for spec in segments]
+    plain = [s.tag() for s in segs if s]
+    for s in segs:
+        if s and plain.count(s.tag()) > 1:
+            s.suffix = '-%04X' % s.run
+    return segs
 
 
 def clip_to_image(ann):
@@ -1628,11 +1641,10 @@ def make_part(part, args):
         return single_part(part, args, mem, original, at, top, out, device, built)
 
     results = []
-    for spec in segments:
-        if 'lines' in spec:
+    for spec, seg in zip(segments, segment_tags(segments, part)):
+        if seg is None:
             results.append(None)
             continue
-        seg = Segment(spec, part)
         lo, hi = seg.lo, seg.hi
         LO, HI = seg.run, seg.run + hi - lo
         smem = bytearray(0x10000)

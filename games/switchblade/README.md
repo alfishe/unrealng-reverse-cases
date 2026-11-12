@@ -1,7 +1,7 @@
 # Switchblade (Gremlin Graphics, 1991)
 
-State: docs written, in review: 12 documents, 69 figures (PNG), 44 animations (GIF), 100 mermaid diagrams and 31 audio
-files (24 MP3, 7 short WAV; 6.2 MB), counted on 2026-11-12 (review round 2) with:
+State: complete (2026-11-12): two review rounds, the kit gaps fixed. 12 documents, 68 figures (PNG), 44 animations
+(GIF), 100 mermaid diagrams and 31 audio files (24 MP3, 7 short WAV; 6.2 MB), counted on 2026-11-12 (the close) with:
 
 ```sh
 ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l

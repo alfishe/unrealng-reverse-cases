@@ -301,7 +301,10 @@ runs it. One image with one `.ann` is the *single* layout (the top file is writt
 
 An image of several segments (each with its own `.ann` or piece, run address and banks, or raw lines another part's
 source gives) is the *segments* layout: the top file sets `ORG` / `DISP` per segment and `INCLUDE`s
-`<top>/<module>.asm` (or `<module>.asm` with `"subdir": false`), then `SAVEBIN`s the whole image:
+`<top>/<module>.asm` (or `<module>.asm` with `"subdir": false`), then `SAVEBIN`s the whole image. Each segment's
+work files are `<ann>[-<piece>].ctl`, `.skool` and `-image.bin` in the part's work folder, with `-<RUN>` (the run
+address in hex) added when two segments share an `.ann` and piece (`boot-4000.ctl`, `boot-853F.ctl`); `kit/refdocs.py`
+reads them for a part of segments in `case.json` `ref_parts`:
 
 ```json
 {"name": "deadend", "image": "build/endings/deadend-c000-bank3.bin", "at": "C000", "out": "build/endings/deadend-c000-bank3.bin",

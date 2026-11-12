@@ -10,8 +10,8 @@ recordings ran gives their calls.
 Written by `kit/refdocs.py`; edit `src/game/game.ann`, then run `kit/mkgame.py --case . --install`
 (see [3. Build and load](03-build-and-load.md)) and `kit/refdocs.py --case .`.
 The parts of the medium (`case.json` `ref_parts`: Bank 4: the AY player, the tunes, the story pages (128K only), The
-loader's second stage) follow the game, each under its own heading with its modules, its source, its annotations and
-its recordings.
+tape BASIC (TZX block 2), The loader's second stage, Block 5's head (TZX block 5)) follow the game, each under its
+own heading (a part of segments one a segment) with its modules, its source, its annotations and its recordings.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -149,7 +149,6 @@ Witness: L1 122 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx x1, r
 | Called from | `GameEntryIntro` (falls into) |
 | Calls | `NewGame` (tail), `ClearRoomCells`, `PanelAttrsRoom` (tail) |
 | Reads | `$4000`-`$5AFE` (screen); `$5D37`-`$5E33` (`BuildBoxPlaceLoop+3`, `Intro48`, `IntroScene`, `IntroPictureText` and 6 more); `$6B5C`-`$7047` (`PageTailTemplate`, `ItemRecords`, `WalkLists`, `WeaponRecords` and 8 more) |
-| Writes | `$4000`-`$5AFF` (screen); `$5D82`-`$5FFF` (`Intro48+51`, `IntroScene`, `IntroPictureText`, `IntroText` and 8 more); `$6082`-`$60FF` (`SizeClasses`); `$6182`-`$61FF` (`SizeClasses+256`, `PrintGlyphs`, `PrintGlyphsLoop`, `PrintGlyphsNext` and 1 more); `$6282`-`$62FF` (`IntroAttrsC+63`); `$6382`-`$63FF` (`IntroGlyphs+111`); 5 more ranges |
 | Ports out | `$00FE`, `$7FFD` |
 
 ## menu
@@ -372,7 +371,6 @@ Witness: L1 1122 (c x2, rzx x1).
 | Called from | `IntroScript`, `PrintGlyphsByte` (falls into), `CopyAttrBlock` (tail) |
 | Calls | `PrintGlyphsRestore` (falls into), `PrintGlyph` |
 | Reads | `$622B`-`$672A` (`IntroAttrsA+6`, `IntroAttrsB`, `IntroAttrsC`, `IntroGlyphs` and 2 more); `$6746`-`$6765` (`TitleColours+76`); `$6781`-`$67A0` (`TitleColours+135`); `$67BC`-`$67DB` (`TitleColours+194`); `$67F7`-`$6816` (`TitleColours+253`); `$6832`-`$6851` (`TitleColours+312`); 1 more ranges |
-| Writes | `$4803`-`$49BC` (screen); `$49E0`-`$4ABC` (screen); `$4AE0`-`$4BBC` (screen); `$4BE0`-`$4CBC` (screen); `$4CE0`-`$4DBC` (screen); `$4DE0`-`$4EBC` (screen); 2 more ranges |
 
 ### `PrintGlyphsDone` (`$6205`)
 
@@ -436,7 +434,6 @@ Witness: L1 71 (c x2, rzx x1).
 | Runs (the other recordings) | 47 calls (`stage1/rec/c48` 47) |
 | Called from | `IntroScript`, `CopyAttrBlock` (falls into) |
 | Calls | `CopyAttrBlock` (tail) |
-| Writes | `$5D31`-`$5D32` (`BuildBoxRowLoop`) |
 
 ### `GlyphBytesAsCode` (`$66CD`)
 
@@ -5428,7 +5425,7 @@ Witness: L1 10240 (bossgate, deaths, gameover, havok, hiscore, menu, play48, roo
 | Called from | `PanelMeters` (falls into) |
 | Calls | `PanelMeters` (tail), `DrawMeterPartial` (falls into), `DrawMeterGradient` (tail), `DrawMeterNext` |
 | Reads | `$6643`-`$6646` (`VitalityShown`, `ChargeStep`, `Charge`, `ChargeShown`); `$FFB7`-`$FFCA` (`MeterGradient`, `MeterStrip`, `MeterPartial`, `MeterEmpty`) |
-| Writes | `$4000`-`$5190` (screen); `$51E0`-`$51FF` (screen); `$52E0`-`$52FF` (screen); `$53E0`-`$53FF` (screen); `$54E0`-`$54FF` (screen); `$55E0`-`$55FF` (screen); 5 more ranges |
+| Writes | `$51E0`-`$51FF` (screen); `$52E0`-`$52FF` (screen); `$53E0`-`$53FF` (screen); `$54E0`-`$54FF` (screen); `$55E0`-`$55FF` (screen); `$56E0`-`$56E7` (screen); 3 more ranges |
 
 ### `DrawMeterPartial` (`$FF90`)
 
@@ -5456,7 +5453,6 @@ Witness: L1 1567338 (bossgate, deaths, gameover, havok, hiscore, menu, play48, r
 | Called from | `PanelWeapon`, `DrawMeter` (tail), `DrawMeterPartial` (falls into), `DrawMeterNext` (tail) |
 | Calls | `DrawMeterNext` (falls into) |
 | Reads | `$6646` (`ChargeShown`); `$FFB7`-`$FFCA` (`MeterGradient`, `MeterStrip`, `MeterPartial`, `MeterEmpty`) |
-| Writes | `$51E0`-`$51FF` (screen); `$52E0`-`$52FF` (screen); `$53E0`-`$53FF` (screen); `$54E0`-`$54FF` (screen); `$55E0`-`$55E7` (screen); `$55F8`-`$55FF` (screen); 3 more ranges |
 | Ports in | `$7FFE` |
 | Ports out | `$08FE`, `$0AFE` |
 
@@ -6064,6 +6060,155 @@ Witness: L1 207 (c1, deaths, gameover, menu, opt x3).
 | Reads | `$D8A3`-`$D990` (`StoryAttrs1`, `StoryAttrs2`, `PortraitAttrs`) |
 
 
+## The tape BASIC (TZX block 2): line 0 and its code (`src/tape/basic.json`)
+
+Switchblade, Gremlin Graphics 1991: TZX block 2, the BASIC program "( Switch )" (361 bytes at PROG `$5CCB`, LINE 0):
+line 0 at `$5CCB-$5D06`, the code it enters at `$5D07`, and the loader `$5D37-$5E33`, which runs at `$FF00`. Its
+entries are `src/tape/<module>.asm`, written from `src/tape/basic.ann` by
+`kit/mkgame.py --part src/tape/basic.json`; the recordings: `work/stage1/c1` (c1: power-on on a 128K, the load at
+signal speed, the menu, the intro, a short walk). This section is the segment `$5CCB-$5D36` of the image.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`basic`](#the-tape-basic-tzx-block-2-line-0-and-its-code-basic) | `$5CCB`-`$5D36` | 1 of 2 |
+
+### The tape BASIC (TZX block 2): line 0 and its code: basic
+
+`src/tape/basic.asm`
+
+#### `BasicCode` (`$5D07`)
+
+**Line 0's code: 48K ROM, black screen, find its own address, copy the loader to `$FF00` and run it**
+
+Entered by USR with interrupts on; its first byte `$F3` (DI) is also the end of the BASIC line (the token NEXT).
+
+1. `$10` to the 128K paging port `$7FFD`: the 48K BASIC ROM, RAM bank 0 at `$C000`, paging not locked (a 48K ignores the write). Border black; Screen and Attributes cleared to 0 (the LDIR copies the stored A = 0).
+
+2. Its own address: SP = 0, CALL RomRet `$0555` (a RET), so the return address `$5D24` is left at `$FFFE`; two DEC SP and POP HL read it back, + `$13` = `$5D37`, the loader's bytes. SP = `$5D37` (the stack grows down into the line, which is no longer needed).
+
+3. LDIR the `$FD` bytes `$5D37-$5E33` to `$FF00-$FFFC` and `JP $FFEE` (LoaderStart).
+
+Witness: L1 11 (c1).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+
+## The tape BASIC (TZX block 2): the tape loader (`src/tape/basic.json`)
+
+Switchblade, Gremlin Graphics 1991: TZX block 2, the BASIC program "( Switch )" (361 bytes at PROG `$5CCB`, LINE 0):
+line 0 at `$5CCB-$5D06`, the code it enters at `$5D07`, and the loader `$5D37-$5E33`, which runs at `$FF00`. Its
+entries are `src/tape/<module>.asm`, written from `src/tape/basic.ann` by
+`kit/mkgame.py --part src/tape/basic.json`; the recordings: `work/stage1/c1` (c1: power-on on a 128K, the load at
+signal speed, the menu, the intro, a short walk), and `work/stage1/rec/c48` (`$FF00`-`$FFFC`). This section is the
+segment `$5D37-$5E33` of the image, run at `$FF00-$FFFC`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`loader`](#the-tape-basic-tzx-block-2-the-tape-loader-loader) | `$FF00`-`$FFFC` | 7 of 8 |
+
+### The tape BASIC (TZX block 2): the tape loader: loader
+
+`src/tape/loader.asm`
+
+#### `LoadBlock` (`$FF00`)
+
+**Load a block with flag `$FF`: IX = the address, DE = the length**
+
+A = `$FF`, then LdBytes. Called by stage 2 for the blocks 4, 5 and (on a 128K) 6.
+
+Witness: L1 8 (c x2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 3 calls, 21 t-states own (0.00 %) |
+| Runs (the other recordings) | 2 calls (`stage1/rec/c48` 2) |
+| Calls | `LdBytes` (falls into) |
+
+#### `LdBytes` (`$FF02`)
+
+**The ROM's LD-BYTES with red / black stripes; returns through LoadEnd**
+
+A = the flag byte, IX = the address, DE = the length. The carry is set by the routine itself (`SCF` at `$FF02`: a load, never a verify). The border goes to `$0A` (red); LoadEnd `$FFB2` is pushed as the return address; then the ROM's code: an edge, the leader (`$9C`/`$C6` timing), the sync, the flag byte, the data bytes with the parity in H, the stripes from C (`AND $02`: red / black).
+
+Every return (an error, BREAK or the end) goes to LoadEnd, with carry set for a good load.
+
+Witness: L1 11 (c x2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 4 calls, 315,266 t-states own (0.02 %) |
+| Runs (the other recordings) | 3 calls (`stage1/rec/c48` 3) |
+| Called from | `LoadBlock` (falls into) |
+| Calls | `LdEdge2`, `LdEdge1`, `LoadEnd` |
+| Ports in | `$0AFE` |
+| Ports out | `$0AFE` |
+
+#### `LdEdge2` (`$FF90`)
+
+**The ROM's LD-EDGE-2: two edges**
+
+Witness: L1 1196411 (c x2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1`; in the other recordings 353,571 calls (`stage1/rec/c48` 353,571) |
+| Called from | `LdBytes` |
+| Calls | `LdEdge1` (falls into) |
+
+#### `LdEdge1` (`$FF94`)
+
+**The ROM's LD-EDGE-1: wait 358 T, then count B up to the next edge; the border stripe**
+
+Out: carry = an edge found; NC = timeout (B wrapped) or BREAK (SPACE, `$7FFE` bit 0, as in the ROM). The stripe colour is C AND `$02` (the ROM: AND `$07`), with MIC.
+
+Witness: L1 2405444 (c x2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1`; in the other recordings 710,652 calls (`stage1/rec/c48` 710,652) |
+| Called from | `LdBytes`, `LdEdge2` (falls into) |
+| Ports in | `$7FFE` |
+| Ports out | `$08FE`, `$0AFE` |
+
+#### `LoadEnd` (`$FFB2`)
+
+**LD-BYTES returns here: on a good load border black, EI, return; else TAPE LOADING ERROR**
+
+Carry set (good): border 0, EI, then LoadReturn (POP AF, RET to the caller of LdBytes, the flags kept). Carry clear: LoadError, which never returns.
+
+Witness: L1 647 (c x2).
+
+| | |
+| --- | --- |
+| Runs | not reached in `stage1/c1`; in the other recordings 3 calls (`stage1/rec/c48` 3) |
+| Called from | `LdBytes` |
+| Ports out | `$00FE` |
+
+#### `LoadReturn` (`$FFEC`)
+
+**POP AF and return: the end of LoadEnd**
+
+Witness: L1 11 (c x2).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+#### `LoaderStart` (`$FFEE`)
+
+**The loader's entry: load stage 2 (TZX block 3, `$080C` bytes) to `$609C` and run it**
+
+From BasicCode's `JP $FFEE`. LdBytes with A = `$FF`, IX = `$609C`, DE = `$080C`, then `JP $609C` (stage 2, src/stage2). The stack is still SP = `$5D37` from BasicCode.
+
+Witness: L1 5 (c x2).
+
+| | |
+| --- | --- |
+| Runs | not reached in the recordings |
+
+
 ## The loader's second stage (`src/stage2/stage2.json`)
 
 Switchblade, Gremlin Graphics 1991: TZX block 3, the loader's second stage, loaded to `$609C` by the loader the
@@ -6232,3 +6377,168 @@ Witness: L1 48 (c x2).
 | Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 10,634,187 t-states own (0.81 %) |
 | Called from | `Stage2Title` |
 | Writes | `$5D31`-`$5D32` |
+
+
+## Block 5's head (TZX block 5): the bootstrap (`src/boot/boot.json`)
+
+Switchblade, Gremlin Graphics 1991: TZX block 5's first `$146` bytes, loaded to `$4000` (into the screen): the
+bootstrap `$4000-$40A3` and the 162-byte AY glue `$40A4-$4145`, which the bootstrap copies to `$853F` on a 128K. Its
+entries are `src/boot/<module>.asm`, written from `src/boot/boot.ann` by `kit/mkgame.py --part src/boot/boot.json`;
+the recordings: `work/stage1/c1` (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short
+walk), and `work/stage1/rec/c48` (`$4000`-`$40A3`). This section is the segment `$4000-$40A3` of the image.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`boot`](#block-5s-head-tzx-block-5-the-bootstrap-boot) | `$4000`-`$40A3` | 2 of 3 |
+
+### Block 5's head (TZX block 5): the bootstrap: boot
+
+`src/boot/boot.asm`
+
+#### `Bootstrap` (`$4000`)
+
+**Set IM 2, copy the game's resident parts, on a 128K patch the hooks and copy the glue, enter the game**
+
+1. DI, SP = `$5C00`, border black.
+
+2. BootModel `$4051`'s operand (written by stage 2's Has128K: 1 on a 128K) chooses: a 128K first runs SetVectors with A = `$14` (bank 4 at `$C000`), so bank 4 gets the vector table too (the interrupt can come while the glue has it paged in); then on every machine SetVectors with A = `$10` (bank 0, the 48K BASIC ROM). I = `$FE`, IM 2: whatever byte is on the bus, the vector read from the table is `$FDFD`, which holds `JP $8456` (InterruptHandler).
+
+3. ResidentSource `$4146` -> `$5C00` (`$F4D` bytes, to `$6B4C`), PanelSource `$5093` -> `$FF01` (`$FE` bytes, to `$FFFE`).
+
+4. 48K: `JP Z,$5CFA`. 128K: the five hooks (see the module header), the glue `$40A4` -> `$853F` (`$A2` bytes), `JP $5CFA`.
+
+Interrupts stay off: the game turns them on (the first `EI`: WaitFireFrames `$8324` in the 48K story; on a 128K GlueMenuInput `$85A1` on the title).
+
+Witness: L1 2 (c x2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 120,598 t-states own (0.01 %) |
+| Runs (the other recordings) | 1 call (`stage1/rec/c48` 1) |
+| Calls | `SetVectors` |
+| Reads | `$4052` (`BootModel+1`); `$4095`-`$5190` (`HookBytes`, `work space $40A4+`) |
+| Writes | `$5C00`-`$6B4C`; `$853F`-`$85E0`; `$A6EF`-`$A6F1`; `$A75C`-`$A75E`; `$A76F`-`$A771`; `$FF01`-`$FFFE` |
+| Ports out | `$00FE` |
+
+#### `SetVectors` (`$401F`)
+
+**Page A into `$7FFD`, write JP `$8456` at `$FDFD` and 257 bytes `$FD` from `$FE00`**
+
+A = the `$7FFD` value. `$C3` at `$FDFD`, the address of InterruptHandler `$8456` at `$FDFE`; the table `$FE00-$FF00` (B = 0: 256 bytes, then one more) all `$FD`, so any byte on the bus gives the vector `$FDFD`. The byte at `$FF00` (the tape loader's first) is overwritten too.
+
+Witness: L1 3 (c x2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2 calls, 13,512 t-states own (0.00 %) |
+| Runs (the other recordings) | 1 call (`stage1/rec/c48` 1) |
+| Called from | `Bootstrap` |
+| Writes | `$FDFD`-`$FF00` |
+| Ports out | `$7FFD` |
+
+
+## Block 5's head (TZX block 5): the AY glue (`src/boot/boot.json`)
+
+Switchblade, Gremlin Graphics 1991: TZX block 5's first `$146` bytes, loaded to `$4000` (into the screen): the
+bootstrap `$4000-$40A3` and the 162-byte AY glue `$40A4-$4145`, which the bootstrap copies to `$853F` on a 128K. Its
+entries are `src/boot/<module>.asm`, written from `src/boot/boot.ann` by `kit/mkgame.py --part src/boot/boot.json`;
+the recordings: `work/stage1/c1` (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short
+walk), and `work/stage1/rec/menu` (`$853F`-`$85E0`), `work/stage1/rec/deaths` (`$853F`-`$85E0`),
+`work/stage1/rec/gameover` (`$853F`-`$85E0`), `work/stage1/rec/rooms` (`$853F`-`$85E0`), `work/stage1/rec/opt2`
+(`$853F`-`$85E0`). This section is the segment `$40A4-$4145` of the image, run at `$853F-$85E0`.
+
+| Module | Entries | Code entries |
+| --- | --- | --- |
+| [`glue`](#block-5s-head-tzx-block-5-the-ay-glue-glue) | `$853F`-`$85E0` | 5 of 5 |
+
+### Block 5's head (TZX block 5): the AY glue: glue
+
+`src/boot/glue.asm`
+
+#### `AyGlue` (`$853F`)
+
+**One frame of the 128K sound: page bank 4, the requests and the player, the volume gate, page back**
+
+Called by InterruptHandler `$8456` every frame. Bank 4 (`$14`) at `$C000`; GlueRequests; EffectBusy `$9BA3` = AY channel A's volume (`$D0A2`), so the footstep effect waits while channel A sounds; then `$7FFD` = Last7FFD `$8450` (the paging the interrupted code had).
+
+Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+
+[Animation: `AyGlue` at work](img/routines/AyGlue.gif)
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 305,838 t-states own (0.02 %) |
+| Runs (the other recordings) | 41,803 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 2 more) |
+| Calls | `GlueRequests` |
+| Reads | `$8450` |
+| Writes | `$9BA3` |
+| Ports out | `$7FFD` |
+
+#### `GlueRequests` (`$8558`)
+
+**The tune and effect requests: start a tune, loop it, follow the jingle with the music, play an effect, or one frame**
+
+- TuneRequest `$8452` = `$FF`: Silence when MusicState is not 0 (the game's stop, `$5C45`).
+
+- `$FE`: no request. Else the number (bit 7 = loop) goes to TuneState `$8453`, StartTune with A AND 15, and the request becomes `$FE`.
+
+- While a tune plays (MusicState not 0): `JP PlayFrame`.
+
+- When it has ended: TuneState bit 7 restarts it (the request is set again); tune 2 (the start jingle) is followed by `$81` (tune 1, looped, the in-game music) when SoundMode `$8455` is 0 (music).
+
+- Then EffectRequest `$8454` (`$FF` after reading it): none -> `JP PlayFrame` (the envelopes), else `JP PlayEffect` with A = the effect.
+
+Witness: L1 47031 (c1, deaths, gameover, menu, opt2, rooms).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 2,614 calls, 227,689 t-states own (0.02 %) |
+| Runs (the other recordings) | 41,803 calls (`stage1/rec/menu` 18,055, `stage1/rec/gameover` 9,844, `stage1/rec/deaths` 7,824 and 2 more) |
+| Called from | `AyGlue` |
+| Reads | `$8452`-`$8455` |
+| Writes | `$8452`-`$8454` |
+
+#### `GlueMenuInput` (`$859E`)
+
+**Hook sites 2 and 3: the fire test, and left / right choose music or effects**
+
+Replaces `CALL $8529` (ReadInput) in ShowHighScores and TitleSequence. ReadInput, EI: Z (fire) returns Z. Else DecodeDirection `$850E`: no direction or no left / right (D = 0) returns NZ; right (D = +1) sets SoundMode `$8455` = 1 (effects), left 0 (music), and GlueSoundIcon shows it; returns NZ (A = 1).
+
+Witness: L1 7533 (c1, deaths, gameover, menu, opt2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 19 calls, 1,112 t-states own (0.00 %) |
+| Runs (the other recordings) | 7,495 calls (`stage1/rec/menu` 4,801, `stage1/rec/gameover` 2,656, `stage1/rec/opt2` 19 and 1 more) |
+| Calls | `GlueSoundIcon` (tail) |
+| Writes | `$8455` |
+
+#### `GlueSoundIcon` (`$85B3`)
+
+**Hook site 4: print the music or effects icon at Y `$B8`, X `$1E` by SoundMode**
+
+SoundMode bit 0: EffectsIconText `$8225`, else MusicIconText `$821E`, through PrintString `$837B`. Then A = 1, NZ.
+
+Witness: L1 957 (c1, deaths, gameover, menu, opt2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 387 t-states own (0.00 %) |
+| Runs (the other recordings) | 955 calls (`stage1/rec/gameover` 923, `stage1/rec/menu` 29, `stage1/rec/opt2` 2 and 1 more) |
+| Called from | `GlueMenuInput` (tail) |
+| Reads | `$8455` |
+
+#### `GlueIntro` (`$85C5`)
+
+**Hook site 5: the 128K intro (StoryPages in bank 4), then bank 0**
+
+DI, bank 4 (`$14`) paged and kept in Last7FFD (so the interrupt's AyGlue pages it back), EI, StoryPages `$D3D0`; then DI, bank 0 (`$10`) and Last7FFD, EI. Called by NewGame `$5C9A` before every game.
+
+Witness: L1 8 (c1, deaths, gameover, menu, opt2).
+
+| | |
+| --- | --- |
+| Runs (c1: power-on on a 128K, the load at signal speed, the menu, the intro, a short walk) | 1 call, 127 t-states own (0.00 %) |
+| Runs (the other recordings) | 6 calls (`stage1/rec/menu` 2, `stage1/rec/gameover` 2, `stage1/rec/opt2` 1 and 1 more) |
+| Writes | `$8450` |
+| Ports out | `$7FFD` |

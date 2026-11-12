@@ -43,11 +43,12 @@ label says how many. --row-bytes fixes the count, --grid-height caps the map's h
 it is as tall).
 
 128K pages: --page N=LISTING names the code at `$C000-$FFFF` that runs while RAM N is paged in from that page's
-listing ("UpdateChannel (RAM 6)"), --page-name N=NAME gives the whole page one name; --listing names the rest. The
-page is the trace's start page, then each `OUT` to `$7FFD`. With either option (or a `--pc N:LO-HI`) a plain --pc
-range at `$C000-$FFFF` is RAM 0's and `N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc
-6:C000-CD60` follows a player in RAM 6, and the game's code at the same addresses counts as "other", its listing
-shown from the game's.
+listing ("UpdateChannel (RAM 6)"), --page-name N=NAME gives the whole page one name; both for one page combine:
+the listing names the code and shows its lines, NAME stands for "RAM N" ("UpdateChannel (the music player)");
+--listing names the rest. The page is the trace's start page, then each `OUT` to `$7FFD`. With either option (or a
+`--pc N:LO-HI`) a plain --pc range at `$C000-$FFFF` is RAM 0's and `N:LO-HI` is RAM N's: `--listing build/game.lst
+--page 6=build/music.lst --pc 6:C000-CD60` follows a player in RAM 6, and the game's code at the same addresses
+counts as "other", its listing shown from the game's.
 """
 import argparse
 import os
