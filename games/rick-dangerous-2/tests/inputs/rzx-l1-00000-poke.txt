@@ -1,0 +1,40 @@
+# RZX archive rick2 (Jim Waterman, SPIN 0.5): work/stage1/rzx/inputs-l1.json, frames 1-2000 as held keys, from the state after frame 0 (tools/rzx_script.py)
+0 POKE 35376 0
+0 POKE 35943 58
+0 POKE 42101 58
+0 POKE 37812 58
+0 -
+298 1
+305 -
+345 CS
+346 8 CS
+670 CS
+671 -
+682 0
+848 0 7
+849 0 7 CS
+855 0
+860 -
+866 8 CS
+1052 0 8 CS
+1061 0 8 6 CS
+1075 0 6
+1077 0
+1081 -
+1234 8
+1235 8 CS
+1504 8
+1505 5
+1767 5 CS
+1768 5 7 CS
+1793 7
+1808 7 CS
+1810 8 7 CS
+1811 8 7
+1812 7
+1961 7 CS
+1963 5 7 CS
+1967 5
+1997 5 7
+1998 5 7 CS
+2000 END

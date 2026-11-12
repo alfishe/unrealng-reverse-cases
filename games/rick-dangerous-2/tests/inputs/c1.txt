@@ -1,0 +1,54 @@
+# c1: after side A has loaded at ROM speed (record-load from power-on on a 128K, the 128 menu's Tape Loader):
+# the title and the control menu; 2 (Kempston), 3 (cursor), 4 (Sinclair), 1 (keyboard) picked in turn, 0 (start);
+# the level menu, 1 (Hyde Park London, in memory on this machine: no tape); then keyboard play in the first rooms:
+# X right, Z left, O up / jump, K down / crawl, SPACE fire with a direction (punch, ray gun, detonator),
+# P pause twice, and E (quit to start) at the end
+0 -
++400 2
++25 -
++60 3
++25 -
++60 4
++25 -
++60 1
++25 -
++100 0
++25 -
++200 1
++25 -
++300 X
++120 -
++30 O
++30 -
++40 X O
++40 -
++60 Z
++80 -
++30 K
++40 -
++30 SPACE X
++20 -
++40 SPACE O
++20 -
++60 SPACE
++10 SPACE K
++20 -
++10 Z
++60 -
++150 X
++150 -
++40 P
++10 -
++100 P
++10 -
++50 X
++200 X O
++40 X
++200 -
++200 SPACE O
++15 -
++40 SPACE O
++15 -
++300 E
++20 -
++600 END

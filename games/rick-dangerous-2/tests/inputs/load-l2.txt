@@ -1,0 +1,20 @@
+# load-l2: level 2 (the Ice Caverns of Freezia) loaded from side B at ROM speed, from the menu after side A
+# (work/stage1/lab/e1-end.szx, the keyboard method). 0 starts, 2 picks the level ("START TAPE ON SIDE TWO"), side B
+# goes in at frame 370 and plays from its first block: the game reads and skips the blocks before level 2, then "STOP
+# TAPE AND PRESS FIRE"; SPACE starts the level and Rick walks right, jumps and walks left in the first room.
+0 -
++50 0
++10 -
++200 2
++10 -
++100 TAPE B
++1 TAPE play
++12700 SPACE
++10 -
++200 X
++100 -
++30 O
++30 -
++60 Z
++100 -
++300 END

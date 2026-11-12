@@ -1,0 +1,23 @@
+# controls-sinclair: the Sinclair (Interface 2 right) keys (6 left, 7 right, 8 down, 9 up, 0 fire) in play, from the
+# menu after side A (work/stage1/lab/e1-end.szx). 4 picks the method (the byte `$7252`), 0 starts, 1 picks level 1;
+# Rick walks right, jumps, walks left, then fire with up (ray gun), with right (punch) and with down (detonator).
+0 -
++50 4
++10 -
++50 0
++10 -
++200 1
++10 -
++300 7
++60 -
++20 9
++30 -
++20 6
++60 -
++40 0 9
++10 -
++60 0 7
++10 -
++60 0 8
++10 -
++300 END

@@ -1,0 +1,3 @@
+# RZX archive rick2 (Jim Waterman, SPIN 0.5): work/stage1/rzx/inputs-l5.json, frames 23001-26257 as held keys, from the state after frame 23000 (tools/rzx_script.py)
+0 -
+3257 END

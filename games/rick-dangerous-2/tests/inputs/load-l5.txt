@@ -1,0 +1,23 @@
+# load-l5: level 5 (the Fat Guy's headquarters) loaded from side B at ROM speed, from the menu after side A
+# (work/stage1/lab/e1-end.szx, the keyboard method). 0 starts, 5 picks the level ("START TAPE ON SIDE TWO"), side B
+# goes in at frame 370 and plays from its first block: the game reads and skips the blocks before level 5, then "STOP
+# TAPE AND PRESS FIRE"; SPACE starts the level and Rick walks right, jumps and walks left in the first room. A POKE,
+# said so: the level menu offers level 5 only when `$8065` is set (`$7F89`; set at `$7DA8` when a game has completed
+# four levels), so frame 0 writes `$8065` = `$FF` (32869,255); the image is unchanged.
+0 POKE 32869 255
+0 -
++50 0
++10 -
++200 5
++10 -
++100 TAPE B
++1 TAPE play
++31700 SPACE
++10 -
++200 X
++100 -
++30 O
++30 -
++60 Z
++100 -
++300 END

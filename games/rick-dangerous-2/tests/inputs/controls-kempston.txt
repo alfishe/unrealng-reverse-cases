@@ -1,0 +1,23 @@
+# controls-kempston: the Kempston joystick in play, from the menu after side A (work/stage1/lab/e1-end.szx). 2 picks
+# the method (the byte `$7252`), 0 starts, 1 picks level 1; Rick walks right, jumps, walks left, then fire with up
+# (ray gun), with right (punch) and with down (detonator).
+0 -
++50 2
++10 -
++50 0
++10 -
++200 1
++10 -
++300 KR
++60 -
++20 KU
++30 -
++20 KL
++60 -
++40 KF KU
++10 -
++60 KF KR
++10 -
++60 KF KD
++10 -
++300 END
