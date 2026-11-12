@@ -1,0 +1,136 @@
+# menu: from the menu after a fast load (work/stage1/probe/load-fast-nokemp/end.szx): first no key for 4000
+# frames (the menu's idle path: `$B3B1` = 4 at `$EF97` starts the game with `$ABA6` = 1 and the demo pointer
+# `$ABA4` = `$D25A`), a key back to the menu; then for each control 2
+# (keyboard Q A O P SPACE), 3 (Sinclair 9 8 6 7 0), 4 (Kempston, the card's stick): the option, 0 (game), READY?,
+# a few moves, then H and R (the keys of the table's last two slots) and BREAK (CAPS SHIFT + SPACE); then 1 (TWO
+# PLAYERS), 2, 0: the two-player game's first turns; R, 1 (ONE PLAYER), 2, and 0 with R, SPACE and V held (the
+# test at `$ABBD`-`$ABD0` that calls `$BB56`)
+4000 SPACE
+4004 -
+5204 2
+5208 -
+5248 0
+5252 -
+5352 SPACE
+5356 -
+5416 P
+5456 O
+5496 Q
+5526 A
+5556 SPACE
+5562 -
+5592 P Q
+5622 O Q
+5652 -
+5692 H
+5696 -
+5756 H
+5760 -
+5820 R
+5824 -
+5924 CS SPACE
+5928 -
+6228 3
+6232 -
+6272 0
+6276 -
+6376 0
+6380 -
+6440 7
+6480 6
+6520 9
+6550 8
+6580 0
+6586 -
+6616 7 9
+6646 6 9
+6676 -
+6716 H
+6720 -
+6780 H
+6784 -
+6844 R
+6848 -
+6948 CS SPACE
+6952 -
+7252 4
+7256 -
+7296 0
+7300 -
+7400 KF
+7404 -
+7464 KR
+7504 KL
+7544 KU
+7574 KD
+7604 KF
+7610 -
+7640 KR KU
+7670 KL KU
+7700 -
+7740 H
+7744 -
+7804 H
+7808 -
+7868 R
+7872 -
+7972 CS SPACE
+7976 -
+8276 1
+8280 -
+8320 2
+8324 -
+8364 0
+8368 -
+8468 SPACE
+8472 -
+8532 P
+8572 O
+8612 Q
+8642 A
+8672 SPACE
+8678 -
+8708 P Q
+8738 O Q
+8768 -
+8808 P
+8848 O
+8888 Q
+8918 A
+8948 SPACE
+8954 -
+8984 P Q
+9014 O Q
+9044 -
+9384 SPACE
+9388 -
+9708 SPACE
+9712 -
+10032 SPACE
+10036 -
+10356 SPACE
+10360 -
+10680 SPACE
+10684 -
+11004 SPACE
+11008 -
+11328 SPACE
+11332 -
+11652 SPACE
+11656 -
+11976 SPACE
+11980 -
+12300 SPACE
+12304 -
+12324 R
+12328 -
+12478 1
+12482 -
+12522 2
+12526 -
+12566 R SPACE V
+12586 R SPACE V 0
+12596 R SPACE V
+12656 SPACE
+12660 -
+12760 END

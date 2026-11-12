@@ -1,0 +1,59 @@
+# c1: power-on on a 48K, the original tape (orig/Bumpy.tap.zip) loaded by LOAD "" at ROM speed (the BASIC, the
+# screen, the code, RANDOMIZE USR 43900), the menu; 1 twice (ONE PLAYER, TWO PLAYERS, ONE PLAYER), 2 (keyboard), 0
+# (game); READY? and a key; play on level 0 with every key (O P Q A SPACE) for about 1500 frames, then no key until
+# the level's timer runs out or the ball is lost
+150 J
+153 -
+158 SS P
+161 -
+166 SS P
+169 -
+174 ENTER
+177 -
+13782 1
+13786 -
+13826 1
+13830 -
+13870 2
+13874 -
+13914 0
+13918 -
+14018 SPACE
+14022 -
+14082 P
+14122 O
+14162 Q
+14192 A
+14222 SPACE
+14228 -
+14258 P Q
+14288 O Q
+14318 -
+14358 P
+14398 O
+14438 Q
+14468 A
+14498 SPACE
+14504 -
+14534 P Q
+14564 O Q
+14594 -
+14634 P
+14674 O
+14714 Q
+14744 A
+14774 SPACE
+14780 -
+14810 P Q
+14840 O Q
+14870 -
+14910 P
+14950 O
+14990 Q
+15020 A
+15050 SPACE
+15056 -
+15086 P Q
+15116 O Q
+15146 -
+18186 END

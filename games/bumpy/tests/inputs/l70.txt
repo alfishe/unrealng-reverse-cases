@@ -1,0 +1,61 @@
+# rzx: the RZX archive's run (bumpy.rzx, xmikex and Jamie Angus, SPIN 0.5, recorded with rollback; someone
+# else's play), one level a recording: from the RZX's play start of the level (tools/rzx_levels.py play-F.z80, the
+# state after RZX frame F, the timer `$AB04`'s first count after READY?), the Kempston byte of the key buffer `$B43E`
+# set to `$FF` (SPIN's own port `$DF` reads left another value there, which our machine never rewrites), then the
+# player's keys (tools/rzx_keys.py: the Sinclair stick 6 7 8 9 0 and the key 3; in the next READY? wait B held on
+# the RZX's start frame - 10) held frame by frame, one run call per change, to the next level change + 150 frames
+# (the last level: to the RZX's end, the ending included). The game draws random numbers from the R register
+# (`LD A,R`, `$F184`, `$F527`), so a replay holds only from the RZX's own state: a level a recording
+47 6
+70 -
+81 7
+104 0 7
+109 0
+136 0 7
+139 7
+154 -
+157 6
+201 7 6
+205 7
+249 7 6
+251 6
+267 0 6
+274 0
+278 -
+287 0
+316 -
+329 6
+340 0 6
+347 0
+363 0 6
+376 6
+415 0 6
+426 0
+462 0 6
+488 0
+501 0 6
+508 6
+524 7
+549 7 6
+551 6
+584 0 6
+594 0
+664 -
+678 7
+729 6
+768 7 6
+771 7
+808 7 6
+809 6
+843 7 6
+845 7
+898 7 6
+901 6
+910 -
+921 0
+939 0 7
+959 0
+961 0 6
+987 6
+1159 -
+1188 END

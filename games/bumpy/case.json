@@ -1,0 +1,13 @@
+{
+  "image_cmd": ["sh", "-c", "mkdir -p work/mkgame && unzip -p orig/Bumpy.tap.zip BUMPY.TAP > work/mkgame/BUMPY.TAP && python3 ../../kit/tapblocks.py work/mkgame/BUMPY.TAP 5 work/mkgame/original.bin"],
+  "image": "work/mkgame/original.bin",
+  "lo": "61A8",
+  "hi": "F8D4",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["stage1/c1"],
+  "code_builds": ["stage1/c1"],
+  "ref_builds": [["stage1/c1", "c1: power-on, the original tape at ROM speed on the 48K, the menu and play on level 0"]],
+  "header": ["; Bumpy, Loriciels 1989 (Spectrum conversion: Luis Jorge Garcia and J250): TAP block 5, BUMPY.CDE,",
+             "; 38700 bytes at $61A8-$F8D3, as the ROM's LD-BYTES leaves it."]
+}

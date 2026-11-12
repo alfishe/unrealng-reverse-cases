@@ -18,9 +18,9 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 9 | Switchblade | complete 2026-11-12 ([case](games/switchblade/README.md)); Gremlin Graphics 1991 (Simon Phipps); TZX 48K/128K in the local packs |
 | 10 | Myth | stage 2 ([case](games/myth/README.md)); System 3, 1989 ("Myth: History in the Making"); local copies include Russian hacks (MYTH_RUSSIAN_VERSION, LESHIJ): sort the original from them |
 | 11 | Deflektor | stage 1 ([case](games/deflektor/README.md)); Gremlin Graphics 1987 (Costa Panayi), Ben Daglish's music |
-| 12 | Rick Dangerous | stage 1 ([case](games/rick-dangerous/README.md)); Core Design / Firebird 1989 |
+| 12 | Rick Dangerous | stage 2 ([case](games/rick-dangerous/README.md)); Core Design / Firebird 1989 |
 | 13 | Rick Dangerous 2 | stage 1 ([case](games/rick-dangerous-2/README.md)); Core Design / Micro Style 1990, 48K/128K |
-| 14 | Bumpy | stage 1 ([case](games/bumpy/README.md)); Loriciels 1989 (the owner wrote "BAMPY"; Bumpy's Arcade Fantasy is the only match in the packs) |
+| 14 | Bumpy | stage 2 ([case](games/bumpy/README.md)); Loriciels 1989 (the owner wrote "BAMPY"; Bumpy's Arcade Fantasy is the only match in the packs); open: Kempston stick play, the name entry, deaths other than S |
 
 ## Planned ports
 

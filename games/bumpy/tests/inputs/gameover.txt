@@ -1,0 +1,59 @@
+# gameover: from the menu after a fast load (work/stage1/probe/load-fast-nokemp/end.szx): 2 (keyboard), 0,
+# READY? and SPACE, a round of moves, then S (key code `$31`, tested at `$AE7A`: a life lost, `$BA71`) three times
+# with SPACE at each READY?: two lives lost and the game over (`$B755`) with a score under the high score (1700,
+# `$EF25`); back at the menu, a second game: 2, 0, SPACE, then a POKE on this machine, the score `$AAFB` = 2000
+# (said so), and S three times: the game over with a new high score (`$EC40`), the name typed (B U M, ENTER)
+0 2
+4 -
+44 0
+48 -
+148 SPACE
+152 -
+212 P
+252 O
+292 Q
+322 A
+352 SPACE
+358 -
+388 P Q
+418 O Q
+448 -
+488 S
+492 -
+902 SPACE
+906 -
+966 S
+970 -
+1380 SPACE
+1384 -
+1444 S
+1448 -
+1858 SPACE
+1862 -
+2822 2
+2826 -
+2866 0
+2870 -
+2970 SPACE
+2974 -
+3034 S
+3038 -
+3448 SPACE
+3452 -
+3512 S
+3516 -
+3926 SPACE
+3930 -
+3990 S
+3994 -
+4404 SPACE
+4408 -
+5368 B
+5372 -
+5412 U
+5416 -
+5456 M
+5460 -
+5500 ENTER
+5504 -
+6444 END
