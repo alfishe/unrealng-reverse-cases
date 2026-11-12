@@ -532,7 +532,7 @@ def cmd_fig_regs(args):
     for b in range(6):
         ax.step(xs, [((r[7] >> b) & 1) * 0.8 + b for r in regs], where='post', color=colours[b % 3])
     ax.set_yticks([0.4 + b for b in range(6)])
-    ax.set_yticklabels(['tone A', 'tone B', 'tone C', 'noise A', 'noise B', 'noise C'], fontsize=9)
+    ax.set_yticklabels(['tone A', 'tone B', 'tone C', 'noise A', 'noise B', 'noise C'], fontsize=10)
     ax.set_ylabel('R7 bits\n(1 = off)')
     ax = axes[3]
     ax.step(xs, [r[6] & 31 for r in regs], where='post', color='tab:red')
@@ -555,6 +555,7 @@ def cmd_fig_instruments(args):
     for n in range(14):
         ay = Ay(Machine('128'))
         mm = ay.m
+        mm.call(B['Silence'])           # the volumes 0, as after StartTune: StartNote keeps the old volume
         # StartNote with IX = AyChannelB, IY = the instrument, HL = a period, C = the gate; then frames of the glue
         su = mm.su
         reg = mm.sim.registers
@@ -575,7 +576,7 @@ def cmd_fig_instruments(args):
         flags = mm.mem[ins + 10 * n + 9]
         ax.set_title('ins %d %s' % (n, {1: 'tone', 2: 'noise', 3: 'tone+noise'}.get(flags & 3, '?')), fontsize=10)
         ax.set_ylim(-0.5, 16)
-        ax.tick_params(labelsize=9)
+        ax.tick_params(labelsize=10)
     fig.suptitle('The 14 instruments: the volume register a frame (volume / 8), each started with a gate of %d frames '
                  '(red dashes),\nby StartNote and UpdateChannel run in the simulator' % gate, fontsize=11)
     fig.supxlabel('frames from the note', fontsize=10)
@@ -597,8 +598,8 @@ def cmd_fig_effects48(args):
         ax.set_xlim(0, max(len(lv), 20))
         ax.set_ylim(0, 130)
         ax.set_title('%d %s: %d%s frames' % (n, EFFECT_NAMES[n], len(rows), '+' if len(rows) >= 300 else ''), fontsize=10)
-        ax.tick_params(labelsize=9)
-    axes[0][0].legend(fontsize=9, loc='upper right')
+        ax.tick_params(labelsize=10)
+    axes[0][0].legend(fontsize=10, loc='upper right')
     fig.supxlabel('frames from the request (one burst a frame)', fontsize=10)
     fig.suptitle('The 14 beeper effects of the 48K: the envelope level and the burst a frame, EffectPlayer $853F run '
                  'in the simulator', fontsize=11)
@@ -623,12 +624,12 @@ def cmd_fig_effects128(args):
         import matplotlib.ticker as mt
         ax2.yaxis.set_major_formatter(mt.ScalarFormatter())
         ax2.yaxis.set_minor_formatter(mt.NullFormatter())
-        ax2.tick_params(labelsize=8)
+        ax2.tick_params(labelsize=10)
         mix = ay.regs[1][7]
         kind = ('tone' if not mix & 1 else '') + ('+noise' if not mix & 8 else '')
         ax.set_title('%d %s (%s): %d%s frames' % (n, EFFECT_NAMES[n], kind.strip('+'), len(ay.regs),
                                                    '+' if len(ay.regs) >= 160 else ''), fontsize=10)
-        ax.tick_params(labelsize=9)
+        ax.tick_params(labelsize=10)
     fig.supxlabel('frames from the request; blue: volume R8 (left axis); orange: tone period R0-R1 (right axis, log)',
                   fontsize=10)
     fig.suptitle('The 14 AY effects of the 128K on channel A, the glue and PlayEffect run in the simulator', fontsize=11)

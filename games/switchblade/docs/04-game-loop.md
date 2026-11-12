@@ -411,7 +411,7 @@ to asking the actors, pass after pass, whether a delay has reached 0.
 
 ### One pass at work
 
-![MainLoop $8DFE: one pass that redraws Hiro, room 9](img/routines/MainLoop.gif)
+![MainLoop: one pass that redraws Hiro, room 9](img/routines/MainLoop.gif)
 
 *One pass of r004000 (48K, the RZX run replayed) in room 9, from frame 543 t 69558 to frame 545 t 22264: 92 482 T,
 1.32 frames, one BlitWindow. 80 pictures of 1156 T, 13 005 instructions. Made with `python3 ../../kit/routine_anim.py
@@ -594,6 +594,22 @@ pause.
 GameTick is cheaper in c1 because fewer pages are active in room 4 at the start. The 128K's sound is four times the
 48K's: AyGlue pages bank 4 in, runs the sequencer and writes the AY registers (doc 9). The 48K effect player is cheap
 between effects.
+
+![InterruptHandler on the 128K: GameTick, then AyGlue pages bank 4 and plays one frame of the tune](img/routines/InterruptHandler.gif)
+
+*One interrupt of c1 (128K, room 4), frame 17 700 from t 1840 to t 9100: 60 pictures of 121 T, 658 instructions.
+Made with `python3 ../../kit/routine_anim.py --work work/docs/zsA/c1 --window 17700:1840-17700:9100 --listing
+build/game.lst --page 4=build/bank4.lst --range 5B00-FFFF --pc 8456-8528,853F-85E0,4:C000-E0F8 --pictures 60 --title
+'...' --out docs/img/routines/InterruptHandler.gif`.*
+
+How to read it:
+
+- Right: the routine at the PC, named from the game's listing or, while bank 4 is paged in, from bank 4's ("WriteAy
+  (RAM 4)"). The bar is the time inside the window.
+- The first eighth is GameTick: the ten pages' delays, the P key, ReadInput.
+- Then AyGlue `$853F` writes `$14` to `$7FFD`, and the PC moves into bank 4: the sequencer, then AyPrepare and
+  WriteAyRegister for each register. The memory rows of `$C000-$D3FF` light up while the screen stays still.
+- At the end AyGlue writes Last7FFD back, and the handler pops and returns.
 
 Witness: InterruptHandler L1 206 326 and GameTick L1 167 059 over every recording with play; `$853F` runs on all 2 614
 entries of c1 from the menu on, GameTick on 975 (frames 17 652 to 18 626, every frame of play).
@@ -794,7 +810,7 @@ The pass, cut by `work/docs/zsA/reveal_split.py` over the trace `552_0-568_0.uat
 
 The cell loop alone takes 10.3 frames. The test, RevealZone, is 177 T: it runs every time Hiro moves.
 
-![Room 9 before and after the reveal of zone $80](img/loop/reveal-room9.png)
+![Room 9 before and after the reveal of zone 80 hex](img/loop/reveal-room9.png)
 
 *Room 9 in r004000 (48K, the RZX run replayed): the screen at the start of frame 552 (RevealedZones `$40`) and of frame
 565 (`$C0`); the cells of zone `$80` outlined in red, from plane `$67` and `$6DFF`. Made with `python3
@@ -806,7 +822,7 @@ How to read it:
 - Right: the room after. The red outlines are the cells whose flag byte has bit 7 (zone `$80`).
 - Every outlined cell was black before and is drawn after; the other differences are Hiro's own cells.
 
-![The reveal pass at work: RevealZone adds zone $80 of room 9, RedrawCellsMasked redraws the 220 cells](img/routines/RedrawCellsMasked.gif)
+![The reveal pass at work: RevealZone adds zone 80 hex of room 9, RedrawCellsMasked redraws the 220 cells](img/routines/RedrawCellsMasked.gif)
 
 *The reveal pass of r004000 (48K, the RZX run replayed), from frame 552 t 68563 to frame 564 t 38771: 90 pictures of
 8 988 T, 115 671 instructions. Made with `python3 ../../kit/routine_anim.py --work work/docs/zsA/r004000 --window

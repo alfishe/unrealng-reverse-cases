@@ -234,7 +234,7 @@ def fig_planes(out, planes=None, caption=None):
            'In $67 blue is zone 0, orange zone 1.', font=F12, fill=FG)
     d.text((12, ly + 18), caption or 'The point: everything the renderer and the collision tests need sits in these '
            '1320 bytes; the record is never read again.', font=F12, fill=FG)
-    d.text((12, ly + 36), 'Source: tools/swroom.py build of room 8; play48 frame 2390 holds the same bytes '
+    d.text((12, ly + 36), 'Source: tools/swroom.py build of room 8; play48 frame 2391 holds the same bytes '
            '(work/docs/zsC/play48-room8.jsonl).', font=F12, fill=DIM)
     img.save(out)
 
@@ -503,7 +503,7 @@ def fig_vars(out):
             a.axvline(f1, color='k', ls=':', lw=1)
     ax[1].text(1314, 33, ' a life lost', fontsize=10)
     ax[4].set_xlabel('play48 frame (memory_at: the state at the start of the frame)', fontsize=11)
-    fig.suptitle('The game variables over play48: rooms 4-9, 28 touches, one 24-step fall, 4 lives lost, 160 points', fontsize=13,
+    fig.suptitle('The game variables over play48: rooms 4-9, 28 touches, one 32-step fall, 4 lives lost, 160 points', fontsize=13,
                  fontweight='bold')
     fig.tight_layout()
     fig.savefig(out, dpi=100)

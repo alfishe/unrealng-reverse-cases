@@ -216,6 +216,29 @@ def cmd_play(args):
     print(args.out, len(pictures), 'pictures')
 
 
+def cmd_shots(args):
+    """Screenshots (screen_shot.py PNGs) two a row, each with its label"""
+    items = [x.partition('=')[::2] for x in args.shot]
+    W = args.width
+    w = (W - 36) // 2
+    h = w * 192 // 256
+    rows = -(-len(items) // 2)
+    pic = Image.new('RGB', (W, 44 + rows * (h + 50) + 18 * len(args.note or [])), BG)
+    d = ImageDraw.Draw(pic)
+    text(d, (12, 8), args.title or '', 15)
+    for i, (path, label) in enumerate(items):
+        im = Image.open(path).convert('RGB').resize((w, h), Image.NEAREST)
+        x = 12 + (i % 2) * (w + 12)
+        y = 44 + (i // 2) * (h + 50)
+        pic.paste(im, (x, y))
+        text(d, (x, y + h + 6), label, 12)
+    y = 44 + rows * (h + 50)
+    for k, line in enumerate(args.note or []):
+        text(d, (12, y + 18 * k), line, 12, DIM)
+    pic.save(args.out)
+    print(args.out, pic.size)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest='cmd', required=True)
@@ -234,8 +257,14 @@ def main():
             p.add_argument('--scale', type=int, default=2)
             p.add_argument('--delay', type=int, default=80)
             p.add_argument('--hold', type=int, default=1500)
+    p = sub.add_parser('shots')
+    p.add_argument('--out', required=True)
+    p.add_argument('--title')
+    p.add_argument('--width', type=int, default=1050)
+    p.add_argument('--shot', action='append', required=True)
+    p.add_argument('--note', action='append')
     args = ap.parse_args()
-    {'keys': cmd_keys, 'records': cmd_records, 'play': cmd_play}[args.cmd](args)
+    {'shots': cmd_shots, 'keys': cmd_keys, 'records': cmd_records, 'play': cmd_play}[args.cmd](args)
 
 
 if __name__ == '__main__':

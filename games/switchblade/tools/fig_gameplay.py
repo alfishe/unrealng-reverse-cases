@@ -96,14 +96,14 @@ def fig_fall(out):
     ax.step(steps, loss, where='mid', color='tab:red', label='energy the landing takes (HiroLanded $90C3)')
     ax.axhline(32, color='tab:blue', ls='--', lw=1, label='full energy $20 (32)')
     ax.axvline(19.5, color='k', ls=':', lw=1)
-    ax.annotate('play48: 32 steps from room 8 into room 9;\nwith 16 left the 8th step takes the life (frame 3045)',
-                xy=(32, 28), xytext=(33.5, 8), arrowprops={'arrowstyle': '->'}, fontsize=10)
+    ax.annotate('play48: 32 steps from room 8 into room 9; 14 damage steps;\na touch took 4 at frame 3016, the 6th step the life (frame 3045)',
+                xy=(32, 28), xytext=(0.5, 22), arrowprops={'arrowstyle': '->'}, fontsize=10)
     ax.text(4, 12, '1-19 steps: a 1-frame crouch (LandScript $7AB6), no loss', fontsize=10)
     ax.set_xlabel('fall steps +$26 (4 pixels each, counted by FallStep across room changes)')
     ax.set_ylabel('energy lost')
-    ax.legend(fontsize=10, loc='upper left')
+    ax.legend(fontsize=10, loc='lower right')
     ax.grid(alpha=0.3)
-    fig.suptitle('Fall damage: nothing below 20 steps, then 6 to 28 energy, 2 a frame', fontsize=13, fontweight='bold')
+    fig.suptitle('Fall damage: nothing below 20 steps, then 6 to 28 energy, 2 a step every 5 frames', fontsize=13, fontweight='bold')
     fig.tight_layout()
     fig.savefig(out, dpi=100)
 
