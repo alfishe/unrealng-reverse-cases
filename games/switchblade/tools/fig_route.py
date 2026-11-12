@@ -135,7 +135,7 @@ def main():
     th = int(tw * 176 / 240)
     rows_n = (127 + cols - 1) // cols
     lab = 16
-    sheet = Image.new('RGB', (W, 30 + rows_n * (th + lab) + 40), (16, 16, 20))
+    sheet = Image.new('RGB', (W, 30 + rows_n * (th + lab) + 56), (16, 16, 20))
     sd = ImageDraw.Draw(sheet)
     sd.text((10, 6), 'The 127 rooms from src/res: number, map row:column, the RZX run\'s first entry', fill='white', font=f14)
     for i, room in enumerate(range(1, 128)):
@@ -154,8 +154,9 @@ def main():
     sd.text((10, yb), 'F: a Fireblade fragment room, G: a giant, H: Havok (rooms 122 and 123 share one record). '
                       '"-": the RZX run never entered it.',
             fill=(210, 210, 210), font=f11)
-    sd.text((10, yb + 16), 'Drawn by tools/fig_rooms.py (every zone revealed, no actors); each picture is the 240 x 176 play window. '
-                     'Our recordings enter all 127.',
+    sd.text((10, yb + 16), 'Drawn by tools/fig_rooms.py (every zone revealed, no actors); each picture is the 240 x 176 play window.',
+            fill=(210, 210, 210), font=f11)
+    sd.text((10, yb + 32), 'Our recordings and probes enter 126 rooms in play; room 122 only by the end sequence (RZX 141 007).',
             fill=(210, 210, 210), font=f11)
     p2 = os.path.join(a.out, 'rooms-sheet.png')
     sheet.save(p2)

@@ -101,8 +101,8 @@ FirebladeGlyphs:
 
 ; "THE DAWN HAS COME AND MY / WORLD IS SAFE, / FOR NOW....." at Y $20, X 4
 ;
-; Printed by HavokFade $8761 when the end picture has faded. Witness: havok
-; (Havok's hit points POKEd to 1).
+; Printed by HavokFade $872B (at $8761) when the end picture has faded.
+; Witness: havok (Havok's hit points POKEd to 1).
 EndText:
   INCBIN "res/texts/strings.bin",$00C2,58
 

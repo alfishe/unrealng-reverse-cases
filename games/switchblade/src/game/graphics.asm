@@ -24,9 +24,9 @@ MeterGlyphs:
 ; The 16 panel pictures of the Fireblade as it grows: six glyph codes each
 ;
 ; $FF3C: when $664E (the pieces found) changes and is not 0, effect 5, and 6
-; bytes from $7F17 + 6 x $664E are copied into FirebladePanelText $82D9 and
-; printed. Witness: not read in the keyed recordings (no piece found); the code
-; alone.
+; bytes from $7F17 + 6 x $664E are copied into FirebladeGlyphs $82D9 (in
+; FirebladePanelText $82D5) and printed. Witness: not read in the keyed
+; recordings (no piece found); the code alone.
 FirebladeIcons:
   INCBIN "res/graphics/fireblade-icons.bin",$0000,96
 
@@ -44,13 +44,14 @@ HavokPicture:
   ORG $D104
 
 ; The tile set: 174 tiles of 12 x 16 (tile n at `$D104` + 24 (n - 1),
-; TileAddress `$8EA3`)
+; FrameRecord `$8EA3`)
 ;
-; The room cells (layers `$68-$6B`), the pickups (PickupTiles `$7BD8`) and the
-; breakable blocks are all drawn from it. Tile `$43` is blank; tiles `$44-$4B`
-; are the shade masks ANDed over a shaded cell (ShadeTile `$8A06`); tiles from
-; `$4B` are drawn with an outline (MaskedColumn `$8C0F`). 4176 bytes
-; `$D104-$E153`, 4 columns x 16 rows, 24 bytes a frame (6 bytes a column).
+; The room cells (layers `$68-$6B`), the pickups (ObjectTilePlaces `$7BD8`) and
+; the breakable blocks are all drawn from it. Tile `$43` is blank; tiles
+; `$44-$4B` are the shade masks ANDed over a shaded cell (ComposeOverlay
+; `$8A06`); tiles from `$4B` are drawn with an outline (MaskedColumn `$8C0F`).
+; 4176 bytes `$D104-$E153`, 4 columns x 16 rows, 24 bytes a frame (6 bytes a
+; column).
 Tiles:
   INCBIN "res/graphics/tiles.bin",$0000,4176
 

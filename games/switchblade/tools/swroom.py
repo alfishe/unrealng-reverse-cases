@@ -650,14 +650,20 @@ BLANK = 0x43
 COLOURS = 0x66F7
 
 
-def draw_tile(pic, mem, x, y, tile, shade):
-    cols = tile_columns(mem, tile)
-    if tile >= 0x4B:
-        pic.put_masked(x, y, cols)
-        return
-    pic.put(x, y, cols)
+def draw_overlay(pic, mem, x, y, tile, shade):
+    """ComposeTileOverlay $89D2: the tile plain (UnpackGroups), then from $1B on the shade tile $43 + n ANDed over it
+    (ComposeOverlay $8A06), whatever the tile's code."""
+    pic.put(x, y, tile_columns(mem, tile))
     if tile >= 0x1B and shade:
         pic.put_and(x, y, tile_columns(mem, BLANK + shade))
+
+
+def draw_tile(pic, mem, x, y, tile, shade):
+    """ComposeTile $89CE: $4B and up outlined (MaskedColumns $8C0A), never shaded; below, ComposeTileOverlay."""
+    if tile >= 0x4B:
+        pic.put_masked(x, y, tile_columns(mem, tile))
+        return
+    draw_overlay(pic, mem, x, y, tile, shade)
 
 
 def draw_pair(pic, mem, x, y, t1, t2, shade):
@@ -684,10 +690,10 @@ def render(mem, revealed=0xFC, rows=ROWS):
         if not any(t):
             draw_tile(pic, mem, x, y, BLANK, 0)    # $8873: cleared, the attributes left as they are
             continue
-        if t[0] or t[1]:
+        if t[0] and t[1]:                          # ComposeBackCell $898C: a pair through ComposeTile
             draw_pair(pic, mem, x, y, t[0], t[1], shade)
-        else:
-            draw_tile(pic, mem, x, y, BLANK, 0)
+        else:                                      # one tile (any code) or $43: ComposeTileOverlay, plain
+            draw_overlay(pic, mem, x, y, t[0] or t[1] or BLANK, shade)
         draw_pair(pic, mem, x, y, t[2], t[3], shade)
         attr = mem[COLOURS + (mem[0x6C00 + cell] >> 4)]
         col = 1 + (12 * c) // 8

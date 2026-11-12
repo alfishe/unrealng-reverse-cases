@@ -1,9 +1,9 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; roomdata.asm: The packed rooms
 ;
-; The 127 rooms, one record each, found through RoomTable `$7100` (word 2 x room): a header byte (the counts of the
-; three placement groups), the placements (2 bytes each), the command list (a byte: code in the low nibble, repeat in
-; the high nibble, then the operands; code `$F` ends it), then the reveal zones, a counts byte (enemies << 4 |
+; The 127 rooms, one record each, found through the room table `$7100` (word 2 x room): a header byte (the counts of
+; the three placement groups), the placements (2 bytes each), the command list (a byte: code in the low nibble, repeat
+; in the high nibble, then the operands; code `$F` ends it), then the reveal zones, a counts byte (enemies << 4 |
 ; pickups), the pickups and the enemy starts (2 bytes each). BuildMap `$9F63` turns the first part into the cell
 ; planes `$6700-$6CFF`, RoomObjects `$A41E` reads the rest. Rooms 122 and 123 share one record; room 0's pointer
 ; `$C9F0` points into room 103 (no room 0 is ever built). The format: ROOM.md.
@@ -774,8 +774,8 @@ Room102:
 ; enemies
 ;
 ; 92 bytes `$C9AB-$CA06`. Header `$AA`. The room above: room 96 (its bottom row
-; is built into cells `$EC-$FF`). Room 0's entry of RoomTable points at `$C9F0`
-; inside this record (no room 0 is built).
+; is built into cells `$EC-$FF`). Room 0's entry of the room table `$7100`
+; points at `$C9F0` inside this record (no room 0 is built).
 Room103:
   INCBIN "res/rooms/rooms.bin",$2083,92
 
@@ -917,8 +917,8 @@ Room121:
 ; 0 placements, the default zone, 0 pickups, 1 enemy
 ;
 ; 41 bytes `$CF88-$CFB0`. Header `$00`. The room above: none. Room 123 is
-; Havok's room: Surface `$A039` treats it apart (only layer `$6B` from cell
-; `$C8`).
+; Havok's room: BuildSurface `$A039` treats it apart (only layer `$6B` from
+; cell `$C8`).
 Room122And123:
   INCBIN "res/rooms/rooms.bin",$2660,41
 

@@ -124,12 +124,15 @@ ActorJumpStart:
   CALL SequenceHeader
   JP JumpMove
 
-; +$10 bit 4 (nothing below): the fall sequence +$31, or Hiro hanging climbs up
+; +$10 bit 4 (hurt): the push-back sequence +$31; Hiro on a ladder leaves it
+; (LeaveLadder)
 ;
 ; From StepActor `$9AD3`. Hiro: script low byte from `$69DC` (`$18`, set by
-; `$9878`), E = 4; when he hangs (+`$02` bit 3) LeaveLadder `$9078` instead.
-; Other actors: the low byte from +`$08`. The page is +`$06`. SequenceHeader
-; `$919C` with L = `$31`, then FallScriptStep `$9240`.
+; `$9878`), E = 4; when he is on a ladder (+`$02` bit 3) LeaveLadder `$9078`
+; instead (`$9058`; taken once, in the room-entry segment e102685). +`$10` bit
+; 4 is the hurt flag (HurtHiro `$98A7` for Hiro); nothing below the feet never
+; sets it. Other actors: the low byte from +`$08`. The page is +`$06`.
+; SequenceHeader `$919C` with L = `$31`, then FallScriptStep `$9240`.
 ;
 ; Two entry points: GrabLadder `$906C` (from ActorJump `$902B` and `$9B1D`):
 ; +`$02` bit 3 (hanging), script `$7AAF` (2 frames) in sequence +`$36`;
@@ -166,7 +169,8 @@ GrabLadder:
   JP StartSequence
 ; This entry point is used by the routine at StopActor.
 LeaveLadder:
-  LD L,$02                ; climb up: script $7AE8 in +$32, X + 2
+  LD L,$02                ; leave the ladder: +$02 bit 3 off, script $7AE8 in
+                          ; +$32, X + 2
   RES 3,(HL)
   LD BC,LadderLeaveScript
   LD L,$01
@@ -775,9 +779,9 @@ MotionStepX:
 ; (+`$02` bit 0): nothing, one in flight at a time.
 ;
 ; Else the weapon kind `$40` + `$664B` - 1: its 7-byte record (KindTemplates
-; `$7200`, KindTemplate `$A652`) is patched into the template `$64EE` (bytes
+; `$7200`, TemplateForKind `$A652`) is patched into the template `$64EE` (bytes
 ; 2-3, 8-9, 12, 16-17: the path, the step, the death script, the size),
-; SpawnActor `$A65D` on page `$6600` at Hiro's Y + `$0A`, X + 6 (+ the
+; InitActor `$A65D` on page `$6600` at Hiro's Y + `$0A`, X + 6 (+ the
 ; template's byte 8 when facing left), its +`$1B` = Hiro's, +`$3F` = 0, then
 ; per kind: below `$43` the life +`$3F` = the hold time `$69E3` x 4; `$43`: the
 ; step delay +`$0C` = 5 - (hold time / 8 AND 7), a longer hold flies faster;
@@ -974,7 +978,7 @@ WeaponExpire:
 ; operand of `LD BC,nn` at `$9683`. Three times: the template `$6582` gets the
 ; bytes +5 to +7 from `$7B86-$7B88`, `$7B83-$7B85`, `$7B80-$7B82` (the
 ; animation `$7B89` and three different +7 bytes: `$A8`, `$9B`, `$8E`),
-; FindFreeActor `$9F2C` looks for a free page among `$62-$65`, and SpawnActor
+; FindFreeActor `$9F2C` looks for a free page among `$62-$65`, and InitActor
 ; `$A65D` puts a kind `$47` there with the 16-bit timer at 170 frames
 ; (`$9991`). The main registers are kept (EXX).
 ;
@@ -1508,8 +1512,8 @@ TouchPickup:
 ; needle bolts, trispike | `$5DF6`, `$5DFA`, `$5E82`, `$5E92`, `$5E96`,
 ; `$5E8E`, `$5E86` | SetWeapon `$98F3`: weapon 0-6 |
 ;
-; | `$18` | a Fireblade fragment | `$5E8A` | CollectFragment `$9908`: 10000, at
-; 16 50000 and weapon 7 |
+; | `$18` | a Fireblade fragment | `$5E8A` | CollectFragment `$9908`: 10 000
+; each; the sixteenth 10 000 + 50 000 = 60 000 and weapon 7 |
 ;
 ; | `$19` | the power-up shield | `$5ECE` | minimum power `$6647` + 2, at most
 ; `$10` (eight) |
@@ -1600,10 +1604,11 @@ SetBullets:
 ;
 ; A = the record's score index (`$C2`, 10000). AddScore `$99E7`, SpawnSparks
 ; `$965F`, the fragment count `$664E` + 1 (shown by `$FF3C`). Below 16 the
-; return address is popped and the weapon is not changed; at 16 AddScore `$C6`
-; (50000) and back to `$98F2`, where SetWeapon `$98F3` gives weapon 7, the
-; Fireblade (the manual: "Hiro's weapon will automatically switch over to the
-; Fireblade"). Not run in the keyed recordings.
+; return address is popped and the weapon is not changed; at 16 also AddScore
+; `$C6` (50000; the sixteenth gives 10 000 + 50 000 = 60 000) and back to
+; `$98F2`, where SetWeapon `$98F3` gives weapon 7, the Fireblade (the manual:
+; "Hiro's weapon will automatically switch over to the Fireblade"). Not run in
+; the keyed recordings.
 ;
 ; Witness: L1 4 (rzx x4). Not run in the keyed recordings.
 CollectFragment:
@@ -1683,7 +1688,7 @@ RestoreShield:
 ; The energy ball (kind $48) in page $65 for BC frames
 ;
 ; BC = the frames. The position: the ball's own (`$6500`) when it is already
-; there, else Hiro's Y and X + 8. SpawnActor `$A65D` with the template `$6594`,
+; there, else Hiro's Y and X + 8. InitActor `$A65D` with the template `$6594`,
 ; kind `$48`; `$6651` = `$48` (LoseEnergy `$9615` and TouchHiro `$9824` ignore
 ; harm while it is set; the IM 2 tick clears it when the page-`$65` timer runs
 ; out, `$84AB`, and so does `$91CB`). Then the 16-bit timer (SetActorTimer
@@ -2836,8 +2841,8 @@ TestBreakable:
 ; Else the kind is kept in the operand at `$9F1C`; its record (`$A652`) gives
 ; the frame and score copied into the pickup template `$65BF-$65C0` (`$65C1` =
 ; 1, `$65C2` = 0); a free page among `$5E-$64` (FindFreeActorAtCell `$9F29`);
-; SpawnActor `$A65D` with kind + `$80` (StartLifetime gives it 255 frames at
-; its first step) at the cell; +2 bits 1, 2: it drops. Ran in `play48` at frame
+; InitActor `$A65D` with kind + `$80` (StartLifetime gives it 255 frames at its
+; first step) at the cell; +2 bits 1, 2: it drops. Ran in `play48` at frame
 ; 1458 (a block broken in room 6, its item revealed).
 ;
 ; Witness: L1 51 (bossgate, play48, throw, rzx x25, rzxroom x4).

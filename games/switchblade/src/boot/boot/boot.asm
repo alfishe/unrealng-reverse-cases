@@ -32,7 +32,8 @@
 ; 4. 48K: `JP Z,$5CFA`. 128K: the five hooks (see the module header), the glue
 ; `$40A4` -> `$853F` (`$A2` bytes), `JP $5CFA`.
 ;
-; Interrupts stay off: the game turns them on (the first `EI` in its waits).
+; Interrupts stay off: the game turns them on (the first `EI`: WaitFireFrames
+; `$8324` in the 48K story; on a 128K GlueMenuInput `$85A1` on the title).
 ;
 ; Witness: L1 2 (c x2).
 Bootstrap:

@@ -290,7 +290,9 @@ weapon bar one unit (8.8). The panel is the only aligned tall text. Every other 
 
 Witness: the branch's `INC C` `$8421` ran 52 times in `c1` (the control menu's 52 glyphs), 263 in `c48`, 3376 in
 `menu`, 1688 in `gameover`, 506 in `hiscore`, 64 in `havok`, and in six RZX segments (r080000 134, r094000 54,
-r122000 64, r134000 74, r140000 144, r142000 231). The aligned branch `$8415` runs in every build that shows the panel.
+r122000 64, r134000 74, r140000 144, r142000 231). The aligned branch `$8415` runs in every build that reprints the
+status line: `play48` 210, the other keyed and integration recordings 770 and 5390 times in 76 RZX segments; not in
+`rooms`, `c48` or the 15 POKE probes, which show the panel but never reprint its status line.
 
 Command: `python3 tools/fig_text.py tall docs/img/text/tall.png`.
 
@@ -301,7 +303,8 @@ pictures (the eyes, the Fireblade, Havok's portrait) are picture records, drawn 
 loop that take a glyph set in BC instead of the font:
 
 - **PrintGlyphs** `$61E5` (48K, in `menu.asm`): the 48K intro's pictures (IntroScript `$5E4D`), from the intro glyph
-  sets. It ran only in c48.
+  sets. It was called 14 times in c48 and 7 times in r000000, the RZX run's 48K intro (the `CALL` at `$61EA`; c1's
+  L1 at `$61E5` is stage 2's code, which occupies these addresses while the tape loads).
 - **PrintStoryString** `$D863` (bank 4): the 128K story's pictures, from StoryFont. It ran in c1, deaths, gameover,
   menu and opt2-4.
 
@@ -814,7 +817,8 @@ shows it and clears the request. The other two are direct calls:
 
 - PAUSE GAME: PauseGame `$6682` (run-time code of page `$66`) calls ShowMessage with A = 3 (`$6694`).
 - GAME OVER: ShowGameOverWait `$831A` calls ShowMessage with A = 4. It is called from GameOver `$5C42` (the last life
-  lost) and from the quit while paused (fire, `$668E`). `menu` frame 2200 shows GAME OVER with 5 lives left: the quit.
+  lost) and from the quit (P pressed while fire is held, `$668E`; PauseGame reads fire only then, never during the
+  pause). `menu` frame 2200 shows GAME OVER with 5 lives left: the quit (fire held from 2099, fire and P 2109-2114).
 
 ```mermaid
 flowchart LR
@@ -823,7 +827,7 @@ flowchart LR
     M --> PM["the main loop 8E1C: PendingMessage 66B6"]
     PM --> S["ShowMessage 66C8: a sprite from MessageFrames F87C"]
     PA["pause: PauseGame 6694, A = 3"] --> S
-    GO["GameOver 5C42, or fire while paused 668E"] --> GW["ShowGameOverWait 831A, A = 4"]
+    GO["GameOver 5C42, or the quit: P while fire is held, 668E"] --> GW["ShowGameOverWait 831A, A = 4"]
     GW --> S
     T["the title, the high scores, the end"] --> P["PrintString records"]
 ```

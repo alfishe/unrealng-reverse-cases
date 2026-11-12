@@ -73,7 +73,7 @@ Every `IN` instruction of `build/game.lst` and `build/boot.lst`:
 | `$852B` | `IN A,($FE)` | `$EFFE` as loaded | ReadInput, rewritten by the menu (5.3) |
 | `$669F` (run address; the bytes at `$6FE7` in PageTail66) | `IN A,(C)` | `$DFFE` | PauseGame (run-time code): P again ends the pause (5.7) |
 
-The three readers in the records (`$6B11`, `$6B1F`, `$6B2D`) run only after the copy to `$8529`. Every other input
+The readers in the records (options 1-4: `$6B11`, `$6B1F`, `$6B2D`, `$6B3B`) run only after the copy to `$8529`. Every other input
 goes through ReadInput `$8529`: the tick, the title, the high-score entry and the waits for fire.
 
 ## 5.2 The control menu
@@ -128,6 +128,7 @@ ControlMenu:                                   ; $6A7B
             carry = a bit 0; a >>= 1
             if carry == 0: goto patch          ; this key is down
             hl += 14
+        goto loop                              ; no key 1-4 down: read again (JR ControlMenuWait)
 patch:
     fire = (hl)
     (TickInput+$0B) = fire; (GlobalsInit+6) = fire
@@ -221,8 +222,10 @@ code that reads a control. Its 18 bytes are rewritten by the menu (5.2).
    bit 1 = 2 right, bit 2 = 3 down, bit 3 = 4 up, bit 4 = 5 fire.
 3. **Kempston** (option 3): `IN A,($1F)` / `CPL` / `BIT 4,A` / `RET`. The interface answers 1 for pressed; `CPL`
    turns that into the keyboard's sense. Bit 0 right, bit 1 left, bit 2 down, bit 3 up, bit 4 fire.
-4. **Protek** (option 4), 18 bytes: two half rows merged into one byte, so that 5 (left), 6 (down), 7 (up), 8
-   (right) and 0 (fire) land in the Sinclair 1 bit positions.
+4. **Protek** (option 4), 18 bytes: two half rows merged into one byte, so that 5 (left), 8 (right), 7 (up), 6
+   (down) and 0 (fire) land in record 4's own bit layout: bit 0 fire, bit 1 left, bit 2 right, bit 3 up, bit 4 down
+   (its opcodes `DEC D`, `INC D`, `DEC E`, `INC E`, 5.4). The bits are those of the `$EFFE` row, but not Sinclair 1's
+   moves: there bit 1 (9) is up and bit 4 (6) is left.
 
 Pseudocode of the Protek reader:
 
@@ -395,7 +398,7 @@ in TickInput `$84BF`:
 4. **Fire down:** if EndFlags `$6652` bit 6 is set (the end text is up), set bit 7 (the main loop leaves for the end)
    and return. Else Charge `$6645` += ChargeStep `$6644`, at most `$20`.
 5. **Fire up:** if it was up last frame too, return. It was let go this frame: C = Charge, Charge = ChargeReset
-   `$6647`. If HiroBusy `$8E77` returns NZ (Hiro cannot strike now), or WeaponActor `$6602` bit 0 is set (page `$66`
+   `$6647`. If HiroBusy `$8E77` returns NZ (Hiro cannot strike now), or WeaponActor+2 `$6602` bit 0 is set (page `$66`
    is busy: a thrown weapon or a message banner, [doc 7](07-objects.md) 7.10), return. Else FireHeld `$69E3` = C,
    and FireRequest `$6650` = 3 when C is `$19` or more, 2 for `$09`-`$18`, 1 below.
 
@@ -504,16 +507,19 @@ HiroAttack `$926E` takes it on Hiro's next step ([doc 10](10-gameplay-logic.md) 
 ![TickInput at the release](img/routines/TickInput.gif)
 
 *Animation 5.1: GameTick in frame 17707 of `c1`, T 1800 to T 4600: the actor timers, P, ReadInput, the release and
-FireRequest written. `python3 kit/routine_anim.py --work work/docs/zsB/c1 --window 17707:1800-17707:4600 --listing
-build/game.lst --view buffer:6640:16x2:hex --range 6600-6AFF --pc 8456-8540 --pictures 40 --out
-docs/img/routines/TickInput.gif`.*
+FireRequest written; at the end the interrupt goes on into the AY player in RAM 4. `python3 kit/routine_anim.py
+--work work/docs/zsB/c1 --window 17707:1800-17707:4600 --listing build/game.lst --page 4=build/bank4.lst --view
+buffer:6640:16x2:hex --range 6600-6AFF --pc 8456-8540 --pictures 40 --title "..."
+--out docs/img/routines/TickInput.gif`.*
 
 How to read:
 
 - Top left: memory `$6600`-`$6AFF`; a byte flashes yellow when written, blue when read.
 - Below it, the bytes `$6640`-`$665F` in hex: Charge at `$6645`, FirePrevious at `$6648`, FireRequest at `$6650`.
 - Right: the listing round the instruction last run, the registers, the frame and T.
-- `$6645` drops from `$14` to `$00`, and `$6650` becomes `$02`, near the end.
+- `$6645` drops from `$14` to `$00` at about T 2850, and `$6650` becomes `$02` at about T 3400. After that the
+  interrupt runs on into the 128K sound code: the glue at `$853F` (no listing line in this picture: `build/boot.lst`
+  holds it) and the AY player in RAM 4, named from `build/bank4.lst`.
 
 ![Hiro answering the keys](img/play/keys.gif)
 
@@ -549,12 +555,18 @@ handler is HiroControl `$9333`:
 3. HiroScriptMove `$933F`: D x 2 (an X step of 2, 3 pixels), E x 4, then HiroMove `$9AFD`.
 4. HiroMove: on a ladder (+2 bit 3) ClimbMove `$9C4A`. Else MoveActor `$9B05`:
    - D against the facing (+`$1B`): StartTurn. The turn takes the step.
-   - E < 0 (up): ActorJump `$9023`. With D it is a running jump; without D, a ladder above is grabbed.
-   - E > 0 (down) with D: walk. Without D: a ladder below is grabbed (GrabLadder `$906C`), else Hiro stands.
-   - E = 0: walk if D, stand if not.
-5. The walk: ProbeVertical (the floor), ProbeWalls (the walls ahead), the walk counters +`$24`/+`$25`, then ApplyMove
-   `$9B56`: the room's barriers, the actors met, the move added, the animation, and CheckRoomExit
-   ([doc 6](06-rendering.md), section 6.7; [doc 7](07-objects.md)).
+   - E < 0 (up): ActorJump `$9023`. Without D, a ladder above is grabbed (LadderAbove `$9CA7`) if there is one,
+     otherwise Hiro jumps straight up (StandScript `$7B00`, 11 steps). With D, a run of 4 or more steps (the run
+     counter +`$24`) gives the long running jump (RunScript `$7A7A`, 16 steps), a shorter run the running jump
+     (WalkScript `$7A51`, 12 steps).
+   - E > 0 (down) with D: walk (E becomes 0). Without D: a ladder below is grabbed (GrabLadder `$906C`), else Hiro
+     stands (`LD E,D` / `JR MoveStand`: no probes).
+   - E = 0: the walk's probes run even when D = 0; Hiro with no D then stands.
+5. The walk `$9B25`: ProbeVertical (the floor), ProbeWalls (the walls ahead); Hiro with D = 0 goes to MoveStand
+   (the walk counters +`$24`/+`$25` = 0). Otherwise the counters count up, and standing on an object (+`$10` bit 3)
+   clears that bit, +`$02` bit 1 and D: no X move this step. Then ApplyMove `$9B56`: the room's barriers, the actors
+   met, the move added, the animation, and CheckRoomExit ([doc 6](06-rendering.md), section 6.7;
+   [doc 7](07-objects.md)).
 
 Pseudocode:
 
@@ -568,14 +580,31 @@ HiroMove:                                      ; $9AFD
     if Hiro+2 bit 3: ClimbMove(d, e); return   ; on a ladder
 MoveActor:                                     ; $9B05
     if d != 0 and sign(d) != facing: StartTurn(); return
-    if e < 0: ActorJump(d); return             ; up
+    if e < 0: ActorJump(d); return             ; up, $9023
     if e > 0:
         if d == 0:
             if LadderBelow(): GrabLadder(); return
-            stand
-        e = 0
-    walk(d)                                    ; ProbeVertical, ProbeWalls, the counters
-    ApplyMove(d, e)                            ; $9B56
+            e = d; goto MoveStand              ; e = 0: stand, no probes
+        e = 0                                  ; MoveDownWalk
+MoveWalk:                                      ; $9B25, also for e == 0 with d == 0
+    ProbeVertical(); ProbeWalls()              ; the floor under, the walls ahead
+    if actor is Hiro and d == 0: goto MoveStand
+    +$24 += 1; +$25 += 1                       ; the walk counters
+    if +$10 bit 3:                             ; standing on an object
+        +$10 bit 3 = 0; +$02 bit 1 = 0; d = 0  ; no X move this step
+    goto ApplyMove
+MoveStand:                                     ; $9B4A
+    +$24 = 0; +$25 = 0
+ApplyMove:                                     ; $9B56
+    ApplyMove(d, e)
+
+ActorJump(d):                                  ; $9023
+    if d == 0:
+        if LadderAbove(): GrabLadder(); return ; $9CA7, $906C
+        script = StandScript                   ; $7B00: straight up, 11 steps
+    elif +$24 < 4: script = WalkScript         ; $7A51: the running jump, 12 steps
+    else: script = RunScript                   ; $7A7A: the long jump, 16 steps
+    SequenceHeader(+$30, script); goto JumpMove ; $919C, $9225
 ```
 
 The entry and the branches of MoveActor:
@@ -626,15 +655,22 @@ flowchart TD
     F -- no --> G{D against the facing?}
     G -- yes --> T[StartTurn]
     G -- no --> H{E up?}
-    H -- yes --> J[ActorJump: running with D, a ladder above without]
+    H -- yes --> J{ActorJump: D?}
+    J -- no --> LA{ladder above?}
+    LA -- yes --> GL[GrabLadder]
+    LA -- no --> JS[straight jump: StandScript 7B00]
+    J -- yes --> RC{run counter +24 at least 4?}
+    RC -- yes --> JL[long jump: RunScript 7A7A]
+    RC -- no --> JR[running jump: WalkScript 7A51]
     H -- no --> I{E down and no D?}
     I -- yes --> K{ladder below?}
-    K -- yes --> GL[GrabLadder]
-    K -- no --> ST[stand]
-    I -- no --> M{D?}
-    M -- yes --> WK[walk: the probes, the counters]
-    M -- no --> ST
-    WK --> AP[ApplyMove: barriers, actors, animation, CheckRoomExit]
+    K -- yes --> GL
+    K -- no --> ST[stand: counters 0]
+    I -- no --> WK[walk: ProbeVertical, ProbeWalls]
+    WK --> M{Hiro and D = 0?}
+    M -- yes --> ST
+    M -- no --> CN[counters + 1; on an object: D = 0]
+    CN --> AP[ApplyMove: barriers, actors, animation, CheckRoomExit]
     ST --> AP
 ```
 
@@ -644,7 +680,7 @@ Worked example (`c1`, key 5 with Hiro facing right):
 2. Hiro's step in frame 18135 runs TurnStep: D = -1 against the facing, so StartTurn ran on the step before.
 3. By frame 18144 the facing byte `$5D1B` is `$FF` (left).
 4. In frame 18144, T 9592, HiroControl runs. ReadDirection gives D = -1, E = 0, carry. HiroScriptMove makes D = -2.
-5. MoveActor walks. X `$5D01` goes from `$32` (sample 18144) to `$30` (sample 18145): two X units, 3 pixels.
+5. MoveActor walks. X `$5D01` goes from `$32` (sample 18144) to `$30` (sample 18145): X - 2, one unit, 3 pixels.
 
 ![HiroControl with key 5](img/routines/HiroControl.gif)
 
@@ -677,8 +713,9 @@ copied to `$6682` at run time. It:
 2. Calls ReadInput. **Fire down: the quit.** ShowGameOverWait `$831A` shows message 4, GAME OVER, and waits up to 200
    frames for fire. Then `JP NewGame` `$5C4D`: the title, with no high-score entry.
 3. Else it shows message 3, PAUSE GAME. The message is not printed: it is the **message banner**, an actor in page
-   `$66` ([doc 7](07-objects.md) 7.10). ShowMessage `$66C8` starts it above the play window and steps it until it
-   holds in place; RunBanner `$66BD` steps it on until its path ends and its active bit clears. The banner flies in,
+   `$66` ([doc 7](07-objects.md) 7.10). ShowMessage `$66C8` starts it above the play window, steps it until it
+   holds in place, and ends with `JP PauseLong` `$8330` (BC = `$6000`, about 9 frames); RunBanner `$66BD` steps it on
+   until its path ends and its active bit clears. The banner flies in,
    holds, and flies out; nothing else moves meanwhile (bit 7 of `$6602`).
 4. Only then does it poll P: one sample, then 5 `HALT`s, until a sample sees P down. A tap shorter than 5 frames can
    fall between two samples and be missed. The poll does not wait for P to be released first: a P still held when the
@@ -694,7 +731,8 @@ PauseGame:                                     ; $6682 (run-time copy of $6FCA)
     if ReadInput() == Z:                       ; fire down with P: quit
         ShowGameOverWait()                     ; GAME OVER, wait for fire (at most 40 x 5 frames)
         goto NewGame                           ; $5C4D: the title again
-    ShowMessage(3)                             ; PAUSE GAME: the banner flies in and holds
+    ShowMessage(3)                             ; PAUSE GAME: the banner flies in and holds,
+                                               ; then PauseLong (about 9 frames)
     RunBanner()                                ; ... and flies out, to its end
     repeat:
         p = IN($DFFE) AND 1
@@ -743,7 +781,7 @@ flowchart TD
     D -- no --> E{fire down?}
     E -- yes --> F[GAME OVER, wait for fire]
     F --> G[NewGame: the title, no high score]
-    E -- no --> H[ShowMessage 3: the PAUSE GAME banner flies in]
+    E -- no --> H[ShowMessage 3: the PAUSE GAME banner flies in, then PauseLong]
     H --> H2[RunBanner: it flies out, to its end]
     H2 --> I[read P, HALT x5]
     I --> J{P down?}
@@ -756,8 +794,9 @@ Worked example (`menu`, option 1):
 
 1. P is tapped at frame 1931 (4 frames). The sample of frame 1932 shows PauseFlag `$80`, and page `$66` already
    holds the banner: `$6602` = `$81`, Y (`$6600`) = `$F4`, X `$48`.
-2. The banner comes down 4 lines a frame, from Y `$F0` to `$50` (1932-1969), wobbles there, and holds from 1978 (its
-   segment count `$6640` = 2: ShowMessage returns). The screen of frame 1990 shows PAUSE GAME in mid-window.
+2. The banner comes down 4 lines a frame from Y `$F0` (ShowMessage's start; `$F4` in the sample of 1932, after its
+   first step) to `$50` (1932-1955, [doc 7](07-objects.md) 7.10), wobbles there until 1977, and holds from 1978 (its
+   segment count `$6640` = 2: ShowMessage's loop ends and PauseLong follows). The screen of frame 1990 shows PAUSE GAME in mid-window.
 3. RunBanner moves it up again from 2006; the sample of 2031 shows `$6602` = 0: the banner has ended, 99 frames after
    the P press, and the poll starts.
 4. P is tapped again at 2035 (4 frames, 2035-2038): a sample falls inside the tap, the delay follows, and the sample of
@@ -884,12 +923,14 @@ of frame 150 shows FX.
 
 *Figure 5.5: the 128K title in `menu` at frame 100 (the note) and frame 150 (FX). The shots by `python3
 kit/screen_shot.py --work work/docs/zsB/menu --out-dir work/docs/zsB/out t100=100:0 t150=150:0`; the figure by
-`python3 tools/fig_controls.py shots --shot work/docs/zsB/out/t100.png=... --shot work/docs/zsB/out/t150.png=...
---out docs/img/controls/title-sound.png`.*
+`python3 tools/fig_controls.py shots --title "..." --shot work/docs/zsB/out/t100.png="menu, frame 100: ..." --shot
+work/docs/zsB/out/t150.png="menu, frame 150: ..." --out docs/img/controls/title-sound.png` (the labels wrap to the
+picture's width).*
 
 How to read:
 
-- The title is the same picture in both; only the icon at the bottom centre changes.
+- The title is still being drawn in both (the logo is built piece by piece; frame 150 has more of it); the
+  choice shows only in the icon at the bottom centre: the note at 100, FX at 150.
 - The icon is printed by GlueSoundIcon each time the choice changes, and when the title is drawn.
 
 The point: the choice uses the control's left and right, whichever device was chosen. It is the 128K glue's own code.

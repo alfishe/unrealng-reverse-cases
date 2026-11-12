@@ -31,7 +31,7 @@ lists seven blocks: a text block, then six data blocks at the ROM's standard tim
 | 0 | text "Created with Ramsoft MakeTZX" | | | | | |
 | 1 | header: Program "( Switch )", LINE 0 | 17 | 2048 ms | 5.09 s | the ROM's LOAD "" | |
 | 2 | the BASIC, its code, the tape loader | 361 | 2051 ms | 4.07 s | the ROM | PROG `$5CCB` |
-| 3 | headerless: stage 2 | 2060 | 6159 ms | 12.81 s | LoadBytes `$FF02`, from LoaderStart `$FFEE` | `$609C-$68A7` |
+| 3 | headerless: stage 2 | 2060 | 6159 ms | 12.81 s | LdBytes `$FF02`, from LoaderStart `$FFEE` | `$609C-$68A7` |
 | 4 | headerless: the game | 37 537 | 4104 ms | 205.61 s | LoadBlock `$FF00`, from LoadGame `$612F` | `$6B5C-$FDFC` |
 | 5 | headerless: the bootstrap and two copies | 4497 | 2059 ms | 27.20 s | the same | `$4000-$5190` |
 | 6 | headerless: bank 4 | 8441 | 16 029 ms | 49.01 s | the same, on a 128K only | bank 4 `$C000-$E0F8`, through `$8000` |
@@ -158,13 +158,18 @@ LoaderStart:                    ; $FFEE
   JP $609C
 ```
 
-LdBytes `$FF02` is a copy of the ROM's LD-BYTES (`$0556`), with three changes:
+LdBytes `$FF02` is a copy of the ROM's LD-BYTES (`$0556`), with four changes:
 
-1. It pushes its own return, LoadEnd `$FFB2`, instead of the ROM's SA/LD-RET.
-2. The border is red (`LD A,$0A`) and the stripes come from `AND $02`: red and black, where the ROM shows red and
-   cyan for the pilot and blue and yellow for the data.
-3. A failed block goes to LoadError `$FFBB`: border red, every attribute `$47`, "TAPE LOADING ERROR" printed with
-   `RST $10`, and a hang. There is no retry.
+1. It starts with its own `SCF` (`$FF02`): always a load, never a verify, so the caller needs to set no carry.
+2. The border starts red (`LD A,$0A`, the ROM's `$0F`).
+3. It pushes its own return, LoadEnd `$FFB2`, instead of the ROM's SA/LD-RET `$053F`. Through it a failed block goes
+   to LoadError `$FFBB`: border red, every attribute `$47`, "TAPE LOADING ERROR" printed with `RST $10`, and a hang.
+   There is no retry.
+4. The stripes come from `AND $02` instead of `AND $07` in LD-SAMPLE: red and black for the pilot and the data alike,
+   where the ROM shows red and cyan for the pilot and blue and yellow for the data.
+
+The rest (LD-START, LD-LEADER, LD-SYNC, LD-8-BITS, LD-EDGE-1 and LD-EDGE-2 with their timing constants) is the ROM's
+byte for byte.
 
 ```mermaid
 flowchart LR
@@ -398,10 +403,13 @@ flowchart TD
 ```
 
 Witness: the bootstrap's routines have L1 count 2 (c1 and c48); SwapBank, the hooks and the glue copy ran only in c1.
-The glue runs on every frame of every 128K recording from the menu on (`$853F` x 18 055 in menu's 18 060 frames).
+The glue runs on every frame of every 128K recording from the first `EI` on (GlueMenuInput `$85A1`, on the title; c1
+frame 16 013): `$853F` x 18 055 in menu's 18 060 frames; the frames before the first are the control menu's, which runs
+with interrupts off.
 
-**The point**: one program serves both machines. The 128K version is the 48K game with fifteen bytes changed and the
-beeper player replaced by a 162-byte bridge to bank 4; the code at the five sites does not know which machine it is on.
+**The point**: one program serves both machines. The 128K version is the 48K game with fifteen bytes written at five
+sites (eleven of them differ from the 48K's) and the beeper player replaced by a 162-byte bridge to bank 4; the code at
+the five sites does not know which machine it is on.
 
 ## 3.4 The 48K path
 

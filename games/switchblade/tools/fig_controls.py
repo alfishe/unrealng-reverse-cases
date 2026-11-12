@@ -223,16 +223,35 @@ def cmd_shots(args):
     w = (W - 36) // 2
     h = w * 192 // 256
     rows = -(-len(items) // 2)
-    pic = Image.new('RGB', (W, 44 + rows * (h + 50) + 18 * len(args.note or [])), BG)
+    font = K.font(12)
+
+    def wrap(label):
+        """The label in lines no wider than its picture (a '|' forces a break)"""
+        lines = []
+        for part in label.split('|'):
+            line = ''
+            for word in part.strip().split(' '):
+                trial = (line + ' ' + word).strip()
+                if line and font.getlength(trial) > w:
+                    lines.append(line)
+                    line = word
+                else:
+                    line = trial
+            lines.append(line)
+        return lines
+    wrapped = [wrap(label) for _, label in items]
+    gap = 18 + 16 * max(len(x) for x in wrapped)
+    pic = Image.new('RGB', (W, 44 + rows * (h + gap) + 18 * len(args.note or [])), BG)
     d = ImageDraw.Draw(pic)
     text(d, (12, 8), args.title or '', 15)
-    for i, (path, label) in enumerate(items):
+    for i, (path, _) in enumerate(items):
         im = Image.open(path).convert('RGB').resize((w, h), Image.NEAREST)
         x = 12 + (i % 2) * (w + 12)
-        y = 44 + (i // 2) * (h + 50)
+        y = 44 + (i // 2) * (h + gap)
         pic.paste(im, (x, y))
-        text(d, (x, y + h + 6), label, 12)
-    y = 44 + rows * (h + 50)
+        for k, line in enumerate(wrapped[i]):
+            text(d, (x, y + h + 6 + 16 * k), line, 12)
+    y = 44 + rows * (h + gap)
     for k, line in enumerate(args.note or []):
         text(d, (12, y + 18 * k), line, 12, DIM)
     pic.save(args.out)

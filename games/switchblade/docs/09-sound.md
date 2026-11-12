@@ -371,7 +371,8 @@ The game requests the effects from 15 sites. The event of each comes from its si
 
 The witness column lists the recordings whose L1 runs the request's address (in brackets), over every build of
 case.json: the keyed and integration recordings, the POKE probes, and the 72 long and 19 room-entry RZX segments
-(`python3 tools/l1q.py ADDR`). HiroMeleeArm `$90FB` also writes 11,
+(`python3 tools/l1q.py ADDR`). A request is not a sound: on the 128K builds in music mode (c1, deaths, gameover,
+opt2-4, throw, hiscore) the requests are made but not heard (9.7). HiroMeleeArm `$90FB` also writes 11,
 but StartActionSeq overwrites it with 10 four instructions later: 11 is never heard from a strike.
 
 ![The 14 beeper effects: the level and the burst a frame](img/sound/effects48.png)
@@ -385,7 +386,8 @@ How to read the figure:
 - **Effect 4** never ends: its release step is 0 (9.19). The panel stops at 300 frames.
 
 The point: every effect is the same machine with other numbers. The shapes differ only by the envelope's four
-steps and the time; the loudest bursts (60 toggles) need a level of 120 or more.
+steps and the time; the loudest bursts (60 toggles) need a level of 112 or more (LevelToBurst `$866D`: `RRCA / OR 4 / AND $7C`, so
+every level from 112 to 127 gives 60).
 
 The lengths and costs, from the model (`python3 tools/sound_sim.py effects48`):
 
@@ -490,7 +492,8 @@ What this means for the player:
 
 - **Music mode** (SoundMode 0, the title's left key): play starts with tune 2, the jingle; then tune 1 loops for ever.
   MusicState is 0 only inside the glue call that restarts the loop, so the effect branch is never reached. The game's
-  effect requests are taken by nobody: **in music mode the 128K plays no effects at all**.
+  effect requests are taken by nobody: **in music mode the 128K plays no effects at all**. Witness: `deaths` (128K,
+  music mode) makes 25 hurt requests and 2 footstep requests, and PlayEffect `$C011` never runs (9.19).
 - **Effects mode** (SoundMode 1, the right key): the jingle plays, then no tune. From then on every request plays.
 - **A request during a tune** stays in EffectRequest (nothing reads it) and is overwritten by the next one. In effects
   mode, the last request made during the jingle plays when the jingle ends.
@@ -775,8 +778,8 @@ How to read the figure:
 - **The orange line** is register 9, the volume as the AY gets it (0-15).
 - **The title** says tone, noise or both (flags bits 0 and 1).
 
-The point: the tunes' sound is mostly the envelope. Ins 0-5 are plucks (attack 127: the peak at once, then a decay
-of 4-5 a frame); ins 6, 9 and 12 hold (decay -1, a high sustain or a slow fall); ins 8 and 11 are the drums' noise,
+The point: the tunes' sound is mostly the envelope. Ins 0-5 and 7 are plucks: ins 0-3 and 5 (attack 127) reach the
+peak at once, ins 4 and 7 (attack 67) in two frames, then a decay of 2-5 a frame; ins 6, 9 and 12 hold (decay -1, a high sustain or a slow fall); ins 8 and 11 are the drums' noise,
 gone in a few frames.
 
 Command: `python3 tools/sound_sim.py fig-instruments docs/img/sound/instruments.png`.
@@ -798,7 +801,8 @@ Three effects move a note's pitch. Each adds to the period AyUpdate writes.
 
 ```text
 UpdateVibrato(ch):
-    if delay = FF: return; if delay > 0: delay -= 1; return
+    if delay = FF: return
+    if delay > 0: delay -= 1; if delay != 0: return    (DEC / RET NZ: at 0 the step runs this frame)
     offset += step
     sweep -= 1
     if sweep = 0:
@@ -1039,8 +1043,8 @@ How to read the figure:
 - **The orange line** is R0-R1, the tone period (right axis, log): a falling line is a rising pitch.
 - **Effect 9** is cut at 160 frames (it lasts 169); **effect 4** never ends (9.19).
 
-The point: on the AY the "pitch" is a real pitch. The vibrato of the effect records is wide (width 4-10, steps up to
-`$5C`), so most effects are sirens or swoops, unlike the beeper's buzz. Effects 0, 2, 3, 9, 10 and 13 swing channel
+The point: on the AY the "pitch" is a real pitch. The vibrato of the effect records is wide (width 2-10, effect 3 88,
+none in effects 7 and 11-13; steps up to `$5C`), so most effects are sirens or swoops, unlike the beeper's buzz. Effects 0, 2, 3, 9, 10 and 13 swing channel
 A's doubled period through 0: the period wraps to `$0Fxx`, a very low note, for a frame or two.
 
 The lengths, from the model (`python3 tools/sound_sim.py effects128`):
@@ -1133,8 +1137,11 @@ that the checks of 9.6, 9.16 and 9.17 compared with the machine.
 - **The order-list codes `$FC` and `$FD`** (not the pattern commands `$FC` / `$FD`, the drums of 9.13): in no
   tune's order list; the skips at `$C1FC` / `$C206` ran in no recording (9.9).
 - **The raw period `$7E`**: in no pattern of the three tunes.
-- **The 128K stop `$FF`** (TuneRequest `$FF`, the glue's Silence at `$858D`): the game writes it at its end, but in
-  no recording was a tune still playing then (MusicState 0), so Silence was not called from there.
+- **The 128K stop `$FF`** (TuneRequest `$FF`, the glue's Silence at `$858D`): EndOfGame `$5C45` writes it before
+  InsertHighScore. In `hiscore` (128K, music mode) tune 1 was playing when the game ended: the glue's
+  `CALL NZ,Silence` at `$858D` ran 715 times, on each frame of the high-score table and the name entry, and Silence `$D182`
+  ran 719 times against 4 StartTune `$C0D7` (each calls Silence once). Why the stop repeats every frame (MusicState
+  not cleared by Silence) is read from the code, not traced.
 - **Effect 4 never ends**, on both machines. Its release step is 0 (48K +10, 128K +3). On the 48K the decay (-1 a
   frame) takes the level from the peak 111 down to the sustain 0; the sustain passes to the release at once
   (EffectTime 1), and a release of 0 keeps the level at 0, never negative, so the effect never goes idle. What is left
@@ -1142,9 +1149,10 @@ that the checks of 9.6, 9.16 and 9.17 compared with the machine.
   replaces it; a footstep can, since its gate is the level 0 (9.3). On the 128K it holds until Silence. Havok's death
   (KillScore E = 4, GameWonSound `$97DE`) and the end picture's fade (`$8744`) request it: havok runs the requests 17
   times (1 and 16), r138000 16 times (the fade).
-- **The music-mode silence of the effects** (9.7): in music mode the glue never reaches the effect branch, so a 128K
-  in music mode plays no effects. It is the glue's logic; no recording plays in music mode long enough to show a
-  request lost (menu chose effects).
+- **The music-mode silence of the effects** (9.7) is witnessed: `deaths` (128K, music mode: the glue's music branch
+  `$8584` ran once) makes 25 hurt requests (`$987D`) and 2 footstep requests (`$9BB2`), and PlayEffect `$C011` never
+  runs (L1 0). It runs 0 times in c1, gameover, opt2-4 and throw too (all music mode); only `menu` (effects mode, 10)
+  and `hiscore` (1, after the game's stop) play effects.
 - **StartNote keeps the old volume** (9.11): a new note or effect attacks from the volume the channel had. After
   Silence or a release that is 0, so it is not heard in the tunes; a re-triggered effect (the footsteps of menu)
   attacks from where the previous one stood. The model reproduces the machine only when started from Silence

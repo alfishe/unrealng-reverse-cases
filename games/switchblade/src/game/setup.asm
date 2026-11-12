@@ -15,14 +15,14 @@
 
 ; The globals' start values: 56 bytes copied to Vitality $6642 at a new game
 ;
-; NewGame `$5CA9` copies these 56 bytes (LDIR, BC = `$38`) to `$6642-$6679`;
-; the first 10 (7 when a boss kind is set, `$9A59`) are copied again when a
-; life is lost (LoseLife `$962A`).
+; NewGame `$5C4D` (at `$5CA9`) copies these 56 bytes (LDIR, BC = `$38`) to
+; `$6642-$6679`; the first 10 (7 when a boss kind is set, `$9A59`) are copied
+; again when a life is lost (LoseLife `$962A`).
 ;
 ; Each shown copy (`$6643`, `$6646`, `$664A`, `$664F`) starts unequal to its
 ; value, so the first pass of the panel jobs ($FF01, $FF64) draws everything.
-; The byte `$5C06` (FirePrevious) is written by ControlMenu `$6A9E` with the
-; chosen fire mask.
+; The byte `$5C06` (FirePrevious) is written by ControlMenu `$6A7B` (at
+; `$6A9E`) with the chosen fire mask.
 ;
 ; Two text records follow (for `$837B`): the score line (Y, X, two style bytes,
 ; eight digits "00000000", a skip of 7 cells, the lives "05", end) and the
@@ -92,8 +92,8 @@ EndOfGame:
 ; 4. Clears `$6D00-$6EFF` (HavokStashB, TakenItems, RevealedZones, HavokStashA,
 ; GoneEnemies), copies GlobalsInit to `$6642`, sets the six bytes `$76D8` to 1.
 ;
-; 5. SpawnActor `$A65D` for Hiro (page `$5D00`, kind `$24`, template `$65CA`,
-; BC = `$4804`); Hiro +`$02` = 7; `$88AE` = 0; CLS (`$8339`); tune command 2
+; 5. InitActor `$A65D` for Hiro (page `$5D00`, kind `$24`, template `$65CA`, BC
+; = `$4804`); Hiro +`$02` = 7; `$88AE` = 0; CLS (`$8339`); tune command 2
 ; (`$8452`).
 ;
 ; 6. The first room: IY = Hiro, `$95C3` (the map lookup and build), `$8365`
@@ -182,7 +182,7 @@ NewGameFlagsLoop:
   LD (HL),$01
   INC HL
   DJNZ NewGameFlagsLoop
-  LD HL,Hiro              ; Hiro: SpawnActor $A65D, kind $24, template $65CA
+  LD HL,Hiro              ; Hiro: InitActor $A65D, kind $24, template $65CA
   LD BC,Screen+2052
   LD DE,HiroTemplate
   LD A,$24

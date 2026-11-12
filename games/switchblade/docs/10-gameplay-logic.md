@@ -22,17 +22,23 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   Fireblade fragment in room 56; `r136000` reaches Havok's room 123 with 16 fragments; `r138000` plays the end.
   Their samples are `work/docs/zsC/r*-hiro.jsonl`, `r034000-frag.jsonl`, `r136000-sum.jsonl` and
   `r138000-sum.jsonl`.
-- The L1 execution counts of every build, printed by `python3 tools/l1q.py ADDR` and summed by
-  `work/docs/zsC/l1sum.sh`: the keyed recordings (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`, `opt2-4`,
-  `play48`, the 15 POKE probes) and the 91 RZX segments (72 long, 19 room-entry).
+- The L1 execution counts of every build, printed by `python3 tools/l1q.py ADDR` (120 builds) and grouped by
+  `python3 work/review/fixC2/cnt.py ADDR`. Every witness count of this doc uses that one basis, in four groups:
+  `play48`; the other keyed and integration recordings, by name (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`,
+  `opt2-4`; `bossgate`, `havok`, `hiscore`, `throw`); the 15 POKE probes; and the 91 RZX segments (72 long, 19
+  room-entry), summed, with the number of segments the code ran in. `rooms` is the stage-1 recording of rooms 1-3,
+  never an RZX segment.
 
-Two cautions hold for every example:
+Three cautions hold for every example:
 
 - A `memory_at` sample of frame N is the state at the start of frame N. A trace (and a routine animation) puts an
   instruction in the frame where it ran. So a change made during frame N shows in the sample of frame N + 1.
 - The RZX run is another player's run. Our segment replays start from its states with its keys, but they diverge from
   it after some frames (Hiro is a few pixels off and the fight goes otherwise). What a segment shows is a valid game,
   not the RZX run itself.
+- A routine animation cuts its window into equal slices of T states and shows, per slice, the code of its `--pc`
+  range that ran in it. A slice in which the named routine does not run shows other code of the range, or "0
+  instructions in this slice" (the first and last pictures often do).
 
 ## 10.1 Hiro's clocks and states
 
@@ -64,6 +70,7 @@ HiroStep:                                  ; Hiro's step, when +$1D is due
     if +$02 bit 1: FallStep; return       ; in the air (10.5)
     if +$10 bit 4: FallSequenceStart       ; hurt: the push-back script in +$31
     if +$10 bit 5: ActorExpired
+    if +$10 bit 2: StartHurtSeq            ; the crush (doc 7)
     if FireRequest: HiroAttack(FireRequest); return
     HiroControl:
         if EndFlags: HiroEndWalk           ; the end: the game steers him
@@ -133,8 +140,8 @@ stateDiagram-v2
     HardLanding --> Control: 3 to 14 steps, 2 energy each
     Grab --> Ladder: 2 steps
     Ladder --> Control: a sideways push at a ladder end
-    Turn --> Control: 2 steps
-    Action --> Control: 8 steps
+    Turn --> Control: 4 steps (12 frames)
+    Action --> Control: 6 or 8 steps
     Control --> Hurt: touched
     Hurt --> Control: 6 steps of push-back
 ```
@@ -160,10 +167,10 @@ Worked example: `play48` frame 1095. Hiro stands in room 5 at Y `$40`, X `$52`, 
 all slots 0. The up key is held. The step of frame 1097 runs HiroControl: D = 0, E = -1, so HiroMove gets Y step -4
 and ActorJump starts StandScript in +`$30`. The sample of 1098 shows +`$30` = `0B` (11 steps) and Y `$3C`.
 
-Witness: HiroControl `$9333` ran 629 times in `play48`, 5495 in the other keyed and integration recordings (c1,
-deaths, gameover, menu, opt2-4, bossgate, havok, hiscore, throw), 438 in the 15 POKE probes and 26 329 times in 90 of
-the 91 RZX segments (72 long, 19 room-entry). The FireRequest test `$9AE9` ran 637 times in `play48`; its branch was
-taken 9 times (HiroAttack `$926E` ran 9 times).
+Witness: HiroControl `$9333` ran 629 times in `play48`, 6250 in the other keyed and integration recordings (c1,
+deaths, gameover, menu, opt2-4, rooms 755, bossgate, havok, hiscore, throw), 438 in the 15 POKE probes and 25 574
+times in 89 of the 91 RZX segments. The FireRequest test `$9AE9` ran 637 times in `play48`; its branch was taken 9
+times (HiroAttack `$926E` ran 9 times).
 
 ## 10.2 Walk and turn
 
@@ -268,8 +275,10 @@ Worked example: `play48` frames 938-942, room 5. The samples read X `$50`, `$52`
 step of X + 2 (one unit, 3 pixels) every 3 frames. The run counter +`$24` reads `1F`, `20`, `21`: Hiro has walked right for 33 steps
 without a stop, so a jump now would be the long one.
 
-Witness: StartTurn `$90B1` ran 43 times in `play48` (TurnStep's flip `$91E6` 42 times), 1062 times in 69 RZX
-segments. Doc 5 shows HiroControl and MoveActor running on a key in its Animation 5.3
+Witness: StartTurn `$90B1` is shared by every actor. It ran 43 times in `play48` (TurnStep's flip `$91E6` 42 times),
+139 times in the other keyed and integration recordings (deaths 91), twice in the POKE probes and 1091 times in 80 RZX
+segments. Hiro's own turn in `play48` is one of the 43: +`$33` busy in the samples 2708-2719 (12 frames, the 4 steps
+of 3), his facing +`$1B` flipped from `01` to `FF` in the sample of 2717; `slots.png` shows that one bar. Doc 5 shows HiroControl and MoveActor running on a key in its Animation 5.3
 ([5.6](05-controls.md#56-from-the-input-byte-to-hiro)).
 
 **The point**: walking is one counter and one probe. The counter +`$24` is the only memory of speed in the game: it
@@ -287,8 +296,9 @@ A script starts with a count, a delay (2 frames a step), the X offsets of the fr
 class. Then each step is three bytes: the frame, the Y step, the X step. MotionStep `$9253` applies one step and
 negates X when Hiro faces left. JumpStep `$921C` runs a step every 2 frames. It ends the jump (StartFallEndJump
 `$9CD1`, slot cleared, the fall begins) when the count runs out, or when the step has no X move and the head test
-fails. ProbeCeiling `$9DF1` fails a step that does not rise (E = 0) or whose head hits a ceiling. So the standing
-jump never hovers: its five flat steps at the top end it at once. The running jumps keep their flat steps because
+fails. ProbeCeiling `$9DF1` (through ProbeCeilingE `$9DF8`, `OR A / RET P`) fails a flat step (E = 0) and a rising
+step (E < 0) whose head hits a ceiling; a descending step (E > 0) passes without a probe, so a descent whose X a wall
+cut to 0 goes on straight down. So the standing jump never hovers: its five flat steps at the top end it at once. The running jumps keep their flat steps because
 they move in X.
 
 ```text
@@ -303,7 +313,7 @@ JumpStep:                                  ; slot +$30, every 2 frames
     if +$30 == 0: end the jump, fall
     frame, dy, dx = next step; if facing left: dx = -dx
     ProbeWalls(dx)                         ; a wall cuts dx to 0
-    if dx == 0 and (dy >= 0 or the head is blocked): end the jump, fall
+    if dx == 0 and (dy == 0 or (dy < 0 and the head is blocked)): end the jump, fall
     ProbeVertical; ApplyMove(dx, dy)
 ```
 
@@ -388,9 +398,12 @@ flowchart TD
     C -->|"no"| M["MotionStep: frame, dy, dx"]
     M --> D{"dx = 0 after the walls?"}
     D -->|"no"| AP["ApplyMove"]
-    D -->|"yes"| H{"rises and the head is free?"}
-    H -->|"yes"| AP
-    H -->|"no"| F
+    D -->|"yes"| H{"dy?"}
+    H -->|"dy = 0"| F
+    H -->|"dy > 0 (descent)"| AP
+    H -->|"dy < 0"| HB{"head blocked?"}
+    HB -->|"no"| AP
+    HB -->|"yes"| F
     AP --> ST
 ```
 
@@ -438,11 +451,11 @@ docs/img/play/play48-jump.gif`.*
 How to read it: Hiro stands in room 5, rises 24 pixels in six steps (two frames each), drops back 4 pixels a frame
 and crouches for one step.
 
-![The screen of play48 frames 1549-1590: the walking jump](img/play/play48-running-jump.gif)
+![The screen of play48 frames 1549-1590: the walking jump](img/play/play48-walking-jump.gif)
 
 *Animation 10.2. The screen of `play48` frames 1549-1590, one picture a frame. Command: `python3
 ../../kit/screen_anim.py --work work/docs/zsC/play48 --from 1549 --to 1590 --step 1 --delay 80
-docs/img/play/play48-running-jump.gif`.*
+docs/img/play/play48-walking-jump.gif`.*
 
 How to read it: from a stand with right held, Hiro rises 20 pixels, glides right 7 units (21 pixels) at the top,
 the script's descents held level by the floor under him, drops 4 pixels from its end onto the higher floor and
@@ -459,14 +472,15 @@ How to read it:
 
 - Left: Hiro's page `$5D00`, 66 bytes in three rows of 22. Byte 0 is Y, byte `$30` (row 3, column 5) the jump
   count.
-- Right: the code of `$921C-$926D` running in each slice, the current instruction highlighted.
+- Right: the code of `$921C-$926D` that ran in each slice, when JumpStep ran in it, the current instruction
+  highlighted.
 - Y drops by 4 and the count by 1 every second frame. In the slice of frame 1109 the path takes
   `JP Z,StartFallEndJump` at `$922F`.
 
 Witness: ActorJump ran 12 times in `play48`: StandScript 2, WalkScript 3, RunScript 7 (`$9035 LD BC,WalkScript` ran
-10 times, `$903F LD BC,RunScript` 7, and every run jump passes `$9035` first). It ran 116 times in the other keyed
-and integration recordings (havok 70, deaths 31) and 757 times in 74 of the 91 RZX segments. JumpStep ran 160 times
-in `play48`.
+10 times, `$903F LD BC,RunScript` 7, and every run jump passes `$9035` first). It ran 125 times in the other keyed
+and integration recordings (havok 70, deaths 31, rooms 9, c1, gameover, opt2-4, bossgate, hiscore), never in the POKE
+probes, and 748 times in 73 of the 91 RZX segments. JumpStep ran 160 times in `play48`.
 
 ## 10.4 Ladders
 
@@ -483,15 +497,20 @@ plays LadderGrabScript `$7AAF` (2 steps) in slot +`$36`. From then on HiroMove s
 `$9C4A`:
 
 - up: no X; the head test; the step stops (E = 0) when the cell at Y + 16, X + 2 is the top tile `$53`;
-- down: the floor 4 pixels below; while the cell at the feet is `$55`, E = 4, otherwise E = 0;
-- a side key at a stop: the facing is set and LeaveLadder `$9078` leaves the ladder: bit 3 cleared, X + 2,
-  LadderLeaveScript `$7AE8` (2 steps) in +`$32`.
+- down, or a side key: ProbeBelow `$9CEE` tests the floor 4 pixels below. Between cell edges (the feet not on a
+  multiple of 16), or at an edge with no floor under it, the probe returns NZ and Hiro moves 4 pixels down
+  (`JP NZ,ApplyMove` at `$9C74` with DE = `$0004`), whatever the key. Only at a cell edge over a floor does the key
+  count: down goes on (E = 4) while the cell at the feet is `$55`, otherwise E = 0;
+- a side key at a cell edge over a floor: the facing is set and LeaveLadder `$9078` leaves the ladder: bit 3
+  cleared, X + 2, LadderLeaveScript `$7AE8` (2 steps) in +`$32`.
 
 On a ladder Hiro steps every 4 frames, not the walk's 3: in `r014000` (frames 1217-1295) +`$1D` reads 4 and Y
 goes `$80`, `$84`, `$88`, ... a step of 4 pixels every fourth frame.
 
-A fall that starts on a ladder (FallSequenceStart with bit 3 set) also goes to LeaveLadder: Hiro does not fall
-off a ladder.
+A hurt on a ladder also goes to LeaveLadder: FallSequenceStart `$904A` (StepActor's +`$10` bit 4, the hurt flag,
+10.8) tests +`$02` bit 3 and jumps to LeaveLadder at `$9058` instead of starting the push-back script. FallSequenceStart
+is called only from `$9AD3`; a ladder never starts a fall (ProbeFloorCell keeps a Hiro with bit 3 set where he is,
+`$9D23`).
 
 ```text
 LadderTest(cell):                          ; LadderAbove: cell B - 14 (one row up); LadderBelow: the cell below
@@ -502,8 +521,8 @@ ClimbMove(D, E):
         D = 0; ProbeCeiling
         if plane6A[cell(Y + 16, X + 2)] == 53: E = 0
         ApplyMove(D, E); return
-    if the floor 4 below is solid: ApplyMove; return
-    E = 4 if plane6A[cell at the feet] == 55 else 0
+    if not over a floor (mid-cell, or no floor at the edge): ApplyMove(0, 4); return   ; ProbeBelow NZ
+    E = 4 if plane6A[cell at the feet] == 55 else 0         ; at a cell edge over a floor
     if D == 0: ApplyMove(0, E); return
     facing = D / 2; LeaveLadder         ; bit 3 off, X + 2, LadderLeaveScript in +$32
 ```
@@ -584,9 +603,10 @@ stateDiagram-v2
     Ground --> Grab: down, a ladder below (LadderBelow 9CA1)
     Grab --> OnLadder: LadderGrabScript 7AAF, 2 steps, +02 bit 3
     OnLadder --> OnLadder: up 4 until the top tile 53
-    OnLadder --> OnLadder: down 4 while the feet are on 55
-    OnLadder --> Leave: a side key at a stop
-    OnLadder --> Leave: a fall would start
+    OnLadder --> OnLadder: down 4 mid-cell, or at an edge with no floor
+    OnLadder --> OnLadder: down 4 at a floor edge while the feet are on 55
+    OnLadder --> Leave: a side key at a cell edge over a floor
+    OnLadder --> Leave: hurt (+10 bit 4, FallSequenceStart 9058)
     Leave --> Ground: LeaveLadder 9078, X + 2, LadderLeaveScript 7AE8
 ```
 
@@ -622,9 +642,10 @@ How to read it:
 - Left: Hiro's page; byte 2 (the flags) turns from `01` to `09`, byte `$36` (row 3, column 11) counts the grab.
 - Right: the ladder code; LadderCellTest's `CPIR` finds `$55`, then ClimbDown keeps E = 4.
 
-Witness: ClimbMove ran 331 times in 13 RZX segments; GrabLadder 8 times in 8 segments; LeaveLadder 15 times in 13
-segments. No keyed recording of ours climbs (`play48` 0). The stop at the top tile `$9C6A` ran 10 times in 3
-segments.
+Witness: ClimbMove ran 524 times in 19 RZX segments; GrabLadder 8 times in 8 segments; LeaveLadder 20 times in 18
+segments: 19 from ClimbLeave's side key (`$9C9E`, in 17 segments) and once from a hurt on a ladder (`$9058` taken,
+in the room-entry segment `e102685`, 10.17). No keyed, integration or POKE build of ours climbs (`play48` 0). The
+stop at the top tile `$9C6A` ran 26 times in 7 segments.
 
 **The point**: a ladder is a tile, not an object. Two tile numbers and a column test make Hiro climb, and the same
 step code (4 pixels, the floor probe) serves the ladder and the ground.
@@ -636,7 +657,11 @@ FallStep `$9CD9` sets bit 2 (falling), probes 4 pixels below and counts the fall
 the floor clears the count (it is set to `$FF` and then incremented). The fall is 4 pixels a frame, and the count
 goes on across a room change.
 
-When a falling Hiro finds the floor, `$9D3B` calls HiroLanded `$90C3`. It reads and clears +`$26`:
+Each FallStep ends with `JP SetWalkCounters` with A = 1: the walk counters +`$24` and +`$25` are 1 on every fall
+step, so after a fall Hiro's next jump is a walking one until he has walked 3 more steps. When a falling Hiro finds
+the floor, ProbeFloorCell's Landed `$9D2B` jumps to HiroLanded `$90C3` (`JP Z,HiroLanded` at `$9D3B`). It reads and
+clears +`$26` itself; with a count above 0 it drops FallStep's return (`POP BC`), so FallStep's own reset of +`$26`
+(`$FF`, then `INC`) runs only when HiroLanded found 0 steps, and for the other actors:
 
 - 0: nothing;
 - 1-19: LandScript `$7AB6` in +`$32`, one step of 3 frames: a crouch;
@@ -649,9 +674,11 @@ the loss while the energy ball shines (10.9), but the steps still run.
 ```text
 FallStep:                                  ; each frame of a fall
     +$02 |= 2 | 4
+    ProbeBelow                             ; Hiro on a floor: JP HiroLanded, which may not come back
     if the floor 4 below is solid: +$26 = 0 else +$26 += 1
+    +$24 = +$25 = 1; ApplyMove             ; JP SetWalkCounters with A = 1
 
-HiroLanded:                                ; from $9D3B, a falling Hiro on the floor
+HiroLanded:                                ; JP from $9D3B, a falling Hiro on the floor
     steps = +$26; +$26 = 0
     if steps == 0: return
     if steps < 20: LandScript in +$32; return
@@ -678,6 +705,14 @@ $9CE4  JR NZ,FallCount
 $9CE6  LD (HL),$FF               ; landed: the counter back to 0
 FallCount:
 $9CE8  INC (HL)
+$9CE9  LD A,$01                  ; the walk counters +$24, +$25 = 1
+$9CEB  JP SetWalkCounters
+...
+Landed:
+$9D2B  LD E,$00                  ; a floor under the feet
+...
+$9D39  CP $24                    ; Hiro: the landing
+$9D3B  JP Z,HiroLanded
 ...
 HiroLanded:
 $90C3  LD L,$26
@@ -790,8 +825,9 @@ How to read it:
   Invulnerable.
 - Right: HiroLanded once (the hard branch), then FallDamageStep in every fifth picture.
 
-Witness: HiroLanded ran 2895 times in all builds; the hard branch `$90CC` once in `play48`, once in `deaths` and 11
-times in 7 RZX segments. The soft crouch `$90E4` ran 42 times in `play48`.
+Witness: HiroLanded ran 43 times in `play48`, 353 in the other keyed and integration recordings, 15 in the POKE
+probes and 2680 times in 86 RZX segments (3091 in all). The hard branch `$90CC` ran once in `play48`, once in
+`deaths` and 12 times in 8 RZX segments. The soft crouch `$90E4` ran 42 times in `play48`.
 
 ## 10.6 The strike: the charge and three moves
 
@@ -951,7 +987,8 @@ How to read it:
   ActionStep once every three frames.
 
 Witness: HiroMelee ran 9 times in `play48`: strike 2 once (`$8506` once, `$90F8` skipped once) and strike 3 eight
-times. In the other keyed builds 21 times, in 56 RZX segments 356 times.
+times. It ran 18 times in the other keyed and integration recordings (havok 11, c1 2, menu, opt2-4, bossgate), 15
+in the POKE probes (once each) and 367 times in 64 RZX segments.
 
 **The point**: one button gives three moves. The game measures how long fire was held and turns it into a move and
 its damage at the release.
@@ -1163,9 +1200,9 @@ python3 tools/fig_gameplay.py --only throw
 ```
 
 Witness: the throw (InitActor at `$92C7`) ran 143 times in 28 RZX segments (26 long, 2 room-entry), WeaponControl
-2186 times in the same 28. Kinds `$40-$42` (`$9302`) 44 times in 13 segments, kind `$43` 14 times and kind `$44` 19 times, each in 2
-segments. Our own `throw` recording (128K, Weapon `$664B` and WeaponCount `$6649` POKEd at frame 1869) throws
-eight times from the keys, frames 1893-3039: HiroAttack 8 runs, the throw `$92C7` 8, WeaponControl 268
+2186 times in the same 28; none in `play48` or the POKE probes. Kinds `$40-$42` (`$9302`) 44 times in 13 segments,
+kind `$43` (`$9304`) 14 times and kind `$44` (`$9315`) 19 times, each in 2 segments. Our own `throw` recording
+(128K, Weapon `$664B` and WeaponCount `$6649` POKEd at frame 1869) throws eight times from the keys, frames 1893-3039: HiroAttack 8 runs, the throw `$92C7` 8, WeaponControl 268
 (the figure above and the screen in 10.17); `bossgate` throws 10 times.
 
 **The point**: a weapon is a second actor that Hiro launches. The charge sets its range, its speed or its path
@@ -1204,7 +1241,10 @@ $982C  AND $10
 $982E  RET NZ
 ```
 
-Then, for a harmful kind (below `$35`, or `$35` / `$36` by their pose), HurtHiro `$9860`:
+Then, for a harmful kind, HurtHiro `$9860`. Kinds below `$35` harm; kind `$35` always harms; kind `$36` harms only
+while its +`$32` is `$0D` or more (TouchKind36 `$986C`, `CP $0D / RET C`); kinds `$37-$3D` are objects to stand on,
+and the rest do nothing. Kinds `$35` and `$36` enter at HurtFacingOpposite `$9876`, so they always push back
+(`$7A18`), whatever the facings.
 
 1. The push-back: the attacker's facing against Hiro's. Opposite facings choose script `$7A18` (pushed back),
    the same facing `$7A2F` (pushed forward). The low byte goes to HiroFallScript `$69DC`.
@@ -1229,10 +1269,13 @@ TouchHiro(actor):
     if not BoxesOverlap(actor, Hiro with his top + 1): return
     if actor.kind < 23: TouchPickup; return            ; taken even under the energy ball
     if Invulnerable or Hiro.+10 & 10: return           ; the ball, or already hurt
-    kind < 35: HurtHiro; 35, 36: by pose; 37-3D: stand on; else nothing
+    if kind < 35: HurtHiro
+    elif kind == 35 or (kind == 36 and actor.+32 >= 0D): HurtHiro, entered at $9876 (script 18)
+    elif kind <= 3D: stand on it
+    else: nothing
 
 HurtHiro(attacker):
-    HiroFallScript = 18 if sign(attacker.facing) != sign(Hiro.facing) else 2F
+    HiroFallScript = 18 if sign(attacker.facing) != sign(Hiro.facing) else 2F   ; 35 and 36: always 18
     sound 0
     LoseEnergy(8 if attacker.kind == 2D else 4)
     if Hiro.+30 & 7: Hiro.+30 &= 7; Hiro.+02 = 03; return
@@ -1316,7 +1359,10 @@ flowchart TD
     PK -->|"yes"| TP["TouchPickup: taken, even under the ball"]
     PK -->|"no"| IV{"Invulnerable, or +10 bit 4 already?"}
     IV -->|"yes"| NO
-    IV -->|"no, a harmful kind"| H["HurtHiro 9860"]
+    IV -->|"no"| HK{"kind below 35, kind 35, or kind 36 with +32 >= 0D?"}
+    HK -->|"no"| NO
+    HK -->|"35 or 36"| S1
+    HK -->|"below 35"| H["HurtHiro 9860"]
     H --> F{"facings opposite?"}
     F -->|"yes"| S1["push-back script 7A18"]
     F -->|"no"| S2["push-forward script 7A2F"]
@@ -1364,8 +1410,10 @@ How to read it:
 - Left: the game variables; byte 0, the energy, goes from `20` to `1C`.
 - Right: the touch tests, then HurtHiro, LoseEnergy and the loop at `$9895` running its eight empty rounds.
 
-Witness: HurtHiro ran 29 times in `play48` (the push-forward `$9868` 13 times, the push-back 16), 27 times in the
-other keyed builds and 612 times in 57 RZX segments. The in-jump branch `$98A0` ran 4 times in `play48`.
+Witness: HurtHiro ran 29 times in `play48` (the push-forward `$9868` 13 times, the push-back 16), 28 times in the
+other keyed and integration recordings (deaths 25, gameover, rooms, hiscore once each), never in the POKE probes, and
+624 times in 63 RZX segments. Kind `$36`'s test (TouchKind36 `$986C`) ran 4 times in `rooms` and 25 times in 6 RZX
+segments. The in-jump branch `$98A0` ran 4 times in `play48`, 3 in `deaths` and 15 times in 8 RZX segments.
 LoseEnergy ran 43 times in `play48`.
 
 **The point**: every hurt costs the same 4, and only the bosses' shots cost 8. What changes is where Hiro ends up: a
@@ -1380,8 +1428,8 @@ LoseLife `$962A` runs when the energy reaches zero. It does nothing during the e
    The ball follows
    Hiro (ShieldFollow, doc 7, 7.13). When its timer ends, DeathStep clears Invulnerable.
 2. The first 10 game variables are reloaded from GlobalsInit `$5C00` = `20 1F 01 00 01 00 01 00 01 00`: energy 32,
-   ChargeStep 1, Charge 0, ChargeReset 0, WeaponCount 0, Weapon 0 (the bytes between are the panel's "shown" copies
-   that force a redraw). So a lost life takes the power-ups, the speed-ups and the weapon. In a boss fight only 7
+   ChargeStep 1, Charge 0, ChargeReset 0, WeaponCount 0, Weapon 0 (the bytes between are the panel's "shown" copies,
+   which force a redraw, and FirePrevious `$6648`). So a lost life takes the power-ups, the speed-ups and the weapon. In a boss fight only 7
    bytes are reloaded: the weapon and its shots stay.
 3. Lives `$664D` - 1 in BCD. Only a borrow below zero (`JP M`) ends the game (GameOver `$5C42`). So with 0 lives on
    the panel Hiro still plays: the game starts with 5 and gives six chances.
@@ -1494,8 +1542,10 @@ How to read it:
   (Invulnerable) becomes `48`.
 - Right: LoseEnergy, then LoseLife's `LDIR` from `$5C00` and the BCD decrement.
 
-Witness: LoseLife ran 4 times in `play48`, 5 in the keyed builds and 83 times in 52 RZX segments. The boss-fight
-reload `$963E` ran 8 times in 5 RZX segments. GameOver ran once in `gameover` and in 4 RZX segments. The lives of
+Witness: LoseLife ran 4 times in `play48`, 6 times in the other keyed and integration recordings (deaths 4,
+gameover 1, hiscore 1), never in the POKE probes, and 84 times in 53 RZX segments. The boss-fight reload `$963E` ran
+8 times in 5 RZX segments. GameOver `$5C42` ran once in `gameover`, once in the integration recording `hiscore`
+and in 4 RZX segments. The lives of
 the RZX run go 5, 4, 3, 2, 1, then 2 (EXTRA) and 1 ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
 
 **The point**: a life is cheap and the ball is generous. 170 frames without any harm, a full meter, and the game
@@ -1676,9 +1726,14 @@ Worked example: the gem of `play48` frame 2318, room 7.
 `play48`'s other pickup is a vitality shield: VitalityRefill `$9956` ran once. The energy was already full, so no
 sample shows a change.
 
-Witness: CollectPickup ran 2 times in `play48`, once in the keyed builds and 45 times in 31 RZX segments.
-LetterPickup ran 4 times in 4 segments; the power-up shield 10 times in 9 segments, the speed-up once, the speed
-reset once, the bullets once, the invulnerability twice (`$98E8`) and the weapon shields 79 times through SetWeapon.
+Witness: CollectPickup ran 2 times in `play48` (a score pickup and the vitality refill), twice in the other keyed
+and integration recordings (`deaths` a score pickup, `bossgate` a weapon shield), never in the POKE probes, and 47
+times in 33 RZX segments. Of those 47: score pickups 12, LetterPickup 5 (in 5 segments), PickupWeapon `$98ED` 10 (4
+of them fragments, so a weapon shield reached the weapon code `$98F2` 6 times), the power-up shield 11 times in 10
+segments, the speed-up once, the bullets once, the speed reset once, the vitality refill `$9956` 4 times, the
+invulnerability once (`$98E8` reached twice, taken once) and one kind past `$1F`. SetWeapon `$98F3`'s other runs (75
+in RZX, 5 in `play48`, 15 in the other keyed and integration recordings) are PanelWeapon giving the fist back
+(`$FF10`, 10.7).
 EXTRA's completion (`$99AA`) ran once in our replay segment `r128000` (its L1); BONUS's (`$99CB`) in no build of
 ours. The RZX run completes EXTRA at RZX frame 128 606
 (its lives go from 1 to 2, [WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)); doc 8
@@ -1698,7 +1753,7 @@ that byte and calls CollectFragment `$9908`:
 3. Fragments `$664E` + 1. Below 16 (bit 4 clear), CollectFragment pops its return address: the weapon code that
    follows is skipped, and Hiro keeps his weapon.
 4. At 16, it adds 50 000 (`$C6`) and returns into SetWeapon. The record's last bytes give weapon 7, the whole
-   Fireblade, with 16 shots.
+   Fireblade, with 16 shots. So each fragment gives 10 000, and the sixteenth 10 000 + 50 000 = 60 000.
 
 Sixteen fragments lie on the map (doc 7, 7.8), one in each of sixteen rooms.
 
@@ -1770,7 +1825,8 @@ How to read it:
 
 Witness: CollectFragment ran once in each of 4 RZX segments (`r034000`, `r056000`, `r116000`, `r132000`). The 16th
 fragment's branch `$9919` ran in no build of ours. `r136000` starts with Fragments `$10` and Weapon 7: the RZX run
-took all sixteen. Known only from the code and that state: the 50 000 bonus and the hand-over of weapon 7.
+took all sixteen. Known only from the code and that state: the sixteenth's 60 000 (10 000 + 50 000) and the
+hand-over of weapon 7.
 
 **The point**: the fragments are the game's goal and its best weapon at once. Each one is worth 10 000, and the
 sixteenth turns the collection into the Fireblade.
@@ -1878,7 +1934,8 @@ Worked example: `play48` frame 2219, room 7 (doc 7, 7.14). Hiro's strike 3 meets
 in its Animation 7.5 (the code) and Animation 7.6 (the screen).
 
 Witness: KillActor ran twice in `play48` and 54 times in 32 RZX segments (27 long, 5 room-entry). A boss was struck
-(`$9761`) 36 times in 6 RZX segments. No boss died in a replayed segment; the two integration recordings kill one each,
+(`$9761`) 36 times in 6 RZX segments; no KillActor run in the other keyed recordings or the POKE probes, apart
+from the two below. No boss died in a replayed segment; the two integration recordings kill one each,
 with its hit points POKEd to 1: `bossgate` a giant (KillActor's boss path `$97B9` 1 run, OpenGate's sound 3 `$97E8`
 1), `havok` Havok (`$97B9` 1, GameWonSound `$97DE` 1); 10.14 and 10.17. The RZX run itself kills the giants and Havok
 (the `rzx-c` recording reaches the end text, [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
@@ -1980,8 +2037,8 @@ state of `r138000` holds 342 890 with 1 life left, after Havok's 50 000 and one 
 
 Witness: AddScore ran 4 times in `play48`: the block broken at frame 1458 (10), the patrollers killed at 1775 and
 2219 (50 each) and the gem at 2318 (50); the samples read the score 10, 60, 110 and 160 after them. Once in the keyed
-builds (`deaths`), twice in each integration recording (`bossgate`, `havok`), and 120 times in 56 RZX segments (47
-long, 9 room-entry). The RZX run's score at RZX frame 72 000 is 00092060 ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
+builds (`deaths`), twice in `bossgate` and in `havok`, once in `throw`, never in the POKE probes, and 120 times in 56
+RZX segments (47 long, 9 room-entry). The RZX run's score at RZX frame 72 000 is 00092060 ([WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)).
 
 ## 10.14 The end
 
@@ -2106,7 +2163,8 @@ How to read it: Havok's picture thins out while Hiro hops in place; then the ene
 is printed over the room.
 
 Witness: HavokFadeStep 241 runs and `$875C` once in `r138000`; HiroEndWalk 515 runs in 2 segments; `$84D7` once in
-`r140000`; EndOfGame 5 times in 5 segments (the game overs and the end). The KillActor win branch `$97CA` ran in no
+`r140000`; EndOfGame `$5C45` 5 times in 5 RZX segments (the game overs and the end), and once each in `gameover`,
+`hiscore` and `havok`. The KillActor win branch `$97CA` ran in no
 RZX segment of ours (`r136000` leaves Havok alive). Our `havok` recording (48K, from the RZX snapshot at 136 000,
 Havok's hit points `$5E13` POKEd to 1 at frame 20) kills him at frame 29: KillActor `$97B9`, the gate search finds
 none, the win `$97CA`, the life bonus loop and GameWonSound `$97DE` once each; the score goes 00272890 to
@@ -2123,13 +2181,13 @@ two of them (free shots, the weapon kept after a lost life). The POKE files chec
 
 | POKE | Address | What it does to the rules |
 | --- | --- | --- |
-| 38421,201 | `$9615` LoseEnergy | `RET`: no energy is ever lost: no hurt, no fall damage, no lost life |
+| 38421,201 | `$9615` LoseEnergy | `RET`: no energy is ever lost and FireRequest is not cleared: no fall damage, no lost life; the hurt's push-back, sound 0 and the in-jump cut remain (HurtHiro runs) |
 | 38913,201 (46 off) | `$9801` TouchHiro | `RET`: no touch with any actor: no hurt, but no pickup either |
 | 38478,0 | `$964E` the `$01` of `SUB $01` in LoseLife | Lives - 0: infinite lives (this release's address) |
 | 37620,0 | `$92F4` the `DEC (HL)` of WeaponCount | `NOP`: infinite shots |
 
 ```text
-LoseEnergy with 38421,201:  return at once          ; energy fixed
+LoseEnergy with 38421,201:  return at once          ; energy fixed; HurtHiro's push-back and sound remain
 LoseLife with 38478,0:      Lives = Lives - 0       ; the ball and the reload still happen
 HiroAttack with 37620,0:    WeaponCount unchanged
 ```
@@ -2145,7 +2203,7 @@ $92F4  DEC (HL)                  ; 37620,0: NOP (WeaponCount)
 ```mermaid
 flowchart LR
     H["a touch or a fall"] --> LE["LoseEnergy 9615"]
-    LE -->|"POKE 38421,201"| X["RET: nothing lost"]
+    LE -->|"POKE 38421,201"| X["RET: no energy lost; the push-back stays"]
     LE --> LL["LoseLife 962A"]
     LL -->|"POKE 38478,0"| L0["Lives - 0"]
     A["a throw"] --> W["WeaponCount - 1 at 92F4"]
@@ -2165,7 +2223,8 @@ bytes shows how central LoseEnergy, LoseLife and the WeaponCount decrement are.
 ## 10.16 Notable features
 
 - **A loop that tests nothing.** HurtHiro's 8-round loop at `$9895` runs with A = 0 and `AND $01`, reads no memory and
-  never branches (10.8). It ran 25 times in `play48` and 609 times in 57 RZX segments, always to the end.
+  never branches (10.8). It ran 25 times in `play48`, 27 in the other keyed
+  recordings (deaths 22, rooms 5) and 618 times in 62 RZX segments, always to the end.
 - **A sound request overwritten.** HiroMelee asks sound `$0B`, and StartActionSeq overwrites it with `$0A` three
   instructions later (10.6). The strike always sounds `$0A`.
 - **Lives at zero still play.** LoseLife ends the game only below zero (`JP M`), so the panel's 0 is a real life:
@@ -2188,9 +2247,10 @@ bytes shows how central LoseEnergy, LoseLife and the WeaponCount decrement are.
 
 ## 10.17 What no recording reached
 
-The builds checked are `play48`, the other keyed builds (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`, `opt2-4`,
-the 15 POKE probes), the 91 RZX segments (72 long, 19 room-entry), and the four witness recordings made at integration (`bossgate`,
-`throw`, `hiscore`, `havok`; WALKTHROUGH 6.0), each with a POKE that sets the scene.
+The builds checked are the four groups of the intro: `play48`; the other keyed recordings (`c1`, `c48`, `deaths`,
+`gameover`, `menu`, `rooms`, `opt2-4`) and the four witness recordings made at integration (`bossgate`, `throw`,
+`hiscore`, `havok`; WALKTHROUGH 6.0), each with a POKE that sets the scene; the 15 POKE probes; and the 91 RZX
+segments (72 long, 19 room-entry).
 
 ![The four witness recordings: a giant killed, a throw, Havok killed, a name entered](img/play/witness-recordings.png)
 
@@ -2215,7 +2275,7 @@ and sits at the top of the table.
 | --- | --- | --- |
 | a giant's death, the gate opening | KillActor `$97B9`, OpenGate `$97E2` | `bossgate` frame 435 (the giant's hit points POKEd to 1) |
 | Havok's death, the life bonus | `$97CA-$97DC` | `havok` frame 29 (Havok's hit points POKEd to 1) |
-| the 16th fragment, 50 000, weapon 7 | `$9919` | not executed in any build; `r136000` holds Fragments 16 and Weapon 7 |
+| the 16th fragment, 10 000 + 50 000 = 60 000, weapon 7 | `$9919` | not executed in any build; `r136000` holds Fragments 16 and Weapon 7 |
 | EXTRA complete | `$99AA` | once in `r128000` (L1); the RZX run's lives show EXTRA at 128 606 |
 | BONUS complete | `$99CB` | not executed in any build |
 | the power reset shield | `$9943` | not executed in any build |

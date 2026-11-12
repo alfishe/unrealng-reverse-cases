@@ -58,7 +58,7 @@ $4000 c Bootstrap ; Set IM 2, copy the game's resident parts, on a 128K patch th
 > 2. BootModel `$4051`'s operand (written by stage 2's Has128K: 1 on a 128K) chooses: a 128K first runs SetVectors with A = `$14` (bank 4 at `$C000`), so bank 4 gets the vector table too (the interrupt can come while the glue has it paged in); then on every machine SetVectors with A = `$10` (bank 0, the 48K BASIC ROM). I = `$FE`, IM 2: whatever byte is on the bus, the vector read from the table is `$FDFD`, which holds `JP $8456` (InterruptHandler).
 > 3. ResidentSource `$4146` -> `$5C00` (`$F4D` bytes, to `$6B4C`), PanelSource `$5093` -> `$FF01` (`$FE` bytes, to `$FFFE`).
 > 4. 48K: `JP Z,$5CFA`. 128K: the five hooks (see the module header), the glue `$40A4` -> `$853F` (`$A2` bytes), `JP $5CFA`.
-> Interrupts stay off: the game turns them on (the first `EI` in its waits).
+> Interrupts stay off: the game turns them on (the first `EI`: WaitFireFrames `$8324` in the 48K story; on a 128K GlueMenuInput `$85A1` on the title).
 > Witness: L1 2 (c x2).
 $4007 ; stage 2's answer: 1 on a 128K
 $4012 BootVectors0 ; bank 0 (and the 48K ROM) at $C000: its vector table

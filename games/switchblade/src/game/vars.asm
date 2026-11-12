@@ -67,8 +67,8 @@ WeaponRecords:
 PageTail5F:
   INCBIN "res/tables/weapons.bin",$0007,42
 
-; The touch zones (run time TouchZones $5FAC): five of Y from, Y to, X from, X
-; to, signed
+; The touch zones (at run time at $5FAC): five of Y from, Y to, X from, X to,
+; signed
 TouchZoneRecords:
   INCBIN "res/tables/touch-zones.bin",$0000,20
 
@@ -88,7 +88,7 @@ SetTuneCode:
 ; Row 3 (to $6082-$60FF): the 24 sprite sets, SizeClasses $6082 at run time:
 ; half columns, rows, bytes a frame, address
 ;
-; SpawnActor `$A65D` copies a set's five bytes to the actor's `+$15-+$19`
+; InitActor `$A65D` copies a set's five bytes to the actor's `+$15-+$19`
 ; (tables/sprite-sets.csv).
 PageTail60:
   INCBIN "res/tables/sprite-sets.bin",$0000,42
@@ -101,7 +101,7 @@ SpriteSetsTail:
   DEFB $18,$40,$00,$00,$00,$00
 
 ; Rows 4-8 (to $6182-$65FF): 34 actor templates of 18 bytes, copied to an
-; actor's +$03..+$14 by SpawnActor
+; actor's +$03..+$14 by InitActor
 ;
 ; KindTemplates `$7200` names the kinds of each (tables/actor-templates.csv);
 ; the run-time names WeaponTemplate, SharedEnemyTemplate, HiroTemplate and
@@ -159,7 +159,7 @@ NameBoxPlaces:
 ; the last six TitleColours
 ;
 ; The render's `$88BA` takes a revealed cell's attribute from CellColours
-; `$66F7` by the high nibble of its plane `$6C` byte; TitleSequence `$A754`
-; reads the last six (tables/cell-colours.csv).
+; `$66F7` by the high nibble of its plane `$6C` byte; TitleColour `$A754` reads
+; the last six (tables/cell-colours.csv).
 CellColoursTemplate:
   INCBIN "res/tables/cell-colours.bin",$0000,9

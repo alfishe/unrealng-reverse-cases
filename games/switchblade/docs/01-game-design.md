@@ -79,7 +79,7 @@ How to read them:
 | high-score table | 200 frames, between titles; "COPYRIGHT GREMLIN GRAPHICS 1990" under it | fire starts | gameover 6 729 |
 | the 128K story | before every game: "AS THE NIGHT BLED CRIMSON ...", Hiro's portrait, "I AM HIRO ..." | waits | c1 16 577, 17 477 |
 | play | the room, the score and lives above, the panel below | plays | c1 17 797, play48 |
-| pause | P | P resumes; fire quits to the title | menu 2 035 |
+| pause | P: the PAUSE GAME banner over the stopped room | P again resumes; P pressed while fire is held quits to the title (GAME OVER first) | menu 1 931, 1 990 |
 | GAME OVER | the banner over the room, 200 frames or fire | waits | gameover 2 429 |
 | the ending | Havok fades away; "THE DAWN HAS COME AND MY WORLD IS SAFE, FOR NOW....." | fire ends the game | RZX 136 000-140 000 |
 | name entry | "WELL DONE! YOU HAVE A HIGH SCORE / PLEASE ENTER YOUR NAME", a letter grid | picks letters with the controls | RZX 142 000 |
@@ -95,7 +95,7 @@ read in SkoolKit. Made with `python3 tools/fig_screens.py docs/img/play/screens-
 How to read it:
 
 - Top row: the first enemy a game meets (room 5's patroller, right of Hiro); a life just lost (the lives go from 04 to
-  03 between frames 2 869 and 3 149); the pause, which draws nothing: the room simply stops.
+  03 between frames 2 869 and 3 149); the pause: the PAUSE GAME banner over the stopped room.
 - Middle and bottom rows: the four giants in their rooms, 39, 58, 112 and 93, each a large figure in the room's right
   or middle part. bossgate 492 is room 58 after the giant's hit points were POKEd to 1 and one strike: the giant and
   the gate on the right are gone.
@@ -141,8 +141,8 @@ The goal follows:
 1. Explore the Undercity of Thraxx, 127 rooms on a 30 x 20 grid, from the surface (rooms 1-8) down to Havok's room
    (123, row 19).
 2. Find the sixteen fragments of the Fireblade. One lies in each of the rooms 15, 26, 29, 43, 56, 62, 63, 70, 71, 89,
-   93, 97, 101, 107, 120 and 124. Each is worth 10 000; the sixteenth is worth 50 000 and makes the Fireblade Hiro's
-   weapon (weapon 7).
+   93, 97, 101, 107, 120 and 124. Each is worth 10 000; the sixteenth adds 50 000 more (60 000 in all) and makes the
+   Fireblade Hiro's weapon (weapon 7).
 3. Beat the four giants on the way: rooms 39, 58, 93 and 112 (kinds `$26`, `$27`, `$29`, `$28`).
 4. Kill Havok in room 123 with a weapon. He fades away; the end text follows; fire ends the game and goes to the name
    entry.
@@ -153,7 +153,7 @@ flowchart TD
     B --> C["pickups: gems, weapons, letters, power"]
     B --> D["16 fragment rooms"]
     B --> G["4 giants: rooms 39, 58, 93, 112"]
-    D --> F["16th fragment: the Fireblade, 50 000"]
+    D --> F["16th fragment: the Fireblade, 10 000 + 50 000"]
     F --> H["room 123: Havok"]
     G --> H
     H --> I["Havok fades: 50 000 + 20 000 for each life left"]
@@ -178,9 +178,10 @@ all, because the game ends only when the count goes below 0.
 | touched by an enemy, a trap or a giant | -4 | TouchHiro `$9801`, HurtHiro `$9860` |
 | touched by a giant's shot | -8 | the same |
 | the stalactite falls on him | -4 | TouchKind36 `$986C` |
+| a falling object (kinds `$37-$3D`) lands on him | -4 | FallingTouch `$9854`, HurtHiro `$9860` |
 | a fall of 20 steps (80 pixels) or more | -6 to -28 | FallDamageStep `$920A` |
 | the vitality pickup | back to `$20` | CollectPickup `$98B6` |
-| energy at 0 | a life: the energy ball for 170 frames, energy `$20`, back to the fist (in a giant's fight the weapon and its shots are kept: 7 bytes of GlobalsInit reloaded, not 10); none while EndFlags `$6652` is set | LoseLife `$962A` |
+| energy at 0 | a life: the energy ball for 170 frames, energy `$20`, the power-ups and speed-ups back to the start (ChargeStep `$6644` = 1, ChargeReset `$6647` = 0), back to the fist (in a giant's fight the weapon and its shots are kept: 7 bytes of GlobalsInit reloaded, not 10); none while EndFlags `$6652` is set | LoseLife `$962A` |
 | lives below 0 | game over | `JP M,GameOver` at `$9651` |
 
 No tile hurts: only actors and falls. While the energy ball is on (after a lost life, or for 853 frames from the
@@ -204,12 +205,12 @@ The score is eight BCD digits (Score `$6653-$6656`, AddScore `$99E7`).
 | a power reset or speed reset shield | 400 |
 | bullets, taken with the fist | 50 |
 | BONUS, all five letters | 10 000 |
-| a Fireblade fragment | 10 000; the sixteenth 50 000 |
+| a Fireblade fragment | 10 000 each; the sixteenth 10 000 + 50 000 = 60 000 (CollectFragment `$9908`) |
 | Havok killed | 50 000 (his own score), plus 20 000 for each life left |
 
-Worked example: at RZX frame 72 000 the run's score is 00092060. At the end it has 1 life left, so Havok adds 70 000:
-his own 50 000 (KillScore `$97EA`, the target's +`$0B`) and one life bonus of 20 000 (LifeBonusLoop `$97D7`). The
-screens show 00272890 at RZX 136 000 and 00342890 at 139 000.
+Worked example: the RZX run's screen shows the score 00272890 at RZX frame 136 000, as Havok is hit. The run has 1
+life left, so Havok adds 70 000: his own 50 000 (KillScore `$97EA`, the target's +`$0B`) and one life bonus of 20 000
+(LifeBonusLoop `$97D7`). 272 890 + 70 000 = 342 890, and the screen at 139 000 shows 00342890.
 
 ### The pickups
 
@@ -217,15 +218,16 @@ screens show 00272890 at RZX 136 000 and 00342890 at 139 000.
 | --- | --- |
 | E, X, T, R, A | all five lit: an extra life (message EXTRA LIFE) |
 | B, O, N, U, S | all five lit: 10 000 (message BONUS POINTS) |
-| weapon shields | weapons 1-6 with 16 shots: blade, scorchball, dart, spinblade, needle bolts, trispike |
-| bullets | 16 more shots |
-| power-up, speed-up | a stronger or faster charge of the strike |
+| weapon shields | weapons 1-6 with the shot count set to 16: blade, scorchball, dart, spinblade, needle bolts, trispike |
+| the fist shield (kind `$11`) | weapon 0, the fist, back (no shots) |
+| bullets | the shot count set to 16, not added (BulletShield `$991F`); taken with the fist, 50 points instead |
+| power-up, speed-up | a stronger or faster charge of the strike: power-up raises the meter's minimum ChargeReset `$6647` by 2, up to `$10`; speed-up the meter's rate ChargeStep `$6644` by 1, up to 3 |
 | power reset, speed reset | back to the start values, 400 |
 | vitality | energy `$20` |
 | invulnerability | the energy ball for 853 frames (17 s; the manual says 16) |
 
-Many pickups are hidden in blocks that break when struck. Pickups spawned with a lifetime (kind bit 7) last 255 frames. Doc 10 gives
-each kind, each weapon and each enemy.
+Many pickups are hidden in blocks that break when struck. Pickups spawned with a lifetime (kind bit 7) last 255 frames.
+Doc 10 gives each kind, each weapon and each enemy.
 
 ### Fighting
 
@@ -251,8 +253,8 @@ How to read it:
   frame at which the run first entered it; "-" means the run never entered it.
 - Rooms 1-8 are the surface: the yellow sky and the noise of the ground. The rest is the Undercity's brick, pipes and
   ladders.
-- Room 122 has the surface's colours at the bottom of the map: the open air under Havok's room; it shares its record
-  with 123.
+- Room 122, beside Havok's room 123 on the bottom row (19:19 and 19:20), has the surface's colours and shares its
+  record `$CF88` with 123; it is built only in the end sequence.
 
 The RZX run enters 107 rooms in play. The 20 it never enters are 1, 2, 3, 11, 12, 13, 14, 18, 19, 21, 36, 47-50, 52,
 55, 91, 92 and 122. Stage 1's rooms recording walked into rooms 1-3 and wrote its way into 11, 14 and 18; the POKE
@@ -318,11 +320,11 @@ whole map must be crossed. The recorded game runs 45 minutes (135 605 frames to 
 ## 1.6 Controls and options
 
 The control menu offers Sinclair 1, Sinclair 2, Kempston and Protek or cursor keys; there is no key redefinition. P
-pauses, and fire in the pause quits. On a 128K the title's left and right choose music or sound effects. Doc 5 has the
-details, and the SLOPPY cheat that picks a start room.
+pauses and P again resumes; P pressed while fire is held quits to the title (GAME OVER first). On a 128K the title's
+left and right choose music or sound effects. Doc 5 has the details, and the SLOPPY cheat that picks a start room.
 
 ## 1.7 Known only from the code
 
-- The BONUS completion, the sixteenth fragment's 50 000 and the Fireblade weapon: no recording of ours takes them.
+- The BONUS completion, the sixteenth fragment's extra 50 000 and the Fireblade weapon: no recording of ours takes them.
 - The flask's 7 000, the invulnerability pickup's 853 frames, the power-up and speed-up shields.
 - The SLOPPY cheat (doc 5).

@@ -332,8 +332,9 @@ title after it. Every recording's own screens are in its `screens/` folder.
 
 ![The menu, the intro, play, Havok, the end](docs/img/play/screens.png)
 
-The first map, [docs/img/maps/map-rzx.png](docs/img/maps/map-rzx.png), is drawn from the image's room tables, each
-room as the RZX run last left it ([doc 2.4](docs/02-architecture.md#24-the-map)). The first sprite sheet,
+The first map, [docs/img/maps/map-rzx.png](docs/img/maps/map-rzx.png), places each room by the image's room tables and
+shows it as the RZX run's screens last left it (stage 1, kept as history); the maps drawn from the resources are
+map-west.png and map-east.png ([doc 2.4](docs/02-architecture.md#24-the-map)). The first sprite sheet,
 [docs/img/sprites/from-screens.png](docs/img/sprites/from-screens.png), is cut from RZX screens (Hiro, Havok, a
 shot): the graphics are not plain bitmaps in memory (the rooms are 3-bit codes, NOTES), so the sheet from the data
 waits for stage 2.
@@ -412,6 +413,7 @@ Every screenshot and still figure the documents show, with the recording and fra
 | [jumps.png](docs/img/gameplay/jumps.png) | [10](docs/10-gameplay-logic.md) | The three jump scripts against Hiro's measured jumps in play48 |  |  |
 | [fall.png](docs/img/gameplay/fall.png) | [10](docs/10-gameplay-logic.md) | Fall damage against the fall steps |  |  |
 | [points.png](docs/img/gameplay/points.png) | [10](docs/10-gameplay-logic.md) | Where the points come from |  |  |
+| [throw.png](docs/img/gameplay/throw.png) | [10](docs/10-gameplay-logic.md) | The shot's X and its life a frame, two throws (`python3 tools/fig_gameplay.py --only throw`) | throw | 1885-2240, 2590-2750 |
 | [witness-recordings.png](docs/img/play/witness-recordings.png) | [10](docs/10-gameplay-logic.md) | The four witness recordings: a giant killed, a throw, Havok killed, a name entered |  |  |
 
 ### 6.2 The images
@@ -475,6 +477,8 @@ animation). The commands are in the captions.
 | [DrawActor.gif](docs/img/routines/DrawActor.gif) | [06](docs/06-rendering.md) (Animation 6.2) | c1 | 17829 |
 | [ActorUpdate.gif](docs/img/routines/ActorUpdate.gif) | [06](docs/06-rendering.md) (Animation 6.3) | c1 | 17829-17830 |
 | [RedrawCellsMasked-zone.gif](docs/img/routines/RedrawCellsMasked-zone.gif) | [06](docs/06-rendering.md) (Animation 6.4) | deaths | 3780-3790 |
+| [PanelDraw.gif](docs/img/routines/PanelDraw.gif) | [06](docs/06-rendering.md) (Animation 6.5) | c1 | 17650-17653 |
+| [BuildSurface.gif](docs/img/routines/BuildSurface.gif) | [06](docs/06-rendering.md) (Animation 6.6) | c1 | 17614-17615 |
 | [BuildRoomPlanes.gif](docs/img/routines/BuildRoomPlanes.gif) | [07](docs/07-objects.md) (Animation 7.1) | play48 | 2389-2391 |
 | [SpawnRoomEnemies.gif](docs/img/routines/SpawnRoomEnemies.gif) | [07](docs/07-objects.md) (Animation 7.2) | play48 | 2427-2428 |
 | [play48-room5-enemies.gif](docs/img/play/play48-room5-enemies.gif) | [07](docs/07-objects.md) (Animation 7.3) | play48 | 646-742 |
@@ -490,7 +494,7 @@ animation). The commands are in the captions.
 | [AyGlue.gif](docs/img/routines/AyGlue.gif) | [09](docs/09-sound.md) | c1 | 16020 |
 | [AyUpdate-frames.gif](docs/img/routines/AyUpdate-frames.gif) | [09](docs/09-sound.md) | c1 | 16013-16063 |
 | [play48-jump.gif](docs/img/play/play48-jump.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.1) | play48 | 1096-1126 |
-| [play48-running-jump.gif](docs/img/play/play48-running-jump.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.2) | play48 | 1549-1590 |
+| [play48-walking-jump.gif](docs/img/play/play48-walking-jump.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.2) | play48 | 1549-1590 |
 | [JumpStep.gif](docs/img/routines/JumpStep.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.3) | play48 | 1098-1112 |
 | [r014000-ladder.gif](docs/img/play/r014000-ladder.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.4) | r014000 | 1200-1340 |
 | [ClimbMove.gif](docs/img/routines/ClimbMove.gif) | [10](docs/10-gameplay-logic.md) (Animation 10.5) | r014000 | 1215-1227 |

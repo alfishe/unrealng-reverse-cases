@@ -550,7 +550,7 @@ def cmd_surface(args):
     tw, th = (crop[2] - crop[0]) * sc, (crop[3] - crop[1]) * sc
     start = 257 - args.room
     block = th + 150
-    pic = Image.new('RGB', (W, 60 + len(roms) * block + 70), BG)
+    pic = Image.new('RGB', (W, 60 + len(roms) * block + 88), BG)
     d = ImageDraw.Draw(pic)
     text(d, (12, 8), args.title or f'Room {args.room}: the ground and floor tiles are chosen by ROM bytes from ${start:04X} on', 15)
     text(d, (12, 30), 'Cell rows 4-6 of the play window, 4x. Row 5: tiles $3C-$3E, row 6: tiles $81-$83 (variant 1-3 = ROM byte AND 3, never twice running).', 12, DIM)
@@ -576,7 +576,8 @@ def cmd_surface(args):
     y = 60 + len(roms) * block
     text(d, (12, y), f'{diff} of the 40 cells differ. The bytes are not the room data: BC was overwritten (LD C,A after NEG), so the reads land in', 12)
     text(d, (12, y + 18), 'the ROM page at $0000: on the 48K ROM that is the keyword table. With ROM 0 or another ROM the ground changes.', 12)
-    text(d, (12, y + 36), 'A ROM of zeros would hang: AND 3 gives 0, INC A gives 1 each time, and 1 = D loops for ever.', 12)
+    text(d, (12, y + 36), 'A ROM of zeros would not hang: each zero gives 1, and while that equals D the read runs on (INC BC, no bound)', 12)
+    text(d, (12, y + 54), 'past $3FFF into RAM until a byte differs; the ground then comes from whatever is there.', 12)
     pic.save(args.out)
     print(args.out, pic.size)
 

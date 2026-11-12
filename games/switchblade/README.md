@@ -1,7 +1,7 @@
 # Switchblade (Gremlin Graphics, 1991)
 
-State: docs written, in review: 12 documents, 62 figures (PNG), 42 animations (GIF), 98 mermaid diagrams and 31 audio
-files (24 MP3, 7 short WAV; 6.9 MB), counted on 2026-11-12 with:
+State: docs written, in review: 12 documents, 69 figures (PNG), 44 animations (GIF), 100 mermaid diagrams and 31 audio
+files (24 MP3, 7 short WAV; 6.2 MB), counted on 2026-11-12 (review round 2) with:
 
 ```sh
 ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l
@@ -25,9 +25,9 @@ Picked in phase 0 from the instructions (`work/candidates/docs/Switchblade.txt`,
 | Row | What applies here |
 | --- | --- |
 | Genre: arcade adventure, flip-screen platform game | Hiro, the last Bladeknight, explores the Undercity of Thraxx screen by screen (run, jump, climb ladders, drop through floors) to collect the 16 fragments of the Fireblade, then fights Havok with it. The world is one connected labyrinth of flip screens with hidden rooms and passages; the screen shows only the blocks Hiro has visited in the current game ("self-mapping"), so the map is drawn from the image's own room data, every room and every block, with the route the RZX run takes through it. Four boss creatures (Giant Spikelouse, Giant Scorpoid, Giant Cybat, Giant Roborganism) and Havok at the end ([WALKTHROUGH 6.0](WALKTHROUGH.md#60-the-recordings)) |
-| Objects and puzzles | bonus gems (50-700), the flask (700), orbs (1000-5000, shattered if they hit the floor), the letters of EXTRA (a life) and BONUS (10 000), weapon shields (fist, blade, scorchball, dart, spinblade, needle bolts, trispike), the bullet, power-up, speed-up and reset shields, vitality, invulnerability, the 16 Fireblade fragments (10 000 each, 50 000 for the whole blade); the Fireblade builds up in the HUD. Each object kind is placed on the map from the data |
+| Objects and puzzles | bonus gems (50-700), the flask (7 000; the manual says 700), orbs (1000-5000, shattered if they hit the floor), the letters of EXTRA (a life) and BONUS (10 000), weapon shields (fist, blade, scorchball, dart, spinblade, needle bolts, trispike), the bullet, power-up, speed-up and reset shields, vitality, invulnerability, the 16 Fireblade fragments (10 000 each, and 50 000 more with the sixteenth: 60 000 for it); the Fireblade builds up in the HUD. Each object kind is placed on the map from the data |
 | Enemies and hazards | flames, proximity floor spikes, bladeballs, spikelice, cybats, mansnakes, spidorbs, crestheds, reptilons, scorpoids, flamehogs, kobras, striders, razorbs (the instructions' list, each to be matched with its sprite and code), the four bosses and Havok |
-| Combat | the fire button held builds the combat power meter; let go, Hiro punches, high-kicks or sweeps by the meter's quarter, or fires the cyber-arm's weapon with a bullet count |
+| Combat | the fire button held builds the combat power meter; let go, Hiro punches, high-kicks or sweeps by how far the meter has filled (thresholds `$09` and `$19` of `$20`), or fires the cyber-arm's weapon with a bullet count |
 | Rendering: flip-screen, revealed blocks | each screen built from block data; the unvisited blocks stay black and are revealed as Hiro walks in; sprites over the background; the HUD (score, lives, the Fireblade, the vitality and power meters, EXTRA and BONUS) |
 | Engine: 128K paging | one bank (4) loaded on a 128K only; the rest of the program is the same on both machines (the 48K memory at the menu equals the 128K one except 322 bytes, [WALKTHROUGH 0.4](WALKTHROUGH.md#04-the-machine-48k-and-128k)); the bootstrap patches five call sites and copies the glue ([doc 3, 3.3](docs/03-build-and-load.md#33-the-bootstrap-4000-and-the-128k-set-up)) |
 | Sound | on a 128K Ben Daglish's AY player in bank 4: three tunes (the title, the start jingle, the in-game music) and 14 effects; the title chooses music or effects (left or right), and in music mode no effect is heard. On a 48K a beeper player in the interrupt plays the same 14 effect numbers as bursts once a frame; the renders are in `docs/audio` ([doc 9](docs/09-sound.md)) |

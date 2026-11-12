@@ -41,7 +41,8 @@ Switchblade has no frame lock in play.
 
 - **The main loop** never waits for the interrupt. It has no `HALT`. When a pass ends, the next starts at once.
 - **A pass** offers each active actor page one call of ActorUpdate. Each call runs at most one actor's logic step, and
-  only when that actor's frame delay has run out. A pass that finds nothing due costs about 1 400 T.
+  only when that actor's frame delay has run out. A pass that finds nothing due costs about 1 400 T (128K, room 4) to
+  4 500 T (48K, five active pages).
 - **The interrupt** (IM 2, every frame) is the game's clock. GameTick counts each actor's delay down, reads the
   controls and the P key, and builds the fire charge. Then the sound runs: the 48K beeper effects, or the AY player
   in bank 4 on a 128K.
@@ -78,7 +79,7 @@ stateDiagram-v2
     Intro48 --> BuildPageTails
     BuildPageTails --> NewGame: $5D07, ten page tails
     NewGame --> Title: SetTune $80, TitleSequence $A73E
-    Title --> Logo: 200 frames
+    Title --> Logo: the logo built piece by piece (TitleStep polling, no HALT)
     Logo --> HighScores: ShowHighScores $A6EC, 200 frames
     HighScores --> Title
     Title --> StartOfPlay: fire
@@ -87,7 +88,7 @@ stateDiagram-v2
     StartOfPlay --> Play: SLOPPY test, 128K story, globals, EnterRoom, JP $8DFE
     Play --> GameOver: LoseLife $962A, no life left
     Play --> EndOfGame: EndFlags $6652 bit 7, after Havok
-    Play --> Quit: fire in the pause
+    Play --> Quit: P pressed with fire held
     GameOver --> EndOfGame: GAME OVER, 200 frames or fire
     Quit --> NewGame: GAME OVER message, no high-score entry
     EndOfGame --> NewGame: SetTune $FF, InsertHighScore $A806
@@ -212,7 +213,7 @@ NewGame:                        ; $5C4D
 | --- | --- | --- | --- |
 | no life left | LoseLife `$962A` (doc 10) | `JP GameOver $5C42`, GAME OVER, EndOfGame, NewGame | yes, when the score qualifies |
 | the end after Havok | EndFlags `$6652` bit 7, tested at `$8E0E` on every pass | `JP EndOfGame $5C45` | yes |
-| the quit | fire while paused, PauseGame `$6682` | ShowGameOverWait `$831A`, then `JP NewGame` | no |
+| the quit | P pressed while fire is held, PauseGame `$6682` (`$6FCA` in PageTail66) | ShowGameOverWait `$831A`, then `JP NewGame` | no |
 
 EndFlags bit 7 is set by GameTick, not by the loop. After Havok's fade the end text sets bit 6. While bit 6 is set, a
 press of fire in GameTick sets bit 7 (4.4). The next pass sees bit 7 at `$8E0E` and jumps to EndOfGame.
@@ -221,7 +222,8 @@ Witnesses:
 
 - `gameover` (128K): GAME OVER at about frame 2429; GameOver runs once; the title and the high-score table follow with
   no entry (the score is too low).
-- `menu` (128K): P, then fire in the pause: the game returns to the title, no entry.
+- `menu` (128K): P (1931), P to resume (2035), then fire held from 2099 and fire and P 2109-2114: GAME OVER, then the
+  title (2367), no entry.
 - The RZX run (48K, another player): the end text at about RZX frame 140 000, the name entry ("XMIKEX J") at 142 000,
   the title at 142 500. GameOver and EndOfGame have L1 count 6 each (gameover, hiscore, four RZX segments);
   InsertHighScore 8 (the listing's Witness lines).
@@ -307,10 +309,10 @@ RunActorSteps:                  ; $9A4B
   CALL StepIfActive
   JR StepHiroFirst
 StepBulletPage:
-  LD D,$66                      ; the shot in page $66
+  LD D,$66                      ; Hiro's weapon or the message banner (page $66)
   CALL StepIfActive
 StepHiroFirst:
-  LD DE,WeaponActor+$0002       ; $6602 bit 7: no more this call
+  LD DE,WeaponActor+$0002       ; $6602 bit 7 (a banner, set by ShowMessage $66C8): no more
   LD A,(DE)
   RLA
   RET C
@@ -346,11 +348,11 @@ fights (the operand at `$9A59` holds the boss kind).
 ```mermaid
 flowchart TD
     A["RunActorSteps $9A4B, H = the page offered"] --> B{"operand $9A51 rotated: carry?"}
-    B -- yes --> C["weapon page $66: StepIfActive"]
+    B -- yes --> C["Hiro's weapon or the message banner, page $66: StepIfActive"]
     B -- no --> D{"boss kind at $9A59 not 0?"}
     D -- yes --> E["boss shot page $60: StepIfActive"]
     D -- no --> F
-    C --> F{"$6602 bit 7?"}
+    C --> F{"$6602 bit 7: a banner runs?"}
     E --> F
     F -- set --> R["return, nothing more"]
     F -- clear --> G{"Hiro $5D: +$1D = 0?"}
@@ -374,16 +376,18 @@ segments, 18 room-entry segments; the listing's Witness lines).
 ### The steps and their cost
 
 `tools/pass_stats.py --steps` cuts a trace into passes and sums the T of each step on the loop's call level. The
-interrupt is counted apart, wherever it fell.
+interrupt's T are counted apart from the steps, wherever it fell; the pass's length, from one MainLoop fetch to the
+next, holds them.
 
 | Step | Routine | c1, 128K, room 4, frames 17 700-17 701 | r004000, 48K, room 9, frames 531-552 |
 | --- | --- | ---: | ---: |
 | the loop's own work | `$8DFE-$8E2A` | 518 T a pass | 556 T a pass |
-| the actors | ActorUpdate `$8E2B` | 746 T a pass | 32 330 T a pass (93.8 %) |
+| the actors | ActorUpdate `$8E2B` | 746 T a pass | 32 319 T a pass (93.8 %) |
 | the weapon icon | PanelWeapon `$FF01` | 86 T a pass | 84 T a pass |
 | the meters | PanelMeters `$FF64` | 130 T a pass | 89 T a pass |
-| **the pass** | | **1 637 T (86 passes, 43 a frame)** | **34 467 T on average (43 passes)** |
-| the interrupts | InterruptHandler `$8456` | 6 803 T each (2 interrupts) | 2 960 T each (23 interrupts) |
+| the four steps | | 1 480 T a pass | 33 048 T a pass |
+| the interrupts inside the passes | InterruptHandler `$8456` | 13 606 T (2 x 6 803), 158 T a pass | 61 024 T (about 2 960 each), 1 419 T a pass |
+| **the pass, with its share of the interrupts** | | **1 637 T (86 passes, 43 a frame)** | **34 467 T on average (43 passes)** |
 
 The averages hide two kinds of pass:
 
@@ -399,8 +403,8 @@ to 49 in one frame; 8 232 frames start no pass at all. c1 in room 4 has 25 068 p
 ![Play on the 48K, routine by routine: a third of the time is the loop asking actors whether they are due](img/arch/budget-routines.png)
 
 *Where the CPU goes in r004000 (48K, the RZX run replayed from RZX frame 4000, 2000 frames of play), routine by routine,
-from its L1. Made with `python3 ../../kit/fig_budget.py work/stage2/rzx/r004000/l1.json docs/img/arch/budget-routines.png
---top 24 --title "..."`.*
+from its L1. Made with `python3 ../../kit/fig_budget.py work/stage2/rzx/r004000/l1.json
+docs/img/arch/budget-routines.png --top 24 --title "..."`.*
 
 How to read it:
 
@@ -444,18 +448,20 @@ Worked example, the same pass (r004000, the trace `543_69558-545_22264.uatr`):
 
 The bootstrap (doc 3.3) sets I = `$FE` and fills Im2Table `$FE00-$FF00` with `$FD`. Whatever byte the bus holds, the
 vector is `$FDFD`, where Im2Jump holds `JP InterruptHandler`. It selects IM 2 (`$401B`) and leaves interrupts off: the
-first `EI` is the game's own, in its input waits (WaitFireFrames `$8324` for the 48K story, ShowHighScoresHold `$A6F2`
-on the title). The game never changes the mode again. c1's play state has IM 2, I = `$FE`, interrupts on, SP = `$5BF6`
-([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing)).
+first `EI` is the game's own. On a 48K it is WaitFireFrames `$8324`, in the 48K story's waits (Intro48 runs before the
+title). On a 128K hook 1 skips the story and the control menu runs with interrupts off, so the first is GlueMenuInput
+`$85A1` on the title (hook 3 at `$A76F` calls it). On the title the first `EI` is TitleStep's fire test `$A772` (48K) or
+`$85A1` (128K), before ShowHighScoresHold `$A6F2`. The game never changes the mode again. c1's play state has IM 2, I =
+`$FE`, interrupts on, SP = `$5BF6` ([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing)).
 
 ### Where interrupts are off
 
 | Code | Where | Why |
 | --- | --- | --- |
-| BasicCode | `$5D07` (`DI`), until LoadEnd `$FFB8` (`EI`) | the tape loader times the signal's edges in T; an interrupt would break the count |
+| BasicCode | `$5D07` (`DI`), until LoadEnd `$FFB2` (`EI` at `$FFB8`) | the tape loader times the signal's edges in T; an interrupt would break the count |
 | LdBytes | `$FF06`, inside the loader | the ROM's LD-BYTES does the same `DI` |
 | SwapBank | `$616A` (stage 2, 128K) | `$7FFD` is switched and `$8000-$A0F8` swapped with bank 4; no interrupt may run while the code is moved |
-| Bootstrap | `$4000`, until the game's first `EI` (`$8324`, `$A6F2`) | I, IM 2 and Im2Table are set and the copies made; the vector table is not ready before |
+| Bootstrap | `$4000`, until the game's first `EI` (`$8324` in the 48K story; `$85A1` on a 128K's title) | I, IM 2 and Im2Table are set and the copies made; the vector table is not ready before |
 | GlueIntro | `$85C5-$85D0`, `$85D4-$85DF` (128K) | bank 4 is paged and Last7FFD written as one step, so that AyGlue in the interrupt pages back the right bank |
 | MaskedColumn | `$8C20-$8C23`, `$8C32-$8C35`: `DI` / `POP BC` / `DEC SP` / `EI` | SP points into ColumnValues `$5B50`, read two values a `POP` and then one back (`DEC SP`), so each value is read twice. Between the `POP` and the `DEC SP` the value v(k+1) lies just below SP, and an interrupt's push would overwrite it; after `DEC SP` the push lands only on values already used |
 | InterruptHandler | the whole handler; `EI` / `RETI` at `$846F` | IM 2 entry disables interrupts until the handler ends |
@@ -628,8 +634,8 @@ How to read it:
 - At the end AyGlue writes Last7FFD back, and the handler pops and returns.
 
 Witness: InterruptHandler L1 222 542 and GameTick L1 177 113 over every recording with play (the listing's Witness
-lines); `$853F` runs on all 2 614
-entries of c1 from the menu on, GameTick on 975 (frames 17 652 to 18 626, every frame of play).
+lines); `$853F` runs on all 2 614 entries of c1 from the first `EI` on (the title, frame 16 013), GameTick on 975
+(frames 17 652 to 18 626, every frame of play).
 
 **The point**: the interrupt is small and steady: 3-10 % of a frame. It holds the game's time (the delays) and the
 player's input, so a stalled pass never loses a key press or a frame of delay; it only postpones the step.
@@ -684,7 +690,8 @@ RoomExitTestX:
 ```
 
 The operand `Hiro+$0020` is the address `$5D20`, Hiro's +`$20`. The stage-2 source printed it with the label of the
-set-up code that sits at `$5D20` before play overwrites the page (`BuildOutlineMaskLoop+$000C`); an `@isub` names it now.
+set-up code that sits at `$5D20` before play overwrites the page (`BuildOutlineMaskLoop+$000C`); an `@isub` names it
+now.
 
 ```mermaid
 flowchart TD
@@ -734,7 +741,7 @@ How long it takes, split by `tools/rzx_room_stalls.py` over the 31 room changes 
 
 The stall is the build plus 0-4 frames of the rest of the pass (Hiro's redraw, the other steps). No room change in
 that range is followed by a zone reveal within 120 frames. The length follows what RedrawRoomMasked draws: the 17
-first visits take 25-71 frames (median 38), the 14 returns, with more zones kept revealed, 38-71 (median 58). The
+first visits take 25-71 frames (median 38), the 14 returns, with more zones kept revealed, 38-71 (median 59.5). The
 longest stalls, 72 frames, are both entries into room 31 (RZX frame 17 393, the first, and 22 203); the shortest build
 is the first entry into room 9 at 3 917, 25 frames. The same split for the doc 6 and doc 7 builds: `c1` room 4 at the
 start, 40 frames (17 612-17 652, 128K); `play48` room 7 to room 8, 38 frames (2 389-2 427, 48K).
@@ -777,10 +784,10 @@ frames 2 389-2 427 (`work/stage2/traces/play48-2389_0-2428_0.uatr`, 386 041 inst
 
 ![A room build against the beam: play48 frames 2389-2393, the planes built, then the cells drawn row by row](img/loop/beam-build-play48.png)
 
-*The first five of the build's 39 frames (48K). Made with `python3 ../../kit/beam_timeline.py --trace
-work/stage2/traces/play48-2389_0-2428_0.uatr --listing build/game.lst --machine 48k --frames 5 --title '...' --out
-docs/img/loop/beam-build-play48.png`; the trace was taken with `--work` on play48's recording (port base 37400) over
-`--window 2389:0-2428:0`.*
+*The first five of the build's 38 frames (48K; the trace runs one frame on, to 2 428). Made with `python3
+../../kit/beam_timeline.py --trace work/stage2/traces/play48-2389_0-2428_0.uatr --listing build/game.lst --machine 48k
+--frames 5 --title '...' --out docs/img/loop/beam-build-play48.png`; the trace was taken with `--work` on play48's
+recording (port base 37400) over `--window 2389:0-2428:0`.*
 
 How to read it:
 
@@ -788,7 +795,7 @@ How to read it:
   UnpackGroupsLoop): the room is decoded into the planes first.
 - From 2 391: the redraw. Each cell is a short slanted run of writes (BlitRows, eight lines of one cell) and a pair of
   DrawCellLayers marks; five cells a frame, all near the top rows, independent of where the beam is.
-- The rest of the 39 frames go on the same way down the room. A quarter to a half of the writes fall ahead of the beam,
+- The rest of the 38 frames go on the same way down the room. A quarter to a half of the writes fall ahead of the beam,
   so a build shows the room growing cell by cell over most of a second.
 
 Witness: EnterRoom L1 206 in every play recording (the listing's Witness line). The build itself is animated in
@@ -1007,7 +1014,8 @@ tearing is a few rows of one actor; only the reveal writes across the whole play
 | the energy ball after a lost life | SpawnShield `$9962`, `$00AA` | 170 frames | the long timer |
 | the invulnerability | page `$65`'s long timer, `$355` | 853 frames (17 s; the manual says 16 s) | the long timer; GameTick clears Invulnerable `$6651` |
 | the game over message | ShowGameOverWait `$831A` | 200 frames or fire | `HALT` x 5 a step (WaitFireFrames `$8321`) |
-| the title's logo and high scores | TitleSequence `$A73E`, ShowHighScores `$A6EC` | 200 frames each, fire ends it | `HALT` loops |
+| the title's logo | TitleSequence `$A73E`, TitleStep `$A766` | the pieces' own timers (+`$3F`); fire ends it from the fourth piece | a polling loop, no `HALT` (play48 frames 0-101) |
+| the high-score table | ShowHighScores `$A6EC` | 200 frames, fire ends it | a `HALT` loop (`EI` at `$A6F2`) |
 | the pause | PauseGame `$6682` | until P again | polls P every 5 `HALT`s, then a `$4000` loop delay |
 | PauseLong `$8330` | | a `$6000` loop delay | a counted loop |
 | the name entry | EnterName `$A861` | ten delays first, about 2 s | `HALT` loops |
@@ -1035,7 +1043,6 @@ The `HALT` loops belong to the screens around play; the only pass-counted timer 
 ## 4.8 Known only from the code
 
 - The SLOPPY start (MatchCheatName `$5C68`): no recording has SLOPPY in the table.
-- `$6602` bit 7, which ends RunActorSteps early: no writer was found for it (stage 2, open question 3).
 - HiroBusyNoJump `$8E81` is not executed in any recording; nothing refers to it.
 - The long-timer path for page `$65` (Invulnerable cleared by GameTick): the invulnerability pickup is not taken in
   any keyed recording.

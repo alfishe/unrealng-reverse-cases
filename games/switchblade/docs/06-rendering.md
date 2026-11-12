@@ -243,17 +243,29 @@ front layers, into the chunk buffer (6.5). If the colour flag (the operand at `$
 CellColours[plane `$6C` high nibble] goes to the 2 x 2 attributes at the cell's address. Then `JP BlitWindowAt`
 `$8C72`: the cell to the screen.
 
-Each tile is composed by ComposeTile:
+A tile goes one of two ways:
 
-- tiles `$4B` and up (things that stand in front: ladders, pipes, crates) through MaskedColumns `$8C0A`, with their
-  outline (6.4);
-- tiles below `$4B` plain, through the unpacker straight into the buffer;
-- tiles `$1B`-`$4A` with a shade nibble n: the tile, then the shade tile `$43` + n ANDed over it at once
-  (ComposeTileOverlay `$89D2`, ComposeOverlay `$8A06`, AndTileColumns `$8A2F`): a dot pattern that darkens the wall.
-  The shade is per tile, not per cell: tiles `$4B` and up are never shaded.
+- **ComposeTile `$89CE`**: tiles `$4B` and up (things that stand in front: ladders, pipes, crates) through
+  MaskedColumns `$8C0A`, with their outline (6.4) and never shaded; tiles below `$4B` fall into ComposeTileOverlay.
+- **ComposeTileOverlay `$89D2`**: the tile plain, through the unpacker (UnpackGroups) straight into the buffer; then,
+  when the code is `$1B` or more and the cell's shade nibble n (plane `$6C` AND `$0F`) is not 0, the shade tile `$43` +
+  n ANDed over it at once (ComposeOverlay `$8A06`, AndTileColumns `$8A2F`): a dot pattern that darkens the wall.
 
-Each layer pair is composed in order: ComposeBackCell `$898C` composes plane `$68`, then plane `$69` over it
-(ComposeTwoTiles `$89B2`); ComposeFrontCell `$8943` then plane `$6A` and `$6B` the same way.
+Which way a tile goes depends on its layer and on its neighbour in the pair, not only on its code:
+
+- **The back layers** (ComposeBackCell `$898C`): when planes `$68` and `$69` both hold a tile, ComposeTwoTiles `$89B2`
+  sends `$68`'s, then `$69`'s through ComposeTile. A **lone back tile** (only one of the two non-zero) goes straight to
+  ComposeTileOverlay, whatever its code: a lone back tile `$4B` or more is drawn plain, without an outline, and is
+  shaded when the nibble is set. With both empty, the blank tile `$43` goes the same way (clearing the cell).
+- **The front layers** (ComposeFrontCell `$8943`): a pair or a lone tile of planes `$6A`/`$6B` goes through
+  ComposeTile, so a front tile `$4B` or more is outlined, and a front tile below `$4B` is shaded like a back one
+  (6.7 has the hidden cell's `$43`).
+
+The shade is per tile, not per cell. Over all 127 rooms (`tools/swroom.py` builds) the back layer holds a lone tile
+`$4B` or more in 93 cells; one of them has a shade nibble: room 95, cell 136, tile `$8C`, shade 7. The RZX segment
+`r116000` ends in room 95 with that cell revealed: its screen matches the rule above in all 192 pixels of the cell, and
+differs in 8 if the tile is drawn outlined and unshaded
+(`work/review/fixB2/cmp95.py`).
 
 Pseudocode:
 
@@ -273,11 +285,58 @@ RedrawCellMask(L, a):                          ; $8868
 
 DrawCellLayers(L):
     if plane68[L] | plane69[L] | plane6A[L] | plane6B[L] == 0: EraseCell(L); return
-    for t in plane68[L], plane69[L], plane6A[L], plane6B[L] (the non-zero ones):  ; ComposeCell $88DB
-        ComposeTile(t)                         ; >= $4B: outlined (MaskedColumns)
-        if $1B <= t <= $4A and plane6C[L] AND $0F: AND tile $43 + n over it
+    ComposeCell(L):                            ; $88DB
+        a, b = plane68[L], plane69[L]          ; ComposeBackCell $898C
+        if a and b: ComposeTile(a); ComposeTile(b)        ; ComposeTwoTiles $89B2
+        else: ComposeTileOverlay(a or b or $43)           ; a lone back tile: any code, never outlined
+        a, b = plane6A[L], plane6B[L]          ; ComposeFrontCell $8943
+        if a and b: ComposeTile(a); ComposeTile(b)
+        elif a or b: ComposeTile(a or b)
     if colour flag: attributes(2 x 2) = CellColours[plane6C[L] >> 4]
     BlitWindowAt(cell's screen address)        ; $8C72
+
+ComposeTile(t):                                ; $89CE
+    if t >= $4B: MaskedColumns(t); return      ; outlined (6.4), never shaded
+    ComposeTileOverlay(t)
+
+ComposeTileOverlay(t):                         ; $89D2
+    UnpackGroups(t)                            ; the tile plain into the buffer
+    n = plane6C[L] AND $0F
+    if t >= $1B and n != 0: AND tile $43 + n over it   ; ComposeOverlay $8A06
+```
+
+The two ways, from `build/game.lst`:
+
+```text
+898C E5           PUSH HL                    ; ComposeBackCell
+898D 26 69        LD H,$69
+898F 7E           LD A,(HL)
+8990 25           DEC H
+8991 B7           OR A
+8992 28 0B        JR Z,ComposeBackOne        ; no $69 tile
+8994 47           LD B,A
+8995 7E           LD A,(HL)
+8996 B7           OR A
+8997 78           LD A,B
+8998 28 0A        JR Z,ComposeBackTile       ; $69 alone
+899A CD B2 89     CALL ComposeTwoTiles       ; a pair: each through ComposeTile
+899D 18 08        JR ComposeBackNext
+899F B6           OR (HL)                    ; ComposeBackOne: $68 alone?
+89A0 20 02        JR NZ,ComposeBackTile
+89A2 3E 43        LD A,$43                   ; both empty: the blank tile
+89A4 CD D2 89     CALL ComposeTileOverlay    ; ComposeBackTile: plain, shaded
+...
+89CE FE 4B        CP $4B                     ; ComposeTile
+89D0 30 F7        JR NC,ComposeHighTile      ; $4B and up: MaskedColumns, outlined
+89D2 CD 06 8A     CALL ComposeOverlay        ; ComposeTileOverlay
+...
+8A06 47           LD B,A                     ; ComposeOverlay
+8A07 FE 1B        CP $1B
+8A09 D8           RET C                      ; below $1B: plain only
+8A0A 26 6C        LD H,$6C
+8A0C 7E           LD A,(HL)
+8A0D E6 0F        AND $0F
+8A0F C8           RET Z                      ; no shade nibble: plain only
 ```
 
 The decision and the colour, from `build/game.lst`:
@@ -357,8 +416,10 @@ How to read:
 
 Worked example (cell 37 of room 46, row 1, column 17): plane `$67` = `$40` (zone `$40`), `$68` = `$1B` (a wall), `$69`
 = `$62`, `$6A` = `$60`, `$6B` = `$5C` (three tiles of `$4B` and up: drawn with an outline), `$6C` = `$03` (shade 3,
-colour 0). ComposeCell draws `$1B`, the shade tile `$46` ANDed over it at once, then `$62`, `$60` and `$5C` (tiles
-`$4B` and up are drawn with their outline and not shaded).
+colour 0). ComposeCell draws `$1B`, the shade tile `$46` ANDed over it at once, then `$62`, `$60` and `$5C`. All
+four come in pairs, so all go through ComposeTile: `$62`, `$60` and `$5C` are drawn with their outline and not
+shaded. Had `$69` been empty, `$1B` would have gone alone through ComposeTileOverlay, with the same result: the plain
+tile and the shade.
 
 ![EnterRoom: room 4 built](img/routines/EnterRoom.gif)
 
@@ -396,8 +457,10 @@ A sprite and a front tile are drawn one unit column at a time:
    OutlineMask `$6F00`: `FF FC F8 F8 F1 F0 F0 F0`.
 
 M[v] clears the pixels of v and the ones beside them inside the unit. ANDing the masks of the line above and below too
-clears a one-pixel rim round the sprite, above, below and between its pixels. Then v is ORed in. The result is a
-sprite with a black outline over any background, with no mask stored.
+clears a one-pixel rim inside each unit: above, below and between the sprite's pixels, but never across a unit's side
+(a value has three bits, and M of a pixel at the unit's edge clears nothing in the next unit). Then v is ORed in. The
+result is a sprite with a black outline over any background, with no mask stored, open where a sprite pixel touches
+the side of its unit: there the background next door shows right up to it.
 
 ![OutlineMask](img/render/outline.png)
 
@@ -523,7 +586,8 @@ in the **chunk buffer** and copies the window to the screen:
   is odd: then the window starts 8 lines into its first cell);
 - each byte holds one value, 0-7: the unit's three pixels.
 
-The pages are the actor pages: an actor's record is the first `$4A` bytes of its page, the buffer the bytes after.
+The pages are the actor pages: an actor's record is the first `$42` bytes (66) of its page, the buffer the bytes from
++`$42` on (ActorBoxStore `$8F65-$8F70` sets ComposeDest to `$5D42` on an odd first row, so `$42-$49` are used then).
 
 BlitWindow `$8C68` copies the window:
 
@@ -654,7 +718,10 @@ from the cells erases the old picture and draws the new one in one blit.
 DrawActor `$8A90`, for one actor:
 
 - skips it when a flag of D is set, when its box does not meet the window (BoxesOverlap `$9A27`), or for kind `$25`;
-- handles a removal (+`$20` bit 1): the actor's cell in plane `$68` is emptied;
+- handles a removal (+`$20` bit 1, cleared here): if the actor is still on the window it is drawn once more; once it
+  is wholly off (ActorOffWindow `$8E95`), its flags +`$02` become 0, its slot in EnemySlots `$68DC` (`$68DB` + the
+  record number +`$29`, when not 0) is freed, and `JP SpawnRoomEnemies` `$8ABB` lets the room's enemies come back;
+- culls an actor with Y `$A0`-`$C7` (below the room; ActorUpdate's own test before the compose is `$A8`-`$C7`);
 - clips it to the window: columns on the left and right (ClipColumns `$8B6A`), lines above (ClipTop `$8BB7`) and
   below (SetColumnClip `$8B94`);
 - finds the frame: IX = the set + frame x bytes a frame;
@@ -753,7 +820,7 @@ the trace:
 | BlitWindow, with the interrupt of frame 17830 | 17829, 67215 to 17830, 17544 | 21 200 |
 
 One redraw of Hiro costs about 80 000 T, more than a frame. The passes that follow, with no actor moving, take about
-700 T each. So the game's speed is set by how many actors move and how big their windows are.
+1 400 T each (the light pass, 1 350-1 500 T in c1: [doc 4](04-game-loop.md), 4.3). So the game's speed is set by how many actors move and how big their windows are.
 
 ![Hiro's redraw against the beam](img/render/beam-c1.png)
 
@@ -866,8 +933,9 @@ doc 4.5).
 *Figure 6.9: `deaths` room 8 at frame 3780 T 0 (zone `$80` only) and at frame 3790 T 0 (zone `$40` drawn below the
 ground). The shots by `python3 kit/screen_shot.py --work work/docs/zsB/deaths --out-dir work/docs/zsB/out
 reveal-before=3780:0 reveal-after=3790:0`, the instance opened on `work/stage1/rec/deaths/session.ttd`; the pair by
-`python3 tools/fig_controls.py shots --out docs/img/render/reveal.png --shot work/docs/zsB/out/reveal-before.png=...
---shot work/docs/zsB/out/reveal-after.png=...`.*
+`python3 tools/fig_controls.py shots --out docs/img/render/reveal.png --title "..." --shot
+work/docs/zsB/out/reveal-before.png="frame 3780 T 0: ..." --shot work/docs/zsB/out/reveal-after.png="frame 3790 T 0:
+..." --note "..."` (the labels wrap to the picture's width).*
 
 How to read:
 
@@ -1008,10 +1076,21 @@ redraw only what changed ([doc 8](08-hud-and-text.md)).
 The surface rooms (the top map row) have no cell data for their ground. BuildSurface `$A039` (in
 BuildRoomPlanes) makes it:
 
-1. sky tiles `$33`-`$36` on rows 0-3;
-2. the horizon strip on row 4, from `$74F5` + the room;
-3. tile `$37` and tile `$43` at places that depend on the room;
-4. row 5: 20 ground tiles `$3B` + variant; row 6: 20 floor tiles `$80` + variant (plane `$6B`).
+1. plane `$6C` of cells 0-`$77` (rows 0-5) = `$20`: colour index 2, no shade; CellProperty `$6BE3` = `$20` too, so
+   the floor row gets the same attribute byte;
+2. sky tiles `$33`-`$36` on rows 0-3 (plane `$68`);
+3. the horizon strip on row 4, from `$74F5` + the room;
+4. tile `$37` at cell (9 - room) AND `$FF`, tile `$43` (blank) at cell (`$54` - room) AND `$FF` for rooms from 5
+   (`CP $FC`). BuildSurface runs for rooms 1-9, 122 and 123 (the `tools/swroom.py` builds of all rooms): rooms 1-9 put
+   `$37` at cells 8 down to 0 and `$43` at `$4F` down to `$4B`; room 122, the end sequence's room, puts `$37` at
+   cell `$8F` (row 7) and `$43` at `$DA` (row 10);
+5. row 5: 20 ground tiles `$3B` + variant (plane `$68`); row 6: 20 floor tiles `$80` + variant in plane `$6B`, each
+   placed by PutTileMarkPropA `$A3F4` (zone byte 1, plane `$6C` = CellProperty `$20`); then CellProperty back to 0.
+
+**Room 123** (Havok's, `CP $7B` / `JR Z,FloorRow`) skips all of that but the floor row, and gets only 14 cells of it,
+from cell `$C8` (row 10). On that path nothing has touched BC: it is still the room pointer pushed at the start, so the
+variants of room 123's floor come from the room's own data, the one surface row that reads what the code meant to
+read. D is whatever the caller left in it.
 
 The variant comes from NextGroundVariant: the next byte at (BC), AND 3, 0 made 1, and never the same as the last
 (D). BC should point at the room's data: BuildSurface pushes it at its start. But on the way BC is reused: after the
@@ -1053,11 +1132,20 @@ A0B8 C9           RET
 Pseudocode:
 
 ```text
-BuildSurface(room):
-    sky rows 0-3; horizon row 4
+BuildSurface(room, bc = the room pointer):     ; $A039
+    CellProperty = $20
+    if room == 123:                            ; Havok's room
+        for 14 cells from $C8: PutTileMarkPropA(plane6B, $80 + NextGroundVariant())  ; bc: the room data
+        goto done
+    plane6C[0..$77] = $20
+    sky rows 0-3 ($33-$36); horizon row 4 (LDIR from $74F5 + room)
     bc = 256 - room                            ; the bug: BC was the room pointer
-    for each of 20 cells of row 5: plane68 = $3B + NextGroundVariant()
-    for each of 20 cells of row 6: plane6B = $80 + NextGroundVariant()
+    plane68[(9 - room) AND $FF] = $37          ; rooms 1-9: cells 8-0; room 122: $8F
+    if room >= 5: plane68[($54 - room) AND $FF] = $43
+    for each of 20 cells of row 5: plane68 = $3B + NextGroundVariant()   ; d starts at $68
+    for each of 20 cells of row 6: PutTileMarkPropA(plane6B, $80 + NextGroundVariant())
+done:
+    CellProperty = 0; pop bc; goto ObjectLoop
 
 NextGroundVariant():
     repeat:
@@ -1069,8 +1157,11 @@ NextGroundVariant():
 
 ```mermaid
 flowchart TD
-    A[BuildSurface] --> B[sky, horizon]
-    B --> C["BC = 256 - room (after LDIR, LD C,A)"]
+    A[BuildSurface: CellProperty = 20h] --> R{room 123?}
+    R -- yes --> R2["14 floor cells from C8h, BC still the room pointer"]
+    R2 --> K
+    R -- no --> B["plane 6C rows 0-5 = 20h; sky, horizon"]
+    B --> C["BC = 256 - room (after LDIR, LD C,A); tiles 37h and 43h"]
     C --> D[NextGroundVariant]
     D --> E["INC BC, A = ROM byte AND 3"]
     E --> F{0?}
@@ -1084,8 +1175,9 @@ flowchart TD
     J -- yes --> K[the room's objects]
 ```
 
-**Why it needs the 48K ROM.** The bytes at `$00FD`-`$0140` of the 48K ROM lie in the BASIC keyword table, which starts
-at `$0095` ("BIN", "OR", "AND", "<=", ">=", "<>", "LINE", "THEN", "TO", "STEP", "DEF FN", "CAT", "FORMAT", "MOVE", ...).
+**Why it needs the 48K ROM.** The bytes at `$00FD`-`$0140` of the 48K ROM lie in the BASIC keyword table. The table
+starts at `$0095` ("?", "RND", `INKEY$`, "PI", "FN", "POINT", ...); room 4's reads begin at `$00FD`, "BIN", then "OR",
+"AND", "<=", ">=", "<>", "LINE", "THEN", "TO", "STEP", "DEF FN", "CAT", "FORMAT", "MOVE", ...
 On the 48K they are always there. On the 128K the game runs with `$7FFD` = `$10`: ROM 1, the 48K BASIC, is paged in, and
 the 128K's ROM 1 matches the 48K ROM in this range. So the surface is the same on both. With ROM 0 (the 128K editor) or
 any other ROM, the ground changes. A ROM of zeros would not hang: every byte gives 1, and when D is 1 NextGroundVariant

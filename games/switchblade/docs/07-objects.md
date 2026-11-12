@@ -167,7 +167,10 @@ DecodeRoom(BC = record):
             p = $7300[*BC & $0F] + g; restart = $7300[*BC & $0F] - 1
             steps = *BC >> 4 (0 = 256); cell = *(BC + 1); BC += 2
             repeat steps times:
-                put tile 1 (or tiles 2, 3 when *p bit 7) at cell in plane $68
+                if *p bit 7:                          ; a pair, plane $68
+                    put tile 2 at cell; cell += 1     ; INC L at $9FA0
+                    put tile 3 at cell                ; the step counts from cell + 1
+                else: put tile 1 at cell
                 cell += *p & $3F
                 if *p bit 6: p = restart
                 p += 1
@@ -232,7 +235,7 @@ flowchart TD
     B --> C{"this group's count n > 0?"}
     C -- no --> G{"another group?"}
     C -- yes --> D["shape from 7300 + group, steps = high nibble, start cell"]
-    D --> E["put tile 1 or the pair 2, 3 in plane 68"]
+    D --> E["put tile 1, or the pair 2, 3 in plane 68 (cell + 1 after the pair)"]
     E --> F{"step bit 6?"}
     F -- yes --> F2["back to the shape start"]
     F -- no --> F3["next step byte"]
@@ -759,7 +762,7 @@ python3 tools/fig_objects.py --only page
 
 | Offset | Field | Meaning |
 | --- | --- | --- |
-| `+$00`, `+$01` | Y, X | Y in pixels (16 a cell), X in units of 1.5 pixels (8 a cell, 160 a room) |
+| `+$00`, `+$01` | Y, X | Y in pixels (16 a cell), X in half units of 1.5 pixels (8 a cell, 160 a room; X + 2 is one unit, 3 pixels) |
 | `+$02` | flags | bit 0 active, bit 1 in the air, bit 2 falling, bit 3 on a ladder, bit 4 a strike armed, bit 5 the last frame shown, bit 7 a bonus rising |
 | `+$03`, `+$04` | handler | the state handler, run when no slot is busy |
 | `+$05-+$0A` | scripts | the walk list and the script page, then the low bytes of the turn, fall, hurt and still scripts |
@@ -857,7 +860,7 @@ Witness: the templates are the bytes of `$6182-$65FF` in every play recording; I
 ### The message banner: page `$66` shared with the weapon
 
 The four in-play messages (EXTRA LIFE, BONUS POINTS, PAUSE GAME, GAME OVER) are not printed. Each is an actor: the
-**message banner**, template 30 at `$65A6` (row 9 of the page tails), kind `$00` (its KindTemplates word is 0:
+**message banner**, template 30 at `$65A6` (row 8 of the page tails, page `$65`), kind `$00` (its KindTemplates word is 0:
 ShowMessage passes the template itself), run by PathControl like a flier.
 It lives in page `$66`, the page of Hiro's thrown weapon, so the two never coexist, and while it is up Hiro cannot
 strike ([doc 5](05-controls.md) 5.5 tests `$6602` bit 0).
@@ -968,7 +971,7 @@ the game image, so its runs are counted at the bytes' run-time addresses (GlyphB
 An enemy record becomes an actor only when three things hold: its cell is in a zone Hiro has seen, its slot in
 EnemySlots is free, and an actor page among `$5E-$64` is free. SpawnRoomEnemies `$A59B` tries every record of the
 room. It runs at the end of EnterRoom, when a new zone is revealed (SpawnZoneEnemies `$A59E`, with only that zone's
-bit), when an actor's death sequence ends (DeathStep `$91D1`), and when an actor leaves the window (`$8ABB`). A
+bit), when an actor's death sequence ends (DeathStep `$91A9`, its `JP SpawnRoomEnemies` at `$91D1`), and when an actor leaves the window (`$8ABB`). A
 record killed in this room stays dead: its bit in GoneEnemies `$6EFE-$6EFF` is set by MarkSpawnKilled `$9137`, and
 SaveRoomState keeps it with the room.
 
@@ -976,9 +979,10 @@ SpawnEnemy `$A5BF` takes a free page (FindFreeActor `$9F2C` looks for active bit
 number into its slot. It turns the cell into a pixel place (CellPixel) and finds the template (TemplateForKind
 `$A652`). A pickup kind (`$01-$22`) uses SharedEnemyTemplate `$65B8`, patched with its item record's frame and score.
 InitActor `$A65D` fills the page, and +`$29` keeps the record's number. A kind with bit 7 (a timed pickup) or a kind
-from `$40` gets a hold: +`$28` = Random AND +`$0D`. Each step then counts the hold down and waits as many frames as
-it has left (StepActor, 7.12), so a hold h delays the first move by about h + (h - 1) + ... + 1 = h(h-1)/2 frames:
-`$0B` gives 55.
+from `$20` on gets a hold: +`$28` = Random AND +`$0D`. The test at `$A61B` is `LD A,(IX+0)` / `RLA` / `JR C` /
+`CP $40`: after the `RLA` it compares kind x 2 with `$40`, so the line is at kind `$20`, not `$40`. Each step then counts
+the hold down and waits as many frames as it has left (StepActor, 7.12). The count is decremented first, so a hold h
+delays the first move by about (h - 1) + (h - 2) + ... + 1 = h(h-1)/2 frames: `$0B` gives 55.
 
 ```text
 SpawnRoomEnemies(C = the zone mask, RevealedZones for a whole room):
@@ -991,7 +995,7 @@ SpawnRoomEnemies(C = the zone mask, RevealedZones for a whole room):
         EnemySlots[B] = B
         template = KindTemplates[r.kind AND $7F]; pickups: SharedEnemyTemplate + the item's frame and score
         InitActor(page, template, r.kind, CellPixel(r.cell)); page+$29 = B
-        if r.kind bit 7 or r.kind >= $40: page+$28 = Random() AND page+$0D
+        if r.kind bit 7 or r.kind >= $20: page+$28 = Random() AND page+$0D   ; RLA, CP $40
 ```
 
 ```text
@@ -1046,9 +1050,9 @@ $A617  EX AF,AF'
 $A618  LD E,$29
 $A61A  LD (DE),A
 $A61B  LD A,(IX+$00)
-$A61E  RLA
+$A61E  RLA                    ; A = kind x 2, carry = bit 7
 $A61F  JR C,SpawnEnemyRandom
-$A621  CP $40
+$A621  CP $40                 ; kind x 2 < $40: kind below $20, no hold
 $A623  JR C,SpawnEnemyDone
 SpawnEnemyRandom:
 $A625  CALL Random            ; +$28 = Random AND +$0D
@@ -1082,8 +1086,9 @@ Worked example: room 8 in `play48`. EnterRoom starts in frame 2389. The build an
 `2B 68`: cell `$68` has flags `$80`, and `$80 AND $80` is not 0. Slot `$68DC` is 0. Page `$5E` is free. The slot becomes 1,
 and CellPixel turns cell `$68` (row 5, column 4) into Y `$50`, X `$20`. The template of kind `$2B` is `$62CA`
 (PatrolControl, 2 hit points, 50 points). The sample of 2428 shows page `$5E` at `50 20 01`: Y `$50`, X `$20`,
-active; `$68DC` = 1. Kind `$2B` is below `$40` without bit 7, so it has no hold, and in the sample of 2430 it has
-already stepped to X `$22`.
+active; `$68DC` = 1. Kind `$2B` is `$20` or more, so it gets a hold, but its template's +`$0D` is 0 (the template's bytes
+`AF 93 28 79 2B 00 00 02 A6 03 00 ...`, +`$0D` the eleventh), so the hold is 0: no delay, and in the sample of 2430 it
+has already stepped to X `$22`.
 
 ![SpawnRoomEnemies running in play48 frame 2427: the patroller of room 8 written into page 5E](img/routines/SpawnRoomEnemies.gif)
 
@@ -1104,8 +1109,9 @@ How to read it:
 16 records a room, the spawner is called again after each death to fill the freed page.
 
 Witness: SpawnEnemy ran 30 times in `play48`, 551 times in the other keyed builds and 2963 times in 68 RZX segments.
-The hold `$A625` ran 7 times in `play48`. The window release `$8ABB` ran only in 3 RZX segments. The spawn of room 8
-is in the samples of 2427 (page `$5E` inactive) and 2428 (active).
+The hold `$A625` ran 7 times in `play48`: it runs for every spawn of a kind from `$20`, the room-8 patroller
+included. The window release `$8ABB` ran only in 3 RZX segments. The spawn of room 8 is in the samples of 2427 (page
+`$5E` inactive) and 2428 (active).
 
 ### The hidden items: BreakReveal
 
@@ -1418,8 +1424,8 @@ stateDiagram-v2
     Left --> Right: +40 reaches 0, reload
 ```
 
-With 16 in +`$3E` the patroller makes 16 steps right (the reload step is one of them) and 16 left, 2 X units a step
-(3 pixels), one step every 3 frames (+`$0C` = 3). A turn against its facing runs the turn slot first (StartTurn `$90B1`).
+With 16 in +`$3E` the patroller makes 16 steps right (the reload step is one of them) and 16 left, X ± 2 a step
+(one unit, 3 pixels), one step every 3 frames (+`$0C` = 3). A turn against its facing runs the turn slot first (StartTurn `$90B1`).
 
 ![A patroller of room 5 in play48 frames 646-742, every second frame](img/play/play48-room5-enemies.gif)
 
@@ -1584,8 +1590,8 @@ stateDiagram-v2
     Falling --> Expired: it lands
 ```
 
-A stalactite hangs until Hiro is within zone 5 (16 pixels above to 31 below, 16 units each side), shakes, then drops
-(SequenceEndDrop `$9201` starts the fall). It hurts Hiro only while its pose count +`$32` is `$0D` or more (TouchHiro,
+A stalactite hangs until Hiro is within zone 5 (16 pixels above to 31 below, 16 X each side: 8 units, 24 pixels;
+HiroInZone `$954B` compares raw X), shakes, then drops (SequenceEndDrop `$9201` starts the fall). It hurts Hiro only while its pose count +`$32` is `$0D` or more (TouchHiro,
 7.14).
 
 Witness: StalactiteControl ran 84 times in the keyed builds and 2609 times in 10 RZX segments; the shake `$9112`
@@ -1632,7 +1638,7 @@ RunActorSteps (7.12), so the shot moves faster than anything else. If a chaser h
 chaser `$3D` after the giant), BossFire expires it to make room: known only from the code.
 
 ShieldFollow `$94E1` steers the energy ball (kind `$48`): 4 pixels up or down while Hiro is more than 16 away in Y,
-2 units left or right while he is more than 4 away in X.
+one unit (X ± 2, 3 pixels) left or right while he is more than 4 X (2 units) away.
 
 Witness: PathControl ran 208 times in `play48`, all of them the energy ball after a lost life (ShieldFollow 123
 times). BossFire's spawn `$94BD` ran 104 times in 9 RZX segments, the shot's end `$93F6` 87 times in 8.

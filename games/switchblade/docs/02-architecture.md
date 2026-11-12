@@ -77,8 +77,8 @@ tools/fig_modules.py src/game/game.ann docs/img/arch/modules.png`.*
 How to read it:
 
 - A row is one 256-byte page; `$5C00` at the top, `$FFFF` at the bottom. A colour is a module (the key below).
-- The code is the band `$80EB-$A927` (`$7BE5-$80EA` above it is graphics, orange): text, mainloop, render, player, enemies, rooms and panel interleaved. Their
-  interleaving is the original's order; the modules are a reading of it.
+- The code is the band `$80EB-$A927` (`$7BE5-$80EA` above it is graphics, orange): text, mainloop, render, player,
+  enemies, rooms and panel interleaved. Their interleaving is the original's order; the modules are a reading of it.
 - `$A928-$FD97` is data: the room records (dark green), then the graphics (orange).
 - R1-R7 on the right mark regions whose bytes at load time are not what they hold in play (2.3).
 
@@ -103,7 +103,7 @@ at `$D104-$FD97`, and `$6651` is Invulnerable, not an end flag.
 | `$6700-$6CFF` | 1 536 | menu code, ControlMenu `$6A7B`; the vars template from `$6B5C` | the six cell planes `$67-$6C` (220 cells each: flags and zones, layers, colours) and the room variables after them: RoomAbove `$6BDC`, Room `$6BDD`, MapRow `$69DF`, MapColumn `$69E0`, EnemyCount `$6ADD` | BuildRoomPlanes `$9F34` |
 | `$6D00-$6EFF` | 512 | vars templates | the kept room states: HavokStashB `$6D00`, TakenItems `$6DFE`, RevealedZones `$6DFF`, HavokStashA `$6E00`, GoneEnemies `$6EFE` | SaveRoomState `$A58A` |
 | `$6F00-$7047` | 328 | templates | OutlineMask `$6F00`, RowBase `$7000`, NameBoxPlaces `$700C`, built by GameEntry | BuildPageTails `$5D07` |
-| `$7048-$72FD` | 694 | rooms | the map tables: columns `$7048`, counts `$70C7`, starts `$70DB`; RoomTable `$7100` | FindRoom `$95F9` |
+| `$7048-$72FD` | 694 | rooms | the map tables: columns `$7048`, counts `$70C7`, starts `$70DB`; RoomDataPointers `$7102` (room n at `$7100` + 2n) | FindRoom `$95F9` |
 | `$7300-$7BE4` | 2 277 | tables | the room build tables, gates (GateClosed `$76D8`), actor scripts, MessageRequest `$79FF` | |
 | `$7BE5-$A927` | 11 587 | code, the font, the strings, sprites | the same | L1 of every recording |
 | `$A928-$D0F8` | 10 193 | the 126 room records | read by BuildRoomPlanes | doc 7 |
@@ -302,8 +302,8 @@ How to read it:
 - r004000 (48K, play only): mainloop 54.7 %, render 36.1 %, panel 4.5 %, player 2.3 %, sound 2.0 %. No `HALT`.
 - play48 (48K: about 100 frames of the title, then play): mainloop 46.4 %, render 44.2 %; `HALT` 0 %: the title's
   logo build (TitleSequence's piece moves, frames 0-101) polls ReadInput through its fire test `$A76F` without `HALT`,
-  and play has none. MainLoop `$8DFE` first runs in frame 102. (The 48K intro does `HALT`, WaitFireLong `$8327`, but
-  play48 starts at c48's title and shows no story.)
+  and play has none. MainLoop `$8DFE` first runs in frame 102. (The 48K intro does `HALT`, WaitFireLong `$831F` (its
+  `HALT` at `$8327`), but play48 starts at c48's title and shows no story.)
 
 Worked example, one 48K frame of r004000 (69 888 T): the interrupt takes about 2 960 T (4 %); the rest is passes. In a
 quiet stretch that is about 15 light passes of 4 200-4 500 T; when Hiro is due, one redraw pass of 45 000-90 000 T takes
@@ -315,5 +315,4 @@ often something is due and how much a redraw costs, not by the frame.
 ## 2.8 Known only from the code
 
 - TapeWriter and its helpers, and LoadError `$FFBB` (doc 3.7).
-- `$6602` bit 7, which stops RunActorSteps: no writer found.
 - SoundSpare `$8451` and `$FFFF`: no reader.

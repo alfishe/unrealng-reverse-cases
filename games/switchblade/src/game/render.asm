@@ -587,11 +587,12 @@ ComposeOverlay:
 
 ; AND a tile's columns into the chunk buffer (the shade of a cell)
 ;
-; The AND variant of the column writer of DrawTileColumns `$89D9`: ShadeTile
-; `$8A06` puts `$8A2F` in the call operand `$89F1`, finds the shade tile `$43`
-; + n with TileAddress `$8EA3` and runs DrawTileColumns, which calls here once
-; a 3-pixel column with HL = the chunk byte of its top line and DE = the
-; column's packed bytes, B = the groups of 8 values (2 for a 16-line tile).
+; The AND variant of the column writer of DrawTileColumns `$89D9`:
+; ComposeOverlay `$8A06` puts `$8A2F` in the call operand `$89F1`, finds the
+; shade tile `$43` + n with FrameRecord `$8EA3` and runs DrawTileColumns, which
+; calls here once a 3-pixel column with HL = the chunk byte of its top line and
+; DE = the column's packed bytes, B = the groups of 8 values (2 for a 16-line
+; tile).
 ;
 ; Each group of three bytes gives eight 3-bit values, most significant first
 ; (the same unpacking as UnpackGroups `$8BC8`); each value is ANDed into the
@@ -1240,8 +1241,8 @@ MirroredColumnLoop:
 
 ; Copy the composed window from the chunk buffer to the screen
 ;
-; E = the window top (`$732C`), A = its left (`$732A`), ScreenAddress `$8828`
-; (DE = the screen byte), then BlitWindowAt `$8C72`.
+; E = the window top (`$732C`), A = its left (`$732A`), SpriteScreenAddress
+; `$8828` (DE = the screen byte), then BlitWindowAt `$8C72`.
 ;
 ; Called by ActorUpdate `$8E2B` after each actor is redrawn and by `$A7B9`.
 ;

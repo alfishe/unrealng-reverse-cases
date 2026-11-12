@@ -30,7 +30,8 @@
 ; The waits `$831F`/`$8321` return Z when fire (`$8529`) is pressed: then it
 ; returns; else it starts again.
 ;
-; Witness: L1 3 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 3 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 Intro48:
   LD A,$07
   CALL ClearScreen
@@ -86,19 +87,22 @@ IntroHold:
 ; DE = the box's screen place, BC = its size: IntroBox `$5DFB`, then
 ; IntroPictureText.
 ;
-; Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroScene:
   CALL IntroBox
 
 ; The next picture and text of the script, then a wait of 40 x 5 frames
 ;
-; Witness: L1 12 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 12 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroPictureText:
   CALL IntroPicture
 
 ; The next text record of the script, then a wait of 40 x 5 frames ($831F)
 ;
-; Witness: L1 15 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 15 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroText:
   CALL IntroPrint
   JP WaitFireLong
@@ -107,7 +111,8 @@ IntroText:
 ;
 ; H = 1 and `$8321`: the eye frames' step.
 ;
-; Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroPictureWait:
   CALL IntroPicture
   LD H,$01
@@ -117,7 +122,8 @@ IntroPictureWait:
 ;
 ; HL = IY, BC = IntroGlyphs `$6313`, PrintGlyphs `$61E5`.
 ;
-; Witness: L1 21 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 21 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroPicture:
   PUSH IY
   POP HL
@@ -127,7 +133,8 @@ IntroPicture:
 
 ; Print the text record at IY ($837B); IY to the next record
 ;
-; Witness: L1 18 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroPrint:
   PUSH IY
   POP HL
@@ -135,7 +142,8 @@ IntroPrint:
 
 ; IY = HL, the record after the one just drawn
 ;
-; Witness: L1 39 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 39 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroScriptNext:
   PUSH HL
 WeaponDefaultItem:
@@ -150,7 +158,8 @@ WeaponDefaultItem:
 ; (`$25`, a skip of B-2 cells, `$25`, `$FF`), the bottom row (`$27`, `$28` x
 ; (B-2), `$29`), end; then `$837B` prints it.
 ;
-; Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroBox:
   LD (RoomObjectList),DE
   LD A,$06
@@ -184,7 +193,8 @@ IntroBoxSides:
 
 ; Store E, then B-2 times A, then D at HL (a box's top or bottom row)
 ;
-; Witness: L1 18 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroBoxRow:
   DEC B
   DEC B
@@ -202,7 +212,8 @@ IntroBoxRowLoop:
 ;
 ; A code below `$20` in a text record skips that many cells (`$837B`).
 ;
-; Witness: L1 99 (c x1, rzx x1). Ran only in c48.
+; Witness: L1 99 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000).
 IntroBoxSide:
   DEC B
   DEC B
@@ -248,7 +259,10 @@ SizeClasses:
 ; 2's code occupies these addresses while the tape loads, and the recordings
 ; mark routine entries there.
 ;
-; Witness: L1 1141 (c x2, rzx x1). Ran only in c48.
+; Witness: L1 1141 (c x2, rzx x1). Called 14 times in c48 (from `$5DEC`, the
+; `CALL` at `$61EA` 14) and 7 times in r000000, the RZX run's 48K intro; c1's
+; runs at this address are stage 2's code, which occupies it while the tape
+; loads.
 PrintGlyphs:
   PUSH BC
   LD B,(HL)
@@ -324,7 +338,8 @@ PrintGlyphsLine:
 ;
 ; From Intro48 (IntroAttrsA/B/C).
 ;
-; Witness: L1 1299 (c x2, rzx x1). Ran only in c48.
+; Witness: L1 1299 (c x2, rzx x1). Ran in c48 and in the RZX run's 48K intro
+; (r000000); c1's runs at this address are stage 2's code.
 CopyAttrBlock:
   PUSH BC
   PUSH DE
@@ -492,9 +507,9 @@ GlyphBytesTail:
 ;
 ; At run time (after BuildPageTails) the nine bytes are `07 47 46 07 46 05 47
 ; 06 45`: the render's `$88BA` takes the attribute of a revealed cell from here
-; by the high nibble of its plane byte; TitleSequence `$A754` reads the last
-; six (TitleColours `$66FA`) as the title's colours. In the image the entry is
-; the rest of IntroGlyphs, to `$6A7A`.
+; by the high nibble of its plane byte; TitleColour `$A754` reads the last six
+; (TitleColours `$66FA`) as the title's colours. In the image the entry is the
+; rest of IntroGlyphs, to `$6A7A`.
 CellColours:
   INCBIN "res/graphics/intro-glyphs-2.bin",$0000,3
 TitleColours:
@@ -615,8 +630,9 @@ ZoneRecords:
 ; The last record's fire test is 18 bytes (`$6B3B-$6B4C`); the others' 7 bytes
 ; are followed by the next record (18 bytes are always copied: records 1-3
 ; bring 11 bytes of the next record after their `RET`; record 4 runs into
-; `$6B42`-`$6B4C`). The cursor test reads `$F7FE` (key 5) and `$EFFE` and ANDs
-; them, but only bit 0 (key 0) is tested.
+; `$6B42`-`$6B4C`). The cursor test reads `$F7FE` (key 5, rotated into bit 1)
+; and `$EFFE` and ANDs them: `BIT 0` tests fire (key 0), and the byte goes on
+; as the directions, key 5 or 9 left, 8 right, 7 up, 6 down.
 ControlRecords:
   DEFB $01,$1E,$1F,$1D,$1C,$14,$15 ; 1: Sinclair 1 (row $EFFE)
   DEFB $3E,$EF,$DB,$FE,$CB,$47,$C9 ; LD A,$EF; IN A,($FE); BIT 0,A; RET

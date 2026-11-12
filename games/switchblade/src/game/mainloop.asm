@@ -8,7 +8,8 @@
 ;
 ; A = 4, CALL $66C8 (the message actor in the globals page: message 4, run
 ; until it ends), then falls into WaitFireLong. Callers: the game over $5C42
-; and the quit from the pause ($668E: fire while paused).
+; and the quit ($668E: P pressed while fire is held; PauseGame reads fire only
+; then, never during the pause).
 ;
 ; Witness: L1 10 (gameover, hiscore, menu, opt x3, rzx x4).
 ShowGameOverWait:
@@ -307,8 +308,9 @@ ReadInputSpace:
 ; instructions; ActorUpdate 1566-1753 T a call, inclusive; `$FF01` and `$FF64`
 ; about 100 T each), so in light rooms the loop turns about 26 times a frame
 ; (c1: 25068 passes in the 975 frames of play). The room build runs inside an
-; actor update (Hiro's move `$9B56` -> `$955A`) and stalls the loop 60-72
-; frames (WALKTHROUGH 1).
+; actor update (Hiro's move `$9B56` -> `$955A`) and stalls the loop: a room
+; build 25-71 frames (median 43), the whole stall at a room change 27-72
+; (median 45; doc 4.5).
 ;
 ; Counts: c1 25068 passes, 28339 actor updates (1.13 active actors a pass, Hiro
 ; alone in room 4); deaths 108018 passes, 225247 updates; rooms 78837 and
@@ -659,7 +661,7 @@ RunActorSteps:
   LD (RunActorSteps+$0006),A
   JR C,StepBulletPage
   LD A,$00                ; LD A,n: n = the boss kind, 0 when no boss fight
-                          ; (SpawnActor $A69D, KillActor $97BA, $A47A)
+                          ; (InitActor at $A69D, KillActor at $97BA, $A47A)
   OR A
   JR Z,StepHiroFirst
   LD D,$60                ; the boss's shot in page $60

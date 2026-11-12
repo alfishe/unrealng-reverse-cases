@@ -53,7 +53,7 @@ RoomPatternsMore:
 ; Tile shapes for $A02E: (tile, step) pairs, a step with bit 7 set ends the
 ; shape
 ;
-; PutShape $A02E: DE = $73xx (E from the room stream, $A01F), (DE) is a tile
+; PlotPattern $A02E: DE = $73xx (E from the room stream, $A01F), (DE) is a tile
 ; code stored at (HL), the next byte is added to L; a step of $80 or more ends.
 ; The room code handlers 0-3 ($A016) place them.
 ;
@@ -213,7 +213,7 @@ TitleSceneStep:
 
 ; Six rooms that hold a gate (the room numbers searched with CPIR by $8F28)
 ;
-; FindGate $8F28: CPIR over these six for the room $6BDD, HL = the match + 6
+; BarrierFind $8F28: CPIR over these six for the room $6BDD, HL = the match + 6
 ; (GateClosed). $8F01 then compares Hiro's X $5D01 with GateX and the side bit
 ; with $5D1B: D = 0 (no move) at the gate. $8F22 clears GateClosed: called at
 ; $97E5 when the guardian (an actor of kind $2A) is killed, effect 3.
@@ -335,8 +335,8 @@ PackerPhases:
 
 ; The byte of a 3-byte group that holds unit n (0-7): 0 0 0 1 1 1 2 2
 ;
-; Read by ScreenAddress `$8828` (`$FDF5` + (X AND 7)): the screen column of a
-; window's left unit = 3 x (X / 8) + this.
+; Read by SpriteScreenAddress `$8828` (`$FDF5` + (X AND 7)): the screen column
+; of a window's left unit = 3 x (X / 8) + this.
 UnitByteOffsets:
   INCBIN "res/tables/unit-offsets.bin",$0000,8
 

@@ -78,11 +78,11 @@ DecorControl:
 
 ; Kind $3F: when Hiro enters its zone, +$0A = 1 and +$10 bit 6 (shown)
 ;
-; HiroInZone `$9529` (zone +`$11` of TouchZones `$5FAC`). Hiro inside: the
-; still frame +`$0A` = 1, `$9D50` (+`$10` bit 6 set, bit 7 cleared), `$9B85`.
-; Outside: `$9B85` while +`$10` bit 7 is clear, else nothing. Template `$64CA`,
-; from `$6F16`. Not run in the keyed recordings; the RZX snapshots hold kind
-; `$3F` on pages `$5E-$63`.
+; HiroInZone `$9529` (zone +`$11` of the touch zones at `$5FAC`). Hiro inside:
+; the still frame +`$0A` = 1, `$9D50` (+`$10` bit 6 set, bit 7 cleared),
+; `$9B85`. Outside: `$9B85` while +`$10` bit 7 is clear, else nothing. Template
+; `$64CA`, from `$6F16`. Not run in the keyed recordings; the RZX snapshots
+; hold kind `$3F` on pages `$5E-$63`.
 ;
 ; Witness: L1 104705 (poke-room x1, rzx x17, rzxroom x5).
 TriggerControl:
@@ -311,7 +311,7 @@ PathStepX:
 ; table lies in the path's page at +`$11`: [n] then n pairs [segment][shot path
 ; offset]. A match: the shot's path offset to `$61E0` (the template `$61DC`,
 ; its +`$07`); a shot still on page `$6000` is expired (`$97A3`) and run
-; (ActorUpdate) until its page is free; the new one is spawned (SpawnActor
+; (ActorUpdate) until its page is free; the new one is spawned (InitActor
 ; `$A65D`, kind `$2D`) at the boss's Y + +`$09`, X + +`$0A`, facing as the boss
 ; (+`$1B` copied); sound 6. BC, HL kept.
 ;
@@ -549,7 +549,8 @@ SpawnRoomEnemiesLoop:
 ; shared template `$65B8` with its first two bytes copied from the kind's
 ; template to `$65BF` and `$65C1`/`$65C2` = `$03`/`$1F` (kinds below `$20`) or
 ; `$04`/`$3F` (`$20-$22`); InitActor `$A65D`; +`$29` = the enemy number; kinds
-; with bit 7 or `$40` and up get +`$28` = Random `$A632` AND +`$0D`.
+; with bit 7 or from `$20` on (the `CP $40` at `$A621` follows an `RLA`: it
+; compares kind x 2) get +`$28` = Random `$A632` AND +`$0D`.
 ;
 ; 468 runs, 21 spawns (`$A5D0`).
 ;

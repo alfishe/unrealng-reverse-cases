@@ -73,10 +73,10 @@ RoomDataPointers:
 
 ; The actor kinds' templates: 73 words, kind -> template (0 for no kind)
 ;
-; Read by KindTemplate `$A652` (kind AND `$7F`, DE = the word). The templates
-; lie in the page tails (`$5D82` ... `$66FF`, from PageTailTemplate). Bytes,
-; not words: the words point at run-time addresses whose image bytes are other
-; things.
+; Read by TemplateForKind `$A652` (kind AND `$7F`, DE = the word). The
+; templates lie in the page tails (`$5D82` ... `$66FF`, from PageTailTemplate).
+; Bytes, not words: the words point at run-time addresses whose image bytes are
+; other things.
 KindTemplates:
   INCBIN "res/tables/kind-templates.bin",$0000,146
 

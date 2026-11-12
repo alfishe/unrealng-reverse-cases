@@ -127,8 +127,8 @@
 @about The game is entered at GameEntry $5CFA (the bootstrap's JP on both machines): the control menu, the 48K intro, then the page tails: ten 126-byte rows of PageTailTemplate ($6B5C) go to +$82..+$FF of the pages $5D00-$6600 (the actor kind templates, the size classes, the touch zones and some run-time code), then the tables OutlineMask $6F00, RowBase $7000 and NameBoxPlaces $700C, and the room cells are cleared. From then on GameEntry's own bytes ($5D00 on) are Hiro's actor page.
 @about NewGame $5C4D is the title loop and the start of every game: the title and high-score table ($A73E), the cheat name check (a high-score name SLOPPY lets keys 1-4 choose the start room), the 128K intro hook, the globals from GlobalsInit, Hiro's actor, the first room, then the main loop $8DFE. GameOver $5C42 and EndOfGame $5C45 lead back to it.
 $5C00 b GlobalsInit 10 ; The globals' start values: 56 bytes copied to Vitality $6642 at a new game
-> NewGame `$5CA9` copies these 56 bytes (LDIR, BC = `$38`) to `$6642-$6679`; the first 10 (7 when a boss kind is set, `$9A59`) are copied again when a life is lost (LoseLife `$962A`).
-> Each shown copy (`$6643`, `$6646`, `$664A`, `$664F`) starts unequal to its value, so the first pass of the panel jobs ($FF01, $FF64) draws everything. The byte `$5C06` (FirePrevious) is written by ControlMenu `$6A9E` with the chosen fire mask.
+> NewGame `$5C4D` (at `$5CA9`) copies these 56 bytes (LDIR, BC = `$38`) to `$6642-$6679`; the first 10 (7 when a boss kind is set, `$9A59`) are copied again when a life is lost (LoseLife `$962A`).
+> Each shown copy (`$6643`, `$6646`, `$664A`, `$664F`) starts unequal to its value, so the first pass of the panel jobs ($FF01, $FF64) draws everything. The byte `$5C06` (FirePrevious) is written by ControlMenu `$6A7B` (at `$6A9E`) with the chosen fire mask.
 > Two text records follow (for `$837B`): the score line (Y, X, two style bytes, eight digits "00000000", a skip of 7 cells, the lives "05", end) and the status line at Y `$B8` X `$12` (style `$FF` `$FF`: "EXTRA", glyph `$85`, the weapon icon `$5B` `$5C`, glyph `$86`, "BONUS", end); glyphs `$85`/`$86` are the weapon bar (`$7F0D`).
 $5C00 ; Vitality $20, shown $1F; ChargeStep 1, Charge 0, shown 1; ChargeReset 0; FirePrevious 1 (patched); WeaponCount 0, shown 1; Weapon 0
 $5C0A ; PauseFlag 0, Lives $05, Fragments 0, shown 1, FireRequest, Invulnerable, EndFlags 0, Score 0 (4 bytes)
@@ -156,7 +156,7 @@ $5C4D c NewGame ; The title loop and a new game: title, cheat, globals, Hiro, th
 > 2. The cheat: MatchCheatName `$5C68` compares each of the ten high-score names (`$8126`, 21-byte records) with "SLOPPY    " (`$8214`). On a match the keys 1-4 (`$F7FE`) held then pick the start: 1 = row `$06` column `$0D`, 2 = `$09`/`$12`, 3 = `$0F`/`$0E`, 4 = `$0F`/`$14`; else (and without the name) row 0 column 3 (room 4). The pair goes to MapRow `$69DF` / MapColumn `$69E0`.
 > 3. `$5C9A`: three NOPs on a 48K; on a 128K the bootstrap writes `CALL $85C5` here (the 128K intro with music, bank 4 `$D3D0`).
 > 4. Clears `$6D00-$6EFF` (HavokStashB, TakenItems, RevealedZones, HavokStashA, GoneEnemies), copies GlobalsInit to `$6642`, sets the six bytes `$76D8` to 1.
-> 5. SpawnActor `$A65D` for Hiro (page `$5D00`, kind `$24`, template `$65CA`, BC = `$4804`); Hiro +`$02` = 7; `$88AE` = 0; CLS (`$8339`); tune command 2 (`$8452`).
+> 5. InitActor `$A65D` for Hiro (page `$5D00`, kind `$24`, template `$65CA`, BC = `$4804`); Hiro +`$02` = 7; `$88AE` = 0; CLS (`$8339`); tune command 2 (`$8452`).
 > 6. The first room: IY = Hiro, `$95C3` (the map lookup and build), `$8365` (the score line), PanelAttrs `$FFEB` (Z in room 4: the attributes `$46`, else 7, through `$835A`), then the tick on (`$845F` = 0) and `JP $8DFE`, the main loop.
 > Witness: L1 20 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3, rzx x2, rzxroom x1).
 $5C55 TitleFired ; the ten high-score names: is one of them SLOPPY?
@@ -174,7 +174,7 @@ $5C9D ; clear $6D00-$6EFF
 $5CA9 ; the globals from GlobalsInit
 $5CB4 ; six flags $76D8 = 1
 $5CB9 NewGameFlagsLoop
-$5CBE ; Hiro: SpawnActor $A65D, kind $24, template $65CA
+$5CBE ; Hiro: InitActor $A65D, kind $24, template $65CA
 $5CDD ; the first room
 $5CF0 NewGameColour ; the play window's attributes: $46 in room 4, else 7
 $5CF3 ; the tick on, the main loop
@@ -210,38 +210,38 @@ $5D4F c Intro48 ; The 48K intro: five scenes from IntroScript, looping until fir
 > 2. CLS; the attribute block IntroAttrsA `$6225` at `$5882` (5 rows of 3); box (`$0008`, 19 x 7) round the picture `$5F24` and the text `$5F56` (THE FIREBLADE SHATTERED ...); border white, IntroAttrsB `$6234`, a delay `$2000`, border black; the picture `$5FA0` and the text `$5FD2` (THEN THE SLAUGHTER BEGAN.).
 > 3. CLS; IntroAttrsC `$6243` at `$5828` (13 rows of 16); box (`$0F00`, 18 x 15) round Havok's picture `$601E` (220 glyphs) and the text `$60FD` (NOW HAVOK REIGNS THE UNDERCITY.); the text `$6161` (I AM HIRO ...); a wait of 60 x 5 frames.
 > The waits `$831F`/`$8321` return Z when fire (`$8529`) is pressed: then it returns; else it starts again.
-> Witness: L1 3 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 3 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5D6A ; the second eye frame lit
 $5D75 ; scene 2: the Fireblade
 $5DAC ; scene 3: Havok and Hiro
 $5DC9 IntroHold ; 60 x 5 frames, then again unless fire
 $5DD2 c IntroScene ; A box, then the next picture and text of the script
 > DE = the box's screen place, BC = its size: IntroBox `$5DFB`, then IntroPictureText.
-> Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DD5 c IntroPictureText ; The next picture and text of the script, then a wait of 40 x 5 frames
-> Witness: L1 12 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 12 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DD8 c IntroText ; The next text record of the script, then a wait of 40 x 5 frames ($831F)
-> Witness: L1 15 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 15 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DDE c IntroPictureWait ; The next picture record, then a wait of 1 x 5 frames
 > H = 1 and `$8321`: the eye frames' step.
-> Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DE6 c IntroPicture ; Draw the picture record at IY with IntroGlyphs; IY to the next record
 > HL = IY, BC = IntroGlyphs `$6313`, PrintGlyphs `$61E5`.
-> Witness: L1 21 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 21 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DF1 c IntroPrint ; Print the text record at IY ($837B); IY to the next record
-> Witness: L1 18 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DF7 c IntroScriptNext ; IY = HL, the record after the one just drawn
-> Witness: L1 39 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 39 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5DFB c IntroBox ; Build a box of the font's frame glyphs as a text record at $5B01 and print it
 > DE = Y, X; B = the width, C = the height (in cells). The record: Y, X, style `$06` `$06`, the top row (`$22`, `$23` x (B-2), `$24`), `$FF`, C-2 side rows (`$25`, a skip of B-2 cells, `$25`, `$FF`), the bottom row (`$27`, `$28` x (B-2), `$29`), end; then `$837B` prints it.
-> Witness: L1 9 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 9 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5E1A IntroBoxSides
 $5E34 c IntroBoxRow ; Store E, then B-2 times A, then D at HL (a box's top or bottom row)
-> Witness: L1 18 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 18 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5E38 IntroBoxRowLoop
 $5E3F c IntroBoxSide ; Store a box side row at HL: $25, a skip of B-2 cells, $25, $FF
 > A code below `$20` in a text record skips that many cells (`$837B`).
-> Witness: L1 99 (c x1, rzx x1). Ran only in c48.
+> Witness: L1 99 (c x1, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000).
 $5E4D b IntroScript ; The 48K intro's script: 8 pictures and 7 texts in the order Intro48 draws them
 > A picture: Y, X (pixels / 2), glyph numbers (1-`$ED`, into IntroGlyphs), `$FF` a new line, 0 the end. A text: Y, X, two style bytes, the characters (font `$7BE5`), `$FF` a new line, 0 the end (the record of `$837B`).
 > Its bytes are under the page tails of `$5D00-$6100` at run time (GameEntry copies the template over them after the intro): the labels in here from `$5FC0` on name those run-time contents.
@@ -262,7 +262,7 @@ $6161 ; I AM HIRO, / THE LAST OF THE BLADEKNIGHTS. / I MUST REBUILD THE FIREBLAD
 $61E5 c PrintGlyphs ; Draw a picture record: B = Y, C = X, then glyph n at BC + 8(n-1), $FF a new line, 0 the end
 > HL = the record, BC = the glyph set. The place is set by `$83CD`; each glyph is drawn by `$83F9` (8 bytes at BC + 8 (n-1)); `$FF` moves to the next line (`$83C6` holds the line start, `$83CD` again). Returns HL past the 0.
 > The entries PrintGlyphsLoop to PrintGlyphsLine are split off because stage 2's code occupies these addresses while the tape loads, and the recordings mark routine entries there.
-> Witness: L1 1141 (c x2, rzx x1). Ran only in c48.
+> Witness: L1 1141 (c x2, rzx x1). Called 14 times in c48 (from `$5DEC`, the `CALL` at `$61EA` 14) and 7 times in r000000, the RZX run's 48K intro; c1's runs at this address are stage 2's code, which occupies it while the tape loads.
 $61F0 c PrintGlyphsLoop ; The next byte of the record
 > Witness: L1 1086 (c x1, rzx x1).
 $61F1 c PrintGlyphsNext ; 0 ends the record
@@ -280,7 +280,7 @@ $620D c PrintGlyphsLine ; Set the print place to BC ($83CD), back to the loop
 > Witness: L1 1347 (c x2, rzx x1).
 $6212 c CopyAttrBlock ; Copy B rows of C bytes from HL to the attributes at DE (DE + 32 a row)
 > From Intro48 (IntroAttrsA/B/C).
-> Witness: L1 1299 (c x2, rzx x1). Ran only in c48.
+> Witness: L1 1299 (c x2, rzx x1). Ran in c48 and in the RZX run's 48K intro (r000000); c1's runs at this address are stage 2's code.
 $621F c CopyAttrBlockCarry ; The high byte of DE + 32
 > Witness: L1 71 (c x2, rzx x1).
 $6225 b IntroAttrsA 3 ; Intro scene 2's attributes: 5 rows of 3 bytes at $5882
@@ -298,7 +298,7 @@ $66CD c GlyphBytesAsCode ; Not code: IntroGlyphs bytes that the kit must list as
 > Witness: L1 13 (gameover, hiscore, menu, opt x3, rzx x5).
 $66CE GlyphBytesTail ; the rest of the glyph bytes, as data
 $66F7 b CellColours 8 ; IntroGlyphs continued; at run time $66F7-$66FF is the cell colour table (page tail of $6600)
-> At run time (after BuildPageTails) the nine bytes are `07 47 46 07 46 05 47 06 45`: the render's `$88BA` takes the attribute of a revealed cell from here by the high nibble of its plane byte; TitleSequence `$A754` reads the last six (TitleColours `$66FA`) as the title's colours. In the image the entry is the rest of IntroGlyphs, to `$6A7A`.
+> At run time (after BuildPageTails) the nine bytes are `07 47 46 07 46 05 47 06 45`: the render's `$88BA` takes the attribute of a revealed cell from here by the high nibble of its plane byte; TitleColour `$A754` reads the last six (TitleColours `$66FA`) as the title's colours. In the image the entry is the rest of IntroGlyphs, to `$6A7A`.
 @res graphics/intro-glyphs-2.bin
 $6A7B c ControlMenu ; The control menu: keys 1-4 choose joystick 1, joystick 2, Kempston or Protek / cursor; patch the input code
 > CLS (A = 0), print ControlMenuText `$6ACB` (`$836E`), wait for one of the keys 1-4 (`$F7FE`, read until one is held; key 1 first). HL = ControlRecords `$6B0A` + 14 x (key - 1); the record patches the input read:
@@ -320,7 +320,7 @@ $6ACF ; 1.JOYSTICK 1 / 2.JOYSTICK 2 / 3.KEMPSTON / 4.PROTEK OR CURSOR, end
 @res texts/control-menu.bin
 $6B0A b ControlRecords 7 ; The four control records (14 bytes): fire mask, direction mask, RRA/NOP, four direction opcodes, the fire test
 > Keys 1 and 2 are the Sinclair joysticks (keys 6-0, fire 0; keys 1-5, fire 5), 3 the Kempston port `$1F` (bits inverted by CPL, so the `RRA` slot is a `NOP`), 4 the Protek / cursor keys 5-8 and 0: key 5 is rotated into bit 1 and ANDed with the `$EFFE` row, so key 5 and key 9 both give left; fire is key 0 only.
-> The last record's fire test is 18 bytes (`$6B3B-$6B4C`); the others' 7 bytes are followed by the next record (18 bytes are always copied: records 1-3 bring 11 bytes of the next record after their `RET`; record 4 runs into `$6B42`-`$6B4C`). The cursor test reads `$F7FE` (key 5) and `$EFFE` and ANDs them, but only bit 0 (key 0) is tested.
+> The last record's fire test is 18 bytes (`$6B3B-$6B4C`); the others' 7 bytes are followed by the next record (18 bytes are always copied: records 1-3 bring 11 bytes of the next record after their `RET`; record 4 runs into `$6B42`-`$6B4C`). The cursor test reads `$F7FE` (key 5, rotated into bit 1) and `$EFFE` and ANDs them: `BIT 0` tests fire (key 0), and the byte goes on as the directions, key 5 or 9 left, 8 right, 7 up, 6 down.
 $6B0A ; 1: Sinclair 1 (row $EFFE)
 $6B11 ; LD A,$EF; IN A,($FE); BIT 0,A; RET
 $6B18 ; 2: Sinclair 2 (row $F7FE)
@@ -348,15 +348,15 @@ $6C36 b WalkLists ; Walk frame lists (run time $5EDE): [n] then n frames, an act
 $6C51 b WeaponRecords 7 ; The thrown weapons' records, kinds $40-$46 (run time $5EF9, $5F82-$5FAB): 7 bytes patched into WeaponTemplate
 @res tables/weapons.bin
 $6C58 PageTail5F ; row 2: to $5F82-$5FFF
-$6C82 b TouchZoneRecords 4 ; The touch zones (run time TouchZones $5FAC): five of Y from, Y to, X from, X to, signed
+$6C82 b TouchZoneRecords 4 ; The touch zones (at run time at $5FAC): five of Y from, Y to, X from, X to, signed
 @res tables/touch-zones.bin
 $6C96 b SetTuneCode 8 ; Code kept as data: run time $5FC0 SetTune, HavokRoomLeave $5FCB, HavokRoomEnter $5FD4 (57 bytes)
 $6CCF ; spare (to $5FFF)
 $6CD6 b PageTail60 5 ; Row 3 (to $6082-$60FF): the 24 sprite sets, SizeClasses $6082 at run time: half columns, rows, bytes a frame, address
-> SpawnActor `$A65D` copies a set's five bytes to the actor's `+$15-+$19` (tables/sprite-sets.csv).
+> InitActor `$A65D` copies a set's five bytes to the actor's `+$15-+$19` (tables/sprite-sets.csv).
 @res tables/sprite-sets.bin
 $6D4E b SpriteSetsTail 6 ; The last six bytes of row 3 (run time $60FA-$60FF): $18 $40 and four zeros, after the 24 sets
-$6D54 b PageTail61 18 ; Rows 4-8 (to $6182-$65FF): 34 actor templates of 18 bytes, copied to an actor's +$03..+$14 by SpawnActor
+$6D54 b PageTail61 18 ; Rows 4-8 (to $6182-$65FF): 34 actor templates of 18 bytes, copied to an actor's +$03..+$14 by InitActor
 > KindTemplates `$7200` names the kinds of each (tables/actor-templates.csv); the run-time names WeaponTemplate, SharedEnemyTemplate, HiroTemplate and TitlePieceTemplate lie here.
 $6DD2 PageTail62 ; row 5: to $6282-$62FF
 $6E50 PageTail63 ; row 6: to $6382-$63FF
@@ -367,7 +367,7 @@ $6FB8 b TitleWhiteRowsCode 8 ; Code kept as data: run time $65EE: EXX; fill $59E
 $6FC8 ; spare
 $6FCA b PageTail66 8 ; Row 9, code kept as data: run time PauseGame $6682, PendingMessage $66B6, RunBanner $66BD, ShowMessage $66C8
 $703F b CellColoursTemplate 9 ; The end of row 9 (run time $66F7-$66FF): the cell colours by plane nibble, the last six TitleColours
-> The render's `$88BA` takes a revealed cell's attribute from CellColours `$66F7` by the high nibble of its plane `$6C` byte; TitleSequence `$A754` reads the last six (tables/cell-colours.csv).
+> The render's `$88BA` takes a revealed cell's attribute from CellColours `$66F7` by the high nibble of its plane `$6C` byte; TitleColour `$A754` reads the last six (tables/cell-colours.csv).
 @res tables/cell-colours.bin
 
 @module rooms ; The map lookup, the room decoder and builder, the room objects and zones
@@ -385,7 +385,7 @@ $70F1 ClearRoomCellsLoop
 $7102 w RoomDataPointers 8 ; The room data's address for each room 1-127 ($A928-$D0A5)
 > Read by `$A3C9` (H = `$71`, L = room x 2: room 1 is `$7102`). MENU names the table's base `$7100` RoomDataTable; its first word `$7100` (room 0) lies in ClearRoomCells.
 $7200 b KindTemplates 2 ; The actor kinds' templates: 73 words, kind -> template (0 for no kind)
-> Read by KindTemplate `$A652` (kind AND `$7F`, DE = the word). The templates lie in the page tails (`$5D82` ... `$66FF`, from PageTailTemplate). Bytes, not words: the words point at run-time addresses whose image bytes are other things.
+> Read by TemplateForKind `$A652` (kind AND `$7F`, DE = the word). The templates lie in the page tails (`$5D82` ... `$66FF`, from PageTailTemplate). Bytes, not words: the words point at run-time addresses whose image bytes are other things.
 @res tables/kind-templates.bin
 $7292 b SolidTiles 2 ; Room tile tables: pairs (plane page, tile) read by $A334
 > Read by `$A334` (B pairs from HL): entry points SolidTiles `$7292`, `$7294` and LedgeTiles `$72B4`.
@@ -471,7 +471,7 @@ $732E b RoomPatternsMore 8 ; Room patterns 9-15 read by $9F63 (continued from Ro
 > Witness: $732E, $7333-$7344 read by $9F63 (rooms).
 @res rooms/outlines-2.bin
 $7345 b RoomShapes 2 ; Tile shapes for $A02E: (tile, step) pairs, a step with bit 7 set ends the shape
-> PutShape $A02E: DE = $73xx (E from the room stream, $A01F), (DE) is a tile code stored at (HL), the next byte is added to L; a step of $80 or more ends. The room code handlers 0-3 ($A016) place them.
+> PlotPattern $A02E: DE = $73xx (E from the room stream, $A01F), (DE) is a tile code stored at (HL), the next byte is added to L; a step of $80 or more ends. The room code handlers 0-3 ($A016) place them.
 > Witness: $7345-$7394 read by $A02E in c1, menu, gameover, deaths, rooms.
 @res rooms/strings.bin
 $73BD b ShapeTilesA 4 ; Four tile codes read through IX by $A357 when the room byte's high nibble is 2
@@ -521,7 +521,7 @@ $76D0 b TitleSceneIndex 1 ; The title scene's index into TitleActorOrder ($B6 at
 > $A73E sets $B6, 0; $A788 increments both when an actor's counter ends (effect 11). $A7C3: step $1A, $1B and $0F end or switch the scene.
 $76D1 TitleSceneStep ; steps done
 $76D2 b GateRooms 6 ; Six rooms that hold a gate (the room numbers searched with CPIR by $8F28)
-> FindGate $8F28: CPIR over these six for the room $6BDD, HL = the match + 6 (GateClosed). $8F01 then compares Hiro's X $5D01 with GateX and the side bit with $5D1B: D = 0 (no move) at the gate. $8F22 clears GateClosed: called at $97E5 when the guardian (an actor of kind $2A) is killed, effect 3.
+> BarrierFind $8F28: CPIR over these six for the room $6BDD, HL = the match + 6 (GateClosed). $8F01 then compares Hiro's X $5D01 with GateX and the side bit with $5D1B: D = 0 (no move) at the gate. $8F22 clears GateClosed: called at $97E5 when the guardian (an actor of kind $2A) is killed, effect 3.
 > Rooms $7B (Havok's room), $5D, $3A, $08, $27, $88. Witness: $76D2-$76D7 read by $8F28 in every play recording; $76DB, $76E1, $76E7 read by $8F01 (deaths).
 $76D8 GateClosed ; six flags, 1 = closed; set to 1 by the new game ($5CB4)
 $76DE GateX ; Hiro's X at each gate
@@ -571,7 +571,7 @@ $7BE5 b Font 8 ; The font: 103 glyphs of 8 bytes for the codes $20-$86, seven ro
 $7F0D MeterGlyphs ; codes $85, $86: built every pass by $FF01 (16 bytes written), the panel meter
 @res graphics/font.bin
 $7F1D b FirebladeIcons 6 ; The 16 panel pictures of the Fireblade as it grows: six glyph codes each
-> $FF3C: when $664E (the pieces found) changes and is not 0, effect 5, and 6 bytes from $7F17 + 6 x $664E are copied into FirebladePanelText $82D9 and printed. Witness: not read in the keyed recordings (no piece found); the code alone.
+> $FF3C: when $664E (the pieces found) changes and is not 0, effect 5, and 6 bytes from $7F17 + 6 x $664E are copied into FirebladeGlyphs $82D9 (in FirebladePanelText $82D5) and printed. Witness: not read in the keyed recordings (no piece found); the code alone.
 @res graphics/fireblade-icons.bin
 $7F7D b HavokPicture 6 ; The end picture: 61 rows of 6 bytes (48 x 61 pixels), drawn by DrawHavok $8769
 > DrawHavok draws 10 x 8 lines of 6 bytes from $7F23 (or $7F3B) to the screen, so the picture is preceded by 90 or 66 bytes of FirebladeIcons on screen; ShiftHavokGraphic $87A6 rotates the 384 bytes $7F7D-$80FC in place (to $80FC: the first 18 bytes of the texts after it too). Witness: drawn in havok (Havok's hit points POKEd to 1).
@@ -627,13 +627,13 @@ $82D9 FirebladeGlyphs ; six glyph codes ($FF59 copies them)
 $82DF ; end
 @res texts/strings.bin
 $82E0 b EndText 4 ; "THE DAWN HAS COME AND MY / WORLD IS SAFE, / FOR NOW....." at Y $20, X 4
-> Printed by HavokFade $8761 when the end picture has faded. Witness: havok (Havok's hit points POKEd to 1).
+> Printed by HavokFade $872B (at $8761) when the end picture has faded. Witness: havok (Havok's hit points POKEd to 1).
 $82E4 ; the text
 @res texts/strings.bin
 
 @module mainloop ; The main loop, the IM 2 handler and its tick, the input read, the actor dispatch
 $831A c ShowGameOverWait ; Show message 4 (the game over) and wait up to 200 frames or for fire
-> A = 4, CALL $66C8 (the message actor in the globals page: message 4, run until it ends), then falls into WaitFireLong. Callers: the game over $5C42 and the quit from the pause ($668E: fire while paused).
+> A = 4, CALL $66C8 (the message actor in the globals page: message 4, run until it ends), then falls into WaitFireLong. Callers: the game over $5C42 and the quit ($668E: P pressed while fire is held; PauseGame reads fire only then, never during the pause).
 > Witness: L1 10 (gameover, hiscore, menu, opt x3, rzx x4).
 $831F c WaitFireLong ; Wait 40 x 5 frames or until fire: Z = fire pressed
 > H = $28, then WaitFireFrames. Callers: $5D4F, $5DD8 (the title and intro), $A73A (the high-score table).
@@ -914,7 +914,7 @@ $8A06 c ComposeOverlay ; Tiles $1B and up: when ($6C00 + L) AND $0F is n, compos
 > Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 @module render
 $8A2F c AndTileColumns ; AND a tile's columns into the chunk buffer (the shade of a cell)
-> The AND variant of the column writer of DrawTileColumns `$89D9`: ShadeTile `$8A06` puts `$8A2F` in the call operand `$89F1`, finds the shade tile `$43` + n with TileAddress `$8EA3` and runs DrawTileColumns, which calls here once a 3-pixel column with HL = the chunk byte of its top line and DE = the column's packed bytes, B = the groups of 8 values (2 for a 16-line tile).
+> The AND variant of the column writer of DrawTileColumns `$89D9`: ComposeOverlay `$8A06` puts `$8A2F` in the call operand `$89F1`, finds the shade tile `$43` + n with FrameRecord `$8EA3` and runs DrawTileColumns, which calls here once a 3-pixel column with HL = the chunk byte of its top line and DE = the column's packed bytes, B = the groups of 8 values (2 for a 16-line tile).
 > Each group of three bytes gives eight 3-bit values, most significant first (the same unpacking as UnpackGroups `$8BC8`); each value is ANDed into the buffer byte of its line (L + 1 a line). The shade tiles `$44-$4A` are dot patterns, so a shaded wall shows its texture through a grid of holes (ROOM-tmp/swroom.py draws them so; the c1 end screen agrees in every cell but the sprites').
 > Out: DE = the byte after the column, HL = the next buffer line.
 > The entry is one byte below the region `$8A30`: the loop is `$8A30`, the `EX DE,HL` before it swaps the pointers DrawTileColumns hands over.
@@ -1024,7 +1024,7 @@ $8C51 c MirroredColumn ; Draw one sprite column mirrored left to right
 > Witness: L1 222923 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, throw, c x1, opt x3, poke-room x8, rzx x71, rzxroom x17).
 $8C60 MirroredColumnLoop
 $8C68 c BlitWindow ; Copy the composed window from the chunk buffer to the screen
-> E = the window top (`$732C`), A = its left (`$732A`), ScreenAddress `$8828` (DE = the screen byte), then BlitWindowAt `$8C72`.
+> E = the window top (`$732C`), A = its left (`$732A`), SpriteScreenAddress `$8828` (DE = the screen byte), then BlitWindowAt `$8C72`.
 > Called by ActorUpdate `$8E2B` after each actor is redrawn and by `$A7B9`.
 > Witness: L1 112380 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 $8C72 c BlitWindowAt ; Pack the window's lines and copy them to the screen at DE
@@ -1104,7 +1104,7 @@ $8DFD b PackUnitsStop2 1 ; INC H: the last stop, always a planted RET
 > The packer's last `INC H` (`$24`): PackerPhases record 30 plants the `RET` here. Witness: L1 0 (c1).
 
 @module roomdata ; The packed rooms
-@about The 127 rooms, one record each, found through RoomTable `$7100` (word 2 x room): a header byte (the counts of the three placement groups), the placements (2 bytes each), the command list (a byte: code in the low nibble, repeat in the high nibble, then the operands; code `$F` ends it), then the reveal zones, a counts byte (enemies << 4 | pickups), the pickups and the enemy starts (2 bytes each). BuildMap `$9F63` turns the first part into the cell planes `$6700-$6CFF`, RoomObjects `$A41E` reads the rest. Rooms 122 and 123 share one record; room 0's pointer `$C9F0` points into room 103 (no room 0 is ever built). The format: ROOM.md.
+@about The 127 rooms, one record each, found through the room table `$7100` (word 2 x room): a header byte (the counts of the three placement groups), the placements (2 bytes each), the command list (a byte: code in the low nibble, repeat in the high nibble, then the operands; code `$F` ends it), then the reveal zones, a counts byte (enemies << 4 | pickups), the pickups and the enemy starts (2 bytes each). BuildMap `$9F63` turns the first part into the cell planes `$6700-$6CFF`, RoomObjects `$A41E` reads the rest. Rooms 122 and 123 share one record; room 0's pointer `$C9F0` points into room 103 (no room 0 is ever built). The format: ROOM.md.
 $A928 b Room1 16 ; Room 1: map row 0, column 0; 4 placements, 2 zone records, 2 pickups, 7 enemies
 > 85 bytes `$A928-$A97C`. Header `$12`. The room above: none.
 $A929 ; the placements
@@ -2096,7 +2096,7 @@ $C99D ; the pickups: type << 5 | n, cell
 $C9A3 ; the enemy starts (copied to $5B01)
 @res rooms/rooms.bin
 $C9AB b Room103 16 ; Room 103: map row 14, column 11; 9 placements, 2 zone records, 1 pickup, 5 enemies
-> 92 bytes `$C9AB-$CA06`. Header `$AA`. The room above: room 96 (its bottom row is built into cells `$EC-$FF`). Room 0's entry of RoomTable points at `$C9F0` inside this record (no room 0 is built).
+> 92 bytes `$C9AB-$CA06`. Header `$AA`. The room above: room 96 (its bottom row is built into cells `$EC-$FF`). Room 0's entry of the room table `$7100` points at `$C9F0` inside this record (no room 0 is built).
 $C9AC ; the placements
 $C9BE ; the commands
 $C9F3 ; the end command (code $F)
@@ -2273,7 +2273,7 @@ $CF80 ; the pickups: type << 5 | n, cell
 $CF84 ; the enemy starts (copied to $5B01)
 @res rooms/rooms.bin
 $CF88 b Room122And123 16 ; Rooms 122 and 123 (one record): map row 19, column 19; map row 19, column 20; 0 placements, the default zone, 0 pickups, 1 enemy
-> 41 bytes `$CF88-$CFB0`. Header `$00`. The room above: none. Room 123 is Havok's room: Surface `$A039` treats it apart (only layer `$6B` from cell `$C8`).
+> 41 bytes `$CF88-$CFB0`. Header `$00`. The room above: none. Room 123 is Havok's room: BuildSurface `$A039` treats it apart (only layer `$6B` from cell `$C8`).
 $CF89 ; the commands
 $CFAC ; the end command (code $F)
 $CFAD ; the reveal zones (0: the default record at $75FB)
@@ -2318,12 +2318,12 @@ $D0F1 ; the enemy starts (copied to $5B01)
 
 @module leftovers
 $D0F9 b RoomDataPad 11 ; Eleven zero bytes after the last room
-> Between room 127 (ends `$D0F8`) and the tile set `$D104`. No recording reads them (the rooms recording reads the room records only through RoomTable `$7100`).
+> Between room 127 (ends `$D0F8`) and the tile set `$D104`. No recording reads them (the rooms recording reads the room records only through the room table `$7100`).
 @res leftovers/room-data-pad.bin
 
 @module graphics
-$D104 b Tiles 24 ; The tile set: 174 tiles of 12 x 16 (tile n at `$D104` + 24 (n - 1), TileAddress `$8EA3`)
-> The room cells (layers `$68-$6B`), the pickups (PickupTiles `$7BD8`) and the breakable blocks are all drawn from it. Tile `$43` is blank; tiles `$44-$4B` are the shade masks ANDed over a shaded cell (ShadeTile `$8A06`); tiles from `$4B` are drawn with an outline (MaskedColumn `$8C0F`). 4176 bytes `$D104-$E153`, 4 columns x 16 rows, 24 bytes a frame (6 bytes a column).
+$D104 b Tiles 24 ; The tile set: 174 tiles of 12 x 16 (tile n at `$D104` + 24 (n - 1), FrameRecord `$8EA3`)
+> The room cells (layers `$68-$6B`), the pickups (ObjectTilePlaces `$7BD8`) and the breakable blocks are all drawn from it. Tile `$43` is blank; tiles `$44-$4B` are the shade masks ANDed over a shaded cell (ComposeOverlay `$8A06`); tiles from `$4B` are drawn with an outline (MaskedColumn `$8C0F`). 4176 bytes `$D104-$E153`, 4 columns x 16 rows, 24 bytes a frame (6 bytes a column).
 @res graphics/tiles.bin
 $E154 b EnemyFrames 24 ; Set 1: 47 frames of 12 x 16, the small enemies and hazards
 > Flying and walking enemies, the explosion, the spikes and flames (the sheet in ROOM-tmp/sheet-sprites.png). 1128 bytes `$E154-$E5BB`, 4 columns x 16 rows, 24 bytes a frame (6 bytes a column).
@@ -2447,7 +2447,7 @@ $FD98 b PackerPhases 3 ; The packer's entries and stops with the screen edge mas
 $FDB0 ; records 8-30: the stops and the right masks
 @res tables/packer-phases.bin
 $FDF5 b UnitByteOffsets 8 ; The byte of a 3-byte group that holds unit n (0-7): 0 0 0 1 1 1 2 2
-> Read by ScreenAddress `$8828` (`$FDF5` + (X AND 7)): the screen column of a window's left unit = 3 x (X / 8) + this.
+> Read by SpriteScreenAddress `$8828` (`$FDF5` + (X AND 7)): the screen column of a window's left unit = 3 x (X / 8) + this.
 @res tables/unit-offsets.bin
 $FDFD s Im2Space ; Zeros in the image: the bootstrap's SetVectors $401F writes JP $8456 at $FDFD and the IM 2 table $FE00-$FF00 (all $FD)
 > Read by no code as loaded: the 260 bytes `$FDFD-$FF00` are written before the first interrupt (boot.ann: Im2Jump, Im2Table).
@@ -2458,7 +2458,7 @@ $FDFD s Im2Space ; Zeros in the image: the bootstrap's SetVectors $401F writes J
 @module mainloop
 $8DFE c MainLoop ; The main loop: the nine actors, the end, the pause, the per-pass jobs
 > Entered by `JP $8DFE` at the start of play (`$5CF7`) and from `$5C68`; it never returns. Each pass: SP = `$5C00` (whatever a routine left on the stack is dropped); for the nine pages `$5D00`-`$6500` (B = 9, H stepped by `INC H`, L = 2 kept), ActorUpdate `$8E2B` when bit 0 of +`$02` (active) is set; then the end flag `$6652` bit 7 (set by the tick when fire is pressed after Havok's death, `$84D7`) jumps to the end `$5C45`; the pause flag `$664C` bit 7 (P, read by the tick) calls the pause `$6682`; `$79FF` not 0 calls `$66B6`; and the two jobs copied over the loader, `$FF01` and `$FF64`.
-> The tenth page `$6600` (Hiro's thrown weapon, kinds `$40-$46`) is not in this loop: RunActorSteps `$9A4B` runs it on every second call. Nothing waits for the frame: a pass costs about 2400-4000 T on average (518 T of the loop's own instructions; ActorUpdate 1566-1753 T a call, inclusive; `$FF01` and `$FF64` about 100 T each), so in light rooms the loop turns about 26 times a frame (c1: 25068 passes in the 975 frames of play). The room build runs inside an actor update (Hiro's move `$9B56` -> `$955A`) and stalls the loop 60-72 frames (WALKTHROUGH 1).
+> The tenth page `$6600` (Hiro's thrown weapon, kinds `$40-$46`) is not in this loop: RunActorSteps `$9A4B` runs it on every second call. Nothing waits for the frame: a pass costs about 2400-4000 T on average (518 T of the loop's own instructions; ActorUpdate 1566-1753 T a call, inclusive; `$FF01` and `$FF64` about 100 T each), so in light rooms the loop turns about 26 times a frame (c1: 25068 passes in the 975 frames of play). The room build runs inside an actor update (Hiro's move `$9B56` -> `$955A`) and stalls the loop: a room build 25-71 frames (median 43), the whole stall at a room change 27-72 (median 45; doc 4.5).
 > Counts: c1 25068 passes, 28339 actor updates (1.13 active actors a pass, Hiro alone in room 4); deaths 108018 passes, 225247 updates; rooms 78837 and 107204; menu 133076; opt2-4 about 15680 each.
 > Witness: L1 2036434 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 $8DFE ; the stack is reset on every pass
@@ -2606,14 +2606,14 @@ $902E ActorJumpScript ; the straight jump
 $9035 ; the running jump
 $903F ; a run of 4 steps or more: the long jump
 $9042 ActorJumpStart ; sequence +$30
-$904A c FallSequenceStart ; +$10 bit 4 (nothing below): the fall sequence +$31, or Hiro hanging climbs up
-> From StepActor `$9AD3`. Hiro: script low byte from `$69DC` (`$18`, set by `$9878`), E = 4; when he hangs (+`$02` bit 3) LeaveLadder `$9078` instead. Other actors: the low byte from +`$08`. The page is +`$06`. SequenceHeader `$919C` with L = `$31`, then FallScriptStep `$9240`.
+$904A c FallSequenceStart ; +$10 bit 4 (hurt): the push-back sequence +$31; Hiro on a ladder leaves it (LeaveLadder)
+> From StepActor `$9AD3`. Hiro: script low byte from `$69DC` (`$18`, set by `$9878`), E = 4; when he is on a ladder (+`$02` bit 3) LeaveLadder `$9078` instead (`$9058`; taken once, in the room-entry segment e102685). +`$10` bit 4 is the hurt flag (HurtHiro `$98A7` for Hiro); nothing below the feet never sets it. Other actors: the low byte from +`$08`. The page is +`$06`. SequenceHeader `$919C` with L = `$31`, then FallScriptStep `$9240`.
 > Two entry points: GrabLadder `$906C` (from ActorJump `$902B` and `$9B1D`): +`$02` bit 3 (hanging), script `$7AAF` (2 frames) in sequence +`$36`; LeaveLadder `$9078` (here and `$9C9E`): bit 3 cleared, X + 2, script `$7AE8` in the pose sequence +`$32`.
 > Witness: L1 797 (deaths, play48, rooms, rzx x58, rzxroom x5).
 $905E StartFallOther ; the fall script's low byte from +$08
 $9061 StartFallScript ; the scripts' page from +$06
 $906C GrabLadder ; hang: +$02 bit 3, script $7AAF in +$36
-$9078 LeaveLadder ; climb up: script $7AE8 in +$32, X + 2
+$9078 LeaveLadder ; leave the ladder: +$02 bit 3 off, script $7AE8 in +$32, X + 2
 $9087 c TurnToHiro ; The hold count +$28 ran out: face Hiro and play the +$0E script (sequence +$32)
 > From StepActor `$9AB0` when +`$28` reaches 0 and +`$0E` is not 0. Direction +`$1B` = 2 when Hiro's X (`$5D2A` x 2, his box's first column) is at or right of the actor, else `$FE`; sound `$09` (`$8454`); the script `$7600` + +`$0E` in sequence +`$32` (StartPoseSeq `$90A1`).
 > Witness: L1 242 (bossgate, rooms, poke-room x6, rzx x53, rzxroom x8).
@@ -2723,7 +2723,7 @@ $9253 c MotionStep ; Read a jump or fall script step: frame +$23, E = Y step, D 
 $9264 MotionStepX
 $926E c HiroAttack ; Hiro's fire (+$6650 set): throw the weapon $664B (actor $6600) or strike
 > From StepActor `$9AE9` for Hiro when `$6650` (the fire request) is not 0. `$69E1` = the strike (1-3). `$664B` = 0 (no weapon): HiroMelee `$90EC`. After Havok (`$6652` set): ResumeState `$9AEC`. The weapon page `$6600` active (+`$02` bit 0): nothing, one in flight at a time.
-> Else the weapon kind `$40` + `$664B` - 1: its 7-byte record (KindTemplates `$7200`, KindTemplate `$A652`) is patched into the template `$64EE` (bytes 2-3, 8-9, 12, 16-17: the path, the step, the death script, the size), SpawnActor `$A65D` on page `$6600` at Hiro's Y + `$0A`, X + 6 (+ the template's byte 8 when facing left), its +`$1B` = Hiro's, +`$3F` = 0, then per kind: below `$43` the life +`$3F` = the hold time `$69E3` x 4; `$43`: the step delay +`$0C` = 5 - (hold time / 8 AND 7), a longer hold flies faster; `$44`: +`$05` = `$F3` + 2 x (strike - 1). A weapon spawned at X `$9C` or more expires at once (`$97A3`). Without a boss (`$9A59` = 0) the count `$6649` loses one. Then the throw script `$7AEF` (8 frames) in +`$34` (StartActionSeq `$9104`).
+> Else the weapon kind `$40` + `$664B` - 1: its 7-byte record (KindTemplates `$7200`, TemplateForKind `$A652`) is patched into the template `$64EE` (bytes 2-3, 8-9, 12, 16-17: the path, the step, the death script, the size), InitActor `$A65D` on page `$6600` at Hiro's Y + `$0A`, X + 6 (+ the template's byte 8 when facing left), its +`$1B` = Hiro's, +`$3F` = 0, then per kind: below `$43` the life +`$3F` = the hold time `$69E3` x 4; `$43`: the step delay +`$0C` = 5 - (hold time / 8 AND 7), a longer hold flies faster; `$44`: +`$05` = `$F3` + 2 x (strike - 1). A weapon spawned at X `$9C` or more expires at once (`$97A3`). Without a boss (`$9A59` = 0) the count `$6649` loses one. Then the throw script `$7AEF` (8 frames) in +`$34` (StartActionSeq `$9104`).
 > Entry HiroEndWalk `$9321` (from HiroControl when `$6652` is set, the end after Havok): no input; with `$6652` bit 6 clear Hiro walks up (E = -1) and, at X `$58` or more, left: the end scene walks him.
 > Witness: L1 650 (bossgate, havok, menu, play48, throw, c x1, opt x3, poke-room x15, rzx x66, rzxroom x10).
 $9281 ; one weapon in flight at a time
@@ -2760,7 +2760,7 @@ $9387 c DecorControl ; Kind $3E: no move, +$25 counts the steps (the animation)
 > DE = 0, +`$25` + 1, then `$9B85` (the redraw and room test without a move). Template `$64DC`, from `$6F28` of the image. Not run in the keyed recordings (the RZX run has it).
 > Witness: L1 738 (rzx x5).
 $9390 c TriggerControl ; Kind $3F: when Hiro enters its zone, +$0A = 1 and +$10 bit 6 (shown)
-> HiroInZone `$9529` (zone +`$11` of TouchZones `$5FAC`). Hiro inside: the still frame +`$0A` = 1, `$9D50` (+`$10` bit 6 set, bit 7 cleared), `$9B85`. Outside: `$9B85` while +`$10` bit 7 is clear, else nothing. Template `$64CA`, from `$6F16`. Not run in the keyed recordings; the RZX snapshots hold kind `$3F` on pages `$5E-$63`.
+> HiroInZone `$9529` (zone +`$11` of the touch zones at `$5FAC`). Hiro inside: the still frame +`$0A` = 1, `$9D50` (+`$10` bit 6 set, bit 7 cleared), `$9B85`. Outside: `$9B85` while +`$10` bit 7 is clear, else nothing. Template `$64CA`, from `$6F16`. Not run in the keyed recordings; the RZX snapshots hold kind `$3F` on pages `$5E-$63`.
 > Witness: L1 104705 (poke-room x1, rzx x17, rzxroom x5).
 $939D TriggerTouched
 $93A8 c StalactiteControl ; Kind $36: Hiro below it (zone 5) shakes it ($7BB5, 30 frames) and lets it fall
@@ -2794,7 +2794,7 @@ $943D PathSegmentStart ; a boss may fire; +$3E = the steps
 $9450 PathStep
 $9466 PathStepX
 $947D c BossFire ; A boss (kinds $25-$29) at the start of a path segment fires its shot (kind $2D on page $6000)
-> D = the segments left +`$40`; HL = the actor; BC = the path. The boss's fire table lies in the path's page at +`$11`: [n] then n pairs [segment][shot path offset]. A match: the shot's path offset to `$61E0` (the template `$61DC`, its +`$07`); a shot still on page `$6000` is expired (`$97A3`) and run (ActorUpdate) until its page is free; the new one is spawned (SpawnActor `$A65D`, kind `$2D`) at the boss's Y + +`$09`, X + +`$0A`, facing as the boss (+`$1B` copied); sound 6. BC, HL kept.
+> D = the segments left +`$40`; HL = the actor; BC = the path. The boss's fire table lies in the path's page at +`$11`: [n] then n pairs [segment][shot path offset]. A match: the shot's path offset to `$61E0` (the template `$61DC`, its +`$07`); a shot still on page `$6000` is expired (`$97A3`) and run (ActorUpdate) until its page is free; the new one is spawned (InitActor `$A65D`, kind `$2D`) at the boss's Y + +`$09`, X + +`$0A`, facing as the boss (+`$1B` copied); sound 6. BC, HL kept.
 > Called at every segment start of every path mover (209 calls in deaths, gameover, menu, rooms, opt2-4), and the kind test passes in bossgate (3 shots) and havok (1): the fire itself is `$9487` on. The RZX run's snapshot at frame 136 000 has Havok (kind `$25`) on page `$5E` and a shot (kind `$2D`, handler PathControlShot `$940A`) on `$6000`.
 > Witness: L1 4894 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, opt x3, rzx x66, rzxroom x9).
 $9495 BossFireFind
@@ -2908,7 +2908,7 @@ $965C ; print the panel's numbers
 
 @module player
 $965F c SpawnSparks ; Three spark actors (kind $47) at the cell $69E2 for 170 frames
-> The cell last probed (`$69E2`, written by ProbeCell `$9E4F`) gives the position (`$8EC7`: Y = row x 16, X = column x 8, then X + 2), kept in the operand of `LD BC,nn` at `$9683`. Three times: the template `$6582` gets the bytes +5 to +7 from `$7B86-$7B88`, `$7B83-$7B85`, `$7B80-$7B82` (the animation `$7B89` and three different +7 bytes: `$A8`, `$9B`, `$8E`), FindFreeActor `$9F2C` looks for a free page among `$62-$65`, and SpawnActor `$A65D` puts a kind `$47` there with the 16-bit timer at 170 frames (`$9991`). The main registers are kept (EXX).
+> The cell last probed (`$69E2`, written by ProbeCell `$9E4F`) gives the position (`$8EC7`: Y = row x 16, X = column x 8, then X + 2), kept in the operand of `LD BC,nn` at `$9683`. Three times: the template `$6582` gets the bytes +5 to +7 from `$7B86-$7B88`, `$7B83-$7B85`, `$7B80-$7B82` (the animation `$7B89` and three different +7 bytes: `$A8`, `$9B`, `$8E`), FindFreeActor `$9F2C` looks for a free page among `$62-$65`, and InitActor `$A65D` puts a kind `$47` there with the 16-bit timer at 170 frames (`$9991`). The main registers are kept (EXX).
 > Callers: BreakBlock `$9E98` (a block smashed), CollectFragment `$990D` (a Fireblade fragment taken), StrikeEnemy `$976B` (a boss other than kind `$25` hit). Ran in `play48` at frame 1458 (a block broken in room 6, its item revealed) and in bossgate (the giant struck, StrikeEnemy `$976B`); no fragment in the keyed recordings.
 > Witness: L1 82 (bossgate, play48, throw, rzx x31, rzxroom x4).
 $9660 ; DE = the cell's Y, X
@@ -3049,7 +3049,7 @@ $98B6 c CollectPickup ; The effect of the pickup of kind A (1-$22)
 > | 7-11 | the letters E X T R A | `$5EA6-$5EB6` | LetterPickup `$9997` |
 > | 12-16 | the letters B O N U S | `$5EBA-$5ECA` | LetterPickup |
 > | `$11-$17` | the weapon shields: fist, blade, scorchball, dart, spinblade, needle bolts, trispike | `$5DF6`, `$5DFA`, `$5E82`, `$5E92`, `$5E96`, `$5E8E`, `$5E86` | SetWeapon `$98F3`: weapon 0-6 |
-> | `$18` | a Fireblade fragment | `$5E8A` | CollectFragment `$9908`: 10000, at 16 50000 and weapon 7 |
+> | `$18` | a Fireblade fragment | `$5E8A` | CollectFragment `$9908`: 10 000 each; the sixteenth 10 000 + 50 000 = 60 000 and weapon 7 |
 > | `$19` | the power-up shield | `$5ECE` | minimum power `$6647` + 2, at most `$10` (eight) |
 > | `$1A` | the speed-up shield | `$5ED2` | the meter's rate `$6644` + 1, at most 3 |
 > | `$1B` | the bullet shield | `$5E9A` | 16 bullets with a weapon, else 50 |
@@ -3082,7 +3082,7 @@ $98FB ; the weapon
 $9902 RefillBullets ; 16 bullets
 $9904 SetBullets
 $9908 c CollectFragment ; A Fireblade fragment: 10000, sparks, the count, at 16 the Fireblade
-> A = the record's score index (`$C2`, 10000). AddScore `$99E7`, SpawnSparks `$965F`, the fragment count `$664E` + 1 (shown by `$FF3C`). Below 16 the return address is popped and the weapon is not changed; at 16 AddScore `$C6` (50000) and back to `$98F2`, where SetWeapon `$98F3` gives weapon 7, the Fireblade (the manual: "Hiro's weapon will automatically switch over to the Fireblade"). Not run in the keyed recordings.
+> A = the record's score index (`$C2`, 10000). AddScore `$99E7`, SpawnSparks `$965F`, the fragment count `$664E` + 1 (shown by `$FF3C`). Below 16 the return address is popped and the weapon is not changed; at 16 also AddScore `$C6` (50000; the sixteenth gives 10 000 + 50 000 = 60 000) and back to `$98F2`, where SetWeapon `$98F3` gives weapon 7, the Fireblade (the manual: "Hiro's weapon will automatically switch over to the Fireblade"). Not run in the keyed recordings.
 > Witness: L1 4 (rzx x4). Not run in the keyed recordings.
 $9910 ; one more fragment
 $9914 ; the 16th?
@@ -3102,7 +3102,7 @@ $995C c RestoreShield ; Put the energy ball back after a room change
 > From EnterRoom `$95F4` when `$6651` is set: BC = the ball's 16-bit timer left (`$651E`), then SpawnShield `$9962`. deaths 2 runs.
 > Witness: L1 16 (deaths, play48, rzx x8, rzxroom x1).
 $9962 c SpawnShield ; The energy ball (kind $48) in page $65 for BC frames
-> BC = the frames. The position: the ball's own (`$6500`) when it is already there, else Hiro's Y and X + 8. SpawnActor `$A65D` with the template `$6594`, kind `$48`; `$6651` = `$48` (LoseEnergy `$9615` and TouchHiro `$9824` ignore harm while it is set; the IM 2 tick clears it when the page-`$65` timer runs out, `$84AB`, and so does `$91CB`). Then the 16-bit timer (SetActorTimer `$9991`).
+> BC = the frames. The position: the ball's own (`$6500`) when it is already there, else Hiro's Y and X + 8. InitActor `$A65D` with the template `$6594`, kind `$48`; `$6651` = `$48` (LoseEnergy `$9615` and TouchHiro `$9824` ignore harm while it is set; the IM 2 tick clears it when the page-`$65` timer runs out, `$84AB`, and so does `$91CB`). Then the 16-bit timer (SetActorTimer `$9991`).
 > Callers: LoseLife `$9632` (170 frames after a lost life), CollectPickup `$98E8` (the invulnerability pickup, `$355` = 853 frames, 17 s at 50 Hz: the manual's "sixteen second period"), RestoreShield `$995C`, `$872B`. deaths and gameover 7 runs.
 > Witness: L1 113 (deaths, gameover, havok, hiscore, play48, rzx x53, rzxroom x2).
 $9970 ; no ball yet: at Hiro, X + 8
@@ -3161,7 +3161,7 @@ $9A4B c RunActorSteps ; Run the next due actor step: page $66 or the boss's shot
 > Every other call (the operand at `$9A51` rotates `$AA`) page `$66` (Hiro's thrown weapon or the message banner) steps when it is active and due (the cyber-arm's shot moves at twice the rate); on the calls between, when a boss fight is on (`$9A59`), the actor in page `$60` (the boss's shot, BossFire). Bit 7 of `$6602` (the banner) stops here. Then Hiro when due; then every page `$5E-$65` that is falling (+2 bit 2) and due; then actor H when due. Each "due" step (`$9A8E`) pops its caller's return, so the call ends after one step.
 > Witness: L1 3898691 (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 $9A50 ; LD A,n: n rotates $AA, one call in two
-$9A58 ; LD A,n: n = the boss kind, 0 when no boss fight (SpawnActor $A69D, KillActor $97BA, $A47A)
+$9A58 ; LD A,n: n = the boss kind, 0 when no boss fight (InitActor at $A69D, KillActor at $97BA, $A47A)
 $9A5D ; the boss's shot in page $60
 $9A64 StepBulletPage ; page $66: Hiro's weapon or the banner
 $9A69 StepHiroFirst ; $6602 bit 7: no more this call
@@ -3404,7 +3404,7 @@ $9EC6 ; $8C: breakable, does not block
 $9ECA ; plane $6A
 $9ED0 ; $8D: blocks
 $9ED7 c BreakReveal ; A block broken: mark it, and drop the pickup hidden in it
-> L = the cell. Plane `$67` bit 1 of the cell cleared. The room's hidden-item list at `$5B02` (pairs: the cell, the content before it) is searched for the cell; the item's number B gives the bit `$80` >> (B - 1) set in `$6DFE` (the room's taken bits, saved per room by `$A58A`). Content & `$1F` = 0: nothing. Else the kind is kept in the operand at `$9F1C`; its record (`$A652`) gives the frame and score copied into the pickup template `$65BF-$65C0` (`$65C1` = 1, `$65C2` = 0); a free page among `$5E-$64` (FindFreeActorAtCell `$9F29`); SpawnActor `$A65D` with kind + `$80` (StartLifetime gives it 255 frames at its first step) at the cell; +2 bits 1, 2: it drops. Ran in `play48` at frame 1458 (a block broken in room 6, its item revealed).
+> L = the cell. Plane `$67` bit 1 of the cell cleared. The room's hidden-item list at `$5B02` (pairs: the cell, the content before it) is searched for the cell; the item's number B gives the bit `$80` >> (B - 1) set in `$6DFE` (the room's taken bits, saved per room by `$A58A`). Content & `$1F` = 0: nothing. Else the kind is kept in the operand at `$9F1C`; its record (`$A652`) gives the frame and score copied into the pickup template `$65BF-$65C0` (`$65C1` = 1, `$65C2` = 0); a free page among `$5E-$64` (FindFreeActorAtCell `$9F29`); InitActor `$A65D` with kind + `$80` (StartLifetime gives it 255 frames at its first step) at the cell; +2 bits 1, 2: it drops. Ran in `play48` at frame 1458 (a block broken in room 6, its item revealed).
 > Witness: L1 51 (bossgate, play48, throw, rzx x25, rzxroom x4).
 $9EDC ; the hidden-item list
 $9EE1 FindHiddenLoop
@@ -3758,7 +3758,7 @@ $A59E SpawnZoneEnemies
 $A5AD SpawnRoomEnemiesLoop
 $A5BF c SpawnEnemy ; Put an enemy into a free actor page when its zone is revealed
 > IX = the enemy record (kind, cell), B = its number (counting down), C = the zone mask. Nothing when the cell's zone is not in C, or the slot `$68DB` + B is already set (the enemy is on), or none of the 7 pages `$5E00-$6400` is free (`$9F2C`).
-> The slot gets B; `$8ECA` turns the cell into the X and Y; TemplateForKind `$A652` gives the 18-byte template; kinds below `$20` and `$20-$22` use the shared template `$65B8` with its first two bytes copied from the kind's template to `$65BF` and `$65C1`/`$65C2` = `$03`/`$1F` (kinds below `$20`) or `$04`/`$3F` (`$20-$22`); InitActor `$A65D`; +`$29` = the enemy number; kinds with bit 7 or `$40` and up get +`$28` = Random `$A632` AND +`$0D`.
+> The slot gets B; `$8ECA` turns the cell into the X and Y; TemplateForKind `$A652` gives the 18-byte template; kinds below `$20` and `$20-$22` use the shared template `$65B8` with its first two bytes copied from the kind's template to `$65BF` and `$65C1`/`$65C2` = `$03`/`$1F` (kinds below `$20`) or `$04`/`$3F` (`$20-$22`); InitActor `$A65D`; +`$29` = the enemy number; kinds with bit 7 or from `$20` on (the `CP $40` at `$A621` follows an `RLA`: it compares kind x 2) get +`$28` = Random `$A632` AND +`$0D`.
 > 468 runs, 21 spawns (`$A5D0`).
 > Witness: L1 3701 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c x1, poke-room x14, rzx x68, rzxroom x17).
 $A5C7 ; the enemy's slot in $68DC-$68EB

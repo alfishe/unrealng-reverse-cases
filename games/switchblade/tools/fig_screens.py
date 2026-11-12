@@ -4,6 +4,7 @@
     python3 tools/fig_screens.py docs/img/play/screens.png --set main        # c1 and the RZX run, menu to the end
     python3 tools/fig_screens.py docs/img/play/screens-more.png              # the load, the title, a fight, GAME OVER
     python3 tools/fig_screens.py docs/img/play/screens-moments.png --set moments  # the giants, a death, the pause
+        # (the pause: work/docs/zsB/out/p1990.png, kit/screen_shot.py on the menu recording, as Figure 5.4 gives)
 
 A picture is a recording's screens/FFFFFF-name.png (tools/record.py: the screen at the start of that frame, 512 x 384,
 the 256 x 192 screen doubled, no border), a stage-1 RZX playback screen (work/stage1/rzx/fNNNNNN.png, 256 x 192), or
@@ -49,7 +50,7 @@ MAIN = [
 MOMENTS = [
     ('stage2/rec/play48/screens/000669-right-1.png', 'play48 669: room 5 and its patroller (48K)'),
     ('stage1/rec/deaths/screens/003149-walk-11.png', 'deaths 3149: a life lost, lives 04 to 03'),
-    ('stage1/rec/menu/screens/002035-pause-1.png', 'menu 2035: paused (P): no banner'),
+    ('docs/zsB/out/p1990.png', 'menu 1990: paused (P): the PAUSE GAME banner'),
     ('stage2/rzx/snap-026000.z80', 'RZX 26000: the giant of room 39'),
     ('stage2/rec/bossgate/screens/000420-boss.png', 'bossgate 420: the giant of room 58'),
     ('stage2/rec/bossgate/screens/000492-gate-gone.png', 'bossgate 492: room 58, giant and gate gone'),

@@ -16,7 +16,7 @@ Leftover72FE:
 ; Eleven zero bytes after the last room
 ;
 ; Between room 127 (ends `$D0F8`) and the tile set `$D104`. No recording reads
-; them (the rooms recording reads the room records only through RoomTable
+; them (the rooms recording reads the room records only through the room table
 ; `$7100`).
 RoomDataPad:
   INCBIN "res/leftovers/room-data-pad.bin",$0000,11

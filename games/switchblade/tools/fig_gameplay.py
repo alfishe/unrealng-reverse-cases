@@ -77,7 +77,7 @@ def fig_jumps(out):
         ax[1].plot(range(0, 34), [rows[start + k][0] for k in range(34)], '-', color=col,
                    label='play48 from frame %d' % start)
     ax[0].invert_yaxis()
-    ax[0].set_xlabel('X step sum (game units: 2 a step, a cell is 8)')
+    ax[0].set_xlabel('X step sum (half units, 1.5 px: a step of 2 = one unit, a cell is 8)')
     ax[0].set_ylabel('Y (pixels, up is negative)')
     ax[0].set_title('the scripts (solid) and play48 (dotted)', fontsize=11)
     ax[0].legend(fontsize=9, loc='lower right')
@@ -103,7 +103,7 @@ def fig_fall(out):
     ax.axvline(19.5, color='k', ls=':', lw=1)
     ax.annotate('play48: 32 steps from room 8 into room 9; 14 damage steps;\na touch took 4 at frame 3016, the 6th step the life (frame 3045)',
                 xy=(32, 28), xytext=(0.5, 22), arrowprops={'arrowstyle': '->'}, fontsize=10)
-    ax.text(4, 12, '1-19 steps: a 1-frame crouch (LandScript $7AB6), no loss', fontsize=10)
+    ax.text(0, 12, '1-19 steps: a 3-frame crouch\n(one step of LandScript $7AB6), no loss', fontsize=10)
     ax.set_xlabel('fall steps +$26 (4 pixels each, counted by FallStep across room changes)')
     ax.set_ylabel('energy lost')
     ax.legend(fontsize=10, loc='lower right')
