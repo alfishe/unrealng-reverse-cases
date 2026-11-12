@@ -14,7 +14,7 @@
 ; HL = $BEC6 + 314 x CaveNumber $FD91; 300 bytes give 600 cells (low nibble
 ; first) into CaveGrid $FDA8, then 14 bytes to CaveParams $FD9A.
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 UnpackCave:
   LD A,(CaveNumber)
   LD B,A
@@ -53,7 +53,7 @@ UnpackCaveLoop2:
 ; Write A into the 4 attributes of the graphic at HL: bright, plain, plain,
 ; bright
 ;
-; Witness: L1 517 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 517 (c1, hiscore, lives, timer, rzx01-rzx32).
 SetGraphicColour:
   OR $40
   LD (HL),A
@@ -74,7 +74,7 @@ SetGraphicColour:
 ; $9B08, BoulderColour into $9B2C, Wall1Colour into $9CB8, EarthColour into
 ; $9B50 (SetGraphicColour).
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 CaveSetup:
   CALL UnpackCave
   LD HL,(EarthGraphic)
@@ -102,7 +102,7 @@ CaveSetup:
 
 ; ClearScreen, ColourCycleInk = $45
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 ClearScreenCave:
   CALL ClearScreen
   LD A,$45
@@ -113,7 +113,7 @@ ClearScreenCave:
 
 ; CaveSetup, then the boulder colour into the 7 dissolve frames
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 CaveSetupAll:
   CALL CaveSetup
   LD A,(GfxBoulder)

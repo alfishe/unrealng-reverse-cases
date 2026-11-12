@@ -25,7 +25,7 @@
 ; Then phase 8 at DE: for each row k, $18 at byte 2 when RombColumns[k] >= the
 ; threshold (never: see the module's header).
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 BuildRombPhases:
   LD IY,RombOffsets
   LD C,$08
@@ -79,7 +79,7 @@ EdgeOnNext:
 ; The offset's index is written into the LD A,(IY+d) at $634D (IY = RombOffsets
 ; $765C).
 ;
-; Witness: L1 2560 (c x4).
+; Witness: L1 2560 (c1-c4).
 ClearPhaseMask:
   EXX
   LD HL,PhaseMask
@@ -99,7 +99,7 @@ ClearPhaseIndex:
 ;
 ; The index is written into the LD (IX+d),1 at $635D.
 ;
-; Witness: L1 57600 (c x4).
+; Witness: L1 57600 (c1-c4).
 MarkPhaseColumn:
   PUSH IX
   LD IX,PhaseMask
@@ -118,7 +118,7 @@ MarkPhaseWrite:
 ; into the instruction at $63AD) at the next destination pixel. Returns HL and
 ; DE 5 bytes on (the next row).
 ;
-; Witness: L1 2560 (c x4).
+; Witness: L1 2560 (c1-c4).
 ScaleRombLine:
   PUSH BC
   PUSH IY
@@ -205,7 +205,7 @@ ScaleSkipBit:
 ; Reverses the 5 bytes of each row and the bits of each byte (MirrorByte
 ; $6419). HL = DE is allowed (FlipSprite $6E35 uses it so).
 ;
-; Witness: L1 80 (c x4).
+; Witness: L1 80 (c1-c4).
 MirrorSprite:
   PUSH HL
   POP IX
@@ -240,7 +240,7 @@ MirrorRow:
 
 ; Reverse the bits of C
 ;
-; Witness: L1 16000 (c x4).
+; Witness: L1 16000 (c1-c4).
 MirrorByte:
   LD B,$08
 MirrorByteBit:
@@ -257,7 +257,7 @@ MirrorByteBit:
 ; back to HL. Called 3 times on RombWork, 17 times on set B, twice by
 ; FlipSprite for each logo sprite.
 ;
-; Witness: L1 112 (c x4).
+; Witness: L1 112 (c1-c4).
 RotateSprite:
   PUSH HL
   LD DE,RotateBuffer
@@ -314,7 +314,7 @@ RotateShiftRow:
 ; The phase is PhaseOrder[(BC)], its sprite DE + 256 x phase; PrintSprite
 ; $64F4. The step (BC) + 1, modulo 32.
 ;
-; Witness: L1 20744 (c x4).
+; Witness: L1 20744 (c1-c4).
 PrintRombPhase:
   LD A,(BC)
   PUSH BC
@@ -338,7 +338,7 @@ PrintRombPhase:
 ; Plain copy (no masking). Used for the rhombi, the logo and, into ScreenCopy,
 ; the reflection.
 ;
-; Witness: L1 20792 (c x4).
+; Witness: L1 20792 (c1-c4).
 PrintSprite:
   LD B,$05
 PrintSpriteCellRow:

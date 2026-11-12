@@ -75,7 +75,7 @@ FreezeWhileA:
 ; back (not executed in any recording: every game ended in a base-set room);
 ; `JP $8F47`.
 ;
-; Witness: L1 8 (c1, explorers, gameover, rzx x1).
+; Witness: L1 8 (c1, explorers, gameover, rzx50000).
 EndGame:
   CALL NewHiScore
   LD HL,Screen+4096             ; the panel's bitmap to $E000
@@ -105,7 +105,7 @@ EndGame:
 ; `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up
 ; `$9855`; `$5B9B` = `$FE`; back to MainLoop.
 ;
-; Witness: L1 5 (gameover, rzx x4).
+; Witness: L1 5 (gameover, rzx06000, rzx10000, rzx24000, rzx32000).
 Respawn:
   XOR A
   LD (LifeLost),A

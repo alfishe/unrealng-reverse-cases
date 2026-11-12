@@ -99,7 +99,7 @@ AddToNumberLow:
 ; from NewHiScore $BD72 only; split off as its own entry here (the cut ran it
 ; on from AddToScore's RET at $BD3A).
 ;
-; Witness: L1 4 (c1, explorers, gameover, rzx x1).
+; Witness: L1 4 (c1, explorers, gameover, rzx50000).
 PrintHiScore:
   LD HL,(PrintNumberSource+$0001)
   PUSH HL
@@ -118,8 +118,8 @@ PrintHiScore:
 ; copied and PrintHiScore $BD3B prints it. Called at the end of a game by
 ; $906D.
 ;
-; Witness: L1 8 (c1, explorers, gameover, rzx x1). c1, explorers, gameover and
-; rzx50000 each set a high score once ($BD67).
+; Witness: L1 8 (c1, explorers, gameover, rzx50000). c1, explorers, gameover
+; and rzx50000 each set a high score once ($BD67).
 NewHiScore:
   LD HL,Score+3
   BIT 7,(HL)

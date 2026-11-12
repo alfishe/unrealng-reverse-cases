@@ -12,7 +12,11 @@ not music.
 
 `tools/res_music.py` converts it (`to_editable` / `from_editable`, called by `tools/res_formats.py` for names under
 `music/`); `python3 tools/res_formats.py check` proves the text gives the bytes back, and
-`python3 tools/res_music.py dump` prints the text of the image's module.
+`python3 tools/res_music.py dump` prints the text of the image's module. The build also writes `music/disco.inc`
+(`to_inc`): the module as DB lines with the labels of `src/music/music.ann` (TunePositions, PatternTable, Pattern1,
+SampleTable, Sample1, ...) at their blocks. The tune's eight entries share it (`@res music/disco.bin include` on each,
+one INCLUDE at TuneHeader), so a tune of another size or shape moves the labels with its blocks; what then has to
+give is SectorTail, the filler up to the 22nd sector (`music.bin` stays 5632 bytes).
 
 ## The module (ASC Sound Master 0.x layout)
 

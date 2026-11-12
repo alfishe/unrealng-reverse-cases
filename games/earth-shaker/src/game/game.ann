@@ -132,7 +132,7 @@ $8038 CellUnusedGfx ; cell 28 (28-31: no such cells, $0000)
 
 $8040 c PrintGlyph ; Print an 8 x 8 glyph at a character cell
 > B = the character row (0-23), C = the column (0-31), DE = the 8 glyph bytes. Out: DE past the glyph, HL the last screen byte. The font, the HUD digits and the map glyphs go through it.
-> Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $8051 PrintGlyphLoop
 
 @module mapscreen ; The map screen (key F): the whole cave as 8 x 8 glyphs
@@ -150,10 +150,10 @@ $8061 c DrawMapCellsLoop ; The per-cell body of DrawMapCells (entered at SBC A,D
 @module cells
 $8075 c ScanCells ; The gravity scan of a pass: clear the fall flags, then ScanCellsBody
 > A = 0, JP ClearFallFlags $E7F5, which clears BoulderLanded $E7A8 and BoulderFell $7FFF and jumps to ScanCellsBody $8079.
-> Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8079 c ScanCellsBody ; Walk the grid bottom-up, right to left, and move each falling object
 > ObjectFell $7FFE = A (0). HL = $FFE1 (row 18, column 29), DE = HL + 30, 19 rows of 30 cells. A boulder above fire becomes $15 (the dissolve) and FizzCount $7FFB = 7. The cells skipped (see the module header) never reach EarthFallGuard $9AA6 / MoveObject $80DB. The CP (HL) at $809A is the earth test SetEarthFalls $FB81 patches to NOP.
-> Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8084 ScanRowLoop
 $8087 ScanCellLoop
 $8098 ScanSkipTests
@@ -161,17 +161,17 @@ $809A ScanEarthTest
 $80D3 ScanNextCell
 $80DB c MoveObject ; Make the object at HL fall into DE, or roll it off
 > HL = the object, DE = the cell below, B = the column count left (30 for column 29, 1 for column 0). The cell below empty: the object moves into it, HL gets $20; a boulder calls BoulderLandCheck $E78C, another object sets ObjectFell $7FFE. Then the cell under the new place: the player facing right (3) jumps to Crush $9ABC, the rest to MoveObjectLanded $8104. The cell below not empty: RollObject $8117.
-> Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 4511703 (c1, hiscore, lives, timer, rzx01-rzx32).
 $80EE MarkObjectFell
 $80F3 CheckUnderFallen
 $8101 b MoveObjectPad ; Leftover: 3 bytes between two jumps, never run
 $8104 c MoveObjectLanded ; The cell under the fallen object: the player facing left, or a switch box
 > A = the cell. 4 jumps to Crush $9ABC; else LandOnSwitch $810E.
-> Witness: L1 15918 (c1, hiscore, rzx x32).
+> Witness: L1 15918 (c1, hiscore, rzx01-rzx32).
 $810B b MoveObjectPad2 ; Leftover: 3 bytes, never run
 $810E c LandOnSwitch ; A switch box under a fallen object sets SwitchHit
 > A = $0B: SwitchHit $7FFC = $FF. The code that follows ($8117, RollObject) is reached from MoveObject when the cell below is not empty: an object on the player (3, 4), earth (6) or a vacated cell ($20) stays; else it rolls left when it is not in column 0 and the left cell and the one below it are both 0, else right when it is not in column 29 and those are 0.
-> Witness: L1 15901 (c1, hiscore, rzx x32).
+> Witness: L1 15901 (c1, hiscore, rzx01-rzx32).
 $8117 RollObject
 $8133 RollLeft
 $813E TryRollRight
@@ -183,7 +183,7 @@ $8158 AntiGravSoundLoop
 $8161 AntiGravSoundLoop2
 $817A c SwitchClear ; After a switch was hit: every force field and switch box becomes $20
 > If SwitchHit $7FFC: every cell 9 (force field) and $0B (switch box) becomes $20, SwitchScore $A9E3 (250 points and the sound), SwitchHit = 0. Then AntiGravPass $A7CD: the gravity scan of the pass.
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8185 SwitchClearLoop
 $8188 SwitchClearLoop2
 $818F SwitchClearSkip
@@ -192,13 +192,13 @@ $81A3 SwitchClearSkip3
 $81A7 b SwitchClearPad ; Leftover: 5 bytes, never run
 $81AC c ClearVacated ; Clear the vacated mark of every cell
 > Every grid cell AND $1F: $20 becomes 0, the animation codes $10-$1F stay.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $81AF ClearVacatedLoop
 
 @module renderer
 $81B9 c AttrAddr ; The attribute address of character cell B, C into HL
 > B = the row, C = the column. HL = $5800 + 32B + C.
-> Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 
 @module mapscreen
 $81CC c ColourMapCells ; Colour the map: each cell's attribute from MapAttrs + its code
@@ -213,7 +213,7 @@ $81D3 ColourMapCellsLoop2
 
 $81E7 c ColourCycle ; Step the cycling colour and flash the open exit
 > ColourPhase $FD8E steps; ColourCycleInk $FD8F cycles $43-$46 (DrawPass $8D46 writes it into the gem graphic). Ends with CALL ExitFlash $905B, RET (on either branch).
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $81F3 ColourCycleSkip
 $81FC ColourCycleSkip2
 $820B ColourCycleSkip3
@@ -225,21 +225,21 @@ $821A c ClearVars ; Clear the variables and the cave grid, $FD7A-$FFFF
 @module effects
 $8228 c ThudSound ; The landing / push thud, registers kept
 > NoiseThud $E77C with AF, BC, DE, HL saved.
-> Witness: L1 3446 (c1, hiscore, rzx x29).
+> Witness: L1 3446 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 $8234 b ThudSoundPad ; Leftover: 28 bytes, never run
 $8250 c PassSoundEntry ; The pass sound: JP PassSoundJump
 > JP PassSoundJump $E7E5 (the 1990 version moved the choice to PassSound $E83A).
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8253 c FallSoundChoice ; The fall noise if a boulder or another object fell
 > A = BoulderFell $7FFF (from PassSound): not 0 plays FallSound $E7A9; else ObjectFell $7FFE not 0 does.
-> Witness: L1 40382 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 40382 (c1, hiscore, lives, timer, rzx01-rzx32).
 $825B FallSoundChoiceSkip
 $8264 b FallSoundPad ; Leftover: one byte, never run
 
 @module renderer
 $8265 c AttrAddrDE ; The attribute address of character cell B, C into DE
 > B = the row, C = the column. DE = $5800 + 32B + C.
-> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8278 b AttrAddrPad ; Leftover: 62 bytes, never run
 
 @module unpack ; The cave unpacker and the cave's set-up
@@ -247,7 +247,7 @@ $8278 b AttrAddrPad ; Leftover: 62 bytes, never run
 
 $82B6 c UnpackCave ; Unpack cave CaveNumber into the grid and copy its 14 parameters
 > HL = $BEC6 + 314 x CaveNumber $FD91; 300 bytes give 600 cells (low nibble first) into CaveGrid $FDA8, then 14 bytes to CaveParams $FD9A.
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $82C0 UnpackCaveLoop
 $82C9 UnpackCaveLoop2
 
@@ -259,40 +259,40 @@ $82E6 c ResetGame ; The first cave, 4 lives, the colour phase
 @module effects
 $82F9 c GemSound ; The gem sound
 > ROM BEEPER HL = $0200, DE = 5, then HL = $0100, DE = 10.
-> Witness: L1 1692 (c1, rzx x32).
+> Witness: L1 1692 (c1, rzx01-rzx32).
 
 @module hud ; The HUD, the score, the time bar, the digits and the texts
 @about The bottom line (row 23) shows the cave, the gems needed and taken (needed : taken), the lives (ShowCounters $85AD) and the score (ShowScore $8342); the time bar is 4 pixel lines at $52C0 (row 22). Numbers are strings of decimal digits (0-9 a byte) printed with the digit glyphs at $BD80 (PrintDigits $832A); texts are ASCII printed with the font, glyph $BC00 + 8 x code (PrintText $834F).
 
 $8315 c IncDigits ; Add 1 to a decimal digit string
 > HL = the last digit, B = the digits. The carry runs left while a digit wraps from 9 to 0.
-> Witness: L1 70724 (c1, rzx x32).
+> Witness: L1 70724 (c1, rzx01-rzx32).
 $8321 c AddPoint ; Add 1 point to the score
 > IncDigits on ScoreDigits $FD94-$FD99.
-> Witness: L1 61961 (c1, rzx x32).
+> Witness: L1 61961 (c1, rzx01-rzx32).
 $832A c PrintDigits ; Print D decimal digits right to left
 > HL = the last digit, B = the row, C = the last digit's column, D = the count. The glyph of digit k is $BD80 + 8k.
-> Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $8342 c ShowScore ; Print the score at row 23, columns 26-31
-> Witness: L1 12605 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 12605 (c1, hiscore, lives, timer, rzx01-rzx32).
 $834F c PrintText ; Print D characters of ASCII text
 > HL = the text, B = the row, C = the first column, D = the length. The glyph of code k is $BC00 + 8k (Font $BD00 is code $20).
-> Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $8359 PrintTextLoop
 $836A c ShowHudLine ; Print HudLine $BCE0 on row 23
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8376 c AddGemValue ; Add GemValue $FD9B points, one at a time
-> Witness: L1 1692 (c1, rzx x32).
+> Witness: L1 1692 (c1, rzx01-rzx32).
 $837A AddGemValueLoop
 $8382 c PutPlayer ; Write the player's code at the player's cell
 > CaveGrid + PlayerIndex = PlayerFacing $FD86.
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 $838E c FaceLeft ; PlayerFacing = 4 (facing left)
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8394 c CountGem ; Count a gem; open the exit when enough are taken
 > GemCount $FD92 + 1; when it equals GemsNeeded $FD9A, ExitOpen $FD85 = $FF. Then GemDigits $FD82 + 1 (IncDigits $8315: the gems taken, counting up from 00), printed at row 23 (PrintDigits, BC = $1709), and GemSound $82F9.
 > Witness: rzx-earth01 frame 814, the panel goes from 00 to 01.
-> Witness: L1 1692 (c1, rzx x32).
+> Witness: L1 1692 (c1, rzx01-rzx32).
 $83A6 CountGemSkip
 
 @module player ; The player: the keys, the moves, digging, pushing, the special cells
@@ -301,54 +301,54 @@ $83A6 CountGemSkip
 
 $83C3 c TryLeft ; The left key: move or act to the left
 > The key site LD A,row ($83C4) / AND mask ($83CA) is written by RedefineKeys $8C30 and the control choice. Pressed: PlayerFacing = 4, KeyMoved = $FF; column 0 stops; the exit (1) only when ExitOpen (then CaveDone); the wall test BlockWall $E869, boulders PushBoulder $E81F, the codes > 6 LeftSpecial $94D6 (which takes gems and the other specials, continuation MoveLeft); then MoveLeft $8428.
-> Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42086 (c1, hiscore, lives, timer, rzx01-rzx32).
 $83DE TryLeftLoop
 $83FB TryLeftSkip
 $8409 TryLeftLoop2
 $841E TryLeftSkip2
 $8428 c MoveLeft ; Move the player one cell left (the old cell 0)
-> Witness: L1 4366 (c1, rzx x32).
+> Witness: L1 4366 (c1, rzx01-rzx32).
 $8437 c TryRight ; The right key: move or act to the right
 > As TryLeft $83C3 with PlayerFacing = 3, column 29 the edge, RightSpecial $9494 (continuation MoveRight), MoveRight $849E.
-> Witness: L1 36883 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 36883 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8453 TryRightLoop
 $8470 TryRightSkip
 $847F TryRightLoop2
 $8494 TryRightSkip2
 $849E c MoveRight ; Move the player one cell right
-> Witness: L1 4761 (c1, rzx x32).
+> Witness: L1 4761 (c1, rzx01-rzx32).
 $84AD c TryUp ; The up key: move or act upward
 > As TryLeft, row 0 the edge; boulders block; UpSpecial $9414, MoveUp $84E6.
-> Witness: L1 31376 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 31376 (c1, hiscore, lives, timer, rzx01-rzx32).
 $84D8 TryUpSkip
 $84E6 c MoveUp ; Move the player one row up
-> Witness: L1 3803 (rzx x32).
+> Witness: L1 3803 (rzx01-rzx32).
 $84F9 c TryDown ; The down key: move or act downward
 > Row 19 the edge; DownSpecial $93CE, MoveDown $8535.
-> Witness: L1 26738 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 26738 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8527 TryDownSkip
 $8535 c MoveDown ; Move the player one row down
-> Witness: L1 4052 (c1, rzx x32).
+> Witness: L1 4052 (c1, rzx01-rzx32).
 
 @module effects
 $8548 b DigNoise ; The dig noise's entry: LD HL,$00FF, whose $00 is the loop's NOP at $854A
 > CALL $8548 from DigNoiseIfDug $E860: HL = $00FF, then DigNoiseLoop $854A sends the ROM bytes $00FF-$0001 AND $18 to port $FE. mkgame keeps the two bytes as data because $854A starts an instruction too.
 $854A c DigNoiseLoop ; The noise loop: (HL) AND $18 to port $FE for HL down to 0
-> Witness: L1 1004824 (c1, rzx x31).
+> Witness: L1 1004824 (c1, rzx01-rzx30, rzx32).
 
 @module player
 $8556 c PlayerStep ; One player step: the four keys in turn until one moves the player
 > ClearStepFlags $E858 (DugEarth, KeyMoved, BoulderPushed 0). PlayerIndex 0 skips only TryLeft (JR Z,PlayerStepSkip lands on the TryRight call; no recording has it). TryLeft, TryRight, TryUp, TryDown, each only while KeyMoved is not $FF; DigNoiseIfDug $E860.
-> Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 $856F PlayerStepSkip
 $8591 PlayerStepSkip2
 $8595 c CollectGem ; Take a gem: the points, the count, the exit
 > AddGemValue $8376, ShowScore $8342, CountGem $8394; when ExitOpen became $FF, ExitOpenSound $9072.
-> Witness: L1 1692 (c1, rzx x32).
+> Witness: L1 1692 (c1, rzx01-rzx32).
 
 @module hud
 $85AD c ShowCounters ; Print the cave number, the gems needed and the lives on row 23
-> Witness: L1 53 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 53 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module menu ; The menu, the title, the screen wipes
 @about GameEntry $8B20 (the BASIC's RANDOMIZE USR 35616) clears the variables, draws the title (DrawTitle $8AC8: the texts, the logo wiped in line by line, its colours), plays the title tune and reads keys 1-5 (MenuKeys $8B29): 1 a game, 2 redefine the keys, 3 keyboard, 4 joystick, 5 reset. When the title tune runs out the high scores and the scroller show (ShowHiScores $B2E4), then the title tune again if the scroller ran out; a key 1-5 that stops the scroller is acted on at once.
@@ -362,17 +362,17 @@ $85CF c ResetAll ; Clear the variables and set the start values
 
 $85D6 c StartGame ; Start a game: the password, 5 lives, the score 0
 > CaveDigits $FD7E = 0, 1; Password $8F29 (sets the cave); Lives $FD93 = 5, ScoreDigits 0.
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 
 @module main
 $85F1 c ResetCave ; Clear the cave's state and print the HUD
 > CaveDone, ExitOpen and GemDigits 0, GemCount 0; SetEarthFalls $FB81, FaceLeft, ShowHudLine, ShowScore, ShowCounters.
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module menu
 $860E c ClearScreen ; Clear the screen: attributes $47, then the pixel wipe
 > Attributes $47 (bright white on black), WipeScreen $8DE3.
-> Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 
 @module effects
 $861F b DeathSoundPad ; Leftover: 15 bytes before DeathSound, never run
@@ -387,17 +387,17 @@ $8643 b DeathLoopPad ; Leftover: 17 bytes, never run
 $8654 c FillTimeBar ; Fill the time bar (4 pixel lines of 32 bytes $FF from $52C0) and colour it
 > Then BarColours $9224.
 > 4 pixel lines of 32 bytes from $52C0: 256 pixels, one taken every 4th pass by TimerStep, so a cave lasts 1024 passes (the timer recording: 5543 frames of passes, 5.41 frames a pass).
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $865C FillTimeBarLoop
 $8671 b FillTimeBarPad ; Leftover: 22 bytes, never run
 
 @module main
 $8687 c CaveReset ; Reset the anti-gravity and the cave state, fill the time bar
 > ResetAntiGrav $A64B, ResetCave $85F1, FillTimeBar $8654.
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8691 c ShiftTimeBar ; Shift the time bar one pixel left
 > 8 pixel lines from $50DF: RL through the 32 bytes of a line, the rightmost first. The bar's first byte $52C0 empties last.
-> Witness: L1 15903 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 15903 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8696 ShiftTimeBarLoop
 $869E ShiftTimeBarLoop2
 $86AD c TimeOutSound ; The time-out sound: a falling sweep
@@ -410,23 +410,23 @@ $86C9 TimeOutSoundLoop4
 $86D3 b TimeOutPad ; Leftover: 11 bytes, never run
 $86DE c TimerStep ; The timer: every fourth pass the bar loses a pixel; an empty bar ends the cave
 > TimerSub $FD7C + $40; on the wrap: ShiftTimeBar $8691 and a ROM BEEPER click (HL = 0, DE = 0). The bar's first byte $52C0 at 0: TimeOutSound $86AD, CaveOver $FD7D = $FF.
-> Witness: L1 43907 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43907 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8702 c TimeBonus ; The cave done: every remaining bar pixel is a point
 > DI at its start, but the first BEEPER's EI turns them on again: 41 of the 45 interrupts in the bonus are taken (rzx-earth01 3668-3713). While $52C0 is not 0: BonusTick $871C (a beep, D its period, rising), ShiftTimeBar, AddPoint, ShowScore.
-> Witness: L1 32 (rzx x32).
+> Witness: L1 32 (rzx01-rzx32).
 $8705 TimeBonusLoop
 $871C c BonusTick ; One bonus beep: ROM BEEPER HL = D, DE = 1; its three DEC D are lost to TimeBonus's POP DE, so D falls by 1 a pixel (TimeBonus's own DEC D)
-> Witness: L1 2062 (rzx x32).
+> Witness: L1 2062 (rzx01-rzx32).
 $872B b TimeBonusPad ; Leftover: 2 bytes, never run
 $872D c QuitKey ; Key H (half row $BF, bit 4): drain the time bar, end the cave
 > Shifts the bar with a click until it is empty, then CaveOver $FD7D = $FF and TimeOutSound: NextCave takes a life. The DI at $8736 lasts only to the first BEEPER (its EI): the drain runs with interrupts on. About 10 650 T a pixel (L1 totals of lives and c1), a full bar about 39 frames.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8737 QuitKeyLoop
 
 @module player
 $8759 c KeysStep ; The fire key chooses FireStep, else PlayerStep
 > The fire key's site (LD A,$7F at $8759, AND $04 at $875F: SPACE half row, bit 2 = M) is written by RedefineKeys $8C30.
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8767 KeysStepSkip
 $876B c FireLeft ; Fire left: act on the left cell without moving
 > Earth: DigInPlace $E7FE. An object: CollectLeft $9621. A boulder: FireLeftBoulder $879F.
@@ -456,7 +456,7 @@ $8878 c FireStep ; The fire key held: each direction key acts on the next cell
 @module main
 $8885 c PlayCave ; Play a cave: passes until out of time, killed or done
 > CaveOver $FD7D = 0, CaveInit $91B9; each pass KeyMoved $FD80 = 0, then the steps of the module header. CaveOver ends it; PlayerKilled: DeathView $903F, DeathSound $862E; CaveDone: TimeBonus $8702.
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $888D PassLoop
 $88C2 CheckCaveDone
 $88CC NextPass
@@ -464,7 +464,7 @@ $88CC NextPass
 @module music
 $88CE c PlayTune ; Play the tune at HL with interrupts off; a key 1-5 stops it
 > See the module header. Out: HL at the byte that ended the tune, interrupts on.
-> Witness: L1 66 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 66 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $88CF NoteLoop
 $88E7 PlayTuneSkip
 $88FD PlayTuneSkip2
@@ -474,7 +474,7 @@ $8935 ToneLoop
 $8944 PlayTuneSkip5
 $8953 PlayTuneSkip6
 $895D c PlayCaveTuneJump ; JP PlayCaveTune: the 1990 version's one tune per four caves
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 $8960 b PlayCaveTunePad ; Leftover: CALL $88CE, RET (the 1988 version's tail after LD HL,$BB80)
 
 @module renderer
@@ -491,20 +491,20 @@ $8985 WipeInLogoLoop2
 @module hud
 $89A7 c ShowLevelLivesScore ; Print LEVEL, LIVES LEFT: and SCORE: with their values
 > HudLabels $BB00 and the digits, for CaveIntro $92D4.
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 
 @module main
 $89EA c CavePlay ; The cave's intro, its tune and its play
 > CaveIntro $92D4, PlayCaveTuneJump $895D, PlayCave $8885 ($89F0).
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 $89F4 c StartGameEntry ; A game: StartGame, then the caves
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $89F7 c CaveStart ; Start a cave: clear the screen and the flags, play it
 > ClearScreen $860E, PlayerKilled, CaveOver and CaveDone 0, CavePlay $89EA; then NextCave.
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 $8A07 c NextCave ; After a cave: the next one, or a life lost
 > CaveDone: the cave digits + 1, CaveNumber + 1; after 32 (CaveNumber $21) WinGame $A8BF and cave 1. Not done: Lives - 1; at 0 the game ends (RET), else the same cave again.
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8A18 NextCaveSkip
 $8A33 NextCaveSkip2
 
@@ -516,7 +516,7 @@ $8A35 c PlayTitleTune ; Play TitleTune $AD00
 $8A3C c ShowMenuTexts ; Print the menu's lines: MenuTexts $AB00 and ShowControlTexts $ECC5
 > Witness: L1 10 (c1, lives, menu).
 $8A74 c FillAttrs ; Fill D attributes with A from row B, column C
-> Witness: L1 3260 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 3260 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $8A83 c ColourMenuTexts ; Colour the menu's lines
 > Witness: L1 10 (c1, lives, menu).
 
@@ -542,7 +542,7 @@ $8B20 c GameEntry ; The game's entry (RANDOMIZE USR 35616): reset, the title, th
 $8B26 GameEntryLoop
 $8B29 c MenuKeys ; Keys 1-5 of the menu; the high scores when the title tune ran out
 > HL = PlayTune's end; HL = $B269 (TitleTune's end) runs ShowHiScores $B2E4. Key 1 NewGame $8BE5, 2 RedefineKeys $8C30, 3 and 4 ChooseControl $ECE3, 5 ResetMachine $8B65.
-> Witness: L1 11 (c1, lives, menu, rzx x1).
+> Witness: L1 11 (c1, lives, menu, rzx01).
 $8B35 MenuKeysSkip
 $8B45 MenuKeysSkip2
 $8B55 MenuKeysSkip3
@@ -565,11 +565,11 @@ $8BDE GameOverScreenLoop
 @module main
 $8BE5 c NewGame ; Key 1: a game, then the high-score check
 > StartGameEntry $89F4, then GameOver $7FF3 ($8BE8).
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 
 @module hud
 $8BEC c ColourLevelLivesScore ; Colour and print the cave intro's three lines
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 
 @module keys ; The keys: the key table, the redefinition, keyboard or joystick
 @about The keys are read by self-modified code: TryLeft $83C3, TryRight $8437, TryUp $84AD, TryDown $84F9 and KeysStep $8759 each start LD A,row; OUT ($FF),A; IN A,($FE); AND mask (the OUT to port $FF has no effect: no 48K device decodes an odd port; IN A,($FE) puts A on the high address byte itself). RedefineKeys $8C30 takes a key with WaitKey $8C1D (KeyTable $A900: 40 records of half row, bit mask, character) and writes its row and mask into the sites. Keys 3 and 4 of the menu copy whole 9-byte code fragments into the sites: KeyboardControl $EBCA the copies saved at KeyboardCode $EB15, JoystickControl $EC2E the Kempston fragments KempstonCode $EAC4 (IN A,($1F) and a bit test).
@@ -581,7 +581,7 @@ $8C13 PauseSkip
 $8C1D c WaitKey ; Wait until a key of KeyTable is down
 > Scans the 40 records over and over. Out: HL = the record's mask byte, the character at HL + 1.
 > No release wait: a key still down when WaitKey is called again is taken again (the menu recording's redefinition took 2 for left, right and up).
-> Witness: L1 69199 (c1, hiscore, lives, menu, rzx x1).
+> Witness: L1 69199 (c1, hiscore, lives, menu, rzx01).
 $8C22 WaitKeyLoop
 $8C30 c RedefineKeys ; Key 2: define the left, right, up, down and fire keys
 > ClearAndKeyboard $ECDC; for each prompt of KeyPrompts $A978: WaitKey, the key's character printed, its row and mask written into the key sites ($83C4 / $83CA, $876C / $8772 ...), RaspSound $90A0.
@@ -592,24 +592,24 @@ $8C35 RedefineKeysLoop
 @module renderer
 $8D46 c DrawPass ; The colours and animations of a pass
 > ColourCycleInk into the 4 attributes of the gem graphic $9B74-$9B77 (ink, ink - 1, ink - 2, ink - 1), AnimateCells $900B, AnimateTable $90B2.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module hiscore
 $8D5D t HiScoresTitle ; "HI-SCORES"
 
 @module renderer
 $8D66 c CellGraphicAddr ; DE = the table word of cell A: $8000 + 2 x (A AND $1F)
-> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8D6D b CellGraphicAddrPad ; Leftover: 8 bytes, never run
 $8D75 c DrawWindowAtOrigin ; Draw the window at ViewOrigin
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8D78 c DrawWindow ; Draw 11 rows of 16 cells from cell index HL
 > DrawCell $8F60 for each; B = the character row (0, 2, ... 20), C = the column (0, 2, ... 30).
-> Witness: L1 43834 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43834 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8D7F DrawWindowLoop
 $8DA6 c WindowOrigin ; The window's first cell from the player's place
 > Row = PlayerIndex / 30, column the rest; the column clamped to 8-22, the row to 5-14; ViewOrigin $FD70 = 30 x (row - 5) + column - 8 (computed as 30 x (row + 1) + column - 188). The window is drawn later, by MapKey's CALL DrawWindowAtOrigin.
-> Witness: L1 43833 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43833 (c1, hiscore, lives, timer, rzx01-rzx32).
 $8DAF WindowOriginLoop
 $8DBD WindowOriginSkip
 $8DC3 WindowOriginSkip2
@@ -619,27 +619,27 @@ $8DD7 WindowOriginLoop2
 
 @module menu
 $8DE3 c WipeScreen ; Wipe the pixels away: 8 passes shifting each byte pair apart
-> Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
+> Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 $8DE6 WipeScreenLoop
 $8DEC WipeScreenLoop2
 $8DEF WipeScreenLoop3
 
 @module password
 $8DFF c ShowPasswordPrompt ; Clear the screen, print EnterPasswordText on row 0
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $8E18 c KeyClick ; A short click for a typed or deleted character
 > Witness: L1 7 (hiscore).
 $8E1E KeyClickLoop
 $8E1F KeyClickLoop2
 $8E2D c EnterPassword ; Read the password into PasswordBuffer $FD00
 > The buffer to spaces, the prompt; WaitKey: '0' deletes, 'e' (ENTER) ends, space and A-Z are stored, at most 20.
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $8E43 EnterPasswordLoop
 $8E6B EnterPasswordSkip
 $8E7A EnterPasswordSkip2
 $8E91 c FindPassword ; Compare PasswordBuffer with 50 records of 20 bytes from CaveNames
 > Out: B = the record that matched (0-49), or 50 when none did.
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $8E96 FindPasswordLoop
 $8E9D FindPasswordLoop2
 $8EA9 FindPasswordSkip
@@ -655,21 +655,21 @@ $8EEB PasswordAcceptedLoop
 $8EEF PasswordAcceptedLoop2
 $8EF7 PasswordAcceptedSkip
 $8F08 c PasswordRejected ; No match: RET (the 1990 version dropped the failure flash PasswordRejectedOld $8F09)
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $8F09 b PasswordRejectedOld ; Leftover: the old failure flash (32 bytes), never run
 $8F29 c Password ; Enter and check the password; set the first cave
 > EnterPassword $8E2D, FindPassword $8E91. No match: cave 1. Record B: CaveNumber = B + 1, CaveDigits counted up to it, PasswordAccepted $8EE4.
-> Witness: L1 3 (c1, lives, rzx x1).
+> Witness: L1 3 (c1, lives, rzx01).
 $8F43 PasswordSkip
 $8F4D PasswordLoop
 
 @module renderer
 $8F60 c DrawCell ; Draw cell code A at character row B, column C (2 x 2 characters)
 > The graphic from CellGraphicsTable; its 4 attributes through AttrAddrDE $8265, then 32 pixel bytes in zigzag order. Valid on even character rows: SET 5,E for the lower half needs bit 5 of E clear. The graphic pointer steps with INC L inside each 4-byte group, so no group may cross a 256-byte page.
-> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 $900B c AnimateCells ; Step the player's frames (4 frames, 36 bytes apart)
 > AnimPhase $FD72 0-3: the player's table words $8006 / $8008 from $9B98 / $9C28 + 36 x phase. Out: HL = ViewOrigin.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9027 AnimateCellsSkip
 
 @module main
@@ -677,14 +677,14 @@ $903F c DeathView ; The killed player: the death graphics in the player's table 
 > $8006 = $9DB4, $8008 = $9DD8, DrawWindow at ViewOrigin.
 > Witness: L1 1 (c1).
 $9052 c CaveStartState ; AnimPhase = 3, CaveReset
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $905B c ExitFlash ; Flash the exit door's colour while the exit is open
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module effects
 $9072 c ExitOpenSound ; The exit opens: a sweep
 > LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0 byte gives a 256-turn low half).
-> Witness: L1 33 (rzx x32).
+> Witness: L1 33 (rzx01-rzx32).
 $9076 ExitOpenSoundLoop
 $907B ExitOpenSoundLoop2
 $907F ExitOpenSoundLoop3
@@ -702,7 +702,7 @@ $90A6 RaspSoundLoop
 @module renderer
 $90B2 c AnimateTable ; Step the animated table words of the specials
 > EarthAnim $9DFC, then the words of cells 8, 9, $0A, $0C, $0D, $0E, $0F from frame AnimPhase.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $90CD AnimateTableLoop
 $90D0 AnimateTableSkip
 $90DD AnimateTableLoop2
@@ -721,20 +721,20 @@ $9145 AnimateTableSkip8
 
 @module player
 $914C c ForceField ; Walked into a force field (9): blocked, 12 TimerSteps at once (3 bar pixels)
-> Witness: L1 11 (rzx x5).
+> Witness: L1 11 (rzx22, rzx24-rzx26, rzx30).
 $914E ForceFieldLoop
 $915B ForceFieldSkip
 $915F c UpSpecialCell ; The special cell above the player: its handler
 > HL = the cell above (code $07-$0F, UpSpecialCheck $93C7). Gem: CollectGem $8595, MoveUp $84E6; jelly bean JellyBean $91F7; force field ForceField $914C; anti-gravity arrow AntiGravTake $A7C7; switch box: RET (blocks); potion: TakePotion $91C9, then the tests go on; teleporter TeleportUp $926E; bubble BubbleUp $934F; fire WalkIntoFire $91AE (PlayerKilled $7FFD = $FF, Continue $9410).
 > Known only from the code: the fire test $9194 and the tail $919A never ran: no build walked up into fire or a potion. The tail is reached after a potion taken from above: CALL Z,TakePotion returns with HL at the $FF that ends LifeTune (after a key 1-5 stop, at the next note's n1 byte, $1E-$2E), every later test fails, CP $0F leaves carry, and SBC gives PlayerIndex - 30: the player moves up into the potion's cell, by luck of the carry. WalkIntoFire itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial $94D6, TryLeft's dispatcher: cave 4, one step left into fire).
-> Witness: L1 517 (rzx x32).
+> Witness: L1 517 (rzx01-rzx32).
 $916A UpSpecialCellSkip
 $91AE WalkIntoFire
 $91B6 b ForceFieldPad ; Leftover: JP $84E6, never run
 
 @module main
 $91B9 c CaveInit ; A cave's start: CaveStartState, MapShown and PlayerKilled 0
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module player
 $91C1 c PotionTune ; The extra-life tune: PlayTune LifeTune $AC5F
@@ -752,7 +752,7 @@ $91F7 c JellyBean ; The jelly bean (8): 32 pixels added to the time bar with a s
 > Witness: L1 132 (rzx x23).
 $91F9 JellyBeanLoop
 $9224 c BarColours ; Colour the time bar from BarAttrs $BC92
-> Witness: L1 105 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 105 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module effects
 $9230 c TeleportFlashOut ; The teleport: the next attribute frame up
@@ -771,19 +771,19 @@ $92B4 b TeleportUpPad ; Leftover: two BEEPER calls (32 bytes), never run
 
 @module main
 $92D4 c CaveIntro ; The cave's intro screen: level, lives, score, the cave name centred on row 20
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 $92E2 CaveIntroLoop
 $92E8 CaveIntroLoop2
 $92F0 CaveIntroSkip
 
 @module unpack
 $9305 c SetGraphicColour ; Write A into the 4 attributes of the graphic at HL: bright, plain, plain, bright
-> Witness: L1 517 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 517 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9313 c CaveSetup ; Unpack the cave; its earth and wall graphics and its four colours
 > UnpackCave $82B6; EarthGraphic $FDA0 into the table word $800C (cell 6), WallGraphic $FDA2 into $800A (cell 5); DoorColour into the exit graphic $9B08, BoulderColour into $9B2C, Wall1Colour into $9CB8, EarthColour into $9B50 (SetGraphicColour).
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9346 c ClearScreenCave ; ClearScreen, ColourCycleInk = $45
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module player
 $934F c BubbleUp ; Push a bubble up: into earth or empty it moves, into fire it bursts
@@ -796,7 +796,7 @@ $9378 c BubbleBurst ; A bubble pushed into fire: the cell becomes $10 (the burst
 @module cells
 $937E c AnimateCellCodes ; SwitchClear, then every animation code steps on
 > $10-$14 step to $15, which becomes $20 (the burst); $15-$1B step to $1C, which becomes $20 (the dissolve).
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9387 AnimateCellCodesLoop
 $9397 AnimateCellCodesSkip
 $939D AnimateCellCodesSkip2
@@ -805,21 +805,21 @@ $939E AnimateCellCodesSkip3
 @module main
 $93A5 c AbortKey ; Key G (half row $FD, bit 4): back to the menu, the return addresses dropped
 > The four POPs drop the returns of PlayCave, CavePlay, CaveStart and NewGame ($889B, $89F3, $8A07, $8BE8, the CALL GameOver); the RET reaches $8B42 (JP GameEntry): no game-over screen, no high-score check. Witness: c1, AbortKey last at 15 244, GameOver never runs.
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module player
 $93B6 c BubbleScore ; The burst bubble: RaspSound, 100 points
 > Witness: L1 136 (rzx x21).
 $93C2 b BubbleScorePad ; Leftover: 5 bytes, never run
 $93C7 c UpSpecialCheck ; A cell code above $0F above the player blocks; else UpSpecialCell
-> Witness: L1 523 (rzx x32).
+> Witness: L1 523 (rzx01-rzx32).
 $93CE c DownSpecial ; The cell below is a special: its handler
-> Witness: L1 1120 (c1, rzx x32).
+> Witness: L1 1120 (c1, rzx01-rzx32).
 $93E1 DownSpecialSkip
 $9410 c Continue ; JP (HL): the stored continuation Continuation $FD87
 > Witness: L1 1608 (c1, rzx x28).
 $9414 c UpSpecial ; The cell above is a special: its handler
-> Witness: L1 523 (rzx x32).
+> Witness: L1 523 (rzx01-rzx32).
 $941F c TeleportDown ; A teleporter below: MoveUp, erase it, go to the next teleporter
 > It calls MoveUp $84E6 ($942B), not MoveDown, then writes $20 into the cell below. With no teleporter found (or only one in cell 599: the test is on BC after CPIR, $9440) it returns with the player one row above where he stood.
 > Witness: L1 11 (rzx x8).
@@ -830,10 +830,10 @@ $946B c BubbleDown ; Push a bubble down
 $9487 BubbleDownSkip
 $948E BubbleDownSkip2
 $9494 c RightSpecial ; The cell to the right is a special (TryRight $8437): its handler, continuation MoveRight
-> Witness: L1 959 (c1, rzx x32).
+> Witness: L1 959 (c1, rzx01-rzx32).
 $94A7 RightSpecialSkip
 $94D6 c LeftSpecial ; The cell to the left is a special (TryLeft $83C3): its handler, continuation MoveLeft
-> Witness: L1 847 (rzx x32).
+> Witness: L1 847 (rzx01-rzx32).
 $94E9 LeftSpecialSkip
 $9518 c TeleportRight ; A teleporter to the right
 > Witness: L1 18 (rzx x10).
@@ -859,22 +859,22 @@ $9621 c CollectLeft ; Fire left on an object: take it
 > Witness: L1 126 (rzx x18).
 $963A CollectLeftSkip
 $9648 c CollectLeftClear ; The saved cell becomes $20
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx24).
 $964E c CollectRight ; Fire right on an object: take it
 > Witness: L1 94 (rzx x16).
 $9667 CollectRightSkip
 $9675 c CollectRightClear ; The saved cell becomes $20
-> Witness: L1 2 (rzx x1).
+> Witness: L1 2 (rzx24).
 $967B c CollectUp ; Fire up on an object: take it
 > Witness: L1 37 (rzx x18).
 $9694 CollectUpSkip
 $96A2 c CollectUpClear ; The saved cell becomes $20
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx24).
 $96A8 c CollectDown ; Fire down on an object: take it
 > Witness: L1 55 (rzx x18).
 $96C1 CollectDownSkip
 $96CF c CollectDownClear ; The saved cell becomes $20
-> Witness: L1 2 (rzx x2).
+> Witness: L1 2 (rzx22, rzx24).
 $96D5 b CollectPad ; Leftover: 43 bytes, never run
 
 @module password
@@ -913,7 +913,7 @@ $9A90 b MapPatchLeftover ; Leftover: code never run (CALL $8059, CALL $81CC, RET
 @module cells
 $9AA5 b EarthFell ; $FF when the falling object is earth: it then does not crush (EarthFallGuard)
 $9AA6 c EarthFallGuard ; Mark falling earth, then MoveObject
-> Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 4511703 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9AB8 EarthFallGuardSkip
 $9ABC c Crush ; A falling object on the player: PlayerKilled unless it is earth
 > Witness: L1 48 (c1, rzx x5): 47 falling earth in caves 13, 17, 22, 24, 26 (EarthFell set, no kill) and one boulder kill, c1 frame 13208 (CrushSkip once). The stage 2 recording death-crush kills the player at frame 21 (cave 1: up twice under a boulder, down once).
@@ -945,7 +945,7 @@ $9DD8 GfxDeathLeft ; slot 20: the killed player facing left (the stage 2 recordi
 
 @module cells
 $9DFC c EarthAnim ; The falling-earth caves: animate earth and the empty cell (frames EmptyFrames $FAE0)
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $9E10 EarthAnimLoop
 $9E13 EarthAnimSkip
 
@@ -967,16 +967,16 @@ $A570 GfxBurst ; slots 74-77, cells $10-$14
 
 @module unpack
 $A600 c CaveSetupAll ; CaveSetup, then the boulder colour into the 7 dissolve frames
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $A60E CaveSetupAllLoop
 
 @module main
 $A615 c PlayWinTune ; Play WinTune $6EF4
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx32).
 $A61B c PlayWinTuneEnd ; RET after the win tune
 > Known only from the code: the rzx32 recording ends during the tune.
 $A61C c WinScreen ; Clear the screen, draw three cells (the player and two gems)
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx32).
 
 @module player
 $A63E c CollectAntiGrav ; Take the anti-gravity arrow with the fire key
@@ -984,7 +984,7 @@ $A63E c CollectAntiGrav ; Take the anti-gravity arrow with the fire key
 
 @module main
 $A64B c ResetAntiGrav ; ResetAntiGravState, FizzCount and SwitchHit 0
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module cells
 $A655 c AntiGravScan ; The upward scan while anti-gravity runs: objects rise
@@ -1019,11 +1019,11 @@ $A746 JingleSkip3
 $A74B c SwitchSound ; The switch's sound
 > Witness: L1 27 (c1, menu, rzx x23).
 $A773 c FizzSound ; While FizzCount runs down: one beep a pass
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module main
 $A792 c ResetAntiGravState ; ClearScreenCave, the anti-gravity digits and steps 0
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module cells
 $A7A0 c AntiGravStartScan ; Anti-gravity on: 99 steps, the digits, the icon
@@ -1031,7 +1031,7 @@ $A7A0 c AntiGravStartScan ; Anti-gravity on: 99 steps, the digits, the icon
 $A7C7 c AntiGravTake ; The player takes the arrow: AntiGravStartScan
 > Witness: L1 15 (rzx x6).
 $A7CD c AntiGravPass ; The gravity scan of a pass: down, or up while anti-gravity runs
-> Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 $A7D7 AntiGravPassSkip
 $A7E7 AntiGravPassSkip2
 $A7EC AntiGravPassLoop
@@ -1039,15 +1039,15 @@ $A7F8 AntiGravPassSkip3
 
 @module main
 $A815 c ShowWinTexts ; Print WinTexts $AB6A
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx32).
 $A86E c ColourWinTexts ; Colour the win texts
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx32).
 $A8BF c WinGame ; After cave 32: the win screen and tune
-> Witness: L1 1 (rzx x1).
+> Witness: L1 1 (rzx32).
 
 @module hud
 $A8D5 c AddPoints ; Add B points
-> Witness: L1 31118 (rzx x29).
+> Witness: L1 31118 (rzx01-rzx12, rzx14-rzx19, rzx22-rzx32).
 $A8E0 c PotionScore ; 20 points
 > The PUSH BC at $A8E3 is never popped: the RET pops it. When LifeTune plays to its end BC is $0038 after PotionTune, so the RET jumps to the ROM's IM 1 routine at $0038, which scans the keyboard and RETs to the true return $91DA in TakePotion. Witness: rzx-earth09 frame 6397 ($A8F1 at T 67102, $0038 at 67112, $91DA at 67994).
 > A key 1-5 held during the tune stops PlayTune $88CE at a record boundary, and BC is the residue the last note's second-voice counter left: per note 0-38 3E 80 41 02 40 02 67 80 38 28 41 62 80 02 20 40 38 44 80 62 51 41 20 1D 02 44 28 38 51 38 62 1D 40 20 28 40 44 38 38 (a model of the loop over LifeTune; the last matches the trace). The RET then lands elsewhere in the ROM: $0080 (SKIP-OVER) returns to $91DA without EI (run on a clone of the rzx-earth09 state: $A8F1 RET to $0080, $0089 RET to $91DA); from the ROM's code, $0051 returns, $003E-$0044 unbalance the stack, $0028 enters the calculator, $0002, $0062 and $0067 reset the machine. No recording held a key 1-5 during a potion.
@@ -1176,7 +1176,7 @@ $C000 b CaveData ; The 32 caves, 314 bytes each
 
 @module effects
 $E740 c NoiseBurst ; ROM bytes as noise
-> Witness: L1 11006 (c1, hiscore, rzx x30).
+> Witness: L1 11006 (c1, hiscore, rzx01-rzx19, rzx21-rzx30, rzx32).
 $E747 NoiseBurstStep
 $E74A NoiseBurstPitch
 $E74C NoiseBurstLoop
@@ -1188,18 +1188,18 @@ $E767 NoiseBurstLoop3
 $E76F NoiseBurstSkip4
 $E774 NoiseBurstSkip5
 $E77C c NoiseThud ; The thud: NoiseBurst with a short length
-> Witness: L1 3446 (c1, hiscore, rzx x29).
+> Witness: L1 3446 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 $E77E NoiseThudLoop
 
 @module cells
 $E78C c BoulderLandCheck ; A boulder fell: BoulderLanded when the cell under its new place is not empty or vacated
-> Witness: L1 9340 (c1, hiscore, rzx x29).
+> Witness: L1 9340 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 $E7A0 BoulderLandCheckSkip
 $E7A8 b BoulderLanded ; $FF when a falling boulder landed this pass (the thud)
 
 @module effects
 $E7A9 c FallSound ; The fall noise
-> Witness: L1 3647 (c1, rzx x32).
+> Witness: L1 3647 (c1, rzx01-rzx32).
 $E7B0 FallSoundLoop
 $E7B5 FallSoundLoop2
 $E7BD FallSoundSkip
@@ -1210,26 +1210,26 @@ $E7D0 FallSoundLoop4
 $E7D8 FallSoundSkip4
 $E7DD FallSoundSkip5
 $E7E5 c PassSoundJump ; JP PassSound
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $E7E8 b PassSoundOld ; Leftover: an older pass sound choice (13 bytes)
 
 @module cells
 $E7F5 c ClearFallFlags ; BoulderLanded and BoulderFell = A, then ScanCellsBody
-> Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module player
 $E7FE c DigInPlace ; The fire key on earth: dig it without moving, with a noise
 > Witness: L1 167 (rzx x16).
 $E81F c PushBoulder ; Push a boulder left or right when the cell beyond is empty
-> Witness: L1 434 (c1, rzx x29).
+> Witness: L1 434 (c1, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 $E824 PushBoulderSkip
 $E82E b BoulderPushed ; $FF when a boulder was pushed this pass (the thud)
 $E82F c ClearMoveFlags ; KeyMoved and BoulderPushed 0
-> Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module cells
 $E83A c PassSound ; The pass sound: a thud after a landing or a push, else the fall noise
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $E846 PassSoundSkip
 $E84A PassSoundSkip2
 $E850 c SetBoulderFlags ; BoulderFell and BoulderLanded = A
@@ -1238,15 +1238,15 @@ $E850 c SetBoulderFlags ; BoulderFell and BoulderLanded = A
 @module player
 $E857 b DugEarth ; $FF when the player dug earth this pass
 $E858 c ClearStepFlags ; DugEarth 0, then ClearMoveFlags
-> Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module effects
 $E860 c DigNoiseIfDug ; The dig noise when DugEarth
-> Witness: L1 20264 (c1, rzx x32).
+> Witness: L1 20264 (c1, rzx01-rzx32).
 
 @module player
 $E869 c BlockWall ; A wall stops the move (the return address dropped); earth sets DugEarth
-> Witness: L1 19281 (c1, rzx x32).
+> Witness: L1 19281 (c1, rzx01-rzx32).
 $E870 BlockWallSkip
 $E87A BlockWallDone
 
@@ -1284,10 +1284,10 @@ $EA80 c ShowMap ; The map screen
 > Witness: L1 1 (timer).
 $EA8D b MapShown ; $FF once the map was shown in this cave
 $EA8E c ClearMapFlag ; MapShown and PlayerKilled 0
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 $EA96 c MapKey ; Key F: the map, once per cave
 > Its last instruction, CALL DrawWindowAtOrigin $8D75, runs every pass: this is where the window is drawn.
-> Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 $EAAF MapKeySkip
 $EAB3 c MapCellAttr ; The map attribute of a cell, 0 for cells from $90
 > Witness: L1 600 (timer).
@@ -1335,7 +1335,7 @@ $EE00 b ExtraGraphic2 36 ; One more cell graphic
 $EE24 w CaveTunes 8 ; The tune of each group of four caves
 @res music/cave-tunes.bin include
 $EE34 c PlayCaveTune ; Play the tune of the cave's group of four
-> Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+> Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 $EE49 b PlayCaveTunePad2 ; Leftover: 183 bytes
 @res leftovers/tune-pad.bin
 
@@ -1375,7 +1375,7 @@ $FB7A EarthAnimStepLoop
 $FB7D EarthAnimStepSkip
 $FB81 c SetEarthFalls ; Patch the scan so earth falls in the caves whose earth graphic is $A4xx
 > The earth graphic's page decides the rule: earth falls when word 6 points into page $A4 (GfxFallingEarth).
-> Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+> Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 
 @module renderer
 $FBA0 b ExtraGraphic4 36 ; Two more cell graphics

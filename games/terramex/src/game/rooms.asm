@@ -756,7 +756,7 @@ DrawRoomRow:
 ;
 ; Witness: 3 runs (r06000, r12000), the room-$0C set-ups.
 ;
-; Witness: L1 3 (rzx x2).
+; Witness: L1 3 (rzx06000, rzx12000).
 WellRecord:
   PUSH HL
   PUSH IX
@@ -822,7 +822,7 @@ WellFrontDraw:
 ; of four cells through DrawTileBuffer $9A62, the second row 32 cells on.
 ; Called only by WellFront at $9A28 (11 runs, r06500 and r12000).
 ;
-; Witness: L1 11 (rzx x2).
+; Witness: L1 11 (rzx06500, rzx12000).
 DrawWellFront:
   LD HL,(WellHole)
   LD A,H

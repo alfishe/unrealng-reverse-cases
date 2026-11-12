@@ -35,7 +35,7 @@ PauseSkip:
 ; No release wait: a key still down when WaitKey is called again is taken again
 ; (the menu recording's redefinition took 2 for left, right and up).
 ;
-; Witness: L1 69199 (c1, hiscore, lives, menu, rzx x1).
+; Witness: L1 69199 (c1, hiscore, lives, menu, rzx01).
 WaitKey:
   LD B,$28
   LD HL,KeyTable

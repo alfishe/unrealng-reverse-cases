@@ -84,7 +84,7 @@ CellUnusedGfx:
 ; Out: DE past the glyph, HL the last screen byte. The font, the HUD digits and
 ; the map glyphs go through it.
 ;
-; Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 90104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 PrintGlyph:
   LD A,B
   AND $F8
@@ -114,7 +114,7 @@ PrintGlyphLoop:
 ;
 ; B = the row, C = the column. HL = $5800 + 32B + C.
 ;
-; Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 3860 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 AttrAddr:
   LD A,B
   SRA A
@@ -137,7 +137,7 @@ AttrAddr:
 ;
 ; B = the row, C = the column. DE = $5800 + 32B + C.
 ;
-; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 AttrAddrDE:
   LD A,B
   SRA A
@@ -196,7 +196,7 @@ LineAddr:
 ; ColourCycleInk into the 4 attributes of the gem graphic $9B74-$9B77 (ink, ink
 ; - 1, ink - 2, ink - 1), AnimateCells $900B, AnimateTable $90B2.
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 DrawPass:
   LD A,(ColourCycleInk)
   LD HL,GfxGem
@@ -218,7 +218,7 @@ DrawPass:
 
 ; DE = the table word of cell A: $8000 + 2 x (A AND $1F)
 ;
-; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 CellGraphicAddr:
   AND $1F
   RLCA
@@ -232,7 +232,7 @@ CellGraphicAddrPad:
 
 ; Draw the window at ViewOrigin
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 DrawWindowAtOrigin:
   CALL DrawPass
 
@@ -241,7 +241,7 @@ DrawWindowAtOrigin:
 ; DrawCell $8F60 for each; B = the character row (0, 2, ... 20), C = the column
 ; (0, 2, ... 30).
 ;
-; Witness: L1 43834 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43834 (c1, hiscore, lives, timer, rzx01-rzx32).
 DrawWindow:
   LD DE,CaveGrid
   ADD HL,DE
@@ -285,7 +285,7 @@ DrawWindowLoop:
 ; (row + 1) + column - 188). The window is drawn later, by MapKey's CALL
 ; DrawWindowAtOrigin.
 ;
-; Witness: L1 43833 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43833 (c1, hiscore, lives, timer, rzx01-rzx32).
 WindowOrigin:
   LD BC,$0000
   LD HL,(PlayerIndex)
@@ -335,7 +335,7 @@ WindowOriginLoop2:
 ; 5,E for the lower half needs bit 5 of E clear. The graphic pointer steps with
 ; INC L inside each 4-byte group, so no group may cross a 256-byte page.
 ;
-; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 7714880 (c1, hiscore, lives, timer, rzx01-rzx32).
 DrawCell:
   CALL CellGraphicAddr
   NOP
@@ -504,7 +504,7 @@ DrawCell:
 ; AnimPhase $FD72 0-3: the player's table words $8006 / $8008 from $9B98 /
 ; $9C28 + 36 x phase. Out: HL = ViewOrigin.
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 AnimateCells:
   LD A,(AnimPhase)
   INC A
@@ -537,7 +537,7 @@ AnimateCellsSkip:
 ; EarthAnim $9DFC, then the words of cells 8, 9, $0A, $0C, $0D, $0E, $0F from
 ; frame AnimPhase.
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 AnimateTable:
   PUSH HL
   PUSH DE

@@ -24,7 +24,7 @@ TeleportFrames:
 ;
 ; NoiseThud $E77C with AF, BC, DE, HL saved.
 ;
-; Witness: L1 3446 (c1, hiscore, rzx x29).
+; Witness: L1 3446 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 ThudSound:
   PUSH AF
   PUSH DE
@@ -49,7 +49,7 @@ ThudSoundPad:
 ; JP PassSoundJump $E7E5 (the 1990 version moved the choice to PassSound
 ; $E83A).
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 PassSoundEntry:
   JP PassSoundJump
 
@@ -58,7 +58,7 @@ PassSoundEntry:
 ; A = BoulderFell $7FFF (from PassSound): not 0 plays FallSound $E7A9; else
 ; ObjectFell $7FFE not 0 does.
 ;
-; Witness: L1 40382 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 40382 (c1, hiscore, lives, timer, rzx01-rzx32).
 FallSoundChoice:
   OR A
   LD A,A
@@ -82,7 +82,7 @@ FallSoundPad:
 ;
 ; ROM BEEPER HL = $0200, DE = 5, then HL = $0100, DE = 10.
 ;
-; Witness: L1 1692 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx01-rzx32).
 GemSound:
   LD HL,$0200
   LD DE,$0005
@@ -107,7 +107,7 @@ DigNoise:
 
 ; The noise loop: (HL) AND $18 to port $FE for HL down to 0
 ;
-; Witness: L1 1004824 (c1, rzx x31).
+; Witness: L1 1004824 (c1, rzx01-rzx30, rzx32).
 DigNoiseLoop:
   NOP
   LD A,(HL)
@@ -171,7 +171,7 @@ DeathLoopPad:
 ; LD C,(HL) then AND $7F: the AND acts on A, so C keeps the full ROM byte (a 0
 ; byte gives a 256-turn low half).
 ;
-; Witness: L1 33 (rzx x32).
+; Witness: L1 33 (rzx01-rzx32).
 ExitOpenSound:
   DI
   LD HL,$0180
@@ -339,7 +339,7 @@ SwitchSound:
 
 ; While FizzCount runs down: one beep a pass
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 FizzSound:
   CALL PassSoundEntry
   NOP
@@ -366,7 +366,7 @@ FizzSound:
 
 ; ROM bytes as noise
 ;
-; Witness: L1 11006 (c1, hiscore, rzx x30).
+; Witness: L1 11006 (c1, hiscore, rzx01-rzx19, rzx21-rzx30, rzx32).
 NoiseBurst:
   DI
   LD HL,$0140
@@ -418,7 +418,7 @@ NoiseBurstSkip5:
 
 ; The thud: NoiseBurst with a short length
 ;
-; Witness: L1 3446 (c1, hiscore, rzx x29).
+; Witness: L1 3446 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 NoiseThud:
   LD D,$06
 NoiseThudLoop:
@@ -436,7 +436,7 @@ NoiseThudLoop:
 
 ; The fall noise
 ;
-; Witness: L1 3647 (c1, rzx x32).
+; Witness: L1 3647 (c1, rzx01-rzx32).
 FallSound:
   DI
   LD HL,$010A
@@ -487,7 +487,7 @@ FallSoundSkip5:
 
 ; JP PassSound
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 PassSoundJump:
   JP PassSound
 
@@ -500,7 +500,7 @@ PassSoundOld:
 
 ; The dig noise when DugEarth
 ;
-; Witness: L1 20264 (c1, rzx x32).
+; Witness: L1 20264 (c1, rzx01-rzx32).
 DigNoiseIfDug:
   LD A,(DugEarth)
   CP $FF

@@ -14,7 +14,7 @@
 ; CaveDigits $FD7E = 0, 1; Password $8F29 (sets the cave); Lives $FD93 = 5,
 ; ScoreDigits 0.
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 StartGame:
   LD HL,$0100
   LD (CaveDigits),HL
@@ -33,7 +33,7 @@ StartGame:
 
 ; Clear the screen, print EnterPasswordText on row 0
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 ShowPasswordPrompt:
   CALL ClearScreen
   LD BC,$0000
@@ -74,7 +74,7 @@ KeyClickLoop2:
 ; The buffer to spaces, the prompt; WaitKey: '0' deletes, 'e' (ENTER) ends,
 ; space and A-Z are stored, at most 20.
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 EnterPassword:
   CALL ShowPasswordPrompt
   LD HL,PasswordBuffer
@@ -141,7 +141,7 @@ EnterPasswordSkip2:
 ;
 ; Out: B = the record that matched (0-49), or 50 when none did.
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 FindPassword:
   LD HL,CaveNames
   LD B,$00
@@ -242,7 +242,7 @@ PasswordAcceptedSkip:
 ; No match: RET (the 1990 version dropped the failure flash PasswordRejectedOld
 ; $8F09)
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 PasswordRejected:
   RET
 
@@ -258,7 +258,7 @@ PasswordRejectedOld:
 ; EnterPassword $8E2D, FindPassword $8E91. No match: cave 1. Record B:
 ; CaveNumber = B + 1, CaveDigits counted up to it, PasswordAccepted $8EE4.
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 Password:
   CALL EnterPassword
   CALL FindPassword

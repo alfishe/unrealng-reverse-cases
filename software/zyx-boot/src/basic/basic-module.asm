@@ -71,7 +71,7 @@ LineFour:
 ; zero bytes between its pieces ($70A8-$A5FF, $AE00-$BFFF, $D600-$FEAF) and the
 ; program it starts should find clean memory.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 Loader:
   LD HL,MenuStart
   LD DE,$61A9

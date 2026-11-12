@@ -23,6 +23,10 @@ side at --scale (2) when they fit, else at the largest whole scale that does, el
 insets on a row of their own under them, enlarged as far as that row allows; a long --title on several lines.
 --width 0 is the older picture: every panel on one row at --scale, the zoom as high as the views (up to 2620 px).
 
+--listing may be given more than once: several listings of one flat image (a 48K boot's menu and its music part,
+`--listing build/main.lst --listing build/music.lst`) are merged by address, each naming its own code (where two
+give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.
+
 --sources is a heuristic: it takes the data reads of the writing routine since its previous write, outside the
 stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values. A range
 gives its first and last byte read, both included, and its length: a loop that reads one byte past its graphic (an
@@ -70,7 +74,7 @@ def ranges(addresses):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     K.add_trace_args(p)
-    p.add_argument('--listing')
+    K.add_listing_arg(p)
     p.add_argument('--out', required=True)
     p.add_argument('--view', default='screen')
     p.add_argument('--by', choices=['routine', 'pc'], default='routine')

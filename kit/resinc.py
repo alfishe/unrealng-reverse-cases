@@ -7,9 +7,12 @@ An INCBIN takes the bytes as they are: an address inside them stays a number, so
 resource pointing at the old place, and the name cannot be written in the editable form at all. A resource marked
 `include` is instead an INCLUDE of NAME.inc (NAME.bin with the suffix .inc): DB / DW lines in which a word may be a
 label's name, resolved by sjasmplus (its second pass, so a label defined later is fine), and the entry's inner labels
-as labels between them. The case's res tool (tools/res_formats.py, the build step) writes the .inc from the editable
-form with `lines()`; kit/mkgame.py writes a numeric one (`numeric()`, the image's bytes and the inner labels at their
-offsets) to check its own assembly, and installs it beside the bytes only for a case without a res hook.
+as labels between them. Several entries one after the other may share one .inc (`@res FILE include` on each): one
+INCLUDE at the first, the later entries' names among the labels inside (symbols() gives them with the inner labels),
+so the editable form may assemble to another number of bytes than the image's. The case's res tool
+(tools/res_formats.py, the build step) writes the .inc from the editable form with `lines()`; kit/mkgame.py writes a
+numeric one (`numeric()`, the image's bytes and the inner labels at their offsets) to check its own assembly, and
+installs it beside the bytes only for a case without a res hook.
 
     import resinc
     names, addrs, marks = resinc.symbols(case_root)   # the .ann's names: {addr: name}, {name: addr}, inner labels
@@ -104,6 +107,9 @@ def symbols(case_root, ann_path=None):
         for i, (n, _) in ann.inline.items():
             if n and a <= i < nxt and n != ann.entries[a][1]:
                 marks.setdefault(res, {})[i - lo] = n
+        if a != lo and a in ann.res_include and ann.entries[a][1]:
+            # a later entry of an INCLUDE several entries share: its name is a label inside the .inc
+            marks.setdefault(res, {})[a - lo] = ann.entries[a][1]
     return names, addrs, marks
 
 

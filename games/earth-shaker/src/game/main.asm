@@ -22,7 +22,7 @@
 ; writes it into the gem graphic). Ends with CALL ExitFlash $905B, RET (on
 ; either branch).
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 ColourCycle:
   LD A,(ColourCycleInk)
   CP $46
@@ -91,7 +91,7 @@ ResetGame:
 ; CaveDone, ExitOpen and GemDigits 0, GemCount 0; SetEarthFalls $FB81,
 ; FaceLeft, ShowHudLine, ShowScore, ShowCounters.
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 ResetCave:
   LD HL,$0000
   LD (CaveDone),HL
@@ -111,7 +111,7 @@ ResetCave:
 ;
 ; ResetAntiGrav $A64B, ResetCave $85F1, FillTimeBar $8654.
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 CaveReset:
   CALL ResetAntiGrav
   CALL ResetCave
@@ -123,7 +123,7 @@ CaveReset:
 ; 8 pixel lines from $50DF: RL through the 32 bytes of a line, the rightmost
 ; first. The bar's first byte $52C0 empties last.
 ;
-; Witness: L1 15903 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 15903 (c1, hiscore, lives, timer, rzx01-rzx32).
 ShiftTimeBar:
   LD HL,Screen+4319
   LD B,$08
@@ -196,7 +196,7 @@ TimeOutPad:
 ; (HL = 0, DE = 0). The bar's first byte $52C0 at 0: TimeOutSound $86AD,
 ; CaveOver $FD7D = $FF.
 ;
-; Witness: L1 43907 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43907 (c1, hiscore, lives, timer, rzx01-rzx32).
 TimerStep:
   LD A,(TimerSub)
   ADD A,$40
@@ -222,7 +222,7 @@ TimerStep:
 ; 0: BonusTick $871C (a beep, D its period, rising), ShiftTimeBar, AddPoint,
 ; ShowScore.
 ;
-; Witness: L1 32 (rzx x32).
+; Witness: L1 32 (rzx01-rzx32).
 TimeBonus:
   DI
   LD D,$00
@@ -243,7 +243,7 @@ TimeBonusLoop:
 ; One bonus beep: ROM BEEPER HL = D, DE = 1; its three DEC D are lost to
 ; TimeBonus's POP DE, so D falls by 1 a pixel (TimeBonus's own DEC D)
 ;
-; Witness: L1 2062 (rzx x32).
+; Witness: L1 2062 (rzx01-rzx32).
 BonusTick:
   LD H,$00
   LD L,D
@@ -267,7 +267,7 @@ TimeBonusPad:
 ; BEEPER (its EI): the drain runs with interrupts on. About 10 650 T a pixel
 ; (L1 totals of lives and c1), a full bar about 39 frames.
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 QuitKey:
   LD A,$BF
   OUT ($FF),A
@@ -303,7 +303,7 @@ QuitKeyLoop:
 ; steps of the module header. CaveOver ends it; PlayerKilled: DeathView $903F,
 ; DeathSound $862E; CaveDone: TimeBonus $8702.
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 PlayCave:
   LD HL,CaveOver
   LD (HL),$00
@@ -345,7 +345,7 @@ NextPass:
 ;
 ; CaveIntro $92D4, PlayCaveTuneJump $895D, PlayCave $8885 ($89F0).
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 CavePlay:
   CALL CaveIntro
   CALL PlayCaveTuneJump
@@ -354,7 +354,7 @@ CavePlay:
 
 ; A game: StartGame, then the caves
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 StartGameEntry:
   CALL StartGame
 
@@ -363,7 +363,7 @@ StartGameEntry:
 ; ClearScreen $860E, PlayerKilled, CaveOver and CaveDone 0, CavePlay $89EA;
 ; then NextCave.
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 CaveStart:
   CALL ClearScreen
   XOR A
@@ -378,7 +378,7 @@ CaveStart:
 ; WinGame $A8BF and cave 1. Not done: Lives - 1; at 0 the game ends (RET), else
 ; the same cave again.
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx32).
 NextCave:
   LD A,(CaveDone)
   OR A
@@ -410,7 +410,7 @@ NextCaveSkip2:
 ;
 ; StartGameEntry $89F4, then GameOver $7FF3 ($8BE8).
 ;
-; Witness: L1 3 (c1, lives, rzx x1).
+; Witness: L1 3 (c1, lives, rzx01).
 NewGame:
   CALL StartGameEntry
   CALL GameOver
@@ -435,7 +435,7 @@ DeathView:
 
 ; AnimPhase = 3, CaveReset
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 CaveStartState:
   LD A,$03
   LD (AnimPhase),A
@@ -444,7 +444,7 @@ CaveStartState:
 
 ; Flash the exit door's colour while the exit is open
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 ExitFlash:
   LD A,(ExitOpen)
   OR A
@@ -461,7 +461,7 @@ ExitFlash:
 
 ; A cave's start: CaveStartState, MapShown and PlayerKilled 0
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 CaveInit:
   CALL CaveStartState
   XOR A
@@ -472,7 +472,7 @@ CaveInit:
 
 ; The cave's intro screen: level, lives, score, the cave name centred on row 20
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 CaveIntro:
   CALL ColourLevelLivesScore
   LD A,(CaveNumber)
@@ -514,7 +514,7 @@ CaveIntroSkip:
 ; GameEntry): no game-over screen, no high-score check. Witness: c1, AbortKey
 ; last at 15 244, GameOver never runs.
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 AbortKey:
   CALL AnimateCellCodes
   LD A,$FD
@@ -532,7 +532,7 @@ AbortKey:
 
 ; Play WinTune $6EF4
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx32).
 PlayWinTune:
   LD HL,WinTune
   CALL PlayTune
@@ -545,7 +545,7 @@ PlayWinTuneEnd:
 
 ; Clear the screen, draw three cells (the player and two gems)
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx32).
 WinScreen:
   CALL ClearScreen
   LD HL,GfxPlayerRight
@@ -565,7 +565,7 @@ WinScreen:
 
 ; ResetAntiGravState, FizzCount and SwitchHit 0
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 ResetAntiGrav:
   CALL ResetAntiGravState
   LD HL,$0000
@@ -576,7 +576,7 @@ ResetAntiGrav:
 
 ; ClearScreenCave, the anti-gravity digits and steps 0
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 ResetAntiGravState:
   CALL ClearScreenCave
   XOR A
@@ -589,7 +589,7 @@ ResetAntiGravState:
 
 ; Print WinTexts $AB6A
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx32).
 ShowWinTexts:
   LD HL,WinTexts
   LD D,$1A
@@ -627,7 +627,7 @@ ShowWinTexts:
 
 ; Colour the win texts
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx32).
 ColourWinTexts:
   LD A,$04
   LD D,$1A
@@ -665,7 +665,7 @@ ColourWinTexts:
 
 ; After cave 32: the win screen and tune
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx32).
 WinGame:
   CALL WinScreen
   CALL ShowWinTexts

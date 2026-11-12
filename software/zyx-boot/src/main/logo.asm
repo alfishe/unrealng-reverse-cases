@@ -16,7 +16,7 @@
 ; $6D6A) and three cells red, bright red, red drawn (DrawGlintRow $6D8A),
 ; mirrored about the screen's centre, the row above one cell further on.
 ;
-; Witness: L1 13931 (c x4).
+; Witness: L1 13931 (c1-c4).
 LogoGlint:
   LD A,(Frames)
   CP $40
@@ -29,8 +29,13 @@ LogoGlint:
   LD (GlintRowStart+$0001),HL
   LD A,(Frames+1)
 GlintHalf:
+  IFDEF GlintAdd
+  ADD A,$01               ; variant: Z only for $FF: the logo glints only in frames $FF00-$FF34,
+                          ; the reflection in every 256-frame block
+  ELSE
   AND $01                 ; Frames high byte bit 0: the glint on the logo
                           ; (even) or on its reflection (odd)
+  ENDIF
   JR Z,GlintStart
   LD HL,Attributes+614
   LD (GlintCornerLeft+$0001),HL
@@ -68,7 +73,11 @@ GlintRow:
   INC C
   PUSH BC
   LD BC,$0020
+  IFDEF GlintDaa
+  DAA                     ; variant: $27 for $A7, one bit off (a damaged byte)
+  ELSE
   AND A
+  ENDIF
   SBC HL,BC
   POP BC
   DJNZ GlintRow
@@ -77,7 +86,7 @@ GlintRow:
 ; Copy 3 attribute cells at the glint's column and their mirror image from
 ; ScreenCopy
 ;
-; Witness: L1 7605 (c x4).
+; Witness: L1 7605 (c1-c4).
 RestoreGlintCells:
   PUSH BC
   PUSH HL
@@ -108,7 +117,7 @@ RestoreGlintCells:
 ; Draw the glint's 3 cells (red, bright red, red) at the column and the mirror
 ; image
 ;
-; Witness: L1 7605 (c x4).
+; Witness: L1 7605 (c1-c4).
 DrawGlintRow:
   PUSH BC
   PUSH HL
@@ -136,7 +145,7 @@ DrawGlintRow:
 
 ; (HL) = 2 (red ink) if HL's column is within the logo (6-25)
 ;
-; Witness: L1 30420 (c x4).
+; Witness: L1 30420 (c1-c4).
 GlintRed:
   LD A,L
   AND $1F
@@ -149,7 +158,7 @@ GlintRed:
 
 ; (HL) = $42 (bright red) if HL's column is within the logo
 ;
-; Witness: L1 15210 (c x4).
+; Witness: L1 15210 (c1-c4).
 GlintBright:
   LD A,L
   AND $1F
@@ -169,7 +178,7 @@ GlintBright:
 ; upward, then ScreenCopy's bottom third ($F000, 2K) and its attribute rows
 ; 19-23 to the screen. DI around it.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 DrawReflection:
   LD HL,Logo
   CALL FlipSprite
@@ -222,7 +231,7 @@ ReflectAttrRow:
 ; Turn the 40x40 sprite at HL upside down (RotateSprite twice: 180 degrees,
 ; then MirrorSprite)
 ;
-; Witness: L1 16 (c x4).
+; Witness: L1 16 (c1-c4).
 FlipSprite:
   CALL RotateSprite
   CALL RotateSprite

@@ -9,7 +9,7 @@
 ; so every register gets 0: no tone, volume 0. Called by ShowCatalogue before
 ; every page, cutting the music for a moment.
 ;
-; Witness: L1 9 (c x4).
+; Witness: L1 9 (c1-c4).
 SoundOff:
   LD HL,30000
   CALL WriteAY
@@ -17,7 +17,7 @@ SoundOff:
 
 ; Write ExitSound to the AY registers 0-13: the bell when a file is chosen
 ;
-; Witness: L1 2 (c x2).
+; Witness: L1 2 (c2, c3).
 PlayBell:
   LD HL,ExitSound
   CALL WriteAY
@@ -25,7 +25,7 @@ PlayBell:
 
 ; Write 14 bytes from HL to the AY registers 0-13
 ;
-; Witness: L1 11 (c x4).
+; Witness: L1 11 (c1-c4).
 WriteAY:
   XOR A
 WriteAYNext:

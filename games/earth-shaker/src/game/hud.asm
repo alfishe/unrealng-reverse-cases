@@ -14,7 +14,7 @@
 ; HL = the last digit, B = the digits. The carry runs left while a digit wraps
 ; from 9 to 0.
 ;
-; Witness: L1 70724 (c1, rzx x32).
+; Witness: L1 70724 (c1, rzx01-rzx32).
 IncDigits:
   LD A,(HL)
   INC A
@@ -30,7 +30,7 @@ IncDigits:
 ;
 ; IncDigits on ScoreDigits $FD94-$FD99.
 ;
-; Witness: L1 61961 (c1, rzx x32).
+; Witness: L1 61961 (c1, rzx01-rzx32).
 AddPoint:
   LD HL,ScoreDigits+$0005
   LD B,$06
@@ -42,7 +42,7 @@ AddPoint:
 ; HL = the last digit, B = the row, C = the last digit's column, D = the count.
 ; The glyph of digit k is $BD80 + 8k.
 ;
-; Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 82595 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 PrintDigits:
   PUSH DE
   LD A,(HL)
@@ -66,7 +66,7 @@ PrintDigits:
 
 ; Print the score at row 23, columns 26-31
 ;
-; Witness: L1 12605 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 12605 (c1, hiscore, lives, timer, rzx01-rzx32).
 ShowScore:
   LD B,$17
   LD C,$1F
@@ -80,7 +80,7 @@ ShowScore:
 ; HL = the text, B = the row, C = the first column, D = the length. The glyph
 ; of code k is $BC00 + 8k (Font $BD00 is code $20).
 ;
-; Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 5918 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 PrintText:
   PUSH DE
   PUSH HL
@@ -105,7 +105,7 @@ PrintTextLoop:
 
 ; Print HudLine $BCE0 on row 23
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 ShowHudLine:
   LD D,$20
   LD BC,$1700
@@ -115,7 +115,7 @@ ShowHudLine:
 
 ; Add GemValue $FD9B points, one at a time
 ;
-; Witness: L1 1692 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx01-rzx32).
 AddGemValue:
   LD A,(GemValue)
   LD B,A
@@ -130,7 +130,7 @@ AddGemValueLoop:
 ;
 ; CaveGrid + PlayerIndex = PlayerFacing $FD86.
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 PutPlayer:
   LD HL,(PlayerIndex)
   LD DE,CaveGrid
@@ -141,7 +141,7 @@ PutPlayer:
 
 ; PlayerFacing = 4 (facing left)
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 FaceLeft:
   LD HL,PlayerFacing
   LD (HL),$04
@@ -155,7 +155,7 @@ FaceLeft:
 ;
 ; Witness: rzx-earth01 frame 814, the panel goes from 00 to 01.
 ;
-; Witness: L1 1692 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx01-rzx32).
 CountGem:
   LD A,(GemCount)
   INC A
@@ -186,7 +186,7 @@ CountGemSkip:
 
 ; Print the cave number, the gems needed and the lives on row 23
 ;
-; Witness: L1 53 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 53 (c1, hiscore, lives, timer, rzx01-rzx32).
 ShowCounters:
   LD BC,$1702
   LD D,$02
@@ -212,7 +212,7 @@ ShowCounters:
 ; TimerStep, so a cave lasts 1024 passes (the timer recording: 5543 frames of
 ; passes, 5.41 frames a pass).
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 FillTimeBar:
   LD B,$04
   LD DE,Screen+4801
@@ -245,7 +245,7 @@ FillTimeBarPad:
 ;
 ; HudLabels $BB00 and the digits, for CaveIntro $92D4.
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 ShowLevelLivesScore:
   LD HL,HudLabels
   LD BC,$060B
@@ -277,7 +277,7 @@ ShowLevelLivesScore:
 
 ; Colour and print the cave intro's three lines
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 ColourLevelLivesScore:
   LD BC,$060B
   LD D,$08
@@ -330,7 +330,7 @@ JellyBeanLoop:
 
 ; Colour the time bar from BarAttrs $BC92
 ;
-; Witness: L1 105 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 105 (c1, hiscore, lives, timer, rzx01-rzx32).
 BarColours:
   LD DE,Attributes+704
   LD BC,$0040
@@ -342,7 +342,7 @@ BarColours:
 
 ; Add B points
 ;
-; Witness: L1 31118 (rzx x29).
+; Witness: L1 31118 (rzx01-rzx12, rzx14-rzx19, rzx22-rzx32).
 AddPoints:
   PUSH BC
   CALL AddPoint

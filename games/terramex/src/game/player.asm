@@ -194,7 +194,7 @@ LadderAltSet:
 ; back. Called only from FloatInRoom2C $A34B ($A3B4): a rising hero bounces off
 ; a tile at its head.
 ;
-; Witness: L1 69 (rzx x2).
+; Witness: L1 69 (rzx18000, rzx20000).
 HeadroomRows:
   PUSH BC
   LD A,(IY+$03)
@@ -451,7 +451,7 @@ CreatureFloorBelow:
 ; IX = the object, IY = its record. SolidTileAt $A328 at (X + 12, Y). Called
 ; only from the creature code $C115.
 ;
-; Witness: L1 138 (rzx x3).
+; Witness: L1 138 (rzx34000, rzx36000, rzx40000).
 CreatureSolidAt:
   LD A,(IX+$00)
   ADD A,$0C
@@ -508,7 +508,7 @@ SolidTileDone:
 ; the screen there shows the hero floating in a lab of floating objects.
 ; Reached only through the room handler table.
 ;
-; Witness: L1 149 (rzx x2).
+; Witness: L1 149 (rzx18000, rzx20000).
 FloatInRoom2C:
   POP AF
   CALL ClearStatus

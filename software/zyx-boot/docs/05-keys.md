@@ -445,8 +445,9 @@ The point: the cursor costs 8 attribute writes every 4th frame (14 on NO EXE FIL
 
 *ReadKeyboard `$6864` in c2 frame 3203 (T 14 900 to 20 130), 60 pictures. Left above: memory `$4000-$FFFF`; left
 below: the screen; right: the listing at the PC. Made with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c2
---window 3203:14900-3203:20130 --listing work/docs/zbA/all.lst --view screen --pc 6864-692F,6848-6862,69C0-6A3E
---range 4000-FFFF --pictures 60 --out docs/img/routines/ReadKeyboard.gif`.*
+--window 3203:14900-3203:20130 --listing build/main.lst --listing build/music.lst --view screen --pc
+6864-692F,6848-6862,69C0-6A3E --range 4000-FFFF --pictures 60 --out docs/img/routines/ReadKeyboard.gif` and the
+title `--title "ReadKeyboard $6864 with 8 held (c2 frame 3203): 24 letters, the digit rows, DownKey moves the cursor"`.*
 
 How to read it:
 

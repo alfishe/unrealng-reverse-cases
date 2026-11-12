@@ -313,9 +313,11 @@ The point: a cycle of 8 passes costs about 4 x 147 + 2 x 39 400 + 63 300 + 78 40
 
 *MainLoop `$627C` over c1 frames 1300-1301 (frame 1300 T 12 000 to frame 1301 T 30 000), 80 pictures. Left above:
 memory `$4000-$FFFF`, lit by age; left below: the screen; right: the listing at the PC. Made with `python3
-../../kit/routine_anim.py --work work/docs/zbA/c1 --window 1300:12000-1301:30000 --listing work/docs/zbA/all.lst
---view screen --pc 627C-62F0,645E-6509 --range 4000-FFFF --pictures 80 --out docs/img/routines/MainLoop.gif`
-(`all.lst` is `build/main.lst` and `build/music.lst` together, so the music's code is named).*
+../../kit/routine_anim.py --work work/docs/zbA/c1 --window 1300:12000-1301:30000 --listing build/main.lst --listing
+build/music.lst --view screen --pc 627C-62F0,645E-6509 --range 4000-FFFF --pictures 80 --out
+docs/img/routines/MainLoop.gif` and the title
+`--title "MainLoop $627C: the stars fall and the rhombi turn, pass after pass with no wait (c1 frames 1300–1301)"`
+(the two listings merged by address, so the music's code is named).*
 
 How to read it:
 
@@ -437,9 +439,10 @@ then it writes `$3A` back and copies the name to the screen. And RotateCursorNam
 *Interrupt `$6757` in c1 frame 1106, the run that sets Frames to `$0232` (low byte 50): from frame 1105 T 71 600 (the
 handler starts at T 71 675) to frame 1106 T 62 000, 80 pictures. Left above: memory `$4000-$FFFF`; left below: the
 screen; right: the listing at the PC. Made with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window
-1105:71600-1106:62000 --listing work/docs/zbA/all.lst --view screen --pc
+1105:71600-1106:62000 --listing build/main.lst --listing build/music.lst --view screen --pc
 6757-6863,6848-6862,6BA5-6DC5,6CA2-6CBE,C000-C477 --range 4000-FFFF --pictures 80 --out
-docs/img/routines/Interrupt.gif`.*
+docs/img/routines/Interrupt.gif` and the title
+`--title "Interrupt $6757 at Frames 50: the music, the twinkle, the glint, then the spin of the cursor name"`.*
 
 How to read it:
 
@@ -513,8 +516,9 @@ A typical frame and the heaviest one against the beam:
 
 *c1 frame 1302 (frame 1301 T 71 600 to frame 1302 T 71 600): the routines along the frame's T-states (the coloured
 bar) and every screen write at its line against the beam (the diagonal). Made with `python3
-../../kit/beam_timeline.py --work work/docs/zbA/c1 --window 1301:71600-1302:71600 --listing work/docs/zbA/all.lst
---machine pentagon --out docs/img/loop/beam-typical.png`.*
+../../kit/beam_timeline.py --work work/docs/zbA/c1 --window 1301:71600-1302:71600 --listing build/main.lst
+--listing build/music.lst --machine pentagon --title "c1 frame 1302: a typical frame of the menu idle against the
+beam (the interrupt, then the main loop)" --out docs/img/loop/beam-typical.png`.*
 
 How to read it:
 
@@ -527,7 +531,9 @@ How to read it:
 
 ![The heaviest frame: the spin](img/loop/beam-spin.png)
 
-*c1 frame 1106, the same command with `--window 1105:71600-1106:71600` and `--out docs/img/loop/beam-spin.png`.*
+*c1 frame 1106, the same command with `--window 1105:71600-1106:71600`, `--title "c1 frame 1106: the heaviest
+frame, the interrupt at Frames 50 turns the cursor name (RotateCursorName)"` and `--out
+docs/img/loop/beam-spin.png`.*
 
 How to read it:
 

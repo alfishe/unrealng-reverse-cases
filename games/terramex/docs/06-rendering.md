@@ -1586,8 +1586,9 @@ What it shows:
 ![Code vs the beam: one pass](img/render/beam-pass.png)
 
 *Figure 6.17: the screen writes of `explorers` frames 6001-6004 against the raster. Made with `python3
-../../kit/beam_timeline.py --work work/docs/tmB/explorers --window 6001:0-6005:0 --listing build/game.lst --out
-docs/img/render/beam-pass.png`.*
+../../kit/beam_timeline.py --work work/docs/tmB/explorers --window 6001:0-6005:0 --listing build/game.lst --machine
+128k --out docs/img/render/beam-pass.png` and the title
+`--title 'Code vs the beam: one pass of room $14 (explorers frames 6001-6004): the screen writes against the raster'`.*
 
 How to read:
 

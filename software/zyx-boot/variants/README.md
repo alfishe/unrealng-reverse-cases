@@ -2,7 +2,7 @@
 
 One folder a variant of the owner's 39 images (`work/candidates/owner-boots_zyx`; the 18 boots on `zyxboot.scl` are `zyxboot-01` ... `zyxboot-18`). Each holds only what differs from the original: the resource files (same names and formats as `src/res`), its music piece, its BASIC sector when that is not the original's, the disk's other files, and `variant.json` (the music piece's address and entries, the moved work areas, the code switches). `tools/variants.py extract` writes them from the candidates, `tools/build.sh --variant NAME` builds one, `tools/build.sh --all` all of them.
 
-Layout A is the original's code; layout B has one more CALL into the music piece after CALL MusicInit (3 bytes: every later address of the code piece moves by 3, which the labels follow); most B variants also keep the screen copy at `$C000` and its stack at `$BF68`. The code switches are in `tools/variants.py` (`CODE_SWITCHES`); no variant has a copy of the code.
+Layout A is the original's code; layout B has one more CALL into the music piece after CALL MusicInit (3 bytes: every later address of the code piece moves by 3, which the labels follow); most B variants also keep the screen copy at `$C000` and its stack at `$BF68`. The code switches are `@variant` lines of `src/main/main.ann` (emitted as `IFDEF`, set by `-D` at the build) or byte edits in `tools/variants.py` (`CODE_SWITCHES`); no variant has a copy of the code.
 
 **56 of 56 build identical.**
 

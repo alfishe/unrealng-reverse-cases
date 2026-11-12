@@ -116,15 +116,23 @@ def save_gif(path, pictures, durations):
 
 
 class Listing:
-    """The code lines and labels of a sjasmplus listing (sjasmplus --lst)
+    """The code lines and labels of a sjasmplus listing (sjasmplus --lst), or of several merged by address: one flat
+    image built from several sources (a menu and the music at $C000), each listing for the addresses it holds
 
-    lines: (address, kind, text) in listing order, kind 'label' or 'code'
+    lines: (address, kind, text) in listing order (several listings one after the other), kind 'label' or 'code';
+    an address two listings both give code at is the first's
     """
 
     def __init__(self, path):
         self.lines = []
         self.code_line = {}  # address -> index into lines of the instruction there
         self.labels = []     # (address, name), sorted, global labels only (no '.')
+        for one in ([path] if isinstance(path, str) else path):
+            self._read(one)
+        self.labels.sort()
+        self._label_addresses = [a for a, _ in self.labels]
+
+    def _read(self, path):
         for raw in open(path, encoding='utf-8', errors='replace'):
             m = LINE.match(raw.rstrip('\n'))
             if not m:
@@ -143,8 +151,6 @@ class Listing:
                 if address not in self.code_line:
                     self.code_line[address] = len(self.lines)
                 self.lines.append((address, 'code', source))
-        self.labels.sort()
-        self._label_addresses = [a for a, _ in self.labels]
 
     def routine(self, address):
         """The global label at or before address"""
@@ -184,7 +190,14 @@ class NoListing:
 
 
 def listing(path):
+    """--listing: a path, or a list of them (--listing repeated: merged by address), or none"""
     return Listing(path) if path else NoListing()
+
+
+def add_listing_arg(parser):
+    parser.add_argument('--listing', action='append', metavar='LISTING',
+                        help='the sjasmplus listing that names the code; repeated, several listings of one flat '
+                             'image merged by address (build/main.lst and build/music.lst)')
 
 
 # ---------------------------------------------------------------------------------------------------------------

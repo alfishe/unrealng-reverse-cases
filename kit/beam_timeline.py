@@ -34,8 +34,13 @@ listing ("MusicFrame (RAM 6)"), --page-name N=NAME gives the whole page one name
 --listing names the rest. Without them a 128K game's interrupt code in RAM 6 would take the names of the RAM 0
 data at its addresses. The page is the trace's start page, then each `OUT` to `$7FFD`; --pc N:LO-HI is RAM N's.
 
+--listing may be given more than once: several listings of one flat image (a 48K boot's menu and its music part,
+`--listing build/main.lst --listing build/music.lst`) are merged by address, each naming its own code (where two
+give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.
+
 The picture is --width pixels wide (1050, the figure limit, readable shown at 900; the frame's time axis gets what the
-labels leave of it), a long --title goes on several lines.
+labels leave of it), a long --title goes on several lines. The axis title "frame T" sits at the frame's end; no tick
+label is drawn within 60 px before it (the 70000 of a 128K or Pentagon frame).
 """
 import argparse
 import os
@@ -68,7 +73,7 @@ def beam_timing(args, frame_t):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     K.add_trace_args(p)
-    p.add_argument('--listing')
+    K.add_listing_arg(p)
     p.add_argument('--out', required=True)
     p.add_argument('--screen', default='4000')
     p.add_argument('--machine', choices=sorted(MACHINES), help='the timing (default: from the trace\'s frame length)')
@@ -176,9 +181,11 @@ def main():
         for line in (0, 64, 128, 191):
             draw.text((4, py + line * 2 - 6), f'{line:3}', fill=K.DIM, font=small)
         y += panel_h + gap
+    axis_x = tx(frame_t) - 50  # the axis title; no tick label within 60 px before it (70000 of a 70908 T frame)
     for t in range(0, frame_t, 10000):
-        draw.text((tx(t), y - gap + 4), f'{t}', fill=K.DIM, font=small)
-    draw.text((tx(frame_t) - 50, y - gap + 4), 'frame T', fill=K.DIM, font=small)
+        if tx(t) <= axis_x - 60:
+            draw.text((tx(t), y - gap + 4), f'{t}', fill=K.DIM, font=small)
+    draw.text((axis_x, y - gap + 4), 'frame T', fill=K.DIM, font=small)
 
     for k in names[:12]:
         draw.rectangle([left, y + 2, left + 12, y + 14], fill=colour[k])

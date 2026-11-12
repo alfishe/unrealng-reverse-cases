@@ -55,7 +55,7 @@ BoulderFell:
 ; A = 0, JP ClearFallFlags $E7F5, which clears BoulderLanded $E7A8 and
 ; BoulderFell $7FFF and jumps to ScanCellsBody $8079.
 ;
-; Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 ScanCells:
   XOR A
   JP ClearFallFlags
@@ -68,7 +68,7 @@ ScanCells:
 ; EarthFallGuard $9AA6 / MoveObject $80DB. The CP (HL) at $809A is the earth
 ; test SetEarthFalls $FB81 patches to NOP.
 ;
-; Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 ScanCellsBody:
   LD (ObjectFell),A
   LD HL,CaveGrid+$0239
@@ -142,7 +142,7 @@ ScanNextCell:
 ; (3) jumps to Crush $9ABC, the rest to MoveObjectLanded $8104. The cell below
 ; not empty: RollObject $8117.
 ;
-; Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 4511703 (c1, hiscore, lives, timer, rzx01-rzx32).
 MoveObject:
   LD A,(DE)
   OR A
@@ -177,7 +177,7 @@ MoveObjectPad:
 ;
 ; A = the cell. 4 jumps to Crush $9ABC; else LandOnSwitch $810E.
 ;
-; Witness: L1 15918 (c1, hiscore, rzx x32).
+; Witness: L1 15918 (c1, hiscore, rzx01-rzx32).
 MoveObjectLanded:
   CP $04
   JR NZ,LandOnSwitch
@@ -195,7 +195,7 @@ MoveObjectPad2:
 ; when it is not in column 0 and the left cell and the one below it are both 0,
 ; else right when it is not in column 29 and those are 0.
 ;
-; Witness: L1 15901 (c1, hiscore, rzx x32).
+; Witness: L1 15901 (c1, hiscore, rzx01-rzx32).
 LandOnSwitch:
   CP $0B
   RET NZ
@@ -302,7 +302,7 @@ AntiGravSoundLoop2:
 ; $20, SwitchScore $A9E3 (250 points and the sound), SwitchHit = 0. Then
 ; AntiGravPass $A7CD: the gravity scan of the pass.
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 SwitchClear:
   LD A,(SwitchHit)
   OR A
@@ -342,7 +342,7 @@ SwitchClearPad:
 ;
 ; Every grid cell AND $1F: $20 becomes 0, the animation codes $10-$1F stay.
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 ClearVacated:
   LD HL,CaveGrid
 ClearVacatedLoop:
@@ -362,7 +362,7 @@ ClearVacatedLoop:
 ; $10-$14 step to $15, which becomes $20 (the burst); $15-$1B step to $1C,
 ; which becomes $20 (the dissolve).
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 AnimateCellCodes:
   CALL SwitchClear
   LD HL,CaveGrid
@@ -399,7 +399,7 @@ EarthFell:
 
 ; Mark falling earth, then MoveObject
 ;
-; Witness: L1 4511703 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 4511703 (c1, hiscore, lives, timer, rzx01-rzx32).
 EarthFallGuard:
   PUSH AF
   XOR A
@@ -440,7 +440,7 @@ CrushSkip:
 ; The falling-earth caves: animate earth and the empty cell (frames EmptyFrames
 ; $FAE0)
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 EarthAnim:
   LD HL,(CellEarthGfx)
   LD A,H
@@ -638,7 +638,7 @@ AntiGravTake:
 
 ; The gravity scan of a pass: down, or up while anti-gravity runs
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 AntiGravPass:
   LD A,(AntiGravSteps)
   OR A
@@ -685,7 +685,7 @@ AntiGravPassSkip3:
 ; A boulder fell: BoulderLanded when the cell under its new place is not empty
 ; or vacated
 ;
-; Witness: L1 9340 (c1, hiscore, rzx x29).
+; Witness: L1 9340 (c1, hiscore, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 BoulderLandCheck:
   PUSH HL
   PUSH DE
@@ -714,7 +714,7 @@ BoulderLanded:
 
 ; BoulderLanded and BoulderFell = A, then ScanCellsBody
 ;
-; Witness: L1 42379 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42379 (c1, hiscore, lives, timer, rzx01-rzx32).
 ClearFallFlags:
   LD (BoulderLanded),A
   LD (BoulderFell),A
@@ -724,7 +724,7 @@ ClearFallFlags:
 
 ; The pass sound: a thud after a landing or a push, else the fall noise
 ;
-; Witness: L1 43775 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43775 (c1, hiscore, lives, timer, rzx01-rzx32).
 PassSound:
   LD A,(BoulderLanded)
   OR A
@@ -770,7 +770,7 @@ EarthAnimStepSkip:
 ; The earth graphic's page decides the rule: earth falls when word 6 points
 ; into page $A4 (GfxFallingEarth).
 ;
-; Witness: L1 47 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 47 (c1, hiscore, lives, timer, rzx01-rzx32).
 SetEarthFalls:
   CALL CaveSetupAll
   LD HL,BlankGraphic

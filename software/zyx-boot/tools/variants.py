@@ -140,9 +140,10 @@ def set_equ(path, equ):
     open(path, 'w').write(s)
 
 
-def run_asm(asm, path, work):
+def run_asm(asm, path, work, defines=()):
     r = subprocess.run([asm, '--nologo', '--msg=war', '-I' + work, '--lst=' + os.path.splitext(path)[0] + '.lst',
-                        '--sym=' + os.path.splitext(path)[0] + '.sym', path], cwd=work, capture_output=True, text=True)
+                        '--sym=' + os.path.splitext(path)[0] + '.sym'] + ['-D' + d for d in defines] + [path],
+                       cwd=work, capture_output=True, text=True)
     if r.returncode or r.stdout.strip() or r.stderr.strip():
         raise SystemExit('%s: %s%s' % (os.path.basename(path), r.stdout, r.stderr))
 
@@ -277,7 +278,7 @@ def write_variant(vdir, name, cfg, notes, changed):
             lines.append('- %s at `%s` (%s `%s` in the original).' % (WHERE[k][0].upper() + WHERE[k][1:],
                                                                      cfg['equ'][k], k, ORIG_EQU[k]))
     for sw in cfg.get('code', []):
-        lines.append('- Code: %s (`%s` in variant.json, tools/variants.py CODE_SWITCHES).' % (switch_what(sw), sw))
+        lines.append('- Code: %s (`%s` in variant.json, %s).' % (switch_what(sw), sw, switch_where(sw)))
     for c in changed:
         lines.append('- `%s` differs from the original.' % c if not c.startswith('files/') else
                      '- `%s`: another file of the disk, kept as its bytes.' % c)
@@ -323,7 +324,7 @@ def build(name, asm):
     apply_code(work, cfg.get('code', []))
     if cfg.get('pieces'):
         open(os.path.join(work, 'main.asm'), 'a').write('  SAVEBIN "image.bin",$4000,$C000  ; variants: the whole memory\n')
-    run_asm(asm, os.path.join(work, 'main.asm'), work)
+    run_asm(asm, os.path.join(work, 'main.asm'), work, ann_defines(cfg.get('code', [])))
     menu = open(os.path.join(work, 'main.bin'), 'rb').read()
     if os.path.exists(os.path.join(vdir, 'basic.txt')):
         import res_basic
@@ -532,25 +533,44 @@ def where(off, cfg):
 
 
 # The code switches a variant.json "code" list may name: (file, the generated lines, their replacement, what it does)
+# The code switches that replace instructions in place are @variant blocks of src/main/main.ann (kit/mkgame.py writes
+# each as IFDEF NAME in the sources): a variant that has one is assembled with -DNAME. switch -> (NAME, what it does)
+ANN_SWITCHES = {
+    'kempston': ('Kempston',
+                'reads the Kempston joystick: `IN A,($1F)` at Joystick `$68B9` in place of `LD A,$00`'),
+    'no-joystick': ('NoJoystick',
+                'has no joystick block: the 22 bytes at Joystick `$68B9` are zeros (NOPs)'),
+    'glint-add': ('GlintAdd',
+                "tests the glint's half with `ADD A,$01` at GlintHalf `$6D1F` (the original `AND $01`)"),
+    'glint-daa': ('GlintDaa',
+                'has `DAA` for the `AND A` at `$6D63` in LogoGlint (one bit off: `$27` for `$A7`), likely a damaged '
+                'byte; the carry it leaves is then not always clear'),
+    'music-after-screen': ('MusicAfterScreen',
+                'starts the music after DrawScreen (the two calls at `$61E7` swapped)'),
+    'corners-plain': ('CornersPlain',
+                'colours the four corners plain green (`LD A,$04` in ColourCornerRows, which draws all four): no '
+                'gradient, CornerColours is not read'),
+}
+
+
+def switch_where(sw):
+    """Where a code switch is defined: a @variant of main.ann or a CODE_SWITCHES edit"""
+    return ('src/main/main.ann @variant %s' % ANN_SWITCHES[sw][0] if sw in ANN_SWITCHES
+            else 'tools/variants.py CODE_SWITCHES')
+
+
+def ann_defines(switches):
+    """the -D names of a variant's switches that are @variant blocks of the sources"""
+    return [ANN_SWITCHES[sw][0] for sw in switches if sw in ANN_SWITCHES]
+
+
+# The other code switches: regular-expression edits of the generated sources in the variant's build folder (they
+# move or add code, or need layout B's extra CALL). switch -> (file, regex, replacement, what it does), or
+# ([(file, regex, replacement)], what it does)
 CODE_SWITCHES = {
-    'kempston': ('keys.asm', r'^Joystick:\n  LD A,\$00[^\n]*\n(?:  +;[^\n]*\n)*',
-                 'Joystick:\n  IN A,($1F)              ; variant: the Kempston joystick is read\n',
-                 'reads the Kempston joystick: `IN A,($1F)` at Joystick `$68B9` in place of `LD A,$00`'),
-    'no-joystick': ('keys.asm', r'^Joystick:\n  LD A,\$00[^\n]*\n(?:  +;[^\n]*\n)*(?:  RRA\n  CALL C,\w+\n){5}',
-                    'Joystick:\n  DEFS 22                 ; variant: the dormant joystick block is zeros (NOPs)\n',
-                    'has no joystick block: the 22 bytes at Joystick `$68B9` are zeros (NOPs)'),
-    'glint-add': ('logo.asm', r'^GlintHalf:\n  AND \$01[^\n]*\n(?:  +;[^\n]*\n)*',
-                  'GlintHalf:\n  ADD A,$01               ; variant: Z only for $FF: the logo glints only in frames $FF00-$FF34,\n                          ; the reflection in every 256-frame block\n',
-                  'tests the glint\'s half with `ADD A,$01` at GlintHalf `$6D1F` (the original `AND $01`)'),
     'no-music-init': ('setup.asm', r'^  CALL MusicInit\n  CALL MusicStart\n',
                       '  DEFS 6                  ; variant: the two calls into the music piece are zeros (NOPs)\n',
                       'never calls the music\'s init: the 6 bytes of the two CALLs at `$61E7` are zeros (family B layout)'),
-    'glint-daa': ('logo.asm', r'^  LD BC,\$0020\n  AND A\n  SBC HL,BC\n', '  LD BC,$0020\n  DAA\n  SBC HL,BC\n',
-                  'has `DAA` for the `AND A` at `$6D63` in LogoGlint (one bit off: `$27` for `$A7`), likely a damaged '
-                  'byte; the carry it leaves is then not always clear'),
-    'music-after-screen': ('setup.asm', r'^  CALL MusicInit\n  CALL DrawScreen\n',
-                           '  CALL DrawScreen\n  CALL MusicInit\n',
-                           'starts the music after DrawScreen (the two calls at `$61E7` swapped)'),
     'catalogue-call': ('setup.asm', r'^Start:\n((?:.*\n){6})  LD DE,\$0000\n  LD HL,Catalogue\n  LD BC,\$0805\n  CALL TrdosEntry\n',
                        '  ORG $619B\n'
                        'ReadCatalogue:          ; variant: the catalogue read moved into a routine just before Start\n'
@@ -561,17 +581,6 @@ CODE_SWITCHES = {
                        'CatalogueRead:\n',
                        'reads the catalogue through ReadCatalogue, a 13-byte routine just before Start at `$619B`, '
                        'and only while the byte at `$FF14` (the launcher\'s flag) is 0'),
-    'corners-plain': ('fade.asm', r'^ColourCorners:\n  LD HL,Attributes\n  CALL ColourCornerRows\n  LD HL,Attributes\+635\n'
-                      r'  CALL ColourCornerRows\n  LD DE,Attributes\+27\n  CALL ColourCornerColumns\n  LD DE,Attributes\+608\n'
-                      r'  CALL ColourCornerColumns\n  RET\n((?:\n|;[^\n]*\n)*)ColourCornerRows:\n  LD B,\$05\n  LD DE,CornerColours\n'
-                      r'CornerRowsNext:\n  LD C,\$05\n  LD A,\(DE\)\n',
-                      'ColourCorners:\n  LD HL,Attributes\n  CALL ColourCornerRows\n  LD HL,Attributes+635\n  CALL ColourCornerRows\n'
-                      '  LD HL,Attributes+27     ; variant: all four corners through ColourCornerRows\n  CALL ColourCornerRows\n'
-                      '  LD HL,Attributes+608\n  CALL ColourCornerRows\n  RET\n\\1ColourCornerRows:\n  LD B,$05\n'
-                      '  LD A,$04                ; variant: one colour, green ink, for every cell\n  NOP\n'
-                      'CornerRowsNext:\n  LD C,$05\n  NOP\n',
-                      'colours the four corners plain green (`LD A,$04` in ColourCornerRows, which draws all four): '
-                      'no gradient, CornerColours is not read'),
     'catalogue-safe': ([
         ('setup.asm', r'^  LD DE,\$0000\n  LD HL,Catalogue\n  LD BC,\$0805\n  CALL TrdosEntry\n',
          '  CALL MusicInit           ; variant: the music first, then the catalogue through ReadCatalogueSafe\n'
@@ -641,13 +650,16 @@ CODE_SWITCHES = {
 
 
 def switch_edits(sw):
-    """[(file, regex, replacement)] of a code switch (one edit, or a list of edits in several modules)"""
+    """[(file, regex, replacement)] of a code switch (one edit, or a list of edits in several modules; none for an
+    @variant switch, which the assembly selects)"""
+    if sw in ANN_SWITCHES:
+        return []
     v = CODE_SWITCHES[sw]
     return v[0] if isinstance(v[0], list) else [v[:3]]
 
 
 def switch_what(sw):
-    return CODE_SWITCHES[sw][-1]
+    return ANN_SWITCHES[sw][1] if sw in ANN_SWITCHES else CODE_SWITCHES[sw][-1]
 
 
 def apply_code(work, switches):
@@ -713,7 +725,7 @@ def write_own_readme(name, same, msg):
             e['MusicPiece'], e['MusicSectors'], ', init `%s`' % e['MusicInit'] if 'MusicInit' in e else '',
             e.get('MusicPlay', '?'), ', start `%s` (layout B)' % e['MusicStart'] if 'MusicStart' in e else ''))
     for sw in cfg.get('code', []):
-        lines.append('- Code: %s (`%s`, tools/variants.py CODE_SWITCHES).' % (switch_what(sw), sw))
+        lines.append('- Code: %s (`%s`, %s).' % (switch_what(sw), sw, switch_where(sw)))
     for part in cfg.get('parts', []):
         pj = json.load(open(os.path.join(vdir, part)))
         ann = pj.get('ann') or pj['segments'][0]['ann']   # the segments layout: one .ann in pieces
@@ -771,8 +783,9 @@ def index(asm):
            '`tools/build.sh --variant NAME` builds one, `tools/build.sh --all` all of them.', '',
            'Layout A is the original\'s code; layout B has one more CALL into the music piece after CALL MusicInit '
            '(3 bytes: every later address of the code piece moves by 3, which the labels follow); most B variants also keep the screen '
-           'copy at `$C000` and its stack at `$BF68`. The code switches are in `tools/variants.py` (`CODE_SWITCHES`); '
-           'no variant has a copy of the code.', '',
+           'copy at `$C000` and its stack at `$BF68`. The code switches are `@variant` lines of `src/main/main.ann` (emitted '
+           'as `IFDEF`, set by `-D` at the build) or byte edits in `tools/variants.py` (`CODE_SWITCHES`); no variant has '
+           'a copy of the code.', '',
            '**%d of %d build identical.**' % (ok, total), '',
            '| Variant | Layout | Files that differ | Code switches and moved areas | Build |',
            '| --- | --- | --- | --- | --- |'] + rows

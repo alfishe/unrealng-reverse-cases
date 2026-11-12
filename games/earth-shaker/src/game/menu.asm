@@ -26,7 +26,7 @@ ResetAll:
 ;
 ; Attributes $47 (bright white on black), WipeScreen $8DE3.
 ;
-; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 ClearScreen:
   LD HL,Attributes
   LD DE,Attributes+1
@@ -116,7 +116,7 @@ ShowMenuTexts:
 
 ; Fill D attributes with A from row B, column C
 ;
-; Witness: L1 3260 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 3260 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 FillAttrs:
   PUSH AF
   PUSH DE
@@ -174,7 +174,7 @@ GameEntryLoop:
 ; Key 1 NewGame $8BE5, 2 RedefineKeys $8C30, 3 and 4 ChooseControl $ECE3, 5
 ; ResetMachine $8B65.
 ;
-; Witness: L1 11 (c1, lives, menu, rzx x1).
+; Witness: L1 11 (c1, lives, menu, rzx01).
 MenuKeys:
   LD DE,TitleTune+$0569
   SBC HL,DE
@@ -226,7 +226,7 @@ ResetMachinePad:
 
 ; Wipe the pixels away: 8 passes shifting each byte pair apart
 ;
-; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 104 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 WipeScreen:
   DI
   LD B,$08

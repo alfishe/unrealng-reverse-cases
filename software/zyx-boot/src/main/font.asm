@@ -15,7 +15,7 @@
 ; (RomChanOpen $1601), then RST $10 for each byte: the control codes AT, INK,
 ; BRIGHT are the ROM's.
 ;
-; Witness: L1 93 (c x4).
+; Witness: L1 93 (c1-c4).
 PrintString:
   PUSH HL
   LD HL,(SavedHLAlt)

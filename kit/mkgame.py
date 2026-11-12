@@ -277,6 +277,8 @@ OVER = re.compile(r'^@over\s+' + HEX4 + r'\s*(?:;\s*(.*))?$')
 BANK_SHORT = re.compile(r'^@bank\s+' + HEX4 + r'\s+(\w+)\s*(?:;\s*(.*))?$')
 NAMES_FROM = re.compile(r'^@names\s+(\w+)\s+(\S+)\s*(?:;.*)?$')
 PIECE = re.compile(r'^@piece\s+(\w+)\s*$')
+# @variant NAME $ADDR[-$END] [+] INSTRUCTION [; comment]
+VARIANT = re.compile(r'^@variant\s+([A-Za-z_]\w*)\s+' + HEX4 + r'(?:-\$([0-9A-Fa-f]{4}))?\s+(\+\s+)?(\S.*?)\s*$')
 OLD_FORM = re.compile(r'^#\s*(@(?:bank|var|alias|over|piece)\s.*)$')
 
 
@@ -309,7 +311,9 @@ class Annotations:
                                   a w entry's words that name data labels become ASSERT lines after the INCBINs;
         @res FILE include         ... assembled with INCLUDE "res/FILE.inc" (FILE's suffix .inc): DB / DW lines the
                                   case's res tool writes from the editable form, words as label names (kit/resinc.py);
-                                  one entry a file, its inner labels inside the .inc
+                                  its inner labels inside the .inc; several entries one after the other may share
+                                  the file: one INCLUDE at the first, the later entries' labels inside the .inc too,
+                                  so the file may hold another number of bytes
         $ADDR [NAME] ; comment    an instruction inside an entry: its label, its comment; inside a data entry the
                                   data line that starts at ADDR (the entry's rows are cut there)
         @isub $ADDR INSTRUCTION   the instruction at ADDR written so (a constant the image's bytes cannot tell from an
@@ -337,6 +341,11 @@ class Annotations:
                                   cut there), every instruction operand $ADDR+1..$ADDR+N-1 written NAME+k
         @alias NAME EXPR ; c      NAME EQU EXPR, for a name that cannot be a label (the operand of a JP into code)
         @over $ADDR ; why         a branch target that holds other bytes when the branch runs: not followed
+        @variant NAME $ADDR INSTRUCTION [; c]
+                                  under NAME the instruction at ADDR is INSTRUCTION: IFDEF NAME, the line, ELSE, the
+                                  original, ENDIF (sjasmplus -DNAME builds the variant); $ADDR-$END replaces the
+                                  instructions from ADDR up to END; '+ INSTRUCTION' inserts it before the one at ADDR;
+                                  more lines of one NAME and place add lines to the block
         @piece NAME               the lines from here to the next @piece are piece NAME of a part file's segments
                                   (each piece is its own segment); the lines before the first piece hold for all
 
@@ -364,6 +373,7 @@ class Annotations:
         self.names_from = {}  # bank: (the .ann of @names, {address: name})
         short_banks = []  # (address, bank, comment, where) of the @bank lines without a name
         self.pieces = []  # the piece names, in the file's order
+        self.variants = []  # [name, lo, hi or None, insert, [lines]] of the @variant lines, in the file's order
         self.path = path
         last = None
         if not os.path.exists(path):
@@ -412,7 +422,7 @@ class Annotations:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
                 short_banks.append((int(m.group(1), 16), m.group(2), m.group(3) or '', f'{path}:{number}'))
                 continue
-            if text.startswith('@var'):
+            if text.startswith('@var') and not text.startswith('@variant'):
                 m = VAR.match(text)
                 if not m:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
@@ -429,6 +439,19 @@ class Annotations:
                 if not m:
                     sys.exit(f'{path}:{number}: cannot read: {line}')
                 self.over.add(int(m.group(1), 16))
+                continue
+            if text.startswith('@variant'):
+                m = VARIANT.match(text)
+                if not m:
+                    sys.exit(f'{path}:{number}: cannot read: {line}')
+                name, lo = m.group(1), int(m.group(2), 16)
+                hi, insert = (int(m.group(3), 16) if m.group(3) else None), bool(m.group(4))
+                if insert and hi is not None:
+                    sys.exit(f'{path}:{number}: @variant: an insertion (+) takes one address, not a range')
+                if self.variants and self.variants[-1][:4] == [name, lo, hi, insert]:
+                    self.variants[-1][4].append(m.group(5))
+                else:
+                    self.variants.append([name, lo, hi, insert, [m.group(5)]])
                 continue
             if text.startswith('@about'):
                 if not self.modules:
@@ -719,11 +742,18 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
             sys.exit('game.ann: @res %s on $%04X, which is no data entry' % (name, a))
         lo, hi = files.get(name, (a, a + extents[a]))
         files[name] = (min(lo, a), max(hi, a + extents[a]))
-    for a in ann.res_include:
-        name = ann.resources[a]
-        if files[name] != (a, a + extents[a]):
-            sys.exit('game.ann: @res %s include on $%04X: the file is shared with another entry (an INCLUDE takes '
-                     'one entry)' % (name, a))
+    shared = {}  # an include file: its entries, in address order
+    for a in sorted(ann.res_include):
+        shared.setdefault(ann.resources[a], []).append(a)
+    for name, entries in shared.items():
+        others = sorted(a for a, n in ann.resources.items() if n == name and a not in ann.res_include)
+        if others:
+            sys.exit('game.ann: @res %s include on $%04X and without include on $%04X: one file is one or the other'
+                     % (name, entries[0], others[0]))
+        for a, b in zip(entries, entries[1:]):
+            if a + extents[a] != b:
+                sys.exit('game.ann: @res %s include on $%04X and $%04X: the entries of one INCLUDE follow each other '
+                         '(bytes between them at $%04X)' % (name, a, b, a + extents[a]))
     for name, (lo, hi) in files.items():
         path = os.path.join(out, 'res', name)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -742,6 +772,14 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
     for a, name in sorted(ann.resources.items()):
         label = ann.name(a)
         at = lines.index(label + ':')
+        if a in ann.res_include and shared[name][0] != a:
+            # a later entry of a shared INCLUDE: its label and bytes are inside the .inc, its comments stay
+            end = at + 1
+            while end < len(lines) and (DATA_LINE.match(lines[end]) or LABEL_LINE.match(lines[end]) or
+                                        COMMENT_LINE.match(lines[end])):
+                end += 1
+            lines[at:end] = []
+            continue
         end = at + 1
         cuts = []  # (address, label) of the labels inside the entry
         while end < len(lines) and (DATA_LINE.match(lines[end]) or LABEL_LINE.match(lines[end]) or
@@ -753,10 +791,15 @@ def write_resources(text, mem, extents, ann, out, word_asserts=True):
                 cuts.append((inner[m.group(1)], m.group(1)))
             end += 1
         if a in ann.res_include:
-            # the numeric .inc: mkgame's own check (the case's res tool writes the one the build includes)
-            fields = {k - a: n for k, n in ann.fields().items() if k == a}
+            # the numeric .inc: mkgame's own check (the case's res tool writes the one the build includes); the
+            # later entries of a shared file with their names and inner labels
+            fields = {k - a: n for k, n in ann.fields().items() if k in shared[name]}
             fields.update({k - a: n for k, n in cuts})
-            text_inc = resinc.numeric(mem[a:a + extents[a]], fields,
+            for b in shared[name][1:]:
+                fields[b - a] = ann.name(b)
+                fields.update({k - a: n for n, k in inner.items() if b <= k < b + extents[b] and k != b})
+            hi = shared[name][-1] + extents[shared[name][-1]]
+            text_inc = resinc.numeric(mem[a:hi], fields,
                                       ['%s: %s (kit/mkgame.py, the image\'s bytes)' % (resinc.inc_name(name), label)])
             open(os.path.join(out, 'res', resinc.inc_name(name)), 'w').write(text_inc)
             INCLUDED[name] = text_inc
@@ -1064,6 +1107,80 @@ def restore_isubs(text, order, isubs):
     return ''.join(out), restored
 
 
+def variant_line(text):
+    """an @variant line's INSTRUCTION [; comment] as a source line, the comment at the column skool2asm uses"""
+    code, semi, comment = text.partition(';')
+    code = '  ' + code.strip()
+    return code.ljust(26) + '; ' + comment.strip() if semi else code
+
+
+def apply_variants(text, order, variants, path):
+    """The @variant blocks: under IFDEF NAME the .ann's lines, ELSE the instructions they replace (none for an
+    insertion, which goes just before the instruction at its address, after that instruction's labels), ENDIF.
+    order: instruction_order. A block inside another's range (a one-instruction variant inside a longer one) is
+    nested in the longer one's ELSE; ranges that cross fail, and so does a label inside a replaced range (a variant
+    would leave it undefined)"""
+    if not variants:
+        return text
+    where = os.path.relpath(path, ROOT) if ROOT else path
+    lines = text.splitlines()
+    at = {}  # instruction address -> its line
+    n = 0
+    for i, line in enumerate(lines):
+        if ASM_INSTRUCTION.match(line.partition(';')[0]):
+            if n < len(order):
+                at[order[n]] = i
+            n += 1
+    if n != len(order):
+        sys.exit(f'{where}: @variant: {len(order)} instructions in the skool file, {n} in the listing')
+    spans = []
+    for name, lo, hi, insert, new in variants:
+        if lo not in at:
+            sys.exit(f'{where}: @variant {name} ${lo:04X}: no instruction there')
+        if insert or hi is None:
+            first = last = at[lo]
+        else:
+            inside = [a for a in at if lo <= a < hi]
+            first, last = at[lo], max(at[a] for a in inside)
+        while not insert and last + 1 < len(lines) and COMMENT_LINE.match(lines[last + 1]):
+            last += 1  # the original's comment wrapped onto lines of its own goes with it
+        label = next((lines[i] for i in range(first + 1, last + 1) if LABEL_LINE.match(lines[i])), None)
+        if label:
+            sys.exit(f'{where}: @variant {name} ${lo:04X}: the label {label} lies inside the range it replaces')
+        spans.append((first, last, name, insert, new))
+    for a, b in ((x, y) for x in spans for y in spans if x is not y):
+        if a[0] < b[0] <= a[1] < b[1]:
+            sys.exit(f'{where}: @variant {a[2]} and {b[2]} cross')
+    blocks = {}  # first line -> (last line, text)
+    # the shorter first, so that a longer range around it takes the block whole into its ELSE
+    for first, last, name, insert, new in sorted(spans, key=lambda x: (x[1] - x[0], x[3] is False)):
+        body = ['  IFDEF %s' % name] + [variant_line(x) for x in new]
+        if insert:
+            old = blocks.get(first, (first, lines[first]))
+            blocks[first] = (old[0], '\n'.join(body + ['  ENDIF', old[1]]))
+            continue
+        old, i = [], first
+        while i <= last:
+            if i in blocks:
+                end, chunk = blocks.pop(i)
+                old.append(chunk)
+                i = end + 1
+            else:
+                old.append(lines[i])
+                i += 1
+        blocks[first] = (last, '\n'.join(body + ['  ELSE'] + old + ['  ENDIF']))
+    out, i = [], 0
+    while i < len(lines):
+        if i in blocks:
+            end, chunk = blocks[i]
+            out.append(chunk)
+            i = end + 1
+        else:
+            out.append(lines[i])
+            i += 1
+    return '\n'.join(out) + ('\n' if text.endswith('\n') else '')
+
+
 def equates(equ, title=None):
     """The variables outside the image (@equ), as EQU lines"""
     if not equ:
@@ -1222,6 +1339,7 @@ def clip_to_image(ann):
         ann.res_include.discard(a)
     for a in [a for a in ann.isub if not LO <= a < HI]:
         del ann.isub[a]
+    ann.variants = [v for v in ann.variants if LO <= v[1] < HI]
 
 
 def generate(seg, mem, args, out, top):
@@ -1259,9 +1377,9 @@ def generate(seg, mem, args, out, top):
     # the single layout's control file is work/.../<main>.ctl (game.ctl in a game's case), as kit/refdocs.py and the
     # cases' doc tools read it
     tag = main_name() if seg.single else seg.tag()
-    ctl = os.path.join(out, tag + '.ctl')
+    ctl = wrote(os.path.join(out, tag + '.ctl'))
     extents = write_ctl(mem, code, targets, calls, entries, ann, ctl)
-    image = os.path.join(out, tag + '-image.bin')
+    image = wrote(os.path.join(out, tag + '-image.bin'))
     open(image, 'wb').write(mem[LO:])
     py = toolpaths.skoolkit_python(args.venv)
     sk = run([py, os.path.join(args.venv, 'bin', 'sna2skool.py'), '-H', '-c', ctl, '-o', str(LO), image]).stdout
@@ -1285,7 +1403,7 @@ def generate(seg, mem, args, out, top):
     if written:
         sys.exit('%s: @isub on no instruction: %s' % (os.path.relpath(seg.ann, ROOT),
                                                       ', '.join('$%04X' % a for a in sorted(written))))
-    skool = os.path.join(out, tag + '.skool')
+    skool = wrote(os.path.join(out, tag + '.skool'))
     open(skool, 'w').write(sk)
     text = run([py, os.path.join(args.venv, 'bin', 'skool2asm.py'), '-H', skool]).stdout
     for half in ('IXl', 'IXh', 'IYl', 'IYh'):
@@ -1309,6 +1427,7 @@ def generate(seg, mem, args, out, top):
             print(f'port: ${a:04X} {instruction} feeds IN / OUT (C): kept a number, not {", ".join(names)}')
     if seg.isub_as_written:
         text = decimal_isubs(text, ann.isub.values())
+    text = apply_variants(text, order, ann.variants, seg.ann)
     # a commented data sub-block of several lines: SkoolKit leaves a bare ';' on the lines after the first
     text = re.sub(r'^(  DEF[BWMS] .*?)\s+;$', r'\1', text, flags=re.M)
     text, files = write_resources(text, mem, extents, ann, out, seg.run == (seg.lo if seg.lo is not None else LO))
@@ -1430,6 +1549,29 @@ def install_resources(part, resources, built=()):
               'tools/res_formats.py, no "res" folder' % (len(files), ', '.join(sorted(files))), file=sys.stderr)
         return 0
     return len(files)
+
+
+WROTE = set()  # the work files this run wrote (absolute paths): what clean_work keeps
+WORK_FILE = re.compile(r'(\.asm|\.ctl|\.skool|-image\.bin)$')  # the kinds of work file mkgame writes
+
+
+def wrote(path):
+    WROTE.add(os.path.abspath(path))
+    return path
+
+
+def clean_work(folders):
+    """the work files of the kinds mkgame writes (a module's .asm, the top file, the control and skool files, the
+    image) in these folders of its own that this run did not write: an older run's, under a module or part name the
+    .ann has no more (code.asm, written while the .ann had no @module)"""
+    for folder in folders:
+        if not os.path.isdir(folder):
+            continue
+        for name in sorted(os.listdir(folder)):
+            path = os.path.abspath(os.path.join(folder, name))
+            if WORK_FILE.search(name) and os.path.isfile(path) and path not in WROTE:
+                os.remove(path)
+                print(f'removed {os.path.relpath(path, ROOT)} (an older run\'s: this one no longer writes it)')
 
 
 def included(path):
@@ -1562,13 +1704,14 @@ def make_part(part, args):
     resources = {}
     for r in filter(None, results):
         for module, body in r[0]:
-            open(os.path.join(out, inc + module_file(module, r[3].top) + '.asm'), 'w').write(body)
+            open(wrote(os.path.join(out, inc + module_file(module, r[3].top) + '.asm')), 'w').write(body)
         resources.update(r[2])
     for res, data in resources.items():
         path = os.path.join(out, 'res', res)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         open(path, 'wb').write(data)
-    open(os.path.join(out, top + '.asm'), 'w').write(text)
+    open(wrote(os.path.join(out, top + '.asm')), 'w').write(text)
+    clean_work([out, os.path.join(out, top)] if subdir else [out])
     if part.get('before_assemble'):
         call_hook(part['before_assemble'], out)
     assemble(part, args, out, top)
@@ -1632,9 +1775,39 @@ def load_witness(seg, fix=False):
                 ran[a] = ran.get(a, 0) + n
 
 
+def family_text(prefix, names):
+    """the members of a numbered family that ran an entry, by name: a run of 3 or more numbers as a range
+    ('c1-c4'), else one by one ('c1, c2, c4'); 'rzx xK' when that is more than 4 items"""
+    numbers = sorted(names, key=lambda x: int(x[len(prefix):]))
+    runs = []
+    for x in numbers:
+        if runs and int(x[len(prefix):]) == int(runs[-1][-1][len(prefix):]) + 1:
+            runs[-1].append(x)
+        else:
+            runs.append([x])
+    items = []
+    for run in runs:
+        items += ['%s-%s' % (run[0], run[-1])] if len(run) >= 3 else run
+    return ', '.join(items) if len(items) <= 4 else '%s x%d' % (prefix, len(names))
+
+
+def witness_items(text):
+    """the build names a witness list holds: a range 'c1-c4' as c1, c2, c3, c4; 'rzx xK' stays one item"""
+    out = set()
+    for x in (x.strip() for x in text.split(',')):
+        m = re.match(r'^(.*?)(\d+)-(.*?)(\d+)$', x)
+        if m and m.group(1) == m.group(3) and int(m.group(2)) < int(m.group(4)):
+            width = len(m.group(2))
+            out |= {'%s%0*d' % (m.group(1), width, k) for k in range(int(m.group(2)), int(m.group(4)) + 1)}
+        elif x:
+            out.add(x)
+    return out
+
+
 def witness_text(builds, address):
     """'N (names)' of a code entry: the runs of its first instruction summed over the builds {build: runs}, and the
-    builds that ran it; names of a numbered family (rzx01 ... rzx32: two or more in the set) as 'rzx xK'"""
+    builds that ran it; the members of a numbered family (c1 ... c4, rzx01 ... rzx32: two or more in the set) named
+    (family_text: 'c1-c4', 'c1, c2, c4'), or 'rzx xK' when there are too many to name"""
     family = {}
     for b in builds:
         m = re.match(r'(.*?)(\d+)$', build_name(b))
@@ -1648,10 +1821,10 @@ def witness_text(builds, address):
         total += n
         m = re.match(r'(.*?)(\d+)$', build_name(b))
         if m and len(family[m.group(1)]) > 1:
-            groups[m.group(1)] = groups.get(m.group(1), 0) + 1
+            groups.setdefault(m.group(1), []).append(build_name(b))
         else:
             singles.append(build_name(b))
-    return total, ', '.join(sorted(singles) + ['%s x%d' % (k, v) for k, v in sorted(groups.items())])
+    return total, ', '.join(sorted(singles) + [family_text(k, v) for k, v in sorted(groups.items())])
 
 
 def check_witness(seg, skip=(), fix=False):
@@ -1691,12 +1864,13 @@ def check_witness(seg, skip=(), fix=False):
             stale += 1
             # a name of the line that is none of these builds' (a recording this run does not load): the line is
             # kept as it is, a rewrite would drop it
-            had = {x.strip() for x in w.group(2).split(',') if x.strip()}
+            had = witness_items(w.group(2))
             unknown = sorted(x for x in had if x not in known and not re.match(r'.* x\d+$', x))
-            dropped = sorted(had - {x.strip() for x in names.split(',')} - set(unknown))
+            dropped = sorted(had - witness_items(names) - set(unknown) - {x for x in had if re.match(r'.* x\d+$', x)})
+            # an entry no build ran at all (data, or code no recording reaches) is no build's miss: nothing said
             print('witness: %s:%d $%04X %s: L1 %s (%s), the builds give L1 %d (%s)%s%s' % (
                 os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', w.group(1), w.group(2), n, names,
-                ('; %s ran no instruction there' % ', '.join(dropped)) if dropped else '',
+                ('; %s ran no instruction there' % ', '.join(dropped)) if dropped and n else '',
                 ('; kept: %s not among the builds' % ', '.join(unknown) if unknown else ': rewritten') if fix else ''))
             if unknown:
                 return w.group(0)
@@ -1737,7 +1911,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
         print(f'resources {len(resources)} files, {sum(len(v) for v in resources.values())} bytes')
     print(f'{top}: {stats}')
     for name, body in modules:
-        open(os.path.join(out, module_file(name, top) + '.asm'), 'w').write(body)
+        open(wrote(os.path.join(out, module_file(name, top) + '.asm')), 'w').write(body)
     text = '\n'.join(part.get('header') or ['; ' + top]) + '\n' + written_line(part, [seg.ann]) + \
         '\n\n  DEVICE %s\n' % device
     if seg.bank is not None and part.get('slot', True):
@@ -1747,7 +1921,8 @@ def single_part(part, args, mem, original, at, top, out, device, built):
                                                 if ann.module_info.get(name, [''])[0] else '') for name, _ in modules)
     binary = part.get('bin') or top + '.bin'
     text += '\n  SAVEBIN "%s",$%04X,$%04X\n' % (binary, LO, HI - LO)
-    open(os.path.join(out, top + '.asm'), 'w').write(text)
+    open(wrote(os.path.join(out, top + '.asm')), 'w').write(text)
+    clean_work([out])
     if part.get('before_assemble'):
         call_hook(part['before_assemble'], out)
     assemble(part, args, out, top)

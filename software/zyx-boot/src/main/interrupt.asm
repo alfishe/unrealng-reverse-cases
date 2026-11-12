@@ -12,7 +12,7 @@
 
 ; The IM 2 handler
 ;
-; Witness: L1 13932 (c x4).
+; Witness: L1 13932 (c1-c4).
 Interrupt:
   PUSH IY
   PUSH IX
@@ -78,7 +78,7 @@ CheckSpin:
 ; column by column. At Frames 90 the LD A at $67D8 is made a RET for one call:
 ; only the address is worked out.
 ;
-; Witness: L1 276 (c x4).
+; Witness: L1 276 (c1-c4).
 RotateCursorName:
   LD HL,RotateRow
   LD (CursorAttrAddr+$0002),HL
@@ -130,7 +130,7 @@ RotateColumnShift:
 
 ; Copy the name from ScreenCopy to the screen (CopyNameToScreen) and leave
 ;
-; Witness: L1 276 (c x4).
+; Witness: L1 276 (c1-c4).
 ShowRotatedName:
   LD HL,CursorRow
   LD (CursorAttrAddr+$0002),HL
@@ -155,7 +155,7 @@ CheckSpinMore:
 
 ; Every 8th frame read the keys; restore the registers, EI, RET
 ;
-; Witness: L1 13931 (c x4).
+; Witness: L1 13931 (c1-c4).
 InterruptExit:
   LD A,(Frames)
   AND $07
@@ -181,7 +181,7 @@ InterruptExit:
 
 ; Copy the 8 rows of the rotated name from ScreenCopy to the screen
 ;
-; Witness: L1 276 (c x4).
+; Witness: L1 276 (c1-c4).
 CopyNameToScreen:
   LD HL,(RotateAddr)
   LD A,H

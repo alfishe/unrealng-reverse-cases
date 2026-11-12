@@ -41,7 +41,7 @@ Each case is a full reverse of one game:
 | [Earth Shaker](games/earth-shaker/README.md) | Your Sinclair (Michael Batty), 1990 | 48K, tape | complete 2026-11-11 | a boulder-and-gems mine game given away on the Your Sinclair issue 63 covertape: 32 caves of 30 x 20 cells in a scrolling window, falling boulders and gems, a password per cave, a plain ROM-speed load |
 | [Battle Command](games/battle-command/README.md) | Ocean Software (Realtime Games), 1990 | 128K, tape (two sides) | complete 2026-11-11 | a 3D tank combat game: one Mauler tank in a filled-polygon world, ten missions on a mission tape, SpeedLock 7 |
 | [Terramex](games/terramex/README.md) | Grandslam Entertainments (Teque), 1987 | 48K / 128K, tape | complete 2026-11-11 | an arcade adventure: five explorers, 70 flick-screen rooms, objects carried by invisible bearers, a countdown to an asteroid's impact; Ben Daglish's AY music on the 128K |
-| [Switchblade](games/switchblade/README.md) | Gremlin Graphics, 1991 | 48K / 128K, tape | in progress (stage 1) | Jeff Calder's conversion of Simon Phipps' flip-screen platform game: Hiro rebuilds the Fireblade in a 127-room Undercity revealed as he walks |
+| [Switchblade](games/switchblade/README.md) | Gremlin Graphics, 1991 | 48K / 128K, tape | in progress (docs written, in review) | Jeff Calder's conversion of Simon Phipps' flip-screen platform game: Hiro rebuilds the Fireblade in a 127-room Undercity revealed as he walks |
 
 ### Software
 
@@ -50,7 +50,7 @@ in `src/main`.
 
 | Program | Publisher, year | Machine, medium | State | What it is |
 | --- | --- | --- | --- | --- |
-| [ZYX boot](software/zyx-boot/README.md) | ZYX Software, 1993-1994 | 48K + AY, TR-DOS | in progress (stage 2: the source rebuilds the disk; docs 02, 03) | a TR-DOS boot menu, not a game: the catalogue as a menu of up to 24 files a page, the ZYX logo with its reflection, four rhombi turning in 3D, falling stars, ASC Sound Master music; runs the file by rewriting its own BASIC line |
+| [ZYX boot](software/zyx-boot/README.md) | ZYX Software, 1993-1994 | 48K + AY, TR-DOS | complete 2026-11-12 (the disk and all 56 variants rebuilt identical; docs 01-13) | a TR-DOS boot menu, not a game: the catalogue as a menu of up to 24 files a page, the ZYX logo with its reflection, four rhombi turning in 3D, falling stars, ASC Sound Master music; runs the file by rewriting its own BASIC line |
 
 Every case is one folder in `games/` (or `software/` for a program that is not a game, its main program's source in
 `src/main`, not `src/game`):

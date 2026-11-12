@@ -10,7 +10,7 @@
 ; Crystal of room $30 taken ($8F86). Witness: c1 once, explorers 5 times,
 ; rzx00000 once (the new games).
 ;
-; Witness: L1 7 (c1, explorers, rzx x1).
+; Witness: L1 7 (c1, explorers, rzx00000).
 ResetItems:
   LD B,$1F
   LD HL,ItemPlaces
@@ -247,7 +247,7 @@ SwapLatch:
 ; Called by BridgeEffect $BA97 ($BA9F) before its start test, which returns
 ; when Z is clear: never. A test left empty (known only from the code).
 ;
-; Witness: L1 489 (rzx x4).
+; Witness: L1 489 (rzx08000, rzx12000, rzx40000, rzx42000).
 AlwaysZero:
   PUSH HL
   CP A

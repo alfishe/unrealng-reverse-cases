@@ -36,7 +36,7 @@ WinTunePad:
 ; See the module header. Out: HL at the byte that ended the tune, interrupts
 ; on.
 ;
-; Witness: L1 66 (c1, hiscore, lives, menu, timer, rzx x32).
+; Witness: L1 66 (c1, hiscore, lives, menu, timer, rzx01-rzx32).
 PlayTune:
   DI
 NoteLoop:
@@ -149,7 +149,7 @@ PlayTuneSkip6:
 
 ; JP PlayCaveTune: the 1990 version's one tune per four caves
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 PlayCaveTuneJump:
   JP PlayCaveTune
 
@@ -207,7 +207,7 @@ CaveTunes:
 
 ; Play the tune of the cave's group of four
 ;
-; Witness: L1 46 (c1, hiscore, lives, timer, rzx x31).
+; Witness: L1 46 (c1, hiscore, lives, timer, rzx01-rzx31).
 PlayCaveTune:
   LD A,(CaveNumber)
   DEC A

@@ -11,27 +11,43 @@
 
 ; Colour the four 5x5 corners with CornerColours
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 ColourCorners:
   LD HL,Attributes
   CALL ColourCornerRows
   LD HL,Attributes+635
   CALL ColourCornerRows
+  IFDEF CornersPlain
+  LD HL,Attributes+27     ; variant: all four corners through ColourCornerRows
+  CALL ColourCornerRows
+  LD HL,Attributes+608
+  CALL ColourCornerRows
+  ELSE
   LD DE,Attributes+27
   CALL ColourCornerColumns
   LD DE,Attributes+608
   CALL ColourCornerColumns
+  ENDIF
   RET
 
 ; At HL, 5 rows of 5 cells: row n all CornerColours[n]
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 ColourCornerRows:
   LD B,$05
+  IFDEF CornersPlain
+  LD A,$04                ; variant: one colour, green ink, for every cell
+  NOP
+  ELSE
   LD DE,CornerColours
+  ENDIF
 CornerRowsNext:
   LD C,$05
+  IFDEF CornersPlain
+  NOP
+  ELSE
   LD A,(DE)
+  ENDIF
 CornerRowsCell:
   LD (HL),A
   INC HL
@@ -47,7 +63,7 @@ CornerRowsCell:
 
 ; At DE, 5 rows of 5 cells, each row the 5 CornerColours
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 ColourCornerColumns:
   LD B,$05
 CornerColumnsRow:
@@ -67,7 +83,7 @@ CornerColumnsRow:
 
 ; Shift every pixel row out of its bytes in 8 passes: the screen goes black
 ;
-; Witness: L1 2 (c x2).
+; Witness: L1 2 (c2, c3).
 ExitFade:
   LD D,$08
 ExitFadePass:

@@ -24,7 +24,7 @@
 ; $94D6 (which takes gems and the other specials, continuation MoveLeft); then
 ; MoveLeft $8428.
 ;
-; Witness: L1 42086 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42086 (c1, hiscore, lives, timer, rzx01-rzx32).
 TryLeft:
   LD A,$DF
   OUT ($FF),A
@@ -85,7 +85,7 @@ TryLeftSkip2:
 
 ; Move the player one cell left (the old cell 0)
 ;
-; Witness: L1 4366 (c1, rzx x32).
+; Witness: L1 4366 (c1, rzx01-rzx32).
 MoveLeft:
   LD HL,(PlayerIndex)
   DEC HL
@@ -101,7 +101,7 @@ MoveLeft:
 ; As TryLeft $83C3 with PlayerFacing = 3, column 29 the edge, RightSpecial
 ; $9494 (continuation MoveRight), MoveRight $849E.
 ;
-; Witness: L1 36883 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 36883 (c1, hiscore, lives, timer, rzx01-rzx32).
 TryRight:
   LD A,$DF
   OUT ($FF),A
@@ -164,7 +164,7 @@ TryRightSkip2:
 
 ; Move the player one cell right
 ;
-; Witness: L1 4761 (c1, rzx x32).
+; Witness: L1 4761 (c1, rzx01-rzx32).
 MoveRight:
   LD HL,(PlayerIndex)
   INC HL
@@ -179,7 +179,7 @@ MoveRight:
 ;
 ; As TryLeft, row 0 the edge; boulders block; UpSpecial $9414, MoveUp $84E6.
 ;
-; Witness: L1 31376 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 31376 (c1, hiscore, lives, timer, rzx01-rzx32).
 TryUp:
   LD A,$FB
   OUT ($FF),A
@@ -215,7 +215,7 @@ TryUpSkip:
 
 ; Move the player one row up
 ;
-; Witness: L1 3803 (rzx x32).
+; Witness: L1 3803 (rzx01-rzx32).
 MoveUp:
   LD HL,(PlayerIndex)
   LD DE,$001E
@@ -231,7 +231,7 @@ MoveUp:
 ;
 ; Row 19 the edge; DownSpecial $93CE, MoveDown $8535.
 ;
-; Witness: L1 26738 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 26738 (c1, hiscore, lives, timer, rzx01-rzx32).
 TryDown:
   LD A,$FD
   OUT ($FF),A
@@ -268,7 +268,7 @@ TryDownSkip:
 
 ; Move the player one row down
 ;
-; Witness: L1 4052 (c1, rzx x32).
+; Witness: L1 4052 (c1, rzx01-rzx32).
 MoveDown:
   LD HL,(PlayerIndex)
   LD DE,$001E
@@ -289,7 +289,7 @@ MoveDown:
 ; recording has it). TryLeft, TryRight, TryUp, TryDown, each only while
 ; KeyMoved is not $FF; DigNoiseIfDug $E860.
 ;
-; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 PlayerStep:
   CALL ClearStepFlags
   LD (HL),$00
@@ -328,7 +328,7 @@ PlayerStepSkip2:
 ; AddGemValue $8376, ShowScore $8342, CountGem $8394; when ExitOpen became $FF,
 ; ExitOpenSound $9072.
 ;
-; Witness: L1 1692 (c1, rzx x32).
+; Witness: L1 1692 (c1, rzx01-rzx32).
 CollectGem:
   CALL AddGemValue
   CALL ShowScore
@@ -351,7 +351,7 @@ CollectGem:
 ; The fire key's site (LD A,$7F at $8759, AND $04 at $875F: SPACE half row, bit
 ; 2 = M) is written by RedefineKeys $8C30.
 ;
-; Witness: L1 43776 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 43776 (c1, hiscore, lives, timer, rzx01-rzx32).
 KeysStep:
   LD A,$7F
   OUT ($FF),A
@@ -571,7 +571,7 @@ FireStep:
 
 ; Walked into a force field (9): blocked, 12 TimerSteps at once (3 bar pixels)
 ;
-; Witness: L1 11 (rzx x5).
+; Witness: L1 11 (rzx22, rzx24-rzx26, rzx30).
 ForceField:
   LD B,$0C
 ForceFieldLoop:
@@ -605,7 +605,7 @@ ForceFieldSkip:
 ; itself ran in the stage 2 recording death-fire (frame 279, from LeftSpecial
 ; $94D6, TryLeft's dispatcher: cave 4, one step left into fire).
 ;
-; Witness: L1 517 (rzx x32).
+; Witness: L1 517 (rzx01-rzx32).
 UpSpecialCell:
   LD A,$07
   CP (HL)
@@ -824,7 +824,7 @@ BubbleScorePad:
 
 ; A cell code above $0F above the player blocks; else UpSpecialCell
 ;
-; Witness: L1 523 (rzx x32).
+; Witness: L1 523 (rzx01-rzx32).
 UpSpecialCheck:
   LD A,$0F
   CP (HL)
@@ -833,7 +833,7 @@ UpSpecialCheck:
 
 ; The cell below is a special: its handler
 ;
-; Witness: L1 1120 (c1, rzx x32).
+; Witness: L1 1120 (c1, rzx01-rzx32).
 DownSpecial:
   PUSH HL
   LD HL,MoveDown
@@ -880,7 +880,7 @@ Continue:
 
 ; The cell above is a special: its handler
 ;
-; Witness: L1 523 (rzx x32).
+; Witness: L1 523 (rzx01-rzx32).
 UpSpecial:
   PUSH HL
   LD HL,MoveUp
@@ -979,7 +979,7 @@ BubbleDownSkip2:
 ; The cell to the right is a special (TryRight $8437): its handler,
 ; continuation MoveRight
 ;
-; Witness: L1 959 (c1, rzx x32).
+; Witness: L1 959 (c1, rzx01-rzx32).
 RightSpecial:
   PUSH HL
   LD HL,MoveRight
@@ -1020,7 +1020,7 @@ RightSpecialSkip:
 ; The cell to the left is a special (TryLeft $83C3): its handler, continuation
 ; MoveLeft
 ;
-; Witness: L1 847 (rzx x32).
+; Witness: L1 847 (rzx01-rzx32).
 LeftSpecial:
   PUSH HL
   LD HL,MoveLeft
@@ -1284,7 +1284,7 @@ CollectLeftSkip:
 
 ; The saved cell becomes $20
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx24).
 CollectLeftClear:
   LD HL,(SavedCell)
   LD (HL),$20
@@ -1320,7 +1320,7 @@ CollectRightSkip:
 
 ; The saved cell becomes $20
 ;
-; Witness: L1 2 (rzx x1).
+; Witness: L1 2 (rzx24).
 CollectRightClear:
   LD HL,(SavedCell)
   LD (HL),$20
@@ -1356,7 +1356,7 @@ CollectUpSkip:
 
 ; The saved cell becomes $20
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx24).
 CollectUpClear:
   LD HL,(SavedCell)
   LD (HL),$20
@@ -1392,7 +1392,7 @@ CollectDownSkip:
 
 ; The saved cell becomes $20
 ;
-; Witness: L1 2 (rzx x2).
+; Witness: L1 2 (rzx22, rzx24).
 CollectDownClear:
   LD HL,(SavedCell)
   LD (HL),$20
@@ -1512,7 +1512,7 @@ DigInPlace:
 
 ; Push a boulder left or right when the cell beyond is empty
 ;
-; Witness: L1 434 (c1, rzx x29).
+; Witness: L1 434 (c1, rzx01-rzx19, rzx21-rzx28, rzx30, rzx32).
 PushBoulder:
   CP (HL)
   JR Z,PushBoulderSkip
@@ -1532,7 +1532,7 @@ BoulderPushed:
 
 ; KeyMoved and BoulderPushed 0
 ;
-; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 ClearMoveFlags:
   LD HL,KeyMoved
   LD (HL),$00
@@ -1548,7 +1548,7 @@ DugEarth:
 
 ; DugEarth 0, then ClearMoveFlags
 ;
-; Witness: L1 42098 (c1, hiscore, lives, timer, rzx x32).
+; Witness: L1 42098 (c1, hiscore, lives, timer, rzx01-rzx32).
 ClearStepFlags:
   LD HL,DugEarth
   LD (HL),$00
@@ -1558,7 +1558,7 @@ ClearStepFlags:
 
 ; A wall stops the move (the return address dropped); earth sets DugEarth
 ;
-; Witness: L1 19281 (c1, rzx x32).
+; Witness: L1 19281 (c1, rzx01-rzx32).
 BlockWall:
   LD A,$05
   CP (HL)

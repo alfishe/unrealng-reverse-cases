@@ -46,7 +46,7 @@ $5D7B b LineFour 5 ; Line 4: the header (line number, length 71) and the REM tok
 $5D80 c Loader ; Clear the menu's memory, read the code, the graphics and the music from the disk, run the menu, clear again
 > Entered by line 10's RANDOMIZE USR 23936 with TR-DOS's TrdosNextSector $5CF4 pointing at the sector after sector 0 of boot (TR-DOS just loaded the program). Clears $61A8-$FEAF (LDIR of $9D08 bytes), then three TrdosEntry $3D13 reads (C = 5), each starting at TrdosNextSector: 15 sectors to MenuStart $61A8 ($61A8-$70A7), 8 sectors to MenuGraphics $A600 ($A600-$ADFF), 22 sectors to MusicPiece $C000 ($C000-$D5FF). Then CALL MenuStart: the menu returns here when a file is chosen, with the launch line already rewritten. Clears $61A8-$FEAF again and returns to BASIC, which goes on with line 10's RUN.
 > The memory is cleared because the menu builds its tables and buffers in the zero bytes between its pieces ($70A8-$A5FF, $AE00-$BFFF, $D600-$FEAF) and the program it starts should find clean memory.
-> Witness: L1 4 (c x4).
+> Witness: L1 4 (c1-c4).
 $5D8D ; the code: 15 sectors from the sector after the BASIC
 $5D9A ; the font and the graphics: 8 sectors
 $5DA7 ; the music: 22 sectors

@@ -4,7 +4,7 @@ From `work/candidates/owner-boots_zyx/zyxboot.scl`, file `ZYX-1` (B, start 182, 
 
 - Its loader (`basic.txt`, the BASIC as text, `tools/res_basic.py`) reads 1 sector of BASIC, then: `$619B` x 16, `$A600` x 8, `$C000` x 21, `$FF14` x 1.
 - The music piece at `$C000`, 21 sectors, init `$C00B`; play `$C00E`.
-- Code: reads the Kempston joystick: `IN A,($1F)` at Joystick `$68B9` in place of `LD A,$00` (`kempston`, tools/variants.py CODE_SWITCHES).
+- Code: reads the Kempston joystick: `IN A,($1F)` at Joystick `$68B9` in place of `LD A,$00` (`kempston`, src/main/main.ann @variant Kempston).
 - Code: reads the catalogue through ReadCatalogue, a 13-byte routine just before Start at `$619B`, and only while the byte at `$FF14` (the launcher's flag) is 0 (`catalogue-call`, tools/variants.py CODE_SWITCHES).
 - Code of its own, described in `parts/launcher.ann` (built by kit/mkgame.py from `parts/launcher.json`, placed at `$FF14`).
 - Residue (bytes the saved file kept from a run, put back after the build):

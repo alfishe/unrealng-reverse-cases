@@ -71,7 +71,7 @@ Reached from GameEntry `$8F00` (falls in) and from EndGame `$906D` (`JP $8F47`) 
 
 3. The set-up (InitGame `$8F69`): clears `$5B04-$5B67` (the hero and party records and other state, 100 bytes: one stored, 99 copied by the LDIR at `$8F74`); fills BearerLoads `$5B7C-$5B96` (27 bytes) with `$FF` (free); ResetItems `$B932` clears the taken bits (bit 7) of the 31 ItemPlaces records and bit 7 of `$B9D9` is set again; copies the saved panel back to the screen (`$E000` -> `$5000`, 2048 bytes; `$E800` -> `$5A00`, 256 attributes: EndGame `$906D` saved it there, because play uses `$E000-$EFFF` as the background copy of the play window); the tile bitmap pointer `$5B72` = `$F000`; `$5C3C`, `$A6FD`, `$A700`, `$5B98`, `$5B9B` = `$FF`, `$A6F5` = 7, `$5B06` = 0; clears `$5BFA-$5C8D` (148 bytes: the countdown, GameOver, Room, PassCount, Status and the rest); `$BCF2` with DE = 0; the object at `$5C25-$5C27` = X `$70`, Y `$60`, room `$0F`; Room `$5C01` = `$14` and the room set-up `$9855`; `$9EBD`; Lives `$5B97` = 4 and `$9E96` (the lives in the panel); the hero at X `$0A` (`$5B04`), Y `$60` (`$5B05`); the lift (`$AF81`) in room `$2B` (`$5B9E`) at Y `$30` (`$5B9F`); the countdown 30 days 23:59 (`$5BFB` days = `$1E`, `$5BFC` hours = `$17`, `$5BFD` minutes = `$3B`); `$9AA1` copies the start into the respawn state `$5C2B-$5C33`; `$9E5D`. Falls into MainLoop `$9018`.
 
-Witness: L1 9 (c1, explorers, gameover, rzx x1).
+Witness: L1 9 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -89,7 +89,7 @@ Witness: L1 9 (c1, explorers, gameover, rzx x1).
 
 The return point of NewGame's `CALL $93AF`: an entry of its own only because the explorers recording starts inside DeviceMenu, so its L1 sees the RET land here. Step 2 and 3 of NewGame `$8F47`: on a 128K the selector at `$C000` in RAM 1, then InitGame `$8F69`. Falls into MainLoop `$9018`.
 
-Witness: L1 8 (c1, explorers, rzx x1).
+Witness: L1 8 (c1, explorers, rzx00000).
 
 | | |
 | --- | --- |
@@ -134,7 +134,7 @@ Reached from MainLoop `$9018` when GameOver `$5BFF` is set (gameover frame 1962 
 
 `$BD50` keeps the score as the high score when it is higher; then the panel (the screen's bottom third `$5000-$57FF` and its attributes `$5A00-$5AFF`) is saved to `$E000-$E7FF` and `$E800-$E8FF`, where DeviceMenu `$93AF` takes its frame pieces from and InitGame `$8F69` restores it; when the alternate tile set is in (AltTileset `$918C` not 0), SwapTileset `$918D` puts the base set back (not executed in any recording: every game ended in a base-set room); `JP $8F47`.
 
-Witness: L1 8 (c1, explorers, gameover, rzx x1).
+Witness: L1 8 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -149,7 +149,7 @@ Reached from MainLoop `$9018` when LifeLost `$5C2A` is set (`$A9EE` sets it to `
 
 Clears LifeLost and `$5C05`; copies the respawn state back: Status `$5C06` from `$5C2B`, StatusTimer `$5C07` from `$5C2C`, the hero record `$5B04-$5B07` from `$5C2E-$5C31`, Room `$5C01` from `$5C2D`, the lift `$5B9E-$5B9F` from `$5C32-$5C33` (`$9AA1` writes the state on every room entry); the room set-up `$9855`; `$5B9B` = `$FE`; back to MainLoop.
 
-Witness: L1 5 (gameover, rzx x4).
+Witness: L1 5 (gameover, rzx06000, rzx10000, rzx24000, rzx32000).
 
 | | |
 | --- | --- |
@@ -264,7 +264,7 @@ IY = object 1 (`$5B08`). RoomStage `$5C41` steps: 0 sets the asteroid (object 1 
 
 Evidence: gameover frames 1516-1959 (no deflector, the strike, after the last life); rzx50000 frames 194-729 (the deflector, GameOver at 729).
 
-Witness: L1 327 (gameover, rzx x1).
+Witness: L1 327 (gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -484,7 +484,7 @@ Called by BuildTileMap at `$993D` when the back-tile is `$10`. IX = the back-til
 
 Witness: 3 runs (r06000, r12000), the room-`$0C` set-ups.
 
-Witness: L1 3 (rzx x2).
+Witness: L1 3 (rzx06000, rzx12000).
 
 | | |
 | --- | --- |
@@ -516,7 +516,7 @@ Witness: L1 26517 (c1, explorers, gameover, rzx x31).
 
 HL = WellHole `$5BA2` (returns at once when 0), DE = WellTiles `$5BA4`. Two rows of four cells through DrawTileBuffer `$9A62`, the second row 32 cells on. Called only by WellFront at `$9A28` (11 runs, r06500 and r12000).
 
-Witness: L1 11 (rzx x2).
+Witness: L1 11 (rzx06500, rzx12000).
 
 | | |
 | --- | --- |
@@ -678,7 +678,7 @@ The TERRAMEX logo TitleLogo `$95FD`, 3 rows of 25 cells at `$4063` (row 3, colum
 
 The loop (MenuLoop `$9440`), once a frame: the option box (rows 8-12, columns 8-21) gets attribute `$43` (magenta), the row of the chosen device (InputDevice `$94AF`: row 8 + 2 * device) `$47` (white); HALT; keys 1, 2, 3 (half row `$F7FE`) choose keyboard, Kempston, Sinclair (explorers: all three); key 0 (half row `$EFFE`) returns. IY = 0 at every turn is never used here.
 
-Witness: L1 9 (c1, explorers, gameover, rzx x1).
+Witness: L1 9 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -696,7 +696,7 @@ Witness: L1 9 (c1, explorers, gameover, rzx x1).
 
 Reached by falling in from DeviceMenu `$93AF` and from MenuKeys `$9468` (`JR $9440`) once a frame; an entry of the cut because the explorers recording starts inside the menu. The box (5 rows x 14 columns at row 8, column 8) gets attribute `$43`, the row of the chosen device (InputDevice `$94AF`; row 8 + 2 * device) `$47` on its 14 columns. IY = 0 here is never used. Falls into MenuKeys.
 
-Witness: L1 6835 (c1, explorers, gameover, rzx x2).
+Witness: L1 6835 (c1, explorers, gameover, rzx00000, rzx50000).
 
 | | |
 | --- | --- |
@@ -713,7 +713,7 @@ Witness: L1 6835 (c1, explorers, gameover, rzx x2).
 
 HALT (one turn a frame), then half row `$F7FE`: a lone 1, 2 or 3 sets InputDevice `$94AF` to 0 (keyboard), 1 (Kempston), 2 (Sinclair); half row `$EFFE` bit 0, the key 0, returns from DeviceMenu `$93AF` to NewGame; else `JR $9440`. explorers chooses all three devices; c1 1, 3, 2 then 0.
 
-Witness: L1 6836 (c1, explorers, gameover, rzx x2).
+Witness: L1 6836 (c1, explorers, gameover, rzx00000, rzx50000).
 
 | | |
 | --- | --- |
@@ -730,7 +730,7 @@ Witness: L1 6836 (c1, explorers, gameover, rzx x2).
 
 HL = the source, DE = the destination, both at a cell's top pixel row in a screen-like layout. 32 bytes a pixel row, INC H and INC D between rows. Callers: DeviceMenu `$93E4`, `$93ED`.
 
-Witness: L1 18 (c1, explorers, gameover, rzx x1).
+Witness: L1 18 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -746,7 +746,7 @@ Witness: L1 18 (c1, explorers, gameover, rzx x1).
 
 HL = the source row (the left cell), DE = the destination row. Copies the cell at column 0, then the cell at column 31 of both (L OR `$1F`, E OR `$1F`), through CopyCell `$94E4`. Out: DE = the next character row's column 0 (into the next screen third after row 7 of one); HL unchanged. Called 22 times a menu by DeviceMenu.
 
-Witness: L1 198 (c1, explorers, gameover, rzx x1).
+Witness: L1 198 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -761,7 +761,7 @@ Witness: L1 198 (c1, explorers, gameover, rzx x1).
 
 HL = the source, DE = the destination; INC H and INC D between rows. BC kept. Called by CopyEdgeCells `$94C2`.
 
-Witness: L1 396 (c1, explorers, gameover, rzx x1).
+Witness: L1 396 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -777,7 +777,7 @@ Witness: L1 396 (c1, explorers, gameover, rzx x1).
 
 DE = MenuText `$9540`, HL = `$4808`, A' = `$44`; falls into PrintString `$94F9`. Called by DeviceMenu `$9430`.
 
-Witness: L1 9 (c1, explorers, gameover, rzx x1).
+Witness: L1 9 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -794,7 +794,7 @@ DE = the text, HL = the screen address of the first cell, A' = the attribute. Ea
 
 Callers: PrintMenuText `$94EF` (falls in), DeviceMenu `$943D`, and `$A7EB` (the countdown text, not executed in any recording).
 
-Witness: L1 108 (c1, explorers, gameover, rzx x1).
+Witness: L1 108 (c1, explorers, gameover, rzx50000).
 
 [Animation: `PrintString` at work](img/routines/PrintString.gif)
 
@@ -813,7 +813,7 @@ Witness: L1 108 (c1, explorers, gameover, rzx x1).
 
 HL = the top-left address (an attribute in every caller), B = the rows, C = the bytes a row, A = the value. Out: HL = the address below the block; BC changed. Callers: DeviceMenu `$93D0`, `$93DB` and MenuLoop `$944D` (once a frame on the menu).
 
-Witness: L1 34256 (c1, explorers, gameover, rzx x2).
+Witness: L1 34256 (c1, explorers, gameover, rzx00000, rzx50000).
 
 | | |
 | --- | --- |
@@ -828,7 +828,7 @@ Witness: L1 34256 (c1, explorers, gameover, rzx x2).
 
 HL = a screen address at a cell's top row. Out: H = `$58` + the screen third, L unchanged: the cell's attribute. Callers: DeviceMenu `$941B`, PrintString `$950B`.
 
-Witness: L1 2268 (c1, explorers, gameover, rzx x1).
+Witness: L1 2268 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -844,7 +844,7 @@ Frames `$71-$74` counted from `$6000` (the image's `$7FC8-$80E7`) are the Earth,
 
 Called by the menu `$93AF` at `$942D`: 9 runs (c1, explorers, gameover, r50000).
 
-Witness: L1 9 (c1, explorers, gameover, rzx x1).
+Witness: L1 9 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -1540,7 +1540,7 @@ Witness: L1 16548 (c1, explorers, gameover, rzx x31).
 
 IX = the hero, IY = `$A0FE`. Runs the floor scan FloorScanFrom `$A208` from (X + 12, Y - 1) instead of under the feet and returns the row count in A (0 = a floor or ceiling tile at the head), Z set when 0. (IY+3) is saved and put back. Called only from FloatInRoom2C `$A34B` (`$A3B4`): a rising hero bounces off a tile at its head.
 
-Witness: L1 69 (rzx x2).
+Witness: L1 69 (rzx18000, rzx20000).
 
 | | |
 | --- | --- |
@@ -1669,7 +1669,7 @@ Witness: L1 3402 (rzx x21).
 
 IX = the object, IY = its record. SolidTileAt `$A328` at (X + 12, Y). Called only from the creature code `$C115`.
 
-Witness: L1 138 (rzx x3).
+Witness: L1 138 (rzx34000, rzx36000, rzx40000).
 
 | | |
 | --- | --- |
@@ -1704,7 +1704,7 @@ The input (`$B87D`) steps the velocity `$5C34` (C = X, B = Y) by 1 a pass toward
 
 Evidence: rzx18000 frames 1769-1997 and rzx20000 frames 0-312 (149 passes); the screen there shows the hero floating in a lab of floating objects. Reached only through the room handler table.
 
-Witness: L1 149 (rzx x2).
+Witness: L1 149 (rzx18000, rzx20000).
 
 | | |
 | --- | --- |
@@ -2025,7 +2025,7 @@ Witness: L1 0 ().
 
 Set by CricketBallScript `$B370` (`$B3A8`, the throw in room `$2D`). Plays Room2DFrames `$A83B`; at its end the status steps to 29 (Frozen `$A90E`) and the timer is cleared. Evidence: rzx16000 frames 1721-1821 (43 passes, once to the end).
 
-Witness: L1 43 (rzx x1).
+Witness: L1 43 (rzx16000).
 
 | | |
 | --- | --- |
@@ -2041,7 +2041,7 @@ Witness: L1 43 (rzx x1).
 
 Set by SilverLiningScript `$B704` (`$B720`, room `$43`). Plays Room43Frames `$A86E`; at the end `$5B98` = `$1D`, `$9E5D`, `$BCF2` with DE = `$004B` (75), status 0. Evidence: rzx38000 frames 2-135 (50 passes).
 
-Witness: L1 50 (rzx x1).
+Witness: L1 50 (rzx38000).
 
 | | |
 | --- | --- |
@@ -2056,7 +2056,7 @@ Witness: L1 50 (rzx x1).
 
 Set when the hero lands after 20 fall passes or more (HeroLand `$A5B9`), on tile `$A5` (HeroTileChecks `$A102`), when the balloon lands falling (BalloonCrash `$AC1A`) and by the creatures of room `$2E` (ExplorerRoom2E `$B2C5`). FallDeathFrames `$A8BF`, then sound 0 and status 18 (StartDying `$AAF0`). Evidence: gameover frames 1363-1371 (the last life), rzx10000, rzx24000.
 
-Witness: L1 9 (gameover, rzx x2).
+Witness: L1 9 (gameover, rzx10000, rzx24000).
 
 [Animation: `FallDeath` at work](img/routines/FallDeath.gif)
 
@@ -2072,7 +2072,7 @@ Witness: L1 9 (gameover, rzx x2).
 
 Set by SnakeBite (`$B5CE` in RunSnakes `$B57C`): a snake of room `$17` or `$1A` (SnakesRoom17 `$B55A`, SnakesRoom1A `$B562`). ThinkHints `$A6E6` of rooms `$17` and `$1A` = `$0C`, then Room1ADeathFrames `$A8E6`, sound 4, status 18. Evidence: rzx10000 frames 1943-1958.
 
-Witness: L1 7 (rzx x1).
+Witness: L1 7 (rzx10000).
 
 | | |
 | --- | --- |
@@ -2087,7 +2087,7 @@ Witness: L1 7 (rzx x1).
 
 Set by HitExplorer `$C0F9` (a creature's touch, not standing) and by the beam hit `$9260` (RoomEffects: within the beam's X span and 12 rows, status below 4). CreatureDeathFrames `$A8E0` with sound 3 each pass, then status 18. Evidence: rzx06000, rzx22000, rzx32000 (33 passes).
 
-Witness: L1 33 (rzx x3).
+Witness: L1 33 (rzx06000, rzx22000, rzx32000).
 
 | | |
 | --- | --- |
@@ -2127,7 +2127,7 @@ Witness: L1 49 (gameover, rzx x5).
 
 Set by TeleportPadCheck `$B03B`. First pass (`$5C07` = 0): the lift is reset to room `$1F`, Y `$50` (`$5B9E`, `$5B9F`). Room `$30` sends to room `$3D`, room `$3D` to room `$20`, each only while `$5C44` is not 0 (else RET Z at `$A914` returns into HeroUpdate before the POP HL at `$A919`: the normal update runs on with status 22 kept, and every pass resets the lift again); the destination goes into TeleportDest `$A959`. Room `$20`: status 23 (SilentDeath `$A8A8`).
 
-Witness: L1 36 (rzx x2).
+Witness: L1 36 (rzx24750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2142,7 +2142,7 @@ Witness: L1 36 (rzx x2).
 
 POP HL, RET: the update ends. Set by LoseGame (`$938D`, the last life, the space scene), ProfessorEnding `$B6EE` (`$B6FB`, the sixth gift) and ExplorerRoom46 `$B2EB`; Room2DAnim `$A828` steps into it. Evidence: 413 passes in gameover and 3 rzx segments.
 
-Witness: L1 413 (gameover, rzx x3).
+Witness: L1 413 (gameover, rzx16000, rzx18000, rzx50000).
 
 | | |
 | --- | --- |
@@ -2155,7 +2155,7 @@ Witness: L1 413 (gameover, rzx x3).
 
 Reached from Teleport `$A8EA` (`$A901`, `$A907`, `$A8EE`). Plays TeleportFrames `$A955`; the byte with bit 7 set is the room: `$5C07` skips it, the room is looked up in TeleportPads `$B073` for the arrival Y and X, PadLatch `$B072` = X (no new trigger on arrival) and the room is set up (`$9855`). The list's `$FF` ends the status. Evidence: two teleports (rzx24750 frames 732-780, rzx34000 frames 1461-1512). The cut puts an entry here so that Frozen `$A90E` holds only its two instructions.
 
-Witness: L1 2 (rzx x2).
+Witness: L1 2 (rzx24750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2168,7 +2168,7 @@ Witness: L1 2 (rzx x2).
 
 Set by BasketScript `$B409` (`$B45A`). The hero's X, Y = object 4's (`$5B14`) every pass. Evidence: 418 passes (rzx28000, rzx32750, rzx34000).
 
-Witness: L1 418 (rzx x3).
+Witness: L1 418 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2193,7 +2193,7 @@ Witness: L1 0 ().
 
 **The lift is in the hero's room (`$5B9E` = `$5C01`)**
 
-Witness: L1 4 (rzx x2).
+Witness: L1 4 (rzx20000, rzx36000).
 
 | | |
 | --- | --- |
@@ -2206,7 +2206,7 @@ Witness: L1 4 (rzx x2).
 
 LiftStops `$A9E6` gives a stop Y for rooms `$1F`, `$2B`, `$37`, `$43`: when the room is listed and `$5B9F` equals it, status 0 (Z); not listed returns NZ.
 
-Witness: L1 263 (rzx x2).
+Witness: L1 263 (rzx20000, rzx36000).
 
 | | |
 | --- | --- |
@@ -2221,7 +2221,7 @@ Witness: L1 263 (rzx x2).
 
 Set by LiftPlatform `$AF81` (down on the platform). In room `$43` it stops at Y `$68`. Y + 2; at `$62` the room below (ExitDown `$A6AE`). Evidence: rzx20000 frames 628-805, rzx36000 frames 334-937 (220 passes).
 
-Witness: L1 220 (rzx x2).
+Witness: L1 220 (rzx20000, rzx36000).
 
 | | |
 | --- | --- |
@@ -2265,7 +2265,7 @@ Witness: L1 0 ().
 
 Set by StatusZeroTriggers `$AF3B` (room `$1D`, left at the spot). Frame `$17`, facing left; right gives up (status 0). After 5 passes: item 9 in use gives status 14, item `$1C` status 15, item `$1B` status 16 (sound 1); any other item waits. Evidence: rzx16000 frames 479-491 (item 9).
 
-Witness: L1 6 (rzx x1).
+Witness: L1 6 (rzx16000).
 
 | | |
 | --- | --- |
@@ -2281,7 +2281,7 @@ Witness: L1 6 (rzx x1).
 
 X + 2 a pass, Y - BarrelArc `$AAFA`[`$5C07`], facing right, the frame up to `$19`, from pass 40 frame `$1A`. At pass 84 status 0. Evidence: rzx16000 frames 508-745.
 
-Witness: L1 85 (rzx x1).
+Witness: L1 85 (rzx16000).
 
 | | |
 | --- | --- |
@@ -2435,7 +2435,7 @@ Witness: L1 0 ().
 
 Set by StatusZeroTriggers `$AF3B` (the hero at the balloon), status 7. `$5C27` = the room (the balloon goes with the hero), frame `$7F` (the hero is drawn inside the basket by BalloonRoom `$AFD7`). In the air (probe +3 not 0) left and right move 2 pixels (right not in status 7). Item 6 in use: status 8, item 7: status 7; both rise 1 pixel a pass; at the top the room above, in room 3 status 8 hovers and status 7 becomes 9 (BalloonCrash `$AC1A`). Other items: the balloon sinks 2 pixels a pass (the room below at `$66`) and on the ground left or right steps out (status 0). `$5C25` / `$5C26` keep the balloon's X and Y. Evidence: rzx14500 frames 195-849 (the Bellows from frame 396: up from room `$0F` into room 3, hovering at its top, down to the ground with item `$0B`) and rzx14000 frames 696-1104 (item `$0B`, then none: no rise); 452 passes; the screen of rzx14000 frame 750 shows the balloon.
 
-Witness: L1 452 (rzx x2).
+Witness: L1 452 (rzx14000, rzx14500).
 
 | | |
 | --- | --- |
@@ -2451,7 +2451,7 @@ Witness: L1 452 (rzx x2).
 
 Set by PickUpItem `$BB6C` (PickUpBounce, `$BBD5`), which puts the hero on top of an object, frame `$0F`. Y - 4; above the top the room above. When the probes find a floor under the feet: status 2 (JumpArc `$ADAC`). Evidence: gameover, rzx10000, rzx22000 (67 passes).
 
-Witness: L1 67 (gameover, rzx x2).
+Witness: L1 67 (gameover, rzx10000, rzx22000).
 
 | | |
 | --- | --- |
@@ -2467,7 +2467,7 @@ Witness: L1 67 (gameover, rzx x2).
 
 Set by HeroUpdate `$A3E1` (StartHover `$A42B`). While `$5B98` is `$0A`: frame `$1D`, right / left 2 pixels within 4..`$E6`, up 2 pixels (the room above at the top, except in room `$08`), down 2 pixels (room `$14`: not below Y `$57`; elsewhere the room below at `$67`). Another item ends it (`$5C03` = 2, status 0). Evidence: 4908 passes in c1, explorers and rzx00000, starting near the beginning of play in room `$14` (explorers frame 963); the frames are known from the code, what `$1D` shows needs the screen.
 
-Witness: L1 4908 (c1, explorers, rzx x2).
+Witness: L1 4908 (c1, explorers, rzx00000, rzx02000).
 
 | | |
 | --- | --- |
@@ -2566,7 +2566,7 @@ Witness: L1 360 (gameover, rzx x26).
 
 **FrameListPtr = HL: a frame list replaces the hero's update until `$FF`**
 
-Witness: L1 7 (rzx x3).
+Witness: L1 7 (rzx00000, rzx02000, rzx22000).
 
 | | |
 | --- | --- |
@@ -2590,7 +2590,7 @@ Witness: L1 0 ().
 
 **One frame of the list at HL; `$FF` ends it**
 
-Witness: L1 224 (rzx x3).
+Witness: L1 224 (rzx00000, rzx02000, rzx22000).
 
 | | |
 | --- | --- |
@@ -2665,7 +2665,7 @@ Witness: L1 1406 (rzx x6).
 
 In the balloon's room (`$5C27`), unless the hero is dying (status 18 or 26): object 4 (the basket) at `$5C25` / `$5C26`, object 3 (the envelope) 16 pixels above. Frames: `$99` empty, `$24` with the hero (statuses 7-9, facing as the hero); the envelope `$9A`, hidden (`$7F`) in status 9. Evidence: rzx14000, rzx14500 (1017 passes).
 
-Witness: L1 1017 (rzx x2).
+Witness: L1 1017 (rzx14000, rzx14500).
 
 | | |
 | --- | --- |
@@ -2712,7 +2712,7 @@ Witness: L1 16714 (c1, explorers, gameover, rzx x31).
 
 Called by the room `$2D` handler `$B370`.
 
-Witness: L1 346 (rzx x2).
+Witness: L1 346 (rzx16000, rzx18000).
 
 | | |
 | --- | --- |
@@ -2790,7 +2790,7 @@ Stage 1 waits for the explorer's frame `$3E` (the throw pose), then puts the bal
 
 Witness: rzx16000 runs stages 0-2 (the throw at `$B3A1` once, the hit at `$B3DB` once), rzx18000 stage 3 (`$B3F5` once): the RZX run gets the Formula here.
 
-Witness: L1 346 (rzx x2).
+Witness: L1 346 (rzx16000, rzx18000).
 
 | | |
 | --- | --- |
@@ -2810,7 +2810,7 @@ Stage 1: the basket travels toward the explorer one pixel a pass, only while the
 
 Witness: rzx28000 and rzx32750 each run stage 0 and the ride (`$B44E` once each), rzx28000 and rzx34000 the arrival (`$B471`).
 
-Witness: L1 870 (rzx x3).
+Witness: L1 870 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2826,7 +2826,7 @@ Witness: L1 870 (rzx x3).
 
 Returns at once (E unchanged) when LeverState `$5C42` is not 0; else BasketRight `$B483`. Called by BasketScript `$B409` in stage 1.
 
-Witness: L1 209 (rzx x1).
+Witness: L1 209 (rzx32750).
 
 | | |
 | --- | --- |
@@ -2841,7 +2841,7 @@ Witness: L1 209 (rzx x1).
 
 IY = the basket slot `$5B14`. Out: E = 0 when it is already at the right end (X `$D8`), else E = 1 and X + 1. The track: while X is below `$38` the basket also rises 2 pixels a pass (Y - 2, not above Y 8); from X `$C8` on it sinks 2 a pass back to Y `$30` (BasketRightTail `$B4A3`); between them it keeps its height.
 
-Witness: L1 418 (rzx x2).
+Witness: L1 418 (rzx28000, rzx32750).
 
 | | |
 | --- | --- |
@@ -2856,7 +2856,7 @@ Witness: L1 418 (rzx x2).
 
 Entered from BasketRight `$B483` with A = the new X, B = Y.
 
-Witness: L1 322 (rzx x2).
+Witness: L1 322 (rzx28000, rzx32750).
 
 | | |
 | --- | --- |
@@ -2868,7 +2868,7 @@ Witness: L1 322 (rzx x2).
 
 Returns at once when LeverState `$5C42` is 0; else BasketLeft `$B4B5`.
 
-Witness: L1 209 (rzx x1).
+Witness: L1 209 (rzx28000).
 
 | | |
 | --- | --- |
@@ -2883,7 +2883,7 @@ Witness: L1 209 (rzx x1).
 
 Out: E = 0 at the left end (X 8), else E = 1 and X - 1. While X is below `$1C` the basket sinks 2 pixels a pass (Y + 2, below `$30`); from X `$7B` up it rises 2 a pass, not above Y 8 (BasketLeftTail `$B4D5`); from `$1C` to `$7A` it keeps its height.
 
-Witness: L1 418 (rzx x3).
+Witness: L1 418 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2898,7 +2898,7 @@ Witness: L1 418 (rzx x3).
 
 Entered from BasketLeft `$B4B5` with A = the new X, B = Y. Evidence: rzx28000 frames 527-1096, the basket from X `$D8` at Y `$30` up to Y 8 at X `$C4`, level down to X `$1C`, then down to Y `$2E` at X 8.
 
-Witness: L1 376 (rzx x3).
+Witness: L1 376 (rzx28000, rzx32750, rzx34000).
 
 | | |
 | --- | --- |
@@ -2914,7 +2914,7 @@ Fleeing: X + 2 a pass, frames `$41-$44` by PassCount (`$5C02` / 2 & 3); at X `$E
 
 Witness: rzx40000 runs it 273 times: the placing (`$B4ED`) once, the flight (`$B540`) 33 times, the score (`$B538`) once. The attack branch (`$B518`) is not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 
-Witness: L1 273 (rzx x1).
+Witness: L1 273 (rzx40000).
 
 | | |
 | --- | --- |
@@ -2930,7 +2930,7 @@ Witness: L1 273 (rzx x1).
 
 The room script of room `$17`: RunSnakes `$B57C` over two objects from slot `$5B0C` (the room's two still creatures, frames `$51`, RoomCreatures `$C266`). Witness: rzx04000 and rzx06000 run it 297 times.
 
-Witness: L1 297 (rzx x2).
+Witness: L1 297 (rzx04000, rzx06000).
 
 | | |
 | --- | --- |
@@ -2947,7 +2947,7 @@ The room script of room `$1A`. Stage 0 copies SnakeTemplate `$B5D1` into the slo
 
 Witness: rzx08000, rzx10000, rzx12000 run it 437 times; the strike (`$B5C2`) and the bite (`$B5C8`) once each, in rzx10000.
 
-Witness: L1 437 (rzx x3).
+Witness: L1 437 (rzx08000, rzx10000, rzx12000).
 
 | | |
 | --- | --- |
@@ -2985,7 +2985,7 @@ Witness: L1 2293 (rzx x5).
 
 Room = `$28`, the room set up (`$9855`), GameWon `$5BFE` = `$1D`, status `$1D` (Frozen `$A90E`); SpaceScene `$B0B6`, room `$28`'s script, plays the ending (and sets GameOver `$5BFF`), `$5B06` = `$7F`. Called by ProfessorScript `$B5DD`. Witness: rzx50000 runs it once, before the ending at frame 729.
 
-Witness: L1 1 (rzx x1).
+Witness: L1 1 (rzx50000).
 
 | | |
 | --- | --- |
@@ -2998,7 +2998,7 @@ Witness: L1 1 (rzx x1).
 
 The room script of room `$43`. When the explorer stands at Y `$20` with X from `$76` to `$83`, holds the Silver Lining (HeldItem `$5B98` = `$0D`) and the status is 0, sets status `$1B` (Room43Anim `$A851`). Witness: rzx36000-rzx40000 run it 737 times; the explorer stands there with another item 100 times (rzx38000); the trigger (`$B71E`) is not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 
-Witness: L1 737 (rzx x3).
+Witness: L1 737 (rzx36000, rzx38000, rzx40000).
 
 | | |
 | --- | --- |
@@ -3012,7 +3012,7 @@ Witness: L1 737 (rzx x3).
 
 The room script of room `$40`: slot `$5B14` at X 8, then LeverScript `$B735`. Witness: rzx28000-rzx32750 run it 1036 times.
 
-Witness: L1 1036 (rzx x4).
+Witness: L1 1036 (rzx28000, rzx30000, rzx32000, rzx32750).
 
 | | |
 | --- | --- |
@@ -3028,7 +3028,7 @@ Witness: L1 1036 (rzx x4).
 
 The room script of room `$3E`: slot `$5B14` at X `$DC`, then LeverScript `$B735`. Witness: rzx26000, rzx28000, rzx34000 run it 571 times.
 
-Witness: L1 571 (rzx x3).
+Witness: L1 571 (rzx26000, rzx28000, rzx34000).
 
 | | |
 | --- | --- |
@@ -3077,7 +3077,7 @@ Witness: L1 1338 (rzx x5).
 
 The room script of room `$3C`. RoomStage `$5C41` counts the passes in the room to `$14`; at `$14`, if PillsTaken `$5C3F` is 0 (the pills, item `$16`, never picked up: PickUpItem `$BB96` sets it), stage `$15` and status `$17` (SilentDeath `$A8A8`); with the pills it stays at `$14`. Witness: rzx26000 runs it 214 times, PillsTaken set (rzx14500 picks the pills up, `$BB96` once); the death branch (`$B796`) is not executed in any recording (c1, explorers, gameover, the 31 rzx builds).
 
-Witness: L1 214 (rzx x1).
+Witness: L1 214 (rzx26000).
 
 | | |
 | --- | --- |
@@ -3092,7 +3092,7 @@ Witness: L1 214 (rzx x1).
 
 B = 21 tiles from the tile map's `$F940` (row 10), then FlickerFloor `$B7A8`. Witness: rzx20000 runs it 155 times.
 
-Witness: L1 155 (rzx x1).
+Witness: L1 155 (rzx20000).
 
 | | |
 | --- | --- |
@@ -3106,7 +3106,7 @@ Witness: L1 155 (rzx x1).
 
 B = 11 tiles from `$F954`, then FlickerFloor `$B7A8`. Witness: rzx20000 runs it 187 times.
 
-Witness: L1 187 (rzx x1).
+Witness: L1 187 (rzx20000).
 
 | | |
 | --- | --- |
@@ -3120,7 +3120,7 @@ Witness: L1 187 (rzx x1).
 
 B = the tile count, HL = the first tile map byte. For each tile (the loop runs the whole body again): Y of the creature slots `$5B09`, `$5B0D`, `$5B11` = 0, slot `$5B14` at the explorer's X and 8 pixels below him (not below Y `$5A`), then the tile `$BC` + (B & 1) XOR (PassCount / 2 & 1) written through `$9A4D`. So the floor alternates `$BC` / `$BD` tile by tile and swaps every second pass; `$BC` and `$BD` are the tiles `$A102` counts when stood on (SK: 50 of them set status `$11`, SinkInMud `$AA04`). What slot `$5B14` shows here is known only from the code (a run request).
 
-Witness: L1 5312 (rzx x1).
+Witness: L1 5312 (rzx20000).
 
 | | |
 | --- | --- |
@@ -3156,7 +3156,7 @@ Every fourth pass (PassCount & 3 = 0) one tile is written into the tile map at `
 
 Witness: the bridge starts 3 times (`$BACC`: rzx08000, rzx12000, rzx42000); rzx08000 and rzx42000 cross forward (`$BB37`), rzx12000 in reverse (`$BB4E`).
 
-Witness: L1 857 (rzx x4).
+Witness: L1 857 (rzx08000, rzx12000, rzx40000, rzx42000).
 
 | | |
 | --- | --- |
@@ -3174,7 +3174,7 @@ Called by ItemsPass in room `$10`, IX = the explorer. Does nothing when RopeCoun
 
 Witness: rzx10000 and gameover stand at Y `$46` / `$48` with the Flute (`$BC8A`, once each) but never at X `$28-$33`: the rope (`$BC91` on) is not executed in any recording (c1, explorers, gameover, the 31 rzx builds). SK called it a seesaw.
 
-Witness: L1 674 (gameover, rzx x2).
+Witness: L1 674 (gameover, rzx10000, rzx14500).
 
 | | |
 | --- | --- |
@@ -3192,7 +3192,7 @@ Witness: L1 674 (gameover, rzx x2).
 
 Called by InitGame at `$8F83` (a new game); InitGame then marks the Energy Crystal of room `$30` taken (`$8F86`). Witness: c1 once, explorers 5 times, rzx00000 once (the new games).
 
-Witness: L1 7 (c1, explorers, rzx x1).
+Witness: L1 7 (c1, explorers, rzx00000).
 
 | | |
 | --- | --- |
@@ -3280,7 +3280,7 @@ Witness: L1 26514 (c1, explorers, gameover, rzx x31). The swap runs 34 times in 
 
 Called by BridgeEffect `$BA97` (`$BA9F`) before its start test, which returns when Z is clear: never. A test left empty (known only from the code).
 
-Witness: L1 489 (rzx x4).
+Witness: L1 489 (rzx08000, rzx12000, rzx40000, rzx42000).
 
 | | |
 | --- | --- |
@@ -3414,7 +3414,7 @@ Witness: L1 46 (c1, explorers, gameover, rzx x18).
 
 The printer's source operand PrintNumberSource+1 (`$BD89`) is pointed at HiScore `$5B78` for one PrintNumber `$BD78` call, then restored. Reached by JP from NewHiScore `$BD72` only; split off as its own entry here (the cut ran it on from AddToScore's RET at `$BD3A`).
 
-Witness: L1 4 (c1, explorers, gameover, rzx x1).
+Witness: L1 4 (c1, explorers, gameover, rzx50000).
 
 | | |
 | --- | --- |
@@ -3427,7 +3427,7 @@ Witness: L1 4 (c1, explorers, gameover, rzx x1).
 
 Compares Score `$5C18` with HiScore `$5B78` from the top byte (`$5C1B`, `$5B7B`) down; a negative score (bit 7 of `$5C1B`) never counts. Higher: the 4 bytes are copied and PrintHiScore `$BD3B` prints it. Called at the end of a game by `$906D`.
 
-Witness: L1 8 (c1, explorers, gameover, rzx x1). c1, explorers, gameover and rzx50000 each set a high score once (`$BD67`).
+Witness: L1 8 (c1, explorers, gameover, rzx50000). c1, explorers, gameover and rzx50000 each set a high score once (`$BD67`).
 
 [Animation: `NewHiScore` at work](img/routines/NewHiScore.gif)
 
@@ -3576,7 +3576,7 @@ Witness: L1 2454 (rzx x11).
 
 As WalkerCreature `$BEDD` along Y: bit 7 set: Y + 2 up to `$66`, tested by TestBelowRight `$C121`; clear: Y - 2 down to 0, tested by TestAhead `$C115`. Then AnimateCreature `$C0AC`.
 
-Witness: L1 266 (rzx x3).
+Witness: L1 266 (rzx34000, rzx36000, rzx40000).
 
 | | |
 | --- | --- |
@@ -3592,7 +3592,7 @@ Witness: L1 266 (rzx x3).
 
 CreatureTimer `$BFA0` (C = 1); while it runs the frame is `$7F` (unseen). Then X - 2 a pass (direction bit cleared); X below 0: unseen again, the timer 0 (a new random wait, the place again) and the type restored from +1. A TestBelow `$C0FD` flag not 0 adds 1 to the record's type (+0): it becomes a RightFlier until it leaves the room (not executed in any recording). Then AnimateCreature `$C0AC`.
 
-Witness: L1 5796 (c1, explorers, rzx x2).
+Witness: L1 5796 (c1, explorers, rzx00000, rzx12000).
 
 | | |
 | --- | --- |
@@ -3626,7 +3626,7 @@ Witness: L1 31152 (c1, explorers, gameover, rzx x23).
 
 As LeftFlier `$BF67`, rightwards: X + 2 to `$E6`, the direction bit set, tested by TestRight `$C109` (a flag not 0 subtracts 1 from the type: it becomes a LeftFlier; not executed in any recording).
 
-Witness: L1 989 (rzx x4).
+Witness: L1 989 (rzx00000, rzx12000, rzx24000, rzx24750).
 
 | | |
 | --- | --- |
@@ -3759,7 +3759,7 @@ Witness: L1 1724 (rzx x14).
 
 **Test a tile with `$A31F` (SK: X + 12, the special tiles), the flag in TileScanFlags+4**
 
-Witness: L1 138 (rzx x3).
+Witness: L1 138 (rzx34000, rzx36000, rzx40000).
 
 | | |
 | --- | --- |
@@ -3851,7 +3851,7 @@ Witness: L1 31 (c1, explorers, gameover, rzx x13).
 
 HL = `$0000`, BC = 9000 counted down by 4: each byte of the ROM (AND E: the speaker bit) is sent after a delay of `$23` - B loop turns, so the pitch falls as B does; then SoundRise `$C506`. Witness: gameover and rzx16000 play it once each.
 
-Witness: L1 2 (gameover, rzx x1).
+Witness: L1 2 (gameover, rzx16000).
 
 | | |
 | --- | --- |
@@ -3866,7 +3866,7 @@ Witness: L1 2 (gameover, rzx x1).
 
 As SoundChirp `$C4CE`, H shifted up with a 1 bit after each burst: 6 bursts, H 3, 7, `$0F`, `$1F`, `$3F`, `$7F`. Played alone and at the end of SoundRomFall `$C4E9`. Witness: gameover (twice), rzx10000, rzx16000, rzx24000.
 
-Witness: L1 5 (gameover, rzx x3).
+Witness: L1 5 (gameover, rzx10000, rzx16000, rzx24000).
 
 | | |
 | --- | --- |
@@ -3880,7 +3880,7 @@ Witness: L1 5 (gameover, rzx x3).
 
 Witness: rzx06000, rzx22000, rzx32000 play it 11 times each (the status `$18` handler CreatureDeath `$A89E`).
 
-Witness: L1 33 (rzx x3).
+Witness: L1 33 (rzx06000, rzx22000, rzx32000).
 
 | | |
 | --- | --- |
@@ -3936,7 +3936,7 @@ Witness: L1 1017 (gameover, rzx x24).
 
 HL = `$0000` (LD HL,`$0000`: SK took its operand for NOPs), B = 0: 256 x 5 bytes, each AND E sent. Witness: rzx10000 plays it once.
 
-Witness: L1 1 (rzx x1).
+Witness: L1 1 (rzx10000).
 
 | | |
 | --- | --- |

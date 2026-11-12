@@ -43,7 +43,7 @@ PlayerHeaderBytes:
 ; The init entry: the menu's set-up calls it once (c1 frame 532), before its IM
 ; 2 handler starts calling MusicPlay $C00E.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 MusicInit:
   JP InitPlayer
 
@@ -52,7 +52,7 @@ MusicInit:
 ; The play entry: the menu's IM 2 handler calls it at $676D on every interrupt
 ; (c1: 7274 calls, frames 543-7879).
 ;
-; Witness: L1 13931 (c x4).
+; Witness: L1 13931 (c1-c4).
 MusicPlay:
   JP PlayFrame
 
@@ -91,7 +91,7 @@ PlayerText:
 ;
 ; c1 runs it once, at frame 532.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 InitPlayer:
   XOR A
   LD HL,ChannelA
@@ -130,7 +130,7 @@ InitPlayer:
 ; InitPlayer $C053 (once a recording) and from MusicStop $C011 (known only from
 ; the code).
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 Silence:
   XOR A
   LD HL,AYRegisters
@@ -239,7 +239,7 @@ DelayCounter:
 ; c1: 7274 frames, 1213 of them row frames (the JR NZ at $C108), 21 new
 ; positions (the CALL Z at $C119).
 ;
-; Witness: L1 13931 (c x4).
+; Witness: L1 13931 (c1-c4).
 PlayFrame:
   LD HL,DelayCounter
   DEC (HL)
@@ -294,7 +294,7 @@ PlayFrameSound:
 ; Out: A = $FF. Reached by falling from PlayFrame $C104 and by JP from Silence
 ; $C095.
 ;
-; Witness: L1 13935 (c x4).
+; Witness: L1 13935 (c1-c4).
 WriteAY:
   LD HL,AYEnvelopeShape
   LD DE,$FFBF
@@ -320,7 +320,7 @@ WriteAYLoop:
 ;
 ; In: E = the register (0-13), A = the value. Keeps DE and HL.
 ;
-; Witness: L1 137602 (c x4).
+; Witness: L1 137602 (c1-c4).
 SetAYRegister:
   PUSH HL
   PUSH DE
@@ -338,7 +338,7 @@ SetAYRegister:
 ; module's three table offsets) and NextPosition $C191 (the streams of channels
 ; B and C).
 ;
-; Witness: L1 98 (c x4).
+; Witness: L1 98 (c1-c4).
 ReadOffsetDE:
   EX DE,HL
 
@@ -347,7 +347,7 @@ ReadOffsetDE:
 ; In: HL = the word's address, BC = the base the offset is from. Out: HL = the
 ; address, DE = the address after the word.
 ;
-; Witness: L1 141 (c x4).
+; Witness: L1 141 (c1-c4).
 ReadOffset:
   LD E,(HL)
   INC HL
@@ -370,7 +370,7 @@ ReadOffset:
 ; c1: 21 positions (0-20, frames 543-7602); position 21 (pattern 14) would
 ; start at row 1230, after c1's last row 1213.
 ;
-; Witness: L1 43 (c x4).
+; Witness: L1 43 (c1-c4).
 NextPosition:
   LD HL,$0000
 PositionOp:
@@ -425,7 +425,7 @@ PatternTableOp:
 ;
 ; c1: 3639 calls in the 1213 row frames.
 ;
-; Witness: L1 6972 (c x4).
+; Witness: L1 6972 (c1-c4).
 ChannelRow:
   DEC (IX+$0A)
   RET NZ
@@ -496,7 +496,7 @@ RowDone:
 ; CommandVolume $C283; $D0-$EF: CommandNoise $C290; $F0-$FF: CommandLength
 ; $C294.
 ;
-; Witness: L1 3520 (c x4).
+; Witness: L1 3520 (c1-c4).
 PatternCommand:
   SUB $F0
   JR NC,CommandLength
@@ -526,7 +526,7 @@ CommandOrnament:
 ;
 ; In: A = the number (0-31), BC = SampleTable $D074 or OrnamentTable $D4EF.
 ;
-; Witness: L1 2522 (c x4).
+; Witness: L1 2522 (c1-c4).
 TableEntry:
   ADD A,A
   LD H,$00
@@ -546,7 +546,7 @@ TableEntry:
 ; envelope); $C1-$CF clears it and +$08 = 1-15, the scale of the sample's
 ; volumes.
 ;
-; Witness: L1 173 (c x4).
+; Witness: L1 173 (c1-c4).
 CommandVolume:
   SET 4,(IX+$00)
   RET Z
@@ -558,7 +558,7 @@ CommandVolume:
 ;
 ; +$05 = A; a note copies it into the noise period +$06.
 ;
-; Witness: L1 119 (c x4).
+; Witness: L1 119 (c1-c4).
 CommandNoise:
   LD (IX+$05),A
   RET
@@ -569,7 +569,7 @@ CommandNoise:
 ; (CommandLengthByte $C29A). $F1-$FF: AYEnvelopeShape $C101 = 1-15, written
 ; (and the envelope restarted) at this frame's WriteAY $C15F.
 ;
-; Witness: L1 706 (c x4).
+; Witness: L1 706 (c1-c4).
 CommandLength:
   JR Z,CommandLengthByte
   LD (AYEnvelopeShape),A
@@ -594,7 +594,7 @@ CommandLengthByte:
 ;
 ; c1: 21 822 calls (3 a frame); 224 with the sample ended, 72 with no note.
 ;
-; Witness: L1 41793 (c x4).
+; Witness: L1 41793 (c1-c4).
 ChannelSound:
   LD (CurrentChannel),A
   XOR A
@@ -664,7 +664,7 @@ ChannelSoundVolume:
 ; (M >> 4) x (the channel volume + 1) / 16. Then AddNoise $C3BB with F's low 5
 ; bits.
 ;
-; Witness: L1 40939 (c x4).
+; Witness: L1 40939 (c1-c4).
 SampleStep:
   LD L,(IX+$0F)
   LD H,(IX+$10)
@@ -747,7 +747,7 @@ SampleVolumeLoop:
 ; the loop row (always, released or not). The note +$02 += N (signed): the
 ; deltas add up from the note's start. Falls into AddNoise $C3BB with F.
 ;
-; Witness: L1 40939 (c x4).
+; Witness: L1 40939 (c1-c4).
 OrnamentStep:
   LD L,(IX+$15)
   LD H,(IX+$16)
@@ -785,7 +785,7 @@ OrnamentRow:
 ; (+$06 + the delta) AND 31. Reached from SampleStep $C308 and OrnamentStep
 ; $C385.
 ;
-; Witness: L1 81878 (c x4).
+; Witness: L1 81878 (c1-c4).
 AddNoise:
   LD A,C
   AND $10

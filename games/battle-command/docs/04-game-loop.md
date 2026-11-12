@@ -516,7 +516,9 @@ The point: one picture is built in about six frames and copied in one.
 ![One pass of the normal view against the beam](img/loop/beam-pass.png)
 
 *play 8509:65903-8517:32142, the pass of the table's second column: eight frames, one panel each. Drawn by
-`python3 ../../kit/beam_timeline.py --work work/docs/bcA/play --window 8509:65903-8517:32142 --listing build/game.lst --machine 128k --frames 8`.
+`python3 ../../kit/beam_timeline.py --work work/docs/bcA/play --window 8509:65903-8517:32142 --listing build/game.lst --machine 128k --frames 8
+--title "One pass of the 3D view (play 8509:65903-8517:32142, Blast Em Mission, normal view): 7.52 frames, the blit in
+the interrupt" --out docs/img/loop/beam-pass.png`.
 `l_89A8`, `l_89EE` and `l_8A27` are the three row loops of ViewBlitFront `$8999`; `l_C0A5` is ClearRadar's loop; `l_747E` and `l_749C` are BarLines `$7464` (the slot bars); `l_AA23` is in
 PlotRadarPixel `$A9FE`.*
 
@@ -546,7 +548,8 @@ frame sync.
 
 *play 10106:0-10110:14972: the last five frames of the rear view's pass 10098:18420-10110:14972 (11.95 frames). Drawn
 by `python3 ../../kit/beam_timeline.py --work work/docs/bcA/play --window 10106:0-10110:14972 --listing build/game.lst
---machine 128k --frames 5`.*
+--machine 128k --frames 5 --title "The end of the heaviest pass measured: the rear view (play 10106:0-10110:14972, pass
+10098:18420-10110:14972, 11.95 frames)" --out docs/img/loop/beam-rear.png`.*
 
 The blit is the same routine, but its interrupt starts it about 1750 T later in the frame (first write at frame T
 8203): 1264 of its 2528 full-row writes before the beam, 1264 after, and the beam overtakes it in line 71 (lines 32 to

@@ -214,7 +214,7 @@ WalkerRightTest:
 ; TestBelowRight $C121; clear: Y - 2 down to 0, tested by TestAhead $C115. Then
 ; AnimateCreature $C0AC.
 ;
-; Witness: L1 266 (rzx x3).
+; Witness: L1 266 (rzx34000, rzx36000, rzx40000).
 ClimberCreature:
   BIT 0,(IY+$08)
   JR NZ,ClimberMove
@@ -258,7 +258,7 @@ ClimberDownTest:
 ; until it leaves the room (not executed in any recording). Then
 ; AnimateCreature $C0AC.
 ;
-; Witness: L1 5796 (c1, explorers, rzx x2).
+; Witness: L1 5796 (c1, explorers, rzx00000, rzx12000).
 LeftFlier:
   LD C,$01
   CALL CreatureTimer
@@ -317,7 +317,7 @@ CreatureTimerDown:
 ; by TestRight $C109 (a flag not 0 subtracts 1 from the type: it becomes a
 ; LeftFlier; not executed in any recording).
 ;
-; Witness: L1 989 (rzx x4).
+; Witness: L1 989 (rzx00000, rzx12000, rzx24000, rzx24750).
 RightFlier:
   LD C,$01
   CALL CreatureTimer
@@ -562,7 +562,7 @@ TestRight:
 ; Test a tile with $A31F (SK: X + 12, the special tiles), the flag in
 ; TileScanFlags+4
 ;
-; Witness: L1 138 (rzx x3).
+; Witness: L1 138 (rzx34000, rzx36000, rzx40000).
 TestAhead:
   PUSH IY
   LD IY,TileScanSecond

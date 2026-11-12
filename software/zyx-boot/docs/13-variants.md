@@ -183,9 +183,15 @@ zyxgambt the glint's colours (`GlintEdge`, `GlintCentre`: the attributes of its 
 
 ## 13.6 The code switches
 
-A code switch is a named edit of `src/main/*.asm` that a variant lists in `variant.json` `code`
-(`tools/variants.py` `CODE_SWITCHES`: a regular expression and its replacement, one or several modules). No
-variant has its own copy of the code.
+A code switch is a named edit of the code that a variant lists in `variant.json` `code`. The six that change
+instructions in place (`kempston`, `no-joystick`, `glint-add`, `glint-daa`, `music-after-screen`,
+`corners-plain`) are `@variant` lines of `src/main/main.ann`: kit/mkgame.py emits each as an `IFDEF` block in the
+module, and `tools/variants.py` (`ANN_SWITCHES`) assembles with `-D` and its name (`-DKempston`). The rest
+(`no-music-init`, `catalogue-call`, `catalogue-safe`, the `sky-*` ones) stay edits of `src/main/*.asm` in
+`tools/variants.py` `CODE_SWITCHES` (a regular expression and its replacement): they act on the layout B call
+that the build inserts (`MusicStart`, not in main.ann), or add labels and `ORG` lines and move code between routines
+and modules, which an `@variant` (instructions inside one entry, no labels) cannot carry. No variant has its own copy
+of the code.
 
 | Switch | Variants | What it does |
 | --- | --- | --- |

@@ -48,7 +48,7 @@ InvertPlayWindowLoop:
 ; Evidence: gameover frames 1516-1959 (no deflector, the strike, after the last
 ; life); rzx50000 frames 194-729 (the deflector, GameOver at 729).
 ;
-; Witness: L1 327 (gameover, rzx x1).
+; Witness: L1 327 (gameover, rzx50000).
 SpaceScene:
   LD IY,ObjectSlot1
   LD HL,RoomStage

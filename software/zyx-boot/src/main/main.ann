@@ -76,6 +76,25 @@
 @isub $6E41 LD HL,30000
 @isub $6508 LD BC,-2048+32
 
+# The owner's variants (variants/README.md): the code switches of tools/variants.py that replace instructions in
+# place, as IFDEF blocks of the sources (sjasmplus -DNAME builds the variant; tools/variants.py passes it for the
+# switch of variant.json "code": kempston is Kempston, no-joystick NoJoystick, ...). The other switches move code or
+# need layout B's extra CALL: they stay regular-expression edits in tools/variants.py (CODE_SWITCHES).
+@variant Kempston $68B9 IN A,($1F) ; variant: the Kempston joystick is read
+@variant NoJoystick $68B9-$68CF DEFS 22 ; variant: the dormant joystick block is zeros (NOPs)
+@variant GlintAdd $6D1F ADD A,$01 ; variant: Z only for $FF: the logo glints only in frames $FF00-$FF34,
+@variant GlintAdd $6D1F ; the reflection in every 256-frame block
+@variant GlintDaa $6D63 DAA ; variant: $27 for $A7, one bit off (a damaged byte)
+@variant MusicAfterScreen $61E7-$61ED CALL DrawScreen ; variant: the music starts after DrawScreen
+@variant MusicAfterScreen $61E7-$61ED CALL MusicInit ; variant: the two calls swapped
+@variant CornersPlain $6CCB-$6CD7 LD HL,Attributes+27 ; variant: all four corners through ColourCornerRows
+@variant CornersPlain $6CCB-$6CD7 CALL ColourCornerRows
+@variant CornersPlain $6CCB-$6CD7 LD HL,Attributes+608
+@variant CornersPlain $6CCB-$6CD7 CALL ColourCornerRows
+@variant CornersPlain $6CDA LD A,$04 ; variant: one colour, green ink, for every cell
+@variant CornersPlain $6CDA NOP
+@variant CornersPlain $6CDF NOP
+
 @module setup ; The entry: save the caller's state, read the catalogue, IM 2, draw the screen, build the phases, the main loop
 @about Start $61A8 is the menu's only entry, called by the BASIC loader (src/basic, Loader $5D80) once the three pieces are in memory. It runs once from the CALL to the first file chosen: the launcher RunLetter $6A51 puts the saved SP back and returns to the loader.
 @about MainLoop $627C never waits for the interrupt: it runs as fast as the CPU allows between the interrupts, so the rhombi turn and the stars fall at a speed that depends on the machine.
@@ -87,11 +106,11 @@ $6256 StartTurnB
 > Saves IY (SavedIY $AFC8), HL' (SavedHLAlt), SP (SavedSP) and I (SavedI). Reads 8 sectors from track 0, sector 0 (the catalogue) to Catalogue $9D00 through TrdosEntry $3D13, still in IM 1. Then SP = MenuStack $FCBC, DI, Im2Table $FD00 filled with $FC, JP Interrupt at Im2Jump $FCFC, IM 2 with I = $FD. CALL $C00B (the music's init, src/music), DrawScreen $6510 (which also lists the catalogue), EI.
 > The rhombi: copies RombSource $6E98 to RombWork $7700, RombColumnOrder to RombColumns $7600 and RombPhaseOffsets to RombOffsets $765C; BuildRombPhases $62F1 with threshold $40 writes set A, phases 0-8 at PhasesA $7800-$80FF, and MirrorSprite $63D6 the mirror images of phases 0-7 as phases 9-16 at MirrorsA $8100-$88FF. RotateSprite $6422 three times turns RombWork by 270 degrees; BuildRombPhases (threshold $80) writes set B at PhasesB $8A00, MirrorSprite the mirrors at MirrorsB $9300, and RotateSprite turns each of the 17 sprites $8A00-$9AFF by 90 degrees: set A turns about the vertical axis, set B about the horizontal one.
 > DrawReflection $6DC6 draws the logo's mirror image at the bottom; the four rhombus steps start at 0, 5, 8 and 14 (PhaseTopLeft $B3B1-PhaseBottomRight $B3B4), MainTick at $FF; SampleStars $645E reads the 60 stars' pixels; then falls into MainLoop.
-> Witness: L1 4 (c x4).
+> Witness: L1 4 (c1-c4).
 
 $627C c MainLoop ; The main loop: the falling stars and the turning rhombi, as fast as the CPU runs
 > MainTick $B3B0 + 1 each pass. Every 2nd pass: MoveStars $6482 twice on StarsA $AC84 and twice on StarsB $ACFC (the operand MoveStars+2 set first). Every 4th: the top left rhombus (set A, at $4000, PhaseTopLeft) and the top right one (set B, at $401B, PhaseTopRight) one step (PrintRombPhase $64DA), and StarsC $AD74 once. Every 8th: the bottom left rhombus (set B, at $5060) and the bottom right (set A, at $507B). No HALT: the loop never ends; Interrupt $6757 does the rest (keys, music, twinkles, cursor) and the launcher leaves through the stack.
-> Witness: L1 27670 (c x4).
+> Witness: L1 27670 (c1-c4).
 $62A4 MainEvery4 ; every 4th pass: the top rhombi, StarsC
 $62CE MainEvery8 ; every 8th pass: the bottom rhombi
 
@@ -104,7 +123,7 @@ $62F7 BuildPhase
 $62FC BuildPhaseRow
 > In: DE = the set's base (PhasesA $7800 or PhasesB $8A00), RombThreshold $768E. For each phase (C = 8 down to 1) and each of the 40 rows: ClearPhaseMask $633B sets PhaseOffset $76C0 = RombOffsets[C] and clears PhaseMask $7698; the first 5 x C entries of RombColumns mark their columns in PhaseMask (MarkPhaseColumn $6354); ScaleRombLine $6364 writes the row. Each phase starts at the next 256 bytes (D + 1, E = 0).
 > Then phase 8 at DE: for each row k, $18 at byte 2 when RombColumns[k] >= the threshold (never: see the module's header).
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 $6304 MarkColumns ; mark the first 5 x C columns
 $6306 MarkColumn
 $6329 EdgeOnRow ; phase 8: the edge-on line
@@ -113,16 +132,16 @@ $6331 EdgeOnNext
 $633B c ClearPhaseMask ; Clear PhaseMask and set PhaseOffset to RombOffsets[C]
 $634D ClearPhaseIndex
 > The offset's index is written into the LD A,(IY+d) at $634D (IY = RombOffsets $765C).
-> Witness: L1 2560 (c x4).
+> Witness: L1 2560 (c1-c4).
 
 $6354 c MarkPhaseColumn ; PhaseMask[A] = 1: column A is kept in this phase
 $635D MarkPhaseWrite
 > The index is written into the LD (IX+d),1 at $635D.
-> Witness: L1 57600 (c x4).
+> Witness: L1 57600 (c1-c4).
 
 $6364 c ScaleRombLine ; Copy one 40-pixel row of the rhombus to the phase: only the marked columns, packed, from PhaseOffset on
 > In: HL = the source row, DE = the phase row, PhaseMask $7698, PhaseOffset $76C0 (bits 7-3 the byte, 2-0 the pixel). For each of the 40 source pixels whose PhaseMask byte is 1, writes the pixel (SET or RES, the opcode built into the instruction at $63AD) at the next destination pixel. Returns HL and DE 5 bytes on (the next row).
-> Witness: L1 2560 (c x4).
+> Witness: L1 2560 (c1-c4).
 $638B ScaleNextByte ; the next source byte
 $638D ScaleNextBit ; the next source bit: the BIT n,(IX) at $6392 built from E
 $6392 ScaleTestBit
@@ -133,11 +152,11 @@ $63BB ScaleSkipBit
 $63D6 c MirrorSprite ; Write the mirror image (left to right) of the 40x40 sprite at HL to DE
 $63DE MirrorRow
 > Reverses the 5 bytes of each row and the bits of each byte (MirrorByte $6419). HL = DE is allowed (FlipSprite $6E35 uses it so).
-> Witness: L1 80 (c x4).
+> Witness: L1 80 (c1-c4).
 
 $6419 c MirrorByte ; Reverse the bits of C
 $641B MirrorByteBit
-> Witness: L1 16000 (c x4).
+> Witness: L1 16000 (c1-c4).
 
 $6422 c RotateSprite ; Turn the 40x40 sprite at HL by 90 degrees (through RotateBuffer $9C00)
 $6428 RotateColumnByte
@@ -145,7 +164,7 @@ $642C RotateColumnBit
 $6430 RotateSourceRow
 $6436 RotateShiftRow
 > For each of the 40 source columns (left to right), shifts the column's 40 pixels into one 40-pixel row of RotateBuffer $9C00, then copies the 200 bytes back to HL. Called 3 times on RombWork, 17 times on set B, twice by FlipSprite for each logo sprite.
-> Witness: L1 112 (c x4).
+> Witness: L1 112 (c1-c4).
 
 @module stars ; The falling stars and the twinkles
 @about 60 stars fall down the screen, one pixel row at a time: three tables of 20 (StarsA $AC84 and StarsB $ACFC moved twice every 2nd pass of MainLoop, StarsC $AD74 once every 4th pass: the third group falls 4 times slower), each star one pixel, the tables' stars in pairs side by side (src/res/tables/stars.txt). A star is drawn by setting its pixel; before it moves, the screen pixel under it is put back (SET if it was lit, RES if not), so the stars pass over the menu without damaging it. From the bottom row a star goes back to the top.
@@ -153,11 +172,11 @@ $6436 RotateShiftRow
 
 $645E c SampleStars ; Read the screen pixel under each of the 60 stars into its record
 > Falls into SampleStar with IX = StarsA $AC84, B = 60 (the three tables follow each other).
-> Witness: L1 12 (c x4).
+> Witness: L1 12 (c1-c4).
 
 $6464 c SampleStar ; For B stars from IX: record +5 = the pixel under the star (BIT n,(HL), the opcode at +4)
 > A star's record (6 bytes): +0/+1 the screen address, +2 RES n,(HL)'s second byte, +3 SET n,(HL)'s, +4 BIT n,(HL)'s, +5 the pixel under it (0 or 1).
-> Witness: L1 1245596 (c x4).
+> Witness: L1 1245596 (c1-c4).
 $6471 SampleStarBit ; BIT n,(HL): the opcode from the record
 $6477 SampleStarStore
 
@@ -165,7 +184,7 @@ $6482 c MoveStars ; Move the 20 stars of one table down one pixel row
 $6488 MoveStarsNext
 $649E MoveStarsRestore
 > The table's address is the operand of the LD IX at $6482 (MainLoop writes it). For each star: puts back the screen pixel under it (RES or SET from +2/+3 by +5), moves the address one pixel row down (from the bottom of the screen to the top), samples the new pixel (SampleStar with B = 1) and sets it.
-> Witness: L1 62246 (c x4).
+> Witness: L1 62246 (c1-c4).
 $64A1 MoveStarsPutBack ; RES / SET n,(HL): put back the pixel the star covered
 $64C1 MoveStarsMoved
 $64D4 MoveStarsDraw ; SET n,(HL): draw the star at its new place
@@ -173,13 +192,13 @@ $64D4 MoveStarsDraw ; SET n,(HL): draw the star at its new place
 @module rhombi
 $64DA c PrintRombPhase ; Print the rhombus at its step (BC) at HL from the phase set at DE, and advance the step
 > The phase is PhaseOrder[(BC)], its sprite DE + 256 x phase; PrintSprite $64F4. The step (BC) + 1, modulo 32.
-> Witness: L1 20744 (c x4).
+> Witness: L1 20744 (c1-c4).
 
 $64F4 c PrintSprite ; Print a 40x40 sprite from DE to the screen at HL (5 cells across, 5 down)
 $64F6 PrintSpriteCellRow
 $64F9 PrintSpriteLine
 > Plain copy (no masking). Used for the rhombi, the logo and, into ScreenCopy, the reflection.
-> Witness: L1 20792 (c x4).
+> Witness: L1 20792 (c1-c4).
 
 @module screen ; The menu's screen, the pages and the cursor
 @about DrawScreen $6510 draws the static screen once: the four rhombi (phase 0), the ZYX logo (Logo $A900 at columns 6-25, rows 0-4, with LogoAttributes $AC20), the corner gradients (ColourCorners $6CBF), the help lines (MenuHelp $6AFD, rows 19-21) and saves it to ScreenCopy $E000. ShowCatalogue $6586 then puts that screen back, clears rows 6-17 and lists a page: up to 12 files in one column (names at column 14), 13-24 in two (columns 6 and 22), 24 a page when there are more (SYMBOL SHIFT for the next page, CAPS SHIFT for the first). Each line is "X>  name": the letter that runs it, in bright cyan, the name green (a BASIC program) or yellow (a 192-sector CODE file).
@@ -188,12 +207,12 @@ $64F9 PrintSpriteLine
 $6510 c DrawScreen ; Draw the static screen, save it to ScreenCopy and fall into ShowCatalogue
 $655D DrawLogoAttrRow
 > The rhombi at $4000, $401B, $5060, $507B (RombSource), the logo's four sprites at $4006, $400B, $4010, $4015, its attributes (5 rows of 20 from LogoAttributes $AC20 to $5806), ColourCorners $6CBF, Chars $5C36 = Font - 256, MenuHelp through PrintString $6720; copies the screen to ScreenCopy $E000.
-> Witness: L1 4 (c x4).
+> Witness: L1 4 (c1-c4).
 
 $6586 c ShowCatalogue ; Show a catalogue page: the clean screen, the file list, the cursor; save the screen
 > SoundOff $6E41; ScreenCopy back to the screen; ClearFilesArea $6930; CursorAttr = 1; ListCatalogue $65C7 from the entry at the operand of the LD IX at $659C (ShowCatalogueAt: Catalogue $9D00, or the next page's for SYMBOL SHIFT); CursorSavedAttr = the attribute under the cursor; PagePointer $B3C1 = the page's first entry; Frames $5C78 and TwinkleClock $DEAC = 0; the screen to ScreenCopy again (now with the list); SampleStars $645E.
 > Called from DrawScreen (falling in), ReadKeyboard for CAPS SHIFT, SYMBOL SHIFT and SPACE.
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 $659C ShowCatalogueAt ; LD IX,nn: the page's first catalogue entry
 
 $65C7 c ListCatalogue ; Count the page's files from IX and print them in one or two columns, or NO EXE FILES !
@@ -204,13 +223,13 @@ $65F1 CountSkip
 $65F9 CountDone
 > Counts the entries from IX to the catalogue's end (a first byte 0, or 128 entries: the end of Catalogue at $A500) that the menu lists: type B except "boot    B" (IsBootFile $6737), and type C of exactly 192 sectors ($C0 at +13; a 48K snapshot saved as CODE, which TR-DOS runs with GO TO "name" CODE). Deleted entries (first byte 1) are skipped (SkipDeleted $674D).
 > 0 files: NoFilesText at row 11, column 9, the cursor 14 cells wide on it. 1-12: one column (PrintColumn $668E at row 6, column 10, Columns = 1). 13-24: ListTwoColumns $6648. 25 or more: ListTwoColumns with 24, NextPagePointer $B3C3 = the entry after the 24th, MorePages $B3B9 = 1.
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 $661E ListOneColumn ; 1-12 files: one column
 $6644 ListTwoOrMore
 
 $6648 c ListTwoColumns ; Print A files (13-24) in two columns: half (rounded up) in column 1 at column 2, the rest at column 18
 > ColumnOneCount $B3BB = A - A / 2, ColumnTwoCount $B3BC = A / 2; the cursor on the first file (row 6, column 6).
-> Witness: L1 3 (c x2).
+> Witness: L1 3 (c2, c3).
 $6680 ListPaged ; 25 or more: 24 now, the rest on the next page
 
 $668E c PrintColumn ; Print D catalogue lines from HL, the first at row C, column B, the letters from E
@@ -219,7 +238,7 @@ $6693 PrintColumnEntry
 $66AF ; exactly 192 sectors ($C0): a 48K Magic snapshot. Vadim's comment reads 'length >= C000'; the test is CP $C0 with JR Z, equality only
 $66B3 PrintColumnSkip
 > Each listed entry: EntryLine $B3CE = AT row,col, BRIGHT 1, INK 5, letter, ">", two spaces, INK 4 (BASIC) or INK 6 (192-sector CODE), the 8 name characters (a byte below 32 or from 128 up shown as "."), $FF; PrintString $6720. Returns HL after the last entry printed.
-> Witness: L1 8 (c x2).
+> Witness: L1 8 (c2, c3).
 $66B8 PrintColumnBasic ; a BASIC file: green
 $66BE PrintColumnName ; the name: 8 characters, the unprintable ones as "."
 $66CD PrintNameChar
@@ -232,7 +251,7 @@ $66DA PrintNameStore
 $6720 c PrintString ; Print the string at HL up to $FF through RST $10 on channel 2
 $672F PrintStringNext
 > Puts back HL' and IY for the ROM (SavedHLAlt, SavedIY), opens channel 2 (RomChanOpen $1601), then RST $10 for each byte: the control codes AT, INK, BRIGHT are the ROM's.
-> Witness: L1 93 (c x4).
+> Witness: L1 93 (c1-c4).
 
 @module catalogue ; Reading the TR-DOS catalogue
 @about The catalogue is track 0's sectors 0-7 (128 entries of 16 bytes: name 8, type 1, start 2, length 2, sectors 1, first sector 1, track 1) read to Catalogue $9D00 by Start and again by SPACE. A first byte 0 ends it, 1 marks a deleted file.
@@ -241,10 +260,10 @@ $6737 c IsBootFile ; Compare the 9 bytes at HL (name and type) with "boot    B":
 $673F IsBootNext
 $6745 IsBootSame
 > Returns HL at the entry's type byte (+8) and E = C: the caller ANDs the type with E, so the boot file's type reads 0 and is never listed.
-> Witness: L1 219 (c x4).
+> Witness: L1 219 (c1-c4).
 
 $674D c SkipDeleted ; While the entry at HL is deleted (A = 1), go to the next one (HL + 16, A its first byte)
-> Witness: L1 234 (c x4).
+> Witness: L1 234 (c1-c4).
 
 @module interrupt ; The IM 2 interrupt: the music, the clocks, the twinkle, the glint, the cursor, the name's spin, the keys
 @about Interrupt $6757 runs at every frame through Im2Jump $FCFC. It saves every register, puts back HL' and IY for the ROM, plays the music (CALL $C00E, src/music), adds 1 to Frames $5C78 and 2 to TwinkleClock $DEAC, draws the twinkle (TwinkleStar $6BA5) and the logo's glint (LogoGlint $6D04). Every 4th frame it paints the cursor. When Frames' low byte is 50, 60, 70 or 80 (in every 256 frames, 5.12 s) the cursor's name is turned by 90 degrees, so it spins once; at 90 the screen gets the name as it stands. Every 8th frame ReadKeyboard $6864 reads the keys.
@@ -252,12 +271,12 @@ $674D c SkipDeleted ; While the entry at HL is deleted (A = 1), go to the next o
 $6757 c Interrupt ; The IM 2 handler
 $6796 PaintCursor
 $67AB StoreCursorAttr
-> Witness: L1 13932 (c x4).
+> Witness: L1 13932 (c1-c4).
 $67AF CheckSpin ; Frames low byte 50: spin the cursor's name
 
 $67C2 c RotateCursorName ; Turn each character of the cursor's name by 90 degrees in ScreenCopy
 > RotateAddr $DEAE = the name's address in ScreenCopy (from CursorAttrAddr's offset); each character's 8 rows to CharBuffer $B3ED, then written back column by column. At Frames 90 the LD A at $67D8 is made a RET for one call: only the address is worked out.
-> Witness: L1 276 (c x4).
+> Witness: L1 276 (c1-c4).
 $67D8 SpinCharacters ; LD A,(RotateLength): a RET at Frames 90
 $67DC RotateNextChar ; the next character
 $67E4 RotateCopyRow
@@ -266,23 +285,23 @@ $67F2 RotateColumnShift
 
 $6803 c ShowRotatedName ; Copy the name from ScreenCopy to the screen (CopyNameToScreen) and leave
 $680E CheckSpinMore
-> Witness: L1 276 (c x4).
+> Witness: L1 276 (c1-c4).
 
 $682D c InterruptExit ; Every 8th frame read the keys; restore the registers, EI, RET
-> Witness: L1 13931 (c x4).
+> Witness: L1 13931 (c1-c4).
 
 @module screen
 $6848 c CursorAttrAddr ; HL = the attribute address of the row and column at the operand of the LD DE at $6848 (CursorRow normally)
 $6852 AttrRowLoop
 $685A AttrAddColumn
 > Also CursorAttrOffset $B3C9 = HL - $5800. RotateCursorName points the operand at RotateRow for one call.
-> Witness: L1 3784 (c x4).
+> Witness: L1 3784 (c1-c4).
 
 @module keys ; The keys, every 8th frame
 @about ReadKeyboard $6864: the letters A-X (KeyTable $6B53, src/res/tables/keys.txt) run the file with that letter at once (RunLetter $6A51); 1, 2, 6, 7 change the column, 3 and 8 move down, 4 and 9 up, 5, 0 and ENTER run the file under the cursor (the two Sinclair joysticks: 1-5 and 6-0 are left, right, down, up, fire); CAPS SHIFT shows the first page, SYMBOL SHIFT the next one, SPACE reads the catalogue again (a new disk). A Kempston read is replaced by LD A,0: its five CALL C never call. The keys repeat while held: at 8 frames a read, a held key moves the cursor 6 times a second.
 
 $6864 c ReadKeyboard ; Read the letters, the digits, ENTER, CAPS SHIFT, SYMBOL SHIFT and SPACE
-> Witness: L1 1741 (c x4).
+> Witness: L1 1741 (c1-c4).
 $6869 ReadNextLetter ; the next letter: the half-row from bits 7-5, the key from bits 4-0
 $6875 ReadLetterRow ; RES n,A: the half-row's address bit, the opcode from the table
 $68B9 Joystick ; the Kempston read: LD A,$00, so the five CALL C after it never call (variants with IN A,($1F) read the joystick, variants/README.md)
@@ -294,24 +313,24 @@ $6930 c ClearFilesArea ; Clear the pixels of rows 6-17 and set their attributes 
 $6935 ClearRow
 $6937 ClearCell
 $6959 ClearAttrs
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 
 $6967 c ColumnKey ; 1, 2, 6, 7: move the cursor to the other column (two columns only)
 > From column 1 to column 2 the cursor keeps its row, but from column 1's last file, when column 2 is one shorter (13-23 files odd), it goes to column 1's first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1 it keeps the row.
-> Witness: L1 2 (c x1).
+> Witness: L1 2 (c2).
 
 $696E c KeyDone ; Pop the caller's AF and return: the key had nothing to do
 $6970 SwapColumn
 $697A SwapRestoreAttr
 $69A1 ToColumnTwo
 $69AD ToColumnOne
-> Witness: L1 1 (c x1).
+> Witness: L1 1 (c4).
 
 $69B7 c CursorMoved ; CursorSavedAttr = the attribute at the cursor's new place; pop AF, return
-> Witness: L1 8 (c x1).
+> Witness: L1 8 (c2).
 
 $69C0 c DownKey ; 3, 8: the cursor down one file (B = 0), wrapping from the column's last file to its first
-> Witness: L1 4 (c x1).
+> Witness: L1 4 (c2).
 
 $69C3 c MoveCursor ; Move the cursor down (B = 0) or up (B = 1), wrapping within its column; nothing with a single file
 $69D2 MoveCursorGo
@@ -324,21 +343,21 @@ $6A25 MoveUpColumnTwo
 $6A2E MoveToLast
 $6A30 MoveSetRow
 > Puts back the old cells' attribute first. The positions run down column 1 (CursorIndex 1 to ColumnOneCount) and on down column 2.
-> Witness: L1 6 (c x1).
+> Witness: L1 6 (c2).
 
 $6A3A c UpKey ; 4, 9: the cursor up one file
-> Witness: L1 2 (c x1).
+> Witness: L1 2 (c2).
 
 @module launcher ; Running the chosen file: the BASIC's launch line, the bell, the fade, back to the loader
 @about The menu does not load the file itself: it writes a TR-DOS command into line 1 of its own BASIC program (src/basic, LaunchLine $5D3B): RUN "name" for a BASIC file, GO TO "name" CODE for a 192-sector CODE file, puts the caller's I, HL', IY and SP back, Frames = 0 and CHARS = $3C00 (the ROM font), plays the bell, fades the screen and returns, IM 1, to the loader (src/basic, Loader $5D80), which clears its memory and returns to BASIC. Line 10's RUN then starts line 1: RANDOMIZE USR 15619: REM : RUN "name" hands the command to TR-DOS.
 
 $6A3F c FireKey ; 5, 0, ENTER: run the file under the cursor (none with no files)
 > C = "@" + CursorIndex: the letter of the file.
-> Witness: L1 2 (c x2).
+> Witness: L1 2 (c2, c4).
 
 $6A51 c RunLetter ; Run the page's file with letter C (A for the first): write the launch line, restore the caller's state, bell, fade, return to the loader
 > Returns at once when C is past the page's last file. Walks the catalogue from PagePointer $B3C1 counting the listed files; each entry passed has its first byte set to 1 (deleted), so the walk's SkipDeleted steps over it, and the chosen one gets its byte back. LaunchToken $5D4C = $F7 (RUN) for a B file, $EC (GO TO) for a 192-sector C file; the name's 8 bytes after the quote; after the closing quote a space or $AF (CODE). Frames = 0; I, HL', IY and SP from Start; Chars = $3C00; PlayBell $6E48; ExitFade $6E72; IM 1; EI; RET to the loader's $5DB7 (after its CALL MenuStart at $5DB4).
-> Witness: L1 3 (c x3).
+> Witness: L1 3 (c2-c4).
 $6A5E RunNextEntry ; the next catalogue entry
 $6A7A ; exactly 192 sectors ($C0): a 48K Magic snapshot. Vadim's comment reads 'length >= C000'; the test is CP $C0 with JR Z, equality only
 $6A7E RunSkipEntry
@@ -380,18 +399,18 @@ $6B9C b RombPhaseOffsets 9 ; Per phase, where its narrowed rhombus starts (the p
 @module stars
 $6BA5 c TwinkleStar ; The twinkle at each frame: new randoms at TwinkleClock 0, erase at the end of a twinkle, a frame every 4th frame
 > TwinkleClock $DEAC (+2 a frame; 32 frames a twinkle plus the 7 held frames at $3E: 39 frames a twinkle, lit 30 and dark 9, 156 a round of 4): 0: NewRandoms $6BAB. Bits 0-5 = $3E (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
-> Witness: L1 13931 (c x4).
+> Witness: L1 13931 (c1-c4).
 $6BCB TwinkleEnd ; the end of a twinkle: the pause
 $6BE7 TwinkleErase
 $6BF5 TwinkleEvery4 ; every 4th frame
 
 $6BAB c NewRandoms ; Fill Randoms $ADEC with 8 new bytes from R, the ROM's bytes and MainTick
 $6BBC NewRandomNext
-> Witness: L1 244 (c x4).
+> Witness: L1 244 (c1-c4).
 
 $6BFD c DrawTwinkle ; Erase the twinkle and draw its next frame at the place from Randoms
 > The place: the pair Randoms[2n], [2n+1], n = TwinkleClock bits 6-7; CheckTwinkleSpot $6C56 refuses a place on a third's last character row or beside the rhombi (columns 6-25 in the top and bottom thirds, 1-30 in the middle one; new randoms and again). EraseTwinkle $6C71 sets TwinkleAddr. The frame: TwinkleClock bits 3-4, counted down when bit 5 is set: frames 0, 1, 2, 3, 3, 2, 1, 0; ORed onto the screen, 16 rows of 2 bytes.
-> Witness: L1 5864 (c x4).
+> Witness: L1 5864 (c1-c4).
 $6C19 DrawTwinkleSprite ; LD A,(TwinkleClock): a RET while TwinkleStar only erases
 $6C24 DrawTwinkleFrame
 $6C39 DrawTwinkleRow ; OR the sprite onto the screen
@@ -399,33 +418,33 @@ $6C53 DrawTwinkleNext
 
 $6C56 c CheckTwinkleSpot ; Carry set if the place (HL) is allowed: the low byte below $E0 and its column clear of the menu
 $6C64 CheckSpotColumn
-> Witness: L1 5864 (c x4).
+> Witness: L1 5864 (c1-c4).
 
 $6C71 c EraseTwinkle ; TwinkleAddr = the place; copy its 16 rows of 2 bytes from ScreenCopy (the twinkle is erased)
 $6C7B EraseTwinkleAddr
 $6C85 EraseTwinkleRow
 $6C9F EraseTwinkleNext
-> Witness: L1 5705 (c x4).
+> Witness: L1 5705 (c1-c4).
 
 @module interrupt
 $6CA2 c CopyNameToScreen ; Copy the 8 rows of the rotated name from ScreenCopy to the screen
 $6CAC CopyNameRow
-> Witness: L1 276 (c x4).
+> Witness: L1 276 (c1-c4).
 
 @module fade ; The corner gradients and the exit fade
 @about The four 5x5 corners of the attributes are gradients from CornerColours $ADF4 (src/res/tables/corner-colours.txt): the top-left and bottom-right corners a colour a row, the top-right and bottom-left ones a colour a column. At the launch ExitFade $6E72 shifts every pixel row out of its bytes in 8 passes, alternately in and out, until the screen is black.
 
 $6CBF c ColourCorners ; Colour the four 5x5 corners with CornerColours
-> Witness: L1 4 (c x4).
+> Witness: L1 4 (c1-c4).
 
 $6CD8 c ColourCornerRows ; At HL, 5 rows of 5 cells: row n all CornerColours[n]
 $6CDD CornerRowsNext
 $6CE0 CornerRowsCell
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 
 $6CEF c ColourCornerColumns ; At DE, 5 rows of 5 cells, each row the 5 CornerColours
 $6CF1 CornerColumnsRow
-> Witness: L1 8 (c x4).
+> Witness: L1 8 (c1-c4).
 
 @module logo ; The ZYX logo: its glint and its reflection
 @about The logo (Logo $A900, four 40x40 sprites; src/res/graphics/logo.png) is printed by DrawScreen; DrawReflection $6DC6 prints it upside down at the bottom. For the first 64 frames of every 256 LogoGlint $6D04 runs a diagonal red glint across the logo (the top one when Frames' high byte is even, the reflection when odd).
@@ -439,39 +458,39 @@ $6D44 GlintStep
 $6D53 GlintRowStart
 $6D56 GlintRow
 > At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 52 a glint step (26 steps): 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells $6D6A) and three cells red, bright red, red drawn (DrawGlintRow $6D8A), mirrored about the screen's centre, the row above one cell further on.
-> Witness: L1 13931 (c x4).
+> Witness: L1 13931 (c1-c4).
 
 $6D6A c RestoreGlintCells ; Copy 3 attribute cells at the glint's column and their mirror image from ScreenCopy
-> Witness: L1 7605 (c x4).
+> Witness: L1 7605 (c1-c4).
 
 $6D8A c DrawGlintRow ; Draw the glint's 3 cells (red, bright red, red) at the column and the mirror image
-> Witness: L1 7605 (c x4).
+> Witness: L1 7605 (c1-c4).
 
 $6DAE c GlintRed ; (HL) = 2 (red ink) if HL's column is within the logo (6-25)
-> Witness: L1 30420 (c x4).
+> Witness: L1 30420 (c1-c4).
 
 $6DBA c GlintBright ; (HL) = $42 (bright red) if HL's column is within the logo
-> Witness: L1 15210 (c x4).
+> Witness: L1 15210 (c1-c4).
 
 $6DC6 c DrawReflection ; Print the logo upside down into ScreenCopy's bottom third and copy it to the screen
 $6E0B ReflectAttrRow
 > FlipSprite $6E35 on each of the four logo sprites (they stay flipped), PrintSprite to $F066, $F06B, $F070, $F075 in ScreenCopy (the screen's $5066...), the logo's 5 attribute rows copied in reverse order to $FAE6 upward, then ScreenCopy's bottom third ($F000, 2K) and its attribute rows 19-23 to the screen. DI around it.
-> Witness: L1 4 (c x4).
+> Witness: L1 4 (c1-c4).
 
 $6E35 c FlipSprite ; Turn the 40x40 sprite at HL upside down (RotateSprite twice: 180 degrees, then MirrorSprite)
-> Witness: L1 16 (c x4).
+> Witness: L1 16 (c1-c4).
 
 @module sound ; The AY: silence and the bell
 $6E41 c SoundOff ; Silence the AY: registers 0-13 from 30000, bytes of the work space nothing writes (zeros)
 > 30000 is $7530, inside Unused1 $70A8 (cleared by the loader, never written), so every register gets 0: no tone, volume 0. Called by ShowCatalogue before every page, cutting the music for a moment.
-> Witness: L1 9 (c x4).
+> Witness: L1 9 (c1-c4).
 
 $6E48 c PlayBell ; Write ExitSound to the AY registers 0-13: the bell when a file is chosen
-> Witness: L1 2 (c x2).
+> Witness: L1 2 (c2, c3).
 
 $6E4F c WriteAY ; Write 14 bytes from HL to the AY registers 0-13
 $6E50 WriteAYNext
-> Witness: L1 11 (c x4).
+> Witness: L1 11 (c1-c4).
 
 $6E64 b ExitSound 7 ; The bell: AY registers 0-13
 > Read by PlayBell.
@@ -483,7 +502,7 @@ $6E74 ExitFadePass
 $6E79 ExitFadeLine
 $6E7A ExitFadeIn
 $6E85 ExitFadeOut
-> Witness: L1 2 (c x2).
+> Witness: L1 2 (c2, c3).
 
 @module rhombi
 $6E98 b RombSource 5 ; The rhombus: 40x40, 5 bytes a row

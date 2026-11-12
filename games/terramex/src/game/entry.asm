@@ -121,7 +121,7 @@ SetLifeLossOp:
 ; hours = `$17`, `$5BFD` minutes = `$3B`); `$9AA1` copies the start into the
 ; respawn state `$5C2B-$5C33`; `$9E5D`. Falls into MainLoop `$9018`.
 ;
-; Witness: L1 9 (c1, explorers, gameover, rzx x1).
+; Witness: L1 9 (c1, explorers, gameover, rzx50000).
 NewGame:
   CALL DeviceMenu
 
@@ -132,7 +132,7 @@ NewGame:
 ; here. Step 2 and 3 of NewGame `$8F47`: on a 128K the selector at `$C000` in
 ; RAM 1, then InitGame `$8F69`. Falls into MainLoop `$9018`.
 ;
-; Witness: L1 8 (c1, explorers, rzx x1).
+; Witness: L1 8 (c1, explorers, rzx00000).
 RunSelector:
   LD A,(Has128K)
   OR A

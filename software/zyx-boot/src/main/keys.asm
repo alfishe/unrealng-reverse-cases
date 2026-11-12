@@ -13,7 +13,7 @@
 
 ; Read the letters, the digits, ENTER, CAPS SHIFT, SYMBOL SHIFT and SPACE
 ;
-; Witness: L1 1741 (c x4).
+; Witness: L1 1741 (c1-c4).
 ReadKeyboard:
   LD C,$41
   LD HL,KeyTable
@@ -66,9 +66,16 @@ ReadLetterRow:
   RRA
   CALL NC,ColumnKey
 Joystick:
+  IFDEF NoJoystick
+  DEFS 22                 ; variant: the dormant joystick block is zeros (NOPs)
+  ELSE
+  IFDEF Kempston
+  IN A,($1F)              ; variant: the Kempston joystick is read
+  ELSE
   LD A,$00                ; the Kempston read: LD A,$00, so the five CALL C
                           ; after it never call (variants with IN A,($1F) read
                           ; the joystick, variants/README.md)
+  ENDIF
   RRA
   CALL C,ColumnKey
   RRA
@@ -79,6 +86,7 @@ Joystick:
   CALL C,UpKey
   RRA
   CALL C,FireKey
+  ENDIF
   LD A,$FE
   IN A,($FE)
   RRA

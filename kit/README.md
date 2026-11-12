@@ -73,10 +73,12 @@ what the generator does with it, the part files); every file of a case and the c
 Every run checks the `.ann`'s `Witness: L1 N (builds)` lines of the code entries against the recordings: N the runs
 of the entry's first instruction summed over `ref_builds`, `read_builds`, `code_builds` and `witness_builds` (less
 `witness_skip`; a `ref_builds` recording with a window counts only inside it), the list the builds that ran it (`c1,
-hiscore, rzx x29`), and prints each stale line
+hiscore, rzx x29`; numbered builds of one family by name, a run of three or more as a range: `c1-c4`, `c1, c2, c4`,
+a family that would take more than four items as one, `rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
 `--fix-witness` rewrites them in the `.ann`, keeps a line that names a recording it did not load, prints each
-name it drops (`menu, search ran no instruction there`), and writes the source again from the rewritten `.ann`, so
+name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
+clause, so a data entry is not said to run no instruction), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
 ([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)).
 
@@ -85,7 +87,9 @@ else the case's `tools/res_formats.py`; a part with resources and none of these 
 installed`), and deletes only the modules the old `game.asm`
 included that the `.ann` no longer has (a hand-written `.asm` beside them stays) and a resource's `src/res/NAME.bin`
 left by an earlier install when the case's `res_formats.py` now writes its editable form (`NAME.png`, `NAME.txt`)
-and not the bytes.
+and not the bytes. Each run also removes from its work folder (`work/mkgame`, a part's `work/...`, and its `top`
+subfolder) the `.asm`, `.ctl`, `.skool` and `-image.bin` files an older run wrote and this one no longer does (a module
+or an entry renamed: `removed work/stage2/mkmusic/code.asm (an older run's: this one no longer writes it)`).
 
 What `mkgame.py` writes as a name and what it keeps a number:
 [ann-format.md 3.4](../docs/ann-format.md#34-what-becomes-labeloffset). A port (`LD BC,nn` before `IN` / `OUT (C)`)
@@ -96,7 +100,13 @@ entry's labelled words inside an `@res` become `ASSERT` lines after its `INCBIN`
 addresses can be assembled from source instead: `@res NAME.bin include` writes `INCLUDE "res/NAME.inc"`, and the
 case's `res_formats.py build` writes that file from the editable form with `resinc.py` (`lines()`: `DB` lines, a
 `DW Label` per address, inner labels; `symbols(case)`: the `.ann`'s names by address, name and resource offset), so a
-text edit takes effect and a label that moves is followed (SimCity's menus). A module named again further on
+text edit takes effect and a label that moves is followed (SimCity's menus). Several entries one after the other
+may share one `.inc` (`@res NAME.bin include` on each): one `INCLUDE` at the first, the later entries' names and the
+inner labels as labels inside, so the editable form may assemble to another size and the labels after it follow (ZYX
+boot's tune, eight entries in `disco.inc`). `@variant NAME` puts an instruction under a name (inserted, or replacing
+the instructions of a range), emitted as an `IFDEF NAME` block that a build selects with `sjasmplus -DNAME`; the
+original stays the `ELSE` side, so the plain build is unchanged (ZYX boot's variants: `-DKempston`,
+[ann-format.md 2](../docs/ann-format.md#2-directives)). A module named again further on
 (`@module tasks` before the IM 2 handler and again before its vector table far above) is one file of several
 stretches: the second starts with `ORG` at its address ([ann-format.md 2](../docs/ann-format.md#2-directives)).
 Several part files may share one `.ann`: each keeps the entries inside its image, and a module wholly outside is
@@ -213,6 +223,11 @@ the trace's start page, then each `OUT` to `$7FFD`. With either option a plain `
 0's and `--pc N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc 6:C000-CD60` follows
 Terramex's music player in RAM 6 while the game's code at the same addresses counts as "other".
 
+Several listings of one flat image (`routine_anim.py`, `beam_timeline.py`, `writers_map.py`): `--listing` given more
+than once merges them by address, each naming its own code (where two give code at one address, the first wins):
+`--listing build/main.lst --listing build/music.lst` names a 48K boot's menu and its music part at `$C000` (ZYX boot);
+`--page` is for 128K pages only.
+
 routine_anim's memory map is 256 bytes a row; a range too small to make 96 px that way (two rows of 2 px for
 `$5B00-$5CFF`) is wrapped at 128, 64, 32 or 16 bytes a row, at a scale as many times larger, the label says how
 many. `--row-bytes N` fixes the count, `--grid-height` caps the map's height (512; the listing beside it as tall).
@@ -231,7 +246,8 @@ narrow, so the picture stays `--width` wide; `--layout wide` is the older pictur
 (1050) and wraps a long `--note`. `writers_map.py` keeps within `--width` (1050): the two views side by side at
 `--scale` (2; two screens fit with narrower gaps) or the largest whole scale that fits, else stacked, the `--zoom`
 insets on a row of their own enlarged as far as it allows. `beam_timeline.py` draws `--width` pixels (1050), the time
-axis taking what the labels leave. Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
+axis taking what the labels leave; no tick label is drawn within 60 px before the axis title "frame T" (the 70000 of a
+128K or Pentagon frame). Both wrap a long `--title`. `writers_map.py --width 0` is its older one-row
 picture (the zoom up to 2620 px), `memanim.py --layout wide --width 0` its older 1102 px one. `memanim.py --cell` is
 the pixels a byte (2, too small to read at 900 px): for an address range of up to 64 pages (16 K) take `--cell 3`, the
 compact picture is 830 px wide; `--cell fit` makes the grid as wide as `--width` allows (988 px at 1050, a byte 3 or 4

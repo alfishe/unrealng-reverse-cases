@@ -1,6 +1,6 @@
 # ZYX boot (ZYX Software, 1993-1994)
 
-State: docs written, in review (2026-11-12). The source rebuilds `orig/boot.scl` byte for byte; documents 01-13 are
+State: complete (2026-11-12): two review rounds, the kit gaps fixed. The source rebuilds `orig/boot.scl` byte for byte; documents 01-13 are
 written; all 56 variants build identical from the same source ([doc 13](docs/13-variants.md)).
 
 | | |

@@ -19,7 +19,7 @@
 ; Falls into SampleStar with IX = StarsA $AC84, B = 60 (the three tables follow
 ; each other).
 ;
-; Witness: L1 12 (c x4).
+; Witness: L1 12 (c1-c4).
 SampleStars:
   LD IX,StarsA
   LD B,$3C
@@ -30,7 +30,7 @@ SampleStars:
 ; A star's record (6 bytes): +0/+1 the screen address, +2 RES n,(HL)'s second
 ; byte, +3 SET n,(HL)'s, +4 BIT n,(HL)'s, +5 the pixel under it (0 or 1).
 ;
-; Witness: L1 1245596 (c x4).
+; Witness: L1 1245596 (c1-c4).
 SampleStar:
   LD L,(IX+$00)
   LD H,(IX+$01)
@@ -56,7 +56,7 @@ SampleStarStore:
 ; screen to the top), samples the new pixel (SampleStar with B = 1) and sets
 ; it.
 ;
-; Witness: L1 62246 (c x4).
+; Witness: L1 62246 (c1-c4).
 MoveStars:
   LD IX,StarsA
   LD B,$14
@@ -120,7 +120,7 @@ MoveStarsDraw:
 ; frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause $DEB0 counts): an
 ; 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle $6BFD.
 ;
-; Witness: L1 13931 (c x4).
+; Witness: L1 13931 (c1-c4).
 TwinkleStar:
   LD A,(TwinkleClock)
   AND A
@@ -128,7 +128,7 @@ TwinkleStar:
 
 ; Fill Randoms $ADEC with 8 new bytes from R, the ROM's bytes and MainTick
 ;
-; Witness: L1 244 (c x4).
+; Witness: L1 244 (c1-c4).
 NewRandoms:
   LD HL,(RomPointer)
   INC HL
@@ -187,7 +187,7 @@ TwinkleEvery4:
 ; frame: TwinkleClock bits 3-4, counted down when bit 5 is set: frames 0, 1, 2,
 ; 3, 3, 2, 1, 0; ORed onto the screen, 16 rows of 2 bytes.
 ;
-; Witness: L1 5864 (c x4).
+; Witness: L1 5864 (c1-c4).
 DrawTwinkle:
   LD A,(TwinkleClock)
   RLCA
@@ -254,7 +254,7 @@ DrawTwinkleNext:
 ; Carry set if the place (HL) is allowed: the low byte below $E0 and its column
 ; clear of the menu
 ;
-; Witness: L1 5864 (c x4).
+; Witness: L1 5864 (c1-c4).
 CheckTwinkleSpot:
   LD B,$1A
   INC HL
@@ -279,7 +279,7 @@ CheckSpotColumn:
 ; TwinkleAddr = the place; copy its 16 rows of 2 bytes from ScreenCopy (the
 ; twinkle is erased)
 ;
-; Witness: L1 5705 (c x4).
+; Witness: L1 5705 (c1-c4).
 EraseTwinkle:
   INC HL
   LD A,(HL)

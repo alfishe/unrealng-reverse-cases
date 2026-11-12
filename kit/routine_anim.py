@@ -29,6 +29,10 @@ memory map and the view one above the other on the left, each at the largest who
 right; a view wider than that column at 1 x (a hex view of 30 bytes a line) goes on a row of its own under both,
 its numbers a point or two smaller if it is wider than the picture. --layout wide is the older picture, the three panels side by side at up to 4 x (up to 2566 px).
 
+--listing may be given more than once: several listings of one flat image (a 48K boot's menu and its music part,
+`--listing build/main.lst --listing build/music.lst`) are merged by address, each naming its own code (where two
+give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.
+
 --pc names the routine's code: instructions outside it (an interrupt, a callee you do not want to watch) still
 change memory but are counted as "other" in the code panel. Several ranges (comma-separated, or --pc repeated)
 take a routine together with the routines it calls elsewhere in memory. GUIDE.md 4.1 says where these figures go.
@@ -228,7 +232,7 @@ def fit(image, height):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     K.add_trace_args(p)
-    p.add_argument('--listing')
+    K.add_listing_arg(p)
     p.add_argument('--out', required=True)
     p.add_argument('--view', default='screen')
     p.add_argument('--range', default='0000-FFFF', help='the memory grid, whole 256-byte rows')

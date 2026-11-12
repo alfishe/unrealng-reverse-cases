@@ -14,7 +14,8 @@ data) -> bytes:
 - tools/res_tables.py: the star tables, the attribute and fade colours, the key table and the other tables, as text;
 - tools/res_text.py: the menu's strings (texts/*.txt, UTF-8);
 - tools/res_basic.py: the BASIC sector's program lines (basic/launch-lines.txt, basic/line-ten.txt) as a listing;
-- tools/res_music.py: the ASC Sound Master tunes (music/disco.txt, a variant's music/asc.txt);
+- tools/res_music.py: the ASC Sound Master tunes (music/disco.txt, a variant's music/asc.txt); the build also writes
+  music/disco.inc, the tune the music piece INCLUDEs (`@res music/disco.bin include` on its eight entries);
 - tools/res_stc.py, tools/res_fuxoft.py: a variant's Sound Tracker and Fuxoft tunes (music/stc.txt, music/fuxoft.txt);
 - tools/res_rip.py: the tunes of five one-off game-rip players (music/hydrofool.txt, megaapoc, ziutek, awbt, fp3bt);
 - tools/res_whittaker.py, tools/res_sheridan.py, tools/res_daglish.py: the tunes of the game rips' drivers (David
@@ -86,7 +87,10 @@ def build(out, res=RES):
         dst = os.path.join(out, name)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if m:
-            open(dst, 'wb').write(m.from_editable(name, open(src, 'rb').read()))
+            data = m.from_editable(name, open(src, 'rb').read())
+            open(dst, 'wb').write(data)
+            if hasattr(m, 'to_inc') and name == 'music/disco.bin':   # an @res ... include (a variant's tree too)
+                open(dst[:-4] + '.inc', 'w').write(m.to_inc(name, data, ROOT))
         else:
             shutil.copyfile(src, dst)
 

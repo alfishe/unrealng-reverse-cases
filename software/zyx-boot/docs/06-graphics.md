@@ -180,9 +180,10 @@ flowchart TD
 
 *DrawReflection `$6DC6` over c1 frames 823-891, 90 pictures. Left above: memory `$9C00-$FFFF`; left below: the
 logo's buffer at `$A900` as 5 x 160 bytes (the four sprites one under another); right: the listing at the PC. Made
-with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window 823:0-891:0 --listing work/docs/zbA/all.lst
---view buffer:A900:5x160 --pc 6DC6-6E40,6422-645D,63D6-6421,64F4-6509 --range 9C00-FFFF --pictures 90 --out
-docs/img/routines/DrawReflection.gif`.*
+with `python3 ../../kit/routine_anim.py --work work/docs/zbA/c1 --window 823:0-891:0 --listing build/main.lst
+--listing build/music.lst --view buffer:A900:5x160 --pc 6DC6-6E40,6422-645D,63D6-6421,64F4-6509 --range 9C00-FFFF
+--pictures 90 --out docs/img/routines/DrawReflection.gif` and the title
+`--title "DrawReflection $6DC6: the four logo sprites turned upside down in place, printed into ScreenCopy, copied to the screen"`.*
 
 How to read it:
 
@@ -961,8 +962,9 @@ Who writes the screen over a few frames:
 ![Code vs screen over c1 frames 1106-1110](img/graphics/writers.png)
 
 *Every screen byte written over c1 frames 1106-1110, coloured by the routine that wrote it last. Made with `python3
-../../kit/writers_map.py --work work/docs/zbA/c1 --window 1105:71600-1110:71600 --listing work/docs/zbA/all.lst
---view screen --out docs/img/graphics/writers.png`.*
+../../kit/writers_map.py --work work/docs/zbA/c1 --window 1105:71600-1110:71600 --listing build/main.lst
+--listing build/music.lst --view screen --title "Code vs screen: who wrote each byte of the screen over c1 frames
+1106–1110 (the spin, the glint, the twinkle, the stars, the rhombi)" --out docs/img/graphics/writers.png`.*
 
 How to read it:
 

@@ -44,7 +44,7 @@ The rhombi: copies RombSource `$6E98` to RombWork `$7700`, RombColumnOrder to Ro
 
 DrawReflection `$6DC6` draws the logo's mirror image at the bottom; the four rhombus steps start at 0, 5, 8 and 14 (PhaseTopLeft `$B3B1`-PhaseBottomRight `$B3B4`), MainTick at `$FF`; SampleStars `$645E` reads the 60 stars' pixels; then falls into MainLoop.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -60,7 +60,7 @@ Witness: L1 4 (c x4).
 
 MainTick `$B3B0` + 1 each pass. Every 2nd pass: MoveStars `$6482` twice on StarsA `$AC84` and twice on StarsB `$ACFC` (the operand MoveStars+2 set first). Every 4th: the top left rhombus (set A, at `$4000`, PhaseTopLeft) and the top right one (set B, at `$401B`, PhaseTopRight) one step (PrintRombPhase `$64DA`), and StarsC `$AD74` once. Every 8th: the bottom left rhombus (set B, at `$5060`) and the bottom right (set A, at `$507B`). No HALT: the loop never ends; Interrupt `$6757` does the rest (keys, music, twinkles, cursor) and the launcher leaves through the stack.
 
-Witness: L1 27670 (c x4).
+Witness: L1 27670 (c1-c4).
 
 [Animation: `MainLoop` at work](img/routines/MainLoop.gif)
 
@@ -81,7 +81,7 @@ In: DE = the set's base (PhasesA `$7800` or PhasesB `$8A00`), RombThreshold `$76
 
 Then phase 8 at DE: for each row k, `$18` at byte 2 when RombColumns[k] >= the threshold (never: see the module's header).
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 [Animation: `BuildRombPhases` at work](img/routines/BuildRombPhases.gif)
 
@@ -99,7 +99,7 @@ Witness: L1 8 (c x4).
 
 The offset's index is written into the LD A,(IY+d) at `$634D` (IY = RombOffsets `$765C`).
 
-Witness: L1 2560 (c x4).
+Witness: L1 2560 (c1-c4).
 
 | | |
 | --- | --- |
@@ -115,7 +115,7 @@ Witness: L1 2560 (c x4).
 
 The index is written into the LD (IX+d),1 at `$635D`.
 
-Witness: L1 57600 (c x4).
+Witness: L1 57600 (c1-c4).
 
 | | |
 | --- | --- |
@@ -130,7 +130,7 @@ Witness: L1 57600 (c x4).
 
 In: HL = the source row, DE = the phase row, PhaseMask `$7698`, PhaseOffset `$76C0` (bits 7-3 the byte, 2-0 the pixel). For each of the 40 source pixels whose PhaseMask byte is 1, writes the pixel (SET or RES, the opcode built into the instruction at `$63AD`) at the next destination pixel. Returns HL and DE 5 bytes on (the next row).
 
-Witness: L1 2560 (c x4).
+Witness: L1 2560 (c1-c4).
 
 | | |
 | --- | --- |
@@ -146,7 +146,7 @@ Witness: L1 2560 (c x4).
 
 Reverses the 5 bytes of each row and the bits of each byte (MirrorByte `$6419`). HL = DE is allowed (FlipSprite `$6E35` uses it so).
 
-Witness: L1 80 (c x4).
+Witness: L1 80 (c1-c4).
 
 | | |
 | --- | --- |
@@ -161,7 +161,7 @@ Witness: L1 80 (c x4).
 
 **Reverse the bits of C**
 
-Witness: L1 16000 (c x4).
+Witness: L1 16000 (c1-c4).
 
 | | |
 | --- | --- |
@@ -175,7 +175,7 @@ Witness: L1 16000 (c x4).
 
 For each of the 40 source columns (left to right), shifts the column's 40 pixels into one 40-pixel row of RotateBuffer `$9C00`, then copies the 200 bytes back to HL. Called 3 times on RombWork, 17 times on set B, twice by FlipSprite for each logo sprite.
 
-Witness: L1 112 (c x4).
+Witness: L1 112 (c1-c4).
 
 | | |
 | --- | --- |
@@ -191,7 +191,7 @@ Witness: L1 112 (c x4).
 
 The phase is PhaseOrder[(BC)], its sprite DE + 256 x phase; PrintSprite `$64F4`. The step (BC) + 1, modulo 32.
 
-Witness: L1 20744 (c x4).
+Witness: L1 20744 (c1-c4).
 
 [Animation: `PrintRombPhase` at work](img/routines/PrintRombPhase.gif)
 
@@ -210,7 +210,7 @@ Witness: L1 20744 (c x4).
 
 Plain copy (no masking). Used for the rhombi, the logo and, into ScreenCopy, the reflection.
 
-Witness: L1 20792 (c x4).
+Witness: L1 20792 (c1-c4).
 
 | | |
 | --- | --- |
@@ -230,7 +230,7 @@ Witness: L1 20792 (c x4).
 
 Falls into SampleStar with IX = StarsA `$AC84`, B = 60 (the three tables follow each other).
 
-Witness: L1 12 (c x4).
+Witness: L1 12 (c1-c4).
 
 | | |
 | --- | --- |
@@ -245,7 +245,7 @@ Witness: L1 12 (c x4).
 
 A star's record (6 bytes): +0/+1 the screen address, +2 RES n,(HL)'s second byte, +3 SET n,(HL)'s, +4 BIT n,(HL)'s, +5 the pixel under it (0 or 1).
 
-Witness: L1 1245596 (c x4).
+Witness: L1 1245596 (c1-c4).
 
 | | |
 | --- | --- |
@@ -261,7 +261,7 @@ Witness: L1 1245596 (c x4).
 
 The table's address is the operand of the LD IX at `$6482` (MainLoop writes it). For each star: puts back the screen pixel under it (RES or SET from +2/+3 by +5), moves the address one pixel row down (from the bottom of the screen to the top), samples the new pixel (SampleStar with B = 1) and sets it.
 
-Witness: L1 62246 (c x4).
+Witness: L1 62246 (c1-c4).
 
 [Animation: `MoveStars` at work](img/routines/MoveStars.gif)
 
@@ -280,7 +280,7 @@ Witness: L1 62246 (c x4).
 
 TwinkleClock `$DEAC` (+2 a frame; 32 frames a twinkle plus the 7 held frames at `$3E`: 39 frames a twinkle, lit 30 and dark 9, 156 a round of 4): 0: NewRandoms `$6BAB`. Bits 0-5 = `$3E` (the twinkle's last frame): EraseTwinkle without a new frame, and for 7 of 8 times TwinkleClock - 2 (TwinklePause `$DEB0` counts): an 8-frame pause. Else every 4th frame (clock bits 0-2 = 2): DrawTwinkle `$6BFD`.
 
-Witness: L1 13931 (c x4).
+Witness: L1 13931 (c1-c4).
 
 [Animation: `TwinkleStar` at work](img/routines/TwinkleStar.gif)
 
@@ -297,7 +297,7 @@ Witness: L1 13931 (c x4).
 
 **Fill Randoms `$ADEC` with 8 new bytes from R, the ROM's bytes and MainTick**
 
-Witness: L1 244 (c x4).
+Witness: L1 244 (c1-c4).
 
 | | |
 | --- | --- |
@@ -314,7 +314,7 @@ Witness: L1 244 (c x4).
 
 The place: the pair Randoms[2n], [2n+1], n = TwinkleClock bits 6-7; CheckTwinkleSpot `$6C56` refuses a place on a third's last character row or beside the rhombi (columns 6-25 in the top and bottom thirds, 1-30 in the middle one; new randoms and again). EraseTwinkle `$6C71` sets TwinkleAddr. The frame: TwinkleClock bits 3-4, counted down when bit 5 is set: frames 0, 1, 2, 3, 3, 2, 1, 0; ORed onto the screen, 16 rows of 2 bytes.
 
-Witness: L1 5864 (c x4).
+Witness: L1 5864 (c1-c4).
 
 | | |
 | --- | --- |
@@ -329,7 +329,7 @@ Witness: L1 5864 (c x4).
 
 **Carry set if the place (HL) is allowed: the low byte below `$E0` and its column clear of the menu**
 
-Witness: L1 5864 (c x4).
+Witness: L1 5864 (c1-c4).
 
 | | |
 | --- | --- |
@@ -342,7 +342,7 @@ Witness: L1 5864 (c x4).
 
 **TwinkleAddr = the place; copy its 16 rows of 2 bytes from ScreenCopy (the twinkle is erased)**
 
-Witness: L1 5705 (c x4).
+Witness: L1 5705 (c1-c4).
 
 | | |
 | --- | --- |
@@ -362,7 +362,7 @@ Witness: L1 5705 (c x4).
 
 The rhombi at `$4000`, `$401B`, `$5060`, `$507B` (RombSource), the logo's four sprites at `$4006`, `$400B`, `$4010`, `$4015`, its attributes (5 rows of 20 from LogoAttributes `$AC20` to `$5806`), ColourCorners `$6CBF`, Chars `$5C36` = Font - 256, MenuHelp through PrintString `$6720`; copies the screen to ScreenCopy `$E000`.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -381,7 +381,7 @@ SoundOff `$6E41`; ScreenCopy back to the screen; ClearFilesArea `$6930`; CursorA
 
 Called from DrawScreen (falling in), ReadKeyboard for CAPS SHIFT, SYMBOL SHIFT and SPACE.
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 [Animation: `ShowCatalogue` at work](img/routines/ShowCatalogue.gif)
 
@@ -402,7 +402,7 @@ Counts the entries from IX to the catalogue's end (a first byte 0, or 128 entrie
 
 0 files: NoFilesText at row 11, column 9, the cursor 14 cells wide on it. 1-12: one column (PrintColumn `$668E` at row 6, column 10, Columns = 1). 13-24: ListTwoColumns `$6648`. 25 or more: ListTwoColumns with 24, NextPagePointer `$B3C3` = the entry after the 24th, MorePages `$B3B9` = 1.
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 | | |
 | --- | --- |
@@ -419,7 +419,7 @@ Witness: L1 8 (c x4).
 
 ColumnOneCount `$B3BB` = A - A / 2, ColumnTwoCount `$B3BC` = A / 2; the cursor on the first file (row 6, column 6).
 
-Witness: L1 3 (c x2).
+Witness: L1 3 (c2, c3).
 
 | | |
 | --- | --- |
@@ -432,7 +432,7 @@ Witness: L1 3 (c x2).
 
 Each listed entry: EntryLine `$B3CE` = AT row,col, BRIGHT 1, INK 5, letter, ">", two spaces, INK 4 (BASIC) or INK 6 (192-sector CODE), the 8 name characters (a byte below 32 or from 128 up shown as "."), `$FF`; PrintString `$6720`. Returns HL after the last entry printed.
 
-Witness: L1 8 (c x2).
+Witness: L1 8 (c2, c3).
 
 | | |
 | --- | --- |
@@ -446,7 +446,7 @@ Witness: L1 8 (c x2).
 
 Also CursorAttrOffset `$B3C9` = HL - `$5800`. RotateCursorName points the operand at RotateRow for one call.
 
-Witness: L1 3784 (c x4).
+Witness: L1 3784 (c1-c4).
 
 | | |
 | --- | --- |
@@ -460,7 +460,7 @@ Witness: L1 3784 (c x4).
 
 **Clear the pixels of rows 6-17 and set their attributes to white on black**
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 | | |
 | --- | --- |
@@ -476,7 +476,7 @@ Witness: L1 8 (c x4).
 
 From column 1 to column 2 the cursor keeps its row, but from column 1's last file, when column 2 is one shorter (13-23 files odd), it goes to column 1's first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1 it keeps the row.
 
-Witness: L1 2 (c x1).
+Witness: L1 2 (c2).
 
 | | |
 | --- | --- |
@@ -487,7 +487,7 @@ Witness: L1 2 (c x1).
 
 **Pop the caller's AF and return: the key had nothing to do**
 
-Witness: L1 1 (c x1).
+Witness: L1 1 (c4).
 
 | | |
 | --- | --- |
@@ -499,7 +499,7 @@ Witness: L1 1 (c x1).
 
 **CursorSavedAttr = the attribute at the cursor's new place; pop AF, return**
 
-Witness: L1 8 (c x1).
+Witness: L1 8 (c2).
 
 | | |
 | --- | --- |
@@ -511,7 +511,7 @@ Witness: L1 8 (c x1).
 
 **3, 8: the cursor down one file (B = 0), wrapping from the column's last file to its first**
 
-Witness: L1 4 (c x1).
+Witness: L1 4 (c2).
 
 | | |
 | --- | --- |
@@ -525,7 +525,7 @@ Witness: L1 4 (c x1).
 
 Puts back the old cells' attribute first. The positions run down column 1 (CursorIndex 1 to ColumnOneCount) and on down column 2.
 
-Witness: L1 6 (c x1).
+Witness: L1 6 (c2).
 
 | | |
 | --- | --- |
@@ -537,7 +537,7 @@ Witness: L1 6 (c x1).
 
 **4, 9: the cursor up one file**
 
-Witness: L1 2 (c x1).
+Witness: L1 2 (c2).
 
 | | |
 | --- | --- |
@@ -555,7 +555,7 @@ Witness: L1 2 (c x1).
 
 Puts back HL' and IY for the ROM (SavedHLAlt, SavedIY), opens channel 2 (RomChanOpen `$1601`), then RST `$10` for each byte: the control codes AT, INK, BRIGHT are the ROM's.
 
-Witness: L1 93 (c x4).
+Witness: L1 93 (c1-c4).
 
 [Animation: `PrintString` at work](img/routines/PrintString.gif)
 
@@ -576,7 +576,7 @@ Witness: L1 93 (c x4).
 
 Returns HL at the entry's type byte (+8) and E = C: the caller ANDs the type with E, so the boot file's type reads 0 and is never listed.
 
-Witness: L1 219 (c x4).
+Witness: L1 219 (c1-c4).
 
 | | |
 | --- | --- |
@@ -589,7 +589,7 @@ Witness: L1 219 (c x4).
 
 **While the entry at HL is deleted (A = 1), go to the next one (HL + 16, A its first byte)**
 
-Witness: L1 234 (c x4).
+Witness: L1 234 (c1-c4).
 
 | | |
 | --- | --- |
@@ -605,7 +605,7 @@ Witness: L1 234 (c x4).
 
 **The IM 2 handler**
 
-Witness: L1 13932 (c x4).
+Witness: L1 13932 (c1-c4).
 
 [Animation: `Interrupt` at work](img/routines/Interrupt.gif)
 
@@ -623,7 +623,7 @@ Witness: L1 13932 (c x4).
 
 RotateAddr `$DEAE` = the name's address in ScreenCopy (from CursorAttrAddr's offset); each character's 8 rows to CharBuffer `$B3ED`, then written back column by column. At Frames 90 the LD A at `$67D8` is made a RET for one call: only the address is worked out.
 
-Witness: L1 276 (c x4).
+Witness: L1 276 (c1-c4).
 
 | | |
 | --- | --- |
@@ -638,7 +638,7 @@ Witness: L1 276 (c x4).
 
 **Copy the name from ScreenCopy to the screen (CopyNameToScreen) and leave**
 
-Witness: L1 276 (c x4).
+Witness: L1 276 (c1-c4).
 
 | | |
 | --- | --- |
@@ -652,7 +652,7 @@ Witness: L1 276 (c x4).
 
 **Every 8th frame read the keys; restore the registers, EI, RET**
 
-Witness: L1 13931 (c x4).
+Witness: L1 13931 (c1-c4).
 
 | | |
 | --- | --- |
@@ -666,7 +666,7 @@ Witness: L1 13931 (c x4).
 
 **Copy the 8 rows of the rotated name from ScreenCopy to the screen**
 
-Witness: L1 276 (c x4).
+Witness: L1 276 (c1-c4).
 
 | | |
 | --- | --- |
@@ -684,7 +684,7 @@ Witness: L1 276 (c x4).
 
 **Read the letters, the digits, ENTER, CAPS SHIFT, SYMBOL SHIFT and SPACE**
 
-Witness: L1 1741 (c x4).
+Witness: L1 1741 (c1-c4).
 
 [Animation: `ReadKeyboard` at work](img/routines/ReadKeyboard.gif)
 
@@ -708,7 +708,7 @@ Witness: L1 1741 (c x4).
 
 C = "@" + CursorIndex: the letter of the file.
 
-Witness: L1 2 (c x2).
+Witness: L1 2 (c2, c4).
 
 | | |
 | --- | --- |
@@ -722,7 +722,7 @@ Witness: L1 2 (c x2).
 
 Returns at once when C is past the page's last file. Walks the catalogue from PagePointer `$B3C1` counting the listed files; each entry passed has its first byte set to 1 (deleted), so the walk's SkipDeleted steps over it, and the chosen one gets its byte back. LaunchToken `$5D4C` = `$F7` (RUN) for a B file, `$EC` (GO TO) for a 192-sector C file; the name's 8 bytes after the quote; after the closing quote a space or `$AF` (CODE). Frames = 0; I, HL', IY and SP from Start; Chars = `$3C00`; PlayBell `$6E48`; ExitFade `$6E72`; IM 1; EI; RET to the loader's `$5DB7` (after its CALL MenuStart at `$5DB4`).
 
-Witness: L1 3 (c x3).
+Witness: L1 3 (c2-c4).
 
 [Animation: `RunLetter` at work](img/routines/RunLetter.gif)
 
@@ -740,7 +740,7 @@ Witness: L1 3 (c x3).
 
 **Colour the four 5x5 corners with CornerColours**
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -753,7 +753,7 @@ Witness: L1 4 (c x4).
 
 **At HL, 5 rows of 5 cells: row n all CornerColours[n]**
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 | | |
 | --- | --- |
@@ -767,7 +767,7 @@ Witness: L1 8 (c x4).
 
 **At DE, 5 rows of 5 cells, each row the 5 CornerColours**
 
-Witness: L1 8 (c x4).
+Witness: L1 8 (c1-c4).
 
 | | |
 | --- | --- |
@@ -781,7 +781,7 @@ Witness: L1 8 (c x4).
 
 **Shift every pixel row out of its bytes in 8 passes: the screen goes black**
 
-Witness: L1 2 (c x2).
+Witness: L1 2 (c2, c3).
 
 [Animation: `ExitFade` at work](img/routines/ExitFade.gif)
 
@@ -800,7 +800,7 @@ Witness: L1 2 (c x2).
 
 At Frames low byte 0 the corner cells by the logo turn red (2). Then on every even frame up to 52 a glint step (26 steps): 5 rows, each row's three cells left of the step restored from ScreenCopy's attributes (RestoreGlintCells `$6D6A`) and three cells red, bright red, red drawn (DrawGlintRow `$6D8A`), mirrored about the screen's centre, the row above one cell further on.
 
-Witness: L1 13931 (c x4).
+Witness: L1 13931 (c1-c4).
 
 [Animation: `LogoGlint` at work](img/routines/LogoGlint.gif)
 
@@ -817,7 +817,7 @@ Witness: L1 13931 (c x4).
 
 **Copy 3 attribute cells at the glint's column and their mirror image from ScreenCopy**
 
-Witness: L1 7605 (c x4).
+Witness: L1 7605 (c1-c4).
 
 | | |
 | --- | --- |
@@ -831,7 +831,7 @@ Witness: L1 7605 (c x4).
 
 **Draw the glint's 3 cells (red, bright red, red) at the column and the mirror image**
 
-Witness: L1 7605 (c x4).
+Witness: L1 7605 (c1-c4).
 
 | | |
 | --- | --- |
@@ -844,7 +844,7 @@ Witness: L1 7605 (c x4).
 
 **(HL) = 2 (red ink) if HL's column is within the logo (6-25)**
 
-Witness: L1 30420 (c x4).
+Witness: L1 30420 (c1-c4).
 
 | | |
 | --- | --- |
@@ -857,7 +857,7 @@ Witness: L1 30420 (c x4).
 
 **(HL) = `$42` (bright red) if HL's column is within the logo**
 
-Witness: L1 15210 (c x4).
+Witness: L1 15210 (c1-c4).
 
 | | |
 | --- | --- |
@@ -872,7 +872,7 @@ Witness: L1 15210 (c x4).
 
 FlipSprite `$6E35` on each of the four logo sprites (they stay flipped), PrintSprite to `$F066`, `$F06B`, `$F070`, `$F075` in ScreenCopy (the screen's `$5066`...), the logo's 5 attribute rows copied in reverse order to `$FAE6` upward, then ScreenCopy's bottom third (`$F000`, 2K) and its attribute rows 19-23 to the screen. DI around it.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 [Animation: `DrawReflection` at work](img/routines/DrawReflection.gif)
 
@@ -889,7 +889,7 @@ Witness: L1 4 (c x4).
 
 **Turn the 40x40 sprite at HL upside down (RotateSprite twice: 180 degrees, then MirrorSprite)**
 
-Witness: L1 16 (c x4).
+Witness: L1 16 (c1-c4).
 
 | | |
 | --- | --- |
@@ -908,7 +908,7 @@ Witness: L1 16 (c x4).
 
 30000 is `$7530`, inside Unused1 `$70A8` (cleared by the loader, never written), so every register gets 0: no tone, volume 0. Called by ShowCatalogue before every page, cutting the music for a moment.
 
-Witness: L1 9 (c x4).
+Witness: L1 9 (c1-c4).
 
 | | |
 | --- | --- |
@@ -921,7 +921,7 @@ Witness: L1 9 (c x4).
 
 **Write ExitSound to the AY registers 0-13: the bell when a file is chosen**
 
-Witness: L1 2 (c x2).
+Witness: L1 2 (c2, c3).
 
 | | |
 | --- | --- |
@@ -933,7 +933,7 @@ Witness: L1 2 (c x2).
 
 **Write 14 bytes from HL to the AY registers 0-13**
 
-Witness: L1 11 (c x4).
+Witness: L1 11 (c1-c4).
 
 [Animation: `WriteAY` at work](img/routines/WriteAY.gif)
 
@@ -970,7 +970,7 @@ Entered by line 10's RANDOMIZE USR 23936 with TR-DOS's TrdosNextSector `$5CF4` p
 
 The memory is cleared because the menu builds its tables and buffers in the zero bytes between its pieces (`$70A8-$A5FF`, `$AE00-$BFFF`, `$D600-$FEAF`) and the program it starts should find clean memory.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1003,7 +1003,7 @@ original disk from power-on, the menu idle (NO EXE FILES !), SPACE), and `work/s
 
 The init entry: the menu's set-up calls it once (c1 frame 532), before its IM 2 handler starts calling MusicPlay `$C00E`.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1017,7 +1017,7 @@ Witness: L1 4 (c x4).
 
 The play entry: the menu's IM 2 handler calls it at `$676D` on every interrupt (c1: 7274 calls, frames 543-7879).
 
-Witness: L1 13931 (c x4).
+Witness: L1 13931 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1047,7 +1047,7 @@ Then BC = DE = TuneHeader `$C478`: DelayOp+1 = the delay (byte 0: 6); through Re
 
 c1 runs it once, at frame 532.
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1064,7 +1064,7 @@ Witness: L1 4 (c x4).
 
 AYRegisters `$C0F4-$C101` = 0, then AYMixer `$C0FB` = `$FF` (tones and noise off), and JP WriteAY `$C15F`, which writes registers 13 to 0 (AYEnvelopeShape is 0 here, not `$FF`, so register 13 is written too). Reached by falling from InitPlayer `$C053` (once a recording) and from MusicStop `$C011` (known only from the code).
 
-Witness: L1 4 (c x4).
+Witness: L1 4 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1081,7 +1081,7 @@ PlayFrameSound `$C131`, every frame: ChannelSound `$C2A0` with A = 0, 1, 2 and I
 
 c1: 7274 frames, 1213 of them row frames (the JR NZ at `$C108`), 21 new positions (the CALL Z at `$C119`).
 
-Witness: L1 13931 (c x4).
+Witness: L1 13931 (c1-c4).
 
 [Animation: `PlayFrame` at work](img/routines/PlayFrame.gif)
 
@@ -1102,7 +1102,7 @@ In: AYRegisters `$C0F4`. Register 13 is written only when AYEnvelopeShape `$C101
 
 Out: A = `$FF`. Reached by falling from PlayFrame `$C104` and by JP from Silence `$C095`.
 
-Witness: L1 13935 (c x4).
+Witness: L1 13935 (c1-c4).
 
 [Animation: `WriteAY` at work](img/routines/WriteAY.gif)
 
@@ -1121,7 +1121,7 @@ Witness: L1 13935 (c x4).
 
 In: E = the register (0-13), A = the value. Keeps DE and HL.
 
-Witness: L1 137602 (c x4).
+Witness: L1 137602 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1136,7 +1136,7 @@ Witness: L1 137602 (c x4).
 
 EX DE,HL and falls into ReadOffset `$C18A`. Used by InitPlayer `$C053` (the module's three table offsets) and NextPosition `$C191` (the streams of channels B and C).
 
-Witness: L1 98 (c x4).
+Witness: L1 98 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1151,7 +1151,7 @@ Witness: L1 98 (c x4).
 
 In: HL = the word's address, BC = the base the offset is from. Out: HL = the address, DE = the address after the word.
 
-Witness: L1 141 (c x4).
+Witness: L1 141 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1168,7 +1168,7 @@ LD HL,n: n = the positions' address (set by InitPlayer `$C053`), plus the positi
 
 c1: 21 positions (0-20, frames 543-7602); position 21 (pattern 14) would start at row 1230, after c1's last row 1213.
 
-Witness: L1 43 (c x4).
+Witness: L1 43 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1189,7 +1189,7 @@ RowDone `$C238`: +`$0A` = the length (+`$09`), the pointer kept; when the next b
 
 c1: 3639 calls in the 1213 row frames.
 
-Witness: L1 6972 (c x4).
+Witness: L1 6972 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1206,7 +1206,7 @@ Witness: L1 6972 (c x4).
 
 In: A = the byte, IX = the record, DE = the stream after it. `$80-$9F`: the sample A - `$80` (+`$0D`/`$0E` = SampleTable + its offset, through TableEntry `$C278`); `$A0-$BF`: the ornament (CommandOrnament `$C26B`, +`$13`/`$14`); `$C0-$CF`: CommandVolume `$C283`; `$D0-$EF`: CommandNoise `$C290`; `$F0-$FF`: CommandLength `$C294`.
 
-Witness: L1 3520 (c x4).
+Witness: L1 3520 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1223,7 +1223,7 @@ Witness: L1 3520 (c x4).
 
 In: A = the number (0-31), BC = SampleTable `$D074` or OrnamentTable `$D4EF`.
 
-Witness: L1 2522 (c x4).
+Witness: L1 2522 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1238,7 +1238,7 @@ Witness: L1 2522 (c x4).
 
 In: A = the byte - `$C0` (Z for `$C0`). `$C0` sets bit 4 (envelope mode: each note is followed by the envelope period byte, and a sample row with E plays on the envelope); `$C1-$CF` clears it and +`$08` = 1-15, the scale of the sample's volumes.
 
-Witness: L1 173 (c x4).
+Witness: L1 173 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1250,7 +1250,7 @@ Witness: L1 173 (c x4).
 
 +`$05` = A; a note copies it into the noise period +`$06`.
 
-Witness: L1 119 (c x4).
+Witness: L1 119 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1262,7 +1262,7 @@ Witness: L1 119 (c x4).
 
 In: A = the byte - `$F0` (Z for `$F0`). `$F0`: +`$09` = the next byte (CommandLengthByte `$C29A`). `$F1-$FF`: AYEnvelopeShape `$C101` = 1-15, written (and the envelope restarted) at this frame's WriteAY `$C15F`.
 
-Witness: L1 706 (c x4).
+Witness: L1 706 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1276,7 +1276,7 @@ In: A = the channel (0-2, into CurrentChannel `$C102`), IX = its record. When th
 
 c1: 21 822 calls (3 a frame); 224 with the sample ended, 72 with no note.
 
-Witness: L1 41793 (c x4).
+Witness: L1 41793 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1293,7 +1293,7 @@ Witness: L1 41793 (c x4).
 
 In: IX. The row at +`$0F`/`$10`, three bytes: F (flags and noise delta), T (tone delta), M (mixer and volume). F bit 7: this row is the loop row (+`$11`/`$12`); bit 6: the next row is the loop row, unless released (bit 3); bit 5 (checked only when not looping back): the sample ends here (bit 1: silence from the next frame). The tone offset += T (signed); +`$01` = M AND 9 (bit 0 tone off, bit 3 noise off); bit 5 of the flags = M bit 1 (envelope); the volume +`$07` = (M >> 4) x (the channel volume + 1) / 16. Then AddNoise `$C3BB` with F's low 5 bits.
 
-Witness: L1 40939 (c x4).
+Witness: L1 40939 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1310,7 +1310,7 @@ Witness: L1 40939 (c x4).
 
 In: IX. The row at +`$15`/`$16`, two bytes: F (flags and noise delta), N (note delta). F bit 7: this row is the loop row (+`$17`/`$18`); bit 6: the next row is the loop row (always, released or not). The note +`$02` += N (signed): the deltas add up from the note's start. Falls into AddNoise `$C3BB` with F.
 
-Witness: L1 40939 (c x4).
+Witness: L1 40939 (c1-c4).
 
 | | |
 | --- | --- |
@@ -1327,7 +1327,7 @@ Witness: L1 40939 (c x4).
 
 In: C = the row's first byte (bits 0-4 a signed delta, -16 to 15), IX. +`$06` = (+`$06` + the delta) AND 31. Reached from SampleStep `$C308` and OrnamentStep `$C385`.
 
-Witness: L1 81878 (c x4).
+Witness: L1 81878 (c1-c4).
 
 | | |
 | --- | --- |

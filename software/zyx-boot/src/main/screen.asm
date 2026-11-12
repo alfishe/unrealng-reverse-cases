@@ -23,7 +23,7 @@
 ; 256, MenuHelp through PrintString $6720; copies the screen to ScreenCopy
 ; $E000.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 DrawScreen:
   LD DE,RombSource
   PUSH DE
@@ -88,7 +88,7 @@ DrawLogoAttrRow:
 ; Called from DrawScreen (falling in), ReadKeyboard for CAPS SHIFT, SYMBOL
 ; SHIFT and SPACE.
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 ShowCatalogue:
   CALL SoundOff
   LD HL,ScreenCopy
@@ -130,7 +130,7 @@ ShowCatalogueAt:
 ; ListTwoColumns $6648. 25 or more: ListTwoColumns with 24, NextPagePointer
 ; $B3C3 = the entry after the 24th, MorePages $B3B9 = 1.
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 ListCatalogue:
   PUSH IX
   POP HL
@@ -211,7 +211,7 @@ ListTwoOrMore:
 ; ColumnOneCount $B3BB = A - A / 2, ColumnTwoCount $B3BC = A / 2; the cursor on
 ; the first file (row 6, column 6).
 ;
-; Witness: L1 3 (c x2).
+; Witness: L1 3 (c2, c3).
 ListTwoColumns:
   AND A
   RRA
@@ -255,7 +255,7 @@ ListPaged:
 ; characters (a byte below 32 or from 128 up shown as "."), $FF; PrintString
 ; $6720. Returns HL after the last entry printed.
 ;
-; Witness: L1 8 (c x2).
+; Witness: L1 8 (c2, c3).
 PrintColumn:
   LD (EntryLine+1),BC
 PrintColumnNext:
@@ -352,7 +352,7 @@ PrintNameStore:
 ; Also CursorAttrOffset $B3C9 = HL - $5800. RotateCursorName points the operand
 ; at RotateRow for one call.
 ;
-; Witness: L1 3784 (c x4).
+; Witness: L1 3784 (c1-c4).
 CursorAttrAddr:
   LD DE,(CursorRow)
   LD HL,$0000
@@ -376,7 +376,7 @@ AttrAddColumn:
 
 ; Clear the pixels of rows 6-17 and set their attributes to white on black
 ;
-; Witness: L1 8 (c x4).
+; Witness: L1 8 (c1-c4).
 ClearFilesArea:
   LD HL,Screen+192
   LD C,$60
@@ -421,7 +421,7 @@ ClearAttrs:
 ; first (CursorIndex 1, row 6, the column unchanged); from column 2 to column 1
 ; it keeps the row.
 ;
-; Witness: L1 2 (c x1).
+; Witness: L1 2 (c2).
 ColumnKey:
   PUSH AF
   LD A,(ColumnTwoCount)
@@ -430,7 +430,7 @@ ColumnKey:
 
 ; Pop the caller's AF and return: the key had nothing to do
 ;
-; Witness: L1 1 (c x1).
+; Witness: L1 1 (c4).
 KeyDone:
   POP AF
   RET
@@ -478,7 +478,7 @@ ToColumnOne:
 
 ; CursorSavedAttr = the attribute at the cursor's new place; pop AF, return
 ;
-; Witness: L1 8 (c x1).
+; Witness: L1 8 (c2).
 CursorMoved:
   CALL CursorAttrAddr
   LD A,(HL)
@@ -489,7 +489,7 @@ CursorMoved:
 ; 3, 8: the cursor down one file (B = 0), wrapping from the column's last file
 ; to its first
 ;
-; Witness: L1 4 (c x1).
+; Witness: L1 4 (c2).
 DownKey:
   PUSH AF
   LD B,$00
@@ -500,7 +500,7 @@ DownKey:
 ; Puts back the old cells' attribute first. The positions run down column 1
 ; (CursorIndex 1 to ColumnOneCount) and on down column 2.
 ;
-; Witness: L1 6 (c x1).
+; Witness: L1 6 (c2).
 MoveCursor:
   LD A,(ColumnTwoCount)
   AND A
@@ -587,7 +587,7 @@ MoveSetRow:
 
 ; 4, 9: the cursor up one file
 ;
-; Witness: L1 2 (c x1).
+; Witness: L1 2 (c2).
 UpKey:
   LD B,$01
   PUSH AF

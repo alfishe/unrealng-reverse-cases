@@ -86,7 +86,7 @@ SoundChirpDelay:
 ; as B does; then SoundRise $C506. Witness: gameover and rzx16000 play it once
 ; each.
 ;
-; Witness: L1 2 (gameover, rzx x1).
+; Witness: L1 2 (gameover, rzx16000).
 SoundRomFall:
   LD HL,$0000
   LD BC,$2328
@@ -118,7 +118,7 @@ SoundRomFallByte:
 ; 3, 7, $0F, $1F, $3F, $7F. Played alone and at the end of SoundRomFall $C4E9.
 ; Witness: gameover (twice), rzx10000, rzx16000, rzx24000.
 ;
-; Witness: L1 5 (gameover, rzx x3).
+; Witness: L1 5 (gameover, rzx10000, rzx16000, rzx24000).
 SoundRise:
   LD H,$03
 SoundRiseBurst:
@@ -147,7 +147,7 @@ SoundRiseDelay:
 ; Witness: rzx06000, rzx22000, rzx32000 play it 11 times each (the status $18
 ; handler CreatureDeath $A89E).
 ;
-; Witness: L1 33 (rzx x3).
+; Witness: L1 33 (rzx06000, rzx22000, rzx32000).
 SoundHiss:
   LD B,$64
 SoundHissLoop:
@@ -203,7 +203,7 @@ SoundToneHigh:
 ; HL = $0000 (LD HL,$0000: SK took its operand for NOPs), B = 0: 256 x 5 bytes,
 ; each AND E sent. Witness: rzx10000 plays it once.
 ;
-; Witness: L1 1 (rzx x1).
+; Witness: L1 1 (rzx10000).
 SoundRomBurst:
   LD HL,$0000
   LD B,L

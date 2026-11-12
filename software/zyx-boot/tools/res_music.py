@@ -14,10 +14,12 @@ The module is in the ASC Sound Master 0.x layout (no loop byte: the tune loops t
 The text keeps that order: the header lines, then `pattern N` with its channels `A`, `B`, `C` (each a stream of
 events), then `sample N` and `ornament N` with their rows. The tables and the header's offsets are written back from
 the layout, so a stream, a sample or an ornament may grow or shrink. The format is described in
-src/res/music/README.md.
+src/res/music/README.md. The build also writes music/disco.inc (to_inc: the module as DB lines with the labels of
+src/music/music.ann at their blocks; the eight entries of the tune share it, `@res music/disco.bin include`).
 
     python3 tools/res_music.py dump [music-c000.bin]     # print the text of the image's module (a check)
 """
+import os
 import re
 import sys
 
@@ -467,6 +469,47 @@ def from_text(text):
 
 def from_editable(name, data):
     return from_text(data.decode('utf-8'))
+
+
+def block_offset(label, lay):
+    """the offset in the module of the block a label of src/music/music.ann names (by its role: TunePositions,
+    PatternTable, PatternData, PatternN = pattern N's stream A, SampleTable, SampleData, SampleN, OrnamentTable,
+    OrnamentData, OrnamentN), None for a name of no role"""
+    pt, st, ot, npos, streams, samples, orns = lay
+    fixed = {'TuneHeader': 0, 'TunePositions': 8, 'PatternTable': pt, 'PatternData': streams[0], 'SampleTable': st,
+             'SampleData': samples[0], 'OrnamentTable': ot, 'OrnamentData': orns[0]}
+    if label in fixed:
+        return fixed[label]
+    m = re.fullmatch(r'(Pattern|Sample|Ornament)(\d+)', label)
+    if not m:
+        return None
+    blocks = {'Pattern': streams[::3], 'Sample': samples, 'Ornament': orns}[m.group(1)]
+    n = int(m.group(2))
+    return blocks[n] if n < len(blocks) else None
+
+
+def to_inc(name, data, root):
+    """music/disco.inc (the build writes it beside disco.bin): the module as DB lines with the labels of
+    src/music/music.ann at their blocks. The eight entries TuneHeader-OrnamentData share it (`@res music/disco.bin
+    include` on each, kit/resinc.py): one INCLUDE at TuneHeader, the other entries' names and the inner labels
+    (Pattern1, Sample13, ...) inside, each put by its role in the layout, so a tune of another size or shape moves
+    them with its blocks"""
+    sys.path.insert(0, os.path.join(root, '..', '..', 'kit'))
+    import resinc
+    marks = resinc.symbols(root, os.path.join(root, 'src', 'music', 'music.ann'))[2].get(name, {})
+    lay = layout(data)
+    at = {}
+    for label in marks.values():
+        off = block_offset(label, lay)
+        if off is None:
+            raise ValueError('music: %s in src/music/music.ann has no place in the module' % label)
+        at.setdefault(off, []).append(label)
+    items = []
+    for i, b in enumerate(data):
+        items += [('label', n) for n in at.get(i, [])]
+        items.append(('b', b))
+    return resinc.lines(items, ['music/disco.inc: written by tools/res_formats.py from src/res/music/disco.txt '
+                                '(tools/res_music.py to_inc)'])
 
 
 def main():

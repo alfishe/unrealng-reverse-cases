@@ -651,7 +651,8 @@ tear.
 So the frame of 8455 shows the new view above line 70 and the old one below it: one torn frame each pass, then
 whole pictures until the next copy.
 `python3 R/kit/beam_timeline.py --trace work/docs/bcB/play/traces/8455_0-8456_0.uatr --listing
-work/docs/bcB/game-nol.lst --machine 128k --out docs/img/render/beam-blit.png`.
+work/docs/bcB/game-nol.lst --machine 128k --title "ViewBlitFront against the beam (play frame 8455): the view tears at
+line 70" --out docs/img/render/beam-blit.png`.
 
 Worked example: a pass of 7.4 frames shows 6.4 whole frames of one picture and one torn frame.
 At 13 frames a pass (the busy scene of death), the tear is one frame in 13.

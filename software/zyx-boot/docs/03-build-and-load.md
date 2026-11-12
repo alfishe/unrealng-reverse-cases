@@ -196,7 +196,7 @@ The inputs:
 | `src/res/basic/*.txt` | `build/res/basic/launch-lines.bin`, `line-ten.bin` | `tools/res_formats.py build` |
 | `src/res/graphics/*.png` | `build/res/graphics/font.bin`, `logo.bin`, `rhombus.bin`, `twinkle.bin` | the same |
 | `src/res/tables/*.txt`, `src/res/texts/*.txt` | `build/res/tables/*.bin`, `build/res/texts/*.bin` | the same |
-| `src/res/music/disco.txt` | `build/res/music/disco.bin` | the same |
+| `src/res/music/disco.txt` | `build/res/music/disco.bin`, and `disco.inc` (DB lines with the tune's labels, which `tune.asm` INCLUDEs) | the same |
 | `src/res/spare/*.bin` | the sectors' tails, as they are | `INCBIN` |
 | the three `.asm`, `build/res` | `build/basic.bin` (256 bytes), `main.bin` (`$61A8-$ADFF`), `music.bin` (5632 bytes) | sjasmplus |
 | the three `.bin` | `build/boot.body` (46 sectors), `build/boot.scl` | `tools/build.sh`, `tools/disk.py scl` |

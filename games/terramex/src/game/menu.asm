@@ -31,7 +31,7 @@
 ; three); key 0 (half row `$EFFE`) returns. IY = 0 at every turn is never used
 ; here.
 ;
-; Witness: L1 9 (c1, explorers, gameover, rzx x1).
+; Witness: L1 9 (c1, explorers, gameover, rzx50000).
 DeviceMenu:
   LD HL,Screen
   LD DE,Screen+1
@@ -116,7 +116,7 @@ MenuLogoByte:
 ; * device) `$47` on its 14 columns. IY = 0 here is never used. Falls into
 ; MenuKeys.
 ;
-; Witness: L1 6835 (c1, explorers, gameover, rzx x2).
+; Witness: L1 6835 (c1, explorers, gameover, rzx00000, rzx50000).
 MenuLoop:
   LD IY,$0000             ; the box: 5 rows x 14 columns of attribute $43 at
                           ; row 8, column 8
@@ -151,7 +151,7 @@ MenuLoop:
 ; `$EFFE` bit 0, the key 0, returns from DeviceMenu `$93AF` to NewGame; else
 ; `JR $9440`. explorers chooses all three devices; c1 1, 3, 2 then 0.
 ;
-; Witness: L1 6836 (c1, explorers, gameover, rzx x2).
+; Witness: L1 6836 (c1, explorers, gameover, rzx00000, rzx50000).
 MenuKeys:
   HALT                    ; one turn a frame
   LD BC,$F7FE             ; keys 1-5
@@ -194,7 +194,7 @@ InputDevice:
 ; screen-like layout. 32 bytes a pixel row, INC H and INC D between rows.
 ; Callers: DeviceMenu `$93E4`, `$93ED`.
 ;
-; Witness: L1 18 (c1, explorers, gameover, rzx x1).
+; Witness: L1 18 (c1, explorers, gameover, rzx50000).
 CopyCharRow:
   LD B,$08
 CopyCharRowLoop:
@@ -219,7 +219,7 @@ CopyCharRowLoop:
 ; (into the next screen third after row 7 of one); HL unchanged. Called 22
 ; times a menu by DeviceMenu.
 ;
-; Witness: L1 198 (c1, explorers, gameover, rzx x1).
+; Witness: L1 198 (c1, explorers, gameover, rzx50000).
 CopyEdgeCells:
   PUSH DE
   PUSH HL
@@ -252,7 +252,7 @@ CopyEdgeCells:
 ; HL = the source, DE = the destination; INC H and INC D between rows. BC kept.
 ; Called by CopyEdgeCells `$94C2`.
 ;
-; Witness: L1 396 (c1, explorers, gameover, rzx x1).
+; Witness: L1 396 (c1, explorers, gameover, rzx50000).
 CopyCell:
   PUSH BC
   LD B,$08
@@ -270,7 +270,7 @@ CopyCellLoop:
 ; DE = MenuText `$9540`, HL = `$4808`, A' = `$44`; falls into PrintString
 ; `$94F9`. Called by DeviceMenu `$9430`.
 ;
-; Witness: L1 9 (c1, explorers, gameover, rzx x1).
+; Witness: L1 9 (c1, explorers, gameover, rzx50000).
 PrintMenuText:
   LD DE,MenuText
   LD HL,Screen+2056
@@ -290,7 +290,7 @@ PrintMenuText:
 ; Callers: PrintMenuText `$94EF` (falls in), DeviceMenu `$943D`, and `$A7EB`
 ; (the countdown text, not executed in any recording).
 ;
-; Witness: L1 108 (c1, explorers, gameover, rzx x1).
+; Witness: L1 108 (c1, explorers, gameover, rzx50000).
 PrintString:
   LD (PrintNewLine+$0001),HL ; the line start: the operand at $9517
 PrintStringLoop:
@@ -339,7 +339,7 @@ UnusedRet:
 ; changed. Callers: DeviceMenu `$93D0`, `$93DB` and MenuLoop `$944D` (once a
 ; frame on the menu).
 ;
-; Witness: L1 34256 (c1, explorers, gameover, rzx x2).
+; Witness: L1 34256 (c1, explorers, gameover, rzx00000, rzx50000).
 FillAttrs:
   PUSH BC
   PUSH HL
@@ -361,7 +361,7 @@ FillAttrsRow:
 ; L unchanged: the cell's attribute. Callers: DeviceMenu `$941B`, PrintString
 ; `$950B`.
 ;
-; Witness: L1 2268 (c1, explorers, gameover, rzx x1).
+; Witness: L1 2268 (c1, explorers, gameover, rzx50000).
 ScreenToAttr:
   LD A,H
   RRCA
@@ -410,7 +410,7 @@ TitleLogo:
 ;
 ; Called by the menu $93AF at $942D: 9 runs (c1, explorers, gameover, r50000).
 ;
-; Witness: L1 9 (c1, explorers, gameover, rzx x1).
+; Witness: L1 9 (c1, explorers, gameover, rzx50000).
 DrawMenuGlobes:
   LD IY,PanelColumns
   LD B,$04

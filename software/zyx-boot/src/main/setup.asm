@@ -34,7 +34,7 @@
 ; $B3B4), MainTick at $FF; SampleStars $645E reads the 60 stars' pixels; then
 ; falls into MainLoop.
 ;
-; Witness: L1 4 (c x4).
+; Witness: L1 4 (c1-c4).
 Start:
   LD (SavedIY),IY
   EXX
@@ -60,8 +60,13 @@ Start:
   IM 2
   LD A,Im2Table>>8
   LD I,A
+  IFDEF MusicAfterScreen
+  CALL DrawScreen         ; variant: the music starts after DrawScreen
+  CALL MusicInit          ; variant: the two calls swapped
+  ELSE
   CALL MusicInit
   CALL DrawScreen
+  ENDIF
   EI
   LD HL,RombSource
   LD DE,RombWork
@@ -140,7 +145,7 @@ StartTurnB:
 ; $6757 does the rest (keys, music, twinkles, cursor) and the launcher leaves
 ; through the stack.
 ;
-; Witness: L1 27670 (c x4).
+; Witness: L1 27670 (c1-c4).
 MainLoop:
   LD A,(MainTick)
   INC A

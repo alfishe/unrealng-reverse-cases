@@ -14,7 +14,7 @@
 ;
 ; C = "@" + CursorIndex: the letter of the file.
 ;
-; Witness: L1 2 (c x2).
+; Witness: L1 2 (c2, c4).
 FireKey:
   PUSH AF
   LD A,(ColumnOneCount)
@@ -38,7 +38,7 @@ FireKey:
 ; from Start; Chars = $3C00; PlayBell $6E48; ExitFade $6E72; IM 1; EI; RET to
 ; the loader's $5DB7 (after its CALL MenuStart at $5DB4).
 ;
-; Witness: L1 3 (c x3).
+; Witness: L1 3 (c2-c4).
 RunLetter:
   LD A,(FileCount)
   ADD A,$40
