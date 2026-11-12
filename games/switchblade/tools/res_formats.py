@@ -582,7 +582,7 @@ ROOM_COMMENTS = [
     '  end xN               code $F (RoomPatch): the end of the map commands',
     '  zones default        no zone records (the whole room is zone 0: EmptyObjectList $75FB), or',
     '  zone @a-b.c ... @c ... [last]  a reveal zone: rectangles (first cell - last cell), single cells',
-    '  pickup tT nN @c      a pickup of type T (ObjectTilePlaces $7BD8), N its taken bit, its cell',
+    '  pickup tT nN @c      a pickup of type T (ObjectTilePlaces $7BD8), N the hidden content kind ($00 none, $01-$1F a pickup kind), its cell',
     '  enemy $KK @c         an enemy start: kind $KK (KindTemplates $7200), its cell',
     'The counts byte (enemies << 4 | pickups) is written from the pickup and enemy lines. A record must keep its',
     'size (the source INCBINs it at fixed offsets).',
@@ -1021,9 +1021,13 @@ TEMPLATE_COLS = [('state', 'word'), ('walk_list', 'hex'), ('script_page', 'hex')
 INSTRUMENT = [('attack', 'dec'), ('decay', 'signed'), ('sustain', 'dec'), ('release', 'signed'), ('peak', 'hex'),
               ('vib_delay', 'dec'), ('vib_width', 'hex'), ('vib_step', 'word'), ('flags', 'hex')]
 
-GAME_SCRIPT_NAMES = {0x7A46: 'StrikeScript1', 0x7A51: 'WalkScript', 0x7A7A: 'RunScript', 0x7AAF: 'TileActionScript',
+START_VALUE_NAMES = ['Vitality', 'VitalityShown', 'ChargeStep', 'Charge', 'ChargeShown', 'ChargeReset',
+                     'FirePrevious', 'WeaponCount', 'WeaponCountShown', 'Weapon', 'PauseFlag', 'Lives (BCD)',
+                     'Fragments', 'FragmentsShown', 'FireRequest', 'Invulnerable', 'EndFlags', 'Score (BCD)',
+                     'Score', 'Score', 'Score']
+GAME_SCRIPT_NAMES = {0x7A46: 'StrikeScript1', 0x7A51: 'WalkScript', 0x7A7A: 'RunScript', 0x7AAF: 'LadderGrabScript',
                      0x7AB6: 'LandScript', 0x7ABC: 'HardLandScript', 0x7ACE: 'StrikeScript2', 0x7ADB: 'StrikeScript3',
-                     0x7AE8: 'TileActionEndScript', 0x7AEF: 'Script92F5', 0x7AFB: 'Script9C0E',
+                     0x7AE8: 'LadderLeaveScript', 0x7AEF: 'Script92F5', 0x7AFB: 'Script9C0E',
                      0x7B00: 'StandScript', 0x7B5D: 'Script911A', 0x7B63: 'MessageNumber (a variable)',
                      0x7B80: 'SpawnTriples', 0x7B89: 'SpawnedScript', 0x7BB5: 'Script9115'}
 
@@ -1054,7 +1058,7 @@ SINGLES = {
     'rooms/decor-tiles.bin': hexlines([
         'ShapeTilesA $73BD (4 bytes) and ShapeTilesB $73C1 (4): the decor rows of command $E (RoomOpLedge $A357): the',
         'tile, the tile put over tiles 3 and 4, those two tiles.'], every(4), base=0x73BD),
-    'rooms/ledge-tiles.bin': hexlines(['SpecialTiles $73C5: the two ledge tiles ($55, $54) searched by $9CB1.'],
+    'rooms/ladder-tiles.bin': hexlines(['SpecialTiles $73C5: the two ladder tiles ($55, $54) searched by $9CB1.'],
                                       every(2), base=0x73C5),
     'rooms/bars-1.bin': table([('page', 'hex'), ('after_wall', 'hex'), ('first', 'hex'), ('middle_a', 'hex'),
                                ('middle_b', 'hex'), ('last', 'hex')], [
@@ -1226,6 +1230,11 @@ SINGLES = {
         'time, the sweep delay and period, the mixer bits, the sweep step (big end), the pitch (bits 5-7 used),',
         'the attack, decay (signed), sustain, release (signed) and peak.'], index='effect',
         notes=lambda r: EFFECT48_NOTES[r]),
+    'tables/start-values.bin': table([('value', 'hex')], [
+        'GlobalsInit $5C00: the start values of the globals Vitality $6642-Score $6656, copied by NewGame $5CA9 (the',
+        'first 10 again after a lost life, 7 in a boss fight). A shown copy starts unequal to its value, so the panel',
+        'draws everything on the first pass; FirePrevious is patched by the control menu.'],
+        index='offset', notes=lambda r: START_VALUE_NAMES[r]),
     'tables/gates.bin': columns_table(['room', 'closed', 'x', 'side'], 6, [
         'GateRooms $76D2: the six rooms with an invisible gate (BarrierFind $8F28), GateClosed (set by NewGame,',
         'cleared by BarrierOpen $8F22), GateX (Hiro\'s X) and GateSide (bit 0: 0 blocks left, 1 right).'],
@@ -1256,9 +1265,10 @@ SINGLES = {
     # ---- music ----
     'music/tunes.bin': ('.txt', tunes_out, tunes_in),
     'music/arpeggios.bin': table([('head', 'hex')] + [('s%d' % i, 'hex') for i in range(1, 8)], [
-        'Arpeggios $CE8C: arpeggios 1-9 (arpeggio 0 is none; its place is the end of the order lists): the head',
-        '(bit 7 loop, bits 3-5 the note\'s own frames, bits 0-2 + 1 the steps), steps (bits 3-7 semitones, bits',
-        '0-2 frames). UpdateArpeggio $C390.'], index='n'),
+        'Arpeggios $CE8C: arpeggios 1-9 (arpeggio 0 is none; its place is the end of the order lists); row n is',
+        'arpeggio n + 1, the number of the pattern command $90 + n (arp5 = 0, +4, +7). The head (bit 7 loop, bits',
+        '3-5 the note\'s own frames, bits 0-2 + 1 the steps), steps (bits 3-7 semitones, bits 0-2 frames).',
+        'UpdateArpeggio $C390.'], index='n'),
     'music/instruments.bin': table(INSTRUMENT, [
         'Instruments $CED4: 14 x 10 bytes: the attack step, decay step, sustain level, release step, peak (volume',
         '0-$7F), the vibrato delay, width and step (a word), the flags (bit 0 tone, 1 noise, 2 the hardware',

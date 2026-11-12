@@ -21,8 +21,9 @@
 ;
 ; Witness: the RZX run's snapshot at frame 80 000 has the flags of rooms `$3A`
 ; and `$27` cleared (`work/stage2/rzx/snap-080000.z80`); deaths runs the test
-; 95 times (in one of the rooms). Witness: L1 39066 (deaths, gameover, menu,
-; play48, rooms, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
+; 95 times (in one of the rooms). Witness: L1 40810 (bossgate, deaths,
+; gameover, havok, hiscore, menu, play48, rooms, throw, c x1, opt x3, poke-room
+; x15, rzx x71, rzxroom x18).
 RoomBarrier:
   CALL BarrierFind
   BIT 0,(HL)              ; no barrier up in this room
@@ -33,7 +34,7 @@ RoomBarrier:
   ADD HL,BC
   BIT 0,(HL)
   LD C,A
-  LD A,(BuildOutlineMaskLoop+$0007) ; Hiro's direction, bit 7 = left
+  LD A,(Hiro+$001B)       ; Hiro's direction, bit 7 = left
   JR NZ,RoomBarrierRight  ; side 1: blocks moving right
   RLA
   RET NC
@@ -52,10 +53,10 @@ RoomBarrierRight:
 ; Clear the current room's barrier flag (the wall goes away)
 ;
 ; BarrierFind `$8F28` (returns at once if the room has none), then (HL) = 0.
-; Caller: `$97A8` (the routine at `$97A3`, outside this range). Not run in the
-; keyed recordings.
+; Caller: `$97A8` (the routine at `$97A3`, outside this range). bossgate opens
+; a giant's gate at frame 435 (its hit points POKEd to 1).
 ;
-; Witness: L1 0 ().
+; Witness: L1 1 (bossgate).
 BarrierOpen:
   CALL BarrierFind
   LD (HL),$00
@@ -69,8 +70,8 @@ BarrierOpen:
 ; return address, so the `RET` leaves RoomBarrier `$8F01` or BarrierOpen
 ; `$8F22` as well.
 ;
-; Witness: L1 39066 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 40811 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 BarrierFind:
   LD A,(Room)
   LD HL,GateRooms
@@ -86,27 +87,27 @@ BarrierNone:
 
   ORG $9023
 
-; Up pressed: grab a ledge above, or start a jump (sequence +$30)
+; Up pressed: grab a ladder above, or start a jump (sequence +$30)
 ;
 ; From WalkStep `$9B05` when the Y step E is negative (Hiro's up; the enemies'
 ; walks never step up). HL = IY = the actor, D = the X step.
 ;
 ; Standing (D = 0): `$9CA7` tests the cell 20 above (one row up) against the
-; two ledge codes at `$73C5` (`$55`, `$54`) with X at a multiple of 8; a ledge
-; goes to GrabLedge `$906C`. Otherwise the jump script: `$7B00` straight up (11
-; steps), `$7A51` running (12 steps), `$7A7A` when the run counter +`$24` is 4
-; or more (16 steps, the long jump); SequenceHeader `$919C` with L = `$30`,
-; then the first step JumpStep `$9225`.
+; two ladder codes at `$73C5` (`$55`, `$54`) with X at a multiple of 8; a
+; ladder goes to GrabLadder `$906C`. Otherwise the jump script: `$7B00`
+; straight up (11 steps), `$7A51` running (12 steps), `$7A7A` when the run
+; counter +`$24` is 4 or more (16 steps, the long jump); SequenceHeader `$919C`
+; with L = `$30`, then the first step JumpStep `$9225`.
 ;
-; Witness: L1 811 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x9).
+; Witness: L1 885 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c
+; x1, opt x3, rzx x64, rzxroom x9).
 ActorJump:
   LD A,D
   OR A
   JR NZ,ActorJumpScript
-  CALL LadderAbove        ; a ledge above?
+  CALL LadderAbove        ; a ladder above?
   OR A
-  JP NZ,GrabLedge
+  JP NZ,GrabLadder
 ActorJumpScript:
   LD BC,StandScript       ; the straight jump
   LD A,D
@@ -125,15 +126,15 @@ ActorJumpStart:
 
 ; +$10 bit 4 (nothing below): the fall sequence +$31, or Hiro hanging climbs up
 ;
-; From ActorStep `$9AD3`. Hiro: script low byte from `$69DC` (`$18`, set by
-; `$9878`), E = 4; when he hangs (+`$02` bit 3) ClimbOntoLedge `$9078` instead.
+; From StepActor `$9AD3`. Hiro: script low byte from `$69DC` (`$18`, set by
+; `$9878`), E = 4; when he hangs (+`$02` bit 3) LeaveLadder `$9078` instead.
 ; Other actors: the low byte from +`$08`. The page is +`$06`. SequenceHeader
 ; `$919C` with L = `$31`, then FallScriptStep `$9240`.
 ;
-; Two entry points: GrabLedge `$906C` (from ActorJump `$902B` and `$9B1D`):
+; Two entry points: GrabLadder `$906C` (from ActorJump `$902B` and `$9B1D`):
 ; +`$02` bit 3 (hanging), script `$7AAF` (2 frames) in sequence +`$36`;
-; ClimbOntoLedge `$9078` (here and `$9C9E`): bit 3 cleared, X + 2, script
-; `$7AE8` in the pose sequence +`$32`.
+; LeaveLadder `$9078` (here and `$9C9E`): bit 3 cleared, X + 2, script `$7AE8`
+; in the pose sequence +`$32`.
 ;
 ; Witness: L1 797 (deaths, play48, rooms, rzx x58, rzxroom x5).
 FallSequenceStart:
@@ -144,7 +145,7 @@ FallSequenceStart:
   LD E,$04
   LD L,$02
   BIT 3,(HL)
-  JP NZ,ClimbOntoLedge
+  JP NZ,LeaveLadder
   LD C,A
   JR StartFallScript
 StartFallOther:
@@ -157,17 +158,17 @@ StartFallScript:
   CALL SequenceHeader
   JP FallMove
 ; This entry point is used by the routines at ActorJump and MoveActor.
-GrabLedge:
+GrabLadder:
   LD L,$02                ; hang: +$02 bit 3, script $7AAF in +$36
   SET 3,(HL)
-  LD BC,TileActionScript
+  LD BC,LadderGrabScript
   LD L,$36
   JP StartSequence
 ; This entry point is used by the routine at StopActor.
-ClimbOntoLedge:
+LeaveLadder:
   LD L,$02                ; climb up: script $7AE8 in +$32, X + 2
   RES 3,(HL)
-  LD BC,TileActionEndScript
+  LD BC,LadderLeaveScript
   LD L,$01
   LD A,(HL)
   ADD A,$02
@@ -177,14 +178,14 @@ ClimbOntoLedge:
 ; The hold count +$28 ran out: face Hiro and play the +$0E script (sequence
 ; +$32)
 ;
-; From ActorStep `$9AB0` when +`$28` reaches 0 and +`$0E` is not 0. Direction
+; From StepActor `$9AB0` when +`$28` reaches 0 and +`$0E` is not 0. Direction
 ; +`$1B` = 2 when Hiro's X (`$5D2A` x 2, his box's first column) is at or right
 ; of the actor, else `$FE`; sound `$09` (`$8454`); the script `$7600` + +`$0E`
 ; in sequence +`$32` (StartPoseSeq `$90A1`).
 ;
-; Witness: L1 240 (rooms, poke-room x6, rzx x53, rzxroom x8).
+; Witness: L1 242 (bossgate, rooms, poke-room x6, rzx x53, rzxroom x8).
 TurnToHiro:
-  LD A,(BuildRowBaseLoop+$0004)
+  LD A,(Hiro+$002A)
   ADD A,A
   LD L,$01
   CP (HL)
@@ -203,15 +204,15 @@ TurnToHiroSet:
 ; Start a script BC in the pose sequence +$32 (landing, climbing, turning to
 ; Hiro, the shake)
 ;
-; L = `$32`, StartSequence `$917E`. Callers: ClimbOntoLedge `$9078`, TurnToHiro
+; L = `$32`, StartSequence `$917E`. Callers: LeaveLadder `$9078`, TurnToHiro
 ; `$9087`, HiroLanded `$90C3`, StalactiteShake `$9112`.
 ;
-; Entry StartHurtSeq `$90A6` (from ActorStep `$9ADD` when +`$10` bit 2 is set:
+; Entry StartHurtSeq `$90A6` (from StepActor `$9ADD` when +`$10` bit 2 is set:
 ; Hiro touched the actor, `$9851`): the script +`$06`/+`$09` in the action
 ; sequence +`$34`.
 ;
-; Witness: L1 1229 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x6, rzx x69, rzxroom x16).
+; Witness: L1 1308 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x6, rzx x69, rzxroom x16).
 StartPoseSeq:
   LD L,$32
   JP StartSequence
@@ -230,8 +231,8 @@ StartHurtSeq:
 ; Clears +`$24` and +`$25`, then StartSequence `$917E` with L = `$33`; TurnStep
 ; `$91E1` flips +`$1B` halfway.
 ;
-; Witness: L1 1256 (deaths, gameover, play48, rooms, c x1, opt x3, poke-room
-; x2, rzx x69, rzxroom x11).
+; Witness: L1 1275 (bossgate, deaths, gameover, hiscore, play48, rooms, throw,
+; c x1, opt x3, poke-room x2, rzx x69, rzxroom x11).
 StartTurn:
   XOR A
   LD L,$24
@@ -255,9 +256,10 @@ StartTurn:
 ; count (StartSequenceCount `$9180`): FallDamageStep `$920A` takes 2 energy
 ; each step (so 6 to 28 energy; full energy is `$20`).
 ;
-; Witness: 157 landings in the keyed recordings, one of them hard (`$90CC`
-; once, deaths; FallDamageStep 14 steps). Witness: L1 2895 (deaths, gameover,
-; menu, play48, rooms, c x1, opt x3, poke-room x15, rzx x70, rzxroom x16).
+; Witness: 157 landings in the keyed recordings, two of them hard (`$90CC` once
+; in deaths, once in `play48`: 32 fall steps, 14 damage steps from frame 3016).
+; Witness: L1 3091 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x16).
 HiroLanded:
   LD L,$26
   LD A,(HL)
@@ -296,10 +298,11 @@ HiroLandedSoft:
 ; Entry StartActionSeq `$9104` (also from HiroAttack after a throw): `$6650` =
 ; 0 (the request taken), sound `$0A`, the script in sequence +`$34`. The `$0B`
 ; stored to `$8454` at `$90FD` is overwritten by the `$0A` at `$910A` before
-; anything reads it.
+; anything reads it, so effect 11 is never heard from a strike; its only
+; audible source is TitleMovePiece `$A775` (a title piece arrives).
 ;
-; Witness: L1 397 (menu, play48, c x1, opt x3, poke-room x15, rzx x56, rzxroom
-; x8).
+; Witness: L1 409 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15,
+; rzx x56, rzxroom x8).
 HiroMelee:
   LD BC,StrikeScript1
   DEC L
@@ -365,7 +368,8 @@ DeathLeavesBonus:
 ; return is dropped, +`$0F` = `$37` (the death script `$7B37`) and +`$10` bit 5
 ; (ActorExpired runs it).
 ;
-; Witness: L1 614 (deaths, play48, rzx x67, rzxroom x7).
+; Witness: L1 638 (bossgate, deaths, havok, play48, throw, rzx x67, rzxroom
+; x7).
 MarkSpawnKilled:
   LD L,$29
   LD A,(HL)
@@ -404,12 +408,13 @@ DieOnLanding:
 ; +$10 bit 5 (timer run out, or killed): the death script $7B00 + +$0F in
 ; sequence +$37
 ;
-; From ActorStep `$9AD8`. Kind `$25` (Havok) only moves on (MoveActor `$9B56`,
+; From StepActor `$9AD8`. Kind `$25` (Havok) only moves on (MoveActor `$9B56`,
 ; his end is `$872B`). +`$0F` = `$58` (the bonus pick-up's script) sets +`$02`
 ; bit 5 at once. The death script `$7B00` + +`$0F` (Hiro: `$7B26`) in sequence
 ; +`$37`; DeathStep `$91A9` ends it.
 ;
-; Witness: L1 1390 (deaths, play48, rzx x68, rzxroom x9).
+; Witness: L1 1691 (bossgate, deaths, havok, play48, throw, rzx x68, rzxroom
+; x9).
 ActorExpired:
   LD L,$1C
   LD A,(HL)
@@ -438,8 +443,8 @@ ActorExpiredScript:
 ; HiroLanded `$90E1`): +`$22` = 0; SequenceTiming `$919F`; L = `$3B`;
 ; SequenceFrameAt `$9191`.
 ;
-; Witness: L1 4732 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 4906 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 StartSequence:
   LD A,(BC)
   INC BC
@@ -450,8 +455,8 @@ StartSequence:
 ; damage count). (HL) = A; +`$22` = 0; SequenceTiming `$919F`; L = `$3B` and
 ; SequenceFrameAt `$9191` (the first frame).
 ;
-; Witness: L1 4746 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 4920 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 StartSequenceCount:
   LD (HL),A
   LD L,$22
@@ -466,8 +471,8 @@ StartSequenceCount:
 ; ActionStep, FallDamageStep, HangStep): BC = +`$3A`/+`$3B`, then
 ; SequenceFrameAt `$9191`.
 ;
-; Witness: L1 11633 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 11974 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 SequenceNextFrame:
   LD L,$3A
   LD C,(HL)
@@ -480,8 +485,8 @@ SequenceNextFrame:
 ; Jumps to `$9B53` (DE = 0, MoveActor `$9B56`): the actor stands while the
 ; frame changes.
 ;
-; Witness: L1 16379 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 16894 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 SequenceFrameAt:
   LD A,(BC)
   INC BC
@@ -497,8 +502,8 @@ SequenceFrameAt:
 ; HL = the slot. Callers: ActorJump `$9044`, FallSequenceStart `$9066`,
 ; DeathLeavesBonus `$9131`.
 ;
-; Witness: L1 1621 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x69,
-; rzxroom x11).
+; Witness: L1 1695 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x69, rzxroom x11).
 SequenceHeader:
   LD A,(BC)
   INC BC
@@ -513,8 +518,8 @@ SequenceHeader:
 ; the size class to +`$14` and its five bytes from SizeClasses `$6082` to
 ; +`$15`-`$19`. Out: A = 0, BC past the header.
 ;
-; Witness: L1 6367 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 6615 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 SequenceTiming:
   LD A,(BC)
   INC BC
@@ -531,8 +536,8 @@ SequenceTiming:
 ; kind `$48` (the shield) clears the invulnerable flag `$6651`, MarkSpawnKilled
 ; `$9137`, and `$A59B` (the room spawner may fill the page again).
 ;
-; Witness: deaths 25 runs. Witness: L1 3524 (deaths, play48, rzx x67, rzxroom
-; x9).
+; Witness: deaths 25 runs. Witness: L1 3660 (bossgate, deaths, havok, play48,
+; throw, rzx x67, rzxroom x9).
 DeathStep:
   DEC (HL)
   JP NZ,SequenceNextFrame
@@ -585,8 +590,8 @@ RiseMove:
 ; SequenceHandlers `$73ED`; HL = +`$33`. At count 2: +`$1B` negated. Then
 ; PoseStep `$91EE`.
 ;
-; Witness: L1 5015 (deaths, gameover, play48, rooms, c x1, opt x3, poke-room
-; x2, rzx x69, rzxroom x12).
+; Witness: L1 5090 (bossgate, deaths, gameover, hiscore, play48, rooms, throw,
+; c x1, opt x3, poke-room x2, rzx x69, rzxroom x12).
 TurnStep:
   LD A,(HL)
   CP $02
@@ -601,8 +606,8 @@ TurnStep:
 ;
 ; SequenceHandlers `$73EB`.
 ;
-; Witness: L1 7492 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x8, rzx x70, rzxroom x18).
+; Witness: L1 7652 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x8, rzx x70, rzxroom x18).
 PoseStep:
   DEC (HL)
   JR Z,SequenceEndDrop
@@ -615,8 +620,8 @@ PoseStep:
 ; `$9102`): `$9DCA`, the reach test in front of him (it clears the bit on a
 ; hit). At 0: SequenceEndDrop `$9201`.
 ;
-; Witness: L1 5177 (menu, play48, c x1, opt x3, poke-room x15, rzx x69, rzxroom
-; x13).
+; Witness: L1 5395 (bossgate, havok, menu, play48, throw, c x1, opt x3,
+; poke-room x15, rzx x69, rzxroom x13).
 ActionStep:
   DEC (HL)
   JR Z,SequenceEndDrop
@@ -632,8 +637,8 @@ ActionStep:
 ; +`$3C`; DE = 0; `$9CD5` sets +`$02` bits 1 and 2: the next step tests the
 ; floor and falls or stands (the fall steps +`$26` start again).
 ;
-; Witness: L1 3531 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 3658 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 SequenceEndDrop:
   CALL ActorFrameBack
   LD DE,$0000
@@ -645,7 +650,7 @@ SequenceEndDrop:
 ; while the shield `$6651` is up, and takes a life at 0). At 0: ResumeState
 ; `$9AEC` (the state handler).
 ;
-; Entry HangStep `$9215` (SequenceHandlers `$73F3`, sequence +`$36`, the ledge
+; Entry HangStep `$9215` (SequenceHandlers `$73F3`, sequence +`$36`, the ladder
 ; grab): the same count-down without the loss.
 ;
 ; Witness: deaths 14 runs. Witness: L1 129 (deaths, play48, rzx x8, rzxroom
@@ -670,8 +675,8 @@ HangStep:
 ; the head test `$9DF1` (a ceiling ends the jump: `$9CD1`); `$9CF8` (the floor
 ; test when +`$10` bit 1), MoveActor `$9B56`.
 ;
-; Witness: L1 6133 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 6629 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 JumpStep:
   DEC (HL)
   JP Z,StartFallEndJump
@@ -687,8 +692,8 @@ JumpStep:
 ; MotionStep (no X step, or a wall): the head test `$9DF1`; a ceiling ends the
 ; jump (`$9CD1`, the fall).
 ;
-; Witness: L1 6677 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 7241 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 JumpMove:
   CALL MotionStep
   LD A,D
@@ -738,8 +743,8 @@ FallSeqEnd:
 ; +`$10` bit 0: a wall clears D; it also stops the kinds `$40-$46` there,
 ; `$97A3`). Callers: JumpMove `$9225`, FallMove `$9240`.
 ;
-; Witness: L1 11262 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x68,
-; rzxroom x13).
+; Witness: L1 11826 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x68, rzxroom x13).
 MotionStep:
   LD A,(BC)
   LD L,$23
@@ -764,7 +769,7 @@ MotionStepX:
 
 ; Hiro's fire (+$6650 set): throw the weapon $664B (actor $6600) or strike
 ;
-; From ActorStep `$9AE9` for Hiro when `$6650` (the fire request) is not 0.
+; From StepActor `$9AE9` for Hiro when `$6650` (the fire request) is not 0.
 ; `$69E1` = the strike (1-3). `$664B` = 0 (no weapon): HiroMelee `$90EC`. After
 ; Havok (`$6652` set): ResumeState `$9AEC`. The weapon page `$6600` active
 ; (+`$02` bit 0): nothing, one in flight at a time.
@@ -785,8 +790,8 @@ MotionStepX:
 ; after Havok): no input; with `$6652` bit 6 clear Hiro walks up (E = -1) and,
 ; at X `$58` or more, left: the end scene walks him.
 ;
-; Witness: L1 540 (menu, play48, c x1, opt x3, poke-room x15, rzx x66, rzxroom
-; x10).
+; Witness: L1 650 (bossgate, havok, menu, play48, throw, c x1, opt x3,
+; poke-room x15, rzx x66, rzxroom x10).
 HiroAttack:
   LD (Strike),A
   LD L,A
@@ -824,8 +829,7 @@ HiroAttack:
   LDI
   LDI
   LD E,A
-  LD A,(BuildOutlineMaskLoop+$0007) ; facing left: the X offset from the
-                                    ; template
+  LD A,(Hiro+$001B)       ; facing left: the X offset from the template
   RLA
   LD A,$06
   JR NC,HiroAttackPlace
@@ -842,7 +846,7 @@ HiroAttackPlace:
   LD HL,WeaponActor
   LD DE,WeaponTemplate
   CALL InitActor          ; spawn on page $6600
-  LD A,(BuildOutlineMaskLoop+$0007) ; the weapon flies Hiro's way
+  LD A,(Hiro+$001B)       ; the weapon flies Hiro's way
   LD E,$1B
   LD (DE),A
   LD E,$3F
@@ -919,9 +923,9 @@ HiroEndWalk:
 ; step D x 2, E x 4 (X 2 pixels, Y 4 pixels a step) -> `$9AFD` (hanging:
 ; `$9C4A`; else WalkStep `$9B05`).
 ;
-; Witness: c1 260 logic steps in 975 frames; deaths 1458. Witness: L1 30578
-; (deaths, gameover, menu, play48, rooms, c x1, opt x3, poke-room x15, rzx x71,
-; rzxroom x18).
+; Witness: c1 260 logic steps in 975 frames; deaths 1458. Witness: L1 32891
+; (bossgate, deaths, gameover, havok, hiscore, menu, play48, rooms, throw, c
+; x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 HiroControl:
   LD A,(EndFlags)
   OR A
@@ -943,10 +947,10 @@ HiroScriptMove:
 ; +`$3F` (the life, from HiroAttack: hold time x 4) counts down; D = 2 x
 ; +`$1B`, E = 0 -> `$9B28` (the wall test and move). At 0 WeaponExpire `$9523`:
 ; `$97A3` (+`$10` bit 5), still. The handler word of the template `$6F3A`
-; (copied to `$64EE`). Not run in the keyed recordings (the RZX run throws:
-; kinds `$44-$46` on page `$6600`).
+; (copied to `$64EE`). The throw recording throws the spinblade and the blade
+; from our own keys (Weapon and WeaponCount POKEd), frames 1893-3039.
 ;
-; Witness: L1 2186 (rzx x26, rzxroom x2).
+; Witness: L1 2632 (bossgate, havok, throw, rzx x26, rzxroom x2).
 WeaponControl:
   LD L,$3F
   DEC (HL)
@@ -976,10 +980,11 @@ WeaponExpire:
 ;
 ; Callers: BreakBlock `$9E98` (a block smashed), CollectFragment `$990D` (a
 ; Fireblade fragment taken), StrikeEnemy `$976B` (a boss other than kind `$25`
-; hit). Not run in the keyed recordings: no fragment, block or boss in them.
+; hit). Ran in `play48` at frame 1458 (a block broken in room 6, its item
+; revealed) and in bossgate (the giant struck, StrikeEnemy `$976B`); no
+; fragment in the keyed recordings.
 ;
-; Witness: L1 79 (play48, rzx x31, rzxroom x4). Not run in the keyed
-; recordings.
+; Witness: L1 82 (bossgate, play48, throw, rzx x31, rzxroom x4).
 SpawnSparks:
   EXX
   CALL LastCellPixel      ; DE = the cell's Y, X
@@ -1032,8 +1037,8 @@ SpawnSparksNext:
 ; into StrikeAllActors); every other kind tests its touch with Hiro (TouchHiro
 ; `$9801`).
 ;
-; Witness: L1 144268 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 148167 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ActorInteractions:
   LD L,$10
   LD A,(HL)
@@ -1051,8 +1056,8 @@ ActorInteractions:
   LD L,$02                ; +2 bit 4: the strike has not hit yet
   BIT 4,(HL)
   RET Z
-  LD DE,(BuildRowBaseLoop+$0004) ; keep the box +$2A-+$2D
-  LD BC,(BuildRowBaseLoop+$0006)
+  LD DE,(Hiro+$002A)      ; keep the box +$2A-+$2D
+  LD BC,(Hiro+$002C)
   PUSH BC
   PUSH DE
   LD L,$1B                ; facing left?
@@ -1086,8 +1091,8 @@ HiroStrikeRowSet:
   CALL StrikeAllActors    ; strike the eight other actors
   POP DE                  ; the box back
   POP BC
-  LD (BuildRowBaseLoop+$0004),DE
-  LD (BuildRowBaseLoop+$0006),BC
+  LD (Hiro+$002A),DE
+  LD (Hiro+$002C),BC
   RET
 OtherInteractions:
   BIT 2,(HL)              ; +2 bit 2: falling
@@ -1109,8 +1114,8 @@ OtherInteractions:
 ; (StrikeActor `$979F`), so one swing hits one actor; the scorchball (kind
 ; `$41`) goes on.
 ;
-; Witness: L1 4215 (menu, play48, c x1, opt x3, poke-room x15, rzx x66, rzxroom
-; x8).
+; Witness: L1 4718 (bossgate, havok, menu, play48, throw, c x1, opt x3,
+; poke-room x15, rzx x66, rzxroom x8).
 StrikeAllActors:
   LD B,$08
   LD D,$5E
@@ -1125,8 +1130,8 @@ StrikeAllLoop:
 ; D = the target's page, H = the striker's. No hit when the target is inactive,
 ; in its hold count (+$28), of a kind with bit 7 set (a pickup that has just
 ; popped out of a block), hurt or expiring (+$10 bits 4, 5), or when the boxes
-; do not overlap (BoxesOverlap `$9A27`). Not run past the box test in the keyed
-; recordings (no strike reached an actor).
+; do not overlap (BoxesOverlap `$9A27`). Kills in `play48` frames 1775 and 2219
+; (patrollers, 50 each).
 ;
 ; **A pickup** (kind below `$23`): the power-up shield (kind `$19`) becomes the
 ; power-up reset shield (kind `$1C`, its frame and score from `$5ED6`), the
@@ -1148,8 +1153,8 @@ StrikeAllLoop:
 ; spent); the scorchball returns to the loop, every other striker pops the
 ; loop's return (one hit a swing), and a shot expires (ExpireActor `$97A3`).
 ;
-; Witness: L1 32322 (menu, play48, c x1, opt x3, poke-room x15, rzx x66,
-; rzxroom x8).
+; Witness: L1 36333 (bossgate, havok, menu, play48, throw, c x1, opt x3,
+; poke-room x15, rzx x66, rzxroom x8).
 StrikeActor:
   LD E,$02
   LD A,(DE)
@@ -1264,7 +1269,10 @@ StrikeDone:
 ; gate), StrikeActor `$97A0` (a shot spent), ProbeWalls `$9DC7` (a shot at a
 ; wall), `$926E`, `$93EB`, `$947D`, `$9801` (deaths: 1 run).
 ;
-; Witness: L1 284 (deaths, play48, rzx x45, rzxroom x4).
+; Witness: L1 300 (bossgate, deaths, havok, play48, throw, rzx x45, rzxroom
+; x4). KillActor's boss branch `$97B9` ran in bossgate at frame 435 (a giant
+; killed, OpenGate `$97E2`, sound 3; its hit points POKEd to 1) and in havok at
+; frame 29 (no gate: the win `$97CA`, the life bonus, GameWonSound `$97DE`).
 ExpireActor:
   LD L,$10
   SET 5,(HL)
@@ -1287,7 +1295,7 @@ KillActor:
   XOR A                   ; a boss: the boss fight is over
   LD (RunActorSteps+$000E),A
   LD B,$0A                ; look for the gate (kind $2A) in the ten pages
-  LD HL,BuildOutlineMaskLoop+$0008
+  LD HL,Hiro+$001C
   LD A,$2A
 FindGateLoop:
   CP (HL)
@@ -1356,18 +1364,18 @@ KillScore:
 ; The loop at `$9895` tests A = 0 with `AND $01` and can never branch: the
 ; slots +$31-$38 are never looked at. deaths: 27 hurts, 3 in the air.
 ;
-; Witness: L1 97216 (deaths, gameover, play48, rooms, c x1, poke-room x9, rzx
-; x70, rzxroom x18).
+; Witness: L1 98469 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; throw, c x1, poke-room x9, rzx x70, rzxroom x18).
 TouchHiro:
   LD L,$1C
   LD A,(HL)
   CP $2D                  ; kind $2D touches even during a combat move
   JR Z,TouchHiroTest
-  LD A,(BuildBoxPlaceLoop) ; Hiro's combat move runs: no touch
+  LD A,(Hiro+$0034)       ; Hiro's combat move runs: no touch
   OR A
   RET NZ
 TouchHiroTest:
-  LD DE,BuildRowBaseLoop+$0006 ; Hiro's top + 1 for the test
+  LD DE,Hiro+$002C        ; Hiro's top + 1 for the test
   LD A,(DE)
   LD C,A
   INC A
@@ -1428,17 +1436,17 @@ HurtHiro:
   LD L,E
   XOR (HL)
   RLA
-  JR C,HurtFacingSame
+  JR C,HurtFacingOpposite
   LD A,$2F                ; the same way: hurt animation $7A2F
   JR HurtHiroSet
 TouchKind36:
   CP $36                  ; kind $36 harms from phase $0D
-  JR NZ,HurtFacingSame
+  JR NZ,HurtFacingOpposite
   LD L,$32
   LD A,(HL)
   CP $0D
   RET C
-HurtFacingSame:
+HurtFacingOpposite:
   LD A,$18                ; facing each other: hurt animation $7A18
 HurtHiroSet:
   LD (HiroFallScript),A   ; the low byte of Hiro's hurt animation
@@ -1452,7 +1460,7 @@ HurtHiroSet:
   ADD A,A
 HurtHiroDamage:
   CALL LoseEnergy
-  LD HL,BuildRowBaseLoop+$000A ; Hiro's slot +$30 (a jump) on?
+  LD HL,Hiro+$0030        ; Hiro's slot +$30 (a jump) on?
   LD A,(HL)
   AND $07
   JR NZ,HurtKnockOff
@@ -1470,7 +1478,7 @@ HurtKnockOff:
   LD (Hiro+$0002),A
   RET
 HurtHiroFlag:
-  LD HL,BuildPageTails+$0009 ; +$10 bit 4: Hiro is hurt
+  LD HL,Hiro+$0010        ; +$10 bit 4: Hiro is hurt
   SET 4,(HL)
   RET
 TouchPickup:
@@ -1522,7 +1530,7 @@ TouchPickup:
 ;
 ; | `$20-$22` | the orbs | `$5DEA-$5DF2` | 1000, 2000, 5000 |
 ;
-; Witness: L1 50 (deaths, play48, rzx x31, rzxroom x2).
+; Witness: L1 51 (bossgate, deaths, play48, rzx x31, rzxroom x2).
 CollectPickup:
   LD HL,EffectRequest
   LD (HL),$08             ; sound 8
@@ -1569,8 +1577,8 @@ PickupWeapon:
 ; and `$FF10` when the bullets run out (HL = `$5DF8`, the fist shield's record
 ; + 2): 12 runs, in c1 and c48 at the start of play.
 ;
-; Witness: L1 98 (deaths, gameover, menu, play48, c x1, opt x3, rzx x51,
-; rzxroom x2).
+; Witness: L1 102 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x1, opt x3, rzx x51, rzxroom x2).
 SetWeapon:
   LD A,(HL)
   LD DE,WeaponIcon        ; the icon: two characters
@@ -1686,7 +1694,8 @@ RestoreShield:
 ; manual's "sixteen second period"), RestoreShield `$995C`, `$872B`. deaths and
 ; gameover 7 runs.
 ;
-; Witness: L1 111 (deaths, gameover, play48, rzx x53, rzxroom x2).
+; Witness: L1 113 (deaths, gameover, havok, hiscore, play48, rzx x53, rzxroom
+; x2).
 SpawnShield:
   PUSH BC
   LD HL,ActorPage9
@@ -1715,8 +1724,8 @@ SpawnShieldPut:
 ; which clears the bit and gives it 255 frames before it vanishes. deaths 1
 ; run.
 ;
-; Witness: L1 267059 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 272892 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 StartLifetime:
   LD L,$1C
   BIT 7,(HL)
@@ -1728,8 +1737,8 @@ StartLifetime:
 ;
 ; The IM 2 tick counts it down and sets +$10 bit 5 at zero (`$8490-$84A3`).
 ;
-; Witness: L1 351 (deaths, gameover, play48, poke-room x2, rzx x64, rzxroom
-; x9).
+; Witness: L1 364 (bossgate, deaths, gameover, havok, hiscore, play48, throw,
+; poke-room x2, rzx x64, rzxroom x9).
 SetActorTimer:
   LD L,$1E
   LD (HL),C
@@ -1805,8 +1814,8 @@ MatchLettersDone:
 ; edge of 0 skips the first test of its axis. Out: carry set when they overlap.
 ; L and E changed. 134974 runs: TouchHiro, StrikeActor, `$8A90`.
 ;
-; Witness: L1 668215 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 694628 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BoxesOverlap:
   LD L,$2B
   LD E,$2A
@@ -1847,8 +1856,8 @@ BoxesOverlapDone:
 ; (`$850C`). On a ladder (+2 bit 3) ClimbMove `$9C4A`; else MoveActor `$9B05`.
 ; 1102 runs.
 ;
-; Witness: L1 16269 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 16670 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 HiroMove:
   XOR A
   LD L,$02
@@ -1871,8 +1880,8 @@ HiroMove:
 ; flag is cleared, he is no longer in the air and does not move in X. Then
 ; ApplyMove `$9B56`.
 ;
-; Witness: L1 37020 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 37599 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 MoveActor:
   LD A,D
   OR A
@@ -1889,7 +1898,7 @@ MoveActorY:
   OR A
   JR NZ,MoveDownWalk
   CALL LadderBelow        ; no D: a ladder below?
-  JP NZ,GrabLedge
+  JP NZ,GrabLadder
   LD E,D                  ; no: stand
   JR MoveStand
 MoveDownWalk:
@@ -1923,8 +1932,8 @@ MoveStand:
 
 ; +$24, +$25 = A, then ApplyMove
 ;
-; Witness: L1 12940 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 13601 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 SetWalkCounters:
   LD L,$24
   LD (HL),A
@@ -1934,8 +1943,8 @@ SetWalkCounters:
 
 ; ApplyMove with D = E = 0
 ;
-; Witness: L1 18804 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 19343 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ApplyNoMove:
   LD DE,$0000
 
@@ -1946,8 +1955,8 @@ ApplyNoMove:
 ; room, the table `$76D2`: D = 0 at its X). Falls into ApplyMoveNoGate. 5141
 ; runs.
 ;
-; Witness: L1 91426 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 94606 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ApplyMove:
   LD L,$00
   LD A,(HL)
@@ -1963,8 +1972,8 @@ ApplyMove:
 ;
 ; ActorInteractions `$9698` (IY, HL, DE kept), then AddMove.
 ;
-; Witness: L1 144268 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 148167 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ApplyMoveNoGate:
   PUSH IY
   PUSH HL
@@ -1978,8 +1987,8 @@ ApplyMoveNoGate:
 ;
 ; Also used by `$A73E`. 13932 runs.
 ;
-; Witness: L1 153903 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 159028 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 AddMove:
   LD A,E
   LD L,$00
@@ -1997,8 +2006,8 @@ AddMove:
 ; FootstepSound `$9BA2` and `JP $955A` (CheckRoomExit). Other kinds below
 ; `$47`: +$20 bit 1. 13986 runs.
 ;
-; Witness: L1 155161 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 160342 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 AnimateAfterMove:
   LD A,E
   LD L,$21
@@ -2033,8 +2042,8 @@ MarkMoved:
 ; no footstep over another effect. Frames `$26`, `$28` are the walk frames with
 ; a foot down. 2348 runs, 10 footsteps (c1, deaths, menu).
 ;
-; Witness: L1 40325 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 FootstepSound:
   LD A,$00                ; LD A,n: n = the effect player's busy flag
   OR A
@@ -2060,8 +2069,8 @@ FootstepPlay:
 ; at `$9BE9` is set: walking into a wall, ProbeWalls), the frame = the table at
 ; +5/+6 [1 + +$25], +$25 wrapping at the table's count. 13986 runs.
 ;
-; Witness: L1 157382 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 162563 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 AnimateActor:
   LD L,$20
   SET 0,(HL)
@@ -2149,8 +2158,8 @@ FixedFrame:
 
 ; +$1A and the frame timer +$1D = A
 ;
-; Witness: L1 88799 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 92498 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 SetFrameDelay:
   LD L,$1A
   LD (HL),A
@@ -2164,8 +2173,8 @@ SetFrameDelay:
 ; 0), the counters are cleared and AnimateAfterMove `$9B7A` runs with no move.
 ; 2835 runs, 54 stops.
 ;
-; Witness: L1 14309 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x15).
+; Witness: L1 16221 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x15).
 StopActor:
   LD L,$24
   LD A,(HL)
@@ -2232,7 +2241,7 @@ ClimbLeave:
   LD L,$1B
   SRA D
   LD (HL),D
-  JP ClimbOntoLedge
+  JP LeaveLadder
 
 ; Is there a ladder to climb down under the actor?
 ;
@@ -2241,7 +2250,7 @@ ClimbLeave:
 ; holds a ladder top (`$55` or `$54` in plane `$6A`, the list `$73C5`) and X is
 ; on the ladder (X mod 16 = 0 or 8). c1, menu: 31 runs, none found.
 ;
-; Witness: L1 1578 (menu, play48, c x1, rzx x28).
+; Witness: L1 1608 (bossgate, menu, play48, c x1, rzx x28).
 LadderBelow:
   CALL ProbeBelow
   RET NZ
@@ -2253,7 +2262,7 @@ LadderBelow:
 ; cell one row up (B - `$14`) is tested as in LadderBelow. Out: NZ: climb (`JP
 ; NZ,$906C`). 10 runs.
 ;
-; Witness: L1 417 (play48, rooms, c x1, opt x3, rzx x40).
+; Witness: L1 484 (havok, play48, rooms, c x1, opt x3, rzx x40).
 LadderAbove:
   LD E,$00
   CALL ProbeVertical
@@ -2289,8 +2298,8 @@ LadderYes:
 ;
 ; From `$921C` and `$9225`: 50 runs.
 ;
-; Witness: L1 811 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 884 (bossgate, deaths, gameover, havok, hiscore, play48, rooms, c
+; x1, opt x3, rzx x64, rzxroom x11).
 StartFallEndJump:
   LD L,$30
   LD (HL),$00
@@ -2299,8 +2308,8 @@ StartFallEndJump:
 ;
 ; From `$9201`: 242 runs.
 ;
-; Witness: L1 4342 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 4542 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 StartFall:
   LD L,$02
   SET 1,(HL)
@@ -2314,8 +2323,8 @@ StartFall:
 ; `$9159`). The fall counter +$26: + 1 a step, 0 after a landing (`$FF` + 1).
 ; Then SetWalkCounters `$9B4B` with 1 and the move.
 ;
-; Witness: L1 10463 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 11152 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 FallStep:
   LD L,$02
   SET 2,(HL)
@@ -2332,8 +2341,8 @@ FallCount:
 
 ; ProbeVertical with E = 4 and C = the height - E
 ;
-; Witness: L1 12324 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 13043 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ProbeBelow:
   LD DE,$0004
   LD A,(IY+$16)
@@ -2348,15 +2357,15 @@ ProbeBelow:
 ; not negative (ProbeFloorCell). Out: HL = IY; Z when the move goes on, NZ when
 ; it stopped or started a fall.
 ;
-; Witness: L1 97350 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 99089 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ProbeVertical:
   LD C,(IY+$16)
 
 ; +$10 bit 1: the actor stands on floors
 ;
-; Witness: L1 109674 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 112132 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ProbeVerticalC:
   BIT 1,(IY+$10)
   JR Z,ProbeVerticalDone
@@ -2380,8 +2389,8 @@ ProbeVerticalDone:
 ; (kinds below `$20`) stop turning (FreezeAnim `$9D50`) unless the cell is a
 ; breakable one (TestBreakable `$9EBB`).
 ;
-; Witness: L1 62773 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 64304 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ProbeFloorCell:
   LD A,D
   ADD A,(IY+$01)
@@ -2433,7 +2442,8 @@ LandedPickup:
 ;
 ; +$10 bit 6 set, bit 7 cleared; A = 0. Also `$9112` (a hazard's trigger).
 ;
-; Witness: L1 1529 (deaths, play48, poke-room x3, rzx x38, rzxroom x9).
+; Witness: L1 1531 (bossgate, deaths, play48, throw, poke-room x3, rzx x38,
+; rzxroom x9).
 FreezeAnim:
   LD L,$10
   SET 6,(HL)
@@ -2447,8 +2457,8 @@ FreezeAnim:
 ; column at + 0; at the right (bit 7): + 8; else the middle (width / 2 - 1),
 ; then width / 2 when that one is free. Out: NZ when solid (CellSolid `$9D7A`).
 ;
-; Witness: L1 56001 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 57081 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 FloorUnder:
   LD A,(IY+$20)
   BIT 6,A
@@ -2475,8 +2485,8 @@ FloorUnderMiddle:
 ; column X / 8). Out: B = A = the cell, NZ when plane `$67` bits 0-1 are set.
 ; HL kept.
 ;
-; Witness: L1 58147 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 59319 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 CellSolid:
   PUSH HL
   LD A,L
@@ -2503,8 +2513,8 @@ CellSolid:
 ; `$9E31`). A wall: D = 0, the walk animation slows (`$9BE9` = `$80`), and a
 ; shot (kinds `$40-$46`) expires (ExpireActor). 3252 runs, 190 walls.
 ;
-; Witness: L1 49262 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 50771 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ProbeWalls:
   PUSH IY
   POP HL
@@ -2554,8 +2564,8 @@ ProbeWallsTest:
 ; feet. ProbeCell `$9E3E` and through it BreakOrBlock `$9E61` (Hiro's move
 ; breaks a block). 42 runs.
 ;
-; Witness: L1 1718 (menu, play48, c x1, opt x3, poke-room x15, rzx x55, rzxroom
-; x8).
+; Witness: L1 1774 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15,
+; rzx x55, rzxroom x8).
 ProbeStrikeCell:
   LD DE,$0000
   PUSH IY
@@ -2585,8 +2595,8 @@ ProbeStrikeCall:
 ;
 ; ProbeCeilingE, HL = IY. From `$9225` (the jump) and ClimbMove. 223 runs.
 ;
-; Witness: L1 4283 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 4780 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 ProbeCeiling:
   CALL ProbeCeilingE
   PUSH IY
@@ -2595,8 +2605,8 @@ ProbeCeiling:
 
 ; E negative: probe the head's corners; blocked: E = 0
 ;
-; Witness: L1 4283 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 4780 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 ProbeCeilingE:
   LD A,E
   OR A
@@ -2608,8 +2618,8 @@ ProbeCeilingE:
 
 ; Probe above the head: the left and right corners (or the one inside)
 ;
-; Witness: L1 3877 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 4307 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 ProbeHead:
   LD A,(IY+$20)
   BIT 6,A
@@ -2626,15 +2636,15 @@ ProbeHeadRight:
 
 ; X + 1
 ;
-; Witness: L1 3853 (deaths, gameover, play48, rooms, c x1, opt x3, rzx x64,
-; rzxroom x11).
+; Witness: L1 4283 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, opt x3, rzx x64, rzxroom x11).
 ProbeHeadLeft:
   LD A,$01
 
 ; ProbeCell at X offset A, Y + 8
 ;
-; Witness: L1 51205 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 53015 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ProbeAtTop:
   LD B,A
   LD A,$08
@@ -2642,8 +2652,8 @@ ProbeAtTop:
 
 ; ProbeCell at X offset A: Y + 8, or the feet for the sweep
 ;
-; Witness: L1 1718 (menu, play48, c x1, opt x3, poke-room x15, rzx x55, rzxroom
-; x8).
+; Witness: L1 1774 (bossgate, havok, menu, play48, c x1, opt x3, poke-room x15,
+; rzx x55, rzxroom x8).
 ProbeStrikeHeight:
   LD B,A
   LD A,(Strike)
@@ -2654,8 +2664,8 @@ ProbeStrikeHeight:
 
 ; ProbeCell at Y + height / 2
 ;
-; Witness: L1 39944 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 40878 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 ProbeAtMiddle:
   LD A,(IY+$16)
   RRCA
@@ -2665,8 +2675,8 @@ ProbeAtMiddle:
 ;
 ; B = the X offset. Out: Z when one of them is a wall.
 ;
-; Witness: L1 43676 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 44626 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 ProbeSide:
   CALL ProbeAtTop
   RET Z
@@ -2675,8 +2685,8 @@ ProbeSide:
 
 ; ProbeCell at Y + height - 4
 ;
-; Witness: L1 37626 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 38556 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 ProbeAtFoot:
   LD A,(IY+$16)
   SUB $04
@@ -2688,8 +2698,8 @@ ProbeAtFoot:
 ; `$9E61` first; then plane `$68`: tiles 1-`$19` are walls. Out: Z = a wall.
 ; 8935 runs.
 ;
-; Witness: L1 129648 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 133377 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ProbeCell:
   ADD A,E
   ADD A,(IY+$00)
@@ -2721,14 +2731,15 @@ ProbeCell:
 ; cell's tile is cleared (in the plane TestBreakable matched), the cell redrawn
 ; (`$8868`), sparks (SpawnSparks), 10 points (`$CE`), the panel; then the probe
 ; returns to its caller: free for the scorchball (it flies on), a wall for the
-; others. Not run in the keyed recordings.
+; others. The break ran in `play48` at frame 1458 (a block broken in room 6,
+; its item revealed).
 ;
 ; The other actors (`$9EB3`): a cell that blocks (TestBreakable's C = 1) is a
 ; wall for them (the return to ProbeCell is popped); else ProbeCell goes on.
 ; 8892 runs, 20 blocked (deaths, rooms).
 ;
-; Witness: L1 129503 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 133232 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 BreakOrBlock:
   LD A,(IY+$1C)
   CP $24
@@ -2791,8 +2802,8 @@ BlockTest:
 ; plane matched (BreakOrBlock clears the tile there), C = 1 when the block also
 ; stops the actors that cannot break it.
 ;
-; Witness: L1 129566 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 133297 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 TestBreakable:
   LD C,$01
   LD H,$69
@@ -2824,11 +2835,10 @@ TestBreakable:
 ; the frame and score copied into the pickup template `$65BF-$65C0` (`$65C1` =
 ; 1, `$65C2` = 0); a free page among `$5E-$64` (FindFreeActorAtCell `$9F29`);
 ; SpawnActor `$A65D` with kind + `$80` (StartLifetime gives it 255 frames at
-; its first step) at the cell; +2 bits 1, 2: it drops. Not run in the keyed
-; recordings.
+; its first step) at the cell; +2 bits 1, 2: it drops. Ran in `play48` at frame
+; 1458 (a block broken in room 6, its item revealed).
 ;
-; Witness: L1 49 (play48, rzx x25, rzxroom x4). Not run in the keyed
-; recordings.
+; Witness: L1 51 (bossgate, play48, throw, rzx x25, rzxroom x4).
 BreakReveal:
   LD H,$67
   RES 1,(HL)
@@ -2884,8 +2894,8 @@ HiddenBitLoop:
 
 ; DE = the cell $69E2's Y, X; then FindFreeActor
 ;
-; Witness: L1 24 (play48, rzx x16, rzxroom x1). Not run in the keyed
-; recordings.
+; Witness: L1 26 (bossgate, play48, throw, rzx x16, rzxroom x1). Ran in
+; `play48` at frame 1458 (a block broken in room 6, its item revealed).
 FindFreeActorAtCell:
   CALL LastCellPixel
 
@@ -2894,8 +2904,8 @@ FindFreeActorAtCell:
 ; HL = page + 2 of the first. Out: carry clear and H = the free page; carry set
 ; when all B are active. Also used by `$A5BF`.
 ;
-; Witness: L1 2413 (deaths, gameover, play48, rooms, c x1, poke-room x13, rzx
-; x64, rzxroom x18).
+; Witness: L1 2441 (bossgate, deaths, gameover, hiscore, play48, rooms, throw,
+; c x1, poke-room x13, rzx x64, rzxroom x18).
 FindFreeActor:
   LD A,(HL)
   RRA

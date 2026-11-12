@@ -76,7 +76,7 @@ ShapeTilesB:
 ; $9CB1: the tile under the actor at $6A00 + B is looked up in these two bytes.
 ; Witness: read by $9CA1 / $9CA7 / $9CB1 in c1, menu, opt2-4, rooms.
 SpecialTiles:
-  INCBIN "res/rooms/ledge-tiles.bin",$0000,2
+  INCBIN "res/rooms/ladder-tiles.bin",$0000,2
 
 ; The room-stream code handlers, 15 addresses ($9FFF: index = the code x 2)
 ;
@@ -270,7 +270,7 @@ WalkScript:
   INCBIN "res/tables/scripts-7a.bin",$0049,41
 RunScript:
   INCBIN "res/tables/scripts-7a.bin",$0072,53
-TileActionScript:
+LadderGrabScript:
   INCBIN "res/tables/scripts-7a.bin",$00A7,7
 LandScript:
   INCBIN "res/tables/scripts-7a.bin",$00AE,6
@@ -280,7 +280,7 @@ StrikeScript2:
   INCBIN "res/tables/scripts-7a.bin",$00C6,13
 StrikeScript3:
   INCBIN "res/tables/scripts-7a.bin",$00D3,13
-TileActionEndScript:
+LadderLeaveScript:
   INCBIN "res/tables/scripts-7a.bin",$00E0,7
 Script92F5:
   INCBIN "res/tables/scripts-7a.bin",$00E7,12

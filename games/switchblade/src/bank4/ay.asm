@@ -12,12 +12,14 @@
 ; IX = the AY record, IY = the instrument (Instruments or Effects), HL = the
 ; tone period, C = the gate time. Sets the instrument, the period, the gate
 ; timer, the vibrato (delay +5, the first sweep half of +6, at least 1, step
-; +7/+8, the offset 0) and clears the slide offset. The mixer: the channel off,
-; then tone on if flags bit 0, noise on if bit 1, or noise on for a burst when
-; DrumPending $C0D2 is set (DrumChannel, DrumTimer = DrumLength). Flags bit 2
-; (hardware envelope, no instrument) sets the AY envelope: shape = +0, period
-; high = +4, low 0, volume $FF (31: bit 4 = envelope mode) and leaves the phase
-; alone; otherwise the phase is EnvAttack $D308.
+; +7/+8, the offset 0) and clears the slide offset; the AY record's volume +$05
+; is kept, so a note or effect attacks from the volume the channel had (doc 09,
+; 9.11). The mixer: the channel off, then tone on if flags bit 0, noise on if
+; bit 1, or noise on for a burst when DrumPending $C0D2 is set (DrumChannel,
+; DrumTimer = DrumLength). Flags bit 2 (hardware envelope, no instrument) sets
+; the AY envelope: shape = +0, period high = +4, low 0, volume $FF (31: bit 4 =
+; envelope mode) and leaves the phase alone; otherwise the phase is EnvAttack
+; $D308.
 ;
 ; Called by SequenceChannel $C1C5 (JP at $C30F) and PlayEffect $C011.
 ;
@@ -44,8 +46,8 @@ SetSweepFrames:
   LD (IX+$0B),A
   LD A,(IY+$08)
   LD (IX+$0C),A
-  XOR A                   ; the volume, the vibrato offset and the slide offset
-                          ; from 0
+  XOR A                   ; the vibrato offset (+$09/+$0A) and the slide offset
+                          ; (+$12/+$13) from 0; the volume (+$05) is kept
   LD (IX+$09),A
   LD (IX+$0A),A
   LD (IX+$12),A

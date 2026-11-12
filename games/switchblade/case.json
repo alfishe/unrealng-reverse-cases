@@ -143,7 +143,11 @@
     "stage2/rzx/rooms/e110673",
     "stage2/rzx/rooms/e129398",
     "stage2/rzx/rooms/e131414",
-    "stage2/rzx/rooms/e133252"
+    "stage2/rzx/rooms/e133252",
+    "stage2/rec/bossgate",
+    "stage2/rec/throw",
+    "stage2/rec/hiscore",
+    "stage2/rec/havok"
   ],
   "witness_names": {
     "stage2/rzx/rooms/e001039": "rzxroom001039",
@@ -165,5 +169,15 @@
     "stage2/rzx/rooms/e129398": "rzxroom129398",
     "stage2/rzx/rooms/e131414": "rzxroom131414",
     "stage2/rzx/rooms/e133252": "rzxroom133252"
-  }
+  },
+  "ref_parts": [
+    [
+      "src/bank4/bank4.json",
+      "Bank 4: the AY player, the tunes, the story pages (128K only)"
+    ],
+    [
+      "src/stage2/stage2.json",
+      "The loader's second stage"
+    ]
+  ]
 }

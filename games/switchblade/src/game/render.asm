@@ -8,8 +8,8 @@
 ;
 ; Callers: $5C68, $5D4F, the title $6A7B, $A6FD, $A73E, $A806.
 ;
-; Witness: L1 121 (deaths, gameover, menu, play48, c x2, opt x3, rzx x7,
-; rzxroom x2).
+; Witness: L1 140 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2,
+; opt x3, rzx x7, rzxroom x2).
 ClearScreen:
   PUSH AF
   CALL BlackAttributes
@@ -22,8 +22,8 @@ ClearScreen:
 
 ; Fill all 768 attributes with A
 ;
-; Witness: L1 242 (deaths, gameover, menu, play48, c x2, opt x3, rzx x7,
-; rzxroom x2).
+; Witness: L1 280 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2,
+; opt x3, rzx x7, rzxroom x2).
 FillAttributes:
   LD HL,Attributes
   LD DE,Attributes+1
@@ -31,8 +31,8 @@ FillAttributes:
 
 ; (HL) = A, then LDIR BC more bytes
 ;
-; Witness: L1 253 (deaths, gameover, menu, play48, c x2, opt x3, rzx x7,
-; rzxroom x2).
+; Witness: L1 294 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2,
+; opt x3, rzx x7, rzxroom x2).
 FillAttrRun:
   LD (HL),A
   LDIR
@@ -40,8 +40,8 @@ FillAttrRun:
 
 ; All attributes to 0
 ;
-; Witness: L1 121 (deaths, gameover, menu, play48, c x2, opt x3, rzx x7,
-; rzxroom x2).
+; Witness: L1 140 (deaths, gameover, havok, hiscore, menu, play48, throw, c x2,
+; opt x3, rzx x7, rzxroom x2).
 BlackAttributes:
   XOR A
   JR FillAttributes
@@ -50,8 +50,8 @@ BlackAttributes:
 ;
 ; Caller: $5C68 (the start of a life).
 ;
-; Witness: L1 11 (deaths, gameover, menu, play48, c x1, opt x3, rzx x1, rzxroom
-; x1).
+; Witness: L1 14 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1,
+; opt x3, rzx x1, rzxroom x1).
 FillPlayAttributes:
   LD HL,Attributes+32
   LD DE,Attributes+33
@@ -68,8 +68,8 @@ FillPlayAttributes:
 ; (column AND 1) into the operand at $8879; CharCellAddress (one character row
 ; down). Callers: RedrawCellMask $8873, ComposeCell.
 ;
-; Witness: L1 64765 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x61, rzxroom x18).
+; Witness: L1 65975 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x61, rzxroom x18).
 CellScreenAddress:
   LD A,E
   LD DE,$1400
@@ -105,8 +105,8 @@ CellRowDivide:
 ; DrawColumnPos and the byte $FDF5 + (DrawColumnPos AND 7). Callers: DrawHavok,
 ; $8C68.
 ;
-; Witness: L1 108742 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 113205 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 SpriteScreenAddress:
   SRL A
   SRL A
@@ -141,8 +141,8 @@ SpriteScreenAddress:
 ;
 ; Caller: the room lookup $95C3.
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RedrawRoomMasked:
   LD A,(RevealedZones)
 
@@ -150,8 +150,8 @@ RedrawRoomMasked:
 ;
 ; Caller: $955A.
 ;
-; Witness: L1 307 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x59, rzxroom x18).
+; Witness: L1 313 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x59, rzxroom x18).
 RedrawCellsMasked:
   AND $FC
   LD C,A
@@ -169,8 +169,8 @@ RedrawCellsLoop:
 
 ; A = C, then RedrawCellMask
 ;
-; Witness: L1 67365 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x59, rzxroom x18).
+; Witness: L1 68685 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x59, rzxroom x18).
 RedrawCell:
   LD A,C
 
@@ -179,8 +179,8 @@ RedrawCell:
 ;
 ; Caller: RedrawCell, $9E61.
 ;
-; Witness: L1 67414 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x61, rzxroom x18).
+; Witness: L1 68736 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x61, rzxroom x18).
 RedrawCellMask:
   LD H,$67
   LD E,L
@@ -210,8 +210,8 @@ EraseCellLower:
 
 ; AND 8 pixel lines of two bytes at HL with D and E
 ;
-; Witness: L1 77766 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x59, rzxroom x18).
+; Witness: L1 78654 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x59, rzxroom x18).
 MaskCellRows:
   LD C,H
   LD B,$08
@@ -232,7 +232,7 @@ DrawCellLayers:
   LD H,$68                ; the cell's four layers ($6800-$6B00) empty: erase;
                           ; else ComposeCell and, when the flag at $88AE is
                           ; set, colour its 2 x 2 attributes from $66F7 + the
-                          ; high nibble of $6900 + L
+                          ; high nibble of $6C00 + L
   XOR A
   OR (HL)
   INC H
@@ -289,8 +289,8 @@ DrawCellDone:
 ; $8943; $8C76 = 4, $8D27 = $10 (the blitter's rows and lines);
 ; CellScreenAddress.
 ;
-; Witness: L1 25880 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x14, rzx x61, rzxroom x18).
+; Witness: L1 26646 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x14, rzx x61, rzxroom x18).
 ComposeCell:
   PUSH HL
   LD BC,ComposeBackCell
@@ -310,13 +310,13 @@ ComposeCell:
 ; One cell through the routine BC (stored as the CALL at $8932), 4 rows, buffer
 ; $5D4A
 ;
-; Witness: L1 51761 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x14, rzx x61, rzxroom x18).
+; Witness: L1 53293 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x14, rzx x61, rzxroom x18).
 ComposeCellColumn:
   LD (ComposeRowLoop+$0009),BC
   LD A,$04
   LD BC,$0100
-  LD DE,BuildBoxPlaceLoop+$0016
+  LD DE,$5D4A
   JR ComposeRows
 
 ; Compose the cells under an actor into its buffer (ComposeDest): rows ($69DE),
@@ -326,8 +326,8 @@ ComposeCellColumn:
 ; operand), B = the rows ($69DE), C = (DrawColumnPos AND 3) x 6, A = the line
 ; count ($8C76), DE = ComposeDest. Caller: the actor update $8E2B.
 ;
-; Witness: L1 197088 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 203037 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeActorCells:
   LD (ComposeRowLoop+$0009),BC
   LD A,(RevealZone+$0005)
@@ -347,8 +347,8 @@ ComposeActorCells:
 
 ; B rows: the count A into $892E, then per row the routine, DE + 16, L + 20
 ;
-; Witness: L1 248850 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 256331 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeRows:
   LD (ComposeRowLoop+$0004),A
   LD A,L
@@ -375,8 +375,8 @@ ComposeRowLoop:
 ; The front layers ($6A00 / $6B00) of cell L, or the blank tile $43 when the
 ; cell's flags AND $6DFF are clear
 ;
-; Witness: L1 336780 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 349517 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeFrontCell:
   PUSH HL
   LD H,$67
@@ -432,8 +432,8 @@ ComposeFrontNext:
 ; The back layers ($6800 / $6900) of cell L: one tile, both (ComposeTwoTiles)
 ; or the blank tile $43
 ;
-; Witness: L1 336778 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 349509 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeBackCell:
   PUSH HL
   LD H,$69
@@ -466,8 +466,8 @@ ComposeBackNext:
 ; Compose the tile (HL), then the tile B over it, keeping the column count at
 ; $89F6
 ;
-; Witness: L1 20934 (deaths, play48, rooms, poke-room x14, rzx x67, rzxroom
-; x15).
+; Witness: L1 21094 (bossgate, deaths, play48, rooms, poke-room x14, rzx x67,
+; rzxroom x15).
 ComposeTwoTiles:
   LD A,(ComposeTileLoop+$000A)
   PUSH HL
@@ -491,8 +491,8 @@ ComposeHighTile:
 
 ; Compose tile A: codes $4B and up through $8C0A, else ComposeTileOverlay
 ;
-; Witness: L1 121127 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 123014 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 ComposeTile:
   CP $4B
   JR NC,ComposeHighTile
@@ -500,15 +500,15 @@ ComposeTile:
 ; ComposeOverlay first (tiles $1B and up with an overlay nibble in $6C00), then
 ; the tile
 ;
-; Witness: L1 352359 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeTileOverlay:
   CALL ComposeOverlay
 
 ; Compose tile B with the 3-bit unpacker $8BC8
 ;
-; Witness: L1 352359 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeTilePlain:
   LD A,B
   LD HL,UnpackGroups
@@ -516,8 +516,8 @@ ComposeTilePlain:
 ; Compose a tile with the unpacker HL (stored as the CALL at $89F0): its packed
 ; data from $8EA3
 ;
-; Witness: L1 437945 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 452405 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeTileWith:
   LD (ComposeTileLoop+$0005),HL
   CALL FrameRecord
@@ -525,8 +525,8 @@ ComposeTileWith:
 ; The unpacker's operands ($8C1E = $50, $8C13 = $0E), then 2-byte rows into DE,
 ; C + 6 a column up to $12
 ;
-; Witness: L1 534177 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 549398 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeTileRows:
   LD B,$00
   ADD HL,BC
@@ -557,8 +557,8 @@ ComposeTileLoop:
 ; Tiles $1B and up: when ($6C00 + L) AND $0F is n, compose the tile, then tile
 ; $43 + n ANDed in by AndTileColumns
 ;
-; Witness: L1 352359 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 365175 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ComposeOverlay:
   LD B,A
   CP $1B
@@ -605,8 +605,8 @@ ComposeOverlay:
 ; The entry is one byte below the region `$8A30`: the loop is `$8A30`, the `EX
 ; DE,HL` before it swaps the pointers DrawTileColumns hands over.
 ;
-; Witness: L1 263033 (deaths, play48, rooms, poke-room x14, rzx x67, rzxroom
-; x13).
+; Witness: L1 264980 (bossgate, deaths, play48, rooms, poke-room x14, rzx x67,
+; rzxroom x13).
 AndTileColumns:
   EX DE,HL
 AndTileLoop:
@@ -677,24 +677,25 @@ AndTileLoop:
 ; Draw the actors that stand in front of the cells' front layer
 ;
 ; E = `$80` (actor flag +2 bit 7: drawn in front), D = `$20` (bit 5 set: not
-; drawn), then DrawActorsAll `$8A76`. Called by ActorStep `$8E2B` (`CALL
+; drawn), then DrawActorsAll `$8A76`. Called by ActorUpdate `$8E2B` (`CALL
 ; C,$8A73`) after the front pass of the cells, only when an actor of the window
 ; holds bit 7.
 ;
-; Witness: L1 10995 (deaths, gameover, menu, play48, opt x3, rzx x26).
+; Witness: L1 11205 (bossgate, deaths, gameover, hiscore, menu, play48, opt x3,
+; rzx x26).
 DrawFrontActors:
   LD DE,$2080
 
 ; Draw the actors of all ten pages that overlap the window
 ;
-; B = 10 pages from `$5D00` (`$5D-$66`), C = 0. Called by ActorStep `$8E2B`
+; B = 10 pages from `$5D00` (`$5D-$66`), C = 0. Called by ActorUpdate `$8E2B`
 ; with DE = `$A001` (draw the active ones, flag +2 bit 0, unless bit 7 or 5 is
 ; set) between the back pass (DrawWindowCells `$8907` with DrawCellBack
 ; `$898C`) and the front pass (with DrawCellFront `$8943`), and by
 ; DrawFrontActors with DE = `$2080`.
 ;
-; Witness: L1 109542 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 112726 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 DrawActorsAll:
   LD BC,$0A00
 
@@ -708,8 +709,8 @@ DrawActorsAll:
 ; Called directly by `$A73E` (`$A7B9`: the redraw of one actor's box after it
 ; moved, then BlitWindow `$8C68`).
 ;
-; Witness: L1 119181 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 123592 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 DrawActors:
   LD HL,Hiro+$0002
 DrawActorsLoop:
@@ -764,8 +765,8 @@ DrawActorsNext:
 ; Run 1440 times in c1 and 132818 times in the stage 1 recordings: every
 ; visible actor, every frame it moves.
 ;
-; Witness: L1 584794 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 610301 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 DrawActor:
   LD A,(HL)
   AND D
@@ -930,8 +931,8 @@ DrawActorMirrorStep:
 ; `$8B94` with A = `$50` (the first value of ColumnValues) and L = 0 (no line
 ; cut).
 ;
-; Witness: L1 152763 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 157851 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ClipColumns:
   EX AF,AF'
   LD L,$16
@@ -973,8 +974,8 @@ ClipColumnsCount:
 ;
 ; Out: A = rows - 2 - L with its flags, HL = IX (the frame's columns).
 ;
-; Witness: L1 152763 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 157851 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 SetColumnClip:
   LD (MaskedColumnStart+$0001),A
   LD A,B
@@ -1008,8 +1009,8 @@ SetColumnClipRows:
 ; `$8B94`. When no line is left (`DEC A`, not positive) `POP IY` drops
 ; DrawActor's return: the actor is not drawn.
 ;
-; Witness: L1 11763 (deaths, gameover, menu, play48, rooms, c x2, opt x3, rzx
-; x70, rzxroom x18).
+; Witness: L1 12268 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, rzx x70, rzxroom x18).
 ClipTop:
   INC A
   LD E,$4A
@@ -1025,8 +1026,8 @@ ClipTop:
 ;
 ; DE = `$5B50`, then UnpackGroups `$8BC8`.
 ;
-; Witness: L1 794589 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 819989 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 UnpackColumn:
   LD DE,ColumnValues
 
@@ -1044,8 +1045,8 @@ UnpackColumn:
 ;
 ; Out: HL = the byte after the groups, DE = the byte after the values.
 ;
-; Witness: L1 4127540 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 4265375 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 UnpackGroups:
   PUSH BC
   LD B,$07
@@ -1115,8 +1116,8 @@ UnpackGroupsLoop:
 ; In: HL = the column's packed bytes, B = rows / 8, D = the chunk page, E = the
 ; first buffer line. UnpackColumn, then MaskedColumn `$8C0F`.
 ;
-; Witness: L1 579743 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x70, rzxroom x19).
+; Witness: L1 597066 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x70, rzxroom x19).
 MaskedColumns:
   PUSH DE
   PUSH BC
@@ -1142,8 +1143,8 @@ MaskedColumns:
 ;
 ; Out: HL = the next column's packed bytes.
 ;
-; Witness: L1 794586 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 819986 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 MaskedColumn:
   POP AF
   POP DE
@@ -1214,8 +1215,8 @@ MaskedColumnSP:
 ; `$8C0F`. DrawActor walks the columns from the right, so the frame is mirrored
 ; as a whole.
 ;
-; Witness: L1 214846 (deaths, gameover, play48, rooms, c x1, opt x3, poke-room
-; x8, rzx x71, rzxroom x17).
+; Witness: L1 222923 (bossgate, deaths, gameover, havok, hiscore, play48,
+; rooms, throw, c x1, opt x3, poke-room x8, rzx x71, rzxroom x17).
 MirroredColumn:
   PUSH DE
   PUSH BC
@@ -1242,10 +1243,10 @@ MirroredColumnLoop:
 ; E = the window top (`$732C`), A = its left (`$732A`), ScreenAddress `$8828`
 ; (DE = the screen byte), then BlitWindowAt `$8C72`.
 ;
-; Called by ActorStep `$8E2B` after each actor is redrawn and by `$A7B9`.
+; Called by ActorUpdate `$8E2B` after each actor is redrawn and by `$A7B9`.
 ;
-; Witness: L1 108178 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 112380 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BlitWindow:
   LD A,(DrawRowPos)
   LD E,A
@@ -1264,8 +1265,8 @@ BlitWindow:
 ; blitter draws 8 lines; DE steps to the next character row (E + `$20`, D back
 ; unless the third changed).
 ;
-; Witness: L1 134059 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 139027 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BlitWindowAt:
   LD H,$5D
 BlitWindowWidth:
@@ -1317,8 +1318,8 @@ BlitWindowNext:
 ; byte = screen AND the right mask (operand `$8CD0`) OR the packed byte; D + 1
 ; to the next line. The masks keep the screen pixels outside the window.
 ;
-; Witness: L1 401979 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 418215 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BlitRows:
   LD BC,$08FF
 ; This entry point is used by the routine at BlitRowsLdiTail.
@@ -1353,7 +1354,7 @@ BlitRowsLdi:
 ; The second half of the LDI chain of BlitRows (ten LDI in all, so up to 12
 ; bytes a line), then the last byte under the right mask.
 ;
-; Witness: L1 5952 (gameover, menu, c x1, rzx x2, rzxroom x1).
+; Witness: L1 6720 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 BlitRowsLdiTail:
   LDI
   LDI
@@ -1378,8 +1379,8 @@ BlitRowsRightMask:
 ; B = 8; for each line: screen AND the mask (operand `$8CDD`: the left mask OR
 ; the right mask) OR the packed byte, D + 1.
 ;
-; Witness: L1 8146 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x64, rzxroom x10).
+; Witness: L1 8899 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x64, rzxroom x10).
 BlitColumn:
   LD B,$08
 BlitColumnLoop:
@@ -1415,8 +1416,8 @@ BlitColumnMask:
 ; Out: A = the bytes a line (BC - the start of the last line); DE as on entry
 ; (the screen).
 ;
-; Witness: L1 134059 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 139027 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 PackRow:
   PUSH DE
   LD L,C
@@ -1504,8 +1505,8 @@ PackRowByte:
 ; The bytes `$8DE6` and `$8DFD` are `INC H` instructions that only a planted
 ; `RET` follows.
 ;
-; Witness: L1 740227 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 753555 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 PackUnits0:
   LD A,(HL)
   RRCA
@@ -1515,8 +1516,9 @@ PackUnits0:
 
 ; Packer entry: the window starts at unit 1 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1097016 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1158720 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x72, rzxroom x19).
 PackUnits1:
   LD E,A
   LD A,(HL)
@@ -1527,8 +1529,9 @@ PackUnits1:
 
 ; Packer entry: the window starts at unit 2 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1297048 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1363472 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x72, rzxroom x19).
 PackUnits2:
   LD D,$00
   LD E,(HL)
@@ -1542,8 +1545,9 @@ PackUnits2:
 
 ; Packer entry: the window starts at unit 3 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1609846 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1690190 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x72, rzxroom x19).
 PackUnits3:
   LD E,A
   LD A,(HL)
@@ -1556,8 +1560,9 @@ PackUnits3:
 
 ; Packer entry: the window starts at unit 4 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1748134 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1838814 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x72, rzxroom x19).
 PackUnits4:
   LD E,A
   LD A,(HL)
@@ -1567,8 +1572,9 @@ PackUnits4:
 
 ; Packer entry: the window starts at unit 5 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1789064 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1847488 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x72, rzxroom x19).
 PackUnits5:
   LD D,$00
   LD E,(HL)
@@ -1584,8 +1590,9 @@ PackUnits5:
 
 ; Packer entry: the window starts at unit 6 of a group
 ;
-; See PackUnits0 `$8D45`. Witness: L1 1821631 (deaths, gameover, menu, play48,
-; rooms, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19).
+; See PackUnits0 `$8D45`. Witness: L1 1883375 (bossgate, deaths, gameover,
+; havok, hiscore, menu, play48, rooms, throw, c x2, opt x3, poke-room x15, rzx
+; x71, rzxroom x19).
 PackUnits6:
   LD E,A
   LD A,(HL)
@@ -1601,8 +1608,8 @@ PackUnits6:
 ; See PackUnits0 `$8D45`. Unit 7 completes byte 2 of the group (`OR (HL)`); the
 ; code goes on with the next two groups (`$8D84`, `$8DC3`), the same pattern.
 ;
-; Witness: L1 1840833 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 1900321 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 PackUnits7:
   OR (HL)
   LD (BC),A
@@ -1712,7 +1719,7 @@ PackUnitsStop1:
 ; further on (`$8DFD`): the widest windows, only at the menu and the game over
 ; in the stage 1 recordings. See PackUnits0 `$8D45`.
 ;
-; Witness: L1 1984 (gameover, menu, c x1, rzx x2, rzxroom x1).
+; Witness: L1 2240 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 PackUnitsTail:
   LD D,$00
   LD E,(HL)
@@ -1746,7 +1753,7 @@ PackUnitsStop2:
 ; IY = the actor. ActorScreenBox `$8F75` (the box with the last move, into the
 ; render's variables), then the box of the actor where it stands now (DE = 0):
 ; BoxColumns `$8FDD` on X gives +`$2E` (columns), +`$2A` (first) and +`$2B`
-; (last column, 2-pixel units 0-79); BoxRows `$9000` on Y gives +`$2F` (rows),
+; (last column, 3-pixel units 0-79); BoxRows `$9000` on Y gives +`$2F` (rows),
 ; +`$2C` (first) and +`$2D` (last row, 8-pixel rows 0-21); the clip bits go to
 ; +`$20` bits 4-7 (bits 0-3 kept). Then `$74BA` (the row-pattern pointer the
 ; render reads at `$8922`) = `$5D4A`, or `$5D42` when the first row `$732C` is
@@ -1754,8 +1761,8 @@ PackUnitsStop2:
 ;
 ; Callers: ActorUpdate `$8E3A` (after every move that needs a redraw), `$A73E`.
 ;
-; Witness: L1 109640 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 114102 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ActorBoxStore:
   CALL ActorScreenBox
   LD L,$01
@@ -1783,7 +1790,7 @@ ActorBoxStore:
   AND $0F
   OR E
   LD (HL),A
-  LD DE,BuildBoxPlaceLoop+$0016 ; Hiro's page +$4A, +$42 on an odd first row
+  LD DE,$5D4A             ; Hiro's page +$4A, +$42 on an odd first row
   LD A,(DrawRowPos)
   RRA
   JR NC,ActorBoxPattern
@@ -1807,8 +1814,8 @@ ActorBoxPattern:
 ;
 ; Callers: ActorBoxStore `$8F3B`, `$955A` (the room change), `$A41E`.
 ;
-; Witness: L1 149976 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 156241 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ActorScreenBox:
   PUSH IY
   POP HL
@@ -1874,7 +1881,7 @@ ActorScreenBoxY:
   POP HL
   RET
 
-; The box's columns from X = A, step D: C = first, B = last (2-pixel units), A
+; The box's columns from X = A, step D: C = first, B = last (3-pixel units), A
 ; = count
 ;
 ; L = X, (IY... HL) the actor page for +`$15` (width in pixels). C = X / 2, or
@@ -1884,8 +1891,8 @@ ActorScreenBoxY:
 ;
 ; Callers: ActorBoxStore `$8F3B`, ActorScreenBox `$8F75`.
 ;
-; Witness: L1 259616 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 270343 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BoxColumns:
   LD L,A
   SRL A
@@ -1918,8 +1925,8 @@ BoxColumnsWidth:
 ; `$16` or more. Falls into BoxSpan `$901F`. Callers: ActorBoxStore `$8F3B`,
 ; ActorScreenBox `$8F75`.
 ;
-; Witness: L1 259616 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 270343 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BoxRows:
   RRA
   RRA
@@ -1948,8 +1955,8 @@ BoxRowsEnd:
 ;
 ; The common tail of BoxColumns `$8FDD` and BoxRows `$9000`.
 ;
-; Witness: L1 519231 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 540685 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 BoxSpan:
   LD B,A
   INC A

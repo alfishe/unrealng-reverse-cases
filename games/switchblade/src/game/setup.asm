@@ -30,15 +30,7 @@
 ; weapon icon `$5B` `$5C`, glyph `$86`, "BONUS", end); glyphs `$85`/`$86` are
 ; the weapon bar (`$7F0D`).
 GlobalsInit:
-  DEFB $20,$1F,$01,$00,$01,$00,$01,$00,$01,$00 ; Vitality $20, shown $1F;
-                                               ; ChargeStep 1, Charge 0, shown
-                                               ; 1; ChargeReset 0; FirePrevious
-                                               ; 1 (patched); WeaponCount 0,
-                                               ; shown 1; Weapon 0
-  DEFB $00,$05,$00,$01,$00,$00,$00,$00,$00,$00 ; PauseFlag 0, Lives $05,
-  DEFB $00                                     ; Fragments 0, shown 1,
-                                               ; FireRequest, Invulnerable,
-                                               ; EndFlags 0, Score 0 (4 bytes)
+  INCBIN "res/tables/start-values.bin",$0000,21
 
 ; The rest of GlobalsInit: the score line and the status line, two text records
 ; for $837B (to ScoreLine $6657, StatusLine $6667)
@@ -72,7 +64,7 @@ ExtraBonusLit:
 ; ShowMessage `$66C8` with A = 4 (GAME OVER) and a wait of up to 40 x 5 frames
 ; or fire. Falls into EndOfGame.
 ;
-; Witness: L1 5 (gameover, rzx x4). Ran once in gameover.
+; Witness: L1 6 (gameover, hiscore, rzx x4). Ran once in gameover.
 GameOver:
   CALL ShowGameOverWait
 ; This entry point is used by the routine at MainLoopActors.
@@ -109,7 +101,8 @@ EndOfGame:
 ; 7, through `$835A`), then the tick on (`$845F` = 0) and `JP $8DFE`, the main
 ; loop.
 ;
-; Witness: L1 16 (deaths, gameover, menu, c x2, opt x3, rzx x2, rzxroom x1).
+; Witness: L1 20 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3,
+; rzx x2, rzxroom x1).
 NewGame:
   LD A,$80
   CALL SetTune
@@ -137,9 +130,9 @@ NewGameNameLoop:
 ; loop's stack (BC) is left behind; NewGame never returns, so the extra word
 ; does not matter.
 ;
-; Witness: L1 120 (deaths, gameover, menu, play48, c x1, opt x3, rzx x1,
-; rzxroom x1). The key branch is known only from the code (no keyed recording
-; has SLOPPY in the table).
+; Witness: L1 150 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1,
+; opt x3, rzx x1, rzxroom x1). The key branch is known only from the code (no
+; keyed recording has SLOPPY in the table).
 MatchCheatName:
   LD DE,CopyrightText+$0023
   LD B,$00
@@ -234,7 +227,8 @@ GameEntry:
 ; An entry of its own: the address is a routine entry of the tape loader's
 ; BASIC code in the recordings.
 ;
-; Witness: L1 9 (deaths, gameover, menu, c x2, opt x3, rzx x1).
+; Witness: L1 11 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx
+; x1).
 GameEntryIntro:
   CALL Intro48
 Hiro:
@@ -266,7 +260,8 @@ Hiro:
 ; An entry of its own: `$5D07` is also the BASIC line's code (the tape loader),
 ; so the recordings mark a routine entry here.
 ;
-; Witness: L1 102 (deaths, gameover, menu, c x2, opt x3, rzx x1, rzxroom x1).
+; Witness: L1 122 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx
+; x1, rzxroom x1).
 BuildPageTails:
   LD BC,$007E
   LD E,$82

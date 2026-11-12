@@ -18,7 +18,7 @@ and bank 4's AY player, frame by frame; the tables, the figures and the audio re
     python3 tools/sound_sim.py fig-effects48 OUT.png       the 14 beeper effects: level and burst a frame
     python3 tools/sound_sim.py fig-effects128 OUT.png      the 14 AY effects: volume and pitch a frame
     python3 tools/sound_sim.py fig-cost OUT.png            the glue's T-states a frame over tune 0
-    python3 tools/sound_sim.py wavs DIR                    tune 0 and tune 1 (MP3), tune 2, the 28 effects (WAV)
+    python3 tools/sound_sim.py wavs DIR                    the 3 tunes and the 28 effects: WAV up to 1 s, else MP3
 
 The 128K: build/game.bin at $5C00, the glue (build/boot.bin $40A4-$4145, as the bootstrap copies it) at $853F and
 build/bank4.bin at $C000 (bank 4, as the glue pages it). Each frame calls AyGlue $853F, as InterruptHandler $8456
@@ -29,7 +29,7 @@ the frame's sound. AY clock 1 773 400 Hz.
 The 48K: build/game.bin at $5C00; EffectPlayer $853F called once a frame, its OUT ($FE) writes with their T-states
 give the speaker bit (bit 4). The simulator has no contention; on the machine the burst runs inside the interrupt,
 after GameTick in play. CPU clock 3 500 000 Hz, 69 888 T a frame. Needs SkoolKit ($SKOOLKIT_VENV), numpy,
-matplotlib; lame or ffmpeg for the MP3.
+matplotlib; lame (or ffmpeg) for the MP3s, VBR quality 4 (`lame -V 4`).
 """
 import argparse
 import glob
@@ -298,10 +298,25 @@ def write_wav(path, samples, rate=44100):
 
 def to_mp3(wav, mp3):
     if shutil.which('lame'):
-        subprocess.run(['lame', '--quiet', '-b', '128', wav, mp3], check=True)
+        subprocess.run(['lame', '--quiet', '-V', '4', wav, mp3], check=True)
     else:
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-b:a', '128k', mp3], check=True)
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', wav, '-q:a', '4', mp3], check=True)
     os.remove(wav)
+
+
+SHORT_WAV = 1.0     # seconds: a render up to this long stays a WAV, a longer one becomes an MP3 (lame -V 4)
+
+
+def write_audio(path, samples, rate=44100):
+    """path without its extension: NAME.wav when the render is short, else NAME.mp3; the other one is removed"""
+    wav, mp3 = path + '.wav', path + '.mp3'
+    write_wav(wav, samples, rate)
+    if len(samples) / rate > SHORT_WAV:
+        to_mp3(wav, mp3)
+        return mp3
+    if os.path.exists(mp3):
+        os.remove(mp3)
+    return wav
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -662,21 +677,14 @@ def cmd_wavs(args):
         ay = tune_run(n)
         if n == 2:
             ay.run(40)       # the release tail
-        wav = os.path.join(args.dir, 'tune-%d.wav' % n)
-        write_wav(wav, render_ay(ay.regs))
-        if n < 2:
-            to_mp3(wav, os.path.join(args.dir, 'tune-%d.mp3' % n))
-            print('wrote tune-%d.mp3' % n, len(ay.regs), 'frames')
-        else:
-            print('wrote', wav, len(ay.regs), 'frames')
+        out = write_audio(os.path.join(args.dir, 'tune-%d' % n), render_ay(ay.regs))
+        print('wrote', out, len(ay.regs), 'frames')
     for n in range(14):
         rows, edges = effect48(n, limit=300)
-        p = os.path.join(args.dir, 'beeper-%02d.wav' % n)
-        write_wav(p, render_edges(edges))
+        p = write_audio(os.path.join(args.dir, 'beeper-%02d' % n), render_edges(edges))
         ay = effect128(n, limit=300)
         ay.run(10)
-        q = os.path.join(args.dir, 'ay-effect-%02d.wav' % n)
-        write_wav(q, render_ay(ay.regs))
+        q = write_audio(os.path.join(args.dir, 'ay-effect-%02d' % n), render_ay(ay.regs))
         print('wrote', p, len(rows), 'frames;', q, len(ay.regs), 'frames')
 
 

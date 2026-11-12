@@ -331,12 +331,12 @@ $D0D9 b NoisePeriod 1 ; The noise period from the last noise channel's tone peri
 @about The AY side of the player. StartNote $D0DA sets a channel up from an instrument; at every frame AyUpdate $D1C3 runs UpdateChannel $D2D6 for A, B and C (the gate timer, UpdateVibrato $D37E, the envelope phase through the record's +$0D/+$0E) and writes the registers 0-10: tone periods (A doubled; base + vibrato offset + slide offset), the noise period, the mixer, the volumes (volume / 8). WriteAyRegister $D3C6 is the one routine with ports $FFFD / $BFFD.
 
 $D0DA c StartNote ; Start a note or an effect on an AY channel
-> IX = the AY record, IY = the instrument (Instruments or Effects), HL = the tone period, C = the gate time. Sets the instrument, the period, the gate timer, the vibrato (delay +5, the first sweep half of +6, at least 1, step +7/+8, the offset 0) and clears the slide offset. The mixer: the channel off, then tone on if flags bit 0, noise on if bit 1, or noise on for a burst when DrumPending $C0D2 is set (DrumChannel, DrumTimer = DrumLength). Flags bit 2 (hardware envelope, no instrument) sets the AY envelope: shape = +0, period high = +4, low 0, volume $FF (31: bit 4 = envelope mode) and leaves the phase alone; otherwise the phase is EnvAttack $D308.
+> IX = the AY record, IY = the instrument (Instruments or Effects), HL = the tone period, C = the gate time. Sets the instrument, the period, the gate timer, the vibrato (delay +5, the first sweep half of +6, at least 1, step +7/+8, the offset 0) and clears the slide offset; the AY record's volume +$05 is kept, so a note or effect attacks from the volume the channel had (doc 09, 9.11). The mixer: the channel off, then tone on if flags bit 0, noise on if bit 1, or noise on for a burst when DrumPending $C0D2 is set (DrumChannel, DrumTimer = DrumLength). Flags bit 2 (hardware envelope, no instrument) sets the AY envelope: shape = +0, period high = +4, low 0, volume $FF (31: bit 4 = envelope mode) and leaves the phase alone; otherwise the phase is EnvAttack $D308.
 > Called by SequenceChannel $C1C5 (JP at $C30F) and PlayEffect $C011.
 > Witness: L1 13915 (c1, deaths, gameover, menu, rooms, opt x3).
 $D0ED ; the vibrato: delay, half the width (at least 1), the step
 $D0FE SetSweepFrames
-$D10D ; the volume, the vibrato offset and the slide offset from 0
+$D10D ; the vibrato offset (+$09/+$0A) and the slide offset (+$12/+$13) from 0; the volume (+$05) is kept
 $D11A ; the mixer: this channel off, then on as the flags say
 $D12D MixerDrum ; a drum burst pending?
 $D135 ; no: noise as the flags say

@@ -1084,15 +1084,34 @@ So every number of 9.8-9.15 that comes from the model is the machine's.
 
 ## 9.18 The audio files
 
-`python3 tools/sound_sim.py wavs docs/audio` renders, from the same model:
+`python3 tools/sound_sim.py wavs docs/audio` renders, from the same model. A render of up to 1 s stays a WAV; a
+longer one is an MP3 (`lame -V 4`), written by the same command:
 
 | File | What | Rendered from |
 | --- | --- | --- |
 | [tune-0.mp3](audio/tune-0.mp3) | the title, 170 s | the 14 registers a frame: three square-wave channels, the noise, the AY's volume table |
 | [tune-1.mp3](audio/tune-1.mp3) | the in-game music, 202 s | the same |
-| [tune-2.wav](audio/tune-2.wav) | the start jingle, with 40 frames of tail | the same |
-| [ay-effect-00.wav](audio/ay-effect-00.wav) ... [ay-effect-13.wav](audio/ay-effect-13.wav) | the 14 AY effects, 10 frames of tail | the same |
-| [beeper-00.wav](audio/beeper-00.wav) ... [beeper-13.wav](audio/beeper-13.wav) | the 14 beeper effects | the speaker's edges at their T-states, 3.5 MHz, filtered to 44.1 kHz |
+| [tune-2.mp3](audio/tune-2.mp3) | the start jingle, with 40 frames of tail | the same |
+
+The 14 effects: the AY ones with 10 frames of tail, rendered from the registers as the tunes; the beeper ones from the
+speaker's edges at their T-states, 3.5 MHz, filtered to 44.1 kHz.
+
+| Effect | 128K (AY) | 48K (beeper) |
+| ---: | --- | --- |
+| 0 | [ay-effect-00.mp3](audio/ay-effect-00.mp3) | [beeper-00.mp3](audio/beeper-00.mp3) |
+| 1 | [ay-effect-01.wav](audio/ay-effect-01.wav) | [beeper-01.mp3](audio/beeper-01.mp3) |
+| 2 | [ay-effect-02.mp3](audio/ay-effect-02.mp3) | [beeper-02.mp3](audio/beeper-02.mp3) |
+| 3 | [ay-effect-03.mp3](audio/ay-effect-03.mp3) | [beeper-03.mp3](audio/beeper-03.mp3) |
+| 4 | [ay-effect-04.mp3](audio/ay-effect-04.mp3) | [beeper-04.mp3](audio/beeper-04.mp3) |
+| 5 | [ay-effect-05.mp3](audio/ay-effect-05.mp3) | [beeper-05.mp3](audio/beeper-05.mp3) |
+| 6 | [ay-effect-06.mp3](audio/ay-effect-06.mp3) | [beeper-06.mp3](audio/beeper-06.mp3) |
+| 7 | [ay-effect-07.wav](audio/ay-effect-07.wav) | [beeper-07.wav](audio/beeper-07.wav) |
+| 8 | [ay-effect-08.mp3](audio/ay-effect-08.mp3) | [beeper-08.mp3](audio/beeper-08.mp3) |
+| 9 | [ay-effect-09.mp3](audio/ay-effect-09.mp3) | [beeper-09.mp3](audio/beeper-09.mp3) |
+| 10 | [ay-effect-10.mp3](audio/ay-effect-10.mp3) | [beeper-10.mp3](audio/beeper-10.mp3) |
+| 11 | [ay-effect-11.wav](audio/ay-effect-11.wav) | [beeper-11.wav](audio/beeper-11.wav) |
+| 12 | [ay-effect-12.wav](audio/ay-effect-12.wav) | [beeper-12.mp3](audio/beeper-12.mp3) |
+| 13 | [ay-effect-13.wav](audio/ay-effect-13.wav) | [beeper-13.mp3](audio/beeper-13.mp3) |
 
 The renders were not listened to while writing this document. They are made by the code from the registers and edges
 that the checks of 9.6, 9.16 and 9.17 compared with the machine.

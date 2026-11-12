@@ -1,0 +1,25 @@
+# GlobalsInit $5C00: the start values of the globals Vitality $6642-Score $6656, copied by NewGame $5CA9 (the
+# first 10 again after a lost life, 7 in a boss fight). A shown copy starts unequal to its value, so the panel
+# draws everything on the first pass; FirePrevious is patched by the control menu.
+offset,value,_note
+0,$20,Vitality
+1,$1F,VitalityShown
+2,$01,ChargeStep
+3,$00,Charge
+4,$01,ChargeShown
+5,$00,ChargeReset
+6,$01,FirePrevious
+7,$00,WeaponCount
+8,$01,WeaponCountShown
+9,$00,Weapon
+10,$00,PauseFlag
+11,$05,Lives (BCD)
+12,$00,Fragments
+13,$01,FragmentsShown
+14,$00,FireRequest
+15,$00,Invulnerable
+16,$00,EndFlags
+17,$00,Score (BCD)
+18,$00,Score
+19,$00,Score
+20,$00,Score

@@ -33,7 +33,8 @@
 ; ZXDB's "Infinite Lives" (`$964B`) misses this release; `$964E` = 0 (the 1 of
 ; `SUB $01`) gives it (WALKTHROUGH 6.3).
 ;
-; Witness: L1 826 (deaths, gameover, play48, rooms, rzx x60, rzxroom x7).
+; Witness: L1 827 (deaths, gameover, hiscore, play48, rooms, rzx x60, rzxroom
+; x7).
 LoseEnergy:
   LD C,A
   LD A,(Invulnerable)     ; the energy ball on: no loss
@@ -90,7 +91,8 @@ LoseLifeReload:
 ; The enemies' values (their +$0B) match the manual: 50 spikelice, 100 cybats /
 ; mansnakes / spidorbs, 200, 250, 300, 350, 5000 the giants.
 ;
-; Witness: L1 125 (deaths, play48, rzx x47, rzxroom x9).
+; Witness: L1 130 (bossgate, deaths, havok, play48, throw, rzx x47, rzxroom
+; x9).
 AddScore:
   PUSH BC
   PUSH DE
@@ -130,7 +132,8 @@ AddScoreLoop:
 ; Callers: AddScore (the score, 4 bytes to `$665B`), LoseEnergy and
 ; LetterPickup (the lives, 1 byte to `$6664`).
 ;
-; Witness: L1 589 (deaths, play48, rzx x63, rzxroom x10).
+; Witness: L1 609 (bossgate, deaths, havok, play48, throw, rzx x63, rzxroom
+; x10).
 BcdToDigits:
   LD A,(HL)
   RRA
@@ -158,10 +161,12 @@ BcdToDigits:
 ; the default weapon comes back (`$98F3` with HL = WeaponDefaultItem `$5DF8`).
 ; The bar: 16 bytes at `$7F0D` (the pixel rows of glyphs `$85`/`$86`): 16 -
 ; count rows cleared, then count rows of `$0E` (count >= 9) or `$E0`, shifted
-; one place on odd rows; StatusLine printed (`$836B`).
+; one place on odd rows; StatusLine printed (`$836B`). The status line is
+; printed tall at the aligned Y `$B8`, so row 7 of glyphs `$85`/`$86` is never
+; drawn: units 1 and 9 of the bar are invisible (doc 08, 8.8).
 ;
-; Witness: L1 1738275 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 2036417 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 PanelWeapon:
   LD HL,WeaponCount
   LD A,(HL)
@@ -236,8 +241,8 @@ PanelFragmentsIndex:
 ; Charge `$6645` / ChargeShown to the meter at `$51F8`, Vitality `$6642` /
 ; VitalityShown to `$51E0`, each through DrawMeter.
 ;
-; Witness: L1 1738281 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 2036423 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x18).
 PanelMeters:
   LD HL,Charge
   LD A,(HL)
@@ -265,8 +270,8 @@ PanelMetersEnergy:
 ; The entries `$FF90`, `$FF94`, `$FFB2` are split off because the tape loader's
 ; LD-EDGE routines and its end lie at these addresses while it runs.
 ;
-; Witness: L1 9595 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x15).
+; Witness: L1 10240 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x15).
 DrawMeter:
   LD (HL),A
   LD A,$FF
@@ -282,16 +287,16 @@ DrawMeter:
 
 ; MeterGradient[A AND 3]
 ;
-; Witness: L1 783675 (deaths, gameover, menu, play48, rooms, c x2, opt x3, rzx
-; x70, rzxroom x15).
+; Witness: L1 784281 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, rzx x70, rzxroom x15).
 DrawMeterPartial:
   LD BC,MeterGradient
   ADD A,C
 
 ; MeterPartial = the gradient byte; C = $C2 - A / 4
 ;
-; Witness: L1 1566732 (deaths, gameover, menu, play48, rooms, c x2, opt x3, rzx
-; x70, rzxroom x15).
+; Witness: L1 1567338 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x2, opt x3, rzx x70, rzxroom x15).
 DrawMeterGradient:
   LD C,A
   LD A,(BC)
@@ -320,8 +325,8 @@ DrawMeterRow:
 
 ; The next pixel row
 ;
-; Witness: L1 57577 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x70, rzxroom x15).
+; Witness: L1 61447 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x70, rzxroom x15).
 DrawMeterNext:
   POP HL
   INC D
@@ -348,8 +353,8 @@ PanelAttrs:
 ; Called by NewGame `$5CE7` (and the room change). The Z result picks the play
 ; window's colour (`$46` in room 4, the start room, else 7).
 ;
-; Witness: L1 11 (deaths, gameover, menu, play48, c x1, opt x3, rzx x1, rzxroom
-; x1).
+; Witness: L1 14 (deaths, gameover, havok, hiscore, menu, play48, throw, c x1,
+; opt x3, rzx x1, rzxroom x1).
 PanelAttrsRoom:
   LD HL,PanelAttrs
   LD DE,Attributes+736

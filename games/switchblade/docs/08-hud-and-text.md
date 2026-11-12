@@ -947,7 +947,10 @@ frame 1000:
 - C is still `$BD` = 189: the LDDR moves 9 entries of 21 bytes, and KEV falls off.
 - InsertHighScore runs at frame 1007, EnterName at frame 1010.
 
-In `gameover` InsertHighScore ran too: the score there was below KEV's 00005010, and it returned.
+In `gameover` InsertHighScore ran too: the score there was below KEV's 00005010, and it returned. Our own `hiscore`
+recording (128K, the score POKEd to 00500000 before the last life) inserts at place 1 at frame 2514 and enters ZX:
+EnterName at 2517, MoveNameBox 10 runs (frames 2769-3183), END at 3229, and the table shows NO.1 ZX at 3871
+(the figure in [10.17](10-gameplay-logic.md#1017-what-no-recording-reached)).
 
 EnterName `$A861` fills the name buffer `$82C2-$82CB` with ten '-' (an underscore glyph). It prints "WELL DONE! YOU
 HAVE A HIGH SCORE" / "PLEASE ENTER YOUR NAME" (tall), the letter grid NameGridText `$826A` (6 x 5: A-Z, '!', a blank,
@@ -1047,7 +1050,7 @@ line under the grid, with the underline one place on. MoveNameBox runs 25 times 
 - **EXTRA and BONUS complete** (8.10): MatchLetters ran only in the RZX segments; no keyed recording completes a word.
 - **The two ties of InsertHighScore** (8.14): a tie goes above. No recording has a tie.
 - **Delete and the limits of EnterName**: the tenth letter can be typed over; delete never goes below 0. The RZX
-  player's name entry shows typing, not these edges.
+  player's name entry and our `hiscore` show typing, not these edges.
 
 ## 8.16 The point
 

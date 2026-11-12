@@ -14,7 +14,7 @@ work/stage2/ann/ROOM.md has the details.
 | `outlines-2.txt` | RoomPatternsMore `$732E-$7344` | 23 | hex lines | DecodeRoom `$9F63` | outline shapes of styles 9-13 and 15 (after the variables DrawColumnPos `$732A`) |
 | `strings.txt` | RoomShapes `$7345-$73BC` | 120 | hex lines | ObjectPattern `$A016`, PlotPattern `$A02E` | tile strings of the commands 0-3: (tile, step) pairs, a step with bit 7 ends |
 | `decor-tiles.txt` | ShapeTilesA `$73BD`, ShapeTilesB `$73C1` | 8 | hex lines | RoomOpLedge `$A357` | the decor rows of command `$E` |
-| `ledge-tiles.txt` | SpecialTiles `$73C5` | 2 | hex lines | LadderCellTest `$9CB1` | the two ledge tiles `$55` and `$54` (CPIR) |
+| `ladder-tiles.txt` | SpecialTiles `$73C5` | 2 | hex lines | LadderCellTest `$9CB1` | the two ladder tiles `$55` and `$54` (CPIR) |
 | `solid-tiles.csv` | SolidTiles `$7292` (LedgeTiles `$72B4`), TopTiles `$72D8` (to `$72DD`) | 76 | CSV (page, tile) | TestCellSolid `$A334` (from NeighbourShade `$A300` and FillBackRow `$A265`), FillBackRow `$A265` (TopTiles) | the tiles that count as solid for the wall fill and shading |
 | `bars-1.csv` | StructureRecords `$7400-$74F5` (StructureSetB `$7436`, StructureSetC `$7496`, ComposeDest `$74BA`) | 246 | CSV, 6 bytes a record | StripRecordAddress `$A0EE`, StripPageFromRecord `$A101`, DrawStrip `$A109`; ComposeDest: ActorBoxStore `$8F3B`, ComposeActorCells `$8907` | the bar styles of codes 6, 9 and `$C` |
 | `horizon.txt` | RoomStrip `$74F6-$7510` | 27 | hex lines | BuildSurface `$A039` | the horizon row of an open-air room: 20 bytes from `$74F5` + room |
@@ -46,7 +46,7 @@ shared record). A cell is written `@row.column`. The lines come in record order:
 - `zones default`: a 0 byte, meaning the room has the one zone of EmptyObjectList.
 - `zone @a-b.c ... @c ... [bit7] [last]`: a reveal zone record. It gives rectangles (first cell - last cell), then
   single cells. `last` sets bit 3, which ends the list.
-- `pickup tT nN @c`: a pickup. T is its type (pickup-tiles.csv), N its taken bit, @c its cell.
+- `pickup tT nN @c`: a pickup. T is its type (pickup-tiles.csv), N is the hidden content's kind (`$00` empty, else a pickup kind `$01-$1F`), @c its cell.
 - `enemy $KK @c`: an enemy start, kind `$KK` (tables/kind-templates.csv).
 
 The counts byte (enemies << 4 | pickups) is computed from the pickup and enemy lines. A room's record must keep its

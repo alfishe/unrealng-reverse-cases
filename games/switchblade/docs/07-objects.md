@@ -1172,7 +1172,7 @@ decrements the slot (the step routines are in doc 10). The nine slots and what f
 | `+$33` turn | TurnStep `$91E1` | StartTurn `$90B1` (a move against the facing) |
 | `+$34` action | ActionStep `$91F4` | a strike or a throw (HiroMelee, HiroAttack), StartHurtSeq |
 | `+$35` hard landing | FallDamageStep `$920A` | HiroLanded `$90C3` after 20 fall steps |
-| `+$36` hang | HangStep `$9215` | GrabLedge `$906C` (Hiro takes a ladder) |
+| `+$36` hang | HangStep `$9215` | GrabLadder `$906C` (Hiro takes a ladder) |
 | `+$37` death | DeathStep `$91A9` | ActorExpired `$9163` |
 | `+$38` rise | RiseStep `$91D4` | DeathLeavesBonus `$911A` |
 
@@ -1360,7 +1360,7 @@ $9365  LD L,$1B
 $9367  LD D,(HL)
 $9368  JP MoveActor
 ChaserTowardHiro:
-$936B  LD A,(BuildRowBaseLoop+$0004)
+$936B  LD A,(Hiro+$002A)
 $936E  RLA
 $936F  LD L,$01
 $9371  CP (HL)
@@ -1371,7 +1371,7 @@ $9379  LD D,$FE
 $937B  JP MoveActor
 ```
 
-`BuildRowBaseLoop+$0004` is `$5D2A`, Hiro's box left; doubled it is his X rounded to a column.
+`Hiro+$002A` is `$5D2A`, Hiro's box left; doubled it is his X rounded to a column.
 
 ```mermaid
 stateDiagram-v2
@@ -1780,7 +1780,8 @@ How to read it: Hiro sweeps at frame 2219; the patroller flashes through its dea
 
 Witness: StrikeActor passed the box test twice in `play48` (`$9723`): the kills at frames 1775 and 2219, both
 patrollers, both at once (2 hit points against a strike of 3). KillActor ran twice in `play48` and 49 times in 27
-RZX segments. OpenGate `$97E2` and the win `$97CA` ran in no recording (all keyed builds and all 71 RZX segments).
+RZX segments. OpenGate `$97E2` ran in `bossgate` at frame 435 and the win `$97CA` in `havok` at frame 29 (each with
+the boss's hit points POKEd to 1; the figure in [10.17](10-gameplay-logic.md#1017-what-no-recording-reached)); no RZX segment runs either.
 TouchHiro found an overlap (`$981C`) 208 times in `play48`; HurtHiro ran 29 times there.
 
 ## 7.15 Random numbers
@@ -1908,9 +1909,8 @@ and the score 29 270 → 39 270 at frame 529.
 
 ## 7.17 What no recording reached
 
-- OpenGate `$97E2` and the win in KillActor (`$97CA`): no giant and no Havok died in any recording, keyed or RZX
-  segment (all 71 checked). `r136000` starts in room 123 with 16 fragments and the Fireblade, but Havok does not die in
-  our replay; `r138000` starts after the win (doc 10).
+- OpenGate `$97E2` and the win in KillActor (`$97CA`): no giant and no Havok dies in a recording without a POKE. With
+  the boss's hit points POKEd to 1, `bossgate` (frame 435) and `havok` (frame 29) run both (doc 10.17).
 - The power reset `$9943` (CollectPickup) and the reset shields made by a strike: not executed in any recording.
 - BossFire's eviction of another actor from page `$60`: known only from the code (room 58 would show it).
 - The window release `$8ABB` ran only in 3 RZX segments; the top exit of a room `$95A4` only in 3.

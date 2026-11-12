@@ -324,7 +324,147 @@ def plan_play48(r):
     r.shot('end')
 
 
-PLANS = {'play48': plan_play48, 'c1': plan_c1, 'c48': plan_c48, 'menu': plan_menu, 'gameover': plan_gameover, 'rooms': plan_rooms, 'opt2': plan_opt2, 'opt3': plan_opt3, 'opt4': plan_opt4}
+def replay_rzx_keys(r, script, upto, pokes=(), step=None):
+    """Holds the keys of an RZX segment's input script (tests/inputs/rFFFFFF.txt, frames from the segment's start,
+    which is this recording's frame 0) from the current frame up to frame @p upto; each (frame, address, bytes, why)
+    of @p pokes is written at its frame; @p step(r) runs every 10 frames"""
+    events = []
+    for line in open(os.path.join(CASE, script)):
+        if line.startswith('#'):
+            continue
+        f, keys = line.split()
+        events.append((int(f), [] if keys in ('-', 'END') else keys.split('+')))
+    pokes = sorted(pokes)
+    while r.lab.frame < upto:
+        held = [k for f, k in events if f <= r.lab.frame][-1:] or [[]]
+        if sorted(held[0]) != sorted(r.held):
+            r.keys(held[0])
+        while pokes and pokes[0][0] <= r.lab.frame:
+            _, addr, data, why = pokes.pop(0)
+            r.poke(addr, data, why)
+        later = [f for f, _ in events if f > r.lab.frame] + [p[0] for p in pokes] + [upto]
+        n = min(min(later) - r.lab.frame, 10)
+        r.lab.run(n)
+        if step:
+            step(r)
+
+
+def plan_bossgate(r):
+    """bossgate: a giant killed and its gate opened (run with --model 48K --start work/stage2/rzx/snap-062000.z80, the
+    RZX run's state at frame 62 000, room 58, as the replay segment r062000 starts): the RZX player's keys
+    (tests/inputs/r062000.txt) held frame by frame as in r062000, with one POKE on this machine at frame 420: the
+    giant's hit points (+`$13` of page `$5F`, kind `$27`; 36 before) = 1, so its next hit by a shot kills it: KillActor's
+    boss branch `$97B9`, OpenGate `$97E2` (the gate, kind `$2A` on page `$5E`, expires), sound 3; then the rest of the
+    segment's keys to frame 2000 and 300 frames with no key"""
+    r.shot('start')
+    seen = {}
+
+    def step(r):
+        gate = r.lab.read(0x5E02, 1)[0] & 1 and r.lab.read(0x5E1C, 1)[0] == 0x2A
+        boss = r.lab.read(0x5F02, 1)[0] & 1 and r.lab.read(0x5F1C, 1)[0] == 0x27
+        if not boss and 'boss-gone' not in seen and r.lab.frame > 420:
+            seen['boss-gone'] = 1
+            r.shot('boss-gone')
+        if not gate and 'gate-gone' not in seen and r.lab.frame > 420:
+            seen['gate-gone'] = 1
+            r.shot('gate-gone')
+    replay_rzx_keys(r, 'tests/inputs/r062000.txt', 420)
+    r.shot('boss')
+    replay_rzx_keys(r, 'tests/inputs/r062000.txt', 2000,
+                    [(420, 0x5F13, [1], 'the giant (kind $27, page $5F) hit points 1: its next hit kills it')], step)
+    r.shot('segment-end')
+    r.keys([])
+    r.wait(300)
+    r.shot('end')
+
+
+def plan_havok(r):
+    """havok: Havok killed, the game won (run with --model 48K --start work/stage2/rzx/snap-136000.z80, the RZX run's
+    state at frame 136 000, room 123, Hiro with the Fireblade, as the replay segment r136000 starts): the RZX player's
+    keys (tests/inputs/r136000.txt) held frame by frame as in r136000, with one POKE on this machine at frame 20:
+    Havok's hit points (+`$13` of page `$5E`, kind `$25`; 33 before) = 1, so the Fireblade's next hit kills him:
+    KillActor's boss branch `$97B9` finds no gate, the win `$97CA` (20000 a life left, EndFlags), Havok's fade and the
+    dawn text; after the segment's keys (to frame 2000) fire is pressed every 300 frames: the end, the high-score
+    entry (the keys 5 8 7 6 0 as in hiscore: END at once) and the title"""
+    r.shot('start')
+    replay_rzx_keys(r, 'tests/inputs/r136000.txt', 2000,
+                    [(20, 0x5E13, [1], 'Havok (kind $25, page $5E) hit points 1: his next hit kills him')])
+    r.shot('segment-end')
+    for i in range(12):
+        r.keys([])
+        r.wait(300)
+        r.shot(f'after-{i:02d}')
+        r.tap('0', 5, 20)
+    r.shot('end')
+
+
+def plan_throw(r):
+    """throw: thrown weapons on the 128K (from the menu after the load, explore/loaded.szx): 4 (Protek), the intro,
+    then POKEs on this machine: Weapon `$664B` = 4 (the spinblade, kind `$43`, life 256 steps) and WeaponCount `$6649`
+    = 16; fire held and let go facing right (HiroAttack `$926E` throws on page `$6600`), a screen while the shot
+    flies; then Weapon = 1 (the blade, kind `$40`, life FireHeld x 4) and throws facing left; WeaponCount falls one a
+    throw and the panel's weapon bar with it"""
+    start_game(r, '4')
+    r.wait(400)
+    r.shot('play')
+    r.poke(0x664B, [4], 'Weapon 4: the spinblade')
+    r.poke(0x6649, [16], 'WeaponCount 16')
+    r.wait(10)
+    for i in range(4):
+        walk(r, F, 12 + 8 * i)
+        walk(r, '', 6, f'spinblade-{i}')
+        r.wait(24)
+        r.shot(f'spinblade-{i}-flying')
+        r.wait(120)
+    r.poke(0x664B, [1], 'Weapon 1: the blade')
+    walk(r, L, 20)
+    for i in range(4):
+        walk(r, F, 12 + 8 * i)
+        walk(r, '', 6, f'blade-{i}')
+        r.wait(10)
+        r.shot(f'blade-{i}-flying')
+        r.wait(100)
+    r.shot('end')
+
+
+def plan_hiscore(r):
+    """hiscore: a name entered in the high-score table (from the menu after the load, explore/loaded.szx): 4 (Protek),
+    the intro, then POKEs on this machine: the score `$6653` = 00 50 00 00 (BCD) and its digits ScoreDigits `$665B`
+    "00500000", lives `$664D` = 0 and energy `$6642` = 1 (the first hit is the game over, as in gameover); Hiro walks
+    and jumps right until the hit; GAME OVER, InsertHighScore `$A806` puts 00500000 in place 1 and EnterName `$A861`
+    takes the name: the box (MoveNameBox `$A8E2`, keys 5 8 7 6) to Z, fire; to X, fire; to the END sign, fire; then
+    the title cycle with the high-score table, ZX in place 1 (a screen every 100 frames)"""
+    start_game(r, '4')
+    r.wait(400)
+    r.shot('play')
+    r.poke(0x6653, [0x00, 0x50, 0x00, 0x00], 'score 00500000 (BCD)')
+    r.poke(0x665B, list(b'00500000'), 'the score digits "00500000"')
+    r.poke(0x664D, [0], 'lives 0: the next death ends the game')
+    r.poke(0x6642, [1], 'energy 1: the next hit is a death')
+    for i in range(30):
+        walk(r, R, 80)
+        walk(r, UR, 30)
+        r.wait(30)
+        if r.lab.read(0x845F, 1)[0] == 1:
+            break
+    r.shot('game-over')
+    for _ in range(40):
+        r.wait(50)
+        if r.lab.read(0x5D00, 2) == bytes([4, 5]) and r.lab.read(0x82C2, 1) == b'-':
+            break
+    r.wait(150)
+    r.shot('name-entry')
+    for spec, n in ((L, 4), (F, 1), (U, 1), (R, 4), (F, 1), (D, 1), (F, 1)):
+        for _ in range(n):
+            r.tap(spec, 4, 30)
+        if spec == F:
+            r.wait(20)
+            r.shot('typed')
+    for i in range(16):
+        r.wait(100)
+        r.shot(f'after-{i:02d}')
+
+PLANS = {'bossgate': plan_bossgate, 'throw': plan_throw, 'hiscore': plan_hiscore, 'havok': plan_havok, 'play48': plan_play48, 'c1': plan_c1, 'c48': plan_c48, 'menu': plan_menu, 'gameover': plan_gameover, 'rooms': plan_rooms, 'opt2': plan_opt2, 'opt3': plan_opt3, 'opt4': plan_opt4}
 
 
 def main():

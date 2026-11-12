@@ -445,7 +445,7 @@ ShowMessage:
 ; this address and the disassembly goes on through the glyph bytes to `$66F6`.
 ; Nothing jumps here in the image.
 ;
-; Witness: L1 12 (gameover, menu, opt x3, rzx x5).
+; Witness: L1 13 (gameover, hiscore, menu, opt x3, rzx x5).
 GlyphBytesAsCode:
   RRA
 GlyphBytesTail:
@@ -550,7 +550,8 @@ ControlMenuWait:
 
 ; The next key (bit) of 1-4
 ;
-; Witness: L1 9813576 (deaths, gameover, menu, c x2, opt x3, rzx x1).
+; Witness: L1 9813588 (deaths, gameover, hiscore, menu, throw, c x2, opt x3,
+; rzx x1).
 ControlMenuKey:
   RRA
   JR NC,ControlMenuPatch
@@ -607,11 +608,14 @@ ZoneRecords:
 ;
 ; Keys 1 and 2 are the Sinclair joysticks (keys 6-0, fire 0; keys 1-5, fire 5),
 ; 3 the Kempston port `$1F` (bits inverted by CPL, so the `RRA` slot is a
-; `NOP`), 4 the Protek / cursor keys 5-8 and 0.
+; `NOP`), 4 the Protek / cursor keys 5-8 and 0: key 5 is rotated into bit 1 and
+; ANDed with the `$EFFE` row, so key 5 and key 9 both give left; fire is key 0
+; only.
 ;
 ; The last record's fire test is 18 bytes (`$6B3B-$6B4C`); the others' 7 bytes
-; are followed by the next record (18 bytes are always copied, the rest is
-; never reached). The cursor test reads `$F7FE` (key 5) and `$EFFE` and ANDs
+; are followed by the next record (18 bytes are always copied: records 1-3
+; bring 11 bytes of the next record after their `RET`; record 4 runs into
+; `$6B42`-`$6B4C`). The cursor test reads `$F7FE` (key 5) and `$EFFE` and ANDs
 ; them, but only bit 0 (key 0) is tested.
 ControlRecords:
   DEFB $01,$1E,$1F,$1D,$1C,$14,$15 ; 1: Sinclair 1 (row $EFFE)
@@ -648,7 +652,7 @@ ControlGap:
 ;
 ; 26 runs (c48, gameover, menu).
 ;
-; Witness: L1 29 (gameover, menu, c x1, rzx x2, rzxroom x1).
+; Witness: L1 32 (gameover, havok, hiscore, menu, c x1, rzx x2, rzxroom x1).
 ShowHighScores:
   LD B,$28
 ShowHighScoresHold:
@@ -727,7 +731,8 @@ ShowHighScoresTable:
 ;
 ; 38 runs; TitleStep 8666 (c1, c48, deaths, gameover, menu, opt2-4).
 ;
-; Witness: L1 41 (deaths, gameover, menu, c x2, opt x3, rzx x2, rzxroom x1).
+; Witness: L1 47 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt x3,
+; rzx x2, rzxroom x1).
 TitleSequence:
   LD HL,TitleSceneIndex
   LD (HL),$B6
@@ -878,9 +883,11 @@ LoadTitlePiecesLoop:
 ; into spaces) is copied into the entry's 10 name bytes.
 ;
 ; 1 run (gameover: the score was not high enough, `$A826` returned). The entry
-; ran in the RZX run (rzx-c, frame 142 000), which has no L1 yet.
+; ran in the RZX run: segment r140000 (work/stage2/rzx/r140000),
+; InsertHighScore at frame 1007 with the score 00342890 (place 1), EnterName at
+; 1010.
 ;
-; Witness: L1 6 (gameover, rzx x5).
+; Witness: L1 8 (gameover, havok, hiscore, rzx x5).
 InsertHighScore:
   LD C,$BD
   LD HL,HiScoreEntries+$0008
@@ -962,11 +969,11 @@ InsertHighScoreBlankNext:
 ; `$A8C8`) and moves on, at most to the tenth (the tenth can be typed over);
 ; the underline's X (`$82CE`) moves 2 a letter.
 ;
-; Not run in the keyed recordings (the gameover score did not reach the table);
-; the RZX run enters a name (rzx-c, frame 142 000; the screen in
-; docs/img/play/screens.png).
+; The hiscore recording (the score POKEd to 00500000 before the last life)
+; enters ZX at frames 2517-3229; havok enters the RZX player's name; r140000
+; frames 1010-2000 (docs/img/play/name-entry.gif, docs/img/text/screens.png).
 ;
-; Witness: L1 5 (rzx x5).
+; Witness: L1 7 (havok, hiscore, rzx x5).
 EnterName:
   LD B,$0A
   LD HL,NameEntryLetters
@@ -1046,10 +1053,11 @@ EnterNamePut:
 ; A step out of the grid is ignored. The box is erased at its old place (its Y
 ; and X copied from `$82AE` into the blank record `$80EB`, printed), the new Y
 ; and X come from the word table `$700C` (2 bytes a sign, by NameLetterIndex)
-; and the box is printed (`$82AE`); then a delay (`$8330`). Not run in the
-; keyed recordings.
+; and the box is printed (`$82AE`); then a delay (`$8330`). hiscore: 10 runs,
+; frames 2769-3183; r140000: 25 runs from frame 1187
+; (docs/img/routines/MoveNameBox.gif).
 ;
-; Witness: L1 17924 (rzx x5).
+; Witness: L1 17934 (hiscore, rzx x5).
 MoveNameBox:
   LD HL,Hiro
   LD A,E
@@ -1086,10 +1094,11 @@ MoveNameBox:
 
 ; A = row x 6 + column of the name-entry box (0-29)
 ;
-; BC = (`$5D00`): C the row, B the column; `$8EDD` gives 6 x row. Not run in
-; the keyed recordings.
+; BC = (`$5D00`): C the row, B the column; `$8EDD` gives 6 x row. hiscore: 13
+; runs; r140000: called by the 25 MoveNameBox runs from frame 1187
+; (docs/img/routines/MoveNameBox.gif).
 ;
-; Witness: L1 73 (rzx x5).
+; Witness: L1 87 (havok, hiscore, rzx x5).
 NameLetterIndex:
   LD BC,(Hiro)
   LD H,C

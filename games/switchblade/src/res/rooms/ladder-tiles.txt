@@ -1,2 +1,2 @@
-# SpecialTiles $73C5: the two ledge tiles ($55, $54) searched by $9CB1.
+# SpecialTiles $73C5: the two ladder tiles ($55, $54) searched by $9CB1.
 $73C5: 55 54

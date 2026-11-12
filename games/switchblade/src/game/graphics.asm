@@ -11,7 +11,8 @@
 ; digits, $22-$29 the frame of the name cursor, $2A / $26 and $65 / $66 the
 ; effects and music icons, $67-$84 the pieces of the Fireblade panel icons,
 ; $85-$86 MeterGlyphs. A glyph is 7 rows over a blank 8th; the tall mode
-; (PrintStringTall) draws row 3 twice.
+; (PrintStringTall) at an aligned Y draws row 4 twice and drops row 7; at a
+; straddling Y it draws the upper cell's last row again (9 rows).
 ;
 ; Witness: $7BE5-$7DCB, $7E0D-$7E1C, $7F0D-$7F1B read by PrintGlyph $83F9 in
 ; every recording.
@@ -35,8 +36,8 @@ FirebladeIcons:
 ; DrawHavok draws 10 x 8 lines of 6 bytes from $7F23 (or $7F3B) to the screen,
 ; so the picture is preceded by 90 or 66 bytes of FirebladeIcons on screen;
 ; ShiftHavokGraphic $87A6 rotates the 384 bytes $7F7D-$80FC in place (to $80FC:
-; the first 18 bytes of the texts after it too). Witness: not run in the keyed
-; recordings.
+; the first 18 bytes of the texts after it too). Witness: drawn in havok
+; (Havok's hit points POKEd to 1).
 HavokPicture:
   INCBIN "res/graphics/havok.bin",$0000,366
 

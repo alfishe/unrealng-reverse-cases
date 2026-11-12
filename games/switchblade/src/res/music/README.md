@@ -6,7 +6,7 @@ Ben Daglish and the 128K sound effects.
 | File | Address | Bytes | Format | Readers | What |
 | --- | --- | ---: | --- | --- | --- |
 | `tunes.txt` | Patterns `$C4B8`, PatternAddrLo `$CC97`, PatternAddrHi `$CCC4`, TuneTable `$CCF1`, OrderLists `$CD03` (to `$CE8B`) | 2516 | text, below | ReadOrderList `$C1E9` (StartTune through TuneTable, OrderPattern through PatternAddrLo/Hi), ReadPatternCommand `$C31F`, ReadEvent `$C27E` | the 45 patterns and the 9 order lists (3 tunes x channels A, B, C); the pointer tables are computed |
-| `arpeggios.csv` | Arpeggios `$CE8C-$CED3` | 72 | CSV, 8 bytes a record | ArpeggioStart, UpdateArpeggio `$C390` | arpeggios 1-9: a head (bit 7 loop, bits 3-5 the note's own frames, bits 0-2 + 1 the steps) and the steps (bits 3-7 semitones, bits 0-2 frames) |
+| `arpeggios.csv` | Arpeggios `$CE8C-$CED3` | 72 | CSV, 8 bytes a record | ArpeggioStart, UpdateArpeggio `$C390` | arpeggios 1-9 (row n is arpeggio n + 1, the `arpN` of tunes.txt): a head (bit 7 loop, bits 3-5 the note's own frames, bits 0-2 + 1 the steps) and the steps (bits 3-7 semitones, bits 0-2 frames) |
 | `instruments.csv` | Instruments `$CED4-$CF5F` | 140 | CSV, 10 bytes a record | ReadPatternCommand `$C31F` (through the slots), StartNote `$D0DA` | 14 instruments: the envelope steps, sustain, peak, the vibrato, the mixer flags |
 | `effects.csv` | Effects `$CF60-$D015` | 182 | CSV, 13 bytes a record | PlayEffect `$C011` | the 14 sound effects on channel A: an instrument, the tone period, the gate time |
 | `notes.csv` | NoteTable `$D016-$D09B` | 134 | CSV, 67 words | ReadEvent `$C27E` (EventNoteIndex, SetNotePeriod), AyUpdate `$D1C3` | the tone periods; `_note` is the note name (index n = MIDI 40 + n on channels B and C, an octave lower on A) |

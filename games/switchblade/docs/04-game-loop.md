@@ -635,7 +635,7 @@ CheckRoomExit:                  ; $955A
   LD A,(Hiro+$0002)             ; on a ladder: always test the rows
   AND $08
   JR NZ,RoomExitTestY
-  LD A,(BuildOutlineMaskLoop+$000C) ; $5D20 = Hiro+$20: top above the room (bit 5)
+  LD A,(Hiro+$0020)            ; $5D20: top above the room (bit 5)
   BIT 5,A
   JR NZ,RoomExitTestX
 RoomExitTestY:
@@ -666,8 +666,8 @@ RoomExitTestX:
   JP SpawnZoneEnemies           ; $A59E
 ```
 
-The operand printed as `BuildOutlineMaskLoop+$000C` is the address `$5D20`, Hiro's +`$20`. The `.ann` prints it with
-the label of the set-up code that sits at `$5D20` before play overwrites the page.
+The operand `Hiro+$0020` is the address `$5D20`, Hiro's +`$20`. The stage-2 source printed it with the label of the
+set-up code that sits at `$5D20` before play overwrites the page (`BuildOutlineMaskLoop+$000C`); an `@isub` names it now.
 
 ```mermaid
 flowchart TD
@@ -704,8 +704,9 @@ it:
    SpawnRoomEnemies `$A59B`, RestoreShield `$995C`.
 
 The RZX run has eleven room builds of 60 to 72 frames without a pass, among them 72 frames from RZX frame 17 393 (the
-entry into room 31) ([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing), `tools/rzx_passes.py`). Doc 6 shows
-the build itself (`img/routines/BuildRoomPlanes.gif`, `EnterRoom.gif`). Witness: EnterRoom L1 201 in every play
+entry into room 31) ([WALKTHROUGH 1](../WALKTHROUGH.md#1-interrupts-and-timing), `tools/rzx_passes.py`). The build
+itself is animated in [doc 6, 6.3](06-rendering.md#63-the-cell-planes-and-the-room-build) (EnterRoom, room 4) and
+[doc 7, 7.6](07-objects.md#76-a-room-decoded-room-8-command-by-command) (Animation 7.1, BuildRoomPlanes, room 8). Witness: EnterRoom L1 201 in every play
 recording.
 
 ### The zone reveal
@@ -718,7 +719,7 @@ RevealZone:                     ; $A569
   LD A,(RevealedZones)          ; $6DFF
   LD C,A
   LD HL,$0000                   ; $A56D: two cells, written by $8FCF for the actor just placed
-  LD A,(BuildOutlineMaskLoop+$0007) ; $5D1B = Hiro+$1B: bit 7 picks L or H
+  LD A,(Hiro+$001B)             ; $5D1B: bit 7 picks L or H
   RLA
   JR C,RevealZoneTest
   LD L,H

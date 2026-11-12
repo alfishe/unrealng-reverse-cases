@@ -453,7 +453,7 @@ saved high-score table, so this source describes them all.
 
 ```mermaid
 flowchart TD
-    R["src/res: 84 editable files"] -->|"tools/res_formats.py build"| RB["build/res: the binary resources"]
+    R["src/res: 85 editable files"] -->|"tools/res_formats.py build"| RB["build/res: the binary resources"]
     A1["src/game/game.ann"] -->|"tools/mkasm_all.sh: kit/mkgame.py"| G["src/game/*.asm"]
     A2["src/bank4/bank4.ann"] --> B4["src/bank4/*.asm"]
     A3["src/boot/boot.ann"] --> BO["src/boot/*.asm"]

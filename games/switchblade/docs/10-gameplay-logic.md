@@ -50,7 +50,7 @@ The slot table of doc 7 names their step handlers:
 | +`$33` | turn | TurnStep `$91E1` | StartTurn `$90B1` |
 | +`$34` | action (a strike, a throw) | ActionStep `$91F4` | StartActionSeq `$9104` |
 | +`$35` | hard landing | FallDamageStep `$920A` | HiroLanded `$90C3` |
-| +`$36` | ladder grab | HangStep `$9215` | GrabLedge `$906C` |
+| +`$36` | ladder grab | HangStep `$9215` | GrabLadder `$906C` |
 | +`$37` | death | DeathStep `$91A9` | not used for Hiro |
 | +`$38` | rise | RiseStep `$91D4` | not used for Hiro |
 
@@ -178,7 +178,7 @@ MoveActor(D, E):
     if E < 0: ActorJump(D); return
     if E > 0:
         if D: E = 0                                         ; down with a side key: walk
-        else if LadderBelow: GrabLedge; return
+        else if LadderBelow: GrabLadder; return
         else: stand
     ProbeVertical; ProbeWalls                               ; the floor, the walls ahead
     if Hiro and D == 0: stand (+$24 = +$25 = 0)
@@ -203,7 +203,7 @@ $9B16  LD A,D                    ; down: with a D, just walk
 $9B17  OR A
 $9B18  JR NZ,MoveDownWalk
 $9B1A  CALL LadderBelow          ; no D: a ladder below?
-$9B1D  JP NZ,GrabLedge
+$9B1D  JP NZ,GrabLadder
 $9B20  LD E,D                    ; no: stand
 $9B21  JR MoveStand
 MoveDownWalk:
@@ -253,7 +253,7 @@ flowchart TD
     DN -->|"no"| W["probe floor and walls"]
     DN -->|"yes, with D"| W
     DN -->|"yes, no D"| LB{"LadderBelow?"}
-    LB -->|"yes"| G["GrabLedge 906C"]
+    LB -->|"yes"| G["GrabLadder 906C"]
     LB -->|"no"| S["stand: counters 0"]
     W --> X{"D still not 0?"}
     X -->|"yes"| C["+24 and +25 + 1"]
@@ -277,7 +277,7 @@ decides how far the next jump goes.
 
 Up starts a jump. ActorJump `$9023` picks one of three fixed scripts by the side key and the run counter:
 
-- no side key: StandScript `$7B00`, 11 steps; but with a ladder above Hiro's column, GrabLedge instead (10.4);
+- no side key: StandScript `$7B00`, 11 steps; but with a ladder above Hiro's column, GrabLadder instead (10.4);
 - a side key: WalkScript `$7A51`, 12 steps;
 - a side key after a run of 4 steps or more: RunScript `$7A7A`, 16 steps.
 
@@ -291,7 +291,7 @@ they move in X.
 
 ```text
 ActorJump(D):
-    if D == 0 and LadderAbove: GrabLedge; return
+    if D == 0 and LadderAbove: GrabLadder; return
     script = StandScript if D == 0 else (RunScript if +$24 >= 4 else WalkScript)
     +$30 = script.count; delay = script.delay
     JumpMove(script)
@@ -312,7 +312,7 @@ $9024  OR A
 $9025  JR NZ,ActorJumpScript
 $9027  CALL LadderAbove          ; a ladder above?
 $902A  OR A
-$902B  JP NZ,GrabLedge
+$902B  JP NZ,GrabLadder
 ActorJumpScript:
 $902E  LD BC,StandScript         ; the straight jump
 $9031  LD A,D
@@ -368,7 +368,7 @@ The three scripts, from `src/res/tables/scripts-7a.txt` (the step bytes are fram
 ```mermaid
 flowchart TD
     A["ActorJump 9023"] --> L{"no side key and LadderAbove?"}
-    L -->|"yes"| G["GrabLedge 906C"]
+    L -->|"yes"| G["GrabLadder 906C"]
     L -->|"no"| P{"side key?"}
     P -->|"no"| S1["StandScript 7B00, 11 steps"]
     P -->|"yes"| R{"run +24 >= 4?"}
@@ -460,23 +460,23 @@ builds and 733 times in 64 RZX segments. JumpStep ran 160 times in `play48`.
 
 ## 10.4 Ladders
 
-The code calls ladders "ledges" (GrabLedge, ClimbOntoLedge, TileActionScript), but they are ladders: plane `$6A`
-(doc 7, 7.1) marks a ladder's cells with the special tiles `$55` (a rung under the feet) and `$54`, and a ladder's top
+The stage-2 source first called them ledges; they are ladders (GrabLadder, LeaveLadder, LadderGrabScript). Plane
+`$6A` (doc 7, 7.1) marks a ladder's cells with the special tiles `$55` (a rung under the feet) and `$54`, and a ladder's top
 with `$53`. Hiro takes a ladder in two ways:
 
 - up with no side key, when the cell 20 pixels above holds `$55` or `$54` (LadderAbove `$9CA7`);
 - down with no side key, when the cell below holds one (LadderBelow `$9CA1`).
 
-Both need Hiro on the ladder's column: X mod 16 = 0 or 8. GrabLedge `$906C` sets +`$02` bit 3 (on a ladder) and
-plays TileActionScript `$7AAF` (2 steps) in slot +`$36`. From then on HiroMove sends every step to ClimbMove
+Both need Hiro on the ladder's column: X mod 16 = 0 or 8. GrabLadder `$906C` sets +`$02` bit 3 (on a ladder) and
+plays LadderGrabScript `$7AAF` (2 steps) in slot +`$36`. From then on HiroMove sends every step to ClimbMove
 `$9C4A`:
 
 - up: no X; the head test; the step stops (E = 0) when the cell at Y + 16, X + 2 is the top tile `$53`;
 - down: the floor 4 pixels below; while the cell at the feet is `$55`, E = 4, otherwise E = 0;
-- a side key at a stop: the facing is set and ClimbOntoLedge `$9078` leaves the ladder: bit 3 cleared, X + 2,
-  TileActionEndScript `$7AE8` (2 steps) in +`$32`.
+- a side key at a stop: the facing is set and LeaveLadder `$9078` leaves the ladder: bit 3 cleared, X + 2,
+  LadderLeaveScript `$7AE8` (2 steps) in +`$32`.
 
-A fall that starts on a ladder (FallSequenceStart with bit 3 set) also goes to ClimbOntoLedge: Hiro does not fall
+A fall that starts on a ladder (FallSequenceStart with bit 3 set) also goes to LeaveLadder: Hiro does not fall
 off a ladder.
 
 ```text
@@ -491,20 +491,20 @@ ClimbMove(D, E):
     if the floor 4 below is solid: ApplyMove; return
     E = 4 if plane6A[cell at the feet] == 55 else 0
     if D == 0: ApplyMove(0, E); return
-    facing = D / 2; ClimbOntoLedge         ; bit 3 off, X + 2, TileActionEndScript in +$32
+    facing = D / 2; LeaveLadder         ; bit 3 off, X + 2, LadderLeaveScript in +$32
 ```
 
 ```asm
-GrabLedge:
+GrabLadder:
 $906C  LD L,$02                  ; +$02 bit 3, script $7AAF in +$36
 $906E  SET 3,(HL)
-$9070  LD BC,TileActionScript
+$9070  LD BC,LadderGrabScript
 $9073  LD L,$36
 $9075  JP StartSequence
-ClimbOntoLedge:
+LeaveLadder:
 $9078  LD L,$02                  ; off: script $7AE8 in +$32, X + 2
 $907A  RES 3,(HL)
-$907C  LD BC,TileActionEndScript
+$907C  LD BC,LadderLeaveScript
 $907F  LD L,$01
 $9081  LD A,(HL)
 $9082  ADD A,$02
@@ -545,7 +545,7 @@ $9C96  JP Z,ApplyMove
 $9C99  LD L,$1B
 $9C9B  SRA D
 $9C9D  LD (HL),D
-$9C9E  JP ClimbOntoLedge
+$9C9E  JP LeaveLadder
 ...
 LadderCellTest:
 $9CB1  LD L,B                    ; the cell's tile in plane $6A
@@ -568,19 +568,19 @@ stateDiagram-v2
     [*] --> Ground
     Ground --> Grab: up, a ladder above (LadderAbove 9CA7)
     Ground --> Grab: down, a ladder below (LadderBelow 9CA1)
-    Grab --> OnLadder: TileActionScript 7AAF, 2 steps, +02 bit 3
+    Grab --> OnLadder: LadderGrabScript 7AAF, 2 steps, +02 bit 3
     OnLadder --> OnLadder: up 4 until the top tile 53
     OnLadder --> OnLadder: down 4 while the feet are on 55
     OnLadder --> Leave: a side key at a stop
     OnLadder --> Leave: a fall would start
-    Leave --> Ground: ClimbOntoLedge 9078, X + 2, TileActionEndScript 7AE8
+    Leave --> Ground: LeaveLadder 9078, X + 2, LadderLeaveScript 7AE8
 ```
 
 Worked example: `r014000` frames 1212-1249, room 20 (our replay of the RZX run, not the run itself).
 
 1. Samples 1212-1216: Hiro stands at Y `$80`, X `$80` (X mod 16 = 0, on a ladder column), flags `01`.
 2. Sample 1217: flags `09` (bit 3, on the ladder), slot +`$36` = 2, X `$7E`. Down was pressed on a ladder top:
-   LadderBelow, then GrabLedge in frame 1216.
+   LadderBelow, then GrabLadder in frame 1216.
 3. Samples 1219 and 1221: +`$36` = 1, then 0. The grab is over.
 4. Samples 1221-1248: Y `$84`, `$88`, ... `$9C`: 4 pixels every 4 frames. Each step found tile `$55` at the feet.
 5. Sample 1249: Room `$1C` (28), Y `$F0`. Hiro climbed out of room 20's bottom into the room below, still on the
@@ -595,12 +595,12 @@ docs/img/play/r014000-ladder.gif`.*
 How to read it: Hiro walks to the ladder, grabs it, climbs down 4 pixels a step, and the screen changes to room 28
 with him on the same ladder.
 
-![GrabLedge and ClimbMove in r014000 frames 1215-1226](img/routines/ClimbMove.gif)
+![GrabLadder and ClimbMove in r014000 frames 1215-1226](img/routines/ClimbMove.gif)
 
-*Animation 10.5. GrabLedge `$906C`, ClimbMove `$9C4A` and LadderBelow `$9CA1` in `r014000` frames 1215-1226, 24
+*Animation 10.5. GrabLadder `$906C`, ClimbMove `$9C4A` and LadderBelow `$9CA1` in `r014000` frames 1215-1226, 24
 pictures of 34944 T. Command: `python3 ../../kit/routine_anim.py --work work/docs/zsC/r014000 --listing
 build/game.lst --window 1215:0-1227:0 --pc 9C4A-9CA6,906C-9086,9CA7-9CD0 --view buffer:5D00:22x3:hex --range
-5D00-6BFF --pictures 24 --out docs/img/routines/ClimbMove.gif --title "GrabLedge and ClimbMove: Hiro takes the
+5D00-6BFF --pictures 24 --out docs/img/routines/ClimbMove.gif --title "GrabLadder and ClimbMove: Hiro takes the
 ladder down, r014000 frames 1215-1226"`.*
 
 How to read it:
@@ -608,7 +608,7 @@ How to read it:
 - Left: Hiro's page; byte 2 (the flags) turns from `01` to `09`, byte `$36` (row 3, column 11) counts the grab.
 - Right: the ladder code; LadderCellTest's `CPIR` finds `$55`, then ClimbDown keeps E = 4.
 
-Witness: ClimbMove ran 331 times in 13 RZX segments; GrabLedge 8 times in 8 segments; ClimbOntoLedge 15 times in 13
+Witness: ClimbMove ran 331 times in 13 RZX segments; GrabLadder 8 times in 8 segments; LeaveLadder 15 times in 13
 segments. No keyed recording of ours climbs (`play48` 0). The stop at the top tile `$9C6A` ran 10 times in 3
 segments.
 
@@ -1021,7 +1021,7 @@ $9292  LDI
 $92B5  LD BC,(Hiro)              ; Y + $0A, X + the offset
 ...
 $92C7  CALL InitActor            ; spawn on page $6600
-$92CA  LD A,(BuildOutlineMaskLoop+$0007)  ; Hiro's facing
+$92CA  LD A,(Hiro+$001B)  ; Hiro's facing
 $92CD  LD E,$1B
 $92CF  LD (DE),A
 $92D0  LD E,$3F
@@ -1095,7 +1095,7 @@ flowchart TD
     D --> T["throw script 7AEF in +34"]
 ```
 
-Worked example: no keyed recording of ours throws a weapon. Take the code with weapon 2 and a release at Charge 20:
+Worked example: the code, with weapon 2 and a release at Charge 20 (the `throw` recording throws the spinblade and the blade, below). Take the code with weapon 2 and a release at Charge 20:
 FireRequest 2, FireHeld 20. HiroAttack finds the kind `$41`, patches WeaponTemplate from `$6C51` 
 (`EF 5E FC 02 40 03 08`: walk list `$5EEF`, delay 2, damage 3, size 8), places the scorchball 10 pixels below Hiro's Y, sets its
 life to 20 x 4 = 80 steps, and WeaponCount goes from 16 to 15. At 2 units a step the scorchball flies 160 units
@@ -1103,8 +1103,9 @@ life to 20 x 4 = 80 steps, and WeaponCount goes from 16 to 15. At 2 units a step
 
 Witness: the throw (InitActor at `$92C7`) ran 141 times in 26 RZX segments, WeaponControl 2184 times in the same
 26. Kinds `$40-$42` (`$9302`) 43 times in 12 segments, kind `$43` 14 times and kind `$44` 19 times, each in 2
-segments. `play48` and the keyed builds never had a weapon: their 9 HiroAttack calls all went to the fist. Known
-only from the RZX segments and the code; no picture of ours shows a throw.
+segments. Our own `throw` recording (128K, Weapon `$664B` and WeaponCount `$6649` POKEd at frame 1869) throws
+eight times from the keys, frames 1893-3039: HiroAttack 8 runs, the throw `$92C7` 8, WeaponControl 268
+(the figure in 10.17); `bossgate` throws 10 times.
 
 **The point**: a weapon is a second actor that Hiro launches. The charge sets its range, its speed or its path
 depending on the weapon, and only the boss fights make shots free.
@@ -1120,7 +1121,7 @@ The collision pass (doc 7, 7.14) calls TouchHiro when an enemy's box meets Hiro'
 4. In a jump (+`$30` AND 7 not 0): the jump count is cut to its low three bits, and the flags become `03` (active,
    in the air): the jump goes on, shorter, and a strike in progress is disarmed.
 5. Otherwise +`$10` bit 4 is set. At Hiro's next step ActorUpdate starts the push-back script from HiroFallScript
-   in slot +`$31` (FallSequenceStart `$904A`): 6 steps of 3 frames, 2 units each. On a ladder ClimbOntoLedge runs
+   in slot +`$31` (FallSequenceStart `$904A`): 6 steps of 3 frames, 2 units each. On a ladder LeaveLadder runs
    instead.
 
 Between steps 4 and 5 stands a loop of 8 rounds at `$9895`. It enters with A = 0 and tests `AND $01`, which is
@@ -1152,11 +1153,11 @@ $9862  LD A,(DE)
 $9863  LD L,E
 $9864  XOR (HL)
 $9865  RLA
-$9866  JR C,HurtFacingSame       ; opposite facings: $7A18
+$9866  JR C,HurtFacingOpposite   ; opposite facings: $7A18
 $9868  LD A,$2F                  ; the same way: hurt animation $7A2F
 $986A  JR HurtHiroSet
 ...
-HurtFacingSame:
+HurtFacingOpposite:
 $9876  LD A,$18
 HurtHiroSet:
 $9878  LD (HiroFallScript),A     ; the low byte of Hiro's hurt animation
@@ -1170,7 +1171,7 @@ $9887  JR NZ,HurtHiroDamage
 $9889  ADD A,A
 HurtHiroDamage:
 $988A  CALL LoseEnergy
-$988D  LD HL,BuildRowBaseLoop+$000A  ; Hiro's slot +$30 (a jump) on?
+$988D  LD HL,Hiro+$0030  ; Hiro's slot +$30 (a jump) on?
 $9890  LD A,(HL)
 $9891  AND $07
 $9893  JR NZ,HurtKnockOff
@@ -1187,7 +1188,7 @@ $98A1  LD A,$03
 $98A3  LD (Hiro+$0002),A
 $98A6  RET
 HurtHiroFlag:
-$98A7  LD HL,BuildPageTails+$0009  ; +$10 bit 4: Hiro is hurt
+$98A7  LD HL,Hiro+$0010  ; +$10 bit 4: Hiro is hurt
 $98AA  SET 4,(HL)
 $98AC  RET
 ...
@@ -1571,7 +1572,8 @@ sample shows a change.
 Witness: CollectPickup ran 2 times in `play48`, once in the keyed builds and 45 times in 31 RZX segments.
 LetterPickup ran 4 times in 4 segments; the power-up shield 10 times in 9 segments, the speed-up once, the speed
 reset once, the bullets once, the invulnerability twice (`$98E8`) and the weapon shields 79 times through SetWeapon.
-The letters' completion (`$99AA`, `$99CB`) ran in no build of ours. The RZX run completes EXTRA at RZX frame 128 606
+EXTRA's completion (`$99AA`) ran once in our replay segment `r128000` (its L1); BONUS's (`$99CB`) in no build of
+ours. The RZX run completes EXTRA at RZX frame 128 606
 (its lives go from 1 to 2, [WALKTHROUGH 6.3](../WALKTHROUGH.md#63-the-state-variables-and-the-pokes)); doc 8
 ([8.10](08-hud-and-text.md#810-extra-and-bonus)) gives the letters' panel. Known only from the code: the power
 reset `$9943` and TransformShield `$973F` (0 runs in all builds).
@@ -1982,8 +1984,10 @@ is printed over the room.
 
 Witness: HavokFadeStep 241 runs and `$875C` once in `r138000`; HiroEndWalk 515 runs in 2 segments; `$84D7` once in
 `r140000`; EndOfGame 5 times in 5 segments (the game overs and the end). The KillActor win branch `$97CA` ran in no
-build of ours: the RZX run kills Havok between RZX frames 136 000 and 138 000, and our `r136000` replay does not
-(Havok stays alive). Known only from the code: the life bonus loop.
+RZX segment of ours (`r136000` leaves Havok alive). Our `havok` recording (48K, from the RZX snapshot at 136 000,
+Havok's hit points `$5E13` POKEd to 1 at frame 20) kills him at frame 29: KillActor `$97B9`, the gate search finds
+none, the win `$97CA`, the life bonus loop and GameWonSound `$97DE` once each; the score goes 00272890 to
+00342890, the RZX run's own end score. InsertHighScore runs at 1816 and EnterName at 1819.
 
 **The point**: the end is a cutscene made of game code. The win flag disables the keys, the hurts and the throws; the
 same Hiro, driven by HiroEndWalk, hops while the boss fades, and one press of fire leads to the high-score table.
@@ -2062,19 +2066,40 @@ bytes shows how central LoseEnergy, LoseLife and the WeaponCount decrement are.
 ## 10.17 What no recording reached
 
 The builds checked are `play48`, the other keyed builds (`c1`, `c48`, `deaths`, `gameover`, `menu`, `rooms`, `opt2-4`,
-the 15 POKE probes) and the 71 RZX segments.
+the 15 POKE probes), the 71 RZX segments, and the four witness recordings made at integration (`bossgate`,
+`throw`, `hiscore`, `havok`; WALKTHROUGH 6.0), each with a POKE that sets the scene.
+
+![The four witness recordings: a giant killed, a throw, Havok killed, a name entered](img/play/witness-recordings.png)
+
+*The four witness recordings (WALKTHROUGH 6.0): `bossgate` frames 420 and 492, `throw` 1921, `havok` 35, `hiscore`
+3183 and 3871. Command (the `havok` shot from its TTD with `kit/screen_shot.py`, WALKTHROUGH 6.1):*
+
+```sh
+python3 tools/fig_text.py screens docs/img/play/witness-recordings.png --shots \
+  "work/stage2/rec/bossgate/screens/000420-boss.png:bossgate 420: the giant, the gate" \
+  "work/stage2/rec/bossgate/screens/000492-gate-gone.png:bossgate 492: giant and gate gone" \
+  "work/stage2/rec/throw/screens/001921-spinblade-0-flying.png:throw 1921: a spinblade thrown" \
+  "work/docs/integrate/tt-havok/shots/f0035.png:havok 35: Havok killed, the fade" \
+  "work/stage2/rec/hiscore/screens/003183-typed.png:hiscore 3183: ZX typed" \
+  "work/stage2/rec/hiscore/screens/003871-after-05.png:hiscore 3871: NO.1 ZX"
+```
+
+How to read it: the giant stands left of Hiro, and one frame-435 strike later the giant and its gate are gone and the
+score is 5 000 higher; a spinblade flies right of Hiro; Havok's picture thins after the kill; ZX is typed in the grid
+and sits at the top of the table.
 
 | Rule | Code | Status |
 | --- | --- | --- |
-| a giant's death, the gate opening | KillActor `$97B9`, OpenGate `$97E2` | not executed in any build; the RZX run does it (its later rooms are reached) |
-| Havok's death, the life bonus | `$97CA-$97DC` | not executed in any build; the RZX run's state at 138 000 holds its result |
+| a giant's death, the gate opening | KillActor `$97B9`, OpenGate `$97E2` | `bossgate` frame 435 (the giant's hit points POKEd to 1) |
+| Havok's death, the life bonus | `$97CA-$97DC` | `havok` frame 29 (Havok's hit points POKEd to 1) |
 | the 16th fragment, 50 000, weapon 7 | `$9919` | not executed in any build; `r136000` holds Fragments 16 and Weapon 7 |
-| EXTRA and BONUS complete | `$99AA`, `$99CB` | not executed in any build; the RZX run's lives show EXTRA at 128 606 |
+| EXTRA complete | `$99AA` | once in `r128000` (L1); the RZX run's lives show EXTRA at 128 606 |
+| BONUS complete | `$99CB` | not executed in any build |
 | the power reset shield | `$9943` | not executed in any build |
 | a struck shield transformed | TransformShield `$973F` | not executed in any build |
-| a throw seen on our screen | HiroAttack `$92C7` | only in 26 RZX segments, no picture of ours |
+| a throw seen on our screen | HiroAttack `$92C7` | `throw` frames 1893-3039 (Weapon POKEd), the figure in 10.17 |
 | a boss's shot hurting Hiro (8) | `$9889` | only in 7 RZX segments (20 runs); no sample of ours |
-| a hurt on a ladder (ClimbOntoLedge from FallSequenceStart) | `$9058` | not checked by a sample of ours |
+| a hurt on a ladder (LeaveLadder from FallSequenceStart) | `$9058` | not checked by a sample of ours |
 
 Our segment replays diverge from the RZX run, so the boss fights they reach go otherwise: `r136000` reaches Havok
-with 16 fragments and the Fireblade, but he does not die in our 2000 frames.
+with 16 fragments and the Fireblade, but he does not die in our 2000 frames; `havok` kills him by a POKE.

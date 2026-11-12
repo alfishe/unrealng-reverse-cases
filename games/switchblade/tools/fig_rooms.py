@@ -7,7 +7,7 @@ reads is filled from src/res alone:
 
     rooms/rooms.txt $A928 (and the pointers the room table $7100 computed from its record order), rooms/map.txt $7048,
     rooms/outline-starts.csv $7300, outlines-1.txt $7310, outlines-2.txt $732E, strings.txt $7345,
-    decor-tiles.txt $73BD, ledge-tiles.txt $73C5, solid-tiles.csv $7292, bars-1.csv $7400, horizon.txt $74F6,
+    decor-tiles.txt $73BD, ladder-tiles.txt $73C5, solid-tiles.csv $7292, bars-1.csv $7400, horizon.txt $74F6,
     bars-2.csv $7511, default-zone.txt $75FB, pickup-tiles.csv $7BD8, graphics/tiles.png $D104,
     tables/cell-colours.csv at $66F7 (where BuildPageTails puts it at run time).
 
@@ -48,7 +48,7 @@ import swroom as SW  # noqa: E402
 ROM_MD5 = '4c42a2f075212361c3117015b107ff68'
 PLACES = [('rooms/rooms.bin', RF.ROOMS_AT), ('rooms/map.bin', 0x7048), ('rooms/outline-starts.bin', 0x7300),
           ('rooms/outlines-1.bin', 0x7310), ('rooms/outlines-2.bin', 0x732E), ('rooms/strings.bin', 0x7345),
-          ('rooms/decor-tiles.bin', 0x73BD), ('rooms/ledge-tiles.bin', 0x73C5), ('rooms/solid-tiles.bin', 0x7292),
+          ('rooms/decor-tiles.bin', 0x73BD), ('rooms/ladder-tiles.bin', 0x73C5), ('rooms/solid-tiles.bin', 0x7292),
           ('rooms/bars-1.bin', 0x7400), ('rooms/horizon.bin', 0x74F6), ('rooms/bars-2.bin', 0x7511),
           ('rooms/default-zone.bin', 0x75FB), ('rooms/pickup-tiles.bin', 0x7BD8), ('graphics/tiles.bin', 0xD104),
           ('graphics/enemies.bin', 0xE154), ('graphics/giants.bin', 0xE5BC), ('tables/cell-colours.bin', 0x66F7)]

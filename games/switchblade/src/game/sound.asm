@@ -25,7 +25,10 @@ EffectRequest:
   DEFB $FF                ; the effect to start, $FF none: the game writes 0-13
                           ; here, the player takes it once a frame
 SoundMode:
-  DEFB $00                ; 128K: 0 music, 1 effects
+  DEFB $00                ; 128K: 0 music, 1 effects. In music mode, after the
+                          ; jingle the glue requests $81 (tune 1 looped) and
+                          ; never reaches the effect branch: a 128K in music
+                          ; mode plays no effects (doc 09, 9.7)
 
   ORG $853F
 
@@ -37,9 +40,10 @@ SoundMode:
 ; the 162-byte glue to the AY player in bank 4 (AyGlue): the 48K bytes from
 ; $85E1 and the table EffectTable stay but are not run.
 ;
-; Witness: L1 206326 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19). The 128K recordings' runs at
-; $853F-$85E0 are the glue's; the 48K player runs in c48 and the RZX builds.
+; Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19). The 128K
+; recordings' runs at $853F-$85E0 are the glue's; the 48K player runs in c48
+; and the RZX builds.
 EffectPlayer:
   CALL EffectFrame
   LD A,(EnvelopeStep+$0004)
@@ -51,8 +55,8 @@ EffectPlayer:
 ; HL = EffectRequest, A = the request, the request back to $FF: $FF goes to
 ; EffectSound $8634, else StartEffect $855B (no sound that frame).
 ;
-; Witness: L1 206326 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 EffectFrame:
   LD HL,EffectRequest
   LD A,(HL)
@@ -90,8 +94,9 @@ EffectMixer:
 ; The level ($85CA) is not cleared: a new effect attacks from the level the old
 ; one left.
 ;
-; Witness: L1 54007 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x71, rzxroom x19). 128K runs here are the glue's.
+; Witness: L1 62138 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19). 128K runs
+; here are the glue's.
 StartEffect:
   LD C,A
   ADD A,A
@@ -144,8 +149,9 @@ SweepSpanShift:
 ; The last half step of the span (DE / 2), then the negation (an entry only
 ; because the 128K glue's $859E hook lies here)
 ;
-; Witness: L1 12275 (deaths, gameover, menu, play48, c x2, opt x3, poke-room
-; x15, rzx x71, rzxroom x19). 128K runs here are the glue's.
+; Witness: L1 13167 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19). 128K runs here are
+; the glue's.
 SweepSpanHalf:
   SRA D
   RR E
@@ -166,8 +172,8 @@ SweepSpanNegate:
 ; Store A as the envelope state (the JR offset at $85CC: 0 sustain, 9 attack,
 ; $16 decay, $2B release)
 ;
-; Witness: L1 7847 (play48, c x1, poke-room x15, rzx x71, rzxroom x19). 128K
-; runs here are the glue's.
+; Witness: L1 8022 (bossgate, havok, play48, c x1, poke-room x15, rzx x71,
+; rzxroom x19). 128K runs here are the glue's.
 SetEnvelopeState:
   LD (EnvelopeStep+$0006),A
   RET
@@ -183,8 +189,8 @@ SetEnvelopeState:
 ; (negative) and at a negative level sets EffectMixer OR 9 (idle when the other
 ; bits are set) with the level 0.
 ;
-; Witness: L1 101706 (deaths, gameover, menu, play48, c x2, opt x3, poke-room
-; x15, rzx x72, rzxroom x19).
+; Witness: L1 106023 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 EffectEnvelope:
   AND $09
   CP $09
@@ -198,15 +204,17 @@ EffectEnvelope:
 ; EffectTime $FF: no count-down (an entry only because the 128K glue's code
 ; starts here)
 ;
-; Witness: L1 72293 (deaths, gameover, menu, play48, c x2, opt x3, poke-room
-; x15, rzx x71, rzxroom x19). 128K runs here are the glue's.
+; Witness: L1 74157 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19). 128K runs here are
+; the glue's.
 EnvelopeTimeFF:
   JR Z,EnvelopeStep
 
 ; EffectTime - 1 (an entry because the glue's $85C5 hook lies here)
 ;
-; Witness: L1 64723 (deaths, gameover, menu, play48, c x2, opt x3, poke-room
-; x15, rzx x71, rzxroom x19). 128K runs here are the glue's.
+; Witness: L1 65807 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19). 128K runs here are
+; the glue's.
 EnvelopeTimeCount:
   DEC (HL)
 ; This entry point is used by the routines at EffectEnvelope and
@@ -261,7 +269,8 @@ EnvelopeRelease:
 ; reloaded from +2 (0: never) and the offset back to -(step x period / 2): a
 ; saw-tooth around the record's pitch.
 ;
-; Witness: L1 100746 (play48, c x1, poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72,
+; rzxroom x19).
 EffectSweep:
   INC HL
   LD A,(HL)
@@ -289,8 +298,8 @@ SweepStep:
 ; The sweep offset = the start value (LD HL,n, operand $862E, set by
 ; StartEffect)
 ;
-; Witness: L1 10795 (play48, poke-room x15, rzx x72, rzxroom x16). Not run in
-; the keyed recordings (the RZX builds run it).
+; Witness: L1 11983 (bossgate, havok, play48, poke-room x15, rzx x72, rzxroom
+; x16).
 SweepRestart:
   LD HL,$0000
   LD (EffectSound+$0014),HL
@@ -309,7 +318,8 @@ SweepRestart:
 ; is a 50 Hz buzz whose loudness follows the envelope: the pitch only picks one
 ; of four ultrasonic carriers.
 ;
-; Witness: L1 152326 (play48, c x1, poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 160413 (bossgate, havok, play48, c x1, poke-room x15, rzx x72,
+; rzxroom x19).
 EffectSound:
   LD A,(EffectMixer)
   CP $3F
@@ -345,7 +355,8 @@ BeeperDelay:
 ; The burst length C (the operand at $865B) from the level A: ((A / 2) AND $7C)
 ; OR 4
 ;
-; Witness: L1 100746 (play48, c x1, poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72,
+; rzxroom x19).
 LevelToBurst:
   RRCA
   OR $04
@@ -355,7 +366,8 @@ LevelToBurst:
 
 ; The DJNZ count (the operand at $865D) from the pitch byte A: bits 5-7, OR 1
 ;
-; Witness: L1 100746 (play48, c x1, poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 105058 (bossgate, havok, play48, c x1, poke-room x15, rzx x72,
+; rzxroom x19).
 PitchToDelay:
   RRCA
   RRCA

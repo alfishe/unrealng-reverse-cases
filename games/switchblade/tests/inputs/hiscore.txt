@@ -1,0 +1,52 @@
+# hiscore: a name entered in the high-score table (from the menu after the load, explore/loaded.szx): 4 (Protek),
+# the intro, then POKEs on this machine: the score `$6653` = 00 50 00 00 (BCD) and its digits ScoreDigits `$665B`
+# "00500000", lives `$664D` = 0 and energy `$6642` = 1 (the first hit is the game over, as in gameover); Hiro walks
+# and jumps right until the hit; GAME OVER, InsertHighScore `$A806` puts 00500000 in place 1 and EnterName `$A861`
+# takes the name: the box (MoveNameBox `$A8E2`, keys 5 8 7 6) to Z, fire; to X, fire; to the END sign, fire; then
+# the title cycle with the high-score table, ZX in place 1 (a screen every 100 frames)
+0 4
+4 -
+64 0
+69 -
+1869 8
+1949 8+7
+1979 -
+2009 8
+2089 8+7
+2119 -
+2149 8
+2229 8+7
+2259 -
+2289 8
+2369 8+7
+2399 -
+2429 8
+2509 8+7
+2539 -
+2769 5
+2773 -
+2803 5
+2807 -
+2837 5
+2841 -
+2871 5
+2875 -
+2905 0
+2909 -
+2959 7
+2963 -
+2993 8
+2997 -
+3027 8
+3031 -
+3061 8
+3065 -
+3095 8
+3099 -
+3129 0
+3133 -
+3183 6
+3187 -
+3217 0
+3221 -
+4871 END

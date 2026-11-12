@@ -12,8 +12,8 @@
 ; game, GameTick), EndText printed. Returns with POP BC / POP HL / RET (out of
 ; the actor dispatch $8E2B).
 ;
-; Witness: L1 564 (rzx x2). Not run in the keyed recordings (the end is in
-; rzx-c, no L1 yet).
+; Witness: L1 825 (havok, rzx x2): havok kills Havok with his hit points POKEd
+; to 1 at frame 20.
 HavokFade:
   LD A,(IY+$10)
   BIT 5,A
@@ -52,7 +52,7 @@ HavokFadeDraw:
 ; E = +$2C, A = +$2A: SpriteScreenAddress; ShiftHavokGraphic; 10 character rows
 ; of 8 lines of 6 bytes, each byte AND the mask at $878F.
 ;
-; Witness: L1 564 (rzx x2). Not run in the keyed recordings.
+; Witness: L1 825 (havok, rzx x2).
 DrawHavok:
   LD E,(IY+$2C)
   LD A,(IY+$2A)
@@ -103,7 +103,7 @@ DrawHavokNextRow:
 ; by RL from $80FC down, right by RR from $7F7D up, one pass a pixel; DE back
 ; to the column (L / 8 added).
 ;
-; Witness: L1 564 (rzx x2). Not run in the keyed recordings.
+; Witness: L1 825 (havok, rzx x2).
 ShiftHavokGraphic:
   LD A,E
   AND $E0

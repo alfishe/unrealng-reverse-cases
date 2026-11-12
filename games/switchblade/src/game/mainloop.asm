@@ -10,7 +10,7 @@
 ; until it ends), then falls into WaitFireLong. Callers: the game over $5C42
 ; and the quit from the pause ($668E: fire while paused).
 ;
-; Witness: L1 9 (gameover, menu, opt x3, rzx x4).
+; Witness: L1 10 (gameover, hiscore, menu, opt x3, rzx x4).
 ShowGameOverWait:
   LD A,$04
   CALL ShowMessage
@@ -20,7 +20,8 @@ ShowGameOverWait:
 ; H = $28, then WaitFireFrames. Callers: $5D4F, $5DD8 (the title and intro),
 ; $A73A (the high-score table).
 ;
-; Witness: L1 107 (deaths, gameover, menu, c x2, opt x3, rzx x6).
+; Witness: L1 122 (deaths, gameover, hiscore, menu, throw, c x2, opt x3, rzx
+; x6).
 WaitFireLong:
   LD H,$28
 
@@ -30,7 +31,8 @@ WaitFireLong:
 ; on fire; H counts down; at 0 DEC H once more so the return is NZ. Callers:
 ; $5D4F, $5DDE, $A6F5 (H = 1: 5 frames).
 ;
-; Witness: L1 5583 (deaths, gameover, menu, c x2, opt x3, rzx x6, rzxroom x2).
+; Witness: L1 6408 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt
+; x3, rzx x6, rzxroom x2).
 WaitFireFrames:
   CALL ReadInput
   EI
@@ -46,7 +48,7 @@ WaitFireHalt:
 
 ; Busy-wait $6000 loops (about 0.18 s)
 ;
-; Witness: L1 113 (gameover, menu, opt x3, rzx x7).
+; Witness: L1 144 (gameover, havok, hiscore, menu, opt x3, rzx x7).
 PauseLong:
   LD BC,$6000
 
@@ -54,7 +56,8 @@ PauseLong:
 ;
 ; Callers: PauseLong, $5D4F, HavokFade $8756, $66AB.
 ;
-; Witness: L1 3606091 (deaths, gameover, menu, c x2, opt x3, rzx x9).
+; Witness: L1 4580939 (deaths, gameover, havok, hiscore, menu, throw, c x2, opt
+; x3, rzx x9).
 DelayBC:
   DEC BC
   LD A,B
@@ -73,8 +76,8 @@ DelayBC:
 ; only 0 runs GameTick; EffectPlayer $853F every frame (on a 128K the glue to
 ; bank 4); EI, RETI.
 ;
-; Witness: L1 206326 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 222542 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 InterruptHandler:
   PUSH HL
   PUSH DE
@@ -114,8 +117,8 @@ InterruptHandler:
 ; message actor ($6602 bit 0) be off; then $69E3 = C and the power $6650 = 3
 ; (charge $19 or more), 2 ($09-$18) or 1.
 ;
-; Witness: L1 167059 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 177113 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 GameTick:
   LD HL,$0000
   INC HL
@@ -220,8 +223,8 @@ TickFireReleased:
 ; LD A,n: n ($850D) is the raw input GameTick read this frame; falls into
 ; DecodeDirection. Caller: $9333.
 ;
-; Witness: L1 30063 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 32293 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 ReadDirection:
   LD A,$00
 
@@ -236,8 +239,8 @@ ReadDirection:
 ; Returns SCF. Callers: ReadDirection, $A861 (the name entry), the 128K glue
 ; $85A3 (the title's toggle).
 ;
-; Witness: L1 498658 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 680151 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 DecodeDirection:
   AND $1E
   CP $1E
@@ -273,8 +276,8 @@ DirectionDone:
 ; WaitFireFrames, GameTick, $A6EF, $A76F (the 128K hooks call $859E there),
 ; $A894.
 ;
-; Witness: L1 642609 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 833030 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ReadInput:
   LD A,$EF
   IN A,($FE)
@@ -299,8 +302,8 @@ ReadInputSpace:
 ; and the two jobs copied over the loader, `$FF01` and `$FF64`.
 ;
 ; The tenth page `$6600` (Hiro's thrown weapon, kinds `$40-$46`) is not in this
-; loop: ActorStep `$9A4B` runs it on every second call. Nothing waits for the
-; frame: a pass costs about 2400-4000 T on average (518 T of the loop's own
+; loop: RunActorSteps `$9A4B` runs it on every second call. Nothing waits for
+; the frame: a pass costs about 2400-4000 T on average (518 T of the loop's own
 ; instructions; ActorUpdate 1566-1753 T a call, inclusive; `$FF01` and `$FF64`
 ; about 100 T each), so in light rooms the loop turns about 26 times a frame
 ; (c1: 25068 passes in the 975 frames of play). The room build runs inside an
@@ -311,8 +314,8 @@ ReadInputSpace:
 ; alone in room 4); deaths 108018 passes, 225247 updates; rooms 78837 and
 ; 107204; menu 133076; opt2-4 about 15680 each.
 ;
-; Witness: L1 1738289 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 2036434 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 MainLoop:
   LD SP,$5C00             ; the stack is reset on every pass
   LD B,$09                ; nine pages, $5D-$65; HL = +$02 (the flags) of the
@@ -326,8 +329,8 @@ MainLoop:
 ; here). H = the page, L = 2: +`$02` bit 0 (active) calls ActorUpdate `$8E2B`;
 ; after the ninth page the flags and the jobs, then `JR $8DFE`.
 ;
-; Witness: L1 15644549 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 18327840 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 MainLoopActors:
   LD A,(HL)               ; +$02 bit 0: the actor is active
   RRA
@@ -353,13 +356,12 @@ MainLoopActors:
 ; H = the actor page (L = 2), from MainLoop `$8E01` and from BossFire `$947D`
 ; (which runs page `$6000` to its end). HL and BC are kept.
 ;
-; 1. ActorStep `$9A4B` (mainloop, outside this range) sets IY to the page and
-; runs at most one actor's logic: on every second call the weapon page `$6600`
-; (or, with a boss in the room, the boss shot page `$6000`) first, then Hiro,
-; then the pages with +`$02` bit 2, then this one, each only when its step
-; delay +`$1D` is 0; the logic is a sequence step (+`$30`-`$38`) or the state
-; handler at +`$03`/+`$04` (the `c` entries below). IY is then the actor that
-; ran.
+; 1. RunActorSteps `$9A4B` sets IY to the page and runs at most one actor's
+; logic: on every second call the weapon page `$6600` (or, with a boss in the
+; room, the boss shot page `$6000`) first, then Hiro, then the pages with
+; +`$02` bit 2, then this one, each only when its step delay +`$1D` is 0; the
+; logic is a sequence step (+`$30`-`$38`) or the state handler at +`$03`/+`$04`
+; (the `c` entries below). IY is then the actor that ran.
 ;
 ; 2. When that actor's +`$20` bit 0 (moved, redraw) is set: clear it,
 ; ActorBoxStore `$8F3B` (its screen box), and draw: kind `$25` (Havok) goes to
@@ -373,8 +375,8 @@ MainLoopActors:
 ; and 1.1-1.3 % redraw (c1 308, deaths 2980): the step delays (+`$1A`, Hiro 3
 ; frames) are counted by the IM 2 tick, so most passes find nothing to do.
 ;
-; Witness: L1 3553005 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 3898690 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 ActorUpdate:
   PUSH HL
   PUSH BC
@@ -422,8 +424,8 @@ ActorUpdateDone:
 ; (airborne) or bit 3 (hanging), or any of his sequence counters +`$30`-`$38`
 ; is not 0 (ActorInSequence `$8E89`).
 ;
-; Witness: L1 716 (menu, play48, c x1, opt x3, poke-room x15, rzx x67, rzxroom
-; x10).
+; Witness: L1 771 (bossgate, havok, menu, play48, throw, c x1, opt x3,
+; poke-room x15, rzx x67, rzxroom x10).
 HiroBusy:
   LD A,(Hiro+$0002)
   AND $0A
@@ -451,8 +453,8 @@ HiroBusyNoJump:
 ; else A = 0 and Z. Callers: HiroBusy `$8E77`, `$9BB6` (keeps the redraw bit
 ; while a sequence plays).
 ;
-; Witness: L1 158093 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 163322 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ActorInSequence:
   LD L,$30
   LD B,$09
@@ -473,8 +475,8 @@ ActorInSequenceLoop:
 ; A = +`$20`, then ClipFlagsOff `$8E98`. Called by the render's `$8A90` for
 ; each actor it draws.
 ;
-; Witness: L1 153664 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 158778 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ActorOffWindow:
   LD L,$20
   LD A,(HL)
@@ -488,8 +490,8 @@ ActorOffWindow:
 ; `$30`: nothing of the box is inside the window. L = the bits on return.
 ; Callers: ActorUpdate `$8E48` (with `$69DD`), ActorOffWindow `$8E95`.
 ;
-; Witness: L1 253102 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 261190 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ClipFlagsOff:
   LD DE,$C030             ; D = $C0, E = $30: two masks, not an address
   LD L,A
@@ -507,8 +509,8 @@ ClipFlagsOff:
 ; a sprite's record in the table at `$D104` (24 bytes a record; the render
 ; reads it).
 ;
-; Witness: L1 534177 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 549398 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 FrameRecord:
   DEC A
   LD H,$00
@@ -534,8 +536,8 @@ FrameRecord:
 ; room's cell arrays (`$6700`, `$6800`, `$6A00`) in the collision code.
 ; Callers: `$9C5B`, `$9C82`, `$9D81`, `$9E4C`.
 ;
-; Witness: L1 187955 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 192856 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 CellIndex:
   LD A,H
   RRA
@@ -555,7 +557,7 @@ CellIndex:
 ;
 ; Falls into CellPixel `$8ECA` with A = `$69E2`. Callers: `$965F`, `$9F29`.
 ;
-; Witness: L1 103 (play48, rzx x31, rzxroom x4).
+; Witness: L1 108 (bossgate, play48, throw, rzx x31, rzxroom x4).
 LastCellPixel:
   LD A,(Strike+$0001)
 
@@ -564,8 +566,8 @@ LastCellPixel:
 ; Divides A by 20 by repeated subtraction (E counts from `$FF`). Caller:
 ; `$A5BF` (the room spawner), and LastCellPixel `$8EC7`.
 ;
-; Witness: L1 636 (deaths, gameover, play48, rooms, c x1, poke-room x13, rzx
-; x63, rzxroom x18).
+; Witness: L1 645 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c
+; x1, poke-room x13, rzx x63, rzxroom x18).
 CellPixel:
   LD DE,$14FF             ; D = 20 (the row width), E = -1
 CellPixelDivide:
@@ -590,8 +592,8 @@ CellPixelDivide:
 ; H and E unsigned; D is cleared, L ignored. Unrolled: eight `ADD HL,HL` / `ADD
 ; HL,DE` steps. Callers: the render `$8A90`, `$8B6A`, `$A0EE`, `$A91B`.
 ;
-; Witness: L1 231350 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 239246 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 Multiply8:
   LD L,$00
   LD D,L
@@ -631,21 +633,22 @@ Multiply8Done:
 
   ORG $9A4B
 
-; Run the next due actor step: the shot or the boss, Hiro, the fallers, actor H
+; Run the next due actor step: the shot or the boss's shot, Hiro, the fallers,
+; actor H
 ;
 ; Called by the actor update `$8E2B` with H = an active actor's page (562 575
 ; runs). IY = that page.
 ;
 ; Every other call (the operand at `$9A51` rotates `$AA`) the shot in page
 ; `$66` steps when it is active and due (the cyber-arm's shot moves at twice
-; the rate); on the calls between, when a boss fight is on (`$9A59`), the boss
-; in page `$60`. Bit 7 of `$6602` stops here. Then Hiro when due; then every
-; page `$5E-$65` that is falling (+2 bit 2) and due; then actor H when due.
-; Each "due" step (`$9A8E`) pops its caller's return, so the call ends after
-; one step.
+; the rate); on the calls between, when a boss fight is on (`$9A59`), the actor
+; in page `$60` (the boss's shot, BossFire). Bit 7 of `$6602` stops here. Then
+; Hiro when due; then every page `$5E-$65` that is falling (+2 bit 2) and due;
+; then actor H when due. Each "due" step (`$9A8E`) pops its caller's return, so
+; the call ends after one step.
 ;
-; Witness: L1 3553006 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 3898691 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 RunActorSteps:
   LD L,$00
   PUSH HL
@@ -688,8 +691,8 @@ StepFallersLoop:
 
 ; Step page D when it is active and due
 ;
-; Witness: L1 1880303 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 2054144 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 StepIfActive:
   LD E,$02
   LD A,(DE)
@@ -701,8 +704,8 @@ StepIfActive:
 ; Pops the caller's return (the call of RunActorSteps ends with this step), IY
 ; = HL = page D, falls into StepActor.
 ;
-; Witness: L1 3621052 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 3977795 (bossgate, deaths, gameover, havok, hiscore, menu,
+; play48, rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 StepIfDue:
   LD E,$1D
   LD A,(DE)
@@ -734,8 +737,8 @@ StepIfDue:
 ; expired (bit 5) `$9163`; bit 2 `$90A6`; Hiro with a combat move pending
 ; (`$6650`) `$926E`; else the handler at +3/+4 (RunHandler `$9AEC`).
 ;
-; Witness: L1 272056 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 277931 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 StepActor:
   LD L,$1A                ; the frame delay again
   LD E,(HL)
@@ -790,8 +793,8 @@ FindSlotLoop:
 ; Reached from StepActor and by `JP $9AEC` from `$920A`, `$926E` (and the
 ; handler `$9216`). The handler runs with HL = IY = the actor.
 ;
-; Witness: L1 230518 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 234521 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 RunHandler:
   LD L,$03
   LD C,(HL)
@@ -800,8 +803,8 @@ RunHandler:
 
 ; JP (BC)
 ;
-; Witness: L1 257681 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 262694 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 JumpToHandler:
   PUSH BC
   POP IX
@@ -822,8 +825,8 @@ RunSlotHandler:
 ; DE = the word at `$7200` + 2 (A AND `$7F`). Callers: `$926E`, `$98B6`,
 ; `$9ED7`, SpawnEnemy. 22 runs.
 ;
-; Witness: L1 750 (deaths, gameover, play48, rooms, c x1, poke-room x13, rzx
-; x65, rzxroom x18).
+; Witness: L1 775 (bossgate, deaths, gameover, hiscore, play48, rooms, throw, c
+; x1, poke-room x13, rzx x65, rzxroom x18).
 TemplateForKind:
   AND $7F
   LD H,$72
@@ -848,8 +851,8 @@ TemplateForKind:
 ; `$926E`, `$947D`, `$965F`, `$9962`, `$9ED7`, SpawnEnemy, the title
 ; (LoadTitlePieces `$A7D7`). 899 runs (every recording).
 ;
-; Witness: L1 2065 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x13, rzx x71, rzxroom x19).
+; Witness: L1 2229 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x13, rzx x71, rzxroom x19).
 InitActor:
   PUSH AF
   PUSH DE
@@ -904,8 +907,8 @@ InitActorFlags:
 ; X (+1) -= +`$3D`, +`$3D` = 0; A = +`$3C` (the base frame); joins
 ; SetActorFrame `$A6D0`. Callers: `$9201`, `$9240`. 219 runs.
 ;
-; Witness: L1 4319 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 4446 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ActorFrameBack:
   LD L,$3D
   LD A,(HL)
@@ -924,8 +927,8 @@ ActorFrameBack:
 ; offset; X += it, +`$3D` = the offset; the third byte is the frame; BC moves
 ; past the step. Joins SetActorFrame. Caller: `$919F`. 284 runs.
 ;
-; Witness: L1 6367 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 6615 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 ActorFrameStep:
   LD L,$01
   LD A,(HL)
@@ -955,8 +958,8 @@ ActorFrameStepApply:
 
 ; +$14 = frame A, its 5-byte record to +$15
 ;
-; Witness: L1 10686 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x70, rzxroom x18).
+; Witness: L1 11061 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x70, rzxroom x18).
 SetActorFrame:
   LD L,$14
   LD (HL),A
@@ -969,15 +972,15 @@ SetActorFrame:
 ;
 ; HL and BC kept. 899 runs.
 ;
-; Witness: L1 2065 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x13, rzx x71, rzxroom x19).
+; Witness: L1 2229 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x13, rzx x71, rzxroom x19).
 CopyFrameRecord:
   PUSH HL
 
 ; The copy itself (SetActorFrame joins here with HL already pushed)
 ;
-; Witness: L1 12751 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x71, rzxroom x19).
+; Witness: L1 13290 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x71, rzxroom x19).
 CopyFrameRecordBody:
   PUSH BC
   LD HL,SizeClasses

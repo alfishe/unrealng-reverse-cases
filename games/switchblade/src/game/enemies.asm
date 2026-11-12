@@ -12,8 +12,8 @@
 ; counter `$8473` (bit 6) and +`$27` = 0-7 steps of it. The step goes to
 ; WalkStep `$9B05` (which also turns them: StartTurn `$90B1`).
 ;
-; Witness: rooms 82 runs (`$9348` only in rooms). Witness: L1 17687 (rooms,
-; poke-room x8, rzx x55, rzxroom x10).
+; Witness: rooms 82 runs (`$9348` only in rooms). Witness: L1 17816 (bossgate,
+; rooms, poke-room x8, rzx x55, rzxroom x10).
 ChaserControl:
   LD L,$27
   XOR A
@@ -40,7 +40,7 @@ ChaserStep:
   LD D,(HL)
   JP MoveActor
 ChaserTowardHiro:
-  LD A,(BuildRowBaseLoop+$0004)
+  LD A,(Hiro+$002A)
   RLA
   LD L,$01
   CP (HL)
@@ -56,8 +56,8 @@ ChaserTowardHiro:
 ; room-edge test without the barrier test). The items carry their number in the
 ; kind (bit 7 set: `$9987` starts a 255-frame life +`$1E` and clears it).
 ;
-; Witness: deaths 134 runs. Witness: L1 52842 (deaths, play48, poke-room x5,
-; rzx x45, rzxroom x8).
+; Witness: deaths 134 runs. Witness: L1 53561 (bossgate, deaths, play48, throw,
+; poke-room x5, rzx x45, rzxroom x8).
 StillControl:
   LD DE,$0000
   CALL ProbeVertical
@@ -119,7 +119,8 @@ StalactiteControl:
 ; (D = 2) down past 0, then +`$40` (N + 1) the left steps (D = `$FE`), then
 ; both are reloaded. WalkStep `$9B05`.
 ;
-; Witness: L1 3588 (deaths, gameover, play48, rooms, c x1, rzx x3, rzxroom x5).
+; Witness: L1 3637 (deaths, gameover, hiscore, play48, rooms, c x1, rzx x3,
+; rzxroom x5).
 PatrolControl:
   XOR A
   LD E,A
@@ -179,7 +180,7 @@ TrapControl:
 ; From TrapControl `$93E1` (Hiro outside its zone) and its tails TrapRearm
 ; `$93EE` and ShotPathEnd `$93F6`. Not run in the keyed recordings.
 ;
-; Witness: L1 1098 (rzx x13, rzxroom x4).
+; Witness: L1 1100 (bossgate, havok, rzx x13, rzxroom x4).
 TrapStill:
   JP ApplyNoMove
 ; This entry point is used by the routine at PathControl.
@@ -212,8 +213,8 @@ ShotPathEnd:
 ; +`$25` + 1; the shot (kind `$2D`) gets the wall test `$9D8E`; MoveActor
 ; `$9B56`.
 ;
-; Witness: L1 11988 (deaths, gameover, menu, play48, rooms, opt x3, rzx x66,
-; rzxroom x9).
+; Witness: L1 12290 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, opt x3, rzx x66, rzxroom x9).
 PathControl:
   LD L,$05
   LD A,(HL)
@@ -315,14 +316,13 @@ PathStepX:
 ; (+`$1B` copied); sound 6. BC, HL kept.
 ;
 ; Called at every segment start of every path mover (209 calls in deaths,
-; gameover, menu, rooms, opt2-4), but the kind test passes in no keyed
-; recording (no boss room was entered): the fire itself (`$9487` on) is known
-; from the code. The RZX run's snapshot at frame 136 000 has Havok (kind `$25`)
-; on page `$5E` and a shot (kind `$2D`, handler PathControlShot `$940A`) on
-; `$6000`.
+; gameover, menu, rooms, opt2-4), and the kind test passes in bossgate (3
+; shots) and havok (1): the fire itself is `$9487` on. The RZX run's snapshot
+; at frame 136 000 has Havok (kind `$25`) on page `$5E` and a shot (kind `$2D`,
+; handler PathControlShot `$940A`) on `$6000`.
 ;
-; Witness: L1 4755 (deaths, gameover, menu, play48, rooms, opt x3, rzx x66,
-; rzxroom x9).
+; Witness: L1 4894 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, opt x3, rzx x66, rzxroom x9).
 BossFire:
   LD D,(HL)
   LD L,$1C
@@ -403,7 +403,7 @@ BossFireSpawn:
 ; spawned by `$9978` with `$6651` set) follows him until its life (+`$1E`) ends
 ; (the tick clears `$6651`).
 ;
-; Witness: L1 2509 (deaths, play48, rzx x53, rzxroom x2).
+; Witness: L1 2516 (deaths, havok, play48, rzx x53, rzxroom x2).
 ShieldFollow:
   LD A,(Hiro)
   LD L,$00
@@ -433,8 +433,8 @@ ShieldFollowX:
 ; +`$1A`/+`$1D` after each move (frames to the next step): the mover changes
 ; speed at random. Callers: PathControl `$944D`, `$9457`.
 ;
-; Witness: L1 19158 (deaths, gameover, menu, play48, rooms, opt x3, rzx x66,
-; rzxroom x9).
+; Witness: L1 19642 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, opt x3, rzx x66, rzxroom x9).
 RandomSpeed:
   LD L,$3F
   AND (HL)
@@ -508,8 +508,8 @@ HiroInZoneYes:
 ; `$6EFF` shifted left give one bit an enemy: clear (not gone) calls SpawnEnemy
 ; `$A5BF`. 27 + 109 runs.
 ;
-; Witness: L1 801 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x69, rzxroom x18).
+; Witness: L1 830 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x69, rzxroom x18).
 SpawnRoomEnemies:
   LD A,(RevealedZones)
 
@@ -553,8 +553,8 @@ SpawnRoomEnemiesLoop:
 ;
 ; 468 runs, 21 spawns (`$A5D0`).
 ;
-; Witness: L1 3644 (deaths, gameover, play48, rooms, c x1, poke-room x14, rzx
-; x68, rzxroom x17).
+; Witness: L1 3701 (bossgate, deaths, gameover, havok, hiscore, play48, rooms,
+; c x1, poke-room x14, rzx x68, rzxroom x17).
 SpawnEnemy:
   LD L,(IX+$01)
   LD H,$67
@@ -635,8 +635,8 @@ SpawnEnemyDone:
 ; One step: HL = HL + swap(HL) + bytes, x 4, + DE, x 8, + DE; 15 steps.
 ; Callers: `$9505`, SpawnEnemy `$A5BF`. 92 runs.
 ;
-; Witness: L1 2478 (deaths, gameover, play48, rooms, c x1, poke-room x13, rzx
-; x55, rzxroom x17).
+; Witness: L1 2482 (bossgate, deaths, gameover, hiscore, play48, rooms, c x1,
+; poke-room x13, rzx x55, rzxroom x17).
 Random:
   LD B,$0F
 RandomLoop:

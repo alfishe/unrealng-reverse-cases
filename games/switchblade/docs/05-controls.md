@@ -549,7 +549,7 @@ handler is HiroControl `$9333`:
 4. HiroMove: on a ladder (+2 bit 3) ClimbMove `$9C4A`. Else MoveActor `$9B05`:
    - D against the facing (+`$1B`): StartTurn. The turn takes the step.
    - E < 0 (up): ActorJump `$9023`. With D it is a running jump; without D, a ladder above is grabbed.
-   - E > 0 (down) with D: walk. Without D: a ladder below is grabbed (GrabLedge `$906C`), else Hiro stands.
+   - E > 0 (down) with D: walk. Without D: a ladder below is grabbed (GrabLadder `$906C`), else Hiro stands.
    - E = 0: walk if D, stand if not.
 5. The walk: ProbeVertical (the floor), ProbeWalls (the walls ahead), the walk counters +`$24`/+`$25`, then ApplyMove
    `$9B56`: the room's barriers, the actors met, the move added, the animation, and CheckRoomExit
@@ -570,7 +570,7 @@ MoveActor:                                     ; $9B05
     if e < 0: ActorJump(d); return             ; up
     if e > 0:
         if d == 0:
-            if LadderBelow(): GrabLedge(); return
+            if LadderBelow(): GrabLadder(); return
             stand
         e = 0
     walk(d)                                    ; ProbeVertical, ProbeWalls, the counters
@@ -607,7 +607,7 @@ The entry and the branches of MoveActor:
 9B17 B7           OR A
 9B18 20 09        JR NZ,MoveDownWalk
 9B1A CD A1 9C     CALL LadderBelow           ; no D: a ladder below?
-9B1D C2 6C 90     JP NZ,GrabLedge
+9B1D C2 6C 90     JP NZ,GrabLadder
 9B20 5A           LD E,D                     ; no: stand
 9B21 18 27        JR MoveStand
 ```
@@ -628,7 +628,7 @@ flowchart TD
     H -- yes --> J[ActorJump: running with D, a ladder above without]
     H -- no --> I{E down and no D?}
     I -- yes --> K{ladder below?}
-    K -- yes --> GL[GrabLedge]
+    K -- yes --> GL[GrabLadder]
     K -- no --> ST[stand]
     I -- no --> M{D?}
     M -- yes --> WK[walk: the probes, the counters]
@@ -1045,9 +1045,12 @@ so it must be exactly SLOPPY in the table.
 A side effect, harmless: the match jumps into NewGame without returning, so the name loop's pushed BC stays on the
 stack. NewGame never returns, and the stack is reset at the next game.
 
-## 5.11 Where the readings differ
+## 5.11 Where the readings differed
 
-| Claim | Where | What the code says |
+The stage-2 notes and `.ann` said these things; both now say what the code says, each line marked "corrected by
+docs".
+
+| Stage-2 claim (corrected) | Where | What the code says |
 | --- | --- | --- |
 | Option 4: "only bit 0 (key 0) is tested... key 5's bit is lost" | stage-2 notes; the `.ann` of ControlRecords | key 5 is rotated into bit 1 and is left; key 9 is left too (5.3) |
 | "Opposite directions are not cancelled" | stage-2 notes | both opcodes run, and D or E ends at 0 (5.4) |

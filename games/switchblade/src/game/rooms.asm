@@ -26,8 +26,8 @@ MapRowStarts:
 ; `$9F3D` (C = `$EC`, B = `$14`: the row above) and `$9F6A` (C = 0, B = `$DC`:
 ; the whole room).
 ;
-; Witness: L1 412 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x56, rzxroom x19).
+; Witness: L1 424 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x56, rzxroom x19).
 ClearRoomCells:
   XOR A
   LD L,C
@@ -100,8 +100,8 @@ TopTiles:
 ; 1: the ten cells `$78-$81` of `$6C00` get the property `$20`; room 8: the
 ; cells `$5A`, `$5B`, `$6E`, `$6F` get 0. Other rooms: nothing.
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RoomPatch:
   LD A,(Room)
   CP $01
@@ -154,8 +154,8 @@ RoomPatch8:
 ; The c1 walk: 13 column crossings (c1, deaths, gameover, rooms), 2 row
 ; crossings (deaths, rooms).
 ;
-; Witness: L1 40325 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 42125 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 CheckRoomExit:
   LD L,$3D                ; C = -(+$3D): the animation's X offset
   LD A,(HL)
@@ -165,7 +165,7 @@ CheckRoomExit:
   LD A,(Hiro+$0002)       ; on a ladder: always test the rows
   AND $08
   JR NZ,RoomExitTestY
-  LD A,(BuildOutlineMaskLoop+$000C) ; top above the room (bit 5): skip the rows
+  LD A,(Hiro+$0020)       ; top above the room (bit 5): skip the rows
   BIT 5,A
   JR NZ,RoomExitTestX
 RoomExitTestY:
@@ -234,8 +234,8 @@ RoomExitEnter:
 ;
 ; Out: A = the value BuildRoomPlanes returned (kept over the calls).
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 EnterRoom:
   LD B,$00                ; B = 0 for the CPIR count
   LD A,(MapRow)
@@ -272,8 +272,8 @@ EnterRoomAbove:
 ; (`$9613`, the rooms recording's 4 failed lookups when it wrote the map
 ; variables by hand). B must be 0 (EnterRoom `$95C3`).
 ;
-; Witness: L1 369 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 375 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 FindRoom:
   LD H,$70
   ADD A,$C7
@@ -306,8 +306,8 @@ FindRoomNone:
 ; to `$EC-$FF` in the planes `$68-$6B` (deaths, rooms: 2). Then the room
 ; `$6BDD` (DecodeRoom with A = 0). Out: A = 0.
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 BuildRoomPlanes:
   LD A,(RoomAbove)
   OR A
@@ -353,8 +353,8 @@ BuildRoomCurrent:
 ; the type, high nibble the count - 1) and their bytes, dispatched through the
 ; table `$73C7` (DispatchObject). The room above stops at type `$0D`.
 ;
-; Witness: L1 273 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 279 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 DecodeRoom:
   LD (ZoneRecords+$000A),A
   PUSH BC                 ; clear all six planes
@@ -446,8 +446,8 @@ WallGroup3:
 ; Also reached from `$A016`, `$A1F1` (the last of a group). Type `$0D`: the
 ; count is (high nibble & 1) + 2.
 ;
-; Witness: L1 1746 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 1770 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 NextObjectGroup:
   LD A,(BC)
   AND $0F
@@ -464,15 +464,15 @@ ObjectGroupCount:
 
 ; The next object of the group
 ;
-; Witness: L1 5635 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 5695 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 NextObject:
   INC BC
 
 ; Count the group; dispatch the type
 ;
-; Witness: L1 5672 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 5736 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 ObjectLoop:
   LD HL,ZoneRecords+$0008
   DEC (HL)
@@ -492,7 +492,8 @@ DispatchObject:
 
 ; Type $0B: a second table $75EF, by bits 4-7 of the next byte
 ;
-; Witness: L1 182 (deaths, play48, rooms, poke-room x8, rzx x19, rzxroom x7).
+; Witness: L1 183 (bossgate, deaths, play48, rooms, poke-room x8, rzx x19,
+; rzxroom x7).
 ObjectTypeB:
   LD HL,RoomCodeHandlersB
   LD A,(BC)
@@ -503,8 +504,8 @@ ObjectTypeB:
 
 ; JP (the word at HL + A)
 ;
-; Witness: L1 4835 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 4889 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 JumpViaTable:
   ADD A,L
   LD L,A
@@ -520,8 +521,8 @@ JumpViaTable:
 ; offset in page `$73` (PlotPattern), one byte skipped. Then the next group. 25
 ; runs.
 ;
-; Witness: L1 202 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x13, rzx x39, rzxroom x13).
+; Witness: L1 208 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x13, rzx x39, rzxroom x13).
 ObjectPattern:
   LD A,$68
   ADD A,D
@@ -548,8 +549,8 @@ ObjectPatternLoop:
 ; The pattern: a tile, then pairs of a step (a byte below `$80`) and a tile; a
 ; byte from `$80` ends it.
 ;
-; Witness: L1 1270 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x13, rzx x39, rzxroom x13).
+; Witness: L1 1316 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x13, rzx x39, rzxroom x13).
 PlotPattern:
   LD A,(DE)
   LD (HL),A
@@ -569,12 +570,13 @@ PlotPattern:
 ; the room); tile `$37` at cell 9 - room (rooms below 10), tile `$43` at `$54`
 ; - room (rooms from 5); a row of tiles `$3C-$3E` and a row of `$81-$83` in
 ; plane `$6B` (solid, attribute `$20`), each tile differing from the one
-; before, the choice taken from the bytes after the room data
-; (NextGroundVariant). Room 123 (Havok's) gets only the second row, 14 cells
-; from `$C8`. 19 runs (c1 and the play recordings: rooms 1-7).
+; before, the choice taken from the bytes of the ROM from `$0000` + 257 - room,
+; the 48K keyword table (NextGroundVariant). Room 123 (Havok's) gets only the
+; second row, 14 cells from `$C8`. 19 runs (c1 and the play recordings: rooms
+; 1-7).
 ;
-; Witness: L1 37 (deaths, gameover, menu, play48, rooms, c x1, opt x3, rzx x2,
-; rzxroom x6).
+; Witness: L1 41 (deaths, gameover, havok, hiscore, menu, play48, rooms, throw,
+; c x1, opt x3, rzx x2, rzxroom x6).
 BuildSurface:
   PUSH BC
   LD A,$20
@@ -650,11 +652,13 @@ FloorRowLoop:
 
 ; A = 1-3 from the next data byte, not equal to D
 ;
-; Reads the bytes after the room's own data as a source of variation: bits 0-1
+; Reads bytes of the ROM from `$0000` + 257 - room as a source of variation (BC
+; was reused: the `LDIR` at `$A070` leaves B = 0, `LD C,A` at `$A075` puts 256
+; - room in C): the 48K keyword table, the same on the 128K's ROM 1. Bits 0-1
 ; (0 counts as 1), until it differs from the last (D). Out: D = A.
 ;
-; Witness: L1 2193 (deaths, gameover, menu, play48, rooms, c x1, opt x3, rzx
-; x2, rzxroom x6).
+; Witness: L1 2432 (deaths, gameover, havok, hiscore, menu, play48, rooms,
+; throw, c x1, opt x3, rzx x2, rzxroom x6).
 NextGroundVariant:
   INC BC
   LD A,(BC)
@@ -676,8 +680,8 @@ ObjectRunH75AD:
 
 ; Type $0A: a horizontal run from the records at $7511
 ;
-; Witness: L1 1624 (deaths, play48, rooms, poke-room x13, rzx x53, rzxroom
-; x14).
+; Witness: L1 1633 (bossgate, deaths, play48, rooms, poke-room x13, rzx x53,
+; rzxroom x14).
 ObjectRunH7511:
   LD HL,StructureSetD
 
@@ -687,8 +691,8 @@ ObjectRunH7511:
 ; the high nibble (`$A0EE`); `$A109` lays it, step 1 with carry, `$14` (a
 ; column) without.
 ;
-; Witness: L1 1692 (deaths, play48, rooms, poke-room x13, rzx x53, rzxroom
-; x14).
+; Witness: L1 1701 (bossgate, deaths, play48, rooms, poke-room x13, rzx x53,
+; rzxroom x14).
 ObjectRunH:
   SCF
   JR StripFromRecord
@@ -717,8 +721,8 @@ ObjectRunV7400:
 ; `$7511`, across) and `$A0C4` (opcode 6, `$7400`, down; not run in the keyed
 ; recordings) lie before this range and join here.
 ;
-; Witness: L1 1078 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14). Runs in deaths and rooms (45 in all).
+; Witness: L1 1100 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14). Runs in deaths and rooms (45 in all).
 RoomOpStripDown:
   LD HL,StructureSetB
 ; This entry point is used by the routine at ObjectRunV7400.
@@ -735,8 +739,8 @@ StripRecordGo:
 ; Callers: opcodes 5, 6, 9 and 10 (`$A0B9`, `$A0BE`, `$A0C4`, RoomOpStripDown
 ; `$A0C9`). 109 runs (deaths, rooms).
 ;
-; Witness: L1 3068 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 3099 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 StripFromRecord:
   CALL StripRecordAddress
   JR StripPageFromRecord
@@ -798,8 +802,8 @@ RoomOpStrip68:
 ; Callers: StripFromRecord `$A0CD`, StripOnLayer `$A0D8`, RoomOpStrip68
 ; `$A0E2`. 123 runs.
 ;
-; Witness: L1 3455 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 3486 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 StripRecordAddress:
   PUSH AF
   PUSH HL
@@ -840,8 +844,8 @@ StripPageFromRecord:
 ; Ends at RoomOpNext `$A1EE`. 123 runs (deaths, rooms); the alternation `$A138`
 ; 179.
 ;
-; Witness: L1 3455 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 3486 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 DrawStrip:
   LD A,$01
   JR C,DrawStripSetStep
@@ -904,7 +908,7 @@ DrawStripSingle:
 ; the table `$75EF` points here. Not run in the keyed recordings; known only
 ; from the code.
 ;
-; Witness: L1 20 (poke-room x1, rzx x8).
+; Witness: L1 21 (bossgate, poke-room x1, rzx x8).
 SubOpRun77:
   CALL ReadRunLen16
   LD H,$6B
@@ -1045,8 +1049,8 @@ SubOpPutCellFlag:
 ;
 ; `JP $9FEE`. The common exit of the strip and sub-opcode handlers. 138 runs.
 ;
-; Witness: L1 3637 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 3669 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 RoomOpNext:
   JP NextObject
 
@@ -1059,7 +1063,8 @@ RoomOpNext:
 ;
 ; 9 runs (deaths, rooms).
 ;
-; Witness: L1 324 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom x14).
+; Witness: L1 326 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 RoomOpFillBack:
   DEC BC
   LD A,(BC)
@@ -1094,7 +1099,8 @@ RoomOpFillBackLoop:
 ;
 ; Callers: RoomOpFillBack `$A1F1`. 12 runs.
 ;
-; Witness: L1 443 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom x14).
+; Witness: L1 446 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 FillBackFrom:
   LD A,(BC)
   LD L,A
@@ -1173,8 +1179,8 @@ FillBackColumn0:
 ; The row ends at the last column (IsRowStart `$A3EA` on the next cell). 579
 ; runs.
 ;
-; Witness: L1 18315 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 18464 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 FillBackRow:
   LD A,(HL)
   OR A
@@ -1249,8 +1255,8 @@ ShadeFirstColumn:
 ; already there is shaded only when C is not 0, and a pillar's right half `$2E`
 ; with C 4 or 5 becomes `$2F`. 369 runs.
 ;
-; Witness: L1 14408 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 14525 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 ShadeCell:
   CALL NeighbourShade
 
@@ -1282,8 +1288,8 @@ ShadeCellApply:
 ; (above only): `$66`; C 5-7 become 4-6; the low nibble of `$6C00` + L = the
 ; result (high nibble kept). Out: H = `$68`. 360 runs.
 ;
-; Witness: L1 13903 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 14016 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 SetShadeProperty:
   LD A,C
   CP $04
@@ -1309,7 +1315,8 @@ SetShadeNibble:
 ;
 ; Callers: SetShadeProperty `$A2CD`. 25 runs, 22 writes.
 ;
-; Witness: L1 598 (deaths, play48, rooms, poke-room x13, rzx x54, rzxroom x11).
+; Witness: L1 603 (bossgate, deaths, play48, rooms, poke-room x13, rzx x54,
+; rzxroom x11).
 PutOverlayIfEmpty:
   PUSH AF
   INC H
@@ -1334,8 +1341,8 @@ ShadeEmptyCell:
 ; B = 33, DE = `$7292`, C = 0; TestCellSolid `$A334` on L-1, L-20, L-21, each
 ; shifting its result into C. C = 7 becomes 6. Out: C, H = `$68`. 369 runs.
 ;
-; Witness: L1 14408 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 14525 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 NeighbourShade:
   LD B,$21
   LD DE,SolidTiles
@@ -1362,8 +1369,8 @@ NeighbourShade:
 ; Carry and C = 3 when it is, else C = 0. Callers: FillBackRow `$A28D` (3 ledge
 ; pairs at `$72B4`), ShadeFirstColumn `$A2AB`. 153 runs.
 ;
-; Witness: L1 3135 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 3158 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 IsAboveInList:
   PUSH HL
   LD A,L
@@ -1381,8 +1388,8 @@ IsAboveInList:
 ; B = 34, DE = `$7294` (the list less its first pair, `$2E` on `$6800`). Falls
 ; into TestCellSolid. 530 runs.
 ;
-; Witness: L1 17806 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 17949 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 IsSolid:
   LD B,$22
   LD DE,SolidTiles+$0002
@@ -1400,8 +1407,8 @@ IsSolid:
 ; `$6B00`; then `$2D` on `$6800` and the three top-tile pairs at `$72D8`. 1790
 ; runs; the pair loop 39917.
 ;
-; Witness: L1 64165 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 64682 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 TestCellSolid:
   PUSH HL
   PUSH DE
@@ -1447,7 +1454,7 @@ TestCellSolidDone:
 ; shading 8 or 5 ORed in and the corner `$65` on `$6900`: the ledge's shadow.
 ; Then RoomOpNext. 7 runs (rooms).
 ;
-; Witness: L1 252 (rooms, poke-room x11, rzx x38, rzxroom x10).
+; Witness: L1 256 (bossgate, rooms, poke-room x11, rzx x38, rzxroom x10).
 RoomOpLedge:
   CALL ReadRunLen16
   PUSH BC
@@ -1520,8 +1527,8 @@ RoomOpLedgeDone:
 ; BC = the word at `$7100` + 2A. Callers: `$9F34` (the room and the room
 ; above). 25 runs.
 ;
-; Witness: L1 273 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 279 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RoomDataAddress:
   LD H,$71
   RLCA
@@ -1537,8 +1544,8 @@ RoomDataAddress:
 ; Callers: DrawStrip `$A109`, RoomOpLedge `$A357`, SubOpRun77 `$A164`. Falls
 ; into ReadRunCommon. Out: BC at the cell byte.
 ;
-; Witness: L1 3727 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 3763 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 ReadRunLen16:
   LD E,$10
   JR ReadRunCommon
@@ -1548,15 +1555,15 @@ ReadRunLen16:
 ; Callers: SubOpPillar, SubOpColumn31, SubOpColumnTop30, SetupRoomObjects. 30
 ; runs.
 ;
-; Witness: L1 327 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 332 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 ReadRun:
   LD E,$00
 
 ; The shared body of ReadRun and ReadRunLen16
 ;
-; Witness: L1 4054 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 4095 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 ReadRunCommon:
   LD A,(BC)
   AND $0F
@@ -1573,8 +1580,8 @@ ReadRunCell:
 ; Callers: `$9F63`, `$9FD6`, StripRecordAddress `$A0EE`, SetupRoomObjects
 ; `$A41E`. 333 runs.
 ;
-; Witness: L1 7053 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 7132 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 OpHighNibble:
   LD A,(BC)
   RRA
@@ -1589,8 +1596,8 @@ OpHighNibble:
 ;
 ; Subtracts 20 up to 12 times. Cell 0 is not found (NZ). B is lost. 656 runs.
 ;
-; Witness: L1 23577 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x14).
+; Witness: L1 23797 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x14).
 IsRowStart:
   LD A,L
   LD B,$0C
@@ -1611,15 +1618,15 @@ PutTileMarkProp:
 ;
 ; Caller: `$A039` (opcode 4, the outdoor rows). 388 runs.
 ;
-; Witness: L1 862 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x6, rzx x11, rzxroom x8).
+; Witness: L1 942 (deaths, gameover, havok, hiscore, menu, play48, rooms,
+; throw, c x1, opt x3, poke-room x6, rzx x11, rzxroom x8).
 PutTileMarkPropA:
   LD (HL),A
 
 ; $6700 + L = 1, $6C00 + L = CellProperty $6BE3
 ;
-; Witness: L1 7092 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x11, rzx x47, rzxroom x17).
+; Witness: L1 7172 (deaths, gameover, havok, hiscore, menu, play48, rooms,
+; throw, c x1, opt x3, poke-room x11, rzx x47, rzxroom x17).
 MarkCellProp:
   PUSH HL
   LD H,$67
@@ -1627,8 +1634,8 @@ MarkCellProp:
 
 ; $6C00 + L = CellProperty $6BE3 (HL on the stack)
 ;
-; Witness: L1 7130 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x11, rzx x47, rzxroom x17).
+; Witness: L1 7210 (deaths, gameover, havok, hiscore, menu, play48, rooms,
+; throw, c x1, opt x3, poke-room x11, rzx x47, rzxroom x17).
 SetCellProp:
   LD A,(CellProperty)
   LD H,$6C
@@ -1647,8 +1654,8 @@ PutTileProp:
 
 ; Write D at (HL) and set the cell flag $6700 to 1
 ;
-; Witness: L1 1270 (deaths, play48, rooms, poke-room x11, rzx x41, rzxroom
-; x12).
+; Witness: L1 1283 (bossgate, deaths, play48, rooms, poke-room x11, rzx x41,
+; rzxroom x12).
 PutTileMark:
   LD A,D
 
@@ -1656,8 +1663,8 @@ PutTileMark:
 ;
 ; Caller: `$9F63` (the room data's tile blocks). 847 runs.
 ;
-; Witness: L1 11339 (deaths, play48, rooms, poke-room x15, rzx x54, rzxroom
-; x14).
+; Witness: L1 11476 (bossgate, deaths, play48, rooms, poke-room x15, rzx x54,
+; rzxroom x14).
 PutTileMarkA:
   LD (HL),A
   PUSH HL
@@ -1671,8 +1678,8 @@ PutTileMarkA:
 ; Writes D; when StripStep `$6BDF` is even (down) that is all; across it goes
 ; on as PutStripTileMark.
 ;
-; Witness: L1 9075 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 9126 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 PutStripTile:
   LD (HL),D
   LD A,(StripStep)
@@ -1681,8 +1688,8 @@ PutStripTile:
 
 ; Write D, and mark the cell when the strip record's +0 has bit 7
 ;
-; Witness: L1 8722 (deaths, play48, rooms, poke-room x15, rzx x55, rzxroom
-; x16).
+; Witness: L1 8757 (bossgate, deaths, play48, rooms, poke-room x15, rzx x55,
+; rzxroom x16).
 PutStripTileMark:
   LD (HL),D
   BIT 7,(IX+$00)
@@ -1692,8 +1699,9 @@ PutStripTileMark:
 ; Read the room's zones, items and enemies; draw the items; restore the room's
 ; state
 ;
-; Called from `$95C3` (the room lookup) with BC after the room's build data. 23
-; runs (c1, deaths, gameover, menu, opt2-4, rooms).
+; Called from `$95C3` (the room lookup) with BC after the room's build data. BC
+; is pushed and popped round the surface (BuildSurface); the variants do not
+; read it. 23 runs (c1, deaths, gameover, menu, opt2-4, rooms).
 ;
 ; 1. The zones: up to 6 records, their addresses in `$6AE1` (count `$6AE0`). A
 ; record: a header (bits 4-6 n rectangles, bit 3 the last record, bits 0-2 m
@@ -1714,8 +1722,8 @@ PutStripTileMark:
 ; `$8C`/`$8D`/`$19` on `$6A00`) and the tile goes into its cell (second byte);
 ; the cell flag gets bit 1 unless the tile is `$8C`.
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 SetupRoomObjects:
   LD D,$01
   LD HL,ZoneRecords
@@ -1855,8 +1863,8 @@ SetupRoomItemNext:
 ; (taken items) and `$6DFF` (revealed zones), `$6E00` + 2 (room - 1) to `$6EFE`
 ; / `$6EFF` (enemies gone); `JP RevealZone` `$A569`. 23 runs.
 ;
-; Witness: L1 201 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 206 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 BuildZones:
   LD A,(ZoneCount)
   LD B,A
@@ -1965,23 +1973,23 @@ BuildZonesNext:
 
 ; HL = $6E00 + 2 (room - 1), DE = $6EFE: the room's enemy bits
 ;
-; Witness: L1 391 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 398 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RoomEnemyState:
   LD H,$6E
   JR RoomStateAddress
 
 ; HL = $6D00 + 2 (room - 1), DE = $6DFE: the room's item and zone bits
 ;
-; Witness: L1 391 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 398 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RoomItemState:
   LD H,$6D
 
 ; L = 2 (room - 1), DE = H:$FE
 ;
-; Witness: L1 782 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x56, rzxroom x18).
+; Witness: L1 796 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x56, rzxroom x18).
 RoomStateAddress:
   LD E,$FE
   LD D,H
@@ -2001,13 +2009,13 @@ RoomStateAddress:
 ;
 ; Callers: `$955A` (every pass of play), BuildZones `$A4D1`. 2356 runs.
 ;
-; Witness: L1 40336 (deaths, gameover, menu, play48, rooms, c x1, opt x3,
-; poke-room x15, rzx x71, rzxroom x18).
+; Witness: L1 42139 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x1, opt x3, poke-room x15, rzx x71, rzxroom x18).
 RevealZone:
   LD A,(RevealedZones)
   LD C,A
   LD HL,$0000
-  LD A,(BuildOutlineMaskLoop+$0007)
+  LD A,(Hiro+$001B)
   RLA
   JR C,RevealZoneTest
   LD L,H
@@ -2032,8 +2040,8 @@ RevealZoneTest:
 ; Called from `$955A` when Hiro leaves a room. 15 runs (c1, deaths, gameover,
 ; rooms).
 ;
-; Witness: L1 190 (deaths, gameover, play48, rooms, c x1, poke-room x15, rzx
-; x55, rzxroom x17).
+; Witness: L1 192 (bossgate, deaths, gameover, hiscore, play48, rooms, c x1,
+; poke-room x15, rzx x55, rzxroom x17).
 SaveRoomState:
   CALL RoomItemState
   EX DE,HL

@@ -1078,9 +1078,12 @@ How to read:
 The point: of 6912 screen bytes, 96 change in a redraw, and all of them come from the three stores of BlitRows. The
 whole cost of the frame (figure 6.8) goes into the buffer; the screen sees one clean copy.
 
-## 6.12 Where the readings differ
+## 6.12 Where the readings differed
 
-| Claim | Where | What the code says |
+The stage-2 `.ann` said three things the code does not; the `.ann` and the generated sources now say what the code
+says.
+
+| Stage-2 claim (corrected) | Where | What the code says |
 | --- | --- | --- |
 | NextGroundVariant "reads the bytes after the room's own data" | `.ann` of rooms.asm | BC is 256 - room by then: it reads the ROM from `$0000` + 257 - room (6.9) |
 | DrawCellLayers: "colour ... from `$66F7` + the high nibble of `$6900` + L" | `.ann` of render.asm | H is `$6C` there (`$68` + 3 + 1): the colour comes from plane `$6C`, as CellColoursTemplate's own comment says |

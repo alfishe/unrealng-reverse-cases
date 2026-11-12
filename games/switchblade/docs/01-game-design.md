@@ -21,6 +21,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `deaths` | 128K, from c1's menu | lives lost to enemies and a fall |
 | the RZX run | 48K, RZX Archive, 142 989 frames, "recorded by xmikex and Jamie Angus (with rollback)" | another player's complete game: the rooms in order, the lives, Havok (RZX frame 135 605), the end text (about 140 000), the name entry (142 000). Read in SkoolKit (`work/stage2/rzx/state.tsv`); the screens are from stage 1's playback (`work/stage1/rzx/`) |
 | the POKE probes | 48K, RZX state at 2015, the map row and column poked | the 15 rooms no play reached (`work/stage2/rec/poke-roomNNN/`) |
+| `bossgate`, `havok` | 48K, from the RZX snapshots at 62 000 and 136 000; the boss's hit points POKEd to 1 | a giant killed and its gate opened (435), Havok killed and the game won (29), doc 10.17 |
+| `throw`, `hiscore` | 128K, from stage 1's loaded state; the weapon, or the score and the last life, POKEd at 1869 | weapons thrown (1893-3039); a name entered in the table (2517-3229), doc 10.17 |
 
 Frames are each recording's own, from its start. A screen named "frame N" is the screen at the start of frame N.
 

@@ -35,9 +35,12 @@ HiScoreTableHead:
 ; Ten entries of 21 bytes: 8 score digits, 4 (skip 4 columns), 10 name letters,
 ; $FF $FF (two lines down)
 ;
-; $5C55 (HL = $8126, the names) and $5C68 (DE = $8213) move the entries on a
-; new high score; $A806 prints them. The default table: JEFF C 00100400, LINDA,
-; SIMES, DANGERSTU, GREGGS, JAMIE, RAY, MONTY, FUNGUS, KEV 00005010.
+; TitleFired $5C55 (HL = $8126, the names) and MatchCheatName $5C68 (DE from
+; $8213) read the names for the cheat SLOPPY; InsertHighScore $A806 moves the
+; entries down on a new high score (the LDDR at $A834) and writes the score and
+; the name; ShowHighScores $A6EC prints them. The default table: JEFF C
+; 00100400, LINDA, SIMES, DANGERSTU, GREGGS, JAMIE, RAY, MONTY, FUNGUS, KEV
+; 00005010.
 HiScoreEntries:
   INCBIN "res/texts/hiscores.bin",$0004,211
 
@@ -98,8 +101,8 @@ FirebladeGlyphs:
 
 ; "THE DAWN HAS COME AND MY / WORLD IS SAFE, / FOR NOW....." at Y $20, X 4
 ;
-; Printed by HavokFade $8761 when the end picture has faded. Witness: not run
-; in the keyed recordings.
+; Printed by HavokFade $8761 when the end picture has faded. Witness: havok
+; (Havok's hit points POKEd to 1).
 EndText:
   INCBIN "res/texts/strings.bin",$00C2,58
 
@@ -109,8 +112,8 @@ EndText:
 ;
 ; Callers: $5C68, $9615 (the energy loss), $97A3, $9801, $9E61.
 ;
-; Witness: L1 254 (deaths, gameover, menu, play48, c x1, opt x3, rzx x63,
-; rzxroom x12).
+; Witness: L1 262 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x1, opt x3, rzx x63, rzxroom x12).
 PrintScore:
   LD HL,ScoreLine
   CALL PrintString
@@ -119,20 +122,21 @@ PrintScore:
 ;
 ; Caller: $FF01 (each pass, when its value changed).
 ;
-; Witness: L1 425 (deaths, gameover, menu, play48, c x1, opt x3, rzx x64,
-; rzxroom x12).
+; Witness: L1 455 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x1, opt x3, rzx x64, rzxroom x12).
 PrintPanelLine:
   LD HL,StatusLine
 
-; Print the string at HL in the tall mode: glyph row 3 drawn twice
+; Print the string at HL in the tall mode: one glyph row drawn twice
 ;
 ; The string's Y (HL+0) AND 7: 0 puts 0 into the operand at $8411
-; (PrintGlyphTop repeats row 3), else into $841D (PrintGlyphLower draws one
-; more row). PrintString's end sets both back to $FF. Callers: the title $6A7B
-; (the options), $A6D9 (the high-score table), $A861.
+; (PrintGlyphTop repeats row 4 and row 7 is lost), else into $841D (the upper
+; cell's last row is drawn again at the top of the lower cell: 9 rows).
+; PrintString's end sets both back to $FF. Callers: the title $6A7B (the
+; options), $A6D9 (the high-score table), $A861.
 ;
-; Witness: L1 506 (deaths, gameover, menu, play48, c x2, opt x3, rzx x66,
-; rzxroom x12).
+; Witness: L1 546 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, rzx x66, rzxroom x12).
 PrintStringTall:
   LD BC,PrintGlyphTop+10
   LD A,(HL)
@@ -157,8 +161,8 @@ SetTallMode:
 ;
 ; Callers: $5DF1, $5DFB, PrintScore, HavokFade, $A6D9, $A861, $A8E2, $FF01.
 ;
-; Witness: L1 2259 (deaths, gameover, menu, play48, c x2, opt x3, rzx x67,
-; rzxroom x12).
+; Witness: L1 2381 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, rzx x67, rzxroom x12).
 PrintString:
   LD BC,Font
   PUSH BC
@@ -222,8 +226,8 @@ PrintStringNewline:
 ;
 ; Caller: PrintString, $61E5, $620D (stage 2).
 ;
-; Witness: L1 4209 (deaths, gameover, menu, play48, c x2, opt x3, rzx x67,
-; rzxroom x12).
+; Witness: L1 4627 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, rzx x67, rzxroom x12).
 SetPrintPosition:
   PUSH BC
   LD A,$08
@@ -248,8 +252,8 @@ SetPrintPosition:
 ;
 ; Callers: CellScreenAddress $8803, SpriteScreenAddress $8828.
 ;
-; Witness: L1 173507 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 179180 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 CharCellAddress:
   INC B
   LD D,$00
@@ -257,8 +261,8 @@ CharCellAddress:
 
 ; DE = the screen address of character row B, pixel line D, column C
 ;
-; Witness: L1 177717 (deaths, gameover, menu, play48, rooms, c x2, opt x3,
-; poke-room x15, rzx x72, rzxroom x19).
+; Witness: L1 183808 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; rooms, throw, c x2, opt x3, poke-room x15, rzx x72, rzxroom x19).
 ScreenAddress:
   AND $F8
   ADD A,$40
@@ -281,8 +285,8 @@ ScreenAddress:
 ; through the saved D); the lower cell's attribute from $8436. Tall mode: the
 ; operands at $8411 / $841D (PrintStringTall). Callers: PrintString, $6200.
 ;
-; Witness: L1 30835 (deaths, gameover, menu, play48, c x2, opt x3, rzx x67,
-; rzxroom x12).
+; Witness: L1 34287 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, rzx x67, rzxroom x12).
 PrintGlyph:
   PUSH DE
   LD A,$FF
@@ -295,7 +299,7 @@ PrintGlyph:
   LD B,A
 PrintGlyphTop:
   LD A,(HL)               ; the rows in the first cell; LD A,n at $8410: 0 =
-                          ; tall (row 3 twice)
+                          ; tall (row 4 twice, row 7 lost)
   LD (DE),A
   INC HL
   INC D
@@ -342,8 +346,8 @@ PrintGlyphDone:
 
 ; Write A to the attribute of the screen address DE, unless A = $FF
 ;
-; Witness: L1 39732 (deaths, gameover, menu, play48, c x2, opt x3, rzx x67,
-; rzxroom x12).
+; Witness: L1 44166 (bossgate, deaths, gameover, havok, hiscore, menu, play48,
+; throw, c x2, opt x3, rzx x67, rzxroom x12).
 SetCellAttr:
   PUSH DE
   PUSH AF

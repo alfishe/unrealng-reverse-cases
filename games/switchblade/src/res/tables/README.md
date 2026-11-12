@@ -1,6 +1,6 @@
 # Tables
 
-The page-tail tables, the kind templates, the 48K effects, the gates, the title scene, the actor scripts and the
+The page-tail tables, the kind templates, the start values, the 48K effects, the gates, the title scene, the actor scripts and the
 packer's phase table, all from the game part. CSV files have a header line; a column whose name starts with `_` (the
 record's address, the kind, the notes) is written for the reader and is not read back. Hex-line files have one record
 or script a line; `$ADDR:` and `#` lines are comments.
@@ -29,6 +29,7 @@ PageTail66 `$6FCA`) stay data rows in the `.ann`, as does SpriteSetsTail `$6D4E`
 | --- | --- | ---: | --- | --- | --- |
 | `kind-templates.csv` | KindTemplates `$7200-$7291` | 146 | CSV, 73 words | TemplateForKind `$A652` | per actor kind: the run-time address of its template or item record |
 | `effects-48k.csv` | EffectTable `$8683-$872A` | 168 | CSV, 12 bytes a record | StartEffect `$855B`, EffectEnvelope `$85B6`, EffectSweep `$8609`, EffectSound `$8634` | the 48K's 14 beeper effects: time, sweep delay and period, mixer, sweep step, pitch, envelope |
+| `start-values.csv` | GlobalsInit `$5C00-$5C14` | 21 | CSV: offset, value (`_note` the variable) | NewGame `$5CA9` (56 bytes to `$6642`), LoseEnergy `$9615` (the first 10, or 7 in a boss fight) | the start values of the globals: energy `$20`, ChargeStep 1, Lives `$05` (BCD), the score 0, the shown copies set unequal so the panel draws at once |
 | `gates.csv` | GateRooms `$76D2` (GateClosed `$76D8`, GateX `$76DE`, GateSide `$76E4`, to `$76E9`) | 24 | CSV, one gate a row (stored column by column) | BarrierFind `$8F28`, RoomBarrier `$8F01`, BarrierOpen `$8F22`, NewGame `$5C4D` | the six invisible gates: room, closed flag, Hiro's X, the side |
 | `title-actors.csv` | TitleActors `$7600-$76B5` | 182 | CSV, 7 bytes a record | TitleSequence `$A73E`, LoadTitlePieces `$A7D7` | the title scene's 26 actors (15, then 11 from `$7669`) |
 | `title-order.csv` | TitleActorOrder `$76B6-$76CF` | 26 | CSV | TitleMovePiece `$A775` | the actor pages in the order the scene steps them |

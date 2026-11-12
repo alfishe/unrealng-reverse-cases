@@ -1,24 +1,69 @@
-# GAME: the documents
+# Switchblade: the documents
 
 | Doc | Contents |
 | --- | --- |
-| [1. Game design](01-game-design.md) | the game as a player meets it: premise, controls, objects, rules, scoring, modes, difficulty |
-| [2. Architecture](02-architecture.md) | the machine budget, the memory map (a figure), stages from the medium to play, the frame, the main loop's call graph, the module map |
-| [3. Build and load](03-build-and-load.md) | the medium block by block, loaders, packers and their formats, the unpack animations, the source build |
-| [4. Game loop](04-game-loop.md) | the state machine (a diagram), the frame schedule, the order of work inside a pass, timing |
-| [5. Controls](05-controls.md) | devices, ports, decoding, menus, hidden keys |
-| [6. Rendering](06-rendering.md) | the screen and how it is drawn: buffers, blits, scrolls, sprites, the raster timing |
-| [7. Objects](07-objects.md) | records, slots, kinds, movers, collisions |
-| [8. HUD and text](08-hud-and-text.md) | panels, fonts, the print routine, every string |
-| [9. Sound](09-sound.md) | the engines, music and effects formats, the players, timing |
-| [10. Gameplay logic](10-gameplay-logic.md) | the rules as code: the player, enemies and their behaviour, levels, scoring, what the recordings showed |
-| [11. Data reference](11-data-reference.md) | every data entry (generated: `kit/refdocs.py --case .`) |
-| [12. Routine reference](12-routine-reference.md) | every routine with its figures (generated) |
+| [1. Game design](01-game-design.md) | every screen and the panel; the story and the goal (16 Fireblade fragments, four giants, Havok); energy, lives, the score, the pickups; the 127 rooms as a contact sheet; the RZX run's route through the game |
+| [2. Architecture](02-architecture.md) | one program for 48K and 128K; the five sources and the 16 modules (module map); the memory map at load and in play, bank 4; the map tables; the leftovers (TapeWriter); the heatmap and the stack; the frame budget by module |
+| [3. Build and load](03-build-and-load.md) | the tape as a picture; the decoy BASIC, the self-locating code, the loader at `$FF00`, stage 2 and the bank 4 swap (animation of the load); the bootstrap, the 128K set-up and the five patched call sites; the 48K path; releases and hacks; the build |
+| [4. Game loop](04-game-loop.md) | the program's states (mermaid); one pass of MainLoop `$8DFE` and its cost; ActorUpdate / RunActorSteps; the IM 2 handler and GameTick with the fire charge; the stalls: room build and zone reveal (RedrawCellsMasked over 220 cells); passes against the beam (48K, 128K); every timer |
+| [5. Controls](05-controls.md) | the four controls (Sinclair 1, Sinclair 2, Kempston, Protek) and the ports each reads; the control menu and ControlRecords `$6B0A` patching ReadInput `$8529`; DecodeDirection (opposite directions cancel); TickInput, the fire latch and the charge; the input reaching Hiro; pause and quit; the title's music/effects switch; the SLOPPY cheat |
+| [6. Rendering](06-rendering.md) | the play screen in cells and 3-pixel units; the 3-bit picture format; the cell planes `$67`-`$6C` and the room build; MaskedColumn: values read through `POP` with an outline made on the fly; the chunk buffer, PackRow's planted `RET` and the blit; the actors' window redraw; zones revealed; the panel; the surface ground drawn from the 48K ROM's keyword table; code against the screen and the beam |
+| [7. Objects](07-objects.md) | the six cell planes and the spare cells; the room record as a program (outlines, 15 commands, zones, hidden items, enemies); room 8 decoded command by command; the map and the room change; every object on the map; the 66-byte actor record; the 73 kinds and their templates; the spawner and the hidden items; the scheduler and the nine sequence slots; every behaviour (patroller, chasers, traps, stalactite, path movers, still kinds); the collision tests; Random; the game variables |
+| [8. HUD and text](08-hud-and-text.md) | the font and PrintGlyph; PrintString's record and the tall mode; the story's picture strings; every text; the panel, the meters, the weapon bar, the Fireblade, EXTRA/BONUS, the score; the banners as sprites; the high-score table, the insertion and the name entry |
+| [9. Sound](09-sound.md) | one interface, two engines; the 48K beeper player (envelope, sweep, burst) checked against play48; the 128K glue and Ben Daglish's AY player (order lists, patterns, instruments, vibrato, arpeggio, slide, drums, AyUpdate) checked against c1 and menu; the three tunes; the 14 effects on both machines; the renders in `docs/audio` (MP3, WAV for the short ones) |
+| [10. Gameplay logic](10-gameplay-logic.md) | Hiro's states and clocks; walk and turn; the three jump scripts; ladders; falls and the hard landing; the charge and the three strikes; the seven weapons; hurts and energy; lives and the energy ball; every pickup; the fragments and the Fireblade; the enemies' rules; the score; the end (Havok's fade, the dawn text, the high-score entry); the POKEs; notable features; what no recording reached |
+| [11. Data reference](11-data-reference.md) | every data entry of the game (242), bank 4 (37) and stage 2 (2), generated by `kit/refdocs.py --case .`; the bootstrap and the tape BASIC are parts of segments, which refdocs does not take (their entries are in `src/boot/boot.asm`, `src/tape/basic.asm`) |
+| [12. Routine reference](12-routine-reference.md) | every routine of the game (343), bank 4 (36) and stage 2 (10) with its callers, runs and figures (generated, as 11) |
 
 ## Terms
 
-Each term once, here; the documents link to it.
+Each term once, here; the documents use these names and no others (a ladder is a ladder, never a ledge; a pass is
+the main loop's pass).
 
 | Term | Meaning |
 | --- | --- |
-| pass | one run of the main loop |
+| actor | a 66-byte record at the start of a memory page `$5D00-$6600`: Hiro, an enemy, a pickup, a shot, a spark (doc 7.9) |
+| AyGlue (the glue) | the 162 bytes `$853F-$85E0` the 128K bootstrap copies over the 48K effect player: they page bank 4 in and drive the AY player (doc 3.3, 9.7) |
+| AyUpdate | the AY player's per-frame routine `$D1C3`: steps the envelopes and writes registers R7, R0-R6, R8-R10 (doc 9.14) |
+| boss fight | the operand at `$9A59` holding a boss kind: page `$60` steps more often, shots are free, a lost life keeps the weapon (doc 7.12, 10.7, 10.9) |
+| burst | the 48K effect sound of one frame: 4-60 speaker toggles at an ultrasonic carrier, heard as a 50 Hz buzz (doc 9.5) |
+| cell | 12 x 16 pixels of the play window, 0-219, 20 a row; one byte in each of the planes `$67`-`$6C` (doc 6.3) |
+| charge | Charge `$6645`: grown by ChargeStep `$6644` each frame fire is held, at most `$20`; its value at the release picks strike 1, 2 or 3 (doc 5.5, 10.6) |
+| chunk buffer | pages `$5D`-`$66` from byte `$4A`: one page a unit column, one byte a line; the window composed before the blit (doc 6.5) |
+| control record | 14 bytes of ControlRecords `$6B0A`, 18 bytes copied over ReadInput `$8529` by the control menu (doc 5.2) |
+| drum | the pattern command `$FD` a b: a noise burst of a frames at noise period b on each note (doc 9.13) |
+| energy ball | kind `$48`, page `$65`: 170 frames after a lost life, 853 after the invulnerability shield; Invulnerable `$6651` while it lives (doc 10.9) |
+| fall steps | Hiro's +`$26`, 4 pixels each; 20 or more make a hard landing (doc 10.5) |
+| fire latch | `$850D`: the last direction and fire byte TickInput saw (doc 5.5) |
+| Fireblade | weapon 7, given by the 16th fragment (doc 10.11) |
+| GoneEnemies | the room's 16-bit mask of killed enemy records; a killed enemy stays dead in its room (doc 7.11) |
+| hidden item | a pickup kept in a block cell, freed when the block is struck (BreakReveal `$9ED7`, doc 7.11) |
+| hits | an actor's +`$13`: its hit points, and the damage it does as a shot (doc 7.14, 10.12) |
+| hook site | one of the five 3-byte places the bootstrap patches on a 128K: `$5CFD`, `$A6EF`, `$A76F`, `$A75C`, `$5C9A` (doc 3.3) |
+| kind | the actor's byte +`$1C`, `$00-$48`; picks the template through KindTemplates `$7200` (doc 7.10) |
+| ladder | the special tiles `$55` (a rung) and `$54` in plane `$6A`, `$53` its top; GrabLadder `$906C` takes it, LeaveLadder `$9078` leaves it (doc 10.4) |
+| light pass | a pass in which no actor is due: about 1 400 T (128K, room 4) to 4 500 T (48K, five active pages) (doc 4.3) |
+| MeterStrip | the 20 bytes `$FFB7-$FFCA` that DrawMeter copies an 8-byte window from (doc 8.7) |
+| outline | the one-pixel black rim MaskedColumn makes from OutlineMask `$6F00` round every sprite and front tile (doc 6.4) |
+| pass | one turn of the main loop, from the fetch of `$8DFE` to the next; 0.02 to 11 frames (doc 4.3) |
+| plane | one of six 220-byte tables at `$6700`-`$6CDB`: zone bits, two back tiles, two front tiles, shade and colour (doc 6.3) |
+| PrintString record | Y (pixels), X (half columns), two attributes, glyph codes; 1-`$1F` skip, `$FF` new line, 0 end (doc 8.2) |
+| r-segments | our own 2000-frame replays of the RZX run's keys from its snapshots (`work/stage2/rzx/rFFFFFF`); they drift from the RZX (WALKTHROUGH 6.0) |
+| redraw pass | a pass that steps an actor that moved and redraws it with BlitWindow `$8C68`: 45 000-320 000 T (doc 4.3) |
+| reveal | Hiro standing in a zone not in RevealedZones `$6DFF`: RevealZone adds it, RedrawCellsMasked redraws the 220 cells, SpawnZoneEnemies starts its enemies (doc 4.5, 6.7) |
+| room build | EnterRoom `$95C3` after an edge crossing: FindRoom, BuildRoomPlanes, the masked redraw, the spawns (doc 4.5, 7.7) |
+| RZX run | the RZX Archive recording of another player's complete 48K game (xmikex and Jamie Angus, with rollback), 142 989 frames |
+| sequence slot | one of nine bytes +`$30-$38` (jump, fall or hurt, pose, turn, action, hard landing, ladder grab, death, rise): the steps left of a script; the first busy slot runs instead of the handler (doc 7.12, 10.1) |
+| shown copy | the byte after a panel variable that holds the value last drawn; the panel redraws on a difference (doc 8.6) |
+| SLOPPY | the cheat: MatchCheatName `$5C68` turns the name typed into a start point (BC per key `$0D06`, `$1209`, `$0E0F`, `$140F`; none gives `$0300`), stored at MapRow `$69DF` by NewGameSetStart `$5C96` (doc 5.10) |
+| stall | a run of frames with no pass start: a room build (60-72 frames) or a reveal (10-27 frames) (doc 4.5) |
+| step delay | an actor's +`$1D`, counted down by GameTick every frame and reloaded from +`$1A` when the actor steps (Hiro: 3 frames) (doc 4.7) |
+| strike | the fist's move or a weapon's throw, FireRequest `$6650` / Strike `$69E1` 1-3; also the fist's damage (doc 10.6) |
+| surface noise | the ground tiles of the surface rooms, picked by bytes of the 48K ROM from `$0000` + 257 - room (doc 6.9) |
+| tall mode | PrintStringTall's one-record patch of PrintGlyph: at an aligned Y glyph row 4 is drawn twice and row 7 dropped (doc 8.3) |
+| template | the 18 bytes InitActor copies to +`$03-$14`: the handler, the scripts, the score, the delay, the hit points (doc 7.10) |
+| touch zone | one of five boxes round an actor in which Hiro wakes a trap, a trigger or the stalactite (doc 7.10) |
+| unit | 3 pixels across, one byte of the chunk buffer; a cell is 4 units, the play window 80 (doc 6.1) |
+| value | 3 bits: one line of one unit, bit 2 the left pixel; eight values packed in three bytes (doc 6.2) |
+| window | the unit and row box redrawn by BlitWindow `$8C68`: an actor's old and new place, or one cell (doc 6.5, 6.6) |
+| zone | a group of a room's cells sharing a bit in the top six bits of their plane-`$67` flag byte, written by the room's zone records (rectangles and single cells); drawn only once revealed, and tested by the spawner (doc 4.5, 7.5) |

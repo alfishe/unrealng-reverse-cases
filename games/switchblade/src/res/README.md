@@ -1,7 +1,7 @@
 # Resources
 
 Every resource out of the code, in an editable format. `tools/res_formats.py build` turns them back into the bytes
-the sources INCBIN, and `tools/res_formats.py check` proves the round trip (84 editable files, 0 bad; the 5 `.bin`
+the sources INCBIN, and `tools/res_formats.py check` proves the round trip (85 editable files, 0 bad; the 5 `.bin`
 files of leftovers/ are bytes). `kit/mkgame.py --install` (`tools/mkasm_all.sh`) writes them from the images through
 `install()`.
 
@@ -14,10 +14,10 @@ The parts:
 
 | Folder | What | Formats | Entries |
 | --- | --- | --- | --- |
-| [`rooms/`](rooms/README.md) | the 127 rooms, the map, the room builder's tables: outline shapes, tile strings, bars, the horizon, solid and ledge tiles, pickup tiles | text (rooms.txt, map.txt), CSV, hex lines | Room1 `$A928`-Room127, MapColumns `$7048`, RoomPatternStarts `$7300`, StructureRecords `$7400`, ... |
+| [`rooms/`](rooms/README.md) | the 127 rooms, the map, the room builder's tables: outline shapes, tile strings, bars, the horizon, solid, ledge and ladder tiles, pickup tiles | text (rooms.txt, map.txt), CSV, hex lines | Room1 `$A928`-Room127, MapColumns `$7048`, RoomPatternStarts `$7300`, StructureRecords `$7400`, ... |
 | [`graphics/`](graphics/README.md) | the tiles, the 23 sprite sets (Hiro, the enemies, the giants, the title pieces), the font, the end picture, the intro and story glyphs, the loader's logo and scroll, attribute blocks, the panel | PNG (3-bit column sheets, 1-bit rows); hex lines | Tiles `$D104`, EnemyFrames `$E154`, ..., Font `$7BE5`, HavokPicture `$7F7D`, IntroGlyphs `$6313`, StoryFont `$D991` (bank 4), Logo `$622B` (stage 2) |
 | [`texts/`](texts/README.md) | the print records: the intro and story pages, the high-score table and its strings, the menus, the panel lines, the end text | text and picture records | IntroScript `$5E4D`, CursorEraseText `$80EB`-EndText `$82E0`, StoryEyesClosed `$D4CB` (bank 4), ... |
-| [`tables/`](tables/README.md) | the page-tail tables (scores, items, weapons, touch zones, sprite sets, actor templates, cell colours), the kind templates, the 48K effects, the gates, the title scene, the actor scripts, the packer phases | CSV; hex lines | PageTailTemplate `$6B5C`-CellColoursTemplate `$703F`, KindTemplates `$7200`, EffectTable `$8683`, ActorScripts `$76EA`, ... |
+| [`tables/`](tables/README.md) | the page-tail tables (scores, items, weapons, touch zones, sprite sets, actor templates, cell colours), the kind templates, the start values (GlobalsInit `$5C00`), the 48K effects, the gates, the title scene, the actor scripts, the packer phases | CSV; hex lines | PageTailTemplate `$6B5C`-CellColoursTemplate `$703F`, KindTemplates `$7200`, EffectTable `$8683`, ActorScripts `$76EA`, ... |
 | [`music/`](music/README.md) | bank 4's three tunes (patterns and order lists), arpeggios, instruments, the 128K effects, the note periods | text (tunes.txt); CSV | Patterns `$C4B8`-OrderLists `$CD03`, Arpeggios `$CE8C`, Instruments `$CED4`, Effects `$CF60`, NoteTable `$D016` |
 | [`leftovers/`](leftovers/README.md) | five stretches of zeros that no code reads | bytes | ControlGap `$6B4D`, Leftover72FE `$72FE`, Spare73F9 `$73F9`, RoomDataPad `$D0F9`, PanelEnd `$FFFF` |
 
@@ -82,7 +82,6 @@ These data entries have no `@res` line:
     intro-glyphs-1 from intro-glyphs-2);
   - BlitRowsLdi, PackUnitsStop1 and PackUnitsStop2: code bytes.
 - **Variables**:
-  - GlobalsInit `$5C00`: the globals' start values;
   - DrawColumnPos `$732A`, TitleSceneIndex `$76D0` and MessageRequest `$79FF`;
   - the sound state: SoundVars and EffectState;
   - bank 4's player state: MusicState, SeqChannelA, SlotTables, Drum*, AyMixer, AyChannelA and NoisePeriod.

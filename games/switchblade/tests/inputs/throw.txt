@@ -1,0 +1,27 @@
+# throw: thrown weapons on the 128K (from the menu after the load, explore/loaded.szx): 4 (Protek), the intro,
+# then POKEs on this machine: Weapon `$664B` = 4 (the spinblade, kind `$43`, life 256 steps) and WeaponCount `$6649`
+# = 16; fire held and let go facing right (HiroAttack `$926E` throws on page `$6600`), a screen while the shot
+# flies; then Weapon = 1 (the blade, kind `$40`, life FireHeld x 4) and throws facing left; WeaponCount falls one a
+# throw and the panel's weapon bar with it
+0 4
+4 -
+64 0
+69 -
+1879 0
+1891 -
+2041 0
+2061 -
+2211 0
+2239 -
+2389 0
+2425 -
+2575 5
+2595 0
+2607 -
+2723 0
+2743 -
+2859 0
+2887 -
+3003 0
+3039 -
+3155 END
