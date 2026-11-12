@@ -1,0 +1,13 @@
+# gameover: from work/stage1/probe/after128.szx (the menu after a ROM-speed 128K load of the original, no POKE),
+# keyboard: ENTER starts, ENTER past the intro, then X (right) held: the boulder of the first screens kills Rick six
+# times, GAME OVER, ENTER back to the menu
+0 -
+20 ENTER
+24 -
+100 ENTER
+104 -
+120 X
+2600 -
+2700 ENTER
+2704 -
+3000 END

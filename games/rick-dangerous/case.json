@@ -1,0 +1,13 @@
+{
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || python3 tools/image.py work/mkgame/original.bin --z80 work/mkgame/entry.z80"],
+  "image": "work/mkgame/original.bin",
+  "lo": "5B00",
+  "hi": "10000",
+  "device": "ZXSPECTRUM128",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["stage1/controls", "stage1/gameover", "stage1/level1", "stage1/level2", "stage1/level3", "stage1/level4", "stage1/ending"],
+  "code_builds": ["stage1/c1"],
+  "ref_builds": [["stage1/c1", "c1: power-on, the original tape at ROM speed on the 128K, the control menu and play on level 1"]],
+  "header": ["; Rick Dangerous, Firebird 1989 (Core Design): $5B00-$FFFF at the entry $AB4D, as the Bleepload loader",
+             "; leaves it (tools/image.py: SkoolKit's simulated load of the original TZX on a 128K)."]
+}

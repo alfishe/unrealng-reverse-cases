@@ -1,0 +1,77 @@
+# controls: from work/stage1/probe/after128.szx (the menu after a ROM-speed 128K load of the original, no POKE).
+# Every control method in turn, each game ended with Q (quit: GAME OVER, fire back to the menu):
+# 1 keyboard (O up, K down, Z left, X right, ENTER fire), 4 Sinclair (6 left, 7 right, 8 down, 9 up, 0 fire),
+# 2 Kempston (the stick held left, then fire: Rick walks right on his own, the original's `$A19F` bug),
+# 3 cursor (5 left, 6 down, 7 up, 8 right, 0 fire). Fire with a direction shoots, fire with down drops a bomb.
+0 -
+20 1
+25 -
+60 ENTER
+64 -
+140 ENTER
+144 -
+160 X
+200 X O
+208 X
+240 ENTER X
+246 -
+280 ENTER K
+286 -
+300 Z
+360 -
+420 Q
+426 -
+560 ENTER
+564 -
+640 4
+645 -
+680 ENTER
+684 -
+760 ENTER
+764 -
+780 7
+820 7 9
+828 7
+860 0 7
+866 -
+900 0 8
+906 -
+920 6
+980 -
+1040 Q
+1046 -
+1180 ENTER
+1184 -
+1260 2
+1265 -
+1300 ENTER
+1304 -
+1380 ENTER
+1384 -
+1400 KL
+1500 KF
+1530 -
+1600 Q
+1606 -
+1740 ENTER
+1744 -
+1820 3
+1825 -
+1860 ENTER
+1864 -
+1940 ENTER
+1944 -
+1960 8
+2000 8 7
+2008 8
+2040 0 8
+2046 -
+2080 0 6
+2086 -
+2100 5
+2160 -
+2220 Q
+2226 -
+2360 ENTER
+2364 -
+2500 END

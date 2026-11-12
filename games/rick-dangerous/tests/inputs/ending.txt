@@ -1,0 +1,9 @@
+# ending: from work/stage1/warp/ending.szx (a warp, said so: level 4 started by the level warp, then at the main
+# loop's HALT `$E4AD` = 3, PC = `$ABD8` with `$E406` pushed: the level-end path of the last level). The closing
+# text, ENTER, the closing effect `$AF56`, GAME OVER, ENTER back to the menu
+0 -
+300 ENTER
+304 -
+1200 ENTER
+1204 -
+1500 END
