@@ -170,7 +170,8 @@ How to read it: the tile numbers fill Cells two rows at a time, left to right, o
 cursor still hold the old room's kinds (`05` and `07`). BuildSpans turns the new numbers into kinds later in the same
 room change.
 
-Witness: RoomCells ran 26 times in the stage-1 recordings, once per room change, and PutBlock 3276 times (26 x 126).
+Witness: RoomCells ran 101 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle, s1-right), once per room
+change, and PutBlock 12 726 times (101 x 126).
 
 **The point**: the room is cut out with one multiply by addition and two nested loops. Its 98 104 T in the `c1` room
 change ([doc 6](06-rendering.md#63-a-room-built)) are 8 % of the change.
@@ -252,9 +253,38 @@ The bytes, a row of rooms a line: `01 0B 0B 0B 0B 0A`, `00 0D 0F 0F 0F 0E`, `05 
 no down bit: it is the bottom of the grid. Room 12 has `05`, right and up. Up from room 12 is room 6, whose own byte
 is 0.
 
-Four more doors join the grids. CheckGridPassages `$AB1C` tests a fixed room, a column and a facing: grid 0's room 7
-at column 4, facing left, leads into the shaft (grid 1), and room 17 at column 29 or more, facing right, leads into
-the arena (grid 2).
+Four more doors join the grids. CheckGridPassages `$AB1C` tests the grid, a fixed room, the hero's column and his
+facing, every pass:
+
+| Grid | Room | Column | Facing | Also | Goes to |
+| ---: | ---: | --- | --- | --- | --- |
+| 0 | 7 | 4 | left | walking (state 1, `CP $01` at `$AB39`) | the shaft, grid 1 (EnterGrid1 `$AB83`) |
+| 0 | `$11` = 17 | `$1D` = 29 and up | right | | the arena, grid 2 (EnterGrid2 `$ABDD`) |
+| 1 | 2 | `$1D` = 29 and up | right | | back to the surface (LeaveGrid1 `$ABA7`) |
+| 2 | any (its only room) | 1 | left | | back to the surface (LeaveGrid2 `$AC01`) |
+
+```asm
+CheckGridPassages:          ; the first door, grid 0 room 7
+  LD A,(GridNumber)
+  CP $00
+  JR NZ,CheckGridPassageGrid1
+  LD A,(RoomNumber)
+  CP $07
+  JR NZ,CheckGridPassageRoom11
+  LD A,(HeroRecord)         ; his column
+  CP $04
+  RET NZ
+  LD A,(HeroFlags)
+  BIT 7,A                   ; facing left?
+  RET Z
+  LD A,(IY+$0A)             ; his state
+  CP $01                    ; walking
+  RET NZ
+  JP EnterGrid1
+```
+
+So a jump or a fall past column 4 of room 7 does not open the shaft: the hero has to walk into it. Witness: EnterGrid1,
+EnterGrid2, LeaveGrid1 and LeaveGrid2 ran once each, in `rzx-r1`.
 
 **A worked example: the demon locks the lair.** `rzx-r1`, `$9B84` (room 12's exit byte, Grid0Rooms + 12), read with
 TTD memory_at.
@@ -265,7 +295,11 @@ TTD memory_at.
 3. At 15647 it is `$05` again. ItemLast `$FE18` goes from 9 to 10 in the same frame: the hero has picked up the item
    the demon left, and the pick-up of item kind 7 writes 5 back.
 
-So a room's exits are data the game can rewrite. The lock is one byte.
+So a room's exits are data the game can rewrite. One lock is this exit byte; the other is CheckRightGate `$81B9`,
+which holds the hero at base column `$1C` until BossPhase is 1, or 4 with item 7 ([doc 10, 10.7](10-gameplay-logic.md)).
+
+The whole grid and the rooms one by one are drawn in doc 1: [the stage map](img/maps/stage1.png) (the three grids
+from the tiles, `tools/stagemap.py`) and [the rooms](img/maps/stage1-rooms.png).
 
 **The point**: a grid is a map with a stride. The rooms are windows that overlap, the exits are four bits a room, and
 a boss fight shuts its room by writing 4 into one byte of the room table.
@@ -288,6 +322,15 @@ Grid 0's 66 placements by kind:
 | 12, 14 | StatueActor `$912B` | 1, 1 | a statue's head |
 | 13 | GateActor `$9065` | 1 | the gate |
 | 16 | BridgeSlabActor `$90A3` | 1 | the bridge slab |
+
+![Grid 0's room windows and placements](img/rooms/placements-grid0.png)
+
+*Grid 0's map with its 18 room windows and the 66 placements of Grid0Placements `$9BA0`, coloured by the kinds of the
+table above. Made with `python3 tools/fig_objects.py placements docs/img/rooms/placements-grid0.png`.*
+
+How to read it: a room shows the dots inside its white frame. The fire pits lie on the cave floor at both ends of the
+bottom row (rooms 12-13 and 17), the urns and chests on the ledges, and the demon's four parts in room 12. Where two frames overlap, a placement
+belongs to both rooms and is created again when either is entered, unless it is marked done.
 
 Grid 1 holds kinds 12 and 14, two each. Grid 2 holds four fire pits and kind 15, the dragon's head (ArenaHeadActor
 `$90E7`).
@@ -354,7 +397,7 @@ urns, the items and the fragments.
 
 | Offset | Field | Notes |
 | --- | --- | --- |
-| +0 | X | byte column 0-29; `$FF` a free record; `$FE` a flame jet between jets (not drawn) |
+| +0 | X | byte column 0-29; `$FF` a free record; `$FE` a flame jet between jets: still drawn, at column 254, which no span copies, so it is invisible |
 | +1 | Y | line in the 144-line play buffer |
 | +2, +3 | width, height | in bytes and lines, from the frame |
 | +4, +5 | the image | the frame's bitmap, one bit a pixel, no mask |
@@ -367,7 +410,7 @@ urns, the items and the fragments.
 | +`$0D`, +`$0E` | base X and Y | where the actor stands; the frame's offsets are added to them |
 | +`$0F` | flags | bit 0 shootable, bit 1 kept over a room change, bit 2 a body, bit 6 not drawn, bit 7 drawn in the second pass |
 | +`$10` | the placement's index | or a counter |
-| +`$11` | the pixel shift | always 0 in stage 1 ([doc 6](06-rendering.md#67-sprites-on-byte-columns)) |
+| +`$11` | the pixel shift | eighths of a byte column: 0 in the keyed recordings; the warrior's flying head moves by it (StepFineBack `$8B4E`, 510 runs in `rzx-r1`; [doc 6](06-rendering.md#67-sprites-on-byte-columns)) |
 
 A frame is a 6-byte record of a frame table (SetActorFrame `$AA02`): the column offset, the line offset, the width,
 the height, the image's offset. SetActorFrame sets X = base X + the column offset (negated when the actor faces left),
@@ -517,7 +560,8 @@ docs/img/play/warrior-walk.gif`.*
 3. They take 10 437 T, 15 % of a frame. The drawing that follows takes about four times as much
    ([doc 6](06-rendering.md#66-the-sprites)).
 
-Witness: RunActorHandlers ran 10 190 times in the stage-1 recordings, WarriorActor 946 times.
+Witness: RunActorHandlers ran 19 503 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle, s1-right),
+WarriorActor 3 604 times (c1o, deaths, rzx-r1, s1-right).
 
 **The point**: a mover is a handler with a counter. The enemies move a byte column at a time on fixed counts of
 passes, so they move slower when a pass is longer.
@@ -545,7 +589,7 @@ The tests:
 | Who against whom | Routine | The rule |
 | --- | --- | --- |
 | the hero against the floor | CellUnderFeet `$B134` | the cell at row (Y + height + 3) / 8, his column: bit 1 solid |
-| the hero against walls and spikes | CellAt `$B162` | the cell at row D / 8, column E - 4: bit 1 solid, bit 3 deadly |
+| the hero against walls and spikes | CellAt `$B162` | A = the cell at row D / 8, screen column E - 2 (CellsPlay `$7282` is screen column 2); Z set when bit 1 (solid) is clear. HeroUpdate tests bit 3 (deadly) itself |
 | the hero's strike against an urn | InStrikeReach `$A816` | the urn's column = the hero's + 3 (facing right) or - 3, and lines within 24 |
 | the warrior's reach | IsHeroInReach `$9621` | the hero's column = the warrior's + 3 (or - 3), and the hero 0-9 lines below his top |
 | a flame jet against the hero | FlameJetActor `$8DCC` | at the jet's frame 3: lines within 20 (HeroWithinY), the hero's column the jet's or the next |
@@ -614,6 +658,12 @@ AddMissileHigh `$B296` fills slots 8-15. UpdateMissiles `$B2E6` calls each used 
 In `c1` the only sender is HeroDeath `$B22B`: it clears slots 8-15 and adds 8 flyers of kind 7. Their path runs out to
 the respawn point, then back as kind 8 ([doc 10](10-gameplay-logic.md)).
 
+![The hero throws in rzx-r1](img/play/shot.gif)
+
+*`rzx-r1` frames 2310-2390, one picture every 2 frames: ThrowItem (item 8) adds a missile of kind 9 (UpdateHeroShot),
+which flies left or right and stops on an actor (ShotHitsActor); the missile slots hold kind 9 at frame 2320. Doc 10
+([10.3](10-gameplay-logic.md#103-strikes-items-and-weapons)) gives its command.*
+
 Witness: UpdatePathFlyer ran in `c1o`, `deaths` and `s1-right`; UpdateBouncer and ShotHitsHero only in `s1-right`.
 
 **The point**: the missiles are a second, lighter actor list. They have no frame records; each handler draws and
@@ -651,6 +701,7 @@ of fixed records.
 - **Missile kind 0 is a trap.** HangFlashBorder `$876C` flashes the border from R in a loop that never returns. A
   record of kind 0 would hang the game.
 - **The fine steps.** StepFineRight `$8B37` and StepFineLeft `$8B61` move an actor by eighths of a byte column through
-  +`$11`. No code calls them.
+  +`$11`. No code calls them. Their sibling StepFineBack `$8B4E` is live: `$8736` and the warrior's flying head
+  (WarriorHeadFly `$9474`) call it, 510 runs in `rzx-r1`.
 - **Room 6.** Its exit byte is 0, so once in it the hero could not leave by an edge. Only room 12's up bit leads into
   it. In `rzx-r1`, read every 10 frames, RoomNumber is never 6.

@@ -3,6 +3,7 @@
 
     python3 tools/fig_objects.py decode docs/img/rooms/decode-room7.png
     python3 tools/fig_objects.py records docs/img/rooms/records.png
+    python3 tools/fig_objects.py placements docs/img/rooms/placements-grid0.png
 
 decode: stage 1's graphics (src/res/stage1/graphics.txt and tiles.png, packed again by tools/res_stage.py and
 unpacked with its unrle, the bytes Unrle `$A424` leaves at `$5B00`), grid 0, room 7 (RoomColumn 11, RoomRow 6, the
@@ -12,6 +13,9 @@ the map byte to the four tiles. The decode was checked against c1's Cells `$7280
 records: the five record layouts of stage 1 (the grid record, a placement, a kind row, an actor record, a span), each
 with a real example: Grid0 `$9B6F`, placement 0, kind row 4, actor record 13 at c1 frame 16550, the first span at
 c1 frame 16202.
+placements: grid 0's map (69 x 21 blocks, drawn from the tiles and scaled to the page) with its 18 room windows (14 x
+9 blocks, a step of 11 columns and 6 rows; the room numbers) and its 66 placements of Grid0Placements `$9BA0`
+(build/stage1.bin), each a dot at its cell (X, Y in cells over the grid) coloured by its kind's group.
 """
 import os
 import sys
@@ -145,5 +149,68 @@ def records(out):
     save(im.crop((0, 0, im.width, y)), out)
 
 
+PLACEMENT_GROUPS = [
+    ((0, 1), 'hanging bodies (0, 1)'), ((2,), 'flame jets (2)'), ((3, 4, 5, 6), 'urns and chests (3-6)'),
+    ((7,), 'fire pits (7)'), ((8, 9, 10, 11), 'the demon (8-11)'), ((12, 13, 14, 16), 'statues, gate, slab (12-16)'),
+]
+
+
+def placements(out):
+    from PIL import ImageDraw
+    d = unpacked()
+    w = [int.from_bytes(d[i:i + 2], 'little') for i in range(0, 10, 2)]
+    K, P_, A, B, M = (10 + x for x in w)
+    pix, att, blk, mp = d[P_:A], d[A:B], d[B:M], d[M:]
+    gw, gh = 69, 21
+    full = Image.new('RGB', (gw * 16, gh * 16))
+    tiles = {}
+    for r in range(gh):
+        for c in range(gw):
+            b = mp[r * gw + c]
+            for k, (dy, dx) in enumerate(((0, 0), (0, 1), (1, 0), (1, 1))):
+                tn = blk[4 * b + k]
+                if tn not in tiles:
+                    tiles[tn] = tile_image(pix, att, tn, 1)
+                full.paste(tiles[tn], (c * 16 + dx * 8, r * 16 + dy * 8))
+    scale = 1018 / full.width
+    pic = full.resize((1018, round(full.height * scale)), Image.LANCZOS)
+    stage = open(os.path.join(CASE, 'build', 'stage1.bin'), 'rb').read()
+    at = 0x9BA0 - 0x6C3F
+    places = []
+    while stage[at] != 0xFF:
+        places.append(tuple(stage[at:at + 3]))
+        at += 3
+    im, dr, y = canvas(80 + pic.height + 130, 'Grid 0 of stage 1: the 18 room windows and the 66 placements',
+                       'The map from the tiles (Grid0 $9B6F: 69 x 21 blocks). White frames: the room windows, 14 x 9 '
+                       'blocks\nevery 11 columns and 6 rows (the room\'s number at its top left). Dots: Grid0Placements '
+                       '$9BA0, the kind at X, Y in cells.\nLoadRoomActors $A4CC creates the placements inside the window '
+                       'at each room change.')
+    x0, y0 = 16, y + 4
+    im.paste(pic, (x0, y0))
+    ov = ImageDraw.Draw(im)
+    for room in range(18):
+        rc, rr = room % 6, room // 6
+        bx, by = rc * 11, rr * 6
+        ov.rectangle((x0 + bx * 16 * scale, y0 + by * 16 * scale, x0 + (bx + 14) * 16 * scale - 1,
+                      y0 + (by + 9) * 16 * scale - 1), outline=(235, 235, 235))
+        ov.text((x0 + bx * 16 * scale + 3 + (6 if rr else 0), y0 + by * 16 * scale + 2 + (10 if rr else 0)), '%d' % room,
+                font=F(13), fill=(235, 235, 235))
+    counts = [0] * len(PLACEMENT_GROUPS)
+    for kind, px, py in places:
+        g = next(i for i, (ks, _) in enumerate(PLACEMENT_GROUPS) if (kind & 0x7F) in ks)
+        counts[g] += 1
+        cx, cy = x0 + (px * 8 + 4) * scale, y0 + (py * 8 + 4) * scale
+        ov.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=COLOURS[g % len(COLOURS)], outline=(0, 0, 0))
+    ly = y0 + pic.height + 14
+    for i, (_, name) in enumerate(PLACEMENT_GROUPS):
+        lx = 16 + (i % 3) * 340
+        yy = ly + (i // 3) * 24
+        ov.ellipse((lx, yy + 3, lx + 11, yy + 14), fill=COLOURS[i % len(COLOURS)])
+        ov.text((lx + 18, yy), '%s: %d' % (name, counts[i]), font=F(13), fill=TEXT)
+    ov.text((16, ly + 56), '%d placements. Rooms overlap by 3 block columns and 3 block rows, so a placement in an '
+            'overlap is created in both rooms.' % len(places), font=F(13), fill=DIM)
+    save(im.crop((0, 0, im.width, ly + 80)), out)
+
+
 if __name__ == '__main__':
-    {'decode': decode, 'records': records}[sys.argv[1]](sys.argv[2])
+    {'decode': decode, 'records': records, 'placements': placements}[sys.argv[1]](sys.argv[2])

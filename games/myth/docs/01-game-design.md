@@ -93,7 +93,7 @@ How to read it: every stage block returns E to the resident.
 - PlayStage `$F1CA` gives Z for E = 2, and the chain at `$F0A4-$F0E8` moves on.
 - Anything else calls GameOver `$F24B` and plays the same stage again.
 
-**The point**: the game is five separate programs on one tape, run in order by a 2.7 KB resident. Only the score, the
+**The point**: the game is five separate programs on one tape, run in order by a 4 KB resident. Only the score, the
 lives and the credits pass between them.
 
 ## 1.2 The screens
@@ -200,7 +200,7 @@ stateDiagram-v2
     Jump --> Stand: lands
     Walk --> Fall: the ground ends
     Fall --> Stand: lands
-    Stand --> Strike: FIRE with a weapon item
+    Stand --> Strike: FIRE with item kind 3, 5 or 6
     Strike --> Stand
     Stand --> Dying: energy 0 or a deadly cell
     Dying --> Stand: respawn, a life less
@@ -210,7 +210,9 @@ How to read it: the hero is a state machine of 11 states.
 
 - They are: stand, walk, jump, fall, leap back, three strikes, leap up, a scripted move, dying.
 - Only standing and walking take new input.
-- The strikes need a weapon item selected.
+- The strikes need an item of kind 3 (the weapon), 5 (the skulls) or 6 (the master icon) selected (HeroFireHeld
+  `$ADE9`). Kinds 5, 7 and 8 also throw or fire (HeroUpdate `$AC3D`: 7 FireBolt `$AD14`, 5 ThrowAmmo `$AD4B`, 8
+  ThrowItem `$92D1`).
 
 **The point**: the controls are the C64's joystick moves mapped to five keys. FIRE changes what the directions mean.
 
@@ -261,7 +263,7 @@ What each kind does is the stage's own code. In stage 1 (`work/stage2/notes-stag
 | 1 | heart | a shield: damage is ignored while its count drains, one every 8th pass |
 | 2 | key | opens the gate; the dragon's prize |
 | 3 | weapon | lets the hero strike |
-| 5 | skull | thrown; nine thrown into the fire pit of room 12 wake the demon |
+| 5 | skull | thrown in an arc; the tenth object thrown into the fire pit of room 12 wakes the demon |
 | 6 | gems | the master icon: in room 2 it ends the stage |
 | 7 | trident with lightning | opens room 12's right exit; fires bolts without limit |
 | 8 | bolt | thrown (ThrowItem `$92D1`) |
@@ -312,19 +314,20 @@ icon, and the master icon opens the way out.
 ### Energy and lives
 
 Energy runs from 46 (full) to 0. Each pass of contact with a danger takes a fixed amount, set in that danger's code.
-The amounts, from every DamageHero call in the four listings:
+The amounts, from every DamageHero call in the four listings, including the shots that reach it through ShotHitsHero
+(stage 1 `$86EB`, which falls through into DamageHero `$870C`):
 
 | Stage | Damage (DamageHero's C) and the danger |
 | --- | --- |
-| 1 | 4: the danger zones, a hanging body, the warrior; 16: a flame jet |
-| 2 | 2: Medusa's head; 4: the harpies, the drops; 20: Medusa's floor shot |
+| 1 | 4: the danger zones, a hanging body, the warrior; 6: the bouncer (BouncerStep `$85FB`), an aimed shot (`$80DF`); 10: the drifting shots (DriftRightHurt `$83CF`, DriftLeftHurt `$8424`); 16: a flame jet |
+| 2 | 2: Medusa's head; 4: the harpies, the drops, the drift-left shot (`$B6C8`); 6: an aimed shot (`$826F`); 20: Medusa's floor shot |
 | 3 | 2: the swamp, the giant's fireball, the dragon's fire, a bog man; 3: the pyre; 6: a Viking; 40: a troll's swing |
-| 4 | 2: a pendulum, the drain of a touch; 4: a deadly floor, a falling column, a touch |
+| 4 | 2: a pendulum, the drain of a touch, the head's shot (HeadShot `$B5C5`); 4: a deadly floor, a falling column, a touch; 6: an aimed shot (`$803A`, never run in a recording) |
 | 5 | 9: any of Dameron's missiles (DamageHero `$7EDA`) |
 
 Other rules of a life:
 
-- A deadly cell at the hero's feet (fire, spikes, the pit) costs a life at once (HeroUpdate, [doc 10](10-gameplay-logic.md)).
+- A deadly cell on the hero's head row, one column ahead of him (`$AC4B-$AC62`), costs a life at once (HeroUpdate, [doc 10](10-gameplay-logic.md)).
 - So does walking off the map sideways (column 0 or 32).
 - A shard of a smashed urn gives 6 energy back (FragmentActor).
 - Below 14 energy the hero flashes his colours.
@@ -365,7 +368,7 @@ The game starts with 4 credits. GameOver `$F24B` takes one at once (CreditsDec `
 flowchart TD
     G["GameOver: Credits - 1, GAME OVER, PRESS SPACE TO SELECT"] --> M["the menu: RESTART THIS STAGE, RESTART FROM STAGE ONE"]
     M --> B{"Credits 0?"}
-    B -->|"no"| T["the bar toggles between the two lines every 32 frames"]
+    B -->|"no"| T["the bar toggles between the two lines every 64 frames, about 1.3 s"]
     B -->|"yes"| O["the bar stays on RESTART FROM STAGE ONE"]
     T -->|"SPACE"| C{"lit line"}
     O -->|"SPACE"| W
@@ -375,7 +378,8 @@ flowchart TD
 
 How to read it: the toggle is GameOverLoop `$F2A7`.
 
-- Every frame whose FrameCounter AND `$1F` is 0 moves the option on.
+- The loop takes two HALTs a round (its own and CycleColours'), and FrameCounter steps once a round. Every round whose
+  FrameCounter AND `$1F` is 0 moves the option on: every 32 rounds, 64 frames.
 - With 0 credits the next option is forced to 1, RESTART FROM STAGE ONE.
 - So 4 credits buy three retries of a stage. The fourth game over leaves only the way back to stage one.
 
@@ -421,6 +425,23 @@ high-score table.
 The rooms come from each stage's room tables (`src/res/stageN/rooms.txt`, [doc 7](07-objects.md)). Stage 5 has no
 rooms: one screen, the duel.
 
+![The enemies, hazards and bosses of the five stages](img/design/enemies.png)
+
+*Each enemy as the player sees it: its sprite from `src/res/stageN`, its handler, how it moves and what it costs the
+hero, what beats it and what it scores. Made with `python3 tools/fig_design.py enemies docs/img/design/enemies.png`.*
+
+How to read it: one card an enemy, a row of cards a stage. The numbers in brackets are the energy a contact or a shot
+takes (the table of [1.6](#16-the-rules)); the last line is what beats it and its points (AddScore's table above).
+
+- The skeleton warrior, the spirits, the Vikings, the trolls, the bog men, the scorpions and the mummy are spawned by
+  timers. The others are placements, the kind numbers of the maps ([1.8](#18-the-maps)).
+- The flame jets, the drops and the pendulums are hazards: nothing beats them, the hero passes between their moves.
+- The bosses take a fixed count of hits. Their mechanisms are in [doc 10](10-gameplay-logic.md): the demon and the
+  dragon of stage 1 in 10.7 and 10.8, the rest in 10.10.
+
+**The point**: each stage has its own cast, but the rules are the same. The common enemies that can be beaten take one to
+four hits, hazards are timed, and a boss is a counter.
+
 ![Key moments of stages 1 and 2](img/design/moments-1.png)
 
 *Moments of the RZX run and the walks: rzx-r1 (stage 1), c1, deaths, rzx-r2 (stage 2). Made with `python3
@@ -446,7 +467,7 @@ How to read them: each screen names its recording and frame. The same frames are
 - Grid 0 is 18 rooms: a graveyard on the surface, the caves under it.
 - Grid 1 is a shaft of three rooms. Grid 2 is the dragon's arena.
 - Hanging bodies, flame jets, fire pits and urns fill grid 0. The warrior walks the graveyard.
-- The winged demon sleeps in room 12's pit until nine skulls are thrown in.
+- The winged demon sleeps in room 12's pit until the tenth object is thrown into it.
 
 ### Stage 2: Greece, 400 BC
 
@@ -498,10 +519,13 @@ copy of the screen line table ([doc 2](02-architecture.md)).
 
 ## 1.8 The maps
 
-![The maps of stages 1 to 4](img/design/maps.png)
+![The maps of stages 1 and 2](img/design/maps.png)
 
-*The four map figures of `tools/fig_rooms.py`, scaled to the page. Made with `python3 tools/fig_design.py maps
-docs/img/design/maps.png`.*
+![The maps of stages 3 and 4](img/design/maps-2.png)
+
+*The four map figures of `tools/fig_rooms.py`, one panel a stage, at most at full size. Stage 3's grid 1, 124 blocks
+wide, is cut at a room edge and continued under it. Under each stage, every placement kind is named by its handler.
+Made with `python3 tools/fig_design.py maps docs/img/design/maps.png` (which also writes `maps-2.png`).*
 
 How to read it: each map is drawn from the stage's resources, never from the image.
 

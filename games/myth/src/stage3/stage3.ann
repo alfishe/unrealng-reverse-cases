@@ -122,7 +122,7 @@ $75CA LastActor ; the 13th record
 $75DC ActorsEnd ; 4 bytes past the records: only the HUD picture's (DissolveHud, EndStage's save) bytes
 $75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind, +3 to +5 the kind's own
 $75E1 MissilesY ; the first record's +1
-$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 5 (its last 4 bytes) to 15 lie over them
 $7610 MissilesHigh ; missile records 8-15 (the hero's death sparks)
 $7611 MissilesHighY ; record 8's +1
 $7640 DigitBuffer ; in play: the score's digit picture (6 + 2 columns x 8 lines, RenderScore $7B61) and a sprite's shifted copy (PreShiftSprite $7F43)
@@ -1981,8 +1981,8 @@ $B1C8 c CellUnderFeet ; HL = the room cell under the actor's feet, E (and D faci
 > Witness: L1 2972 (rzx-r3, s3-right).
 $B1E9 CellUnderFeetColumn
 $B1F6 c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
-> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; the play area's cell column 0 is screen column 4). The
-> cell's bits: 1 solid, 3 deadly (HeroUpdate $ADE3).
+> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is screen column 2, so the cell is at screen column E - 2). The
+> cell's bits: 1 solid, 3 deadly (stage 3's HeroUpdate $ADE3 does not test it).
 > Stage 1's CellAt at $B162 is the same code.
 > Witness: L1 1832 (rzx-r3, s3-right).
 $B1FC c CellAtRow ; CellAt `$B1F6` entered with D = the cell row (0-17) instead of the pixel line

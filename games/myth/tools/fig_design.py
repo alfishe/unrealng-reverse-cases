@@ -6,15 +6,17 @@
     python3 tools/fig_design.py moments1 docs/img/design/moments-1.png
     python3 tools/fig_design.py moments2 docs/img/design/moments-2.png
     python3 tools/fig_design.py hud docs/img/design/hud.png
-    python3 tools/fig_design.py maps docs/img/design/maps.png
+    python3 tools/fig_design.py maps docs/img/design/maps.png     # and docs/img/design/maps-2.png
     python3 tools/fig_design.py items docs/img/design/items.png
     python3 tools/fig_design.py route1 docs/img/design/route-stage1.png
+    python3 tools/fig_design.py enemies docs/img/design/enemies.png
 
 The screens are those of the recordings: docs/img/play/*.png (taken with kit/screen_shot.py from c1, menu, the
 stage walks and rzx-r1), and the screens the recording tool saved every 500 frames or so into
 work/stage2/rec/<recording>/screens/ (rzx-r1 .. rzx-r5, joystick, ending). The HUD figure is c1 frame 15476's
 top 48 lines (docs/img/play/stage1-start.png), with the fields' cells from the stage code (src/stage1/hud.asm). The
-maps figure scales the four map figures of tools/fig_rooms.py (docs/img/maps/stageN.png).
+maps figures place the four map figures of tools/fig_rooms.py (docs/img/maps/stageN.png), one panel a stage,
+with each kind named by its handler's label.
 """
 import sys
 
@@ -142,22 +144,160 @@ def hud(out):
     save(im.crop((0, 0, W, lab_y + 250)), out)
 
 
+def kind_names(n):
+    """Each placement kind's handler label, read from the stage's table-kinds.csv and build/stageN.lst."""
+    import csv
+    import re
+    lab = {}
+    with open(P('build', f'stage{n}.lst'), errors='replace') as f:
+        for line in f:
+            m = re.match(r'\s*\d+\+?\s+([0-9A-F]{4})\s+([A-Za-z_][A-Za-z0-9_]*):', line)
+            if m and m.group(1) not in lab:
+                lab[m.group(1)] = m.group(2)
+    with open(P('src', 'res', f'stage{n}', 'table-kinds.csv')) as f:
+        rows = [r for r in csv.reader(f) if r and not r[0].startswith('#') and r[0] != 'row']
+    return [(int(r[0]), lab.get(r[2][1:].upper(), r[2])) for r in rows]
+
+
+MAP_NAMES = {1: 'stage 1, The Road To Hell: 3 grids, 22 rooms', 2: 'stage 2, Greece 400 BC: 3 grids, 15 rooms',
+             3: 'stage 3, Scandinavia 500 AD: 3 grids, 16 rooms', 4: 'stage 4, Egypt 3000 BC: 9 grids, 29 rooms'}
+# stage 3's grid 1 is 124 blocks wide: its map is cut at a room edge (x 890, the sixth room) and the rest of grid 1
+# (y 210-364 of docs/img/maps/stage3.png) is drawn under it as "grid 1, continued"
+STAGE3_CUT, STAGE3_GRID1 = 890, (210, 364)
+
+
+def map_pieces(n):
+    pic = Image.open(P('docs', 'img', 'maps', f'stage{n}.png')).convert('RGB')
+    if n == 3:
+        y0, y1 = STAGE3_GRID1
+        return [(None, pic.crop((0, 0, STAGE3_CUT + 1, pic.height))),
+                ('grid 1, continued from its sixth room window', pic.crop((STAGE3_CUT, y0, pic.width, y1)))]
+    return [(None, pic)]
+
+
 def maps(out):
-    pics = [Image.open(P('docs', 'img', 'maps', f'stage{n}.png')).convert('RGB') for n in (1, 2, 3, 4)]
-    im, d, y = canvas(2000, 'The four room stages as one contact sheet (stage 5 has no rooms)',
-                      'Drawn by tools/fig_rooms.py from src/res/stageN (graphics.txt, the rooms and the placements); '
-                      'scaled to the page.\nEach magenta dot is a placement: its number is the kind (doc 07).')
-    names = ['stage 1, The Road To Hell: 3 grids, 22 rooms', 'stage 2, Greece 400 BC: 3 grids, 15 rooms',
-             'stage 3, Scandinavia 500 AD: 3 grids, 16 rooms', 'stage 4, Egypt 3000 BC: 9 grids, 29 rooms']
-    for pic, name in zip(pics, names):
-        s = min((W - 32) / pic.width, 700 / pic.height)
-        p = pic.resize((int(pic.width * s), int(pic.height * s)), Image.LANCZOS)
-        d.text((16, y), name, font=F(16), fill=HI)
-        im.paste(p, (16, y + 24))
-        y += p.height + 40
+    """Two sheets: stages 1 and 2 into OUT, stages 3 and 4 into OUT with -2 before .png. Each stage is its own panel,
+    at most at full size, with its kinds named under it."""
+    for stages_, path in (((1, 2), out), ((3, 4), out.replace('.png', '-2.png'))):
+        im, d, y = canvas(4000, f'The maps of stages {stages_[0]} and {stages_[1]} (stage 5 has no rooms)',
+                          'Drawn by tools/fig_rooms.py from src/res/stageN (graphics.txt, the rooms and the '
+                          'placements).\nEach magenta dot is a placement; its number is the kind, named under '
+                          'the map by its handler (table-kinds.csv; docs 07 and 10).')
+        for n in stages_:
+            d.text((16, y), MAP_NAMES[n], font=F(17), fill=HI)
+            y += 28
+            for sub, pic in map_pieces(n):
+                if sub:
+                    d.text((16, y), sub, font=F(13), fill=TEXT)
+                    y += 20
+                s = min(1.0, (W - 32) / pic.width)
+                p = pic.resize((int(pic.width * s), int(pic.height * s)), Image.LANCZOS) if s < 1 else pic
+                im.paste(p, (16, y))
+                y += p.height + 8
+            names = kind_names(n)
+            groups = {}
+            for k, name in names:
+                groups.setdefault(name, []).append(k)
+            parts = [(', '.join(str(k) for k in ks), name) for name, ks in
+                     sorted(groups.items(), key=lambda t: t[1][0])]
+            x = 16
+            for ks, name in parts:
+                txt = f'{ks}: {name}'
+                w = d.textlength(txt, font=F(13)) + 22
+                if x + w > W - 16:
+                    x, y = 16, y + 19
+                d.text((x, y), ks + ':', font=F(13), fill=HI)
+                d.text((x + d.textlength(ks + ': ', font=F(13)), y), name, font=F(13), fill=TEXT)
+                x += w
+            y += 40
+        save(im.crop((0, 0, W, y)), path)
+
+
+# Doc 01's enemy sheet: (stage, sprite file under src/res/stageN/, frame, the name, the handler, what it does, what
+# beats it). The facts are those of the handlers' headers in build/stageN.lst and of doc 01's damage and score tables.
+ENEMIES = [
+    (1, 'sprites-warrior.png', 0, 'skeleton warrior', 'WarriorActor $94D0', 'rises, walks, shield, strikes 4',
+     'one hit collapses it: 20'),
+    (1, 'bitmaps-hanging-2x37.png', 0, 'hanging body', 'HangingActor $9186', 'swings; 4 under it when still',
+     'struck: 160'),
+    (1, 'sprites-statue.png', 0, 'statue head', 'StatueActor $912B', 'spits drifting shots (10)', 'breaks: 64'),
+    (1, 'sprites-flame-jet.png', 6, 'flame jet', 'FlameJetActor $8DCC', 'rises at random; 16 on contact',
+     'cannot be beaten'),
+    (1, 'bitmaps-boss-body-6x32.png', 1, 'winged demon', 'BossBody $8E7C', 'wakes on the 10th thrown object',
+     'ten hits'),
+    (1, 'sprites-arena-head.png', 0, 'the dragon', 'ArenaHeadActor $90E7', 'the arena of grid 2', '20 bolts'),
+    (2, 'bitmaps-harpy-4x28.png', 0, 'harpy', 'HarpyActor $8DE8', 'rises, shoots; touch 4',
+     'flies off for good'),
+    (2, 'sprites-spirit.png', 6, 'spirit', 'SpiritActor $9028', 'six shots every 16 passes',
+     'a hit bursts it'),
+    (2, 'sprites-drop.png', 0, 'drop', 'DropActor $A929', 'falls from the roof; 4', 'cannot be beaten'),
+    (2, 'bitmaps-hydra-head-3x22.png', 0, 'hydra', 'HydraHead1Actor $7FB5 ...', 'three heads over the pool',
+     '9 hits a head'),
+    (2, 'sprites-medusa.png', 0, 'Medusa', 'MedusaActor $814E', 'her head: floor shots (20)',
+     'her head struck falls as an item'),
+    (3, 'sprites-viking.png', 0, 'Viking', 'VikingActor $8C64', 'blocks, swings an axe (6)',
+     'a hit: falls'),
+    (3, 'sprites-troll.png', -1, 'troll', 'TrollLegsActor $9003', 'walks, a swing of 40', 'four hits: 200'),
+    (3, 'sprites-bog-man.png', 0, 'bog man', 'BogManActor $91AD', 'wades out of the swamp; 2', 'sinks again'),
+    (3, 'bitmaps-dragon-head-4x27.png', 0, 'dragon', 'DragonHeadActor $92BF', 'fire (2) in room 8',
+     '16 thrown objects: 2500'),
+    (4, 'sprites-scorpion.png', 0, 'scorpion', 'ScorpionActor $9319', 'crawls 2 columns / 10 passes',
+     'leaves at the edge'),
+    (4, 'sprites-mummy.png', 0, 'mummy', 'MummyActor $9351', 'walks left; touch: a life', '3 hits: 80'),
+    (4, 'sprites-pendulum.png', 0, 'pendulum', 'Pendulum $888F', 'swings; 2', 'a trap'),
+    (4, 'sprites-boss-mouth.png', 0, "pharaoh's head", 'BossMouth $8AD4', 'spits shots (2)', '20 hits: 1400'),
+    (5, 'bitmaps-dameron-face0-7x128.png', 0, 'Dameron', 'stage 5', 'four forms, missiles of 9', '80 hits'),
+]
+ENEMY_INK = {1: (255, 80, 80), 2: (120, 160, 255), 3: (120, 230, 120), 4: (255, 230, 90), 5: (230, 120, 255)}
+
+
+def enemies(out):
+    import res_stage
+    cw, ch = 255, 0
+    cells = []
+    for st, fname, frame, name, handler, does, beats in ENEMIES:
+        bms, meta = res_stage.png_to_frames(open(P('src', 'res', f'stage{st}', fname), 'rb').read(), 'tx-frames')
+        if frame < 0:  # the tallest frame (the troll's legs and body are two records; its frames differ)
+            frame = max(range(len(bms)), key=lambda i: meta['sizes'][i][1])
+        w, h = meta['sizes'][frame]
+        sc = 1 if h > 60 else 2 if h > 36 else 3
+        spr = Image.new('RGB', (w * 8 * sc, h * sc), (0, 0, 0))
+        for yy in range(h):
+            for xx in range(w * 8):
+                if (bms[frame][yy * w + xx // 8] >> (7 - xx % 8)) & 1:
+                    spr.paste(ENEMY_INK[st], (xx * sc, yy * sc, xx * sc + sc, yy * sc + sc))
+        if spr.height > 130:
+            spr = spr.resize((spr.width * 130 // spr.height, 130), Image.NEAREST)
+        cells.append((st, spr, name, handler, does, beats))
+        ch = max(ch, spr.height)
+    im, d, y = canvas(3000, 'The enemies, hazards and bosses of the five stages',
+                      'Each sprite from src/res/stageN, in the stage\'s colour. Under it: the handler, what it does (its '
+                      'damage), what beats it (its score).\nFrom the handlers\' headers in build/stageN.lst and the '
+                      'tables of 1.6; doc 10 has the mechanisms.')
+    x = 16
+    row_h = 0
+    last = None
+    for st, spr, name, handler, does, beats in cells:
+        if st != last:
+            if last is not None:
+                y += row_h + 14
+            x, row_h = 16, 0
+            d.text((16, y), f'stage {st}', font=F(16), fill=HI)
+            y += 24
+            last = st
+        if x + cw > W - 8:
+            x, y = 16, y + row_h + 10
+            row_h = 0
+        d.rectangle([x, y, x + cw - 10, y + 136 + 4 * 17 + 6], fill=(24, 24, 28))
+        im.paste(spr, (x + (cw - 10 - spr.width) // 2, y + 4 + (130 - spr.height)))
+        ty = y + 140
+        d.text((x + 6, ty), name, font=F(14), fill=HI)
+        for i, t in enumerate((handler, does, beats)):
+            d.text((x + 6, ty + 18 + i * 17), t, font=F(12), fill=TEXT if i else DIM)
+        row_h = max(row_h, 136 + 4 * 17 + 6)
+        x += cw
+    y += row_h + 14
     save(im.crop((0, 0, W, y)), out)
-
-
 
 
 ICON_TABLES = {1: (0x7F3B, 9), 2: (0x7F00, 8), 3: (0x7F2F, 10), 4: (0x7F75, 10), 5: (0x7E8B, 9)}
@@ -268,4 +408,4 @@ def route1(out):
 if __name__ == '__main__':
     cmd, out = sys.argv[1], sys.argv[2]
     {'front': front, 'stages': stages, 'moments1': moments1, 'moments2': moments2, 'hud': hud,
-     'maps': maps, 'items': items, 'route1': route1}[cmd](out)
+     'maps': maps, 'items': items, 'route1': route1, 'enemies': enemies}[cmd](out)

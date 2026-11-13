@@ -10,12 +10,14 @@
 
   ORG $F356
 
-; One frame: FrameCounter + 1, the next colour of ColourCycle into the box
+; One HALT, then FrameCounter + 1, the next colour of ColourCycle into the box
 ; under the titles
 ;
-; Called every frame by the waits (c1, every recording with a title screen).
-; Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right,
-; s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+; Called once a round by the waits (c1, every recording with a title screen);
+; every resident caller HALTs before it, so in the resident's loops
+; FrameCounter steps once every two frames. Witness: L1 7883 (c1, ending,
+; joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right,
+; stageload, rzx-r0-rzx-r5).
 CycleColours:
   HALT
   LD A,(FrameCounter)
@@ -410,7 +412,7 @@ BandRow15:
 SetMenuBandsEnd:
   RET
 
-; 75 frames of CycleColours
+; 75 rounds of HALT + CycleColours (two HALTs): 150 frames, 3 s
 ;
 ; Witness: L1 15 (c1, ending, joystick, menu, s5-right, stageload,
 ; rzx-r0-rzx-r5).

@@ -51,10 +51,10 @@ How to read it:
 | 1 | ROM header | 17 | Program "MYTH", 4514 bytes, LINE 0 | 5.08 s | PLAY at 234 |
 | 2 | ROM data | 4514 | the BASIC at PROG `$5CCB-$6E6C` | 28.49 s | USR at 1963 |
 | 3-8 | group "Speedlock 7 Block 1": tone, sync, the piece `$E8`, 171 bytes | 171 | the second stage `$FF26-$FFCF` | 1.79 s + 2.5 s pause | entered at 2387 |
-| 9-36 | group "Speedlock 7 Block 2": tone, sync, `$E8`, then 12 blocks, each after a 3-byte mark | 11 222 | the screen, the resident's pieces, the keys, the table, Unxor, Sl1End, Boot | 55.4 s + 3.3 s pause | 2387-5166 |
-| 37 | turbo, flag `$56` | 15 360 | the front `$6C3F-$A83E` | 49.39 s + 4.2 s | 5167-7826 |
+| 9-36 | group "Speedlock 7 Block 2": tone, sync, `$E8`, then 12 blocks, each after a 3-byte mark | 11 247 (12 blocks; 11 281 with the `$E8` and the eleven marks) | the screen, the resident's pieces, the keys, the table, Unxor, Sl1End, Boot | 55.4 s + 3.3 s pause | 2387-5166 |
+| 37 | turbo, flag `$56` | 15 360 | the front `$6C3F-$A83E` | 49.39 s + 4.2 s | 5167-7826 (LoadFront's entry to the front's `$7800`) |
 | 38 | stop the tape | | | | |
-| 39-40 | text "Stage 1: The Road To Hell", turbo | 33 792 | stage 1 over `$6C3F-$F03E` | 122.03 s + 3.5 s | 8626-15079 |
+| 39-40 | text "Stage 1: The Road To Hell", turbo | 33 792 | stage 1 over `$6C3F-$F03E` | 122.03 s + 3.5 s | 8626-15075 (PlayStage's entry to StageEntry; TurboLoad starts after the 150-frame PRESS PLAY wait) |
 | 41 | stop | | | | |
 | 42-43 | text "Stage 2: Greece 400 BC", turbo | 33 792 | stage 2 | 122.10 s + 3.8 s | |
 | 44 | stop | | | | |
@@ -99,7 +99,7 @@ chain and the SpeedLock blocks.
 The program is one line, line 0. LIST would show it as:
 
 ```text
-0 INK 0: PAPER 0: RANDOMIZE USR ((PEEK 23635+256*PEEK 23636)+10)
+0 {INK 0}{PAPER 0}RANDOMIZE USR ((PEEK 23635+256*PEEK 23636)+10)
 ```
 
 The header's LINE 0 runs it at once. 23635 is the system variable PROG, the program's first byte. So the line reads
@@ -130,8 +130,8 @@ So the expression is PEEK 23635 + 256 x PEEK 23636 + 59 = PROG + 59. In `c1` PRO
 Line 0 is 4 bytes of number and length, then 55 bytes of body: 59 bytes in all, `$5CCB-$5D05`. `$5D06` is the first
 byte after the line's end mark `$0D`. That is CopyChain.
 
-The line has two more tricks. A line 0 is out of reach of LIST and EDIT on a real Spectrum. The INK 0 and PAPER 0 make
-any listing black on black.
+The line has two more tricks. A line 0 is out of reach of LIST and EDIT on a real Spectrum. The INK 0 and PAPER 0 are not
+statements but the embedded control codes `$10 $00 $11 $00`: they turn the rest of this one line black on black.
 
 ### CopyChain: the first machine code
 
@@ -205,7 +205,8 @@ Layer000Loop:
   DEC BC
   LD A,B
   OR C
-  JP NZ,Layer000Loop      ; then on into $EE10, the new code
+  JP NZ,Layer000Loop      ; then on into $EE11, the new code; the first rewritten byte,
+                          ; $EE10, is this JP's own high byte
 ```
 
 In pseudocode, every layer follows the same pattern:
@@ -285,7 +286,7 @@ once the loader has read tape block 7.
 flowchart LR
     T["tape: the BASIC block"] -->|"ROM LD-BYTES"| B["$5CCB: line 0 and the chain, enciphered"]
     B -->|"CopyChain LDIR"| C0["$EDE4-$FF25: 103 layers deep"]
-    C0 -->|"layer 0 rewrites $EE10-$FF25"| C1["102 layers deep"]
+    C0 -->|"layer 0 rewrites $EE10-$FF25, its own JP's last byte first"| C1["102 layers deep"]
     C1 -->|"layers 1 to 101"| C2["1 layer deep"]
     C2 -->|"layer 102 rewrites the rest"| L["LoaderStart $FBD4: plain"]
 ```
@@ -643,7 +644,7 @@ Boot:                     ; $5B00, blocks 33 and 35
   LD IY,$5C3A             ; the system variables
   LD BC,$7FFD
   LD A,$10
-  OUT (C),A               ; a 128K: ROM 1, bank 0, paging locked
+  OUT (C),A               ; a 128K: ROM 1, bank 0; bit 5 clear, paging not locked
   RES 4,(IY+$01)          ; 48 BASIC mode
   LD HL,$EB7F             ; LDDR $CB80-$EB7F to $E000-$FFFF
   LD DE,$FFFF
@@ -725,7 +726,8 @@ B. C is the stage. LoadFront passes the front's own values.
 | stage 5 | 2 | 1 | 7 | 66 | 132 | 33 792 |
 
 Five different triples give one length: each record hides 33 792 in its own way. The D and E bytes (1, 8, 15, 23,
-30 and 1, 5, 9, 4, 8) are not read by any code that ran.
+30 and 1, 5, 9, 4, 8) are loaded into D and E by StageLoadLoop `$F211`, but LoadStage `$F5E4` never uses those
+registers.
 
 ### The IM 2 jump inside the loader
 
@@ -771,13 +773,17 @@ A wrong block gives NZ. PlayStage marks no stage loaded and loads again, with no
 ```mermaid
 flowchart TD
     A["PlayStage $F1CA: IY = the stage record"] --> B{"StageLoaded = this stage?"}
-    B -->|"yes"| R["120 frames, then run it"]
-    B -->|"no"| C["PRESS PLAY ON TAPE, the two titles"]
-    C --> D["LoadStage $F5E4: StageLoaded := C, HALT, LoadBlock"]
+    B -->|"no"| P["PRESS PLAY ON TAPE, WaitFrames: 150 frames"]
+    P --> T["PlayStageTitles $F200: the two title lines (PrintRecord twice)"]
+    B -->|"yes"| T
+    T --> L{"LoadStage $F5E4: StageLoaded = C?"}
+    L -->|"yes"| R["LoadStageLoaded: WaitBC 120 frames, no load"]
+    R --> H
+    L -->|"no"| D["StageLoaded := C, HALT, LoadBlock"]
     D --> E{"byte $BB80 = StageCheck?"}
     E -->|"no"| F["StageLoaded := $FF"]
-    F --> D
-    E -->|"yes"| G["STOP THE TAPE, wait"]
+    F --> L
+    E -->|"yes"| G["STOP THE TAPE, WaitFrames: 150 frames"]
     G --> H["H := lives, CALL $7800"]
     H --> I{"E from the stage"}
     I -->|"2: completed"| N["the next stage record"]
@@ -985,3 +991,4 @@ are enciphered by tools that run the loader's own code in reverse.
 | TurboVerify, the verify path | `$FF11` | the flag's carry always says LOAD |
 | the turbo load error, RST 8 | TurboExit `$FEB1` | every recorded load was good |
 | RestartFromStageOne, REWIND THE TAPE | `$F048` | no game over chose it |
+| why `c1`'s tape runs about 2 s ahead of the TZX's own block times (sl1 entered at 2387 against about 2440) | the emulator's tape clock against the TZX's time 0 | unexplained: settling it needs a recording opened at the tape's start, comparing the frame of block 1's first edge with the TZX's time 0; `c1` frames and TZX times are kept apart |

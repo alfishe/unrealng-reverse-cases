@@ -1236,8 +1236,8 @@ CellUnderFeetUnusedColumn:
 ; A = the room cell at column E, pixel line D; Z: not solid
 ;
 ; D = D / 8, on into CellAtRow $B2E2. HL = D x 32 + E - 4 (an offset into the
-; cells $7282; the play area's cell column 0 is screen column 4). The cell's
-; bits: 1 solid, 3 deadly.
+; cells $7282; CellsPlay $7282 is screen column 2, so the cell is at screen
+; column E - 2). The cell's bits: 1 solid, 3 deadly.
 ;
 ; As in stage 1 at $B162, the same code; stage 2 enters its second part from
 ; outside too.

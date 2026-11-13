@@ -1590,10 +1590,10 @@ CellUnderFeetColumn:
 
 ; A = the room cell at column E, pixel line D; Z: not solid
 ;
-; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; the play area's cell
-; column 0 is screen column 4). The
+; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is
+; screen column 2, so the cell is at screen column E - 2). The
 ;
-; cell's bits: 1 solid, 3 deadly (HeroUpdate $ADE3).
+; cell's bits: 1 solid, 3 deadly (stage 3's HeroUpdate $ADE3 does not test it).
 ;
 ; Stage 1's CellAt at $B162 is the same code.
 ;

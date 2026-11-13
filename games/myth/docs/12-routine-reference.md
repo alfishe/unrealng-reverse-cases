@@ -2400,9 +2400,9 @@ Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 **The hero's pass: items, hazards, weapons, colour, then his state's handler**
 
-IY = the hero. Item 1 drains (`$89A1`). A deadly cell (bit 3) under him at his column + 4 (facing right) or his
+IY = the hero. Item 1 drains (`$89A1`). A deadly cell (bit 3) on his head row (his top line, IY+1), one column ahead of him (CellAt
 
-column (left) and his line, or his column 0 or 32 and up, costs a life (LoseLife `$7ECE`) unless he is dying (state
+`$B162` with E = his column + 4 facing right or his column facing left: screen column X + 2 or X - 2), or his column 0 or 32 and up, costs a life (LoseLife `$7ECE`) unless he is dying (state
 
 `$0F`). Then, not dying: the selected item's kind (`$7F05`) fires its weapon: 7 FireBolt `$AD14`, 5 ThrowAmmo `$AD4B`, 8
 
@@ -5350,9 +5350,9 @@ Witness: L1 13831 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 **A = the room cell at column E, pixel line D; Z: not solid**
 
-HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`; the play area's cell column 0 is screen column 4). The
+HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`; CellsPlay `$7282` is screen column 2, so the cell is at screen column E - 2). The
 
-cell's bits: 1 solid, 3 deadly (HeroUpdate `$AC3D`).
+cell's bits: 1 solid, 3 deadly (tested by HeroUpdate `$AC3D`).
 
 Witness: L1 20581 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
@@ -5538,7 +5538,7 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 **GAME OVER: a credit less, the menu RESTART THIS STAGE / RESTART FROM STAGE ONE, SPACE chooses**
 
-Input: BC the address of the stage's six score digits (copied into the menu's SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at `$F25D`, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE TO SELECT, 20 frames of CycleColours, the menu. Every 32 frames the highlight moves to the other line (with no credit left it stays on RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
+Input: BC the address of the stage's six score digits (copied into the menu's SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at `$F25D`, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE TO SELECT, 20 rounds of HALT + CycleColours (which HALTs again): 40 frames, the menu. Every 64 frames (32 rounds of two HALTs, FrameCounter AND `$1F` = 0) the highlight moves to the other line (with no credit left it stays on RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
@@ -5558,7 +5558,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 #### `GameOver3` (`$F295`)
 
-**20 frames of colours, the menu, then the choice**
+**40 frames of colours (20 rounds of two HALTs), the menu, then the choice**
 
 | | |
 | --- | --- |
@@ -5635,9 +5635,9 @@ Not executed in any recording (all checked); stage 4's code refers to it (known 
 
 #### `CycleColours` (`$F356`)
 
-**One frame: FrameCounter + 1, the next colour of ColourCycle into the box under the titles**
+**One HALT, then FrameCounter + 1, the next colour of ColourCycle into the box under the titles**
 
-Called every frame by the waits (c1, every recording with a title screen). Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+Called once a round by the waits (c1, every recording with a title screen); every resident caller HALTs before it, so in the resident's loops FrameCounter steps once every two frames. Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
 
 | | |
 | --- | --- |
@@ -5882,7 +5882,7 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 #### `WaitFrames` (`$F542`)
 
-**75 frames of CycleColours**
+**75 rounds of HALT + CycleColours (two HALTs): 150 frames, 3 s**
 
 Witness: L1 15 (c1, ending, joystick, menu, s5-right, stageload, rzx-r0-rzx-r5).
 
@@ -12197,7 +12197,7 @@ Not executed in any recording (the recordings checked: s2-right, rzx-r2); known 
 
 **A = the room cell at column E, pixel line D; Z: not solid**
 
-D = D / 8, on into CellAtRow `$B2E2`. HL = D x 32 + E - 4 (an offset into the cells `$7282`; the play area's cell column 0 is screen column 4). The cell's bits: 1 solid, 3 deadly.
+D = D / 8, on into CellAtRow `$B2E2`. HL = D x 32 + E - 4 (an offset into the cells `$7282`; CellsPlay `$7282` is screen column 2, so the cell is at screen column E - 2). The cell's bits: 1 solid, 3 deadly.
 
 As in stage 1 at `$B162`, the same code; stage 2 enters its second part from outside too.
 
@@ -16965,9 +16965,9 @@ Witness: L1 2972 (rzx-r3, s3-right).
 
 **A = the room cell at column E, pixel line D; Z: not solid**
 
-HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`; the play area's cell column 0 is screen column 4). The
+HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`; CellsPlay `$7282` is screen column 2, so the cell is at screen column E - 2). The
 
-cell's bits: 1 solid, 3 deadly (HeroUpdate `$ADE3`).
+cell's bits: 1 solid, 3 deadly (stage 3's HeroUpdate `$ADE3` does not test it).
 
 Stage 1's CellAt at `$B162` is the same code.
 
@@ -21691,7 +21691,7 @@ Not executed in any recording (the recordings checked: s4-right, rzx-r4); known 
 
 **A = the room cell at column E, pixel line D; Z: not solid**
 
-HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`). The cell's bits: 1 solid, 3 deadly (CheckDeadlyFloor). As in stage 1 at `$B162`.
+HL = D / 8 x 32 + E - 4 (an offset into the cells `$7282`; CellsPlay `$7282` is screen column 2, so the cell is at screen column E - 2). The cell's bits: 1 solid, 3 deadly (CheckDeadlyFloor). As in stage 1 at `$B162`.
 
 Witness: L1 529 (rzx-r4, s4-right).
 

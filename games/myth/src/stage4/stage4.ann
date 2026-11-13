@@ -100,7 +100,7 @@ $74F2 Actors ; the 13 other actor records, 18 bytes each ($74F2-$75DB); +0 = $FF
 $75CA LastActor ; the 13th record
 $75DC ActorsEnd ; 4 bytes past the records: only the HUD picture's (DissolveHud, EndStage's save) bytes
 $75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind (MissileHandlers $B4E0), +3 to +5 the kind's own
-$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 5 (its last 4 bytes) to 15 lie over them
 $7610 MissilesHigh ; missile records 8-15 (AddMissileHigh $B45C: the hero's death sparks)
 $7640 DigitBuffer ; in play: the score's digit picture (6 + 2 columns x 8 lines, the score's renderer, RevealScore $97CD) and a sprite's shifted copy (PreShiftSprite $7F89)
 $76A0 SpanTable ; in play: the open spans CopyBuffer copies, 6 bytes each (the length, 0, the buffer address, the screen address; SpanCount spans), on to $779B
@@ -1612,7 +1612,7 @@ $B31A c CellBelowFeet ; A = the room cell one row below the actor's feet, 4 colu
 > Not executed in any recording (the recordings checked: s4-right, rzx-r4); known only from the code.
 $B33A CellBelowFeetColumn
 $B346 c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
-> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282). The cell's bits: 1 solid, 3 deadly (CheckDeadlyFloor). As in stage 1 at `$B162`.
+> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is screen column 2, so the cell is at screen column E - 2). The cell's bits: 1 solid, 3 deadly (CheckDeadlyFloor). As in stage 1 at `$B162`.
 > Witness: L1 529 (rzx-r4, s4-right).
 $B363 c FlashCellWait ; Flash the attribute $58C2 + HL red and yellow until N is pressed (not referenced)
 > Saves AF; the attribute at $58C2 + HL alternates $50 and $70 a frame each (HALTs); reads the keyboard half-row $7FFE: N (bit 3) ends it, else the resident's $FCDB is called; the DJNZ's counter is B, which LD BC,$7FFE has just set to $7F. No instruction or word of the image refers to `$B363`.

@@ -1483,7 +1483,8 @@ CellBelowFeetColumn:
 
 ; A = the room cell at column E, pixel line D; Z: not solid
 ;
-; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282). The cell's bits: 1
+; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is
+; screen column 2, so the cell is at screen column E - 2). The cell's bits: 1
 ; solid, 3 deadly (CheckDeadlyFloor). As in stage 1 at `$B162`.
 ;
 ; Witness: L1 529 (rzx-r4, s4-right).

@@ -31,7 +31,7 @@ counted from the emulator's frame start. On the 48K the INT rises at frame T 181
 
 ## 4.1 The game cycle
 
-Myth is one resident program at `$E000-$FFFF` and one overlay at `$6C3F-$F03E`. The overlay is the front (logo,
+Myth is one resident program at `$F000-$FFFF` and one overlay at `$6C3F-$F03E`. The overlay is the front (logo,
 credits, menu) or one of the five stages. The resident loads each overlay from tape and calls it at `$7800`
 (GameMain). It is the only program that sees the whole game.
 
@@ -67,10 +67,10 @@ load is [doc 3](03-build-and-load.md). The front's own screens are in [doc 5](05
 | State | Code | Who calls it | Recorded in |
 | --- | --- | --- | --- |
 | the resident's entry | ResidentEntry `$F040`: DI, ResidentInit, SetIm2 `$F635` | Boot's `JP (HL)` | `c1` frame 5166 |
-| the front's load | LoadFront `$F07E`: LoadStage with C = 0, then CALL GameMain | ResidentEntry, RestartFromStageOne | `c1` 5167-7734 |
+| the front's load | LoadFront `$F07E`: LoadStage with C = 0, then CALL GameMain | ResidentEntry, RestartFromStageOne | `c1` 5167-7826 (LoadFront's entry to the front's `$7800`) |
 | the front | FrontMain `$7800`: logo, credits, menu | LoadFront | `c1` 7826-8524 |
 | a new game | NewGame `$F090`: score 0, lives 5, credits 4 | the front's StartGame, by RET | `c1` 8524 |
-| a stage's load | PlayStage `$F1CA`, StageLoadLoop | PlayStage1 ... PlayStage5 | `c1` 8626-14976 |
+| a stage's load | PlayStage `$F1CA`, StageLoadLoop | PlayStage1 ... PlayStage5 | `c1` 8626-15075 (PlayStage's entry to StageEntry; TurboLoad starts after the 150-frame PRESS PLAY wait) |
 | a stage | StageEntry `$7800` of the stage block | StageRun's CALL GameMain | `c1` 15075 on |
 | the passes | MainLoop `$7839` (stage 1) | StageEntry falls into it | `c1` 15478 on |
 | the stage's end | EndStage `$789E` (stage 1) | GameOverExit, QuitStage, StageExit | `s1-right` |
@@ -129,11 +129,12 @@ Stage 5's code never sets E = 2. Winning the duel leaves WELL DONE on the screen
 flowchart TD
     A["PlayStage $F1CA, IY = the record"] --> B["ClearScreen"]
     B --> C{"StageLoaded = the record's C?"}
-    C -->|"no"| D["PRESS PLAY ON TAPE, WaitFrames 75, clear the line"]
+    C -->|"no"| D["PRESS PLAY ON TAPE, WaitFrames: 150 frames, clear the line"]
     C -->|"yes"| E["the two titles: PrintRecord x 2"]
     D --> E
     E --> F["StageLoadLoop: D, E, C, H, L, B from the record"]
     F --> G["LoadStage $F5E4"]
+    G -->|"already loaded: WaitBC 120 frames, Z"| I
     G -->|"NZ: not this stage"| H["StageLoaded = $FF"]
     H --> F
     G -->|"Z"| I["StageRun: SilenceAy, ClearScreen, H = Lives"]
@@ -151,12 +152,14 @@ The resident hands the stage only H, the lives, on entry. On return it takes E (
 
 ### GameOver
 
-GameOver takes a credit, shows GAME OVER and PRESS SPACE TO SELECT, waits 20 frames, then prints the menu. The menu's
-loop HALTs once a frame. Every 32 frames (FrameCounter `$FE31` AND `$1F` = 0) the highlight moves to the other line.
+GameOver takes a credit, shows GAME OVER and PRESS SPACE TO SELECT, waits 40 frames (20 rounds of HALT + CycleColours,
+which HALTs again), then prints the menu. The menu's loop takes two HALTs a round, its own and CycleColours' (through
+GameOver4 `$F2D8`), and FrameCounter `$FE31` steps once a round. Every 64 frames (FrameCounter AND `$1F` = 0) the
+highlight moves to the other line.
 
 ```asm
 GameOverLoop:
-  HALT                    ; one frame
+  HALT                    ; one frame; CycleColours (GameOver4) HALTs again
   LD A,(FrameCounter)
   AND $1F
   JR NZ,GameOver4
@@ -179,9 +182,9 @@ GameOverSetOption:
 GameOver(BC = score digits):
     copy the six digits into the menu's SCORE
     Credits -= 1                          # CreditsDec $F25D
-    print GAME OVER, PRESS SPACE TO SELECT; 20 frames of CycleColours
+    print GAME OVER, PRESS SPACE TO SELECT; 20 rounds of HALT + CycleColours: 40 frames
     option = 1                            # RESTART FROM STAGE ONE highlighted first
-    every frame:
+    every round (2 frames):
         HALT
         if FrameCounter % 32 == 0:
             option = option + 1
@@ -197,7 +200,7 @@ GameOver(BC = score digits):
 
 1. Game overs one to three take them to 3, 2 and 1. Each time the highlight alternates between the two lines.
 2. The fourth game over takes the last: Credits = 0.
-3. At the next 32-frame tick, option = 1 + 1 = 2, so option = E = 1. The highlight stays on RESTART FROM STAGE ONE.
+3. At the next 64-frame tick, option = 1 + 1 = 2, so option = E = 1. The highlight stays on RESTART FROM STAGE ONE.
 4. SPACE then drops PlayStageN's return address and jumps to RestartFromStageOne `$F048`. That prints REWIND THE
    TAPE, AND THEN PRESS PLAY and loads the front again. NewGame then gives 4 credits back.
 
@@ -266,8 +269,8 @@ The handler does not count frames, so the game counts passes. PassCounter `$FE31
 lives' colours. A pass is about 3 frames in stage 1 ([4.5](#45-one-pass-measured)). So a timer of 32 passes lasts
 about 2 seconds in a light room and longer in a heavy one.
 
-The resident names the same byte FrameCounter. In the menus and the waits CycleColours steps it once a frame, after a
-HALT. So the same byte counts frames in the menus and passes in play.
+The resident names the same byte FrameCounter. In the resident's menus and waits it steps once every two frames: the caller
+HALTs, then CycleColours HALTs again and steps it. So the same byte counts frame pairs in the menus and passes in play.
 
 **The point**: the interrupt is a sound clock only. Game time is counted in passes, and a pass is as long as its
 work.
@@ -517,10 +520,12 @@ The routines that took the most of that pass:
 1. One 48K frame is 69 888 T. 220 334 / 69 888 = 3.15 frames.
 2. The three render routines take 29 464 + 41 444 + 67 533 = 138 441 T: 63 % of the pass.
 3. The game itself (the actors, the missiles, the hero's moves) is what is left of the 102 509 T between ClearBuffer
-   and UpdateAttributes once the clear is taken out: about 73 000 T.
+   and UpdateAttributes once the clear is taken out: about 73 000 T, a third of the pass. DrawActors' plotters
+   (16 509 T in the table below) are part of it; without them the logic is about 56 500 T, a quarter.
 4. So the game takes about 16 steps a second (50 / 3.15), and draws for 63 % of the time.
 
-**The point**: Myth spends most of a pass moving bytes. The game's logic is a third of it.
+**The point**: Myth spends most of a pass moving bytes. The game's logic, the actors' drawing aside, is about a
+quarter of it.
 
 ## 4.6 One pass against the beam
 
@@ -647,8 +652,9 @@ not. So a round is 6 + 4 + 4 + 10 = 24 T, not the 26 T of DelayBC's JR NZ.
    while it draws the paper. An interrupt that lands in the wait adds AyFrame's time as well.
 
 **A worked example: the witness count.** The stage-1 recordings ran 10 187 passes, and 8978 of them waited.
-8978 x 1100 = 9 875 800 rounds. The L1 count of DelayBC's first instruction is 9 877 843. The 2043 more are the
-interrupts' returns into the loop, which the L1 counts as entries.
+8978 x 1100 = 9 875 800 rounds. The L1 count of DelayBC's first instruction is 9 877 843. The 2043 more are two
+waits already in progress when `c1o` and `deaths` start (1029 and 1014 rounds). The recordings that start outside a
+wait match 1100 a pass exactly: `s1-idle` 7430 waits and 8 173 000 rounds, `s1-right` 1427 and 1 569 700.
 
 **The point**: PacePass is a fixed pad, not a frame lock. It evens out the rooms the designers timed. The rooms with
 many actors still run slower.
@@ -920,7 +926,7 @@ Six loops stop the pass or run instead of it.
 | the item window | ItemWindow `$7C27` | a HALT a frame, an item step every 6 frames | SPACE, then the box flashed |
 | the idle passes | IdlePasses `$9842` | 3 HALTs + PassTick | B rounds |
 | the stage's waits | WaitFrames `$8C35` | a HALT a round | BC rounds |
-| the resident's waits | WaitFrames `$F542` | HALT + CycleColours | 75 rounds |
+| the resident's waits | WaitFrames `$F542` | HALT + CycleColours (a second HALT) | 75 rounds of two HALTs: 150 frames |
 | the stage's end | EndStage `$789E` | 100 frames after the fade | RET to PlayStage |
 
 ### The pause

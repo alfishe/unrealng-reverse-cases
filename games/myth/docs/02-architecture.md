@@ -27,7 +27,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 Myth is a 48K game that also plays sound on a 128K.
 
 - It uses only banks 5, 2 and 0: `$4000-$FFFF` as a 48K sees it.
-- On a 128K, Boot `$5B00` writes `$10` to port `$7FFD` once: ROM 1 (48 BASIC), bank 0 at `$C000`, paging locked.
+- On a 128K, Boot `$5B00` writes `$10` to port `$7FFD` once: ROM 1 (48 BASIC), bank 0 at `$C000`; paging is not
+  locked (bit 5, `$20`, stays clear).
   Nothing pages again.
 - The RZX run's 128K snapshots have RAM 1, 3, 4 and 6 empty and only 198 bytes in RAM 7 ([README](../README.md)).
 - What the 128K adds is the AY. The resident's IM 2 handler drives it every interrupt ([doc 9](09-sound.md)). On a 48K
@@ -271,7 +272,8 @@ Passes, frames and interrupts in each stage of the RZX run (the L1 counts of Mai
 
 The game misses about 40 % of the interrupts in stages 1-4. ClearBuffer and CopyBuffer run with interrupts off.
 
-- ClearBuffer moves SP into the play buffer and clears it with PUSH HL: 2304 PUSHes, about 27 000 T.
+- ClearBuffer moves SP into the play buffer and clears it with PUSH HL: 2304 PUSHes, about 27 000 T
+  uncontended, 29 000-31 000 T measured (29 464 T in c1, 30 761 T a pass in rzx-r1, with contention).
 - CopyBuffer moves SP along the span table: POP BC, POP HL, POP DE for each span.
 - An interrupt while SP walks the buffer would push its return address into the picture. So both start with DI.
 - The Z80 takes an interrupt only while the INT line is low, about 32 T at the frame's start. An INT that falls inside
@@ -310,11 +312,14 @@ flowchart TD
     KH --> UA["UpdateAttributes, then CopyBuffer: LDI chain, DI"]
     UA --> PT["PassTick: energy, lives flash, game over step"]
     PT --> SS["ShowScore"]
+    PT -.->|"the last life lost (LoseLife $7ECE)"| GT["GameOverTimer $FE5B = 1: GAME OVER in the item strip"]
     SS --> SP{"SPACE?"}
-    SP -->|"no"| M
+    SP -->|"no"| LV
     SP -->|"CAPS SHIFT too"| Q["QuitStage: E = 1"]
     SP -->|"alone"| IW["ItemWindow"]
-    IW --> M
+    IW --> LV{"Lives 0 and the hero back in state 0?"}
+    LV -->|"no"| M
+    LV -->|"yes"| GO["GameOverExit $7897: E = 0, back to PlayStage, GameOver"]
 ```
 
 How to read it: one pass is one step of the game. Everything is drawn into the play buffer between ClearBuffer and
@@ -406,7 +411,7 @@ did not is often still there, unreached.
 | | 48K | 128K |
 | --- | --- | --- |
 | The load | the same tape, the same blocks | the same; the ROM check skips the timing compare on a +2A/+3 ROM |
-| Paging | none | Boot writes `$10` to `$7FFD`: ROM 1, bank 0, locked |
+| Paging | none | Boot writes `$10` to `$7FFD`: ROM 1, bank 0, not locked (bit 5 clear) |
 | Memory used | `$4000-$FFFF` | the same: banks 5, 2, 0 only |
 | Sound | silent: the AY writes go nowhere | 13 effects through the AY, no music |
 | Frame | 69 888 T | 70 908 T: a pass takes slightly fewer frames |

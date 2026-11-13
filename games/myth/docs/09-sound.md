@@ -21,7 +21,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `c1` | a 48K from power-on, the original tape | a life lost at frame 15886: effect 7 on a machine without an AY |
 
 All the code of this document is the resident's `src/resident/ay.asm`, at the same addresses for the whole game. The
-effects are `build/res/resident/effects.bin`, 137 bytes at `$F54D`.
+effects are `build/res/resident/effects.bin`, 138 bytes at `$F54D-$F5D6`.
 
 ## 9.1 One driver, thirteen effects
 
@@ -67,7 +67,7 @@ Im2Handler:
 
 It swaps to the other register set and calls AyFrame. AyFrame keeps IX and IY on the stack itself.
 
-There are 71 calls of PlaySoundVector in the five stages (15, 19, 9, 13 and 15). The resident and the front call none.
+There are 71 calls of PlaySoundVector in the five stages (15, 19, 13, 15 and 9). The resident and the front call none.
 SilenceAy is called three times: once by ResidentInit, and by StageRun before and after each stage's GameMain. So no
 effect runs on from one stage into the next.
 
@@ -418,22 +418,22 @@ its lowest to its highest. Made with `python3 tools/fig_sound.py chart docs/img/
 | ---: | --- | --- | ---: | --- | --- |
 | 0 | `02 01 01 E6 0A 00 52 0A FE` | B, noise | 82 | noise sawing over 5 bits, volume 14 down to 4 | stage 5: NextDameronForm, BurstMissileStep |
 | 1 | `02 01 01 C8 0A 00 30 1E FD` | B, noise | 48 | the same with a faster saw, volume 12 down to 3 | StartBurstSound (stages 1-4), stage 4 ColumnDust |
-| 2 | `02 01 01 C8 D1 00 06 00 ED` | B, noise | 6 | a short hiss, period 17 | StrikeableActor, stage 2 WarriorStatueStrike, stage 5 Dameron's fire |
-| 3 | `01 00 01 BE 38 02 08 00 ED` | A, tone | 8 | 195 Hz, fading | PieceRisesSound, FragmentBounce |
-| 4 | `01 00 01 C8 E8 03 0A 88 F8` | A, tone | 10 | 126 Hz rising to 2 771 Hz, then 27.6 Hz | ItemHandlerAdd, stage 2 ExtraLifeTaken |
-| 5 | `02 00 05 C8 2C 01 02 00 00 02 CC 00 02 00 00 02 D1 00 02 00 00` | B, tone | 6 | three notes: 369, 447, 551 Hz | FragmentTouchLine |
-| 6 | `02 01 02 48 00 00 04 09 12 0B 01 F5` | B, noise | 14 | noise that swells to 7, then fades | AimedShot, BossBurst, stage 2 SpiritFiresNext and HydraHeadShot, stage 4 HeadShots and FireKind3Press |
+| 2 | `02 01 01 C8 D1 00 06 00 ED` | B, noise | 6 | a short hiss, period 17 | StrikeableActor (stages 1-4), stage 2 WarriorStatueStrike, stage 4 StrikeableKind9, stage 5 Dameron's fire |
+| 3 | `01 00 01 BE 38 02 08 00 ED` | A, tone | 8 | 195 Hz, fading | PieceRisesSound, FragmentBounce (stages 1-4) |
+| 4 | `01 00 01 C8 E8 03 0A 88 F8` | A, tone | 10 | 126 Hz rising to 2 771 Hz, then 27.6 Hz | ItemHandlerAdd (stages 1, 3, 4), stage 2 ItemHandler and ExtraLifeTaken |
+| 5 | `02 00 05 C8 2C 01 02 00 00 02 CC 00 02 00 00 02 D1 00 02 00 00` | B, tone | 6 | three notes: 369, 447, 551 Hz | FragmentTouchLine (stages 1-4) |
+| 6 | `02 01 02 48 00 00 04 09 12 0B 01 F5` | B, noise | 14 | noise that swells to 7, then fades | AimedShot (stages 1-3), stage 1 BossBurst, stage 2 SpiritFiresNext and HydraHeadShot, stage 4 HeadShots and FireKind3Press |
 | 7 | `01 00 01 C8 98 00 14 64 F8` | A, tone | 20 | 440 Hz falling to 54 Hz | LoseLife (every stage) |
-| 8 | `02 01 01 B4 28 00 08 0A FE` | B, noise | 8 | a hiss, volume 11 to 10 | BossShots, ThrowItemPress, FireBoltPress, stage 4 FireKind1Press, stage 5 HeroFireArmed |
+| 8 | `02 01 01 B4 28 00 08 0A FE` | B, noise | 8 | a hiss, volume 11 to 10 | stage 1 BossShots, ThrowItemPress (stages 1-3), stage 3 FireBoltPress, stage 4 FireKind1Press, stage 5 HeroFireArmed |
 | 9 | `03 01 02 50 40 0E 21 FF 01 42 00 FF` | C, noise | 98 | a soft rumble, 2 s | stage 2 PoolActor, stage 3 RainChance |
 | 10 | `01 01 02 54 0A 00 03 05 14 01 01 01` | A, noise | 3 | a click that grows | stage 2 DropActorSplash, UpdateFloorShotRun |
-| 11 | `01 01 01 DC 0A 00 0F C8 F6` | A, noise | 15 | noise sawing down, volume 13 to 5 | FireBoltAdd, ThrowAmmoAdd, stage 2 KindTwelveShot and FireHeroMissileAdd, stage 4 HeroThrowMissileAdd |
+| 11 | `01 01 01 DC 0A 00 0F C8 F6` | A, noise | 15 | noise sawing down, volume 13 to 5 | stage 1 FireBoltAdd, ThrowAmmoAdd (stages 1, 3), stage 2 KindTwelveShot and FireHeroMissileAdd, stage 4 HeroThrowMissileAdd |
 | 12 | `01 00 01 C8 2C 01 0A 00 EC` | A, tone | 10 | 369 Hz, a fast fade | ShowPieceTaken (stages 1-4), stage 4 FadeInFrame |
 
 The callers come from the stage listings: `LD DE,n` and `CALL PlaySoundVector`. The interrupt counts are those the
 bytes ask for. In play each lasts about 1.6 times as many frames.
 
-There are four tones and nine noises. The channels split by use:
+There are five tones (3, 4, 5, 7 and 12) and eight noises. The channels split by use:
 
 - A carries the hero's gains and losses (3, 4, 7, 12) and two small noises (10, 11);
 - B carries the fighting (0, 1, 2, 5, 6, 8);
@@ -453,7 +453,7 @@ They are made with `python3 tools/fig_sound.py wav docs/audio`. The model is an 
 tones, a 17-bit noise generator and the AY's volume curve, with every interrupt taken. So they are the effects as their
 bytes write them, without the stretching of [9.7](#97-the-lost-interrupts-stretch-every-effect).
 
-**The point**: thirteen effects of nine to twenty-one bytes, 137 bytes in all. The game's whole sound is smaller than
+**The point**: thirteen effects of nine to twenty-one bytes, 138 bytes in all. The game's whole sound is smaller than
 one of its fonts.
 
 ## 9.9 The 48K against the 128K

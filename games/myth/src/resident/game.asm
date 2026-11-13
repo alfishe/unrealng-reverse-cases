@@ -149,12 +149,13 @@ StageRun:
 ; Input: BC the address of the stage's six score digits (copied into the menu's
 ; SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at
 ; $F25D, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE
-; TO SELECT, 20 frames of CycleColours, the menu. Every 32 frames the highlight
-; moves to the other line (with no credit left it stays on RESTART FROM STAGE
-; ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and
-; returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps
-; to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right,
-; s4-right).
+; TO SELECT, 20 rounds of HALT + CycleColours (which HALTs again): 40 frames,
+; the menu. Every 64 frames (32 rounds of two HALTs, FrameCounter AND $1F = 0)
+; the highlight moves to the other line (with no credit left it stays on
+; RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE
+; sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops
+; the return and jumps to RestartFromStageOne. Witness: L1 4 (s1-right,
+; s2-right, s3-right, s4-right).
 GameOver:
   PUSH BC
   POP HL
@@ -184,7 +185,7 @@ GameOver2:
 TextPressSpace:
   INCBIN "res/resident/text-press-space.bin",$0000,25
 
-; 20 frames of colours, the menu, then the choice
+; 40 frames of colours (20 rounds of two HALTs), the menu, then the choice
 GameOver3:
   LD B,$14
 GameOverPause:
@@ -198,7 +199,8 @@ GameOverPause:
   LD (GameOverOption),A
 ; This entry point is used by the routine at GameOver4.
 GameOverLoop:
-  HALT                    ; one frame
+  HALT                    ; one frame; GameOver4's CycleColours HALTs again, so
+                          ; a round is two frames
   LD A,(FrameCounter)
   AND $1F
   JR NZ,GameOver4

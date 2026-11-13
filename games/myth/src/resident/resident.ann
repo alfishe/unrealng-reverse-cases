@@ -81,7 +81,7 @@ $F211 StageLoadLoop ; load until the block is the stage's
 $F22F StageRun ; the stage itself
 
 $F24B c GameOver ; GAME OVER: a credit less, the menu RESTART THIS STAGE / RESTART FROM STAGE ONE, SPACE chooses
-> Input: BC the address of the stage's six score digits (copied into the menu's SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at $F25D, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE TO SELECT, 20 frames of CycleColours, the menu. Every 32 frames the highlight moves to the other line (with no credit left it stays on RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
+> Input: BC the address of the stage's six score digits (copied into the menu's SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at $F25D, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE TO SELECT, 20 rounds of HALT + CycleColours (which HALTs again): 40 frames, the menu. Every 64 frames (32 rounds of two HALTs, FrameCounter AND $1F = 0) the highlight moves to the other line (with no credit left it stays on RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 $F25D CreditsDec ; DEC A: the credit a game over costs
 $F269 ; Print: the text follows
 $F26C t TextGameOver ; The text: column byte 12, bit 0, row 40, GAME OVER
@@ -89,9 +89,9 @@ $F26C t TextGameOver ; The text: column byte 12, bit 0, row 40, GAME OVER
 $F279 c GameOver2 ; Print the second line
 $F27C t TextPressSpace ; The text: column byte 7, bit 0, row 52, PRESS SPACE TO SELECT
 @res resident/text-press-space.bin
-$F295 c GameOver3 ; 20 frames of colours, the menu, then the choice
+$F295 c GameOver3 ; 40 frames of colours (20 rounds of two HALTs), the menu, then the choice
 $F297 GameOverPause
-$F2A7 GameOverLoop ; one frame
+$F2A7 GameOverLoop ; one frame; GameOver4's CycleColours HALTs again, so a round is two frames
 $F2BA GameOverToggle
 $F2C3 GameOverSetOption
 $F2D0 ; AttrBox: the highlight bar, its row patched above
@@ -119,8 +119,8 @@ $F355 c PrintGameOverMenuEnd
 @module print ; Text and screen: the proportional print, the reveal, the attribute boxes, the colour cycle, the screen clear, the dissolve masks
 @about Print takes its text after the CALL: a column byte, a bit within it, a pixel row, then capital letters, digits and spaces up to a 0. TextToBuffer draws the line into TextBuffer with PrintFont (each glyph its own width), then RevealText brings it onto the screen in 8 frames through the dissolve masks, while CycleColours runs. AttrBox fills an attribute rectangle given after its CALL. ClearScreen clears the screen and paints the colour bands of the title screens.
 
-$F356 c CycleColours ; One frame: FrameCounter + 1, the next colour of ColourCycle into the box under the titles
-> Called every frame by the waits (c1, every recording with a title screen). Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F356 c CycleColours ; One HALT, then FrameCounter + 1, the next colour of ColourCycle into the box under the titles
+> Called once a round by the waits (c1, every recording with a title screen); every resident caller HALTs before it, so in the resident's loops FrameCounter steps once every two frames. Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
 $F36B ; AttrBox: the cycling box
 
 $F36E b CycleBox 5 ; AttrBox data: column 6, row 4, 20 wide, 4 high, the attribute written by CycleColours
@@ -194,7 +194,7 @@ $F539 c SetMenuBands4
 $F53C b BandRow15 5 ; AttrBox data: row 15, attribute $05
 $F541 c SetMenuBandsEnd
 
-$F542 c WaitFrames ; 75 frames of CycleColours
+$F542 c WaitFrames ; 75 rounds of HALT + CycleColours (two HALTs): 150 frames, 3 s
 > Witness: L1 15 (c1, ending, joystick, menu, s5-right, stageload, rzx-r0-rzx-r5).
 $F544 WaitFramesLoop
 

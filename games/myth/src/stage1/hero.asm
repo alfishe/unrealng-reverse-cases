@@ -979,11 +979,12 @@ CheckHeroFootingGround2:
 
 ; The hero's pass: items, hazards, weapons, colour, then his state's handler
 ;
-; IY = the hero. Item 1 drains ($89A1). A deadly cell (bit 3) under him at his
-; column + 4 (facing right) or his
+; IY = the hero. Item 1 drains ($89A1). A deadly cell (bit 3) on his head row
+; (his top line, IY+1), one column ahead of him (CellAt
 ;
-; column (left) and his line, or his column 0 or 32 and up, costs a life
-; (LoseLife $7ECE) unless he is dying (state
+; $B162 with E = his column + 4 facing right or his column facing left: screen
+; column X + 2 or X - 2), or his column 0 or 32 and up, costs a life (LoseLife
+; $7ECE) unless he is dying (state
 ;
 ; $0F). Then, not dying: the selected item's kind ($7F05) fires its weapon: 7
 ; FireBolt $AD14, 5 ThrowAmmo $AD4B, 8
@@ -1013,9 +1014,9 @@ HeroUpdate:
   JP Z,HeroUpdateHazard
   SUB $04
 HeroUpdateHazard:
-  LD E,A                  ; the cell under the front column: bit 3 deadly (the
-                          ; JP Z at $AC62 was taken in every pass of every
-                          ; recording)
+  LD E,A                  ; the cell on the head row, one column ahead: bit 3
+                          ; deadly (the JP Z at $AC62 was taken in every pass
+                          ; of every recording)
   LD D,(IY+$01)
   CALL CellAt
   BIT 3,A

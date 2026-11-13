@@ -1081,10 +1081,10 @@ CellUnderFeetColumn:
 
 ; A = the room cell at column E, pixel line D; Z: not solid
 ;
-; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; the play area's cell
-; column 0 is screen column 4). The
+; HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is
+; screen column 2, so the cell is at screen column E - 2). The
 ;
-; cell's bits: 1 solid, 3 deadly (HeroUpdate $AC3D).
+; cell's bits: 1 solid, 3 deadly (tested by HeroUpdate $AC3D).
 ;
 ; Witness: L1 20581 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CellAt:

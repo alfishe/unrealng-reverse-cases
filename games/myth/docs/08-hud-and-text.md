@@ -47,7 +47,7 @@ flowchart TD
         CL["ClearTextLine $9D65: one space"] --> PT
         RS --> SF["ShimmerFrame, PaintBoxColours"]
     end
-    R -.->|"masks"| M["DissolveMasks $F9CB, 4 sets of 8"]
+    R -.->|"masks"| M["DissolveMasks $F9CB, 6 sets of 8, sets 0-3 used"]
     RS -.->|"masks"| M
 ```
 
@@ -211,7 +211,7 @@ pixel 96.
 | E | 4 | `$FC` | 2 | 7 | byte 18, bit 4 |
 | R | 17 | `$FE` | 1 | 8 | byte 19, bit 3 |
 
-The M is drawn at bit 7: its first row `$C6` becomes the pair `$01 $8C`. The pen then moves 9: 7 + 9 = 16, less 8
+The M is drawn at bit 7: its first row `$F6` becomes the pair `$01 $EC`. The pen then moves 9: 7 + 9 = 16, less 8
 once, is bit 8 of byte 14. The E is shifted 8 times through its pair and lands in byte 15, at pixel 120. The sum of
 the advances is 67, so the pen ends at pixel 163, byte 20 bit 3. The line's middle is at (96 + 162) / 2 = 129: the text
 is centred on the screen's middle, pixel 128, to within one pixel. The bottom of [the font figure](img/hud/fonts.png)
@@ -289,7 +289,9 @@ RevealText(row):
                 screen[row + r][col] = (screen AND NOT mask) OR (TextBuffer[32 r + col] AND mask)
 ```
 
-The masks are 4 sets of 8 at `$F9CB`. Each set grows from one bit to `$FF`, one bit a step:
+The masks are 6 sets of 8 at `$F9CB`; RevealText, DissolveHud and the front's PrintText pick only sets 0-3 (AND
+`$18`). Sets 4 and 5 (`$F9EB-$F9FA`) are read by no live code: the front's dead OldRevealWide10 `$9BC7` cycles sets
+0-4 ([8.11](#811-known-only-from-the-code)). Each set grows from one bit to `$FF`, one bit a step:
 
 | Set | Address | Step 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 | ---: | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -297,6 +299,8 @@ The masks are 4 sets of 8 at `$F9CB`. Each set grows from one bit to `$FF`, one 
 | 1 | `$F9D3` | `$04` | `$44` | `$46` | `$56` | `$76` | `$77` | `$F7` | `$FF` |
 | 2 | `$F9DB` | `$80` | `$A0` | `$A2` | `$AA` | `$EA` | `$EB` | `$EF` | `$FF` |
 | 3 | `$F9E3` | `$20` | `$21` | `$25` | `$65` | `$6D` | `$ED` | `$EF` | `$FF` |
+| 4 | `$F9EB` | `$01` | `$81` | `$91` | `$99` | `$B9` | `$BB` | `$FB` | `$FF` |
+| 5 | `$F9F3` | `$10` | `$90` | `$92` | `$9A` | `$BA` | `$BB` | `$FB` | `$FF` |
 
 The ROM is the source of noise. It is not random, but its bytes look random enough, and the pointer restarts at
 `$0001` each step. So each screen byte keeps its set over the 8 steps and gains one bit a step. A bit, once copied,
@@ -307,7 +311,7 @@ that does not show, because the screen already holds that bit.
 Row 52 is on the screen at `$44C0`, so column 8 is `$44C8`. In TextBuffer, the same byte is `$5B08` = `$3E`
 (`00111110`, the left edge of P and R).
 
-1. The pointer for row 0, column 8 is `$0009`. The 48K ROM holds `$5C` there. `$5C` AND `$18` = `$18`: set 3.
+1. The pointer for row 0, column 8 is `$0009`. The 48K ROM holds `$5D` there. `$5D` AND `$18` = `$18`: set 3.
 2. The step's mask AND `$3E` gives the bits copied. Step 0: `$20` AND `$3E` = `$20`. Step 1: `$21` gives `$20` again.
    Step 2: `$25` gives `$24`. Step 3: `$65` gives `$24`.
 3. Step 4: `$6D` gives `$2C`. Step 5: `$ED` gives `$2C`. Step 6: `$EF` gives `$2E`. Step 7: `$FF` gives `$3E`, the
@@ -351,7 +355,8 @@ JR). RevealStrip `$9E4D` is RevealText again, with three changes.
 | one step | 43 269 T, 224 bytes | 24 803 T, 126 bytes |
 
 The narrower strip keeps the rest of the screen untouched: the logo's box lies around columns 7-24. Every front text
-fits inside it. The widest, PRESS SPACE TO SELECT, runs from pixel 66 to 192; the strip is pixels 56-199.
+fits inside it. The widest, CONCEPT ANIMATIONS (FontLarge, 130 pixels), runs from pixel 64 to 193; the strip is
+pixels 56-199.
 
 ClearTextLine `$9D65` prints a single space on a line. TextBuffer is cleared and holds no glyph, so the 16 frames
 dissolve the line to paper. The resident does the same with its "clear line" texts.
@@ -642,10 +647,13 @@ The cost, measured at `rzx-r1` frame 663:
 | HideLeadingZeros | 1 001 |
 | ShowScore in all | 8 915 |
 
+PassTick (220 T) is listed for comparison and is not in the sum: the other four rows add up to 8 915 T.
+
 ShowScore takes 12.8 % of a 69 888 T frame, every pass, to draw the same digits again. The score changed 12 times in
 the first 2700 frames of `rzx-r1`.
 
-Witness: ShowScore and HideLeadingZeros ran 10 186 times in the L1 recordings, RenderScore 10 188 times, once a pass.
+Witness: ShowScore and HideLeadingZeros ran 19 498 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle,
+s1-right), RenderScore 19 501 times, once a pass.
 AddScore ran at `rzx-r1` frame 661, T 10 004.
 
 **The point**: the score is cheap to keep (one ADD and one compare) and dear to show. A flag set by AddScore would
@@ -792,11 +800,12 @@ the score's two variables live in the resident.
 - **The resident's odd characters.** TextToBuffer treats any byte not a digit or a space as a letter. A byte under
   `A` would wrap the subtraction and read before PrintFont. No resident text has one.
 - **Two mask sets unused.** DissolveMasks holds 6 sets of 8, 48 bytes. AND `$18` picks only sets 0-3, so the 16 bytes
-  at `$F9EB-$F9FA` are read by none of the three dissolves.
+  at `$F9EB-$F9FA` are read by none of the three dissolves; only the front's dead OldRevealWide10 `$9BC7`, which
+  cycles sets 0-4, would reach set 4.
 - **CopyToScreen in the resident.** `$F646` copies B rows of D bytes to the screen through ScreenLineTable. No code
   calls it; each stage has its own CopyToScreen `$79CC`.
-- **RomFontLeftover.** The 124 bytes at `$FF84` are a copy of the ROM font at `$3E34-$3EAF`, a leftover of the
-  mastering. No code reads them, and the stack writes over their end in play.
+- **RomFontLeftover.** 123 of the 124 bytes at `$FF84` copy the ROM font at `$3E34-$3EAE`; the last is `$27`, where
+  the ROM has 0. A leftover of the mastering. No code reads them, and the stack writes over their end in play.
 - **The high score digits.** ByteToDigits has a branch for ScoreHigh above 0 (10 000 points or more). `c1o`, `deaths`,
   `s1-idle` and `s1-right` ran only the 0 branch; `rzx-r1` passes 10 000 at frame 9484 (AddScore's carry) and runs the
   other from 9486. AddScore's wrap from 99 to 0 (a million points) never ran.

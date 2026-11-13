@@ -87,7 +87,7 @@ $7030 MissilesEnd ; the stray ninth record FindFreeMissile $8C6C returns when al
 $7100 Particles ; in play, at the duel's end: the burst's particles, 4 bytes each, $FF ends the list (StartBurst $91B9, UpdateBurst)
 $74E0 ActorRecords ; stage 1's hero and actor records (14 x 18 bytes): only stage 1's routines left in the block with no caller (SpawnActor $9E9C, RunActorHandlers $9EB7, ClearActors $95BD) touch them
 $75E0 HeroShots ; in play: the hero's 16 shot records, 8 bytes each ($75E0-$765F; +0 the column, $FF free, $FE ending; +1 the line; +2/+3 the screen address), ClearHeroShots $7F02
-$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the hero's shot records 4-15 lie over them
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the hero's shot records 4-15 (8 bytes each) lie over them
 $7610 HeroShots6 ; shot record 6; stage 1's AddMissileHigh $9F60 (kept, no caller) would write its missile records 8-15 here
 $7640 DigitBuffer ; at the stage's start: the score's digit picture (RenderScore $7B14, RevealScore $967E), before ClearHeroShots fills $75E0-$765F with $FF; also the item count's digits (FormatItemCount, no caller from play)
 $7660 HudColoursRest ; the colours of rows 3-5 past the shot records

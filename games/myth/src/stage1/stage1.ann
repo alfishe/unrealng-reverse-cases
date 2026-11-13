@@ -115,7 +115,7 @@ $74F2 Actors ; the 13 other actor records, 18 bytes each ($74F2-$75DB); +0 = $FF
 $75CA LastActor ; the 13th record
 $75DC ActorsEnd ; 4 bytes past the records: only the HUD picture's (DissolveHud, EndStage's save) bytes
 $75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind (MissileHandlers $B31A), +3 to +5 the kind's own
-$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 5 (its last 4 bytes) to 15 lie over them
 $7610 MissilesHigh ; missile records 8-15 (AddMissileHigh $B296: the hero's death sparks)
 $7640 DigitBuffer ; in play: the score's digit picture (6 + 2 columns x 8 lines, RenderScore $7B73, RevealScore $985D) and a sprite's shifted copy (PreShiftSprite $7F4D)
 $76A0 SpanTable ; in play: the open spans CopyBuffer copies, 6 bytes each (the length, 0, the buffer address, the screen address; SpanCount spans), on to $779B
@@ -1611,15 +1611,15 @@ $AC37 c RebuildRoom ; Clear the room's cells and build the room again
 > Witness: L1 4 (rzx-r1).
 @module hero
 $AC3D c HeroUpdate ; The hero's pass: items, hazards, weapons, colour, then his state's handler
-> IY = the hero. Item 1 drains ($89A1). A deadly cell (bit 3) under him at his column + 4 (facing right) or his
-> column (left) and his line, or his column 0 or 32 and up, costs a life (LoseLife $7ECE) unless he is dying (state
+> IY = the hero. Item 1 drains ($89A1). A deadly cell (bit 3) on his head row (his top line, IY+1), one column ahead of him (CellAt
+> $B162 with E = his column + 4 facing right or his column facing left: screen column X + 2 or X - 2), or his column 0 or 32 and up, costs a life (LoseLife $7ECE) unless he is dying (state
 > $0F). Then, not dying: the selected item's kind ($7F05) fires its weapon: 7 FireBolt $AD14, 5 ThrowAmmo $AD4B, 8
 > $92D1. Dying: the death pause ($9259). Then the colour (HeroColour $ACD9), and while HeroFreeze $FE58 counts down
 > the controls are ignored. Else by the state +$0A: 0 HeroStand $ADA2, 1 HeroWalk $AF64, 2 HeroJump $B087, 3
 > HeroFall $B021, 4 HeroLeapBack $B06B, 5 HeroStrikeMid $AE8E, 6 HeroStrikeHigh $AED4, 7 HeroStrikeLow $AE5D, 9
 > HeroLeap $B0B3, $0B the scripted move $871A.
 > Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
-$AC59 HeroUpdateHazard ; the cell under the front column: bit 3 deadly (the JP Z at $AC62 was taken in every pass of every recording)
+$AC59 HeroUpdateHazard ; the cell on the head row, one column ahead: bit 3 deadly (the JP Z at $AC62 was taken in every pass of every recording)
 $AC65 HeroUpdateDeath
 $AC6F HeroUpdateWeapons
 $AC8C HeroUpdateState
@@ -1779,8 +1779,8 @@ $B134 c CellUnderFeet ; HL = the room cell under the actor's feet, E (and D faci
 > Witness: L1 13831 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 $B155 CellUnderFeetColumn
 $B162 c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
-> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; the play area's cell column 0 is screen column 4). The
-> cell's bits: 1 solid, 3 deadly (HeroUpdate $AC3D).
+> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is screen column 2, so the cell is at screen column E - 2). The
+> cell's bits: 1 solid, 3 deadly (tested by HeroUpdate $AC3D).
 > Witness: L1 20581 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 @module render
 $B17F c SaveAttributes ; Copy the screen's attributes to the shadow at $6D00

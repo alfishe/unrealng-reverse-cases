@@ -125,7 +125,8 @@ code; no recording played with it.
    throw or a bolt. Then the same pass opens the item window.
 4. The window waits for SPACE's release. The next press of FIRE is its SPACE: it closes the window, and the hero does
    not act on it.
-5. So the hero acts on every other press of FIRE, and the window opens on the others.
+5. So the hero acts on every other press of FIRE (the 1st, 3rd, ...), and each of those presses also opens the window;
+   the presses between only close it.
 
 So the one key DEFINE KEYS accepts without complaint is the one that breaks play.
 

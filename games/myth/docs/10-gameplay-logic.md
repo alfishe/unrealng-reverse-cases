@@ -20,6 +20,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `rzx-r1` | stage 1 of the RZX run, 128K, the Sinclair joystick | a jump (frames 3580-3628), a throw (2310-2390), the five icons, the demon (13 880-15 521), the dragon (19 600-19 750), the master icon and the teleport (29 590-29 880) |
 | `c1` | a 48K from power-on, the original tape; stage 1 in play from frame 15478 | a fight with a skeleton and a flame jet (15 700-15 886), a life lost at 15886, the respawn at 16222 |
 | `deaths`, `s1-right` | stage 1 as loaded | the witness counts of the hero's states and of LoseLife |
+| `rzx-r2` ... `rzx-r5` | stages 2-5 of the RZX run, 128K | the bosses of stages 2-4 and the duel with Dameron ([10.10](#1010-stages-2-5-and-the-ending)) |
 
 The `deaths` recording loses its life at frame 2775 in the same way as `c1` at 15886; its session is not kept, so the
 measurements of this document use `c1`. The code is stage 1's (`src/stage1/hero.asm`, `enemies.asm`, `hud.asm`,
@@ -91,8 +92,10 @@ flowchart TD
     FT --> EX["CheckRoomExits, CheckGridPassages"]
 ```
 
-The deadly cells are those with bit 3 of their kind set ([doc 7](07-objects.md)). The hero tests one cell: the one at
-his front column (+4 facing right) and his top line. A column of 0, or of 32 and more, is deadly too.
+The deadly cells are those with bit 3 of their kind set ([doc 7](07-objects.md)). The hero tests one cell: the one on
+his top line, in the column just ahead of him. HeroUpdate passes CellAt E = X + 4 facing right, X facing left, and
+CellAt's column is E - 2, so the cell is at screen column X + 2 facing right, X - 2 facing left
+(`$AC4B-$AC62`). A column of 0, or of 32 and more, is deadly too.
 
 The states, the hero record's +`$0A`:
 
@@ -120,19 +123,20 @@ stateDiagram-v2
 
 | State | Handler | What it is | L1 count |
 | ---: | --- | --- | ---: |
-| 0 | HeroStand `$ADA2` | reads the keys | 8194 |
-| 1 | HeroWalk `$AF64` | 12 frames a cycle, 2 columns each half | 875 |
-| 2 | HeroJump `$B087` | the forward jump, frames 0 to `$12` | 105 |
-| 3 | HeroFall `$B021` | falls up to 4 lines a pass | 83 |
-| 4 | HeroLeapBack `$B06B` | a leap that found no ledge sinks back | 9 |
+| 0 | HeroStand `$ADA2` | reads the keys | 12 717 |
+| 1 | HeroWalk `$AF64` | 12 frames a cycle, 2 columns each half | 3 173 |
+| 2 | HeroJump `$B087` | the forward jump, frames 0 to `$12` | 1 528 |
+| 3 | HeroFall `$B021` | falls up to 4 lines a pass | 356 |
+| 4 | HeroLeapBack `$B06B` | a leap that found no ledge sinks back | 423 |
 | 5 | HeroStrikeMid `$AE8E` | the middle strike, 10 passes | 11 |
-| 6 | HeroStrikeHigh `$AED4` | the high strike, 9 passes | 47 |
-| 7 | HeroStrikeLow `$AE5D` | the low strike, 8 passes | 9 |
-| 9 | HeroLeap `$B0B3` | the leap up (DOWN), frames 0 to `$0D` | 9 |
-| `$0B` | HeroRecoil | thrown back from a closed exit | none |
+| 6 | HeroStrikeHigh `$AED4` | the high strike, 9 passes | 67 |
+| 7 | HeroStrikeLow `$AE5D` | the low strike, 8 passes | 306 |
+| 9 | HeroLeap `$B0B3` | the leap up (DOWN), frames 0 to `$0D` | 423 |
+| `$0B` | HeroRecoil `$871A` | thrown back from a closed exit | none |
 | `$0F` | RespawnCountdown `$9259` | dying: hidden, waiting | 797 |
 
-The counts are the handler's runs in the L1 recordings, from the routines' witness lines.
+The counts are the handlers' witness lines in `build/stage1.lst`: their runs summed over the stage-1 builds that ran
+them (`c1o`, `deaths`, `rzx-r1`, `s1-idle`, `s1-right`).
 
 **The point**: the hero is a state machine with one handler a state. The hazards and the weapons are checked before the
 state runs, so a death or a shot can happen in any state.
@@ -522,13 +526,82 @@ and only then is there anything to hit.
 Grid 2 is a single room, the arena. The dragon is its picture (DrawArenaPicture `$89BB`) and a head actor
 (ArenaHeadActor `$90E7`) that opens its mouth and breathes.
 
-- ZoneDamage takes 4 a pass from a hero at column 16 or more while the dragon lives.
-- A bolt (item 7, kind 6) that reaches column 15 counts a hit: ArenaBossHit `$A14A`, ArenaBossHits + 1.
-- At 20 hits the dragon bursts, ArenaBossBeaten is set, and item 2 drops at column `$14`, line `$70`.
+- ZoneDamage `$8A2E` takes 4 a pass from a hero at column 16 or more (`CP $10`) while the dragon lives.
+- The head counts +`$0A` down from a random 16-23; at 6 it breathes (BossShots), below 8 its mouth opens
+  (ArenaHeadMouth), at 0 it reloads.
+- A bolt (item 7, missile kind 6, UpdateFlatShot `$8564`) that reaches column 15 in grid 2 counts a hit:
+  ArenaBossHit `$A14A`, ArenaBossHits + 1.
+- At 20 hits (`CP $14`) the dragon bursts, ArenaBossBeaten is set, and item 2 drops at column `$14`, line `$70`.
 - Item 2 opens the arena's left exit (CheckItemGate).
 
-In `rzx-r1` ArenaBossHits reads 3 at frame 19 600, 8 at 19 650, 14 at 19 700 and 20 at 19 750: a hit about every 8
-frames.
+```mermaid
+stateDiagram-v2
+    [*] --> Wait: the arena entered
+    Wait --> Open: count +$0A under 8
+    Open --> Breathe: count 6, BossShots
+    Breathe --> Open
+    Open --> Wait: count 0, a new random 16-23
+    Wait --> Hit: a bolt at column 15
+    Open --> Hit: a bolt at column 15
+    Hit --> Wait: ArenaBossHits under 20
+    Hit --> Beaten: ArenaBossHits 20
+    Beaten --> [*]: item 2 dropped, the head removed
+```
+
+The hit, as the bolt's handler hands it over (`$857E-$859E`, then ArenaBossHit):
+
+```asm
+FlatShotCheck:
+  LD A,(GridNumber)
+  CP $02
+  JP NZ,FlatShotDraw
+  LD A,(IY+$00)             ; the bolt's column
+  CP $0F
+  JP NZ,FlatShotDraw
+  LD A,(ArenaBossBeaten)
+  CP $00
+  JP NZ,FlatShotDraw
+  ...
+  JP ArenaBossHit
+ArenaBossHit:
+  CALL RemoveActor          ; the bolt is gone
+  LD A,$01
+  LD (ArenaFlash),A
+  LD A,(ArenaBossHits)
+  CP $14
+  RET Z                     ; already beaten
+  INC A
+  LD (ArenaBossHits),A
+  CP $14
+  RET NZ
+  LD D,$14                  ; the 20th: item 2 at column $14, line $70
+  LD E,$70
+  LD L,$02
+  LD H,$00
+  LD BC,ItemIconSprites
+  CALL SpawnItem
+  LD A,$01
+  LD (ArenaBossBeaten),A
+  ...                       ; the burst at column $0E, row 4
+  JP StartBurst
+```
+
+![The dragon of the arena beaten in rzx-r1](img/play/dragon.gif)
+
+*`rzx-r1` frames 19520-19760, one picture every 3 frames: the hero at the arena's left fires bolts at the green
+dragon; the whole dragon flashes red on a hit (ArenaFlash), and after the 20th it bursts and item 2 drops at the
+arena's floor. Made with `python3
+../../kit/screen_anim.py --work work/review/fixB/rzx-r1 --from 19520 --to 19760 --step 3 --scale 2 --delay 80
+docs/img/play/dragon.gif` (the recording opened with `python3 ../../kit/rs.py open --work work/review/fixB/rzx-r1
+--ttd work/stage2/rec/rzx-r1/session.ttd`).*
+
+**A worked example: the twenty bolts.** In `rzx-r1` the head runs from frame 19313 (ArenaHeadActor, 81 runs in all).
+ArenaBossHit runs 20 times, from frame 19568 to 19749, ArenaBossHits reading 3 at 19 600, 8 at 19 650, 14 at 19 700
+and 20 at 19 750: a hit about every 9 frames. UpdateFlatShot ran 259 times, so most bolts are in flight for several
+passes before they reach column 15.
+
+Witness: ArenaHeadActor L1 81, ArenaBossHit L1 20, UpdateFlatShot L1 259 (all `rzx-r1`); ZoneDamage L1 19 500 (the
+five stage-1 builds).
 
 **The point**: the second boss is a race. The hero must stay out of the zone and land twenty bolts.
 
@@ -611,7 +684,8 @@ out.
 
 ## 10.10 Stages 2-5 and the ending
 
-The later stages reuse stage 1's engine with their own actors. From their annotation files:
+The later stages reuse stage 1's engine with their own actors. The summary first, then a section per stage with its
+handlers, their runs (the witness lines of `build/stage2.lst` ... `stage5.lst`) and each boss in asm:
 
 | Stage | Enemies | Bosses and their rule |
 | --- | --- | --- |
@@ -626,6 +700,176 @@ The RZX run beats each boss, and its replays carry an L1 ([WALKTHROUGH 6.0](../W
 (30 hits, frames 14348-14596, ThroneBossBeaten); `rzx-r4` beats the pharaoh's head (20 hits from frame 20598,
 BossBeaten one run).
 
+### Stage 2: the temple
+
+| Handler | What it does | Witness |
+| --- | --- | --- |
+| SpawnRandomEnemy `$8F8C` | a spirit at a random open place of the room, at most 2 (SpiritCount) | L1 271 (rzx-r2, s2-right, stageload) |
+| SpiritActor `$9028` | grows out of the floor, floats, spits six shots every 16 passes (effect 6), fades or bursts | L1 1066 (rzx-r2, s2-right, stageload) |
+| HarpyRiseActor `$A7F6`, HarpyActor `$8DE8` | the harpy rises out of its statue, swoops with AimedShot at steps 4 and 8, bobs 255 passes, flies off; touch costs 4 | L1 109, 718 (rzx-r2, s2-right) |
+| WarriorStatueActor `$A718` | a statue that takes strikes (effect 2) | L1 1527 (rzx-r2, s2-right, stageload) |
+| PoolActor `$ABF2`, DropActor `$A929` | the pool (effect 9) and the drops that splash (effect 10) | L1 3268 (rzx-r2), 3341 (rzx-r2, s2-right) |
+| HydraHead1Actor `$7FB5`, 2 `$7FEB`, 3 `$8023`, HydraHeadHit `$8092` | the hydra's three heads on their necks; 9 hits cut a head | L1 339, 131, 210, 845 (rzx-r2) |
+| MedusaActor `$814E`, MedusaHeadActor `$8179` | the statue struck from the left at column `$17` loses its head; the head spits (effect 11), falls, lies, and item 2 turns it into item 6 | L1 341, 427 (rzx-r2) |
+
+A head counts its hits in +`$0B` (9 from ActorKinds). ThrownHitsActor sets +9 bit 5 on a hit; HydraHeadHit takes it:
+
+```asm
+HydraHeadHit:
+  BIT 5,(IY+$09)            ; hit this pass?
+  JP Z,HydraHeadFlash
+  LD (IY+$0C),$01           ; flash: blue
+  DEC (IY+$0B)              ; hits left
+  JR NZ,HydraHeadHitDone
+  LD (IY+$0A),$2A           ; 0 left: the state "cut"
+  LD (IY+$0C),$44
+HydraHeadHitDone:
+  RES 5,(IY+$09)
+HydraHeadFlash:             ; the flash steps 1 -> 4 -> $44, one a pass
+  ...
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Alive: placed at its neck's end
+    Alive --> Flash: a thrown weapon hits (+9 bit 5)
+    Flash --> Alive: hits left
+    Flash --> Cut: the 9th hit, +$0A = $2A
+    Cut --> [*]: CutHydraHeadN, HydraHeads - 1, a burst
+    note right of Cut: HydraDefeated bursts the body when HydraHeads is 0
+```
+
+![The hydra's last head cut and its body burst in rzx-r2](img/play/hydra.gif)
+
+*`rzx-r2` frames 14250-14400, one picture every 2 frames: the hero on the ledge at the left throws at the last head
+(head 1), which bursts at frame 14317; then the body bursts (HydraDefeated) and the room's bonus appears. Made with `python3 ../../kit/screen_anim.py --work work/review/fixB/rzx-r2 --from 14250
+--to 14400 --step 2 --scale 2 --delay 80 docs/img/play/hydra.gif`. Stage 2's screens: [the temple](img/play/stage2-temple.png),
+[the harpy](img/play/stage2-harpy.png).*
+
+**A worked example: three heads, 27 hits.** HydraHeadHit runs 845 times in `rzx-r2` (frames 10427-14317), once a
+pass for each head on screen. The 27 hits (9 a head) cut head 2 at frame 11132 (CutHydraHead2), head 3 at 13532 and
+head 1 at 14317, one run each. HydraHeads then reads 0, and HydraDefeated, called every pass (L1 8031), bursts the
+body in room 7 and gives the room's bonus.
+
+### Stage 3: the longship, the swamp and the castle
+
+| Handler | What it does | Witness |
+| --- | --- | --- |
+| SpawnViking `$8C16`, VikingActor `$8C64` | Vikings on the longship: walk, stand, block with the shield, strike with the axe, stagger and sink when shot | L1 44 (rzx-r3, s3-right), 696 (rzx-r3, s3-right) |
+| SpawnTroll `$8F91`, TrollLegsActor `$9003`, TrollBodyActor `$90C6` | a troll in two records: the legs walk, the body swings its club when the hero is near | L1 13, 644, 641 (rzx-r3) |
+| SpawnBogMan `$9170`, BogManActor `$91AD` | a bog man rises from the swamp, wades (2 damage on touch), sinks | L1 30, 553 (rzx-r3) |
+| LightningActor `$94AC`, UpdateRain `$A41E` | the lightning and the rain; the rain puts the pyre out | L1 2393, 6278 (rzx-r3, s3-right) |
+| CheckWaterDeath `$8824` | the sea under the longship and the swamp of grid 1 room 10 kill; the swamp's lower lines drain 2 | L1 6280 (rzx-r3, s3-right) |
+| DrawDragon `$887A`, DragonHeadActor `$92BF` | the dragon of grid 1 room 8: thrown objects count in DragonHits | L1 6278 (rzx-r3, s3-right), 477 (rzx-r3) |
+| ThroneBossStep `$9514`, UpdateBolt `$821F` | the giant on the throne: drawn, shooting kind-4 missiles every 8th pass, 30 bolts beat it | L1 6278 (rzx-r3, s3-right), 99 (rzx-r3) |
+
+The Viking is the stage's state machine (+`$0A`):
+
+```mermaid
+stateDiagram-v2
+    [*] --> Walk: SpawnViking, from the left or the right
+    Walk --> Stand: in reach of the hero
+    Stand --> Block: VikingStandChoose
+    Stand --> Strike: VikingStandChoose
+    Block --> Stand
+    Strike --> Stand
+    Walk --> Hit: a shot (+9 bit 4)
+    Stand --> Hit: a shot
+    Hit --> Die: the last hit
+    Hit --> Stand: hits left
+    Die --> [*]: sinks, VikingGone
+```
+
+The giant counts in ThroneBossHits `$FE65`; the bolt's handler sets ThroneHitFlag `$FE66` at column `$19`:
+
+```asm
+ThroneBossStep:
+  LD A,(GridNumber)
+  CP $02
+  RET NZ                    ; only in the castle's hall
+  LD A,(ThroneBossHits)
+  CP $1E
+  JP Z,ThroneBossBeaten     ; the 30th hit
+  CP $1F
+  RET Z                     ; beaten: nothing more
+  LD HL,ThronePicture
+  LD DE,PlayBuffer+1048
+  LD B,$4F
+  CALL DrawRowPicture       ; the seated giant, every pass
+  LD A,(ThroneHitFlag)
+  CP $01
+  JR Z,ThroneBossHit        ; a hit: count it, paint the mask red ($42)
+  ...                       ; else its own colours, and every 8th pass a missile of kind 4
+```
+
+![The giant on the throne beaten in rzx-r3](img/play/throne.gif)
+
+*`rzx-r3` frames 14480-14640, one picture every 2 frames: the last bolts reach the giant, its cells flash red, and
+at frame 14599 ThroneBossBeaten bursts it (score 40 418 to 42 418) and the bonus appears. Made with `python3 ../../kit/screen_anim.py --work
+work/review/fixB/rzx-r3 --from 14480 --to 14640 --step 2 --scale 2 --delay 80 docs/img/play/throne.gif`. Stage 3's
+screens: [the longship](img/play/stage3-longship.png), [its prow](img/play/stage3-prow.png).*
+
+**A worked example: thirty hits.** UpdateBolt's hit branch (`$8237`) runs 33 times in `rzx-r3`; ThroneBossHits counts
+30 of them, between frames 14348 and 14596. The flag is one byte, so two bolts in one pass count once, and a bolt after
+the count reached `$1E` counts nothing. ThroneBossBeaten
+runs once, at frame 14599: score 2000, the burst at column `$14`, row 5, and the piece of event bit `$40`
+(SpawnBonus at D = `$19`, E = `$4C`). The dragon of room 8 dies earlier, DragonBeaten at frame 12489.
+
+### Stage 4: the pyramid
+
+| Handler | What it does | Witness |
+| --- | --- | --- |
+| SpawnTimer `$9245`, SpawnScorpion `$92F7`, ScorpionActor `$9319` | scorpions sent in at random (SpawnPick), crawling 2 columns every 10 passes | L1 8620 (rzx-r4, s4-right), 28, 2195 (rzx-r4) |
+| MummyActor `$9351` | the mummy of grid 10, every `$50-$8F` passes: walks left, kills the hero it reaches, three shots destroy it | L1 325 (rzx-r4) |
+| Pendulum `$888F`, FallingColumn `$87AC`, SwitchedSpikes `$86FF`, CrumblingSlab `$869B`, CrumblingLedge `$89A8` | the traps, armed by the trap slots that FloorSwitch `$865C` sets | L1 1774, 8055, 2624, 7610, 3207 (rzx-r4) |
+| BarrierBlockActor `$96CB`, BarrierPillarActor `$96DD` | the barrier of grid 0 room 1, closed until BarrierState is 2; it throws the hero back (HeroRecoil) | L1 970, 997 (rzx-r4, s4-right) |
+| DrawBossPicture `$8F2B`, BossMouth `$8AD4`, HeroBoltBoss `$8123` | the pharaoh's head of grid 8 room 2: the picture, the mouth, the bolts that hit it | L1 8619 (rzx-r4, s4-right), 460 (rzx-r4), 388 block runs of `$8123` (rzx-r4) |
+
+A bolt at column `$18` or more in grid 8 room 2 while BossPhase is 1 sets BossFlash to 2 (HeroBoltBoss). The picture's
+routine counts the hits while the flash runs:
+
+```asm
+DrawBossPicture:
+  ...                       ; grid 8 room 2, BossPhase not 2
+  LD HL,BossPicture
+  LD DE,PlayBuffer+1047
+  LD B,$68
+  CALL DrawRowPicture       ; 104 rows, every pass
+  LD HL,BossColours
+  LD A,(BossFlash)
+  CP $00
+  JP Z,BossPictureColours
+  DEC A
+  LD (BossFlash),A
+  LD A,(BossHits)
+  DEC A
+  LD (BossHits),A
+  CALL Z,BossBeaten         ; the last hit: four new actors, score 1400, a burst
+  LD HL,BossHitColours
+BossPictureColours:
+  ...                       ; 13 rows of 8 colours into the shadow
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Asleep: BossPhase 0, the mouth shut
+    Asleep --> Awake: BossPhase 1
+    Awake --> Flash: a bolt at column $18 or more, BossFlash = 2
+    Flash --> Awake: BossHits - 1 each flash pass
+    Flash --> Beaten: BossHits 0, BossBeaten
+    Beaten --> [*]: BossPhase 2, the picture and the mouth gone
+```
+
+![The pharaoh's head beaten in rzx-r4](img/play/pharaoh.gif)
+
+*`rzx-r4` frames 21840-21990, one picture every 2 frames: the last bolts fly at the pharaoh's head, then BossBeaten's
+burst at frame 21921 (score 56 078 to 57 478, the 1400 points) and the bonus. Made with `python3 ../../kit/screen_anim.py --work work/review/fixB/rzx-r4 --from 21840 --to 21990
+--step 2 --scale 2 --delay 80 docs/img/play/pharaoh.gif`. Stage 4's screen: [the pyramid](img/play/stage4-pyramid.png).*
+
+**A worked example: the head's 458 passes.** In `rzx-r4` the picture is drawn in 458 passes, 20 of them with the hit
+colours: the 20 decrements of BossHits, the last calling BossBeaten at frame 21921 (L1 1). BossMouth runs 460 times,
+from frame 19599 to 23408.
+
 ### The ending
 
 Stage 5 has no rooms and no exit. Its main loop waits for the frame with a HALT, the only stage loop that does
@@ -636,6 +880,76 @@ Stage 5 has no rooms and no exit. Its main loop waits for the frame with a HALT,
 - At 20, ten shots, the phase steps and NextDameronForm `$A0C4` bursts the old form (effect 0).
 - After the fourth form the ending text stays on the screen and the loop runs on. Only no lives or CAPS SHIFT + SPACE
   leave the stage.
+
+DuelHit `$79A9` runs from ColourPlayArea every pass:
+
+```asm
+DuelHit:
+  LD A,(TextShown)
+  CP $01
+  JP Z,FlashTextRows        ; a text page up: flash it instead
+  LD A,(PendingHits)
+  CP $00
+  RET Z
+  DEC A                     ; one pending hit a pass
+  LD (PendingHits),A
+  LD A,(HitCounter)
+  INC A
+  LD (HitCounter),A
+  CP $14
+  JP NZ,DuelHitFlash        ; under 20: just flash
+  LD A,$00
+  LD (HitCounter),A
+  LD A,(DuelPhase)
+  INC A                     ; the next form
+  LD (DuelPhase),A
+  LD A,$01
+  LD (FormChanged),A
+  CALL NextDameronForm      ; effect 0; explosions, or at phase 4 the final burst
+DuelHitFlash:
+  ...                       ; Dameron's 15 x 16 cells blue for this pass
+NextDameronForm:
+  LD DE,$0000
+  CALL PlaySoundVector      ; effect 0
+  LD A,(DuelPhase)
+  CP $01
+  JP Z,SpawnFormExplosions1
+  CP $02
+  JP Z,SpawnFormExplosions2
+  CP $03
+  JP Z,SpawnFormExplosions3
+  LD D,$0C                  ; phase 4: the final burst at column 12, row 9
+  LD E,$09
+  LD A,$01
+  LD IX,FinalBurstShape
+  JP StartBurst
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Intro: DuelPhase $FF, the texts
+    Intro --> Form0: the timer runs out, DuelPhase 0
+    Form0 --> Form1: 20 hits (10 shots)
+    Form1 --> Form2: 20 hits
+    Form2 --> Form3: 20 hits
+    Form3 --> Won: 20 hits, the final burst
+    Won --> Won: the ending text, the loop runs on
+```
+
+DameronFire `$8B2A` picks each form's missiles: fireballs in form 0, bolts in forms 1 and 2, arcing shots in form 3
+(effect 2 each).
+
+![Dameron's first form beaten in rzx-r5](img/play/duel.gif)
+
+*`rzx-r5` frames 2380-2530, one picture every 2 frames: the hero (left) and Dameron's fireballs cross; Dameron's
+colours change from picture to picture, and on a pass with a pending hit DuelHit paints his cells blue (the middle of
+the GIF). At frame 2456 the 20th hit of form 0 calls NextDameronForm (effect 0). Made with `python3
+../../kit/screen_anim.py --work work/review/fixB/rzx-r5 --from 2380 --to 2530 --step 2 --scale 2 --delay 80
+docs/img/play/duel.gif`. The screens: [the intro text](img/play/stage5-void.png), [Dameron](img/play/stage5-dameron.png).*
+
+**A worked example: 80 hits.** In `rzx-r5` DuelHit's counting branch (`$79B7`) runs 80 times: 40 shots, two hits
+each. NextDameronForm runs four times, at frames 2456 (form 1), then up to 4416 (the final burst). DuelHit and DuelStep
+run every pass (L1 11 696 in `ending`, `rzx-r5` and `s5-right`); `s5-right` never hits Dameron.
 
 In `rzx-r5` the duel runs from frame 1551 to 4005 and WELL DONE appears at 5663 ([doc 1](01-game-design.md)).
 
@@ -656,7 +970,8 @@ quit or a reset ends.
 - **BossHits** keeps 1 after the demon is beaten, because BossFlees is taken before the store.
 - **ThrowItem, FireBolt and ThrowAmmo** run only in `rzx-r1`: ThrowItem from frame 2310 (kind 8, 72 to 71), ThrowAmmo
   ten throws at the demon's pit (frames 13818-14826), FireBolt 24 bolts at the dragon (frames 19528-19764).
-- **The deadly cell.** HeroUpdate's test of bit 3 of the cell under the hero never found one: the `JP Z` at `$AC62`
+- **The deadly cell.** HeroUpdate's test of bit 3 of the cell on the hero's head line, one column ahead
+  ([10.1](#101-the-hero-one-record-one-state-a-pass)), never found one: the `JP Z` at `$AC62`
   was taken in every pass of every recording (`rzx-r1` 9313, `deaths` 867, `c1o` 276). The deaths came from the
   flames and the enemies.
 - **The shield** (item 1): `rzx-r1` selects it for 89 passes (frames 24826-25096) and DrainItemCharge takes 11 of its

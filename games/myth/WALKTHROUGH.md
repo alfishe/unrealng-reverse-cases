@@ -48,13 +48,13 @@ speed by its own loader; 16 658 frames, L1 built (148 773 035 instructions, 2516
 | 1963 | the BASIC's code runs at `$5D06` (stage 0); the chain's 103 layers decrypt `$EDE4-$FF25` up to frame 2189 (stage 1 counted 31 from the L1's arrivals; [doc 3, 3.3](docs/03-build-and-load.md)) |
 | 2387 | the Speedlock loader `$FF26` reads the protected blocks |
 | 5166 | the resident code is copied to `$E000-$FFFF` and entered at `$F040`; IM 2 is set (SetIm2 `$F635`) |
-| 5167-7734 | the turbo loader TurboLoad `$FE90` (`$FE90-$FF53`, called by LoadBlock `$FF54`) loads the main block to `$6C3F-$A83E`; the tape stops on the stop block |
+| 5167-7734 | the turbo loader TurboLoad `$FE90` (`$FE90-$FF53`, called by LoadBlock `$FF54`) loads the main block to `$6C3F-$A83E`; the tape stops on the stop block (the tape's run; docs 03 and 04 time the front's load from LoadFront's entry to the front's `$7800`: 5167-7826) |
 | 7826 | the main block is entered at `$7800`: the logo over a starfield drawn into the picture (static) ([logo](docs/img/play/logo.png)) |
 | 7938 | SPACE: the credits cycle ([credits](docs/img/play/credits.png)) |
 | 8310 | SPACE: the menu "PRESS SPACE TO SELECT", START GAME, DEFINE KEYS, SELECT JOYSTICK; the highlight moves by itself every 96 frames and SPACE takes the highlighted line ([menu](docs/img/play/menu.png)) |
 | 8524 | SPACE on START GAME (the line blinks) |
 | 8726 | "PRESS PLAY ON TAPE" ([press play](docs/img/play/press-play.png)); PLAY; stage 1 loads from frame 8626 |
-| 14976 | the tape stops after stage 1: "STOP THE TAPE / STAGE ONE / THE ROAD TO HELL" (frame 15026, [stage title](docs/img/play/stage1-title.png)); the first room is drawn about 400 frames later |
+| 14976 | the tape stops after stage 1: "STOP THE TAPE / STAGE ONE / THE ROAD TO HELL" (frame 15026, [stage title](docs/img/play/stage1-title.png)); the first room is drawn about 400 frames later (a tape event; docs 03 and 04 time the stage's load from PlayStage's entry to StageEntry: 8626-15075) |
 | 15476 | stage 1 in play ([first room](docs/img/play/stage1-start.png)) in room 2: right, left, a jump, fire in each direction; room 2 to 8 at 15570 |
 | 15890 | a life lost (lives `$FE61` 5 to 4 between 15880 and 15900; LoseLife at 15886). The SPACE presses at 15948 and 15951 fall in the respawn (hero state `$0F`), so no item window opens; the script's H pauses nothing (CheckPause `$79B1` reads ENTER, port `$BFFE` bit 0) |
 | 16531 | room 8 to 7 |
@@ -144,7 +144,7 @@ stage 5.
 The figures drawn from recordings (not screens) say their recording and frames in their captions: [energy and
 death](docs/img/play/energy-death.png) c1 15700-16300, [the jump's path](docs/img/play/jump-path.png) rzx-r1 3576-3632,
 [a light pass](docs/img/play/pass-beam-light.png) and [the room change](docs/img/play/pass-beam-roomchange.png) against the
-beam, c1 16200-16203 and 16538-16540.
+beam, c1 16200-16202 and 16538-16540.
 
 The game-over screen offers RESTART THIS STAGE, RESTART FROM STAGE ONE, GAME CREDITS 3 and the score.
 
@@ -226,6 +226,11 @@ data and rendered to files ([doc 9](docs/09-sound.md)); nothing was played.
 | [teleport.gif](docs/img/play/teleport.gif) | doc 10 | rzx-r1 | 29590-29880 |
 | [death.gif](docs/img/play/death.gif) | doc 10 | c1 | 15860-16240 |
 | [HeroDeath.gif](docs/img/routines/HeroDeath.gif) | doc 10 | c1 | 15886 |
+| [dragon.gif](docs/img/play/dragon.gif) | doc 10 | rzx-r1 | 19520-19760 |
+| [hydra.gif](docs/img/play/hydra.gif) | doc 10 | rzx-r2 | 14250-14400 |
+| [throne.gif](docs/img/play/throne.gif) | doc 10 | rzx-r3 | 14480-14640 |
+| [pharaoh.gif](docs/img/play/pharaoh.gif) | doc 10 | rzx-r4 | 21840-21990 |
+| [duel.gif](docs/img/play/duel.gif) | doc 10 | rzx-r5 | 2380-2530 |
 
 Each caption gives the command that made it (`kit/screen_anim.py`, `kit/memanim.py`, `kit/routine_anim.py`,
 `tools/anim_keys.py`, `tools/fig_sound.py regs`); `W` in doc 3 is an analysis folder opened on c1's session.

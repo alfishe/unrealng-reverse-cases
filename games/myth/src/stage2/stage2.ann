@@ -119,7 +119,7 @@ $74F2 Actors ; the 13 other actor records, 18 bytes each ($74F2-$75DB); +0 = $FF
 $75CA LastActor ; the 13th record
 $75DC ActorsEnd ; 4 bytes past the records (written and read in rzx-r2: a 15th record's first bytes are tested as the list's end)
 $75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind, +3 to +5 the kind's own
-$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 5 (its last 4 bytes) to 15 lie over them
 $7610 MissilesHigh ; missile records 8-15 (AddMissileHigh $B3C5)
 $7640 DigitBuffer ; in play: the score's digit picture and a sprite's shifted copy (PreShiftSprite $7F10)
 $76A0 SpanTable ; in play: the open spans CopyBuffer $94A9 copies, 6 bytes each (the length, 0, the buffer address, the screen address), on to $77B9
@@ -1934,7 +1934,7 @@ $B2B0 c CellUnderFeetUnused ; A copy of a feet-cell test: the row (line + height
 > Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
 $B2D0 CellUnderFeetUnusedColumn
 $B2DC c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
-> D = D / 8, on into CellAtRow $B2E2. HL = D x 32 + E - 4 (an offset into the cells $7282; the play area's cell column 0 is screen column 4). The cell's bits: 1 solid, 3 deadly.
+> D = D / 8, on into CellAtRow $B2E2. HL = D x 32 + E - 4 (an offset into the cells $7282; CellsPlay $7282 is screen column 2, so the cell is at screen column E - 2). The cell's bits: 1 solid, 3 deadly.
 > As in stage 1 at $B162, the same code; stage 2 enters its second part from outside too.
 > Witness: L1 1762 (rzx-r2, s2-right, stageload).
 $B2E2 c CellAtRow ; A = the room cell at column E, cell row D; Z: not solid

@@ -199,8 +199,8 @@ one pass.
 The second clear buys nothing: Unrle overwrites almost all of it, and the third clear wipes what remains. It costs
 1.7 frames of the room change's 18.4.
 
-Witness: RoomChange `$988B` and Unrle ran 26 times in the stage-1 recordings, CopyTileToScreen 13 104 times
-(26 x 504).
+Witness: RoomChange `$988B` and Unrle ran 101 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle,
+s1-right), CopyTileToScreen 50 904 times (101 x 504).
 
 **The point**: the room build reuses the play buffer as its workspace, draws the scenery once onto the screen behind
 black attributes, and leaves only a list of spans behind. The scenery is never drawn again while the hero stays.
@@ -313,14 +313,15 @@ docs/img/routines/ClearBuffer.gif`.*
 ClearBuffer runs with interrupts off: an INT in the middle would push its return address into the buffer. This is
 one of the two places where interrupts are lost ([doc 4](04-game-loop.md#410-the-lost-interrupts)).
 
-Witness: ClearBuffer ran 10 218 times in the stage-1 recordings.
+Witness: ClearBuffer ran 19 608 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 **The point**: the buffer is wiped in 0.42 of a frame, at the cost of the interrupt that falls inside.
 
 ## 6.6 The sprites
 
 DrawActors `$A5DF` walks the 14 actor records twice. The first walk draws the records whose `+$0F` has bits 6 and 7
-clear. The second draws those with bit 7 set, on top of the others. Bit 6 is never drawn.
+clear. The second draws those with bit 7 set, on top of the others; it tests only bit 7. So bit 6 alone hides a
+record, and a record with bits 6 and 7 set is drawn in the second walk.
 
 ```asm
 DrawActors:
@@ -466,6 +467,13 @@ DrawActors ORs 12 sprites into the play buffer' --out docs/img/routines/DrawActo
 
 The 12 sprites of that pass took 42 479 T, from DrawActors' entry at 16202:60705 to UpdateAttributes at 16203:33296.
 
+![The sprites of stage 1 and the hero of stage 5](img/sprites/stage1-sprites.png)
+
+*Every sprite set and bitmap set of stage 1 that an actor or a missile draws, and stage 5's hero (12 images behind
+HeroFrames' 16 entries, 6.13), from `src/res`: the address, the size, the frames' sizes in bytes x lines and the
+routine that draws them. The fragment's 8 frames are its pre-shifted copies (0-7 pixels). Made with `python3
+tools/fig_render.py sprites docs/img/sprites/stage1-sprites.png`.*
+
 **The point**: the sprite code is a dispatcher over 13 tiny plotters, one per width and facing. No masks, no
 pre-shifted copies, no second set of left-facing frames.
 
@@ -489,6 +497,12 @@ column's.
 3. then a plotter one byte wider.
 
 The 12 walk frames make it unnecessary. They cost memory instead of time.
+
+![PreShiftSprite on the warrior's flying head](img/render/preshift.png)
+
+*The warrior's flying head (`sprites-warrior.png` frame 9, 2 bytes x 6 lines) as PreShiftSprite `$7F4D` copies it to
+`$7640` for +`$11` = 0-7: one byte wider, shifted right +`$11` pixels; the gold lines are the byte columns, the
+numbers the line's three bytes. Made with `python3 tools/fig_render.py shift docs/img/render/preshift.png`.*
 
 **The point**: stage 1 moves its actors on byte columns and draws the in-between steps into the frames. The pixel
 shifter is kept for one small sprite, the warrior's flying head.
@@ -544,6 +558,17 @@ shows, because the open cells have black paper and the buffer has no pixels ther
 2. The cells of ink 7 grow from 3 to 28 as actors with ink 7 walk through the room.
 3. The colour of an open cell is whatever the last actor there painted. On black paper with no pixels, all of them
    look the same.
+
+![The colours at c1 frame 16202](img/render/colours.png)
+
+*`c1` frame 16202, room 8: the play area's 18 x 28 cells in RoomAttributes `$7042`, in the shadow `$6DC2` with each
+drawn actor's box (gold, ColourActor's rule from the records at `$74E0`), and on the screen at `$58C2`. Made with
+`python3 tools/fig_render.py colours work/review/fixB/c1 16202 docs/img/render/colours.png` (the recording opened
+with `python3 ../../kit/rs.py open --work work/review/fixB/c1 --ttd work/stage1/c1/session.ttd --model 48K`).*
+
+How to read it: the gold boxes are where ColourActor wrote the actors' +`$0C` into the shadow. On the screen only the
+open cells (no grey dot) take the shadow's colour; a box that runs into a solid cell (the scenery in front) leaves that
+cell's own colour, so the stencil of the spans also clips the colours.
 
 **The point**: the colour clash is managed by the room's design. The open space is black paper, so a sprite's colour
 can be left anywhere.
@@ -653,11 +678,12 @@ spans down the screen' --out docs/img/routines/CopyBuffer.gif`.*
 1. The LDIs: 281 cells x 8 lines x 16 T = 35 968 T.
 2. Each line of each span adds LD BC 10, ADD HL 11, LD E 7, INC D 4, DEC A 4, JR 12 and the JP 10: 58 T. 31 spans x
    8 lines x 58 = 14 384 T.
-3. Each span adds about 200 T: three POPs, the patch and the restore. 31 x 200 = 6 200 T.
-4. That is about 56 500 T. The trace measures 67 533 T for the copy. The rest is contention: each LDI reads the
+3. Each span adds about 290 T: about 180 T for the three POPs, the two operand patches and the JP written into the
+   chain, about 110 T for the restore of `ED A0 ED` and the span count. 31 x 290 = 9 000 T.
+4. That is about 59 300 T. The trace measures 67 533 T for the copy. The rest is contention: each LDI reads the
    buffer and writes the screen, both in the RAM the ULA shares.
 
-Witness: CopyBuffer ran 10 190 times in the stage-1 recordings.
+Witness: CopyBuffer ran 19 503 times in the five stage-1 builds (c1o, deaths, rzx-r1, s1-idle, s1-right).
 
 **The point**: CopyBuffer is the cost of the stencil. It copies only the open cells, and copies them with the cheapest
 copy the Z80 has.
@@ -714,7 +740,7 @@ The renderer never waits for the beam. [Doc 4](04-game-loop.md#46-one-pass-again
 
 ![Three frames of c1 against the beam](img/play/pass-beam-light.png)
 
-*The ordinary pass at `c1` 16200-16203 against the beam, from doc 4 4.6, where its command is given.*
+*The ordinary pass at `c1` 16200-16202 against the beam, from doc 4 4.6, where its command is given.*
 
 - CopyChain copies at about 570 T a screen line. The beam draws a line every 224 T.
 - So in the frame where the copy starts, the beam catches it at about line 135. The lines above the crossing show the
@@ -722,8 +748,11 @@ The renderer never waits for the beam. [Doc 4](04-game-loop.md#46-one-pass-again
 - The tear is in the open cells only, and it moves from pass to pass. Black paper and small sprites make it hard to
   see.
 
-The room change is the one place the renderer lines up with the frame. UpdateAttrRestore HALTs and then writes all
-504 colours right after the interrupt, while the beam is in the top border. The new room appears at once
+The room change is the one place the renderer lines up with the frame. UpdateAttrRestore `$8CE0` copies the buffer,
+HALTs and then writes the 504 colours from just after the interrupt. At about 98 T a cell (LD C,(IY+0), the cell
+test, LD (IX+0),C, four INCs and the DJNZ) and about 100 T a row it ends near T 51 000, well inside the picture. It
+stays ahead of the beam all the way: it finishes play row r (screen row 6 + r) at about 2 850 x (r + 1) T, and the
+beam reaches that row at 25 088 + 1 792 x r T. So the new room appears in one frame
 ([doc 4](04-game-loop.md#49-the-heaviest-pass-a-room-change)).
 
 **The point**: Myth tears, but only in the open cells. The scenery, the bigger part of the screen, never changes
@@ -760,7 +789,8 @@ Stages 2-4 carry the same renderer at other addresses, with their own graphics b
 `$B77F`).
 
 Stage 5, the duel with Dameron, has no rooms. It draws straight onto the screen, and each picture carries blank edges
-that wipe its own trail. The hero is 3 bytes x 24 lines, with 16 frames: 4 animation steps x 4 shifts of 2 pixels.
+that wipe its own trail. The hero is 3 bytes x 24 lines. HeroFrames `$85D9` has 16 entries, 4 animation steps x 4
+shifts of 2 pixels, but only 12 distinct images: step 3 points at step 1's (`$BC3C-$BD14`).
 
 ```asm
 DrawHero:
@@ -808,8 +838,10 @@ DrawHeroLine:
 | an item's ink cycled through four colours | CycleItemInk | no caller ran it |
 | the left-facing missile drawer | DrawMissileMirrored `$B3DA` | no caller ran it, `rzx-r1` included |
 | stage 5's ClearBuffer | `$96AC` | stage 5 never clears a buffer |
+| the left-facing 6-byte plotter | PlotRow6Mirrored `$88AD` | no actor 6 bytes wide faces left in the recordings |
 
 `rzx-r1` runs what the other stage-1 recordings do not: the pixel shift ([6.7](#67-sprites-on-byte-columns)),
-the plotters for 5, 6 and 7 bytes (PlotRow5 180 runs, PlotRow6 7812, PlotRow7 570, from DrawActorSprite; the
+the plotters for 5, 6 and 7 bytes (PlotRow5 180 runs, PlotRow5Mirrored 160, PlotRow6 7812, PlotRow7 570, from
+DrawActorSprite; the
 demon's body is 6 bytes wide), DrawRowPicture `$8B03` for the demon's face and the dragon (746 calls from DrawRoomPicture, 80 from
 DrawArenaPicture) and the mirrored drawers of the hero's shot (DrawSpriteMirrored 284, ColourSpriteMirrored 559).
