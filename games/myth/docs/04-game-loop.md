@@ -238,8 +238,9 @@ Im2Handler:
   RETI
 ```
 
-The handler swaps to the alternate registers and plays one step of the sound ([doc 9](09-sound.md)). It does not save
-IX or IY, and AyFrame does not touch them. It keeps no frame counter and reads no keys.
+The handler swaps to the alternate registers and plays one step of the sound ([doc 9](09-sound.md)). It does not save IX
+or IY; AyFrame `$F78A` uses IX to walk Channels `$F85E` and saves and restores both itself. It keeps no frame counter
+and reads no keys.
 
 ```mermaid
 sequenceDiagram
@@ -507,13 +508,16 @@ The routines that took the most of that pass:
 
 | Routine | T | Share |
 | --- | ---: | ---: |
-| CopyChain, CopyBuffer's LDI chain | 46 554 | 21.1 % |
+| CopyChain (stage 1 `$9B09`), CopyBuffer's LDI chain | 46 554 | 21.1 % |
 | UpdateAttrCell, UpdateAttrNext | 41 444 | 18.8 % |
 | ClearBufferLoop | 29 464 | 13.4 % |
 | CopyLineE, CopySpan, CopyLineEnd, CopySpanRestore | 20 979 | 9.5 % |
 | DrawActorOpaqueLoop, PlotRow2, PlotRow3Mirrored | 16 509 | 7.5 % |
 | PathFlyerByte, a flying actor's path | 11 945 | 5.4 % |
 | everything else | 53 439 | 24.3 % |
+
+CopyChain here is the stage's LDI chain inside CopyBuffer. The BASIC loader's routine at `$5D06`
+([doc 3](03-build-and-load.md)) carries the same label in `basic.asm`; it is a different routine.
 
 **A worked example: the pass in T-states.** The pass is 220 334 T.
 
@@ -541,10 +545,13 @@ How to read it:
 
 - Frame 16200: the green blocks are UpdateAttrCell writing the attribute rows, top to bottom. At the right edge the
   red dots start: CopyChain copying pixel lines.
-- Frame 16201: the red dots are CopyChain. It copies one 8-line span after another down the play area, at about 570 T
-  a line. The beam draws a line every 224 T, so it catches the copy at about line 135 and frame T 46 000. The lines
-  above the crossing were copied before the beam drew them and show the new picture. The lines below show the last
-  pass's picture for one more frame. That is the tear of a buffer copied without frame sync.
+- Frame 16201: the red dots are CopyChain. It copies one 8-line span after another down the play area, at about 560 T a
+  pixel line: in this pass 31 spans (281 bytes wide in all) cover 15 cell rows, so 120 pixel lines and 2248 bytes, in
+  67 400 T from CopyBuffer's entry to the end of its last span (the pass's trace, `$9AE6` and `$9B4D` counted). A line of
+  the play area with no open span costs nothing. The beam draws a line every 224 T, so it catches the copy at about line
+  135 and frame T 46 000. The lines above the crossing were copied before the beam drew them and show the new picture.
+  The lines below show the last pass's picture for one more frame. That is the tear of a buffer copied without frame
+  sync.
 - Frame 16202: the strip is violet up to frame T 29 000: ClearBufferLoop. It writes no screen byte. Then the actors'
   routines (orange PathFlyerByte, pink PlotRow3Mirrored) draw into the buffer.
 - The thin vertical line at frame T 1812 is the INT.
@@ -794,7 +801,8 @@ sees it. The game loses the interrupt, and with it one step of the sound.
 3. 88 801 / 234 705 = 37.8 % of the time an INT finds the interrupts off.
 4. The L1 counts give 38.4 % lost. That is the same figure within the rounding.
 
-Stage 5 has no play buffer, no ClearBuffer and no CopyBuffer, yet it loses 20.6 %. Its DrawHero and DrawHeroFrame
+Stage 5 has no play buffer and no CopyBuffer; its ClearBuffer (`$96AC`) is called only from EndStage (`$78B6`) and
+never ran. Yet it loses 20.6 %. Its DrawHero and DrawHeroFrame
 walk SP down ScreenLineTable `$FB00` with DI, and three of Dameron's face routines in `duel.asm` do the same.
 
 **The point**: the lost interrupts are the price of the PUSH clear and the stack copy. Only the sound pays it: the
@@ -821,7 +829,7 @@ docs/img/loop/pass-anatomy.png`, which reads the stage's `.ann` with `kit/fig_bu
 
 How to read it:
 
-- The blues are the renderer. In stages 1-4 they are 130 000 to 160 000 T a pass, about two frames.
+- The blues are the renderer. In stages 1-4 they are 161 000 to 173 000 T a pass, about 2.3-2.4 frames.
 - Stage 2's CopyBuffer is the largest (71 758 T): the hydra's room has more open cells to copy.
 - HALT in stages 1-4 is not in the pass. It is the stage's title, its entry, the item window and the waits, spread
   over the passes by the division.
@@ -958,7 +966,8 @@ effect playing at the moment runs to its end.
 **A worked example: the pause that was never taken.** `c1`'s script presses H at frames 16050 and 16104 to pause.
 
 1. H is port `$BFFE` bit 4. CheckPause reads bit 0 only.
-2. So the game went on. PauseRelease `$79B5` has 0 runs in every recording.
+2. So the game went on. PauseRelease (stage 1 `$79B9`; `$796F`, `$79A7`, `$79EA` in stages 2-4) has 0 runs in every
+   recording of its stage (c1o, deaths, s1-idle, s1-right, s2-right, s3-right, s4-right, rzx-r1 ... rzx-r4).
 3. Only ENTER pauses, and DEFINE KEYS does not change that ([doc 5](05-controls.md)).
 
 ### The item window
@@ -1032,7 +1041,7 @@ world stands still while it waits, and only the sound goes on.
 | What | Where | Why no recording shows it |
 | --- | --- | --- |
 | PacePassUnused: rooms 0 and 5 wait `$03E8`, room `$0B` waits BC as it stands | `$7982` | no code calls it |
-| the pause | PauseRelease `$79B5` | no recording pressed ENTER in play |
+| the pause | PauseRelease `$79B9` | no recording pressed ENTER in play |
 | RestartFromStageOne, REWIND THE TAPE | `$F048` | no game over chose it |
 | QuitStage in stage 1 | `$789C` | no stage-1 recording held CAPS SHIFT with SPACE |
 | stage 5's E = 2 | none | the code has no path that returns it |

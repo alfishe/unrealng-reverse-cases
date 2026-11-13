@@ -474,8 +474,9 @@ HeroFrames' 16 entries, 6.13), from `src/res`: the address, the size, the frames
 routine that draws them. The fragment's 8 frames are its pre-shifted copies (0-7 pixels). Made with `python3
 tools/fig_render.py sprites docs/img/sprites/stage1-sprites.png`.*
 
-**The point**: the sprite code is a dispatcher over 13 tiny plotters, one per width and facing. No masks, no
-pre-shifted copies, no second set of left-facing frames.
+**The point**: the sprite code is a dispatcher over 13 tiny plotters, one per width and facing. No masks and no
+second set of left-facing frames. The actors are drawn at byte columns: the fragment's 8 frames are its shifts drawn
+into the data, and one sprite is shifted at run time (6.7).
 
 ## 6.7 Sprites on byte columns
 
@@ -504,8 +505,10 @@ The 12 walk frames make it unnecessary. They cost memory instead of time.
 `$7640` for +`$11` = 0-7: one byte wider, shifted right +`$11` pixels; the gold lines are the byte columns, the
 numbers the line's three bytes. Made with `python3 tools/fig_render.py shift docs/img/render/preshift.png`.*
 
-**The point**: stage 1 moves its actors on byte columns and draws the in-between steps into the frames. The pixel
-shifter is kept for one small sprite, the warrior's flying head.
+**The point**: stage 1 moves its actors on byte columns and draws the in-between steps into the frames. In stage 1
+the pixel shifter is kept for one small sprite, the warrior's flying head. Stages 2 and 3 use it more: the hydra's
+heads (PlaceHydraHead `$8100` sets +`$11` every pass, 842 runs in `rzx-r2`), Medusa's falling head (StepFineLeft,
+called at `$81F5`) and the troll's body (StepFineBack, called by TrollBodyActor at `$90D7`).
 
 ## 6.8 The colours
 

@@ -5,8 +5,8 @@
 ; and the sea (CheckWaterDeath). Grid 1 (the swamp and the forest): trolls in two records (SpawnTroll, TrollLegsActor,
 ; TrollBodyActor), bog men (SpawnBogMan, BogManActor), the funeral pyre (PyreFlameActor, PyreBierActor, PyreBodyActor:
 ; the rain puts the flames out and the body rises), the dragon in room 8 (DrawDragon, DragonHeadActor,
-; DragonFlameActor; 16 thrown objects kill it) and the drawbridge (DrawbridgeActor). Grid 2 (the castle's hall): the
-; giant on the throne (ThroneBossStep; 30 bolts kill it).
+; DragonFlameActor; 15 thrown objects kill it: DragonHits $0F) and the drawbridge (DrawbridgeActor). Grid 2 (the
+; castle's hall): the giant on the throne (ThroneBossStep; 30 bolts kill it).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $82B9

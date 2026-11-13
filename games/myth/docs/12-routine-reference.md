@@ -10615,9 +10615,9 @@ Phases 2 and `$0A` (`$A817`): +8 counts from `$13` to `$16` again and again, the
 
 HarpyPhase = `$0A`, the frames come from HarpyRiseFrames + `$17` (from `$0C`) of HarpyLampSet; it vanishes (RET, no frame)
 
-once its line is under 8. Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from
+once its line is under 8. The recordings checked (s2-right, rzx-r2) never run `$A817-$A845`: phase 2 is known only
 
-the code.
+from the code.
 
 In s2-right 50 passes and the rise (screen 000500.scr: the green figure under the lamp), in rzx-r2 59.
 
@@ -22224,7 +22224,7 @@ Only in grid 8 room 2 while BossPhase is not 2. Draws the 104-row picture at `$C
 
 Witness: L1 8619 (rzx-r4, s4-right).
 
-In s4-right only the first test ran (grid 0). In rzx-r4 the picture was drawn 458 passes, 20 of them with the hit colours (the 20 hits of BossHits, the last calling `$A24C`).
+In s4-right only the first test ran (grid 0). In rzx-r4 the picture was drawn 458 passes, 20 of them with the hit colours (BossHits' 20 counts: 10 bolts, each counted twice, at column `$18` and at `$19` where it is freed: HeroBoltBoss `$8146` 20 runs, `$8150` taken 10; the last count calls `$A24C` at frame 21921).
 
 | | |
 | --- | --- |

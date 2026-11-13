@@ -38,7 +38,7 @@ Myth is a 48K game that also plays sound on a 128K.
 | --- | --- | --- |
 | RAM | 48 KB, `$4000-$FFFF` | the screen 6912 bytes, the play buffer 4608, a stage block 33 792, the resident 4033 |
 | CPU | 69 888 T a frame (48K), 70 908 (128K) | a pass of stages 1-4 takes 3.2-3.6 frames ([2.5](#25-the-frame-budget)) |
-| Interrupts | 50 a second | IM 2, AyFrame only; 34-45 % of them are missed in play ([2.5](#25-the-frame-budget)) |
+| Interrupts | 50 a second | IM 2, AyFrame only; 34-44 % of them are missed in play ([2.5](#25-the-frame-budget)) |
 | Tape | one TZX of 53 blocks | the BASIC, the SpeedLock chain, the resident, the front, five stage blocks ([doc 3](03-build-and-load.md)) |
 | Sound | the AY on a 128K, nothing on a 48K | 13 effects, no music in the game ([doc 9](09-sound.md)) |
 
@@ -106,7 +106,7 @@ data extents):
 | `$FF54-$FF83` | 48 | LoadBlock and StageCheck `$FF7F` | between stages |
 | `$FF84-$FFFF` | 124 | RomFontLeftover, with the stack on top of it | the stack in play |
 
-The stage 1 rows hold for every stage. Each stage's code starts at `$7800` and ends at `$B4B1`, `$B7D4`, `$B4E9`,
+The stage 1 rows hold for every stage. Each stage's code starts at `$7800` and ends at `$B4B1`, `$B7D4`, `$B555`,
 `$B77E` and `$A366` for stages 1-5 ([2.4](#24-the-module-map)). Each block writes its own bytes only in
 `$6C3F-$77FF` and at single self-modified bytes ([WALKTHROUGH 6.2](../WALKTHROUGH.md#62-levels-objects-and-state)).
 
@@ -276,7 +276,8 @@ The game misses about 40 % of the interrupts in stages 1-4. ClearBuffer and Copy
   uncontended, 29 000-31 000 T measured (29 464 T in c1, 30 761 T a pass in rzx-r1, with contention).
 - CopyBuffer moves SP along the span table: POP BC, POP HL, POP DE for each span.
 - An interrupt while SP walks the buffer would push its return address into the picture. So both start with DI.
-- The Z80 takes an interrupt only while the INT line is low, about 32 T at the frame's start. An INT that falls inside
+- The Z80 takes an interrupt only while the INT line is low at the frame's start: 32 T on the 48K, 36 T on the 128K
+  (the RZX recordings are 128K). An INT that falls inside
   a DI stretch is lost.
 
 **A worked example.** A pass of stage 1 in the RZX run:
@@ -365,11 +366,16 @@ byte over the RZX run (the L1's byte counts of page 0):
 | `$FFDB-$FFDC` | 129 | 54 | 0 | |
 | `$FFD5-$FFD6` | 22 | 12 | 0 | the low mark |
 
-The low mark is `$FFD5` in every stage but stage 5 (`$FFE9`). That is 43 bytes under `$FFFF`: 21 words. LoadBlock
-writes `$FF00` and `$FF4D` during a load: those are the turbo loader's own variables, not the stack.
+The low mark is `$FFD5` in every stage but stage 5 (`$FFE9`). That is 42 bytes under `$FFFF` (`$FFD5-$FFFE`,
+ResidentInit's `LD SP,$FFFF` at `$F003`): 21 words. LoadBlock writes `$FF00` and `$FF4D` during a load: those are the
+turbo loader's own variables, not the stack.
 
-**The point**: the stack needs 43 bytes and has 124. No code puts the stack anywhere else, except ClearBuffer and
-CopyBuffer, which borrow SP with the interrupts off.
+**The point**: the stack needs 42 bytes and has 124. No code puts the stack anywhere else, except ClearBuffer and
+CopyBuffer in stages 1-4 and stage 5's sprite and face drawers: DrawHero `$8576` and DrawHeroFrame `$9D85` (their
+`LD SP,HL` at `$85C0` and `$9DAD`) and Dameron's DrawFaceWide `$88AB`, DrawFaceNarrow, DrawFaceClear, DrawDomeStart and
+DrawDameronBack in `duel.asm`, each saving SP first and loading it back after
+([4.10](04-game-loop.md#410-the-lost-interrupts)). ClearBuffer, CopyBuffer, DrawHero and DrawHeroFrame do it with the
+interrupts off.
 
 ## 2.8 The code that ran, and the leftovers
 
@@ -385,10 +391,13 @@ How to read it: a red stretch is code known only from the code. Every such entry
 | front | 2485 | 2046 (82.3 %) | c1, menu, joystick, rzx-r0 |
 | stage1 | 13 807 | 12 991 (94.1 %) | c1o, deaths, s1-idle, s1-right, rzx-r1 |
 | stage2 | 14 193 | 13 365 (94.2 %) | s2-right, rzx-r2 |
-| stage3 | 14 054 | 12 592 (89.6 %) | s3-right, rzx-r3 |
+| stage3 | 14 162 | 12 700 (89.7 %) | s3-right, rzx-r3 |
 | stage4 | 13 792 | 12 205 (88.5 %) | s4-right, rzx-r4 |
 | stage5 | 8145 | 6727 (82.6 %) | s5-right, rzx-r5, ending |
 | resident | 1767 | 1758 (99.5 %) | c1, rzx-r1 ... rzx-r5 |
+
+The resident row starts at `$F03F`: ResidentInit (`$F000-$F03E`) runs before the traced play and is left out, hence
+1767 code bytes against the 1792 of [2.4](#24-the-module-map).
 
 The leftovers, in groups (the parts' notes, `work/stage2/NOTES.md`):
 

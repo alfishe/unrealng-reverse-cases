@@ -4,12 +4,13 @@
 ; Stage 2's enemies and bosses: the harpy (SpawnHarpy $8DA4 brings it when HarpyPhase allows, HarpyActor $8DE8 with
 ; its wings HarpyWingsActor $8DD2; it rises, attacks with AimedShot, bobs, then flies off), the spirits that float
 ; over the temple floor (SpawnRandomEnemy $8F8C, SpiritActor $9028, at most 2), Medusa's statue (MedusaActor $814E)
-; and her head (MedusaHeadActor $8179: struck, it falls and lies as item kind 2, and held for 20 passes it turns into
-; item kind 6), the statues that break into items (BreakStatue0 $9A41, BreakStatue1 $9A14), the urns, the pool's
-; ripple (WaterActor $8782) and the hydra of grid 1 (three heads on necks moved by $9EAE: HydraHead1Actor $7FB5 to
-; HydraHead1LowActor $805B, 9 hits a head (HydraHeadHit $8092), each head cut bursts (CutHydraHead1 $80C1); with all
-; three gone HydraDefeated $9BB4 ends the fight). In rzx-r2 the harpy is fought at frames 3199-4467, Medusa at
-; 7462-8677 (grid 2) and the hydra at 10427-14318 (grid 1, rooms 3 and 7).
+; and her head (MedusaHeadActor $8179: struck by the high strike at column $17, it falls and lies on the floor as an
+; actor; with item kind 2, which the smashed warrior statue drops (BreakStatue1 $9A14), selected for 20 passes, it
+; turns into item kind 6: MedusaHeadLies $8215), the statues that break into items (BreakStatue0 $9A41, BreakStatue1
+; $9A14), the urns, the pool's ripple (WaterActor $8782) and the hydra of grid 1 (three heads on necks moved by $9EAE:
+; HydraHead1Actor $7FB5 to HydraHead1LowActor $805B, 9 hits a head (HydraHeadHit $8092), each head cut bursts
+; (CutHydraHead1 $80C1); with all three gone HydraDefeated $9BB4 ends the fight). In rzx-r2 the harpy is fought at
+; frames 3199-4467, Medusa at 7462-8677 (grid 2) and the hydra at 10427-14318 (grid 1, rooms 3 and 7).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $7FB5
@@ -2115,10 +2116,10 @@ HarpyLampSet:
 ; HarpyPhase = $0A, the frames come from HarpyRiseFrames + $17 (from $0C) of
 ; HarpyLampSet; it vanishes (RET, no frame)
 ;
-; once its line is under 8. Not executed in any recording (the recordings
-; checked: s2-right, rzx-r2); known only from
+; once its line is under 8. The recordings checked (s2-right, rzx-r2) never run
+; $A817-$A845: phase 2 is known only
 ;
-; the code.
+; from the code.
 ;
 ; In s2-right 50 passes and the rise (screen 000500.scr: the green figure under
 ; the lamp), in rzx-r2 59.

@@ -414,7 +414,7 @@ $7FA4 c ShiftLine7 ; Seven pixels: ShiftLine4 and ShiftLine1 three times
 > As in stage 1 at $7FDD.
 > Witness: L1 2449 (rzx-r2).
 @module enemies ; The enemies, the hazards and the bosses
-@about Stage 2's enemies and bosses: the harpy (SpawnHarpy $8DA4 brings it when HarpyPhase allows, HarpyActor $8DE8 with its wings HarpyWingsActor $8DD2; it rises, attacks with AimedShot, bobs, then flies off), the spirits that float over the temple floor (SpawnRandomEnemy $8F8C, SpiritActor $9028, at most 2), Medusa's statue (MedusaActor $814E) and her head (MedusaHeadActor $8179: struck, it falls and lies as item kind 2, and held for 20 passes it turns into item kind 6), the statues that break into items (BreakStatue0 $9A41, BreakStatue1 $9A14), the urns, the pool's ripple (WaterActor $8782) and the hydra of grid 1 (three heads on necks moved by $9EAE: HydraHead1Actor $7FB5 to HydraHead1LowActor $805B, 9 hits a head (HydraHeadHit $8092), each head cut bursts (CutHydraHead1 $80C1); with all three gone HydraDefeated $9BB4 ends the fight). In rzx-r2 the harpy is fought at frames 3199-4467, Medusa at 7462-8677 (grid 2) and the hydra at 10427-14318 (grid 1, rooms 3 and 7).
+@about Stage 2's enemies and bosses: the harpy (SpawnHarpy $8DA4 brings it when HarpyPhase allows, HarpyActor $8DE8 with its wings HarpyWingsActor $8DD2; it rises, attacks with AimedShot, bobs, then flies off), the spirits that float over the temple floor (SpawnRandomEnemy $8F8C, SpiritActor $9028, at most 2), Medusa's statue (MedusaActor $814E) and her head (MedusaHeadActor $8179: struck by the high strike at column $17, it falls and lies on the floor as an actor; with item kind 2, which the smashed warrior statue drops (BreakStatue1 $9A14), selected for 20 passes, it turns into item kind 6: MedusaHeadLies $8215), the statues that break into items (BreakStatue0 $9A41, BreakStatue1 $9A14), the urns, the pool's ripple (WaterActor $8782) and the hydra of grid 1 (three heads on necks moved by $9EAE: HydraHead1Actor $7FB5 to HydraHead1LowActor $805B, 9 hits a head (HydraHeadHit $8092), each head cut bursts (CutHydraHead1 $80C1); with all three gone HydraDefeated $9BB4 ends the fight). In rzx-r2 the harpy is fought at frames 3199-4467, Medusa at 7462-8677 (grid 2) and the hydra at 10427-14318 (grid 1, rooms 3 and 7).
 $7FB5 c HydraHead1Actor ; The hydra's head 1 (actor kind 7): hits, the cut, the fire, placed at the end of neck 1
 > IY = the actor. Hydra1Neck = $80 (cut): RemoveActor. Else HydraHeadHit counts the hits; when the state +$0A becomes $2A (the 9th hit) CutHydraHead1 bursts it, Hydra1Neck gets bit 7 and the actor is removed. Else $B31C (a fire shot and effect 6 when Hydra1Step is 4, 8 or 12) and PlaceHydraHead with E = Hydra1X + $18, D = Hydra1Pose and A = Hydra1Y. The neck's step, pose and end are moved by $9EAE. In rzx-r2 it runs at frames 12590-14318 (grid 1 room 7) and is cut at frame 14317.
 > Witness: L1 339 (rzx-r2).
@@ -1570,8 +1570,8 @@ $A7F6 c HarpyRiseActor ; Kind 3: the harpy under the lamp; it rises (HarpyPhase 
 > this record is removed.
 > Phases 2 and $0A ($A817): +8 counts from $13 to $16 again and again, the base line goes 8 up each round ($8F84),
 > HarpyPhase = $0A, the frames come from HarpyRiseFrames + $17 (from $0C) of HarpyLampSet; it vanishes (RET, no frame)
-> once its line is under 8. Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from
-> the code.
+> once its line is under 8. The recordings checked (s2-right, rzx-r2) never run $A817-$A845: phase 2 is known only
+> from the code.
 > In s2-right 50 passes and the rise (screen 000500.scr: the green figure under the lamp), in rzx-r2 59.
 > Witness: L1 109 (rzx-r2, s2-right).
 $A810 HarpyRisePhase

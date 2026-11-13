@@ -715,12 +715,12 @@ PutBlockFlag:
 ; Stage 4 has nine grids, where stage 1 has three. They are named by the
 ; GridNumber ($FE47) the grid passages give them (EnterGrid1 $8B8C to
 ; EnterGrid10 $969C), not by their order: the records lie in the order 0, 9, 2,
-; 1, 3, 4, 5, 8, 10 (GridNumber 6 and 7 do not exist); tools/fig_rooms.py
-; numbers them 0-8 in that order. Stage 4 keeps their nine records together,
-; then the nine room tables (Grid0Rooms $9B33), then the nine placement lists
-; (Grid0Placements $9B50): stage 1 puts each room table after its record. The
-; resource is rooms-split.txt (tools/res_stage4.py), in rooms.txt's language;
-; tools/fig_rooms.py draws the map and every room from it
+; 1, 3, 4, 5, 8, 10 (GridNumber 6 and 7 do not exist); tools/fig_rooms.py names
+; them by GridNumber, the record in brackets. Stage 4 keeps their nine records
+; together, then the nine room tables (Grid0Rooms $9B33), then the nine
+; placement lists (Grid0Placements $9B50): stage 1 puts each room table after
+; its record. The resource is rooms-split.txt (tools/res_stage4.py), in
+; rooms.txt's language; tools/fig_rooms.py draws the map and every room from it
 ; (docs/img/maps/stage4.png, stage4-rooms.png).
 ;
 ; Read in s4-right (RoomCells $9898, StartGrid $A5CC, LeaveRoomDown $A06A, the

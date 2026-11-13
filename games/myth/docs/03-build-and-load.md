@@ -678,8 +678,8 @@ docs/img/routines/Unxor.gif`.*
 Boot's JP (HL) enters ResidentEntry `$F040` at frame 5166. It sets IM 2 and loads the front
 ([doc 2](02-architecture.md#23-the-memory-map)).
 
-Block 29 holds 99 bytes after Unxor that no code runs, `$FE89-$FEE8`: copies of Sl1End, Boot and Sl1Start's first 34
-bytes. The mastering tool left them in the block.
+Block 29 holds 96 bytes after Unxor that no code runs, `$FE89-$FEE8`: copies of Sl1End (15 bytes), Boot (47) and
+Sl1Start's first 34 bytes. The mastering tool left them in the block.
 
 ## 3.9 The turbo loader and the stage blocks
 

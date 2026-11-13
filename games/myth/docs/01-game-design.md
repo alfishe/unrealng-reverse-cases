@@ -301,7 +301,7 @@ on the pad. In stage 1 it is kind 6, put in room 15 and used in room 2 (CheckSta
 | Stage | Master icon | Where it appears | The pad |
 | --- | --- | --- | --- |
 | 1 | kind 6 | grid 0 room 15, after the fifth icon | grid 0 room 2 |
-| 2 | kind 5 (the artefact) | grid 2, Medusa's room | grid 0 room 0, columns 12-15 |
+| 2 | kind 5 (the artefact) | grid 2, spawned by RoomEvents `$8381` once the pieces are complete | grid 0 room 0, columns 12-15 |
 | 3 | kind 6 | the throne giant's reward | grid 1 room 2, columns 10-13 |
 | 4 | the exit item | grid 9, the hall beyond the boss | grid 8 room 1 |
 | 5 | none | | the duel won: no exit |
@@ -319,7 +319,7 @@ The amounts, from every DamageHero call in the four listings, including the shot
 
 | Stage | Damage (DamageHero's C) and the danger |
 | --- | --- |
-| 1 | 4: the danger zones, a hanging body, the warrior; 6: the bouncer (BouncerStep `$85FB`), an aimed shot (`$80DF`); 10: the drifting shots (DriftRightHurt `$83CF`, DriftLeftHurt `$8424`); 16: a flame jet |
+| 1 | 4: the danger zones, a hanging body, the warrior; 6: the bouncer (BouncerStep `$85FB`), an aimed shot (`$80DF`, never run in a recording); 10: the drifting shots (DriftRightHurt `$83CF`, DriftLeftHurt `$8424`); 16: a flame jet |
 | 2 | 2: Medusa's head; 4: the harpies, the drops, the drift-left shot (`$B6C8`); 6: an aimed shot (`$826F`); 20: Medusa's floor shot |
 | 3 | 2: the swamp, the giant's fireball, the dragon's fire, a bog man; 3: the pyre; 6: a Viking; 40: a troll's swing |
 | 4 | 2: a pendulum, the drain of a touch, the head's shot (HeadShot `$B5C5`); 4: a deadly floor, a falling column, a touch; 6: an aimed shot (`$803A`, never run in a recording) |
@@ -418,12 +418,12 @@ high-score table.
 | --- | ---: | ---: | --- | --- | --- |
 | 1 | 3 | 22 | hanging bodies, flame jets, fire pits, skeletons, the warrior | the winged demon (room 12), the dragon (grid 2) | master icon in room 2 |
 | 2 | 3 | 15 | harpies, spirits, the pool, drops, statues | the hydra (three heads), Medusa | the artefact in grid 0 room 0 |
-| 3 | 3 | 16 | Vikings, trolls, bog men, lightning | the pyre, the dragon (16 hits), the throne giant (30 hits) | kind 6 in grid 1 room 2 |
-| 4 | 9 | 29 | scorpions, traps (pendulums, columns, slabs, spikes), the mummy | the barrier, the pharaoh's head (20 hits) | the exit item in grid 8 room 1 |
+| 3 | 3 | 16 | Vikings, trolls, bog men, lightning | the pyre, the dragon (15 objects), the throne giant (30 hits) | kind 6 in grid 1 room 2 |
+| 4 | 9 | 29 | scorpions, traps (pendulums, columns, slabs, spikes), the mummy | the barrier, the pharaoh's head (10 bolts, 20 counts) | the exit item in grid 8 room 1 |
 | 5 | 0 | 0 | Dameron's missiles | Dameron's four forms (80 hits) | none |
 
-The rooms come from each stage's room tables (`src/res/stageN/rooms.txt`, [doc 7](07-objects.md)). Stage 5 has no
-rooms: one screen, the duel.
+The rooms come from each stage's room tables (`src/res/stageN/rooms.txt`, stage 4's `rooms-split.txt`,
+[doc 7](07-objects.md)). Stage 5 has no rooms: one screen, the duel.
 
 ![The enemies, hazards and bosses of the five stages](img/design/enemies.png)
 
@@ -435,7 +435,12 @@ takes (the table of [1.6](#16-the-rules)); the last line is what beats it and it
 
 - The skeleton warrior, the spirits, the Vikings, the trolls, the bog men, the scorpions and the mummy are spawned by
   timers. The others are placements, the kind numbers of the maps ([1.8](#18-the-maps)).
-- The flame jets, the drops and the pendulums are hazards: nothing beats them, the hero passes between their moves.
+- The flame jets, the drops, the pyre's flames, the pendulums, the falling columns and the spikes are hazards: nothing
+  beats them, the hero passes between their moves. Stage 3's lightning hurts nobody: no DamageHero call is its.
+- The bosses of the cards: the winged demon, the dragon of stage 1, the hydra, Medusa, the dragon and the throne giant
+  of stage 3, the pharaoh's head and Dameron.
+- Not on a card: the cells that hurt (stage 1's danger zones and fire pits, stage 4's deadly floor) are tiles of the
+  room, and the shots are missiles; both are in the damage table of [1.6](#16-the-rules).
 - The bosses take a fixed count of hits. Their mechanisms are in [doc 10](10-gameplay-logic.md): the demon and the
   dragon of stage 1 in 10.7 and 10.8, the rest in 10.10.
 
@@ -491,7 +496,7 @@ How to read them: each screen names its recording and frame. The same frames are
   hall beyond.
 - The tombs are rooms of traps.
 - The altar's disc opens the mummy's corridor.
-- The pharaoh's head fires shots in five directions and takes 20 bolts.
+- The pharaoh's head fires shots in five directions and takes 10 bolts: each bolt counts twice, 20 counts of BossHits ([10.10](10-gameplay-logic.md)).
 
 ### Stage 5: Duel with Dameron
 
@@ -523,9 +528,12 @@ copy of the screen line table ([doc 2](02-architecture.md)).
 
 ![The maps of stages 3 and 4](img/design/maps-2.png)
 
-*The four map figures of `tools/fig_rooms.py`, one panel a stage, at most at full size. Stage 3's grid 1, 124 blocks
-wide, is cut at a room edge and continued under it. Under each stage, every placement kind is named by its handler.
-Made with `python3 tools/fig_design.py maps docs/img/design/maps.png` (which also writes `maps-2.png`).*
+*The four maps of `tools/fig_rooms.py`, drawn again by `tools/fig_design.py` with larger kind numbers, one panel a
+stage, at most at full size. Stage 3's grid 1, 124 blocks wide, is cut at a room edge and continued under it. Under each
+stage, every placement kind is named by its handler. Stage 4's grids are named by their GridNumber (`$FE47`), the number
+the code and this document use; their records lie in the order 0, 9, 2, 1, 3, 4, 5, 8, 10 (GridNumber 6 and 7 do not
+exist), given in brackets. Made with `python3 tools/fig_design.py maps docs/img/design/maps.png` (which also writes
+`maps-2.png`).*
 
 How to read it: each map is drawn from the stage's resources, never from the image.
 
@@ -550,16 +558,17 @@ Stage 1's tiles are on [their own sheet](img/sprites/stage1-tiles.png). How a ro
 The RZX archive's run (`myth.rzx`, 128K, SPIN 0.5) plays the whole game. It loses no life in stage 1 and wins the
 duel. Its six blocks, replayed with L1 (`work/stage2/notes-rec.md`):
 
-| Block | Stage | RZX frames | Frames | Bosses, by the recording's own frame |
+| Block | Stage | RZX frames | Recording frames | Bosses, by the recording's own frame |
 | --- | --- | --- | ---: | --- |
 | rzx-r0 | the menu | 0-2063 | 2063 | DEFINE KEYS 9 8 6 7 0, START GAME |
 | rzx-r1 | 1 | 2064-32 895 | 30 834 | the demon's cave 14 504-16 504, the dragon 19 528 |
 | rzx-r2 | 2 | 32 896-52 067 | 19 175 | the hydra 13 504 |
 | rzx-r3 | 3 | 52 068-69 521 | 17 455 | the dragon 11 012-12 128, the drawbridge 13 529, the throne giant 14 505 |
 | rzx-r4 | 4 | 69 522-93 925 | 24 405 | the mummy 16 510-18 006, the pharaoh's head 19 570-20 528 |
-| rzx-r5 | 5 | 93 926-100 150 | 6225 | the duel 1551-4005, WELL DONE 5663 |
+| rzx-r5 | 5 | 93 926-100 150 | 6225 | the duel 1646-4416, WELL DONE 5663 |
 
-The whole run is 100 151 frames, 33 minutes at 50 Hz. Stage 1 alone takes 10 minutes.
+The whole run is 100 151 frames (the RZX ranges), 33 minutes at 50 Hz. The "Recording frames" column is each block's own
+count as replayed; it differs from its range by up to 3 frames and sums to 100 157. Stage 1 alone takes 10 minutes.
 
 ### Stage 1, room by room
 
@@ -599,7 +608,7 @@ flowchart LR
     subgraph S2["stage 2"]
         A2["temple: statues, harpies"] --> B2["the caves: pool, drops"]
         B2 --> C2["the hydra: 27 hits"]
-        C2 --> D2["Medusa's room: the artefact"]
+        C2 --> D2["grid 2: the artefact, pieces complete"]
         D2 --> E2["grid 0 room 0: exit at 18721"]
     end
     subgraph S3["stage 3"]
@@ -612,7 +621,7 @@ flowchart LR
     subgraph S4["stage 4"]
         A4["beach: the barrier"] --> B4["the hub, four tombs"]
         B4 --> C4["the altar: the mummy's corridor"]
-        C4 --> D4["the pharaoh's head: 20 bolts"]
+        C4 --> D4["the pharaoh's head: 10 bolts"]
         D4 --> E4["grid 9: the exit item"]
         E4 --> F4["grid 8 room 1: exit"]
     end

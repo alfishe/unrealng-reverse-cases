@@ -78,7 +78,7 @@ HeroUpdateDispatch:
 flowchart TD
     A["HeroActor $AA3E, first in the pass"] --> U["HeroUpdate $AC3D"]
     U --> D["DrainItemCharge: the shield's count, 1 every 8th pass"]
-    D --> H{"column 0 or 32 and up, or a cell with bit 3 under him?"}
+    D --> H{"column 0 or 32 and up, or a bit-3 cell on his head line one column ahead?"}
     H -->|"yes, not dying"| L["LoseLife $7ECE"]
     H -->|"no"| W["the selected item: 7 FireBolt, 5 ThrowAmmo, 8 ThrowItem"]
     L --> W
@@ -148,7 +148,8 @@ Every move is a sequence of frames from a sprite set. A frame record carries its
 
 - **The walk** moves the base column 2 at walk frames 0 and 6. At frames 5 and 11 the feet are together: there the
   hero stops if a wall is ahead (FrontCell `$AFED`) or no key is held.
-- **The jump** (UP) runs the jump set's 19 frames. The base column moves 1 at frame 9 and 5 more when he stands. On
+- **The jump** (UP) runs the jump set's 19 frames. The base column moves 2 at the start (StartJump
+  `$AE3D`), 1 at frame 9 and 5 more when he stands: 8 in all. On
   the way down CheckHeroFooting `$AA67` looks for ground one column ahead at frame 12; finding it, he lands on the
   ledge 16 lines up.
 - **The leap** (DOWN) crouches and springs straight up. At frame 8 a ledge under his raised feet lets him climb onto
@@ -689,16 +690,20 @@ handlers, their runs (the witness lines of `build/stage2.lst` ... `stage5.lst`) 
 
 | Stage | Enemies | Bosses and their rule |
 | --- | --- | --- |
-| 2 | the harpy (rises, aimed shots, flies off), the spirits over the temple floor (at most 2), the pool, the drops | the hydra: three heads, 9 hits each (HydraHeadHit); Medusa: her head struck falls as item 2, and held for 20 passes it turns into item 6 |
-| 3 | Vikings, the lightning, the rain and the sea (CheckWaterDeath), trolls in two records, bog men | the funeral pyre (the rain puts the flames out); the dragon of room 8: 16 thrown objects; the giant on the throne: 30 bolts |
-| 4 | scorpions, the traps, the mummy ([doc 1, 1.7](01-game-design.md#17-the-five-stages)) | the barrier of grid 0 room 1 (closed until BarrierState is 2, the hero thrown back by HeroRecoil); the pharaoh's head: 20 hits |
+| 2 | the harpy (rises, aimed shots, flies off), the spirits over the temple floor (at most 2), the pool, the drops | the hydra: three heads, 9 hits each (HydraHeadHit); Medusa: a high strike at column `$17` drops her head; it lies on the floor (2 energy on touch), and with item 2 selected for 20 passes beside it, it turns into item 6 (MedusaHeadLies `$8215`) |
+| 3 | Vikings, the lightning, the rain and the sea (CheckWaterDeath), trolls in two records, bog men | the funeral pyre: item 9 selected in room 5 starts the rain (UpdateRain `$A41E`); at rain step `$50` the flames die (PyreState 1), at `$64` the body rises (PyreState 2); the troll: 4 hits (`$9FD5`), 200 points; the dragon of room 8: 15 thrown objects (DragonHits `$0F`, DrawDragon `$887A`); the giant on the throne: 30 bolts |
+| 4 | scorpions, the traps, the mummy ([doc 1, 1.7](01-game-design.md#17-the-five-stages)) | the barrier of grid 0 room 1 (closed until BarrierState is 2, the hero thrown back by HeroRecoil); the pharaoh's head: 10 bolts (each counts twice in BossHits, 20 counts; HeroBoltBoss, BossMouth `$8AD8`, DrawBossPicture `$8F53`) |
 | 5 | Dameron's missiles | Dameron's four forms ([below](#the-ending)) |
 
 The RZX run beats each boss, and its replays carry an L1 ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
 `rzx-r2` cuts the hydra's heads (HydraHeadHit 845 runs) and bursts its body at frame 14335 (HydraDefeated);
 `rzx-r3` beats the dragon (DragonBeaten, one run; its hits counted from frame 10960) and the giant on the throne
-(30 hits, frames 14348-14596, ThroneBossBeaten); `rzx-r4` beats the pharaoh's head (20 hits from frame 20598,
-BossBeaten one run).
+(30 hits, frames 14348-14596, ThroneBossBeaten); `rzx-r4` beats the pharaoh's head (10 bolts, 20 counts, from frame 20598 to
+BossBeaten at 21921).
+
+Each stage's puzzle chain (its icons, its master item and the pad it is used on) is the table of
+[doc 1, 1.5](01-game-design.md#15-the-items-the-teleport-icons-and-the-master-icon); the sections below give the
+enemies and the bosses that stand in the way.
 
 ### Stage 2: the temple
 
@@ -707,10 +712,11 @@ BossBeaten one run).
 | SpawnRandomEnemy `$8F8C` | a spirit at a random open place of the room, at most 2 (SpiritCount) | L1 271 (rzx-r2, s2-right, stageload) |
 | SpiritActor `$9028` | grows out of the floor, floats, spits six shots every 16 passes (effect 6), fades or bursts | L1 1066 (rzx-r2, s2-right, stageload) |
 | HarpyRiseActor `$A7F6`, HarpyActor `$8DE8` | the harpy rises out of its statue, swoops with AimedShot at steps 4 and 8, bobs 255 passes, flies off; touch costs 4 | L1 109, 718 (rzx-r2, s2-right) |
-| WarriorStatueActor `$A718` | a statue that takes strikes (effect 2) | L1 1527 (rzx-r2, s2-right, stageload) |
-| PoolActor `$ABF2`, DropActor `$A929` | the pool (effect 9) and the drops that splash (effect 10) | L1 3268 (rzx-r2), 3341 (rzx-r2, s2-right) |
+| WarriorStatueActor `$A718` | the warrior statue: six high strikes (effect 2 each) smash it (BreakStatue1 `$9A14`) and drop item 2 at column `$14`, line `$60`: the item that turns Medusa's head into item 6 | L1 1527 (rzx-r2, s2-right, stageload); `$9A14` 1 (rzx-r2) |
+| PoolActor `$ABF2`, DropActor `$A929` | the pool (effect 9) and the drops that splash (effect 10); a drop costs 4 energy on touch (DropActorTouch `$A999`) | L1 3268 (rzx-r2), 3341 (rzx-r2, s2-right) |
 | HydraHead1Actor `$7FB5`, 2 `$7FEB`, 3 `$8023`, HydraHeadHit `$8092` | the hydra's three heads on their necks; 9 hits cut a head | L1 339, 131, 210, 845 (rzx-r2) |
-| MedusaActor `$814E`, MedusaHeadActor `$8179` | the statue struck from the left at column `$17` loses its head; the head spits (effect 11), falls, lies, and item 2 turns it into item 6 | L1 341, 427 (rzx-r2) |
+| HydraHead1LowActor `$805B` | the first head as seen from room 3, where the hydra stands lower in the window; never cut there | L1 166 (rzx-r2) |
+| MedusaActor `$814E`, MedusaHeadActor `$8179` | the statue struck by the high strike (state 6, frame 7) with the hero at column `$17` facing right loses its head; the head spits (effect 11), falls and lies on the floor as an actor (2 energy on touch, MedusaHeadDraw `$823E`); with item 2 selected, +`$0B` (20) counts down a pass, and at the 21st pass (MedusaHeadLies `$8215`) MedusaState is 4 and item 6 appears at D `$11`, E `$50` (`$8221` not taken 20, taken 1, frames 8624-8677) | L1 341, 427 (rzx-r2) |
 
 A head counts its hits in +`$0B` (9 from ActorKinds). ThrownHitsActor sets +9 bit 5 on a hit; HydraHeadHit takes it:
 
@@ -756,11 +762,11 @@ body in room 7 and gives the room's bonus.
 | Handler | What it does | Witness |
 | --- | --- | --- |
 | SpawnViking `$8C16`, VikingActor `$8C64` | Vikings on the longship: walk, stand, block with the shield, strike with the axe, stagger and sink when shot | L1 44 (rzx-r3, s3-right), 696 (rzx-r3, s3-right) |
-| SpawnTroll `$8F91`, TrollLegsActor `$9003`, TrollBodyActor `$90C6` | a troll in two records: the legs walk, the body swings its club when the hero is near | L1 13, 644, 641 (rzx-r3) |
+| SpawnTroll `$8F91`, TrollLegsActor `$9003`, TrollBodyActor `$90C6` | a troll in two records: the legs walk, the body swings its club when the hero is near; 4 hits (+`$0B`) end it at ScoreBurst200 `$9FD5`: 200 points and item 5 | L1 13, 644, 641 (rzx-r3) |
 | SpawnBogMan `$9170`, BogManActor `$91AD` | a bog man rises from the swamp, wades (2 damage on touch), sinks | L1 30, 553 (rzx-r3) |
-| LightningActor `$94AC`, UpdateRain `$A41E` | the lightning and the rain; the rain puts the pyre out | L1 2393, 6278 (rzx-r3, s3-right) |
+| LightningActor `$94AC`, UpdateRain `$A41E` | the lightning and the rain: item 9 selected in room 5 starts it (the fall-through to `$A501` ran once); rain step `$50` sets PyreState 1 (the flames die), step `$64` PyreState 2 (the body rises) | L1 2393, 6278 (rzx-r3, s3-right) |
 | CheckWaterDeath `$8824` | the sea under the longship and the swamp of grid 1 room 10 kill; the swamp's lower lines drain 2 | L1 6280 (rzx-r3, s3-right) |
-| DrawDragon `$887A`, DragonHeadActor `$92BF` | the dragon of grid 1 room 8: thrown objects count in DragonHits | L1 6278 (rzx-r3, s3-right), 477 (rzx-r3) |
+| DrawDragon `$887A`, DragonHeadActor `$92BF` | the dragon of grid 1 room 8: thrown objects count in DragonHits; the 15th hit beats it (`$88A1` taken 15, frames 10961-12487) | L1 6278 (rzx-r3, s3-right), 477 (rzx-r3) |
 | ThroneBossStep `$9514`, UpdateBolt `$821F` | the giant on the throne: drawn, shooting kind-4 missiles every 8th pass, 30 bolts beat it | L1 6278 (rzx-r3, s3-right), 99 (rzx-r3) |
 
 The Viking is the stage's state machine (+`$0A`):
@@ -825,8 +831,12 @@ runs once, at frame 14599: score 2000, the burst at column `$14`, row 5, and the
 | BarrierBlockActor `$96CB`, BarrierPillarActor `$96DD` | the barrier of grid 0 room 1, closed until BarrierState is 2; it throws the hero back (HeroRecoil) | L1 970, 997 (rzx-r4, s4-right) |
 | DrawBossPicture `$8F2B`, BossMouth `$8AD4`, HeroBoltBoss `$8123` | the pharaoh's head of grid 8 room 2: the picture, the mouth, the bolts that hit it | L1 8619 (rzx-r4, s4-right), 460 (rzx-r4), 388 block runs of `$8123` (rzx-r4) |
 
-A bolt at column `$18` or more in grid 8 room 2 while BossPhase is 1 sets BossFlash to 2 (HeroBoltBoss). The picture's
-routine counts the hits while the flash runs:
+The head sleeps (BossPhase 0) until item 9 is used up in grid 8 room 1: while kind 9 is selected there, DrainKind9
+`$951D` takes one from its count every 16th pass, and on the empty count it sets BossPhase 1 (`$9547`, one run in
+`rzx-r4`). A bolt at column `$18` or more in grid 8 room 2 while BossPhase is 1 sets BossFlash to 2 (HeroBoltBoss
+`$8146`); it sets it again at column `$19`, where the bolt is freed (`$8150`). BossMouth `$8AD8` and DrawBossPicture
+each take one off BossFlash, and the picture's routine takes one off BossHits (`$14` at the stage start) on each pass
+it finds the flash set, so every bolt counts twice:
 
 ```asm
 DrawBossPicture:
@@ -853,11 +863,11 @@ BossPictureColours:
 ```mermaid
 stateDiagram-v2
     [*] --> Asleep: BossPhase 0, the mouth shut
-    Asleep --> Awake: BossPhase 1
-    Awake --> Flash: a bolt at column $18 or more, BossFlash = 2
-    Flash --> Awake: BossHits - 1 each flash pass
-    Flash --> Beaten: BossHits 0, BossBeaten
-    Beaten --> [*]: BossPhase 2, the picture and the mouth gone
+    Asleep --> Awake: item 9 used up in grid 8 room 1 (DrainKind9 $951D, every 16th pass, BossPhase 1 at $9547)
+    Awake --> Flash: a bolt at column $18, and again at $19 where it is freed, BossFlash = 2
+    Flash --> Awake: BossMouth $8AD8 BossFlash - 1, DrawBossPicture BossFlash - 1 and BossHits - 1
+    Flash --> Beaten: BossHits 0 (the 10th bolt, the 20th count), BossBeaten
+    Beaten --> [*]: BossPhase 2, the picture and the mouth gone, four ledges (BridgeLedgeTemplate, line $70, columns $14, $17, $1A, $1D) bridge to the exit, then RoomEvents
 ```
 
 ![The pharaoh's head beaten in rzx-r4](img/play/pharaoh.gif)
@@ -867,8 +877,10 @@ burst at frame 21921 (score 56 078 to 57 478, the 1400 points) and the bonus. Ma
 --step 2 --scale 2 --delay 80 docs/img/play/pharaoh.gif`. Stage 4's screen: [the pyramid](img/play/stage4-pyramid.png).*
 
 **A worked example: the head's 458 passes.** In `rzx-r4` the picture is drawn in 458 passes, 20 of them with the hit
-colours: the 20 decrements of BossHits, the last calling BossBeaten at frame 21921 (L1 1). BossMouth runs 460 times,
-from frame 19599 to 23408.
+colours: the 20 decrements of BossHits. HeroBoltBoss's `LD A,$02` (`$8146`) runs 20 times and the bolt is freed at
+column `$19` 10 times (`$8150` taken 10, frames 20597-21921): 10 bolts, two counts each. The 20th count calls
+BossBeaten at frame 21921 (L1 1), which spawns the four ledges of the bridge to the exit (BridgeLedgeForming `$8A22`,
+L1 1268) and calls RoomEvents. BossMouth runs 460 times, from frame 19599 to 23408.
 
 ### The ending
 
@@ -948,10 +960,11 @@ the GIF). At frame 2456 the 20th hit of form 0 calls NextDameronForm (effect 0).
 docs/img/play/duel.gif`. The screens: [the intro text](img/play/stage5-void.png), [Dameron](img/play/stage5-dameron.png).*
 
 **A worked example: 80 hits.** In `rzx-r5` DuelHit's counting branch (`$79B7`) runs 80 times: 40 shots, two hits
-each. NextDameronForm runs four times, at frames 2456 (form 1), then up to 4416 (the final burst). DuelHit and DuelStep
+each. NextDameronForm runs four times: at frames 2456 (form 1), 3228 (form 2), 4076 (form 3) and 4416 (the final
+burst). DuelHit and DuelStep
 run every pass (L1 11 696 in `ending`, `rzx-r5` and `s5-right`); `s5-right` never hits Dameron.
 
-In `rzx-r5` the duel runs from frame 1551 to 4005 and WELL DONE appears at 5663 ([doc 1](01-game-design.md)).
+In `rzx-r5` the hits run from frame 1646 to 4416 (the counting branch `$79C4`) and WELL DONE appears at 5663 ([doc 1](01-game-design.md)).
 
 **The point**: the game ends by not ending. Winning leaves the player in front of the text, in a loop that only a
 quit or a reset ends.

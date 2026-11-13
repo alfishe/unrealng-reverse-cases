@@ -1198,8 +1198,9 @@ InertActor:
 ; Witness: L1 8619 (rzx-r4, s4-right).
 ;
 ; In s4-right only the first test ran (grid 0). In rzx-r4 the picture was drawn
-; 458 passes, 20 of them with the hit colours (the 20 hits of BossHits, the
-; last calling $A24C).
+; 458 passes, 20 of them with the hit colours (BossHits' 20 counts: 10 bolts,
+; each counted twice, at column $18 and at $19 where it is freed: HeroBoltBoss
+; $8146 20 runs, $8150 taken 10; the last count calls $A24C at frame 21921).
 DrawBossPicture:
   LD A,(GridNumber)
   CP $08

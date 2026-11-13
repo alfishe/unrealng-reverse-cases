@@ -1,6 +1,6 @@
 # Myth: History in the Making (System 3 Software, 1989)
 
-State: docs written, in review (2026-11-13). 12 documents, 71 figures (PNG), 30 animations (GIF), 51 mermaid
+State: complete 2026-11-13 (two review rounds, kit gaps fixed, every case regressed identical). 12 documents, 77 figures (PNG), 35 animations (GIF), 56 mermaid
 diagrams and 13 audio files (3 MP3, 10 short WAV; 328 KB), counted on 2026-11-13 with:
 
 ```sh

@@ -29,7 +29,7 @@ BossColours:
 ; The boss picture's 8 x 13 attributes while BossFlash runs (a hit)
 ;
 ; DrawBossPicture, instead of BossColours, while BossFlash is set. Read in
-; rzx-r4 (20 hits).
+; rzx-r4 (20 passes: 10 bolts, two counts each).
 BossHitColours:
   INCBIN "res/stage4/table-boss-hit-colours.bin",$0000,104
 

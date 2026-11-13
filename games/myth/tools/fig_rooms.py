@@ -178,6 +178,17 @@ def draw_actor(dr, im, x, y, kind, kinds_tab, sprites, f):
     dr.text((x * 8 + 2, y + 2), str(kind), font=f, fill=(255, 64, 255))
 
 
+# the GridNumber ($FE47) of each grid record where the records are not in that order (build/stage4.lst, Grid0 $9AE2)
+GRID_NUMBERS = {'stage4': [0, 9, 2, 1, 3, 4, 5, 8, 10]}
+
+
+def grid_name(stage, n):
+    """'grid G' by the code's GridNumber, with ' (record n)' where the records lie in another order"""
+    if stage in GRID_NUMBERS:
+        return f'grid {GRID_NUMBERS[stage][n]} (record {n})'
+    return f'grid {n}'
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('stage')
@@ -196,7 +207,7 @@ def main():
     dr = ImageDraw.Draw(im)
     y0 = 10
     for n, g in enumerate(grids):
-        dr.text((10, y0), f'grid {n}: {g["w"]} x {g["h"]} blocks, {len(windows(g))} rooms; '
+        dr.text((10, y0), f'{grid_name(a.stage, n)}: {g["w"]} x {g["h"]} blocks, {len(windows(g))} rooms; '
                 f'{len(lists[n]) if n < len(lists) else 0} placements', font=f, fill=(255, 255, 255))
         y0 += 24
         im.paste(grid_image(g, blocks, mp), (10, y0))
@@ -231,7 +242,7 @@ def main():
         exits = g['exits'][number] if number < len(g['exits']) else 0
         ex = ''.join(ch for bit, ch in ((1, 'R'), (2, 'L'), (4, 'U'), (8, 'D')) if exits & bit) or '-'
         x0, y0 = 10 + (k % cols) * (rw + 10), 10 + (k // cols) * (rh + 30)
-        sd.text((x0, y0), f'grid {n} room {number} (blocks {c},{r}) exits {ex}', font=fs, fill=(255, 255, 255))
+        sd.text((x0, y0), f'{grid_name(a.stage, n)} room {number} (blocks {c},{r}) exits {ex}', font=fs, fill=(255, 255, 255))
         sheet.paste(room, (x0, y0 + 16))
     spath = os.path.join(a.out, a.stage + '-rooms.png')
     sheet.save(spath)

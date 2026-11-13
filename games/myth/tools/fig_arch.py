@@ -242,7 +242,7 @@ COVERAGE = [
                                 'work/stage1/rec/s1-idle/l1.json', 'work/stage1/rec/s1-right/l1.json',
                                 'work/stage2/rec/rzx-r1/l1.json']),
     ('stage2', 0x7800, 0xB7D4, ['work/stage1/rec/s2-right/l1.json', 'work/stage2/rec/rzx-r2/l1.json']),
-    ('stage3', 0x7800, 0xB4E9, ['work/stage1/rec/s3-right/l1.json', 'work/stage2/rec/rzx-r3/l1.json']),
+    ('stage3', 0x7800, 0xB555, ['work/stage1/rec/s3-right/l1.json', 'work/stage2/rec/rzx-r3/l1.json']),
     ('stage4', 0x7800, 0xB77E, ['work/stage1/rec/s4-right/l1.json', 'work/stage2/rec/rzx-r4/l1.json']),
     ('stage5', 0x7800, 0xA366, ['work/stage1/rec/s5-right/l1.json', 'work/stage2/rec/rzx-r5/l1.json',
                                 'work/stage2/rec/ending/l1.json']),

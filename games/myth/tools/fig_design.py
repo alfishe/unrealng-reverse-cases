@@ -166,8 +166,47 @@ MAP_NAMES = {1: 'stage 1, The Road To Hell: 3 grids, 22 rooms', 2: 'stage 2, Gre
 STAGE3_CUT, STAGE3_GRID1 = 890, (210, 364)
 
 
+# Stage 4's records lie in the order of these GridNumbers ($FE47, set by the grid passages EnterGrid1 $8B8C to
+# EnterGrid10 $969C; GridNumber 6 and 7 do not exist): build/stage4.lst at Grid0 $9AE2. The other stages' grids are
+# numbered as their records lie.
+GRID_NUMBERS = {4: [0, 9, 2, 1, 3, 4, 5, 8, 10]}
+
+
+def map_image(n):
+    """The map of tools/fig_rooms.py (the same geometry as docs/img/maps/stageN.png), drawn again with each grid named
+    by its GridNumber and the placements' kind numbers large enough to read at 900 px: 13 px on a dark box."""
+    import fig_rooms
+    pix, att, blk, mp, grids, lists, _, _ = fig_rooms.load(f'stage{n}')
+    blocks = fig_rooms.block_images(fig_rooms.tile_images(pix, att), blk)
+    names = GRID_NUMBERS.get(n, list(range(len(grids))))
+    width = max(g['w'] for g in grids) * 16 + 20
+    height = sum(g['h'] * 16 + 40 for g in grids) + 10
+    im = Image.new('RGB', (width, height), (40, 40, 40))
+    dr = ImageDraw.Draw(im)
+    fk = F(13)
+    y0 = 10
+    for k, g in enumerate(grids):
+        order = f' (record {k})' if n in GRID_NUMBERS else ''
+        dr.text((10, y0), f'grid {names[k]}{order}: {g["w"]} x {g["h"]} blocks, {len(fig_rooms.windows(g))} room{"s" if len(fig_rooms.windows(g)) > 1 else ""}; '
+                f'{len(lists[k]) if k < len(lists) else 0} placements', font=F(14), fill=(255, 255, 255))
+        y0 += 24
+        im.paste(fig_rooms.grid_image(g, blocks, mp), (10, y0))
+        for c, r in fig_rooms.windows(g):
+            colour = (255, 255, 0) if (c, r) == (g['col'], g['row']) else (255, 255, 255)
+            dr.rectangle([10 + c * 16, y0 + r * 16, 10 + (c + 14) * 16 - 1, y0 + (r + 9) * 16 - 1], outline=colour)
+        for kind, x, y, done in (lists[k] if k < len(lists) else []):
+            cx, cy = 10 + x * 8, y0 + y * 8
+            dr.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=(255, 64, 255))
+            t = str(kind)
+            tw = dr.textlength(t, font=fk)
+            dr.rectangle([cx + 4, cy - 8, cx + 4 + tw + 3, cy + 7], fill=(0, 0, 0))
+            dr.text((cx + 5, cy - 8), t, font=fk, fill=(255, 150, 255))
+        y0 += g['h'] * 16 + 16
+    return im
+
+
 def map_pieces(n):
-    pic = Image.open(P('docs', 'img', 'maps', f'stage{n}.png')).convert('RGB')
+    pic = map_image(n)
     if n == 3:
         y0, y1 = STAGE3_GRID1
         return [(None, pic.crop((0, 0, STAGE3_CUT + 1, pic.height))),
@@ -182,7 +221,8 @@ def maps(out):
         im, d, y = canvas(4000, f'The maps of stages {stages_[0]} and {stages_[1]} (stage 5 has no rooms)',
                           'Drawn by tools/fig_rooms.py from src/res/stageN (graphics.txt, the rooms and the '
                           'placements).\nEach magenta dot is a placement; its number is the kind, named under '
-                          'the map by its handler (table-kinds.csv; docs 07 and 10).')
+                          'the map by its handler (table-kinds.csv; docs 07 and 10).\nStage 4\'s grids are named by '
+                          'their GridNumber ($FE47), its records\' order in brackets.')
         for n in stages_:
             d.text((16, y), MAP_NAMES[n], font=F(17), fill=HI)
             y += 28
@@ -241,10 +281,22 @@ ENEMIES = [
     (3, 'sprites-bog-man.png', 0, 'bog man', 'BogManActor $91AD', 'wades out of the swamp; 2', 'sinks again'),
     (3, 'bitmaps-dragon-head-4x27.png', 0, 'dragon', 'DragonHeadActor $92BF', 'fire (2) in room 8',
      '16 thrown objects: 2500'),
+    (3, 'rowpicture-throne.png', 0, 'throne giant', 'ThroneBossStep $9514', 'grid 2; a spark every 8 passes (2)',
+     '30 thrown kind-7 items: 2000'),
+    (3, 'sprites-pyre-flame.png', 0, 'pyre flames', 'PyreFlameActor $93C8', 'room 5, columns 10-17 (3)',
+     'the rain puts them out'),
+    (3, 'bitmaps-lightning-4-3x104.png', 0, 'lightning', 'LightningActor $94AC', 'grid 0, one flash of three',
+     'scenery: no damage'),
     (4, 'sprites-scorpion.png', 0, 'scorpion', 'ScorpionActor $9319', 'crawls 2 columns / 10 passes',
      'leaves at the edge'),
     (4, 'sprites-mummy.png', 0, 'mummy', 'MummyActor $9351', 'walks left; touch: a life', '3 hits: 80'),
     (4, 'sprites-pendulum.png', 0, 'pendulum', 'Pendulum $888F', 'swings; 2', 'a trap'),
+    (4, 'sprites-barrier.png', 0, 'barrier block', 'BarrierBlockActor $96CB', 'grid 0 room 1: closes the way',
+     'a shot bursts it: 200'),
+    (4, 'sprites-traps.png', 17, 'falling column', 'FallingColumn $87AC', 'falls on its trap slot (4)',
+     'a trap, stays down'),
+    (4, 'sprites-traps.png', 13, 'spikes', 'SwitchedSpikes $86FF', 'rise under a slab (2)',
+     'a switch lowers them'),
     (4, 'sprites-boss-mouth.png', 0, "pharaoh's head", 'BossMouth $8AD4', 'spits shots (2)', '20 hits: 1400'),
     (5, 'bitmaps-dameron-face0-7x128.png', 0, 'Dameron', 'stage 5', 'four forms, missiles of 9', '80 hits'),
 ]
@@ -256,6 +308,19 @@ def enemies(out):
     cw, ch = 255, 0
     cells = []
     for st, fname, frame, name, handler, does, beats in ENEMIES:
+        if fname.startswith('rowpicture'):  # a row-packed picture (the throne giant): palette index 1 is ink
+            pic = Image.open(P('src', 'res', f'stage{st}', fname))
+            sc = 2
+            spr = Image.new('RGB', (pic.width * sc, pic.height * sc), (0, 0, 0))
+            for yy in range(pic.height):
+                for xx in range(pic.width):
+                    if pic.getpixel((xx, yy)) == 1:
+                        spr.paste(ENEMY_INK[st], (xx * sc, yy * sc, xx * sc + sc, yy * sc + sc))
+            if spr.height > 130:
+                spr = spr.resize((spr.width * 130 // spr.height, 130), Image.NEAREST)
+            cells.append((st, spr, name, handler, does, beats))
+            ch = max(ch, spr.height)
+            continue
         bms, meta = res_stage.png_to_frames(open(P('src', 'res', f'stage{st}', fname), 'rb').read(), 'tx-frames')
         if frame < 0:  # the tallest frame (the troll's legs and body are two records; its frames differ)
             frame = max(range(len(bms)), key=lambda i: meta['sizes'][i][1])

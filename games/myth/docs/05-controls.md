@@ -748,6 +748,6 @@ steady pixel a frame while the game outside it is frozen.
 | SPACE held in DEFINE KEYS: the reader and the name run as code | WaitOrSpace `$9BA5` | the `menu` recording let SPACE go in time |
 | DEFINE KEYS after KEMPSTON: the keys read inverted | KeyXorMask `$FCFA` | no recording did both |
 | FIRE defined as SPACE in play | KeyFire, TestSpaceKey | the `menu` recording did not play |
-| the pause | PauseRelease `$79B5` | no recording pressed ENTER in play |
+| the pause | PauseRelease `$79B9` | no recording pressed ENTER in play |
 | CAPS SHIFT + SPACE in stage 1 | QuitStage `$789C` | no stage-1 recording quit |
 | FIRE + RIGHT facing right | HeroFireHeld | `c1` faced left when it pressed it |

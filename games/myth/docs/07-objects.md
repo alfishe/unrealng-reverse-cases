@@ -701,7 +701,8 @@ of fixed records.
 - **Missile kind 0 is a trap.** HangFlashBorder `$876C` flashes the border from R in a loop that never returns. A
   record of kind 0 would hang the game.
 - **The fine steps.** StepFineRight `$8B37` and StepFineLeft `$8B61` move an actor by eighths of a byte column through
-  +`$11`. No code calls them. Their sibling StepFineBack `$8B4E` is live: `$8736` and the warrior's flying head
+  +`$11`. No code in stage 1 calls them (stage 2's MedusaHeadFallStep calls its StepFineLeft at `$81F5`).
+  Their sibling StepFineBack `$8B4E` is live: `$8736` and the warrior's flying head
   (WarriorHeadFly `$9474`) call it, 510 runs in `rzx-r1`.
 - **Room 6.** Its exit byte is 0, so once in it the hero could not leave by an edge. Only room 12's up bit leads into
   it. In `rzx-r1`, read every 10 frames, RoomNumber is never 6.
