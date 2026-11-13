@@ -45,7 +45,7 @@ ResidentEntry:
 
 ; Clear the screen and load the front
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 ShowFront:
   CALL ClearScreen
   JR LoadFront

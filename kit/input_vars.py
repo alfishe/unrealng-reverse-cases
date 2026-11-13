@@ -40,7 +40,7 @@ def parse_script(path):
         if keys == ['END']:
             out.append((frame, None))
             break
-        out.append((frame, set() if keys == ['-'] else set(keys)))
+        out.append((frame, set() if keys == ['-'] else {k for key in keys for k in key.split('+')}))  # W+O: W, O
     return out
 
 

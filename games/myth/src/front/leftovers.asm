@@ -18,6 +18,8 @@
 ; screen (ClearScreen $9EBC), fills the box, then fills 32 attribute bytes with
 ; C on every second row from $5800, B times. No caller; not executed in any
 ; recording (c1, menu).
+;
+; Witness: L1 0 ().
 OldStripedScreen:
   LD A,B
   LD (OldStripedScreen+$0013),A
@@ -55,6 +57,8 @@ OldStripedRow:
 ; Five FillAttrBox $9D31 calls (column 8, row 6, 16 x 18 cells of $44; then
 ; column 8, rows 11, 13, 15, 17, 16 x 1 of $45) and RET: an earlier layout of
 ; the menu box. No caller; not executed in any recording (c1, menu).
+;
+; Witness: L1 0 ().
 OldPaintBoxes:
   CALL FillAttrBox
   DEFB $08,$06,$10,$12,$44
@@ -80,6 +84,8 @@ OldPaintBoxes:
 ; cells) are painted on the attribute row OldBarVars+3 AND $F0 and each bar
 ; moves by its step, the step negated when the two screen bytes there are both
 ; 0. No caller; not executed in any recording (c1, menu).
+;
+; Witness: L1 0 ().
 OldBouncingBars:
   CALL FillAttrBox
   DEFB $08,$78,$0E,$09,$04
@@ -207,6 +213,8 @@ OldBarsDone:
 ; OldBouncingBars)
 ;
 ; Called only from OldBouncingBars at $9B54. Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldLineAddress:
   LD DE,ScreenLineTable
   LD H,$00
@@ -222,6 +230,8 @@ OldLineAddress:
 ; The earlier WaitOrSpace: one HALT a count, SPACE (ReadSpace $9D29) or KeyFire
 ; $FCCC (Z) ends it the way WaitOrSpace $9BA5 does. No caller; not executed in
 ; any recording.
+;
+; Witness: L1 0 ().
 OldWaitSpaceOrFire:
   HALT
   PUSH BC
@@ -249,6 +259,8 @@ OldWaitAbort:
 ; lines, 24 bytes from column 4 merged from $5B00 under the masks $F9CB on, the
 ; mask set cycling 0-4 (byte $FE12 as its counter). Called only from
 ; OldRevealPage $9CCF. Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealWide10:
   LD A,C
   LD (OldRevealStep10+$0005),A
@@ -328,6 +340,8 @@ OldRevealMaskSet10:
 ; The same over 26 pixel lines (no caller but OldRevealPage2)
 ;
 ; Called only from OldRevealPage2 $9CF4. Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealWide26:
   LD A,C
   LD (OldRevealStep26+$0005),A
@@ -410,6 +424,8 @@ OldRevealMaskSet26:
 ; Calls PrintText $9D72 with HL = $5B00 and A = $18: the final PrintText reads
 ; its parameters after the CALL, so this code would print the bytes after the
 ; CALL as text. No caller; not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealPage:
   PUSH BC
   LD HL,TextBuffer
@@ -424,6 +440,8 @@ OldRevealPage:
 ; OldRevealPage, after its PrintText call
 ;
 ; Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealPageNext:
   POP BC
   PUSH IX
@@ -439,6 +457,8 @@ OldRevealPageNext:
 ; Clear $5B00-$5D6F, two old-style PrintText calls, reveal 26 lines (no caller)
 ;
 ; No caller; not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealPage2:
   PUSH BC
   LD HL,TextBuffer
@@ -453,6 +473,8 @@ OldRevealPage2:
 ; OldRevealPage2, after its first PrintText call
 ;
 ; Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealPage2Second:
   LD HL,TextBuffer
   LD A,$18
@@ -461,6 +483,8 @@ OldRevealPage2Second:
 ; OldRevealPage2, after its second PrintText call: OldRevealWide26
 ;
 ; Not executed in any recording.
+;
+; Witness: L1 0 ().
 OldRevealPage2Reveal:
   POP BC
   PUSH IX

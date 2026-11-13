@@ -26,6 +26,8 @@
 ; c1: entered at frame 8127 (the front's bytes: $99A8 to $99C9 ran once), START
 ; GAME. menu: the recording starts inside MenuHighlight: DEFINE KEYS taken
 ; (dispatch at frame 71), the menu again at 1354, START GAME at 1552.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 Menu:
   CALL MenuTitle
   CALL MenuHook
@@ -71,6 +73,8 @@ StartGame:
 ; c1: 149 passes, frames 8195-8491 (2 frames each), E moved at 8289, 8385, 8481
 ; (to 0), SPACE at 8491 on START GAME. menu: 38 passes in two entries, DEFINE
 ; KEYS at frame 7 (E = 1 already in menu.szx), START GAME at 1488.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuHighlight:
   LD E,$00
   LD D,$00
@@ -132,6 +136,8 @@ MenuBarColours:
 ; PRESS SPACE TO SELECT on line 68 (small font)
 ;
 ; c1: frame 8127; menu: frame 1354.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuTitle:
   CALL PrintText
 
@@ -142,12 +148,16 @@ TextPressSpaceToSelect:
 ; MenuTitle's RET
 ;
 ; c1: frame 8144; menu: frame 1371.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuTitleDone:
   RET
 
 ; START GAME, DEFINE KEYS, SELECT JOYSTICK on lines 84, 100, 116 (large font)
 ;
 ; c1: frames 8144-8193; menu: 1371-1420.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuLines:
   CALL PrintText
 
@@ -158,6 +168,8 @@ TextStartGame:
 ; The second line
 ;
 ; MenuLines, continued. c1: frame 8160; menu: 1387.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuLines2:
   CALL PrintText
 
@@ -168,6 +180,8 @@ TextDefineKeys:
 ; The third line
 ;
 ; MenuLines, continued. c1: frame 8176; menu: 1403.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuLines3:
   CALL PrintText
 
@@ -178,5 +192,7 @@ TextSelectJoystick:
 ; MenuLines's RET
 ;
 ; c1: frame 8193; menu: 1420.
+;
+; Witness: L1 8 (c1, joystick, menu, rzx-r0).
 MenuLinesDone:
   RET

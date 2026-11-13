@@ -21,7 +21,7 @@ KeyUp:
 
 ; DOWN: port $BFFE bit 3 (J)
 ;
-; Witness: L1 33680 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
+; Witness: L1 33044 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
 ; s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 KeyDown:
   CALL KeyHook
@@ -47,7 +47,7 @@ KeyLeft:
 
 ; RIGHT: port $FBFE bit 1 (W)
 ;
-; Witness: L1 41800 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
+; Witness: L1 40953 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
 ; s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 KeyRight:
   CALL KeyHook
@@ -73,7 +73,7 @@ KeyFire:
 
 ; RET: each reader calls it first
 ;
-; Witness: L1 788100 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
+; Witness: L1 787888 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right,
 ; s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 KeyHook:
   RET

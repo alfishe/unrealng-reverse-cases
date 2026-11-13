@@ -8,8 +8,8 @@
 
 ; Score and amount 0, lives 5, credits 4, then the five stages in turn
 ;
-; Reached from the front's StartGame by RET (front notes). Witness: L1 3728
-; (c1, joystick, menu, rzx-r0).
+; Reached from the front's StartGame by RET (front notes). Witness: L1 4 (c1,
+; joystick, menu, rzx-r0).
 NewGame:
   LD HL,$0000
   LD (Score),HL
@@ -77,8 +77,8 @@ StageRecord5:
 ; Z (the right block, StageCheck), each failure marking no stage loaded.
 ; SilenceAy, ClearScreen, H := Lives, CALL GameMain (the stage), Lives := H, CP
 ; E with 2, SilenceAy. Output: Z when the stage ended with E = 2 (completed),
-; BC the address of the stage's score digits for GameOver. Witness: L1 3421
-; (c1, joystick, menu, rzx-r0-rzx-r4).
+; BC the address of the stage's score digits for GameOver. Witness: L1 8 (c1,
+; joystick, menu, rzx-r0-rzx-r4).
 PlayStage:
   PUSH IY
   CALL ClearScreen
@@ -153,7 +153,7 @@ StageRun:
 ; moves to the other line (with no credit left it stays on RESTART FROM STAGE
 ; ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and
 ; returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps
-; to RestartFromStageOne. Witness: L1 34 (c1, s1-right, s2-right, s3-right,
+; to RestartFromStageOne. Witness: L1 4 (s1-right, s2-right, s3-right,
 ; s4-right).
 GameOver:
   PUSH BC

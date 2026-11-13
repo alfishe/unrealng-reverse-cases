@@ -23,6 +23,8 @@
 ; $9736.
 ;
 ; menu: entered once at frame 71 (SPACE on DEFINE KEYS at frame 6).
+;
+; Witness: L1 2 (menu, rzx-r0).
 DefineKeys:
   CALL MenuHook
   CALL PrintText
@@ -50,6 +52,8 @@ TextPressTheKeyFor:
 ; as code. Known only from the code.
 ;
 ; menu: 5 passes (frames 88-1354).
+;
+; Witness: L1 2 (menu, rzx-r0).
 DefineKeysLoop:
   LD IY,KeyUp
   LD IX,KeyNames
@@ -105,6 +109,8 @@ DefineKeysDone:
 ;
 ; PrintText $9D72 with KeyNameText's parameters. menu: 10 runs (two a key,
 ; frames 88-1234).
+;
+; Witness: L1 20 (menu, rzx-r0).
 PrintKeyName:
   CALL PrintText
 
@@ -120,6 +126,8 @@ KeyNameChar:
 ; PrintKeyName's RET after its string
 ;
 ; menu: 10 runs (frames 104-1250).
+;
+; Witness: L1 20 (menu, rzx-r0).
 PrintKeyNameDone:
   RET
 
@@ -146,6 +154,8 @@ KeyNames:
 ;
 ; menu: 55 entries (5 calls, 50 restarts after the 8th row), 421 rows read, 5
 ; keys found (frames 104-1234).
+;
+; Witness: L1 70 (menu, rzx-r0).
 ScanKeyboard:
   LD IX,KeyRowPorts
   LD IY,KeyRowChars

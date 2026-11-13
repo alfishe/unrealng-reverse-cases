@@ -23,7 +23,12 @@ use it).
 imports `corpus.py`, `mm_session.py` and the MCP client beside it and drives the unreal-qt of the same checkout, so a
 copy here would drift from the binary. `python3 kit/rs.py ARGS` runs it from the checkout `toolpaths.py` finds
 (`--unreal U` first to give one), so a case's commands name `../../kit/rs.py`, not a path set on one machine; the
-`$RS` of the docs is that script.
+`$RS` of the docs is that script. For `capture --inputs` it reads the input scripts first: a word that is no key fails
+there with the line and the reason (`a.txt:12: "W,O" is no key: the keys are A-Z 0-9 ENTER SPACE CS SS and the
+Kempston KF KL KR KU KD, keys held together separated by spaces ("W O") or joined by "+" ("W+O") ...`), not in the
+emulator's `Unknown key 'w,o'`; a chord `W+O` (zx-reaper's form, which `mm_session.py` does not take) goes over as a
+copy of the script in `W/inputs/` with the keys separated by spaces (`kitlib.input_script`, `plain_input_script`;
+`input_vars.py` reads `W+O` as W and O too).
 
 The annotation file these scripts read is described in [docs/ann-format.md](../docs/ann-format.md) (every directive,
 what the generator does with it, the part files); every file of a case and the command that makes it in
@@ -42,7 +47,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; `Symbols(case).add(ann, lo, hi)` writes and reads an address of an editable form as a name (`word($CCDA)` is `SharedModels+591`, `value()` the address again); the case's `res_formats.py build` calls it |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
-| `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above) |
+| `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
@@ -73,7 +78,9 @@ what the generator does with it, the part files); every file of a case and the c
 
 Every run checks the `.ann`'s `Witness: L1 N (builds)` lines of the code entries against the recordings: N the runs
 of the entry's first instruction summed over `ref_builds`, `read_builds`, `code_builds` and `witness_builds` (less
-`witness_skip`; a `ref_builds` recording with a window counts only inside it), the list the builds that ran it (`c1,
+`witness_skip`; a `ref_builds` recording with a window counts only inside it; a `same_bytes` or `"mode": "blocks"`
+part only the runs of its own bytes, a source's `lo`/`hi` window bounding them; builds of one name summed as one: frame
+windows kept inside the recording's folder, `stage1/c1/load`, are `c1`), the list the builds that ran it (`c1,
 hiscore, rzx x29`; numbered builds of one family by name, a run of three or more as a range: `c1-c4`, `c1, c2, c4`,
 a family that would take more than four items as one, `rzx x29`), and prints each stale line
 (`witness: src/game/game.ann:134 $8040 PrintGlyph: L1 90100 (c1, rzx x32), the builds give L1 90104 (...)`);
@@ -81,7 +88,11 @@ a family that would take more than four items as one, `rzx x29`), and prints eac
 name it drops (`menu, search ran no instruction there`; an entry no build ran stays `L1 0 ()` with no such
 clause, so a data entry is not said to run no instruction), and writes the source again from the rewritten `.ann`, so
 that with `--install` one run leaves the `.ann` and the `.asm` current
-([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)).
+([ann-format.md 3.2](../docs/ann-format.md#32-a-description--text)). One L1 keeps one instruction an address (the
+last bytes run there, the runs of all): mkgame prints the witnessed entries whose bytes changed in the recording, and
+frame windows of it (`kit/rs.py build --from-frame F --to-frame G --into work/stage1/c1/load`, given as
+`witness_builds`, the whole recording as `witness_skip`) keep two programs at one address apart (Myth's loader
+pieces, its resident over the SpeedLock chain, its front under stage 1).
 
 `--install` writes the modules, `game.asm` and the resources (through the json's `res_install`, else `case.json`'s,
 else the case's `tools/res_formats.py`; a part with resources and none of these prints `WARNING: N resources not
@@ -196,6 +207,7 @@ yellow fading through red, trails dark.
 | `memanim.py` | memory over a longer stretch (a load, an unpack, a level set-up) | `memory_at` samples |
 | `screen_anim.py` | the screen over frames | `memory_at` samples |
 | `screen_shot.py` | the screen at named moments | `memory_at` |
+| `merge_l1.py OUT.json L1 ... [--stack LO-HI]` | several L1 builds summed into one for `heatmap.py` (pages 5, 2, 0; the frames summed); `--stack` prints each build's lowest write in that range, the stack's low mark (Switchblade `5B00-5BFF`, Myth `FF00-FFFF`) | `l1.json` |
 | `heatmap.py` | executed / read / written per byte over a build; `--panels` (any of `executed,read,written,composite`), `--columns` (2), TrueType text that reads at 900 px | `l1.json` |
 | `fig_budget.py` | where the CPU time goes: each routine's (or module's) own T-states as a share of all the frames, coloured by module; several `.ann` parts (page, range), HALT and the ROM apart, a panel per state | `l1.json` |
 | `zxscreen.py` | a 6912-byte screen or a 64 K image to PNG | a file |

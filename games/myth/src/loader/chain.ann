@@ -4,7 +4,9 @@
 # tape turns it back into the tape's bytes, identical (tools/build.sh). The layer entries come from
 # work/stage2/loader/layer_ann.py (a run of the chain in SkoolKit's simulator over the plain view).
 # Witnesses: the chain run (work/parts/chain-trace.json: every instruction of the 103 layers); c1 (work/stage1/c1, a
-# 48K from power-on, the tape at signal speed) for the loader $FBD4-$FF25.
+# 48K from power-on, the tape at signal speed) for the loader $FBD4-$FF25. Its witness counts are c1's windows of the
+# load (work/stage1/c1/load, frames 0-5099, and work/stage1/c1/unxor, 5100-5165, tools/c1_windows.sh): the resident
+# runs at these addresses later, and Unxor at TimeCheck's.
 
 @equ $0000 RomStart at $FBDA,$FBDF,$FBE4 ; the ROM's first byte, $F3 (DI) in every Spectrum ROM
 @equ $006D RomModelByte ; a ROM byte: $28 in the +2A/+3 ROM (TimeCheck skips its compare there)
@@ -682,7 +684,7 @@ $FE60 c ReadMark ; Read the bits of a mark into L until its marker bit shifts ou
 @about TimeCheck is LoaderMain's call: it loads tape block 7 and then measures how often the EAR bit changes in 255 windows; a tape played too fast or too slow (a copy, a turbo deck) sets FailFlag, which Sl1End (src/loader/sl1end.asm) turns into a crash at the end of the load.
 
 $FE76 c TimeCheck ; Load the second stage, then measure the tape's edges into TimeBuffer and compare them
-> CALL LoadStream (IX = Sl1Start, DE = $AA: tape block 7). Then 255 TimeSample counts to TimeBuffer. On the +2A/+3 ROM (its byte $006D is $28) no compare; else TimeCompare. Tape block 29 loads Unxor over this routine later (src/loader/unxor.asm). Witness: L1 2 (c1).
+> CALL LoadStream (IX = Sl1Start, DE = $AA: tape block 7). Then 255 TimeSample counts to TimeBuffer. On the +2A/+3 ROM (its byte $006D is $28) no compare; else TimeCompare. Tape block 29 loads Unxor over this routine later (src/loader/unxor.asm). Witness: L1 1 (c1).
 $FE7E TimeCheckLoop ; one sample: c1 255 passes
 
 $FE91 c TimeSample ; Count the changes of EAR (port $7FFE bit 6) in 255 polls into E

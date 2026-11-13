@@ -26,6 +26,8 @@
 ;
 ; c1 (the front's bytes): 32 passes, frames 7969-8063, the abort once (SPACE,
 ; frame 8063). menu: 100 passes, no abort (frames 172-1290).
+;
+; Witness: L1 289 (c1, menu, rzx-r0).
 WaitOrSpace:
   PUSH BC
   HALT
@@ -50,6 +52,8 @@ WaitAbort:
 ;
 ; In: BC = frames. c1: 20 frames for ShowLogo (frames 7828-7848; $9BBF 20
 ; runs).
+;
+; Witness: L1 40 (c1, rzx-r0).
 WaitFrames:
   HALT
   DEC BC
@@ -63,6 +67,8 @@ WaitFrames:
 ; Z if SPACE is held (port $7FFE bit 0)
 ;
 ; c1 (the front's bytes): 32 runs; menu: 100 (each from WaitOrSpace).
+;
+; Witness: L1 289 (c1, menu, rzx-r0).
 ReadSpace:
   LD BC,$7FFE
   IN A,(C)
@@ -78,6 +84,8 @@ ReadSpace:
 ; frames), MenuHighlight, JoystickHighlight, ClearScreen.
 ;
 ; c1 (the front's bytes): 443 runs; menu: 814.
+;
+; Witness: L1 3853 (c1, joystick, menu, rzx-r0).
 FillAttrBox:
   POP IY
   LD L,(IY+$01)
@@ -119,6 +127,8 @@ FillAttrByte:
 ; the 7 lines (columns 7-24) to paper. 16 frames.
 ;
 ; c1 (the front's bytes): 8 runs; menu: 12.
+;
+; Witness: L1 72 (c1, joystick, menu, rzx-r0).
 ClearTextLine:
   LD (BlankLineLine),A
   CALL PrintText
@@ -132,6 +142,8 @@ BlankLineLine:
 ; ClearTextLine's RET after its string
 ;
 ; PrintText returns here. c1 and menu run it with every ClearTextLine.
+;
+; Witness: L1 72 (c1, joystick, menu, rzx-r0).
 ClearTextLineDone:
   RET
 
@@ -152,6 +164,8 @@ ClearTextLineDone:
 ;
 ; c1 (the front's bytes): 14 calls, frames 8007-8539; menu: 27 (DEFINE KEYS's
 ; prompts and names, the menu's lines, the wipes).
+;
+; Witness: L1 146 (c1, joystick, menu, rzx-r0).
 PrintText:
   POP IY
   LD A,(IY+$00)
@@ -259,6 +273,8 @@ PrintOrRow:
 ; C = 9 less the trailing zero bits of GlyphMask (a mask $F8, 5 pixels: C = 6);
 ; PixelShift + C, and when it reaches 8: E + 1 and PixelShift - 8.
 ;
+; Witness: L1 920 (c1, joystick, menu, rzx-r0).
+;
 ; menu: 156 runs (one a character).
 AdvanceColumn:
   LD A,(GlyphMask)
@@ -298,6 +314,8 @@ PrintTextDone:
 ; grow to $FF by step 7, so after 16 frames the strip is the buffer's.
 ;
 ; c1 (the front's bytes): 14 runs (one a printed line); menu: 27.
+;
+; Witness: L1 146 (c1, joystick, menu, rzx-r0).
 RevealStrip:
   LD L,A
   LD H,$00
@@ -375,6 +393,8 @@ RevealMaskOffset:
 ; StartGame $99DD before the resident's stage loader prints PRESS PLAY ON TAPE.
 ;
 ; c1: once, frame 8555; menu: once, frame 1552.
+;
+; Witness: L1 4 (c1, joystick, menu, rzx-r0).
 ClearScreen:
   CALL FillAttrBox
   DEFB $00,$00,$20,$19,$00

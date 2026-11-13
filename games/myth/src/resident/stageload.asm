@@ -17,7 +17,7 @@
 ; Inputs: C the stage (0 the front), B, H, L the length parameters (to
 ; LoadLength). StageLoaded = C: wait 120 frames, Z. Else StageLoaded := C,
 ; HALT, LoadBlock; NZ (a wrong block or a load error) returns NZ; else clear
-; the line, STOP THE TAPE, WaitFrames, Z. Witness: L1 8 (c1, joystick, menu,
+; the line, STOP THE TAPE, WaitFrames, Z. Witness: L1 7 (c1, joystick, menu,
 ; stageload, rzx-r0, rzx-r1).
 LoadStage:
   LD A,B

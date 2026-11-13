@@ -26,6 +26,8 @@
 ; c1: run once; the bitmap copy at frame 7828, the wait 7828-7848 ($9BBF ran 20
 ; times), the attributes at 7848 (the front's bytes: the LDIRs at $7865, $7870,
 ; $7880 ran 767, 6144 and 768 times).
+;
+; Witness: L1 2 (c1, rzx-r0).
 ShowLogo:
   LD HL,Attributes
   LD DE,Attributes+1
@@ -63,6 +65,8 @@ ShowLogoWait:
 ;
 ; c1 (the front's bytes): $7891 8 runs, $78A7 512, $78B7 9216 (8 x 64 x 18),
 ; right after SPACE at frame 7938.
+;
+; Witness: L1 2 (c1, rzx-r0).
 DissolveLogoBox:
   LD HL,ScreenLineTable+128
   LD (DissolveLinePtr),HL
@@ -140,6 +144,8 @@ ShimmerColours:
 ;
 ; c1: from frame 7848 to SPACE seen at 7938: 45 passes of two frames ($7947 ran
 ; 45 times).
+;
+; Witness: L1 2 (c1, rzx-r0).
 LogoWaitSpace:
   LD A,$00
   LD (ShimmerCount),A
@@ -175,6 +181,8 @@ LogoWaitLoop:
 ;
 ; c1 (the front's bytes): 293 runs of its LDIRs, frames 7968-8554; menu: 775
 ; runs.
+;
+; Witness: L1 2921 (c1, joystick, menu, rzx-r0).
 PaintBoxColours:
   CALL FillAttrBox
   DEFB $07,$08,$12,$08,$42
@@ -210,6 +218,8 @@ PaintBoxColours:
 ; slide one cell every 4 frames and come round every 128 frames.
 ;
 ; menu: 775 runs; c1 (the front's bytes): 338 runs of its body.
+;
+; Witness: L1 3120 (c1, joystick, menu, rzx-r0).
 ShimmerFrame:
   LD A,(ShimmerCount)
   DEC A

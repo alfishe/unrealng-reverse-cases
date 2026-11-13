@@ -55,7 +55,7 @@ EffectLeftover:
 
 ; Mixer := $38 (tones off), every channel idle, the three volumes 0
 ;
-; Witness: L1 25 (c1, ending, joystick, s1-idle, s1-right, s2-right, s3-right,
+; Witness: L1 24 (c1, ending, joystick, s1-idle, s1-right, s2-right, s3-right,
 ; s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 SilenceAy:
   LD A,$38
@@ -81,7 +81,7 @@ SilenceVolumes:
 
 ; Start effect E (through PlaySoundVector), every register kept
 ;
-; Witness: L1 3077 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right,
+; Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right,
 ; s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 PlaySound:
   PUSH IY
@@ -128,7 +128,7 @@ EffectTable:
 ; Put the effect at IY into its channel; set its tone or noise bits in the
 ; mixer
 ;
-; Witness: L1 3077 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right,
+; Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right,
 ; s4-right, s5-right, stageload, rzx-r1-rzx-r5).
 StartEffect:
   LD C,(IY+$00)
@@ -278,7 +278,7 @@ AyFrameNext:
 ; One frame of the channel at IX: write its volume, move its period and volume,
 ; the next segment
 ;
-; Witness: L1 379456 (c1, c1o, deaths, ending, joystick, menu, s1-idle,
+; Witness: L1 377598 (c1, c1o, deaths, ending, joystick, menu, s1-idle,
 ; s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
 ChannelStep:
   LD A,(IX+$00)

@@ -5,10 +5,12 @@
 
 ; The variables past the loaded image (stage1.ann @equ)
 RomWipeTop     EQU $033D  ; a ROM address taken as the top of the failure wipe
+Boot           EQU $5B00  ; src/loader/boot.asm: Unxor's JP
 SysVars        EQU $5C3A  ; IY's value for the ROM: ERR_NR, the system variables' base
 BootStack      EQU $5E87  ; the stack Boot sets
 ResidentCipher EQU $DB80  ; the resident's pieces as loaded: $DB80-$EB7F, XORed with $DF
 ResidentEntry  EQU $F040  ; the resident's entry (src/resident/resident.asm)
+Unxor          EQU $FE76  ; src/loader/unxor.asm: Sl1End's JP Z
 FailFlag       EQU $FEE9  ; non-zero when the timing check or a mark failed (src/loader/chain.asm)
   ORG $FF3A
   INCLUDE "sl1end-module.asm"  ; Sl1End: the stage's new end at $FF3A

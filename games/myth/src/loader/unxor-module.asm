@@ -11,7 +11,7 @@
 ; with $DF on top of the loader's own key; this loop takes it off in place.
 ; Inputs: none. Side effects: $DB80-$EB7F plain. Then JP Boot.
 ;
-; Witness: L1 2 (c1).
+; Witness: L1 1 (c1).
 Unxor:
   LD HL,ResidentCipher
   LD BC,$1000
@@ -24,7 +24,7 @@ UnxorLoop:
   LD A,B
   OR C
   JR NZ,UnxorLoop
-  JP $5B00                ; JP $5B00: Boot (src/loader/boot.asm)
+  JP Boot                ; JP Boot (src/loader/boot.asm)
 
 ; Bytes of block 29 no code runs: copies of Sl1End, Boot and the start of
 ; Sl1Start

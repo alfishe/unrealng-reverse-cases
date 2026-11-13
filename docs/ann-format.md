@@ -61,7 +61,7 @@ lines, but `kit/ann_names.py` only matches upper case, so write upper case.
 | `@isub` | `@isub $ADDR INSTRUCTION` | The instruction at `ADDR` is written exactly so: no `Label+offset`, `@equ` or `@var` name rewrites it. Use it for a constant the bytes cannot tell from an address (`LD HL,-6`, `LD SP,$FFFF`) and for an operand that needs a name the kit cannot work out (`LD HL,LevelTable-8`). A number equal to a label's address stays a number (skool2asm would write the label; the kit puts the instruction back as written), and a decimal number stays decimal (`LD DE,-10000`, which skool2asm writes `LD DE,-$2710`; `LD DE,1*256+30`). An `@isub` on an address that is no instruction fails: `@isub on no instruction: $XXXX` |
 | `@inline` | `@inline $ADDR [N]` | The routine at `ADDR` reads data placed after its `CALL` (a print routine with an inline string). The static walk stops at every call to it, so a string no recording printed is not taken for code. With `N`, the routine reads exactly `N` bytes (a one-byte code, a column): the walk goes on after them, and only those bytes are data |
 | `@variant` | `@variant NAME $ADDR INSTRUCTION [; comment]`, `@variant NAME $ADDR-$END INSTRUCTION [; comment]`, `@variant NAME $ADDR + INSTRUCTION [; comment]` | A conditional in the generated module: under `NAME` the instruction at `ADDR` is `INSTRUCTION`. It is written as `IFDEF NAME`, the `.ann`'s lines, `ELSE`, the original instruction (with its comment), `ENDIF`, so the plain build is unchanged and `sjasmplus -DNAME` builds the variant. `$ADDR-$END` replaces the instructions from `ADDR` up to `END` (not included; the new lines may be of another size, `DEFS 22` for a block of zeros); `+` inserts the line before the instruction at `ADDR` (`IFDEF NAME`, the line, `ENDIF`). Further `@variant` lines of the same NAME and place add lines to the block; a line with only a comment continues the comment. A variant inside another's range (a one-instruction variant inside a replaced block) is nested in that block's `ELSE`. Fails: an address that is no instruction (`@variant NAME $XXXX: no instruction there`), a label inside a replaced range (`... the label NAME lies inside the range it replaces`: the variant cannot move a label), two ranges that cross (`@variant A and B cross`). ZYX boot's variants: `-DKempston` reads the joystick (`@variant Kempston $68B9 IN A,($1F)`), `-DNoJoystick` replaces the 22-byte block with `DEFS 22` |
-| `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead. Two operands are never named: the offset of a `Label+offset` (`LD HL,data_96FE+$4455` stays so inside `@equ $4000 Screen 6144`), and a port, the `LD BC,nn` whose `BC` feeds `IN` or `OUT (C)` (section 3.4; mkgame prints `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`); an `at` list that names the instruction still names it |
+| `@equ` | `@equ $ADDR NAME [N] [at $I[,$J ...]] [; comment]` | A variable outside the image (the work space past the loaded bytes). The top file gets `NAME EQU $ADDR`, and every instruction operand in `ADDR..ADDR+N-1` is written `NAME` / `NAME+k` (not in an `@isub`'s instruction: `@isub $94C5 LD HL,$4010` stays a number inside `@equ $4000 Screen 6144`). N defaults to 1. With `at`, only the operands of the instructions at `$I`, `$J`, ... are named: an address that is also a plain number elsewhere (`@equ $0000 RomStart at $XXXX` names the `JP $0000` at `$XXXX` and leaves every `LD HL,$0000` alone). An `at` address that is no instruction fails: `@equ ... at no instruction: $XXXX`. An address inside the image is refused: name it as a label instead; but an `.ann` shared by several parts (the pieces of a loader, each its own image) may give another part's label so, with the same name as its entry or inner label (`@equ $FE76 Unxor` beside `$FE76 c Unxor`): in the part whose image holds the address the line is that label, in the others an `EQU` and the operands named (Myth's `src/loader/pieces.ann`: Sl1End's `JP Z,Unxor`, Unxor's `JP Boot`); another name there fails, naming the label the `.ann` has. Two operands are never named: the offset of a `Label+offset` (`LD HL,data_96FE+$4455` stays so inside `@equ $4000 Screen 6144`), and a port, the `LD BC,nn` whose `BC` feeds `IN` or `OUT (C)` (section 3.4; mkgame prints `port: $7178 LD BC,$FEFE feeds IN / OUT (C): kept a number, not Im2Table+254`); an `at` list that names the instruction still names it |
 
 Real lines (Zynaps, `src/game/game.ann`):
 
@@ -128,7 +128,17 @@ menu, timer, rzx x32).` A line that no longer agrees, say after `case.json` swap
 again from it (with `--install` one run leaves the `.asm` current too); a line that names a
 build mkgame did not load is kept as written and printed (`kept: NAME not among the builds`), and a name it drops is
 printed as `NAME ran no instruction there` (not for an entry no build ran at all, `L1 0 ()`, a data entry or a dormant
-routine: that says no more than its count). Other witness text
+routine: that says no more than its count). A part whose addresses other programs also ran counts only the runs of
+its own bytes, as its code is found: `same_bytes`, where all the instruction's bytes the L1 holds are the image's;
+`"mode": "blocks"`, where its opcode and length are (an operand may be self-modified); and a source's `lo`/`hi`
+window bounds its runs. The L1 keeps one instruction an address (the last bytes run there, the runs of all), so two
+programs with different bytes at one address are told apart only as far as the bytes go: the program whose bytes ran
+last gets all the runs, the other none. mkgame prints the witnessed entries whose bytes changed in the recording
+(`witness: src/loader/pieces.ann: c1 holds 1 witnessed entry whose bytes changed in the recording ($FE76): ...`);
+frame windows of the recording (`kit/rs.py build --from-frame F --to-frame G --into work/stage1/c1/load`) keep the
+programs apart: give the part the windows as `witness_builds` and the whole recording as `witness_skip`. Builds of
+one name (`stage1/c1/load` and `stage1/c1/unxor` are both `c1`: the windows kept inside the recording's folder; or
+`witness_names`) are one item, their runs summed. Other witness text
 (`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched.
 
 ### 3.3 An inner line: `$ADDR [NAME] [; comment]`
@@ -322,11 +332,11 @@ reads them for a part of segments in `case.json` `ref_parts`:
 | `ann`, `piece` | the annotations (and the piece of them) |
 | `top` / `name`, `dest`, `bin` / `out` | the top file `TOP.asm`, where `--install` writes it and the modules, the `SAVEBIN` name |
 | `header`, `written`, `device` | the top file's first comment lines, its "Written by" line (default: from the `.ann`), the sjasmplus `DEVICE` (`ZXSPECTRUM48`) |
-| `witness_builds` | more recordings for the witness counts only (section 3.2): `work/<build>/l1.json` |
+| `witness_builds`, `witness_skip` | more recordings for the witness counts only (section 3.2): `work/<build>/l1.json`; the builds of `l1` left out of them (a whole recording whose frame windows are in `witness_builds`) |
 | `l1` | the recordings: `"PATH"` or `{"path", "reads", "lo", "hi", "roots", "format", "optional"}`. `reads`: its data reads count (not for a build over a depacker's input; default: the build's folder is in `read_builds`). `lo`/`hi`: only this window of addresses counts (the bytes that held this part while it ran). `roots: false`: a routine that is only the window's root (where the build began) is no entry. `format: "trace"`: a simulator's `{"starts": {ADDR: length}, "entries": [ADDR], "reads": {ADDR: count}}`. A path may be a glob. A segment's own `l1` replaces the part's |
 | `mode` | `"instructions"` (default: every recorded instruction whose opcode and length are the image's) or `"blocks"` (only whole recorded basic blocks whose every instruction has the image's bytes, no routine entries: a later program at the same addresses cannot make a lone byte look like code) |
 | `bases`, `pages`, `bank` | L1 page -> Z80 base (`{"5": "4000", "2": "8000", "0": "C000"}` by default); `pages` lists pages at their natural base (5 `$4000`, 2 `$8000`, any other `$C000`); `bank` N adds `SLOT 3` / `PAGE N` to the top file |
-| `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window) |
+| `same_bytes` | count a recorded instruction only when all its bytes are the image's (code overwritten later in the same window), for the code and the witness counts (section 3.2) |
 | `data_entries` | `"stop"` (or `true`): every annotated data entry, up to the next entry, is data the walk never enters; `"first"`: only the entry's first byte stops the walk |
 | `entries_in_code`, `no_entries` | keep only the recorded routine entries the walk made code / take none |
 | `overwritten` | `[[LO, HI], ...]`: ranges another block overwrites at run time; no recorded instruction there counts and the walk stops there |
@@ -355,6 +365,10 @@ python3 ../../kit/mkgame.py --image work/parts/loader-5d3b.bin --org '$5D3B' --a
 
 `--l1` (instructions only), `--l1-reads` (instructions and data reads), `--blocks`, `--page N` (repeat), `--bank N`,
 `--range LO-HI`, `--built NAME=PATH`, `--save PATH`, `--res DIR`, `--wide`, `--narrow` are the keys above.
+
+`--part F.json --ann FILE` runs a part file with another `.ann` (a trial copy; with `--out DIR` its work files go
+apart too): it replaces the file's `ann`, or the one all its segments share; a part whose segments have several
+`.ann` files is refused (`--ann with --part: the segments of F.json have several .ann files ...`).
 
 ### 5.4 In the cases
 

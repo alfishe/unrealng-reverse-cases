@@ -25,6 +25,61 @@ def unreal_root(hint=None):
     return toolpaths.unreal_ng(hint)
 
 
+# Input scripts (mm_session.py's, zx-reaper's tests/inputs format): "FRAME KEYS..." holds the keys until the next
+# line, "FRAME -" releases all, "FRAME END" ends, "+N" counts from the previous line. Keys held together are
+# separated by spaces ("100 W O"); "W+O" is the same chord (zx-reaper's form), which mm_session.py does not take:
+# kit/rs.py capture hands it a copy with the chords split
+INPUT_KEYS = {chr(c) for c in range(ord('A'), ord('Z') + 1)} | set('0123456789') | \
+    {'ENTER', 'SPACE', 'CS', 'SS', 'KF', 'KL', 'KR', 'KU', 'KD'}
+
+
+def input_script(path):
+    """(lines, problems) of an input script: lines [(frame, keys or None at END, the line's text)], keys a list with
+    the "+" chords split; problems ["path:N: ..."] for every word that is no key"""
+    lines, problems, frame = [], [], 0
+    for number, raw in enumerate(open(path), 1):
+        text = raw.split('#', 1)[0].strip()
+        if not text:
+            continue
+        stamp, *words = text.split()
+        if not re.match(r'^\+?\d+$', stamp):
+            problems.append(f'{path}:{number}: "{stamp}" is no frame (FRAME or +N first, then the keys)')
+            continue
+        frame = frame + int(stamp[1:]) if stamp.startswith('+') else int(stamp)
+        if words == ['END']:
+            lines.append((frame, None, text))
+            break
+        if words and words[0].upper() in ('TYPE', 'POKE', 'TAPE'):
+            problems.append(f'{path}:{number}: {words[0]} lines are zx-reaper\'s (tools/zxrun.py): mm_session.py '
+                            f'plays keys only')
+            continue
+        keys = []
+        for word in ([] if words == ['-'] else words):
+            parts = word.split('+')
+            bad = [k for k in parts if k.upper() not in INPUT_KEYS]
+            if bad:
+                problems.append(f'{path}:{number}: "{word}" is no key: the keys are A-Z 0-9 ENTER SPACE CS SS and '
+                                f'the Kempston KF KL KR KU KD, keys held together separated by spaces ("W O") or joined '
+                                f'by "+" ("W+O"); "-" alone releases all')
+                continue
+            keys += [k.upper() for k in parts]
+        lines.append((frame, keys, text))
+    return lines, problems
+
+
+def plain_input_script(path, out):
+    """write the input script with its "+" chords split into keys separated by spaces (the form mm_session.py
+    plays) to out; returns the problems (input_script), nothing written when there are any"""
+    lines, problems = input_script(path)
+    if problems:
+        return problems
+    with open(out, 'w') as f:
+        f.write(f'# {os.path.basename(path)} with its chords split (kit/rs.py)\n')
+        for frame, keys, _ in lines:
+            f.write(f'{frame} END\n' if keys is None else f'{frame} {" ".join(keys) if keys else "-"}\n')
+    return []
+
+
 def access_trace(hint=None):
     """The access_trace module of unreal-ng"""
     path = os.path.join(unreal_root(hint), 'tools/verification/analysis/access_trace.py')

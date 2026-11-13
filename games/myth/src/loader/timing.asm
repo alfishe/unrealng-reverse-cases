@@ -14,7 +14,7 @@
 ; CALL LoadStream (IX = Sl1Start, DE = $AA: tape block 7). Then 255 TimeSample
 ; counts to TimeBuffer. On the +2A/+3 ROM (its byte $006D is $28) no compare;
 ; else TimeCompare. Tape block 29 loads Unxor over this routine later
-; (src/loader/unxor.asm). Witness: L1 2 (c1).
+; (src/loader/unxor.asm). Witness: L1 1 (c1).
 TimeCheck:
   CALL LoadStream
   LD HL,TimeBuffer

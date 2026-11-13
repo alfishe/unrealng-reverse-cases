@@ -3,7 +3,7 @@
 image's bytes: a case's game, or any other part of the medium (a loader, a menu, a driver, a bank, several pieces).
 
     python3 kit/mkgame.py [--case CASE] [--config FILE] [--ann FILE] [--out DIR] [--install]      the case's main part
-    python3 kit/mkgame.py [--case CASE] --part FILE.json [--install]                               a part file
+    python3 kit/mkgame.py [--case CASE] --part FILE.json [--ann FILE] [--install]                  a part file
     python3 kit/mkgame.py [--case CASE] --image BIN --org ADDR --ann FILE --top NAME --dest DIR     one image
                           [--range LO-HI] [--res DIR] [--l1 L1.json ...] [--l1-reads L1.json ...] [--blocks]
                           [--page N ...] [--bank N] [--built NAME=PATH ...] [--save PATH] [--title TEXT] [--install]
@@ -139,7 +139,15 @@ class Source:
                       spec.get('optional', False))
 
 
-EXECS = {}  # l1.json path -> {address: the runs of the instruction there}, filled by read_sources
+EXECS = {}  # l1.json path -> {address: [(page, bytes, runs, self-modified)]}, filled by read_sources
+
+
+def add_runs(ran, doc, bases):
+    """the recorded instructions of an L1 document in the pages of bases into ran {address: [(page, the bytes the
+    L1 holds, runs, self-modified)]}: the witness check keeps the bytes, so that a part counts only its own"""
+    for z80, page, code, _kind, n, *rest in doc['instructions']:
+        if page in bases:
+            ran.setdefault(int(z80[1:], 16), []).append((page, bytes.fromhex(code), n, bool(rest and rest[-1])))
 
 
 def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=False):
@@ -161,11 +169,7 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
             wlo = lo if src.lo is None else max(lo, src.lo)
             whi = hi if src.hi is None else min(hi, src.hi)
             if src.format == 'l1':  # the runs of each instruction, for the witness check
-                ran = EXECS.setdefault(path, {})
-                for z80, page, _code, _kind, n, *_ in doc['instructions']:
-                    if page in bases:
-                        a = int(z80[1:], 16)
-                        ran[a] = ran.get(a, 0) + n
+                add_runs(EXECS.setdefault(path, {}), doc, bases)
             if src.format == 'trace':
                 for a, n in doc['starts'].items():
                     if decode(mem, int(a, 16))[0] == n:
@@ -372,6 +376,7 @@ class Annotations:
         self.over = set()  # branch targets not followed
         self.names_from = {}  # bank: (the .ann of @names, {address: name})
         short_banks = []  # (address, bank, comment, where) of the @bank lines without a name
+        own_labels = []  # (address, name, where) of the @equ lines inside the image: the .ann's own labels
         self.pieces = []  # the piece names, in the file's order
         self.variants = []  # [name, lo, hi or None, insert, [lines]] of the @variant lines, in the file's order
         self.path = path
@@ -475,7 +480,10 @@ class Annotations:
                 if LO <= address < HI:
                     if piece is not None and current is None:
                         continue  # a common line: another piece's address, a label in this one
-                    raise SystemExit(f'{where}:{number}: @equ ${address:04X} is inside the image: name it as a label')
+                    # an .ann shared by several parts may name another part's label: in the part that holds the
+                    # address the line is that label (checked when the file is read), in the others an EQU
+                    own_labels.append((address, parts[2] if len(parts) > 2 else '', f'{where}:{number}'))
+                    continue
                 rest, size = parts[3:], 1
                 if rest and rest[0].isdigit():
                     size, rest = int(rest[0]), rest[1:]
@@ -551,6 +559,11 @@ class Annotations:
         for start, name in self.modules:
             if start is None:
                 sys.exit(f'{path}: module {name} holds no entry')
+        for a, name, where_at in own_labels:
+            if self.name(a) != name:
+                sys.exit(f'{where_at}: @equ ${a:04X} {name} is inside the image: name it as a label (an @equ inside '
+                         f'the image is only another part\'s label, the same name as this .ann\'s entry or label at '
+                         f'${a:04X}: {self.name(a) or "none"})')
 
     def merge_inner(self, a, name, comment, where):
         # Two lines for one address (a name on one, a comment on the other) are merged, not the last kept
@@ -1650,7 +1663,7 @@ def make_part(part, args):
         smem = bytearray(0x10000)
         smem[LO:HI] = original[lo - at:hi - at]
         results.append(generate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top))
-        if check_witness(seg, part.get('witness_skip', ()), args.fix_witness) and args.fix_witness:
+        if check_witness(seg, part.get('witness_skip', ()), args.fix_witness, bytes(smem)) and args.fix_witness:
             print(f'witness: {os.path.relpath(seg.ann, ROOT)} rewritten, its source written again from it')
             results[-1] = regenerate(seg, bytes(smem), args, out, None if part.get('subdir', True) else top)
         print(f'{os.path.relpath(seg.ann, ROOT)}{" " + seg.piece if seg.piece else ""}: {results[-1][5]}')
@@ -1780,11 +1793,7 @@ def load_witness(seg, fix=False):
                 sys.exit(f'no recording {path}: --fix-witness would drop it from the witness lines')
             print(f'witness: no recording {os.path.relpath(path, ROOT)}: its runs are left out of the check')
             continue
-        ran = EXECS.setdefault(path, {})
-        for z80, page, _code, _kind, n, *_ in json.load(open(path))['instructions']:
-            if page in seg.bases:
-                a = int(z80[1:], 16)
-                ran[a] = ran.get(a, 0) + n
+        add_runs(EXECS.setdefault(path, {}), json.load(open(path)), seg.bases)
 
 
 def family_text(prefix, names):
@@ -1819,42 +1828,83 @@ def witness_items(text):
 def witness_text(builds, address):
     """'N (names)' of a code entry: the runs of its first instruction summed over the builds {build: runs}, and the
     builds that ran it; the members of a numbered family (c1 ... c4, rzx01 ... rzx32: two or more in the set) named
-    (family_text: 'c1-c4', 'c1, c2, c4'), or 'rzx xK' when there are too many to name"""
-    family = {}
-    for b in builds:
-        m = re.match(r'(.*?)(\d+)$', build_name(b))
+    (family_text: 'c1-c4', 'c1, c2, c4'), or 'rzx xK' when there are too many to name; builds of one name (the frame
+    windows of one recording, witness_names) summed as one"""
+    family, names = {}, {}
+    for b in builds:  # builds witness_names gives one name (frame windows of one recording) are one item
+        names.setdefault(build_name(b), []).append(b)
+    for name in names:
+        m = re.match(r'(.*?)(\d+)$', name)
         if m:
-            family.setdefault(m.group(1), []).append(b)
+            family.setdefault(m.group(1), []).append(name)
     singles, groups, total = [], {}, 0
-    for b, ran in builds.items():
-        n = ran.get(address, 0)
+    for name, members in names.items():
+        n = sum(builds[b].get(address, 0) for b in members)
         if not n:
             continue
         total += n
-        m = re.match(r'(.*?)(\d+)$', build_name(b))
+        m = re.match(r'(.*?)(\d+)$', name)
         if m and len(family[m.group(1)]) > 1:
-            groups.setdefault(m.group(1), []).append(build_name(b))
+            groups.setdefault(m.group(1), []).append(name)
         else:
-            singles.append(build_name(b))
+            singles.append(name)
     return total, ', '.join(sorted(singles) + [family_text(k, v) for k, v in sorted(groups.items())])
 
 
-def check_witness(seg, skip=(), fix=False):
+class Runs:
+    """The runs of one build at the addresses of one segment's image, as witness_text reads them (get(address, 0)).
+
+    A part whose addresses other programs also ran counts only the runs of its own bytes, as its code is found:
+    "same_bytes", where all the instruction's bytes the L1 holds are the image's; "mode": "blocks", where its opcode
+    and length are (an operand may be self-modified). So another program at the same address (a loader piece run
+    over by the next, a menu by the game) adds nothing. Any other part counts every run, as before. A source's
+    address window (lo, hi) bounds its runs as it bounds the code. shared: the entries counted under such a part
+    whose instruction the L1 marks self-modified: the L1 keeps one instruction an address (the last bytes run
+    there, the runs of all), so the runs may be several programs' (a frame window build keeps them apart)"""
+
+    def __init__(self, ran, mem, match, windows):
+        self.ran, self.mem, self.match, self.windows = ran, mem, match, windows
+        self.shared = set()
+
+    def get(self, a, default=0):
+        if self.windows and not any(lo <= a < hi for lo, hi in self.windows):
+            return default
+        n = 0
+        for _page, raw, runs, modified in self.ran.get(a, ()):
+            if self.match and self.mem is not None:
+                if decode(self.mem, a)[0] != len(raw) or self.mem[a] != raw[0]:
+                    continue
+                if self.match == 'all' and self.mem[a:a + len(raw)] != raw:
+                    continue
+            n += runs
+            if self.match == 'all' and modified:
+                self.shared.add(a)
+        return n or default
+
+
+def check_witness(seg, skip=(), fix=False, mem=None):
     """The "Witness: L1 N (builds)" lines of the .ann's code entries against the recordings: N is the runs of the
     entry's first instruction summed over the segment's builds (the case's read_builds, code_builds, ref_builds and
-    witness_builds, or a part's l1 and witness_builds, less witness_skip), the list the builds that ran it. Prints each stale line; fix: rewrites N and the list in the .ann.
-    Returns the number of stale lines"""
+    witness_builds, or a part's l1 and witness_builds, less witness_skip), the list the builds that ran it; with mem
+    (the segment's image) only the runs of its own bytes count (Runs). Prints each stale line; fix: rewrites N and
+    the list in the .ann. Returns the number of stale lines"""
     if not seg.ann or not os.path.exists(seg.ann):
         return 0
     load_witness(seg, fix)
     work = os.path.join(ROOT, 'work')
     builds = {}
+    match = 'all' if seg.same_bytes else 'opcode' if seg.mode == 'blocks' else None
     for path, ran in EXECS.items():
         build = os.path.relpath(os.path.dirname(path), work)
-        if build not in skip and any(os.path.abspath(path) == os.path.abspath(s.path) or
-                                     ('*' in s.path and fnmatch.fnmatch(path, s.path)) for s in seg.sources) or \
-                build not in skip and any(os.path.abspath(path) == os.path.abspath(w) for w in seg.witness):
-            builds[build] = ran
+        if build in skip:
+            continue
+        sources = [s for s in seg.sources if os.path.abspath(path) == os.path.abspath(s.path) or
+                   ('*' in s.path and fnmatch.fnmatch(path, s.path))]
+        witness = any(os.path.abspath(path) == os.path.abspath(w) for w in seg.witness)
+        if sources or witness:
+            windows = [] if witness or any(s.lo is None and s.hi is None for s in sources) else \
+                [(s.lo if s.lo is not None else 0, s.hi if s.hi is not None else 0x10000) for s in sources]
+            builds[build] = Runs(ran, mem, match, windows)
     known = {build_name(b) for b in builds}
     lines = open(seg.ann).read().split('\n')
     entry, stale = None, 0
@@ -1888,6 +1938,16 @@ def check_witness(seg, skip=(), fix=False):
                 return w.group(0)
             return 'Witness: L1 %d (%s)' % (n, names)
         lines[i] = WITNESS.sub(sub, line)
+    shared = {}
+    for b, r in builds.items():
+        for a in r.shared:
+            shared.setdefault(build_name(b), set()).add(a)
+    for name, where in sorted(shared.items()):
+        # the L1 keeps one instruction an address: the last bytes that ran there, the runs of all
+        print('witness: %s: %s holds %d witnessed entr%s whose bytes changed in the recording (%s%s): their counts '
+              'may include another program\'s runs at the same address; a frame window build of each keeps them '
+              'apart' % (os.path.relpath(seg.ann, ROOT), name, len(where), 'y' if len(where) == 1 else 'ies',
+                         ', '.join('$%04X' % a for a in sorted(where)[:6]), ', ...' if len(where) > 6 else ''))
     if fix and stale:
         open(seg.ann, 'w').write('\n'.join(lines))
     return stale
@@ -1896,7 +1956,7 @@ def check_witness(seg, skip=(), fix=False):
 def regenerate(seg, mem, args, out, top):
     """generate again after --fix-witness rewrote the .ann, the recordings' runs (EXECS, which read_sources adds
     to) as the first pass left them"""
-    saved = {path: dict(ran) for path, ran in EXECS.items()}
+    saved = {path: {a: list(runs) for a, runs in ran.items()} for path, ran in EXECS.items()}
     result = generate(seg, mem, args, out, top)
     EXECS.clear()
     EXECS.update(saved)
@@ -1914,7 +1974,7 @@ def single_part(part, args, mem, original, at, top, out, device, built):
     if seg.bank is not None and 'bases' not in part and part.get('pages') is None:
         seg.bases = natural_bases([seg.bank], LO)
     result = generate(seg, mem, args, out, top)
-    if check_witness(seg, part.get('witness_skip', ()), args.fix_witness) and args.fix_witness:
+    if check_witness(seg, part.get('witness_skip', ()), args.fix_witness, mem) and args.fix_witness:
         # the .asm comes from the .ann: written again, so that one run (with --install) leaves both current
         print(f'witness: {os.path.relpath(seg.ann, ROOT)} rewritten, its source written again from it')
         result = regenerate(seg, mem, args, out, top)
@@ -2084,7 +2144,9 @@ def main():
     p.add_argument('--venv', help='a virtualenv with SkoolKit (else $SKOOLKIT_VENV, kit/toolpaths.py)')
     p.add_argument('--sjasmplus', help='sjasmplus (else $SJASMPLUS, kit/toolpaths.py)')
     p.add_argument('--out', help='the work folder')
-    p.add_argument('--ann', help='the annotations (the main part: src/<main>/<main>.ann, src/game/game.ann in a game)')
+    p.add_argument('--ann', help='the annotations (the main part: src/<main>/<main>.ann, src/game/game.ann in a game; '
+                   'with --part it replaces the part file\'s .ann, or the one all its segments share: a part whose '
+                   'segments have several .ann files is refused)')
     p.add_argument('--install', action='store_true', help='write the sources when the bytes are the image\'s')
     p.add_argument('--fix-witness', action='store_true', help='rewrite the stale "Witness: L1 N (builds)" lines of '
                    'the .ann from the recordings (mkgame prints them in any case) and write the source again from '
@@ -2101,6 +2163,16 @@ def main():
         part = json.load(open(os.path.join(ROOT, args.part) if not os.path.isabs(args.part) else args.part))
         if args.out:
             part['work'] = os.path.relpath(os.path.abspath(args.out), ROOT)
+        if args.ann:  # the part's .ann replaced (a trial copy): one .ann the part, or the one all its segments share
+            ann = os.path.relpath(os.path.abspath(args.ann), ROOT)
+            segs = [s for s in part.get('segments', ()) if s.get('ann')]
+            if len({s['ann'] for s in segs}) > 1:
+                sys.exit('--ann with --part: the segments of %s have several .ann files (%s); give a part file '
+                         'instead' % (args.part, ', '.join(sorted({s['ann'] for s in segs}))))
+            for s in segs:
+                s['ann'] = ann
+            if not segs:
+                part['ann'] = ann
         part.setdefault('name', os.path.splitext(os.path.basename(args.part))[0])
         return make_part(part, args)
     if args.image:

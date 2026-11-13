@@ -21,6 +21,8 @@
 ; $A0D9, JoystickHighlight $9A3B (E = the line taken), ClearTextLine with 68,
 ; 84, 100, 116, then E = 0 SetKempston $9834, 1 SetCursorKeys $989F, 2
 ; SetSinclair $986A, 3 BackToMenu. Not executed in any recording (c1, menu).
+;
+; Witness: L1 4 (joystick).
 SelectJoystick:
   CALL MenuHook
   CALL JoystickText
@@ -55,6 +57,8 @@ BackToMenu:
 ;
 ; Called from Menu at $99AB, DefineKeys $971A and SelectJoystick $97D8 before
 ; anything else; does nothing. menu: 2 runs; c1: 1 (the front's bytes).
+;
+; Witness: L1 14 (c1, joystick, menu, rzx-r0).
 MenuHook:
   RET
 
@@ -66,6 +70,8 @@ MenuHook:
 ; $47 RIGHT, $4F LEFT, each through its Patch*Reader; KeyXorMask $FCFA := $FF,
 ; so a set bit (the Kempston's pressed direction) reads as a pressed key (Z
 ; after BIT). Back to the menu. Not executed in any recording.
+;
+; Witness: L1 1 (joystick).
 SetKempston:
   LD HL,$001F
   LD (ReaderPort),HL
@@ -93,6 +99,8 @@ SetKempston:
 ;
 ; ReaderPort = $EFFE; $47 FIRE, $4F UP, $57 DOWN, $5F RIGHT, $67 LEFT;
 ; KeyXorMask := 0. Back to the menu. Not executed in any recording.
+;
+; Witness: L1 1 (joystick).
 SetSinclair:
   LD HL,$EFFE
   LD (ReaderPort),HL
@@ -121,6 +129,8 @@ SetSinclair:
 ; ReaderPort = $EFFE; $47 FIRE, $57 RIGHT, $5F UP, $67 DOWN; ReaderPort =
 ; $F7FE, LEFT with $67 still in ReaderBitOp (bit 4: the 5 key); KeyXorMask :=
 ; 0. Back to the menu. Not executed in any recording.
+;
+; Witness: L1 1 (joystick).
 SetCursorKeys:
   LD HL,$EFFE
   LD (ReaderPort),HL
@@ -146,6 +156,8 @@ SetCursorKeys:
 ; KeyFire's port := ReaderPort, its BIT opcode := ReaderBitOp
 ;
 ; Writes KeyFire+4/+5 and KeyFire+13. Not executed in any recording.
+;
+; Witness: L1 3 (joystick).
 PatchFireReader:
   LD HL,(ReaderPort)
   LD (KeyFire+4),HL
@@ -156,6 +168,8 @@ PatchFireReader:
 ; KeyLeft's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
 ; Writes KeyLeft+4/+5 and KeyLeft+13. Not executed in any recording.
+;
+; Witness: L1 3 (joystick).
 PatchLeftReader:
   LD HL,(ReaderPort)
   LD (KeyLeft+4),HL
@@ -166,6 +180,8 @@ PatchLeftReader:
 ; KeyRight's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
 ; Writes KeyRight+4/+5 and KeyRight+13. Not executed in any recording.
+;
+; Witness: L1 3 (joystick).
 PatchRightReader:
   LD HL,(ReaderPort)
   LD (KeyRight+4),HL
@@ -176,6 +192,8 @@ PatchRightReader:
 ; KeyUp's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
 ; Writes KeyUp+4/+5 and KeyUp+13. Not executed in any recording.
+;
+; Witness: L1 3 (joystick).
 PatchUpReader:
   LD HL,(ReaderPort)
   LD (KeyUp+4),HL
@@ -186,6 +204,8 @@ PatchUpReader:
 ; KeyDown's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
 ; Writes KeyDown+4/+5 and KeyDown+13. Not executed in any recording.
+;
+; Witness: L1 3 (joystick).
 PatchDownReader:
   LD HL,(ReaderPort)
   LD (KeyDown+4),HL
@@ -202,6 +222,8 @@ PatchDownReader:
 ; 14: lines 68, 84, 100, 116), colours from JoystickBarColours $9A8C, E 0-3. 96
 ; frames a line, 384 a cycle, starting on KEMPSTON. Not executed in any
 ; recording.
+;
+; Witness: L1 4 (joystick).
 JoystickHighlight:
   LD E,$00
   LD D,$00
@@ -263,6 +285,8 @@ JoystickBarColours:
 ;
 ; Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames). Not
 ; executed in any recording.
+;
+; Witness: L1 4 (joystick).
 JoystickText:
   CALL PrintText
 
@@ -273,6 +297,8 @@ TextKempston:
 ; The second line
 ;
 ; JoystickText, continued. Not executed in any recording.
+;
+; Witness: L1 4 (joystick).
 JoystickText2:
   CALL PrintText
 
@@ -283,6 +309,8 @@ TextCursorKeys:
 ; The third line
 ;
 ; JoystickText, continued. Not executed in any recording.
+;
+; Witness: L1 4 (joystick).
 JoystickText3:
   CALL PrintText
 
@@ -293,6 +321,8 @@ TextSinclair:
 ; The fourth line
 ;
 ; JoystickText, continued. Not executed in any recording.
+;
+; Witness: L1 4 (joystick).
 JoystickText4:
   CALL PrintText
 
@@ -303,5 +333,7 @@ TextLeaveThisMenu:
 ; JoystickText's RET
 ;
 ; Not executed in any recording.
+;
+; Witness: L1 4 (joystick).
 JoystickTextDone:
   RET

@@ -44,5 +44,12 @@
       "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
     ]
   ],
-  "other_builds": []
+  "other_builds": [],
+  "witness_skip": [
+    "stage1/c1"
+  ],
+  "witness_builds": [
+    "stage1/c1/load",
+    "stage1/c1/unxor"
+  ]
 }

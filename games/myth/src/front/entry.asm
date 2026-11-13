@@ -29,6 +29,8 @@
 ; credits from 7967, SPACE seen in the credits at 8063, the menu from 8127,
 ; START GAME at 8491, back in the resident at about 8558 (c1's L1 with the
 ; front's bytes: $7803, $7806, $7808, $780B, $7812-$781A ran once).
+;
+; Witness: L1 2 (c1, rzx-r0).
 FrontMain:
   CALL ShowLogo
   CALL CreditsLoop
@@ -57,6 +59,8 @@ FrontRunMenu:
 ; and nothing reads SavedReturn or SavedStack: not executed in any recording
 ; (c1, menu). The resident's own set-up does the same work before it loads the
 ; block (SetIm2 $F635, c1 frame 5166).
+;
+; Witness: L1 0 ().
 FrontColdEntry:
   DI
   POP HL
@@ -79,6 +83,8 @@ FrontColdEntry:
 ; $FD00-$FE00 of $FE), IM 2, EI. The resident's SetIm2 $F635 with the save
 ; added. Called only by FrontColdEntry: not executed in any recording (c1,
 ; menu).
+;
+; Witness: L1 0 ().
 SetIm2Front:
   DI
   PUSH HL

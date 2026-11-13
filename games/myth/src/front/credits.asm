@@ -26,6 +26,8 @@
 ; its 140-frame wait (WaitOrSpace's abort ran once, c1 branch $9BB1 taken
 ; once): the credits ended on page 1. menu: not reached. Pages 2-7 are known
 ; only from the code.
+;
+; Witness: L1 2 (c1, rzx-r0).
 CreditsLoop:
   LD BC,$0014
   CALL WaitOrSpace
@@ -39,6 +41,8 @@ TextProgrammedBy:
 ;
 ; CreditsLoop, continued after its string. c1: run once, frame 8023 (the
 ; front's bytes).
+;
+; Witness: L1 2 (c1, rzx-r0).
 CreditsPage1Name:
   CALL PrintText
 
@@ -51,6 +55,8 @@ TextNeilDodwell:
 ; CreditsLoop, continued: WaitOrSpace 70 (c1: SPACE ended the credits here,
 ; frame 8063), ClearTextLine with the lines 84 and 100, WaitOrSpace 20, then
 ; GRAPHICS BY.
+;
+; Witness: L1 2 (c1, rzx-r0).
 CreditsPage2:
   LD BC,$0046
   CALL WaitOrSpace
@@ -70,6 +76,8 @@ TextGraphicsBy:
 ;
 ; CreditsLoop, continued. Not executed in any recording (c1 left the credits on
 ; page 1).
+;
+; Witness: L1 0 ().
 CreditsPage2Name:
   CALL PrintText
 
@@ -80,6 +88,8 @@ TextConceptAnimations:
 ; Hold, wipe, page 3 heading
 ;
 ; CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage3:
   LD BC,$0046
   CALL WaitOrSpace
@@ -98,6 +108,8 @@ TextProducedBy:
 ; Page 3's second line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage3Name:
   CALL PrintText
 
@@ -108,6 +120,8 @@ TextSystemThree:
 ; Hold, wipe, page 4 heading
 ;
 ; CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage4:
   LD BC,$0046
   CALL WaitOrSpace
@@ -126,6 +140,8 @@ TextOriginalGameDesign:
 ; Page 4's second line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage4Name:
   CALL PrintText
 
@@ -136,6 +152,8 @@ TextMarkCale:
 ; Hold, wipe, page 5 heading
 ;
 ; CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage5:
   LD BC,$0046
   CALL WaitOrSpace
@@ -154,6 +172,8 @@ TextSoundEffectsBy:
 ; Page 5's second line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage5Name:
   CALL PrintText
 
@@ -166,6 +186,8 @@ TextNeilDodwellSound:
 ;
 ; CreditsLoop, continued: as CreditsPage2, then DEVELOPED on line 68. Not
 ; executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage6:
   LD BC,$0046
   CALL WaitOrSpace
@@ -184,6 +206,8 @@ TextDeveloped:
 ; Page 6's second line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage6Line2:
   CALL PrintText
 
@@ -194,6 +218,8 @@ TextInAssociationWith:
 ; Page 6's third line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage6Line3:
   CALL PrintText
 
@@ -205,6 +231,8 @@ TextMarjacqMicro:
 ;
 ; CreditsLoop, continued: WaitOrSpace 70, ClearTextLine with 68, 84, 116,
 ; WaitOrSpace 20, COPYRIGHT 1989. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage7:
   LD BC,$0046
   CALL WaitOrSpace
@@ -225,6 +253,8 @@ TextCopyright1989:
 ; Page 7's second line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage7Line2:
   CALL PrintText
 
@@ -235,6 +265,8 @@ TextSystem3Software:
 ; Page 7's third line
 ;
 ; CreditsLoop, continued. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage7Line3:
   CALL PrintText
 
@@ -248,6 +280,8 @@ TextPressSpaceToStart:
 ; CreditsLoop, continued: WaitOrSpace 100, ClearTextLine with 68, 100 and 116
 ; (line 84, SYSTEM 3 SOFTWARE, is left: page 1's heading is revealed over it),
 ; WaitOrSpace 20, JP CreditsLoop. Not executed in any recording.
+;
+; Witness: L1 0 ().
 CreditsPage7End:
   LD BC,$0064
   CALL WaitOrSpace

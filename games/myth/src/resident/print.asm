@@ -51,7 +51,7 @@ ColourCycle:
 ; Fill an attribute box: column, row, width, height, attribute after the CALL
 ;
 ; The five bytes after the CALL: column, row, width, height, attribute; returns
-; after them. Witness: L1 9086 (c1, ending, joystick, menu, s1-idle, s1-right,
+; after them. Witness: L1 9085 (c1, ending, joystick, menu, s1-idle, s1-right,
 ; s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
 AttrBox:
   POP IY
@@ -90,8 +90,8 @@ AttrBoxCell:
 ; Print the text after the CALL: TextToBuffer, then RevealText at its row
 ;
 ; The data: column byte, bit, pixel row, text, 0; returns after the 0. Witness:
-; L1 2971 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right,
-; stageload, rzx-r0-rzx-r4).
+; L1 43 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, stageload,
+; rzx-r0-rzx-r4).
 Print:
   POP IY
   CALL TextToBuffer
@@ -101,7 +101,7 @@ Print:
 
 ; Print the text at IY (a StageTable title), IY past it
 ;
-; Witness: L1 12 (c1, joystick, menu, rzx-r0, rzx-r1, rzx-r3).
+; Witness: L1 11 (c1, joystick, menu, rzx-r0, rzx-r1, rzx-r3).
 PrintRecord:
   CALL TextToBuffer
   LD A,(TextRow)
@@ -117,7 +117,7 @@ PrintRecord:
 ; space (as the glyph after Z) and 0-9 (after the space); the glyph's width
 ; mask to CharMask, its 7 rows to GlyphBuffer, shifted right by BitShift, ORed
 ; into TextBuffer at DE; then Advance. Ends after the 0 with IY past it.
-; Witness: L1 55 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right,
+; Witness: L1 54 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right,
 ; stageload, rzx-r0-rzx-r4).
 TextToBuffer:
   LD HL,TextBuffer
@@ -247,7 +247,7 @@ TextEnd:
 ; For step 0-7: the ADD A,n at RevealMaskAdd := $CB + step; HALT, CycleColours;
 ; for the 7 rows and 32 bytes: mask = DissolveMasks set (a ROM byte from $0001
 ; up AND $18) at the step; screen := (screen AND NOT mask) OR (buffer AND
-; mask). Witness: L1 2763 (c1, joystick, menu, s1-right, s2-right, s3-right,
+; mask). Witness: L1 54 (c1, joystick, menu, s1-right, s2-right, s3-right,
 ; s4-right, stageload, rzx-r0-rzx-r4).
 RevealText:
   LD L,A
@@ -312,7 +312,7 @@ RevealMaskAdd:
 
 ; Wait BC frames (HALT each)
 ;
-; Witness: L1 2617 (c1).
+; Witness: L1 0 ().
 WaitBC:
   HALT
   DEC BC

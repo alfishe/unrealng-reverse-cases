@@ -5,13 +5,13 @@
 # credits and the menu (START GAME, DEFINE KEYS, SELECT JOYSTICK) and returns to the resident on START GAME, which
 # then loads stage 1 over all of it.
 #
-# The recordings: c1 (work/stage1/c1, frames 7826-8558 run the front) and menu (work/stage1/rec/menu, from c1's menu
-# state: DEFINE KEYS, then START GAME). c1 later runs stage 1's code at the same addresses, and an L1 keeps one
-# instruction an address: the part file counts a recorded instruction only where its bytes are the front's
-# (mode blocks, same_bytes), so many of the front's runs in c1 are lost (work/stage2/notes-front.md). The
-# "Witness: L1" lines are the kit's counts of the entry's first address in both builds; at an address where stage 1
-# ran code too, c1's count includes stage 1's runs. The runs of the front's own bytes (work/stage2/front/ran.py) and
-# c1's frames are given in the text. SELECT JOYSTICK was never recorded: what it does is known only from the code.
+# The recordings: c1 (work/stage1/c1, frames 7826-8558 run the front), menu (work/stage1/rec/menu, from c1's menu
+# state: DEFINE KEYS, then START GAME), rzx-r0 and joystick (SELECT JOYSTICK, then START GAME). c1 and joystick later
+# run stage 1's code at the same addresses, and an L1 keeps one instruction an address: the part file counts a
+# recorded instruction only where its bytes are the front's (mode blocks, same_bytes), so many of the front's runs in
+# the whole recordings are lost (work/stage2/notes-front.md). The "Witness: L1" lines count c1 and joystick in their
+# windows before stage 1 runs (work/stage1/c1/front, frames 5166-15074, and work/stage2/rec/joystick/front, frames
+# 0-8899, tools/c1_windows.sh), menu and rzx-r0 whole. c1's frames are given in the text.
 #
 # Names outside the part (the resident, $F000-$FFFF, and the stage variables at $FExx) are @equ lines, named here;
 # the lead aligns them with src/resident/resident.ann.
@@ -58,13 +58,16 @@ $760E s FrontMidSpace ; Zeros up to the code at $7800
 $7800 c FrontMain ; The front: the logo, the credits, wipe the text lines, the menu; returns on START GAME
 > Called by the resident (CALL $7800 at $F08D) once the block is loaded. ShowLogo $785A (the logo until SPACE, then its box wiped), CreditsLoop $9509 (until SPACE), the four text lines of the box wiped (ClearTextLine $9D65 with the lines 68, 84, 100, 116), then Menu $99A8. Menu returns only for START GAME, and then not here: StartGame $99DD drops FrontMain's return address, so the RET there goes straight back to the resident at $F090. The RET at $781D is not executed in any recording (c1, menu).
 > c1: entered at frame 7826; the logo from 7848, SPACE seen at 7938, the credits from 7967, SPACE seen in the credits at 8063, the menu from 8127, START GAME at 8491, back in the resident at about 8558 (c1's L1 with the front's bytes: $7803, $7806, $7808, $780B, $7812-$781A ran once).
+> Witness: L1 2 (c1, rzx-r0).
 $7806 FrontWipeBox ; the credits returned (SPACE): wipe the four text lines of the box
 $781A FrontRunMenu ; the menu (returns only by StartGame's dropped return, to the resident)
 
 $781E c FrontColdEntry ; A second entry: save the caller's return and SP, own stack, own IM 2 vector, keys active low, then FrontMain
 > Pops the return address into SavedReturn $FE06, black border (OUT ($FE),0), keeps SP in SavedStack $FE04, sets SP = $FFFF, sets the IM 2 jump to Im2Handler $F9B3 with SetIm2Front $783B, clears KeyXorMask $FCFA and jumps to FrontMain. No instruction of the resident or the block jumps or calls here, and nothing reads SavedReturn or SavedStack: not executed in any recording (c1, menu). The resident's own set-up does the same work before it loads the block (SetIm2 $F635, c1 frame 5166).
+> Witness: L1 0 ().
 $783B c SetIm2Front ; Save the IM 2 jump's three bytes to SavedIm2Jump, write JP HL there, I = $FD, IM 2, EI
 > In: HL = the handler. The three bytes at Im2Jump $FEFE go to SavedIm2Jump $FE01 first (LDIR), then $C3 and HL are written at $FEFE, I = $FD (the table $FD00-$FE00 of $FE), IM 2, EI. The resident's SetIm2 $F635 with the save added. Called only by FrontColdEntry: not executed in any recording (c1, menu).
+> Witness: L1 0 ().
 
 @module logo ; The logo over a starfield, the box's shimmer and colours, the box wiped by dissolving
 @about ShowLogo $785A puts LogoScreen $79DB on the screen: the attributes made black first, the 6144 bitmap bytes, 20 frames, then the 768 attribute bytes. The starfield is part of the picture (blue dots in its bitmap): no code moves it. LogoWaitSpace $7942 then runs two effects every two frames until SPACE: ShimmerFrame $79AE rolls the yellow and bright yellow streaks of ShimmerColours $78E2 over the logo box's attributes (rows 7-16, columns 6-25), and the box's inside is painted back over it (rows 14 and 15 there; PaintBoxColours $7971 later: rows 8-15, columns 7-24, red with magenta on rows 9, 11, 13, 15), so only the frame of the box shimmers. On SPACE, DissolveLogoBox $7889 wipes the inside of the box (pixel lines 64-127, columns 7-24) in 8 dissolve steps; the credits and the menu are then printed into that space.
@@ -73,11 +76,13 @@ $783B c SetIm2Front ; Save the IM 2 jump's three bytes to SavedIm2Jump, write JP
 $785A c ShowLogo ; Black attributes, the logo's bitmap, 20 frames, its attributes; then wait for SPACE and wipe the box
 > Attributes $5800-$5AFF := 0 (LDIR), LogoScreen's 6144 bitmap bytes to Screen $4000, WaitFrames $9BBF with BC = 20, then the 768 attribute bytes after them (LogoAttributes $91DB) to $5800: the picture appears at once, 20 frames after the bitmap was drawn invisibly. Then LogoWaitSpace $7942 and DissolveLogoBox $7889.
 > c1: run once; the bitmap copy at frame 7828, the wait 7828-7848 ($9BBF ran 20 times), the attributes at 7848 (the front's bytes: the LDIRs at $7865, $7870, $7880 ran 767, 6144 and 768 times).
+> Witness: L1 2 (c1, rzx-r0).
 $7872 ShowLogoWait ; HL = LogoAttributes: kept over the wait
 
 $7889 c DissolveLogoBox ; Wipe pixel lines 64-127, columns 7-24 to paper in 8 dissolve steps, the masks picked by ROM bytes
 > For step 0-7: the ADD A,n at $78C4 gets $CB + step; for each of the 64 lines from ScreenLineTable+128 ($FB80, line 64; DissolveLinePtr $9718 walks it) and each of its 18 bytes from column 7: BC = PixelShift's word + 1 (stored back), A = (BC) AND $18, mask = the byte at $F900 + A + $CB + step (the resident's dissolve masks $F9CB-$F9EA: four sets of 8, each set ending in $FF), screen byte := screen AND NOT mask. The word starts at 0, so the bytes that pick the mask set are the ROM's from $0001 up: a fixed pseudo-random pattern. After step 7 every mask is $FF and the 64 x 18 bytes are 0. No HALT: the 8 steps run back to back.
 > c1 (the front's bytes): $7891 8 runs, $78A7 512, $78B7 9216 (8 x 64 x 18), right after SPACE at frame 7938.
+> Witness: L1 2 (c1, rzx-r0).
 $7891 DissolveStep ; one step: the mask offset $CB + step into the ADD below
 $78A7 DissolveLine ; one line: its screen address + 7 from the table
 $78B7 DissolveByte ; one byte: the next ROM byte picks one of four masks
@@ -91,15 +96,18 @@ $78E2 b ShimmerColours 16 ; The frame shimmer's attributes: a 32-byte pattern of
 $7942 c LogoWaitSpace ; Shimmer the logo's frame every two frames until SPACE
 > ShimmerCount $FE1D := 0, then: HALT, HALT, ShimmerFrame $79AE, the attribute rows 14 and 15 from column 7 (at $59C7 and $59E7, 18 bytes each) := $42 and 3, read port $7FFE bit 0 (SPACE); loop while it is up. Rows 8-13 of the box's inside keep the logo's own attributes.
 > c1: from frame 7848 to SPACE seen at 7938: 45 passes of two frames ($7947 ran 45 times).
+> Witness: L1 2 (c1, rzx-r0).
 $7947 LogoWaitLoop ; two frames, the shimmer, then SPACE?
 
 $7971 c PaintBoxColours ; The box's inside: rows 8-15, columns 7-24 red ($42), then rows 9, 11, 13, 15 magenta (3)
 > FillAttrBox $9D31 (column 7, row 8, 18 x 8 cells, $42: bright red on black), then 17 bytes of 3 (magenta) on the attribute rows 9, 11, 13 and 15 from column 7. A printed text line (7 pixel lines from line 68, 84, 100 or 116) spans two attribute rows: its top half is red, its bottom half magenta. It also undoes the menu highlight bar of the last pass. Called every two frames by every wait after the logo.
 > c1 (the front's bytes): 293 runs of its LDIRs, frames 7968-8554; menu: 775 runs.
+> Witness: L1 2921 (c1, joystick, menu, rzx-r0).
 
 $79AE c ShimmerFrame ; Count ShimmerCount down and copy the shimmer pattern at its phase over the box's 10 x 20 attributes
 > ShimmerCount $FE1D - 1; phase = (ShimmerCount >> 1) AND 31; for row 0-9: 20 bytes from ShimmerColours $78E2 + phase + row to the attributes at $58E6 + 32 x row (row 7, column 6 down). The phase moves every second call and the pattern repeats every 32 bytes, so at the usual two frames a call the streaks slide one cell every 4 frames and come round every 128 frames.
 > menu: 775 runs; c1 (the front's bytes): 338 runs of its body.
+> Witness: L1 3120 (c1, joystick, menu, rzx-r0).
 $79C8 ShimmerRow ; 20 bytes, then the next attribute row and the next pattern byte
 
 $79DB b LogoScreen 32 ; The logo screen: the MYTH logo in its box, HISTORY IN THE MAKING, over a starfield (6144 bitmap bytes, 768 attributes)
@@ -112,6 +120,7 @@ $91DB LogoAttributes ; the 768 attributes, copied at $787D
 
 $94DB c OldStripedScreen ; Clear the screen, then B attribute rows of C, every second row (no caller)
 > In: B = rows, C = attribute, DE = pushed and popped into BC. Patches the height of the FillAttrBox $9D31 parameters after the CALL at $94E7 (column 0, row 0, 32 wide, height B, $42) and the LD A,n at $94FB with C, clears the screen (ClearScreen $9EBC), fills the box, then fills 32 attribute bytes with C on every second row from $5800, B times. No caller; not executed in any recording (c1, menu).
+> Witness: L1 0 ().
 $94F3 OldStripedRow ; one attribute row of C (the LD A,n patched at $94FB)
 
 @module credits ; The credits: seven pages printed and wiped in a loop until SPACE
@@ -121,70 +130,87 @@ $94F3 OldStripedRow ; one attribute row of C (the LD A,n patched at $94FB)
 $9509 c CreditsLoop ; The credits' seven pages, round and round until SPACE in one of the waits
 > No input; returns (through WaitOrSpace's dropped return) when SPACE is held at the end of a wait's pass. Every page waits 40 frames, prints its lines, waits 140 frames (200 after the last) and wipes its lines with ClearTextLine $9D65. Writes the screen in the box (pixel lines 68-122, columns 7-24), TextBuffer and the variables of PrintText.
 > c1: entered at frame 7967; page 1 printed at 8007-8039, SPACE seen at 8063 in its 140-frame wait (WaitOrSpace's abort ran once, c1 branch $9BB1 taken once): the credits ended on page 1. menu: not reached. Pages 2-7 are known only from the code.
+> Witness: L1 2 (c1, rzx-r0).
 $9512 t TextProgrammedBy ; PrintText: small font, byte 11, line 84: PROGRAMMED BY
 @res front-texts/programmed-by.bin
 $9524 c CreditsPage1Name ; Page 1's second line
 > CreditsLoop, continued after its string. c1: run once, frame 8023 (the front's bytes).
+> Witness: L1 2 (c1, rzx-r0).
 $9527 t TextNeilDodwell ; PrintText: large font, byte 11, shift 2, line 100: NEIL DODWELL
 @res front-texts/neil-dodwell.bin
 $9538 c CreditsPage2 ; Hold page 1 for 140 frames, wipe it, page 2 heading
 > CreditsLoop, continued: WaitOrSpace 70 (c1: SPACE ended the credits here, frame 8063), ClearTextLine with the lines 84 and 100, WaitOrSpace 20, then GRAPHICS BY.
+> Witness: L1 2 (c1, rzx-r0).
 $9551 t TextGraphicsBy ; PrintText: small font, byte 11, shift 7, line 84: GRAPHICS BY
 @res front-texts/graphics-by.bin
 $9561 c CreditsPage2Name ; Page 2's second line
 > CreditsLoop, continued. Not executed in any recording (c1 left the credits on page 1).
+> Witness: L1 0 ().
 $9564 t TextConceptAnimations ; PrintText: large font, byte 8, line 100: CONCEPT ANIMATIONS
 @res front-texts/concept-animations.bin
 $957B c CreditsPage3 ; Hold, wipe, page 3 heading
 > CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+> Witness: L1 0 ().
 $9594 t TextProducedBy ; PrintText: small font, byte 11, shift 7, line 84: PRODUCED BY
 @res front-texts/produced-by.bin
 $95A4 c CreditsPage3Name ; Page 3's second line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $95A7 t TextSystemThree ; PrintText: large font, byte 11, line 100: SYSTEM THREE
 @res front-texts/system-three.bin
 $95B8 c CreditsPage4 ; Hold, wipe, page 4 heading
 > CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+> Witness: L1 0 ().
 $95D1 t TextOriginalGameDesign ; PrintText: small font, byte 8, shift 5, line 84: ORIGINAL GAME DESIGN
 @res front-texts/original-game-design.bin
 $95EA c CreditsPage4Name ; Page 4's second line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $95ED t TextMarkCale ; PrintText: large font, byte 12, line 100: MARK CALE
 @res front-texts/mark-cale.bin
 $95FB c CreditsPage5 ; Hold, wipe, page 5 heading
 > CreditsLoop, continued: as CreditsPage2. Not executed in any recording.
+> Witness: L1 0 ().
 $9614 t TextSoundEffectsBy ; PrintText: small font, byte 10, line 84: SOUND EFFECTS BY
 @res front-texts/sound-effects-by.bin
 $9629 c CreditsPage5Name ; Page 5's second line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $962C t TextNeilDodwellSound ; PrintText: large font, byte 11, shift 2, line 100: NEIL DODWELL (the same bytes as TextNeilDodwell)
 @res front-texts/neil-dodwell-sound.bin
 $963D c CreditsPage6 ; Hold, wipe, page 6's first line
 > CreditsLoop, continued: as CreditsPage2, then DEVELOPED on line 68. Not executed in any recording.
+> Witness: L1 0 ().
 $9656 t TextDeveloped ; PrintText: small font, byte 12, shift 5, line 68: DEVELOPED
 @res front-texts/developed.bin
 $9664 c CreditsPage6Line2 ; Page 6's second line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $9667 t TextInAssociationWith ; PrintText: small font, byte 8, shift 7, line 84: IN ASSOCIATION WITH
 @res front-texts/in-association-with.bin
 $967F c CreditsPage6Line3 ; Page 6's third line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $9682 t TextMarjacqMicro ; PrintText: large font, byte 10, shift 1, line 116: MARJACQ MICRO
 @res front-texts/marjacq-micro.bin
 $9694 c CreditsPage7 ; Hold page 6, wipe lines 68, 84 and 116, page 7's first line
 > CreditsLoop, continued: WaitOrSpace 70, ClearTextLine with 68, 84, 116, WaitOrSpace 20, COPYRIGHT 1989. Not executed in any recording.
+> Witness: L1 0 ().
 $96B2 t TextCopyright1989 ; PrintText: small font, byte 10, shift 6, line 68: COPYRIGHT 1989
 @res front-texts/copyright-1989.bin
 $96C5 c CreditsPage7Line2 ; Page 7's second line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $96C8 t TextSystem3Software ; PrintText: small font, byte 9, shift 2, line 84: SYSTEM 3 SOFTWARE
 @res front-texts/system-3-software.bin
 $96DE c CreditsPage7Line3 ; Page 7's third line
 > CreditsLoop, continued. Not executed in any recording.
+> Witness: L1 0 ().
 $96E1 t TextPressSpaceToStart ; PrintText: small font, byte 8, shift 3, line 116: PRESS SPACE TO START
 @res front-texts/press-space-to-start.bin
 $96FA c CreditsPage7End ; Hold page 7 for 200 frames, wipe lines 68, 100 and 116, wait, start again at page 1
 > CreditsLoop, continued: WaitOrSpace 100, ClearTextLine with 68, 100 and 116 (line 84, SYSTEM 3 SOFTWARE, is left: page 1's heading is revealed over it), WaitOrSpace 20, JP CreditsLoop. Not executed in any recording.
+> Witness: L1 0 ().
 
 @module logo
 $9718 w DissolveLinePtr 1 ; DissolveLogoBox's pointer into ScreenLineTable (the next line's entry)
@@ -197,12 +223,14 @@ $9718 w DissolveLinePtr 1 ; DissolveLogoBox's pointer into ScreenLineTable (the 
 $971A c DefineKeys ; DEFINE KEYS: the prompt line, then the five keys
 > Reached from Menu $99A8 (JP Z at $99D2) with the text lines wiped. MenuHook $980A, then PRESS THE KEY FOR (small font, line 84), then DefineKeysLoop $9736.
 > menu: entered once at frame 71 (SPACE on DEFINE KEYS at frame 6).
+> Witness: L1 2 (menu, rzx-r0).
 $9720 t TextPressTheKeyFor ; PrintText: small font, byte 9, shift 5, line 84: PRESS THE KEY FOR
 @res front-texts/press-the-key-for.bin
 $9736 c DefineKeysLoop ; For the five readers: show the name, scan a key, show it, wait, patch the reader's port and bit
 > IY = KeyUp $FC90 (the reader), IX = KeyNames $97B5 (its name), C = 0-4. For each: the 7-byte name into KeyNameSlot $97AC, PrintKeyName $97A5; ScanKeyboard $9916 (A = the key's character, ScanBit and ScanPort set); the character into KeyNameChar $97B2 and PrintKeyName again (UP    X); WaitOrSpace $9BA5 with BC = 20 (40 frames); reader+13 := $47 OR ScanBit x 8 (BIT ScanBit,A), reader+4/+5 := ScanPort. Then IY + 15, IX + 7. After the five: ClearTextLine with the lines 68, 84, 100, 116 and back to Menu (BackToMenu $9807).
 > SPACE as a key works if it is let go within the 16 frames of the second PrintKeyName (the menu recording's FIRE). Held longer, the WaitOrSpace after it sees SPACE, drops its own return and RETs to the next word on the stack, IY (pushed at $9745): the reader runs and its RET goes to IX, the name text, as code. Known only from the code.
 > menu: 5 passes (frames 88-1354).
+> Witness: L1 2 (menu, rzx-r0).
 $9742 DefineKeyNext ; one key: the name into the slot
 $9752 DefineKeyScan ; the name, the scan, the name with the key
 $9764 DefineKeyPatch ; BIT n,A from ScanBit, then the port
@@ -210,12 +238,14 @@ $978E DefineKeysDone ; five done: wipe the four lines, back to the menu
 
 $97A5 c PrintKeyName ; Print KeyNameText (the key's name and the key) in the large font on line 100
 > PrintText $9D72 with KeyNameText's parameters. menu: 10 runs (two a key, frames 88-1234).
+> Witness: L1 20 (menu, rzx-r0).
 $97A8 t KeyNameText ; PrintText: large font, byte 13, line 100: a 7-byte slot for the name ("RIGHT  " on the tape) whose last byte gets the key
 $97AC KeyNameSlot ; the 7 bytes: the name from KeyNames, the key's character at +6
 $97B2 KeyNameChar ; the key's character (written at $9758)
 @res front-texts/key-name.bin
 $97B4 c PrintKeyNameDone ; PrintKeyName's RET after its string
 > menu: 10 runs (frames 104-1250).
+> Witness: L1 20 (menu, rzx-r0).
 $97B5 t KeyNames ; The five names, 7 bytes each, no end mark: UP, DOWN, LEFT, RIGHT, FIRE (the order of the readers KeyUp to KeyFire)
 > Read 7 bytes at a time by DefineKeysLoop $9736 (LDIR to KeyNameSlot $97AC). menu: all 35 bytes read.
 @res front-texts/key-names.bin
@@ -225,39 +255,51 @@ $97B5 t KeyNames ; The five names, 7 bytes each, no end mark: UP, DOWN, LEFT, RI
 
 $97D8 c SelectJoystick ; SELECT JOYSTICK: the four choices, the highlight, wipe, patch the readers for the chosen one
 > Reached from Menu $99A8 (JP Z at $99D7, line 2). MenuHook $980A, JoystickText $A0D9, JoystickHighlight $9A3B (E = the line taken), ClearTextLine with 68, 84, 100, 116, then E = 0 SetKempston $9834, 1 SetCursorKeys $989F, 2 SetSinclair $986A, 3 BackToMenu. Not executed in any recording (c1, menu).
+> Witness: L1 4 (joystick).
 $97F6 SelectJoystickChoice ; E = the line: 0 KEMPSTON, 1 CURSOR KEYS, 2 SINCLAIR, 3 LEAVE
 $9807 BackToMenu ; the menu again (from DEFINE KEYS, every joystick choice and LEAVE THIS MENU)
 
 $980A c MenuHook ; An empty routine: RET (called at the start of the menu, DEFINE KEYS and SELECT JOYSTICK)
 > Called from Menu at $99AB, DefineKeys $971A and SelectJoystick $97D8 before anything else; does nothing. menu: 2 runs; c1: 1 (the front's bytes).
+> Witness: L1 14 (c1, joystick, menu, rzx-r0).
 
 @module leftovers
 $980B c OldPaintBoxes ; Five attribute boxes: one 16 x 18 of $44, four 16 x 1 of $45 on rows 11, 13, 15, 17 (no caller)
 > Five FillAttrBox $9D31 calls (column 8, row 6, 16 x 18 cells of $44; then column 8, rows 11, 13, 15, 17, 16 x 1 of $45) and RET: an earlier layout of the menu box. No caller; not executed in any recording (c1, menu).
+> Witness: L1 0 ().
 
 @module joystick
 
 $9834 c SetKempston ; KEMPSTON: port $1F, fire bit 4, up 3, down 2, right 0, left 1, KeyXorMask $FF
 > ReaderPort = $001F, then (ReaderBitOp, reader): $67 FIRE, $5F UP, $57 DOWN, $47 RIGHT, $4F LEFT, each through its Patch*Reader; KeyXorMask $FCFA := $FF, so a set bit (the Kempston's pressed direction) reads as a pressed key (Z after BIT). Back to the menu. Not executed in any recording.
+> Witness: L1 1 (joystick).
 $986A c SetSinclair ; SINCLAIR: half row $EFFE, fire 0 (bit 0), up 9, down 8, right 7, left 6, KeyXorMask 0
 > ReaderPort = $EFFE; $47 FIRE, $4F UP, $57 DOWN, $5F RIGHT, $67 LEFT; KeyXorMask := 0. Back to the menu. Not executed in any recording.
+> Witness: L1 1 (joystick).
 $989F c SetCursorKeys ; CURSOR KEYS: half row $EFFE for fire 0, up 7, down 6, right 8; $F7FE for left 5; KeyXorMask 0
 > ReaderPort = $EFFE; $47 FIRE, $57 RIGHT, $5F UP, $67 DOWN; ReaderPort = $F7FE, LEFT with $67 still in ReaderBitOp (bit 4: the 5 key); KeyXorMask := 0. Back to the menu. Not executed in any recording.
+> Witness: L1 1 (joystick).
 $98D5 c PatchFireReader ; KeyFire's port := ReaderPort, its BIT opcode := ReaderBitOp
 > Writes KeyFire+4/+5 and KeyFire+13. Not executed in any recording.
+> Witness: L1 3 (joystick).
 $98E2 c PatchLeftReader ; KeyLeft's port and BIT opcode from ReaderPort and ReaderBitOp
 > Writes KeyLeft+4/+5 and KeyLeft+13. Not executed in any recording.
+> Witness: L1 3 (joystick).
 $98EF c PatchRightReader ; KeyRight's port and BIT opcode from ReaderPort and ReaderBitOp
 > Writes KeyRight+4/+5 and KeyRight+13. Not executed in any recording.
+> Witness: L1 3 (joystick).
 $98FC c PatchUpReader ; KeyUp's port and BIT opcode from ReaderPort and ReaderBitOp
 > Writes KeyUp+4/+5 and KeyUp+13. Not executed in any recording.
+> Witness: L1 3 (joystick).
 $9909 c PatchDownReader ; KeyDown's port and BIT opcode from ReaderPort and ReaderBitOp
 > Writes KeyDown+4/+5 and KeyDown+13. Not executed in any recording.
+> Witness: L1 3 (joystick).
 
 @module definekeys
 $9916 c ScanKeyboard ; Wait for a key: one half row every two frames; A = its character, ScanBit = its bit, ScanPort = its port
 > IX = KeyRowPorts $9970, IY = KeyRowChars $9980. For each of the 8 half rows: HALT, HALT, ShimmerFrame, PaintBoxColours, IN of the row's port, then the 5 bits from bit 0: the first at 0 (pressed) gives E = the bit. None: the next row (IX + 2, IY + 5); after the 8th row, start again. Found: ScanBit $996D = E, ScanPort $996E = the port, A = KeyRowChars[row x 5 + E]. A key is seen only if it is held while its row is read, once in 16 frames; with two keys held the first row in the order wins. No wait for the key's release.
 > menu: 55 entries (5 calls, 50 restarts after the 8th row), 421 rows read, 5 keys found (frames 104-1234).
+> Witness: L1 70 (menu, rzx-r0).
 $9920 ScanRow ; two frames, the effects, then this half row
 $9940 ScanBitLoop ; the five bits, bit 0 first
 $9956 ScanFound ; E = the bit
@@ -280,6 +322,7 @@ $9980 t KeyRowChars ; The character of each key, 5 a half row, bit 0 first: "-" 
 $99A8 c Menu ; The menu: draw it, the highlight until SPACE, wipe, then the chosen line's action
 > MenuTitle $A166, MenuHook $980A, MenuLines $A184, MenuHighlight $99E2 (E = the line), ClearTextLine with 68, 84, 100, 116, then E = 0 StartGame $99DD, 1 DefineKeys $971A, 2 SelectJoystick $97D8 (JP, no return: they JP back here).
 > c1: entered at frame 8127 (the front's bytes: $99A8 to $99C9 ran once), START GAME. menu: the recording starts inside MenuHighlight: DEFINE KEYS taken (dispatch at frame 71), the menu again at 1354, START GAME at 1552.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $99B4 MenuWipe ; wipe the four lines, E kept
 $99CA MenuDispatch ; E: 0 START GAME, 1 DEFINE KEYS, 2 SELECT JOYSTICK
 $99DA MenuOther ; any other E (none: MenuHighlight gives 0-2)
@@ -288,6 +331,7 @@ $99DD StartGame ; START GAME: clear the screen, drop FrontMain's return, RET to 
 $99E2 c MenuHighlight ; The moving highlight over the 3 menu lines until SPACE; E = the line taken
 > D = 0 (the pass, 0-47), E = 0 (the line). A pass: HALT, HALT, ShimmerFrame $79AE, PaintBoxColours $7971 (which also clears the last bar), then FillAttrBox $9D31 over column 7, row 10 + 2E, 18 x 2 cells with MenuBarColours[D AND 7] (the row and the colour are patched into its parameters at $9A0C and $9A0F); D + 1; D = 48: D = 0 and E + 1 (3: E = 0). Then SPACE (port $7FFE bit 0): held, return with E; else the next pass. 2 frames a pass, 96 frames a line, 288 a cycle.
 > c1: 149 passes, frames 8195-8491 (2 frames each), E moved at 8289, 8385, 8481 (to 0), SPACE at 8491 on START GAME. menu: 38 passes in two entries, DEFINE KEYS at frame 7 (E = 1 already in menu.szx), START GAME at 1488.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $99E6 MenuHighlightPass ; two frames, the effects, the bar
 $9A10 MenuHighlightStep ; the next pass; 48 passes a line
 $9A23 MenuReadSpace ; SPACE: the line E is taken
@@ -300,6 +344,7 @@ $9A33 b MenuBarColours 8 ; The menu bar's 8 colours, one a pass: $42 $43 $44 $45
 @module joystick
 $9A3B c JoystickHighlight ; The moving highlight over the 4 joystick lines until SPACE; E = the line taken
 > As MenuHighlight $99E2 with 4 lines: the bar on row 8 + 2E (rows 8, 10, 12, 14: lines 68, 84, 100, 116), colours from JoystickBarColours $9A8C, E 0-3. 96 frames a line, 384 a cycle, starting on KEMPSTON. Not executed in any recording.
+> Witness: L1 4 (joystick).
 $9A3F JoystickHighlightPass ; two frames, the effects, the bar
 $9A69 JoystickHighlightStep ; the next pass; 48 passes a line
 $9A7C JoystickReadSpace ; SPACE: the line E is taken
@@ -312,6 +357,7 @@ $9A8C b JoystickBarColours 8 ; The joystick bar's 8 colours: the same as MenuBar
 @module leftovers
 $9A94 c OldBouncingBars ; Paint two boxes, and five one-cell bars that move along a row and bounce (no caller)
 > Two FillAttrBox $9D31 calls (the second's row patched from OldBarVars+2 AND $F0), then, when the high nibbles of OldBarVars+2 and +3 differ, the five bars' columns (15-19) and steps (-1) are set in OldBarVars+4 to +13 and it returns; otherwise the five bars (attributes $41, 2, $42, 3, $43, each 1 x 2 cells) are painted on the attribute row OldBarVars+3 AND $F0 and each bar moves by its step, the step negated when the two screen bytes there are both 0. No caller; not executed in any recording (c1, menu).
+> Witness: L1 0 ().
 $9AE2 OldBarsPaint ; the bars painted
 $9B3C OldBarsMove ; the bars moved
 $9B42 OldBarsNext ; one bar
@@ -320,8 +366,10 @@ $9B79 OldBarsDone ; the next bar
 
 $9B81 c OldLineAddress ; IY = ScreenLineTable + 2L (the entry of pixel line L) (no caller but OldBouncingBars)
 > Called only from OldBouncingBars at $9B54. Not executed in any recording.
+> Witness: L1 0 ().
 $9B8C c OldWaitSpaceOrFire ; Wait BC frames; SPACE or the FIRE reader drops the caller's return (no caller)
 > The earlier WaitOrSpace: one HALT a count, SPACE (ReadSpace $9D29) or KeyFire $FCCC (Z) ends it the way WaitOrSpace $9BA5 does. No caller; not executed in any recording.
+> Witness: L1 0 ().
 $9BA2 OldWaitAbort ; SPACE or FIRE: drop the caller's return
 
 @module print ; Waits, attribute boxes and PrintText: the strip of seven pixel lines revealed by a dissolve
@@ -331,60 +379,74 @@ $9BA2 OldWaitAbort ; SPACE or FIRE: drop the caller's return
 $9BA5 c WaitOrSpace ; Wait BC passes of two frames with the effects; SPACE returns to the caller's caller
 > In: BC = passes. A pass: HALT, ShimmerFrame, PaintBoxColours, HALT, ReadSpace $9D29. SPACE held: POP BC, POP HL (the caller's return dropped), RET: the caller's caller goes on (CreditsLoop returns to FrontMain). Else BC - 1 until 0, RET.
 > c1 (the front's bytes): 32 passes, frames 7969-8063, the abort once (SPACE, frame 8063). menu: 100 passes, no abort (frames 172-1290).
+> Witness: L1 289 (c1, menu, rzx-r0).
 $9BB4 WaitCount ; no SPACE: count down
 $9BBC WaitAbort ; SPACE: drop the caller's return
 
 $9BBF c WaitFrames ; Wait BC frames (HALT each)
 > In: BC = frames. c1: 20 frames for ShowLogo (frames 7828-7848; $9BBF 20 runs).
+> Witness: L1 40 (c1, rzx-r0).
 
 @module leftovers
 $9BC7 c OldRevealWide10 ; Reveal 10 pixel lines from line C x 8, 24 bytes from column 4, from $5B00 in 8 dissolve steps (no caller but OldRevealPage)
 > The earlier reveal: C = the character row; for 8 steps (HALT each) and 10 lines, 24 bytes from column 4 merged from $5B00 under the masks $F9CB on, the mask set cycling 0-4 (byte $FE12 as its counter). Called only from OldRevealPage $9CCF. Not executed in any recording.
+> Witness: L1 0 ().
 $9BD1 OldRevealStep10 ; one step (HALT)
 $9BFD OldRevealLine10 ; one pixel line
 $9C0D OldRevealByte10 ; one byte, the mask set cycling
 $9C1B OldRevealMaskSet10 ; the mask set counter wrapped
 $9C4B c OldRevealWide26 ; The same over 26 pixel lines (no caller but OldRevealPage2)
 > Called only from OldRevealPage2 $9CF4. Not executed in any recording.
+> Witness: L1 0 ().
 $9C55 OldRevealStep26 ; one step (HALT)
 $9C81 OldRevealLine26 ; one pixel line
 $9C91 OldRevealByte26 ; one byte, the mask set cycling
 $9C9F OldRevealMaskSet26 ; the mask set counter wrapped
 $9CCF c OldRevealPage ; Clear $5B00, print with the old PrintText convention (HL, A = 24), reveal 10 lines; B times, C + 2 (no caller)
 > Calls PrintText $9D72 with HL = $5B00 and A = $18: the final PrintText reads its parameters after the CALL, so this code would print the bytes after the CALL as text. No caller; not executed in any recording.
+> Witness: L1 0 ().
 $9CE5 c OldRevealPageNext ; OldRevealPage, after its PrintText call
 > Not executed in any recording.
+> Witness: L1 0 ().
 $9CF4 c OldRevealPage2 ; Clear $5B00-$5D6F, two old-style PrintText calls, reveal 26 lines (no caller)
 > No caller; not executed in any recording.
+> Witness: L1 0 ().
 $9D0A c OldRevealPage2Second ; OldRevealPage2, after its first PrintText call
 > Not executed in any recording.
+> Witness: L1 0 ().
 $9D12 c OldRevealPage2Reveal ; OldRevealPage2, after its second PrintText call: OldRevealWide26
 > Not executed in any recording.
+> Witness: L1 0 ().
 $9D1B b OldBarVars 14 ; Zeros: OldBouncingBars's variables (+2, +3: rows; +4 to +13: five columns and steps)
 > Read and written only by OldBouncingBars $9A94 (never executed). Zeros on the tape.
 
 @module print
 $9D29 c ReadSpace ; Z if SPACE is held (port $7FFE bit 0)
 > c1 (the front's bytes): 32 runs; menu: 100 (each from WaitOrSpace).
+> Witness: L1 289 (c1, menu, rzx-r0).
 
 $9D31 c FillAttrBox ; Fill a box of attributes; its five parameters follow the CALL: column, row, width, height, attribute
 > Pops the return address into IY, fills height rows of width bytes from Attributes + 32 x row + column with the attribute, then returns past the five bytes (IY + 5 pushed, RET). Callers: PaintBoxColours $7971 (every two frames), MenuHighlight, JoystickHighlight, ClearScreen.
 > c1 (the front's bytes): 443 runs; menu: 814.
+> Witness: L1 3853 (c1, joystick, menu, rzx-r0).
 $9D49 FillAttrRow ; one row of width bytes
 $9D51 FillAttrByte ; one byte
 
 $9D65 c ClearTextLine ; Wipe one text line of the box: print one space on line A
 > In: A = the screen line (68, 84, 100 or 116). Patches BlankLineLine and calls PrintText: the buffer is cleared and holds no glyph, so RevealStrip dissolves the 7 lines (columns 7-24) to paper. 16 frames.
 > c1 (the front's bytes): 8 runs; menu: 12.
+> Witness: L1 72 (c1, joystick, menu, rzx-r0).
 $9D6B t BlankLineText ; PrintText: small font, byte 0, line patched by ClearTextLine: one space
 $9D6E BlankLineLine ; the screen line, written at $9D65
 @res front-texts/blank-line.bin
 $9D71 c ClearTextLineDone ; ClearTextLine's RET after its string
 > PrintText returns here. c1 and menu run it with every ClearTextLine.
+> Witness: L1 72 (c1, joystick, menu, rzx-r0).
 
 $9D72 c PrintText ; Print the text after the CALL into TextBuffer and reveal it on its screen line; return after its zero byte
 > In: (SP) = the parameters: font, start byte, pixel shift, screen line, text, 0. FontBase $A0D7 := FontSmall $9ED2 for font 0, else FontLarge $9FFA; TextBuffer $5B00-$5BFF := 0; D, E = $5B, the start byte; PixelShift $A0D2 := the shift; TextLine $A0D3 := the line. Each character: 0 ends; "A"-"Z" give glyph 0-25; a space glyph 26; any other byte under "A": byte - $30 + $5C - $41 (the digits 0-9: glyphs 27-36). The glyph's 8 bytes at FontBase + 8 x glyph: GlyphMask $A0D4 := its width mask, its 7 rows into GlyphRows $7600 (each followed by a zero byte), shifted right PixelShift times through the pair, ORed into the buffer at DE, DE + 32 a row. AdvanceColumn $9E24 moves the pen by the glyph's width + 1 pixels. At the end: RevealStrip $9E4D with A = TextLine, then RET past the zero byte (IY pushed).
 > c1 (the front's bytes): 14 calls, frames 8007-8539; menu: 27 (DEFINE KEYS's prompts and names, the menu's lines, the wipes).
+> Witness: L1 146 (c1, joystick, menu, rzx-r0).
 $9D82 PrintFontChosen ; FontBase chosen
 $9DAD PrintChar ; the next character; 0 ends
 $9DC6 PrintOtherChar ; a byte under "A" (not a space): byte - $30 + $5C
@@ -399,6 +461,7 @@ $9E44 PrintTextDone ; the reveal, then return past the zero
 
 $9E24 c AdvanceColumn ; Move the pen right by the glyph's width + 1: PixelShift, and E on a byte boundary
 > C = 9 less the trailing zero bits of GlyphMask (a mask $F8, 5 pixels: C = 6); PixelShift + C, and when it reaches 8: E + 1 and PixelShift - 8.
+> Witness: L1 920 (c1, joystick, menu, rzx-r0).
 $9E29 AdvanceCountZeros ; one trailing zero bit less
 $9E34 AdvancePen ; PixelShift + C
 $9E40 AdvanceStore ; store PixelShift
@@ -407,6 +470,7 @@ $9E40 AdvanceStore ; store PixelShift
 $9E4D c RevealStrip ; Copy TextBuffer's 7 lines (columns 7-24) to the screen at line A in 8 dissolve steps of two frames
 > In: A = the screen line. RevealLines $A0D5 := ScreenLineTable + 2A. For step 0-7: the ADD A,n at $9E98 := $CB + step; HALT, ShimmerFrame, PaintBoxColours, HALT; then for the 7 lines and their 18 bytes from column 7: the next ROM byte (PixelShift's word as a pointer, from 0 + 1 up) AND $18 picks one of the four mask sets of the resident's dissolve masks $F9CB, mask = that set's byte for the step; screen := (screen AND NOT mask) OR (buffer AND mask). The masks grow to $FF by step 7, so after 16 frames the strip is the buffer's.
 > c1 (the front's bytes): 14 runs (one a printed line); menu: 27.
+> Witness: L1 146 (c1, joystick, menu, rzx-r0).
 $9E5A RevealStep ; one step: the mask offset, two frames with the effects
 $9E7B RevealLine ; one pixel line: 18 bytes from column 7
 $9E8B RevealByte ; one byte under its mask
@@ -415,6 +479,7 @@ $9E98 RevealMaskOffset ; ADD A,n: n patched to $CB + step at $9E60
 $9EBC c ClearScreen ; Black attributes and a blank bitmap: the whole screen cleared (START GAME)
 > FillAttrBox (column 0, row 0, 32 x 25, 0): the 25th row's 32 bytes go to $5B00-$5B1F (TextBuffer), then the bitmap $4000-$57FF := 0. Called by StartGame $99DD before the resident's stage loader prints PRESS PLAY ON TAPE.
 > c1: once, frame 8555; menu: once, frame 1552.
+> Witness: L1 4 (c1, joystick, menu, rzx-r0).
 
 @module data ; The two fonts and PrintText's variables
 @about FontSmall $9ED2 (37 glyphs: A-Z, the space, 0-9) for the headings and the menu title, FontLarge $9FFA (27 glyphs: A-Z, the space) for the names and the menu lines. A glyph is 8 bytes: a width mask (its set bits, from bit 7, are the columns the glyph uses: AdvanceColumn steps the pen by their count + 1) and 7 pixel rows. PrintText's variables follow the large font.
@@ -435,22 +500,27 @@ $A0D7 FontBase ; PrintText: FontSmall or FontLarge (a word)
 @module joystick
 $A0D9 c JoystickText ; The SELECT JOYSTICK lines: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU
 > Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames). Not executed in any recording.
+> Witness: L1 4 (joystick).
 $A0DC t TextKempston ; PrintText: large font, byte 12, shift 2, line 68: KEMPSTON
 @res front-texts/kempston.bin
 $A0E9 c JoystickText2 ; The second line
 > JoystickText, continued. Not executed in any recording.
+> Witness: L1 4 (joystick).
 $A0EC t TextCursorKeys ; PrintText: large font, byte 11, shift 1, line 84: CURSOR KEYS
 @res front-texts/cursor-keys.bin
 $A0FC c JoystickText3 ; The third line
 > JoystickText, continued. Not executed in any recording.
+> Witness: L1 4 (joystick).
 $A0FF t TextSinclair ; PrintText: large font, byte 12, shift 6, line 100: SINCLAIR
 @res front-texts/sinclair.bin
 $A10C c JoystickText4 ; The fourth line
 > JoystickText, continued. Not executed in any recording.
+> Witness: L1 4 (joystick).
 $A10F t TextLeaveThisMenu ; PrintText: large font, byte 9, shift 6, line 116: LEAVE THIS MENU
 @res front-texts/leave-this-menu.bin
 $A123 c JoystickTextDone ; JoystickText's RET
 > Not executed in any recording.
+> Witness: L1 4 (joystick).
 
 @module leftovers
 $A124 b OldDefineKeysTexts 16 ; The texts of an earlier DEFINE KEYS: PRESS KEY FOR, UP, DOW\N (sic), LEFT, RIGHT, FIRE, each after two bytes, each ended by 0
@@ -460,24 +530,30 @@ $A124 b OldDefineKeysTexts 16 ; The texts of an earlier DEFINE KEYS: PRESS KEY F
 @module menu
 $A166 c MenuTitle ; PRESS SPACE TO SELECT on line 68 (small font)
 > c1: frame 8127; menu: frame 1354.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $A169 t TextPressSpaceToSelect ; PrintText: small font, byte 8, shift 2, line 68: PRESS SPACE TO SELECT
 @res front-texts/press-space-to-select.bin
 $A183 c MenuTitleDone ; MenuTitle's RET
 > c1: frame 8144; menu: frame 1371.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $A184 c MenuLines ; START GAME, DEFINE KEYS, SELECT JOYSTICK on lines 84, 100, 116 (large font)
 > c1: frames 8144-8193; menu: 1371-1420.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $A187 t TextStartGame ; PrintText: large font, byte 11, shift 5, line 84: START GAME
 @res front-texts/start-game.bin
 $A196 c MenuLines2 ; The second line
 > MenuLines, continued. c1: frame 8160; menu: 1387.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $A199 t TextDefineKeys ; PrintText: large font, byte 11, shift 4, line 100: DEFINE KEYS
 @res front-texts/define-keys.bin
 $A1A9 c MenuLines3 ; The third line
 > MenuLines, continued. c1: frame 8176; menu: 1403.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 $A1AC t TextSelectJoystick ; PrintText: large font, byte 9, shift 7, line 116: SELECT JOYSTICK
 @res front-texts/select-joystick.bin
 $A1C0 c MenuLinesDone ; MenuLines's RET
 > c1: frame 8193; menu: 1420.
+> Witness: L1 8 (c1, joystick, menu, rzx-r0).
 
 @module workspace
 $A1C1 s FrontHighSpace ; Zeros to the block's end ($A1C1-$A83E)

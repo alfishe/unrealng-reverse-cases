@@ -49,5 +49,13 @@
   ],
   "other_builds": [
     "stage1/rec/menu"
+  ],
+  "witness_skip": [
+    "stage1/c1",
+    "stage2/rec/joystick"
+  ],
+  "witness_builds": [
+    "stage1/c1/front",
+    "stage2/rec/joystick/front"
   ]
 }

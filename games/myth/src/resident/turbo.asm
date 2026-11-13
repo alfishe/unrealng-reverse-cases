@@ -11,7 +11,7 @@
 ; Load a block of 2 x (9B + H + L) pages (LoadLength) to GameBlock; carry set
 ; when it loaded
 ;
-; Witness: L1 8 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
+; Witness: L1 7 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
 TurboLoad:
   LD A,(LoadLengthB)
   LD C,A
@@ -128,7 +128,7 @@ TurboBit:
 
 ; Two edges
 ;
-; Witness: L1 936053 (c1, joystick, menu, stageload).
+; Witness: L1 936052 (c1, joystick, menu, stageload).
 TurboEdgePair:
   CALL TurboEdge
   RET NC

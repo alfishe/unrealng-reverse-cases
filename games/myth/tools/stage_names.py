@@ -19,7 +19,7 @@ The search runs over the target's stage range $6C3F-$F03E with the 16-bit operan
 several places is placed by the mapping (a call from a matched routine says where it is) or by the order of its
 matched neighbours, else it is left out as ambiguous. Then every operand pair that points at a stage-1 data entry or
 inner label gives that entry's address in the target (data entries are not compared byte for byte: their shape and
-size are to be checked).
+size are to be checked: the entry line gives only the start, stage 1's row width and title go to its description).
 
 Output: for each matched routine its entry line (`$XXXX c Name ; title`), the description "As in stage 1 at $YYYY,
 the same code." and its inner labels at the same offsets; the data entries found through the operands; the @equ
@@ -327,9 +327,12 @@ def main():
         if t is None:
             continue
         data_found.append(e)
-        block = [f'${t:04X} {kind} {name}' + (f' {width}' if width else '') + (f' ; {title}' if title else '')]
+        # only the start is known: stage 1's row width and title (its sizes) stay out of the entry line, so a data
+        # entry of another size is not given stage 1's
+        block = [f'${t:04X} {kind} {name} ; as in stage 1 at ${e:04X}']
         block.append(f'> As in stage 1 at ${e:04X} (found through the operands of the matched routines); '
-                     f'its size and shape are to be checked.')
+                     f'its size and shape are to be checked. Stage 1: {kind}'
+                     + (f' {width} a row' if width else '') + (f', "{title}"' if title else '') + '.')
         out.append((t, block))
     placed_t = {t for t, _ in out}
     for v in sorted(mapping):

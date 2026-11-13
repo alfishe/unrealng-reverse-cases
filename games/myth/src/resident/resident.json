@@ -130,6 +130,6 @@
   "same_bytes": true,
   "data_entries": "stop",
   "witness_builds": [
-    "stage1/c1"
+    "stage1/c1/run"
   ]
 }
