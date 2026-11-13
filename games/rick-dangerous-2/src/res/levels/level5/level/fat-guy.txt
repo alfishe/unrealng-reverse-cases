@@ -1,0 +1,22 @@
+# The Fat Guy (level 5, FatGuyStart $F7E6): five parts of 8 bytes (width or x offset, height or y offset,
+# sprite, the path and the animation after the kill), then those paths and the animation (kinds.txt tokens).
+[parts]
+part 0: w=0 h=0 sprite=$D8ED path=$F864 anim=$F8C5 ; sprite 45
+part 1: w=232 h=21 sprite=$D66D path=$F879 anim=$F8C7 ; sprite 40
+part 2: w=0 h=21 sprite=$D6ED path=$F88E anim=$F8C9 ; sprite 41
+part 3: w=232 h=42 sprite=$D76D path=$F8A3 anim=$F8CB ; sprite 42
+part 4: w=0 h=42 sprite=$D86D path=$F8B4 anim=$F8C5 ; sprite 44
+[paths]
+# part 0
+$F864: 4*(0,-8) 1*(0,-6) 1*(0,-4) 1*(0,-2) 1*(0,0) 1*(0,2) 1*(0,4) 1*(0,6) 16*(0,7) jump=$F864
+# part 1
+$F879: 1*(-8,-8) 1*(-7,-6) 1*(-6,-4) 1*(-5,-2) 1*(-4,0) 1*(-3,2) 1*(-3,4) 1*(-2,6) 16*(-2,7) jump=$F879
+# part 2
+$F88E: 1*(7,-8) 1*(7,-6) 1*(6,-4) 1*(5,-2) 1*(4,0) 1*(3,2) 1*(3,4) 1*(2,6) 16*(2,7) jump=$F88E
+# part 3
+$F8A3: 1*(-8,0) 1*(-7,2) 1*(-6,4) 1*(-5,6) 1*(-4,7) 2*(-3,7) 16*(-2,7) jump=$F8A3
+# part 4
+$F8B4: 1*(7,0) 1*(7,2) 1*(6,4) 1*(5,6) 1*(4,7) 2*(3,7) 16*(2,7) jump=$F8B4
+[anims]
+# the pieces
+$F8C5: 34 34 35 35 36 36 37 37 jump=$F8C5

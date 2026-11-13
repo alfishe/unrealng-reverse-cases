@@ -1,0 +1,374 @@
+# Fragment 06: the RAM 1 part, $C000-$D07F on a 128K (side A block 6's first 4224 bytes, $6000-$707F on the tape):
+# the AY music player, its 11 tunes, 7 instruments, 2 ornaments and 28 sound effects. The replacement for
+# src/music/music.ann. The game reaches it only through CallRam1 $7A77: MusicStartTune $CA27 (from StartTune $7AAD,
+# A = tune), MusicFrame $CAAF (from MusicFrameCall $7AB6, every interrupt), MusicEffect $CCC8 (from PlayEffect $7A97,
+# A = effect); ReadMusicByte $7ABF reads MusicPlaying $C9CF but nothing calls it.
+# Leftovers of the author's assembler source sit in the initial bytes of the voice and channel records ($C720-$C752,
+# $C9D1-$CA26): "...et pitch (with [sin]gle offset) / SE[TP]ITCH: ADD A,A" and "$3: LD L,(IY+10) / LD H,(IY+11) /
+# LD C,(IY+12) / CALL SOUND / $2: POP IY / POP IX", the source of SetPitch $CCB5 and MusicEffect $CCF6: StartVoice
+# $C754 was called SOUND.
+
+@isub $CC80 LD HL,Ornaments-8-7*256
+@isub $CCE8 LD BC,Effects
+
+@module tunes ; The tunes: patterns, the tune table, the order lists, the pattern addresses, ornaments, instruments
+@about A tune is three order lists, one per AY channel (TuneTable). An order list names patterns by number (PatternAddrLow / PatternAddrHigh) with a repeat count and a transpose before them; a pattern is a stream of notes (note, duration in frames), rests and instrument / ornament changes ending in $FF. A note starts the channel's voice with the current instrument (the volume envelope and pitch sweep of 10 bytes in Instruments) and, when an ornament is set, the ornament's semitone steps (Ornaments). The format in full: work/stage2/ann/06-notes.md.
+@about Resources: tunes/patterns.txt (the 54 patterns and their address table: patterns.bin, pattern-low.bin, pattern-high.bin), tunes/tunes.txt (the tune table and the order lists: tune-table.bin, order-lists.bin), tunes/ornaments.csv, tunes/instruments.csv.
+
+$C000 b Patterns 8 ; The 54 patterns of the 11 tunes (704 bytes, PatternAddrLow / PatternAddrHigh give each start)
+> A pattern is read by SequenceChannel $CAF7 and PatternCommand $CBFE: $80-$87 the instrument (slot n of the channel's InstrumentSlots, Instruments + 10 n), $88-$BF the ornament (bits 0-3; 0 none), $FF the end; a byte n below $7F is a note, period table index n + transpose + 12, followed by its duration in frames; $7F d a rest of d frames; $7E lo hi d a note of the period word lo hi (no pattern uses it); $C0-$FE skip 4 bytes ($C2 1 byte; no pattern uses them). Some patterns start inside another (3 holds the instrument byte and then 4, likewise 10 and 11, 21 and 22, 25 and 27, 35 and 36, 45 and 46; 48 is the last three notes of 43) and three numbers share a start (17/18, 31/32, 40/41). Patterns 3, 10, 17, 31, 34 and 40 are in no order list.
+> Read by SequenceChannel in c1 and the control and load recordings (the reads of $C754's callers); which pattern belongs to which tune is in each inner line.
+@res tunes/patterns.bin
+$C000 Pattern00 ; tune 0 channel A: instrument 0, 19 notes
+$C028 Pattern02 ; tune 0 channel C: instrument 0
+$C04E Pattern08 ; tune 0 channel C: one note of 96 frames
+$C051 Pattern01 ; tune 0 channel B: instrument 1, ornament 1 (the major chord)
+$C078 Pattern09 ; tune 0 channel B: no instrument byte
+$C08D Pattern03 ; in no order list: instrument 4, then Pattern04
+$C08E Pattern04 ; tune 0 channel A
+$C0AA Pattern05 ; tune 0 channel A: one note of 96 frames
+$C0AD Pattern06 ; tune 0 channel B: instrument 3, eight notes of 96 frames
+$C0BF Pattern07 ; tune 0 channel C: instrument 2, eight notes of 12 frames
+$C0D1 Pattern10 ; in no order list: instrument 0, then Pattern11
+$C0D2 Pattern11 ; tune 3 channel A
+$C0DC Pattern12 ; tune 3 channel B: a rest of 56 frames, one note
+$C0E2 Pattern13 ; tune 3 channel C: a rest of 56 frames, one note
+$C0E8 Pattern14 ; tune 2 (game over) channel A
+$C0FC Pattern15 ; tune 2 channel B
+$C10E Pattern16 ; tune 2 channel C: instrument 2, ornament 1
+$C117 Pattern17 ; also pattern 18: tune 1 (the signal) channel A
+$C11F Pattern19 ; tune 1 channel B
+$C127 Pattern20 ; tune 1 channel C
+$C12F Pattern21 ; tune 5 (level 1) channel A: instrument 4, then Pattern22
+$C130 Pattern22 ; tune 5 channel C
+$C14D Pattern23 ; tune 5 channel C: a rest of 8 frames, instrument 5
+$C151 Pattern24 ; tune 5 channel B: instrument 6, two rests of 128 frames, notes of 64
+$C167 Pattern25 ; tune 9 (level 5) channel A: instrument 4, then Pattern27
+$C168 Pattern27 ; tune 9 channel C
+$C181 Pattern26 ; tune 9 channel B: instrument 6
+$C18B Pattern28 ; tune 9 channel C: a rest of 8 frames, instrument 5
+$C18F Pattern29 ; tune 7 (level 3) channel A
+$C19D Pattern30 ; tune 7 channel B
+$C1A7 Pattern31 ; also pattern 32: tune 7 channel C
+$C1AD Pattern33 ; tune 6 (level 2) channel A: instrument 5
+$C1CF Pattern34 ; in no order list: instrument 5, four notes of 48 frames
+$C1D9 Pattern35 ; tune 6 channel B: instrument 5, a rest of 6 frames, then Pattern36
+$C1DC Pattern36 ; tune 6 channel B
+$C1ED Pattern37 ; tune 6 channel C: instrument 6
+$C1FF Pattern38 ; tune 6 channel C: a rest of 96 frames
+$C202 Pattern39 ; tune 8 (level 4) channel A: instrument 5
+$C21C Pattern40 ; also pattern 41: tune 8 channel B
+$C22E Pattern42 ; tune 8 channel C
+$C238 Pattern43 ; tune 10 (the Fat Guy end) channel A: instrument 0
+$C241 Pattern48 ; tune 10 channel A: the last three notes of Pattern43
+$C248 Pattern44 ; tune 10 channel B
+$C258 Pattern45 ; tune 10 channel C: instrument 4, ornament 1, then Pattern46
+$C27A Pattern46 ; tune 10 channel C
+$C289 Pattern47 ; tune 10 channel C
+$C29E Pattern49 ; tune 10 channel A
+$C2A5 Pattern50 ; tune 10 channel B: instrument 6
+$C2B3 Pattern51 ; tune 10 channel B
+$C2B8 Pattern52 ; tune 10 channel B
+$C2BD Pattern53 ; tune 10 channel B: one note of 96 frames
+
+$C2C0 w TuneTable 3 ; The 11 tunes: the order lists of channels A, B and C
+> MusicStartTune $CA27 reads the three words at TuneTable + 6 A into the channels (+1/+2). Tunes: 0 the control menu and the CONGRATULATIONS end, 1 the signal (cheats, the countdown bonus), 2 game over, 3 no caller in the game, 4 silence (OrderListEmpty on all three: before a level loads), 5-9 the levels 1-5, 10 the Fat Guy end after the lives tally.
+> Read in c1 and the control and load recordings: tunes 0, 2 and 4-9 ($C2C0-$C2C5, $C2CC-$C2D1, $C2D8-$C2FB in the reads of MusicStartTune).
+@res tunes/tune-table.bin
+$C2C0 ; tune 0: the control menu ($80B9) and the CONGRATULATIONS end ($875D)
+$C2C6 ; tune 1: the signal (the cheat chords $7D3B, $7D55; the countdown bonus start $9CC6 and stop $9CDB)
+$C2CC ; tune 2: game over ($7E20)
+$C2D2 ; tune 3: no call site in the game
+$C2D8 ; tune 4: silence, before a level loads ($7CD2)
+$C2DE ; tune 5: level 1 (LevelTune $7CE3, Level + 4)
+$C2E4 ; tune 6: level 2
+$C2EA ; tune 7: level 3
+$C2F0 ; tune 8: level 4
+$C2F6 ; tune 9: level 5
+$C2FC ; tune 10: the Fat Guy end after the lives tally ($874B)
+
+$C302 b OrderLists 8 ; The order lists: the patterns of each channel of each tune
+> An order list is read by SequenceChannel $CB17-$CB5C, one byte or two at a time: n below $80 plays pattern n; $80-$BF sets the times the next pattern plays (bits 0-4; 0 = 256; without one, once); $C0-$FD v sets the channel's instrument slot (bits 0-2) to the instrument offset v (Instruments + v; no list uses it); $FE t transposes the following patterns by t semitones (signed); $FF ends the channel (its +$0D = 0). The lists do not loop: a tune ends when all three are done and the voices have died away.
+> $C381, $C385 and $C38A are spare $FF bytes and $C3C3, $C3CC and $C3DA three order lists TuneTable does not name.
+@res tunes/order-lists.bin
+$C302 OrderListEmpty ; $FF: tune 4's three channels
+$C303 Tune0OrderA ; patterns 0 0, +3: 0 0, -12: 4 5, -14: 4, -8: 5, 0: 0 0
+$C318 Tune0OrderB
+$C32E Tune0OrderC
+$C357 Tune3OrderA ; 11, +3: 11
+$C35C Tune3OrderB
+$C361 Tune3OrderC
+$C366 Tune2OrderA ; 14
+$C368 Tune2OrderB ; 15
+$C36A Tune2OrderC ; 16
+$C36C Tune1OrderA ; 18
+$C36E Tune1OrderB ; 19
+$C370 Tune1OrderC ; 20
+$C372 Tune5OrderA ; 21 twelve times
+$C375 Tune5OrderB ; 24, +5: 24
+$C37A Tune5OrderC ; 23, 22 twelve times
+$C37E Tune9OrderA ; 25 eleven times
+$C381 ; a spare $FF
+$C382 Tune9OrderB ; 26 four times
+$C385 ; a spare $FF
+$C386 Tune9OrderC ; 28, 27 eleven times
+$C38A ; a spare $FF
+$C38B Tune7OrderA ; pattern 29 sixteen times over the transposes 0, +3, +6
+$C3AA Tune7OrderB
+$C3B5 Tune7OrderC
+$C3C0 Tune6OrderA ; 33 eight times
+$C3C3 SpareOrderListA ; not in TuneTable: +7, pattern 33 four times
+$C3C8 Tune6OrderB ; 35, 36 fourteen times
+$C3CC SpareOrderListB ; not in TuneTable: +7, pattern 36 eight times
+$C3D1 Tune6OrderC
+$C3DA SpareOrderListC ; not in TuneTable: patterns 37 and 38 under -5, +7, 0
+$C3E8 Tune8OrderA
+$C3F0 Tune8OrderB
+$C3F8 Tune8OrderC ; 42 sixteen times
+$C3FB Tune10OrderA
+$C408 Tune10OrderB
+$C423 Tune10OrderC
+
+$C444 b PatternAddrLow 8 ; The low bytes of the 54 pattern addresses
+> SequenceChannel $CB5C: a pattern n starts at PatternAddrLow[n] + 256 PatternAddrHigh[n].
+@res tunes/pattern-low.bin
+
+$C47A b PatternAddrHigh 8 ; The high bytes of the 54 pattern addresses
+> SequenceChannel $CB6F.
+@res tunes/pattern-high.bin
+
+$C4B0 b Ornaments 8 ; Ornaments 1 and 2: 8 bytes each
+> UpdateOrnament $CC80 finds ornament n at $C4A8 + 8 n (n = 1-15; only 1 and 2 lie here, a higher n would read Instruments or Effects). +0: bit 7 loop, bits 3-5 the frames the first step lasts, bits 0-2 the number of steps after it; each step: bits 3-7 semitones above the note, bits 0-2 its frames (0 = 256). Ornament 1 ($8A $21 $39): 0, +4, +7 a frame each, looping (a major chord); ornament 2 ($8A $21 $01): 0, +4, 0, looping. Patterns 1, 16 and 45 set ornament 1; no pattern sets ornament 2.
+@res tunes/ornaments.bin
+$C4B8 Ornament2
+
+$C4C0 b Instruments 10 ; Instruments 0-6: 10 bytes each (pattern bytes $80-$86)
+> StartVoice $C754 copies an instrument into a voice: +0 attack step (volume per frame, unsigned), +1 decay step (signed), +2 sustain level, +3 release step (signed), +4 peak level (volume 0-127, the AY gets volume / 8), +5 frames before the pitch sweep starts ($FF never), +6 sweep frames (bit 7: once; else the sweep swings back and forth, starting with half), +7/+8 sweep step (period units per frame, signed), +9 flags (bit 0 tone, bit 1 noise, bit 2 the AY's own envelope: shape +0 and period +4, bit 7 the voice is not taken by a note). With bit 2, +0 and +4 are the envelope's shape and period. The voice's period is the note's plus the sweep's offset.
+> Read in c1 and the control and load recordings ($C4C5-$C505 in StartVoice's reads).
+@res tunes/instruments.bin
+$C4C0 ; instrument 0: attack 114, decay -32 to 56, peak 64, release -4, vibrato step 2 after 18 frames, 4 frames each way
+$C4CA ; instrument 1: attack 64 to 54, decay -4 to 0, no sweep
+$C4D4 ; instrument 2: as 0, sustain 50, peak 56
+$C4DE ; instrument 3: as 0, sustain 70, peak 80
+$C4E8 ; instrument 4: peak 127 at once, decay -4 to 0
+$C4F2 ; instrument 5: peak 100 at once, decay -4 to 0
+$C4FC ; instrument 6: slow attack 6 to 64, decay -1 to 60, release -1, vibrato step 2 after 16 frames, 5 frames each way
+
+@module effects ; The sound effects: the table, the start, the choice of a voice
+@about An effect is a 13-byte record: an instrument (10 bytes, as in Instruments), the AY period (word) and the sustain frames. MusicEffect $CCC8 starts effect A on a free voice when no tune plays; with all three voices busy, effects 0 and 2 are dropped and the others take the voices in turn. Resource: tunes/effects.csv (all 28 records).
+
+$C506 b Effects 13 ; The 28 sound effects: an instrument, the period, the sustain frames
+> MusicEffect $CCC8: record A at Effects + 13 A; +0-+9 the instrument, +$0A/+$0B the AY tone period, +$0C the frames before the release ($FF never). Effect 0's first 10 bytes are also instrument slot 7 (Instruments + 70), which no pattern selects.
+> Read in c1 and the control and load recordings: effects 0, 4, 5 and 10 ($C510-$C512, $C544-$C546, $C551-$C553, $C592-$C594 in MusicEffect's reads). The game names 0, 2, 4, 5, 6, 7, 9 and 10 at its call sites (06-notes.md); the beeper on a 48K has 11 effects (0-10), so 11-27 have no counterpart there and no call site names them.
+@res tunes/effects.bin
+$C506 ; 0: a footstep ($9AA5): tone + noise, period 952, 1 frame; dropped when no voice is free
+$C513 ; 1: noise, period 450 (no call site)
+$C520 ; 2: the fuse's hiss ($9386): noise, swept; dropped when no voice is free
+$C52D ; 3: tone + noise, period 1024, swept (no call site)
+$C53A ; 4: the gun ($95A8): tone, period 0 swept up by 64 a frame
+$C547 ; 5: the bang ($937A; level 5 $F969): noise, period 250 swept down, 32 frames
+$C554 ; 6: ammunition or detonators taken ($A5A2, $A5B2): tone, period 534, a step of 78
+$C561 ; 7: a treasure taken ($A58F): tone, period 80, a step of 78
+$C56E ; 8: as 7, the sweep never starts (no call site)
+$C57B ; 9: an enemy stunned by the punch ($8C59; level 5 $F956): tone + noise, period 886, swept
+$C588 ; 10: a death, Rick's ($93E7) or an enemy's ($9F67), each life in the tally ($873E; level 5 $F96E): tone, period 61, 50 frames
+$C595 ; 11 (no call site)
+$C5A2 ; 12 (no call site)
+$C5AF ; 13 (no call site)
+$C5BC ; 14 (no call site)
+$C5C9 ; 15: the AY envelope (flags bit 2; no call site)
+$C5D6 ; 16: the AY envelope (no call site)
+$C5E3 ; 17: the AY envelope (no call site)
+$C5F0 ; 18 (no call site)
+$C5FD ; 19 (no call site)
+$C60A ; 20 (no call site)
+$C617 ; 21 (no call site)
+$C624 ; 22 (no call site)
+$C631 ; 23 (no call site)
+$C63E ; 24 (no call site)
+$C64B ; 25: the AY envelope (no call site)
+$C658 ; 26 (no call site)
+$C665 ; 27 (no call site)
+
+@module player ; The voices: the period table, the voice records, the envelopes and sweeps, the AY registers
+@about Three voice records (VoiceA-C, 18 bytes) hold what the AY plays: the period, the volume and its envelope phase, the sustain count, the pitch sweep. A note of a tune or an effect starts a voice (StartVoice, the original SOUND); every frame UpdateVoices runs each voice's envelope and sweep and writes AY registers 0-10. Resource: tables/periods.csv.
+
+$C672 w Periods 8 ; The AY tone periods of 85 semitones: A#0 (3822) up to A7 (32), then 24
+> The note index is the pattern's note + the transpose + 12 (SequenceChannel $CBB6) plus an ornament's step (UpdateOrnament $CC6F); SetPitch $CCB5 reads the word. Index i sounds about MIDI note 22 + i with the 128K's AY clock of 1.7734 MHz (period 3822 = 29.0 Hz); index 20 (1236) and 24 (988) are about half a semitone flat of their neighbours' steps and the last (24, index 84) is far above A7.
+@res tables/periods.bin
+
+$C71C b MixerShadow ; The AY mixer (register 7) as written: bits 0-2 tone A-C off, bits 3-5 noise A-C off
+> All of a voice's bits set means the voice is free (UpdateVoice $C8D6, PickEffectVoice $CD0A); $3F means silence and UpdateVoices does nothing. Written by StartVoice (the voice's bits cleared by its flags), SilenceAy (| $3F), VoiceOff $C965 (| the voice's bits); written to the AY by UpdateVoices and SilenceAy. Initial $3F.
+
+$C71D b VoiceA 3 ; Voice A (AY channel A, 18 bytes; IX in StartVoice, UpdateVoice, SetPitch)
+> +0 the mixer AND mask that turns the tone on ($FE), +1 the one for the noise ($F7), +2 the voice's mixer bits ($09); +3/+4 the tone period; +5 the volume (0-127; $FF with the AY envelope); +6 the sustain frames left ($FF never ends, 0 releases); +7 the frames before the sweep ($FF none); +8 the sweep frames left; +9/+$0A the sweep's period offset; +$0B/+$0C the sweep step; +$0D/+$0E the envelope phase routine (EnvelopeAttack, EnvelopeDecay, EnvelopeSustain, EnvelopeRelease); +$0F/+$10 the instrument; +$11 the instrument's flags.
+> The initial bytes from +3 are text of the author's source: "et pitch (with " (the voice is free at the start, MixerShadow $3F). Read and written by StartVoice, UpdateVoice, SweepPitch, the envelope phases, UpdateVoices, SetPitch, SilenceAy (+5, +$11).
+$C720 ; +3: the tone period (word), +5 the volume, +6 the sustain frames, +7 the sweep delay, +8 the sweep count, +9/+$0A the sweep offset, +$0B/+$0C the sweep step, +$0D/+$0E the phase routine, +$0F/+$10 the instrument, +$11 the flags
+
+$C72F b VoiceB 3 ; Voice B (AY channel B), the fields as VoiceA
+> Masks $FD, $EF, bits $12. Initial bytes from +3: "gle offset)", CR, LF, "SE" (text of the source).
+$C732 ; +3 ... +$11 as VoiceA
+
+$C741 b VoiceC 3 ; Voice C (AY channel C), the fields as VoiceA
+> Masks $FB, $DF, bits $24. Initial bytes from +3: "ITCH: ADD A,A", CR, LF (text of the source: the label SETPITCH of SetPitch $CCB5).
+$C744 ; +3 ... +$11 as VoiceA
+
+$C753 b NoiseShadow ; The noise source: the period low byte (+ sweep) of the last voice with noise
+> UpdateVoices: written when a voice's flags have bit 1; register 6 gets it rotated right three times (the AY keeps bits 0-4: the byte's bits 3-7). Initial 0.
+
+$C754 c StartVoice ; Start voice IX with instrument IY, period HL, sustain C (the original SOUND)
+> Copies the instrument into the voice: +$0F/+$10 = IY, period +3/+4 = HL, sustain +6 = C, sweep delay +7 = IY+5, sweep count +8 = (IY+6 AND $7F) / 2 (at least 1: the first swing is half), step +$0B/+$0C = IY+7/+8, offset +9/+$0A = 0, flags +$11 = IY+9. The voice's mixer bits are set, then cleared for the tone (flags bit 0) and the noise (bit 1). Without bit 2 the envelope starts at EnvelopeAttack from the volume the voice had (a new note does not restart from 0); with bit 2 the AY's envelope: register 13 = IY+0 (shape), 11 = IY+4, 12 = 0, volume $FF (register value 31: the envelope).
+> Interrupts are disabled (DI) and left so. Called by SequenceChannel $CBEE (a note, unless the voice's flags have bit 7) and MusicEffect $CCFE (an effect): 2134 runs in the 9 builds, 39 of them effects (from $CCFE). The AY envelope branch is not executed in any recording (no instrument, and no effect called, has bit 2).
+> Witness: L1 2331 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C779 StartVoiceSweepCount
+$C7A2 StartVoiceNoise ; bit 1: the noise on
+$C7A9 StartVoiceStoreMixer
+$C7BA StartVoiceHardwareEnvelope ; bit 2 (not executed in any recording)
+
+$C7D9 c SilenceAy ; Silence the AY and free all three voices
+> Mixer register 7 = MixerShadow | $3F (all off), volumes 8-10 = 0, envelope period 11 = 1, 12 = 0, shape 13 = 0; the voices' volumes (+5) and flags (+$11) = 0. Called by MusicStartTune only: 17 runs in the 9 builds.
+> Witness: L1 18 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+
+$C81A c UpdateVoices ; Every frame: the three voices' envelopes and sweeps, then AY registers 0-10
+> Nothing when MixerShadow has all six bits set. Otherwise UpdateVoice for A, B, C, then register 7 = MixerShadow, registers 0-5 = each voice's period + sweep offset (+3/+4 + +9/+$0A), register 6 = NoiseShadow rotated right 3 times (set from the low byte of each voice with noise, C winning), registers 8-10 = each voice's volume / 8. Called by MusicFrame every frame: 23 034 runs in the 9 builds.
+> Witness: L1 24223 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C858 WriteToneAFine ; register 0
+$C876 WriteToneBFine ; register 2
+$C894 WriteToneCFine ; register 4
+
+$C8D6 c UpdateVoice ; One frame of voice IX: the sustain count, the sweep, the envelope phase
+> Returns at once for a free voice. IY = the instrument (+$0F/+$10). The sustain count +6 goes down unless 0 or $FF; SweepPitch; then the phase routine at +$0D/+$0E (JP (HL)), or with the AY envelope (flags bit 2) HardwareEnvelopeWait. 32 025 runs in the 9 builds.
+> Witness: L1 34617 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C8F7 UpdateVoiceSweep
+
+$C908 c EnvelopeAttack ; Volume up by the attack step until the peak, then EnvelopeDecay
+> IX+5 += IY+0; at IY+4 or above it is set to IY+4 and the phase becomes EnvelopeDecay. Reached by JP (HL) from UpdateVoice: 2237 runs in the 9 builds.
+> Witness: L1 2442 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C917 AttackPeak
+
+$C927 c EnvelopeDecay ; Volume by the decay step until the sustain level, then EnvelopeSustain
+> IX+5 += IY+1 (signed); below IY+2 (or negative) it is set to IY+2 and the phase becomes EnvelopeSustain. 15 942 runs in the 9 builds.
+> Witness: L1 17515 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C939 DecayAtSustain
+
+$C949 c EnvelopeSustain ; Hold the volume until the sustain count is 0, then EnvelopeRelease
+> The count IX+6 is the note's duration or the effect's +$0C. 9964 runs in the 9 builds.
+> Witness: L1 10418 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+
+$C958 c EnvelopeRelease ; Volume by the release step down to 0, then the voice is off
+> IX+5 += IY+3 (signed); when it goes negative VoiceOff: volume 0, the voice's bits set in MixerShadow (the voice is free), bit 7 of the flags cleared. HardwareEnvelopeWait (the AY envelope) waits for the sustain count and goes to VoiceOff. 561 runs in the 9 builds; VoiceOff 46 runs (l1q, 10 builds with sec-l1-s8); HardwareEnvelopeWait not executed in any recording.
+> Witness: L1 622 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2, load-l4).
+$C965 VoiceOff
+$C977 HardwareEnvelopeWait ; the AY envelope: off when the sustain count is 0 (not executed in any recording)
+
+$C97E c SweepPitch ; One frame of voice IX's pitch sweep
+> The delay +7 counts down ($FF: no sweep); once at 0 the offset +9/+$0A grows by the step +$0B/+$0C each frame. When the count +8 runs out: the instrument's +6 = 0 keeps sweeping (the count wraps to 256), bit 7 stops it (+7 = $FF), else the count is reloaded with +6 and the step negated (a vibrato around the note). 28 704 runs in the 9 builds; the reversal 1535 (l1q, 10 builds with sec-l1-s8).
+> Witness: L1 30997 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$C98B SweepStep
+$C9AF SweepReverse
+
+$C9C0 c AyAccessBegin ; RET: a hook before the AY writes
+> A RET called before every group of AY writes (StartVoice, SilenceAy, UpdateVoices); AyAccessEnd ends them. Room for a patch (paging, DI); does nothing here. 10 692 runs in the 9 builds.
+> Witness: L1 11557 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+
+$C9C1 c AyAccessEnd ; RET: a hook after the AY writes
+> Jumped to at the end of StartVoice, SilenceAy and UpdateVoices: their RET. 10 692 runs in the 9 builds.
+> Witness: L1 11557 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+
+$C9C2 c WriteAyRegister ; AY register C = A
+> OUT ($FFFD) the register, OUT ($BFFD) the value. Keeps BC; E changed. 117 544 runs in the 9 builds.
+> Witness: L1 127055 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+
+$C9CF b MusicPlaying ; A tune runs: $FF, 1 while its last notes die away, 0 none
+> Set to $FF by MusicStartTune. MusicFrame: the OR of the channels' +$0D; when all are 0, 1 while a voice still sounds, else 0. MusicEffect plays nothing while it is not 0 (341 of the 385 effect calls in the 9 builds were dropped so). ReadMusicByte $7ABF in the game reads it (no caller).
+
+$C9D0 b ChannelA 7 ; Channel A of the tune (21 bytes; IY in SequenceChannel, PatternCommand, UpdateOrnament)
+> +0 the channel's first instrument slot in InstrumentSlots (0, 8, 16: constant); +1/+2 the order list pointer; +3/+4 the pattern's start; +5/+6 the pattern pointer; +7/+8 the instrument (Instruments + slot value); +9 the times the pattern still plays; +$0A the transpose; +$0B $FF when the pattern has ended; +$0C the frames the note still lasts; +$0D $FF while the order list runs, 0 at its end; +$0E the note's period index; +$0F the ornament number; +$10/+$11 the ornament step pointer; +$12 the step's frames left; +$13 the steps left; +$14 the ornament state (bit 7 running, bit 6 start at the next frame, bits 0-5 the number).
+> MusicStartTune sets +1/+2, +7-+$0D, +$0F. The initial bytes from +1 are text of the author's source: LF, "$3:", TAB, "LD", TAB, "L,(IY+10)", CR, LF, TAB (MusicEffect's lines).
+$C9D1 ; +1 ... +$14 as above
+
+$C9E5 b ChannelB 7 ; Channel B of the tune (21 bytes), the fields as ChannelA
+> +0 = 8. Initial bytes from +1: text of the source ("D", TAB, "H,(IY+11)", ...).
+$C9E6 ; +1 ... +$14
+
+$C9FA b ChannelC 7 ; Channel C of the tune (21 bytes), the fields as ChannelA
+> +0 = 16. Initial bytes from +1: text of the source ("Y+12)", CR, LF, CR, LF, TAB, "CALL", TAB, "SOUND", ...).
+$C9FB ; +1 ... +$14
+
+$CA0F b InstrumentSlots 8 ; Eight instrument offsets per channel: 0, 10, ... 70
+> MusicStartTune fills each channel's 8 bytes with 0, 10, ... 70 (the instruments 0-7, Instruments + offset); an order list byte $C0-$FD could change one (none does); PatternCommand reads them for $80-$87. Initial bytes: text of the source.
+
+$CA27 c MusicStartTune ; Start tune A: silence, then the three channels from TuneTable
+> SilenceAy; the order lists from TuneTable + 6 A into the channels' +1/+2; +9 = 1 (play once), +$0A = 0 (no transpose), +$0B = $FF (read the order list at the next frame), +$0C = 1, +$0D = $FF, +$0F = 0 (no ornament), +7/+8 = Instruments; InstrumentSlots = 0, 10, ... 70 three times; MusicPlaying = $FF.
+> Called from StartTune $7AAD through CallRam1 (17 runs in the 9 builds: tunes 0, 2 and 4-9).
+> Witness: L1 18 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CA38 MusicStartTuneChannels
+$CA87 FillSlotsChannel
+$CA88 FillSlotsLoop
+
+$CAAF c MusicFrame ; Every frame: UpdateVoices, then one step of the tune on each channel
+> UpdateVoices; nothing more when MusicPlaying is 0. MusicPlaying = the OR of the channels' +$0D; when 0 it is set to 1 while a voice sounds (0 when all are free) and nothing more; else SequenceChannel for A, B and C (IY = ChannelA-C, IX = VoiceA-C; C falls into SequenceChannel).
+> Called from MusicFrameCall $7AB6 every interrupt: 23 034 runs in the 9 builds, the channels 10 060.
+> Witness: L1 24223 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CAD9 MusicFrameChannels
+
+@module sequencer ; The tune sequencer: order lists, patterns, ornaments
+@about One call of SequenceChannel a frame and channel: the note's frames count down; at 0 the pattern's next bytes are read (commands, then a note or a rest) and the note starts the voice. A pattern's $FF is met while the last note still sounds; the next frame takes the next order list entry, so patterns follow each other without a gap.
+
+$CAF7 c SequenceChannel ; One frame of channel IY driving voice IX
+> UpdateOrnament first. When the pattern has ended (+$0B): once more from its start while +9 counts down, else the next order list entry (ReadOrderLoop: $FE transpose, $FF the channel's end with +$0D = 0, $80-$BF the repeat, $C0-$FD an instrument slot, below $80 the pattern via PatternAddrLow / PatternAddrHigh). Then the note's frames +$0C go down; while the note lasts, a command byte at the pointer is done at once (PatternCommand); at 0, PatternCommand for each command, then the note: $7F a rest (only the frames), $7E a period word, else index + $0A + 12 into Periods (+$0E keeps it). The frames go to +$0C, the ornament state +$14 = ornament | $C0, and StartVoice runs with the instrument +7/+8, the period, the frames as sustain; not when the voice's flags have bit 7.
+> 30 180 runs in the 9 builds; the order list 499, a new pattern 99, a note 2292, a rest 41 (l1q, 10 builds with sec-l1-s8). The slot command and the $7E period are not executed in any recording.
+> Witness: L1 32775 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CB00 PatternEnded ; once more, or the order list
+$CB17 ReadOrderList ; +9 = 1
+$CB21 ReadOrderLoop
+$CB33 OrderNotTranspose
+$CB3C OrderNotEnd
+$CB49 OrderSetSlot ; $C0-$FD v: slot (bits 0-2) = v (not executed in any recording)
+$CB56 OrderSlotStore
+$CB5C OrderPattern ; a pattern number
+$CB7C ContinuePattern
+$CB82 CountNote
+$CB94 ReadPatternLoop ; the note has ended: commands, then a note or a rest
+$CBA5 PatternNote
+$CBB6 PatternPitchedNote ; index = note + transpose + 12
+$CBCA PatternNoteStart ; HL = the period
+$CBF1 PatternRest ; $7F: only the frames
+
+$CBFE c PatternCommand ; Do the pattern command at DE: instrument, ornament, end, or a skipped command
+> $80-$87: the instrument +7/+8 = Instruments + InstrumentSlots[+0 + bits 0-2]; $88-$BF: the ornament +$0F = bits 0-3; $FF: +$0B = $FF (the pattern has ended; DE stays); $C0-$FE: skipped, $C2 one byte, the others four. DE moves past the command. 336 runs in the 9 builds; $88 and up 208, the ornaments 7 (l1q, 10 builds with sec-l1-s8); the skip is not executed in any recording.
+> Witness: L1 360 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CC1C PatternCommandHigh
+$CC25 PatternCommandNotEnd
+$CC30 PatternCommandSkip ; not executed in any recording
+
+$CC38 c UpdateOrnament ; One frame of channel IY's ornament: the next semitone step into voice IX's period
+> Nothing when the voice's flags have bit 7 or the state +$14 has bit 7 clear; number 0 clears bit 7. At the start (bit 6) and whenever the steps +$13 run out, OrnamentStart: the record at $C4A8 + 8 n (Ornaments), +$12 = its bits 3-5, +$13 = bits 0-2 + 1, the pointer at it, the period of the note itself; an ornament without bit 7 holds its last step instead of starting again. Each time the step's frames +$12 run out: the next step, +$12 = its bits 0-2, the period of +$0E + its bits 3-7 (SetPitch). 30 180 runs in the 9 builds; a step 2531, a start 1312 (l1q, 10 builds with sec-l1-s8).
+> Witness: L1 32775 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CC4C OrnamentRunning ; D = 7: the mask, and the high byte added at OrnamentStart
+$CC6F OrnamentStep
+$CC80 OrnamentStart ; HL = $BDA8 + $0700 (D) + 8 n = $C4A8 + 8 n
+$CC9A OrnamentRestart
+$CCB5 SetPitch ; voice IX's period = Periods[A] (the source's SETPITCH)
+$CCBE SetPitchStore
+
+@module effects
+$CCC8 c MusicEffect ; Start effect A on a voice when no tune plays
+> Nothing while MusicPlaying is not 0. IY = Effects + 13 A; PickEffectVoice gives IX (no carry: none, the effect is dropped); StartVoice with the period +$0A/+$0B and the sustain +$0C. Keeps all registers but AF. The lines from $CCF6 are in the leftover source text of ChannelA ("LD L,(IY+10) ... CALL SOUND ... POP IY / POP IX").
+> Called from PlayEffect $7A97 through CallRam1: 385 runs in the 9 builds, 44 past the MusicPlaying test, 39 started.
+> Witness: L1 429 (controls-cursor, controls-kempston, controls-keyboard, controls-sinclair, sec-l1-s8, c1, load-l2-load-l5).
+$CD01 MusicEffectDone
+
+$CD09 b StealTurn ; The voice the next effect takes when none is free: 0-2, A-C in turn
+> PickEffectVoice: incremented (1, 2, 0, ...) each time an effect other than 0 or 2 finds all three voices busy (15 times in the 9 builds).
+
+$CD0A c PickEffectVoice ; IX = a voice for effect A: the first free one, else the next in turn; no carry: none
+> A voice is free when all its bits are set in MixerShadow. A, then B, then C; with none free, effects 0 (the footstep) and 2 (the fuse) return no carry (dropped) and the others take the voice StealTurn names after its increment. 44 runs (c1 only): a free voice 24 (A 12, B or C 12), a voice taken 15, dropped 5.
+> Witness: L1 44 (c1).
+$CD1B PickVoiceFree
+$CD1C PickVoiceFound
+$CD1E PickVoiceTestB
+$CD4F PickVoiceSteal
+
+$CD69 s TailFill ; 791 zeros to the end of the block ($D07F)
+> Nothing reads or writes them in any recording (no reads in the l1q output of the part's routines).

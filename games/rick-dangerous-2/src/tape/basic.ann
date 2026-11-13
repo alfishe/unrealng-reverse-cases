@@ -1,0 +1,27 @@
+# The annotations of tape/basic (kit/mkgame.py --part src/tape/basic.json). Format: ../../../../docs/ann-format.md.
+#
+# Side A block 2, the BASIC program "RICK-II" (header block 1: LINE 0, program length 75, no variables) at PROG
+# $5CCB. Witness: c1 (work/stage1/c1: power-on, the original TZX at ROM speed): the 128's Tape Loader reads the
+# block and runs it (the loader $FF00 entered at frame 1110, re_session.py stages).
+
+@module basic ; The BASIC "RICK-II": black screen, CLEAR 65279, LOAD the loader, call it
+@about Four lines, auto-run from the first (the header's LINE 0, below line 10, starts at the program's start). PAPER 0, INK 0 and BORDER 0 make the screen black so the loading screen appears only when its attributes arrive; CLEAR 65279 puts RAMTOP under $FF00, where LOAD ""CODE then reads the 256-byte "loader" block (header block 3: start 65280); RANDOMIZE USR 65280 enters it. The numbers carry their five-byte forms ($0E, then the small-integer form 0, sign, value, 0) as the ROM's editor writes them.
+
+$5CCB b BasicLine10 ; Line 10: PAPER 0: INK 0: BORDER 0
+> The line number 10 (high byte first), the length 27, then PAPER ($DA) "0" and its number 0, ":", INK ($D9) "0", ":", BORDER ($E7) "0", ENTER ($0D).
+$5CCB ; the line number, 10, and the length, 27
+$5CCF ; PAPER "0" and its hidden 0
+$5CD7 ; ": INK 0"
+$5CE0 ; ": BORDER 0" and ENTER
+$5CEA b BasicLine20 ; Line 20: CLEAR 65279
+> CLEAR ($FD) "65279" and its hidden number $FEFF: RAMTOP = $FEFF, under the loader.
+$5CEA ; the line number, 20, and the length, 13
+$5CEE ; CLEAR "65279", hidden $FEFF, ENTER
+$5CFB b BasicLine30 ; Line 30: LOAD "" CODE
+> LOAD ($EF) "" CODE ($AF): the next Bytes block at the address of its header, the "loader" block at 65280.
+$5CFB ; the line number, 30, and the length, 5
+$5CFF ; LOAD "" CODE ENTER
+$5D04 b BasicLine40 ; Line 40: RANDOMIZE USR 65280
+> RANDOMIZE ($F9) USR ($C0) "65280", hidden $FF00: calls the loader (src/loader). It never returns: the loader resets the machine on a tape error and jumps into the game otherwise.
+$5D04 ; the line number, 40, and the length, 14
+$5D08 ; RANDOMIZE USR "65280", hidden $FF00, ENTER

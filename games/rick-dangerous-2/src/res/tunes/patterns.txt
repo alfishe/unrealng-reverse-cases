@@ -1,0 +1,49 @@
+# The 54 patterns of the tunes (RAM 1 $C000, 704 bytes) and their address table (PatternAddrLow /
+# PatternAddrHigh). A line per pattern stream ($FF ends it); [Pnn] marks where pattern nn starts (several may
+# share bytes). NOTE:frames a note (C4 = MIDI 60; the byte is MIDI - 34, the period index byte + transpose + 12),
+# r:frames a rest, perP:frames a note by tone period, iK instrument K, oK ornament K, {XX} a byte as it is.
+# patterns 54
+[P00] i0 B4:16 E4:8 E4:48 F#4:8 G#4:8 A4:8 B4:16 E5:8 E5:48 C#5:8 B4:8 A4:8 B4:16 E4:8 E4:48 F#4:8 G#4:8 A4:8 B4:96
+[P02] i0 G#4:16 B3:8 B3:48 E4:8 E4:8 E4:8 G#4:16 B4:8 B4:48 A4:8 A4:8 A4:8 G#4:16 B3:8 B3:48 E4:8 E4:8 E4:8
+[P08] F#4:96
+[P01] i1 o1 E4:24 E4:8 E4:8 E4:8 E4:24 A4:24 E4:24 E4:8 E4:8 E4:8 E4:24 A4:24 E4:24 E4:8 E4:8 E4:8 E4:24 A4:24
+[P09] B4:24 B4:8 B4:8 B4:8 B4:8 B4:8 B4:8 B4:8 B4:8 B4:8
+[P03] i4 [P04] i0 G5:16 C5:8 C5:48 G5:24 F5:16 A#4:8 A#4:48 D5:12 F5:12 G5:16 C5:8 C5:48 G5:24
+[P05] F5:96
+[P06] i3 C5:96 A#4:96 C5:96 A#4:96 A#4:96 G#4:96 A#4:96 D5:96
+[P07] i2 G4:12 C4:12 E4:12 C4:12 G4:12 E4:12 C5:12 G4:12
+[P10] i0 [P11] i0 E4:8 E4:24 E5:24 B4:48
+[P12] i0 r:56 E4:48
+[P13] i0 r:56 G#4:48
+[P14] i0 B4:16 E4:8 E4:48 F#4:8 G4:8 A4:8 B4:16 E5:8 E5:48
+[P15] i0 G4:16 B3:8 B3:48 E4:8 r:16 G4:16 B4:8 B4:48
+[P16] i2 o1 E4:72 A4:24 E4:72
+[P17] [P18] i1 B4:16 G#4:8 E5:48
+[P19] i1 G#4:16 E4:8 B4:48
+[P20] i1 E4:16 B3:8 G#4:48
+[P21] i4 [P22] G5:16 D5:8 A#4:8 G5:16 D5:8 A#4:8 G5:8 D5:8 G#5:8 D5:8 G5:8 D5:8 G#5:8 D5:8
+[P23] r:8 i5
+[P24] i6 r:128 r:128 G3:64 A#3:64 G3:64 A#3:64 F#3:64 A#3:64 G3:64 F#3:64
+[P25] i4 [P27] E5:8 D#5:8 E5:8 D#5:8 C#5:8 D#5:8 E5:8 D#5:8 C#5:8 D#5:8 E5:8 C#5:8
+[P26] i6 C#4:64 E4:64 C4:64 E4:64
+[P28] r:8 i5
+[P29] i0 C5:12 A4:12 A4:12 C5:12 A4:12 A4:12
+[P30] i0 A4:36 A5:24 G5:12 D#5:72
+[P31] [P32] i6 A3:72 C4:72
+[P33] i5 B3:12 E3:12 B3:12 E3:12 B3:12 D#3:12 B3:12 D#3:12 B3:12 D3:12 B3:12 D3:12 B3:12 D#3:12 B3:12 D#3:12
+[P34] i5 E3:48 D#3:48 D3:48 D#3:48
+[P35] i5 r:6 [P36] G4:12 G4:12 G4:12 G4:12 G4:12 G4:12 G4:12 G4:12
+[P37] i6 G4:24 F#4:24 G4:24 B4:24 G4:24 F#4:24 G4:24 E4:24
+[P38] r:96
+[P39] i5 G4:16 F#4:8 E4:8 G4:16 F#4:8 E4:8 G4:16 F#4:8 E4:8 G4:16 F#4:8 E4:8
+[P40] [P41] i4 r:72 E4:8 G4:8 B4:8 E5:8 B4:8 E4:8 G4:8
+[P42] i5 A#4:8 G4:8 A4:8 G4:8
+[P43] i0 E4:48 D#4:48 C#4:48 B3:48 [P48] G4:48 A4:48 E4:96
+[P44] i0 B3:48 G#4:48 B4:48 E5:48 D5:48 E5:48 B3:96
+[P45] i4 o1 E4:24 E4:8 E4:8 E4:8 E4:24 E4:8 E4:8 E4:8 E4:24 E4:8 E4:8 E4:8 E4:24 E4:8 E4:8 E4:8 [P46] G4:24 G4:8 G4:8 G4:8 A4:24 A4:12 A4:12
+[P47] E4:24 E4:8 E4:8 E4:8 E4:8 E4:8 E4:8 E4:8 E4:8 E4:8
+[P49] G4:48 A4:48 A4:96
+[P50] i6 D6:36 D6:12 C#6:12 B5:12 A5:20 C#6:4
+[P51] B5:72 E5:24
+[P52] C#6:72 E5:24
+[P53] E5:96

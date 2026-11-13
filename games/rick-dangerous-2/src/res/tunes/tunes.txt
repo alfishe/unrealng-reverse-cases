@@ -1,0 +1,42 @@
+# The 11 tunes (RAM 1: TuneTable $C2C0, the order lists from $C302): a line per order list ($FF ends it);
+# [TnnA] marks where tune nn's channel A list starts (B, C the other AY channels; several may share one).
+# Pnn plays pattern nn (tunes/patterns.txt), xN the next pattern N times (0 = 256), t+N transposes the
+# patterns after it by N semitones, {XX} a byte as it is.
+# tunes 11
+[T04A] [T04B] [T04C]
+[T00A] P00 P00 t+3 P00 P00 t-12 P04 P05 t-14 P04 t-8 P05 t+0 P00 P00
+[T00B] P01 P09 P01 P09 t+3 P01 P09 P01 P09 t+0 P06 t+0 P01 P09 P01 t-7 P09
+[T00C] P02 P08 P02 P08 t+3 P02 P08 P02 P08 t+0 P07 t-2 P07 t+0 P07 t-2 P07 P07 t-4 P07 t-2 P07 t+2 P07 t+0 P02 P08 P02 t+2 P08
+[T03A] P11 t+3 P11
+[T03B] P12 t+3 P12
+[T03C] P13 t+3 P13
+[T02A] P14
+[T02B] P15
+[T02C] P16
+[T01A] P18
+[T01B] P19
+[T01C] P20
+[T05A] x12 P21
+[T05B] P24 t+5 P24
+[T05C] P23 x12 P22
+[T09A] x11 P25
+
+[T09B] x4 P26
+
+[T09C] P28 x11 P27
+
+[T07A] P29 t+3 P29 t+0 P29 t+3 P29 P29 t+6 P29 t+3 P29 t+6 P29 P29 t+3 P29 t+0 P29 t+3 P29
+[T07B] P30 P30 t+3 P30 P30 t+0 P30 P30
+[T07C] P32 P32 t+3 P32 P32 t+0 P32 P32
+[T06A] x8 P33
+t+7 x4 P33
+[T06B] P35 x14 P36
+t+7 x8 P36
+[T06C] x4 P38 P37 x4 P38 P37 P38 P38
+t-5 P37 P38 P38 t+7 P37 x4 P38 t+0 P37
+[T08A] P39 t+3 P39 t+0 P39
+[T08B] P41 t+3 P41 t+0 P41
+[T08C] x16 P42
+[T10A] P43 P43 P48 P49 P48 P48 P43 P43 P48 P49 P48 P48
+[T10B] P44 P44 t-12 P50 P51 P50 P52 P50 P51 P50 P53 t+0 P44 P44 t-12 P50 P51 P50 P52 P50 P51 P50 P53
+[T10C] P45 P47 P45 P47 P46 P47 P46 t+5 P47 t+0 P46 P47 P46 P47 P45 P47 P45 P47 P46 P47 P46 t+5 P47 t+0 P46 P47 P46 P47

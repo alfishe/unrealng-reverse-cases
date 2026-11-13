@@ -1,0 +1,9 @@
+# cheats: the two chords MainLoop tests ($71C0, $71DC), from work/stage1/rzx/l5/at002000.szx (level 5, $8065 set by
+# the RZX run's fourth level), Rick idle: C+S+3 (CheatInfinite $8066 toggled, tune 1), then SPACE+N+ENTER+J+Y
+# (CheatExits $8067 = $FF, tune 1). No POKE.
+0
+50 C S 3
+60
+200 SPACE N ENTER J Y
+210
+800 END

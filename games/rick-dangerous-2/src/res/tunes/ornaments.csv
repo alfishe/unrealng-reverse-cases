@@ -1,0 +1,4 @@
+# ornament,loop,base_frames,steps,then 7 steps semitones:frames (header bit 7 loop, bits 3-5 the base
+# step's frames, bits 0-2 the steps used; a step byte: semitones x 8 + frames). Ornament 0 is none.
+1,1,1,2,4:1,7:1,0:0,0:0,0:0,0:0,0:0
+2,1,1,2,4:1,0:1,0:0,0:0,0:0,0:0,0:0

@@ -1,0 +1,11 @@
+# end-congrats: the CONGRATULATIONS ending ($8754). rzx-l4-20000-poke (the RZX run's last level 4 frames, from work/stage1/rzx/l4/at020000.szx, the same immunity POKEs)
+# plus POKE 32498 0 ($7EF2, the levels done, = 0): level 4 then ends with $8065 clear, so MainLoop goes to $8754, not level 5. Then idle.
+0 POKE 32498 0
+0 POKE 35376 0
+0 POKE 35943 58
+0 POKE 42101 58
+0 POKE 37812 58
+0 8
+1 8 CS
+125
+2600 END

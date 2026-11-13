@@ -1,0 +1,26 @@
+# Side A of the tape ("Rick Dangerous 2 - Side A.tzx" in orig/RickDangerous2.tzx.zip) as tools/mktape.py writes it:
+# one line a TZX block, in order (the format is in tools/mktape.py; the blocks in docs/03-build-and-load.md 3.1).
+# The items are the parts tools/build.sh assembles into build/:
+#   basic.bin    src/tape/basic.asm, the BASIC "RICK-II"
+#   loader.bin   src/loader/loader.asm, the loader at $FF00 as it runs (the tape holds it enciphered: "loader:")
+#   screen.bin   src/screen/screen.asm, the loading screen at $4000
+#   music.bin    src/music/music.asm, the AY music as it runs in RAM 1 at $C000 (on the tape at $6000-$707F)
+#   game.bin     src/game/game.asm, the game $7080-$A7FF
+#   level1.bin   src/levels/level1/level1.asm, level 1 at $A800-$FCFF (stored deciphered on this side)
+tzx 1.10
+archive 0 Rick Dangerous 2 - Side A
+archive 1 Micro Style
+archive 2 CORE Design
+archive 3 1990
+archive 4 English
+archive 5 Arcade: Platform
+archive 6 £9.99
+archive 7 Unknown
+archive 8 Original
+archive 255 TZXed by Mikie & Andy Barker\rFor Steve Brown
+header 403 0 RICK-II @basic.bin 0 75
+data 4507 basic.bin
+header 977 3 loader 256 65280 32768
+data 6323 loader:loader.bin
+reversed 6203 screen.bin
+reversed 3603 music.bin game.bin level1.bin zeros:510

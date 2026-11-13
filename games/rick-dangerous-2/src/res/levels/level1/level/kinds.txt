@@ -1,0 +1,272 @@
+# Kinds: a trap or pickup kind (a map entry's kind below $74) points to an 11-byte record: width, height,
+# flags (bit 6 deadly, 7 the detonator test; bits 0-5 the behaviour after the switch), path, anim, path2,
+# anim2 (absolute words). A record whose kind never switches has 7 bytes (the next record follows). The
+# animation and path tokens: anim N (a frame), N+K (frame N for K more passes), fx=N, jump=$hhhh; path
+# C*(dx,dy) (C passes of the step, dx and dy signed nibbles), fx=N, jump=$hhhh.
+[kinds.bin]
+kind 0: $0000
+kind 1: $F668
+kind 2: $F673
+kind 3: $F67E
+kind 4: $F689
+kind 5: $F694
+kind 6: $F69B
+kind 7: $F6A2
+kind 8: $F6A9
+kind 9: $F6B4
+kind 10: $F6BF
+kind 11: $F6CA
+kind 12: $F6D5
+kind 13: $F6E0
+kind 14: $F6E7
+kind 15: $F6EE
+kind 16: $F6F9
+kind 17: $F700
+kind 18: $F707
+kind 19: $F70E
+kind 20: $F715
+kind 21: $F71C
+kind 22: $F723
+kind 23: $F72E
+kind 24: $F739
+kind 25: $F740
+kind 26: $F747
+kind 27: $F74E
+kind 28: $F755
+kind 29: $F75C
+kind 30: $F763
+kind 31: $F76A
+kind 32: $F771
+kind 33: $F778
+kind 34: $F783
+kind 35: $F78A
+kind 36: $F791
+kind 37: $F79C
+kind 38: $F7A7
+kind 39: $F7B2
+kind 40: $F7BD
+kind 41: $F7C8
+kind 42: $F7CF
+kind 43: $F7D6
+kind 44: $F7E1
+kind 45: $F7EC
+kind 46: $F7F3
+kind 47: $F7FA
+kind 48: $F801
+kind 49: $F808
+[anims.bin]
+# anim of $F668, anim of $F673, anim of $F67E, anim of $F689, anim of $F694, anim of $F69B, anim of $F6A2, anim of $F6A9, anim of $F6B4, anim of $F6BF, anim of $F6CA, anim of $F6D5, anim of $F7C8, anim of $F7D6, anim2 of $F668, anim2 of $F673, anim2 of $F67E, anim2 of $F689, anim2 of $F6A9, anim2 of $F6B4, anim2 of $F6BF, anim2 of $F6CA, anim2 of $F6D5, anim2 of $F7D6
+$F269: 70+10 jump=$F269
+# anim of $F6E0
+$F26E: 62 fx=4 62+13
+# anim2 of $F6EE, anim2 of $F72E
+$F273: 34 fx=5 34 35 35 36 36 37 37 38 38 jump=$F273
+# anim of $F6E7
+$F282: fx=4 64+16 jump=$F273
+# anim of $F6EE
+$F289: 86+63 jump=$F289
+# anim of $F6F9
+$F28E: fx=4 64+16 jump=$F273
+# anim of $F700
+$F295: fx=4 65+8 jump=$F273
+# anim of $F707
+$F29C: 62 fx=4 62+2 34 fx=5 34 35 35 36 36 37 37 38 38 127+3 jump=$F29C
+# anim of $F70E
+$F2B2: 66 fx=15 67 68 69 66 67 68 69 127+24 jump=$F2B2
+# anim of $F739
+$F2C1: fx=4 63+26 jump=$F273
+# anim of $F71C
+$F2C8: fx=4 64+7 jump=$F273
+# anim of $F723, anim of $F783
+$F2CF: 63 fx=4 63+6 34 fx=5 34 35 35 36 36 37 37 38 38 127+7 jump=$F2CF
+# anim of $F72E, anim of $F808, anim2 of $F808
+$F2E5: 87 jump=$F2E5
+# anim of $F740, anim of $F747
+$F2E9: 127+16 fx=4 63+11 jump=$F273
+# anim of $F74E
+$F2F2: 66 fx=15 67 68 69 66 67 68 69 66 68 69 127+24 jump=$F2F2
+# anim of $F755, anim of $F75C
+$F304: 63 fx=4 63+2 34 fx=5 34 35 35 36 36 37 37 38 38 127+3 jump=$F304
+# anim of $F763, anim of $F7EC
+$F31A: fx=4 63+23 jump=$F273
+# anim of $F76A
+$F321: 66 fx=15 67 68 69 127+32 jump=$F321
+# anim of $F771
+$F32C: fx=4 62+3 jump=$F273
+# anim of $F778, anim2 of $F778
+$F333: 72 73 74 jump=$F333
+# anim of $F7A7, anim of $F7B2
+$F339: 71 jump=$F339
+# anim2 of $F723, anim2 of $F7BD, anim2 of $F7E1
+$F33D: 127 jump=$F33D
+# anim2 of $F791
+$F341: 75 75 75 76 76 76 77 77 77 75 jump=$F341
+# anim2 of $F79C
+$F34E: 78 78 78 79 79 79 80 80 80 78 jump=$F34E
+# anim2 of $F7A7
+$F35B: 72 73 74 72 73 74 72 73 74 72 73 74 72 73 74 72 fx=17 71+16 72 73 74 72 73 74 72 73 74 72 73 74 72 73 74 72 fx=17 71+16 72 73 74 72 73 74 72 73 74 72 73 74 72 73 74 72 72 73 74 72 73 74 72 73 74 72 73 74 72 73 74 72 fx=17 71+16 jump=$F35B
+# anim2 of $F7B2
+$F3AA: 72 73 74 jump=$F3AA
+# anim of $F7BD
+$F3B0: 63 fx=4 63+10 34 fx=5 34 35 35 36 36 37 37 38 38 127+11 jump=$F3B0
+# anim of $F715
+$F3C6: fx=4 63+15 jump=$F273
+# anim of $F78A
+$F3CD: 127+20 fx=4 62+3 34 fx=5 34 35 35 36 36 37 37 38 38 127+3 jump=$F3CD
+# anim of $F791
+$F3E4: 127 75 127 75 127 75 127 75 127 75 127 75 127 75 jump=$F3E4
+# anim of $F79C
+$F3F5: 127 78 127 78 127 78 127 78 127 78 127 78 127 78 jump=$F3F5
+# anim of $F7E1
+$F406: 63 fx=4 63+10 34 fx=5 34 35 35 36 36 37 37 38 38 127+11 jump=$F406
+# anim of $F7CF
+$F41C: 66 fx=15 67 68 69 66 67 68 69 66 67 68 69 127+50 jump=$F41C
+# anim of $F7F3
+$F42F: 127 fx=16 127 127 89+4 127+4 89+4 127+4 89+4 127+4 89+4 127 127 127 jump=$F42F
+# anim of $F7FA
+$F448: 127 fx=16 127 127 88+4 127+4 88+4 127+4 88+4 127+4 88+4 127 127 127 jump=$F448
+# anim of $F801
+$F461: fx=16 81+4 82+4 82+3 82+3 82+3 82+3 81+3 81+3 81+3 81+3 82+3 82+3 81+3 82+3 81+3 82+3 82+3 81+3 82+3 82+3 82+3 82+3 83+20 fx=9 84+2 85+2 84+2 85+2 84+2 85+2 84+2 85+2 84+2 85+2 84+2 85+2 84+2 85+2 84+2 85+2 84+2 83+6 jump=$F491
+[paths.bin]
+# path of $F668, path of $F673, path of $F67E, path of $F689, path of $F6A9, path of $F6B4, path of $F6BF, path of $F6CA, path of $F6EE, path of $F72E, path of $F791, path of $F79C, path of $F7A7, path of $F7B2, path of $F7CF, path of $F7D6, path of $F801, path of $F808, path2 of $F723, path2 of $F7BD, path2 of $F7E1
+$F4BA: 1*(0,0) jump=$F4BA
+# path of $F6D5, path2 of $F668
+$F4BF: 16*(0,4) 24*(0,0) 16*(0,-4) 16*(0,0) jump=$F4BF
+# path2 of $F673
+$F4CA: 24*(0,4) 24*(0,0) 24*(0,-4) 24*(0,0) jump=$F4CA
+# path2 of $F67E
+$F4D5: 24*(-2,0) 6*(7,0) jump=$F4D5
+# path2 of $F689
+$F4DC: 32*(0,-4) 32*(0,4) jump=$F4DC
+# path of $F694
+$F4E3: 64*(-2,0) 64*(2,0) jump=$F4E3
+# path of $F69B
+$F4EA: 16*(-2,0) 16*(2,0) jump=$F4EA
+# path of $F6A2
+$F4F1: 24*(0,-4) 48*(0,0) 24*(0,4) 12*(0,0) jump=$F4F1
+# path2 of $F6A9
+$F4FC: 127*(0,7) jump=$F4FC
+# path2 of $F6B4
+$F501: 10*(0,-4) jump=$F4BA
+# path2 of $F6BF
+$F506: 16*(0,-4) 48*(0,0) 16*(0,4) jump=$F506
+# path2 of $F6CA
+$F50F: 32*(2,0) 16*(0,0) 32*(-2,0) jump=$F50F
+# path2 of $F6D5
+$F518: 16*(0,-4) 16*(0,0) 16*(0,4) 24*(0,0) jump=$F518
+# path of $F6E0
+$F523: 14*(0,7) 1*(-8,0) 9*(0,0) jump=$F4BA
+# path of $F6E7
+$F52C: 20*(6,6) 1*(-8,0) 9*(0,0) jump=$F4BA
+# path of $F6F9
+$F535: 16*(6,6) 1*(-8,0) 9*(0,0) jump=$F4BA
+# path of $F700
+$F53E: 8*(-6,6) 1*(-8,0) 9*(0,0) jump=$F4BA
+# path of $F707
+$F547: 2*(0,7) 1*(0,3) 1*(-8,0) 9*(0,0) 1*(7,-3) 2*(0,-8) jump=$F547
+# path of $F70E
+$F556: 8*(7,0) 24*(0,0) 8*(-8,0) 24*(0,0) jump=$F556
+# path of $F715
+$F561: 15*(7,0) 1*(0,-8) 8*(0,0) jump=$F4BA
+# path of $F71C
+$F56A: 7*(6,6) 8*(0,0) jump=$F4BA
+# path of $F723
+$F571: 7*(7,0) 1*(0,-8) 9*(0,0) 1*(-8,7) 6*(-8,0) jump=$F571
+# path of $F739
+$F57E: 26*(-8,0) 1*(0,-8) 8*(0,0) jump=$F4BA
+# path of $F740
+$F587: 16*(0,0) 11*(7,0) 1*(0,-8) 9*(0,0) jump=$F4BA
+# path of $F747
+$F592: 16*(0,0) 11*(-8,0) 1*(0,-8) 9*(0,0) jump=$F4BA
+# path of $F74E
+$F59D: 11*(7,0) 24*(0,0) 11*(-8,0) 24*(0,0) jump=$F59D
+# path of $F755
+$F5A8: 3*(7,0) 1*(0,-8) 9*(0,0) 1*(-8,7) 2*(-8,0) jump=$F5A8
+# path of $F75C
+$F5B5: 3*(-8,0) 1*(0,-8) 9*(0,0) 1*(7,7) 2*(7,0) jump=$F5B5
+# path of $F763
+$F5C2: 23*(-8,0) 1*(0,-8) 8*(0,0) jump=$F4BA
+# path of $F76A
+$F5CB: 4*(7,0) 32*(0,0) 4*(-8,0) 32*(0,0) jump=$F5CB
+# path of $F771
+$F5D6: 3*(0,7) jump=$F4BA
+# path of $F778
+$F5DB: 32*(-2,0) 32*(2,0) jump=$F5DB
+# path2 of $F778
+$F5E2: 64*(-2,0) 64*(2,0) jump=$F5E2
+# path of $F783
+$F5E9: 7*(-8,0) 1*(0,-8) 8*(0,0) jump=$F4BA
+# path2 of $F7A7
+$F5F2: 16*(2,0) 16*(0,0) 16*(2,0) 16*(0,0) 32*(-2,0) 16*(0,0) jump=$F5F2
+# path2 of $F7B2
+$F601: 40*(-2,0) 2*(0,0) 40*(2,0) 2*(0,0) jump=$F601
+# path of $F7BD
+$F60C: 11*(-8,0) 1*(0,-8) 9*(0,0) 1*(7,7) 10*(7,0) jump=$F60C
+# path of $F7C8
+$F619: 10*(0,0) 24*(0,-4) 24*(0,0) 24*(0,4) jump=$F619
+# path of $F78A
+$F624: 20*(0,0) 2*(0,7) 1*(0,3) 1*(-8,0) 9*(0,0) 1*(7,-3) 2*(0,-8) jump=$F624
+# path2 of $F7D6
+$F635: 8*(0,-4) 16*(0,0) 8*(0,4) jump=$F635
+# path of $F7E1
+$F63E: 11*(-8,0) 1*(0,-8) 9*(0,0) 1*(7,7) 10*(7,0) jump=$F63E
+# path of $F7EC
+$F64B: 23*(7,0) 1*(0,-8) 8*(0,0) jump=$F4BA
+# path2 of $F6EE, path2 of $F72E
+$F654: 10*(0,0) jump=$F4BA
+# path of $F7F3, path of $F7FA
+$F659: 34*(0,0) jump=$F4BA
+# path2 of $F808
+$F65E: 34*(-8,0) jump=$F65E
+# path2 of $F791, path2 of $F79C
+$F663: 10*(0,0) jump=$F663
+[kinds-2.bin]
+record $F668: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F4BF anim2=$F269 ; kind 1
+record $F673: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F4CA anim2=$F269 ; kind 2
+record $F67E: width=24 height=16 flags=$A0 path=$F4BA anim=$F269 path2=$F4D5 anim2=$F269 ; kind 3
+record $F689: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F4DC anim2=$F269 ; kind 4
+record $F694: width=24 height=8 flags=$A0 path=$F4E3 anim=$F269 ; kind 5
+record $F69B: width=24 height=8 flags=$A0 path=$F4EA anim=$F269 ; kind 6
+record $F6A2: width=24 height=8 flags=$A0 path=$F4F1 anim=$F269 ; kind 7
+record $F6A9: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F4FC anim2=$F269 ; kind 8
+record $F6B4: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F501 anim2=$F269 ; kind 9
+record $F6BF: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F506 anim2=$F269 ; kind 10
+record $F6CA: width=24 height=8 flags=$A0 path=$F4BA anim=$F269 path2=$F50F anim2=$F269 ; kind 11
+record $F6D5: width=24 height=8 flags=$A0 path=$F4BF anim=$F269 path2=$F518 anim2=$F269 ; kind 12
+record $F6E0: width=6 height=21 flags=$50 path=$F523 anim=$F26E ; kind 13
+record $F6E7: width=16 height=16 flags=$50 path=$F52C anim=$F282 ; kind 14
+record $F6EE: width=24 height=16 flags=$F0 path=$F4BA anim=$F289 path2=$F654 anim2=$F273 ; kind 15
+record $F6F9: width=16 height=16 flags=$50 path=$F535 anim=$F28E ; kind 16
+record $F700: width=16 height=16 flags=$50 path=$F53E anim=$F295 ; kind 17
+record $F707: width=8 height=21 flags=$50 path=$F547 anim=$F29C ; kind 18
+record $F70E: width=24 height=14 flags=$50 path=$F556 anim=$F2B2 ; kind 19
+record $F715: width=24 height=4 flags=$50 path=$F561 anim=$F3C6 ; kind 20
+record $F71C: width=16 height=16 flags=$50 path=$F56A anim=$F2C8 ; kind 21
+record $F723: width=24 height=4 flags=$50 path=$F571 anim=$F2CF path2=$F4BA anim2=$F33D ; kind 22
+record $F72E: width=24 height=16 flags=$C0 path=$F4BA anim=$F2E5 path2=$F654 anim2=$F273 ; kind 23
+record $F739: width=24 height=4 flags=$50 path=$F57E anim=$F2C1 ; kind 24
+record $F740: width=24 height=4 flags=$50 path=$F587 anim=$F2E9 ; kind 25
+record $F747: width=24 height=4 flags=$50 path=$F592 anim=$F2E9 ; kind 26
+record $F74E: width=24 height=16 flags=$50 path=$F59D anim=$F2F2 ; kind 27
+record $F755: width=24 height=4 flags=$50 path=$F5A8 anim=$F304 ; kind 28
+record $F75C: width=24 height=4 flags=$50 path=$F5B5 anim=$F304 ; kind 29
+record $F763: width=24 height=4 flags=$50 path=$F5C2 anim=$F31A ; kind 30
+record $F76A: width=24 height=14 flags=$50 path=$F5CB anim=$F321 ; kind 31
+record $F771: width=6 height=21 flags=$50 path=$F5D6 anim=$F32C ; kind 32
+record $F778: width=24 height=21 flags=$50 path=$F5DB anim=$F333 path2=$F5E2 anim2=$F333 ; kind 33
+record $F783: width=24 height=4 flags=$50 path=$F5E9 anim=$F2CF ; kind 34
+record $F78A: width=8 height=21 flags=$50 path=$F624 anim=$F3CD ; kind 35
+record $F791: width=24 height=6 flags=$10 path=$F4BA anim=$F3E4 path2=$F663 anim2=$F341 ; kind 36
+record $F79C: width=24 height=6 flags=$10 path=$F4BA anim=$F3F5 path2=$F663 anim2=$F34E ; kind 37
+record $F7A7: width=16 height=21 flags=$50 path=$F4BA anim=$F339 path2=$F5F2 anim2=$F35B ; kind 38
+record $F7B2: width=16 height=21 flags=$50 path=$F4BA anim=$F339 path2=$F601 anim2=$F3AA ; kind 39
+record $F7BD: width=24 height=4 flags=$50 path=$F60C anim=$F3B0 path2=$F4BA anim2=$F33D ; kind 40
+record $F7C8: width=24 height=8 flags=$A0 path=$F619 anim=$F269 ; kind 41
+record $F7CF: width=24 height=14 flags=$50 path=$F4BA anim=$F41C ; kind 42
+record $F7D6: width=24 height=8 flags=$20 path=$F4BA anim=$F269 path2=$F635 anim2=$F269 ; kind 43
+record $F7E1: width=24 height=4 flags=$50 path=$F63E anim=$F406 path2=$F4BA anim2=$F33D ; kind 44
+record $F7EC: width=24 height=4 flags=$50 path=$F64B anim=$F31A ; kind 45
+record $F7F3: width=0 height=0 flags=$00 path=$F659 anim=$F42F ; kind 46
+record $F7FA: width=0 height=0 flags=$00 path=$F659 anim=$F448 ; kind 47
+record $F801: width=0 height=0 flags=$00 path=$F4BA anim=$F461 ; kind 48
+record $F808: width=24 height=16 flags=$D0 path=$F4BA anim=$F2E5 path2=$F65E anim2=$F2E5 ; kind 49

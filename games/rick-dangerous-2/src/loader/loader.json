@@ -1,0 +1,33 @@
+{
+  "about": "Side A block 4, the loader at $FF00 (256 bytes) as it runs; the tape holds it enciphered (tools/mktape.py loader:): python3 ../../kit/mkgame.py --part src/loader/loader.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/loader-ff00.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/loader-ff00.bin",
+  "org": "FF00",
+  "ann": "src/loader/loader.ann",
+  "top": "loader",
+  "bin": "loader.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "bases": {
+    "0": "C000"
+  },
+  "header": [
+    "; Rick Dangerous 2, Micro Style 1990: side A block 4, the loader, 256 bytes at $FF00, as it runs once its first",
+    "; loop has deciphered $FF0B-$FFFF (XOR $5C); tools/mktape.py enciphers it for the tape."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "FF00",
+      "hi": "10000",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkloader"
+}

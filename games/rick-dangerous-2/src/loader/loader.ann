@@ -1,0 +1,60 @@
+# The annotations of loader/loader (kit/mkgame.py --part src/loader/loader.json). Format: ../../../../docs/ann-format.md.
+#
+# Side A block 4, 256 bytes at $FF00, read by the ROM's LD-BYTES (LOAD ""CODE, src/tape/basic.ann) and entered by
+# RANDOMIZE USR 65280. The tape holds $FF0B-$FFFF XOR $5C (tools/mktape.py "loader:", tools/parts.py crypt_loader);
+# this source is the loader as it runs, after its first loop. Witness: c1 (work/stage1/c1: power-on, side A at ROM
+# speed on the 128K): the loader entered at frame 1110 T 65 924, deciphered by frame 1111, the screen and the game read,
+# the game entered at $7B8F at frame 13 998 T 9477 (re_session.py stages, the L1's arrivals). Later the game's entry
+# code copies the IM 2 handler over $FEFE-$FF20 and the stack (SP = 0) grows down over the tail.
+
+@equ $4000 Screen 6912 ; the display file and attributes: the loading screen's block goes here
+@equ $6000 TapeCode ; side A block 6's load address: the music ($6000-$707F), the game, level 1
+@equ $7B8F GameEntry ; the game's entry code (src/game)
+@equ $0000 Reset at $FFD8 ; the ROM's start: a load error resets the machine
+
+@module loader ; The loader: decipher itself, read the screen and the game with a bit-reversed LD-BYTES, enter the game
+@about The loader reads two headerless blocks the ROM cannot read: every byte of them is stored with its bits in reversed order (bit 0 first on the tape), and their XOR checksum is $FF, not 0. LdBytesReversed is the ROM's LD-BYTES ($0556) copied with three changes: a byte is shifted in from the top (LD L,$80 and RR L where the ROM has LD L,$01 and RL L), the checksum test is LD A,H; CPL; CP 1, and the verify branch is gone. A failed block returns to LoadFailed, which resets the machine (JP NC,0).
+@about The block is enciphered from $FF0B on the tape: Decipher XORs $FF0B-$FFFF with IYH ($5C, the high byte of the ROM's IY = $5C3A). The first byte it deciphers is the operand of its own JR NZ ($AB on the tape, $F7 = back to DecipherLoop), so the loop is enciphered too and still runs.
+
+$FF00 c Decipher ; Decipher $FF0B-$FFFF (XOR IYH = $5C), then load the screen and the game and enter it
+> Entered by the BASIC's RANDOMIZE USR 65280 with IY = $5C3A (the ROM's system variables base). DE runs from $FF0B to $FFFF; each byte XOR IYH. The loop ends when D wraps to 0. The first byte deciphered is DecipherLoop's own JR NZ operand ($FF0B: $AB XOR $5C = $F7, the jump back).
+> Then SP = 0 (the stack under the top of memory: the game keeps it so, and it grows down over this page), LdBytesReversed reads the loading screen (6912 bytes, flag $FF) to $4000 and the game block ($9EFE bytes) to $6000, EI and JP GameEntry $7B8F.
+> c1: entered at frame 1110 T 65 924, the deciphering done by frame 1111, the game entered at frame 13 998 T 9477.
+> Witness: L1 1 (c1).
+$FF03 DecipherLoop
+$FF0B LoadScreenAndGame ; the first byte this loop deciphers is the operand of the JR NZ before it
+$FF2A ; interrupts on again: the IM 1 handler of the ROM until the game's entry sets IM 2
+
+$FF2D c LdBytesReversed ; LD-BYTES with every byte's bits in reversed order: IX = address, DE = length, A = flag, carry set
+> A copy of the ROM's LD-BYTES ($0556) with the same timing constants (the pilot, sync and edge loops), border colours and flag test. Differences: the bit shift register L starts at $80 and takes each bit by RR L (LdByte), so the first bit on the tape becomes bit 0; the checksum H must end as $FF (LD A,H; CPL; CP 1: carry set when good); the return address pushed at the start is LoadFailed ($FFD8) instead of the ROM's SA/LD-RET, so an error (or BREAK) resets the machine; the verify branch jumps to the next instruction (only loading is possible).
+> Inputs: IX = the first byte, DE = the length, A = the flag ($FF), carry set. Output: the bytes in memory; returns through LoadFailed.
+> c1: two blocks, the screen and then the game, until frame 13 998.
+> Witness: L1 2 (c1).
+$FF42 LdBreak ; RET NZ: the ROM's LD-BREAK
+$FF43 LdStart ; wait for an edge, then the pilot
+$FF4B LdWait ; a pause of about one second before the pilot is timed
+$FF57 LdLeader ; the pilot: 256 pulses of the leader length
+$FF66 LdSync ; the sync pulse
+$FF80 LdLoop ; one byte: the flag first, then the data
+$FF85 LdStore ; the ROM's LD-VERIFY test (JR NC) now jumps here as well: the byte is always stored
+$FF8A LdFlag ; the first byte must equal the flag in A' (L XOR A)
+$FF94 LdNext
+$FF96 LdDec
+$FF9A LdByte ; L = $80: the marker bit shifts out of bit 0 after 8 bits (RR L), the ROM's LD L,$01 and RL L reversed
+$FF9C LdBitLoop
+$FFAD LdParity ; DE = 0: the checksum test, H must be $FF
+
+$FFB6 c LdEdge2 ; Two edges: the ROM's LD-EDGE-2 (B = the time count, C = the border and EAR state)
+> As the ROM's $05E3: LdEdge1 twice. Carry clear: timed out or BREAK. Witness: L1 0 (c1).
+$FFBA c LdEdge1 ; One edge: the ROM's LD-EDGE-1, the delay loop of 22, the border stripes
+> As the ROM's $05E7: wait 358 T, then sample port $FE until the EAR bit changes or B wraps; on an edge the border colour toggles (C bits 0-2, OR 8 for the MIC off). Carry clear: timed out or BREAK (SPACE in row $7F). Witness: L1 0 (c1).
+$FFBC LdDelay
+$FFC0 LdSample
+
+$FFD8 c LoadFailed ; The return of LdBytesReversed: a failed block resets the machine, a good one turns the border black
+> Pushed by LdBytesReversed ($FF35) as its return address. Carry clear (a checksum error, a timeout or BREAK): JP 0, the machine resets. Carry set: border 0, RET to the loader. c1: two returns, both good.
+> Witness: L1 0 (c1).
+$FFDB LoadGood
+
+$FFDF b LoaderTail ; 33 bytes of an older routine's tail, never run: the ROM's SA-BYTES fragments; the stack overwrites them
+> LD A,$0D; LD B,$37; DJNZ; OUT ($FE),A; LD BC,$3B0E; EX AF,AF'; LD L,A; JP $FF7B; LD A,D; OR E; JR Z; LD L,(IX+0); LD A,H; XOR L; LD H,A; LD A,1; SCF; JP $FF99: the shape of the ROM's SA-BYTES ($04D0-$0510), its jumps pointing into this page. No instruction here runs in any recording (c1, the level loads). The game's stack grows down from $0000 into this tail (low mark $FFDC in c1, $FFE6 in the other recordings: docs/02-architecture.md 2.4), and the Kixx copy differs only here (32 bytes from offset 223).

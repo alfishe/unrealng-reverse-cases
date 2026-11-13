@@ -1,0 +1,7 @@
+# name,digits (six digit bytes, 0-9 each, most significant first: the score adder adds them digit by digit)
+points-50,000050
+points-100,000100
+points-500,000500
+points-5000,005000
+points-10000,010000
+points-100000,100000

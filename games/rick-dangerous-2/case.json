@@ -2,11 +2,11 @@
   "image_cmd": [
     "sh",
     "-c",
-    "test -f work/mkgame/original.bin || (mkdir -p work/mkgame && python3 tools/image.py work/mkgame/original.bin)"
+    "test -f work/mkgame/original.bin || python3 tools/parts.py > /dev/null"
   ],
   "image": "work/mkgame/original.bin",
-  "lo": "6000",
-  "hi": "10000",
+  "lo": "7080",
+  "hi": "A800",
   "device": "ZXSPECTRUM128",
   "bases": {
     "5": "4000",
@@ -14,15 +14,10 @@
     "0": "C000"
   },
   "read_builds": [
-    "stage1/c1",
     "stage1/controls-cursor",
     "stage1/controls-kempston",
     "stage1/controls-keyboard",
     "stage1/controls-sinclair",
-    "stage1/load-l2",
-    "stage1/load-l3",
-    "stage1/load-l4",
-    "stage1/load-l5",
     "stage1/rec/rzx-l1-00000-poke",
     "stage1/rec/rzx-l1-02000-poke",
     "stage1/rec/rzx-l1-04000-poke",
@@ -82,7 +77,28 @@
     "stage1/rec/rzx-l5-24000-poke",
     "stage1/rec/rzx-l5-26000-poke",
     "stage1/rec/rzx-l5-full",
-    "stage1/rec/rzx-l5-23000"
+    "stage1/rec/rzx-l5-23000",
+    "stage2/rec/cheats",
+    "stage2/rec/end-congrats",
+    "stage2/rec/long-l4",
+    "stage2/rec/sec-l1-s8",
+    "stage2/rec/sec-l2-s10",
+    "stage2/rec/sec-l2-s11",
+    "stage2/rec/sec-l2-s12",
+    "stage2/rec/sec-l2-s7",
+    "stage2/rec/sec-l3-s3",
+    "stage2/rec/sec-l3-s4",
+    "stage2/rec/sec-l3-s5",
+    "stage2/rec/sec-l3-s7",
+    "stage2/rec/sec-l3-s8",
+    "stage2/rec/sec-l3-s9",
+    "stage2/rec/sec-l4-s1",
+    "stage2/rec/sec-l4-s11",
+    "stage2/rec/sec-l4-s12",
+    "stage2/rec/sec-l4-s2",
+    "stage2/rec/sec-l4-s6",
+    "stage2/rec/sec-l5-s3",
+    "stage2/rec/sec-l5-s5"
   ],
   "code_builds": [
     "stage1/c1",
@@ -153,7 +169,29 @@
     "stage1/rec/rzx-l5-24000-poke",
     "stage1/rec/rzx-l5-26000-poke",
     "stage1/rec/rzx-l5-full",
-    "stage1/rec/rzx-l5-23000"
+    "stage1/rec/rzx-l5-23000",
+    "stage2/rec/c48",
+    "stage2/rec/cheats",
+    "stage2/rec/end-congrats",
+    "stage2/rec/long-l4",
+    "stage2/rec/sec-l1-s8",
+    "stage2/rec/sec-l2-s10",
+    "stage2/rec/sec-l2-s11",
+    "stage2/rec/sec-l2-s12",
+    "stage2/rec/sec-l2-s7",
+    "stage2/rec/sec-l3-s3",
+    "stage2/rec/sec-l3-s4",
+    "stage2/rec/sec-l3-s5",
+    "stage2/rec/sec-l3-s7",
+    "stage2/rec/sec-l3-s8",
+    "stage2/rec/sec-l3-s9",
+    "stage2/rec/sec-l4-s1",
+    "stage2/rec/sec-l4-s11",
+    "stage2/rec/sec-l4-s12",
+    "stage2/rec/sec-l4-s2",
+    "stage2/rec/sec-l4-s6",
+    "stage2/rec/sec-l5-s3",
+    "stage2/rec/sec-l5-s5"
   ],
   "ref_builds": [
     [
@@ -194,7 +232,8 @@
     ]
   ],
   "header": [
-    "; Rick Dangerous 2, Micro Style 1990 (Core Design): side A's code block, $6000-$FEFD, and the loader at $FF00,",
-    "; as the tape leaves them on a 128K (the bit-reversed blocks put back in order by tools/image.py)."
+    "; Rick Dangerous 2, Micro Style 1990 (Core Design): the game $7080-$A7FF, side A block 6's bytes $1080-$47FF as the",
+    "; loader leaves them (the bit-reversed block put back in order by tools/image.py); the music before it and level 1",
+    "; after it are parts of their own (src/music, src/levels)."
   ]
 }

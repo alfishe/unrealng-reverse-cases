@@ -1,0 +1,38 @@
+# c48: after side A has loaded at ROM speed on a 48K (record-load from power-on, LOAD "" typed): the control menu,
+# 1 (keyboard), 0 (start); the level menu, 1 (Hyde Park London, in memory after side A: no tape); keyboard play:
+# X right, O jump, SPACE + O the ray gun, SPACE + K a detonator, SPACE + X the punch, P pause twice, E quit
+0 -
++400 1
++25 -
++100 0
++25 -
++200 1
++25 -
++300 X
++120 -
++30 O
++30 -
++60 SPACE O
++15 -
++60 SPACE O
++15 -
++60 SPACE K
++15 -
++250 SPACE X
++15 -
++60 Z
++80 -
++30 SPACE K
++15 -
++300 X
++200 -
++40 P
++10 -
++100 P
++10 -
++300 X O
++60 X
++300 -
++300 E
++20 -
++600 END

@@ -1,0 +1,53 @@
+{
+  "about": "Side A block 6 $6000-$707F: the AY music player and its tunes, copied to RAM 1 at $C000 on a 128K: python3 ../../kit/mkgame.py --part src/music/music.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/music-c000.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/music-c000.bin",
+  "org": "C000",
+  "ann": "src/music/music.ann",
+  "top": "music",
+  "bin": "music.bin",
+  "dest": "src/music",
+  "device": "ZXSPECTRUM128",
+  "bank": 1,
+  "bases": {
+    "1": "C000"
+  },
+  "header": [
+    "; Rick Dangerous 2, Micro Style 1990: side A block 6's first 4224 bytes ($6000-$707F on the tape), the AY music",
+    "; player, its tunes and effects, which the entry code copies to RAM 1 at $C000 on a 128K."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "reads": false
+    },
+    "work/stage1/controls-cursor/l1.json",
+    "work/stage1/controls-kempston/l1.json",
+    "work/stage1/controls-keyboard/l1.json",
+    "work/stage1/controls-sinclair/l1.json",
+    {
+      "path": "work/stage1/load-l2/l1.json",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/load-l3/l1.json",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/load-l4/l1.json",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/load-l5/l1.json",
+      "reads": false
+    },
+    "work/stage1/rec/rzx-*/l1.json",
+    "work/stage2/rec/*/l1.json"
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mkmusic"
+}

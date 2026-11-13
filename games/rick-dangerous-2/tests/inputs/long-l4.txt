@@ -1,0 +1,12 @@
+# long-l4: CheatExits ($8067 = $FF, what SPACE+N+ENTER+J+Y sets with level 5 open) by POKE 32871 255 on rzx-l4-20000-poke
+# (work/stage1/rzx/l4/at020000.szx, the RZX run's last level 4 frames and immunity POKEs): the exit that ends level 4
+# (kind $82) leads on to section 10 instead. Then idle.
+0 POKE 32871 255
+0 POKE 35376 0
+0 POKE 35943 58
+0 POKE 42101 58
+0 POKE 37812 58
+0 8
+1 8 CS
+125
+1200 END

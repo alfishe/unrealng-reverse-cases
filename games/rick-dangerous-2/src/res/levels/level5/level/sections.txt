@@ -1,0 +1,341 @@
+# Sections: 8 bytes a section (offsets big-endian): map = offset from the maps' base (maps.txt row map / 8),
+# pad (read by no code), limit = the last view top row the scroll reaches (cells), exits and objects =
+# offsets from this table to the section's exit list and map entry list. SectionCounts $8374 says how many
+# sections the game uses; the entries after them are fillers. Then the lists in their byte order:
+#   exit flags row to arrive (4 bytes; flags bits 0-1 side 1 left 2 right, 4 keep a level end under CheatExits,
+#     5 arrive riding, 6 LevelHookOn, 7 level end; row = Rick's feet row; to = section; arrive = feet row there),
+#     a byte with (b AND $0B) = 0 ends the list;
+#   object kind row col param (4 bytes; col bits 0-4 column, 5 x + 4, 6 y + 3, 7 spawn on view; param bits 0-1
+#     boxes, 2-5 behaviour or patrol, 6 one-shot), then its boxes: box x row size who (size: rows - 1 high
+#     nibble, columns - 1 low; who: bit 0 Rick, 1 bullet, 2 blast, 3 punch, 4 enemy, 5 trap, 6 every pass);
+#     kind 0 ends the list.
+section 0: map=>$0000 pad=0 limit=104 exits=>$0040 objects=>$0045 ; map rows 2-33 shown
+section 1: map=>$0110 pad=0 limit=8 exits=>$0116 objects=>$011B ; map rows 36-43 shown
+section 2: map=>$0160 pad=0 limit=80 exits=>$0170 objects=>$0179 ; map rows 46-71 shown
+section 3: map=>$0240 pad=0 limit=32 exits=>$0246 objects=>$024B ; map rows 74-87 shown
+section 4: map=>$02B0 pad=0 limit=8 exits=>$02DC objects=>$02E1 ; map rows 88-95 shown
+section 5: map=>$02E8 pad=0 limit=16 exits=>$0332 objects=>$0337 ; map rows 95-104 shown
+section 6: map=>$0340 pad=0 limit=104 exits=>$0398 objects=>$03A1 ; map rows 106-137 shown
+section 7: map=>$0440 pad=0 limit=16 exits=>$04CE objects=>$04D3 ; map rows 138-147 shown
+# +$0040: exits of section 0
+exit flags=$02 row=43 to=1 arrive=27 ; right, to section 1
+end $00
+# +$0045: objects of section 0
+object kind=$06 row=10 col=$0A param=$91 ; kind 6, trap behaviour $10; x 80; on a trigger
+  box x=40 row=16 size=$3F who=$41 ; 16 x 4 cells
+object kind=$77 row=17 col=$90 param=$80 ; enemy, behaviour 3, patrol 8 px; x 128; on view
+object kind=$0F row=18 col=$B4 param=$89 ; kind 15, trap behaviour $08; x 164; on view
+  box x=144 row=16 size=$35 who=$04 ; 6 x 4 cells
+object kind=$01 row=21 col=$D9 param=$AD ; kind 1, detonators; x 200, y + 3; on view
+  box x=200 row=21 size=$22 who=$01 ; 3 x 3 cells
+object kind=$10 row=25 col=$14 param=$01 ; kind 16, trap behaviour $00; x 160; on a trigger
+  box x=160 row=26 size=$11 who=$01 ; 2 x 2 cells
+object kind=$03 row=26 col=$6C param=$11 ; kind 3, trap behaviour $10; x 100, y + 3; on a trigger
+  box x=40 row=28 size=$79 who=$41 ; 10 x 8 cells
+object kind=$77 row=33 col=$84 param=$C0 ; enemy, behaviour 3, patrol 8 px; x 32; on view, one-shot
+object kind=$11 row=33 col=$94 param=$00 ; kind 17, trap behaviour $00; x 160; on view
+object kind=$0C row=38 col=$12 param=$81 ; kind 12, trap behaviour $00; x 144; on a trigger
+  box x=128 row=53 size=$23 who=$01 ; 4 x 3 cells
+object kind=$7C row=41 col=$1D param=$41 ; bonus countdown stop; x 232; on a trigger, one-shot
+  box x=232 row=40 size=$32 who=$01 ; 3 x 4 cells
+object kind=$0C row=42 col=$0E param=$81 ; kind 12, trap behaviour $00; x 112; on a trigger
+  box x=128 row=53 size=$23 who=$01 ; 4 x 3 cells
+object kind=$01 row=49 col=$CF param=$29 ; kind 1, ammunition; x 120, y + 3; on view
+  box x=120 row=49 size=$22 who=$01 ; 3 x 3 cells
+object kind=$7D row=57 col=$88 param=$94 ; enemy, behaviour 1, patrol 48 px; x 64; on view
+object kind=$24 row=60 col=$B0 param=$19 ; kind 36, trap behaviour $18; x 132; on view
+  box x=128 row=66 size=$10 who=$08 ; 1 x 2 cells
+object kind=$76 row=65 col=$8D param=$80 ; enemy, behaviour 2, patrol 8 px; x 104; on view
+object kind=$76 row=65 col=$89 param=$80 ; enemy, behaviour 2, patrol 8 px; x 72; on view
+object kind=$0A row=68 col=$84 param=$09 ; kind 10, trap behaviour $08; x 32; on view
+  box x=88 row=56 size=$30 who=$01 ; 1 x 4 cells
+object kind=$09 row=72 col=$98 param=$09 ; kind 9, trap behaviour $08; x 192; on view
+  box x=208 row=71 size=$00 who=$01 ; 1 x 1 cells
+object kind=$7E row=73 col=$95 param=$00 ; enemy, behaviour 2, patrol 8 px; x 168; on view
+object kind=$01 row=73 col=$D5 param=$61 ; kind 1, treasure; x 168, y + 3; on view, one-shot
+  box x=168 row=73 size=$22 who=$01 ; 3 x 3 cells
+object kind=$08 row=74 col=$A9 param=$09 ; kind 8, trap behaviour $08; x 76; on view
+  box x=72 row=80 size=$30 who=$01 ; 1 x 4 cells
+object kind=$06 row=86 col=$0E param=$91 ; kind 6, trap behaviour $10; x 112; on a trigger
+  box x=96 row=92 size=$6F who=$41 ; 16 x 7 cells
+object kind=$07 row=86 col=$14 param=$91 ; kind 7, trap behaviour $10; x 160; on a trigger
+  box x=96 row=92 size=$6F who=$41 ; 16 x 7 cells
+object kind=$78 row=93 col=$04 param=$01 ; bonus countdown start; x 32; on a trigger
+  box x=32 row=90 size=$54 who=$01 ; 5 x 6 cells
+object kind=$0B row=101 col=$D2 param=$0D ; kind 11, trap behaviour $0C; x 144, y + 3; on view
+  box x=24 row=106 size=$10 who=$08 ; 1 x 2 cells
+object kind=$01 row=105 col=$C4 param=$61 ; kind 1, treasure; x 32, y + 3; on view, one-shot
+  box x=32 row=105 size=$22 who=$01 ; 3 x 3 cells
+object kind=$05 row=106 col=$C4 param=$80 ; kind 5, trap behaviour $00; x 32, y + 3; on view
+object kind=$03 row=106 col=$78 param=$11 ; kind 3, trap behaviour $10; x 196, y + 3; on a trigger
+  box x=160 row=108 size=$57 who=$41 ; 8 x 6 cells
+object kind=$76 row=117 col=$8C param=$80 ; enemy, behaviour 2, patrol 8 px; x 96; on view
+object kind=$76 row=117 col=$8E param=$80 ; enemy, behaviour 2, patrol 8 px; x 112; on view
+object kind=$02 row=120 col=$91 param=$25 ; kind 2, trap behaviour $24; x 136; on view
+  box x=128 row=118 size=$14 who=$04 ; 5 x 2 cells
+end 0
+# +$0116: exits of section 1
+exit flags=$22 row=27 to=2 arrive=27 ; right, arrives riding, to section 2
+end $00
+# +$011B: objects of section 1
+object kind=$13 row=13 col=$97 param=$59 ; kind 19, trap behaviour $18; x 184; on view, one-shot
+  box x=168 row=18 size=$14 who=$04 ; 5 x 2 cells
+object kind=$12 row=16 col=$91 param=$4D ; kind 18, trap behaviour $0C; x 136; on view, one-shot
+  box x=168 row=18 size=$14 who=$04 ; 5 x 2 cells
+object kind=$77 row=17 col=$8C param=$00 ; enemy, behaviour 3, patrol 8 px; x 96; on view
+object kind=$2C row=17 col=$F6 param=$4D ; kind 44, trap behaviour $0C; x 180, y + 3; on view, one-shot
+  box x=168 row=18 size=$14 who=$04 ; 5 x 2 cells
+object kind=$27 row=17 col=$16 param=$51 ; kind 39, trap behaviour $10; x 176; on a trigger, one-shot
+  box x=168 row=18 size=$14 who=$44 ; 5 x 2 cells
+object kind=$28 row=17 col=$16 param=$51 ; kind 40, trap behaviour $10; x 176; on a trigger, one-shot
+  box x=168 row=18 size=$14 who=$44 ; 5 x 2 cells
+object kind=$29 row=17 col=$16 param=$51 ; kind 41, trap behaviour $10; x 176; on a trigger, one-shot
+  box x=168 row=18 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2A row=17 col=$16 param=$51 ; kind 42, trap behaviour $10; x 176; on a trigger, one-shot
+  box x=168 row=18 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2B row=17 col=$16 param=$51 ; kind 43, trap behaviour $10; x 176; on a trigger, one-shot
+  box x=168 row=18 size=$14 who=$44 ; 5 x 2 cells
+object kind=$12 row=24 col=$9D param=$4D ; kind 18, trap behaviour $0C; x 232; on view, one-shot
+  box x=168 row=18 size=$14 who=$04 ; 5 x 2 cells
+object kind=$7D row=25 col=$86 param=$08 ; enemy, behaviour 1, patrol 24 px; x 48; on view
+object kind=$76 row=25 col=$96 param=$00 ; enemy, behaviour 2, patrol 8 px; x 176; on view
+end 0
+# +$0170: exits of section 2
+exit flags=$01 row=71 to=3 arrive=23 ; left, to section 3
+exit flags=$02 row=99 to=4 arrive=27 ; right, to section 4
+end $00
+# +$0179: objects of section 2
+object kind=$01 row=13 col=$E4 param=$E1 ; kind 1, treasure; x 36, y + 3; on view, one-shot
+  box x=32 row=13 size=$22 who=$01 ; 3 x 3 cells
+object kind=$16 row=14 col=$31 param=$91 ; kind 22, trap behaviour $10; x 140; on a trigger
+  box x=96 row=16 size=$39 who=$41 ; 10 x 4 cells
+object kind=$06 row=14 col=$12 param=$11 ; kind 6, trap behaviour $10; x 144; on a trigger
+  box x=136 row=13 size=$EA who=$41 ; 11 x 15 cells
+object kind=$78 row=16 col=$0D param=$01 ; bonus countdown start; x 104; on a trigger
+  box x=104 row=16 size=$30 who=$01 ; 1 x 4 cells
+object kind=$14 row=18 col=$06 param=$11 ; kind 20, trap behaviour $10; x 48; on a trigger
+  box x=16 row=16 size=$BB who=$41 ; 12 x 12 cells
+object kind=$17 row=22 col=$1C param=$11 ; kind 23, trap behaviour $10; x 224; on a trigger
+  box x=160 row=13 size=$F7 who=$41 ; 8 x 16 cells
+object kind=$15 row=28 col=$08 param=$11 ; kind 21, trap behaviour $10; x 64; on a trigger
+  box x=16 row=20 size=$79 who=$41 ; 10 x 8 cells
+object kind=$14 row=30 col=$12 param=$92 ; kind 20, trap behaviour $10; x 144; on a trigger
+  box x=192 row=31 size=$03 who=$01 ; 4 x 1 cells
+  box x=56 row=36 size=$03 who=$20 ; 4 x 1 cells
+object kind=$17 row=30 col=$14 param=$91 ; kind 23, trap behaviour $10; x 160; on a trigger
+  box x=168 row=36 size=$03 who=$20 ; 4 x 1 cells
+object kind=$14 row=30 col=$0A param=$92 ; kind 20, trap behaviour $10; x 80; on a trigger
+  box x=112 row=36 size=$02 who=$20 ; 3 x 1 cells
+  box x=192 row=31 size=$03 who=$01 ; 4 x 1 cells
+object kind=$17 row=30 col=$0C param=$91 ; kind 23, trap behaviour $10; x 96; on a trigger
+  box x=104 row=36 size=$01 who=$20 ; 2 x 1 cells
+object kind=$18 row=40 col=$8A param=$09 ; kind 24, trap behaviour $08; x 80; on view
+  box x=32 row=40 size=$03 who=$01 ; 4 x 1 cells
+object kind=$18 row=40 col=$90 param=$09 ; kind 24, trap behaviour $08; x 128; on view
+  box x=80 row=48 size=$03 who=$20 ; 4 x 1 cells
+object kind=$0D row=40 col=$0A param=$01 ; kind 13, trap behaviour $00; x 80; on a trigger
+  box x=80 row=40 size=$22 who=$01 ; 3 x 3 cells
+object kind=$19 row=57 col=$42 param=$92 ; kind 25, trap behaviour $10; x 16, y + 3; on a trigger
+  box x=88 row=54 size=$8F who=$41 ; 16 x 9 cells
+  box x=32 row=56 size=$78 who=$41 ; 9 x 8 cells
+object kind=$2D row=62 col=$30 param=$81 ; kind 45, trap behaviour $00; x 132; on a trigger
+  box x=128 row=61 size=$13 who=$01 ; 4 x 2 cells
+object kind=$1C row=68 col=$C2 param=$89 ; kind 28, trap behaviour $08; x 16, y + 3; on view
+  box x=40 row=68 size=$30 who=$02 ; 1 x 4 cells
+object kind=$7C row=69 col=$00 param=$41 ; bonus countdown stop; x 0; on a trigger, one-shot
+  box x=0 row=68 size=$32 who=$01 ; 3 x 4 cells
+object kind=$1A row=73 col=$46 param=$91 ; kind 26, trap behaviour $10; x 48, y + 3; on a trigger
+  box x=56 row=68 size=$7F who=$41 ; 16 x 8 cells
+object kind=$1B row=73 col=$57 param=$91 ; kind 27, trap behaviour $10; x 184, y + 3; on a trigger
+  box x=56 row=68 size=$7F who=$41 ; 16 x 8 cells
+object kind=$01 row=73 col=$CF param=$A9 ; kind 1, ammunition; x 120, y + 3; on view
+  box x=120 row=73 size=$22 who=$01 ; 3 x 3 cells
+object kind=$05 row=86 col=$C4 param=$80 ; kind 5, trap behaviour $00; x 32, y + 3; on view
+object kind=$1F row=86 col=$DA param=$80 ; kind 31, trap behaviour $00; x 208, y + 3; on view
+object kind=$20 row=93 col=$01 param=$91 ; kind 32, trap behaviour $10; x 8; on a trigger
+  box x=128 row=94 size=$10 who=$08 ; 1 x 2 cells
+object kind=$1E row=98 col=$CA param=$80 ; kind 30, trap behaviour $00; x 80, y + 3; on view
+object kind=$1F row=98 col=$DB param=$80 ; kind 31, trap behaviour $00; x 216, y + 3; on view
+end 0
+# +$0246: exits of section 3
+exit flags=$02 row=51 to=2 arrive=99 ; right, to section 2
+end $00
+# +$024B: objects of section 3
+object kind=$13 row=13 col=$8F param=$59 ; kind 19, trap behaviour $18; x 120; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$7E row=21 col=$94 param=$00 ; enemy, behaviour 2, patrol 8 px; x 160; on view
+object kind=$7E row=21 col=$88 param=$00 ; enemy, behaviour 2, patrol 8 px; x 64; on view
+object kind=$2C row=21 col=$EE param=$4D ; kind 44, trap behaviour $0C; x 116, y + 3; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$10 row=21 col=$84 param=$4D ; kind 16, trap behaviour $0C; x 32; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$27 row=21 col=$0E param=$51 ; kind 39, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$28 row=21 col=$0E param=$51 ; kind 40, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$29 row=21 col=$0E param=$51 ; kind 41, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2A row=21 col=$0E param=$51 ; kind 42, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2B row=21 col=$0E param=$51 ; kind 43, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$1D row=38 col=$C4 param=$00 ; kind 29, trap behaviour $00; x 32, y + 3; on view
+object kind=$13 row=45 col=$87 param=$59 ; kind 19, trap behaviour $18; x 56; on view, one-shot
+  box x=40 row=50 size=$14 who=$04 ; 5 x 2 cells
+object kind=$12 row=48 col=$8D param=$4D ; kind 18, trap behaviour $0C; x 104; on view, one-shot
+  box x=40 row=50 size=$14 who=$04 ; 5 x 2 cells
+object kind=$12 row=48 col=$9D param=$4D ; kind 18, trap behaviour $0C; x 232; on view, one-shot
+  box x=40 row=50 size=$14 who=$04 ; 5 x 2 cells
+object kind=$2C row=49 col=$E6 param=$4D ; kind 44, trap behaviour $0C; x 52, y + 3; on view, one-shot
+  box x=40 row=50 size=$14 who=$04 ; 5 x 2 cells
+object kind=$27 row=49 col=$06 param=$51 ; kind 39, trap behaviour $10; x 48; on a trigger, one-shot
+  box x=40 row=50 size=$14 who=$44 ; 5 x 2 cells
+object kind=$28 row=49 col=$06 param=$51 ; kind 40, trap behaviour $10; x 48; on a trigger, one-shot
+  box x=40 row=50 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2B row=49 col=$06 param=$51 ; kind 43, trap behaviour $10; x 48; on a trigger, one-shot
+  box x=40 row=50 size=$14 who=$44 ; 5 x 2 cells
+object kind=$75 row=49 col=$84 param=$08 ; enemy, behaviour 1, patrol 24 px; x 32; on view
+object kind=$76 row=49 col=$94 param=$80 ; enemy, behaviour 2, patrol 8 px; x 160; on view
+object kind=$77 row=49 col=$90 param=$80 ; enemy, behaviour 3, patrol 8 px; x 128; on view
+end 0
+# +$02DC: exits of section 4
+exit flags=$02 row=27 to=6 arrive=115 ; right, to section 6
+end $00
+# +$02E1: objects of section 4
+object kind=$2E row=12 col=$91 param=$59 ; kind 46, trap behaviour $18; x 136; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$13 row=13 col=$8A param=$59 ; kind 19, trap behaviour $18; x 80; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$2C row=21 col=$EE param=$4D ; kind 44, trap behaviour $0C; x 116, y + 3; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$75 row=21 col=$8C param=$08 ; enemy, behaviour 1, patrol 24 px; x 96; on view
+object kind=$7E row=21 col=$99 param=$00 ; enemy, behaviour 2, patrol 8 px; x 200; on view
+object kind=$77 row=21 col=$84 param=$00 ; enemy, behaviour 3, patrol 8 px; x 32; on view
+object kind=$27 row=21 col=$0E param=$51 ; kind 39, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$28 row=21 col=$0E param=$51 ; kind 40, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$29 row=21 col=$0E param=$51 ; kind 41, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2B row=21 col=$0E param=$51 ; kind 43, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=22 size=$14 who=$44 ; 5 x 2 cells
+object kind=$12 row=24 col=$9D param=$4D ; kind 18, trap behaviour $0C; x 232; on view, one-shot
+  box x=104 row=22 size=$14 who=$04 ; 5 x 2 cells
+object kind=$77 row=25 col=$97 param=$00 ; enemy, behaviour 3, patrol 8 px; x 184; on view
+end 0
+# +$0332: exits of section 5
+exit flags=$02 row=23 to=6 arrive=55 ; right, to section 6
+end $00
+# +$0337: objects of section 5
+object kind=$2E row=17 col=$8E param=$59 ; kind 46, trap behaviour $18; x 112; on view, one-shot
+  box x=104 row=26 size=$14 who=$04 ; 5 x 2 cells
+object kind=$12 row=20 col=$9D param=$4D ; kind 18, trap behaviour $0C; x 232; on view, one-shot
+  box x=104 row=26 size=$14 who=$04 ; 5 x 2 cells
+object kind=$78 row=20 col=$04 param=$01 ; bonus countdown start; x 32; on a trigger
+  box x=32 row=22 size=$13 who=$01 ; 4 x 2 cells
+object kind=$7C row=20 col=$18 param=$41 ; bonus countdown stop; x 192; on a trigger, one-shot
+  box x=192 row=22 size=$13 who=$01 ; 4 x 2 cells
+object kind=$2C row=25 col=$EE param=$4D ; kind 44, trap behaviour $0C; x 116, y + 3; on view, one-shot
+  box x=104 row=26 size=$14 who=$04 ; 5 x 2 cells
+object kind=$75 row=25 col=$8C param=$08 ; enemy, behaviour 1, patrol 24 px; x 96; on view
+object kind=$27 row=25 col=$0E param=$51 ; kind 39, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=26 size=$14 who=$44 ; 5 x 2 cells
+object kind=$28 row=25 col=$0E param=$51 ; kind 40, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=26 size=$14 who=$44 ; 5 x 2 cells
+object kind=$29 row=25 col=$0E param=$51 ; kind 41, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=26 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2A row=25 col=$0E param=$51 ; kind 42, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=26 size=$14 who=$44 ; 5 x 2 cells
+object kind=$2B row=25 col=$0E param=$51 ; kind 43, trap behaviour $10; x 112; on a trigger, one-shot
+  box x=104 row=26 size=$14 who=$44 ; 5 x 2 cells
+object kind=$77 row=25 col=$84 param=$00 ; enemy, behaviour 3, patrol 8 px; x 32; on view
+object kind=$77 row=25 col=$99 param=$00 ; enemy, behaviour 3, patrol 8 px; x 200; on view
+object kind=$7E row=29 col=$93 param=$00 ; enemy, behaviour 2, patrol 8 px; x 152; on view
+end 0
+# +$0398: exits of section 6
+exit flags=$42 row=23 to=7 arrive=31 ; right, LevelHookOn (the Fat Guy), to section 7
+exit flags=$01 row=63 to=5 arrive=31 ; left, to section 5
+end $00
+# +$03A1: objects of section 6
+object kind=$7D row=13 col=$84 param=$98 ; enemy, behaviour 1, patrol 56 px; x 32; on view
+object kind=$01 row=13 col=$D0 param=$A9 ; kind 1, ammunition; x 128, y + 3; on view
+  box x=128 row=13 size=$22 who=$01 ; 3 x 3 cells
+object kind=$01 row=13 col=$D1 param=$AD ; kind 1, detonators; x 136, y + 3; on view
+  box x=136 row=13 size=$22 who=$01 ; 3 x 3 cells
+object kind=$33 row=16 col=$12 param=$91 ; kind 51, trap behaviour $10; x 144; on a trigger
+  box x=80 row=12 size=$3A who=$41 ; 11 x 4 cells
+object kind=$32 row=21 col=$4F param=$11 ; kind 50, trap behaviour $10; x 120, y + 3; on a trigger
+  box x=24 row=20 size=$55 who=$41 ; 6 x 6 cells
+object kind=$34 row=21 col=$F8 param=$19 ; kind 52, trap behaviour $18; x 196, y + 3; on view
+  box x=120 row=12 size=$30 who=$01 ; 1 x 4 cells
+object kind=$7C row=21 col=$1D param=$41 ; bonus countdown stop; x 232; on a trigger, one-shot
+  box x=232 row=20 size=$32 who=$01 ; 3 x 4 cells
+object kind=$31 row=22 col=$10 param=$12 ; kind 49, trap behaviour $10; x 128; on a trigger
+  box x=32 row=34 size=$17 who=$41 ; 8 x 2 cells
+  box x=32 row=29 size=$63 who=$41 ; 4 x 7 cells
+object kind=$17 row=26 col=$10 param=$11 ; kind 23, trap behaviour $10; x 128; on a trigger
+  box x=96 row=28 size=$6F who=$41 ; 16 x 7 cells
+object kind=$0B row=37 col=$CE param=$0D ; kind 11, trap behaviour $0C; x 112, y + 3; on view
+  box x=224 row=49 size=$10 who=$08 ; 1 x 2 cells
+object kind=$26 row=41 col=$82 param=$A5 ; kind 38, trap behaviour $24; x 16; on view
+  box x=32 row=42 size=$12 who=$04 ; 3 x 2 cells
+object kind=$35 row=48 col=$34 param=$1E ; kind 53, trap behaviour $1C; x 164; on a trigger
+  box x=128 row=40 size=$B3 who=$41 ; 4 x 12 cells
+  box x=160 row=40 size=$67 who=$41 ; 8 x 7 cells
+object kind=$30 row=50 col=$43 param=$11 ; kind 48, trap behaviour $10; x 24, y + 3; on a trigger
+  box x=16 row=52 size=$35 who=$41 ; 6 x 4 cells
+object kind=$78 row=52 col=$06 param=$01 ; bonus countdown start; x 48; on a trigger
+  box x=48 row=52 size=$31 who=$01 ; 2 x 4 cells
+object kind=$1F row=54 col=$D6 param=$00 ; kind 31, trap behaviour $00; x 176, y + 3; on view
+object kind=$2F row=55 col=$43 param=$11 ; kind 47, trap behaviour $10; x 24, y + 3; on a trigger
+  box x=16 row=52 size=$35 who=$41 ; 6 x 4 cells
+object kind=$2F row=55 col=$49 param=$11 ; kind 47, trap behaviour $10; x 72, y + 3; on a trigger
+  box x=48 row=49 size=$67 who=$41 ; 8 x 7 cells
+object kind=$30 row=58 col=$40 param=$11 ; kind 48, trap behaviour $10; x 0, y + 3; on a trigger
+  box x=0 row=60 size=$33 who=$41 ; 4 x 4 cells
+object kind=$75 row=61 col=$8E param=$84 ; enemy, behaviour 1, patrol 16 px; x 112; on view
+object kind=$01 row=61 col=$C6 param=$ED ; kind 1, detonators; x 48, y + 3; on view, one-shot
+  box x=48 row=61 size=$22 who=$01 ; 3 x 3 cells
+object kind=$2F row=63 col=$40 param=$11 ; kind 47, trap behaviour $10; x 0, y + 3; on a trigger
+  box x=0 row=60 size=$33 who=$41 ; 4 x 4 cells
+object kind=$75 row=69 col=$94 param=$80 ; enemy, behaviour 1, patrol 8 px; x 160; on view
+object kind=$22 row=72 col=$0C param=$1D ; kind 34, trap behaviour $1C; x 96; on a trigger
+  box x=96 row=71 size=$02 who=$41 ; 3 x 1 cells
+object kind=$22 row=72 col=$10 param=$1D ; kind 34, trap behaviour $1C; x 128; on a trigger
+  box x=128 row=71 size=$02 who=$41 ; 3 x 1 cells
+object kind=$01 row=77 col=$D4 param=$29 ; kind 1, ammunition; x 160, y + 3; on view
+  box x=160 row=77 size=$22 who=$01 ; 3 x 3 cells
+object kind=$36 row=80 col=$08 param=$05 ; kind 54, trap behaviour $04; x 64; on a trigger
+  box x=64 row=79 size=$00 who=$01 ; 1 x 1 cells
+object kind=$30 row=82 col=$4A param=$11 ; kind 48, trap behaviour $10; x 80, y + 3; on a trigger
+  box x=64 row=84 size=$37 who=$41 ; 8 x 4 cells
+object kind=$30 row=82 col=$52 param=$11 ; kind 48, trap behaviour $10; x 144, y + 3; on a trigger
+  box x=120 row=84 size=$37 who=$41 ; 8 x 4 cells
+object kind=$2F row=87 col=$4A param=$11 ; kind 47, trap behaviour $10; x 80, y + 3; on a trigger
+  box x=64 row=84 size=$37 who=$41 ; 8 x 4 cells
+object kind=$2F row=87 col=$52 param=$11 ; kind 47, trap behaviour $10; x 144, y + 3; on a trigger
+  box x=120 row=84 size=$37 who=$41 ; 8 x 4 cells
+object kind=$30 row=90 col=$4E param=$11 ; kind 48, trap behaviour $10; x 112, y + 3; on a trigger
+  box x=64 row=92 size=$3E who=$41 ; 15 x 4 cells
+object kind=$09 row=93 col=$98 param=$09 ; kind 9, trap behaviour $08; x 192; on view
+  box x=208 row=92 size=$00 who=$01 ; 1 x 1 cells
+object kind=$2F row=95 col=$52 param=$11 ; kind 47, trap behaviour $10; x 144, y + 3; on a trigger
+  box x=64 row=92 size=$3E who=$41 ; 15 x 4 cells
+object kind=$2F row=95 col=$4A param=$11 ; kind 47, trap behaviour $10; x 80, y + 3; on a trigger
+  box x=64 row=92 size=$3E who=$41 ; 15 x 4 cells
+object kind=$1F row=106 col=$D1 param=$80 ; kind 31, trap behaviour $00; x 136, y + 3; on view
+object kind=$09 row=109 col=$84 param=$09 ; kind 9, trap behaviour $08; x 32; on view
+  box x=32 row=107 size=$00 who=$01 ; 1 x 1 cells
+object kind=$22 row=111 col=$98 param=$00 ; kind 34, trap behaviour $00; x 192; on view
+object kind=$76 row=119 col=$8C param=$00 ; enemy, behaviour 2, patrol 8 px; x 96; on view
+object kind=$7D row=121 col=$90 param=$90 ; enemy, behaviour 1, patrol 40 px; x 128; on view
+object kind=$21 row=122 col=$8D param=$00 ; kind 33, trap behaviour $00; x 104; on view
+object kind=$0A row=124 col=$98 param=$09 ; kind 10, trap behaviour $08; x 192; on view
+  box x=208 row=123 size=$00 who=$01 ; 1 x 1 cells
+end 0
+# +$04CE: exits of section 7
+exit flags=$92 row=27 to=0 arrive=27 ; right, level end
+end $00
+# +$04D3: objects of section 7
+bytes $01 $24 $19 $1E $00 $19 $AF $41
+bytes $80 $16 $DF

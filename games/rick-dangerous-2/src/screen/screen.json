@@ -1,0 +1,21 @@
+{
+  "about": "Side A block 5, the loading screen at $4000 (6912 bytes): python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/screen-4000.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/screen-4000.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM128",
+  "header": [
+    "; Rick Dangerous 2, Micro Style 1990: side A block 5, the loading screen, read by the loader to $4000."
+  ],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

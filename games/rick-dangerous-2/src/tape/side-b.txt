@@ -1,0 +1,20 @@
+# Side B of the tape ("Rick Dangerous 2 - Side B.tzx" in orig/RickDangerous2.tzx.zip) as tools/mktape.py writes it:
+# one line a TZX block, in order (the format is in tools/mktape.py; the blocks in docs/03-build-and-load.md 3.1).
+# The five level blocks, each src/levels/levelN/levelN.asm assembled at $A800 (build/levelN.bin) with its maps'
+# last 768 bytes enciphered ("maps:"), in the loader's bit-reversed form; the level loader reads them in order.
+tzx 1.10
+archive 0 Rick Dangerous 2 - Side B
+archive 1 Micro Style
+archive 2 CORE Design
+archive 3 1990
+archive 4 English
+archive 5 Arcade: Platform
+archive 6 £9.99
+archive 7 Unknown
+archive 8 Original
+archive 255 TZXed by Mikie & Andy Barker\rFor Steve Brown
+reversed 11423 maps:level1.bin
+reversed 10390 maps:level2.bin
+reversed 10809 maps:level3.bin
+reversed 9382 maps:level4.bin
+reversed 58582 maps:level5.bin

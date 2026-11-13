@@ -1,0 +1,42 @@
+{
+  "about": "Level 2 (side B block 2): python3 ../../kit/mkgame.py --part src/levels/level2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/level2-a800.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/level2-a800.bin",
+  "org": "A800",
+  "ann": "src/levels/levels.ann",
+  "piece": "level2",
+  "top": "level2",
+  "bin": "level2.bin",
+  "dest": "src/levels/level2",
+  "device": "ZXSPECTRUM128",
+  "bases": {
+    "2": "8000",
+    "0": "C000"
+  },
+  "same_bytes": true,
+  "res_install": "tools/res_formats.py:install_level2",
+  "header": [
+    "; Rick Dangerous 2, Micro Style 1990: level 2, 21 760 bytes at $A800-$FCFF as the game plays it (the maps'",
+    "; last 768 bytes deciphered); tools/mktape.py enciphers them for side B."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/load-l2/l1.json",
+      "reads": false
+    },
+    {
+      "path": "work/stage1/rec/rzx-l2-*/l1.json",
+      "reads": false
+    },
+    {
+      "path": "work/stage2/rec/sec-l2-*/l1.json",
+      "reads": false
+    }
+  ],
+  "data_entries": "stop",
+  "work": "work/stage2/mklevel2"
+}
