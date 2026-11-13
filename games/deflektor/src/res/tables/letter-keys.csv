@@ -1,0 +1,30 @@
+# LetterKeys $9EBD: the TestKey code of each letter A-Z (8 x (4 - bit) + half-row), read by
+# ReadLetterKey $9E5A; the last row, $FF, ends the table.
+_row,key
+A,$26
+B,$00
+C,$0F
+D,$16
+E,$15
+F,$0E
+G,$06
+H,$01
+I,$12
+J,$09
+K,$11
+L,$19
+M,$10
+N,$08
+O,$1A
+P,$22
+Q,$25
+R,$0D
+S,$1E
+T,$05
+U,$0A
+V,$07
+W,$1D
+X,$17
+Y,$02
+Z,$1F
+end,$FF

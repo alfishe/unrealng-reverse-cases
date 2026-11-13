@@ -209,8 +209,8 @@ BeamGlyphSet:
 ;
 ; Run at every level start of every play recording (165 in all).
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 SetUpLevel:
   LD A,(Level)
   CP $3C
@@ -398,8 +398,8 @@ SetUpLevelLaser:
 ;
 ; The pass takes 4.85 frames on average in the RZX run (WALKTHROUGH 1).
 ;
-; Witness: L1 111157 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 MainLoop:
   CALL ReadKeys
   CALL MarkCursorCells
@@ -481,8 +481,9 @@ MainLoopRest:
 ; inside CopyPlayArea (called at `$85AB`), so its L1 marks a routine root at
 ; the return address.
 ;
-; Witness: L1 111052 (c1, c1g, cheat, controls, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x59).
 PassEnd:
   LD A,(GremlinSoundFlag)
   LD HL,GremlinSound
@@ -602,9 +603,9 @@ PassEndSlotNext:
 ; LifeLostSound `$8665`: LoseLife (`$8680` once, `$86C1` 36 times) (B `$19`, C
 ; 6, D 6, 10 notes).
 ReceiverOpenSound:
-  DEFB $01,$0F,$04,$14,$23
+  INCBIN "res/tables/sounds-pass-end.bin",$0000,5
 LifeLostSound:
-  DEFB $01,$19,$06,$06,$0A ; type 1, B $19, C 6, D 6, E 10
+  INCBIN "res/tables/sounds-pass-end.bin",$0005,5
 
   ORG $87D4
 
@@ -660,7 +661,7 @@ LevelComplete:
 ; `$87F0`, so their L1s mark a routine root at the return address. Run 78 times
 ; (all 60 RZX segments: the 42 roots and the 18 completions).
 ;
-; Witness: L1 115 (ending, hof, L x20, rzx x60).
+; Witness: L1 116 (ending, hof, nameedit, L x20, rzx x60).
 LevelCompletePause:
   CALL Delay
   CALL Delay
@@ -771,8 +772,8 @@ TheEndKeys:
 ; life left), `$9DE1`, the title `$A729-$A732` (four), the ending `$A8D9`,
 ; `$A943`, `$A963-$A96C`.
 ;
-; Witness: L1 1373 (c1, c1g, controls, ending, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 1400 (c1, c1g, controls, ending, energy, energy-out, gameover,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 Delay:
   LD C,$FF
 

@@ -1,0 +1,6 @@
+# IntermissionText $972B: the pause's banner, 15 characters.
+# "..." a printable run (3 or more characters $20-$7E), two hex digits any other byte
+# (the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a
+# line's start is the address of its first byte; keep the lengths, the loop words point
+# into the text.
+$972B: " INTERMISSION  "

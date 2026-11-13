@@ -2,7 +2,7 @@
 
 Every resource out of the code, in an editable format; `tools/res_formats.py build --out build/res` turns them back
 into the bytes the sources INCBIN (tools/build.sh does it first), `tools/res_formats.py check` proves the round trip
-(22 files, 0 bad). The formats are described in the docstring of tools/res_formats.py and in each folder's README.md.
+(45 files, 0 bad). The formats are described in the docstring of tools/res_formats.py and in each folder's README.md.
 Pictures of every level from levels/levels.txt: `python3 tools/level_maps.py OUT`.
 
 | File | Address | Size | Format | What | Read by |
@@ -17,6 +17,29 @@ Pictures of every level from levels/levels.txt: `python3 tools/level_maps.py OUT
 | tables/graze-offsets.csv | `$8190` | 16 | CSV | GrazeOffsets | BeamAbsorbIn/Out, BeamReflectIn/Out |
 | tables/polariser-cells.csv | `$81A0` | 24 | CSV | PolariserCells | PolariserPassIn/Out |
 | tables/sounds.csv | `$81D4` | 40 | CSV | the 8 PlaySound records (BurnSound to ContactSound) | PassEnd, the sound flags (`SoundFlagsFound`) |
+| tables/level-settings.csv | `$8385` | 130 | CSV | LevelSettings: energy rate and gremlin count of each slot | SetUpLevel `$843C` |
+| tables/sounds-pass-end.csv | `$8660` | 10 | CSV | ReceiverOpenSound, LifeLostSound | PassEnd, LoseLife |
+| tables/sound-drained.csv | `$8695` | 5 | CSV | EnergyDrainedSound | LoseLife `$866A` |
+| graphics/game-over.png | `$8714` | 192 | 1-bit bitmap | GameOverBanner, 96 x 16 | LoseLife `$866A` |
+| graphics/level-digits.png | `$88B0` | 88 | 1-bit glyphs | LevelDigits: 0-9 and P | SetUpLevel `$843C` |
+| tables/wipes.csv | `$8D95` | 128 | CSV | PlayAreaWipes and ScreenWipes: 8 corner records of 8 words | WipeIn `$8CAD` |
+| texts/practice.txt | `$8A9D` | 36 | hex text | PracticeText | PrintPlay `$8E47` |
+| texts/intermission.txt | `$972B` | 15 | hex text | IntermissionText | the pause `$973F` |
+| tables/cursor-steps.csv | `$993E` | 32 | CSV | CursorSteps | MoveCursor `$9910` |
+| graphics/cursor.png | `$9A37` | 32 | 1-bit bitmap | CursorGraphic, 16 x 16 | DrawCursorSquare `$9A11` |
+| tables/letter-keys.csv | `$9EBD` | 27 | CSV | LetterKeys | ReadLetterKey `$9E5A` |
+| tables/menu-dither.csv | `$9F41` | 8 | CSV | MenuDither | DrawMenuScreen `$9ED8` |
+| texts/options.txt | `$9F49` | 154 | hex text | HallOfFameTitle, OptionsText | PrintFull `$8E3A` |
+| graphics/name-cursor.png | `$9FE3` | 8 | 1-bit glyphs | NameCursorGlyph | the name entry |
+| texts/hall-of-fame.txt | `$9FEB` | 104 | hex text | HallOfFameScores, HallOfFameNames | PrintFull, HallOfFame |
+| tables/options-layout.csv | `$A053` | 175 | CSV | OptionsLayout: 87 attribute runs | DrawMenuScreen `$9ED8` |
+| texts/messages.txt | `$A112` | 488 | hex text | the COMPUTER line's messages and loop words | the COMPUTER line |
+| texts/ending.txt | `$A984` | 259 | hex text | EndingText | PrintFull `$8E3A` |
+| graphics/ending-plug.png | `$AA87` | 32 | 1-bit bitmap | EndingPlug, 16 x 16 | the ending |
+| graphics/ending-kettle.png | `$AAA7` | 60 | 1-bit bitmap | EndingKettle, 24 x 20 | the ending |
+| graphics/gremlin.png | `$AAE3` | 128 | 1-bit bitmap | GremlinFrames, 4 x 16 x 16 | UpdateGremlins `$AB9F` |
+| tables/gremlin-steps.csv | `$AB97` | 8 | CSV | GremlinSteps | GremlinMove `$AC4D` |
+| tables/title-tune.csv | `$ADF0` | 528 | CSV | TitleTuneData: 176 notes x 3 periods | TitleTune `$AD79` |
 | tables/cell-table.csv | `$8200` | 372 | CSV | CellTable: the four characters of each cell code `$00-$5C` | RenderGrid `$8960` |
 | levels/levels.txt | `$B000` | 8640 | level text | LevelData: 64 slots of 135 cells (60 levels, the practice level in slot `$3C`, 3 unused) | BuildLevel (LevelSetup `$891A`) |
 | graphics/font.png | `$D200` | 768 | 1-bit glyphs | Font, characters 32-127 | PrintChar, the menu, the hall of fame, the scroller |
@@ -33,3 +56,10 @@ Pictures of every level from levels/levels.txt: `python3 tools/level_maps.py OUT
 The game's work areas (the grid `$FD23`, the character map `$E000`, the buffers `$E300-$FCFF`) are not resources:
 the game builds them. The main block's code outside the game (src/head) and the loader (src/tape, src/loader) have no
 resources but these two loader files.
+
+What stays bytes in the sources (DEFB / DEFW in src/game), and why: the game's variables (ControlMethod, Level,
+Lives, CellsLeft, the explosion slots `$81B8`, the beam's and the wipe's state, RandomSeed, ScoreText, the name entry's
+and the COMPUTER line's variables, the energy and overload bars, SoundFlags, the gremlin records `$AB63`), which the
+game sets before it reads them, so their bytes in the image are no data the docs describe; and the few unread bytes
+Spare81FC, Spare81FE, Unused9AF1, UnusedA102 and UnusedAD46 (`s`, 51 zeros). Every table, picture, text and tune is a
+file above.

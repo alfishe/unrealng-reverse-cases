@@ -288,12 +288,12 @@ MoveGame:               ; $FD00
 
 ![The head, the chain and the mover in memory](img/load/decipher.gif)
 
-*`$5B00-$FFFF` of `c1` from frame 15 638 to 15 756, one picture a frame (119). How to read it: a byte's grey is its
+*`$5B00-$FFFF` of `c1` from frame 15 638 to 15 756, one picture every fifth frame (25). How to read it: a byte's grey is its
 value; yellow is a byte written since the last picture, fading through red. The point: first the whole block moves
-up (one sweep), then for about 100 frames almost nothing is written (the chain reads its sums and deciphers 372
-bytes at `$7BC0-$7D33`), then the 16-bit layer and the mover rewrite everything from `$6000` up in two frames; the
+up (one sweep), then for about 100 frames (some 20 pictures) almost nothing is written (the chain reads its sums and deciphers 372
+bytes at `$7BC0-$7D33`), then the 16-bit layer and the mover rewrite everything from `$6000` up in two frames (one picture); the
 last pictures are the game's first pass writing its buffers at `$E000-$FCFF`. Command: `python3
-../../kit/memanim.py --work work/docs/dfA/c1 --from 15638 --to 15756 --step 69888 --cell fit --label "..." --delay 100
+../../kit/memanim.py --work work/docs/dfA/c1 --from 15638 --to 15756 --step 349440 --cell 3 --label "..." --delay 400
 docs/img/load/decipher.gif`.*
 
 ## 3.6 The build
@@ -302,7 +302,7 @@ The case builds the tape from its sources and compares it with the original, byt
 
 ```mermaid
 flowchart TD
-    R[src/res: levels, tables, graphics, loader script and font] -->|tools/res_formats.py build| RB[build/res]
+    R[src/res: levels, tables, graphics, texts, loader script and font] -->|tools/res_formats.py build| RB[build/res]
     BA[src/tape/basic.asm] -->|sjasmplus| B1[basic.bin]
     L2[src/loader/stage2.asm] -->|sjasmplus| B2[stage2.bin]
     HD[src/head/head.asm] -->|sjasmplus| B3[head.bin]

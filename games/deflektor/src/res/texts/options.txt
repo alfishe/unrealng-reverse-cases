@@ -1,0 +1,13 @@
+# HallOfFameTitle $9F49 and OptionsText $9F59: text records for PrintFull $8E3A.
+# "..." a printable run (3 or more characters $20-$7E), two hex digits any other byte
+# (the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a
+# line's start is the address of its first byte; keep the lengths, the loop words point
+# into the text.
+$9F49: BB 12 06 "HALL OF FAME" FF
+$9F59: BB 08 01 "(abcdefghijklm("
+$9F6B: BA 08 02 ")nopqrstuvwxyz)"
+$9F7D: BB 01 06 "OPTIONS" B8 01 08 "1 KEYBOARD"
+$9F94: B8 01 09 "2 SINCLAIR" B8 01 0A
+$9FA4: "3 KEMPSTON" B8 01 0B "4 PROTEK-AGF"
+$9FBD: B9 01 0D "5 DEMO" B9 01 0E "6 PRACTICE"
+$9FD3: B8 01 10 "7 START GAME" FF

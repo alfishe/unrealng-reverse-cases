@@ -1,0 +1,3 @@
+# corner: from work/docs/integrate/corner/corner.szx (a clone: game0.szx with the beam start POKEd, see make.py): no key
+0 -
+1500 END

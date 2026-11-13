@@ -92,8 +92,9 @@ RestoreIm1:
 ; 4808 frames: the load's frames before the entry have none; `rzx-004833` 7019
 ; in 7019 frames); 3377 T an entry on average in `c1g` (WALKTHROUGH 1).
 ;
-; Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, gameover, hof, kempston, menu, mine, nameedit, overload,
+; practice, L x20, rzx x60).
 InterruptHandler:
   PUSH HL
   PUSH DE
@@ -293,11 +294,13 @@ ScrollRowLoop:
 ;
 ; Reached by the fall from the line's scroll and by the jumps of every other
 ; path. PlaySoundFlags `$A8A7` runs with the interrupt still off, so a long
-; effect delays the main code (it never spans a frame: the longest flag effect,
-; `$81D4`, takes 0.49 frame).
+; effect delays the main code (it never spans a frame: the longest flag effect
+; played, ChargeWarble `$81E8` for bit 4, takes 0.41 frame; `$81D4`'s bit 0 is
+; never set).
 ;
-; Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, gameover, hof, kempston, menu, mine, nameedit, overload,
+; practice, L x20, rzx x60).
 InterruptExit:
   CALL PlaySoundFlags
   POP AF
@@ -332,8 +335,8 @@ InterruptExit:
 ; `rzx-344752`); the pause (`$A4AA`) only in `controls`: 126 frames, the flash
 ; 101, the end of the pause once.
 ;
-; Witness: L1 3082 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
-; rzx344752).
+; Witness: L1 3417 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
+; nameedit, practice, rzx344752).
 MenuScrollerTick:
   LD A,(MessageText+$0001)
   AND A

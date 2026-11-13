@@ -54,7 +54,8 @@ There are two ways an effect is asked for:
 ## 9.2 The records and PlaySound
 
 An effect is a 5-byte record: the kind, then four parameters. The eight at `$81D4-$81FB` are one resource,
-`src/res/tables/sounds.csv`; three more sit beside their callers.
+`src/res/tables/sounds.csv`; three more sit beside their callers (`src/res/tables/sounds-pass-end.csv` `$8660`,
+`src/res/tables/sound-drained.csv` `$8695`).
 
 | Record | Bytes | Kind | Name | Played by | Length (T) | Frames |
 | --- | --- | --- | --- | --- | ---: | ---: |
@@ -159,7 +160,7 @@ square wave and back, once every (256 - L)(257 - L) loops. The ear hears a tone 
 | `$0204` | LevelCompleteLife `$8853`, each life (HL left by the sweep before it) | 248 Hz | 28 755 T | 0.41 |
 | `$0F3C` | the pause, `$9743` and `$97C4` | 319 Hz | 215 538 T | 3.08 |
 | `$1478` | the options: a control chosen `$A829` | 460 Hz | 287 561 T | 4.11 |
-| `$28A0` | the options: a key defined `$A7FF` | 651 Hz | 575 595 T | 8.24 |
+| `$28A0` | the options: 5 DEMO, 6 PRACTICE or 7 START GAME `$A7FF` | 651 Hz | 575 595 T | 8.24 |
 | `$3250` | HallOfFame `$9CA9`, enter your name | 355 Hz | 718 531 T | 10.28 |
 | `$465A` | the options screen `$A75E`, the name entered `$9DDC` | 377 Hz | 1 006 031 T | 14.39 |
 | `$C814` | AbortGame `$9828`, game over `$870E` | 265 Hz | 2 872 885 T | 41.11 |
@@ -446,7 +447,7 @@ PlayNote(h, l, d):                          # the note's three periods
 
 ![The title tune](img/sound/title-tune.png)
 
-*TitleTuneData `$ADF0-$AFFF` drawn by `python3 tools/sound_render.py tune docs/img/sound/title-tune.png` (from the
+*TitleTuneData `$ADF0-$AFFF` (the resource `src/res/tables/title-tune.csv`, a row a note) drawn by `python3 tools/sound_render.py tune docs/img/sound/title-tune.png` (from the
 image). How to read it: one column a note, 176 in all; each voice is a bar at its pitch, 3 500 000 / (108 x
 period), on the semitone grid. The point:*
 
@@ -471,7 +472,7 @@ starts again. The pitches above are about 5 % high for the same reason.
 ## 9.8 The renders
 
 All rendered by `python3 tools/sound_render.py wav docs/audio`: the simulator's OUT list, bit 4 averaged over each
-44 100 Hz sample, 16-bit mono. None was played while writing this document.
+44 100 Hz sample, 16-bit mono; the title tune then as an MP3 (`lame -V 4`), the effects (all under a second) as WAV. None was played while writing this document.
 
 | Sound | File |
 | --- | --- |
@@ -490,11 +491,11 @@ All rendered by `python3 tools/sound_render.py wav docs/audio`: the simulator's 
 | TwoTone `$0204`, a life counted | [tone-life.wav](audio/tone-life.wav) |
 | TwoTone `$0F3C`, the pause | [tone-pause.wav](audio/tone-pause.wav) |
 | TwoTone `$1478`, a control chosen | [tone-option.wav](audio/tone-option.wav) |
-| TwoTone `$28A0`, a key defined | [tone-keys.wav](audio/tone-keys.wav) |
+| TwoTone `$28A0`, DEMO, PRACTICE or START GAME chosen | [tone-start.wav](audio/tone-start.wav) |
 | TwoTone `$3250`, enter your name | [tone-name.wav](audio/tone-name.wav) |
 | TwoTone `$465A`, the options screen | [tone-menu.wav](audio/tone-menu.wav) |
 | TwoTone `$C814`, game aborted or over | [tone-abort.wav](audio/tone-abort.wav) |
-| The title tune, 176 notes | [title-tune.wav](audio/title-tune.wav) |
+| The title tune, 176 notes (35.4 s, MP3) | [title-tune.mp3](audio/title-tune.mp3) |
 
 A flag sound repeats once a frame in the game. The files hold one repeat; the 50 Hz repetition is not rendered.
 

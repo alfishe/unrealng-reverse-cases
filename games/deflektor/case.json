@@ -8,6 +8,20 @@
   "lo": "6000",
   "hi": "E000",
   "device": "ZXSPECTRUM48",
+  "ref_parts": [
+    [
+      "src/tape/basic.json",
+      "The tape"
+    ],
+    [
+      "src/loader/stage2.json",
+      "The loader's second stage"
+    ],
+    [
+      "src/head/head.json",
+      "The main block"
+    ]
+  ],
   "bases": {
     "5": "4000",
     "2": "8000",
@@ -104,7 +118,9 @@
     "stage2/rec/L51",
     "stage2/rec/L55",
     "stage2/rec/L59",
-    "stage2/rec/ending"
+    "stage2/rec/ending",
+    "docs/dfA/rec/practice",
+    "docs/integrate/rec/nameedit"
   ],
   "code_builds": [
     "stage1/c1"
@@ -112,7 +128,7 @@
   "ref_builds": [
     [
       "stage1/c1g",
-      "c1g: the c1 recording's game window, from the jump to $8382 (frame 15752 T 33930): the menu and play"
+      "c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play"
     ]
   ],
   "header": [
@@ -123,6 +139,7 @@
     "stage1/c1g": "c1g"
   },
   "witness_builds": [
-    "stage2/rec/cheat"
+    "stage2/rec/cheat",
+    "docs/integrate/rec/corner"
   ]
 }

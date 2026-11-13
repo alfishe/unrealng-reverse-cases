@@ -1,0 +1,70 @@
+# LevelSettings $8385: two bytes a level slot, read by SetUpLevel $843C ($84CD): the energy
+# rate (frames per pixel of the energy bar, the operand of CP at $A63B) and the gremlin count
+# (GremlinCount $AB95). Slots 0-59 are levels 1-60, 60-62 practice P1-P3, 63 never set up; the
+# last row ($8405-$8406) follows slot 63 and is read by no code.
+_row,energy_rate,gremlins
+slot 0,$5A,$00
+slot 1,$6E,$00
+slot 2,$5A,$02
+slot 3,$64,$02
+slot 4,$46,$02
+slot 5,$50,$02
+slot 6,$6E,$02
+slot 7,$5A,$02
+slot 8,$5A,$04
+slot 9,$46,$03
+slot 10,$5A,$02
+slot 11,$46,$02
+slot 12,$5A,$02
+slot 13,$82,$02
+slot 14,$55,$03
+slot 15,$46,$02
+slot 16,$64,$02
+slot 17,$6E,$02
+slot 18,$82,$02
+slot 19,$5A,$03
+slot 20,$82,$00
+slot 21,$64,$03
+slot 22,$82,$03
+slot 23,$6E,$03
+slot 24,$55,$02
+slot 25,$82,$00
+slot 26,$87,$04
+slot 27,$82,$01
+slot 28,$8C,$02
+slot 29,$5A,$02
+slot 30,$50,$03
+slot 31,$78,$03
+slot 32,$5A,$04
+slot 33,$88,$02
+slot 34,$64,$02
+slot 35,$78,$03
+slot 36,$82,$02
+slot 37,$64,$02
+slot 38,$82,$02
+slot 39,$5A,$03
+slot 40,$64,$03
+slot 41,$82,$02
+slot 42,$6E,$03
+slot 43,$78,$03
+slot 44,$64,$02
+slot 45,$6E,$03
+slot 46,$78,$03
+slot 47,$78,$03
+slot 48,$6E,$03
+slot 49,$5A,$03
+slot 50,$87,$00
+slot 51,$5A,$08
+slot 52,$78,$04
+slot 53,$78,$03
+slot 54,$64,$03
+slot 55,$8C,$00
+slot 56,$82,$02
+slot 57,$8C,$04
+slot 58,$82,$05
+slot 59,$5A,$08
+slot 60,$FF,$00
+slot 61,$FF,$08
+slot 62,$FF,$00
+slot 63,$FF,$00
+after slot 63,$01,$00

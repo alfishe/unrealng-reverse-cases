@@ -580,12 +580,12 @@ the top-left. The other three records mirror this.
 
 ![WipeInPlayArea brings level 1 onto the screen](img/routines/WipeInPlayArea.gif)
 
-*`L01` frames 26-64, WipeInPlayArea and WipeIn only (`$8CA2-$8D94`), 76 pictures. How to read it: top left, memory
+*`L01` frames 26-64, WipeInPlayArea and WipeIn only (`$8CA2-$8D94`), 38 pictures (one a frame). How to read it: top left, memory
 `$4000-$FFFF`, 256 bytes a row (the screen's writes at the top); bottom left, the screen; right, the listing. The
 point: this time the corner is the top-left. The level slides in over the options screen, which is still on the
 screen. The pause between rounds (WipeInPauseInner) takes most of the time at first and less as the rectangle grows.
 Command: `python3 ../../kit/routine_anim.py --work work/docs/dfA/L01 --window 26:0-64:0 --listing build/game.lst
---view screen --range 4000-FFFF --pc 8CA2-8D94 --pictures 76 --title "..." --out
+--view screen --range 4000-FFFF --pc 8CA2-8D94 --pictures 38 --delay 160 --title "..." --out
 docs/img/routines/WipeInPlayArea.gif`.*
 
 **Worked example: the rounds of level 1's wipe.** The watch `tools/ttd_watch.py --work work/docs/dfA/L01 --addr
@@ -624,8 +624,8 @@ directly on the screen ([doc 8](08-hud-and-text.md)).
 
 ## 6.11 What is known only from the code
 
-- InCornerTable `$8100` and its branch `$93F2`, a diagonal beam meeting two walls in the incoming pass: no recording
-  read it.
+- InCornerTable `$8100` and its branch `$93F2`, a diagonal beam meeting a wall in the incoming pass: no play reads it.
+  Only the clone `corner` does (the beam's start POKEd to a diagonal; [doc 10, 10.12](10-gameplay-logic.md#1012-what-is-known-only-from-the-code)).
 - Beam glyphs 28 and 36: drawn by no recording.
-- The practice line of DrawMarkedChars (`$8A6E`, PrintPlay `$8E47`) was listed as known only from the code. The
-  `practice` recording of this document runs it 615 times ([doc 5, 5.4](05-controls.md#54-practice)).
+- The practice line of DrawMarkedChars (`$8A6E`, PrintPlay `$8E47`) is no longer known only from the code: the
+  `practice` recording runs it 615 times ([doc 5, 5.4](05-controls.md#54-practice)).

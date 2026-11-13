@@ -69,7 +69,7 @@ $8080 b OutBounceTable 8 ; A slanted beam's bounce in the outgoing pass: 8 bytes
 @res tables/out-bounce.bin
 $8100 b InCornerTable 16 ; A diagonal beam's bounce in the incoming pass: 16 bytes for each of the diagonals 2, 6, 10, 14
 > ReflectInCorner `$93F2` (`$93F4`): InBounceTable gives `$80` + n for a diagonal, and `$8100` + n holds two words (the offsets of the characters above or below and beside the corner) and four answers of three bytes (the new direction, dx, dy) by which of them are walls: none (+4), the first (+7), the second (+10), both (+13). None or both send the beam back (OVERLOAD), one turns it a quarter.
-> Known only from the code: no recording reads a byte of it (the branch `$93F2` never ran). Editable form: tables/in-corner.csv.
+> No play reads it: the trace's first vertex is the only one whose incoming pass meets a wall the outgoing pass before it has not (work/docs/integrate/corner_level1.py), and that vertex is the laser's front, on an axis. Read only on a clone, `corner` (game0.szx with the beam's start `$8376-$8378` POKEd to x 10, y 16, direction 10: 342 passes, the beam turned a quarter to direction 14). Editable form: tables/in-corner.csv.
 $8100 ; direction 2 (south-east)
 $8110 ; direction 6 (south-west)
 $8120 ; direction 10 (north-west)
@@ -199,6 +199,7 @@ $8382 c GameEntry ; The game's entry: JP Start
 $8385 b LevelSettings 16 ; The energy rate and the gremlin count of each level: 2 bytes for each of the 64 level slots
 > Read by SetUpLevel `$843C` (at `$84CD`): slot `Level` x 2. Byte 0 goes to `$A63C`, the operand of the `CP $64` at `$A63B` in the energy routine `$A613`: the energy bar loses one pixel each time the interrupt's tick `$A506` reaches it, so it is the number of frames per pixel (70-140 in levels 1-60, 255 in the practice slots). Byte 1 goes to `$AB95`, the number of gremlin records `$AB63` the gremlin code walks (`$9AB6`, `$ABAD`): 0-5 in levels 1-59, 8 in level 60, 0 / 8 / 0 / 0 in the four practice slots.
 > Levels 1-60 are slots 0-59; slots 60-62 are the practice levels P1-P3 (PracticeFlag); slot 63 is never set up (LevelCompletePause `$887D` returns to the title when the level number reaches 63). Each row of the listing is eight levels.
+@res tables/level-settings.bin
 $8385 ; levels 1-8
 $8395 ; levels 9-16
 $83A5 ; levels 17-24
@@ -210,7 +211,7 @@ $83F5 ; levels 57-60, practice P1-P3, the unused slot 63
 $8405 ; unused: no code or recording reads them
 $8407 b PracticeFlag ; $FF in practice mode (the options panel's 6), else 0
 > Cleared by TitleLoop `$840C`, set by the options panel (`$A7E5`, key 6). Read by NewGame (`$841E`: the start slot 60, P1), SetUpLevel (`$84DA`: the score cleared each level), LoseLife (`$86A0`: no life is taken), DrawMarkedChars (`$8A68`: the PRACTICE MODE line), `$9BCA`, `$A6E9` and `$A7E5`.
-> No recording plays practice: the `menu` recording's key 6 did not take (its screen 7750 shows LEVEL 01, and NewGame's `$8424` ran in no build), so the practice path is known only from the code.
+> The `menu` recording's key 6 did not take (its screen 7750 shows LEVEL 01). The practice path is played by `practice` (`work/docs/dfA/rec/practice`, 6 PRACTICE from `menu.szx`): NewGame `$8424` and the practice set-up `$84DA` once, level P1 (slot 60).
 $8408 c Start ; Interrupts off, IM 2 on (the jump at $FDFD and the vector table), then into TitleLoop
 > `DI`, then `$A2FA` (the IM 2 set-up: `JP $A32A` at `$FDFD`, the table `$FE00-$FF00`, I = `$FE`). Falls into TitleLoop; interrupts stay off until LevelPanel's `EI` (`$843B`).
 > Run once a load (`c1`, `c1g`).
@@ -218,19 +219,20 @@ $8408 c Start ; Interrupts off, IM 2 on (the jump at $FDFD and the vector table)
 $840C c TitleLoop ; Demo and practice off, the hall-of-fame check, the title and options panel, then a new game
 > The place every game ends: GameOver (`$8711`), the demo's last level (`$856E`), the end of practice (`$887F`), the ending (`$88AD`) and the abort keys (`$982C`) jump here.
 > Clears the demo flag `$8379` and PracticeFlag; `$9BC0` (the score `$9B3E` against the hall of fame, the name entry); `$A729` (the title, the options panel; it returns when a game is to start, with `$8379` set by key 5 DEMO or PracticeFlag by key 6). Falls into NewGame.
-> Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $8413 ; the hall-of-fame check of the last game's score
 $8416 ; the title and the options panel
 $8419 c NewGame ; Three lives, the first level (or practice slot 60), the saved score cleared, then LevelPanel
 > Lives `$837D` = 3; Level `$81FF` = 0, or `$3C` (P1) when PracticeFlag is set; two Delays (about 24 frames); `$9B30` clears the score saved at the level's start (`$9B44`, five spaces), so SetUpLevel starts the game's score at 0. Falls into LevelPanel.
 > An entry of its own: the `energy` and `kempston` recordings start from a snapshot taken inside `$A729`, so their L1s mark a routine root here.
-> Witness: L1 10 (c1, c1g, controls, energy, energy-out, kempston, menu).
+> Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice).
 $8426 NewGameLevel ; Level = 0, or $3C for practice
 $8429 ; two Delays
+$842C NewGameDelay2 ; the second Delay (a split entry: snapshot-started recordings mark a routine root here)
 $842F ; the saved score cleared: the game starts at 0
 $8432 c LevelPanel ; Draw the bottom panel afresh, blank the COMPUTER line, interrupts on; into SetUpLevel
 > From NewGame and LevelCompletePause (`$8882`, after a level's bonus). `$A50C` copies the panel's picture `$7B80` (four character rows, the LEVEL, LIVES, OVERLOAD, ENERGY, SCORE, HIGH and COMPUTER fields, three full life bars) to the screen's rows 20-23 with its attributes; MessageText `$A10E` = `$A199` (a blank line of three spaces that loops); `EI`. Falls into SetUpLevel.
-> Witness: L1 90 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, L x20, rzx x59).
+> Witness: L1 92 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, nameedit, practice, L x20, rzx x59).
 
 @module mainloop ; The level set-up, the main loop's pass, level complete
 @about SetUpLevel $843C prints the level number, clears the pass's flags, the gremlin records and the explosion slots, reads the level's settings, puts back the score saved at the level's start, builds the level ($891A) and wipes it onto the screen ($8CA2), resets the bars ($A52F: CHARGING LASER), counts the cells and mirrors, finds the laser and the cursor's first place ($8AC1), then runs MainLoop.
@@ -247,7 +249,7 @@ $843C c SetUpLevel ; Set up the level in Level $81FF and play it: digits, flags,
 > 7. Counts the level's bytes: D = the cells (`$40`), E = the mirrors (`$01-$10`; turning mirrors, bit 7 set, are not counted). MirrorCount `$837A` = E (the charging's scramble `$A598` turns fewer mirrors when there are 30 or more); CellsLeft `$8380` = D; the points of a burnt cell (the operand of `LD B,n` at CellPoints `$8F62`) = 12 (120 points), or 3 (30 points) when the level has 30 or more cells (levels 4, 9, 14 ... 59: 110-120 cells; 38, 58, 60).
 > 8. FindLaser `$8AC1`, then MainLoop.
 > Run at every level start of every play recording (165 in all).
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8443 ; the practice slots: P and the slot - 59
 $8449 SetUpLevelDecimal ; A = Level + 1, B = its tens
 $844D SetUpLevelTensLoop
@@ -285,7 +287,7 @@ $854A c MainLoop ; One pass of play: keys, cursor, grid, beam, gremlins, the scr
 > 3. Else, unless FindLaser found no laser (`$8378` = `$FF`), the beam's start: direction `$8ECB` = `$8378`, x `$8ECD` = `$8376`, y `$8ECE` = `$8377` (the half-cell in front of the laser); the beam's graphics bank `$8381` = `$40` in every other 8-frame spell of FrameCounter while the energy is critical (`$837E`), else 0: the beam flickers; TraceBeam `$8ED6`.
 > 4. `$9A57`, `$99C6`, the gremlins `$AB9F` (not while charging), CopyPlayArea `$8C10`; then PassEnd.
 > The pass takes 4.85 frames on average in the RZX run (WALKTHROUGH 1).
-> Witness: L1 111157 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8553 ; the laser charging?
 $8559 ; the demo: show the next level
 $855F MainLoopDemoNext
@@ -303,7 +305,7 @@ $85AE c PassEnd ; The pass's second half: sounds, overload, life lost, energy, c
 > 4. The explosions: each of the seven 4-byte slots at `$81B8` (the grid address, high byte first, then y and x in half-cells; high byte 0 = free) is a cell burning. The cell's code: a code below `$58` (the cell just hit) becomes `$57` and sets `$837B`; then one step a pass, `$58` to `$5C` (SoundFlags bit 3 while `$58`-`$59`), and at `$5D` the cell is emptied (code 0), the slot freed and CellsLeft decremented. Each step marks the cell's four characters (DrawMarks `$E300`) with 2, to be drawn twice.
 > 5. A new explosion this pass (`$837B` set): PlaySound `$81D4`. Back to MainLoop.
 > An entry of its own: the `gameover` recording starts from a snapshot taken inside CopyPlayArea (called at `$85AB`), so its L1 marks a routine root at the return address.
-> Witness: L1 111052 (c1, c1g, cheat, controls, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $85BF ; the overload bar; a full bar sets LifeLost
 $85C9 ; the charging and the energy bar; LevelDone set by the beam
 $85D3 ; SoundFlags bit 3 off
@@ -323,6 +325,7 @@ $8650 ; a new explosion: the burn sound
 $8660 b ReceiverOpenSound 5 ; Two PlaySound records: the receiver's door blown, and the life-lost sound
 > A PlaySound `$A8C0` record: type 1 (a sweep, `$A85E`), then four bytes B, C, D, E: E notes of C half-periods each, the half-period D (delay loops) changed by B after each note.
 > ReceiverOpenSound: PassEnd `$85E7` (B `$0F`, C 4, D `$14`, 35 notes). LifeLostSound `$8665`: LoseLife (`$8680` once, `$86C1` 36 times) (B `$19`, C 6, D 6, 10 notes).
+@res tables/sounds-pass-end.bin
 $8665 LifeLostSound ; type 1, B $19, C 6, D 6, E 10
 
 @module panel ; Lives, the panel's level digits, game over
@@ -331,16 +334,17 @@ $866A c LoseLife ; A life lost: BOOM and the red screen, a life bar hollowed, th
 > From PassEnd (`$85C6`) when LifeLost `$8ED3` is set (the overload bar full `$A6F0`, or the energy drained `$A67C`).
 > SoundFlags = 0. When the COMPUTER line's MessageNumber `$A104` is below `$16`: message `$16` BOOM BOOM BOOM (MessageText = `$A15D`), PlaySound LifeLostSound, and the play area's 640 attributes (rows 0-19) = `$10` (black ink on red paper); then LoseLifeCount. With a message `$16` or above already shown (`$17` ENERGY DRAINED) LoseLifeDrained plays EnergyDrainedSound instead.
 > Run 45 times: `mine`, `overload`, `gameover` (the red screen, `$8675` 41 times) and `energy` (ENERGY DRAINED, `$869A` 4 times), and 36 lives lost over 26 RZX segments.
-> Witness: L1 53 (energy, energy-out, gameover, hof, mine, overload, L45, L59, rzx x26).
+> Witness: L1 56 (energy, energy-out, gameover, hof, mine, nameedit, overload, L45, L59, rzx x26).
 $8675 ; BOOM BOOM BOOM
 $8686 ; the play area red: attributes $10
 $8695 b EnergyDrainedSound 5 ; The PlaySound record of a life lost by drained energy: a falling sweep
 > Type 1 (`$A85E`): B `$FE` (the half-period grows by 2 each note), C 2, D `$14`, 60 notes. Played by LoseLifeDrained `$869A`.
+@res tables/sound-drained.bin
 $869A c LoseLifeDrained ; The energy drained: the falling sweep, then the life taken (LoseLifeCount)
 > From LoseLife when MessageNumber is `$16` or above. PlaySound EnergyDrainedSound, then LoseLifeCount `$86A0`:
 > Not in practice: Lives `$837D` - 1, and the bar of that life (the new count n: columns 10 + 2n and 11 + 2n of row 21, lines 4-6) hollowed to `$40`, `$01` (its outline). Then 36 bursts of LifeLostSound, a Delay; lives left: SetUpLevel (the same level again); none: GAME OVER.
 > GAME OVER: GameOverBanner (96 x 16 pixels) at columns 10-21 of rows 9-10, its 24 attributes white (7); a buzz (`$A843` with HL = `$C814`: `$C8` x 256 loops of two speaker counters a period apart); TitleLoop.
-> Witness: L1 10 (energy, energy-out, hof, rzx053912, rzx227686).
+> Witness: L1 13 (energy, energy-out, hof, nameedit, rzx053912, rzx227686).
 $86A0 LoseLifeCount ; practice: no life taken
 $86A6 ; Lives - 1 (the POKE `$86A9` of the trainers)
 $86AD ; the lost life's bar: column 10 + 2 x lives, row 21 lines 4-6
@@ -358,6 +362,7 @@ $8706 GameOverAttrBottom
 $870B ; a buzz, then the title
 $8714 b GameOverBanner 12 ; The GAME OVER banner: 16 lines of 12 bytes (96 x 16 pixels), a frame round the words
 > Drawn by LoseLifeDrained's game-over path (`$86D4`): lines 0-7 to row 9, lines 8-15 to row 10, columns 10-21, attributes 7. Read 3 times (`gameover`, `mine`, `overload`).
+@res graphics/game-over.bin
 $8714 ; the frame's top line, then two blank lines
 $8738 ; GAME OVER, ten lines
 $87B0 ; two blank lines and the frame's bottom line
@@ -375,7 +380,7 @@ $87F3 c LevelCompletePause ; Two more Delays, the play area magenta, the energy 
 > 4. Four Delays; the score is saved as the next level's start score (`$9B3E` to `$9B44`); Lives = 3: every level starts with three lives (LevelPanel redraws the three bars).
 > 5. Level 60 (after the 60th level): TheEnd. Level 63 (after the third practice level): TitleLoop. Else LevelPanel, the next level.
 > An entry of its own: 42 of the RZX segments start from a snapshot taken at the level change (`$81FF` written at `$87ED`), inside the Delay called at `$87F0`, so their L1s mark a routine root at the return address. Run 78 times (all 60 RZX segments: the 42 roots and the 18 completions).
-> Witness: L1 115 (ending, hof, L x20, rzx x60).
+> Witness: L1 116 (ending, hof, nameedit, L x20, rzx x60).
 $87F9 ; the play area magenta
 $8806 LevelCompleteEnergy ; 10 points, a tone, a pixel off the energy bar
 $8811 ; shift one pixel out of the bar's byte, three lines
@@ -396,6 +401,7 @@ $88AA ; $AD79, then the title
 @module panel
 $88B0 b LevelDigits 8 ; The panel's LEVEL digits: 11 glyphs of 8 x 8 pixels, 0-9 and P
 > SetUpLevel `$843C` draws two of them (tens, units) at columns 6 and 7, from line 4 of row 20 to line 3 of row 21. P is the tens glyph of the practice levels (P1-P3).
+@res graphics/level-digits.bin
 $88B0 ; 0
 $88B8 ; 1
 $88C0 ; 2
@@ -412,7 +418,7 @@ $8900 ; P
 $8908 c Delay ; Wait 255 x 255 DJNZ loops (about 12 frames, interrupts as they are)
 > C = 255 outer passes of B = 255 `DJNZ`: about 845 000 T-states, 12 frames of 69 888 T. Leaves A and HL alone, BC = 0.
 > Callers: NewGame (twice), the demo (`$855F`), LoseLife (`$86CA`), LevelComplete and LevelCompletePause (seven times a level and two for each life left), `$9DE1`, the title `$A729-$A732` (four), the ending `$A8D9`, `$A943`, `$A963-$A96C`.
-> Witness: L1 1373 (c1, c1g, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 1400 (c1, c1g, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $890A DelayOuter
 $890C DelayInner
 
@@ -430,7 +436,7 @@ $891A c BuildLevel ; Copy level Level to the grid, clear the character map, mark
 > 4. The 135 level bytes go to `$FD23` in 9 rows of 15, each row followed by two zero guards (17 bytes a row): the cell (row r, column c) is at `$FD23` + 17 r + c, and the row above (r = -1) and the guards read as empty cells.
 > 5. Falls into RenderGrid (and so DrawMarkedChars): the whole level is drawn into the buffers.
 > Called by SetUpLevel (`$8509`) only. The tool `tools/level_maps.py` runs it in SkoolKit's simulator for every slot (docs/img/maps).
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8927 BuildLevelAddLoop
 $892A BuildLevelGrid ; the grid cleared
 $893A ; the character map cleared, every DrawMark 1
@@ -445,7 +451,7 @@ $8960 c RenderGrid ; Each grid cell to four character codes in the character map
 > A code with bit 7 set is a turning element (RenderGridTurning): the code steps on once a pass, the mirrors `$01-$10` round 16 angles, the blocks `$11-$18` and `$19-$20` round their 8, and the cell's four DrawMarks are set to 1. Other codes with bit 7 (`$A1` up) draw as their low code without turning.
 > Writes the map every pass but marks only the turning cells: a cell another routine changes is drawn because that routine marks it.
 > Jumps to DrawMarkedChars. From MainLoop (`$8550`) every pass and from BuildLevel (falls in).
-> Witness: L1 111344 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117459 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8966 ; the grid, 9 rows of 15
 $896B RenderGridRow
 $896D RenderGridCell
@@ -465,8 +471,8 @@ $89F7 ; its four DrawMarks set to 1
 $8A09 c DrawMarkedChars ; Draw every marked character into the play buffers, the practice line, the frame round the play area
 > For each of the 640 DrawMarks `$E300` with a nonzero mark: the character code at the same place in the character map (`$E000`), its colour `$DF00` + code (CellColours) to ColourBuffer `$E600`, its eight lines `$D700` + 8 x code (CellGraphics) to PixelBuffer `$E900` (row r, column c at `$E900` + 256 r + c, a line every 32 bytes). The marks are left as they are: CopyPlayArea counts them down.
 > In practice (PracticeFlag) PrintPlay `$8E47` writes PracticeText on row 19. Then the frame: line 0 and line 159 of the pixel buffer all set, and the left pixel of column 0 and the right pixel of column 31 on lines 1-158.
-> From RenderGrid. The practice line is known only from the code (`$8A6E` ran in no recording).
-> Witness: L1 111334 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> From RenderGrid. The practice line `$8A6E` ran 615 times in `practice` (`work/docs/dfA/rec/practice`).
+> Witness: L1 117449 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8A0F DrawMarkedLoop
 $8A14 ; a marked character: its code, colour and glyph
 $8A1F ; the colour to ColourBuffer ($E000 + $600)
@@ -479,7 +485,8 @@ $8A74 DrawMarkedFrame ; the frame: top and bottom lines
 $8A8C ; the side pixels, lines 1-158
 $8A94 DrawMarkedFrameLoop
 $8A9D b PracticeText 8 ; The practice line: a print record for PrintPlay, row 19 of the play area in bright magenta
-> Record: the attribute `$43` with bit 7 set, column 0, row `$13`, then 32 characters, then `$FF` (the end of the records). Printed by DrawMarkedChars in practice; known only from the code.
+> Record: the attribute `$43` with bit 7 set, column 0, row `$13`, then 32 characters, then `$FF` (the end of the records). Printed by DrawMarkedChars in practice (the `practice` recording).
+@res texts/practice.bin
 $8AA0 ; " PRACTICE MODE . G AND U ABORTS "
 $8AC0 ; the end of the records
 
@@ -491,7 +498,7 @@ $8AC1 c FindLaser ; Find the laser ($47-$4A) in the grid: the beam's start and d
 > Found: `$8374` = 2B, `$8375` = 2C (the laser's centre in half-cells); the direction `$8378` = 4 x ((code - `$43`) AND 3): `$47` east, `$48` down, `$49` west, `$4A` up. The direction's (dx, dy) from `$8170`: the beam's start `$8376` = x + dx and `$8377` = y + dy (the half-cell in front; it returns if that is off the field: x 32 or more, y 20 or more).
 > The cursor (`$96C3` column, `$96C4` row) starts on the cell in front of the laser and moves on by (dx / 2, dy / 2) until a cell is not empty: the cursor starts on the first element the laser points at (level 1: the mirror at row 7, column 0, left of the laser). The walk has no bound but the elements it meets.
 > From SetUpLevel (`$8547`).
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8AC6 FindLaserRow
 $8AC8 FindLaserCell
 $8AD1 FindLaserNext
@@ -508,7 +515,7 @@ $8B2F ; the grid address: $FD12 + 17 (row + 1) + column
 $8B32 FindLaserRowAdd
 $8B3F c OpenReceiver ; The last cell burnt: the element in front of the receiver starts to explode (its door)
 > From PassEnd (`$85E1`) when CellsLeft `$8380` reaches 0. Finds the receiver (`$4B-$4E`, scanning backwards like FindLaser); none: drops its return address and jumps to MainLoop (`$8B58`).
-> The receiver's direction (code - `$4B`) AND 3 gives (dx, dy) from `$8170`; the cell in front of it (x + dx, y + dy, returning if off the field) goes into the first explosion slot `$81B8` (grid address high, low, y, x), and CellsLeft = `$FF` (no second call). PassEnd then explodes it like a burnt cell (the code `$57`, then `$58-$5C`, then empty).
+> The receiver's direction (code - `$4B`) AND 3 gives (dx, dy) from `$8170`; the cell in front of it (x + dx, y + dy, returning if off the field) goes into the first explosion slot `$81B8` (grid address high, low, y, x), and CellsLeft = `$FF` (no second call); the door's own explosion then decrements it to `$FE` when its slot empties. PassEnd then explodes it like a burnt cell (the code `$57`, then `$58-$5C`, then empty).
 > In levels 1-60 the element in front of the receiver is a mine (`$41`, 23 levels), a wall (`$21-$3E`, 32), a block (4) or a fibre-optic end (`$53`, 1): the receiver is shut until every cell burns.
 > Run 21 times, all in RZX segments (once in each level the last cell burns).
 > Witness: L1 41 (L x20, rzx x21).
@@ -526,8 +533,8 @@ $8B95 ; CellsLeft $FF: done
 @module render
 $8B9B c CopyFullScreen ; Copy the full-screen buffer to the screen: pixels $E500 (24 rows of 256) and attributes $E200
 > The linear buffer (`$E500` + 256 r + 32 l + c, character row r, line l) to the screen in its own layout, 24 rows x 8 lines x 32 `LDI`; then 767 attributes from `$E200` to `$5800` (the last one, row 23 column 31, is not copied).
-> From the ending (`$A8D4`) and `$9DD6` (the menu). Run twice, in `rzx-344752` (the ending); the menu's call ran in no recording.
-> Witness: L1 4 (ending, hof, rzx344752).
+> From the ending (`$A8D4`) and `$9DD6` (the menu). Run in `rzx-344752` (the ending, `$A8D4`) and in `hof` (`$9DD6`, after the name AGENT).
+> Witness: L1 5 (ending, hof, nameedit, rzx344752).
 $8BA3 CopyFullScreenRow
 $8BA7 CopyFullScreenLine ; 32 bytes of one line
 $8BED ; the next character row on the screen (the third carried)
@@ -536,19 +543,19 @@ $8C10 c CopyPlayArea ; Copy the marked characters of the play area to the screen
 > Walks DrawMarks backwards from `$E57F` (row 19, column 31) to `$E300`: a mark's low byte is the screen's low byte, its page (`$E3`-`$E5`) the screen third, so the character at the mark is the screen address B x 256 + E (B from `$57` down to `$47`, the third's last line). A nonzero mark is decremented and the character's eight lines (PixelBuffer, from line 7 up, 32 bytes apart) go to the screen.
 > Then the 640 colours of ColourBuffer `$E600` to the attributes `$5800` (rows 0-19) in one `LDIR`.
 > From MainLoop (`$85AB`), every pass. A mark of 2 (an explosion, HighlightCell) draws the character on two passes.
-> Witness: L1 111060 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117170 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8C19 c CopyPlayAreaThird ; The marks' page (a screen third) in C, the screen's page in B: on with the next character
 > Part of CopyPlayArea. An entry of its own: the `mine` and `overload` recordings start inside the loop (CopyPlayAreaNext `$8C56` is their root), and the walk shares these jump targets with CopyPlayArea.
-> Witness: L1 333179 (c1, c1g, cheat, controls, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 351508 (c1, c1g, cheat, controls, corner, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8C1A c CopyPlayAreaLoop ; The next mark: zero, skip; else count it down and copy the character's eight lines
 > Part of CopyPlayArea (see CopyPlayAreaThird).
-> Witness: L1 71078071 (c1, c1g, cheat, controls, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 74988317 (c1, c1g, cheat, controls, corner, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8C21 ; eight lines, from line 7 up
 $8C51 ; back to the marks' page
 $8C52 CopyPlayAreaSkip ; the next mark and character to the left
 $8C56 c CopyPlayAreaNext ; Still in the row: the next character; else the row above, the third below at a page's end
 > Part of CopyPlayArea. An entry of its own: the `gameover`, `mine` and `overload` recordings start from snapshots taken here, so their L1s mark a routine root.
-> Witness: L1 71078068 (c1, c1g, cheat, controls, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 74988314 (c1, c1g, cheat, controls, corner, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8C59 ; the character row above
 $8C61 ; a marks page done: the screen third above
 $8C6C ; all 640 colours to the attributes
@@ -568,14 +575,14 @@ $8C8B w WipeTable 1 ; The record table of this wipe: PlayAreaWipes or ScreenWipe
 $8C8D w WipeSaved 4 ; The four addresses at the start of a round (the rows move them)
 $8C95 c WipeInScreen ; Wipe the full-screen buffer ($E500 / $E200) onto the screen from a random corner
 > WipeWidth = 9, WipeTable = ScreenWipes `$8DD5`; then WipeIn. From the menu (`$9CA3`, `$A758`).
-> Witness: L1 12 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, rzx344752).
+> Witness: L1 14 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, nameedit, practice, rzx344752).
 $8CA2 c WipeInPlayArea ; Wipe the play buffers ($E900 / $E600) onto the screen's rows 0-19 from a random corner
 > WipeWidth = 13, WipeTable = PlayAreaWipes `$8D95`; falls into WipeIn. From SetUpLevel (`$8512`).
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8CAD c WipeIn ; Grow a rectangle of the buffer on the screen from a corner, one row and one column a round
 > Random `$8E15`: L AND 3 picks one of the table's four records (a corner), copied to WipeSteps. WipeRows = 1. Each round: the four addresses saved; WipeRows character rows of WipeWidth bytes are copied (eight lines from the linear buffer, 32 bytes a line, to the screen; one attribute row from the colour buffer); a pause of (33 - WipeWidth) x 255 `DJNZ` (the rounds speed up); the addresses back, plus their steps; WipeRows + 1 and WipeWidth + 1 until the width passes 32.
 > The steps move the screen corner and the source corner so that the picture slides in: from the top-left the screen corner stays and the source runs from the buffer's bottom-right part to its top-left (`$FEFF` = up one row and left one byte); at the end the whole buffer is on the screen. The play area: 13 x 1 to 32 x 20 in 20 rounds; the full screen: 9 x 1 to 32 x 24 in 24.
-> Witness: L1 208 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 214 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $8CC6 ; one row to start
 $8CCB WipeInRound ; save the four addresses
 $8CD9 WipeInRow ; one character row of the rectangle
@@ -589,12 +596,14 @@ $8D3E ; the addresses back, plus the steps
 $8D81 ; one row and one column more
 $8D95 w PlayAreaWipes 8 ; WipeInPlayArea's four corners: four steps then four start addresses each (screen, attributes, pixels, colours)
 > The play area (20 rows, PixelBuffer `$E900`, ColourBuffer `$E600`) grows from the screen's top-left, top-right, bottom-left or bottom-right corner, the picture sliding in from that side. The first record was picked at 41 of the 164 set-ups in the builds other than `c1` (the reads of `$8D95`).
+@res tables/wipes.bin
 $8D95 ; top-left: the screen corner stays at $4000, the source runs up-left from row 19, column 19
 $8DA5 ; top-right: the screen corner left from column 19, the source up from row 19, column 0
 $8DB5 ; bottom-left: the screen corner up from row 19, the source left from row 0, column 19
 $8DC5 ; bottom-right: the screen corner up-left from row 19, column 19, the source stays at the buffer's top-left
 $8DD5 w ScreenWipes 8 ; WipeInScreen's four corners: as PlayAreaWipes, for the 24-row full-screen buffer ($E500 / $E200)
 > The same four corners from column 23 and row 23. The first record was picked once of the 9 menu wipes (`menu`).
+@res tables/wipes.bin
 $8DD5 ; top-left
 $8DE5 ; top-right
 $8DF5 ; bottom-left
@@ -602,7 +611,7 @@ $8E05 ; bottom-right
 $8E15 c Random ; The next random number: RandomSeed = 254 x (RandomSeed + 1) mod 65537 - 1; HL = the new seed
 > H = E, L = `$FD`, then three subtractions with borrows: 256 x seed - 2 x seed + 253 taken modulo 65537 (`$10001`) and folded to 16 bits, the Lehmer generator of the Spectrum ROM's RND with 254 for its 75. Checked against that formula for all 65 536 seeds (work/ann/01-main/rnd_check.py); the period is 65 536.
 > Callers: WipeIn (the corner), the grey grid (`$9014`, the scatter), the charging's scramble (`$A587`), the noise sound (`$A896`), the gremlins (`$ABED`, `$AC31`, `$AC53`). The options panel's key wait adds 1 to the seed on each of its loops (`$A7AB-$A7AF`), so the game's random numbers depend on how long the panel waited; `$ACA0` reads the seed's high byte.
-> Witness: L1 799870 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 826505 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $8E2E RandomStore
 $8E32 w RandomSeed 1 ; The random seed, $22B8 in the image
 $8E34 w PrintPixel 1 ; The print routines' pixel address of the next character
@@ -611,12 +620,12 @@ $8E38 b PrintPixelPage ; The pixel buffer's page: $E5 (PrintFull) or $E9 (PrintP
 $8E39 PrintColourPage ; the colour buffer's page: $E2 or $E6
 $8E3A c PrintFull ; Print the text records at HL into the full-screen buffer (pixels $E500, attributes $E200)
 > PrintPixelPage = `$E5`, PrintColourPage = `$E2`; then PrintRecords (in PrintPlay). From the hall of fame (`$9F2B`-`$9F3D`) and the ending (`$A8D1`).
-> Witness: L1 66 (c1, c1g, controls, ending, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 74 (c1, c1g, controls, ending, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $8E47 c PrintPlay ; Print the text records at HL into the play buffers (pixels $E900, colours $E600)
 > PrintPixelPage = `$E9`, PrintColourPage = `$E6`, then the records. A record: the attribute with bit 7 set, the column, the character row (into the buffer: the pixels at page + row, the colour at page x 256 + 32 x row + column), then the characters (32 up, eight lines from Font: `$D200` + 8 x (code - 32), 32 bytes apart) until a byte with bit 7: the next record, or `$FF`, the end.
 > The colour is written for every character but `/` and `\` (`$2F`, `$5C`), which keep the colour under them.
-> PrintPlay's own part runs only for PracticeText (DrawMarkedChars `$8A71`): known only from the code; PrintRecords runs only for PrintFull.
-> Witness: L1 0 ().
+> PrintPlay's own part runs only for PracticeText (DrawMarkedChars `$8A71`), in practice (the `practice` recording); PrintRecords runs for both.
+> Witness: L1 615 (practice).
 $8E52 PrintRecords ; $FF: the end; else the record's attribute
 $8E58 ; the column (C) and the character row (B + the pixel page)
 $8E65 ; the colour address: the colour page + 32 x row + column
@@ -649,7 +658,7 @@ $8ED5 BeamInLaser ; $FF: the beam came back into the laser this pass (BeamBackTo
 $8ED6 c TraceBeam ; Trace the beam from the laser: the step count cleared, then BeamStep until the beam ends
 > From MainLoop (`$859B`) with BeamDirection, BeamX, BeamY at the laser's front. Clears BeamSteps and `$8EC0`, then BeamStep, which loops (through the step code's `JP $8EDD` at `$926A` / `$9274`) and returns when the beam ends.
 > BeamStep runs about 11.7 times a trace (1 038 316 against 88 519).
-> Witness: L1 106709 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 112689 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8EDD c BeamStep ; One step of the beam: at a cell's centre, what the cell does to it; then the step code ($906E)
 > BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell (row y/2 - 1, column x/2 - 1) at `$FD12` + 17 (y/2) + x/2, BeamAtCentre = `$FF`, and the code with bit 7 cleared (a turning element acts as its current angle):
 > - `$00` empty: on (`$906E`);
@@ -663,7 +672,7 @@ $8EDD c BeamStep ; One step of the beam: at a cell's centre, what the cell does 
 > - `$4B-$4E` the receiver: BeamReceiver;
 > - `$4F-$57` the fibre optics: `$903E`;
 > - `$58` and up (a cell exploding): return, the beam ends.
-> Witness: L1 1217263 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1251228 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8EF0 ; x / 2: odd, between cells
 $8EF9 ; y / 2: odd, between cells
 $8F02 ; the cell: $FD12 + 17 (y/2) + x/2
@@ -688,18 +697,18 @@ $8FAE c BeamAtLaser ; The beam at the laser: from its front, BeamBackToLaser; el
 $8FC5 c BeamBackToLaser ; BeamInLaser = $FF, then HighlightCell on the laser's cell
 > From BeamAtLaser and from the step code (`$91B5`, `$926E` the 40th step, `$93D9`, `$9438`, `$9657`, `$96A4`, `$96B9`). HighlightCell uses `$8374` / `$8375`, the laser's centre FindLaser left there (BeamReceiver changes them only at contact, which ends the level).
 > 6521 runs: `mine`, `overload` and 54 RZX segments. The `overload` recording sets BeamInLaser by a POKE (WALKTHROUGH 6.0).
-> Witness: L1 7107 (hof, mine, overload, L x20, rzx x54).
+> Witness: L1 7109 (hof, mine, nameedit, overload, L x20, rzx x54).
 $8FCA c HighlightCell ; Colour the cell at ($8374, $8375) bright magenta ($43) in ColourBuffer and mark it twice
 > The cell whose centre is x = `$8374`, y = `$8375` (half-cells): its four colours at ColourBuffer `$E600` + 32 (y - 1) + x - 1 = `$43` (bright magenta on black), its four DrawMarks = 2. CopyPlayArea copies the colours every pass, so the cell shows magenta until DrawMarkedChars draws its characters again with their own colours (the next pass, as the mark is still 1).
 > From BeamReceiver (`$8FAC`) and BeamBackToLaser. 6539 runs.
-> Witness: L1 7145 (hof, mine, overload, L x20, rzx x55).
+> Witness: L1 7147 (hof, mine, nameedit, overload, L x20, rzx x55).
 $8FDC ; ColourBuffer + 32 (y - 1) + x - 1
 $8FE1 ; the four colours $43
 $8FED ; DrawMarks (three pages down): 2
 $8FFB c BeamMirror ; A mirror: BeamNextDirection = (code - 1 - BeamDirection + 8) AND 15, BeamReflected; on to $906E
 > C = code - 1, the mirror's angle 0-15 (`$01` upright: an east beam goes back west; `$05` an east beam goes up; `$09` lies along the east-west axis). The new direction is (16 - direction + C + 8) AND 15: the reflection of the beam in a mirror line turned C x 11.25 degrees from upright. BeamReflected = `$FF`; then `$906E`.
 > From BeamStep (`$8F1A`).
-> Witness: L1 212472 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x58).
+> Witness: L1 218110 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x58).
 # Fragment 02-beam: $9000-$9FFF (annotator 02-beam). The beam trace's handlers and character passes, the pause, the
 # keys and the four control methods, the dormant level cheat, the cursor and the mirror turning, the score, the
 # hall-of-fame entry and the options screen's drawing with its texts. Notes: work/ann/02-beam.md.
@@ -739,7 +748,7 @@ $906E c BeamVertex ; Draw the beam round one vertex in three passes, then take t
 > The glyphs come from the table `$8000`: four bytes for each direction and set (E = 4 x direction + `$8381`, D = `$80`; `$8381` is `$40` on the flashing frames of the warning set by `$A623`), one byte for each of the four characters round the vertex (up-left, up-right, down-left, down-right). Bits 7-6 of the byte say which pass draws it, bits 5-0 are the glyph (`$D500` + 8 x glyph): 00 the incoming pass `BeamInChar` `$9278`, bit 7 the corner pass `BeamCornerChar` `$9440` (the characters a slanted beam cuts through a corner), bit 6 the outgoing pass `BeamOutChar` `$94FD`.
 > 1. The incoming pass with the incoming direction `$8ECB` (none when it is `$FF`: after a fibre jump or a wall's turn). 2. The corner pass with the same bytes, but only for the characters inside the play area. 3. When the new direction is the reverse of the incoming one (a mirror at right angles, a wall hit head on), the beam goes back into the laser: `$8FC5` (OVERLOAD, `$8ED5` = `$FF`) and the trace ends. 4. At a fibre entry (`$8ED1` = 2) the vertex moves to the partner's (`$91C6`) and the vertex is drawn again with no incoming pass. 5. The outgoing pass with the new direction, then the move (`BeamStep` `$9226`).
 > Any pass may end the trace on a wall or an absorbing polariser (its handler drops the return addresses and returns from the trace). 1 046 773 vertices drawn over all recordings (c1g, controls, energy, kempston, menu, mine, overload and the 59 RZX level segments).
-> Witness: L1 1241033 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1276460 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $906E ; clear the per-vertex flags $8EC3-$8EC8
 $9081 ; C = x; beyond $20: no vertex
 $9088 ; x 0 or $20: the beam ends here
@@ -764,12 +773,12 @@ $91DF BeamOutPass ; DE = $8000 + 4 x the new direction + $8381: the outgoing pas
 $9226 c BeamNewDirection ; Take the new direction and move the beam to its next vertex
 > Falls in from `BeamVertex` `$906E`, and is jumped to by `PrismTurn` `$9014`. The new direction `$8ECC` becomes the direction `$8ECB`; `$FF` ends the trace. HL = the step of the direction in the table `$8170` (two bytes a direction, dx then dy: `$02,$00` for 0 (east), `$02,$01`, `$01,$01`, `$01,$02`, `$00,$02` for 4 (south), and so on round to `$02,$FF` for 15): a step is one cell (two characters) along the axes, a character on the diagonals, and two by one on the eight slopes between, so the 16 directions are 22.5 degrees apart only roughly (26.6 and 63.4 degrees for the slopes).
 > Falls into `BeamMove` `$9235`.
-> Witness: L1 1084235 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1108934 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9235 c BeamMove ; Move the vertex by the step at HL, count the beam's length, trace on
 > Entered from `BeamNewDirection` (the step of the direction) and from the reflections of `BeamReflectIn` `$938F` with HL at a step of their own tables (`$8140`, `$8100`). x + dx must stay below `$21` and y + dy below `$15` (a negative result is above too): else the trace ends.
 > The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10, 14, one character a step) only at even x, so it counts about one a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as if the beam had come back into the laser, and the laser lit; the trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59 level segments, `$926D` 2010 runs in all).
 > Then back to the trace `$8EDD` for the next vertex.
-> Witness: L1 1111452 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1139437 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9235 ; B = x, C = y
 $923D ; x + dx: off the area ($21 or more, or below 0): the trace ends
 $9246 ; y + dy: off the area: the trace ends
@@ -781,7 +790,7 @@ $9271 ; under 150: the next vertex; else the beam stops
 $9278 c BeamInChar ; The incoming pass: one character round the vertex, its glyph, the walls and the polarisers it meets
 > Called four times by `BeamVertex` `$906E` with DE at the glyph byte of the character (`$8000` table) and `$8914` / `$8916` at the character. A byte with bit 7 or 6 set is not this pass's: nothing drawn, only the colour of the next step (`BeamInNext` `$92DE`). `$8EC4` counts the characters of this pass (1-4).
 > At a cell's centre (`$8EC1` set by the trace, not for polarisers) only the walls count: `$71` absorbs (`BeamAbsorbIn` `$9344`), `$72` reflects (`BeamReflectIn` `$938F`), anything else is drawn over: the beam crosses the element's own characters. Elsewhere, by the character in the map: 0 drawn; `$01`-`$30` (a mirror's art) and `$7C`-`$7F` (a prism's), `$B0` and up (fibre ends, the explosion) not drawn; `$31`-`$70` a polariser (`$92FD`); `$71` absorbs, `$72` reflects; `$73`-`$7B` (cells, mines) drawn; `$80`-`$AF` (the laser, the receiver) absorb.
-> Witness: L1 4738979 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4870383 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $927E ; bit 7 or 6: not the incoming pass's glyph
 $9282 ; count the characters of this pass ($8EC4)
 $9289 ; at a cell's centre: only the walls stop the beam
@@ -790,7 +799,7 @@ $92A8 BeamInOnCell ; $71: an absorbing wall; $72: a reflecting wall
 $92B3 c BeamPlotGlyph ; Draw a beam glyph into the pixel buffer: mark the character and colour it
 > Falls in from `BeamInChar` `$9278`, jumped to by the polariser's pass `$9341`. The character gets the draw mark 2 (`$E300`, so `$8A09` copies it) and the colour `$43` (bright magenta on black, `$E600`); the glyph C (`$D500` + 8C) is ORed into the eight pixel rows at `$8916`, whose address is kept in `$8EC9`: a wall met at the next character of the pass erases it (`$9381`).
 > Falls into `BeamInNext` `$92DE`.
-> Witness: L1 1489418 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1533825 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $92B3 ; the draw mark: $E300
 $92B8 ; the colour: $E600, bright magenta
 $92BD ; DE = the glyph $D500 + 8C
@@ -800,7 +809,7 @@ $92DE c BeamInNext ; The next glyph byte; light the character on a mirror or at 
 > The common end of the incoming pass (`BeamInChar` `$9278`, `BeamPlotGlyph`, the walls when they let the beam by). DE moves to the next glyph byte. When the vertex is the centre of a mirror (`$8EC2` set by `$8FFB`) the character is coloured `$43` and marked: the mirror the beam bounces off lights up in the beam's colour. At a fibre entry (`$8ED1` = 2) it takes `$7B` (bright, white paper, magenta ink).
 > The entry point `$92FD` is the polariser: the polariser's angle is (character - `$31`) AND `$1F` / 4 (eight angles, four characters each, `$31`-`$50` the cyan ones of cells `$11`-`$18`, `$51`-`$70` the yellow ones of `$19`-`$20`). A beam whose direction AND 7 is the angle (along its axis, either way) passes: three more characters round the cell get the mark and the colour (offsets `$81A0`, six bytes for each of the four characters) and the glyph is drawn. Otherwise a cyan polariser absorbs (`BeamAbsorbIn`) and a yellow one reflects (`BeamReflectIn`).
 > Experiment (`elements.py`, the beam going west through row 7 column 1 of level 1): `$11` and `$19` (angle 0) pass it, `$13` (angle 2) absorbs it, `$1B` (angle 2) sends it back into the laser (OVERLOAD).
-> Witness: L1 4703273 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4831391 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $92DF ; the next glyph byte
 $92E0 ; B = $43: lit on a mirror
 $92E8 ; at a fibre entry: B = $7B
@@ -827,9 +836,9 @@ $938C AbsorbInEnd ; drop the return addresses: the trace ends
 $938F c BeamReflectIn ; The incoming beam meets a reflecting wall ($72) or a yellow polariser across it
 > From `BeamInChar` `$9278` and the polariser test `$92FD`. Along an axis the test is the absorbing wall's (`$9344`): grazed when the character across is free; else the beam goes straight back, which is the laser's OVERLOAD (`$8FC5`), and the trace ends (the second wall character of a vertex too).
 > On a slope or diagonal it bounces (`$93DC`): the table `$8140` (three bytes a direction: the new direction, dx, dy) gives a slope's mirror image off the wall it can meet (1, 7, 9, 15 off an upright wall: 1 to 7, 7 to 1, 9 to 15, 15 to 9; 3, 5, 11, 13 off a level one: 3 to 13 and so on) and the step to the vertex it leaves from; a diagonal (bit 7 of the first byte) reads `$8100` + 16 x n: two words, the characters above and to the side of the corner, and four answers by which of them are walls: none or both send it back (the trace then sees the reverse direction and OVERLOADs), one turns it a quarter. If the new direction is the reverse: OVERLOAD. Then `BeamMove` `$9235` with that step.
-> The diagonal branch `$93F2` ran in no recording (known only from the code); the slope branch ran 21 949 times in 33 RZX segments.
+> The diagonal branch `$93F2` ran in no play, only on the clone `corner` (InCornerTable `$8100`); the slope branch ran 21 949 times in 33 RZX segments.
 > Experiment (`elements.py`): a full reflecting wall `$3E` and a yellow polariser across the beam (`$1B`) send the westward beam of level 1 straight back: `$8ED5` = `$FF`.
-> Witness: L1 32170 (c1, c1g, cheat, hof, L x9, rzx x33).
+> Witness: L1 35456 (c1, c1g, cheat, corner, hof, nameedit, L x9, rzx x33).
 $938F ; slope or diagonal: bounce off
 $9397 ; second wall character of the vertex: back into the laser
 $93A1 ; the character across the beam ($8190)
@@ -847,7 +856,7 @@ $943B ; else move with the step
 $9440 c BeamCornerChar ; The corner pass: the characters a slanted beam cuts through at a corner
 > Called up to four times by `BeamVertex` `$906E` (the characters inside the play area) with DE at the glyph byte; only bytes with bit 7 set are this pass's (the slopes and diagonals: the beam crosses the corner of a character beside the vertex). Its glyph (bit 7 cleared) is ORed into the pixel buffer with the mark 2 and, on an empty character, the colour `$43`.
 > By the character: 0 drawn and lit; `$01`-`$30` (mirrors) and `$7C` and up not drawn; a polariser (`$949C`) along the beam's axis is drawn only when the character is already lit (`$E600` = `$43`); across it, a cyan polariser's character counts as an absorbing corner and a yellow one's as a reflecting corner; `$71` and `$72` corners (`$94C4`, `$94D9`): the first one is passed; a second absorbing corner ends the beam; two corners of which one reflects turn it by the fourth byte of the direction's row of `$8080` (`$94E9`), mostly straight back (the OVERLOAD of `$91A9`). At a cell's centre (`$8EC1`) walls only, as in the incoming pass.
-> Witness: L1 4485692 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4597599 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9446 ; bit 7 clear: not the corner pass's glyph
 $9450 ; the character in the map
 $9460 BeamCornerOnCell ; $B0 and up: drawn, not lit; $71 / $72: the wall corners
@@ -863,7 +872,7 @@ $94D9 BeamCornerReflect ; a reflecting corner ($8EC6)
 $94E9 BeamCornerTurn ; two corners met: the new direction = byte 7 of $8080 + 8 x direction
 $94FD c BeamOutChar ; The outgoing pass: one character round the vertex in the new direction
 > Called four times by `BeamVertex` (at `$91EA`) with DE at the glyph byte of the new direction; only bytes with bit 6 set are this pass's (the half of the beam that leaves the vertex). `$8EC8` counts its characters. The tests mirror the incoming pass's (`BeamInChar` `$9278`): at a cell's centre only the walls; elsewhere 0 drawn, mirrors' and prisms' characters skipped, polarisers (`$957A`), `$71` and the laser / receiver characters absorb (`BeamAbsorbOut` `$95C2`), `$72` reflects (`BeamReflectOut` `$960D`). The polariser test compares the direction `$8ECB`, not the new one `$8ECC`; after a bounce in place (`$96A7`) `$8ECB` is `$FF`, so a polariser's character beside that vertex is judged as if the beam ran at angle 7 (known only from the code).
-> Witness: L1 4392558 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4498406 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9503 ; bit 6 clear: not the outgoing pass's glyph
 $9507 ; count the characters of this pass ($8EC8)
 $950E ; at a cell's centre: only the walls stop the beam
@@ -871,12 +880,12 @@ $9514 ; the character in the map
 $952D BeamOutOnCell ; $71: absorbing; $72: reflecting
 $9538 c BeamOutPlot ; Draw an outgoing glyph: mark, colour $43, OR the glyph in
 > As `BeamPlotGlyph` `$92B3` for the outgoing pass (glyph = the byte with bit 6 cleared); the pixel address is kept in `$8EC9`. Falls into `BeamOutNext` `$9565`.
-> Witness: L1 1326576 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 1357897 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9542 ; the glyph: bit 6 cleared
 $9559 BeamOutRows
 $9565 c BeamOutNext ; The next outgoing glyph byte; at a fibre end colour the character $7B
 > The common end of the outgoing pass. While `$8ED1` is not 0 (a fibre entry, 2, or the partner end after the jump, 1) the character gets the colour `$7B`. The entry point `$957A` is the outgoing pass's polariser: passes along the axis (three characters marked through `$81A0`, then `BeamOutPlot`), else cyan absorbs, yellow reflects.
-> Witness: L1 4345190 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4448984 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9566 ; the next glyph byte
 $956C ; a fibre end: colour $7B
 $957A BeamOutPolariser ; B = the polariser's angle; compared with $8ECB, not the new direction
@@ -886,7 +895,7 @@ $95AC PolariserPassOutLoop
 $95C2 c BeamAbsorbOut ; The outgoing beam meets an absorbing wall, a cyan polariser across it, the laser or the receiver
 > As `BeamAbsorbIn` `$9344` with the new direction `$8ECC` and the pass's count `$8EC8`: along an axis the character across (`$8190`) must be a wall too, else the beam grazes it; then the last glyph (`$8EC9`) is wiped unless this is the pass's first character, and the trace ends. On a slope or a diagonal: absorbed at once.
 > Experiment (`elements.py 21`): a quarter wall `$21` at the up-left of the cell is reached here and grazed; the beam goes on west.
-> Witness: L1 5282 (c1, c1g, L x17, rzx x36).
+> Witness: L1 5864 (c1, c1g, practice, L x17, rzx x36).
 $95C2 ; slope or diagonal: absorbed at once
 $95CA ; second wall character: absorbed
 $95D4 ; the character across the beam
@@ -895,7 +904,7 @@ $95FF AbsorbOutWipe
 $960A AbsorbOutEnd ; drop the return addresses: the trace ends
 $960D c BeamReflectOut ; The outgoing beam meets a reflecting wall or a yellow polariser across it
 > Along an axis as `BeamReflectIn` `$938F`: grazed, or straight back (OVERLOAD `$8FC5`, the trace ends). On a slope or a diagonal (`$965A`) the row of the new direction in `$8080` (eight bytes: two words, the two characters to test, then four directions by which of them are walls, +1 the first, +2 the second) gives the bounced direction. Its reverse: OVERLOAD. Else the beam is turned in place: the direction `$8ECB` = `$FF` (no incoming pass), the bounce count `$8EC0` + 1, and the vertex is drawn again (`BeamVertex` `$906E`) with the new direction. At 40 bounces OVERLOAD, at 150 the trace ends; the bounce count never passed 39 in the recordings (`$96B8` never ran).
-> Witness: L1 49194 (c1, c1g, cheat, hof, L x9, rzx x31).
+> Witness: L1 50666 (c1, c1g, cheat, hof, nameedit, L x9, rzx x31).
 $960D ; slope or diagonal: bounce
 $9615 ; second wall character: back into the laser
 $961F ; the character across the beam
@@ -923,6 +932,7 @@ $96D7 ; four bytes never used
 $96DB PauseSavedRows ; five pixel rows of $50E0-$50EF
 $972B t IntermissionText ; " INTERMISSION  ": the pause's banner, 15 characters
 > Printed by PauseGame `$973A` over the screen's left half at `$50E1` (pixel rows 0-4 of the characters, the font from `$D202`); the screen's strip is saved in PauseSavedRows `$96DB` first.
+@res texts/intermission.bin
 
 @module controls ; The controls: the pause, the abort, the keyboard, Sinclair, Kempston and Protek, the dormant level cheat
 $973A c PauseGame ; P: INTERMISSION until ENTER, then the game goes on as it was
@@ -950,7 +960,7 @@ $97F0 c ReadKeys ; Each pass: P pauses, U and G together abort the game, then th
 > Called first in each pass of the main loop (`$854A`; 90 922 runs over all recordings). Clears CursorMode `$96C6`. P (`$DFFE` bit 0) without ENTER: PauseGame `$973A`. U (`$DFFE` bit 3) with G (`$FDFE` bit 4): the COMPUTER line shows message `$14`, "GAME ABORTED" (`$A17B`, "DEMO ABORTED" `$A18A` in the demo), a tone (`$A843`, HL = `$C814`), the return address is dropped and the game goes back to the title (`$840C`). Then `ReadControls` `$9869`.
 > A quirk: with P and ENTER both held the abort test reads bit 3 of the ENTER half-row (J) for U.
 > Recordings: `controls` aborts with U + G ("GAME ABORTED", screen 2000), `menu` the demo (SPACE ends it elsewhere) and practice (U + G); `$9811` 5 runs (controls, kempston, menu).
-> Witness: L1 111157 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $97F4 ; P?
 $97FC ; P with ENTER: no pause
 $9805 ReadKeysAbort ; U?
@@ -973,7 +983,7 @@ $985F ; S at level 0: the level restarts
 $9869 c ReadControls ; Read the chosen control method into the control bits: 0 left, 1 right, 2 down, 3 up, 4 fire
 > By ControlMethod `$81FD`: 0 the keyboard (Q up, A down, K left, L right, fire any key of the bottom row: CAPS SHIFT to V and B to SPACE, port `$7EFE`), 1 Sinclair (`$98AD`: both Interface 2 ports, 1-5 left, right, down, up, fire and 6-0 left, right, down, up, fire, ORed), 2 Kempston (`ReadKempston` `$98D2`), 3 Protek / AGF cursor keys (`$98E7`: 5 left, 8 right, 6 down, 7 up, 0 fire). All four end in `MoveCursor` `$9910`.
 > Runs: the keyboard `$987B` 1361 (c1g, controls), Sinclair `$98AD` 88 978 (the default; every RZX segment), Kempston `$98D2` 301 (kempston), Protek `$98E7` 276 (controls).
-> Witness: L1 111148 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117259 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $987B ReadKeyboard ; Q: up
 $9886 ReadKeyboardA ; A: down
 $988F ReadKeyboardL ; L: right
@@ -997,7 +1007,7 @@ $990F ReadProtekDone
 @module beam
 $9910 c MoveCursor ; Keep the control bits; with fire turn the mirror under the cursor, else move the cursor a cell
 > The control bits A (from `ReadControls` `$9869`) go to ControlBits `$96C5`. Fire held: `TurnMirror` `$995E`. Else the four direction bits index CursorSteps `$993E` (dx, dy, diagonals included, opposite pairs cancel) and the cursor moves one cell, each axis only when it stays on the grid (column 0-14, row 0-8). No delay: the cursor moves a cell every pass of the main loop (4.85 frames a pass in the RZX run).
-> Witness: L1 111148 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117259 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9913 ; fire: turn the mirror
 $9918 ; no direction: nothing to do
 $991C ; HL = CursorSteps + 2 x direction bits
@@ -1005,6 +1015,7 @@ $9927 ; column + dx, kept when 0-14
 $9932 MoveCursorRow ; row + dy, kept when 0-8
 $993E b CursorSteps 2 ; dx, dy for each value of the direction bits (bit 0 left, 1 right, 2 down, 3 up)
 > 16 pairs read by `MoveCursor` `$9910`. Left and right together, or up and down together, cancel; the last four pairs (up and down both held) are zero.
+@res tables/cursor-steps.bin
 $995E c TurnMirror ; Fire held: turn the mirror under the cursor one sixteenth to the right or to the left
 > CursorMode `$96C6` = 7 (the square cursor). The cell under the cursor (`$FD23` + 17 x row + column) must be a mirror, `$01`-`$10` with or without bit 7 (bit 7: a mirror that also turns by itself, one step each pass of the grid drawing `$8960`, at `$89B1`); right (bit 1) adds one, left (bit 0) subtracts one, round from 16 to 1 and back; both or neither: nothing. Bit 7 is kept. Up and down do nothing while fire is held. One step a pass: a full turn takes 16 passes.
 > The angle: the trace (`$8FFB`) reflects the beam off mirror m to (m - 1 - direction + 8) AND 15, so mirror m lies at (m + 7) x 11.25 degrees: 1 upright, 9 level, a sixteenth of a turn of the beam per two steps of the mirror.
@@ -1019,15 +1030,15 @@ $998F TurnMirrorLeft ; left: - 1
 $9995 TurnMirrorStore ; round in 1-16, bit 7 put back
 $999F c MarkCursorCells ; Mark the four characters under the cursor for redrawing
 > Called each pass by the main loop (`$854D`) before the grid is drawn (`$8960`): the draw marks `$E300` of the cursor cell's 2 x 2 characters (column 2x + 1, row 2y + 1 of the 32 x 20 map) are set to 2, so the cell's own graphics replace last pass's cursor.
-> Witness: L1 111149 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117260 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $99C6 c DrawCursor ; Show the cursor: the cell's colours inverted, or a white square while fire is held
 > Called each pass by the main loop (`$85A1`) after the beam. HL = the colour buffer `$E600` at the cursor cell's up-left character. CursorMode `$96C6` = 0: `InvertColour` `$99F7` swaps ink and paper of the four characters (flash and bright kept). 7: the four colours are set to 7 (white on black) and the 16 x 16 square `CursorGraphic` `$9A37` is ORed into the pixel buffer `$E900` over the cell.
-> Witness: L1 111061 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $99E1 ; fire held: the square
 $99E8 ; else invert the four colours
 $99F7 c InvertColour ; Swap the ink and paper of the colour byte at HL
 > Keeps bits 7-6 (flash, bright). Falls in from `DrawCursor` for the fourth character.
-> Witness: L1 235384 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 259824 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9A11 c DrawCursorSquare ; Fire held: colour 7 and the square drawn round the cell
 > Entered from `DrawCursor` `$99C6` with A = 7, HL at the colour buffer, B = the character row 2y + 1, C = the column 2x + 1.
 > Witness: L1 52215 (c1, c1g, controls, kempston, menu, L x20, rzx x58).
@@ -1035,12 +1046,13 @@ $9A1B ; DE = the square, HL = the pixel buffer at the cell
 $9A27 DrawCursorSquareRow ; 16 rows of 2 bytes, ORed
 $9A37 b CursorGraphic 2 ; The cursor's square: 16 rows of 16 pixels, a one-pixel frame
 > ORed into the pixel buffer round the cell under the cursor by `DrawCursorSquare` `$9A11` while fire is held.
+@res graphics/cursor.bin
 
 @module elements ; The elements: cells, mines, prisms, gremlins, the energy and the overload
 $9A57 c CursorFire ; Fire: the square cursor, and a gremlin in the cell under the cursor is killed (160 points each)
 > Called each pass by the main loop (`$859E`). Fire is the control bits' bit 4 (`$96C5`) or read again by the method (keyboard: any key of the bottom rows; Sinclair: 5 or 0; Kempston: bit 4 of port `$1F`; Protek: 0). With fire: CursorMode `$96C6` = 7, and the gremlin records (`$AB63`, 6 bytes each, `$AB95` of them, the count the level set-up copies from the second byte of its `$8385` pair) are searched for one whose cell address (+4, +5) is the cursor cell's. Each found one is killed: +0 = `$C8`, +1 = 0, +5 = 0 (no cell), `$837C` = `$FF` (the main loop then plays the effect `$81ED`), and the score gets 16 tens for it (`AddScore` `$9AF3`).
 > Recordings: `$9AC5` 117 180 runs in 53 RZX segments; a gremlin was hit (`$9AD1`) 120 times in 43 segments.
-> Witness: L1 111061 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9A71 ; the keyboard: the two bottom half-rows
 $9A7C CursorFireSinclair ; Sinclair: 5 or 0
 $9A8F CursorFireKempston ; Kempston: bit 4
@@ -1059,20 +1071,20 @@ $9AF1 b Unused9AF1 ; Two bytes ($06, $04) no code reads
 > No recording reads or writes them (`work/ann/02-beam/rw.py`).
 $9AF3 c AddScore ; Add B tens to the score, then print it
 > The score is ASCII digits in ScoreText (`$9B3E`-`$9B43`, the last a fixed "0": points come in tens). B times, the tens digit `$9B42` goes up by one with the carry to the left (a space counts as 0). Callers: the cells burnt (`$8F64`, B = `$18` or the value patched at `$8F63`), gremlins (`CursorFire` `$9A57`, 16 a gremlin), the receiver opening when the last cell is gone (`$85EC`, 25), the level's end bonuses (`$8808` one ten a step, `$884A` 50 a step: fragment 01). 21 897 runs over the 60 RZX segments. Falls into `PrintScore`.
-> Witness: L1 31617 (ending, hof, L x20, rzx x60).
+> Witness: L1 31837 (corner, ending, hof, nameedit, L x20, rzx x60).
 $9AF6 AddScoreDigit ; a space counts as 0
 $9AFD AddScoreCarry ; past 9: 0 and carry to the left
 $9B07 AddScoreNext
 $9B0A c PrintScore ; Print the score right-aligned on the panel
 > From the last digit `$9B43` leftwards to the first space, right to left from `$53BF` (`PrintDigitsBack` `$9B10`). Called by `AddScore` and the level set-up (`$850C`).
-> Witness: L1 4957 (c1, c1g, cheat, controls, ending, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 5012 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $9B10 c PrintDigitsBack ; Print the characters at BC leftwards from screen address DE until a space
 > Each character: rows 2-6 of its glyph (`$D202` + 8 x (character - 32)), five pixel rows down from DE; then DE one column left, BC one character back. Used for the score and the high score (`PrintHighScore` `$9B53`).
-> Witness: L1 33219 (c1, c1g, cheat, controls, ending, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 33565 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $9B24 PrintDigitRows
 $9B30 c ClearSavedScore ; Clear the score kept at the level's start
 > Five spaces at `$9B44`-`$9B48`: the level set-up (`$84EB`) copies them to the score digits `$9B3E`, so a new game or practice starts at 0. Called at a new game (`$842F`) and for practice (`$84DE`).
-> Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, L01).
+> Witness: L1 13 (c1, c1g, controls, energy, energy-out, kempston, menu, practice, L01).
 $9B35 ClearSavedScoreLoop
 $9B3B b ScoreText 9 ; The score, the score at the level's start and the high score, as ASCII digits
 > `$9B3B`-`$9B3D` three spaces stop `PrintScore`; ScoreDigits `$9B3E`-`$9B43` the score (the last "0" never changes). SavedScore `$9B44`-`$9B48`: the score when the level was entered, copied back to the score by the level set-up (`$84EB`): a life lost takes away the points of the unfinished level; written at a level's end by `$8865`. `$9B49` ("0") is never read. HighScoreText `$9B4A`-`$9B52`: three spaces, then the hall of fame's top score with its leading zeros made spaces (`PrintHighScore` `$9B53`), the last "0" fixed.
@@ -1083,7 +1095,7 @@ $9B49 ; "0", never read
 $9B4A HighScoreText ; spaces, then the high score's digits
 $9B53 c PrintHighScore ; Print the hall of fame's top score on the panel as HIGH
 > Copies the first score of the hall of fame (`$9FEE`, five digits, leading zeros turned to spaces) to `$9B4D`-`$9B51` and prints `$9B52` leftwards from `$53FF`. Called by the level set-up (`$850F`); 164 runs over all recordings.
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9B5C PrintHighScoreZero ; a leading 0: a space
 $9B6A PrintHighScoreRest ; the rest as it is
 $9B6D PrintHighScorePrint
@@ -1105,11 +1117,11 @@ $9B83 LetterIndex
 $9B84 ScoreCopy ; the score, six digits
 $9B8A ; never used
 $9BC0 c HallOfFame ; After a game: rank the score, take a name for the hall of fame, draw the options screen
-> Called by the title loop `$840C` after each game (11 runs: c1g, controls, gameover, kempston, menu, mine, overload, rzx-344752). Interrupts off, the sound flags cleared, `$A103` = `$FF` (the interrupt's title mode). After practice (`$8407`): only the options screen (`DrawMenuScreen` `$9ED8`) and the COMPUTER line `$A199`.
+> Called by the title loop `$840C` after each game (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload, rzx-344752). Interrupts off, the sound flags cleared, `$A103` = `$FF` (the interrupt's title mode). After practice (`$8407`): only the options screen (`DrawMenuScreen` `$9ED8`) and the COMPUTER line `$A199`.
 > Else the score's six digits (spaces as 0) go to ScoreCopy `$9B84`, `RankScore` `$9E1F` gives the place 1-7. 7: just the options screen. Else the lower records move down one (scores 9 bytes a record from `$9FEB`, names 8 bytes from `$A022`, the last dropped), the score is written into its record, the name cleared to five spaces, the rows renumbered (`RenumberHallOfFame` `$9E00`), the screen drawn and wiped in (`$8C95`), a tone (`$A843`, `$3250`), the COMPUTER line "HIGH DEFLEKTOR RATING ... PLEASE ENTER YOUR NAME" (`$A28E`, its `$A2A4` patched to `$FE`).
 > The name: up to five letters at column `$12` of the hall of fame's row 8 + rank, a blinking diamond (`$9FE3`, attribute `$3A`) every 70 polls at the next place. The letters A-Z (`ReadLetterKey` `$9E5A`), SPACE, DELETE (0) one back, ENTER ends: the screen redrawn from the buffer (`$9ED8`, `$8B9B`), a tone (`$465A`) and six delays (`$8908`).
-> Recording: `rzx-344752` (the RZX player's entry after the ending: one letter, R, then ENTER; 206 polls). The DELETE (`$9D15`) and SPACE (`$9D5A`) paths and the full name (`$9D7E`) ran in no recording: known only from the code.
-> Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Recordings: `hof` (place 6, the name AGENT in five letters, frames 17 051-17 151, then ENTER and CopyFullScreen `$9DD6`) and `rzx-344752` (one letter, R, then ENTER). The full name (`$9D7E`) ran in `hof`. `nameedit` (the same start as `hof`; A, G, DELETE, SPACE, E, N, T, X, ENTER) runs DELETE (`$9D15`) and SPACE (`$9D5A`) once each and the full name's refusal of X (`$9D7E`): the name A ENT.
+> Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $9BCA ; practice: no hall of fame
 $9BD0 ; the score to ScoreCopy, spaces as 0
 $9BD8 HallOfFameCopy
@@ -1151,43 +1163,44 @@ $9DD2 HallOfFameDone ; ENTER: redraw, a tone, a pause
 $9DE1 HallOfFameDelay
 $9DE8 c PutGlyph ; Copy an 8-byte glyph from HL to the screen at NameScreen
 > Eight rows down from the address in `$9B7C`. Used by the name entry and by the title's options code (`$A7A0`, `$A7F9`, `$A82F`).
-> Witness: L1 71 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, rzx344752).
+> Witness: L1 107 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, nameedit, practice, rzx344752).
 $9DEE PutGlyphRow
 $9DF5 c EraseNameCursor ; Clear the name cursor: attribute $38 and a space
-> Known only from the code (no recording deletes or types a space).
-> Witness: L1 0 ().
+> From the DELETE (`$9D15`) and SPACE (`$9D5A`) paths: run twice in `nameedit`, once each.
+> Witness: L1 2 (nameedit).
 $9E00 c RenumberHallOfFame ; Set the rows of the hall of fame's records to 9-14
 > The third byte (the row) of the six names' records (`$A024`, 8 bytes apart) and of the six scores' (`$9FED`, 9 bytes apart): 9, 10, ... 14, after records were moved.
-> Witness: L1 2 (hof, rzx344752).
+> Witness: L1 3 (hof, nameedit, rzx344752).
 $9E0A RenumberNames
 $9E19 RenumberScores
 $9E1F c RankScore ; The place of ScoreCopy in the hall of fame: 1-6, or 7 when it is too low
 > Compares the six digits of ScoreCopy `$9B84` with the scores from the last (`$A01B`) upwards; the place goes down from 7 while the score is greater than the record's; equal does not pass. Returns the place in A and Rank `$9B78`.
-> Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $9E2C RankScoreRecord
 $9E31 RankScoreDigit
 $9E3C RankScoreDone ; lower or equal: here
 $9E43 RankScoreUp ; greater: one place up
 $9E5A c ReadLetterKey ; Which letter key is newly pressed: carry and A = 1-26, or no carry
 > Tests the 26 key codes of `LetterKeys` `$9EBD` with `TestKey` `$9EA2`. A held key: carry only when it differs from LastKey `$9B81`; KeyHeld `$9B80` = 1 while any letter is held, 0 when none.
-> Witness: L1 2179 (hof, rzx344752).
+> Witness: L1 4639 (hof, nameedit, rzx344752).
 $9E62 ReadLetterLoop
 $9E78 ReadLetterFound ; a new key: carry
 $9E8F ReadLetterSame ; the same key as before: no carry
 $9E99 ReadLetterNone
 $9EA2 c TestKey ; Test one key: A = 8 x (4 - bit) + half-row, NC when it is held
 > The half-row 0-7 is `$7FFE`, `$BFFE`, `$DFFE`, `$EFFE`, `$F7FE`, `$FBFE`, `$FDFE`, `$FEFE`; the high three bits count the key from the outer end of the half-row (bit 4 first). So `$21` is ENTER, `$20` SPACE, `$23` 0 (DELETE).
-> Witness: L1 49147 (hof, rzx344752).
+> Witness: L1 109958 (hof, nameedit, rzx344752).
 $9EB3 TestKeyRow
 $9EB8 TestKeyBit
 $9EBD b LetterKeys 8 ; The key codes of A to Z for TestKey, $FF ends
 > `$26` A, `$00` B, `$0F` C, `$16` D, `$15` E, `$0E` F, `$06` G, `$01` H, `$12` I, `$09` J, `$11` K, `$19` L, `$10` M, `$08` N, `$1A` O, `$22` P, `$25` Q, `$0D` R, `$1E` S, `$05` T, `$0A` U, `$07` V, `$1D` W, `$17` X, `$02` Y, `$1F` Z (the code is 8 x (4 - bit) + half-row of `TestKey`).
+@res tables/letter-keys.bin
 
 @module menu ; The title, the options panel, the demo, practice, the hall of fame's display
 $9ED8 c DrawMenuScreen ; Draw the options screen into the buffer $E200 / $E500: panels, logo, options, hall of fame
 > Unpacks the screen's attributes from the run-length list `$A053` (count, value; `$FF` ends) into 768 bytes at `$E200`, clears the pixel buffer `$E500`-`$FCFF` (a linear screen, 32 bytes a row), fills every character whose attribute is 2 with the dither `MenuDither` `$9F41`, then prints with `$8E3A` (records: attribute + `$80`, column, row, text; a byte with bit 7 starts the next record, `$FF` ends): "HALL OF FAME" (`$9F49`), the hall of fame's names (`$A022`) and scores (`$9FEB`), the logo and the options (`$9F59`). `$8B9B` or `$8C95` then copy the buffer to the screen.
 > Called by `HallOfFame` `$9BC0` (12 runs over all recordings).
-> Witness: L1 16 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 18 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $9EDE MenuUnpack
 $9EE6 MenuUnpackRun
 $9EED MenuClearPixels ; clear the pixel buffer $E500-$FCFF
@@ -1199,12 +1212,15 @@ $9F1F MenuDitherNext
 $9F28 ; the texts
 $9F41 b MenuDither 8 ; The dither of the options screen's background panels: $AA, $55 alternating
 > Eight rows put into every character of attribute 2 by `DrawMenuScreen` `$9ED8`.
+@res tables/menu-dither.bin
 $9F49 b HallOfFameTitle 8 ; The text record "HALL OF FAME" at column $12, row 6, attribute $3B, $FF ends
 > The records `$8E3A` prints: the first byte, bit 7 set, is the attribute + `$80`, then the column, the row, the characters; `$FF` ends the list.
+@res texts/options.bin
 $9F49 ; attribute $3B, column $12, row 6
 $9F4C ; "HALL OF FAME", end
 $9F59 b OptionsText 8 ; The logo and the options: text records for $8E3A, $FF ends
 > The logo is two rows of the font's characters `a`-`z` and the brackets (`$28`, `$29`): the font holds the DEFLEKTOR logo there. Then OPTIONS and the seven lines 1 KEYBOARD, 2 SINCLAIR, 3 KEMPSTON, 4 PROTEK-AGF, 5 DEMO, 6 PRACTICE, 7 START GAME (rows 8-11, 13-14, 16, column 1, attributes `$38`, `$39`).
+@res texts/options.bin
 $9F59 ; the logo's top row: attribute $3B, column 8, row 1
 $9F6B ; the logo's second row: attribute $3A, column 8, row 2
 $9F7D ; OPTIONS: attribute $3B, column 1, row 6
@@ -1217,8 +1233,10 @@ $9FC6 ; 6 PRACTICE, row 14
 $9FD3 ; 7 START GAME: attribute $38, row 16; then the end $FF
 $9FE3 b NameCursorGlyph 8 ; The name entry's blinking cursor: a small diamond
 > Put by `HallOfFame` `$9BC0` (at `$9CEC`, attribute `$3A`) at the next letter's place, every other 70 polls.
+@res graphics/name-cursor.bin
 $9FEB b HallOfFameScores 9 ; The hall of fame's six scores: text records of 9 bytes (attribute, column $18, row, six digits), $FF ends
 > Rows 9-14 (`RenumberHallOfFame` `$9E00`), the top one in attribute `$3A`, the others `$38`: 090000, 075000, 060000, 045000, 030000, 015000 at the start. `HallOfFame` `$9BC0` moves records down and writes a new score; `RankScore` `$9E1F` compares with them; `PrintHighScore` `$9B53` shows the first as HIGH. `$A021` = `$FF` ends the list; the names follow at `$A022` (8-byte records, MEGA, GREAT, GOOD, SO-SO, BAD, AWFUL).
+@res texts/hall-of-fame.bin
 # Fragment 03-irq: $A000-$AFFF (texts, IM 2 and the COMPUTER line, the bars, sound, the ending, the gremlins, the
 # title tune). The bytes $A000-$A021 are the end of the hall-of-fame score records that start at $9FEB (the other
 # fragment's range): no entry here, the first entry is $A022.
@@ -1227,6 +1245,7 @@ $9FEB b HallOfFameScores 9 ; The hall of fame's six scores: text records of 9 by
 $A022 t HallOfFameNames ; The hall of fame's six names: text records (attribute, column, row, 5 characters), $FF
 > Six records of 8 bytes for the printer `$8E3A`: an attribute byte with bit 7 set (the record mark; the printer clears bit 7, so the colour is `$39`, blue on white), the column `$12`, the row `$09-$0E`, then five characters. `$FF` ends the list. They stand beside the six score records `$9FEB` (9 bytes each: attribute, column `$18`, row, six digits) printed by `$9ED8` (at `$9F2E`) on the options panel; the default names are the six ranks MEGA, GREAT, GOOD, SO-SO, BAD, AWFUL.
 > A new entry (`$9BC0`): the names below the new place move down one record (`LDDR` from `$A049` to `$A051`, 8 bytes a record), the new record's five characters are cleared to spaces (`$9C6D`) and typed in by `$9E00` (which reads from `$A024`, the row byte). Evidence: written once in `rzx-344752` (the RZX player's entry, name R); read in every recording that showed the options panel (`c1g`, `menu`, `controls`, `kempston`, `mine`, `overload`, `gameover`).
+@res texts/hall-of-fame.bin
 $A022 ; MEGA (row 9)
 $A02A ; GREAT (row 10)
 $A032 ; GOOD (row 11)
@@ -1240,6 +1259,7 @@ $A053 b OptionsLayout 2 ; The options screen's layout: 87 runs (count, value) gi
 > Read by `$9ED8` (at `$9EDB`): each pair writes `count` copies of `value` to `$E200` on, `$FF` ends; the 87 runs fill exactly 768 cells (24 rows of 32). Values: `$00` empty, `$3B` and `$38` the attributes of the title box (rows 1-2, magenta on white) and of the two panels (rows 5-17: the OPTIONS and HALL OF FAME boxes; rows 20-23: the scroller's box), `$02` a shadow cell: `$9ED8` draws the checker pattern `$9F41` (`$AA55...`) into the pixel buffer `$E500` wherever a cell is `$02`, the drop shadow along the right and bottom edge of each box.
 > Decoded (`.` `$00`, `b` `$3B`, `w` `$38`, `#` `$02`): rows 1-2 cols 7-23 `b`, its shadow on row 3; rows 5-17 two boxes cols 0-13 and 17-30 `w`, shadows in col 14 / 31 and row 18; rows 20-22 cols 4-26 `w`, shadow col 27 and row 23.
 > Evidence: read 12 times (every draw of the options screen: `c1g`, `menu`, `controls`, `kempston`, `mine`, `overload`, `gameover`, `rzx-344752`).
+@res tables/options-layout.bin
 $A101 ; the end mark
 $A102 b UnusedA102 ; One byte $FF that no recording reads or writes
 > No instruction in the image addresses it (searched in `game.skool`); probably a spare end mark of the layout above.
@@ -1261,53 +1281,76 @@ $A110 w MessagePointer ; The text being shown: the next character of a scrolling
 
 $A112 t DemoMessage ; Static: ",,,, DEMO ,,,," (MessageNumber 1, ResetBars on demo level 0)
 > 14 characters after the `$FE` static mark; `,` is a small ring in the font (`$D260`), `.` a small diamond. Evidence: read in `menu` (the demo).
+@res texts/messages.bin
 $A121 t ChargingMessage ; Static: "CHARGING LASER" (MessageNumber 1, ResetBars)
 > Shown at each level start while the energy bar fills. Evidence: `energy` frame 500; every recording that started a level.
+@res texts/messages.bin
 $A130 t OverloadMessage ; Static: " . OVERLOAD . " (MessageNumber $12, the beam back in the laser)
 > Evidence: `overload`; read in `mine` and 54 RZX segments.
+@res texts/messages.bin
 $A13F t MineAlertMessage ; Static: ". MINE ALERT ." (MessageNumber $13, the beam on a mine)
 > Evidence: `mine`; 46 RZX segments.
+@res texts/messages.bin
 $A14E t DrainedMessage ; Static: "ENERGY DRAINED" (MessageNumber $17, EnergyDrained $A66F)
 > Evidence: `energy` (twice), `rzx-053912`, `rzx-227686`.
+@res texts/messages.bin
 $A15D t BoomMessage ; Static: "BOOM BOOM BOOM" (MessageNumber $16, a life lost: $867A)
 > Evidence: `mine`, `overload`, `gameover` and the RZX segments that lost a life.
+@res texts/messages.bin
 $A16C t ContactMessage ; Static: "   CONTACT!   " (MessageNumber $18, the beam reached the receiver: $87DD)
 > Shown by `$87D4` when LevelDone `$8ED2` is set, the level complete. Evidence: read in all 60 RZX segments (each reaches the end of a level in the RZX's own run).
+@res texts/messages.bin
 $A17B t GameAbortedMessage ; Static: " GAME ABORTED " (MessageNumber $14, U + G: $9811)
 > Evidence: `controls`, `kempston`, `menu`.
+@res texts/messages.bin
 $A18A t DemoAbortedMessage ; Static: " DEMO ABORTED " (the same key in the demo: $981F)
 > The 14 characters end at `$A198`; BlankMessage follows.
+@res texts/messages.bin
 $A199 t BlankMessage ; Scrolling: two spaces, then back to itself: the line runs empty; reaching it ends a message (MessageNumber 0)
 > The "no message" message: SetupInterrupts, `$8435`, the end of charging (`$A602`), the overload stopping (`$A70B`), `$9BF3`. The scroller compares every `$FF` jump with this address (`$A3E7`) and clears MessageNumber when it is taken.
+@res texts/messages.bin
 $A19B ; $FF, then the address where the text goes on
 $A19C w BlankMessageLoop ; BlankMessage again
+@res texts/messages.bin
 $A19E t GremlinsMessage ; Scrolling: ",,,BEWARE OF THE GREMLINS!,,," (MessageNumber 4, GremlinAppear), once
 > Evidence: read in 51 RZX segments (the levels with gremlins).
+@res texts/messages.bin
 $A1BB ; $FF
 $A1BC w GremlinsMessageLoop ; then BlankMessage: shown once
+@res texts/messages.bin
 $A1BE t EnergyLowMessage ; Scrolling: "---WARNING-----ENERGY LOW---" (MessageNumber $0A, two bar bytes left), once
 > Evidence: `energy` frame 5000; 17 RZX segments.
+@res texts/messages.bin
 $A1DA ; $FF
 $A1DB w EnergyLowMessageLoop ; then BlankMessage
+@res texts/messages.bin
 $A1DD t EnergyCriticalMessage ; Scrolling: "---WARNING---ENERGY LEVEL CRITICAL-", repeated (MessageNumber $0C, one bar byte left)
 > Evidence: `energy` frame 5750; 11 RZX segments.
+@res texts/messages.bin
 $A200 ; $FF
 $A201 w EnergyCriticalLoop ; back to its own start: it repeats until another message
+@res texts/messages.bin
 $A203 t CreditsMessage ; The menu scroller's text: "DEFLEKTOR , WRITTEN BY COSTA PANAYI ... SELECT OPTION ,,, ", a pause, again
 > Set by OptionsMenu `$A757` (`$A76E`). `@` is the copyright sign in the font (`$D300`). Text: DEFLEKTOR , WRITTEN BY COSTA PANAYI , WITH HELP FROM THE ALIEN , MUSIC BY BEN AND JOBBEE , @1987 VORTEX SOFTWARE ,,, SELECT OPTION ,,, .
 > Evidence: read in `c1g`, `controls`, `kempston`, `menu`, `energy`; the whole text and the pause only in `controls` (the longest wait on the panel).
+@res texts/messages.bin
 $A28A CreditsPause ; $FE: a pause of 124 frames, counted down in place ($A4B5); OptionsMenu writes $FE back ($A769)
 $A28B ; $FF
 $A28C w CreditsLoop ; back to the start
+@res texts/messages.bin
 $A28E t HighRatingMessage ; The name-entry prompt: "HIGH DEFLEKTOR RATING ", a pause, ", PLEASE ENTER YOUR NAME , ", again
 > Set by `$9CB4` for a hall-of-fame entry, which writes `$FE` to the pause first (`$9CAE`). Evidence: `rzx-344752` (the RZX player's entry).
+@res texts/messages.bin
 $A2A4 RatingPause ; $FE: the pause, as CreditsPause
 $A2C0 ; $FF
 $A2C1 w HighRatingLoop ; back to the start
+@res texts/messages.bin
 $A2C3 t IntermissionMessage ; The pause (P): ",,, PRESS ENTER FOR MORE ACTION ,,,,,, INTERMISSION ", repeated
 > Set by `$97B1`; the pause `$973F` first prints "INTERMISSION" itself (`$972B`) on the line. Evidence: `controls`.
+@res texts/messages.bin
 $A2F7 ; $FF
 $A2F8 w IntermissionLoop ; back to the start
+@res texts/messages.bin
 
 @isub $A75B LD HL,$465A
 @module interrupt ; The IM 2 set-up and the interrupt handler: the ticks, the COMPUTER line, the beeper effects
@@ -1330,7 +1373,7 @@ $A32A c InterruptHandler ; Every frame: EnergyTick, FrameCounter, the COMPUTER l
 > 4. InterruptExit `$A450`: PlaySoundFlags `$A8A7`, the registers back, `EI`, `RET`.
 > The POKE file's "Infinite lives" 41784,0 writes `NOP` over the `INC A` at `$A338`: EnergyTick never moves, so the energy never drains.
 > Evidence: 381 862 entries over all recordings, one a frame (`c1g` 4473 in 4808 frames: the load's frames before the entry have none; `rzx-004833` 7019 in 7019 frames); 3377 T an entry on average in `c1g` (WALKTHROUGH 1).
-> Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $A32E ; MenuScroller set: the menu's line instead, no ticks
 $A335 ; EnergyTick + 1 ($A338 INC A: the POKE 41784,0 makes it NOP)
 $A33C ; FrameCounter + 1
@@ -1356,14 +1399,14 @@ $A40D ScrollLinePixel ; 5 rows: shift $50EF down to $50E0 a pixel left, the glyp
 $A415 ScrollRowLoop ; 16 RL (HL) unrolled, from the right
 $A445 ; $50E0's bit 7 stays set (the panel's edge)
 $A450 c InterruptExit ; The common end of the handler: the beeper effect of SoundFlags, the registers back, EI, RET
-> Reached by the fall from the line's scroll and by the jumps of every other path. PlaySoundFlags `$A8A7` runs with the interrupt still off, so a long effect delays the main code (it never spans a frame: the longest flag effect, `$81D4`, takes 0.49 frame).
-> Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Reached by the fall from the line's scroll and by the jumps of every other path. PlaySoundFlags `$A8A7` runs with the interrupt still off, so a long effect delays the main code (it never spans a frame: the longest flag effect played, ChargeWarble `$81E8` for bit 4, takes 0.41 frame; `$81D4`'s bit 0 is never set).
+> Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $A459 c MenuScrollerTick ; The menu's line: row 21, columns 5-25 scrolled a pixel a frame; bytes $82-$FE in the text are pauses
 > From InterruptHandler when MenuScroller `$A103` is set. A new message is taken (MessagePointer = MessageText, the high byte cleared) and the line `$51A5` (5 pixel rows of 21 bytes, scan lines 1-5) cleared. Then each frame: if the next text byte is `$81` or more it is a pause (MenuPause), else the 21 bytes `$51A5-$51B9` of the 5 rows are shifted a pixel left with MessageGlyph's next column coming in (MenuScrollPixel), and every 8 pixels the next character is loaded (`$FF`: go on at the next word).
 > A pause byte counts down in the text itself, a frame a step: `$FE` to `$E6` (24 frames) the line stands; `$E5` to `$82` (100 frames) its attributes (`$5AA5`, 21 bytes) flash, bit 4 of the count choosing `$3F` (white on white, hidden) or `$38` (black on white), 16 frames each; at `$81` the byte is set back to `$FE` and the text goes on. The callers write `$FE` again before they set the text (`$A769`, `$9CAE`), since an interrupted count stays in the text.
 > No tick is counted on this path (EnergyTick, FrameCounter).
 > Evidence: 2490 entries (`c1g`, `controls`, `energy`, `kempston`, `menu`, `rzx-344752`); the pause (`$A4AA`) only in `controls`: 126 frames, the flash 101, the end of the pause once.
-> Witness: L1 3082 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, rzx344752).
+> Witness: L1 3417 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, nameedit, practice, rzx344752).
 $A45F ; a new message: take it, clear the line
 $A469 ; $51A5: 5 pixel rows of 21 bytes
 $A46F MenuClearRowLoop
@@ -1401,7 +1444,7 @@ $A50A w OverloadBarPointer ; The overload bar's screen byte: $54B1-$54B8 (row 21
 $A50C c DrawPanel ; The HUD panel: 1024 pixel bytes from $7B80 to rows 20-23 and 128 attributes from $7F80
 > DE = `$5080`, HL = `$7B80`: 32 bytes a pixel row, 8 rows a character row (D + 1 until bit 3 is set), then E + 32 for the next of the four character rows 20-23 (E = `$80`, `$A0`, `$C0`, `$E0`; done when it wraps to 0). Then 128 bytes to the attributes `$5A80-$5AFF`. So the picture at `$7B80` (the brief's OptionsPanel) is the play panel (LEVEL, LIVES, OVERLOAD, ENERGY, SCORE, HIGH, COMPUTER), 1024 + 128 bytes ending at `$7FFF`.
 > Called by `$8432` at each new game and level start. Evidence: 67 runs (`c1g`, `controls`, `energy`, `kempston`, `menu`, 59 RZX segments).
-> Witness: L1 90 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, L x20, rzx x59).
+> Witness: L1 92 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, nameedit, practice, L x20, rzx x59).
 $A512 DrawPanelRowLoop
 $A51E ; the next character row: E + 32
 $A526 ; the attributes, rows 20-23
@@ -1410,7 +1453,7 @@ $A526 ; the attributes, rows 20-23
 $A52F c ResetBars ; At each level start: both bars empty, the pointers, LaserCharging on, CHARGING LASER (or DEMO)
 > Clears the 8 bytes of the overload bar (`$54B1`) and of the energy bar (`$54F1`) in their three pixel rows, OverloadBarPointer = `$54B1`, EnergyBarPointer = `$54F1`, LaserCharging = `$FF`, MessageNumber = 1, and MessageText = ChargingMessage; in the demo (`$8379` set) DemoMessage on level 0 only (on later demo levels the message is left as it is).
 > Called by `$843C` (at `$8515`) at each level start and restart after a lost life. Evidence: 164 runs (all recordings but `gameover`).
-> Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A538 ClearOverloadLoop
 $A542 ; the energy bar
 $A547 ClearEnergyLoop
@@ -1422,7 +1465,7 @@ $A57A c ChargeLaser ; A pass of the laser's charge: turn the mirrors at random, 
 > Then SoundFlags bit 4 (the charge's tone, every frame) and two bits into the energy bar (`SCF; RRA` twice: it fills from the left); a full byte moves EnergyBarPointer right. At `$54F9` the bar is full: the pointer back to `$54F8`, EnergyTick and LaserCharging 0, MessageText = BlankMessage, SoundFlags 0, and the sound `$81F2` (PlaySound, 18 frames).
 > 32 passes a level start (8 bytes of 4 steps): `rzx-011752` frames 230-382.
 > Evidence: 3328 runs (104 level starts x 32).
-> Witness: L1 4352 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 4480 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A582 ChargeRowLoop
 $A584 ChargeCellLoop
 $A58A ; C = the random byte's high half
@@ -1442,7 +1485,7 @@ $A613 c DrainEnergy ; Each pass: the charge while LaserCharging, else critical /
 > - EnergyTick below the rate (the operand of `CP` at EnergyRate `$A63B`, written by the level set-up `$84D2` from the table `$8385`): return. Else EnergyTick = 0 and the bar loses a step (`SLA` of its byte in three rows: it shrinks from the right); an empty byte moves the pointer left: at `$54F2` ENERGY LOW (`$0A`), at `$54F0` EnergyDrained.
 > So a level lasts 64 steps of `rate` frames (level 1: `$5A` = 90, 5760 frames, 115 s, plus the pass's wait). `energy`: charged at about frame 690, drained at 6450. The POKE "Infinite Energy" (`$A63D`, `RET C` made `RET`) stops it here.
 > Evidence: 90 776 runs.
-> Witness: L1 110999 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117106 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A61A ; one byte left: critical
 $A638 DrainEnergyTick
 $A63B EnergyRate ; CP n: n is the level's energy rate (frames a step), written by the level set-up $84D2
@@ -1453,23 +1496,23 @@ $A66F EnergyDrained ; ENERGY DRAINED: LifeLost $8ED3 = $FF, $8378 = $FF (the las
 $A683 c UpdateOverload ; Each pass: the beam on a mine (MINE ALERT, 4 steps), in the laser (OVERLOAD, 1 step), else cool down
 > Called by the main loop at `$85BF`. BeamOnMine `$8ED4` (set by the beam `$8F6C`): MessageNumber `$13`, MineAlertMessage, then OverloadStep and three more OverloadAddStep. BeamInLaser `$8ED5`: SoundFlags bit 2 on and bit 1 off, OVERLOAD (`$12`) unless a more urgent message other than MINE ALERT is shown, OverloadStep. Neither: CoolOverload.
 > Evidence: 90 821 runs; MINE ALERT 1753 (`mine`, `gameover`, 46 RZX segments), OVERLOAD (`$A6A6`) in `overload` and the RZX segments.
-> Witness: L1 111052 (c1, c1g, cheat, controls, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A689 ; on a mine: MINE ALERT and four steps
 $A6A0 OverloadBeamInLaser ; the beam back in the laser?
 $A6A6 ; the overload tone on, the mine's off
 $A6BB OverloadShowMessage ; OVERLOAD
 $A6C6 c OverloadStep ; Clear BeamOnMine and BeamInLaser for the next pass, then one step
 > The beam sets the two flags again on each pass it meets a mine or the laser. Evidence: 8226 runs.
-> Witness: L1 9139 (gameover, hof, mine, overload, L x20, rzx x55).
+> Witness: L1 9141 (gameover, hof, mine, nameedit, overload, L x20, rzx x55).
 $A6CD c OverloadAddStep ; One step on the overload bar; full ($54B9): LifeLost, unless practice
 > Returns at once when the bar is full (OverloadBarPointer `$54B9`). The POKE "Infinite Time" turns this `RET Z` at `$A6D3` into `RET`: the bar never fills. Else one bit into the byte (`SCF; RRA` in three rows: it fills from the left); a full byte moves the pointer right; at `$54B9` LifeLost `$8ED3` = `$FF` unless PracticeFlag `$8407` is set.
 > Evidence: 13 485 runs; full (`$A6EE`) 41 times (`mine`, `overload`, `gameover`, 24 RZX segments).
-> Witness: L1 15400 (gameover, hof, mine, overload, L x20, rzx x55).
+> Witness: L1 15402 (gameover, hof, mine, nameedit, overload, L x20, rzx x55).
 $A6E9 ; full: a life lost, but not in practice
 $A6F4 c CoolOverload ; Neither mine nor laser: the two tones off, OVERLOAD / MINE ALERT taken off, one step back
 > From UpdateOverload. SoundFlags bits 1 and 2 cleared; MessageNumber `$12` or `$13`: 0 and BlankMessage. The bar's byte shifted left (a step back); an empty byte moves OverloadBarPointer left, not below `$54B1`.
 > Evidence: 82 595 runs.
-> Witness: L1 101913 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 108021 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A707 CoolOverloadQuiet ; the message off
 $A711 CoolOverloadStep
 
@@ -1477,7 +1520,7 @@ $A711 CoolOverloadStep
 $A729 c TitleScreen ; The title picture and its tune, then the options panel
 > Called by `$840C` / `$8408` at `$8416` after the menu set-up `$9BC0`. Four waits `$8908`, `DI`, waits until no key is held (half rows read with A = 0), fills the attributes with the first one's value (`$5800` copied on), copies TitlePicture `$6000` (6912 bytes) to the screen, and plays the title tune (TitleTune `$AD79`) until a key; then falls into OptionsMenu.
 > Evidence: 10 runs (`c1g`, `controls`, `gameover`, `kempston`, `menu`, `mine`, `overload`).
-> Witness: L1 13 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, overload).
+> Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload).
 $A735 ; no key held, then the picture
 $A736 TitleKeyReleaseLoop
 $A73E ; the attributes all as $5800, then TitlePicture to the screen
@@ -1486,8 +1529,8 @@ $A757 c OptionsMenu ; The options panel: credits on the menu line, keys 1-4 the 
 > `DI`; `$8C95` (the panel's buffers to the screen); a tone (TwoTone `$465A`, 14 frames); waits until no key; CreditsPause = `$FE`; MessageText = CreditsMessage; `EI` (the menu scroller runs).
 > OptionsHighlight: the line of the current ControlMethod `$81FD` (rows 8-11: `$4802` + 32 x method, attributes `$5901`): 12 attributes `$3A` (red on white), the marker `$9FE3` (an 8 x 8 diamond, drawn by `$9DE8` at the place kept in `$9B7C`).
 > OptionsKeyLoop, until a key: the random seed `$8E32` + 1 (so the game's randomness depends on how long the panel stays up); 7 START GAME (`$EFFE` bit 3), 5 DEMO (`$F7FE` bit 4: `$8379` = `$FF`), 6 PRACTICE (`$EFFE` bit 4: PracticeFlag `$8407` = `$FF`): the chosen line is highlighted (row 16, 13 or 14), the marker drawn there, a tone (`$28A0`, 8 frames), `DI`, MenuScroller = 0 and return to the new game. Keys 1-4 (`$F7FE` bits 0-3): ControlMethod = 0-3, a tone (`$1478`, 4 frames), the old marker wiped (the space glyph `$D200`), the old line back to `$38`, and OptionsHighlight again.
-> Evidence: entered 8 times (`c1g`, `controls`, `energy`, `kempston`, `menu`; `energy` and `kempston` start inside it). DEMO once (`menu`); the PRACTICE branch `$A7E3` ran in no recording (nor did the practice text `$8A6E`).
-> Witness: L1 10 (c1, c1g, controls, energy, energy-out, kempston, menu).
+> Evidence: entered 8 times (`c1g`, `controls`, `energy`, `kempston`, `menu`; `energy` and `kempston` start inside it). DEMO once (`menu`); the PRACTICE branch `$A7E3` and the practice text `$8A6E` run in `practice` (`work/docs/dfA/rec/practice`).
+> Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice).
 $A761 OptionsKeyReleaseLoop
 $A769 ; the credits on the menu line, the pause reset
 $A775 OptionsHighlight ; the current control method's line and marker
@@ -1510,20 +1553,20 @@ $A837 OptionsUnhighlightLoop ; the old line back to $38
 $A83F c PlayTone ; Kind 0: L, H from the record, then TwoTone
 > From PlaySound. The record `$81E8` (SoundFlags bit 4, the charge) is the only kind-0 record found: L = `$8C`, H = 2.
 > Evidence: 16 418 runs.
-> Witness: L1 21595 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 22256 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $A843 c TwoTone ; A warble: two square waves of periods 256-L and 257-L loops toggle the speaker, for H x 256 loops
 > D counts up from L, E from L-1; each that wraps to 0 toggles the speaker and MIC bits (`XOR $18`) and starts again from L (E from L-1). The two nearly equal periods beat against each other. B x C = H x 256 loops.
-> Also called directly with HL as the tone: the menu (`$465A` 14.4 frames, `$28A0` 8.2, `$1478` 4.1), the pause (`$0F3C` 3.1), the abort (`$C814` 41.1), the name entry (`$3250` 10.3), the level complete (`$0A3C` 2.1 each step of the bonus count); T-states by SkoolKit's simulator (work/ann/03-irq/simtime.py, no contention).
+> Also called directly with HL as the tone: the menu (`$465A` 14.4 frames, `$28A0` 8.2, `$1478` 4.1), the pause (`$0F3C` 3.1), the abort (`$C814` 41.1), the name entry (`$3250` 10.3), the level complete (`$0A3C` 2.1 each step of the bonus count, and `$0204` (0.41 frame) after each life of the bonus, at `$8853`: HL is what PlaySweep left, GremlinSound's step and half-cycles); T-states by SkoolKit's simulator (work/ann/03-irq/simtime.py, no contention).
 > Evidence: 17 972 runs.
-> Witness: L1 24193 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 24908 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $A849 TwoToneLoop
 $A851 TwoToneSecond
 $A858 TwoToneNext
 $A85E c PlaySweep ; Kind 1: E steps of L half-cycles, each of a delay D, D - H after each step (a falling or rising sweep)
 > Record: H (the step), L (half-cycles a step), D (the first delay, `DJNZ` loops), E (steps). H > 0 shortens the delay (the pitch rises), `$FE` (-2, the mine's `$81D9`) lengthens it.
-> Records: `$81D4` (bit 0, no writer sets it: dormant), `$81D9` (bit 1, the beam on a mine, 0.20 frame), `$81DE` (bit 2, the beam in the laser, 0.02), `$81ED` (`$85B5`, 2.2 frames), `$81F2` (the charge done, the ending, 17.9), `$81F7` (CONTACT!, 43.3), `$8660` (5.99), `$8665` (a life lost, 2.6).
+> Records: `$81D4` (BurnSound: played directly by PassEnd `$865A` on a pass with a new explosion; its flag bit 0 is never set), `$81D9` (bit 1, the beam on a mine, 0.20 frame), `$81DE` (bit 2, the beam in the laser, 0.02), `$81ED` (`$85B5`, 2.2 frames), `$81F2` (the charge done, the ending, 17.9), `$81F7` (CONTACT!, 43.3), `$8660` (5.99), `$8665` (a life lost, 2.6).
 > Evidence: 43 809 runs.
-> Witness: L1 49982 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 50108 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $A867 SweepStepLoop
 $A869 SweepHalfCycle
 $A86C SweepDelay
@@ -1531,7 +1574,7 @@ $A87A c PlayNoise ; Kind 2: E bursts of random length and period; the record's 4
 > Record: D (the period mask), E (bursts), C (the length mask), and an opcode byte stored at NoiseOp `$A89F` (self-modifying: `$A2` = `AND D`, the image's own). Each burst: L half-cycles of a delay B, then a random pair from `$8E15`: L = (L AND C) + 1, B = (H op D) + 1.
 > The record `$81E3` (SoundFlags bit 3: a burning cell, `$860F`): D = 2, E = 4, C = `$0A`, `AND D`; 0.04 frame.
 > Evidence: 11 171 runs (53 RZX segments).
-> Witness: L1 16529 (L x20, rzx x53).
+> Witness: L1 16546 (corner, L x20, rzx x53).
 $A881 ; the opcode byte into the code
 $A889 NoiseBurstLoop
 $A88A NoiseHalfCycle
@@ -1543,13 +1586,13 @@ $A8A6 b SoundFlags ; The effects asked for: bit 0 (dormant), 1 mine, 2 laser ove
 $A8A7 c PlaySoundFlags ; From the interrupt: the effect of the lowest set bit 0-4 of SoundFlags, record $81D4 + 5 x bit
 > B counts 5 down while the flags are rotated right; the first carry gives the bit (5 - B), HL = `$81D4` + 5 x bit, then PlaySound. No bit: return.
 > Evidence: 381 862 runs (every interrupt).
-> Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 $A8AC SoundFlagsLoop
 $A8B2 SoundFlagsFound
 $A8C0 c PlaySound ; Play the 5-byte effect record at HL: kind 0 PlayTone, 1 PlaySweep, else PlayNoise
 > Called directly by the main code (`$85B5`, `$85E7`, `$865A`, `$8683`, `$869D`, `$86C4`, `$87E6`, `$8850`, `$8899`, `$889F`, ChargeLaser `$A60F`, EndingScreen `$A94C`) and from PlaySoundFlags.
 > Evidence: 71 398 runs.
-> Witness: L1 88106 (c1, c1g, cheat, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+> Witness: L1 88910 (c1, c1g, cheat, controls, corner, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 
 @module ending ; The ending after level 60
 $A8CE c EndingScreen ; The ending: CONGRATULATIONS ..., the plug and the kettle joined by the cable, the tea, PRESS ANY KEY
@@ -1575,6 +1618,7 @@ $A97E EndingKeyLoop
 $A984 t EndingText ; The ending's text records for $8E3A: attribute | $80, column, row, text; $FF
 > Attributes after the printer clears bit 7. Rows 12-14: spaces that only colour the picture's place (7 for the plug and kettle, 3 magenta for the cable). Rows 17, 18 and 23 are printed in attribute 0 (black on black) and shown later by EndingScreen.
 > Evidence: read once (`rzx-344752`).
+@res texts/ending.bin
 $A984 ; (8,2) $43: CONGRATULATIONS
 $A996 ; (9,5) $06: YOU ARE TRULY
 $A9A6 ; (15,6) $06: A
@@ -1591,12 +1635,15 @@ $AA6E ; (5,23) $00: ,,, PRESS ANY KEY ,,,
 $AA86 ; the end
 $AA87 b EndingPlug 2 ; The mains plug with its cable end: 16 x 16 pixels, 2 bytes a row
 > Drawn by EndingScreen at `$48A4` (8 rows) and `$48C4` (8 rows): row 13-14, column 4.
+@res graphics/ending-plug.bin
 $AAA7 b EndingKettle 3 ; The kettle: 24 x 20 pixels, 3 bytes a row
 > Drawn by EndingScreen at `$4C99` (4 rows, row 12 lines 4-7), `$48B9` and `$48D9` (8 rows each): columns 25-27.
+@res graphics/ending-kettle.bin
 
 @module elements
 $AAE3 b GremlinFrames 2 ; The gremlin: four frames of 16 x 16 pixels (2 bytes a row), a dithered blob that wobbles
 > DrawGremlin ORs frame GremlinPhase / 32 (`$AAE3` + GremlinPhase) into the pixel buffer. Evidence: read in 54 RZX segments.
+@res graphics/gremlin.bin
 $AAE3 ; frame 0
 $AB03 GremlinFrame1 ; frame 1
 $AB23 GremlinFrame2 ; frame 2
@@ -1622,11 +1669,12 @@ $AB95 b GremlinCount ; The level's number of gremlins, 0-8: the second byte of i
 $AB96 b GremlinPhase ; The animation frame x 32: + $20 each pass (0, $20, $40, $60); bit 5 clear: the delays count
 $AB97 b GremlinSteps 2 ; The four moves (dX, dY): right, down, left, up
 > GremlinMove picks one at random (`$8E15` L AND 3).
+@res tables/gremlin-steps.bin
 $AB9F c UpdateGremlins ; Each pass: count the waiting gremlins down, make them appear, walk or turn the others, draw them
 > Called by the main loop (`$85A8`) when the laser is charged. GremlinPhase + `$20` (the next frame, `RES 7`). For each of GremlinCount records (IX = Gremlins, 6 bytes each): delay `$FF`: skip; delay not 0: on passes with GremlinPhase bit 5 clear count it down, at 0 GremlinAppear; delay 0: turns left: GremlinTurnMirror, else GremlinMove, then DrawGremlin.
 > So the first gremlin appears 2 x 65 passes after the charge (`rzx-011752`, level 3: the charge ends at frame 382, the first GremlinAppear at 850), the next ones 20 passes apart.
 > Evidence: 87 502 runs; GremlinAppear in 54 RZX segments.
-> Witness: L1 106709 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston, menu, mine, overload, L x20, rzx x59).
+> Witness: L1 112691 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $ABB3 GremlinLoop
 $ABBE ; waiting: count down on every other pass
 $ABD3 GremlinActive ; turns left: turn the mirror, else walk
@@ -1636,7 +1684,7 @@ $ABE4 GremlinNext
 $ABED c GremlinAppear ; A random empty cell in columns 3-10, rows 0-7: the gremlin is there; BEWARE OF THE GREMLINS
 > X = 2 x ((L AND 7) + 3), Y = 2 x (H AND 7) from `$8E15`; the cell `$FD12 + 17 x (row + 1) + column`. Not empty: delay = 1 (another try on the next counted pass). Empty: GremlinsMessage (MessageNumber 4) unless a more urgent one is shown, and DrawGremlin.
 > Evidence: 4910 runs (54 RZX segments); the message 253 times.
-> Witness: L1 5139 (hof, L x18, rzx x54).
+> Witness: L1 5150 (hof, nameedit, L x18, rzx x54).
 $AC02 ; the cell's address: $FD12 + 17 x (row + 1) + column
 $AC05 GremlinCellRowLoop
 $AC11 ; taken: try again next time
@@ -1644,12 +1692,12 @@ $AC17 GremlinWarn
 $AC2D c GremlinTurnMirror ; One turn of the mirror under the gremlin: +1 or -1 of 16 angles at random
 > Turns - 1; the cell at +4/+5 gets (code AND `$0F`) + 1 (one way) or (code - 2 AND `$0F`) + 1 (the other), by bit 0 of `$8E15`'s L. The beam and the redraw see the new angle on the next pass.
 > Evidence: 11 188 runs (52 RZX segments).
-> Witness: L1 12407 (hof, L x15, rzx x52).
+> Witness: L1 12712 (hof, nameedit, L x15, rzx x52).
 $AC45 GremlinTurnBack
 $AC4D c GremlinMove ; A step in a random direction, inside the play area, onto a free cell or between cells
 > New X = X + dX below 29, new Y = Y + dY below 17 (GremlinSteps). On a cell (both even): the cell's address to +4/+5; an empty cell, a cell `$40` or a mine `$41`: go; a mirror (`$01-$10`): go and stand, turns = `$8E33` AND 7; anything else: no step. Between cells: +5 = 0 and the four characters under the new place (CharMap `$E000` + 32 x (Y + 1) + X + 1) must each be below `$31` or `$74-$7B`, else no step.
 > Evidence: 97 827 runs (54 RZX segments).
-> Witness: L1 112465 (hof, L x18, rzx x54).
+> Witness: L1 121430 (hof, nameedit, L x18, rzx x54).
 $AC66 ; the new X
 $AC6B ; the new Y
 $AC75 ; both even: on a cell
@@ -1664,7 +1712,7 @@ $ACF2 GremlinCommit ; the new place
 $ACFF c DrawGremlin ; Mark the gremlin's 2 x 2 characters for redraw and OR its frame into the pixel buffer
 > DrawMarks `$E300` + 32 x (Y + 1) + X + 1 (and the three next to it) = 2; the frame (`$AAE3` + GremlinPhase) ORed into PixelBuffer `$E900` + 256 x (Y + 1) + X + 1, 16 rows of 2 bytes. The +1 is the play area's border character.
 > Evidence: 109 267 runs.
-> Witness: L1 125184 (hof, L x18, rzx x54).
+> Witness: L1 134460 (hof, nameedit, L x18, rzx x54).
 $AD22 ; the frame
 $AD36 DrawGremlinLoop
 $AD46 s UnusedAD46 ; 51 bytes of 0 that no recording reads or writes
@@ -1675,14 +1723,14 @@ $AD79 c TitleTune ; The title tune with the interrupt off: 176 notes from TitleT
 > `DI`; IX = TitleTuneData, B = `$B0` notes; each note: H, L, D the three voices' periods, BC = `$1770` (6000) loops of PlayNote. After each note the keyboard (all half rows): a key ends it with `EI`. After the last note it starts again.
 > Called by TitleScreen `$A754`, the pause `$97AE` (the "pause's tune"), the ending `$88AA`. One note takes 677 051-733 334 T (9.7-10.5 frames), the tune 35.4 s (SkoolKit's simulator, work/ann/03-irq/simtime.py).
 > Evidence: 12 runs (`c1g`, `controls`, `gameover`, `kempston`, `menu`, `mine`, `overload`, `rzx-344752`).
-> Witness: L1 16 (c1, c1g, controls, ending, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 17 (c1, c1g, controls, ending, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, rzx344752).
 $AD7A TitleTuneRestart
 $AD80 TitleTuneNoteLoop
 $ADA5 TitleTuneEnd
 $ADA7 c PlayNote ; The inner loop of a note: three counters; each that reaches 0 sends a short pulse and reloads
 > H, L, D count down once a loop; at 0 the speaker goes off (`OUT` 0) for C = 15 `DJNZ` loops and back on (`$10`) for 16 - C = 1, then the counter is reloaded from the note (IX+0, +1, +2). So each voice is a train of short pulses at 3.5 MHz / (about 108 T x period): `$42` about 490 Hz, `$84` about 245 Hz. BC on the stack counts the note's loops (`ADE8`); `NOP NOP` pad the loop.
 > Evidence: 6 919 984 runs.
-> Witness: L1 10118160 (c1, c1g, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, overload, rzx344752).
+> Witness: L1 10535890 (c1, c1g, controls, ending, energy, energy-out, gameover, hof, kempston, menu, mine, nameedit, overload, practice, rzx344752).
 $ADB3 NoteVoice1Off
 $ADBB NoteVoice1On
 $ADC0 NoteVoice2
@@ -1694,12 +1742,13 @@ $ADE3 NoteVoice3On
 $ADE8 NoteLoopEnd ; the note's loop count (BC on the stack)
 $ADF0 b TitleTuneData 3 ; The title tune: 176 notes of three periods (voice 1, 2, 3), up to $AFFF
 > 528 bytes, `$ADF0-$AFFF`; 54 different periods from `$2B` to `$E2`. Read by TitleTune. Evidence: read in `c1g`, `controls`, `gameover`, `kempston`, `menu`, `mine`, `overload`, `rzx-344752`.
+@res tables/title-tune.bin
 
 @module levels ; The levels: the data and the builder
 $B000 b LevelData 15 ; The 64 level slots: 135 cell codes each (9 rows of 15), slot = Level, at $B000 + $87 x slot
 > BuildLevel `$891A` (`$891E`: `LD HL,$B000`, then `$87` added Level times) copies a slot's 9 rows of 15 into the grid `$FD23` (17 bytes a row: two guards). Slots 0-59 are levels 1-60, slots 60-62 the practice levels P1-P3, slot 63 is never set up.
 > A cell code: `$00` empty; `$01-$10` a mirror at 16 angles; `$11-$18` a cyan polariser and `$19-$20` a yellow one at 8 angles; `$21-$2F` an absorbing and `$30-$3E` a reflecting wall, by the quarters it fills; `$40` a cell to burn; `$41` a mine; `$42` a prism; `$47-$4A` the laser facing east, south, west, north; `$4B-$4E` the receiver open to the east, south, west, north; `$50-$57` the fibre-optic ends, pairs `$50/$51`, `$52/$53`, `$54/$55`, `$56/$57`. Bit 7 set on a mirror or a polariser (`$81-$A0`): it turns by itself, one step a pass (RenderGrid `$8960`). Each level holds one laser and one receiver.
-> Slot 63 is level 23 with five mirrors at other angles (rows 0, 4, 8): a draft or a copy left over. Slots 60-63 (`$CFA4-$D1BF`) were read by no recording (no practice game was played). Editable form: levels/levels.txt.
+> Slot 63 is level 23 with five mirrors at other angles (rows 0, 4, 8): a draft or a copy left over. Slot 60 (P1) is read by `practice` (`work/docs/dfA/rec/practice`); slots 61-63 by no recording. Editable form: levels/levels.txt.
 $B000 ; slot 0: level 1
 $B087 ; slot 1: level 2
 $B10E ; slot 2: level 3

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The game's other graphics from the entry image (tools/image.py), drawn as they are stored:
 
-- the text font: characters 32-118 at `$D100 + 8 x code` (the printer `$8E3A`; the draft map of `c1g`);
+- the text font: characters 32-118 at `$D200 + 8 x (code - 32)` (the same bytes as `$D100 + 8 x code`) (the printer `$8E3A`; the draft map of `c1g`);
 - the 16 x 16 cursor at `$9A37` (32 bytes, two bytes a row; drawn by `$9A11`);
 - the LEVEL digits at `$88B0` (8 bytes a digit, a byte a pixel row; `$843C` copies them to the LEVEL field).
 
@@ -34,10 +34,10 @@ def main():
     sheet = Image.new('RGB', (900, 225), (40, 40, 40))
     d = ImageDraw.Draw(sheet)
     px = sheet.load()
-    d.text((8, 4), 'font $D100 + 8 x code, codes 32-118 (printer $8E3A)', fill=W)
+    d.text((8, 4), 'font $D200 + 8 x (code - 32), codes 32-118 (printer $8E3A)', fill=W)
     for i, code in enumerate(range(32, 119)):
         x0, y0 = 8 + (i % 29) * 30, 22 + (i // 29) * 34
-        c = img[0xD100 + 8 * code:0xD108 + 8 * code]
+        c = img[0xD200 + 8 * (code - 32):0xD208 + 8 * (code - 32)]
         bits(px, x0, y0, [[b] for b in c], 1, s)
     d.text((8, 132), 'cursor $9A37 (16 x 16, $9A11)', fill=W)
     cur = img[0x9A37:0x9A57]

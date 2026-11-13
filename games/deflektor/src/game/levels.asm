@@ -47,8 +47,8 @@ PixelPointer:
 ; Called by SetUpLevel (`$8509`) only. The tool `tools/level_maps.py` runs it
 ; in SkoolKit's simulator for every slot (docs/img/maps).
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BuildLevel:
   LD A,(Level)
   LD B,A
@@ -105,8 +105,9 @@ BuildLevelRowLoop:
 ; pass (RenderGrid `$8960`). Each level holds one laser and one receiver.
 ;
 ; Slot 63 is level 23 with five mirrors at other angles (rows 0, 4, 8): a draft
-; or a copy left over. Slots 60-63 (`$CFA4-$D1BF`) were read by no recording
-; (no practice game was played). Editable form: levels/levels.txt.
+; or a copy left over. Slot 60 (P1) is read by `practice`
+; (`work/docs/dfA/rec/practice`); slots 61-63 by no recording. Editable form:
+; levels/levels.txt.
 LevelData:
   INCBIN "res/levels/levels.bin",$0000,8640
 

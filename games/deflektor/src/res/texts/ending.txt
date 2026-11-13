@@ -1,0 +1,17 @@
+# EndingText $A984: the ending's text records for PrintFull $8E3A.
+# "..." a printable run (3 or more characters $20-$7E), two hex digits any other byte
+# (the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a
+# line's start is the address of its first byte; keep the lengths, the loop words point
+# into the text.
+$A984: C3 08 02 "CONGRATULATIONS"
+$A996: 86 09 05 "YOU ARE TRULY"
+$A9A6: 86 0F 06 41 86 08 07 "MASTER DEFLEKTOR"
+$A9BD: 87 02 0A "THE CIRCUIT IS NOW COMPLETE"
+$A9DB: 87 19 0C "   " 87 04 0D "                        "
+$A9FC: 87 04 0E "                        "
+$AA17: 83 06 0D "                   "
+$AA2D: 83 06 0E "                   "
+$AA43: 80 05 11 "THE TEA WILL BE READY"
+$AA5B: 80 08 12 "IN FIVE MINUTES!"
+$AA6E: 80 05 17 ",,, PRESS ANY KEY ,,,"
+$AA86: FF

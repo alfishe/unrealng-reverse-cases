@@ -524,7 +524,21 @@ document are TraceBeam's own answers, not a re-implementation.
 - The 150-step stop of BeamLengthCheck: the recordings reach 40 steps; how often a trace ran on to 150 was not
   counted.
 - FibreNoPartner `$9059`: no level lacks a partner.
-- InCornerTable `$8100` (a diagonal beam bouncing in the incoming pass, `$93F2`): no recording reads it.
+- InCornerTable `$8100` (a diagonal beam bouncing in the incoming pass, ReflectInCorner `$93F2`): no play reads it.
+  The outgoing pass of each vertex already tests the character the next vertex's incoming pass meets, so only the
+  trace's first vertex can reach `$93F2`, and that vertex is the laser's front, on an axis. A search in SkoolKit's
+  simulator over level 1 (`work/docs/integrate/corner_search.py`, `corner_level1.py`: mirrors turning the beam onto
+  a diagonal with a reflecting wall in its way, and every start vertex) found hits only at the first vertex. The clone
+  `corner` (`work/docs/integrate/rec/corner`: `game0.szx` with the beam's start `$8376-$8378` POKEd to x 10, y 16,
+  direction 10) shows it: 342 passes run `$93F2`, the wall beside the laser is the one wall found, and the beam is
+  turned a quarter, to direction 14.
+
+![A diagonal beam turned in the incoming pass](img/logic/reflect-in-corner.png)
+
+*`corner` at frame 750 (`python3 tools/scr_png.py work/docs/integrate/rec/corner/screens/000750.scr
+docs/img/logic/reflect-in-corner.png`). How to read it: level 1 on the clone; the beam starts at the reflecting wall
+right of the laser. The point: the beam set off north-west leaves north-east: InCornerTable's "one wall" answer, a
+quarter turn.*
 - The codes `$3F` and `$43-$46` (a cell and lasers no level holds): the trace treats them as a cell and as lasers.
 - A gremlin killed while standing on a mirror it is turning: the kill clears +1, so the turn stops (no recording
   shows it).

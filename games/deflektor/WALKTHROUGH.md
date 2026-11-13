@@ -87,12 +87,12 @@ second stage as loaded (`ldr2.bin`). The game itself was read from memory, not f
 `work/stage1/images/entry.cpu.bin` (`tools/ttd_dump.py`, `c1` frame 15 752 T 33 930) disassembled with z80dasm
 (`work/stage1/dis/e4.txt`, `$8000-$AFFF`).
 
-The level format was found from the code ([doc 2, 2.1](docs/02-architecture.md#21-the-memory-map)): `$891A` takes
+The level format was found from the code ([doc 2, 2.7](docs/02-architecture.md#27-the-levels-in-memory)): `$891A` takes
 135 bytes from `$B000 + $87 x $81FF` into the grid `$FD23`, `$8960` and `$8A09` draw it. `tools/level_maps.py` runs
 `$891A` in SkoolKit's simulator for each of the 61 slots and draws the buffers it fills: the
 [first map of the levels](docs/img/maps/all.png) (`docs/img/maps/level-NN.png`, `levels.json` with each level's
 address and bytes). `tools/tile_sheet.py` draws every cell code from the table `$8200` and the characters
-`$D700` / `$DF00` ([the tile sheet](docs/img/sprites/tiles.png)); `tools/gfx_sheet.py` the font at `$D100`, the
+`$D700` / `$DF00` ([the tile sheet](docs/img/sprites/tiles.png)); `tools/gfx_sheet.py` the font at `$D200` (code 32 first), the
 cursor at `$9A37` and the LEVEL digits at `$88B0` ([the font sheet](docs/img/sprites/font.png)).
 
 ## 3. The stages and the packers
@@ -136,14 +136,15 @@ THE TEA WILL BE READY IN FIVE MINUTES!") and a name for the hall of fame. The op
 
 ### 6.0 The recordings
 
-All on unreal-ng's 48K, muted, port bases 37480 and 37485; each keeps its `session.ttd` in its folder. A snapshot
-start is a state saved by `work/stage1/drive.py` or `tools/rzx_dump.py`; the POKEs are said where used.
+All on unreal-ng's 48K, muted, port bases 37480 and 37485; each keeps its `session.ttd` in its folder (`c1g` is a
+window of `c1`'s). A snapshot start is a state saved by `work/stage1/drive.py`, `tools/rzx_dump.py`, `tools/lab.py` or
+the stage 2 level bot; the POKEs are said where used. Every command runs from the case folder after `. work/env.sh`.
 
 | Name | Folder | Start | Inputs | Frames | What it reached |
 | --- | --- | --- | --- | --- | --- |
 | `c1` | `work/stage1/c1` | power-on, `--record-load`, the 10 Mega Games tape at ROM timing ([1](#1-one-recording-from-power-on)) | `tests/inputs/c1.txt` | 20 560 | the load and every loader stage, the title, the options panel (3, 4, 2, 1, 7), level 1 with the keyboard: cursor moves, mirrors turned |
 | `c1g` | `work/stage1/c1g` | a build of `c1` from frame 15 752 T 33 930 (the entry `$8382`) | as `c1` | 4808 | the game window of `c1` |
-| `menu` | `work/stage1/menu` | `work/stage1/probe/menu.szx` (the title after the same ROM-timing load, frame 17 000) | `tests/inputs/menu.txt` | 9000 | the title and its tune for 3000 frames, the options, 5 DEMO (the demo shows levels 14, 23, 37, 55, 59: [screen 4500](docs/img/play/demo.png)), SPACE ends it, 6 PRACTICE ([screen 7750](docs/img/play/practice.png)), U + G aborts, the title |
+| `menu` | `work/stage1/menu` | `work/stage1/probe/menu.szx` (the title after the same ROM-timing load, frame 17 000) | `tests/inputs/menu.txt` | 9000 | the title and its tune for 3000 frames, the options, 5 DEMO (the demo shows levels 14, 23, 37, 55, 59: [screen 4500](docs/img/play/demo.png)), SPACE ends it, 6 PRACTICE pressed, but it did not take: [screen 7750](docs/img/play/practice.png) shows LEVEL 01, U + G aborts, the title |
 | `controls` | `work/stage1/controls` | `menu.szx` | `tests/inputs/controls.txt` | 7000 | 1 KEYBOARD (`$987B` 317 times), P pauses ("INTERMISSION ... PRESS ENTER FOR MORE ACTION", `$973F`), the pause's tune, ENTER goes on (`$97C0`), U + G "GAME ABORTED" ([screen 2000](docs/img/play/game-aborted.png)); 4 PROTEK-AGF (`$98E7` 276); 2 SINCLAIR (`$98AD`); the 3 KEMPSTON pick did not take (pressed while the title was still up) |
 | `kempston` | `work/stage1/kempston` | `menu.szx` | `tests/inputs/kempston.txt` | 2000 | 3 KEMPSTON: the joystick read at `$98D2` 301 times, the cursor and a mirror turned |
 | `energy` | `work/stage1/energy` | `menu.szx` | `tests/inputs/energy.txt` | 18 500 | level 1 with no key (Sinclair, the default): messages `$A104` 01 CHARGING LASER (frame 500), `$0A` ENERGY LOW (5000), `$0C` CRITICAL (5750), `$17` ENERGY DRAINED with `$8ED3` = `$FF` and lives 3 to 2 (6450), again at 12 550 (lives 1); `tools/ttd_watch.py` every 50 frames |
@@ -151,9 +152,27 @@ start is a state saved by `work/stage1/drive.py` or `tools/rzx_dump.py`; the POK
 | `overload` | `work/stage1/overload` | `work/stage1/probe/overload.szx`: as `mine.szx` with `$8ED5` = `$FF` (the beam back in the laser) instead of `$8ED4` | `tests/inputs/overload.txt` | 1500 | "OVERLOAD" (`$A6BB` three times, `$A6A6` 129), three lives lost, game over |
 | `gameover` | `work/stage1/gameover` | `work/stage1/probe/gameover.szx`: the POKEs of `mine.szx` and lives `$837D` = 1 | `tests/inputs/gameover.txt` | 4000 | the last life lost (`$86A6` once), game over, the title |
 | `rzx-NNNNNN` (60) | `work/stage1/rzx/rNNNNNN` | `work/stage1/rzx/snap-NNNNNN.z80`, the RZX archive's run at frame NNNNNN, the frame where the level `$81FF` changed (`tools/rzx_dump.py --snap-on-change 81FF`; someone else's play) | `tests/inputs/rzx-NNNNNN.txt` (`tools/rzx_script.py`: the RZX's port reads as held keys, to 100 frames after the next level change) | 1252 to 9454, 341 171 in all | every level from 2 to 60 and the ending; 18 levels completed in our replay, the others drift from the RZX's course (table in 6.1) |
+| `energy-out` | `work/stage2/rec/energy-out` | `menu.szx` | `tests/inputs/energy-out.txt` | 21 000 | SPACE, 7, then no key: ENERGY DRAINED three times (`$A66F` 3 runs, LoseLife 3), GAME OVER from the energy alone, HallOfFame `$9BC0` with score 0 (place 7, no entry), the title |
+| `L01` ... `L59` (20) | `work/stage2/rec/LNN` | the bot's level-start state `LNN.szx` (`work/stage2/levels`, `lv`, `lv2`) | the bot's own keys `LNN.txt` beside it | 1542 to 3171 | levels 1, 3, 5, 6, 9, 10, 12, 15, 20, 22, 25, 30, 31, 35, 39, 42, 45, 51, 55, 59 completed by the case's bot (LevelComplete `$87D4` ran; `work/stage2/check_recs.py`). The bot's clones skipped other levels by a POKE of LevelDone `$8ED2` (said in each script's first line). Levels 19, 24, 34, 40, 49 and 54 the bot finished live, but their replays (`work/stage2/rec/L19` ...) do not reach the receiver: no witness |
+| `hof` | `work/stage2/rec/hof` | `work/stage2/hof/start.szx` = the bot's `lv/L06.szx` (a clone: levels 2 and 4 were skipped by the LevelDone POKE), score 019980 | `tests/inputs/hof.txt` | 17 750 | no key to GAME OVER, then the name AGENT and ENTER: RankScore `$9E1F` place 6, AGENT 021940 in the hall of fame, CopyFullScreen `$9DD6` ([`hof` 17160](docs/img/play/hof-017160-name.png)) |
+| `ending` | `work/stage2/rec/ending` | `work/stage2/lv2/L61.szx`: the state at level 60's CONTACT! on the bot's clone (level 60 finished by the LevelDone POKE), score 238 670 | `work/stage2/ending/inputs.txt` (no key) | 3000 | TheEnd `$8885`, EndingScreen `$A8CE`: the plug, the kettle, THE TEA WILL BE READY IN FIVE MINUTES!, PRESS ANY KEY held to the end ([`ending` 1000](docs/img/play/ending-001000.png)) |
+| `cheat` | `work/stage2/rec/cheat` | `work/stage2/cheat/cheat.szx`: `game0.szx` with the POKE `$982F-$9831` = 0 (the jump over the dormant W / S cheat removed; `work/stage2/cheat/make.py`) | `tests/inputs/cheat.txt` | 1900 | W, W, S: Level `$81FF` 0, 1, 2, 1, each a restart (case.json witness_builds, not read_builds) |
+| `practice` | `work/docs/dfA/rec/practice` | `menu.szx` | `work/docs/dfA/practice.txt` | 2500 | SPACE, 6 PRACTICE, then P1 with the Sinclair keys: NewGame's practice branch `$8424` and SetUpLevel's `$84DA` once, the practice line `$8A6E` 615 times, slot 60 read ([`practice` 1750](docs/img/play/practice-001750.png)) |
+| `nameedit` | `work/docs/integrate/rec/nameedit` | `work/stage2/hof/start.szx` (the clone `hof` starts from) | `tests/inputs/nameedit.txt` | 17 800 | as `hof` to the name entry, then A, G, DELETE (0), SPACE, E, N, T, X, ENTER: DELETE `$9D15` and SPACE `$9D5A` once each, EraseNameCursor `$9DF5` twice, the full name refusing X (`$9D7E`); the hall of fame shows A ENT 021940 ([`nameedit` 17250](docs/img/hud/name-entry-edit.png)) |
+| `corner` | `work/docs/integrate/rec/corner` | `work/docs/integrate/corner/corner.szx`: `game0.szx` with the beam's start `$8376-$8378` POKEd to x 10, y 16, direction 10 (`work/docs/integrate/corner/make.py`; a clone) | `tests/inputs/corner.txt` (no key) | 1500 | every pass starts a diagonal beam at the reflecting wall beside the laser: ReflectInCorner `$93F2` and InCornerTable `$8100` 342 times, the beam turned a quarter to direction 14 ([`corner` 750](docs/img/logic/reflect-in-corner.png); case.json witness_builds) |
 
-How they were made: `$RS capture --snapshot ... --model 48K --inputs ... --ranges 4000-FFFF --port-base 37480`
-(`work/stage1/own_capture.sh`, `work/stage1/rzx_capture_all.sh`), each instance stopped after its capture.
+How they were made (from C after `. work/env.sh`; port base 37480 or 37485):
+
+```sh
+python3 $RS capture --work FOLDER --snapshot START --inputs INPUTS --ranges 4000-FFFF --port-base 37480 --model 48K --binary $BIN
+python3 $RS stop --work FOLDER
+python3 $RS open --work work/docs/dfA/NAME --ttd FOLDER/session.ttd   # the writers' reopen for their figures
+```
+
+Stage 1's by `work/stage1/own_capture.sh` and `work/stage1/rzx_capture_all.sh`, the levels by
+`sh work/stage2/capture_levels.sh work/stage2/lv work/stage2/lv2`, `hof` after `python3 work/stage2/hof/make.py`,
+`cheat` after `python3 work/stage2/cheat/make.py`, `corner` after `python3 work/docs/integrate/corner/make.py`; `c1`
+with `--record-load` from the tape. The writers reopened `work/docs/dfA/L01`, `L03`, `c1`, `hof`, ...
 
 The RZX segments start exactly on the RZX's state but drift: in our replay 18 of the 59 levels are completed (the
 receiver reached, `$8FA9` in the L1), 26 lose lives (`$86A6`, 36 in all) and 15 are still in play at the end, while
@@ -163,11 +182,14 @@ unreal-ng; stage 2 is to find the source (`LD A,R` at `$FD12` seeds R before the
 reached at its start and played for its length; their completion is the RZX's own (someone else's run, said so):
 `$81FF` takes every value from 0 to 60 in the RZX (`work/stage1/rzx/watch.json`).
 
-Not reached by our recordings: a level completed by our own play (the RZX completes all 60, our replay 18); level 1
-completed (the RZX's first segment, from its title, was not replayed: the title drifted at once); game over by energy
-alone (`energy` stops after two of three lives, 6100 frames a life); the gremlins' contact ("CONTACT!", "BEWARE OF THE
-GREMLINS!") checked by an address; a hall-of-fame entry from our own score (the RZX's last segment shows it: name R,
-274 920); the dormant W / S level cheat at `$9832` (no jump reaches it).
+What stage 1 did not reach, stage 2 and the documents added: levels completed by our own play (the bot's 20, with
+level 1 among them), game over by energy alone (`energy-out`), CONTACT! checked by an address (it is the beam in the
+receiver, LevelComplete `$87D4`, message `$18`, not a gremlin's touch: the gremlins only turn mirrors; doc 10), a
+hall-of-fame entry from our own score (`hof`, `nameedit`), the W / S cheat on a clone (`cheat`), practice
+(`practice`) and the diagonal bounce in the incoming pass on a clone (`corner`). Still known only from the code (each
+document's last section): practice levels P2, P3 and slot 63, the Y + T level drop `$983E`, the 150-step stop of the
+trace, FibreNoPartner `$9059`, the cell codes no level holds, the gremlin delay `$FF`, a gremlin killed by our own
+fire (only in RZX segments) and on a mirror it is turning, beam glyphs 28 and 36.
 
 ### 6.1 Screens and levels
 
@@ -178,6 +200,14 @@ Every screen as captured (`tools/scr_png.py` from a recording's `screens/NNNNNN.
 - the demo: [`menu` screen 4500](docs/img/play/demo.png); practice: [`menu` screen 7750](docs/img/play/practice.png);
 - a life lost (the red screen): [`mine` screen 500](docs/img/play/life-lost.png); GAME ABORTED: [`controls` screen 2000](docs/img/play/game-aborted.png);
 - the ending and the hall of fame with the RZX player's entry: [`rzx-344752` screen 750](docs/img/play/ending.png), [screen 1250](docs/img/play/hall-of-fame.png).
+- level 1 played by the bot (`L01`): [the charge, 100](docs/img/play/l01-000100-charging.png), [OVERLOAD, 262](docs/img/play/l01-000262-overload.png), [a cell burns, 395](docs/img/play/l01-000395-burn.png), [mid level, 1000](docs/img/play/l01-001000-play.png), [MINE ALERT, 1346](docs/img/play/l01-001346-mine.png), [the door, 1425](docs/img/play/l01-001425-door.png), [CONTACT!, 1560](docs/img/play/l01-001560-contact.png), [the bonus, 1610](docs/img/play/l01-001610-bonus.png);
+- a gremlin (`L03`): [1180](docs/img/play/l03-001180-gremlin.png), [1300](docs/img/play/l03-001300-gremlin-mirror.png);
+- the energy (`energy`): [ENERGY LOW, 5000](docs/img/play/energy-005000-low.png), [CRITICAL, 5760](docs/img/play/energy-005760-critical.png), [DRAINED, 6460](docs/img/play/energy-006460-drained.png);
+- the pause: [`controls` 1500](docs/img/play/controls-001500-intermission.png); a life lost and game over: [`gameover` 100](docs/img/play/gameover-000100.png), [150](docs/img/play/gameover-000150.png);
+- practice P1: [`practice` 1750](docs/img/play/practice-001750.png);
+- the name entry: [`hof` 17160](docs/img/play/hof-017160-name.png) (AGENT), [`nameedit` 17250](docs/img/hud/name-entry-edit.png) (A ENT, after DELETE and SPACE);
+- the ending on our own clone: [`ending` 1000](docs/img/play/ending-001000.png);
+- the diagonal bounce on the clone: [`corner` 750](docs/img/logic/reflect-in-corner.png).
 
 Every level in play (level 1 from `c1` screen 4750, the others from their RZX segment's screen 1500, or 750 where the
 segment is shorter), with its address and how its segment ended:
@@ -246,6 +276,34 @@ segment is shorter), with its address and how its segment ended:
 | 60 | `$CF1D` | `rzx-340213` | 4639 | completed (`$8FA9`) | [frame 1500](docs/img/play/level-60.png) |
 | ending | - | `rzx-344752` | 1252 | the ending (`$8885`), the name entry, the hall of fame | [ending, frame 750](docs/img/play/ending.png), [hall of fame, frame 1250](docs/img/play/hall-of-fame.png) |
 
-The levels drawn from the data, without the beam: [doc 2, 2.3](docs/02-architecture.md#23-the-levels).
+The levels drawn from the data, without the beam: the contact sheets of [doc 1, 1.6](docs/01-game-design.md#16-the-60-levels).
+
+### 6.2 The animations
+
+| File | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| [loading-screen.gif](docs/img/load/loading-screen.gif) | [doc 3](docs/03-build-and-load.md) | c1 | 1000-15 700, every 100th |
+| [decipher.gif](docs/img/load/decipher.gif) | doc 3 | c1 | 15 638-15 756, every 5th |
+| [MainLoop.gif](docs/img/routines/MainLoop.gif) | [doc 4](docs/04-game-loop.md) | L01 | 1003-1008 |
+| [TraceBeam.gif](docs/img/routines/TraceBeam.gif) | doc 4 | L01 | 1000-1003 |
+| [TurnMirror.gif](docs/img/routines/TurnMirror.gif) | [doc 5](docs/05-controls.md) | L01 | 1494-1514 |
+| [l01-turn.gif](docs/img/play/l01-turn.gif) | doc 5 | L01 | 1490-1522 |
+| [BuildLevel.gif](docs/img/routines/BuildLevel.gif) | [doc 6](docs/06-rendering.md) | L01 | 24-30 |
+| [CopyPlayArea.gif](docs/img/routines/CopyPlayArea.gif) | doc 6 | L01 | 1003-1004 |
+| [TraceBeam-draw.gif](docs/img/routines/TraceBeam-draw.gif) | doc 6 | L01 | 245-249 |
+| [WipeInPlayArea.gif](docs/img/routines/WipeInPlayArea.gif) | doc 6 | L01 | 26-64 |
+| [BuildLevel-grid.gif](docs/img/objects/BuildLevel-grid.gif) | [doc 7](docs/07-objects.md) | L01 | 23-24 |
+| [UpdateGremlins.gif](docs/img/objects/UpdateGremlins.gif) | doc 7 | L03 | 1176-1194 |
+| [AddScore.gif](docs/img/hud/AddScore.gif) | [doc 8](docs/08-hud-and-text.md) | L01 | 1598-1614 |
+| [name-entry.gif](docs/img/hud/name-entry.gif) | doc 8 | hof | 16 890-17 200, every 5th |
+| [PlaySweep-port.gif](docs/img/routines/PlaySweep-port.gif) | [doc 9](docs/09-sound.md) | none (SkoolKit's simulator, `tools/sound_render.py anim`) | GremlinSound's 150 509 T |
+| [level-01-solve.gif](docs/img/play/level-01-solve.gif) | [doc 1](docs/01-game-design.md) | L01 | 200-1620, every 10th |
+| [trace-overload.gif](docs/img/logic/trace-overload.gif) | [doc 10](docs/10-gameplay-logic.md) | L01 (a dump replayed by `tools/fig_trace.py`) | 256 |
+| [trace-burn.gif](docs/img/logic/trace-burn.gif) | doc 10 | L01 (a dump replayed) | 377 |
+| [trace-contact.gif](docs/img/logic/trace-contact.gif) | doc 10 | L01 (a dump replayed) | 1514 |
+| [PassEnd-burn.gif](docs/img/logic/PassEnd-burn.gif) | doc 10 | L01 | 377-411 |
+| [UpdateOverload.gif](docs/img/logic/UpdateOverload.gif) | doc 10 | L01 | 1325-1352 |
+| [gremlins.gif](docs/img/logic/gremlins.gif) | doc 10 | L03 | 1150-1330, every 3rd |
+| [level-complete.gif](docs/img/logic/level-complete.gif) | doc 10 | L01 | 1508-1645, every 3rd |
 
 ## 7. Review

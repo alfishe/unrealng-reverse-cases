@@ -14,14 +14,17 @@ The formats (src/res/README.md and each folder's README.md list the files, addre
   `screen` (the Spectrum's 6912-byte screen), `linear` (pixel rows of 32 bytes top to bottom, then the attributes:
   PanelPicture, as DrawPanel `$A50C` copies it), `chars` (two blocks: 8 bytes a character, and one attribute a
   character; 16 characters a row of the sheet: CellGraphics `$D700` and CellColours `$DF00` in one file).
-- 1-bit glyphs (graphics/font.png, graphics/beam-glyphs.png, leftovers/beam-glyphs-spare.png, loader/glyphs.png):
+- 1-bit glyphs (graphics/font.png, graphics/beam-glyphs.png, graphics/level-digits.png, graphics/name-cursor.png,
+  leftovers/beam-glyphs-spare.png, loader/glyphs.png):
   8 x 8 characters, 8 bytes each, 16 a row; palette 0 paper (black), 1 ink (white), 2 grey (no character there);
   `dk` holds the count and the first character's number.
+- 1-bit bitmaps (graphics/game-over.png, cursor.png, gremlin.png, ending-plug.png, ending-kettle.png): rows of W
+  bytes (W x 8 pixels) top to bottom, frames one under the other; palette 0 paper, 1 ink; `dk` holds W.
 - Levels (levels/levels.txt): the 64 slots of LevelData `$B000`, one `slot N` line and 9 lines of 15 cell tokens each
   (levels/README.md has the legend).
-- Tables (tables/*.csv): `#` lines comments, a header line naming the columns, then one record a line; numbers decimal
+- Tables (tables/*.csv; tables/wipes.csv steps signed, addresses $hex): `#` lines comments, a header line naming the columns, then one record a line; numbers decimal
   or `$hex`; a column whose name starts with `_` is written for the reader and not read back.
-- Hex text (loader/script.txt): `"text"` for printable runs, two hex digits a byte otherwise; `$ADDR:` at a line's start
+- Hex text (loader/script.txt, texts/*.txt): `"text"` for printable runs, two hex digits a byte otherwise; `$ADDR:` at a line's start
   and `#` lines are comments.
 Any other file (leftovers/*.bin) stays its bytes.
 """
@@ -623,6 +626,105 @@ def hextext_in(raw):
     return bytes(out)
 
 
+
+# ---------------------------------------------------------------------------------------------------------------
+# 1-bit bitmaps: rows of W bytes (W x 8 pixels wide), top to bottom; a sheet of frames one under the other
+# ---------------------------------------------------------------------------------------------------------------
+def bitmap_to_png(d, wb):
+    from PIL import Image
+    if len(d) % wb:
+        raise ValueError('%d bytes: no whole rows of %d bytes' % (len(d), wb))
+    h = len(d) // wb
+    img = Image.new('P', (wb * 8, h), 0)
+    img.putpalette(MONO + [0] * (768 - len(MONO)))
+    px = img.load()
+    for y in range(h):
+        for bx in range(wb):
+            b = d[y * wb + bx]
+            for x in range(8):
+                px[bx * 8 + x, y] = (b >> (7 - x)) & 1
+    return save_png(img, {'layout': 'bitmap', 'bytes_a_row': wb})
+
+
+def png_to_bitmap(raw):
+    img, px, meta = open_png(raw)
+    wb = meta['bytes_a_row']
+    out = bytearray()
+    for y in range(img.size[1]):
+        for bx in range(wb):
+            b = 0
+            for x in range(8):
+                v = px[bx * 8 + x, y]
+                if v not in (0, 1):
+                    raise ValueError('pixel %d,%d is %d, neither paper (0) nor ink (1)' % (bx * 8 + x, y, v))
+                b = b << 1 | v
+            out.append(b)
+    return bytes(out)
+
+
+def bitmap(wb):
+    return ('.png', lambda d: bitmap_to_png(d, wb), png_to_bitmap)
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Byte rows: a CSV of fixed-size records, one byte a column (decimal, or signed where the column name ends in -s)
+# ---------------------------------------------------------------------------------------------------------------
+def rows_csv(comments, columns, label=None):
+    per = len(columns)
+
+    def out(d):
+        rows = []
+        for i in range((len(d) + per - 1) // per):
+            r = [sgn(b) if c.endswith('-s') else hx(b) for c, b in zip(columns, d[per * i:per * i + per])]
+            r += [''] * (per - len(r))  # a short last record: its missing columns empty
+            rows.append(([label(i)] if label else []) + r)
+        return csv_out(comments, (['_row'] if label else []) + columns, rows)
+
+    def back(raw):
+        return b''.join(bytes(num(r[c]) & 0xFF for c in columns if r.get(c, '') != '') for r in csv_in(raw))
+    return ('.csv', out, back)
+
+
+def sounds_csv(names, first):
+    def out(d):
+        rows = [[n, d[5 * i]] + [hx(b) for b in d[5 * i + 1:5 * i + 5]] for i, n in enumerate(names)]
+        return csv_out(['PlaySound $A8C0 records from $%04X: 5 bytes each, the kind then four parameters, as in' % first,
+                        'tables/sounds.csv. `_name` is the record\'s label in game.ann; keep the rows in this order.'],
+                       ['_name', 'kind', 'p1', 'p2', 'p3', 'p4'], rows)
+    return ('.csv', out, sounds_in)
+
+
+def text_res(org, what):
+    return ('.txt', hextext_out(org, [what, '"..." a printable run (3 or more characters $20-$7E), two hex digits any other byte',
+                                      '(the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a',
+                                      'line\'s start is the address of its first byte; keep the lengths, the loop words point',
+                                      'into the text.']), hextext_in)
+
+
+def note_name(period):
+    return '%.1f Hz' % (3500000 / (2 * 26 * period)) if period else '-'
+
+
+WIPE_NAMES = ['play top-left', 'play top-right', 'play bottom-left', 'play bottom-right',
+              'screen top-left', 'screen top-right', 'screen bottom-left', 'screen bottom-right']
+WIPE_COLUMNS = ['step_screen', 'step_attrs', 'step_pixels', 'step_colours', 'screen', 'attrs', 'pixels', 'colours']
+
+
+def wipes_out(d):
+    rows = []
+    for i, n in enumerate(WIPE_NAMES):
+        w = [d[16 * i + 2 * k] | d[16 * i + 2 * k + 1] << 8 for k in range(8)]
+        rows.append([n] + [sw(v & 0xFF, v >> 8) for v in w[:4]] + ['$%04X' % v for v in w[4:]])
+    return csv_out(['PlayAreaWipes $8D95 (the play rows) and ScreenWipes $8DD5 (the screen rows): one record of 8',
+                    'words a corner, read by WipeIn $8CAD: the four steps added each round (signed), then the four',
+                    'start addresses (the screen, its attributes, the pixel buffer, the colour buffer).'],
+                   ['_row'] + WIPE_COLUMNS, rows)
+
+
+def wipes_in(raw):
+    return b''.join(word(r[c]) for r in csv_in(raw) for c in WIPE_COLUMNS)
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # The resources: .bin name -> (suffix, bytes -> editable, editable -> bytes); groups: one editable, several .bin
 # ---------------------------------------------------------------------------------------------------------------
@@ -650,6 +752,45 @@ SINGLES = {
         '"..." a printable run (3 or more characters $20-$7E), two hex digits any other byte; the control codes are',
         'not decoded here (loader/README.md). `$ADDR:` at a line\'s start is the address of its first byte.']),
         hextext_in),
+    'tables/wipes.bin': ('.csv', wipes_out, wipes_in),
+    'tables/level-settings.bin': rows_csv(['LevelSettings $8385: two bytes a level slot, read by SetUpLevel $843C ($84CD): the energy',
+                                           'rate (frames per pixel of the energy bar, the operand of CP at $A63B) and the gremlin count',
+                                           '(GremlinCount $AB95). Slots 0-59 are levels 1-60, 60-62 practice P1-P3, 63 never set up; the',
+                                           'last row ($8405-$8406) follows slot 63 and is read by no code.'],
+                                          ['energy_rate', 'gremlins'], lambda i: 'slot %d' % i if i < 64 else 'after slot 63'),
+    'tables/title-tune.bin': rows_csv(['TitleTuneData $ADF0-$AFFF: the title tune, 176 notes of three periods (voices 1, 2, 3), read by',
+                                       'TitleTune $AD79 and PlayNote $ADA7 (three down-counters; each that reaches 0 sends a pulse and',
+                                       'reloads its period). One row a note, in order.'],
+                                      ['voice1', 'voice2', 'voice3'], lambda i: 'note %d' % i),
+    'tables/letter-keys.bin': rows_csv(['LetterKeys $9EBD: the TestKey code of each letter A-Z (8 x (4 - bit) + half-row), read by',
+                                        'ReadLetterKey $9E5A; the last row, $FF, ends the table.'],
+                                       ['key'], lambda i: chr(65 + i) if i < 26 else 'end'),
+    'tables/cursor-steps.bin': rows_csv(['CursorSteps $993E: dx, dy of the cursor for each value 0-15 of the direction bits (bit 0',
+                                         'left, 1 right, 2 down, 3 up), read by MoveCursor $9910.'],
+                                        ['dx-s', 'dy-s'], lambda i: 'bits %d' % i),
+    'tables/gremlin-steps.bin': rows_csv(['GremlinSteps $AB97: the four moves of a gremlin (dX, dY), picked at random by GremlinMove $AC4D.'],
+                                         ['dx-s', 'dy-s'], lambda i: ['right', 'down', 'left', 'up'][i]),
+    'tables/menu-dither.bin': rows_csv(['MenuDither $9F41: the eight pixel rows DrawMenuScreen $9ED8 puts into every character of',
+                                        'attribute 2 (the options screen\'s background).'], ['row'], lambda i: 'line %d' % i),
+    'tables/options-layout.bin': rows_csv(['OptionsLayout $A053: the options screen\'s attributes as 87 runs (count, value) written by',
+                                           'DrawMenuScreen $9ED8 from $E200 on; the runs fill 768 cells (24 rows of 32). The last row is',
+                                           'the end marker $FF alone (its value column empty).'],
+                                          ['count', 'value'], lambda i: 'run %d' % i),
+    'tables/sounds-pass-end.bin': sounds_csv(['ReceiverOpenSound', 'LifeLostSound'], 0x8660),
+    'tables/sound-drained.bin': sounds_csv(['EnergyDrainedSound'], 0x8695),
+    'graphics/game-over.bin': bitmap(12),
+    'graphics/level-digits.bin': glyphs(0),
+    'graphics/cursor.bin': bitmap(2),
+    'graphics/name-cursor.bin': glyphs(0),
+    'graphics/gremlin.bin': bitmap(2),
+    'graphics/ending-plug.bin': bitmap(2),
+    'graphics/ending-kettle.bin': bitmap(3),
+    'texts/practice.bin': text_res(0x8A9D, 'PracticeText $8A9D: the practice line, a print record for PrintPlay $8E47.'),
+    'texts/intermission.bin': text_res(0x972B, 'IntermissionText $972B: the pause\'s banner, 15 characters.'),
+    'texts/options.bin': text_res(0x9F49, 'HallOfFameTitle $9F49 and OptionsText $9F59: text records for PrintFull $8E3A.'),
+    'texts/hall-of-fame.bin': text_res(0x9FEB, 'HallOfFameScores $9FEB and HallOfFameNames $A022: the six records of the hall of fame.'),
+    'texts/messages.bin': text_res(0xA112, 'The COMPUTER line\'s messages DemoMessage $A112 to IntermissionLoop $A2F8: static texts, scrolling texts and their loop words.'),
+    'texts/ending.bin': text_res(0xA984, 'EndingText $A984: the ending\'s text records for PrintFull $8E3A.'),
 }
 
 GROUPS = {  # editable file -> (the .bin names, [bytes] -> editable, editable -> [bytes])
@@ -680,6 +821,29 @@ WHERE = {
     'leftovers/cell-graphics-spare.bin': (0xDDA0, 352),
     'graphics/cell-colours.bin': (0xDF00, 212),
     'leftovers/cell-colours-spare.bin': (0xDFD4, 44),
+    'tables/level-settings.bin': (0x8385, 130),
+    'tables/wipes.bin': (0x8D95, 128),
+    'tables/sounds-pass-end.bin': (0x8660, 10),
+    'tables/sound-drained.bin': (0x8695, 5),
+    'graphics/game-over.bin': (0x8714, 192),
+    'graphics/level-digits.bin': (0x88B0, 88),
+    'texts/practice.bin': (0x8A9D, 36),
+    'texts/intermission.bin': (0x972B, 15),
+    'tables/cursor-steps.bin': (0x993E, 32),
+    'graphics/cursor.bin': (0x9A37, 32),
+    'tables/letter-keys.bin': (0x9EBD, 27),
+    'tables/menu-dither.bin': (0x9F41, 8),
+    'texts/options.bin': (0x9F49, 154),
+    'graphics/name-cursor.bin': (0x9FE3, 8),
+    'texts/hall-of-fame.bin': (0x9FEB, 104),
+    'tables/options-layout.bin': (0xA053, 175),
+    'texts/messages.bin': (0xA112, 488),
+    'texts/ending.bin': (0xA984, 259),
+    'graphics/ending-plug.bin': (0xAA87, 32),
+    'graphics/ending-kettle.bin': (0xAAA7, 60),
+    'graphics/gremlin.bin': (0xAAE3, 128),
+    'tables/gremlin-steps.bin': (0xAB97, 8),
+    'tables/title-tune.bin': (0xADF0, 528),
     'loader/glyphs.bin': 'glyphs-b326.bin',
     'loader/script.bin': 'script-998e.bin',
 }

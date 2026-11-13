@@ -1,0 +1,19 @@
+# The COMPUTER line's messages DemoMessage $A112 to IntermissionLoop $A2F8: static texts, scrolling texts and their loop words.
+# "..." a printable run (3 or more characters $20-$7E), two hex digits any other byte
+# (the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a
+# line's start is the address of its first byte; keep the lengths, the loop words point
+# into the text.
+$A112: FE ",,,, DEMO ,,,," FE
+$A122: "CHARGING LASER" FE " . OVERLOAD . "
+$A13F: FE ". MINE ALERT ." FE
+$A14F: "ENERGY DRAINED" FE "BOOM BOOM BOOM"
+$A16C: FE "   CONTACT!   " FE
+$A17C: " GAME ABORTED " FE " DEMO ABORTED   "
+$A19B: FF 99 A1 ",,,BEWARE OF THE GREMLINS!,,,"
+$A1BB: FF 99 A1 "---WARNING-----ENERGY LOW---"
+$A1DA: FF 99 A1 "---WARNING---ENERGY LEVEL CRITICAL-"
+$A200: FF DD A1 "DEFLEKTOR , WRITTEN BY COSTA PANAYI , WITH HELP FROM THE ALIEN , MUSIC BY BEN AND JOBBEE , @1987 VORTEX SOFTWARE ,,, SELECT OPTION ,,, "
+$A28A: FE FF 03 A2 "HIGH DEFLEKTOR RATING "
+$A2A4: FE ", PLEASE ENTER YOUR NAME , "
+$A2C0: FF 8E A2 ",,, PRESS ENTER FOR MORE ACTION ,,,,,, INTERMISSION "
+$A2F7: FF C3 A2

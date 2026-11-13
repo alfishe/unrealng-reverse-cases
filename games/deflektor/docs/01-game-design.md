@@ -409,7 +409,9 @@ column 3). The point: one step of one mirror moves the end of the beam from a wa
 4. BeamStep sets LevelDone `$8ED2` at `$8FA9`; PassEnd runs LevelComplete: CONTACT (message `$18`) from frame 1520.
 
 Levels completed this way by the bot, each a replayable recording `work/stage2/rec/LNN`: 1, 3, 5, 6, 9, 10, 12, 15,
-20, 22, 25, 30, 31, 35, 39, 42, 45, 51, 55, 59. The other 40 levels were completed by the RZX player (stage 1, 60
+20, 22, 25, 30, 31, 35, 39, 42, 45, 51, 55, 59. Six more (19, 24, 34, 40, 49, 54) the bot finished live, but its
+script does not reach the receiver when it is replayed (gremlin levels: a gremlin turns another mirror in the replay),
+so they are no witness and no document cites them. The other 40 levels were completed by the RZX player (stage 1, 60
 segments, someone else's play); on the bot's clones they were skipped by a POKE of LevelDone `$8ED2`.
 
 ## 1.8 Modes and difficulty

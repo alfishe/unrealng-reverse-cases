@@ -1,0 +1,6 @@
+# GremlinSteps $AB97: the four moves of a gremlin (dX, dY), picked at random by GremlinMove $AC4D.
+_row,dx-s,dy-s
+right,1,0
+down,0,1
+left,-1,0
+up,0,-1

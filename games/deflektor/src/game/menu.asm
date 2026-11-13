@@ -42,8 +42,8 @@ Gap7B00:
 ;
 ; Called by `HallOfFame` `$9BC0` (12 runs over all recordings).
 ;
-; Witness: L1 16 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
-; mine, overload, rzx344752).
+; Witness: L1 18 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
+; mine, nameedit, overload, rzx344752).
 DrawMenuScreen:
   LD DE,CharMap+512
   LD HL,OptionsLayout
@@ -115,16 +115,14 @@ MenuDitherNext:
 ; Eight rows put into every character of attribute 2 by `DrawMenuScreen`
 ; `$9ED8`.
 MenuDither:
-  DEFB $AA,$55,$AA,$55,$AA,$55,$AA,$55
+  INCBIN "res/tables/menu-dither.bin",$0000,8
 
 ; The text record "HALL OF FAME" at column $12, row 6, attribute $3B, $FF ends
 ;
 ; The records `$8E3A` prints: the first byte, bit 7 set, is the attribute +
 ; `$80`, then the column, the row, the characters; `$FF` ends the list.
 HallOfFameTitle:
-  DEFB $BB,$12,$06        ; attribute $3B, column $12, row 6
-  DEFB $48,$41,$4C,$4C,$20,$4F,$46,$20 ; "HALL OF FAME", end
-  DEFB $46,$41,$4D,$45,$FF
+  INCBIN "res/texts/options.bin",$0000,16
 
 ; The logo and the options: text records for $8E3A, $FF ends
 ;
@@ -134,35 +132,14 @@ HallOfFameTitle:
 ; PRACTICE, 7 START GAME (rows 8-11, 13-14, 16, column 1, attributes `$38`,
 ; `$39`).
 OptionsText:
-  DEFB $BB,$08,$01,$28,$61,$62,$63,$64 ; the logo's top row: attribute $3B,
-  DEFB $65,$66,$67,$68,$69,$6A,$6B,$6C ; column 8, row 1
-  DEFB $6D,$28
-  DEFB $BA,$08,$02,$29,$6E,$6F,$70,$71 ; the logo's second row: attribute $3A,
-  DEFB $72,$73,$74,$75,$76,$77,$78,$79 ; column 8, row 2
-  DEFB $7A,$29
-  DEFB $BB,$01,$06,$4F,$50,$54,$49,$4F ; OPTIONS: attribute $3B, column 1, row
-  DEFB $4E,$53                         ; 6
-  DEFB $B8,$01,$08,$31,$20,$4B,$45,$59 ; 1 KEYBOARD: attribute $38, row 8
-  DEFB $42,$4F,$41,$52,$44
-  DEFB $B8,$01,$09,$32,$20,$53,$49,$4E ; 2 SINCLAIR, row 9
-  DEFB $43,$4C,$41,$49,$52
-  DEFB $B8,$01,$0A,$33,$20,$4B,$45,$4D ; 3 KEMPSTON, row 10
-  DEFB $50,$53,$54,$4F,$4E
-  DEFB $B8,$01,$0B,$34,$20,$50,$52,$4F ; 4 PROTEK-AGF, row 11
-  DEFB $54,$45,$4B,$2D,$41,$47,$46
-  DEFB $B9,$01,$0D,$35,$20,$44,$45,$4D ; 5 DEMO: attribute $39, row 13
-  DEFB $4F
-  DEFB $B9,$01,$0E,$36,$20,$50,$52,$41 ; 6 PRACTICE, row 14
-  DEFB $43,$54,$49,$43,$45
-  DEFB $B8,$01,$10,$37,$20,$53,$54,$41 ; 7 START GAME: attribute $38, row 16;
-  DEFB $52,$54,$20,$47,$41,$4D,$45,$FF ; then the end $FF
+  INCBIN "res/texts/options.bin",$0010,138
 
 ; The name entry's blinking cursor: a small diamond
 ;
 ; Put by `HallOfFame` `$9BC0` (at `$9CEC`, attribute `$3A`) at the next
 ; letter's place, every other 70 polls.
 NameCursorGlyph:
-  DEFB $00,$00,$08,$1C,$3E,$1C,$08,$00
+  INCBIN "res/graphics/name-cursor.bin",$0000,8
 
 ; The hall of fame's six scores: text records of 9 bytes (attribute, column
 ; $18, row, six digits), $FF ends
@@ -174,13 +151,7 @@ NameCursorGlyph:
 ; `$A021` = `$FF` ends the list; the names follow at `$A022` (8-byte records,
 ; MEGA, GREAT, GOOD, SO-SO, BAD, AWFUL).
 HallOfFameScores:
-  DEFB $BA,$18,$09,$30,$39,$30,$30,$30,$30
-  DEFB $B8,$18,$0A,$30,$37,$35,$30,$30,$30
-  DEFB $B8,$18,$0B,$30,$36,$30,$30,$30,$30
-  DEFB $B8,$18,$0C,$30,$34,$35,$30,$30,$30
-  DEFB $B8,$18,$0D,$30,$33,$30,$30,$30,$30
-  DEFB $B8,$18,$0E,$30,$31,$35,$30,$30,$30
-  DEFB $FF
+  INCBIN "res/texts/hall-of-fame.bin",$0000,55
 
   ORG $A053
 
@@ -202,94 +173,7 @@ HallOfFameScores:
 ; Evidence: read 12 times (every draw of the options screen: `c1g`, `menu`,
 ; `controls`, `kempston`, `mine`, `overload`, `gameover`, `rzx-344752`).
 OptionsLayout:
-  DEFB $27,$00
-  DEFB $11,$3B
-  DEFB $0F,$00
-  DEFB $11,$3B
-  DEFB $01,$02
-  DEFB $0F,$00
-  DEFB $11,$02
-  DEFB $27,$00
-  DEFB $0E,$38
-  DEFB $03,$00
-  DEFB $0E,$38
-  DEFB $01,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $02,$00
-  DEFB $0E,$38
-  DEFB $01,$02
-  DEFB $01,$00
-  DEFB $0E,$02
-  DEFB $03,$00
-  DEFB $0E,$02
-  DEFB $24,$00
-  DEFB $17,$38
-  DEFB $09,$00
-  DEFB $17,$38
-  DEFB $01,$02
-  DEFB $08,$00
-  DEFB $17,$38
-  DEFB $01,$02
-  DEFB $09,$00
-  DEFB $17,$02
-  DEFB $04,$00
-  DEFB $FF                ; the end mark
+  INCBIN "res/tables/options-layout.bin",$0000,175
 
 ; One byte $FF that no recording reads or writes
 ;
@@ -311,8 +195,8 @@ UnusedA102:
 ; Evidence: 10 runs (`c1g`, `controls`, `gameover`, `kempston`, `menu`, `mine`,
 ; `overload`).
 ;
-; Witness: L1 13 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
-; mine, overload).
+; Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
+; mine, nameedit, overload).
 TitleScreen:
   CALL Delay
   CALL Delay
@@ -359,9 +243,11 @@ TitleKeyReleaseLoop:
 ;
 ; Evidence: entered 8 times (`c1g`, `controls`, `energy`, `kempston`, `menu`;
 ; `energy` and `kempston` start inside it). DEMO once (`menu`); the PRACTICE
-; branch `$A7E3` ran in no recording (nor did the practice text `$8A6E`).
+; branch `$A7E3` and the practice text `$8A6E` run in `practice`
+; (`work/docs/dfA/rec/practice`).
 ;
-; Witness: L1 10 (c1, c1g, controls, energy, energy-out, kempston, menu).
+; Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu,
+; practice).
 OptionsMenu:
   DI
   CALL WipeInScreen

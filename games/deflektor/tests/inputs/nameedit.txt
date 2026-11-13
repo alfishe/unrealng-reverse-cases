@@ -1,0 +1,23 @@
+# nameedit: from work/stage2/hof/start.szx (the hof recording's start: the bot's L06.szx, a clone whose levels 2 and 4
+# were skipped by a POKE of LevelDone; score 019980): no key until GAME OVER, then in the hall of fame A, G, DELETE (0),
+# SPACE, E, N, T (the sixth column: full), X (refused: the name is full), ENTER. The name: "A ENT".
+0 -
+17050 A
+17055 -
+17075 G
+17080 -
+17100 0
+17105 -
+17125 SPACE
+17130 -
+17150 E
+17155 -
+17175 N
+17180 -
+17200 T
+17205 -
+17225 X
+17230 -
+17250 ENTER
+17255 -
+17800 END

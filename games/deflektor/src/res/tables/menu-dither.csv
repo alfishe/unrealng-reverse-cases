@@ -1,0 +1,11 @@
+# MenuDither $9F41: the eight pixel rows DrawMenuScreen $9ED8 puts into every character of
+# attribute 2 (the options screen's background).
+_row,row
+line 0,$AA
+line 1,$55
+line 2,$AA
+line 3,$55
+line 4,$AA
+line 5,$55
+line 6,$AA
+line 7,$55

@@ -91,8 +91,8 @@ Spare81FC:
 ;
 ; Evidence: 16 418 runs.
 ;
-; Witness: L1 21595 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 22256 (c1, c1g, cheat, controls, energy, energy-out, hof,
+; kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 PlayTone:
   LD A,(HL)
   INC HL
@@ -109,13 +109,15 @@ PlayTone:
 ; Also called directly with HL as the tone: the menu (`$465A` 14.4 frames,
 ; `$28A0` 8.2, `$1478` 4.1), the pause (`$0F3C` 3.1), the abort (`$C814` 41.1),
 ; the name entry (`$3250` 10.3), the level complete (`$0A3C` 2.1 each step of
-; the bonus count); T-states by SkoolKit's simulator
-; (work/ann/03-irq/simtime.py, no contention).
+; the bonus count, and `$0204` (0.41 frame) after each life of the bonus, at
+; `$8853`: HL is what PlaySweep left, GremlinSound's step and half-cycles);
+; T-states by SkoolKit's simulator (work/ann/03-irq/simtime.py, no contention).
 ;
 ; Evidence: 17 972 runs.
 ;
-; Witness: L1 24193 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 24908 (c1, c1g, cheat, controls, ending, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x60).
 TwoTone:
   LD C,H
   XOR A
@@ -148,15 +150,17 @@ TwoToneNext:
 ; loops), E (steps). H > 0 shortens the delay (the pitch rises), `$FE` (-2, the
 ; mine's `$81D9`) lengthens it.
 ;
-; Records: `$81D4` (bit 0, no writer sets it: dormant), `$81D9` (bit 1, the
-; beam on a mine, 0.20 frame), `$81DE` (bit 2, the beam in the laser, 0.02),
-; `$81ED` (`$85B5`, 2.2 frames), `$81F2` (the charge done, the ending, 17.9),
-; `$81F7` (CONTACT!, 43.3), `$8660` (5.99), `$8665` (a life lost, 2.6).
+; Records: `$81D4` (BurnSound: played directly by PassEnd `$865A` on a pass
+; with a new explosion; its flag bit 0 is never set), `$81D9` (bit 1, the beam
+; on a mine, 0.20 frame), `$81DE` (bit 2, the beam in the laser, 0.02), `$81ED`
+; (`$85B5`, 2.2 frames), `$81F2` (the charge done, the ending, 17.9), `$81F7`
+; (CONTACT!, 43.3), `$8660` (5.99), `$8665` (a life lost, 2.6).
 ;
 ; Evidence: 43 809 runs.
 ;
-; Witness: L1 49982 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 50108 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, gameover, hof, kempston, menu, mine, nameedit, overload,
+; practice, L x20, rzx x60).
 PlaySweep:
   LD B,(HL)
   INC HL
@@ -198,7 +202,7 @@ SweepDelay:
 ;
 ; Evidence: 11 171 runs (53 RZX segments).
 ;
-; Witness: L1 16529 (L x20, rzx x53).
+; Witness: L1 16546 (corner, L x20, rzx x53).
 PlayNoise:
   LD D,(HL)
   INC HL
@@ -260,8 +264,9 @@ SoundFlags:
 ;
 ; Evidence: 381 862 runs (every interrupt).
 ;
-; Witness: L1 466704 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 487506 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, gameover, hof, kempston, menu, mine, nameedit, overload,
+; practice, L x20, rzx x60).
 PlaySoundFlags:
   LD A,(SoundFlags)
   LD B,$05
@@ -291,8 +296,9 @@ SoundFlagsFound:
 ;
 ; Evidence: 71 398 runs.
 ;
-; Witness: L1 88106 (c1, c1g, cheat, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 88910 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, gameover, hof, kempston, menu, mine, nameedit, overload,
+; practice, L x20, rzx x60).
 PlaySound:
   LD A,(HL)
   INC HL
@@ -319,8 +325,8 @@ PlaySound:
 ; Evidence: 12 runs (`c1g`, `controls`, `gameover`, `kempston`, `menu`, `mine`,
 ; `overload`, `rzx-344752`).
 ;
-; Witness: L1 16 (c1, c1g, controls, ending, energy-out, gameover, hof,
-; kempston, menu, mine, overload, rzx344752).
+; Witness: L1 17 (c1, c1g, controls, ending, energy-out, gameover, hof,
+; kempston, menu, mine, nameedit, overload, rzx344752).
 TitleTune:
   DI
 ; This entry point is used by the routine at TitleTuneNoteLoop.
@@ -363,8 +369,9 @@ TitleTuneEnd:
 ;
 ; Evidence: 6 919 984 runs.
 ;
-; Witness: L1 10118160 (c1, c1g, controls, ending, energy, energy-out,
-; gameover, hof, kempston, menu, mine, overload, rzx344752).
+; Witness: L1 10535890 (c1, c1g, controls, ending, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice,
+; rzx344752).
 PlayNote:
   PUSH BC
   NOP
@@ -432,179 +439,4 @@ NoteLoopEnd:
 ; TitleTune. Evidence: read in `c1g`, `controls`, `gameover`, `kempston`,
 ; `menu`, `mine`, `overload`, `rzx-344752`.
 TitleTuneData:
-  DEFB $84,$42,$37
-  DEFB $84,$42,$37
-  DEFB $6E,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $52,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $DF,$4B,$38
-  DEFB $DF,$4B,$38
-  DEFB $6E,$4A,$37
-  DEFB $DF,$4B,$38
-  DEFB $76,$4A,$3B
-  DEFB $84,$4A,$3B
-  DEFB $95,$4A,$3B
-  DEFB $95,$4A,$3B
-  DEFB $84,$42,$37
-  DEFB $84,$42,$37
-  DEFB $6E,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $A7,$42,$37
-  DEFB $52,$42,$37
-  DEFB $A7,$42,$37
-  DEFB $C8,$43,$32
-  DEFB $C8,$43,$32
-  DEFB $63,$42,$31
-  DEFB $C8,$43,$32
-  DEFB $92,$3A,$31
-  DEFB $48,$3A,$31
-  DEFB $8B,$3A,$2C
-  DEFB $44,$39,$2B
-  DEFB $84,$42,$37
-  DEFB $84,$42,$37
-  DEFB $6E,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $A5,$42,$37
-  DEFB $52,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $DF,$4B,$38
-  DEFB $DF,$4B,$38
-  DEFB $6E,$4A,$37
-  DEFB $DF,$4B,$38
-  DEFB $76,$4A,$3B
-  DEFB $84,$4A,$3B
-  DEFB $95,$4A,$3B
-  DEFB $95,$4A,$3B
-  DEFB $84,$42,$37
-  DEFB $84,$42,$37
-  DEFB $6E,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $A6,$42,$37
-  DEFB $A7,$42,$37
-  DEFB $52,$42,$37
-  DEFB $A7,$42,$37
-  DEFB $C8,$43,$32
-  DEFB $C8,$43,$32
-  DEFB $63,$42,$31
-  DEFB $C8,$43,$32
-  DEFB $92,$3A,$31
-  DEFB $48,$3A,$31
-  DEFB $8B,$3A,$2C
-  DEFB $44,$39,$2B
-  DEFB $89,$8B,$8D
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $89,$8B,$8D
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $89,$8B,$8D
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $8A,$8B,$8C
-  DEFB $89,$8B,$8D
-  DEFB $8A,$8B,$8C
-  DEFB $8B,$8A,$8C
-  DEFB $8B,$8A,$8C
-  DEFB $9E,$9D,$9C
-  DEFB $9E,$9D,$9C
-  DEFB $95,$3A,$3B
-  DEFB $95,$3A,$3B
-  DEFB $95,$3A,$3B
-  DEFB $93,$38,$37
-  DEFB $92,$30,$31
-  DEFB $95,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9D,$3E,$3F
-  DEFB $A8,$3E,$3F
-  DEFB $A8,$3E,$3F
-  DEFB $A8,$42,$43
-  DEFB $A9,$4C,$4B
-  DEFB $A8,$42,$43
-  DEFB $A9,$4B,$4C
-  DEFB $A9,$4B,$4C
-  DEFB $A8,$3E,$3F
-  DEFB $E1,$3E,$3F
-  DEFB $E1,$3E,$3F
-  DEFB $E2,$42,$43
-  DEFB $B4,$4B,$4C
-  DEFB $B3,$42,$43
-  DEFB $A9,$4C,$4B
-  DEFB $AD,$5B,$5C
-  DEFB $A0,$4C,$4B
-  DEFB $9E,$9D,$9C
-  DEFB $9E,$9D,$9C
-  DEFB $95,$3A,$3B
-  DEFB $95,$3A,$3B
-  DEFB $95,$3A,$3B
-  DEFB $93,$38,$37
-  DEFB $92,$30,$31
-  DEFB $95,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9F,$3A,$3B
-  DEFB $9D,$3E,$3F
-  DEFB $A8,$3E,$3F
-  DEFB $A8,$3E,$3F
-  DEFB $A8,$42,$43
-  DEFB $A9,$4C,$4B
-  DEFB $A8,$42,$43
-  DEFB $A9,$4B,$4C
-  DEFB $A9,$4B,$4C
-  DEFB $A8,$3E,$3F
-  DEFB $E1,$3E,$3F
-  DEFB $E1,$3E,$3F
-  DEFB $E2,$42,$43
-  DEFB $B4,$4B,$4C
-  DEFB $B3,$42,$43
-  DEFB $A9,$4C,$4B
-  DEFB $AD,$5B,$5C
-  DEFB $A0,$4C,$4B
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $CB,$50,$43
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $B3,$4B,$3B
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $A8,$42,$38
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
-  DEFB $94,$3B,$32
+  INCBIN "res/tables/title-tune.bin",$0000,528

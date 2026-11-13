@@ -1,0 +1,12 @@
+# HallOfFameScores $9FEB and HallOfFameNames $A022: the six records of the hall of fame.
+# "..." a printable run (3 or more characters $20-$7E), two hex digits any other byte
+# (the record bytes: attribute | $80, column, row; $FF the end; the loop words). `$ADDR:` at a
+# line's start is the address of its first byte; keep the lengths, the loop words point
+# into the text.
+$9FEB: BA 18 09 "090000" B8 18 0A "075000"
+$9FFD: B8 18 0B "060000" B8 18 0C "045000"
+$A00F: B8 18 0D "030000" B8 18 0E "015000"
+$A021: FF B9 12 09 "MEGA " B9 12 0A "GREAT"
+$A032: B9 12 0B "GOOD " B9 12 0C "SO-SO"
+$A042: B9 12 0D "BAD  " B9 12 0E "AWFUL"
+$A052: FF

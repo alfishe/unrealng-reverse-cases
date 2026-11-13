@@ -159,68 +159,18 @@ EndingKeyLoop:
 ;
 ; Evidence: read once (`rzx-344752`).
 EndingText:
-  DEFM $C3,$08,$02,"CONGRATULATIONS" ; (8,2) $43: CONGRATULATIONS
-  DEFM $86,$09,$05,"YOU ARE TRULY" ; (9,5) $06: YOU ARE TRULY
-  DEFM $86,$0F,$06,"A"    ; (15,6) $06: A
-  DEFM $86,$08,$07,"MASTER DEFLEKTOR" ; (8,7) $06: MASTER DEFLEKTOR
-  DEFM $87,$02,$0A,"THE CIRCUIT IS NOW COMPLETE" ; (2,10) $07: THE CIRCUIT IS
-                                                 ; NOW COMPLETE
-  DEFM $87,$19,$0C,"   "  ; (25,12) $07: 3 spaces, the kettle's top
-  DEFM $87,$04,$0D,"                        " ; (4,13) $07: 24 spaces
-  DEFM $87,$04,$0E,"                        " ; (4,14) $07: 24 spaces
-  DEFM $83,$06,$0D,"                   " ; (6,13) $03: 19 spaces, the cable
-  DEFM $83,$06,$0E,"                   " ; (6,14) $03: 19 spaces
-  DEFM $80,$05,$11,"THE TEA WILL BE READY" ; (5,17) $00: THE TEA WILL BE READY
-                                           ; (hidden until EndingScreen sets
-                                           ; the attributes)
-  DEFM $80,$08,$12,"IN FIVE MINUTES!" ; (8,18) $00: IN FIVE MINUTES!
-  DEFM $80,$05,$17,",,, PRESS ANY KEY ,,," ; (5,23) $00: ,,, PRESS ANY KEY ,,,
-  DEFM $FF                ; the end
+  INCBIN "res/texts/ending.bin",$0000,259
 
 ; The mains plug with its cable end: 16 x 16 pixels, 2 bytes a row
 ;
 ; Drawn by EndingScreen at `$48A4` (8 rows) and `$48C4` (8 rows): row 13-14,
 ; column 4.
 EndingPlug:
-  DEFB $06,$C0
-  DEFB $0D,$80
-  DEFB $DB,$6F
-  DEFB $FF,$F8
-  DEFB $FF,$FA
-  DEFB $DB,$6A
-  DEFB $DB,$6A
-  DEFB $DB,$6B
-  DEFB $DB,$6B
-  DEFB $DB,$6A
-  DEFB $51,$4A
-  DEFB $AA,$AA
-  DEFB $75,$58
-  DEFB $DB,$6F
-  DEFB $0D,$80
-  DEFB $06,$C0
+  INCBIN "res/graphics/ending-plug.bin",$0000,32
 
 ; The kettle: 24 x 20 pixels, 3 bytes a row
 ;
 ; Drawn by EndingScreen at `$4C99` (4 rows, row 12 lines 4-7), `$48B9` and
 ; `$48D9` (8 rows each): columns 25-27.
 EndingKettle:
-  DEFB $07,$F8,$00
-  DEFB $1C,$04,$00
-  DEFB $38,$02,$00
-  DEFB $70,$02,$00
-  DEFB $F0,$42,$F0
-  DEFB $F3,$FB,$E0
-  DEFB $FF,$FF,$C0
-  DEFB $80,$01,$80
-  DEFB $BF,$FF,$80
-  DEFB $BF,$FF,$80
-  DEFB $3F,$FF,$80
-  DEFB $3F,$FF,$80
-  DEFB $3F,$FF,$80
-  DEFB $3F,$FF,$80
-  DEFB $00,$00,$00
-  DEFB $AA,$AA,$A0
-  DEFB $00,$00,$00
-  DEFB $AA,$AA,$A0
-  DEFB $00,$00,$00
-  DEFB $AA,$AA,$A0
+  INCBIN "res/graphics/ending-kettle.bin",$0000,60

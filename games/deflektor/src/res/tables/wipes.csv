@@ -1,0 +1,12 @@
+# PlayAreaWipes $8D95 (the play rows) and ScreenWipes $8DD5 (the screen rows): one record of 8
+# words a corner, read by WipeIn $8CAD: the four steps added each round (signed), then the four
+# start addresses (the screen, its attributes, the pixel buffer, the colour buffer).
+_row,step_screen,step_attrs,step_pixels,step_colours,screen,attrs,pixels,colours
+play top-left,0,0,-257,-33,$4000,$5800,$FC13,$E873
+play top-right,-1,-1,-256,-32,$4013,$5813,$FC00,$E860
+play bottom-left,-32,-32,-1,-1,$5060,$5A60,$E913,$E613
+play bottom-right,-33,-33,0,0,$5073,$5A73,$E900,$E600
+screen top-left,0,0,-257,-33,$4000,$5800,$FC17,$E4F7
+screen top-right,-1,-1,-256,-32,$4017,$5817,$FC00,$E4E0
+screen bottom-left,-32,-32,-1,-1,$50E0,$5AE0,$E517,$E217
+screen bottom-right,-33,-33,0,0,$50F7,$5AF7,$E500,$E200

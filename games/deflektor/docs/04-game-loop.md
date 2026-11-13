@@ -112,12 +112,12 @@ characters (the first one of a level, all 640) costs most.
 
 ![One pass of the main loop](img/routines/MainLoop.gif)
 
-*`L01` from frame 1003 T 15 000 to frame 1008 T 20 000, 90 pictures of 3939 T. How to read it: top left the memory
+*`L01` from frame 1003 T 15 000 to frame 1008 T 20 000, 45 pictures of 7877 T. How to read it: top left the memory
 map of `$4000-$FFFF` (yellow written, green run, blue read, fading); bottom left the screen; right the listing at
 the instruction running, with the lines run in the slice marked. The point: the screen is written in one burst
 (CopyPlayArea) at the start; the rest of the pass works in the buffers at `$E000-$FCFF` and the screen does not
 change until the next copy. Command: `python3 ../../kit/routine_anim.py --work work/docs/dfA/L01 --window
-1003:15000-1008:20000 --listing build/game.lst --view screen --range 4000-FFFF --pictures 90 --title "..." --out
+1003:15000-1008:20000 --listing build/game.lst --view screen --range 4000-FFFF --pictures 45 --delay 160 --title "..." --out
 docs/img/routines/MainLoop.gif`.*
 
 ## 4.4 The heaviest work: the beam's trace
@@ -129,13 +129,13 @@ colour into ColourBuffer ([doc 6](06-rendering.md), [doc 10](10-gameplay-logic.m
 
 ![TraceBeam at work](img/routines/TraceBeam.gif)
 
-*`L01` frames 1000 to 1003, TraceBeam and its callees (`$8ED6-$96FF`) only, 80 pictures of 2996 T. How to read it:
+*`L01` frames 1000 to 1003, TraceBeam and its callees (`$8ED6-$96FF`) only, 40 pictures of 5992 T. How to read it:
 top left the buffers `$E000-$FFFF`; bottom left PixelBuffer `$E900` as a 32 x 160 bitmap (the field without colour);
 right the listing. The point: the beam is drawn glyph by glyph into the buffer, each glyph OR-ed in over eight rows,
 and every glyph also writes its draw mark at `$E300` and its colour at `$E600`, so the next pass redraws the
 characters under the old beam and the beam vanishes. Command: `python3 ../../kit/routine_anim.py --work
 work/docs/dfA/L01 --window 1000:0-1003:30000 --listing build/game.lst --view buffer:E900:32x160 --range E000-FFFF
---pc 8ED6-96FF --pictures 80 --title "..." --out docs/img/routines/TraceBeam.gif`.*
+--pc 8ED6-96FF --pictures 40 --delay 160 --title "..." --out docs/img/routines/TraceBeam.gif`.*
 
 ```mermaid
 flowchart TD

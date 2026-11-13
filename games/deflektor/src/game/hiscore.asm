@@ -49,11 +49,11 @@ ScoreCopy:
 ; After a game: rank the score, take a name for the hall of fame, draw the
 ; options screen
 ;
-; Called by the title loop `$840C` after each game (11 runs: c1g, controls,
-; gameover, kempston, menu, mine, overload, rzx-344752). Interrupts off, the
-; sound flags cleared, `$A103` = `$FF` (the interrupt's title mode). After
-; practice (`$8407`): only the options screen (`DrawMenuScreen` `$9ED8`) and
-; the COMPUTER line `$A199`.
+; Called by the title loop `$840C` after each game (c1, c1g, controls,
+; energy-out, gameover, hof, kempston, menu, mine, overload, rzx-344752).
+; Interrupts off, the sound flags cleared, `$A103` = `$FF` (the interrupt's
+; title mode). After practice (`$8407`): only the options screen
+; (`DrawMenuScreen` `$9ED8`) and the COMPUTER line `$A199`.
 ;
 ; Else the score's six digits (spaces as 0) go to ScoreCopy `$9B84`,
 ; `RankScore` `$9E1F` gives the place 1-7. 7: just the options screen. Else the
@@ -70,12 +70,15 @@ ScoreCopy:
 ; back, ENTER ends: the screen redrawn from the buffer (`$9ED8`, `$8B9B`), a
 ; tone (`$465A`) and six delays (`$8908`).
 ;
-; Recording: `rzx-344752` (the RZX player's entry after the ending: one letter,
-; R, then ENTER; 206 polls). The DELETE (`$9D15`) and SPACE (`$9D5A`) paths and
-; the full name (`$9D7E`) ran in no recording: known only from the code.
+; Recordings: `hof` (place 6, the name AGENT in five letters, frames 17 051-17
+; 151, then ENTER and CopyFullScreen `$9DD6`) and `rzx-344752` (one letter, R,
+; then ENTER). The full name (`$9D7E`) ran in `hof`. `nameedit` (the same start
+; as `hof`; A, G, DELETE, SPACE, E, N, T, X, ENTER) runs DELETE (`$9D15`) and
+; SPACE (`$9D5A`) once each and the full name's refusal of X (`$9D7E`): the
+; name A ENT.
 ;
-; Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
-; mine, overload, rzx344752).
+; Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
+; mine, nameedit, overload, rzx344752).
 HallOfFame:
   DI
   XOR A
@@ -368,8 +371,8 @@ HallOfFameDelay:
 ; Eight rows down from the address in `$9B7C`. Used by the name entry and by
 ; the title's options code (`$A7A0`, `$A7F9`, `$A82F`).
 ;
-; Witness: L1 71 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
-; rzx344752).
+; Witness: L1 107 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
+; nameedit, practice, rzx344752).
 PutGlyph:
   LD DE,(NameScreen)
   LD B,$08
@@ -383,9 +386,10 @@ PutGlyphRow:
 
 ; Clear the name cursor: attribute $38 and a space
 ;
-; Known only from the code (no recording deletes or types a space).
+; From the DELETE (`$9D15`) and SPACE (`$9D5A`) paths: run twice in `nameedit`,
+; once each.
 ;
-; Witness: L1 0 ().
+; Witness: L1 2 (nameedit).
 EraseNameCursor:
   LD HL,(NameAttr)
   LD (HL),$38
@@ -398,7 +402,7 @@ EraseNameCursor:
 ; and of the six scores' (`$9FED`, 9 bytes apart): 9, 10, ... 14, after records
 ; were moved.
 ;
-; Witness: L1 2 (hof, rzx344752).
+; Witness: L1 3 (hof, nameedit, rzx344752).
 RenumberHallOfFame:
   LD HL,HallOfFameNames+$0002
   LD DE,$0008
@@ -426,8 +430,8 @@ RenumberScores:
 ; (`$A01B`) upwards; the place goes down from 7 while the score is greater than
 ; the record's; equal does not pass. Returns the place in A and Rank `$9B78`.
 ;
-; Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
-; mine, overload, rzx344752).
+; Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
+; mine, nameedit, overload, rzx344752).
 RankScore:
   LD A,$07
   LD (Rank),A
@@ -475,7 +479,7 @@ RankScoreUp:
 ; key: carry only when it differs from LastKey `$9B81`; KeyHeld `$9B80` = 1
 ; while any letter is held, 0 when none.
 ;
-; Witness: L1 2179 (hof, rzx344752).
+; Witness: L1 4639 (hof, nameedit, rzx344752).
 ReadLetterKey:
   LD HL,LetterKeys
   LD A,$01
@@ -524,7 +528,7 @@ ReadLetterNone:
 ; `$FDFE`, `$FEFE`; the high three bits count the key from the outer end of the
 ; half-row (bit 4 first). So `$21` is ENTER, `$20` SPACE, `$23` 0 (DELETE).
 ;
-; Witness: L1 49147 (hof, rzx344752).
+; Witness: L1 109958 (hof, nameedit, rzx344752).
 TestKey:
   LD C,A
   AND $07
@@ -554,10 +558,7 @@ TestKeyBit:
 ; `$0D` R, `$1E` S, `$05` T, `$0A` U, `$07` V, `$1D` W, `$17` X, `$02` Y, `$1F`
 ; Z (the code is 8 x (4 - bit) + half-row of `TestKey`).
 LetterKeys:
-  DEFB $26,$00,$0F,$16,$15,$0E,$06,$01
-  DEFB $12,$09,$11,$19,$10,$08,$1A,$22
-  DEFB $25,$0D,$1E,$05,$0A,$07,$1D,$17
-  DEFB $02,$1F,$FF
+  INCBIN "res/tables/letter-keys.bin",$0000,27
 
   ORG $A022
 
@@ -580,10 +581,4 @@ LetterKeys:
 ; options panel (`c1g`, `menu`, `controls`, `kempston`, `mine`, `overload`,
 ; `gameover`).
 HallOfFameNames:
-  DEFM $B9,$12,$09,"MEGA " ; MEGA (row 9)
-  DEFM $B9,$12,$0A,"GREAT" ; GREAT (row 10)
-  DEFM $B9,$12,$0B,"GOOD " ; GOOD (row 11)
-  DEFM $B9,$12,$0C,"SO-SO" ; SO-SO (row 12)
-  DEFM $B9,$12,$0D,"BAD  " ; BAD (row 13)
-  DEFM $B9,$12,$0E,"AWFUL" ; AWFUL (row 14)
-  DEFM $FF                ; the end of the list
+  INCBIN "res/texts/hall-of-fame.bin",$0037,49

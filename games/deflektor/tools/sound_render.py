@@ -2,7 +2,7 @@
 """Doc 09's sound: every beeper effect and the title tune run by SkoolKit's simulator over the entry image, the
 speaker bit (bit 4 of port $FE) recorded at the T-state of each OUT, then rendered or drawn.
 
-    python3 tools/sound_render.py wav DIR            # one WAV per effect, the tune, into DIR (never played here)
+    python3 tools/sound_render.py wav DIR            # one WAV per effect, the tune as an MP3 (lame -V 4), into DIR (never played here)
     python3 tools/sound_render.py table              # each effect's T-states, frames, half-cycles, pitch range
     python3 tools/sound_render.py effects OUT        # pitch against time of every effect (a PNG)
     python3 tools/sound_render.py tune OUT           # the title tune as a three-voice piano roll (a PNG)
@@ -50,7 +50,7 @@ EFFECTS = [
     ('tone-life', 0xA843, {'HL': 0x0204}, 'TwoTone $0204', 'LevelCompleteLife $8853 (HL left by the sweep)'),
     ('tone-pause', 0xA843, {'HL': 0x0F3C}, 'TwoTone $0F3C', 'the pause $9743, $97C4'),
     ('tone-option', 0xA843, {'HL': 0x1478}, 'TwoTone $1478', 'the options: a control chosen $A829'),
-    ('tone-keys', 0xA843, {'HL': 0x28A0}, 'TwoTone $28A0', 'the options: a key defined $A7FF'),
+    ('tone-start', 0xA843, {'HL': 0x28A0}, 'TwoTone $28A0', 'the options: 5 DEMO, 6 PRACTICE or 7 START GAME $A7FF'),
     ('tone-name', 0xA843, {'HL': 0x3250}, 'TwoTone $3250', 'HallOfFame $9CA9: enter your name'),
     ('tone-menu', 0xA843, {'HL': 0x465A}, 'TwoTone $465A', 'the options screen $A75E, the name entered $9DDC'),
     ('tone-abort', 0xA843, {'HL': 0xC814}, 'TwoTone $C814', 'AbortGame $9828, game over $870E'),
@@ -157,8 +157,13 @@ def cmd_wav(d):
         write_wav(os.path.join(d, name + '.wav'), edges(outs), t + 2000)
         print('%-16s %8d T' % (name, t))
     ev, total, _ = tune_events()
-    write_wav(os.path.join(d, 'title-tune.wav'), ev, total)
-    print('title-tune %d T %.1f s' % (total, total / CLOCK))
+    wav = os.path.join(d, 'title-tune.wav')
+    write_wav(wav, ev, total)
+    # the 35 s tune as an MP3 (lame -V 4); the effects, all under a second, stay WAV
+    import subprocess
+    subprocess.run(['lame', '--quiet', '-V', '4', wav, os.path.join(d, 'title-tune.mp3')], check=True)
+    os.remove(wav)
+    print('title-tune %d T %.1f s (MP3)' % (total, total / CLOCK))
 
 
 def stats():

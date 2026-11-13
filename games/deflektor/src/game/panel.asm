@@ -57,8 +57,8 @@ PanelPicture:
 ; times) and `energy` (ENERGY DRAINED, `$869A` 4 times), and 36 lives lost over
 ; 26 RZX segments.
 ;
-; Witness: L1 53 (energy, energy-out, gameover, hof, mine, overload, L45, L59,
-; rzx x26).
+; Witness: L1 56 (energy, energy-out, gameover, hof, mine, nameedit, overload,
+; L45, L59, rzx x26).
 LoseLife:
   XOR A
   LD (SoundFlags),A
@@ -83,7 +83,7 @@ LoseLife:
 ; Type 1 (`$A85E`): B `$FE` (the half-period grows by 2 each note), C 2, D
 ; `$14`, 60 notes. Played by LoseLifeDrained `$869A`.
 EnergyDrainedSound:
-  DEFB $01,$FE,$02,$14,$3C
+  INCBIN "res/tables/sound-drained.bin",$0000,5
 
 ; The energy drained: the falling sweep, then the life taken (LoseLifeCount)
 ;
@@ -99,7 +99,7 @@ EnergyDrainedSound:
 ; 24 attributes white (7); a buzz (`$A843` with HL = `$C814`: `$C8` x 256 loops
 ; of two speaker counters a period apart); TitleLoop.
 ;
-; Witness: L1 10 (energy, energy-out, hof, rzx053912, rzx227686).
+; Witness: L1 13 (energy, energy-out, hof, nameedit, rzx053912, rzx227686).
 LoseLifeDrained:
   LD HL,EnergyDrainedSound
   CALL PlaySound
@@ -179,22 +179,7 @@ GameOverAttrBottom:
 ; lines 8-15 to row 10, columns 10-21, attributes 7. Read 3 times (`gameover`,
 ; `mine`, `overload`).
 GameOverBanner:
-  DEFB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; the frame's top line,
-  DEFB $80,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01 ; then two blank lines
-  DEFB $80,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01
-  DEFB $80,$07,$E7,$C7,$39,$FC,$03,$E6,$37,$F7,$E0,$01 ; GAME OVER, ten lines
-  DEFB $80,$0F,$EF,$EF,$FD,$FC,$07,$F6,$37,$F7,$F0,$01
-  DEFB $80,$0C,$0C,$6C,$CD,$80,$06,$36,$36,$06,$30,$01
-  DEFB $80,$0C,$0C,$6C,$CD,$80,$06,$36,$36,$06,$30,$01
-  DEFB $80,$0C,$0C,$6C,$CD,$FC,$06,$36,$37,$F7,$F0,$01
-  DEFB $80,$0C,$EF,$EC,$CD,$FC,$06,$36,$37,$F7,$E0,$01
-  DEFB $80,$0C,$EF,$EC,$CD,$80,$06,$37,$76,$07,$C0,$01
-  DEFB $80,$0C,$6C,$6C,$CD,$80,$06,$33,$E6,$06,$E0,$01
-  DEFB $80,$0F,$EC,$6C,$CD,$FC,$07,$F1,$C7,$F6,$70,$01
-  DEFB $80,$07,$EC,$6C,$CD,$FC,$03,$E0,$87,$F6,$30,$01
-  DEFB $80,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01 ; two blank lines and
-  DEFB $80,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$01 ; the frame's bottom
-  DEFB $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; line
+  INCBIN "res/graphics/game-over.bin",$0000,192
 
   ORG $88B0
 
@@ -204,17 +189,7 @@ GameOverBanner:
 ; line 4 of row 20 to line 3 of row 21. P is the tens glyph of the practice
 ; levels (P1-P3).
 LevelDigits:
-  DEFB $7C,$FE,$C6,$C6,$C6,$C6,$FE,$7C ; 0
-  DEFB $18,$38,$38,$18,$18,$18,$3C,$3C ; 1
-  DEFB $FC,$FE,$06,$7E,$FC,$C0,$FE,$FE ; 2
-  DEFB $FC,$FE,$06,$FC,$FE,$06,$FE,$FC ; 3
-  DEFB $C0,$C0,$CC,$CC,$FE,$FE,$0C,$0C ; 4
-  DEFB $FE,$FE,$C0,$FC,$FE,$06,$FE,$FC ; 5
-  DEFB $7E,$FE,$C0,$FC,$FE,$C6,$FE,$7C ; 6
-  DEFB $FC,$FE,$06,$0E,$0C,$1C,$18,$38 ; 7
-  DEFB $7C,$FE,$C6,$7C,$FE,$C6,$FE,$7C ; 8
-  DEFB $7C,$FE,$C6,$FE,$7E,$06,$FE,$FC ; 9
-  DEFB $FC,$FE,$C6,$FE,$FC,$C0,$C0,$C0 ; P
+  INCBIN "res/graphics/level-digits.bin",$0000,88
 
   ORG $9AF1
 
@@ -235,7 +210,7 @@ Unused9AF1:
 ; step: fragment 01). 21 897 runs over the 60 RZX segments. Falls into
 ; `PrintScore`.
 ;
-; Witness: L1 31617 (ending, hof, L x20, rzx x60).
+; Witness: L1 31837 (corner, ending, hof, nameedit, L x20, rzx x60).
 AddScore:
   LD HL,ScoreDigits+$0004
 AddScoreDigit:
@@ -260,8 +235,9 @@ AddScoreNext:
 ; `$53BF` (`PrintDigitsBack` `$9B10`). Called by `AddScore` and the level
 ; set-up (`$850C`).
 ;
-; Witness: L1 4957 (c1, c1g, cheat, controls, ending, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 5012 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20,
+; rzx x60).
 PrintScore:
   LD DE,Screen+5055
   LD BC,$9B43
@@ -272,8 +248,9 @@ PrintScore:
 ; pixel rows down from DE; then DE one column left, BC one character back. Used
 ; for the score and the high score (`PrintHighScore` `$9B53`).
 ;
-; Witness: L1 33219 (c1, c1g, cheat, controls, ending, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 33565 (c1, c1g, cheat, controls, corner, ending, energy,
+; energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20,
+; rzx x60).
 PrintDigitsBack:
   LD A,(BC)
   CP $20
@@ -307,7 +284,8 @@ PrintDigitRows:
 ; score digits `$9B3E`, so a new game or practice starts at 0. Called at a new
 ; game (`$842F`) and for practice (`$84DE`).
 ;
-; Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, L01).
+; Witness: L1 13 (c1, c1g, controls, energy, energy-out, kempston, menu,
+; practice, L01).
 ClearSavedScore:
   LD HL,SavedScore
   LD B,$05
@@ -343,8 +321,8 @@ HighScoreText:
 ; zeros turned to spaces) to `$9B4D`-`$9B51` and prints `$9B52` leftwards from
 ; `$53FF`. Called by the level set-up (`$850F`); 164 runs over all recordings.
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 PrintHighScore:
   LD DE,HallOfFameScores+$0003
   LD HL,HighScoreText+$0003
@@ -442,39 +420,39 @@ MessagePointer:
 ; 14 characters after the `$FE` static mark; `,` is a small ring in the font
 ; (`$D260`), `.` a small diamond. Evidence: read in `menu` (the demo).
 DemoMessage:
-  DEFM $FE,",,,, DEMO ,,,,"
+  INCBIN "res/texts/messages.bin",$0000,15
 
 ; Static: "CHARGING LASER" (MessageNumber 1, ResetBars)
 ;
 ; Shown at each level start while the energy bar fills. Evidence: `energy`
 ; frame 500; every recording that started a level.
 ChargingMessage:
-  DEFM $FE,"CHARGING LASER"
+  INCBIN "res/texts/messages.bin",$000F,15
 
 ; Static: " . OVERLOAD . " (MessageNumber $12, the beam back in the laser)
 ;
 ; Evidence: `overload`; read in `mine` and 54 RZX segments.
 OverloadMessage:
-  DEFM $FE," . OVERLOAD . "
+  INCBIN "res/texts/messages.bin",$001E,15
 
 ; Static: ". MINE ALERT ." (MessageNumber $13, the beam on a mine)
 ;
 ; Evidence: `mine`; 46 RZX segments.
 MineAlertMessage:
-  DEFM $FE,". MINE ALERT ."
+  INCBIN "res/texts/messages.bin",$002D,15
 
 ; Static: "ENERGY DRAINED" (MessageNumber $17, EnergyDrained $A66F)
 ;
 ; Evidence: `energy` (twice), `rzx-053912`, `rzx-227686`.
 DrainedMessage:
-  DEFM $FE,"ENERGY DRAINED"
+  INCBIN "res/texts/messages.bin",$003C,15
 
 ; Static: "BOOM BOOM BOOM" (MessageNumber $16, a life lost: $867A)
 ;
 ; Evidence: `mine`, `overload`, `gameover` and the RZX segments that lost a
 ; life.
 BoomMessage:
-  DEFM $FE,"BOOM BOOM BOOM"
+  INCBIN "res/texts/messages.bin",$004B,15
 
 ; Static: "   CONTACT!   " (MessageNumber $18, the beam reached the receiver:
 ; $87DD)
@@ -483,19 +461,19 @@ BoomMessage:
 ; read in all 60 RZX segments (each reaches the end of a level in the RZX's own
 ; run).
 ContactMessage:
-  DEFM $FE,"   CONTACT!   "
+  INCBIN "res/texts/messages.bin",$005A,15
 
 ; Static: " GAME ABORTED " (MessageNumber $14, U + G: $9811)
 ;
 ; Evidence: `controls`, `kempston`, `menu`.
 GameAbortedMessage:
-  DEFM $FE," GAME ABORTED "
+  INCBIN "res/texts/messages.bin",$0069,15
 
 ; Static: " DEMO ABORTED " (the same key in the demo: $981F)
 ;
 ; The 14 characters end at `$A198`; BlankMessage follows.
 DemoAbortedMessage:
-  DEFM $FE," DEMO ABORTED "
+  INCBIN "res/texts/messages.bin",$0078,15
 
 ; Scrolling: two spaces, then back to itself: the line runs empty; reaching it
 ; ends a message (MessageNumber 0)
@@ -505,48 +483,48 @@ DemoAbortedMessage:
 ; every `$FF` jump with this address (`$A3E7`) and clears MessageNumber when it
 ; is taken.
 BlankMessage:
-  DEFM "  "
-  DEFM $FF                ; $FF, then the address where the text goes on
+  INCBIN "res/texts/messages.bin",$0087,3
 
 ; BlankMessage again
 BlankMessageLoop:
-  DEFW BlankMessage
+  INCBIN "res/texts/messages.bin",$008A,2
+  ASSERT {BlankMessageLoop} == BlankMessage
 
 ; Scrolling: ",,,BEWARE OF THE GREMLINS!,,," (MessageNumber 4, GremlinAppear),
 ; once
 ;
 ; Evidence: read in 51 RZX segments (the levels with gremlins).
 GremlinsMessage:
-  DEFM ",,,BEWARE OF THE GREMLINS!,,,"
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$008C,30
 
 ; then BlankMessage: shown once
 GremlinsMessageLoop:
-  DEFW BlankMessage
+  INCBIN "res/texts/messages.bin",$00AA,2
+  ASSERT {GremlinsMessageLoop} == BlankMessage
 
 ; Scrolling: "---WARNING-----ENERGY LOW---" (MessageNumber $0A, two bar bytes
 ; left), once
 ;
 ; Evidence: `energy` frame 5000; 17 RZX segments.
 EnergyLowMessage:
-  DEFM "---WARNING-----ENERGY LOW---"
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$00AC,29
 
 ; then BlankMessage
 EnergyLowMessageLoop:
-  DEFW BlankMessage
+  INCBIN "res/texts/messages.bin",$00C9,2
+  ASSERT {EnergyLowMessageLoop} == BlankMessage
 
 ; Scrolling: "---WARNING---ENERGY LEVEL CRITICAL-", repeated (MessageNumber
 ; $0C, one bar byte left)
 ;
 ; Evidence: `energy` frame 5750; 11 RZX segments.
 EnergyCriticalMessage:
-  DEFM "---WARNING---ENERGY LEVEL CRITICAL-"
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$00CB,36
 
 ; back to its own start: it repeats until another message
 EnergyCriticalLoop:
-  DEFW EnergyCriticalMessage
+  INCBIN "res/texts/messages.bin",$00EF,2
+  ASSERT {EnergyCriticalLoop} == EnergyCriticalMessage
 
 ; The menu scroller's text: "DEFLEKTOR , WRITTEN BY COSTA PANAYI ... SELECT
 ; OPTION ,,, ", a pause, again
@@ -558,17 +536,14 @@ EnergyCriticalLoop:
 ; Evidence: read in `c1g`, `controls`, `kempston`, `menu`, `energy`; the whole
 ; text and the pause only in `controls` (the longest wait on the panel).
 CreditsMessage:
-  DEFM "DEFLEKTOR , WRITTEN BY COSTA PANAYI , WITH HELP FROM THE ALIEN , "
-  DEFM "MUSIC BY BEN AND JOBBEE , @1987 VORTEX SOFTWARE ,,, SELECT OPTION"
-  DEFM " ,,, "
+  INCBIN "res/texts/messages.bin",$00F1,135
 CreditsPause:
-  DEFM "~"+$80            ; $FE: a pause of 124 frames, counted down in place
-                          ; ($A4B5); OptionsMenu writes $FE back ($A769)
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$0178,2
 
 ; back to the start
 CreditsLoop:
-  DEFW CreditsMessage
+  INCBIN "res/texts/messages.bin",$017A,2
+  ASSERT {CreditsLoop} == CreditsMessage
 
 ; The name-entry prompt: "HIGH DEFLEKTOR RATING ", a pause, ", PLEASE ENTER
 ; YOUR NAME , ", again
@@ -576,14 +551,14 @@ CreditsLoop:
 ; Set by `$9CB4` for a hall-of-fame entry, which writes `$FE` to the pause
 ; first (`$9CAE`). Evidence: `rzx-344752` (the RZX player's entry).
 HighRatingMessage:
-  DEFM "HIGH DEFLEKTOR RATING "
+  INCBIN "res/texts/messages.bin",$017C,22
 RatingPause:
-  DEFM $FE,", PLEASE ENTER YOUR NAME , " ; $FE: the pause, as CreditsPause
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$0192,29
 
 ; back to the start
 HighRatingLoop:
-  DEFW HighRatingMessage
+  INCBIN "res/texts/messages.bin",$01AF,2
+  ASSERT {HighRatingLoop} == HighRatingMessage
 
 ; The pause (P): ",,, PRESS ENTER FOR MORE ACTION ,,,,,, INTERMISSION ",
 ; repeated
@@ -591,12 +566,12 @@ HighRatingLoop:
 ; Set by `$97B1`; the pause `$973F` first prints "INTERMISSION" itself
 ; (`$972B`) on the line. Evidence: `controls`.
 IntermissionMessage:
-  DEFM ",,, PRESS ENTER FOR MORE ACTION ,,,,,, INTERMISSION "
-  DEFM $FF                ; $FF
+  INCBIN "res/texts/messages.bin",$01B1,53
 
 ; back to the start
 IntermissionLoop:
-  DEFW IntermissionMessage
+  INCBIN "res/texts/messages.bin",$01E6,2
+  ASSERT {IntermissionLoop} == IntermissionMessage
 
   ORG $A50C
 
@@ -613,8 +588,8 @@ IntermissionLoop:
 ; Called by `$8432` at each new game and level start. Evidence: 67 runs (`c1g`,
 ; `controls`, `energy`, `kempston`, `menu`, 59 RZX segments).
 ;
-; Witness: L1 90 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, L
-; x20, rzx x59).
+; Witness: L1 92 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
+; nameedit, practice, L x20, rzx x59).
 DrawPanel:
   LD DE,Screen+4224
   LD HL,PanelPicture

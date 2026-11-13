@@ -41,26 +41,7 @@ GameEntry:
 ; to the title when the level number reaches 63). Each row of the listing is
 ; eight levels.
 LevelSettings:
-  DEFB $5A,$00,$6E,$00,$5A,$02,$64,$02,$46,$02,$50,$02,$6E,$02,$5A,$02 ; levels 1-8
-  DEFB $5A,$04,$46,$03,$5A,$02,$46,$02,$5A,$02,$82,$02,$55,$03,$46,$02 ; levels
-                                                                       ; 9-16
-  DEFB $64,$02,$6E,$02,$82,$02,$5A,$03,$82,$00,$64,$03,$82,$03,$6E,$03 ; levels
-                                                                       ; 17-24
-  DEFB $55,$02,$82,$00,$87,$04,$82,$01,$8C,$02,$5A,$02,$50,$03,$78,$03 ; levels
-                                                                       ; 25-32
-  DEFB $5A,$04,$88,$02,$64,$02,$78,$03,$82,$02,$64,$02,$82,$02,$5A,$03 ; levels
-                                                                       ; 33-40
-  DEFB $64,$03,$82,$02,$6E,$03,$78,$03,$64,$02,$6E,$03,$78,$03,$78,$03 ; levels
-                                                                       ; 41-48
-  DEFB $6E,$03,$5A,$03,$87,$00,$5A,$08,$78,$04,$78,$03,$64,$03,$8C,$00 ; levels
-                                                                       ; 49-56
-  DEFB $82,$02,$8C,$04,$82,$05,$5A,$08,$FF,$00,$FF,$08,$FF,$00,$FF,$00 ; levels
-                                                                       ; 57-60,
-                                                                       ; practice
-                                                                       ; P1-P3, the
-                                                                       ; unused
-                                                                       ; slot 63
-  DEFB $01,$00            ; unused: no code or recording reads them
+  INCBIN "res/tables/level-settings.bin",$0000,130
 
 ; $FF in practice mode (the options panel's 6), else 0
 ;
@@ -69,9 +50,10 @@ LevelSettings:
 ; cleared each level), LoseLife (`$86A0`: no life is taken), DrawMarkedChars
 ; (`$8A68`: the PRACTICE MODE line), `$9BCA`, `$A6E9` and `$A7E5`.
 ;
-; No recording plays practice: the `menu` recording's key 6 did not take (its
-; screen 7750 shows LEVEL 01, and NewGame's `$8424` ran in no build), so the
-; practice path is known only from the code.
+; The `menu` recording's key 6 did not take (its screen 7750 shows LEVEL 01).
+; The practice path is played by `practice` (`work/docs/dfA/rec/practice`, 6
+; PRACTICE from `menu.szx`): NewGame `$8424` and the practice set-up `$84DA`
+; once, level P1 (slot 60).
 PracticeFlag:
   DEFB $00
 
@@ -101,8 +83,8 @@ Start:
 ; panel; it returns when a game is to start, with `$8379` set by key 5 DEMO or
 ; PracticeFlag by key 6). Falls into NewGame.
 ;
-; Witness: L1 14 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
-; mine, overload, rzx344752).
+; Witness: L1 15 (c1, c1g, controls, energy-out, gameover, hof, kempston, menu,
+; mine, nameedit, overload, rzx344752).
 TitleLoop:
   XOR A
   LD (DemoFlag),A
@@ -121,7 +103,8 @@ TitleLoop:
 ; An entry of its own: the `energy` and `kempston` recordings start from a
 ; snapshot taken inside `$A729`, so their L1s mark a routine root here.
 ;
-; Witness: L1 10 (c1, c1g, controls, energy, energy-out, kempston, menu).
+; Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu,
+; practice).
 NewGame:
   LD A,$03
   LD (Lives),A
@@ -133,9 +116,10 @@ NewGameLevel:
   LD (Level),A            ; Level = 0, or $3C for practice
   CALL Delay              ; two Delays
 
-; l_842C
-l_842C:
-  CALL Delay
+; NewGameDelay2
+NewGameDelay2:
+  CALL Delay              ; the second Delay (a split entry: snapshot-started
+                          ; recordings mark a routine root here)
   CALL ClearSavedScore    ; the saved score cleared: the game starts at 0
 
 ; Draw the bottom panel afresh, blank the COMPUTER line, interrupts on; into
@@ -147,8 +131,8 @@ l_842C:
 ; the screen's rows 20-23 with its attributes; MessageText `$A10E` = `$A199` (a
 ; blank line of three spaces that loops); `EI`. Falls into SetUpLevel.
 ;
-; Witness: L1 90 (c1, c1g, controls, energy, energy-out, hof, kempston, menu, L
-; x20, rzx x59).
+; Witness: L1 92 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
+; nameedit, practice, L x20, rzx x59).
 LevelPanel:
   CALL DrawPanel
   LD HL,BlankMessage

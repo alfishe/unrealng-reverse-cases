@@ -59,8 +59,12 @@ OutBounceTable:
 ; the second (+10), both (+13). None or both send the beam back (OVERLOAD), one
 ; turns it a quarter.
 ;
-; Known only from the code: no recording reads a byte of it (the branch `$93F2`
-; never ran). Editable form: tables/in-corner.csv.
+; No play reads it: the trace's first vertex is the only one whose incoming
+; pass meets a wall the outgoing pass before it has not
+; (work/docs/integrate/corner_level1.py), and that vertex is the laser's front,
+; on an axis. Read only on a clone, `corner` (game0.szx with the beam's start
+; `$8376-$8378` POKEd to x 10, y 16, direction 10: 342 passes, the beam turned
+; a quarter to direction 14). Editable form: tables/in-corner.csv.
 InCornerTable:
   INCBIN "res/tables/in-corner.bin",$0000,64
 
@@ -147,8 +151,8 @@ PolariserCells:
 ;
 ; From SetUpLevel (`$8547`).
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 FindLaser:
   LD HL,LevelGrid+185
   LD C,$09
@@ -243,8 +247,9 @@ FindLaserRowAdd:
 ; The receiver's direction (code - `$4B`) AND 3 gives (dx, dy) from `$8170`;
 ; the cell in front of it (x + dx, y + dy, returning if off the field) goes
 ; into the first explosion slot `$81B8` (grid address high, low, y, x), and
-; CellsLeft = `$FF` (no second call). PassEnd then explodes it like a burnt
-; cell (the code `$57`, then `$58-$5C`, then empty).
+; CellsLeft = `$FF` (no second call); the door's own explosion then decrements
+; it to `$FE` when its slot empties. PassEnd then explodes it like a burnt cell
+; (the code `$57`, then `$58-$5C`, then empty).
 ;
 ; In levels 1-60 the element in front of the receiver is a mine (`$41`, 23
 ; levels), a wall (`$21-$3E`, 32), a block (4) or a fibre-optic end (`$53`, 1):
@@ -386,8 +391,8 @@ BeamInLaser:
 ;
 ; BeamStep runs about 11.7 times a trace (1 038 316 against 88 519).
 ;
-; Witness: L1 106709 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 112689 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 TraceBeam:
   XOR A
   LD (BeamSteps),A
@@ -425,8 +430,8 @@ TraceBeam:
 ;
 ; - `$58` and up (a cell exploding): return, the beam ends.
 ;
-; Witness: L1 1217263 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1251228 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamStep:
   XOR A
   LD (BeamAtCentre),A
@@ -582,7 +587,7 @@ BeamAtLaser:
 ; 6521 runs: `mine`, `overload` and 54 RZX segments. The `overload` recording
 ; sets BeamInLaser by a POKE (WALKTHROUGH 6.0).
 ;
-; Witness: L1 7107 (hof, mine, overload, L x20, rzx x54).
+; Witness: L1 7109 (hof, mine, nameedit, overload, L x20, rzx x54).
 BeamBackToLaser:
   LD A,$FF
   LD (BeamInLaser),A
@@ -598,7 +603,7 @@ BeamBackToLaser:
 ;
 ; From BeamReceiver (`$8FAC`) and BeamBackToLaser. 6539 runs.
 ;
-; Witness: L1 7145 (hof, mine, overload, L x20, rzx x55).
+; Witness: L1 7147 (hof, mine, nameedit, overload, L x20, rzx x55).
 HighlightCell:
   LD A,(HighlightY)
   DEC A
@@ -650,8 +655,8 @@ HighlightCell:
 ;
 ; From BeamStep (`$8F1A`).
 ;
-; Witness: L1 212472 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x58).
+; Witness: L1 218110 (c1, c1g, cheat, controls, energy, energy-out, hof,
+; kempston, menu, mine, nameedit, overload, practice, L x20, rzx x58).
 BeamMirror:
   LD C,A
   DEC C
@@ -808,8 +813,8 @@ FibrePartner:
 ; drawn over all recordings (c1g, controls, energy, kempston, menu, mine,
 ; overload and the 59 RZX level segments).
 ;
-; Witness: L1 1241033 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1276460 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamVertex:
   XOR A                   ; clear the per-vertex flags $8EC3-$8EC8
   LD (BeamReflected+$0001),A
@@ -1041,8 +1046,8 @@ BeamOutPass:
 ;
 ; Falls into `BeamMove` `$9235`.
 ;
-; Witness: L1 1084235 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1108934 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamNewDirection:
   LD A,(BeamNextDirection)
   LD (BeamDirection),A
@@ -1070,8 +1075,8 @@ BeamNewDirection:
 ;
 ; Then back to the trace `$8EDD` for the next vertex.
 ;
-; Witness: L1 1111452 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1139437 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamMove:
   LD A,(BeamX)            ; B = x, C = y
   LD B,A
@@ -1130,8 +1135,8 @@ BeamLengthCheck:
 ; absorbs, `$72` reflects; `$73`-`$7B` (cells, mines) drawn; `$80`-`$AF` (the
 ; laser, the receiver) absorb.
 ;
-; Witness: L1 4738979 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4870383 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamInChar:
   LD A,(DE)
   LD C,A
@@ -1175,8 +1180,8 @@ BeamInOnCell:
 ;
 ; Falls into `BeamInNext` `$92DE`.
 ;
-; Witness: L1 1489418 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1533825 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamPlotGlyph:
   INC H                   ; the draw mark: $E300
   INC H
@@ -1230,8 +1235,8 @@ BeamPlotRows:
 ; level 1): `$11` and `$19` (angle 0) pass it, `$13` (angle 2) absorbs it,
 ; `$1B` (angle 2) sends it back into the laser (OVERLOAD).
 ;
-; Witness: L1 4703273 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4831391 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamInNext:
   POP DE
   INC E                   ; the next glyph byte
@@ -1395,14 +1400,15 @@ AbsorbInEnd:
 ; the new direction is the reverse: OVERLOAD. Then `BeamMove` `$9235` with that
 ; step.
 ;
-; The diagonal branch `$93F2` ran in no recording (known only from the code);
-; the slope branch ran 21 949 times in 33 RZX segments.
+; The diagonal branch `$93F2` ran in no play, only on the clone `corner`
+; (InCornerTable `$8100`); the slope branch ran 21 949 times in 33 RZX
+; segments.
 ;
 ; Experiment (`elements.py`): a full reflecting wall `$3E` and a yellow
 ; polariser across the beam (`$1B`) send the westward beam of level 1 straight
 ; back: `$8ED5` = `$FF`.
 ;
-; Witness: L1 32170 (c1, c1g, cheat, hof, L x9, rzx x33).
+; Witness: L1 35456 (c1, c1g, cheat, corner, hof, nameedit, L x9, rzx x33).
 BeamReflectIn:
   LD A,(BeamDirection)    ; slope or diagonal: bounce off
   LD B,A
@@ -1543,8 +1549,8 @@ ReflectInPick:
 ; mostly straight back (the OVERLOAD of `$91A9`). At a cell's centre (`$8EC1`)
 ; walls only, as in the incoming pass.
 ;
-; Witness: L1 4485692 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4597599 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamCornerChar:
   LD A,(DE)
   LD C,A
@@ -1685,8 +1691,8 @@ BeamCornerTurn:
 ; place (`$96A7`) `$8ECB` is `$FF`, so a polariser's character beside that
 ; vertex is judged as if the beam ran at angle 7 (known only from the code).
 ;
-; Witness: L1 4392558 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4498406 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamOutChar:
   LD A,(DE)
   LD C,A
@@ -1726,8 +1732,8 @@ BeamOutOnCell:
 ; cleared); the pixel address is kept in `$8EC9`. Falls into `BeamOutNext`
 ; `$9565`.
 ;
-; Witness: L1 1326576 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 1357897 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamOutPlot:
   INC H
   INC H
@@ -1768,8 +1774,8 @@ BeamOutRows:
 ; axis (three characters marked through `$81A0`, then `BeamOutPlot`), else cyan
 ; absorbs, yellow reflects.
 ;
-; Witness: L1 4345190 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4448984 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 BeamOutNext:
   POP DE
   INC E                   ; the next glyph byte
@@ -1851,7 +1857,7 @@ PolariserPassOutLoop:
 ; Experiment (`elements.py 21`): a quarter wall `$21` at the up-left of the
 ; cell is reached here and grazed; the beam goes on west.
 ;
-; Witness: L1 5282 (c1, c1g, L x17, rzx x36).
+; Witness: L1 5864 (c1, c1g, practice, L x17, rzx x36).
 BeamAbsorbOut:
   LD A,(BeamNextDirection) ; slope or diagonal: absorbed at once
   LD B,A
@@ -1912,7 +1918,7 @@ AbsorbOutEnd:
 ; new direction. At 40 bounces OVERLOAD, at 150 the trace ends; the bounce
 ; count never passed 39 in the recordings (`$96B8` never ran).
 ;
-; Witness: L1 49194 (c1, c1g, cheat, hof, L x9, rzx x31).
+; Witness: L1 50666 (c1, c1g, cheat, hof, nameedit, L x9, rzx x31).
 BeamReflectOut:
   LD A,(BeamNextDirection) ; slope or diagonal: bounce
   LD B,A
@@ -2078,7 +2084,7 @@ PauseSavedRows:
 ; rows 0-4 of the characters, the font from `$D202`); the screen's strip is
 ; saved in PauseSavedRows `$96DB` first.
 IntermissionText:
-  DEFM " INTERMISSION  "
+  INCBIN "res/texts/intermission.bin",$0000,15
 
   ORG $9910
 
@@ -2092,8 +2098,8 @@ IntermissionText:
 ; 0-14, row 0-8). No delay: the cursor moves a cell every pass of the main loop
 ; (4.85 frames a pass in the RZX run).
 ;
-; Witness: L1 111148 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117259 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 MoveCursor:
   LD (ControlBits),A
   BIT 4,A                 ; fire: turn the mirror
@@ -2128,22 +2134,7 @@ MoveCursorRow:
 ; 16 pairs read by `MoveCursor` `$9910`. Left and right together, or up and
 ; down together, cancel; the last four pairs (up and down both held) are zero.
 CursorSteps:
-  DEFB $00,$00
-  DEFB $FF,$00
-  DEFB $01,$00
-  DEFB $00,$00
-  DEFB $00,$01
-  DEFB $FF,$01
-  DEFB $01,$01
-  DEFB $00,$00
-  DEFB $00,$FF
-  DEFB $FF,$FF
-  DEFB $01,$FF
-  DEFB $00,$00
-  DEFB $00,$00
-  DEFB $00,$00
-  DEFB $00,$00
-  DEFB $00,$00
+  INCBIN "res/tables/cursor-steps.bin",$0000,32
 
 ; Fire held: turn the mirror under the cursor one sixteenth to the right or to
 ; the left
@@ -2218,8 +2209,8 @@ TurnMirrorStore:
 ; (column 2x + 1, row 2y + 1 of the 32 x 20 map) are set to 2, so the cell's
 ; own graphics replace last pass's cursor.
 ;
-; Witness: L1 111149 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117260 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 MarkCursorCells:
   LD A,(CursorX)
   ADD A,A
@@ -2262,8 +2253,8 @@ MarkCursorCells:
 ; 16 x 16 square `CursorGraphic` `$9A37` is ORed into the pixel buffer `$E900`
 ; over the cell.
 ;
-; Witness: L1 111061 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 DrawCursor:
   LD A,(CursorX)
   ADD A,A
@@ -2302,8 +2293,8 @@ DrawCursor:
 ; Keeps bits 7-6 (flash, bright). Falls in from `DrawCursor` for the fourth
 ; character.
 ;
-; Witness: L1 235384 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 259824 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 InvertColour:
   LD A,(HL)
   LD B,A
@@ -2368,22 +2359,7 @@ DrawCursorSquareRow:
 ; ORed into the pixel buffer round the cell under the cursor by
 ; `DrawCursorSquare` `$9A11` while fire is held.
 CursorGraphic:
-  DEFB $FF,$FF
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $80,$01
-  DEFB $FF,$FF
+  INCBIN "res/graphics/cursor.bin",$0000,32
 
   ORG $D500
 

@@ -321,7 +321,7 @@ flowchart TD
 ```
 
 *The entry. Witness: `hof` runs HallOfFame once, with place 6, five letters and ENTER, and CopyFullScreen at the end
-(`$9DD6`). The DELETE and SPACE paths ran in no recording. The point: a name is typed straight into the hall of
+(`$9DD6`). `nameedit` (the same start) runs DELETE and SPACE once each (below). The point: a name is typed straight into the hall of
 fame's own text record, which is also what the options screen prints, so there is no separate copy to save.*
 
 ![The name entry](img/hud/name-entry.gif)
@@ -346,8 +346,20 @@ half-row 6 (`$FDFE`, A S D F G), bit 0. It is then written at the record's place
 Rank = 14. The typed name stays in memory only. The game has no save, so the hall of fame resets to MEGA ... AWFUL at
 the next load.
 
+**DELETE and SPACE.** `nameedit` (`work/docs/integrate/rec/nameedit`, `tests/inputs/nameedit.txt`) starts as `hof` and
+types A, G, DELETE (key 0), SPACE, E, N, T, X and ENTER. DELETE (`$9D15`) runs once: the column goes back over G, and
+EraseNameCursor `$9DF5` blanks the place. SPACE (`$9D5A`) runs once: a space is written and the column moves on.
+After T the name is full; X is refused by the full-name test `$9D7E` (polled 377 times while X is held). The name
+in the record is "A ENT".
+
+![The hall of fame after DELETE and SPACE](img/hud/name-entry-edit.png)
+
+*`nameedit` at frame 17 250, as ENTER is pressed (`python3 tools/scr_png.py
+work/docs/integrate/rec/nameedit/screens/017250.scr docs/img/hud/name-entry-edit.png`). How to read it: the hall of
+fame in the options screen. The point: the sixth place reads A ENT 021940: the deleted G is gone and the space
+stands in the name like a letter.*
+
 ## 8.6 What is known only from the code
 
-- The name entry's DELETE (`$9D15`) and SPACE (`$9D5A`) paths: no recording pressed them.
 - The characters no recording printed: 34-39, 42, 43, 47, 58-63, 81 and 90-96 (the listing's Font block).
 - The ending's text records (`$A8xx`): read once, in `rzx-344752` only.

@@ -32,8 +32,8 @@
 ; Recordings: `$9AC5` 117 180 runs in 53 RZX segments; a gremlin was hit
 ; (`$9AD1`) 120 times in 43 segments.
 ;
-; Witness: L1 111061 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117171 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 CursorFire:
   LD A,(ControlBits)
   BIT 4,A
@@ -173,8 +173,8 @@ OverloadBarPointer:
 ; Called by `$843C` (at `$8515`) at each level start and restart after a lost
 ; life. Evidence: 164 runs (all recordings but `gameover`).
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 ResetBars:
   LD HL,Screen+5297
   LD (OverloadBarPointer),HL
@@ -245,8 +245,8 @@ ResetBarsCharging:
 ;
 ; Evidence: 3328 runs (104 level starts x 32).
 ;
-; Witness: L1 4352 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 4480 (c1, c1g, cheat, controls, energy, energy-out, hof,
+; kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 ChargeLaser:
   LD HL,DrawMarks+33
   LD DE,LevelGrid+35
@@ -374,8 +374,8 @@ ChargeNextCell:
 ;
 ; Evidence: 90 776 runs.
 ;
-; Witness: L1 110999 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117106 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 DrainEnergy:
   LD A,(LaserCharging)
   AND A
@@ -452,8 +452,9 @@ EnergyDrained:
 ; Evidence: 90 821 runs; MINE ALERT 1753 (`mine`, `gameover`, 46 RZX segments),
 ; OVERLOAD (`$A6A6`) in `overload` and the RZX segments.
 ;
-; Witness: L1 111052 (c1, c1g, cheat, controls, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117162 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x59).
 UpdateOverload:
   LD A,(BeamOnMine)
   AND A
@@ -490,7 +491,7 @@ OverloadShowMessage:
 ; The beam sets the two flags again on each pass it meets a mine or the laser.
 ; Evidence: 8226 runs.
 ;
-; Witness: L1 9139 (gameover, hof, mine, overload, L x20, rzx x55).
+; Witness: L1 9141 (gameover, hof, mine, nameedit, overload, L x20, rzx x55).
 OverloadStep:
   XOR A
   LD (BeamInLaser),A
@@ -507,7 +508,7 @@ OverloadStep:
 ; Evidence: 13 485 runs; full (`$A6EE`) 41 times (`mine`, `overload`,
 ; `gameover`, 24 RZX segments).
 ;
-; Witness: L1 15400 (gameover, hof, mine, overload, L x20, rzx x55).
+; Witness: L1 15402 (gameover, hof, mine, nameedit, overload, L x20, rzx x55).
 OverloadAddStep:
   LD HL,(OverloadBarPointer)
   LD A,L
@@ -546,8 +547,8 @@ OverloadAddStep:
 ;
 ; Evidence: 82 595 runs.
 ;
-; Witness: L1 101913 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 108021 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 CoolOverload:
   LD A,(SoundFlags)
   AND $F9
@@ -590,73 +591,13 @@ CoolOverloadStep:
 ; DrawGremlin ORs frame GremlinPhase / 32 (`$AAE3` + GremlinPhase) into the
 ; pixel buffer. Evidence: read in 54 RZX segments.
 GremlinFrames:
-  DEFB $05,$00            ; frame 0
-  DEFB $2A,$A0
-  DEFB $55,$50
-  DEFB $2A,$A8
-  DEFB $55,$54
-  DEFB $AA,$AA
-  DEFB $55,$54
-  DEFB $AA,$AA
-  DEFB $55,$55
-  DEFB $2A,$AA
-  DEFB $55,$55
-  DEFB $2A,$AA
-  DEFB $15,$54
-  DEFB $0A,$AA
-  DEFB $05,$54
-  DEFB $00,$A0
+  INCBIN "res/graphics/gremlin.bin",$0000,32
 GremlinFrame1:
-  DEFB $02,$A0            ; frame 1
-  DEFB $15,$54
-  DEFB $2A,$A8
-  DEFB $15,$54
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $2A,$A8
-  DEFB $15,$54
-  DEFB $2A,$A8
-  DEFB $05,$40
+  INCBIN "res/graphics/gremlin.bin",$0020,32
 GremlinFrame2:
-  DEFB $00,$50            ; frame 2
-  DEFB $02,$AA
-  DEFB $05,$54
-  DEFB $0A,$AA
-  DEFB $15,$55
-  DEFB $2A,$AA
-  DEFB $55,$55
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $AA,$AA
-  DEFB $55,$54
-  DEFB $AA,$A8
-  DEFB $55,$50
-  DEFB $2A,$A0
-  DEFB $55,$40
-  DEFB $0A,$00
+  INCBIN "res/graphics/gremlin.bin",$0040,32
 GremlinFrame3:
-  DEFB $00,$00            ; frame 3
-  DEFB $05,$50
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $2A,$AA
-  DEFB $55,$55
-  DEFB $AA,$AA
-  DEFB $55,$55
-  DEFB $AA,$AA
-  DEFB $55,$55
-  DEFB $AA,$AA
-  DEFB $55,$54
-  DEFB $2A,$AA
-  DEFB $55,$54
-  DEFB $0A,$A0
-  DEFB $00,$00
+  INCBIN "res/graphics/gremlin.bin",$0060,32
 
 ; Eight gremlin records of 6 bytes: delay, turns, X, Y, the cell's address
 ;
@@ -711,10 +652,7 @@ GremlinPhase:
 ;
 ; GremlinMove picks one at random (`$8E15` L AND 3).
 GremlinSteps:
-  DEFB $01,$00
-  DEFB $00,$01
-  DEFB $FF,$00
-  DEFB $00,$FF
+  INCBIN "res/tables/gremlin-steps.bin",$0000,8
 
 ; Each pass: count the waiting gremlins down, make them appear, walk or turn
 ; the others, draw them
@@ -731,8 +669,8 @@ GremlinSteps:
 ;
 ; Evidence: 87 502 runs; GremlinAppear in 54 RZX segments.
 ;
-; Witness: L1 106709 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 112691 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 UpdateGremlins:
   LD A,(GremlinPhase)
   ADD A,$20
@@ -788,7 +726,7 @@ GremlinNext:
 ;
 ; Evidence: 4910 runs (54 RZX segments); the message 253 times.
 ;
-; Witness: L1 5139 (hof, L x18, rzx x54).
+; Witness: L1 5150 (hof, nameedit, L x18, rzx x54).
 GremlinAppear:
   CALL Random
   LD A,L
@@ -834,7 +772,7 @@ GremlinWarn:
 ;
 ; Evidence: 11 188 runs (52 RZX segments).
 ;
-; Witness: L1 12407 (hof, L x15, rzx x52).
+; Witness: L1 12712 (hof, nameedit, L x15, rzx x52).
 GremlinTurnMirror:
   DEC A
   LD (IX+$01),A
@@ -870,7 +808,7 @@ GremlinTurnBack:
 ;
 ; Evidence: 97 827 runs (54 RZX segments).
 ;
-; Witness: L1 112465 (hof, L x18, rzx x54).
+; Witness: L1 121430 (hof, nameedit, L x18, rzx x54).
 GremlinMove:
   LD C,(IX+$02)
   LD B,(IX+$03)
@@ -992,7 +930,7 @@ GremlinCommit:
 ;
 ; Evidence: 109 267 runs.
 ;
-; Witness: L1 125184 (hof, L x18, rzx x54).
+; Witness: L1 134460 (hof, nameedit, L x18, rzx x54).
 DrawGremlin:
   LD C,(IX+$02)
   INC C

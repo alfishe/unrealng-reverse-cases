@@ -292,7 +292,7 @@ Bytes the game carries but never uses (each checked in the L1 of every recording
 | `$5B00-$5FFF` | 1280 | the loader's last code and block head | the load's workspace; the game does not clear it |
 | `$7B00-$7B7F` | 128 | Gap7B00: zeros | pads the panel picture to end at `$7FFF` |
 | `$81FC`, `$81FE` | 1 + 1 | zeros between the sound records, ControlMethod and Level | alignment of Level at `$81FF` |
-| `$8100-$813F` | 64 | InCornerTable: a diagonal beam's bounce in the incoming pass | read only by ReflectInCorner `$93F2`, a branch no recording ran ([doc 10](10-gameplay-logic.md)) |
+| `$8100-$813F` | 64 | InCornerTable: a diagonal beam's bounce in the incoming pass | read only by ReflectInCorner `$93F2`, a branch no play runs; the clone recording `corner` runs it ([doc 10, 10.12](10-gameplay-logic.md#1012-what-is-known-only-from-the-code)) |
 | `$8405-$8406` | 2 | the end of LevelSettings: `$01 $00` | a 65th pair |
 | `$96D7-$96DA` | 4 | in the pause's save area | never used |
 | `$9AF1-$9AF2` | 2 | Unused9AF1: `$06 $04` | no code reads them |

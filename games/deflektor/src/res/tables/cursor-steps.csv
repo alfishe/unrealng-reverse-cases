@@ -1,0 +1,19 @@
+# CursorSteps $993E: dx, dy of the cursor for each value 0-15 of the direction bits (bit 0
+# left, 1 right, 2 down, 3 up), read by MoveCursor $9910.
+_row,dx-s,dy-s
+bits 0,0,0
+bits 1,-1,0
+bits 2,1,0
+bits 3,0,0
+bits 4,0,1
+bits 5,-1,1
+bits 6,1,1
+bits 7,0,0
+bits 8,0,-1
+bits 9,-1,-1
+bits 10,1,-1
+bits 11,0,0
+bits 12,0,0
+bits 13,0,0
+bits 14,0,0
+bits 15,0,0

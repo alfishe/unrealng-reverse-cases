@@ -1,0 +1,5 @@
+# PlaySound $A8C0 records from $8660: 5 bytes each, the kind then four parameters, as in
+# tables/sounds.csv. `_name` is the record's label in game.ann; keep the rows in this order.
+_name,kind,p1,p2,p3,p4
+ReceiverOpenSound,1,$0F,$04,$14,$23
+LifeLostSound,1,$19,$06,$06,$0A

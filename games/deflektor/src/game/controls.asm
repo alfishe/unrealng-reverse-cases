@@ -161,8 +161,8 @@ PauseRestoreRows:
 ; `menu` the demo (SPACE ends it elsewhere) and practice (U + G); `$9811` 5
 ; runs (controls, kempston, menu).
 ;
-; Witness: L1 111157 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117268 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 ReadKeys:
   XOR A
   LD (CursorMode),A
@@ -266,8 +266,8 @@ LevelCheatDown:
 ; default; every RZX segment), Kempston `$98D2` 301 (kempston), Protek `$98E7`
 ; 276 (controls).
 ;
-; Witness: L1 111148 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117259 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 ReadControls:
   LD A,(ControlMethod)
   CP $01

@@ -62,8 +62,8 @@ CellTable:
 ; Jumps to DrawMarkedChars. From MainLoop (`$8550`) every pass and from
 ; BuildLevel (falls in).
 ;
-; Witness: L1 111344 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117459 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 RenderGrid:
   LD HL,CharMap+31
   LD (CharMapPointer),HL
@@ -199,11 +199,11 @@ RenderGridTurned:
 ; Then the frame: line 0 and line 159 of the pixel buffer all set, and the left
 ; pixel of column 0 and the right pixel of column 31 on lines 1-158.
 ;
-; From RenderGrid. The practice line is known only from the code (`$8A6E` ran
-; in no recording).
+; From RenderGrid. The practice line `$8A6E` ran 615 times in `practice`
+; (`work/docs/dfA/rec/practice`).
 ;
-; Witness: L1 111334 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117449 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 DrawMarkedChars:
   LD HL,PixelBuffer
   LD DE,DrawMarks
@@ -309,14 +309,9 @@ DrawMarkedFrameLoop:
 ;
 ; Record: the attribute `$43` with bit 7 set, column 0, row `$13`, then 32
 ; characters, then `$FF` (the end of the records). Printed by DrawMarkedChars
-; in practice; known only from the code.
+; in practice (the `practice` recording).
 PracticeText:
-  DEFB $C3,$00,$13
-  DEFB $20,$50,$52,$41,$43,$54,$49,$43 ; " PRACTICE MODE . G AND U ABORTS "
-  DEFB $45,$20,$4D,$4F,$44,$45,$20,$2E
-  DEFB $20,$47,$20,$41,$4E,$44,$20,$55
-  DEFB $20,$41,$42,$4F,$52,$54,$53,$20
-  DEFB $FF                ; the end of the records
+  INCBIN "res/texts/practice.bin",$0000,36
 
   ORG $8B9B
 
@@ -328,10 +323,10 @@ PracticeText:
 ; attributes from `$E200` to `$5800` (the last one, row 23 column 31, is not
 ; copied).
 ;
-; From the ending (`$A8D4`) and `$9DD6` (the menu). Run twice, in `rzx-344752`
-; (the ending); the menu's call ran in no recording.
+; From the ending (`$A8D4`) and `$9DD6` (the menu). Run in `rzx-344752` (the
+; ending, `$A8D4`) and in `hof` (`$9DD6`, after the name AGENT).
 ;
-; Witness: L1 4 (ending, hof, rzx344752).
+; Witness: L1 5 (ending, hof, nameedit, rzx344752).
 CopyFullScreen:
   LD HL,DrawMarks+512
   LD DE,Screen
@@ -415,8 +410,8 @@ CopyFullScreenLine:
 ; From MainLoop (`$85AB`), every pass. A mark of 2 (an explosion,
 ; HighlightCell) draws the character on two passes.
 ;
-; Witness: L1 111060 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 117170 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 CopyPlayArea:
   LD HL,PixelBuffer+5119
   LD E,$7F
@@ -430,8 +425,9 @@ CopyPlayArea:
 ; recordings start inside the loop (CopyPlayAreaNext `$8C56` is their root),
 ; and the walk shares these jump targets with CopyPlayArea.
 ;
-; Witness: L1 333179 (c1, c1g, cheat, controls, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 351508 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x59).
 CopyPlayAreaThird:
   LD D,C
 
@@ -440,8 +436,9 @@ CopyPlayAreaThird:
 ;
 ; Part of CopyPlayArea (see CopyPlayAreaThird).
 ;
-; Witness: L1 71078071 (c1, c1g, cheat, controls, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 74988317 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x59).
 CopyPlayAreaLoop:
   LD A,(DE)
   AND A
@@ -501,8 +498,9 @@ CopyPlayAreaSkip:
 ; `overload` recordings start from snapshots taken here, so their L1s mark a
 ; routine root.
 ;
-; Witness: L1 71078068 (c1, c1g, cheat, controls, energy, energy-out, gameover,
-; hof, kempston, menu, mine, overload, L x20, rzx x59).
+; Witness: L1 74988314 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; gameover, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx
+; x59).
 CopyPlayAreaNext:
   JP NZ,CopyPlayAreaLoop
   LD L,$FF                ; the character row above
@@ -570,8 +568,8 @@ WipeSaved:
 ; WipeWidth = 9, WipeTable = ScreenWipes `$8DD5`; then WipeIn. From the menu
 ; (`$9CA3`, `$A758`).
 ;
-; Witness: L1 12 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
-; rzx344752).
+; Witness: L1 14 (c1, c1g, controls, energy, energy-out, hof, kempston, menu,
+; nameedit, practice, rzx344752).
 WipeInScreen:
   LD A,$09
   LD (WipeWidth),A
@@ -585,8 +583,8 @@ WipeInScreen:
 ; WipeWidth = 13, WipeTable = PlayAreaWipes `$8D95`; falls into WipeIn. From
 ; SetUpLevel (`$8512`).
 ;
-; Witness: L1 196 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x59).
+; Witness: L1 200 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x59).
 WipeInPlayArea:
   LD A,$0D
   LD (WipeWidth),A
@@ -610,8 +608,8 @@ WipeInPlayArea:
 ; one byte); at the end the whole buffer is on the screen. The play area: 13 x
 ; 1 to 32 x 20 in 20 rounds; the full screen: 9 x 1 to 32 x 24 in 24.
 ;
-; Witness: L1 208 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
-; menu, mine, overload, L x20, rzx x60).
+; Witness: L1 214 (c1, c1g, cheat, controls, energy, energy-out, hof, kempston,
+; menu, mine, nameedit, overload, practice, L x20, rzx x60).
 WipeIn:
   CALL Random
   LD A,L
@@ -738,27 +736,7 @@ WipeInPauseInner:
 ; picture sliding in from that side. The first record was picked at 41 of the
 ; 164 set-ups in the builds other than `c1` (the reads of `$8D95`).
 PlayAreaWipes:
-  DEFW $0000,$0000,$FEFF,$FFDF,$4000,$5800,$FC13,$E873 ; top-left: the screen
-                                                       ; corner stays at $4000,
-                                                       ; the source runs
-                                                       ; up-left from row 19,
-                                                       ; column 19
-  DEFW $FFFF,$FFFF,$FF00,$FFE0,$4013,$5813,$FC00,$E860 ; top-right: the screen
-                                                       ; corner left from
-                                                       ; column 19, the source
-                                                       ; up from row 19, column
-                                                       ; 0
-  DEFW $FFE0,$FFE0,$FFFF,$FFFF,$5060,$5A60,$E913,$E613 ; bottom-left: the
-                                                       ; screen corner up from
-                                                       ; row 19, the source
-                                                       ; left from row 0,
-                                                       ; column 19
-  DEFW $FFDF,$FFDF,$0000,$0000,$5073,$5A73,$E900,$E600 ; bottom-right: the
-                                                       ; screen corner up-left
-                                                       ; from row 19, column
-                                                       ; 19, the source stays
-                                                       ; at the buffer's
-                                                       ; top-left
+  INCBIN "res/tables/wipes.bin",$0000,64
 
 ; WipeInScreen's four corners: as PlayAreaWipes, for the 24-row full-screen
 ; buffer ($E500 / $E200)
@@ -766,10 +744,7 @@ PlayAreaWipes:
 ; The same four corners from column 23 and row 23. The first record was picked
 ; once of the 9 menu wipes (`menu`).
 ScreenWipes:
-  DEFW $0000,$0000,$FEFF,$FFDF,$4000,$5800,$FC17,$E4F7 ; top-left
-  DEFW $FFFF,$FFFF,$FF00,$FFE0,$4017,$5817,$FC00,$E4E0 ; top-right
-  DEFW $FFE0,$FFE0,$FFFF,$FFFF,$50E0,$5AE0,$E517,$E217 ; bottom-left
-  DEFW $FFDF,$FFDF,$0000,$0000,$50F7,$5AF7,$E500,$E200 ; bottom-right
+  INCBIN "res/tables/wipes.bin",$0040,64
 
 ; The next random number: RandomSeed = 254 x (RandomSeed + 1) mod 65537 - 1; HL
 ; = the new seed
@@ -786,8 +761,8 @@ ScreenWipes:
 ; on each of its loops (`$A7AB-$A7AF`), so the game's random numbers depend on
 ; how long the panel waited; `$ACA0` reads the seed's high byte.
 ;
-; Witness: L1 799870 (c1, c1g, cheat, controls, energy, energy-out, hof,
-; kempston, menu, mine, overload, L x20, rzx x60).
+; Witness: L1 826505 (c1, c1g, cheat, controls, corner, energy, energy-out,
+; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 Random:
   LD DE,(RandomSeed)
   LD H,E
@@ -829,8 +804,8 @@ PrintColourPage:
 ; PrintPixelPage = `$E5`, PrintColourPage = `$E2`; then PrintRecords (in
 ; PrintPlay). From the hall of fame (`$9F2B`-`$9F3D`) and the ending (`$A8D1`).
 ;
-; Witness: L1 66 (c1, c1g, controls, ending, energy-out, gameover, hof,
-; kempston, menu, mine, overload, rzx344752).
+; Witness: L1 74 (c1, c1g, controls, ending, energy-out, gameover, hof,
+; kempston, menu, mine, nameedit, overload, rzx344752).
 PrintFull:
   LD A,$E5
   LD (PrintPixelPage),A
@@ -851,10 +826,10 @@ PrintFull:
 ; The colour is written for every character but `/` and `\` (`$2F`, `$5C`),
 ; which keep the colour under them.
 ;
-; PrintPlay's own part runs only for PracticeText (DrawMarkedChars `$8A71`):
-; known only from the code; PrintRecords runs only for PrintFull.
+; PrintPlay's own part runs only for PracticeText (DrawMarkedChars `$8A71`), in
+; practice (the `practice` recording); PrintRecords runs for both.
 ;
-; Witness: L1 0 ().
+; Witness: L1 615 (practice).
 PrintPlay:
   LD A,$E9
   LD (PrintPixelPage),A
