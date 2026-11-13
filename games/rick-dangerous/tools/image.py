@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""The game image as the Bleepload loader leaves it: `$5B00-$FFFF` at the game's entry `$AB4D` (DI, LD SP,0,
-CALL `$A043`), RAM 5, 2 and 0 at `$4000`, `$8000`, `$C000`.
+"""The game image as the Bleepload loader leaves it: a 64 K file, `$4000-$FFFF` at the game's entry `$AB4D` (DI,
+LD SP,0, CALL `$A043`), RAM 5, 2 and 0 at `$4000`, `$8000`, `$C000` (`$0000-$3FFF` zero; the game is `$5B00-$FFFF`).
 
     python3 tools/image.py work/mkgame/original.bin [--z80 work/mkgame/entry.z80]
 
@@ -38,10 +38,10 @@ def main():
         code = ('import sys\nfrom skoolkit.snapshot import Snapshot\ns = Snapshot.get(sys.argv[1])\n'
                 'assert s.pc == %d, hex(s.pc)\nr = bytes(s.ram(-1))\n'
                 'v = r[5 * 16384:6 * 16384] + r[2 * 16384:3 * 16384] + r[0:16384]\n'
-                'open(sys.argv[2], "wb").write(v[%d:])\n') % (ENTRY, LO - 0x4000)
+                'open(sys.argv[2], "wb").write(bytes(16384) + v)\n') % ENTRY
         os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
         subprocess.run([os.path.join(venv, 'bin', 'python3'), '-c', code, z80, a.out], check=True)
-    print(f'{a.out}: ${LO:04X}-$FFFF at the entry ${ENTRY:04X}')
+    print(f'{a.out}: 64 K, the game ${LO:04X}-$FFFF at the entry ${ENTRY:04X}')
 
 
 if __name__ == '__main__':

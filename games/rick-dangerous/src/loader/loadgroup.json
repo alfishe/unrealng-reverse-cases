@@ -1,0 +1,29 @@
+{
+  "about": "group 1's blocks 44-45: LoadGroup at $FA00, the loader of groups 2 and 3 (512 bytes, deciphered): python3 ../../kit/mkgame.py --part src/loader/loadgroup.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/loadgroup-fa00.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/loadgroup-fa00.bin",
+  "org": "FA00",
+  "ann": "src/loader/loadgroup.ann",
+  "top": "loadgroup",
+  "bin": "loadgroup.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": [
+    "; Rick Dangerous, Firebird 1989 (Bleepload): group 1's blocks 44-45: LoadGroup at $FA00, the loader of groups 2 and 3 (512 bytes, deciphered)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "FA00",
+      "hi": "FC00",
+      "reads": false
+    }
+  ],
+  "work": "work/stage2/mkloadgroup"
+}

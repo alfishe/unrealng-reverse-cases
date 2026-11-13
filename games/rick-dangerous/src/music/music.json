@@ -1,0 +1,20 @@
+{
+  "about": "The game image's $5E00-$6BA3 as the entry copies it to RAM 1 at $C000 on a 128K: the AY music and effects player and its tunes: python3 ../../kit/mkgame.py --part src/music/music.json --install",
+  "image_cmd": ["sh", "-c", "test -f work/parts/music-c000.bin || python3 tools/parts.py > /dev/null"],
+  "image": "work/parts/music-c000.bin",
+  "org": "C000",
+  "ann": "src/music/music.ann",
+  "top": "music",
+  "bin": "music.bin",
+  "dest": "src/music",
+  "device": "ZXSPECTRUM128",
+  "bank": 1,
+  "bases": {"1": "C000"},
+  "data_entries": "stop",
+  "header": ["; Rick Dangerous, Firebird 1989: the AY music and effects player and its tunes, $0DA4 bytes, assembled at $C000 in RAM 1",
+             "; where the entry's CopyMusicToRam1 puts them on a 128K; the game image holds the same bytes at $5E00."],
+  "l1": ["work/stage1/c1/l1.json", "work/stage1/controls/l1.json", "work/stage1/gameover/l1.json", "work/stage1/level1/l1.json",
+         "work/stage1/level2/l1.json", "work/stage1/level3/l1.json", "work/stage1/level4/l1.json", "work/stage1/ending/l1.json"],
+  "witness_builds": ["stage2/zones/L1Z4", "stage2/ending2", "stage2/beeper48"],
+  "work": "work/stage2/mkmusic"
+}

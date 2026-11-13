@@ -1,0 +1,29 @@
+{
+  "about": "TZX block 4, Rick1: the first loader stage, which the ROM loads at $CD00 (512 bytes): python3 ../../kit/mkgame.py --part src/loader/rick1.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/rick1-cd00.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/rick1-cd00.bin",
+  "org": "CD00",
+  "ann": "src/loader/rick1.ann",
+  "top": "rick1",
+  "bin": "rick1.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": [
+    "; Rick Dangerous, Firebird 1989 (Bleepload): TZX block 4, Rick1: the first loader stage, which the ROM loads at $CD00 (512 bytes)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "CD00",
+      "hi": "CF00",
+      "reads": false
+    }
+  ],
+  "work": "work/stage2/mkrick1"
+}

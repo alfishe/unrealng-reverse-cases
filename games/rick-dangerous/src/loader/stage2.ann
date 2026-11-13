@@ -1,0 +1,52 @@
+# The second stage of the Bleepload loader (kit/mkgame.py --part src/loader/stage2.json; format:
+# ../../../../docs/ann-format.md). The image is the page as the tape holds it, deciphered; the game's image has the
+# stack's bytes at $5DE7-$5DFE. Witness: c1, windowed to $5D00-$5DFF.
+
+@equ $0556 LdBytes ; the ROM's LD-BYTES: IX = the address, DE = the length, A = the flag, carry set to load, reset to verify
+@equ $028E KeyScan ; the ROM's KEY-SCAN: DE = the keys held, Z when the combination is valid
+@equ $4000 Screen 6912 ; the display file and the attributes
+@equ $5C6B DfSz ; DF_SZ: the lines of the lower screen
+@equ $5CB0 NmiAdd 2 ; NMIADD: the 128K ROM's NMI vector
+@equ $5E00 GameLow ; the game's $5E00-$6DFF (src/game): the AY player and tunes, copied to RAM 1 later
+@equ $AB4D GameEntry ; the game's entry (src/game)
+@equ $CD6E LoadBlock ; Rick1's tape reader (src/loader/rick1.asm)
+@equ $CE2A CheckBlock ; Rick1's checksum
+@equ $CE7E BadBlock ; Rick1's "Block ?" message
+@equ $CF00 Group1Screen ; group 1's $CF00-$E9FF, deciphered: the loading screen
+@equ $EA00 Group1Low ; group 1's $EA00-$F9FF, deciphered: the game's $5E00-$6DFF
+@equ $FA00 LoadGroup at $5D72,$5D8A ; the loader of groups 2 and 3 (src/loader/loadgroup.asm)
+@equ $FEE7 KeyPagePtr 2 ; in group 1's last block, the only bytes of it read: the key page, $C900
+@equ $FEE9 KeyedFrom 2 ; ... the first address the key deciphers, $CF00
+@equ $FEEC KeyedEnd ; ... the high byte after the last, $FC
+
+@module stage2 ; The second loader stage: the key, the deciphering, groups 2 and 3, the start
+@about Group 1's block 46, which Rick1 copies to $5D00 and whose tail jumps to it: $5D00-$5D3F come plain, $5D40-$5DFF enciphered with the key, which this stage makes and then uses on itself. It loads group 1's last block (only three of its pointers are read), makes the key from the key page and Rick1's code, deciphers its own rest and the pages $CF00-$FBFF, shows the loading screen and calls LoadGroup for groups 2 and 3. Last it starts the game at $AB4D, or, with two keys held, verifies the image against a plain tape block: a check for the tape duplicators.
+@about The key: key[i] = keypage[$C900 + i] XOR Rick1[$CD00 + i] XOR Rick1[$CE00 + i], made in place over the key page. tools/bleepload.py does the same both ways; the tape stores the key page (src/res/loader/keypage.bin) and the plain bytes of every other page.
+
+$5D00 c Stage2Start ; The second stage's entry: load and check group 1's last block, without storing it
+> Entered from block 46's tail (`JP $5D00`) with IX = `$CD3E`, the address StoreBlock left (pushed for MakeKey). Loads block 47 by LoadBlock and checks it (CheckBlock; a bad one: BadBlock and again). The block is never stored: its payload and its tail's `JP $5D94` are decoys, and only KeyPagePtr, KeyedFrom and KeyedEnd in the buffer are read.
+> Witness: L1 1 (c1).
+$5D02 LoadLastBlock
+$5D12 MakeKey ; HL = Rick1's first page; each key page byte XOR Rick1[$CD00 + i] XOR Rick1[$CE00 + i]
+$5D1A MakeKeyLoop
+$5D24 DecipherSelf ; the stage's bytes $5D40-$5DFF XOR key[0..$BF]
+$5D2B DecipherSelfLoop
+$5D32 ; NMIADD = 0, DF_SZ = 2
+$5D3D DecipherGroup1 ; KeyedFrom to KeyedEnd: each byte XOR key[address AND $FF]
+$5D44 DecipherLoop
+$5D51 ShowScreen ; the stack under $5DFF, the loading screen to the screen
+$5D5F ; the game's $5E00-$6DFF
+$5D6A LoadGroup2 ; marker $34; the status line at AT 19,14, the error line at AT 20,14
+$5D75 ; clear the screen and its attributes
+$5D82 LoadGroup3 ; marker $35, into $4000-$45FF; the status at AT 10,10, the errors at AT 13,10
+$5D8D ; group 3 to the game's $FA00-$FFFF
+$5D98 StartOrVerify ; KEY-SCAN: two keys whose codes differ by $21 verify, else start
+$5DA4 VerifyImage ; LD-BYTES in verify mode: $5E00-$FF1D against a ROM-speed block, flag $FF
+$5DB6 VerifyFailed
+$5DB7 ShowVerify ; the border green (the bytes agree) or black, forever
+$5DBB StartGame ; the game
+@isub $5D28 LD HL,Stage2Start+$40
+@isub $5D51 LD SP,Stage2Start+$FF
+
+$5DBE s Stage2Spare ; The page's last 66 bytes: zeros on the tape; the stack under $5DFF from ShowScreen on
+$5DE7 ; the stack at the game's entry: 24 bytes the game's image holds here

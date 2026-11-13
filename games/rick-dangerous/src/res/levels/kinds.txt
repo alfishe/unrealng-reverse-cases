@@ -1,0 +1,144 @@
+# Rick Dangerous: object kinds, animation lists, movement scripts (tools/res_levels.py)
+# kind NAME a A b B gfx|anim G script S c C d D: the 8 bytes +0, +1, +2-3, +4-5, +6, +7
+
+kind kind0 a $00 b $00 anim - script - c $00 d $00
+kind kind1 a $18 b $15 anim - script - c $00 d $00
+kind kind2 a $00 b $00 anim - script - c $00 d $00
+kind kind3 a $00 b $00 anim - script - c $00 d $00
+kind pic4 a $18 b $15 anim $8F53 script - c $00 d $00
+kind pic5 a $18 b $15 anim $8F53 script - c $00 d $00
+kind pic6 a $18 b $15 anim $8F53 script - c $00 d $00
+kind pic7 a $18 b $15 anim $8CDD script - c $00 d $00
+kind pic8 a $18 b $15 anim $8CDD script - c $00 d $00
+kind pic9 a $18 b $15 anim $8CDD script - c $00 d $00
+kind pic10 a $18 b $15 anim $914B script - c $00 d $00
+kind pic11 a $18 b $15 anim $914B script - c $00 d $00
+kind pic12 a $18 b $15 anim $914B script - c $00 d $00
+kind pic13 a $18 b $15 anim $914B script - c $00 d $00
+kind pic14 a $18 b $15 anim $914B script - c $00 d $00
+kind pic15 a $18 b $15 anim $914B script - c $00 d $00
+kind pic16 a $18 b $15 anim $6A80 script - c $00 d $00
+kind pic17 a $18 b $15 anim $896B script - c $00 d $00
+kind pic18 a $18 b $15 anim $8BE1 script - c $00 d $00
+kind pic19 a $18 b $15 anim $7080 script - c $00 d $00
+kind pic20 a $18 b $15 anim $8B63 script - c $00 d $00
+kind pic21 a $18 b $15 anim $8C5F script - c $00 d $00
+kind mark22 a $00 b $00 anim - script - c $04 d $04
+kind mark23 a $00 b $00 anim - script - c $04 d $04
+kind actor24 a $18 b $10 anim A1 script S0 c $03 d $03
+kind actor25 a $18 b $06 anim A2 script S1 c $04 d $04
+kind actor26 a $18 b $06 anim A2 script S2 c $10 d $04
+kind actor27 a $18 b $12 anim A3 script S3 c $04 d $04
+kind actor28 a $18 b $10 anim A1 script S2 c $04 d $04
+kind actor29 a $18 b $15 anim A4 script S31 c $04 d $04
+kind actor30 a $18 b $15 anim A4 script S33 c $04 d $04
+kind actor31 a $18 b $10 anim A1 script S4 c $04 d $04
+kind actor32 a $04 b $15 anim A5 script S5 c $04 d $07
+kind actor33 a $18 b $10 anim A1 script S6 c $14 d $04
+kind actor34 a $10 b $10 anim A6 script S7 c $04 d $04
+kind actor35 a $10 b $10 anim A7 script S8 c $04 d $04
+kind actor36 a $18 b $10 anim A1 script S9 c $03 d $03
+kind actor37 a $20 b $08 anim A8 script S3 c $04 d $04
+kind actor38 a $18 b $10 anim A1 script S10 c $04 d $04
+kind actor39 a $20 b $0D anim A9 script S3 c $04 d $04
+kind actor40 a $18 b $15 anim A10 script S11 c $04 d $04
+kind actor41 a $18 b $15 anim A10 script S12 c $04 d $04
+kind actor42 a $18 b $15 anim A11 script S13 c $04 d $04
+kind actor43 a $18 b $10 anim A12 script S14 c $04 d $04
+kind actor44 a $20 b $10 anim A13 script S2 c $04 d $04
+kind actor45 a $18 b $15 anim A14 script S15 c $14 d $04
+kind actor46 a $18 b $15 anim A15 script S3 c $03 d $03
+kind actor47 a $18 b $15 anim A16 script S16 c $04 d $04
+kind actor48 a $20 b $10 anim A13 script S17 c $04 d $04
+kind actor49 a $18 b $15 anim A14 script S18 c $04 d $04
+kind actor50 a $12 b $15 anim A17 script S19 c $04 d $04
+kind actor51 a $12 b $15 anim A17 script S20 c $18 d $04
+kind actor52 a $18 b $15 anim A14 script S21 c $04 d $04
+kind actor53 a $18 b $15 anim A18 script S22 c $04 d $04
+kind actor54 a $12 b $10 anim A19 script S23 c $04 d $04
+kind actor55 a $12 b $10 anim A19 script S23 c $04 d $04
+kind actor56 a $18 b $15 anim A20 script S24 c $04 d $04
+kind actor57 a $10 b $08 anim A21 script S2 c $10 d $04
+kind actor58 a $18 b $10 anim A22 script S25 c $04 d $04
+kind actor59 a $18 b $10 anim A23 script S3 c $03 d $03
+kind actor60 a $18 b $11 anim A24 script S26 c $04 d $04
+kind actor61 a $12 b $15 anim A17 script S27 c $18 d $04
+kind actor62 a $18 b $15 anim A25 script S3 c $04 d $04
+kind actor63 a $20 b $08 anim A27 script S28 c $14 d $04
+kind actor64 a $18 b $10 anim A26 script S3 c $03 d $03
+kind actor65 a $18 b $15 anim A28 script S5 c $04 d $06
+kind actor66 a $18 b $15 anim A18 script S29 c $1F d $04
+kind actor67 a $18 b $15 anim A0 script S30 c $04 d $04
+kind actor68 a $18 b $15 anim A0 script S32 c $04 d $04
+kind actor69 a $18 b $11 anim A24 script S34 c $04 d $04
+kind actor70 a $18 b $10 anim A22 script S35 c $04 d $04
+kind kind71 a $00 b $00 anim - script - c $00 d $00
+
+# anim NAME: frame bytes (bit 7 to slot +6, bits 0-6 the graphic), then $FF: back to the start
+anim A0 00 0D 0E 0F 0D 0E end
+anim A1 21 end
+anim A2 00 22 end
+anim A3 00 22 end
+anim A4 00 0D 8D end
+anim A5 00 23 end
+anim A6 24 00 end
+anim A7 21 end
+anim A8 25 00 end
+anim A9 00 25 end
+anim A10 00 26 27 end
+anim A11 00 28 end
+anim A12 2A 29 2A end
+anim A13 2B end
+anim A14 2C end
+anim A15 2D 00 end
+anim A16 00 11 end
+anim A17 2E 2E AE end
+anim A18 30 31 30 end
+anim A19 32 00 0F 0E 0D end
+anim A20 9E end
+anim A21 00 85 end
+anim A22 33 end
+anim A23 00 AF B5 B4 B5 B4 AF end
+anim A24 36 end
+anim A25 30 31 end
+anim A26 00 2F 35 34 35 34 2F end
+anim A27 B4 35 B4 end
+anim A28 12 end
+
+# script NAME: steps FRAMES,DX,DY (signed), then end ($FF); raw XX: a byte outside the steps
+script S0 16,0,0 12,0,4 250,0,0 48,0,-1 end
+script S1 70,8,0 end
+script S2 70,-8,0 end
+script S3 248,0,0 248,0,0 248,0,0 end
+script S4 250,0,0 8,0,4 34,0,0 8,0,-4 end
+script S5 70,0,-8 end
+script S6 9,0,0 8,0,1 5,0,0 8,0,1 5,0,0 8,0,1 5,0,0 8,0,1 5,0,0 8,0,1 4,0,0 8,0,1 250,0,0 250,0,0 250,0,0 250,0,0 250,0,0 250,0,0 6,0,-8 end
+script S7 1,0,0 end
+script S8 35,0,0 70,0,8 end
+script S9 16,0,0 12,0,4 250,0,0 4,0,8 25,0,0 10,0,-8 end
+script S10 34,2,0 150,0,0 34,2,0 25,0,0 17,-8,0 end
+script S11 128,2,0 end
+script S12 128,1,0 end
+script S13 96,2,0 8,0,4 12,0,8 44,-2,0 8,0,4 32,-2,0 8,0,4 12,0,8 70,-2,0 end
+script S14 32,1,2 25,0,0 32,-1,-2 end
+script S15 8,0,2 4,0,4 37,0,0 4,0,-4 8,0,-2 12,0,0 end
+script S16 24,0,0 end
+script S17 8,-4,0 8,0,4 16,-8,0 25,0,0 8,8,0 4,0,-4 150,0,0 8,8,0 250,0,0 4,0,-4 8,4,0 end
+script S18 4,0,4 4,0,8 50,0,0 48,0,-1 75,0,0 end
+script S19 4,-4,0 28,-2,2 end
+script S20 128,3,0 end
+script S21 32,0,-1 36,0,0 4,0,4 2,0,8 end
+script S22 4,0,0 254,-2,0 end
+script S23 8,0,0 end
+script S24 2,0,-4 2,0,-2 1,0,-1 1,0,1 2,0,2 4,0,4 254,0,8 end
+script S25 12,4,0 4,2,0 2,0,0 4,-2,0 48,-4,0 4,-2,0 46,0,0 4,2,0 35,4,0 end
+script S26 16,0,0 16,1,0 16,3,0 44,2,0 34,-4,0 end
+script S27 128,-3,0 end
+script S28 128,-12,0 end
+script S29 70,-6,0 end
+script S30 5,0,0 1,64,-64 5,0,0 1,-80,-32 5,0,0 1,-80,8 5,0,0 1,32,32 5,0,0 1,0,88 5,0,0 1,64,-96 5,0,0 70,6,3 5,0,0 end
+script S31 3,-8,0 1,-10,-2 1,-6,-2 1,-6,-5 1,-5,-6 1,-2,-6 1,-2,-10 1,2,-10 1,2,-6 1,5,-6 1,6,-5 1,6,-2 1,10,-2 1,10,2 1,6,2 1,6,5 1,5,6 1,2,6 1,2,10 1,-2,10 1,-2,6 1,-5,6 1,-6,5 1,-6,2 1,-10,2 70,-8,0 end
+script S32 5,0,0 1,0,-128 5,0,0 1,-64,64 5,0,0 1,-128,-32 5,0,0 1,-32,-32 5,0,0 1,112,64 5,0,0
+script S33 3,8,0 1,10,-2 1,6,-2 1,6,-5 1,5,-6 1,2,-6 1,2,-10 1,-2,-10 1,-2,-6 1,-5,-6 1,-6,-5 1,-6,-2 1,-10,-2 1,-10,2 1,-6,2 1,-6,5 1,-5,6 1,-2,6 1,-2,10 1,2,10 1,2,6 1,5,6 1,6,5 1,6,2 1,10,2 70,8,0 end
+script S34 64,2,0 32,-2,0 54,2,0 86,-2,0 end
+script S35 24,0,0 4,-2,0 32,-4,0 4,-2,0 40,0,0 4,2,0 32,4,0 4,2,0 2,0,0 end

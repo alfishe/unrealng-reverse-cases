@@ -1,0 +1,129 @@
+# Rick1, the first stage of the Bleepload loader (kit/mkgame.py --part src/loader/rick1.json; format:
+# ../../../../docs/ann-format.md). The block formats and the ciphers: tools/bleepload.py; the tape: src/tape/tape.txt.
+# Witness: c1, the original TZX from power-on at ROM speed on the 128K (work/stage1/c1, windowed to $CD00-$CEFF).
+
+@inline $CEC8
+@equ $1601 ChanOpen ; the ROM's CHAN-OPEN: A = the stream
+@equ $5C6B DfSz ; DF_SZ: the lines of the lower screen
+@equ $FE00 BlockBuffer ; every block loads here: its marker first ($64 for group 1)
+@equ $FE01 BlockPayload 256 ; the block's 256 bytes of payload
+@equ $FF01 BlockNumber ; the block's number in its group
+@equ $FF02 BlockDest 2 ; where the payload goes
+@equ $FF04 BlockFiller ; N, the filler's length; then N bytes, the tail's JP and the checksum
+@equ $FF15 NextFiller ; N of the next block: set from each block's checksum (8 for the first)
+
+@module rick1 ; Rick1: the first loader stage, which loads tape group 1
+@about TZX block 4, loaded by the BASIC's LOAD "Rick1" CODE 52480 at $CD00 and entered by its RANDOMIZE USR 52480. It loads the 48 blocks of tape group 1 (marker $64) one by one into BlockBuffer $FE00, checks each one's number and checksum, copies its 256-byte payload where the block says, and jumps into the block's own tail: a JP back to NextBlock, or for block 46 a JP into the second stage at $5D00 (src/loader/stage2.asm).
+@about Its tape reader LoadBlock is the ROM's LD-BYTES with four changes: a 100-pulse leader instead of 256, no flag check, no BREAK, and no parity check (CheckBlock makes a checksum instead). The timing constants are the ROM's, so the "turbo" blocks run at ROM speed with a short pilot. Rick1's own 512 bytes are the cipher's key material too: the second stage XORs the key page with them, so a changed byte here spoils every keyed block.
+
+$CD00 c Rick1Start ; Rick1's entry: open the screen, print the colours and "Searching 00", then load group 1
+> Entered by the BASIC's RANDOMIZE USR 52480. Opens stream 2 (ChanOpen), sets DfSz to 0, prints INK 9 PAPER 8 (PrintInline: contrasting ink, transparent paper), sets D, the block wanted, to 0, prints "Searching 00" (ShowSearching) and sets NextFiller to 8, the first block's filler length.
+> Witness: L1 1 (c1).
+$CD0C t ColoursText ; INK 9, PAPER 8: the print colours (contrasting ink, transparent paper), $FF the end
+$CD11 c Rick1Begin ; Rick1Start after its string: D = 0, "Searching 00", the first block's filler length
+> Witness: L1 1 (c1).
+$CD11 ; D = 0: the block wanted
+
+$CD16 ; the first block's filler is 8 bytes long
+
+$CD1B c NextBlock ; Load the next block of group 1, check it, store it and jump into its tail
+> LoadBlock, then the marker: a block other than `$64` is skipped. A number other than D, or a checksum CheckBlock does not match: BadBlock, and the next block. A good block's payload is copied (StoreBlock) and "Loading NN" printed (ShowLoading).
+> Then the tail: HL steps over the N filler bytes to the block's last byte, the checksum, whose bits 0-2 + 1 are the next block's N (NextFiller); D + 1, and `JP (HL)` into the block's `JP` after the filler: `JP NextBlock` for blocks 0-45, `JP $5D00` (the second stage) for block 46. The filler's bytes are never run.
+> Witness: L1 47 (c1).
+$CD30 CheckThisBlock ; the block wanted: its checksum
+$CD3B BlockGood ; store the payload, print "Loading NN"
+$CD45 SkipFiller ; HL = BlockFiller + N
+$CD4D ; the checksum: bits 0-2 + 1 = the next block's N
+$CD57 ; the next block wanted
+$CD58 ; into the tail: JP NextBlock (block 46: the second stage)
+
+$CD59 c StoreBlock ; Copy the block's 256-byte payload to its address; leave IX = the caller's return address
+> LDIRs BlockPayload to the address in BlockDest. The payload is copied as it comes: group 1's cipher is undone later by the second stage. Last it pops the return address into IX and pushes it back, so IX = `$CD3E`, inside Rick1: the second stage keeps that IX and makes the key from Rick1's page (`$5D12`).
+> Witness: L1 47 (c1).
+
+$CD6E c LoadBlock ; Read one Bleepload block from the tape into BlockBuffer: the ROM's LD-BYTES, changed
+> DE = BlockLength (`$109` + N), IX = BlockBuffer, A' = `$FF` with carry set: load. C keeps the EAR level and the border colour: the leader stripes red and yellow (EdgeOne flips C with `XOR $24` from `$02`), the data blue and cyan (C `XOR 3` after the sync).
+> Against the ROM's LD-BYTES (`$0556`): the leader needs only 100 pulses (`LD H,$64` where the ROM counts 256); the flag byte is read but not checked (a NOP where the ROM has RET NZ); verify mode hangs (`JR NC,$`); the end has no parity test: EI, the registers back and RET. Its edge routines EdgeTwo and EdgeOne keep the ROM's timing constants and drop the BREAK test.
+> Witness: L1 48 (c1).
+$CD8D WaitEdge ; the ROM's LD-START: wait for an edge
+$CD93 ; 100 leader pulses
+$CD99 ; a NOP over the ROM's 1 s delay
+$CD9A LeaderLoop ; the ROM's LD-LEADER
+$CDA9 SyncLoop ; the ROM's LD-SYNC
+$CDBA ; the data's border: blue and cyan
+$CDC4 ByteLoop ; the ROM's LD-LOOP
+$CDC7 VerifyHang ; verify mode: never ends
+$CDCE FlagByte ; the ROM's LD-FLAG: no check (a NOP where the ROM has RET NZ)
+$CDD8 NextByte ; the ROM's LD-NEXT
+$CDDA CountByte ; the ROM's LD-DEC
+$CDDE ReadByte ; the ROM's LD-8-BITS
+$CDE0 ReadBit
+$CDF6 LoadDone ; no parity check: back with the registers restored
+
+$CDFC c EdgeTwo ; Time two edges: the ROM's LD-EDGE-2
+> B = the time counter. Carry set: both edges came in time; reset: time out.
+> Witness: L1 109221 (c1).
+
+$CE00 c EdgeOne ; Time one edge and flip the border colour: the ROM's LD-EDGE-1 without the BREAK test
+> B = the time counter, +1 per pass of the sampling loop; C = the last level and the border colour. The ROM's `RET NC` after the `RRA` is a NOP, so BREAK does not stop the load. Each edge flips C's bits 2 and 5 (`XOR $24`) and writes the colour to the border.
+> Witness: L1 224652 (c1).
+$CE02 EdgeDelay
+$CE06 EdgeSample
+$CE13 EdgeFound ; flip the level bit and the border colour
+
+$CE1F c BlockLength ; DE = $109 + NextFiller: the length of the next block
+> Witness: L1 96 (c1).
+$CE25 BlockLengthLoop
+
+$CE2A c CheckBlock ; A = the XOR of the block's bytes but its last; HL = that last byte, for the caller's CP (HL)
+> Witness: L1 48 (c1).
+$CE32 CheckLoop
+
+$CE3D c PrintBlockNumber ; Print BlockNumber in two hex digits (and add 1 to it in the buffer)
+> Witness: L1 47 (c1).
+$CE42 PrintHexByte ; A in two hex digits (ShowSearching and ShowRewind enter here with D)
+
+$CE4B c PrintHexDigit ; Print A's low nibble as a hex digit (RST $10)
+> Witness: L1 96 (c1).
+$CE55 PrintDigit
+
+$CE57 c ShowLoading ; Clear row 10 (AT 10,10, twelve spaces), print "Loading NN" at AT 7,10
+> NN is the block's number (PrintBlockNumber).
+> Witness: L1 47 (c1).
+
+$CE5C t LoadingText ; AT 10,10, twelve spaces (clear the search line), AT 7,10 "Loading   "
+$CE79 c ShowLoadingNumber ; ShowLoading after its string: the block's number
+> Witness: L1 47 (c1).
+
+$CE7E c BadBlock ; A block not wanted, or a bad checksum: print "Block ? NN" at AT 7,10
+> A = the block's number (the XOR CheckBlock made, when the checksum failed), kept in E. After the string, BadBlockAhead prints the number and chooses the hint. Not run in c1: the TZX plays every block in order.
+> Witness: L1 0 ().
+
+$CE84 t BlockText ; AT 7,10 "Block ?   "
+
+$CE92 c BadBlockAhead ; BadBlock's rest: the number, then "Rewind to NN" for a block past the one wanted, else "Searching NN"
+> E (the block found) >= D (the block wanted): ShowRewind; else on into ShowSearching. Known only from the code: no recording loaded a block out of order.
+> Witness: L1 0 ().
+
+$CE9B c ShowSearching ; Print "Searching NN" at AT 10,10: NN = D, the block wanted
+> Witness: L1 1 (c1).
+
+$CE9F t SearchingText ; AT 10,10 "Searching "
+$CEAD c ShowSearchingNumber ; ShowSearching after its string: D, the block wanted
+> Witness: L1 1 (c1).
+
+$CEB2 c ShowRewind ; Print "Rewind to NN" at AT 10,10: NN = D, the block wanted
+> Known only from the code.
+> Witness: L1 0 ().
+
+$CEB5 t RewindText ; AT 10,10 "Rewind to "
+$CEC3 c ShowRewindNumber ; ShowRewind after its string: D, the block wanted
+> Known only from the code.
+> Witness: L1 0 ().
+
+$CEC8 c PrintInline ; Print the bytes after the CALL up to $FF (RST $10) and return after them
+> Witness: L1 49 (c1).
+$CEC9 PrintInlineLoop
+$CED2 PrintInlineEnd
+
+$CED4 s Rick1Spare ; Rick1's last 44 bytes: zeros, which nothing reads but MakeKey $5D12 (the key material)

@@ -1,0 +1,46 @@
+# The annotations of TZX block 2, the BASIC program "Rick" at PROG $5CCB-$5D7F (181 bytes; header TZX block 1:
+# LINE 10, program length 181, no variables): the source of src/tape/basic.asm (../../kit/mkgame.py --part
+# src/tape/basic.json). Format: ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1: power-on, the original
+# TZX at ROM speed), whose ROM loads the block and runs it from line 10.
+# Every number in a line is its digits, then the number marker $0E and the five-byte small-integer form
+# (0, 0, low, high, 0) the ROM reads.
+
+@module basic ; The BASIC "Rick": the title, then LOAD "Rick1" CODE 52480 and RANDOMIZE USR 52480
+@about Six lines: 10 REM RICK DANGEROUS  v.2/89; 20 CLEAR 50000; 30 BORDER 0: PAPER 0: INK 0: CLS; 40 PRINT AT 1,8; PAPER 1; INK 7;" RICK DANGEROUS "; 50 LOAD "Rick1" CODE 52480; 60 RANDOMIZE USR 52480. Rick1 (src/loader/rick1.asm) then loads the rest without the ROM's loader.
+@about Each line: its number (two bytes, high byte first), its length (two bytes, low byte first), the tokens, ENTER ($0D).
+
+$5CCB b BasicLine10 ; 10 REM RICK DANGEROUS  v.2/89
+> A version mark ("v.2/89"); nothing reads it.
+$5CCD ; the line's length, 25
+$5CCF ; REM ($EA) and the text
+
+$5CE8 b BasicLine20 ; 20 CLEAR 50000
+> RAMTOP at 50000 = `$C350`, below the key page `$C900` and Rick1 `$CD00`.
+$5CEC ; CLEAR ($FD) "50000"
+$5CF2 ; $0E and 50000 = $C350
+
+$5CF9 b BasicLine30 ; 30 BORDER 0: PAPER 0: INK 0: CLS
+> A black screen and border: the title of line 40 is the only thing shown while Rick1 loads.
+$5CFD ; BORDER ($E7) "0", $0E and 0
+$5D06 ; ":" PAPER ($DA) "0", $0E and 0
+$5D0F ; ":" INK ($D9) "0", $0E and 0
+$5D18 ; ":" CLS ($FB), ENTER
+
+$5D1A b BasicLine40 ; 40 PRINT AT 1,8; PAPER 1; INK 7;" RICK DANGEROUS "
+> The title in white on blue at row 1, column 8. Rick1 then prints its own messages at rows 7 and 10.
+$5D1E ; PRINT ($F5) AT ($AC) "1", $0E and 1
+$5D27 ; "," "8", $0E and 8
+$5D2F ; ";" PAPER ($DA) "1", $0E and 1
+$5D38 ; ";" INK ($D9) "7", $0E and 7
+$5D41 ; ";" and the string " RICK DANGEROUS "
+
+$5D55 b BasicLine50 ; 50 LOAD "Rick1" CODE 52480
+> Loads TZX blocks 3 and 4 (the header "Rick1", CODE, 512 bytes) at 52480 = `$CD00`, Rick1Start.
+$5D59 ; LOAD ($EF) "Rick1" CODE ($AF) "52480"
+$5D68 ; $0E and 52480 = $CD00
+
+$5D6E b BasicLine60 ; 60 RANDOMIZE USR 52480
+> Calls Rick1Start `$CD00` (src/loader/rick1.asm), which never returns.
+$5D72 ; RANDOMIZE ($F9) USR ($C0) "52480"
+$5D79 ; $0E and 52480 = $CD00
+$5D7F ; ENTER

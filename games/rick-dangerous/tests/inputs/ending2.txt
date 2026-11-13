@@ -1,0 +1,12 @@
+# ending2: from work/stage2/warp/ending.szx (a warp, said so: the L4Z9 zone warp of work/stage2/zonewarp.py, then the
+# door at the level's end exit opened as the blast opens it: object slots 0 ($EA8E, kind 55) and 8 ($EB7E, kind 54)
+# freed; work/stage2/endingwarp.py). Our own keys: right (8) to the end exit, the level end and the bonus, the London
+# text, ENTER, the closing effect, GAME OVER, ENTER back to the menu.
+0 -
+10 8
+330 -
+900 ENTER
+904 -
+1700 ENTER
+1704 -
+2000 END

@@ -27,8 +27,7 @@ the entry `$AB4D` (`python3 tools/image.py work/mkgame/original.bin`, `case.json
 emulator's at the entry in `c1` except 39 bytes in `$5B89-$5BDD`, which the game overwrites before it uses them
 ([doc 2, 2.3](docs/02-architecture.md#23-the-images-loaded-at-the-entry-in-play)).
 
-A disk in the zxart collection, `DTA_RickDangerous_Source.dsk`, holds the source of the SAM Coupe port (ZXDB 38305).
-It is a lead for names only (`work/stage1/NOTES.md`).
+The SAM Coupe port's source disk (zxart, ZXDB 38305): not used (only the standard Spectrum releases).
 
 ## 1. One recording from power-on
 

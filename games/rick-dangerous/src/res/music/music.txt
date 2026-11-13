@@ -1,0 +1,630 @@
+# Rick Dangerous (Firebird 1989), the 128K's AY music and effects: tools/res_music.py, src/res/music/README.md.
+# instrument N / effect N: attack decay sustain release peak (volume 0-255, AY volume = /8), vibrato delay (frames,
+#   255 none), length (0 slide, bit 7 slide that stops, else vibrato half period), step (added to the period a
+#   frame), flags (tone, noise, fixed); an effect adds its period and its frames.
+# tune N: the order lists of channels A, B, C.
+# order NAME: P pattern, xN repeat the next pattern N times, t+N transpose (semitones), mapK=V instrument slot, end.
+# pattern N: one line a step: NOTE FRAMES (C-1 is the period table's first note; played at note + transpose),
+#   rest FRAMES, period $XXXX FRAMES, instrument N, cmd $XX [$YY $YY $YY]; the pattern's end byte is implied.
+instrument 0: attack 127 decay -2 sustain 32 release -8 peak 54 delay 255 length 0 step 0 flags tone
+instrument 1: attack 127 decay -2 sustain 32 release -8 peak 45 delay 255 length 0 step 0 flags tone
+instrument 2: attack 32 decay -1 sustain 48 release -1 peak 54 delay 255 length 0 step 0 flags tone
+instrument 3: attack 38 decay -2 sustain 40 release -1 peak 54 delay 255 length 0 step 0 flags tone
+instrument 4: attack 12 decay -1 sustain 48 release -1 peak 54 delay 255 length 0 step 0 flags tone
+instrument 5: attack 127 decay -7 sustain 20 release -127 peak 55 delay 0 length 0 step 0 flags noise
+instrument 6: attack 127 decay -4 sustain 0 release -19 peak 127 delay 63 length 0 step 1280 flags tone
+instrument 7: attack 127 decay -22 sustain 31 release -127 peak 63 delay 255 length 8 step 25600 flags noise
+
+effect 0: attack 127 decay -10 sustain 32 release -4 peak 127 delay 0 length 1 step 35 flags noise period 155 frames 2
+effect 1: attack 127 decay -127 sustain 1 release -1 peak 85 delay 0 length 1 step 35 flags noise period 9 frames 1
+effect 2: attack 127 decay -5 sustain 97 release -1 peak 127 delay 1 length 3 step 35 flags noise period 255 frames 10
+effect 3: attack 10 decay -6 sustain 1 release -1 peak 75 delay 1 length 0 step -8 flags noise period 193 frames 32
+effect 4: attack 127 decay -20 sustain 14 release -11 peak 85 delay 255 length 0 step 0 flags tone+noise period 952 frames 1
+effect 5: attack 21 decay -11 sustain 2 release -108 peak 85 delay 255 length 0 step 0 flags noise period 450 frames 1
+effect 6: attack 123 decay -5 sustain 6 release -1 peak 100 delay 4 length 0 step 4088 flags tone period 404 frames 3
+effect 7: attack 51 decay -3 sustain 23 release -1 peak 127 delay 3 length 0 step 4087 flags tone period 1500 frames 3
+effect 8: attack 31 decay -2 sustain 74 release -52 peak 127 delay 1 length 1 step 78 flags tone period 534 frames 2
+effect 9: attack 30 decay -2 sustain 66 release -2 peak 127 delay 1 length 1 step 78 flags tone period 80 frames 2
+effect 10: attack 30 decay -2 sustain 66 release -2 peak 127 delay 255 length 1 step 78 flags tone period 80 frames 2
+effect 11: attack 46 decay -1 sustain 55 release -1 peak 127 delay 0 length 255 step 3 flags tone period 250 frames 10
+
+tune 0: t0a t0b t0c
+tune 1: t1a t1b t1c
+tune 2: t2a t2b t2c
+tune 3: t3a t3b t3c
+tune 4: t4a t4b t4c
+tune 5: t5a t5b t5c
+tune 6: t6a t6b t6c
+tune 7: t7a t7b t7c
+
+order t0a: P0 x8 P4 t+5 P0 x8 P4 t+0 x4 P4 t+1 x4 P4 t+2 x4 P4 t+3 x4 P4 t+28 P8 end
+order t0b: P1 x8 P6 t+5 P1 x8 P6 t+0 x4 P8 t+1 x4 P8 t+2 x4 P8 t+3 x4 P8 t+22 P8 end
+order t0c: P2 P3 t+5 P2 P5 t+0 P7 t+1 P7 t+2 P7 t+3 P7 t+25 P8 end
+order t1a: P6 P6 x17 P9 end
+order t1b: P6 P6 x17 P10 end
+order t1c: P11 P12 P11 P12 P38 end
+order t2a: t-12 P46 P46 P47 end
+order t2b: x16 P48 x16 P48 x16 P48 x16 P48 x6 P48 end
+order t2c: end
+order t3a: end
+order t3b: x2 P43 t+7 x2 P43 t+0 x2 P43 t+7 x2 P43 t+0 P43 t+7 P43 t+0 P43 t+7 P43 end
+order t3c: P51 P52 P51 P53 t+7 P51 P52 P51 P53 t+0 P51 P52 P51 P53 t+7 P51 P52 P51 P53 t+0 P54 t-5 P54 t+0 P54 t-5 P54 end
+order t5a: t+0 P13 P14 P13 P16 P31 t+0 P22 P24 P22 P26 P13 P14 P13 P16 P15 t+5 P22 P24 P22 P26 t+5 P13 P14 P13 P16 P15 end
+order t5b: t+0 P16 x4 P17 t+5 x4 P17 x6 t+7 P17 t+0 P17 P17 x4 P17 t+5 x4 P17 t+0 P15 t-7 x4 P17 t-5 x4 P17 t-7 x4 P17 t-5 x4 P17 t-7 x4 P17 t-5 x4 P17 t-7 x4 P17 t-5 x4 P17 t+0 x4 P17 t+5 x4 P17 x6 t+7 P17 t+0 P17 P17 x4 P17 t+5 x4 P17 t+0 P31 t-2 x4 P17 t+0 x4 P17 t-2 x4 P17 t+0 x4 P17 t-2 x4 P17 t+0 x4 P17 t-2 x4 P17 t+0 x4 P17 t+5 x4 P17 t+10 x4 P17 x6 t+12 P17 t+5 P17 P17 x4 P17 t+10 x4 P17 t+5 P15 end
+order t5c: t+0 P18 P19 P18 P16 P20 t+0 P23 P25 P23 P27 P18 P19 P18 P16 P20 t+5 P23 P25 P23 P27 t+5 P18 P19 P18 P16 P20 end
+order t6a: P32 end
+order t6b: P33 end
+order t6c: end
+order t7a: P40 end
+order t7b: P41 end
+order t7c: end
+order t4a: P44 end
+order t4b: P45 end
+order t4c: end
+
+pattern 0
+  instrument 0
+  B-3 16
+  D-4 16
+  F#4 16
+  B-4 16
+  D-5 16
+  F#5 16
+  B-5 16
+  D-6 16
+
+pattern 1
+  instrument 0
+  F#3 16
+  B-3 16
+  D-4 16
+  F#4 16
+  B-4 16
+  D-5 16
+  F#5 16
+  B-5 16
+
+pattern 2
+  instrument 0
+  F#3 4
+  D-3 4
+  B-2 4
+  D-3 4
+  B-3 4
+  F#3 4
+  D-3 4
+  F#3 4
+  D-4 4
+  B-3 4
+  F#3 4
+  B-3 4
+  F#4 4
+  D-4 4
+  B-3 4
+  D-4 4
+  B-4 4
+  F#4 4
+  D-4 4
+  F#4 4
+  D-5 4
+  B-4 4
+  F#4 4
+  B-4 4
+  F#5 4
+  D-5 4
+  B-4 4
+  D-5 4
+  B-5 4
+  F#4 4
+  D-4 4
+  F#4 4
+
+pattern 3
+  instrument 0
+  D-5 16
+  C#5 8
+  B-4 8
+  D-5 16
+  C#5 8
+  B-4 8
+  D-5 8
+  C#5 8
+  C-5 8
+  B-4 8
+  A#4 8
+  A-4 8
+  G#4 8
+  G-4 8
+
+pattern 4
+  instrument 1
+  B-4 8
+  F#4 8
+
+pattern 5
+  D-5 8
+  C#5 8
+  C-5 8
+  B-4 8
+  A#4 8
+  A-4 8
+  G#4 8
+  G-4 8
+  F#4 8
+  F-4 8
+  E-4 8
+  D#4 8
+  D-4 8
+  C#4 8
+  C-4 8
+  B-3 8
+
+pattern 6
+  rest 16
+
+pattern 7
+  instrument 0
+  D#5 4
+  C-5 4
+  A-4 4
+  F#4 4
+  C-5 4
+  A-4 4
+  F#4 4
+  D#4 4
+  A-4 4
+  F#4 4
+  D#4 4
+  C-4 4
+  F#4 4
+  D#4 4
+  C-4 4
+  A-3 4
+
+pattern 8
+  instrument 0
+  F#2 16
+
+pattern 9
+  instrument 1
+  F#3 16
+  C#4 8
+  C#4 8
+  F#3 16
+  C#4 16
+
+pattern 10
+  instrument 1
+  rest 16
+  A-3 8
+  A-3 8
+  rest 16
+  A-3 16
+
+pattern 11
+  instrument 0
+  F#4 16
+  G#4 16
+  A-4 32
+  G#4 32
+  F#4 32
+  F#4 16
+  G#4 16
+  A-4 16
+  C#5 16
+  G#4 16
+  A-4 16
+  F#4 32
+
+pattern 12
+  A-4 16
+  B-4 16
+  C#5 32
+  C#5 16
+  D-5 16
+  C#5 16
+  B-4 16
+  G#4 16
+  A-4 16
+  B-4 32
+  B-4 16
+  C#5 16
+  B-4 16
+  A-4 16
+
+pattern 13
+  instrument 2
+  F#3 6
+  F#3 18
+  F#4 18
+  C#4 30
+  A#3 6
+  B-3 18
+  C#4 18
+  D#4 30
+
+pattern 14
+  C#4 6
+  C#4 18
+  G#4 18
+  F-4 30
+  C#4 6
+  D#4 18
+  F-4 18
+  F#4 30
+
+pattern 15
+  instrument 2
+  D-4 36
+  E-4 36
+  F#3 18
+  F#3 18
+  C#3 36
+
+pattern 16
+  rest 6
+
+pattern 17
+  instrument 3
+  F#2 18
+
+pattern 18
+  instrument 2
+  C#3 6
+  C#3 18
+  C#4 18
+  A#3 30
+  C#3 6
+  F#3 18
+  F#3 18
+  F#3 30
+
+pattern 19
+  G#3 6
+  G#3 18
+  F-4 18
+  C#4 30
+  G#3 6
+  G#3 18
+  C#4 18
+  C#4 30
+
+pattern 20
+  F#3 36
+  G#3 36
+  C#3 18
+  A#2 18
+  F#3 36
+
+pattern 21
+  A#3 36
+  B-3 36
+  A#3 72
+
+pattern 22
+  B-3 18
+  D#4 18
+  F#4 36
+  F-4 36
+  C#4 18
+  G#3 18
+
+pattern 23
+  D#4 18
+  F#4 18
+  B-4 36
+  G#4 36
+  F-4 18
+  C#4 18
+
+pattern 24
+  B-3 18
+  D#4 18
+  F#4 36
+  G#4 36
+  F-4 18
+  G#3 18
+
+pattern 25
+  D#4 18
+  F#4 18
+  B-4 36
+  C#5 36
+  C#4 18
+  C#4 18
+
+pattern 26
+  B-3 18
+  D#4 18
+  F#4 36
+  G#4 36
+  F-4 18
+  G#3 12
+
+pattern 27
+  D#4 18
+  F#4 18
+  B-4 36
+  C#5 36
+  C#4 18
+  C#4 12
+
+pattern 28
+  C#4 18
+  F#4 18
+  F#4 30
+  F#4 6
+  F-4 18
+  F#4 18
+  C#4 30
+  A#3 6
+  B-3 36
+  C#4 18
+  D#4 18
+  C#4 72
+  C#4 18
+  F#4 18
+  F#4 30
+  F#4 6
+  A#4 18
+  F#4 18
+  F#4 30
+  F#4 6
+  B-4 36
+  C#5 18
+  D#5 18
+  C#5 72
+
+pattern 29
+  F#3 72
+  A#3 72
+  B-3 72
+  C#4 72
+
+pattern 30
+  A#3 72
+  C#4 72
+  D#4 72
+  F-4 72
+
+pattern 31
+  A-4 36
+  B-4 36
+  A#3 18
+  C#4 18
+  A#2 36
+
+pattern 32
+  instrument 2
+  C#5 16
+  C#5 32
+  B-4 16
+  A#4 16
+  F#4 32
+  C#5 16
+  B-4 64
+
+pattern 33
+  instrument 3
+  E-3 16
+  E-3 32
+  E-3 16
+  F#3 16
+  F#3 32
+  F#3 16
+  B-2 48
+  F#3 16
+  B-3 64
+
+pattern 34
+
+pattern 35
+
+pattern 36
+
+pattern 37
+
+pattern 38
+  instrument 0
+  F#4 16
+  G#4 16
+  A-4 32
+  G#4 32
+  F#4 16
+
+pattern 39
+  rest 64
+  rest 64
+  rest 64
+  rest 64
+
+pattern 40
+  instrument 0
+  F-4 16
+  C#4 8
+  G#4 48
+
+pattern 41
+  instrument 0
+  rest 24
+  G#5 48
+
+pattern 42
+  instrument 5
+  F#3 16
+  rest 8
+  F#3 8
+  F#3 8
+  F#3 8
+  F#3 8
+  rest 16
+  F#3 8
+  F#3 8
+  F#3 8
+  F#3 8
+  rest 16
+  F#3 24
+  F#3 24
+  F#3 24
+
+pattern 43
+  instrument 2
+  F#2 24
+  A-2 24
+  C#3 24
+  A-2 24
+
+pattern 44
+  instrument 0
+  A#4 48
+  A#4 16
+  B-4 16
+  B-4 32
+  A#4 16
+  B-4 24
+  A#4 8
+  G#4 16
+  F#4 16
+  F-4 48
+  C#5 32
+  B-4 32
+  A#4 8
+  F#4 8
+  B-4 8
+  G#4 8
+  C#5 16
+  B-4 16
+  A#4 32
+  G#4 32
+  F#4 8
+  F#4 32
+  instrument 2
+  rest 64
+  G#4 24
+  A#4 24
+  F#4 24
+  F#3 24
+  C#4 96
+
+pattern 45
+  instrument 2
+  F#3 48
+  F#3 16
+  B-3 16
+  B-3 32
+  B-3 16
+  B-3 24
+  B-3 8
+  B-3 16
+  B-3 16
+  C#4 48
+  F#3 32
+  F-4 32
+  C#4 8
+  C#4 8
+  C#4 8
+  C#4 8
+  C#4 16
+  C#4 16
+  F#3 32
+  C#4 32
+  F#3 8
+  F#3 32
+  instrument 4
+  rest 64
+  G#5 24
+  A#5 24
+  F#5 24
+  F#4 24
+  C#5 96
+
+pattern 46
+  instrument 0
+  G#5 8
+  A#5 8
+  B-5 8
+  G#5 8
+  A#5 8
+  B-5 8
+  C#6 8
+  A#5 8
+  B-5 8
+  C#6 8
+  D#6 8
+  B-5 8
+  C#6 8
+  D#6 8
+  E-6 8
+  C#6 8
+  D#6 8
+  B-5 8
+  C#6 8
+  A#5 8
+  B-5 8
+  G#5 8
+  A#5 8
+  G-5 8
+  G#5 8
+  D#5 8
+  E-5 8
+  C#5 8
+  D#5 8
+  B-4 8
+  C#5 8
+  A#4 8
+
+pattern 47
+  instrument 0
+  B-4 8
+  G#4 8
+  A#4 8
+  G-4 8
+  G#4 8
+
+pattern 48
+  instrument 1
+  G#2 4
+  G#3 4
+
+pattern 49
+  instrument 1
+  B-4 16
+  B-3 8
+  D#4 8
+  F#4 8
+  F#4 32
+
+pattern 50
+  instrument 1
+  F#4 16
+  F#3 8
+  B-3 8
+  D#4 8
+  D#4 32
+
+pattern 51
+  instrument 4
+  F#3 16
+  A-3 8
+  C#4 16
+  F#4 8
+
+pattern 52
+  A-4 16
+  F#4 8
+  C#4 16
+  A-3 8
+
+pattern 53
+  A-4 24
+  F#4 24
+
+pattern 54
+  A-5 16
+  F#5 8
+  C#5 16
+  A-4 8
+  F#4 16
+  C#4 8
+  A-3 16
+  F#3 8

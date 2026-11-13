@@ -1,0 +1,8 @@
+1 . KEYBOARD
+
+2 . KEMPSTON
+
+3 . CURSOR
+
+4 . SINCLAIR
+{end}

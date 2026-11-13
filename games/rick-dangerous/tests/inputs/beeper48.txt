@@ -1,0 +1,48 @@
+# beeper48: the 48K beeper path. From work/stage1/probe/orig48.szx (the original loaded on a 48K by LOAD "",
+# ROM speed, at the control menu; no warp, no POKE). 3 (cursor keys), fire to start, fire past the intro, then our
+# own keys for level 1 (work/stage2/zonescript.py script(), seed "beeper48", shifted to frame 300): walking, jumps,
+# shots, dynamite and stick pokes, so the effects go to the beeper (BeeperEffect $A08E).
+0 -
+40 3
+44 -
+100 0
+104 -
+250 0
+254 -
+310 0 7
+314 -
+326 8
+386 0 7
+390 -
+402 7
+430 8
+502 8 7
+520 8
+633 7
+702 0 7
+706 -
+718 8 6
+755 8
+849 8
+922 0 7
+926 -
+938 8 7
+967 8
+1069 8
+1194 8 7
+1210 0 8
+1214 -
+1226 5
+1254 8 7
+1278 5
+1315 6
+1368 5
+1411 0 6
+1415 -
+1427 8 6
+1473 8
+1507 5
+1554 7
+1575 8 6
+1590 -
+1600 END

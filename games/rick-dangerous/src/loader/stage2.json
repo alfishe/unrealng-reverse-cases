@@ -1,0 +1,29 @@
+{
+  "about": "group 1's block 46: the second loader stage at $5D00 (256 bytes, deciphered, as the tape holds it): python3 ../../kit/mkgame.py --part src/loader/stage2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/stage2-5d00.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/stage2-5d00.bin",
+  "org": "5D00",
+  "ann": "src/loader/stage2.ann",
+  "top": "stage2",
+  "bin": "stage2.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM128",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": [
+    "; Rick Dangerous, Firebird 1989 (Bleepload): group 1's block 46: the second loader stage at $5D00 (256 bytes, deciphered, as the tape holds it)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "5D00",
+      "hi": "5E00",
+      "reads": false
+    }
+  ],
+  "work": "work/stage2/mkstage2"
+}

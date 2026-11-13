@@ -1,0 +1,1187 @@
+# Rick Dangerous: the levels (tools/res_levels.py; src/res/levels/README.md)
+
+level 1
+
+zone L1Z1 set 0
+map
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  54 49 48 71 54 53 55 54
+  6D 6E 41 41 41 41 41 52
+  51 45 45 45 50 71 43 52
+  52 46 46 46 46 50 43 76
+  71 46 54 53 55 54 43 52
+  54 48 76 42 41 41 6E 71
+  50 42 41 6E 52 6F 71 52
+  4F 43 71 6F 46 46 46 46
+  50 43 76 48 49 49 53 52
+  71 43 41 41 79 79 41 41
+exit left $18 -> end $20
+exit right $38 -> L1Z2 $18
+obj $18 mark22 flags $00 x $08+0 q $08+0
+obj $18 actor42 flags $88 x $00+1 q $28+0
+obj $38 pic4 flags $F0 x $10+5 q $28+1
+obj $38 mark23 flags $01 x $E0+0 q $E0+0
+term $74 $65 $72 $6D
+
+zone L1Z2 set 0
+map
+  6D 6E 58 59 66 65 58 59
+  51 45 45 71 76 45 71 52
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  53 51 46 46 46 54 53 51
+  42 41 52 46 50 42 41 52
+  65 40 52 50 7E 6E 5C 52
+  66 65 41 41 41 40 5B 52
+  68 66 65 40 40 5C 58 59
+  6F 70 50 6C 5D 5B 4A 46
+  55 46 54 43 5F 64 40 52
+  53 55 54 6C 5E 5B 5D 52
+  50 42 41 6E 40 64 5F 52
+  7E 6B 5E 5D 5E 5B 5E 52
+  50 6A 40 5F 40 64 71 52
+  50 76 6C 5E 40 64 52 46
+  50 42 6E 40 40 71 51 54
+  54 43 40 40 72 52 46 46
+  50 6C 40 52 70 52 53 55
+  54 43 5E 4A 53 55 6F 46
+  50 43 40 40 4A 47 49 52
+  4F 6C 72 40 40 4B 4B 52
+  46 56 71 7A 43 40 40 52
+  54 71 51 71 73 71 43 52
+  71 71 51 54 73 76 43 71
+  7E 41 41 41 6E 71 43 41
+exit left $18 -> L1Z1 $38
+exit right $68 -> L1Z3 $20
+obj $18 pic18 flags $00 x $C0+5 q $00+0
+obj $18 actor25 flags $88 x $90+5 q $C0+3
+obj $20 pic4 flags $00 x $60+5 q $70+1
+obj $28 pic4 flags $F0 x $80+5 q $80+2
+obj $30 pic4 flags $00 x $40+5 q $60+0
+obj $38 actor25 flags $88 x $10+1 q $60+3
+obj $48 pic18 flags $00 x $48+5 q $00+0
+obj $60 actor27 flags $88 x $C0+2 q $C0+2
+obj $68 pic4 flags $F0 x $B0+5 q $60+1
+obj $68 actor25 flags $88 x $10+1 q $20+2
+obj $68 pic18 flags $00 x $50+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L1Z3 set 0
+map
+  66 65 40 40 40 41 6E 58
+  71 71 45 45 45 45 45 71
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  50 52 53 51 53 51 52 4F
+  50 42 75 41 75 41 41 41
+  54 43 5B 5A 5B 5A 40 71
+  41 6E 64 40 64 40 5E 7D
+exit left $20 -> L1Z2 $68
+exit right $18 -> L1Z4 $18
+obj $18 pic5 flags $00 x $48+1 q $00+3
+obj $18 pic5 flags $F0 x $C0+1 q $00+1
+obj $18 pic6 flags $00 x $88+1 q $00+0
+obj $20 mark22 flags $01 x $20+4 q $20+4
+obj $20 mark23 flags $01 x $C0+4 q $C0+4
+obj $20 pic18 flags $00 x $70+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L1Z4 set 0
+map
+  50 6C 5B 5A 5B 5E 5B 52
+  50 45 45 45 45 45 45 46
+  71 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  54 49 4A 48 48 48 71 76
+  41 6E 40 75 41 75 41 52
+  71 43 40 5B 5E 5B 5A 52
+  50 43 40 5B 5A 7A 43 52
+  50 56 57 60 6F 71 43 52
+  46 50 46 46 46 76 73 52
+  51 46 46 46 50 49 74 52
+  54 54 53 55 49 74 40 52
+  4F 42 41 4C 43 40 72 52
+  50 43 40 4D 43 58 59 66
+  50 43 40 4E 43 71 51 53
+  50 6C 40 71 71 71 54 6F
+  4F 6C 5A 41 75 4C 76 53
+  50 43 5C 5E 5B 4D 42 51
+  50 6C 5B 5A 64 4D 43 51
+  6D 6E 64 40 5B 4E 43 51
+  51 6F 71 73 71 76 73 52
+  46 50 76 43 76 76 73 51
+  50 71 42 6E 52 54 73 52
+  51 76 43 40 41 4C 43 52
+  55 76 43 72 40 4E 43 52
+  6F 53 76 76 76 49 6B 52
+  76 71 49 77 77 74 5F 76
+  50 42 79 40 7A 76 6F 6F
+  4F 6B 76 71 49 48 46 46
+  50 6A 41 41 6E 41 76 46
+  50 76 76 76 76 6B 4A 76
+  50 49 4C 43 4C 6A 40 41
+exit left $18 -> L1Z3 $18
+exit right $80 -> L1Z5 $18
+obj $18 mark22 flags $00 x $00+0 q $00+0
+obj $18 pic4 flags $00 x $80+1 q $40+0
+obj $18 pic17 flags $00 x $98+1 q $00+0
+obj $38 actor47 flags $81 x $28+5 q $88+5
+obj $38 actor27 flags $88 x $20+5 q $20+5
+obj $40 actor45 flags $8C x $70+2 q $70+4
+obj $40 actor45 flags $8E x $88+2 q $70+4
+obj $48 actor43 flags $FC x $68+1 q $68+1
+obj $50 pic4 flags $00 x $80+1 q $28+0
+obj $50 actor25 flags $88 x $10+1 q $40+0
+obj $60 pic18 flags $00 x $50+5 q $00+0
+obj $68 actor44 flags $1F x $80+6 q $90+4
+obj $78 actor46 flags $15 x $78+2 q $68+2
+obj $78 actor46 flags $15 x $88+2 q $78+2
+obj $80 mark23 flags $01 x $E0+0 q $E0+0
+obj $80 pic18 flags $00 x $30+5 q $00+0
+obj $80 pic4 flags $F0 x $30+5 q $60+1
+obj $80 pic4 flags $00 x $80+5 q $30+0
+term $74 $65 $72 $6D
+
+zone L1Z5 set 0
+map
+  7A 43 4E 43 4E 6A 40 76
+  46 6F 45 6F 45 6F 45 51
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  54 55 47 49 4A 55 55 46
+  41 41 4B 79 40 41 41 54
+  71 43 40 40 40 40 40 53
+  4F 43 44 40 69 44 40 51
+  4F 43 40 40 69 40 72 51
+  50 43 44 40 44 40 7A 52
+  4F 43 72 40 40 5C 4A 50
+  54 43 5B 5E 5D 5B 5A 4F
+  6D 72 64 40 5F 64 40 52
+  46 50 71 76 77 64 58 59
+  50 76 77 78 6E 58 59 76
+  4F 42 6E 58 59 68 68 71
+  6D 6E 40 75 41 75 41 51
+  50 6C 5E 5B 5E 5B 5A 76
+  4F 43 40 64 40 64 40 71
+  4F 43 5E 5B 5E 5B 5E 41
+exit left $18 -> L1Z4 $80
+exit right $50 -> L1Z6 $18
+obj $18 pic18 flags $00 x $A8+6 q $00+0
+obj $30 actor25 flags $88 x $10+5 q $80+4
+obj $38 actor49 flags $8C x $80+0 q $A0+4
+obj $40 pic16 flags $00 x $08+5 q $00+0
+obj $40 pic4 flags $F0 x $50+5 q $60+0
+obj $48 actor25 flags $48 x $10+5 q $C0+4
+obj $48 pic4 flags $00 x $80+5 q $40+0
+obj $48 pic4 flags $00 x $70+5 q $38+0
+obj $50 actor46 flags $15 x $C0+6 q $B0+6
+term $74 $65 $72 $6D
+
+zone L1Z6 set 0
+map
+  7E 6E 40 64 40 64 40 71
+  50 71 6F 70 45 45 70 6F
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  71 54 53 55 49 71 54 52
+  41 41 75 41 6E 41 41 7D
+  76 43 76 71 43 76 73 71
+  50 43 76 42 5B 77 74 77
+  7E 6E 75 6E 64 72 72 76
+  76 45 45 45 6F 52 71 52
+  76 46 54 53 55 51 46 76
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+  46 46 46 46 46 46 46 46
+exit left $18 -> L1Z5 $50
+exit right $20 -> end $18
+obj $18 actor37 flags $84 x $60+3 q $80+4
+obj $18 actor37 flags $84 x $A0+3 q $40+0
+obj $20 actor48 flags $8E x $E0+2 q $40+4
+term $74 $65 $72 $6D
+
+level 2
+
+zone L2Z1 set 0
+map
+  09 09 09 09 09 09 09 09
+  09 06 07 1A 07 1A 07 09
+  09 08 1D 1B 02 1B 1D 09
+  07 2E 16 1C 02 1C 16 FF
+  0B 09 09 09 09 09 09 0A
+  0B 0A 30 1A 07 1A 28 37
+  37 06 2E 1C 16 1C 02 07
+  37 2D 0B 09 09 0A 2D 37
+  37 22 07 07 07 07 3D 37
+  37 22 0B 09 09 09 09 09
+  37 22 28 33 28 28 33 37
+  0B 09 09 09 0A 30 0F 37
+  0B 09 0A 30 33 2E 10 37
+  37 30 33 2E 02 29 0B 0A
+  37 08 01 29 0B 09 09 0A
+  37 2F 34 07 07 28 0B 0A
+  0B 09 32 2F 34 1D 07 37
+  0B 09 09 09 32 2F 34 37
+  37 06 1A 07 1A 28 0F 37
+  7C 2E 1C 01 1C 02 10 37
+  0B 09 0A 2D 0C 0B 09 0A
+  0B 0A 06 3D 01 07 0B 0A
+  37 0D 0C 0F 0C 21 0B 0A
+  37 08 02 10 01 1C 07 37
+  0B 0A 2D 0C 0C 0C 0F 37
+  37 06 3D 04 03 05 10 7B
+  0B 0A 0D 0C 0F 0C 0C 37
+  37 2C 2E 02 10 04 03 37
+  37 2D 0B 09 09 31 2B 37
+  37 22 07 07 07 07 02 37
+  2A 28 0B 09 09 0A 2D 37
+  37 08 07 07 07 07 3D 7B
+exit right $18 -> L2Z2 $60
+exit left $78 -> end $78
+obj $18 mark23 flags $01 x $E0+0 q $E0+0
+obj $18 actor29 flags $88 x $80+1 q $60+0
+obj $18 actor30 flags $88 x $88+1 q $A0+0
+obj $20 pic7 flags $00 x $C0+1 q $98+0
+obj $20 pic9 flags $00 x $88+1 q $00+1
+obj $28 actor28 flags $1F x $40+2 q $60+0
+obj $30 pic7 flags $00 x $60+5 q $40+3
+obj $30 pic8 flags $00 x $C0+1 q $00+5
+obj $40 actor32 flags $48 x $70+0 q $40+0
+obj $40 actor25 flags $C8 x $40+1 q $80+2
+obj $48 actor25 flags $88 x $18+5 q $20+5
+obj $48 pic9 flags $00 x $C8+5 q $00+4
+obj $50 pic7 flags $00 x $40+5 q $80+0
+obj $60 actor27 flags $88 x $40+1 q $40+1
+obj $60 actor26 flags $88 x $D0+5 q $20+4
+obj $68 pic19 flags $00 x $28+5 q $00+0
+obj $70 actor24 flags $8E x $C8+0 q $C8+6
+obj $78 actor26 flags $88 x $D0+5 q $20+4
+obj $78 mark22 flags $00 x $20+2 q $20+2
+term $74 $65 $72 $6D
+
+zone L2Z2 set 0
+map
+  0B 0E 0E 0E 0E 0E 0E 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 0A 06 1A 07 28 0B 0A
+  37 30 3C 1B 04 05 28 37
+  37 08 02 1C 16 02 02 07
+  37 2D 0C 0C 0C 0C 0F 37
+  37 22 02 29 34 01 10 37
+  37 2D 21 37 2F 29 38 37
+  37 22 1B 37 30 33 07 37
+  37 22 1B 17 2E 04 05 37
+  7C 22 1C 18 04 05 0F 37
+  0B 09 09 09 0A 08 10 37
+  37 06 17 07 0B 0A 22 37
+  37 08 18 1D 07 28 22 37
+  37 2D 37 2F 34 02 10 37
+  37 22 0B 09 0A 30 28 37
+  37 22 17 07 07 23 2B 37
+  37 22 18 04 03 05 02 37
+  0B 37 3F 02 36 29 34 37
+  0B 09 09 09 09 0A 2D 37
+  37 06 28 28 28 37 22 37
+  37 2D 37 08 36 29 22 37
+  07 3D 0B 30 28 17 3D 37
+exit right $18 -> L2Z3 $30
+exit left $60 -> L2Z1 $18
+obj $18 mark23 flags $01 x $E0+0 q $E0+0
+obj $20 pic9 flags $00 x $80+2 q $00+0
+obj $20 actor27 flags $88 x $80+2 q $78+0
+obj $30 actor25 flags $88 x $18+1 q $80+1
+obj $30 pic7 flags $00 x $50+1 q $40+0
+obj $30 actor27 flags $88 x $A0+5 q $A0+5
+obj $40 pic7 flags $F0 x $80+1 q $30+0
+obj $40 pic19 flags $00 x $C8+7 q $00+0
+obj $50 actor27 flags $88 x $58+0 q $50+1
+obj $58 actor31 flags $8E x $70+2 q $60+4
+obj $60 pic9 flags $00 x $80+5 q $00+1
+obj $60 mark22 flags $00 x $80+4 q $80+4
+term $74 $65 $72 $6D
+
+zone L2Z3 set 0
+map
+  37 30 28 3C 19 18 10 37
+  0B 0E 0E 0E 0E 0E 0E 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  37 30 3F 1F 07 07 07 37
+  2A 2E 28 1E 16 04 05 07
+  37 2D 0B 09 09 09 09 0A
+  37 22 37 3A 39 39 39 37
+  37 22 39 23 01 1D 01 37
+  37 22 02 26 26 29 34 37
+  0B 0A 2F 0B 09 0A 2D 37
+  07 28 0B 09 09 0A 22 37
+  37 08 3F 39 39 37 22 37
+  37 2F 07 04 05 28 22 37
+exit right $18 -> L2Z4 $30
+exit left $30 -> L2Z2 $18
+obj $18 actor28 flags $1F x $40+2 q $20+0
+obj $18 actor40 flags $F8 x $68+1 q $60+1
+obj $18 pic7 flags $F0 x $88+1 q $28+0
+obj $18 pic7 flags $F0 x $80+1 q $50+0
+obj $18 pic7 flags $F0 x $A8+1 q $28+0
+obj $18 actor32 flags $88 x $C0+4 q $A0+0
+obj $28 actor39 flags $88 x $40+4 q $48+4
+obj $30 actor33 flags $8C x $58+4 q $20+5
+obj $30 actor33 flags $8C x $70+4 q $20+5
+obj $30 actor33 flags $8C x $88+4 q $20+5
+term $74 $65 $72 $6D
+
+zone L2Z4 set 0
+map
+  0B 09 0E 0E 0E 0E 0E 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  37 06 28 0B 0A 30 33 37
+  7C 2E 24 39 39 24 04 7B
+  37 08 25 04 05 25 04 37
+  37 08 3F 11 11 37 08 37
+  37 2D 3F 12 12 37 2D 37
+  37 22 3F 13 13 37 22 37
+  37 2D 3F 11 11 37 2D 37
+  37 22 3F 12 12 37 22 37
+  07 07 1A 12 12 1A 3D 07
+exit right $30 -> L2Z5 $18
+exit left $30 -> L2Z3 $18
+obj $18 actor29 flags $89 x $88+5 q $70+1
+obj $18 actor30 flags $89 x $60+5 q $70+1
+obj $18 actor34 flags $81 x $78+1 q $70+1
+obj $18 actor35 flags $8E x $78+4 q $70+1
+obj $20 mark22 flags $01 x $70+1 q $70+1
+obj $20 mark23 flags $01 x $70+5 q $70+5
+obj $30 pic9 flags $00 x $C0+1 q $00+2
+obj $30 pic9 flags $00 x $B0+1 q $00+3
+obj $30 pic9 flags $00 x $A0+1 q $00+1
+term $74 $65 $72 $6D
+
+zone L2Z5 set 0
+map
+  37 08 1C 13 13 1C 10 37
+  0B 20 20 20 20 20 20 09
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  37 06 07 15 07 15 37 37
+  07 2E 2B 14 2B 14 1F 37
+  37 08 02 14 16 14 1E 7B
+  0B 0A 08 0B 09 09 09 09
+  37 06 2E 15 07 15 07 37
+  37 08 0B 0A 2D 37 08 37
+  37 08 07 07 3D 0B 09 0A
+  0B 0A 08 0F 0B 0A 06 07
+  37 06 2E 10 37 06 2E 37
+exit left $18 -> L2Z4 $30
+exit right $30 -> L2Z6 $18
+obj $18 pic8 flags $00 x $28+5 q $00+1
+obj $18 pic7 flags $F0 x $A8+5 q $50+0
+obj $18 pic19 flags $00 x $B8+5 q $00+0
+obj $28 pic17 flags $00 x $C0+1 q $00+0
+obj $30 actor27 flags $88 x $C0+0 q $E0+0
+obj $30 actor27 flags $88 x $A0+4 q $C0+4
+obj $38 actor26 flags $88 x $C0+1 q $00+1
+obj $38 pic9 flags $00 x $60+1 q $00+3
+term $74 $65 $72 $6D
+
+zone L2Z6 set 0
+map
+  37 27 37 22 07 2E 37 0A
+  0B 0E 09 0E 0E 0E 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  37 3A 07 39 39 07 39 37
+  37 08 2B 2B 01 1D 01 37
+  07 2E 04 05 01 2B 02 37
+  0B 09 0A 2F 34 04 05 37
+  37 3A 39 39 2E 37 08 37
+  37 08 29 34 29 37 08 0A
+  37 08 15 27 15 15 27 37
+  37 08 0B 09 09 09 09 0A
+  37 08 39 39 39 39 39 37
+  37 08 02 1D 02 1D 02 7B
+  0B 0A 27 2B 26 2B 02 37
+  37 30 0C 0C 0C 0C 0F 37
+  37 08 29 29 29 34 10 37
+  37 2D 28 28 0B 09 09 0A
+  37 22 29 34 07 07 39 37
+  0B 22 37 08 29 37 08 0A
+  37 22 37 08 07 07 2E 37
+  37 22 28 28 28 28 3C 37
+  37 22 29 29 29 29 0B 0A
+  37 06 39 39 37 3A 39 37
+  37 08 1D 04 39 2E 02 07
+  37 08 26 26 26 26 26 37
+exit left $18 -> L2Z5 $30
+exit right $60 -> L2Z7 $18
+obj $10 pic8 flags $00 x $48+3 q $00+2
+obj $10 pic8 flags $00 x $A8+3 q $00+4
+obj $20 actor36 flags $2E x $60+0 q $18+4
+obj $20 actor27 flags $88 x $20+4 q $20+4
+obj $30 actor26 flags $88 x $E0+5 q $20+4
+obj $38 actor37 flags $24 x $C0+3 q $D0+0
+obj $48 mark22 flags $00 x $20+4 q $20+4
+obj $48 actor27 flags $88 x $20+4 q $20+7
+obj $50 pic16 flags $00 x $80+1 q $00+0
+obj $50 pic7 flags $00 x $80+1 q $18+1
+obj $60 actor38 flags $2E x $20+6 q $D0+2
+obj $60 mark23 flags $01 x $E0+0 q $E0+0
+term $74 $65 $72 $6D
+
+zone L2Z7 set 0
+map
+  0B 0E 0E 0E 0E 0E 0E 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  37 06 0B 09 0A 06 07 37
+  37 08 1F 1F 1F 2E 02 37
+  07 2E 1E 1E 1E 16 01 FF
+  0B 09 09 09 0A 30 0F 37
+  0B 0A 06 07 1F 2E 10 37
+  2A 07 2E 02 1E 01 10 FF
+  0B 0A 08 0B 09 09 09 0A
+  37 06 2E 37 3A 07 3B 37
+  3F 2E 28 28 3C 36 34 37
+  37 2F 29 29 29 37 08 37
+  0B 09 09 09 09 0A 08 37
+  37 06 15 39 07 15 2E 37
+  37 08 14 04 05 0B 09 0A
+  37 30 28 3C 0B 0A 3A 37
+  3F 2E 04 05 07 28 3C 37
+  3F 02 36 26 0B 0A 08 37
+  3F 01 0B 09 0A 30 3C 37
+  31 2B 07 37 3A 2E 2B 37
+  37 08 02 0B 0A 08 02 37
+  7C 2E 29 37 06 2B 2B 37
+  37 08 39 28 3F 2B 01 37
+  2A 2E 36 26 3F 02 2B 37
+  37 3F 0B 09 0A 08 29 37
+  37 06 07 07 07 2E 07 37
+  37 08 29 34 01 01 16 37
+  3F 2E 37 3F 26 36 0B 0A
+  3F 04 28 28 28 28 33 07
+  37 2F 29 29 29 29 29 37
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+  0B 09 09 09 09 09 09 0A
+exit left $18 -> L2Z6 $60
+exit right $78 -> end $78
+obj $18 actor40 flags $F8 x $40+1 q $40+0
+obj $18 actor40 flags $88 x $60+1 q $A0+0
+obj $18 pic17 flags $00 x $C8+1 q $00+0
+obj $20 actor41 flags $78 x $80+5 q $80+4
+obj $28 actor27 flags $88 x $40+0 q $50+0
+obj $30 pic9 flags $00 x $40+3 q $00+0
+obj $40 pic7 flags $00 x $20+1 q $80+2
+obj $40 actor28 flags $1F x $60+4 q $60+0
+obj $40 mark22 flags $00 x $60+5 q $60+5
+obj $58 pic7 flags $F0 x $A0+3 q $10+2
+obj $68 actor28 flags $1F x $A8+2 q $A8+0
+obj $78 pic9 flags $00 x $40+3 q $00+0
+obj $78 pic9 flags $00 x $A0+3 q $00+0
+obj $78 pic9 flags $00 x $80+3 q $00+0
+obj $78 mark23 flags $01 x $E0+0 q $E0+0
+term $74 $65 $72 $6D
+
+level 3
+
+zone L3Z1 set 1
+map
+  80 80 80 80 80 80 80 80
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 87 85 85 85 85 85 80
+  80 86 84 84 84 84 B2 AA
+  80 86 84 84 84 99 99 80
+  8A 88 84 84 84 84 84 80
+  82 81 81 81 83 8F 8D 80
+  80 80 80 80 80 90 99 80
+  8A 85 85 85 85 88 84 80
+  80 8F 8D 8D 99 80 80 80
+  80 90 84 84 84 AC 87 80
+  82 81 83 8F 82 81 81 83
+  80 87 85 B9 85 80 AE 80
+  80 86 99 80 80 AE A1 85
+  80 86 84 85 85 88 9B 9C
+exit left $20 -> end $00
+exit right $40 -> L3Z2 $18
+obj $20 actor66 flags $89 x $C0+1 q $00+0
+obj $28 actor53 flags $89 x $C0+5 q $A0+4
+obj $30 actor56 flags $00 x $C8+5 q $C8+5
+obj $30 actor57 flags $8C x $C0+7 q $20+4
+obj $40 actor54 flags $11 x $70+3 q $60+6
+obj $40 actor55 flags $1F x $70+6 q $60+6
+obj $40 pic12 flags $00 x $A0+3 q $00+0
+term $74 $65 $72 $6D
+
+zone L3Z2 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 83 87 85 82 81 83
+  80 87 85 88 84 85 85 80
+  85 88 84 93 93 93 84 85
+  82 81 81 81 81 81 81 83
+  85 85 85 85 85 85 85 85
+  80 86 96 95 96 95 93 80
+exit left $18 -> L3Z1 $40
+exit right $18 -> L3Z3 $18
+exit left $20 -> L3Z3 $18
+exit right $20 -> L3Z3 $20
+obj $18 pic10 flags $F1 x $60+1 q $40+0
+obj $18 pic10 flags $F1 x $80+1 q $40+0
+obj $18 pic10 flags $01 x $A0+1 q $40+0
+obj $20 pic11 flags $F1 x $60+5 q $00+1
+obj $20 pic12 flags $01 x $80+5 q $00+0
+obj $20 pic11 flags $01 x $A0+5 q $00+1
+obj $20 pic16 flags $00 x $C8+5 q $00+0
+obj $20 pic17 flags $00 x $70+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L3Z3 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 83 87 85 82 81 83
+  80 87 85 88 84 85 85 80
+  85 88 84 93 93 93 84 85
+  82 81 81 81 81 81 81 83
+  85 85 85 85 85 85 85 85
+  80 86 96 95 96 95 94 80
+exit right $18 -> L3Z2 $20
+exit left $18 -> L3Z2 $18
+exit right $20 -> L3Z4 $20
+exit left $20 -> L3Z2 $20
+obj $18 pic10 flags $01 x $60+1 q $40+0
+obj $18 pic11 flags $01 x $80+1 q $00+1
+obj $18 pic10 flags $F1 x $A0+1 q $40+0
+obj $20 pic11 flags $00 x $60+5 q $00+1
+obj $20 pic12 flags $00 x $80+5 q $00+1
+obj $20 pic11 flags $F0 x $A0+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L3Z4 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 87 85 85 85 85 85 80
+  8A 88 94 93 B2 84 84 80
+  80 80 80 80 80 80 86 80
+  85 85 85 85 85 85 88 80
+  82 83 8E 8D 8D 8D 8C 80
+  80 87 88 84 84 84 8B 80
+  80 8F 80 86 84 84 9F 80
+  80 90 80 95 94 94 B0 80
+  80 90 99 9A AF 9F 9F 80
+  9C 9C 9D B1 84 84 B2 80
+  80 80 80 AE A1 9B 9C 9C
+  80 87 85 88 9A 9F 9F 80
+  80 86 94 97 B1 93 84 80
+  80 AE 99 99 99 99 A1 AA
+  80 86 82 81 81 81 81 83
+  80 8F 80 80 80 87 85 85
+  8A B9 85 85 85 88 93 80
+exit left $20 -> L3Z3 $20
+exit right $50 -> L3Z5 $18
+obj $18 actor53 flags $79 x $80+1 q $80+1
+obj $18 pic11 flags $00 x $38+1 q $00+1
+obj $28 pic10 flags $F0 x $20+1 q $20+0
+obj $30 actor50 flags $79 x $C8+7 q $C0+7
+obj $38 pic11 flags $00 x $80+5 q $00+0
+obj $40 pic10 flags $F0 x $50+5 q $40+0
+obj $40 pic10 flags $F0 x $40+5 q $40+0
+obj $48 actor46 flags $15 x $B0+2 q $C8+2
+obj $48 actor46 flags $15 x $E0+2 q $C8+2
+obj $50 actor66 flags $19 x $98+5 q $70+4
+obj $50 actor54 flags $11 x $80+3 q $70+4
+obj $50 actor55 flags $1F x $80+6 q $70+4
+term $74 $65 $72 $6D
+
+zone L3Z5 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 83 87 85 82 81 83
+  80 89 85 88 84 85 89 80
+  85 88 84 84 84 84 84 80
+  80 8F 8D 8C 8D 8C 8C 80
+  8A B9 84 8B 84 8B 8B 80
+  80 80 80 80 80 80 8F 80
+  80 87 A8 A7 A7 A9 8B 80
+  80 86 A5 A4 A4 A6 8B 80
+  80 86 82 81 81 81 81 83
+  80 86 AD 87 85 85 85 80
+  80 86 82 81 81 83 86 85
+  80 86 99 99 AB 85 88 80
+exit left $18 -> L3Z4 $50
+exit right $38 -> L3Z6 $18
+obj $18 mark22 flags $00 x $00+0 q $00+0
+obj $18 pic10 flags $F0 x $48+1 q $20+0
+obj $18 pic10 flags $00 x $C8+1 q $20+0
+obj $20 pic12 flags $00 x $C0+1 q $00+1
+obj $20 actor53 flags $79 x $60+1 q $60+0
+obj $28 pic20 flags $00 x $68+5 q $00+0
+obj $28 pic20 flags $00 x $80+5 q $00+0
+obj $30 actor57 flags $8C x $88+7 q $20+1
+obj $30 actor56 flags $31 x $80+5 q $80+5
+obj $38 pic10 flags $F0 x $80+5 q $60+0
+term $74 $65 $72 $6D
+
+zone L3Z6 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 87 85 A8 A7 A7 A9 80
+  87 88 84 A5 A4 A4 A6 85
+  80 86 80 80 80 80 80 80
+  8A 88 85 A8 A7 A9 85 85
+  9D 84 84 A5 A4 A6 9B 9C
+exit left $18 -> L3Z5 $38
+exit right $18 -> L3Z5 $20
+exit right $20 -> L3Z7 $18
+obj $18 mark23 flags $01 x $00+0 q $00+0
+obj $18 pic20 flags $00 x $88+1 q $00+0
+obj $18 pic20 flags $00 x $A0+1 q $00+0
+obj $18 pic10 flags $F0 x $A0+1 q $40+0
+obj $20 pic20 flags $00 x $88+5 q $00+0
+obj $20 pic11 flags $F1 x $C0+1 q $00+2
+term $74 $65 $72 $6D
+
+zone L3Z7 set 1
+map
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  80 80 80 80 80 80 80 80
+  85 85 85 B3 9C 9E 85 AA
+  9D 84 84 84 85 88 84 9B
+  80 B7 BC 80 AE A1 9B 9C
+  80 80 80 87 88 84 99 80
+  8A 85 85 88 84 B2 93 AA
+  80 8E 8C 8D 8D 8D 8D 80
+  8A B4 90 84 84 84 B2 AA
+  80 8E 8D 8D 8D 8C 8D 80
+  8A B4 84 84 84 8B 84 AA
+  80 8E 8C 8D 8D 8D 8D 80
+  80 86 8B 84 84 84 B2 80
+  80 80 80 80 BB 84 82 83
+  80 87 85 85 BA 84 85 B5
+  9C 9C 9D 84 84 9B 9C 9C
+  8A 91 85 88 9B 9C 9E 91
+  9C 9C 9D 84 91 85 88 80
+exit left $18 -> L3Z6 $20
+exit right $48 -> L3Z8 $20
+exit right $50 -> L3Z6 $20
+obj $18 actor45 flags $8C x $80+0 q $20+4
+obj $28 actor61 flags $88 x $D0+1 q $20+0
+obj $30 actor51 flags $88 x $20+1 q $20+0
+obj $38 actor61 flags $88 x $E0+1 q $20+0
+obj $40 pic10 flags $00 x $28+1 q $40+0
+obj $40 pic17 flags $00 x $C0+1 q $00+0
+obj $48 pic16 flags $00 x $28+1 q $00+0
+obj $50 pic11 flags $00 x $30+1 q $A0+4
+term $74 $65 $72 $6D
+
+zone L3Z8 set 1
+map
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  80 87 85 B3 9C 9C 9C 9C
+  85 88 B6 86 85 85 85 85
+  80 8F 80 B6 86 80 8F 80
+  85 B9 82 83 86 80 90 85
+  80 90 80 87 88 85 B9 80
+exit right $18 -> L3Z8 $18
+exit left $18 -> L3Z8 $18
+exit left $20 -> L3Z7 $48
+exit right $20 -> L3Z9 $30
+obj $18 actor37 flags $44 x $00+3 q $40+0
+obj $18 actor37 flags $44 x $A0+3 q $40+0
+obj $18 actor39 flags $48 x $E0+2 q $40+0
+obj $20 actor62 flags $88 x $80+5 q $80+4
+obj $20 actor39 flags $88 x $20+6 q $20+5
+term $74 $65 $72 $6D
+
+zone L3Z9 set 1
+map
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  80 89 A8 A7 A9 85 89 80
+  85 88 A5 A4 A6 84 84 80
+  80 AE 99 99 99 A1 84 80
+  80 86 A2 A2 A2 A2 80 80
+  80 8F 80 87 A8 A7 A9 80
+  80 90 85 88 A5 A4 A6 80
+  80 8F 8D B8 82 81 81 83
+  85 B9 84 84 A3 A8 A7 80
+  82 83 86 84 85 A5 A4 80
+  80 AE AE 80 8E 8D 8C 80
+  80 86 84 85 88 84 8B 80
+  8A 88 80 B7 A2 A2 80 80
+  80 86 85 80 BB 85 85 80
+  80 86 84 91 BA 84 94 91
+  80 8E B8 99 BB 84 80 80
+  80 8E B8 84 BA 84 85 91
+  80 B7 BC B7 80 86 84 80
+exit left $18 -> L3Z7 $18
+exit left $30 -> L3Z8 $20
+exit right $48 -> L3Z10 $20
+exit right $50 -> L3Z6 $20
+obj $18 pic11 flags $F0 x $20+1 q $00+7
+obj $18 pic20 flags $00 x $60+1 q $00+0
+obj $28 pic20 flags $00 x $A0+1 q $00+0
+obj $28 pic11 flags $00 x $30+1 q $00+0
+obj $30 pic10 flags $F0 x $40+5 q $60+0
+obj $30 actor54 flags $11 x $80+3 q $68+4
+obj $30 actor55 flags $1F x $80+6 q $68+4
+obj $30 pic20 flags $00 x $C0+5 q $00+0
+obj $40 actor46 flags $15 x $90+0 q $A0+0
+obj $48 actor27 flags $88 x $20+1 q $18+0
+obj $50 pic10 flags $00 x $B0+5 q $A0+3
+obj $50 pic16 flags $00 x $C0+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L3Z10 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 87 B9 91 85 91 85 80
+  8A 88 8B 82 81 83 86 85
+  80 86 8B 99 AB 85 80 80
+  85 88 84 84 84 84 85 85
+  80 B7 8B 80 B7 BC 86 B6
+exit right $18 -> L3Z10 $18
+exit left $20 -> L3Z9 $48
+exit right $20 -> L3Z11 $18
+obj $10 pic10 flags $F0 x $78+5 q $20+0
+obj $10 pic10 flags $00 x $90+5 q $20+0
+obj $10 pic10 flags $F0 x $A8+5 q $20+0
+obj $20 actor39 flags $88 x $40+6 q $40+6
+obj $20 actor39 flags $48 x $C0+6 q $E0+4
+term $74 $65 $72 $6D
+
+zone L3Z11 set 1
+map
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  80 89 85 85 85 85 89 80
+  85 88 84 84 84 84 84 99
+  80 8F 8D 8D 8D 8D 8C 80
+  82 81 81 83 8F 82 81 83
+  80 87 85 85 B9 85 85 B6
+  80 86 80 80 80 80 80 80
+  80 86 85 85 85 85 85 80
+  80 86 98 8D B8 80 86 80
+  82 81 81 81 81 83 86 80
+  80 87 A8 A7 A9 85 88 85
+  80 86 A5 A4 A6 80 86 80
+exit left $18 -> L3Z10 $20
+exit right $18 -> L3Z4 $18
+exit right $38 -> L3Z12 $20
+obj $18 mark22 flags $00 x $00+0 q $00+0
+obj $18 pic12 flags $00 x $C0+1 q $00+0
+obj $18 pic11 flags $F0 x $80+1 q $00+0
+obj $18 actor39 flags $88 x $60+6 q $60+4
+obj $20 actor52 flags $4C x $60+4 q $E0+4
+obj $28 actor54 flags $11 x $B0+3 q $A0+4
+obj $28 actor55 flags $1F x $B0+6 q $A0+4
+obj $30 pic10 flags $F0 x $30+1 q $20+5
+obj $30 pic10 flags $00 x $78+1 q $20+1
+obj $38 actor39 flags $88 x $C0+6 q $C0+4
+obj $38 mark23 flags $01 x $E0+0 q $E0+0
+obj $38 pic10 flags $00 x $40+5 q $50+0
+term $74 $65 $72 $6D
+
+zone L3Z12 set 1
+map
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 89 85 85 85 85 89 80
+  80 86 8C 8D 8D B8 8D 80
+  80 8E 8C B8 84 8D 8D 80
+  85 88 8B 84 84 84 84 85
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+  82 81 81 81 81 81 81 83
+  80 80 80 80 80 80 80 80
+exit left $20 -> L3Z11 $38
+exit right $20 -> end $00
+obj $10 pic14 flags $00 x $C0+5 q $00+0
+obj $18 pic11 flags $F0 x $C0+1 q $00+2
+obj $18 pic11 flags $00 x $20+1 q $00+2
+obj $20 actor53 flags $89 x $A0+1 q $00+0
+obj $20 mark22 flags $00 x $00+0 q $00+0
+obj $20 mark23 flags $01 x $E0+0 q $E0+0
+term $74 $65 $72 $6D
+
+level 4
+
+zone L4Z1 set 1
+map
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 E6 E0 EC EC E0 E5 C0
+  ED E7 E1 C4 C4 E1 C4 C0
+  C0 EF E1 C4 C4 E1 EE C0
+  C0 F1 E1 EE C7 E1 C4 E5
+  ED BE E1 F6 F1 E1 C4 FE
+exit left $20 -> end $00
+exit right $28 -> L4Z2 $68
+obj $20 actor56 flags $80 x $C0+1 q $C0+0
+obj $20 actor57 flags $8C x $C0+3 q $20+0
+obj $20 actor57 flags $8C x $C8+3 q $00+0
+obj $20 pic10 flags $F0 x $60+5 q $30+0
+obj $28 pic15 flags $00 x $20+5 q $00+1
+obj $28 actor63 flags $8C x $E0+6 q $10+4
+obj $28 pic12 flags $00 x $C0+5 q $00+0
+obj $28 pic21 flags $00 x $10+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L4Z2 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 E6 C0 C0 E6 C0 C0
+  C0 C0 E4 C0 C0 E4 C0 C0
+  C0 E6 E7 E5 E5 E7 E5 C0
+  C0 BF E7 C4 C4 C4 C4 E5
+  C0 EF EE EE EE E7 BD C0
+  C0 F1 C3 F9 C4 C3 F9 C0
+  C0 F1 C1 E4 C4 C1 F3 C0
+  C0 F1 C0 C0 C0 C0 C0 C0
+  C0 F1 E5 E5 E5 E5 E5 C0
+  C0 BF EE EE C7 EE EE C0
+  C0 E4 C3 F9 C8 C3 F9 C0
+  C0 BF C2 BF C7 C2 BF C0
+  C0 E4 C1 D4 C8 C1 D4 FE
+  C0 C0 C0 C0 C0 C0 EF C0
+  C0 E6 E5 E5 E5 E5 BE C0
+  C0 E4 EE EE EE E7 C8 C0
+  C0 F7 C5 C5 C6 C5 FD C0
+  C0 EF EE EE C7 EE EE FE
+  C0 F1 C4 C4 C8 C4 C4 C0
+  C0 BF E7 BD EE EE C7 C0
+  C0 E4 C3 F9 C4 C3 F1 C0
+  C0 E4 C2 E4 C4 C2 F1 C0
+  C0 E4 C2 E4 C4 C2 F1 C0
+  E5 E7 C1 D4 D3 C1 F1 C0
+  C9 C9 C9 C9 C9 C9 C9 C0
+exit right $18 -> L4Z3 $18
+exit left $68 -> L4Z1 $28
+obj $10 pic15 flags $00 x $28+5 q $00+7
+obj $20 pic13 flags $00 x $90+5 q $50+0
+obj $20 pic14 flags $F0 x $A0+5 q $00+7
+obj $28 actor64 flags $88 x $28+1 q $28+3
+obj $28 actor65 flags $89 x $A0+5 q $A0+5
+obj $30 pic21 flags $00 x $88+5 q $00+0
+obj $38 actor63 flags $8C x $E0+5 q $C0+4
+obj $40 pic14 flags $F0 x $80+5 q $00+7
+obj $48 pic12 flags $00 x $A0+5 q $00+0
+obj $48 pic13 flags $F0 x $20+5 q $50+0
+obj $50 actor63 flags $8D x $E0+1 q $88+0
+obj $60 actor64 flags $88 x $C8+1 q $C8+0
+obj $68 actor64 flags $88 x $70+0 q $80+0
+obj $68 actor65 flags $89 x $C8+1 q $C0+0
+obj $68 pic15 flags $00 x $C0+1 q $00+0
+obj $68 pic14 flags $F0 x $40+1 q $00+0
+term $74 $65 $72 $6D
+
+zone L4Z3 set 1
+map
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 E6 EC E6 E5 EC E6 C0
+  E5 F7 C5 C5 C5 C5 C6 FE
+  C0 EF EE EE EE EE C7 C0
+  C0 F1 C4 C4 C4 C4 C8 E5
+  C0 F1 E9 EE DE DF C8 C0
+exit left $18 -> L4Z2 $18
+exit right $20 -> L4Z4 $18
+obj $18 actor63 flags $8C x $E0+1 q $40+0
+obj $18 actor65 flags $89 x $68+1 q $68+1
+obj $20 pic15 flags $00 x $20+5 q $00+2
+obj $20 actor65 flags $89 x $A0+5 q $A0+5
+obj $20 pic13 flags $F0 x $C0+5 q $C0+0
+obj $20 mark22 flags $00 x $D0+0 q $D0+0
+term $74 $65 $72 $6D
+
+zone L4Z4 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 E6 E3 E3 EC E3 E5 C0
+  E5 E7 DA DA C4 DA C4 C0
+  C0 E2 F4 F4 F2 F4 DC C0
+  C0 E4 DA D9 FB F4 F5 C0
+  C0 E4 DA C4 DA DA D7 C0
+  C0 E2 D9 DC DA D9 FB C0
+  C0 E4 C4 C4 DA C4 F4 C0
+  C0 E2 FB F2 D9 DC D9 C0
+  C0 E8 D9 DC C4 C4 C4 C0
+  C0 F1 CE F0 F0 CD F0 C0
+  C0 F1 CC C0 D4 C4 D3 C0
+  C0 F1 CC C0 C0 C0 C0 C0
+  C0 F1 D0 CF CE CD CD C0
+  C0 F1 C4 D0 D2 CD CD C0
+  C0 F1 C4 C4 D0 CD CD C0
+  C0 EF EE EE EE EE EF C0
+  C0 F1 C4 EE EE EE F1 C0
+  C0 F1 C4 EE EE EE EE C0
+  C0 F1 C4 CE F0 CD F0 C0
+  C0 F1 C4 CC CE F0 CD C0
+  C0 EF C0 C0 C0 C0 C0 C0
+  C0 E6 62 62 62 62 62 62
+  C0 E4 C4 C4 C4 C4 C4 C0
+exit left $18 -> L4Z3 $20
+exit right $68 -> L4Z5 $18
+obj $18 pic17 flags $00 x $60+2 q $00+0
+obj $18 pic11 flags $F0 x $B0+2 q $00+0
+obj $20 pic13 flags $00 x $20+6 q $38+0
+obj $20 pic13 flags $00 x $C8+6 q $30+0
+obj $20 pic16 flags $00 x $C8+6 q $00+0
+obj $38 pic11 flags $F0 x $B0+5 q $00+0
+obj $38 actor64 flags $88 x $48+6 q $40+5
+obj $40 actor59 flags $88 x $20+6 q $20+6
+obj $48 pic14 flags $00 x $90+5 q $00+4
+obj $50 actor59 flags $88 x $20+1 q $20+0
+obj $50 pic10 flags $00 x $60+1 q $48+0
+obj $50 pic21 flags $00 x $60+5 q $00+0
+obj $50 actor65 flags $88 x $A8+5 q $A0+5
+obj $60 actor65 flags $88 x $40+1 q $40+1
+obj $60 pic13 flags $F0 x $60+1 q $60+0
+obj $68 actor60 flags $8E x $40+1 q $28+4
+obj $68 actor70 flags $8C x $C0+6 q $28+4
+term $74 $65 $72 $6D
+
+zone L4Z5 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 DD C0 DD DB DB DB C0
+  E5 E7 C0 BF C0 E4 C4 E5
+  C0 E4 C0 BF C0 EF C7 C0
+  C0 E4 C0 BF E5 BE C8 C0
+  C0 E4 D8 E7 FE F1 C8 C0
+exit left $18 -> L4Z4 $68
+exit right $18 -> L4Z6 $68
+obj $18 actor64 flags $88 x $68+1 q $70+0
+obj $18 actor58 flags $1F x $C8+2 q $B8+1
+obj $18 mark23 flags $88 x $A0+0 q $A0+0
+obj $18 actor59 flags $88 x $A0+5 q $A8+5
+obj $20 actor64 flags $88 x $28+1 q $30+0
+obj $20 pic15 flags $00 x $A0+5 q $00+0
+obj $20 pic15 flags $00 x $C0+5 q $00+0
+obj $20 pic14 flags $00 x $88+1 q $00+1
+term $74 $65 $72 $6D
+
+zone L4Z6 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 E6 EC E6 E5 EC F1 C0
+  C0 E4 C4 C4 C4 C4 C8 E5
+  C0 E4 E9 DE DE DF C8 FE
+  C0 C0 C0 C0 C0 C0 F1 FE
+  C0 E6 E3 E3 E3 E3 BE FE
+  C0 E8 D9 D9 D9 D9 C0 C0
+  C0 F1 C4 C4 C4 C4 7F C0
+  C0 FD C5 C5 C5 C6 C0 C0
+  C0 92 EE EE EE C7 EE C0
+  C0 C0 F7 C5 C5 FD C5 C0
+  C0 BF C7 EE EE EE 7F C0
+  C0 C5 FD C5 C5 C6 C0 C0
+  C0 BF EE EE EE C7 EE C0
+  C0 E4 C3 C3 C3 F1 C4 C0
+  C0 E4 C1 C1 C1 F1 C4 C0
+  C0 C0 C0 C0 C0 C0 EF FE
+  C0 E6 E5 E5 E5 E5 BE FE
+  C0 BF C7 EE EE EE EE C0
+  C0 E4 C8 C4 C4 C4 C4 C0
+  C0 E4 EE EE E7 BD C7 C0
+  C0 C0 E4 C4 C4 C4 C8 C0
+  E5 67 C0 E4 F6 E9 C4 FE
+  C0 E4 67 67 67 67 35 FE
+exit right $18 -> L4Z7 $20
+exit left $68 -> L4Z5 $18
+obj $18 mark23 flags $01 x $E0+0 q $E0+0
+obj $18 mark22 flags $00 x $20+4 q $20+4
+obj $18 actor63 flags $8C x $E0+5 q $00+4
+obj $30 pic13 flags $F0 x $80+1 q $30+0
+obj $38 actor59 flags $88 x $40+1 q $40+1
+obj $38 pic12 flags $00 x $80+1 q $00+1
+obj $38 pic21 flags $00 x $D0+1 q $00+0
+obj $40 actor65 flags $89 x $48+1 q $40+0
+obj $48 pic12 flags $00 x $40+5 q $00+0
+obj $50 actor63 flags $8C x $E0+5 q $20+4
+obj $58 pic13 flags $F0 x $40+5 q $30+0
+obj $58 pic14 flags $F0 x $C8+5 q $00+7
+obj $60 actor59 flags $88 x $40+4 q $40+4
+obj $68 actor63 flags $8C x $E0+5 q $20+4
+term $74 $65 $72 $6D
+
+zone L4Z7 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 E6 C0 C0 C0 C0
+  C0 C0 C0 C3 C0 C0 C0 C0
+  C0 E6 D5 C2 D6 E5 E5 C0
+  C0 E4 C4 C2 BF EE E7 E5
+  C0 EF EE C2 F3 F8 F8 C0
+  ED BE C4 C2 BF C0 EF C0
+  C0 F1 D3 C1 D4 67 F1 C0
+exit right $18 -> L4Z8 $18
+exit left $20 -> L4Z6 $18
+obj $10 pic13 flags $F0 x $80+5 q $10+0
+obj $18 pic14 flags $F0 x $C8+5 q $00+6
+obj $18 pic12 flags $00 x $20+1 q $00+0
+obj $18 actor64 flags $88 x $C8+6 q $C8+6
+obj $20 actor64 flags $88 x $C8+5 q $C0+5
+term $74 $65 $72 $6D
+
+zone L4Z8 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 EC E6 E5 E5 E5 EC C0
+  E5 E7 C4 EE E7 C4 C4 C0
+  C0 61 A0 A0 A0 A0 A0 C0
+  C0 E4 F6 E9 C4 C4 C4 C0
+  C0 C0 C0 C0 C0 C0 E4 C0
+  C0 C0 C0 C0 C0 E6 E7 C0
+  ED E5 E5 E5 E5 E7 EE 3E
+  C0 EF EE EE EE EE EE FE
+  C0 F1 C4 C4 C4 C4 C4 FE
+  C0 BF EE EE EE EE E7 C0
+  C0 D4 C4 C4 C4 C4 C4 C0
+  C0 BF E7 BD E7 BD E7 FE
+  C0 E4 EE E7 BD EE CE C0
+  C0 D4 C4 C4 EB EA EB C0
+  C0 BF E7 C4 C4 C4 C4 3E
+  C0 61 A0 A0 A0 A0 A0 C0
+  C0 E4 DE DE DF C4 C4 FE
+  C0 67 67 67 67 67 35 FE
+  C0 E4 67 67 67 67 67 C0
+  C0 E4 EB EA EB E7 C4 E5
+  C0 E4 C4 C4 C4 EE EE FE
+  C0 E4 C4 EE EE E7 C4 FE
+  ED E7 BD E7 CA CB C4 FE
+exit left $18 -> L4Z7 $18
+exit right $60 -> L4Z9 $20
+obj $18 actor60 flags $8E x $20+6 q $00+0
+obj $20 actor64 flags $88 x $C8+5 q $D0+4
+obj $20 actor65 flags $89 x $90+1 q $90+1
+obj $20 actor65 flags $89 x $A8+1 q $A8+1
+obj $28 actor58 flags $8C x $A0+6 q $B8+0
+obj $30 actor63 flags $8C x $E0+2 q $20+2
+obj $30 pic10 flags $F0 x $38+5 q $40+0
+obj $40 actor63 flags $8C x $E0+2 q $50+0
+obj $48 actor59 flags $88 x $20+1 q $18+0
+obj $48 actor64 flags $88 x $E0+5 q $D8+5
+obj $50 actor69 flags $8E x $20+2 q $20+0
+obj $50 actor63 flags $8C x $E0+6 q $20+4
+obj $60 pic13 flags $F0 x $B0+1 q $20+0
+obj $60 pic13 flags $F0 x $60+5 q $20+0
+obj $68 actor63 flags $8C x $E0+5 q $20+4
+obj $68 pic16 flags $00 x $18+5 q $00+0
+term $74 $65 $72 $6D
+
+zone L4Z9 set 1
+map
+  C0 C9 C9 C9 C9 C9 C9 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 E6 C0 C0 C0 E6 C0
+  C0 D6 E7 D5 D6 E5 E7 C0
+  C0 E4 C3 F9 C4 C4 C3 C0
+  C0 E4 C2 E8 F2 F2 C2 C0
+  ED E7 C2 F1 63 F8 C2 C0
+  C0 E4 C1 EF EE C4 C1 E6
+  C0 C9 C9 C9 C9 C9 C9 C9
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+  C0 C0 C0 C0 C0 C0 C0 C0
+exit left $20 -> L4Z8 $60
+exit right $24 -> end $00
+obj $18 pic13 flags $F0 x $60+1 q $20+0
+obj $18 pic13 flags $F0 x $80+1 q $20+0
+obj $20 actor67 flags $19 x $80+0 q $80+0
+obj $20 actor68 flags $19 x $88+7 q $80+0
+obj $20 actor67 flags $19 x $88+7 q $80+0
+obj $20 actor68 flags $19 x $78+7 q $80+0
+obj $20 actor54 flags $11 x $E8+3 q $80+0
+obj $20 actor55 flags $1F x $E8+6 q $80+0
+term $74 $65 $72 $6D

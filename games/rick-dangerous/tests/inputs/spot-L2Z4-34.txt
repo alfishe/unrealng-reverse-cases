@@ -1,0 +1,9 @@
+# spot-L2Z4-34: from work/stage2/warp/spot-L2Z4-34.szx (a warp, said so: the zone warp of work/stage2/zonewarp.py with the
+# view's top row 8 map rows above the object of kind 34, which no other recording spawned;  = 0, the
+# infinite-lives POKE; work/stage2/spotwarp.py). Our own keys: stand, then left, then right.
+0 -
+150 5
+250 -
+260 8
+360 -
+400 END

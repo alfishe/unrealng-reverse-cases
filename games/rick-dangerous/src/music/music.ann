@@ -1,0 +1,184 @@
+# The annotations of music (kit/mkgame.py --part src/music/music.json). Format: ../../../../docs/ann-format.md.
+# The bytes are the game image's $5E00-$6BA3; the entry's CopyMusicToRam1 ($A069) copies them to RAM 1 $C000 on a
+# 128K. The game reaches them only through its own entries in RAM 2: AyPlayEffect $9FED (CALL $C685), AyPlayTune $A016
+# (CALL $C3E4) and the IM 2 tick $A030 (CALL $C46C), each with RAM 1 paged in.
+
+@module player ; The AY player: periods, the three channels' state, note start, volume envelopes, the AY output
+@about The player under the tunes and the effects. Three channel records (ChannelA, ChannelB, ChannelC, 18 bytes each) hold what each AY channel sounds now: tone period, volume, a software volume envelope (attack, decay, sustain, release, run by a routine pointer per channel), a duration count and a vibrato or slide added to the period. StartNote $C0E2 loads a channel from a 10-byte instrument (or the first 10 bytes of an effect); UpdateAy $C19F, once a frame from AyTick $C46C, steps the three channels and writes AY registers 0-10.
+@about The period table is the one of an Atari ST player (YM2149 at 2 MHz), index 0 = C-1: on the Spectrum's 1.7734 MHz AY every note sounds about two semitones lower. The player uses no hardware envelope: the hooks SoundHookStart $C345 and SoundHookEnd $C346 are bare RETs, and the envelope stub at StartNoteFixed $C148 loads registers and writes nothing.
+
+$C000 w PeriodTable 8 ; AY tone periods, 85 notes from C-1 (3822) by semitones; index = note + transpose + 12
+> TrackStep $C4B4 (at $C573) and OrnamentStep $C5F5 (at $C672) read the word at PeriodTable + 2 * index; the index is the pattern's note plus the track's transpose plus 12. The values are 2 000 000 / 16 / f of the equal-tempered scale (3822: 32.7 Hz, C-1, at 2 MHz).
+> Two entries carry a typo in bit 5 of the low byte: index 20 (G#2) is 1236 (`$04D4`), not 1204 (`$04B4`), and index 24 (C-3) is 988 (`$03DC`), not 956 (`$03BC`); those two notes sound about half a semitone flat. The last entry, index 84, is 24, not 30.
+$C0AA b MixerShadow ; AY register 7 as last written: bits 0-2 tone off, bits 3-5 noise off (all set: silent)
+> StartNote clears the channel's tone and/or noise bits (its instrument's flags bits 0 and 1), ReleaseStep $C2DD sets them again when the volume reaches 0. UpdateAy returns at once while bits 0-5 are all set (nothing sounding): that is the cost of a silent frame. As loaded: `$3F`.
+$C0AB b ChannelA 18 ; Channel A: +0 tone-on AND mask, +1 noise-on AND mask, +2 its mixer bits, +3/+4 period, +5 volume (0-255)
+> The channel record (IX), 18 bytes: +0 the AND mask that turns its tone on in register 7, +1 the mask that turns its noise on, +2 both its bits (tone and noise off), +3/+4 the note's period, +5 the volume (0-255; AY volume = it / 8), +6 the duration left (frames; 0: released; `$FF`: held), +7 the vibrato delay left (`$FF`: none), +8 the vibrato steps left, +9/+10 the offset added to the period, +11/+12 the offset's step per frame, +13/+14 the envelope phase routine (AttackStep $C28D, DecayStep $C2AC, SustainStep $C2CE, ReleaseStep $C2DD), +15/+16 the instrument, +17 the instrument's flags (bit 7 set while an effect owns the channel, so tunes leave it alone).
+> Masks of channel A as loaded: `$FE`, `$F7`, `$09`.
+$C0BD b ChannelB 18 ; Channel B (masks `$FD`, `$EF`, `$12`); effect 4 always plays here
+$C0CF b ChannelC 18 ; Channel C (masks `$FB`, `$DF`, `$24`)
+$C0E1 b NoisePeriod ; The noise period: the low period byte of the last channel with noise (instrument flags bit 1)
+> UpdateAy stores the low byte of a noise channel's period (+ offset) here and writes it rotated right three times to AY register 6.
+$C0E2 c StartNote ; Start a note on channel IX: instrument IY, period HL, duration C
+> Copies the instrument (IY: +0 attack step, +1 decay step, +2 sustain level, +3 release step, +4 peak volume, +5 vibrato delay, +6 vibrato length, +7/+8 vibrato step, +9 flags) into the channel record: period, duration, delay, half the vibrato length (at least 1), the step; the period offset is cleared. The flags go to +17: bit 0 turns the channel's tone on, bit 1 its noise, bit 2 a fixed volume (`$FF`, held for the duration) instead of the envelope (no instrument or effect sets it). Otherwise the envelope starts at AttackStep. Called by TrackStep for a tune's note and by AyPlayEffect $C685 with an effect.
+> Starts with DI and has no EI: the callers run with interrupts off (the game's `$9FED`) or inside the IM 2 handler.
+> Witness: L1 5524 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C107 StartNoteSteps ; at least one vibrato step
+$C130 StartNoteNoise ; flags bit 1: the channel's noise on
+$C137 StartNoteEnvelope
+$C148 StartNoteFixed ; the fixed-volume start: a stub of a hardware-envelope start (loads A and C, writes nothing)
+$C15E c SilenceAll ; Silence the AY: all tone and noise off, volumes 0, the channels' volumes cleared
+> Sets bits 0-5 of MixerShadow, writes register 7, zeroes registers 8-10, register 11 = 1 and 12-13 = 0 (the envelope), and the three channels' volumes. AyPlayTune $C3E4 calls it before a tune starts.
+> Witness: L1 30 (c1, controls, ending, ending2, gameover, level1).
+$C19F c UpdateAy ; Once a frame: step the three channels and write AY registers 7, 0-6 and 8-10
+> Returns at once while MixerShadow has every channel off. Otherwise runs ChannelStep $C25B for channels A, B and C, then writes the mixer, each channel's period plus its vibrato offset, the noise period (NoisePeriod, from a channel with noise) and the volumes (+5 / 8).
+> Witness: L1 47434 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C1DD UpdateAyToneA
+$C1FB UpdateAyToneB
+$C219 UpdateAyToneC
+$C25B c ChannelStep ; One channel's frame: count the duration down, step the vibrato, run the envelope phase
+> Nothing while the channel is off in MixerShadow. The duration (+6) counts down unless 0 or `$FF`; VibratoStep $C303 moves the period offset; then a fixed-volume instrument (flags bit 2) waits for the duration to end and goes to ReleaseOff, the others jump to the phase routine at +13/+14.
+> Witness: L1 99282 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C27C ChannelStepPhase
+$C28D c AttackStep ; Envelope phase 1: volume + attack step until the peak, then DecayStep
+> Witness: L1 6357 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C29C AttackPeak
+$C2AC c DecayStep ; Envelope phase 2: volume + decay step (negative) down to the sustain level, then SustainStep
+> Witness: L1 37089 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C2BE DecaySustain
+$C2CE c SustainStep ; Envelope phase 3: hold the volume until the duration (+6) is 0, then ReleaseStep
+> Witness: L1 15122 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C2DD c ReleaseStep ; Envelope phase 4: volume + release step (negative) down to 0, then the channel off and free
+> At 0 the channel's tone and noise bits are set again in MixerShadow and +17 bit 7 is cleared, so a tune may use the channel again after an effect.
+> Witness: L1 7788 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C2EA ReleaseOff
+$C2FC FixedVolumeEnd ; a fixed-volume note: off when its duration ends
+$C303 c VibratoStep ; Add the step to the period offset after the delay; at the end of the length reverse the step
+> +7 delays the start (`$FF`: never). Each frame the step (+11/+12) is added to the offset (+9/+10); when +8 counts to 0 the instrument's length +6 decides: 0 keeps the step going (a slide), bit 7 set stops it (+7 = `$FF`), else +8 = the length and the step is negated (a vibrato).
+> Witness: L1 66356 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C310 VibratoAdd
+$C334 VibratoReverse
+$C345 c SoundHookStart ; A bare RET called before the AY writes: a hook left from another machine's player
+> Witness: L1 33124 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C346 c SoundHookEnd ; A bare RET jumped to after the AY writes
+> Witness: L1 33124 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C347 c WriteAy ; Write A to AY register C (OUT `$FFFD` the register, OUT `$BFFD` the value)
+> Witness: L1 364244 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+
+@module sequencer ; The tune sequencer: three tracks of order lists and patterns, started by AyPlayTune, stepped by AyTick
+@about A tune is three order lists, one a channel (TuneTable $CA8F, 6 bytes a tune). An order list names patterns, with repeat counts and transposes; a pattern is a list of notes, each with its duration in frames, and instrument changes. The three track records (Track0-Track2, 21 bytes each) follow the lists; AyTick $C46C steps them once a frame from the IM 2 handler. The format and the editable text are in src/res/music/README.md.
+@about A note never takes a channel that an effect holds (channel +17 bit 7): the effect plays to its end over the tune, which goes on silently on that channel until its next note there.
+
+$C354 c OldEntries ; Not run: a jump table of an earlier build (JP `$A016`, JP AyTick, the flag, JP OldPlayEffect)
+> Known only from the code. Nothing jumps here: the game calls AyPlayTune $C3E4, AyTick $C46C and AyPlayEffect $C685 directly. The first jump goes to `$A016`, the game's own AyPlayTune in RAM 2, so the table was made for a build where this code sat elsewhere.
+$C357 c OldTick ; Not run: JP AyTick
+> Known only from the code.
+$C35A b MusicOn ; The music flag: `$FF` after AyPlayTune, 1 while the last notes die away, 0 when the tune is over
+> AyPlayTune sets `$FF`; AyTick ORs the three tracks' active bytes (+13) into it, and when all three order lists have ended it is 1 until every channel is silent, then 0. AyTick steps the tracks only while it is not 0.
+$C35B c OldJumps ; Not run: JP OldPlayEffect
+> Known only from the code.
+$C35E c OldStopMusic ; Not run: MusicOn = 0, then SilenceAll
+> Known only from the code.
+$C365 c OldPlayEffect ; Not run: an older AyPlayEffect, always on channel A
+> Known only from the code. The same record address as AyPlayEffect (EffectTable + 13A), always channel A, and the channel marked busy (+17 bit 7) after StartNote; DI / EI round it.
+$C38D b Track0 21 ; Track 0 (channel A): +0 instrument map offset, +1/+2 order list pointer, +3/+4 pattern start, +5/+6 pattern pointer
+> The track record (IY), 21 bytes: +0 its 8 slots' offset in InstrumentMap (0, 8, 16 as loaded; never written), +1/+2 the next order list byte, +3/+4 the pattern's start (for a repeat), +5/+6 the next pattern byte, +7/+8 the instrument, +9 the repeats left, +10 the transpose (semitones), +11 `$FF` when the pattern has ended, +12 the frames left of the note, +13 active (0 when its order list has ended), +14 the note's period index, +15 the ornament number, +16/+17 the ornament pointer, +18 the ornament step's frames, +19 the steps left, +20 the ornament state (bit 7 on, bit 6 restart, bits 0-5 the number).
+$C3A2 b Track1 21 ; Track 1 (channel B), map offset 8
+$C3B7 b Track2 21 ; Track 2 (channel C), map offset 16
+$C3CC b InstrumentMap 8 ; Each track's 8 instrument slots: an offset into Instruments, 0-70 step 10, set by AyPlayTune
+> A pattern's `$80`-`$87` takes slot 0-7 here; an order list's `$C0`-`$FD` byte puts the next byte into a slot (no tune does). AyPlayTune fills all three with 0, 10, ... 70, so slot N is instrument N.
+$C3E4 c AyPlayTune ; Start tune A (0-7): silence, point the three tracks at the tune's order lists, MusicOn = `$FF`
+> Called from the game's AyPlayTune `$A016` (128K only) with A = the tune. Calls SilenceAll, reads the tune's three order list pointers from TuneTable + 6A, then for each track: repeats 1, transpose 0, pattern ended, the note's frames 1, active, ornament 0, instrument Instruments (0); InstrumentMap to 0, 10, ... 70. The tunes and their call sites: 0 `$E324` (a level's intro), 1-4 `$AC20` (a level's end, the number from `$E4AD`), 5 `$E220`, 6 `$E386`, 7 `$F531` (the bonus end marker).
+> Witness: L1 30 (c1, controls, ending, ending2, gameover, level1).
+$C3F5 PlayTuneLists
+$C444 PlayTuneMapRow
+$C445 PlayTuneMapLoop
+$C46C c AyTick ; Once a frame (the IM 2 handler, through `$A030`): UpdateAy, then step the three tracks while a tune plays
+> UpdateAy runs every frame, for the effects too. While MusicOn is not 0 the three tracks' active bytes are ORed: all ended, MusicOn = 1 while a channel still sounds, then 0; else TrackStep for tracks 0, 1, 2 on channels A, B, C (the last falls into TrackStep).
+> Witness: L1 47434 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C496 MusicTickTracks
+$C4B4 c TrackStep ; One track's frame: count the note down; at its end read the next pattern bytes (and order list bytes)
+> OrnamentStep first. While the note's frames last (+12), the pattern pointer is only moved past command bytes. At 0 the next pattern byte: `$80`-`$FF` commands (PatternCommand $C5BB), `$7F` a rest (the next byte: frames), `$7E` a period word then frames, else a note: PeriodTable[note + transpose + 12], the next byte its frames, and StartNote with the track's instrument unless an effect holds the channel.
+> At a pattern's `$FF` the repeat count runs down (the same pattern again), then the order list is read: under `$80` a pattern number (PatternLo / PatternHi), `$80`-`$BF` the repeats (bits 0-4) of the next pattern, `$C0`-`$FD` an InstrumentMap slot (bits 0-2) and its value, `$FE` a transpose, `$FF` the end (active = 0).
+> Witness: L1 43833 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C4BD TrackNextPattern
+$C4D4 TrackOrderList
+$C4DE TrackOrderByte
+$C4F0 TrackOrderEnd
+$C4F9 TrackOrderRepeat
+$C506 TrackOrderMap
+$C513 TrackOrderMapStore
+$C519 TrackOrderPattern
+$C539 TrackPatternBytes
+$C53F TrackCountDown
+$C551 TrackNextByte
+$C562 TrackNote
+$C573 TrackNoteIndex
+$C587 TrackNoteStart
+$C5AE TrackRest
+$C5B0 OrnamentBase ; OrnamentStep's table base: ornament N at OrnamentBase + 8N lies in this code (no tune has one)
+$C5BB c PatternCommand ; A pattern command byte at DE: `$80`-`$87` instrument slot, `$88`-`$BF` ornament, `$FF` pattern end, `$C0`-`$FE` skipped
+> `$80`-`$87`: the instrument = Instruments + InstrumentMap[track +0 + bits 0-2]. `$88`-`$BF`: the ornament number (bits 0-3) for the next notes. `$FF`: the track's pattern ended (+11 = `$FF`). `$C2` is skipped alone, the other `$C0`-`$FE` with three more bytes. The tunes use only `$80`-`$85` and `$FF`.
+> Witness: L1 1892 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C5D9 PatternCommandEnd
+$C5E2 PatternCommandOrnament
+$C5ED PatternCommandSkip
+$C5F5 c OrnamentStep ; Step the track's ornament (a per-note arpeggio): the period moves through table offsets
+> Every note sets +20 = ornament | `$C0`, and with ornament 0 (every tune) OrnamentStep clears bit 7 and returns. Beyond that it is known only from the code: with a number N it would read bytes at OrnamentBase + 8N (bits 0-2 frames, bits 3-7 semitones over the note), which lie inside TrackStep's code: the ornament table of the original player was not kept.
+> Witness: L1 43833 (L1Z4, c1, controls, ending, ending2, gameover, level1-level4).
+$C609 OrnamentRun
+$C62C OrnamentNext
+$C63D OrnamentStart
+$C657 OrnamentLoad
+$C672 OrnamentPeriod
+$C67B OrnamentSetPeriod
+
+@module effects ; The sound effects: AyPlayEffect and the table of the 12 effects
+@about An effect is one note started straight on a channel: a 13-byte record, the 10 bytes of an instrument then its period and its duration. AyPlayEffect $C685 takes channels A, B, C in turn (effect 4 always B) and marks the channel busy, so the tune's notes skip it until the effect's volume reaches 0.
+@about The game calls it through its own AyPlayEffect `$9FED` (A = the effect, RAM 1 paged in, interrupts off). On a 48K `$9FED` plays the beeper routine `$A08E` instead, from its own data: these records are the 128K's only.
+
+$C685 c AyPlayEffect ; Play effect A (0-11): its record from EffectTable on the next channel, as a note
+> IY = EffectTable + 13A. Effect 4 goes to ChannelB; the others to the channel after the last one used (EffectChannel 0, 1, 2: A, B, C). StartNote with the record's period (+10/+11) and duration (+12). Keeps every register but A and F.
+> Witness: L1 2042 (L1Z4, c1, controls, ending2, gameover, level1-level4).
+$C6AE PlayEffectNextChannel
+$C6B8 PlayEffectChannel
+$C6D0 PlayEffectStart
+$C6E4 b EffectChannel ; The channel of the last effect: 0, 1, 2 = A, B, C (as loaded 0)
+
+@module tunes ; The tunes: 55 patterns, the tune table, the 24 order lists, the pattern pointers and the 8 instruments
+@about All of it, with the effects, is one editable text, src/res/music/music.txt (tools/res_music.py, src/res/music/README.md): the instruments, the effects, the tunes' order lists and the patterns, one line a note with its name. The pointer tables (TuneTable, PatternLo, PatternHi) are made from the layout when the text is built back.
+
+$C6E5 b Patterns 16 ; The 55 patterns, one after the other: notes (note, frames), rests, instrument bytes, `$FF` at the end
+> A pattern: `$80`-`$87` instrument slot, `$7F` FRAMES a rest, `$7E` LO HI FRAMES a period given directly, NOTE FRAMES a note (NOTE 0-`$7D`, played at PeriodTable[NOTE + transpose + 12]), `$FF` the end. The tunes use notes 6-52, durations of 4-96 frames (50 a second) and instruments 0-5. Patterns 34-37 are empty (only `$FF`), and 12 patterns are named by no order list: 21, 28-30, 34-37, 39, 42, 49, 50.
+@res music/patterns.bin
+$CA8F b TuneTable 6 ; 8 tunes x 3 order list pointers (channels A, B, C)
+> Tune 0 `$E324` (a level's intro), 1-4 `$AC20` (a level's end), 5 `$E220` (the menu), 6 `$E386` (GAME OVER), 7 `$F531` (the bonus end marker). In the recordings (reads of this table): tunes 0, 5, 6 in `controls` and `gameover`; 0, 5, 6, 7 in `level1`; 4, 5, 6 in `ending`.
+@res music/tunetable.bin
+$CABF b OrderLists 16 ; The 24 order lists: pattern numbers, `$80`+N repeats, `$FE` N transpose, `$FF` end
+> Stored for tunes 0-3, 5-7, then 4. Tunes 2, 3, 4, 6 and 7 leave a channel silent (a list that is only `$FF`). Transposes run from -12 (tune 2) to +28 semitones (tune 0's last pattern).
+@res music/orders.bin
+$CC4A b PatternLo 16 ; The low bytes of the 55 pattern addresses
+@res music/patternlo.bin
+$CC81 b PatternHi 16 ; The high bytes of the 55 pattern addresses
+@res music/patternhi.bin
+$CCB8 b Instruments 10 ; 8 instruments of 10 bytes: attack, decay, sustain, release, peak, vibrato delay, length, step, flags
+> +0 attack step, +1 decay step (signed), +2 sustain level, +3 release step (signed), +4 peak volume (AY volume = /8), +5 vibrato delay in frames (`$FF`: none), +6 vibrato length (0: a slide that goes on, bit 7: a slide that stops), +7/+8 the step added to the period each frame, +9 flags (bit 0 tone, bit 1 noise, bit 2 fixed volume). Instruments 0-4 are tone with envelopes peaking at `$2D`-`$36`; 5 is noise, used only by pattern 42, which no order list names; 6 (a tone that slides down after 63 frames, step `$0500`) and 7 (noise with a vibrato, step `$6400`: `$0400` in the AY's 12 bits) are used by no pattern.
+@res music/instruments.bin
+
+@module effects
+
+$CD08 b EffectTable 13 ; The 12 effects, 13 bytes each: an instrument's 10 bytes, the period, the duration
+> +0-+9 as Instruments, +10/+11 the period, +12 the duration in frames. The comments give the call sites of the game's AyPlayEffect `$9FED` with A = the effect and the most runs of a call site in one recording.
+@res music/effects.bin
+$CD08 Effect0 ; Effect 0: noise, a slide; a shot fired, `$FA50` (level3 7)
+$CD15 Effect1 ; Effect 1: noise; fire with no bullets left, `$FA47` (c1 146)
+$CD22 Effect2 ; Effect 2: noise, a slide; the dynamite's bang, `$EC93` (level3 6)
+$CD2F Effect3 ; Effect 3: noise, a slide (step -8); a trap set off `$EFCB`, a poke with the stick `$F9EF` (level4 62 at `$EFCB`)
+$CD3C Effect4 ; Effect 4: tone and noise, always channel B; Rick's steps (crawl `$FCB8`, climb `$FD0D`, walk `$FD44`) (level3 357 at `$FD44`)
+$CD49 Effect5 ; Effect 5: noise; no call site passes 5
+$CD56 Effect6 ; Effect 6: tone, a slide up after 4 frames (step `$0FF8`: -8 in the AY's 12 bits); a head against a ceiling `$F97D`, `$FADB` (level2 53 and 67)
+$CD63 Effect7 ; Effect 7: tone, a slide up after 3 frames (step `$0FF7`); no call site passes 7
+$CD70 Effect8 ; Effect 8: tone, a vibrato; dynamite or bullets picked up, `$ED76` (once, in the L1Z4 zone recording)
+$CD7D Effect9 ; Effect 9: tone, a vibrato; a treasure picked up, `$EDEC` (level1 4)
+$CD8A Effect10 ; Effect 10: tone, as 9 without the vibrato (delay `$FF`); the bonus count starts (the start marker), `$F4FE` (controls 7)
+$CD97 Effect11 ; Effect 11: tone, a slide that stops; Rick dies `$FBF4`, an enemy is hit `$F17E` (level4 29 at `$FBF4`)

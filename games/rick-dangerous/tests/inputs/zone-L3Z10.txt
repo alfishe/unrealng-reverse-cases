@@ -1,0 +1,61 @@
+# zone-L3Z10: from work/stage2/warp/L3Z10.szx, the zone warp (a patch on a clone, said so: level table
+# record 0 = level 3's with Rick's x, y, the zone record $D5F6 and the top row of the zone, $E3F4 = 0 (infinite
+# lives, the ZXDB POKE), ENTER, $E4AD = 2, fire; work/stage2/zonewarp.py). Keys: work/stage2/zonescript.py, seed the zone name.
+0 -
+10 0 7
+14 -
+26 8 6
+114 7
+138 0 7
+142 -
+154 0 8
+158 -
+170 8 6
+258 0 7
+262 -
+274 8
+336 8 7
+363 0 8
+367 -
+379 0 8
+383 -
+395 6
+473 7
+556 0 8
+560 -
+572 5 7
+592 5
+630 0 8
+634 -
+646 8 7
+671 0 7
+675 -
+687 8
+746 8 7
+768 8
+857 8
+915 8
+947 0 6
+951 -
+963 8 7
+985 5
+1064 8
+1116 6
+1194 8
+1260 6
+1317 6
+1388 8
+1427 8 6
+1510 7
+1562 8 7
+1584 5
+1639 5
+1677 7
+1717 8
+1785 8
+1820 7
+1877 7
+1910 8 7
+1929 8
+2011 -
+2000 END

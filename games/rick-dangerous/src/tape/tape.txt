@@ -1,0 +1,246 @@
+# The tape orig/RickDangerous.tzx.zip holds ("Rick Dangerous.tzx"), as tools/mktape.py writes it: one line a TZX
+# block, in order (docs/03-build-and-load.md 3.1; the block formats and the ciphers: tools/bleepload.py). Format:
+#   tzx MAJOR.MINOR                         the file header ("ZXTape!", $1A, the version)
+#   text TEXT                               a text description block ($30)
+#   header PAUSE TYPE NAME LENGTH P1 P2     a standard ($10) ROM header: flag $00, type 0 (Program) or 3 (Bytes), the
+#                                           name padded to 10, the length ("@FILE": the file's), P1, P2 ("=": the length)
+#   data PAUSE FILE                         a standard ($10) data block: flag $FF, the file, the XOR checksum
+#   group TEXT / group-end                  a group start ($21) and end ($22)
+#   tone PULSE COUNT                        a pure tone ($12): COUNT pulses of PULSE T-states
+#   pause MS                                a pause ($20)
+#   turbo PILOT SYNC1 SYNC2 ZERO ONE LAST   the timings of every turbo ($11) block after it
+#   key KEYPAGE RICK1                       group 1's key: the tape's key page XOR Rick1's two pages
+#   g1 PILOTS PAUSE NUM DEST ITEM FILL JP   a group 1 block: PILOTS pilot pulses, the pause after it in ms, its number,
+#                                           where it goes, the 256 plain bytes (enciphered by the key in $CF00-$FBFF
+#                                           and in $5D40-$5DFF), the filler (hex: as long as the previous block's
+#                                           checksum asks) and the JP after it
+#   g23 GROUP PILOTS PAUSE NUM DEST END GO ITEM   a group 2 or 3 block: ITEM's 256 bytes, each XOR DEST's high byte;
+#                                           END the high byte after the group's last page, GO where to go after it
+# ITEM is a file of build/ (or build/res/) or FILE@ORG:ADDR, the 256 bytes at ADDR of FILE, whose first byte is at
+# ORG (hex). PAUSE and PILOTS are the original's (a MakeTZX capture of a real tape: they vary block to block).
+tzx 1.10
+text Created with Ramsoft MakeTZX
+header 1 0 Rick @basic.bin 10 =
+data 491 basic.bin
+header 978 3 Rick1 @rick1.bin 52480 12544
+data 612 rick1.bin
+group Bleepload Group 1
+turbo 2165 667 735 856 1712 8
+key res/loader/keypage.bin rick1.bin
+tone 2165 4650
+pause 5
+# the key page, plain
+g1 249 64 0 $C900 res/loader/keypage.bin C2FCDF8BCA631DAB $CD1B
+# the loading screen (keyed), 27 blocks
+g1 249 6 1 $CF00 res/screens/loading.scr@4000:4000 C2FCDF8B $CD1B
+g1 248 6 2 $D000 res/screens/loading.scr@4000:4100 C2FCDF8BC31BCD $CD1B
+g1 249 7 3 $D100 res/screens/loading.scr@4000:4200 C2FCDF8BC31BCDC3 $CD1B
+g1 248 6 4 $D200 res/screens/loading.scr@4000:4300 C2FCDF8BC31BCD $CD1B
+g1 249 6 5 $D300 res/screens/loading.scr@4000:4400 C2FCDF $CD1B
+g1 248 6 6 $D400 res/screens/loading.scr@4000:4500 C2FCDF $CD1B
+g1 248 7 7 $D500 res/screens/loading.scr@4000:4600 C2 $CD1B
+g1 249 6 8 $D600 res/screens/loading.scr@4000:4700 C2C31BCDC6CD98 $CD1B
+g1 248 6 9 $D700 res/screens/loading.scr@4000:4800 C2C31BCDC6 $CD1B
+g1 250 6 10 $D800 res/screens/loading.scr@4000:4900 C2C31BCDC6C3 $CD1B
+g1 248 6 11 $D900 res/screens/loading.scr@4000:4A00 C2C31BCDC6C3C3 $CD1B
+g1 249 6 12 $DA00 res/screens/loading.scr@4000:4B00 C2 $CD1B
+g1 249 6 13 $DB00 res/screens/loading.scr@4000:4C00 C2C3 $CD1B
+g1 249 6 14 $DC00 res/screens/loading.scr@4000:4D00 C2C3C31BCD47C3C3 $CD1B
+g1 249 6 15 $DD00 res/screens/loading.scr@4000:4E00 C2C3 $CD1B
+g1 249 61 16 $DE00 res/screens/loading.scr@4000:4F00 C2C3C31BCD9FC3C3 $CD1B
+g1 248 6 17 $DF00 res/screens/loading.scr@4000:5000 C2 $CD1B
+g1 249 7 18 $E000 res/screens/loading.scr@4000:5100 C2C31B $CD1B
+g1 248 6 19 $E100 res/screens/loading.scr@4000:5200 C2C3 $CD1B
+g1 249 6 20 $E200 res/screens/loading.scr@4000:5300 C2C3C31BCD0661 $CD1B
+g1 248 6 21 $E300 res/screens/loading.scr@4000:5400 C2 $CD1B
+g1 249 6 22 $E400 res/screens/loading.scr@4000:5500 C2C31BCD0D06 $CD1B
+g1 249 6 23 $E500 res/screens/loading.scr@4000:5600 C2C3 $CD1B
+g1 249 6 24 $E600 res/screens/loading.scr@4000:5700 C2C3C31B $CD1B
+g1 248 6 25 $E700 res/screens/loading.scr@4000:5800 C2 $CD1B
+g1 249 6 26 $E800 res/screens/loading.scr@4000:5900 C2C31BCD3F1BCD58 $CD1B
+g1 248 6 27 $E900 res/screens/loading.scr@4000:5A00 C2C3 $CD1B
+# the game image $5E00-$6DFF (keyed), 16 blocks: the AY player and tunes, then leftovers
+g1 249 5 28 $EA00 game.bin@5B00:5E00 C2C3C31B $CD1B
+g1 249 6 29 $EB00 game.bin@5B00:5F00 C2C3C31BC3 $CD1B
+g1 249 7 30 $EC00 game.bin@5B00:6000 C2C3C31BC3 $CD1B
+g1 249 6 31 $ED00 game.bin@5B00:6100 C2C3C31B $CD1B
+g1 249 58 32 $EE00 game.bin@5B00:6200 C2C3C31B $CD1B
+g1 249 6 33 $EF00 game.bin@5B00:6300 C2C3C31BC31BCD $CD1B
+g1 249 5 34 $F000 game.bin@5B00:6400 C2C3C31BC31BCD $CD1B
+g1 250 6 35 $F100 game.bin@5B00:6500 C2C3 $CD1B
+g1 248 6 36 $F200 game.bin@5B00:6600 C2C3 $CD1B
+g1 249 6 37 $F300 game.bin@5B00:6700 C2C3C31BCDD6CD $CD1B
+g1 248 7 38 $F400 game.bin@5B00:6800 C2C3C31BCDD6CD $CD1B
+g1 248 7 39 $F500 game.bin@5B00:6900 C2C3C31BCD $CD1B
+g1 248 6 40 $F600 game.bin@5B00:6A00 C2C3 $CD1B
+g1 249 6 41 $F700 game.bin@5B00:6B00 C2C3C31BCD3D $CD1B
+g1 248 6 42 $F800 game.bin@5B00:6C00 C2 $CD1B
+g1 249 6 43 $F900 game.bin@5B00:6D00 C2C31BCDB73DC31B $CD1B
+# LoadGroup, the loader of groups 2 and 3 (keyed), 2 blocks
+g1 249 6 44 $FA00 loadgroup.bin@FA00:FA00 C2C31B $CD1B
+g1 249 6 45 $FB00 loadgroup.bin@FA00:FB00 C2C31BC3 $CD1B
+# the second stage: $5D00-$5D3F plain, $5D40-$5DFF keyed (key[i - $40])
+g1 249 4 46 $5D00 stage2.bin C2C31BC3C31B $5D00
+# the last block: only its bytes $FEE7-$FEEC are read (the key page, the keyed range); its address and its JP $5D94 are never used
+g1 250 1 47 $FF0E res/loader/lastblock.bin C2C31BC3C3 $5D94
+tone 2165 4657
+pause 5240
+group-end
+group Bleepload Group 2
+tone 2165 4657
+pause 7
+g23 2 250 65 0 $6E00 $FA $0000 game.bin@5B00:6E00
+g23 2 249 9 1 $6F00 $FA $0000 game.bin@5B00:6F00
+g23 2 249 9 2 $7000 $FA $0000 game.bin@5B00:7000
+g23 2 249 9 3 $7100 $FA $0000 game.bin@5B00:7100
+g23 2 249 9 4 $7200 $FA $0000 game.bin@5B00:7200
+g23 2 249 9 5 $7300 $FA $0000 game.bin@5B00:7300
+g23 2 249 8 6 $7400 $FA $0000 game.bin@5B00:7400
+g23 2 249 8 7 $7500 $FA $0000 game.bin@5B00:7500
+g23 2 249 9 8 $7600 $FA $0000 game.bin@5B00:7600
+g23 2 248 8 9 $7700 $FA $0000 game.bin@5B00:7700
+g23 2 250 9 10 $7800 $FA $0000 game.bin@5B00:7800
+g23 2 249 8 11 $7900 $FA $0000 game.bin@5B00:7900
+g23 2 249 8 12 $7A00 $FA $0000 game.bin@5B00:7A00
+g23 2 249 8 13 $7B00 $FA $0000 game.bin@5B00:7B00
+g23 2 250 8 14 $7C00 $FA $0000 game.bin@5B00:7C00
+g23 2 249 8 15 $7D00 $FA $0000 game.bin@5B00:7D00
+g23 2 249 62 16 $7E00 $FA $0000 game.bin@5B00:7E00
+g23 2 250 9 17 $7F00 $FA $0000 game.bin@5B00:7F00
+g23 2 249 9 18 $8000 $FA $0000 game.bin@5B00:8000
+g23 2 249 9 19 $8100 $FA $0000 game.bin@5B00:8100
+g23 2 249 8 20 $8200 $FA $0000 game.bin@5B00:8200
+g23 2 249 8 21 $8300 $FA $0000 game.bin@5B00:8300
+g23 2 249 8 22 $8400 $FA $0000 game.bin@5B00:8400
+g23 2 249 8 23 $8500 $FA $0000 game.bin@5B00:8500
+g23 2 249 9 24 $8600 $FA $0000 game.bin@5B00:8600
+g23 2 249 8 25 $8700 $FA $0000 game.bin@5B00:8700
+g23 2 249 8 26 $8800 $FA $0000 game.bin@5B00:8800
+g23 2 249 8 27 $8900 $FA $0000 game.bin@5B00:8900
+g23 2 249 8 28 $8A00 $FA $0000 game.bin@5B00:8A00
+g23 2 249 8 29 $8B00 $FA $0000 game.bin@5B00:8B00
+g23 2 249 8 30 $8C00 $FA $0000 game.bin@5B00:8C00
+g23 2 249 9 31 $8D00 $FA $0000 game.bin@5B00:8D00
+g23 2 249 61 32 $8E00 $FA $0000 game.bin@5B00:8E00
+g23 2 250 8 33 $8F00 $FA $0000 game.bin@5B00:8F00
+g23 2 249 9 34 $9000 $FA $0000 game.bin@5B00:9000
+g23 2 249 9 35 $9100 $FA $0000 game.bin@5B00:9100
+g23 2 249 8 36 $9200 $FA $0000 game.bin@5B00:9200
+g23 2 249 8 37 $9300 $FA $0000 game.bin@5B00:9300
+g23 2 249 8 38 $9400 $FA $0000 game.bin@5B00:9400
+g23 2 249 9 39 $9500 $FA $0000 game.bin@5B00:9500
+g23 2 249 9 40 $9600 $FA $0000 game.bin@5B00:9600
+g23 2 249 9 41 $9700 $FA $0000 game.bin@5B00:9700
+g23 2 249 9 42 $9800 $FA $0000 game.bin@5B00:9800
+g23 2 249 9 43 $9900 $FA $0000 game.bin@5B00:9900
+g23 2 248 9 44 $9A00 $FA $0000 game.bin@5B00:9A00
+g23 2 249 9 45 $9B00 $FA $0000 game.bin@5B00:9B00
+g23 2 248 8 46 $9C00 $FA $0000 game.bin@5B00:9C00
+g23 2 251 8 47 $9D00 $FA $0000 game.bin@5B00:9D00
+g23 2 249 61 48 $9E00 $FA $0000 game.bin@5B00:9E00
+g23 2 249 8 49 $9F00 $FA $0000 game.bin@5B00:9F00
+g23 2 249 9 50 $A000 $FA $0000 game.bin@5B00:A000
+g23 2 249 9 51 $A100 $FA $0000 game.bin@5B00:A100
+g23 2 249 9 52 $A200 $FA $0000 game.bin@5B00:A200
+g23 2 249 8 53 $A300 $FA $0000 game.bin@5B00:A300
+g23 2 249 9 54 $A400 $FA $0000 game.bin@5B00:A400
+g23 2 249 9 55 $A500 $FA $0000 game.bin@5B00:A500
+g23 2 249 8 56 $A600 $FA $0000 game.bin@5B00:A600
+g23 2 250 8 57 $A700 $FA $0000 game.bin@5B00:A700
+g23 2 249 9 58 $A800 $FA $0000 game.bin@5B00:A800
+g23 2 249 8 59 $A900 $FA $0000 game.bin@5B00:A900
+g23 2 248 9 60 $AA00 $FA $0000 game.bin@5B00:AA00
+g23 2 249 8 61 $AB00 $FA $0000 game.bin@5B00:AB00
+g23 2 248 9 62 $AC00 $FA $0000 game.bin@5B00:AC00
+g23 2 249 8 63 $AD00 $FA $0000 game.bin@5B00:AD00
+g23 2 249 60 64 $AE00 $FA $0000 game.bin@5B00:AE00
+g23 2 250 8 65 $AF00 $FA $0000 game.bin@5B00:AF00
+g23 2 249 8 66 $B000 $FA $0000 game.bin@5B00:B000
+g23 2 250 9 67 $B100 $FA $0000 game.bin@5B00:B100
+g23 2 249 9 68 $B200 $FA $0000 game.bin@5B00:B200
+g23 2 249 8 69 $B300 $FA $0000 game.bin@5B00:B300
+g23 2 249 8 70 $B400 $FA $0000 game.bin@5B00:B400
+g23 2 249 8 71 $B500 $FA $0000 game.bin@5B00:B500
+g23 2 249 9 72 $B600 $FA $0000 game.bin@5B00:B600
+g23 2 248 8 73 $B700 $FA $0000 game.bin@5B00:B700
+g23 2 249 9 74 $B800 $FA $0000 game.bin@5B00:B800
+g23 2 249 9 75 $B900 $FA $0000 game.bin@5B00:B900
+g23 2 249 8 76 $BA00 $FA $0000 game.bin@5B00:BA00
+g23 2 249 8 77 $BB00 $FA $0000 game.bin@5B00:BB00
+g23 2 251 9 78 $BC00 $FA $0000 game.bin@5B00:BC00
+g23 2 249 8 79 $BD00 $FA $0000 game.bin@5B00:BD00
+g23 2 250 60 80 $BE00 $FA $0000 game.bin@5B00:BE00
+g23 2 249 8 81 $BF00 $FA $0000 game.bin@5B00:BF00
+g23 2 249 9 82 $C000 $FA $0000 game.bin@5B00:C000
+g23 2 248 8 83 $C100 $FA $0000 game.bin@5B00:C100
+g23 2 250 8 84 $C200 $FA $0000 game.bin@5B00:C200
+g23 2 249 8 85 $C300 $FA $0000 game.bin@5B00:C300
+g23 2 251 9 86 $C400 $FA $0000 game.bin@5B00:C400
+g23 2 249 8 87 $C500 $FA $0000 game.bin@5B00:C500
+g23 2 249 9 88 $C600 $FA $0000 game.bin@5B00:C600
+g23 2 249 8 89 $C700 $FA $0000 game.bin@5B00:C700
+g23 2 249 8 90 $C800 $FA $0000 game.bin@5B00:C800
+g23 2 249 9 91 $C900 $FA $0000 game.bin@5B00:C900
+g23 2 249 8 92 $CA00 $FA $0000 game.bin@5B00:CA00
+g23 2 249 8 93 $CB00 $FA $0000 game.bin@5B00:CB00
+g23 2 249 8 94 $CC00 $FA $0000 game.bin@5B00:CC00
+g23 2 249 8 95 $CD00 $FA $0000 game.bin@5B00:CD00
+g23 2 250 64 96 $CE00 $FA $0000 game.bin@5B00:CE00
+g23 2 248 8 97 $CF00 $FA $0000 game.bin@5B00:CF00
+g23 2 250 9 98 $D000 $FA $0000 game.bin@5B00:D000
+g23 2 249 9 99 $D100 $FA $0000 game.bin@5B00:D100
+g23 2 249 9 100 $D200 $FA $0000 game.bin@5B00:D200
+g23 2 249 8 101 $D300 $FA $0000 game.bin@5B00:D300
+g23 2 249 8 102 $D400 $FA $0000 game.bin@5B00:D400
+g23 2 249 8 103 $D500 $FA $0000 game.bin@5B00:D500
+g23 2 249 8 104 $D600 $FA $0000 game.bin@5B00:D600
+g23 2 249 8 105 $D700 $FA $0000 game.bin@5B00:D700
+g23 2 250 8 106 $D800 $FA $0000 game.bin@5B00:D800
+g23 2 249 8 107 $D900 $FA $0000 game.bin@5B00:D900
+g23 2 249 8 108 $DA00 $FA $0000 game.bin@5B00:DA00
+g23 2 250 9 109 $DB00 $FA $0000 game.bin@5B00:DB00
+g23 2 249 8 110 $DC00 $FA $0000 game.bin@5B00:DC00
+g23 2 249 9 111 $DD00 $FA $0000 game.bin@5B00:DD00
+g23 2 249 65 112 $DE00 $FA $0000 game.bin@5B00:DE00
+g23 2 248 8 113 $DF00 $FA $0000 game.bin@5B00:DF00
+g23 2 249 9 114 $E000 $FA $0000 game.bin@5B00:E000
+g23 2 249 8 115 $E100 $FA $0000 game.bin@5B00:E100
+g23 2 249 8 116 $E200 $FA $0000 game.bin@5B00:E200
+g23 2 249 8 117 $E300 $FA $0000 game.bin@5B00:E300
+g23 2 250 8 118 $E400 $FA $0000 game.bin@5B00:E400
+g23 2 249 9 119 $E500 $FA $0000 game.bin@5B00:E500
+g23 2 249 8 120 $E600 $FA $0000 game.bin@5B00:E600
+g23 2 249 8 121 $E700 $FA $0000 game.bin@5B00:E700
+g23 2 249 8 122 $E800 $FA $0000 game.bin@5B00:E800
+g23 2 249 8 123 $E900 $FA $0000 game.bin@5B00:E900
+g23 2 249 8 124 $EA00 $FA $0000 game.bin@5B00:EA00
+g23 2 249 8 125 $EB00 $FA $0000 game.bin@5B00:EB00
+g23 2 249 8 126 $EC00 $FA $0000 game.bin@5B00:EC00
+g23 2 249 8 127 $ED00 $FA $0000 game.bin@5B00:ED00
+g23 2 250 62 128 $EE00 $FA $0000 game.bin@5B00:EE00
+g23 2 249 8 129 $EF00 $FA $0000 game.bin@5B00:EF00
+g23 2 250 9 130 $F000 $FA $0000 game.bin@5B00:F000
+g23 2 249 8 131 $F100 $FA $0000 game.bin@5B00:F100
+g23 2 249 8 132 $F200 $FA $0000 game.bin@5B00:F200
+g23 2 249 8 133 $F300 $FA $0000 game.bin@5B00:F300
+g23 2 249 8 134 $F400 $FA $0000 game.bin@5B00:F400
+g23 2 249 8 135 $F500 $FA $0000 game.bin@5B00:F500
+g23 2 249 8 136 $F600 $FA $0000 game.bin@5B00:F600
+g23 2 249 8 137 $F700 $FA $0000 game.bin@5B00:F700
+g23 2 249 8 138 $F800 $FA $0000 game.bin@5B00:F800
+g23 2 249 2 139 $F900 $FA $0000 game.bin@5B00:F900
+tone 2165 4663
+pause 3007
+group-end
+group Bleepload Group 3
+tone 2165 4665
+pause 6
+g23 3 249 65 0 $4000 $46 $0000 game.bin@5B00:FA00
+g23 3 249 8 1 $4100 $46 $0000 game.bin@5B00:FB00
+g23 3 249 8 2 $4200 $46 $0000 game.bin@5B00:FC00
+g23 3 250 9 3 $4300 $46 $0000 game.bin@5B00:FD00
+g23 3 249 8 4 $4400 $46 $0000 game.bin@5B00:FE00
+g23 3 250 1 5 $4500 $46 $0000 game.bin@5B00:FF00
+tone 2165 4662
+pause 1
+group-end

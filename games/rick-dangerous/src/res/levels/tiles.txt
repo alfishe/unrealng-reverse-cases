@@ -1,0 +1,1281 @@
+# Rick Dangerous: 256 tiles of 4 x 4 char codes, the zone's char set (tools/res_levels.py)
+tile $00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+  00 00 00 00
+tile $01
+  29 2A 2D 2E
+  2B 2C 2F 30
+  22 31 32 20
+  28 33 34 26
+tile $02
+  2D 2E 20 22
+  33 34 2B 2C
+  22 29 2A 20
+  28 26 28 26
+tile $03
+  31 32 2D 2E
+  2B 2C 2F 30
+  2E 29 2A 31
+  30 33 34 2B
+tile $04
+  29 2A 20 22
+  2B 2C 26 28
+  22 2D 2E 2D
+  28 2F 30 2F
+tile $05
+  2D 2E 29 2A
+  2F 30 2B 2C
+  2E 2D 2E 20
+  30 2B 2C 26
+tile $06
+  19 1A 19 1A
+  1B 30 2B 2C
+  1E 2D 2E 20
+  00 2B 2C 26
+tile $07
+  19 1A 19 1A
+  2F 30 2B 2C
+  22 2D 2E 20
+  28 2B 2C 26
+tile $08
+  19 2E 29 2A
+  1B 30 2B 2C
+  1E 2D 2E 20
+  00 2B 2C 26
+tile $09
+  E1 E2 E8 E3
+  E4 E5 EB EC
+  E8 E9 E7 E8
+  E5 E6 EA EB
+tile $0A
+  E1 E2 E8 E3
+  E4 E5 EB E6
+  E8 E9 E7 E3
+  E5 E6 EA EC
+tile $0B
+  E1 E2 E8 E3
+  E4 E5 EB EC
+  E7 E9 E7 E8
+  EA E6 EA EB
+tile $0C
+  C1 C2 C2 C3
+  C5 C4 C5 C4
+  1E 19 1A 1D
+  28 2F 30 26
+tile $0D
+  C6 C2 C2 C3
+  C7 C4 C5 C4
+  1E 19 1A 1D
+  00 33 34 26
+tile $0E
+  C1 C2 C2 C3
+  C4 C5 C4 C5
+  E8 E3 E1 E2
+  EB EC E4 E5
+tile $0F
+  C3 FC FD C1
+  C5 51 52 C4
+  1E 53 54 1D
+  28 53 54 1F
+tile $10
+  2D 53 54 1A
+  2F 53 54 1C
+  22 53 54 1D
+  28 53 54 1F
+tile $11
+  91 92 93 94
+  1B 95 96 1C
+  22 97 98 1D
+  28 95 96 1F
+tile $12
+  31 97 98 1A
+  33 95 96 1C
+  22 97 98 1D
+  28 95 96 1F
+tile $13
+  29 97 98 1A
+  2B 95 96 1C
+  22 97 98 1D
+  99 9A 9B 9C
+tile $14
+  2D 6A 6B 1A
+  2F 6C 6D 1C
+  22 6E 6F 1D
+  28 70 71 1F
+tile $15
+  19 6E 6F 1A
+  33 6C 6D 1C
+  22 72 73 1D
+  28 74 75 1F
+tile $16
+  31 32 31 32
+  2F 30 2B 2C
+  9D 9E 9F A0
+  A1 A2 A3 A4
+tile $17
+  82 83 84 1A
+  7F 80 81 1C
+  76 77 78 1D
+  79 7A 7B 1F
+tile $18
+  7C 7D 7E 1A
+  76 77 78 1C
+  79 7A 7B 1D
+  7F 80 81 1F
+tile $19
+  04 02 03 04
+  05 03 02 05
+  22 02 03 20
+  28 03 02 26
+tile $1A
+  19 66 19 1A
+  33 68 1B 30
+  22 68 1E 20
+  28 68 00 26
+tile $1B
+  31 68 19 2A
+  2B 68 1B 2C
+  22 68 1E 20
+  28 68 00 26
+tile $1C
+  29 68 19 2E
+  33 68 1B 30
+  22 68 1E 20
+  28 67 00 26
+tile $1D
+  29 2A 06 07
+  2B 2C 4B 4C
+  22 20 49 4A
+  28 26 28 26
+tile $1E
+  0B 0C 0D 1A
+  0E 0F 10 1C
+  11 12 13 1D
+  14 15 16 1F
+tile $1F
+  19 1A 19 1A
+  2F 30 2B 2C
+  22 2D 2E 20
+  08 09 0A 26
+tile $20
+  BE BF BF C0
+  C4 C5 C4 C5
+  E8 E3 E1 E2
+  EB EC E4 E5
+tile $21
+  C1 C2 C2 C3
+  C5 C4 C5 C4
+  1E 66 1E 1D
+  28 68 00 26
+tile $22
+  19 53 54 1A
+  1B 53 54 1C
+  1E 53 54 1D
+  00 53 54 1F
+tile $23
+  4D 4E 4D 4E
+  4F 50 4F 50
+  22 4D 4E 20
+  28 4F 50 26
+tile $24
+  A5 A6 A7 2A
+  A8 A9 AA 1C
+  22 AB 1E 1D
+  28 AC 00 26
+tile $25
+  2D AD 19 2A
+  2F AE 1B 2C
+  22 AE 1A 20
+  28 AF 1C 26
+tile $26
+  29 2A 2D 2E
+  2B 2C 2F 30
+  22 31 32 20
+  5C 5C 5C 5C
+tile $27
+  19 2A 2D 2E
+  1B 2C 2F 30
+  1E 31 32 20
+  5C 5C 5C 5C
+tile $28
+  E1 E2 E8 E3
+  E4 EB E5 E6
+  1E 19 1A 1D
+  28 33 34 26
+tile $29
+  29 2A 2D 2E
+  2B 2C 2F 30
+  E1 E2 E8 E3
+  E4 E5 EB E6
+tile $2A
+  E3 1A 19 1A
+  EC 1C 2F 30
+  E3 19 32 20
+  EC 1B 34 26
+tile $2B
+  29 2A 2D 2E
+  2B 2C 2F 30
+  B6 B6 B6 B6
+  28 2F 30 26
+tile $2C
+  C7 C4 C5 C4
+  1B 1C 5E 1C
+  1E 19 1A 1D
+  00 33 34 26
+tile $2D
+  C6 FC FD C1
+  C7 51 52 C4
+  1E 53 54 1D
+  00 53 54 1F
+tile $2E
+  19 2A 2D 2E
+  2B 2C 2F 30
+  22 31 32 20
+  28 33 34 26
+tile $2F
+  19 2A 2D 2E
+  1B 2C 2F 30
+  E1 E2 E8 E3
+  E4 E5 EB E6
+tile $30
+  E1 E2 E8 E3
+  E4 EB E5 E6
+  1E 19 1A 1D
+  00 33 34 26
+tile $31
+  E1 E2 E3 1A
+  E4 E5 E6 1C
+  E8 E8 E8 B6
+  E5 EB EC 1F
+tile $32
+  E1 E2 E8 E3
+  E4 E5 EB 01
+  E8 E9 E7 E9
+  E5 E6 EA EC
+tile $33
+  19 1A 19 1A
+  1B 34 2F 30
+  1E 20 22 20
+  28 26 28 26
+tile $34
+  31 32 29 2A
+  2F 30 2B 2C
+  1E 2D 2E 20
+  00 2B 2C 26
+tile $35
+  18 15 16 15
+  19 16 17 16
+  18 17 16 15
+  15 16 16 17
+tile $36
+  2D 2E 31 32
+  2F 30 2B 2C
+  22 E1 E2 E9
+  28 E4 E5 EC
+tile $37
+  E1 E2 E8 E3
+  E4 E5 EB E6
+  E7 E9 E1 E9
+  EA E6 E4 EC
+tile $38
+  20 53 54 1E
+  26 53 54 00
+  E1 E2 E8 E3
+  E4 E5 EB E6
+tile $39
+  5E 5E 5E 5E
+  1B 1C 1B 1C
+  22 29 2A 20
+  28 26 28 26
+tile $3A
+  5E 5E 5E 5E
+  1B 1C 1B 1C
+  1E 29 2A 20
+  00 26 28 26
+tile $3B
+  5E 5E 5E 5E
+  1B 1C 1B 1C
+  22 29 2A 20
+  28 26 28 26
+tile $3C
+  19 2E 20 22
+  1B 34 2B 2C
+  1E 29 2A 20
+  28 26 28 26
+tile $3D
+  1D 53 54 1A
+  2F 53 54 1C
+  22 53 54 1D
+  28 53 54 1F
+tile $3E
+  18 19 18 DC
+  17 16 17 DE
+  16 17 16 DC
+  15 16 16 DE
+tile $3F
+  E1 E2 E3 1A
+  E4 E5 E6 1C
+  E7 E8 E9 1D
+  EA EB EC 1F
+tile $40
+  39 3A 3B 3C
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $41
+  00 00 00 00
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $42
+  00 00 00 00
+  00 3E 3F 40
+  00 42 43 44
+  00 46 47 48
+tile $43
+  00 3A 3B 3C
+  00 3E 3F 40
+  00 42 43 44
+  00 46 47 48
+tile $44
+  39 3A 3B 3C
+  3D C8 C9 40
+  41 CA CB 00
+  45 46 00 00
+tile $45
+  D5 D6 D5 D6
+  D7 D8 D7 D8
+  D9 DA D9 DA
+  DB DC DB DC
+tile $46
+  D9 DA D9 DA
+  DB DC DB DC
+  D9 DA D9 DA
+  DB DC DB DC
+tile $47
+  D9 DA D9 DA
+  DB DC DB DC
+  D9 EF F2 EE
+  F1 00 00 F1
+tile $48
+  D9 DA D9 DA
+  DB DC DB DC
+  F2 F0 D9 F3
+  ED EE EF F0
+tile $49
+  D9 DA D9 F1
+  DB F3 ED EE
+  EF F0 00 00
+  F3 00 00 48
+tile $4A
+  ED EE D9 DA
+  00 EF EE DC
+  41 00 EF F0
+  45 46 00 F1
+tile $4B
+  00 00 3B 00
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $4C
+  85 86 87 88
+  89 8A 8B 8C
+  89 8A 8B 8C
+  89 8A 8B 8C
+tile $4D
+  89 8A 8B 8C
+  89 8A 8B 8C
+  89 8A 8B 8C
+  89 8A 8B 8C
+tile $4E
+  89 8A 8B 8C
+  89 8A 8B 8C
+  89 8A 8B 8C
+  8D 8E 8F 90
+tile $4F
+  D9 DA ED EE
+  DB EF F0 ED
+  D9 DA EF EE
+  DB EF EE F1
+tile $50
+  D9 EF F2 EE
+  DB EF F0 F1
+  D9 DA F3 F3
+  DB F1 DB EF
+tile $51
+  ED EE D9 DA
+  F1 F3 DB DC
+  EE ED EE DA
+  ED EE DB DC
+tile $52
+  ED EE D9 DA
+  F1 EF F0 DC
+  EF F2 EE DA
+  F3 F3 F1 DC
+tile $53
+  D9 DA D9 DA
+  DB DC DB DC
+  D9 ED EE EF
+  F1 DC ED EE
+tile $54
+  D9 DA D9 DA
+  DB DC EF F0
+  F1 ED EE F1
+  ED EE EF F0
+tile $55
+  D9 DA D9 DA
+  DB DC DB DC
+  EE ED F0 DA
+  ED EE EF F0
+tile $56
+  35 3A 3B 3C
+  DB 36 35 36
+  D9 DA D9 DA
+  DB DC DB DC
+tile $57
+  39 3A 3B 3C
+  36 35 35 36
+  D9 DA D9 DA
+  DB DC DB DC
+tile $58
+  39 3A F4 F5
+  3D 3E 00 F8
+  F4 F5 F6 F7
+  00 F8 F9 FA
+tile $59
+  F6 F7 F8 F9
+  F8 F9 FA FB
+  FA FB F8 F9
+  FB F8 F9 FA
+tile $5A
+  B6 3A 3B 3C
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $5B
+  B6 B9 BA BB
+  3D B2 B3 B4
+  41 42 B1 44
+  45 46 B0 48
+tile $5C
+  39 3A 3B 3C
+  3D 3E 3F 40
+  41 42 B5 44
+  45 46 B0 48
+tile $5D
+  B6 FC FD B7
+  3D 53 54 00
+  41 53 54 00
+  45 53 54 00
+tile $5E
+  B6 B7 B8 B7
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $5F
+  39 53 54 00
+  3D 53 54 00
+  41 53 54 00
+  45 53 54 00
+tile $60
+  39 CD D9 DA
+  CE DC DB DC
+  D9 DA D9 DA
+  DB DC DB DC
+tile $61
+  18 15 16 15
+  19 17 16 16
+  5F 5F 5F 5F
+  19 16 16 17
+tile $62
+  18 CB 19 19
+  5F 5F 5F 5F
+  16 17 16 15
+  15 16 16 17
+tile $63
+  16 15 16 15
+  2A 2B 2C CE
+  2F 30 31 18
+  18 32 18 19
+tile $64
+  39 3A B0 3C
+  3D 3E B1 40
+  41 42 B1 44
+  45 46 B0 48
+tile $65
+  F6 F7 3B 3C
+  F9 00 3F 40
+  F4 F5 F6 F7
+  FB F8 F9 00
+tile $66
+  F8 F9 F4 F5
+  F8 F9 FA FB
+  FA FB F8 F9
+  FB F8 F9 FA
+tile $67
+  DC DD DC DD
+  DE DF DE DF
+  19 18 19 18
+  15 16 16 17
+tile $68
+  FA FB F8 F9
+  F8 F9 FA FB
+  FA FB F8 F9
+  FB F8 F9 FA
+tile $69
+  5A 3A 3B 59
+  3D 59 5A 40
+  41 42 59 5A
+  59 5A 47 48
+tile $6A
+  00 53 54 00
+  00 53 54 00
+  00 53 54 00
+  00 53 54 00
+tile $6B
+  B7 FC FD B6
+  00 53 54 00
+  00 53 54 00
+  00 53 54 00
+tile $6C
+  B6 B8 B7 B6
+  00 3E 3F 40
+  00 42 43 44
+  00 46 47 48
+tile $6D
+  F3 37 38 00
+  F3 00 00 00
+  F3 00 43 44
+  F3 35 36 48
+tile $6E
+  00 3A 3B 3C
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $6F
+  ED EE EF EE
+  D7 D8 D7 D8
+  D9 DA D9 DA
+  DB DC DB DC
+tile $70
+  EF F0 EF EE
+  D7 D8 D7 D8
+  D9 DA D9 DA
+  DB DC DB DC
+tile $71
+  ED F0 EF EE
+  F1 ED EE F3
+  EF EE F1 F1
+  F1 F3 ED F0
+tile $72
+  39 3A 3B 3C
+  3D 3E 3F 40
+  41 42 43 44
+  45 5C 5C 48
+tile $73
+  00 3A 3B 3C
+  00 3E 3F 5B
+  00 42 43 5B
+  00 46 47 48
+tile $74
+  00 3A 3B 3C
+  00 3E 3F 40
+  00 42 43 44
+  45 46 47 48
+tile $75
+  00 00 00 00
+  3D 3E 3F 40
+  41 42 B5 44
+  45 46 B1 48
+tile $76
+  F1 EF EE F1
+  F3 F3 F2 F2
+  ED EE ED F0
+  F1 EF EE F3
+tile $77
+  ED EE ED EE
+  F3 EF EE F1
+  00 00 00 00
+  45 46 47 48
+tile $78
+  00 00 00 00
+  00 3E 3F 40
+  00 42 43 44
+  45 46 47 48
+tile $79
+  00 00 3B 3C
+  3D 3E 3F 40
+  41 42 43 44
+  45 46 47 48
+tile $7A
+  D1 BC BD D2
+  D3 5D 5F DD
+  DE 60 61 DF
+  E0 62 63 64
+tile $7B
+  1D 1E E7 E9
+  17 18 EA EC
+  21 23 E7 E9
+  00 1F EA EC
+tile $7C
+  E7 E9 19 1A
+  EA EC 24 25
+  E7 E9 27 55
+  EA EC 00 1F
+tile $7D
+  00 00 ED EE
+  00 56 EF F0
+  00 57 F3 F3
+  00 00 EF F0
+tile $7E
+  EF F0 00 00
+  ED EE 58 00
+  ED EE 65 00
+  F3 F1 00 00
+tile $7F
+  CF CF D0 CF
+  16 47 48 41
+  17 49 4A 42
+  16 3F 40 19
+tile $80
+  E0 E1 E2 E3
+  E4 E5 E6 E7
+  E8 E9 EA EB
+  EC ED EE EF
+tile $81
+  E2 E3 E0 E1
+  E6 E7 E4 E5
+  EA EB E8 E9
+  EE EF EC ED
+tile $82
+  E0 E3 E0 E1
+  E8 E7 E4 E5
+  E4 EB E8 E9
+  EC EF EC ED
+tile $83
+  E2 E3 E0 E3
+  E6 E7 E4 EB
+  EA EB E8 E7
+  EE EF EC EF
+tile $84
+  1E 1F 22 23
+  20 21 24 25
+  1F 22 23 1E
+  21 24 25 20
+tile $85
+  26 27 26 27
+  20 21 24 25
+  1F 22 23 1E
+  21 24 25 20
+tile $86
+  26 1F 22 23
+  28 21 24 25
+  00 22 23 1E
+  00 24 25 20
+tile $87
+  26 27 26 27
+  28 21 24 25
+  00 22 23 1E
+  00 24 25 20
+tile $88
+  26 1F 22 23
+  20 21 24 25
+  1F 22 23 1E
+  21 24 25 20
+tile $89
+  8C 8D 8E 27
+  8F 90 C0 00
+  C1 C2 C3 26
+  00 28 00 28
+tile $8A
+  F7 27 26 27
+  F7 00 24 25
+  F7 26 23 1E
+  F7 28 25 20
+tile $8B
+  1E 39 3A 27
+  20 39 3A 00
+  1F 39 3A 26
+  21 39 3A 28
+tile $8C
+  D2 FC FD D3
+  00 39 3A 00
+  1F 39 3A 26
+  21 39 3A 28
+tile $8D
+  D2 D3 D4 D3
+  28 00 28 00
+  1F 22 23 1E
+  21 24 25 20
+tile $8E
+  D5 D3 D4 D3
+  28 00 28 00
+  27 22 23 1E
+  00 24 25 20
+tile $8F
+  D5 FC FD D3
+  00 39 3A 00
+  27 39 3A 26
+  00 39 3A 28
+tile $90
+  26 39 3A 27
+  28 39 3A 00
+  27 39 3A 26
+  00 39 3A 28
+tile $91
+  26 79 7A 27
+  20 7B 7C 00
+  1F 7B 7C 26
+  21 7B 7C 28
+tile $92
+  CF CF D0 CF
+  41 4B 4C 19
+  42 4D 4E 19
+  19 3F 40 18
+tile $93
+  1E 04 05 23
+  20 06 07 25
+  04 05 04 05
+  06 07 06 07
+tile $94
+  22 23 22 23
+  24 25 24 25
+  6F 70 70 71
+  72 73 73 74
+tile $95
+  0A 0B 22 23
+  0A 0C 24 25
+  0A 0B 23 1E
+  0A 0C 25 20
+tile $96
+  1E 1F 08 0A
+  20 21 09 0A
+  1F 22 08 0A
+  21 24 09 0A
+tile $97
+  1E 1F 22 23
+  20 21 24 25
+  27 22 23 1E
+  00 24 25 20
+tile $98
+  1E 1F 22 D3
+  D2 D3 D4 00
+  27 26 27 26
+  21 24 25 20
+tile $99
+  E0 E1 E2 E3
+  EC ED EE EF
+  27 26 27 26
+  21 24 25 20
+tile $9A
+  D2 D3 D4 D3
+  F8 F9 F8 F9
+  27 BE BF 26
+  21 BE BF 28
+tile $9B
+  1E 1F 22 F4
+  20 21 F4 F5
+  1F F4 F5 F6
+  F4 F5 F4 F5
+tile $9C
+  F5 F6 F7 F4
+  F4 F5 F6 F7
+  F7 F6 F7 F4
+  F4 F5 F6 F7
+tile $9D
+  F5 27 22 23
+  F6 F5 28 25
+  F5 F6 F7 26
+  F4 F5 F6 F7
+tile $9E
+  F7 F6 F7 27
+  F6 F7 28 25
+  F7 26 27 1E
+  00 28 25 20
+tile $9F
+  D2 D3 D2 D3
+  F8 F8 F8 F8
+  27 26 27 26
+  21 24 25 20
+tile $A0
+  15 17 15 16
+  16 15 17 17
+  5F 5F 5F 5F
+  16 15 16 16
+tile $A1
+  26 1F 22 23
+  28 21 24 25
+  27 22 23 1E
+  21 24 25 20
+tile $A2
+  1E 1F 22 23
+  20 21 24 25
+  E0 E1 E2 E3
+  EC ED EE EF
+tile $A3
+  E0 E1 E3 27
+  E4 E5 E7 00
+  E8 E9 EB 26
+  EC ED EF 28
+tile $A4
+  34 34 34 34
+  35 35 35 36
+  33 33 33 33
+  35 35 35 35
+tile $A5
+  1E 1F 1A 1B
+  20 21 1C 1D
+  1F 22 1A 1B
+  21 24 1C 1D
+tile $A6
+  1A 1B 26 23
+  1C 1D 28 25
+  1A 1B 27 1E
+  1C 1D 00 20
+tile $A7
+  26 27 26 27
+  20 21 24 25
+  1A 1B 1A 1B
+  1C 1D 1C 1D
+tile $A8
+  26 27 26 27
+  20 21 24 25
+  1F 22 1A 1B
+  21 24 1C 1D
+tile $A9
+  26 27 26 27
+  20 21 24 25
+  1A 1B 27 1E
+  1C 1D 00 20
+tile $AA
+  26 27 26 F4
+  20 21 24 F4
+  1F 22 23 F4
+  21 24 25 F4
+tile $AB
+  26 27 26 27
+  28 21 24 25
+  27 22 23 1E
+  21 24 25 20
+tile $AC
+  E0 E1 E2 E3
+  E4 E5 E6 E7
+  EC ED EE EF
+  27 26 27 26
+tile $AD
+  E0 E1 E2 E3
+  E4 E5 E6 E7
+  EC ED EE EF
+  27 26 27 26
+tile $AE
+  E0 E1 E2 E3
+  EC ED EE EF
+  27 26 27 26
+  00 24 25 20
+tile $AF
+  D8 D8 D8 D8
+  F8 F8 F8 F8
+  27 26 27 26
+  21 24 25 20
+tile $B0
+  1E 1F 08 0A
+  20 21 09 0A
+  1F 22 08 0A
+  21 3C 09 0A
+tile $B1
+  1E BE BF 27
+  20 BE BF 00
+  1F BE BF 26
+  21 BE BF 28
+tile $B2
+  1E 23 22 23
+  20 25 24 25
+  04 05 04 05
+  06 07 06 07
+tile $B3
+  26 F6 F7 F4
+  20 00 F6 F7
+  23 1E 27 F4
+  25 1F 21 28
+tile $B4
+  26 04 05 23
+  22 06 07 25
+  04 05 04 05
+  06 07 06 07
+tile $B5
+  26 27 BE BF
+  20 21 BE BF
+  1F 22 BE BF
+  21 24 BE BF
+tile $B6
+  E0 E1 E2 E3
+  E4 E5 E6 E7
+  E8 E9 EA EB
+  29 ED EE EF
+tile $B7
+  26 1F 22 23
+  28 21 24 25
+  27 22 23 1E
+  3B 3B 3B 3B
+tile $B8
+  26 1F 22 23
+  28 21 24 25
+  1F 22 23 1E
+  21 24 25 20
+tile $B9
+  26 39 3A 27
+  20 39 3A 00
+  1F 39 3A 26
+  21 39 3A 28
+tile $BA
+  26 27 26 23
+  20 21 24 25
+  1F 22 23 1E
+  21 24 25 20
+tile $BB
+  E0 E3 26 23
+  E4 E7 28 25
+  E8 EB 27 1E
+  EC EF 00 20
+tile $BC
+  1E 1F E0 E3
+  20 21 E4 E7
+  1F 22 E8 EB
+  3B 3B EC EF
+tile $BD
+  15 16 17 CF
+  15 16 16 16
+  16 17 16 15
+  15 15 16 16
+tile $BE
+  19 37 38 18
+  16 37 38 18
+  15 37 38 19
+  16 37 38 18
+tile $BF
+  CF D0 CF CF
+  18 16 16 16
+  18 17 16 15
+  18 15 16 16
+tile $C0
+  DC DD DC DD
+  DE DF DE DF
+  DC DD DC DD
+  DE DF DE DF
+tile $C1
+  AE AF B0 B1
+  B2 B3 B4 B5
+  B6 B7 B8 B9
+  BA BB BC BD
+tile $C2
+  9E 9F A0 A1
+  A2 A3 A4 A5
+  A6 A7 A8 A9
+  AA AB AC AD
+tile $C3
+  15 94 95 19
+  15 96 97 18
+  15 98 99 19
+  9A 9B 9C 9D
+tile $C4
+  15 17 15 16
+  16 16 16 16
+  16 17 16 15
+  16 15 16 16
+tile $C5
+  15 17 15 16
+  0D 0E 0F 10
+  0F 11 0D 10
+  77 76 77 77
+tile $C6
+  15 16 15 16
+  0E 0F 10 0E
+  11 10 0F 11
+  76 02 03 76
+tile $C7
+  CF FA FB CF
+  16 37 38 18
+  16 37 38 18
+  16 37 38 18
+tile $C8
+  16 37 38 19
+  16 37 38 18
+  16 37 38 19
+  16 37 38 18
+tile $C9
+  F0 F1 F2 F1
+  F9 F8 F9 F8
+  DC DD DC DD
+  DE DF DE DF
+tile $CA
+  16 17 16 15
+  15 16 15 16
+  61 62 63 64
+  61 62 63 64
+tile $CB
+  16 17 15 16
+  15 16 16 15
+  65 66 67 18
+  65 66 67 19
+tile $CC
+  15 3F 40 18
+  16 3F 40 19
+  16 3F 40 18
+  16 3F 40 19
+tile $CD
+  15 17 15 16
+  41 41 45 41
+  42 42 46 42
+  18 19 18 19
+tile $CE
+  15 17 15 16
+  16 47 48 41
+  16 49 4A 42
+  16 3F 40 19
+tile $CF
+  15 17 15 16
+  41 4B 4C 15
+  42 4D 4E 19
+  19 3F 40 18
+tile $D0
+  15 3F 40 19
+  16 4F 50 41
+  16 51 52 42
+  16 15 18 19
+tile $D1
+  15 3F 40 19
+  41 53 54 18
+  42 55 56 19
+  19 18 19 15
+tile $D2
+  15 3F 40 18
+  41 53 50 41
+  42 4D 4A 42
+  18 3F 40 18
+tile $D3
+  15 17 15 16
+  16 58 5E 60
+  16 5C 19 18
+  16 5C 18 16
+tile $D4
+  19 17 15 16
+  5F 59 18 16
+  19 5C 18 15
+  18 5C 19 16
+tile $D5
+  18 5C 19 18
+  16 5A 5D 5D
+  16 19 18 19
+  16 15 16 16
+tile $D6
+  18 5C 18 19
+  5D 5B 19 16
+  18 19 18 15
+  16 15 16 16
+tile $D7
+  15 68 01 16
+  16 68 01 16
+  16 68 01 16
+  16 68 01 17
+tile $D8
+  19 68 01 19
+  16 68 01 18
+  16 68 01 19
+  16 68 01 18
+tile $D9
+  16 CC 19 16
+  D6 D7 D6 D6
+  19 18 19 19
+  16 16 16 16
+tile $DA
+  16 CB 19 16
+  15 CB 19 15
+  16 CB 18 16
+  16 CB 18 15
+tile $DB
+  18 18 19 18
+  CE CE CE C7
+  16 17 16 16
+  16 16 16 17
+tile $DC
+  16 17 16 16
+  18 16 17 16
+  19 16 16 16
+  16 17 16 16
+tile $DD
+  18 18 19 18
+  CE CE CE C7
+  18 17 16 16
+  19 16 16 17
+tile $DE
+  15 17 15 16
+  16 69 6A 6B
+  69 6A 6B 69
+  6C 6D 6E 6C
+tile $DF
+  15 17 15 16
+  18 16 16 16
+  6A 6B 18 15
+  6D 6E 19 16
+tile $E0
+  19 7D 7E 18
+  16 7F 80 18
+  16 7F 80 19
+  16 7F 80 18
+tile $E1
+  15 7F 80 19
+  16 7F 80 18
+  16 7F 80 19
+  16 7F 80 18
+tile $E2
+  18 16 17 16
+  D6 D6 D6 D6
+  19 18 19 19
+  18 16 16 16
+tile $E3
+  19 CB 19 18
+  16 CB 18 15
+  16 CB 19 16
+  16 CB 18 15
+tile $E4
+  18 17 15 16
+  18 16 16 16
+  19 17 16 15
+  19 15 16 16
+tile $E5
+  19 18 19 19
+  16 16 16 16
+  16 17 16 15
+  16 15 16 16
+tile $E6
+  19 19 18 19
+  18 16 16 16
+  19 17 16 15
+  18 15 16 16
+tile $E7
+  19 17 15 16
+  16 16 16 16
+  16 17 16 15
+  16 15 16 16
+tile $E8
+  18 02 03 15
+  D6 FA FB D6
+  18 37 38 19
+  18 37 38 18
+tile $E9
+  15 17 15 16
+  16 92 93 18
+  16 92 93 19
+  16 92 93 19
+tile $EA
+  85 86 85 86
+  19 18 19 18
+  16 17 16 15
+  16 15 16 16
+tile $EB
+  89 87 88 89
+  19 18 19 18
+  16 17 16 15
+  16 15 16 16
+tile $EC
+  DC DD DC DD
+  DE DF DE DF
+  19 33 33 18
+  81 82 83 84
+tile $ED
+  DD 18 18 18
+  DF 19 16 16
+  DD 18 16 15
+  DF 19 16 17
+tile $EE
+  CF D0 CF CF
+  16 16 16 16
+  16 17 16 15
+  16 15 16 16
+tile $EF
+  CF FA FB CF
+  18 37 38 18
+  18 37 38 18
+  18 37 38 18
+tile $F0
+  15 17 15 16
+  D1 D1 D1 D1
+  42 42 42 42
+  18 19 18 19
+tile $F1
+  18 37 38 18
+  18 37 38 18
+  18 37 38 18
+  18 37 38 18
+tile $F2
+  15 16 15 16
+  D6 D6 D6 D6
+  19 18 19 19
+  16 16 16 16
+tile $F3
+  18 15 15 16
+  CE C4 C5 CE
+  18 15 16 16
+  18 15 16 15
+tile $F4
+  16 CC 19 16
+  D6 D7 D6 D6
+  19 CB 19 19
+  16 CB 19 16
+tile $F5
+  15 16 15 16
+  D6 D6 D6 D6
+  18 68 01 19
+  16 68 01 16
+tile $F6
+  16 16 15 16
+  16 15 92 93
+  69 6A 6B 93
+  6C 6D 6E 93
+tile $F7
+  19 16 15 16
+  0E 0F 10 0E
+  11 10 0F 11
+  76 02 03 76
+tile $F8
+  16 15 15 16
+  CE CE CE CE
+  16 15 16 16
+  16 15 16 15
+tile $F9
+  15 17 15 16
+  16 16 16 16
+  18 17 16 15
+  19 16 16 16
+tile $FA
+  16 37 38 19
+  D6 37 38 D6
+  16 37 38 19
+  19 37 38 18
+tile $FB
+  16 16 17 16
+  D6 D7 D6 D6
+  19 CB 19 19
+  16 CB 19 16
+tile $FC
+  18 37 38 18
+  18 37 38 18
+  18 37 38 18
+  18 37 38 18
+tile $FD
+  15 37 38 18
+  0E 37 38 0E
+  11 37 38 11
+  76 76 77 76
+tile $FE
+  D9 62 DA DB
+  D9 62 DA DB
+  D9 62 DA DB
+  D9 62 DA DB
+tile $FF
+  19 1A 19 E1
+  2F 30 2B E4
+  22 2D 2E E7
+  28 2B 2C EA

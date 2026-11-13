@@ -1,0 +1,144 @@
+# LoadGroup, the loader of Bleepload's groups 2 and 3 (kit/mkgame.py --part src/loader/loadgroup.json; format:
+# ../../../../docs/ann-format.md). The image is group 1's blocks 44 and 45 deciphered by the second stage.
+# Witness: c1, windowed to $FA00-$FBFF (before group 3 overwrites it).
+
+@inline $FBC6
+@equ $1601 ChanOpen ; the ROM's CHAN-OPEN: A = the stream
+@equ $5C6B DfSz ; DF_SZ: the lines of the lower screen
+@equ $FE00 BlockBuffer ; every block loads here: its marker first ($34 group 2, $35 group 3)
+@equ $FE01 BlockPayload 256 ; the block's 256 bytes, each XOR the high byte of its address
+@equ $FF01 BlockNumber ; the block's number in its group
+@equ $FF02 BlockDest 2 ; where the payload goes
+@equ $FF05 GroupEnd ; the high byte after the group's last page
+@equ $FF06 GroupGo 2 ; where to go after the last block: 0, return
+
+@module loadgroup ; LoadGroup: the loader of groups 2 and 3
+@about Group 1's blocks 44 and 45, deciphered at $FA00-$FBFF by the second stage, which calls it twice: group 2 (the game's $6E00-$F9FF) and group 3 (the game's $FA00-$FFFF, loaded into $4000-$45FF because it overwrites this code). It is Rick1 again with other block fields: every block is $109 bytes, each payload byte is XORed with the high byte of its address on the way (StorePage), the check byte covers the payload and the fields, and the group ends at the page its blocks name.
+
+$FA00 c LoadGroup ; Load a group of blocks (A = its marker) to their addresses; BC, DE = AT positions of the two message lines
+> A goes to GroupMarker, BC to StatusAt (C the row, B the column), DE to ErrorAt. D, the block wanted, = 0. Opens stream 2, DfSz = 0, prints INK 9 PAPER 8, clears the status line and prints "Searching 00" on the error line.
+> Then per block: LoadGroupBlock, the marker (another is skipped), the number (not D: GroupBadBlock), CheckPage (bad: GroupBadBlock); a good block is deciphered and stored (StorePage), "Loading NN" printed (ShowGroupLoading), D + 1. After the block whose address' high byte is GroupEnd - 1: DfSz = 2, and GroupGo, 0 in both groups, returns.
+> Group 2: 140 blocks, the lines at rows 19 and 20 under the picture. Group 3: 6 blocks on the cleared screen, rows 10 and 13.
+> Witness: L1 2 (c1).
+$FA1A t GroupColoursText ; INK 9, PAPER 8, $FF the end
+$FA1F c LoadGroupBegin ; LoadGroup after its string: clear the status line, "Searching 00", the first block
+> Witness: L1 36 (c1).
+
+$FA2A GroupBlockGood ; store the payload, print "Loading NN"
+$FA31 ; the group's last page?
+$FA3C GroupNextBlock
+$FA54 GroupCheck
+$FA5F GroupDone
+$FA64 ; GroupGo: 0 returns
+
+$FA6C c StorePage ; Copy the payload to its address, each byte XOR the address' high byte: the groups' cipher
+> Group 3's pages are `$40-$45`, the screen's top third: its blocks show on the screen, deciphered, as they load.
+> Witness: L1 146 (c1).
+$FA78 StorePageLoop
+
+$FA85 c LoadGroupBlock ; Read one block into BlockBuffer: Rick1's LoadBlock with DE = $109
+> The ROM's LD-BYTES with a 100-pulse leader and no flag, BREAK or parity test, as Rick1's LoadBlock (`$CD6E`).
+> Witness: L1 146 (c1).
+$FAA2 GroupWaitEdge ; LD-START
+$FAA8 ; 100 leader pulses
+$FAAE ; a NOP over the ROM's delay
+$FAAF GroupLeaderLoop ; LD-LEADER
+$FABE GroupSyncLoop ; LD-SYNC
+$FACF ; the data's border: blue and cyan
+$FAD9 GroupByteLoop ; LD-LOOP
+$FADC GroupVerifyHang ; verify mode: never ends
+$FAE3 GroupFlagByte ; LD-FLAG: no check
+$FAED GroupNextByte
+$FAEF GroupCountByte
+$FAF3 GroupReadByte
+$FAF5 GroupReadBit
+$FB0B GroupLoadDone ; no parity check
+
+$FB0E c GroupEdgeTwo ; Time two edges: the ROM's LD-EDGE-2
+> Witness: L1 327022 (c1).
+
+$FB12 c GroupEdgeOne ; Time one edge and flip the border colour: LD-EDGE-1 without the BREAK test
+> Witness: L1 677895 (c1).
+$FB14 GroupEdgeDelay
+$FB18 GroupEdgeSample
+$FB25 GroupEdgeFound
+
+$FB31 c GroupSpareRet ; A lone RET after GroupEdgeOne
+> Known only from the code: no CALL or JP reaches it.
+> Witness: L1 0 ().
+
+$FB32 c CheckPage ; A = the XOR of $FE01-$FF07 (the payload and the fields); HL = $FF08, the block's check byte
+> Witness: L1 198 (c1).
+$FB3A CheckPageLoop
+
+$FB45 c GroupPrintNumber ; Print BlockNumber in two hex digits (and add 1 to it in the buffer)
+> Witness: L1 198 (c1).
+$FB4A GroupPrintHexByte ; A in two hex digits
+
+$FB53 c GroupPrintHexDigit ; Print A's low nibble as a hex digit
+> Witness: L1 297 (c1).
+$FB5D GroupPrintDigit
+
+$FB5F c ShowGroupLoading ; Clear the error line, print "Loading NN" on the status line
+> Witness: L1 146 (c1).
+
+$FB6D t GroupLoadingText ; "Loading   "
+$FB78 c ShowGroupLoadingNumber ; ShowGroupLoading after its string: the block's number
+> Witness: L1 146 (c1).
+
+$FB7C c GroupBadBlock ; A block not wanted, or a bad check byte: "Block ? NN" on the status line
+> A = the block's number (the XOR CheckPage made, when the check failed), kept in E. Not run in c1.
+> Witness: L1 0 ().
+
+$FB85 t GroupBlockText ; "Block ?   "
+
+$FB90 c GroupBadBlockAhead ; GroupBadBlock's rest: the number, then "Rewind to NN" (E >= D) or "Searching NN"
+> Known only from the code: no recording loaded a block out of order.
+> Witness: L1 0 ().
+
+$FB99 c ShowGroupSearching ; Print "Searching NN" on the error line: NN = D, the block wanted
+> Witness: L1 2 (c1).
+
+$FBA0 t GroupSearchingText ; "Searching "
+$FBAB c ShowGroupSearchingNumber ; ShowGroupSearching after its string: D, the block wanted
+> Witness: L1 12 (c1).
+
+$FBB0 c ShowGroupRewind ; Print "Rewind to NN" on the error line: NN = D, the block wanted
+> Known only from the code.
+> Witness: L1 0 ().
+
+$FBB6 t GroupRewindText ; "Rewind to "
+$FBC1 c ShowGroupRewindNumber ; ShowGroupRewind after its string: D, the block wanted
+> Known only from the code.
+> Witness: L1 0 ().
+
+$FBC6 c GroupPrintInline ; Print the bytes after the CALL up to $FF and return after them
+> Witness: L1 594 (c1).
+$FBC7 GroupPrintInlineLoop
+$FBD0 GroupPrintInlineEnd
+
+$FBD2 c ClearMessage ; Print twelve spaces (at the line AtStatus or AtError set)
+> Witness: L1 148 (c1).
+
+$FBD5 t SpacesText ; twelve spaces
+$FBE2 c ClearMessageEnd ; ClearMessage after its string: return
+> Witness: L1 148 (c1).
+
+$FBE3 c AtStatus ; Print AT row, column of the status line: StatusAt, set from BC by LoadGroup
+> Witness: L1 150 (c1).
+
+$FBE6 t StatusAtText ; AT row, column: the row and the column LoadGroup sets
+$FBE7 StatusAt ; the row, then the column: LoadGroup's C and B
+$FBEA c AtStatusEnd ; AtStatus after its string: return
+> Witness: L1 148 (c1).
+
+$FBEB c AtError ; Print AT row, column of the error line: ErrorAt, set from DE by LoadGroup
+> Witness: L1 148 (c1).
+
+$FBEE t ErrorAtText ; AT row, column: the row and the column LoadGroup sets
+$FBEF ErrorAt ; the row, then the column: LoadGroup's E and D
+$FBF2 c AtErrorEnd ; AtError after its string: return
+> Witness: L1 150 (c1).
+
+$FBF3 b GroupMarker ; The marker of the group being loaded ($34 or $35), set by LoadGroup
+$FBF4 s LoadGroupSpare ; LoadGroup's last 12 bytes: zeros
