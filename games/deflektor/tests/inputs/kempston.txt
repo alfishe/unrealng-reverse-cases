@@ -1,0 +1,20 @@
+# kempston: from work/stage1/probe/menu.szx (the title after a ROM-timing load of the 10 Mega Games tape): SPACE,
+# 3 KEMPSTON, 7 START GAME, the cursor moved right and up, fire + right and fire + left on a mirror, U + G aborts
+0 -
+300 SPACE
+305 -
+400 3
+405 -
+500 7
+505 -
+1000 KR
+1030 -
+1060 KU
+1090 -
+1120 KF KR
+1180 KF
+1190 KF KL
+1250 -
+1500 U G
+1510 -
+2000 END

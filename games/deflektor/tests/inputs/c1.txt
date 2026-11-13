@@ -1,0 +1,35 @@
+# c1: after the load (power-on, the 10 Mega Games TZX at ROM speed: the original's three blocks byte for byte; the
+# tape stopped at frame 15700): the title, SPACE to the menu, the control options 3 (Kempston), 4 (Protek-AGF),
+# 2 (Sinclair), 1 (keyboard), 7 to start level 1; play with the keyboard (Q A K L, M held to turn a mirror):
+# the cursor around the laser's first mirrors, a mirror turned both ways, then idle until the energy runs out
+0 -
++300 SPACE
++5 -
++120 3
++5 -
++60 4
++5 -
++60 2
++5 -
++60 1
++5 -
++60 7
++5 -
++250 L
++20 -
++20 Q
++20 -
++20 M
++10 M L
++40 M
++10 M K
++40 -
++30 L
++30 -
++30 A
++30 -
++30 K
++30 -
++30 Q
++30 -
++3500 END

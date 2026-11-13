@@ -1,0 +1,13 @@
+{
+  "image_cmd": ["sh", "-c", "test -f work/mkgame/original.bin || python3 tools/image.py work/mkgame/original.bin"],
+  "image": "work/mkgame/original.bin",
+  "lo": "6000",
+  "hi": "10000",
+  "device": "ZXSPECTRUM48",
+  "bases": {"5": "4000", "2": "8000", "0": "C000"},
+  "read_builds": ["stage1/c1g"],
+  "code_builds": ["stage1/c1"],
+  "ref_builds": [["stage1/c1g", "c1g: the c1 recording's game window, from the jump to $8382 (frame 15752 T 33930): the menu and play"]],
+  "header": ["; Deflektor, Gremlin Graphics 1987 (Vortex Software: Costa Panayi): the game $6000-$FFFF at its entry $8382,",
+             "; after the turbo loader, the decrypting stage $7B52 and the mover at $FD00 (tools/image.py)."]
+}

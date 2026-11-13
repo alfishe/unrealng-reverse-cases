@@ -1,0 +1,5 @@
+# mine: from work/stage1/probe/mine.szx (level 1 in play, work/stage1/probe/game0.szx, with POKEs: the overload bar's
+# pointer `$A50A` = `$54B8`, its bytes `$54B8`, `$55B8`, `$56B8` = `$FE`, and `$8ED4` = `$FF`, the beam on a mine):
+# no key; "MINE ALERT" (`$A689`), the bar fills, a life lost, the level again
+0 -
+1500 END

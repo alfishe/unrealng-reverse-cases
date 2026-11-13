@@ -1,0 +1,4 @@
+# gameover: from work/stage1/probe/gameover.szx (game0.szx with the POKEs of mine.szx and lives `$837D` = 1): no key; the last life lost,
+# game over, the hall of fame or the title
+0 -
+4000 END

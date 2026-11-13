@@ -1,0 +1,77 @@
+# controls: from work/stage1/probe/menu.szx (the title after a ROM-timing load of the 10 Mega Games tape); each control
+# method in turn: SPACE to the options, the method's key, 7 START GAME, the cursor moved and a mirror turned with that
+# method, then U + G (GAME ABORTED). 1 keyboard (Q A K L, M as fire; P pauses ("INTERMISSION ... PRESS ENTER FOR MORE
+# ACTION": a key ends the tune `$AD79`, a second ENTER goes on)), 3 Kempston,
+# 4 Protek (5 left, 6 down, 7 up, 8 right, 0 fire), 2 Sinclair (6 left, 7 right, 8 down, 9 up, 0 fire)
+0 -
+300 SPACE
+305 -
+400 1
+405 -
+500 7
+505 -
+1000 L
+1030 -
+1060 Q
+1090 -
+1120 M L
+1180 M
+1190 M K
+1250 -
+1400 P
+1405 -
+1700 ENTER
+1705 -
+1750 ENTER
+1755 -
+1900 U G
+1910 -
+2300 SPACE
+2305 -
+2400 3
+2405 -
+2500 7
+2505 -
+3000 KR
+3030 -
+3060 KU
+3090 -
+3120 KF KR
+3180 KF
+3190 KF KL
+3250 -
+3400 U G
+3410 -
+3800 SPACE
+3805 -
+3900 4
+3905 -
+4000 7
+4005 -
+4500 8
+4530 -
+4560 7
+4590 -
+4620 0 8
+4680 0
+4690 0 5
+4750 -
+4900 U G
+4910 -
+5300 SPACE
+5305 -
+5400 2
+5405 -
+5500 7
+5505 -
+6000 7
+6030 -
+6060 9
+6090 -
+6120 0 7
+6180 0
+6190 0 6
+6250 -
+6400 U G
+6410 -
+7000 END

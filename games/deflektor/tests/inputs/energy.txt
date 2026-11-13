@@ -1,0 +1,8 @@
+# energy: from work/stage1/probe/menu.szx; SPACE, 7 START GAME (Sinclair, the default), then no key: level 1's energy
+# runs out three times (ENERGY DRAINED, a life each), game over, the title again
+0 -
+300 SPACE
+305 -
+400 7
+405 -
+18500 END

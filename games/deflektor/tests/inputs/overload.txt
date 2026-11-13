@@ -1,0 +1,4 @@
+# overload: from work/stage1/probe/overload.szx (as mine.szx but `$8ED5` = `$FF`, the beam back in the laser, instead
+# of `$8ED4`): no key; "OVERLOAD" (`$A6BB`), the bar fills, a life lost
+0 -
+1500 END
