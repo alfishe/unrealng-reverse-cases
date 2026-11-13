@@ -1,0 +1,21 @@
+# The tape orig/Deflektor.tzx.zip holds (Deflektor.tzx), as tools/mktape.py writes it: one line a TZX block, in
+# order. Format:
+#   tzx MAJOR.MINOR                         the file header ("ZXTape!", $1A, the version)
+#   header PAUSE TYPE NAME LENGTH P1 P2     a standard ($10) ROM header block: flag $00, the type (0 Program), the
+#                                           name padded to 10 ("_" for a space), the data length ("@FILE": the
+#                                           file's), P1 (the auto-run LINE), P2 (the program's length without its
+#                                           variables; "=" the data length)
+#   data PAUSE ITEM [ITEM ...]              a standard ($10) data block: flag $FF, the items' bytes, the XOR checksum
+#   turbo PILOT SYNC1 SYNC2 ZERO ONE N PAUSE BASIC ADDR=ITEM ...
+#                                           a turbo ($11) block: the pulse lengths in T-states, N pilot pulses, the
+#                                           pause; its bits are what the loader in BASIC asks for to load each ITEM
+#                                           at ADDR (hex), in the loader's order (tools/tapesim.py)
+# An ITEM is a file of build/ or NAME@ORG:LO-HI, the bytes LO..HI-1 of NAME, whose first byte is at ORG (hex).
+# PAUSE is the pause after the block in ms, as the original has it. The BASIC's length 384 holds a 52-byte program
+# (line 0) and, as its "variables", the code: src/tape/basic.ann. The loads: the loader's second stage in three
+# pieces, the loading screen's glyphs and script (src/res/loader), then the main block (tools/cipher.py's output,
+# $5C00-$DDEF as loaded) as the load at $C000 (its $9DF0-$DDEF, moved down at the end), $5C00 and $9C00.
+tzx 1.10
+header 989 0 DEFLEKTOR_ @basic.bin 0 52
+data 986 basic.bin
+turbo 2127 693 693 836 1670 4836 0 basic.bin B75A=stage2.bin@B75A:B75A-B869 B869=stage2.bin@B75A:B869-B8DD B8DD=stage2.bin@B75A:B8DD-BBDF B326=res/loader/glyphs.bin 998E=res/loader/script.bin C000=main.bin@5C00:9DF0-DDF0 5C00=main.bin@5C00:5C00-9C00 9C00=main.bin@5C00:9C00-9DF0

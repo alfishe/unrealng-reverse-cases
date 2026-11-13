@@ -1,0 +1,37 @@
+# BeamGlyphBytes $8000: four bytes a direction (the characters up-left, up-right, down-left,
+# down-right of the vertex); set 0 at $8000 (steady), set 1 at $8040 (the flashing set: BeamGlyphSet
+# $8381 = $40). PASS:GLYPH: the pass that draws it (in = BeamInChar $9278, out = BeamOutChar $94FD,
+# corner = BeamCornerChar $9440; bits 7-6 of the byte) and the glyph, BeamGlyphs $D500 + 8 x GLYPH.
+set,direction,up_left,up_right,down_left,down_right
+0,0,in:1,out:1,in:2,out:2
+0,1,in:3,corner:4,corner:19,out:6
+0,2,in:7,corner:4,corner:5,out:7
+0,3,in:8,corner:20,corner:5,out:9
+0,4,in:10,in:11,out:10,out:11
+0,5,corner:12,in:13,out:14,corner:21
+0,6,corner:12,in:16,out:16,corner:15
+0,7,corner:12,in:17,out:18,corner:22
+0,8,out:1,in:1,out:2,in:2
+0,9,out:3,corner:4,corner:19,in:6
+0,10,out:7,corner:4,corner:5,in:7
+0,11,out:8,corner:20,corner:5,in:9
+0,12,out:10,out:11,in:10,in:11
+0,13,corner:12,out:13,in:14,corner:21
+0,14,corner:12,out:16,in:16,corner:15
+0,15,corner:12,out:17,in:18,corner:22
+1,0,in:23,out:23,in:24,out:24
+1,1,in:25,corner:4,corner:5,out:26
+1,2,in:27,corner:0,corner:0,out:27
+1,3,in:29,corner:4,corner:5,out:30
+1,4,in:31,in:32,out:31,out:32
+1,5,corner:12,in:33,out:34,corner:15
+1,6,corner:0,in:35,out:35,corner:0
+1,7,corner:12,in:37,out:38,corner:15
+1,8,out:23,in:23,out:24,in:24
+1,9,out:25,corner:4,corner:5,in:26
+1,10,out:27,corner:0,corner:0,in:27
+1,11,out:29,corner:4,corner:5,in:30
+1,12,out:31,out:32,in:31,in:32
+1,13,corner:12,out:33,in:34,corner:15
+1,14,corner:0,out:35,in:35,corner:0
+1,15,corner:12,out:37,in:38,corner:15

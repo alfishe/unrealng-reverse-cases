@@ -1,0 +1,10 @@
+# cheat: from work/stage2/cheat/cheat.szx = work/stage1/probe/game0.szx (level 1 in play) with the POKE $982F-$9831 = 0
+# (the JP over the dormant cheat removed, a clone); W twice (the next level, twice), then S (the level before)
+0 -
+100 W
+108 -
+700 W
+708 -
+1300 S
+1308 -
+1900 END

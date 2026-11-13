@@ -1,0 +1,9 @@
+# InCornerTable $8100: 16 bytes for each diagonal direction (2, 6, 10, 14), reached by BeamReflectIn
+# $93F2 through InBounceTable ($80 + 16 n). test1 / test2: offsets (words) from the up-left character
+# of the vertex; then for none / first / second / both of them walls: the new direction and the step
+# (dx, dy) to the vertex the beam leaves from. Known only from the code: no recording ran it.
+diagonal,test1,test2,none,none_dx,none_dy,first,first_dx,first_dy,second,second_dx,second_dy,both,both_dx,both_dy
+2,-32,-1,10,-2,-2,6,-2,0,14,0,-2,10,-2,-2
+6,-32,1,14,2,-2,2,2,0,10,0,-2,14,2,-2
+10,1,32,2,2,2,6,0,2,14,2,0,2,2,2
+14,-1,32,6,-2,2,2,0,2,10,-2,0,6,-2,2

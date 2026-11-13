@@ -1,0 +1,15 @@
+# The PlaySound $A8C0 records $81D4-$81FB: 5 bytes each, the kind then four parameters.
+# kind 0 PlayTone $A83F: p1 L (the tone), p2 H (x 256 loops), p3 p4 not read.
+# kind 1 PlaySweep $A85E: p1 H (the delay step, signed), p2 L (half-cycles a step), p3 D (the first
+# delay), p4 E (steps). kind 2 PlayNoise $A87A: p1 D (period mask), p2 E (bursts), p3 C (length
+# mask), p4 the opcode stored at NoiseOp $A89F ($A2 = AND D). Records 0-4 are SoundFlags bits 0-4
+# (PlaySoundFlags $A8A7). `_name` is the entry's label in game.ann; keep the rows in this order.
+_name,kind,p1,p2,p3,p4
+BurnSound,1,$02,$04,$2E,$09
+MineSound,1,$FE,$04,$46,$02
+LaserBackSound,1,$0A,$03,$14,$01
+BurningNoise,2,$02,$04,$0A,$A2
+ChargeWarble,0,$8C,$02,$00,$00
+GremlinSound,1,$02,$04,$50,$1E
+ChargedSound,1,$08,$04,$03,$64
+ContactSound,1,$02,$04,$05,$DC

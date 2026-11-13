@@ -1,0 +1,16 @@
+# hof: from work/stage2/hof/start.szx (= the bot L06.szx: level 6 starting, score 019980; levels 2 and 4 before it were skipped by a POKE of LevelDone): no
+# key until GAME OVER (the energy drains three times), then the name AGENT and ENTER in the hall of fame
+0 -
+17050 A
+17055 -
+17075 G
+17080 -
+17100 E
+17105 -
+17125 N
+17130 -
+17150 T
+17155 -
+17175 ENTER
+17180 -
+17750 END

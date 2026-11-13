@@ -1,0 +1,97 @@
+# CellTable $8200: the four character codes of each cell code (RenderGrid $8960): top left, top
+# right, bottom left, bottom right; each character is drawn from CellGraphics $D700 + 8 x character
+# in the colour CellColours $DF00 + character. Codes $00-$5C (bit 7 of a grid code is cleared first).
+code,top_left,top_right,bottom_left,bottom_right,_what
+$00,$00,$00,$00,$00,empty
+$01,$01,$02,$03,$04,"mirror, angle 0"
+$02,$05,$06,$07,$08,"mirror, angle 1"
+$03,$09,$0A,$0B,$0C,"mirror, angle 2"
+$04,$09,$0D,$0E,$0C,"mirror, angle 3"
+$05,$09,$0F,$10,$0C,"mirror, angle 4"
+$06,$09,$11,$12,$0C,"mirror, angle 5"
+$07,$09,$13,$14,$0C,"mirror, angle 6"
+$08,$15,$16,$17,$18,"mirror, angle 7"
+$09,$19,$1A,$1B,$1C,"mirror, angle 8"
+$0A,$1D,$1E,$1F,$20,"mirror, angle 9"
+$0B,$21,$22,$23,$24,"mirror, angle 10"
+$0C,$25,$22,$23,$26,"mirror, angle 11"
+$0D,$27,$22,$23,$28,"mirror, angle 12"
+$0E,$29,$22,$23,$2A,"mirror, angle 13"
+$0F,$2B,$22,$23,$2C,"mirror, angle 14"
+$10,$2D,$2E,$2F,$30,"mirror, angle 15"
+$11,$31,$32,$33,$34,"cyan polariser, angle 0"
+$12,$35,$36,$37,$38,"cyan polariser, angle 1"
+$13,$39,$3A,$3B,$3C,"cyan polariser, angle 2"
+$14,$3D,$3E,$3F,$40,"cyan polariser, angle 3"
+$15,$41,$42,$43,$44,"cyan polariser, angle 4"
+$16,$45,$46,$47,$48,"cyan polariser, angle 5"
+$17,$49,$4A,$4B,$4C,"cyan polariser, angle 6"
+$18,$4D,$4E,$4F,$50,"cyan polariser, angle 7"
+$19,$51,$52,$53,$54,"yellow polariser, angle 0"
+$1A,$55,$56,$57,$58,"yellow polariser, angle 1"
+$1B,$59,$5A,$5B,$5C,"yellow polariser, angle 2"
+$1C,$5D,$5E,$5F,$60,"yellow polariser, angle 3"
+$1D,$61,$62,$63,$64,"yellow polariser, angle 4"
+$1E,$65,$66,$67,$68,"yellow polariser, angle 5"
+$1F,$69,$6A,$6B,$6C,"yellow polariser, angle 6"
+$20,$6D,$6E,$6F,$70,"yellow polariser, angle 7"
+$21,$71,$00,$00,$00,"absorbing wall, quarters 1"
+$22,$00,$71,$00,$00,"absorbing wall, quarters 2"
+$23,$00,$00,$71,$00,"absorbing wall, quarters 4"
+$24,$00,$00,$00,$71,"absorbing wall, quarters 8"
+$25,$71,$71,$00,$00,"absorbing wall, quarters 3"
+$26,$00,$00,$71,$71,"absorbing wall, quarters C"
+$27,$71,$00,$71,$00,"absorbing wall, quarters 5"
+$28,$00,$71,$00,$71,"absorbing wall, quarters A"
+$29,$71,$00,$00,$71,"absorbing wall, quarters 9"
+$2A,$00,$71,$71,$00,"absorbing wall, quarters 6"
+$2B,$71,$71,$71,$00,"absorbing wall, quarters 7"
+$2C,$71,$71,$00,$71,"absorbing wall, quarters B"
+$2D,$00,$71,$71,$71,"absorbing wall, quarters E"
+$2E,$71,$00,$71,$71,"absorbing wall, quarters D"
+$2F,$71,$71,$71,$71,"absorbing wall, quarters F"
+$30,$72,$00,$00,$00,"reflecting wall, quarters 1"
+$31,$00,$72,$00,$00,"reflecting wall, quarters 2"
+$32,$00,$00,$72,$00,"reflecting wall, quarters 4"
+$33,$00,$00,$00,$72,"reflecting wall, quarters 8"
+$34,$72,$72,$00,$00,"reflecting wall, quarters 3"
+$35,$00,$00,$72,$72,"reflecting wall, quarters C"
+$36,$72,$00,$72,$00,"reflecting wall, quarters 5"
+$37,$00,$72,$00,$72,"reflecting wall, quarters A"
+$38,$72,$00,$00,$72,"reflecting wall, quarters 9"
+$39,$00,$72,$72,$00,"reflecting wall, quarters 6"
+$3A,$72,$72,$72,$00,"reflecting wall, quarters 7"
+$3B,$72,$72,$00,$72,"reflecting wall, quarters B"
+$3C,$00,$72,$72,$72,"reflecting wall, quarters E"
+$3D,$72,$00,$72,$72,"reflecting wall, quarters D"
+$3E,$72,$72,$72,$72,"reflecting wall, quarters F"
+$3F,$74,$75,$76,$77,unused (the cell's characters)
+$40,$74,$75,$76,$77,cell
+$41,$78,$79,$7A,$7B,mine
+$42,$7C,$7D,$7E,$7F,prism
+$43,$80,$81,$82,$83,"unused (laser east, other characters)"
+$44,$84,$85,$86,$87,"unused (laser south, other characters)"
+$45,$88,$89,$8A,$8B,"unused (laser west, other characters)"
+$46,$8C,$8D,$8E,$8F,"unused (laser north, other characters)"
+$47,$90,$91,$92,$93,laser east
+$48,$94,$95,$96,$97,laser south
+$49,$98,$99,$9A,$9B,laser west
+$4A,$9C,$9D,$9E,$9F,laser north
+$4B,$A0,$A1,$A2,$A3,receiver east
+$4C,$A4,$A5,$A6,$A7,receiver south
+$4D,$A8,$A9,$AA,$AB,receiver west
+$4E,$AC,$AD,$AE,$AF,receiver north
+$4F,$00,$00,$00,$00,unused (blank)
+$50,$B0,$B1,$B2,$B3,"fibre-optic end, pair 0 a"
+$51,$B0,$B1,$B2,$B3,"fibre-optic end, pair 0 b"
+$52,$B4,$B5,$B6,$B7,"fibre-optic end, pair 1 a"
+$53,$B4,$B5,$B6,$B7,"fibre-optic end, pair 1 b"
+$54,$B8,$B9,$BA,$BB,"fibre-optic end, pair 2 a"
+$55,$B8,$B9,$BA,$BB,"fibre-optic end, pair 2 b"
+$56,$BC,$BD,$BE,$BF,"fibre-optic end, pair 3 a"
+$57,$BC,$BD,$BE,$BF,"fibre-optic end, pair 3 b"
+$58,$C0,$C1,$C2,$C3,explosion frame 0
+$59,$C4,$C5,$C6,$C7,explosion frame 1
+$5A,$C8,$C9,$CA,$CB,explosion frame 2
+$5B,$CC,$CD,$CE,$CF,explosion frame 3
+$5C,$D0,$D1,$D2,$D3,explosion frame 4

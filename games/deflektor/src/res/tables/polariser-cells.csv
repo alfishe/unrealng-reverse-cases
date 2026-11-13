@@ -1,0 +1,10 @@
+# PolariserCells $81A0: 6 bytes for each of a polariser's four characters by the character code AND 3
+# (characters $31-$70 run top left, top right, bottom left, bottom right from $x1: 0 is the bottom
+# right one, 1 top left, 2 top right, 3 bottom left), the offsets (words) of the other three in the
+# character map (PolariserPassIn $9320, the outgoing pass $959E): a beam along the axis marks and
+# lights them.
+_row,w0,w1,w2
+0 bottom-right,-33,-32,-1
+1 top-left,1,32,33
+2 top-right,31,32,-1
+3 bottom-left,1,-32,-31

@@ -1,0 +1,13 @@
+# GrazeOffsets $8190: 8 words, offsets in the character map from the character in which an axis beam
+# meets a wall to the character across the beam line (BeamAbsorbIn $9357, BeamReflectIn $93A2, the
+# outgoing tests $95D5, $9620). Word index = (character of the pass - 1) + direction / 2; for
+# direction 12 the third and fourth characters would read on into PolariserCells $81A0.
+_row,w0
+0,31
+1,-33
+2,-31
+3,-33
+4,33
+5,-31
+6,33
+7,31

@@ -1,0 +1,412 @@
+; --------------------------------------------------------------------------------------------------------------------
+; loader1.asm: The loader's first stage at $B626: its variables, the pilot search, the turbo byte and block loads
+;
+; Copied by BasicCode from $5D17 to $B626-$B759 and run from Loader1Start $B65B: clear the screen, copy the ROM font
+; to $B326 (the loading screen's character set, which the fourth load partly overwrites), find the turbo block's pilot
+; (FindPilot) and load stage 2's first piece ($10F bytes to $B75A) with LoadBlock, then JP $B856 in that piece.
+; Everything later (the rest of stage 2, the glyphs, the script, the game) is loaded by stage 2 through LoadBlock.
+;
+; The turbo encoding (work/ann/04-loader.md). The edge waits count 56 T passes in B; one bit is one pulse pair (two
+; edges, EdgePair). A 0 is a pair of 836 T pulses, a 1 a pair of 1670 T: from B = $B0, a count above $CB is a 1.
+; ReadByte reads 9 pairs, 8 bits MSB first and an invert flag (the byte is the complement when the flag is 1, so at
+; most 4 of the 8 bits are ones), then as many padding pairs as the zeros less 5. A 1 lasts as long as two 0s, so
+; every byte takes the time of 13 short pairs (21720-21736 T, about 6.2 ms) whatever its value.
+;
+; LoadBlock calls ByteHook after every byte. It keeps the checksum H (the XOR of the block's bytes, plus `$FF` for
+; every hook) and counts HookCount down. LoadBlock has no RET: after the checksum byte it falls into ByteHook, so that
+; byte is counted too and H XOR L leaves H = 0 for the next load; once stage 2 has armed the counter, every 8th count
+; runs stage 2's work at $B75A (the countdown and the loading screen's script), which reads its own pulse pairs from
+; the tape, 7 of them, the time of one more byte. So the tape and the code stay in step without any pause in the
+; block.
+;
+; No border stripes and no BREAK test: the edge loop samples EAR (bit 6 of port $FE) in a 56 T loop of the ROM's
+; length, with a never-taken RET C and a NOP where the ROM tests SPACE. A timeout or a bad checksum jumps to $0000:
+; the machine resets.
+; --------------------------------------------------------------------------------------------------------------------
+
+; The loader's variables (read and written by stage 2 as well), then the
+; copyright text
+;
+; HookCount `$B626`: ByteHook's down-counter. 0 until stage 2 sets it to 8
+; (`$B856`), so the hook does nothing during the first load.
+;
+; The countdown (`$B627-$B62A`), the flags (`$B62B`), the script's print state
+; (`$B62C-$B633`), the countdown's place (`$B634-$B637`), the screen set-up
+; (`$B638`, `$B639`), the script's window (`$B63B-$B640`), the character set
+; (`$B641`) and the control codes' work bytes (`$B643-$B648`). Names and
+; readers: work/ann/04-loader.md.
+HookCount:
+  DEFB $00
+TickHooks:
+  DEFB $05                ; hooks left to the countdown's next tick (5 at
+                          ; first, then 20: about 0.99 s)
+Countdown:
+  DEFB $32,$39,$34        ; the countdown, three ASCII digits, "294": the
+                          ; seconds left to the end of the load
+LoadFlags:
+  DEFB $00                ; bit 0 the countdown runs, bit 1 the script runs,
+                          ; bit 2 a control code repeats, bit 3 a picture
+ScriptWait:
+  DEFB $01                ; hooks to wait before the next script step ($03 n
+                          ; sets it; 1 = every hook)
+PrintRow:
+  DEFB $C0,$5A            ; the print position's row: the attribute address of
+                          ; its column 0 ($5AC0: row 22)
+PrintColumn:
+  DEFB $00                ; the print position's column (0-31, absolute)
+AttrPair:
+  DEFB $00                ; read as a word: C (this byte, unused) and B =
+                          ; PrintAttr for PrintGlyph
+PrintAttr:
+  DEFB $07                ; the attribute of printed characters (7: white ink
+                          ; on black)
+ScriptPtr:
+  DEFB $35,$B8            ; the script's next byte: SerialText $B835 first,
+                          ; then $998E
+CountdownAt:
+  DEFB $C1,$5A            ; the countdown's first digit: an attribute address
+                          ; ($5AC1: row 22, column 1)
+CountdownPair:
+  DEFB $00                ; read as a word: C (unused) and B = CountdownAttr
+CountdownAttr:
+  DEFB $57                ; the countdown's attribute, $57 (bright, white on
+                          ; red)
+ClsAttr:
+  DEFB $00                ; the attribute Loader1Start clears the screen to (0:
+                          ; black)
+BorderColour:
+  DEFB $00                ; the border FindPilot sets (0: black), with MIC
+  DEFB $20                ; $20, not read by the tape's code
+WindowLeft:
+  DEFB $00                ; the script window's first column (0)
+WindowRight:
+  DEFB $1F                ; the script window's last column (31)
+WindowTop:
+  DEFB $00,$58            ; the window's top row: the attribute address of its
+                          ; column 0 ($5800)
+WindowBottom:
+  DEFB $E0,$5A            ; the window's bottom row, the same way ($5AE0: row
+                          ; 23)
+FontPtr:
+  DEFB $26,$B3            ; the character set: the 8 bytes of character 32
+                          ; ($B326, the ROM font's copy)
+FillChar:
+  DEFB $20                ; the character $0C, $0E and $1D print (32: space;
+                          ; $05 sets it)
+RepeatCount:
+  DEFB $00                ; $0E's count left; in a picture, the column within
+                          ; the row
+PictureWidth:
+  DEFB $00                ; a picture's cells a row ($0F's fourth byte)
+PictureRows:
+  DEFB $00                ; a picture's rows left ($0F's third byte)
+PictureAt:
+  DEFB $00,$00            ; the attribute address of the picture row's first
+                          ; cell
+
+; "(C) D.G.COOKE 1987": never read
+;
+; 18 bytes up to the first instruction. The code does not read them (the chain
+; in the main block holds the same author's "COPYRIGHT D.G.COOKE 1987",
+; src/head).
+CopyrightText:
+  DEFM "(C) D.G.COOKE 1987"
+
+; The first stage: clear the screen, copy the ROM font to $B326, find the
+; pilot, load stage 2's first piece
+;
+; From BasicCode's `JP $B65B`.
+;
+; 1. The attributes `$5800-$5AFF` filled with ClsAttr (0) and the pixels
+; `$4000-$57FF` with 0, both by LDDR from the top (BC = 0 after the first LDDR
+; gives the 0 for the second).
+;
+; 2. LDIR the 768 bytes of RomFont `$3D00` to FontPtr's `$B326`: characters
+; 32-127 for PrintGlyph. The fourth load replaces characters 32-90 with
+; Deflektor's own.
+;
+; 3. DI; FindPilot (no pilot within its time: `JP $0000`); H = 0, the checksum;
+; LoadBlock IX = `$B75A`, DE = `$010F`, stage 2's first piece; `JP $B856`
+; (LoadRest, in that piece).
+;
+; Witness: L1 2 (c1).
+Loader1Start:
+  LD HL,Attributes+767
+  LD DE,Attributes+766
+  LD BC,$02FF
+  LD A,(ClsAttr)
+  LD (HL),A
+  LDDR
+  DEC DE                  ; the pixels: the byte below the attributes, then
+                          ; LDDR $17FF more
+  DEC HL
+  LD (HL),B
+  LD BC,$17FF
+  LDDR
+  LD HL,RomFont             ; the ROM font, 3 x 256 bytes (C = 0 after the LDDR)
+  LD DE,(FontPtr)
+  LD B,$03
+  LDIR
+  DI                      ; interrupts off for the rest of the load
+  CALL FindPilot
+  JP NC,$0000
+  LD H,$00                ; the checksum starts at 0 (each later load starts at
+                          ; 0 too: LoadBlock's end)
+  LD IX,Stage2             ; stage 2's first piece, $10F bytes to $B75A
+  LD DE,$010F
+  CALL LoadBlock
+  JP LoadRest
+
+; Find the turbo block's pilot and its sync: NC when no edge comes within 2000
+; tries
+;
+; The border to BorderColour with MIC set (`OR $08`); C = the port `$FE` level
+; now (the edge waits compare bit 6 with it).
+;
+; 1. Up to 2000 EdgeWait calls for a first edge; none: `RET` with NC (HL = 0).
+;
+; 2. Then pilot pairs (EdgePair from B = `$9C`) whose count must pass `$C6` (a
+; pair of 2127 T pulses gives about 60): 256 - H in a row (H = the high byte of
+; the tries left, so 249 in c1), any short pair starts again.
+;
+; 3. The sync: single edges from B = `$C9` while the count reaches `$D4` (the
+; rest of the pilot); the first shorter one is the first sync pulse (693 T),
+; and `JP $B70E` waits for the second's edge. Returns with carry set.
+;
+; The same plan as the ROM's LD-LEADER and LD-SYNC with its own constants. c1
+; counted 249 pilot pairs, then 4337 pilot edges to the sync.
+;
+; Witness: L1 2 (c1).
+FindPilot:
+  LD A,(BorderColour)
+  OR $08
+  LD BC,$00FE
+  OUT (C),A
+  LD A,$00                ; C = the EAR level now (bit 6 is compared)
+  IN A,($FE)
+  LD C,A
+FindPilotStart:
+  LD HL,$07D0             ; HL = 2000 tries for an edge
+FindPilotEdge:
+  CALL EdgeWait
+  JR C,FindPilotPairs
+  DEC HL
+  LD A,H
+  OR L
+  JR NZ,FindPilotEdge
+  RET
+FindPilotPairs:
+  LD B,H                  ; the pilot: pairs above $C6 from $9C, 256 - H in a
+                          ; row
+  CALL EdgePair
+  JR NC,FindPilotStart
+FindPilotPair:
+  LD B,$9C
+  CALL EdgePair
+  JR NC,FindPilotStart
+  LD A,$C6
+  CP B
+  JR NC,FindPilotStart
+  INC H
+  JR NZ,FindPilotPair
+FindPilotSync:
+  LD B,$C9                ; edges from $C9 while they count to $D4: the sync is
+                          ; the first short one
+  CALL EdgeWait
+  JR NC,FindPilotStart
+  LD A,B
+  CP $D4
+  JR NC,FindPilotSync
+  JP EdgeWait
+
+; Read one byte into L: 8 pairs MSB first and an invert flag, then the padding
+; pairs; NC on a timeout
+;
+; DE is kept. D = `$FC`, E = 9 pairs. Each pair is EdgePair from the B the
+; caller or the last pair left (B = `$B0` after each); a count above `$CB` is a
+; 1. Each bit goes into L by the next pass's `RL L`, so after 9 passes L holds
+; bits 1-8 and the carry the ninth, the invert flag: `SBC A,A; XOR L`
+; complements L when the flag is 1. D counts the 0 pairs from -4.
+;
+; Then D - 1 = zeros - 5 padding pairs, never tested (FILL bits). So a byte is
+; 9 + zeros - 5 pairs; with a 1 as long as two 0s, every byte lasts 13 short
+; pairs. The encoder writes the form with fewer ones (tools/tapesim.py
+; `byte_bits`), so zeros is 5 to 9 and the padding 0 to 4.
+;
+; Out: L = the byte, carry set; NC (and B wrapped) on a timeout. Called by
+; LoadBlock for each byte and for the checksum.
+;
+; Witness: L1 82906 (c1).
+ReadByte:
+  PUSH DE
+  LD DE,$FC09             ; D = -4 (zeros counted up), E = 9 pairs
+ReadByteBit:
+  RL L                    ; the last pair's bit into L
+  CALL EdgePair
+  JR NC,ReadByteEnd
+  LD A,$CB                ; a count above $CB is a 1
+  CP B
+  JR C,ReadByteNext
+  INC D                   ; a 0: one more zero
+ReadByteNext:
+  LD B,$B0
+  DEC E
+  JR NZ,ReadByteBit
+  SBC A,A                 ; the ninth bit, the invert flag, complements L
+  XOR L
+  LD L,A
+  INC B                   ; B + 1: the code's time between this pair and the
+                          ; next
+  SCF
+  JR ReadBytePadCount
+ReadBytePad:
+  CALL EdgePair           ; a padding pair, its value not tested
+  JR NC,ReadByteEnd
+  LD B,$B0
+ReadBytePadCount:
+  DEC D                   ; D - 1 more: zeros - 5 padding pairs
+  JR NZ,ReadBytePad
+ReadByteEnd:
+  POP DE
+  RET
+
+; Stage 2's hook padding: read pairs until L's marker bit leaves bit 7, then L
+; = $FF
+;
+; Called by stage 2's HookWork (`$B784`). L holds a marker bit (2 at the hook's
+; start) that every pair the hook reads moves up: here each pair shifts a 1 in
+; with `RL L` until the marker falls out into the carry. So the hook always
+; reads 7 pairs in all (the countdown's and the script's included), 6 long and
+; the last short (tools/tapesim.py gives 0 when bit 7 of L is set): the time of
+; 13 short pairs, one byte's.
+;
+; Out: L = `$FF` and carry set (stage 2 then gives that L to ByteHook as if it
+; were a byte: XORed into H and counted); NC on a timeout.
+;
+; Witness: L1 60788 (c1).
+PadPairs:
+  LD B,$B0
+  CALL EdgePair
+  RET NC
+  RL L
+  JR NC,PadPairs
+  LD L,$FF
+  RET
+
+; Wait for two edges (one pulse pair), counting in B; NC on a timeout
+;
+; EdgeWait twice (the second by falling into it). Called by FindPilot,
+; ReadByte, PadPairs, LoadBlock and stage 2.
+;
+; Witness: L1 914788 (c1).
+EdgePair:
+  CALL EdgeWait
+  RET NC
+
+; Wait 350 T, then for the next edge, counting 56 T passes in B: carry = an
+; edge, NC = B wrapped
+;
+; A delay of 25 x 14 T, then EdgeNoDelay `$B714` (stage 2 calls it directly):
+; `AND A` (carry clear) and the loop. A pass: `INC B` (a wrap to 0 is the
+; timeout: `RET Z` with NC), port `$FE` read with A = 0, XOR C, `AND $40`
+; (EAR). An edge: C = NOT C (the new level), carry set.
+;
+; The pass is the ROM's LD-SAMPLE length (56 T); a never-taken `RET C` and a
+; `NOP` stand where the ROM tests SPACE and changes the border, so the screen
+; keeps its border and BREAK does nothing.
+;
+; Witness: L1 1857012 (c1).
+EdgeWait:
+  LD A,$19
+EdgeDelay:
+  DEC A
+  JP NZ,EdgeDelay
+EdgeNoDelay:
+  AND A                   ; the entry without the delay (stage 2's script and
+                          ; countdown pairs)
+EdgeLoop:
+  INC B
+  RET Z
+  LD A,$00
+  IN A,($FE)
+  XOR C
+  AND $40
+  RET C
+  NOP
+  JR Z,EdgeLoop
+  LD A,C                  ; an edge: the new level in C, carry set
+  CPL
+  LD C,A
+  SCF
+  RET
+
+; Load DE bytes to IX: one lead pair, the bytes (ByteHook after each), the
+; checksum byte against H, then on into ByteHook
+;
+; IX = the address, DE = the length; H = the running checksum. A lead pair
+; (EdgePair from B = `$B0`; NC: `JP $0000`). For each byte: ReadByte (NC:
+; reset), store L at (IX), IX + 1, B + 3 (the time of this code before the next
+; pair), ByteHook. Then ReadByte for the checksum byte and `JP NZ,$0000` unless
+; it equals H. There is no RET: the code runs on into ByteHook, which XORs the
+; checksum byte into H (H = 0, the next load's start), counts it in HookCount
+; like a data byte (so the hooks keep their period across the loads) and
+; returns to LoadBlock's caller. IX is left past the block.
+;
+; Called 8 times: by Loader1Start (`$B75A`, `$10F`) and by stage 2 (LoadRest:
+; `$B869`, `$74` and `$B8DD`, `$302`; LoadFiles: `$B326`, `$01D8`; `$998E`,
+; `$1998`; `$C000`, `$4000`; `$5C00`, `$4000`; `$9C00`, `$01F0`).
+;
+; Witness: L1 16 (c1).
+LoadBlock:
+  LD B,$B0
+  CALL EdgePair
+  JP NC,$0000
+  LD B,$B0                ; the first byte's pair counts from $B0
+LoadBlockByte:
+  CALL ReadByte
+  JP NC,$0000
+  LD (IX+$00),L           ; store the byte (tools/tapesim.py reads the loads
+                          ; here)
+  INC IX
+  INC B                   ; B + 3: the store's time
+  INC B
+  INC B
+  CALL ByteHook
+  DEC DE
+  LD A,D
+  OR E
+  JR NZ,LoadBlockByte
+  CALL ReadByte           ; the checksum byte: equal to H, the XOR of the
+                          ; block's bytes (and $FF a hook)
+  JP NC,$0000
+  LD A,H                  ; L = H, else reset; then on into ByteHook (H = 0)
+  XOR L
+  JP NZ,$0000
+
+; After each byte: H = H XOR L; once stage 2 has armed it, every 8th call runs
+; stage 2's work
+;
+; The checksum first. Then A = HookCount - 1: negative (HookCount 0, before
+; stage 2 arms it) returns at once (`RET M`). Otherwise the routine runs on
+; past this stage's end into Stage2 `$B75A`, which stores the count and returns
+; until it is 0, then does the countdown and the script, reads the hook's
+; pairs, and comes back here with L = `$FF` (counted and XORed like a byte;
+; work/ann/04-loader.md).
+;
+; Called by LoadBlock after each byte, entered by LoadBlock's end after the
+; checksum byte, and jumped to by stage 2 at the end of its work (L = `$FF`).
+;
+; c1: 5882 hooks ran (tools/tapesim.py run, work/ann/04-loader/hooks.py): after
+; 8 bytes of the second load, then every 7 bytes and the hook's own count (6
+; data bytes and the last load's checksum byte at the start of the third to
+; eighth loads).
+;
+; Witness: L1 94670 (c1).
+ByteHook:
+  LD A,H
+  XOR L
+  LD H,A
+  LD A,(HookCount)
+  DEC A                   ; HookCount 0 (not armed): return; else on into stage
+                          ; 2 at $B75A
+  RET M

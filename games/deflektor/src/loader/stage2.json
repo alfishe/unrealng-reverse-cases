@@ -1,0 +1,29 @@
+{
+  "about": "The turbo block's first three loads: the loader's second stage at $B75A-$BBDE: python3 ../../kit/mkgame.py --part src/loader/stage2.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/stage2-b75a.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/stage2-b75a.bin",
+  "org": "B75A",
+  "ann": "src/loader/stage2.ann",
+  "top": "stage2",
+  "out": "stage2.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; Deflektor, Gremlin Graphics 1987: the loader's second stage, $B75A-$BBDE, loaded in three pieces by the",
+    "; first ($10F, $74 and $302 bytes): the countdown, the loading screen's script engine and the rest of the load."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "B75A",
+      "hi": "BBDF",
+      "reads": false
+    }
+  ],
+  "work": "work/stage2/mkstage2"
+}

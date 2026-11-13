@@ -1,0 +1,284 @@
+# The annotations of loader/stage2 (kit/mkgame.py --part src/loader/stage2.json). Format: ../../../../docs/ann-format.md.
+#
+# The loader's second stage, $B75A-$BBDE (1157 bytes): the first three loads of the turbo block, made by the first
+# stage (src/tape/basic.ann): $B75A-$B868 ($10F bytes, by Loader1Start), $B869-$B8DC ($74) and $B8DD-$BBDE ($302,
+# both by LoadRest). Witness: c1 (power-on, the original TZX). "Witness: L1 0 (c1)" lines are placeholders the lead's
+# --fix-witness fills. Evidence: work/ann/04-loader/ (hooks.py, reader.py, script.py: tools/tapesim.py's run of the
+# original turbo block, instrumented, and the script decoded by these rules) and work/ann/04-loader.md.
+
+@equ $5B00 MoveStub 3 ; the printer buffer: LoadFiles writes LDIR; RET there and jumps to it
+@equ $C000 HighBuffer ; where the main block's last $4000 bytes are loaded before the move
+@equ $B626 HookCount ; the first stage's variables (src/tape/basic.ann)
+@equ $B627 TickHooks
+@equ $B628 Countdown 3
+@equ $B62B LoadFlags
+@equ $B62C ScriptWait
+@equ $B62D PrintRow 2
+@equ $B62F PrintColumn
+@equ $B630 AttrPair
+@equ $B631 PrintAttr
+@equ $B632 ScriptPtr 2
+@equ $B634 CountdownAt 2
+@equ $B636 CountdownPair 2
+@equ $B63B WindowLeft
+@equ $B63C WindowRight
+@equ $B63D WindowTop 2
+@equ $B63F WindowBottom 2
+@equ $B641 FontPtr 2
+@equ $B643 FillChar
+@equ $B644 RepeatCount
+@equ $B645 PictureWidth
+@equ $B646 PictureRows
+@equ $B647 PictureAt 2
+@equ $B6FD PadPairs ; the first stage's routines (src/tape/basic.ann)
+@equ $B70A EdgePair
+@equ $B70E EdgeWait
+@equ $B714 EdgeNoDelay
+@equ $B727 LoadBlock
+@equ $B752 ByteHook
+@isub $B99F LD BC,-32
+
+@module loader2 ; The loader's second stage: the hook's work every 8th byte
+@about Loaded by the first stage in three pieces: $B75A-$B868 ($10F bytes, then Loader1Start jumps to LoadRest $B856 in it), $B869-$B8DC ($74) and $B8DD-$BBDE ($302), both loaded by LoadRest itself (the CALL that loads $B869 returns to the bytes it has just loaded). LoadRest arms the first stage's ByteHook and jumps to LoadFiles $BACC, which makes the other five loads.
+@about Every 8th call of ByteHook (7 bytes and the hook itself) runs HookWork $B75A, which does the countdown's tick when it is due (CountdownTick), steps the loading screen's script (ScriptStep), and then pads its time on tape to 7 pulse pairs (6 long, 1 short): the time of one byte. The tape's encoder (tools/tapesim.py) knows where the hook reads its pairs and writes them, so the hook's work costs no gap in the block. In c1 5882 hooks ran: 294 with a countdown tick, 1426 with script steps (1336 of them with 6 steps).
+@about The work every hook does is bounded by a marker bit in L (2 at the start): every pair the countdown or the script reads moves it one place up, and PadPairs (in the first stage) reads the rest until it leaves bit 7. A hook with a tick has room for 2 script steps, one without for 6.
+
+$B75A c HookWork ; ByteHook's work: store the count; every 8th call the countdown tick, the script steps, the padding pairs
+> Entered from ByteHook `$B752` in the first stage, which runs on into these bytes with A = HookCount - 1 and the return address in LoadBlock (`$B742`) on the stack.
+> 1. HookCount = A; not 0: return. Else HookCount = 8, B = LoadFlags, L = 2 (the marker bit).
+> 2. Bit 0 (the countdown): TickHooks - 1; at 0 CountdownTick, which returns A = 20 (`$14`) for TickHooks.
+> 3. Bit 1 (the script): ScriptWait - 1; at 0 (ScriptWait stays 1, so the next hook steps again) ScriptStep, which ends at ByteHook by itself. Else ScriptWait is stored and the hook pads.
+> 4. HookPad `$B784`: PadPairs (the rest of the 7 pairs), B = `$B2`, `JR C` to ByteHook with L = `$FF`: the hook XORs `$FF` into the checksum, counts itself in HookCount (8 - 1 = 7) and returns to LoadBlock. A timeout: `JP $0000`.
+> c1 (work/ann/04-loader/hooks.py): the first hook after 8 bytes of the second load, then one every 7 bytes and the hook (6 data bytes and the last load's checksum byte at the start of the third to eighth loads: LoadBlock runs on into ByteHook after the checksum); 5882 in all.
+> Witness: L1 47063 (c1).
+$B75E ; every 8th: HookCount = 8 again, L = the marker bit
+$B76D ; the countdown's tick every 20 hooks (5 for the first)
+$B777 HookScript ; the script: wait ScriptWait hooks, then step
+$B784 HookPad ; the rest of the hook's 7 pairs, then ByteHook again with L = $FF
+$B78B HookFail ; a timeout: reset
+
+@module script ; The loading screen's script engine: one item a step, characters printed with the loader's font
+@about The script is a byte stream at ScriptPtr: SerialText $B835 first (from LoadRest), then the fifth load at $998E (from LoadFiles, which also sets ScriptWait = 230, so the script starts about 11 s after its load began). A byte of 32 or more is a character, printed by PrintGlyph at the print position (PrintRow, PrintColumn) in PrintAttr, after which the position moves right and wraps inside the window (WindowLeft-WindowRight, WindowTop-WindowBottom, wrapping to the top). A byte below 32 is a control code (ControlCode, the module control); $04 ends the script.
+@about The engine runs only on the hook: ScriptStep does up to 6 items a hook, one pulse pair each, so it never waits for the load. The script is read while it loads: the closest it comes in c1 is 260 bytes behind the byte being loaded ($A70D against IX = $A811, work/ann/04-loader/reader.py); its pauses ($03) keep it so.
+@about The script's format, every code with its arguments, and the decoded script (work/ann/04-loader/script.py): work/ann/04-loader.md.
+
+$B78E c ScriptStep ; One script item (with EXX: the loader's registers kept), then one pulse pair; up to 6 a hook
+> Entered by HookWork when ScriptWait runs out, and from its own end while the marker bit in L has not reached bit 7.
+> 1. LoadFlags bit 3 (a picture is being drawn): PictureCell, one cell.
+> 2. Else the byte at ScriptPtr (ScriptPtr + 1): `$04` ends the script (LoadFlags bit 1 cleared, then HookPad); below 32 ControlCode; else PrintChar `$B7B8`: PrintGlyph at PrintRow + PrintColumn in PrintAttr, then CursorRight `$B7CA` (PrintColumn + 1; past WindowRight back to WindowLeft and NextRow `$B7D8`: PrintRow + 32, past WindowBottom back to WindowTop).
+> 3. ScriptPair `$B7F0`: EXX back, one long pair (EdgeNoDelay, EdgeWait), `SLA L`: the marker not yet in bit 7, another item. Else one short pair (EdgePair), L = `$FF`, B = `$B2`, `JP $B752` (ByteHook: the hook's end, as at HookPad).
+> c1 (work/ann/04-loader/reader.py): 8228 items in 1426 hooks. The two `$04` ends: SerialText's at 1.99 s and the script's (`$B325`) at 273.3 s, 17 s before the last load.
+> Witness: L1 8228 (c1).
+$B799 ; the next byte; $04 ends the script
+$B7A2 ScriptEnd ; the end: the script off, the hook pads
+$B7AA ScriptPicture ; a picture's next cell
+$B7AF ScriptCode ; below 32: a control code
+$B7B8 PrintChar ; print A at the position (ControlCode's fills enter here too)
+$B7CA CursorRight ; the column + 1, wrapping to the window's left and the next row ($09 enters here)
+$B7D8 NextRow ; the row + 32, wrapping to the window's top ($0A and $0D enter here)
+$B7EC SetRow
+$B7F0 ScriptPair ; one long pair a step; the marker in bit 7 ends the hook
+$B803 ScriptLast ; the hook's last pair, a short one
+
+$B812 c PrintGlyph ; Print character A at the attribute address DE in attribute B (8 bytes from FontPtr + 8 x (A - 32))
+> The glyph is FontPtr + 8 x A - 256 (character 32 is FontPtr's first). The attribute B goes to (DE), then DE becomes the cell's first pixel row (D x 8 AND `$78`: `$58` to `$40`, `$59` to `$48`, `$5A` to `$50`) and 8 bytes are copied down the cell. C is not used.
+> Called by ScriptStep (characters, from its registers in the other set) and CountdownTick (the digits).
+> Witness: L1 8435 (c1).
+$B823 ; the attribute, then the cell's pixel address
+$B82E PrintGlyphRow
+
+$B835 t SerialText ; The first script: "      DEFLEKTOR SERIAL NO-VX3240" and $04, printed on row 22
+> ScriptPtr's first value (the first stage's variables), run from LoadRest, while the second and third pieces load: 32 characters at PrintRow `$5AC0` (row 22) from column 0 in PrintAttr 7, then the end `$04`. The fifth load's script later prints "SECONDS TO LOAD DEFLEKTOR" over its right part (AT 22,5) and the countdown takes columns 1-3.
+
+@module countdown ; The stage's own last pieces and the countdown in seconds
+@about LoadRest loads the rest of this stage, turning the script (SerialText) and then the countdown on. CountdownTick counts the three ASCII digits at Countdown down by one every 20 hooks: 160 byte times of 13 short pairs, 3475776 T, 0.993 s at 3.5 MHz. The 294 at the start is the load's length in those seconds: in c1 the 294th tick shows 000 at 293.7 s, a tenth of a second before the last byte (work/ann/04-loader/hooks.py).
+
+$B856 c LoadRest ; Stage 2's entry: arm the hook, start the serial text, load the stage's last two pieces, then LoadFiles
+> From Loader1Start's `JP $B856`, IX = `$B869` (just past the first piece) and H = the checksum.
+> 1. HookCount = 8 (ByteHook works from now on); LoadFlags bit 1, the script (SerialText); LoadBlock `$74` bytes: `$B869-$B8DC`, the bytes this routine goes on with after the CALL.
+> 2. LoadFlags bit 0, the countdown; LoadBlock `$302` bytes: `$B8DD-$BBDE`. `JP $BACC` (LoadFiles).
+> Witness: L1 1 (c1).
+$B866 ; the next piece: $B869-$B8DC, where this routine goes on
+$B869 ; the countdown on; the last piece, $B8DD-$BBDE
+
+$B87A c CountdownTick ; One second less: Countdown - 1 in ASCII digits, shown at CountdownAt; past 000 the countdown stops
+> Called by HookWork when TickHooks reaches 0 (EXX: the loader's HL, DE and B kept in the other set).
+> The three digits from the last: `SBC A,0` with the borrow, `DAA`, below `$30` a borrow on and `SET 4,A` ('0' - 1 gives '9'). A borrow out of the first digit (past 000): LoadFlags bit 0 off, the marker bit set at bit 7, one pair (CountdownWait). Else the digits are printed at CountdownAt (`$5AC1`) with CountdownPair's B (CountdownAttr `$57`), each after one long pair (EdgeNoDelay, EdgeWait; `RL L` with bit 0 of C, the level byte, as the carry: its value does not matter, the marker set at bit 4 leaves after 4 pairs whatever comes in): 4 pairs.
+> Out: A = 20 (TickHooks), B = LoadFlags. IgnoreCode `$B8DC` (the final `RET`) is also the control-code table's handler for the codes that do nothing.
+> c1: 294 ticks, 3475776 T apart (0.993 s), from 293 at 3.73 s to 000 at 293.70 s; the count never passed 000.
+> Witness: L1 294 (c1).
+$B87B ; the last digit first, with the borrow in
+$B881 CountdownDigit
+$B88F ; past 000: the countdown off, the marker for one pair
+$B899 CountdownShow ; the three digits at CountdownAt, a pair before each
+$B8B2 CountdownPrint
+$B8C2 CountdownWait
+$B8D6 ; A = 20 hooks to the next tick, B = the flags for HookWork
+$B8DC IgnoreCode ; RET: the table's handler of the codes that do nothing
+
+@module control ; The script's control codes below 32
+@about ControlCode gets the code in A and ScriptPtr past it. Codes $0C (CLS), $0E (REPEAT n) and $1D (TABFILL n) print FillChar one cell a step and repeat themselves (LoadFlags bit 2) until done. The others go through ControlTable $BB92: the handler gets A = the next script byte and DE = the address after it, and stores DE in ScriptPtr only when it takes that byte as an argument. A table code first waits 20 x 14 T.
+@about The codes (work/ann/04-loader.md has the decoded script): $03 n pause n hooks; $05 c FillChar = c; $08 left; $09 right; $0A down; $0B up; $0C clear the window; $0D to the window's left on the next row; $0E n print FillChar n times; $0F row col rows cols a picture of rows x cols cells; $10 n INK; $11 n PAPER; $12 n FLASH; $13 n BRIGHT; $16 row col AT inside the window; $18 swap INK and PAPER; $19 c and 8 bytes a new glyph for c; $1A left right top bottom the window; $1D n fill to column n; $1E n BORDER. $00-$02, $04 (the end, never dispatched), $06, $07, $14, $15, $17, $1B, $1C and $1F do nothing and take no argument. The INK to BRIGHT and AT codes are the ROM's numbers (16-19, 22).
+
+$B8DD c ControlCode ; A control code: $0C, $0E and $1D here, the others through ControlTable
+> Called by ScriptStep with A = the code and the script pointer HL (the other register set) past it, in ScriptPtr as well.
+> TABFILL `$1D` n (`$B8FF`): the target column is n - 1, at most WindowRight. Until PrintColumn is the target, FillChar is printed and the code repeats (the pointer goes back to it); at the target, one more and n is taken: the print position ends at column n (through the next row when it was past it).
+> REPEAT `$0E` n (`$B914`): RepeatCount = n the first time (LoadFlags bit 2), then one FillChar a step, n in all (0: 256).
+> CLS `$0C` (`$B938`): the first time, the print position to the window's top left; then FillChar a step until the position is back there, then bit 2 off and a wait of 20 x 14 T. The window is filled with spaces, a cell a step (the script's 4677 `$0C` steps in c1).
+> A repeating step goes back one byte (ControlAgain `$B96B`), stores ScriptPtr, drops ScriptStep's return and prints FillChar through PrintChar.
+> The table: the handler from ControlTable + 2 x A, A = the byte at ScriptPtr, DE = ScriptPtr + 1, `JP (HL)`; it returns to ScriptStep.
+> Witness: L1 5843 (c1).
+$B8E9 ; a table code: a wait of 20 x 14 T first
+$B8EB ControlDelay
+$B8EF ; the handler, A = the next byte, DE = past it
+$B8FF CodeTabFill ; $1D n: fill to column n
+$B90B TabFillTest
+$B914 CodeRepeat ; $0E n: FillChar n times
+$B924 RepeatStep
+$B935 ControlTake ; take the argument, print once more
+$B938 CodeCls ; $0C: clear the window with FillChar, a cell a step
+$B954 ClsStep
+$B96B ControlAgain ; the pointer back to the code: it runs again next step
+$B96C ControlFill ; print FillChar instead of returning to ScriptStep
+$B976 ClsDone
+$B97D ClsDelay
+
+$B982 c CodePause ; $03 n: wait n hooks before the next item (ScriptWait = n), ending this hook's steps
+> Takes n, drops ScriptStep's return, EXX and HookPad: no more items this hook. HookWork steps again in the n-th hook from now. The script waits 23 times (c1), 50 to 250 hooks (about 2.5 to 12 s).
+> Witness: L1 23 (c1).
+
+$B98E c CodeLeft ; $08: the print position one column left; before WindowLeft, WindowRight of the row above
+> No argument. Falls into CodeUp for the row.
+> Witness: L1 0 ().
+$B99C c CodeUp ; $0B: the print position one row up; above WindowTop, WindowBottom
+> No argument. Not used by Deflektor's script.
+> Witness: L1 0 ().
+$B9B5 c CodeRight ; $09: the print position one column right (CursorRight)
+> No argument; drops ScriptStep's return and goes on at CursorRight `$B7CA`, so the step ends with ScriptPair as after a character.
+> Witness: L1 0 ().
+$B9B9 c CodeReturn ; $0D: the print position to WindowLeft on the next row
+> No argument. PrintColumn = WindowLeft, then CodeDown's NextRow. 86 times in c1.
+> Witness: L1 86 (c1).
+$B9BF c CodeDown ; $0A: the print position one row down (NextRow), the column kept
+> No argument.
+> Witness: L1 86 (c1).
+$B9C3 c CodeGlyph ; $19 c b1-b8: the 8 bytes of character c's glyph (32 or more) copied into the font
+> Below 32 it returns at once and takes nothing (the next byte is read as an item). Else 8 bytes from the script to FontPtr + 8 x (c - 32); ScriptPtr past them. Not used by Deflektor's script (its glyphs are the fourth load).
+> Witness: L1 0 ().
+$B9DB c CodeBorder ; $1E n: the border = n AND 7 (MIC set)
+> Not used by Deflektor's script.
+> Witness: L1 0 ().
+$B9E9 c CodePaper ; $11 n: PrintAttr's paper = n (bits 3-5)
+> Witness: L1 1 (c1).
+$B9F0 c CodeInk ; $10 n: PrintAttr's ink = n (bits 0-2)
+> Witness: L1 33 (c1).
+$B9F4 c CodeFlash ; $12 n: PrintAttr's FLASH bit = bit 0 of n
+> Not used by Deflektor's script.
+> Witness: L1 0 ().
+$B9F8 c CodeBright ; $13 n: PrintAttr's BRIGHT bit = bit 0 of n
+> Not used by Deflektor's script. AttrFlag `$B9FA` (also CodeFlash's): A = `$FF` or 0 from bit 0 of n.
+> Witness: L1 0 ().
+$B9FA AttrFlag
+$B9FC c SetAttrBits ; PrintAttr = (A AND C) OR (PrintAttr AND NOT C); take the argument
+> C is the mask: `$07` ink, `$38` paper, `$80` flash, `$40` bright. IgnoreCode28 `$BA09` (its `RET`) is the table's handler of `$1C`.
+> Witness: L1 34 (c1).
+$BA09 IgnoreCode28 ; RET: the handler of $1C (does nothing)
+$BA0A c CodeSwap ; $18: swap PrintAttr's ink and paper (FLASH and BRIGHT kept)
+> No argument. Not used by Deflektor's script.
+> Witness: L1 0 ().
+$BA20 c CodeAt ; $16 row col: the print position inside the window (WindowLeft + col, WindowTop + 32 x row), clamped to it
+> The column: WindowLeft + col, at most WindowRight (also on a carry). The row: WindowTop + 32 x row, at most WindowBottom. 24 times in c1.
+> Witness: L1 24 (c1).
+$BA33 AtRight
+$BA34 AtColumn
+$BA4A AtBottom
+$BA4D AtRow
+$BA51 c Times32 ; HL = 32 x L (H = 0): a row's offset in the attributes
+> Called by CodeAt, CodeWindow and CodePicture.
+> Witness: L1 45 (c1).
+$BA59 c CodeFill ; $05 c: FillChar = c (the character CLS, REPEAT and TABFILL print)
+> Not used by Deflektor's script: FillChar stays a space.
+> Witness: L1 0 ().
+$BA61 c CodeWindow ; $1A left right top bottom: the script's window; the print position to its top left
+> The columns sorted; a right column of 32 or more makes the window 0-31. The rows sorted; a bottom row of 24 or more makes it 0-23. WindowLeft, WindowRight; WindowTop and WindowBottom as attribute addresses of column 0 (`$5800` + 32 x row); PrintRow = WindowTop, PrintColumn = WindowLeft.
+> Deflektor's script: `$1A` 1 30 10 20 (the text panel under the picture), and 0 31 0 21 before the last picture.
+> Witness: L1 2 (c1).
+$BA6A WindowCols ; the columns in order (H the right, L the left)
+$BA72 WindowSetCols ; WindowLeft, WindowRight
+$BA88 WindowRows ; the rows: past 23, the full height
+$BA90 WindowSetRows ; WindowTop
+$BAA9 c CodePicture ; $0F row col rows cols: draw a picture of rows x cols cells from the script, one cell a step
+> The cells' screen place is absolute (not the window's): PictureAt = `$5800` + 32 x row + col, PictureRows = rows, PictureWidth = cols, RepeatCount = 0 (the column), LoadFlags bit 3: ScriptStep then calls PictureCell for every item until the picture is done. 17 pictures in Deflektor's script (the frame of 9 x 32 cells first).
+> Witness: L1 17 (c1).
+
+@module loads ; The rest of the turbo block: the glyphs, the script and the game, and the move at the end
+@about LoadFiles reads its loads from LoadParams $BBD2 (the same code would load another game with other parameters): the loading screen's glyphs ($B326, $1D8 bytes: characters 32-90 over the ROM font's copy), the script ($998E, $1998 bytes) and the main block ($81F0 bytes for $5C00-$DDEF). The main block covers this stage ($B326-$BBDE), so its last $4000 bytes ($9DF0-$DDEF) come first, to HighBuffer $C000; then $5C00-$9BFF and $9C00-$9DEF; then a 3-byte stub at $5B00 (LDIR; RET) copies $C000-$FFFF to $9DF0 over the loader and returns to $5C00, the main block's head (src/head).
+@about In c1 (work/ann/04-loader/hooks.py, the times from the pilot's end): glyphs at 7.98 s, script 11.34 s, $C000 57.83 s, $5C00 174.05 s, $9C00 290.27 s; the block ends at 293.80 s.
+
+$BACC c LoadFiles ; Load the glyphs and the script, start the script, load the main block in three loads, move its tail, run it
+> From LoadRest's `JP $BACC`.
+> 1. LoadBlock GlyphsAddr, GlyphsLen (when not 0).
+> 2. LoadFlags bit 1 (the script on again), ScriptWait = ScriptDelay (230 hooks), the print position to the window's top left, ScriptPtr = ScriptAddr; LoadBlock ScriptAddr, ScriptLen: the script runs while it loads.
+> 3. MainLen of `$4000` or more: LoadBlock HighBuffer `$C000`, `$4000` (the block's last `$4000` bytes); MainLen - `$4000`.
+> 4. IX = MainAddr (pushed: the return address at the end); LoadBlock `$4000` bytes while `$4000` or more are left; then the rest (when not 0). IX is now MainAddr + MainLen - `$4000`.
+> 5. MainLen's high byte below 4: `RET` to MainAddr. Else `LDIR` (`$ED $B0`) and `RET` at MoveStub `$5B00`, HL = `$C000`, DE = IX (`$9DF0`), BC = `$4000`, `JP $5B00`: the copy runs from the printer buffer, outside the bytes it overwrites (this stage among them), and its `RET` goes to MainAddr `$5C00`.
+> The test in step 5 reads MainLen's high byte against 4, not `$40`: a main block of `$0400-$3FFF` bytes would still be "moved". Deflektor's `$81F0` takes the move.
+> Witness: L1 1 (c1).
+$BAD9 ; the script on, after ScriptDelay hooks, from the window's top left
+$BB04 ; the main block: its last $4000 bytes to $C000 first
+$BB1A LoadMainLow ; from MainAddr up, $4000 bytes at a time
+$BB2E LoadMainRest
+$BB33 ; MoveStub: LDIR; RET at $5B00, then $C000 to its place, RET to MainAddr
+
+@module cells ; Picture cells, the control-code table and the load parameters
+@about PictureCell draws a $0F picture's cells, one a step; ControlTable holds the handlers of the codes below 32; LoadParams are LoadFiles' addresses and lengths.
+
+$BB50 c PictureCell ; Draw a picture's next cell from the script: an attribute and 8 pixel bytes; the picture's end clears LoadFlags bit 3
+> Called by ScriptStep while LoadFlags bit 3 is set. The cell is PictureAt + RepeatCount (the column); the attribute byte goes there, the 8 pixel bytes down the cell (the attribute address turned into the pixel address as in PrintGlyph). ScriptPtr + 9. RepeatCount + 1; at PictureWidth, 0 again, PictureAt + 32 and PictureRows - 1; at 0 the picture is done.
+> c1: 474 cells (work/ann/04-loader/reader.py counted the calls).
+> Witness: L1 474 (c1).
+$BB5B ; the attribute, then 8 pixel rows
+$BB67 PictureCellRow
+$BB6D ; the next cell; at the row's end the next row
+$BB87 ; the last row: the picture is done
+
+$BB92 w ControlTable ; The handlers of control codes $00-$1F, a word each ($0C, $0E and $1D are ControlCode's own)
+> ControlCode jumps to the word at ControlTable + 2 x code. IgnoreCode (`$B8DC`) and IgnoreCode28 (`$BA09`) are a `RET`: the code does nothing and takes no argument.
+$BB92 ; $00-$02 nothing
+$BB98 ; $03 PAUSE n
+$BB9A ; $04 nothing (the end: ScriptStep never dispatches it)
+$BB9C ; $05 FILL c
+$BB9E ; $06, $07 nothing
+$BBA2 ; $08 LEFT
+$BBA4 ; $09 RIGHT
+$BBA6 ; $0A DOWN
+$BBA8 ; $0B UP
+$BBAA ; $0C CLS (ControlCode's own, never read)
+$BBAC ; $0D CR
+$BBAE ; $0E REPEAT n (ControlCode's own, never read)
+$BBB0 ; $0F PICTURE row col rows cols
+$BBB2 ; $10 INK n
+$BBB4 ; $11 PAPER n
+$BBB6 ; $12 FLASH n
+$BBB8 ; $13 BRIGHT n
+$BBBA ; $14, $15 nothing
+$BBBE ; $16 AT row col
+$BBC0 ; $17 nothing
+$BBC2 ; $18 SWAP
+$BBC4 ; $19 GLYPH c and 8 bytes
+$BBC6 ; $1A WINDOW left right top bottom
+$BBC8 ; $1B nothing
+$BBCA ; $1C nothing
+$BBCC ; $1D TABFILL n (ControlCode's own, never read)
+$BBCE ; $1E BORDER n
+$BBD0 ; $1F nothing
+
+$BBD2 w LoadParams ; LoadFiles' parameters: the glyphs' and the script's address and length
+> GlyphsAddr `$B326`, GlyphsLen `$01D8` (59 characters, 32-90); ScriptAddr `$998E`, ScriptLen `$1998`.
+$BBD2 GlyphsAddr
+$BBD4 GlyphsLen
+$BBD6 ScriptAddr
+$BBD8 ScriptLen
+$BBDA b ScriptDelay ; Hooks before the script's first step: 230 (about 11.4 s)
+$BBDB w MainAddr ; The main block's address, $5C00 (LoadFiles returns there), and its length MainLen, $81F0
+$BBDD MainLen

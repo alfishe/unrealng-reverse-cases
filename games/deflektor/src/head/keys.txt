@@ -1,0 +1,43 @@
+# The keys of D.G. Cooke's decryption chain (src/head/head.ann, tools/cipher.py): what the chain's sums give
+# on the original tape, and the bytes the chain overwrites as it goes. One line an item, in the order the chain
+# runs them:
+#   plant ADDR BYTE                 the byte at ADDR before the chain writes over it (ChainStart writes $CB at $7B99)
+#   xor RET B C A BYTE             a call of XorLayer $7B84 returning to RET: B bytes from RET+1 (0 = 256), the
+#                                  step C, the incoming key A; BYTE was at RET before the layer wrote C there
+#   sum RET B C A BYTE             a call of a sum layer ($7BD2, $7C15, $7C54): no bytes change but RET
+#   operand ADDR BYTE              the operand FinalSum reads at ADDR before it zeroes it
+#   key16 WORD                     the 16-bit key the final sum gives (HL at $7CBE)
+# Decimal unless hex is the item's rule (addresses, the key).
+plant 7B99 69
+xor 7BBF 198 217 0 115
+xor 7BC7 227 217 0 69
+xor 7BCF 241 179 0 210
+xor 7BE8 241 217 0 67
+xor 7BEF 248 218 0 223
+sum 7BF5 248 181 0 87
+xor 7BFA 249 181 0 250
+sum 7C02 243 218 0 121
+sum 7C06 243 218 0 121
+xor 7C0C 241 218 0 3
+xor 7C12 241 109 0 69
+xor 7C2D 227 54 0 119
+sum 7C32 227 55 0 91
+xor 7C37 228 55 0 209
+xor 7C3F 200 27 0 203
+xor 7C45 228 27 0 214
+sum 7C4B 227 227 0 220
+sum 7C51 199 227 0 248
+sum 7C6A 143 227 0 48
+xor 7C70 143 227 0 233
+xor 7C74 143 227 0 116
+xor 7C7A 143 227 0 241
+sum 7C7E 143 227 0 149
+xor 7C82 143 227 0 176
+sum 7C87 143 226 0 208
+xor 7C8B 143 226 0 90
+xor 7C95 158 113 0 228
+sum 7C99 158 113 0 172
+sum 7CA0 159 56 0 163
+sum 7CA5 159 57 0 180
+operand 7CA7 200
+key16 43FB

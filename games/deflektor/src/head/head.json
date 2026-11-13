@@ -1,0 +1,72 @@
+{
+  "about": "The main block's code that is not the game, as it stands once the chain has run (tools/cipher.py): BlockHead $5C00, the decryption chain $7B52-$7CFF, the mover $FD00-$FD1A: python3 ../../kit/mkgame.py --part src/head/head.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/head-5c00.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/head-5c00.bin",
+  "at": "5C00",
+  "top": "head",
+  "out": "head.bin",
+  "dest": "src/head",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; Deflektor, Gremlin Graphics 1987: the main block's own code (496 bytes), decrypted: BlockHead $5C00-$5C26,",
+    "; the chain $7B52-$7CFF and the mover $FD00-$FD1A; tools/cipher.py encrypts it with the game (src/head/keys.txt)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "reads": false
+    }
+  ],
+  "segments": [
+    {
+      "title": "the block's head",
+      "ann": "src/head/head.ann",
+      "lo": "5C00",
+      "hi": "5C27",
+      "l1": [
+        {
+          "path": "work/stage1/c1/l1.json",
+          "lo": "5C00",
+          "hi": "5C27",
+          "reads": false
+        }
+      ]
+    },
+    {
+      "title": "the decryption chain",
+      "ann": "src/head/head.ann",
+      "lo": "5C27",
+      "hi": "5DD5",
+      "run": "7B52",
+      "l1": [
+        {
+          "path": "work/stage1/c1/l1.json",
+          "lo": "7B52",
+          "hi": "7D00",
+          "reads": false
+        }
+      ]
+    },
+    {
+      "title": "the mover",
+      "ann": "src/head/head.ann",
+      "lo": "5DD5",
+      "hi": "5DF0",
+      "run": "FD00",
+      "l1": [
+        {
+          "path": "work/stage1/c1/l1.json",
+          "lo": "FD00",
+          "hi": "FD1B",
+          "reads": false
+        }
+      ]
+    }
+  ],
+  "work": "work/stage2/mkhead"
+}

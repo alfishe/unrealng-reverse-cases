@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Every level drawn from the data by the game's own code: SkoolKit's simulator runs LevelSetup `$891A` over the
-entry image (tools/image.py) with the level variable `$81FF` set, and the play-area buffers it fills are turned into
-a picture. `$891A` takes the level's 135 bytes (15 x 9 cells) from `$B000 + $87 x level` (address kept at `$8912`),
+"""Every level drawn from the resource by the game's own code: the level grids of src/res/levels/levels.txt
+(tools/res_formats.py levels_in, the text the source INCBINs) are put at LevelData `$B000` of the entry image
+(tools/image.py), SkoolKit's simulator runs LevelSetup `$891A` with the level variable `$81FF` set, and the play-area
+buffers it fills are turned into a picture. An edited levels.txt is drawn as edited. `$891A` takes the level's 135 bytes (15 x 9 cells) from `$B000 + $87 x level` (address kept at `$8912`),
 copies them to the grid `$FD23` (17 bytes a row), and `$8960` turns each cell into four 8 x 8 character codes through
 the table `$8200` (4 codes a cell code) in the map `$E000` (32 a row); `$8A09` draws each code's 8 bytes from
 `$D700 + 8 x code` into the pixel buffer `$E900` (32 bytes a pixel row, 20 character rows) and its colour from
@@ -17,13 +18,14 @@ import json
 import os
 import sys
 
-V = os.environ.get('SKOOLKIT_VENV', '/Volumes/TB4-4Tb/Projects/Test/unreal-ng/scratch/venv-skoolkit')
-for p in [os.path.join(V, 'lib', d, 'site-packages') for d in os.listdir(os.path.join(V, 'lib'))]:
-    sys.path.insert(0, p)
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import tapesim  # noqa: E402,F401  (SkoolKit through kit/toolpaths.py's venv)
+import res_formats  # noqa: E402
 from skoolkit.simulator import Simulator  # noqa: E402
 from PIL import Image  # noqa: E402
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+LEVELS = os.path.join(HERE, '..', 'src', 'res', 'levels', 'levels.txt')
 IMAGE = os.path.join(HERE, '..', 'work', 'mkgame', 'original.bin')
 PAL = [(0, 0, 0), (0, 0, 205), (205, 0, 0), (205, 0, 205), (0, 205, 0), (0, 205, 205), (205, 205, 0), (205, 205, 205),
        (0, 0, 0), (0, 0, 255), (255, 0, 0), (255, 0, 255), (0, 255, 0), (0, 255, 255), (255, 255, 0), (255, 255, 255)]
@@ -64,7 +66,9 @@ def main():
     ap.add_argument('--scale', type=int, default=2)
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
-    img = open(IMAGE, 'rb').read()
+    img = bytearray(open(IMAGE, 'rb').read())
+    data = res_formats.levels_in(open(LEVELS, 'rb').read())
+    img[0xB000:0xB000 + len(data)] = data
     info, pics = [], []
     for lv in range(61):
         m = draw_level(img, lv)

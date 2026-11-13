@@ -1,0 +1,58 @@
+{
+  "about": "TZX block 1, the BASIC \"DEFLEKTOR\" at PROG $5CCB (384 bytes, LINE 0): line 0, its code at $5D05 and the first loader stage it copies to $B626: python3 ../../kit/mkgame.py --part src/tape/basic.json --install",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/basic-5ccb.bin || python3 tools/parts.py > /dev/null"
+  ],
+  "image": "work/parts/basic-5ccb.bin",
+  "at": "5CCB",
+  "top": "basic",
+  "out": "basic.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "data_entries": "stop",
+  "header": [
+    "; Deflektor, Gremlin Graphics 1987: TZX block 1, the BASIC \"DEFLEKTOR\" (384 bytes at PROG $5CCB, LINE 0):",
+    "; line 0 and its code at $5D05, and the loader's first stage $5D17-$5E4A, which runs at $B626."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "reads": false
+    }
+  ],
+  "segments": [
+    {
+      "title": "line 0 and its code",
+      "ann": "src/tape/basic.ann",
+      "lo": "5CCB",
+      "hi": "5D17",
+      "l1": [
+        {
+          "path": "work/stage1/c1/l1.json",
+          "lo": "5CCB",
+          "hi": "5D17",
+          "reads": false
+        }
+      ]
+    },
+    {
+      "title": "the loader's first stage",
+      "ann": "src/tape/basic.ann",
+      "lo": "5D17",
+      "hi": "5E4B",
+      "run": "B626",
+      "l1": [
+        {
+          "path": "work/stage1/c1/l1.json",
+          "lo": "B626",
+          "hi": "B75A",
+          "reads": false
+        }
+      ]
+    }
+  ],
+  "work": "work/stage2/mkbasic"
+}

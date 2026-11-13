@@ -1,0 +1,710 @@
+# LevelData $B000: the 64 level slots, 135 bytes each (9 rows of 15 cells), in slot order.
+# A `slot N` line starts a slot (the words after N are a comment); then 9 rows of 15 tokens. Legend in
+# levels/README.md: ... empty, Mnn mirror (angle nn), PCn / PYn cyan / yellow polariser (angle n), WAm / WRm
+# absorbing / reflecting wall (quarters m: 1 top left, 2 top right, 4 bottom left, 8 bottom right), CEL cell,
+# MIN mine, PRS prism, L-d laser, R-d receiver (d: E S W N), Fna / Fnb fibre-optic pair n; lower case: the
+# element turns by itself (bit 7); $HH any other code.
+
+slot 0  level 1  $B000
+M06 ... ... ... WA5 CEL CEL WRA M14 ... pc2 CEL CEL WRA WRD
+... CEL CEL CEL WA5 CEL CEL WRA ... ... ... CEL ... ... WRA
+... CEL m05 CEL WAF PRS WR3 WR3 ... ... ... ... PC3 ... ...
+... CEL CEL CEL WAF ... ... ... ... ... F2a ... ... ... M01
+... WA3 WA3 WA3 WAF ... ... py7 ... CEL ... ... ... ... ...
+... ... M09 ... ... ... ... ... ... ... ... ... ... ... M06
+... ... ... ... ... ... ... ... ... ... ... MIN PC3 ... ...
+M02 ... ... L-W WRA ... ... ... ... WRB CEL MIN CEL ... F2b
+... ... WR5 R-E WRA ... ... ... M13 WRA CEL ... WRC WRC WR4
+
+slot 1  level 2  $B087
+M05 CEL MIN ... CEL WR2 ... ... ... CEL WR8 ... MIN ... R-S
+... WR8 WR2 CEL WR1 WR2 WR9 ... M03 ... ... ... WR4 CEL WRC
+WR1 ... WR2 WR1 MIN ... WR4 WR4 ... WR4 WR1 MIN WR8 ... ...
+... M06 WR8 ... WR1 WRC ... MIN ... ... CEL WR1 CEL WR9 ...
+MIN WR4 CEL ... WR4 ... M07 ... WR1 ... WR9 ... ... MIN ...
+... ... WR4 ... WR2 ... ... WR6 ... CEL ... WR8 WR2 WR2 WRA
+L-S CEL ... ... M04 ... WR4 ... WR2 ... M03 ... WR2 ... ...
+... WR1 WR6 MIN ... WR8 CEL WR6 ... ... WR4 WR2 MIN WR4 M02
+M03 ... WR8 ... WR2 ... WR8 ... M12 ... ... WR9 WR8 ... CEL
+
+slot 2  level 3  $B10E
+CEL CEL WRD ... ... ... M10 ... CEL WRA ... ... CEL ... M07
+CEL CEL WR2 WRB ... ... ... ... ... WRA ... ... ... WRC ...
+CEL CEL PRS ... M00 ... ... ... WRC WRF WR5 ... ... WR5 py4
+CEL CEL WR8 WRE ... ... ... ... ... ... ... ... ... WRD CEL
+CEL CEL WR7 ... ... ... ... WR8 WRC WR4 ... M10 ... WR2 WR3
+WR3 WR3 WR1 ... WRF WR5 PRS WAA R-W WR7 WR3 ... py5 ... ...
+WR4 CEL ... ... ... ... ... WR2 WR3 WR5 M04 ... WRC WRE ...
+WR5 ... ... ... ... ... py1 ... ... WRB ... ... WR3 WR3 CEL
+WRD WRC ... M04 ... ... ... ... CEL WRA L-N WRD WRC ... ...
+
+slot 3  level 4  $B195
+MIN CEL CEL CEL CEL CEL CEL CEL M08 CEL M03 CEL CEL CEL MIN
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M08 CEL
+CEL CEL M15 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL MIN
+CEL CEL CEL CEL CEL m01 CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL
+R-E WAA CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M05 ... L-W
+
+slot 4  level 5  $B21C
+M10 CEL M12 ... M09 ... M12 ... M09 CEL M11 CEL M07 ... R-S
+CEL M08 ... M07 ... M01 CEL M14 ... M05 ... M07 ... M06 MIN
+M11 ... M10 ... M12 CEL M08 ... M07 MIN M00 ... M05 CEL M01
+... M04 CEL M15 ... M14 ... M06 ... M01 CEL M02 CEL M15 ...
+M00 ... M11 CEL M02 ... M12 ... M02 ... M05 ... M06 ... M15
+... M09 ... M03 ... M15 CEL M06 ... M11 CEL M00 ... M11 ...
+M12 ... M04 ... M07 ... M04 ... M03 ... M03 ... M05 CEL M01
+... M11 CEL M14 ... M07 ... M01 CEL M11 ... M01 ... M00 CEL
+L-N ... M12 ... M13 CEL M01 MIN M08 ... M09 CEL M05 ... M04
+
+slot 5  level 6  $B2A3
+L-E ... M00 ... WR5 M07 ... WR4 M12 ... ... ... ... ... PRS
+WRF WRC WRC ... ... ... ... WR5 ... ... py6 ... py0 CEL ...
+MIN ... ... ... ... WRF ... WR5 py0 ... ... MIN ... ... PRS
+WR5 CEL WR8 ... ... WRF ... WR5 CEL ... py4 ... py4 CEL ...
+WR5 ... WRA ... CEL ... ... WRD WRC WR4 ... ... ... ... PRS
+WR5 CEL WRF ... ... CEL ... ... CEL WR5 py5 CEL py0 CEL ...
+WR5 ... ... ... WRA WR3 WR3 ... ... WR5 CEL ... ... ... PRS
+WR5 ... ... ... ... ... ... M01 ... WR5 py6 CEL py1 CEL WAC
+WRF ... M09 ... ... ... ... ... MIN WRD WRC WRC WRC WRC R-N
+
+slot 6  level 7  $B32A
+CEL ... M07 ... WR3 WR1 M12 ... ... ... M12 WRA R-E WAF M11
+WR7 WR3 ... ... CEL ... ... WRF ... WRB ... WRA WR3 WRB ...
+... CEL ... ... ... WRC ... ... CEL WRA ... ... CEL WRA ...
+WRC WRE WR3 ... WRA WR5 ... WRB WR4 ... ... M14 ... WRF ...
+... ... M02 ... ... ... CEL WRA WR7 WR3 ... ... ... WR3 ...
+... ... WRC WRC CEL ... ... ... WR3 ... CEL ... WRA ... ...
+M00 ... ... WR2 WR5 ... WRA ... ... WR5 WRF ... WRA ... M13
+WRC WRC ... ... WR5 CEL WRA ... M03 ... ... ... ... CEL ...
+L-E ... M11 ... WRD WRC WR7 CEL ... ... WRC WRC WRC WRC WRF
+
+slot 7  level 8  $B3B1
+L-S WAA WAF WRF WR3 WR3 WR3 WRB WR5 ... WR3 ... MIN ... F1b
+... WAA R-E WRA CEL CEL CEL WR2 WR1 ... ... ... M13 ... ...
+... WAA WAF WR7 CEL MIN CEL CEL WRB ... ... ... ... ... ...
+... ... WRF WR5 MIN MIN MIN CEL WRA WRC ... ... ... ... ...
+M04 ... PRS ... CEL MIN CEL MIN ... PRS ... ... ... ... M04
+... ... WR3 WR5 MIN CEL MIN CEL WRA WR3 ... ... ... ... M09
+... ... ... WRD WRC WRC WRC WRC WRE ... ... ... ... WA8 WAC
+... ... ... ... ... ... ... ... ... ... ... WAE ... WA3 CEL
+... ... M15 ... MIN M06 MIN ... M12 ... ... WA5 F1a WA8 WAF
+
+slot 8  level 9  $B438
+MIN CEL CEL PRS CEL CEL CEL L-S CEL CEL CEL PRS CEL CEL MIN
+CEL CEL CEL CEL MIN CEL CEL ... CEL CEL MIN CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL M07 CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL m07 CEL CEL CEL CEL CEL CEL CEL m13 CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL M11 CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL MIN CEL CEL WAC CEL CEL MIN CEL CEL CEL CEL
+MIN CEL CEL PRS CEL CEL CEL R-N CEL CEL CEL PRS CEL CEL MIN
+
+slot 9  level 10  $B4BF
+M04 CEL M11 CEL M13 ... M04 ... M14 CEL M08 MIN M08 ... M10
+... M05 ... M07 CEL M10 CEL M09 ... M09 ... M02 ... M05 MIN
+M07 CEL M02 MIN M01 ... M06 ... M12 MIN M06 CEL M02 CEL M01
+... M08 ... M05 ... M14 ... M11 CEL M03 ... M13 ... M10 CEL
+M15 ... M10 CEL M13 ... M13 ... M07 ... M02 ... M01 CEL M11
+... M03 ... M12 ... M04 CEL M03 ... M03 CEL M14 ... M06 ...
+M14 ... M04 ... M14 CEL M03 ... M08 ... M07 ... M12 CEL M11
+... M06 CEL M05 ... M09 ... M03 CEL M06 CEL M05 ... M02 MIN
+L-N ... M04 ... M02 CEL M11 MIN M08 ... M09 CEL M03 ... R-N
+
+slot 10  level 11  $B546
+R-S ... ... ... M12 ... F1a ... CEL ... ... MIN ... MIN ...
+MIN ... CEL WRD WRC ... ... ... WR7 MIN ... ... CEL ... ...
+M03 ... py5 ... WR5 ... ... ... WR5 ... CEL MIN ... ... CEL
+... M05 ... CEL WR1 ... ... ... ... CEL ... ... ... MIN WRA
+WRC WRC WRC WR5 py2 ... M14 ... WR5 ... WR5 ... ... ... WRA
+CEL CEL CEL WR5 ... ... ... ... WR3 ... WRB ... M08 ... WRA
+CEL PRS CEL WRF ... ... WRD ... py5 ... ... ... ... ... WRF
+... ... ... WR5 ... WR5 WRA ... ... WRA WRC ... ... WR3 WRF
+... F1b ... WR5 M14 CEL WRA ... M13 ... ... ... M01 ... L-W
+
+slot 11  level 12  $B5CD
+M03 ... MIN ... CEL ... ... MIN ... ... M06 ... ... CEL ...
+... WRF ... CEL WR3 WR3 WR3 ... M05 CEL ... ... ... MIN CEL
+L-E ... ... ... M11 ... M12 ... ... ... ... M05 ... ... ...
+... MIN ... ... ... ... ... WR4 ... ... F1b ... ... ... M00
+WAF WA5 M09 ... ... CEL ... WR5 PC2 PC5 ... ... MIN ... ...
+CEL ... ... ... ... ... ... WR5 ... ... ... ... ... WA7 WA3
+CEL ... M11 ... PC4 ... ... WRF ... ... M09 ... ... WR5 R-W
+M02 ... ... ... ... ... F1a ... M15 ... CEL ... ... WAD WAC
+MIN ... M14 ... ... MIN ... ... CEL WAC WAC M08 ... ... CEL
+
+slot 12  level 13  $B654
+... CEL ... WRC WRF ... WR5 ... CEL WRC WR7 ... CEL WRF L-S
+m01 ... CEL WR5 ... ... WR5 M11 ... WR5 ... WRE WRC WRF ...
+... ... ... WR5 M09 ... WR5 ... ... WR5 M08 WR8 ... ... M03
+... ... ... WR5 ... ... WR1 WRA ... WRC ... WRA ... WRF WRC
+... WR5 ... ... WRC ... ... WRA WRC WRA ... ... ... WRA WR3
+... WR5 ... ... WR5 py7 ... ... WR5 WRA ... WR2 ... ... M11
+... WRF WRA WR3 WR1 ... ... ... WR5 WRA ... PRS WRA WRB ...
+PC0 WRF WR3 ... M02 ... CEL WRF WR5 WRA ... CEL CEL WRA ...
+R-N WRF ... CEL ... ... WRA CEL M14 WRA ... CEL CEL WRA CEL
+
+slot 13  level 14  $B6DB
+L-S R-E WAA CEL CEL CEL CEL CEL CEL CEL CEL M04 CEL CEL MIN
+... CEL CEL CEL CEL CEL CEL CEL CEL CEL M05 CEL CEL CEL CEL
+M03 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M12 CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M09
+CEL CEL CEL CEL CEL CEL m03 CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL PRS CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+MIN CEL CEL M09 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN
+
+slot 14  level 15  $B762
+M04 CEL m11 ... M10 ... M01 ... M07 CEL M11 ... m08 CEL M01
+... M10 ... M07 CEL M06 CEL M09 ... M01 ... M11 ... M03 ...
+M12 ... M01 ... M07 ... M06 ... M03 MIN M03 CEL M08 CEL M07
+CEL M01 ... M04 ... M02 MIN M12 CEL M04 ... M09 ... M10 CEL
+M14 ... M13 CEL M03 ... R-N ... M02 ... m02 ... M02 ... M10
+... M15 ... M05 ... M01 CEL M10 ... M08 ... M11 CEL M15 ...
+M10 ... M00 ... M02 ... M11 ... M08 CEL M03 ... M02 ... M00
+... M05 CEL M07 CEL M12 ... M11 CEL M10 ... M09 CEL M13 CEL
+L-N ... M06 ... m06 CEL M06 MIN M09 ... M14 CEL M04 MIN M02
+
+slot 15  level 16  $B7E9
+WR5 ... ... WRA CEL ... CEL WR5 F0b WAF F3a ... WAE MIN CEL
+WR5 ... CEL WR2 PC2 ... ... WR5 ... F1b ... ... PRS CEL MIN
+WR5 WRA ... WR8 WRA ... WRA WR1 WRF WRC ... CEL WAB MIN CEL
+WR5 WRA ... WRA ... ... WRA ... ... WR5 ... MIN WA2 WAF WAF
+WR5 WRA ... WRE ... ... WRA WRC ... WR5 M10 ... ... PC4 R-W
+WR5 CEL ... WR5 ... ... ... WRA ... WRB WRC WR7 WR3 WR3 WRB
+WR5 ... CEL WR5 ... ... ... ... ... WRA L-E ... M12 ... F1a
+F2a ... ... WR5 PRS ... ... M03 ... WRA ... ... ... ... WRA
+... M03 ... WRD WRC WRC ... ... CEL WRA F0a WRC F3b WRC F2b
+
+slot 16  level 17  $B870
+R-E PY4 ... PY0 py6 ... ... ... CEL ... ... ... ... M15 ...
+... ... CEL ... ... ... MIN PY2 PY2 PY2 CEL ... py4 ... PY0
+MIN PY4 PY4 PY4 ... M09 ... ... ... ... ... M04 ... ... PY0
+PY6 ... ... ... ... ... ... py4 ... M07 ... ... CEL ... ...
+... ... ... M01 ... PY7 ... ... CEL ... ... ... PY2 PY2 MIN
+... py5 ... ... ... PY7 ... M04 ... PY0 PY0 CEL ... ... ...
+CEL ... ... ... ... PY7 ... ... ... ... PY0 ... ... M03 CEL
+PY7 CEL ... ... MIN ... ... ... py5 ... ... ... ... ... ...
+PY7 ... PY0 L-N ... ... CEL ... ... MIN PY6 CEL M02 ... PY7
+
+slot 17  level 18  $B8F7
+L-E ... ... M11 WRA WR1 CEL WR2 WRF WR5 R-E WRA CEL ... M15
+WR3 WRB WRD ... WRE ... M15 ... WRF CEL ... WR2 WRF WRD ...
+M02 ... ... ... WRB ... ... ... WR3 ... ... CEL ... WRF ...
+... ... ... M03 ... CEL ... ... M13 ... WRF WRF ... WRB ...
+... WR7 ... ... WR8 WRF ... WR4 ... ... ... WRB WRD ... CEL
+... WR5 M15 ... WRE WR7 WR3 WR1 CEL ... M00 ... WRF ... ...
+CEL WRD WRC ... ... ... M13 ... ... WRD ... ... WRF ... M15
+WRE WR7 CEL ... WRF WRD WRC WR4 ... WRB ... ... CEL ... ...
+WRF WR5 M03 ... CEL ... CEL ... M13 WRA WRC WRC WRC WRC WRE
+
+slot 18  level 19  $B97E
+CEL CEL CEL CEL MIN CEL WRA WRF L-E ... ... M02 CEL CEL MIN
+M08 CEL CEL CEL CEL MIN WRA CEL MIN CEL CEL CEL CEL CEL CEL
+CEL M01 CEL CEL WR5 R-W WRF CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M01
+CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL CEL
+CEL CEL m10 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL M03 CEL CEL CEL CEL MIN CEL CEL CEL
+MIN CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M05
+
+slot 19  level 20  $BA05
+M11 CEL M12 ... M12 ... M15 ... M03 CEL M06 ... M06 MIN M01
+... M13 ... M00 ... M13 CEL M08 ... M14 ... M04 CEL M00 ...
+L-N ... M14 ... M01 ... M09 ... M11 MIN M00 CEL M04 CEL M09
+... M00 CEL M12 ... M10 ... m04 ... M04 ... M08 ... M14 ...
+R-S ... M10 CEL M10 ... m11 MIN m11 CEL M06 ... M13 CEL M10
+MIN M07 ... M14 MIN M15 CEL m00 ... M12 CEL M10 ... M06 CEL
+M15 ... M09 ... M01 ... M10 ... M11 ... M03 ... M07 ... M15
+... M07 CEL M08 CEL M07 ... M15 CEL M13 ... M03 CEL M07 CEL
+M12 MIN M08 MIN M05 CEL M10 MIN M01 ... M06 CEL M02 ... M02
+
+slot 20  level 21  $BA8C
+PRS ... ... ... ... ... ... ... ... ... ... ... CEL WAA R-W
+... ... ... ... ... ... ... ... PRS ... ... CEL ... ... ...
+M06 ... ... PRS ... CEL ... CEL ... CEL ... ... ... M08 ...
+... ... ... ... ... ... WAF WAF WAF ... ... ... ... ... CEL
+... CEL ... ... ... ... ... ... ... ... ... ... ... ... ...
+... ... PRS ... ... ... ... ... ... ... PRS ... ... CEL ...
+... ... ... ... ... ... ... PRS ... ... ... M02 ... ... ...
+... ... ... ... M09 ... ... ... ... ... ... ... ... PRS ...
+M06 ... ... CEL ... ... ... L-N ... ... CEL ... ... ... CEL
+
+slot 21  level 22  $BB13
+WRF WR3 WR3 WR3 WR3 WR3 WR5 WAF WR3 WR3 WRF ... py2 CEL py5
+... ... ... ... F1b ... WR5 ... WRA ... ... ... CEL CEL CEL
+PRS ... PRS ... ... M07 WR5 M00 WRA ... ... ... py1 CEL py0
+CEL ... ... ... WRA WR3 WR5 ... WRA ... M15 ... ... ... CEL
+PRS CEL PRS ... WRA R-N WRF L-N WRF ... ... ... py5 ... py4
+CEL ... ... ... WR2 WR3 WR3 WR3 WR1 ... ... ... ... ... CEL
+PRS CEL PRS ... M00 WRA WRC WR7 ... ... WRF ... py4 ... py1
+CEL ... CEL ... ... ... ... WR5 M03 ... WRF ... ... ... ...
+PRS CEL PRS CEL ... ... F1a ... ... ... WRF WRC WRC WRC WRE
+
+slot 22  level 23  $BB9A
+WAF CEL ... M10 ... CEL ... ... ... CEL ... M09 ... CEL WAF
+WAF ... CEL ... PC2 ... WAF MIN WAF ... PC6 ... CEL ... WAF
+WAF WAB ... ... ... ... ... PC4 ... ... ... ... ... WA7 WAF
+WA2 WAB WA4 MIN ... ... PC2 ... PC6 ... ... MIN WA8 WA7 WA1
+PY4 WAA L-E ... PRS ... ... m12 ... ... PRS ... MIN WA5 PY4
+WA8 WAE WA1 MIN ... ... PC6 ... PC2 ... ... MIN WA2 WAD WA4
+WAF WAE ... ... ... ... ... PC4 ... ... ... ... ... WAD WAF
+WAF ... CEL ... PC6 ... WAF MIN WAF ... PC2 ... CEL ... WAF
+WAF CEL ... M10 ... CEL ... R-N ... CEL ... M07 ... CEL WAF
+
+slot 23  level 24  $BC21
+MIN CEL CEL CEL CEL CEL CEL L-S CEL CEL CEL M02 CEL CEL MIN
+CEL CEL CEL CEL CEL CEL CEL ... CEL CEL CEL CEL CEL CEL CEL
+M11 CEL CEL CEL CEL CEL CEL M11 CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL m07 CEL CEL WA7 WA3 WAB CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL WA5 R-N WAA CEL M02 CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL WAD WAC WAE CEL CEL CEL CEL CEL CEL
+M00 CEL CEL CEL CEL CEL CEL WAF CEL CEL CEL CEL CEL CEL M03
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL m14 CEL
+MIN CEL CEL CEL CEL CEL m02 CEL CEL CEL CEL CEL CEL CEL MIN
+
+slot 24  level 25  $BCA8
+M06 CEL M11 CEL M05 ... M11 ... M00 MIN M02 ... M03 CEL M10
+... M05 MIN M14 ... M00 CEL M00 ... M09 ... M03 ... M12 MIN
+M01 MIN M04 ... M15 CEL M00 ... M12 MIN M07 CEL M04 CEL M13
+... M15 ... M14 ... M15 ... M02 ... M09 CEL M03 ... M10 CEL
+L-E ... M13 CEL M03 ... M01 MIN M09 ... M14 ... M15 MIN R-W
+... M01 ... M07 ... M13 CEL M03 ... M02 ... M15 ... M00 ...
+M10 ... M03 ... M08 ... M15 ... M00 CEL M15 ... M02 CEL M05
+... M02 MIN M12 CEL M03 ... M08 CEL M12 ... M13 MIN M00 ...
+M09 CEL M08 ... M15 CEL M03 MIN M15 ... M00 CEL M02 CEL M13
+
+slot 25  level 26  $BD2F
+R-E WAA ... F1a ... ... CEL ... ... M08 WR3 WR3 WR3 WR3 CEL
+WAF WA3 WA1 ... WA2 WA3 WAF WAF WA5 ... pc2 CEL pc6 ... WRA
+MIN M04 CEL PRS CEL M09 MIN WAA WA5 pc2 ... ... ... M10 WR2
+M06 CEL M06 CEL M05 CEL M06 WAA ... ... WR8 WRC WRC WRC WR4
+CEL M07 CEL M06 CEL M08 CEL WAA ... ... WRE ... ... CEL WRD
+M13 CEL M12 MIN M02 CEL M11 WAA M13 ... ... ... ... ... WRA
+MIN M13 MIN M07 CEL M10 CEL WAA CEL WRC WRC WRC WR4 ... WRA
+M06 CEL M04 CEL M15 MIN M04 WAA ... ... ... ... ... ... WRE
+CEL M09 MIN M07 CEL M02 MIN WAF F1b ... ... ... M04 ... L-W
+
+slot 26  level 27  $BDB6
+WA7 WA3 WA1 M09 ... M12 WA2 WA3 WA1 M10 ... M06 WA2 WA3 WAB
+WA5 PC6 ... ... ... ... ... R-S ... ... ... ... ... PC2 WAA
+WA5 ... ... ... ... ... ... WAC ... ... ... ... ... ... WAA
+... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
+m12 m04 m10 m08 m00 m02 m00 m00 m10 m09 m02 m03 m04 m12 m14
+... ... ... ... ... ... MIN ... MIN ... ... ... ... ... ...
+WA5 ... ... ... ... ... ... ... ... ... ... ... ... ... WAA
+WA5 ... ... ... ... ... ... ... ... ... ... ... ... ... WAA
+CEL CEL CEL CEL CEL CEL CEL L-N CEL CEL CEL CEL CEL CEL CEL
+
+slot 27  level 28  $BE3D
+M03 M11 ... ... F0b WRA ... M05 M00 ... ... ... M01 WRA CEL
+M03 M00 ... ... ... WRA ... M08 M00 ... ... F2b WR8 WR6 CEL
+WRC WRC ... ... CEL WRA ... ... ... F1b ... ... ... CEL CEL
+CEL WR2 ... ... ... WR7 WR3 WRB WRC WRE WR3 WR3 WR3 WR3 WR3
+R-E MIN ... ... M14 WR5 F2a ... ... WR5 F1a CEL CEL CEL CEL
+WR3 WR3 WR3 WR3 WR3 M13 M11 ... ... WR5 CEL ... ... ... ...
+MIN CEL ... WRA ... M14 M15 ... ... WR5 MIN ... ... ... ...
+WRA WR3 WR3 WR3 ... ... ... ... ... WR5 CEL ... ... M03 M14
+L-E ... M10 ... ... ... ... ... ... WR5 F0a ... ... M12 M08
+
+slot 28  level 29  $BEC4
+M08 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL M08 CEL CEL CEL M06 CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL M15
+CEL MIN CEL CEL MIN CEL CEL CEL MIN m03 MIN CEL CEL CEL CEL
+R-S CEL CEL MIN CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL
+WRC CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+M14 CEL CEL CEL CEL CEL M01 CEL CEL CEL CEL CEL M00 CEL CEL
+... CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M05 CEL
+L-N CEL M05 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+
+slot 29  level 30  $BF4B
+M05 CEL M13 MIN M11 MIN M03 MIN M12 CEL M07 MIN M02 MIN M08
+MIN M04 ... M14 CEL M14 CEL M11 ... M14 ... M05 CEL M08 MIN
+M03 CEL M09 ... M01 ... M09 ... M04 CEL M11 CEL M07 CEL M14
+CEL M05 CEL M07 ... M08 ... M09 CEL M07 ... M05 ... M02 MIN
+M01 ... M09 ... M01 ... L-W ... R-E MIN M10 ... M00 ... M09
+MIN M15 CEL M02 ... M05 CEL M06 ... M07 CEL M01 ... M03 MIN
+M09 ... M09 ... M03 ... M01 ... M12 ... M07 ... M07 CEL M02
+MIN M02 CEL M13 CEL M10 ... M14 CEL M06 ... M11 CEL M07 CEL
+M02 CEL M13 MIN M01 MIN M14 MIN M05 MIN M11 CEL M09 MIN M10
+
+slot 30  level 31  $BFD2
+... WR3 WR3 WRB L-S WAF M05 ... ... ... ... ... M04 WRA MIN
+CEL WRF WRF WRC ... WAF ... WAF ... ... ... ... ... WRA CEL
+... ... ... ... M03 WAF F1b WAF F2b ... ... ... M15 WRA CEL
+WR3 WR3 WR3 WR5 ... WAA R-N WA5 ... ... ... ... ... WRA CEL
+MIN CEL CEL F1a MIN WA2 WA3 WA1 ... CEL ... ... ... ... py4
+CEL CEL CEL PRS F2a WRC ... ... ... pc3 ... pc4 ... ... ...
+MIN CEL CEL CEL CEL WRA ... ... ... ... ... CEL ... CEL ...
+CEL MIN CEL CEL CEL WRA ... ... M05 ... pc4 ... pc0 ... ...
+MIN CEL MIN CEL MIN WRA ... M07 ... ... ... ... ... ... M09
+
+slot 31  level 32  $C059
+CEL ... ... WR9 ... WR1 M00 ... WR1 ... WR4 ... L-E ... M10
+... WR2 MIN WR4 WR2 ... ... WR4 CEL WR1 ... MIN WR6 WR8 ...
+... M04 ... ... WR2 ... WR4 ... WR2 ... WR9 ... ... CEL ...
+WR5 WR4 WR4 WR1 CEL ... ... WR6 ... WR1 ... ... WR2 ... ...
+... MIN ... ... WR9 ... WR8 ... ... ... M11 ... CEL WR2 MIN
+WR4 WR6 CEL WR8 CEL ... ... MIN ... WR1 WR8 ... WR1 M07 ...
+CEL ... WR8 MIN WR8 WR2 ... WR2 ... ... ... WR8 WR4 ... WR2
+MIN M11 WR2 ... ... ... M08 ... WR9 WR2 WR8 CEL WR4 WR1 M09
+M01 ... WR2 CEL WR1 CEL ... MIN R-W ... CEL ... MIN CEL ...
+
+slot 32  level 33  $C0E0
+R-S WR3 WR3 WR3 WR3 WRB MIN ... ... ... ... ... M11 ... WRF
+WA3 CEL pc2 CEL MIN WRA ... M10 ... ... ... ... ... ... WRA
+PRS ... ... MIN MIN WRA ... ... WRC WRC WR5 ... ... ... WRA
+... CEL pc1 MIN pc7 WRA CEL ... ... CEL ... ... WR7 PRS WR3
+PRS ... ... ... ... WR2 WR3 WR1 ... ... CEL ... WR5 CEL CEL
+... CEL pc5 CEL pc5 ... CEL WRA ... WRF ... ... WR1 CEL CEL
+PRS ... ... MIN ... ... pc6 WRA ... WRF ... ... ... MIN MIN
+CEL CEL PRS ... pc6 ... ... WRA ... ... ... ... WR3 WR3 WRF
+CEL CEL ... ... ... ... M11 WR2 ... M06 WRA ... M14 ... L-W
+
+slot 33  level 34  $C167
+MIN CEL M08 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN R-W
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN
+CEL CEL CEL CEL CEL CEL CEL CEL CEL m15 CEL CEL CEL CEL CEL
+CEL CEL CEL CEL M00 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M11 CEL MIN
+CEL M05 CEL CEL CEL CEL L-S CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL ... CEL CEL CEL CEL CEL CEL CEL CEL
+MIN CEL CEL CEL CEL CEL M14 CEL CEL CEL CEL CEL CEL CEL MIN
+
+slot 34  level 35  $C1EE
+M10 MIN M07 CEL M10 ... M07 MIN M02 ... M13 ... M11 ... L-W
+CEL F1b ... M00 ... M04 CEL M09 ... M05 ... M06 CEL M10 ...
+M15 CEL M09 ... M04 ... M03 ... M08 ... F2b ... M14 ... M02
+MIN M05 ... M06 CEL M00 MIN M07 CEL M05 ... M00 ... M09 CEL
+M05 MIN M03 ... M10 ... M13 ... M07 ... M15 CEL M07 ... M14
+... M10 CEL M08 ... M14 ... M04 MIN M02 ... M05 ... M06 MIN
+M09 CEL M02 ... F2a MIN M02 CEL M06 ... M15 ... M11 CEL M12
+MIN M14 ... M09 ... M05 ... M15 CEL M04 ... M01 ... F1a MIN
+R-N ... M05 CEL M07 CEL M15 ... M15 MIN M11 CEL M04 CEL M05
+
+slot 35  level 36  $C275
+R-S WAA WA3 WAB CEL WR5 M05 ... ... CEL CEL CEL WA7 WA3 WA3
+WAC WAE M06 WAA CEL WR5 ... ... M10 WA3 WAB L-E ... ... M04
+F1b ... ... ... ... ... ... ... PC2 ... ... ... ... ... ...
+M05 ... ... ... PY4 PY4 ... ... CEL PC2 ... ... M09 ... WA7
+... ... ... ... ... ... ... PY5 ... ... ... WRC WRC WRC WA5
+MIN PC3 ... F2a F1a ... ... ... F2b ... ... CEL CEL CEL WA5
+... CEL ... ... ... ... ... WRC WRC WRC MIN CEL m04 CEL WA5
+WA5 ... WAF WAF M12 ... ... WR5 CEL CEL WR3 CEL CEL CEL WA5
+WAF ... CEL CEL pc1 ... M09 WR5 CEL CEL PRS MIN WA7 WA3 WA1
+
+slot 36  level 37  $C2FC
+WRF WR3 WR3 WR3 ... MIN ... CEL WRE ... WRB ... M05 ... L-W
+... CEL ... ... ... ... M06 ... WR5 CEL WRA ... ... WR3 WR3
+M10 ... WRB ... WRF ... ... ... WR5 ... WRA WR4 ... M04 ...
+... WRB WRA ... CEL ... MIN ... ... ... CEL WR3 WR3 ... ...
+... MIN ... M03 ... WRC PY7 ... CEL ... ... ... M06 ... ...
+... WRC WRC M02 ... ... PY7 ... ... WR6 WR5 WR8 WRC WR7 F1b
+... WR5 F1a ... ... WR5 CEL ... ... WR3 ... WRE ... CEL MIN
+MIN WRD ... ... ... WRD ... ... ... ... WR7 WR3 ... WRC WRE
+R-N WRF ... ... M13 ... ... ... M08 ... WR5 M12 ... ... CEL
+
+slot 37  level 38  $C383
+WA7 WA3 WA3 WA1 WRF WR3 WR3 WR3 WR3 WR3 WR3 WR5 WA3 WAB R-S
+F2b ... M06 ... PRS CEL CEL MIN MIN CEL MIN WR5 F1b WAA WAC
+... ... ... ... WRB CEL CEL CEL CEL MIN CEL WRB WRC ... ...
+... PC4 PC4 PC4 WRA MIN MIN CEL MIN CEL MIN CEL PRS ... M02
+CEL WR4 ... ... WRE CEL CEL MIN MIN MIN CEL CEL WR7 ... ...
+CEL WR5 M08 ... PRS CEL CEL CEL MIN CEL MIN CEL WRD ... ...
+CEL WR5 ... ... WR3 WR5 CEL CEL CEL MIN CEL CEL PRS ... M04
+MIN ... F2a ... ... WR3 WRD MIN CEL CEL CEL CEL WR7 ... ...
+WAD WAC WAC WAC WA4 F1a WRA WRC WRC WRC WRC WRC WR5 WAE L-N
+
+slot 38  level 39  $C40A
+MIN CEL CEL PRS CEL CEL CEL CEL M08 CEL M02 CEL CEL CEL MIN
+CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL py6 CEL CEL CEL CEL CEL CEL CEL CEL CEL M01 CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+M02 CEL CEL CEL CEL CEL CEL PRS CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL M03 CEL CEL CEL CEL M03
+MIN CEL CEL CEL M06 CEL CEL CEL CEL CEL py3 CEL CEL CEL ...
+R-N MIN CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL L-N
+
+slot 39  level 40  $C491
+R-E MIN M08 ... M01 ... M01 MIN M13 CEL M02 ... M07 ... L-S
+MIN M07 ... M14 CEL M08 CEL M14 ... M09 ... M11 CEL M13 ...
+M03 CEL M05 ... M10 ... M06 ... M10 ... M14 ... M03 ... M15
+CEL M08 ... py0 CEL M01 ... py0 CEL M02 ... py2 ... M05 ...
+M00 ... M09 CEL M07 ... M04 ... M12 ... M11 CEL M08 ... M06
+CEL M08 ... py6 ... M15 CEL py0 ... M12 ... py5 ... M08 MIN
+M03 CEL M06 ... M00 MIN M13 ... M04 CEL M03 ... M03 CEL M01
+MIN M04 ... M15 CEL M06 ... M03 CEL M08 ... M13 MIN M11 MIN
+M15 CEL M05 MIN M12 CEL M12 ... M02 MIN M03 CEL M09 CEL M09
+
+slot 40  level 41  $C518
+L-E ... M03 ... ... ... M02 ... WR5 CEL M01 WRA CEL F1b CEL
+WRF WRC ... ... WR3 WR5 ... ... WR5 WRA ... WRA CEL CEL MIN
+WRF ... ... ... ... ... py5 ... WRB ... ... WRF CEL PRS CEL
+WR5 ... PRS ... WRD ... WRC ... ... ... ... WRA CEL CEL CEL
+WR5 ... ... ... WRA ... WRA ... M04 ... py2 WRA WR3 WR3 WR3
+WR5 MIN ... ... ... CEL ... ... ... ... WR8 ... CEL CEL CEL
+CEL ... ... MIN CEL ... WRA ... ... ... WRA ... CEL m06 CEL
+... ... CEL ... ... MIN WRE ... ... ... WR3 WRB CEL CEL CEL
+R-E MIN ... CEL CEL ... M09 ... F1a ... M06 WRA WRC WRC WRC
+
+slot 41  level 42  $C59F
+WAC CEL ... M08 WA2 WA3 CEL ... ... MIN ... ... M07 ... MIN
+WA3 WAB ... ... ... M01 ... ... F1a ... ... ... ... ... M01
+R-E WAA ... ... M04 ... ... ... ... ... PC4 ... M08 ... CEL
+WAC WAE CEL WRC ... WR8 WRF WR5 ... ... ... ... ... ... CEL
+WA3 ... MIN WRF WR3 WR3 ... ... ... CEL ... ... M03 WAA WAF
+M14 ... ... ... F1b ... ... WR5 ... ... ... ... ... MIN ...
+... ... ... M10 ... ... ... WR5 M11 ... M14 ... ... ... M06
+CEL MIN ... ... ... CEL ... WRC WRC WRC WRC CEL ... WAF ...
+WAF CEL ... ... M15 MIN WRC ... WRC ... CEL ... MIN ... L-N
+
+slot 42  level 43  $C626
+MIN WAA CEL ... M13 WAA CEL WR5 F1b CEL PRS CEL MIN WRF L-S
+CEL MIN MIN WAF WAC ... CEL WRD WRC WRE ... WRD WRC WRF ...
+M10 ... ... ... ... ... PRS ... ... ... M08 ... ... ... M13
+CEL MIN MIN WAF WA3 ... CEL WRF ... WRA ... ... ... WRF WRC
+F2b WAA CEL ... M02 WAA CEL WRF WR4 WRA ... ... MIN WR5 ...
+WAC WAE WAC WAE WA3 WA3 M03 CEL WR5 WRA ... ... MIN WR5 F2a
+MIN CEL CEL ... F1a MIN CEL MIN WR5 WRA WR4 PRS WRA WR5 ...
+CEL CEL ... WR3 WR3 WR3 WR3 WR3 WR1 ... WR5 CEL CEL WRB WA3
+... ... PRS ... WRC WRF WRC ... M00 ... WR5 CEL MIN WRA R-N
+
+slot 43  level 44  $C6AD
+M12 CEL CEL CEL CEL CEL CEL M14 CEL CEL CEL CEL CEL CEL M10
+CEL CEL CEL MIN CEL CEL CEL ... CEL CEL CEL MIN CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL ... CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL L-N CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL M07 CEL MIN R-S MIN CEL M07 CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL WRC CEL CEL CEL CEL CEL CEL CEL
+CEL MIN CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+m03 CEL CEL CEL CEL CEL CEL M14 CEL CEL CEL CEL CEL CEL m09
+
+slot 44  level 45  $C734
+M03 MIN m07 CEL M12 ... M06 MIN m10 ... M15 CEL M10 ... L-S
+MIN M13 ... M10 ... M07 CEL M13 ... M14 ... M09 CEL M00 ...
+M10 CEL M07 CEL M01 ... M08 ... M11 CEL m03 ... M00 ... M10
+MIN M15 ... M15 CEL M08 ... M08 MIN M00 ... M01 ... M10 ...
+M15 ... M00 ... m10 ... M00 MIN R-W MIN M05 CEL M14 ... m08
+CEL M13 CEL M09 ... M07 ... M02 MIN M05 ... M01 ... M00 CEL
+M07 CEL M06 ... M14 MIN M10 ... M13 ... m04 ... M02 MIN M11
+MIN M05 MIN M09 ... M04 ... M05 CEL M07 ... M08 CEL M07 MIN
+M03 CEL m00 ... M08 CEL M08 CEL m07 ... M03 CEL m03 CEL M07
+
+slot 45  level 46  $C7BB
+L-E ... ... M06 ... WR5 M03 ... MIN WR3 WR3 WRB ... M05 ...
+... ... ... ... ... WR5 ... ... PRS CEL CEL WRA ... ... F2b
+... F0a ... F2a ... WR5 ... ... ... CEL CEL WRA CEL ... WRA
+WRD WRC WRE WR3 WR3 WR5 F0b WRA ... CEL CEL WRA ... CEL ...
+R-E WAF PRS ... CEL WR5 ... WRA WR5 CEL CEL WR7 ... WRF WRF
+WA7 WA3 WAB WA4 ... WRB WRF WRF WR5 CEL CEL WR5 ... ... WRA
+CEL CEL MIN WAD ... ... ... WRA WRF WRF WRF WR1 ... WR5 WRA
+MIN PRS CEL PRS ... M13 ... ... ... ... ... ... CEL MIN WRA
+CEL CEL MIN WAF ... ... ... M14 CEL MIN M08 ... ... MIN WRA
+
+slot 46  level 47  $C842
+PY7 MIN M10 ... PY0 PY0 ... ... CEL MIN ... ... PY0 ... R-S
+MIN ... ... ... ... ... ... py0 ... ... MIN ... ... CEL PY0
+L-E ... M04 ... PY0 PY0 ... ... ... ... ... py5 ... ... M08
+... ... ... ... ... ... ... M07 ... PY7 ... ... ... py6 ...
+MIN PY2 PY2 ... ... ... CEL ... ... PY7 ... M10 ... CEL ...
+... ... CEL ... PY3 ... ... py5 ... CEL ... ... ... ... PY6
+... py5 ... ... ... ... ... ... ... M08 ... PY4 PY4 PY4 MIN
+CEL ... py5 ... M10 ... PY2 PY2 MIN ... ... ... CEL ... ...
+MIN M01 ... ... ... ... CEL ... ... ... ... PY0 ... M14 CEL
+
+slot 47  level 48  $C8C9
+WR7 WR3 WR3 WR3 WR3 WR5 M08 ... CEL WRF CEL M02 ... WRA WRF
+... ... CEL ... ... WRD ... WR2 WR3 WRB WRF ... CEL WRE L-S
+CEL ... WRF ... ... WRB ... ... M09 ... ... ... WR3 WRB ...
+WR3 WRF WRF ... M02 ... CEL WR8 WRC WRE WR7 ... M15 WRA ...
+M07 ... WR3 WRD ... ... ... WR2 MIN WRF WR1 ... ... WRE ...
+... WRC ... WRF WRF ... M02 ... ... CEL ... ... ... ... ...
+... WRF ... CEL ... ... WRC ... ... ... WRD ... ... ... M11
+... WRB WR3 WR3 WR3 WRF WRF ... M14 ... WR7 ... WRB WRD WRC
+M00 ... ... ... CEL MIN WRA WR4 CEL WR8 WR5 M13 ... WR5 R-W
+
+slot 48  level 49  $C950
+M09 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL M00 CEL CEL CEL m07 CEL CEL CEL
+CEL CEL CEL m04 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL CEL CEL
+M01 CEL CEL CEL CEL CEL CEL WAF CEL CEL CEL CEL CEL CEL M10
+CEL CEL CEL CEL CEL CEL MIN WAF MIN CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL MIN WAF MIN CEL CEL CEL M05 CEL CEL
+MIN CEL CEL CEL M04 ... L-W WAF R-E MIN CEL CEL CEL M08 MIN
+
+slot 49  level 50  $C9D7
+M09 CEL M13 ... M06 ... M00 ... M05 CEL M15 ... M12 MIN M14
+... M01 MIN M14 CEL M12 CEL M02 ... M00 ... m08 CEL M12 ...
+M15 CEL pc3 ... M10 ... M08 ... M09 MIN m05 CEL m09 CEL M09
+... M01 CEL M15 ... M11 ... m08 ... M04 ... m11 ... M14 ...
+R-S ... M11 CEL M07 ... m15 MIN m15 CEL M12 ... M14 CEL L-N
+MIN M07 ... m03 MIN M14 CEL m04 ... M08 CEL M08 ... M05 CEL
+M15 ... m12 ... m10 ... M05 ... M09 ... M02 ... pc0 ... M15
+... M06 CEL m00 CEL M09 ... M03 CEL M03 ... M08 ... M03 CEL
+M12 MIN M10 MIN M02 CEL M09 MIN M00 ... M06 CEL M08 MIN M15
+
+slot 50  level 51  $CA5E
+WR3 WR3 WR3 WR3 WR3 WR3 WR1 M01 WR8 WRE CEL M01 MIN M12 CEL
+CEL ... ... ... ... ... ... ... WRE MIN M05 CEL M04 CEL M15
+MIN ... WR2 WR3 WR3 WR3 WRB ... WR5 M14 CEL M14 CEL M08 MIN
+WR5 ... ... ... ... ... ... ... WR5 CEL M02 MIN M07 CEL M05
+WRB CEL ... ... WR7 WR3 WR5 M00 ... M05 CEL M00 CEL M14 CEL
+WR2 WR3 WR3 WR3 WR1 ... ... ... ... ... M04 CEL M00 CEL M00
+WR4 M07 ... ... ... PC0 WA8 PRS WA4 PC0 ... M10 CEL M05 MIN
+WR5 ... py0 CEL py4 ... WA7 ... WAB ... WR8 WRC WRC WRC WRC
+CEL WRC WRC WRC WRC CEL WA5 L-N WAA M07 ... CEL ... WA5 R-W
+
+slot 51  level 52  $CAE5
+PRS CEL PRS ... PRS CEL PRS CEL PRS CEL PRS ... PRS CEL PRS
+CEL ... CEL ... ... ... ... ... ... ... ... ... CEL ... CEL
+PRS CEL PRS ... PRS ... PRS ... PRS ... PRS ... PRS CEL PRS
+CEL ... ... ... ... ... ... ... ... ... ... ... ... ... CEL
+L-E ... ... M01 ... ... ... ... ... ... ... M02 ... WAA R-W
+CEL ... ... ... ... ... ... ... ... ... ... ... ... ... CEL
+py5 CEL py6 ... py4 ... py0 ... py7 ... py5 ... py0 CEL py1
+CEL ... CEL ... ... ... ... ... ... ... ... ... CEL ... CEL
+py2 CEL py7 ... py7 CEL py1 CEL py5 CEL py0 ... py3 CEL py6
+
+slot 52  level 53  $CB6C
+WR5 MIN CEL M13 ... ... ... ... pc7 CEL MIN WRA WRF WRF WRF
+WRF WR3 WR3 ... ... WA3 WAF WRF WRC WRC WRC WRE ... ... WRA
+... ... ... ... ... ... F1a ... ... ... ... ... M06 ... WRA
+M14 ... WAF ... ... ... WAF WRF WRF WRF WRF WRF ... WRF WRA
+WAC ... WRC ... ... ... ... WRF WR4 ... ... ... ... WRF WRA
+WA3 ... WR3 WRF WRF WR5 m08 CEL WR5 WRA WRF WRF WRF WR7 WRA
+M06 ... F1b MIN CEL WR5 CEL CEL WR5 WRA WR4 MIN WRB WR5 M03
+... ... WRC WRF WRF WRF WRF WR3 WR1 ... WR5 CEL CEL WRB WAF
+L-N ... WRF MIN CEL CEL ... M14 WAF M04 ... PRS CEL MIN R-N
+
+slot 53  level 54  $CBF3
+L-S MIN CEL CEL CEL CEL M01 CEL CEL CEL CEL CEL CEL CEL MIN
+... CEL CEL CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL
+M01 CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL M13
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL M08 CEL CEL CEL m13 CEL CEL M00 CEL CEL CEL
+CEL CEL CEL CEL CEL WR7 WR3 WRB CEL CEL CEL CEL CEL CEL CEL
+CEL MIN CEL CEL CEL WR5 R-N WRA CEL CEL CEL CEL CEL CEL CEL
+CEL CEL M12 CEL CEL WRD WRC WRE CEL MIN CEL CEL MIN MIN CEL
+
+slot 54  level 55  $CC7A
+M04 CEL m00 CEL m02 CEL M15 ... M10 ... M01 CEL M12 CEL M14
+MIN M00 MIN M06 ... M09 CEL M06 CEL M03 ... M09 MIN M01 CEL
+M07 CEL m11 ... m14 ... M00 ... M00 CEL M03 ... M05 ... M15
+MIN M07 ... M04 ... M15 CEL M12 ... M11 ... M10 ... M07 ...
+R-E MIN m09 ... m06 ... M13 MIN M06 ... M09 ... M15 ... L-W
+MIN M07 ... M04 ... M11 CEL M12 ... M14 ... M01 ... M01 ...
+M15 CEL m01 ... m03 ... M15 ... M11 CEL M08 ... M02 ... M02
+MIN M10 MIN M08 ... M11 CEL M09 CEL M03 ... M02 MIN M05 CEL
+M01 CEL m00 CEL m13 CEL M02 ... M06 ... M08 CEL M04 CEL M06
+
+slot 55  level 56  $CD01
+CEL ... ... ... ... ... M11 ... ... ... ... CEL ... WAF R-W
+... PRS ... ... ... ... ... ... ... ... M05 ... ... ... ...
+... ... ... M00 ... ... ... CEL PRS ... ... ... ... CEL ...
+... CEL ... ... ... ... ... ... ... ... ... ... PRS ... CEL
+L-E ... ... ... PRS ... ... ... ... ... WAF CEL ... ... ...
+... ... ... CEL ... ... ... M05 ... ... ... ... ... ... ...
+... M05 ... ... ... ... ... ... ... CEL ... PRS ... ... M09
+... ... ... CEL ... ... PRS ... ... ... ... ... ... CEL ...
+CEL ... PRS ... ... ... ... ... M11 ... CEL ... ... ... PRS
+
+slot 56  level 57  $CD88
+M11 M01 M11 ... F0a ... ... WR3 WR3 WR3 ... ... M12 ... L-W
+M15 M10 M12 ... CEL WRA ... M02 M09 M05 ... MIN WRC WRC WRC
+... ... ... ... MIN WR2 WR5 M02 M06 M05 WRA ... CEL ... F2a
+WR3 WR3 WRB ... CEL ... WRD WRC WRC WRC WRE WRC WRC WRC WRC
+M06 M07 WRA CEL M14 ... ... MIN R-W WRF ... ... CEL ... MIN
+M11 M13 WRA WRC WRC WRC WRC WR7 WR3 WRB CEL ... ... ... ...
+... ... CEL MIN ... ... ... ... F1a WRA ... MIN ... M06 M05
+F0b ... ... F2b ... ... M00 M13 ... WR7 CEL ... ... M09 M14
+CEL WRA CEL ... M13 ... M12 M00 ... WR5 F1b CEL ... M13 M02
+
+slot 57  level 58  $CE0F
+CEL CEL CEL CEL CEL CEL CEL L-S CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL ... CEL CEL CEL CEL CEL CEL CEL
+CEL CEL CEL CEL CEL CEL CEL ... CEL CEL CEL CEL CEL CEL CEL
+CEL m02 CEL m12 CEL m08 MIN ... MIN m02 CEL m11 CEL m11 CEL
+m07 m05 m13 m12 m11 m02 m03 m00 m09 m11 m09 m01 m03 m13 m05
+m07 ... m03 ... m00 ... ... ... ... ... m00 ... m11 ... m07
+... ... ... ... ... ... WA8 WAC WA4 ... ... ... ... ... ...
+WA3 WAB ... ... ... ... WAA R-N WA5 ... ... ... ... WA7 WA3
+PC6 WAA WAC M13 WAC M07 WAE WA3 WAD M14 WAC M06 WAC WA5 PC2
+
+slot 58  level 59  $CE96
+WAE WAF CEL WAF CEL WAF CEL WAF CEL WAF CEL WAF CEL WAF WAD
+WAF CEL M14 M05 M00 M10 M04 M03 M09 M07 M02 M13 M15 CEL WAF
+PC6 WAF M02 M03 M13 M05 M07 M01 M15 M09 M03 M07 M03 WAF PC2
+... WAA M02 M11 M14 M10 MIN M02 MIN M07 M12 M05 M00 WA5 ...
+M13 ... M04 M02 MIN m10 M12 CEL M00 m14 MIN M10 M06 ... M10
+... WAA M00 M10 M09 M11 MIN M15 MIN M11 M02 M04 M08 WA5 MIN
+L-N WAF M05 M00 M14 M08 M15 M12 M01 M07 M14 M01 M08 WAF R-N
+WAF CEL M01 M09 M01 M04 M02 M11 M07 M13 M02 M14 M11 CEL WAF
+WAB WAF CEL WAF CEL WAF CEL WAF CEL WAF CEL WAF CEL WAF WA7
+
+slot 59  level 60  $CF1D
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL PRS CEL PRS CEL PRS CEL R-S CEL PRS CEL PRS CEL PRS CEL
+CEL CEL CEL CEL CEL CEL CEL MIN CEL CEL CEL CEL CEL CEL CEL
+CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL
+CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL CEL
+CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL PRS CEL
+CEL CEL CEL CEL CEL CEL ... ... ... CEL CEL CEL CEL CEL CEL
+CEL PRS CEL PRS CEL PRS WAA L-N WA5 PRS CEL PRS CEL PRS CEL
+CEL CEL CEL CEL WA8 WAC WAE WAF WAD WAC WA4 CEL CEL CEL CEL
+
+slot 60  practice P1  $CFA4
+CEL CEL CEL CEL WA5 CEL CEL WAA ... ... F1a ... CEL CEL WRA
+CEL m07 CEL CEL WA5 CEL CEL PRS ... M07 ... pc4 CEL CEL WRA
+CEL CEL CEL CEL WAD CEL CEL WAA M03 ... ... ... WR3 WR3 WR3
+CEL CEL CEL M03 WA2 WA3 WA3 WAF ... ... ... ... ... M09 ...
+WA3 WA3 WA3 ... ... ... ... ... ... ... ... ... ... ... ...
+M01 ... ... ... ... PC7 PC7 PC7 ... ... ... ... py5 ... M13
+... ... py0 ... ... PC7 PC7 PC7 ... WR5 CEL MIN MIN ... ...
+... WRC ... ... ... ... ... ... ... WRB CEL MIN CEL WAC MIN
+L-N WRA ... M05 ... ... ... ... F1b WRA CEL MIN MIN WA5 R-N
+
+slot 61  practice P2  $D02B
+M00 CEL M08 ... M15 ... M04 ... M01 CEL M10 MIN M10 ... M11
+CEL M10 ... M08 ... M05 CEL M00 ... M09 ... M02 CEL M04 MIN
+M05 ... M01 MIN M02 CEL M07 ... M14 MIN M07 ... M06 CEL M01
+... M07 ... M06 ... M15 ... M11 CEL M03 ... M01 ... M09 ...
+M10 CEL M08 CEL M11 ... M13 ... M05 ... M05 ... M00 CEL M14
+... M06 ... M15 ... M04 CEL M01 ... M00 CEL M01 ... M08 ...
+M12 ... M06 ... M14 ... M06 ... M10 CEL M08 ... M14 CEL M11
+... M04 ... M03 CEL M11 ... M03 CEL M02 CEL M01 ... M05 MIN
+L-N CEL M02 ... M03 ... M11 MIN M09 CEL M09 ... M07 ... R-N
+
+slot 62  practice P3  $D0B2
+CEL CEL CEL WAA CEL CEL CEL WRF CEL CEL PRS CEL CEL WRF L-S
+... ... ... WAF CEL CEL CEL WRF WRC WRE ... WRD WRC WRF ...
+... M12 ... ... CEL CEL PRS ... ... ... M12 ... ... ... M14
+... ... ... WAF CEL CEL CEL WRF ... WRA ... ... ... WRF WRC
+CEL CEL CEL WAA CEL CEL CEL WRF WR4 WRA ... ... ... WRA WRF
+WAC WAC WAC WAE WA3 WA3 M14 CEL WR5 WRA ... ... ... ... ...
+CEL CEL CEL ... ... ... CEL CEL WR5 WRA WR4 PRS WRA WR5 M09
+CEL CEL ... WRF WRF WRF WRF WR7 WR1 ... WR5 CEL CEL WRB WAF
+... PRS ... CEL CEL CEL CEL CEL M11 ... WR5 CEL CEL WRA R-N
+
+slot 63  unused (never set up)  $D139
+WAF CEL ... M11 ... CEL ... ... ... CEL ... M05 ... CEL WAF
+WAF ... CEL ... PC2 ... WAF MIN WAF ... PC6 ... CEL ... WAF
+WAF WAB ... ... ... ... ... PC4 ... ... ... ... ... WA7 WAF
+WA2 WAB WA4 MIN ... ... PC2 ... PC6 ... ... MIN WA8 WA7 WA1
+PY4 WAA L-E ... PRS ... ... m02 ... ... PRS ... MIN WA5 PY4
+WA8 WAE WA1 MIN ... ... PC6 ... PC2 ... ... MIN WA2 WAD WA4
+WAF WAE ... ... ... ... ... PC4 ... ... ... ... ... WAD WAF
+WAF ... CEL ... PC6 ... WAF MIN WAF ... PC2 ... CEL ... WAF
+WAF CEL ... M09 ... CEL ... R-N ... CEL ... M06 ... CEL WAF

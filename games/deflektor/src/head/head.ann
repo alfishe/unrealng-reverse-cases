@@ -1,0 +1,167 @@
+# The annotations of head (kit/mkgame.py --part src/head/head.json). Format: ../../../../docs/ann-format.md.
+#
+# The main block's own code, 496 bytes, as it stands once D.G. Cooke's chain has run (tools/cipher.py decrypts the
+# loaded block, src/head/keys.txt holds the keys): BlockHead $5C00-$5C26 (loaded at $5C00 and run there), the chain
+# $7B52-$7CFF (loaded at $5C27-$5DD4, moved up by BlockHead) and the mover $FD00-$FD1A (loaded at $5DD5-$5DEF).
+# Witness: c1 (power-on, the original TZX, the 10 Mega Games copy). Evidence: tools/cipher.py, tools/tapesim.py
+# (the chain run in SkoolKit's simulator from the loaded block to $8382), work/stage2/NOTES.md section 1.
+
+@equ $5B00 MoveStub 2 ; the printer buffer: the loader's LDIR; RET, here a POP HL; JP (HL) that gives BlockHead its address
+@equ $8382 GameEntry ; the game's entry (src/game/game.ann) once the mover has run
+@equ $6000 GameBase ; where the mover puts the game
+@isub $FD0F LD SP,$FFFF
+@isub $FD0B LD ($5C09),BC
+@isub $7B76 LD HL,$4000
+@isub $7BD2 LD HL,$4000
+@isub $7C15 LD HL,$4000
+@isub $7C54 LD HL,$4000
+@isub $7CAD LD HL,$4000
+
+@module head ; The main block's head: where it is, and the chain moved up to $7B52
+@about The loader's last step (MoveStub $5B00: LDIR; RET) returns to $5C00 with the turbo block's sixth and seventh loads in place: $5C00-$9BFF and $9C00-$9DEF, the eighth's first $1F0 bytes at $C000-$FFFF (src/loader/stage2.ann). The block is encrypted except these 39 bytes: BlockHead works out its own address (a POP HL; JP (HL) planted in the printer buffer, so the block runs wherever it is loaded) and copies the rest of the block, $5C27-$DDEF, up to $7B52-$FD1A with LDDR (the two ranges overlap: the copy runs backwards), then returns into the copy at $7B52, the chain.
+
+$5C00 c BlockHead ; Find the block's address with a stub at $5B00, move $5C27-$DDEF up to $7B52 and run the chain there
+> 1. DI; `$E9E1` (POP HL; JP (HL)) at MoveStub `$5B00`; CALL it: HL = `$5C0A`, the address after the CALL.
+> 2. HL + 29 = `$5C27`, the first encrypted byte; BC = `$81C9` (33225 bytes, `$5C27-$DDEF`); DE = `$7B52`, pushed: the RET's target.
+> 3. The source below the target (it is): BlockMoveUp, HL and DE moved to the ends (+ BC - 1) and LDDR, so the overlap copies right. Else BlockMoveDown `$5C24`, LDIR (never taken on the tape).
+> 4. RET to `$7B52`.
+> c1: one run, 33225 bytes moved.
+> Witness: L1 1 (c1).
+$5C0A ; HL = this address: + 29 is the block's first encrypted byte
+$5C15 ; the source below the target: copy backwards
+$5C1B BlockMoveUp ; LDDR from the ends
+$5C24 BlockMoveDown ; LDIR (the source above the target; not taken)
+
+@module chain ; D.G. Cooke's decryption chain: 30 layers keyed on sums of memory, then a 16-bit layer over the game
+@about The chain runs from $7B52 with SP = $5BFE (the loader's stack); it depends on SP and on the whole of memory $4000-$FFFF, the loading screen and the loader included, so a changed byte anywhere breaks the keys. It is decrypted while it runs: each layer decrypts the bytes after its own call, so the code past a CALL exists only once that call has returned.
+@about ChainStart fills the printer buffer and the system variables' area $5B00-$7B51 with a generated stream and the mover's tail, then sums memory into A. Each of the 30 layers is a CALL followed by a key byte: XorLayer decrypts B bytes after the call with a running key (p = 17 x prev + C, XORed in), a sum layer (SumLayer1-3: three copies with their own addresses) adds memory from $4000 in steps of C + 1 to A; both then add the key byte at the return address to A, write C over it and jump past it. On the original tape every layer's incoming A is 0: the key bytes are chosen so (src/head/keys.txt has them, the byte each layer finds and C, the byte it leaves).
+@about FinalSum makes a 16-bit sum of $4000-$FFFF (with its own operand at $7CA7 zeroed first), and Final16 decrypts $7D00-$FD19 in words with it: the whole game and the mover. The last decrypted word plus $7A3D is the jump: $FD00 on the original, the mover. A wrong key jumps wild.
+
+$7B52 c ChainStart ; Fill $5B00-$7B51 with a generated stream (twice), then sum $4000-$FFFF into A and go to the first layer
+> 1. D = `$95`, E = 2 passes: from HL = `$5B00`, BC = `$2052` bytes: (HL) = D, D = 17 x D + L + 11. After the first pass HL = `$FD1B`, BC = `$02E5` (the space past the mover, `$FD1B-$FFFF`), the second pass.
+> 2. A = D, HL = `$4000`: A + each byte to `$FFFF` (the carry out of HL ends the loop); `JR C` to ChainLayers.
+> The stream overwrites the BASIC, the system variables and the loader's stack area, so nothing of the BASIC loader survives.
+> Witness: L1 2 (c1).
+$7B5B ChainFill ; one byte of the stream
+$7B76 ; the sum of $4000-$FFFF into A
+$7B7D ChainSum
+
+$7B84 c XorLayer ; Decrypt the B bytes after the CALL with key A and step C, add the key byte at the return address to A, write C there, return past it
+> In: A the key, B the count (0 = 256), C the step; the return address on the stack.
+> Each byte: D = A, A = 17 x D + C, XOR (HL), stored; the decrypted byte is the next key. Then B restored from E, A + (return address), (return address) = C, `JP` to the return address + 1.
+> c1: 3642 bytes decrypted over 372 addresses (`$7BC0-$7D33`), up to 17 layers on one address.
+> Witness: L1 36 (c1).
+$7B87 XorLayerByte
+
+$7B99 t ChainText ; "COPYRIGHT D.G.COOKE 1987" after a plant byte: ChainLayers writes $CB at $7B99 (the tape has $45 there) before the first layer
+> Inside the first layers' range: XorLayer decrypts over it, so the text is also key material.
+
+$7BB2 c ChainLayers ; The 30 layers in turn: each CALL is followed by its key byte, and the code after it exists only once the call returns
+> 1. `$CB` at ChainText (the plant), BC = `$46D9` with bit 7 of B set: the first XorLayer.
+> 2. Then layer after layer, B and C changed by shifts and increments between the calls (EXX, OR E and the like are key bytes, not code: XorLayer writes C over them and jumps past). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
+> 3. After the 30th layer (at `$7CA2`): FinalSum.
+> c1: 30 layers, incoming A = 0 each (src/head/keys.txt).
+> Witness: L1 2 (c1).
+$7BBF ; key byte 1 (XorLayer): A + 115 (the tape's byte), then C = $D9 written here, 198 bytes decrypted
+$7BC7 ; key byte 2 (XorLayer): A + 69 (the tape's byte), then C = $D9 written here, 227 bytes decrypted
+$7BCF ; key byte 3 (XorLayer): A + 210 (the tape's byte), then C = $B3 written here, 241 bytes decrypted
+$7BD2 c SumLayer1 ; A + B + the sum of every (C + 1)th byte from $4000 to $FFFF, then the key byte at the return address, C written over it
+> In: A the key, B, C the step - 1. HL = `$4000`, DE = C + 1; A + B, then A + (HL) until HL carries out past `$FFFF`; A + (return address), (return address) = C, `JP` past it.
+> SumLayer2 `$7C15` and SumLayer3 `$7C54` are the same code at other addresses (the chain's own bytes take part in the sums, so three copies give three different chains of keys).
+> Witness: L1 12 (c1).
+$7BD9 SumLayer1Loop
+$7BE3 ChainLayers2 ; the chain goes on past SumLayer1
+$7BE8 ; key byte 4 (XorLayer): A + 67 (the tape's byte), then C = $D9 written here, 241 bytes decrypted
+$7BEF b KeyByte5 ; key byte 5 (XorLayer): A + 223 (the tape's byte), then C = $DA written here, 248 bytes decrypted
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7BF0 c Layers6 ; The chain after key byte 5: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7BF5 ; key byte 6 (a sum layer): A + 87 (the tape's byte), then C = $B5 written here
+$7BFA ; key byte 7 (XorLayer): A + 250 (the tape's byte), then C = $B5 written here, 249 bytes decrypted
+$7C02 b KeyByte8 ; key byte 8 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C03 c Layers9 ; The chain after key byte 8: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C06 b KeyByte9 ; key byte 9 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C07 c Layers10 ; The chain after key byte 9: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C0C b KeyByte10 ; key byte 10 (XorLayer): A + 3 (the tape's byte), then C = $DA written here, 241 bytes decrypted
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C0D c Layers11 ; The chain after key byte 10: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C12 ; key byte 11 (XorLayer): A + 69 (the tape's byte), then C = $6D written here, 241 bytes decrypted
+$7C15 c SumLayer2 ; A copy of SumLayer1
+> The same eleven instructions as SumLayer1 `$7BD2`.
+> Witness: L1 6 (c1).
+$7C1C SumLayer2Loop
+$7C26 ChainLayers3 ; the chain goes on past SumLayer2
+$7C2D b KeyByte12 ; key byte 12 (XorLayer): A + 119 (the tape's byte), then C = $36 written here, 227 bytes decrypted
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C2E c Layers13 ; The chain after key byte 12: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C32 ; key byte 13 (a sum layer): A + 91 (the tape's byte), then C = $37 written here
+$7C37 ; key byte 14 (XorLayer): A + 209 (the tape's byte), then C = $37 written here, 228 bytes decrypted
+$7C3F ; key byte 15 (XorLayer): A + 203 (the tape's byte), then C = $1B written here, 200 bytes decrypted
+$7C45 ; key byte 16 (XorLayer): A + 214 (the tape's byte), then C = $1B written here, 228 bytes decrypted
+$7C4B ; key byte 17 (a sum layer): A + 220 (the tape's byte), then C = $E3 written here
+$7C51 ; key byte 18 (a sum layer): A + 248 (the tape's byte), then C = $E3 written here
+$7C54 c SumLayer3 ; A copy of SumLayer1
+> The same eleven instructions as SumLayer1 `$7BD2`.
+> Witness: L1 6 (c1).
+$7C5B SumLayer3Loop
+$7C65 ChainLayers4 ; the chain goes on past SumLayer3
+$7C6A ; key byte 19 (a sum layer): A + 48 (the tape's byte), then C = $E3 written here
+$7C70 ; key byte 20 (XorLayer): A + 233 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C74 ; key byte 21 (XorLayer): A + 116 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C7A ; key byte 22 (XorLayer): A + 241 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C7E ; key byte 23 (a sum layer): A + 149 (the tape's byte), then C = $E3 written here
+$7C82 ; key byte 24 (XorLayer): A + 176 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C87 b KeyByte25 ; key byte 25 (a sum layer): A + 208 (the tape's byte), then C = $E2 written here
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C88 c Layers26 ; The chain after key byte 25: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C8B b KeyByte26 ; key byte 26 (XorLayer): A + 90 (the tape's byte), then C = $E2 written here, 143 bytes decrypted
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7C8C c Layers27 ; The chain after key byte 26: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7C95 ; key byte 27 (XorLayer): A + 228 (the tape's byte), then C = $71 written here, 158 bytes decrypted
+$7C99 ; key byte 28 (a sum layer): A + 172 (the tape's byte), then C = $71 written here
+$7CA0 b KeyByte29 ; key byte 29 (a sum layer): A + 163 (the tape's byte), then C = $38 written here
+> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
+$7CA1 c Layers30 ; The chain after key byte 29: the next layer's B and C, then its CALL
+> Decrypted by an earlier layer, run once.
+> Witness: L1 2 (c1).
+$7CA5 ; key byte 30 (a sum layer): A + 180 (the tape's byte), then C = $39 written here
+$7CA6 c FinalSum ; Zero its own operand, sum $4000-$FFFF as 16-bit words into DE, decrypt $7D00-$FD19 with it, jump to the last word + $7A3D
+> 1. DE = A (the 30th layer's A; E = 146 on the tape: the operand at `$7CA7` was 200 when it ran as part of the sums), A = 0 stored into that operand (`$7CA7`), so the sum below does not count it.
+> 2. HL = `$4000`, BC = 1: DE + the word at HL, HL + 2, to `$FFFF`. On the tape DE = `$43FB` (src/head/keys.txt key16).
+> 3. Final16 `$7CBE`: L = E, B = D (as H), C = `$29`; from `$7D00` in words: H = L, HL + BC, the low byte XOR L (L = the new byte), the high byte XOR H (B = the new byte), to `$FD1A`.
+> 4. HL = the last word (`$82C3` on the tape) + `$7A3D` = `$FD00`; bit 7 of R set; `JP (HL)`: the mover.
+> c1: the 16-bit layer over 32794 bytes, 16397 words.
+> Witness: L1 2 (c1).
+$7CB3 FinalSumLoop
+$7CBE Final16 ; the 16-bit layer over $7D00-$FD19
+$7CC5 Final16Loop
+$7CDC ; the last word + $7A3D: the mover's address
+
+$7CE8 t ChainText2 ; "COPYRIGHT D.G.COOKE 1987" again, the chain's last bytes before the game
+> Not read by the chain's code; the 16-bit layer starts after it, at `$7D00`.
+
+@module mover ; The mover: the decrypted game down to $6000 and into it
+@about Decrypted by Final16 with the game and jumped to by FinalSum. It copies $7D00-$FCFF to $6000-$DFFF (the game's place, src/game/game.ann), clears REPDEL / REPPER with BC = 0, sets SP = $FFFF, clears bit 7 of R and jumps to the game's entry. The game then clears $FD00-$FDFA for the level grid (LevelGrid $FD23), wiping the mover.
+
+$FD00 c MoveGame ; $7D00-$FCFF to $6000-$DFFF, BC = 0 to $5C09, SP = $FFFF, bit 7 of R cleared, JP GameEntry $8382
+> The game's own copy of these bytes is the decrypted block; the mover's last word (the `JP $8382` operand) is the word FinalSum adds `$7A3D` to, so the jump to `$FD00` and the game's entry are one word.
+> c1: one run.
+> Witness: L1 3 (c1).
+$FD0B ; BC = 0 after the LDIR: REPDEL and REPPER zeroed
+$FD12 ; bit 7 of R cleared (FinalSum set it)
+
