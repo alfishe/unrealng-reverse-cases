@@ -21,6 +21,11 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 12 | Rick Dangerous | paused 2026-11-12 (token budget, Myth first; uncommitted work in the case); docs (writers) ([case](games/rick-dangerous/README.md)); Core Design / Firebird 1989 |
 | 13 | Rick Dangerous 2 | paused 2026-11-12 (token budget, Myth first; uncommitted work in the case); docs (writer) ([case](games/rick-dangerous-2/README.md)); Core Design / Micro Style 1990, 48K/128K |
 | 14 | Bumpy | paused 2026-11-12 (token budget, Myth first; uncommitted work in the case); docs (writers) ([case](games/bumpy/README.md)); Loriciels 1989 (the owner wrote "BAMPY"; Bumpy's Arcade Fantasy is the only match in the packs); source, resources and leftovers done (all 100 levels finished in recordings, fire death, two players, name entry, Kempston via decode=a5); next: docs 04-10 |
+| 15 | Rex | queued 2026-11-13 (the owner's link: idpixel.ru/games/rex); Martech 1988; ZXDB id, release and media at stage 1 |
+| 16 | MASK III: Venom Strikes Back | queued 2026-11-13 (idpixel.ru/games/maskiiivenomstrikesback); Gremlin Graphics 1988; ZXDB id at stage 1 |
+| 17 | R-Type | queued 2026-11-13 (viva-games.ru/game/r-type); Electric Dreams 1988 (Bob Pape); ZXDB id at stage 1 |
+| 18 | Enduro Racer | queued 2026-11-13; Activision 1987; ZXDB id at stage 1 |
+| 19 | ATV Simulator | queued 2026-11-13 (viva-games.ru/game/atv-simulator); Codemasters 1987; ZXDB id at stage 1 |
 
 ## Planned ports
 
