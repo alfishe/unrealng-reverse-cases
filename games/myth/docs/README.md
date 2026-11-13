@@ -1,24 +1,58 @@
-# GAME: the documents
+# Myth: History in the Making: the documents
 
 | Doc | Contents |
 | --- | --- |
-| [1. Game design](01-game-design.md) | the game as a player meets it: premise, controls, objects, rules, scoring, modes, difficulty |
-| [2. Architecture](02-architecture.md) | the machine budget, the memory map (a figure), stages from the medium to play, the frame, the main loop's call graph, the module map |
-| [3. Build and load](03-build-and-load.md) | the medium block by block, loaders, packers and their formats, the unpack animations, the source build |
-| [4. Game loop](04-game-loop.md) | the state machine (a diagram), the frame schedule, the order of work inside a pass, timing |
-| [5. Controls](05-controls.md) | devices, ports, decoding, menus, hidden keys |
-| [6. Rendering](06-rendering.md) | the screen and how it is drawn: buffers, blits, scrolls, sprites, the raster timing |
-| [7. Objects](07-objects.md) | records, slots, kinds, movers, collisions |
-| [8. HUD and text](08-hud-and-text.md) | panels, fonts, the print routine, every string |
-| [9. Sound](09-sound.md) | the engines, music and effects formats, the players, timing |
-| [10. Gameplay logic](10-gameplay-logic.md) | the rules as code: the player, enemies and their behaviour, levels, scoring, what the recordings showed |
-| [11. Data reference](11-data-reference.md) | every data entry (generated: `kit/refdocs.py --case .`) |
-| [12. Routine reference](12-routine-reference.md) | every routine with its figures (generated) |
+| [1. Game design](01-game-design.md) | the premise, every screen, the controls (ENTER pauses, not H), the panel, the rules (energy, lives, credits, the score table), the teleport icons and the master icon, the five stages, the maps, the RZX run's route |
+| [2. Architecture](02-architecture.md) | power-on to play, the memory map in three states, the IM 2 jump inside the turbo loader, the thirteen parts by module, the frame budget and the 40 % of interrupts lost to DI, the call graph, the heatmap and the stack, the code that ran, the leftovers, 48K against 128K |
+| [3. Build and load](03-build-and-load.md) | the tape as a picture, the 55-byte BASIC line's hidden 59, the 103-layer chain keyed on R, the Multiface check, the SpeedLock reader (bit timing, keys rewritten by the stream, the self-rewriting block table), the timing check that tests the pause, the reveal and countdown inside the bit loop, Unxor and Boot, the turbo loader and StageCheck, every failure path, the releases (the RZX's ROM-speed release), the build |
+| [4. Game loop](04-game-loop.md) | the game cycle (NewGame, PlayStage, GameOver and its credits), the three clocks (the interrupt plays sound only, the pass, the HALT waits), MainLoop `$7839` call by call, one pass measured and against the beam, PacePass in every stage, the 18-frame room change, the lost interrupts, stage 5's frame-locked loop, the pause, the item window, EndStage |
+| [5. Controls](05-controls.md) | the five self-modified key readers and KeyXorMask, the fixed keys (SPACE, CAPS SHIFT, ENTER), the menu's moving bar, SELECT JOYSTICK (Kempston, cursor, Sinclair) with the joystick recording, DEFINE KEYS and its three traps, the hero's key priority (FIRE first; FIRE + LEFT is the middle strike), FIRE's latch, the pause, the item window frame by frame |
+| [6. Rendering](06-rendering.md) | the scenery drawn once onto the screen and the actors through stencils of open spans; the room build (Unrle, RoomCells, the tiles, BuildSpans) timed; ClearBuffer's PUSHes, the 13 row plotters with BitReverse, sprites on byte columns, the colours left in the shadow, CopyBuffer's patched LDI chain; writers maps of the screen and the buffer; stage 5's direct drawing |
+| [7. Objects](07-objects.md) | the stage's packed tiles, 2 x 2 blocks and map, room 7 decoded by hand from a map byte to its pixels, RoomCells, the grids and their overlapping windows, the exit bits (and the demon shutting room 12), the placements and LoadRoomActors, the 18-byte actor record as a data sheet, the warrior's state machine and one step measured, collisions as column equalities (an urn struck twice), the 16 missile records, the other stages |
+| [8. HUD and text](08-hud-and-text.md) | one font format stored four times, the width masks and the advance, a line laid out by hand, the dissolve through ROM-picked masks checked byte by byte, the front's second copy of the print, every string with its place (all centred by hand), the HUD set up once and patched field by field, the score redrawn every pass (12.8 % of a frame), the energy bar a pixel a unit, the lives, items, teleport icons and GAME OVER |
+| [9. Sound](09-sound.md) | thirteen AY effects and no music or beeper, the effect format and the channel record, AyFrame and ChannelStep (the volume written twice before the step, the period after it), effect 2 checked write for write against rzx-r1, effect 4's period wrapping to a 27.6 Hz growl, the lost interrupts stretching every effect about 1.6 times, a render of each effect (WAV, MP3 over a second), the 48K running the same driver unheard, 1-3 % of a frame |
+| [10. Gameplay logic](10-gameplay-logic.md) | the hero as a state machine and HeroUpdate's order, one jump measured frame by frame, the items as weapons, damage as a debt paid 2 a pass (a fight measured in c1), a life lost and the respawn, stage 1's enemies, the demon woken by ten objects in its pit and beaten by ten hits, the dragon's 20 bolts, the five teleport icons, the master icon and the pad, the bosses of stages 2-5 (with the rzx-r2 to rzx-r4 witnesses) and the ending that never exits, what stays known only from the code |
+| [11. Data reference](11-data-reference.md) | every data entry of stage 1 (126), then the resident (59), the front (46), stages 2-5 (115, 120, 123, 76), the tape BASIC (3), the decryption chain (15), the second stage (2) and Unxor (1), generated by `kit/refdocs.py --case .` |
+| [12. Routine reference](12-routine-reference.md) | every routine of stage 1 (318), then the resident (68), the front (76), stages 2-5 (320, 321, 320, 148), the tape BASIC (1), the decryption chain (131), the second stage (2), Unxor, Sl1End and Boot (1 each), with its callers, runs and figures (generated, as 11) |
 
 ## Terms
 
-Each term once, here; the documents link to it.
+Each term once, here; the documents use these names and no others.
 
 | Term | Meaning |
 | --- | --- |
-| pass | one run of the main loop |
+| actor record | 18 bytes at `$74E0` (14 of them): position, size, frame, handler, counters, base position, flags (doc 7) |
+| block | 2 x 2 tiles, 4 tile numbers in the stage's block table; the map is made of block numbers (doc 7) |
+| BossPhase | `$FE4C` in stage 1: the demon's phase, 1 asleep, 2 flying, 3 falling, 4 beaten (doc 10) |
+| busy wait | a loop that counts BC down to pad a pass: PacePass through DelayBC `$79AB`, 26 T a round; stage 4's PacePassWait, 24 T a round (doc 4) |
+| channel record | 8 bytes at `$F85E` + 8 x (channel - 1): segments left (`$FF` idle), interrupts left, the segment's address, the period, the noise flag, the volume x 16 (doc 9) |
+| credits | the game-over retries; 4 at the start, one taken by each game over (doc 1) |
+| dissolve masks | DissolveMasks `$F9CB`, 4 sets of 8 masks growing one bit a step; a ROM byte picks the set of each screen byte (doc 8) |
+| effect | one of the 13 AY sounds at `$F54D`: channel, noise flag, segment count, volume x 16, period, then 3-byte segments (doc 9) |
+| EnergyChange | the pending change of the energy (`$FE4E` in stage 1): the energy moves 2 a pass towards it (doc 10) |
+| FireLatch | the byte that makes FIRE edge-triggered (`$FE50` in stage 1, `$FE3A` in stage 5) (doc 5) |
+| grid | a field of 2 x 2-tile blocks in a stage's map; a room is a 14 x 9-block window of it (doc 7) |
+| handler | the routine at an actor record's +6/+7, called once a pass by RunActorHandlers (doc 7) |
+| HeroFreeze | `$FE58`: passes the hero ignores the keys after a respawn (23) (doc 10) |
+| item window | the pause SPACE opens in stages 1-4 to scroll the carried items; the world stops (doc 4, 5) |
+| key reader | one of the five 15-byte routines at `$FC90-$FCDA`; its port (+4) and BIT opcode (+13) are the set-up (doc 5) |
+| KeyXorMask | the byte at `$FCFA` every reader XORs in: 0 for keys, `$FF` for the Kempston (doc 5) |
+| layer | one routine of the decryption chain; it rewrites the rest of the chain and runs into it (103 of them) (doc 3) |
+| lost interrupt | an INT that falls while ClearBuffer or CopyBuffer runs with DI; the sound misses a step (doc 2, 4, 9) |
+| mark | the 3-byte `07 FF 00` piece between SpeedLock blocks, read at a slower bit rate (doc 3) |
+| master icon | the item that appears when the five teleport icons are taken (item kind 6 in stage 1); selected on the teleport pad (stage 1: room 2, columns 18-21, line `$5A`) it ends the stage (doc 1, 10) |
+| missile record | 6 bytes at `$75E0` (16 of them): column, line, kind, three bytes of the kind's own (doc 7) |
+| pass | one run of a stage's MainLoop: one step of the game, about 3.3 frames in stages 1-4 (doc 4) |
+| PitDrops | `$FE38` in stage 1: objects thrown into room 12's pit while the demon sleeps; stops at 9, the tenth wakes it (doc 10) |
+| placement | 3 bytes (kind, X, Y in grid cells) in a grid's list; bit 7 of the kind marks it done (doc 7) |
+| play buffer | `$5B00-$6CFF`, 18 rows of 8 lines of 32 bytes, linear; the actors are drawn into it every pass (doc 6) |
+| resident | the 4 KB at `$F000-$FFFF` loaded once: the game chain, the turbo loader, the AY driver, the key readers (doc 2) |
+| segment | 3 bytes of an effect: its length in interrupts and the signed period and volume changes a step (doc 9) |
+| shadow attributes | `$6D00-$6FFF`, a copy of the attributes with the actors' colours painted in (doc 6) |
+| span | a run of open cells in one row of a room; CopyBuffer copies only the spans, so the scenery stays in front (doc 6) |
+| StageCheck | the byte each stage block holds at `$BB80`, compared with StageCheck `$FF7F` + stage - 1 to tell the five same-sized blocks apart (doc 3) |
+| teleport icon | the sheet's name for the five pieces of a stage (the code's "piece", PiecesMask `$FE51`): an actor that takes 6 hits, rises and gives 1200 points when touched (doc 1, 10) |
+| TextBuffer | `$5B00`, 256 bytes: the line Print or PrintText draws before the dissolve brings it on screen (doc 8) |
+| tile kind | one byte a tile: 0 open (the actors show), bit 1 solid, bit 3 deadly; any non-zero kind is scenery (doc 7) |
+| turbo block | a block in the ROM's format at a faster bit rate, flag `$56`, read by TurboLoad `$FE90` (doc 3) |
+| width mask | a glyph's first byte; one bit a pixel column used; the pen moves 9 less its trailing zeros (doc 8) |

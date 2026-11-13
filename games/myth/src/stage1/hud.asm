@@ -16,7 +16,7 @@
 ; StageExit. In stage 1 the selected item 6 at that place is the way out of the
 ; stage.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19501 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CheckStageExit:
   LD A,(RoomNumber)
   CP $02
@@ -41,10 +41,10 @@ CheckStageExit:
 ;
 ; StartStageExit draws the field and seeds 80 stars at $5B00 (4 bytes each);
 ; then each frame (HALT) moves the stars of speed 1-3 (MoveStar), until KeyFire
-; or SPACE ($8A54); then E = 2 and EndStage.
+; or SPACE ($8A54); then E = 2 and EndStage. rzx-r1: after frame 29744 (the
+; stars from about 29800).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 StageExit:
   POP HL
   CALL StartStageExit
@@ -78,8 +78,7 @@ StageExitDone:
 ; ScreenLineTable+96, line 48 down), and plots two lines from StarPixels (speed
 ; and pixel).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 38454 (rzx-r1).
 MoveStar:
   LD A,(IX+$03)
   CP $80
@@ -144,10 +143,7 @@ MoveStarClear:
 
 ; The two pixel lines of a star, by speed (rows 1-4) and pixel (pairs 0-3)
 StarPixels:
-  DEFB $40,$00,$10,$00,$04,$00,$01,$00
-  DEFB $C0,$00,$30,$00,$0C,$00,$03,$00
-  DEFB $C0,$C0,$30,$30,$0C,$0C,$03,$03
-  DEFB $C0,$C0,$30,$30,$0C,$0C,$03,$03
+  INCBIN "res/stage1/table-star-pixels.bin",$0000,32
 
 ; Clear the play area, colour it at random and seed 80 stars
 ;
@@ -156,8 +152,7 @@ StarPixels:
 ; $5B00: speed 1-4, pixel 0-3, column 2-29, y $80-$FF (random bytes from
 ; $8B85).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 StartStageExit:
   CALL BlackOutPlayArea
   LD HL,BlankIcon
@@ -200,8 +195,7 @@ SeedStarColumn:
 ; $8B85, paper 0. Sets RandomPointer to $091D first, so the colours are the
 ; same each time.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 RandomPlayAttrs:
   LD IX,Attributes+194
   LD HL,$091D
@@ -230,13 +224,13 @@ RandomPlayAttrsPick:
 
 ; Add BC points to the score
 ;
-; Score += BC; at 10000 or more, Score -= 10000 and ScoreHigh += 1 (wrapping
-; from 99 to 0). Outputs none; A, BC, HL destroyed. Called with 1200 for a
-; piece (PieceWaitsPickup) and by the enemies' deaths ($A065, $A19B, $A1CF,
-; $A87B).
+; rzx-r1: frame 661, T 10004, 20 points for the urn; the score reaches 2269 by
+; frame 2702 and passes 10 000 at 9484. Score += BC; at 10000 or more, Score -=
+; 10000 and ScoreHigh += 1 (wrapping from 99 to 0). Outputs none; A, BC, HL
+; destroyed. Called with 1200 for a piece (PieceWaitsPickup) and by the
+; enemies' deaths ($A065, $A19B, $A1CF, $A87B).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 81 (rzx-r1).
 AddScore:
   LD HL,(Score)
   ADD HL,BC
@@ -262,7 +256,7 @@ AddScore:
 ; as two at ScoreDigitsHigh, then RenderDigits draws the six characters into
 ; $7640 with a stride of 6.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19501 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RenderScore:
   LD IX,ScoreDigitsLow
   LD HL,(Score)
@@ -282,7 +276,7 @@ RenderScore:
 ; leading '0' of ScoreDigitsHigh on, and copies them to the HUD at $5826 (row
 ; 1, columns 6-11).
 ;
-; Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19498 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HideLeadingZeros:
   LD IX,ScoreDigitsHigh
   LD HL,ShadowAttributes
@@ -311,7 +305,7 @@ HideLeadingZerosCopy:
 ; RenderScore, then CopyToScreen of the 6 x 8 bytes at $7640 to column 6, line
 ; 8, then HideLeadingZeros. Every pass.
 ;
-; Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19498 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ShowScore:
   CALL RenderScore
   LD HL,DigitBuffer
@@ -328,7 +322,7 @@ ShowScore:
 ; character: 7 lines from DigitGlyphs + (char - '0') x 8 and an eighth line of
 ; 0, one byte column; HL moves one byte right per character.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 20857 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RenderDigits:
   LD (RenderDigitsChar+$001C),A
   INC IX
@@ -402,7 +396,7 @@ ScoreDigitsEnd:
 ;
 ; LivesFlash = 0. Called by LoseLife and at the stage's start ($9821).
 ;
-; Witness: L1 9 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 10 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 StartLivesFlash:
   XOR A
   LD (LivesFlash),A
@@ -416,7 +410,7 @@ StartLivesFlash:
 ; down to 3 (magenta) for box n while Lives >= n, else 1 (blue). Called every
 ; pass by $984D.
 ;
-; Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 LivesFlashStep:
   LD A,(LivesFlash)
   CP $10
@@ -468,7 +462,7 @@ LivesFlashDownNext:
 ; Energy + 2 up to $2E. Called every pass by $984D. Deaths recording: Energy 46
 ; down to 2, then the life lost at frame 2775 and the refill.
 ;
-; Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ApplyEnergyChange:
   LD A,(EnergyChange)
   CP $00
@@ -541,7 +535,7 @@ LoseLastLife:
 ; picture ($E06C for the first piece, $E088 for the others) to column 24 +
 ; PiecesTaken, line $19; PlaySoundVector 12.
 ;
-; Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19502 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ShowPieceTaken:
   LD A,(PieceTakenFlag)
   DEC A
@@ -580,7 +574,7 @@ ShowPieceBoxDraw:
 ; PieceFlash - 1 a pass; the colour is the cycle at $B3D2[(PieceFlash + 2) & 7]
 ; for PiecesTaken + 1 cells at $5879 and $5899 (rows 3-4 from column 25).
 ;
-; Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19502 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 FlashPieces:
   LD A,(PieceFlash)
   LD E,A
@@ -623,7 +617,7 @@ FlashPiecesCell:
 ; cycle ($B3C4) patched into the inline record GameOverBox and filled.
 ; s1-right: the HUD's GAME OVER (WALKTHROUGH 6.1, frame 4000).
 ;
-; Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 GameOverStep:
   LD A,(GameOverTimer)
   CP $00
@@ -666,7 +660,7 @@ GameOverStepDone:
 ; C = the damage. Called by ShotHitsHero and the enemies ($8A43, $8A51, $8DEE,
 ; $921B, $96AB).
 ;
-; Witness: L1 822 (c1o, deaths, s1-right).
+; Witness: L1 840 (c1o, deaths, rzx-r1, s1-right).
 DamageHero:
   LD A,(HeroState)
   CP $0F
@@ -684,17 +678,17 @@ DamageHero:
 ; the HUD as loaded). Eight steps, each
 ;
 ; after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask
-; is one of 4 rows of 8 at $F9CC
+; is DissolveMasks $F9CB + set + step
 ;
-; (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a
-; ROM byte read through RandomPointer,
-;
-; reset to 0 each step so the pattern is the same every step) and gains bits
-; each step until $FF. Patches the
+; (set = bits 3-4 of a ROM byte read through RandomPointer, 0, 8, 16 or 24; the
+; step 0-7, the ADD at DissolveStepOperand set to 0 first) and gains bits each
+; step until $FF; only RandomPointer's low byte is cleared each step, so each
+; step reads the next 6 pages of the ROM and the pattern changes (rzx-r1: the
+; first reads of the 8 steps at $0701, $0D01, $1301 ... $3101). Patches the
 ;
 ; LD DE at $8AC5 (the source) and the ADD A at $8AE9 (the step).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 DissolveHud:
   LD (DissolveStep+$000B),DE
   LD B,$08
@@ -756,7 +750,7 @@ DissolveStepOperand:
 ; IX ends past the digits. PrintScore $7B73 writes the score $F9FB with 4
 ; digits into $7C22.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19501 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 NumberToDigits:
   LD IY,DecimalTable
   LD A,$05
@@ -791,10 +785,13 @@ DigitSubtract:
 
 ; Write A (0-99) as two ASCII digits at IX
 ;
-; A = 0 writes "00". PrintScore writes the amount $F9FD so; only the 0 branch
-; ran.
+; A = 0 writes "00". RenderScore writes ScoreHigh $F9FD so. c1o, deaths,
+; s1-idle and s1-right ran only the 0 branch;
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; rzx-r1 passes 10 000 points at frame 9484 (AddScore's carry into ScoreHigh)
+; and runs the other from 9486.
+;
+; Witness: L1 19501 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ByteToDigits:
   CP $00
   JR NZ,ByteToDigitsTens
@@ -824,7 +821,7 @@ ByteToDigitsLoop:
 ; (written into BarEdgeMask), then zeros to 6 bytes; drawn on 6 screen lines
 ; from EnergyBarScreen ($4134). Called every pass from $984D.
 ;
-; Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrawEnergyBar:
   LD A,(EnergyShown)
   LD B,A

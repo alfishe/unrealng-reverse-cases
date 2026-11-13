@@ -204,8 +204,8 @@ EndStageSave:
 ;
 ; Reached by a JP from DuelStep ($8855) with A = the phase DuelPhase $FE43, 3
 ; or more: form 3 (no face drawn) and the end cost less, so the pass is padded
-; with a busy count of HL down to 0 (26 T-states a round): $07D0 when A is 4,
-; else $0320. Returns to DuelStep's caller.
+; with a busy count of HL down to 0 (24 T-states a round: DEC HL, LD A,L, OR H,
+; JP NZ): $07D0 when A is 4, else $0320. Returns to DuelStep's caller.
 ;
 ; Witness: L1 472 (ending, rzx-r5).
 PaceLateForms:

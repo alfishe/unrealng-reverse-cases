@@ -2,7 +2,7 @@
 ; timing.asm: The timing check: load the second stage, sample the tape's edges, compare the two ends
 ;
 ; TimeCheck is LoaderMain's call: it loads tape block 7 and then measures how often the EAR bit changes in 255
-; windows; a tape played too fast or too slow (a copy, a turbo deck) sets FailFlag, which Sl1End
+; windows; a pause after block 7 that is not silent (in c1 all 255 samples are 1) sets FailFlag, which Sl1End
 ; (src/loader/sl1end.asm) turns into a crash at the end of the load.
 ; --------------------------------------------------------------------------------------------------------------------
 

@@ -225,9 +225,10 @@ MoveActorY:
 ; As stage 1's: LoadRoomActors ($A499) builds an actor from a placement with
 ; its kind's row: +1 Y = the placement's Y x 8 + the offset, +6/+7 the handler,
 ; +8 to +$0C (the counter, the flags, the state, the item, the attribute), +$0F
-; (bit 0: kept over a room change). The handlers: 0 KneelingStatueActor, 1, 14,
-; 15 WarriorStatueActor, 2 HarpyLampActor, 3 HarpyRiseActor, 4 and 5 PoolActor,
-; 6 DropActor, 7-10 HydraHead1Actor, HydraHead2Actor, HydraHead3Actor,
+; (bit 0 shootable: ShotHitsActor; bit 1 kept over a room change:
+; LoadRoomActors). The handlers: 0 KneelingStatueActor, 1, 14, 15
+; WarriorStatueActor, 2 HarpyLampActor, 3 HarpyRiseActor, 4 and 5 PoolActor, 6
+; DropActor, 7-10 HydraHead1Actor, HydraHead2Actor, HydraHead3Actor,
 ; HydraHead1LowActor, 11 MedusaActor, 12 MedusaHeadActor, 13 HarpyFlameActor,
 ; 16-19 StrikeableActor, 20 WaterActor.
 ;

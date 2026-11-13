@@ -19,9 +19,7 @@
 ; (ScrollItemsLeft); SPACE again: waits for its release, cycles the frame back
 ; to its first colour and flashes the selected box (FlashSelectedBox).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code. The HUD's strip itself is drawn in every
-; recording (c1 frame 15982).
+; Witness: L1 245 (rzx-r1).
 ItemWindow:
   XOR A
   LD (PassCounter),A
@@ -67,7 +65,7 @@ ItemWindowSettle:
 ; (column 15, line 24, 2 x 2 cells) and fills it with $8C3D. Called by
 ; ItemWindow and at the stage's start ($981B).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 27 (rzx-r1, s1-idle, s1-right).
 FlashSelectedBox:
   LD B,$05
   LD C,$02
@@ -90,7 +88,7 @@ SelectedBoxRecord:
 ;
 ; Part of FlashSelectedBox, after its inline record.
 ;
-; Witness: L1 10 (s1-idle, s1-right).
+; Witness: L1 135 (rzx-r1, s1-idle, s1-right).
 FlashSelectedBoxNext:
   POP BC
   INC C
@@ -105,7 +103,7 @@ FlashSelectedBoxNext:
 ; (ShowItemStrip). Also run three times at the stage's start ($97FF, with the
 ; frame cycle patched off) to roll the strip in.
 ;
-; Witness: L1 6 (s1-idle, s1-right).
+; Witness: L1 40 (rzx-r1, s1-idle, s1-right).
 ScrollItemsLeft:
   LD A,(ItemLast)
   LD B,A
@@ -146,8 +144,7 @@ ScrollItemsLeftByte:
 ; Returns if ItemSelected is ItemFirst. Else ItemSelected - 1 and the mirror of
 ; ScrollItemsLeft.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 25 (rzx-r1).
 ScrollItemsRight:
   LD A,(ItemFirst)
   LD B,A
@@ -189,8 +186,8 @@ ScrollItemsRightByte:
 ; attributes $586A-$5875 and $588A-$5895. Its first byte is a NOP that the
 ; stage's start ($97FA) patches to RET while it rolls the strip in, and back.
 ;
-; Witness: L1 144 (s1-idle, s1-right). In the stage-1 recordings only the
-; patched RET ran (the item window was never opened).
+; Witness: L1 3102 (rzx-r1, s1-idle, s1-right). In the stage-1 recordings only
+; the patched RET ran (the item window was never opened).
 CycleWindowFrame:
   NOP
   LD HL,PassCounter
@@ -223,7 +220,7 @@ WindowFrameColours:
 ;
 ; Every pass. ItemsChanged is set by AddItem.
 ;
-; Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19502 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RedrawItemsIfChanged:
   LD A,(ItemsChanged)
   CP $01
@@ -238,7 +235,7 @@ RedrawItemsIfChanged:
 ; For 8 slots from CarriedItems + ItemSelected - 3: DrawItemIcon at $5B64 + 3 x
 ; n, then ShowItemStrip.
 ;
-; Witness: L1 6 (s1-idle, s1-right).
+; Witness: L1 1226 (rzx-r1, s1-idle, s1-right).
 DrawItemStrip:
   LD A,(ItemSelected)
   SUB $03
@@ -265,10 +262,10 @@ DrawItemStripNext:
 ;
 ; FormatItemCount, CopyToScreen of the 2 x 8 bytes at $7640 to column 15, line
 ; 8; then the attributes $582F and $5830: $41 (blue on black, unseen) for a
-; zero digit pair, else $06.
+; zero digit pair, else $06. rzx-r1: at 714, T 11852, after the shield is
+; taken.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1356 (rzx-r1).
 ShowItemCount:
   CALL FormatItemCount
   LD HL,DigitBuffer
@@ -309,8 +306,7 @@ ShowItemCountHide:
 ; Tens and units into ItemCountText+2 and +3, then RenderDigits with a stride
 ; of 2.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1356 (rzx-r1).
 FormatItemCount:
   LD A,(ItemSelected)
   LD C,A
@@ -345,7 +341,7 @@ ItemCountText:
 ; HL = the buffer address (stride 32), A = the item kind; the icon's address is
 ; ItemIcons[A]. Destroys BC, DE.
 ;
-; Witness: L1 48 (s1-idle, s1-right).
+; Witness: L1 9808 (rzx-r1, s1-idle, s1-right).
 DrawItemIcon:
   PUSH HL
   LD C,A
@@ -382,7 +378,7 @@ DrawItemIconLine:
 ; Two calls of CopyStripRows: the first 8 lines to $406A (row 3, column 10),
 ; the next 8 to $408A.
 ;
-; Witness: L1 150 (s1-idle, s1-right).
+; Witness: L1 2690 (rzx-r1, s1-idle, s1-right).
 ShowItemStrip:
   LD HL,PlayBuffer+104
   LD DE,Screen+106
@@ -396,7 +392,7 @@ ShowItemStrip:
 ; HL = the buffer (left after the call at the next 8 lines), DE = the screen
 ; address.
 ;
-; Witness: L1 300 (s1-idle, s1-right).
+; Witness: L1 5380 (rzx-r1, s1-idle, s1-right).
 CopyStripRows:
   LD B,$08
 CopyStripRow:
@@ -419,10 +415,11 @@ CopyStripRow:
 ; the room data). If A is already in CarriedItems (any of the 12 slots, the
 ; padding too), its count goes up by D, at most 99; else ItemLast + 1 and the
 ; new slot gets A and D. Sets ItemsChanged. Called by $8B03 and $A10E (the
-; pick-ups).
+; pick-ups). rzx-r1: the shield taken at frames 712-714 (ItemLast
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; $FE18 6 to 7 at 712).
+;
+; Witness: L1 23 (rzx-r1).
 AddItem:
   PUSH AF
   CP $07
@@ -473,7 +470,7 @@ AddItemStore:
 ; A = CarriedItems[ItemSelected], IX = CarriedCounts + ItemSelected. BC
 ; destroyed.
 ;
-; Witness: L1 37505 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 66986 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 GetSelectedItem:
   LD HL,CarriedItems
   LD A,(ItemSelected)
@@ -520,7 +517,7 @@ ItemIcons:
 ;
 ; Reads the hero's state $74EA and frame $74E8. Called by $A7C4 for each enemy.
 ;
-; Witness: L1 20131 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 24767 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 IsHeroHitFrame7:
   LD A,(HeroState)
   CP $07
@@ -551,7 +548,7 @@ IsHeroHitFrame6:
 ; for a closed exit; on Z the hero goes to state $0B (HeroRecoil, +$0B = $FF)
 ; and Z is returned (the walk handler $AF64 stops). NZ: free.
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 CheckWalkBarriers:
   CALL CheckRightGate
   JR Z,WalkBarrierHit
@@ -572,7 +569,7 @@ WalkBarrierHit:
 ; Returns NZ (open) outside that room, facing left, at another x; Z (closed)
 ; for other states.
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 CheckRightGate:
   LD A,(GridNumber)
   CP $00
@@ -602,7 +599,7 @@ CheckRightGateItem:
 
 ; Grid 0 room 7, facing left at x 5: closed while GateOpen is 0
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 CheckLeftGate:
   LD A,(GridNumber)
   CP $00
@@ -622,7 +619,7 @@ CheckLeftGate:
 
 ; Grid 2, facing left at x 2: closed unless item 2 is carried
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 CheckItemGate:
   LD A,(GridNumber)
   CP $02
@@ -649,7 +646,7 @@ CheckItemGateNext:
 ;
 ; GetSelectedItem; not item 1: Z via $B2DC. Callers: $8DE7, $96A4.
 ;
-; Witness: L1 9 (c1o, deaths, s1-right).
+; Witness: L1 10 (c1o, deaths, rzx-r1, s1-right).
 IsShieldUp:
   CALL GetSelectedItem
   CP $01
@@ -667,8 +664,8 @@ IsShieldUp:
 ; +$11 down, the column on wrap) and the walk frame drawn ($AFD1). At 7: state
 ; 0, x - 1 column ($B112 E = $FF), +$11 = 0, standing ($ADDD).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 HeroRecoil:
   INC (IY+$0B)
   LD A,(IY+$0B)
@@ -700,8 +697,8 @@ RecoilSteps:
 ;
 ; HL = $7282 + (D / 8) x 32 + E, then BIT 1,(HL). No caller in the image.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 CellFlagUnused:
   SRL D
   SRL D
@@ -734,7 +731,7 @@ CellFlagUnused:
 ; (PassCounter) and redraws the HUD's item (JP $7D5E). The kind-1 branch never
 ; ran in the stage-1 recordings.
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrainItemCharge:
   CALL GetSelectedItem
   CP $01
@@ -822,10 +819,11 @@ RespawnPointsArena:
 ; launches a shot from the hero's hands
 ;
 ; ($B296: D = the column (one less facing left), E = the line + 8 rounded to a
-; cell, B = the direction, C = 9).
+; cell, B = the direction, C = 9). rzx-r1:
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; frame 2310, kind 8 count 72 to 71.
+;
+; Witness: L1 6930 (rzx-r1).
 ThrowItem:
   LD A,(FireLatch)
   CP $00
@@ -883,7 +881,7 @@ ThrowItemLeft:
 ;
 ; RoomNumber $FE30 (the room may have changed).
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroActor:
   CALL HeroUpdate
   CALL CheckHeroFooting
@@ -918,7 +916,7 @@ HeroActor:
 ;
 ; $AF1B).
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CheckHeroFooting:
   LD A,(IY+$0A)
   CP $02
@@ -1001,7 +999,7 @@ CheckHeroFootingGround2:
 ;
 ; HeroLeap $B0B3, $0B the scripted move $871A.
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroUpdate:
   CALL DrainItemCharge
   LD A,(HeroRecord)
@@ -1015,7 +1013,9 @@ HeroUpdate:
   JP Z,HeroUpdateHazard
   SUB $04
 HeroUpdateHazard:
-  LD E,A
+  LD E,A                  ; the cell under the front column: bit 3 deadly (the
+                          ; JP Z at $AC62 was taken in every pass of every
+                          ; recording)
   LD D,(IY+$01)
   CALL CellAt
   BIT 3,A
@@ -1083,7 +1083,7 @@ HeroUpdateDispatch:
 ; selected with a count: white and blue on alternate passes. Else +$0C rises
 ; one a pass up to 7 (white).
 ;
-; Witness: L1 9393 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 18706 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroColour:
   LD A,(Energy)
   CP $0E
@@ -1125,8 +1125,7 @@ HeroColourDone:
 ;
 ; but the death.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 207 (rzx-r1).
 FireBolt:
   LD A,(FireLatch)
   CP $00
@@ -1166,8 +1165,7 @@ FireBoltAdd:
 ;
 ; +4 = $FF, +5 = 1, and plays effect $0B.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 319 (rzx-r1).
 ThrowAmmo:
   LD A,(FireLatch)
   CP $00
@@ -1230,7 +1228,7 @@ ThrowAmmoAdd:
 ; joystick set-up ($9834 Kempston bits 3, 2, 1, 0, 4; $986A Sinclair keys 9, 8,
 ; 6, 7, 0).
 ;
-; Witness: L1 8194 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 12717 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroStand:
   CALL KeyFire
   JP Z,HeroFireHeld
@@ -1261,7 +1259,7 @@ HeroStandLeft:
 ;
 ; pause) and $A48B.
 ;
-; Witness: L1 71 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 465 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroStandFrame:
   LD A,$0C
   LD (IY+$08),A
@@ -1277,11 +1275,12 @@ HeroStandSet:
 ; (state 7, HeroStrikeLow $AE5D), UP the
 ;
 ; high strike (state 6, HeroStrikeHigh $AED4), LEFT the middle strike (state 5,
-; HeroStrikeMid $AE8E); each starts at
+; HeroStrikeMid $AE8E) whichever way the
 ;
-; frame $FF with the base column + 1.
+; hero faces, RIGHT nothing (only KeyLeft is tested); each starts at frame $FF
+; with the base column + 1.
 ;
-; Witness: L1 115 (c1o, s1-right).
+; Witness: L1 331 (c1o, rzx-r1, s1-right).
 HeroFireHeld:
   CALL GetSelectedItem
   CP $06
@@ -1324,7 +1323,7 @@ HeroFireHeldNoWeapon:
 ;
 ; Also entered from the walk (WalkJumpCheck $AFDB).
 ;
-; Witness: L1 8 (s1-right).
+; Witness: L1 85 (rzx-r1, s1-right).
 StartJump:
   LD E,$02
   CALL MoveBaseX
@@ -1334,7 +1333,7 @@ StartJump:
 
 ; Start the leap (DOWN): state 9, base column + 1
 ;
-; Witness: L1 1 (c1o).
+; Witness: L1 47 (c1o, rzx-r1).
 StartLeap:
   LD E,$01
   CALL MoveBaseX
@@ -1349,7 +1348,7 @@ StartLeap:
 ;
 ; 1). Frame 4 of the state is the hit ($7FEE, StrikeableActor $A7C4).
 ;
-; Witness: L1 9 (c1o).
+; Witness: L1 306 (c1o, rzx-r1).
 HeroStrikeLow:
   INC (IY+$08)
   LD A,(IY+$08)
@@ -1423,7 +1422,7 @@ HeroStrikeMidFrames:
 ;
 ; the high hit ($7FFA).
 ;
-; Witness: L1 47 (c1o, s1-right).
+; Witness: L1 67 (c1o, rzx-r1, s1-right).
 HeroStrikeHigh:
   INC (IY+$08)
   LD A,(IY+$08)
@@ -1461,7 +1460,7 @@ HeroStrikeHighFrames:
 
 ; Start a fall: state 3, speed 2, frame $10, base column - 5
 ;
-; Witness: L1 8 (c1o, deaths, s1-right).
+; Witness: L1 26 (c1o, deaths, rzx-r1, s1-right).
 StartFall:
   LD (IY+$0A),$03
   LD (IY+$0B),$02
@@ -1472,7 +1471,7 @@ StartFall:
 
 ; Drop off a ledge missed in a jump: state 3, speed 4, frame $10
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 4 (rzx-r1, s1-right).
 StartDrop:
   LD (IY+$0A),$03
   LD (IY+$0B),$04
@@ -1484,7 +1483,7 @@ StartDrop:
 ; FrontCellAhead $B007: a solid cell keeps him standing. Else state 1, frame 0,
 ; base column + 2.
 ;
-; Witness: L1 126 (c1o, deaths, s1-right).
+; Witness: L1 246 (c1o, deaths, rzx-r1, s1-right).
 WalkRight:
   CALL FrontCellAhead
   RET NZ
@@ -1496,7 +1495,7 @@ WalkRight:
 
 ; LEFT while standing: start walking unless a wall is ahead (base column - 2)
 ;
-; Witness: L1 18 (c1o, deaths).
+; Witness: L1 121 (c1o, deaths, rzx-r1).
 WalkLeft:
   CALL FrontCellAhead
   RET NZ
@@ -1519,7 +1518,7 @@ WalkLeft:
 ;
 ; base column moves 2 (B = MoveBaseX $B112); then the frame of HeroWalkSet.
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 HeroWalk:
   CALL CheckWalkBarriers
   RET Z
@@ -1585,7 +1584,7 @@ HeroWalkSet:
 ;
 ; Pops the return address and jumps to StartJump $AE3D.
 ;
-; Witness: L1 875 (c1o, deaths, s1-right).
+; Witness: L1 3173 (c1o, deaths, rzx-r1, s1-right).
 WalkJumpCheck:
   CALL KeyUp
   RET NZ
@@ -1602,7 +1601,7 @@ WalkJumpCheckJump:
 ;
 ; Column + 4 facing right, + 0 facing left (CellAt $B162).
 ;
-; Witness: L1 139 (c1o, deaths, s1-right).
+; Witness: L1 502 (c1o, deaths, rzx-r1, s1-right).
 FrontCell:
   LD A,(IY+$00)
   ADD A,$04
@@ -1621,7 +1620,7 @@ FrontCellLine:
 
 ; The same test as FrontCell $AFED (a second copy of the code)
 ;
-; Witness: L1 144 (c1o, deaths, s1-right).
+; Witness: L1 367 (c1o, deaths, rzx-r1, s1-right).
 FrontCellAhead:
   LD A,(IY+$00)
   ADD A,$04
@@ -1648,7 +1647,7 @@ FrontCellAheadLine:
 ;
 ; to 4 and is added to the base line.
 ;
-; Witness: L1 83 (c1o, deaths, s1-right).
+; Witness: L1 356 (c1o, deaths, rzx-r1, s1-right).
 HeroFall:
   LD A,(IY+$08)
   CP $10
@@ -1687,7 +1686,7 @@ HeroFallShow:
 
 ; State 4: a leap that found no ledge sinks back (the leap frames backwards)
 ;
-; Witness: L1 9 (c1o).
+; Witness: L1 423 (c1o, rzx-r1).
 HeroLeapBack:
   DEC (IY+$08)
   LD A,(IY+$08)
@@ -1708,7 +1707,7 @@ HeroLeapBackShow:
 ;
 ; the way down.
 ;
-; Witness: L1 105 (s1-right).
+; Witness: L1 1528 (rzx-r1, s1-right).
 HeroJump:
   INC (IY+$08)
   LD A,(IY+$08)
@@ -1727,7 +1726,7 @@ HeroJumpEnd:
 
 ; Show frame A of the jump set
 ;
-; Witness: L1 179 (c1o, deaths, s1-right).
+; Witness: L1 1815 (c1o, deaths, rzx-r1, s1-right).
 JumpFrame:
   LD A,(IY+$08)
   CALL SetActorFrame
@@ -1746,7 +1745,7 @@ HeroJumpSet:
 ;
 ; him back (state 4, HeroLeapBack $B06B).
 ;
-; Witness: L1 9 (c1o).
+; Witness: L1 423 (c1o, rzx-r1).
 HeroLeap:
   INC (IY+$08)
   LD A,(IY+$08)
@@ -1774,7 +1773,7 @@ HeroLeapFrame:
 
 ; Show frame A of the leap set
 ;
-; Witness: L1 16 (c1o).
+; Witness: L1 752 (c1o, rzx-r1).
 LeapFrame:
   CALL SetActorFrame
 
@@ -1785,7 +1784,7 @@ HeroLeapSet:
 ; Turn the hero round in the walk: base column by TurnSteps[frame], facing
 ; flipped
 ;
-; Witness: L1 2 (c1o).
+; Witness: L1 11 (c1o, rzx-r1).
 HeroTurn:
   LD E,(IY+$08)
   LD D,$00

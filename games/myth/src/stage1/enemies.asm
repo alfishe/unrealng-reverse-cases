@@ -22,7 +22,7 @@
 ; freed). Frame 0. Draws with $AA02 (frames $E154, graphics $E06C). Its kind's
 ; handler pointer is at $9D5F.
 ;
-; Witness: L1 2066 (s1-right).
+; Witness: L1 5234 (rzx-r1, s1-right).
 UpdatePieceActor:
   CALL SetCycleColour
   LD A,(IY+$0B)
@@ -61,8 +61,7 @@ PieceFrames:
 ; State 6: rise and bob along RiseSteps for 30 steps (effect 3 at steps 16 and
 ; 25), then state 7
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 155 (rzx-r1).
 PieceRises:
   INC (IY+$08)
   LD A,(IY+$08)
@@ -103,8 +102,7 @@ RiseSteps:
 ; $A11E (the hero within $14 lines); then the hero's x ($74E0) equal to +0 or
 ; +0 + 1: AddScore 1200, PieceTakenFlag = 1, PiecesMask |= +$10, freed ($B35E).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 28 (rzx-r1).
 PieceWaitsPickup:
   LD C,$14
   CALL HeroWithinY
@@ -152,7 +150,7 @@ PieceNotTaken:
 ;
 ; known only from the code.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrawRoomPicture:
   LD A,(RoomNumber)
   CP $0C
@@ -193,8 +191,7 @@ DrawRoomPicture:
 ;
 ; Writes A to the shadow attributes $6E2E and $6E32.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 846 (rzx-r1).
 SetEyeColour:
   LD (PlayAttributesCell+$006C),A
   LD (PlayAttributesCell+$0070),A
@@ -237,7 +234,7 @@ EyeFlashColours:
 ;
 ; known only from the code.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrawArenaPicture:
   LD A,(GridNumber)
   CP $02
@@ -315,7 +312,7 @@ ArenaColumn:
 ;
 ; Grid 0: the hero at a column under 4 loses 4 each pass.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ZoneDamage:
   LD A,(GridNumber)
   CP $02
@@ -352,8 +349,7 @@ ZoneDamageGrid0:
 ;
 ; his state $74EA is $0F.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 7664 (rzx-r1).
 FirePitActor:
   LD A,(IY+$08)
   CP $64
@@ -424,7 +420,7 @@ FirePitColours:
 ;
 ; FlameJetShort, sprites $C391 (13 frames of a flame growing and dying).
 ;
-; Witness: L1 12846 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 26588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 FlameJetActor:
   LD A,(IY+$08)
   CP $03
@@ -495,11 +491,10 @@ FlameJetShort:
 
 ; Spawn the bridge slab (template $9D23) at column 15, line $87
 ;
-; Jumped to by BossWingRight once BossPhase is 3 or more. Spawns into IY
-; (SpawnActor $A4B1).
+; Jumped to by BossWingRight once BossPhase is 3 or more (rzx-r1 frame 15362
+; on). Spawns into IY (SpawnActor $A4B1).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 SpawnBossBridge:
   LD HL,ActorTemplates
   LD D,$0F
@@ -511,10 +506,12 @@ SpawnBossBridge:
 ; Handler of the template at $9CD1. Sprite $DDE9, 3 bytes x $21 lines, then
 ; BossPart. Stage 1: the winged demon of
 ;
-; room 12 (the RZX run's window; no recording with an L1 reached it).
+; room 12; rzx-r1 runs the four parts in room 12, frames 14980-15521 (BossPhase
+; 2 at 14980, 3 at 15362, 4
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; at 15521).
+;
+; Witness: L1 477 (rzx-r1).
 BossWingLeft:
   LD HL,BossWingSprite
   LD B,$03
@@ -526,8 +523,7 @@ BossWingLeft:
 ; As BossWingLeft (template $9CDA); from BossPhase 3 on it turns into
 ; SpawnBossBridge.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 477 (rzx-r1).
 BossWingRight:
   LD A,(BossPhase)
   CP $03
@@ -541,8 +537,7 @@ BossWingRight:
 ;
 ; Template $9CE3. Sprite $DE4C, 6 bytes x $20 lines, then BossPart.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 477 (rzx-r1).
 BossBody:
   LD HL,BossBodySprites
   LD B,$06
@@ -559,8 +554,7 @@ BossBody:
 ;
 ; Then BossPart.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 518 (rzx-r1).
 BossHead:
   LD HL,BossHeadSprites
   LD B,$02
@@ -600,8 +594,7 @@ BossHeadHit:
 ;
 ; throws (JP $B18B); then back to state 2.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1947 (rzx-r1).
 BossPart:
   LD (IY+$04),L
   LD (IY+$05),H
@@ -706,8 +699,7 @@ BossHeadFrames:
 ; Set the boss part's colour: white on red while BossFlash, else
 ; BossColours[PassCounter & 7]
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 449 (rzx-r1).
 BossColour:
   LD A,(BossFlash)
   CP $00
@@ -736,8 +728,7 @@ BossColourCycle:
 ;
 ; H = $24) its remains; BossPhase = 4.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 41 (rzx-r1).
 BossFall:
   CALL BossColour
   LD A,(IY+$0E)
@@ -774,12 +765,11 @@ BossFallLine:
 
 ; The lines the falling body drops by, from rising (-4) to falling fast (5)
 BossFallSteps:
-  DEFB $FC,$FD,$FE,$FF,$00,$00,$01,$02,$03,$04,$05
+  INCBIN "res/stage1/table-boss-fall-steps.bin",$0000,11
 
 ; The body's sprite of the attack: $DF0C under step 10, $DE4C from it
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 22 (rzx-r1).
 BossBodySprite:
   LD DE,BossBodySprites
   LD A,(IY+$0D)
@@ -795,8 +785,8 @@ BossBodySpriteSet:
 ;
 ; Then BossPart. No template or code names $9007: a leftover.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 BossGrowPart:
   LD A,(IY+$0A)
   CP $01
@@ -809,18 +799,11 @@ BossGrowPart:
 
 ; The boss's colours over 8 passes (ink 7 down to 3 and back)
 BossColours:
-  DEFB $07,$06,$05,$04,$03,$04,$05,$06
+  INCBIN "res/stage1/table-boss-colours.bin",$0000,8
 
 ; The line steps of the hover, 64 bytes (+8 & $3F); $80 ends the hover
 BossHoverPath:
-  DEFB $00,$00,$00,$00,$80,$00,$00,$00
-  DEFB $00,$FF,$FF,$FE,$FD,$FD,$FE,$FF
-  DEFB $FF,$00,$00,$00,$00,$80,$00,$00
-  DEFB $00,$00,$FF,$FF,$FE,$FE,$FF,$FF
-  DEFB $00,$00,$00,$00,$00,$80,$00,$00
-  DEFB $00,$01,$01,$02,$03,$03,$02,$01
-  DEFB $01,$00,$00,$00,$00,$80,$00,$00
-  DEFB $00,$00,$01,$01,$02,$02,$01,$01
+  INCBIN "res/stage1/table-boss-hover-path.bin",$0000,64
 
   ORG $90E7
 
@@ -834,8 +817,7 @@ BossHoverPath:
 ;
 ; Stage 1: the green dragon's head.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 81 (rzx-r1).
 ArenaHeadActor:
   LD A,(ArenaBossBeaten)
   CP $00
@@ -883,7 +865,7 @@ ArenaHeadMouth:
 ; StatueFrameSeq, +8 / 2) and at 3 spits (FireShot $B497). Sprites $DA00 (3 x
 ; 31: the horse-like head).
 ;
-; Witness: L1 1033 (s1-right).
+; Witness: L1 2167 (rzx-r1, s1-right).
 StatueActor:
   LD (IY+$0C),$03
   BIT 4,(IY+$09)
@@ -940,7 +922,7 @@ StatueFrameSeq:
 ; columns and less than $18 lines under it loses 4 (DamageHero), the body
 ; swings again for 4-11 times.
 ;
-; Witness: L1 2773 (c1o, deaths, s1-right).
+; Witness: L1 9786 (c1o, deaths, rzx-r1, s1-right).
 HangingActor:
   LD (IY+$02),$02
   LD (IY+$03),$25
@@ -1030,7 +1012,7 @@ HangingStill:
 ;
 ; +$0B = 1 for the upper line) and its head $9D8F in the next record.
 ;
-; Witness: L1 237 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 438 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 SpawnRandomEnemy:
   CALL FindFreeActorPair
   RET NZ
@@ -1088,7 +1070,7 @@ SpawnRooms:
 ;
 ; Over the 14 records from the hero $74E0.
 ;
-; Witness: L1 13 (c1o, deaths, s1-right).
+; Witness: L1 67 (c1o, deaths, rzx-r1, s1-right).
 IsColumnTaken:
   PUSH IX
   LD IX,HeroRecord
@@ -1127,7 +1109,7 @@ IsColumnTakenNext:
 ;
 ; (WarriorHeadFly); else the head is hidden (+$0F bit 6).
 ;
-; Witness: L1 860 (c1o, deaths, s1-right).
+; Witness: L1 3809 (c1o, deaths, rzx-r1, s1-right).
 WarriorHeadActor:
   RES 6,(IY+$0F)
   LD A,(IY-$08)
@@ -1146,7 +1128,7 @@ WarriorHeadActor:
 ;
 ; + 1.
 ;
-; Witness: L1 321 (c1o, deaths, s1-right).
+; Witness: L1 1232 (c1o, deaths, rzx-r1, s1-right).
 WarriorHeadAssemble:
   CALL FollowLeader
   INC (IY+$08)
@@ -1176,8 +1158,7 @@ WarriorHeadSteps:
 ; A curve of $26 steps (+$0E by WarriorHeadArc, back by StepFineBack), frame
 ; $0D; at the end WarriorHeadLand.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 663 (rzx-r1).
 WarriorHeadFly:
   LD A,(IY+$08)
   CP $FF
@@ -1215,8 +1196,7 @@ WarriorHeadArc:
 ; BossPhase 4: $A87B with the head's cell (D, E); else spawns the template
 ; $EB2C ($B35E then $A098).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 17 (rzx-r1).
 WarriorHeadLand:
   LD D,(IY+$00)
   DEC D
@@ -1254,7 +1234,7 @@ WarriorHeadLandPickup:
 ; 6 WarriorBlock, 7 WarriorStrike; state 1 (the head coming down) only shows
 ; the frame, or WarriorHit on a hit.
 ;
-; Witness: L1 946 (c1o, deaths, s1-right).
+; Witness: L1 3604 (c1o, deaths, rzx-r1, s1-right).
 WarriorActor:
   LD A,(IY+$0A)
   CP $00
@@ -1285,7 +1265,7 @@ UnusedRet:
 ; When either record's +0 is $FF both are freed and the caller's caller returns
 ; (POP HL).
 ;
-; Witness: L1 321 (c1o, deaths, s1-right).
+; Witness: L1 1249 (c1o, deaths, rzx-r1, s1-right).
 FollowLeader:
   LD A,(IY-$05)
   LD (IY+$0D),A
@@ -1311,7 +1291,7 @@ FollowLeaderGone:
 ;
 ; the state becomes 1.
 ;
-; Witness: L1 145 (c1o, deaths, s1-right).
+; Witness: L1 702 (c1o, deaths, rzx-r1, s1-right).
 WarriorRise:
   LD A,(IY+$0B)
   CP $00
@@ -1347,7 +1327,7 @@ WarriorRiseUp:
 
 ; State 2: turn to the hero, then walk
 ;
-; Witness: L1 8 (c1o, deaths, s1-right).
+; Witness: L1 26 (c1o, deaths, rzx-r1, s1-right).
 WarriorFace:
   LD A,(HeroRecord)
   CP (IY+$00)
@@ -1373,7 +1353,7 @@ WarriorFaceRight:
 ; forward, dropped at the room's edge (column 0 or $1F, $B363). The frame
 ; WarriorWalkFrames[+8 / 2].
 ;
-; Witness: L1 365 (c1o, deaths, s1-right).
+; Witness: L1 1109 (c1o, deaths, rzx-r1, s1-right).
 WarriorWalk:
   BIT 4,(IY+$09)
   JP NZ,WarriorCollapseStart
@@ -1444,7 +1424,7 @@ WarriorWalkFrames:
 ; Z when the hero stands 3 columns in front, less than 10 lines below the
 ; warrior's top
 ;
-; Witness: L1 74 (c1o, deaths, s1-right).
+; Witness: L1 118 (c1o, deaths, rzx-r1, s1-right).
 IsHeroInReach:
   LD A,(HeroY)
   SUB (IY+$01)
@@ -1472,7 +1452,7 @@ IsHeroInReachColumn:
 ;
 ; unless the item guard).
 ;
-; Witness: L1 32 (c1o, deaths, s1-right).
+; Witness: L1 57 (c1o, deaths, rzx-r1, s1-right).
 WarriorFight:
   BIT 4,(IY+$09)
   JP NZ,WarriorCollapseStart
@@ -1533,8 +1513,7 @@ UnusedRet2:
 ;
 ; +$1A (the head's +8) = $FF; state 5.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 13 (rzx-r1).
 WarriorHit:
   LD E,$00
   LD A,(HeroRecord)
@@ -1561,7 +1540,7 @@ WarriorCollapseStart:
 ; Turn round (one column back when facing left) and rise again (state 0, +8 =
 ; 7)
 ;
-; Witness: L1 5 (c1o, deaths, s1-right).
+; Witness: L1 12 (c1o, deaths, rzx-r1, s1-right).
 WarriorTurn:
   BIT 7,(IY+$09)
   JR Z,WarriorTurnDone
@@ -1575,8 +1554,7 @@ WarriorTurnDone:
 
 ; State 5: the warrior falls apart (14 frames), then is removed
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 485 (rzx-r1).
 WarriorCollapse:
   RES 1,(IY+$0F)
   INC (IY+$08)
@@ -1593,8 +1571,8 @@ WarriorCollapseFrames:
 ; State 6: hold the shield up (frame $12) for +8 passes, then fight on (+$10 -
 ; 1)
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 WarriorBlock:
   LD A,$12
   DEC (IY+$08)
@@ -1634,13 +1612,13 @@ WarriorStrikeFrames:
 
 ; Show frame +8 of the warrior's frames
 ;
-; Witness: L1 536 (c1o, deaths, s1-right).
+; Witness: L1 1970 (c1o, deaths, rzx-r1, s1-right).
 WarriorFrame:
   LD A,(IY+$08)
 
 ; Show frame A of the warrior's frames (SetFrame $AA02 with WarriorFrames)
 ;
-; Witness: L1 1233 (c1o, deaths, s1-right).
+; Witness: L1 4920 (c1o, deaths, rzx-r1, s1-right).
 WarriorSetFrame:
   CALL SetActorFrame
 
@@ -1650,7 +1628,7 @@ WarriorFrames:
 
 ; NZ when another body stands 1 or 2 columns ahead (B = 0: 2, 1: 1)
 ;
-; Witness: L1 12 (c1o, deaths, s1-right).
+; Witness: L1 49 (c1o, deaths, rzx-r1, s1-right).
 IsWarriorAhead:
   LD A,$02
   CALL NegateIfFacingLeft
@@ -1699,7 +1677,7 @@ IsWarriorAhead1:
 ; pick-up) by the strikeable actors, the fragments and the routines of the
 ; other modules.
 ;
-; Witness: L1 2857 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 11424 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 AbsDiffBelow:
   LD (AbsDiffLimit+$0001),A
   LD A,E
@@ -1736,12 +1714,12 @@ AbsDiffLimit:
 ; Each pass it shows frame (+8) of the frame table $E25A over the graphics at
 ; $E190 (SetActorFrame $AA02). In
 ;
-; stage 1 these are the graveyard's skeletons and hanging bodies (the room
-; records); the hit path is reached only
+; stage 1 these are the urns and chests (kinds 3-6 of ActorKinds); the hit path
+; runs in rzx-r1 (frames 638 and
 ;
-; in the RZX run (rzx-s1, no L1).
+; 662: placement 2 of room 2 struck twice).
 ;
-; Witness: L1 20131 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 24767 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 StrikeableActor:
   CALL IsHeroHitFrame7
   JR NZ,StrikeableActorFrame
@@ -1780,8 +1758,7 @@ StrikeableActorSet:
 ;
 ; RemoveActor $B35E.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 5 (rzx-r1).
 ShatterActor:
   LD B,(IY+$00)
   LD A,(IY+$01)
@@ -1802,7 +1779,7 @@ ShatterActor:
 ;
 ; $B2DC) in reach, NZ (ReturnNZ $B2E1) not.
 ;
-; Witness: L1 4 (c1o).
+; Witness: L1 54 (c1o, rzx-r1).
 InStrikeReach:
   LD E,(IY+$00)
   LD A,(HeroFlags)
@@ -1842,8 +1819,7 @@ InStrikeReachMiss:
 ;
 ; and starts it (InitFragment $A87B). IY is kept.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 5 (rzx-r1).
 SpawnFragments:
   LD HL,$07CF
   LD (RandomPointer),HL
@@ -1874,8 +1850,7 @@ SpawnFragmentsNext:
 ; From two Random $8B85 bytes: B = the first AND 3, C = the second AND 3, A =
 ; the second AND $80.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 37 (rzx-r1).
 RandomFragmentParams:
   CALL Random
   AND $03
@@ -1897,8 +1872,7 @@ RandomFragmentParams:
 ;
 ; Also jumped to from $94C0 (a fragment with B = C = 0, A = 0).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 44 (rzx-r1).
 InitFragment:
   PUSH BC
   PUSH AF
@@ -1939,8 +1913,7 @@ InitFragment:
 ;
 ; energy change EnergyChange $FE4E + 6, score +25, effect 5, and it is removed.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 2817 (rzx-r1).
 FragmentActor:
   CALL ColourRedMagenta
   LD (IY+$0C),C
@@ -2070,8 +2043,7 @@ FragmentFall:
 ; of 33 bytes. A fragment that reaches column 0 or 31 is removed (RemoveActor
 ; $B35E).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1223 (rzx-r1).
 MoveFragment:
   LD A,(IY+$00)
   SLA A
@@ -2140,8 +2112,7 @@ FragmentArc1:
 ; the same +4 values; effect 6. Jumped to from $8F64 (the boss's handler) when
 ; its +$0D is $0A.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 BossBurst:
   LD A,(IY+$00)
   ADD A,$03
@@ -2186,8 +2157,7 @@ BossBurst:
 ;
 ; Called from $90F2 when the boss's state is 6.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 3 (rzx-r1).
 BossShots:
   LD A,(IY+$00)
   ADD A,$00
@@ -2224,8 +2194,8 @@ BossShotsEven:
 ;
 ; No CALL, JP or word in the image reaches it.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 AimedShot:
   LD A,(IY+$01)
   LD E,A
@@ -2248,7 +2218,7 @@ AimedShot:
 ;
 ; $9152.
 ;
-; Witness: L1 29 (s1-right).
+; Witness: L1 57 (rzx-r1, s1-right).
 SpawnActorShot:
   LD D,(IY+$00)
   INC D

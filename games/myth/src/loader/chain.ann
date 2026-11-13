@@ -681,7 +681,7 @@ $FE60 c ReadMark ; Read the bits of a mark into L until its marker bit shifts ou
 > Inputs: L the marker (1 or 2, so 7 or 6 bits), A the first delay, B the start count. Output: L the bits, carry set; carry clear on a timeout. Witness: L1 231 (c1).
 
 @module timing ; The timing check: load the second stage, sample the tape's edges, compare the two ends
-@about TimeCheck is LoaderMain's call: it loads tape block 7 and then measures how often the EAR bit changes in 255 windows; a tape played too fast or too slow (a copy, a turbo deck) sets FailFlag, which Sl1End (src/loader/sl1end.asm) turns into a crash at the end of the load.
+@about TimeCheck is LoaderMain's call: it loads tape block 7 and then measures how often the EAR bit changes in 255 windows; a pause after block 7 that is not silent (in c1 all 255 samples are 1) sets FailFlag, which Sl1End (src/loader/sl1end.asm) turns into a crash at the end of the load.
 
 $FE76 c TimeCheck ; Load the second stage, then measure the tape's edges into TimeBuffer and compare them
 > CALL LoadStream (IX = Sl1Start, DE = $AA: tape block 7). Then 255 TimeSample counts to TimeBuffer. On the +2A/+3 ROM (its byte $006D is $28) no compare; else TimeCompare. Tape block 29 loads Unxor over this routine later (src/loader/unxor.asm). Witness: L1 1 (c1).

@@ -442,11 +442,12 @@ DrawTextLineDone:
 ; The texts' proportional font: 28 glyphs of 8 bytes, A-Z, space, full stop
 ;
 ; Each glyph: byte 0 the width mask (bits set from bit 7 for the glyph's pixel
-; columns plus a gap: $FE for A, B, D, N, O, Q, R, Y, Z; $FC for C, E, F, G, H,
-; J, K, P, S, T, U, V, X; $F8 for L and space; $F0 for I and the full stop; $FF
-; for M and W), then 7 rows of pixels (bit 7 the left). Read by DrawTextGlyph
-; $8F20 (TextFont + 8 x the index). Indexes 28-36 (the digits) would read past
-; it into UpdateBurst's code; no text has a digit.
+; columns; the advance, 9 less the trailing zeros, adds the gap: $FE for A, B,
+; D, N, O, Q, R, Y, Z; $FC for C, E, F, G, H, J, K, P, S, T, U, V, X; $F8 for L
+; and space; $F0 for I and the full stop; $FF for M and W), then 7 rows of
+; pixels (bit 7 the left). Read by DrawTextGlyph $8F20 (TextFont + 8 x the
+; index). Indexes 28-36 (the digits) would read past it into UpdateBurst's
+; code; no text has a digit.
 TextFont:
   INCBIN "res/stage5/bitmaps-text-font-1x8.bin",$0000,208
 TextFontSpace:

@@ -17,7 +17,7 @@
 ; (clears the room cells), ClearBuffer, $A5BD, $A5DF (draws the actors) and
 ; CopyBuffer, then runs on into MainLoop.
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 StageEntry:
   LD A,H
   LD (Lives),A
@@ -55,7 +55,7 @@ StageEntry:
 ;
 ; reveal (RevealScore) and the lives (JP $7DCD).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 StageSetUp:
   CALL ClearScreen
   CALL ClearShadowAttributes
@@ -80,7 +80,7 @@ HudBox1:
 HudBoxPaint2:
   CALL FillShadowAttributes ; the code resumes after the 5 bytes
 
-; the score box: white on blue
+; the item strip (column 10, line 24, 12 x 2): bright blue on black
 HudBox2:
   DEFB $0A,$18,$0C,$02,$41
 
@@ -125,7 +125,7 @@ StageSetUpItems:
 ;
 ; 30 x (3 HALTs + PassTick), then 7 x 5 steps of FadeInStep a HALT each.
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 StageFadeIn:
   LD B,$1E
   CALL IdlePasses
@@ -149,7 +149,7 @@ FadeInFrame:
 
 ; B x (3 HALTs + PassTick)
 ;
-; Witness: L1 60 (s1-idle, s1-right).
+; Witness: L1 90 (rzx-r1, s1-idle, s1-right).
 IdlePasses:
   PUSH BC
   HALT
@@ -167,7 +167,7 @@ IdlePasses:
 ; Draws 1 to 8 lines of the digit buffer $7640 at columns 6 (6 wide) and 15 (2
 ; wide), one line higher each step.
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 RevealScore:
   LD B,$08
   LD C,$0F

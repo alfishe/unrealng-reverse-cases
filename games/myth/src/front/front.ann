@@ -251,10 +251,10 @@ $97B5 t KeyNames ; The five names, 7 bytes each, no end mark: UP, DOWN, LEFT, RI
 @res front-texts/key-names.bin
 
 @module joystick ; SELECT JOYSTICK: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU; the readers patched for each
-@about Never recorded: everything here is known only from the code. SelectJoystick $97D8 prints its four lines (JoystickText $A0D9: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU on lines 68, 84, 100, 116, large font), then JoystickHighlight $9A3B runs the moving highlight over them (the menu's timing: 96 frames a line, starting on KEMPSTON) until SPACE. The lines are wiped, and for line 0-2 the five readers are patched: KEMPSTON reads port $1F with KeyXorMask $FF (a Kempston interface sets its bits for a pressed direction), bit 3 up, 2 down, 1 left, 0 right, 4 fire; SINCLAIR reads half row $EFFE: 9 up, 8 down, 6 left, 7 right, 0 fire; CURSOR KEYS 7 up, 6 down, 5 left (half row $F7FE), 8 right, 0 fire. Each pair (ReaderPort $FE4D, ReaderBitOp $FE4C) goes to one reader through a Patch*Reader routine; KeyXorMask is 0 for both key layouts. LEAVE THIS MENU (line 3) changes nothing; every choice goes back to the menu.
+@about Recorded in joystick (work/stage2/rec/joystick: CURSOR, SINCLAIR, LEAVE, KEMPSTON in turn). SelectJoystick $97D8 prints its four lines (JoystickText $A0D9: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU on lines 68, 84, 100, 116, large font), then JoystickHighlight $9A3B runs the moving highlight over them (the menu's timing: 96 frames a line, starting on KEMPSTON) until SPACE. The lines are wiped, and for line 0-2 the five readers are patched: KEMPSTON reads port $1F with KeyXorMask $FF (a Kempston interface sets its bits for a pressed direction), bit 3 up, 2 down, 1 left, 0 right, 4 fire; SINCLAIR reads half row $EFFE: 9 up, 8 down, 6 left, 7 right, 0 fire; CURSOR KEYS 7 up, 6 down, 5 left (half row $F7FE), 8 right, 0 fire. Each pair (ReaderPort $FE4D, ReaderBitOp $FE4C) goes to one reader through a Patch*Reader routine; KeyXorMask is 0 for both key layouts. LEAVE THIS MENU (line 3) changes nothing; every choice goes back to the menu.
 
 $97D8 c SelectJoystick ; SELECT JOYSTICK: the four choices, the highlight, wipe, patch the readers for the chosen one
-> Reached from Menu $99A8 (JP Z at $99D7, line 2). MenuHook $980A, JoystickText $A0D9, JoystickHighlight $9A3B (E = the line taken), ClearTextLine with 68, 84, 100, 116, then E = 0 SetKempston $9834, 1 SetCursorKeys $989F, 2 SetSinclair $986A, 3 BackToMenu. Not executed in any recording (c1, menu).
+> Reached from Menu $99A8 (JP Z at $99D7, line 2). MenuHook $980A, JoystickText $A0D9, JoystickHighlight $9A3B (E = the line taken), ClearTextLine with 68, 84, 100, 116, then E = 0 SetKempston $9834, 1 SetCursorKeys $989F, 2 SetSinclair $986A, 3 BackToMenu.
 > Witness: L1 4 (joystick).
 $97F6 SelectJoystickChoice ; E = the line: 0 KEMPSTON, 1 CURSOR KEYS, 2 SINCLAIR, 3 LEAVE
 $9807 BackToMenu ; the menu again (from DEFINE KEYS, every joystick choice and LEAVE THIS MENU)
@@ -271,28 +271,28 @@ $980B c OldPaintBoxes ; Five attribute boxes: one 16 x 18 of $44, four 16 x 1 of
 @module joystick
 
 $9834 c SetKempston ; KEMPSTON: port $1F, fire bit 4, up 3, down 2, right 0, left 1, KeyXorMask $FF
-> ReaderPort = $001F, then (ReaderBitOp, reader): $67 FIRE, $5F UP, $57 DOWN, $47 RIGHT, $4F LEFT, each through its Patch*Reader; KeyXorMask $FCFA := $FF, so a set bit (the Kempston's pressed direction) reads as a pressed key (Z after BIT). Back to the menu. Not executed in any recording.
+> ReaderPort = $001F, then (ReaderBitOp, reader): $67 FIRE, $5F UP, $57 DOWN, $47 RIGHT, $4F LEFT, each through its Patch*Reader; KeyXorMask $FCFA := $FF, so a set bit (the Kempston's pressed direction) reads as a pressed key (Z after BIT). Back to the menu.
 > Witness: L1 1 (joystick).
 $986A c SetSinclair ; SINCLAIR: half row $EFFE, fire 0 (bit 0), up 9, down 8, right 7, left 6, KeyXorMask 0
-> ReaderPort = $EFFE; $47 FIRE, $4F UP, $57 DOWN, $5F RIGHT, $67 LEFT; KeyXorMask := 0. Back to the menu. Not executed in any recording.
+> ReaderPort = $EFFE; $47 FIRE, $4F UP, $57 DOWN, $5F RIGHT, $67 LEFT; KeyXorMask := 0. Back to the menu.
 > Witness: L1 1 (joystick).
 $989F c SetCursorKeys ; CURSOR KEYS: half row $EFFE for fire 0, up 7, down 6, right 8; $F7FE for left 5; KeyXorMask 0
-> ReaderPort = $EFFE; $47 FIRE, $57 RIGHT, $5F UP, $67 DOWN; ReaderPort = $F7FE, LEFT with $67 still in ReaderBitOp (bit 4: the 5 key); KeyXorMask := 0. Back to the menu. Not executed in any recording.
+> ReaderPort = $EFFE; $47 FIRE, $57 RIGHT, $5F UP, $67 DOWN; ReaderPort = $F7FE, LEFT with $67 still in ReaderBitOp (bit 4: the 5 key); KeyXorMask := 0. Back to the menu.
 > Witness: L1 1 (joystick).
 $98D5 c PatchFireReader ; KeyFire's port := ReaderPort, its BIT opcode := ReaderBitOp
-> Writes KeyFire+4/+5 and KeyFire+13. Not executed in any recording.
+> Writes KeyFire+4/+5 and KeyFire+13.
 > Witness: L1 3 (joystick).
 $98E2 c PatchLeftReader ; KeyLeft's port and BIT opcode from ReaderPort and ReaderBitOp
-> Writes KeyLeft+4/+5 and KeyLeft+13. Not executed in any recording.
+> Writes KeyLeft+4/+5 and KeyLeft+13.
 > Witness: L1 3 (joystick).
 $98EF c PatchRightReader ; KeyRight's port and BIT opcode from ReaderPort and ReaderBitOp
-> Writes KeyRight+4/+5 and KeyRight+13. Not executed in any recording.
+> Writes KeyRight+4/+5 and KeyRight+13.
 > Witness: L1 3 (joystick).
 $98FC c PatchUpReader ; KeyUp's port and BIT opcode from ReaderPort and ReaderBitOp
-> Writes KeyUp+4/+5 and KeyUp+13. Not executed in any recording.
+> Writes KeyUp+4/+5 and KeyUp+13.
 > Witness: L1 3 (joystick).
 $9909 c PatchDownReader ; KeyDown's port and BIT opcode from ReaderPort and ReaderBitOp
-> Writes KeyDown+4/+5 and KeyDown+13. Not executed in any recording.
+> Writes KeyDown+4/+5 and KeyDown+13.
 > Witness: L1 3 (joystick).
 
 @module definekeys
@@ -343,7 +343,7 @@ $9A33 b MenuBarColours 8 ; The menu bar's 8 colours, one a pass: $42 $43 $44 $45
 
 @module joystick
 $9A3B c JoystickHighlight ; The moving highlight over the 4 joystick lines until SPACE; E = the line taken
-> As MenuHighlight $99E2 with 4 lines: the bar on row 8 + 2E (rows 8, 10, 12, 14: lines 68, 84, 100, 116), colours from JoystickBarColours $9A8C, E 0-3. 96 frames a line, 384 a cycle, starting on KEMPSTON. Not executed in any recording.
+> As MenuHighlight $99E2 with 4 lines: the bar on row 8 + 2E (rows 8, 10, 12, 14: lines 68, 84, 100, 116), colours from JoystickBarColours $9A8C, E 0-3. 96 frames a line, 384 a cycle, starting on KEMPSTON.
 > Witness: L1 4 (joystick).
 $9A3F JoystickHighlightPass ; two frames, the effects, the bar
 $9A69 JoystickHighlightStep ; the next pass; 48 passes a line
@@ -499,27 +499,26 @@ $A0D7 FontBase ; PrintText: FontSmall or FontLarge (a word)
 
 @module joystick
 $A0D9 c JoystickText ; The SELECT JOYSTICK lines: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU
-> Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames). Not executed in any recording.
+> Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames).
 > Witness: L1 4 (joystick).
 $A0DC t TextKempston ; PrintText: large font, byte 12, shift 2, line 68: KEMPSTON
 @res front-texts/kempston.bin
 $A0E9 c JoystickText2 ; The second line
-> JoystickText, continued. Not executed in any recording.
+> JoystickText, continued.
 > Witness: L1 4 (joystick).
 $A0EC t TextCursorKeys ; PrintText: large font, byte 11, shift 1, line 84: CURSOR KEYS
 @res front-texts/cursor-keys.bin
 $A0FC c JoystickText3 ; The third line
-> JoystickText, continued. Not executed in any recording.
+> JoystickText, continued.
 > Witness: L1 4 (joystick).
 $A0FF t TextSinclair ; PrintText: large font, byte 12, shift 6, line 100: SINCLAIR
 @res front-texts/sinclair.bin
 $A10C c JoystickText4 ; The fourth line
-> JoystickText, continued. Not executed in any recording.
+> JoystickText, continued.
 > Witness: L1 4 (joystick).
 $A10F t TextLeaveThisMenu ; PrintText: large font, byte 9, shift 6, line 116: LEAVE THIS MENU
 @res front-texts/leave-this-menu.bin
 $A123 c JoystickTextDone ; JoystickText's RET
-> Not executed in any recording.
 > Witness: L1 4 (joystick).
 
 @module leftovers

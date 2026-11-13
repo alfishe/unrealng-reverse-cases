@@ -14,7 +14,7 @@
 @equ $F959 DigitGlyphs ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
 @equ $F9B0 PlaySoundVector ; resident: JP to the AY effect starter (E = the effect number)
 @equ $F9BF DecimalTable 10 ; resident: the words 10000, 1000, 100, 10, 1
-@equ $F9CC DissolveMasks 8 ; resident: DissolveHud's eight masks
+@equ $F9CB DissolveMasks 8 ; resident: the dissolve masks; DissolveHud reads sets 0-3 (32 bytes)
 @equ $F9FB Score 2 ; resident: the score's low four decimal digits, 0-9999 (AddScore)
 @equ $F9FD ScoreHigh ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
 @equ $FA00 BitReverse 256 ; resident: each byte with its bits reversed (the sprites drawn facing left)
@@ -49,7 +49,7 @@
 @equ $FE3A InitOnly3A ; set to $10 by InitStageState; no stage-1 code reads it (known only from the code)
 @equ $FE3D BurstTimer ; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
 @equ $FE3E BurstSmall ; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
-@equ $FE3F Energy ; the hero's energy, 0 (full) to $2E
+@equ $FE3F Energy ; the hero's energy, 0 (empty: a life lost) to $2E (full)
 @equ $FE41 InitOnly41 ; set to $0D by InitStageState; no stage-3 code reads it (stage 1's InitOnly40; known only from the code)
 @equ $FE42 InitOnly42 ; set to 1 by InitStageState; no stage-3 code reads it (stage 1's InitOnly41; known only from the code)
 @equ $FE43 SpanOpen ; (stage 1: $FE42) BuildSpans: 1 while a run of open cells goes on
@@ -725,20 +725,20 @@ $891C c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
 > Called at $9EBD and $9F13 before a room change.
 > Stage 1's ClearPlayBuffer at $8A7B is the same code.
 > Witness: L1 34 (rzx-r3, s3-right).
-$892A c CopyBlockToScreen ; Copy a block of bytes to the screen, one pixel line at a time
-> HL = the source (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width
+$892A c CopyScreenToBlock ; Copy a block of the screen, one pixel line at a time, into a buffer
+> HL = the buffer (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width
 > in bytes, E = the lines. Patches its ADD A,n at $893E with the column; the line addresses come from ScreenLineTable.
-> EndStageSave ($7925) copies the HUD's 48 lines with it.
-> Stage 1's CopyBlockToScreen at $8A89 is the same code.
+> Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer. EndStageSave ($7925) saves the
+> HUD's 48 lines into $7000 with it.
+> Stage 1's CopyScreenToBlock at $8A89 is the same code.
 > Witness: L1 2 (rzx-r3, s3-right).
 $893A CopyBlockLine
 
 @module hud
 $8952 c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
 > DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $970D: the HUD as loaded). Eight steps, each
-> after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is one of 4 rows of 8 at $F9CC
-> (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a ROM byte read through RandomPointer,
-> reset to 0 each step so the pattern is the same every step) and gains bits each step until $FF. Patches the
+> after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is DissolveMasks $F9CB + set + step
+> (set = bits 3-4 of a ROM byte read through RandomPointer, 0, 8, 16 or 24; the step 0-7, the ADD at DissolveStepOperand set to 0 first) and gains bits each step until $FF; only RandomPointer's low byte is cleared each step, so each step reads the next 6 pages of the ROM and the pattern changes (rzx-r1: the first reads of the 8 steps at $0701, $0D01, $1301 ... $3101). Patches the
 > LD DE at $8966 (the source) and the ADD A at $898A (the step).
 > Stage 1's DissolveHud at $8AB1 is the same code.
 > Witness: L1 2 (rzx-r3, s3-right).

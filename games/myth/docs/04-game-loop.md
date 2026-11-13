@@ -1025,9 +1025,11 @@ world stands still while it waits, and only the sound goes on.
 
 | What | Where | Why no recording shows it |
 | --- | --- | --- |
-| PaceShaftRoom: the wait of `$0640` rounds in grid 1 room 0 | `src/stage1/mainloop.asm` | no stage-1 recording with a witness build reached the shaft |
 | PacePassUnused: rooms 0 and 5 wait `$03E8`, room `$0B` waits BC as it stands | `$7982` | no code calls it |
 | the pause | PauseRelease `$79B5` | no recording pressed ENTER in play |
 | RestartFromStageOne, REWIND THE TAPE | `$F048` | no game over chose it |
 | QuitStage in stage 1 | `$789C` | no stage-1 recording held CAPS SHIFT with SPACE |
 | stage 5's E = 2 | none | the code has no path that returns it |
+
+PaceShaftRoom, the wait of `$0640` rounds in grid 1 room 0, ran 731 times in `rzx-r1` (the RZX run's stage 1 replayed
+with an L1); no other stage-1 recording reached the shaft.

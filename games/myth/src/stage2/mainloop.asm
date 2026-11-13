@@ -149,7 +149,7 @@ EndStageSave:
   LD BC,$0000
   LD D,$20
   LD E,$30
-  CALL CopyBlockToScreen
+  CALL CopyScreenToBlock
   CALL FlashFadeScreen
   CALL ClearScreen
   LD BC,$0064

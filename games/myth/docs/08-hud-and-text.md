@@ -797,7 +797,8 @@ the score's two variables live in the resident.
   calls it; each stage has its own CopyToScreen `$79CC`.
 - **RomFontLeftover.** The 124 bytes at `$FF84` are a copy of the ROM font at `$3E34-$3EAF`, a leftover of the
   mastering. No code reads them, and the stack writes over their end in play.
-- **The high score digits.** ByteToDigits has a branch for ScoreHigh above 0 (10 000 points or more). In the stage-1
-  recordings only the 0 branch ran, and AddScore's wrap from 99 to 0 (a million points) never did.
+- **The high score digits.** ByteToDigits has a branch for ScoreHigh above 0 (10 000 points or more). `c1o`, `deaths`,
+  `s1-idle` and `s1-right` ran only the 0 branch; `rzx-r1` passes 10 000 at frame 9484 (AddScore's carry) and runs the
+  other from 9486. AddScore's wrap from 99 to 0 (a million points) never ran.
 - **The old DEFINE KEYS.** OldDefineKeysTexts `$A124` in the front holds PRESS KEY FOR and the five key names, with
   `DOW\N` for DOWN. No code prints them.

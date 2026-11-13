@@ -4,9 +4,9 @@
 ; The 14 actor records at $74E0 (the hero, then 13 others at $74F2), 18 bytes each: +0 X (column 0-29, $FF a free
 ; record), +1 Y (line in the 144-line play buffer; $C8 and up is above the top), +2 width in bytes, +3 height in
 ; lines, +4/+5 the frame's address, +6/+7 the handler, +8..+$0C the kind's five bytes (+9 bit 0 opaque, bit 7 facing
-; left; +$0C the attribute), +$0D/+$0E X and Y where the actor entered the room, +$0F flags (bit 1 kept over a room
-; change, bit 6 not drawn, bit 7 drawn in the second pass), +$10 the placement's index, +$11 the pixel shift (0 or 100
-; and up: none).
+; left; +$0C the attribute), +$0D/+$0E X and Y where the actor entered the room, +$0F flags (bit 0 shootable
+; (ShotHitsActor), bit 1 kept over a room change, bit 2 a body (IsColumnTaken), bit 6 not drawn, bit 7 drawn in the
+; second pass), +$10 the placement's index, +$11 the pixel shift (0 or 100 and up: none).
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $8B37
@@ -18,8 +18,8 @@
 ;
 ; CALL, JP or table word names $8B37): a leftover of the engine.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 StepFineRight:
   ADD A,(IY+$11)
   CP $08
@@ -41,8 +41,7 @@ StepFineRightCarry:
 ; facing (StepX $B112 with E = -1). Called by $8736 and the warrior's flying
 ; head $9474.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 510 (rzx-r1).
 StepFineBack:
   LD E,A
   LD A,(IY+$11)
@@ -59,8 +58,8 @@ StepFineBack:
 ; As StepFineRight leftwards (+0 and +$0D one column left on a borrow). Nothing
 ; calls it: a leftover.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 StepFineLeft:
   LD E,A
   LD A,(IY+$11)
@@ -80,7 +79,7 @@ StepFineLeft:
 ; Every pass: SpawnDelay - 1; at 0 reloads it with 30-61 (Random) and, in grid
 ; 0, goes to SpawnRandomEnemy $9353.
 ;
-; Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19502 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 SpawnTimer:
   LD A,(SpawnDelay)
   DEC A
@@ -102,8 +101,7 @@ SpawnTimerFire:
 ; A record is free when its +0 is $FF. Returns NZ (via $B2E1) when none is
 ; free.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 63 (rzx-r1).
 FindFreeActor:
   LD B,$0D
   LD IY,Actors
@@ -120,7 +118,7 @@ FindFreeActorLoop:
 ;
 ; For an enemy of two records (the warrior and its head). 12 records searched.
 ;
-; Witness: L1 238 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 444 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 FindFreeActorPair:
   LD B,$0C
   LD IY,Actors
@@ -147,7 +145,7 @@ FindPairNext:
 ; it sinks (+1) to $48; GateOpen = 1 while it is above line $38. Frame 0 of
 ; GateFrames (sprite $D9CA, 2 x 24: bars).
 ;
-; Witness: L1 82 (c1o, deaths).
+; Witness: L1 876 (c1o, deaths, rzx-r1).
 GateActor:
   CALL GetSelectedItem
   CP $02
@@ -192,8 +190,7 @@ GateFrames:
 ;
 ; column): the hero can stand on it.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 585 (rzx-r1).
 BridgeSlabActor:
   LD (IY+$02),$04
   LD (IY+$03),$08
@@ -233,7 +230,7 @@ BridgeSlabLand:
 
 ; Clear the shots and free all 13 actor records ($74F2, 234 bytes of $FF)
 ;
-; Witness: L1 4 (s1-idle, s1-right).
+; Witness: L1 10 (rzx-r1, s1-idle, s1-right).
 ClearActors:
   CALL ClearShots
   LD HL,Actors
@@ -247,7 +244,7 @@ ClearActors:
 
 ; Fill the shot slots $75E0-$763F (96 bytes) with $FF
 ;
-; Witness: L1 30 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 111 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ClearShots:
   LD HL,Missiles
   LD DE,Missiles+$0001
@@ -260,7 +257,7 @@ ClearShots:
 
 ; +$0E (the base line) + C
 ;
-; Witness: L1 86 (c1o, deaths, s1-right).
+; Witness: L1 483 (c1o, deaths, rzx-r1, s1-right).
 MoveActorY:
   LD A,(IY+$0E)
   ADD A,C
@@ -274,16 +271,17 @@ MoveActorY:
 ;
 ; LoadRoomActors $A4CC builds an actor from a placement with its kind's row: +1
 ; Y = the placement's Y x 8 + the offset, +6/+7 the handler, +8 to +$0C (the
-; counter, the flags, the state, the item, the attribute), +$0F (bit 0: kept
-; over a room change). Stage 1's kinds: 0 and 1 a hanging body (HangingActor
-; $9186; 1 faces the other way), 2 a flame jet (FlameJetActor $8DCC), 3-6 urns
-; and chests that break when struck (StrikeableActor $A7C4; +$0B the item
-; inside), 7 a fire pit (FirePitActor $8D6D), 8-11 the winged demon's left
-; wing, right wing, body and head (BossWingLeft $8E60 to BossHead $8E86), 12
-; and 14 a statue head (StatueActor $912B), 13 the gate (GateActor $9065), 15
-; the dragon's head (ArenaHeadActor $90E7), 16 the bridge slab (BridgeSlabActor
-; $90A3). Read in all four stage-1 builds (81 of its bytes: the kinds of the
-; rooms the recordings visit).
+; counter, the flags, the state, the item, the attribute), +$0F (bit 0
+; shootable: ShotHitsActor; bit 1 kept over a room change: LoadRoomActors).
+; Stage 1's kinds: 0 and 1 a hanging body (HangingActor $9186; 1 faces the
+; other way), 2 a flame jet (FlameJetActor $8DCC), 3-6 urns and chests that
+; break when struck (StrikeableActor $A7C4; +$0B the item inside), 7 a fire pit
+; (FirePitActor $8D6D), 8-11 the winged demon's left wing, right wing, body and
+; head (BossWingLeft $8E60 to BossHead $8E86), 12 and 14 a statue head
+; (StatueActor $912B), 13 the gate (GateActor $9065), 15 the dragon's head
+; (ArenaHeadActor $90E7), 16 the bridge slab (BridgeSlabActor $90A3). Read in
+; all four stage-1 builds (81 of its bytes: the kinds of the rooms the
+; recordings visit).
 ActorKinds:
   INCBIN "res/stage1/table-kinds.bin",$0000,153
 
@@ -320,7 +318,7 @@ WarriorHeadTemplate:
 ; Called once from StageEntry $7800. Output: none. Side effects: the
 ; $FE08-$FE5F stage variables.
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 InitStageState:
   LD HL,RandomSeed
   LD DE,RandomSeed+1
@@ -380,8 +378,7 @@ InitStageState:
 ;
 ; Reached from the handler $A7C4's jump table ($A7E2).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 15 (rzx-r1).
 ScoreBurst20:
   LD BC,$0014
   CALL AddScore
@@ -412,10 +409,12 @@ ScoreBurst20Alt:
 ; Input: D, E = X and Y, BC = the item's frame, L = the item kind (+$0B), H =
 ; the amount (+$0A). FindFreeActor $8D3A; with a free record: SpawnActor with
 ; the template $9D47 (16 x 16 lines, handler ItemHandler), then the frame, kind
-; and amount. Preserves IY.
+; and amount. Preserves IY. rzx-r1: frame 662, the urn of placement 2 drops the
+; shield (amount 20) into
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; record 1.
+;
+; Witness: L1 23 (rzx-r1).
 SpawnItem:
   PUSH IY
   PUSH HL
@@ -450,8 +449,7 @@ SpawnItemFull:
 ; with the frame $EB6C, kind 8, amount $24. Reached from $A7C4's jump table
 ; ($A7EF).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 6 (rzx-r1).
 DropItemKind8:
   LD D,(IY+$00)
   LD E,(IY+$0E)
@@ -464,10 +462,11 @@ DropItemKind8:
 ; Free the actor and drop item kind 1 (amount 20) where it entered the room
 ;
 ; As DropItemKind8 with the frame $EB8C, kind 1, amount $14. Reached from
-; $A7C4's jump table ($A7F4).
+; $A7C4's jump table ($A7F4). rzx-r1: frame 662
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; (the urn of placement 2).
+;
+; Witness: L1 4 (rzx-r1).
 DropItemKind1:
   LD D,(IY+$00)
   LD E,(IY+$0E)
@@ -484,8 +483,7 @@ DropItemKind1:
 ; AddScore 400, PiecesComplete + 1 for kind 6, AddCarried $7E5F with A = the
 ; kind (+$0B) and D = the amount (+$0A), PlaySoundVector 4, and FreeActor.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 658 (rzx-r1).
 ItemHandler:
   CALL SetCycleColour
   LD C,$14
@@ -518,7 +516,7 @@ ItemHandlerAdd:
 ; Input: IY = the actor, C = the distance. E = the hero's Y ($74E1), D = the
 ; actor's Y, then WithinDistance $A7B8: carry when |E - D| < C.
 ;
-; Witness: L1 251 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 1175 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 HeroWithinY:
   LD A,(HeroY)
   LD E,A
@@ -531,8 +529,8 @@ HeroWithinY:
 ; IY = the actor: StartBurst at X - 6, Y / 8 + 2 with the shape $EF69, then
 ; FreeActor. No code or table in the image refers to $A129.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 BurstAtActor:
   LD A,(IY+$00)
   SUB $06
@@ -556,10 +554,11 @@ BurstAtActor:
 ; Reached by a jump from $859F. FreeActor, ArenaFlash = 1; ArenaBossHits + 1 up
 ; to 20. On the 20th hit: SpawnItem at $14, $70 (frame $EAEC, kind 2, amount
 ; 0), ArenaBossBeaten = 1, and StartBurst at $0E, 4 with the shape $EFC9
-; (colours 4 and 6, big mode).
+; (colours 4 and 6, big mode). rzx-r1: ArenaBossHits 3 to 20 at frames
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; 19600-19750.
+;
+; Witness: L1 20 (rzx-r1).
 ArenaBossHit:
   CALL RemoveActor
   LD A,$01
@@ -592,8 +591,7 @@ ArenaBossHit:
 ;
 ; Reached by a jump from $8EAD. Big mode, colours 4 and 5.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 BossFlees:
   LD (IY+$0F),$14
   LD A,$03
@@ -612,8 +610,7 @@ BossFlees:
 ; + 1 with the shape $EFB1 (small mode, colours 1 and 3), MarkPlacementDone,
 ; FreeActor. Reached from $9141 (the handler $912B).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 2 (rzx-r1).
 ScoreBurst64:
   LD BC,$0040
   CALL AddScore
@@ -644,8 +641,7 @@ ScoreBurst64Left:
 ; IY = the actor. AddScore 160, StartBurst at X - 7, Y / 8 + 2 with the shape
 ; $EF85, colours 7 and 6, big mode. Reached from $9195 (the handler $9186).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 11 (rzx-r1).
 ScoreBurst160:
   LD BC,$00A0
   CALL AddScore
@@ -673,10 +669,9 @@ ScoreBurst160:
 ; ParticleInks, BurstTimer = $FF. Each set bit of the shape gives a particle
 ; record of 4 bytes at $7040: X, Y (cell row), the direction (a random 0-5, +
 ; 13 for the right byte), the ink (a random 0-3); $FF ends the list. Preserves
-; IY.
+; IY. rzx-r1: frame 661, T 10312 (effect 1 through StartBurstSound).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 30 (rzx-r1).
 StartBurst:
   LD (BurstSmall),A
   PUSH DE
@@ -771,7 +766,7 @@ StartBurstNextBit:
 ; the 8 glyph bytes are stored into the play buffer at the cell and the cell's
 ; attribute (ParticleInks) via $B34E.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 UpdateBurst:
   LD E,$1C
   LD A,(BurstSmall)
@@ -940,7 +935,7 @@ BurstLeftover:
 
 ; BurstTimer = $64: no burst
 ;
-; Witness: L1 0 ().
+; Witness: L1 26 (rzx-r1).
 StopBurst:
   LD A,$64
   LD (BurstTimer),A
@@ -961,7 +956,7 @@ BurstSteps:
 
 ; Put the hero at X $0E, Y $31 (PlaceHero)
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 PlaceHeroAtStart:
   LD D,$0E
   LD E,$31
@@ -972,7 +967,7 @@ PlaceHeroAtStart:
 ; Input: D, E = X and Y. Called from PlaceHeroAtStart and $AB1C (a grid
 ; change).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 7 (rzx-r1, s1-idle, s1-right).
 PlaceHero:
   LD IY,HeroRecord
   LD HL,HeroTemplate
@@ -982,10 +977,11 @@ PlaceHero:
 ; Set bit 7 of the actor's placement (it does not come back)
 ;
 ; IY = the actor: the placement +$10 x 3 + Placements gets bit 7, so
-; LoadRoomActors skips it from now on.
+; LoadRoomActors skips it from now on. rzx-r1:
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; frame 662, the urn of placement 2 ($9BA6 05 to 85).
+;
+; Witness: L1 28 (rzx-r1).
 MarkPlacementDone:
   LD L,(IY+$10)
   LD H,$00
@@ -1004,7 +1000,7 @@ MarkPlacementDone:
 ;
 ; Called once from StageEntry: every placed actor comes back.
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 ReviveAllPlacements:
   LD HL,(Placements)
   LD DE,$0003
@@ -1022,7 +1018,7 @@ ReviveAllPlacementsLoop:
 ; Input: HL = the template, IY = the record, D, E = X and Y (also the entry X,
 ; Y at +$0D, +$0E). Preserves IY and DE.
 ;
-; Witness: L1 18 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 165 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 SpawnActor:
   PUSH IY
   PUSH DE
@@ -1053,7 +1049,7 @@ SpawnActor:
 ;
 ; Called by the room builder at each room change.
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 LoadRoomActors:
   LD IY,Actors
   LD DE,$0012
@@ -1189,7 +1185,7 @@ LoadRoomActorsSkip:
 ; For the 14 records from $74E0: when +0 is not $FF, the handler +6/+7 is
 ; written into HandlerCall and called with IY = the record.
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RunActorHandlers:
   LD B,$0E
   LD IY,HeroRecord
@@ -1232,7 +1228,7 @@ RunActorHandlersNext:
 ; width x height bytes, row by row, one bit a pixel, no mask (DrawSprite $B42B
 ; copies it).
 ;
-; Witness: L1 28567 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 58036 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 SetActorFrame:
   POP IX
   LD E,(IX+$00)
@@ -1270,7 +1266,7 @@ SetActorFrame:
 
 ; Move the actor IY's base column by E (the other way when it faces left)
 ;
-; Witness: L1 182 (c1o, deaths, s1-right).
+; Witness: L1 1048 (c1o, deaths, rzx-r1, s1-right).
 MoveBaseX:
   LD A,E
   BIT 7,(IY+$09)
@@ -1283,7 +1279,7 @@ MoveBaseXAdd:
 
 ; A = -A when the actor IY faces left (+9 bit 7)
 ;
-; Witness: L1 28591 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 58134 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 NegateIfFacingLeft:
   BIT 7,(IY+$09)
   RET Z
@@ -1292,7 +1288,7 @@ NegateIfFacingLeft:
 
 ; HL = DE + 6A: frame A's record in the frame table DE
 ;
-; Witness: L1 28567 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 58036 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 FrameRecordAddress:
   LD L,A
   LD H,$00
@@ -1320,7 +1316,7 @@ FrameRecordAddress:
 ;
 ; full (nothing added), else NZ. AddMissileHigh $B296 uses slots 8-15 ($7610).
 ;
-; Witness: L1 29 (s1-right).
+; Witness: L1 105 (rzx-r1, s1-right).
 AddMissile:
   PUSH BC
   PUSH DE
@@ -1330,7 +1326,7 @@ AddMissile:
 
 ; Add a missile to the slots 8-15 ($7610) of the missile records
 ;
-; Witness: L1 56 (c1o, deaths, s1-right).
+; Witness: L1 174 (c1o, deaths, rzx-r1, s1-right).
 AddMissileHigh:
   PUSH BC
   PUSH DE
@@ -1339,7 +1335,7 @@ AddMissileHigh:
 
 ; Add a missile to the eight slots from BC
 ;
-; Witness: L1 85 (c1o, deaths, s1-right).
+; Witness: L1 279 (c1o, deaths, rzx-r1, s1-right).
 AddMissileFrom:
   LD D,$00
 AddMissileSearch:
@@ -1399,7 +1395,7 @@ AddMissileFull:
 ; MissileHandlers[+2] through the CALL at MissileCall $B30C, whose operand it
 ; writes. IX is kept.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 UpdateMissiles:
   PUSH IX
   LD B,$10
@@ -1433,10 +1429,14 @@ UpdateMissilesNext:
 
 ; The handler of each missile kind 0-11
 ;
-; 0 $876C, 1 $80DF, 2 and 3 $8006 (the thrown items, left and right), 4 $83A9,
-; 5 $8403 (the boss's shots), 6 $8564
+; 0 $876C, 1 $80DF UpdateAimedShot, 2 and 3 $8006 UpdateThrownArc (the thrown
+; items, left and right), 4 $83A9
 ;
-; (the bolt), 7 and 8 $842C (the death burst), 9 $8171, $0A and $0B $85C8.
+; UpdateDriftRight, 5 $8403 UpdateDriftLeft, 6 $8564 UpdateFlatShot (the bolt),
+; 7 and 8 $842C UpdatePathFlyer
+;
+; (HeroDeath's 8 flyers), 9 $8171 UpdateHeroShot, $0A and $0B $85C8
+; UpdateBouncer.
 MissileHandlers:
   DEFW HangFlashBorder
   DEFW UpdateAimedShot
@@ -1455,7 +1455,7 @@ MissileHandlers:
 
 ; Free the actor record IY (+0 = $FF)
 ;
-; Witness: L1 76 (c1o, s1-right).
+; Witness: L1 381 (c1o, rzx-r1, s1-right).
 RemoveActor:
   LD (IY+$00),$FF
   RET
@@ -1464,8 +1464,8 @@ RemoveActor:
 ;
 ; Jumped to from $95F7 and $95FC.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 RemoveActorPair:
   LD (IY+$00),$FF
   LD (IY+$12),$FF

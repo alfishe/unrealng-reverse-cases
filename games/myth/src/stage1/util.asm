@@ -12,7 +12,7 @@
 ; Input BC (the rounds, 26 T-states each). Output BC = 0, A = 0. The interrupt
 ; returns land on its three instructions (L1 lists them as entries).
 ;
-; Witness: L1 9877843 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 12491743 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DelayBC:
   DEC BC
 
@@ -33,7 +33,7 @@ DelayBCLoop:
 ; Calls KeyHook, then reads port $7FFE bit 0: Z when SPACE is held. The main
 ; loop $7872 opens the item window on it.
 ;
-; Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 156844 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 TestSpaceKey:
   CALL KeyHook
   LD BC,$7FFE
@@ -43,7 +43,7 @@ TestSpaceKey:
 
 ; Clear the screen's 768 attributes to 0
 ;
-; Witness: L1 3 (s1-idle, s1-right).
+; Witness: L1 5 (rzx-r1, s1-idle, s1-right).
 ClearAttributes:
   LD HL,Attributes
   LD DE,Attributes+1
@@ -54,7 +54,7 @@ ClearAttributes:
 
 ; Clear the shadow attributes $6D00-$6FFF to 0
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 ClearShadowAttributes:
   LD HL,ShadowAttributes
   LD DE,ShadowAttributes+$0001
@@ -68,9 +68,12 @@ ClearShadowAttributes:
 ; Clears 4401 bytes of the play buffer (the LDIR form; ClearBuffer $9AB5 is the
 ; fast PUSH form of the whole 4608).
 ;
-; Called at $9F49 and $9F9F before a room change.
+; Called at $9F49 and $9F9F before a room change. Unrle overwrites 4295 of its
+; 4401 bytes and RoomChange ends with
 ;
-; Witness: L1 24 (c1o, deaths, s1-right).
+; ClearBuffer: the clear buys nothing (c1: 120 109 T of a room change).
+;
+; Witness: L1 94 (c1o, deaths, rzx-r1, s1-right).
 ClearPlayBuffer:
   LD HL,PlayBuffer
   LD DE,PlayBuffer+1
@@ -79,19 +82,21 @@ ClearPlayBuffer:
   LDIR
   RET
 
-; Copy a block of bytes to the screen, one pixel line at a time
+; Copy a block of the screen, one pixel line at a time, into a buffer
 ;
-; HL = the source (lines packed one after the other), B = the screen column, C
+; HL = the buffer (lines packed one after the other), B = the screen column, C
 ; = the first pixel line, D = the width
 ;
 ; in bytes, E = the lines. Patches its ADD A,n at $8A9D with the column; the
 ; line addresses come from ScreenLineTable.
 ;
-; The game-over path $790D copies the HUD's saved 48 lines back from $7000 with
-; it.
+; Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer.
+; EndStage saves the HUD's lines
 ;
-; Witness: L1 1 (s1-right).
-CopyBlockToScreen:
+; 0-47 into $7000 with it ($790D).
+;
+; Witness: L1 2 (rzx-r1, s1-right).
+CopyScreenToBlock:
   LD A,B
   LD (CopyBlockLine+$0005),A
   LD B,$00
@@ -122,8 +127,7 @@ CopyBlockLine:
 ;
 ; Returns HL = 0 when A is 0. Called by $A9AF.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1223 (rzx-r1).
 Multiply:
   LD HL,$0000
   CP $00
@@ -147,8 +151,8 @@ MultiplyLoop:
 ;
 ; Called by the actor set-up $A5A1.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 NextSeed:
   LD A,(RandomSeed)
   LD C,A
@@ -164,7 +168,7 @@ NextSeed:
 ; RandomPointer + 1, kept in $0000-$3FFF; A = the ROM byte there. The game's
 ; random numbers.
 ;
-; Witness: L1 1858 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 6635 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 Random:
   LD HL,(RandomPointer)
   INC HL
@@ -177,7 +181,7 @@ Random:
 
 ; Clear the attributes, then the 6144 pixel bytes
 ;
-; Witness: L1 3 (s1-idle, s1-right).
+; Witness: L1 5 (rzx-r1, s1-idle, s1-right).
 ClearScreen:
   CALL ClearAttributes
   LD HL,Screen
@@ -207,8 +211,8 @@ BlankIcon:
 ; IY = ScreenLineTable[C] (the word, not the address read). Nothing calls it: a
 ; leftover.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 LineAddressToIY:
   LD DE,ScreenLineTable
   LD L,C
@@ -225,7 +229,7 @@ LineAddressToIY:
 ; DE = the map (Attributes or the shadow $6D00). Used by FillAttributes and
 ; FillShadowAttributes.
 ;
-; Witness: L1 188 (s1-idle, s1-right).
+; Witness: L1 319 (rzx-r1, s1-idle, s1-right).
 CellAddress:
   SRL C
   SRL C
@@ -247,7 +251,7 @@ CellAddress:
 
 ; Wait BC interrupts (HALT each)
 ;
-; Witness: L1 300 (s1-idle, s1-right).
+; Witness: L1 500 (rzx-r1, s1-idle, s1-right).
 WaitFrames:
   HALT
   DEC BC
@@ -260,7 +264,7 @@ WaitFrames:
 
 ; A = 1, Z set: the "yes" exit of the tests
 ;
-; Witness: L1 28 (c1o, deaths, s1-right).
+; Witness: L1 924 (c1o, deaths, rzx-r1, s1-right).
 ReturnZ:
   LD A,$01
   CP $01
@@ -268,7 +272,7 @@ ReturnZ:
 
 ; A = 1, Z clear: the "no" exit of the tests
 ;
-; Witness: L1 36 (c1o, deaths, s1-right).
+; Witness: L1 311 (c1o, deaths, rzx-r1, s1-right).
 ReturnNZ:
   LD A,$01
   CP $00

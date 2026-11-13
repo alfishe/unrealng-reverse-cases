@@ -114,8 +114,8 @@ EndStage:
 ; fields with CopyToScreen from the cleared play buffer $5B00 (stride 0): the
 ; score (column 6, line 8, 6 x 8), the fields at column $0E (4 x 8) and column
 ; $14 (6 x 8) of line 8, the item strip (column $0A, line $18, 12 x 16) and the
-; pieces field (column $19, line $18, 6 x 16). Then CopyBlockToScreen puts the
-; HUD picture as loaded ($7000, 32 x 48) back on lines 0-47, FlashFadeScreen,
+; pieces field (column $19, line $18, 6 x 16). Then CopyScreenToBlock saves
+; lines 0-47 into the HUD picture ($7000, 32 x 48), FlashFadeScreen,
 ; ClearScreen, WaitFrames 100. Returns with E = the outcome (popped), BC =
 ; ScoreDigitsHigh (the score's six digits as text) and H = Lives.
 ;
@@ -154,7 +154,7 @@ EndStageSave:
   LD BC,$0000
   LD D,$20
   LD E,$30
-  CALL CopyBlockToScreen
+  CALL CopyScreenToBlock
   CALL FlashFadeScreen
   CALL ClearScreen
   LD BC,$0064
@@ -170,12 +170,12 @@ EndStageSave:
 ; Pad the pass with a busy wait taken from PaceWaits by grid and room
 ;
 ; BC = PaceWaits[GridNumber x 3 + RoomNumber], then BC is counted down to 0
-; (PacePassWait, 26 T-states a round). Grid 0 room 0 waits $0258 rounds, grid 0
-; room 1 $0640, grid 4 rooms 0 and 1 $04B0, every other place 1. Unlike stage
-; 1's PacePass (which also reseeded RandomPointer from R every 64 passes and
-; used DelayBC), stage 4's has its own loop and no reseed. The busy wait ran 1
-; 498 000 rounds in s4-right's 945 passes (grid 0) and 1 099 377 in rzx-r4's
-; 7675.
+; (PacePassWait, 24 T-states a round: JP NZ is 10 T). Grid 0 room 0 waits $0258
+; rounds, grid 0 room 1 $0640, grid 4 rooms 0 and 1 $04B0, every other place 1.
+; Unlike stage 1's PacePass (which also reseeded RandomPointer from R every 64
+; passes and used DelayBC), stage 4's has its own loop and no reseed. The busy
+; wait ran 1 498 000 rounds in s4-right's 945 passes (grid 0) and 1 099 377 in
+; rzx-r4's 7675.
 ;
 ; Witness: L1 8620 (rzx-r4, s4-right).
 PacePass:
@@ -212,12 +212,7 @@ PacePassWait:
 ; those rooms read the next grid's words; they are all 1 there. Read every pass
 ; in both recordings.
 PaceWaits:
-  DEFW $0258,$0640,$0001,$0001,$0001,$0001,$0001,$0001
-  DEFW $0001,$0001,$0001,$0001,$04B0,$04B0,$0001,$0001
-  DEFW $0001,$0001,$0001,$0001,$0001,$0001,$0001,$0001
-  DEFW $0001,$0001,$0001,$0001,$0001,$0001,$0001,$0001
-  DEFW $0001,$0001,$0001,$0001,$0001,$0001,$0001,$0001
-  DEFW $0001,$0001,$0001,$0001,$0001,$0001,$0001,$0001
+  INCBIN "res/stage4/table-pace-waits.bin",$0000,96
 
 ; ENTER pauses: wait for its release, a second press and its release
 ;

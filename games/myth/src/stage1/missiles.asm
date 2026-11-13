@@ -18,8 +18,7 @@
 ; ArcSteps[+3]. Draws frame +4 & 7 from $D926 (12 bytes a frame) with the
 ; record ArcFrame, mirrored for kind 3.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 170 (rzx-r1).
 UpdateThrownArc:
   CALL CheckPitDrop
   LD A,(IY+$01)
@@ -76,9 +75,7 @@ ThrownArcMirror:
 
 ; The arc's y change at each step 0-22
 ArcSteps:
-  DEFB $FC,$FD,$FE,$FF,$00,$01,$02,$03
-  DEFB $04,$05,$06,$07,$FC,$FD,$FE,$FF
-  DEFB $00,$01,$02,$03,$04,$04,$00
+  INCBIN "res/stage1/table-arc-steps.bin",$0000,23
 
 ; The thrown object's frame record: a word (0, the graphics come in HL), 2
 ; bytes wide, 6 lines
@@ -91,8 +88,7 @@ ArcFrame:
 ; Tests the cell at (x + 3, y + 8) with $B162; not free (Z) decrements +3 so
 ; the object rests.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 160 (rzx-r1).
 CheckArcLanding:
   LD A,(IY+$03)
   CP $0C
@@ -112,12 +108,16 @@ CheckArcLandingCell:
   RET
 
 ; An object below y $82: outside room 12 freed; in room 12 counted
-; (EyeFlashRepeats, PitDrops up to 9; the ninth sets BossPhase 2)
+; (EyeFlashRepeats, PitDrops up to 9; the tenth object, PitDrops already 9,
+; sets BossPhase 2)
 ;
-; Only while BossPhase is 1. Above y $82: returns at once.
+; Only while BossPhase is 1. Above y $82: returns at once. CP $09 / JR
+; Z,CheckPitDropDone comes before the INC, so
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; the count stops at 9 and the tenth object wakes the demon (rzx-r1: PitDrops 9
+; at 14780, BossPhase 2 at 14980).
+;
+; Witness: L1 170 (rzx-r1).
 CheckPitDrop:
   LD A,(IY+$01)
   CP $82
@@ -148,8 +148,8 @@ CheckPitDropDone:
 ; ShotFrames, mirrored). ShotHitsHero with C = 6; moves; freed at column 0 or
 ; $1F, y under 8 or $80 and up; draws the direction's frame.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 UpdateAimedShot:
   LD C,$06
   CALL ShotHitsHero
@@ -207,14 +207,7 @@ ShotFrames:
 
 ; The 8 directions: dx, dy, the frame's offset in ShotFrames, 1 mirrored
 ShotDirections:
-  DEFB $00,$F8,$04,$00
-  DEFB $01,$F8,$0C,$01
-  DEFB $01,$00,$00,$01
-  DEFB $01,$08,$10,$01
-  DEFB $00,$08,$08,$00
-  DEFB $FF,$08,$10,$00
-  DEFB $FF,$00,$00,$00
-  DEFB $FF,$F8,$0C,$00
+  INCBIN "res/stage1/table-shot-directions.bin",$0000,32
 
 ; Kind 9: a shot flying left or right; stops at the room's edge or on an actor
 ; it hits
@@ -223,8 +216,7 @@ ShotDirections:
 ; finds an actor (it sets the actor's hit flag). Draws ShotFrames' first frame
 ; ($C783), mirrored by the direction.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 914 (rzx-r1).
 UpdateHeroShot:
   LD A,(IY+$04)
   CP $00
@@ -252,8 +244,7 @@ HeroShotHit:
 ; +3 = the tick 0-3 (the frame), +4 = dy a tick. Freed at y $88 and over or
 ; column $1E. ShotHitsHero with C = 10, then DrawDriftShot.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 63 (rzx-r1).
 UpdateDriftRight:
   LD A,(IY+$01)
   ADD A,(IY+$04)
@@ -277,8 +268,7 @@ DriftRightHurt:
 ; Draw a drifting shot: frame +3 from the records at $B3EA, ink green (red in
 ; room 0), flickering bright
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 275 (rzx-r1).
 DrawDriftShot:
   LD A,(IY+$03)
   SLA A
@@ -305,8 +295,7 @@ DrawDriftShotColour:
 
 ; Kind 5: as UpdateDriftRight, drifting left
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 226 (rzx-r1).
 UpdateDriftLeft:
   LD A,(IY+$01)
   ADD A,(IY+$04)
@@ -461,8 +450,7 @@ PathSteps:
 ; at column 15 with $FE5D 0: $A14A. Draws FlatShotFrame ($D986, 2 x 8),
 ; mirrored for +5 = 1, coloured by $B3A3.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 259 (rzx-r1).
 UpdateFlatShot:
   LD A,(IY+$05)
   CP $00
@@ -515,7 +503,7 @@ FlatShotFrame:
 ; (BounceSteps), freed at 45 or at the room's edge; CheckBounceFloor at the
 ; bounce bottoms. ShotHitsHero with C = 6. Frames BounceFrames by +5's parity.
 ;
-; Witness: L1 1092 (s1-right).
+; Witness: L1 2110 (rzx-r1, s1-right).
 UpdateBouncer:
   LD A,(IY+$02)
   CP $0A
@@ -587,7 +575,7 @@ BounceSteps:
 ;
 ; Tests (x + 3, y + 16) with $B162.
 ;
-; Witness: L1 1064 (s1-right).
+; Witness: L1 2058 (rzx-r1, s1-right).
 CheckBounceFloor:
   LD A,(IY+$03)
   CP $06
@@ -619,8 +607,7 @@ CheckBounceFloorCell:
 ; and the shot's y - the actor's y under its height (+3). Returns via $B2E1
 ; (NZ, hit) or $B2DC (Z, none).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 889 (rzx-r1).
 ShotHitsActor:
   LD IX,Actors
   LD B,$0D
@@ -658,7 +645,7 @@ ShotHitsActorSkip:
 ; and $A7B8 (A = $0E, E = the hero's y, D = +1) finds them overlapping,
 ; DamageHero.
 ;
-; Witness: L1 1064 (s1-right).
+; Witness: L1 2333 (rzx-r1, s1-right).
 ShotHitsHero:
   CALL GetSelectedItem
   CP $01
@@ -684,8 +671,8 @@ ShotHitsHeroTest:
 ; The entry 0 of the handler table at $B31A, and the jumps at $890F, $8911,
 ; $892D. A trap: never returns.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 HangFlashBorder:
   LD A,R
   OUT ($FE),A

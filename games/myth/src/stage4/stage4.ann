@@ -5,7 +5,7 @@
 @equ $F959 DigitGlyphs ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
 @equ $F9B0 PlaySoundVector ; resident: JP to the AY effect starter (E = the effect number)
 @equ $F9BF DecimalTable 10 ; resident: the words 10000, 1000, 100, 10, 1
-@equ $F9CC DissolveMasks 8 ; resident: DissolveHud's eight masks
+@equ $F9CB DissolveMasks 8 ; resident: the dissolve masks; DissolveHud reads sets 0-3 (32 bytes)
 @equ $F9FB Score 2 ; resident: the score's low four decimal digits, 0-9999 (AddScore)
 @equ $F9FD ScoreHigh ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
 @equ $FA00 BitReverse 256 ; resident: each byte with its bits reversed (the sprites drawn facing left)
@@ -41,7 +41,7 @@
 @equ $FE36 InitOnly36 ; set to $10 by InitStageState; no stage-4 code reads it (known only from the code)
 @equ $FE39 BurstTimer ; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
 @equ $FE3A BurstSmall ; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
-@equ $FE3B Energy ; the hero's energy, 0 (full) to $2E
+@equ $FE3B Energy ; the hero's energy, 0 (empty: a life lost) to $2E (full)
 @equ $FE3D InitOnly3D ; set to $0D by InitStageState; no stage-4 code reads it (known only from the code)
 @equ $FE3E InitOnly3E ; set to 1 by InitStageState; no stage-4 code reads it (known only from the code)
 @equ $FE3F SpanOpen ; BuildSpans: 1 while a run of open cells goes on (stage 1's $FE42)
@@ -81,7 +81,7 @@ $6D00 s ShadowAttributes ; The shadow of the screen's 768 attributes, the screen
 $6DC0 PlayAttributes ; row 6: the first row of the play area (the room's 18 rows)
 $6DC2 PlayAttributesCell ; row 6, column 2: the room's first cell
 $7000 b HudPicture 32 ; The HUD as loaded: 48 lines of 32 bytes (linear, top first), then their colours at $7600 (6 rows of 32)
-> DissolveHud $8FD6 dissolves the 48 lines onto the screen's lines 0-47 and StageSetUp $9715 copies the 192 colours into the shadow rows 0-5, once, at the stage's start. EndStage $7898 saves the screen's lines 0-47 back here ($7907, CopyBlockToScreen's reverse) and the attributes $5800-$58BF to $7600 ($78B6), so the next stage's block shows the HUD as the player left it; the copy is CopyBlockToScreen $8FAE called at $7911, which, despite its stage-1 name, copies the screen lines into the block (its LDIR runs after EX DE,HL). Between the two the bytes are the records labelled inside (RoomAttributes, Cells, HeroRecord, Actors, Missiles, DigitBuffer, SpanTable). The picture: the frame of the HUD, the energy bar's box, the score box, the item strip's box, the lives and pieces boxes (docs/img). Read and written in s4-right (all 1728 bytes).
+> DissolveHud $8FD6 dissolves the 48 lines onto the screen's lines 0-47 and StageSetUp $9715 copies the 192 colours into the shadow rows 0-5, once, at the stage's start. EndStage $7898 saves the screen's lines 0-47 back here and the attributes $5800-$58BF to $7600 ($78B6), so the next stage's block shows the HUD as the player left it; the copy is CopyScreenToBlock $8FAE called at $7911 (its LDIR runs after EX DE,HL). Between the two the bytes are the records labelled inside (RoomAttributes, Cells, HeroRecord, Actors, Missiles, DigitBuffer, SpanTable). The picture: the frame of the HUD, the energy bar's box, the score box, the item strip's box, the lives and pieces boxes (docs/img). Read and written in s4-right (all 1728 bytes).
 $7040 RoomAttributes ; $7040-$727F: the old room's play colours (SavePlayAttrs $A1A9: 576 bytes, rows 6-23) and the cells' twins ($7042 + row x 32 + column: PutBlock writes 0, UpdateAttributes reads the solid cells' colours); also the burst's particles (StartBurst $A385, 4 bytes each)
 $7042 RoomAttributesCell ; the twin of the cell $7282 (576 bytes lower)
 $7280 Cells ; the room's cells: 19 rows of 32 (tile numbers, then their kinds after BuildSpans $9959; bit 1 solid, bit 3 deadly, kind 7 a bridge slab)
@@ -130,7 +130,7 @@ $7898 c EndStage ; Leave the stage: hide the pieces boxes, then EndStageSave (sa
 > E (pushed) is the outcome: 0 game over (GameOverExit), 1 quit (QuitStage), 2 stage completed (StageExit $7A72). ClearBuffer $9A28, then the pieces boxes' attributes (rows 3 and 4, columns 25-30: $5879 and $5899, 6 cells each) set to 1 with two LDIRs. Stage 1 hid the lives boxes too with two inline FillAttributes records; stage 4 hides only the pieces boxes and falls straight into EndStageSave.
 > Witness: L1 2 (rzx-r4, s4-right).
 $78B6 c EndStageSave ; EndStage, continued: save the HUD, clear its fields, fade, return
-> Saves the HUD's attributes (rows 0-5, 192 bytes) to $7600. Clears five HUD fields with CopyToScreen from the cleared play buffer $5B00 (stride 0): the score (column 6, line 8, 6 x 8), the fields at column $0E (4 x 8) and column $14 (6 x 8) of line 8, the item strip (column $0A, line $18, 12 x 16) and the pieces field (column $19, line $18, 6 x 16). Then CopyBlockToScreen puts the HUD picture as loaded ($7000, 32 x 48) back on lines 0-47, FlashFadeScreen, ClearScreen, WaitFrames 100. Returns with E = the outcome (popped), BC = ScoreDigitsHigh (the score's six digits as text) and H = Lives.
+> Saves the HUD's attributes (rows 0-5, 192 bytes) to $7600. Clears five HUD fields with CopyToScreen from the cleared play buffer $5B00 (stride 0): the score (column 6, line 8, 6 x 8), the fields at column $0E (4 x 8) and column $14 (6 x 8) of line 8, the item strip (column $0A, line $18, 12 x 16) and the pieces field (column $19, line $18, 6 x 16). Then CopyScreenToBlock saves lines 0-47 into the HUD picture ($7000, 32 x 48), FlashFadeScreen, ClearScreen, WaitFrames 100. Returns with E = the outcome (popped), BC = ScoreDigitsHigh (the score's six digits as text) and H = Lives.
 > Witness: L1 2 (rzx-r4, s4-right).
 @module render ; The renderer: the sprite row plotters, the play buffer, the attributes, ClearBuffer and CopyBuffer
 $7929 c FlashFadeScreen ; Fade every coloured ink up to white over 7 frames, then down to black over 7 frames
@@ -144,11 +144,12 @@ $7951 FadeDownCell
 $7957 FadeDownNext
 @module mainloop
 $7961 c PacePass ; Pad the pass with a busy wait taken from PaceWaits by grid and room
-> BC = PaceWaits[GridNumber x 3 + RoomNumber], then BC is counted down to 0 (PacePassWait, 26 T-states a round). Grid 0 room 0 waits $0258 rounds, grid 0 room 1 $0640, grid 4 rooms 0 and 1 $04B0, every other place 1. Unlike stage 1's PacePass (which also reseeded RandomPointer from R every 64 passes and used DelayBC), stage 4's has its own loop and no reseed. The busy wait ran 1 498 000 rounds in s4-right's 945 passes (grid 0) and 1 099 377 in rzx-r4's 7675.
+> BC = PaceWaits[GridNumber x 3 + RoomNumber], then BC is counted down to 0 (PacePassWait, 24 T-states a round: JP NZ is 10 T). Grid 0 room 0 waits $0258 rounds, grid 0 room 1 $0640, grid 4 rooms 0 and 1 $04B0, every other place 1. Unlike stage 1's PacePass (which also reseeded RandomPointer from R every 64 passes and used DelayBC), stage 4's has its own loop and no reseed. The busy wait ran 1 498 000 rounds in s4-right's 945 passes (grid 0) and 1 099 377 in rzx-r4's 7675.
 > Witness: L1 8620 (rzx-r4, s4-right).
 $797B PacePassWait ; count BC down to 0
 $7982 w PaceWaits 8 ; The busy-wait rounds of each place: word GridNumber x 3 + RoomNumber (48 words)
 > Read by PacePass $7974 (LD HL,PaceWaits; the word at + 2 x (GridNumber x 3 + RoomNumber)). Words 0 and 1 (grid 0 rooms 0 and 1): $0258 and $0640; words 12 and 13 (grid 4 rooms 0 and 1): $04B0; all the others 1. Three words a grid is fewer than the rooms of some grids (grid 3 has a room 3, grid 4 a room 4), so those rooms read the next grid's words; they are all 1 there. Read every pass in both recordings.
+@res stage4/table-pace-waits.bin
 $79E2 c CheckPause ; ENTER pauses: wait for its release, a second press and its release
 > Reads port $BFFE bit 0 (ENTER). Not pressed: returns at once. Pressed: waits for the key's release, the next press and its release, so the game stands still between two presses. No other effect. As in stage 1 at `$79B1`. The wait loops from $79EA on ran in neither recording (ENTER never pressed).
 > Witness: L1 8620 (rzx-r4, s4-right).
@@ -764,13 +765,13 @@ $8F92 c ClearShadowAttributes ; Clear the shadow attributes $6D00-$6FFF to 0
 $8FA0 c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
 > Clears 4401 bytes of the play buffer (the LDIR form; ClearBuffer $9A28 is the fast form). Callers: StartStageExit, $A140 and $A196.
 > Witness: L1 43 (rzx-r4, s4-right).
-$8FAE c CopyBlockToScreen ; Copy a block of bytes to the screen, one pixel line at a time
-> HL = the source (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines. Patches its ADD A,n at $8FC2 with the column; the line addresses come from ScreenLineTable. EndStageSave $7911 copies the HUD's saved 48 lines back from $7000 with it.
+$8FAE c CopyScreenToBlock ; Copy a block of the screen, one pixel line at a time, into a buffer
+> HL = the buffer (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines. Patches its ADD A,n at $8FC2 with the column; the line addresses come from ScreenLineTable. Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer. EndStageSave $7911 saves the HUD's 48 lines into $7000 with it.
 > Witness: L1 2 (rzx-r4, s4-right).
 $8FBE CopyBlockLine
 @module hud
 $8FD6 c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
-> DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $9732: the HUD as loaded). Eight steps, each after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is one of 4 rows of 8 at $F9CC (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a ROM byte read through RandomPointer, whose low byte is reset to 0 each step so the pattern is the same every step) and gains bits each step until $FF. Patches the LD DE at $8FEC (the source) and the ADD A at DissolveStepOperand (the step). As stage 1's DissolveHud `$8AB1`.
+> DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $9732: the HUD as loaded). Eight steps, each after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is DissolveMasks $F9CB + set + step (set = bits 3-4 of a ROM byte read through RandomPointer, 0, 8, 16 or 24; the step 0-7, the ADD at DissolveStepOperand set to 0 first) and gains bits each step until $FF; only RandomPointer's low byte is cleared each step, so each step reads the next 6 pages of the ROM and the pattern changes (rzx-r1: the first reads of the 8 steps at $0701, $0D01, $1301 ... $3101). Patches the LD DE at $8FEC (the source) and the ADD A at DissolveStepOperand (the step). As stage 1's DissolveHud `$8AB1`.
 > Witness: L1 2 (rzx-r4, s4-right).
 $8FE1 DissolveStep
 $8FF1 DissolveLine

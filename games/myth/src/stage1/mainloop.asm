@@ -23,7 +23,7 @@
 ; not 0; with no lives and the hero back in state 0 it ends with E = 0
 ; (GameOverExit).
 ;
-; Witness: L1 10187 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 MainLoop:
   CALL PacePass
   CALL ShowPieceTaken
@@ -76,8 +76,10 @@ GameOverExit:
 
 ; CAPS SHIFT + SPACE: end the stage with E = 1
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code ($787E).
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the
+;
+; code. $787E, the JP Z to it, ran 3 times in c1 (SPACE seen, CAPS SHIFT not).
 QuitStage:
   LD E,$01
 
@@ -94,7 +96,7 @@ QuitStage:
 ; returns to the stage loader with E, BC = ScoreDigitsHigh (the six score
 ; digits) and H = Lives.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 2 (rzx-r1, s1-right).
 EndStage:
   PUSH DE
   CALL ClearBuffer
@@ -109,7 +111,7 @@ EndPiecesBox:
 ;
 ; Part of EndStage, after the first inline record.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 2 (rzx-r1, s1-right).
 EndStageLives:
   CALL FillAttributes
 
@@ -122,7 +124,7 @@ EndLivesBox:
 ;
 ; Part of EndStage, after the second inline record.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 2 (rzx-r1, s1-right).
 EndStageSave:
   LD HL,Attributes
   LD DE,HudColours
@@ -157,7 +159,7 @@ EndStageSave:
   LD BC,$0000
   LD D,$20
   LD E,$30
-  CALL CopyBlockToScreen
+  CALL CopyScreenToBlock
   CALL FlashFadeScreen
   CALL ClearScreen
   LD BC,$0064
@@ -179,7 +181,7 @@ EndStageSave:
 ; The wait evens out the pass time of rooms with few actors (8978 of the 10187
 ; passes in the stage-1 recordings waited).
 ;
-; Witness: L1 10187 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 PacePass:
   LD A,(PassCounter)
   AND $3F
@@ -206,8 +208,8 @@ PacePassRoom:
 ; before it sets HL, not BC), others return. A leftover of another stage's
 ; pacing.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 PacePassUnused:
   LD A,(RoomNumber)
   CP $00
@@ -227,8 +229,7 @@ PacePassUnusedWait:
 ; Reached from PacePass when GridNumber is not 0: in grid 1 room 0 waits $0640
 ; rounds of DelayBC, else returns.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 731 (rzx-r1).
 PaceShaftRoom:
   LD A,(GridNumber)
   CP $01
@@ -246,7 +247,7 @@ PaceShaftRoom:
 ; for the key's release, the next press and its release, so the game stands
 ; still between two presses. No other effect.
 ;
-; Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19502 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CheckPause:
   LD BC,$BFFE
   IN A,(C)
@@ -273,7 +274,7 @@ PauseRelease2:
 ;
 ; PassCounter + 1, then $7E9F, $A3C5, $836D and $7DD2.
 ;
-; Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19588 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 PassTick:
   LD HL,PassCounter
   INC (HL)

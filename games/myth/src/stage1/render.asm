@@ -18,7 +18,7 @@
 ; Inputs: none; changes the whole attribute area $5800-$5AFF. Called by
 ; EndStage.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 2 (rzx-r1, s1-right).
 FlashFadeScreen:
   LD B,$07
 FadeUpFrame:
@@ -74,7 +74,7 @@ FadeDownNext:
 ; for each line takes the line's address from ScreenLineTable and LDIRs D
 ; bytes. Destroys IX, BC, DE.
 ;
-; Witness: L1 10225 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 20920 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CopyToScreen:
   LD (CopyToScreenLine+$0017),A
   LD A,B
@@ -115,9 +115,10 @@ CopyToScreenLine:
 ; ShiftRoutines[+$11] (patched into PreShiftCall). Called by $A62A for every
 ; actor drawn.
 ;
-; Witness: L1 50388 (c1o, deaths, s1-idle, s1-right). The shift was 0 in every
-; pass: the copy from $7F53 on is not executed in any recording (the recordings
-; checked: c1o, deaths, s1-idle, s1-right) and known only from the code.
+; Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right). The shift was 0
+; in every pass of c1o, deaths, s1-idle and s1-right; rzx-r1 takes the copy
+; from $7F53 on 595 times (the warrior's flying head, moved in eighths by
+; StepFineBack).
 PreShiftSprite:
   LD A,(IY+$11)
   CP $00
@@ -163,8 +164,7 @@ ShiftRoutines:
 
 ; Shift one line of (IY+2)+1 bytes at HL one pixel right; HL moves past it
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 6426 (rzx-r1).
 ShiftLine1:
   LD B,(IY+$02)
   SRL (HL)
@@ -177,8 +177,7 @@ ShiftLine1Byte:
 
 ; Two pixels: ShiftLine1 twice over the same line
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1224 (rzx-r1).
 ShiftLine2:
   PUSH HL
   CALL ShiftLine1
@@ -187,8 +186,7 @@ ShiftLine2:
 
 ; Three pixels: ShiftLine1 three times
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 408 (rzx-r1).
 ShiftLine3:
   PUSH HL
   CALL ShiftLine1
@@ -200,8 +198,7 @@ ShiftLine3:
 
 ; Four pixels: RLD along the line
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1632 (rzx-r1).
 ShiftLine4:
   LD B,(IY+$02)
   INC B
@@ -214,8 +211,7 @@ ShiftLine4Byte:
 
 ; Five pixels: ShiftLine4 and ShiftLine1
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 408 (rzx-r1).
 ShiftLine5:
   PUSH HL
   CALL ShiftLine4
@@ -224,8 +220,7 @@ ShiftLine5:
 
 ; Six pixels: ShiftLine4 and ShiftLine1 twice
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 408 (rzx-r1).
 ShiftLine6:
   PUSH HL
   CALL ShiftLine4
@@ -237,8 +232,7 @@ ShiftLine6:
 
 ; Seven pixels: ShiftLine4 and ShiftLine1 three times
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 408 (rzx-r1).
 ShiftLine7:
   PUSH HL
   CALL ShiftLine4
@@ -267,7 +261,7 @@ ShiftLine7:
 ; order and write them right to left through the bit-reversal table at $FA00
 ; (resident), so a sprite faces left.
 ;
-; Witness: L1 200314 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 289583 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 PlotRow1:
   LD A,(DE)
   OR (HL)
@@ -285,7 +279,7 @@ PlotRow1:
 ; As PlotRow1, the byte bit-reversed through the table $FA00 (B = $FA, C = the
 ; byte).
 ;
-; Witness: L1 6353 (c1o, deaths).
+; Witness: L1 75622 (c1o, deaths, rzx-r1).
 PlotRow1Mirrored:
   PUSH BC
   LD B,$FA
@@ -309,7 +303,7 @@ PlotRow1Mirrored:
 ; ORs 2 bytes from HL into DE, DE+1; then DE + 31 (the next line's first
 ; column).
 ;
-; Witness: L1 132616 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 362406 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 PlotRow2:
   LD A,(DE)
   OR (HL)
@@ -332,7 +326,7 @@ PlotRow2:
 ; DE = the row's rightmost byte: each byte bit-reversed through $FA00 and
 ; written leftwards; then DE + 33.
 ;
-; Witness: L1 24112 (c1o, deaths, s1-right).
+; Witness: L1 130320 (c1o, deaths, rzx-r1, s1-right).
 PlotRow2Mirrored:
   PUSH BC
   LD B,$FA
@@ -361,7 +355,7 @@ PlotRow2Mirrored:
 
 ; Plot one sprite row 3 bytes wide
 ;
-; Witness: L1 8068 (c1o, deaths, s1-right).
+; Witness: L1 54294 (c1o, deaths, rzx-r1, s1-right).
 PlotRow3:
   LD A,(DE)
   OR (HL)
@@ -386,7 +380,7 @@ PlotRow3:
 
 ; Plot one sprite row 3 bytes wide, mirrored
 ;
-; Witness: L1 8265 (c1o, deaths, s1-right).
+; Witness: L1 63135 (c1o, deaths, rzx-r1, s1-right).
 PlotRow3Mirrored:
   PUSH BC
   LD B,$FA
@@ -423,7 +417,7 @@ PlotRow3Mirrored:
 
 ; Plot one sprite row 4 bytes wide
 ;
-; Witness: L1 12509 (c1o, deaths, s1-right).
+; Witness: L1 49428 (c1o, deaths, rzx-r1, s1-right).
 PlotRow4:
   LD A,(DE)
   OR (HL)
@@ -453,7 +447,7 @@ PlotRow4:
 
 ; Plot one sprite row 4 bytes wide, mirrored
 ;
-; Witness: L1 324 (c1o, s1-right).
+; Witness: L1 1976 (c1o, rzx-r1, s1-right).
 PlotRow4Mirrored:
   PUSH BC
   LD B,$FA
@@ -500,8 +494,7 @@ PlotRow4Mirrored:
 ;
 ; No 5-byte-wide sprite was drawn in the stage-1 recordings.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 180 (rzx-r1).
 PlotRow5:
   LD A,(DE)
   OR (HL)
@@ -536,8 +529,7 @@ PlotRow5:
 
 ; Plot one sprite row 5 bytes wide, mirrored
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 160 (rzx-r1).
 PlotRow5Mirrored:
   PUSH BC
   LD B,$FA
@@ -593,8 +585,7 @@ PlotRow5Mirrored:
 ; Used by the 6-byte frames (the winged boss's body $DE4C, the arena head's
 ; frames at $CED2).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 7812 (rzx-r1).
 PlotRow6:
   LD A,(DE)
   OR (HL)
@@ -634,8 +625,8 @@ PlotRow6:
 
 ; Plot one sprite row 6 bytes wide, mirrored
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 PlotRow6Mirrored:
   PUSH BC
   LD B,$FA
@@ -699,8 +690,7 @@ PlotRow6Mirrored:
 ; The widest plotter; RowPlotters has no mirrored 7-byte entry (index 15 is
 ; $876C).
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 570 (rzx-r1).
 PlotRow7:
   LD A,(DE)
   OR (HL)
@@ -766,8 +756,7 @@ RowPlotters:
 ;
 ; arena pictures ($D5D5, $D0D8) are in this form.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 46898 (rzx-r1).
 DrawRowPicture:
   PUSH BC
   PUSH DE
@@ -802,7 +791,7 @@ DrawRowPicture:
 ;
 ; attribute. Returns after them. The game-over screen $78A2 and $78AA use it.
 ;
-; Witness: L1 180 (s1-idle, s1-right).
+; Witness: L1 307 (rzx-r1, s1-idle, s1-right).
 FillAttributes:
   POP IX
   LD BC,$0005
@@ -836,7 +825,7 @@ FillAttributesCell:
 ;
 ; As FillAttributes into the shadow; StageSetUp paints the HUD's boxes with it.
 ;
-; Witness: L1 8 (s1-idle, s1-right).
+; Witness: L1 12 (rzx-r1, s1-idle, s1-right).
 FillShadowAttributes:
   POP IX
   LD BC,$0005
@@ -868,7 +857,7 @@ FillShadowCell:
 
 ; Copy the whole shadow $6D00-$6FFF to the attributes after a HALT
 ;
-; Witness: L1 4 (s1-idle, s1-right).
+; Witness: L1 6 (rzx-r1, s1-idle, s1-right).
 ShowShadowAttributes:
   LD HL,ShadowAttributes
   LD DE,Attributes
@@ -891,7 +880,7 @@ ShowShadowAttributes:
 ; HALT every cell is written: open cells from the shadow, solid cells from
 ; RoomAttributes $7042.
 ;
-; Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19500 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 UpdateAttributes:
   LD A,(RestoreAttributes)
   CP $01
@@ -973,7 +962,7 @@ RestoreAttrPut:
 ;
 ; calls it 35 times.
 ;
-; Witness: L1 70 (s1-idle, s1-right).
+; Witness: L1 105 (rzx-r1, s1-idle, s1-right).
 FadeInStep:
   LD HL,Attributes+194
   LD DE,PlayAttributesCell
@@ -1021,7 +1010,7 @@ FadeNext:
 ; the length in cells, 0, the play buffer's address, the screen's address.
 ; SpanCount = the spans.
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 BuildSpans:
   LD HL,(PlayBuffer)
   LD BC,PlayBuffer+10
@@ -1097,7 +1086,7 @@ BuildSpansNext:
 ;
 ; i.e. ScreenLineTable from line 48, + CellColumn); IX + 6.
 ;
-; Witness: L1 798 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 3013 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 AddSpan:
   LD (IX+$00),$01
   LD (IX+$01),$00
@@ -1140,7 +1129,7 @@ AddSpan:
 ; SP = $6D00, 144 x 16 PUSHes of 0 (4608 bytes); SP saved in SavedSP.
 ; Interrupts off meanwhile (DI ... EI).
 ;
-; Witness: L1 10218 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19608 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ClearBuffer:
   DI
   LD (SavedSP),SP
@@ -1183,7 +1172,7 @@ ClearBufferLoop:
 ;
 ; back, D + 1); puts ED A0 ED back. SpanCount spans; interrupts off meanwhile.
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CopyBuffer:
   DI
   LD HL,(SpanCount)
@@ -1277,7 +1266,7 @@ CopySpanRestore:
 ; Fills $58C0-$5AFF (the play area's 576 attributes) with 0 before a room is
 ; built. Called by the room builder $988B.
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 102 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 BlackOutPlayArea:
   LD HL,Attributes+192
   LD DE,Attributes+193
@@ -1295,7 +1284,7 @@ BlackOutPlayArea:
 ; with bit 7 (drawn over the others). Each: ClipActor then DrawActorSprite. Bit
 ; 6 is never drawn.
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrawActors:
   LD B,$0E
   LD IY,HeroRecord
@@ -1341,7 +1330,7 @@ DrawActorsTopNext:
 ; $7F4D makes the shifted copy at $7640 when +$11 is 1-99, and HL is then
 ; $7640, else the frame +4/+5.
 ;
-; Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ClipActor:
   LD A,(IY+$01)
   CP $C8
@@ -1374,7 +1363,7 @@ ClipActorFrame:
 
 ; DE = $5B00 + Y x 32 + X of the actor IY
 ;
-; Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 BufferAddressDE:
   LD L,(IY+$01)
   LD H,$00
@@ -1434,7 +1423,7 @@ ClipActorOff:
 ; its right column. A shifted copy (+$11 1-99) is one byte wider. The routine
 ; is written into RowDrawCall. Then ColourActor.
 ;
-; Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 DrawActorSprite:
   LD A,B
   CP $00
@@ -1493,10 +1482,12 @@ DrawActorOpaqueLoop:
 ;
 ; The cells under the actor (screen row Y / 8 + 6; the column X, or X - width +
 ; 1 facing left; width +2, + 1 when shifted, written into ColourWidth; the rows
-; the lines cover, cut at line $90) get +$0C in the attribute shadow at $6D00.
-; Nothing below the play area.
+; the lines cover, cut at line $90; one row more when both the top and the
+; bottom line fall inside a row: 27 lines from line 84 colour rows 10-14, 5
+; rows for 4) get +$0C in the attribute shadow at $6D00. Nothing below the play
+; area.
 ;
-; Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ColourActor:
   LD C,(IY+$02)
   LD A,(IY+$11)
@@ -1583,8 +1574,8 @@ ColourActorCell:
 ;
 ; No code or table in the image refers to $A788.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 CycleItemInk:
   LD A,(IY+$0B)
   AND $03
@@ -1606,8 +1597,8 @@ ItemInks:
 ; cell row: +0 = $FF and a jump to $B2DC. No code or table in the image refers
 ; to $A79D.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 FreeIfOnHero:
   LD A,(HeroRecord)
   CP (IY+$00)
@@ -1626,7 +1617,7 @@ FreeIfOnHero:
 
 ; Copy the screen's attributes to the shadow at $6D00
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 SaveAttributes:
   LD HL,Attributes
   LD DE,ShadowAttributes
@@ -1639,7 +1630,7 @@ SaveAttributes:
 ; HL = the play-buffer address of the actor IY ($5B00 + line x 32 + column); DE
 ; = HL in
 ;
-; Witness: L1 5517 (c1o, deaths, s1-right).
+; Witness: L1 7977 (c1o, deaths, rzx-r1, s1-right).
 BufferAddressHL:
   PUSH HL
   LD L,(IY+$01)
@@ -1662,7 +1653,7 @@ BufferAddressHL:
 ;
 ; The shadow's row 6 ($6DC0) is the play area's top row.
 ;
-; Witness: L1 5517 (c1o, deaths, s1-right).
+; Witness: L1 7977 (c1o, deaths, rzx-r1, s1-right).
 AttrShadowAddress:
   LD A,(IY+$01)
   AND $F8
@@ -1688,8 +1679,8 @@ AttrShadowAddressA:
 ;
 ; No CALL, JP or word in the image reaches it.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 ColourGreenCyan:
   LD A,(PassCounter)
   LD C,$44
@@ -1700,8 +1691,7 @@ ColourGreenCyan:
 
 ; C = $42 or $43 (bright red, bright magenta) on alternate passes
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 2817 (rzx-r1).
 ColourRedMagenta:
   LD A,(PassCounter)
   LD C,$42
@@ -1712,7 +1702,7 @@ ColourRedMagenta:
 
 ; C = $42 (bright red) or 6 (yellow) on alternate passes
 ;
-; Witness: L1 1064 (s1-right).
+; Witness: L1 2854 (rzx-r1, s1-right).
 ColourRedYellow:
   LD A,(PassCounter)
   LD C,$42
@@ -1723,7 +1713,7 @@ ColourRedYellow:
 
 ; C = $46 or $43 (bright yellow, bright magenta) on alternate passes
 ;
-; Witness: L1 17299 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 31041 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 ColourYellowMagenta:
   LD A,(PassCounter)
   LD C,$46
@@ -1736,8 +1726,8 @@ ColourYellowMagenta:
 ;
 ; No CALL, JP or word in the image reaches it.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 ColourCyanGreen:
   LD A,(PassCounter)
   LD C,$45
@@ -1751,8 +1741,7 @@ ColourCyanGreen:
 ;
 ; Called from $85B5, $85BE and DrawMissileMirrored $B3DA.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 235 (rzx-r1).
 MissileColour:
   LD A,(IY+$02)
   CP $02
@@ -1772,7 +1761,7 @@ MissileColours:
 
 ; The actor IY's colour +$0C = CycleColour $B3C4
 ;
-; Witness: L1 2066 (s1-right).
+; Witness: L1 5892 (rzx-r1, s1-right).
 SetCycleColour:
   CALL CycleColour
   LD (IY+$0C),A
@@ -1781,7 +1770,7 @@ SetCycleColour:
 ; A = CycleColours[pass AND 7]: bright cyan, green, magenta, red, blue, red,
 ; magenta, green
 ;
-; Witness: L1 2507 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 7626 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CycleColour:
   LD A,(PassCounter)
   AND $07
@@ -1803,8 +1792,8 @@ CycleColours:
 ;
 ; or word in the image reaches it.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Not executed in any recording (the recordings checked: c1o, deaths, rzx-r1,
+; s1-idle, s1-right); known only from the code.
 DrawMissileMirrored:
   LD L,(IX+$00)
   LD H,(IX+$01)
@@ -1834,7 +1823,7 @@ SpeedSteps:
 ; IY = the position, IX the image descriptor (+2 width, +3 height): (height / 8
 ; + 1) rows of the width.
 ;
-; Witness: L1 5517 (c1o, deaths, s1-right).
+; Witness: L1 7418 (c1o, deaths, rzx-r1, s1-right).
 ColourSprite:
   PUSH BC
   CALL AttrShadowAddress
@@ -1866,7 +1855,7 @@ ColourSpriteCell:
 ;
 ; $B332). The bytes replace the buffer's: no mask, no OR.
 ;
-; Witness: L1 1064 (s1-right).
+; Witness: L1 3240 (rzx-r1, s1-right).
 DrawSprite:
   CALL BufferAddressHL
   EX DE,HL
@@ -1893,8 +1882,7 @@ DrawSpriteRow:
 ;
 ; at $FA00. Called from $8069, $8134, $85BB and DrawMissileMirrored $B3DA.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 284 (rzx-r1).
 DrawSpriteMirrored:
   CALL BufferAddressHL
   EX DE,HL
@@ -1930,8 +1918,7 @@ DrawSpriteMirroredByte:
 ; ColourSprite $B40A for a mirrored image (filled leftwards from its right
 ; edge)
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 559 (rzx-r1).
 ColourSpriteMirrored:
   PUSH BC
   CALL AttrShadowAddress

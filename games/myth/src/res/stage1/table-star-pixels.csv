@@ -1,0 +1,6 @@
+# stage1: table star-pixels, 4 rows of 8 bytes (tools/res_stage.py TABLES)
+row,p0_l0,p0_l1,p1_l0,p1_l1,p2_l0,p2_l1,p3_l0,p3_l1
+0,$40,$00,$10,$00,$04,$00,$01,$00
+1,$C0,$00,$30,$00,$0C,$00,$03,$00
+2,$C0,$C0,$30,$30,$0C,$0C,$03,$03
+3,$C0,$C0,$30,$30,$0C,$0C,$03,$03

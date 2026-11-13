@@ -16,7 +16,7 @@
 ; The lists at $9BA0, $9C69 and $9C78: 3-byte entries up to $FF, bit 7 of the
 ; first byte cleared (ClearTakenFlags).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 3 (rzx-r1, s1-idle, s1-right).
 ResetObjectLists:
   LD HL,Grid0Placements
   CALL ClearTakenFlags
@@ -26,7 +26,7 @@ ResetObjectLists:
 
 ; Clear bit 7 of each 3-byte entry at HL up to the $FF end
 ;
-; Witness: L1 156 (s1-idle, s1-right).
+; Witness: L1 234 (rzx-r1, s1-idle, s1-right).
 ClearTakenFlags:
   LD A,(HL)
   CP $FF
@@ -57,7 +57,7 @@ ClearTakenFlags:
 ; BuildSpans, ClearBuffer (the unpacked data is gone) and the actors (JP
 ; $A4CC).
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RoomChange:
   LD A,$64
   LD (BurstTimer),A
@@ -144,7 +144,7 @@ RoomChangeBitmaps:
 
 ; Copy 8 bytes from HL to the screen cell DE (INC D a line)
 ;
-; Witness: L1 13104 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 50904 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CopyTileToScreen:
   LD B,$08
 CopyTileLine:
@@ -165,7 +165,7 @@ CopyTileLine:
 ;
 ; (PutBlock), the cells 64 bytes a block row (32 a cell row, columns 2-29).
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 RoomCells:
   LD HL,$0000
   LD A,(RoomRow)
@@ -228,9 +228,11 @@ RoomCellsBlock:
 ; left, top right, bottom left, bottom
 ;
 ; right). Also writes CellFlag (0) into each cell's twin 576 bytes lower ($7040
-; grid). Returns HL + 1 + 32.
+; grid); the CP $59 test
 ;
-; Witness: L1 3276 (c1o, deaths, s1-idle, s1-right).
+; is dead: both branches load C = 0. Returns HL + 1 + 32.
+;
+; Witness: L1 12726 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 PutBlock:
   PUSH AF
   LD C,$00
@@ -353,7 +355,7 @@ Grid2Placements:
 ; RoomNumber + 1, BurstTimer = $64 (any burst stopped), RoomEvents. Facing
 ; left: nothing. Preserves IX and IY.
 ;
-; Witness: L1 67 (c1o, deaths, s1-right).
+; Witness: L1 575 (c1o, deaths, rzx-r1, s1-right).
 LeaveRoomRight:
   PUSH IX
   PUSH IY
@@ -382,7 +384,7 @@ LeaveRoomRightEnd:
 ; As LeaveRoomRight, mirrored: only when the hero faces left (+9 bit 7 set); B
 ; = -11 blocks, C = -22 cells, RoomNumber - 1.
 ;
-; Witness: L1 369 (c1o, deaths, s1-right).
+; Witness: L1 904 (c1o, deaths, rzx-r1, s1-right).
 LeaveRoomLeft:
   PUSH IX
   PUSH IY
@@ -413,7 +415,7 @@ LeaveRoomLeftEnd:
 ; RoomNumber + the grid's rooms-per-row (record +8), BurstTimer = $64,
 ; RoomEvents. Preserves IX and IY.
 ;
-; Witness: L1 153 (c1o, deaths, s1-right).
+; Witness: L1 159 (c1o, deaths, rzx-r1, s1-right).
 LeaveRoomDown:
   PUSH IX
   PUSH IY
@@ -452,7 +454,7 @@ LeaveRoomDownEnd:
 ; -6 blocks and C = -96 lines, SavePlayAttrs, RoomNumber - the grid's
 ; rooms-per-row, BurstTimer = $64, RoomEvents. Preserves IX and IY.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 5 (rzx-r1, s1-right).
 LeaveRoomUp:
   PUSH IX
   PUSH IY
@@ -491,7 +493,7 @@ LeaveRoomUpEnd:
 ; when it falls outside columns 0-29; every other record is freed. Then $8A7B
 ; and a jump to the room builder $988B.
 ;
-; Witness: L1 20 (c1o, deaths, s1-right).
+; Witness: L1 80 (c1o, deaths, rzx-r1, s1-right).
 ShiftRoomColumns:
   LD A,(RoomColumn)
   ADD A,B
@@ -548,7 +550,7 @@ ShiftColumnsNext:
 ; (IY+$00),A`): the code moves a kept actor's Y into its X. Ran 6 times in
 ; s1-right.
 ;
-; Witness: L1 4 (c1o, deaths, s1-right).
+; Witness: L1 14 (c1o, deaths, rzx-r1, s1-right).
 ShiftRoomRows:
   LD A,(RoomRow)
   ADD A,B
@@ -596,7 +598,7 @@ ShiftRowsNext:
 ; $7040 and sets RestoreAttributes = 1, so the next attribute pass ($8CAA)
 ; shows the new room over the old one's colours.
 ;
-; Witness: L1 24 (c1o, deaths, s1-right).
+; Witness: L1 98 (c1o, deaths, rzx-r1, s1-right).
 SavePlayAttrs:
   LD HL,PlayAttributes
   LD DE,RoomAttributes
@@ -614,7 +616,7 @@ SavePlayAttrs:
 ; with GridNumber = 1 only room 2, bit 4 ($07, $54). The event's bit goes to
 ; SpawnBonus.
 ;
-; Witness: L1 24 (c1o, deaths, s1-right).
+; Witness: L1 94 (c1o, deaths, rzx-r1, s1-right).
 RoomEvents:
   LD A,(GridNumber)
   CP $01
@@ -664,10 +666,11 @@ RoomEventStageVar4B:
 ; taken
 ;
 ; Only when PiecesTaken = 5 and PiecesComplete = 1: SpawnItem at X 9, Y $30
-; with the frame $EB0C, kind 6, amount 1.
+; with the frame $EB0C, kind 6, amount 1. rzx-r1: the master icon
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; taken at about frame 27250.
+;
+; Witness: L1 3 (rzx-r1).
 SpawnRewardItem:
   LD A,(PiecesTaken)
   CP $05
@@ -690,7 +693,7 @@ SpawnRewardItem:
 ; = the bit (BonusHandler sets it in PiecesMask when the hero takes it), the
 ; second with +$0B = 1 (its sparkle). Preserves IY.
 ;
-; Witness: L1 1 (s1-right).
+; Witness: L1 6 (rzx-r1, s1-right).
 SpawnBonus:
   LD A,(PiecesMask)
   AND B
@@ -736,7 +739,7 @@ SpawnBonusFull:
 ; The room builder $988B unpacks the stage's tiles and map at $B4B2 with it to
 ; $5B00 at every room change (26 calls in the stage-1 recordings).
 ;
-; Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 Unrle:
   LD A,(HL)
   INC HL
@@ -774,7 +777,7 @@ UnrleRunLoop:
 ; RoomExitsPtr = +4/+5 (the grid's room table), and jumps to the room builder
 ; $988B. Called at the stage start and from $AC37 (a grid change).
 ;
-; Witness: L1 2 (s1-idle, s1-right).
+; Witness: L1 7 (rzx-r1, s1-idle, s1-right).
 StartGrid:
   LD HL,Cells
   LD DE,Cells+$0001
@@ -809,7 +812,7 @@ StartGrid:
 ;
 ; up ($9EB9). Not while the hero is dying (state $0F).
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CheckRoomExits:
   LD A,(IY+$0A)
   CP $0F
@@ -861,7 +864,7 @@ CheckRoomExitUp:
 ;
 ; grid 2, column 1, facing left: back to the surface (LeaveGrid2 $AC01).
 ;
-; Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 19503 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CheckGridPassages:
   LD A,(GridNumber)
   CP $00
@@ -922,8 +925,7 @@ CheckGridPassageGrid2:
 ;
 ; again (RebuildRoom $AC37), GridNumber 1. IY is kept.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 EnterGrid1:
   LD HL,Grid1
   LD (RoomGrid),HL
@@ -949,8 +951,7 @@ EnterGrid1:
 ; build and put back to 0 and $16 after it (the record's +2 and +3, read by the
 ; room build). GridNumber 0.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 LeaveGrid1:
   LD HL,Grid0
   LD (RoomGrid),HL
@@ -979,8 +980,7 @@ LeaveGrid1:
 ;
 ; RoomGrid $9B96, Placements $9C78, room 0, GridNumber 2.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 EnterGrid2:
   LD HL,Grid2
   LD (RoomGrid),HL
@@ -1003,8 +1003,7 @@ EnterGrid2:
 ;
 ; As LeaveGrid1 $ABA7 with $9B72 = $0C and $9B71 = $37 for the build, room $11.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 1 (rzx-r1).
 LeaveGrid2:
   LD HL,Grid0
   LD (RoomGrid),HL
@@ -1033,8 +1032,7 @@ LeaveGrid2:
 ;
 ; ClearRoom $A444, then on into BuildRoom $9FA5.
 ;
-; Not executed in any recording (the recordings checked: c1o, deaths, s1-idle,
-; s1-right); known only from the code.
+; Witness: L1 4 (rzx-r1).
 RebuildRoom:
   CALL StartGrid
   JP SavePlayAttrs
@@ -1050,7 +1048,7 @@ RebuildRoom:
 ; = row x 32 + column (an offset into the cells $7282). Z when bit 1 (solid) of
 ; the cell is clear.
 ;
-; Witness: L1 8531 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 13831 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CellUnderFeet:
   LD A,(IY+$01)
   ADD A,(IY+$03)
@@ -1088,7 +1086,7 @@ CellUnderFeetColumn:
 ;
 ; cell's bits: 1 solid, 3 deadly (HeroUpdate $AC3D).
 ;
-; Witness: L1 9915 (c1o, deaths, s1-idle, s1-right).
+; Witness: L1 20581 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 CellAt:
   SRL D
   SRL D

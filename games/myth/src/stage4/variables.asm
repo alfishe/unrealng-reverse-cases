@@ -52,16 +52,14 @@ PlayAttributesCell:
 ;
 ; DissolveHud $8FD6 dissolves the 48 lines onto the screen's lines 0-47 and
 ; StageSetUp $9715 copies the 192 colours into the shadow rows 0-5, once, at
-; the stage's start. EndStage $7898 saves the screen's lines 0-47 back here
-; ($7907, CopyBlockToScreen's reverse) and the attributes $5800-$58BF to $7600
-; ($78B6), so the next stage's block shows the HUD as the player left it; the
-; copy is CopyBlockToScreen $8FAE called at $7911, which, despite its stage-1
-; name, copies the screen lines into the block (its LDIR runs after EX DE,HL).
-; Between the two the bytes are the records labelled inside (RoomAttributes,
-; Cells, HeroRecord, Actors, Missiles, DigitBuffer, SpanTable). The picture:
-; the frame of the HUD, the energy bar's box, the score box, the item strip's
-; box, the lives and pieces boxes (docs/img). Read and written in s4-right (all
-; 1728 bytes).
+; the stage's start. EndStage $7898 saves the screen's lines 0-47 back here and
+; the attributes $5800-$58BF to $7600 ($78B6), so the next stage's block shows
+; the HUD as the player left it; the copy is CopyScreenToBlock $8FAE called at
+; $7911 (its LDIR runs after EX DE,HL). Between the two the bytes are the
+; records labelled inside (RoomAttributes, Cells, HeroRecord, Actors, Missiles,
+; DigitBuffer, SpanTable). The picture: the frame of the HUD, the energy bar's
+; box, the score box, the item strip's box, the lives and pieces boxes
+; (docs/img). Read and written in s4-right (all 1728 bytes).
 HudPicture:
   INCBIN "res/stage4/picture-hud-32x48.bin",$0000,64
 RoomAttributes:

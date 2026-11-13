@@ -472,8 +472,10 @@ pre-shifted copies, no second set of left-facing frames.
 ## 6.7 Sprites on byte columns
 
 X in an actor record is a column in bytes. PreShiftSprite `$7F4D` could shift a frame right by 1-7 pixels into a copy
-at `$7640`, but the shift was 0 in every pass of every stage-1 recording. So every actor moves sideways in steps of 8
-pixels.
+at `$7640`. The shift was 0 in every pass of `c1o`, `deaths`, `s1-idle` and `s1-right`, so the actors they show move
+sideways in steps of 8 pixels. One actor does use it: the skeleton warrior's flying head (WarriorHeadFly), which
+StepFineBack `$8B4E` moves in eighths of a column through +`$11`. `rzx-r1` shifts 595 sprites, about 6 lines each
+(ShiftLine1 6426 runs, StepFineBack 510, frames 2355-28753).
 
 The walk hides it. SetActorFrame `$AA02` sets X and Y from the record's base (`+$0D`, `+$0E`) plus each frame's own
 offsets. The hero's walk has 12 frames, and the figure moves across its sprite from frame to frame. The base column
@@ -489,7 +491,7 @@ column's.
 The 12 walk frames make it unnecessary. They cost memory instead of time.
 
 **The point**: stage 1 moves its actors on byte columns and draws the in-between steps into the frames. The pixel
-shifter is there and never runs.
+shifter is kept for one small sprite, the warrior's flying head.
 
 ## 6.8 The colours
 
@@ -802,10 +804,12 @@ DrawHeroLine:
 
 | What | Where | Why no recording shows it |
 | --- | --- | --- |
-| the pixel shift: the copy to `$7640` and ShiftLine1-7 | PreShiftSprite `$7F4D` | `+$11` was 0 in every pass |
-| sprites 5, 6 and 7 bytes wide | PlotRow5-PlotRow7 and their mirrors | no actor that wide in the recordings |
 | width 0 and mirrored width 7: a hang loop that flashes the border | RowPlotters `$8910`, HangFlashBorder `$876C` | never reached with a valid frame |
-| a row-packed picture drawer | DrawRowPicture `$8B03` | the room and arena pictures were drawn another way |
 | an item's ink cycled through four colours | CycleItemInk | no caller ran it |
-| the left-facing missile and sprite drawers | DrawMissileMirrored, DrawSpriteMirrored, ColourSpriteMirrored | no left-facing missile in the recordings |
+| the left-facing missile drawer | DrawMissileMirrored `$B3DA` | no caller ran it, `rzx-r1` included |
 | stage 5's ClearBuffer | `$96AC` | stage 5 never clears a buffer |
+
+`rzx-r1` runs what the other stage-1 recordings do not: the pixel shift ([6.7](#67-sprites-on-byte-columns)),
+the plotters for 5, 6 and 7 bytes (PlotRow5 180 runs, PlotRow6 7812, PlotRow7 570, from DrawActorSprite; the
+demon's body is 6 bytes wide), DrawRowPicture `$8B03` for the demon's face and the dragon (746 calls from DrawRoomPicture, 80 from
+DrawArenaPicture) and the mirrored drawers of the hero's shot (DrawSpriteMirrored 284, ColourSpriteMirrored 559).

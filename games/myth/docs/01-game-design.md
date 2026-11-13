@@ -275,14 +275,17 @@ The sheet's clues match the code.
 **The teleport icons.** These are the sheet's "teleport icons" and the code's "pieces".
 
 - Each stage has five.
-- Each is an actor that appears when its room's event fires: a boss beaten, a statue broken, a set piece done
-  (SpawnBonus, [doc 10](10-gameplay-logic.md)).
-- Taking one gives 1200 points and fills its ring on the panel.
+- Each is an actor that appears in its room. In stage 1 RoomEvents puts one there when the hero enters grid 0 room 0,
+  5, 11 or 12 or grid 1 room 2, unless its bit is set in PiecesMask `$FE51` (SpawnBonus,
+  [doc 10, 10.9](10-gameplay-logic.md#109-the-icons-the-master-icon-and-the-teleport)); room 12's waits behind the
+  demon.
+- It takes 6 hits, then rises. Touched, it gives 1200 points and fills its ring on the panel.
 
 ```mermaid
 flowchart TD
-    E["a room's event: a boss beaten, a statue broken, a pyre burnt"] --> S["SpawnBonus: a teleport icon appears"]
-    S --> T["the hero touches it: 1200 points, its ring filled"]
+    E["the hero enters an icon's room, its PiecesMask bit clear"] --> S["SpawnBonus: a teleport icon appears"]
+    S --> H["6 hits: it rises"]
+    H --> T["the hero touches it: 1200 points, its ring filled"]
     T --> Q{"five rings filled?"}
     Q -->|"no"| E
     Q -->|"yes: the rings flash"| M["the master icon appears in its room"]

@@ -9,7 +9,7 @@ What this covers:
 - effect 2 worked by hand against the port writes of a recording;
 - effect 4 and its period that wraps round on the last step;
 - the lost interrupts, which stretch every effect;
-- the thirteen effects: their shapes, their pitches, who plays them, and a WAV render of each;
+- the thirteen effects: their shapes, their pitches, who plays them, and a render of each (WAV, MP3 for the three over a second);
 - the 48K against the 128K;
 - the cost, and what is known only from the code.
 
@@ -441,12 +441,13 @@ There are four tones and nine noises. The channels split by use:
 
 So a burst and a shot on the same pass cut each other off on channel B.
 
-The renders, one WAV file each, 44 100 Hz mono, one interrupt every 20 ms:
+The renders, 44 100 Hz mono, one interrupt every 20 ms; a WAV up to 1 s, an MP3 (`lame -V 4`) for the three longer
+ones (effects 0, 1 and 9):
 
 | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- |
-| [effect 0](audio/effect-00.wav) | [effect 1](audio/effect-01.wav) | [effect 2](audio/effect-02.wav) | [effect 3](audio/effect-03.wav) | [effect 4](audio/effect-04.wav) | [effect 5](audio/effect-05.wav) | [effect 6](audio/effect-06.wav) |
-| [effect 7](audio/effect-07.wav) | [effect 8](audio/effect-08.wav) | [effect 9](audio/effect-09.wav) | [effect 10](audio/effect-10.wav) | [effect 11](audio/effect-11.wav) | [effect 12](audio/effect-12.wav) | |
+| [effect 0](audio/effect-00.mp3) | [effect 1](audio/effect-01.mp3) | [effect 2](audio/effect-02.wav) | [effect 3](audio/effect-03.wav) | [effect 4](audio/effect-04.wav) | [effect 5](audio/effect-05.wav) | [effect 6](audio/effect-06.wav) |
+| [effect 7](audio/effect-07.wav) | [effect 8](audio/effect-08.wav) | [effect 9](audio/effect-09.mp3) | [effect 10](audio/effect-10.wav) | [effect 11](audio/effect-11.wav) | [effect 12](audio/effect-12.wav) | |
 
 They are made with `python3 tools/fig_sound.py wav docs/audio`. The model is an AY clock of 1 773 400 Hz, square
 tones, a 17-bit noise generator and the AY's volume curve, with every interrupt taken. So they are the effects as their
@@ -515,8 +516,8 @@ channel makes four of them a frame (the volume twice, the period twice); a noise
   the volume twice ([9.5](#95-worked-example-effect-2-by-hand)). It is harmless and costs 68 T a busy channel.
 - **StartEffect's dead code.** For a tone it shifts C left once per channel number, from 4. C is never read after.
   Then it tests the noise flag a second time, already known to be 0.
-- **SilenceAy's comment.** `$38` sets bits 3, 4 and 5: the noises off, the tones on. The source comment "tones off" is
-  wrong; a change is sent to the lead.
+- **SilenceAy's comment.** `$38` sets bits 3, 4 and 5: the noises off, the tones on. The source said "tones off"; it now
+  says "tones on, noise off".
 - **MixerSpare** `$F877`: a byte after Mixer that no code names.
 - **A segment of one interrupt** changes nothing, because the next count goes down at once
   ([9.4](#94-ayframe-and-channelstep)). Only effect 10 has one.

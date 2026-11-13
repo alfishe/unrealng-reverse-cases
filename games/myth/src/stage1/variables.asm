@@ -14,8 +14,8 @@
 ; (line in the play buffer), +2 width in bytes, +3 height in lines, +4/+5 the frame's bitmap, +6/+7 the handler, +8
 ; the frame or a counter, +9 flags (bit 0 opaque, bit 4 hit, bit 7 facing left), +$0A the state, +$0B the item kind or
 ; a step, +$0C the attribute, +$0D/+$0E the base X and Y (SetActorFrame $AA02 adds the frame's dx, dy to them), +$0F
-; flags (bit 1 kept over a room change, bit 2 a body, bit 6 hidden, bit 7 drawn in the second pass), +$10 the
-; placement's index or a counter, +$11 the pixel shift (1-99 drawn shifted by PreShiftSprite $7F4D).
+; flags (bit 0 shootable, bit 1 kept over a room change, bit 2 a body, bit 6 hidden, bit 7 drawn in the second pass),
+; +$10 the placement's index or a counter, +$11 the pixel shift (1-99 drawn shifted by PreShiftSprite $7F4D).
 ; --------------------------------------------------------------------------------------------------------------------
 
 ; The last 193 bytes of the play buffer PlayBuffer $5B00-$6CFF (character row
@@ -52,13 +52,12 @@ PlayAttributesCell:
 ; DissolveHud $8AB1 dissolves the 48 lines onto the screen's lines 0-47 and
 ; StageSetUp $97AC copies the 192 colours into the shadow rows 0-5, once, at
 ; the stage's start. EndStage $789E saves the screen's lines 0-47 back here
-; ($7903, CopyBlockToScreen's reverse) and the attributes $5800-$58BF to $7600
-; ($78B2), so the next stage's block shows the HUD as the player left it; the
-; game-over path $790D copies it back to the screen. Between the two the bytes
-; are the records labelled inside (RoomAttributes, Cells, HeroRecord, Actors,
-; Missiles, DigitBuffer, SpanTable). The picture: the frame of the HUD, the
-; energy bar's box, the score box, the item strip's box, the lives and pieces
-; boxes (docs/img). Read in all four stage-1 builds.
+; (CopyScreenToBlock, called at $790D) and the attributes $5800-$58BF to $7600
+; ($78B2), so the next stage's block shows the HUD as the player left it.
+; Between the two the bytes are the records labelled inside (RoomAttributes,
+; Cells, HeroRecord, Actors, Missiles, DigitBuffer, SpanTable). The picture:
+; the frame of the HUD, the energy bar's box, the score box, the item strip's
+; box, the lives and pieces boxes (docs/img). Read in all four stage-1 builds.
 HudPicture:
   INCBIN "res/stage1/picture-hud-32x48.bin",$0000,64
 RoomAttributes:

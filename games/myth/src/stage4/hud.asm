@@ -734,12 +734,14 @@ DamageHero:
 ;
 ; DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $9732:
 ; the HUD as loaded). Eight steps, each after a HALT: every byte of screen
-; lines 0-47 = source AND a mask; the mask is one of 4 rows of 8 at $F9CC
-; (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a
-; ROM byte read through RandomPointer, whose low byte is reset to 0 each step
-; so the pattern is the same every step) and gains bits each step until $FF.
-; Patches the LD DE at $8FEC (the source) and the ADD A at DissolveStepOperand
-; (the step). As stage 1's DissolveHud `$8AB1`.
+; lines 0-47 = source AND a mask; the mask is DissolveMasks $F9CB + set + step
+; (set = bits 3-4 of a ROM byte read through RandomPointer, 0, 8, 16 or 24; the
+; step 0-7, the ADD at DissolveStepOperand set to 0 first) and gains bits each
+; step until $FF; only RandomPointer's low byte is cleared each step, so each
+; step reads the next 6 pages of the ROM and the pattern changes (rzx-r1: the
+; first reads of the 8 steps at $0701, $0D01, $1301 ... $3101). Patches the LD
+; DE at $8FEC (the source) and the ADD A at DissolveStepOperand (the step). As
+; stage 1's DissolveHud `$8AB1`.
 ;
 ; Witness: L1 2 (rzx-r4, s4-right).
 DissolveHud:

@@ -175,7 +175,7 @@ $7A7D ColourPlayAreaRow
 
 @module mainloop
 $7ABB c PaceLateForms ; Pad the pass in Dameron's form 3 and after: wait $0320 rounds (phase 3) or $07D0 (phase 4)
-> Reached by a JP from DuelStep ($8855) with A = the phase DuelPhase $FE43, 3 or more: form 3 (no face drawn) and the end cost less, so the pass is padded with a busy count of HL down to 0 (26 T-states a round): $07D0 when A is 4, else $0320. Returns to DuelStep's caller.
+> Reached by a JP from DuelStep ($8855) with A = the phase DuelPhase $FE43, 3 or more: form 3 (no face drawn) and the end cost less, so the pass is padded with a busy count of HL down to 0 (24 T-states a round: DEC HL, LD A,L, OR H, JP NZ): $07D0 when A is 4, else $0320. Returns to DuelStep's caller.
 > Witness: L1 472 (ending, rzx-r5).
 $7AC6 PaceLateFormsLoop
 $7ACD c TextPassDelay ; Busy wait $07D0 rounds: the pass pacing while the intro or the ending text is up
@@ -615,7 +615,7 @@ $8F95 c DrawTextLineDone ; The RET DrawTextLine jumps to at a line's 0
 > Reached by JP Z from $8F0B.
 > Witness: L1 42 (ending, rzx-r5, s5-right).
 $8F96 b TextFont 8 ; The texts' proportional font: 28 glyphs of 8 bytes, A-Z, space, full stop
-> Each glyph: byte 0 the width mask (bits set from bit 7 for the glyph's pixel columns plus a gap: $FE for A, B, D, N, O, Q, R, Y, Z; $FC for C, E, F, G, H, J, K, P, S, T, U, V, X; $F8 for L and space; $F0 for I and the full stop; $FF for M and W), then 7 rows of pixels (bit 7 the left). Read by DrawTextGlyph $8F20 (TextFont + 8 x the index). Indexes 28-36 (the digits) would read past it into UpdateBurst's code; no text has a digit.
+> Each glyph: byte 0 the width mask (bits set from bit 7 for the glyph's pixel columns; the advance, 9 less the trailing zeros, adds the gap: $FE for A, B, D, N, O, Q, R, Y, Z; $FC for C, E, F, G, H, J, K, P, S, T, U, V, X; $F8 for L and space; $F0 for I and the full stop; $FF for M and W), then 7 rows of pixels (bit 7 the left). Read by DrawTextGlyph $8F20 (TextFont + 8 x the index). Indexes 28-36 (the digits) would read past it into UpdateBurst's code; no text has a digit.
 $9066 TextFontSpace ; glyph 26: space (blank)
 $906E TextFontStop ; glyph 27: the full stop, written `\` in the texts
 @res stage5/bitmaps-text-font-1x8.bin
@@ -699,7 +699,7 @@ $93E5 c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
 > 4401 bytes. As in stage 1 at $8A7B, the same code. No caller in stage 5's code (no CALL, JP or word in the block names $93E5: work/stage2/stage5/B-raw.py).
 > Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
 $93F3 c CopyScreenToBlock ; Copy a block of the screen, one pixel line at a time, into a buffer
-> HL = the buffer (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines. Patches its ADD A,n at CopyBlockColumn with the column; the line addresses come from ScreenLineTable $FB00. Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer (not the other way). Called from $7924 (EndStage saves the HUD's lines 0-47 into HudPicture $7000). The same code as stage 1's $8A89, which stage 1 names CopyBlockToScreen.
+> HL = the buffer (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines. Patches its ADD A,n at CopyBlockColumn with the column; the line addresses come from ScreenLineTable $FB00. Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer (not the other way). Called from $7924 (EndStage saves the HUD's lines 0-47 into HudPicture $7000). The same code as stage 1's CopyScreenToBlock $8A89.
 > Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
 $9403 CopyBlockLine
 $9407 CopyBlockColumn ; ADD A,n: n = the column, written at $93F4
@@ -707,7 +707,7 @@ $9407 CopyBlockColumn ; ADD A,n: n = the column, written at $93F4
 @module hud
 @about The HUD (screen lines 0-47) is stage 1's: the picture $7000 dissolved in, the boxes coloured by FillShadowAttributes, the score written by NumberToDigits and ByteToDigits, the energy bar drawn by DrawEnergyBar from Energy $FE4F.
 $941B c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
-> DE = the source picture (48 lines of 32 bytes; HudPicture $7000 from StageSetUp). Eight steps, each after a HALT: the low byte of RandomPointer $FE0A = 0 (the same pattern every step), then every byte of screen lines 0-47 (ScreenLineTable $FB00) = source AND a mask; the mask is read at $F9CB + (a byte read through RandomPointer AND $18) + the step + 1 (the resident's DissolveMasks $F9CC: 4 rows of 8) and gains bits each step. Patches the LD DE at DissolveSource and the ADD A at DissolveStepOperand. As stage 1's DissolveHud $8AB1.
+> DE = the source picture (48 lines of 32 bytes; HudPicture $7000 from StageSetUp). Eight steps, each after a HALT: the low byte of RandomPointer $FE0A = 0 (the high byte kept, so each step reads the next 6 pages of the ROM), then every byte of screen lines 0-47 (ScreenLineTable $FB00) = source AND a mask; the mask is read at DissolveMasks $F9CB + (a byte read through RandomPointer AND $18) + the step 0-7 (4 of the resident's sets of 8) and gains bits each step. Patches the LD DE at DissolveSource and the ADD A at DissolveStepOperand. As stage 1's DissolveHud $8AB1.
 > Witness: L1 3 (ending, rzx-r5, s5-right).
 $9426 DissolveStep
 $9431 DissolveSource ; LD DE,n: n = the picture, written at $941B

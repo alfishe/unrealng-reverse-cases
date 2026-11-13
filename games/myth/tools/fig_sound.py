@@ -13,7 +13,7 @@ step() follows ChannelStep `$F7DE` and AyFrame `$F78A` instruction by instructio
 register is written first (twice: WriteVolume falls into AyWrite, then CALL AyWrite), then the frame count goes down,
 then the period and the volume move, and only then AyFrame writes the period. So the first period heard is already
 moved once. chart draws, per effect, the AY volume (0-15) and the period written at each interrupt.
-wav renders each effect at 44 100 Hz with one interrupt every 1/50 s, an AY clock of 1 773 400 Hz, square tones, a
+wav renders each effect at 44 100 Hz (a WAV up to 1 s, else an MP3 by `lame -V 4`) with one interrupt every 1/50 s, an AY clock of 1 773 400 Hz, square tones, a
 17-bit noise generator and the AY's volume curve. The files are written, never played.
 regs traces frames F0 - 2 to F1 of the recording held by the re_session work folder WORK (kitlib.load_trace, kept in
 WORK/traces/), reads its OUT writes (`$FFFD` the register, `$BFFD` the value) and draws the 14 registers
@@ -23,6 +23,7 @@ table prints each effect's decoded bytes and its frames, for the doc.
 
 import os
 import struct
+import subprocess
 import sys
 import wave
 
@@ -157,17 +158,27 @@ def render(e):
     return samples
 
 
+SHORT_WAV = 1.0  # seconds: a render up to this long stays a WAV, a longer one becomes an MP3 (lame -V 4)
+
+
 def wav(folder):
     os.makedirs(folder, exist_ok=True)
     for i, e in enumerate(effects()):
         s = render(e)
         mean = sum(s) / len(s)
         path = os.path.join(folder, 'effect-%02d.wav' % i)
+        mp3 = path[:-4] + '.mp3'
         with wave.open(path, 'wb') as w:
             w.setnchannels(1)
             w.setsampwidth(2)
             w.setframerate(RATE)
             w.writeframes(b''.join(struct.pack('<h', int(max(-1, min(1, (x - mean) * 0.9)) * 30000)) for x in s))
+        if len(s) / RATE > SHORT_WAV:
+            subprocess.run(['lame', '--quiet', '-V', '4', path, mp3], check=True)
+            os.remove(path)
+            path = mp3
+        elif os.path.exists(mp3):
+            os.remove(mp3)
         print(path, '%.2f s' % (len(s) / RATE))
 
 

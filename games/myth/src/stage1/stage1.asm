@@ -12,7 +12,7 @@ PlayBuffer     EQU $5B00  ; the play buffer $5B00-$6CFF (its tail $6C3F-$6CFF is
 DigitGlyphs    EQU $F959  ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
 PlaySoundVector EQU $F9B0  ; resident: JP to the AY effect starter (E = the effect number)
 DecimalTable   EQU $F9BF  ; resident: the words 10000, 1000, 100, 10, 1
-DissolveMasks  EQU $F9CC  ; resident: DissolveHud's eight masks
+DissolveMasks  EQU $F9CB  ; resident: the dissolve masks; DissolveHud reads sets 0-3 (32 bytes)
 Score          EQU $F9FB  ; resident: the score's low four decimal digits, 0-9999 (AddScore)
 ScoreHigh      EQU $F9FD  ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
 BitReverse     EQU $FA00  ; resident: each byte with its bits reversed (the sprites drawn facing left)
@@ -46,12 +46,12 @@ RoomNumber     EQU $FE30  ; the room in its grid, a grid row of rooms after anot
 PassCounter    EQU $FE31  ; +1 every pass (PassTick $984D): the animations' clock
 EyeFlashRepeats EQU $FE36  ; DrawRoomPicture's eye flashes still to come; +1 for each object thrown into room 12's pit (CheckPitDrop $80B2)
 EyeFlashStep   EQU $FE37  ; DrawRoomPicture: the step 10-1 of the current flash
-PitDrops       EQU $FE38  ; objects thrown into room 12's pit while the demon sleeps, up to 9: the ninth wakes it (BossPhase 2)
+PitDrops       EQU $FE38  ; objects thrown into room 12's pit while the demon sleeps, up to 9; the tenth object wakes it (BossPhase 2; rzx-r1: PitDrops 1 at 13880 ... 9 at 14780, BossPhase 2 at 14980)
 GateOpen       EQU $FE39  ; GateActor $9065: 1 while the gate stands raised (Y under $38): the left exit of its room is open
 InitOnly3A     EQU $FE3A  ; set to $10 by InitStageState; no stage-1 code reads it (known only from the code)
 BurstTimer     EQU $FE3D  ; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
 BurstSmall     EQU $FE3E  ; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
-Energy         EQU $FE3F  ; the hero's energy, 0 (full) to $2E
+Energy         EQU $FE3F  ; the hero's energy, 0 (empty: a life lost) to $2E (full)
 InitOnly40     EQU $FE40  ; set to $0D by InitStageState; no stage-1 code reads it (known only from the code)
 InitOnly41     EQU $FE41  ; set to 1 by InitStageState; no stage-1 code reads it (known only from the code)
 SpanOpen       EQU $FE42  ; BuildSpans: 1 while a run of open cells goes on
@@ -74,7 +74,7 @@ HeroFreeze     EQU $FE58  ; passes the hero's state handler is skipped ($17 afte
 LivesFlash     EQU $FE59  ; the lives boxes' flash step, 0-$10 ($10 idle)
 RestoreAttributes EQU $FE5A  ; 1: UpdateAttributes takes the solid cells' colours from RoomAttributes once (the new room fades in over the old one)
 GameOverTimer  EQU $FE5B  ; 0 in play; 1 when the last life is lost, counts to $32
-BossHits       EQU $FE5C  ; the hits the winged boss's head still takes ($0A at the stage start)
+BossHits       EQU $FE5C  ; the hits the winged boss's head still takes ($0A at the stage start; stays 1 after the tenth hit: BossFlees is jumped to before the store)
 ArenaBossBeaten EQU $FE5D  ; 1 once the arena's boss took 20 hits (ArenaBossHit): its picture and damage stop
 ArenaBossHits  EQU $FE5E  ; the hits the arena's boss took, up to 20
 ArenaFlash     EQU $FE5F  ; 1 after a hit on the arena's boss: its picture's colours flash red once

@@ -85,6 +85,12 @@ TABLES = {
     'burst-directions-cut': [('s%d' % i, 'u8') for i in range(26)],
     'boss-colours': [('c%d' % i, 'x8') for i in range(8)],
     'boss-hit-colours': [('c%d' % i, 'x8') for i in range(8)],
+    'arc-steps': [('dy', 's8')],
+    'boss-fall-steps': [('dy', 's8')],
+    'boss-hover-path': [('dy', 's8')],
+    'shot-directions': [('dx', 's8'), ('dy', 's8'), ('frame', 'u8'), ('mirrored', 'u8')],
+    'star-pixels': [('p%d_l%d' % (p, l), 'x8') for p in range(4) for l in range(2)],
+    'pace-waits': [('rounds', 'x16')],
 }
 
 

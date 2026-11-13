@@ -53,7 +53,7 @@ EffectLeftover:
 
   ORG $F66F
 
-; Mixer := $38 (tones off), every channel idle, the three volumes 0
+; Mixer := $38 (tones on, noise off), every channel idle, the three volumes 0
 ;
 ; Witness: L1 24 (c1, ending, joystick, s1-idle, s1-right, s2-right, s3-right,
 ; s4-right, s5-right, stageload, rzx-r1-rzx-r5).

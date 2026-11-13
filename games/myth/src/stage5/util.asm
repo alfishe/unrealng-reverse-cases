@@ -102,7 +102,7 @@ ClearPlayBuffer:
 ; ScreenLineTable $FB00. Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's
 ; bytes go to the buffer (not the other way). Called from $7924 (EndStage saves
 ; the HUD's lines 0-47 into HudPicture $7000). The same code as stage 1's
-; $8A89, which stage 1 names CopyBlockToScreen.
+; CopyScreenToBlock $8A89.
 ;
 ; Not executed in any recording (the recordings checked: s5-right, rzx-r5,
 ; ending); known only from the code.

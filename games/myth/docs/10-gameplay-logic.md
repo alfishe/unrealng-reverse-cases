@@ -620,6 +620,12 @@ The later stages reuse stage 1's engine with their own actors. From their annota
 | 4 | scorpions, the traps, the mummy ([doc 1, 1.7](01-game-design.md#17-the-five-stages)) | the barrier of grid 0 room 1 (closed until BarrierState is 2, the hero thrown back by HeroRecoil); the pharaoh's head: 20 hits |
 | 5 | Dameron's missiles | Dameron's four forms ([below](#the-ending)) |
 
+The RZX run beats each boss, and its replays carry an L1 ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
+`rzx-r2` cuts the hydra's heads (HydraHeadHit 845 runs) and bursts its body at frame 14335 (HydraDefeated);
+`rzx-r3` beats the dragon (DragonBeaten, one run; its hits counted from frame 10960) and the giant on the throne
+(30 hits, frames 14348-14596, ThroneBossBeaten); `rzx-r4` beats the pharaoh's head (20 hits from frame 20598,
+BossBeaten one run).
+
 ### The ending
 
 Stage 5 has no rooms and no exit. Its main loop waits for the frame with a HALT, the only stage loop that does
@@ -640,13 +646,18 @@ quit or a reset ends.
 
 - **HeroRecoil** (state `$0B`), the hop back from a closed exit, never runs in stage 1's recordings. Stage 4's barrier
   shows it in `s4-right`.
-- **ItemWindow's RIGHT** (ScrollItemsRight) and **QuitStage** never ran in the L1 recordings.
+- **QuitStage** never ran in any recording. ItemWindow's RIGHT (ScrollItemsRight) runs only in `rzx-r1` (25 runs).
 - **CellFlagUnused** tests bit 1 of a cell and has no caller.
 - **BossGrowPart** `$9007` grows a boss part to 32 lines; no template names it.
-- **SpawnBossBridge** `$8E56`: the right wing turns into a bridge slab from BossPhase 3 on. `rzx-r1` shows the slab
-  under the falling body, but no L1 count covers it.
-- **The tenth object.** The stage 1 source says "PitDrops up to 9; the ninth sets BossPhase 2". The code and `rzx-r1`
-  both say the tenth (a change is sent to the lead).
+- **SpawnBossBridge** `$8E56`: the right wing turns into a bridge slab from BossPhase 3 on. `rzx-r1` runs it once, at
+  BossPhase 3 (frame 15362 on), and shows the slab under the falling body.
+- **The tenth object.** PitDrops stops at 9 (`CP $09` / `JR Z` before the `INC`), and the tenth object wakes the demon:
+  `rzx-r1` reads PitDrops 9 at 14780 and BossPhase 2 at 14980.
 - **BossHits** keeps 1 after the demon is beaten, because BossFlees is taken before the store.
-- **ThrowItem, FireBolt and ThrowAmmo** are marked "Not executed" in the stage 1 source; `rzx-r1` runs ThrowItem (kind 9
-  shots from frame 2320) and the bolts of the arena.
+- **ThrowItem, FireBolt and ThrowAmmo** run only in `rzx-r1`: ThrowItem from frame 2310 (kind 8, 72 to 71), ThrowAmmo
+  ten throws at the demon's pit (frames 13818-14826), FireBolt 24 bolts at the dragon (frames 19528-19764).
+- **The deadly cell.** HeroUpdate's test of bit 3 of the cell under the hero never found one: the `JP Z` at `$AC62`
+  was taken in every pass of every recording (`rzx-r1` 9313, `deaths` 867, `c1o` 276). The deaths came from the
+  flames and the enemies.
+- **The shield** (item 1): `rzx-r1` selects it for 89 passes (frames 24826-25096) and DrainItemCharge takes 11 of its
+  count, one every 8th pass; IsShieldUp kept one hit off at frame 17450.

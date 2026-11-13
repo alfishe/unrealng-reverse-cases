@@ -13,6 +13,7 @@ stage 1's (`src/res/stage1/README.md`), except the room data:
 | File | Address | Bytes | What | Read by |
 |------|---------|-------|------|---------|
 | `picture-hud-32x48.png` | `$7000`-`$76BF` | 1728 | the HUD as loaded: 48 lines x 32 bytes, then 6 rows of colours; in play the space holds the stage's records (`variables.asm`) | DissolveHud `$8FD6`, StageSetUp `$9715`; saved back by EndStage `$7898` |
+| `table-pace-waits.csv` | `$7982` | 96 | the busy-wait rounds of each place, a word for GridNumber x 3 + RoomNumber (48 words) | PacePass `$7961` |
 | `table-startitems.csv` | `$7F69` | 12 | the item kind of each of the 12 carried slots at the stage's start | InitStageState `$9F71` |
 | `table-itemicons.csv` | `$7F75` | 20 | the icon of each item kind 0-9 (words; kind 4 is BlankIcon) | DrawItemIcon `$7E5A` |
 | `rooms-split.txt` | `$9AE2`-`$9DAA` | 713 | 9 grid records (`$9AE2`-`$9B32`), their room tables (`$9B33`-`$9B4F`), 9 placement lists (`$9B50`-`$9DAA`) | RoomCells `$9898`, StartGrid `$A5CC`, LeaveRoomDown `$A06A`, LoadRoomActors |

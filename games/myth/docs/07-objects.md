@@ -645,9 +645,9 @@ of fixed records.
 - **LoadRoomActors has no lower bound.** The search for a free record walks down from record 13 and stops only on a
   free one. With all 13 records used it would run below `$74F2`. The busiest window of grid 0 has 12 placements, so
   the placements alone never fill the table.
-- **ShotHitsActor and UpdateHeroShot never ran.** Missile kind 9 and the shootable bit, +`$0F` bit 0, are in the code
-  and in the kind rows of the hanging bodies, the demon's body and head, the statues, the gate and the dragon's head.
-  No recording fires a kind-9 shot.
+- **ShotHitsActor and UpdateHeroShot** run only in `rzx-r1` (889 and 914 runs). Missile kind 9 and the shootable bit,
+  +`$0F` bit 0, are in the kind rows of the hanging bodies, the demon's body and head, the statues, the gate and the
+  dragon's head; `c1o`, `deaths`, `s1-idle` and `s1-right` fire no kind-9 shot.
 - **Missile kind 0 is a trap.** HangFlashBorder `$876C` flashes the border from R in a loop that never returns. A
   record of kind 0 would hang the game.
 - **The fine steps.** StepFineRight `$8B37` and StepFineLeft `$8B61` move an actor by eighths of a byte column through

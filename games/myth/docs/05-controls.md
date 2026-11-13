@@ -190,7 +190,7 @@ MenuHighlight:                         # E = the line, D = the pass on that line
     E = 0; D = 0
     loop:
         HALT; HALT                     # a pass is 2 frames
-        the starfield and the box's colours
+        the frame's shimmer (ShimmerFrame) and the box's colours
         paint the bar: column 7, row 10 + 2 x E, 18 x 2 cells, colour MenuBarColours[D % 8]
         D += 1
         if D == 48: D = 0; E = (E + 1) % 3
@@ -221,7 +221,7 @@ line and presses SPACE.
 2. The recording shows E moving at 8289 (DEFINE KEYS), 8385 (SELECT JOYSTICK) and 8481 (START GAME again): 96
    frames apart, as the code says.
 3. SPACE is read at 8491, with E = 0: START GAME.
-4. 149 passes in 296 frames: 2 frames a pass, with the starfield and the box's colours inside each.
+4. 149 passes in 296 frames: 2 frames a pass, with the frame's shimmer (ShimmerFrame) and the box's colours inside each.
 
 So a menu choice costs up to 288 frames of waiting, almost 6 seconds. D and E start at 0 each time the menu is drawn,
 so after DEFINE KEYS the bar is back on START GAME.

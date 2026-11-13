@@ -83,20 +83,23 @@ ClearPlayBuffer:
   LDIR
   RET
 
-; Copy a block of bytes to the screen, one pixel line at a time
+; Copy a block of the screen, one pixel line at a time, into a buffer
 ;
-; HL = the source (lines packed one after the other), B = the screen column, C
+; HL = the buffer (lines packed one after the other), B = the screen column, C
 ; = the first pixel line, D = the width
 ;
 ; in bytes, E = the lines. Patches its ADD A,n at $893E with the column; the
 ; line addresses come from ScreenLineTable.
 ;
-; EndStageSave ($7925) copies the HUD's 48 lines with it.
+; Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer.
+; EndStageSave ($7925) saves the
 ;
-; Stage 1's CopyBlockToScreen at $8A89 is the same code.
+; HUD's 48 lines into $7000 with it.
+;
+; Stage 1's CopyScreenToBlock at $8A89 is the same code.
 ;
 ; Witness: L1 2 (rzx-r3, s3-right).
-CopyBlockToScreen:
+CopyScreenToBlock:
   LD A,B
   LD (CopyBlockLine+$0005),A
   LD B,$00

@@ -24,6 +24,12 @@ Formats in short:
 | `table-startitems.csv` | `$7F2F` | 12 | the item kind of each of the 12 carried slots at the stage's start | InitStageState `$9DA1` |
 | `table-itemicons.csv` | `$7F3B` | 18 | the icon of each item kind 0-8 (words) | DrawItemIcon `$7E19`, SpawnItem `$A098` |
 | `rooms.txt` | `$9B6F`-`$9C89` | 283 | 3 grid records (Grid0 `$9B6F`, Grid1 `$9B8A`, Grid2 `$9B96`) with their room tables; 3 placement lists (`$9BA0`, `$9C69`, `$9C78`) | RoomCells `$9928`, StartGrid `$A444`, CheckRoomExits `$AADA`, CheckGridPassages `$AB1C`, LoadRoomActors `$A4CC` |
+| `table-star-pixels.csv` | `$7ABA` | 32 | the two pixel lines of a falling star, by speed (rows 1-4) and pixel (pairs 0-3) | MoveStar `$7A4A` |
+| `table-arc-steps.csv` | `$8079` | 23 | the thrown object's line change at each arc step 0-22 | UpdateThrownArc `$8006` |
+| `table-shot-directions.csv` | `$8151` | 32 | the aimed shot's 8 directions: dx, dy, the frame's offset in ShotFrames, mirrored | UpdateAimedShot `$80DF` |
+| `table-boss-fall-steps.csv` | `$8FE8` | 11 | the lines the beaten demon's body drops by a pass, from -4 to 5 | BossFall `$8FA5` |
+| `table-boss-colours.csv` | `$901D` | 8 | the demon's colours over 8 passes (ink 7 down to 3 and back) | BossColour `$8F87` |
+| `table-boss-hover-path.csv` | `$9025` | 64 | the demon's line step at each step of its hover; `$80` (-128) ends it | BossPart `$8EB2` |
 | `table-kinds.csv` | `$9C8A` | 153 | the 17 placement kinds: Y offset, handler, record bytes +8..+`$0C`, +`$0F` | LoadRoomActors `$A4CC` |
 | `table-actor-templates.csv` | `$9D23` | 126 | 7 whole actor records: bridge slab, hero, item, piece, fragment, warrior, warrior's head | SpawnActor `$A4B1` and its callers |
 | `table-burst-steps.csv` | `$A39D` | 40 | 20 (dx, dy) particle steps | UpdateBurst |
@@ -72,3 +78,9 @@ zeros), `$779C`-`$77FF` (100 zeros), and the work space `$6C3F`-`$6FFF`, `$76C0`
 
 The figures `docs/img/maps/stage1.png` (the three grids with every placement) and `docs/img/maps/stage1-rooms.png`
 (each of the 22 rooms) are drawn from these files by `python3 tools/fig_rooms.py stage1`.
+
+What stays bytes in `stage1.ann`, and why: the variables and records `$6D00-$77FF` (state, not data: written in play);
+the self-modified operands; the 2-byte word tables of code addresses (RowPlotters, ShiftRoutines, MissileHandlers,
+the handler words of the jump tables): they name routines, an edit would be a code change; the inline parameter
+bytes of FillShadowAttributes (HudBox1-3) and SetActorFrame's inline words, which sit between instructions; and the
+small frame records of single sprites (ArcFrame, ShotFrames' records), kept beside the bitmap they describe.

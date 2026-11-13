@@ -11,8 +11,8 @@ The tape is played at signal speed (fast and turbo tape off): the loader is Spee
 stops the tape after the main block and after each stage block (ID 20 with a pause of 0); the game then waits, and
 a plan presses play again when the game asks for the next stage (`tape_play`).
 
-The controls (the instructions, checked in stage 1): Q left, W right, I up (jump), J down, O fire, H pause, SPACE
-the item window. A POKE, where a plan uses one, is applied on the recording's machine only, written in record.json
+The controls (the instructions, checked in stage 1): Q left, W right, I up (jump), J down, O fire, SPACE
+the item window; the pause is ENTER (CheckPause `$79B1`), not the H the instructions name. A POKE, where a plan uses one, is applied on the recording's machine only, written in record.json
 and in the plan's note; the image of the case is cut from c1 (case.json), never from a recording with a POKE.
 """
 import argparse
@@ -185,7 +185,7 @@ def walk(r, spec, frames, name=None):
 def plan_c1(r):
     """c1: power-on on a 48K, LOAD "", the original tape at signal speed by its own loader (Speedlock 7), the logo,
     SPACE, the credits, SPACE, the menu, START GAME, stage 1 loaded from the tape, then play: right, left, a jump,
-    fire with each direction, crouch, the item window (SPACE), pause (H)"""
+    fire with each direction, crouch, the item window (SPACE), H (the script's pause: the game reads ENTER, so it pauses nothing)"""
     boot(r)
     to_menu(r)
     r.lab.save(os.path.join(r.work, 'menu.szx'))

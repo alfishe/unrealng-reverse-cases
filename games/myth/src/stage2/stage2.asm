@@ -12,7 +12,7 @@ PlayBuffer     EQU $5B00  ; the play buffer $5B00-$6CFF (its tail $6C3F-$6CFF is
 DigitGlyphs    EQU $F959  ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
 PlaySoundVector EQU $F9B0  ; resident: JP to the AY effect starter (E = the effect number)
 DecimalTable   EQU $F9BF  ; resident: the words 10000, 1000, 100, 10, 1
-DissolveMasks  EQU $F9CC  ; resident: DissolveHud's eight masks
+DissolveMasks  EQU $F9CB  ; resident: the dissolve masks; DissolveHud reads sets 0-3 (32 bytes)
 Score          EQU $F9FB  ; resident: the score's low four decimal digits, 0-9999 (AddScore)
 ScoreHigh      EQU $F9FD  ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
 BitReverse     EQU $FA00  ; resident: each byte with its bits reversed (the sprites drawn facing left)
@@ -47,7 +47,7 @@ PassCounter    EQU $FE31  ; +1 every pass (PassTick $984D): the animations' cloc
 InitOnly3A     EQU $FE37  ; stage 1 has it at $FE3A; set to $10 by InitStageState $9766; no stage-2 code reads it (known only from the code)
 BurstTimer     EQU $FE3A  ; stage 1 has it at $FE3D; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
 BurstSmall     EQU $FE3B  ; stage 1 has it at $FE3E; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
-Energy         EQU $FE3C  ; stage 1 has it at $FE3F; the hero's energy, 0 (full) to $2E
+Energy         EQU $FE3C  ; stage 1 has it at $FE3F; the hero's energy, 0 (empty: a life lost) to $2E (full)
 InitOnly40     EQU $FE3E  ; stage 1 has it at $FE40; set to $0D by InitStageState $9766; no stage-2 code reads it (known only from the code)
 InitOnly41     EQU $FE3F  ; stage 1 has it at $FE41; set to 1 by InitStageState $9766; no stage-2 code reads it (known only from the code)
 SpanOpen       EQU $FE40  ; stage 1 has it at $FE42; BuildSpans $93B5: 1 while a run of open cells goes on

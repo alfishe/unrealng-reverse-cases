@@ -1,15 +1,15 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; joystick.asm: SELECT JOYSTICK: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU; the readers patched for each
 ;
-; Never recorded: everything here is known only from the code. SelectJoystick $97D8 prints its four lines
-; (JoystickText $A0D9: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU on lines 68, 84, 100, 116, large font), then
-; JoystickHighlight $9A3B runs the moving highlight over them (the menu's timing: 96 frames a line, starting on
-; KEMPSTON) until SPACE. The lines are wiped, and for line 0-2 the five readers are patched: KEMPSTON reads port $1F
-; with KeyXorMask $FF (a Kempston interface sets its bits for a pressed direction), bit 3 up, 2 down, 1 left, 0 right,
-; 4 fire; SINCLAIR reads half row $EFFE: 9 up, 8 down, 6 left, 7 right, 0 fire; CURSOR KEYS 7 up, 6 down, 5 left (half
-; row $F7FE), 8 right, 0 fire. Each pair (ReaderPort $FE4D, ReaderBitOp $FE4C) goes to one reader through a
-; Patch*Reader routine; KeyXorMask is 0 for both key layouts. LEAVE THIS MENU (line 3) changes nothing; every choice
-; goes back to the menu.
+; Recorded in joystick (work/stage2/rec/joystick: CURSOR, SINCLAIR, LEAVE, KEMPSTON in turn). SelectJoystick $97D8
+; prints its four lines (JoystickText $A0D9: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU on lines 68, 84, 100,
+; 116, large font), then JoystickHighlight $9A3B runs the moving highlight over them (the menu's timing: 96 frames a
+; line, starting on KEMPSTON) until SPACE. The lines are wiped, and for line 0-2 the five readers are patched:
+; KEMPSTON reads port $1F with KeyXorMask $FF (a Kempston interface sets its bits for a pressed direction), bit 3 up,
+; 2 down, 1 left, 0 right, 4 fire; SINCLAIR reads half row $EFFE: 9 up, 8 down, 6 left, 7 right, 0 fire; CURSOR KEYS 7
+; up, 6 down, 5 left (half row $F7FE), 8 right, 0 fire. Each pair (ReaderPort $FE4D, ReaderBitOp $FE4C) goes to one
+; reader through a Patch*Reader routine; KeyXorMask is 0 for both key layouts. LEAVE THIS MENU (line 3) changes
+; nothing; every choice goes back to the menu.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $97D8
@@ -20,7 +20,7 @@
 ; Reached from Menu $99A8 (JP Z at $99D7, line 2). MenuHook $980A, JoystickText
 ; $A0D9, JoystickHighlight $9A3B (E = the line taken), ClearTextLine with 68,
 ; 84, 100, 116, then E = 0 SetKempston $9834, 1 SetCursorKeys $989F, 2
-; SetSinclair $986A, 3 BackToMenu. Not executed in any recording (c1, menu).
+; SetSinclair $986A, 3 BackToMenu.
 ;
 ; Witness: L1 4 (joystick).
 SelectJoystick:
@@ -69,7 +69,7 @@ MenuHook:
 ; ReaderPort = $001F, then (ReaderBitOp, reader): $67 FIRE, $5F UP, $57 DOWN,
 ; $47 RIGHT, $4F LEFT, each through its Patch*Reader; KeyXorMask $FCFA := $FF,
 ; so a set bit (the Kempston's pressed direction) reads as a pressed key (Z
-; after BIT). Back to the menu. Not executed in any recording.
+; after BIT). Back to the menu.
 ;
 ; Witness: L1 1 (joystick).
 SetKempston:
@@ -98,7 +98,7 @@ SetKempston:
 ; KeyXorMask 0
 ;
 ; ReaderPort = $EFFE; $47 FIRE, $4F UP, $57 DOWN, $5F RIGHT, $67 LEFT;
-; KeyXorMask := 0. Back to the menu. Not executed in any recording.
+; KeyXorMask := 0. Back to the menu.
 ;
 ; Witness: L1 1 (joystick).
 SetSinclair:
@@ -128,7 +128,7 @@ SetSinclair:
 ;
 ; ReaderPort = $EFFE; $47 FIRE, $57 RIGHT, $5F UP, $67 DOWN; ReaderPort =
 ; $F7FE, LEFT with $67 still in ReaderBitOp (bit 4: the 5 key); KeyXorMask :=
-; 0. Back to the menu. Not executed in any recording.
+; 0. Back to the menu.
 ;
 ; Witness: L1 1 (joystick).
 SetCursorKeys:
@@ -155,7 +155,7 @@ SetCursorKeys:
 
 ; KeyFire's port := ReaderPort, its BIT opcode := ReaderBitOp
 ;
-; Writes KeyFire+4/+5 and KeyFire+13. Not executed in any recording.
+; Writes KeyFire+4/+5 and KeyFire+13.
 ;
 ; Witness: L1 3 (joystick).
 PatchFireReader:
@@ -167,7 +167,7 @@ PatchFireReader:
 
 ; KeyLeft's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
-; Writes KeyLeft+4/+5 and KeyLeft+13. Not executed in any recording.
+; Writes KeyLeft+4/+5 and KeyLeft+13.
 ;
 ; Witness: L1 3 (joystick).
 PatchLeftReader:
@@ -179,7 +179,7 @@ PatchLeftReader:
 
 ; KeyRight's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
-; Writes KeyRight+4/+5 and KeyRight+13. Not executed in any recording.
+; Writes KeyRight+4/+5 and KeyRight+13.
 ;
 ; Witness: L1 3 (joystick).
 PatchRightReader:
@@ -191,7 +191,7 @@ PatchRightReader:
 
 ; KeyUp's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
-; Writes KeyUp+4/+5 and KeyUp+13. Not executed in any recording.
+; Writes KeyUp+4/+5 and KeyUp+13.
 ;
 ; Witness: L1 3 (joystick).
 PatchUpReader:
@@ -203,7 +203,7 @@ PatchUpReader:
 
 ; KeyDown's port and BIT opcode from ReaderPort and ReaderBitOp
 ;
-; Writes KeyDown+4/+5 and KeyDown+13. Not executed in any recording.
+; Writes KeyDown+4/+5 and KeyDown+13.
 ;
 ; Witness: L1 3 (joystick).
 PatchDownReader:
@@ -220,8 +220,7 @@ PatchDownReader:
 ;
 ; As MenuHighlight $99E2 with 4 lines: the bar on row 8 + 2E (rows 8, 10, 12,
 ; 14: lines 68, 84, 100, 116), colours from JoystickBarColours $9A8C, E 0-3. 96
-; frames a line, 384 a cycle, starting on KEMPSTON. Not executed in any
-; recording.
+; frames a line, 384 a cycle, starting on KEMPSTON.
 ;
 ; Witness: L1 4 (joystick).
 JoystickHighlight:
@@ -283,8 +282,7 @@ JoystickBarColours:
 
 ; The SELECT JOYSTICK lines: KEMPSTON, CURSOR KEYS, SINCLAIR, LEAVE THIS MENU
 ;
-; Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames). Not
-; executed in any recording.
+; Four PrintText calls, large font, lines 68, 84, 100, 116 (64 frames).
 ;
 ; Witness: L1 4 (joystick).
 JoystickText:
@@ -296,7 +294,7 @@ TextKempston:
 
 ; The second line
 ;
-; JoystickText, continued. Not executed in any recording.
+; JoystickText, continued.
 ;
 ; Witness: L1 4 (joystick).
 JoystickText2:
@@ -308,7 +306,7 @@ TextCursorKeys:
 
 ; The third line
 ;
-; JoystickText, continued. Not executed in any recording.
+; JoystickText, continued.
 ;
 ; Witness: L1 4 (joystick).
 JoystickText3:
@@ -320,7 +318,7 @@ TextSinclair:
 
 ; The fourth line
 ;
-; JoystickText, continued. Not executed in any recording.
+; JoystickText, continued.
 ;
 ; Witness: L1 4 (joystick).
 JoystickText4:
@@ -331,8 +329,6 @@ TextLeaveThisMenu:
   INCBIN "res/front-texts/leave-this-menu.bin",$0000,20
 
 ; JoystickText's RET
-;
-; Not executed in any recording.
 ;
 ; Witness: L1 4 (joystick).
 JoystickTextDone:
