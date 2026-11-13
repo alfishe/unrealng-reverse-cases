@@ -1882,12 +1882,36 @@ class Runs:
         return n or default
 
 
+# a code entry's text that says no recording ran it ("Not executed in any recording", "not run in any recording",
+# "no recording reaches it")
+NOT_RUN = re.compile(r'\b(?:not|never) (?:executed|run|reached) in any recording|'
+                     r'\bno recording (?:runs|ran|reaches|reached) (?:it|here)\b', re.I)
+
+
+def says_not_run(text):
+    """the NOT_RUN phrase of a description line that is said of the entry: not in brackets (a branch's note), not
+    with another subject ("The RET at $781D is not executed ...", "the two-player paths were ..."; "this is" and "it
+    is" are the entry's)"""
+    for m in NOT_RUN.finditer(text):
+        before = text[:m.start()]
+        if before.count('(') > before.count(')'):
+            continue
+        words = re.findall(r"[\w$']+", before.lower())
+        if words and words[-1] in ('is', 'are', 'was', 'were') and \
+                not (len(words) > 1 and words[-2] in ('this', 'it', 'entry', 'routine')):
+            continue
+        return m.group(0)
+    return None
+
+
 def check_witness(seg, skip=(), fix=False, mem=None):
     """The "Witness: L1 N (builds)" lines of the .ann's code entries against the recordings: N is the runs of the
     entry's first instruction summed over the segment's builds (the case's read_builds, code_builds, ref_builds and
     witness_builds, or a part's l1 and witness_builds, less witness_skip), the list the builds that ran it; with mem
     (the segment's image) only the runs of its own bytes count (Runs). Prints each stale line; fix: rewrites N and
-    the list in the .ann. Returns the number of stale lines"""
+    the list in the .ann. Returns the number of stale lines. A code entry whose text says no recording ran it
+    (NOT_RUN) while the builds give it runs is printed too (the text is the writer's: a recording added later makes it
+    wrong); --fix-witness leaves that text alone"""
     if not seg.ann or not os.path.exists(seg.ann):
         return 0
     load_witness(seg, fix)
@@ -1917,6 +1941,12 @@ def check_witness(seg, skip=(), fix=False, mem=None):
             continue
         if not text.startswith('>') or entry is None or entry[1] != 'c' or not LO <= entry[0] < HI:
             continue  # an entry outside this image (an .ann shared by several parts) is another part's
+        said = says_not_run(text)
+        if said:
+            n, names = witness_text(builds, entry[0])
+            if n:
+                print('witness: %s:%d $%04X %s: the text says "%s", the builds give L1 %d (%s)' % (
+                    os.path.relpath(seg.ann, ROOT), i + 1, entry[0], entry[2] or '', said, n, names))
 
         def sub(w):
             nonlocal stale

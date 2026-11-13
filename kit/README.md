@@ -72,6 +72,7 @@ what the generator does with it, the part files); every file of a case and the c
 | `witness_builds` | recordings that count in the witness lines only (a fuel failure, an armour test), optional |
 | `witness_names` | `{build: name}` for a witness list: a windowed copy of a recording under its recording's name (Battle Command `{"stage1/c1g": "c1"}`), optional |
 | `ref_parts` | part files (`"src/bank3/bank3.json"` or `[path, title]`) docs 11 and 12 cover after the game, a section each (a part of segments a section a segment with an `.ann`, "Title: segment title"), optional; a part file's `ref_builds` (else the case's) are its first builds, its other `l1` sources the others (`other_builds` overrides them; `[]` for none) |
+| `ref_skip_moves` | `true`: doc 11's readers and writers leave out the block moves, the bytes an L1 loop copies (a read and a write stride of step 1 or -1 over as many bytes, 16 or more in a range: `LDIR`, `LDDR`, an in-place decryption; not an `LDIR` fill, whose destination is its source a byte on) or loads (a write stride alone whose store wrote code a recording later ran, an L1 arrival's writer: a tape loader, a depacker of code); doc 12's Reads and Writes keep them. A part file's own key for a part. Optional |
 | `ref_load_end` | `{build: frame}`: the frame from which a recording that loads the game (`stage1/c1`) runs the game's image; its routines first run before it (a loader at the game's addresses) write no entry's "Written by" (Switchblade: the tape loader at `$FF00`, whose block writes fell to DrawMeter `$FF7C`), optional |
 | `overlay` | a buffer laid over code once play starts (`lo`, `hi`, `name`, `why`), optional |
 | `header`, `data_note` | the first comment lines of `game.asm`; a sentence for doc 11, optional |
@@ -129,7 +130,16 @@ What `refdocs.py` writes, beside the names, titles and descriptions of the `.ann
 
 - **Memory ranges** (doc 12, Reads / Writes) name the label at or below their first byte, inner labels included, as
   `Label+offset` (`$77D6` is `TrainOut`, not the record `TrainCell` that holds it); a range inside one entry then
-  names the inner labels it covers, a longer one the entries it runs into.
+  names the inner labels it covers, a longer one the entries it runs into. A range outside the image that is not
+  the screen (below the game's image, once "(system)"; outside a part's image, once its numbers) is named by the
+  `.ann`'s `@equ` lines: the one that holds its first byte (`NAME+offset`), then those that start inside it (Myth's
+  stages: `$5D2E`-`$6AFA` is `PlayBuffer+558`, from `@equ $5B00 PlayBuffer 4415`; an `@equ ... at` names no
+  range). With none, "(system)" or the numbers stay.
+- **Block moves** (`ref_skip_moves`, doc 11 only): the bytes a routine copies or loads in a loop are moved, not
+  used, so they make it no reader or writer of the entries there. Where two programs ran at one address in one
+  recording (Myth's resident over the SpeedLock chain, whose in-place decryption L1 booked to the resident's
+  routines), give the part a frame window of the recording as its `ref_builds` (`stage1/c1/run`): cutting the moves
+  out of a shared L1 routine also cuts the later program's own accesses to those bytes.
 - **The interrupt's acceptance** is the handler's. L1 books the IM 2 vector read and the return address the interrupt
   pushes to the instruction it interrupted; refdocs takes them from that routine and gives them to the handler (the
   callee of L1's `interrupt` edge): the read of a word holding the handler's address in the page the most interrupted

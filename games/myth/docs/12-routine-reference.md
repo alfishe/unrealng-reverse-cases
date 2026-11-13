@@ -370,7 +370,7 @@ Witness: L1 20920 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 10,695 calls, 30,215,275 t-states own (1.38 %) |
 | Runs (the other recordings) | 9,847 calls (`stage1/rec/s1-idle` 7,445, `stage1/rec/s1-right` 1,462, `stage1/rec/deaths` 940) |
 | Called from | `EndStageSave`, `StartStageExit`, `ShowScore`, `ShowItemCount`, `ShowPieceTaken`, `GameOverStep`, `RevealScore` |
-| Reads | `$5B00`-`$5B0B` (system); `$7640`-`$766F` (`DigitBuffer`); `$8BA3`-`$8BC2` (`BlankIcon`); `$CE92`-`$CED1` (`GameOverPicture`); `$E06C`-`$E0A3` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F` (`work space $FB10+`); 2 more ranges |
+| Reads | `$5B00`-`$5B0B` (`PlayBuffer`); `$7640`-`$766F` (`DigitBuffer`); `$8BA3`-`$8BC2` (`BlankIcon`); `$CE92`-`$CED1` (`GameOverPicture`); `$E06C`-`$E0A3` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F` (`work space $FB10+`); 2 more ranges |
 | Writes | `$4026`-`$57FF` (screen); `$79E5` (`CopyToScreenLine+6`); `$79F6` (`CopyToScreenLine+23`) |
 
 ### `PreShiftSprite` (`$7F4D`)
@@ -497,8 +497,8 @@ Witness: L1 289583 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 89,269 calls, 5,013,974 t-states own (0.23 %) |
 | Runs (the other recordings) | 197,916 calls (`stage1/rec/s1-idle` 163,930, `stage1/rec/deaths` 18,578, `stage1/rec/s1-right` 15,408) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5B8C`-`$5CDE` (system); `$5D2E`-`$6CA4` (`PlayBufferTail`); `$6CB8`-`$6CC4` (`PlayBufferTail+121`); `$6CD8`-`$6CE4` (`PlayBufferTail+153`); `$6CF8` (`PlayBufferTail+185`); `$C2D1`-`$C584` (`FirePitSprites`, `FlameJetSprites`, `HangingSprites`); 6 more ranges |
-| Writes | `$5B8C`-`$5CDE` (system); `$5D2E`-`$6CA4` (`PlayBufferTail`); `$6CB8`-`$6CC4` (`PlayBufferTail+121`); `$6CD8`-`$6CE4` (`PlayBufferTail+153`); `$6CF8` (`PlayBufferTail+185`) |
+| Reads | `$5B8C`-`$5CDE` (`PlayBuffer+140`); `$5D2E`-`$6CA4` (`PlayBufferTail`); `$6CB8`-`$6CC4` (`PlayBufferTail+121`); `$6CD8`-`$6CE4` (`PlayBufferTail+153`); `$6CF8` (`PlayBufferTail+185`); `$C2D1`-`$C584` (`FirePitSprites`, `FlameJetSprites`, `HangingSprites`); 6 more ranges |
+| Writes | `$5B8C`-`$5CDE` (`PlayBuffer+140`); `$5D2E`-`$6CA4` (`PlayBufferTail`); `$6CB8`-`$6CC4` (`PlayBufferTail+121`); `$6CD8`-`$6CE4` (`PlayBufferTail+153`); `$6CF8` (`PlayBufferTail+185`) |
 
 ### `PlotRow1Mirrored` (`$8781`)
 
@@ -514,8 +514,8 @@ Witness: L1 75622 (c1o, deaths, rzx-r1).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 69,269 calls, 6,916,944 t-states own (0.32 %) |
 | Runs (the other recordings) | 3,969 calls (`stage1/rec/deaths` 3,969) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5D2E`-`$6AFA` (system); `$6C80` (`PlayBufferTail+65`); `$6CA0` (`PlayBufferTail+97`); `$6CC0` (`PlayBufferTail+129`); `$6CE0` (`PlayBufferTail+161`); `$CBEB`-`$CBF0` (`WarriorSprites+1036`); 9 more ranges |
-| Writes | `$5D2E`-`$6AFA` (system); `$6C80` (`PlayBufferTail+65`); `$6CA0` (`PlayBufferTail+97`); `$6CC0` (`PlayBufferTail+129`); `$6CE0` (`PlayBufferTail+161`) |
+| Reads | `$5D2E`-`$6AFA` (`PlayBuffer+558`); `$6C80` (`PlayBufferTail+65`); `$6CA0` (`PlayBufferTail+97`); `$6CC0` (`PlayBufferTail+129`); `$6CE0` (`PlayBufferTail+161`); `$CBEB`-`$CBF0` (`WarriorSprites+1036`); 9 more ranges |
+| Writes | `$5D2E`-`$6AFA` (`PlayBuffer+558`); `$6C80` (`PlayBufferTail+65`); `$6CA0` (`PlayBufferTail+97`); `$6CC0` (`PlayBufferTail+129`); `$6CE0` (`PlayBufferTail+161`) |
 
 ### `PlotRow2` (`$8793`)
 
@@ -548,8 +548,8 @@ Witness: L1 130320 (c1o, deaths, rzx-r1, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 106,208 calls, 15,867,635 t-states own (0.73 %) |
 | Runs (the other recordings) | 20,230 calls (`stage1/rec/deaths` 12,840, `stage1/rec/s1-right` 7,390) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5D70`-`$5D91` (system); `$5DB0`-`$6AFB` (system); `$6BF3`-`$6C54` (`PlayBufferTail`); `$6C73`-`$6C80` (`PlayBufferTail+52`); `$6C93`-`$6CA0` (`PlayBufferTail+84`); `$6CB3`-`$6CC0` (`PlayBufferTail+116`); 11 more ranges |
-| Writes | `$5D70`-`$5D91` (system); `$5DB0`-`$6AFB` (system); `$6BF3`-`$6C54` (`PlayBufferTail`); `$6C73`-`$6C80` (`PlayBufferTail+52`); `$6C93`-`$6CA0` (`PlayBufferTail+84`); `$6CB3`-`$6CC0` (`PlayBufferTail+116`); 1 more ranges |
+| Reads | `$5D70`-`$5D91` (`PlayBuffer+624`); `$5DB0`-`$6AFB` (`PlayBuffer+688`); `$6BF3`-`$6C54` (`PlayBufferTail`); `$6C73`-`$6C80` (`PlayBufferTail+52`); `$6C93`-`$6CA0` (`PlayBufferTail+84`); `$6CB3`-`$6CC0` (`PlayBufferTail+116`); 11 more ranges |
+| Writes | `$5D70`-`$5D91` (`PlayBuffer+624`); `$5DB0`-`$6AFB` (`PlayBuffer+688`); `$6BF3`-`$6C54` (`PlayBufferTail`); `$6C73`-`$6C80` (`PlayBufferTail+52`); `$6C93`-`$6CA0` (`PlayBufferTail+84`); `$6CB3`-`$6CC0` (`PlayBufferTail+116`); 1 more ranges |
 
 ### `PlotRow3` (`$87BD`)
 
@@ -593,8 +593,8 @@ Witness: L1 49428 (c1o, deaths, rzx-r1, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 36,919 calls, 5,544,339 t-states own (0.25 %) |
 | Runs (the other recordings) | 10,515 calls (`stage1/rec/deaths` 6,163, `stage1/rec/s1-right` 4,352) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5C6B`-`$5EF0` (system); `$5F24`-`$6CB9` (`PlayBufferTail`); `$C7DF`-`$CBBA` (`WarriorSprites`); `$DB68`-`$DBB7` (`WarriorCollapseSprites+60`); `$DBF7`-`$DD22` (`WarriorCollapseSprites+203`); `$DD70`-`$DD93` (`WarriorCollapseSprites+580`) |
-| Writes | `$5C6B`-`$5EF0` (system); `$5F24`-`$6CB9` (`PlayBufferTail`) |
+| Reads | `$5C6B`-`$5EF0` (`PlayBuffer+363`); `$5F24`-`$6CB9` (`PlayBufferTail`); `$C7DF`-`$CBBA` (`WarriorSprites`); `$DB68`-`$DBB7` (`WarriorCollapseSprites+60`); `$DBF7`-`$DD22` (`WarriorCollapseSprites+203`); `$DD70`-`$DD93` (`WarriorCollapseSprites+580`) |
+| Writes | `$5C6B`-`$5EF0` (`PlayBuffer+363`); `$5F24`-`$6CB9` (`PlayBufferTail`) |
 
 ### `PlotRow4Mirrored` (`$880E`)
 
@@ -608,8 +608,8 @@ Witness: L1 1976 (c1o, rzx-r1, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1,652 calls, 409,551 t-states own (0.02 %) |
 | Runs (the other recordings) | 216 calls (`stage1/rec/s1-right` 216) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6596`-`$6ADB` (system); `$CDA8`-`$CE13` (`WarriorSprites+1481`); `$DB68`-`$DBB7` (`WarriorCollapseSprites+60`); `$DBF7`-`$DD22` (`WarriorCollapseSprites+203`); `$DD70`-`$DD93` (`WarriorCollapseSprites+580`); `$FA00`-`$FAF8` (`work space $FA00+`) |
-| Writes | `$6596`-`$6ADB` (system) |
+| Reads | `$6596`-`$6ADB` (`PlayBuffer+2710`); `$CDA8`-`$CE13` (`WarriorSprites+1481`); `$DB68`-`$DBB7` (`WarriorCollapseSprites+60`); `$DBF7`-`$DD22` (`WarriorCollapseSprites+203`); `$DD70`-`$DD93` (`WarriorCollapseSprites+580`); `$FA00`-`$FAF8` (`work space $FA00+`) |
+| Writes | `$6596`-`$6ADB` (`PlayBuffer+2710`) |
 
 ### `PlotRow5` (`$8838`)
 
@@ -623,8 +623,8 @@ Witness: L1 180 (rzx-r1).
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 180 calls, 32,686 t-states own (0.00 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$67A9`-`$680D` (system); `$6829`-`$682D` (system); `$6849`-`$684D` (system); `$6869`-`$686D` (system); `$6889`-`$688D` (system); `$68A9`-`$68AD` (system); 3 more ranges |
-| Writes | `$67A9`-`$680D` (system); `$6829`-`$682D` (system); `$6849`-`$684D` (system); `$6869`-`$686D` (system); `$6889`-`$688D` (system); `$68A9`-`$68AD` (system); 2 more ranges |
+| Reads | `$67A9`-`$680D` (`PlayBuffer+3241`); `$6829`-`$682D` (`PlayBuffer+3369`); `$6849`-`$684D` (`PlayBuffer+3401`); `$6869`-`$686D` (`PlayBuffer+3433`); `$6889`-`$688D` (`PlayBuffer+3465`); `$68A9`-`$68AD` (`PlayBuffer+3497`); 3 more ranges |
+| Writes | `$67A9`-`$680D` (`PlayBuffer+3241`); `$6829`-`$682D` (`PlayBuffer+3369`); `$6849`-`$684D` (`PlayBuffer+3401`); `$6869`-`$686D` (`PlayBuffer+3433`); `$6889`-`$688D` (`PlayBuffer+3465`); `$68A9`-`$68AD` (`PlayBuffer+3497`); 2 more ranges |
 
 ### `PlotRow5Mirrored` (`$8857`)
 
@@ -636,8 +636,8 @@ Witness: L1 160 (rzx-r1).
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 160 calls, 47,865 t-states own (0.00 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$67AA`-`$68DB` (system); `$69AF`-`$6ADB` (system); `$DD23`-`$DD54` (`WarriorCollapseSprites+503`); `$FA00`-`$FA11` (`work space $FA00+`); `$FA80` (`work space $FA80+`) |
-| Writes | `$67AA`-`$68DB` (system); `$69AF`-`$6ADB` (system) |
+| Reads | `$67AA`-`$68DB` (`PlayBuffer+3242`); `$69AF`-`$6ADB` (`PlayBuffer+3759`); `$DD23`-`$DD54` (`WarriorCollapseSprites+503`); `$FA00`-`$FA11` (`work space $FA00+`); `$FA80` (`work space $FA80+`) |
+| Writes | `$67AA`-`$68DB` (`PlayBuffer+3242`); `$69AF`-`$6ADB` (`PlayBuffer+3759`) |
 
 ### `PlotRow6` (`$8889`)
 
@@ -651,8 +651,8 @@ Witness: L1 7812 (rzx-r1).
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 7,812 calls, 1,669,662 t-states own (0.08 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F0E`-`$63F3` (system); `$668E`-`$6C53` (`PlayBufferTail`); `$6C6E`-`$6C73` (`PlayBufferTail+47`); `$6C8E`-`$6C93` (`PlayBufferTail+79`); `$6CAE`-`$6CB3` (`PlayBufferTail+111`); `$6CCE`-`$6CD3` (`PlayBufferTail+143`); 3 more ranges |
-| Writes | `$5F0E`-`$63F3` (system); `$668E`-`$6C53` (`PlayBufferTail`); `$6C6E`-`$6C73` (`PlayBufferTail+47`); `$6C8E`-`$6C93` (`PlayBufferTail+79`); `$6CAE`-`$6CB3` (`PlayBufferTail+111`); `$6CCE`-`$6CD3` (`PlayBufferTail+143`); 1 more ranges |
+| Reads | `$5F0E`-`$63F3` (`PlayBuffer+1038`); `$668E`-`$6C53` (`PlayBufferTail`); `$6C6E`-`$6C73` (`PlayBufferTail+47`); `$6C8E`-`$6C93` (`PlayBufferTail+79`); `$6CAE`-`$6CB3` (`PlayBufferTail+111`); `$6CCE`-`$6CD3` (`PlayBufferTail+143`); 3 more ranges |
+| Writes | `$5F0E`-`$63F3` (`PlayBuffer+1038`); `$668E`-`$6C53` (`PlayBufferTail`); `$6C6E`-`$6C73` (`PlayBufferTail+47`); `$6C8E`-`$6C93` (`PlayBufferTail+79`); `$6CAE`-`$6CB3` (`PlayBufferTail+111`); `$6CCE`-`$6CD3` (`PlayBufferTail+143`); 1 more ranges |
 
 ### `PlotRow6Mirrored` (`$88AD`)
 
@@ -676,8 +676,8 @@ Witness: L1 570 (rzx-r1).
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 570 calls, 139,701 t-states own (0.01 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F4D`-`$6333` (system); `$634D`-`$6353` (system); `$636D`-`$6373` (system); `$638D`-`$6393` (system); `$63AD`-`$63B3` (system); `$63CD`-`$63D3` (system); 2 more ranges |
-| Writes | `$5F4D`-`$6333` (system); `$634D`-`$6353` (system); `$636D`-`$6373` (system); `$638D`-`$6393` (system); `$63AD`-`$63B3` (system); `$63CD`-`$63D3` (system); 1 more ranges |
+| Reads | `$5F4D`-`$6333` (`PlayBuffer+1101`); `$634D`-`$6353` (`PlayBuffer+2125`); `$636D`-`$6373` (`PlayBuffer+2157`); `$638D`-`$6393` (`PlayBuffer+2189`); `$63AD`-`$63B3` (`PlayBuffer+2221`); `$63CD`-`$63D3` (`PlayBuffer+2253`); 2 more ranges |
+| Writes | `$5F4D`-`$6333` (`PlayBuffer+1101`); `$634D`-`$6353` (`PlayBuffer+2125`); `$636D`-`$6373` (`PlayBuffer+2157`); `$638D`-`$6393` (`PlayBuffer+2189`); `$63AD`-`$63B3` (`PlayBuffer+2221`); `$63CD`-`$63D3` (`PlayBuffer+2253`); 1 more ranges |
 
 ### `DrawRowPicture` (`$8B03`)
 
@@ -696,7 +696,7 @@ Witness: L1 46898 (rzx-r1).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 826 calls, 24,558,826 t-states own (1.12 %) |
 | Called from | `DrawRoomPicture`, `DrawArenaPicture` |
 | Reads | `$D0D8`-`$D50C` (`ArenaPicture`); `$D5D5`-`$D91F` (`RoomPicture`) |
-| Writes | `$5B09`-`$619D` (system); `$61B7`-`$61FD` (system); `$6216`-`$621D` (system); `$6236`-`$623D` (system); `$6256`-`$625D` (system); `$6276`-`$627D` (system); 1 more ranges |
+| Writes | `$5B09`-`$619D` (`PlayBuffer+9`); `$61B7`-`$61FD` (`PlayBuffer+1719`); `$6216`-`$621D` (`PlayBuffer+1814`); `$6236`-`$623D` (`PlayBuffer+1846`); `$6256`-`$625D` (`PlayBuffer+1878`); `$6276`-`$627D` (`PlayBuffer+1910`); 1 more ranges |
 
 ### `FillAttributes` (`$8C3D`)
 
@@ -811,7 +811,7 @@ Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 24 calls (`stage1/rec/deaths` 17, `stage1/rec/s1-right` 6, `stage1/rec/s1-idle` 1) |
 | Called from | `RoomChange` |
 | Calls | `AddSpan` |
-| Reads | `$5B00`-`$5BCD` (system); `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$7796` (`SpanTable`, `SpanTableRest`); `$FE1C`-`$FE1F` (`work space $FE1C+`); `$FE42` (`work space $FE42+`) |
+| Reads | `$5B00`-`$5BCD` (`PlayBuffer`); `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$7796` (`SpanTable`, `SpanTableRest`); `$FE1C`-`$FE1F` (`work space $FE1C+`); `$FE42` (`work space $FE42+`) |
 | Writes | `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$7796` (`SpanTable`, `SpanTableRest`); `$9A1C`-`$9A1D` (`BuildSpansKinds+1`); `$FE1C`-`$FE1F` (`work space $FE1C+`); `$FE42` (`work space $FE42+`) |
 
 ### `AddSpan` (`$9A6E`)
@@ -960,7 +960,7 @@ Witness: L1 108073 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Called from | `DrawActors` |
 | Calls | `PlotRow1`, `PlotRow1Mirrored`, `PlotRow2`, `PlotRow2Mirrored`, `PlotRow3`, `PlotRow3Mirrored`, `PlotRow4`, `PlotRow4Mirrored`, `PlotRow5`, `PlotRow5Mirrored`, `PlotRow6`, `PlotRow7`, `ColourActor` |
 | Reads | `$74E2`-`$75DB` (`HeroY+1`, `HeroFrame`, `HeroFlags`, `HeroState` and 6 more); `$8914`-`$892D` (`RowPlotters+4`); `$C2B1`-`$C36C` (`BridgeSlabSprite`, `FirePitSprites`); `$D9CA`-`$DB19` (`GateSprites`, `StatueSprites`); `$E190`-`$E259` (`StrikeableSprites`); `$EAEC`-`$EB4B` (`ItemIconSprites`, `ItemIconKind6`, `ItemIconKind5`); 1 more ranges |
-| Writes | `$5B74`-`$5F35` (system); `$5F53`-`$5F55` (system); `$5F73`-`$5F75` (system); `$5F93`-`$5F95` (system); `$5FB3`-`$5FB5` (system); `$5FD3`-`$5FD5` (system); 2 more ranges |
+| Writes | `$5B74`-`$5F35` (`PlayBuffer+116`); `$5F53`-`$5F55` (`PlayBuffer+1107`); `$5F73`-`$5F75` (`PlayBuffer+1139`); `$5F93`-`$5F95` (`PlayBuffer+1171`); `$5FB3`-`$5FB5` (`PlayBuffer+1203`); `$5FD3`-`$5FD5` (`PlayBuffer+1235`); 2 more ranges |
 
 ### `ColourActor` (`$A6FF`)
 
@@ -1212,7 +1212,7 @@ Witness: L1 3240 (rzx-r1, s1-right).
 | Called from | `UpdateThrownArc`, `UpdateAimedShot`, `DrawDriftShot`, `UpdateFlatShot`, `UpdateBouncer` |
 | Calls | `BufferAddressHL` |
 | Reads | `$8092`-`$8093` (`ArcFrame+2`); `$813F`-`$8140` (`ShotFrames+2`); `$85C6`-`$85C7` (`FlatShotFrame+2`); `$863F`-`$8644` (`BounceFrames+2`); `$B3EC`-`$B3F9` (`ImageDescriptors+2`); `$C783`-`$C78C` (`ShotSmall`); 2 more ranges |
-| Writes | `$5C8A`-`$6052` (system); `$606D`-`$6072` (system); `$608D`-`$6098` (system); `$60AD`-`$60B8` (system); `$60CD`-`$60D8` (system); `$60ED`-`$60F8` (system); 1 more ranges |
+| Writes | `$5C8A`-`$6052` (`PlayBuffer+394`); `$606D`-`$6072` (`PlayBuffer+1389`); `$608D`-`$6098` (`PlayBuffer+1421`); `$60AD`-`$60B8` (`PlayBuffer+1453`); `$60CD`-`$60D8` (`PlayBuffer+1485`); `$60ED`-`$60F8` (`PlayBuffer+1517`); 1 more ranges |
 
 ### `DrawSpriteMirrored` (`$B446`)
 
@@ -1230,7 +1230,7 @@ Witness: L1 284 (rzx-r1).
 | Called from | `UpdateAimedShot` |
 | Calls | `BufferAddressHL` |
 | Reads | `$813F`-`$8140` (`ShotFrames+2`); `$C783`-`$C78C` (`ShotSmall`); `$FA00` (`work space $FA00+`); `$FA21` (`work space $FA21+`); `$FA40` (`work space $FA40+`); `$FA74`-`$FA80` (`work space $FA74+`); 3 more ranges |
-| Writes | `$630D`-`$6393` (system); `$6508`-`$659F` (system); `$6608`-`$664A` (system); `$6668`-`$666A` (system); `$6688`-`$668A` (system); `$6705`-`$679F` (system); 2 more ranges |
+| Writes | `$630D`-`$6393` (`PlayBuffer+2061`); `$6508`-`$659F` (`PlayBuffer+2568`); `$6608`-`$664A` (`PlayBuffer+2824`); `$6668`-`$666A` (`PlayBuffer+2920`); `$6688`-`$668A` (`PlayBuffer+2952`); `$6705`-`$679F` (`PlayBuffer+3077`); 2 more ranges |
 
 ### `ColourSpriteMirrored` (`$B46F`)
 
@@ -1347,8 +1347,8 @@ Witness: L1 94 (c1o, deaths, rzx-r1, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 70 calls, 8,127,092 t-states own (0.37 %) |
 | Runs (the other recordings) | 22 calls (`stage1/rec/deaths` 17, `stage1/rec/s1-right` 5) |
 | Called from | `ShiftRoomColumns`, `ShiftRoomRows` |
-| Reads | `$5B00`-`$6C2F` (system) |
-| Writes | `$5B00`-`$6C30` (system) |
+| Reads | `$5B00`-`$6C2F` (`PlayBuffer`) |
+| Writes | `$5B00`-`$6C30` (`PlayBuffer`) |
 
 ### `CopyScreenToBlock` (`$8A89`)
 
@@ -1513,7 +1513,7 @@ Witness: L1 19501 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 9,810 calls (`stage1/rec/s1-idle` 7,430, `stage1/rec/s1-right` 1,439, `stage1/rec/deaths` 941) |
 | Called from | `MainLoop` |
 | Calls | `GetSelectedItem` |
-| Reads | `$5B00`-`$5C3C` (system); `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7A22` (`StageExitFrame+1`); `$FE30` (`work space $FE30+`); `$FE4B` (`work space $FE4B+`) |
+| Reads | `$5B00`-`$5C3C` (`PlayBuffer`); `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7A22` (`StageExitFrame+1`); `$FE30` (`work space $FE30+`); `$FE4B` (`work space $FE4B+`) |
 
 ### `StageExit` (`$7A1D`)
 
@@ -1540,8 +1540,8 @@ Witness: L1 38454 (rzx-r1).
 | --- | --- |
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 38,454 calls, 32,531,594 t-states own (1.49 %) |
 | Called from | `StageExit` |
-| Reads | `$5B00`-`$5C3B` (system); `$7ABA`-`$7AD1` (`StarPixels`); `$FB60`-`$FC67` (`work space $FB60+`) |
-| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` (system) |
+| Reads | `$5B00`-`$5C3B` (`PlayBuffer`); `$7ABA`-`$7AD1` (`StarPixels`); `$FB60`-`$FC67` (`work space $FB60+`) |
+| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` (`PlayBuffer+3`) |
 
 ### `StartStageExit` (`$7ADA`)
 
@@ -1556,7 +1556,7 @@ Witness: L1 1 (rzx-r1).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 1 call, 30,510 t-states own (0.00 %) |
 | Called from | `StageExit` |
 | Calls | `CopyToScreen`, `RandomPlayAttrs`, `Random`, `BlackOutPlayArea` |
-| Writes | `$5B00`-`$5C3F` (system) |
+| Writes | `$5B00`-`$5C3F` (`PlayBuffer`) |
 
 ### `RandomPlayAttrs` (`$7B27`)
 
@@ -1956,8 +1956,8 @@ Witness: L1 40 (rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 6 calls (`stage1/rec/s1-idle` 3, `stage1/rec/s1-right` 3) |
 | Called from | `ItemWindow`, `StageSetUpItems` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B67`-`$5D97` (system); `$7CAF` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` (`work space $FE17+`) |
-| Writes | `$5B67`-`$5D97` (system); `$FE17` (`work space $FE17+`) |
+| Reads | `$5B67`-`$5D97` (`PlayBuffer+103`); `$7CAF` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` (`work space $FE17+`) |
+| Writes | `$5B67`-`$5D97` (`PlayBuffer+103`); `$FE17` (`work space $FE17+`) |
 
 ### `ScrollItemsRight` (`$7CB9`)
 
@@ -1972,8 +1972,8 @@ Witness: L1 25 (rzx-r1).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 25 calls, 34,723,162 t-states own (1.59 %) |
 | Called from | `ItemWindow` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B64`-`$5D54` (system); `$7CE3` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` (`work space $FE17+`) |
-| Writes | `$5B64`-`$5D54` (system); `$FE17` (`work space $FE17+`) |
+| Reads | `$5B64`-`$5D54` (`PlayBuffer+100`); `$7CE3` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` (`work space $FE17+`) |
+| Writes | `$5B64`-`$5D54` (`PlayBuffer+100`); `$FE17` (`work space $FE17+`) |
 
 ### `CycleWindowFrame` (`$7CED`)
 
@@ -2071,7 +2071,7 @@ Witness: L1 9808 (rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 48 calls (`stage1/rec/s1-idle` 24, `stage1/rec/s1-right` 24) |
 | Called from | `DrawItemStrip` |
 | Reads | `$7F3B`-`$7F4C` (`ItemIcons`); `$8BA3`-`$8BC2` (`BlankIcon`); `$EAEC`-`$EBEB` (`ItemIconSprites`, `ItemIconKind6`, `ItemIconKind5`, `ItemIconKind3` and 4 more) |
-| Writes | `$5B64`-`$5D5B` (system) |
+| Writes | `$5B64`-`$5D5B` (`PlayBuffer+100`) |
 
 ### `ShowItemStrip` (`$7E3D`)
 
@@ -2101,7 +2101,7 @@ Witness: L1 5380 (rzx-r1, s1-idle, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 5,080 calls, 16,951,023 t-states own (0.78 %) |
 | Runs (the other recordings) | 300 calls (`stage1/rec/s1-idle` 150, `stage1/rec/s1-right` 150) |
 | Called from | `ShowItemStrip` (falls into) |
-| Reads | `$5B68`-`$5C93` (system); `$5CA8`-`$5CB3` (system); `$5CC8`-`$5CD3` (system); `$5CE8`-`$5CF3` (system); `$5D08`-`$5D13` (system); `$5D28`-`$5D33` (system); 1 more ranges |
+| Reads | `$5B68`-`$5C93` (`PlayBuffer+104`); `$5CA8`-`$5CB3` (`PlayBuffer+424`); `$5CC8`-`$5CD3` (`PlayBuffer+456`); `$5CE8`-`$5CF3` (`PlayBuffer+488`); `$5D08`-`$5D13` (`PlayBuffer+520`); `$5D28`-`$5D33` (`PlayBuffer+552`); 1 more ranges |
 | Writes | `$406A`-`$4195` (screen); `$426A`-`$4295` (screen); `$436A`-`$4395` (screen); `$446A`-`$4495` (screen); `$456A`-`$4595` (screen); `$466A`-`$4695` (screen); 1 more ranges |
 
 ### `AddItem` (`$7E5F`)
@@ -3058,8 +3058,8 @@ Witness: L1 5080 (c1o, deaths, s1-right).
 | Runs (the other recordings) | 4,264 calls (`stage1/rec/s1-right` 3,672, `stage1/rec/deaths` 592) |
 | Called from | `UpdateMissiles` |
 | Calls | `BufferAddressHL`, `RemoveActor` (tail), `ColourYellowMagenta`, `ColourSprite` (tail) |
-| Reads | `$61AB`-`$61AD` (system); `$61CB`-`$61CE` (system); `$61EB`-`$61F3` (system); `$620A`-`$6214` (system); `$622A`-`$6254` (system); `$626A`-`$6B38` (system); 7 more ranges |
-| Writes | `$61AB`-`$61AD` (system); `$61CB`-`$61CE` (system); `$61EB`-`$61F3` (system); `$620A`-`$6214` (system); `$622A`-`$6254` (system); `$626A`-`$6B38` (system); 3 more ranges |
+| Reads | `$61AB`-`$61AD` (`PlayBuffer+1707`); `$61CB`-`$61CE` (`PlayBuffer+1739`); `$61EB`-`$61F3` (`PlayBuffer+1771`); `$620A`-`$6214` (`PlayBuffer+1802`); `$622A`-`$6254` (`PlayBuffer+1834`); `$626A`-`$6B38` (`PlayBuffer+1898`); 7 more ranges |
+| Writes | `$61AB`-`$61AD` (`PlayBuffer+1707`); `$61CB`-`$61CE` (`PlayBuffer+1739`); `$61EB`-`$61F3` (`PlayBuffer+1771`); `$620A`-`$6214` (`PlayBuffer+1802`); `$622A`-`$6254` (`PlayBuffer+1834`); `$626A`-`$6B38` (`PlayBuffer+1898`); 3 more ranges |
 
 ### `UpdateFlatShot` (`$8564`)
 
@@ -4941,7 +4941,7 @@ Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 24 calls (`stage1/rec/deaths` 17, `stage1/rec/s1-right` 6, `stage1/rec/s1-idle` 1) |
 | Called from | `ShiftRoomColumns` (tail), `ShiftRoomRows` (tail), `StartGrid` (tail) |
 | Calls | `ClearShots`, `CopyTileToScreen`, `RoomCells`, `BuildSpans`, `ClearBuffer`, `BlackOutPlayArea`, `Unrle`, `LoadRoomActors` (tail) |
-| Reads | `$5B02`-`$5B05` (system); `$61EE`-`$62B1` (system); `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71` (`work space $FB60+`); `$FE1F`-`$FE24` (`work space $FE1F+`) |
+| Reads | `$5B02`-`$5B05` (`PlayBuffer+2`); `$61EE`-`$62B1` (`PlayBuffer+1774`); `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71` (`work space $FB60+`); `$FE1F`-`$FE24` (`work space $FE1F+`) |
 | Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$98D3`-`$98D4` (`RoomChangeAttrs+1`); `$98F1`-`$98F2` (`RoomChangeBitmaps+1`); `$FE1F` (`work space $FE1F+`); `$FE3D` (`work space $FE3D+`) |
 
 ### `CopyTileToScreen` (`$991F`)
@@ -4956,7 +4956,7 @@ Witness: L1 50904 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 37,800 calls, 12,069,805 t-states own (0.55 %) |
 | Runs (the other recordings) | 12,096 calls (`stage1/rec/deaths` 8,568, `stage1/rec/s1-right` 3,024, `stage1/rec/s1-idle` 504) |
 | Called from | `RoomChange` |
-| Reads | `$5BCE`-`$61ED` (system) |
+| Reads | `$5BCE`-`$61ED` (`PlayBuffer+206`) |
 | Writes | `$40C2`-`$57FD` (screen) |
 
 ### `RoomCells` (`$9928`)
@@ -4980,7 +4980,7 @@ Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 24 calls (`stage1/rec/deaths` 17, `stage1/rec/s1-right` 6, `stage1/rec/s1-idle` 1) |
 | Called from | `RoomChange` |
 | Calls | `PutBlock` |
-| Reads | `$5B08`-`$5B09` (system); `$647A`-`$6BC6` (system); `$9B6F`-`$9B76` (`Grid0`); `$9B8A`-`$9B9D` (`Grid1`, `Grid1Rooms`, `Grid2`); `$FE21`-`$FE22` (`work space $FE21+`) |
+| Reads | `$5B08`-`$5B09` (`PlayBuffer+8`); `$647A`-`$6BC6` (`PlayBuffer+2426`); `$9B6F`-`$9B76` (`Grid0`); `$9B8A`-`$9B9D` (`Grid1`, `Grid1Rooms`, `Grid2`); `$FE21`-`$FE22` (`work space $FE21+`) |
 
 ### `PutBlock` (`$9986`)
 
@@ -5000,7 +5000,7 @@ Witness: L1 12726 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (rzx-r1: the RZX run's stage 1 replayed pass by pass) | 9,450 calls, 5,786,567 t-states own (0.26 %) |
 | Runs (the other recordings) | 3,024 calls (`stage1/rec/deaths` 2,142, `stage1/rec/s1-right` 756, `stage1/rec/s1-idle` 126) |
 | Called from | `RoomCells` |
-| Reads | `$5B06`-`$5B07` (system); `$62B2`-`$6BC6` (system); `$FE29` (`work space $FE29+`) |
+| Reads | `$5B06`-`$5B07` (`PlayBuffer+6`); `$62B2`-`$6BC6` (`PlayBuffer+1970`); `$FE29` (`work space $FE29+`) |
 | Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$FE29` (`work space $FE29+`) |
 
 ### `LeaveRoomRight` (`$9E16`)
@@ -5191,7 +5191,7 @@ Witness: L1 101 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 | Runs (the other recordings) | 24 calls (`stage1/rec/deaths` 17, `stage1/rec/s1-right` 6, `stage1/rec/s1-idle` 1) |
 | Called from | `RoomChange` |
 | Reads | `$B4B2`-`$C2B0` (`StageGraphics`) |
-| Writes | `$5B00`-`$6BC6` (system); `$A42F`-`$A438` (`UnrleEscape+1`, `UnrleRun`, `UnrleEnd`) |
+| Writes | `$5B00`-`$6BC6` (`PlayBuffer`); `$A42F`-`$A438` (`UnrleEscape+1`, `UnrleRun`, `UnrleEnd`) |
 
 ### `StartGrid` (`$A444`)
 
@@ -5370,10 +5370,10 @@ Witness: L1 20581 (c1o, deaths, rzx-r1, s1-idle, s1-right).
 Myth: History in the Making, System 3 Software 1989: the resident part `$F000-$FFFF`, as Boot `$5B00` copies it
 there; the stage blocks load over `$F000-$F03E`, the rest stays from the load to the end. Its entries are
 `src/resident/<module>.asm`, written from `src/resident/resident.ann` by `kit/mkgame.py --part
-src/resident/resident.json`; the recordings: `work/stage1/c1` (c1: a 48K from power-on, the whole load at signal
-speed, the menu, stage 1), and `work/stage1/c1o`, `work/stage1/rec/deaths`, `work/stage1/rec/s1-idle`,
-`work/stage1/rec/s1-right`, `work/stage1/rec/menu`, `work/stage1/rec/s2-right`, `work/stage1/rec/s3-right`,
-`work/stage1/rec/s4-right`, `work/stage1/rec/s5-right`.
+src/resident/resident.json`; the recordings: `work/stage1/c1/run` (c1 from frame 5166 (tools/c1_windows.sh): the
+resident from its entry on, the front, the stage 1 load, stage 1), and `work/stage1/c1o`, `work/stage1/rec/deaths`,
+`work/stage1/rec/s1-idle`, `work/stage1/rec/s1-right`, `work/stage1/rec/menu`, `work/stage1/rec/s2-right`,
+`work/stage1/rec/s3-right`, `work/stage1/rec/s4-right`, `work/stage1/rec/s5-right`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -5402,11 +5402,8 @@ Run once, from ResidentEntry (c1: the front loads after it; the stage blocks ove
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 438,885 t-states own (0.04 %) |
-| Calls | `ShowFront` (tail), `SaveLoaderBytes`, `SetIm2`, `SilenceAy` |
-| Reads | `$EFFC`-`$FF25` (`ResidentInit`, `ResidentInitPad`, `ResidentEntry`, `ShowFront` and 117 more) |
-| Writes | `$EFFB`-`$FF25` (`ResidentInit`, `ResidentInitPad`, `ResidentEntry`, `ShowFront` and 117 more) |
-| Ports out | `$00FE` |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `SaveLoaderBytes`, `SetIm2`, `SilenceAy` |
 
 #### `ResidentEntry` (`$F040`)
 
@@ -5416,11 +5413,9 @@ Boot's JP (HL) lands here (c1). Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 645 t-states own (0.00 %) |
-| Called from | `ResidentInitPad` (falls into) |
-| Calls | `ShowFront` (falls into) |
-| Reads | `$F01B`-`$F038` (`ResidentInitPad+2`) |
-| Writes | `$F01A`-`$F037` (`ResidentInitPad+1`) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 239 t-states own (0.00 %) |
+| Writes | `$F9AE` (`StageLoaded`) |
+| Ports out | `$00FE` |
 
 #### `ShowFront` (`$F043`)
 
@@ -5430,11 +5425,8 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 442,108 t-states own (0.04 %) |
-| Called from | `ResidentInit` (tail), `ResidentEntry` (falls into) |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
 | Calls | `ClearScreen` |
-| Reads | `$F046`-`$FF25` (`ShowFront+3`, `RestartFromStageOne`, `TextRewind`, `RestartFromStageOne2` and 114 more) |
-| Writes | `$F045`-`$FF25` (`ShowFront+2`, `RestartFromStageOne`, `TextRewind`, `RestartFromStageOne2` and 114 more) |
 
 #### `RestartFromStageOne` (`$F048`)
 
@@ -5470,11 +5462,8 @@ LoadStage with C = 0: StageLoaded := 0, so LoadBlock does not check the block. T
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 115,478 t-states own (0.01 %) |
-| Called from | `NewGame` (tail) |
-| Calls | `NewGame` (falls into), `LoadStage` |
-| Reads | `$F09A`-`$FF25` (`NewGame+10`, `StageTable`, `PlayStage`, `TextPressPlay` and 107 more) |
-| Writes | `$F09A`-`$FF25` (`NewGame+10`, `StageTable`, `PlayStage`, `TextPressPlay` and 107 more) |
+| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
+| Calls | `LoadStage` |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): game
 
@@ -5488,12 +5477,10 @@ Reached from the front's StartGame by RET (front notes). Witness: L1 4 (c1, joys
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3,724 calls, 1,856,223 t-states own (0.16 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 114 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/s1-right`, `stage1/rec/s2-right` and 2 more) |
-| Called from | `LoadFront` (falls into) |
-| Calls | `LoadFront` (tail), `PlayStage`, `GameOver` |
-| Reads | `$F080`-`$FF25` (`LoadFront+2`, `NewGame`, `StageTable`, `PlayStage` and 108 more) |
-| Writes | `$F07F`-`$FF25` (`LoadFront+1`, `NewGame`, `StageTable`, `PlayStage` and 108 more) |
+| Calls | `PlayStage`, `GameOver` |
+| Writes | `$F9AD`-`$F9AF` (`Credits`, `StageLoaded`, `Lives`); `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `PlayStage` (`$F1CA`)
 
@@ -5503,12 +5490,11 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3,414 calls, 276,333 t-states own (0.02 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 call, 120 t-states own (0.00 %) |
 | Runs (the other recordings) | 1 call (`stage1/rec/menu` 1) |
 | Called from | `NewGame` |
 | Calls | `Print`, `ClearScreen` |
-| Reads | `$F0EC` (`StageTable+2`); `$F1B7`-`$FF25` (`StageRecord5+22`, `PlayStage`, `TextPressPlay`, `PlayStage2nd` and 106 more) |
-| Writes | `$F1B6`-`$FF25` (`StageRecord5+21`, `PlayStage`, `TextPressPlay`, `PlayStage2nd` and 106 more) |
+| Reads | `$F0EC` (`StageTable+2`); `$F9AE` (`StageLoaded`) |
 
 #### `PlayStage2nd` (`$F1F5`)
 
@@ -5516,7 +5502,7 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 34 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 34 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`stage1/rec/menu`) |
 | Called from | `RevealText` |
 | Calls | `Print`, `WaitFrames` |
@@ -5527,12 +5513,11 @@ Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's s
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 1,761,696 t-states own (0.15 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 313 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`stage1/rec/menu`, `stage1/rec/s1-right`, `stage1/rec/s2-right` and 4 more) |
 | Called from | `RevealText` |
 | Calls | `PrintRecord`, `ClearScreen`, `LoadStage`, `SilenceAy` |
-| Reads | `$F0EA`-`$F0EF` (`StageTable`); `$F206`-`$FF25` (`PlayStageTitles+6`, `GameOver`, `TextGameOver`, `GameOver2` and 101 more) |
-| Writes | `$F205`-`$FF25` (`PlayStageTitles+5`, `GameOver`, `TextGameOver`, `GameOver2` and 101 more) |
+| Reads | `$F0EA`-`$F0EF` (`StageTable`); `$F9AF` (`Lives`) |
 
 #### `GameOver` (`$F24B`)
 
@@ -5542,7 +5527,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 calls (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `NewGame` |
 | Calls | `Print`, `ClearScreen` |
 
@@ -5552,7 +5537,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5562,7 +5547,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/s4-right`, `stage1/rec/s1-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s4-right`, `stage1/rec/s1-right`, `stage1/rec/s3-right` and 1 more) |
 | Called from | `GameOver4` (tail), `RevealText` |
 | Calls | `GameOver4` (tail), `PrintGameOverMenu`, `CycleColours`, `AttrBox`, `SetMenuBands` |
 
@@ -5572,7 +5557,7 @@ Input: BC the address of the stage's six score digits (copied into the menu's SC
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 6,051 calls (`stage1/rec/s4-right` 2,406, `stage1/rec/s1-right` 1,683, `stage1/rec/s3-right` 1,032 and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 6,051 calls (`stage1/rec/s4-right` 2,406, `stage1/rec/s1-right` 1,683, `stage1/rec/s3-right` 1,032 and 1 more) |
 | Called from | `GameOver3` (tail), `AttrBox` |
 | Calls | `GameOver3` (tail), `CycleColours` |
 | Ports in | `$7FFE` |
@@ -5585,7 +5570,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings 4 calls (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings 4 calls (`stage1/rec/s1-right` 1, `stage1/rec/s2-right` 1, `stage1/rec/s3-right` 1 and 1 more) |
 | Called from | `GameOver3` |
 | Calls | `Print` |
 
@@ -5595,7 +5580,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5605,7 +5590,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -5615,7 +5600,7 @@ Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
+| Runs | not reached in `stage1/c1/run`; in the other recordings run into, not called (`stage1/rec/s1-right`, `stage1/rec/s2-right`, `stage1/rec/s3-right` and 1 more) |
 | Called from | `RevealText` |
 
 #### `DelayB` (`$F5D9`)
@@ -5626,8 +5611,7 @@ Not executed in any recording (all checked); stage 4's code refers to it (known 
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `LoadStage` (falls into) |
+| Runs | not reached in the recordings |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): print
 
@@ -5641,12 +5625,12 @@ Called once a round by the waits (c1, every recording with a title screen); ever
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 289 calls, 20,130,281 t-states own (1.73 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 289 calls, 19,970,717 t-states own (2.49 %) |
 | Runs (the other recordings) | 6,567 calls (`stage1/rec/s4-right` 2,485, `stage1/rec/s1-right` 1,756, `stage1/rec/s3-right` 1,125 and 4 more) |
-| Called from | `GameOver3`, `GameOver4`, `CycleColoursEnd` (tail), `RevealText`, `WaitFrames` |
+| Called from | `GameOver3`, `GameOver4`, `RevealText`, `WaitFrames` |
 | Calls | `AttrBox` |
-| Reads | `$F33D`-`$F35A` (`TextCreditsScore+13`, `PrintGameOverMenuEnd`, `CycleColours`); `$F374`-`$FF25` (`ColourCycle`, `AttrBox`, `Print`, `PrintRecord` and 83 more) |
-| Writes | `$F33C`-`$F359` (`TextCreditsScore+12`, `PrintGameOverMenuEnd`, `CycleColours`); `$F372`-`$FF25` (`CycleBoxAttr`, `CycleColoursEnd`, `ColourCycle`, `AttrBox` and 85 more) |
+| Reads | `$F357` (`CycleColours+1`); `$F374`-`$F37B` (`ColourCycle`); `$FE31` (`FrameCounter`) |
+| Writes | `$F372` (`CycleBoxAttr`); `$FE31` (`FrameCounter`) |
 
 #### `CycleColoursEnd` (`$F373`)
 
@@ -5654,10 +5638,9 @@ Called once a round by the waits (c1, every recording with a title screen); ever
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3,282 calls, 32,840 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 289 calls, 2,890 t-states own (0.00 %) |
 | Runs (the other recordings) | 6,568 calls (`stage1/rec/s4-right` 2,486, `stage1/rec/s1-right` 1,755, `stage1/rec/s3-right` 1,124 and 4 more) |
-| Called from | `CycleBox` (falls into), `AttrBox` |
-| Calls | `CycleColours` (tail) |
+| Called from | `AttrBox` |
 
 #### `AttrBox` (`$F37C`)
 
@@ -5667,12 +5650,12 @@ The five bytes after the CALL: column, row, width, height, attribute; returns af
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 317 calls, 1,039,622 t-states own (0.09 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 316 calls, 849,106 t-states own (0.11 %) |
 | Runs (the other recordings) | 7,612 calls (`stage1/rec/s4-right` 2,879, `stage1/rec/s1-right` 2,038, `stage1/rec/s3-right` 1,302 and 4 more) |
-| Called from | `GameOver3`, `CycleColours`, `ColourCycle` (falls into), `ClearScreen`, `ClearScreen2`, `ClearScreen3`, `ClearScreen4`, `ClearScreen5`, `SetMenuBands`, `SetMenuBands2`, `SetMenuBands3`, `SetMenuBands4` |
-| Calls | `GameOver4`, `CycleColoursEnd`, `Print` (falls into), `ClearScreen2`, `ClearScreen3`, `ClearScreen4`, `ClearScreen5`, `SetMenuBands`, `SetMenuBands2`, `SetMenuBands3`, `SetMenuBands4`, `SetMenuBandsEnd` |
-| Reads | `$F35F`-`$FCFF` (`CycleColours+9`, `CycleBox`, `CycleColoursEnd`, `ColourCycle` and 83 more); `$FE01`-`$FF25` (`WorkSpace`, `TurboLoad`) |
-| Writes | `$5800`-`$5AFF` (screen); `$F35E`-`$FF25` (`CycleColours+8`, `CycleBox`, `CycleColoursEnd`, `ColourCycle` and 86 more) |
+| Called from | `GameOver3`, `CycleColours`, `ClearScreen`, `ClearScreen2`, `ClearScreen3`, `ClearScreen4`, `ClearScreen5`, `SetMenuBands`, `SetMenuBands2`, `SetMenuBands3`, `SetMenuBands4` |
+| Calls | `GameOver4`, `CycleColoursEnd`, `ClearScreen2`, `ClearScreen3`, `ClearScreen4`, `ClearScreen5`, `SetMenuBands`, `SetMenuBands2`, `SetMenuBands3`, `SetMenuBands4`, `SetMenuBandsEnd` |
+| Reads | `$F36E`-`$F372` (`CycleBox`, `CycleBoxAttr`); `$F4EF`-`$F4F3` (`ClearBox`); `$F504`-`$F540` (`BandRow18`, `ClearScreen3`, `BandRow19`, `ClearScreen4` and 11 more) |
+| Writes | `$5800`-`$5AFF` (screen) |
 
 #### `Print` (`$F3B0`)
 
@@ -5682,10 +5665,10 @@ The data: column byte, bit, pixel row, text, 0; returns after the 0. Witness: L1
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,934 calls, 88,274 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 6 calls, 414 t-states own (0.00 %) |
 | Runs (the other recordings) | 22 calls (`stage1/rec/s1-right` 5, `stage1/rec/s2-right` 5, `stage1/rec/s3-right` 5 and 2 more) |
-| Called from | `PlayStage`, `PlayStage2nd`, `GameOver`, `GameOver2`, `PrintGameOverMenu`, `PrintGameOverMenu2`, `PrintGameOverMenu3`, `AttrBox` (falls into), `LoadStage`, `LoadStage2` |
-| Calls | `PrintRecord` (falls into), `TextToBuffer`, `RevealText` (tail) |
+| Called from | `PlayStage`, `PlayStage2nd`, `GameOver`, `GameOver2`, `PrintGameOverMenu`, `PrintGameOverMenu2`, `PrintGameOverMenu3`, `LoadStage`, `LoadStage2` |
+| Calls | `TextToBuffer`, `RevealText` (tail) |
 | Reads | `$F9A9` (`TextRow`) |
 
 #### `PrintRecord` (`$F3BD`)
@@ -5696,12 +5679,11 @@ Witness: L1 11 (c1, joystick, menu, rzx-r0, rzx-r1, rzx-r3).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 837 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 calls, 172 t-states own (0.00 %) |
 | Runs (the other recordings) | 2 calls (`stage1/rec/menu` 2) |
-| Called from | `PlayStageTitles`, `Print` (falls into) |
+| Called from | `PlayStageTitles` |
 | Calls | `TextToBuffer`, `RevealText` |
-| Reads | `$F3A1`-`$F3BE` (`AttrBoxCell+5`, `Print`, `PrintRecord`); `$F9A9` (`TextRow`) |
-| Writes | `$F3A0`-`$F3BD` (`AttrBoxCell+4`, `Print`, `PrintRecord`) |
+| Reads | `$F9A9` (`TextRow`) |
 
 #### `TextToBuffer` (`$F3CB`)
 
@@ -5711,12 +5693,12 @@ Clears TextBuffer, sets BitShift and TextRow; for each character: A-Z, a space (
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 9 calls, 1,106,543 t-states own (0.10 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 8 calls, 240,159 t-states own (0.03 %) |
 | Runs (the other recordings) | 24 calls (`stage1/rec/s1-right` 5, `stage1/rec/s2-right` 5, `stage1/rec/s4-right` 5 and 2 more) |
 | Called from | `Print`, `PrintRecord` |
 | Calls | `Advance` (tail) |
-| Reads | `$5B00`-`$5BFF`; `$5D00`-`$5D0D`; `$F0F0`-`$F110` (`StageTable+6`); `$F1DF`-`$F1FF` (`TextPressPlay`, `PlayStage2nd`, `TextClearLine`); `$F3C0`-`$FCFF` (`PrintRecord+3`, `TextToBuffer`, `Advance`, `RevealText` and 77 more); `$FE01`-`$FF25` (`WorkSpace`, `TurboLoad`) |
-| Writes | `$5B00`-`$5C00`; `$5D00`-`$5D0D`; `$F3BF`-`$FF25` (`PrintRecord+2`, `TextToBuffer`, `Advance`, `RevealText` and 80 more) |
+| Reads | `$5B00`-`$5BFF` (`TextBuffer`); `$5D00`-`$5D0D` (`GlyphBuffer`); `$F0F0`-`$F110` (`StageTable+6`); `$F1DF`-`$F1FF` (`TextPressPlay`, `PlayStage2nd`, `TextClearLine`); `$F602`-`$F61A` (`TextClearTop`, `LoadStage2`, `TextStopTape`); `$F880`-`$F887` (`PrintFont`); 4 more ranges |
+| Writes | `$5B00`-`$5C00` (`TextBuffer`); `$5D00`-`$5D0D` (`GlyphBuffer`); `$F9A8`-`$F9AA` (`BitShift`, `TextRow`, `CharMask`) |
 
 #### `Advance` (`$F465`)
 
@@ -5726,12 +5708,11 @@ Witness: L1 760 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, sta
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 72 calls, 100,662 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 72 calls, 13,273 t-states own (0.00 %) |
 | Runs (the other recordings) | 456 calls (`stage1/rec/s3-right` 103, `stage1/rec/s2-right` 103, `stage1/rec/s4-right` 103 and 2 more) |
-| Called from | `TextToBuffer` (tail), `RevealText` (tail) |
-| Calls | `RevealText` (falls into) |
-| Reads | `$F444`-`$F461` (`TextShiftRow+4`, `TextMerge`, `TextMergeRow`); `$F491`-`$FF25` (`RevealStep+1`, `WaitBC`, `ClearScreen`, `ClearBox` and 77 more) |
-| Writes | `$F443`-`$F460` (`TextShiftRow+3`, `TextMerge`, `TextMergeRow`); `$F9A8` (`BitShift`) |
+| Called from | `TextToBuffer` (tail) |
+| Reads | `$F9A8`-`$F9AA` (`BitShift`, `TextRow`, `CharMask`) |
+| Writes | `$F9A8` (`BitShift`) |
 
 #### `RevealText` (`$F483`)
 
@@ -5743,12 +5724,12 @@ For step 0-7: the ADD A,n at RevealMaskAdd := `$CB` + step; HALT, CycleColours; 
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,717 calls, 4,951,563 t-states own (0.43 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 8 calls, 4,390,385 t-states own (0.55 %) |
 | Runs (the other recordings) | 24 calls (`stage1/rec/s3-right` 5, `stage1/rec/s2-right` 5, `stage1/rec/s4-right` 5 and 2 more) |
-| Called from | `Print` (tail), `PrintRecord`, `Advance` (falls into) |
-| Calls | `PlayStage2nd`, `PlayStageTitles`, `GameOver2`, `GameOver3`, `PrintGameOverMenu2`, `PrintGameOverMenu3`, `PrintGameOverMenuEnd`, `CycleColours`, `Advance` (tail), `LoadStage2`, `LoadStage3` |
-| Reads | `$40A0`-`$42FF` (screen); `$4480`-`$48FF` (screen); `$49A0`-`$49FF` (screen); `$4AA0`-`$4AFF` (screen); `$4C80`-`$4CDF` (screen); `$4D80`-`$4DDF` (screen); 5 more ranges |
-| Writes | `$40A0`-`$42FF` (screen); `$4480`-`$48FF` (screen); `$49A0`-`$49FF` (screen); `$4AA0`-`$4AFF` (screen); `$4C80`-`$4CDF` (screen); `$4D80`-`$4DDF` (screen); 3 more ranges |
+| Called from | `Print` (tail), `PrintRecord` |
+| Calls | `PlayStage2nd`, `PlayStageTitles`, `GameOver2`, `GameOver3`, `PrintGameOverMenu2`, `PrintGameOverMenu3`, `PrintGameOverMenuEnd`, `CycleColours`, `LoadStage2`, `LoadStage3` |
+| Reads | `$40A0`-`$42FF` (screen); `$4480`-`$48FF` (screen); `$49A0`-`$49FF` (screen); `$4AA0`-`$4AFF` (screen); `$4C80`-`$4CDF` (screen); `$4D80`-`$4DDF` (screen); 10 more ranges |
+| Writes | `$40A0`-`$42FF` (screen); `$4480`-`$48FF` (screen); `$49A0`-`$49FF` (screen); `$4AA0`-`$4AFF` (screen); `$4C80`-`$4CDF` (screen); `$4D80`-`$4DDF` (screen); 4 more ranges |
 
 #### `WaitBC` (`$F4E5`)
 
@@ -5768,7 +5749,7 @@ Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 51 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 11 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 4 more) |
 | Called from | `ShowFront`, `PlayStage`, `PlayStageTitles`, `GameOver` |
 | Calls | `AttrBox` |
@@ -5779,12 +5760,12 @@ Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 4 calls, 501,175 t-states own (0.04 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 500,503 t-states own (0.06 %) |
 | Runs (the other recordings) | 11 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 4 more) |
-| Called from | `AttrBox`, `ClearBox` (falls into) |
+| Called from | `AttrBox` |
 | Calls | `AttrBox` |
-| Reads | `$4000`-`$57FE` (screen); `$F4D8`-`$F4F5` (`RevealMaskAdd+17`, `WaitBC`, `ClearScreen`, `ClearBox` and 1 more) |
-| Writes | `$4000`-`$57FF` (screen); `$F4D7`-`$F4F4` (`RevealMaskAdd+16`, `WaitBC`, `ClearScreen`, `ClearBox` and 1 more) |
+| Reads | `$4000`-`$57FE` (screen) |
+| Writes | `$4000`-`$57FF` (screen) |
 
 #### `ClearScreen3` (`$F509`)
 
@@ -5792,11 +5773,10 @@ Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,585 calls, 95,585 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 11 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 4 more) |
 | Called from | `AttrBox` |
 | Calls | `AttrBox` |
-| Writes | `$F510`-`$FF25` (`BandRow19+4`, `ClearScreen4`, `BandRow21`, `ClearScreen5` and 70 more) |
 
 #### `ClearScreen4` (`$F511`)
 
@@ -5804,12 +5784,10 @@ Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 4 calls, 736 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 11 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 4 more) |
-| Called from | `AttrBox`, `BandRow19` (falls into) |
+| Called from | `AttrBox` |
 | Calls | `AttrBox` |
-| Reads | `$F4F7`-`$F514` (`ClearScreen2+3`, `BandRow18`, `ClearScreen3`, `BandRow19` and 2 more) |
-| Writes | `$F4F6`-`$F513` (`ClearScreen2+2`, `BandRow18`, `ClearScreen3`, `BandRow19` and 1 more) |
 
 #### `ClearScreen5` (`$F519`)
 
@@ -5817,7 +5795,7 @@ Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 51 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 11 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 4 more) |
 | Called from | `AttrBox` |
 | Calls | `AttrBox` |
@@ -5830,7 +5808,7 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 51 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 200 calls (`stage1/rec/s4-right` 77, `stage1/rec/s1-right` 55, `stage1/rec/s3-right` 34 and 4 more) |
 | Called from | `GameOver3`, `AttrBox` |
 | Calls | `AttrBox` |
@@ -5841,7 +5819,7 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,554 calls, 76,612 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 200 calls (`stage1/rec/s4-right` 77, `stage1/rec/s1-right` 55, `stage1/rec/s3-right` 34 and 4 more) |
 | Called from | `AttrBox` |
 | Calls | `AttrBox` |
@@ -5852,7 +5830,7 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 51 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 200 calls (`stage1/rec/s4-right` 77, `stage1/rec/s1-right` 55, `stage1/rec/s3-right` 34 and 4 more) |
 | Called from | `AttrBox` |
 | Calls | `AttrBox` |
@@ -5863,12 +5841,10 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 4 calls, 710 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 51 t-states own (0.00 %) |
 | Runs (the other recordings) | 200 calls (`stage1/rec/s4-right` 77, `stage1/rec/s1-right` 55, `stage1/rec/s3-right` 34 and 4 more) |
-| Called from | `AttrBox`, `BandRow13` (falls into) |
+| Called from | `AttrBox` |
 | Calls | `AttrBox` |
-| Reads | `$F522`-`$F53F` (`SetMenuBands+1`, `BandRows10`, `SetMenuBands2`, `BandRow11` and 4 more) |
-| Writes | `$F521`-`$F53E` (`SetMenuBands`, `BandRows10`, `SetMenuBands2`, `BandRow11` and 4 more) |
 
 #### `SetMenuBandsEnd` (`$F541`)
 
@@ -5876,7 +5852,7 @@ Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, jo
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 30 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 30 t-states own (0.00 %) |
 | Runs (the other recordings) | 200 calls (`stage1/rec/s4-right` 77, `stage1/rec/s1-right` 55, `stage1/rec/s3-right` 34 and 4 more) |
 | Called from | `AttrBox` |
 
@@ -5888,12 +5864,11 @@ Witness: L1 15 (c1, ending, joystick, menu, s5-right, stageload, rzx-r0-rzx-r5).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 15,597,490 t-states own (1.34 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 14,803,878 t-states own (1.84 %) |
 | Runs (the other recordings) | 2 calls (`stage1/rec/s5-right` 1, `stage1/rec/menu` 1) |
 | Called from | `PlayStage2nd`, `LoadStage3` |
 | Calls | `CycleColours` |
-| Reads | `$F545` (`WaitFramesLoop+1`); `$F55A`-`$FF25` (`Effect1+4`, `EffectLeftover`, `DelayB`, `LoadStage` and 55 more) |
-| Writes | `$F55A`-`$FF25` (`Effect1+4`, `EffectLeftover`, `DelayB`, `LoadStage` and 55 more) |
+| Reads | `$F545` (`WaitFramesLoop+1`) |
 
 #### `CopyToScreen` (`$F646`)
 
@@ -5917,12 +5892,12 @@ Witness: L1 24 (c1, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 142,682 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 calls, 1,354 t-states own (0.00 %) |
 | Runs (the other recordings) | 10 calls (`stage1/rec/s1-right` 2, `stage1/rec/s2-right` 2, `stage1/rec/s3-right` 2 and 3 more) |
-| Called from | `ResidentInit`, `PlayStageTitles`, `SavedLoaderBytes` (falls into) |
-| Calls | `PlaySound` (falls into), `WriteMixer`, `AyWrite` |
-| Reads | `$F659`-`$F676` (`CopyToScreenRow+3`, `SavedLoaderBytes`, `SilenceAy`); `$F691`-`$FF25` (`SilenceVolumes+10`, `PlaySound`, `EffectTable`, `StartEffect` and 43 more) |
-| Writes | `$F658`-`$F675` (`CopyToScreenRow+2`, `SavedLoaderBytes`, `SilenceAy`); `$F691`-`$FF25` (`SilenceVolumes+10`, `PlaySound`, `EffectTable`, `StartEffect` and 43 more) |
+| Called from | `ResidentInit`, `PlayStageTitles` |
+| Calls | `WriteMixer`, `AyWrite` |
+| Reads | `$F85E`-`$F874` (`Channels`, `Channel2`, `Channel3`) |
+| Writes | `$F85E`-`$F876` (`Channels`, `Mixer`) |
 
 #### `PlaySound` (`$F69B`)
 
@@ -5932,12 +5907,11 @@ Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 276,987 t-states own (0.02 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 call, 243 t-states own (0.00 %) |
 | Runs (the other recordings) | 752 calls (`stage1/rec/s3-right` 395, `stage1/rec/s5-right` 227, `stage1/rec/s2-right` 84 and 4 more) |
-| Called from | `SilenceAy` (falls into), `PlaySoundVector` (tail) |
+| Called from | `PlaySoundVector` (tail) |
 | Calls | `StartEffect` |
-| Reads | `$F693`-`$FF25` (`SilenceVolumes+12`, `PlaySound`, `EffectTable`, `StartEffect` and 43 more) |
-| Writes | `$F692`-`$FF25` (`SilenceVolumes+11`, `PlaySound`, `EffectTable`, `StartEffect` and 43 more) |
+| Reads | `$F6C9`-`$F6CA` (`EffectTable+14`) |
 
 #### `StartEffect` (`$F6D5`)
 
@@ -5947,12 +5921,12 @@ Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 619,584 t-states own (0.05 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 call, 606 t-states own (0.00 %) |
 | Runs (the other recordings) | 752 calls (`stage1/rec/s3-right` 395, `stage1/rec/s5-right` 227, `stage1/rec/s2-right` 84 and 4 more) |
-| Called from | `PlaySound`, `EffectTable` (falls into) |
+| Called from | `PlaySound` |
 | Calls | `WriteMixer` |
-| Reads | `$F59B`-`$F5A1` (`Effect7`); `$F6B2`-`$F6CF` (`PlaySound+23`, `EffectTable`); `$F6E2`-`$FF25` (`StartEffect+13`, `WriteMixer`, `AyFrame`, `ChannelStep` and 40 more) |
-| Writes | `$F6B1`-`$F6CE` (`PlaySound+22`, `EffectTable`); `$F6E1`-`$FF25` (`StartEffect+12`, `WriteMixer`, `AyFrame`, `ChannelStep` and 40 more) |
+| Reads | `$F59B`-`$F5A1` (`Effect7`); `$F876` (`Mixer`) |
+| Writes | `$F85E`-`$F865` (`Channels`); `$F876` (`Mixer`) |
 
 #### `WriteMixer` (`$F781`)
 
@@ -5962,7 +5936,7 @@ Witness: L1 3100 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 102 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 102 t-states own (0.00 %) |
 | Runs (the other recordings) | 762 calls (`stage1/rec/s3-right` 397, `stage1/rec/s5-right` 228, `stage1/rec/s2-right` 86 and 5 more) |
 | Called from | `SilenceAy`, `StartEffect` |
 | Calls | `AyWrite` (tail) |
@@ -5978,12 +5952,12 @@ Witness: L1 125689 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, 
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,373 calls, 1,934,292 t-states own (0.17 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2,373 calls, 1,646,693 t-states own (0.21 %) |
 | Runs (the other recordings) | 45,735 calls (`stage1/rec/s1-idle` 11,589, `stage1/rec/s4-right` 7,259, `stage1/rec/s1-right` 6,758 and 6 more) |
-| Called from | `ChannelStep` (tail), `Im2Handler` |
+| Called from | `Im2Handler` |
 | Calls | `ChannelStep`, `AyWrite` |
-| Reads | `$F790`-`$F7AD` (`AyFrame+6`, `AyFrameChannel`); `$F7C8`-`$FF25` (`AyFrameNext+1`, `ChannelStep`, `WriteVolume`, `AyWrite` and 38 more) |
-| Writes | `$F78F`-`$FF25` (`AyFrame+5`, `ChannelStep`, `WriteVolume`, `AyWrite` and 38 more) |
+| Reads | `$F85E`-`$F878` (`Channels`, `Mixer`, `MixerSpare`, `ChannelNumber`) |
+| Writes | `$F878` (`ChannelNumber`) |
 
 #### `ChannelStep` (`$F7DE`)
 
@@ -5993,12 +5967,12 @@ Witness: L1 377598 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, 
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 8,977 calls, 553,474 t-states own (0.05 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 7,119 calls, 269,607 t-states own (0.03 %) |
 | Runs (the other recordings) | 137,205 calls (`stage1/rec/s1-idle` 34,767, `stage1/rec/s4-right` 21,777, `stage1/rec/s1-right` 20,274 and 6 more) |
 | Called from | `AyFrame` |
-| Calls | `AyFrame` (tail), `WriteVolume`, `AyWrite` |
-| Reads | `$F5A2`-`$F5A3` (`Effect7+7`); `$F7CA`-`$FF25` (`AyFrameNext+3`, `ChannelStep`, `WriteVolume`, `AyWrite` and 38 more) |
-| Writes | `$F7C9`-`$FF25` (`AyFrameNext+2`, `ChannelStep`, `WriteVolume`, `AyWrite` and 38 more) |
+| Calls | `WriteVolume`, `AyWrite` |
+| Reads | `$F5A2`-`$F5A3` (`Effect7+7`); `$F85E`-`$F878` (`Channels`, `Mixer`, `MixerSpare`, `ChannelNumber`) |
+| Writes | `$F85E`-`$F865` (`Channels`) |
 
 #### `WriteVolume` (`$F843`)
 
@@ -6008,12 +5982,11 @@ Witness: L1 24735 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-rig
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 20 calls, 78,486 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 20 calls, 1,500 t-states own (0.00 %) |
 | Runs (the other recordings) | 6,034 calls (`stage1/rec/s3-right` 3,619, `stage1/rec/s5-right` 1,349, `stage1/rec/s2-right` 782 and 4 more) |
 | Called from | `ChannelStep` |
 | Calls | `AyWrite` (falls into) |
-| Reads | `$F851`-`$FF25` (`WriteVolume+14`, `AyWrite`, `Channels`, `Mixer` and 36 more) |
-| Writes | `$F851`-`$FF25` (`WriteVolume+14`, `AyWrite`, `Channels`, `Mixer` and 36 more) |
+| Reads | `$F865` (`Channels+7`); `$F878` (`ChannelNumber`) |
 
 #### `AyWrite` (`$F854`)
 
@@ -6023,11 +5996,9 @@ Witness: L1 79117 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 88 calls, 953,322 t-states own (0.08 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 88 calls, 4,488 t-states own (0.00 %) |
 | Runs (the other recordings) | 19,225 calls (`stage1/rec/s3-right` 11,320, `stage1/rec/s5-right` 4,278, `stage1/rec/s2-right` 2,437 and 5 more) |
 | Called from | `SilenceAy`, `WriteMixer` (tail), `AyFrame`, `ChannelStep`, `WriteVolume` (falls into) |
-| Reads | `$F83B`-`$FF25` (`ChannelDone+8`, `WriteVolume`, `AyWrite`, `Channels` and 37 more) |
-| Writes | `$F83A`-`$FF25` (`ChannelDone+7`, `WriteVolume`, `AyWrite`, `Channels` and 37 more) |
 | Ports out | `$BFFD`, `$FFFD` |
 
 #### `PlaySoundVector` (`$F9B0`)
@@ -6038,9 +6009,9 @@ Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 call, 10 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1 call, 10 t-states own (0.00 %) |
 | Runs (the other recordings) | 752 calls (`stage1/rec/s3-right` 395, `stage1/rec/s5-right` 227, `stage1/rec/s2-right` 84 and 4 more) |
-| Calls | `PlaySound` (tail), `Im2Handler` (falls into) |
+| Calls | `PlaySound` (tail) |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): stageload
 
@@ -6054,12 +6025,12 @@ Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength)
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 189,374 t-states own (0.02 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 calls, 54,788 t-states own (0.01 %) |
 | Runs (the other recordings) | 1 call (`stage1/rec/menu` 1) |
-| Called from | `LoadFront`, `PlayStageTitles`, `DelayB` (falls into) |
+| Called from | `LoadFront`, `PlayStageTitles` |
 | Calls | `Print`, `LoadBlock` |
-| Reads | `$F5CD`-`$FCFF` (`Effect11+8`, `EffectLeftover`, `DelayB`, `LoadStage` and 52 more); `$FE01`-`$FF25` (`WorkSpace`, `TurboLoad`) |
-| Writes | `$F5CC`-`$FF25` (`Effect11+7`, `EffectLeftover`, `DelayB`, `LoadStage` and 55 more) |
+| Reads | `$F5FB` (`LoadStage+23`); `$F9AE` (`StageLoaded`) |
+| Writes | `$F879`-`$F87B` (`LoadLength`, `LoadLengthL`, `LoadLengthB`); `$F9AE` (`StageLoaded`) |
 
 #### `LoadStage2` (`$F607`)
 
@@ -6067,7 +6038,7 @@ Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength)
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 34 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 34 t-states own (0.00 %) |
 | Called from | `RevealText` |
 | Calls | `Print` |
 
@@ -6077,12 +6048,10 @@ Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength)
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | run into, not called, 69,937 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | run into, not called, 82 t-states own (0.00 %) |
 | Runs (the other recordings) | run into, not called (`stage1/rec/s5-right`, `stage1/rec/s1-idle`, `stage1/rec/s1-right` and 3 more) |
 | Called from | `RevealText` |
 | Calls | `WaitFrames` |
-| Reads | `$F60F`-`$F62C` (`TextStopTape+5`, `LoadStage3`, `SaveLoaderBytes`) |
-| Writes | `$F60E`-`$F62B` (`TextStopTape+4`, `LoadStage3`, `SaveLoaderBytes`) |
 
 #### `LoadBlock` (`$FF54`)
 
@@ -6092,11 +6061,11 @@ DI; Im2Jump := SavedLoaderBytes (the loader's code); TurboLoad; SaveLoaderBytes;
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 424 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 calls, 424 t-states own (0.00 %) |
 | Runs (the other recordings) | 1 call (`stage1/rec/menu` 1) |
 | Called from | `LoadStage` |
 | Calls | `SaveLoaderBytes`, `SetIm2`, `TurboLoad` |
-| Reads | `$BB80`; `$F66C`-`$F66E` (`SavedLoaderBytes`); `$F9AE` (`StageLoaded`); `$FF7F` (`StageCheck`) |
+| Reads | `$BB80` (`StageCheckByte`); `$F66C`-`$F66E` (`SavedLoaderBytes`); `$F9AE` (`StageLoaded`); `$FF7F` (`StageCheck`) |
 | Writes | `$FEFE`-`$FF00` (`Im2Jump`) |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): im2
@@ -6111,9 +6080,8 @@ Witness: L1 5 (c1, joystick, stageload).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 294 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 294 t-states own (0.00 %) |
 | Called from | `ResidentInit`, `LoadBlock` |
-| Calls | `SetIm2` (falls into) |
 | Reads | `$FEFE`-`$FF00` (`Im2Jump`) |
 | Writes | `$F66C`-`$F66E` (`SavedLoaderBytes`) |
 
@@ -6125,10 +6093,9 @@ Im2Table (`$FD00-$FE00`, all `$FE`) sends every interrupt to Im2Jump at `$FEFE`.
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 3 calls, 258,214 t-states own (0.02 %) |
-| Called from | `ResidentInit`, `SaveLoaderBytes` (falls into), `LoadBlock` |
-| Reads | `$F62E`-`$FF25` (`SaveLoaderBytes+5`, `SetIm2`, `CopyToScreen`, `SavedLoaderBytes` and 47 more) |
-| Writes | `$F62D`-`$FF25` (`SaveLoaderBytes+4`, `SetIm2`, `CopyToScreen`, `SavedLoaderBytes` and 47 more) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 3 calls, 234 t-states own (0.00 %) |
+| Called from | `ResidentInit`, `LoadBlock` |
+| Writes | `$FEFE`-`$FF00` (`Im2Jump`) |
 
 #### `Im2Handler` (`$F9B3`)
 
@@ -6138,14 +6105,9 @@ Witness: L1 125688 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, 
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2,373 calls, 1,917,693 t-states own (0.16 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2,373 calls, 121,023 t-states own (0.02 %) |
 | Runs (the other recordings) | 45,735 calls (`stage1/rec/s1-idle` 11,589, `stage1/rec/s4-right` 7,259, `stage1/rec/s1-right` 6,758 and 6 more) |
-| Called from | `PlaySoundVector` (falls into) |
 | Calls | `AyFrame` |
-| Reads | `$F991`-`$FF25` (`PrintFont+273`, `BitShift`, `TextRow`, `CharMask` and 28 more) |
-| Writes | `$F990`-`$FF25` (`PrintFont+272`, `BitShift`, `TextRow`, `CharMask` and 28 more) |
-| Ports in | `$003F`, `$F39F` |
-| Ports out | `$001F`, `$017B`, `$01BB`, `$437F` |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): score
 
@@ -6173,9 +6135,9 @@ Witness: L1 41801 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 185 calls, 25,194 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 185 calls, 13,746 t-states own (0.00 %) |
 | Runs (the other recordings) | 14,695 calls (`stage1/rec/s1-idle` 7,431, `stage1/rec/s5-right` 3,729, `stage1/rec/s2-right` 978 and 5 more) |
-| Calls | `KeyDown` (falls into), `KeyHook` |
+| Calls | `KeyHook` |
 | Reads | `$FCFA` (`KeyXorMask`) |
 | Ports in | `$DFFE`, `$EFFE` |
 
@@ -6187,10 +6149,9 @@ Witness: L1 33044 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 705 calls, 40,184 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 69 calls, 5,204 t-states own (0.00 %) |
 | Runs (the other recordings) | 13,236 calls (`stage1/rec/s1-idle` 7,431, `stage1/rec/s5-right` 3,729, `stage1/rec/s2-right` 708 and 5 more) |
-| Called from | `KeyUp` (falls into) |
-| Calls | `KeyLeft` (tail), `KeyHook` |
+| Calls | `KeyHook` |
 | Reads | `$FCFA` (`KeyXorMask`) |
 | Ports in | `$BFFE`, `$EFFE` |
 
@@ -6202,11 +6163,10 @@ Witness: L1 37050 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 138 calls, 75,420 t-states own (0.01 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 138 calls, 10,245 t-states own (0.00 %) |
 | Runs (the other recordings) | 13,278 calls (`stage1/rec/s1-idle` 7,431, `stage1/rec/s5-right` 3,729, `stage1/rec/s2-right` 614 and 5 more) |
-| Called from | `KeyDown` (tail) |
-| Calls | `KeyRight` (falls into), `KeyHook` |
-| Reads | `$FCFA`-`$FD0A` (`KeyXorMask`, `KeyXorMaskPad`, `Im2Table`) |
+| Calls | `KeyHook` |
+| Reads | `$FCFA` (`KeyXorMask`) |
 | Ports in | `$EFFE`, `$FBFE` |
 
 #### `KeyRight` (`$FCBD`)
@@ -6217,9 +6177,8 @@ Witness: L1 40953 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1,022 calls, 5,950,162 t-states own (0.51 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 175 calls, 13,093 t-states own (0.00 %) |
 | Runs (the other recordings) | 14,153 calls (`stage1/rec/s1-idle` 7,431, `stage1/rec/s5-right` 3,729, `stage1/rec/deaths` 862 and 5 more) |
-| Called from | `KeyLeft` (falls into), `KeyFire` (tail) |
 | Calls | `KeyHook` |
 | Reads | `$FCFA` (`KeyXorMask`) |
 | Ports in | `$EFFE`, `$FBFE` |
@@ -6232,10 +6191,9 @@ Witness: L1 49911 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-righ
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 70 calls, 388,008 t-states own (0.03 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 70 calls, 5,200 t-states own (0.00 %) |
 | Runs (the other recordings) | 13,407 calls (`stage1/rec/s1-idle` 7,431, `stage1/rec/s5-right` 3,759, `stage1/rec/s2-right` 712 and 5 more) |
-| Called from | `KeyHookExit` (tail) |
-| Calls | `KeyRight` (tail), `KeyHook` |
+| Calls | `KeyHook` |
 | Reads | `$FCFA` (`KeyXorMask`) |
 | Ports in | `$DFFE`, `$EFFE` |
 
@@ -6247,11 +6205,9 @@ Witness: L1 787888 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-rig
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1,619 calls, 48,563 t-states own (0.00 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 1,407 calls, 14,070 t-states own (0.00 %) |
 | Runs (the other recordings) | 97,689 calls (`stage1/rec/s1-idle` 52,014, `stage1/rec/s5-right` 18,675, `stage1/rec/s2-right` 7,675 and 5 more) |
 | Called from | `KeyUp`, `KeyDown`, `KeyLeft`, `KeyRight`, `KeyFire` |
-| Reads | `$FD07`-`$FD0A` (`Im2Table+7`) |
-| Writes | `$FD08`-`$FD0A` (`Im2Table+8`) |
 
 #### `KeyHookExit` (`$FCDC`)
 
@@ -6261,8 +6217,7 @@ All recordings checked. KeyHook's RET at `$FCDB` keeps it out of reach; with the
 
 | | |
 | --- | --- |
-| Runs | ran within another entry's routine (reached by a jump or by running on, its calls below), no runs of its own counted |
-| Calls | `KeyFire` (tail) |
+| Runs | not reached in the recordings |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): turbo
 
@@ -6276,13 +6231,13 @@ Witness: L1 7 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 32,363,930 t-states own (2.78 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 2 calls, 25,253,034 t-states own (3.14 %) |
 | Runs (the other recordings) | 1 call (`stage1/rec/menu` 1) |
 | Called from | `LoadBlock` |
 | Calls | `TurboEdgePair`, `TurboEdge` |
-| Reads | `$4001`-`$5AFF` (screen); `$5D00`-`$FC0B` (`ResidentInit`, `ResidentInitPad`, `ResidentEntry`, `ShowFront` and 104 more) |
-| Writes | `$4000`-`$5AFF` (screen); `$5D00`-`$FC0C` (`ResidentInit`, `ResidentInitPad`, `ResidentEntry`, `ShowFront` and 104 more); `$FDE7`-`$FDE8` (`Im2Table+231`); `$FF4D` (`TurboBorderMask+1`) |
-| Ports in | `$00FE`, `$7FFE` |
+| Reads | `$F879`-`$F87B` (`LoadLength`, `LoadLengthL`, `LoadLengthB`) |
+| Writes | `$FF4D` (`TurboBorderMask+1`) |
+| Ports in | `$00FE` |
 | Ports out | `$00FE` |
 
 #### `TurboEdgePair` (`$FF37`)
@@ -6293,11 +6248,10 @@ Witness: L1 936052 (c1, joystick, menu, stageload).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 393,761 calls, 8,662,750 t-states own (0.74 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 393,760 calls, 8,662,720 t-states own (1.08 %) |
 | Runs (the other recordings) | 1,075 calls (`stage1/rec/menu` 1,075) |
 | Called from | `TurboLoad` |
 | Calls | `TurboEdge` |
-| Reads | `$FEE9` (`TurboSync+7`) |
 
 #### `TurboEdge` (`$FF3B`)
 
@@ -6305,7 +6259,7 @@ Witness: L1 936052 (c1, joystick, menu, stageload).
 
 | | |
 | --- | --- |
-| Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 793,021 calls, 562,512,674 t-states own (48.32 %) |
+| Runs (c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1) | 793,021 calls, 562,512,660 t-states own (70.04 %) |
 | Runs (the other recordings) | 1,075 calls (`stage1/rec/menu` 1,075) |
 | Called from | `TurboLoad`, `TurboEdgePair` |
 | Ports in | `$7FFE` |
@@ -6420,7 +6374,7 @@ Witness: L1 2 (c1, rzx-r0).
 | --- | --- |
 | Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 call, 5,945,628 t-states own (0.51 %) |
 | Reads | `$59C7`-`$59D7` (screen); `$7948`-`$7949` (`LogoWaitLoop+1`) |
-| Writes | `$59C7`-`$59D8` (screen); `$FE1D` |
+| Writes | `$59C7`-`$59D8` (screen); `$FE1D` (`ShimmerCount`) |
 
 #### `PaintBoxColours` (`$7971`)
 
@@ -7342,8 +7296,8 @@ Witness: L1 146 (c1, joystick, menu, rzx-r0).
 | Runs (the other recordings) | 27 calls (`stage1/rec/menu` 27) |
 | Called from | `CreditsLoop`, `CreditsPage1Name`, `DefineKeys`, `PrintKeyName`, `ClearTextLine`, `MenuTitle`, `MenuLines`, `MenuLines2`, `MenuLines3` |
 | Calls | `AdvanceColumn` (tail) |
-| Reads | `$5B00`-`$5BFF`; `$7600`-`$760C` (`GlyphRows`); `$9512`-`$9537` (`TextProgrammedBy`, `CreditsPage1Name`, `TextNeilDodwell`); `$9D6B`-`$9D70` (`BlankLineText`, `BlankLineLine`); `$A169`-`$A1BF` (`TextPressSpaceToSelect`, `MenuTitleDone`, `MenuLines`, `TextStartGame` and 4 more) |
-| Writes | `$5B00`-`$5C00`; `$A0D2`-`$A0D8` (`PixelShift`, `TextLine`, `GlyphMask`, `RevealLines` and 1 more) |
+| Reads | `$5B00`-`$5BFF` (`TextBuffer`); `$7600`-`$760C` (`GlyphRows`); `$9512`-`$9537` (`TextProgrammedBy`, `CreditsPage1Name`, `TextNeilDodwell`); `$9D6B`-`$9D70` (`BlankLineText`, `BlankLineLine`); `$A169`-`$A1BF` (`TextPressSpaceToSelect`, `MenuTitleDone`, `MenuLines`, `TextStartGame` and 4 more) |
+| Writes | `$5B00`-`$5C00` (`TextBuffer`); `$A0D2`-`$A0D8` (`PixelShift`, `TextLine`, `GlyphMask`, `RevealLines` and 1 more) |
 
 #### `AdvanceColumn` (`$9E24`)
 
@@ -7379,7 +7333,7 @@ Witness: L1 146 (c1, joystick, menu, rzx-r0).
 | Runs (the other recordings) | 27 calls (`stage1/rec/menu` 27) |
 | Called from | `AdvanceColumn` |
 | Calls | `PaintBoxColours`, `ShimmerFrame` |
-| Reads | `$FB88`-`$FB94`; `$FBA8`-`$FBB4`; `$FBC8`-`$FBD4`; `$FBE8`-`$FBF4` |
+| Reads | `$FB88`-`$FB94` (`ScreenLineTable+136`); `$FBA8`-`$FBB4` (`ScreenLineTable+168`); `$FBC8`-`$FBD4` (`ScreenLineTable+200`); `$FBE8`-`$FBF4` (`ScreenLineTable+232`) |
 
 #### `ClearScreen` (`$9EBC`)
 
@@ -7445,8 +7399,8 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 2,976,214 t-states own (0.22 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 141,318 t-states own (0.03 %) |
 | Calls | `RoomEvents`, `ClearActors`, `ResetObjectLists`, `StageSetUp`, `StageFadeIn`, `ClearBuffer`, `CopyBuffer`, `InitStageState`, `StartGrid`, `PlaceHeroAtStart`, `ReviveAllPlacements`, `RunActorHandlers`, `DrawActors` |
-| Reads | `$5800`-`$58BF` (screen); `$74EA` (`HeroState`); `$FE6F` |
-| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`); `$FE23`-`$FE26`; `$FE6F` |
+| Reads | `$5800`-`$58BF` (screen); `$74EA` (`HeroState`); `$FE6F` (`Lives`) |
+| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`); `$FE23`-`$FE26` (`RoomGrid`, `Placements`); `$FE6F` (`Lives`) |
 | Ports in | `$FEFE` |
 
 #### `StageSetUp` (`$9177`)
@@ -7473,7 +7427,7 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Called from | `StageEntry`, `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ClearShadowAttributes`, `DissolveHud`, `ClearScreen`, `WaitFrames`, `FillShadowAttributes`, `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
 | Reads | `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`) |
-| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7CB8` (`CycleWindowFrame`); `$FE17` |
+| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7CB8` (`CycleWindowFrame`); `$FE17` (`ItemSelected`) |
 
 #### `StageFadeIn` (`$91F0`)
 
@@ -7492,8 +7446,8 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 1,189,372 t-states own (0.23 %) |
 | Called from | `StageEntry` |
 | Calls | `FadeInStep`, `IdlePasses` |
-| Reads | `$9200` (`FadeInFrame+2`); `$FE31` |
-| Writes | `$FE31` |
+| Reads | `$9200` (`FadeInFrame+2`); `$FE31` (`PassCounter`) |
+| Writes | `$FE31` (`PassCounter`) |
 
 #### `IdlePasses` (`$920E`)
 
@@ -7589,7 +7543,7 @@ Witness: L1 2 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 7,479 t-states own (0.00 %) |
 | Called from | `StageExit` (tail) |
 | Calls | `ClearBuffer` |
-| Reads | `$5800`-`$58BF` (screen); `$FE6F` |
+| Reads | `$5800`-`$58BF` (screen); `$FE6F` (`Lives`) |
 | Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`) |
 
 #### `EndStageSave` (`$78BB`)
@@ -7657,8 +7611,8 @@ Witness: L1 8120 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 304 calls, 24,928 t-states own (0.00 %) |
 | Called from | `MainLoop`, `IdlePasses` |
 | Calls | `LivesFlashStep` (tail), `ApplyEnergyChange`, `GameOverStep`, `DrawEnergyBar` |
-| Reads | `$FE31` |
-| Writes | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
+| Writes | `$FE31` (`PassCounter`) |
 
 ### Stage 2 (TZX block 43): render
 
@@ -7698,7 +7652,7 @@ Witness: L1 8701 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6,437 calls, 18,384,596 t-states own (1.35 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 290 calls, 817,893 t-states own (0.16 %) |
 | Called from | `EndStageSave`, `ShowScore`, `ShowItemCount`, `ShowPieceTaken`, `GameOverStep`, `RevealScore` |
-| Reads | `$5B00`-`$5B0B`; `$7640`-`$766F` (`DigitBuffer`); `$8BCA`-`$8BD5` (`BlankIcon`); `$C644`-`$C683` (`GameOverPicture`); `$DD41`-`$DD78` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F`; 1 more ranges |
+| Reads | `$5B00`-`$5B0B` (`PlayBuffer`); `$7640`-`$766F` (`DigitBuffer`); `$8BCA`-`$8BD5` (`BlankIcon`); `$C644`-`$C683` (`GameOverPicture`); `$DD41`-`$DD78` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F` (`ScreenLineTable+16`); 1 more ranges |
 | Writes | `$4026`-`$419E` (screen); `$4226`-`$429E` (screen); `$4326`-`$439E` (screen); `$4426`-`$449E` (screen); `$4526`-`$459E` (screen); `$4626`-`$469E` (screen); 3 more ranges |
 
 #### `PreShiftSprite` (`$7F10`)
@@ -7857,8 +7811,8 @@ Witness: L1 61507 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 39,217 calls, 2,203,506 t-states own (0.16 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3,675 calls, 206,661 t-states own (0.04 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5D44`-`$606C`; `$6086`-`$608C`; `$60A6`-`$60AC`; `$60C6`-`$60CC`; `$60E6`-`$60EC`; `$6106`-`$610C`; 8 more ranges |
-| Writes | `$5D44`-`$606C`; `$6086`-`$608C`; `$60A6`-`$60AC`; `$60C6`-`$60CC`; `$60E6`-`$60EC`; `$6106`-`$610C`; 1 more ranges |
+| Reads | `$5D44`-`$606C` (`PlayBuffer+580`); `$6086`-`$608C` (`PlayBuffer+1414`); `$60A6`-`$60AC` (`PlayBuffer+1446`); `$60C6`-`$60CC` (`PlayBuffer+1478`); `$60E6`-`$60EC` (`PlayBuffer+1510`); `$6106`-`$610C` (`PlayBuffer+1542`); 8 more ranges |
+| Writes | `$5D44`-`$606C` (`PlayBuffer+580`); `$6086`-`$608C` (`PlayBuffer+1414`); `$60A6`-`$60AC` (`PlayBuffer+1446`); `$60C6`-`$60CC` (`PlayBuffer+1478`); `$60E6`-`$60EC` (`PlayBuffer+1510`); `$6106`-`$610C` (`PlayBuffer+1542`); 1 more ranges |
 
 #### `PlotRow1Mirrored` (`$88CA`)
 
@@ -7874,8 +7828,8 @@ Witness: L1 13560 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 13,560 calls, 1,353,253 t-states own (0.10 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5D56`-`$5E7A`; `$5E96`-`$5E9A`; `$5EB6`-`$5EBA`; `$5ED6`-`$5EDA`; `$5EF6`-`$5EFA`; `$5F16`-`$5F1A`; 7 more ranges |
-| Writes | `$5D56`-`$5E7A`; `$5E96`-`$5E9A`; `$5EB6`-`$5EBA`; `$5ED6`-`$5EDA`; `$5EF6`-`$5EFA`; `$5F16`-`$5F1A`; 1 more ranges |
+| Reads | `$5D56`-`$5E7A` (`PlayBuffer+598`); `$5E96`-`$5E9A` (`PlayBuffer+918`); `$5EB6`-`$5EBA` (`PlayBuffer+950`); `$5ED6`-`$5EDA` (`PlayBuffer+982`); `$5EF6`-`$5EFA` (`PlayBuffer+1014`); `$5F16`-`$5F1A` (`PlayBuffer+1046`); 7 more ranges |
+| Writes | `$5D56`-`$5E7A` (`PlayBuffer+598`); `$5E96`-`$5E9A` (`PlayBuffer+918`); `$5EB6`-`$5EBA` (`PlayBuffer+950`); `$5ED6`-`$5EDA` (`PlayBuffer+982`); `$5EF6`-`$5EFA` (`PlayBuffer+1014`); `$5F16`-`$5F1A` (`PlayBuffer+1046`); 1 more ranges |
 
 #### `PlotRow2` (`$88DC`)
 
@@ -7893,8 +7847,8 @@ Witness: L1 89117 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 64,192 calls, 5,611,908 t-states own (0.41 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 2,770 calls, 242,079 t-states own (0.05 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5B08`-`$5C6A`; `$5C88`-`$5C8A`; `$5CA8`-`$6CFA` (`PlayBufferTail`); `$C3D5`-`$C3F6` (`SpiritSprites`); `$C7FE`-`$C853` (`HeroStrikeSprites`); `$CA45`-`$D1A2` (`HeroStrikeSprites+583`, `EnergyBarPattern`, `HeroJumpSprites`, `HeroWalkSprites`); 4 more ranges |
-| Writes | `$5B08`-`$5C6A`; `$5C88`-`$5C8A`; `$5CA8`-`$6CFA` (`PlayBufferTail`) |
+| Reads | `$5B08`-`$5C6A` (`PlayBuffer+8`); `$5C88`-`$5C8A` (`PlayBuffer+392`); `$5CA8`-`$6CFA` (`PlayBufferTail`); `$C3D5`-`$C3F6` (`SpiritSprites`); `$C7FE`-`$C853` (`HeroStrikeSprites`); `$CA45`-`$D1A2` (`HeroStrikeSprites+583`, `EnergyBarPattern`, `HeroJumpSprites`, `HeroWalkSprites`); 4 more ranges |
+| Writes | `$5B08`-`$5C6A` (`PlayBuffer+8`); `$5C88`-`$5C8A` (`PlayBuffer+392`); `$5CA8`-`$6CFA` (`PlayBufferTail`) |
 
 #### `PlotRow2Mirrored` (`$88EC`)
 
@@ -7910,8 +7864,8 @@ Witness: L1 14434 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 14,434 calls, 2,161,265 t-states own (0.16 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5CA5`-`$6AFD`; `$CA45`-`$CB3D` (`HeroStrikeSprites+583`, `EnergyBarPattern`, `HeroJumpSprites`); `$CD09`-`$CEBB` (`HeroJumpSprites+518`); `$D0B4`-`$D1A2` (`HeroWalkSprites+390`); `$E527`-`$E54E` (`HarpyLampSprites+766`); `$E61C`-`$E801` (`PoolSprites`); 2 more ranges |
-| Writes | `$5CA5`-`$6AFD` |
+| Reads | `$5CA5`-`$6AFD` (`PlayBuffer+421`); `$CA45`-`$CB3D` (`HeroStrikeSprites+583`, `EnergyBarPattern`, `HeroJumpSprites`); `$CD09`-`$CEBB` (`HeroJumpSprites+518`); `$D0B4`-`$D1A2` (`HeroWalkSprites+390`); `$E527`-`$E54E` (`HarpyLampSprites+766`); `$E61C`-`$E801` (`PoolSprites`); 2 more ranges |
+| Writes | `$5CA5`-`$6AFD` (`PlayBuffer+421`) |
 
 #### `PlotRow3` (`$8906`)
 
@@ -7929,8 +7883,8 @@ Witness: L1 86725 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 55,509 calls, 6,594,972 t-states own (0.49 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 8,413 calls, 1,000,442 t-states own (0.19 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5B06`-`$5B4A`; `$5B66`-`$5B6A`; `$5B86`-`$5B8B`; `$5BA6`-`$5BAB`; `$5BC6`-`$5BCB`; `$5BE6`-`$5BEB`; 8 more ranges |
-| Writes | `$5B06`-`$5B4A`; `$5B66`-`$5B6A`; `$5B86`-`$5B8B`; `$5BA6`-`$5BAB`; `$5BC6`-`$5BCB`; `$5BE6`-`$5BEB`; 1 more ranges |
+| Reads | `$5B06`-`$5B4A` (`PlayBuffer+6`); `$5B66`-`$5B6A` (`PlayBuffer+102`); `$5B86`-`$5B8B` (`PlayBuffer+134`); `$5BA6`-`$5BAB` (`PlayBuffer+166`); `$5BC6`-`$5BCB` (`PlayBuffer+198`); `$5BE6`-`$5BEB` (`PlayBuffer+230`); 8 more ranges |
+| Writes | `$5B06`-`$5B4A` (`PlayBuffer+6`); `$5B66`-`$5B6A` (`PlayBuffer+102`); `$5B86`-`$5B8B` (`PlayBuffer+134`); `$5BA6`-`$5BAB` (`PlayBuffer+166`); `$5BC6`-`$5BCB` (`PlayBuffer+198`); `$5BE6`-`$5BEB` (`PlayBuffer+230`); 1 more ranges |
 
 #### `PlotRow3Mirrored` (`$891B`)
 
@@ -7947,7 +7901,7 @@ Witness: L1 29125 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 29,125 calls, 5,705,745 t-states own (0.42 %) |
 | Called from | `DrawActorSprite` |
 | Reads | `$5C85`-`$6D81` (`PlayBufferTail`, `ShadowAttributes`); `$6D9F`-`$6DA1` (`ShadowAttributes+159`); `$6DBF`-`$6DC1` (`ShadowAttributes+191`, `PlayAttributes`); `$6DDF`-`$6DE1` (`PlayAttributesCell+29`); `$6DFF` (`PlayAttributesCell+61`); `$6E1F`-`$6E21` (`PlayAttributesCell+93`); 8 more ranges |
-| Writes | `$5C85`-`$5CE7`; `$5D04`-`$6D81` (`PlayBufferTail`, `ShadowAttributes`); `$6D9F`-`$6DA1` (`ShadowAttributes+159`); `$6DBF`-`$6DC1` (`ShadowAttributes+191`, `PlayAttributes`); `$6DDF`-`$6DE1` (`PlayAttributesCell+29`); `$6DFF` (`PlayAttributesCell+61`); 1 more ranges |
+| Writes | `$5C85`-`$5CE7` (`PlayBuffer+389`); `$5D04`-`$6D81` (`PlayBufferTail`, `ShadowAttributes`); `$6D9F`-`$6DA1` (`ShadowAttributes+159`); `$6DBF`-`$6DC1` (`ShadowAttributes+191`, `PlayAttributes`); `$6DDF`-`$6DE1` (`PlayAttributesCell+29`); `$6DFF` (`PlayAttributesCell+61`); 1 more ranges |
 
 #### `PlotRow4` (`$893D`)
 
@@ -7981,8 +7935,8 @@ Witness: L1 528 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 528 calls, 128,814 t-states own (0.01 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$682A`-`$6A17`; `$6A2A`-`$6A37`; `$6A4A`-`$6A57`; `$6A6A`-`$6A77`; `$6A8A`-`$6A97`; `$6AAA`-`$6AB7`; 8 more ranges |
-| Writes | `$682A`-`$6A17`; `$6A2A`-`$6A37`; `$6A4A`-`$6A57`; `$6A6A`-`$6A77`; `$6A8A`-`$6A97`; `$6AAA`-`$6AB7`; 2 more ranges |
+| Reads | `$682A`-`$6A17` (`PlayBuffer+3370`); `$6A2A`-`$6A37` (`PlayBuffer+3882`); `$6A4A`-`$6A57` (`PlayBuffer+3914`); `$6A6A`-`$6A77` (`PlayBuffer+3946`); `$6A8A`-`$6A97` (`PlayBuffer+3978`); `$6AAA`-`$6AB7` (`PlayBuffer+4010`); 8 more ranges |
+| Writes | `$682A`-`$6A17` (`PlayBuffer+3370`); `$6A2A`-`$6A37` (`PlayBuffer+3882`); `$6A4A`-`$6A57` (`PlayBuffer+3914`); `$6A6A`-`$6A77` (`PlayBuffer+3946`); `$6A8A`-`$6A97` (`PlayBuffer+3978`); `$6AAA`-`$6AB7` (`PlayBuffer+4010`); 2 more ranges |
 
 #### `PlotRow5` (`$8981`)
 
@@ -7999,8 +7953,8 @@ Witness: L1 1260 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 168 calls, 30,467 t-states own (0.01 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,092 calls, 198,271 t-states own (0.01 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6173`-`$6337`; `$6353`-`$640D`; `$6427`-`$642D`; `$6447`-`$644D`; `$6467`-`$665B`; `$6677`-`$6C29`; 7 more ranges |
-| Writes | `$6173`-`$6337`; `$6353`-`$640D`; `$6427`-`$642D`; `$6447`-`$644D`; `$6467`-`$665B`; `$6677`-`$6C29`; 6 more ranges |
+| Reads | `$6173`-`$6337` (`PlayBuffer+1651`); `$6353`-`$640D` (`PlayBuffer+2131`); `$6427`-`$642D` (`PlayBuffer+2343`); `$6447`-`$644D` (`PlayBuffer+2375`); `$6467`-`$665B` (`PlayBuffer+2407`); `$6677`-`$6C29` (`PlayBuffer+2935`); 7 more ranges |
+| Writes | `$6173`-`$6337` (`PlayBuffer+1651`); `$6353`-`$640D` (`PlayBuffer+2131`); `$6427`-`$642D` (`PlayBuffer+2343`); `$6447`-`$644D` (`PlayBuffer+2375`); `$6467`-`$665B` (`PlayBuffer+2407`); `$6677`-`$6C29` (`PlayBuffer+2935`); 6 more ranges |
 
 #### `PlotRow5Mirrored` (`$89A0`)
 
@@ -8016,8 +7970,8 @@ Witness: L1 252 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 252 calls, 73,802 t-states own (0.01 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6869`-`$6A17`; `$6A29`-`$6A37`; `$6A49`-`$6A57`; `$6A69`-`$6A77`; `$6A89`-`$6A97`; `$6AA9`-`$6AB7`; 9 more ranges |
-| Writes | `$6869`-`$6A37`; `$6A49`-`$6A57`; `$6A69`-`$6A77`; `$6A89`-`$6A97`; `$6AA9`-`$6AB7`; `$6AC9`-`$6AD7`; 1 more ranges |
+| Reads | `$6869`-`$6A17` (`PlayBuffer+3433`); `$6A29`-`$6A37` (`PlayBuffer+3881`); `$6A49`-`$6A57` (`PlayBuffer+3913`); `$6A69`-`$6A77` (`PlayBuffer+3945`); `$6A89`-`$6A97` (`PlayBuffer+3977`); `$6AA9`-`$6AB7` (`PlayBuffer+4009`); 9 more ranges |
+| Writes | `$6869`-`$6A37` (`PlayBuffer+3433`); `$6A49`-`$6A57` (`PlayBuffer+3913`); `$6A69`-`$6A77` (`PlayBuffer+3945`); `$6A89`-`$6A97` (`PlayBuffer+3977`); `$6AA9`-`$6AB7` (`PlayBuffer+4009`); `$6AC9`-`$6AD7` (`PlayBuffer+4041`); 1 more ranges |
 
 #### `PlotRow6` (`$89D2`)
 
@@ -8034,8 +7988,8 @@ Witness: L1 6221 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 3,108 calls, 662,016 t-states own (0.12 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 3,113 calls, 665,909 t-states own (0.05 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5B12`-`$5B97`; `$5BB2`-`$66D7`; `$66F2`-`$66F7`; `$6712`-`$6717`; `$6732`-`$6737`; `$6752`-`$6757`; 3 more ranges |
-| Writes | `$5B12`-`$5B97`; `$5BB2`-`$66D7`; `$66F2`-`$66F7`; `$6712`-`$6717`; `$6732`-`$6737`; `$6752`-`$6757`; 1 more ranges |
+| Reads | `$5B12`-`$5B97` (`PlayBuffer+18`); `$5BB2`-`$66D7` (`PlayBuffer+178`); `$66F2`-`$66F7` (`PlayBuffer+3058`); `$6712`-`$6717` (`PlayBuffer+3090`); `$6732`-`$6737` (`PlayBuffer+3122`); `$6752`-`$6757` (`PlayBuffer+3154`); 3 more ranges |
+| Writes | `$5B12`-`$5B97` (`PlayBuffer+18`); `$5BB2`-`$66D7` (`PlayBuffer+178`); `$66F2`-`$66F7` (`PlayBuffer+3058`); `$6712`-`$6717` (`PlayBuffer+3090`); `$6732`-`$6737` (`PlayBuffer+3122`); `$6752`-`$6757` (`PlayBuffer+3154`); 1 more ranges |
 
 #### `PlotRow6Mirrored` (`$89F6`)
 
@@ -8082,7 +8036,7 @@ Witness: L1 46384 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 509 calls, 16,334,363 t-states own (1.20 %) |
 | Called from | `DrawHydraBody` (tail) |
 | Reads | `$D967`-`$DD40` (`HydraBodyPicture`) |
-| Writes | `$5C19`-`$5C1B`; `$5C39`-`$5ED6`; `$5EF4`-`$66F9`; `$6712`-`$671C`; `$6737`-`$69DC`; `$69F4`-`$6C56` (`PlayBufferTail`); 1 more ranges |
+| Writes | `$5C19`-`$5C1B` (`PlayBuffer+281`); `$5C39`-`$5ED6` (`PlayBuffer+313`); `$5EF4`-`$66F9` (`PlayBuffer+1012`); `$6712`-`$671C` (`PlayBuffer+3090`); `$6737`-`$69DC` (`PlayBuffer+3127`); `$69F4`-`$6C56` (`PlayBufferTail`); 1 more ranges |
 
 #### `FillAttributes` (`$8C63`)
 
@@ -8162,8 +8116,8 @@ Witness: L1 8031 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 11,599,570 t-states own (2.21 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyBuffer` |
-| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$8D1F` (`RestoreAttrRow`); `$FE68` |
-| Writes | `$58C2`-`$5AFD` (screen); `$FE68` |
+| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$8D1F` (`RestoreAttrRow`); `$FE68` (`RestoreAttributes`) |
+| Writes | `$58C2`-`$5AFD` (screen); `$FE68` (`RestoreAttributes`) |
 
 #### `FadeInStep` (`$9149`)
 
@@ -8185,7 +8139,7 @@ Witness: L1 105 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 35 calls, 2,314,106 t-states own (0.17 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 35 calls, 2,314,106 t-states own (0.44 %) |
 | Called from | `StageFadeIn` |
-| Reads | `$58C2`-`$593D` (screen); `$59F4`-`$59F6` (screen); `$5A09`-`$5A16` (screen); `$5A28`-`$5AFD` (screen); `$6DC2`-`$7001` (`PlayAttributesCell`, `HudPicture`); `$FE31` |
+| Reads | `$58C2`-`$593D` (screen); `$59F4`-`$59F6` (screen); `$5A09`-`$5A16` (screen); `$5A28`-`$5AFD` (screen); `$6DC2`-`$7001` (`PlayAttributesCell`, `HudPicture`); `$FE31` (`PassCounter`) |
 | Writes | `$58C2`-`$593D` (screen); `$59F4`-`$59F6` (screen); `$5A09`-`$5A16` (screen); `$5A28`-`$5AFD` (screen) |
 
 #### `BuildSpans` (`$93B5`)
@@ -8205,8 +8159,8 @@ Witness: L1 43 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 341,427 t-states own (0.07 %) |
 | Called from | `RoomChange` |
 | Calls | `AddSpan` |
-| Reads | `$5B00`-`$5BCC`; `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$77B4` (`SpanTable`, `SpanTableRest`); `$FE1C`-`$FE1F`; `$FE40` |
-| Writes | `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$77B4` (`SpanTable`, `SpanTableRest`); `$93EA`-`$93EB` (`BuildSpansKinds+1`); `$FE1C`-`$FE1F`; `$FE40` |
+| Reads | `$5B00`-`$5BCC` (`PlayBuffer`); `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$77B4` (`SpanTable`, `SpanTableRest`); `$FE1C`-`$FE1F` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE40` (`SpanOpen`) |
+| Writes | `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$77B4` (`SpanTable`, `SpanTableRest`); `$93EA`-`$93EB` (`BuildSpansKinds+1`); `$FE1C`-`$FE1F` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE40` (`SpanOpen`) |
 
 #### `AddSpan` (`$943D`)
 
@@ -8226,7 +8180,7 @@ Witness: L1 1374 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,040 calls, 391,479 t-states own (0.03 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 92 calls, 34,680 t-states own (0.01 %) |
 | Called from | `BuildSpans` |
-| Reads | `$FB60`-`$FC71`; `$FE1E`-`$FE1F` |
+| Reads | `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE1E`-`$FE1F` (`SpanRow`, `CellColumn`) |
 | Writes | `$76A0`-`$77B9` (`SpanTable`, `SpanTableRest`) |
 
 #### `ClearBuffer` (`$9484`)
@@ -8247,8 +8201,8 @@ Witness: L1 8080 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,841 calls, 178,121,886 t-states own (13.10 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 279 calls, 8,476,364 t-states own (1.62 %) |
 | Called from | `StageEntry`, `MainLoop`, `EndStage`, `RoomChange` |
-| Reads | `$FE0E`-`$FE0F` |
-| Writes | `$FE0E`-`$FE0F` |
+| Reads | `$FE0E`-`$FE0F` (`SavedSP`) |
+| Writes | `$FE0E`-`$FE0F` (`SavedSP`) |
 
 #### `CopyBuffer` (`$94A9`)
 
@@ -8268,7 +8222,7 @@ Witness: L1 8033 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,806 calls, 416,629,111 t-states own (30.64 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 18,513,358 t-states own (3.53 %) |
 | Called from | `StageEntry`, `UpdateAttributes` |
-| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1D` |
+| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1D` (`SavedSP`, `InitOnly10`, `InitOnly12`, `WorkByte` and 4 more) |
 | Writes | `$40C2`-`$40FD` (screen); `$41C2`-`$41FD` (screen); `$42C2`-`$42FD` (screen); `$43C2`-`$43FD` (screen); `$44C2`-`$44FD` (screen); `$45C2`-`$45FD` (screen); 4 more ranges |
 
 #### `BlackOutPlayArea` (`$99D3`)
@@ -8366,7 +8320,7 @@ Witness: L1 40129 (rzx-r2, s2-right, stageload).
 | Called from | `DrawActors` |
 | Calls | `PlotRow1`, `PlotRow1Mirrored`, `PlotRow2`, `PlotRow2Mirrored`, `PlotRow3`, `PlotRow3Mirrored`, `PlotRow4`, `PlotRow4Mirrored`, `PlotRow5`, `PlotRow5Mirrored`, `PlotRow6`, `ColourActor` |
 | Reads | `$74E2`-`$75DB` (`HeroY+1`, `HeroFrame`, `HeroFlags`, `HeroState` and 6 more); `$8A5D`-`$8A72` (`RowPlotters+4`); `$C62C`-`$C643` (`RippleSprites`); `$C704`-`$C7CD` (`StrikeableSprites`); `$DF45`-`$E0A3` (`StatueSprites`); `$E61C`-`$E801` (`PoolSprites`) |
-| Writes | `$6154`-`$6377`; `$6393`-`$6AFD`; `$6C04`-`$6C3F` (`PlayBufferTail`); `$A643`-`$A644` (`RowDrawCall+1`) |
+| Writes | `$6154`-`$6377` (`PlayBuffer+1620`); `$6393`-`$6AFD` (`PlayBuffer+2195`); `$6C04`-`$6C3F` (`PlayBufferTail`); `$A643`-`$A644` (`RowDrawCall+1`) |
 
 #### `ColourActor` (`$A662`)
 
@@ -8459,7 +8413,7 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 21,778 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `GetSelectedItem` |
-| Reads | `$5B00`-`$5C3C`; `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$79D8` (`StageExitFrame+1`); `$FE30`; `$FE54` |
+| Reads | `$5B00`-`$5C3C` (`PlayBuffer`); `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$79D8` (`StageExitFrame+1`); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
 
 #### `StageExit` (`$79D3`)
 
@@ -8490,8 +8444,8 @@ Witness: L1 8990 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 8,990 calls, 6,272,139 t-states own (0.46 %) |
 | Called from | `StageExit` |
-| Reads | `$5B00`-`$5C3B`; `$7A71`-`$7A88` (`StarPixels`); `$FB60`-`$FC67` |
-| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` |
+| Reads | `$5B00`-`$5C3B` (`PlayBuffer`); `$7A71`-`$7A88` (`StarPixels`); `$FB60`-`$FC67` (`ScreenLineTable+96`) |
+| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` (`PlayBuffer+3`) |
 
 #### `StartStageExit` (`$7A91`)
 
@@ -8506,8 +8460,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 201,493 t-states own (0.01 %) |
 | Called from | `StageExit`, `FillAttributes` |
 | Calls | `RandomPlayAttrs`, `ClearPlayBuffer`, `Random`, `FillAttributes` |
-| Reads | `$FB60`-`$FC7F` |
-| Writes | `$40C0`-`$57FD` (screen); `$5B00`-`$5C3F` |
+| Reads | `$FB60`-`$FC7F` (`ScreenLineTable+96`) |
+| Writes | `$40C0`-`$57FD` (screen); `$5B00`-`$5C3F` (`PlayBuffer`) |
 
 #### `RandomPlayAttrs` (`$7AF3`)
 
@@ -8524,7 +8478,7 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 72,260 t-states own (0.01 %) |
 | Called from | `StartStageExit` |
 | Calls | `Random` |
-| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` |
+| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `AddScore` (`$7B1F`)
 
@@ -8540,8 +8494,8 @@ Witness: L1 34 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 34 calls, 3,324 t-states own (0.00 %) |
 | Called from | `PieceWaitsPickup`, `ScoreBurst20`, `ItemHandler`, `FragmentActor` |
-| Reads | `$F9FB`-`$F9FD` |
-| Writes | `$F9FB`-`$F9FD` |
+| Reads | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
+| Writes | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `RenderScore` (`$7B40`)
 
@@ -8560,7 +8514,7 @@ Witness: L1 8033 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 866,551 t-states own (0.17 %) |
 | Called from | `ShowScore`, `StageSetUp` |
 | Calls | `RenderDigits` (tail), `NumberToDigits`, `ByteToDigits` |
-| Reads | `$7BEB`-`$7BF1` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F977`; `$F999`-`$F99F`; `$F9FB`-`$F9FD` |
+| Reads | `$7BEB`-`$7BF1` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F977` (`DigitGlyphs`); `$F999`-`$F99F`; `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7BC5` (`RenderDigitsChar+28`) |
 
 #### `HideLeadingZeros` (`$7B61`)
@@ -8613,7 +8567,7 @@ Witness: L1 8639 (rzx-r2, s2-right, stageload).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6,412 calls, 17,872,387 t-states own (1.31 %) |
 | Called from | `RenderScore` (tail), `FormatItemCount` (tail) |
-| Reads | `$7BEB`-`$7BF1` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7D95`-`$7D97` (`ItemCountText+2`); `$F959`-`$F9A7` |
+| Reads | `$7BEB`-`$7BF1` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7D95`-`$7D97` (`ItemCountText+2`); `$F959`-`$F9A7` (`DigitGlyphs`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7BC5` (`RenderDigitsChar+28`) |
 
 #### `StartLivesFlash` (`$7D98`)
@@ -8632,7 +8586,7 @@ Witness: L1 10 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 3 calls, 122 t-states own (0.00 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 30 t-states own (0.00 %) |
 | Called from | `LoseLife`, `StageSetUp` (tail), `ExtraLifeActor` |
-| Writes | `$FE6C` |
+| Writes | `$FE6C` (`LivesFlash`) |
 
 #### `LivesFlashStep` (`$7D9E`)
 
@@ -8650,8 +8604,8 @@ Witness: L1 8120 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,835 calls, 256,829 t-states own (0.02 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 304 calls, 23,516 t-states own (0.00 %) |
 | Called from | `PassTick` (tail) |
-| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE6C`-`$FE6F` |
-| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE6C` |
+| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE6C`-`$FE6F` (`LivesFlash`, `GameOverTimer`, `Lives`) |
+| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE6C` (`LivesFlash`) |
 
 #### `ApplyEnergyChange` (`$7E62`)
 
@@ -8670,8 +8624,8 @@ Witness: L1 8120 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 304 calls, 14,922 t-states own (0.00 %) |
 | Called from | `PassTick` |
 | Calls | `LoseLife` (tail) |
-| Reads | `$74EA` (`HeroState`); `$FE3C`; `$FE59`; `$FE6F` |
-| Writes | `$FE3C`; `$FE59`-`$FE6F` |
+| Reads | `$74EA` (`HeroState`); `$FE3C` (`Energy`); `$FE59` (`EnergyChange`); `$FE6F` (`Lives`) |
+| Writes | `$FE3C` (`Energy`); `$FE59`-`$FE6F` (`EnergyChange`, `HarpyPhase`, `SpawnDelay`, `Hydra1Neck` and 17 more) |
 
 #### `LoseLife` (`$7E90`)
 
@@ -8686,8 +8640,8 @@ Witness: L1 6 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 5 calls, 1,219 t-states own (0.00 %) |
 | Called from | `ApplyEnergyChange` (tail), `HeroFall` |
 | Calls | `StartLivesFlash`, `HeroDeath` (tail) |
-| Reads | `$74EA` (`HeroState`); `$FE6F` |
-| Writes | `$FE3C`; `$FE59`-`$FE6F` |
+| Reads | `$74EA` (`HeroState`); `$FE6F` (`Lives`) |
+| Writes | `$FE3C` (`Energy`); `$FE59`-`$FE6F` (`EnergyChange`, `HarpyPhase`, `SpawnDelay`, `Hydra1Neck` and 17 more) |
 
 #### `FlashPieces` (`$84F3`)
 
@@ -8705,8 +8659,8 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,806 calls, 815,218 t-states own (0.06 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 18,150 t-states own (0.00 %) |
 | Called from | `MainLoop` |
-| Reads | `$B509`-`$B510` (`CycleColours`); `$FE62`-`$FE6A` |
-| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE62` |
+| Reads | `$B509`-`$B510` (`CycleColours`); `$FE62`-`$FE6A` (`PieceFlash`, `PieceTakenFlag`, `RespawnShiftX`, `RespawnShiftY` and 5 more) |
+| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE62` (`PieceFlash`) |
 
 #### `ShowPieceTaken` (`$8525`)
 
@@ -8725,8 +8679,8 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 7,700 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyToScreen` |
-| Reads | `$FE63`-`$FE6A` |
-| Writes | `$FE62`-`$FE6A` |
+| Reads | `$FE63`-`$FE6A` (`PieceTakenFlag`, `RespawnShiftX`, `RespawnShiftY`, `HeroFreeze` and 4 more) |
+| Writes | `$FE62`-`$FE6A` (`PieceFlash`, `PieceTakenFlag`, `RespawnShiftX`, `RespawnShiftY` and 5 more) |
 
 #### `GameOverStep` (`$8566`)
 
@@ -8745,8 +8699,8 @@ Witness: L1 8120 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 304 calls, 9,462 t-states own (0.00 %) |
 | Called from | `PassTick` |
 | Calls | `CopyToScreen`, `FillAttributes`, `CycleColour` |
-| Reads | `$FE6D` |
-| Writes | `$85A0` (`GameOverColour+13`); `$FE6D` |
+| Reads | `$FE6D` (`GameOverTimer`) |
+| Writes | `$85A0` (`GameOverColour+13`); `$FE6D` (`GameOverTimer`) |
 
 #### `GameOverStepDone` (`$85A1`)
 
@@ -8778,8 +8732,8 @@ Witness: L1 72 (rzx-r2, s2-right, stageload).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 36 calls, 2,369 t-states own (0.00 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 29 calls, 1,911 t-states own (0.00 %) |
 | Called from | `MedusaHeadDraw`, `ShotHitsHero` (falls into), `HarpyActor`, `HarpyRiseActor`, `UpdateFloorShot` |
-| Reads | `$74EA` (`HeroState`); `$FE59` |
-| Writes | `$FE59` |
+| Reads | `$74EA` (`HeroState`); `$FE59` (`EnergyChange`) |
+| Writes | `$FE59` (`EnergyChange`) |
 
 #### `DissolveHud` (`$8AD6`)
 
@@ -8797,7 +8751,7 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 2,285,037 t-states own (0.17 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 2,285,037 t-states own (0.44 %) |
 | Called from | `StageSetUp` |
-| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 15 more); `$8AE3` (`DissolveStep+2`); `$8B11` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA`; `$FB00`-`$FB5F`; `$FE0A`-`$FE0B` |
+| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 15 more); `$8AE3` (`DissolveStep+2`); `$8B11` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA` (`DissolveMasks`); `$FB00`-`$FB5F` (`ScreenLineTable`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 | Writes | `$4000`-`$41BF` (screen); `$4200`-`$42BF` (screen); `$4300`-`$43BF` (screen); `$4400`-`$44BF` (screen); `$4500`-`$45BF` (screen); `$4600`-`$46BF` (screen); 4 more ranges |
 
 #### `NumberToDigits` (`$8C0A`)
@@ -8818,7 +8772,7 @@ Witness: L1 8033 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,806 calls, 11,204,834 t-states own (0.82 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 431,564 t-states own (0.08 %) |
 | Called from | `RenderScore` |
-| Reads | `$F9C1`-`$F9C8` |
+| Reads | `$F9C1`-`$F9C8` (`DecimalTable+2`) |
 | Writes | `$7BED`-`$7BF0` (`ScoreDigitsLow`) |
 
 #### `ByteToDigits` (`$8C3C`)
@@ -8857,7 +8811,7 @@ Witness: L1 8120 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 5,835 calls, 532,463 t-states own (0.04 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 304 calls, 102,331 t-states own (0.02 %) |
 | Called from | `PassTick` |
-| Reads | `$9E19`-`$9E1F` (`BarMasks`); `$CA00`-`$CA02` (`HeroStrikeSprites+514`); `$CAFD`-`$CAFF` (`EnergyBarPattern`); `$FE3C`; `$FE58` |
+| Reads | `$9E19`-`$9E1F` (`BarMasks`); `$CA00`-`$CA02` (`HeroStrikeSprites+514`); `$CAFD`-`$CAFF` (`EnergyBarPattern`); `$FE3C` (`Energy`); `$FE58` (`EnergyShown`) |
 | Writes | `$4134`-`$4139` (screen); `$4234`-`$4239` (screen); `$4334`-`$4339` (screen); `$4434`-`$4439` (screen); `$4534`-`$4539` (screen); `$4634`-`$4639` (screen); 2 more ranges |
 
 ### Stage 2 (TZX block 43): hero
@@ -8882,7 +8836,7 @@ Witness: L1 161 (rzx-r2).
 | Called from | `MainLoop` |
 | Calls | `FlashSelectedBox` (falls into), `ScrollItemsLeft`, `ScrollItemsRight`, `CycleWindowFrame`, `DrawItemStrip`, `ShowItemCount`, `TestSpaceKey` |
 | Reads | `$586A` (screen); `$7BF8`-`$7C04` (`ItemWindow+6`, `ItemWindowStep`, `ItemWindowFrame`); `$7C2F` (`ItemWindowSettle+1`) |
-| Writes | `$FE31` |
+| Writes | `$FE31` (`PassCounter`) |
 
 #### `FlashSelectedBox` (`$7C39`)
 
@@ -8951,8 +8905,8 @@ Witness: L1 28 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 4,548,012 t-states own (0.87 %) |
 | Called from | `ItemWindow`, `StageSetUp` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B67`-`$5D97`; `$7C7A` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` |
-| Writes | `$5B67`-`$5D97`; `$FE17` |
+| Reads | `$5B67`-`$5D97` (`PlayBuffer+103`); `$7C7A` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` (`ItemSelected`, `ItemLast`) |
+| Writes | `$5B67`-`$5D97` (`PlayBuffer+103`); `$FE17` (`ItemSelected`) |
 
 #### `ScrollItemsRight` (`$7C84`)
 
@@ -8969,8 +8923,8 @@ Witness: L1 14 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 14 calls, 18,077,974 t-states own (1.33 %) |
 | Called from | `ItemWindow` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B64`-`$5D54`; `$7CAE` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` |
-| Writes | `$5B64`-`$5D54`; `$FE17` |
+| Reads | `$5B64`-`$5D54` (`PlayBuffer+100`); `$7CAE` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` (`ItemSelected`, `ItemLast`, `ItemFirst`) |
+| Writes | `$5B64`-`$5D54` (`PlayBuffer+100`); `$FE17` (`ItemSelected`) |
 
 #### `CycleWindowFrame` (`$7CB8`)
 
@@ -8988,8 +8942,8 @@ Witness: L1 1719 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,575 calls, 923,562 t-states own (0.07 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 72 calls, 720 t-states own (0.00 %) |
 | Called from | `ItemWindow`, `ScrollItemsLeft`, `ScrollItemsRight` |
-| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7CE1`-`$7CF0` (`WindowFrameColours`); `$FE31` |
-| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE31` |
+| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7CE1`-`$7CF0` (`WindowFrameColours`); `$FE31` (`PassCounter`) |
+| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE31` (`PassCounter`) |
 
 #### `RedrawItemsIfChanged` (`$7CF1`)
 
@@ -9008,8 +8962,8 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 11,546 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawItemStrip`, `ShowItemCount` (tail) |
-| Reads | `$FE53` |
-| Writes | `$FE53` |
+| Reads | `$FE53` (`ItemsChanged`) |
+| Writes | `$FE53` (`ItemsChanged`) |
 
 #### `DrawItemStrip` (`$7D01`)
 
@@ -9028,7 +8982,7 @@ Witness: L1 556 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 3,917 t-states own (0.00 %) |
 | Called from | `ItemWindow`, `RedrawItemsIfChanged`, `StageSetUp` |
 | Calls | `DrawItemIcon`, `ShowItemStrip` (tail) |
-| Reads | `$7EDC`-`$7EEA` (`CarriedItems`, `CarriedCounts`); `$FE17` |
+| Reads | `$7EDC`-`$7EEA` (`CarriedItems`, `CarriedCounts`); `$FE17` (`ItemSelected`) |
 
 #### `ShowItemCount` (`$7D29`)
 
@@ -9063,7 +9017,7 @@ Witness: L1 606 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 606 calls, 209,724 t-states own (0.02 %) |
 | Called from | `ShowItemCount` |
 | Calls | `RenderDigits` (tail) |
-| Reads | `$7EEE`-`$7EF2` (`CarriedCounts+6`); `$FE17` |
+| Reads | `$7EEE`-`$7EF2` (`CarriedCounts+6`); `$FE17` (`ItemSelected`) |
 | Writes | `$7D95`-`$7D96` (`ItemCountText+2`) |
 
 #### `DrawItemIcon` (`$7DE5`)
@@ -9083,7 +9037,7 @@ Witness: L1 4448 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 24 calls, 59,804 t-states own (0.01 %) |
 | Called from | `DrawItemStrip` |
 | Reads | `$7F00`-`$7F0D` (`ItemIcons`); `$8BCA`-`$8BE9` (`BlankIcon`); `$DE65`-`$DF24` (`ItemIconSprites`, `ItemIconKind1`, `ItemIconKind3`, `ItemIconKind6` and 2 more) |
-| Writes | `$5B64`-`$5D5B` |
+| Writes | `$5B64`-`$5D5B` (`PlayBuffer+100`) |
 
 #### `ShowItemStrip` (`$7E0A`)
 
@@ -9119,7 +9073,7 @@ Witness: L1 2888 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2,588 calls, 8,439,999 t-states own (0.62 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 150 calls, 414,137 t-states own (0.08 %) |
 | Called from | `ShowItemStrip` (falls into) |
-| Reads | `$5B68`-`$5C93`; `$5CA8`-`$5CB3`; `$5CC8`-`$5CD3`; `$5CE8`-`$5CF3`; `$5D08`-`$5D13`; `$5D28`-`$5D33`; 1 more ranges |
+| Reads | `$5B68`-`$5C93` (`PlayBuffer+104`); `$5CA8`-`$5CB3` (`PlayBuffer+424`); `$5CC8`-`$5CD3` (`PlayBuffer+456`); `$5CE8`-`$5CF3` (`PlayBuffer+488`); `$5D08`-`$5D13` (`PlayBuffer+520`); `$5D28`-`$5D33` (`PlayBuffer+552`); 1 more ranges |
 | Writes | `$406A`-`$4195` (screen); `$426A`-`$4295` (screen); `$436A`-`$4395` (screen); `$446A`-`$4495` (screen); `$456A`-`$4595` (screen); `$466A`-`$4695` (screen); 1 more ranges |
 
 #### `AddItem` (`$7E2B`)
@@ -9136,8 +9090,8 @@ Witness: L1 7 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 7 calls, 3,889 t-states own (0.00 %) |
 | Called from | `ItemHandler` |
-| Reads | `$7EDC`-`$7EEF` (`CarriedItems`, `CarriedCounts`); `$FE18` |
-| Writes | `$7EE4`-`$7EF2` (`CarriedItems+8`, `CarriedCounts`); `$FE18`; `$FE53` |
+| Reads | `$7EDC`-`$7EEF` (`CarriedItems`, `CarriedCounts`); `$FE18` (`ItemLast`) |
+| Writes | `$7EE4`-`$7EF2` (`CarriedItems+8`, `CarriedCounts`); `$FE18` (`ItemLast`); `$FE53` (`ItemsChanged`) |
 
 #### `GetSelectedItem` (`$7ECA`)
 
@@ -9155,7 +9109,7 @@ Witness: L1 9245 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 6,690 calls, 734,295 t-states own (0.05 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 367 calls, 40,285 t-states own (0.01 %) |
 | Called from | `CheckStageExit`, `MedusaHeadLies`, `ThrowItem`, `HeroUpdate`, `HeroFireHeld` |
-| Reads | `$7EE2`-`$7EE6` (`CarriedItems+6`); `$FE17` |
+| Reads | `$7EE2`-`$7EE6` (`CarriedItems+6`); `$FE17` (`ItemSelected`) |
 
 #### `HeroRecoil` (`$87C2`)
 
@@ -9203,8 +9157,8 @@ Witness: L1 723 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 102 calls, 4,917 t-states own (0.00 %) |
 | Called from | `HeroUpdate` (tail) |
 | Calls | `RespawnPoint`, `HeroStandFrame` (tail) |
-| Reads | `$74F0` (`HeroCounter`); `$FE31` |
-| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE64` |
+| Reads | `$74F0` (`HeroCounter`); `$FE31` (`PassCounter`) |
+| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE64` (`RespawnShiftX`) |
 
 #### `RespawnPoint` (`$8F45`)
 
@@ -9221,7 +9175,7 @@ Witness: L1 12 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 10 calls, 1,246 t-states own (0.00 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2 calls, 230 t-states own (0.00 %) |
 | Called from | `RespawnCountdown`, `HeroDeath` |
-| Reads | `$8F66`-`$8F7D` (`RespawnPoints`, `RespawnPointsGrid0`); `$FE30`; `$FE54` |
+| Reads | `$8F66`-`$8F7D` (`RespawnPoints`, `RespawnPointsGrid0`); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
 
 #### `ThrowItem` (`$90F5`)
 
@@ -9242,8 +9196,8 @@ Witness: L1 1411 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,411 calls, 101,174 t-states own (0.01 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `AddMissileHigh` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7EEF` (`CarriedCounts+7`); `$FE60` |
-| Writes | `$7EEF` (`CarriedCounts+7`); `$FE60` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7EEF` (`CarriedCounts+7`); `$FE60` (`FireLatch`) |
+| Writes | `$7EEF` (`CarriedCounts+7`); `$FE60` (`FireLatch`) |
 
 #### `HeroActor` (`$AC8E`)
 
@@ -9262,8 +9216,8 @@ Witness: L1 8034 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 276 calls, 65,155 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `CheckHeroFooting`, `CheckRoomExits`, `CheckGridPassages`, `HeroUpdate` |
-| Reads | `$9542`-`$9555` (`Grid0+4`, `Grid1`, `Grid2`); `$FE23`-`$FE30` |
-| Writes | `$FE2E`-`$FE2F` |
+| Reads | `$9542`-`$9555` (`Grid0+4`, `Grid1`, `Grid2`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE2E`-`$FE2F` (`RoomExitsPtr`) |
 
 #### `CheckHeroFooting` (`$ACB7`)
 
@@ -9304,8 +9258,8 @@ Witness: L1 8034 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 276 calls, 79,063 t-states own (0.02 %) |
 | Called from | `HeroActor` |
 | Calls | `GetSelectedItem`, `RespawnCountdown` (tail), `ThrowItem`, `FireHeroMissile`, `HeroStand` (tail), `HeroStrikeLow` (tail), `HeroStrikeMid` (tail), `HeroStrikeHigh` (tail), `HeroWalk` (tail), `HeroFall` (tail), `HeroLeapBack` (tail), `HeroJump` (tail), `HeroLeap` (tail), `CycleColour` |
-| Reads | `$74E0`-`$74EC` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 2 more); `$FE3C`; `$FE66` |
-| Writes | `$74EC` (`HeroAttribute`); `$FE66` |
+| Reads | `$74E0`-`$74EC` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 2 more); `$FE3C` (`Energy`); `$FE66` (`HeroFreeze`) |
+| Writes | `$74EC` (`HeroAttribute`); `$FE66` (`HeroFreeze`) |
 
 #### `FireHeroMissile` (`$AE43`)
 
@@ -9322,8 +9276,8 @@ Witness: L1 1136 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,136 calls, 86,353 t-states own (0.01 %) |
 | Called from | `HeroUpdate` |
 | Calls | `AddMissile` |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE60` |
-| Writes | `$FE60` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE60` (`FireLatch`) |
+| Writes | `$FE60` (`FireLatch`) |
 
 #### `HeroStand` (`$AE9B`)
 
@@ -9563,7 +9517,7 @@ Witness: L1 1541 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 88 calls, 28,884 t-states own (0.01 %) |
 | Called from | `HeroUpdate` (tail), `WalkRight` (tail), `WalkLeft` (falls into) |
 | Calls | `CheckWalkBarriers`, `SetActorFrame`, `HeroStandFrame` (tail), `WalkJumpCheck`, `FrontCell`, `HeroTurn`, `MoveBaseX`, `NegateIfFacingLeft` |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE54` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE54` (`GridNumber`) |
 | Writes | `$74E8`-`$74ED` (`HeroFrame`, `HeroFlags`, `HeroState`, `HeroAttribute` and 1 more) |
 
 #### `WalkJumpCheck` (`$B0E2`)
@@ -9642,8 +9596,8 @@ Witness: L1 165 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 14 calls, 3,004 t-states own (0.00 %) |
 | Called from | `HeroUpdate` (tail) |
 | Calls | `LoseLife`, `HeroStandFrame` (tail), `JumpFrame` (tail), `MoveBaseX`, `CellUnderFeet`, `HeroDeath` (tail) |
-| Reads | `$74E1`-`$74EE` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 3 more); `$FE30`; `$FE54` |
-| Writes | `$74E8`-`$74EE` (`HeroFrame`, `HeroFlags`, `HeroState`, `HeroAttribute` and 2 more); `$FE59` |
+| Reads | `$74E1`-`$74EE` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 3 more); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
+| Writes | `$74E8`-`$74EE` (`HeroFrame`, `HeroFlags`, `HeroState`, `HeroAttribute` and 2 more); `$FE59` (`EnergyChange`) |
 
 #### `HeroLeapBack` (`$B1A8`)
 
@@ -9774,8 +9728,8 @@ Witness: L1 9 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 2,756 t-states own (0.00 %) |
 | Called from | `LoseLife` (tail), `HeroFall` (tail) |
 | Calls | `RespawnPoint`, `AddMissileHigh` |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`); `$FE64` |
-| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 5 more); `$7610`-`$763F` (`MissilesHigh`); `$FE64`-`$FE65` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`); `$FE64` (`RespawnShiftX`) |
+| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 5 more); `$7610`-`$763F` (`MissilesHigh`); `$FE64`-`$FE65` (`RespawnShiftX`, `RespawnShiftY`) |
 
 ### Stage 2 (TZX block 43): enemies
 
@@ -9794,8 +9748,8 @@ Witness: L1 339 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 339 calls, 79,700 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HydraHeadHit`, `CutHydraHead1`, `PlaceHydraHead` (tail), `HydraHeadShot`, `RemoveActor` (tail) |
-| Reads | `$75D4` (`LastActor+10`); `$FE43`-`$FE5C` |
-| Writes | `$FE5C` |
+| Reads | `$75D4` (`LastActor+10`); `$FE43`-`$FE5C` (`Hydra1Step`, `Hydra1Pose`, `Hydra2Step`, `Hydra2Pose` and 16 more) |
+| Writes | `$FE5C` (`Hydra1Neck`) |
 
 #### `HydraHead2Actor` (`$7FEB`)
 
@@ -9810,8 +9764,8 @@ Witness: L1 131 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 131 calls, 29,191 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HydraHeadHit`, `CutHydraHead2`, `PlaceHydraHead` (tail), `HydraHeadShot`, `RemoveActor` (tail) |
-| Reads | `$75D4` (`LastActor+10`); `$FE45`-`$FE5D` |
-| Writes | `$FE5D` |
+| Reads | `$75D4` (`LastActor+10`); `$FE45`-`$FE5D` (`Hydra2Step`, `Hydra2Pose`, `Hydra1X`, `Hydra1Y` and 15 more) |
+| Writes | `$FE5D` (`Hydra2Neck`) |
 
 #### `HydraHead3Actor` (`$8023`)
 
@@ -9826,8 +9780,8 @@ Witness: L1 210 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 210 calls, 39,027 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HydraHeadHit`, `CutHydraHead3`, `PlaceHydraHead` (tail), `HydraHeadShot`, `RemoveActor` (tail) |
-| Reads | `$75C2` (`Actors+208`); `$FE41`-`$FE5E` |
-| Writes | `$FE5E` |
+| Reads | `$75C2` (`Actors+208`); `$FE41`-`$FE5E` (`Hydra3Step`, `Hydra3Pose`, `Hydra1Step`, `Hydra1Pose` and 20 more) |
+| Writes | `$FE5E` (`Hydra3Neck`) |
 
 #### `HydraHead1LowActor` (`$805B`)
 
@@ -9842,7 +9796,7 @@ Witness: L1 166 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 166 calls, 31,295 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HydraHeadHit`, `PlaceHydraHead` (tail), `HydraHeadShot` |
-| Reads | `$75C2` (`Actors+208`); `$FE43`-`$FE5C` |
+| Reads | `$75C2` (`Actors+208`); `$FE43`-`$FE5C` (`Hydra1Step`, `Hydra1Pose`, `Hydra2Step`, `Hydra2Pose` and 16 more) |
 
 #### `HydraHeadHit` (`$8092`)
 
@@ -9872,8 +9826,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 80 t-states own (0.00 %) |
 | Called from | `HydraHead1Actor` |
 | Calls | `StartBurst` (tail) |
-| Reads | `$FE5F` |
-| Writes | `$FE5F` |
+| Reads | `$FE5F` (`HydraHeads`) |
+| Writes | `$FE5F` (`HydraHeads`) |
 
 #### `CutHydraHead2` (`$80D6`)
 
@@ -9888,8 +9842,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 80 t-states own (0.00 %) |
 | Called from | `HydraHead2Actor` |
 | Calls | `StartBurst` (tail) |
-| Reads | `$FE5F` |
-| Writes | `$FE5F` |
+| Reads | `$FE5F` (`HydraHeads`) |
+| Writes | `$FE5F` (`HydraHeads`) |
 
 #### `CutHydraHead3` (`$80EB`)
 
@@ -9904,8 +9858,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 80 t-states own (0.00 %) |
 | Called from | `HydraHead3Actor` |
 | Calls | `StartBurst` (tail) |
-| Reads | `$FE5F` |
-| Writes | `$FE5F` |
+| Reads | `$FE5F` (`HydraHeads`) |
+| Writes | `$FE5F` (`HydraHeads`) |
 
 #### `PlaceHydraHead` (`$8100`)
 
@@ -9947,8 +9901,8 @@ Witness: L1 341 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 341 calls, 28,377 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `IsHeroStrikeFrame`, `MedusaSetFrame` (tail), `RemoveActor` (tail) |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE57` |
-| Writes | `$FE57` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE57` (`MedusaState`) |
+| Writes | `$FE57` (`MedusaState`) |
 
 #### `IsHeroStrikeFrame` (`$816D`)
 
@@ -9979,8 +9933,8 @@ Witness: L1 427 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 427 calls, 85,982 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `MedusaSetFrame`, `MedusaHeadLies` (tail), `KindTwelveShot` (tail), `RemoveActor` (tail) |
-| Reads | `$75C0`-`$75C6` (`Actors+206`); `$81AC`-`$81C7` (`MedusaHeadFrames`); `$81FB`-`$8214` (`MedusaHeadFallSteps+1`); `$FE57` |
-| Writes | `$75C0`-`$75C6` (`Actors+206`); `$FE57` |
+| Reads | `$75C0`-`$75C6` (`Actors+206`); `$81AC`-`$81C7` (`MedusaHeadFrames`); `$81FB`-`$8214` (`MedusaHeadFallSteps+1`); `$FE57` (`MedusaState`) |
+| Writes | `$75C0`-`$75C6` (`Actors+206`); `$FE57` (`MedusaState`) |
 
 #### `MedusaSetFrame` (`$81C8`)
 
@@ -10023,7 +9977,7 @@ Witness: L1 60 (rzx-r2).
 | Called from | `MedusaHeadActor` (tail) |
 | Calls | `GetSelectedItem`, `MedusaHeadDraw` (tail), `SpawnItem` (tail), `RemoveActor` |
 | Reads | `$75C3` (`Actors+209`) |
-| Writes | `$75C3` (`Actors+209`); `$FE57` |
+| Writes | `$75C3` (`Actors+209`); `$FE57` (`MedusaState`) |
 
 #### `MedusaHeadDraw` (`$823E`)
 
@@ -10038,7 +9992,7 @@ Witness: L1 86 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 86 calls, 17,034 t-states own (0.00 %) |
 | Called from | `MedusaHeadFalls` (tail), `MedusaHeadLies` (tail) |
 | Calls | `MedusaSetFrame` (tail), `DamageHero` |
-| Reads | `$74E0` (`HeroRecord`); `$75B8`-`$75C0` (`Actors+198`); `$FE57` |
+| Reads | `$74E0` (`HeroRecord`); `$75B8`-`$75C0` (`Actors+198`); `$FE57` (`MedusaState`) |
 | Writes | `$75C0`-`$75C6` (`Actors+206`) |
 
 #### `UpdatePieceActor` (`$842E`)
@@ -10058,8 +10012,8 @@ Witness: L1 4470 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 162 calls, 24,601 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `SetCycleColour` |
-| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$750F` (`Actors`); `$84A7`-`$84C4` (`RiseSteps`); `$FE6B` |
-| Writes | `$74FA`-`$750C` (`Actors+8`); `$FE63`-`$FE6B` |
+| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$750F` (`Actors`); `$84A7`-`$84C4` (`RiseSteps`); `$FE6B` (`PiecesMask`) |
+| Writes | `$74FA`-`$750C` (`Actors+8`); `$FE63`-`$FE6B` (`PieceTakenFlag`, `RespawnShiftX`, `RespawnShiftY`, `HeroFreeze` and 5 more) |
 
 #### `PieceRises` (`$8472`)
 
@@ -10105,7 +10059,7 @@ Witness: L1 8944 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 589 calls, 149,326 t-states own (0.03 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `NextSeed` |
-| Reads | `$758A` (`Actors+152`); `$759C` (`Actors+170`); `$75AE` (`Actors+188`); `$75C0` (`Actors+206`); `$75D2` (`LastActor+8`); `$FE31` |
+| Reads | `$758A` (`Actors+152`); `$759C` (`Actors+170`); `$75AE` (`Actors+188`); `$75C0` (`Actors+206`); `$75D2` (`LastActor+8`); `$FE31` (`PassCounter`) |
 | Writes | `$7584`-`$75D2` (`Actors+146`, `LastActor`) |
 
 #### `HangFlashBorder` (`$88B6`)
@@ -10132,8 +10086,8 @@ Witness: L1 2 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 223 t-states own (0.00 %) |
 | Called from | `HarpyRiseActor` |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
-| Reads | `$FE10`-`$FE11` |
-| Writes | `$74FF`-`$7500` (`Actors+13`); `$7511`-`$7512` (`Actors+31`); `$FE10`-`$FE11` |
+| Reads | `$FE10`-`$FE11` (`InitOnly10`) |
+| Writes | `$74FF`-`$7500` (`Actors+13`); `$7511`-`$7512` (`Actors+31`); `$FE10`-`$FE11` (`InitOnly10`) |
 
 #### `HarpyWingsActor` (`$8DD2`)
 
@@ -10167,7 +10121,7 @@ Witness: L1 718 (rzx-r2, s2-right).
 | Called from | `RunActorHandlers` |
 | Calls | `DamageHero`, `Random`, `CycleItemInk`, `AimedShot`, `RemoveActor` (tail) |
 | Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7512` (`Actors`); `$8EBA`-`$8ECC` (`HarpyBobSteps`, `HarpyAttackFrames`) |
-| Writes | `$74F3`-`$7524` (`Actors+1`); `$FE5A` |
+| Writes | `$74F3`-`$7524` (`Actors+1`); `$FE5A` (`HarpyPhase`) |
 
 #### `HarpyPlaceWings` (`$8ECD`)
 
@@ -10199,8 +10153,8 @@ Witness: L1 271 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 9 calls, 3,156 t-states own (0.00 %) |
 | Called from | `SpawnTimer` (tail) |
 | Calls | `Random`, `FindFreeActor`, `IsSpawnBarred`, `SpawnActor` (tail), `CellAt` |
-| Reads | `$74F2`-`$753A` (`Actors`); `$FE54`; `$FE67` |
-| Writes | `$FE67` |
+| Reads | `$74F2`-`$753A` (`Actors`); `$FE54` (`GridNumber`); `$FE67` (`SpiritCount`) |
+| Writes | `$FE67` (`SpiritCount`) |
 
 #### `IsSpawnBarred` (`$8FF1`)
 
@@ -10216,7 +10170,7 @@ Witness: L1 245 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 164 calls, 18,027 t-states own (0.00 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 9 calls, 915 t-states own (0.00 %) |
 | Called from | `SpawnRandomEnemy` |
-| Reads | `$9022`-`$9027` (`NoSpawnColumns`); `$FE30`; `$FE54` |
+| Reads | `$9022`-`$9027` (`NoSpawnColumns`); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
 
 #### `SpiritActor` (`$9028`)
 
@@ -10233,8 +10187,8 @@ Witness: L1 1066 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 254 calls, 63,641 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `SetCycleColour` |
-| Reads | `$74EA`-`$7536` (`HeroState`, `HeroAttribute`, `HeroBaseX`, `HeroBaseY` and 2 more); `$90A1`-`$90B4` (`SpiritBobSteps`); `$FE31`; `$FE67` |
-| Writes | `$74FA`-`$7536` (`Actors+8`); `$FE67` |
+| Reads | `$74EA`-`$7536` (`HeroState`, `HeroAttribute`, `HeroBaseX`, `HeroBaseY` and 2 more); `$90A1`-`$90B4` (`SpiritBobSteps`); `$FE31` (`PassCounter`); `$FE67` (`SpiritCount`) |
+| Writes | `$74FA`-`$7536` (`Actors+8`); `$FE67` (`SpiritCount`) |
 
 #### `SpiritFloat` (`$9054`)
 
@@ -10277,7 +10231,7 @@ Witness: L1 403 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 114 calls, 19,230 t-states own (0.00 %) |
 | Called from | `SpiritFloat` |
 | Calls | `AddMissile` |
-| Reads | `$74F2`-`$74F3` (`Actors`); `$7504`-`$7505` (`Actors+18`); `$7516`-`$7517` (`Actors+36`); `$7528`-`$7529` (`Actors+54`); `$90EF`-`$90F4` (`SpiritShotDirections`); `$FE31` |
+| Reads | `$74F2`-`$74F3` (`Actors`); `$7504`-`$7505` (`Actors+18`); `$7516`-`$7517` (`Actors+36`); `$7528`-`$7529` (`Actors+54`); `$90EF`-`$90F4` (`SpiritShotDirections`); `$FE31` (`PassCounter`) |
 
 #### `DrawHydraBody` (`$9E21`)
 
@@ -10296,7 +10250,7 @@ Witness: L1 8050 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 277 calls, 8,587 t-states own (0.00 %) |
 | Called from | `MainLoop`, `LeaveRoomRight` |
 | Calls | `DrawRowPicture` (tail) |
-| Reads | `$FE30`; `$FE54`-`$FE5F` |
+| Reads | `$FE30` (`RoomNumber`); `$FE54`-`$FE5F` (`GridNumber`, `Statue0Broken`, `Statue1State`, `MedusaState` and 8 more) |
 
 #### `ColourHydra` (`$9E4F`)
 
@@ -10315,7 +10269,7 @@ Witness: L1 8050 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 277 calls, 8,587 t-states own (0.00 %) |
 | Called from | `MainLoop`, `FillShadowAttributes`, `LeaveRoomRight` |
 | Calls | `FillShadowAttributes`, `SpeckleHydra` (falls into) |
-| Reads | `$FE30`; `$FE54`-`$FE5F` |
+| Reads | `$FE30` (`RoomNumber`); `$FE54`-`$FE5F` (`GridNumber`, `Statue0Broken`, `Statue1State`, `MedusaState` and 8 more) |
 | Writes | `$6F37` (`PlayAttributesCell+373`); `$6F58`-`$6F59` (`PlayAttributesCell+406`); `$6F78`-`$6F79` (`PlayAttributesCell+438`); `$6F99` (`PlayAttributesCell+471`) |
 
 #### `SpeckleHydra` (`$9E94`)
@@ -10355,8 +10309,8 @@ Witness: L1 8031 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 8,525 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `HydraNeck1Step`, `HydraNeck2Step`, `HydraNeck3Step` |
-| Reads | `$A126`-`$A1B3` (`HydraNeck1Poses+19`, `HydraNeck1Points`); `$A1DC`-`$A2A3` (`HydraNeck2Points+20`); `$A2CB`-`$A33C` (`HydraNeck3Poses+17`, `HydraNeck3Points`); `$FE30`; `$FE54` |
-| Writes | `$FE4D`-`$FE52` |
+| Reads | `$A126`-`$A1B3` (`HydraNeck1Poses+19`, `HydraNeck1Points`); `$A1DC`-`$A2A3` (`HydraNeck2Points+20`); `$A2CB`-`$A33C` (`HydraNeck3Poses+17`, `HydraNeck3Points`); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
+| Writes | `$FE4D`-`$FE52` (`Hydra1X`, `Hydra1Y`, `Hydra2X`, `Hydra2Y` and 2 more) |
 
 #### `HydraNeck1Step` (`$9EEC`)
 
@@ -10377,8 +10331,8 @@ Witness: L1 930 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 930 calls, 205,580 t-states own (0.02 %) |
 | Called from | `UpdateHydraNecks` |
 | Calls | `Random`, `NeckLength`, `DrawNeckHigh` (tail), `DrawNeckLow` (tail) |
-| Reads | `$A113`-`$A127` (`HydraNeck1Poses`); `$FE30`; `$FE43`; `$FE5C` |
-| Writes | `$FE43`-`$FE44`; `$FE5C` |
+| Reads | `$A113`-`$A127` (`HydraNeck1Poses`); `$FE30` (`RoomNumber`); `$FE43` (`Hydra1Step`); `$FE5C` (`Hydra1Neck`) |
+| Writes | `$FE43`-`$FE44` (`Hydra1Step`, `Hydra1Pose`); `$FE5C` (`Hydra1Neck`) |
 
 #### `HydraNeck2Step` (`$9F31`)
 
@@ -10397,8 +10351,8 @@ Witness: L1 930 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 930 calls, 206,304 t-states own (0.02 %) |
 | Called from | `UpdateHydraNecks` |
 | Calls | `Random`, `NeckLength`, `DrawNeckHigh` (tail), `DrawNeckLow` (tail) |
-| Reads | `$A1B4`-`$A1C7` (`HydraNeck2Poses`); `$FE30`; `$FE45`; `$FE5D` |
-| Writes | `$FE45`-`$FE46`; `$FE5D` |
+| Reads | `$A1B4`-`$A1C7` (`HydraNeck2Poses`); `$FE30` (`RoomNumber`); `$FE45` (`Hydra2Step`); `$FE5D` (`Hydra2Neck`) |
+| Writes | `$FE45`-`$FE46` (`Hydra2Step`, `Hydra2Pose`); `$FE5D` (`Hydra2Neck`) |
 
 #### `HydraNeck3Step` (`$9F75`)
 
@@ -10417,8 +10371,8 @@ Witness: L1 930 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 930 calls, 198,618 t-states own (0.01 %) |
 | Called from | `UpdateHydraNecks` |
 | Calls | `Random`, `NeckLength`, `DrawNeckLow` (tail) |
-| Reads | `$A2BA`-`$A2CC` (`HydraNeck3Poses`); `$FE30`; `$FE41`; `$FE5E` |
-| Writes | `$FE41`-`$FE42`; `$FE5E` |
+| Reads | `$A2BA`-`$A2CC` (`HydraNeck3Poses`); `$FE30` (`RoomNumber`); `$FE41` (`Hydra3Step`); `$FE5E` (`Hydra3Neck`) |
+| Writes | `$FE41`-`$FE42` (`Hydra3Step`, `Hydra3Pose`); `$FE5E` (`Hydra3Neck`) |
 
 #### `NeckLength` (`$9FB3`)
 
@@ -10531,7 +10485,7 @@ Witness: L1 443 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 81 calls, 9,394 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `IsHeroStrikeFrame`, `BreakStatue0` (tail), `StatueFrame` (falls into), `RemoveActor` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$75B8` (`Actors+198`); `$FE55` |
+| Reads | `$74E0` (`HeroRecord`); `$75B8` (`Actors+198`); `$FE55` (`Statue0Broken`) |
 | Writes | `$75C0` (`Actors+206`) |
 
 #### `StatueFrame` (`$A70E`)
@@ -10572,8 +10526,8 @@ Witness: L1 1527 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 354 calls, 46,254 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `IsHeroStrikeFrame`, `BreakStatue1` (tail), `StatueFrame` (tail), `RemoveActor` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$756D` (`Actors+123`); `$757F` (`Actors+141`); `$75B8`-`$75C7` (`Actors+198`); `$FE56` |
-| Writes | `$756A` (`Actors+120`); `$757C` (`Actors+138`); `$758E` (`Actors+156`); `$75C3`-`$75C4` (`Actors+209`); `$FE56` |
+| Reads | `$74E0` (`HeroRecord`); `$756D` (`Actors+123`); `$757F` (`Actors+141`); `$75B8`-`$75C7` (`Actors+198`); `$FE56` (`Statue1State`) |
+| Writes | `$756A` (`Actors+120`); `$757C` (`Actors+138`); `$758E` (`Actors+156`); `$75C3`-`$75C4` (`Actors+209`); `$FE56` (`Statue1State`) |
 
 #### `HarpyFlameActor` (`$A760`)
 
@@ -10599,8 +10553,8 @@ Witness: L1 65 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 37 calls, 6,233 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HarpyLampFrame` (tail), `RemoveActor` (tail), `HeroNearGlow` |
-| Reads | `$74EA` (`HeroState`); `$75C0`-`$75C4` (`Actors+206`); `$A7BA`-`$A7BF` (`HarpyFlameFrames`); `$FE5A` |
-| Writes | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` |
+| Reads | `$74EA` (`HeroState`); `$75C0`-`$75C4` (`Actors+206`); `$A7BA`-`$A7BF` (`HarpyFlameFrames`); `$FE5A` (`HarpyPhase`) |
+| Writes | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` (`HarpyPhase`) |
 
 #### `HarpyLampActor` (`$A7E2`)
 
@@ -10618,7 +10572,7 @@ Witness: L1 67 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 38 calls, 2,004 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `HarpyLampFrame` (falls into), `RemoveActor` (tail), `HeroNearGlow` |
-| Reads | `$FE5A` |
+| Reads | `$FE5A` (`HarpyPhase`) |
 
 #### `HarpyLampFrame` (`$A7EF`)
 
@@ -10675,8 +10629,8 @@ Witness: L1 109 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 59 calls, 17,763 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `DamageHero`, `SpawnHarpy`, `CycleItemInk`, `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$75CA`-`$75D6` (`LastActor`); `$A8BE`-`$A8D3` (`HarpyRiseFrames+1`); `$FE5A` |
-| Writes | `$75D2`-`$75D5` (`LastActor+8`); `$FE5A` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$75CA`-`$75D6` (`LastActor`); `$A8BE`-`$A8D3` (`HarpyRiseFrames+1`); `$FE5A` (`HarpyPhase`) |
+| Writes | `$75D2`-`$75D5` (`LastActor+8`); `$FE5A` (`HarpyPhase`) |
 
 #### `HarpyRiseAsleep` (`$A87D`)
 
@@ -10830,7 +10784,7 @@ Witness: L1 7 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 7 calls, 5,576 t-states own (0.00 %) |
 | Called from | `BreakStatue1` (tail), `BreakStatue0` (tail), `ShatterActor` |
 | Calls | `FindFreeActor`, `RandomFragmentParams`, `InitFragment` |
-| Writes | `$AA4F`-`$AA51` (`FragmentColumn+1`, `FragmentLine`); `$FE0A`-`$FE0B` |
+| Writes | `$AA4F`-`$AA51` (`FragmentColumn+1`, `FragmentLine`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `RandomFragmentParams` (`$AA5E`)
 
@@ -10882,8 +10836,8 @@ Witness: L1 1383 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,383 calls, 548,561 t-states own (0.04 %) |
 | Called from | `RunActorHandlers`, `InitFragment` (falls into) |
 | Calls | `AddScore`, `AbsDiffAtMost`, `MoveFragment` (falls into), `CellAt`, `RemoveActor` (tail), `ColourRedMagenta` |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$74F2`-`$75A2` (`Actors`); `$75CA`-`$75D8` (`LastActor`); `$ABBA`-`$ABED` (`FragmentArc0`, `FragmentArc1`); `$FE59` |
-| Writes | `$74F3`-`$75A2` (`Actors+1`); `$75CB`-`$75D8` (`LastActor+1`); `$FE59` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$74F2`-`$75A2` (`Actors`); `$75CA`-`$75D8` (`LastActor`); `$ABBA`-`$ABED` (`FragmentArc0`, `FragmentArc1`); `$FE59` (`EnergyChange`) |
+| Writes | `$74F3`-`$75A2` (`Actors+1`); `$75CB`-`$75D8` (`LastActor+1`); `$FE59` (`EnergyChange`) |
 
 #### `MoveFragment` (`$AB6A`)
 
@@ -11040,8 +10994,8 @@ Witness: L1 5192 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 944 calls, 2,586,098 t-states own (0.19 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `BufferAddressHL`, `RemoveActor` (tail), `ColourYellowMagenta`, `ColourSprite` (tail) |
-| Reads | `$5B00`-`$6B76`; `$7610`-`$763F` (`MissilesHigh`); `$8666`-`$86E8` (`PathSteps+2`); `$B6DD`-`$B6E2` (`ImageDescriptors`); `$E898`-`$E8E5` (`DriftShotSprites`, `DriftShot1`); `$FE64`-`$FE6F` |
-| Writes | `$5B00`-`$6B76`; `$7610`-`$763F` (`MissilesHigh`) |
+| Reads | `$5B00`-`$6B76` (`PlayBuffer`); `$7610`-`$763F` (`MissilesHigh`); `$8666`-`$86E8` (`PathSteps+2`); `$B6DD`-`$B6E2` (`ImageDescriptors`); `$E898`-`$E8E5` (`DriftShotSprites`, `DriftShot1`); `$FE64`-`$FE6F` (`RespawnShiftX`, `RespawnShiftY`, `HeroFreeze`, `SpiritCount` and 7 more) |
+| Writes | `$5B00`-`$6B76` (`PlayBuffer`); `$7610`-`$763F` (`MissilesHigh`) |
 
 #### `ShotHitsActor` (`$86EA`)
 
@@ -11094,8 +11048,8 @@ Witness: L1 4565 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 637 calls, 31,483 t-states own (0.01 %) |
 | Called from | `UpdateAimedShot`, `UpdateDriftLeft` |
 | Calls | `DamageHero` (falls into), `AbsDiffAtMost` |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$75E0`-`$760B` (`Missiles`, `HudColours`); `$FE59` |
-| Writes | `$FE59` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$75E0`-`$760B` (`Missiles`, `HudColours`); `$FE59` (`EnergyChange`) |
+| Writes | `$FE59` (`EnergyChange`) |
 
 #### `AddMissileHigh` (`$B3C5`)
 
@@ -11130,8 +11084,8 @@ Witness: L1 661 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 349 calls, 121,565 t-states own (0.01 %) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
 | Calls | `Random`, `ReturnZ` (falls into) |
-| Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE27` |
-| Writes | `$75E0`-`$763F` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE27` |
+| Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE27` (`MissileCursor`) |
+| Writes | `$75E0`-`$763F` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE27` (`MissileCursor`) |
 
 #### `ReturnZ` (`$B40B`)
 
@@ -11265,7 +11219,7 @@ Witness: L1 1432 (rzx-r2).
 | --- | --- |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,432 calls, 62,292 t-states own (0.00 %) |
 | Called from | `DrawFloorShot`, `DrawHeroMissile` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourRedMagenta` (`$B499`)
 
@@ -11282,7 +11236,7 @@ Witness: L1 4724 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 1,086 calls, 47,271 t-states own (0.01 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 3,638 calls, 158,349 t-states own (0.01 %) |
 | Called from | `DropActor`, `FragmentActor` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourRedYellow` (`$B4A4`)
 
@@ -11300,7 +11254,7 @@ Witness: L1 2741 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,049 calls, 45,348 t-states own (0.00 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 574 calls, 24,749 t-states own (0.00 %) |
 | Called from | `DrawShotFrame` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `HeroNearGlow` (`$B4AF`)
 
@@ -11335,7 +11289,7 @@ Witness: L1 5916 (rzx-r2, s2-right).
 | Runs (s2-right: stage 2 from the RZX run's snapshot, a walk to the right) | 3,963 calls, 172,464 t-states own (0.03 %) |
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,953 calls, 84,917 t-states own (0.01 %) |
 | Called from | `UpdatePathFlyer`, `DriftShotColour` (tail) |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourCyanGreen` (`$B4D0`)
 
@@ -11365,7 +11319,7 @@ Witness: L1 2621 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2,038 calls, 133,771 t-states own (0.01 %) |
 | Called from | `DrawMissileMirrored` |
 | Calls | `ColourYellowMagenta` (tail) |
-| Reads | `$75E2`-`$760C` (`Missiles+2`, `HudColours`); `$B4F0`-`$B4F3` (`DriftColours`); `$FE31` |
+| Reads | `$75E2`-`$760C` (`Missiles+2`, `HudColours`); `$B4F0`-`$B4F3` (`DriftColours`); `$FE31` (`PassCounter`) |
 
 #### `SetCycleColour` (`$B4F4`)
 
@@ -11402,7 +11356,7 @@ Witness: L1 7864 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 4,797 calls, 331,012 t-states own (0.02 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 437 calls, 30,172 t-states own (0.01 %) |
 | Called from | `GameOverStep`, `HeroUpdate`, `SetCycleColour` |
-| Reads | `$B509`-`$B510` (`CycleColours`); `$FE31` |
+| Reads | `$B509`-`$B510` (`CycleColours`); `$FE31` (`PassCounter`) |
 
 #### `UpdateFloorShot` (`$B511`)
 
@@ -11487,7 +11441,7 @@ Witness: L1 1051 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,051 calls, 131,213 t-states own (0.01 %) |
 | Called from | `UpdateHeroMissile` |
 | Calls | `ReturnNZ` (tail) |
-| Reads | `$75E0`-`$760B` (`Missiles`, `HudColours`); `$FE30`; `$FE54`-`$FE5F` |
+| Reads | `$75E0`-`$760B` (`Missiles`, `HudColours`); `$FE30` (`RoomNumber`); `$FE54`-`$FE5F` (`GridNumber`, `Statue0Broken`, `Statue1State`, `MedusaState` and 8 more) |
 
 #### `UpdateDriftLeft` (`$B639`)
 
@@ -11573,7 +11527,7 @@ Witness: L1 1255 (rzx-r2, s2-right, stageload).
 | Called from | `DrawShotFrame`, `DrawFloorShot` |
 | Calls | `BufferAddressHL` |
 | Reads | `$82CF`-`$82E0` (`ShotFrames+2`); `$B5E1`-`$B5E2` (`FloorShotImage+2`); `$C5D0`-`$C5D9` (`ShotSmall`); `$C5F8`-`$C62B` (`ShotSlanted`); `$D515`-`$D580` (`SpinShotSprites+24`) |
-| Writes | `$5C03`-`$6B98` |
+| Writes | `$5C03`-`$6B98` (`PlayBuffer+259`) |
 
 #### `DrawSpriteMirrored` (`$B784`)
 
@@ -11593,7 +11547,7 @@ Witness: L1 5539 (rzx-r2, s2-right, stageload).
 | Called from | `DrawShotFrame`, `DrawHeroMissile`, `DrawMissileMirrored` |
 | Calls | `BufferAddressHL` |
 | Reads | `$82CF`-`$82E0` (`ShotFrames+2`); `$B60A`-`$B60B` (`HeroMissileImage+2`); `$B6DF`-`$B700` (`ImageDescriptors+2`); `$C5D0`-`$C5D9` (`ShotSmall`); `$C5F8`-`$C62B` (`ShotSlanted`); `$D515`-`$D580` (`SpinShotSprites+24`); 2 more ranges |
-| Writes | `$5B13`-`$5B75`; `$5B93`-`$5B95`; `$5BB3`-`$5BB5`; `$5BD3`-`$5BD5`; `$5BF3`-`$6C68` (`PlayBufferTail`); `$6C83`-`$6C88` (`PlayBufferTail+68`); 1 more ranges |
+| Writes | `$5B13`-`$5B75` (`PlayBuffer+19`); `$5B93`-`$5B95` (`PlayBuffer+147`); `$5BB3`-`$5BB5` (`PlayBuffer+179`); `$5BD3`-`$5BD5` (`PlayBuffer+211`); `$5BF3`-`$6C68` (`PlayBufferTail`); `$6C83`-`$6C88` (`PlayBufferTail+68`); 1 more ranges |
 
 #### `ColourSpriteMirrored` (`$B7AD`)
 
@@ -11652,7 +11606,7 @@ Witness: L1 1541 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 88 calls, 6,427 t-states own (0.00 %) |
 | Called from | `CheckWalkBarriers` |
 | Calls | `ReturnNZ` (tail) |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE30`; `$FE54` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
 
 #### `CheckMedusaBarrier` (`$835D`)
 
@@ -11668,7 +11622,7 @@ Witness: L1 1541 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1,183 calls, 39,299 t-states own (0.00 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 88 calls, 2,728 t-states own (0.00 %) |
 | Called from | `CheckWalkBarriers` |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE30`; `$FE54`-`$FE57` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE30` (`RoomNumber`); `$FE54`-`$FE57` (`GridNumber`, `Statue0Broken`, `Statue1State`, `MedusaState`) |
 
 #### `RoomEvents` (`$8381`)
 
@@ -11687,7 +11641,7 @@ Witness: L1 39 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 592 t-states own (0.00 %) |
 | Called from | `StageEntry`, `EnterGrid2`, `LeaveGrid1`, `LeaveRoomRight`, `LeaveRoomLeft`, `LeaveRoomDown`, `LeaveRoomUp` |
 | Calls | `SpawnBonus` (tail), `SpawnItem` (tail) |
-| Reads | `$FE30`; `$FE54`-`$FE6B` |
+| Reads | `$FE30` (`RoomNumber`); `$FE54`-`$FE6B` (`GridNumber`, `Statue0Broken`, `Statue1State`, `MedusaState` and 19 more) |
 | Writes | `$7502`-`$750F` (`Actors+16`) |
 
 #### `SpawnBonus` (`$83E9`)
@@ -11705,7 +11659,7 @@ Witness: L1 12 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 8 calls, 1,534 t-states own (0.00 %) |
 | Called from | `RoomEvents` (tail), `HydraDefeated` (tail) |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
-| Reads | `$FE6B` |
+| Reads | `$FE6B` (`PiecesMask`) |
 | Writes | `$7502`-`$750F` (`Actors+16`) |
 
 #### `ExtraLifeSparkle` (`$841D`)
@@ -11739,7 +11693,7 @@ Witness: L1 2 (rzx-r2, s2-right).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 165 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `PlaceHeroGrid1`, `EnterGridBuild` |
-| Writes | `$FE23`-`$FE30`; `$FE54` |
+| Writes | `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE54` (`GridNumber`) |
 
 #### `EnterGrid2` (`$8835`)
 
@@ -11756,7 +11710,7 @@ Witness: L1 2 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2 calls, 364 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `RoomEvents`, `PlaceHeroGrid2`, `EnterGridBuild` |
-| Writes | `$FE23`-`$FE30`; `$FE54` |
+| Writes | `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE54` (`GridNumber`) |
 
 #### `LeaveGrid2` (`$8859`)
 
@@ -11773,7 +11727,7 @@ Witness: L1 2 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2 calls, 386 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `PlaceHeroBackGrid1`, `EnterGridBuild` |
-| Writes | `$FE23`-`$FE30`; `$FE54` |
+| Writes | `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE54` (`GridNumber`) |
 
 #### `LeaveGrid1` (`$8882`)
 
@@ -11790,7 +11744,7 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 244 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `RoomEvents`, `PlaceHeroBackGrid0`, `EnterGridBuild` |
-| Writes | `$9540` (`Grid0+2`); `$FE23`-`$FE30`; `$FE54` |
+| Writes | `$9540` (`Grid0+2`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE54` (`GridNumber`) |
 
 #### `ResetObjectLists` (`$8EF9`)
 
@@ -11856,8 +11810,8 @@ Witness: L1 43 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 541,023 t-states own (0.10 %) |
 | Called from | `ShiftRoomColumns` (tail), `ShiftRoomRows` (tail), `StartGrid` (tail) |
 | Calls | `ClearShots`, `CopyTileToScreen`, `RoomCells`, `BuildSpans`, `ClearBuffer`, `BlackOutPlayArea`, `Unrle`, `LoadRoomActors` (tail) |
-| Reads | `$5B02`-`$5B05`; `$61E5`-`$62A7`; `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71`; `$FE1F`-`$FE24` |
-| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$929F`-`$92A0` (`RoomChangeAttrs+1`); `$92BD`-`$92BE` (`RoomChangeBitmaps+1`); `$FE1F`; `$FE3A` |
+| Reads | `$5B02`-`$5B05` (`PlayBuffer+2`); `$61E5`-`$62A7` (`PlayBuffer+1765`); `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE1F`-`$FE24` (`CellColumn`, `RoomColumn`, `RoomRow`, `RoomGrid`) |
+| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$929F`-`$92A0` (`RoomChangeAttrs+1`); `$92BD`-`$92BE` (`RoomChangeBitmaps+1`); `$FE1F` (`CellColumn`); `$FE3A` (`BurstTimer`) |
 
 #### `CopyTileToScreen` (`$92EB`)
 
@@ -11875,7 +11829,7 @@ Witness: L1 21672 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 16,632 calls, 5,311,461 t-states own (0.39 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1,512 calls, 482,963 t-states own (0.09 %) |
 | Called from | `RoomChange` |
-| Reads | `$5BCD`-`$61E4` |
+| Reads | `$5BCD`-`$61E4` (`PlayBuffer+205`) |
 | Writes | `$40C2`-`$57FD` (screen) |
 
 #### `RoomCells` (`$92F4`)
@@ -11901,7 +11855,7 @@ Witness: L1 43 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 58,628 t-states own (0.01 %) |
 | Called from | `RoomChange` |
 | Calls | `PutBlock` |
-| Reads | `$5B08`-`$5B09`; `$6460`-`$6A0B`; `$953E`-`$9557` (`Grid0`, `Grid1`, `Grid2`); `$FE21`-`$FE22` |
+| Reads | `$5B08`-`$5B09` (`PlayBuffer+8`); `$6460`-`$6A0B` (`PlayBuffer+2400`); `$953E`-`$9557` (`Grid0`, `Grid1`, `Grid2`); `$FE21`-`$FE22` (`RoomColumn`, `RoomRow`) |
 
 #### `PutBlock` (`$9352`)
 
@@ -11921,8 +11875,8 @@ Witness: L1 5418 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 4,158 calls, 2,545,034 t-states own (0.19 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 378 calls, 230,945 t-states own (0.04 %) |
 | Called from | `RoomCells` |
-| Reads | `$5B06`-`$5B07`; `$62A8`-`$6A0B`; `$FE29` |
-| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$FE29` |
+| Reads | `$5B06`-`$5B07` (`PlayBuffer+6`); `$62A8`-`$6A0B` (`PlayBuffer+1960`); `$FE29` (`CellFlag`) |
+| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$FE29` (`CellFlag`) |
 
 #### `LeaveRoomRight` (`$9810`)
 
@@ -11941,8 +11895,8 @@ Witness: L1 117 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 2 calls, 624 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomColumns`, `SavePlayAttrs`, `DrawHydraBody`, `ColourHydra` |
-| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30`; `$FE5A` |
-| Writes | `$FE30`-`$FE3A` |
+| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE5A` (`HarpyPhase`) |
+| Writes | `$FE30`-`$FE3A` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `LeaveRoomLeft` (`$9853`)
 
@@ -11961,8 +11915,8 @@ Witness: L1 379 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 10 calls, 1,281 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomColumns`, `SavePlayAttrs` |
-| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30`; `$FE5A` |
-| Writes | `$FE30`-`$FE3A` |
+| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE5A` (`HarpyPhase`) |
+| Writes | `$FE30`-`$FE3A` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `LeaveRoomDown` (`$9890`)
 
@@ -11979,8 +11933,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 323 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomRows`, `SavePlayAttrs` |
-| Reads | `$74EA` (`HeroState`); `$954F` (`Grid1+8`); `$FE23`-`$FE30` |
-| Writes | `$FE30`-`$FE3A` |
+| Reads | `$74EA` (`HeroState`); `$954F` (`Grid1+8`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE30`-`$FE3A` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `LeaveRoomUp` (`$98D5`)
 
@@ -11997,8 +11951,8 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 318 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomRows`, `SavePlayAttrs` |
-| Reads | `$74E8`-`$74EA` (`HeroFrame`, `HeroFlags`, `HeroState`); `$954F` (`Grid1+8`); `$FE23`-`$FE30` |
-| Writes | `$FE30`-`$FE3A` |
+| Reads | `$74E8`-`$74EA` (`HeroFrame`, `HeroFlags`, `HeroState`); `$954F` (`Grid1+8`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE30`-`$FE3A` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `ShiftRoomColumns` (`$9913`)
 
@@ -12017,7 +11971,7 @@ Witness: L1 31 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 2 calls, 3,469 t-states own (0.00 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft` |
 | Calls | `ClearPlayBuffer`, `RoomChange` (tail) |
-| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 7 more); `$FE21` |
+| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 7 more); `$FE21` (`RoomColumn`) |
 | Writes | `$74E0`-`$754C` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 6 more); `$755E` (`Actors+108`); `$7570` (`Actors+126`); `$7582`-`$7594` (`Actors+144`); `$75A6`-`$75D7` (`Actors+180`, `LastActor`); `$994C`-`$9958` (`ShiftKeptX+1`, `ShiftKeptEntryX`); 1 more ranges |
 
 #### `ShiftRoomRows` (`$996C`)
@@ -12037,7 +11991,7 @@ Witness: L1 2 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 2 calls, 2,754 t-states own (0.00 %) |
 | Called from | `LeaveRoomDown`, `LeaveRoomUp` |
 | Calls | `ClearPlayBuffer`, `RoomChange` (tail) |
-| Reads | `$74E1`-`$75D9` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 6 more); `$FE22` |
+| Reads | `$74E1`-`$75D9` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 6 more); `$FE22` (`RoomRow`) |
 | Writes | `$74E1`-`$74EE` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 3 more); `$7516`-`$754C` (`Actors+36`); `$755E` (`Actors+108`); `$7570` (`Actors+126`); `$7582` (`Actors+144`); `$7594` (`Actors+162`); 5 more ranges |
 
 #### `SavePlayAttrs` (`$99C2`)
@@ -12057,7 +12011,7 @@ Witness: L1 40 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 2 calls, 35,126 t-states own (0.01 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft`, `LeaveRoomDown`, `LeaveRoomUp`, `EnterGridBuild` (tail) |
 | Reads | `$6DC0`-`$6FFF` (`PlayAttributes`, `PlayAttributesCell`) |
-| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE68` |
+| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE68` (`RestoreAttributes`) |
 
 #### `Unrle` (`$A33D`)
 
@@ -12078,7 +12032,7 @@ Witness: L1 43 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 554,455 t-states own (0.11 %) |
 | Called from | `RoomChange` |
 | Reads | `$B7D5`-`$C3D4` (`StageGraphics`) |
-| Writes | `$5B00`-`$6A0B`; `$A348`-`$A351` (`UnrleEscape+1`, `UnrleRun`, `UnrleEnd`) |
+| Writes | `$5B00`-`$6A0B` (`PlayBuffer`); `$A348`-`$A351` (`UnrleEscape+1`, `UnrleRun`, `UnrleEnd`) |
 
 #### `StartGrid` (`$A35D`)
 
@@ -12097,8 +12051,8 @@ Witness: L1 10 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 19,076 t-states own (0.00 %) |
 | Called from | `StageEntry`, `EnterGridBuild` |
 | Calls | `ClearActors`, `RoomChange` (tail) |
-| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsFloor`); `$9540`-`$9555` (`Grid0+2`, `Grid1`, `Grid2`); `$FE23`-`$FE24` |
-| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsFloor`); `$FE21`-`$FE2F` |
+| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsFloor`); `$9540`-`$9555` (`Grid0+2`, `Grid1`, `Grid2`); `$FE23`-`$FE24` (`RoomGrid`) |
+| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsFloor`); `$FE21`-`$FE2F` (`RoomColumn`, `RoomRow`, `RoomGrid`, `Placements` and 3 more) |
 
 #### `CheckRoomExits` (`$AD2A`)
 
@@ -12144,7 +12098,7 @@ Witness: L1 8034 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 276 calls, 16,027 t-states own (0.00 %) |
 | Called from | `HeroActor` |
 | Calls | `EnterGrid1` (tail), `EnterGrid2` (tail), `LeaveGrid2` (tail), `LeaveGrid1` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE30`; `$FE54` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE30` (`RoomNumber`); `$FE54` (`GridNumber`) |
 
 #### `EnterGridBuild` (`$ADBA`)
 
@@ -12305,8 +12259,8 @@ Witness: L1 34 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 27 calls, 3,117,864 t-states own (0.23 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 2 calls, 235,669 t-states own (0.04 %) |
 | Called from | `StartStageExit`, `ShiftRoomColumns`, `ShiftRoomRows` |
-| Reads | `$5B00`-`$6C2F` |
-| Writes | `$5B00`-`$6C30` |
+| Reads | `$5B00`-`$6C2F` (`PlayBuffer`) |
+| Writes | `$5B00`-`$6C30` (`PlayBuffer`) |
 
 #### `CopyScreenToBlock` (`$8AAE`)
 
@@ -12363,8 +12317,8 @@ Witness: L1 5970 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 3,502 calls, 234,691 t-states own (0.02 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 393 calls, 26,331 t-states own (0.01 %) |
 | Called from | `WaterActor` |
-| Reads | `$FE08` |
-| Writes | `$FE08` |
+| Reads | `$FE08` (`RandomSeed`) |
+| Writes | `$FE08` (`RandomSeed`) |
 
 #### `Random` (`$8BAC`)
 
@@ -12382,8 +12336,8 @@ Witness: L1 5591 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 4,521 calls, 316,527 t-states own (0.02 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 173 calls, 12,110 t-states own (0.00 %) |
 | Called from | `StartStageExit`, `RandomPlayAttrs`, `SpawnTimer`, `HarpyActor`, `SpawnRandomEnemy`, `SpiritFloat`, `InitStageState`, `StartBurst`, `UpdateBurst`, `HydraNeck1Step`, `HydraNeck2Step`, `HydraNeck3Step`, `DropActor`, `RandomFragmentParams`, `PoolActor`, `AddMissileFrom` |
-| Reads | `$FE0A`-`$FE0B` |
-| Writes | `$FE0A`-`$FE0B` |
+| Reads | `$FE0A`-`$FE0B` (`RandomPointer`) |
+| Writes | `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `ClearScreen` (`$8BB9`)
 
@@ -12524,8 +12478,8 @@ Witness: L1 8032 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 14,235 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `SpawnRandomEnemy` (tail) |
-| Reads | `$FE5B` |
-| Writes | `$FE5B` |
+| Reads | `$FE5B` (`SpawnDelay`) |
+| Writes | `$FE5B` (`SpawnDelay`) |
 
 #### `FindFreeActor` (`$8D71`)
 
@@ -12655,8 +12609,8 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 2,994 t-states own (0.00 %) |
 | Called from | `StageEntry` |
 | Calls | `Random` |
-| Reads | `$7EF4`-`$7EFF` (`StartItems`); `$FE08`-`$FE6C` |
-| Writes | `$7EDC`-`$7EEF` (`CarriedItems`, `CarriedCounts`); `$FE08`-`$FE6D` |
+| Reads | `$7EF4`-`$7EFF` (`StartItems`); `$FE08`-`$FE6C` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 61 more) |
+| Writes | `$7EDC`-`$7EEF` (`CarriedItems`, `CarriedCounts`); `$FE08`-`$FE6D` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 62 more) |
 
 #### `ScoreBurst20` (`$99E1`)
 
@@ -12692,7 +12646,7 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 172 t-states own (0.00 %) |
 | Called from | `WarriorStatueActor` (tail) |
 | Calls | `SpawnItem`, `StartBurst`, `SpawnFragments` (tail) |
-| Writes | `$FE56` |
+| Writes | `$FE56` (`Statue1State`) |
 
 #### `BreakStatue0` (`$9A41`)
 
@@ -12709,7 +12663,7 @@ Witness: L1 1 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 172 t-states own (0.00 %) |
 | Called from | `KneelingStatueActor` (tail) |
 | Calls | `SpawnItem`, `StartBurst`, `SpawnFragments` (tail) |
-| Writes | `$FE55` |
+| Writes | `$FE55` (`Statue0Broken`) |
 
 #### `SpawnItem` (`$9A6E`)
 
@@ -12778,8 +12732,8 @@ Witness: L1 268 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 268 calls, 14,986 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `AddScore`, `AddItem`, `HeroOnItem`, `RemoveActor` (tail), `SetCycleColour` |
-| Reads | `$74FC`-`$74FD` (`Actors+10`); `$7520`-`$7521` (`Actors+46`); `$FE69` |
-| Writes | `$FE69` |
+| Reads | `$74FC`-`$74FD` (`Actors+10`); `$7520`-`$7521` (`Actors+46`); `$FE69` (`PiecesComplete`) |
+| Writes | `$FE69` (`PiecesComplete`) |
 
 #### `ExtraLifeActor` (`$9AFA`)
 
@@ -12796,7 +12750,7 @@ Witness: L1 102 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 102 calls, 18,119 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `StartLivesFlash`, `ExtraLifeSparkle` (tail), `MoveActorY`, `HarpyLampFrame` (tail), `MoveBaseX`, `RemoveActor` (tail) |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$75B8`-`$75D2` (`Actors+198`, `LastActor`); `$FE6F` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$75B8`-`$75D2` (`Actors+198`, `LastActor`); `$FE6F` (`Lives`) |
 | Writes | `$75C0` (`Actors+206`); `$75D2` (`LastActor+8`) |
 
 #### `SparkleActor` (`$9B4F`)
@@ -12892,8 +12846,8 @@ Witness: L1 8031 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 8,525 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `SpawnBonus` (tail), `StartBurst` |
-| Reads | `$FE30`-`$FE3A`; `$FE5F` |
-| Writes | `$FE5F` |
+| Reads | `$FE30`-`$FE3A` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`); `$FE5F` (`HydraHeads`) |
+| Writes | `$FE5F` (`HydraHeads`) |
 
 #### `StartBurst` (`$9BFA`)
 
@@ -12910,8 +12864,8 @@ Witness: L1 17 (rzx-r2).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 17 calls, 470,238 t-states own (0.03 %) |
 | Called from | `CutHydraHead1` (tail), `CutHydraHead2` (tail), `CutHydraHead3` (tail), `MedusaStruck` (tail), `ScoreBurst20` (tail), `BreakStatue1`, `BreakStatue0`, `HydraDefeated` |
 | Calls | `Random` |
-| Reads | `$EEAA`-`$EF11` (`BurstShapes`, `BurstShapeMedusa`, `BurstShapeStatue`, `BurstShape20` and 2 more); `$FE14` |
-| Writes | `$7040`-`$7148` (`RoomAttributes`, `RoomAttributesCell`); `$9D96`-`$9D99` (`ParticleInks`); `$FE0A`-`$FE14`; `$FE3A`-`$FE3B` |
+| Reads | `$EEAA`-`$EF11` (`BurstShapes`, `BurstShapeMedusa`, `BurstShapeStatue`, `BurstShape20` and 2 more); `$FE14` (`WorkByte`) |
+| Writes | `$7040`-`$7148` (`RoomAttributes`, `RoomAttributesCell`); `$9D96`-`$9D99` (`ParticleInks`); `$FE0A`-`$FE14` (`RandomPointer`, `SavedSP`, `InitOnly10`, `InitOnly12` and 1 more); `$FE3A`-`$FE3B` (`BurstTimer`, `BurstSmall`) |
 
 #### `UpdateBurst` (`$9C92`)
 
@@ -12934,8 +12888,8 @@ Witness: L1 8031 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 275 calls, 8,525 t-states own (0.00 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `AttrShadowAddressA` |
-| Reads | `$7040`-`$7148` (`RoomAttributes`, `RoomAttributesCell`); `$9D96`-`$9DCB` (`ParticleInks`, `BurstSteps`, `DrawEnergyBar`); `$EDA7`-`$EEC4` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`, `BurstShapes`); `$FE3A`-`$FE3B` |
-| Writes | `$5C01`-`$6CFE` (`PlayBufferTail`); `$6DE1`-`$6FFE` (`PlayAttributesCell+31`); `$7040`-`$7145` (`RoomAttributes`, `RoomAttributesCell`); `$9D47`-`$9D48` (`ParticleGlyph+1`); `$FE3A` |
+| Reads | `$7040`-`$7148` (`RoomAttributes`, `RoomAttributesCell`); `$9D96`-`$9DCB` (`ParticleInks`, `BurstSteps`, `DrawEnergyBar`); `$EDA7`-`$EEC4` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`, `BurstShapes`); `$FE3A`-`$FE3B` (`BurstTimer`, `BurstSmall`) |
+| Writes | `$5C01`-`$6CFE` (`PlayBufferTail`); `$6DE1`-`$6FFE` (`PlayAttributesCell+31`); `$7040`-`$7145` (`RoomAttributes`, `RoomAttributesCell`); `$9D47`-`$9D48` (`ParticleGlyph+1`); `$FE3A` (`BurstTimer`) |
 
 #### `StopBurst` (`$9D90`)
 
@@ -13067,7 +13021,7 @@ Witness: L1 3 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 1 call, 1,059 t-states own (0.00 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 1 call, 1,059 t-states own (0.00 %) |
 | Called from | `StageEntry` |
-| Reads | `$9568`-`$959E` (`Grid0Placements`); `$FE25`-`$FE26` |
+| Reads | `$9568`-`$959E` (`Grid0Placements`); `$FE25`-`$FE26` (`Placements`) |
 | Writes | `$9568`-`$959B` (`Grid0Placements`) |
 
 #### `SpawnActor` (`$A416`)
@@ -13107,8 +13061,8 @@ Witness: L1 43 (rzx-r2, s2-right, stageload).
 | Runs (rzx-r2: the RZX run's stage 2 replayed pass by pass) | 33 calls, 371,475 t-states own (0.03 %) |
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 3 calls, 31,178 t-states own (0.01 %) |
 | Called from | `RoomChange` (tail) |
-| Reads | `$7501`-`$75D9` (`Actors+15`, `LastActor`); `$9568`-`$96C3` (`Grid0Placements`, `ActorKinds`); `$FE14`-`$FE26` |
-| Writes | `$74F2`-`$75DB` (`Actors`, `LastActor`); `$FE14` |
+| Reads | `$7501`-`$75D9` (`Actors+15`, `LastActor`); `$9568`-`$96C3` (`Grid0Placements`, `ActorKinds`); `$FE14`-`$FE26` (`WorkByte`, `ItemSelected`, `ItemLast`, `ItemFirst` and 7 more) |
+| Writes | `$74F2`-`$75DB` (`Actors`, `LastActor`); `$FE14` (`WorkByte`) |
 
 #### `RunActorHandlers` (`$A523`)
 
@@ -13239,8 +13193,8 @@ Witness: L1 554 (rzx-r2, s2-right, stageload).
 | Runs (stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played) | 84 calls, 39,596 t-states own (0.01 %) |
 | Called from | `SpiritFires`, `FireHeroMissile`, `AimedShot`, `HydraHeadShot`, `KindTwelveShot` |
 | Calls | `AddMissileFrom` (tail) |
-| Reads | `$75E0`-`$760A` (`Missiles`, `HudColours`); `$FE27` |
-| Writes | `$75E0`-`$760F` (`Missiles`, `HudColours`); `$FE27` |
+| Reads | `$75E0`-`$760A` (`Missiles`, `HudColours`); `$FE27` (`MissileCursor`) |
+| Writes | `$75E0`-`$760F` (`Missiles`, `HudColours`); `$FE27` (`MissileCursor`) |
 
 
 ## Stage 3 (TZX block 46) (`src/stage3/stage3.json`)
@@ -13285,8 +13239,8 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 call, 776,762 t-states own (0.14 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 2,654,094 t-states own (0.21 %) |
 | Calls | `ClearActors`, `ResetObjectLists`, `StageSetUp`, `StageFadeIn`, `ClearBuffer`, `CopyBuffer`, `InitStageState`, `StartGrid`, `PlaceHeroAtStart`, `ReviveAllPlacements`, `RunActorHandlers`, `DrawActors` |
-| Reads | `$74EA` (`HeroState`); `$FE60`-`$FE6B` |
-| Writes | `$74E3`-`$74ED` (`HeroHeight`, `HeroFrame`, `HeroFlags`, `HeroState` and 2 more); `$FE23`-`$FE30`; `$FE4C`; `$FE6B` |
+| Reads | `$74EA` (`HeroState`); `$FE60`-`$FE6B` (`HeroFreeze`, `RestoreAttributes`, `LivesFlash`, `GameOverTimer` and 5 more) |
+| Writes | `$74E3`-`$74ED` (`HeroHeight`, `HeroFrame`, `HeroFlags`, `HeroState` and 2 more); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE4C` (`GridNumber`); `$FE6B` (`Lives`) |
 | Ports in | `$FEFE` |
 
 #### `MainLoop` (`$784A`)
@@ -13331,7 +13285,7 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Called from | `StageEntry`, `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ClearShadowAttributes`, `DissolveHud`, `ClearScreen`, `WaitFrames`, `FillShadowAttributes`, `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
 | Reads | `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `MissilesHighY`, `DigitBuffer`) |
-| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7CDB` (`CycleWindowFrame`); `$FE17` |
+| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7CDB` (`CycleWindowFrame`); `$FE17` (`ItemSelected`) |
 
 #### `StageFadeIn` (`$9785`)
 
@@ -13349,8 +13303,8 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 1,857,504 t-states own (0.15 %) |
 | Called from | `StageEntry` |
 | Calls | `FadeInStep`, `IdlePasses` |
-| Reads | `$9795` (`FadeInFrame+2`); `$FE31` |
-| Writes | `$FE31` |
+| Reads | `$9795` (`FadeInFrame+2`); `$FE31` (`PassCounter`) |
+| Writes | `$FE31` (`PassCounter`) |
 
 #### `FadeInFromScreen` (`$97A3`)
 
@@ -13489,7 +13443,7 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | run into, not called, 6,746 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `FlashFadeScreen`, `CopyToScreen`, `CopyScreenToBlock`, `ClearScreen`, `WaitFrames` |
-| Reads | `$5800`-`$58BF` (screen); `$FE6B` |
+| Reads | `$5800`-`$58BF` (screen); `$FE6B` (`Lives`) |
 | Writes | `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `MissilesHighY`, `DigitBuffer`) |
 
 #### `PacePass` (`$7975`)
@@ -13505,8 +13459,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,377 calls, 94,859 t-states own (0.02 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 4,747,251 t-states own (0.38 %) |
 | Called from | `MainLoop` |
-| Reads | `$FE0A`-`$FE0B`; `$FE30`-`$FE31`; `$FE4C` |
-| Writes | `$FE0A`-`$FE0B` |
+| Reads | `$FE0A`-`$FE0B` (`RandomPointer`); `$FE30`-`$FE31` (`RoomNumber`, `PassCounter`); `$FE4C` (`GridNumber`) |
+| Writes | `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `CheckPause` (`$799F`)
 
@@ -13541,8 +13495,8 @@ Witness: L1 6338 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,931 calls, 404,418 t-states own (0.03 %) |
 | Called from | `MainLoop`, `IdlePasses` |
 | Calls | `LivesFlashStep` (tail), `ApplyEnergyChange`, `GameOverStep`, `DrawEnergyBar` |
-| Reads | `$FE31` |
-| Writes | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
+| Writes | `$FE31` (`PassCounter`) |
 
 ### Stage 3 (TZX block 46): render
 
@@ -13581,7 +13535,7 @@ Witness: L1 7038 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,400 calls, 4,294,085 t-states own (0.76 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 5,638 calls, 15,937,512 t-states own (1.29 %) |
 | Called from | `EndStageSave`, `StartStageExit`, `ShowScore`, `ShowItemCount`, `ShowPieceTaken`, `GameOverStep`, `RevealScore` |
-| Reads | `$5B00`-`$5B0B`; `$7640`-`$766F` (`DigitBuffer`); `$8A44`-`$8A63` (`BlankIcon`); `$D328`-`$D367` (`GameOverPicture`); `$DECB`-`$DF02` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F`; 2 more ranges |
+| Reads | `$5B00`-`$5B0B` (`PlayBuffer`); `$7640`-`$766F` (`DigitBuffer`); `$8A44`-`$8A63` (`BlankIcon`); `$D328`-`$D367` (`GameOverPicture`); `$DECB`-`$DF02` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F` (`ScreenLineTable+16`); 2 more ranges |
 | Writes | `$4026`-`$57FF` (screen); `$79D3` (`CopyToScreenLine+6`); `$79E4` (`CopyToScreenLine+23`) |
 
 #### `PreShiftSprite` (`$7F43`)
@@ -13719,8 +13673,8 @@ Witness: L1 1118 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,118 calls, 61,683 t-states own (0.00 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$62D1`-`$6611`; `$6631`; `$6651`; `$6671`; `$6691`; `$6C0C`; 3 more ranges |
-| Writes | `$62D1`-`$65F1`; `$6611`; `$6631`; `$6651`; `$6671`; `$6691`; 2 more ranges |
+| Reads | `$62D1`-`$6611` (`PlayBuffer+2001`); `$6631` (`PlayBuffer+2865`); `$6651` (`PlayBuffer+2897`); `$6671` (`PlayBuffer+2929`); `$6691` (`PlayBuffer+2961`); `$6C0C` (`PlayBuffer+4364`); 3 more ranges |
+| Writes | `$62D1`-`$65F1` (`PlayBuffer+2001`); `$6611` (`PlayBuffer+2833`); `$6631` (`PlayBuffer+2865`); `$6651` (`PlayBuffer+2897`); `$6671` (`PlayBuffer+2929`); `$6691` (`PlayBuffer+2961`); 2 more ranges |
 
 #### `PlotRow1Mirrored` (`$863E`)
 
@@ -13751,8 +13705,8 @@ Witness: L1 117953 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 44,429 calls, 3,901,543 t-states own (0.69 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 73,524 calls, 6,430,099 t-states own (0.52 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5CC5`-`$69FE`; `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`); `$D0B6`-`$D109` (`TrollSprites`); 6 more ranges |
-| Writes | `$5CC5`-`$69FE`; `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`) |
+| Reads | `$5CC5`-`$69FE` (`PlayBuffer+453`); `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`); `$D0B6`-`$D109` (`TrollSprites`); 6 more ranges |
+| Writes | `$5CC5`-`$69FE` (`PlayBuffer+453`); `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`) |
 
 #### `PlotRow2Mirrored` (`$8660`)
 
@@ -13768,8 +13722,8 @@ Witness: L1 29387 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 29,387 calls, 4,389,253 t-states own (0.35 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5CD2`-`$5DB3`; `$5DD0`-`$69FD`; `$D0B6`-`$D109` (`TrollSprites`); `$D59A`-`$D5C5` (`VikingSprites+562`); `$D77E`-`$D7CD` (`VikingSprites+1046`); `$E0E9`-`$E118` (`HeroStrikeSprites`); 4 more ranges |
-| Writes | `$5CD2`-`$5DB3`; `$5DD0`-`$69FD` |
+| Reads | `$5CD2`-`$5DB3` (`PlayBuffer+466`); `$5DD0`-`$69FD` (`PlayBuffer+720`); `$D0B6`-`$D109` (`TrollSprites`); `$D59A`-`$D5C5` (`VikingSprites+562`); `$D77E`-`$D7CD` (`VikingSprites+1046`); `$E0E9`-`$E118` (`HeroStrikeSprites`); 4 more ranges |
+| Writes | `$5CD2`-`$5DB3` (`PlayBuffer+466`); `$5DD0`-`$69FD` (`PlayBuffer+720`) |
 
 #### `PlotRow3` (`$867A`)
 
@@ -13784,8 +13738,8 @@ Witness: L1 33520 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 6,357 calls, 759,107 t-states own (0.13 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 27,163 calls, 3,230,743 t-states own (0.26 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5CA5`-`$6B1D`; `$6B3B`-`$6B3D`; `$6B5B`-`$6B5D`; `$6B7B`-`$6B7D`; `$6B9B`-`$6B9D`; `$6BBB`-`$6BBD`; 8 more ranges |
-| Writes | `$5CA5`-`$6B1D`; `$6B3B`-`$6B3D`; `$6B5B`-`$6B5D`; `$6B7B`-`$6B7D`; `$6B9B`-`$6B9D`; `$6BBB`-`$6BBD`; 1 more ranges |
+| Reads | `$5CA5`-`$6B1D` (`PlayBuffer+421`); `$6B3B`-`$6B3D` (`PlayBuffer+4155`); `$6B5B`-`$6B5D` (`PlayBuffer+4187`); `$6B7B`-`$6B7D` (`PlayBuffer+4219`); `$6B9B`-`$6B9D` (`PlayBuffer+4251`); `$6BBB`-`$6BBD` (`PlayBuffer+4283`); 8 more ranges |
+| Writes | `$5CA5`-`$6B1D` (`PlayBuffer+421`); `$6B3B`-`$6B3D` (`PlayBuffer+4155`); `$6B5B`-`$6B5D` (`PlayBuffer+4187`); `$6B7B`-`$6B7D` (`PlayBuffer+4219`); `$6B9B`-`$6B9D` (`PlayBuffer+4251`); `$6BBB`-`$6BBD` (`PlayBuffer+4283`); 1 more ranges |
 
 #### `PlotRow3Mirrored` (`$868F`)
 
@@ -13800,8 +13754,8 @@ Witness: L1 23080 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,430 calls, 278,439 t-states own (0.05 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 21,650 calls, 4,247,731 t-states own (0.34 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5CB1`-`$6BCF`; `$D368`-`$D7F4` (`VikingSprites`); `$D9F9`-`$DA91` (`BogManSprites+408`); `$DD91`-`$DE29` (`BogManSprites+1328`); `$E119`-`$E15D` (`HeroStrikeSprites+48`); `$E29C`-`$E517` (`HeroJumpSprites+120`); 3 more ranges |
-| Writes | `$5CB1`-`$6BCF` |
+| Reads | `$5CB1`-`$6BCF` (`PlayBuffer+433`); `$D368`-`$D7F4` (`VikingSprites`); `$D9F9`-`$DA91` (`BogManSprites+408`); `$DD91`-`$DE29` (`BogManSprites+1328`); `$E119`-`$E15D` (`HeroStrikeSprites+48`); `$E29C`-`$E517` (`HeroJumpSprites+120`); 3 more ranges |
+| Writes | `$5CB1`-`$6BCF` (`PlayBuffer+433`) |
 
 #### `PlotRow4` (`$86B1`)
 
@@ -13816,8 +13770,8 @@ Witness: L1 28405 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 318 calls, 48,093 t-states own (0.01 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 28,087 calls, 4,211,300 t-states own (0.34 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F6C`-`$61EF`; `$6251`-`$6514`; `$652E`-`$6C57` (`PlayBufferTail`); `$C64C`-`$C73B` (`DrawbridgeSprites+124`); `$CB10`-`$CCBF` (`DragonHeadSprites`); `$CF51`-`$D040` (`BreathSprites+632`); 4 more ranges |
-| Writes | `$5F6C`-`$61EF`; `$6251`-`$6514`; `$652E`-`$6C57` (`PlayBufferTail`) |
+| Reads | `$5F6C`-`$61EF` (`PlayBuffer+1132`); `$6251`-`$6514` (`PlayBuffer+1873`); `$652E`-`$6C57` (`PlayBufferTail`); `$C64C`-`$C73B` (`DrawbridgeSprites+124`); `$CB10`-`$CCBF` (`DragonHeadSprites`); `$CF51`-`$D040` (`BreathSprites+632`); 4 more ranges |
+| Writes | `$5F6C`-`$61EF` (`PlayBuffer+1132`); `$6251`-`$6514` (`PlayBuffer+1873`); `$652E`-`$6C57` (`PlayBufferTail`) |
 
 #### `PlotRow4Mirrored` (`$86CB`)
 
@@ -13832,8 +13786,8 @@ Witness: L1 9890 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 242 calls, 59,926 t-states own (0.01 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 9,648 calls, 2,396,673 t-states own (0.19 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6542`-`$6BAC`; `$6BC5`-`$6BCC`; `$6BE5`-`$6BEC`; `$6C05`-`$6C0C`; `$6C25`-`$6C2C`; `$6C45`-`$6C4C` (`PlayBufferTail+6`); 8 more ranges |
-| Writes | `$6542`-`$6B8C`; `$6BA5`-`$6BAC`; `$6BC5`-`$6BCC`; `$6BE5`-`$6BEC`; `$6C05`-`$6C0C`; `$6C25`-`$6C2C`; 1 more ranges |
+| Reads | `$6542`-`$6BAC` (`PlayBuffer+2626`); `$6BC5`-`$6BCC` (`PlayBuffer+4293`); `$6BE5`-`$6BEC` (`PlayBuffer+4325`); `$6C05`-`$6C0C` (`PlayBuffer+4357`); `$6C25`-`$6C2C` (`PlayBuffer+4389`); `$6C45`-`$6C4C` (`PlayBufferTail+6`); 8 more ranges |
+| Writes | `$6542`-`$6B8C` (`PlayBuffer+2626`); `$6BA5`-`$6BAC` (`PlayBuffer+4261`); `$6BC5`-`$6BCC` (`PlayBuffer+4293`); `$6BE5`-`$6BEC` (`PlayBuffer+4325`); `$6C05`-`$6C0C` (`PlayBuffer+4357`); `$6C25`-`$6C2C` (`PlayBuffer+4389`); 1 more ranges |
 
 #### `PlotRow5` (`$86F5`)
 
@@ -13850,8 +13804,8 @@ Witness: L1 10815 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 88 calls, 16,222 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 10,727 calls, 1,945,759 t-states own (0.16 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$654C`-`$6A10`; `$6A2C`-`$6A30`; `$6A4C`-`$6A50`; `$6A6C`-`$6A70`; `$6A8C`-`$6A90`; `$6AAC`-`$6AB0`; 7 more ranges |
-| Writes | `$654C`-`$6A10`; `$6A2C`-`$6A30`; `$6A4C`-`$6A50`; `$6A6C`-`$6A70`; `$6A8C`-`$6A90`; `$6AAC`-`$6AB0`; 1 more ranges |
+| Reads | `$654C`-`$6A10` (`PlayBuffer+2636`); `$6A2C`-`$6A30` (`PlayBuffer+3884`); `$6A4C`-`$6A50` (`PlayBuffer+3916`); `$6A6C`-`$6A70` (`PlayBuffer+3948`); `$6A8C`-`$6A90` (`PlayBuffer+3980`); `$6AAC`-`$6AB0` (`PlayBuffer+4012`); 7 more ranges |
+| Writes | `$654C`-`$6A10` (`PlayBuffer+2636`); `$6A2C`-`$6A30` (`PlayBuffer+3884`); `$6A4C`-`$6A50` (`PlayBuffer+3916`); `$6A6C`-`$6A70` (`PlayBuffer+3948`); `$6A8C`-`$6A90` (`PlayBuffer+3980`); `$6AAC`-`$6AB0` (`PlayBuffer+4012`); 1 more ranges |
 
 #### `PlotRow5Mirrored` (`$8714`)
 
@@ -13865,8 +13819,8 @@ Witness: L1 2157 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 2,157 calls, 644,174 t-states own (0.05 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6554`-`$68CE`; `$68E8`-`$68EE`; `$6908`-`$690E`; `$6928`-`$692E`; `$6948`-`$694E`; `$6968`-`$696E`; 6 more ranges |
-| Writes | `$6554`-`$68CE`; `$68E8`-`$68EE`; `$6908`-`$690E`; `$6928`-`$692E`; `$6948`-`$694E`; `$6968`-`$696E`; 1 more ranges |
+| Reads | `$6554`-`$68CE` (`PlayBuffer+2644`); `$68E8`-`$68EE` (`PlayBuffer+3560`); `$6908`-`$690E` (`PlayBuffer+3592`); `$6928`-`$692E` (`PlayBuffer+3624`); `$6948`-`$694E` (`PlayBuffer+3656`); `$6968`-`$696E` (`PlayBuffer+3688`); 6 more ranges |
+| Writes | `$6554`-`$68CE` (`PlayBuffer+2644`); `$68E8`-`$68EE` (`PlayBuffer+3560`); `$6908`-`$690E` (`PlayBuffer+3592`); `$6928`-`$692E` (`PlayBuffer+3624`); `$6948`-`$694E` (`PlayBuffer+3656`); `$6968`-`$696E` (`PlayBuffer+3688`); 1 more ranges |
 
 #### `PlotRow6` (`$8746`)
 
@@ -13882,8 +13836,8 @@ Witness: L1 1672 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,672 calls, 354,151 t-states own (0.03 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$656C`-`$69F1`; `$6A0C`-`$6A11`; `$6A2C`-`$6A31`; `$6A4C`-`$6A51`; `$6A6C`-`$6A71`; `$6A8C`-`$6A91`; 3 more ranges |
-| Writes | `$656C`-`$6A11`; `$6A2C`-`$6A31`; `$6A4C`-`$6A51`; `$6A6C`-`$6A71`; `$6A8C`-`$6A91`; `$6AAC`-`$6AB1`; 1 more ranges |
+| Reads | `$656C`-`$69F1` (`PlayBuffer+2668`); `$6A0C`-`$6A11` (`PlayBuffer+3852`); `$6A2C`-`$6A31` (`PlayBuffer+3884`); `$6A4C`-`$6A51` (`PlayBuffer+3916`); `$6A6C`-`$6A71` (`PlayBuffer+3948`); `$6A8C`-`$6A91` (`PlayBuffer+3980`); 3 more ranges |
+| Writes | `$656C`-`$6A11` (`PlayBuffer+2668`); `$6A2C`-`$6A31` (`PlayBuffer+3884`); `$6A4C`-`$6A51` (`PlayBuffer+3916`); `$6A6C`-`$6A71` (`PlayBuffer+3948`); `$6A8C`-`$6A91` (`PlayBuffer+3980`); `$6AAC`-`$6AB1` (`PlayBuffer+4012`); 1 more ranges |
 
 #### `PlotRow6Mirrored` (`$876A`)
 
@@ -13930,7 +13884,7 @@ Witness: L1 46610 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 650 calls, 12,494,732 t-states own (1.01 %) |
 | Called from | `DrawDragon`, `ThroneBossStep` |
 | Reads | `$C44D`-`$C59B` (`ThronePicture`); `$C921`-`$CAB8` (`DragonPicture`) |
-| Writes | `$5F1E`-`$5F9D`; `$5FBE`-`$611D`; `$613D`-`$615D`; `$617B`-`$619D`; `$61B3`-`$61BD`; `$61D3`-`$61DD`; 1 more ranges |
+| Writes | `$5F1E`-`$5F9D` (`PlayBuffer+1054`); `$5FBE`-`$611D` (`PlayBuffer+1214`); `$613D`-`$615D` (`PlayBuffer+1597`); `$617B`-`$619D` (`PlayBuffer+1659`); `$61B3`-`$61BD` (`PlayBuffer+1715`); `$61D3`-`$61DD` (`PlayBuffer+1747`); 1 more ranges |
 
 #### `FillAttributes` (`$8ADE`)
 
@@ -14004,8 +13958,8 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 208,148,116 t-states own (16.82 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyBuffer`, `RestoreMasts` |
-| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`, `CellsDrawbridge`); `$8B9F` (`RestoreAttributesRow`); `$FE61` |
-| Writes | `$58C2`-`$5AFD` (screen); `$FE61` |
+| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`, `CellsDrawbridge`); `$8B9F` (`RestoreAttributesRow`); `$FE61` (`RestoreAttributes`) |
+| Writes | `$58C2`-`$5AFD` (screen); `$FE61` (`RestoreAttributes`) |
 
 #### `FadeInStep` (`$96DF`)
 
@@ -14026,7 +13980,7 @@ Witness: L1 70 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 35 calls, 3,075,556 t-states own (0.55 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 35 calls, 3,075,556 t-states own (0.25 %) |
 | Called from | `StageFadeIn` |
-| Reads | `$58C2`-`$5AFD` (screen); `$6DC2`-`$7001` (`PlayAttributesCell`, `HudPicture`); `$FE31` |
+| Reads | `$58C2`-`$5AFD` (screen); `$6DC2`-`$7001` (`PlayAttributesCell`, `HudPicture`); `$FE31` (`PassCounter`) |
 | Writes | `$58C2`-`$5AFD` (screen) |
 
 #### `BuildSpans` (`$99B1`)
@@ -14049,8 +14003,8 @@ Witness: L1 39 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 36 calls, 4,084,976 t-states own (0.33 %) |
 | Called from | `RoomChange` |
 | Calls | `AddSpan` |
-| Reads | `$5B00`-`$5BEE`; `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$76E0`-`$77A0` (`SpanTable`); `$FE1C`-`$FE1F`; `$FE43` |
-| Writes | `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$76E0`-`$77A0` (`SpanTable`); `$99E4`-`$99E5` (`BuildSpansKinds+1`); `$FE1C`-`$FE1F`; `$FE43` |
+| Reads | `$5B00`-`$5BEE` (`PlayBuffer`); `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$76E0`-`$77A0` (`SpanTable`); `$FE1C`-`$FE1F` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE43` (`SpanOpen`) |
+| Writes | `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$76E0`-`$77A0` (`SpanTable`); `$99E4`-`$99E5` (`BuildSpansKinds+1`); `$FE1C`-`$FE1F` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE43` (`SpanOpen`) |
 
 #### `AddSpan` (`$9A36`)
 
@@ -14069,7 +14023,7 @@ Witness: L1 914 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 72 calls, 27,136 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 842 calls, 316,836 t-states own (0.03 %) |
 | Called from | `BuildSpans` |
-| Reads | `$FB60`-`$FC71`; `$FE1E`-`$FE1F` |
+| Reads | `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE1E`-`$FE1F` (`SpanRow`, `CellColumn`) |
 | Writes | `$76E0`-`$77A5` (`SpanTable`) |
 
 #### `ClearBuffer` (`$9A7D`)
@@ -14089,8 +14043,8 @@ Witness: L1 6322 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,382 calls, 43,723,889 t-states own (7.77 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,940 calls, 151,782,804 t-states own (12.26 %) |
 | Called from | `StageEntry`, `MainLoop`, `EndStage`, `RoomChange` |
-| Reads | `$FE0E`-`$FE0F` |
-| Writes | `$FE0E`-`$FE0F` |
+| Reads | `$FE0E`-`$FE0F` (`SavedSP`) |
+| Writes | `$FE0E`-`$FE0F` (`SavedSP`) |
 
 #### `CopyBuffer` (`$9AA2`)
 
@@ -14115,8 +14069,8 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,378 calls, 104,347,146 t-states own (18.53 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 326,615,105 t-states own (26.39 %) |
 | Called from | `StageEntry`, `UpdateAttributes` |
-| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1D` |
-| Writes | `$40C2`-`$57FD` (screen); `$9AD3`-`$9B19` (`CopyChain+2`, `CopyLineEnd`, `CopyLineE`, `CopySpanRestore`); `$FE0E`-`$FE1D` |
+| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1D` (`SavedSP`, `InitOnly10`, `InitOnly12`, `WorkByte` and 4 more) |
+| Writes | `$40C2`-`$57FD` (screen); `$9AD3`-`$9B19` (`CopyChain+2`, `CopyLineEnd`, `CopyLineE`, `CopySpanRestore`); `$FE0E`-`$FE1D` (`SavedSP`, `InitOnly10`, `InitOnly12`, `WorkByte` and 4 more) |
 
 #### `BlackOutPlayArea` (`$9FC7`)
 
@@ -14216,7 +14170,7 @@ Witness: L1 31568 (rzx-r3, s3-right).
 | Called from | `DrawActors` |
 | Calls | `PlotRow1`, `PlotRow2`, `PlotRow2Mirrored`, `PlotRow3`, `PlotRow3Mirrored`, `PlotRow4`, `PlotRow4Mirrored`, `PlotRow5`, `PlotRow5Mirrored`, `PlotRow6`, `ColourActor` |
 | Reads | `$74E2`-`$75D3` (`HeroY+1`, `HeroHeight`, `HeroFrame`, `HeroFlags` and 8 more); `$87D1`-`$87E6` (`RowPlotters+4`); `$8A44` (`BlankIcon`); `$C1F5`-`$C44C` (`LightningBolt1`, `LightningBolt2`, `LightningBolt3`, `LightningBolt4`); `$C754`-`$C908` (`PyreFlameSprites`, `BierSprites`); `$D310`-`$D31F` (`WaterRipple`); 3 more ranges |
-| Writes | `$5B04`-`$6B56`; `$6B6A`-`$6B76`; `$6B8A`-`$6B96`; `$6BAE`-`$6BB2`; `$6BCE`-`$6BD2`; `$6BEE`-`$6BF2`; 2 more ranges |
+| Writes | `$5B04`-`$6B56` (`PlayBuffer+4`); `$6B6A`-`$6B76` (`PlayBuffer+4202`); `$6B8A`-`$6B96` (`PlayBuffer+4234`); `$6BAE`-`$6BB2` (`PlayBuffer+4270`); `$6BCE`-`$6BD2` (`PlayBuffer+4302`); `$6BEE`-`$6BF2` (`PlayBuffer+4334`); 2 more ranges |
 
 #### `ColourActor` (`$A8FD`)
 
@@ -14349,7 +14303,7 @@ Witness: L1 1239 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,239 calls, 53,932 t-states own (0.00 %) |
 | Called from | `FragmentActor` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourRedYellow` (`$B41C`)
 
@@ -14363,7 +14317,7 @@ Witness: L1 735 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 735 calls, 31,961 t-states own (0.00 %) |
 | Called from | `DrawShotFrame`, `PyreFlameActor` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourCyanCycle` (`$B427`)
 
@@ -14377,7 +14331,7 @@ Witness: L1 66 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 66 calls, 4,554 t-states own (0.00 %) |
 | Called from | `UpdateBolt` |
-| Reads | `$B435`-`$B438` (`ColourCycle4`); `$FE31` |
+| Reads | `$B435`-`$B438` (`ColourCycle4`); `$FE31` (`PassCounter`) |
 
 #### `SetGreenCycleColour` (`$B439`)
 
@@ -14391,7 +14345,7 @@ Witness: L1 553 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 553 calls, 49,215 t-states own (0.00 %) |
 | Called from | `BogManActor` |
-| Reads | `$B44A`-`$B451` (`GreenCycleColours`); `$FE31` |
+| Reads | `$B44A`-`$B451` (`GreenCycleColours`); `$FE31` (`PassCounter`) |
 | Writes | `$74FE` (`ActorsY+11`); `$7510` (`ActorsY+29`); `$7522` (`ActorsY+47`); `$7534` (`ActorsY+65`) |
 
 #### `ColourYellowMagenta` (`$B45A`)
@@ -14406,7 +14360,7 @@ Witness: L1 2567 (s3-right).
 | --- | --- |
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,567 calls, 111,488 t-states own (0.02 %) |
 | Called from | `UpdatePathFlyer` |
-| Reads | `$FE31` |
+| Reads | `$FE31` (`PassCounter`) |
 
 #### `ColourCyanGreen` (`$B465`)
 
@@ -14436,7 +14390,7 @@ Witness: L1 257 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 257 calls, 27,509 t-states own (0.00 %) |
 | Called from | `DragonFlameActor` |
-| Reads | `$7596` (`ActorsY+163`); `$B486`-`$B489` (`MissileColours`); `$FE31` |
+| Reads | `$7596` (`ActorsY+163`); `$B486`-`$B489` (`MissileColours`); `$FE31` (`PassCounter`) |
 
 #### `ColourRedCycle` (`$B48A`)
 
@@ -14479,7 +14433,7 @@ Witness: L1 5894 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,502 calls, 172,638 t-states own (0.03 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 3,392 calls, 234,143 t-states own (0.02 %) |
 | Called from | `UpdateThroneShot`, `GameOverStep`, `HeroColour`, `SetCycleColour` |
-| Reads | `$B4B1`-`$B4B8` (`CycleColours`); `$FE31` |
+| Reads | `$B4B1`-`$B4B8` (`CycleColours`); `$FE31` (`PassCounter`) |
 
 #### `ColourSprite` (`$B4C9`)
 
@@ -14518,7 +14472,7 @@ Witness: L1 925 (rzx-r3).
 | Called from | `UpdateThrownAmmo`, `DrawShotFrame`, `UpdateThroneShot` |
 | Calls | `BufferAddressHL` |
 | Reads | `$8060`-`$8081` (`ThrownAmmoFrames+2`); `$80A6`-`$80A7` (`ShotFrames+2`); `$8172`-`$817F` (`ThroneShotFrames+2`); `$D264`-`$D2AD` (`FireballSprites`, `ShotSmall`); `$D300`-`$D30F` (`ThrownAmmoSprites`) |
-| Writes | `$5C90`-`$6A93`; `$6AAE`-`$6B09`; `$6B24`-`$6B29`; `$6B44`-`$6B49`; `$6B64`-`$6B69`; `$6B84`-`$6B89`; 1 more ranges |
+| Writes | `$5C90`-`$6A93` (`PlayBuffer+400`); `$6AAE`-`$6B09` (`PlayBuffer+4014`); `$6B24`-`$6B29` (`PlayBuffer+4132`); `$6B44`-`$6B49` (`PlayBuffer+4164`); `$6B64`-`$6B69` (`PlayBuffer+4196`); `$6B84`-`$6B89` (`PlayBuffer+4228`); 1 more ranges |
 
 #### `DrawSpriteMirrored` (`$B505`)
 
@@ -14537,8 +14491,8 @@ Witness: L1 281 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 281 calls, 416,496 t-states own (0.03 %) |
 | Called from | `DrawShotFrame`, `UpdateBolt` |
 | Calls | `BufferAddressHL` |
-| Reads | `$80A6`-`$80A7` (`ShotFrames+2`); `$D2A4`-`$D2AD` (`ShotSmall`); `$FA00`; `$FA21`; `$FA40`; `$FA74`-`$FA80`; 3 more ranges |
-| Writes | `$6505`-`$658A`; `$6605`-`$669F`; `$6705`-`$679F`; `$680D`-`$683A`; `$684D`-`$685A`; `$686D`-`$687A`; 1 more ranges |
+| Reads | `$80A6`-`$80A7` (`ShotFrames+2`); `$D2A4`-`$D2AD` (`ShotSmall`); `$FA00` (`BitReverse`); `$FA21` (`BitReverse+33`); `$FA40` (`BitReverse+64`); `$FA74`-`$FA80` (`BitReverse+116`); 3 more ranges |
+| Writes | `$6505`-`$658A` (`PlayBuffer+2565`); `$6605`-`$669F` (`PlayBuffer+2821`); `$6705`-`$679F` (`PlayBuffer+3077`); `$680D`-`$683A` (`PlayBuffer+3341`); `$684D`-`$685A` (`PlayBuffer+3405`); `$686D`-`$687A` (`PlayBuffer+3437`); 1 more ranges |
 
 #### `ColourSpriteMirrored` (`$B52E`)
 
@@ -14640,8 +14594,8 @@ Witness: L1 34 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2 calls, 234,674 t-states own (0.04 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 32 calls, 3,768,062 t-states own (0.30 %) |
 | Called from | `ShiftRoomColumns` |
-| Reads | `$5B00`-`$6C2F` |
-| Writes | `$5B00`-`$6C30` |
+| Reads | `$5B00`-`$6C2F` (`PlayBuffer`) |
+| Writes | `$5B00`-`$6C30` (`PlayBuffer`) |
 
 #### `CopyScreenToBlock` (`$892A`)
 
@@ -14711,8 +14665,8 @@ Witness: L1 10237 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 3,649 calls, 255,506 t-states own (0.05 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 6,588 calls, 461,255 t-states own (0.04 %) |
 | Called from | `StartStageExit`, `RandomPlayAttrs`, `SpawnTimer`, `SpawnViking`, `VikingStand`, `VikingDie`, `SwampSpawnTimer`, `TrollLegsActor`, `TrollSwingCheck`, `SpawnBogMan`, `BogManActor`, `DragonHeadActor`, `PyreFlameActor`, `LightningActor`, `ThroneBossStep`, `InitStageState`, `StartBurst`, `UpdateBurst`, `RainChance`, `LightningStep`, `RandomFragmentParams` |
-| Reads | `$FE0A`-`$FE0B` |
-| Writes | `$FE0A`-`$FE0B` |
+| Reads | `$FE0A`-`$FE0B` (`RandomPointer`) |
+| Writes | `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `ClearScreen` (`$8A33`)
 
@@ -14821,7 +14775,7 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 4,648,672 t-states own (0.38 %) |
 | Called from | `MainLoop` |
 | Calls | `GetSelectedItem` |
-| Reads | `$5B00`-`$5C3C`; `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$7A10` (`StageExitFrame+1`); `$FE30`; `$FE4C` |
+| Reads | `$5B00`-`$5C3C` (`PlayBuffer`); `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$7A10` (`StageExitFrame+1`); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
 
 #### `StageExit` (`$7A0B`)
 
@@ -14852,8 +14806,8 @@ Witness: L1 8004 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 8,004 calls, 5,337,400 t-states own (0.43 %) |
 | Called from | `StageExit` |
-| Reads | `$5B00`-`$5C3B`; `$7AA8`-`$7ABF` (`StarPixels`); `$FB60`-`$FC67` |
-| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` |
+| Reads | `$5B00`-`$5C3B` (`PlayBuffer`); `$7AA8`-`$7ABF` (`StarPixels`); `$FB60`-`$FC67` (`ScreenLineTable+96`) |
+| Writes | `$40C2`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` (`PlayBuffer+3`) |
 
 #### `StartStageExit` (`$7AC8`)
 
@@ -14870,7 +14824,7 @@ Witness: L1 1 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 26,853 t-states own (0.00 %) |
 | Called from | `StageExit` |
 | Calls | `CopyToScreen`, `RandomPlayAttrs`, `Random`, `BlackOutPlayArea` |
-| Writes | `$5B00`-`$5C3F` |
+| Writes | `$5B00`-`$5C3F` (`PlayBuffer`) |
 
 #### `RandomPlayAttrs` (`$7B15`)
 
@@ -14887,7 +14841,7 @@ Witness: L1 1 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 72,500 t-states own (0.01 %) |
 | Called from | `StartStageExit` |
 | Calls | `Random` |
-| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` |
+| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `AddScore` (`$7B41`)
 
@@ -14903,8 +14857,8 @@ Witness: L1 41 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 41 calls, 4,144 t-states own (0.00 %) |
 | Called from | `PieceWaitsPickup`, `ScoreBurst200`, `DragonBeaten`, `ThroneBossBeaten`, `ScoreBurst20`, `ItemHandler`, `FragmentActor` |
-| Reads | `$F9FB`-`$F9FD` |
-| Writes | `$F9FB`-`$F9FD` |
+| Reads | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
+| Writes | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `RenderScore` (`$7B61`)
 
@@ -14922,7 +14876,7 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 862,993 t-states own (0.07 %) |
 | Called from | `ShowScore`, `StageSetUp` |
 | Calls | `RenderDigits` (tail), `NumberToDigits`, `ByteToDigits` |
-| Reads | `$F9FB`-`$F9FD` |
+| Reads | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `HideLeadingZeros` (`$7B83`)
 
@@ -14974,7 +14928,7 @@ Witness: L1 6990 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,378 calls, 3,824,770 t-states own (0.68 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 5,612 calls, 15,117,502 t-states own (1.22 %) |
 | Called from | `RenderScore` (tail), `FormatItemCount` (tail) |
-| Reads | `$7C0E`-`$7C14` (`ScoreDigitsHigh`, `ScoreDigitsLow`); `$7DB8`-`$7DBA` (`ItemCountText+2`); `$F959`-`$F9A7` |
+| Reads | `$7C0E`-`$7C14` (`ScoreDigitsHigh`, `ScoreDigitsLow`); `$7DB8`-`$7DBA` (`ItemCountText+2`); `$F959`-`$F9A7` (`DigitGlyphs`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7BE8` (`RenderDigitsChar+28`) |
 
 #### `StartLivesFlash` (`$7DBB`)
@@ -14992,7 +14946,7 @@ Witness: L1 6 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 5 calls, 167 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 27 t-states own (0.00 %) |
 | Called from | `LoseLife`, `StageSetUp` (tail) |
-| Writes | `$FE62` |
+| Writes | `$FE62` (`LivesFlash`) |
 
 #### `LivesFlashStep` (`$7DC0`)
 
@@ -15009,8 +14963,8 @@ Witness: L1 6338 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,407 calls, 114,148 t-states own (0.02 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,931 calls, 198,822 t-states own (0.02 %) |
 | Called from | `PassTick` (tail) |
-| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE62`-`$FE6B` |
-| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE62` |
+| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE62`-`$FE6B` (`LivesFlash`, `GameOverTimer`, `InitOnly64`, `ThroneBossHits` and 3 more) |
+| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE62` (`LivesFlash`) |
 
 #### `ApplyEnergyChange` (`$7E84`)
 
@@ -15027,8 +14981,8 @@ Witness: L1 6338 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,407 calls, 58,946 t-states own (0.01 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,931 calls, 177,732 t-states own (0.01 %) |
 | Called from | `PassTick` |
-| Reads | `$FE3F`; `$FE51` |
-| Writes | `$FE3F`; `$FE51` |
+| Reads | `$FE3F` (`Energy`); `$FE51` (`EnergyChange`) |
+| Writes | `$FE3F` (`Energy`); `$FE51` (`EnergyChange`) |
 
 #### `LoseLife` (`$7EB3`)
 
@@ -15045,8 +14999,8 @@ Witness: L1 4 (s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 4 calls, 932 t-states own (0.00 %) |
 | Called from | `CheckWaterDeath` (tail) |
 | Calls | `StartLivesFlash`, `HeroDeath` (tail) |
-| Reads | `$FE6B` |
-| Writes | `$FE3F`; `$FE51`-`$FE6B` |
+| Reads | `$FE6B` (`Lives`) |
+| Writes | `$FE3F` (`Energy`); `$FE51`-`$FE6B` (`EnergyChange`, `SpawnDelay`, `FireLatch`, `PiecesMask` and 20 more) |
 
 #### `ShowPieceTaken` (`$837F`)
 
@@ -15064,8 +15018,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 138,326 t-states own (0.01 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyToScreen` |
-| Reads | `$FE55`-`$FE58` |
-| Writes | `$FE55`-`$FE58` |
+| Reads | `$FE55`-`$FE58` (`PiecesTaken`, `PieceFlash`, `PiecesComplete`, `PieceTakenFlag`) |
+| Writes | `$FE55`-`$FE58` (`PiecesTaken`, `PieceFlash`, `PiecesComplete`, `PieceTakenFlag`) |
 
 #### `FlashPieces` (`$83C0`)
 
@@ -15082,8 +15036,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,377 calls, 90,882 t-states own (0.02 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 591,879 t-states own (0.05 %) |
 | Called from | `MainLoop` |
-| Reads | `$B4B1`-`$B4B8` (`CycleColours`); `$FE55`-`$FE56` |
-| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE56` |
+| Reads | `$B4B1`-`$B4B8` (`CycleColours`); `$FE55`-`$FE56` (`PiecesTaken`, `PieceFlash`) |
+| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE56` (`PieceFlash`) |
 
 #### `GameOverStep` (`$83F2`)
 
@@ -15101,8 +15055,8 @@ Witness: L1 6338 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,931 calls, 152,880 t-states own (0.01 %) |
 | Called from | `PassTick` |
 | Calls | `CopyToScreen`, `FillAttributes`, `CycleColour` |
-| Reads | `$FE63` |
-| Writes | `$842C` (`GameOverColour+13`); `$FE63` |
+| Reads | `$FE63` (`GameOverTimer`) |
+| Writes | `$842C` (`GameOverColour+13`); `$FE63` (`GameOverTimer`) |
 
 #### `GameOverStepDone` (`$842D`)
 
@@ -15132,8 +15086,8 @@ Witness: L1 26 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2 calls, 130 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 24 calls, 1,572 t-states own (0.00 %) |
 | Called from | `UpdateThroneShot`, `DragonFireDamage` (tail), `VikingStand` |
-| Reads | `$74EA` (`HeroState`); `$FE51` |
-| Writes | `$FE51` |
+| Reads | `$74EA` (`HeroState`); `$FE51` (`EnergyChange`) |
+| Writes | `$FE51` (`EnergyChange`) |
 
 #### `DissolveHud` (`$8952`)
 
@@ -15156,7 +15110,7 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 call, 2,285,032 t-states own (0.41 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 2,285,032 t-states own (0.18 %) |
 | Called from | `StageSetUp` |
-| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 19 more); `$895E` (`DissolveStep+2`); `$898B` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA`; `$FB00`-`$FB5F`; `$FE0A`-`$FE0B` |
+| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 19 more); `$895E` (`DissolveStep+2`); `$898B` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA` (`DissolveMasks`); `$FB00`-`$FB5F` (`ScreenLineTable`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 | Writes | `$4000`-`$41BF` (screen); `$4200`-`$42BF` (screen); `$4300`-`$43BF` (screen); `$4400`-`$44BF` (screen); `$4500`-`$45BF` (screen); `$4600`-`$46BF` (screen); 4 more ranges |
 
 #### `NumberToDigits` (`$8A84`)
@@ -15176,7 +15130,7 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,378 calls, 2,328,648 t-states own (0.41 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 8,980,823 t-states own (0.73 %) |
 | Called from | `RenderScore` |
-| Reads | `$F9C1`-`$F9C8` |
+| Reads | `$F9C1`-`$F9C8` (`DecimalTable+2`) |
 | Writes | `$7C10`-`$7C13` (`ScoreDigitsLow`) |
 
 #### `ByteToDigits` (`$8AB6`)
@@ -15211,7 +15165,7 @@ Witness: L1 6338 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,407 calls, 260,684 t-states own (0.05 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,931 calls, 338,142 t-states own (0.03 %) |
 | Called from | `PassTick` |
-| Reads | `$A392`-`$A398` (`BarMasks`); `$E21E`-`$E223` (`EnergyBarPattern`); `$FE3F`; `$FE50` |
+| Reads | `$A392`-`$A398` (`BarMasks`); `$E21E`-`$E223` (`EnergyBarPattern`); `$FE3F` (`Energy`); `$FE50` (`EnergyShown`) |
 | Writes | `$4134`-`$4139` (screen); `$4234`-`$4239` (screen); `$4334`-`$4339` (screen); `$4434`-`$4439` (screen); `$4534`-`$4539` (screen); `$4634`-`$4639` (screen); 2 more ranges |
 
 ### Stage 3 (TZX block 46): hero
@@ -15238,7 +15192,7 @@ Witness: L1 172 (rzx-r3).
 | Called from | `MainLoop` |
 | Calls | `FlashSelectedBox` (falls into), `ScrollItemsLeft`, `ScrollItemsRight`, `CycleWindowFrame`, `DrawItemStrip`, `ShowItemCount`, `TestSpaceKey` |
 | Reads | `$586A` (screen); `$7C1A`-`$7C27` (`ItemWindow+5`, `ItemWindowStep`, `ItemWindowFrame`); `$7C52` (`ItemWindowSettle+1`) |
-| Writes | `$FE31` |
+| Writes | `$FE31` (`PassCounter`) |
 
 #### `FlashSelectedBox` (`$7C5C`)
 
@@ -15303,8 +15257,8 @@ Witness: L1 32 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 29 calls, 39,257,496 t-states own (3.17 %) |
 | Called from | `ItemWindow`, `StageSetUp` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B67`-`$5D97`; `$7C9D` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` |
-| Writes | `$5B67`-`$5D97`; `$FE17` |
+| Reads | `$5B67`-`$5D97` (`PlayBuffer+103`); `$7C9D` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` (`ItemSelected`, `ItemLast`) |
+| Writes | `$5B67`-`$5D97` (`PlayBuffer+103`); `$FE17` (`ItemSelected`) |
 
 #### `ScrollItemsRight` (`$7CA7`)
 
@@ -15321,8 +15275,8 @@ Witness: L1 17 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 17 calls, 24,156,653 t-states own (1.95 %) |
 | Called from | `ItemWindow` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B64`-`$5D54`; `$7CD1` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` |
-| Writes | `$5B64`-`$5D54`; `$FE17` |
+| Reads | `$5B64`-`$5D54` (`PlayBuffer+100`); `$7CD1` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` (`ItemSelected`, `ItemLast`, `ItemFirst`) |
+| Writes | `$5B64`-`$5D54` (`PlayBuffer+100`); `$FE17` (`ItemSelected`) |
 
 #### `CycleWindowFrame` (`$7CDB`)
 
@@ -15341,8 +15295,8 @@ Witness: L1 1967 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 72 calls, 720 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,895 calls, 1,120,042 t-states own (0.09 %) |
 | Called from | `ItemWindow`, `ScrollItemsLeft`, `ScrollItemsRight` |
-| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7D04`-`$7D13` (`WindowFrameColours`); `$FE31` |
-| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE31` |
+| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7D04`-`$7D13` (`WindowFrameColours`); `$FE31` (`PassCounter`) |
+| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE31` (`PassCounter`) |
 
 #### `RedrawItemsIfChanged` (`$7D14`)
 
@@ -15360,8 +15314,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 183,536 t-states own (0.01 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawItemStrip`, `ShowItemCount` (tail) |
-| Reads | `$FE4B` |
-| Writes | `$FE4B` |
+| Reads | `$FE4B` (`ItemsChanged`) |
+| Writes | `$FE4B` (`ItemsChanged`) |
 
 #### `DrawItemStrip` (`$7D24`)
 
@@ -15379,7 +15333,7 @@ Witness: L1 637 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 634 calls, 720,980 t-states own (0.06 %) |
 | Called from | `ItemWindow`, `RedrawItemsIfChanged`, `StageSetUp` |
 | Calls | `DrawItemIcon`, `ShowItemStrip` (tail) |
-| Reads | `$7EFC`-`$7F0D` (`CarriedItems`, `CarriedCounts`); `$FE17` |
+| Reads | `$7EFC`-`$7F0D` (`CarriedItems`, `CarriedCounts`); `$FE17` (`ItemSelected`) |
 
 #### `ShowItemCount` (`$7D4C`)
 
@@ -15414,7 +15368,7 @@ Witness: L1 710 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 710 calls, 227,681 t-states own (0.02 %) |
 | Called from | `ShowItemCount` |
 | Calls | `RenderDigits` (tail) |
-| Reads | `$7F13`-`$7F1A` (`CarriedCounts+6`); `$FE17` |
+| Reads | `$7F13`-`$7F1A` (`CarriedCounts+6`); `$FE17` (`ItemSelected`) |
 | Writes | `$7DB8`-`$7DB9` (`ItemCountText+2`) |
 
 #### `DrawItemIcon` (`$7E07`)
@@ -15433,7 +15387,7 @@ Witness: L1 5096 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 5,072 calls, 10,868,293 t-states own (0.88 %) |
 | Called from | `DrawItemStrip` |
 | Reads | `$7F2F`-`$7F42` (`ItemIcons`); `$8A44`-`$8A63` (`BlankIcon`); `$EA00`-`$EB1F` (`ItemIconSprites`, `ItemIconKind6`, `ItemIconKind9`, `ItemIconKind3` and 5 more) |
-| Writes | `$5B64`-`$5D5B` |
+| Writes | `$5B64`-`$5D5B` (`PlayBuffer+100`) |
 
 #### `ShowItemStrip` (`$7E2B`)
 
@@ -15467,7 +15421,7 @@ Witness: L1 3434 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 150 calls, 414,113 t-states own (0.07 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 3,284 calls, 10,556,292 t-states own (0.85 %) |
 | Called from | `ShowItemStrip` (falls into) |
-| Reads | `$5B68`-`$5C93`; `$5CA8`-`$5CB3`; `$5CC8`-`$5CD3`; `$5CE8`-`$5CF3`; `$5D08`-`$5D13`; `$5D28`-`$5D33`; 1 more ranges |
+| Reads | `$5B68`-`$5C93` (`PlayBuffer+104`); `$5CA8`-`$5CB3` (`PlayBuffer+424`); `$5CC8`-`$5CD3` (`PlayBuffer+456`); `$5CE8`-`$5CF3` (`PlayBuffer+488`); `$5D08`-`$5D13` (`PlayBuffer+520`); `$5D28`-`$5D33` (`PlayBuffer+552`); 1 more ranges |
 | Writes | `$406A`-`$4195` (screen); `$426A`-`$4295` (screen); `$436A`-`$4395` (screen); `$446A`-`$4495` (screen); `$456A`-`$4595` (screen); `$466A`-`$4695` (screen); 1 more ranges |
 
 #### `AddItem` (`$7E4D`)
@@ -15482,8 +15436,8 @@ Witness: L1 13 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 13 calls, 9,699 t-states own (0.00 %) |
 | Called from | `ItemHandler` |
-| Reads | `$7EFC`-`$7F18` (`CarriedItems`, `CarriedCounts`); `$FE18` |
-| Writes | `$7F03`-`$7F1A` (`CarriedItems+7`, `CarriedCounts`); `$FE18`; `$FE4B` |
+| Reads | `$7EFC`-`$7F18` (`CarriedItems`, `CarriedCounts`); `$FE18` (`ItemLast`) |
+| Writes | `$7F03`-`$7F1A` (`CarriedItems+7`, `CarriedCounts`); `$FE18` (`ItemLast`); `$FE4B` (`ItemsChanged`) |
 
 #### `GetSelectedItem` (`$7EEA`)
 
@@ -15500,7 +15454,7 @@ Witness: L1 22067 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 3,836 calls, 428,195 t-states own (0.08 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 18,231 calls, 2,058,560 t-states own (0.17 %) |
 | Called from | `CheckStageExit`, `DrainItemCharge`, `DrawbridgeActor`, `ThrowItem`, `UpdateRain`, `HeroUpdate`, `HeroColour`, `ThrowAmmo`, `HeroFireHeld` |
-| Reads | `$7F02`-`$7F09` (`CarriedItems+6`); `$FE17` |
+| Reads | `$7F02`-`$7F09` (`CarriedItems+6`); `$FE17` (`ItemSelected`) |
 
 #### `IsHeroHitFrame6` (`$7FE9`)
 
@@ -15604,7 +15558,7 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 489,507 t-states own (0.04 %) |
 | Called from | `HeroUpdate` |
 | Calls | `LoseLife` (tail) |
-| Reads | `$74E0`-`$74EE` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 5 more); `$FE30`; `$FE4C` |
+| Reads | `$74E0`-`$74EE` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 5 more); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
 
 #### `DrainItemCharge` (`$8860`)
 
@@ -15644,8 +15598,8 @@ Witness: L1 518 (s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 518 calls, 24,809 t-states own (0.00 %) |
 | Called from | `HeroUpdate` (tail) |
 | Calls | `RespawnPoint`, `HeroStandFrame` (tail) |
-| Reads | `$74F0` (`HeroCounter`); `$FE31` |
-| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE5E` |
+| Reads | `$74F0` (`HeroCounter`); `$FE31` (`PassCounter`) |
+| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE5E` (`RespawnShiftX`) |
 
 #### `RespawnPoint` (`$95FD`)
 
@@ -15659,7 +15613,7 @@ Witness: L1 8 (s3-right).
 | --- | --- |
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 8 calls, 939 t-states own (0.00 %) |
 | Called from | `RespawnCountdown`, `HeroDeath` |
-| Reads | `$9624`-`$9625` (`RespawnPoints+6`); `$FE30`; `$FE4C` |
+| Reads | `$9624`-`$9625` (`RespawnPoints+6`); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
 
 #### `ThrowItem` (`$9646`)
 
@@ -15680,8 +15634,8 @@ Witness: L1 1802 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,802 calls, 124,277 t-states own (0.01 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `AddMissileHigh` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$7F14` (`CarriedCounts+7`); `$FE53` |
-| Writes | `$7F14` (`CarriedCounts+7`); `$FE53` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$7F14` (`CarriedCounts+7`); `$FE53` (`FireLatch`) |
+| Writes | `$7F14` (`CarriedCounts+7`); `$FE53` (`FireLatch`) |
 
 #### `FireBolt` (`$969A`)
 
@@ -15698,8 +15652,8 @@ Witness: L1 245 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 245 calls, 21,218 t-states own (0.00 %) |
 | Called from | `HeroUpdate` |
 | Calls | `AddMissileHigh` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE53` |
-| Writes | `$FE53` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE53` (`FireLatch`) |
+| Writes | `$FE53` (`FireLatch`) |
 
 #### `HeroActor` (`$AC46`)
 
@@ -15723,8 +15677,8 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 1,157,157 t-states own (0.09 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `CheckHeroFooting`, `CheckRoomExits`, `CheckGridPassages`, `HeroUpdate` |
-| Reads | `$9B3B`-`$9B49` (`Grid0+4`, `Grid0Rooms`, `Grid1`); `$9B5C`-`$9B5D` (`Grid2+4`); `$FE23`-`$FE30` |
-| Writes | `$FE2E`-`$FE2F` |
+| Reads | `$9B3B`-`$9B49` (`Grid0+4`, `Grid0Rooms`, `Grid1`); `$9B5C`-`$9B5D` (`Grid2+4`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE2E`-`$FE2F` (`RoomExitsPtr`) |
 
 #### `CheckHeroFooting` (`$AC6F`)
 
@@ -15761,8 +15715,8 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 1,632,208 t-states own (0.13 %) |
 | Called from | `HeroActor` |
 | Calls | `GetSelectedItem`, `PyreFireDamage`, `DragonFireDamage`, `CheckWaterDeath`, `DrainItemCharge`, `RespawnCountdown` (tail), `ThrowItem`, `FireBolt`, `HeroColour`, `ThrowAmmo`, `HeroStand` (tail), `HeroStrike` (tail), `HeroWalk` (tail), `HeroFall` (tail), `HeroLeapBack` (tail), `HeroJump` (tail), `HeroLeap` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE60` |
-| Writes | `$FE60` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE60` (`HeroFreeze`) |
+| Writes | `$FE60` (`HeroFreeze`) |
 
 #### `HeroColour` (`$AE59`)
 
@@ -15782,7 +15736,7 @@ Witness: L1 5762 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 543,137 t-states own (0.04 %) |
 | Called from | `HeroUpdate` |
 | Calls | `GetSelectedItem`, `CycleColour` |
-| Reads | `$74EC` (`HeroAttribute`); `$FE3F` |
+| Reads | `$74EC` (`HeroAttribute`); `$FE3F` (`Energy`) |
 | Writes | `$74EC` (`HeroAttribute`) |
 
 #### `ThrowAmmo` (`$AE94`)
@@ -15800,8 +15754,8 @@ Witness: L1 562 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 562 calls, 39,380 t-states own (0.00 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `AddMissile` |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 1 more); `$7F16` (`CarriedCounts+9`); `$FE53` |
-| Writes | `$7F16` (`CarriedCounts+9`); `$FE53` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 1 more); `$7F16` (`CarriedCounts+9`); `$FE53` (`FireLatch`) |
+| Writes | `$7F16` (`CarriedCounts+9`); `$FE53` (`FireLatch`) |
 
 #### `HeroStand` (`$AEDA`)
 
@@ -16186,8 +16140,8 @@ Witness: L1 4 (s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 4 calls, 10,688 t-states own (0.00 %) |
 | Called from | `LoseLife` (tail) |
 | Calls | `RespawnPoint`, `AddMissileHigh` |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$FE5E` |
-| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 6 more); `$7610`-`$763F` (`MissilesHigh`, `MissilesHighY`); `$FE5E`-`$FE5F` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$FE5E` (`RespawnShiftX`) |
+| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 6 more); `$7610`-`$763F` (`MissilesHigh`, `MissilesHighY`); `$FE5E`-`$FE5F` (`RespawnShiftX`, `RespawnShiftY`) |
 
 ### Stage 3 (TZX block 46): missiles
 
@@ -16208,8 +16162,8 @@ Witness: L1 200 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 200 calls, 86,834 t-states own (0.01 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `RemoveActor` (tail), `ColourSprite`, `DrawSprite` |
-| Reads | `$75E0`-`$760E` (`Missiles`, `MissilesY`, `HudColours`); `$805E`-`$807F` (`ThrownAmmoFrames`); `$FE30`; `$FE4D` |
-| Writes | `$75E0`-`$760E` (`Missiles`, `MissilesY`, `HudColours`); `$FE4E` |
+| Reads | `$75E0`-`$760E` (`Missiles`, `MissilesY`, `HudColours`); `$805E`-`$807F` (`ThrownAmmoFrames`); `$FE30` (`RoomNumber`); `$FE4D` (`DragonHits`) |
+| Writes | `$75E0`-`$760E` (`Missiles`, `MissilesY`, `HudColours`); `$FE4E` (`DragonHitFlag`) |
 
 #### `DrawShotFrame` (`$8082`)
 
@@ -16239,7 +16193,7 @@ Witness: L1 329 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 329 calls, 98,272 t-states own (0.01 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `ShotHitsActor`, `RemoveActor` (tail) |
-| Reads | `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$80A4`-`$80A5` (`ShotFrames`); `$FE30` |
+| Reads | `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$80A4`-`$80A5` (`ShotFrames`); `$FE30` (`RoomNumber`) |
 | Writes | `$7610`-`$763A` (`MissilesHigh`, `MissilesHighY`) |
 
 #### `UpdateThroneShot` (`$80F0`)
@@ -16271,8 +16225,8 @@ Witness: L1 99 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 99 calls, 29,699 t-states own (0.00 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `RemoveActor` (tail), `ColourCyanCycle`, `DrawSpriteMirrored`, `ColourSpriteMirrored` (tail) |
-| Reads | `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$80A4`-`$80A5` (`ShotFrames`); `$FE30`; `$FE4C` |
-| Writes | `$7610`-`$763A` (`MissilesHigh`, `MissilesHighY`); `$FE66` |
+| Reads | `$7610`-`$763E` (`MissilesHigh`, `MissilesHighY`); `$80A4`-`$80A5` (`ShotFrames`); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
+| Writes | `$7610`-`$763A` (`MissilesHigh`, `MissilesHighY`); `$FE66` (`ThroneHitFlag`) |
 
 #### `UpdatePathFlyer` (`$842E`)
 
@@ -16289,8 +16243,8 @@ Witness: L1 2856 (s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,856 calls, 8,314,615 t-states own (1.48 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `BufferAddressHL`, `RemoveActor` (tail), `ColourYellowMagenta`, `ColourSprite` (tail) |
-| Reads | `$61A5`-`$61A7`; `$61C5`-`$61C8`; `$61E5`-`$61E8`; `$6204`-`$6208`; `$6224`-`$6228`; `$6244`-`$6248`; 6 more ranges |
-| Writes | `$61A5`-`$61A7`; `$61C5`-`$61C8`; `$61E5`-`$61E8`; `$6204`-`$6208`; `$6224`-`$6228`; `$6244`-`$6248`; 2 more ranges |
+| Reads | `$61A5`-`$61A7` (`PlayBuffer+1701`); `$61C5`-`$61C8` (`PlayBuffer+1733`); `$61E5`-`$61E8` (`PlayBuffer+1765`); `$6204`-`$6208` (`PlayBuffer+1796`); `$6224`-`$6228` (`PlayBuffer+1828`); `$6244`-`$6248` (`PlayBuffer+1860`); 6 more ranges |
+| Writes | `$61A5`-`$61A7` (`PlayBuffer+1701`); `$61C5`-`$61C8` (`PlayBuffer+1733`); `$61E5`-`$61E8` (`PlayBuffer+1765`); `$6204`-`$6208` (`PlayBuffer+1796`); `$6224`-`$6228` (`PlayBuffer+1828`); `$6244`-`$6248` (`PlayBuffer+1860`); 2 more ranges |
 
 #### `ShotHitsActor` (`$8566`)
 
@@ -16342,7 +16296,7 @@ Witness: L1 1769 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,661 calls, 88,697 t-states own (0.01 %) |
 | Called from | `CheckWalkBarriers` |
 | Calls | `ReturnNZ` (tail) |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 1 more); `$FE30`; `$FE4C` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 1 more); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
 
 #### `ResetObjectLists` (`$95B0`)
 
@@ -16403,8 +16357,8 @@ Witness: L1 39 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 36 calls, 6,491,469 t-states own (0.52 %) |
 | Called from | `ShiftRoomColumns` (tail), `StartGrid` (tail) |
 | Calls | `ClearShots`, `CopyTileToScreen`, `RoomCells`, `BuildSpans`, `ClearBuffer`, `BlackOutPlayArea`, `Unrle`, `LoadRoomActors` (tail) |
-| Reads | `$5B02`-`$5B05`; `$6317`-`$63FB`; `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$FB60`-`$FC71`; `$FE1F`-`$FE24` |
-| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$989B`-`$989C` (`RoomChangeAttrs+1`); `$98B9`-`$98BA` (`RoomChangeBitmaps+1`); `$FE1F`; `$FE3D` |
+| Reads | `$5B02`-`$5B05` (`PlayBuffer+2`); `$6317`-`$63FB` (`PlayBuffer+2071`); `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE1F`-`$FE24` (`CellColumn`, `RoomColumn`, `RoomRow`, `RoomGrid`) |
+| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$989B`-`$989C` (`RoomChangeAttrs+1`); `$98B9`-`$98BA` (`RoomChangeBitmaps+1`); `$FE1F` (`CellColumn`); `$FE3D` (`BurstTimer`) |
 
 #### `CopyTileToScreen` (`$98E7`)
 
@@ -16419,7 +16373,7 @@ Witness: L1 19656 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,512 calls, 482,704 t-states own (0.09 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 18,144 calls, 5,794,303 t-states own (0.47 %) |
 | Called from | `RoomChange` |
-| Reads | `$5BEF`-`$6316` |
+| Reads | `$5BEF`-`$6316` (`PlayBuffer+239`) |
 | Writes | `$40C2`-`$57FD` (screen) |
 
 #### `RoomCells` (`$98F0`)
@@ -16444,7 +16398,7 @@ Witness: L1 39 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 36 calls, 703,289 t-states own (0.06 %) |
 | Called from | `RoomChange` |
 | Calls | `PutBlock` |
-| Reads | `$5B08`-`$5B09`; `$65DF`-`$6C54` (`PlayBufferTail`); `$9B37`-`$9B5F` (`Grid0`, `Grid0Rooms`, `Grid1`, `Grid1Rooms` and 1 more); `$FE21`-`$FE22` |
+| Reads | `$5B08`-`$5B09` (`PlayBuffer+8`); `$65DF`-`$6C54` (`PlayBufferTail`); `$9B37`-`$9B5F` (`Grid0`, `Grid0Rooms`, `Grid1`, `Grid1Rooms` and 1 more); `$FE21`-`$FE22` (`RoomColumn`, `RoomRow`) |
 
 #### `PutBlock` (`$994E`)
 
@@ -16463,8 +16417,8 @@ Witness: L1 4914 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 378 calls, 231,047 t-states own (0.04 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,536 calls, 2,772,747 t-states own (0.22 %) |
 | Called from | `RoomCells` |
-| Reads | `$5B06`-`$5B07`; `$63FC`-`$6427`; `$6438`-`$644F`; `$6464`-`$6C54` (`PlayBufferTail`); `$FE29` |
-| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`, `CellsDrawbridge`); `$FE29` |
+| Reads | `$5B06`-`$5B07` (`PlayBuffer+6`); `$63FC`-`$6427` (`PlayBuffer+2300`); `$6438`-`$644F` (`PlayBuffer+2360`); `$6464`-`$6C54` (`PlayBufferTail`); `$FE29` (`CellFlag`) |
+| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`, `CellsDrawbridge`); `$FE29` (`CellFlag`) |
 
 #### `LeaveRoomRight` (`$9D70`)
 
@@ -16482,8 +16436,8 @@ Witness: L1 268 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 266 calls, 36,933 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `ShiftRoomColumns`, `StopRoomEffects`, `RoomEvents` |
-| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30`; `$FE5D` |
-| Writes | `$FE30`-`$FE3D` |
+| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE5D` (`PyreState`) |
+| Writes | `$FE30`-`$FE3D` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `LeaveRoomLeft` (`$9DAC`)
 
@@ -16499,8 +16453,8 @@ Witness: L1 410 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 390 calls, 52,619 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `ShiftRoomColumns`, `StopRoomEffects`, `RoomEvents` |
-| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30`; `$FE5D` |
-| Writes | `$FE30`-`$FE3D` |
+| Reads | `$74E9` (`HeroFlags`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE5D` (`PyreState`) |
+| Writes | `$FE30`-`$FE3D` (`RoomNumber`, `PassCounter`, `InitOnly3A`, `BurstTimer`) |
 
 #### `LeaveRoomDown` (`$9DE8`)
 
@@ -16546,7 +16500,7 @@ Witness: L1 34 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 32 calls, 41,744 t-states own (0.00 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft` |
 | Calls | `ClearPlayBuffer`, `RoomChange` (tail) |
-| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 9 more); `$FE21` |
+| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 9 more); `$FE21` (`RoomColumn`) |
 | Writes | `$74E0`-`$7535` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 8 more); `$755E`-`$7570` (`ActorsY+107`); `$7582` (`ActorsY+143`); `$7594` (`ActorsY+161`); `$75A6` (`ActorsY+179`); `$75B8` (`ActorsY+197`); 3 more ranges |
 
 #### `ShiftRoomRows` (`$9EC3`)
@@ -16579,7 +16533,7 @@ Witness: L1 37 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 35 calls, 541,923 t-states own (0.04 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft`, `RebuildRoom` (tail) |
 | Reads | `$6DC0`-`$6FFF` (`PlayAttributes`, `PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`) |
-| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE5A`-`$FE68` |
+| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE5A`-`$FE68` (`RainStep`, `RainPointer`, `DrawbridgeDown`, `PyreState` and 10 more) |
 
 #### `SavePlayAttrs` (`$9F20`)
 
@@ -16609,7 +16563,7 @@ Witness: L1 37 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 35 calls, 5,237 t-states own (0.00 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft`, `RebuildRoom` |
 | Calls | `SpawnBonus` (tail) |
-| Reads | `$FE30`; `$FE4C`-`$FE57` |
+| Reads | `$FE30` (`RoomNumber`); `$FE4C`-`$FE57` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 8 more) |
 
 #### `SpawnRewardItem` (`$9F7F`)
 
@@ -16640,7 +16594,7 @@ Witness: L1 11 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 10 calls, 2,098 t-states own (0.00 %) |
 | Called from | `RoomEvents` (tail), `ThroneBossBeaten` (tail) |
 | Calls | `FindFreeActorPair`, `SpawnActor` |
-| Reads | `$FE54` |
+| Reads | `$FE54` (`PiecesMask`) |
 | Writes | `$7502`-`$7521` (`ActorsY+15`) |
 
 #### `Unrle` (`$A39A`)
@@ -16678,7 +16632,7 @@ Witness: L1 14 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 7 calls, 101,843 t-states own (0.01 %) |
 | Called from | `RainChance` (tail), `UpdateRain` (tail) |
 | Calls | `RainRandomByte` |
-| Writes | `$7040`-`$712F` (`RoomAttributes`, `RoomAttributesCell`); `$FE3D`; `$FE5A`-`$FE5C` |
+| Writes | `$7040`-`$712F` (`RoomAttributes`, `RoomAttributesCell`); `$FE3D` (`BurstTimer`); `$FE5A`-`$FE5C` (`RainStep`, `RainPointer`, `DrawbridgeDown`) |
 
 #### `RainChance` (`$A3FD`)
 
@@ -16694,8 +16648,8 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 197,682 t-states own (0.02 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `StartRain` (tail) |
-| Reads | `$FE4C`-`$FE5A` |
-| Writes | `$7040`-`$712F` (`RoomAttributes`, `RoomAttributesCell`); `$FE3D`; `$FE5A`-`$FE5C` |
+| Reads | `$FE4C`-`$FE5A` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 11 more) |
+| Writes | `$7040`-`$712F` (`RoomAttributes`, `RoomAttributesCell`); `$FE3D` (`BurstTimer`); `$FE5A`-`$FE5C` (`RainStep`, `RainPointer`, `DrawbridgeDown`) |
 
 #### `UpdateRain` (`$A41E`)
 
@@ -16715,8 +16669,8 @@ GetSelectedItem `$7EEA`: kind 9 selected, RoomNumber 5 and a count left: the cou
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 24,581,288 t-states own (1.99 %) |
 | Called from | `MainLoop` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `StartRain` (tail), `DrawRainDrop`, `RainRandomByte`, `DrawRainSplash` |
-| Reads | `$6DC0`-`$6F9E` (`PlayAttributes`, `PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7040`-`$711E` (`RoomAttributes`, `RoomAttributesCell`); `$7F17` (`CarriedCounts+10`); `$A4A4` (`UpdateRainSplashLine+1`); `$FE30`; `$FE4C`-`$FE5A` |
-| Writes | `$6DC0`-`$6F9F` (`PlayAttributes`, `PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7040`-`$711D` (`RoomAttributes`, `RoomAttributesCell`); `$7F17` (`CarriedCounts+10`); `$A4A4` (`UpdateRainSplashLine+1`); `$FE5A`-`$FE5D` |
+| Reads | `$6DC0`-`$6F9E` (`PlayAttributes`, `PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7040`-`$711E` (`RoomAttributes`, `RoomAttributesCell`); `$7F17` (`CarriedCounts+10`); `$A4A4` (`UpdateRainSplashLine+1`); `$FE30` (`RoomNumber`); `$FE4C`-`$FE5A` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 11 more) |
+| Writes | `$6DC0`-`$6F9F` (`PlayAttributes`, `PlayAttributesCell`, `ThroneAttributesCell`, `DragonAttributesCell`); `$7040`-`$711D` (`RoomAttributes`, `RoomAttributesCell`); `$7F17` (`CarriedCounts+10`); `$A4A4` (`UpdateRainSplashLine+1`); `$FE5A`-`$FE5D` (`RainStep`, `RainPointer`, `DrawbridgeDown`, `PyreState`) |
 
 #### `DrawRainDrop` (`$A50A`)
 
@@ -16748,7 +16702,7 @@ Witness: L1 70017 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 33,894 calls, 10,920,857 t-states own (0.88 %) |
 | Called from | `DrawRainDrop` (falls into), `DrawRainSplash` (tail) |
 | Reads | `$7040`-`$711D` (`RoomAttributes`, `RoomAttributesCell`); `$A568`-`$A587` (`RainDropShapes`, `RainSplashShapes`) |
-| Writes | `$5B00`-`$69FF` |
+| Writes | `$5B00`-`$69FF` (`PlayBuffer`) |
 
 #### `RainRandomByte` (`$A54A`)
 
@@ -16763,8 +16717,8 @@ Witness: L1 5151 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,565 calls, 179,607 t-states own (0.03 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 2,586 calls, 181,096 t-states own (0.01 %) |
 | Called from | `StartRain`, `UpdateRain` |
-| Reads | `$FE5B`-`$FE5C` |
-| Writes | `$FE5B`-`$FE5C` |
+| Reads | `$FE5B`-`$FE5C` (`RainPointer`, `DrawbridgeDown`) |
+| Writes | `$FE5B`-`$FE5C` (`RainPointer`, `DrawbridgeDown`) |
 
 #### `DrawRainSplash` (`$A557`)
 
@@ -16796,8 +16750,8 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 31,011,818 t-states own (2.51 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `ColourMasts` |
-| Reads | `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$A5AA` (`LightningStepNext+13`); `$A5CD`-`$A5D1` (`LightningColours`); `$FE4C`-`$FE59` |
-| Writes | `$58C2`-`$5A5D` (screen); `$5A70`-`$5A7D` (screen); `$5A90`-`$5A9D` (screen); `$5AB0`-`$5ABD` (screen); `$FE59` |
+| Reads | `$7282`-`$74BD` (`CellsPlay`, `CellsDrawbridge`); `$A5AA` (`LightningStepNext+13`); `$A5CD`-`$A5D1` (`LightningColours`); `$FE4C`-`$FE59` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 10 more) |
+| Writes | `$58C2`-`$5A5D` (screen); `$5A70`-`$5A7D` (screen); `$5A90`-`$5A9D` (screen); `$5AB0`-`$5ABD` (screen); `$FE59` (`LightningState`) |
 
 #### `ColourMasts` (`$A5D2`)
 
@@ -16814,7 +16768,7 @@ Witness: L1 7538 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 2,098 calls, 1,231,357 t-states own (0.22 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 5,440 calls, 743,793 t-states own (0.06 %) |
 | Called from | `LightningStep`, `RestoreMasts` (tail) |
-| Reads | `$FE30`; `$FE4C` |
+| Reads | `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`) |
 | Writes | `$5962` (screen); `$5982` (screen); `$59A2` (screen); `$59C2`-`$59CF` (screen); `$59E2`-`$59EF` (screen); `$5A02`-`$5A0F` (screen); 6 more ranges |
 
 #### `RestoreMasts` (`$A634`)
@@ -16848,8 +16802,8 @@ Witness: L1 5 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4 calls, 65,218 t-states own (0.01 %) |
 | Called from | `StageEntry`, `RebuildRoom` |
 | Calls | `ClearActors`, `RoomChange` (tail) |
-| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsDrawbridge`, `CellsFloor`); `$9B39`-`$9B49` (`Grid0+2`, `Grid0Rooms`, `Grid1`); `$9B5A`-`$9B5D` (`Grid2+2`); `$FE23`-`$FE24` |
-| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsDrawbridge`, `CellsFloor`); `$FE21`-`$FE2F` |
+| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsDrawbridge`, `CellsFloor`); `$9B39`-`$9B49` (`Grid0+2`, `Grid0Rooms`, `Grid1`); `$9B5A`-`$9B5D` (`Grid2+2`); `$FE23`-`$FE24` (`RoomGrid`) |
+| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsDrawbridge`, `CellsFloor`); `$FE21`-`$FE2F` (`RoomColumn`, `RoomRow`, `RoomGrid`, `Placements` and 3 more) |
 
 #### `CheckRoomExits` (`$ACE2`)
 
@@ -16886,8 +16840,8 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,378 calls, 109,137 t-states own (0.02 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 418,231 t-states own (0.03 %) |
 | Called from | `HeroActor` |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE30`; `$FE4C`-`$FE55` |
-| Writes | `$9B46` (`Grid1+2`); `$FE23`-`$FE30`; `$FE4C` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroHeight`, `HeroFrame` and 2 more); `$FE30` (`RoomNumber`); `$FE4C`-`$FE55` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 6 more) |
+| Writes | `$9B46` (`Grid1+2`); `$FE23`-`$FE30` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE4C` (`GridNumber`) |
 
 #### `EnterGrid1` (`$AD5F`)
 
@@ -17031,8 +16985,8 @@ Witness: L1 3871 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,537 calls, 259,162 t-states own (0.02 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `SetCycleColour` |
-| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`, `ActorsY`); `$8333`-`$8350` (`RiseSteps`); `$FE54` |
-| Writes | `$74FA`-`$750C` (`ActorsY+7`); `$751E` (`ActorsY+43`); `$FE54`-`$FE58` |
+| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`, `ActorsY`); `$8333`-`$8350` (`RiseSteps`); `$FE54` (`PiecesMask`) |
+| Writes | `$74FA`-`$750C` (`ActorsY+7`); `$751E` (`ActorsY+43`); `$FE54`-`$FE58` (`PiecesMask`, `PiecesTaken`, `PieceFlash`, `PiecesComplete` and 1 more) |
 
 #### `PieceRises` (`$82FE`)
 
@@ -17074,7 +17028,7 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1,378 calls, 42,718 t-states own (0.01 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 165,275 t-states own (0.01 %) |
 | Called from | `HeroUpdate` |
-| Reads | `$74E0` (`HeroRecord`); `$FE30`; `$FE5D` |
+| Reads | `$74E0` (`HeroRecord`); `$FE30` (`RoomNumber`); `$FE5D` (`PyreState`) |
 
 #### `DragonFireDamage` (`$8807`)
 
@@ -17090,7 +17044,7 @@ Witness: L1 6280 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 170,338 t-states own (0.01 %) |
 | Called from | `HeroUpdate` |
 | Calls | `DamageHero` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$FE30`; `$FE4D`-`$FE4F` |
+| Reads | `$74E0` (`HeroRecord`); `$FE30` (`RoomNumber`); `$FE4D`-`$FE4F` (`DragonHits`, `DragonHitFlag`, `DragonBreath`) |
 
 #### `DrawDragon` (`$887A`)
 
@@ -17108,7 +17062,7 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 2,640,911 t-states own (0.21 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawRowPicture`, `DragonBeaten` (tail) |
-| Reads | `$CABF`-`$CB0F` (`DragonAttributes`); `$FE30`; `$FE4C`-`$FE4E` |
+| Reads | `$CABF`-`$CB0F` (`DragonAttributes`); `$FE30` (`RoomNumber`); `$FE4C`-`$FE4E` (`GridNumber`, `DragonHits`, `DragonHitFlag`) |
 | Writes | `$6E96` (`DragonAttributesCell+4`); `$6EB5`-`$6EB8` (`DragonAttributesCell+35`); `$6ED4`-`$6ED8` (`DragonAttributesCell+66`); `$6EF5`-`$6EF9` (`DragonAttributesCell+99`); `$6F15`-`$6F39` (`DragonAttributesCell+131`); `$6F54`-`$6F59` (`DragonAttributesCell+194`); 2 more ranges |
 
 #### `SpawnViking` (`$8C16`)
@@ -17125,8 +17079,8 @@ Witness: L1 44 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 21 calls, 3,412 t-states own (0.00 %) |
 | Called from | `SpawnTimer` (tail) |
 | Calls | `Random`, `FindFreeActor`, `SpawnActor` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$FE30`; `$FE4C`; `$FE68` |
-| Writes | `$FE68` |
+| Reads | `$74E0` (`HeroRecord`); `$FE30` (`RoomNumber`); `$FE4C` (`GridNumber`); `$FE68` (`VikingCount`) |
+| Writes | `$FE68` (`VikingCount`) |
 
 #### `VikingActor` (`$8C64`)
 
@@ -17142,8 +17096,8 @@ Witness: L1 696 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 499 calls, 150,085 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `RemoveActor` (tail) |
-| Reads | `$74E9`-`$7514` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 4 more); `$8DFB`-`$8E09` (`VikingStrikeFrames`); `$8E52` (`VikingHitFrames`); `$FE30`; `$FE68` |
-| Writes | `$74FA`-`$7514` (`ActorsY+7`); `$FE68` |
+| Reads | `$74E9`-`$7514` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 4 more); `$8DFB`-`$8E09` (`VikingStrikeFrames`); `$8E52` (`VikingHitFrames`); `$FE30` (`RoomNumber`); `$FE68` (`VikingCount`) |
+| Writes | `$74FA`-`$7514` (`ActorsY+7`); `$FE68` (`VikingCount`) |
 
 #### `VikingWalk` (`$8CB6`)
 
@@ -17342,7 +17296,7 @@ Witness: L1 3497 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 3,497 calls, 367,326 t-states own (0.03 %) |
 | Called from | `SpawnTimer` (tail) |
 | Calls | `Random`, `SpawnBogMan` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$8F86`-`$8F8D` (`SwampSpawnRooms`); `$FE30`; `$FE52` |
+| Reads | `$74E0` (`HeroRecord`); `$8F86`-`$8F8D` (`SwampSpawnRooms`); `$FE30` (`RoomNumber`); `$FE52` (`SpawnDelay`) |
 | Writes | `$74FB` (`ActorsY+8`); `$750D` (`ActorsY+26`); `$751F` (`ActorsY+44`); `$7531` (`ActorsY+62`); `$758B` (`ActorsY+152`); `$759D` (`ActorsY+170`); 1 more ranges |
 
 #### `SpawnTroll` (`$8F91`)
@@ -17637,8 +17591,8 @@ Witness: L1 477 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 477 calls, 130,367 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `Random`, `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$75AE`-`$75B1` (`ActorsY+187`); `$9316`-`$9328` (`DragonHeadFrames`); `$FE4D`-`$FE4E` |
-| Writes | `$75AE`-`$75B2` (`ActorsY+187`); `$FE4F` |
+| Reads | `$75AE`-`$75B1` (`ActorsY+187`); `$9316`-`$9328` (`DragonHeadFrames`); `$FE4D`-`$FE4E` (`DragonHits`, `DragonHitFlag`) |
+| Writes | `$75AE`-`$75B2` (`ActorsY+187`); `$FE4F` (`DragonBreath`) |
 
 #### `DragonFlameActor` (`$9329`)
 
@@ -17653,7 +17607,7 @@ Witness: L1 477 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 477 calls, 88,878 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `RemoveActor` (tail), `MissileColour` |
-| Reads | `$759C` (`ActorsY+169`); `$FE4D`-`$FE4F` |
+| Reads | `$759C` (`ActorsY+169`); `$FE4D`-`$FE4F` (`DragonHits`, `DragonHitFlag`, `DragonBreath`) |
 | Writes | `$7595`-`$75A0` (`ActorsY+162`) |
 
 #### `DrawbridgeActor` (`$9369`)
@@ -17669,8 +17623,8 @@ Witness: L1 120 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 120 calls, 34,201 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `GetSelectedItem`, `SetActorFrame` |
-| Reads | `$75AE`-`$75B0` (`ActorsY+187`); `$FE5C` |
-| Writes | `$5A2E`-`$5A31` (screen); `$73EE`-`$73F1` (`CellsDrawbridge`); `$75AE`-`$75B0` (`ActorsY+187`); `$FE5C` |
+| Reads | `$75AE`-`$75B0` (`ActorsY+187`); `$FE5C` (`DrawbridgeDown`) |
+| Writes | `$5A2E`-`$5A31` (screen); `$73EE`-`$73F1` (`CellsDrawbridge`); `$75AE`-`$75B0` (`ActorsY+187`); `$FE5C` (`DrawbridgeDown`) |
 
 #### `PyreFlameActor` (`$93C8`)
 
@@ -17685,7 +17639,7 @@ Witness: L1 466 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 466 calls, 111,535 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `Random`, `SetActorFrame`, `RemoveActor` (tail), `ColourRedYellow` |
-| Reads | `$758A`-`$75D8` (`ActorsY+151`, `LastActor`); `$FE31`; `$FE5D` |
+| Reads | `$758A`-`$75D8` (`ActorsY+151`, `LastActor`); `$FE31` (`PassCounter`); `$FE5D` (`PyreState`) |
 | Writes | `$758A`-`$75D8` (`ActorsY+151`, `LastActor`) |
 
 #### `PyreBierActor` (`$9420`)
@@ -17705,7 +17659,7 @@ Witness: L1 214 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 214 calls, 17,602 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `PyreDropItem`, `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$758D`-`$7590` (`ActorsY+154`); `$FE5D` |
+| Reads | `$758D`-`$7590` (`ActorsY+154`); `$FE5D` (`PyreState`) |
 | Writes | `$758D`-`$7590` (`ActorsY+154`) |
 
 #### `PyreDropItem` (`$9450`)
@@ -17737,8 +17691,8 @@ Witness: L1 286 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 286 calls, 50,839 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$7566`-`$757E` (`ActorsY+115`); `$FE5D` |
-| Writes | `$7578`-`$757E` (`ActorsY+133`); `$FE5D` |
+| Reads | `$74E0` (`HeroRecord`); `$7566`-`$757E` (`ActorsY+115`); `$FE5D` (`PyreState`) |
+| Writes | `$7578`-`$757E` (`ActorsY+133`); `$FE5D` (`PyreState`) |
 
 #### `LightningActor` (`$94AC`)
 
@@ -17758,7 +17712,7 @@ Witness: L1 2393 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,015 calls, 333,190 t-states own (0.03 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `Random` |
-| Reads | `$75D5` (`LastActor+11`); `$9500`-`$9513` (`LightningFrames`); `$FE59` |
+| Reads | `$75D5` (`LastActor+11`); `$9500`-`$9513` (`LightningFrames`); `$FE59` (`LightningState`) |
 | Writes | `$75CA`-`$75D5` (`LastActor`) |
 
 #### `ThroneBossStep` (`$9514`)
@@ -17779,7 +17733,7 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 803,658 t-states own (0.06 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawRowPicture`, `Random`, `ThroneBossBeaten` (tail), `AddMissile` (tail) |
-| Reads | `$C59E`-`$C5CF` (`ThroneAttributes`); `$FE31`; `$FE4C`; `$FE65`-`$FE66` |
+| Reads | `$C59E`-`$C5CF` (`ThroneAttributes`); `$FE31` (`PassCounter`); `$FE4C` (`GridNumber`); `$FE65`-`$FE66` (`ThroneBossHits`, `ThroneHitFlag`) |
 | Writes | `$6E5C`-`$6E5D` (`ThroneAttributesCell+3`); `$6E7B`-`$6E7D` (`ThroneAttributesCell+34`); `$6E9B`-`$6E9D` (`DragonAttributesCell+9`); `$6EBB`-`$6EBD` (`DragonAttributesCell+41`); `$6EDB`-`$6EDD` (`DragonAttributesCell+73`); `$6EFA`-`$6EFD` (`DragonAttributesCell+104`); 3 more ranges |
 
 #### `AbsDiffBelow` (`$A9B6`)
@@ -17879,7 +17833,7 @@ Witness: L1 2 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 2 calls, 1,849 t-states own (0.00 %) |
 | Called from | `ShatterActor` |
 | Calls | `FindFreeActor`, `RandomFragmentParams`, `InitFragment` |
-| Writes | `$AA61`-`$AA63` (`FragmentColumn+1`, `FragmentLine`); `$FE0A`-`$FE0B` |
+| Writes | `$AA61`-`$AA63` (`FragmentColumn+1`, `FragmentLine`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `RandomFragmentParams` (`$AA70`)
 
@@ -17933,8 +17887,8 @@ Witness: L1 1239 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1,239 calls, 437,985 t-states own (0.04 %) |
 | Called from | `RunActorHandlers`, `InitFragment` (falls into) |
 | Calls | `AddScore`, `AbsDiffBelow`, `MoveFragment` (falls into), `CellAt`, `RemoveActor` (tail), `ColourRedMagenta` |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$74F2`-`$75B4` (`Actors`, `ActorsY`); `$ABD2`-`$AC05` (`FragmentArc0`, `FragmentArc1`); `$FE51` |
-| Writes | `$74F3`-`$75B4` (`ActorsY`); `$FE51` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$74F2`-`$75B4` (`Actors`, `ActorsY`); `$ABD2`-`$AC05` (`FragmentArc0`, `FragmentArc1`); `$FE51` (`EnergyChange`) |
+| Writes | `$74F3`-`$75B4` (`ActorsY`); `$FE51` (`EnergyChange`) |
 
 #### `MoveFragment` (`$AB82`)
 
@@ -18068,8 +18022,8 @@ Witness: L1 6279 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,902 calls, 213,870 t-states own (0.02 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `SpawnViking` (tail), `SwampSpawnTimer` (tail) |
-| Reads | `$FE4C`-`$FE52` |
-| Writes | `$FE52` |
+| Reads | `$FE4C`-`$FE52` (`GridNumber`, `DragonHits`, `DragonHitFlag`, `DragonBreath` and 3 more) |
+| Writes | `$FE52` (`SpawnDelay`) |
 
 #### `FindFreeActor` (`$8BE3`)
 
@@ -18171,8 +18125,8 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 2,829 t-states own (0.00 %) |
 | Called from | `StageEntry` |
 | Calls | `Random` |
-| Reads | `$7F1E`-`$7F2E` (`StartItems`); `$FE08`-`$FE68` |
-| Writes | `$7EFC`-`$7F0C` (`CarriedItems`); `$FE08`-`$FE69` |
+| Reads | `$7F1E`-`$7F2E` (`StartItems`); `$FE08`-`$FE68` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 53 more) |
+| Writes | `$7EFC`-`$7F0C` (`CarriedItems`); `$FE08`-`$FE69` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 53 more) |
 
 #### `ScoreBurst200` (`$9FD5`)
 
@@ -18202,7 +18156,7 @@ Witness: L1 1 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 103 t-states own (0.00 %) |
 | Called from | `DrawDragon` (tail) |
 | Calls | `AddScore`, `StartBurst` (tail) |
-| Writes | `$FE4D` |
+| Writes | `$FE4D` (`DragonHits`) |
 
 #### `ThroneBossBeaten` (`$A02A`)
 
@@ -18217,7 +18171,7 @@ Witness: L1 1 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 141 t-states own (0.00 %) |
 | Called from | `ThroneBossStep` (tail) |
 | Calls | `AddScore`, `SpawnBonus` (tail), `StartBurst` |
-| Writes | `$FE65` |
+| Writes | `$FE65` (`ThroneBossHits`) |
 
 #### `ScoreBurst20` (`$A04E`)
 
@@ -18269,7 +18223,7 @@ Witness: L1 4 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4 calls, 484 t-states own (0.00 %) |
 | Called from | `StrikeableActor` (tail) |
-| Reads | `$75B8`-`$75D8` (`ActorsY+197`, `LastActor`); `$FE30` |
+| Reads | `$75B8`-`$75D8` (`ActorsY+197`, `LastActor`); `$FE30` (`RoomNumber`) |
 
 #### `DropItemKind8` (`$A0B4`)
 
@@ -18301,7 +18255,7 @@ Witness: L1 3 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 3 calls, 357 t-states own (0.00 %) |
 | Called from | `StrikeableActor` (tail) |
 | Calls | `SpawnItem` (tail), `RemoveActor` |
-| Reads | `$75B8`-`$75D8` (`ActorsY+197`, `LastActor`); `$FE30` |
+| Reads | `$75B8`-`$75D8` (`ActorsY+197`, `LastActor`); `$FE30` (`RoomNumber`) |
 
 #### `ItemHandler` (`$A108`)
 
@@ -18316,8 +18270,8 @@ Witness: L1 355 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 355 calls, 40,857 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `AddScore`, `AddItem`, `HeroWithinY`, `RemoveActor` (tail), `SetCycleColour` |
-| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`, `ActorsY`); `$FE57` |
-| Writes | `$FE57` |
+| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`, `ActorsY`); `$FE57` (`PiecesComplete`) |
+| Writes | `$FE57` (`PiecesComplete`) |
 
 #### `HeroWithinY` (`$A13D`)
 
@@ -18365,8 +18319,8 @@ Witness: L1 14 (rzx-r3).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 14 calls, 411,183 t-states own (0.03 %) |
 | Called from | `ScoreBurst200`, `DragonBeaten` (tail), `ThroneBossBeaten`, `ScoreBurst20` (tail) |
 | Calls | `Random` |
-| Reads | `$EFBC`-`$EFF9` (`BurstShapes`, `BurstShape2`, `BurstShapeBoss`); `$FE14` |
-| Writes | `$7040`-`$7198` (`RoomAttributes`, `RoomAttributesCell`); `$A30F`-`$A312` (`ParticleInks`); `$FE0A`-`$FE14`; `$FE3D`-`$FE3E` |
+| Reads | `$EFBC`-`$EFF9` (`BurstShapes`, `BurstShape2`, `BurstShapeBoss`); `$FE14` (`WorkByte`) |
+| Writes | `$7040`-`$7198` (`RoomAttributes`, `RoomAttributesCell`); `$A30F`-`$A312` (`ParticleInks`); `$FE0A`-`$FE14` (`RandomPointer`, `SavedSP`, `InitOnly10`, `InitOnly12` and 1 more); `$FE3D`-`$FE3E` (`BurstTimer`, `BurstSmall`) |
 
 #### `UpdateBurst` (`$A201`)
 
@@ -18384,8 +18338,8 @@ Witness: L1 6278 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 4,901 calls, 7,640,240 t-states own (0.62 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `AttrShadowAddressA` |
-| Reads | `$7040`-`$7198` (`RoomAttributes`, `RoomAttributesCell`); `$A30F`-`$A334` (`ParticleInks`, `BurstSteps`); `$EEB9`-`$EFBA` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`); `$FE3D`-`$FE3E` |
-| Writes | `$5C0B`-`$6D01` (`PlayBufferTail`, `ShadowAttributes`); `$6DEB`-`$7001` (`PlayAttributesCell+41`, `HudPicture`); `$7040`-`$7195` (`RoomAttributes`, `RoomAttributesCell`); `$A2C0`-`$A2C1` (`ParticleGlyph+1`); `$FE3D` |
+| Reads | `$7040`-`$7198` (`RoomAttributes`, `RoomAttributesCell`); `$A30F`-`$A334` (`ParticleInks`, `BurstSteps`); `$EEB9`-`$EFBA` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`); `$FE3D`-`$FE3E` (`BurstTimer`, `BurstSmall`) |
+| Writes | `$5C0B`-`$6D01` (`PlayBufferTail`, `ShadowAttributes`); `$6DEB`-`$7001` (`PlayAttributesCell+41`, `HudPicture`); `$7040`-`$7195` (`RoomAttributes`, `RoomAttributesCell`); `$A2C0`-`$A2C1` (`ParticleGlyph+1`); `$FE3D` (`BurstTimer`) |
 
 #### `StopBurst` (`$A309`)
 
@@ -18446,7 +18400,7 @@ Witness: L1 9 (rzx-r3).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 9 calls, 1,188 t-states own (0.00 %) |
 | Called from | `StrikeableActor` |
-| Reads | `$75C8` (`ActorsY+213`); `$75DA` (`LastActor+16`); `$9B8F`-`$9BB9` (`Grid1Placements`); `$FE25`-`$FE26` |
+| Reads | `$75C8` (`ActorsY+213`); `$75DA` (`LastActor+16`); `$9B8F`-`$9BB9` (`Grid1Placements`); `$FE25`-`$FE26` (`Placements`) |
 | Writes | `$9B8F`-`$9BB9` (`Grid1Placements`) |
 
 #### `ReviveAllPlacements` (`$A69F`)
@@ -18464,7 +18418,7 @@ Witness: L1 2 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 1 call, 835 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 1 call, 835 t-states own (0.00 %) |
 | Called from | `StageEntry` |
-| Reads | `$9B62`-`$9B8C` (`Grid0Placements`); `$FE25`-`$FE26` |
+| Reads | `$9B62`-`$9B8C` (`Grid0Placements`); `$FE25`-`$FE26` (`Placements`) |
 | Writes | `$9B62`-`$9B89` (`Grid0Placements`) |
 
 #### `SpawnActor` (`$A6AF`)
@@ -18502,8 +18456,8 @@ Witness: L1 39 (rzx-r3, s3-right).
 | Runs (s3-right: stage 3 from the RZX run's snapshot, a walk to the right) | 3 calls, 21,054 t-states own (0.00 %) |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 36 calls, 432,123 t-states own (0.03 %) |
 | Called from | `RoomChange` (tail) |
-| Reads | `$7501`-`$75D9` (`ActorsY+14`, `LastActor`); `$9B62`-`$9C6F` (`Grid0Placements`, `ActorKinds`); `$FE14`-`$FE26` |
-| Writes | `$755E`-`$75DB` (`ActorsY+107`, `LastActor`); `$FE14` |
+| Reads | `$7501`-`$75D9` (`ActorsY+14`, `LastActor`); `$9B62`-`$9C6F` (`Grid0Placements`, `ActorKinds`); `$FE14`-`$FE26` (`WorkByte`, `ItemSelected`, `ItemLast`, `ItemFirst` and 7 more) |
+| Writes | `$755E`-`$75DB` (`ActorsY+107`, `LastActor`); `$FE14` (`WorkByte`) |
 
 #### `RunActorHandlers` (`$A7BB`)
 
@@ -18636,8 +18590,8 @@ Witness: L1 121 (rzx-r3, s3-right).
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 89 calls, 3,827 t-states own (0.00 %) |
 | Called from | `ThrowItem` (tail), `FireBolt` (tail), `HeroDeath` |
 | Calls | `AddMissileFrom` (falls into) |
-| Reads | `$7610`-`$763A` (`MissilesHigh`, `MissilesHighY`); `$FE27` |
-| Writes | `$7610`-`$763F` (`MissilesHigh`, `MissilesHighY`); `$FE27` |
+| Reads | `$7610`-`$763A` (`MissilesHigh`, `MissilesHighY`); `$FE27` (`MissileCursor`) |
+| Writes | `$7610`-`$763F` (`MissilesHigh`, `MissilesHighY`); `$FE27` (`MissileCursor`) |
 
 #### `AddMissileFrom` (`$B33A`)
 
@@ -18651,8 +18605,8 @@ Witness: L1 163 (rzx-r3, s3-right).
 | --- | --- |
 | Runs (rzx-r3: the RZX run's stage 3 replayed pass by pass) | 131 calls, 34,848 t-states own (0.00 %) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
-| Reads | `$75E0`-`$763A` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more); `$FE27` |
-| Writes | `$75E0`-`$763F` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more); `$FE27` |
+| Reads | `$75E0`-`$763A` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more); `$FE27` (`MissileCursor`) |
+| Writes | `$75E0`-`$763F` (`Missiles`, `MissilesY`, `HudColours`, `MissilesHigh` and 1 more); `$FE27` (`MissileCursor`) |
 
 #### `UpdateMissiles` (`$B384`)
 
@@ -18747,8 +18701,8 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 call, 509,265 t-states own (0.09 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 3,932,632 t-states own (0.23 %) |
 | Calls | `RoomEvents`, `ClearActors`, `ResetObjectLists`, `StageSetUp`, `StageFadeIn`, `ClearBuffer`, `CopyBuffer`, `InitStageState`, `StartGrid`, `PlaceHeroAtStart`, `ReviveAllPlacements`, `RunActorHandlers`, `DrawActors` |
-| Reads | `$5800`-`$58BF` (screen); `$74EA` (`HeroState`); `$FE5D` |
-| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`); `$FE24`-`$FE27`; `$FE5D` |
+| Reads | `$5800`-`$58BF` (screen); `$74EA` (`HeroState`); `$FE5D` (`Lives`) |
+| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`); `$FE24`-`$FE27` (`RoomGrid`, `Placements`); `$FE5D` (`Lives`) |
 | Ports in | `$FEFE` |
 
 #### `StageSetUp` (`$9715`)
@@ -18766,7 +18720,7 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Called from | `StageEntry`, `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ClearShadowAttributes`, `DissolveHud`, `ClearScreen`, `WaitFrames`, `FillShadowAttributes`, `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
 | Reads | `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`) |
-| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7D2D` (`CycleWindowFrame`); `$FE17` |
+| Writes | `$6D00`-`$6DBF` (`ShadowAttributes`); `$7D2D` (`CycleWindowFrame`); `$FE17` (`ItemSelected`) |
 
 #### `StageFadeIn` (`$978E`)
 
@@ -18782,8 +18736,8 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 1,193,977 t-states own (0.07 %) |
 | Called from | `StageEntry` |
 | Calls | `FadeInStep`, `IdlePasses` |
-| Reads | `$979E` (`FadeInFrame+2`); `$FE32` |
-| Writes | `$FE32` |
+| Reads | `$979E` (`FadeInFrame+2`); `$FE32` (`PassCounter`) |
+| Writes | `$FE32` (`PassCounter`) |
 
 #### `IdlePasses` (`$97B2`)
 
@@ -18873,7 +18827,7 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 7,176 t-states own (0.00 %) |
 | Called from | `StageExit` (tail) |
 | Calls | `ClearBuffer` |
-| Reads | `$5800`-`$58BF` (screen); `$FE5D` |
+| Reads | `$5800`-`$58BF` (screen); `$FE5D` (`Lives`) |
 | Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$7600`-`$76BF` (`HudColours`, `MissilesHigh`, `DigitBuffer`, `SpanTable`) |
 
 #### `EndStageSave` (`$78B6`)
@@ -18902,7 +18856,7 @@ Witness: L1 8620 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 calls, 43,781,862 t-states own (7.78 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 33,277,558 t-states own (1.92 %) |
 | Called from | `MainLoop` |
-| Reads | `$7982`-`$79C3` (`PaceWaits`); `$FE31`; `$FE47` |
+| Reads | `$7982`-`$79C3` (`PaceWaits`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`) |
 
 #### `CheckPause` (`$79E2`)
 
@@ -18933,8 +18887,8 @@ Witness: L1 8679 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,704 calls, 631,899 t-states own (0.04 %) |
 | Called from | `MainLoop`, `IdlePasses` |
 | Calls | `LivesFlashStep` (tail), `ApplyEnergyChange`, `GameOverStep`, `DrawEnergyBar` |
-| Reads | `$FE32` |
-| Writes | `$FE32` |
+| Reads | `$FE32` (`PassCounter`) |
+| Writes | `$FE32` (`PassCounter`) |
 
 ### Stage 4 (TZX block 49): render
 
@@ -18969,7 +18923,7 @@ Witness: L1 9426 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 968 calls, 2,770,733 t-states own (0.49 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 8,458 calls, 24,057,287 t-states own (1.39 %) |
 | Called from | `EndStageSave`, `ShowScore`, `ShowItemCount`, `ShowPieceTaken`, `GameOverStep`, `RevealScore` |
-| Reads | `$5B00`-`$5B0B`; `$7640`-`$766F` (`DigitBuffer`); `$90CA`-`$90D5` (`BlankIcon`); `$D01D`-`$D05C` (`GameOverPicture`); `$E27F`-`$E2B6` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F`; 1 more ranges |
+| Reads | `$5B00`-`$5B0B` (`PlayBuffer`); `$7640`-`$766F` (`DigitBuffer`); `$90CA`-`$90D5` (`BlankIcon`); `$D01D`-`$D05C` (`GameOverPicture`); `$E27F`-`$E2B6` (`PieceSprites`, `PieceSprite1`); `$FB10`-`$FB1F` (`ScreenLineTable+16`); 1 more ranges |
 | Writes | `$4026`-`$419E` (screen); `$4226`-`$429E` (screen); `$4326`-`$439E` (screen); `$4426`-`$449E` (screen); `$4526`-`$459E` (screen); `$4626`-`$469E` (screen); 3 more ranges |
 
 #### `PreShiftSprite` (`$7F89`)
@@ -19090,8 +19044,8 @@ Witness: L1 67002 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 6,428 calls, 361,540 t-states own (0.06 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 60,574 calls, 3,405,757 t-states own (0.20 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5B0B`-`$5B4B`; `$5B6B`; `$5F01`-`$5F59`; `$6103`-`$6157`; `$622A`-`$6AF8`; `$6C80` (`PlayBufferTail+65`); 10 more ranges |
-| Writes | `$5B0B`-`$5B2B`; `$5B4B`; `$5B6B`; `$5F01`-`$5F59`; `$6103`-`$6157`; `$622A`-`$6AF8`; 4 more ranges |
+| Reads | `$5B0B`-`$5B4B` (`PlayBuffer+11`); `$5B6B` (`PlayBuffer+107`); `$5F01`-`$5F59` (`PlayBuffer+1025`); `$6103`-`$6157` (`PlayBuffer+1539`); `$622A`-`$6AF8` (`PlayBuffer+1834`); `$6C80` (`PlayBufferTail+65`); 10 more ranges |
+| Writes | `$5B0B`-`$5B2B` (`PlayBuffer+11`); `$5B4B` (`PlayBuffer+75`); `$5B6B` (`PlayBuffer+107`); `$5F01`-`$5F59` (`PlayBuffer+1025`); `$6103`-`$6157` (`PlayBuffer+1539`); `$622A`-`$6AF8` (`PlayBuffer+1834`); 4 more ranges |
 
 #### `PlotRow1Mirrored` (`$8D7C`)
 
@@ -19105,8 +19059,8 @@ Witness: L1 18883 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 18,883 calls, 1,886,712 t-states own (0.11 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6228`-`$68FC`; `$E0F4`-`$E10A` (`HeroWalkSprites+592`); `$E64B`-`$E661` (`HeroLeapSprites+116`); `$FA00`-`$FA70`; `$FA88`-`$FAA0`; `$FAC0`; 1 more ranges |
-| Writes | `$6228`-`$68FC` |
+| Reads | `$6228`-`$68FC` (`PlayBuffer+1832`); `$E0F4`-`$E10A` (`HeroWalkSprites+592`); `$E64B`-`$E661` (`HeroLeapSprites+116`); `$FA00`-`$FA70` (`BitReverse`); `$FA88`-`$FAA0` (`BitReverse+136`); `$FAC0` (`BitReverse+192`); 1 more ranges |
+| Writes | `$6228`-`$68FC` (`PlayBuffer+1832`) |
 
 #### `PlotRow2` (`$8D8E`)
 
@@ -19121,8 +19075,8 @@ Witness: L1 88666 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 3,776 calls, 331,471 t-states own (0.06 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 84,890 calls, 7,412,355 t-states own (0.43 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5D0F`-`$6AFA`; `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`); `$D46F`-`$D4BC` (`ScorpionSprites+30`); 7 more ranges |
-| Writes | `$5D0F`-`$6AFA`; `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`) |
+| Reads | `$5D0F`-`$6AFA` (`PlayBuffer+527`); `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`); `$D46F`-`$D4BC` (`ScorpionSprites+30`); 7 more ranges |
+| Writes | `$5D0F`-`$6AFA` (`PlayBuffer+527`); `$6C80`-`$6C81` (`PlayBufferTail+65`); `$6CA0`-`$6CA1` (`PlayBufferTail+97`); `$6CC0`-`$6CC1` (`PlayBufferTail+129`); `$6CE0`-`$6CE1` (`PlayBufferTail+161`) |
 
 #### `PlotRow2Mirrored` (`$8D9E`)
 
@@ -19136,8 +19090,8 @@ Witness: L1 29976 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 29,976 calls, 4,476,049 t-states own (0.26 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F8B`-`$5F94`; `$5FAB`-`$6015`; `$602A`-`$6035`; `$604A`-`$6055`; `$606A`-`$6075`; `$608A`-`$6095`; 9 more ranges |
-| Writes | `$5F8B`-`$5F94`; `$5FAB`-`$6015`; `$602A`-`$6035`; `$604A`-`$6055`; `$606A`-`$6075`; `$608A`-`$6095`; 1 more ranges |
+| Reads | `$5F8B`-`$5F94` (`PlayBuffer+1163`); `$5FAB`-`$6015` (`PlayBuffer+1195`); `$602A`-`$6035` (`PlayBuffer+1322`); `$604A`-`$6055` (`PlayBuffer+1354`); `$606A`-`$6075` (`PlayBuffer+1386`); `$608A`-`$6095` (`PlayBuffer+1418`); 9 more ranges |
+| Writes | `$5F8B`-`$5F94` (`PlayBuffer+1163`); `$5FAB`-`$6015` (`PlayBuffer+1195`); `$602A`-`$6035` (`PlayBuffer+1322`); `$604A`-`$6055` (`PlayBuffer+1354`); `$606A`-`$6075` (`PlayBuffer+1386`); `$608A`-`$6095` (`PlayBuffer+1418`); 1 more ranges |
 
 #### `PlotRow3` (`$8DB8`)
 
@@ -19150,8 +19104,8 @@ Witness: L1 46065 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1,512 calls, 178,957 t-states own (0.03 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 44,553 calls, 5,289,934 t-states own (0.31 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F97`-`$5FF9`; `$6017`-`$6119`; `$6136`-`$6139`; `$6156`-`$6159`; `$6176`-`$6ACA`; `$6AE7`-`$6AEA`; 8 more ranges |
-| Writes | `$5F97`-`$5FF9`; `$6017`-`$6119`; `$6136`-`$6139`; `$6156`-`$6159`; `$6176`-`$6ACA`; `$6AE7`-`$6AEA` |
+| Reads | `$5F97`-`$5FF9` (`PlayBuffer+1175`); `$6017`-`$6119` (`PlayBuffer+1303`); `$6136`-`$6139` (`PlayBuffer+1590`); `$6156`-`$6159` (`PlayBuffer+1622`); `$6176`-`$6ACA` (`PlayBuffer+1654`); `$6AE7`-`$6AEA` (`PlayBuffer+4071`); 8 more ranges |
+| Writes | `$5F97`-`$5FF9` (`PlayBuffer+1175`); `$6017`-`$6119` (`PlayBuffer+1303`); `$6136`-`$6139` (`PlayBuffer+1590`); `$6156`-`$6159` (`PlayBuffer+1622`); `$6176`-`$6ACA` (`PlayBuffer+1654`); `$6AE7`-`$6AEA` (`PlayBuffer+4071`) |
 
 #### `PlotRow3Mirrored` (`$8DCD`)
 
@@ -19163,8 +19117,8 @@ Witness: L1 32649 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 32,649 calls, 6,397,922 t-states own (0.37 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$5F8B`-`$6015`; `$602B`-`$6176`; `$6187`-`$68A9`; `$68C7`-`$68C9`; `$68E7`-`$68E9`; `$CBAD`-`$CBDF` (`PendulumSprites`); 7 more ranges |
-| Writes | `$5F8B`-`$6015`; `$602B`-`$68A9`; `$68C7`-`$68C9`; `$68E7`-`$68E9` |
+| Reads | `$5F8B`-`$6015` (`PlayBuffer+1163`); `$602B`-`$6176` (`PlayBuffer+1323`); `$6187`-`$68A9` (`PlayBuffer+1671`); `$68C7`-`$68C9` (`PlayBuffer+3527`); `$68E7`-`$68E9` (`PlayBuffer+3559`); `$CBAD`-`$CBDF` (`PendulumSprites`); 7 more ranges |
+| Writes | `$5F8B`-`$6015` (`PlayBuffer+1163`); `$602B`-`$68A9` (`PlayBuffer+1323`); `$68C7`-`$68C9` (`PlayBuffer+3527`); `$68E7`-`$68E9` (`PlayBuffer+3559`) |
 
 #### `PlotRow4` (`$8DEF`)
 
@@ -19176,8 +19130,8 @@ Witness: L1 4631 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 4,631 calls, 695,259 t-states own (0.04 %) |
 | Called from | `DrawActorSprite` |
-| Reads | `$6556`-`$677F`; `$6796`-`$679F`; `$67B6`-`$67BF`; `$67D6`-`$67DF`; `$67F6`-`$67FF`; `$6816`-`$681F`; 4 more ranges |
-| Writes | `$6556`-`$677F`; `$6796`-`$679F`; `$67B6`-`$67BF`; `$67D6`-`$67DF`; `$67F6`-`$67FF`; `$6816`-`$681F`; 1 more ranges |
+| Reads | `$6556`-`$677F` (`PlayBuffer+2646`); `$6796`-`$679F` (`PlayBuffer+3222`); `$67B6`-`$67BF` (`PlayBuffer+3254`); `$67D6`-`$67DF` (`PlayBuffer+3286`); `$67F6`-`$67FF` (`PlayBuffer+3318`); `$6816`-`$681F` (`PlayBuffer+3350`); 4 more ranges |
+| Writes | `$6556`-`$677F` (`PlayBuffer+2646`); `$6796`-`$679F` (`PlayBuffer+3222`); `$67B6`-`$67BF` (`PlayBuffer+3254`); `$67D6`-`$67DF` (`PlayBuffer+3286`); `$67F6`-`$67FF` (`PlayBuffer+3318`); `$6816`-`$681F` (`PlayBuffer+3350`); 1 more ranges |
 
 #### `PlotRow4Mirrored` (`$8E09`)
 
@@ -19254,7 +19208,7 @@ Witness: L1 47632 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 458 calls, 11,972,840 t-states own (0.69 %) |
 | Called from | `DrawBossPicture` |
 | Reads | `$C4A5`-`$C692` (`BossPicture`) |
-| Writes | `$5F1E`-`$6A7E`; `$6A9E`-`$6ADE`; `$6AFE`; `$6B1E`-`$6B3E`; `$6B5E`-`$6BBE`; `$6BDE`; 1 more ranges |
+| Writes | `$5F1E`-`$6A7E` (`PlayBuffer+1054`); `$6A9E`-`$6ADE` (`PlayBuffer+3998`); `$6AFE` (`PlayBuffer+4094`); `$6B1E`-`$6B3E` (`PlayBuffer+4126`); `$6B5E`-`$6BBE` (`PlayBuffer+4190`); `$6BDE` (`PlayBuffer+4318`); 1 more ranges |
 
 #### `FillAttributes` (`$9163`)
 
@@ -19320,8 +19274,8 @@ Witness: L1 8619 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 314,856,994 t-states own (18.19 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyBuffer` |
-| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$921F` (`RestoreAttrRow`); `$FE1C` |
-| Writes | `$58C2`-`$5AFD` (screen); `$FE1C` |
+| Reads | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$921F` (`RestoreAttrRow`); `$FE1C` (`RestoreAttributes`) |
+| Writes | `$58C2`-`$5AFD` (screen); `$FE1C` (`RestoreAttributes`) |
 
 #### `FadeInStep` (`$9612`)
 
@@ -19336,7 +19290,7 @@ Witness: L1 70 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 35 calls, 2,677,494 t-states own (0.48 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 35 calls, 2,677,494 t-states own (0.15 %) |
 | Called from | `StageFadeIn` |
-| Reads | `$58C2`-`$5AFD` (screen); `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$FE32` |
+| Reads | `$58C2`-`$5AFD` (screen); `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$FE32` (`PassCounter`) |
 | Writes | `$58C2`-`$5AFD` (screen) |
 
 #### `BuildSpans` (`$9959`)
@@ -19353,8 +19307,8 @@ Witness: L1 57 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 55 calls, 6,045,583 t-states own (0.35 %) |
 | Called from | `RoomChange` |
 | Calls | `AddSpan` |
-| Reads | `$5B00`-`$5BBC`; `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$777E` (`SpanTable`, `SpanTableRest`); `$FE1D`-`$FE20`; `$FE3F` |
-| Writes | `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$777E` (`SpanTable`, `SpanTableRest`); `$998E`-`$998F` (`BuildSpansKinds+1`); `$FE1D`-`$FE20`; `$FE3F` |
+| Reads | `$5B00`-`$5BBC` (`PlayBuffer`); `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$777E` (`SpanTable`, `SpanTableRest`); `$FE1D`-`$FE20` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE3F` (`SpanOpen`) |
+| Writes | `$7282`-`$74BD` (`CellsPlay`); `$76A0`-`$777E` (`SpanTable`, `SpanTableRest`); `$998E`-`$998F` (`BuildSpansKinds+1`); `$FE1D`-`$FE20` (`SpanCount`, `SpanRow`, `CellColumn`); `$FE3F` (`SpanOpen`) |
 
 #### `AddSpan` (`$99E1`)
 
@@ -19369,7 +19323,7 @@ Witness: L1 1238 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 30 calls, 11,284 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1,208 calls, 454,308 t-states own (0.03 %) |
 | Called from | `BuildSpans` |
-| Reads | `$FB60`-`$FC71`; `$FE1F`-`$FE20` |
+| Reads | `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE1F`-`$FE20` (`SpanRow`, `CellColumn`) |
 | Writes | `$76A0`-`$7783` (`SpanTable`, `SpanTableRest`) |
 
 #### `ClearBuffer` (`$9A28`)
@@ -19387,8 +19341,8 @@ Witness: L1 8681 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 949 calls, 28,993,454 t-states own (5.15 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,732 calls, 236,593,474 t-states own (13.67 %) |
 | Called from | `StageEntry`, `MainLoop`, `EndStage`, `RoomChange` |
-| Reads | `$FE0E`-`$FE0F` |
-| Writes | `$FE0E`-`$FE0F` |
+| Reads | `$FE0E`-`$FE0F` (`SavedSP`) |
+| Writes | `$FE0E`-`$FE0F` (`SavedSP`) |
 
 #### `CopyBuffer` (`$9A4D`)
 
@@ -19405,7 +19359,7 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 946 calls, 20,443,762 t-states own (3.63 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 357,194,426 t-states own (20.64 %) |
 | Called from | `StageEntry`, `UpdateAttributes` |
-| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1E` |
+| Reads | `$5B02`-`$6CFD` (`PlayBufferTail`); `$FE0E`-`$FE1E` (`SavedSP`, `InitOnly10`, `InitOnly12`, `WorkByte` and 5 more) |
 | Writes | `$40C2`-`$40FD` (screen); `$41C2`-`$41FD` (screen); `$42C2`-`$42FD` (screen); `$43C2`-`$43FD` (screen); `$44C2`-`$44FD` (screen); `$45C2`-`$45FD` (screen); 4 more ranges |
 
 #### `BlackOutPlayArea` (`$A1BA`)
@@ -19488,7 +19442,7 @@ Witness: L1 68207 (rzx-r4, s4-right).
 | Called from | `DrawActors` |
 | Calls | `PlotRow1`, `PlotRow1Mirrored`, `PlotRow2`, `PlotRow2Mirrored`, `PlotRow3`, `PlotRow3Mirrored`, `PlotRow4`, `ColourActor` |
 | Reads | `$74E2`-`$75D3` (`HeroY+1`, `HeroFrame`, `HeroFlags`, `HeroState` and 6 more); `$8F0F`-`$8F1C` (`RowPlotters+4`); `$C763`-`$C9C0` (`BrazierSprites`, `TrapSprites`); `$D005`-`$D01C` (`WaterBitmaps`); `$D05D`-`$D0F6` (`BarrierSprites`); `$D508`-`$D587` (`BossMouthSprites`); 2 more ranges |
-| Writes | `$5B08`-`$6AF7`; `$6B40`-`$6CFD` (`PlayBufferTail`); `$A866`-`$A867` (`RowDrawCall+1`) |
+| Writes | `$5B08`-`$6AF7` (`PlayBuffer+8`); `$6B40`-`$6CFD` (`PlayBufferTail`); `$A866`-`$A867` (`RowDrawCall+1`) |
 
 #### `ColourActor` (`$A885`)
 
@@ -19630,7 +19584,7 @@ Witness: L1 2740 (rzx-r4).
 | Called from | `DrawShotRecord`, `HeadShot` |
 | Calls | `BufferAddressHL` |
 | Reads | `$809A`-`$809B` (`ShotFrames+2`); `$816B`-`$8174` (`HeroBoltFrames+2`); `$B606`-`$B617` (`HeadShotImages+2`); `$CF29`-`$CF32` (`ShotSmallBitmap`); `$CF85`-`$D004` (`BoltBitmaps`, `HeadShotBitmaps`) |
-| Writes | `$5C41`-`$5C42`; `$5C61`-`$5C62`; `$5C81`-`$5C83`; `$5CA1`-`$5CA3`; `$5CC1`-`$6C4B` (`PlayBufferTail`); `$6C6A`-`$6C6B` (`PlayBufferTail+43`); 1 more ranges |
+| Writes | `$5C41`-`$5C42` (`PlayBuffer+321`); `$5C61`-`$5C62` (`PlayBuffer+353`); `$5C81`-`$5C83` (`PlayBuffer+385`); `$5CA1`-`$5CA3` (`PlayBuffer+417`); `$5CC1`-`$6C4B` (`PlayBufferTail`); `$6C6A`-`$6C6B` (`PlayBufferTail+43`); 1 more ranges |
 
 #### `DrawSpriteMirrored` (`$B6CD`)
 
@@ -19645,8 +19599,8 @@ Witness: L1 80 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 80 calls, 118,539 t-states own (0.01 %) |
 | Called from | `DrawShotRecord` |
 | Calls | `BufferAddressHL` |
-| Reads | `$809A`-`$809B` (`ShotFrames+2`); `$CF29`-`$CF32` (`ShotSmallBitmap`); `$FA00`; `$FA21`; `$FA40`; `$FA74`-`$FA80`; 3 more ranges |
-| Writes | `$650A`-`$6559`; `$656A`-`$6579`; `$658A`-`$6599`; `$660A`-`$6610`; `$662A`-`$6630`; `$664A`-`$6650`; 2 more ranges |
+| Reads | `$809A`-`$809B` (`ShotFrames+2`); `$CF29`-`$CF32` (`ShotSmallBitmap`); `$FA00` (`BitReverse`); `$FA21` (`BitReverse+33`); `$FA40` (`BitReverse+64`); `$FA74`-`$FA80` (`BitReverse+116`); 3 more ranges |
+| Writes | `$650A`-`$6559` (`PlayBuffer+2570`); `$656A`-`$6579` (`PlayBuffer+2666`); `$658A`-`$6599` (`PlayBuffer+2698`); `$660A`-`$6610` (`PlayBuffer+2826`); `$662A`-`$6630` (`PlayBuffer+2858`); `$664A`-`$6650` (`PlayBuffer+2890`); 2 more ranges |
 
 #### `ColourSpriteMirrored` (`$B6F6`)
 
@@ -19682,7 +19636,7 @@ Witness: L1 8620 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 3,927,253 t-states own (0.23 %) |
 | Called from | `MainLoop` |
 | Calls | `GetSelectedItem` |
-| Reads | `$5B00`-`$5C3C`; `$74E0` (`HeroRecord`); `$7A4D` (`StageExitFrame+1`); `$FE31`; `$FE47` |
+| Reads | `$5B00`-`$5C3C` (`PlayBuffer`); `$74E0` (`HeroRecord`); `$7A4D` (`StageExitFrame+1`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`) |
 
 #### `StageExit` (`$7A48`)
 
@@ -19709,8 +19663,8 @@ Witness: L1 5974 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 5,974 calls, 3,638,617 t-states own (0.21 %) |
 | Called from | `StageExit` |
-| Reads | `$5B00`-`$5C3B`; `$7AE6`-`$7AFD` (`StarPixels`); `$FB60`-`$FC67` |
-| Writes | `$40C3`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` |
+| Reads | `$5B00`-`$5C3B` (`PlayBuffer`); `$7AE6`-`$7AFD` (`StarPixels`); `$FB60`-`$FC67` (`ScreenLineTable+96`) |
+| Writes | `$40C3`-`$54BD` (screen); `$5502`-`$55BD` (screen); `$5602`-`$56BD` (screen); `$5702`-`$57BD` (screen); `$5B03`-`$5C3B` (`PlayBuffer+3`) |
 
 #### `StartStageExit` (`$7B06`)
 
@@ -19725,7 +19679,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 174,784 t-states own (0.01 %) |
 | Called from | `StageExit` |
 | Calls | `ClearPlayBuffer`, `FillAttributes` |
-| Reads | `$FB60`-`$FC7F` |
+| Reads | `$FB60`-`$FC7F` (`ScreenLineTable+96`) |
 | Writes | `$40C0`-`$57FD` (screen) |
 
 #### `StartStageExitStars` (`$7B2C`)
@@ -19741,7 +19695,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | run into, not called, 26,808 t-states own (0.00 %) |
 | Called from | `FillAttributes` |
 | Calls | `RandomPlayAttrs`, `Random` |
-| Writes | `$5B00`-`$5C3F` |
+| Writes | `$5B00`-`$5C3F` (`PlayBuffer`) |
 
 #### `RandomPlayAttrs` (`$7B68`)
 
@@ -19756,7 +19710,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 72,277 t-states own (0.00 %) |
 | Called from | `StartStageExitStars` |
 | Calls | `Random` |
-| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` |
+| Writes | `$58C2`-`$5ABD` (screen); `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `AddScore` (`$7B94`)
 
@@ -19770,8 +19724,8 @@ Witness: L1 45 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 45 calls, 4,214 t-states own (0.00 %) |
 | Called from | `PieceWaitsPickup`, `ScoreBurst20`, `ScoreBurst80`, `ScoreBurst200`, `BossBeaten`, `ItemHandler` |
-| Reads | `$F9FB`-`$F9FD` |
-| Writes | `$F9FB`-`$F9FD` |
+| Reads | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
+| Writes | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `RenderScore` (`$7BB5`)
 
@@ -19787,7 +19741,7 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 1,406,259 t-states own (0.08 %) |
 | Called from | `ShowScore`, `StageSetUp` |
 | Calls | `RenderDigits` (tail), `NumberToDigits`, `ByteToDigits` |
-| Reads | `$7C60`-`$7C66` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F967`; `$F979`-`$F97F`; `$F999`-`$F99F`; `$F9FB`-`$F9FD` |
+| Reads | `$7C60`-`$7C66` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F967` (`DigitGlyphs`); `$F979`-`$F97F`; `$F999`-`$F99F`; `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7C3A` (`RenderDigitsChar+28`) |
 
 #### `HideLeadingZeros` (`$7BD6`)
@@ -19833,7 +19787,7 @@ Witness: L1 9379 (rzx-r4, s4-right).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 8,433 calls, 23,477,914 t-states own (1.36 %) |
 | Called from | `RenderScore` (tail), `FormatItemCount` (tail) |
-| Reads | `$7C60`-`$7C66` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7E0A`-`$7E0C` (`ItemCountText+2`); `$F959`-`$F9A7` |
+| Reads | `$7C60`-`$7C66` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$7E0A`-`$7E0C` (`ItemCountText+2`); `$F959`-`$F9A7` (`DigitGlyphs`) |
 | Writes | `$7640`-`$766F` (`DigitBuffer`); `$7C3A` (`RenderDigitsChar+28`) |
 
 #### `StartLivesFlash` (`$7E0D`)
@@ -19849,7 +19803,7 @@ Witness: L1 8 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 5 calls, 234 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 3 calls, 90 t-states own (0.00 %) |
 | Called from | `LoseLife`, `AnkhShrine`, `StageSetUp` (tail) |
-| Writes | `$FE55` |
+| Writes | `$FE55` (`LivesFlash`) |
 
 #### `LivesFlashStep` (`$7E13`)
 
@@ -19864,8 +19818,8 @@ Witness: L1 8679 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 975 calls, 109,236 t-states own (0.02 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,704 calls, 315,394 t-states own (0.02 %) |
 | Called from | `PassTick` (tail) |
-| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55`-`$FE5D` |
-| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55` |
+| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55`-`$FE5D` (`LivesFlash`, `GameOverTimer`, `UrnsComplete`, `BossPhase` and 4 more) |
+| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55` (`LivesFlash`) |
 
 #### `ApplyEnergyChange` (`$7ED7`)
 
@@ -19880,8 +19834,8 @@ Witness: L1 8679 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 975 calls, 45,935 t-states own (0.01 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,704 calls, 296,341 t-states own (0.02 %) |
 | Called from | `PassTick` |
-| Reads | `$FE3B`-`$FE49` |
-| Writes | `$FE3B`-`$FE49` |
+| Reads | `$FE3B`-`$FE49` (`Energy`, `InitOnly3D`, `InitOnly3E`, `SpanOpen` and 4 more) |
+| Writes | `$FE3B`-`$FE49` (`Energy`, `InitOnly3D`, `InitOnly3E`, `SpanOpen` and 4 more) |
 
 #### `LoseLife` (`$7F05`)
 
@@ -19896,8 +19850,8 @@ Witness: L1 526 (s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 526 calls, 21,950 t-states own (0.00 %) |
 | Called from | `HeroUpdate`, `CheckDeathZone` (tail) |
 | Calls | `StartLivesFlash`, `HeroDeath` (tail) |
-| Reads | `$74EA` (`HeroState`); `$FE5D` |
-| Writes | `$FE3B`-`$FE5D` |
+| Reads | `$74EA` (`HeroState`); `$FE5D` (`Lives`) |
+| Writes | `$FE3B`-`$FE5D` (`Energy`, `InitOnly3D`, `InitOnly3E`, `SpanOpen` and 23 more) |
 
 #### `FlashPieces` (`$83A1`)
 
@@ -19914,8 +19868,8 @@ In s4-right PieceFlash stayed 0; in rzx-r4 the boxes flashed after each piece (5
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 calls, 62,465 t-states own (0.01 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 678,830 t-states own (0.04 %) |
 | Called from | `MainLoop` |
-| Reads | `$B5BD`-`$B5C4` (`CycleColours`); `$FE4C`-`$FE4D` |
-| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE4D` |
+| Reads | `$B5BD`-`$B5C4` (`CycleColours`); `$FE4C`-`$FE4D` (`PiecesTaken`, `PieceFlash`) |
+| Writes | `$5879`-`$587E` (screen); `$5899`-`$589E` (screen); `$FE4D` (`PieceFlash`) |
 
 #### `ShowPieceTaken` (`$83D3`)
 
@@ -19933,8 +19887,8 @@ In s4-right no piece was taken; in rzx-r4 all five were (the first with the pict
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 216,008 t-states own (0.01 %) |
 | Called from | `MainLoop` |
 | Calls | `CopyToScreen` |
-| Reads | `$FE4C`-`$FE4E` |
-| Writes | `$FE4C`-`$FE53` |
+| Reads | `$FE4C`-`$FE4E` (`PiecesTaken`, `PieceFlash`, `PieceTakenFlag`) |
+| Writes | `$FE4C`-`$FE53` (`PiecesTaken`, `PieceFlash`, `PieceTakenFlag`, `RespawnShiftX` and 4 more) |
 
 #### `GameOverStep` (`$8414`)
 
@@ -19952,8 +19906,8 @@ s4-right: the game over at the end (169 passes with GAME OVER shown). rzx-r4 had
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,704 calls, 238,919 t-states own (0.01 %) |
 | Called from | `PassTick` |
 | Calls | `CopyToScreen`, `FillAttributes`, `CycleColour` |
-| Reads | `$FE56` |
-| Writes | `$844E` (`GameOverBox+4`); `$FE56` |
+| Reads | `$FE56` (`GameOverTimer`) |
+| Writes | `$844E` (`GameOverBox+4`); `$FE56` (`GameOverTimer`) |
 
 #### `GameOverStepDone` (`$844F`)
 
@@ -19980,8 +19934,8 @@ Witness: L1 16 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 16 calls, 1,056 t-states own (0.00 %) |
 | Called from | `ShotHitsHero` (falls into), `ColumnHurts` (tail), `CheckDeadlyFloor` (tail) |
-| Reads | `$74EA` (`HeroState`); `$FE49` |
-| Writes | `$FE49` |
+| Reads | `$74EA` (`HeroState`); `$FE49` (`EnergyChange`) |
+| Writes | `$FE49` (`EnergyChange`) |
 
 #### `DissolveHud` (`$8FD6`)
 
@@ -19996,7 +19950,7 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 call, 2,285,037 t-states own (0.41 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 2,285,037 t-states own (0.13 %) |
 | Called from | `StageSetUp` |
-| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 15 more); `$8FE3` (`DissolveStep+2`); `$9011` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA`; `$FB00`-`$FB5F`; `$FE0A`-`$FE0B` |
+| Reads | `$7000`-`$75FF` (`HudPicture`, `RoomAttributes`, `RoomAttributesCell`, `Cells` and 15 more); `$8FE3` (`DissolveStep+2`); `$9011` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA` (`DissolveMasks`); `$FB00`-`$FB5F` (`ScreenLineTable`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 | Writes | `$4000`-`$41BF` (screen); `$4200`-`$42BF` (screen); `$4300`-`$43BF` (screen); `$4400`-`$44BF` (screen); `$4500`-`$45BF` (screen); `$4600`-`$46BF` (screen); 4 more ranges |
 
 #### `NumberToDigits` (`$910A`)
@@ -20012,7 +19966,7 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 946 calls, 1,542,580 t-states own (0.27 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 16,337,340 t-states own (0.94 %) |
 | Called from | `RenderScore` |
-| Reads | `$F9C1`-`$F9C8` |
+| Reads | `$F9C1`-`$F9C8` (`DecimalTable+2`) |
 | Writes | `$7C62`-`$7C65` (`ScoreDigitsLow`) |
 
 #### `ByteToDigits` (`$913C`)
@@ -20043,7 +19997,7 @@ Witness: L1 8679 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 975 calls, 229,992 t-states own (0.04 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,704 calls, 429,648 t-states own (0.02 %) |
 | Called from | `PassTick` |
-| Reads | `$A5A4`-`$A5AA` (`BarMasks`); `$DADB`-`$DAE0` (`EnergyBarPattern`); `$FE3B`-`$FE48` |
+| Reads | `$A5A4`-`$A5AA` (`BarMasks`); `$DADB`-`$DAE0` (`EnergyBarPattern`); `$FE3B`-`$FE48` (`Energy`, `InitOnly3D`, `InitOnly3E`, `SpanOpen` and 3 more) |
 | Writes | `$4134`-`$4139` (screen); `$4234`-`$4239` (screen); `$4334`-`$4339` (screen); `$4434`-`$4439` (screen); `$4534`-`$4539` (screen); `$4634`-`$4639` (screen); 2 more ranges |
 
 ### Stage 4 (TZX block 49): hero
@@ -20066,7 +20020,7 @@ Witness: L1 170 (rzx-r4).
 | Called from | `MainLoop` |
 | Calls | `FlashSelectedBox` (falls into), `ScrollItemsLeft`, `ScrollItemsRight`, `CycleWindowFrame`, `DrawItemStrip`, `ShowItemCount`, `TestSpaceKey` |
 | Reads | `$586A` (screen); `$7C6D`-`$7C79` (`ItemWindow+6`, `ItemWindowStep`, `ItemWindowFrame`); `$7CA4` (`ItemWindowSettle+1`) |
-| Writes | `$FE32` |
+| Writes | `$FE32` (`PassCounter`) |
 
 #### `FlashSelectedBox` (`$7CAE`)
 
@@ -20125,8 +20079,8 @@ Witness: L1 36 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 33 calls, 49,815,548 t-states own (2.88 %) |
 | Called from | `ItemWindow`, `StageSetUp` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B67`-`$5D97`; `$7CEF` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` |
-| Writes | `$5B67`-`$5D97`; `$FE17` |
+| Reads | `$5B67`-`$5D97` (`PlayBuffer+103`); `$7CEF` (`ScrollItemsLeftByte+14`); `$FE17`-`$FE18` (`ItemSelected`, `ItemLast`) |
+| Writes | `$5B67`-`$5D97` (`PlayBuffer+103`); `$FE17` (`ItemSelected`) |
 
 #### `ScrollItemsRight` (`$7CF9`)
 
@@ -20141,8 +20095,8 @@ Witness: L1 23 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 23 calls, 34,708,089 t-states own (2.01 %) |
 | Called from | `ItemWindow` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B64`-`$5D54`; `$7D23` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` |
-| Writes | `$5B64`-`$5D54`; `$FE17` |
+| Reads | `$5B64`-`$5D54` (`PlayBuffer+100`); `$7D23` (`ScrollItemsRightByte+14`); `$FE17`-`$FE19` (`ItemSelected`, `ItemLast`, `ItemFirst`) |
+| Writes | `$5B64`-`$5D54` (`PlayBuffer+100`); `$FE17` (`ItemSelected`) |
 
 #### `CycleWindowFrame` (`$7D2D`)
 
@@ -20159,8 +20113,8 @@ In s4-right only the patched RET ran (72 times, the roll-in); the colour code fr
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 72 calls, 720 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 2,347 calls, 1,397,570 t-states own (0.08 %) |
 | Called from | `ItemWindow`, `ScrollItemsLeft`, `ScrollItemsRight` |
-| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7D56`-`$7D65` (`WindowFrameColours`); `$FE32` |
-| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE32` |
+| Reads | `$586A`-`$5874` (screen); `$588A`-`$5894` (screen); `$7D56`-`$7D65` (`WindowFrameColours`); `$FE32` (`PassCounter`) |
+| Writes | `$586A`-`$5875` (screen); `$588A`-`$5895` (screen); `$FE32` (`PassCounter`) |
 
 #### `RedrawItemsIfChanged` (`$7D66`)
 
@@ -20176,8 +20130,8 @@ Witness: L1 8620 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 320,752 t-states own (0.02 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawItemStrip`, `ShowItemCount` (tail) |
-| Reads | `$FE46` |
-| Writes | `$FE46` |
+| Reads | `$FE46` (`ItemsChanged`) |
+| Writes | `$FE46` (`ItemsChanged`) |
 
 #### `DrawItemStrip` (`$7D76`)
 
@@ -20193,7 +20147,7 @@ Witness: L1 685 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 682 calls, 813,801 t-states own (0.05 %) |
 | Called from | `ItemWindow`, `RedrawItemsIfChanged`, `StageSetUp` |
 | Calls | `DrawItemIcon`, `ShowItemStrip` (tail) |
-| Reads | `$7F51`-`$7F62` (`CarriedItems`, `CarriedCounts`); `$FE17` |
+| Reads | `$7F51`-`$7F62` (`CarriedItems`, `CarriedCounts`); `$FE17` (`ItemSelected`) |
 
 #### `ShowItemCount` (`$7D9E`)
 
@@ -20224,7 +20178,7 @@ Witness: L1 758 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 758 calls, 248,920 t-states own (0.01 %) |
 | Called from | `ShowItemCount` |
 | Calls | `RenderDigits` (tail) |
-| Reads | `$7F63`-`$7F6A` (`CarriedCounts+6`, `StartItems`); `$FE17` |
+| Reads | `$7F63`-`$7F6A` (`CarriedCounts+6`, `StartItems`); `$FE17` (`ItemSelected`) |
 | Writes | `$7E0A`-`$7E0B` (`ItemCountText+2`) |
 
 #### `DrawItemIcon` (`$7E5A`)
@@ -20241,7 +20195,7 @@ Witness: L1 5480 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 5,456 calls, 12,062,103 t-states own (0.70 %) |
 | Called from | `DrawItemStrip` |
 | Reads | `$7F75`-`$7F88` (`ItemIcons`); `$90CA`-`$90E9` (`BlankIcon`); `$E3A3`-`$E4C2` (`ItemIconBitmaps`) |
-| Writes | `$5B64`-`$5D5B` |
+| Writes | `$5B64`-`$5D5B` (`PlayBuffer+100`) |
 
 #### `ShowItemStrip` (`$7E7F`)
 
@@ -20271,7 +20225,7 @@ Witness: L1 4202 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 150 calls, 414,137 t-states own (0.07 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 4,052 calls, 12,754,469 t-states own (0.74 %) |
 | Called from | `ShowItemStrip` (falls into) |
-| Reads | `$5B68`-`$5C93`; `$5CA8`-`$5CB3`; `$5CC8`-`$5CD3`; `$5CE8`-`$5CF3`; `$5D08`-`$5D13`; `$5D28`-`$5D33`; 1 more ranges |
+| Reads | `$5B68`-`$5C93` (`PlayBuffer+104`); `$5CA8`-`$5CB3` (`PlayBuffer+424`); `$5CC8`-`$5CD3` (`PlayBuffer+456`); `$5CE8`-`$5CF3` (`PlayBuffer+488`); `$5D08`-`$5D13` (`PlayBuffer+520`); `$5D28`-`$5D33` (`PlayBuffer+552`); 1 more ranges |
 | Writes | `$406A`-`$4195` (screen); `$426A`-`$4295` (screen); `$436A`-`$4395` (screen); `$446A`-`$4495` (screen); `$456A`-`$4595` (screen); `$466A`-`$4695` (screen); 1 more ranges |
 
 #### `AddItem` (`$7EA0`)
@@ -20286,8 +20240,8 @@ Witness: L1 17 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 17 calls, 10,485 t-states own (0.00 %) |
 | Called from | `ItemHandler` |
-| Reads | `$7F51`-`$7F68` (`CarriedItems`, `CarriedCounts`); `$FE18` |
-| Writes | `$7F59`-`$7F6A` (`CarriedItems+8`, `CarriedCounts`, `StartItems`); `$FE18`; `$FE46` |
+| Reads | `$7F51`-`$7F68` (`CarriedItems`, `CarriedCounts`); `$FE18` (`ItemLast`) |
+| Writes | `$7F59`-`$7F6A` (`CarriedItems+8`, `CarriedCounts`, `StartItems`); `$FE18` (`ItemLast`); `$FE46` (`ItemsChanged`) |
 
 #### `GetSelectedItem` (`$7F3F`)
 
@@ -20302,7 +20256,7 @@ Witness: L1 35065 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 3,834 calls, 427,994 t-states own (0.08 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 31,231 calls, 3,446,151 t-states own (0.20 %) |
 | Called from | `CheckStageExit`, `AnkhShrine`, `DrainKind9`, `FireKind1`, `FireKind3`, `CheckGridPassages`, `HeroUpdate`, `HeroThrowMissile`, `HeroFireHeld` |
-| Reads | `$7F57`-`$7F5E` (`CarriedItems+6`, `CarriedCounts`); `$FE17` |
+| Reads | `$7F57`-`$7F5E` (`CarriedItems+6`, `CarriedCounts`); `$FE17` (`ItemSelected`) |
 
 #### `IsHeroHitFrame7` (`$802E`)
 
@@ -20348,7 +20302,7 @@ Witness: L1 2174 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 2,090 calls, 66,892 t-states own (0.00 %) |
 | Called from | `CheckWalkBarriers` |
 | Calls | `ReturnNZ` (tail) |
-| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE31`; `$FE47`; `$FE5A` |
+| Reads | `$74E0`-`$74E9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`); `$FE5A` (`BarrierState`) |
 
 #### `HeroRecoil` (`$8B3A`)
 
@@ -20393,8 +20347,8 @@ Witness: L1 522 (s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 522 calls, 24,753 t-states own (0.00 %) |
 | Called from | `HeroUpdate` (tail) |
 | Calls | `RespawnPoint`, `HeroStandFrame` (tail) |
-| Reads | `$74F0` (`HeroCounter`); `$FE32` |
-| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE4F` |
+| Reads | `$74F0` (`HeroCounter`); `$FE32` (`PassCounter`) |
+| Writes | `$74E9`-`$74F0` (`HeroFlags`, `HeroState`, `HeroAttribute`, `HeroBaseX` and 2 more); `$FE4F` (`RespawnShiftX`) |
 
 #### `RespawnPoint` (`$9477`)
 
@@ -20408,7 +20362,7 @@ Witness: L1 8 (s4-right).
 | --- | --- |
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 8 calls, 1,048 t-states own (0.00 %) |
 | Called from | `RespawnCountdown`, `HeroDeath` |
-| Reads | `$9493`-`$9494` (`RespawnPoints+2`); `$FE31`; `$FE47` |
+| Reads | `$9493`-`$9494` (`RespawnPoints+2`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`) |
 
 #### `DrainKind9` (`$951D`)
 
@@ -20423,8 +20377,8 @@ Witness: L1 81 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 81 calls, 6,984 t-states own (0.00 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount` (tail), `GetSelectedItem` |
-| Reads | `$7F66` (`CarriedCounts+9`); `$FE31`-`$FE32`; `$FE47`; `$FE58` |
-| Writes | `$7F66` (`CarriedCounts+9`); `$FE58` |
+| Reads | `$7F66` (`CarriedCounts+9`); `$FE31`-`$FE32` (`RoomNumber`, `PassCounter`); `$FE47` (`GridNumber`); `$FE58` (`BossPhase`) |
+| Writes | `$7F66` (`CarriedCounts+9`); `$FE58` (`BossPhase`) |
 
 #### `FireKind1` (`$954B`)
 
@@ -20439,8 +20393,8 @@ Witness: L1 1198 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1,198 calls, 81,462 t-states own (0.00 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `AddMissileHigh` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7F65` (`CarriedCounts+8`); `$FE4B` |
-| Writes | `$7F65` (`CarriedCounts+8`); `$FE4B` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7F65` (`CarriedCounts+8`); `$FE4B` (`FireLatch`) |
+| Writes | `$7F65` (`CarriedCounts+8`); `$FE4B` (`FireLatch`) |
 
 #### `FireKind3` (`$959F`)
 
@@ -20455,8 +20409,8 @@ Witness: L1 1185 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1,185 calls, 81,371 t-states own (0.00 %) |
 | Called from | `HeroUpdate` |
 | Calls | `ShowItemCount`, `GetSelectedItem`, `ClearKind2Missiles`, `AddMissileHigh` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7F68` (`CarriedCounts+11`); `$FE4B` |
-| Writes | `$7F68` (`CarriedCounts+11`); `$FE4B` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$7F68` (`CarriedCounts+11`); `$FE4B` (`FireLatch`) |
+| Writes | `$7F68` (`CarriedCounts+11`); `$FE4B` (`FireLatch`) |
 
 #### `HeroActor` (`$ABF9`)
 
@@ -20472,8 +20426,8 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 2,203,181 t-states own (0.13 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `CheckHeroFooting`, `CheckRoomExits`, `CheckGridPassages`, `HeroUpdate`, `CheckDeathZone`, `CheckFellOut`, `CheckDeadlyFloor` |
-| Reads | `$9AE6`-`$9B2F` (`Grid0+4`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE24`-`$FE31` |
-| Writes | `$FE2F`-`$FE30` |
+| Reads | `$9AE6`-`$9B2F` (`Grid0+4`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE2F`-`$FE30` (`RoomExitsPtr`) |
 
 #### `CheckHeroFooting` (`$AC2B`)
 
@@ -20506,8 +20460,8 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 2,745,271 t-states own (0.16 %) |
 | Called from | `HeroActor` |
 | Calls | `LoseLife`, `GetSelectedItem`, `HeroRecoil` (tail), `RespawnCountdown` (tail), `DrainKind9`, `FireKind1`, `FireKind3`, `HeroStand` (tail), `HeroStrikeLow` (tail), `HeroStrikeMid` (tail), `HeroStrikeHigh` (tail), `HeroThrow` (tail), `HeroWalk` (tail), `HeroFall` (tail), `HeroLeapBack` (tail), `HeroJump` (tail), `HeroLeap` (tail), `CycleColour` |
-| Reads | `$74E0`-`$74EC` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 2 more); `$FE3B`; `$FE51` |
-| Writes | `$74E8`-`$74EC` (`HeroFrame`, `HeroFlags`, `HeroState`, `HeroAttribute`); `$FE51` |
+| Reads | `$74E0`-`$74EC` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 2 more); `$FE3B` (`Energy`); `$FE51` (`HeroFreeze`) |
+| Writes | `$74E8`-`$74EC` (`HeroFrame`, `HeroFlags`, `HeroState`, `HeroAttribute`); `$FE51` (`HeroFreeze`) |
 
 #### `HeroThrowMissile` (`$AE97`)
 
@@ -20957,8 +20911,8 @@ Witness: L1 4 (s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 4 calls, 11,185 t-states own (0.00 %) |
 | Called from | `LoseLife` (tail) |
 | Calls | `RespawnPoint`, `AddMissileHigh` |
-| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`); `$FE4F` |
-| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 5 more); `$7610`-`$763F` (`MissilesHigh`); `$FE4F`-`$FE50` |
+| Reads | `$74E0`-`$74E1` (`HeroRecord`, `HeroY`); `$7610`-`$763E` (`MissilesHigh`); `$FE4F` (`RespawnShiftX`) |
+| Writes | `$74E0`-`$74F0` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 5 more); `$7610`-`$763F` (`MissilesHigh`); `$FE4F`-`$FE50` (`RespawnShiftX`, `RespawnShiftY`) |
 
 #### `CheckDeathZone` (`$B71E`)
 
@@ -20974,7 +20928,7 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 243,800 t-states own (0.01 %) |
 | Called from | `HeroActor` |
 | Calls | `LoseLife` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$FE31`; `$FE47` |
+| Reads | `$74E0` (`HeroRecord`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`) |
 
 #### `CheckFellOut` (`$B733`)
 
@@ -21064,8 +21018,8 @@ Witness: L1 400 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 400 calls, 130,272 t-states own (0.01 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `DrawShotRecord` (tail), `ShotHitsActor`, `RemoveActor` (tail) |
-| Reads | `$7610`-`$763E` (`MissilesHigh`); `$FE31`; `$FE47`; `$FE58` |
-| Writes | `$7610`-`$763D` (`MissilesHigh`); `$FE59` |
+| Reads | `$7610`-`$763E` (`MissilesHigh`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`); `$FE58` (`BossPhase`) |
+| Writes | `$7610`-`$763D` (`MissilesHigh`); `$FE59` (`BossFlash`) |
 
 #### `UpdateDart` (`$8450`)
 
@@ -21081,7 +21035,7 @@ Witness: L1 74 (rzx-r4).
 | Called from | `UpdateMissiles` |
 | Calls | `ShotHitsActor`, `BufferAddressHL`, `AttrShadowAddress`, `RemoveActor` (tail) |
 | Reads | `$75E0`-`$760C` (`Missiles`, `HudColours`) |
-| Writes | `$654C`-`$6553`; `$656C`-`$6573`; `$694A`-`$694B`; `$696A`-`$696B`; `$6F0C`-`$6F13` (`PlayAttributesCell+330`); `$6F8A`-`$6F8B` (`PlayAttributesCell+456`); 1 more ranges |
+| Writes | `$654C`-`$6553` (`PlayBuffer+2636`); `$656C`-`$6573` (`PlayBuffer+2668`); `$694A`-`$694B` (`PlayBuffer+3658`); `$696A`-`$696B` (`PlayBuffer+3690`); `$6F0C`-`$6F13` (`PlayAttributesCell+330`); `$6F8A`-`$6F8B` (`PlayAttributesCell+456`); 1 more ranges |
 
 #### `UpdatePathFlyer` (`$8484`)
 
@@ -21096,8 +21050,8 @@ Witness: L1 3304 (s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 3,304 calls, 8,862,584 t-states own (1.57 %) |
 | Called from | `UpdateMissiles` |
 | Calls | `BufferAddressHL`, `RemoveActor` (tail), `ColourYellowMagenta`, `ColourSprite` (tail) |
-| Reads | `$6129`-`$612B`; `$6149`-`$614C`; `$6169`-`$616C`; `$6188`-`$618C`; `$61A8`-`$61AC`; `$61C8`-`$61CC`; 6 more ranges |
-| Writes | `$6129`-`$612B`; `$6149`-`$614C`; `$6169`-`$616C`; `$6188`-`$618C`; `$61A8`-`$61AC`; `$61C8`-`$61CC`; 2 more ranges |
+| Reads | `$6129`-`$612B` (`PlayBuffer+1577`); `$6149`-`$614C` (`PlayBuffer+1609`); `$6169`-`$616C` (`PlayBuffer+1641`); `$6188`-`$618C` (`PlayBuffer+1672`); `$61A8`-`$61AC` (`PlayBuffer+1704`); `$61C8`-`$61CC` (`PlayBuffer+1736`); 6 more ranges |
+| Writes | `$6129`-`$612B` (`PlayBuffer+1577`); `$6149`-`$614C` (`PlayBuffer+1609`); `$6169`-`$616C` (`PlayBuffer+1641`); `$6188`-`$618C` (`PlayBuffer+1672`); `$61A8`-`$61AC` (`PlayBuffer+1704`); `$61C8`-`$61CC` (`PlayBuffer+1736`); 2 more ranges |
 
 #### `ShotHitsActor` (`$85CC`)
 
@@ -21191,7 +21145,7 @@ In s4-right both calls were in grid 0. In rzx-r4 (44 calls) every grid's branch 
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 44 calls, 6,333 t-states own (0.00 %) |
 | Called from | `StageEntry`, `EnterGrid9`, `LeaveRoomRight`, `LeaveRoomLeft`, `LeaveRoomDown`, `BossBeaten` (tail) |
 | Calls | `SpawnItem` (tail) |
-| Reads | `$FE31`; `$FE47`-`$FE58` |
+| Reads | `$FE31` (`RoomNumber`); `$FE47`-`$FE58` (`GridNumber`, `EnergyShown`, `EnergyChange`, `SpawnDelay` and 14 more) |
 | Writes | `$7502`-`$750F` (`Actors+16`); `$754A`-`$7557` (`Actors+88`) |
 
 #### `SpawnBonus` (`$822C`)
@@ -21220,7 +21174,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 228 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid9` (`$8BBD`)
 
@@ -21235,7 +21189,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 245 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `RoomEvents`, `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid2` (`$8BF1`)
 
@@ -21250,7 +21204,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 220 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid3` (`$8C20`)
 
@@ -21266,7 +21220,7 @@ Witness: L1 1 (rzx-r4).
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
 | Reads | `$74E9` (`HeroFlags`) |
-| Writes | `$74E9` (`HeroFlags`); `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$74E9` (`HeroFlags`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid4` (`$8C53`)
 
@@ -21281,7 +21235,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 220 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid5` (`$8C82`)
 
@@ -21296,7 +21250,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 220 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `EnterGrid8` (`$8CB1`)
 
@@ -21311,7 +21265,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 220 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `ReturnToGrid8` (`$8CE0`)
 
@@ -21327,7 +21281,7 @@ Witness: L1 1 (rzx-r4).
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
 | Reads | `$74E9` (`HeroFlags`) |
-| Writes | `$74E9` (`HeroFlags`); `$9B23` (`Grid8+2`); `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$74E9` (`HeroFlags`); `$9B23` (`Grid8+2`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `ReturnToGrid1` (`$8D23`)
 
@@ -21342,8 +21296,8 @@ Witness: L1 4 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 4 calls, 1,263 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Reads | `$FE47` |
-| Writes | `$9B00` (`Grid1+3`); `$FE24`-`$FE31`; `$FE47` |
+| Reads | `$FE47` (`GridNumber`) |
+| Writes | `$9B00` (`Grid1+3`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `ResetObjectLists` (`$942B`)
 
@@ -21387,7 +21341,7 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 220 t-states own (0.00 %) |
 | Called from | `CheckGridPassages` (tail) |
 | Calls | `SpawnActor`, `RebuildRoom`, `HeroStandFrame` |
-| Writes | `$FE24`-`$FE31`; `$FE47` |
+| Writes | `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more); `$FE47` (`GridNumber`) |
 
 #### `RoomChange` (`$97FB`)
 
@@ -21405,8 +21359,8 @@ Witness: L1 57 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 55 calls, 9,917,436 t-states own (0.57 %) |
 | Called from | `ShiftRoomColumns` (tail), `ShiftRoomRows` (tail), `StartGrid` (tail) |
 | Calls | `ClearShots`, `CopyTileToScreen`, `RoomCells`, `BuildSpans`, `ClearBuffer`, `BlackOutPlayArea`, `Unrle`, `LoadRoomActors` (tail) |
-| Reads | `$5B02`-`$5B05`; `$6155`-`$6207`; `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71`; `$FE20`-`$FE25` |
-| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$9843`-`$9844` (`RoomChangeAttrs+1`); `$9861`-`$9862` (`RoomChangeBitmaps+1`); `$FE20`; `$FE39` |
+| Reads | `$5B02`-`$5B05` (`PlayBuffer+2`); `$6155`-`$6207` (`PlayBuffer+1621`); `$7282`-`$74BD` (`CellsPlay`); `$FB60`-`$FC71` (`ScreenLineTable+96`); `$FE20`-`$FE25` (`CellColumn`, `RoomColumn`, `RoomRow`, `RoomGrid`) |
+| Writes | `$6DC2`-`$6FFD` (`PlayAttributesCell`); `$9843`-`$9844` (`RoomChangeAttrs+1`); `$9861`-`$9862` (`RoomChangeBitmaps+1`); `$FE20` (`CellColumn`); `$FE39` (`BurstTimer`) |
 
 #### `CopyTileToScreen` (`$988F`)
 
@@ -21419,7 +21373,7 @@ Witness: L1 28728 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1,008 calls, 321,893 t-states own (0.06 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 27,720 calls, 8,853,465 t-states own (0.51 %) |
 | Called from | `RoomChange` |
-| Reads | `$5BBD`-`$6154` |
+| Reads | `$5BBD`-`$6154` (`PlayBuffer+189`) |
 | Writes | `$40C2`-`$57FD` (screen) |
 
 #### `RoomCells` (`$9898`)
@@ -21438,7 +21392,7 @@ Witness: L1 57 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 55 calls, 1,075,605 t-states own (0.06 %) |
 | Called from | `RoomChange` |
 | Calls | `PutBlock` |
-| Reads | `$5B08`-`$5B09`; `$63B8`-`$6FD2` (`PlayBufferTail`, `ShadowAttributes`); `$9AE2`-`$9B31` (`Grid0`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE22`-`$FE23` |
+| Reads | `$5B08`-`$5B09` (`PlayBuffer+8`); `$63B8`-`$6FD2` (`PlayBufferTail`, `ShadowAttributes`); `$9AE2`-`$9B31` (`Grid0`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE22`-`$FE23` (`RoomColumn`, `RoomRow`) |
 
 #### `PutBlock` (`$98F6`)
 
@@ -21453,8 +21407,8 @@ Witness: L1 7182 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 252 calls, 154,948 t-states own (0.03 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 6,930 calls, 4,246,275 t-states own (0.25 %) |
 | Called from | `RoomCells` |
-| Reads | `$5B06`-`$5B07`; `$6208`-`$6FD2` (`PlayBufferTail`, `ShadowAttributes`); `$FE2A` |
-| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$FE2A` |
+| Reads | `$5B06`-`$5B07` (`PlayBuffer+6`); `$6208`-`$6FD2` (`PlayBufferTail`, `ShadowAttributes`); `$FE2A` (`CellFlag`) |
+| Writes | `$7042`-`$74BD` (`RoomAttributesCell`, `Cells`, `CellsPlay`); `$FE2A` (`CellFlag`) |
 
 #### `LeaveRoomRight` (`$9FFD`)
 
@@ -21470,8 +21424,8 @@ Witness: L1 235 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 234 calls, 33,031 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomColumns`, `SavePlayAttrsGrid10` |
-| Reads | `$74E9` (`HeroFlags`); `$FE24`-`$FE31` |
-| Writes | `$FE31`-`$FE39` |
+| Reads | `$74E9` (`HeroFlags`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE31`-`$FE39` (`RoomNumber`, `PassCounter`, `InitOnly36`, `BurstTimer`) |
 
 #### `LeaveRoomLeft` (`$A02D`)
 
@@ -21487,8 +21441,8 @@ Witness: L1 439 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 434 calls, 60,580 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomColumns`, `SavePlayAttrsGrid10` |
-| Reads | `$74E9` (`HeroFlags`); `$9DF0`-`$9DF4` (`TrapSlotsGrid4Linked`); `$FE24`-`$FE31` |
-| Writes | `$9DF0`-`$9DF5` (`TrapSlotsGrid4Linked`); `$FE31`-`$FE39` |
+| Reads | `$74E9` (`HeroFlags`); `$9DF0`-`$9DF4` (`TrapSlotsGrid4Linked`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$9DF0`-`$9DF5` (`TrapSlotsGrid4Linked`); `$FE31`-`$FE39` (`RoomNumber`, `PassCounter`, `InitOnly36`, `BurstTimer`) |
 
 #### `LeaveRoomDown` (`$A06A`)
 
@@ -21503,8 +21457,8 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 323 t-states own (0.00 %) |
 | Called from | `CheckRoomExits` |
 | Calls | `RoomEvents`, `ShiftRoomRows`, `SavePlayAttrsGrid10` |
-| Reads | `$74EA` (`HeroState`); `$9B05` (`Grid1+8`); `$FE24`-`$FE31` |
-| Writes | `$FE31`-`$FE39` |
+| Reads | `$74EA` (`HeroState`); `$9B05` (`Grid1+8`); `$FE24`-`$FE31` (`RoomGrid`, `Placements`, `MissileCursor`, `CellFlag` and 2 more) |
+| Writes | `$FE31`-`$FE39` (`RoomNumber`, `PassCounter`, `InitOnly36`, `BurstTimer`) |
 
 #### `LeaveRoomUp` (`$A0AF`)
 
@@ -21532,8 +21486,8 @@ Witness: L1 41 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 40 calls, 59,067 t-states own (0.00 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft` |
 | Calls | `ClearPlayBuffer`, `RoomChange` (tail) |
-| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 7 more); `$FE22` |
-| Writes | `$74E0`-`$7570` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 6 more); `$7582` (`Actors+144`); `$7594`-`$75B8` (`Actors+162`); `$75CA` (`LastActor`); `$A126`-`$A132` (`ShiftKeptX+1`, `ShiftKeptEntryX`); `$FE22` |
+| Reads | `$74E0`-`$75D9` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 7 more); `$FE22` (`RoomColumn`) |
+| Writes | `$74E0`-`$7570` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 6 more); `$7582` (`Actors+144`); `$7594`-`$75B8` (`Actors+162`); `$75CA` (`LastActor`); `$A126`-`$A132` (`ShiftKeptX+1`, `ShiftKeptEntryX`); `$FE22` (`RoomColumn`) |
 
 #### `ShiftRoomRows` (`$A146`)
 
@@ -21551,7 +21505,7 @@ Witness: L1 1 (rzx-r4).
 | Called from | `LeaveRoomDown` |
 | Calls | `ClearPlayBuffer`, `RoomChange` (tail) |
 | Reads | `$74E1`-`$754C` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 5 more); `$755E` (`Actors+108`); `$7570` (`Actors+126`); `$7582` (`Actors+144`); `$7594` (`Actors+162`); `$75A6` (`Actors+180`); 2 more ranges |
-| Writes | `$74E1`-`$74EE` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 3 more); `$75B8` (`Actors+198`); `$75CA` (`LastActor`); `$A17C`-`$A188` (`ShiftKeptY+1`, `ShiftKeptEntryY`); `$FE23` |
+| Writes | `$74E1`-`$74EE` (`HeroY`, `HeroFrame`, `HeroFlags`, `HeroState` and 3 more); `$75B8` (`Actors+198`); `$75CA` (`LastActor`); `$A17C`-`$A188` (`ShiftKeptY+1`, `ShiftKeptEntryY`); `$FE23` (`RoomRow`) |
 
 #### `SavePlayAttrsGrid10` (`$A19C`)
 
@@ -21566,8 +21520,8 @@ Witness: L1 55 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 call, 12,200 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 54 calls, 871,765 t-states own (0.05 %) |
 | Called from | `LeaveRoomRight`, `LeaveRoomLeft`, `LeaveRoomDown`, `RebuildRoom` (tail) |
-| Reads | `$6DC0`-`$6FFF` (`PlayAttributes`, `PlayAttributesCell`); `$FE47` |
-| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE1C`; `$FE4A` |
+| Reads | `$6DC0`-`$6FFF` (`PlayAttributes`, `PlayAttributesCell`); `$FE47` (`GridNumber`) |
+| Writes | `$7040`-`$727F` (`RoomAttributes`, `RoomAttributesCell`); `$FE1C` (`RestoreAttributes`); `$FE4A` (`SpawnDelay`) |
 
 #### `SavePlayAttrs` (`$A1A9`)
 
@@ -21611,8 +21565,8 @@ Witness: L1 15 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 14 calls, 222,671 t-states own (0.01 %) |
 | Called from | `StageEntry`, `RebuildRoom` |
 | Calls | `ClearActors`, `RoomChange` (tail) |
-| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsFloor`); `$9AE4`-`$9B2F` (`Grid0+2`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE24`-`$FE25` |
-| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsFloor`); `$FE22`-`$FE30` |
+| Reads | `$7280`-`$74DE` (`Cells`, `CellsPlay`, `CellsFloor`); `$9AE4`-`$9B2F` (`Grid0+2`, `Grid9`, `Grid2`, `Grid1` and 5 more); `$FE24`-`$FE25` (`RoomGrid`) |
+| Writes | `$7280`-`$74DF` (`Cells`, `CellsPlay`, `CellsFloor`); `$FE22`-`$FE30` (`RoomColumn`, `RoomRow`, `RoomGrid`, `Placements` and 3 more) |
 
 #### `CheckRoomExits` (`$AC9E`)
 
@@ -21644,7 +21598,7 @@ Witness: L1 8621 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 1,087,232 t-states own (0.06 %) |
 | Called from | `HeroActor` |
 | Calls | `GetSelectedItem`, `EnterGrid1` (tail), `EnterGrid9` (tail), `EnterGrid2` (tail), `EnterGrid3` (tail), `EnterGrid4` (tail), `EnterGrid5` (tail), `EnterGrid8` (tail), `ReturnToGrid8` (tail), `ReturnToGrid1` (tail), `EnterGrid10` (tail) |
-| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE31`; `$FE47`-`$FE5A` |
+| Reads | `$74E0`-`$74EA` (`HeroRecord`, `HeroY`, `HeroFrame`, `HeroFlags` and 1 more); `$FE31` (`RoomNumber`); `$FE47`-`$FE5A` (`GridNumber`, `EnergyShown`, `EnergyChange`, `SpawnDelay` and 16 more) |
 
 #### `RebuildRoom` (`$ADFE`)
 
@@ -21769,8 +21723,8 @@ Witness: L1 155 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 155 calls, 5,808 t-states own (0.00 %) |
 | Called from | `PieceRises` |
-| Reads | `$74FA` (`Actors+8`); `$FE47` |
-| Writes | `$FE52` |
+| Reads | `$74FA` (`Actors+8`); `$FE47` (`GridNumber`) |
+| Writes | `$FE52` (`TrapChainTimer`) |
 
 #### `TrapChainStep` (`$830C`)
 
@@ -21787,8 +21741,8 @@ In s4-right TrapChainTimer stayed 0; in rzx-r4 the chain ran once (28 passes, gr
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 calls, 29,295 t-states own (0.01 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 240,125 t-states own (0.01 %) |
 | Called from | `MainLoop` |
-| Reads | `$FE52` |
-| Writes | `$9DDB`-`$9DE1` (`TrapSlotsGrid3`); `$FE52` |
+| Reads | `$FE52` (`TrapChainTimer`) |
+| Writes | `$9DDB`-`$9DE1` (`TrapSlotsGrid3`); `$FE52` (`TrapChainTimer`) |
 
 #### `LinkTrapSlots` (`$8324`)
 
@@ -21805,7 +21759,7 @@ In s4-right GridNumber was 0 every pass. In rzx-r4 the grid-3 link ran (1047 pas
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 945 calls, 61,444 t-states own (0.01 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 906,816 t-states own (0.05 %) |
 | Called from | `MainLoop` |
-| Reads | `$9DE7`-`$9DFF` (`TrapSlotsGrid3Linked`, `TrapSlotsGrid4`, `TrapSlotsGrid4Linked`, `TrapSlotsGrid5` and 1 more); `$FE47` |
+| Reads | `$9DE7`-`$9DFF` (`TrapSlotsGrid3Linked`, `TrapSlotsGrid4`, `TrapSlotsGrid4Linked`, `TrapSlotsGrid5` and 1 more); `$FE47` (`GridNumber`) |
 | Writes | `$9DE7` (`TrapSlotsGrid3Linked`) |
 
 #### `PieceWaitsPickup` (`$8373`)
@@ -21821,8 +21775,8 @@ Witness: L1 299 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 299 calls, 27,665 t-states own (0.00 %) |
 | Called from | `UpdatePieceActor` (tail) |
 | Calls | `AddScore`, `PieceActorDraw` (tail), `HeroWithinY`, `RemoveActor` (tail) |
-| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7502` (`Actors`); `$753A`-`$754A` (`Actors+72`); `$FE54` |
-| Writes | `$FE4E`-`$FE54` |
+| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7502` (`Actors`); `$753A`-`$754A` (`Actors+72`); `$FE54` (`PiecesMask`) |
+| Writes | `$FE4E`-`$FE54` (`PieceTakenFlag`, `RespawnShiftX`, `RespawnShiftY`, `HeroFreeze` and 3 more) |
 
 #### `WaterRipple` (`$8629`)
 
@@ -21839,7 +21793,7 @@ The beach rooms of grid 0.
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 42 calls, 9,593 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 337 calls, 76,764 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
-| Reads | `$75AE` (`Actors+188`); `$75C0` (`Actors+206`); `$75D2` (`LastActor+8`); `$FE32` |
+| Reads | `$75AE` (`Actors+188`); `$75C0` (`Actors+206`); `$75D2` (`LastActor+8`); `$FE32` (`PassCounter`) |
 | Writes | `$75A8`-`$75D2` (`Actors+182`, `LastActor`) |
 
 #### `FloorSwitch` (`$865C`)
@@ -22136,8 +22090,8 @@ Witness: L1 312 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 312 calls, 140,123 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `ActorCellOffset`, `FindUrnCount`, `SetCycleColour` |
-| Reads | `$75D5`-`$75D6` (`LastActor+11`); `$7F5D`-`$7F66` (`CarriedCounts`); `$FE57` |
-| Writes | `$5A96`-`$5A97` (screen); `$5AB6`-`$5AB7` (screen); `$7456`-`$7457` (`CellsPlay+468`); `$7476`-`$7477` (`CellsPlay+500`); `$75CC`-`$75D5` (`LastActor+2`); `$FE57` |
+| Reads | `$75D5`-`$75D6` (`LastActor+11`); `$7F5D`-`$7F66` (`CarriedCounts`); `$FE57` (`UrnsComplete`) |
+| Writes | `$5A96`-`$5A97` (screen); `$5AB6`-`$5AB7` (screen); `$7456`-`$7457` (`CellsPlay+468`); `$7476`-`$7477` (`CellsPlay+500`); `$75CC`-`$75D5` (`LastActor+2`); `$FE57` (`UrnsComplete`) |
 
 #### `FindUrnCount` (`$8994`)
 
@@ -22198,7 +22152,7 @@ Witness: L1 268 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 268 calls, 43,756 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `ActorCellOffset`, `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$7544` (`Actors+82`); `$7556` (`Actors+100`); `$7568` (`Actors+118`); `$757A` (`Actors+136`); `$FE58` |
+| Reads | `$7544` (`Actors+82`); `$7556` (`Actors+100`); `$7568` (`Actors+118`); `$757A` (`Actors+136`); `$FE58` (`BossPhase`) |
 | Writes | `$7454`-`$745F` (`CellsPlay+466`); `$7544` (`Actors+82`); `$7556` (`Actors+100`); `$7568` (`Actors+118`); `$757A` (`Actors+136`) |
 
 #### `AnkhShrine` (`$8A88`)
@@ -22214,8 +22168,8 @@ Witness: L1 432 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 432 calls, 70,771 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `StartLivesFlash`, `GetSelectedItem`, `StrikeableActorFrame` (tail), `CycleColourA` |
-| Reads | `$74E0` (`HeroRecord`); `$754C`-`$7557` (`Actors+90`); `$FE5D` |
-| Writes | `$7554`-`$7558` (`Actors+98`); `$FE5D` |
+| Reads | `$74E0` (`HeroRecord`); `$754C`-`$7557` (`Actors+90`); `$FE5D` (`Lives`) |
+| Writes | `$7554`-`$7558` (`Actors+98`); `$FE5D` (`Lives`) |
 
 #### `BossMouth` (`$8AD4`)
 
@@ -22230,8 +22184,8 @@ Witness: L1 460 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 460 calls, 106,349 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `SetActorFrame`, `RemoveActor` (tail) |
-| Reads | `$758A` (`Actors+152`); `$8B12`-`$8B19` (`BossMouthSequence`); `$FE58`-`$FE59` |
-| Writes | `$758A`-`$758E` (`Actors+152`); `$FE59` |
+| Reads | `$758A` (`Actors+152`); `$8B12`-`$8B19` (`BossMouthSequence`); `$FE58`-`$FE59` (`BossPhase`, `BossFlash`) |
+| Writes | `$758A`-`$758E` (`Actors+152`); `$FE59` (`BossFlash`) |
 
 #### `UrnMarker` (`$8B1A`)
 
@@ -22278,7 +22232,7 @@ In s4-right only the first test ran (grid 0). In rzx-r4 the picture was drawn 45
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 1,967,363 t-states own (0.11 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawRowPicture`, `BossBeaten` |
-| Reads | `$C693`-`$C762` (`BossColours`, `BossHitColours`); `$FE31`; `$FE47`; `$FE58`-`$FE5B` |
+| Reads | `$C693`-`$C762` (`BossColours`, `BossHitColours`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`); `$FE58`-`$FE5B` (`BossPhase`, `BossFlash`, `BarrierState`, `BossHits`) |
 | Writes | `$6E58`-`$6F1F` (`PlayAttributesCell+150`); `$6F38`-`$6F3F` (`PlayAttributesCell+374`); `$6F58`-`$6F5F` (`PlayAttributesCell+406`); `$6F78`-`$6F7F` (`PlayAttributesCell+438`); `$6F98`-`$6F9F` (`PlayAttributesCell+470`); `$6FB8`-`$6FBF` (`PlayAttributesCell+502`); 2 more ranges |
 
 #### `SpawnScorpion` (`$92F7`)
@@ -22380,7 +22334,7 @@ Witness: L1 970 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 38 calls, 2,365 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `BarrierFrame` (tail), `ScoreBurst200` (tail) |
-| Reads | `$75D3` (`LastActor+9`); `$FE5A` |
+| Reads | `$75D3` (`LastActor+9`); `$FE5A` (`BarrierState`) |
 
 #### `BarrierPillarActor` (`$96DD`)
 
@@ -22396,8 +22350,8 @@ Witness: L1 997 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 65 calls, 6,808 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `BarrierFrame` (tail), `RemoveActor` (tail) |
-| Reads | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` |
-| Writes | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` |
+| Reads | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` (`BarrierState`) |
+| Writes | `$75C0`-`$75C3` (`Actors+206`); `$FE5A` (`BarrierState`) |
 
 #### `BarrierFrame` (`$970B`)
 
@@ -22426,8 +22380,8 @@ Witness: L1 1 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 394 t-states own (0.00 %) |
 | Called from | `DrawBossPicture` |
 | Calls | `AddScore`, `RoomEvents` (tail), `FindFreeActor`, `StartBurst`, `SpawnActor` |
-| Reads | `$FE58` |
-| Writes | `$FE58` |
+| Reads | `$FE58` (`BossPhase`) |
+| Writes | `$FE58` (`BossPhase`) |
 
 #### `AbsDiffBelow` (`$A92A`)
 
@@ -22456,7 +22410,7 @@ Witness: L1 3670 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 3,670 calls, 110,887 t-states own (0.01 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `IsHeroHitFrame7`, `ScoreBurst20`, `DropItemKind1` (tail), `DropItemKind2` (tail), `DropItemKind6` (tail), `DropItemKind3` (tail), `DropItemKind8` (tail), `MarkPlacementDone`, `StrikeableActorFrame` (tail), `InStrikeReach` |
-| Reads | `$7530` (`Actors+62`); `$7542`-`$756E` (`Actors+80`); `$758A`-`$759C` (`Actors+152`); `$75AE` (`Actors+188`); `$FE31`; `$FE47` |
+| Reads | `$7530` (`Actors+62`); `$7542`-`$756E` (`Actors+80`); `$758A`-`$759C` (`Actors+152`); `$75AE` (`Actors+188`); `$FE31` (`RoomNumber`); `$FE47` (`GridNumber`) |
 | Writes | `$7530` (`Actors+62`); `$7542` (`Actors+80`); `$7554` (`Actors+98`); `$7566` (`Actors+116`); `$758A` (`Actors+152`); `$759C` (`Actors+170`); 1 more ranges |
 
 #### `StrikeableActorFrame` (`$A98D`)
@@ -22603,7 +22557,7 @@ Witness: L1 8619 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 311,067 t-states own (0.02 %) |
 | Called from | `MainLoop` |
 | Calls | `AddMissile` |
-| Reads | `$B44C`-`$B453` (`HeadShotDirections`); `$FE31`-`$FE32`; `$FE47`; `$FE58` |
+| Reads | `$B44C`-`$B453` (`HeadShotDirections`); `$FE31`-`$FE32` (`RoomNumber`, `PassCounter`); `$FE47` (`GridNumber`); `$FE58` (`BossPhase`) |
 
 ### Stage 4 (TZX block 49): util
 
@@ -22669,8 +22623,8 @@ Witness: L1 43 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 call, 120,883 t-states own (0.02 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 42 calls, 4,868,514 t-states own (0.28 %) |
 | Called from | `StartStageExit`, `ShiftRoomColumns`, `ShiftRoomRows` |
-| Reads | `$5B00`-`$6C2F` |
-| Writes | `$5B00`-`$6C30` |
+| Reads | `$5B00`-`$6C2F` (`PlayBuffer`) |
+| Writes | `$5B00`-`$6C30` (`PlayBuffer`) |
 
 #### `CopyScreenToBlock` (`$8FAE`)
 
@@ -22725,8 +22679,8 @@ Witness: L1 2804 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 55 calls, 3,850 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 2,749 calls, 192,506 t-states own (0.01 %) |
 | Called from | `StartStageExitStars`, `RandomPlayAttrs`, `SpawnTimer`, `InitStageState`, `StartBurst`, `UpdateBurst` |
-| Reads | `$FE0A`-`$FE0B` |
-| Writes | `$FE0A`-`$FE0B` |
+| Reads | `$FE0A`-`$FE0B` (`RandomPointer`) |
+| Writes | `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `ClearScreen` (`$90B9`)
 
@@ -22873,8 +22827,8 @@ s4-right: 27 reloads, 11 picks, none in a room of SpawnTable. rzx-r4: 259 reload
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,675 calls, 620,040 t-states own (0.04 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `FindFreeActor`, `SpawnActor` (tail) |
-| Reads | `$92BC`-`$92F1` (`SpawnTable+1`); `$FE31`; `$FE47`-`$FE4A` |
-| Writes | `$FE4A` |
+| Reads | `$92BC`-`$92F1` (`SpawnTable+1`); `$FE31` (`RoomNumber`); `$FE47`-`$FE4A` (`GridNumber`, `EnergyShown`, `EnergyChange`, `SpawnDelay`) |
+| Writes | `$FE4A` (`SpawnDelay`) |
 
 #### `ClearActorRecord` (`$93DA`)
 
@@ -22978,8 +22932,8 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 4,828 t-states own (0.00 %) |
 | Called from | `StageEntry` |
 | Calls | `Random` |
-| Reads | `$7F69`-`$7F74` (`StartItems`); `$9DAB`-`$9E19` (`TrapSlots`, `TrapSlotsGrid2`, `TrapSlotsGrid3`, `TrapSlotsGrid3Linked` and 4 more); `$FE08`-`$FE5A` |
-| Writes | `$7F51`-`$7F64` (`CarriedItems`, `CarriedCounts`); `$9DAB`-`$9E1A` (`TrapSlots`, `TrapSlotsGrid2`, `TrapSlotsGrid3`, `TrapSlotsGrid3Linked` and 4 more); `$FE08`-`$FE5B` |
+| Reads | `$7F69`-`$7F74` (`StartItems`); `$9DAB`-`$9E19` (`TrapSlots`, `TrapSlotsGrid2`, `TrapSlotsGrid3`, `TrapSlotsGrid3Linked` and 4 more); `$FE08`-`$FE5A` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 46 more) |
+| Writes | `$7F51`-`$7F64` (`CarriedItems`, `CarriedCounts`); `$9DAB`-`$9E1A` (`TrapSlots`, `TrapSlotsGrid2`, `TrapSlotsGrid3`, `TrapSlotsGrid3Linked` and 4 more); `$FE08`-`$FE5B` (`RandomSeed`, `RandomPointer`, `SavedSP`, `InitOnly10` and 47 more) |
 
 #### `ScoreBurst20` (`$A1C8`)
 
@@ -23025,7 +22979,7 @@ Witness: L1 1 (rzx-r4).
 | Called from | `BarrierBlockActor` (tail) |
 | Calls | `AddScore`, `StartBurst`, `RemoveActor` (tail) |
 | Reads | `$75CA`-`$75CB` (`LastActor`) |
-| Writes | `$FE5A` |
+| Writes | `$FE5A` (`BarrierState`) |
 
 #### `SpawnItem` (`$A2A5`)
 
@@ -23130,8 +23084,8 @@ Witness: L1 394 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 394 calls, 45,651 t-states own (0.00 %) |
 | Called from | `RunActorHandlers` |
 | Calls | `AddScore`, `AddItem`, `HeroWithinY`, `RemoveActor` (tail), `SetCycleColour` |
-| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`); `$753A`-`$7545` (`Actors+72`); `$FE53` |
-| Writes | `$FE53` |
+| Reads | `$74E0` (`HeroRecord`); `$74F2`-`$7521` (`Actors`); `$753A`-`$7545` (`Actors+72`); `$FE53` (`PiecesComplete`) |
+| Writes | `$FE53` (`PiecesComplete`) |
 
 #### `HeroNearActor` (`$A364`)
 
@@ -23173,8 +23127,8 @@ Witness: L1 23 (rzx-r4).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 23 calls, 618,555 t-states own (0.04 %) |
 | Called from | `ScoreBurst20` (tail), `ScoreBurst80`, `ScoreBurst200`, `BossBeaten` |
 | Calls | `Random` |
-| Reads | `$E93D`-`$E98A` (`BossBurstShape`, `UnreadE955`, `BurstShapes`); `$FE14` |
-| Writes | `$7040`-`$7170` (`RoomAttributes`, `RoomAttributesCell`); `$A521`-`$A524` (`ParticleInks`); `$FE0A`-`$FE14`; `$FE39`-`$FE3A` |
+| Reads | `$E93D`-`$E98A` (`BossBurstShape`, `UnreadE955`, `BurstShapes`); `$FE14` (`WorkByte`) |
+| Writes | `$7040`-`$7170` (`RoomAttributes`, `RoomAttributesCell`); `$A521`-`$A524` (`ParticleInks`); `$FE0A`-`$FE14` (`RandomPointer`, `SavedSP`, `InitOnly10`, `InitOnly12` and 1 more); `$FE39`-`$FE3A` (`BurstTimer`, `BurstSmall`) |
 
 #### `UpdateBurst` (`$A41D`)
 
@@ -23190,8 +23144,8 @@ Witness: L1 8619 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,674 calls, 5,904,166 t-states own (0.34 %) |
 | Called from | `MainLoop` |
 | Calls | `Random`, `AttrShadowAddressA` |
-| Reads | `$7040`-`$7170` (`RoomAttributes`, `RoomAttributesCell`); `$A521`-`$A546` (`ParticleInks`, `BurstSteps`); `$A621`-`$A624` (`MarkPlacementDone+11`); `$A635`-`$A636` (`ReviveAllPlacementsLoop+6`); `$E83A`-`$E93F` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`, `BossBurstShape`); `$FE39`-`$FE3A` |
-| Writes | `$5C07`-`$6CFF` (`PlayBufferTail`); `$6DE7`-`$6FFF` (`PlayAttributesCell+37`); `$7040`-`$716D` (`RoomAttributes`, `RoomAttributesCell`); `$A4D2`-`$A4D3` (`ParticleGlyph+1`); `$FE39` |
+| Reads | `$7040`-`$7170` (`RoomAttributes`, `RoomAttributesCell`); `$A521`-`$A546` (`ParticleInks`, `BurstSteps`); `$A621`-`$A624` (`MarkPlacementDone+11`); `$A635`-`$A636` (`ReviveAllPlacementsLoop+6`); `$E83A`-`$E93F` (`ParticleGlyphs`, `BurstGlyphs`, `BurstDirections`, `BossBurstShape`); `$FE39`-`$FE3A` (`BurstTimer`, `BurstSmall`) |
+| Writes | `$5C07`-`$6CFF` (`PlayBufferTail`); `$6DE7`-`$6FFF` (`PlayAttributesCell+37`); `$7040`-`$716D` (`RoomAttributes`, `RoomAttributesCell`); `$A4D2`-`$A4D3` (`ParticleGlyph+1`); `$FE39` (`BurstTimer`) |
 
 #### `StopBurst` (`$A51B`)
 
@@ -23248,7 +23202,7 @@ Witness: L1 2 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 1 call, 331 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 1 call, 331 t-states own (0.00 %) |
 | Called from | `StageEntry` |
-| Reads | `$9B50`-`$9B5F` (`Grid0Placements`); `$FE26`-`$FE27` |
+| Reads | `$9B50`-`$9B5F` (`Grid0Placements`); `$FE26`-`$FE27` (`Placements`) |
 | Writes | `$9B50`-`$9B5C` (`Grid0Placements`) |
 
 #### `SpawnActor` (`$A639`)
@@ -23280,8 +23234,8 @@ Witness: L1 57 (rzx-r4, s4-right).
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 2 calls, 10,023 t-states own (0.00 %) |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 55 calls, 863,050 t-states own (0.05 %) |
 | Called from | `RoomChange` (tail) |
-| Reads | `$7501`-`$75D9` (`Actors+15`, `LastActor`); `$9B50`-`$9DA8` (`Grid0Placements`, `Grid9Placements`, `Grid2Placements`, `Grid1Placements` and 5 more); `$9E1B`-`$9EE0` (`ActorKinds`); `$FE14`-`$FE27` |
-| Writes | `$74F2`-`$75DB` (`Actors`, `LastActor`); `$FE14` |
+| Reads | `$7501`-`$75D9` (`Actors+15`, `LastActor`); `$9B50`-`$9DA8` (`Grid0Placements`, `Grid9Placements`, `Grid2Placements`, `Grid1Placements` and 5 more); `$9E1B`-`$9EE0` (`ActorKinds`); `$FE14`-`$FE27` (`WorkByte`, `ItemSelected`, `ItemLast`, `ItemFirst` and 8 more) |
+| Writes | `$74F2`-`$75DB` (`Actors`, `LastActor`); `$FE14` (`WorkByte`) |
 
 #### `RunActorHandlers` (`$A746`)
 
@@ -23387,8 +23341,8 @@ Witness: L1 97 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 65 calls, 2,795 t-states own (0.00 %) |
 | Called from | `FireKind1` (tail), `FireKind3` (tail), `HeroDeath` |
 | Calls | `AddMissileFrom` (falls into) |
-| Reads | `$7610`-`$763A` (`MissilesHigh`); `$FE28` |
-| Writes | `$7610`-`$763F` (`MissilesHigh`); `$FE28` |
+| Reads | `$7610`-`$763A` (`MissilesHigh`); `$FE28` (`MissileCursor`) |
+| Writes | `$7610`-`$763F` (`MissilesHigh`); `$FE28` (`MissileCursor`) |
 
 #### `AddMissileFrom` (`$B462`)
 
@@ -23402,8 +23356,8 @@ Witness: L1 217 (rzx-r4, s4-right).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 185 calls, 50,593 t-states own (0.00 %) |
 | Called from | `AddMissile` (tail), `AddMissileHigh` (falls into) |
-| Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE28` |
-| Writes | `$75E0`-`$763F` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE28` |
+| Reads | `$75E0`-`$763A` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE28` (`MissileCursor`) |
+| Writes | `$75E0`-`$763F` (`Missiles`, `HudColours`, `MissilesHigh`); `$FE28` (`MissileCursor`) |
 
 #### `UpdateMissiles` (`$B4AC`)
 
@@ -23473,7 +23427,7 @@ Witness: L1 642 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 642 calls, 27,949 t-states own (0.00 %) |
 | Called from | `DrawShotRecord` |
-| Reads | `$FE32` |
+| Reads | `$FE32` (`PassCounter`) |
 
 #### `DimNearStart` (`$B546`)
 
@@ -23499,7 +23453,7 @@ Witness: L1 2691 (s4-right).
 | --- | --- |
 | Runs (s4-right: stage 4 from the RZX run's snapshot, a walk to the right) | 2,691 calls, 116,871 t-states own (0.02 %) |
 | Called from | `UpdatePathFlyer` |
-| Reads | `$FE32` |
+| Reads | `$FE32` (`PassCounter`) |
 
 #### `MissileColour` (`$B567`)
 
@@ -23525,7 +23479,7 @@ Witness: L1 5259 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 5,259 calls, 362,947 t-states own (0.02 %) |
 | Called from | `Brazier` |
-| Reads | `$B58E`-`$B591` (`ColourCycle4`); `$FE32` |
+| Reads | `$B58E`-`$B591` (`ColourCycle4`); `$FE32` (`PassCounter`) |
 
 #### `HeadShotColour` (`$B592`)
 
@@ -23539,7 +23493,7 @@ Witness: L1 2178 (rzx-r4).
 | --- | --- |
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 2,178 calls, 150,282 t-states own (0.01 %) |
 | Called from | `HeadShot` |
-| Reads | `$B5A0`-`$B5A7` (`HeadShotColours`); `$FE32` |
+| Reads | `$B5A0`-`$B5A7` (`HeadShotColours`); `$FE32` (`PassCounter`) |
 
 #### `SetCycleColour` (`$B5A8`)
 
@@ -23570,7 +23524,7 @@ Witness: L1 7385 (rzx-r4, s4-right).
 | Runs (rzx-r4: the RZX run's stage 4 replayed pass by pass) | 7,215 calls, 144,338 t-states own (0.01 %) |
 | Called from | `GameOverStep`, `HeroUpdate`, `SetCycleColour` |
 | Calls | `CycleColourA` (falls into) |
-| Reads | `$B5BD`-`$B5C4` (`CycleColours`); `$FE32` |
+| Reads | `$B5BD`-`$B5C4` (`CycleColours`); `$FE32` (`PassCounter`) |
 
 #### `CycleColourA` (`$B5B4`)
 
@@ -23631,8 +23585,8 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 95,259,811 t-states own (21.58 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 91,097,976 t-states own (11.87 %) |
 | Calls | `InitHero`, `ClearHeroShots`, `ClearMissiles`, `InitStars`, `DrawIntroText`, `DrawEndingText`, `StageSetUp`, `QuietPasses`, `InitStageState` |
-| Reads | `$7848` (`MainLoop+5`); `$BA84` (`HeroGameOverCount`); `$FE43`-`$FE4D` |
-| Writes | `$4200`-`$4201` (screen); `$FE3A`-`$FE58` |
+| Reads | `$7848` (`MainLoop+5`); `$BA84` (`HeroGameOverCount`); `$FE43`-`$FE4D` (`DuelPhase`, `HitCounter`, `DuelTimer`, `TextShown` and 6 more) |
+| Writes | `$4200`-`$4201` (screen); `$FE3A`-`$FE58` (`FireLatch`, `WorkByte`, `DameronArrived`, `DameronX` and 23 more) |
 | Ports in | `$FEFE` |
 
 #### `StageSetUp` (`$95E4`)
@@ -23700,7 +23654,7 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | run into, not called, 257 t-states own (0.00 %) |
 | Called from | `FillShadowAttributes` |
 | Calls | `RenderScore`, `FlashSelectedBox`, `ScrollItemsLeft`, `DrawItemStrip`, `StartLivesFlash` (tail), `ShowShadowAttributes`, `RevealScore`, `SaveAttributes` |
-| Writes | `$7C99` (`CycleWindowFrame`); `$FE35` |
+| Writes | `$7C99` (`CycleWindowFrame`); `$FE35` (`ItemSelected`) |
 
 #### `QuietPasses` (`$965D`)
 
@@ -23768,8 +23722,8 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 2,228 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 2,228 t-states own (0.00 %) |
 | Called from | `StageEntry` |
-| Reads | `$7E7F`-`$7E8A` (`StartItems`); `$FE08`-`$FE55` |
-| Writes | `$7E67`-`$7E72` (`CarriedItems`); `$FE08`-`$FE56` |
+| Reads | `$7E7F`-`$7E8A` (`StartItems`); `$FE08`-`$FE55` (`RandomSeed`, `RandomPointer`, `DrawSavedSP`, `SavedSP` and 33 more) |
+| Writes | `$7E67`-`$7E72` (`CarriedItems`); `$FE08`-`$FE56` (`RandomSeed`, `RandomPointer`, `DrawSavedSP`, `SavedSP` and 34 more) |
 
 ### Stage 5 (TZX block 52): mainloop
 
@@ -23867,7 +23821,7 @@ Witness: L1 472 (ending, rzx-r5).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 171 calls, 3,333,921 t-states own (0.76 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 301 calls, 5,863,931 t-states own (0.76 %) |
 | Called from | `DuelStep` (tail) |
-| Writes | `$FE41`-`$FE44` |
+| Writes | `$FE41`-`$FE44` (`PendingHits`, `FormChanged`, `DuelPhase`, `HitCounter`) |
 
 #### `TextPassDelay` (`$7ACD`)
 
@@ -23913,8 +23867,8 @@ Witness: L1 90 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 30 calls, 2,460 t-states own (0.00 %) |
 | Called from | `IdlePasses` |
 | Calls | `LivesFlashStep` (tail), `ApplyEnergyChange`, `GameOverStep`, `DrawEnergyBar` |
-| Reads | `$FE4D` |
-| Writes | `$FE4D` |
+| Reads | `$FE4D` (`PassCounter`) |
+| Writes | `$FE4D` (`PassCounter`) |
 
 ### Stage 5 (TZX block 52): render
 
@@ -23948,7 +23902,7 @@ Witness: L1 48 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 16 calls, 18,424 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 16 calls, 18,424 t-states own (0.00 %) |
 | Called from | `RevealScore` |
-| Reads | `$7640`-`$766F` (`DigitBuffer`, `HudColoursRest`); `$FB10`-`$FB1F` |
+| Reads | `$7640`-`$766F` (`DigitBuffer`, `HudColoursRest`); `$FB10`-`$FB1F` (`ScreenLineTable+16`) |
 | Writes | `$4026`-`$4030` (screen); `$4126`-`$4130` (screen); `$4226`-`$4230` (screen); `$4326`-`$4330` (screen); `$4426`-`$4430` (screen); `$4526`-`$4530` (screen); 4 more ranges |
 
 #### `ColourPlayArea` (`$7A72`)
@@ -24157,7 +24111,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,811 calls, 193,978 t-states own (0.04 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 355,783 t-states own (0.05 %) |
 | Called from | `ColourPlayArea` |
-| Reads | `$A02F`-`$A036` (`CycleColours`); `$FE4D` |
+| Reads | `$A02F`-`$A036` (`CycleColours`); `$FE4D` (`PassCounter`) |
 
 #### `ColourSprite` (`$A037`)
 
@@ -24230,7 +24184,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 939,280 t-states own (0.12 %) |
 | Called from | `ColourPlayArea` (tail) |
 | Calls | `FlashTextRows` (tail), `NextDameronForm` |
-| Reads | `$FE3E`-`$FE47` |
+| Reads | `$FE3E`-`$FE47` (`DameronX`, `DameronY`, `DameronPathIndex`, `PendingHits` and 5 more) |
 | Writes | `$58CF`-`$5A5D` (screen); `$5A6F`-`$5A7D` (screen); `$5A8F`-`$5A9D` (screen); `$5AAF`-`$5ABD` (screen); `$5ACF`-`$5ADD` (screen); `$5AEF`-`$5AFD` (screen); 2 more ranges |
 
 #### `FlashTextRows` (`$7A22`)
@@ -24261,7 +24215,7 @@ Witness: L1 31075 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 6,096 calls, 1,112,773 t-states own (0.25 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 23,194 calls, 4,232,854 t-states own (0.55 %) |
 | Called from | `FlashTextRows` |
-| Reads | `$FE4D` |
+| Reads | `$FE4D` (`PassCounter`) |
 | Writes | `$5910`-`$591B` (screen); `$5950`-`$595B` (screen); `$5990`-`$599B` (screen); `$59D0`-`$59DB` (screen); `$5A10`-`$5A1B` (screen); `$5A50`-`$5A5B` (screen); 1 more ranges |
 
 #### `DuelStep` (`$87C2`)
@@ -24283,8 +24237,8 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 1,127,848 t-states own (0.15 %) |
 | Called from | `MainLoop` |
 | Calls | `PaceLateForms` (tail), `DrawDameronFace`, `DrawDameronDome`, `DrawDameronBack`, `ShowTexts` (tail) |
-| Reads | `$8A28`-`$8B29` (`DameronPath`, `DameronApproachStep`); `$FE3D`-`$FE46` |
-| Writes | `$FE3D`-`$FE46` |
+| Reads | `$8A28`-`$8B29` (`DameronPath`, `DameronApproachStep`); `$FE3D`-`$FE46` (`DameronArrived`, `DameronX`, `DameronY`, `DameronPathIndex` and 5 more) |
+| Writes | `$FE3D`-`$FE46` (`DameronArrived`, `DameronX`, `DameronY`, `DameronPathIndex` and 5 more) |
 
 #### `DrawDameronFace` (`$8859`)
 
@@ -24302,8 +24256,8 @@ Witness: L1 6161 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1,500 calls, 33,080,692 t-states own (7.49 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,402 calls, 27,581,847 t-states own (3.60 %) |
 | Called from | `DuelStep` |
-| Reads | `$8931` (`DrawFaceClearLine+3`); `$A43A`-`$A7B9` (`DameronFace0`); `$ABBA`-`$B1B9` (`DameronFace1`, `DameronFace2`); `$FE0C`-`$FE0D`; `$FE30`-`$FE43` |
-| Writes | `$40CF`-`$57F5` (screen); `$88B0`-`$88B9` (`DrawFaceWide+5`, `DrawFaceWideLine`); `$88DE`-`$88E7` (`DrawFaceNarrow+5`, `DrawFaceNarrowLine`); `$8926`-`$8931` (`DrawFaceClear+11`, `DrawFaceClearLine`); `$FE0C`-`$FE0D`; `$FE30`; 1 more ranges |
+| Reads | `$8931` (`DrawFaceClearLine+3`); `$A43A`-`$A7B9` (`DameronFace0`); `$ABBA`-`$B1B9` (`DameronFace1`, `DameronFace2`); `$FE0C`-`$FE0D` (`DrawSavedSP`); `$FE30`-`$FE43` (`LineCount`, `InitOnly32`, `ItemSelected`, `ItemLast` and 11 more) |
+| Writes | `$40CF`-`$57F5` (screen); `$88B0`-`$88B9` (`DrawFaceWide+5`, `DrawFaceWideLine`); `$88DE`-`$88E7` (`DrawFaceNarrow+5`, `DrawFaceNarrowLine`); `$8926`-`$8931` (`DrawFaceClear+11`, `DrawFaceClearLine`); `$FE0C`-`$FE0D` (`DrawSavedSP`); `$FE30` (`LineCount`); 1 more ranges |
 
 #### `DrawDameronDome` (`$894D`)
 
@@ -24319,7 +24273,7 @@ Witness: L1 6161 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1,500 calls, 25,420,464 t-states own (5.76 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,402 calls, 24,070,831 t-states own (3.14 %) |
 | Called from | `DuelStep` |
-| Reads | `$A7BA`-`$A9B9` (`DameronDome`); `$B1BA`-`$B3B9` (`DameronDome3`); `$FE0C`-`$FE0D`; `$FE30`-`$FE43` |
+| Reads | `$A7BA`-`$A9B9` (`DameronDome`); `$B1BA`-`$B3B9` (`DameronDome3`); `$FE0C`-`$FE0D` (`DrawSavedSP`); `$FE30`-`$FE43` (`LineCount`, `InitOnly32`, `ItemSelected`, `ItemLast` and 11 more) |
 | Writes | `$40D6`-`$42F9` (screen); `$43D6`-`$43F9` (screen); `$44D6`-`$44F9` (screen); `$45D6`-`$45F9` (screen); `$46D6`-`$46F9` (screen); `$47D6`-`$57F9` (screen); 4 more ranges |
 
 #### `DrawDameronBack` (`$899C`)
@@ -24336,8 +24290,8 @@ Witness: L1 6161 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1,500 calls, 28,909,204 t-states own (6.55 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,402 calls, 27,341,219 t-states own (3.56 %) |
 | Called from | `DuelStep` |
-| Reads | `$A9BA`-`$ABB9` (`DameronBack`); `$FE0C`-`$FE0D`; `$FE30`-`$FE43` |
-| Writes | `$40DA`-`$57FD` (screen); `$89C6`-`$89D0` (`DrawDameronBack+42`, `DrawBackLine`); `$89FB`-`$8A05` (`DrawBackGone+15`, `DrawBackClearLine`); `$FE0C`-`$FE0D`; `$FE30`; `$FE42` |
+| Reads | `$A9BA`-`$ABB9` (`DameronBack`); `$FE0C`-`$FE0D` (`DrawSavedSP`); `$FE30`-`$FE43` (`LineCount`, `InitOnly32`, `ItemSelected`, `ItemLast` and 11 more) |
+| Writes | `$40DA`-`$57FD` (screen); `$89C6`-`$89D0` (`DrawDameronBack+42`, `DrawBackLine`); `$89FB`-`$8A05` (`DrawBackGone+15`, `DrawBackClearLine`); `$FE0C`-`$FE0D` (`DrawSavedSP`); `$FE30` (`LineCount`); `$FE42` (`FormChanged`) |
 
 #### `DameronFire` (`$8B2A`)
 
@@ -24356,7 +24310,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 681,269 t-states own (0.09 %) |
 | Called from | `MainLoop` |
 | Calls | `FindFreeMissile` |
-| Reads | `$BA82` (`HeroState`); `$FE3D`-`$FE4D` |
+| Reads | `$BA82` (`HeroState`); `$FE3D`-`$FE4D` (`DameronArrived`, `DameronX`, `DameronY`, `DameronPathIndex` and 12 more) |
 | Writes | `$7000`-`$7034` (`HudPicture`, `MissilesEnd`) |
 
 #### `UpdateBurst` (`$9076`)
@@ -24411,8 +24365,8 @@ Witness: L1 2 (ending, rzx-r5).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 47,516 t-states own (0.01 %) |
 | Called from | `NextDameronForm` (tail) |
 | Calls | `Random` |
-| Reads | `$7AD7`-`$7AEE` (`FinalBurstShape`); `$FE3B` |
-| Writes | `$7100`-`$7280` (`Particles`); `$FE0A`-`$FE0B`; `$FE3B`-`$FE49` |
+| Reads | `$7AD7`-`$7AEE` (`FinalBurstShape`); `$FE3B` (`WorkByte`) |
+| Writes | `$7100`-`$7280` (`Particles`); `$FE0A`-`$FE0B` (`RandomPointer`); `$FE3B`-`$FE49` (`WorkByte`, `DameronArrived`, `DameronX`, `DameronY` and 9 more) |
 
 #### `EraseParticle` (`$9349`)
 
@@ -24427,7 +24381,7 @@ Witness: L1 2754 (ending, rzx-r5).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1,377 calls, 367,016 t-states own (0.08 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,377 calls, 366,833 t-states own (0.05 %) |
 | Called from | `UpdateBurst` |
-| Reads | `$9AD5`-`$9C26` (`PlayLineTable+64`, `UnusedZeros2`); `$FE4A`-`$FE4B` |
+| Reads | `$9AD5`-`$9C26` (`PlayLineTable+64`, `UnusedZeros2`); `$FE4A`-`$FE4B` (`TextPenShift`, `TextScratch`) |
 | Writes | `$40CF`-`$40FE` (screen); `$41CF`-`$41FE` (screen); `$42CF`-`$42FE` (screen); `$43CF`-`$43FE` (screen); `$44CF`-`$44FE` (screen); `$45CF`-`$45FE` (screen); 18 more ranges |
 
 #### `NextDameronForm` (`$A0C4`)
@@ -24444,7 +24398,7 @@ Witness: L1 8 (ending, rzx-r5).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 4 calls, 3,734 t-states own (0.00 %) |
 | Called from | `DuelHit` |
 | Calls | `StartBurst` (tail) |
-| Reads | `$FE3E`-`$FE43` |
+| Reads | `$FE3E`-`$FE43` (`DameronX`, `DameronY`, `DameronPathIndex`, `PendingHits` and 2 more) |
 | Writes | `$7000`-`$7034` (`HudPicture`, `MissilesEnd`) |
 
 #### `SpawnFormExplosions1` (`$A0EA`)
@@ -24520,7 +24474,7 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 139 t-states own (0.00 %) |
 | Called from | `StageSetUpItems` |
 | Calls | `RenderDigits` (tail), `NumberToDigits`, `ByteToDigits` |
-| Reads | `$F9FB`-`$F9FD` |
+| Reads | `$F9FB`-`$F9FD` (`Score`, `ScoreHigh`) |
 
 #### `HideLeadingZeros` (`$7B36`)
 
@@ -24564,7 +24518,7 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 2,476 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 2,476 t-states own (0.00 %) |
 | Called from | `RenderScore` (tail) |
-| Reads | `$7BC4`-`$7BCA` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F95F`; `$F981`-`$F9A7` |
+| Reads | `$7BC4`-`$7BCA` (`ScoreDigitsHigh`, `ScoreDigitsLow`, `ScoreDigitsEnd`); `$F959`-`$F95F` (`DigitGlyphs`); `$F981`-`$F9A7` |
 | Writes | `$7640`-`$766F` (`DigitBuffer`, `HudColoursRest`); `$7B9D` (`RenderDigitsChar+28`) |
 
 #### `StartLivesFlash` (`$7D7F`)
@@ -24581,7 +24535,7 @@ Witness: L1 8 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 30 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 6 calls, 180 t-states own (0.00 %) |
 | Called from | `LoseLife`, `StageSetUpItems` (tail) |
-| Writes | `$FE55` |
+| Writes | `$FE55` (`LivesFlash`) |
 
 #### `LivesFlashStep` (`$7D85`)
 
@@ -24597,8 +24551,8 @@ Witness: L1 11786 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,841 calls, 99,843 t-states own (0.02 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,186 calls, 231,883 t-states own (0.03 %) |
 | Called from | `MainLoop`, `PassTick` (tail) |
-| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55`-`$FE58` |
-| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55` |
+| Reads | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55`-`$FE58` (`LivesFlash`, `GameOverTimer`, `Lives`) |
+| Writes | `$5861`-`$5866` (screen); `$5881`-`$5886` (screen); `$FE55` (`LivesFlash`) |
 
 #### `ApplyEnergyChange` (`$7E17`)
 
@@ -24616,8 +24570,8 @@ Witness: L1 11786 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,841 calls, 90,049 t-states own (0.02 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,186 calls, 183,875 t-states own (0.02 %) |
 | Called from | `MainLoop`, `PassTick` |
-| Reads | `$BA82` (`HeroState`); `$FE4F`-`$FE58` |
-| Writes | `$BA82` (`HeroState`); `$FE4F`-`$FE58` |
+| Reads | `$BA82` (`HeroState`); `$FE4F`-`$FE58` (`Energy`, `InitOnly50`, `InitOnly51`, `EnergyShown` and 4 more) |
+| Writes | `$BA82` (`HeroState`); `$FE4F`-`$FE58` (`Energy`, `InitOnly50`, `InitOnly51`, `EnergyShown` and 4 more) |
 
 #### `LoseLife` (`$7E47`)
 
@@ -24648,7 +24602,7 @@ Witness: L1 90 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 30 calls, 930 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 30 calls, 930 t-states own (0.00 %) |
 | Called from | `PassTick` |
-| Reads | `$FE56` |
+| Reads | `$FE56` (`GameOverTimer`) |
 
 #### `GameOverStepDone` (`$7ED9`)
 
@@ -24674,8 +24628,8 @@ Witness: L1 32 (ending).
 | --- | --- |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 32 calls, 1,506 t-states own (0.00 %) |
 | Called from | `CheckShotHitsHero` |
-| Reads | `$FE53` |
-| Writes | `$FE53` |
+| Reads | `$FE53` (`EnergyChange`) |
+| Writes | `$FE53` (`EnergyChange`) |
 
 #### `DissolveHud` (`$941B`)
 
@@ -24691,7 +24645,7 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 2,285,032 t-states own (0.52 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 2,285,032 t-states own (0.30 %) |
 | Called from | `StageSetUp` |
-| Reads | `$7000`-`$75FF` (`HudPicture`, `MissilesEnd`, `Particles`, `ActorRecords` and 1 more); `$9428` (`DissolveStep+2`); `$9456` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA`; `$FB00`-`$FB5F`; `$FE0A`-`$FE0B` |
+| Reads | `$7000`-`$75FF` (`HudPicture`, `MissilesEnd`, `Particles`, `ActorRecords` and 1 more); `$9428` (`DissolveStep+2`); `$9456` (`DissolveStepOperand+1`); `$F9CB`-`$F9EA`; `$FB00`-`$FB5F` (`ScreenLineTable`); `$FE0A`-`$FE0B` (`RandomPointer`) |
 | Writes | `$4000`-`$41BF` (screen); `$4200`-`$42BF` (screen); `$4300`-`$43BF` (screen); `$4400`-`$44BF` (screen); `$4500`-`$45BF` (screen); `$4600`-`$46BF` (screen); 4 more ranges |
 
 #### `NumberToDigits` (`$94F0`)
@@ -24708,7 +24662,7 @@ Witness: L1 3 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1 call, 2,254 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 2,254 t-states own (0.00 %) |
 | Called from | `RenderScore` |
-| Reads | `$F9C1`-`$F9C8` |
+| Reads | `$F9C1`-`$F9C8` (`DecimalTable+2`) |
 | Writes | `$7BC6`-`$7BC9` (`ScoreDigitsLow`) |
 
 #### `ByteToDigits` (`$9524`)
@@ -24741,7 +24695,7 @@ Witness: L1 11786 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,841 calls, 174,324 t-states own (0.04 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,186 calls, 713,640 t-states own (0.09 %) |
 | Called from | `MainLoop`, `PassTick` |
-| Reads | `$979D`-`$97A3` (`BarMasks`); `$BA78`-`$BA7D` (`EnergyBarPattern`); `$FE4F`-`$FE52` |
+| Reads | `$979D`-`$97A3` (`BarMasks`); `$BA78`-`$BA7D` (`EnergyBarPattern`); `$FE4F`-`$FE52` (`Energy`, `InitOnly50`, `InitOnly51`, `EnergyShown`) |
 | Writes | `$4134`-`$4139` (screen); `$4234`-`$4239` (screen); `$4334`-`$4339` (screen); `$4434`-`$4439` (screen); `$4534`-`$4539` (screen); `$4634`-`$4639` (screen); 2 more ranges |
 
 ### Stage 5 (TZX block 52): hero
@@ -24825,8 +24779,8 @@ Witness: L1 9 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3 calls, 4,548,150 t-states own (0.59 %) |
 | Called from | `StageSetUpItems` |
 | Calls | `CycleWindowFrame`, `ShowItemStrip` |
-| Reads | `$5B67`-`$5D97`; `$7C5B` (`ScrollItemsLeftByte+14`); `$FE35`-`$FE36` |
-| Writes | `$5B67`-`$5D97`; `$FE35` |
+| Reads | `$5B67`-`$5D97` (`PlayBuffer+103`); `$7C5B` (`ScrollItemsLeftByte+14`); `$FE35`-`$FE36` (`ItemSelected`, `ItemLast`) |
+| Writes | `$5B67`-`$5D97` (`PlayBuffer+103`); `$FE35` (`ItemSelected`) |
 
 #### `ScrollItemsRight` (`$7C65`)
 
@@ -24884,7 +24838,7 @@ Witness: L1 9 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3 calls, 3,916 t-states own (0.00 %) |
 | Called from | `StageSetUpItems` |
 | Calls | `DrawItemIcon`, `ShowItemStrip` (tail) |
-| Reads | `$7E67`-`$7E70` (`CarriedItems`); `$FE35` |
+| Reads | `$7E67`-`$7E70` (`CarriedItems`); `$FE35` (`ItemSelected`) |
 
 #### `ShowItemCount` (`$7D0B`)
 
@@ -24925,7 +24879,7 @@ Witness: L1 72 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 24 calls, 59,825 t-states own (0.01 %) |
 | Called from | `DrawItemStrip` |
 | Reads | `$7E8B`-`$7E9C` (`ItemIcons`); `$94B0`-`$94CF` (`BlankIcon`); `$B9D8`-`$B9F7` (`ItemIcon8`); `$BA38`-`$BA57` (`ItemIcon0`) |
-| Writes | `$5B64`-`$5D5B` |
+| Writes | `$5B64`-`$5D5B` (`PlayBuffer+100`) |
 
 #### `ShowItemStrip` (`$7DF5`)
 
@@ -24957,7 +24911,7 @@ Witness: L1 450 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 150 calls, 414,155 t-states own (0.09 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 150 calls, 414,155 t-states own (0.05 %) |
 | Called from | `ShowItemStrip` (falls into) |
-| Reads | `$5B68`-`$5C73`; `$5C88`-`$5C93`; `$5CA8`-`$5CB3`; `$5CC8`-`$5CD3`; `$5CE8`-`$5CF3`; `$5D08`-`$5D13`; 2 more ranges |
+| Reads | `$5B68`-`$5C73` (`PlayBuffer+104`); `$5C88`-`$5C93` (`PlayBuffer+392`); `$5CA8`-`$5CB3` (`PlayBuffer+424`); `$5CC8`-`$5CD3` (`PlayBuffer+456`); `$5CE8`-`$5CF3` (`PlayBuffer+488`); `$5D08`-`$5D13` (`PlayBuffer+520`); 2 more ranges |
 | Writes | `$406A`-`$4095` (screen); `$416A`-`$4195` (screen); `$426A`-`$4295` (screen); `$436A`-`$4395` (screen); `$446A`-`$4495` (screen); `$456A`-`$4595` (screen); 2 more ranges |
 
 #### `InitHero` (`$7EE9`)
@@ -25012,7 +24966,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 1,047,098 t-states own (0.14 %) |
 | Called from | `MainLoop` |
 | Calls | `HeroLeft`, `HeroRight`, `HeroUp`, `HeroDown` |
-| Reads | `$BA82`-`$BA84` (`HeroState`, `HeroFrame`, `HeroGameOverCount`); `$FE4D`-`$FE58` |
+| Reads | `$BA82`-`$BA84` (`HeroState`, `HeroFrame`, `HeroGameOverCount`); `$FE4D`-`$FE58` (`PassCounter`, `InitOnly4E`, `Energy`, `InitOnly50` and 6 more) |
 | Writes | `$BA82`-`$BA84` (`HeroState`, `HeroFrame`, `HeroGameOverCount`) |
 
 #### `HeroLeft` (`$7F8E`)
@@ -25094,8 +25048,8 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 422,341 t-states own (0.06 %) |
 | Called from | `MainLoop` |
 | Calls | `FindShotSlot` |
-| Reads | `$75E0`-`$7658` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$BA7E`-`$BA82` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState`); `$FB90`-`$FC41`; `$FE3A` |
-| Writes | `$75E0`-`$765B` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE3A` |
+| Reads | `$75E0`-`$7658` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$BA7E`-`$BA82` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState`); `$FB90`-`$FC41` (`ScreenLineTable+144`); `$FE3A` (`FireLatch`) |
+| Writes | `$75E0`-`$765B` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE3A` (`FireLatch`) |
 
 #### `FindShotSlot` (`$802C`)
 
@@ -25111,8 +25065,8 @@ Witness: L1 278 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 246 calls, 33,702 t-states own (0.01 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1 call, 137 t-states own (0.00 %) |
 | Called from | `HeroFire` |
-| Reads | `$75E0`-`$7658` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE2D` |
-| Writes | `$FE2D` |
+| Reads | `$75E0`-`$7658` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE2D` (`ShotCursor`) |
+| Writes | `$FE2D` (`ShotCursor`) |
 
 #### `MoveShots` (`$8464`)
 
@@ -25130,8 +25084,8 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 2,811 calls, 3,751,432 t-states own (0.85 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 5,221,673 t-states own (0.68 %) |
 | Called from | `MainLoop` |
-| Reads | `$75E0`-`$765A` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE3E`-`$FE43` |
-| Writes | `$75E0`-`$765A` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE41` |
+| Reads | `$75E0`-`$765A` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE3E`-`$FE43` (`DameronX`, `DameronY`, `DameronPathIndex`, `PendingHits` and 2 more) |
+| Writes | `$75E0`-`$765A` (`HeroShots`, `HudColours`, `HeroShots6`, `DigitBuffer`); `$FE41` (`PendingHits`) |
 
 #### `DrawShots` (`$84F2`)
 
@@ -25165,7 +25119,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 12,050,038 t-states own (1.57 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawHeroFrame` (tail) |
-| Reads | `$85D9`-`$85F8` (`HeroFrames`); `$BA7E`-`$BA82` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState`); `$BB1C`-`$BE7B` (`HeroSprites`); `$FE0E`-`$FE0F`; `$FE4D` |
+| Reads | `$85D9`-`$85F8` (`HeroFrames`); `$BA7E`-`$BA82` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState`); `$BB1C`-`$BE7B` (`HeroSprites`); `$FE0E`-`$FE0F` (`SavedSP`); `$FE4D` (`PassCounter`) |
 | Writes | `$4802`-`$50AC` (screen); `$5102`-`$51AC` (screen); `$5202`-`$52AC` (screen); `$5302`-`$53AC` (screen); `$5402`-`$54AC` (screen); `$5502`-`$55AC` (screen); 4 more ranges |
 
 #### `DrawHeroFrame` (`$9D85`)
@@ -25181,7 +25135,7 @@ Witness: L1 119 (ending).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 119 calls, 271,069 t-states own (0.04 %) |
 | Called from | `DrawHero` (tail) |
 | Calls | `SpriteFrameAddress` |
-| Reads | `$B5A6`-`$B67D` (`SpriteBankBursts`, `SpriteBank13`, `SpriteBank14`); `$B6C6`-`$B79D` (`SpriteBank15`); `$BA7E`-`$BA83` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState` and 1 more); `$FE0E`-`$FE0F` |
+| Reads | `$B5A6`-`$B67D` (`SpriteBankBursts`, `SpriteBank13`, `SpriteBank14`); `$B6C6`-`$B79D` (`SpriteBank15`); `$BA7E`-`$BA83` (`HeroRecord`, `HeroLine`, `HeroUnused2`, `HeroState` and 1 more); `$FE0E`-`$FE0F` (`SavedSP`) |
 | Writes | `$48A8`-`$48EA` (screen); `$49A8`-`$49EA` (screen); `$4AA8`-`$4AEA` (screen); `$4BA8`-`$4BEA` (screen); `$4CA8`-`$4CEA` (screen); `$4DA8`-`$4DEA` (screen); 4 more ranges |
 
 ### Stage 5 (TZX block 52): missiles
@@ -25237,7 +25191,7 @@ Witness: L1 14710 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3,888 calls, 3,555,206 t-states own (0.46 %) |
 | Called from | `UpdateDameronMissiles` |
 | Calls | `MoveCurvedShot` (tail), `CheckShotHitsHero` |
-| Reads | `$7000`-`$702E` (`HudPicture`); `$B3BA`-`$B479` (`SpriteBank`); `$B53A`-`$B5A5` (`SpriteBankBolts`); `$B7E6`-`$B94D` (`SpriteBank15+288`); `$FB60`-`$FBE1`; `$FC00`-`$FC41`; 1 more ranges |
+| Reads | `$7000`-`$702E` (`HudPicture`); `$B3BA`-`$B479` (`SpriteBank`); `$B53A`-`$B5A5` (`SpriteBankBolts`); `$B7E6`-`$B94D` (`SpriteBank15+288`); `$FB60`-`$FBE1` (`ScreenLineTable+96`); `$FC00`-`$FC41` (`ScreenLineTable+256`); 1 more ranges |
 | Writes | `$40D3`-`$40D5` (screen); `$40F3`-`$40F6` (screen); `$4113`-`$4116` (screen); `$4134`-`$4136` (screen); `$41D3`-`$41D5` (screen); `$41F3`-`$41F6` (screen); 63 more ranges |
 
 #### `FireballMissile` (`$8080`)
@@ -25311,7 +25265,7 @@ Witness: L1 1953 (ending, rzx-r5).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 1,195 calls, 4,413,728 t-states own (0.58 %) |
 | Called from | `UpdateMissile` (tail) |
 | Calls | `SpriteFrameAddress`, `FreeShot` (tail) |
-| Reads | `$7000`-`$7022` (`HudPicture`); `$840B`-`$8463` (`ArcSteps0`, `ArcSteps1`, `ArcSteps2`, `ArcSteps3`); `$9809`-`$996E` (`ScreenLinePlay+4`, `BlankTextLine`); `$9E94`-`$9E97` (`CurvedShotFrames`); `$B47A`-`$B539` (`SpriteBank+192`); `$FE4D` |
+| Reads | `$7000`-`$7022` (`HudPicture`); `$840B`-`$8463` (`ArcSteps0`, `ArcSteps1`, `ArcSteps2`, `ArcSteps3`); `$9809`-`$996E` (`ScreenLinePlay+4`, `BlankTextLine`); `$9E94`-`$9E97` (`CurvedShotFrames`); `$B47A`-`$B539` (`SpriteBank+192`); `$FE4D` (`PassCounter`) |
 | Writes | `$40EF`-`$57EB` (screen); `$7000`-`$7022` (`HudPicture`); `$9E4B` (`CurvedShotColumn1+1`); `$9E64` (`CurvedShotColumn2+1`); `$9E80` (`CurvedShotColumn3+1`) |
 
 #### `AddMissile` (`$9F57`)
@@ -25535,8 +25489,8 @@ Witness: L1 7885 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 1,900 calls, 127,300 t-states own (0.03 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3,479 calls, 233,093 t-states own (0.03 %) |
 | Called from | `MoveStars` |
-| Reads | `$FE08` |
-| Writes | `$FE08` |
+| Reads | `$FE08` (`RandomSeed`) |
+| Writes | `$FE08` (`RandomSeed`) |
 
 #### `Random` (`$9492`)
 
@@ -25552,8 +25506,8 @@ Witness: L1 617 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 289 calls, 20,249 t-states own (0.00 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 289 calls, 20,230 t-states own (0.00 %) |
 | Called from | `InitStars`, `UpdateBurst`, `StartBurst` |
-| Reads | `$FE0A`-`$FE0B` |
-| Writes | `$FE0A`-`$FE0B` |
+| Reads | `$FE0A`-`$FE0B` (`RandomPointer`) |
+| Writes | `$FE0A`-`$FE0B` (`RandomPointer`) |
 
 #### `ClearScreen` (`$949F`)
 
@@ -25767,7 +25721,7 @@ Witness: L1 11696 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 5,156 calls, 16,715,752 t-states own (2.18 %) |
 | Called from | `MainLoop` |
 | Calls | `DrawStar` |
-| Reads | `$BA86`-`$BAC3` (`Stars`); `$FB60`-`$FC71` |
+| Reads | `$BA86`-`$BAC3` (`Stars`); `$FB60`-`$FC71` (`ScreenLineTable+96`) |
 
 #### `DrawStar` (`$869C`)
 
@@ -25783,7 +25737,7 @@ Witness: L1 187136 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 44,976 calls, 21,427,404 t-states own (4.85 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 82,496 calls, 40,451,302 t-states own (5.27 %) |
 | Called from | `DrawStars` |
-| Reads | `$A400`-`$A439` (`StarSlow`, `StarFast`); `$BA86`-`$BAC5` (`Stars`); `$FE3E`-`$FE4D` |
+| Reads | `$A400`-`$A439` (`StarSlow`, `StarFast`); `$BA86`-`$BAC5` (`Stars`); `$FE3E`-`$FE4D` (`DameronX`, `DameronY`, `DameronPathIndex`, `PendingHits` and 11 more) |
 | Writes | `$4000`-`$4001` (screen); `$40C0`-`$4101` (screen); `$41C0`-`$4201` (screen); `$42C0`-`$4301` (screen); `$43C0`-`$4401` (screen); `$44C0`-`$44FF` (screen); 2 more ranges |
 
 ### Stage 5 (TZX block 52): texts
@@ -25811,8 +25765,8 @@ Witness: L1 5535 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 3,754 calls, 104,670,743 t-states own (13.64 %) |
 | Called from | `DuelStep` (tail) |
 | Calls | `ClearTextArea` (tail), `CopyTextLine` |
-| Reads | `$FE43`-`$FE46` |
-| Writes | `$FE47` |
+| Reads | `$FE43`-`$FE46` (`DuelPhase`, `HitCounter`, `DuelTimer`) |
+| Writes | `$FE47` (`TextShown`) |
 
 #### `ClearTextArea` (`$8D44`)
 
@@ -25823,7 +25777,7 @@ Witness: L1 5535 (ending, rzx-r5, s5-right).
 | Runs (s5-right: stage 5 from the RZX run's snapshot, a walk to the right) | 1 call, 289 t-states own (0.00 %) |
 | Called from | `ShowTexts` (tail) |
 | Calls | `CopyTextLine` |
-| Writes | `$FE47` |
+| Writes | `$FE47` (`TextShown`) |
 
 #### `CopyTextLine` (`$8D89`)
 
@@ -25841,7 +25795,7 @@ Witness: L1 31101 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 6,104 calls, 15,306,345 t-states own (3.47 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 23,205 calls, 58,185,254 t-states own (7.58 %) |
 | Called from | `ShowTexts`, `ClearTextArea` |
-| Reads | `$5B00`-`$625F`; `$6300`-`$635F`; `$6400`-`$645F`; `$6500`-`$655F`; `$6600`-`$665F`; `$6700`-`$675F`; 2 more ranges |
+| Reads | `$5B00`-`$625F` (`PlayBuffer`); `$6300`-`$635F` (`PlayBuffer+2048`); `$6400`-`$645F` (`PlayBuffer+2304`); `$6500`-`$655F` (`PlayBuffer+2560`); `$6600`-`$665F` (`PlayBuffer+2816`); `$6700`-`$675F` (`PlayBuffer+3072`); 2 more ranges |
 | Writes | `$4810`-`$509B` (screen); `$5110`-`$519B` (screen); `$5210`-`$529B` (screen); `$5310`-`$539B` (screen); `$5410`-`$549B` (screen); `$5510`-`$559B` (screen); 2 more ranges |
 
 #### `DrawIntroText` (`$8DAF`)
@@ -25895,8 +25849,8 @@ Witness: L1 42 (ending, rzx-r5, s5-right).
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 14 calls, 436,413 t-states own (0.06 %) |
 | Called from | `DrawIntroText`, `DrawEndingText` |
 | Calls | `AdvanceTextPen`, `DrawTextLineDone` (tail) |
-| Reads | `$5B00`-`$625E`; `$6300`-`$635E`; `$6400`-`$655E`; `$6600`-`$675E`; `$6800`-`$685E`; `$6A00`-`$6A0D`; 3 more ranges |
-| Writes | `$5B00`-`$625F`; `$6300`-`$635F`; `$6400`-`$655F`; `$6600`-`$675F`; `$6800`-`$685F`; `$6A00`-`$6A0D`; 1 more ranges |
+| Reads | `$5B00`-`$625E` (`PlayBuffer`); `$6300`-`$635E` (`PlayBuffer+2048`); `$6400`-`$655E` (`PlayBuffer+2304`); `$6600`-`$675E` (`PlayBuffer+2816`); `$6800`-`$685E` (`PlayBuffer+3328`); `$6A00`-`$6A0D` (`TextGlyphRows`); 3 more ranges |
+| Writes | `$5B00`-`$625F` (`PlayBuffer`); `$6300`-`$635F` (`PlayBuffer+2048`); `$6400`-`$655F` (`PlayBuffer+2304`); `$6600`-`$675F` (`PlayBuffer+2816`); `$6800`-`$685F` (`PlayBuffer+3328`); `$6A00`-`$6A0D` (`TextGlyphRows`); 1 more ranges |
 
 #### `AdvanceTextPen` (`$8F78`)
 
@@ -25912,8 +25866,8 @@ Witness: L1 456 (ending, rzx-r5, s5-right).
 | Runs (rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won) | 152 calls, 27,359 t-states own (0.01 %) |
 | Runs (ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts) | 152 calls, 27,359 t-states own (0.00 %) |
 | Called from | `DrawTextLine` |
-| Reads | `$FE4A`-`$FE4C` |
-| Writes | `$FE4A` |
+| Reads | `$FE4A`-`$FE4C` (`TextPenShift`, `TextScratch`, `GlyphWidthMask`) |
+| Writes | `$FE4A` (`TextPenShift`) |
 
 #### `DrawTextLineDone` (`$8F95`)
 
@@ -27174,7 +27128,7 @@ Witness: L1 56665 (c1).
 | Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 56,665 calls, 13,163,115 t-states own (1.13 %) |
 | Called from | `StoreByte` |
 | Calls | `EdgeDelay` (tail) |
-| Reads | `$8000`-`$82FF` |
+| Reads | `$8000`-`$82FF` (`AttrBuffer`, `AttrRevealOff`) |
 | Writes | `$5800`-`$5AFF` (screen); `$FD25`-`$FD27` (`EdgeBorderMask+1`); `$FDD0`-`$FDD1` (`BitHook+1`) |
 
 #### `CountdownTask` (`$FC73`)
@@ -27244,8 +27198,8 @@ Witness: L1 2 (c1).
 | --- | --- |
 | Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 10,074,835 t-states own (0.87 %) |
 | Calls | `EdgePair`, `Edge`, `EdgeDelay` |
-| Reads | `$FEEA`-`$FEF7` (`EdgeWindows`); `$FF49`-`$FF7F` |
-| Writes | `$4000`-`$57FF` (screen); `$5B00`-`$5B2E`; `$8000`-`$82FF`; `$DB80`-`$EB7F`; `$FD25` (`EdgeBorderMask+1`); `$FDB5`-`$FDEC` (`StoreByte`, `StoreLast`); 1 more ranges |
+| Reads | `$FEEA`-`$FEF7` (`EdgeWindows`); `$FF49`-`$FF7F` (`BlockTable`) |
+| Writes | `$4000`-`$57FF` (screen); `$5B00`-`$5B2E`; `$8000`-`$82FF` (`AttrBuffer`, `AttrRevealOff`); `$DB80`-`$EB7F`; `$FD25` (`EdgeBorderMask+1`); `$FDB5`-`$FDEC` (`StoreByte`, `StoreLast`); 1 more ranges |
 | Ports in | `$0AFE` |
 | Ports out | `$0AFE`, `$7FFD` |
 
@@ -27395,8 +27349,8 @@ Witness: L1 1 (c1).
 | | |
 | --- | --- |
 | Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 2 calls, 233,504 t-states own (0.02 %) |
-| Reads | `$DB80`-`$EB7F` |
-| Writes | `$9000`-`$90FE`; `$DB80`-`$EB7F` |
+| Reads | `$DB80`-`$EB7F` (`ResidentCipher`) |
+| Writes | `$9000`-`$90FE`; `$DB80`-`$EB7F` (`ResidentCipher`) |
 
 
 ## Sl1End (TZX block 31) (`src/loader/sl1end.json`)
@@ -27453,6 +27407,6 @@ Witness: L1 1 (c1).
 | | |
 | --- | --- |
 | Runs (c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1) | 1 call, 184,594 t-states own (0.02 %) |
-| Reads | `$5C3B`; `$CB80`-`$EB7F` |
-| Writes | `$5B00`-`$5B2A` (`Boot`, `BootCopy`, `BootWipe`); `$5C3B`; `$E000`-`$FFFF` |
+| Reads | `$5C3B`; `$CB80`-`$EB7F` (`ResidentCipher`) |
+| Writes | `$5B00`-`$5B2A` (`Boot`, `BootCopy`, `BootWipe`); `$5C3B`; `$E000`-`$FFFF` (`ResidentCipher+1152`, `ResidentEntry`, `Unxor`, `FailFlag`) |
 | Ports out | `$7FFD` |

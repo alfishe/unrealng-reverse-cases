@@ -282,91 +282,92 @@ with its modules, its source, its annotations and its recordings.
 Myth: History in the Making, System 3 Software 1989: the resident part `$F000-$FFFF`, as Boot `$5B00` copies it
 there; the stage blocks load over `$F000-$F03E`, the rest stays from the load to the end. Its entries are
 `src/resident/<module>.asm`, written from `src/resident/resident.ann` by `kit/mkgame.py --part
-src/resident/resident.json`; the readers and writers from `work/stage1/c1`.
+src/resident/resident.json`; the readers and writers from `work/stage1/c1/run`, block copies and loads left out
+(`ref_skip_moves`).
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): init
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F019` | `ResidentInitPad` | 39 | Zeros up to ResidentEntry, overwritten by every stage block. No code reads them: the stage blocks load `$6C3F-$F03E` over them (their last bytes, the stages' own). Known only from the code and tape.txt. | `ResidentEntry`, `ResidentInit`, `TurboLoad` | `ResidentEntry`, `ResidentInit`, `TurboLoad` |
-| `$F04E` | `TextRewind` | 19 | The text: column byte 9, bit 3, row 36, REWIND THE TAPE | `ResidentInit`, `ShowFront`, `TurboLoad` | `ResidentInit`, `ShowFront`, `TurboLoad` |
-| `$F064` | `TextPressPlayAgain` | 23 | The text: column byte 7, bit 5, row 52, AND THEN PRESS PLAY | `ResidentInit`, `ShowFront`, `TurboLoad` | `ResidentInit`, `ShowFront`, `TurboLoad` |
+| `$F019` | `ResidentInitPad` | 39 | Zeros up to ResidentEntry, overwritten by every stage block. No code reads them: the stage blocks load `$6C3F-$F03E` over them (their last bytes, the stages' own). Known only from the code and tape.txt. | - | - |
+| `$F04E` | `TextRewind` | 19 | The text: column byte 9, bit 3, row 36, REWIND THE TAPE | - | - |
+| `$F064` | `TextPressPlayAgain` | 23 | The text: column byte 7, bit 5, row 52, AND THEN PRESS PLAY | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): game
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F0EA` | `StageTable` | 39 of 224 | The five stages: the load parameters, then the two title lines as Print data. A record: D, E (not read by the resident: LoadStage keeps B, H, L; known only from the code), C the stage number (StageLoaded, StageCheck), H, L and B (the length: 2 x (9B + H + L) pages of 256 bytes, 132 = 33 792 bytes for every stage), then two Print strings (column byte, bit, row, text, 0): STAGE N and its title. Read by PlayStage (c1: stage 1; sN-right: stages 2-5). | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +3 | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +1 |
-| `$F111` | `StageRecord2` (`StageTable`+39) | 45 | - | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` |
-| `$F13E` | `StageRecord3` (`StageTable`+84) | 52 | - | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` |
-| `$F172` | `StageRecord4` (`StageTable`+136) | 47 | - | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` | `LoadFront`, `NewGame`, `ResidentInit`, `ShowFront`, `TurboLoad` |
-| `$F1A1` | `StageRecord5` (`StageTable`+183) | 41 | - | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +1 | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +1 |
-| `$F1DF` | `TextPressPlay` | 22 | The text: column byte 8, bit 2, row 52, PRESS PLAY ON TAPE | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +2 | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +1 |
-| `$F1FB` | `TextClearLine` | 5 | The text: column byte 8, bit 2, row 52, a space (clears the line: TextToBuffer clears the buffer) | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +2 | `LoadFront`, `NewGame`, `PlayStage`, `ResidentInit`, `ShowFront` +1 |
-| `$F26C` | `TextGameOver` | 13 | The text: column byte 12, bit 0, row 40, GAME OVER | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 |
-| `$F27C` | `TextPressSpace` | 25 | The text: column byte 7, bit 0, row 52, PRESS SPACE TO SELECT | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 |
-| `$F2D3` | `HighlightBox` | 1 of 5 | AttrBox data: column 0, row (10 + 2 x option, written at `$F2CA`), 32 wide, 1 high, attribute `$43` | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +3 |
-| `$F2D4` | `HighlightRow` (`HighlightBox`+1) | 4 | the row, written by GameOver | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +3 |
-| `$F2FA` | `TextRestartStage` | 22 | The text: column byte 8, bit 5, row 84, RESTART THIS STAGE | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 |
-| `$F313` | `TextRestartFromOne` | 26 | The text: column byte 6, bit 3, row 100, RESTART FROM STAGE ONE | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 | `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles`, `ResidentInit` +2 |
-| `$F330` | `TextCreditsScore` | 16 of 37 | The text: column byte 1, bit 6, row 148, GAME CREDITS n   SCORE nnnnnn (n written by GameOver) | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +4 |
-| `$F340` | `CreditsDigit` (`TextCreditsScore`+16) | 14 | the credits digit, written by GameOver | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +4 |
-| `$F34E` | `ScoreDigits` (`TextCreditsScore`+30) | 7 | the six score digits, copied by GameOver | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 | `CycleColours`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 |
+| `$F0EA` | `StageTable` | 39 of 224 | The five stages: the load parameters, then the two title lines as Print data. A record: D, E (not read by the resident: LoadStage keeps B, H, L; known only from the code), C the stage number (StageLoaded, StageCheck), H, L and B (the length: 2 x (9B + H + L) pages of 256 bytes, 132 = 33 792 bytes for every stage), then two Print strings (column byte, bit, row, text, 0): STAGE N and its title. Read by PlayStage (c1: stage 1; sN-right: stages 2-5). | `PlayStage`, `PlayStageTitles`, `TextToBuffer` | - |
+| `$F111` | `StageRecord2` (`StageTable`+39) | 45 | - | - | - |
+| `$F13E` | `StageRecord3` (`StageTable`+84) | 52 | - | - | - |
+| `$F172` | `StageRecord4` (`StageTable`+136) | 47 | - | - | - |
+| `$F1A1` | `StageRecord5` (`StageTable`+183) | 41 | - | - | - |
+| `$F1DF` | `TextPressPlay` | 22 | The text: column byte 8, bit 2, row 52, PRESS PLAY ON TAPE | `TextToBuffer` | - |
+| `$F1FB` | `TextClearLine` | 5 | The text: column byte 8, bit 2, row 52, a space (clears the line: TextToBuffer clears the buffer) | `TextToBuffer` | - |
+| `$F26C` | `TextGameOver` | 13 | The text: column byte 12, bit 0, row 40, GAME OVER | - | - |
+| `$F27C` | `TextPressSpace` | 25 | The text: column byte 7, bit 0, row 52, PRESS SPACE TO SELECT | - | - |
+| `$F2D3` | `HighlightBox` | 1 of 5 | AttrBox data: column 0, row (10 + 2 x option, written at `$F2CA`), 32 wide, 1 high, attribute `$43` | - | `GameOverSetOption` (code) |
+| `$F2D4` | `HighlightRow` (`HighlightBox`+1) | 4 | the row, written by GameOver | - | `GameOverSetOption` (code) |
+| `$F2FA` | `TextRestartStage` | 22 | The text: column byte 8, bit 5, row 84, RESTART THIS STAGE | - | - |
+| `$F313` | `TextRestartFromOne` | 26 | The text: column byte 6, bit 3, row 100, RESTART FROM STAGE ONE | - | - |
+| `$F330` | `TextCreditsScore` | 16 of 37 | The text: column byte 1, bit 6, row 148, GAME CREDITS n   SCORE nnnnnn (n written by GameOver) | - | `CreditsDec` (code) |
+| `$F340` | `CreditsDigit` (`TextCreditsScore`+16) | 14 | the credits digit, written by GameOver | - | `CreditsDec` (code) |
+| `$F34E` | `ScoreDigits` (`TextCreditsScore`+30) | 7 | the six score digits, copied by GameOver | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): print
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F36E` | `CycleBox` | 4 of 5 | AttrBox data: column 6, row 4, 20 wide, 4 high, the attribute written by CycleColours | `AttrBox`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 | `AttrBox`, `CycleColours`, `LoadFront`, `NewGame`, `PlayStage` +4 |
-| `$F372` | `CycleBoxAttr` (`CycleBox`+4) | 1 | the attribute | `AttrBox`, `LoadFront`, `NewGame`, `PlayStage`, `PlayStageTitles` +3 | `AttrBox`, `CycleColours`, `LoadFront`, `NewGame`, `PlayStage` +4 |
-| `$F374` | `ColourCycle` | 8 | The box's colours, one a frame: bright red, magenta, green, cyan, yellow and back. Read by CycleColours (c1). | `AttrBox`, `CycleColours`, `LoadFront`, `NewGame`, `PlayStage` +4 | `AttrBox`, `CycleColours`, `LoadFront`, `NewGame`, `PlayStage` +4 |
-| `$F4EF` | `ClearBox` | 5 | AttrBox data: the whole screen, attribute 0 | `Advance`, `AttrBox`, `ClearScreen2`, `CycleColours`, `LoadFront` +8 | `AttrBox`, `ClearScreen2`, `CycleColours`, `LoadFront`, `NewGame` +7 |
-| `$F504` | `BandRow18` | 5 | AttrBox data: row 18, attribute `$42` | `Advance`, `AttrBox`, `ClearScreen4`, `CycleColours`, `LoadFront` +8 | `AttrBox`, `ClearScreen4`, `CycleColours`, `LoadFront`, `NewGame` +7 |
-| `$F50C` | `BandRow19` | 5 | AttrBox data: row 19, attribute `$03` | `Advance`, `AttrBox`, `ClearScreen4`, `CycleColours`, `LoadFront` +8 | `AttrBox`, `ClearScreen3`, `ClearScreen4`, `CycleColours`, `LoadFront` +8 |
-| `$F514` | `BandRow21` | 5 | AttrBox data: row 21, attribute `$42` | `Advance`, `AttrBox`, `ClearScreen4`, `CycleColours`, `LoadFront` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +7 |
-| `$F51C` | `BandRow22` | 5 | AttrBox data: row 22, attribute `$03` | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +7 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +7 |
-| `$F524` | `BandRows10` | 5 | AttrBox data: rows 10-17, attribute `$44` | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F52C` | `BandRow11` | 5 | AttrBox data: row 11, attribute `$05` | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F534` | `BandRow13` | 5 | AttrBox data: row 13, attribute `$05` | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F53C` | `BandRow15` | 5 | AttrBox data: row 15, attribute `$05` | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F9CB` | `DissolveMasks` | 48 | Six sets of 8 masks, each growing to `$FF`: RevealText and the front's reveals pick a set by a ROM byte. Read by RevealText and the front (front notes). The sets at `$F9EB` are not picked by RevealText (A AND `$18` gives 0-3). | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
+| `$F36E` | `CycleBox` | 4 of 5 | AttrBox data: column 6, row 4, 20 wide, 4 high, the attribute written by CycleColours | `AttrBox` | `CycleColours` |
+| `$F372` | `CycleBoxAttr` (`CycleBox`+4) | 1 | the attribute | `AttrBox` | `CycleColours` |
+| `$F374` | `ColourCycle` | 8 | The box's colours, one a frame: bright red, magenta, green, cyan, yellow and back. Read by CycleColours (c1). | `CycleColours` | - |
+| `$F4EF` | `ClearBox` | 5 | AttrBox data: the whole screen, attribute 0 | `AttrBox` | - |
+| `$F504` | `BandRow18` | 5 | AttrBox data: row 18, attribute `$42` | `AttrBox` | - |
+| `$F50C` | `BandRow19` | 5 | AttrBox data: row 19, attribute `$03` | `AttrBox` | - |
+| `$F514` | `BandRow21` | 5 | AttrBox data: row 21, attribute `$42` | `AttrBox` | - |
+| `$F51C` | `BandRow22` | 5 | AttrBox data: row 22, attribute `$03` | `AttrBox` | - |
+| `$F524` | `BandRows10` | 5 | AttrBox data: rows 10-17, attribute `$44` | `AttrBox` | - |
+| `$F52C` | `BandRow11` | 5 | AttrBox data: row 11, attribute `$05` | `AttrBox` | - |
+| `$F534` | `BandRow13` | 5 | AttrBox data: row 13, attribute `$05` | `AttrBox` | - |
+| `$F53C` | `BandRow15` | 5 | AttrBox data: row 15, attribute `$05` | `AttrBox` | - |
+| `$F9CB` | `DissolveMasks` | 48 | Six sets of 8 masks, each growing to `$FF`: RevealText and the front's reveals pick a set by a ROM byte. Read by RevealText and the front (front notes). The sets at `$F9EB` are not picked by RevealText (A AND `$18` gives 0-3). | `RevealText` | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): ay
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F54D` | `EffectData` | 9 of 138 | The 13 effects: channel, noise flag (0 a tone), segments, volume x 16, period, then the segments. With the noise flag set the channel's tone is off, its noise on, and AyFrame writes the period's low byte to the noise period (register 6). A segment: duration in frames, period change a frame (signed), volume change a frame (signed, x 16). Read by StartEffect and ChannelStep (every stage recording). | `Advance`, `AttrBox`, `ChannelStep`, `CycleColours`, `LoadFront` +11 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +9 |
-| `$F556` | `Effect1` (`EffectData`+9) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F55F` | `Effect2` (`EffectData`+18) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F568` | `Effect3` (`EffectData`+27) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F571` | `Effect4` (`EffectData`+36) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F57A` | `Effect5` (`EffectData`+45) | 21 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F58F` | `Effect6` (`EffectData`+66) | 12 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F59B` | `Effect7` (`EffectData`+78) | 9 | - | `Advance`, `AttrBox`, `ChannelStep`, `CycleColours`, `LoadFront` +10 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F5A4` | `Effect8` (`EffectData`+87) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F5AD` | `Effect9` (`EffectData`+96) | 12 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F5B9` | `Effect10` (`EffectData`+108) | 12 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `NewGame` +8 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `NewGame` +8 |
-| `$F5C5` | `Effect11` (`EffectData`+120) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +9 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +9 |
-| `$F5CE` | `Effect12` (`EffectData`+129) | 9 | - | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +9 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +9 |
-| `$F5D7` | `EffectLeftover` | 2 | Two bytes after the last effect that no code reads: `$06` `$04`, like the start of a second segment. Effect 12 has one segment, so ChannelStep stops before them (known only from the code: the count at `$F5D0` is 1). A leftover of the effect's editing. | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +9 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +9 |
-| `$F6BB` | `EffectTable` | 26 | The addresses of the 13 effects. Read by PlaySound (every stage recording). | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +13 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +13 |
-| `$F85E` | `Channels` | 8 of 24 | The three channels, 8 bytes each. +0 segments left (`$FF` idle), +1 frames left in the segment, +2 the segment's address, +4 the period, +6 the noise flag (0 a tone), +7 the volume x 16. Read and written by StartEffect, AyFrame and ChannelStep. | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F866` | `Channel2` (`Channels`+8) | 8 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F86E` | `Channel3` (`Channels`+16) | 8 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F876` | `Mixer` | 1 | The AY mixer value (register 7) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F877` | `MixerSpare` | 1 | A byte no code reads (known only from the code: no operand names it) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F878` | `ChannelNumber` | 1 | The channel AyFrame is on, 1-3 | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F879` | `LoadLength` | 1 of 3 | LoadStage's H, L and B: TurboLoad's length is 2 x (9B + H + L) pages | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F87A` | `LoadLengthL` (`LoadLength`+1) | 1 | L | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F87B` | `LoadLengthB` (`LoadLength`+2) | 1 | B | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F87C` | `LoadLengthPad` | 4 | Zeros no code reads (known only from the code) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
+| `$F54D` | `EffectData` | 9 of 138 | The 13 effects: channel, noise flag (0 a tone), segments, volume x 16, period, then the segments. With the noise flag set the channel's tone is off, its noise on, and AyFrame writes the period's low byte to the noise period (register 6). A segment: duration in frames, period change a frame (signed), volume change a frame (signed, x 16). Read by StartEffect and ChannelStep (every stage recording). | `ChannelStep`, `StartEffect` | - |
+| `$F556` | `Effect1` (`EffectData`+9) | 9 | - | - | - |
+| `$F55F` | `Effect2` (`EffectData`+18) | 9 | - | - | - |
+| `$F568` | `Effect3` (`EffectData`+27) | 9 | - | - | - |
+| `$F571` | `Effect4` (`EffectData`+36) | 9 | - | - | - |
+| `$F57A` | `Effect5` (`EffectData`+45) | 21 | - | - | - |
+| `$F58F` | `Effect6` (`EffectData`+66) | 12 | - | - | - |
+| `$F59B` | `Effect7` (`EffectData`+78) | 9 | - | `ChannelStep`, `StartEffect` | - |
+| `$F5A4` | `Effect8` (`EffectData`+87) | 9 | - | - | - |
+| `$F5AD` | `Effect9` (`EffectData`+96) | 12 | - | - | - |
+| `$F5B9` | `Effect10` (`EffectData`+108) | 12 | - | - | - |
+| `$F5C5` | `Effect11` (`EffectData`+120) | 9 | - | - | - |
+| `$F5CE` | `Effect12` (`EffectData`+129) | 9 | - | - | - |
+| `$F5D7` | `EffectLeftover` | 2 | Two bytes after the last effect that no code reads: `$06` `$04`, like the start of a second segment. Effect 12 has one segment, so ChannelStep stops before them (known only from the code: the count at `$F5D0` is 1). A leftover of the effect's editing. | - | - |
+| `$F6BB` | `EffectTable` | 26 | The addresses of the 13 effects. Read by PlaySound (every stage recording). | `PlaySound` | - |
+| `$F85E` | `Channels` | 8 of 24 | The three channels, 8 bytes each. +0 segments left (`$FF` idle), +1 frames left in the segment, +2 the segment's address, +4 the period, +6 the noise flag (0 a tone), +7 the volume x 16. Read and written by StartEffect, AyFrame and ChannelStep. | `AyFrame`, `ChannelStep`, `SilenceAy`, `WriteVolume` | `ChannelStep`, `SilenceAy`, `StartEffect` |
+| `$F866` | `Channel2` (`Channels`+8) | 8 | - | `AyFrame`, `ChannelStep`, `SilenceAy` | `SilenceAy` |
+| `$F86E` | `Channel3` (`Channels`+16) | 8 | - | `AyFrame`, `ChannelStep`, `SilenceAy` | `SilenceAy` |
+| `$F876` | `Mixer` | 1 | The AY mixer value (register 7) | `StartEffect`, `WriteMixer` | `SilenceAy`, `StartEffect` |
+| `$F877` | `MixerSpare` | 1 | A byte no code reads (known only from the code: no operand names it) | - | - |
+| `$F878` | `ChannelNumber` | 1 | The channel AyFrame is on, 1-3 | `AyFrame`, `ChannelStep`, `WriteVolume` | `AyFrame` |
+| `$F879` | `LoadLength` | 1 of 3 | LoadStage's H, L and B: TurboLoad's length is 2 x (9B + H + L) pages | `TurboLoad` | `LoadStage` |
+| `$F87A` | `LoadLengthL` (`LoadLength`+1) | 1 | L | `TurboLoad` | `LoadStage` |
+| `$F87B` | `LoadLengthB` (`LoadLength`+2) | 1 | B | `TurboLoad` | `LoadStage` |
+| `$F87C` | `LoadLengthPad` | 4 | Zeros no code reads (known only from the code) | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): stageload
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F602` | `TextClearTop` | 5 | The text: column 0, bit 0, row 36, a space | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +9 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +9 |
-| `$F60A` | `TextStopTape` | 17 | The text: column byte 10, bit 3, row 52, STOP THE TAPE | `Advance`, `AttrBox`, `CycleColours`, `LoadFront`, `LoadStage` +10 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +10 |
+| `$F602` | `TextClearTop` | 5 | The text: column 0, bit 0, row 36, a space | `TextToBuffer` | - |
+| `$F60A` | `TextStopTape` | 17 | The text: column byte 10, bit 3, row 52, STOP THE TAPE | `TextToBuffer` | - |
 | `$FF7E` | `StageCheckFront` | 1 | Unused slot 0 of StageCheck (the front is not checked) | - | - |
 | `$FF7F` | `StageCheck` | 5 | The byte at StageCheckByte of stages 1-5: `$16`, `$4B`, `$FA`, `$E0`, `$80`. Read by LoadBlock (c1: stage 1; sN-right: stages 2-5). Each value is the stage block's byte at `$BB80` (work/mkgame/stageN.bin). | `LoadBlock` | - |
 
@@ -374,64 +375,64 @@ src/resident/resident.json`; the readers and writers from `work/stage1/c1`.
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F66C` | `SavedLoaderBytes` | 3 | TurboLoad's three bytes at Im2Jump while the IM 2 jump is there. Written by SaveLoaderBytes, read back by LoadBlock (c1). | `Advance`, `AttrBox`, `CycleColours`, `LoadBlock`, `LoadFront` +12 | `AttrBox`, `ClearScreen3`, `CycleColours`, `LoadFront`, `LoadStage` +12 |
-| `$FD00` | `Im2Table` | 257 | 257 bytes of `$FE`: whatever the bus holds, the vector is `$FEFE` (Im2Jump). Read by the Z80 at every interrupt (I = `$FD`), c1 and every recording. | `Advance`, `AyFrame`, `AyWrite`, `ChannelStep`, `CycleColours` +15 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +19 |
+| `$F66C` | `SavedLoaderBytes` | 3 | TurboLoad's three bytes at Im2Jump while the IM 2 jump is there. Written by SaveLoaderBytes, read back by LoadBlock (c1). | `LoadBlock` | `SaveLoaderBytes` |
+| `$FD00` | `Im2Table` | 257 | 257 bytes of `$FE`: whatever the bus holds, the vector is `$FEFE` (Im2Jump). Read by the Z80 at every interrupt (I = `$FD`), c1 and every recording. | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): font
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F880` | `PrintFont` | 296 | 37 glyphs, 8 bytes each: the width mask, then 7 rows; A-Z, the space, 0-9. Read by TextToBuffer (every title screen). The mask's lowest set bit marks the glyph's width (Advance). | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
+| `$F880` | `PrintFont` | 296 | 37 glyphs, 8 bytes each: the width mask, then 7 rows; A-Z, the space, 0-9. Read by TextToBuffer (every title screen). The mask's lowest set bit marks the glyph's width (Advance). | `TextToBuffer` | - |
 | `$FF84` | `RomFontLeftover` | 124 | A copy of the ROM font `$3E34-$3EAF` (the end of F to U) and `$27`: no code reads it. A leftover of the mastering: no operand names `$FF84-$FFFF` and the tape's image holds the ROM's bytes. The stack (SP = `$FFFF`) writes over its end in play. Known only from the code. | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): vars
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F9A8` | `BitShift` | 1 | TextToBuffer's bit within the column byte (also a scratch word with TextRow for RevealText and the stages) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +19 |
-| `$F9A9` | `TextRow` | 1 | Print's pixel row | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +20 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9AA` | `CharMask` | 1 | The current glyph's width mask | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9AB` | `RowPointer` | 2 | RevealText's place in ScreenLineTable | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9AD` | `Credits` | 1 | The game's credits: 4 at NewGame, one less a game over | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +20 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +19 |
-| `$F9AE` | `StageLoaded` | 1 | The stage in memory (0 the front, `$FF` none) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +19 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$F9AF` | `Lives` | 1 | The lives, passed to each stage in H and back | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9C9` | `DecimalTablePad` | 2 | Zeros no code reads (known only from the code) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9FE` | `ResidentVarsPad` | 2 | Zeros (known only from the code) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$FE01` | `WorkSpace` | 3 of 143 | The work space of the front and the stages (zeros in the tape's image). The front: SavedIm2Jump, SavedStack, SavedReturn, ShimmerCount, ReaderBitOp, ReaderPort (src/front). The stages: `$FE08-$FE6F` (src/stageN). The resident's own: GameOverOption and FrameCounter. | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +21 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +20 |
-| `$FE04` | `SavedStack` (`WorkSpace`+3) | 2 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE06` | `SavedReturn` (`WorkSpace`+5) | 2 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE08` | `StageVars` (`WorkSpace`+7) | 21 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE1D` | `ShimmerCount` (`WorkSpace`+28) | 1 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE1E` | `GameOverOption` (`WorkSpace`+29) | 1 | GameOver's highlighted line, 0 or 1 | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +19 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +19 |
-| `$FE1F` | `StageVars2` (`WorkSpace`+30) | 18 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE31` | `FrameCounter` (`WorkSpace`+48) | 1 | CycleColours' frame count | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$FE32` | `StageVars3` (`WorkSpace`+49) | 26 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE4C` | `ReaderBitOp` (`WorkSpace`+75) | 1 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE4D` | `ReaderPort` (`WorkSpace`+76) | 2 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FE4F` | `StageVars4` (`WorkSpace`+78) | 65 | - | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
+| `$F9A8` | `BitShift` | 1 | TextToBuffer's bit within the column byte (also a scratch word with TextRow for RevealText and the stages) | `Advance`, `RevealText`, `TextToBuffer` | `Advance`, `RevealText`, `TextToBuffer` |
+| `$F9A9` | `TextRow` | 1 | Print's pixel row | `Print`, `PrintRecord`, `RevealText` | `RevealText`, `TextToBuffer` |
+| `$F9AA` | `CharMask` | 1 | The current glyph's width mask | `Advance` | `TextToBuffer` |
+| `$F9AB` | `RowPointer` | 2 | RevealText's place in ScreenLineTable | `RevealText` | `RevealText` |
+| `$F9AD` | `Credits` | 1 | The game's credits: 4 at NewGame, one less a game over | `GameOver` (code), `GameOverLoop` (code) | `NewGame`, `CreditsDec` (code) |
+| `$F9AE` | `StageLoaded` | 1 | The stage in memory (0 the front, `$FF` none) | `LoadBlock`, `LoadStage`, `PlayStage` | `LoadStage`, `ResidentEntry`, `ResidentInit` (code), `StageLoadLoop` (code) |
+| `$F9AF` | `Lives` | 1 | The lives, passed to each stage in H and back | `PlayStageTitles` | `NewGame`, `GameOverRetry` (code), `StageRun` (code) |
+| `$F9C9` | `DecimalTablePad` | 2 | Zeros no code reads (known only from the code) | - | - |
+| `$F9FE` | `ResidentVarsPad` | 2 | Zeros (known only from the code) | - | - |
+| `$FE01` | `WorkSpace` | 3 of 143 | The work space of the front and the stages (zeros in the tape's image). The front: SavedIm2Jump, SavedStack, SavedReturn, ShimmerCount, ReaderBitOp, ReaderPort (src/front). The stages: `$FE08-$FE6F` (src/stageN). The resident's own: GameOverOption and FrameCounter. | `CycleColours`, `GameOver4` (code), `GameOverLoop` (code), `GameOverToggle` (code), `KeyHookExit` (code) | `CycleColours`, `GameOver` (code), `GameOverPause` (code), `GameOverSetOption` (code) |
+| `$FE04` | `SavedStack` (`WorkSpace`+3) | 2 | - | `KeyHookExit` (code) | - |
+| `$FE06` | `SavedReturn` (`WorkSpace`+5) | 2 | - | `KeyHookExit` (code) | - |
+| `$FE08` | `StageVars` (`WorkSpace`+7) | 21 | - | - | - |
+| `$FE1D` | `ShimmerCount` (`WorkSpace`+28) | 1 | - | - | - |
+| `$FE1E` | `GameOverOption` (`WorkSpace`+29) | 1 | GameOver's highlighted line, 0 or 1 | `GameOver4` (code), `GameOverToggle` (code) | `GameOverPause` (code), `GameOverSetOption` (code) |
+| `$FE1F` | `StageVars2` (`WorkSpace`+30) | 18 | - | - | - |
+| `$FE31` | `FrameCounter` (`WorkSpace`+48) | 1 | CycleColours' frame count | `CycleColours`, `GameOverLoop` (code) | `CycleColours`, `GameOver` (code) |
+| `$FE32` | `StageVars3` (`WorkSpace`+49) | 26 | - | - | - |
+| `$FE4C` | `ReaderBitOp` (`WorkSpace`+75) | 1 | - | - | - |
+| `$FE4D` | `ReaderPort` (`WorkSpace`+76) | 2 | - | - | - |
+| `$FE4F` | `StageVars4` (`WorkSpace`+78) | 65 | - | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): score
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$F9BF` | `DecimalTable` | 10 | 10000, 1000, 100, 10, 1: the stages' decimal print. Read by the stages' score print (every stage recording). | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9FB` | `Score` | 2 | The score, a word (0 at NewGame; the stages add to it) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$F9FD` | `ScoreHigh` | 1 | The score's high two digits (ten thousands, 0-99), above Score: 0 at NewGame; the stages' AddScore carries into it (src/stage1 AddScore) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
+| `$F9BF` | `DecimalTable` | 10 | 10000, 1000, 100, 10, 1: the stages' decimal print. Read by the stages' score print (every stage recording). | - | - |
+| `$F9FB` | `Score` | 2 | The score, a word (0 at NewGame; the stages add to it) | - | `NewGame` |
+| `$F9FD` | `ScoreHigh` | 1 | The score's high two digits (ten thousands, 0-99), above Score: 0 at NewGame; the stages' AddScore carries into it (src/stage1 AddScore) | - | `NewGame` |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): tables
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$FA00` | `BitReverse` | 256 | Byte n is n with its bits in reverse order (the stages' mirrored sprites). Read in c1 and in the stage recordings (deaths, s1-s3). | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$FB00` | `ScreenLineTable` | 384 | The screen address of each of the 192 pixel lines. Read by RevealText, the front and the stages. | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +18 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +18 |
-| `$FC80` | `ScreenLineTablePad` | 16 | Zeros no code reads (known only from the code) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
+| `$FA00` | `BitReverse` | 256 | Byte n is n with its bits in reverse order (the stages' mirrored sprites). Read in c1 and in the stage recordings (deaths, s1-s3). | - | - |
+| `$FB00` | `ScreenLineTable` | 384 | The screen address of each of the 192 pixel lines. Read by RevealText, the front and the stages. | `RevealText` | - |
+| `$FC80` | `ScreenLineTablePad` | 16 | Zeros no code reads (known only from the code) | - | - |
 
 ### The resident (TZX blocks 25, 17, 27 at `$F000-$FFFF`): keys
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$FCFA` | `KeyXorMask` | 1 | 0 for keys (active low), `$FF` for a Kempston (active high), written by the front | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +22 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
-| `$FCFB` | `KeyXorMaskPad` | 5 | Zeros no code reads (known only from the code) | `Advance`, `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep` +17 | `AttrBox`, `AyFrame`, `AyWrite`, `ChannelStep`, `ClearScreen3` +17 |
+| `$FCFA` | `KeyXorMask` | 1 | 0 for keys (active low), `$FF` for a Kempston (active high), written by the front | `KeyDown`, `KeyFire`, `KeyLeft`, `KeyRight`, `KeyUp` | - |
+| `$FCFB` | `KeyXorMaskPad` | 5 | Zeros no code reads (known only from the code) | - | - |
 
 
 ## The front (TZX block 37) (`src/front/front.json`)

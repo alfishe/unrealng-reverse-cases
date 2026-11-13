@@ -139,7 +139,13 @@ frame windows of the recording (`kit/rs.py build --from-frame F --to-frame G --i
 programs apart: give the part the windows as `witness_builds` and the whole recording as `witness_skip`. Builds of
 one name (`stage1/c1/load` and `stage1/c1/unxor` are both `c1`: the windows kept inside the recording's folder; or
 `witness_names`) are one item, their runs summed. Other witness text
-(`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched.
+(`Witness: L1 18 585 passes`, `Witness: L1 window ...`) is not touched. A description that says the entry ran in no
+recording ("Not executed in any recording", "not run" / "never reached in any recording", "no recording reaches it")
+while the builds give it runs is printed too, and left as written (the text is the writer's: a recording added later
+makes it wrong):
+`witness: src/front/front.ann:142 $9538 CreditsPage2: the text says "Not executed in any recording", ...`. The phrase counts only when it is said of the entry: not inside
+brackets, and not after another subject's "is" / "are" / "was" / "were" ("The RET at `$781D` is not executed in any
+recording"; "this is" and "it is" are the entry's).
 
 ### 3.3 An inner line: `$ADDR [NAME] [; comment]`
 

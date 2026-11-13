@@ -111,8 +111,8 @@
   "work": "work/stage2/mkresident",
   "ref_builds": [
     [
-      "stage1/c1",
-      "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
+      "stage1/c1/run",
+      "c1 from frame 5166 (tools/c1_windows.sh): the resident from its entry on, the front, the stage 1 load, stage 1"
     ]
   ],
   "other_builds": [
@@ -131,5 +131,6 @@
   "data_entries": "stop",
   "witness_builds": [
     "stage1/c1/run"
-  ]
+  ],
+  "ref_skip_moves": true
 }

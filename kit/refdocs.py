@@ -26,6 +26,17 @@ case.json keys read here (beside mkgame.py's):
     "ref_load_end": {"stage1/c1": 15505}     (optional) per recording, the frame from which it runs the game's
                                image: a routine first run before it ran during the load (a loader at the game's
                                addresses), its writes are the blocks landing and are no entry's "Written by"
+    "ref_skip_moves": true     (optional; a part file's own key for a part) doc 11's readers and writers leave out
+                               the block moves: an L1 loop that copies (a read and a write stride of step 1 or -1
+                               over as many bytes, 16 or more: LDIR, LDDR, an in-place decryption; not an LDIR
+                               fill, its destination the source a byte on) or loads (a write
+                               stride of step 1 or -1 alone, whose store wrote code a recording later ran: a tape
+                               loader, a depacker of code). Their bytes are moved, not used (Myth's resident: the
+                               SpeedLock chain's decryption over it). Doc 12's Reads and Writes keep them
+
+Memory ranges outside the image that are not the screen (below the game's image: "system" without a name; outside a
+part's image: its numbers) are named by the view's .ann @equ lines that cover them (NAME, NAME+offset), Myth's
+`$5B00` PlayBuffer of the stages and TextBuffer of the front.
 
 ref_parts: after the game's sections, one section a part file of the single layout, from its .ann, its image and its
 recordings: the part's "ref_builds" (else the case's) first, then its other l1 sources ("other_builds" overrides
@@ -146,6 +157,73 @@ def split(rs, take):
             else:
                 out.append((a, a, 1))
     return kept, taken
+
+
+# a block move's stride covers at least this many bytes in one range (ref_skip_moves)
+MOVE_MIN = 16
+
+
+def block_moves(b):
+    """ref_skip_moves: {L1 routine index: {'reads': [(lo, hi)], 'writes': [...]}}, the bytes the routine's block
+    moves read and wrote. A move is an L1 loop's stride of step 1 or -1 with a range of MOVE_MIN bytes or more: a read
+    and a write stride over as many such bytes (a copy: LDIR, LDDR, LD A,(HL) / LD (DE),A; or an in-place change, a
+    decryption; not a fill, the destination its source shifted by a byte), or a write stride with no such read
+    stride whose store wrote code a recording later ran (an L1 arrival's writer: a loader, a depacker of code). The
+    ranges go to the routines whose blocks hold the stride's instruction"""
+    if hasattr(b, 'moves'):
+        return b.moves
+    doc = DOCS[b.path]
+    holds = {}  # (page, instruction address) -> the L1 routines whose blocks hold it
+    for blk in doc.get('blocks', ()):
+        for a in range(int(blk['start'][1:], 16), int(blk['end'][1:], 16) + 1):
+            holds.setdefault((blk['page'], a), set()).add(blk['routine'])
+    writers = {int(x['writer'][1:], 16) for x in doc.get('arrivals', ()) if x.get('writer')}
+
+    def bigs(s):
+        return [(int(x['from'][1:], 16), int(x['to'][1:], 16)) for x in s['ranges']
+                if x['bytes'] >= MOVE_MIN and x['page'] in mkgame.BASES]
+
+    def big(s):
+        return sum(hi - lo + 1 for lo, hi in bigs(s))
+
+    def copy(r, w):
+        """a read and a write stride over as many bytes, not a fill: an LDIR whose destination is its source one
+        byte on (the same bytes shifted) clears a buffer, its bytes are used"""
+        if big(r) != big(w):
+            return False
+        return not any(rl != wl and rl <= wh and wl <= rh for (rl, rh), (wl, wh) in zip(bigs(r), bigs(w)))
+    b.moves = {}
+    for loop in doc.get('loops', ()):
+        strides = [s for s in loop['strides'] if abs(s['stride']) == 1 and s.get('constant', True) and big(s)]
+        reads = [s for s in strides if s['access'] == 'read']
+        writes = [s for s in strides if s['access'] == 'write']
+        moved = [s for s in reads if any(copy(s, w) for w in writes)] + \
+            [w for w in writes if any(copy(s, w) for s in reads)]
+        if not reads:
+            moved += [w for w in writes if int(w['at'][1:], 16) in writers]
+        for st in moved:
+            kind = 'reads' if st['access'] == 'read' else 'writes'
+            for i in holds.get((loop['page'], int(st['at'][1:], 16)), ()):
+                got = b.moves.setdefault(i, {'reads': [], 'writes': []})[kind]
+                got += [(int(x['from'][1:], 16), int(x['to'][1:], 16)) for x in st['ranges']
+                        if x['page'] in mkgame.BASES]
+    return b.moves
+
+
+def cut(rs, out):
+    """the ranges rs (lo, hi, n) without the bytes of out [(lo, hi)]"""
+    for olo, ohi in out:
+        kept = []
+        for lo, hi, _ in rs:
+            if hi < olo or lo > ohi:
+                kept.append((lo, hi, hi - lo + 1))
+                continue
+            if lo < olo:
+                kept.append((lo, olo - 1, olo - lo))
+            if hi > ohi:
+                kept.append((ohi + 1, hi, hi - ohi))
+        rs = kept
+    return rs
 
 
 # LD through memory: LD r,(nn) reads, LD (nn),r writes (1 byte with A, 2 with a register pair)
@@ -274,7 +352,8 @@ class View:
                     ann_path=os.path.join(ROOT, 'src', main, main + '.ann'), piece=None, top=main, src='src/' + main,
                     ref_builds=[tuple(b) for b in config.get('ref_builds', [])],
                     read_builds=tuple(config.get('read_builds', ())), code_builds=tuple(config.get('code_builds', ())),
-                    windows={}, outside=None, h2='##', blocks=False)
+                    windows={}, outside=None, h2='##', blocks=False,
+                    skip_moves=bool(config.get('ref_skip_moves')))
 
     @staticmethod
     def part(spec, config, game):
@@ -342,7 +421,8 @@ class View:
                  piece=piece, top=top, ann_top=ann_top, src=part.get('dest') or os.path.dirname(ann),
                  ref_builds=ref, read_builds=tuple(read), code_builds=tuple(code), windows=windows,
                  outside=game_namer(game, lo) if seg.bank is not None else plain_span, h2='###',
-                 blocks=seg.mode == 'blocks' or seg.same_bytes, segment=None, part_title=title)
+                 blocks=seg.mode == 'blocks' or seg.same_bytes, segment=None, part_title=title,
+                 skip_moves=bool(part.get('ref_skip_moves')))
         if not os.path.exists(v.ctl):
             sys.exit(f'run kit/mkgame.py --part {path} first (it writes {os.path.relpath(v.ctl, ROOT)})')
         return v
@@ -384,6 +464,8 @@ class View:
                                      if k in self.windows else '') for k in others) if others else '')
                 if doc == 12 else 'the readers and writers from ' + ', '.join(
                     [f'`work/{k}`' for k, _ in self.ref_builds] + [f'`work/{k}`' for k in self.read_builds])) + '.'
+        if self.skip_moves and doc == 11:
+            text = text[:-1] + ', block copies and loads left out (`ref_skip_moves`).'
         if self.segment:
             lo, hi, run = self.segment
             text += ' This section is the segment `$%04X-$%04X` of the image' % (lo, hi - 1) + (
@@ -520,11 +602,33 @@ def reference(v, config):
         name = labels.get(at, e[2])
         return name if at == a else '%s+%d' % (name, a - at)
 
+    # an '@equ ... at' name holds only its instructions' operands: no range is named after it
+    equs = sorted((a, name, size) for a, (name, size, _) in ann.equ.items() if a not in ann.equ_at)
+
+    def equ_span(lo, hi):
+        """A range outside the image, not the screen, by the .ann's @equ lines: the one that holds its first byte
+        (NAME+offset), then those that start inside it; None when none does"""
+        if 0x4000 <= lo < 0x5B00:
+            return None
+        names = []
+        held = [e for e in equs if e[0] <= lo < e[0] + e[2]]
+        if held:
+            a, name, _ = held[-1]
+            names.append(name if a == lo else '%s+%d' % (name, lo - a))
+        names += [name for a, name, _ in equs if lo < a <= hi and name not in names]
+        if not names:
+            return None
+        shown = ', '.join('`%s`' % n for n in names[:4]) + (' and %d more' % (len(names) - 4) if len(names) > 4 else '')
+        return ('`$%04X`' % lo if lo == hi else '`$%04X`-`$%04X`' % (lo, hi)) + ' (%s)' % shown
+
     def span(lo, hi):
         """A memory range as the labels it covers: the one at or below its first byte (inner labels included,
         Label+offset), then the entries it runs into, or within one entry its inner labels"""
         if v.outside and (hi < LO or lo >= HI):
-            return v.outside(lo, hi)
+            text = v.outside(lo, hi)
+            return equ_span(lo, hi) or text if text == plain_span(lo, hi) else text
+        if hi < LO and equ_span(lo, hi):
+            return equ_span(lo, hi)
         if hi < LO:
             area = 'screen' if 0x4000 <= lo < 0x5B00 else 'system'
             return ('`$%04X`' % lo if lo == hi else '`$%04X`-`$%04X`' % (lo, hi)) + ' (%s)' % area
@@ -572,6 +676,7 @@ def reference(v, config):
         # blocks landing, not the writes of the entry that holds its address
         load_end = config.get('ref_load_end', {}).get(key) if v.game else None
         data = key in read_keys
+        moves = block_moves(b) if v.skip_moves and data else {}
         # the interrupt's acceptance, booked by L1 to the interrupted instruction: the vector read (a word that
         # holds the handler's address) and the return address pushed (bytes the stack uses) go to the handler
         moved = {}  # handler routine index -> {'reads': [...], 'writes': [...]}
@@ -646,7 +751,8 @@ def reference(v, config):
                         continue
                     rs = r.get('_' + kind, ranges(p[kind])) + moved.get(i, {}).get(kind, [])
                     s[kind] += rs
-                    got[kind] += rs
+                    # ref_skip_moves: the bytes the routine's block moves copied or loaded are no entry's use
+                    got[kind] += cut(rs, moves[i][kind]) if i in moves else rs
             s['ports_in'].update(x if isinstance(x, str) else x.get('port', str(x)) for x in p['ports_in'])
             s['ports_out'].update(x if isinstance(x, str) else x.get('port', str(x)) for x in p['ports_out'])
         for c in b.calls:
@@ -860,7 +966,8 @@ def reference(v, config):
            'of the whole entry\'s ("17 of 34"). The name, the title and the description are the',
            f'source\'s (`src/{MAIN}/{MAIN}.ann`); the readers and writers are the routines the recordings saw touch it',
            '(' + ', '.join(f'`work/{k}`' for k, _ in BUILDS) + ', local and not in the repository'
-           + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '') + ')'
+           + (f'; {OVERLAY_NAME}\'s accesses are not counted as theirs' if OVERLAY_NAME else '')
+           + ('; block copies and loads left out, `ref_skip_moves`' if v.skip_moves else '') + ')'
            + (', then those only the case\'s other recordings (`read_builds`) saw, with the first of them in brackets'
               if len(read_keys & set(every)) > len(ref_keys) else '') + ', and, marked',
            '"(code)", the routines (the label at or below the instruction) whose `LD` through `(nn)`, or through `HL`, `DE`'
