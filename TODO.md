@@ -19,7 +19,7 @@ done is in [AGENTS.md](AGENTS.md); this file says only what is next.
 | 10 | Myth | stage 2 ([case](games/myth/README.md)); System 3, 1989 ("Myth: History in the Making"); local copies include Russian hacks (MYTH_RUSSIAN_VERSION, LESHIJ): sort the original from them |
 | 11 | Deflektor | stage 2 ([case](games/deflektor/README.md)); Gremlin Graphics 1987 (Costa Panayi), Ben Daglish's music |
 | 12 | Rick Dangerous | docs (writers) ([case](games/rick-dangerous/README.md)); Core Design / Firebird 1989 |
-| 13 | Rick Dangerous 2 | stage 2 ([case](games/rick-dangerous-2/README.md)); Core Design / Micro Style 1990, 48K/128K |
+| 13 | Rick Dangerous 2 | docs (writer) ([case](games/rick-dangerous-2/README.md)); Core Design / Micro Style 1990, 48K/128K |
 | 14 | Bumpy | docs (writers) ([case](games/bumpy/README.md)); Loriciels 1989 (the owner wrote "BAMPY"; Bumpy's Arcade Fantasy is the only match in the packs); source, resources and leftovers done (all 100 levels finished in recordings, fire death, two players, name entry, Kempston via decode=a5); next: docs 04-10 |
 
 ## Planned ports
