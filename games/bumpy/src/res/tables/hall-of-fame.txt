@@ -1,0 +1,7 @@
+# The hall of fame: 4 records of 32 bytes: the PrintText line ($16 row col,
+# $14 attr, $02 double height, name, " : ", five digits, $00), then the score
+# word and 12 zero bytes.
+"\x16\x07\x0A\x14\x0F\x02PAP : 16000\x00" $80 $3E $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00
+"\x16\x0A\x0A\x14\x0F\x02PEP : 08000\x00" $40 $1F $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00
+"\x16\x0D\x0A\x14\x0F\x02PIP : 04000\x00" $A0 $0F $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00
+"\x16\x10\x0A\x14\x0F\x02POP : 01700\x00" $A4 $06 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00 $00

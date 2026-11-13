@@ -1,0 +1,3 @@
+# The menu's option 1: two 16-byte strings (one player, two players).
+"ONE PLAYER      "
+"TWO PLAYERS     "

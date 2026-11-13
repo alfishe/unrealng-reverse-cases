@@ -1,0 +1,12 @@
+# LevelColours $E119: the CPC firmware inks (0-26)
+# of pens 1-3 by level mod 7 + 1 (row 0 never
+# read); a RET on the Spectrum.
+row,pen1,pen2,pen3
+0,0,19,0
+1,3,15,25
+2,1,14,20
+3,12,24,26
+4,3,6,26
+5,4,17,26
+6,9,18,26
+7,3,16,26

@@ -1,0 +1,6 @@
+# The control sets (KeyboardKeys $F092): key codes row x 8 + bit (row 8 the
+# Kempston byte); sets: keyboard, Kempston, Sinclair.
+set,up,down,left,right,fire,fire2,pause,quit
+0,$28,$30,$11,$10,$00,$00,$0C,$2B
+1,$43,$42,$41,$40,$44,$44,$0C,$2B
+2,$19,$1A,$1C,$1B,$18,$44,$0C,$2B

@@ -1,0 +1,66 @@
+# passes: a lost level (as events) played with the player's keys numbered by the game's own passes: the timer
+# `$AB04` goes down by one each main-loop pass, so (lives lost so far, timer) names a pass in the RZX's run and in
+# ours alike, even where a pass takes two frames in one emulator and one in the other. The RZX's keys of a pass are
+# the game's first read (`$B423`, pc >= `$4000`) of each keyboard row in the frames that end with that timer value
+# (work/stage2/rzx-states.tsv has the timer); our frame holds the keys of the pass that starts in it (timer - 1).
+# READY? (timer 1000 for 40 frames) is ended by B held three frames
+82 6
+163 0 6
+171 0
+187 0 7
+193 7
+259 0 7
+269 0
+296 -
+300 7
+307 0 7
+310 0
+521 -
+523 7
+541 6
+554 0 6
+564 0
+587 0 7
+588 7
+603 7 6
+604 6
+617 0 6
+626 0
+639 0 6
+642 6
+725 0 6
+727 0
+764 7
+780 0
+793 0 7
+809 0
+823 0 7
+827 7
+859 0 7
+861 0
+894 -
+895 7
+902 0 7
+904 0
+1101 0 6
+1140 6
+1145 7
+1183 0 7
+1185 -
+1188 0
+1220 0 7
+1236 0
+1266 -
+1268 7
+1304 7 6
+1309 6
+1351 -
+1394 6
+1398 0 6
+1404 0
+1449 -
+1451 7
+1480 -
+1528 7
+1731 -
+1731 END

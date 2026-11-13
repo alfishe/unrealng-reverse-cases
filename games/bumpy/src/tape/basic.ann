@@ -1,0 +1,45 @@
+# The annotations of tape block 2, the BASIC program "BUMPY" at PROG $5CCB-$5D89 (191 bytes): the source of
+# src/tape/basic.asm and src/tape/basic-module.asm (../../kit/mkgame.py --part src/tape/basic.json). Format:
+# ../../../../docs/ann-format.md. Witness: c1 (work/stage1/c1: power-on, the tape at ROM speed), whose ROM LOADs
+# this block and runs its line 10.
+
+@module basic ; The BASIC: line 10, which hides the tape messages, loads the screen and the code and calls the game
+@about Tape block 2 holds the program "BUMPY" (header: LINE 10, program length 191, no variables). The one line is POKE 23624,0: POKE 23693,0: POKE 23607,128: CLEAR 24999: LOAD "" SCREEN$: PRINT: BRIGHT 1: OVER 1: PAPER 5: {INK 0} LOAD "" CODE 25000: POKE 23607,60: POKE 23685,0: RANDOMIZE USR 43900. Every number is its digits, then the number marker $0E and the five-byte small-integer form the ROM reads.
+@about c1: the ROM loads the block and runs the line at once (LINE 10); the screen and the code follow, and USR 43900 enters GameStart $AB7C (src/game).
+
+$5CCB b BasicLine10 ; BASIC line 10: POKE 23624,0: POKE 23693,0: POKE 23607,128: CLEAR 24999: LOAD "" SCREEN$: PRINT: BRIGHT 1: OVER 1: PAPER 5: {INK 0} LOAD "" CODE 25000: POKE 23607,60: POKE 23685,0: RANDOMIZE USR 43900
+> The whole program (the header's program length 191 covers it all): the line number 10 (two bytes, high byte first), the line's length (187, low byte first), then thirteen statements split by ":" ($3A) and closed by ENTER ($0D).
+> POKE 23624,0 sets BORDCR (a black border and lower screen) and POKE 23693,0 ATTR_P (black on black). POKE 23607,128 moves the high byte of CHARS from $3C to $80: the ROM's messages ("Bytes: BUMPY.SCR", "Bytes: BUMPY.CDE") then print with the font read from RAM at $8100-$83FF, which holds zeros before the code block loads, so they print blank. CLEAR 24999 puts RAMTOP at $61A7, one byte below the code block (GameBlock $61A8). LOAD "" SCREEN$ loads the loading screen (tape blocks 3 and 4) at $4000; PRINT, BRIGHT 1, OVER 1 and PAPER 5 make the next message (OVER 1, a blank font) leave the picture alone (known only from the code: the message is not seen in c1's shots).
+> The two bytes $10 $00 before LOAD are an embedded INK 0 control, which the interpreter skips (the ROM's character fetch passes over colour controls and their parameter); in a LIST it inks the rest of the line black. LOAD "" CODE 25000 loads tape blocks 5 and 6 at $61A8. POKE 23607,60 puts CHARS back at $3C00, POKE 23685,0 clears the high byte of DF_CC (known only from the code: nothing prints after it), and RANDOMIZE USR 43900 calls GameStart $AB7C, which never returns.
+$5CCD ; the line's length, 187
+$5CCF ; POKE ($F4) "23624"
+$5CD5 ; $0E and 23624 = $5C48 (BORDCR), then "," and "0"
+$5CDD ; $0E and 0
+$5CE3 ; ":" POKE ($F4) "23693"
+$5CEA ; $0E and 23693 = $5C8D (ATTR_P), then "," and "0"
+$5CF2 ; $0E and 0
+$5CF8 ; ":" POKE ($F4) "23607"
+$5CFF ; $0E and 23607 = $5C37 (CHARS high byte), then "," and "128"
+$5D09 ; $0E and 128
+$5D0F ; ":" CLEAR ($FD) "24999"
+$5D16 ; $0E and 24999 = $61A7
+$5D1C ; ":" LOAD ($EF) "" SCREEN$ ($AA)
+$5D21 ; ":" PRINT ($F5)
+$5D23 ; ":" BRIGHT ($DC) "1"
+$5D26 ; $0E and 1
+$5D2C ; ":" OVER ($DE) "1"
+$5D2F ; $0E and 1
+$5D35 ; ":" PAPER ($DA) "5"
+$5D38 ; $0E and 5
+$5D3E ; ":" then the embedded INK 0 control ($10 $00)
+$5D41 ; LOAD ($EF) "" CODE ($AF) "25000"
+$5D4A ; $0E and 25000 = $61A8
+$5D50 ; ":" POKE ($F4) "23607"
+$5D57 ; $0E and 23607, then "," and "60"
+$5D60 ; $0E and 60 = $3C
+$5D66 ; ":" POKE ($F4) "23685"
+$5D6D ; $0E and 23685 = $5C85 (DF_CC high byte), then "," and "0"
+$5D75 ; $0E and 0
+$5D7B ; ":" RANDOMIZE ($F9) USR ($C0) "43900"
+$5D83 ; $0E and 43900 = $AB7C
+$5D89 ; ENTER

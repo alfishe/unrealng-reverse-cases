@@ -1,0 +1,13 @@
+# The CPC level editor's menu, never read on the Spectrum: letters A = 1 ... Z = 26,
+# each string ending in $00.
+"RETOUR\x00"
+"EDITEUR\x00"
+"\x00"
+"CHARGER\x00"
+"TABLEAUXSAUVER\x00"
+"TABLEAUX\x00"
+"EFFACER\x00"
+"TABLEAU\x00"
+"QUITTER\x00"
+"EDITEUR\x00"
+"\x00"

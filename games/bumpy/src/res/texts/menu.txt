@@ -1,0 +1,8 @@
+# The menu (MenuText, PrintText $E667): $16 AT row col, $01/$02 single/double height,
+# $10 INK, $13 BRIGHT, $00 the end.
+"\x16\x08\x0A\x02\x10\x070   GAME"
+"\x16\x0B\x0A\x02\x10\x051 ONE PLAYER "
+"\x16\x0E\x0A\x02\x10\x072 KEYBOARD"
+"\x16\x11\x0A\x02\x10\x043 SINCLAIR"
+"\x16\x14\x0A\x02\x10\x044 KEMPSTON"
+"\x16\x17\x03\x01\x10\x02\x13\x01VERSIONED BY J250 <SPAIN>\x00"

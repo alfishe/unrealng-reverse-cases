@@ -1,0 +1,19 @@
+{
+  "about": "Tape block 2, the BASIC program BUMPY $5CCB-$5D89 (line 10): python3 ../../kit/mkgame.py --part src/tape/basic.json --install",
+  "image_cmd": ["sh", "-c", "mkdir -p work/parts && python3 tools/image.py --block 1 work/parts/basic-5ccb.bin && python3 -c \"import sys; d=open('work/parts/basic-5ccb.bin','rb').read(); open('work/parts/basic.img','wb').write(bytes(0x5CCB)+d+bytes(0x10000-0x5CCB-len(d)))\""],
+  "image": "work/parts/basic.img",
+  "lo": "5CCB",
+  "hi": "5D8A",
+  "ann": "src/tape/basic.ann",
+  "top": "basic",
+  "bin": "basic.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Bumpy, Loriciels 1989: tape block 2, the BASIC program \"BUMPY\" (191 bytes at PROG $5CCB, LINE 10):",
+    "; hides the tape messages, CLEAR 24999, LOAD \"\" SCREEN$, LOAD \"\" CODE 25000 and RANDOMIZE USR 43900."
+  ],
+  "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5CCB", "hi": "5D8A"}],
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic"
+}

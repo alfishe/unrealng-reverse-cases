@@ -1,0 +1,3 @@
+# "Erase Una Vez ...", never printed: $1F is the CPC firmware's LOCATE
+# (PrintOnceUponATime $E7C6, unrun).
+"\x1F\x02\x0A\x148\x01Erase \x02Una Vez ...\x00"

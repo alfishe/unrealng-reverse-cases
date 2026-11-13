@@ -12,3 +12,1845 @@
 #   @isub $ADDR LD HL,-6            the instruction written so
 #   @equ $ADDR Name [N] ; comment    a variable past the image: an EQU, its operands by name
 #   @inline $ADDR                   a routine that reads its data after the CALL
+@module graphics ; The graphics: the CPC mode-1 pictures of the play screen, the ball, the objects and the cells
+@about Every picture here is Amstrad CPC mode-1 data: a byte holds 4 pixels in two planes (pen = bit 7-i + 2 x bit 3-i). The Spectrum's blitters (DrawSprite $E318, XorSprite $E3EE, the coloured $E3E5) show the low nibble only, one bit a pixel, so a CPC byte is 4 Spectrum pixels and a picture w bytes wide is 4w pixels; the bricks (XorBricks $E4C4) show the high nibble. Width and height are never stored: each caller sets SpriteWidth $A9FE and the rows in B. The resources are 4-pen PNGs (src/res/sprites/README.md).
+@about The leftovers $61A8, $6758, $75A8 and $8385 are bytes no routine reads (no recording reads them either); they look like more CPC pictures of the original.
+$61A8 b UnusedPicture61A8 16 ; Never read: 496 bytes of CPC mode-1 picture data left from the original (known only from the bytes)
+> No instruction refers to $61A8-$6397 and no recording reads it (work/stage1/memmap-use.txt). The bytes are mostly $F0 and $0F runs, the shape of a CPC frame or panel. Kept as leftovers/unused-61a8.bin.
+@res leftovers/unused-61a8.bin
+$6398 b SidePanels 16 ; The two side panels, each 2 bytes x 192 lines, drawn by DrawSides $B488
+> DrawSides $B488 draws SidePanels at the CPC address $F800 (left edge, B = $C0 lines, SpriteWidth 2) and SidePanelRight $6518 at $F83C (right edge) once per game start. Witness: read by every recording that starts a game (c1, menu, gameover, rzx).
+@res sprites/sides.bin
+$6518 SidePanelRight ; the right panel, 384 bytes
+$6698 b ExitSign 16 ; The EXIT sign: two pictures of 8 bytes x 7 lines, read only by the unrun DrawExitSign $D08E
+> DrawExitSign $D08E (never called) would XOR the first picture one character row above the exit's cell. No recording reads these 112 bytes. Known only from the code.
+@res sprites/exit-sign.bin
+$6708 b BlankPicture 16 ; 80 zero bytes: the blank picture that erases a cell, the ball's last burst frame and the exit's first frame
+> Read by the burst's last step ($B1CB, 4 x 14), FillColumn ($B4E1), OpenExit ($BCE1, 8 x 10), the fire put-out ($C126) and the lock opening's end ($C4B8). Its bytes are all zero, so a stored blank clears and an XOR leaves the screen as it is.
+$6758 s Unused6758 ; 144 zero bytes no routine reads
+$67E8 b BallPictures 16 ; The ball: 16 pictures of 4 bytes x 10 lines for player 1, then 16 for player 2 at BallPictures2 $6A68
+> BallPictures (the round ball) and the 15 rolling frames $6810-$6A40, 40 bytes apart, chosen by BallFramesRight $C4E2 / BallFramesLeft $C502 for each step of a move. Player 2's ball is the same set $280 bytes on ($ADE6 adds $0280 when CurrentPlayer $ADDB is 2).
+> Witness: read every frame of play (the ball is drawn by XOR, erased and drawn again); BallPictures2 is read only in two-player turns of player 2 (work/stage2/rec/twoplayer).
+@res sprites/ball.bin
+$6A68 BallPictures2 ; player 2's ball, 16 pictures
+$6CE8 b ObjectPictures 16 ; The objects 1-40: 4 bytes x 14 lines each (56 bytes), kind k at $6CB0 + 56k
+> TakeObject $B958 and BuildLevelObject $CFF4 find kind k at $6CB0 + 56 x k (kind 0, no object, is never drawn, so $6CB0 is only a base inside BallPictures2). Drawn in the ink ObjectInks $C6F6[k] by $E3E5. Kinds: 1 hammer, 2 key, 3 water, 4 bottle (an extra life), 5-40 prizes (src/res/sprites/README.md).
+@res sprites/objects.bin
+$75A8 b UnusedPicture75A8 16 ; Never read: 480 bytes of CPC picture data left from the original (known only from the bytes)
+@res leftovers/unused-75a8.bin
+$7788 b Platform1Pictures 8 ; Platform type 1 (and the plain one under a fire, type 8): rest, two take-off and three spring pictures, 8 bytes wide
+> Rest $7788 (4 lines), take-off $77A8 and $77F8 (10 lines each, also the conveyors 6 and 7, PlatDraw6/7), spring $7848 (7), $7880 (9), $78C8 (7): the pictures SpringPics $C5D6 and TakeoffPics $C64E name for type 1. Drawn by XOR at the cell's screen address CellScrAddr $AB2D.
+@res sprites/platform-1.bin
+$77A8 Platform1Takeoff ; take-off, 8 x 10; the conveyor left (type 6)
+$77F8 Platform1Takeoff2 ; take-off, 8 x 10; the conveyor right (type 7)
+$7848 Platform1Spring ; spring pictures: 8 x 7, 8 x 9, 8 x 7
+$7900 b Platform2Pictures 8 ; Platform type 2 (crumbling, first stage): rest 8 x 4, take-off 8 x 10 twice, spring 8 x 7, 8 x 9, 8 x 7
+@res sprites/platform-2.bin
+$7A78 b Platform3Pictures 6 ; Platform type 3 (crumbling, second stage), 6 bytes wide: rest 6 x 4, take-off 6 x 8 twice, spring 6 x 6, 6 x 7, 6 x 6
+@res sprites/platform-3.bin
+$7B62 b Platform4Pictures 4 ; Platform type 4 (crumbling, last stage), 4 bytes wide: rest 4 x 4, take-off 4 x 6 twice, spring 4 x 5, 4 x 6, 4 x 5
+@res sprites/platform-4.bin
+$7BE2 b Platform5Pictures 8 ; Platform type 5 (the stopping platform, and the one under a fire, type 9): rest 8 x 4, take-off 8 x 10 twice, spring 8 x 7, 8 x 9, 8 x 7
+@res sprites/platform-5.bin
+$7D5A b SpikesPicture 6 ; Platform type 12, the spikes: 6 bytes x 7 lines (PlatDraw12 $D1B2)
+@res sprites/spikes.bin
+$7D84 b CrumblePictures 8 ; The crumbling platforms' falling pictures: 8 x 4, then three of 6 x 4 (CrumbleType3), three of 4 x 4, three of 2 x 4 and four of 2 x 5
+> Drawn one a step by the crumble steps ($C258-$C3BF) at CrumbleAddr $AB24 as a platform wears from type 2 to 3, 3 to 4 and 4 to nothing.
+@res sprites/crumble-8.bin
+$7DA4 b CrumbleType3 6 ; Three falling pictures of 6 x 4
+@res sprites/crumble-6.bin
+$7DEC b CrumbleType4 4 ; Three falling pictures of 4 x 4
+@res sprites/crumble-4.bin
+$7E1C b CrumbleSmall 2 ; Three falling pictures of 2 x 4
+@res sprites/crumble-2.bin
+$7E34 b CrumbleBits 2 ; Four falling pictures of 2 x 5, the last pieces
+@res sprites/crumble-bits.bin
+$7E5C b WallPictures 16 ; The walls, 2 bytes x 24 lines each: wall 4's four frames, the locks 3, 2, 1, the flash, the lock's five opening frames
+> Wall 4 (no key opens it) cycles $7E5C + 48n, n 0-3, every fourth frame (AnimateWalls $BC30). Locks: type 3 $7F1C, type 2 $7F4C, type 1 $7F7C (WallDraw3/2/1); $7FAC the flash of a key used; $7FDC-$809C the five frames of a type-1 lock opening ($C492-$C4B1). Drawn at WallScrAddr $AB2F.
+@res sprites/walls.bin
+$7F1C WallLock3 ; lock type 3
+$7F4C WallLock2 ; lock type 2
+$7F7C WallLock1 ; lock type 1
+$7FAC WallFlash ; a lock taking a key
+$7FDC WallOpening ; a type-1 lock opening, five frames
+$80CC b ExitMark 9 ; The exit: a 1-byte x 9-line mark, then four frames of 6 bytes x 5 lines at ExitFrames $80D5
+> OpenExit $BCB9 draws ExitMark ($BCF6, SpriteWidth 1, 9 lines); AnimateExit $BD21 cycles the frames from the table $C522.
+@res sprites/exit-mark.bin
+$80D5 b ExitFrames 6 ; The exit's four frames, 6 x 5
+@res sprites/exit.bin
+$814D b FirePictures 6 ; Flames: three frames of 6 bytes x 5 lines over a burning platform (types 8 and 9)
+> AnimateFires $BBCD picks frame FireFrame $AA16 every fourth frame; PlatDraw8/9 draw the first at the build.
+@res sprites/fire.bin
+$81A7 b SteamPictures 6 ; The water drop's steam over a fire put out: 6 x 6, 6 x 3, 6 x 2, then 4 x 3 at SteamSmall $81E9
+> Drawn by the fire put-out steps ($C13E-$C185) at FireOutAddr $AB29.
+@res sprites/steam.bin
+$81E9 b SteamSmall 4 ; the last steam picture, 4 x 3
+@res sprites/steam-small.bin
+$81F5 b BurstPictures 4 ; The ball bursting: six pictures of 4 bytes x 14 lines (state 6, $B195-$B1C2), then BlankPicture
+@res sprites/burst.bin
+$8345 b BrickPicture 8 ; One brick layer: 8 bytes x 8 lines, drawn by XorBricks $E4C4 from the high nibbles
+> DrawBricks $D180 draws it once a layer still standing (BrickLayers $AAD7, 8 for a whole brick).
+@res sprites/bricks.bin
+$8385 b Unused8385 16 ; Never read: 2231 bytes left from the original (known only from the bytes)
+> No instruction refers to $8385-$8C3B; no recording reads it. The bytes look like more CPC mode-1 pictures. Note that LevelRecords is reached as $8BF1 + 75 x (level + 1) (BuildLevel $CF7E), an address inside this block that is never read.
+@res leftovers/unused-8385.bin
+@module levels ; The level data, the cells and the level builder
+@about The 100 levels are 75-byte records at LevelRecords $8C3C: 36 cells (a wall type in the high nibble, a platform type in the low one), the ball's start cell, the prizes to take, the cell the exit appears in, and an object for each cell. BuildLevel $CF2E copies the record of Level $AB00 to LevelRecord $AA20 and splits the cells into CellPlatforms $AA6B and CellWalls $AA8F. The text form is src/res/levels/levels.txt.
+$8C3C b LevelRecords 75 ; The 100 level records, 75 bytes each (level 0 first)
+> BuildLevel $CF2E reads record Level $AB00 (as $8BF1 + 75 x (Level + 1)) once per life start. Record: +0..+35 the cells, row by row from the top, 6 a row (wall << 4 | platform); +36 the start cell; +37 the prizes; +38 the exit's cell; +39..+74 the objects (0 none, 1-40).
+> Witness: 88 levels read by the RZX recordings rzx l00-l99 (the record of each level they reach); the other levels are read by stage 2's level recordings (work/stage2/rec).
+@res levels/levels.bin
+$A988 s LevelsEnd ; 117 zero bytes after the last record, never read
+@module vars ; The game's variables: the ball, the cells of the level, the player, the animations
+@about The variables from $A9FD to $AB5E. Every value is written by the game before it is read; the bytes on the tape are zeros (the CPC original's state) except where said. One player's record (score, water, keys, hammers, level, lives) is a copy at $AAFB of Player1Record $AB09 or Player2Record $AB10.
+$A9FD b TakeoffDrawn ; 1 while the take-off picture of the cell the ball leaves is on the screen
+$A9FE b SpriteWidth ; The width in bytes of the next picture a blitter draws (the rows go in B)
+$A9FF b BallStep ; The step of the ball's current move: 0-15 (bounce, left, right), 0-7 (up, down)
+$AA00 b BallState ; The ball's state: 0 bounce in place, 1 left, 2 right, 3 up, 4 down, 5 stopped, 6 burst, 7 fall out, 8 level end
+$AA01 w BallSprite ; The ball's current picture (in BallPictures $67E8)
+$AA03 w BallScrAddr ; The ball's CPC screen address
+$AA05 w BallOldAddr ; The address the ball was drawn at last, to erase it
+$AA07 w CellIndex ; A cell's index as a word: the build's and the brick test's current cell
+$AA09 s Unused1 ; two bytes never used
+$AA0B b CellByte ; Scratch: a cell's byte during the build, a brick's layers in the brick test
+$AA0C b FireTick ; Counts frames to the flames' next frame (every fourth)
+$AA0D b WallTick ; Counts frames to wall 4's next frame (every fourth)
+$AA0E b ExitTick ; Counts frames to the exit's next frame
+$AA0F b ExitFrame ; The exit's frame, 1-4
+$AA10 w ExitAnimAddr ; The exit's screen address
+$AA12 b ExitOpen ; 1 once the exit is open
+$AA13 b SpringArmed ; 1 when the up key or fire armed the spring: the next landing goes up (state 3)
+$AA14 b CrumblePending ; A crumbling platform waits for the ball to leave
+$AA15 b CrumbleActive ; A crumbling platform's animation runs
+$AA16 b FireFrame ; The flames' frame, 1-3
+$AA17 b WallFrame ; Wall 4's frame, 1-4
+$AA18 w LockAnimAddr ; The screen address of the lock being opened
+$AA1A w LockAnimSteps ; The lock animation's step table ($C592, $C596 or $C59A)
+$AA1C b LockStep ; The lock animation's step
+$AA1D b LockActive ; A lock animation runs
+$AA1E s Unused2 ; two bytes never used
+$AA20 b LevelRecord 12 ; The current level's record, copied from LevelRecords: 36 cells, then BallCell, PrizesLeft, ExitCell
+> BuildLevel $CF2E clears $AA20-$AAFA (219 bytes) and copies the 75-byte record here, so the record's byte 36 becomes BallCell $AA44, byte 37 PrizesLeft $AA45, byte 38 ExitCell $AA46 and bytes 39-74 CellObjects $AA47.
+$AA44 b BallCell ; The ball's cell, 0-35 (the record's start cell at a life's start)
+$AA45 b PrizesLeft ; The prizes still to take; at 0 OpenExit $BCB9 opens the exit
+$AA46 b ExitCell ; The cell the exit opens in
+$AA47 b CellObjects 12 ; The object of each cell, 0 none, 1-40 (taken ones become 0)
+$AA6B b CellPlatforms 12 ; The platform type of each cell (the record's low nibbles; changed as platforms crumble, burn out or break)
+$AA8F b CellWalls 12 ; The wall type to the right of each cell (the record's high nibbles; lowered as keys open locks)
+$AAB3 b CellBurning 12 ; 1 for a cell whose platform burns (types 8 and 9)
+$AAD7 b BrickLayers 12 ; The brick layers still standing in each cell (8 for a whole brick, type 10)
+$AAFB w Score ; The current player's score
+$AAFD b Water ; Water drops: one puts out a fire the ball lands on
+$AAFE b Keys ; Keys: one opens a lock one step
+$AAFF b Hammers ; Hammers: one breaks a whole brick's first layer
+$AB00 b Level ; The level, 0-99 (shown as is)
+$AB01 b Lives ; Spare lives
+$AB02 b AfterLives ; Read with the record copies, never written: the byte after the player's record
+$AB03 s Unused3 ; never used
+$AB04 w Timer ; The level's timer: 1000 at a life's start, one off a frame; the rest goes into the score at the level end
+$AB06 b WaterAtStart ; Water at the level's start (given back when a life is lost)
+$AB07 b KeysAtStart ; Keys at the level's start
+$AB08 b HammersAtStart ; Hammers at the level's start
+$AB09 b Player1Record 7 ; Player 1's record: score (word), water, keys, hammers, level, lives ($FA lives: the player is out)
+$AB10 b Player2Record 7 ; Player 2's record, the same layout
+$AB17 b BorderFlash ; Set by the bottle (an extra life): the CPC border flash, a RET on the Spectrum
+$AB18 b HudColumn ; The column the next HUD figure prints at
+$AB19 s Unused4 ; never used
+$AB1A b StartCell ; The level's start cell (the record's byte 36)
+$AB1B b CrumbleCell ; The cell of the crumbling platform
+$AB1C b CellPlatform ; The platform type of the ball's cell (CellPlatforms[BallCell], set by $BB32)
+$AB1D b CellObject ; The object in the ball's cell
+$AB1E b CellWall ; The wall of the ball's cell (written by the unrun ReadWallCell $BB4A)
+$AB1F s Unused5 ; never used
+$AB20 b CrumbleNewType ; The type the crumbling platform becomes
+$AB21 b CrumbleStep ; The crumble animation's step
+$AB22 w CrumbleSteps ; The crumble animation's step table
+$AB24 w CrumbleAddr ; The crumbling platform's screen address
+$AB26 b FireOutStep ; The fire put-out animation's step
+$AB27 w FireOutSteps ; Its step table ($C55E, $C56E or $C57E)
+$AB29 w FireOutAddr ; Its screen address
+$AB2B b FireOutActive ; A fire put-out animation runs
+$AB2C s Unused6 ; never used
+$AB2D w CellScrAddr ; The CPC screen address of the current cell (CellAddresses $E131)
+$AB2F w WallScrAddr ; The CPC screen address of the current wall (WallAddresses $E179)
+$AB31 w BrickLayerAddr ; The screen address of the brick layer being knocked off
+$AB33 b BrickActive ; A brick animation runs
+$AB34 b BrickAnimStep ; The brick animation's step
+$AB35 b SpringRecord 8 ; The spring record of the ball's platform (24 bytes from SpringPics $C5D6): 4 offsets, 4 pictures, 4 widths, 4 row counts
+$AB4D b TakeoffRecord 6 ; The take-off record (18 bytes from TakeoffPics $C64E): 3 offsets, 3 pictures, 3 widths, 3 row counts
+$AB5F s Unused7 ; 29 zero bytes never used
+@module setup ; Start-up and the start of a game and of each life: players, records, the cheat, the "ready?" screen
+@about GameStart ($AB7C, the BASIC's RANDOMIZE USR 43900) disables interrupts and enters the menu loop at GameRestart: the menu (Menu $EF33) returns the choice in $B3B1 (0 one player, 1 the demo, 2 two players). A game clears the screen, draws the side panels, zeroes both player records ($AB09, $AB10: score word, water, keys, hammers, level, lives), offers the cheat (R, SPACE and V held at once) and starts the first life at LifeStart.
+@about LifeStart runs at the start of every level and after every life lost: it resets the ball, sets the timer to 1000, copies the current player's record to the working copy at $AAFB, builds the level (CF2E), prints "ready?" and waits for a key, whose direction sets the first move. The main loop follows.
+
+$AB7C c GameStart ; The code block's entry (USR 43900): DI, then GameRestart
+> The BASIC's RANDOMIZE USR 43900 lands here; it disables the interrupts for good (the game waits for frames with EI: HALT, WaitFrame $B6E4) and falls into GameRestart. Nothing jumps back here.
+> Witness: L1 1 (c1).
+$AB7D c GameRestart ; The menu, then a new game or the demo by the menu's choice $B3B1
+> Calls Menu $EF33, then clears the demo flag $ABA6 and the cheat-mode flag $ADDD. By $B3B1: 0 starts a one-player game ($ADDC = 1), 2 a two-player game ($ADDC = 2), 1 the demo ($ABA6 = 1, the demo input pointer $ABA4 = $D25A, one byte before the demo's moves at $D25B; the demo plays one player). Quitting a game (R in MainLoop, QuitToMenu $B7B2) and the end of the demo come back here.
+> Witness: L1 7 (c1, gameover, menu, twoname).
+$AB80 c GameRestartChoice ; Back from the menu: start what $B3B1 chose
+> GameRestart's tail, where Menu returns. It is an entry of its own because the recordings that start inside the menu (work/stage1/probe/load-fast-nokemp/end.szx: menu, gameover, twoname) reach it by Menu's RET with no CALL seen. Clears DemoFlag $ABA6 and CheatMode $ADDD and branches on MenuChoice $B3B1 as GameRestart says.
+> Witness: runs after every Menu call (GameRestart L1 7: c1, gameover, menu, twoname).
+$ABA3 b UnusedByteABA3 ; One byte ($01) between the JP and the demo variables; nothing reads it (leftover)
+$ABA4 w DemoInputPtr ; The demo's input pointer: the last move state read from $D25B+ (BallStopped $B11A)
+$ABA6 b DemoFlag ; 1 while the demo plays, 0 in a game: no keys are read, the "ready?" text is skipped
+$ABA7 b ObjectFlag ; A flag the object handlers ($B9A7-$B9FD) read; no recording writes it (always 0 in the image)
+$ABA8 c NewGameOnePlayer ; One player ($ADDC = 1); NewGame follows
+> Witness: L1 7 (c1, gameover, menu).
+$ABAF NewGameTwoPlayers ; two players ($ADDC = 2)
+$ABB4 NewGame ; white ink on black, the side panels, zeroed records, the cheat test
+> NewGame: ClearAttrs $B471 (ink 7, black border), DrawSides $B488, InitPlayers $BB96 (both records zeroed, 2 lives each by $BBA8). Then the cheat: TestKey $B6CB for R ($2B), SPACE ($00) and V ($3C); all three held calls $BB56 (99 water, keys, hammers and lives for player 1). The current player $ADDB = 1. Witness of the cheat test: $ABCB (V tested once R and SPACE are held) ran once, in the menu build.
+$ABD3 FirstPlayer ; the current player $ADDB = 1
+$ABD8 c LifeStart ; The start of a level or of a new life: resets the ball, the timer and the player's working copy, builds the level, "ready?"
+> Entered from NewGame, from the level end (LevelEnd $B2C2 through $B3AE) and after a life lost (LoseLife $BA93). If the cheat mode $ADDD is on (never: its switch is gone, see CheatModeOn $ADE0) $BB7D refills the stores. ClearPlayArea $B4CE, then zeroes the ball state $AA00, BallStep $A9FF, SpringArmed $AA13, the animation flags $AA12, $AB33, $AB2B, $AA15, $AA14, $AA1D, the platform under the ball $AB1C and $A9FD; the timer $AB04 = 1000 ($03E8: the frames the level allows).
+> The players: the current player $ADDB is kept in $ADDE. With two players ($ADDC = 2) the code copies player 2's record ($AB10) to the working copy $AAFB and sets $ADDB = 2, then player 1's ($AB09) and $ADDB = 1, each time testing lives = $FA (the mark of a player out) with a JR Z to the very next line: the test does nothing (known only from the code). Then $ADDB = $ADDE again and the record of the current player is copied to $AAFB (7 bytes: score word, water, keys, hammers, level, lives), with the text to show: ReadyText $AD3B (one player), Player1ReadyText $AD48 or Player2ReadyText $AD84.
+> In a game: ClearPlayArea, BuildLevel $CF2E, PrintText $E667 of that text; in the demo BuildLevel only. Then water, keys and hammers are kept in $AB06-$AB08 (the stores at the level's start), $BB32 reads the platform under the ball, and D ($32) calls CheatModeSwitch $ADDF (a RET). A game then draws the HUD ($E58B), waits for all keys up (WaitRelease $B401) and for a key (WaitPressHeld $B6DD), and the key sets the first move (DecideMove $B7E4). Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD and WaitFrame $B6E4; MainLoop follows.
+> Witness: L1 57 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$AC19 ; two players: player 2's record to the working copy, $ADDB = 2
+$AC30 LifeStartPlayer1 ; player 1's record to the working copy, $ADDB = 1
+$AC47 LifeStartCurrent ; the current player back from $ADDE; pick the record and the text
+$AC63 LifeStartPlayer2 ; player 2: record $AB10, text Player2ReadyText (no recording ran it)
+$AC69 LifeStartCopy ; the record to the working copy $AAFB
+$AC86 LifeStartDemo ; the demo: BuildLevel without the text
+$AC89 LifeStartStores ; keep water, keys and hammers in $AB06-$AB08
+$ACB0 LifeStartReady ; the HUD, wait for no key, then for a key; DecideMove
+$ACBC LifeStartGo ; the play area again without the text, the HUD, one frame
+
+@module mainloop ; The main loop, the state dispatcher and the keys
+@about MainLoop $ACC8 runs once a frame: it reads the ball's cell, runs the animations (flames, walls, conveyors, bricks, locks), counts the timer down, the bottle's pause, tests R (quit), D (the gone cheat mode), the pause key (slot $F08A), waits for the frame (WaitFrame $B6E4 through $B87E) and jumps to the ball's state routine through StateTable $AD29 by BallState $AA00. Every state routine ends with JP MainLoop.
+@about MainLoop ran 81737 times over the recordings (its witness), one pass a frame, so the game moves at 50 steps a second (the ball's bounce in place, 16 steps, takes 16 frames).
+
+$ACC8 c MainLoop ; One frame of the game: the animations, the timer, the keys, the frame wait, then the ball's state routine
+> Each pass: $BB32 (the platform under the ball to $AB1C), $BB05 (the ball's cell address), the animations $BE94 ($AB33), $BFF3 ($AB2B), $C19D ($AA15), $C43E ($AA1D), $BBCD and $BC30 (every fourth frame: the flames and the walls), $BD21 ($AA12), the timer $B7D1 (the timer $AB04 minus one), the bottle's pause $BA60. Then the keys: R ($2B) held jumps to QuitToMenu $B7B2; D ($32) calls CheatModeSwitch $ADDF (a RET); in a game (not the demo) the pause key (slot $F08A) calls Pause $B440. Last WaitFrame (through $B87E) and the dispatch.
+> Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AD03 MainLoopPause ; in a game: the pause key
+$AD0C MainLoopWait ; the frame wait
+$AD0F Dispatch ; jump to StateTable[BallState AND 15]
+$AD29 w StateTable 9 ; The ball's nine state routines by BallState $AA00: 0 bounce, 1 left, 2 right, 3 up, 4 down, 5 stopped, 6 burst, 7 out below, 8 level end
+$AD3B b ReadyText 16 ; The one-player text: AT 11,13, INK 7, double height, "ready?", end (PrintText $E667)
+$AD48 b Player1ReadyText 16 ; The two-player text for player 1: "PLAYER 1" at 9,12 in ink 5, "ready?" at 12,13 in ink 7, "PLAYER" down column 31 in ink 5, then "1" at 17,31 in ink 7
+$AD84 b Player2ReadyText 16 ; The same for player 2: "PLAYER 2", "ready?", "PLAYER" down column 31, "2"
+$ADBF b BlankReadyText 16 ; Spaces over "PLAYER n" and "ready?" (AT 9,12 and 12,13); nothing prints it (leftover)
+$ADDB b CurrentPlayer ; The player playing now: 1 or 2 (selects the ball sprite, PlayerBallSprite $ADE6, and the record)
+$ADDC b PlayerCount ; The number of players, 1 or 2 (GameRestart)
+$ADDD b CheatMode ; The cheat mode: non-zero refills the stores each life ($BB7D) and lets the level end pick a level ($B2C9); no code sets it (CheatModeOn $ADE0 is cut off)
+$ADDE b SavedPlayer ; LifeStart's copy of CurrentPlayer while it walks the two records
+$ADDF c CheatModeSwitch ; The D key's routine: a RET, put before the code that would switch the cheat mode on
+> MainLoop and LifeStart call it when D ($32) is held. The RET makes the key do nothing; the next six bytes (CheatModeOn $ADE0) are the original body. Witness: called whenever D is held; no recording held D.
+> Witness: L1 0 ().
+$ADE0 c CheatModeOn ; LD A,1: LD ($ADDD),A: RET: the cut-off body of the D key (never runs)
+> Would set CheatMode $ADDD = 1. CheatModeSwitch's RET in front of it keeps it from running; nothing else jumps here (known only from the code).
+> Witness: L1 0 ().
+
+@module ball ; The ball: the sprite routines, the move states, landing, the burst, falling out and the level end
+@about The ball is a CPC-style screen address $AA03 (the previous one in $AA05) and a sprite $AA01 (the round ball $67E8 or a rolling frame; player 2's sprites lie $280 higher). Each move state takes one step a frame from a table of address offsets: bounce in place (BallBounce, 16 steps, 18 lines up and back), left and right (16 steps: the same arc and 10 CPC bytes, 5 Spectrum bytes, sideways), up and down (8 steps of 4 lines: 32 lines, one cell). Before each step a per-step check from the state's handler table ($AE9B, $AF15, $AF8F, $B044, $B0FA: routines at $C778-$CECC) tests the cells the ball crosses (walls, platforms, objects) and continues in the state's move routine.
+@about At the end of a move LandingCheck $B09E decides: on a platform, DecideMove $B7E4 picks the next state from the platform and the keys; in the air the ball falls (state 4); with no platform on the bottom row it falls out of the screen (state 7). The S key ($31) kills the ball in any move state (Suicide $BA71). Death by the burst (state 6) or by falling out (state 7) ends in LoseLife $BA93.
+
+$ADE6 c PlayerBallSprite ; HL = the sprite at HL for the current player: + $280 for player 2
+> Input HL a ball sprite (player 1's); output HL unchanged when CurrentPlayer $ADDB = 1, else HL + $280 (player 2's ball, a different pattern). Player 2's branch ran in no recording (no two-player game reached play).
+> Witness: L1 218172 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$ADF1 c DrawBallRound ; XOR the round ball ($67E8) at the ball's address $AA03
+> Witness: L1 57057 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$ADFE c DrawBallFrame ; XOR the ball's sprite $AA01 (a rolling frame) at $AA03
+> Witness: L1 34344 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AE0B c DrawBallRoundOld ; XOR the round ball at the previous address $AA05 (erases it)
+> Witness: L1 200 (c1, gameover, menu, twoname, l10, l51, l68, l96, rzx x29).
+$AE18 EraseBallOld ; XOR the sprite $AA01 at the previous address $AA05
+$AE23 c DrawBallXor ; XOR a ball sprite: HL the CPC address, DE the sprite; 10 lines, $A9FE = 4
+> Sets $A9FE = 4, B = 10 (lines), C = 7, and calls the XOR sprite routine $E3E5. The sprite routines above load HL and DE and come here.
+> Witness: L1 182818 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AE30 c BallStepMove ; Moves the ball one step: $AA05 = $AA03, $AA03 += IX[BallStep], erase at the old address
+> Input IX the state's offset table (16 or 8 words). The new address is the old plus the step's offset (a CPC screen address delta: $0800 a pixel line, $0050 a character row); then EraseBallOld at $AE18 removes the old picture. The caller draws the new one.
+> Witness: L1 91187 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AE4B c StepDispatch ; Jumps to IX[BallStep]: the per-step check of the current move
+> Input IX a state's handler table. Each check routine ($C778-$CECC) tests the cells, then goes on to the state's move routine (BallBounceMove $AE65 and the others) or to a crash.
+> Witness: L1 91704 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AE5F c BallBounce ; State 0: the bounce in place, 16 steps (the checks in BounceChecks)
+> Witness: L1 18987 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$AE65 c BallBounceMove ; State 0's step: round ball, the BounceOffsets step, S kills, after step 15 LandingCheck
+$AE82 BallBounceMoveSkip
+> Sprite = the round ball $67E8. BallStepMove with BounceOffsets $AEBB; in a game, S ($31) jumps to Suicide $BA71; DrawBallRound; BallStep + 1 and back to MainLoop, or after step 15 BallStep = 0 and LandingCheck $B09E. The 16 offsets lift the ball 4, 8, 11, 14, 16, 17, 18, 18, 18, 17, 16, 14, 11, 8, 4 and 0 lines above its rest line (pixel line 6 or 7 of a character row).
+> Witness: L1 18987 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$AE93 BallBounceEnd ; step 15 done: LandingCheck
+$AE9B w BounceChecks 8 ; State 0's 16 per-step checks (routines $C778-$C822)
+$AEBB w BounceOffsets 8 ; State 0's 16 address offsets: the ball's arc, 18 lines up and back
+$AEDB c BallLeft ; State 1: the jump to the left, 16 steps (the checks in LeftChecks)
+> Witness: L1 15425 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$AEE2 c BallLeftMove ; State 1's step: LeftOffsets, S kills, the rolling frame ($B8A2), after step 15 LandingCheck
+$AEF9 BallLeftMoveSkip
+> As BallBounceMove with LeftOffsets $AF35 and the sprite picked by $B8A2 (the left-rolling frames). The ball moves 10 CPC bytes left (5 Spectrum bytes, one cell) on the same arc.
+> Witness: L1 15478 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$AF0D BallLeftEnd ; step 15 done: LandingCheck
+$AF15 w LeftChecks 8 ; State 1's 16 per-step checks (routines $C847-$CA57)
+$AF35 w LeftOffsets 8 ; State 1's 16 offsets: the arc and 10 CPC bytes to the left
+$AF55 c BallRight ; State 2: the jump to the right, 16 steps (the checks in RightChecks)
+> Witness: L1 18921 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AF5C c BallRightMove ; State 2's step: RightOffsets, S kills, the rolling frame ($B882), after step 15 LandingCheck
+$AF73 BallRightMoveSkip
+> As BallLeftMove with RightOffsets $AFAF and the right-rolling frames ($B882).
+> Witness: L1 18866 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$AF87 BallRightEnd ; step 15 done: LandingCheck
+$AF8F w RightChecks 8 ; State 2's 16 per-step checks (routines $CA8D-$CC9A)
+$AFAF w RightOffsets 8 ; State 2's 16 offsets: the arc and 10 CPC bytes to the right
+$AFCF c BallUp ; State 3: the spring's jump up one cell, 8 steps (the checks in UpChecks)
+> Witness: L1 18771 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$AFD6 c BallUpMove ; State 3's step: 4 lines up, S kills; after step 7 DecideMove
+$AFF3 BallUpMoveSkip
+> Round ball, UpOffsets $B054 (8 x 4 lines = 32 lines, one cell row). After step 7, BallStep = 0 and DecideMove $B7E4 picks the next state (the ball is on the platform above).
+> Witness: L1 18254 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$B004 BallUpEnd ; step 7 done: DecideMove
+$B00F c BallBumpCeiling ; The ball hits a platform from below: two lines up and back, then it falls (state 4)
+> Jumped to by the up checks ($CDAA, $CDC3) when the cell above is closed. Moves the ball 2 lines up ($F000 = minus $1000), redraws it, waits a frame ($B87E), moves it back ($1000) and sets BallState = 4 (down). 88 bumps in the recordings (its witness).
+> Witness: L1 100 (c1, gameover, menu, twoname, l10, l51, l68, l96, rzx x29).
+$B044 w UpChecks 8 ; State 3's 8 per-step checks (routines $CCD0-$CE10)
+$B054 w UpOffsets 8 ; State 3's 8 offsets: 4 lines up each ($E000 + $1FB0 = -$50 and so on, by the line in the character row)
+$B064 c BallDown ; State 4: the fall one cell down, 8 steps (the checks in DownChecks)
+> Witness: L1 19600 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B06B c BallDownMove ; State 4's step: 4 lines down, S kills; after step 7 LandingCheck
+$B088 BallDownMoveSkip
+> Witness: L1 19596 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B099 BallDownEnd ; step 7 done
+$B09E c LandingCheck ; The end of a move: on a platform DecideMove, in the air fall, off the bottom row lost
+> $AA44 is the ball's cell (0-35, six columns by six rows; 30-35 the bottom row) and $AB1C the platform in it. A platform: DecideMove $B7E4. No platform above the bottom row: BallState = 4 (fall one cell); if the cell below (CellPlatforms $AA6B + cell + 6) holds bricks ($0A) DecideMove runs at once. No platform on the bottom row: BallState = 7 (lost below), BallStep = 0. Witness: state 7 started 8 times in the recordings ($B0E0).
+> Witness: L1 6101 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B0B4 LandingFall ; in the air: fall (state 4), bricks below decide at once
+$B0D1 LandingBottom ; on the bottom row
+$B0E0 LandingLost ; no platform on the bottom row: state 7
+$B0ED c BallBurstStart ; Starts the burst (state 6, step 0): the ball hit a deadly platform
+> Jumped to by the platform checks when the ball lands on platform 12 from above ($CA8A, $CF09) or hits it from below ($CCCD); the fire death (a flame without water) goes through it too. 5 bursts in the recordings (rzx45, rzx56, rzx68).
+> Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+$B0FA w DownChecks 8 ; State 4's 8 per-step checks (routines $CE24-$CECC)
+$B10A w DownOffsets 8 ; State 4's 8 offsets: 4 lines down each
+$B11A c BallStopped ; State 5: the ball sits on a stopper platform (5) until left or right is pressed
+> In the demo the next state is the next byte of the demo input ($ABA4 + 1, from $D25B). In a game S kills (Suicide $BA71), right sets state 2 ($B855), left state 1 ($B84F). Then a short busy wait (Delay $B873, B = 2) and MainLoop.
+> Witness: L1 827 (menu, l x6, rzx x29).
+$B12E BallStoppedKeys ; a game: S, right, left
+$B142 BallStoppedWait ; the wait, then MainLoop
+$B14A c BallBurst ; State 6: the burst, one frame of BurstSteps a pass (10 steps), then LoseLife
+> Jumps to BurstSteps[BallStep] after BallStep + 1 and a frame wait ($B87E). The steps: the ball drawn at three places around the burst point $AB2D (BurstBall1-3), six burst pictures $81F5-$830D (56 bytes each, 14 lines), a blank ($6708), then LoseLife $BA93.
+> Witness: L1 116 (fire, rzx x8).
+$B16E c BurstBall1 ; Burst step 0: the ball at $AB2D + $FF62
+> Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+$B177 c BurstBall2 ; Burst step 1: the ball at $AB2D + $FF62 (off) and + $2F12
+> Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+$B186 c BurstBall3 ; Burst step 2: the ball at $AB2D + $2F12 (off) and + $2712
+> Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+$B195 c BurstFrame1 ; Burst step 3: picture $81F5
+> Witness: L1 14 (fire, rzx x8).
+$B19E c BurstFrame2 ; Burst step 4: picture $822D
+> Witness: L1 14 (fire, rzx x8).
+$B1A7 c BurstFrame3 ; Burst step 5: picture $8265
+> Witness: L1 14 (fire, rzx x8).
+$B1B0 c BurstFrame4 ; Burst step 6: picture $829D
+> Witness: L1 14 (fire, rzx x8).
+$B1B9 c BurstFrame5 ; Burst step 7: picture $82D5
+> Witness: L1 14 (fire, rzx x8).
+$B1C2 c BurstFrame6 ; Burst step 8: picture $830D
+> Witness: L1 14 (fire, rzx x8).
+$B1CB c BurstEnd ; Burst step 9: the blank picture $6708 over it, then LoseLife
+> Witness: L1 14 (fire, rzx x8).
+$B1D4 c DrawBurstPicture ; Stores the picture at DE (14 lines, $A9FE = 4) at the burst point $AB2D + $1712
+> Witness: L1 98 (fire, rzx x8).
+$B1E7 c DrawBurstBall ; XOR the player's round ball at $AB2D + BC
+> Witness: L1 30 (fire, rzx45, rzx56, rzx68).
+$B1F6 w BurstSteps 10 ; State 6's ten steps: BurstBall1-3, BurstFrame1-6, BurstEnd
+$B20A c BallFallOut ; State 7: the ball sinks out through the bottom edge, one LostSteps routine a frame, then LoseLife
+> Jumps to LostSteps[BallStep] after BallStep + 1, $A9FE = 4. Five steps: the ball moves down and is drawn with fewer lines (9, 5, 1), the last plays the sound $F4CB and calls LoseLife $BA93. Witness: 8 falls in the recordings.
+> Witness: L1 40 (rzx x6).
+$B22F b UnusedRetB22F ; A lone RET ($C9) nobody calls (leftover)
+$B230 c LostStep1 ; Falling out, step 0: the round ball off, $AA03 + $E050, on again
+> Witness: L1 8 (rzx x6).
+$B243 c LostStep2 ; Step 1: the ball off, the sprite kept in $AA01, $AA03 + $2000, 9 lines of it on
+> Witness: L1 8 (rzx x6).
+$B262 c LostStep3 ; Step 2: 9 lines off, $AA03 + $E050, 5 lines on
+> Witness: L1 8 (rzx x6).
+$B284 c LostStep4 ; Step 3: 5 lines off, $AA03 + $2000, 1 line on
+> Witness: L1 8 (rzx x6).
+$B2A6 c LostStep5 ; Step 4: the last line off, the sound $F4CB, LoseLife
+> Witness: L1 8 (rzx x6).
+$B2B8 w LostSteps 5 ; State 7's five steps
+$B2C2 c LevelEnd ; State 8: the ball sinks into the exit, the timer counts into the score, the next level
+> Reached when the ball lands on the exit (platform $0B: DecideMove sets state 8). With CheatMode $ADDD the level would come from a routine's L (CALL $B754, a RET; then L reduced below 100 by steps of 97: known only from the code). Else NextLevel $B2D5.
+> Witness: L1 101 (menu, l x12, rzx x88).
+$B2C9 LevelEndCheat ; the cheat mode's level choice (never runs)
+$B2CD LevelEndCheatLoop ; reduce below 100
+$B2D5 NextLevel ; Level $AB00 + 1, 100 becomes 0
+> NextLevel: level 99 is followed by level 0 (witness: one run of $B2DE in the RZX). Then 9 times: two bytes of the ball's top line cleared ($C71F, $B515), the ball one line lower ($0800; $C050 more past a character row), the round ball stored there ($E318), a frame, the animations ($BD21, $BBCD, $BC30), a frame. Then the last line cleared, the sound $F49A and 15 HALTs. Then the rest of the timer $AB04 goes into the score one point a tick: the tick sound $F4F9, score $AAFB + 1, the score printed ($E60C), until the timer is 0. The working copy goes back to the player's record ($AB09; $AB10 for player 2), and the demo ends ($B7A9, back to the menu) or a game waits about a second ($B7B8) and starts the level at LifeStart.
+$B2E0 LevelEndSet ; store the level
+$B2E6 LevelEndSink ; one line of the sinking ball
+$B312 LevelEndSinkDraw ; draw the ball one line lower
+$B359 LevelEndPause ; 15 frames
+$B35F LevelEndTimer ; the timer into the score
+$B367 LevelEndTick ; one point
+$B37F LevelEndTimerLow ; the timer's high byte is 0
+$B387 LevelEndSave ; the working copy back to the record
+$B397 LevelEndSaveSkip ; copy 7 bytes
+$B3AB LevelEndNext ; a game: the pause, then LifeStart
+
+@module menu ; The menu's choice and the controls: the keyboard and the Kempston stick
+$B3B1 b MenuChoice ; The menu's choice: 0 one player, 1 the demo, 2 two players (written by Menu at $EF97, $F0C7)
+$B3B2 c ReadControlMask ; Builds a byte of the eight key slots held (bit 7 the last) into $B3CE: never called
+$B3B5 ReadControlMaskKeepDE
+$B3BA ReadControlMaskLoop
+$B3C6 ReadControlMaskNext
+> For the slots KeySlots $F084-$F08B in turn: E shifts right and bit 7 is set when TestKeyBit says the slot's key is held; the word DE goes to $B3CE. Nothing calls it and nothing reads $B3CE (known only from the code): a left-over of a control reader the game replaced by one TestKey call a slot.
+> Witness: L1 0 ().
+$B3CE w ControlMask ; ReadControlMask's result; never read (leftover)
+$B3D0 c TestKeyBit ; Z when the key of code A is held: patches BIT b,(IX+d) at $B3F3 with d = A >> 3 and b = A AND 7
+> Input A a key code: row (A >> 3) 0-8 of KeyRows $B436 and bit (A AND 7). Rows 0-7 are the half-rows $7FFE, $BFFE, $DFFE, $EFFE, $F7FE, $FBFE, $FDFE, $FEFE (so $00 SPACE, $2B R, $31 S, $32 D, $3C V); row 8 is the Kempston stick ($40 right, $41 left, $42 down, $43 up, $44 fire). Writes the displacement to $B3F5 and the bit into the opcode byte $B3F6 (self-modifying), then tests. Output Z when held (bit 0), NZ when not. Keeps IX.
+> Witness: L1 423995 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B3F0 c TestKeyBitTest ; TestKeyBit's second half: stores the patched opcode (A) at $B3F6 and runs BIT b,(IX+d)
+> The walk makes it an entry of its own (the recordings count one run more here than at TestKeyBit: a recording that starts inside the routine). Nothing calls or jumps here (known only from the code); it is the tail of TestKeyBit.
+> Witness: L1 423996 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B3FA c WaitPress ; Waits until a key or the stick is held, then until all are released
+> Witness: L1 14595 (menu).
+$B401 c WaitRelease ; Waits until no key and no stick direction is held
+> Witness: L1 152206 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$B407 c AnyControl ; ReadControls, then Z when nothing is held (the AND of the nine KeyRows bytes is $FF)
+> Witness: L1 501803 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x26).
+$B411 AnyControlLoop ; AND the nine rows
+$B418 c ReadControls ; Reads the 8 keyboard half-rows into KeyRows $B436-$B43D and the Kempston port $DF into $B43E
+> DI, then IN ($FE) for each half-row, $7FFE first, each stored with bits 5-7 set (OR $E0). Then IN A,($DF) (A, the high byte, holds the last row's value): the low five bits are the Kempston stick, 1 = pressed. When all five are 1 (no interface: the port floats at $FF) the routine returns with interrupts still off and $B43E unchanged; else it stores the complement (0 = pressed, like the keys) and EI. A Kempston mouse answering on port $DF would be read as a stick here (known only from the code).
+> Witness: L1 925798 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B420 ReadControlsLoop ; one half-row
+$B436 b KeyRows 9 ; The last read of the controls: 8 keyboard half-rows ($7FFE ... $FEFE) and the Kempston stick, 0 = held
+$B43F b UnusedByteB43F ; One byte after KeyRows; nothing reads it (leftover)
+$B440 c Pause ; The pause key: wait for its release, then for a key and its release
+> Called by MainLoop when the pause key (slot $F08A) is held in a game. Witness: 3 pauses in the recordings.
+> Witness: L1 3 (menu).
+$B447 c TestLeft ; NZ when the left control (slot $F086) is held
+> Witness: L1 5463 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$B44E c TestRight ; NZ when the right control (slot $F087) is held
+> Witness: L1 4674 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$B455 c TestFire ; NZ when the fire control (slot $F084) is held: never called
+> TestUpOrFire $B463 tests fire itself; nothing calls this one (known only from the code).
+> Witness: L1 0 ().
+$B45C c TestDown ; NZ when the down control (slot $F085) is held
+> Witness: L1 990 (l x12, rzx x94).
+$B463 c TestUpOrFire ; NZ when up (slot $F088) or fire (slot $F084) is held: the spring
+> Witness: L1 6352 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+
+@module render ; The screen: attributes, the side panels, the play area and the CPC-to-Spectrum line table
+@about The game draws with Amstrad CPC screen addresses ($C000 + line AND 7 x $800 + row x 80 + byte). LineAddress $B515 turns the line and column ScreenAddrToLine $C71F found into a Spectrum address: SpectrumLines $B52D gives the Spectrum line of each of the 200 CPC lines (the first 7 and the last 8 go to a scratch area at $FCE0, off the Spectrum screen), $B52C the Spectrum byte column (the CPC byte column / 2).
+
+$B471 c ClearAttrs ; All attributes = A (7: white ink, black paper), the border = A >> 3 (black)
+> Witness: L1 9 (c1, gameover, menu, twoname).
+$B488 c DrawSides ; Draws the side panels: $6398 at the CPC address $F800 and $6518 at $F83C, 192 lines each ($E318)
+> Witness: L1 9 (c1, gameover, menu, twoname).
+$B4A8 c FillColumn ; Stores C into B lines of one byte column from the CPC address DE: never called
+$B4B5 FillColumnLoop
+> Converts DE ($C71F, $B515) and stores C at each line's Spectrum address. No code calls it (known only from the code).
+> Witness: L1 0 ().
+$B4CE c ClearPlayArea ; Clears columns 1-29 of the 200 lines (the blank $6708), then the play attributes (ink 7)
+> Witness: L1 151 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$B4D6 ClearPlayAreaLoop ; one line
+$B4F8 c SetPlayAttrs ; Each attribute row: column 0 and 30 yellow (6), columns 1-29 = A; column 31 untouched
+> Witness: L1 149 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$B4FD SetPlayAttrsLoop ; one attribute row
+$B515 c LineAddress ; IX = SpectrumLines + 2 x the line ($C751), $B52C = the CPC column ($C750) / 2
+> Input the line $C751 and column $C750 from ScreenAddrToLine $C71F. Output IX points at the Spectrum line address; the caller ORs $B52C into its low byte.
+> Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B52C b SpectrumColumn ; LineAddress's Spectrum byte column (the CPC byte column / 2)
+$B52D w SpectrumLines 8 ; The Spectrum address of the start of each CPC line 0-206: 7 lines at $FCE0, the 192 screen lines from $4000, 8 more at $FCE0
+
+@module mainloop
+$B6CB c TestKey ; NZ (A = 1) when the key or stick code A is held, else Z (A = 0): ReadControls then TestKeyBit
+> Witness: L1 423995 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B6D9 TestKeySkip ; not held
+$B6DB c NoOp ; A RET the level builder calls three times ($CF50, $CF5A, $CF64)
+> Witness: L1 282 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$B6DC b UnusedRetB6DC ; A lone RET ($C9); nothing calls it (leftover)
+$B6DD c WaitPressHeld ; Waits until a key or the stick is held (no wait for the release): the "ready?" prompt
+> Witness: L1 332911 (c1, fire, gameover, menu, twoname, rzx x23).
+$B6E3 b UnusedRetB6E3 ; A lone RET ($C9) before WaitFrame; nothing calls it (leftover)
+@isub $B30D LD DE,$C050
+@isub $B48B LD DE,$F800
+@isub $B49D LD DE,$F83C
+
+@module mainloop ; The main loop, the frame wait and the state dispatcher
+@about The frame wait and the small timing helpers the game, the death and the game-over paths share.
+$B6E4 c WaitFrame ; Refresh the HUD's attributes and wait for the next frame interrupt
+> Calls $E58B (the per-frame HUD refresh, which repaints the attributes with PaintHudAttrs $B6EE), then EI and HALT: the game runs at one pass of MainLoop $ACC8 a frame. IX is preserved. Called by MainLoop ($ACC5) and WaitOneFrame $B87E.
+> Witness: L1 95897 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+
+@module hud ; The timer, lives, score, HUD, game over and hall of fame
+@about The HUD's attribute repaint, the level timer and the loss of a life.
+$B6EE c PaintHudAttrs ; Repaint the attributes of the HUD row and of column 30
+> Copies the 20 bytes of HudRowAttrs $B730 to the top attribute row from $5803, in groups of 5, 3, 3, 3, 3 and 3 with one or two cells skipped between them (the cells between the HUD's fields keep their colour), then writes 6 (yellow on black) down column 30 ($581E, 24 rows). Called by $E58B every frame, so whatever the CPC-style drawing leaves in those cells is put right once a frame.
+> Witness: L1 95989 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B723 ; HL = the attribute cell after the last group: row 0, column 30
+$B72B PaintColumn30 ; 24 rows, 32 bytes apart
+$B730 b HudRowAttrs 16 ; The attributes of the HUD row (top line), read by PaintHudAttrs
+> 20 attributes: 5 of $07 (white on black) for $5803-$5807, then five groups of three, each one coloured icon cell ($46 bright yellow, $45 bright cyan, $45, $46, $42 bright red) and two white digits. Each group is the icon and number of one HUD field (known only from the code which field is which: $E5A1-$E5F9 print them).
+$B744 HudRowAttrsEnd ; three unread $C9 bytes before FirmwareStub
+> Three $C9 (RET) bytes no code reads or runs: part of the row of RET stubs that ends at $B754 (see FirmwareStub $B747).
+
+@module mainloop
+$B747 c FirmwareStub ; A RET in place of an Amstrad CPC firmware call
+> A lone RET. $B744-$B754 is a row of 17 $C9 bytes: the Spectrum port replaced the CPC firmware jump block entries the game called with RETs at the same kind of place. This one is called with B = C = 26 by TakeBottle $BA1C and with B = C = 0 by BottleFlashOff $BA60: on the CPC, B and C are two colours, which fits SCR SET BORDER (26 bright white, 0 black): a border flash for the extra life that the Spectrum drops (known only from the code).
+> Witness: L1 40 (menu, l10, l36, l45, l68, rzx x15).
+$B748 b FirmwareStubs2 ; Eight more RET stubs ($C9), none called
+> Never run or read.
+$B750 c FirmwareStub3 ; A RET stub, called by $B387 at the end of a level
+> A lone RET in the row of firmware stubs ($B744-$B754); called by the level-end code at $B387.
+> Witness: L1 20 (menu, l51, l59, l96, l98, rzx x15).
+$B751 b FirmwareStubs4 ; Three more RET stubs ($C9), none called
+> Never run or read.
+$B754 c FirmwareStub5 ; A RET stub, called only by the disabled cheat routes $B2C9 and $BA80
+> A lone RET; both callers are dead code (the level-select cheat, see SelfDestruct $BA71), so it never runs.
+> Witness: L1 0 ().
+
+@module hiscore ; Game over, the hall of fame and the return to the menu
+@about The end of a player's game: the hall of fame check, the two-player hand-over and the way back to the menu.
+$B755 c GameOver ; A player has lost his last ball: hall of fame, mark him out, hand over or end the game
+> Entered from LoseLife $BA93 when the lives ($AB01) are 0. IX = the record of the player in play: $AB09 for player 1 ($ADDB = 1), $AB10 for player 2. When the score ($AAFB) is not below the lowest hall of fame score (the word at $EF25), NameEntry $EC40 runs. Then the record's lives byte (IX+6) is set to $FA, the mark of a player out of the game.
+> One player ($ADDC = 1), or the other player already out ($FA in his record): GameOverPause $B7A9 and back to the menu. Otherwise the game passes to the other player through LoseLife's hand-over ($BADF or $BAF1). Witness: the game-over recording (stage1/gameover) ends here; the RZX never loses its last life; the two-player branches ran in stage2/rec/twoname (both players to the end: player 1 out, the hand-over $BADF/$BAF1 to player 2, then the menu).
+> Witness: L1 4 (gameover, twoname).
+$B764 GameOverHiScore ; compare the score with the hall of fame's last entry
+$B77A GameOverMarkOut ; mark the player out ($FA)
+$B796 GameOverPlayer1 ; player 1 was in play: is player 2 still in?
+$B7A9 c GameOverPause ; Wait about 2.5 seconds, then back to the menu
+> Twenty times GameOverDelay $C4D5 (each about 40 000 delay loops and a frame), then BackToMenu $B7B2. Entered from GameOver $B755 and from the end of the demo ($B3A8).
+> Witness: L1 3 (gameover, menu, twoname).
+$B7AB GameOverPauseLoop
+$B7B2 c BackToMenu ; Wait up to a second for a key, then restart at the menu
+> WaitKeyOrSecond $B7B8, then JP $AB7D (the menu and a new game). Entered from GameOverPause and from MainLoop when the quit key ($2B, see $ACEC) is down.
+> Witness: L1 6 (gameover, menu, twoname).
+
+@module mainloop
+$B7B8 c WaitKeyOrSecond ; Wait 50 frames or until a key is pressed
+> Sets the counter $EFED to 50, then a frame at a time (EI, HALT) calls AnyKey $B407 and returns as soon as it reports a key (NZ), else counts down to 0. Used between lives (LoseLife $BA93), after a level ($B3AB) and before the menu (BackToMenu).
+> Witness: L1 56 (fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x26).
+$B7BE WaitKeyOrSecondLoop
+$B7D0 WaitKeyOrSecondEnd
+
+@module hud
+$B7D1 c TickTimer ; Count the level timer down by one frame, stopping at 0
+> The level timer $AB04 (a word, 1000 = $03E8 at each level start, $AC06) goes down by one each frame MainLoop runs ($ACE4) and stops at 0. Nothing here acts on 0: the timer only sets the bonus the level end ($B35F) adds to the score. 1000 frames are 20 seconds.
+> Witness: L1 92279 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B7D9 TickTimerDec
+$B7DE TickTimerLowByte ; high byte 0: stop at 0
+
+@module ball ; The ball: bounce, moves, platforms and walls
+@about What the ball does next at each landing, its rolling frames and its hit on a brick from below.
+$B7E4 c ChooseNextState ; At a landing, choose the ball's next state from the platform and the keys
+> Called by the bounce handlers ($ACB9, $B009, $B0AE, $B0CB, $B0DA) when the ball lands on a cell. In play ($ABA6 = 0), in this order: SpringArmed $AA13 = 1 gives state 3 (up); the cell's platform ($AB1C) $0B, the open exit, gives 8 (level end); 7 gives 2 (right: conveyor); 6 gives 1 (left: conveyor); 5 gives 5 (stopped, waiting for left or right); $0A (bricks) keeps the state; the left key (KeySlots $F086, LeftKey $B447) gives 1; the right key ($F087, RightKey $B44E) gives 2; a ball going up (3) with the down key ($F085, DownKey $B45C) gives 0, and without it stays 3; anything else gives 0 (bounce in place).
+> In the demo ($ABA6 not 0) the exit and the conveyors are checked first, then the next byte of the demo moves (the pointer $ABA4 is advanced) becomes BallState $AA00, and SpringArmed still forces 3. Output: BallState $AA00. Witness: every play recording (rzx x100, menu demo).
+> Witness: L1 6161 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B7FF ChooseDemoState ; demo: the next byte of the demo moves
+$B812 ChoosePlayState
+$B843 SetStateBounce ; state 0
+$B849 ChooseUpOrBounce ; going up: the down key turns it into a bounce
+$B84F c SetStateLeft ; BallState = 1 (moving left)
+> Also the target of the left conveyor and of the stopped ball's left key ($B13F).
+> Witness: L1 979 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$B855 c SetStateRight ; BallState = 2 (moving right)
+> Also the target of the right conveyor and of the stopped ball's right key ($B139).
+> Witness: L1 1238 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B85B SetStateUp ; state 3
+$B861 c SetStateDown ; BallState = 4 (moving down): never called
+> LD A,4: LD ($AA00),A: RET, like its neighbours, but no code jumps here (known only from the code: a leftover of ChooseNextState).
+> Witness: L1 0 ().
+$B867 c SetStateStopped ; BallState = 5 (stopped on a type 5 platform)
+> Witness: L1 141 (l x6, rzx x26).
+$B86D SetStateLevelEnd ; state 8
+
+@module mainloop
+$B873 c Delay ; Busy wait: B times 50 empty loops
+> Input B. About 650 T-states a unit. Used by the burst death ($B144), GameOverDelay $C4D5 and NameEntry ($EC4E). BC preserved.
+> Witness: L1 37654 (gameover, menu, twoname, l x6, rzx x29).
+$B876 DelayInner
+$B87E c WaitOneFrame ; CALL WaitFrame: wait one frame
+> Called where a frame passes without the main loop: the state handlers ($AD0C, $B029, $B169), the level end ($B328, $B334) and the pause between lives (LoseLife, 50 calls).
+> Witness: L1 95861 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+
+@module ball
+$B882 c DrawBallRight ; Draw the ball's frame for a move to the right
+> Sets the width $A9FE to 4 bytes, takes the frame address for the step BallStep $A9FF from BallFramesRight $C4E2 into $AA01 and calls DrawBall $ADE6. Called by the right-move handler ($AF73).
+> Witness: L1 18866 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B8A2 c DrawBallLeft ; Draw the ball's frame for a move to the left
+> As DrawBallRight with the table BallFramesLeft $C502. Called by the left-move handler ($AEF9).
+> Witness: L1 15478 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+
+@module render ; The animated cells: crumbling platforms, springs, bricks, fires, water, walls and the exit
+@about The platform-change animations (a platform worn by the ball: 2, then 3, then 4, then gone), the spring and tilt of the platforms, the crumbling bricks, the flames and the water that puts them out, the opening locks and the turning walls. Each is a little machine stepped once a frame by MainLoop: an active flag, a step number and a table of step routines; most steps XOR the previous frame off and the next one on (DrawSpriteXor $E3EE).
+$B8C2 c SetPlatformCell ; Write the new platform type of a platform-change animation into its cell
+> PlatformCells $AA6B[$AB1B] = $AB20 (the cell and the new type StartWearTo3 $C3D5, StartWearTo4 $C3F8 or StartFallAway $C41B left there). Called by the first or last step of each change ($C1C3, $C1FF, $C211).
+> Witness: L1 1400 (menu, l x12, rzx x91).
+
+@module ball
+$B8D1 c HitBrick ; The ball going up meets a brick: crumble a layer (a hammer for an intact brick) and send it down
+> Called by the up-move handlers ($CCE9-$CE15) when the ball is under a brick cell. B = BrickContact $E1C1[BallStep]: the layer count a brick must have for the ball to touch it at this step (5, 4, 3, 2, 1, 8, 7, 6 for steps 0-7). HL = BrickLayers $AAD7 + the cell $AA44 (8 layers when the level is built, $D180); the address goes to $AA07, the count to $AA0B. No contact (count not B): return NZ.
+> Contact: the screen address of the layer ($AA03 - $2002, wrapped into the CPC screen) goes to $AB31, BallState becomes 4 (down). At step 5 (an intact brick) a hammer is needed: Hammers $AAFF - 1 and the HUD ($E5E6); without one ($B952) BallStep becomes 3 and the brick is untouched. Else BallStep becomes 8 - step (the way down mirrors the way up), the crumble animation starts ($AB33 = 1, step $AB34 = 0, BrickStep $BE94), the layer count goes down by one and at 0 the cell's platform becomes 0 (the brick is gone). Witness: 369 contacts in the recordings, 47 at step 5 (each with a hammer), 46 bricks gone.
+> Witness: L1 1837 (l51, l59, l96, l98, rzx x27).
+$B8F3 HitBrickContact
+$B903 HitBrickDown
+$B921 HitBrickMirror
+$B92D HitBrickMirrorSkip
+$B93A HitBrickLayer
+$B952 HitBrickNoHammer ; never run: no hammer, the ball just turns back
+
+@module objects ; The objects: hammers, keys, water, bottles and prizes; the score and the exit
+@about An object lies in a cell (ObjectCells $AA47, kinds 0-40). The ball takes it when it lands there: kinds 1-4 are tools and the extra life, 5 and up are prizes worth 15 points each; the last prize opens the exit.
+$B958 c TakeObject ; Take the object in the ball's cell, if any
+> Kind = $AB1D (ReadCell $BB32). 0: nothing. Else erases the object's sprite (ObjectSprites $6CB0 + 56 × kind, 4 bytes × 14 rows, XOR at the cell's screen address $AB2D - $9E, DrawSpriteXorInk $E3E5 with colour 7), clears ObjectCells $AA47[cell], and for kinds 1-4 jumps through ObjectHandlers $BA3D. Kinds 5 and up are prizes: the pick-up sound $F3F6 (skipped once after a long sound, $ABA7 = 4), then AddScore $BA47 with 15. Called by the landing handlers ($C811, $CA46, $CC89, $CDF9, $CEC6). Witness: 936 objects taken in the recordings, 625 prizes.
+> Witness: L1 8156 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$B966 TakeObjectSprite
+$B9A7 TakePrize
+$B9B1 TakePrizeScore
+$B9B7 TakePrizeQuiet
+$B9BE c TakeNothing ; ObjectHandlers[0]: RET (kind 0 is no object, filtered out before)
+> Never run: TakeObject returns on kind 0 before the jump.
+> Witness: L1 0 ().
+$B9BF c TakeKey ; Kind 2, a key: Keys + 1 (at most 99) and the HUD
+> The pick-up sound $F3F6 unless $ABA7 = 4 (then $ABA7 = 0), Keys $AAFE + 1 unless 99, then JP $E5D3 (print the keys). Witness: 183 keys.
+> Witness: L1 204 (c1, menu, l x9, rzx x60).
+$B9C9 TakeKeyCount
+$B9D7 TakeKeyQuiet
+$B9DE c TakeWater ; Kind 3, a water drop: Water + 1 (at most 99) and the HUD
+> As TakeKey with Water $AAFD and $E5C0. Witness: 54 drops.
+> Witness: L1 66 (c1, gameover, menu, twoname, l x5, rzx x29).
+$B9E8 TakeWaterCount
+$B9F6 TakeWaterQuiet
+$B9FD c TakeHammer ; Kind 1, a hammer: Hammers + 1 (at most 99) and the HUD
+> As TakeKey with Hammers $AAFF and $E5E6. Witness: 58 hammers.
+> Witness: L1 63 (l x5, rzx x38).
+$BA07 TakeHammerCount
+$BA15 TakeHammerQuiet
+$BA1C c TakeBottle ; Kind 4, the bottle: an extra life
+> $ABA7 = 4 (the next pick-up is silent), the sound $F40D, FirmwareStub $B747 with B = C = 26 (a dropped CPC border flash), $AB17 = 1 (BottleFlashOff undoes it next frame), lives $AB01 + 1 unless 99, then JP $E5AD (print the lives). The only way to gain a life: 15 bottles in the RZX and one in the menu recording's demo, each one life.
+> Witness: L1 20 (menu, l10, l36, l45, l68, rzx x15).
+$BA37 TakeBottleStore
+$BA3D w ObjectHandlers 5 ; The handlers of object kinds 0-4, jumped to by TakeObject
+> TakeNothing $B9BE, TakeHammer $B9FD, TakeKey $B9BF, TakeWater $B9DE, TakeBottle $BA1C.
+$BA47 c AddScore ; Add BC to the score, print it, and count a prize off
+> Score $AAFB += BC, PrintScore $E5A1, PrizesLeft $AA45 - 1 and OpenExit $BCB9 when it reaches 0. Only prizes come here (BC = 15).
+> Witness: L1 690 (c1, menu, l x12, rzx00-rzx44, rzx46-rzx99).
+$BA60 c BottleFlashOff ; The frame after a bottle: undo the border flash
+> When $AB17 is set: clears it and calls FirmwareStub $B747 with B = C = 0 (a CPC border back to black; a RET here). Called by MainLoop ($ACE7) every frame.
+> Witness: L1 92279 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+
+@module hud
+$BA71 c SelfDestruct ; The S key: burst the ball (in the demo, back to the main loop)
+> Jumped to from the state handlers ($AE7F, $AEF6, $AF70, $AFF0, $B085, $B133) when the key $31 (S) is down. In the demo ($ABA6 not 0) it jumps back to MainLoop $ACC8 and nothing happens. With $ADDD not 0 (never: $ADDF is a RET before the store that would set it) a disabled level select runs: FirmwareStub5 $B754, then Level = L reduced below 100 by steps of 97. Then the death sound $F4CB and LoseLife.
+> Witness: L1 12 (gameover, twoname).
+$BA80 SelfDestructLevelSelect ; dead code
+$BA84 SelfDestructReduce
+$BA8C SelfDestructSetLevel
+$BA90 SelfDestructSound
+$BA93 c LoseLife ; The ball is lost: one life less, the level restarts (or game over, or the other player)
+> Lives $AB01 = 0: GameOver $B755. Else lives - 1; Water, Keys and Hammers go back to their values at the level start ($AB06-$AB08); the 7 bytes score, water, keys, hammers, level and lives ($AAFB-$AB01) are saved in the player's record ($AB09 player 1, $AB10 player 2, by $ADDB). With two players ($ADDC = 2) the turn passes to the other player unless his record's lives byte is $FA (out): $ADDB = 1 or 2. Then 50 frames (WaitOneFrame), WaitKeyOrSecond, and JP $ABD8, which starts the level of the player whose turn it is. Entered from the burst death ($B1D1), the fall below the screen ($B2B5) and SelfDestruct. Witness: 27 runs (gameover, rzx x11): 25 lives lost, 2 game overs; the turn change is known only from the code.
+> Witness: L1 34 (fire, gameover, twoname, rzx x11).
+$BABE LoseLifeSave
+$BADF SwitchToPlayer1
+$BAE6 LoseLifePlayer1 ; player 1 was in play: is player 2 out?
+$BAF1 SwitchToPlayer2
+$BAF6 LoseLifeWait
+$BAF8 LoseLifeWaitLoop
+
+@module levels ; The level data, the cells and the level builder
+@about The cell helpers: a level is 36 cells (6 × 6), each with a platform, a wall, an object, a fire flag and a brick count in the tables $AA47-$AAFA.
+$BB05 c CellScreenAddr ; The screen address of the ball's cell: $AB2D = CellAddrs $E131[$AA44]
+> A CPC screen address (the game draws in CPC coordinates, ScreenAddrToLine $C71F converts). Called by MainLoop ($ACCC) and the level builder.
+> Witness: L1 98391 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BB1D c WallScreenAddr ; The screen address of wall A: $AB2F = WallAddrs $E179[A]
+> Input A, a cell. Called by the wall handlers and the builder ($C93E, $CB81, $D1D3-$D1F7).
+> Witness: L1 673 (c1, fire, menu, l x9, rzx x59).
+$BB32 c ReadCell ; The platform and object of the ball's cell: $AB1C, $AB1D
+> $AB1C = PlatformCells $AA6B[$AA44], $AB1D = ObjectCells $AA47[$AA44]. Called by MainLoop ($ACC9) every frame and the handlers.
+> Witness: L1 97066 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BB4A c ReadWallCell ; The wall of cell A: $AB1E = WallCells $AA8F[A]; never called
+> Known only from the code: no caller, and nothing reads $AB1E.
+> Witness: L1 0 ().
+
+@module menu ; The menu, demo, controls, pause, quit, the cheat and two players
+$BB56 c CheatStock ; The cheat R+SPACE+V: 99 water, keys, hammers and lives for both players, level 0
+> Both player records ($AB09, $AB10): water, keys, hammers and lives 99 ($63), level 0. Called at the start of a game ($ABD0) when the keys $2B, $00 and $3C are all down. Witness: 1 run, in the menu recording (stage1/menu).
+> Witness: L1 1 (menu).
+$BB7D c PracticeStock ; Water, keys and hammers 3 for both players: never run
+> Called at $ABDD each loop when $ADDD is not 0, which never happens ($ADDF is a RET before the store). Known only from the code: a disabled practice or cheat mode.
+> Witness: L1 0 ().
+
+@module setup ; The start: the set-up and a new game
+$BB96 c InitPlayers ; Clear both player records: 2 lives each; the demo gets level 10 and 2 of each tool
+> Zeroes the 14 bytes $AB09-$AB16, lives 2 for both players. In the demo ($ABA6 not 0) player 1 gets water, keys and hammers 2 and level 10. Called by GameStart ($ABBA).
+> Witness: L1 9 (c1, gameover, menu, twoname).
+$BB9C InitPlayersClear
+$BBB8 InitPlayersDemo
+
+@module render
+$BBCD c AnimateFires ; Every 4 frames, the next flame frame on every burning platform
+> $AA0C counts frames; at 4, NextFireFrame $BC8B steps the frame $AA16 (1-3), and each of the 36 cells whose FireFlags $AAB3 byte is set gets the flame frame $814D + 30 × (frame - 1) (6 bytes × 5 rows, colour $C2) stored at CellAddrs $E131[cell] + $17B1 (DrawSpriteInk $E2A0). Called by MainLoop ($ACDB) and the level end ($B32E).
+> Witness: L1 93190 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BBDE AnimateFiresLoop
+$BBFC AnimateFiresFrame
+$BC05 AnimateFiresDraw
+$BC2C AnimateFiresNext
+$BC30 c AnimateWalls ; Every 4 frames, the next frame of every turning wall (type 4)
+> $AA0D counts frames; at 4, NextWallFrame $BCA2 steps $AA17 (1-4), and each cell whose WallCells $AA8F byte is 4 gets the frame $7E5C + 48 × (frame - 1) (2 bytes × 24 rows) XORed at WallAddrs $E179[cell] (DrawSpriteXorInk, colour $83). Called by MainLoop ($ACDE) and the level end ($B331).
+> Witness: L1 93190 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BC40 AnimateWallsLoop
+$BC5E AnimateWallsFrame
+$BC67 AnimateWallsDraw
+$BC86 AnimateWallsNext
+$BC8B c NextFireFrame ; $AA0C = 0; the flame frame $AA16 steps 1, 2, 3, 1 ...
+> Witness: L1 23297 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BC9C NextFireFrameWrap
+$BCA2 c NextWallFrame ; $AA0D = 0; the wall frame $AA17 steps 1, 2, 3, 4, 1 ...
+> Witness: L1 23297 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BCB3 NextWallFrameWrap
+
+@module objects
+$BCB9 c OpenExit ; The last prize is taken: the exit cell becomes platform $0B and is drawn open
+> The exit cell is $AA46 (from the level). PlatformCells[$AA46] = $0B; $AB2D = its screen address; the blank $6708 is stored at +$27B0 (8 bytes × 10 rows), the sprite $80CC at +$2FB0 and +$2FB7 (1 byte × 9 rows each, the two posts), then the exit animation is armed: $AA10 = the address + 1, $AA12 = 1 (AnimateExit). Called by AddScore $BA47. Witness: 92 exits opened in the recordings.
+> Witness: L1 104 (menu, l x12, rzx x91).
+$BD21 c AnimateExit ; Every 2 frames, the next frame of the open exit
+> When $AA12 is set: $AA0E counts frames, at 2 NextExitFrame $BD5C steps $AA0F (1-4) and the frame ExitFrames $C522[frame - 1] (6 bytes × 5 rows, colour $5E) is stored at $AA10. Called by MainLoop ($ACE1) and the level end ($B32B).
+> Witness: L1 93188 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BD5C c NextExitFrame ; $AA0E = 0; the exit frame $AA0F steps 1, 2, 3, 4, 1 ...
+> Witness: L1 6672 (menu, l x12, rzx x91).
+$BD6D NextExitFrameWrap
+
+@module render
+$BD73 c LoadSpring ; Arm the spring of the platform under the ball (types 1-5)
+> When SpringArmed $AA13 is 0 and the platform $AB1C is 1-5: copies the 24-byte spring record of the type (SpringRecords $C52A[type - 1]) to $AB35 (4 offsets, 4 frame addresses, 4 widths, 4 row counts) and sets SpringArmed. Types 0 and 6 up (conveyors, fire, bricks, exit) have no spring. Called by the bounce handlers when up or fire (UpKey $B463) is down, or the demo byte is 9.
+> Witness: L1 2286 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDA6 c SpringStep1 ; Spring frame 0 off, 1 on (the platform squeezes)
+> Each SpringStep XORs two of the 4 spring frames (SpringPart0-3): the one shown off, the next on. Steps 1-6 show frames 1, 2, 1, 0, 3, 0: down, further down, back, rest, up, rest. Called by the bounce handlers at fixed steps of the bounce ($C800, $C80B, $C81C, $C827 and the like).
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDAE c SpringStep2 ; Spring frame 1 off, 2 on
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDB6 c SpringStep3 ; Spring frame 2 off, 1 on
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDBE c SpringStep4 ; Spring frame 1 off, 0 on
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDC6 c SpringStep5 ; Spring frame 0 off, 3 on (the platform flexes up as the ball leaves)
+> Called by the up-move handler ($CD1D).
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDCE c SpringStep6 ; Spring frame 3 off, 0 on; the spring is done (SpringArmed = 0)
+> Called by the up-move handler ($CD62).
+> Witness: L1 1316 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDDB c SpringPart0 ; XOR spring frame 0 at the cell's address + its offset
+> HL = $AB2D + the offset $AB35, DE = the frame $AB3D, width $AB45, rows $AB49, DrawSpriteXor $E3EE.
+> Witness: L1 5273 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BDF5 c SpringPart1 ; XOR spring frame 1 (offset $AB37, frame $AB3F, width $AB46, rows $AB4A)
+> Witness: L1 5276 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BE0F c SpringPart2 ; XOR spring frame 2 (offset $AB39, frame $AB41, width $AB47, rows $AB4B)
+> Witness: L1 2638 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BE29 c SpringPart3 ; XOR spring frame 3 (offset $AB3B, frame $AB43, width $AB48, rows $AB4C)
+> Witness: L1 2635 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$BE43 c TiltPart0 ; XOR the platform's rest frame of the tilt record (offset $AB4D, frame $AB53, width $AB59, rows $AB5C)
+> The tilt record (18 bytes at $AB4D: 3 offsets, 3 frames, 3 widths, 3 row counts) is copied by the move handlers ($C890, $CAD6) from TiltRecords $C5CC[type - 1] when the ball rolls off a platform sideways: TiltPart0 + TiltPart1 tilt it left, TiltPart0 + TiltPart2 right, and the reverse pair sets it back. The AND C after the ADD only sets flags.
+> Witness: L1 2402 (c1, fire, gameover, menu, twoname, l x12, rzx x90).
+$BE5E c TiltPart1 ; XOR the left-tilt frame (offset $AB4F, frame $AB55, width $AB5A, rows $AB5D)
+> Witness: L1 1106 (c1, fire, gameover, menu, twoname, l x11, rzx x85).
+$BE79 c TiltPart2 ; XOR the right-tilt frame (offset $AB51, frame $AB57, width $AB5B, rows $AB5E)
+> Witness: L1 1296 (c1, gameover, menu, twoname, l x12, rzx x89).
+$BE94 c BrickStep ; Run the next step of the brick crumble animation, if one is active
+> When $AB33 is set: jumps to BrickSteps $C534[$AB34] and advances $AB34. Steps BrickCrumble1-4 clear the hit layer at $AB31 in four checkered passes. Called by MainLoop ($ACCF).
+> Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$BEBB c BrickCrumble1 ; The brick sound and the first pass of the crumble
+> The sound $F4E2, then with interrupts off: the layer's address $AB31 to a pixel line (ScreenAddrToLine $C71F, LineAddr $B515) and 8 of the 16 bytes of its 4 lines × 4 bytes set to 0 in a checker (BrickNextLine $BF06 between lines). Each crumble pass clears another pattern; the four leave the layer empty.
+> Witness: L1 409 (l51, l59, l96, l98, rzx x27).
+$BF06 c BrickNextLine ; IY = the next screen line's address at the same column
+> IX += 2 in the line table ($B52D), IY = the line's address with the column $B52C ORed in.
+> Witness: L1 4908 (l51, l59, l96, l98, rzx x27).
+$BF19 c BrickCrumble2 ; The second pass of the crumble
+> Witness: L1 409 (l51, l59, l96, l98, rzx x27).
+$BF60 c BrickCrumble3 ; The third pass of the crumble
+> Witness: L1 409 (l51, l59, l96, l98, rzx x27).
+$BFA7 c BrickCrumble4 ; The last pass of the crumble; the animation ends ($AB33 = 0)
+> Witness: L1 409 (l51, l59, l96, l98, rzx x27).
+$BFF3 c WaterStep ; Run the next step of the put-out-the-fire animation, if one is active
+> When $AB2B is set: jumps to the step table at $AB27 (WaterStepsA $C55E, B $C56E or C $C57E, chosen by the landing handler: $CA30, $CC73, $CE74), entry $AB26, and advances $AB26. Each sequence lets a drop fall (3 or 4 frames, the sprite WaterDrop $C0FE XORed at $AB29 + an offset), puts out the fire (ExtinguishFire $C10C), then shows 4 frames of steam. Called by MainLoop ($ACD2).
+> Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$C019 c WaterA1 ; Sequence A: the water sound $F427, drop frame A1 on
+> Witness: L1 12 (l59, rzx x8).
+$C01F c WaterA2 ; Drop A1 off, A2 on
+> Witness: L1 12 (l59, rzx x8).
+$C025 c WaterA3 ; Drop A2 off, A3 on
+> Witness: L1 12 (l59, rzx x8).
+$C02B c WaterA4 ; Drop A3 off, the fire out (ExtinguishFire) and steam 1 on
+> Witness: L1 12 (l59, rzx x8).
+$C031 c WaterA5 ; Steam 1 off, 2 on
+> Witness: L1 12 (l59, rzx x8).
+$C037 c WaterA6 ; Steam 2 off, 3 on
+> Witness: L1 12 (l59, rzx x8).
+$C03D c WaterA7 ; Steam 3 off, 4 on
+> Witness: L1 12 (l59, rzx x8).
+$C043 c WaterA8 ; Steam 4 off; the animation ends ($AB2B = 0)
+> Witness: L1 12 (l59, rzx x8).
+$C04C c WaterB1 ; Sequence B: the water sound, drop frame B1 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C052 c WaterB2 ; Drop B1 off, B2 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C058 c WaterB3 ; Drop B2 off, B3 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C05E c WaterB4 ; Drop B3 off, the fire out and steam 1 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C064 c WaterB5 ; Steam 1 off, 2 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C06A c WaterB6 ; Steam 2 off, 3 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C070 c WaterB7 ; Steam 3 off, 4 on
+> Witness: L1 25 (l36, l59, rzx x17).
+$C076 c WaterB8 ; Steam 4 off; the animation ends
+> Witness: L1 25 (l36, l59, rzx x17).
+$C07F c WaterC1 ; Sequence C: the water sound, drop frame C1 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C085 c WaterC2 ; Drop C1 off, C2 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C08B c WaterC3 ; Drop C2 off, C3 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C091 c WaterC4 ; Drop C3 off, C4 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C097 c WaterC5 ; Drop C4 off, the fire out and steam 1 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C09D c WaterC6 ; Steam 1 off, 2 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C0A3 c WaterC7 ; Steam 2 off, 3 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C0A9 c WaterC8 ; Steam 3 off, 4 on
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C0AF c WaterC9 ; Steam 4 off; the animation ends
+> Witness: L1 18 (menu, l10, l56, rzx x12).
+$C0B8 c DropA1 ; XOR the drop at $AB29 + $1715
+> Each Drop entry loads its offset into BC and joins XorWaterDrop $C0E8.
+> Witness: L1 24 (l59, rzx x8).
+$C0BD c DropA2 ; XOR the drop at $AB29 - $089C ($F764)
+> Witness: L1 24 (l59, rzx x8).
+$C0C2 c DropA3 ; XOR the drop at $AB29 + $1763
+> Witness: L1 24 (l59, rzx x8).
+$C0C7 c DropB1 ; XOR the drop at $AB29 + $1711
+> Witness: L1 50 (l36, l59, rzx x17).
+$C0CC c DropB2 ; XOR the drop at $AB29 - $089E ($F762)
+> Witness: L1 50 (l36, l59, rzx x17).
+$C0D1 c DropB3 ; XOR the drop at $AB29 + $1763
+> Witness: L1 50 (l36, l59, rzx x17).
+$C0D6 c DropC1 ; XOR the drop at $AB29 + $1EC3
+> Witness: L1 36 (menu, l10, l56, rzx x12).
+$C0DB c DropC2 ; XOR the drop at $AB29 + $0713
+> Witness: L1 36 (menu, l10, l56, rzx x12).
+$C0E0 c DropC3 ; XOR the drop at $AB29 + $2F13
+> Witness: L1 36 (menu, l10, l56, rzx x12).
+$C0E5 c DropC4 ; XOR the drop at $AB29 + $1763
+> Witness: L1 36 (menu, l10, l56, rzx x12).
+$C0E8 c XorWaterDrop ; XOR WaterDrop (2 bytes × 7 rows, colour 5) at $AB29 + BC
+> DrawSpriteXorInk $E3E5. The offsets are CPC screen offsets ($0800 a pixel line, 80 a character row).
+> Witness: L1 366 (menu, l10, l36, l56, l59, rzx x28).
+$C0FE b WaterDrop 2 ; The falling water drop: 2 bytes × 7 rows of CPC mode-1 pixels
+> Read by XorWaterDrop $C0E8.
+$C10C c ExtinguishFire ; Put out the fire under the ball: platform 8 becomes 1, 9 becomes 5
+> FireFlags $AAB3[$AA44] = 0; PlatformCells[$AA44] becomes 1 if it was 8, else 5; the blank $6708 is stored over the flames at $AB29 + $0FB1 (6 bytes × 6 rows, colour $C6); then falls into Steam1. Witness: 49 fires put out (11 + 22 + 16 by sequence).
+> Witness: L1 55 (menu, l10, l36, l56, l59, rzx x28).
+$C126 ExtinguishFireDraw
+$C13E c Steam1 ; XOR steam frame 1 ($81A7, 6 bytes × 6 rows) at $AB29 + $0FB1
+> Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
+$C155 c Steam2 ; XOR steam frame 2 ($81CB, 6 bytes × 3 rows) at $AB29 + $27B1
+> Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
+$C16D c Steam3 ; XOR steam frame 3 ($81DD, 6 bytes × 2 rows) at $AB29 + $2FB1
+> Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
+$C185 c Steam4 ; XOR steam frame 4 ($81E9, 4 bytes × 3 rows) at $AB29 + $27B2
+> Witness: L1 110 (menu, l10, l36, l56, l59, rzx x28).
+$C19D c PlatformChangeStep ; Run the next step of a worn platform's animation, if one is active
+> When $AA15 is set (copied from $AA14 by the landing handlers once the ball has left): jumps to the step table $AB22 (WearTo3Steps $C53C, WearTo4Steps $C544 or FallAwaySteps $C54C) entry $AB21 and advances $AB21. The frames are XORed at $AB24 (the cell's address when the change started). Called by MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0, $CE8F).
+> Witness: L1 93581 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$C1C3 c WearTo3Step1 ; Type 2 becomes 3: write the cell, platform 2 off, crack 2a on
+> Witness: L1 250 (menu, l x9, rzx x56).
+$C1CD c WearTo3Step2 ; Crack 2a off, 2b on
+> Witness: L1 250 (menu, l x9, rzx x56).
+$C1D4 c WearTo3Step3 ; Crack 2b off, 2c on
+> Witness: L1 249 (menu, l x9, rzx x56).
+$C1DB c WearTo3Step4 ; Crack 2c off, platform 3 on; done ($AA14 = $AA15 = 0)
+> Witness: L1 249 (menu, l x9, rzx x56).
+$C1EA c WearTo4Step1 ; Type 3 becomes 4: platform 3 off, crack 3a on
+> Witness: L1 385 (menu, l x11, rzx x77).
+$C1F1 c WearTo4Step2 ; Crack 3a off, 3b on
+> Witness: L1 385 (menu, l x11, rzx x77).
+$C1F8 c WearTo4Step3 ; Crack 3b off, 3c on
+> Witness: L1 385 (menu, l x11, rzx x77).
+$C1FF c WearTo4Step4 ; Write the cell (4), crack 3c off, platform 4 on; done
+> Witness: L1 385 (menu, l x11, rzx x77).
+$C211 c FallAwayStep1 ; Type 4 goes: write the cell (0), platform 4 off, fall frame 1 on
+> Witness: L1 765 (l x11, rzx x87).
+$C21B c FallAwayStep2 ; Fall frame 1 off, 2 on
+> Witness: L1 765 (l x11, rzx x87).
+$C222 c FallAwayStep3 ; Fall frame 2 off, 3 on
+> Witness: L1 765 (l x11, rzx x87).
+$C229 c FallAwayStep4 ; Fall frame 3 off, 4 on
+> Witness: L1 765 (l x11, rzx x87).
+$C230 c FallAwayStep5 ; Fall frame 4 off, 5 on
+> Witness: L1 765 (l x11, rzx x87).
+$C237 c FallAwayStep6 ; Fall frame 5 off, 6 on
+> Witness: L1 765 (l x11, rzx x87).
+$C23E c FallAwayStep7 ; Fall frame 6 off, 7 on
+> Witness: L1 765 (l x11, rzx x87).
+$C245 c FallAwayStep8 ; Fall frame 7 off, 8 on
+> Witness: L1 765 (l x11, rzx x87).
+$C24C c FallAwayStep9 ; Fall frame 8 off: the platform is gone; done
+> Witness: L1 765 (l x11, rzx x87).
+$C258 c XorPlatform2 ; XOR the type 2 platform ($7900, 8 bytes × 4 rows) at $AB24
+> Each of the frame routines $C258-$C3BE XORs one frame at $AB24 plus a byte offset (DrawSpriteXor $E3EE): the platforms 2, 3 and 4 as the level shows them and the frames between.
+> Witness: L1 250 (menu, l x9, rzx x56).
+$C26A c XorCrack2a ; XOR $7D84 (8 bytes × 4 rows) at $AB24
+> Witness: L1 500 (menu, l x9, rzx x56).
+$C27C c XorCrack2b ; XOR $7DA4 (6 bytes × 4 rows) at $AB24 + 1
+> Witness: L1 499 (menu, l x9, rzx x56).
+$C293 c XorCrack2c ; XOR $7DBC (6 bytes × 4 rows) at $AB24 + 1
+> Witness: L1 498 (menu, l x9, rzx x56).
+$C2AA c XorPlatform3 ; XOR the type 3 platform ($7A78, 6 bytes × 4 rows) at $AB24 + 1
+> Witness: L1 634 (menu, l x11, rzx x78).
+$C2C1 c XorCrack3a ; XOR $7DD4 (6 bytes × 4 rows) at $AB24 + 1
+> Witness: L1 770 (menu, l x11, rzx x77).
+$C2D8 c XorCrack3b ; XOR $7DEC (4 bytes × 4 rows) at $AB24 + 2
+> Witness: L1 770 (menu, l x11, rzx x77).
+$C2EF c XorCrack3c ; XOR $7DFC (4 bytes × 4 rows) at $AB24 + 2
+> Witness: L1 770 (menu, l x11, rzx x77).
+$C306 c XorPlatform4 ; XOR the type 4 platform ($7B62, 4 bytes × 4 rows) at $AB24 + 2
+> Witness: L1 1150 (menu, l x12, rzx x90).
+$C31D c XorFall1 ; XOR $7E0C (4 bytes × 4 rows) at $AB24 + 2
+> Witness: L1 1530 (l x11, rzx x87).
+$C334 c XorFall2 ; XOR $7E1C (2 bytes × 4 rows) at $AB24 + 3
+> Witness: L1 1530 (l x11, rzx x87).
+$C34B c XorFall3 ; XOR $7E24 (2 bytes × 4 rows) at $AB24 + 3
+> Witness: L1 1530 (l x11, rzx x87).
+$C362 c XorFall4 ; XOR $7E2C (2 bytes × 4 rows) at $AB24 + 3
+> Witness: L1 1530 (l x11, rzx x87).
+$C379 c XorFall5 ; XOR $7E34 (2 bytes × 5 rows) at $AB24 + 3
+> Witness: L1 1530 (l x11, rzx x87).
+$C390 c XorFall6 ; XOR $7E3E (2 bytes × 5 rows) at $AB24 + 3 - $0800 (a pixel line higher)
+> Witness: L1 1530 (l x11, rzx x87).
+$C3A7 c XorFall7 ; XOR $7E48 (2 bytes × 5 rows) at $AB24 + 3 - $0800
+> Witness: L1 1530 (l x11, rzx x87).
+$C3BE c XorFall8 ; XOR $7E52 (2 bytes × 5 rows) at $AB24 + 3 - $0800
+> Witness: L1 1530 (l x11, rzx x87).
+$C3D5 c StartWearTo3 ; The ball bounced on a type 2 platform: arm its change to 3
+> $AB24 = the cell's address $AB2D, $AA14 = 1 (pending until the ball leaves), the steps WearTo3Steps $C53C from 0, the cell $AB1B = $AA44, the new type $AB20 = 3. Called by the landing handlers ($C7C1, $C8C4, $CB0A, $CD23). Platforms 2, 3 and 4 wear: each bounce takes them one step towards nothing. Witness: 220 runs.
+> Witness: L1 250 (menu, l x9, rzx x56).
+$C3F8 c StartWearTo4 ; The ball bounced on a type 3 platform: arm its change to 4
+> As StartWearTo3 with WearTo4Steps $C544 and the new type 4. Witness: 328 runs.
+> Witness: L1 385 (menu, l x11, rzx x77).
+$C41B c StartFallAway ; The ball bounced on a type 4 platform: arm its fall (type 0, no platform)
+> As StartWearTo3 with FallAwaySteps $C54C and the new type 0. Witness: 672 runs.
+> Witness: L1 765 (l x11, rzx x87).
+$C43E c WallStep ; Run the next step of a lock's opening, if one is active
+> When $AA1D is set: jumps to the step table $AA1A (set by the wall handlers $C95D-$C971 and $CBA0-$CBB4 from the lock's type: LockSteps $C592 for 3, $C596 for 2, $C59A for 1) entry $AA1C and advances it. A key turns lock 3 into 2, 2 into 1, and 1 into an open wall, each with its sound. Called by MainLoop ($ACD8).
+> Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$C464 c Lock3Step1 ; Lock 3: the sound $F43E, lock 3 frame off, the flash frame on
+> XorLock3 $D20A, XorLockFlash $D216.
+> Witness: L1 24 (l36, l96, rzx x18).
+$C46E c Lock3Step2 ; Flash off, lock 2 frame on; done
+> Witness: L1 24 (l36, l96, rzx x18).
+$C476 c Lock2Step1 ; Lock 2: the sound $F455, lock 2 off, flash on
+> Witness: L1 38 (l36, l59, l96, rzx x24).
+$C480 c Lock2Step2 ; Flash off, lock 1 frame on; done
+> Witness: L1 38 (l36, l59, l96, rzx x24).
+$C488 c Lock1Step1 ; Lock 1: the sound $F46C, lock 1 off, flash on
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C492 c Lock1Step2 ; Flash off, the opening frame $7FDC stored
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C49C c Lock1Step3 ; The opening frame $800C
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C4A3 c Lock1Step4 ; The opening frame $803C
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C4AA c Lock1Step5 ; The opening frame $806C
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C4B1 c Lock1Step6 ; The opening frame $809C
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C4B8 c Lock1Step7 ; The blank $6708: the wall is gone; done
+> Witness: L1 117 (menu, l x6, rzx x42).
+$C4BE c WallStepEnd ; $AA1D = 0: the lock's animation is over
+> Witness: L1 179 (menu, l x6, rzx x42).
+$C4C4 c StoreWallFrame ; Store the wall frame HL (2 bytes × 24 rows) at $AA18
+> DrawSprite $E318 (a store, not an XOR).
+> Witness: L1 702 (menu, l x6, rzx x42).
+
+@module hiscore
+$C4D5 c GameOverDelay ; Two Delay(200) and a frame: about 2 × 130 000 T-states
+> Called 20 times by GameOverPause $B7A9.
+> Witness: L1 60 (gameover, menu, twoname).
+@module ball ; The ball: the bounce, the moves left, right, up and down, the platforms and walls it meets
+@about The ball's tables and the step handlers of its five moving states. Each state (BallState $AA00, 0 bounce in place, 1 left, 2 right, 3 up, 4 down) has a table of 16 (8 for up and down) step handlers in the main loop's range ($AE9B, $AF15, $AF8F, $B044, $B0FA); the handler for BallStep $A9FF runs once a frame, then the state's common tail moves and draws the ball. Step 0 of each state looks at the platform the ball leaves (the cell's platform type $AB1C, which $BB32 reads from $AA6B[ball cell $AA44]) and dispatches through a table of 13 handlers, one a platform type.
+@about The cells are a grid of 6 columns and 6 rows (cell = row x 6 + column, 0-35): the cell below is +6, the one above -6. The wall between a cell and the next one to the right has the cell's index in the wall array $AA8F.
+$C4E2 w BallFramesRight 16 ; The ball's picture for each of the 16 steps of the move right
+> MoveRight's draw ($B882) sets the ball sprite $AA01 = BallFramesRight[BallStep]: the 15 rolling frames $6810-$6A40 (40 bytes apart), then the round ball $67E8 at step 15. Read 16 359 times in the recordings.
+$C502 w BallFramesLeft 16 ; The ball's picture for each of the 16 steps of the move left
+> The same frames in the reverse order ($6A40 down to $6810, then $67E8), read by $B8A2 for the move left (13 276 times).
+$C522 w FireFrames 4 ; The four pictures of the flames on a burning platform
+> $BD21 draws FireFrames[$AA0F - 1] ($80D5, $80F3, $8111, $812F; 30 bytes apart, 5 lines of 6 bytes) with ink $5E at the burning cell, every second frame (5672 times).
+$C52A w SpringCurves 5 ; The spring-press records of platform types 1-5 (24 bytes each at SpringPics)
+> LoadSpring $BD73 copies the record of the ball's platform type (1-5) to $AB35 when the up key or fire arms the spring. The records are at SpringPics $C5D6.
+
+@module render ; The renderer: the platforms, walls, objects and their animations on the CPC-layout screen
+@about The game draws in Amstrad CPC screen addresses ($C000 + line in the character row x $800 + character row x 80 + byte column) and converts each one to a Spectrum line with ScreenAddrToLine $C71F and the line table $B52D. The pictures are CPC mode-1 bytes; the Spectrum shows their low nibbles (XOR $E3EE, store $E318, with ink $E3E5).
+@about The animations below are lists of routines, one a step: a player calls entry N at its N-th call and stops when an entry clears its active flag.
+$C534 w BrickBreakSteps 4 ; The four steps of a brick wall breaking
+> $BE94 calls BrickBreakSteps[$AB34] once a frame while $AB33 is set: $BEBB, $BF19, $BF60, $BFA7 (1476 calls).
+$C53C w CrumbleSteps2 4 ; The steps of a type-2 platform turning into type 3 after the ball leaves it
+> Set by $C3D5 ($AB22); $C1C3 writes the new type ($B8C2: $AA6B[$AB1B] = $AB20 = 3), the others redraw. Witness: the RZX, 220 starts.
+$C544 w CrumbleSteps3 4 ; The steps of a type-3 platform turning into type 4
+> Set by $C3F8 (328 starts); the new type $AB20 = 4.
+$C54C w CrumbleSteps4 9 ; The steps of a type-4 platform vanishing
+> Set by $C41B (672 starts); the new type $AB20 = 0, no platform; the last step $C24C clears $AA14 and $AA15.
+$C55E w FireOutLeft 8 ; The steps of the water putting out a fire, the ball moving left
+> LeftStep9 $C9CE starts it ($AB27, $AB26 = 0, $AB29 the cell's screen address, $AB2B = 1) when the ball reaches a burning platform (type 8 or 9) and holds a water drop.
+$C56E w FireOutRight 8 ; The same, the ball moving right
+> Started by RightStep9 $CC11.
+$C57E w FireOutDown 9 ; The same, the ball falling onto the burning platform below
+> Started by DownStep0 $CE24.
+$C590 w LeftoverWord ; $B1CB, a word nothing reads
+> Known only from the recordings: no read. It would be a tenth step of FireOutDown ($B1CB is inside the burst animation $B1A7-$B1E6).
+$C592 w LockOpenSteps3 2 ; The two steps of a lock of type 3 opening to type 2
+> The ball hits the lock with a key: $AA1A points here, $C43E plays it ($AA1C the step, $AA1D active). $C464: sound $F43E, XOR out the type-3 picture, XOR the flash picture; $C46E: XOR the flash picture off, draw the type-2 picture, stop.
+$C596 w LockOpenSteps2 2 ; The two steps of a lock of type 2 opening to type 1
+> $C476 (sound $F455, XOR out the type-2 picture, flash), $C480 (flash off, draw the type-1 picture, stop).
+$C59A w LockOpenSteps1 7 ; The seven steps of a lock of type 1 opening for good
+> $C488 (sound $F46C, XOR out the type-1 picture, flash), $C492 (flash off, store $7FDC), then $800C, $803C, $806C, $809C and the blank $6708 stored over the wall's place ($AA18): the lock falls away. 97 openings in the recordings.
+$C5A8 w PlatformDrawTable 13 ; The routine that draws each platform type 0-12 when the level is built
+> BuildLevel's cell loop ($CFC8) jumps to PlatformDrawTable[type]; each routine draws at the cell's screen address $AB2D and goes on to BuildLevelObject $CFF4. Type 0 and type 11 (the exit) draw nothing: the exit appears only when OpenExit $BCB9 writes it.
+$C5C2 w WallDrawTable 5 ; The routine that draws each wall type 0-4 when the level is built
+> BuildLevelObject jumps to WallDrawTable[$AA8F[cell]]; each goes on to BuildLevelNextCell $D047.
+
+@module ball
+$C5CC w TakeoffTable 5 ; The take-off picture record of platform types 1-5 (18 bytes each at TakeoffPics)
+> LeftTakeoff $C890 and RightTakeoff $CAD6 copy TakeoffTable[type - 1]'s record to $AB4D.
+$C5D6 b SpringPics 24 ; The spring-press records of platform types 1-5, 24 bytes each
+> Each record is four pictures, the frames of the platform pressed by the bouncing ball: four screen offsets from the cell's address (words), four picture addresses (words), four widths in bytes, four heights in lines. Type 1: offsets 0, $F800, $2FB0, $2FB0; pictures $7788, $7848, $7880, $78C8. LoadSpring $BD73 copies one to $AB35; $BDA6-$BDCE draw its frames.
+$C5D6 SpringPics1 ; type 1, the plain platform
+$C5EE SpringPics2 ; type 2, crumbling (first stage)
+$C606 SpringPics3 ; type 3, crumbling (second stage)
+$C61E SpringPics4 ; type 4, crumbling (last stage)
+$C636 SpringPics5 ; type 5, the stopping platform
+$C64E b TakeoffPics 18 ; The take-off records of platform types 1-5, 18 bytes each
+> Each record is three pictures: three screen offsets from the cell's address (words), three picture addresses (words), three widths, three heights. Picture 0 is the platform itself, picture 1 the one drawn when the ball leaves it to the left (the same picture as the conveyor 6, $77A8 for type 1), picture 2 the one for the right ($77F8, as the conveyor 7). $BE43 draws picture 0, $BE5E picture 1, $BE79 picture 2, all by XOR, so step 5 of the move draws them again to undo them.
+$C64E TakeoffPics1 ; type 1
+$C660 TakeoffPics2 ; type 2
+$C672 TakeoffPics3 ; type 3
+$C684 TakeoffPics4 ; type 4
+$C696 TakeoffPics5 ; type 5
+$C6A8 w LeftTakeoffTable 13 ; Step 0 of the move left: the handler for each platform type 0-12 the ball leaves
+> LeftStep0 $C847 jumps to LeftTakeoffTable[$AB1C]: 1 and 5 LeftTakeoff, 2-4 LeftCrumble2-4, the others the plain step $AEE2.
+$C6C2 w RightTakeoffTable 13 ; Step 0 of the move right: the handler for each platform type 0-12
+> RightStep0 $CA8D: 1 and 5 RightTakeoff, 2-4 RightCrumble2-4, the others $AF5C.
+$C6DC w UpTakeoffTable 13 ; Step 0 of the jump: the handler for each platform type 0-12
+> UpStep0 $CCD0: 1 and 5 UpSpringRelease, 2-4 UpCrumble2-4, the others $AFD6.
+
+@module objects ; The objects: their colours
+@about The ink of each object kind, read when the level is built.
+$C6F6 b ObjectInks ; The Spectrum attribute each object kind 0-40 is drawn with
+> BuildLevelObject $CFF4 draws object kind K (sprite $6CB0 + 56 K, 14 lines of 4 bytes) with ink ObjectInks[K] (it patches the displacement of LD C,(IX+d) at $D01B). Kind 0 is no object and is never read. The values are attributes: $45 bright cyan, $46 bright yellow, $44 bright green, $42 bright red, $43 bright magenta, $06 yellow and so on.
+@res tables/object-inks.bin
+
+@module render
+$C71F c ScreenAddrToLine ; Convert a CPC screen address to the character row, pixel line and byte column
+> Input HL: an address in the CPC layout ($C000 + line in the row x $800 + row x 80 + byte). Output: ScanInRow $C74E = the line within the character row (0-7), CharRow $C74F = the row, ByteColumn $C750 = the byte column (0-79), PixelLine $C751 = row x 8 + line. Uses DivideHLbyBC $C752 for the division by 80. BC, DE, HL changed. Every picture drawn goes through it (277 064 calls in the recordings).
+> Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$C74E b ScanInRow ; The line within the character row (0-7)
+$C74F CharRow ; The character row
+$C750 ByteColumn ; The byte column (0-79)
+$C751 PixelLine ; The pixel line, row x 8 + line
+$C752 c DivideHLbyBC ; Divide HL by BC: the quotient to DivQuotient, the remainder to DivRemainder
+> A 16-step shift-and-subtract division. Input HL the dividend, BC the divisor. Output HL = DivQuotient $C774, DE = DivRemainder $C776. Only ScreenAddrToLine calls it (BC = 80).
+> Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$C758 DivideStep ; one bit of the quotient a pass, 16 passes
+$C763 DivideBitDone
+$C774 w DivQuotient ; The quotient of the last division
+$C776 DivRemainder ; The remainder
+
+@module ball
+$C778 c BounceStep0 ; Bounce in place, step 0: the landing sound, then the handler of the platform type
+> The first handler of BounceSteps $AE9B. If $ABA7 is 4 (a fire was just put out) it is cleared and no sound plays; otherwise when the cell below holds bricks ($0A) or the ball's cell has a platform ($AB1C not 0), $ABA7 = 1 and the bounce sound $F3C8 plays. Then it jumps to BounceTypeTable[$AB1C] $C82D: types 2-4 start crumbling the platform, the others go to the state's tail $AE65.
+> Witness: L1 1199 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C799 BounceSound
+$C7A1 BounceDispatch
+$C7BA BounceQuiet
+$C7C1 c BounceCrumble2 ; Bounce on a type-2 platform: it starts turning into type 3
+> Calls $C3D5 (CrumbleSteps2), then the tail $AE65.
+> Witness: L1 80 (l45, l56, l68, rzx x27).
+$C7C7 c BounceCrumble3 ; Bounce on a type-3 platform: it starts turning into type 4
+> Calls $C3F8 (CrumbleSteps3), then $AE65.
+> Witness: L1 102 (l36, l45, l56, l68, rzx x38).
+$C7CD c BounceCrumble4 ; Bounce on a type-4 platform: it starts vanishing
+> Calls $C41B (CrumbleSteps4), then $AE65.
+> Witness: L1 210 (l x6, rzx x55).
+$C7D3 c BounceStep1 ; Bounce, step 1: start the crumble animation if one is pending
+> If $AA14 is set (a crumble was started at step 0), $AA15 = $AA14, which lets $C19D play it. Then $AE65.
+> Witness: L1 1197 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C7DE c BounceStepIdle ; Bounce, steps 2-8: nothing but the tail
+> Jumps to $AE65; also the end of BounceStep1.
+> Witness: L1 8710 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C7E1 c BounceStep9 ; Bounce, step 9: arm the spring and draw its first frame
+> In the demo ($ABA6 not 0) the spring is armed when the next demo move ($ABA4 + 1) is 9; in play when $B463 finds up or fire pressed. Arming calls LoadSpring $BD73. If SpringArmed $AA13, $BDA6 draws the first press frame. Then $AE65.
+> Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C7F4 BounceArmByKey
+$C7FA BounceSpringFrame
+$C803 c BounceStep10 ; Bounce, step 10: nothing but the tail
+> Witness: L1 2364 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C806 c BounceStep11 ; Bounce, step 11: the second spring frame
+> If SpringArmed, $BDAE draws it. Then $AE65.
+> Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C80E c BounceStep12 ; Bounce, step 12: nothing but the tail
+> Witness: L1 2364 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C811 c BounceStep13 ; Bounce, step 13: take the object in the cell
+> Calls TakeObject $B958, then $AE65.
+> Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C817 c BounceStep14 ; Bounce, step 14: the third spring frame
+> If SpringArmed, $BDB6. Then $AE65.
+> Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C822 c BounceStep15 ; Bounce, step 15: the last spring frame
+> If SpringArmed, $BDBE. Then $AE65, whose end at step 15 calls ChooseNextState $B7E4.
+> Witness: L1 1181 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+$C82D w BounceTypeTable 13 ; Bounce step 0: the handler for each platform type 0-12
+> Types 2, 3, 4 BounceCrumble2-4, the others the tail $AE65. Only types 0-4 are read: the ball never bounces in place on the others (5 stops it, 6 and 7 push it, 8, 9 and 12 kill it, 10 and 11 end its moves another way).
+$C847 c LeftStep0 ; Move left, step 0: the sound, then the handler of the platform the ball leaves
+> As BounceStep0 (the $ABA7 and $F3C8 sound rule), then it jumps to LeftTakeoffTable[$AB1C] $C6A8.
+> Witness: L1 992 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$C868 LeftSound
+$C870 LeftDispatch
+$C889 LeftQuiet
+$C890 c LeftTakeoff ; Leave a platform of type 1-5 to the left: draw it tilted
+> Copies TakeoffTable[$AB1C - 1]'s 18-byte record to $AB4D, draws picture 0 ($BE43) and picture 1 ($BE5E) by XOR, sets $A9FD = 1 (to be undone at step 5), then the left tail $AEE2.
+> Witness: L1 553 (c1, fire, gameover, menu, twoname, l x11, rzx x85).
+$C8BC c LeftCrumble2 ; Leave a type-2 platform to the left: start its crumbling
+> Unless a crumble is already playing ($AA15), calls $C3D5, then LeftTakeoff; else the tail.
+> Witness: L1 41 (menu, l10, l35, l51, l68, rzx x20).
+$C8CA c LeftCrumble3 ; Leave a type-3 platform to the left
+> As LeftCrumble2 with $C3F8.
+> Witness: L1 84 (l x8, rzx x41).
+$C8D8 c LeftCrumble4 ; Leave a type-4 platform to the left
+> As LeftCrumble2 with $C41B.
+> Witness: L1 142 (l x7, rzx x58).
+$C8E6 c LeftStepIdle ; Move left, steps 1-4: the tail only
+> Witness: L1 3968 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$C8E9 c LeftStep5 ; Move left, step 5: undo the take-off pictures and meet the wall on the left
+> If $A9FD, picture 1 and 0 are XORed off and $A9FD = 0. A pending crumble starts ($AA15 = $AA14). Then the screen byte left of the ball ($AA03, through ScreenAddrToLine and $B515, column (ByteColumn - 2) / 2) is read: 0 means no wall, the move goes on. The pattern $7C (wall type 4), or no key (Keys $AAFE = 0), or a wall type that is no lock: sound $F43E and the ball turns back (LeftBounceBack). A lock (wall $AA8F[$AA44 - 1] of type 1-3) with a key: the lock becomes type - 1, its animation (LockOpenSteps1-3) starts at the wall's place ($AB2D + $2EBE), Keys - 1 (HUD $E5D3), and the ball turns back too.
+> Witness: L1 992 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$C994 LeftBounceBack ; BallStep = 11, BallState = 2: the ball comes back to its cell moving right
+$C9A2 LeftWallBlocked ; the bump sound $F43E
+$C8FC LeftPendingCrumble
+$C907 LeftWallCheck
+$C958 LeftOpenLock1
+$C962 LeftOpenLock2
+$C96C LeftOpenLock3
+$C974 LeftUseKey
+$C9A7 c LeftStepIdle2 ; Move left, steps 6 and 7: the tail only
+> Witness: L1 1758 (c1, fire, gameover, menu, l x11, rzx x94).
+$C9AA c LeftStep8 ; Move left, step 8: enter the cell on the left, unless bricks fill it
+> If the brick counter $AAD7[$AA44 - 1] is not 0 the ball turns right (BallState 2) and stays in its cell; else $AA44 - 1.
+> Witness: L1 879 (c1, fire, gameover, menu, l x11, rzx x94).
+$C9C5 LeftEnterCell
+$C9CE c LeftStep9 ; Move left, step 9: arm the spring, put out a fire
+> The spring as at BounceStep9 (demo move 9 or $B463, LoadSpring, $BDA6). If the platform $AB1C is on fire (8 or 9) and the ball holds a drop (Water $AAFD), Water - 1 (HUD $E5C0), $ABA7 = 4 and FireOutLeft starts at the cell's screen address (from $E131). Then $AEE2.
+> Witness: L1 884 (c1, fire, gameover, menu, l x11, rzx x94).
+$C9E1 LeftArmByKey
+$C9E7 LeftSpringFrame
+$C9FD LeftPutOutFire
+$CA38 c LeftStep10 ; Move left, step 10: the tail only
+> Witness: L1 896 (c1, fire, gameover, menu, l x11, rzx x94).
+$CA3B c LeftStep11 ; Move left, step 11: the second spring frame
+> Witness: L1 884 (c1, fire, gameover, menu, l x11, rzx x94).
+$CA43 c LeftStep12 ; Move left, step 12: the tail only
+> Witness: L1 1930 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$CA46 c LeftStep13 ; Move left, step 13: take the object
+> Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$CA4C c LeftStep14 ; Move left, step 14: the third spring frame
+> Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$CA57 c LeftStep15 ; Move left, step 15: the last spring frame, then death on fire or spikes
+> If SpringArmed, $BDBE. Landing on a platform of type 8 or 9 (still burning: no water was left at step 9) plays $F483 and kills (stage2/rec/fire: level 38, Water POKEd to 0, left onto cell 31); type 12 (spikes) plays $F4B4 and kills: the ball is drawn at the step offsets $AF35 and the burst state begins ($B0ED). Otherwise the tail $AEE2. Witness: the spike death ran once (LeftSpikeDeath); the fire death once, in stage2/rec/fire (LeftFireDeath).
+> Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+$CA75 LeftSpikeDeath ; the spike sound
+$CA7A LeftFireDeath ; the fire sound (stage2/rec/fire)
+$CA7D LeftDeath
+$CA8D c RightStep0 ; Move right, step 0: the sound, then the handler of the platform the ball leaves
+> The mirror of LeftStep0, through RightTakeoffTable $C6C2.
+> Witness: L1 1258 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CAAE RightSound
+$CAB6 RightDispatch
+$CACF RightQuiet
+$CAD6 c RightTakeoff ; Leave a platform of type 1-5 to the right: draw it tilted
+> As LeftTakeoff with picture 2 ($BE79), then the right tail $AF5C.
+> Witness: L1 648 (c1, gameover, menu, twoname, l x12, rzx x89).
+$CB02 c RightCrumble2 ; Leave a type-2 platform to the right
+> Witness: L1 46 (l x5, rzx x19).
+$CB10 c RightCrumble3 ; Leave a type-3 platform to the right
+> Witness: L1 80 (menu, l x7, rzx x36).
+$CB1E c RightCrumble4 ; Leave a type-4 platform to the right
+> Witness: L1 183 (l x7, rzx x61).
+$CB2C c RightStepIdle ; Move right, steps 1-4: the tail only
+> Witness: L1 5032 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CB2F c RightStep5 ; Move right, step 5: undo the take-off pictures and meet the wall on the right
+> The mirror of LeftStep5: the screen byte at column (ByteColumn + 3) / 2, the pattern $3E for wall type 4, the wall $AA8F[$AA44], the animation at $AB2D + $2EC8; the ball turns back to the left (BallState 1, BallStep 11).
+> Witness: L1 1258 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CBD7 RightBounceBack ; BallStep = 11, BallState = 1
+$CBE5 RightWallBlocked ; the bump sound $F43E
+$CB42 RightPendingCrumble
+$CB4D RightWallCheck
+$CB9B RightOpenLock1
+$CBA5 RightOpenLock2
+$CBAF RightOpenLock3
+$CBB7 RightUseKey
+$CBEA c RightStepIdle2 ; Move right, steps 6 and 7: the tail only
+> Witness: L1 2192 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CBED c RightStep8 ; Move right, step 8: enter the cell on the right, unless bricks fill it
+> Witness: L1 1096 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC08 RightEnterCell
+$CC11 c RightStep9 ; Move right, step 9: arm the spring, put out a fire
+> As LeftStep9 with FireOutRight.
+> Witness: L1 1091 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC24 RightArmByKey
+$CC2A RightSpringFrame
+$CC40 RightPutOutFire
+$CC7B c RightStep10 ; Move right, step 10: the tail only
+> Witness: L1 1116 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC7E c RightStep11 ; Move right, step 11: the second spring frame
+> Witness: L1 1091 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC86 c RightStep12 ; Move right, step 12: the tail only
+> Witness: L1 2294 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC89 c RightStep13 ; Move right, step 13: take the object
+> Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC8F c RightStep14 ; Move right, step 14: the third spring frame
+> Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CC9A c RightStep15 ; Move right, step 15: the last spring frame, then death on fire or spikes
+> As LeftStep15 with the offsets $AFAF. Neither death ran in the recordings (known only from the code).
+> Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CCB8 RightSpikeDeath ; the spike sound, never run
+$CCBD RightFireDeath ; the fire sound, never run
+$CCC0 RightDeath
+$CCD0 c UpStep0 ; Jump, step 0: the jump sound, the bricks, then the handler of the platform left
+> Unless $ABA7 is 4 (cleared), the jump sound $F3DF plays when the platform $AB1C is neither 0 nor bricks ($0A). On bricks $B8D1 counts a hit, which may turn the ball down: when BallState is no longer 3, the down handler $B064 takes over. Then UpTakeoffTable[$AB1C] $C6DC.
+> Witness: L1 2568 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CCE5 UpNoSound
+$CCE7 UpBricks
+$CD0D UpQuiet
+$CD18 c UpSpringRelease ; Jump from a platform of type 1-5: the spring's release frame
+> If SpringArmed, $BDC6. Then the up tail $AFD6.
+> Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CD23 c UpCrumble2 ; Jump from a type-2 platform: it starts crumbling
+> Witness: L1 83 (menu, l10, l68, l98, rzx x40).
+$CD29 c UpCrumble3 ; Jump from a type-3 platform
+> Witness: L1 119 (l x10, rzx x49).
+$CD2F c UpCrumble4 ; Jump from a type-4 platform
+> Witness: L1 230 (l x10, rzx x71).
+$CD35 c UpStep1 ; Jump, step 1: the bricks check
+> Every step of the jump calls $B8D1 when the platform is bricks and leaves for $B064 when that turned the ball down.
+> Witness: L1 2516 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CD48 c UpStep2 ; Jump, step 2: the bricks check
+> Witness: L1 2463 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CD5C c UpStep3 ; Jump, step 3: the spring frame, the bricks, start a pending crumble
+> If SpringArmed, $BDCE; a pending crumble starts ($AA15 = $AA14) and $C19D plays two of its steps.
+> Witness: L1 2412 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CD8A c UpStep4 ; Jump, step 4: hit the platform above, or pass it
+> On the top row ($AA44 < 6) the ball turns down ($B00F). Above an empty cell or a cell with bricks or the exit (10, 11) it goes on. Spikes (12) above kill: sound $F4B4, the burst state 6 at step 3 (UpSpikeDeath, 8 deaths in the recordings). Any other platform (1-9) above stops the jump: $B00F turns the ball down.
+> Witness: L1 2361 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$CDC6 UpSpikeDeath ; the spike sound, BallState 6, BallStep 3
+$CDD9 c UpStep5 ; Jump, step 5: the ball enters the cell above
+> $AA44 - 6, and $BB32 reads the new cell's platform and object.
+> Witness: L1 2202 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+$CDF9 c UpStep6 ; Jump, step 6: take the object
+> Witness: L1 2150 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+$CE10 c UpStep7 ; Jump, step 7: the bricks check; the tail then calls ChooseNextState
+> Witness: L1 2099 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+$CE24 c DownStep0 ; Fall, step 0: put out a burning platform below with a water drop
+> If the cell below ($AA44 + 6) has a platform of type 8 or 9 and Water $AAFD is not 0: Water - 1, $ABA7 = 4, FireOutDown starts at that cell. Then the down tail $B06B.
+> Witness: L1 2222 (c1, menu, l x12, rzx00-rzx99).
+$CE3F DownPutOutFire
+$CE7C c DownStepIdle ; Fall, steps 1 and 2: the tail only
+> Witness: L1 4615 (c1, menu, l x12, rzx00-rzx99).
+$CE7F c DownStep3 ; Fall, step 3: the ball enters the cell below
+> $AA44 + 6.
+> Witness: L1 2376 (c1, menu, l x12, rzx00-rzx99).
+$CE8A c DownStep4 ; Fall, step 4: the crumble, the cell, the spring
+> Plays a step of a pending crumble ($C19D), sets $AB2D and $AB1C for the new cell ($BB05, $BB32), arms the spring as at BounceStep9 and draws two press frames ($BDA6, $BDAE).
+> Witness: L1 2527 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CEAB DownArmByKey
+$CEB1 DownSpringFrame
+$CEC6 c DownStep5 ; Fall, step 5: take the object
+> Witness: L1 2575 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CEC9 c DownStepIdle2 ; Fall, step 6: the tail only
+> Witness: L1 5201 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CECC c DownStep7 ; Fall, step 7: the last spring frames, then death on fire or spikes
+> $BDB6 and $BDBE if SpringArmed. A platform of type 8 or 9 (no water left at step 0) kills with $F483 (never run from here: the fire recording falls in from the side); type 12 kills with $F4B4 (4 deaths): the ball drawn at $B10A, then the burst ($B0ED).
+> Witness: L1 2677 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$CEF4 DownSpikeDeath ; the spike sound
+$CEF9 DownFireDeath ; the fire sound, never run
+$CEFC DownDeath
+
+@module render
+$CF0C c DrawPanelA ; Draw the 72 x 200 picture PanelPicture at CPC $C03E (never called)
+> Copies PanelPicture $D2B4 (18 bytes a line, 200 lines) to the CPC address $C03E with the store routine $E318. No instruction calls it and no table holds its address: known only from the code. It reads like the Amstrad version's side panel (the Spectrum draws the sides from $6398 and $6518 with $B488 instead).
+> Witness: L1 0 ().
+$CF1D c DrawPanelB ; A second copy of DrawPanelA, never called
+> Byte for byte the same code. Known only from the code.
+> Witness: L1 0 ().
+
+@module levels ; The level builder
+@about BuildLevel copies the level's 75-byte record from the level data $8C3C to the work area $AA20, splits the 36 cells into platforms and walls, and draws every cell, object, wall and the ball.
+$CF2E c BuildLevel ; Build and draw level Level: copy the record, split the cells, draw them and the ball
+> The CPC inks of the level (LevelColours $E119 row Level mod 7 + 1) go to $B6DB, a RET on the Spectrum. The work area $AA20-$AAFA (219 bytes) is cleared, the record at $8C3C + 75 x Level is copied to $AA20 (byte 36, the start cell, also to $AB1A), and each of the 36 cells is split: the high nibble to the walls $AA8F, the low nibble to the platforms $AA6B. Then BuildLevelCell draws every cell. Last the ball: sprite $67E8, cell $AA44 = the start cell, its screen address $AA03 = the cell's + $2F62, drawn by XOR (10 lines of 4 bytes). Called by the main loop at $AC7D, $AC86 and $ACBF (75 builds in the recordings).
+> Witness: L1 94 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$CF34 LevelMod7 ; A = Level mod 7 by subtraction
+$CF3B LevelColourRow
+$CF45 LevelColourSeek
+$CF6E ClearWorkArea ; $AA20-$AAFA to 0
+$CF81 SeekLevelRecord ; HL = $8BF1 + 75 x (Level + 1) = $8C3C + 75 x Level
+$CF98 SplitCell ; cell 36 - B: the high nibble to $AA8F, the low to $AA6B
+$CFC8 c BuildLevelCell ; Draw cell 36 - B: its platform through PlatformDrawTable
+> $AA44 = the cell, $AA07 = the cell as a word, $AB2D its screen address ($BB05), then a jump to PlatformDrawTable[platform].
+> Witness: L1 3363 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$CFF4 c BuildLevelObject ; Draw the cell's object and its wall
+> Object kind K = $AA47[cell]; if not 0 the sprite $6CB0 + 56 K is drawn at $AB2D - $9E with ink ObjectInks[K] (14 lines of 4 bytes, $E3E5). Then a jump to WallDrawTable[$AA8F[cell]].
+> Witness: L1 3363 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$D01B ; LD C,(IX+K): BuildLevelObject writes K into the displacement at $D01D
+$D009 SeekObjectSprite
+$D028 BuildLevelWall
+$D047 c BuildLevelNextCell ; The next cell, or the ball when all 36 are drawn
+> Witness: L1 3362 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+
+@module render
+$D076 c UnusedRet ; A lone RET before DrawObjectXor
+> Known only from the code: nothing calls it.
+> Witness: L1 0 ().
+$D077 c DrawObjectXor ; XOR the picture at $A9F6 over the current cell's object place (never called)
+> The same place and size as BuildLevelObject's object ($AB2D - $9E, 14 lines of 4 bytes), the picture from the word $A9F6, drawn by XOR without ink. Nothing calls it: an earlier way to draw or wipe an object. Known only from the code.
+> Witness: L1 0 ().
+$D08E c DrawExitSign ; XOR the EXIT sign $6698 above the current cell (never called)
+> Draws $6698 (7 lines of 8 bytes) at $AB2D + $F710, one character row above the platform. Nothing calls it; OpenExit $BCB9 would be its caller. Known only from the code.
+> Witness: L1 0 ().
+$D0A4 c PlatDrawNone ; Platform types 0 and 11: nothing to draw
+> Witness: L1 1003 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x23).
+$D0A7 c PlatDraw1 ; Platform type 1, the plain platform
+> Witness: L1 1222 (c1, fire, gameover, menu, twoname, l51, l98, rzx x13).
+$D0AD c DrawPlatform1Pic ; XOR the plain platform $7788 at the cell
+> Witness: L1 1290 (c1, fire, gameover, menu, twoname, l51, l98, rzx x13).
+$D0B2 c PlatDraw2 ; Platform type 2, the first crumbling stage
+> Witness: L1 187 (fire, menu, l51, l96, l98, rzx x15).
+$D0B8 c DrawPlatform2Pic ; XOR the picture $7900 at the cell
+> Witness: L1 187 (fire, menu, l51, l96, l98, rzx x15).
+$D0BD c PlatDraw3 ; Platform type 3, the second crumbling stage
+> Witness: L1 141 (l51, l59, l96, l98, rzx x15).
+$D0C3 c DrawPlatform3Pic ; XOR the picture $7A78 (6 bytes wide) one byte right of the cell
+> Witness: L1 141 (l51, l59, l96, l98, rzx x15).
+$D0D8 c PlatDraw4 ; Platform type 4, the last crumbling stage
+> Witness: L1 229 (fire, l51, l59, l96, l98, rzx x14).
+$D0DE c DrawPlatform4Pic ; XOR the picture $7B62 (4 bytes wide) two bytes right of the cell
+> Witness: L1 229 (fire, l51, l59, l96, l98, rzx x14).
+$D0F3 c PlatDraw5 ; Platform type 5, the stopping platform
+> Witness: L1 66 (menu, rzx x8).
+$D0F9 c DrawPlatform5Pic ; XOR the picture $7BE2 at the cell
+> Witness: L1 74 (fire, menu, rzx x9).
+$D0FE c DrawPlatformPic ; XOR the picture DE at the cell's address $AB2D: 8 bytes wide, 4 lines
+> Witness: L1 1551 (c1, fire, gameover, menu, twoname, l51, l96, l98, rzx x21).
+$D10C c PlatDraw6 ; Platform type 6, the conveyor to the left
+> Witness: L1 82 (menu, l51, l59, l98, rzx x11).
+$D112 c DrawConveyorLeftPic ; XOR the picture $77A8 (10 lines) at $AB2D + $27B0
+> Witness: L1 82 (menu, l51, l59, l98, rzx x11).
+$D127 c PlatDraw7 ; Platform type 7, the conveyor to the right
+> Witness: L1 89 (menu, l51, l59, l96, l98, rzx x13).
+$D12D c DrawConveyorRightPic ; XOR the picture $77F8 (10 lines) at $AB2D + $27B0
+> Witness: L1 89 (menu, l51, l59, l96, l98, rzx x13).
+$D142 c PlatDraw8 ; Platform type 8: the plain platform on fire
+> Draws the platform, then the flames.
+> Witness: L1 68 (c1, gameover, menu, twoname, rzx x8).
+$D14B c DrawFlames ; Mark the cell burning and draw the first flames
+> $AAB3[$AA44] = 1 (the fire animation $BD21 then plays FireFrames there), and $814D is drawn with ink $C2 at $AB2D + $17B1 (5 lines of 6 bytes).
+> Witness: L1 76 (c1, fire, gameover, menu, twoname, rzx x8).
+$D171 c PlatDraw9 ; Platform type 9: the stopping platform on fire
+> Witness: L1 8 (fire, rzx43, rzx59).
+$D17A c PlatDraw10 ; Platform type 10, bricks
+> Witness: L1 51 (fire, l98, rzx x6).
+$D180 c DrawBricks ; Fill the cell with bricks: the counter 8 and four rows of the brick picture
+> $AAD7[$AA44] = 8 (the brick counter: the moves left and right cannot enter the cell while it is not 0; $B8D1 counts it down), then $8345 four times, 8 lines each, $50 bytes apart, through $E4BB with ink $82.
+> Witness: L1 51 (fire, l98, rzx x6).
+$D19D DrawBricksRow ; one of the four rows of bricks, $50 bytes (a character row) apart
+$D1B2 c PlatDraw12 ; Platform type 12, spikes
+> Witness: L1 217 (menu, l51, l59, l96, l98, rzx x15).
+$D1B8 c DrawSpikesPic ; XOR the spikes $7D5A (7 lines, 6 bytes) at $AB2D + $2FB1
+> Witness: L1 217 (menu, l51, l59, l96, l98, rzx x15).
+$D1CD c WallDrawNone ; Wall type 0: nothing to draw
+> Witness: L1 2955 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$D1D0 c WallDraw1 ; Wall type 1, the lock that opens with one key
+> $BB1D gives the wall's address $AB2F, then DrawLock1Pic.
+> Witness: L1 201 (menu, l59, l98, rzx x10).
+$D1DC c WallDraw2 ; Wall type 2, the lock that takes two keys
+> Witness: L1 10 (l98, rzx56, rzx59).
+$D1E8 c WallDraw3 ; Wall type 3, the lock that takes three keys
+> Witness: L1 21 (rzx x7).
+$D1F4 c WallDraw4 ; Wall type 4, the wall no key opens
+> Witness: L1 176 (fire, menu, l51, l59, l98, rzx x12).
+$D200 c DrawLock1Pic ; XOR the lock picture $7F7C at the wall
+> Witness: L1 356 (menu, l x7, rzx x45).
+$D205 c DrawLock2Pic ; XOR the lock picture $7F4C at the wall
+> Witness: L1 72 (l36, l59, l96, l98, rzx x26).
+$D20A c DrawLock3Pic ; XOR the lock picture $7F1C at the wall
+> Witness: L1 45 (l36, l96, rzx x22).
+$D20F c DrawWall4Pic ; Draw the wall $7E5C with ink $83 at the wall
+> Witness: L1 176 (fire, menu, l51, l59, l98, rzx x12).
+$D216 c DrawLockFlashPic ; XOR the flash picture $7FAC at the wall (a lock opening)
+> Witness: L1 358 (menu, l x6, rzx x42).
+$D21B c DrawWallPic ; XOR the picture DE at the wall's address $AB2F: 2 bytes wide, 24 lines
+> Witness: L1 831 (menu, l x7, rzx x47).
+$D229 DrawWallPicInk ; the same with the ink C ($E3E5)
+$D237 c DrawWall4Frame0 ; Store the wall-4 frame $7E5C at the wall (never called)
+> With DrawWall4Frame1-3 an animation of the wall of type 4 drawn by store ($E318), not XOR: the frames $7E5C, $7E8C, $7EBC, $7EEC (48 bytes, 24 lines of 2 bytes). Nothing calls them; the game animates that wall with $BC30. Known only from the code.
+> Witness: L1 0 ().
+$D23C c DrawWall4Frame1 ; Store the frame $7E8C (never called)
+> Witness: L1 0 ().
+$D241 c DrawWall4Frame2 ; Store the frame $7EBC (never called)
+> Witness: L1 0 ().
+$D246 c DrawWall4Frame3 ; Store the frame $7EEC (never called)
+> Witness: L1 0 ().
+$D24B c StoreWallPic ; Store the picture HL at the wall's address $AB2F, 2 bytes wide, 24 lines (never called)
+> Witness: L1 0 ().
+
+@module menu ; The demo's moves
+@about The demo plays these moves instead of the keys.
+$D25A b DemoMoves ; The demo's move list: one byte a decision
+> GameStart sets the demo pointer $ABA4 = $D25A; each decision reads the byte after it (from $D25B on, 48 bytes read): 0-5 the next ball state at a landing, 9 arm the spring at a step 9 (BounceStep9, LeftStep9 and the others). The first byte is never read.
+@res tables/demo-moves.bin
+$D28B s DemoPad ; 41 zeros after the demo moves, never read
+
+@module render
+$D2B4 b PanelPicture ; A picture of 18 bytes x 200 lines in CPC mode 1, never read
+> Only DrawPanelA and DrawPanelB (never called) would read it. 3600 bytes, $D2B4-$E0C3.
+@res sprites/panel.bin
+
+@module levels
+$E0C4 b LevelLeftover ; 85 bytes of small numbers, never read
+> Known only from the recordings: no read and no reader in the code. Pairs of values 0-$16; their meaning is not known.
+@res leftovers/e0c4.bin
+$E119 b LevelColours 3 ; The CPC inks of the three pens, a row for each level mod 7
+> BuildLevel reads row Level mod 7 + 1 (the first row, $E119-$E11B, is never read) and passes the three values (CPC firmware colours 0-26) to $B6DB, which on the Spectrum returns at once: a leftover of the Amstrad version.
+@res tables/level-colours.bin
+
+@module render
+$E131 b CellAddresses 8 ; The CPC screen address of each cell 0-35 (36 words)
+> $BB05 sets $AB2D = the word for the ball's cell $AA44; the fire put-out code reads it too. Rows are $140 bytes ($C942, $CA82, $CBC2, $CD02, $CE42, $CF82 for column 0), columns 10 bytes apart. Words that only look like program addresses.
+@res tables/cell-addresses.bin
+$E179 b WallAddresses 8 ; The CPC screen address of each wall 0-35 (36 words; the sixth of each row is 0)
+> $BB1D sets $AB2F = the word for wall A. Wall N is between cell N and cell N + 1; the last of each row has no wall.
+@res tables/wall-addresses.bin
+
+@module ball
+$E1C1 b BrickSteps ; The value a brick counter must have at each step 0-7 of a jump for the bricks to break
+> $B8D1 compares $AAD7[cell] with BrickSteps[BallStep]: 5, 4, 3, 2, 1, 8, 7, 6.
+@res tables/brick-steps.bin
+
+@module levels
+$E1C9 b EditorTexts ; The texts of a level editor's menu, letters coded A = 1, never read
+> "RETOUR", "EDITEUR", "CHARGER TABLEAUX", "SAUVER TABLEAUX", "EFFACER TABLEAU", "QUITTER EDITEUR", each ended by 0: the French menu of a level editor the game does not have. Known only from the bytes: nothing reads them.
+@res texts/editor.bin
+$E21A s EditorFontPad ; Four zero bytes before the editor's letters, never read
+$E21E b EditorFont 5 ; The letters A-Z of the editor, 5 lines of 8 pixels each, never read
+> 26 one-colour glyphs for EditorTexts. Two bytes ($E277-$E278) are read in the recordings, by no reader of the font: known only from the recordings.
+@res sprites/editor-font.bin
+@module sprites ; The sprite blitters: CPC mode-1 graphics drawn on the Spectrum screen, and their colour cells
+@about The game keeps the Amstrad CPC's graphics and screen addresses. A sprite is CPC mode-1 bytes, ($A9FE) bytes a line (4 pixels each, two bit planes) and B lines; its place is a CPC screen address ($C000 + line%8 x $800 + row x 80 + byte). The blitters turn the address into a pixel line and a CPC byte column ($C71F), take the Spectrum line address from the line table ($B515: IX = $B52D + 2 x line, $B52C = column / 2) and pack two CPC bytes into one Spectrum byte: the low nibbles (one bit plane, pens 2 and 3 show as ink) for the sprites, the high nibbles for the bricks. An odd CPC column starts with a half byte.
+@about Store (DrawSprite), XOR (XorSprite) and XOR of the high nibbles (XorBricks), each with a variant that then colours the cells the sprite covers (PaintAttrs). Interrupts are off while a sprite is drawn.
+$E2A0 c DrawSpriteColoured ; Draw a sprite (store) and colour the cells it covers
+> DrawSprite $E318 (DE the CPC screen address, HL the graphics, B the lines, ($A9FE) the width in CPC bytes), then PaintAttrs $E2A3 with the attribute in C.
+> Witness: L1 89434 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx34, rzx36-rzx44, rzx46-rzx99).
+$E2A3 c PaintAttrs ; Colour the cells under the sprite just drawn with the attribute C
+$E2B5 PaintAttrsSkip
+$E2CF PaintAttrsSkip2
+$E30C PaintAttrsLoop
+$E30E PaintAttrsLoop2
+> Input: C the attribute (bit 7 set: the area is 8 lines taller), the place left by $C71F ($C74F the CPC character row, $C750 the CPC byte column), the height in lines at SpriteHeight $E3E4 and the width at $A9FE. Nothing is done when C's ink (bits 0-2) is 0.
+> The cells are rows ($C74F - 1) onwards (a sprite starting in CPC row 0, above the Spectrum screen, loses its first 8 lines), columns $C750 / 2 onwards, ((width + column bit 0 + 1) / 2) cells wide and (height + 7) / 8 rows high; each gets C (bit 7 cleared), written into the operand of the LD (HL),n at $E30E before the loop. Output: the attributes; $E3E4 and $C74F changed.
+> Witness: L1 275682 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E318 c DrawSprite ; Draw a CPC sprite on the screen, storing its bytes
+$E33F DrawSpriteLoop
+$E34F DrawSpriteLoop2
+$E369 DrawSpriteSkip
+$E37C DrawSpriteSkip2
+$E38B DrawSpriteLoop3
+$E3A8 DrawSpriteLoop4
+$E3C2 DrawSpriteSkip3
+$E3D5 DrawSpriteSkip4
+> Input: DE the CPC screen address, HL the graphics, B the lines, ($A9FE) the width in CPC bytes. B goes to SpriteHeight $E3E4. Each line: the Spectrum address from the line table, then width / 2 bytes, each (first byte << 4) | (second byte & $0F), and for an odd width a last half byte (first byte << 4). An odd CPC column ($C750 bit 0) starts with the low nibble of one byte alone and ends with a high-nibble byte when the width is even. Output: carry clear, BC kept; IY kept; the screen bytes stored. Interrupts are off from $E32A and on again at the end.
+> Witness: L1 91481 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E3E4 b SpriteHeight ; The height in lines of the last sprite drawn (PaintAttrs takes it)
+$E3E5 c XorSpriteColoured ; XOR a sprite onto the screen and colour its cells
+> XorSprite $E3EE (HL the CPC screen address, DE the graphics, B the lines), then PaintAttrs $E2A3 with C.
+> Witness: L1 186047 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E3EE c XorSprite ; XOR a CPC sprite onto the screen
+$E413 XorSpriteLoop
+$E423 XorSpriteLoop2
+$E43E XorSpriteSkip
+$E452 XorSpriteSkip2
+$E460 XorSpriteLoop3
+$E47E XorSpriteLoop4
+$E499 XorSpriteSkip3
+$E4AD XorSpriteSkip4
+> As DrawSprite $E318, but the screen address is in HL and the graphics in DE, and each byte is XORed into the screen: drawing twice removes the sprite. The last half byte of an odd width at an even column ($E442) never ran: no sprite of odd width is XORed there.
+> Witness: L1 228035 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E4BB c XorBricksColoured ; XOR a brick graphic and colour its cells
+> XorBricks $E4C4, then PaintAttrs $E2A3 with C. The only caller is the brick drawing at $D1A6.
+> Witness: L1 204 (fire, l98, rzx x6).
+$E4C4 c XorBricks ; XOR a CPC graphic onto the screen from its high nibbles
+$E4E9 XorBricksLoop
+$E4F9 XorBricksLoop2
+$E514 XorBricksSkip
+$E522 XorBricksSkip2
+$E530 XorBricksLoop3
+$E554 XorBricksLoop4
+$E56F XorBricksSkip3
+$E57D XorBricksSkip4
+> As XorSprite $E3EE, but each Spectrum byte is (first byte & $F0) | (second byte >> 4): the other bit plane of the CPC graphic. The odd-column path $E530-$E58A never ran (the bricks lie at even columns).
+> Witness: L1 204 (fire, l98, rzx x6).
+
+@module hud ; The status line: score, lives, water, keys, hammers and level at the top of the screen
+@about The status line is screen lines 1-7 (line-table entry 8): six fields printed with the font's digits and the icons 123-127 by PrintDigit and HudBlit, at the column in $AB18, which each character advances.
+$E58B c DrawHud ; Redraw the whole status line
+> Calls $B6EE, then ScoreToHud, LivesToHud, HammersToHud, WaterToHud, KeysToHud and LevelToHud. Called from the main loop ($ACB0, $ACC2) and the frame wait ($B6E6).
+> Witness: L1 95989 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5A1 c ScoreToHud ; Print the score: five digits at column 3
+> The score word $AAFB as five digits (PrintNumber5), columns 3-7.
+> Witness: L1 96679 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5AD c LivesToHud ; Print the lives: icon 123 and two digits at column 9
+> Icon character $7B at column 9, then the low byte of $AB01 as two digits (PrintNumber2).
+> Witness: L1 96009 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5C0 c WaterToHud ; Print the water drops: icon 124 and two digits at column 14
+> Icon $7C at column 14, then the byte $AAFD as two digits.
+> Witness: L1 96110 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5D3 c KeysToHud ; Print the keys: icon 125 and two digits at column 18
+> Icon $7D at column 18, then the byte $AAFE as two digits.
+> Witness: L1 96372 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5E6 c HammersToHud ; Print the hammers: icon 126 and two digits at column 22
+> Icon $7E at column 22, then the byte $AAFF as two digits.
+> Witness: L1 96104 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E5F9 c LevelToHud ; Print the level: icon 127 and two digits at column 26
+> Icon $7F at column 26, then Level $AB00 as two digits: the number shown is the level's index 0-99 as stored.
+> Witness: L1 95991 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E60C c PrintNumber5 ; Print HL as five decimal digits
+> PrintDigit for 10000, 1000 and 100, then falls into PrintNumber2. Also called by $B37A (the score while the timer is counted in).
+> Witness: L1 102196 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E61E c PrintNumber2 ; Print HL's tens and units
+> PrintDigit for 10 and 1. A value of 100 or more gives a tens "digit" past 9 (the glyph after "9"); the callers pass bytes below 100 (known only from the code).
+> Witness: L1 582784 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E62B c PrintDigit ; Print HL div DE as one digit and keep HL mod DE
+$E62D PrintDigitLoop
+$E635 PrintDigitSkip
+> Input: HL the value, DE the power of ten. C counts the subtractions; HL is left with the remainder; the glyph is Font + 8 x (C + 16) ($F649, "0"), drawn by PrintHudGlyph.
+> Witness: L1 1472156 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E639 c PrintHudGlyph ; Draw glyph C of the table at DE on the status line
+> HL = DE + 8 x C, then HudBlit. HL is kept.
+> Witness: L1 1952742 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E644 c HudBlit ; Copy glyph rows 0-6 at HL to the status line at column ($AB18), then advance the column
+$E652 HudBlitLoop
+> Rows go to screen lines 1-7 (line-table entry 8, $B53D, then INC D for each line); glyph row 7 is not drawn. No attribute is written. $AB18 + 1.
+> Witness: L1 1952744 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$E661 c PrintHudIcon ; Draw character A of the font on the status line
+> DE = $F4C9 (Font - 256, so that 8 x A lands on the character), C = A, then PrintHudGlyph.
+> Witness: L1 480586 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+
+@module text ; The text printer: control codes, single and double height, the font
+@about PrintText prints a string of the font's characters 32-127 with control codes: $16 row col (AT), $01 single height, $02 double height, $10 n ink, $11 n paper, $12 n flash, $13 n bright, $14 n the whole attribute, $15 the default attribute again, $09 skip a column, $0D a new line, $00 the end. Other codes below 32 and above 127 print "?". The state is TextVars $E712-$E716.
+$E667 c PrintText ; Print the string at HL with its control codes
+$E695 PrintTextEnd
+$E69C PrintTextAt
+$E6A6 PrintTextSingle
+$E6AC PrintTextDouble
+$E6B3 PrintTextInk
+$E6C3 PrintTextPaper
+$E6D9 PrintTextFlash
+$E6EC PrintTextBright
+$E701 PrintTextAttr
+$E709 PrintTextCode15
+> Input: HL the string. Reads up to and including $00; at the end the attribute goes back to the default ($E712 to $E713) and HL points after the $00. $11 (paper) and $12 (flash) never ran. $12 and $13 cannot set their bit: the ROTATE through carry ($E6DB, $E6EE-$E6F0) puts the carry left by the CP (always clear) into the bit, so FLASH and BRIGHT are always cleared (known only from the code; the menu's "$13 1" at $F05A has no effect).
+> Witness: L1 46858 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$E712 b TextVars ; The printer's state: default attribute, attribute, double height, row, column
+$E713 TextAttr ; the attribute of the next characters
+$E714 TextDouble ; 0 single height, 1 double height
+$E715 TextRow ; the character row 0-23 (AT's first byte)
+$E716 TextColumn ; the column 0-31 (AT's second byte)
+$E717 c PrintChar ; Print character A, or act on $0D and $09
+$E72D PrintCharSkip
+$E732 PrintCharSkip2
+$E737 PrintCharSkip3
+> $0D: NewLine; $09: NextColumn; codes below 32 or from 128: "?"; else DrawGlyph. HL kept.
+> Witness: L1 34443 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$E73E c DrawGlyph ; Draw font character A at TextRow, TextColumn in TextAttr, and move on a column
+$E75F DrawGlyphLoop
+$E786 DrawGlyphSkip
+> The glyph Font + 8 x (A - 32) goes to the 8 lines of the character row (line-table entry 8 x row + 7, $B53B); at double height each row is drawn twice, so the character covers the row and the next. Then the attribute TextAttr at the cell (and the cell below at double height), and NextColumn.
+> Witness: L1 34375 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$E7A9 c NextColumn ; TextColumn + 1; at 32 a new line
+> Witness: L1 34443 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x24).
+$E7B3 c NewLine ; TextColumn 0, TextRow + 1 (24 wraps to 0)
+> Witness: L1 49 (menu, twoname).
+$E7C6 c PrintOnceUponATime ; Print the text "Erase Una Vez ..." (never called)
+> LD HL,$E7CD: CALL PrintText: RET. Nothing in the image calls it and no recording ran it (known only from the code). The text starts with the Amstrad CPC firmware's LOCATE code $1F row col, which PrintText does not know: it would print "?" for $1F and $0A. A leftover of the CPC original or of the Spanish conversion (the menu says "VERSIONED BY J250 <SPAIN>").
+> Witness: L1 0 ().
+$E7CD b OnceUponATimeText ; "Erase Una Vez ..." ("once upon a time", Spanish): CPC LOCATE 2,10, attribute $38, single then double height
+@res texts/once-upon-a-time.bin
+$E7E6 c XorLogo ; XOR the logo onto the menu screen (never called)
+> XorSprite $E3EE with HL = $C066, DE = Logo, B = 60 lines, width 18: draws the logo of DrawLogo $E7F7 a second time, removing it. Not called and not run (known only from the code).
+> Witness: L1 0 ().
+
+@module menu ; The menu: the logo, the options, the controls, demo and hall of fame in turn
+@about Menu $EF33 prints the backdrop and the logo and waits: 0 starts the game, 1 toggles one and two players, 2-4 choose keyboard (Q A O P SPACE), Sinclair (9 8 6 7 0) or Kempston. After 3000 frames (60 s) without a key it returns for the demo or shows the hall of fame for 750 frames, alternately.
+$E7F7 c DrawLogo ; Draw the BUMPY logo at the top of the menu screen
+> DrawSprite $E318: Logo $E808, CPC address $C066 (character row 1, CPC byte 22: Spectrum line 1, column 11), width 18 CPC bytes (72 pixels), 60 lines. No attributes: the colours are the backdrop's (MenuBackdropText $F0E8).
+> Witness: L1 8 (c1, gameover, menu, twoname).
+$E808 b Logo 18 ; The BUMPY logo: 60 lines of 18 CPC mode-1 bytes (72 x 60 pixels)
+@res sprites/logo.bin
+
+@module hiscore ; Game over and the hall of fame: the place, the name entry, the table screen
+@about The hall of fame is four PrintText strings of 32 bytes (HallOfFame $EEB3): AT, attribute, double height, a three-letter name, " : ", five digits and the score word. A player whose score is not below the lowest entry ($EF25) enters it when his game ends (GameOver $B755, EnterHallOfFame $EC40).
+$EC40 c EnterHallOfFame ; Game over: flash the border, put the score in the hall of fame and enter the name
+$EC42 EnterHallOfFameLoop
+$EC45 EnterHallOfFameLoop2
+$EC64 EnterHallOfFameLoop3
+$EC8E EnterHallOfFameSkip
+$EC9D EnterHallOfFameSkip2
+> Called by the game over $B777. 250 x 8 border colours 7..0 with a delay ($B873, B = 2) between them. Then the place: the score $AAFB is compared with the scores (+$12) of records 1-3 only; at the first lower one, the records from there down to the third move one down (LDDR $EF12 to $EF32, $60 - 32 x place bytes) and the score goes in its place. A score below all three goes to record 4 without a compare (GameOver called this routine only because the score is not below record 4's, $EF25). In the gameover recording the score went to record 4 and the move at $EC8E never ran.
+> The record gets the score, the name "..." ($2E), its digits (ScoreToDigits); then ShowHallOfFame and EnterName. Output: ($ED93) = the record.
+> Witness: L1 3 (gameover, twoname).
+$ECC0 c EnterName ; The name entry: three letters, chosen by left and right, each confirmed by fire or up
+$ECCF EnterNameLoop
+$ECD2 EnterNameLoop2
+$ECE7 EnterNameSkip
+$ECEA EnterNameSkip2
+$ECFA EnterNameSkip3
+$ECFB EnterNameSkip4
+$ED0A EnterNameSkip5
+> Waits for all keys up ($B401). For each of the three letters at record +6: the letter starts at "@" ($40); right ($F087, $B44E) steps it up and left ($F086, $B447) down; right wraps from "Y" to "@" (INC, CP $5A, JR C), left from "@" to "Z", so "Z" is reached only by left; fire or up ($F088 / $F084, $B463) waits for the keys up and goes to the next letter. The table is reprinted (PrintHallOfFame) after each test and 5 HALTs (0.1 s) pass. In the gameover recording no key was pressed: 394 rounds on the first letter. In stage2/rec/twoname both players typed their names (B U M by right, left and fire, then Z A P with Z by left from "@"): the polling once every 5 HALTs is why a 4-frame tap can be missed.
+> Witness: L1 3 (gameover, twoname).
+$ED18 w NameLetterPtr ; EnterName: the address of the letter being chosen
+$ED1A c ShowHallOfFame ; Clear the screen and draw the hall of fame: the lines, the title and the four records
+> Border 0, ClearScreen $F0CB, DrawHofLines, PrintText HofTitleText $EDEF, PrintHallOfFame.
+> Witness: L1 4 (gameover, menu, twoname).
+$ED2D c PrintHallOfFame ; Print the four records at rows 7, 10, 13 and 16
+$ED34 PrintHallOfFameLoop
+> Each record's row byte (+1) is set (7, 10, 13, 16), then PrintText.
+> Witness: L1 714 (gameover, menu, twoname).
+$ED4C c ScoreToDigits ; Write the new record's score (+$12) as five ASCII digits at +$0C-$10
+> The record from ($ED93).
+> Witness: L1 3 (gameover, twoname).
+$ED84 c DigitOf ; A = "0" + HL div DE; HL = HL mod DE
+$ED86 DigitOfLoop
+$ED8E DigitOfSkip
+> Witness: L1 15 (gameover, twoname).
+$ED93 w NewRecordPtr ; The hall-of-fame record the last game entered
+$ED95 c DrawHofLines ; Draw the hall of fame's perspective lines at the top and the bottom of the screen
+$ED9B DrawHofLinesLoop
+$EDC7 DrawHofLinesSkip
+> For each row n of HofLineRows (to $FF): screen line n gets 31 bytes of $88 (dotted) and line n + 1 of $FF (solid) from column 0; line 192 - n gets $FF and the next $88: the lines draw closer towards the middle of the screen.
+> Witness: L1 4 (gameover, menu, twoname).
+$EDC9 c DrawLinePair ; Fill the line at the table entry HL with C and the next line with B
+> Witness: L1 104 (gameover, menu, twoname).
+$EDD4 c FillLine ; Fill 31 bytes of the screen line whose address is at (HL) with A
+> Witness: L1 208 (gameover, menu, twoname).
+$EDE1 b HofLineRows ; The lines of DrawHofLines: 0, 2, 5, 8, 12, 17, 23, 30, 38, 48, 60, 73, 87, then $FF
+$EDEF b HofTitleText ; The hall of fame screen: coloured bars, "B U M P Y" and "H A L L  O F  F A M E" (PrintText)
+@res texts/hall-of-fame-title.bin
+$EEB3 b HallOfFame 16 ; The hall of fame: four records of 32 bytes, PrintText strings with the score word
+> Each record: $16 row col (AT; the row is set by PrintHallOfFame), $14 $0F (attribute), $02 (double height), three letters, " : ", five digits, $00, then the score as a word (+$12) and 12 zeros. The tape's table: PAP 16000, PEP 08000, PIP 04000, POP 01700.
+@res tables/hall-of-fame.bin
+
+@module menu
+$EF33 c Menu ; The menu: draw it and wait for 0 (play), 1 (players), 2-4 (controls), or the time-out
+> Border 0, ClearScreen, the backdrop (MenuBackdropText $F0E8), DrawLogo, then MenuPrint. Returns to GameStart with $B3B1 = 0 (one player), 2 (two players) or 4 (the demo).
+> Witness: L1 8 (c1, gameover, menu, twoname).
+$EF44 c MenuRedraw ; After an option: the pick-up sound, then MenuPrint
+> Witness: L1 11 (c1, gameover, menu, twoname).
+$EF47 c MenuPrint ; Start the time-out (3000 frames) and print the options
+> Witness: L1 19 (c1, gameover, menu, twoname).
+$EF53 c MenuLoop ; One frame of the menu: test the keys, count the time-out
+> Each frame (HALT): key "0" (code $18) starts the game (LoadControls, SetPlayersMode); "1" ($20) MenuTogglePlayers; "2", "3", "4" ($21-$23) MenuSelectControls with 0, 1, 2. The time-out $EFED counts down; at 0 MenuDemoToggle flips: 1 returns with $B3B1 = 4 (the demo), 0 shows the hall of fame (MenuShowHallOfFame).
+> Witness: L1 7019 (c1, gameover, menu, twoname).
+$EF54 c MenuWait ; MenuLoop's HALT
+$EF9B MenuWaitSkip
+> Witness: L1 7022 (c1, gameover, menu, twoname).
+$EFA2 b MenuDemoToggle ; Flipped at each menu time-out: 1 the demo, 0 the hall of fame
+$EFA3 c MenuTogglePlayers ; Key 1: one player or two
+> Players $F062 = 1 - Players; the 11 bytes of PlayersTexts (+16 for two) are copied over the option's text at $F005; then MenuRedraw.
+> Witness: L1 4 (c1, menu, twoname).
+$EFC6 c MenuSelectControls ; Keys 2-4: choose the controls A (0 keyboard, 1 Sinclair, 2 Kempston)
+$EFCF MenuSelectControlsLoop
+> ControlChoice $F083 = A; the three options' ink bytes ($F015, $F025, $F035) are set to 4 (green) and the chosen one to 7 (white); then MenuRedraw.
+> Witness: L1 7 (c1, gameover, menu, twoname).
+$EFED w MenuTimer ; The menu's time-out in frames (3000; 750 on the hall of fame)
+$EFEF b MenuText ; The options: 0 GAME, 1 ONE PLAYER, 2 KEYBOARD, 3 SINCLAIR, 4 KEMPSTON, and VERSIONED BY J250 <SPAIN> (PrintText)
+@res texts/menu.bin
+$F062 b Players ; 0 one player, 1 two players (SetPlayersMode: $B3B1 = 2 x Players)
+$F063 b PlayersTexts 16 ; "ONE PLAYER" and "TWO PLAYERS", 16 bytes each; MenuTogglePlayers copies 11
+@res texts/players.bin
+$F083 b ControlChoice ; The controls chosen in the menu: 0 keyboard, 1 Sinclair, 2 Kempston
+$F084 b KeySlots 8 ; The controls in play: eight key codes (row x 8 + bit; row 8 the Kempston port)
+> The key codes of the key test $B6CB / $B3D0: row 0-7 the half-rows $7FFE, $BFFE, $DFFE, $EFFE, $F7FE, $FBFE, $FDFE, $FEFE, row 8 the Kempston byte $B43E (inverted by $B418). The slots: +0 up, +1 down, +2 left, +3 right, +4 fire, +5 a second fire (not read in this range), +6 $0C (H), +7 $2B (R). The tape holds the keyboard set; LoadControls copies the chosen set here when a game starts.
+$F08C w ControlSets ; The three sets of eight codes by ControlChoice: KeyboardKeys, SinclairKeys, KempstonKeys
+$F092 b KeyboardKeys 8 ; The three control sets, eight key codes each (the KeySlots order): keyboard, Kempston, Sinclair
+> KeyboardKeys: Q A O P SPACE SPACE H R. KempstonKeys: the Kempston bits 3 2 1 0 4 4 (up, down, left, right, fire, fire), H, R. SinclairKeys: 9 8 6 7 0, the Kempston fire, H, R.
+$F09A KempstonKeys ; Kempston up, down, left, right, fire, fire, H, R
+$F0A2 SinclairKeys ; 9 8 6 7 0, Kempston fire, H, R
+@res tables/control-sets.bin
+$F0AA c LoadControls ; Copy the chosen control set into KeySlots
+> Witness: L1 8 (c1, gameover, menu, twoname).
+$F0C2 c SetPlayersMode ; $B3B1 = 2 x Players (0 one player, 2 two players)
+> Witness: L1 8 (c1, gameover, menu, twoname).
+$F0CB c ClearScreen ; Clear the pixels and fill the attributes with TextVars' default ($E712)
+> Witness: L1 12 (c1, gameover, menu, twoname).
+$F0E8 b MenuBackdropText ; The menu's backdrop: coloured bars of spaces around the logo (PrintText)
+@res texts/menu-backdrop.bin
+$F165 c MenuShowHallOfFame ; Show the hall of fame for 750 frames (15 s) or until a key, then the menu again
+$F16E MenuShowHallOfFameLoop
+$F180 MenuShowHallOfFameSkip
+> Witness: L1 1 (menu).
+
+@module sound ; The sound: beeper effects, their primitives, and the unused 128K and interrupt code
+@about Every effect is LD HL,params: CALL primitive(s): RET, followed by 16 bytes of parameters. No primitive reads them (the CPC original's envelopes, known only from the code): they are kept as leftovers. The primitives drive the speaker (bit 4 of port $FE) with interrupts off: sweeps, random noise from R, and noise from ROM bytes.
+@about $F183-$F3C7 holds code no recording ran and nothing calls: a random number, an AY register writer for the 128K, a delay, a line-table builder, and two IM 2 set-ups whose handlers call empty hooks. It is the frame of a 128K music driver that this release does not have.
+$F183 c Random ; A = a random byte from R (never called)
+> R twice XORed into an address in HL, then R XOR (that address). HL kept. Nothing calls it (known only from the code).
+> Witness: L1 0 ().
+$F190 c WriteAyRegisters ; Write AY registers 0-13 from the 14 bytes at HL (never called)
+$F192 WriteAyRegistersLoop
+> For each register A = 0-13: C = (HL), WriteAyRegister. Nothing calls it (known only from the code).
+> Witness: L1 0 ().
+$F19F c WriteAyRegister ; Write C to AY register A (128K ports $FFFD, $BFFD)
+$F1A9 WriteAyRegisterSkip
+> Register 7 (the mixer) is masked with $3F, so the I/O ports stay inputs. OUT ($FFFD),A then OUT ($BFFD),C, interrupts off between. Known only from the code.
+> Witness: L1 0 ().
+$F1B8 b UnusedF1B8 ; 16 bytes: seven NOPs, $FF and eight NOPs
+$F1C8 c DelayAfterFrame ; HALT, then a loop of 512 (never called)
+$F1CE DelayAfterFrameLoop
+> Known only from the code.
+> Witness: L1 0 ().
+$F1D5 c BuildLineTable ; Write the 192 Spectrum line addresses at $F206 (never called)
+$F1DB BuildLineTableLoop
+> For line 0-191: $4000 + (line & $C0) x 32 + (line & 7) x 256 + (line & $38) x 4, stored as words from $F206: the table $B52D holds the same addresses ready made. Run, it would write $F206-$F385 over this code and the IM 2 set-ups (known only from the code).
+> Witness: L1 0 ().
+$F206 b LineTableArea ; 35 bytes where BuildLineTable writes: a shifted copy of the code $F1E1-$F205
+$F229 s UnusedF229 ; 282 zeros
+$F343 c InstallIm2Key ; Install IM 2 with handler Im2HandlerKey, then call $B3B5 (never called)
+> The vector table $FDFF-$FEFF is filled with $FD, a JP Im2HandlerKey put at $FDFD, I = $FE, IM 2, EI; BC = 0 and CALL $B3B5 (inside the key slot reader at $B3B1: it reads the eight KeySlots into a bit mask at $B3CE). Nothing calls it (known only from the code).
+> Witness: L1 0 ().
+$F36B c Im2HandlerKey ; The IM 2 handler of InstallIm2Key: save all, call Im2HookKey, RETI
+> Witness: L1 0 ().
+$F382 c Im2HookKey ; RET: the place of a per-frame routine (music) the handler would call
+> Witness: L1 0 ().
+$F383 b UnusedF383 ; 5 bytes: LD HL,$F38A and two NOPs, never run
+$F388 c InstallIm2Wait ; Install IM 2 with handler Im2HandlerWait, then wait for a key (never called)
+> As InstallIm2Key, with Im2HandlerWait in the JP at $FDFD and CALL $B3FA (wait for a key down and up). Nothing calls it (known only from the code).
+> Witness: L1 0 ().
+$F3B0 c Im2HandlerWait ; The IM 2 handler of InstallIm2Wait: save all, call Im2HookWait, RETI
+> Witness: L1 0 ().
+$F3C7 c Im2HookWait ; RET: the place of a per-frame routine the handler would call
+> Witness: L1 0 ().
+$F3C8 c SfxLand ; Effect: the ball lands on a platform (the square tone)
+> SquareTone $F54C. Called at $C79E, $C86D, $CAB3 when the landing sets $ABA7 = 1.
+> Witness: L1 2605 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$F3CF b SfxLandParams ; SfxLand's 16 unread parameter bytes
+@res leftovers/sfx-land-params.bin
+$F3DF c SfxHit ; Effect: the ball strikes a cell that is not empty and not bricks
+> RomNoise $F560 (its noise from the ROM at $04E6). Called at $CCE2.
+> Witness: L1 1314 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$F3E6 b SfxHitParams ; SfxHit's 16 parameter bytes (only the address's low byte $E6 is used, as RomNoise's start in the ROM)
+@res leftovers/sfx-hit-params.bin
+$F3F6 c SfxPickup ; Effect: an object picked up, a menu option chosen
+> RandomNoise2 $F534. Called by the prize, key, water and hammer handlers ($B9AE, $B9C6, $B9E5, $BA04) and MenuRedraw.
+> Witness: L1 1034 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$F3FD b SfxPickupParams ; SfxPickup's 16 unread parameter bytes
+@res leftovers/sfx-pickup-params.bin
+$F40D c SfxExtraLife ; Effect: the bottle, an extra life
+> TripleSweep $F579 twice. Called at $BA21.
+> Witness: L1 20 (menu, l10, l36, l45, l68, rzx x15).
+$F417 b SfxExtraLifeParams ; SfxExtraLife's 16 unread parameter bytes
+@res leftovers/sfx-extra-life-params.bin
+$F427 c SfxAnimA ; Effect: a step of the animations at $C019, $C04C, $C07F
+> RumbleHigh $F5AD.
+> Witness: L1 55 (menu, l10, l36, l56, l59, rzx x28).
+$F42E b SfxAnimAParams ; SfxAnimA's 16 unread parameter bytes
+@res leftovers/sfx-anim-a-params.bin
+$F43E c SfxWallBounce ; Effect: the ball bounces back from a wall (a falling sweep)
+> SweepDown $F510. Called at $C464, $C9A2, $CBE5.
+> Witness: L1 119 (c1, menu, twoname, l x5, rzx x39).
+$F445 b SfxWallBounceParams ; SfxWallBounce's 16 unread parameter bytes
+@res leftovers/sfx-wall-bounce-params.bin
+$F455 c SfxLockA ; Effect: a step of the lock animation at $C476
+> RandomNoise1 $F521.
+> Witness: L1 38 (l36, l59, l96, rzx x24).
+$F45C b SfxLockAParams ; SfxLockA's 16 unread parameter bytes
+@res leftovers/sfx-lock-a-params.bin
+$F46C c SfxLockB ; Effect: a step of the lock animation at $C488
+> RandomNoise2 $F534.
+> Witness: L1 117 (menu, l x6, rzx x42).
+$F473 b SfxLockBParams ; SfxLockB's 16 unread parameter bytes
+@res leftovers/sfx-lock-b-params.bin
+$F483 c SfxFireDeath ; Effect: the ball lands on fire without water (stage2/rec/fire)
+> RumbleLow $F58C, as SfxSpikeDeath. Called at $CA7A, $CCBD, $CEF9, the landings on a burning platform with no water drop; no recording lost a ball to fire.
+> Witness: L1 1 (fire).
+$F48A b SfxFireDeathParams ; SfxFireDeath's 16 unread parameter bytes
+@res leftovers/sfx-fire-death-params.bin
+$F49A c SfxLevelEnd ; Effect: the level is finished
+> TripleSweep $F579 twice. Called at $B354.
+> Witness: L1 101 (menu, l x12, rzx x88).
+$F4A4 b SfxLevelEndParams ; SfxLevelEnd's 16 unread parameter bytes
+@res leftovers/sfx-level-end-params.bin
+$F4B4 c SfxSpikeDeath ; Effect: the ball dies on platform 12
+> RumbleLow $F58C. Called at $CA75, $CCB8, $CDC6, $CEF4.
+> Witness: L1 13 (rzx x8).
+$F4BB b SfxSpikeDeathParams ; SfxSpikeDeath's 16 unread parameter bytes
+@res leftovers/sfx-spike-death-params.bin
+$F4CB c SfxLifeLost ; Effect: a life is lost (the ball fell, or the S key)
+> RumbleLow $F58C. Called at $B2B2 (the fall below the screen) and $BA90.
+> Witness: L1 20 (gameover, twoname, rzx x6).
+$F4D2 b SfxLifeLostParams ; SfxLifeLost's 16 unread parameter bytes
+@res leftovers/sfx-life-lost-params.bin
+$F4E2 c SfxAnimB ; Effect: a step of the animation at $BEBB
+> RumbleHigh $F5AD.
+> Witness: L1 409 (l51, l59, l96, l98, rzx x27).
+$F4E9 b SfxAnimBParams ; SfxAnimB's 16 unread parameter bytes
+@res leftovers/sfx-anim-b-params.bin
+$F4F9 c SfxTimerTick ; Effect: a tick of the timer counted into the score at the level's end
+> SweepDown $F510. Called at $B36B.
+> Witness: L1 5598 (menu, l x8, rzx x80).
+$F500 b SfxTimerTickParams ; SfxTimerTick's 16 unread parameter bytes
+@res leftovers/sfx-timer-tick-params.bin
+$F510 c SweepDown ; 100 speaker toggles, each delay one shorter (E = 100 down to 1): a rising tone
+> Interrupts off; EI at the end.
+> Witness: L1 5717 (c1, menu, twoname, l x11, rzx x94).
+$F513 c SweepFromE ; As SweepDown from the delay in E
+$F514 SweepFromELoop
+$F519 SweepFromELoop2
+> Witness: L1 6443 (c1, menu, twoname, l x12, rzx00-rzx34, rzx36-rzx82, rzx84-rzx97, rzx99).
+$F521 c RandomNoise1 ; 100 speaker pulses, each delay taken from R, the speaker bit from R
+$F525 RandomNoise1Loop
+$F52C RandomNoise1Loop2
+> Witness: L1 38 (l36, l59, l96, rzx x24).
+$F534 c RandomNoise2 ; 100 pulses, the speaker bit from R, delay $50 + (R & $3F)
+$F537 RandomNoise2Loop
+$F544 RandomNoise2Loop2
+> Witness: L1 1151 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+$F54C c SquareTone ; 100 half periods: on with a delay of 100, off at once
+$F550 SquareToneLoop
+$F558 SquareToneLoop2
+$F55B SquareToneSkip
+> Witness: L1 2605 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+$F560 c RomNoise ; 100 pulses from ROM bytes $0400 + L on: the speaker bit and the delay $28 + (byte & $3F)
+$F565 RomNoiseLoop
+$F571 RomNoiseLoop2
+> L is the low byte of the effect's parameter address.
+> Witness: L1 1314 (c1, gameover, menu, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
+$F579 c TripleSweep ; Three sweeps from R-based delays (R set to $3F first, so the same each time)
+$F580 TripleSweepLoop
+> Witness: L1 242 (menu, l x12, rzx x91).
+$F58C c RumbleLow ; 600 samples from ROM $0000: border bits and speaker from the byte, delay (byte & $F0) + 1
+> Writes the mask $F0 into the AND at $F59F; RomRumble does the rest.
+> Witness: L1 34 (fire, gameover, twoname, rzx x11).
+$F598 c RomRumble ; The sample loop: HL the ROM, BC the count, the mask in the AND at $F59F
+$F5A2 RomRumbleLoop
+> Each byte: OUT ($FE),(byte & $F8) (border black, MIC and speaker bits from the ROM), then a delay of (byte & mask) + 1. EI at the end.
+> Witness: L1 438000 (fire, gameover, menu, twoname, l x7, rzx x48).
+$F5AD c RumbleHigh ; 900 samples from ROM $1770, mask $0E
+> Witness: L1 464 (menu, l x7, rzx x42).
+$F5BB c SfxUnused ; An effect nothing calls: 900 samples from ROM $0BB8, mask $38
+> Known only from the code.
+> Witness: L1 0 ().
+
+@module text
+$F5C9 b Font 8 ; The font: characters 32-127, 8 bytes each; 123-127 the status-line icons of lives, water, keys, hammers and level
+@res fonts/font.bin
+$F8C9 s FontTail ; 11 zeros to the end of the code block

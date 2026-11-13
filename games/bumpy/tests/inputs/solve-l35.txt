@@ -1,0 +1,35 @@
+# events: one of the levels the frame-by-frame RZX replay loses (stage 1: l10 l35 l36 l45 l51 l56 l59 l68 l83
+# l96 l97 l98), played again from the RZX's play start of the level (play-F.z80) with the player's own decisions
+# taken from the RZX's run but held by the game's state, not by the frame: every frame of ours reads the ball's
+# state `$AA00`, step `$A9FF` and cell `$AA44`, counts the changes of (state, cell) and the steps that went back
+# (tools/record.EventKey, with the frames spent at that place) and holds the keys the RZX's player held on the RZX frame with the same count and step
+# (tools/rzx_keys.py; work/stage2/rzx-states.tsv from tools/rzx_states.py gives the RZX's states). A frame's keys
+# are those of the game's first read of each keyboard row in that frame (`$B423`; the ROM's interrupt scan and the
+# later reads left out): a key pressed between two reads of one frame took effect only at the later ones. So a pass that
+# takes two frames here and one in SPIN still gets the RZX's keys. A wait for a key after a lost life (READY?) is
+# ended by B held one frame. One run call a frame, to the level change + 150 frames
+26 6
+63 7 6
+66 7
+106 7 6
+109 6
+136 0 6
+142 0
+153 -
+160 0
+197 0 7
+213 0
+228 0 6
+246 0
+247 0 7
+262 7
+335 7 6
+336 6
+383 7 6
+385 7
+408 0 7
+414 0
+455 0 6
+468 0
+653 -
+653 END

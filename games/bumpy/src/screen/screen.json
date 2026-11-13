@@ -1,0 +1,15 @@
+{
+  "about": "Tape block 4, the loading screen BUMPY.SCR (6912 bytes), loaded by LOAD \"\" SCREEN$ at $4000: python3 ../../kit/mkgame.py --part src/screen/screen.json --install",
+  "image_cmd": ["sh", "-c", "mkdir -p work/parts && python3 tools/image.py --block 3 work/parts/screen-4000.bin"],
+  "image": "work/parts/screen-4000.bin",
+  "org": "4000",
+  "ann": "src/screen/screen.ann",
+  "top": "screen",
+  "bin": "screen.bin",
+  "dest": "src/screen",
+  "device": "ZXSPECTRUM48",
+  "header": ["; Bumpy, Loriciels 1989: tape block 4, the loading screen BUMPY.SCR, loaded by the BASIC's LOAD \"\" SCREEN$ at $4000."],
+  "l1": [],
+  "data_entries": "stop",
+  "work": "work/stage2/mkscreen"
+}

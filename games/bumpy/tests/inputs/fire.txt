@@ -1,0 +1,7 @@
+# fire: the fire death no other recording has (`$F483`): from the RZX's play start of level 38 (play-F.z80; the
+# ball starts in cell 32, the cell on its left, 31, is platform 9, stop-on-fire, with no wall between, and the level
+# has no water drop), Water `$AAFD` POKEd to 0 on this machine (said so: the RZX's player carries drops in), then
+# the Sinclair left key 6 held until the ball lands on the fire; the burst and the READY? that follows
+20 6
+60 -
+300 END
