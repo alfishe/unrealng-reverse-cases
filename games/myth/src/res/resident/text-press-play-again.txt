@@ -1,0 +1,4 @@
+column 7
+bit 5
+row 52
+text "AND THEN PRESS PLAY"

@@ -1,0 +1,19 @@
+# The RZX Archive run (myth.rzx, 128K; someone else's play), RZX frames 0-2063, replayed pass for pass from work/stage1/rzx/snap0.z80 by tools/rzx_replay.py: the keys as held, by the recording's frame (each set on the IN that saw the change in the RZX); the seed writes are in record.json "pokes"
+364 SPACE
+395 -
+539 SPACE
+671 -
+801 SPACE
+910 -
+928 9
+1014 -
+1030 8
+1116 -
+1132 6
+1218 -
+1234 7
+1320 -
+1416 0
+1632 0 SPACE
+1919 0
+2063 END

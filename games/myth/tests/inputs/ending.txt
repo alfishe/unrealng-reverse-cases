@@ -1,0 +1,7 @@
+# ending: Dameron's duel won and the ending, by POKEs on the recording's machine only (record.json "pokes"; the
+# image is cut from orig/ alone): from the RZX run's stage 5 as loaded (STATE work/stage1/rzx/snap5.z80, 128K), the
+# intro texts run until the duel begins (phase `$FE43` from $FF to 0); then four times, each 600 frames apart, the
+# duel's hit counter `$FE44` is set to 19 and one hit made pending (`$FE41` = 1), so the next pass's DuelHit `$79A9`
+# counts the 20th hit and steps the phase (0 to 1 to 2 to 3 to 4: Dameron's forms, then won); then 6000 frames
+# of the ending
+10820 END

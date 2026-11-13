@@ -1,0 +1,254 @@
+# stage4: the map grids, their room tables and the placement lists (tools/res_stage4.py, the split layout:
+#   the records, then the room tables, then the placement lists)
+# grid W H COLUMN ROW ROOMS MAP STEP: blocks wide and high, the start window (blocks), the room table,
+#   the grid's offset in the map, rooms a grid row; rooms: one exit byte a room (1 right, 2 left, 4 up,
+#   8 down), a grid row of rooms a line; placements: KIND X Y (cells over the grid), "done" = bit 7
+layout split
+base $9AE2
+grid 25 9 0 0 $9B33 0 6
+rooms 1 2
+grid 14 9 0 0 $9B35 225 4
+rooms 0
+grid 47 9 0 0 $9B36 351 1
+rooms 1
+rooms 3
+rooms 3
+rooms 2
+grid 14 15 0 0 $9B3A 774 1
+rooms 8
+rooms 0
+grid 47 9 33 0 $9B3C 984 1
+rooms 1
+rooms 3
+rooms 3
+rooms 2
+grid 58 9 22 0 $9B40 1407 1
+rooms 1
+rooms 3
+rooms 3
+rooms 3
+rooms 2
+grid 58 9 0 0 $9B45 1929 1
+rooms 1
+rooms 3
+rooms 3
+rooms 3
+rooms 2
+grid 36 9 0 0 $9B4A 2451 1
+rooms 1
+rooms 3
+rooms 2
+grid 36 9 0 0 $9B4D 2775 1
+rooms 1
+rooms 3
+rooms 2
+placements
+4 2 17
+4 5 17
+4 9 17
+20 32 14
+21 34 12
+end
+placements
+12 7 6
+12 23 6
+end
+placements
+5 6 11
+7 5 0
+5 12 11
+7 11 0
+5 18 11
+7 17 0
+5 24 11
+7 23 0
+8 36 13
+4 250 0
+8 40 13
+4 250 0
+8 44 13
+4 250 0
+5 62 11
+6 65 7
+5 54 11
+6 57 7
+8 76 9
+4 250 0
+8 80 9
+4 250 0
+8 84 9
+4 250 0
+8 88 9
+4 250 0
+1 22 10
+4 250 0
+2 60 10
+0 80 8
+3 88 8
+4 250 0
+4 250 0
+2 38 12
+12 32 7
+12 46 7
+end
+placements
+13 22 25
+12 14 6
+12 16 8
+end
+placements
+9 56 13
+4 250 0
+9 58 13
+4 250 0
+9 60 13
+4 250 0
+9 62 13
+4 250 0
+9 64 13
+4 250 0
+9 66 13
+4 250 0
+5 52 13
+4 250 0
+5 90 13
+7 89 2
+5 84 13
+7 83 2
+5 80 13
+7 75 2
+5 8 13
+4 8 0
+5 38 13
+10 35 9
+5 16 13
+11 11 0
+5 18 13
+4 250 0
+5 20 13
+4 250 0
+5 22 13
+4 250 0
+3 6 12
+1 80 12
+2 68 12
+1 28 12
+12 58 8
+12 64 8
+end
+placements
+8 80 11
+4 250 0
+8 82 11
+4 250 0
+8 90 11
+4 250 0
+5 92 11
+7 91 0
+5 104 11
+7 103 0
+5 12 11
+6 15 7
+5 14 11
+6 11 7
+5 20 11
+6 19 7
+5 22 11
+6 23 7
+5 10 11
+4 250 0
+5 24 11
+4 250 0
+5 34 11
+7 33 0
+4 250 0
+4 250 0
+5 38 11
+7 37 0
+12 78 5
+12 98 7
+12 63 12
+12 55 12
+3 8 10
+1 66 10
+2 80 10
+1 102 10
+1 30 10
+19 110 3
+end
+placements
+5 18 13
+7 19 2
+5 28 13
+7 25 2
+5 28 13
+7 29 2
+8 36 13
+4 250 0
+5 38 13
+7 33 2
+4 250 0
+7 37 2
+4 250 0
+7 41 2
+8 48 13
+4 250 0
+5 52 13
+7 51 2
+8 56 13
+4 250 0
+8 58 13
+4 250 0
+5 62 13
+7 61 2
+8 74 13
+4 250 0
+8 76 13
+4 250 0
+8 78 13
+4 250 0
+8 80 13
+4 250 0
+8 82 13
+4 250 0
+8 84 13
+4 250 0
+8 86 13
+4 250 0
+5 100 13
+7 99 2
+5 102 13
+7 101 2
+3 112 12
+1 72 12
+12 8 8
+12 14 8
+12 68 8
+12 96 8
+12 106 8
+end
+placements
+17 44 16
+17 46 16
+17 48 16
+17 50 16
+15 18 10
+15 10 12
+14 14 12
+14 22 10
+15 14 8
+14 29 8
+14 22 6
+15 10 6
+15 18 4
+15 27 4
+15 27 12
+15 34 12
+16 69 7
+18 64 14
+18 67 14
+18 70 14
+18 73 14
+end
+placements
+end

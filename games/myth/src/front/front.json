@@ -1,0 +1,53 @@
+{
+  "about": "The main block $6C3F-$A83E (TZX block 37): the logo, the credits, the menu",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/stage5.bin || python3 tools/image.py work/mkgame > /dev/null"
+  ],
+  "image": "work/mkgame/front.bin",
+  "lo": "6C3F",
+  "hi": "A83F",
+  "ann": "src/front/front.ann",
+  "top": "front",
+  "bin": "front.bin",
+  "dest": "src/front",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: the main block (TZX block 37), 15 360 bytes at $6C3F: the logo, the credits, the menu."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "6C3F",
+      "hi": "A83F"
+    },
+    {
+      "path": "work/stage1/rec/menu/l1.json",
+      "lo": "6C3F",
+      "hi": "A83F"
+    },
+    {
+      "path": "work/stage2/rec/rzx-r0/l1.json",
+      "lo": "6C3F",
+      "hi": "A83F"
+    },
+    {
+      "path": "work/stage2/rec/joystick/l1.json",
+      "lo": "6C3F",
+      "hi": "A83F"
+    }
+  ],
+  "same_bytes": true,
+  "work": "work/stage2/mkfront",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
+    ]
+  ],
+  "other_builds": [
+    "stage1/rec/menu"
+  ]
+}

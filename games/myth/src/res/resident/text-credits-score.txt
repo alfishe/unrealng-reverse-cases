@@ -1,0 +1,4 @@
+column 1
+bit 6
+row 148
+text "GAME CREDITS 2       SCORE 000000"

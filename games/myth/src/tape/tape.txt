@@ -1,0 +1,87 @@
+# The original tape (orig/Myth-HistoryInTheMaking.tzx.zip, "Myth - History In The Making.tzx"), block by block:
+# tools/mktape.py writes it from this list and the files tools/build.sh makes; the build compares the result with
+# the original byte for byte. The format is in tools/mktape.py; docs/03-build-and-load.md 3.1 has the blocks.
+#
+# The SpeedLock loader (src/loader/chain.asm, $FBD4-$FF25) reads the `sl` blocks. In group 2 each is preceded by a
+# mark `07 FF 00` (5 bits of the last byte) at zero 875 T / one 1750 T, and read at zero 714 T / one 1428 T. Where
+# each block of group 2 goes is the loader's table at $FF49 (5 bytes a row: the address, the length less one, the
+# $7FFD value; src/loader/sl1.asm), first the one in block 7, then the one block 23 loads over it.
+version 1 10
+archive
+info 0 Myth: History in the Making
+info 1 System 3 Software Ltd
+info 2 Concept Animations:\r  Neil Dodwell, \r  Dave Dew.
+info 3 1989
+info 4 English
+info 5 Arcade: Adventure
+info 6 \xA39.99
+info 7 Speedlock 7
+info 8 Original
+info 255 TZXed by Andrew Barker
+archive-end
+header 965 program MYTH basic.bin 0
+rom 7726 basic.bin
+group Speedlock 7 Block 1
+tone 2165 1542
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the loader's second stage at $FF26-$FFCF (src/loader/sl1.asm), 170 bytes and the check byte
+sl 714 1428 8 2500 $FF26 sl1.bin check
+group-end
+group Speedlock 7 Block 2
+tone 2165 1541
+pulses 714,714,714,714,1428,1428,2147,2147,2147,2147,2147,2147,1428,1428,714,714
+pure 714 1428 6 0 hex:E8
+# the loading screen: the bitmap straight to $4000, the attributes to $8000 (copied to $5800 in steps while the
+# blocks load)
+sl 714 1428 8 0 $4000 res/screens/loading.scr:0:1800
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $8000 res/screens/loading.scr:1800:1B00
+pure 875 1750 5 0 hex:07FF00
+# the resident part $F300-$F77F, XORed with $DF (Unxor $FE76 takes it off), loaded at $DE80
+sl 714 1428 8 0 $DE80 resident.bin@F000:F300:F780^DF
+pure 875 1750 5 0 hex:07FF00
+# the key of the body store: LD A,$86 at $FDB5 (was LD A,$C1)
+sl 714 1428 8 0 $FDB5 hex:3E86
+pure 875 1750 5 0 hex:07FF00
+# the key of the last-byte store: LD A,$86 / XOR L / ADD A, at $FDE9 (was LD A,$C1)
+sl 714 1428 8 0 $FDE9 hex:3E86ADC6
+pure 875 1750 5 0 hex:07FF00
+# the loader's table again, 55 bytes over $FF49. The loader goes on at row 5 ($FF62). Rows 0-4 are not read again
+# and differ from block 7's ($8000 768, $DE80 1152, $FDB5 2, $FDE9 4, $FF49 55): $8000 768, $9500 25856, two zero
+# rows, $0000 40. Rows 5-10:
+#   $DB80 768  $E300 2176  $FE76 115  $FF3A 15  $5B00 33  end (the last block: 14 bytes and a check byte at $5B21)
+sl 714 1428 8 0 $FF49 hex:0080ff02100095ff641000000000000000000000000027001080dbff021000e37f081076fe7200103aff0e0010005b2000100000000000
+pure 875 1750 5 0 hex:07FF00
+# the resident part $F000-$F2FF and $F780-$FFFF, XORed with $DF
+sl 714 1428 8 0 $DB80 resident.bin@F000:F000:F300^DF
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $E300 resident.bin@F000:F780:10000^DF
+pure 875 1750 5 0 hex:07FF00
+# Unxor $FE76 over the block reader (src/loader/unxor.asm), the stage's new end at $FF3A (src/loader/sl1end.asm)
+sl 714 1428 8 0 $FE76 unxor.bin
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 0 $FF3A sl1end.bin
+pure 875 1750 5 0 hex:07FF00
+# the boot at $5B00 (src/loader/boot.asm): the copy to $E000-$FFFF and the jump to $F040
+sl 714 1428 8 0 $5B00 boot.bin:0:21
+pure 875 1750 5 0 hex:07FF00
+sl 714 1428 8 3288 $5B21 boot.bin:21:2F check
+group-end
+# the main block (logo, credits, menu) and the five stages, each loaded at $6C3F by the turbo loader $FF02
+turbo 2165 714 714 583 1166 3265 8 4169 $56 front.bin
+stop
+text Stage 1: The Road To Hell
+turbo 2165 714 714 583 1166 3256 8 3452 $56 stage1.bin
+stop
+text Stage 2: Greece 400 BC
+turbo 2165 714 714 583 1166 3267 8 3799 $56 stage2.bin
+stop
+text Stage 3: Scandinavia 500 AD
+turbo 2165 714 714 583 1166 3242 8 4468 $56 stage3.bin
+stop
+text Stage 4: Egypt 3000 BC
+turbo 2165 714 714 583 1166 3253 8 4388 $56 stage4.bin
+stop
+text Stage 5: Duel With Dameron
+turbo 2165 714 714 583 1166 3271 8 44630 $56 stage5.bin

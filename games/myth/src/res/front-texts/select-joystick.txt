@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: large
+column: 9
+shift: 7
+line: 116
+text: "SELECT JOYSTICK"

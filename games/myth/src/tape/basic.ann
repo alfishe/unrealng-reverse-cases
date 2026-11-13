@@ -1,0 +1,35 @@
+# The annotations of tape block 2, the BASIC program "MYTH" at PROG $5CCB-$6E6C (4514 bytes): the source of
+# src/tape/basic.asm (../../kit/mkgame.py --part src/tape/basic.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/c1, a 48K from power-on, the tape at signal speed): the ROM's LD-BYTES wrote $5CCB-$6E6C,
+# CopyChain ran at frame 1963 (docs/03-build-and-load.md 3.2).
+
+@module basic ; The BASIC: one line whose USR enters the machine code after it, and the enciphered chain
+@about The program is one line, number 0 (LIST and EDIT never reach a line 0): INK 0, PAPER 0, RANDOMIZE USR ((PEEK 23635+256*PEEK 23636)+10). The 10 is only the shown digits: the hidden five-byte number after them is 59, so the USR enters PROG+59, the first byte after the line's end mark: CopyChain at $5D06 (PROG = $5CCB in c1).
+@about CopyChain copies the 4418 bytes from PROG+$5F ($5D2A, ChainTape) to $EDE4-$FF25 and returns into them: the decryption chain (src/loader/chain.asm, its plain view). ChainTape is assembled from chain-tape.bin, which tools/build.sh makes from the plain view with tools/speedlock.py tape.
+
+$5CCB b BasicLine0 ; Line 0: INK 0 PAPER 0 RANDOMIZE USR ((PEEK 23635+256*PEEK 23636)+10), the 10 hiding 59
+> The ROM's line format: the line number high byte first, the length (55) low byte first, the tokens, $0D. Each number in the line is its digits followed by $0E and the five bytes the interpreter really uses: the digits 23635, 256 and 23636 carry their own numbers, the digits 10 carry 59. Read by the ROM's interpreter in c1; no machine code reads it.
+$5CCB BasicLineNumber ; the line number, high byte first: 0
+$5CCD BasicLineLength ; the line's length after these four bytes, low byte first: 55
+$5CCF ; INK 0, PAPER 0 (control codes $10 and $11 with their colour)
+$5CD3 ; RANDOMIZE USR ( (
+$5CD7 ; PEEK "23635" and its number 23635 (PROG's low byte)
+$5CE3 ; + "256" and its number
+$5CED ; * PEEK "23636" and its number (PROG's high byte)
+$5CFA ; ) + "10" and the hidden number
+$5CFF BasicHiddenNumber ; the five-byte number the interpreter adds: 59 (the shown digits say 10)
+$5D04 ; ) and the end of line mark $0D
+
+$5D06 c CopyChain ; Clear the screen, copy the chain to $EDE4-$FF25 and return into it
+> Entered by line 0's USR (PROG+59). Interrupts off; clears $4000-$5BFF (the bitmap, the attributes and the printer buffer) to zero, so the screen goes black; border black. HL = PROG + $5F (ChainTape, found from the system variable PROG at 23635 rather than assumed); DE = $EDE4, BC = 4418; SP = $8000 with $EDE4 pushed, then LDIR and RET: the RET enters the chain's first layer at $EDE4. Side effects: the screen cleared, SP left at $7FFE.
+> c1: frame 1963; the LDIR at $5D27 wrote $EDE4-$FF25 (docs/03 3.2).
+> Witness: L1 1 (c1).
+$5D16 ; HL = PROG + $5F: the chain's first byte in the program
+$5D23 ; the RET below goes to $EDE4
+
+$5D2A b ChainTape ; The decryption chain as the tape holds it (4418 bytes, copied to $EDE4)
+> The bytes of $EDE4-$FF25 before any layer ran. src/loader/chain.asm is their plain view (each byte after the last layer that rewrites it); tools/speedlock.py tape turns the plain view back into these bytes, and tools/build.sh checks the whole tape against the original. Read by CopyChain's LDIR in c1.
+@res tape/chain-tape.bin
+
+$6E6C b BasicEnd ; The block's last byte, past the copy: a zero no code reads
+> CopyChain copies 4418 bytes, $5D2A-$6E6B; the block's 4514 bytes end one byte later. Nothing reads the zero after the ROM's load (c1: CopyChain's LDIR stops at $6E6B), a byte of the BASIC block left over past the chain.

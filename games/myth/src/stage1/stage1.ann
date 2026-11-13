@@ -1,0 +1,2065 @@
+# Stage 1 of Myth (TZX block 40 at $6C3F-$F03E): the annotations kit/mkgame.py writes src/stage1/*.asm from.
+#
+# The case's main part (case.json). Stages 2-5 (src/stage2..5) are the same engine assembled at other addresses;
+# tools/stage_names.py carries this file's names over to them. The resident part $F03F-$FFFF (src/resident) is named
+# by its own .ann: its routines and variables are @equ here, with the names that part uses.
+#
+# Variables outside the block: the screen, the play buffer, the resident part's routines and tables, and the work space $FE01-$FEFD
+# (InitStageState $9DA1 clears $FE08-$FE5F at the stage start).
+@equ $4000 Screen 6144 ; the screen's pixels
+@equ $4134 EnergyBarScreen ; the HUD's energy bar: screen row 1, pixel line 1, column 20
+@equ $5800 Attributes 768 ; the screen's attributes
+@equ $5B00 PlayBuffer 4415 ; the play buffer $5B00-$6CFF (its tail $6C3F-$6CFF is PlayBufferTail in the block): 18 character rows of 8 lines of 32 bytes, linear; also the unpack area of StageGraphics
+@equ $F959 DigitGlyphs ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
+@equ $F9B0 PlaySoundVector ; resident: JP to the AY effect starter (E = the effect number)
+@equ $F9BF DecimalTable 10 ; resident: the words 10000, 1000, 100, 10, 1
+@equ $F9CC DissolveMasks 8 ; resident: DissolveHud's eight masks
+@equ $F9FB Score 2 ; resident: the score's low four decimal digits, 0-9999 (AddScore)
+@equ $F9FD ScoreHigh ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
+@equ $FA00 BitReverse 256 ; resident: each byte with its bits reversed (the sprites drawn facing left)
+@equ $FB00 ScreenLineTable 384 ; resident: the screen address of each of the 192 pixel lines (words)
+@equ $FC90 KeyUp ; resident key reader: Z when UP is held (DEFINE KEYS / joystick patch its port and bit)
+@equ $FC9F KeyDown ; resident key reader: Z when DOWN is held
+@equ $FCAE KeyLeft ; resident key reader: Z when LEFT is held
+@equ $FCBD KeyRight ; resident key reader: Z when RIGHT is held
+@equ $FCCC KeyFire ; resident key reader: Z when FIRE is held
+@equ $FCDB KeyHook ; resident: called before every key read (a RET, or the joystick / pause check DEFINE KEYS installs)
+@equ $FE08 RandomSeed 2 ; NextSeed $8B76: seed = seed x 5 + $15 (a linear congruential step); $07CF at the stage start (InitStageState)
+@equ $FE0A RandomPointer 2 ; Random $8B85: a pointer into the ROM ($0000-$3FFF), whose bytes are the random numbers; reseeded from R every 64 passes, $07CF at the stage start, $0D7A at each burst
+@equ $FE0E SavedSP 2 ; ClearBuffer and CopyBuffer keep the caller's SP here while SP walks their buffers
+@equ $FE10 InitOnly10 ; set to 2 by InitStageState; no stage-1 code reads it (known only from the code)
+@equ $FE12 InitOnly12 ; set to 1 by InitStageState; no stage-1 code reads it (known only from the code)
+@equ $FE14 WorkByte ; scratch: the placement counter of LoadRoomActors, the shape bits of StartBurst
+@equ $FE17 ItemSelected ; the slot of CarriedItems the HUD cursor is on (6 at the start)
+@equ $FE18 ItemLast ; the last used slot of CarriedItems (6 at the start; AddItem raises it)
+@equ $FE19 ItemFirst ; the first slot of CarriedItems (6): the item window does not scroll before it
+@equ $FE1C SpanCount 2 ; the spans in the span table $76A0 that CopyBuffer copies (BuildSpans $99E9)
+@equ $FE1E SpanRow ; BuildSpans' cell row 0-17
+@equ $FE1F CellColumn ; the cell column 2-29 of RoomChange's and BuildSpans' loops
+@equ $FE21 RoomColumn ; the room's left edge in the grid, in blocks (2 cells)
+@equ $FE22 RoomRow ; the room's top edge in the grid, in blocks (16 lines)
+@equ $FE23 RoomGrid 2 ; the grid record of the current map grid ($9B6F, $9B8A or $9B96)
+@equ $FE25 Placements 2 ; the current grid's placement list (Grid0Placements, Grid1Placements, Grid2Placements): 3 bytes a placement, $FF ends
+@equ $FE27 MissileCursor ; AddMissile's round-robin slot number 0-7
+@equ $FE29 CellFlag ; PutBlock $9986: the byte written to the cell's twin in $7040 (always 0)
+@equ $FE2E RoomExitsPtr 2 ; the current room's byte in the grid's room table (grid record +4 + RoomNumber)
+@equ $FE30 RoomNumber ; the room in its grid, a grid row of rooms after another: +1 right, -1 left, + grid record +8 down (stage 1, grid 0: 12 the demon's lair)
+@equ $FE31 PassCounter ; +1 every pass (PassTick $984D): the animations' clock
+@equ $FE36 EyeFlashRepeats ; DrawRoomPicture's eye flashes still to come; +1 for each object thrown into room 12's pit (CheckPitDrop $80B2)
+@equ $FE37 EyeFlashStep ; DrawRoomPicture: the step 10-1 of the current flash
+@equ $FE38 PitDrops ; objects thrown into room 12's pit while the demon sleeps, up to 9: the ninth wakes it (BossPhase 2)
+@equ $FE39 GateOpen ; GateActor $9065: 1 while the gate stands raised (Y under $38): the left exit of its room is open
+@equ $FE3A InitOnly3A ; set to $10 by InitStageState; no stage-1 code reads it (known only from the code)
+@equ $FE3D BurstTimer ; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
+@equ $FE3E BurstSmall ; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
+@equ $FE3F Energy ; the hero's energy, 0 (full) to $2E
+@equ $FE40 InitOnly40 ; set to $0D by InitStageState; no stage-1 code reads it (known only from the code)
+@equ $FE41 InitOnly41 ; set to 1 by InitStageState; no stage-1 code reads it (known only from the code)
+@equ $FE42 SpanOpen ; BuildSpans: 1 while a run of open cells goes on
+@equ $FE43 BossFlash ; the boss's hit flash: passes left in white-on-red ($41)
+@equ $FE4A ItemsChanged ; 1 after AddItem: the main loop redraws the item strip
+@equ $FE4B GridNumber ; the grid the hero is in: 0 Grid0 (stage 1: the surface and the caves), 1 Grid1 (the shaft), 2 Grid2 (the arena)
+@equ $FE4C BossPhase ; the winged boss's phase: 1 asleep (the start), 2 the flight, 3 the fall (BossFlees), 4 beaten; room 12's right exit is open from 4 on
+@equ $FE4D EnergyShown ; the energy the HUD bar last drew
+@equ $FE4E EnergyChange ; the pending energy change: $80 and up drains 2 a pass, under $80 refills 2 a pass
+@equ $FE4F SpawnDelay ; SpawnTimer $8D1D: passes to the next random spawn (a random 0-15 at the stage start)
+@equ $FE50 FireLatch ; 1 while FIRE stays held after a shot or a throw: one a press
+@equ $FE51 PiecesMask ; one bit a piece of the artefact (the room event's bit, actor +$10): spawned and taken
+@equ $FE52 PiecesTaken ; pieces taken, 0-5
+@equ $FE53 PieceFlash ; passes left of the HUD pieces' colour flash
+@equ $FE54 PiecesComplete ; set to 1 when the fifth piece is taken; +1 for each item of kind 6 taken (SpawnRewardItem gives the kind-6 item while it is 1)
+@equ $FE55 PieceTakenFlag ; 1 for one pass after a piece is taken
+@equ $FE56 RespawnShiftX ; $FF: no death pending; else the hero's column less the respawn column less 2 (HeroDeath $B22B); the path flyers move by it (x 2) when their path ends
+@equ $FE57 RespawnShiftY ; the hero's line less the respawn line less $27, set with RespawnShiftX
+@equ $FE58 HeroFreeze ; passes the hero's state handler is skipped ($17 after a life lost)
+@equ $FE59 LivesFlash ; the lives boxes' flash step, 0-$10 ($10 idle)
+@equ $FE5A RestoreAttributes ; 1: UpdateAttributes takes the solid cells' colours from RoomAttributes once (the new room fades in over the old one)
+@equ $FE5B GameOverTimer ; 0 in play; 1 when the last life is lost, counts to $32
+@equ $FE5C BossHits ; the hits the winged boss's head still takes ($0A at the stage start)
+@equ $FE5D ArenaBossBeaten ; 1 once the arena's boss took 20 hits (ArenaBossHit): its picture and damage stop
+@equ $FE5E ArenaBossHits ; the hits the arena's boss took, up to 20
+@equ $FE5F ArenaFlash ; 1 after a hit on the arena's boss: its picture's colours flash red once
+@equ $FE61 Lives ; lives left, from H at StageEntry
+@inline $8C3D 5
+@inline $8C6D 5
+@inline $AA02
+
+@module variables ; The stage's work space: the play buffer's tail, the shadow attributes, the HUD picture and the records over it
+@about The block's first 5057 bytes ($6C3F-$77FF) are loaded with the stage but hold no code. $6C3F-$6CFF is the end of the play buffer PlayBuffer ($5B00-$6CFF: 18 character rows of 8 lines of 32 bytes, linear), $6D00-$6FFF the shadow of the screen's attributes. $7000-$76BF holds, as loaded, the HUD: its picture (48 lines of 32 bytes, linear) and its colours (6 rows of 32). StageSetUp $97AC copies the colours into the shadow and dissolves the picture onto the screen (DissolveHud $8AB1); from then on the space is the stage's records: the old room's colours and the burst's particles ($7040), the room's cells ($7280), the hero's and the 13 other actors' records ($74E0, $74F2), the 16 missile records ($75E0), the digit picture ($7640) and the span table ($76A0). EndStage $789E saves the screen's HUD lines and colours back into $7000 and $7600 before the next stage's block is loaded over them.
+@about An actor record (18 bytes, the hero's at $74E0 and 13 at $74F2): +0 X (byte column 0-29; $FF a free record), +1 Y (line in the play buffer), +2 width in bytes, +3 height in lines, +4/+5 the frame's bitmap, +6/+7 the handler, +8 the frame or a counter, +9 flags (bit 0 opaque, bit 4 hit, bit 7 facing left), +$0A the state, +$0B the item kind or a step, +$0C the attribute, +$0D/+$0E the base X and Y (SetActorFrame $AA02 adds the frame's dx, dy to them), +$0F flags (bit 1 kept over a room change, bit 2 a body, bit 6 hidden, bit 7 drawn in the second pass), +$10 the placement's index or a counter, +$11 the pixel shift (1-99 drawn shifted by PreShiftSprite $7F4D).
+$6C3F s PlayBufferTail ; The last 193 bytes of the play buffer PlayBuffer $5B00-$6CFF (character row 17's last lines)
+> ClearBuffer $9AB5 clears the play buffer to $6CFF with PUSH HL (SP from $6D00); RoomChange $988B unpacks the stage's tiles and map into it from $5B00 (4295 bytes, to $6BC6); the actors are drawn into it every pass. Zero as loaded. Read in all four stage-1 builds (c1o, deaths, s1-idle, s1-right: CopyBuffer $9ADA).
+
+$6D00 s ShadowAttributes ; The shadow of the screen's 768 attributes, the screen's layout; the play area from $6DC2 (row 6, column 2)
+> The HUD's colours are copied into rows 0-5 at the stage's set-up (StageSetUp $97AC); RoomChange $988B writes each cell's attribute into rows 6-23, the actors' colours are painted over them every pass, and UpdateAttributes $8CAA copies the open cells to $5800 (ShowShadowAttributes $8C9D the whole of it). FillShadowAttributes $8C6D paints rectangles into it with five bytes after its CALL. Zero as loaded.
+$6DC0 PlayAttributes ; row 6: the first row of the play area (the room's 18 rows)
+$6DC2 PlayAttributesCell ; row 6, column 2: the room's first cell
+
+$7000 b HudPicture 32 ; The HUD as loaded: 48 lines of 32 bytes (linear, top first), then their colours at $7600 (6 rows of 32)
+> DissolveHud $8AB1 dissolves the 48 lines onto the screen's lines 0-47 and StageSetUp $97AC copies the 192 colours into the shadow rows 0-5, once, at the stage's start. EndStage $789E saves the screen's lines 0-47 back here ($7903, CopyBlockToScreen's reverse) and the attributes $5800-$58BF to $7600 ($78B2), so the next stage's block shows the HUD as the player left it; the game-over path $790D copies it back to the screen. Between the two the bytes are the records labelled inside (RoomAttributes, Cells, HeroRecord, Actors, Missiles, DigitBuffer, SpanTable). The picture: the frame of the HUD, the energy bar's box, the score box, the item strip's box, the lives and pieces boxes (docs/img). Read in all four stage-1 builds.
+$7040 RoomAttributes ; $7040-$727F: the old room's play colours (SavePlayAttrs $9FA5: 576 bytes, rows 6-23) and the cells' twins ($7042 + row x 32 + column: PutBlock writes 0, UpdateAttributes reads the solid cells' colours); also the burst's particles (StartBurst $A1F3, 4 bytes each)
+$7042 RoomAttributesCell ; the twin of the cell $7282 (576 bytes lower)
+$7280 Cells ; the room's cells: 19 rows of 32 (tile numbers, then their kinds after BuildSpans $99E9; bit 1 solid, bit 3 deadly, kind 7 a bridge slab)
+$7282 CellsPlay ; row 0, column 2: the room's first cell (RoomCells $9928 writes 28 x 18)
+$74C0 CellsFloor ; row 18 below the room: 32 bytes of $FF (StartGrid $A444), a floor no actor falls through
+$74E0 HeroRecord ; the hero's actor record (18 bytes; +0 X)
+$74E1 HeroY ; +1 the hero's line
+$74E8 HeroFrame ; +8 the frame number of the hero's set
+$74E9 HeroFlags ; +9 bit 7: facing left
+$74EA HeroState ; +$0A 0 stand, 1 walk, 2 jump, 3 fall, 4 leap back, 5-7 strikes, 9 leap up, $0B recoil, $0F dying (HeroUpdate $AC3D)
+$74EC HeroAttribute ; +$0C the hero's attribute
+$74ED HeroBaseX ; +$0D the base column
+$74EE HeroBaseY ; +$0E the base line
+$74F0 HeroCounter ; +$10 the pause after a death (HeroDeath $B22B)
+$74F2 Actors ; the 13 other actor records, 18 bytes each ($74F2-$75DB); +0 = $FF a free record
+$75CA LastActor ; the 13th record
+$75DC ActorsEnd ; 4 bytes past the records: only the HUD picture's (DissolveHud, EndStage's save) bytes
+$75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind (MissileHandlers $B31A), +3 to +5 the kind's own
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7610 MissilesHigh ; missile records 8-15 (AddMissileHigh $B296: the hero's death sparks)
+$7640 DigitBuffer ; in play: the score's digit picture (6 + 2 columns x 8 lines, RenderScore $7B73, RevealScore $985D) and a sprite's shifted copy (PreShiftSprite $7F4D)
+$76A0 SpanTable ; in play: the open spans CopyBuffer copies, 6 bytes each (the length, 0, the buffer address, the screen address; SpanCount spans), on to $779B
+@res stage1/picture-hud-32x48.bin
+
+$76C0 s SpanTableRest ; The span table's room past the HUD's colours: spans 6-42 ($76C0-$779B)
+> BuildSpans $99E9 and AddSpan $9A6E write the spans from $76A0 on; a room of many short runs reaches into this space. Zero as loaded. In the stage-1 builds 34 of its bytes are read.
+
+$779C s Unused779C ; 100 bytes no code reads or writes (the four stage-1 builds); zero as loaded
+
+
+@module entry ; The stage's entry and set-up
+@about Stage 1's block is entered at $7800 by the resident stage loader with H = the lives. StageEntry sets up the stage (variables, title, HUD, the first room) and falls into the main loop; EndStage returns to the loader with E = the outcome (0 game over, 1 quit, 2 stage completed), H = the lives and BC = the score's digits.
+$7800 c StageEntry ; Start the stage: lives from H, variables, HUD, the first room, then the main loop
+> Called by the resident stage loader with H = the lives left. Stores H in Lives, then: $9DA1 (clears $FE08-$FE5F, the carried items from StartItems, the item window at slot 6, the energy refill $2E), $97AC (the title, the HUD), $921E and $922F, RoomGrid = $9B6F (grid 0) with the actor list pointer $FE25 = $9BA0, $A4A1 and $A47D (the room's actors), RoomNumber = 2, $A444 (clears the room cells), ClearBuffer, $A5BD, $A5DF (draws the actors) and CopyBuffer, then runs on into MainLoop.
+> Witness: L1 2 (s1-idle, s1-right).
+
+@module mainloop ; The main loop and its pass
+@about MainLoop $7839 runs one game step a pass, with no frame sync: about 3 frames a pass in c1's play window, 18 at a room change (WALKTHROUGH 1.2). PacePass pads the light rooms with a busy wait. A pass ends with SPACE (the item window), CAPS SHIFT + SPACE (quit) or the end of the lives.
+$7839 c MainLoop ; One pass: pace, HUD, input, actors, draw, copy; SPACE opens the item window
+> The pass, in order: PacePass, ShowPieceTaken, FlashPieces, CheckPause (ENTER), $8D1D, RedrawItemsIfChanged, ClearBuffer, CheckStageExit (may leave to EndStage), the missiles $B2E6, $A5BD, $A5DF (the actors drawn into the buffer), $89BB, $8A2E, $8930, $A28B, KeyHook, $8CAA (attributes and CopyBuffer), $984D (energy, lives flash, game over step), ShowScore, then the SPACE test $8A54.
+> SPACE with CAPS SHIFT ends the stage with E = 1 (QuitStage); SPACE alone opens ItemWindow unless the hero is in state $0F (dying; the hero record's +$0A at $74EA). The loop goes on while Lives is not 0 or the hero's state is not 0; with no lives and the hero back in state 0 it ends with E = 0 (GameOverExit).
+> Witness: L1 10187 (c1o, deaths, s1-idle, s1-right).
+$7877 MainLoopSpace ; SPACE pressed: CAPS SHIFT too quits, else the item window
+$7889 MainLoopNext ; go on while lives are left or the hero is not back in state 0
+$7897 c GameOverExit ; No lives: end the stage with E = 0
+> Reached from MainLoop when Lives and the hero's state $74EA are both 0. E = 0, then EndStage.
+> Witness: L1 1 (s1-right).
+$789C c QuitStage ; CAPS SHIFT + SPACE: end the stage with E = 1
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code ($787E).
+$789E c EndStage ; Leave the stage: hide the HUD boxes, save the HUD, fade, return E, H = lives, BC = the score's digits
+> E (pushed) is the outcome: 0 game over (GameOverExit), 1 quit (QuitStage), 2 stage completed (StageExit). Clears the play buffer, hides the pieces boxes and the lives boxes with two inline attribute fills ($8C3D), saves the HUD attributes (rows 0-5) to $7600, clears the score, the two middle HUD fields, the item strip and the pieces field with CopyToScreen from the cleared buffer (stride 0), saves the HUD bitmap (lines 0-47) to $7000 ($8A89), fades the screen (FlashFadeScreen), clears it ($8B92), waits 100 frames ($8C35) and returns to the stage loader with E, BC = ScoreDigitsHigh (the six score digits) and H = Lives.
+> Witness: L1 1 (s1-right).
+$78A5 b EndPiecesBox 5 ; $8C3D's inline record: column 25, line 24, 6 x 2 cells, attribute 1 (the pieces boxes hidden)
+$78AA c EndStageLives ; EndStage, continued: hide the lives boxes
+> Part of EndStage, after the first inline record.
+> Witness: L1 1 (s1-right).
+$78AD b EndLivesBox 5 ; $8C3D's inline record: column 1, line 24, 6 x 2 cells, attribute 1 (the lives boxes hidden)
+$78B2 c EndStageSave ; EndStage, continued: save the HUD, clear its fields, fade, return
+> Part of EndStage, after the second inline record.
+> Witness: L1 1 (s1-right).
+
+@module render ; The renderer: the sprite row plotters, the play buffer, the attributes, ClearBuffer and CopyBuffer
+@about A pass draws the actors into the play buffer $5B00-$6CFF (18 character rows of 8 pixel lines of 32 bytes, linear: a pixel line is +32, a character row +256) with the row plotters below, then copies to the screen only the open cells of the room (the spans BuildSpans made at the room change), so the scenery drawn once by RoomChange stays in front of the actors. The attributes go the same way: the shadow $6D00 (768 bytes, one a screen cell) to the screen for the open cells only.
+$7925 c FlashFadeScreen ; Fade every coloured ink up to white over 7 frames, then down to black over 7 frames
+> Seven times (HALT each): every attribute whose ink is neither 0 nor 7 gets ink + 1. Then seven times (two HALTs each): every ink not 0 gets ink - 1. Inputs: none; changes the whole attribute area $5800-$5AFF. Called by EndStage.
+> Witness: L1 1 (s1-right).
+$7927 FadeUpFrame
+$792F FadeUpCell
+$7939 FadeUpNext
+$7944 FadeDownFrame
+$794D FadeDownCell
+$7953 FadeDownNext
+
+@module mainloop
+$795D c PacePass ; Reseed the random pointer every 64 passes and pad the pass with a busy wait in the light rooms
+> When PassCounter & $3F is 0, the high byte of RandomPointer is set from R. Then: in grid 0 (GridNumber 0), rooms 0-5 wait $044C rounds of DelayBC; in grid 1, room 0 waits $0640 (PaceShaftRoom); every other room goes on at once. The wait evens out the pass time of rooms with few actors (8978 of the 10187 passes in the stage-1 recordings waited).
+> Witness: L1 10187 (c1o, deaths, s1-idle, s1-right).
+$796F PacePassRoom
+$7982 c PacePassUnused ; A pacing variant no code calls: rooms 0 and 5 wait $03E8, room $0B waits a count left in BC
+> No caller in the image (no CALL, JP or pointer to $7982). Reads RoomNumber: 0 or 5 wait $03E8 rounds of DelayBC, $0B waits BC as it stands (the LD HL,$16A8 before it sets HL, not BC), others return. A leftover of another stage's pacing.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7996 PacePassUnusedWait
+$799C c PaceShaftRoom ; Grid 1, room 0: wait $0640 rounds
+> Reached from PacePass when GridNumber is not 0: in grid 1 room 0 waits $0640 rounds of DelayBC, else returns.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+
+@module util ; Small helpers: keys, clears, copies, numbers, random numbers, delays
+@about Clears and copies of the screen and the shadow, the decimal printing helpers, the random numbers (Random $8B85 reads ROM bytes through RandomPointer; NextSeed $8B76 an LCG), WaitFrames and the small arithmetic the others share.
+$79AB c DelayBC ; Busy wait: count BC down to 0
+> Input BC (the rounds, 26 T-states each). Output BC = 0, A = 0. The interrupt returns land on its three instructions (L1 lists them as entries).
+> Witness: L1 9877843 (c1o, deaths, s1-idle, s1-right).
+$79AC DelayBCTest
+$79AE DelayBCLoop
+
+@module mainloop
+$79B1 c CheckPause ; ENTER pauses: wait for its release, a second press and its release
+> Reads port $BFFE bit 0 (ENTER). Not pressed: returns at once. Pressed: waits for the key's release, the next press and its release, so the game stands still between two presses. No other effect.
+> Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+$79B9 PauseRelease
+$79BF PausePress
+$79C5 PauseRelease2
+
+@module render
+$79CC c CopyToScreen ; Copy a block of bytes to the screen, line by line
+> Inputs: HL = the source, B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines, A = the source's stride (added to HL after each line; 0 repeats one source line, used with the cleared buffer to clear a screen block). Patches the column into $79E5 and the stride into $79F6, then for each line takes the line's address from ScreenLineTable and LDIRs D bytes. Destroys IX, BC, DE.
+> Witness: L1 10225 (c1o, deaths, s1-idle, s1-right).
+$79DF CopyToScreenLine
+
+@module hud ; The energy, the lives, the score, the HUD, game over and the stage exit
+@about The score is six decimal digits in two resident variables, ScoreHigh (two digits) and Score (four digits, 0-9999), so it carries from stage to stage. The energy (Energy, 0-$2E) changes by 2 a pass towards a pending EnergyChange; the HUD's six boxes at the top left show the lives, and the five boxes at the top right the pieces taken.
+$79FC c CheckStageExit ; With item 6 selected, standing at the start place of room 2: leave the stage
+> Every pass. Only in grid 0 (GridNumber 0), room 2 (the stage's first room) and with item 6 selected (GetSelectedItem): when the hero's x ($74E0) is 18-21 and its y ($74E1) is $5A, drops its own return address and runs StageExit. In stage 1 the selected item 6 at that place is the way out of the stage.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$7A1D c StageExit ; The stage's exit effect: falling stars over a coloured field until FIRE or SPACE, then EndStage with E = 2
+> StartStageExit draws the field and seeds 80 stars at $5B00 (4 bytes each); then each frame (HALT) moves the stars of speed 1-3 (MoveStar), until KeyFire or SPACE ($8A54); then E = 2 and EndStage.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7A21 StageExitFrame
+$7A28 StageExitStar
+$7A45 StageExitDone
+$7A4A c MoveStar ; Move one star down by its speed and plot it as two pixel lines
+> IX = the star: +0 speed 1-4, +1 the pixel within the byte 0-3, +2 the column 2-29, +3 y ($80 and up: not yet on screen). Off screen: y += speed only. On screen: y = (y + speed) mod 128, clears the bytes above it (speed lines, from ScreenLineTable+96, line 48 down), and plots two lines from StarPixels (speed and pixel).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7A58 MoveStarOnScreen
+$7A61 MoveStarPlot
+$7A8A MoveStarClear
+$7ABA b StarPixels 8 ; The two pixel lines of a star, by speed (rows 1-4) and pixel (pairs 0-3)
+$7ADA c StartStageExit ; Clear the play area, colour it at random and seed 80 stars
+> $A057, then clears the play area (column 0, lines $30-$BF, 32 bytes wide, from the blank $8BA3 with stride 0), RandomPlayAttrs, and 80 star records at $5B00: speed 1-4, pixel 0-3, column 2-29, y $80-$FF (random bytes from $8B85).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7AF4 SeedStar
+$7B06 SeedStarColumn
+$7B27 c RandomPlayAttrs ; Fill the play area's attributes (28 x 16 cells) with bright inks 2-7 on black
+> From $58C2 (row 6, column 2), 16 rows of 28 cells: bright, ink 2-7 from $8B85, paper 0. Sets RandomPointer to $091D first, so the colours are the same each time.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7B33 RandomPlayAttrsRow
+$7B36 RandomPlayAttrsCell
+$7B37 RandomPlayAttrsPick
+$7B53 c AddScore ; Add BC points to the score
+> Score += BC; at 10000 or more, Score -= 10000 and ScoreHigh += 1 (wrapping from 99 to 0). Outputs none; A, BC, HL destroyed. Called with 1200 for a piece (PieceWaitsPickup) and by the enemies' deaths ($A065, $A19B, $A1CF, $A87B).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7B73 c RenderScore ; Write the six score digits into ScoreDigits and draw them into the text buffer $7640
+> $8BE3 writes Score as four digits at ScoreDigitsLow, $8C15 writes ScoreHigh as two at ScoreDigitsHigh, then RenderDigits draws the six characters into $7640 with a stride of 6.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$7B95 c HideLeadingZeros ; Colour the score's leading zeros blue on black (unseen) and the rest yellow
+> Builds six attributes at $6D00 ($06, yellow on black), sets $01 for each leading '0' of ScoreDigitsHigh on, and copies them to the HUD at $5826 (row 1, columns 6-11).
+> Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+$7BA9 HideLeadingZerosNext
+$7BB7 HideLeadingZerosCopy
+$7BC3 c ShowScore ; Draw the score on the HUD
+> RenderScore, then CopyToScreen of the 6 x 8 bytes at $7640 to column 6, line 8, then HideLeadingZeros. Every pass.
+> Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+$7BD7 c RenderDigits ; Draw a string of digits into a byte buffer, 8 lines a character
+> IX = a text record (two bytes skipped, then characters from '0' up, 0 ends), HL = the buffer, A = the buffer's stride (patched into $7BFA). Each character: 7 lines from DigitGlyphs + (char - '0') x 8 and an eighth line of 0, one byte column; HL moves one byte right per character.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$7BDE RenderDigitsChar
+$7C1E b ScoreDigits 9 ; The score as text: two unused bytes, ScoreHigh's two digits, Score's four digits, 0
+$7C20 ScoreDigitsHigh ; ScoreHigh's two digits ($8C15); EndStage returns this address in BC
+$7C22 ScoreDigitsLow ; Score's four digits ($8BE3)
+$7C26 ScoreDigitsEnd ; 0: the end mark
+
+@module hero ; The hero: walk, jump, crouch, strike, fire, the items and the item window
+@about The carried items are two 12-byte lists, CarriedItems $7F17 (the item kind of each slot) and CarriedCounts $7F23 (its amount), filled from StartItems at the stage's start. Slots 0-5 are padding (slots 0-3 hold the blank icon 4) and slot 6 is the first item; ItemFirst..ItemLast are the slots in use and ItemSelected the selected one. The HUD's item strip shows the selected slot in the middle and its neighbours (DrawItemStrip, 8 icons drawn, 3 and two halves seen through the 12-byte window at $406A); the SPACE item window (ItemWindow) scrolls it.
+$7C27 c ItemWindow ; SPACE: stop the game, flash the strip's frame, choose an item with LEFT and RIGHT, SPACE again to go on
+> Clears PassCounter, waits (cycling the frame colours, CycleWindowFrame) for SPACE's release, then every 6 frames: DrawItemStrip and ShowItemCount; RIGHT scrolls to the previous slot (ScrollItemsRight), LEFT to the next (ScrollItemsLeft); SPACE again: waits for its release, cycles the frame back to its first colour and flashes the selected box (FlashSelectedBox).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code. The HUD's strip itself is drawn in every recording (c1 frame 15982).
+$7C35 ItemWindowStep
+$7C37 ItemWindowFrame
+$7C4F ItemWindowLeft
+$7C59 ItemWindowSpace
+$7C5E ItemWindowRelease
+$7C63 ItemWindowSettle
+$7C6E c FlashSelectedBox ; Colour the selected item's box with inks 2 to 6, one a frame
+> Five frames: patches the colour into the inline record SelectedBoxRecord (column 15, line 24, 2 x 2 cells) and fills it with $8C3D. Called by ItemWindow and at the stage's start ($981B).
+> Witness: L1 2 (s1-idle, s1-right).
+$7C72 FlashSelectedBoxFrame
+$7C7B b SelectedBoxRecord 5 ; $8C3D's inline record: column 15, line 24, 2 x 2 cells, the colour (patched)
+$7C80 c FlashSelectedBoxNext ; FlashSelectedBox, continued
+> Part of FlashSelectedBox, after its inline record.
+> Witness: L1 10 (s1-idle, s1-right).
+$7C85 c ScrollItemsLeft ; Select the next slot: scroll the strip 24 pixels left, one pixel a frame
+> Returns if ItemSelected is ItemLast. Else ItemSelected + 1, and 24 times: shifts the strip's 18 lines in the play buffer ($5B66-$5B77, 17 bytes a line) one pixel left, cycles the frame (CycleWindowFrame) and shows the strip (ShowItemStrip). Also run three times at the stage's start ($97FF, with the frame cycle patched off) to roll the strip in.
+> Witness: L1 6 (s1-idle, s1-right).
+$7C94 ScrollItemsLeftStep
+$7C9A ScrollItemsLeftLine
+$7CA1 ScrollItemsLeftByte
+$7CB9 c ScrollItemsRight ; Select the previous slot: scroll the strip 24 pixels right
+> Returns if ItemSelected is ItemFirst. Else ItemSelected - 1 and the mirror of ScrollItemsLeft.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7CC8 ScrollItemsRightStep
+$7CCE ScrollItemsRightLine
+$7CD5 ScrollItemsRightByte
+$7CED c CycleWindowFrame ; Next colour of the strip's frame (the 12 cells over and under it)
+> PassCounter + 1; the colour WindowFrameColours[PassCounter & 15] fills the attributes $586A-$5875 and $588A-$5895. Its first byte is a NOP that the stage's start ($97FA) patches to RET while it rolls the strip in, and back.
+> Witness: L1 144 (s1-idle, s1-right). In the stage-1 recordings only the patched RET ran (the item window was never opened).
+$7D16 b WindowFrameColours 8 ; The frame's 16 inks: 1 to 7 and back
+$7D26 c RedrawItemsIfChanged ; When ItemsChanged is set: clear it and redraw the strip and the count
+> Every pass. ItemsChanged is set by AddItem.
+> Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+$7D36 c DrawItemStrip ; Draw the icons of slots ItemSelected-3 to +4 into the buffer and show them
+> For 8 slots from CarriedItems + ItemSelected - 3: DrawItemIcon at $5B64 + 3 x n, then ShowItemStrip.
+> Witness: L1 6 (s1-idle, s1-right).
+$7D49 DrawItemStripNext
+$7D5E c ShowItemCount ; Draw the selected item's count (two digits) and hide it when 0
+> FormatItemCount, CopyToScreen of the 2 x 8 bytes at $7640 to column 15, line 8; then the attributes $582F and $5830: $41 (blue on black, unseen) for a zero digit pair, else $06.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7D7E ShowItemCountTens
+$7D8F ShowItemCountUnits
+$7D9A ShowItemCountHide
+$7DA0 c FormatItemCount ; Write CarriedCounts[ItemSelected] as two digits into ItemCountText and draw them at $7640
+> Tens and units into ItemCountText+2 and +3, then RenderDigits with a stride of 2.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7DB1 FormatItemCountTens
+$7DB8 FormatItemCountUnits
+$7DC8 b ItemCountText 5 ; The count as text for RenderDigits: two unused bytes, two digits, 0
+
+@module hud
+$7DCD c StartLivesFlash ; Start the lives boxes' flash
+> LivesFlash = 0. Called by LoseLife and at the stage's start ($9821).
+> Witness: L1 9 (c1o, deaths, s1-idle, s1-right).
+$7DD2 c LivesFlashStep ; One step of the lives boxes' flash: up to white, then back to magenta (a life) or blue (lost)
+> Idle when LivesFlash is $10. Steps 1-7: the six boxes' attributes at $5861 and $5881 (rows 3-4, columns 1-6) get ink + 1 up to 7. Steps 8-15: ink - 1 down to 3 (magenta) for box n while Lives >= n, else 1 (blue). Called every pass by $984D.
+> Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+$7DE6 LivesFlashUp
+$7DF3 LivesFlashUpNext
+$7DF8 LivesFlashDown
+$7DFA LivesFlashDownBox
+$7E08 LivesFlashDownStep
+$7E14 LivesFlashDownNext
+
+@module hero
+$7E19 c DrawItemIcon ; Draw item icon A (16 lines of 2 bytes, a blank third byte) into the buffer at HL
+> HL = the buffer address (stride 32), A = the item kind; the icon's address is ItemIcons[A]. Destroys BC, DE.
+> Witness: L1 48 (s1-idle, s1-right).
+$7E2A DrawItemIconLine
+$7E3D c ShowItemStrip ; Copy the strip's 12 x 16 window from the buffer ($5B68) to the screen ($406A)
+> Two calls of CopyStripRows: the first 8 lines to $406A (row 3, column 10), the next 8 to $408A.
+> Witness: L1 150 (s1-idle, s1-right).
+$7E4C c CopyStripRows ; Copy 8 lines of 12 bytes from the buffer (stride 32) to one character row of the screen at DE
+> HL = the buffer (left after the call at the next 8 lines), DE = the screen address.
+> Witness: L1 300 (s1-idle, s1-right).
+$7E4E CopyStripRow
+$7E5F c AddItem ; Add D of item A to the carried items: a new slot after ItemLast, or the amount added (up to 99)
+> A = the item kind, D = the amount. Item 7 also writes 5 into $9B84 (a byte of the room data). If A is already in CarriedItems (any of the 12 slots, the padding too), its count goes up by D, at most 99; else ItemLast + 1 and the new slot gets A and D. Sets ItemsChanged. Called by $8B03 and $A10E (the pick-ups).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7E69 AddItemFind
+$7E6E AddItemFindNext
+$7E89 AddItemDone
+$7E8F AddItemMore
+$7E9C AddItemStore
+
+@module hud
+$7E9F c ApplyEnergyChange ; Move the energy 2 a pass towards EnergyChange; at 0 lose a life
+> EnergyChange 0: nothing. $80 and up (a drain): EnergyChange + 2 and Energy - 2; Energy at 0 calls LoseLife. Under $80 (a refill): EnergyChange - 2 and Energy + 2 up to $2E. Called every pass by $984D. Deaths recording: Energy 46 down to 2, then the life lost at frame 2775 and the refill.
+> Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+$7EBD ApplyEnergyRefill
+$7ECE c LoseLife ; A life lost: Lives - 1, effect 7, flash the lives, freeze the hero; refill or game over
+> Returns if Lives is 0. Lives - 1, PlaySoundVector 7, StartLivesFlash, HeroFreeze = $17. Lives left: Energy 0, EnergyChange $2E (the refill), E = $33 and $B22B (the hero's death). None left: E = $6C, GameOverTimer = 1 and $B22B. Called by ApplyEnergyChange and by $AC6C (the hero at column 0 or $20 and up, or in a cell with bit 3 set). Deaths recording: Lives 5 to 4 at frame 2775.
+> Witness: L1 7 (c1o, deaths, s1-right).
+$7EFB LoseLastLife
+
+@module hero
+$7F05 c GetSelectedItem ; A = the selected item's kind, IX = the address of its count
+> A = CarriedItems[ItemSelected], IX = CarriedCounts + ItemSelected. BC destroyed.
+> Witness: L1 37505 (c1o, deaths, s1-idle, s1-right).
+$7F17 b CarriedItems 12 ; The item kind of each of the 12 slots (slots 0-3 hold 4, the blank icon; the first item at slot 6)
+$7F23 b CarriedCounts 12 ; The amount of each slot's item (shown by ShowItemCount; AddItem adds)
+$7F2F b StartItems 12 ; The carried items at the stage's start, copied to CarriedItems by $9DA1: slot 6 holds item 3
+@res stage1/table-startitems.bin
+$7F3B w ItemIcons 1 ; The 16 x 16 icon of each item kind 0-8 (32 bytes each; kind 4 points to the blank $8BA3)
+@res stage1/table-itemicons.bin
+
+@module render
+$7F4D c PreShiftSprite ; For an actor with a shift (+$11 = 1-7): copy its sprite to $7640 and shift it right
+> IY = the actor record. +$11 = 0 or $64 and up: nothing. Else copies the sprite (+4/+5, +2 bytes wide, +3 lines) to $7640 with a zero byte added to each line, then shifts each line right by +$11 pixels with the routine ShiftRoutines[+$11] (patched into PreShiftCall). Called by $A62A for every actor drawn.
+> Witness: L1 50388 (c1o, deaths, s1-idle, s1-right). The shift was 0 in every pass: the copy from $7F53 on is not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right) and known only from the code.
+$7F62 PreShiftCopyLine
+$7F88 PreShiftLine
+$7F89 PreShiftCall ; CALL ShiftRoutines[+$11], patched
+$7F90 w ShiftRoutines 8 ; The shift routine for 1-7 pixels (entry 0 unused)
+$7FA0 c ShiftLine1 ; Shift one line of (IY+2)+1 bytes at HL one pixel right; HL moves past it
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FA6 ShiftLine1Byte
+$7FAC c ShiftLine2 ; Two pixels: ShiftLine1 twice over the same line
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FB3 c ShiftLine3 ; Three pixels: ShiftLine1 three times
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FBF c ShiftLine4 ; Four pixels: RLD along the line
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FC4 ShiftLine4Byte
+$7FCA c ShiftLine5 ; Five pixels: ShiftLine4 and ShiftLine1
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FD1 c ShiftLine6 ; Six pixels: ShiftLine4 and ShiftLine1 twice
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$7FDD c ShiftLine7 ; Seven pixels: ShiftLine4 and ShiftLine1 three times
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+
+@module hero
+$7FEE c IsHeroHitFrame7 ; Z (and C clear) when the hero is in state 7 at frame 4, the frame its attack hits
+> Reads the hero's state $74EA and frame $74E8. Called by $A7C4 for each enemy.
+> Witness: L1 20131 (c1o, deaths, s1-idle, s1-right).
+$7FFA c IsHeroHitFrame6 ; Z when the hero is in state 6 at frame 4
+> As IsHeroHitFrame7 for state 6. Called by $9676.
+> Witness: L1 26 (c1o, s1-right).
+
+@module missiles ; The missiles: shots, thrown objects and flyers in 16 six-byte records at $75E0
+@about $B2E6 calls, for each of the 16 records at $75E0 not free (+0 = $FF), the handler of its kind (+2) from the table at $B31A. The record: +0 the column (path flyers: +5 / 2), +1 y, +2 the kind, +3/+4/+5 the kind's own (a step, a direction). A handler frees its record with $B35E. Most of them draw with $B42B / $B446 (normal / mirrored) and colour with $B382, $B3A3 or $B40A / $B46F.
+$8006 c UpdateThrownArc ; Kinds 2 and 3: an object thrown in an arc, left (2) or right (3); counts the drops into room 12's pit
+> IY = the record: +3 the arc step, +4 the frame counter. CheckPitDrop first; below y $82 it is freed. +3 and +4 step; CheckArcLanding at steps 12 and 21; step 22 frees it. Every fourth tick x moves 1 (kind 2 left, 3 right); y += ArcSteps[+3]. Draws frame +4 & 7 from $D926 (12 bytes a frame) with the record ArcFrame, mirrored for kind 3.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8013 ThrownArcMove
+$8037 ThrownArcLeft
+$803A ThrownArcDraw
+$8071 ThrownArcMirror
+$8079 b ArcSteps 8 ; The arc's y change at each step 0-22
+$8090 b ArcFrame 4 ; The thrown object's frame record: a word (0, the graphics come in HL), 2 bytes wide, 6 lines
+$8094 c CheckArcLanding ; At arc steps 12 and 21: if the cell under the object is not free, hold the step
+> Tests the cell at (x + 3, y + 8) with $B162; not free (Z) decrements +3 so the object rests.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$809E CheckArcLandingCell
+$80B2 c CheckPitDrop ; An object below y $82: outside room 12 freed; in room 12 counted (EyeFlashRepeats, PitDrops up to 9; the ninth sets BossPhase 2)
+> Only while BossPhase is 1. Above y $82: returns at once.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$80D9 CheckPitDropDone
+$80DF c UpdateAimedShot ; Kind 1: a shot flying in one of 8 directions; hurts the hero by 6
+> +4 = the direction 0-7 (ShotDirections: dx, dy, the frame's offset in ShotFrames, mirrored). ShotHitsHero with C = 6; moves; freed at column 0 or $1F, y under 8 or $80 and up; draws the direction's frame.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$811B DrawShotFrame ; A = mirrored, C = the frame's offset in ShotFrames
+$8134 DrawShotMirrored
+$813D b ShotFrames 4 ; Frame records: graphics address, width, lines ($C783 2x5, $C78D 1x15, $C79C 1x15, $C7AB 2x13, $C7C5 2x13)
+$8151 b ShotDirections 4 ; The 8 directions: dx, dy, the frame's offset in ShotFrames, 1 mirrored
+$8171 c UpdateHeroShot ; Kind 9: a shot flying left or right; stops at the room's edge or on an actor it hits
+> +4 = 0 left, else right. Freed at column 0 or $1F, or when ShotHitsActor finds an actor (it sets the actor's hit flag). Draws ShotFrames' first frame ($C783), mirrored by the direction.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8185 HeroShotLeft
+$818B HeroShotHit
+
+@module hero
+$819A c CheckWalkBarriers ; While walking: thrown back from a closed exit (rooms 12 and 7 of grid 0, the room of grid 2)
+> IY = the hero. CheckRightGate, CheckLeftGate and CheckItemGate each return Z for a closed exit; on Z the hero goes to state $0B (HeroRecoil, +$0B = $FF) and Z is returned (the walk handler $AF64 stops). NZ: free.
+> Witness: L1 875 (c1o, deaths, s1-right).
+$81AB WalkBarrierHit
+$81B9 c CheckRightGate ; Grid 0 room 12, facing right at x $1C: open while BossPhase is 1, or 4 with item 7 carried
+> Returns NZ (open) outside that room, facing left, at another x; Z (closed) for other states.
+> Witness: L1 875 (c1o, deaths, s1-right).
+$81E2 CheckRightGateItem
+$81EE c CheckLeftGate ; Grid 0 room 7, facing left at x 5: closed while GateOpen is 0
+> Witness: L1 875 (c1o, deaths, s1-right).
+$820E c CheckItemGate ; Grid 2, facing left at x 2: closed unless item 2 is carried
+> Witness: L1 875 (c1o, deaths, s1-right).
+$8227 CheckItemGateNext
+
+@module enemies ; The enemies, the hazards and the bosses
+@about The room's actors come from its placements (LoadRoomActors $A4CC, the kinds in ActorKinds $9C8A) and from SpawnRandomEnemy $9353 (grid 0: a warrior rises from the ground every 30-61 passes). Stage 1's: the skeleton warriors (WarriorActor $94D0 and its head WarriorHeadActor $93F2), the hanging bodies (HangingActor $9186), the statue heads that spit (StatueActor $912B), the flame jets and fire pits (FlameJetActor $8DCC, FirePitActor $8D6D), the gate (GateActor $9065), the winged demon of room 12 (four parts, BossWingLeft $8E60 to BossHead $8E86, phases in BossPhase, its face RoomPicture drawn by DrawRoomPicture $8930) and the dragon of the arena, grid 2 (ArenaHeadActor $90E7, its body ArenaPicture drawn by DrawArenaPicture $89BB, 20 hits: ArenaBossHit $A14A).
+$8233 c UpdatePieceActor ; An actor that takes 6 hits, rises, bobs and then waits to be taken as a piece (1200 points)
+> IY = the actor (18-byte record). Colour from the cycle ($B3BD). +$0B not 0: animates frames 2-9. Else by +$0A: 6 PieceRises, 7 PieceWaitsPickup; 0-5: each hit (+$09 bit 4, set by a shot or the hero's blow) clears the flag and adds 1 to +$0A; at 6 the next record's +0 is set $FF (the record after it freed). Frame 0. Draws with $AA02 (frames $E154, graphics $E06C). Its kind's handler pointer is at $9D5F.
+> Witness: L1 2066 (s1-right).
+$8262 PieceActorStill
+$8267 PieceActorAnimate
+$8272 PieceActorDraw
+$8275 b PieceFrames 4 ; $AA02's inline operands: the frame table $E154 and the graphics base $E06C
+$8279 c PieceRises ; State 6: rise and bob along RiseSteps for 30 steps (effect 3 at steps 16 and 25), then state 7
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$828D PieceRisesSound
+$8293 PieceRisesMove
+$82A7 PieceRisesDone
+$82AE b RiseSteps 8 ; The rising piece's y change at each step 0-29
+$82CC c PieceWaitsPickup ; State 7: when the hero touches it at its column (or the next): 1200 points, the piece's bit, freed
+> $A11E (the hero within $14 lines); then the hero's x ($74E0) equal to +0 or +0 + 1: AddScore 1200, PieceTakenFlag = 1, PiecesMask |= +$10, freed ($B35E).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$82DF PieceTaken
+$82F6 PieceNotTaken
+
+@module hud
+$82FA c ShowPieceTaken ; After a piece is taken: count it, draw its box on the HUD, start the flash, effect 12
+> Only when PieceTakenFlag is 1 (cleared here). PiecesTaken + 1 (5: PiecesComplete = 1), PieceFlash = $2D, then CopyToScreen of a 2 x 14-byte picture ($E06C for the first piece, $E088 for the others) to column 24 + PiecesTaken, line $19; PlaySoundVector 12.
+> Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+$8312 ShowPieceBox
+$8324 ShowPieceBoxDraw
+$833B c FlashPieces ; Cycle the colours of the pieces' boxes while PieceFlash runs (always once all five are taken)
+> PieceFlash - 1 a pass; the colour is the cycle at $B3D2[(PieceFlash + 2) & 7] for PiecesTaken + 1 cells at $5879 and $5899 (rows 3-4 from column 25).
+> Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+$834A FlashPiecesStep
+$8366 FlashPiecesCell
+$836D c GameOverStep ; After the last life: count GameOverTimer to $31, draw GAME OVER in the item strip, then cycle its colour
+> GameOverTimer 0: nothing. 1-$30: + 1 a pass. At $31: clears the strip (column 10, line $18, 12 x 16 from the blank $8BA3) and draws the 8 x 8-byte GAME OVER picture at $CE92 at column 12, line $1C. $32 and on: the colour from the cycle ($B3C4) patched into the inline record GameOverBox and filled. s1-right: the HUD's GAME OVER (WALKTHROUGH 6.1, frame 4000).
+> Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+$839A GameOverColour
+$83A3 b GameOverBox 5 ; $8C3D's inline record: column 12, line 24, 8 x 2 cells, the colour (patched)
+$83A8 c GameOverStepDone ; GameOverStep, continued: return
+> Witness: L1 168 (s1-right).
+
+@module missiles
+$83A9 c UpdateDriftRight ; Kind 4: a falling (or rising) shot drifting right one column every other tick; hurts the hero by 10
+> +3 = the tick 0-3 (the frame), +4 = dy a tick. Freed at y $88 and over or column $1E. ShotHitsHero with C = 10, then DrawDriftShot.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$83CF DriftRightHurt
+$83D4 c DrawDriftShot ; Draw a drifting shot: frame +3 from the records at $B3EA, ink green (red in room 0), flickering bright
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$83F8 DrawDriftShotColour
+$8403 c UpdateDriftLeft ; Kind 5: as UpdateDriftRight, drifting left
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8424 DriftLeftHurt
+$842C c UpdatePathFlyer ; Kinds 7 and 8: a flyer along PathSteps, forwards (7) then back (8); OR-drawn 3 x 13 bytes
+> +4 = the step into PathSteps (pairs: dx in half columns, dy), +5 = x in half columns, +3 a step counter. Kind 7 steps forwards; at the end mark ($64) it becomes kind 8 and is moved by RespawnShiftX (x 2) and RespawnShiftY, unless no lives are left (freed). Kind 8 steps back and is freed at step $FF. +0 = +5 / 2; the pre-shifted half ($B3EA or $B3EE by +5's parity) is ORed into the buffer (3 bytes x 13 lines) when on screen (column under $1E, y under $78), then coloured ($B38D, $B40A).
+> Witness: L1 5080 (c1o, deaths, s1-right).
+$8443 PathFlyerForward
+$8449 PathFlyerStep
+$8482 PathFlyerMove
+$849A PathFlyerBack
+$84A9 PathFlyerPlace
+$84C0 PathFlyerDraw
+$84D7 PathFlyerLine
+$84DA PathFlyerByte
+$84EE b PathSteps 8 ; The flyer's path: dx (half columns), dy a step; $64 $64 ends
+$8564 c UpdateFlatShot ; Kind 6: a shot flying flat left or right; in grid 2 at column 15 it triggers $A14A
+> +5 = 0 right, 1 left. Freed at column 0 or $1E. In grid 2 (the single room) at column 15 with $FE5D 0: $A14A. Draws FlatShotFrame ($D986, 2 x 8), mirrored for +5 = 1, coloured by $B3A3.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8573 FlatShotRight
+$857E FlatShotCheck
+$85A1 FlatShotDraw
+$85BB FlatShotMirrored
+$85C4 b FlatShotFrame 4 ; Frame record: graphics $D986, 2 bytes wide, 8 lines
+$85C8 c UpdateBouncer ; Kinds 10 and 11: a missile bouncing along the floor, left (10) or right (11); hurts the hero by 6
+> +5 counts ticks: x moves 1 every other tick. +3 = the bounce step 1-44 (BounceSteps), freed at 45 or at the room's edge; CheckBounceFloor at the bounce bottoms. ShotHitsHero with C = 6. Frames BounceFrames by +5's parity.
+> Witness: L1 1092 (s1-right).
+$85E8 BouncerLeft
+$85FB BouncerStep
+$863D b BounceFrames 4 ; Two frame records: $D996 and $D9B0, 2 bytes x 13 lines
+$8645 b BounceSteps 8 ; The bouncer's y change at steps 1-44; the last 6 bytes ($8672-$8677) are never read (the step stops at 45)
+$8678 c CheckBounceFloor ; At steps 6, 19, 30, 39 and 46: if the cell under it is not free, hold the step (it rolls on the floor)
+> Tests (x + 3, y + 16) with $B162.
+> Witness: L1 1064 (s1-right).
+$868E CheckBounceFloorCell
+$86A2 c ShotHitsActor ; NZ (and the actor's hit flag, +$09 bit 4) when the shot IY is over a shootable actor
+> For the 13 actors at $74F2: not free, shootable (+$0F bit 0), same column, and the shot's y - the actor's y under its height (+3). Returns via $B2E1 (NZ, hit) or $B2DC (Z, none).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$86A8 ShotHitsActorNext
+$86D2 ShotHitsActorSkip
+
+@module hero
+$86DD c IsShieldUp ; NZ when item 1 is selected and its count is not 0 (the shield); Z otherwise
+> GetSelectedItem; not item 1: Z via $B2DC. Callers: $8DE7, $96A4.
+> Witness: L1 9 (c1o, deaths, s1-right).
+
+@module missiles
+$86EB c ShotHitsHero ; Hurt the hero by C when the missile IY is in its column and within 14 lines; not through the shield
+> Item 1 selected with a count: no harm. Else when the hero's x ($74E0) is +0 and $A7B8 (A = $0E, E = the hero's y, D = +1) finds them overlapping, DamageHero.
+> Witness: L1 1064 (s1-right).
+$86F8 ShotHitsHeroTest
+
+@module hud
+$870C c DamageHero ; EnergyChange - C (a drain), unless the hero is dying (state $0F)
+> C = the damage. Called by ShotHitsHero and the enemies ($8A43, $8A51, $8DEE, $921B, $96AB).
+> Witness: L1 822 (c1o, deaths, s1-right).
+
+@module hero
+$871A c HeroRecoil ; State $0B: the hero thrown back from a closed exit, a 6-step hop, then standing
+> +$0B counts 0-6: y += RecoilSteps[+$0B], x back one pixel step ($8B4E with 3: +$11 down, the column on wrap) and the walk frame drawn ($AFD1). At 7: state 0, x - 1 column ($B112 E = $FF), +$11 = 0, standing ($ADDD).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8734 HeroRecoilStep
+$874C b RecoilSteps 7 ; The hop's y change at steps 0-6
+$8753 c CellFlagUnused ; A leftover no code calls: Z unless bit 1 of the room cell at (column E, line D) is set
+> HL = $7282 + (D / 8) x 32 + E, then BIT 1,(HL). No caller in the image.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+
+@module missiles
+$876C c HangFlashBorder ; Missile kind 0 (no missile): flash the border from R for ever
+> The entry 0 of the handler table at $B31A, and the jumps at $890F, $8911, $892D. A trap: never returns.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+
+@isub $99AF LD BC,-576
+@isub $99BE LD BC,-576
+@isub $99D0 LD BC,-576
+@isub $99DF LD BC,-576
+@isub $9ABD LD SP,PlayBuffer+4608
+
+@module render
+$8776 c PlotRow1 ; Plot one sprite row 1 byte wide into the play buffer
+> HL = the sprite's bytes, DE = the buffer address. ORs (HL) into (DE) (no mask: the buffer is cleared every pass),
+> then HL + 1 and DE + 32 (the next pixel line). One of the row plotters of RowPlotters $8910, called once a row by
+> the sprite drawer at $A6AA. The plotters 1-7 bytes wide all work so; the mirrored ones read the row's bytes in
+> order and write them right to left through the bit-reversal table at $FA00 (resident), so a sprite faces left.
+> Witness: L1 200314 (c1o, deaths, s1-idle, s1-right).
+$8781 c PlotRow1Mirrored ; Plot one sprite row 1 byte wide, mirrored
+> As PlotRow1, the byte bit-reversed through the table $FA00 (B = $FA, C = the byte).
+> Witness: L1 6353 (c1o, deaths).
+$8793 c PlotRow2 ; Plot one sprite row 2 bytes wide
+> ORs 2 bytes from HL into DE, DE+1; then DE + 31 (the next line's first column).
+> Witness: L1 132616 (c1o, deaths, s1-idle, s1-right).
+$87A3 c PlotRow2Mirrored ; Plot one sprite row 2 bytes wide, mirrored
+> DE = the row's rightmost byte: each byte bit-reversed through $FA00 and written leftwards; then DE + 33.
+> Witness: L1 24112 (c1o, deaths, s1-right).
+$87BD c PlotRow3 ; Plot one sprite row 3 bytes wide
+> Witness: L1 8068 (c1o, deaths, s1-right).
+$87D2 c PlotRow3Mirrored ; Plot one sprite row 3 bytes wide, mirrored
+> Witness: L1 8265 (c1o, deaths, s1-right).
+$87F4 c PlotRow4 ; Plot one sprite row 4 bytes wide
+> Witness: L1 12509 (c1o, deaths, s1-right).
+$880E c PlotRow4Mirrored ; Plot one sprite row 4 bytes wide, mirrored
+> Witness: L1 324 (c1o, s1-right).
+$8838 c PlotRow5 ; Plot one sprite row 5 bytes wide
+> No 5-byte-wide sprite was drawn in the stage-1 recordings.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8857 c PlotRow5Mirrored ; Plot one sprite row 5 bytes wide, mirrored
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8889 c PlotRow6 ; Plot one sprite row 6 bytes wide
+> Used by the 6-byte frames (the winged boss's body $DE4C, the arena head's frames at $CED2).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$88AD c PlotRow6Mirrored ; Plot one sprite row 6 bytes wide, mirrored
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$88E7 c PlotRow7 ; Plot one sprite row 7 bytes wide (no mirrored form)
+> The widest plotter; RowPlotters has no mirrored 7-byte entry (index 15 is $876C).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8910 w RowPlotters 8 ; The row plotter of each sprite width: word 2 x width + 1 when mirrored
+> Read by the sprite drawer at $A6CA (LD BC,RowPlotters): index 2 x width + (facing left). Width 0 and the mirrored
+> width 7 hold $876C (a hang loop: border flicker and KeyHook forever), never reached with a valid frame.
+
+@module enemies
+$8930 c DrawRoomPicture ; Draw room 12's big picture and flash its eyes
+> Only in room 12 ($FE30, else returns at once): draws the 53-row picture at $D5D5 (stage 1: the demon's face over
+> the winged boss's lair) into the play buffer from column 9 of its first line (DrawRowPicture), every pass since
+> the buffer is cleared every pass. Paints the shadow attributes $6DC0-$6E80 red (2) and the two eye cells $6E89,
+> $6E96, then sets the eyes' colours (SetEyeColour) to EyeFlashColours[EyeFlashStep] while a flash runs (10 steps),
+> starting a new flash while EyeFlashRepeats is non-zero.
+> Only the first test ran in the stage-1 recordings (no recording reached the room or the arena); the drawing is
+> known only from the code.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$8980 c SetEyeColour ; Colour the room picture's two eye cells A
+> Writes A to the shadow attributes $6E2E and $6E32.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8987 EyeFlashNext ; the flash ended: start another while EyeFlashRepeats lasts
+$8997 b EyeFlashColours 10 ; The eye colours of one flash, read backwards: black, then bright blue to cyan and back
+@module hero
+$89A1 c DrainItemCharge ; Use up the protective item's charge while it is selected
+> Called by the hero's pass at $AC3D. When the selected item (GetSelectedItem $7F05) is of kind 1 (the kind
+> DamageHero's guard $86DD lets protect the hero) and its count IX is non-zero, takes one away every 8th pass
+> (PassCounter) and redraws the HUD's item (JP $7D5E). The kind-1 branch never ran in the stage-1 recordings.
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$89BA DrainItemDone
+@module enemies
+$89BB c DrawArenaPicture ; Draw the arena's boss picture (grid 2) and its colours
+> Only in grid 2 (GridNumber) while ArenaBossBeaten is 0: draws the 92-row picture at $D0D8 (stage 1: the green
+> dragon's body) into the play buffer from $5F8E (buffer row 4, column 14) with DrawRowPicture, then its attributes:
+> the 12 x 16 block $D515 copied into the shadow $6E4E, or, when ArenaFlash is 1, painted red (2) where the block is
+> non-zero and ArenaFlash cleared. Then colours the column $6E4D: 3 cells green (4) or red when flashing, 3 red.
+> Only the first test ran in the stage-1 recordings (no recording reached the room or the arena); the drawing is
+> known only from the code.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$89E1 ArenaAttrRow ; copy one row of 16 attributes
+$89F6 ArenaFlashRed ; ArenaFlash: paint the picture's cells red
+$89FE ArenaFlashRow
+$8A01 ArenaFlashCell
+$8A08 ArenaFlashNext
+$8A19 ArenaColumn ; the column of 6 cells left of the picture
+$8A2E c ZoneDamage ; Hurt the hero in a room's danger zone
+> Grid 2 with the arena boss alive: the hero at column 16 or more ($74E0 >= $10) loses 4 (DamageHero $870C, C = 4).
+> Grid 0: the hero at a column under 4 loses 4 each pass.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$8A46 ZoneDamageGrid0
+@module util
+$8A54 c TestSpaceKey ; Is SPACE down?
+> Calls KeyHook, then reads port $7FFE bit 0: Z when SPACE is held. The main loop $7872 opens the item window on it.
+> Witness: L1 10186 (c1o, deaths, s1-idle, s1-right).
+$8A5F c ClearAttributes ; Clear the screen's 768 attributes to 0
+> Witness: L1 3 (s1-idle, s1-right).
+$8A6D c ClearShadowAttributes ; Clear the shadow attributes $6D00-$6FFF to 0
+> Witness: L1 2 (s1-idle, s1-right).
+$8A7B c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
+> Clears 4401 bytes of the play buffer (the LDIR form; ClearBuffer $9AB5 is the fast PUSH form of the whole 4608).
+> Called at $9F49 and $9F9F before a room change.
+> Witness: L1 24 (c1o, deaths, s1-right).
+$8A89 c CopyBlockToScreen ; Copy a block of bytes to the screen, one pixel line at a time
+> HL = the source (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width
+> in bytes, E = the lines. Patches its ADD A,n at $8A9D with the column; the line addresses come from ScreenLineTable.
+> The game-over path $790D copies the HUD's saved 48 lines back from $7000 with it.
+> Witness: L1 1 (s1-right).
+$8A99 CopyBlockLine
+@module hud
+$8AB1 c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
+> DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $97AC: the HUD as loaded). Eight steps, each
+> after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is one of 4 rows of 8 at $F9CC
+> (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a ROM byte read through RandomPointer,
+> reset to 0 each step so the pattern is the same every step) and gains bits each step until $FF. Patches the
+> LD DE at $8AC5 (the source) and the ADD A at $8AE9 (the step).
+> Witness: L1 2 (s1-idle, s1-right).
+$8ABB DissolveStep
+$8ACA DissolveLine
+$8ADA DissolveByte
+$8AE9 DissolveStepOperand ; ADD A,n: n = the step 0-7
+@module render
+$8B03 c DrawRowPicture ; Draw a row-packed picture into a buffer
+> HL = the picture, DE = the buffer address of its first line, B = its lines. Each line is one byte, the bytes to
+> copy in its high nibble and the columns to skip in its low nibble, then those bytes; DE + 32 a line. The room and
+> arena pictures ($D5D5, $D0D8) are in this form.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+@module util
+$8B24 c Multiply ; HL = A x B (the smaller one as the loop count)
+> Returns HL = 0 when A is 0. Called by $A9AF.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8B30 MultiplySet
+$8B33 MultiplyLoop
+@module actors ; The actor records: placement, the per-pass update, the frames, the bursts
+@about The 14 actor records at $74E0 (the hero, then 13 others at $74F2), 18 bytes each: +0 X (column 0-29, $FF a free record), +1 Y (line in the 144-line play buffer; $C8 and up is above the top), +2 width in bytes, +3 height in lines, +4/+5 the frame's address, +6/+7 the handler, +8..+$0C the kind's five bytes (+9 bit 0 opaque, bit 7 facing left; +$0C the attribute), +$0D/+$0E X and Y where the actor entered the room, +$0F flags (bit 1 kept over a room change, bit 6 not drawn, bit 7 drawn in the second pass), +$10 the placement's index, +$11 the pixel shift (0 or 100 and up: none).
+$8B37 c StepFineRight ; Move the actor IY right by A eighths of a byte column (no caller)
+> Adds A to the fraction +$11; past 8 takes 8 off and moves +0 and +$0D one column right. Nothing calls it (no
+> CALL, JP or table word names $8B37): a leftover of the engine.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8B42 StepFineRightCarry
+$8B4E c StepFineBack ; Move the actor IY back by A eighths of a byte column
+> Takes A from the fraction +$11; on a borrow adds 8 back and moves the base column +$0D one column against the
+> facing (StepX $B112 with E = -1). Called by $8736 and the warrior's flying head $9474.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8B61 c StepFineLeft ; Move the actor IY left by A eighths of a byte column (no caller)
+> As StepFineRight leftwards (+0 and +$0D one column left on a borrow). Nothing calls it: a leftover.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+@module util
+$8B76 c NextSeed ; RandomSeed = RandomSeed x 5 + $15; A = it
+> Called by the actor set-up $A5A1.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8B85 c Random ; A = the next ROM byte
+> RandomPointer + 1, kept in $0000-$3FFF; A = the ROM byte there. The game's random numbers.
+> Witness: L1 1858 (c1o, deaths, s1-idle, s1-right).
+$8B92 c ClearScreen ; Clear the attributes, then the 6144 pixel bytes
+> Witness: L1 3 (s1-idle, s1-right).
+$8BA3 b BlankIcon 8 ; 32 zero bytes: the blank icon (item kind 4) and the source of every clear done by copying with stride 0
+> ItemIcons' kind 4 points here (DrawItemIcon $7E19 reads all 32 bytes); CopyToScreen $79CC copies its first bytes with stride 0 to clear the play area (StageEntry), the HUD fields (EndStage) and the item strip (GameOverStep); the templates' frame word ($9D3B and others) points here until SetActorFrame sets a frame. Read in the stage-1 builds (DrawItemIcon, $79CC).
+$8BC3 c LineAddressToIY ; IY = the screen address of pixel line C (no caller)
+> IY = ScreenLineTable[C] (the word, not the address read). Nothing calls it: a leftover.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8BCF c CellAddress ; HL = DE + (C / 8) x 32 + B: the cell of pixel line C, column B in a 32-wide map
+> DE = the map (Attributes or the shadow $6D00). Used by FillAttributes and FillShadowAttributes.
+> Witness: L1 188 (s1-idle, s1-right).
+@module hud
+$8BE3 c NumberToDigits ; Write HL as B decimal digits (ASCII) at IX
+> B = 1-5 digits (the last B of 10000, 1000, 100, 10, 1 from DecimalTable); each digit by repeated subtraction.
+> IX ends past the digits. PrintScore $7B73 writes the score $F9FB with 4 digits into $7C22.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$8BF3 DigitLoop
+$8BFC DigitSubtract
+$8C15 c ByteToDigits ; Write A (0-99) as two ASCII digits at IX
+> A = 0 writes "00". PrintScore writes the amount $F9FD so; only the 0 branch ran.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$8C22 ByteToDigitsTens
+$8C24 ByteToDigitsLoop
+@module util
+$8C35 c WaitFrames ; Wait BC interrupts (HALT each)
+> Witness: L1 300 (s1-idle, s1-right).
+@module render
+$8C3D c FillAttributes ; Fill a rectangle of the screen's attributes (5 bytes after the CALL)
+> The 5 bytes after the CALL: the column, the pixel line (/8 = the cell row), the width, the height in cells, the
+> attribute. Returns after them. The game-over screen $78A2 and $78AA use it.
+> Witness: L1 180 (s1-idle, s1-right).
+$8C60 FillAttributesRow
+$8C62 FillAttributesCell
+$8C6D c FillShadowAttributes ; Fill a rectangle of the shadow attributes $6D00 (5 bytes after the CALL)
+> As FillAttributes into the shadow; StageSetUp paints the HUD's boxes with it.
+> Witness: L1 8 (s1-idle, s1-right).
+$8C90 FillShadowRow
+$8C92 FillShadowCell
+$8C9D c ShowShadowAttributes ; Copy the whole shadow $6D00-$6FFF to the attributes after a HALT
+> Witness: L1 4 (s1-idle, s1-right).
+$8CAA c UpdateAttributes ; Copy the open cells' attributes from the shadow, then CopyBuffer
+> The play area's 18 rows x 28 columns from row 6 column 2: where the cell kind ($7282, BuildSpans) is 0 (open),
+> the attribute comes from the shadow $6DC2 (the room's colours with the actors' painted in); solid cells keep
+> theirs. Then CopyBuffer. With RestoreAttributes = 1 (set at $9FB2): clears it, CopyBuffer first, then after a
+> HALT every cell is written: open cells from the shadow, solid cells from RoomAttributes $7042.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$8CBE UpdateAttrRow
+$8CC1 UpdateAttrCell
+$8CCA UpdateAttrNext
+$8CE0 UpdateAttrRestore
+$8CF8 RestoreAttrRow
+$8CFB RestoreAttrCell
+$8D03 RestoreAttrPut
+@module actors
+$8D1D c SpawnTimer ; Count down to the next random enemy
+> Every pass: SpawnDelay - 1; at 0 reloads it with 30-61 (Random) and, in grid 0, goes to SpawnRandomEnemy $9353.
+> Witness: L1 10189 (c1o, deaths, s1-idle, s1-right).
+$8D27 SpawnTimerFire
+$8D3A c FindFreeActor ; IY = the first free actor record of 13 (Z), else NZ
+> A record is free when its +0 is $FF. Returns NZ (via $B2E1) when none is free.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8D43 FindFreeActorLoop
+$8D50 c FindFreeActorPair ; IY = the first free actor record whose next record is free too (Z), else NZ
+> For an enemy of two records (the warrior and its head). 12 records searched.
+> Witness: L1 238 (c1o, deaths, s1-idle, s1-right).
+$8D59 FindPairLoop
+$8D66 FindPairNext
+@module enemies
+$8D6D c FirePitActor ; Actor handler: a pit of fire that kills on touch
+> Handler of the template at $9CCA. The first pass (+8 = 100) starts at a random frame 0-7; +8 counts 0-11, the
+> frame is +8 / 2 of FirePitFrames; the colour +$0C flickers between $42 and $43 on PassCounter. The hero in the
+> same column or one left of it and less than 15 lines above the pit's top loses a life at once (JP $7ECE) unless
+> his state $74EA is $0F.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8D7C FirePitAnimate
+$8D95 FirePitTouch
+$8DA7 FirePitHeight
+$8DBE FirePitFrame
+$8DC6 b FirePitFrames 4 ; SetFrame's data: the frame records $C36D, the sprite bytes $C2D1 (4 frames of flames)
+$8DCA b FirePitColours 2 ; The pit's two colours, bright red and bright magenta on black
+$8DCC c FlameJetActor ; Actor handler: a jet of flame that rises out of the ground at random
+> Handler of the template at $9C9D. +8 counts the frames 0 to +$0A ($0D long, 7 short); at frame 3 the hero within
+> 20 lines (A11E) and in the jet's column or the next loses $10 (DamageHero, unless the item guard $86DD). The
+> colour comes from $B38D. At the end of a jet: the next one long (3 in 4) or short, after a pause of 66-129 passes
+> (+8 = $BE + 0-63, counting up through 0); between jets +0 = $FE (not drawn). The frames from FlameJetLong /
+> FlameJetShort, sprites $C391 (13 frames of a flame growing and dying).
+> Witness: L1 12846 (c1o, deaths, s1-idle, s1-right).
+$8DE7 FlameJetHit
+$8DF1 FlameJetStep
+$8E0A FlameJetPause
+$8E17 FlameJetNext
+$8E26 FlameJetShow
+$8E33 FlameJetFrame
+$8E3D b FlameJetFrames 4 ; SetFrame's data: the frame records $C4E5, the sprite bytes $C391
+$8E41 b FlameJetLong 13 ; The long jet's frames
+$8E4E b FlameJetShort 8 ; The short jet's frames
+$8E56 c SpawnBossBridge ; Spawn the bridge slab (template $9D23) at column 15, line $87
+> Jumped to by BossWingRight once BossPhase is 3 or more. Spawns into IY (SpawnActor $A4B1).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8E60 c BossWingLeft ; Actor handler: the winged boss's left wing
+> Handler of the template at $9CD1. Sprite $DDE9, 3 bytes x $21 lines, then BossPart. Stage 1: the winged demon of
+> room 12 (the RZX run's window; no recording with an L1 reached it).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8E6A c BossWingRight ; Actor handler: the winged boss's right wing
+> As BossWingLeft (template $9CDA); from BossPhase 3 on it turns into SpawnBossBridge.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8E7C c BossBody ; Actor handler: the winged boss's body
+> Template $9CE3. Sprite $DE4C, 6 bytes x $20 lines, then BossPart.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8E86 c BossHead ; Actor handler: the winged boss's head, the part that takes the hits
+> Template $9CEC. Sprite $DFCC, 2 bytes x $14 lines. BossFlash counts down; a hit (+9 bit 4, set by the hero's
+> weapon) clears the bit, sets BossFlash to 1 and takes one of BossHits; at 0 the boss is beaten (JP $A182).
+> Then BossPart.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8E98 BossHeadHit
+$8EB2 c BossPart ; The winged boss's parts' common handler: sprite, then the phase
+> HL, B, C = the part's sprite, width, height into +4/+5, +2, +3. BossPhase 1: nothing more. 4: the part is removed
+> ($B35E). 3: the body (+0 = $10) falls (BossFall), the other parts are removed. 2: the flight: the lair's flag
+> $9B84 set to 4, +$0E = $FF, the colour (BossColour), then +$0A: 0 wait +8 passes; 1 rise to line +$0B; 2 hover
+> by BossHoverPath (+8 indexes it; $80 ends: state 3); 3 the attack: +$0D counts to $1A, the body (+0 = $0E)
+> changes its sprite at 10 (BossBodySprite), the head (+0 = $10) shows BossHeadFrames between 5 and $11 and at 10
+> throws (JP $B18B); then back to state 2.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8ED8 BossFlight
+$8EF3 BossRise
+$8F05 BossHover
+$8F24 BossHoverEnd
+$8F2D BossAttack
+$8F68 BossAttackEnd
+$8F6D w BossHeadFrames 2 ; The head's sprite at each attack step 5-17 (open and close the mouth)
+$8F87 c BossColour ; Set the boss part's colour: white on red while BossFlash, else BossColours[PassCounter & 7]
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8F94 BossColourCycle
+$8FA5 c BossFall ; The beaten boss's body falls; at the floor it turns into the next phase
+> BossColour, then +$0E counts up to $14 and the body drops by BossFallSteps[+$0E / 2] lines to line $5C at most.
+> +$0B - 2 each pass; at 0 the body is removed and $A098 spawns (D = the column, E = $60, sprite $EBAC, L = 7,
+> H = $24) its remains; BossPhase = 4.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$8FB3 BossFallDrop
+$8FC6 BossFallLine
+$8FE8 b BossFallSteps 11 ; The lines the falling body drops by, from rising (-4) to falling fast (5)
+$8FF3 c BossBodySprite ; The body's sprite of the attack: $DF0C under step 10, $DE4C from it
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$9000 BossBodySpriteSet
+$9007 c BossGrowPart ; Grow a part's height to $20 while its state is 1 (no caller)
+> Then BossPart. No template or code names $9007: a leftover.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$901D b BossColours 8 ; The boss's colours over 8 passes (ink 7 down to 3 and back)
+$9025 b BossHoverPath 8 ; The line steps of the hover, 64 bytes (+8 & $3F); $80 ends the hover
+@module actors
+$9065 c GateActor ; Actor handler: a gate that rises while the hero holds the key item
+> Template $9D00. When the selected item (GetSelectedItem) is of kind 2 the gate rises (+$0E - 1) to line $28, else
+> it sinks (+1) to $48; GateOpen = 1 while it is above line $38. Frame 0 of GateFrames (sprite $D9CA, 2 x 24: bars).
+> Witness: L1 82 (c1o, deaths).
+$9076 GateRise
+$907E GateSink
+$908B GateState
+$909B GateFrame
+$909F b GateFrames 4 ; SetFrame's data: the frame records $D9FA, the sprite bytes $D9CA
+$90A3 c BridgeSlabActor ; Actor handler: a slab that sinks into place and becomes floor
+> Templates $9D1B and $9D29. Sprite $C2B1 (4 bytes x 8). Waits while BossPhase is under 3, then sinks one line a
+> pass to line $70 and there writes cell kind 7 into its 4 cells of the room's cells ($7280 + line / 8 x 32 + its
+> column): the hero can stand on it.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$90C7 BridgeSlabLand
+@module enemies
+$90E7 c ArenaHeadActor ; Actor handler: the arena boss's head (opens its mouth, breathes)
+> Template $9D10. Removed once ArenaBossBeaten. +$0A counts down from 16-23 (random); in state 6 it breathes
+> ($B1D5); the frame is ArenaHeadMouth[min(+$0A, 7)] of ArenaHeadFrames (sprites $CED2: 6 x 40 closed, 7 x 38 open).
+> Stage 1: the green dragon's head.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$9108 ArenaHeadCount
+$9115 ArenaHeadFrame
+$911F b ArenaHeadFrames 4 ; SetFrame's data: the frame records $D0CC, the sprite bytes $CED2
+$9123 b ArenaHeadMouth 8 ; The frame at each count 0-7 (1: the mouth open)
+$912B c StatueActor ; Actor handler: a statue head that spits at the hero and breaks after hits
+> Templates $9CF7 and $9D09. Colour 3; a hit (+9 bit 4) flashes it ($41) and takes one of +$0B, at 0 it breaks
+> (JP $A19B). Idle at frame 0 until Random & $0F is 4, then +8 counts 0-11 (frames 0, 1, 2, 2, 1, 0 of
+> StatueFrameSeq, +8 / 2) and at 3 spits (FireShot $B497). Sprites $DA00 (3 x 31: the horse-like head).
+> Witness: L1 1033 (s1-right).
+$9143 StatueIdle
+$914A StatueAnimate
+$9164 StatueWait
+$916D StatueFrame
+$917C b StatueFrames 4 ; SetFrame's data: the frame records $DB1A, the sprite bytes $DA00
+$9180 b StatueFrameSeq 6 ; The frames of one spit
+$9186 c HangingActor ; Actor handler: a hanged body that swings and strikes the hero passing under it
+> Templates $9C8B and $9C94. Sprite $C533, 2 bytes x $25 lines, 8 frames of 74 bytes. A hit removes it ($A1CF,
+> $A48E). State 0: the swing, a frame each 3rd pass; after +$0E swings state 1. State 1: frame 0; the hero within 2
+> columns and less than $18 lines under it loses 4 (DamageHero), the body swings again for 4-11 times.
+> Witness: L1 2773 (c1o, deaths, s1-right).
+$919D HangingSwing
+$91E4 HangingStill
+@module actors
+$921E c ClearActors ; Clear the shots and free all 13 actor records ($74F2, 234 bytes of $FF)
+> Witness: L1 4 (s1-idle, s1-right).
+@module rooms ; The room data, Unrle, the room builder and the room changes
+@about A stage's map is up to three grids of blocks of 2 x 2 tiles (Grid0, Grid1, Grid2 at $9B6F: the size, the start window, the room table of exits); a room is a window of 14 x 9 blocks stepping 11 columns and 6 rows. At each room change RoomChange $988B unpacks StageGraphics (Unrle $A424) into the play buffer, RoomCells $9928 writes the window's 28 x 18 tile numbers into Cells, the tiles are drawn once onto the screen with their colours into ShadowAttributes, BuildSpans $99E9 lists the open runs, and LoadRoomActors $A4CC puts the room's placements into actor records. The room exits ($AADA) and the grid passages ($AB1C) move the window.
+$922F c ResetObjectLists ; Clear the taken flags of the stage's three object lists
+> The lists at $9BA0, $9C69 and $9C78: 3-byte entries up to $FF, bit 7 of the first byte cleared (ClearTakenFlags).
+> Witness: L1 2 (s1-idle, s1-right).
+$923E c ClearTakenFlags ; Clear bit 7 of each 3-byte entry at HL up to the $FF end
+> Witness: L1 156 (s1-idle, s1-right).
+@module actors
+$924B c ClearShots ; Fill the shot slots $75E0-$763F (96 bytes) with $FF
+> Witness: L1 30 (c1o, deaths, s1-idle, s1-right).
+@module hero
+$9259 c RespawnCountdown ; The hero's wait after a death; then he comes back at the room's respawn point
+> IY = the hero. Every 2nd pass +$10 - 1; at 0: state 0, position (+$0D, +$0E) = RespawnPoint, flags 0,
+> RespawnShiftX = $FF, the standing frame (JP $ADDD). Reached from $AC91.
+> Witness: L1 797 (c1o, deaths, s1-right).
+$927C c RespawnPoint ; D, E = the respawn column and line of the room RoomNumber in grid GridNumber
+> Witness: L1 13 (c1o, deaths, s1-right).
+$9290 RespawnPointRead
+$929D b RespawnPoints 8 ; Column, line of each room: grid 0 (18 rooms), grid 1 (3) at $92C1, grid 2 (1) at $92C7
+$92C1 RespawnPointsShaft ; grid 1
+$92C7 RespawnPointsArena ; grid 2
+@module actors
+$92C9 c MoveActorY ; +$0E (the base line) + C
+> Witness: L1 86 (c1o, deaths, s1-right).
+@module hero
+$92D1 c ThrowItem ; Throw the selected item when the fire key is pressed (one throw a press)
+> Reached from $AC89. FireLatch makes it one throw a press. Unless the hero's state is $0F: takes one of the selected
+> item's count (none left: nothing), redraws it ($7D5E), plays effect 8 and launches a shot from the hero's hands
+> ($B296: D = the column (one less facing left), E = the line + 8 rounded to a cell, B = the direction, C = 9).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$92E1 ThrowItemPress
+$931D ThrowItemLeft
+@module render
+$9325 c FadeInStep ; One step of the colour fade: each cell's ink one nearer its shadow attribute
+> Over the 576 attributes from $58C2 (row 6 column 2) against the shadow $6DC2: where the shadow is non-zero, on odd
+> passes the ink goes down one, on even ones up one toward the shadow's ink (with the shadow's paper). StageFadeIn
+> calls it 35 times.
+> Witness: L1 70 (s1-idle, s1-right).
+$932E FadeCell
+$933E FadeUp
+$934A FadeNext
+@module enemies
+$9353 c SpawnRandomEnemy ; Spawn a warrior (two records) at a random place of the room, when the room allows
+> Needs a free pair (FindFreeActorPair). D = Random & 3 picks one of the room's 4 places (bits 3-0 of
+> SpawnRooms[RoomNumber]); the place's column is D x 6 + 3, its line $1C, or $70 when bit 4 is set. Not when another
+> body stands within 2 columns (IsColumnTaken). Spawns WarriorTemplate $9D7D (a warrior that rises from the ground,
+> +$0B = 1 for the upper line) and its head $9D8F in the next record.
+> Witness: L1 237 (c1o, deaths, s1-idle, s1-right).
+$936E SpawnPlaceShift
+$9372 SpawnPlaceTest
+$938B SpawnPlaceFree
+$939F SpawnHead
+$93AF b SpawnRooms 18 ; Per room: bits 0-3 the 4 spawn places allowed, bit 4 the lower line
+$93C1 c IsColumnTaken ; NZ when an actor with a body (+$0F bit 2) stands within 2 columns of D
+> Over the 14 records from the hero $74E0.
+> Witness: L1 13 (c1o, deaths, s1-right).
+$93C9 IsColumnTakenLoop
+$93DD IsColumnTakenYes
+$93E4 IsColumnTakenNext
+$93F2 c WarriorHeadActor ; Actor handler: the warrior's head (the record after the warrior)
+> Follows the warrior one record before (IY - $12): while it rises (state 1) the head flies in onto its shoulders
+> (WarriorHeadAssemble; then the warrior's state + 1); when it collapses (state 5) the head flies off
+> (WarriorHeadFly); else the head is hidden (+$0F bit 6).
+> Witness: L1 860 (c1o, deaths, s1-right).
+$940C c WarriorHeadAssemble ; The head comes down onto the rising warrior
+> FollowLeader; +8 counts to $22, the frame WarriorHeadSteps[+8 / 2]; at $22 the warrior's +8 = $FF and its state
+> + 1.
+> Witness: L1 321 (c1o, deaths, s1-right).
+$9429 WarriorHeadAssembleFrame
+$9436 b WarriorHeadSteps 17 ; The head's frames while it comes down
+$9447 c WarriorHeadFly ; The head flies off the collapsing warrior
+> A curve of $26 steps (+$0E by WarriorHeadArc, back by StepFineBack), frame $0D; at the end WarriorHeadLand.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$9477 WarriorHeadFlyFrame
+$947C b WarriorHeadArc 8 ; The head's line steps of the flight (32 bytes)
+$949C c WarriorHeadLand ; The flown head lands: an item or a pickup in its place
+> BossPhase 4: $A87B with the head's cell (D, E); else spawns the template $EB2C ($B35E then $A098).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$94BB WarriorHeadLandBoss
+$94C3 WarriorHeadLandPickup
+$94D0 c WarriorActor ; Actor handler: the warrior (stage 1: a skeleton with sword and shield)
+> Template $9D7D. By state +$0A: 0 WarriorRise, 2 WarriorFace, 3 WarriorWalk, 4 WarriorFight, 5 WarriorCollapse,
+> 6 WarriorBlock, 7 WarriorStrike; state 1 (the head coming down) only shows the frame, or WarriorHit on a hit.
+> Witness: L1 946 (c1o, deaths, s1-right).
+$9500 b UnusedRet 1 ; A RET no code reaches
+$9501 c FollowLeader ; Copy the leader's base position (record before) into this record; drop both if one is gone
+> When either record's +0 is $FF both are freed and the caller's caller returns (POP HL).
+> Witness: L1 321 (c1o, deaths, s1-right).
+$951C FollowLeaderGone
+$9526 c WarriorRise ; State 0: the warrior comes up out of the ground (or down onto it)
+> +$0B 0: up 4 lines a pass to line $4C; else down 4 to $5C or the floor (IsSolid $B162). Then +8 counts to 8 and
+> the state becomes 1.
+> Witness: L1 145 (c1o, deaths, s1-right).
+$954D WarriorRiseDone
+$955E WarriorRiseUp
+$956D c WarriorFace ; State 2: turn to the hero, then walk
+> Witness: L1 8 (c1o, deaths, s1-right).
+$9588 WarriorFaceRight
+$958F c WarriorWalk ; State 3: walk toward the hero; fight when he is in reach
+> +8 counts 0-$23; at $0B checks the floor ahead and the hero in reach (IsHeroInReach): turns (WarriorTurn) when
+> he is behind, stops for another body ahead (IsWarriorAhead), else fights (state 4); at 0 and $12 one column
+> forward, dropped at the room's edge (column 0 or $1F, $B363). The frame WarriorWalkFrames[+8 / 2].
+> Witness: L1 365 (c1o, deaths, s1-right).
+$95A6 WarriorWalkCheck
+$95B4 WarriorWalkAhead
+$95D4 WarriorWalkFacing
+$95E2 WarriorWalkStop
+$95E6 WarriorWalkStep
+$95ED WarriorWalkMove
+$95FF WarriorWalkFrame
+$960F b WarriorWalkFrames 18 ; The walk's frames (14-17)
+$9621 c IsHeroInReach ; Z when the hero stands 3 columns in front, less than 10 lines below the warrior's top
+> Witness: L1 74 (c1o, deaths, s1-right).
+$963D IsHeroInReachColumn
+$9642 c WarriorFight ; State 4: block the hero's blows, strike at random
+> The hero out of reach: back to walking (state 3) or turning. The hero striking (HeroAttacking $7FFA) and facing
+> it: block (state 6) while +$10 lasts, else collapse. Else 1 in 8 passes strikes (state 7) for 4 (DamageHero,
+> unless the item guard).
+> Witness: L1 32 (c1o, deaths, s1-right).
+$9659 WarriorFightFacing
+$9671 WarriorFightReach
+$969C WarriorFightStrike
+$96AE WarriorFightSwing
+$96B9 b UnusedRet2 1 ; A RET no code reaches
+$96BA c WarriorHit ; A hit: turn to the hero and collapse
+> +$1A (the head's +8) = $FF; state 5.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$96C6 WarriorHitTurn
+$96DC WarriorCollapseStart
+$96EB c WarriorTurn ; Turn round (one column back when facing left) and rise again (state 0, +8 = 7)
+> Witness: L1 5 (c1o, deaths, s1-right).
+$96FA WarriorTurnDone
+$9705 c WarriorCollapse ; State 5: the warrior falls apart (14 frames), then is removed
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$9719 b WarriorCollapseFrames 4 ; SetFrame's data: the frame records $DD95, the sprite bytes $DB2C
+$971D c WarriorBlock ; State 6: hold the shield up (frame $12) for +8 passes, then fight on (+$10 - 1)
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$9738 c WarriorStrike ; State 7: the sword swing (WarriorStrikeFrames), then fight on
+> Witness: L1 27 (c1o, s1-right).
+$974F WarriorStrikeEnd
+$975F b WarriorStrikeFrames 4 ; The swing's frames
+$9763 c WarriorFrame ; Show frame +8 of the warrior's frames
+> Witness: L1 536 (c1o, deaths, s1-right).
+$9766 c WarriorSetFrame ; Show frame A of the warrior's frames (SetFrame $AA02 with WarriorFrames)
+> Witness: L1 1233 (c1o, deaths, s1-right).
+$9769 b WarriorFrames 4 ; SetFrame's data: the frame records $CE14, the sprite bytes $C7DF (21 frames)
+$976D c IsWarriorAhead ; NZ when another body stands 1 or 2 columns ahead (B = 0: 2, 1: 1)
+> Witness: L1 12 (c1o, deaths, s1-right).
+$9785 IsWarriorAheadLoop
+$9795 IsWarriorAheadNext
+$97A0 IsWarriorAhead2
+$97A6 IsWarriorAhead1
+@module entry
+$97AC c StageSetUp ; Set up the stage's screen: the HUD, its colours, the score and the items
+> Clears the screen and the shadow, copies the HUD's colours $7600 (6 rows) into the shadow and shows them,
+> dissolves the HUD's picture $7000 in (DissolveHud), paints the HUD's boxes (FillShadowAttributes x 4), then draws
+> the items with $7D36 / $7C85 three times (with $7CED patched to RET and ItemSelected = 3), the score, the score's
+> reveal (RevealScore) and the lives (JP $7DCD).
+> Witness: L1 2 (s1-idle, s1-right).
+$97D5 b HudBox1 5 ; FillShadowAttributes' data: column, line, width, height, colour
+$97DA HudBoxPaint2 ; the code resumes after the 5 bytes
+$97DD b HudBox2 5 ; the score box: white on blue
+$97E2 HudBoxPaint3
+$97E5 b HudBox3 5 ; the item box
+$97EA HudBoxPaint4
+$97ED b HudBox4 5 ; the play area: black
+$97F2 StageSetUpItems
+$9824 c StageFadeIn ; Run 30 quiet passes, then fade the room's colours in
+> 30 x (3 HALTs + PassTick), then 7 x 5 steps of FadeInStep a HALT each.
+> Witness: L1 2 (s1-idle, s1-right).
+$982B FadeInRound
+$9832 FadeInFrame
+$9842 c IdlePasses ; B x (3 HALTs + PassTick)
+> Witness: L1 60 (s1-idle, s1-right).
+@module mainloop
+$984D c PassTick ; The pass's counters: PassCounter + 1, the energy, the timers and the lives' colours
+> PassCounter + 1, then $7E9F, $A3C5, $836D and $7DD2.
+> Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+@module entry
+$985D c RevealScore ; Raise the score's digits into the HUD line by line (8 steps)
+> Draws 1 to 8 lines of the digit buffer $7640 at columns 6 (6 wide) and 15 (2 wide), one line higher each step.
+> Witness: L1 2 (s1-idle, s1-right).
+$9865 RevealScoreStep
+@module rooms
+$988B c RoomChange ; Build the room: unpack the stage's graphics, draw the scenery, make the spans
+> BurstTimer = 100. Unrle $A424 the packed tiles and map $B4B2 into $5B00 (the play buffer), clear the shots, build
+> the cells (RoomCells, IX = RoomGrid), $A057, then patch the tile bitmaps' and the attributes' addresses into $98F1
+> and $98D3 (from the header words $5B02, $5B04) and draw every cell of the 18 x 28 play area: its attribute into
+> the shadow $6DC2 and its 8 bitmap bytes straight onto the screen (CopyTileToScreen, from line 48 column 2). Then
+> BuildSpans, ClearBuffer (the unpacked data is gone) and the actors (JP $A4CC).
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+$98C3 RoomChangeRow
+$98CC RoomChangeCell
+$98D2 RoomChangeAttrs ; LD HL,n: n = the tile attributes' address
+$98F0 RoomChangeBitmaps ; LD BC,n: n = the tile bitmaps' address
+$991F c CopyTileToScreen ; Copy 8 bytes from HL to the screen cell DE (INC D a line)
+> Witness: L1 13104 (c1o, deaths, s1-idle, s1-right).
+$9921 CopyTileLine
+$9928 c RoomCells ; Write the room's 14 x 9 blocks as 28 x 18 tile numbers into the cells $7282
+> IX = the grid record (+0 the width in blocks, +6 the grid's offset in the map). The window starts at
+> RoomRow x width + RoomColumn of the map ($5B0A + the header word $5B08 + the offset); each block becomes 2 x 2 tiles
+> (PutBlock), the cells 64 bytes a block row (32 a cell row, columns 2-29).
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+$9938 RoomCellsRowOffset
+$993B RoomCellsColumn
+$995A RoomCellsRow
+$9960 RoomCellsBlock
+$9986 c PutBlock ; Write block A's 4 tile numbers at HL, HL + 1, HL + 32, HL + 33
+> The blocks are 4 tile numbers each at $5B0A + the header word $5B06 (top left, top right, bottom left, bottom
+> right). Also writes CellFlag (0) into each cell's twin 576 bytes lower ($7040 grid). Returns HL + 1 + 32.
+> Witness: L1 3276 (c1o, deaths, s1-idle, s1-right).
+$9992 PutBlockFlag
+@module render
+$99E9 c BuildSpans ; Turn the cells into tile kinds and list the open runs as spans for CopyBuffer
+> Patches $9A1C with the tile kinds' address ($5B0A + the header word $5B00). Each cell's tile number becomes its
+> kind (0 open, else solid scenery). Each run of open cells in a row becomes a span (AddSpan): 6 bytes from $76A0:
+> the length in cells, 0, the play buffer's address, the screen's address. SpanCount = the spans.
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+$9A0E BuildSpansRow
+$9A15 BuildSpansCell
+$9A1B BuildSpansKinds ; LD HL,n: n = the tile kinds' address
+$9A2F BuildSpansOpen
+$9A3B BuildSpansStart
+$9A4A BuildSpansNext
+$9A6E c AddSpan ; Open a span of 1 cell at the current cell (IX = the next span record)
+> Length 1, then the buffer's address $5B00 + SpanRow x 256 + CellColumn and the screen's ($FB60 + SpanRow x 16,
+> i.e. ScreenLineTable from line 48, + CellColumn); IX + 6.
+> Witness: L1 798 (c1o, deaths, s1-idle, s1-right).
+$9AB5 c ClearBuffer ; Clear the play buffer $5B00-$6CFF with PUSH HL (DI)
+> SP = $6D00, 144 x 16 PUSHes of 0 (4608 bytes); SP saved in SavedSP. Interrupts off meanwhile (DI ... EI).
+> Witness: L1 10218 (c1o, deaths, s1-idle, s1-right).
+$9AC2 ClearBufferLoop
+$9ADA c CopyBuffer ; Copy the open spans of the play buffer to the screen (an LDI chain cut by a patched JP)
+> SP walks the span table $76A0 (POP BC: the length, POP HL: the buffer, POP DE: the screen). For each span: patches
+> the LD BC at $9B45 with 32 - the length, writes JP $9B45 into the LDI chain at $9B09 + 2 x the length (saved at
+> $9B50), the LD E at $9B49 with the screen address's low byte; copies 8 lines (LDIs, then HL + 32 - length, E
+> back, D + 1); puts ED A0 ED back. SpanCount spans; interrupts off meanwhile.
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$9AE6 CopySpan
+$9B09 CopyChain ; 30 LDIs, cut by the JP patched over the one after the span's length
+$9B45 CopyLineEnd ; LD BC,n: n = 32 - the length
+$9B49 CopyLineE ; LD E,n: n = the span's screen address's low byte
+$9B4F CopySpanRestore ; LD HL,n: n = where the JP was put
+
+@module rooms
+$9B6F b Grid0 9 ; Grid 0's record (stage 1: the surface and the caves): 69 x 21 blocks, the start window at block column 22, row 0, the room table Grid0Rooms, map offset 0, 6 rooms a grid row
+> A grid record, 9 bytes: +0 the width and +1 the height in blocks, +2/+3 the start window's block column and row (where StartGrid $A444 puts the window; the grid passages rewrite them, $ABBA-$AC30), +4/+5 the room table, +6/+7 the grid's offset in the map section of the unpacked graphics, +8 the rooms a grid row of rooms. A room is a window of 14 x 9 blocks; the windows step 11 block columns and 6 block rows, so neighbouring rooms share 3 columns or 3 rows of blocks. RoomGrid ($FE23) points at the record of the hero's grid; RoomCells $9928 reads +0, +6/+7; RoomNumber counts the windows a grid row after another.
+> The room table, one byte a room: the exits, bit 0 right, bit 1 left, bit 2 up, bit 3 down (read by the edge checks $AADA). Item kind 7 writes 5 into room 12's byte $9B84 (right and up: the gate to the right opens).
+> Read in all four stage-1 builds (RoomCells, StartGrid, the edge checks). The file rooms.txt holds the three records, their room tables and the placement lists; tools/fig_rooms.py draws the map and every room from it (docs/img/maps/).
+$9B78 Grid0Rooms ; 18 rooms, 6 a row: the exits of each
+$9B8A Grid1 ; Grid 1 (stage 1: the shaft): 14 x 21 blocks, start 0, 0, map offset $05A9, 1 room a row (3 rooms)
+$9B93 Grid1Rooms
+$9B96 Grid2 ; Grid 2 (stage 1: the dragon's arena): 14 x 9 blocks, one room, map offset $06CF
+$9B9F Grid2Rooms
+$9BA0 Grid0Placements ; grid 0's 66 placements: the kind (bit 7: done), X and Y in cells over the whole grid; $FF $FF $FF ends
+> LoadRoomActors $A4CC puts each placement not done that lies in the room's window (X in 2 x RoomColumn to + 29, Y in 2 x RoomRow to + 17) into a free actor record, with the kind's row of ActorKinds; MarkPlacementDone sets bit 7 when the actor is beaten or taken, so it does not come back; ResetObjectLists $922F clears the bits at the stage's start. Grid 0: kinds 0 and 1 (hanging bodies) 7 each, 2 (flame jets) 15, 3-6 (urns and chests) 16, 7 (fire pits) 13, 8-11 (the winged demon's parts) 1 each, 12 and 14 (statue heads) 1 each, 13 (the gate) 1, 16 (the bridge slab) 1.
+$9C69 Grid1Placements ; grid 1's 4: statue heads (kinds 12, 14)
+$9C78 Grid2Placements ; grid 2's 5: four fire pits and the dragon's head (kind 15)
+@res stage1/rooms.bin
+
+@module actors
+$9C8A b ActorKinds 9 ; The 17 placement kinds, 9 bytes each: the Y offset, the handler, 5 bytes for the record's +8 to +$0C, the record's +$0F
+> LoadRoomActors $A4CC builds an actor from a placement with its kind's row: +1 Y = the placement's Y x 8 + the offset, +6/+7 the handler, +8 to +$0C (the counter, the flags, the state, the item, the attribute), +$0F (bit 0: kept over a room change). Stage 1's kinds: 0 and 1 a hanging body (HangingActor $9186; 1 faces the other way), 2 a flame jet (FlameJetActor $8DCC), 3-6 urns and chests that break when struck (StrikeableActor $A7C4; +$0B the item inside), 7 a fire pit (FirePitActor $8D6D), 8-11 the winged demon's left wing, right wing, body and head (BossWingLeft $8E60 to BossHead $8E86), 12 and 14 a statue head (StatueActor $912B), 13 the gate (GateActor $9065), 15 the dragon's head (ArenaHeadActor $90E7), 16 the bridge slab (BridgeSlabActor $90A3). Read in all four stage-1 builds (81 of its bytes: the kinds of the rooms the recordings visit).
+@res stage1/table-kinds.bin
+
+$9D23 b ActorTemplates 18 ; Seven whole actor records (18 bytes each, the first the bridge slab's) that SpawnActor $A4B1 copies for the actors no placement makes
+> The handler at +6/+7 and the frame at +4/+5 as for a placed actor; the rest as an actor record (HeroRecord $74E0). Read in all four stage-1 builds.
+$9D35 HeroTemplate ; the hero (PlaceHeroAtStart $A47D): handler $AA3E
+$9D47 ItemTemplate ; an item lying on the floor (SpawnItem $A098): 2 x 16, handler $A0E9
+$9D59 PieceTemplate ; a piece of the stage's artefact (handler $8233)
+$9D6B FragmentTemplate ; a fragment of a broken urn (3 x 11, handler $A891)
+$9D7D WarriorTemplate ; the warrior that rises from the ground (SpawnRandomEnemy $9353): handler WarriorActor
+$9D8F WarriorHeadTemplate ; its head, in the next record: handler WarriorHeadActor
+@res stage1/table-actor-templates.bin
+
+@isub $A4F5 LD BC,-18
+@isub $A5A9 LD BC,-18
+
+@module actors
+$9DA1 c InitStageState ; Clear and set the stage variables at the start of the stage
+> Clears $FE08-$FE5F (88 bytes), copies the 12 starting carried-object kinds from $7F2F to the carried kinds at $7F17, seeds RandomPointer from R and draws SpawnDelay (a random 0-15), then sets the stage's start values: BurstTimer $64 (no burst), RandomPointer and RandomSeed $07CF, EnergyChange $2E (energy refilled to full), ItemLast 6, and InitOnly10, InitOnly12, ItemSelected, ItemFirst, InitOnly3A, InitOnly40, InitOnly41, BossPhase, RespawnShiftX, ArenaBossHits.
+> Called once from StageEntry $7800. Output: none. Side effects: the $FE08-$FE5F stage variables.
+> Witness: L1 2 (s1-idle, s1-right).
+
+@module rooms
+$9E16 c LeaveRoomRight ; Move the room window 11 blocks right when the hero leaves by the right edge
+> IY = the hero's record. When the hero faces right (+9 bit 7 clear): ShiftRoomColumns with B = 11 blocks and C = 22 cells, SavePlayAttrs, RoomNumber + 1, BurstTimer = $64 (any burst stopped), RoomEvents. Facing left: nothing. Preserves IX and IY.
+> Witness: L1 67 (c1o, deaths, s1-right).
+$9E40 LeaveRoomRightEnd
+$9E45 c LeaveRoomLeft ; Move the room window 11 blocks left when the hero leaves by the left edge
+> As LeaveRoomRight, mirrored: only when the hero faces left (+9 bit 7 set); B = -11 blocks, C = -22 cells, RoomNumber - 1.
+> Witness: L1 369 (c1o, deaths, s1-right).
+$9E6F LeaveRoomLeftEnd
+$9E74 c LeaveRoomDown ; Move the room window 6 blocks down when the hero leaves by the bottom
+> IY = the hero. Only in the hero's state 3 (+$0A; state 2 with +8 under 8 goes nowhere): ShiftRoomRows with B = 6 blocks and C = 96 lines, SavePlayAttrs, RoomNumber + the grid's rooms-per-row (record +8), BurstTimer = $64, RoomEvents. Preserves IX and IY.
+> Witness: L1 153 (c1o, deaths, s1-right).
+$9E88 LeaveRoomDownState3
+$9EB4 LeaveRoomDownEnd
+$9EB9 c LeaveRoomUp ; Move the room window 6 blocks up when the hero leaves by the top
+> IY = the hero. Only in state 2 (+$0A) with +8 under 8: ShiftRoomRows with B = -6 blocks and C = -96 lines, SavePlayAttrs, RoomNumber - the grid's rooms-per-row, BurstTimer = $64, RoomEvents. Preserves IX and IY.
+> Witness: L1 1 (s1-right).
+$9EF2 LeaveRoomUpEnd
+$9EF7 c ShiftRoomColumns ; Move the room window by B blocks across, move the hero and the kept actors by C cells, build the room
+> Input: B = the blocks to move (signed), C = the cells (2B), IY = the hero. RoomColumn + B; the hero's X and entry X - C. The amount 2B is written into the two SUB operands at ShiftKeptX and ShiftKeptEntryX; then every used actor record with +$0F bit 1 (kept over a room change) is moved by it and freed when it falls outside columns 0-29; every other record is freed. Then $8A7B and a jump to the room builder $988B.
+> Witness: L1 20 (c1o, deaths, s1-right).
+$9F1E ShiftColumnsLoop
+$9F2E ShiftKeptX ; SUB n: n written above (2 x blocks)
+$9F3A ShiftKeptEntryX ; SUB n: n written above
+$9F41 ShiftColumnsFree
+$9F45 ShiftColumnsNext
+$9F4F c ShiftRoomRows ; Move the room window by B blocks up or down, move the hero and the kept actors by C lines, build the room
+> Input: B = the blocks to move (signed), C = the lines (16B), IY = the hero. RoomRow + B; the hero's Y and entry Y - C. C is written into the SUB operands at ShiftKeptY and ShiftKeptEntryY; every used record with +$0F bit 1 is moved by it (freed outside lines 0-143), every other record is freed. Then $8A7B and a jump to the room builder $988B.
+> The kept actor's new Y is stored at +0 (its X), not at +1 ($9F8A `LD (IY+$00),A`): the code moves a kept actor's Y into its X. Ran 6 times in s1-right.
+> Witness: L1 4 (c1o, deaths, s1-right).
+$9F74 ShiftRowsLoop
+$9F84 ShiftKeptY ; SUB n: n written above (16 x blocks)
+$9F90 ShiftKeptEntryY ; SUB n: n written above
+$9F97 ShiftRowsFree
+$9F9B ShiftRowsNext
+$9FA5 c SavePlayAttrs ; Keep the old room's play-area attributes for the fade-in of the next room
+> Copies the 576 attribute-shadow bytes of screen rows 6-23 ($6DC0, 18 x 32) to $7040 and sets RestoreAttributes = 1, so the next attribute pass ($8CAA) shows the new room over the old one's colours.
+> Witness: L1 24 (c1o, deaths, s1-right).
+$9FB6 c RoomEvents ; Spawn the bonus or item of a room that has one, after a room change
+> Called by the four LeaveRoom routines. By RoomNumber: room 0 event bit 0 (the bonus at D = $12, E = $54), room 5 bit 1 ($0A, $54), room 11 bit 2 ($09, $44), room 12 bit 3 ($09, $44); room 15 the reward item (SpawnRewardItem); with GridNumber = 1 only room 2, bit 4 ($07, $54). The event's bit goes to SpawnBonus.
+> Witness: L1 24 (c1o, deaths, s1-right).
+$9FD2 RoomEventRoom5
+$9FDF RoomEventRoom11
+$9FEC RoomEventRoom12
+$9FF9 RoomEventNone
+$9FFA RoomEventStageVar4B
+$A009 c SpawnRewardItem ; Spawn item kind 6 in room 15 when PiecesTaken is 5 and one kind-6 item was taken
+> Only when PiecesTaken = 5 and PiecesComplete = 1: SpawnItem at X 9, Y $30 with the frame $EB0C, kind 6, amount 1.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A023 c SpawnBonus ; Spawn a room's bonus (two records) unless its event bit is set in PiecesMask
+> Input: B = the event's bit, D, E = X and Y. Returns when PiecesMask has the bit. Else, when FindTwoFreeActors $8D50 finds two free records in a row, both get the template $9D59 (the bonus handler $8233) at D, E: the first with +$10 = the bit (BonusHandler sets it in PiecesMask when the hero takes it), the second with +$0B = 1 (its sparkle). Preserves IY.
+> Witness: L1 1 (s1-right).
+$A052 SpawnBonusFull
+
+@module render
+$A057 c BlackOutPlayArea ; Fill the attributes of screen rows 6-23 with 0 (black on black)
+> Fills $58C0-$5AFF (the play area's 576 attributes) with 0 before a room is built. Called by the room builder $988B.
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+
+@module actors
+$A065 c ScoreBurst20 ; Score 20, then burst the actor (shape $EF69) into particles and free it
+> IY = the actor. AddScore $7B53 with 20, then StartBurst at X - 7, Y / 8 with the shape $EF69 in the small mode, colours 6 and 4 (3 and 2 when +8 = 8). StartBurst returns into the caller, which frees the actor.
+> Reached from the handler $A7C4's jump table ($A7E2).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A08F ScoreBurst20Alt
+$A098 c SpawnItem ; Put an item actor (template $9D47) into a free record
+> Input: D, E = X and Y, BC = the item's frame, L = the item kind (+$0B), H = the amount (+$0A). FindFreeActor $8D3A; with a free record: SpawnActor with the template $9D47 (16 x 16 lines, handler ItemHandler), then the frame, kind and amount. Preserves IY.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A0BC SpawnItemFull
+$A0C3 c DropItemKind8 ; Free the actor and drop item kind 8 (amount 36) where it entered the room
+> IY = the actor. D = its X, E = its entry Y; FreeActor $B35E, then SpawnItem with the frame $EB6C, kind 8, amount $24. Reached from $A7C4's jump table ($A7EF).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A0D6 c DropItemKind1 ; Free the actor and drop item kind 1 (amount 20) where it entered the room
+> As DropItemKind8 with the frame $EB8C, kind 1, amount $14. Reached from $A7C4's jump table ($A7F4).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A0E9 c ItemHandler ; An item actor: picked up when the hero stands on it
+> The handler of the template $9D47 (+6). $B3BD each pass; when the hero is within 20 lines (HeroWithinY) and in the item's column or the one after, AddScore 400, PiecesComplete + 1 for kind 6, AddCarried $7E5F with A = the kind (+$0B) and D = the amount (+$0A), PlaySoundVector 4, and FreeActor.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A0FE ItemHandlerTaken
+$A10F ItemHandlerAdd
+$A11E c HeroWithinY ; Carry set when the hero's Y is within C lines of the actor's
+> Input: IY = the actor, C = the distance. E = the hero's Y ($74E1), D = the actor's Y, then WithinDistance $A7B8: carry when |E - D| < C.
+> Witness: L1 251 (c1o, deaths, s1-idle, s1-right).
+$A129 c BurstAtActor ; Burst the actor's shape $EF69 (small mode, colours 2 and 3), then free it
+> IY = the actor: StartBurst at X - 6, Y / 8 + 2 with the shape $EF69, then FreeActor. No code or table in the image refers to $A129.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A14A c ArenaBossHit ; Free the hit actor and count a hit on the boss; on the 20th, drop item kind 2 and burst the boss
+> Reached by a jump from $859F. FreeActor, ArenaFlash = 1; ArenaBossHits + 1 up to 20. On the 20th hit: SpawnItem at $14, $70 (frame $EAEC, kind 2, amount 0), ArenaBossBeaten = 1, and StartBurst at $0E, 4 with the shape $EFC9 (colours 4 and 6, big mode).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A182 c BossFlees ; Mark the actor gone (+$0F = $14), BossPhase = 3, burst the shape $EF99 at 8, 4
+> Reached by a jump from $8EAD. Big mode, colours 4 and 5.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A19B c ScoreBurst64 ; Score 64, burst the actor (shape $EFB1), mark its placement done and free it
+> IY = the actor. AddScore 64, StartBurst at X - 7 (X - 5 facing right), Y / 8 + 1 with the shape $EFB1 (small mode, colours 1 and 3), MarkPlacementDone, FreeActor. Reached from $9141 (the handler $912B).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A1AB ScoreBurst64Left
+$A1CF c ScoreBurst160 ; Score 160 and burst the actor (shape $EF85, big mode)
+> IY = the actor. AddScore 160, StartBurst at X - 7, Y / 8 + 2 with the shape $EF85, colours 7 and 6, big mode. Reached from $9195 (the handler $9186).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A1F3 c StartBurst ; Turn a 16 x 12 shape into particles at $7040 that fly apart (UpdateBurst)
+> Input: A = BurstSmall (1 small: 14 steps; 0 big: 28), D, E = the shape's left column and top cell row, IX = the shape (12 rows of 2 bytes, bit 7 left), B and C = the two inks. PlaySoundVector 1, RandomPointer = $0D7A (every burst flies the same way), the colours C, C + $40 (bright), B, B + $40 into ParticleInks, BurstTimer = $FF. Each set bit of the shape gives a particle record of 4 bytes at $7040: X, Y (cell row), the direction (a random 0-5, + 13 for the right byte), the ink (a random 0-3); $FF ends the list. Preserves IY.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A201 StartBurstSound
+$A22A StartBurstRow
+$A22F StartBurstByte
+$A238 StartBurstBit
+$A246 StartBurstDirection
+$A267 StartBurstNextBit
+$A28B c UpdateBurst ; Move and draw the burst's particles one step (every pass)
+> Called by the main loop. Nothing while BurstTimer = $64. Else BurstTimer + 1; at the last step ($1C, or $0E when BurstSmall) it ends (StopBurst). The step picks the particles' glyph: $EE86[step + a random 0-3] x 8 + $EE66, written into ParticleGlyph. Each particle (4 bytes from $7040, $FF ends, $80 dead): its direction's step table at $EEA9 + direction x 32 gives an index into BurstSteps (dx, dy; the second set for directions 13 and up), X + dx kept within 1-30, Y - dy (a particle above row 0 or below row 17 dies: $80); then the 8 glyph bytes are stored into the play buffer at the cell and the cell's attribute (ParticleInks) via $B34E.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$A296 UpdateBurstStep
+$A2C9 UpdateBurstLoop
+$A2E1 UpdateBurstDirection
+$A301 UpdateBurstIndex
+$A316 UpdateBurstMove
+$A326 UpdateBurstY
+$A336 UpdateBurstStoreY
+$A339 UpdateBurstDraw
+$A349 ParticleGlyph ; LD DE,n: n = the step's glyph (written by UpdateBurst)
+$A387 UpdateBurstNext
+$A392 b BurstLeftover ; An unreached RET byte after UpdateBurst's loop
+> No code jumps here (the loop above ends with JP UpdateBurstLoop).
+$A393 c StopBurst ; BurstTimer = $64: no burst
+> Witness: L1 0 ().
+$A399 b ParticleInks 4 ; The burst's four particle attributes, written by StartBurst
+> ink C, bright ink C, ink B, bright ink B; the particle's byte 3 (0-3) picks one. As loaded: 2, $42, $43, 3.
+$A39D b BurstSteps 2 ; 20 (dx, dy) steps: 10 for the left-byte particles, 10 for the right-byte ones
+@res stage1/table-burst-steps.bin
+
+@module hud
+$A3C5 c DrawEnergyBar ; Redraw the HUD's energy bar when the energy changed
+> When Energy differs from EnergyShown: EnergyShown = Energy; the bar is Energy / 8 bytes of the pattern at $E43D, a last byte masked by BarMasks[Energy & 7] (written into BarEdgeMask), then zeros to 6 bytes; drawn on 6 screen lines from EnergyBarScreen ($4134). Called every pass from $984D.
+> Witness: L1 10246 (c1o, deaths, s1-idle, s1-right).
+$A3F6 DrawEnergyBarLine
+$A3FF DrawEnergyBarFull
+$A405 DrawEnergyBarEdge
+$A406 BarEdgeMask ; AND n: n = BarMasks[Energy & 7] (written above)
+$A411 DrawEnergyBarClear
+$A415 DrawEnergyBarNext
+$A41C b BarMasks 8 ; The left-aligned masks of 0-7 pixels for the bar's last byte
+
+@module rooms
+$A424 c Unrle ; Unpack an RLE block: the first byte is the escape, ESC n v is n copies of v, ESC ESC ends
+> Input: HL = the packed block, DE = the output. The block's first byte is its escape byte, written into UnrleEscape and UnrleEnd's compares. Then: a byte other than the escape is copied; the escape followed by n, v writes n copies of v (n = 0 gives 256); the escape twice ends. Output: HL = the second escape of the end mark, DE = after the output.
+> The room builder $988B unpacks the stage's tiles and map at $B4B2 with it to $5B00 at every room change (26 calls in the stage-1 recordings).
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+$A42C UnrleNext
+$A42E UnrleEscape ; CP n: n = the block's escape byte (written above)
+$A436 UnrleRun
+$A437 UnrleEnd ; CP n: n = the escape byte (written above)
+$A43E UnrleRunLoop
+$A444 c StartGrid ; Clear the room cells and the actors' extra state, enter the current grid at its start room, build it
+> Clears $7280-$74BF (the room's cells), fills $74C0-$74DF with $FF, calls $921E, then reads the RoomGrid record: RoomColumn = +2, RoomRow = +3, RoomExitsPtr = +4/+5 (the grid's room table), and jumps to the room builder $988B. Called at the stage start and from $AC37 (a grid change).
+> Witness: L1 2 (s1-idle, s1-right).
+
+@module actors
+$A47D c PlaceHeroAtStart ; Put the hero at X $0E, Y $31 (PlaceHero)
+> Witness: L1 2 (s1-idle, s1-right).
+$A481 c PlaceHero ; Put the hero's template $9D35 into the hero's record $74E0 at D, E, then $ADDD
+> Input: D, E = X and Y. Called from PlaceHeroAtStart and $AB1C (a grid change).
+> Witness: L1 2 (s1-idle, s1-right).
+$A48E c MarkPlacementDone ; Set bit 7 of the actor's placement (it does not come back)
+> IY = the actor: the placement +$10 x 3 + Placements gets bit 7, so LoadRoomActors skips it from now on.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A4A1 c ReviveAllPlacements ; Clear bit 7 of every placement of the current grid
+> Called once from StageEntry: every placed actor comes back.
+> Witness: L1 2 (s1-idle, s1-right).
+$A4A7 ReviveAllPlacementsLoop
+$A4B1 c SpawnActor ; Copy an 18-byte template (HL) into the record IY and put it at D, E
+> Input: HL = the template, IY = the record, D, E = X and Y (also the entry X, Y at +$0D, +$0E). Preserves IY and DE.
+> Witness: L1 18 (c1o, deaths, s1-idle, s1-right).
+$A4CC c LoadRoomActors ; Free the actors not kept over a room change and create the room's placed actors
+> Frees every record of $74F2-$75DB without +$0F bit 1. Then walks Placements (3 bytes: the kind, bit 7 done; X and Y in cells over the whole grid; $FF ends). A placement not done inside the room window (X in 2 x RoomColumn to + 29, Y in 2 x RoomRow to + 17) takes a free record found from $75CA down (no lower bound: it is assumed there is one) and is filled from the kind table $9C8A (9 bytes a kind: Y offset in lines, the handler, five bytes for +8..+$0C, +$0F): X and Y relative to the room (Y in lines + the offset), the entry X, Y, +$10 = the placement's index, width 1, height 8, +$11 = 0, and a random 0-63 for +$0A when the kind gives $40.
+> Called by the room builder at each room change.
+> Witness: L1 26 (c1o, deaths, s1-idle, s1-right).
+$A4D5 LoadRoomActorsFree
+$A4DF LoadRoomActorsNext
+$A4EE LoadRoomActorsSlot
+$A4FC LoadRoomActorsPlacement
+$A53E LoadRoomActorsKind
+$A541 LoadRoomActorsFill
+$A5A9 LoadRoomActorsTaken
+$A5AE LoadRoomActorsSkip
+$A5BD c RunActorHandlers ; Call the handler of every used actor record (the hero first)
+> For the 14 records from $74E0: when +0 is not $FF, the handler +6/+7 is written into HandlerCall and called with IY = the record.
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$A5C3 RunActorHandlersLoop
+$A5D3 HandlerCall ; CALL n: n = the record's handler (written above)
+$A5D6 RunActorHandlersNext
+
+@module render
+$A5DF c DrawActors ; Draw every visible actor into the play buffer, in two passes (+$0F bit 7 last)
+> First pass: the used records with +$0F bits 6 and 7 clear; second pass: those with bit 7 (drawn over the others). Each: ClipActor then DrawActorSprite. Bit 6 is never drawn.
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$A5E5 DrawActorsLoop
+$A5FF DrawActorsNext
+$A60D DrawActorsTopLoop
+$A621 DrawActorsTopNext
+$A62A c ClipActor ; The actor's visible lines, buffer address and frame address
+> IY = the actor. Output: B = the lines to draw (0 none), DE = the play-buffer address, HL = the frame. Y $C8 and up (above the top): ClipActorTop. Y $90-$C7 (below the play area): B = 0. Else B = the height cut at line $90; $7F4D makes the shifted copy at $7640 when +$11 is 1-99, and HL is then $7640, else the frame +4/+5.
+> Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+$A648 ClipActorShift
+$A65D ClipActorFrame
+$A664 c BufferAddressDE ; DE = $5B00 + Y x 32 + X of the actor IY
+> Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+$A67A ClipActorTop ; Above the top: draw the lines from line 0, skip the frame's first rows
+$A6A1 ClipActorTopSkip
+$A6A5 ClipActorTopDone
+$A6A7 ClipActorOff ; B = 0: nothing to draw
+$A6AA c DrawActorSprite ; Draw B lines of the actor's frame into the play buffer, then colour it
+> Input: B lines, DE = the buffer, HL = the frame (rows of +2 bytes, top first, no mask). +9 bit 0: copied opaque (DrawActorOpaque). Else ORed in by a row routine from the table $8910 (4 bytes a width 0-7: the right-facing and the left-facing routine); the left-facing routines mirror the bytes through the resident bit-reverse table $FA00 and step left, so a left-facing actor's X is its right column. A shifted copy (+$11 1-99) is one byte wider. The routine is written into RowDrawCall. Then ColourActor.
+> Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+$A6C6 DrawActorSpriteRoutine
+$A6D6 DrawActorSpriteSet
+$A6DF RowDrawCall ; CALL n: n = the row routine (written above)
+$A6E8 DrawActorOpaque ; LDIR each row of +2 bytes, 32 bytes a buffer line
+$A6EB DrawActorOpaqueLoop
+$A6FF c ColourActor ; Fill the actor's cells in the attribute shadow $6D00 with its attribute +$0C
+> The cells under the actor (screen row Y / 8 + 6; the column X, or X - width + 1 facing left; width +2, + 1 when shifted, written into ColourWidth; the rows the lines cover, cut at line $90) get +$0C in the attribute shadow at $6D00. Nothing below the play area.
+> Witness: L1 50388 (c1o, deaths, s1-idle, s1-right).
+$A70E ColourActorWidth
+$A73C ColourActorAddress
+$A757 ColourActorHeight
+$A75A ColourActorRows
+$A76D ColourActorRows2
+$A777 ColourActorRow
+$A778 ColourWidth ; LD B,n: n = the width in cells (written above)
+$A77B ColourActorCell
+$A788 c CycleItemInk ; +$0C = ItemInks[+$0B & 3] (not referenced)
+> No code or table in the image refers to $A788.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A799 b ItemInks 4 ; CycleItemInk's four attributes
+$A79D c FreeIfOnHero ; Free the actor when it is in the hero's column and cell row (not referenced)
+> When the hero's X ($74E0) equals +0 and the hero's Y and +1 are in the same cell row: +0 = $FF and a jump to $B2DC. No code or table in the image refers to $A79D.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+
+#
+# SetActorFrame $AA02 reads 4 bytes placed after its CALL and never returns there (it pops the address and returns
+# to the caller's caller): every CALL $AA02 is followed by its parameters, not code. For the head:
+
+
+@module enemies
+$A7B8 c AbsDiffBelow ; Carry when |E - D| is under A
+> In: A the limit, D and E the two values. Out: A = |E - D|, carry set when it is under the limit. It stores the
+> limit into its own compare at AbsDiffLimit $A7C1. Used for the distances between the hero and an actor (reach,
+> pick-up) by the strikeable actors, the fragments and the routines of the other modules.
+> Witness: L1 2857 (c1o, deaths, s1-idle, s1-right).
+$A7C1 AbsDiffLimit ; the limit, written by the first instruction
+$A7C4 c StrikeableActor ; Per-pass handler of an actor that the hero's low strike hits (two hits destroy it)
+> Its address is the handler word at $9CA6, $9CAF, $9CB8 and $9CC1 of the room data (UpdateActors $A5BD calls the
+> record's +6/+7). IY = the actor record. When the hero's low strike lands this pass ($7FEE: hero state 7 at frame
+> 4) and InStrikeReach $A816 says the actor is in front of the hero, the hit count (the record's +8, which is also
+> the frame number) goes up: an odd count plays effect 2 and the actor shows its damaged frame; an even one destroys
+> it: score +20 and an explosion ($A065), the actor marked dead in the grid's actor list ($A48E), then by the
+> record's +$10 bits 0-1: 2 drops the object at $A0D6, 1 the object at $A0C3, 0 bursts it into eight fragments
+> (ShatterActor $A803).
+> Each pass it shows frame (+8) of the frame table $E25A over the graphics at $E190 (SetActorFrame $AA02). In
+> stage 1 these are the graveyard's skeletons and hanging bodies (the room records); the hit path is reached only
+> in the RZX run (rzx-s1, no L1).
+> Witness: L1 20131 (c1o, deaths, s1-idle, s1-right).
+$A7E1 StrikeableActorDies ; the second hit: score, explosion, the dead mark, then the drop by +$10
+$A7F9 StrikeableActorFrame
+$A7FF w StrikeableActorSet 2 ; SetActorFrame's parameters: the frame table, the graphics base
+$A803 c ShatterActor ; Burst the actor into eight fragments and remove it
+> IY = the actor. B = its column, C = its line rounded down to 8, +5; SpawnFragments $A846 with D = 8, then
+> RemoveActor $B35E.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A816 c InStrikeReach ; Z when the actor IY stands where the hero's strike lands
+> The actor's column must be the hero's column $74E0 + 3 when the hero faces right ($74E9 bit 7 clear), - 3 when
+> he faces left, and its line within 24 ($18) of the hero's line $74E1 (AbsDiffBelow $A7B8). Out: Z (ReturnZ
+> $B2DC) in reach, NZ (ReturnNZ $B2E1) not.
+> Witness: L1 4 (c1o).
+$A82A InStrikeReachRight
+$A832 InStrikeReachLine
+$A843 InStrikeReachMiss
+$A846 c SpawnFragments ; Start D fragment actors at column B, line C
+> Seeds the random pointer RandomPointer $FE0A with $07CF (so every burst looks the same), writes B and C into the
+> LD D / LD E at FragmentColumn $A85D and FragmentLine $A85F, and for each of the D fragments takes a free actor
+> record (FindFreeActor $8D3A; it stops quietly when none is free), random parameters (RandomFragmentParams $A86D)
+> and starts it (InitFragment $A87B). IY is kept.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A857 SpawnFragmentsLoop
+$A85D FragmentColumn ; LD D,n: n = the column, written by SpawnFragments
+$A85F FragmentLine ; LD E,n: n = the line, written by SpawnFragments
+$A867 SpawnFragmentsNext
+$A86D c RandomFragmentParams ; B = its arc (0-3), C = its speed (0-3), A = its facing (bit 7)
+> From two Random $8B85 bytes: B = the first AND 3, C = the second AND 3, A = the second AND $80.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A87B c InitFragment ; Fill the actor record IY as a fragment and run its first step
+> Copies the fragment template $9D6B into the record (InitActor $A4B1 with D, E the column and line), then the
+> record's +9 = A (facing), +$0A = B (the arc), +8 = C (the speed in pixels a step), and goes on into FragmentActor.
+> Also jumped to from $94C0 (a fragment with B = C = 0, A = 0).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A891 c FragmentActor ; Per-pass handler of a fragment: fly an arc, land, lie, sink, be picked up
+> The handler word of the fragment template ($9D71). IY = the fragment. Its colour alternates (ColourRedMagenta
+> $B377). The step counter +$0B runs from 0: steps 5, $0E, $14 and $17 play effect 3 (a bounce); each step moves
+> it by +8 pixels a pass across (MoveFragment $A97A, reversed when facing left) and down by the step's entry of
+> FragmentArc0 $A9CA (arc +$0A = 0) or FragmentArc1 $A9E6 (other arcs; doubled when +$0A bit 1 is set); from step
+> $18 it no longer moves across. At steps 9, $10, $15 and $17 it looks at the cell under it (column + 2, line +
+> $16, $14 or $0E; CellAt $B162): no solid ground there makes it fall (step $1C: 7 lines a pass, removed under line
+> $90). Step $1B is the rest (FragmentRest $A91D): +$0E counts down; under 6 it sinks 3 lines a pass and at 0 it is
+> removed. A fragment the hero touches (his column or the one left of it, his line within $20) is taken: the pending
+> energy change EnergyChange $FE4E + 6, score +25, effect 5, and it is removed.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A8B9 FragmentBounce
+$A8BF FragmentStep
+$A8D1 FragmentArcEntry
+$A8DD FragmentDrop
+$A8EB FragmentSetLine
+$A8EE FragmentMove
+$A909 FragmentGround
+$A91D FragmentRest
+$A939 FragmentTouch
+$A946 FragmentTouchLine
+$A96A FragmentFall
+$A97A c MoveFragment ; Move the fragment E pixels across and point it at its pre-shifted image
+> IY = the fragment, E = the pixels (negated when it faces left, +9 bit 7). The pixel column (+0 x 8 + the
+> sub-column +$0D) moves by E; +0 and +$0D take the new column and pixel. The image pointer +4/+5 = $E9E4 + $21 x
+> the shift (Multiply $8B24; the shift is the pixel, or 7 - the pixel when it faces left): eight pre-shifted copies
+> of 33 bytes. A fragment that reaches column 0 or 31 is removed (RemoveActor $B35E).
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$A990 MoveFragmentColumn
+$A9AD MoveFragmentImage
+$A9CA b FragmentArc0 7 ; The line change of each step of a fragment's arc 0 (28 signed bytes)
+> Read by FragmentActor $A891 (+$0B the step): up 8, 6, 4, 2, 1 lines, then down 1, 2, 4, 6, 8, a short second hop
+> and the rest. Known only from the code (FragmentActor never ran in a recording with an L1).
+$A9E6 FragmentArc1 ; the arcs 1-3 (doubled for 2 and 3): a lower hop
+@module actors
+$AA02 c SetActorFrame ; Set the actor IY to frame A of a frame table (the 4 bytes after the CALL)
+> The CALL is followed by two words: the frame table DE and the graphics base BC; the routine pops them and
+> returns to its caller's caller. A frame record is 6 bytes (FrameRecordAddress $B12A: DE + 6A): +0 the column
+> offset (negated when the actor faces left, +9 bit 7), +1 the line offset, +2 the width in bytes, +3 the height in
+> lines, +4/+5 the offset of the image from the graphics base. The actor's column +0 = the offset + its base column
+> +$0D, its line +1 = the line offset + its base line +$0E, +2 and +3 the size, +4/+5 the image address. An image is
+> width x height bytes, row by row, one bit a pixel, no mask (DrawSprite $B42B copies it).
+> Witness: L1 28567 (c1o, deaths, s1-idle, s1-right).
+@module hero
+$AA3E c HeroActor ; Per-pass handler of the hero's record ($74E0): move, fall, leave the room, change grid
+> The handler word of the hero's template ($9D3B), called first in each pass of UpdateActors $A5BD with IY =
+> $74E0. HeroUpdate $AC3D (controls and states), CheckHeroFooting $AA67 (ledges and falls), CheckRoomExits $AADA
+> with IX = RoomExitsPtr $FE2E, CheckGridPassages $AB1C, then RoomExitsPtr = the grid record's word +4 +
+> RoomNumber $FE30 (the room may have changed).
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$AA67 c CheckHeroFooting ; Catch a ledge in a jump, or start a fall where the ground ends
+> IY = the hero. In a jump (state 2) at frame $0C: solid ground under the feet one column ahead (CellUnderFeet
+> $B134, E = 1, D = 2) lands him on the ledge: frame $0F, the base column 2 back, the base line 16 up ($92C9), on
+> into the jump's frame (JumpFrame $B0A9); at frame $0F with no ground there he drops (StartDrop $AF2D). Standing
+> (state 0) or walking (state 1) at frame 5 or $0B with no ground under him (E = 2, D = 0) starts a fall (StartFall
+> $AF1B).
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$AA8E CheckHeroFootingState
+$AAAC CheckHeroFootingWalk
+$AAB9 CheckHeroFootingGround
+$AACD CheckHeroFootingGround2
+@module rooms
+$AADA c CheckRoomExits ; Leave the room when the hero crosses an open edge
+> IY = the hero, IX = the room's exit flags (RoomExitsPtr $FE2E). Bit 1: column under 6 leaves left ($9E45); bit 0:
+> column $1A and up leaves right ($9E16); bit 3: line $70 and down leaves down ($9E74); bit 2: line under $10 leaves
+> up ($9EB9). Not while the hero is dying (state $0F).
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$AAEF CheckRoomExitRight
+$AAFE CheckRoomExitDown
+$AB0D CheckRoomExitUp
+$AB1C c CheckGridPassages ; Pass between the map grids at their fixed doors
+> The stage's three grids are joined at four doors, each a room, a column and a facing (GridNumber $FE4B, RoomNumber
+> $FE30, the hero's column $74E0 and facing $74E9):
+> grid 0 room 7, column 4, facing left, walking: into the shaft (EnterGrid1 $AB83);
+> grid 0 room $11, column $1D and up, facing right: into the single room (EnterGrid2 $ABDD);
+> grid 1 room 2, column $1D and up, facing right: back to the surface (LeaveGrid1 $ABA7);
+> grid 2, column 1, facing left: back to the surface (LeaveGrid2 $AC01).
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$AB3F CheckGridPassageRoom11
+$AB51 CheckGridPassageGrid1
+$AB6E CheckGridPassageGrid2
+$AB83 c EnterGrid1 ; Go into grid 1 (the shaft $9B8A), room 0, the hero at column 2, line $F1
+> RoomGrid $FE23 = $9B8A, Placements $FE25 = $9C69, RoomNumber 0, PlaceHero $A481 (D = 2, E = $F1), the room built
+> again (RebuildRoom $AC37), GridNumber 1. IY is kept.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$ABA7 c LeaveGrid1 ; Back from the shaft to grid 0 room 7, the hero at column 2, line $21
+> RoomGrid $9B6F, Placements $9BA0, room 7. The grid record's bytes $9B72 and $9B71 are set to 6 and $0B for the
+> build and put back to 0 and $16 after it (the record's +2 and +3, read by the room build). GridNumber 0.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$ABDD c EnterGrid2 ; Go into grid 2 (the single room $9B96), the hero at column 2, line $31
+> RoomGrid $9B96, Placements $9C78, room 0, GridNumber 2.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$AC01 c LeaveGrid2 ; Back from the single room to grid 0 room $11, the hero at column $1A, line $29
+> As LeaveGrid1 $ABA7 with $9B72 = $0C and $9B71 = $37 for the build, room $11.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$AC37 c RebuildRoom ; Clear the room's cells and build the room again
+> ClearRoom $A444, then on into BuildRoom $9FA5.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+@module hero
+$AC3D c HeroUpdate ; The hero's pass: items, hazards, weapons, colour, then his state's handler
+> IY = the hero. Item 1 drains ($89A1). A deadly cell (bit 3) under him at his column + 4 (facing right) or his
+> column (left) and his line, or his column 0 or 32 and up, costs a life (LoseLife $7ECE) unless he is dying (state
+> $0F). Then, not dying: the selected item's kind ($7F05) fires its weapon: 7 FireBolt $AD14, 5 ThrowAmmo $AD4B, 8
+> $92D1. Dying: the death pause ($9259). Then the colour (HeroColour $ACD9), and while HeroFreeze $FE58 counts down
+> the controls are ignored. Else by the state +$0A: 0 HeroStand $ADA2, 1 HeroWalk $AF64, 2 HeroJump $B087, 3
+> HeroFall $B021, 4 HeroLeapBack $B06B, 5 HeroStrikeMid $AE8E, 6 HeroStrikeHigh $AED4, 7 HeroStrikeLow $AE5D, 9
+> HeroLeap $B0B3, $0B the scripted move $871A.
+> Witness: L1 10190 (c1o, deaths, s1-idle, s1-right).
+$AC59 HeroUpdateHazard
+$AC65 HeroUpdateDeath
+$AC6F HeroUpdateWeapons
+$AC8C HeroUpdateState
+$ACA3 HeroUpdateDispatch
+$ACD9 c HeroColour ; Set the hero's colour: flashing when weak or shielded
+> IY = the hero, +$0C his colour. Energy $FE3F under $0E: the colour cycle of CycleColour $B3C4. Else item kind 1
+> selected with a count: white and blue on alternate passes. Else +$0C rises one a pass up to 7 (white).
+> Witness: L1 9393 (c1o, deaths, s1-idle, s1-right).
+$ACE9 HeroColourShield
+$AD07 HeroColourNormal
+$AD13 HeroColourDone
+$AD14 c FireBolt ; Item kind 7: a bolt for each press of FIRE (no count)
+> FIRE edge-triggered through FireLatch $FE50. Adds a missile of kind 6 at the hero's column (one left when facing
+> left) and line + 4, its +5 = 0 (right) or 1 (left) (AddMissile $B28D), and plays effect $0B. Runs in every state
+> but the death.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$AD24 FireBoltPress
+$AD42 FireBoltAdd
+$AD4B c ThrowAmmo ; Item kind 5: throw one of the counted items, standing only
+> FIRE edge-triggered (FireLatch $FE50). With a count left ($7F05's IX), the count goes down and the HUD's count is
+> printed again ($7D5E); standing (state 0) it adds a missile of kind 2 (facing left) or 3 (right) at line - 2,
+> +4 = $FF, +5 = 1, and plays effect $0B.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$AD5B ThrowAmmoPress
+$AD95 ThrowAmmoAdd
+$ADA2 c HeroStand ; State 0: read the controls
+> IY = the hero. FIRE: HeroFireHeld $ADE9. DOWN: the leap (StartLeap $AE4D). UP: the jump (StartJump $AE3D). RIGHT:
+> walk right (WalkRight $AF3A), first turning (base column + 4, facing right) when facing left; LEFT the same to the
+> left (WalkLeft $AF4F). No key: the standing frame (HeroStandFrame $ADDD). The key readers are the resident's
+> KeyUp $FC90 to KeyFire $FCCC (Z = held): the order UP, DOWN, LEFT, RIGHT, FIRE is that of the front part's
+> joystick set-up ($9834 Kempston bits 3, 2, 1, 0, 4; $986A Sinclair keys 9, 8, 6, 7, 0).
+> Witness: L1 8194 (c1o, deaths, s1-idle, s1-right).
+$ADC9 HeroStandLeft
+$ADDD c HeroStandFrame ; Show the standing frame (frame $0C of the walk set) and end the pass
+> Frame $0C of HeroWalkSet. Also jumped to by the other states when they end, by $8731, $9279 (the end of the death
+> pause) and $A48B.
+> Witness: L1 71 (c1o, deaths, s1-idle, s1-right).
+$ADE5 w HeroStandSet 2 ; SetActorFrame's parameters: the walk frame table, its graphics
+$ADE9 c HeroFireHeld ; FIRE held while standing: a strike with a hand weapon
+> Only with the selected item's kind 6, 5 or 3 ($7F05): DOWN the low strike (state 7, HeroStrikeLow $AE5D), UP the
+> high strike (state 6, HeroStrikeHigh $AED4), LEFT the middle strike (state 5, HeroStrikeMid $AE8E); each starts at
+> frame $FF with the base column + 1.
+> Witness: L1 115 (c1o, s1-right).
+$ADF8 HeroFireHeldKeys
+$AE0D HeroFireHeldUp
+$AE22 HeroFireHeldLeft
+$AE3B HeroFireHeldNone
+$AE3C HeroFireHeldNoWeapon
+$AE3D c StartJump ; Start the jump: state 2, base column + 2
+> Also entered from the walk (WalkJumpCheck $AFDB).
+> Witness: L1 8 (s1-right).
+$AE4D c StartLeap ; Start the leap (DOWN): state 9, base column + 1
+> Witness: L1 1 (c1o).
+$AE5D c HeroStrikeLow ; State 7: the low strike, 8 passes
+> Frames 4, 4, 5, 5, 5, 5, 4, 4 of the strike set (HeroStrikeLowFrames); at the end back to standing (base column -
+> 1). Frame 4 of the state is the hit ($7FEE, StrikeableActor $A7C4).
+> Witness: L1 9 (c1o).
+$AE73 HeroStrikeLowShow
+$AE82 w HeroStrikeLowSet 2 ; the strike frame table, its graphics
+$AE86 b HeroStrikeLowFrames 8 ; the strike set's frame for each pass of the low strike
+$AE8E c HeroStrikeMid ; State 5: the middle strike, 10 passes; held at pass 6 while LEFT is held
+> Frames 6, 6, 7, 7, 8, 8, 7, 7, 6, 6 of the strike set (HeroStrikeMidFrames); +$10 counts its passes.
+> Witness: L1 11 (c1o).
+$AEA4 HeroStrikeMidEnd
+$AEB7 HeroStrikeMidShow
+$AEC6 w HeroStrikeMidSet 2 ; the strike frame table, its graphics
+$AECA b HeroStrikeMidFrames 10 ; the strike set's frame (less 6) for each pass of the middle strike
+$AED4 c HeroStrikeHigh ; State 6: the high strike, 9 passes; held while FIRE and UP are held
+> Frames 0, 1, 2, ..., 2, 1, 0 of the strike set (HeroStrikeHighFrames, by the pass / 2). Frame 4 of the state is
+> the high hit ($7FFA).
+> Witness: L1 47 (c1o, s1-right).
+$AEEC HeroStrikeHighEnd
+$AEFF HeroStrikeHighShow
+$AF0C w HeroStrikeHighSet 2 ; the strike frame table, its graphics
+$AF10 b HeroStrikeHighFrames 11 ; the strike set's frame for each pair of passes of the high strike
+$AF1B c StartFall ; Start a fall: state 3, speed 2, frame $10, base column - 5
+> Witness: L1 8 (c1o, deaths, s1-right).
+$AF2D c StartDrop ; Drop off a ledge missed in a jump: state 3, speed 4, frame $10
+> Witness: L1 1 (s1-right).
+$AF3A c WalkRight ; RIGHT while standing: start walking unless a wall is ahead
+> FrontCellAhead $B007: a solid cell keeps him standing. Else state 1, frame 0, base column + 2.
+> Witness: L1 126 (c1o, deaths, s1-right).
+$AF4F c WalkLeft ; LEFT while standing: start walking unless a wall is ahead (base column - 2)
+> Witness: L1 18 (c1o, deaths).
+$AF64 c HeroWalk ; State 1: walk, 12 frames a cycle, 2 columns each half
+> A puzzle block ahead ($819A) ends the pass. UP at frame 5 or $0A jumps (WalkJumpCheck $AFDB). At frames 5 and $0B
+> (the feet together) a wall ahead (FrontCell $AFED) or no direction key stops him (state 0, standing frame). RIGHT
+> while facing left, or LEFT while facing right, turns him (HeroTurn $B0F0). The frame goes 0 to $0B; at 0 and 6 the
+> base column moves 2 (B = MoveBaseX $B112); then the frame of HeroWalkSet.
+> Witness: L1 875 (c1o, deaths, s1-right).
+$AF78 HeroWalkWall
+$AF84 HeroWalkRight
+$AF94 HeroWalkLeft
+$AFA4 HeroWalkNoKey
+$AFAF HeroWalkStop
+$AFB6 HeroWalkStep
+$AFC4 HeroWalkFrame
+$AFD1 HeroWalkShow
+$AFD7 w HeroWalkSet 2 ; the walk frame table ($0D frames; $0C stands), its graphics
+$AFDB c WalkJumpCheck ; UP during the walk at frame 5 or $0A: drop the walk and jump
+> Pops the return address and jumps to StartJump $AE3D.
+> Witness: L1 875 (c1o, deaths, s1-right).
+$AFE9 WalkJumpCheckJump
+$AFED c FrontCell ; A = the cell ahead of the hero at his line + 16; NZ when it is solid
+> Column + 4 facing right, + 0 facing left (CellAt $B162).
+> Witness: L1 139 (c1o, deaths, s1-right).
+$AFFD FrontCellLine
+$B007 c FrontCellAhead ; The same test as FrontCell $AFED (a second copy of the code)
+> Witness: L1 144 (c1o, deaths, s1-right).
+$B017 FrontCellAheadLine
+$B021 c HeroFall ; State 3: fall, speeding up to 4 lines a pass, land on solid ground
+> Frames $10 to $12 of the jump set. At frame $10: solid ground under the feet (CellUnderFeet $B134, E = 2, D = 0)
+> starts the landing (frames $11, $12, then standing at frame 6, base column + 5); else the speed +$0B goes up by 2
+> to 4 and is added to the base line.
+> Witness: L1 83 (c1o, deaths, s1-right).
+$B03D HeroFallLanding
+$B042 HeroFallFalling
+$B050 HeroFallSpeed
+$B05C HeroFallMove
+$B065 HeroFallShow
+$B06B c HeroLeapBack ; State 4: a leap that found no ledge sinks back (the leap frames backwards)
+> Witness: L1 9 (c1o).
+$B081 HeroLeapBackShow
+$B087 c HeroJump ; State 2: the forward jump, frames 0 to $12 of the jump set
+> At frame 9 the base column moves 1; at $13 he stands (base column + 5). CheckHeroFooting $AA67 catches a ledge on
+> the way down.
+> Witness: L1 105 (s1-right).
+$B096 HeroJumpEnd
+$B0A9 c JumpFrame ; Show frame A of the jump set
+> Witness: L1 179 (c1o, deaths, s1-right).
+$B0AF w HeroJumpSet 2 ; the jump frame table ($13 frames), its graphics
+$B0B3 c HeroLeap ; State 9: the leap up (DOWN), frames 0 to $0D of the leap set
+> The frames crouch and spring up (their line offsets fall from 46 to 25). At frame 8 a ledge under the raised feet
+> (CellUnderFeet $B134, E = 1, D = 2) lets him climb: at $0E the base line goes 16 up and he stands; no ledge sinks
+> him back (state 4, HeroLeapBack $B06B).
+> Witness: L1 9 (c1o).
+$B0CE HeroLeapLedge
+$B0E6 HeroLeapFrame
+$B0E9 c LeapFrame ; Show frame A of the leap set
+> Witness: L1 16 (c1o).
+$B0EC w HeroLeapSet 2 ; the leap frame table ($0E frames), its graphics
+$B0F0 c HeroTurn ; Turn the hero round in the walk: base column by TurnSteps[frame], facing flipped
+> Witness: L1 2 (c1o).
+$B106 b TurnSteps 12 ; the base-column move of a turn at each walk frame
+@module actors
+$B112 c MoveBaseX ; Move the actor IY's base column by E (the other way when it faces left)
+> Witness: L1 182 (c1o, deaths, s1-right).
+$B11B MoveBaseXAdd
+$B122 c NegateIfFacingLeft ; A = -A when the actor IY faces left (+9 bit 7)
+> Witness: L1 28591 (c1o, deaths, s1-idle, s1-right).
+$B12A c FrameRecordAddress ; HL = DE + 6A: frame A's record in the frame table DE
+> Witness: L1 28567 (c1o, deaths, s1-idle, s1-right).
+@module rooms
+$B134 c CellUnderFeet ; HL = the room cell under the actor's feet, E (and D facing left) columns back; Z: not solid
+> IY = the actor. The cell row = (line +1 + height +3 + 3) / 8, the column = +0 - E (- D more when facing left); HL
+> = row x 32 + column (an offset into the cells $7282). Z when bit 1 (solid) of the cell is clear.
+> Witness: L1 8531 (c1o, deaths, s1-idle, s1-right).
+$B155 CellUnderFeetColumn
+$B162 c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
+> HL = D / 8 x 32 + E - 4 (an offset into the cells $7282; the play area's cell column 0 is screen column 4). The
+> cell's bits: 1 solid, 3 deadly (HeroUpdate $AC3D).
+> Witness: L1 9915 (c1o, deaths, s1-idle, s1-right).
+@module render
+$B17F c SaveAttributes ; Copy the screen's attributes to the shadow at $6D00
+> Witness: L1 2 (s1-idle, s1-right).
+@module enemies
+$B18B c BossBurst ; Throw eight shots round the boss (four of type 4, four of type 5)
+> IY = the boss. Type 4 at its column + 3 .. + 1, line + $14, +4 = $FF, 1, 3, 4; type 5 at column - 2 .. - 0 with
+> the same +4 values; effect 6. Jumped to from $8F64 (the boss's handler) when its +$0D is $0A.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B1D5 c BossShots ; Two shots of type 5 from the boss, the pair alternating with each call
+> IY = the boss; its +$0B counts the calls. Odd: +4 = 1 and 2; even: 3 and 4; at its column, line + $10; effect 8.
+> Called from $90F2 when the boss's state is 6.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B203 BossShotsEven
+$B214 c AimedShot ; A shot of type 2 at the actor IY with a random +5 ($FA asks AddMissile for one); effect 6
+> No CALL, JP or word in the image reaches it.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+@module hero
+$B22B c HeroDeath ; Start the hero's death: a burst of eight fragments, the hero hidden, the pause
+> Only when no death is in progress (RespawnShiftX $FE56 = $FF). E = the pause in pairs of passes ($33 after a life, $6C
+> after the last; from LoseLife $7ECE), stored in the hero's +$10 ($74F0). Clears the effects 8-15 ($7610-$763F),
+> adds eight effects of type 7 at the hero (column, line + 4) with +4 = 0, 2, .. 14 (the directions) and +5 = the
+> column x 2 (AddMissileHigh $B296), sets state $0F ($74EA), takes the respawn point ($927C: D column, E line),
+> RespawnShiftX and RespawnShiftY $FE57 from it, and hides the hero (column 0, line $8C, colour 0).
+> Witness: L1 7 (c1o, deaths, s1-right).
+$B246 HeroDeathBurst
+@module actors
+$B28D c AddMissile ; Add a missile (shot, spark) to the first eight slots of the missile records $75E0
+> In: D column, E line, C type, B and A its parameters. The list holds 16 records of 6 bytes: +0 column ($FF free),
+> +1 line, +2 type (the handler of MissileHandlers $B31A), +3 $FF, +4 B, +5 A. The search starts after the slot of
+> MissileCursor $FE27 (round robin over 8). A = $FA puts a Random $8B85 byte in +5. Out: Z when the eight slots are
+> full (nothing added), else NZ. AddMissileHigh $B296 uses slots 8-15 ($7610).
+> Witness: L1 29 (s1-right).
+$B296 c AddMissileHigh ; Add a missile to the slots 8-15 ($7610) of the missile records
+> Witness: L1 56 (c1o, deaths, s1-right).
+$B29C c AddMissileFrom ; Add a missile to the eight slots from BC
+> Witness: L1 85 (c1o, deaths, s1-right).
+$B29E AddMissileSearch
+$B2D9 AddMissileFull
+@module util
+$B2DC c ReturnZ ; A = 1, Z set: the "yes" exit of the tests
+> Witness: L1 28 (c1o, deaths, s1-right).
+$B2E1 c ReturnNZ ; A = 1, Z clear: the "no" exit of the tests
+> Witness: L1 36 (c1o, deaths, s1-right).
+@module actors
+$B2E6 c UpdateMissiles ; Run the handler of every missile in use (once a main-loop pass)
+> The 16 records of the missile records $75E0 (6 bytes each, IY): a record whose +0 is not $FF calls the handler
+> MissileHandlers[+2] through the CALL at MissileCall $B30C, whose operand it writes. IX is kept.
+> Witness: L1 10188 (c1o, deaths, s1-idle, s1-right).
+$B2F1 UpdateMissilesLoop
+$B30C MissileCall ; CALL nn: nn = the effect's handler, written by UpdateMissiles
+$B313 UpdateMissilesNext
+$B31A w MissileHandlers 1 ; The handler of each missile kind 0-11
+> 0 $876C, 1 $80DF, 2 and 3 $8006 (the thrown items, left and right), 4 $83A9, 5 $8403 (the boss's shots), 6 $8564
+> (the bolt), 7 and 8 $842C (the death burst), 9 $8171, $0A and $0B $85C8.
+@module render
+$B332 c BufferAddressHL ; HL = the play-buffer address of the actor IY ($5B00 + line x 32 + column); DE = HL in
+> Witness: L1 5517 (c1o, deaths, s1-right).
+$B349 c AttrShadowAddress ; HL = the attribute-shadow address of the actor IY ($6DC0 + line / 8 x 32 + column)
+> The shadow's row 6 ($6DC0) is the play area's top row.
+> Witness: L1 5517 (c1o, deaths, s1-right).
+$B34E AttrShadowAddressA ; entry with A = the line rounded down to 8
+@module actors
+$B35E c RemoveActor ; Free the actor record IY (+0 = $FF)
+> Witness: L1 76 (c1o, s1-right).
+$B363 c RemoveActorPair ; Free the actor record IY and the next one (+0 and +$12 = $FF)
+> Jumped to from $95F7 and $95FC.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+@module render
+$B36C c ColourGreenCyan ; C = $44 or $45 (bright green, bright cyan) on alternate passes
+> No CALL, JP or word in the image reaches it.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B377 c ColourRedMagenta ; C = $42 or $43 (bright red, bright magenta) on alternate passes
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B382 c ColourRedYellow ; C = $42 (bright red) or 6 (yellow) on alternate passes
+> Witness: L1 1064 (s1-right).
+$B38D c ColourYellowMagenta ; C = $46 or $43 (bright yellow, bright magenta) on alternate passes
+> Witness: L1 17299 (c1o, deaths, s1-idle, s1-right).
+$B398 c ColourCyanGreen ; C = $45 or $44 on alternate passes
+> No CALL, JP or word in the image reaches it.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B3A3 c MissileColour ; C = the colour of the missile IY: type 2 ColourYellowMagenta, else MissileColours[pass AND 3]
+> Called from $85B5, $85BE and DrawMissileMirrored $B3DA.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B3B9 b MissileColours 4 ; bright red, bright magenta, bright red, magenta
+$B3BD c SetCycleColour ; The actor IY's colour +$0C = CycleColour $B3C4
+> Witness: L1 2066 (s1-right).
+$B3C4 c CycleColour ; A = CycleColours[pass AND 7]: bright cyan, green, magenta, red, blue, red, magenta, green
+> Witness: L1 2507 (c1o, deaths, s1-idle, s1-right).
+$B3D2 b CycleColours 8 ; the colour cycle
+$B3DA c DrawMissileMirrored ; Draw the image IX points to, mirrored, and colour it
+> HL = the image (IX +0/+1), DrawSpriteMirrored $B446, MissileColour $B3A3, ColourSpriteMirrored $B46F. No CALL, JP
+> or word in the image reaches it.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B3EA b ImageDescriptors 4 ; Four image descriptors: the image address, the width in bytes, the height in lines
+> $EBEC, $EC13, $EC3A and $EC61, each 3 x 13. Read through HL from $83DF and $84B2.
+$B3FA b SpeedSteps 8 ; 16 signed steps -4 .. 4, two each: no reader found (known only from the code)
+$B40A c ColourSprite ; Fill the attribute shadow under an image with C
+> IY = the position, IX the image descriptor (+2 width, +3 height): (height / 8 + 1) rows of the width.
+> Witness: L1 5517 (c1o, deaths, s1-right).
+$B41C ColourSpriteRow
+$B421 ColourSpriteCell
+$B42B c DrawSprite ; Copy an image to the play buffer at the actor's position (no mask)
+> HL = the image, IX the descriptor (+2 width in bytes, +3 height in lines), IY the position (BufferAddressHL
+> $B332). The bytes replace the buffer's: no mask, no OR.
+> Witness: L1 1064 (s1-right).
+$B432 DrawSpriteRow
+$B446 c DrawSpriteMirrored ; Copy an image mirrored left to right (through the bit-reverse table $FA00)
+> As DrawSprite $B42B, each row written from right to left and each byte reversed by the resident's 256-byte table
+> at $FA00. Called from $8069, $8134, $85BB and DrawMissileMirrored $B3DA.
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B44D DrawSpriteMirroredRow
+$B458 DrawSpriteMirroredByte
+$B46F c ColourSpriteMirrored ; ColourSprite $B40A for a mirrored image (filled leftwards from its right edge)
+> Not executed in any recording (the recordings checked: c1o, deaths, s1-idle, s1-right); known only from the code.
+$B488 ColourSpriteMirroredRow
+$B48D ColourSpriteMirroredCell
+@module enemies
+$B497 c SpawnActorShot ; An actor shoots: a missile of kind $0A (facing right) or $0B (left) in front of it
+> IY = the actor. Column + 1 (facing right) or its column (left), line + 2 (AddMissile $B28D, B = A = 0). Called from
+> $9152.
+> Witness: L1 29 (s1-right).
+$B4AC SpawnActorShotAdd
+
+@module rooms
+$B4B2 b StageGraphics 16 ; The stage's tiles, blocks and map, RLE-packed (3583 bytes; 4295 unpacked: 196 tiles, 114 blocks, the three grids' map)
+> RoomChange $988B unpacks it with Unrle $A424 into the play buffer at $5B00 at every room change (the buffer is cleared again before the actors are drawn). Unrle: the first byte is the escape ($C7 here); a byte other than the escape is itself, ESC n v is n copies of v (n = 0: 256), ESC ESC ends. Unpacked: five words, the offsets from $5B0A of the tile kinds (1 byte a tile: 0 open, else solid; bit 1 solid, bit 3 deadly), the tile pixels (8 bytes a tile), the tile attributes (1 a tile), the blocks (4 tile numbers a block: top left, top right, bottom left, bottom right) and the map (a block number a byte, the grids one after another, each its width x height; Grid0 +6 gives its offset). RoomCells $9928 turns the room's 14 x 9 blocks into 28 x 18 tile numbers in Cells.
+> The packer that made it is greedy: every run of 4 to 255 equal bytes is ESC n v, except one stretch of 8 zero bytes left as they are (unpacked offset 1366: a blank tile's pixels). With that one exception tools/res_stage.py packs the block again bit for bit, so the resource is editable: graphics.txt (the blocks and the map grids as text) and tiles.png (the tiles' pixels and colours). The same holds for the stages 2-4 (docs/img/maps/ has every grid and room). Read in all four stage-1 builds, every byte (Unrle).
+@res stage1/graphics.bin
+
+@module graphics ; The stage's sprites, pictures and their frame tables
+@about Every animated actor shows frames of a sprite set: the bitmaps, then a frame table of 6-byte records (dx, dy, the width in bytes, the height in lines, the bitmap's offset from the set's start). SetActorFrame $AA02 takes the frame number in A and the table's and the set's addresses from the four bytes after its CALL, and fills the actor's +0/+1 (+$0D + dx, negated when the actor faces left, and +$0E + dy), +2/+3 and +4/+5. A bitmap is 1 bit a pixel, the rows top first, no mask; DrawActorSprite $A6AA ORs it into the play buffer through the row plotters (RowPlotters $8910), mirrored through the resident bit-reversal table $FA00 when the actor faces left; DrawSprite $B42B copies a picture with LDIR. Each set's bitmaps are exactly the bytes its frames cover, and its table follows them: so each set is one resource (sprites-NAME.png with the table in its text chunk). The plain pictures (shots, icons, the boss's parts) are bitmaps-NAME-WxH.png, frames of one size one after another.
+@about The sets: the hero's walk, jump, leap and strikes; the urns and chests; the pieces of the artefact; the warriors (stage 1: skeletons) and their collapse; the statue heads; the hanging bodies; the flame jets and fire pits; the gate and the bridge slab; the dragon's head with its body picture and the winged demon's wings, body and head with the face over its lair. What no stage-1 recording reads (the demon, the dragon, the shots, the bridge, the fire pit) is named from the code that reads it.
+$C2B1 b BridgeSlabSprite 4 ; The bridge slab: 4 bytes x 8 lines (BridgeSlabTemplate's frame; the demon's beaten wing lays it, BridgeSlabActor $90A3)
+> Not read in the stage-1 recordings (none reaches the demon); known only from the code ($9D27, the template's +4).
+@res stage1/bitmaps-bridge-slab-4x8.bin
+
+$C2D1 b FirePitSprites 8 ; The fire pit's flames: 6 frames of 2 bytes x 12-14 lines (FirePitActor $8D6D shows 0-3)
+> Not read in the stage-1 recordings; known only from the code (FirePitFrames $8DC6).
+$C36D FirePitFrameTable ; 6 records
+@res stage1/sprites-fire-pit.bin
+
+$C391 b FlameJetSprites 8 ; The flame jet: 13 frames of 2 bytes x 3-22 lines, from a flicker to a column of flame and back (FlameJetActor $8DCC)
+> Read in all four stage-1 builds (FlameJetFrames $8E3D).
+$C4E5 FlameJetFrameTable ; 13 records
+@res stage1/sprites-flame-jet.bin
+
+$C533 b HangingSprites 2 ; The hanging body: 8 frames of 2 bytes x 37 lines, the rope above (HangingActor $9186 points +4/+5 into it itself, $91CB and $91E4)
+> Read in all four stage-1 builds.
+@res stage1/bitmaps-hanging-2x37.bin
+
+$C783 b ShotSmall 2 ; A shot: 2 bytes x 5 lines (ShotFrames $813D's first record)
+> The shots' pictures, ShotFrames $813D: this one, two of 1 x 15 and two of 2 x 13, by direction (ShotDirections $8151). Not read in the stage-1 recordings; known only from the code.
+@res stage1/bitmaps-shot-small-2x5.bin
+$C78D b ShotUpright 1 ; Two shots of 1 byte x 15 lines (the ones flying up and down)
+@res stage1/bitmaps-shot-upright-1x15.bin
+$C7AB b ShotSlanted 2 ; Two shots of 2 bytes x 13 lines (the slanted ones)
+@res stage1/bitmaps-shot-slanted-2x13.bin
+
+$C7DF b WarriorSprites 8 ; The warrior (stage 1: a skeleton with a sword and a shield): 21 frames (rise, stand, walk, block, strike)
+> WarriorSetFrame $9766 (WarriorFrames $9769). Read in all four stage-1 builds (1628 of its bytes; the frames not shown are the rising ones' tops).
+$CE14 WarriorFrameTable ; 21 records
+@res stage1/sprites-warrior.bin
+
+$CE92 b GameOverPicture 8 ; GAME OVER: 8 bytes x 8 lines, drawn in the HUD's item strip (GameOverStep $836D)
+> Read in the stage-1 builds (all 64 bytes: the game over of the deaths recording).
+@res stage1/bitmaps-game-over-8x8.bin
+
+$CED2 b ArenaHeadSprites 8 ; The dragon's head: 2 frames, the mouth closed (6 bytes x 40 lines) and open (7 x 38) (ArenaHeadActor $90E7)
+> Not read in the stage-1 recordings (none reaches the arena); known only from the code (ArenaHeadFrames $911F).
+$D0CC ArenaHeadFrameTable ; 2 records
+@res stage1/sprites-arena-head.bin
+
+$D0D8 b ArenaPicture 16 ; The dragon's body: a row-packed picture of 92 lines (each a byte LEN x 16 + SKIP, then LEN bytes), drawn from buffer row 4, column 14
+> DrawArenaPicture $89BB draws it into the play buffer every pass with DrawRowPicture $8B03 while the dragon lives (ArenaBossBeaten), then its colours ArenaAttributes. Not read in the stage-1 recordings; known only from the code.
+@res stage1/rowpicture-arena.bin
+$D50E b ArenaPictureEnd 7 ; 7 bytes past the picture's 92nd line that no code reads (known only from the code: DrawArenaPicture draws 92 lines)
+
+$D515 b ArenaAttributes 16 ; The dragon's colours: 12 rows of 16 attributes (0: leave the cell), copied into the shadow at $6E4E
+> DrawArenaPicture $89BB, or painted red where non-zero while ArenaFlash. Known only from the code.
+@res stage1/table-arena-attributes.bin
+
+$D5D5 b RoomPicture 16 ; The demon's face over its lair (room 12): a row-packed picture of 53 lines, drawn from buffer column 9
+> DrawRoomPicture $8930 draws it every pass in room 12, its two eyes flashing (EyeFlashColours). Not read in the stage-1 recordings; known only from the code.
+@res stage1/rowpicture-room.bin
+$D920 b RoomPictureEnd 6 ; 6 bytes past the picture's 53rd line that no code reads (known only from the code)
+
+$D926 b ThrownSprites 2 ; A thrown object: 8 frames of 2 bytes x 6 lines (stage 1: a turning skull), drawn by the missile kinds 2 and 3 (ArcFrame $8090: frame x 12)
+> Not read in the stage-1 recordings; known only from the code.
+@res stage1/bitmaps-thrown-2x6.bin
+$D986 b FlatShotSprite 2 ; A flat shot: 2 bytes x 8 lines (FlatShotFrame $85C4)
+> Not read in the stage-1 recordings; known only from the code.
+@res stage1/bitmaps-flat-shot-2x8.bin
+$D996 b BounceSprites 2 ; The bouncing shot: 2 frames of 2 bytes x 13 lines (BounceFrames $863D)
+> Read in all four stage-1 builds (DrawSprite $B42B).
+@res stage1/bitmaps-bounce-2x13.bin
+
+$D9CA b GateSprites 8 ; The gate: 1 frame of 2 bytes x 24 lines (GateActor $9065)
+> Read in all four stage-1 builds (GateFrames $909F).
+$D9FA GateFrameTable ; 1 record
+@res stage1/sprites-gate.bin
+
+$DA00 b StatueSprites 8 ; The statue head: 3 frames of 3 bytes x 31-32 lines (StatueActor $912B)
+> Read in all four stage-1 builds (StatueFrames $917C).
+$DB1A StatueFrameTable ; 3 records
+@res stage1/sprites-statue.bin
+
+$DB2C b WarriorCollapseSprites 8 ; The warrior falling apart: 14 frames, from the body to a few sparks (WarriorCollapse $9705)
+> Not read in the stage-1 recordings (WarriorCollapseFrames $9719); known only from the code.
+$DD95 WarriorCollapseFrameTable ; 14 records
+@res stage1/sprites-warrior-collapse.bin
+
+$DDE9 b BossWingSprite 3 ; The winged demon's wing: 3 bytes x 33 lines (BossWingLeft $8E60, mirrored for the right)
+> Not read in the stage-1 recordings (none reaches room 12); known only from the code.
+@res stage1/bitmaps-boss-wing-3x33.bin
+$DE4C b BossBodySprites 6 ; The demon's body: 2 frames of 6 bytes x 32 lines (BossBodySprite $8FF3: $DE4C from the attack's step 10)
+> Known only from the code.
+$DF0C BossBodyStill ; the body under step 10
+@res stage1/bitmaps-boss-body-6x32.bin
+$DFCC b BossHeadSprites 2 ; The demon's head: 4 frames of 2 bytes x 20 lines, the mouth closed to open (BossHeadFrames $8F6D)
+> Known only from the code.
+$DFF4 BossHead1
+$E01C BossHead2
+$E044 BossHead3
+@res stage1/bitmaps-boss-head-2x20.bin
+
+$E06C b PieceSprites 8 ; A piece of the stage's artefact: 10 frames (UpdatePieceActor $8233); the first two (2 x 14) are also the HUD's piece pictures
+> ShowPieceTaken copies $E06C (the first piece) or $E088 (the others) to the HUD. Read in all four stage-1 builds (PieceFrames $8275).
+$E088 PieceSprite1 ; the second frame, the HUD's picture of a later piece
+$E154 PieceFrameTable ; 10 records
+@res stage1/sprites-piece.bin
+
+$E190 b StrikeableSprites 8 ; The urns and chests: 8 frames, two of each (whole, cracked) for the kinds 3-6 (StrikeableActor $A7C4)
+> Read in all four stage-1 builds (StrikeableActorSet $A7FF).
+$E25A StrikeableFrameTable ; 8 records
+@res stage1/sprites-strikeable.bin
+
+$E28A b HeroStrikeSprites 8 ; The hero's strikes: 9 frames (low, middle, high)
+> HeroStrikeLowSet $AE82, HeroStrikeMidSet $AEC6, HeroStrikeHighSet $AF0C. Read in all four stage-1 builds.
+$E407 HeroStrikeFrameTable ; 9 records
+@res stage1/sprites-hero-strike.bin
+
+$E43D b EnergyBarPattern 6 ; The energy bar's pattern: 6 bytes, one pixel line (DrawEnergyBar $A3C5 draws Energy / 8 of them on 6 lines)
+> Read in all four stage-1 builds.
+@res stage1/bitmaps-energy-bar-6x1.bin
+
+$E443 b HeroJumpSprites 8 ; The hero's jump: 19 frames (HeroJumpSet $B0AF)
+> Read in all four stage-1 builds.
+$E6F0 HeroJumpFrameTable ; 19 records
+@res stage1/sprites-hero-jump.bin
+
+$E762 b HeroWalkSprites 8 ; The hero walking and standing: 13 frames (HeroWalkSet $AFD7, HeroStandSet $ADE5; frame 12 stands)
+> Read in all four stage-1 builds.
+$E996 HeroWalkFrameTable ; 13 records
+@res stage1/sprites-hero-walk.bin
+
+$E9E4 b FragmentSprites 3 ; A fragment of a broken urn: 8 copies of 3 bytes x 11 lines, shifted 0-7 pixels (FragmentActor $A891: $E9E4 + 33 x shift)
+> Not read in the stage-1 recordings (no urn breaks in them); known only from the code.
+@res stage1/bitmaps-fragment-3x11.bin
+
+$EAEC b ItemIconSprites 2 ; The item icons: 8 of 2 bytes x 16 lines (the first item kind 2's), for the HUD's strip and the items on the floor (ItemIcons $7F3B)
+> DrawItemIcon $7E19 and the item actors (SpawnItem $A098 sets the icon as the frame). The stage-1 recordings read two (the kinds 3 and 0 the strip shows).
+$EB0C ItemIconKind6
+$EB2C ItemIconKind5
+$EB4C ItemIconKind3
+$EB6C ItemIconKind8
+$EB8C ItemIconKind1
+$EBAC ItemIconKind7
+$EBCC ItemIconKind0 ; an empty box
+@res stage1/bitmaps-item-icons-2x16.bin
+
+$EBEC b DriftShotSprites 3 ; The drifting shots: 4 frames of 3 bytes x 13 lines (ImageDescriptors $B3EA, DrawDriftShot $83D4)
+> Read in all four stage-1 builds.
+$EC13 DriftShot1
+$EC3A DriftShot2
+$EC61 DriftShot3
+@res stage1/bitmaps-drift-shots-3x13.bin
+
+$EC88 b HeroLeapSprites 8 ; The hero's leaps (back and up): 14 frames (HeroLeapSet $B0EC)
+> Read in all four stage-1 builds.
+$EE12 HeroLeapFrameTable ; 14 records
+@res stage1/sprites-hero-leap.bin
+
+$EE66 b ParticleGlyphs 8 ; The burst's 4 particle glyphs, 1 byte x 8 lines each (UpdateBurst: BurstGlyphs[...] x 8 + $EE66)
+> Not read in the stage-1 recordings (no burst in them); known only from the code.
+@res stage1/bitmaps-particles-1x8.bin
+$EE86 b BurstGlyphs 16 ; The glyph (0-3) of each burst step, indexed by the step + a random 0-3
+> Known only from the code (UpdateBurst $A2B1).
+@res stage1/table-burst-glyphs.bin
+$EEA9 b BurstDirections 16 ; 6 rows of 32 indices into BurstSteps $A39D: each particle direction's step at each burst step
+> Known only from the code.
+@res stage1/table-burst-directions.bin
+$EF69 b BurstShapes 2 ; The shapes a burst breaks up: 5 frames of 2 bytes x 12 lines (StartBurst $A1F3 reads 24 bytes from the shape's address)
+> The shapes are read from $EF69 (ScoreBurst20 $A065, BurstAtActor $A129), $EF85 (ScoreBurst160 $A1CF: 4 bytes into the second frame, so its last 4 bytes are the third frame's first), $EF99 (BossFlees $A182), $EFB1 (ScoreBurst64 $A19B) and $EFC9 (ArenaBossHit $A14A). Known only from the code.
+$EF85 BurstShapeHanging ; ScoreBurst160's shape (the hanging body)
+$EF99 BurstShapeBoss ; BossFlees' shape
+$EFB1 BurstShapeStatue ; ScoreBurst64's shape (the statue head)
+$EFC9 BurstShapeBossHit ; ArenaBossHit's shape (the demon's last hit)
+@res stage1/bitmaps-burst-shapes-2x12.bin
+
+$EFE1 s BlockEnd ; 94 zero bytes to the block's end ($F03E) that no code reads (the four stage-1 builds; known only from the code)

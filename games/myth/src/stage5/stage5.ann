@@ -1,0 +1,1124 @@
+# Stage 5 of Myth (TZX block 52 at $6C3F-$F03E): the annotations kit/mkgame.py writes src/stage5/*.asm from.
+#
+# The same engine as stage 1 (src/stage1/stage1.ann) assembled at other addresses, with the stage's own code: the
+# flight through space and the duel with Dameron, the intro and the ending texts. Only 51 of stage 1's 310 routines
+# recur byte for byte (tools/stage_names.py); they keep stage 1's names. The resident part $F03F-$FFFF
+# (src/resident) is @equ here with stage 1's names.
+#
+# Variables outside the block: the screen, the play buffer, the resident part's routines and tables.
+@equ $4000 Screen 6144 ; the screen's pixels
+@equ $5800 Attributes 768 ; the screen's attributes
+@equ $5B00 PlayBuffer 4415 ; the play buffer $5B00-$6CFF (its tail $6C3F-$6CFF is in the block): 18 character rows of 8 lines of 32 bytes, linear
+@equ $F959 DigitGlyphs ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
+@equ $F9B0 PlaySoundVector ; resident: JP to the AY effect starter (E = the effect number)
+@equ $F9BF DecimalTable 10 ; resident: the words 10000, 1000, 100, 10, 1
+@equ $F9FB Score 2 ; resident: the score's low four decimal digits, 0-9999 (AddScore)
+@equ $F9FD ScoreHigh ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
+@equ $FA00 BitReverse 256 ; resident: each byte with its bits reversed (the sprites drawn facing left)
+@equ $FB00 ScreenLineTable 384 ; resident: the screen address of each of the 192 pixel lines (words)
+@equ $FC90 KeyUp ; resident key reader: Z when UP is held (DEFINE KEYS / joystick patch its port and bit)
+@equ $FC9F KeyDown ; resident key reader: Z when DOWN is held
+@equ $FCAE KeyLeft ; resident key reader: Z when LEFT is held
+@equ $FCBD KeyRight ; resident key reader: Z when RIGHT is held
+@equ $FCCC KeyFire ; resident key reader: Z when FIRE is held
+@equ $FCDB KeyHook ; resident: called before every key read (a RET, or the joystick / pause check DEFINE KEYS installs)
+@equ $4134 EnergyBarScreen ; the HUD's energy bar: screen row 1, pixel line 1, column 20
+@equ $6A00 TextGlyphRows 14 ; DrawTextLine's 7 (row, 0) pairs, inside the play buffer past the text pages
+#
+# The work space $FE01-$FEFD (InitStageState $96DD clears $FE08-$FE56 at the stage start). Stage 5 lays it out
+# anew: the names are stage 1's where the job is the same (stage 1's address in the comment), new ones otherwise.
+@equ $FE08 RandomSeed 2 ; NextSeed $9483: seed = seed x 5 + $15; $07CF at the stage start
+@equ $FE0A RandomPointer 2 ; Random $9492: a pointer into the ROM whose bytes are the random numbers; reseeded from R at the stage start, $0D7A at the burst
+@equ $FE0C DrawSavedSP 2 ; the real SP while Dameron's drawers walk SP over the line table
+@equ $FE0E SavedSP 2 ; the real SP while ClearBuffer, DrawHero and DrawHeroFrame walk SP over their tables
+@equ $FE2D ShotCursor ; FindShotSlot's round robin 0-15 over the hero's shots (stage 1's MissileCursor $FE27)
+@equ $FE2F ItemsChanged ; stage 1's $FE4A: 1 after AddItem; only RedrawItemsIfChanged (no caller) reads it
+@equ $FE30 LineCount ; the line counter of Dameron's drawers; 2 from InitStageState
+@equ $FE32 InitOnly32 ; set to 1 by InitStageState, read by nothing (stage 1's InitOnly12)
+@equ $FE35 ItemSelected ; stage 1's $FE17: the slot of CarriedItems the HUD shows (6, then 3 from StageSetUp)
+@equ $FE36 ItemLast ; stage 1's $FE18: the last used slot of CarriedItems (6)
+@equ $FE37 ItemFirst ; stage 1's $FE19: the first slot of CarriedItems (6)
+@equ $FE38 MissileCursor ; AddMissileFrom's round robin over stage 1's missile records (kept, no caller)
+@equ $FE3A FireLatch ; stage 1's $FE50: 1 armed (FIRE up), 0 after a press; the hero fires on the release
+@equ $FE3B WorkByte ; scratch: StartBurst's shape bits (stage 1's WorkByte $FE14)
+@equ $FE3D DameronArrived ; 1 once Dameron's approach reached line $14: his path and his missiles start
+@equ $FE3E DameronX ; Dameron's X offset in pixels (0, never changed)
+@equ $FE3F DameronY ; Dameron's top line from line 48 ($8E at the start, $14 after the approach, then his path)
+@equ $FE40 DameronPathIndex ; the step in DameronPath ($FF at the start)
+@equ $FE41 PendingHits ; 2 after a shot meets Dameron's mouth; DuelHit takes one a pass
+@equ $FE42 FormChanged ; 1 after a form change: the drawers clear the old picture
+@equ $FE43 DuelPhase ; $FF the intro, 0-3 Dameron's four forms, 4 won (the ending)
+@equ $FE44 HitCounter ; the hits on the current form, 0-19 (20 change the form)
+@equ $FE45 DuelTimer 2 ; the texts' timer: $044C at the start, - 2 a pass; $FFC3 from the duel's start and again after the win
+@equ $FE47 TextShown ; 1 while the intro or the ending is on the screen (its rows flash)
+@equ $FE48 BurstSmall ; stage 1's $FE3E: 1 a small burst (14 steps, doubled moves), 0 a big one
+@equ $FE49 BurstTimer ; stage 1's $FE3D: the burst's step; $65 idle in stage 5, $FF just started, $64 StopBurst
+@equ $FE4A TextPenShift ; DrawTextLine's pixel offset; also UpdateBurst's old particle column for EraseParticle
+@equ $FE4B TextScratch ; a text line's third header byte (unused); also UpdateBurst's old particle row
+@equ $FE4C GlyphWidthMask ; the current glyph's width mask (DrawTextGlyph)
+@equ $FE4D PassCounter ; stage 1's $FE31: + 1 every pass, the animations' clock
+@equ $FE4E InitOnly4E ; set to $10 by InitStageState, read by nothing (stage 1's InitOnly3A)
+@equ $FE4F Energy ; stage 1's $FE3F: the hero's energy, 0 to $2E (full)
+@equ $FE50 InitOnly50 ; set to $0D by InitStageState, read by nothing (stage 1's InitOnly40)
+@equ $FE51 InitOnly51 ; set to 1 by InitStageState, read by nothing (stage 1's InitOnly41)
+@equ $FE52 EnergyShown ; stage 1's $FE4D: the energy the HUD bar last drew
+@equ $FE53 EnergyChange ; stage 1's $FE4E: the pending energy change ($80 and up drains, under $80 refills 2 a pass)
+@equ $FE55 LivesFlash ; stage 1's $FE59: the lives boxes' flash step, 0-$10 ($10 idle)
+@equ $FE56 GameOverTimer ; stage 1's $FE5B: never set in stage 5 (only GameOverStep and InitStageState's clear write it)
+@equ $FE58 Lives ; stage 1's $FE61: lives left, from H at StageEntry
+@inline $954E 5
+@inline $957F 5
+@isub $7934 LD BC,ScoreDigitsHigh
+
+@module variables ; The stage's work space: the play buffer's tail, the shadow attributes, the HUD picture and the records over it
+@about The block's first 5057 bytes ($6C3F-$77FF) are loaded with the stage and hold no code; they are byte for byte stage 1's ($6C3F-$6FFF and $76C0-$77FF zeros, the HUD picture and its colours at $7000-$76BF). $6C3F-$6CFF is the end of the play buffer ($5B00-$6CFF), which in stage 5 holds the intro's and the ending's text pages ($5B00-$61FF, $6200-$68FF, DrawIntroText $8DAF, DrawEndingText $8DDE). $6D00-$6FFF is the shadow of the screen's attributes. After StageSetUp $95E4 has dissolved the HUD onto the screen, the picture's space holds stage 5's records: Dameron's missiles (Missiles $7000, 8 x 6 bytes), the burst's particles (Particles $7100, 4 bytes each), the hero's shots (HeroShots $75E0, 16 x 8 bytes) and the digit picture (DigitBuffer $7640). The hero's record and the stars lie in the data area (HeroRecord $BA7E, Stars $BA86).
+$6C3F s PlayBufferTail ; The last 193 bytes of the play buffer PlayBuffer $5B00-$6CFF
+> ClearBuffer $96AC clears the play buffer to $6CFF with PUSH HL. In stage 5 the buffer holds the two text pages from PlayBuffer $5B00 to $68FF; this tail is not written or read by stage 5's code (no recording reads or writes $6C3F-$6CFF: s5-right, rzx-r5, ending). Zero as loaded.
+
+$6D00 s ShadowAttributes ; The shadow of the screen's 768 attributes, the screen's layout
+> StageSetUp $95E4 copies the HUD's colours into rows 0-5 and shows the whole shadow (ShowShadowAttributes $95B0); FillShadowAttributes $957F paints its boxes into it (HudBox1-4, the play area black). The rest of stage 5 colours the screen's attributes directly (Attributes $5800). s5-right: 896 bytes written ($6D00-$707F, with the missile records), 9350 reads at most. Zero as loaded.
+$6DC0 PlayAttributes ; row 6: the first row of the play area (AttrShadowAddress $A000, kept from stage 1, no caller)
+
+$7000 b HudPicture 32 ; The HUD as loaded: 48 lines of 32 bytes (linear, top first), then their colours at $7600 (6 rows of 32)
+> The same 1728 bytes as stage 1's (src/res/stage1/picture-hud-32x48.png). DissolveHud $941B dissolves the 48 lines onto the screen's lines 0-47 and StageSetUp $95E4 copies the 192 colours into the shadow rows 0-5, once, at the stage's start. EndStage $78B5 saves the screen's lines 0-47 back here ($78CC copies the colours to HudColours $7600, CopyScreenToBlock $93F3 the lines to $7000) before the next block is loaded.
+> In play the picture's space holds the records below. s5-right reads $6D00-$76BF (the dissolve and the records) and writes $7000-$707F and $75E0-$766F.
+$7000 Missiles ; in play: Dameron's 8 missile records, 6 bytes each ($7000-$702F): +0 the column ($FF free), +1 the line, +2 the kind, +3/+4 the kind's own (ClearMissiles $7F10 fills 128 bytes with $FF)
+$7030 MissilesEnd ; the stray ninth record FindFreeMissile $8C6C returns when all eight are busy; UpdateDameronMissiles $804A never reads it
+$7100 Particles ; in play, at the duel's end: the burst's particles, 4 bytes each, $FF ends the list (StartBurst $91B9, UpdateBurst)
+$74E0 ActorRecords ; stage 1's hero and actor records (14 x 18 bytes): only stage 1's routines left in the block with no caller (SpawnActor $9E9C, RunActorHandlers $9EB7, ClearActors $95BD) touch them
+$75E0 HeroShots ; in play: the hero's 16 shot records, 8 bytes each ($75E0-$765F; +0 the column, $FF free, $FE ending; +1 the line; +2/+3 the screen address), ClearHeroShots $7F02
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the hero's shot records 4-15 lie over them
+$7610 HeroShots6 ; shot record 6; stage 1's AddMissileHigh $9F60 (kept, no caller) would write its missile records 8-15 here
+$7640 DigitBuffer ; at the stage's start: the score's digit picture (RenderScore $7B14, RevealScore $967E), before ClearHeroShots fills $75E0-$765F with $FF; also the item count's digits (FormatItemCount, no caller from play)
+$7660 HudColoursRest ; the colours of rows 3-5 past the shot records
+@res stage5/picture-hud-32x48.bin
+
+$76C0 s Unused76C0 ; 320 bytes ($76C0-$77FF) no stage-5 code reads or writes
+> Stage 1's span table room ($76A0-$779B) and its unused tail. Stage 5 copies no spans: no operand of its code names $7680-$77FF (checked over the listing $7800-$A366), and no recording (s5-right, rzx-r5, ending) reads or writes any of it. Zero as loaded.
+
+
+@module entry ; The stage's entry and set-up
+@about Stage 5's block is entered at StageEntry $7800 by the resident stage loader with H = the lives. StageEntry sets up the stage (the work space $FE08-$FE56, the HUD, the duel's variables, the two text pages, the hero, the shot and missile tables, the stars) and falls into MainLoop. Stage 5 has no stage-completed exit: it returns to the loader only with E = 0 (no lives) or E = 1 (CAPS SHIFT + SPACE).
+$7800 c StageEntry ; Start the stage: lives from H, variables, HUD, duel, texts, hero, stars, then the main loop
+> Called by the resident stage loader with H = the lives left. Stores H in Lives ($FE58), then: InitStageState $96DD (clears $FE08-$FE56, the carried items from StartItems, the energy refill $2E in EnergyChange $FE53), StageSetUp $95E4 (the title, the HUD, the item strip rolled in, the score revealed), QuietPasses $965D (30 idle passes of 3 frames: the HUD's energy refill and lives flash run). Then FireLatch $FE3A = 0, Dameron's X DameronX $FE3E = 0 and Y DameronY $FE3F = $8E (below the play area), the path index DameronPathIndex $FE40 = $FF, the phase DuelPhase $FE43 = $FF (the intro text), the text timer DuelTimer $FE45 = $044C, the burst timer BurstTimer $FE49 = $65 (idle).
+> Then DrawIntroText $8DAF and DrawEndingText $8DDE (the intro and the ending texts drawn into the play buffer at PlayBuffer $5B00 and $6200), ClearHeroShots, InitHero, ClearMissiles, InitStars, and falls into MainLoop.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module mainloop ; The main loop and its pass
+@about MainLoop $7843 runs one step a pass with a HALT at its head, so stage 5 is frame-synced (stages 1-4 are not). s5-right: 3730 passes in 7940 frames, about 2.1 frames a pass. While a text page is up (the phase DuelPhase $FE43 is $FF before the duel, 4 after it) each pass adds TextPassDelay's $07D0 rounds; in form 3 and after the duel PaceLateForms adds $0320 or $07D0 rounds. The loop ends only on no lives (the hero's game-over count HeroGameOverCount $BA84 at 0: E = 0) or CAPS SHIFT + SPACE (E = 1); winning the duel leaves the ending text on screen and the loop running.
+$7843 c MainLoop ; One pass: HALT, the hero, the shots, the stars, Dameron, the HUD, the missiles, the colours; CAPS SHIFT + SPACE quits
+> The pass, in order: PassCounter $FE4D + 1, HALT, HeroControl, HeroFire, MoveShots, DrawShots, MoveStars, DameronFire, ApplyEnergyChange, DrawEnergyBar $9744 (the energy bar), LivesFlashStep, DrawStars, DuelStep (the texts or Dameron), UpdateBurst $9076 (the burst particles); then writes $02 and $FF to the screen bytes $4200-$4201 (pixel line 2, columns 0-1, in the HUD); TextPassDelay when the phase DuelPhase $FE43 is $FF (the intro) and again when it is 4 (won); DrawHero, UpdateDameronMissiles, ColourPlayArea (which ends in DuelHit).
+> Then: the hero's game-over count HeroGameOverCount $BA84 at 0 ends the stage with E = 0 (GameOverExit). CAPS SHIFT (port $FEFE bit 0) and SPACE (port $7FFE bit 0) both held end it with E = 1 (QuitStage). SPACE alone does nothing: stage 5 has no item window (ItemWindow has no caller).
+> Witness: L1 11697 (ending, rzx-r5, s5-right).
+$78A1 MainLoopCaps ; CAPS SHIFT held: SPACE too quits
+$78AE c GameOverExit ; No lives: end the stage with E = 0
+> Reached from MainLoop when the hero's game-over count HeroGameOverCount $BA84 reaches 0 (HeroControl counts it down in state 3, after the last life). E = 0, then EndStage.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$78B3 c QuitStage ; CAPS SHIFT + SPACE: end the stage with E = 1
+> Reached from MainLoop ($78A8); falls into EndStage with E = 1.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$78B5 c EndStage ; Leave the stage: hide the HUD boxes, save the HUD, fade, return E, H = lives, BC = the score's digits
+> As in stage 1 at $789E, the same code with stage 5's addresses. E (pushed) is the outcome: 0 game over (GameOverExit), 1 quit (QuitStage). Clears the play buffer (ClearBuffer $96AC), hides the pieces boxes and the lives boxes with two inline attribute fills (FillAttributes $954E, EndPiecesBox and EndLivesBox), copies the HUD attributes (rows 0-5, $5800-$58BF) to HudColours $7600, clears the score (column 6, line 8, 6 x 8 bytes), the two middle HUD fields (column 14, 4 x 8; column 20, 6 x 8), the item strip (column 10, line 24, 12 x 16) and the pieces field (column 25, line 24, 6 x 16) with CopyToScreen from the cleared buffer PlayBuffer $5B00 (stride 0).
+> Then saves the HUD bitmap (lines 0-47, 32 bytes wide) to HudPicture $7000 with CopyScreenToBlock $93F3 (over the missile records, no longer needed), fades the screen (FlashFadeScreen), clears it (ClearScreen $949F), waits 100 frames (WaitFrames $9546) and returns to the stage loader with E, BC = ScoreDigitsHigh (the six score digits) and H = Lives.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$78BC b EndPiecesBox 5 ; $954E's inline record: column 25, line 24, 6 x 2 cells, attribute 1 (the pieces boxes hidden)
+> Read by FillAttributes $954E (@inline 5) after the CALL at $78B9: column, line, width and height in cells, attribute.
+$78C1 c EndStageLives ; EndStage, continued: hide the lives boxes
+> Part of EndStage, after the first inline record.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$78C4 b EndLivesBox 5 ; $954E's inline record: column 1, line 24, 6 x 2 cells, attribute 1 (the lives boxes hidden)
+> Read by FillAttributes $954E after the CALL at EndStageLives $78C1, in EndPiecesBox's format.
+$78C9 c EndStageSave ; EndStage, continued: save the HUD, clear its fields, fade, return
+> Part of EndStage, after the second inline record.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module render ; Drawing: the fades, the screen copies, the play area's colours
+@about Stage 5 draws straight to the screen: the hero (DrawHero), its shots (DrawShots), the stars (DrawStar), Dameron's three parts (DrawDameronFace, DrawDameronDome, DrawDameronBack) and his missiles are copied to the screen with no mask, each picture carrying blank edges that wipe its trail. The play area's colours are one colour a pass (ColourPlayArea, from the cycle CycleColour $A021). The play buffer $5B00-$6CFF holds the two text pages.
+$793C c FlashFadeScreen ; Fade every coloured ink up to white over 7 frames, then down to black over 7 frames
+> As in stage 1 at $7925, the same code. Seven times (HALT each): every attribute whose ink is neither 0 nor 7 gets ink + 1. Then seven times (two HALTs each): every ink not 0 gets ink - 1. Inputs: none; changes the attributes $5800-$5AFF. Called by EndStage.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$793E FadeUpFrame
+$7946 FadeUpCell
+$7952 FadeUpNext
+$795E FadeDownFrame
+$7967 FadeDownCell
+$796E FadeDownNext
+$7979 c CopyToScreen ; Copy a block of bytes to the screen, line by line
+> As in stage 1 at $79CC, the same code. Inputs: HL = the source, B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines, A = the source's stride (added to HL after each line; 0 repeats one source line, used with the cleared buffer to clear a screen block). Patches the column into $7992 and the stride into $79A3, then for each line takes the line's address from ScreenLineTable and LDIRs D bytes. Destroys IX, BC, DE.
+> Callers: EndStage, ShowScore, ShowItemCount, GameOverStep and RevealScore $967E (the score revealed at the start).
+> Witness: L1 48 (ending, rzx-r5, s5-right).
+$798C CopyToScreenLine
+
+@module duel ; The duel with Dameron: the texts' timer, his four forms, his path, his missiles, the hits
+@about Dameron is a 15-column head on the right, drawn in three parts every pass: the face (7 bytes wide at column (X + $78) / 8), the dome (4 wide at (X + $B0) / 8) and the back (4 wide at (X + $D0) / 8), 128 lines from line 48 + Y (the line table ScreenLinePlay $9805). X (DameronX $FE3E) stays 0 (DameronPath moves only Y), so the columns are 15, 22 and 26. Y (DameronY $FE3F) starts at $8E, climbs one line a pass to $14 (DameronApproachStep), then follows DameronPath (one line up or down a pass, 128 steps).
+@about The phase DuelPhase $FE43: $FF the intro text (TextPassDelay, the timer DuelTimer $FE45 from $044C down by 2 a pass to $00A0: 470 passes), 0-3 Dameron's four forms, 4 won (the ending text). A hero shot on the hit line sets the pending hits PendingHits $FE41 = 2; DuelHit takes one a pass into the hit counter HitCounter $FE44; at 20 (10 shots) the phase steps, FormChanged $FE42 = 1 and NextDameronForm $A0C4 bursts the old form. Form 0 face DameronFace0 $A43A, form 1 face DameronFace1 $ABBA, form 2 a 5-byte face DameronFace2 $AF3A, form 3 no face (the dome from DameronDome3 $B1BA); won: the dome and the back cleared and the final burst (FinalBurstShape).
+$79A9 c DuelHit ; Take one pending hit a pass: count it, step the form every 20, flash Dameron's cells blue; while a text is up flash it instead
+> Reached by a JP from ColourPlayArea every pass. TextShown $FE47 = 1 (a text page on screen, set by ShowTexts $8C87): FlashTextRows and return. Else when the pending hits PendingHits $FE41 are 0: return. Else PendingHits $FE41 - 1 and the hit counter HitCounter $FE44 + 1; at $14 (20): HitCounter $FE44 = 0, the phase DuelPhase $FE43 + 1, FormChanged $FE42 = 1 and NextDameronForm $A0C4 (effect 0 and the bursts of the beaten form; the final burst at phase 4).
+> Then (DuelHitFlash) the 15 x 16 cells from $58C0 + (Y AND $F8) x 4 + (X + $78) / 8 (Dameron's face and dome) get attribute 1 (blue on black) for this pass; ColourPlayArea recolours them on the next.
+> A shot gives two hits (MoveShots sets PendingHits $FE41 to 2), so a form takes 10 shots and the duel 40. s5-right never hit Dameron ($79B7 never ran); rzx-r5 counted all 80 hits ($79B7 80 runs, 40 shots on the hit line) and won the duel.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$79DB DuelHitFlash ; Dameron's cells blue for one pass
+$79FE DuelHitFlashRow ; 15 cells, then + $12 to the next row
+$7A22 c FlashTextRows ; Flash the seven text rows' attributes red and magenta
+> While a text page is shown (TextShown $FE47 = 1): FlashTextRow on the rows 8, 10, ..., 20 at column 16 ($5910, $5950, $5990, $59D0, $5A10, $5A50, $5A90), the rows CopyTextLine $8D89 copies the text lines to.
+> Witness: L1 4440 (ending, rzx-r5, s5-right).
+$7A4D c FlashTextRow ; Fill 12 attributes at HL with bright red ($42) on even passes, bright magenta ($43) on odd ones
+> HL = the first attribute; the colour from PassCounter $FE4D bit 0. HL is left past the 12 cells.
+> Witness: L1 31075 (ending, rzx-r5, s5-right).
+$7A59 FlashTextRowFill
+
+@module render
+$7A72 c ColourPlayArea ; Colour the whole play area (rows 6-23, columns 2-29) with this pass's cycle colour, then DuelHit
+> A = CycleColour $A021 (the colour cycle by PassCounter AND 7: bright yellow, cyan, green, magenta, red, magenta, green, cyan, the bytes at CycleColours $A02F); fills 18 rows of 28 cells from $58C2, unrolled. Then JP DuelHit, which may paint Dameron's cells blue or flash the text over it. Every pass: the stars, the hero, the shots and Dameron all take the one colour.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$7A7D ColourPlayAreaRow
+
+@module mainloop
+$7ABB c PaceLateForms ; Pad the pass in Dameron's form 3 and after: wait $0320 rounds (phase 3) or $07D0 (phase 4)
+> Reached by a JP from DuelStep ($8855) with A = the phase DuelPhase $FE43, 3 or more: form 3 (no face drawn) and the end cost less, so the pass is padded with a busy count of HL down to 0 (26 T-states a round): $07D0 when A is 4, else $0320. Returns to DuelStep's caller.
+> Witness: L1 472 (ending, rzx-r5).
+$7AC6 PaceLateFormsLoop
+$7ACD c TextPassDelay ; Busy wait $07D0 rounds: the pass pacing while the intro or the ending text is up
+> Called by MainLoop when the phase DuelPhase $FE43 is $FF (the intro) and when it is 4 (won). Counts HL from $07D0 to 0 (about 52 000 T-states, 0.75 frame). Destroys A, HL.
+> Witness: L1 5537 (ending, rzx-r5, s5-right).
+$7AD0 TextPassDelayLoop
+
+@module duel
+$7AD7 b FinalBurstShape 2 ; The final burst's shape: 12 rows of 16 bits, bits 7-14 set (a block 8 fragments wide, 12 high)
+> Read by StartBurst $91B9 (IX = $7AD7, D = 12, E = 9, A = 1) from $A0E2, at phase 4 (Dameron beaten): each set bit (bit 7 of the first byte first) puts a burst fragment at column D + bit, row E + row. Every row is $01, $FE.
+@res stage5/bitmaps-final-burst-2x12.bin
+$7AEF b FinalBurstShapeTail 4 ; Two more rows of FinalBurstShape's pattern that no code reads
+> StartBurst $91B9 reads 24 bytes (12 rows of 2); these 4 bytes ($01, $FE, $01, $FE) continue the pattern up to AddScore. No code reads them: no operand points into them, and StartBurst $91B9 stops after 24 bytes.
+
+@module hud ; The energy, the lives, the score, the HUD and game over
+@about The routines stage 5 keeps from stage 1's HUD. The score is six decimal digits in the resident Score and ScoreHigh; stage 5 never adds to it (AddScore has no caller) and never shows it after the start (ShowScore has no caller; RevealScore $967E reveals it once). The energy (Energy $FE4F, $2E full) moves 2 a pass towards the pending EnergyChange $FE53; when it would reach 0 a life is lost and the hero explodes (state 1 of the hero record HeroRecord $BA7E). The six lives boxes flash after each life lost (LivesFlashStep).
+$7AF3 c AddScore ; Add BC points to the score
+> As in stage 1 at $7B53, the same instructions. Score += BC; at 10000 or more, Score -= 10000 and ScoreHigh + 1 (wrapping from 99 to 0). Outputs none; A, BC, HL destroyed.
+> No caller in stage 5's code: no CALL, JP or pointer to $7AF3 in the linear listing list-all.txt.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7B14 c RenderScore ; Write the six score digits into ScoreDigits and draw them into the text buffer $7640
+> As in stage 1 at $7B73, the same code. $94F0 writes Score as four digits at ScoreDigitsLow, ByteToDigits $9524 writes ScoreHigh as two at ScoreDigitsHigh, then RenderDigits draws the six characters into DigitBuffer $7640 with a stride of 6. Called once by StageSetUp $95E4 (the stage's set-up).
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$7B36 c HideLeadingZeros ; Colour the score's leading zeros blue on black (unseen) and the rest yellow
+> As in stage 1 at $7B95, the same code. Builds six attributes at $6D00 ($06, yellow on black), sets $01 for each leading '0' of ScoreDigitsHigh on, and copies them to the HUD at $5826 (row 1, columns 6-11). Reached only from ShowScore.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7B4A HideLeadingZerosNext
+$7B5A HideLeadingZerosCopy
+$7B66 c ShowScore ; Draw the score on the HUD
+> As in stage 1 at $7BC3, the same code. RenderScore, then CopyToScreen of the 6 x 8 bytes at DigitBuffer $7640 to column 6, line 8, then HideLeadingZeros.
+> No caller in stage 5's code: no CALL, JP or pointer to $7B66 in list-all.txt (stage 1 calls it every pass; stage 5's main loop does not).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7B7A c RenderDigits ; Draw a string of digits into a byte buffer, 8 lines a character
+> As in stage 1 at $7BD7, the same code. IX = a text record (two bytes skipped, then characters from '0' up, 0 ends), HL = the buffer, A = the buffer's stride (patched into $7B9D). Each character: 7 lines from DigitGlyphs + (char - '0') x 8 and an eighth line of 0, one byte column; HL moves one byte right per character. Reached by JP from RenderScore and FormatItemCount.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$7B81 RenderDigitsChar
+$7BC2 b ScoreDigits 9 ; The score as text: two unused bytes, ScoreHigh's two digits, Score's four digits, 0
+> Written by RenderScore (NumberToDigits $94F0 at ScoreDigitsLow, ByteToDigits $9524 at ScoreDigitsHigh), read by RenderDigits and HideLeadingZeros; EndStage returns ScoreDigitsHigh in BC. Loaded as 0, 0, '000000', 0.
+$7BC4 ScoreDigitsHigh ; ScoreHigh's two digits ($9524); EndStage returns this address in BC
+$7BC6 ScoreDigitsLow ; Score's four digits ($94F0)
+$7BCA ScoreDigitsEnd ; 0: the end mark
+
+@module hero ; The hero: its movement, its shots, its explosion, and the item strip kept from stage 1
+@about The hero is a 3-byte, 24-line sprite (HeroFrames: 4 animation frames x 4 two-pixel shifts) copied to the screen from the record HeroRecord $BA7E: +0 X in pixels ($12-$66), +1 the screen line ($40-$96), +4 the state (0 flying, 1 exploding, 2 re-forming, 3 game over), +5 the explosion frame, +6 the game-over count ($5A). The keys move it 2 pixels a pass in state 0 (HeroControl). FIRE shoots on its release (HeroFire): the shot records at HeroShots $75E0 (16 x 8 bytes: +0 the column, $FF free, $FE ending; +1 the line; +2/+3 the screen address) fly one column a pass to column 29 (MoveShots, DrawShots).
+@about The item strip, the item window and the item counts are stage 1's code left in the block: StageSetUp $95E4 rolls the strip in at the start (ScrollItemsLeft three times, FlashSelectedBox); nothing else of it runs.
+$7BCB c ItemWindow ; SPACE: stop the game, flash the strip's frame, choose an item with LEFT and RIGHT, SPACE again to go on
+> As in stage 1 at $7C27, the same code. Clears PassCounter, waits (cycling the frame colours, CycleWindowFrame) for SPACE's release (TestSpaceKey $93BE), then every 6 frames: DrawItemStrip and ShowItemCount; RIGHT (KeyRight $FCBD) scrolls to the previous slot (ScrollItemsRight), LEFT (KeyLeft $FCAE) to the next (ScrollItemsLeft); SPACE again: waits for its release, cycles the frame back to its first colour (the attribute $586A at 1) and falls into FlashSelectedBox.
+> No caller in stage 5's code: no CALL, JP or pointer to $7BCB in list-all.txt other than its own loop ($7BD7); stage 5's main loop does not test SPACE alone.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7BDA ItemWindowStep
+$7BDC ItemWindowFrame
+$7BF6 ItemWindowLeft
+$7C02 ItemWindowSpace
+$7C08 ItemWindowRelease
+$7C0E ItemWindowSettle
+$7C1A c FlashSelectedBox ; Colour the selected item's box with inks 2 to 6, one a frame
+> As in stage 1 at $7C6E, the same code. Five frames: patches the colour into the inline record SelectedBoxRecord (column 15, line 24, 2 x 2 cells) and fills it with FillAttributes $954E. Called by StageSetUp $95E4 (the stage's set-up) and reached from ItemWindow.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$7C1E FlashSelectedBoxFrame
+$7C27 b SelectedBoxRecord 5 ; $954E's inline record: column 15, line 24, 2 x 2 cells, the colour (patched)
+> Read by FillAttributes $954E after the CALL at $7C24; FlashSelectedBox writes its last byte (the colour, 2 to 6).
+$7C2C c FlashSelectedBoxNext ; FlashSelectedBox, continued
+> Part of FlashSelectedBox, after its inline record.
+> Witness: L1 15 (ending, rzx-r5, s5-right).
+$7C31 c ScrollItemsLeft ; Select the next slot: scroll the strip 24 pixels left, one pixel a frame
+> As in stage 1 at $7C85, the same code. Returns if ItemSelected $FE35 is ItemLast $FE36. Else ItemSelected + 1, and 24 times: shifts the strip's 18 lines in the play buffer ($5B66-$5B77, 17 bytes a line) one pixel left, cycles the frame (CycleWindowFrame) and shows the strip (ShowItemStrip). Run three times at the stage's start ($963A, with the frame cycle patched off) to roll the strip in.
+> Witness: L1 9 (ending, rzx-r5, s5-right).
+$7C40 ScrollItemsLeftStep
+$7C46 ScrollItemsLeftLine
+$7C4D ScrollItemsLeftByte
+$7C65 c ScrollItemsRight ; Select the previous slot: scroll the strip 24 pixels right
+> As in stage 1 at $7CB9, the same code. Returns if ItemSelected $FE35 is ItemFirst $FE37. Else ItemSelected - 1 and the mirror of ScrollItemsLeft. Reached only from ItemWindow.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7C74 ScrollItemsRightStep
+$7C7A ScrollItemsRightLine
+$7C81 ScrollItemsRightByte
+$7C99 c CycleWindowFrame ; Next colour of the strip's frame (the 12 cells over and under it)
+> As in stage 1 at $7CED, the same code. PassCounter $FE4D + 1; the colour WindowFrameColours[PassCounter AND 15] fills the attributes $586A-$5875 and $588A-$5895. Its first byte is a NOP that the stage's start ($9632) patches to RET while it rolls the strip in, and back ($964B).
+> Witness: L1 216 (ending, rzx-r5, s5-right). In s5-right only the patched RET ran (the item window was never opened).
+$7CC2 b WindowFrameColours 8 ; The frame's 16 inks: 1 to 7 and back
+> 16 bytes, read by CycleWindowFrame at PassCounter AND 15: 1-7, 7, 7, 6-1. Read in no recording (s5-right, rzx-r5, ending).
+$7CD2 c RedrawItemsIfChanged ; When ItemsChanged is set: clear it and redraw the strip and the count
+> As in stage 1 at $7D26, the same instructions with ItemsChanged at ItemsChanged $FE2F (stage 1's $FE4A). When $FE2F is 1: clears it, DrawItemStrip, then ShowItemCount.
+> No caller in stage 5's code: no CALL, JP or pointer to $7CD2 in list-all.txt; nothing in stage 5 writes ItemsChanged $FE2F but this routine (and InitStageState $96DD's clear).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7CE3 c DrawItemStrip ; Draw the icons of slots ItemSelected-3 to +4 into the buffer and show them
+> As in stage 1 at $7D36, the same code. For 8 slots from CarriedItems + ItemSelected - 3: DrawItemIcon at $5B64 + 3 x n, then ShowItemStrip. Called by StageSetUp $95E4 at the start (three times), ItemWindow and RedrawItemsIfChanged.
+> Witness: L1 9 (ending, rzx-r5, s5-right).
+$7CF6 DrawItemStripNext
+$7D0B c ShowItemCount ; Draw the selected item's count (two digits) and hide it when 0
+> As in stage 1 at $7D5E, the same code. FormatItemCount, CopyToScreen of the 2 x 8 bytes at DigitBuffer $7640 to column 15, line 8 (stride 2); then the attributes $582F (tens) and $5830 (units): $41 (blue on black, unseen) for a zero digit pair, else $06 (yellow). Reached from ItemWindow and RedrawItemsIfChanged.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7D2C ShowItemCountTens
+$7D3E ShowItemCountZero ; units digit '0': hidden only when the tens are hidden too
+$7D4A ShowItemCountHide
+$7D50 c FormatItemCount ; Write CarriedCounts[ItemSelected] as two digits into ItemCountText and draw them at $7640
+> As in stage 1 at $7DA0, the same code. Tens (by repeated subtraction of 10) and units into ItemCountText+2 and +3, then RenderDigits with a stride of 2 into DigitBuffer $7640. Called by ShowItemCount.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7D61 FormatItemCountTens
+$7D6A FormatItemCountDone
+$7D7A b ItemCountText 5 ; The count as text for RenderDigits: two unused bytes, two digits, 0
+> Written by FormatItemCount (+2 the tens, +3 the units), read by RenderDigits and ShowItemCount. Loaded as 0, 0, '00', 0.
+
+@module hud
+$7D7F c StartLivesFlash ; Start the lives boxes' flash
+> As in stage 1 at $7DCD, the same instructions with LivesFlash at $FE55. LivesFlash = 0. Called by LoseLife and at the stage's start (the JP at $965A).
+> Witness: L1 8 (ending, rzx-r5, s5-right).
+$7D85 c LivesFlashStep ; One step of the lives boxes' flash: up to white, then back to magenta (a life) or blue (lost)
+> As in stage 1 at $7DD2, the same instructions with Lives at $FE58 and LivesFlash at LivesFlash $FE55. Idle when LivesFlash is $10. Steps 1-7: the six boxes' attributes at $5861 and $5881 (rows 3-4, columns 1-6) get ink + 1 up to 7. Steps 8-16: ink - 1 down to 3 (magenta) for box n while Lives >= n, else 1 (blue). Called every pass by MainLoop and by PassTick $966E (the idle passes at the start).
+> Witness: L1 11786 (ending, rzx-r5, s5-right).
+$7D9A LivesFlashUp
+$7DA8 LivesFlashUpNext
+$7DAD LivesFlashDown
+$7DAF LivesFlashBox
+$7DBE LivesFlashBoxInk
+$7DCB LivesFlashDownNext
+
+@module hero
+$7DD0 c DrawItemIcon ; Draw item icon A (16 lines of 2 bytes, a blank third byte) into the buffer at HL
+> As in stage 1 at $7E19, the same code. HL = the buffer address (stride 32), A = the item kind; the icon's address is ItemIcons[A]. Destroys BC, DE. Called by DrawItemStrip.
+> Witness: L1 72 (ending, rzx-r5, s5-right).
+$7DE1 DrawItemIconLine
+$7DF5 c ShowItemStrip ; Copy the strip's 12 x 16 window from the buffer ($5B68) to the screen ($406A)
+> As in stage 1 at $7E3D, the same code. Two calls of CopyStripRows: the first 8 lines to $406A (row 3, column 10), the next 8 to $408A.
+> Witness: L1 225 (ending, rzx-r5, s5-right).
+$7E04 c CopyStripRows ; Copy 8 lines of 12 bytes from the buffer (stride 32) to one character row of the screen at DE
+> As in stage 1 at $7E4C, the same code. HL = the buffer (left after the call at the next 8 lines), DE = the screen address.
+> Witness: L1 450 (ending, rzx-r5, s5-right).
+$7E06 CopyStripRow
+
+@module hud
+$7E17 c ApplyEnergyChange ; Move the energy 2 a pass towards EnergyChange; at 0 lose a life
+> As in stage 1 at $7E9F, with Energy at $FE4F and EnergyChange at $FE53. EnergyChange 0: nothing. $80 and up (a drain): EnergyChange + 2 and Energy - 2 (none at Energy 0); when Energy would reach 0 it is not stored and LoseLife runs. Under $80 (a refill): EnergyChange - 2 and Energy + 2 up to $2E. Called every pass by MainLoop and by PassTick $966E.
+> The damage in stage 5 is odd (C = 9 at CheckShotHitsDamage $A361): from $F7 the drain steps $F9, $FB, $FD, $FF, $01, and from then on EnergyChange swaps between $01 (a refill step to $FF, Energy + 2 below $2E) and $FF (a drain step to $01, Energy - 2) every pass until the next change; the bar flickers by 2. s5-right ran only the refill at the start (23 passes, Energy 0 to $2E); ending ran the damage 32 times (CheckShotHitsDamage) and lost 5 lives. The swap itself is known only from the code.
+> Witness: L1 11786 (ending, rzx-r5, s5-right).
+$7E36 ApplyEnergyRefill
+$7E47 c LoseLife ; A life lost: the hero explodes, Lives - 1, effect 7, flash the lives, refill the energy
+> Reached from ApplyEnergyChange when the drain would take Energy to 0. Returns if the hero's state HeroState $BA82 is not 0 (already exploding). Else the state = 1 (HeroControl runs the explosion, then state 2 or 3), EnergyChange = $30 (the refill), StartLivesFlash, Lives $FE58 - 1, and PlaySoundVector with E = 7. Unlike stage 1 it does not test Lives first: HeroControl ends the stage when the explosion ends with Lives at 0.
+> Witness: L1 5 (ending).
+
+@module hero
+$7E67 b CarriedItems 12 ; The item kind of each of the 12 slots (slots 0-3 hold 4, the blank icon; slot 6 holds 8)
+> Copied from StartItems by InitStageState $96DD at the start; read by DrawItemStrip (CarriedItems + ItemSelected - 3, 8 slots). Loaded as a copy of StartItems.
+$7E73 b CarriedCounts 12 ; The amount of each slot's item (read by FormatItemCount)
+> Read by FormatItemCount at CarriedCounts + ItemSelected. All 0; no stage-5 code writes them.
+$7E7F b StartItems 12 ; The carried items at the stage's start, copied to CarriedItems by $96DD: slots 0-3 kind 4 (blank), slot 6 kind 8
+> The 12 bytes $04, $04, $04, $04, 0, 0, $08, 0, 0, 0, 0, 0. InitStageState $96DD copies them with LDIR to CarriedItems.
+@res stage5/table-startitems.bin
+$7E8B w ItemIcons 3 ; The 16 x 16 icon of each item kind 0-8 (32 bytes each; kind 4 points to the blank $94B0)
+> Read by DrawItemIcon at ItemIcons + 2 x kind: ItemIcon0 $BA38, ItemIcon1 $B9F8, ItemIcons16 $B958, ItemIcon3 $B9B8, BlankIcon $94B0, ItemIcon5 $B998, ItemIcon6 $B978, ItemIcons16 $B958, ItemIcon8 $B9D8.
+@res stage5/table-itemicons.bin
+
+@module hud
+$7E9D c GameOverStep ; Count GameOverTimer to $31, draw GAME OVER in the item strip, then cycle its colour
+> As in stage 1 at $836D, with GameOverTimer at $FE56. GameOverTimer 0: nothing. 1-$30: + 1 a pass. At $31: clears the strip (column 10, line $18, 12 x 16 from the blank BlankIcon $94B0, stride 0) and draws the 8 x 8-byte GAME OVER picture at GameOverPicture $A367 at column 12, line $1C. $32 and on (GameOverColour): the colour from CycleColour $A021 patched into the inline record GameOverBox and filled. Called every pass by PassTick $966E, which runs only in the idle passes at the start ($9678).
+> Nothing in stage 5 sets GameOverTimer: InitStageState $96DD clears it and no other code writes GameOverTimer $FE56 but this routine, so only the first test runs; stage 5's game over is the hero's count HeroGameOverCount $BA84 (HeroControl).
+> Witness: L1 90 (ending, rzx-r5, s5-right).
+$7ECB GameOverColour
+$7ED4 b GameOverBox 5 ; $954E's inline record: column 12, line 24, 8 x 2 cells, the colour (patched)
+> Read by FillAttributes $954E after the CALL at $7ED1; GameOverStep writes the colour (the last byte, $7ED8).
+$7ED9 c GameOverStepDone ; GameOverStep, continued: return
+> Part of GameOverStep, after its inline record.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$7EDA c DamageHero ; EnergyChange - C (a drain)
+> C = the damage. Called by $A363 (a missile on the hero, C = 9). Unlike stage 1's DamageHero it does not test the hero's state.
+> Witness: L1 32 (ending).
+
+@module mainloop
+$7EE2 c AbortGame ; Blue border, then the resident's abort ($FCE3: DI, IM 0, the loader's SP and return address)
+> Writes 1 to port $FE (a blue border) and jumps to $FCE3, the resident's exit that KeyHook takes when its key is pressed (it restores SP from $FE04 and returns through $FE06).
+> No caller in stage 5's code: no CALL, JP or pointer to $7EE2 in list-all.txt.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module hero
+$7EE9 c InitHero ; Put the hero at X $40, line $68, flying (state 0, frame 0), the game-over count $5A
+> Writes the hero record HeroRecord $BA7E: +0 X = $40, +1 line = $68, +4 state = 0, +5 frame = 0, +6 the game-over count = $5A (90 even passes). Called once by StageEntry.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$7F02 c ClearHeroShots ; Free the 16 hero shot records: fill $75E0-$765F with $FF
+> 128 bytes of $FF (LDIR): the 16 records of 8 bytes MoveShots and DrawShots walk. Called once by StageEntry.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module missiles ; Dameron's missiles: 8 records of 6 bytes at $7000
+@about A missile record (HudPicture $7000 + 6n, n = 0-7; $FF at +0 free): +0 the column, +1 the line (from line 48: ScreenLineTable + $60), +2 the kind, +3 the frame or the path, +4 the step. Kinds: 1 a fireball (3 x 16, frames 0-3), 2 an arcing shot along ArcSteps0-3 (MoveCurvedShot $9DC6), 3 a bolt (3 x 9, frames 8-11), 4 a burst (3 x 24, frames $13-$17, placed by NextDameronForm $A0C4 when a form is beaten). Frame n is at SpriteBank $B3BA + the word n of SpriteFrameOffsets $938E (SpriteFrameAddress $9378). Every missile is tested against the hero first (CheckShotHitsHero $A33E: C = 9 damage); kinds 1-3 move one column left every other pass and are freed at column -1 (FreeShot $A015).
+$7F10 c ClearMissiles ; Free Dameron's missiles: fill $7000-$707F with $FF
+> 128 bytes of $FF (LDIR), more than the 8 records x 6 bytes UpdateDameronMissiles reads (FindFreeMissile may write a ninth record at MissilesEnd $7030, inside this area). Called once by StageEntry.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module hero
+$7F1E c HeroControl ; Move the hero with the keys (state 0); on even passes run its explosion, re-forming and game-over count
+> IX = the hero record HeroRecord $BA7E. State +4 = 0: RIGHT (HeroRight), LEFT (HeroLeft), UP (HeroUp), DOWN (HeroDown), each tested with the resident readers (KeyRight $FCBD, KeyLeft $FCAE, KeyUp $FC90, KeyDown $FC9F; Z = held), 2 pixels a pass. Then on odd passes (PassCounter $FE4D bit 0) return.
+> On even passes by state: 0 nothing; 1 (exploding, set by LoseLife) the frame +5 + 1 up to 6, then state 3 when Lives $FE58 is 0, else state 2; 2 (re-forming) the frame - 1 down to $FF, then state 0 and frame 0; 3 and on (game over) the count +6 - 1 and the frame = 5 each even pass; MainLoop ends the stage when the count HeroGameOverCount $BA84 reaches 0 (90 even passes).
+> A quirk from the code: on the pass the explosion ends with lives left, the state-2 test sees A = Lives: with 2 lives it runs one re-forming step at once (frame 5), with others the state-3 tail once (HeroGameOverTick: the count - 1, frame 5).
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$7F42 HeroControlState ; even passes only: the state machine
+$7F6B HeroToReform ; lives left: state 2
+$7F6F HeroReforming
+$7F86 HeroGameOverTick ; the game-over count - 1, frame 5
+$7F8E c HeroLeft ; LEFT: X - 2 unless it becomes $10 (X stops at $12)
+> IX = the hero record. Called by HeroControl when LEFT is held.
+> Witness: L1 126 (rzx-r5).
+$7F9A c HeroRight ; RIGHT: X + 2 while under $68 (X stops at $66)
+> IX = the hero record. Called by HeroControl when RIGHT is held.
+> Witness: L1 2147 (rzx-r5, s5-right).
+$7FA6 c HeroUp ; UP: the line - 2 unless it falls under $40
+> IX = the hero record. Called by HeroControl when UP is held.
+> Witness: L1 869 (rzx-r5, s5-right).
+$7FB2 c HeroDown ; DOWN: the line + 2 while under $98 (the line stops at $96)
+> IX = the hero record. Called by HeroControl when DOWN is held.
+> Witness: L1 703 (rzx-r5).
+
+@module util ; Small helpers
+@about Stage 5's own helper in this range; the shared ones (clears, copies, random numbers, delays) are at $93BE-$9663.
+$7FBE c AttrAddress ; HL = the attribute address of pixel line A, pixel column C: $5800 + (A AND $F8) x 4 + C / 8
+> Inputs A (a pixel line) and C (an X in pixels); output HL; B = 0, C destroyed.
+> No caller in stage 5's code: no CALL, JP or pointer to $7FBE in list-all.txt.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module hero
+$7FD3 c HeroFire ; FIRE: a shot from the hero on each release of FIRE, with effect 8
+> Nothing while the hero's state HeroState $BA82 is not 0. FireLatch $FE3A = 1 (armed): FIRE held (KeyFire $FCCC, Z) clears it. FireLatch 0: while FIRE is held nothing; when it is up FireLatch = 1 and a shot: FindShotSlot (none free: return), PlaySoundVector E = 8, the record: +0 the column X / 8, +1 the line (Y + 12) AND $F8, +2/+3 the screen address of that line and column (ScreenLineTable). FireLatch is 0 at the start, so the first pass with FIRE up fires once.
+> s5-right: 30 presses, 31 shots.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$7FEA HeroFireArmed ; FireLatch 0: shoot when FIRE is up
+$802C c FindShotSlot ; IX = the next shot record (round robin over 16); Z when it is free
+> ShotCursor $FE2D + 1 AND 15; IX = HeroShots $75E0 + 8 x it; Z when +0 is $FF. Called by HeroFire.
+> Witness: L1 278 (ending, rzx-r5, s5-right).
+
+@module missiles
+$804A c UpdateDameronMissiles ; Run each of the 8 missile records at $7000 that is not free
+> IX = HudPicture $7000, 6 bytes a record; UpdateMissile for each with +0 not $FF. Every pass from MainLoop.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$8050 UpdateDameronMissilesNext
+$805C UpdateMissilesSkip
+$8065 c UpdateMissile ; One missile: hurt the hero if it is on it, then move and draw it by its kind
+> CheckShotHitsHero $A33E first (the hero's column X / 8 equal to +0 and the hero's line - $20 - the missile's line from -7 to 13: DamageHero with C = 9). Then by the kind +2: 1 FireballMissile, 2 MoveCurvedShot $9DC6 (the arcing shot), 3 BoltMissile, 4 BurstMissile; others return.
+> Witness: L1 14710 (ending, rzx-r5, s5-right).
+$8080 c FireballMissile ; Kind 1: a fireball flying left one column every other pass; 3 bytes x 16 lines, frames 0-3
+> On even passes the column +0 - 1; at -1 the record is freed (FreeShot $A015). The frame PassCounter AND 3 (SpriteFrameAddress $9378), drawn at ScreenLineTable[$30 + line] + column, 3 bytes a line, the second character row at + $20 from the first's top. Launched by DameronFire in form 0.
+> Witness: L1 8132 (ending, rzx-r5, s5-right).
+$8094 FireballMissileDraw
+$819D c BurstMissile ; Kind 4: a burst standing in place: frames $13-$17 twice with effect 0 between, then freed
+> On even passes the step +4 + 1 (from $FF). Steps $64 and up: nothing (the first pass). Steps 0-4: the frame +3 = the step; step 5: PlaySoundVector E = 0; steps 5-9 not drawn; 10-14: the frame = the step - 10; 15: freed (FreeShot $A015). Drawn as frame +3 + $13, 3 bytes x 24 lines. Placed by NextDameronForm $A0C4 (21 places, $A10D-$A335) when a form is beaten.
+> Witness: L1 1187 (ending, rzx-r5).
+$81A8 BurstMissileStep
+$81C1 BurstMissileLate ; steps 5 and on: free at 15, hidden under 10, else the step - 10
+$81CE BurstMissileDraw
+$834E c BoltMissile ; Kind 3: a bolt flying left one column every other pass; 3 bytes x 9 lines, frames 8-11
+> As FireballMissile with the frame (PassCounter AND 3) + 8 and 9 lines. Launched by DameronFire in forms 1 and 2.
+> Witness: L1 3438 (ending, rzx-r5).
+$8362 BoltMissileDraw
+$840B b ArcSteps0 8 ; The arcing shot's line step a pass, path 0: -4 x 4 ... +5, $64 ends (23 bytes)
+> Read by MoveCurvedShot $9DC6 (kind 2) at ArcSteps + the step +4 for the path +3 = 0: the line +1 changes by the signed byte; $64 holds the last step (+4 - 1 and read again). Paths 0-3 are chosen by DameronFire in form 3 ((PassCounter / 16) AND 3).
+$8422 b ArcSteps1 8 ; Path 1: -4 ... +5, $64 ends (18 bytes)
+> As ArcSteps0, for +3 = 1.
+$8434 b ArcSteps2 7 ; Path 2: -3 ... +5, $64 ends (14 bytes)
+> As ArcSteps0, for +3 = 2.
+$8442 b ArcSteps3 8 ; Path 3: -3, -2 x 4, -1 x 8, 0, +1 x 8 ... +5, $64 ends (34 bytes)
+> As ArcSteps0, for +3 = 3 (the longest, flattest arc).
+
+@module hero
+$8464 c MoveShots ; Move the hero's shots one column right; a shot on Dameron's hit line scores two pending hits
+> For the 16 shot records at HeroShots $75E0 (8 bytes): free ($FF) skip; $FE becomes $FF (freed after DrawShots erased it); else the column + 1 and the screen address +2 + 1; at column $1D the shot ends ($FE). Then Dameron's column: (X + C) / 8 with C = $88 (forms 0-2), $B0 (form 3), $E8 (won). In that column and with the line +1 within Y + $2B to Y + $A2 the shot ends; it scores (the pending hits PendingHits $FE41 = 2) only on the line (Y AND $F8) + $88 (form 0), + $68 (form 1), + $60 (forms 2-3), the mouth; won (phase 4 and on): any line in the band.
+> With X at 0 the won column is 29 ($1D), where the shots end before the test, so no hit after the duel. s5-right: 25 shots met the head, none on the hit line; rzx-r5: 40 shots on the hit line ($84DE), all before the win.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$846D MoveShotsNext
+$8497 MoveShotsColumn
+$84D2 MoveShotsLine
+$84DE ShotHitsDameron ; two pending hits
+$84E6 MoveShotsSkip
+$84EB ShotEnds ; +0 = $FE: erased and freed on the next passes
+$84F2 c DrawShots ; Draw the hero's shots (5 lines of 2 blank and 2 picture bytes); erase the ending ones
+> For the 16 shot records: free skip; ending ($FE): EraseShot clears 3 lines of one byte at the screen address +2/+3; else 5 lines at the screen address: 2 bytes of 0 (the trail) then 2 bytes of ShotGraphic. Then clears the screen byte $4BFD (line 123, column 29) every pass. Every pass from MainLoop.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$84F8 DrawShotsNext
+$854F DrawShotsSkip
+$855D EraseShot
+$856C b ShotGraphic 2 ; The hero's shot: 5 lines of 2 bytes
+> Read by DrawShots (LDI, 2 bytes a line).
+@res stage5/bitmaps-shot-2x5.bin
+$8576 c DrawHero ; Draw the hero (3 bytes x 24 lines) straight to the screen; while exploding $9D85 draws the explosion
+> IX = the hero record HeroRecord $BA7E. State +4 not 0: JP DrawHeroFrame $9D85 (the explosion frame +5 + 12, same layout). Else the frame: HeroFrames[((PassCounter AND 7) / 2) x 4 + (X AND 6) / 2], 4 animation frames and 4 two-pixel shifts; the column X / 8 is patched into $85C8; SP walks ScreenLineTable from the line +1 (DI), 3 LDIs a line for 24 lines.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$85C5 DrawHeroLine
+$85D9 w HeroFrames 4 ; The hero's 16 frames: 4 animation steps x 4 shifts (0, 2, 4, 6 pixels), 72 bytes each
+> Read by DrawHero at HeroFrames + ((PassCounter AND 7) / 2) x 8 + (X AND 6). Steps 0-2 at $BB1C-$BE34; step 3 repeats step 1 ($BC3C-$BD14).
+
+@module stars ; The stars streaming right to left behind the duel
+@about 16 stars at Stars $BA86 (4 bytes: +0 X in pixels, +1 the screen line, +2 the speed class: 0 slow, 4 pixels a pass, 1 fast, 8 pixels a pass; +3 a counter whose bit 0 picks a new line or keeps the old one when the star wraps). Drawn straight to the screen with blank edges; hidden where Dameron's head is.
+$85F9 c InitStars ; Seed the 16 stars: X = 16 x n (n = 16 down to 1), a random line $30-$BF rounded to 8
+> For n = 16 down to 1 at Stars $BA86: +1 = (a Random $9492 byte under $90) + $30 AND $F8, +0 = n x 16 (n = 16 gives 0); a second Random $9492 call only advances the ROM pointer. Called once by StageEntry.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$8602 InitStarsNext
+$8603 InitStarsLine
+$8627 c MoveStars ; Move the stars left by 4 (slow) or 8 (fast) pixels; a wrapped star may take a new line
+> For n = 16 down to 1: +2 = n AND 1, X - 4 (+2 = 0) or - 8 (+2 = 1). Under $F8 the new X is stored. Wrapped: +3 - 1; odd keeps the line and the wrapped X; even: a new line from NextSeed ($9483, AND $F8, under $90) + $30 AND $FC and X = $F0.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$8630 MoveStarsNext
+$8656 MoveStarNewLine
+$8669 MoveStarStore
+$866C MoveStarsSkip
+$8672 c DrawStars ; Draw the 16 stars
+> For each: DE = ScreenLineTable[+1] + X / 8, then DrawStar. Every pass from MainLoop.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$8678 DrawStarsNext
+$869C c DrawStar ; Draw one star at DE unless it is behind Dameron's head
+> IX = the star. Hidden (return) when the phase is under 4, X is beyond Dameron's X + $88 and the line is within Y + $31 to Y + $A0. Slow stars (+2 = 0): 3 lines of 3 bytes from StarSlow $A400 (X AND 7 = 0) or StarSlow1 $A409. Fast stars: 5 lines of 4 bytes from StarFast $A412 (even passes) or StarFast1 $A426 (odd), or with +3 odd (DrawStarNarrow) 3 bytes of each line from the second.
+> Witness: L1 187136 (ending, rzx-r5, s5-right).
+$86C4 DrawStarVisible
+$86DA DrawStarFast
+$873D DrawStarSlow
+$874B DrawStarSlowLines
+$8776 DrawStarNarrow
+
+@module duel
+$87C2 c DuelStep ; The texts' timer, or Dameron: his approach and path, his three parts, the late forms' pacing
+> Phase $FF (the intro), or 4 (won) with FormChanged $FE42 at 0: the text timer (DuelTextTimer): the timer DuelTimer $FE45 - 2 a pass and JP ShowTexts $8C87 (the text pages), until it is $00A0. Then won stays on the ending (ShowTexts $8C87 every pass, the timer no longer counts); the intro starts the duel: the phase = 0, the timer = $FFC3 (so after the duel the ending waits while the timer's high byte is $FF or $FE before ShowTexts $8C87 shows it).
+> Else (DuelMove): until the arrival flag DameronArrived $FE3D is set, Y - 1 a pass (DameronApproachStep) to $14, where DameronArrived $FE3D = 1; then the path index DameronPathIndex $FE40 + 1 and X, Y += DameronPath[DameronPathIndex $FE40]. HL = ScreenLinePlay $9805 + 2 x Y (Dameron's top line, from line 48), DrawDameronFace, DrawDameronBack, DrawDameronDome; in form 3 and on PaceLateForms.
+> s5-right: 470 intro passes, the approach from $8E to $14 in 122 passes, then the path.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$87D7 DuelTextTimer
+$87E6 DuelTextCount
+$87EE DuelTextDone
+$8801 DuelMove
+$8819 DuelPathStep
+$8829 DuelApplyStep
+$8859 c DrawDameronFace ; Draw Dameron's face (form 0: $A43A, 1: $ABBA, 7 bytes; 2: $AF3A, 5 bytes; 3: none); clear the old one on a form change
+> Phase 4 and on: return. HL = the line table from Dameron's Y (ScreenLinePlay $9805 + 2 x Y), patched into the three LD SP; the column (X + $78) / 8 patched into the 7-byte draw, - 2 into the clear, + 2 into the 5-byte draw. 128 lines ($80), or $36 when Y is $5A or more. DI; SP walks the line table; each line LDIs the picture's bytes to the screen.
+> Form 2 draws 5 bytes at column + 2, then (DrawFaceChange) on the pass FormChanged $FE42 is 1 clears 5 bytes of 128 lines at column - 2 and clears FormChanged $FE42; form 3 draws nothing and on that pass clears the 5 bytes at column + 2. Returns with EI.
+> Witness: L1 6161 (ending, rzx-r5, s5-right).
+$888C DrawFaceSelect
+$88AB DrawFaceWide
+$88B6 DrawFaceWideLine
+$88D9 DrawFaceNarrow
+$88E4 DrawFaceNarrowLine
+$8902 DrawFaceChange
+$891B DrawFaceClear
+$892E DrawFaceClearLine
+$894D c DrawDameronDome ; Draw the middle of Dameron's head (4 bytes x 128 lines at (X + $B0) / 8): $A7BA, $B1BA in form 3
+> Phase 4 and on: return. HL = the line table, patched into the LD SP; the column patched into the ADD; DI, 128 lines of 4 LDIs, EI.
+> Witness: L1 6161 (ending, rzx-r5, s5-right).
+$8973 DrawDomeStart
+$897F DrawDomeLine
+$899C c DrawDameronBack ; Draw the back of Dameron's head (4 bytes x 128 lines at (X + $D0) / 8, $A9BA); won: clear the head once
+> HL = the line table, patched into two LD SP; the column into the draw, - 4 into the clear. Phase under 4: DI, 128 lines of 4 LDIs (two NOPs after them), EI. Phase 4 (DrawBackGone): when FormChanged $FE42 is 1, clears it and clears 8 bytes of 128 lines from column (X + $D0) / 8 - 4 (the dome and the back).
+> Witness: L1 6161 (ending, rzx-r5, s5-right).
+$89CD DrawBackLine
+$89EC DrawBackGone
+$8A02 DrawBackClearLine
+$8A28 b DameronPath 16 ; Dameron's path after the approach: 128 steps of (dX, dY), dX always 0, dY +1 or -1
+> Read by DuelStep at DameronPath + 2 x the path index DameronPathIndex $FE40 (a byte, so 128 steps that repeat): X += dX, Y += dY each pass. Twice: up 20, down 6, up 6, down 20, up 6, down 6 (no net move).
+@res stage5/table-dameron-path.bin
+$8B28 b DameronApproachStep 2 ; The approach's step (dX 0, dY -1): Dameron climbs from Y $8E to $14
+> Read by DuelStep until the arrival flag DameronArrived $FE3D is set.
+$8B2A c DameronFire ; Dameron's missiles, by form, on set passes; effect 2 each
+> Nothing until the arrival flag DameronArrived $FE3D is set, or while the hero's state HeroState $BA82 is not 0. By the phase: 0, at PassCounter AND $1F = 0 or 7: a fireball (kind 1) at column (X + $80) / 8, line (Y + $50) AND $F8; 1, at 0 or 8: a bolt (kind 3) at (X + $78) / 8, line (Y AND $F8) + $30; 2, at 0: two bolts at (X + $88) / 8, lines (Y AND $F8) + $18 and (Y + $30) AND $F8, at 5: one at (Y AND $F8) + $20; 3, every 8 passes: an arcing shot (kind 2) at (X + $B0) / 8, line (Y AND $F8) + $20, path (PassCounter / 16) AND 3, step $FF. Each through FindFreeMissile and PlaySoundVector E = 2.
+> s5-right: 196 fireballs in form 0.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$8B4E DameronFire0
+$8B59 DameronFire0Shot
+$8B7F DameronFire1
+$8B8D DameronFire1Shot
+$8BB3 DameronFire2
+$8C06 DameronFire2Single
+$8C2C DameronFire3
+
+@module missiles
+$8C6C c FindFreeMissile ; IX = the first free missile record ($FF at +0) of the 8 at $7000; NZ either way
+> Found: A = 0, CP 1, so NZ. None free: the loop ends with IX = MissilesEnd $7030 (a ninth record past the table, inside the 128 bytes ClearMissiles fills) and NZ from the last CP $FF. So the callers' RET Z never returns; with all 8 records busy a new missile is written at MissilesEnd $7030, which UpdateDameronMissiles never reads. Called by DameronFire and NextDameronForm $A0C4 (21 calls).
+> Witness: L1 445 (ending, rzx-r5, s5-right).
+$8C75 FindFreeMissileNext
+$8C82 FindFreeMissileFound
+
+@module texts ; The intro and ending texts: their font, the drawing into buffers and the copy to the screen
+@about Stage 5 shows two texts of seven lines each, the intro ("HURTLING ACROSS THE VOID OF SPACE. PRAPARE TO CONFRONT THE EVIL ANGEL OF TIME.DAMERON.") before the duel and the ending ("WELL DONE. YOUR TASK IS COMPLETE. HISTORY IS RESTORED AND DAMERON IS BANISHED.") after it. Both are drawn once at the start (DrawIntroText, DrawEndingText) in a proportional font (TextFont) into seven 256-byte pages of the play buffer each ($5B00-$61FF and $6200-$68FF), a page holding one line of 12 bytes x 8 pixel lines; ShowTexts copies one set to screen rows 8-20, columns 16-27, while the duel timer DuelTimer $FE45 runs.
+$8C87 c ShowTexts ; Copy the intro or the ending text to the screen, or clear it, by the duel's phase and timer
+> Jumped to from $87EB and $87F3 (the main loop's timer step) after the duel timer DuelTimer $FE45 was counted down by 2. HL = the timer, A = the phase DuelPhase $FE43.
+> Phase 4 (Dameron beaten): ShowEnding. Otherwise by the timer's high byte: 2, or 1 with a low byte other than 0, shows the intro (TextShowing TextShown $FE47 = 1, the seven intro pages $5B00-$61FF copied by CopyTextLine to the screen at $4800, $4840, $4880, $48C0, $5000, $5040, $5080: character rows 8, 10, ... 20, columns 16-27), then waits 1300 loops of DEC HL (about 31 000 T-states, under half a frame); exactly $0100 clears the text (ClearTextArea: TextShowing = 0, BlankTextLine copied to the same seven places); any other value returns at once.
+> In s5-right the timer starts at $044C (set at $7826) and goes down by 2 a pass: the intro is copied on the 255 passes from $02FE to $0102, cleared once at $0100, and the duel starts at $00A0 ($87F6: phase 0, timer $FFC3).
+> Output: none. Side effects: TextShowing TextShown $FE47, the screen's pixels in rows 8-20, columns 16-27.
+> Witness: L1 5535 (ending, rzx-r5, s5-right).
+$8CA1 ShowIntro ; the intro's seven pages to the screen
+$8CE8 ShowIntroDelay ; 1300 x (DEC HL until 0)
+$8CEF ShowEnding ; phase 4: the timer's high byte $FF or $FE returns; else the ending's pages $6200-$68FF, then the delay
+$8D3D ShowEndingDelay
+$8D44 ClearTextArea ; timer $0100: TextShowing = 0 and BlankTextLine over the seven text lines
+$8D89 c CopyTextLine ; Copy one text page (8 lines of 12 bytes) from HL to the screen at DE + 16
+> Input: HL = the page (12 bytes a pixel line, packed), DE = the screen address of the character row's first line. E + 16 (column 16); 8 lines, each 12 LDIs, then INC D (the next pixel line of the character row). Output: HL past the 96 bytes. Corrupts A, BC, DE.
+> Called 7 times from each of ShowIntro, ShowEnding and ClearTextArea.
+> Witness: L1 31101 (ending, rzx-r5, s5-right).
+$8D8F CopyTextLineRow
+$8DAF c DrawIntroText ; Draw the intro's seven lines into the pages $5B00-$61FF
+> IY = IntroText; DrawTextLine for each page PlayBuffer $5B00, $5C00, ... $6100 (IY runs on from line to line). Called once at the stage start ($7831).
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$8DDE c DrawEndingText ; Draw the ending's seven lines into the pages $6200-$68FF
+> IY = EndingText; DrawTextLine for each page $6200 ... $6800. Called once at the stage start ($7834), right after DrawIntroText: the ending waits in the play buffer's pages for the whole duel.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$8E0D t IntroText ; The intro's seven lines: each 3 header bytes, the characters, 0
+> Format of a line (DrawTextLine): byte 0 the start column in bytes (0-11) within the 12-byte line, byte 1 the start pixel offset (0-7), byte 2 a byte stored in TextScratch $FE4B and never used for the text, then ASCII characters (A-Z, space, `\` drawn as a full stop; digits would index past TextFont), then 0. All headers here are 0, 0, 0: every line starts at the left edge.
+> The text, as printed (sic): HURTLING / ACROSS THE / VOID OF SPACE. / PRAPARE TO / CONFRONT THE / EVIL ANGEL OF / TIME.DAMERON. Read once by DrawIntroText through IY (DrawTextLine).
+$8E19 IntroLine2 ; "ACROSS THE"
+$8E27 IntroLine3 ; "VOID OF SPACE."
+$8E39 IntroLine4 ; "PRAPARE TO" (sic)
+$8E47 IntroLine5 ; "CONFRONT THE"
+$8E57 IntroLine6 ; "EVIL ANGEL OF"
+$8E68 IntroLine7 ; "TIME.DAMERON."
+@res stage5/textlines-intro.bin
+$8E79 t EndingText ; The ending's seven lines, in IntroText's format
+> WELL DONE. / YOUR TASK / IS COMPLETE. / HISTORY IS / RESTORED AND / DAMERON IS / BANISHED. Read once by DrawEndingText (DrawTextLine); shown by ShowEnding once Dameron is beaten (phase 4). The text is drawn into the second page at the stage start (read once in every recording); rzx-r5 and ending reached the ending page (ShowEnding $8CEF 841 and 3284 passes).
+$8E87 EndingLine2 ; "YOUR TASK"
+$8E94 EndingLine3 ; "IS COMPLETE."
+$8EA4 EndingLine4 ; "HISTORY IS"
+$8EB2 EndingLine5 ; "RESTORED AND"
+$8EC2 EndingLine6 ; "DAMERON IS"
+$8ED0 EndingLine7 ; "BANISHED."
+@res stage5/textlines-ending.bin
+$8EDD c DrawTextLine ; Draw one text line into a 96-byte page with the proportional TextFont
+> Input: HL = the page (its low byte 0), IY = the line (header, characters, 0). Clears the 96 bytes from HL (12 bytes x 8 lines). The pen: DE = H, header byte 0; the pixel offset TextPenShift $FE4A = header byte 1; header byte 2 goes to TextScratch $FE4B (not read by the text code).
+> Each character: '0'-'9' + $2C, space becomes $5B, then - 'A': A-Z are glyphs 0-25, space 26, `\` 27 (a full stop). The glyph is 8 bytes at TextFont + 8 x the index: byte 0 the width mask (kept in GlyphWidthMask $FE4C), 7 pixel rows. The rows go as pairs (row, 0) into the scratch $6A00-$6A0D (inside the play buffer), are shifted right by the pixel offset (TextPenShift $FE4A times SRL / RR over each pair), and ORed into the page at DE, DE + 1 (rows 12 bytes apart: pixel lines 0-6 of the line, line 7 stays blank). AdvanceTextPen moves the pen. A 0 ends the line (DrawTextLineDone) with IY past it, ready for the next line.
+> Output: IY past the line's 0. Corrupts A, BC, DE, HL; TextPenShift $FE4A, TextScratch $FE4B, GlyphWidthMask $FE4C, $6A00-$6A0D.
+> Witness: L1 42 (ending, rzx-r5, s5-right).
+$8F04 DrawTextChar ; the next character; 0 ends the line
+$8F16 DrawTextDigit ; '0'-'9' + $2C (no text uses a digit)
+$8F1A DrawTextNotDigit ; space becomes $5B, glyph 26
+$8F20 DrawTextGlyph ; index = A - 'A'; the glyph's width mask to $FE4C
+$8F3A DrawTextCopyRow ; 7 rows into $6A00 as (row, 0) pairs
+$8F4E DrawTextShift ; shift the 7 pairs right by the pixel offset (C times)
+$8F53 DrawTextShiftRow
+$8F5E DrawTextMerge ; OR the 7 pairs into the page, 12 bytes a row
+$8F63 DrawTextMergeRow
+$8F78 c AdvanceTextPen ; Move the pen past the glyph just drawn: its width + 1 pixel
+> The width mask GlyphWidthMask $FE4C has the glyph's columns set from bit 7 down: C = 9 - its trailing zero bits (8 for most letters, 7 for C, E, F ..., 9 for M and W, 6 for space, 5 for I and the full stop). The pixel offset TextPenShift $FE4A + C; at 8 or more, DE + 1 and the offset - 8 (once: after a 9-wide glyph from offset 7 the offset stays 8, which the shift loop handles). Called after each glyph by DrawTextLine ($8F73).
+> Witness: L1 456 (ending, rzx-r5, s5-right).
+$8F7D AdvanceTextPenWidth ; count the mask's trailing zeros
+$8F86 AdvanceTextPenAdd
+$8F91 AdvanceTextPenStore
+$8F95 c DrawTextLineDone ; The RET DrawTextLine jumps to at a line's 0
+> Reached by JP Z from $8F0B.
+> Witness: L1 42 (ending, rzx-r5, s5-right).
+$8F96 b TextFont 8 ; The texts' proportional font: 28 glyphs of 8 bytes, A-Z, space, full stop
+> Each glyph: byte 0 the width mask (bits set from bit 7 for the glyph's pixel columns plus a gap: $FE for A, B, D, N, O, Q, R, Y, Z; $FC for C, E, F, G, H, J, K, P, S, T, U, V, X; $F8 for L and space; $F0 for I and the full stop; $FF for M and W), then 7 rows of pixels (bit 7 the left). Read by DrawTextGlyph $8F20 (TextFont + 8 x the index). Indexes 28-36 (the digits) would read past it into UpdateBurst's code; no text has a digit.
+$9066 TextFontSpace ; glyph 26: space (blank)
+$906E TextFontStop ; glyph 27: the full stop, written `\` in the texts
+@res stage5/bitmaps-text-font-1x8.bin
+
+@module duel
+@about When the hits on Dameron complete a phase, DuelHit $79A9 calls NextDameronForm: phases 1-3 throw seven staggered explosions (shot records of kind 4 at HudPicture $7000) round his head; phase 4 bursts the head's 16 x 12 shape at FinalBurstShape $7AD7 into particles (StartBurst), which fly apart for 14 steps of two passes (UpdateBurst from the main loop), each an 8 x 8 glyph drawn and erased directly on the screen. The particle list is at Particles $7100 (4 bytes a particle).
+$9076 c UpdateBurst ; Move and draw the burst's particles one step (on the even passes)
+> Called every pass by the main loop ($7869); acts only when PassCounter $FE4D is even. Nothing while BurstTimer $FE49 = $65 (set at $782E: no burst). Else BurstTimer + 1; at $1C ($0E when BurstSmall $FE48 is not 0) the burst ends (StopBurst). The step's glyph: BurstGlyphSteps[step + Random AND 3] x 8 + BurstGlyphs, written into ParticleGlyph's operand $915C.
+> Each particle (4 bytes from Particles $7100, $FF ends the list, $80 a dead one): +2 the direction; 13-18 (the shape's right byte) become 0-5 and take the first set of steps, BurstSteps; 0-5 (the left byte) take the second, BurstStepsLeft. The step's index = BurstDirections[direction x 32 + step + (+3 AND 3)] (that sum doubled in the small mode); dx, dy = the pair at that index. The old cell is erased (EraseParticle, through TextPenShift $FE4A, TextScratch $FE4B); X + dx is kept when the sum is 1-30; Y - dy: a result of 0 leaves Y as it was, 26 and up kills the particle (+0 = $80, not drawn), else stored. Then the glyph's 8 bytes go to the screen cell (PlayLineTable[Y x 8] + X, INC H a line): a particle in rows 0-5 gets the address 0 + X (PlayLineTable's zero words) and writes into the ROM, i.e. is not shown.
+> The even pass after StopBurst (BurstTimer $64) runs once more: $64 + 1 = $65 is not the end value, so the step $65 is drawn (the glyph and step indexes read past BurstGlyphSteps and BurstDirections), then the next even pass sees $65 and stops.
+> In s5-right no burst ran: only the tests of PassCounter $FE4D and BurstTimer $FE49 ran. rzx-r5 and ending ran the body from $908D 16 times each, at the win.
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$9087 UpdateBurstStep ; BurstTimer = $65: idle
+$90BA UpdateBurstLoop ; the next particle: $FF ends, $80 skipped
+$90D2 UpdateBurstDirection ; HL = BurstDirections + direction x 32
+$90F2 UpdateBurstIndex
+$9107 UpdateBurstMove ; E, D = dx, dy; erase the old cell
+$912C UpdateBurstY
+$913D UpdateBurstStoreY
+$9140 UpdateBurstDraw ; the cell's screen address from PlayLineTable
+$915B ParticleGlyph ; LD DE,n: n = the step's glyph, written at $90B3
+$917F UpdateBurstNext
+$918A b UnusedRet 1 ; A RET no code reaches
+> After UpdateBurst's JP UpdateBurstLoop; no CALL, JP or word in stage 5's block names $918A (work/stage2/stage5/B-raw.py).
+$918B c StopBurst ; BurstTimer = $64: the burst ends
+> Reached by JP Z from $908F at the last step. As in stage 1 at $A393, the same code (stage 1's idle value; stage 5's idle value is $65, see UpdateBurst).
+> Witness: L1 2 (ending, rzx-r5).
+$9191 b BurstSteps 2 ; 20 (dx, dy) steps: 10 for the right-byte particles, 10 for the left-byte ones
+> Signed bytes (-1, 0, 1): dx added to the column, dy taken from the character row. UpdateBurst reads the pair BurstSteps + 2 x the index ($90FA; + $14 for the directions 0-5). The same use as stage 1's BurstSteps $A39D.
+$91A5 BurstStepsLeft ; the second set: the shape's left-byte particles (directions 0-5)
+@res stage5/table-burst-steps.bin
+$91B9 c StartBurst ; Turn a 16 x 12 shape into particles at $7100 that fly apart (UpdateBurst)
+> Input: A = BurstSmall $FE48 (1 small: 14 steps of doubled moves; 0 big: 28), D, E = the shape's left column and top character row, IX = the shape (12 rows of 2 bytes, bit 7 the left). RandomPointer $FE0A = $0D7A (every burst flies the same way), BurstTimer $FE49 = $FF. Each set bit gives a particle of 4 bytes at Particles $7100: X, Y, the direction (a Random 0-5, + 13 for the row's right byte), +3 a Random 0-3; X + 1 a bit, the next row at Y + 1, X - 16; $FF ends the list. Preserves IY. Unlike stage 1's StartBurst $A1F3 it plays no sound and sets no colours.
+> Its only use: NextDameronForm $A0E6 (JP) at phase 4, D = 12, E = 9, A = 1, IX = FinalBurstShape $7AD7 (Dameron's head).
+> Witness: L1 2 (ending, rzx-r5).
+$91CF StartBurstRow
+$91D4 StartBurstByte
+$91DD StartBurstBit
+$91EB StartBurstDirection ; a Random 0-7 until under 6
+$920C StartBurstNextBit
+$9230 b BurstGlyphs 8 ; The burst's 8 x 8 particle glyphs: 0-3 from dense to sparse, 4-6 blank
+> UpdateBurst writes BurstGlyphs + 8 x BurstGlyphSteps[...] into ParticleGlyph ($90AF); the indexes 0-3 are the four patterns, 4-6 (read only on the extra step $65, see UpdateBurst) are blank.
+$9250 BurstGlyphBlank ; glyphs 4-6: zeros
+@res stage5/bitmaps-particles-1x8.bin
+$9268 b BurstUnused 4 ; Four zero bytes between the glyphs and BurstGlyphSteps
+> No code reads them (UpdateBurst's glyph indexes stop at 6).
+$926C b BurstGlyphSteps 16 ; The glyph (0-3) at each burst step: index = step + a Random 0-3
+> 35 bytes: 1, 0 at the first steps, then 1, 2 and 3, 2: the particles grow sparser as they fly. Read by UpdateBurst ($90A2: step 0-$1B + 0-3, the first 31 bytes; the extra step $65 reads past the table).
+@res stage5/table-burst-glyphs.bin
+$928F b BurstDirections 32 ; Six direction tables of 32 step indexes (0-6 into BurstSteps); the first five here
+> UpdateBurst reads BurstDirections + direction x 32 + (step + 0-3) ($90DA; the sum doubled in the small mode). The sixth table (direction 5, BurstDirectionsCut $932F) has only 26 bytes before EraseParticle's code at EraseParticle $9349: its indexes 26-31 read code bytes, and the small mode's doubled indexes up to 32 reach $934F.
+@res stage5/table-burst-directions.bin
+$932F b BurstDirectionsCut 26 ; The sixth direction table (direction 5), cut to 26 bytes by EraseParticle's code
+> Its indexes 26-31 (and the small mode's doubled ones up to 32) would read the code bytes of EraseParticle $9349 on: UpdateBurst does not check the table's end. rzx-r5 and ending read 13 of its bytes and 4 bytes of EraseParticle $9349 on: the overrun happens.
+@res stage5/table-burst-directions-cut.bin
+$9349 c EraseParticle ; Clear the 8 x 8 screen cell of the particle at column $FE4A, row $FE4B
+> HL = PlayLineTable[TextScratch $FE4B x 8] + TextPenShift $FE4A; 8 zero bytes, INC H a line. Called by UpdateBurst ($9119) before each particle moves. Corrupts A, BC, HL.
+> Witness: L1 2754 (ending, rzx-r5).
+
+@module render
+@about Stage 5 draws the duel straight to the screen: the shots, explosions and the hero's other frames come from one sprite bank at SpriteBank $B3BA (SpriteFrameAddress), the screen lines from tables (the resident ScreenLineTable $FB00 and two copies in the block, StageScreenLines and PlayLineTable). Stage 1's play-buffer sprite routines (DrawSprite and the others) are still in the block with no caller.
+$9378 c SpriteFrameAddress ; DE = $B3BA + SpriteFrameOffsets[A]: the bytes of sprite frame A
+> Input: A = the frame 0-23. Output: DE = the frame's first byte. Preserves BC and HL. Callers: the straight shots $80B3 (frame PassCounter AND 3), the explosions $81ED (frames 19-23), $8383, DrawHeroFrame $9D8F (frames 12-23) and MoveCurvedShot $9E42 (frames 4-7).
+> Witness: L1 13871 (ending, rzx-r5, s5-right).
+$938E w SpriteFrameOffsets 8 ; The offset of each of the 24 sprite frames in the bank $B3BA
+> 0, $30 ... $150 (frames 0-7, 48 bytes each: 3 bytes x 16 lines), $180, $19B, $1B6, $1D1 (frame 8 27 bytes after frame 7's 48; frames 8-11 27 bytes: 3 x 9), $1EC, $234 (frames 12-13, 72 bytes: 3 x 24), $27C (frame 14, 144 bytes to the next), $30C, $354 ... $54C (frames 15-23, 72 bytes apart). Read by SpriteFrameAddress ($937F).
+@res stage5/table-frame-offsets.bin
+
+@module util
+@about Most of these recur byte for byte from stage 1 (tools/stage_names.py) and keep stage 1's names. Stage 1's actor records and missile list ($74E0, HeroShots $75E0) are not used by stage 5's duel: their routines (SpawnActor to UpdateMissiles) have no caller in stage 5's code.
+$93BE c TestSpaceKey ; Is SPACE down?
+> Calls KeyHook $FCDB, then reads port $7FFE bit 0: Z when SPACE is held. Called from $7BD4, ItemWindowSpace $7C02 and ItemWindowRelease $7C08. As in stage 1 at $8A54, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$93C9 c ClearAttributes ; Clear the screen's 768 attributes to 0
+> Called by ClearScreen. As in stage 1 at $8A5F, the same code.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$93D7 c ClearShadowAttributes ; Clear the shadow attributes $6D00-$6FFF to 0
+> Called by StageSetUp. As in stage 1 at $8A6D, the same code.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$93E5 c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
+> 4401 bytes. As in stage 1 at $8A7B, the same code. No caller in stage 5's code (no CALL, JP or word in the block names $93E5: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$93F3 c CopyScreenToBlock ; Copy a block of the screen, one pixel line at a time, into a buffer
+> HL = the buffer (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines. Patches its ADD A,n at CopyBlockColumn with the column; the line addresses come from ScreenLineTable $FB00. Each line: EX DE,HL, LDIR, EX DE,HL, so the screen's bytes go to the buffer (not the other way). Called from $7924 (EndStage saves the HUD's lines 0-47 into HudPicture $7000). The same code as stage 1's $8A89, which stage 1 names CopyBlockToScreen.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9403 CopyBlockLine
+$9407 CopyBlockColumn ; ADD A,n: n = the column, written at $93F4
+
+@module hud
+@about The HUD (screen lines 0-47) is stage 1's: the picture $7000 dissolved in, the boxes coloured by FillShadowAttributes, the score written by NumberToDigits and ByteToDigits, the energy bar drawn by DrawEnergyBar from Energy $FE4F.
+$941B c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
+> DE = the source picture (48 lines of 32 bytes; HudPicture $7000 from StageSetUp). Eight steps, each after a HALT: the low byte of RandomPointer $FE0A = 0 (the same pattern every step), then every byte of screen lines 0-47 (ScreenLineTable $FB00) = source AND a mask; the mask is read at $F9CB + (a byte read through RandomPointer AND $18) + the step + 1 (the resident's DissolveMasks $F9CC: 4 rows of 8) and gains bits each step. Patches the LD DE at DissolveSource and the ADD A at DissolveStepOperand. As stage 1's DissolveHud $8AB1.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$9426 DissolveStep
+$9431 DissolveSource ; LD DE,n: n = the picture, written at $941B
+$9436 DissolveLine
+$9446 DissolveByte
+$9455 DissolveStepOperand ; ADD A,n: n = the step 0-7
+
+@module util
+$946F c Multiply ; HL = A x B (the smaller one as the loop count)
+> Returns HL = 0 when A is 0. As stage 1's Multiply $8B24. No caller in stage 5's code (no CALL, JP or word names $946F: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$947C MultiplySet
+$947F MultiplyLoop
+$9483 c NextSeed ; RandomSeed = RandomSeed x 5 + $15; A = it
+> RandomSeed $FE08 (low byte). Called from MoveStarNewLine $8656. As in stage 1 at $8B76, the same code.
+> Witness: L1 7885 (ending, rzx-r5, s5-right).
+$9492 c Random ; A = the next ROM byte
+> RandomPointer $FE0A + 1, kept in $0000-$3FFF; A = the ROM byte there. Called from InitStarsLine $8603, $8612, UpdateBurst and StartBurst. As in stage 1 at $8B85, the same code.
+> Witness: L1 617 (ending, rzx-r5, s5-right).
+$949F c ClearScreen ; Clear the attributes, then the 6144 pixel bytes
+> Called by StageSetUp and from $792A. As in stage 1 at $8B92, the same code.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module hud
+$94B0 b BlankIcon 8 ; 32 zero bytes: a blank source for clears done by copying
+> Read by $7EAF (LD HL,$94B0, then BC = $0A18, DE = $0C10: a copy to the screen); s5-right read each of its bytes 9 times. Stage 1's BlankIcon $8BA3 (the blank item icon and the source of the clears done by copying with stride 0).
+
+@module render
+$94D0 c LineAddressToIY ; IY = the screen address of pixel line C (no caller)
+> IY = ScreenLineTable $FB00 + 2C (the word's address, not the word read). No CALL, JP or word in the block names $94D0 (work/stage2/stage5/B-raw.py). As in stage 1 at $8BC3, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$94DC c CellAddress ; HL = DE + (C / 8) x 32 + B: the cell of pixel line C, column B in a 32-wide map
+> DE = the map (Attributes or the shadow ShadowAttributes $6D00). Used by FillAttributes and FillShadowAttributes. As in stage 1 at $8BCF, the same code.
+> Witness: L1 27 (ending, rzx-r5, s5-right).
+
+@module hud
+$94F0 c NumberToDigits ; Write HL as B decimal digits (ASCII) at IX
+> B = 1-5 digits (the last B of 10000, 1000, 100, 10, 1 from DecimalTable $F9BF); each digit by repeated subtraction. IX ends past the digits. Called from $7B1D (the score). As stage 1's NumberToDigits $8BE3.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$9501 DigitLoop
+$950A DigitSubtract
+$9524 c ByteToDigits ; Write A (0-99) as two ASCII digits at IX
+> A = 0 writes "00"; else the tens by repeated subtraction of 10, then the units. Called from $7B27. In s5-right A was not 0 (the "00" branch never ran). As stage 1's ByteToDigits $8C15.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$9532 ByteToDigitsTens
+$9534 ByteToDigitsLoop
+
+@module util
+$9546 c WaitFrames ; Wait BC interrupts (HALT each)
+> Called by StageSetUp (BC = 50, twice) and from $7930. As in stage 1 at $8C35, the same code.
+> Witness: L1 300 (ending, rzx-r5, s5-right).
+
+@module render
+$954E c FillAttributes ; Fill a rectangle of the screen's attributes (5 bytes after the CALL)
+> The 5 bytes after the CALL: the column, the pixel line (/8 = the cell row), the width, the height in cells, the attribute. Returns after them (POP IX, IX + 5, PUSH IX). Called from $78B9, EndStageLives $78C1, $7C24 and $7ED1. As stage 1's FillAttributes $8C3D.
+> Witness: L1 15 (ending, rzx-r5, s5-right).
+$9571 FillAttributesRow
+$9573 FillAttributesCell
+$957F c FillShadowAttributes ; Fill a rectangle of the shadow attributes $6D00 (5 bytes after the CALL)
+> As FillAttributes into the shadow; StageSetUp paints the HUD's boxes with it (HudBox1-HudBox4). As stage 1's FillShadowAttributes $8C6D.
+> Witness: L1 12 (ending, rzx-r5, s5-right).
+$95A2 FillShadowRow
+$95A4 FillShadowCell
+$95B0 c ShowShadowAttributes ; Copy the whole shadow $6D00-$6FFF to the attributes after a HALT
+> Called twice by StageSetUp. As in stage 1 at $8C9D, the same code.
+> Witness: L1 6 (ending, rzx-r5, s5-right).
+
+@module util
+$95BD c ClearActors ; Clear the shots and free all 13 actor records ($74F2, 234 bytes of $FF)
+> ClearShots, then $74F2-$75DB = $FF. As in stage 1 at $921E, the same code. No caller in stage 5's code (no CALL, JP or word names $95BD: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$95CE c ClearShots ; Fill the shot slots $75E0-$763F (96 bytes) with $FF
+> Called only by ClearActors. As in stage 1 at $924B, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$95DC c MoveActorY ; The actor IY's base line +$0E + C
+> As in stage 1 at $92C9, the same code. No caller in stage 5's code (no CALL, JP or word names $95DC: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module entry
+@about StageEntry $7800 calls InitStageState, StageSetUp and QuietPasses before the texts are drawn; RevealScore and the HUD's boxes are stage 1's.
+$95E4 c StageSetUp ; Set up the stage's screen: the HUD, its colours, the score and the items
+> ClearScreen, ClearShadowAttributes, the HUD's colours HudColours $7600 (192 bytes, rows 0-5) into the shadow and shown (ShowShadowAttributes), WaitFrames 50, DissolveHud with the picture HudPicture $7000, WaitFrames 50, the four boxes (FillShadowAttributes with HudBox1-HudBox4), ShowShadowAttributes. Then ItemSelected $FE35 = 3, CycleWindowFrame $7C99 patched to RET, DrawItemStrip $7CE3 and ScrollItemsLeft $7C31 three times, CycleWindowFrame $7C99 back to 0 (NOP), RenderScore $7B14 (the score), RevealScore, FlashSelectedBox $7C1A, SaveAttributes and JP StartLivesFlash $7D7F. Called once from $7807. As stage 1's StageSetUp $97AC.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$960D b HudBox1 5 ; FillShadowAttributes' data: column 6, line 8, width 6, height 1, colour $41 (bright blue on black)
+$9612 HudBoxPaint2 ; the code resumes after the 5 bytes
+$9615 b HudBox2 5 ; column 10, line 24, width 12, height 2, colour $41
+$961A HudBoxPaint3
+$961D b HudBox3 5 ; column 15, line 8, width 2, height 1, colour $41
+$9622 HudBoxPaint4
+$9625 b HudBox4 5 ; the play area: column 2, line 48, width 28, height 18, colour 0 (black)
+$962A StageSetUpItems
+$965D c QuietPasses ; Run 30 quiet passes (IdlePasses with B = 30)
+> Called once from $780A. Stage 1's StageFadeIn $9824 ran the same 30 passes and then faded the room in; stage 5 has no fade.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$9663 c IdlePasses ; B x (3 HALTs + PassTick)
+> As in stage 1 at $9842, the same code.
+> Witness: L1 90 (ending, rzx-r5, s5-right).
+
+@module mainloop
+@about PassTick is stage 1's per-pass tick with stage 5's routines.
+$966E c PassTick ; The pass's counters: PassCounter + 1, the energy, the bar, the timers and the lives' colours
+> PassCounter $FE4D + 1, then ApplyEnergyChange $7E17, DrawEnergyBar, GameOverStep $7E9D and JP LivesFlashStep $7D85. Called by IdlePasses. As stage 1's PassTick $984D.
+> Witness: L1 90 (ending, rzx-r5, s5-right).
+
+@module entry
+$967E c RevealScore ; Raise the score's digits into the HUD line by line (8 steps)
+> Draws 1 to 8 lines of the digit buffer DigitBuffer $7640 at column 6 (6 wide) and column 15 (2 wide) through CopyToScreen $7979, from pixel line 15 up, one line higher and one line more each step, a HALT a step. Called by StageSetUp. As in stage 1 at $985D, the same code.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+$9686 RevealScoreStep
+
+@module render
+$96AC c ClearBuffer ; Clear the play buffer $5B00-$6CFF with PUSH HL (DI)
+> SP = ShadowAttributes $6D00, 144 x 16 PUSHes of 0 (4608 bytes); SP saved in SavedSP $FE0E. Interrupts off meanwhile (DI ... EI). Called from $78B6. As in stage 1 at $9AB5, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$96B9 ClearBufferLoop
+$96D1 c SaveAttributes ; Copy the screen's attributes to the shadow at $6D00
+> Called by StageSetUp. As in stage 1 at $B17F, the same code.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module entry
+$96DD c InitStageState ; Clear and set the stage variables at the start of the stage
+> Clears $FE08-$FE56 (79 bytes), copies the 12 starting carried-object kinds from StartItems $7E7F to CarriedItems $7E67, seeds RandomPointer $FE0A from R (overwritten below), then: InitOnly51 $FE51 = 1, InitOnly50 $FE50 = $0D, LineCount $FE30 = 2, InitOnly32 $FE32 = 1, InitOnly4E $FE4E = $10, ItemFirst $FE37 = 6, ItemSelected $FE35 = 6, ItemLast $FE36 = 6, RandomSeed $FE08 and RandomPointer $FE0A = $07CF, EnergyChange $FE53 = $2E (the energy fills up to full). Called once from $7804.
+> Stage 1's InitStageState $9DA1 in the same order with stage 5's addresses; stage 5 drops SpawnDelay, BurstTimer (StageEntry sets BurstTimer $FE49 = $65 itself), RespawnShiftX and the bosses' counters.
+> Witness: L1 3 (ending, rzx-r5, s5-right).
+
+@module render
+$9736 c BlackOutPlayArea ; Fill the attributes of screen rows 6-23 with 0 (black on black)
+> As in stage 1 at $A057, the same code. No caller in stage 5's code (no CALL, JP or word names $9736: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module hud
+$9744 c DrawEnergyBar ; Redraw the HUD's energy bar when the energy changed
+> When Energy $FE4F differs from EnergyShown $FE52: EnergyShown = Energy; the bar is Energy / 8 bytes of the pattern at EnergyBarPattern $BA78, a last byte masked by BarMasks[Energy AND 7] (written into BarEdgeMask's operand), then zeros up to 6 bytes; drawn on 6 screen lines from EnergyBarScreen $4134 (row 1, line 1, column 20; INC D a line). Called by the main loop ($785D) and PassTick. As stage 1's DrawEnergyBar $A3C5.
+> Witness: L1 11786 (ending, rzx-r5, s5-right).
+$9775 DrawEnergyBarLine
+$977F DrawEnergyBarFull
+$9785 DrawEnergyBarEdge
+$9786 BarEdgeMask ; AND n: n = BarMasks[Energy AND 7], written at $9760
+$9792 DrawEnergyBarZeros
+$9796 DrawEnergyBarNext
+$979D b BarMasks 8 ; The bar's last byte: 0 to 7 pixels from the left ($00, $80, $C0 ... $FE)
+> Read by DrawEnergyBar ($975B) with Energy AND 7.
+
+@module render
+$97A5 w StageScreenLines 8 ; The screen address of each of the 192 pixel lines (a copy of the resident ScreenLineTable $FB00)
+> Words Screen $4000, $4100 ... $57E0. Read from line 48 on (ScreenLinePlay) by $8838 (Dameron's head) and MoveCurvedShot $9E1E: a play-area line Y is ScreenLinePlay + 2Y. s5-right read none of its bytes through LD (the head walks it with POP, which the recordings do not count as reads); rzx-r5 and ending read 284 of them (MoveCurvedShot).
+$9805 ScreenLinePlay ; line 48: the play area's top line
+$9925 b BlankTextLine 16 ; 96 zero bytes: a blank text page, copied by ClearTextArea over the seven text lines
+> Read by ClearTextArea ($8D49 ... $8D7F, seven times 96 bytes) when the intro ends.
+$9985 b UnusedZeros1 16 ; 272 zero bytes after BlankTextLine: no code reads them
+> No operand names $9985-$9A94 and no recording (s5-right, rzx-r5, ending) read any of them.
+$9A95 w PlayLineTable 8 ; The screen address of each pixel line, 0 for the HUD's lines 0-47
+> 192 words: 48 zeros (lines 0-47), then $40C0 ... $57E0 (lines 48-191). Read by UpdateBurst ($914B) and EraseParticle ($9355) at the word of line row x 8: a particle in the HUD rows gets address 0 + X and writes into the ROM.
+$9AF5 PlayLineTablePlay ; line 48
+$9C15 b UnusedZeros2 16 ; 368 zero bytes after PlayLineTable: only the burst's overrun reads four of them
+> No operand names $9C15-$9D84. rzx-r5 and ending read $9C15/$9C16 and $9C25/$9C26: UpdateBurst and EraseParticle look up the word of line row x 8 past the table's end for particles below the screen. The rest no code reads.
+
+@module hero
+@about The hero's record is at HeroRecord $BA7E (+0 X in pixels, +1 the screen line, +4 a flag, +5 a frame).
+$9D85 c DrawHeroFrame ; Draw the hero ($BA7E) as frame +5 + 12 (3 bytes x 24 lines) straight onto the screen
+> Jumped to from $857F when the record's +4 (HeroState $BA82) is not 0. DI; DE = SpriteFrameAddress(+5 + 12); the column +0 / 8 is written into the ADD A,n at DrawHeroFrameColumn; SP walks ScreenLineTable $FB00 from the line +1 (SavedSP $FE0E keeps the real SP); 24 lines of 3 bytes (LDI x 3 until BC = 72 is spent); EI. No mask: the bytes replace the screen's.
+> Witness: L1 119 (ending).
+$9DB2 DrawHeroFrameLine
+$9DB4 DrawHeroFrameColumn ; ADD A,n: n = the column, written at $9D9B
+
+@module missiles
+@about The shot records are at HudPicture $7000: 8 of 6 bytes (+0 the byte column, $FF free; +1 the play-area line; +2 the kind: 1 straight FireballMissile $8080, 2 curved MoveCurvedShot, 3 BoltMissile $834E, 4 an explosion BurstMissile $819D; +3 and +4 per kind). UpdateDameronMissiles $804A runs them every pass, CheckShotHitsHero first.
+$9DC6 c MoveCurvedShot ; Move and draw a curved shot (kind 2): leftwards, its line along one of four paths
+> IX = the record. On even passes (PassCounter $FE4D bit 0 clear) X - 1; X leaving 0 frees it (FreeShot). Every pass +4 + 1 and the step = path[+4], the path by +3: 0 ArcSteps0 $840B, 1 ArcSteps1 $8422, 2 ArcSteps2 $8434, else ArcSteps3 $8442; a step $64 is the path's end (the index goes back one: the last step repeats). Y + the step; $A0 and up frees it. Drawn straight onto the screen: the column X written into the three ADD A,n at CurvedShotColumn1-3, the lines from ScreenLinePlay + 2Y; the frame CurvedShotFrames[PassCounter AND 3] (4-7) by SpriteFrameAddress; 3 lines of 3 zero bytes above, the 16 lines of 3 bytes, 3 zero lines below (it wipes its own trail up and down).
+> Jumped to from $8072 (kind 2).
+> Witness: L1 1953 (ending, rzx-r5).
+$9DDA CurvedShotStep
+$9DDD CurvedShotRead ; the path's step at +4; $64 = hold
+$9E00 CurvedShotAdd
+$9E0D CurvedShotMove
+$9E47 CurvedShotClearTop
+$9E4A CurvedShotColumn1 ; ADD A,n: n = the column, written at $9E2F
+$9E60 CurvedShotDrawLine
+$9E63 CurvedShotColumn2 ; ADD A,n: n = the column, written at $9E2C
+$9E7C CurvedShotClearBottom
+$9E7F CurvedShotColumn3 ; ADD A,n: n = the column, written at $9E32
+$9E94 b CurvedShotFrames 4 ; The curved shot's frames: 4, 5, 6, 7, then 7, 6, 5, 4
+> MoveCurvedShot reads the first four ($9E3D, PassCounter AND 3); the second four, the ping-pong's way back, are read by no code.
+
+@module util
+$9E9C c SpawnActor ; Copy an 18-byte template (HL) into the record IY and put it at D, E
+> Input: HL = the template, IY = the record, D, E = X and Y (also the entry X, Y at +$0D, +$0E). Preserves IY and DE. As in stage 1 at $A4B1, the same code. No caller in stage 5's code (no CALL, JP or word names $9E9C: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9EB7 c RunActorHandlers ; Call the handler of every used actor record (the 14 records from $74E0)
+> When +0 is not $FF, the handler +6/+7 is written into HandlerCall and called with IY = the record. As stage 1's RunActorHandlers $A5BD. No caller in stage 5's code (no CALL, JP or word names $9EB7: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9EBD RunActorHandlersLoop
+$9ECE HandlerCall ; CALL n: n = the record's handler (written at $9ECB)
+$9ED1 RunActorHandlersNext
+$9EDA c DrawActors ; Stage 1's two-pass actor drawing loops, with their drawing calls gone
+> Two loops over the 14 records from ActorRecords $74E0 test +0 = $FF and +$0F bits 6 and 7 as stage 1's DrawActors $A5DF does, but every branch lands on the next record: nothing is drawn (stage 1's CALLs of ClipActor and DrawActorSprite are not there). The only word $9EDA in the block is at $70D1, inside the data. No caller in stage 5's code (work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9EE0 DrawActorsLoop
+$9EF7 DrawActorsNext
+$9F05 DrawActorsTopLoop
+$9F15 DrawActorsTopNext
+$9F1E c BufferAddressDE ; DE = $5B00 + Y x 32 + X of the actor IY
+> As stage 1's BufferAddressDE $A664. No caller in stage 5's code (no CALL, JP or word names $9F1E: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F34 c MoveBaseX ; Move the actor IY's base column +$0D by E (the other way when it faces left)
+> As stage 1's MoveBaseX $B112. No caller in stage 5's code (no CALL, JP or word names $9F34: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F3E MoveBaseXAdd
+$9F45 c NegateIfFacingLeft ; A = -A when the actor IY faces left (+9 bit 7)
+> As in stage 1 at $B122, the same code. No caller in stage 5's code (no CALL, JP or word names $9F45: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F4D c NegatePlus4IfFacingLeft ; A = 4 - A when the actor IY faces left (+9 bit 7), else A
+> No caller in stage 5's code (no CALL, JP or word names $9F4D: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+
+@module missiles
+$9F57 c AddMissile ; Add a missile to the first eight slots of the missile records $75E0
+> In: D column, E line, C type, B and A its parameters. 16 records of 6 bytes: +0 column ($FF free), +1 line, +2 type, +3 $FF, +4 B, +5 A. The search starts after the slot of MissileCursor $FE38 (round robin over 8). A = $FA puts a Random byte in +5. Out: Z when the eight slots are full, else NZ. As in stage 1 at $B28D, the same code. No caller in stage 5's code (no CALL, JP or word names $9F57: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F60 c AddMissileHigh ; Add a missile to the slots 8-15 ($7610) of the missile records
+> As in stage 1 at $B296, the same code. No caller in stage 5's code (no CALL, JP or word names $9F60: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F66 c AddMissileFrom ; Add a missile to the eight slots from BC
+> Reached by AddMissile's JP; AddMissileHigh runs into it. As stage 1's AddMissileFrom $B29C.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9F68 AddMissileSearch
+$9FA5 AddMissileFull
+$9FA8 c ReturnZ ; A = 1, Z set: the "yes" exit of the tests
+> As in stage 1 at $B2DC, the same code. Only AddMissileFull runs into it; no CALL, JP or word names $9FA8.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9FAD c ReturnNZ ; A = 1, Z clear: the "no" exit of the tests
+> As in stage 1 at $B2E1, the same code. No caller in stage 5's code (no CALL, JP or word names $9FAD: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9FB2 c UpdateMissiles ; Run the handler of every missile in use in the records $75E0
+> The 16 records (6 bytes each, IY): a record whose +0 is not $FF calls MissileHandlers[+2] through the CALL at MissileCall, whose operand it writes. IX is kept. As stage 1's UpdateMissiles $B2E6, with a one-word handler table. No caller in stage 5's code (no CALL, JP or word names $9FB2: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$9FBD UpdateMissilesLoop
+$9FD9 MissileCall ; CALL nn: nn = the missile's handler, written at $9FD5
+$9FE0 UpdateMissilesNext
+$9FE7 w MissileHandlers 1 ; The handler of missile type 0: $7EE2
+> One word; a type 1 or more would read BufferAddressHL's code bytes as the handler. Read only by UpdateMissiles ($9FCD).
+
+@module render
+$9FE9 c BufferAddressHL ; HL = the play-buffer address of the actor IY ($5B00 + line x 32 + column); DE = HL in
+> Called by DrawSprite and DrawSpriteMirrored. As in stage 1 at $B332, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A000 c AttrShadowAddress ; HL = the attribute-shadow address of the actor IY ($6DC0 + line / 8 x 32 + column)
+> Called by ColourSprite and ColourSpriteMirrored. As in stage 1 at $B349, the same code.
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A005 AttrShadowAddressA ; entry with A = the line rounded down to 8
+
+@module missiles
+$A015 c FreeShot ; Free the shot record IX (+0 = $FF)
+> Jumped to by the shots and explosions when they end: $808E (a straight shot past column 0), $81C3 (an explosion's last frame), $835C, MoveCurvedShot $9DD4 and $9E13.
+> Witness: L1 422 (ending, rzx-r5, s5-right).
+
+@module render
+$A01A c SetCycleColour ; The actor IY's colour +$0C = CycleColour
+> As in stage 1 at $B3BD, the same code. No caller in stage 5's code (no CALL, JP or word names $A01A: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A021 c CycleColour ; A = CycleColours[PassCounter AND 7]
+> Called from ColourPlayArea $7A72 and GameOverColour $7ECB. As in stage 1 at $B3C4, the same code (its table holds other colours).
+> Witness: L1 11696 (ending, rzx-r5, s5-right).
+$A02F b CycleColours 8 ; The colour cycle: bright yellow, cyan, green, magenta, red, magenta, green, cyan
+> $46, $45, $44, $43, $42, $43, $44, $45 (bright ink on black). Read by CycleColour ($A029).
+$A037 c ColourSprite ; Fill the attribute shadow under an image with C
+> IY = the position, IX the image descriptor (+2 width, +3 height): (height / 8 + 1) rows of the width. As in stage 1 at $B40A, the same code. No caller in stage 5's code (no CALL, JP or word names $A037: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A049 ColourSpriteRow
+$A04E ColourSpriteCell
+$A058 c DrawSprite ; Copy an image to the play buffer at the actor's position (no mask)
+> HL = the image, IX the descriptor (+2 width in bytes, +3 height in lines), IY the position (BufferAddressHL). As in stage 1 at $B42B, the same code. No caller in stage 5's code (no CALL, JP or word names $A058: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A05F DrawSpriteRow
+$A073 c DrawSpriteMirrored ; Copy an image mirrored left to right (through the bit-reverse table $FA00)
+> As DrawSprite, each row written from right to left and each byte reversed by BitReverse $FA00. As in stage 1 at $B446, the same code. No caller in stage 5's code (no CALL, JP or word names $A073: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A07A DrawSpriteMirroredRow
+$A085 DrawSpriteMirroredByte
+$A09C c ColourSpriteMirrored ; ColourSprite for a mirrored image (filled leftwards from its right edge)
+> As in stage 1 at $B46F, the same code. No caller in stage 5's code (no CALL, JP or word names $A09C: work/stage2/stage5/B-raw.py).
+> Not executed in any recording (the recordings checked: s5-right, rzx-r5, ending); known only from the code.
+$A0B5 ColourSpriteMirroredRow
+$A0BA ColourSpriteMirroredCell
+
+@module duel
+$A0C4 c NextDameronForm ; Dameron's next form: seven explosions round his head, or at phase 4 the burst
+> Called by DuelHit ($79D8) after the 20th hit of a phase has stepped the phase DuelPhase $FE43. PlaySoundVector $F9B0 with E = 0. Phase 1: SpawnFormExplosions1, 2: SpawnFormExplosions2, 3: SpawnFormExplosions3; any other (4): StartBurst (JP) with D = 12, E = 9 (column 12, row 9), A = 1 (small: 14 steps), IX = FinalBurstShape $7AD7 (the head's 16 x 12 shape).
+> Witness: L1 8 (ending, rzx-r5).
+$A0E9 b UnusedRet2 1 ; A RET no code reaches
+> After NextDameronForm's JP StartBurst; no CALL, JP or word in stage 5's block names $A0E9 (work/stage2/stage5/B-raw.py).
+$A0EA c SpawnFormExplosions1 ; Seven explosions round Dameron's head for his second form (phase 1)
+> The base: E = DameronX $FE3E / 8 + 14 (column), D = (DameronY $FE3F AND $F8) + $48 (line). Each explosion: FindFreeMissile $8C6C finds a free shot record (IX), then +0 = E + dx, +1 = D + dy, +2 = 4 (the kind: the explosion handler BurstMissile $819D), +4 = its start count (negative: the handler counts it up every second pass and shows nothing until it reaches 0, so the seven go off one after the other). (dx, dy, +4): (0, $10, $FF), (2, $18, $FC), (4, $20, $FA), (4, 8, $FE), (1, $18, $F6), (3, 8, $F9), (-1, $10, $F2).
+> Each FindFreeMissile $8C6C is followed by RET Z, but FindFreeMissile $8C6C returns NZ both when it finds a record and when the eight are busy (then IX = MissilesEnd $7030, past the records): the RET Z is never taken.
+> Witness: L1 2 (ending, rzx-r5).
+$A1B2 c SpawnFormExplosions2 ; Seven explosions round Dameron's head for his third form (phase 2)
+> As SpawnFormExplosions1 with the base E = DameronX / 8 + 12, D = (DameronY AND $F8) + 8 and (dx, dy, +4): (0, $10, $FF), (2, $18, $FC), (4, $20, $FA), (3, 8, $FE), (1, $18, $F6), (1, $28, $F9), (-1, $20, $F2).
+> Witness: L1 2 (ending, rzx-r5).
+$A27A c SpawnFormExplosions3 ; Seven explosions round Dameron's head for his fourth form (phase 3)
+> As SpawnFormExplosions1 with the base E = DameronX / 8 + $13, D = DameronY AND $F8 and (dx, dy, +4): (0, 0, $FF), (2, $18, $FC), (1, 8, $FA), (-1, $28, $FE), (1, $18, $F6), (3, $18, $F9), (2, $10, $F2).
+> Witness: L1 2 (ending, rzx-r5).
+
+@module missiles
+$A33E c CheckShotHitsHero ; Damage the hero by 9 when the shot IX meets him
+> Called for every used shot record by UpdateMissile $8065 each pass. The hero's column = HeroRecord $BA7E / 8 must equal +0; d = HeroLine $BA7F - $20 - (+1) (his line less the shot's); a hit when -7 <= d <= 13: DamageHero $7EDA with C = 9 (EnergyChange $FE53 - 9). The shot is not freed.
+> In s5-right the column matched 391 times, the line never: no shot hit the hero; ending: 32 hits (CheckShotHitsDamage $A361), 5 lives lost.
+> Witness: L1 14710 (ending, rzx-r5, s5-right).
+$A35E CheckShotHitsBelow ; d >= 0: a hit under 14
+$A361 CheckShotHitsDamage
+
+@module graphics ; The stage's pictures: GAME OVER, the stars, Dameron's head in its forms, the sprite bank, the item icons, the hero
+@about Stage 5's data runs from GameOverPicture $A367 to $BE7B; the rest of the block ($BE7C-$F03E) is zeros but for one byte. Everything is plain 1-bit bitmaps, rows top first, bit 7 the left pixel, no mask, copied (not ORed) straight to the screen through the screen-line tables. Each file of src/res/stage5/ is one entry (bitmaps-NAME-WxH: frames of W bytes x H lines one after another). s5-right reads the stars, Dameron's form-0 face, dome and back, the sprite bank's frames 0-3 ($B3BA-$B479, the fireballs), two item icons, the energy-bar pattern and the hero's frames; rzx-r5 and ending (the duel won) also read face 1, face 2, dome 3, the curved shot's frames, the bolts and the bursts. Read in no recording: GameOverPicture, SpriteBankSpare, BitMasks, ItemIconSpare, UnusedWordTable and the zero runs.
+$A367 b GameOverPicture 8 ; GAME OVER: 8 bytes x 8 lines (the last line blank)
+> GameOverStep $7E9D copies it to column 12, line $1C of the item strip (CopyToScreen $7979, BC = $0C1C, DE = $0808) when GameOverTimer reaches $31. Nothing in stage 5 sets GameOverTimer, so it is never shown: not read in s5-right; known only from the code ($7EBD).
+@res stage5/bitmaps-game-over-8x8.bin
+
+$A3A7 s UnusedA3A7 ; 89 zero bytes no code reads (no operand names $A3A7-$A3FF; no recording reads any)
+
+$A400 b StarSlow 3 ; The slow star: two frames of 3 bytes x 3 lines ($A400, $A409)
+> DrawStar $869C draws a slow star (+2 = 0) with the frame at $A400 when its X AND 7 is 0, else StarSlow1 $A409 (the star is 4 pixels on, half a byte). Read in s5-right (21103 + 10077 runs of the copy).
+$A409 StarSlow1 ; frame 1: the star 4 pixels to the right
+@res stage5/bitmaps-star-slow-3x3.bin
+
+$A412 b StarFast 4 ; The fast star: two frames of 4 bytes x 5 lines ($A412, $A426)
+> DrawStar $869C draws a fast star (+2 = 1) with $A412 on even passes and StarFast1 $A426 on odd ones (PassCounter bit 0): a twinkle. Read in s5-right.
+$A426 StarFast1 ; frame 1: the twinkle
+@res stage5/bitmaps-star-fast-4x5.bin
+
+$A43A b DameronFace0 7 ; Dameron's face, form 0: 7 bytes x 128 lines
+> DrawDameronFace $8859 copies it (phase 0) at column (DameronX + $78) / 8, from line 48 + DameronY, with SP walking the line table; 128 lines, or $36 while DameronY >= $5A. Read in s5-right (3259 passes).
+@res stage5/bitmaps-dameron-face0-7x128.bin
+
+$A7BA b DameronDome 4 ; The middle of Dameron's head, forms 0-2: 4 bytes x 128 lines
+> DrawDameronDome $894D, at column (DameronX + $B0) / 8. Read in s5-right.
+@res stage5/bitmaps-dameron-dome-4x128.bin
+
+$A9BA b DameronBack 4 ; The back of Dameron's head (the hair), every form: 4 bytes x 128 lines
+> DrawDameronBack $899C, at column (DameronX + $D0) / 8. Read in s5-right.
+@res stage5/bitmaps-dameron-back-4x128.bin
+
+$ABBA b DameronFace1 7 ; Dameron's face, form 1: 7 bytes x 128 lines
+> DrawDameronFace $8859 in phase 1 (after the first 20 counted hits). Read in rzx-r5 and ending (896 bytes); s5-right counted no hit.
+@res stage5/bitmaps-dameron-face1-7x128.bin
+
+$AF3A b DameronFace2 5 ; Dameron's face, form 2: 5 bytes x 128 lines (the skull)
+> DrawDameronFace $8859 in phase 2, two columns further right. Read in rzx-r5 and ending (640 bytes).
+@res stage5/bitmaps-dameron-face2-5x128.bin
+
+$B1BA b DameronDome3 4 ; The middle of Dameron's head, form 3 (no face): 4 bytes x 128 lines
+> DrawDameronDome $894D in phase 3. Read in rzx-r5 and ending (512 bytes).
+@res stage5/bitmaps-dameron-dome3-4x128.bin
+
+$B3BA b SpriteBank 3 ; The sprite bank, frames 0-7: 3 bytes x 16 lines (fireballs 0-3, the curved shot 4-7)
+> The bank holds 24 frames 3 bytes wide, found through SpriteFrameOffsets $938E: SpriteFrameAddress $9378 gives DE = $B3BA + SpriteFrameOffsets[A]. Frames 0-3 are Dameron's fireball (FireballMissile, PassCounter AND 3), 4-7 the curved shot's (MoveCurvedShot $9DC6 through CurvedShotFrames $9E94). s5-right read frames 0-3 only ($B3BA-$B479); rzx-r5 and ending read all eight.
+@res stage5/bitmaps-bank-3x16.bin
+
+$B53A b SpriteBankBolts 3 ; The sprite bank, frames 8-11: 3 bytes x 9 lines, the bolt
+> BoltMissile $834E (kind 3, forms 1 and 2). Read in rzx-r5 and ending (all 108 bytes).
+@res stage5/bitmaps-bank-3x9.bin
+
+$B5A6 b SpriteBankBursts 3 ; The sprite bank, frames 12-23: 3 bytes x 24 lines, the hero's explosion and the bursts (13 blocks of 72 bytes)
+> Frames 12-18 are the hero's explosion and re-forming (DrawHeroFrame $9D85: frame +5 + 12), $13-$17 the bursts round Dameron at a form change (kind 4). Frame 14's offset ($27C) is followed by 144 bytes to frame 15 ($30C): the 72 bytes at SpriteBankSpare $B67E (SpriteBank $B3BA + $2C4) are a frame no offset names, read by no code. rzx-r5 read 360 bytes of the frames, ending 792; the spare frame was read in no recording.
+$B5EE SpriteBank13 ; frame 13
+$B636 SpriteBank14 ; frame 14
+$B67E SpriteBankSpare ; 72 bytes between frames 14 and 15 that no offset names: a frame no code draws
+$B6C6 SpriteBank15 ; frame 15
+@res stage5/bitmaps-bank-3x24.bin
+
+$B94E s UnusedB94E ; 2 zero bytes no code reads
+
+$B950 b BitMasks 8 ; One bit a byte, bit 7 to bit 0 ($80, $40 ... $01): no reader
+> No operand of stage 5's code names $B950-$B957 and no word in the code area points there (checked over $7800-$A366); no recording (s5-right, rzx-r5, ending) reads any of it. Known only from the bytes.
+
+$B958 b ItemIcons16 2 ; The item icons: 8 icons of 2 bytes x 16 lines (32 bytes each)
+> DrawItemIcon $7DD0 copies the icon ItemIcons $7E8B names for the kind (kind 2 and 7 $B958, 6 ItemIcon6 $B978, 5 ItemIcon5 $B998, 3 ItemIcon3 $B9B8, 8 ItemIcon8 $B9D8, 1 ItemIcon1 $B9F8, 0 ItemIcon0 $BA38; kind 4 is the blank BlankIcon $94B0). The icon at ItemIconSpare $BA18 has no kind: no word names it. s5-right reads ItemIcon8 $B9D8 (kind 8, the item the hero starts with) and ItemIcon0 $BA38.
+$B978 ItemIcon6 ; kind 6
+$B998 ItemIcon5 ; kind 5
+$B9B8 ItemIcon3 ; kind 3
+$B9D8 ItemIcon8 ; kind 8: the starting item (StartItems slot 6)
+$B9F8 ItemIcon1 ; kind 1
+$BA18 ItemIconSpare ; no kind names it
+$BA38 ItemIcon0 ; kind 0
+@res stage5/bitmaps-item-icons-2x16.bin
+
+$BA58 s UnusedBA58 ; 32 zero bytes no code reads
+
+$BA78 b EnergyBarPattern 6 ; The energy bar's pattern: 6 bytes, the same on each of the bar's 6 lines
+> DrawEnergyBar $9744 copies its whole bytes and a last partial byte (BarMasks $979D) to the HUD at EnergyBarScreen $4134, six lines, by the energy. Read in s5-right (138 lines drawn).
+@res stage5/bitmaps-energy-bar-6x1.bin
+
+@module variables
+$BA7E b HeroRecord 8 ; The hero's record: +0 X in pixels, +1 the screen line, +4 the state, +5 the frame, +6 the game-over count
+> InitHero $7EE9 sets X $40, line $68, state 0, the count $5A; HeroControl $7F1E moves it (X $12-$66, line $40-$96) and steps the explosion; DrawHero $8576 and DrawHeroFrame $9D85 draw it; CheckShotHitsHero $A33E tests the missiles against +0, +1. +2, +3 and +7 are read by no code. The bytes as loaded ($CC $7F $C1 $04 $00 $03 $1F $2B) are overwritten by InitHero before any read. s5-right: 16034 reads of +0/+1, the state 16187.
+$BA7F HeroLine ; +1 the screen line
+$BA80 HeroUnused2 ; +2, +3: no reader
+$BA82 HeroState ; +4: 0 flying, 1 exploding, 2 re-forming, 3 game over
+$BA83 HeroFrame ; +5 the explosion's frame
+$BA84 HeroGameOverCount ; +6: $5A, - 1 on each even pass in state 3; at 0 MainLoop ends the stage (E = 0)
+$BA85 HeroUnused7 ; +7: no reader
+
+$BA86 b Stars 4 ; The 16 stars, 4 bytes each: +0 X in pixels, +1 the screen line, +2 the speed (0 slow, 1 fast), +3 a counter
+> InitStars $85F9 seeds them; MoveStars $8627 moves them (4 or 8 pixels a pass to the left) and gives a wrapped star a new line; DrawStars $8672 draws them. The bytes as loaded are overwritten by InitStars. s5-right: 13441 reads.
+
+@module graphics
+$BAC6 w UnusedWordTable 8 ; 43 words no code reads: 1, 1000 x 3, 900, 800, 700, 600 x 4, 500 x 2, 400, 300, 200, 100, 60 x 6, 1 x 17, then 0
+> A falling table of numbers (a delay or speed schedule) that no stage-5 code uses: no operand names $BAC6-$BB1B and no word in the code area points there (checked over $7800-$A366); no recording (s5-right, rzx-r5, ending) reads any of it. Known only from the bytes.
+
+$BB1C b HeroSprites 3 ; The hero: 12 frames of 3 bytes x 24 lines (3 animation steps x 4 shifts of 2 pixels)
+> DrawHero $8576 copies the frame HeroFrames $85D9 names (step (PassCounter AND 7) / 2, step 3 the same as step 1; the shift X AND 6) straight to the screen, no mask. Read in s5-right (1858 reads a byte at most).
+@res stage5/bitmaps-hero-3x24.bin
+
+$BE7C s UnusedBE7C ; 7742 zero bytes ($BE7C-$DCB9) no code reads
+$DCBA b StrayByte 1 ; A lone $7F among the zeros: no code reads it (no operand or word names it)
+$DCBB s UnusedDCBB ; 4996 zero bytes to the block's end ($DCBB-$F03E) no code reads

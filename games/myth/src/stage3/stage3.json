@@ -1,0 +1,44 @@
+{
+  "about": "Stage 3 (TZX block 46) at $6C3F-$F03E",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/stage5.bin || python3 tools/image.py work/mkgame > /dev/null"
+  ],
+  "image": "work/mkgame/stage3.bin",
+  "lo": "6C3F",
+  "hi": "F03F",
+  "ann": "src/stage3/stage3.ann",
+  "top": "stage3",
+  "bin": "stage3.bin",
+  "dest": "src/stage3",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: stage 3 (TZX block 46), 33 792 bytes loaded at $6C3F by the",
+    "; resident stage loader over $6C3F-$F03E (tools/image.py)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/s3-right/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    },
+    {
+      "path": "work/stage2/rec/rzx-r3/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    }
+  ],
+  "work": "work/stage2/mkstage3",
+  "ref_builds": [
+    [
+      "stage1/rec/s3-right",
+      "s3-right: stage 3 from the RZX run's snapshot, a walk to the right"
+    ],
+    [
+      "stage2/rec/rzx-r3",
+      "rzx-r3: the RZX run's stage 3 replayed pass by pass"
+    ]
+  ],
+  "other_builds": []
+}

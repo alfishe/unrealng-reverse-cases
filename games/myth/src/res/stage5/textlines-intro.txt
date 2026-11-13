@@ -1,0 +1,8 @@
+# stage5: one text line a line: COLUMN PIXEL BYTE2 TEXT (tools/res_stage5.py); `\` is the full stop
+0 0 0 HURTLING
+0 0 0 ACROSS THE
+0 0 0 VOID OF SPACE\
+0 0 0 PRAPARE TO
+0 0 0 CONFRONT THE
+0 0 0 EVIL ANGEL OF
+0 0 0 TIME\DAMERON\

@@ -1,0 +1,4 @@
+column 12
+bit 0
+row 40
+text "GAME OVER"

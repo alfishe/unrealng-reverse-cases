@@ -62,8 +62,8 @@ stage load.
 
 ## 2.3 The map of stage 1
 
-Drawn from the data by `python3 tools/stagemap.py work/stage1/mem/c1-stage1.bin B4B2 9B6F docs/img/maps/stage1.png
---sheet docs/img/sprites/stage1-tiles.png`. The format, read from the code ([WALKTHROUGH 6.2](../WALKTHROUGH.md#62-levels-objects-and-state)):
+Drawn from the resources by `python3 tools/fig_rooms.py stage1` (`src/res/stage1/`: graphics.txt, tiles.png,
+rooms.txt, the kinds and the sprite sets; the placements drawn with their sprites). The format, read from the code ([WALKTHROUGH 6.2](../WALKTHROUGH.md#62-levels-objects-and-state)):
 
 - the packed block `$B4B2-$C2B0` (3583 bytes) unpacks to 4295 bytes at `$5B00`: five words, offsets from `$5B0A`:
   tile kinds (`+$0000`, 196 bytes), tile bitmaps (`+$00C4`, 196 x 8), tile attributes (`+$06E4`, 196), blocks
@@ -75,6 +75,11 @@ Drawn from the data by `python3 tools/stagemap.py work/stage1/mem/c1-stage1.bin 
   column `$FE21` and writes it to `$7282`.
 
 ![Stage 1's three map grids, drawn from the unpacked data with their tiles and attributes](img/maps/stage1.png)
+
+The same tool draws every room of a stage and the maps of stages 2-4 (stage 5 has no rooms):
+[stage 1's rooms](img/maps/stage1-rooms.png), [stage 2](img/maps/stage2.png) and [its rooms](img/maps/stage2-rooms.png),
+[stage 3](img/maps/stage3.png) and [its rooms](img/maps/stage3-rooms.png), [stage 4](img/maps/stage4.png) and
+[its rooms](img/maps/stage4-rooms.png).
 
 The tiles of stage 1 (196, each 8 x 8 with its attribute; numbered as the blocks use them):
 

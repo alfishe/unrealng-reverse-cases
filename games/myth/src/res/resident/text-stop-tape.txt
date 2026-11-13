@@ -1,0 +1,4 @@
+column 10
+bit 3
+row 52
+text "STOP THE TAPE"

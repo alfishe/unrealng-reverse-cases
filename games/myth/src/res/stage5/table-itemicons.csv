@@ -1,0 +1,11 @@
+# stage5: table itemicons, 9 rows of 2 bytes (tools/res_stage.py TABLES)
+row,icon
+0,$BA38
+1,$B9F8
+2,$B958
+3,$B9B8
+4,$94B0
+5,$B998
+6,$B978
+7,$B958
+8,$B9D8

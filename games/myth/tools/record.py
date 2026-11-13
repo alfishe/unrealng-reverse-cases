@@ -81,19 +81,23 @@ class Run:
         self.tape_log.append({'frame': self.lab.frame, 'action': 'stopped',
                               'block': (self.tape().get('position') or {}).get('block')})
 
-    def menu_row(self):
+    def menu_row(self, rows=(10, 12, 14)):
         """The highlighted menu line: 10 START GAME, 12 DEFINE KEYS, 14 SELECT JOYSTICK (its two attribute rows
-        are equal: the bright cycling colour), else None"""
+        are equal: the bright cycling colour), else None; the joystick menu's rows are 8 KEMPSTON, 10 CURSOR KEYS,
+        12 SINCLAIR, 14 LEAVE THIS MENU"""
         a = self.lab.read(0x5800, 768)
-        for r in (10, 12, 14):
+        for r in rows:
             if a[r * 32 + 16] == a[(r + 1) * 32 + 16]:
                 return r
         return None
 
-    def menu_select(self, row, limit=600):
-        """Waits for the highlight to come to @p row, then SPACE"""
+    def menu_select(self, row, limit=600, rows=(10, 12, 14)):
+        """Waits for the highlight to come to @p row, then SPACE. The menu loops of the front block (MenuSelect
+        `$99E2`, the joystick menu `$9A3B`) step a tick of two HALTs and the starfield, light line E for 48 ticks
+        (rows 10 + 2E, the joystick menu's 8 + 2E) and read SPACE (`$7FFE` bit 0) once a tick, at `$9A26` /
+        `$9A7F`: SPACE held 4 frames after 6 frames of the line's light falls in its window"""
         n = 0
-        while self.menu_row() != row and n < limit:
+        while self.menu_row(rows) != row and n < limit:
             self.wait(2)
             n += 2
         self.wait(6)
@@ -236,6 +240,127 @@ def plan_menu(r):
     r.shot('menu-after')
 
 
+def readers(r):
+    """The key readers `$FC90-$FCDA` (one small routine a key: a port and a bit each, which DEFINE KEYS and SELECT
+    JOYSTICK rewrite), as hex"""
+    return r.lab.read(0xFC90, 0x4B).hex()
+
+
+def plan_joystick(r):
+    """joystick: from c1's menu state (STATE work/stage1/c1/menu.szx, 48K, a Kempston card on the edge slot):
+    SELECT JOYSTICK four times, choosing in turn CURSOR KEYS, SINCLAIR, LEAVE THIS MENU and KEMPSTON (each SPACE
+    timed to the highlight of its line, record.json moments keep the key readers `$FC90-$FCDA` after each), then
+    START GAME, the original tape put in with its cursor on stage 1's block (block 34, where c1's load of the main
+    block left it: the only change from a user's load), stage 1 loaded at signal speed by the game's stage loader, and
+    stage 1 played with the Kempston joystick (right, fire, up, left)"""
+    r.shot('menu')
+    r.moments[-1]['readers'] = readers(r)
+    for name, row in (('cursor', 10), ('sinclair', 12), ('leave', 14), ('kempston', 8)):
+        r.menu_select(14)
+        while r.menu_row((8, 10, 12, 14)) is None:   # the joystick menu is drawn line by line
+            r.wait(10)
+        r.shot(f'joystick-menu-{name}')
+        r.menu_select(row, rows=(8, 10, 12, 14))
+        r.shot(f'chosen-{name}')
+        while r.menu_row() is None:                   # back on the main menu
+            r.wait(10)
+        r.shot(f'after-{name}')
+        r.moments[-1]['readers'] = readers(r)
+    r.menu_select(10)
+    r.wait(60)
+    r.shot('press-play')
+    r.lab.insert_tape(TAPE, play=False)
+    r.wait(10)
+    r.lab.post('/tape/seek', {'block': 34})
+    r.tape_log.append({'frame': r.lab.frame, 'action': 'insert+seek', 'block': 34})
+    r.tape_play()
+    r.wait(100)
+    r.shot('stage1-title')
+    r.wait_tape_stop()
+    r.wait(450)
+    r.shot('stage1-start')
+    for spec, frames in (('KR', 120), ('', 20), ('KF', 16), ('', 20), ('KU', 30), ('', 30), ('KL', 120),
+                         ('', 20), ('KR+KF', 30), ('', 40)):
+        r.hold(spec, frames)
+        if spec:
+            r.shot('kempston-' + spec.replace('+', ''))
+
+
+def plan_stageload(r):
+    """stageload: the load of stage 2 from the original tape for real, at signal speed: from the RZX run's state 16
+    frames before the end of stage 1's input block (STATE work/stage2/rzx/snap-032880.z80, 128K, tools/rzx_inputs.py
+    --snap 32880: STAGE TWO's title shown, the resident runner about to call the loader `$F5E4` with $F9AE = 2; the
+    RZX's first loader IN, ROM LD-BYTES `$0562`, comes at RZX frame 32 889; another player's run, a cheat state).
+    The RZX's player had another release: its resident loader is patched to the ROM's standard-speed LD-BYTES
+    (`$FEBB-$FECD`: `SCF; INC D; EX AF,AF'; DEC D; NOP; DI; NOP; NOP; ...; JP $0562`), where the original tape's
+    resident sets `$FF4D` = 2 and reads the turbo blocks with its own edge loop (`IN A,($FE)` at `$FECB` on to
+    `$FECE`). From the RZX's state the ROM loader cannot read the original's turbo block (work/stage2/notes-rec.md: the
+    pilot is taken, the flag byte fails, `$FEB1`'s `RST 8` leaves the loader, the tape pauses). So the original's 19 loader bytes `$FEBB-$FECD` (from c1's menu state) are put back
+    first (a POKE, record.json "pokes"; it restores the original code, the image is not touched). Then the original
+    tape with its cursor on stage 2's block (the emulator's block 36: 32 main, 34 stage 1, 36 stage 2, 38 stage 3,
+    40 stage 4, 42 stage 5, each followed by its stop block), PLAY, the block loaded and checked (its byte `$BB80`
+    against the table `$FF7E`), STOP THE TAPE and the stage's start, then stage 2 played with the run's keys (6 left,
+    7 right, 9 up, 0 fire)."""
+    r.shot('start')
+    import z80mem
+    h, pages = z80mem.load(os.path.join(CASE, 'work', 'stage1', 'c1', 'menu.szx'))
+    orig = pages[0][0xFEBB - 0xC000:0xFECE - 0xC000]
+    r.poke(0xFEBB, list(orig), "the original tape's resident loader bytes $FEBB-$FECD (c1's menu state) over the "
+           "RZX release's patch to ROM LD-BYTES, so the original turbo block can be read")
+    r.lab.insert_tape(TAPE, play=False)
+    r.wait(10)
+    r.lab.post('/tape/seek', {'block': 36})
+    r.tape_log.append({'frame': r.lab.frame, 'action': 'insert+seek', 'block': 36})
+    r.tape_play()
+    r.wait(100)
+    r.shot('loading')
+    r.wait_tape_stop()
+    r.shot('loaded')
+    for i in range(6):
+        r.wait(100)
+        r.shot(f'title-{i}')
+    for spec, frames in (('7', 200), ('', 20), ('7+0', 30), ('', 20), ('9+7', 30), ('', 30), ('7', 300), ('', 50)):
+        r.hold(spec, frames)
+        if spec:
+            r.shot('play-' + spec.replace('+', ''))
+
+
+def plan_ending(r):
+    """ending: Dameron's duel won and the ending, by POKEs on the recording's machine only (record.json "pokes"; the
+    image is cut from orig/ alone): from the RZX run's stage 5 as loaded (STATE work/stage1/rzx/snap5.z80, 128K), the
+    intro texts run until the duel begins (phase `$FE43` from $FF to 0); then four times, each 600 frames apart, the
+    duel's hit counter `$FE44` is set to 19 and one hit made pending (`$FE41` = 1), so the next pass's DuelHit `$79A9`
+    counts the 20th hit and steps the phase (0 to 1 to 2 to 3 to 4: Dameron's forms, then won); then 6000 frames
+    of the ending"""
+    r.shot('start')
+    # the snapshot holds phase 0 from before the stage's set-up (`$7823` sets $FF and the timer `$044C`): wait for
+    # the intro first, then for its end (`$87EE`: timer `$00A0`, phase 0, timer `$FFC3`, `$FE47` cleared at `$8D44`);
+    # a pending hit poked before the set-up steps the intro's phase $FF to 0 and freezes the timer with `$FE47` = 1
+    # (DuelHit then jumps to `$7A22` and counts nothing)
+    for want in (0xFF, 0):
+        for i in range(400):
+            if r.lab.read(0xFE43, 1)[0] == want:
+                break
+            r.wait(10)
+    for i in range(100):
+        v = r.lab.read(0xFE43, 5)
+        if v[4] == 0xFF:
+            break
+        r.wait(10)
+    r.shot('duel')
+    for phase in range(4):
+        r.poke(0xFE44, [0x13], f'phase {phase}: 19 of the 20 hits Dameron takes in this phase')
+        r.poke(0xFE41, [1], f'phase {phase}: one hit pending, the 20th')
+        for k in range(6):
+            r.wait(100)
+            v = r.lab.read(0xFE41, 7)
+            r.shot(f'phase{v[2]}-{k}-hits{v[3]}-fe47_{v[6]}')
+    for k in range(60):
+        r.wait(100)
+        v = r.lab.read(0xFE43, 4)
+        r.shot(f'end-{k}-phase{v[0]}-timer{v[2] | v[3] << 8:04x}')
+
+
 def plan_gameover(r):
     """gameover: from c1's stage 1 state in play (STATE work/stage1/c1/stage1.szx, 48K, lives 5): POKE lives `$FE61`
     to 1 (said: the only patched byte, never in the image), then the deaths plan's moves (back and forth by the
@@ -299,7 +424,8 @@ def plan_stage(r):
     r.shot(f'stage{n}-end')
 
 
-PLANS = {'c1': plan_c1, 'menu': plan_menu, 'gameover': plan_gameover, 'deaths': plan_deaths, 'stage': plan_stage}
+PLANS = {'c1': plan_c1, 'menu': plan_menu, 'gameover': plan_gameover, 'deaths': plan_deaths, 'stage': plan_stage,
+         'joystick': plan_joystick, 'stageload': plan_stageload, 'ending': plan_ending}
 
 
 def main():

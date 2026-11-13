@@ -1,0 +1,24 @@
+# stageload: the load of stage 2 from the original tape for real, at signal speed: from the RZX run's state 16
+# frames before the end of stage 1's input block (STATE work/stage2/rzx/snap-032880.z80, 128K, tools/rzx_inputs.py
+# --snap 32880: STAGE TWO's title shown, the resident runner about to call the loader `$F5E4` with $F9AE = 2; the
+# RZX's first loader IN, ROM LD-BYTES `$0562`, comes at RZX frame 32 889; another player's run, a cheat state).
+# The RZX's player had another release: its resident loader is patched to the ROM's standard-speed LD-BYTES
+# (`$FEBB-$FECD`: `SCF; INC D; EX AF,AF'; DEC D; NOP; DI; NOP; NOP; ...; JP $0562`), where the original tape's
+# resident sets `$FF4D` = 2 and reads the turbo blocks with its own edge loop (`IN A,($FE)` at `$FECB` on to
+# `$FECE`). From the RZX's state the ROM loader cannot read the original's turbo block (work/stage2/rec-tmp/
+# stageload-midedge and the trials after it: the flag byte fails after the pilot, `$FEB1`'s `RST 8` leaves the
+# loader, the tape pauses). So the original's 19 loader bytes `$FEBB-$FECD` (from c1's menu state) are put back
+# first (a POKE, record.json "pokes"; it restores the original code, the image is not touched). Then the original
+# tape with its cursor on stage 2's block (the emulator's block 36: 32 main, 34 stage 1, 36 stage 2, 38 stage 3,
+# 40 stage 4, 42 stage 5, each followed by its stop block), PLAY, the block loaded and checked (its byte `$BB80`
+# against the table `$FF7E`), STOP THE TAPE and the stage's start, then stage 2 played with the run's keys (6 left,
+# 7 right, 9 up, 0 fire).
+6712 7
+6912 -
+6932 7 0
+6962 -
+6982 9 7
+7012 -
+7042 7
+7342 -
+7392 END

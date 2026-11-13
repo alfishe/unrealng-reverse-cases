@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: small
+column: 11
+shift: 7
+line: 84
+text: "PRODUCED BY"

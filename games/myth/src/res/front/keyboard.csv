@@ -1,0 +1,11 @@
+# KeyRowPorts $9970 and KeyRowChars $9980: the half-row port, then its keys bit 0 first
+# ("-" CAPS SHIFT, "+" ENTER, "/" SPACE, "." SYMBOL SHIFT)
+port,keys
+$FEFE,-ZXCV
+$FDFE,ASDFG
+$FBFE,QWERT
+$DFFE,POIUY
+$BFFE,+LKJH
+$7FFE,/.MNB
+$EFFE,09876
+$F7FE,12345

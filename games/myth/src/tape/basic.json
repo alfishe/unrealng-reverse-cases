@@ -1,0 +1,42 @@
+{
+  "about": "Tape block 2, the BASIC program \"MYTH\" $5CCB-$6E6C (4514 bytes, LINE 0)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/resident-f000.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/basic-5ccb.bin",
+  "org": "5CCB",
+  "ann": "src/tape/basic.ann",
+  "top": "basic",
+  "bin": "basic.bin",
+  "dest": "src/tape",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5
+  ],
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: tape block 2, the BASIC program \"MYTH\" (4514 bytes at PROG $5CCB, LINE 0)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "5CCB",
+      "hi": "5D2A",
+      "reads": false
+    }
+  ],
+  "built": {
+    "tape/chain-tape.bin": "chain-tape.bin"
+  },
+  "data_entries": "stop",
+  "work": "work/stage2/mkbasic",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
+    ]
+  ],
+  "other_builds": []
+}

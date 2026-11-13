@@ -1,0 +1,4 @@
+column 7
+bit 0
+row 52
+text "PRESS SPACE TO SELECT"

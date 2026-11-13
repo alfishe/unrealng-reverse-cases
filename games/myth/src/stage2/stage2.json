@@ -1,0 +1,53 @@
+{
+  "about": "Stage 2 (TZX block 43) at $6C3F-$F03E",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/stage5.bin || python3 tools/image.py work/mkgame > /dev/null"
+  ],
+  "image": "work/mkgame/stage2.bin",
+  "lo": "6C3F",
+  "hi": "F03F",
+  "ann": "src/stage2/stage2.ann",
+  "top": "stage2",
+  "bin": "stage2.bin",
+  "dest": "src/stage2",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: stage 2 (TZX block 43), 33 792 bytes loaded at $6C3F by the",
+    "; resident stage loader over $6C3F-$F03E (tools/image.py)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/s2-right/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    },
+    {
+      "path": "work/stage2/rec/rzx-r2/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    },
+    {
+      "path": "work/stage2/rec/stageload/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    }
+  ],
+  "work": "work/stage2/mkstage2",
+  "ref_builds": [
+    [
+      "stage1/rec/s2-right",
+      "s2-right: stage 2 from the RZX run's snapshot, a walk to the right"
+    ],
+    [
+      "stage2/rec/rzx-r2",
+      "rzx-r2: the RZX run's stage 2 replayed pass by pass"
+    ],
+    [
+      "stage2/rec/stageload",
+      "stageload: stage 2 loaded from the tape (block 36) by the resident loader, then played"
+    ]
+  ],
+  "other_builds": []
+}

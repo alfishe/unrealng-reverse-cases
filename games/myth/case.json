@@ -1,11 +1,13 @@
 {
-  "image_cmd": ["sh", "-c", "python3 tools/image.py work/mkgame"],
+  "main": "stage1",
+  "image_cmd": ["sh", "-c", "python3 tools/image.py work/mkgame > /dev/null"],
   "image": "work/mkgame/stage1.bin",
   "lo": "6C3F",
   "hi": "F03F",
   "device": "ZXSPECTRUM48",
   "bases": {"5": "4000", "2": "8000", "0": "C000"},
-  "read_builds": ["game"],
-  "ref_builds": [["game", "the first recording's game window"]],
-  "header": ["; Myth: History in the Making, System 3 Software 1989: stage 1's block (TZX block 40) as the stage loader leaves it at $6C3F. The main block and stages 2-5 are cut by tools/image.py beside it; the resident part $F03F-$FFFF comes from the Speedlock blocks (stage 2)."]
+  "read_builds": ["stage1/c1o", "stage1/rec/deaths", "stage1/rec/s1-idle", "stage1/rec/s1-right"],
+  "ref_builds": [["stage1/c1o", "c1's stage 1 play window (frames 15476-16658)"]],
+  "header": ["; Myth: History in the Making, System 3 Software 1989: stage 1 (TZX block 40), 33 792 bytes loaded at $6C3F by the",
+             "; resident stage loader over $6C3F-$F03E (tools/image.py)."]
 }

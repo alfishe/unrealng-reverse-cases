@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: large
+column: 12
+shift: 2
+line: 68
+text: "KEMPSTON"

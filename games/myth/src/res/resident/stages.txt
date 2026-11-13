@@ -1,0 +1,25 @@
+# D E C H L B: C the stage, the length 2 x (9B + H + L) pages; D and E not read
+stage 1
+load 1 1 1 0 3 7
+title 12 1 100 "STAGE ONE"
+title 9 0 116 "THE ROAD TO HELL"
+
+stage 2
+load 8 5 2 5 7 6
+title 12 2 100 "STAGE TWO"
+title 6 3 116 "GREECE FOUR HUNDRED BC"
+
+stage 3
+load 15 9 3 1 2 7
+title 12 0 100 "STAGE THREE"
+title 4 5 116 "SCANDINAVIA FIVE HUNDRED AD"
+
+stage 4
+load 23 4 4 6 6 6
+title 12 2 100 "STAGE FOUR"
+title 6 0 116 "EGYPT THREE THOUSAND BC"
+
+stage 5
+load 30 8 5 2 1 7
+title 12 3 100 "STAGE FIVE"
+title 8 6 116 "DUEL WITH DAMERON"

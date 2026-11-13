@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: small
+column: 10
+shift: 6
+line: 68
+text: "COPYRIGHT 1989"

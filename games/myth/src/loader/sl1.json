@@ -1,0 +1,42 @@
+{
+  "about": "The loader's second stage $FF26-$FFCF (170 bytes, tape block 7)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/resident-f000.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/sl1-ff26.bin",
+  "org": "FF26",
+  "ann": "src/loader/sl1.ann",
+  "top": "sl1",
+  "bin": "sl1.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: the SpeedLock loader's second stage, tape block 7, run at $FF26."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "FF26",
+      "hi": "FFD0",
+      "reads": false
+    }
+  ],
+  "same_bytes": true,
+  "data_entries": "stop",
+  "work": "work/stage2/mksl1",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
+    ]
+  ],
+  "other_builds": []
+}

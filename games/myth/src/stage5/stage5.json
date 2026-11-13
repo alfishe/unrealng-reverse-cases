@@ -1,0 +1,53 @@
+{
+  "about": "Stage 5 (TZX block 52) at $6C3F-$F03E",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/mkgame/stage5.bin || python3 tools/image.py work/mkgame > /dev/null"
+  ],
+  "image": "work/mkgame/stage5.bin",
+  "lo": "6C3F",
+  "hi": "F03F",
+  "ann": "src/stage5/stage5.ann",
+  "top": "stage5",
+  "bin": "stage5.bin",
+  "dest": "src/stage5",
+  "device": "ZXSPECTRUM48",
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: stage 5 (TZX block 52), 33 792 bytes loaded at $6C3F by the",
+    "; resident stage loader over $6C3F-$F03E (tools/image.py)."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/rec/s5-right/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    },
+    {
+      "path": "work/stage2/rec/rzx-r5/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    },
+    {
+      "path": "work/stage2/rec/ending/l1.json",
+      "lo": "6C3F",
+      "hi": "F03F"
+    }
+  ],
+  "work": "work/stage2/mkstage5",
+  "ref_builds": [
+    [
+      "stage1/rec/s5-right",
+      "s5-right: stage 5 from the RZX run's snapshot, a walk to the right"
+    ],
+    [
+      "stage2/rec/rzx-r5",
+      "rzx-r5: the RZX run's stage 5 replayed pass by pass, the duel won"
+    ],
+    [
+      "stage2/rec/ending",
+      "ending: stage 5 from snap5 with POKEs of the hit counter, the ending texts"
+    ]
+  ],
+  "other_builds": []
+}

@@ -1,0 +1,65 @@
+# stage3: the map grids, their room tables and the placement lists (tools/res_stage.py)
+# grid W H COLUMN ROW ROOMS MAP STEP: blocks wide and high, the start window (blocks), the room table,
+#   the grid's offset in the map, rooms a grid row; rooms: one exit byte a room (1 right, 2 left, 4 up,
+#   8 down), a grid row of rooms a line; placements: KIND X Y (cells over the grid), "done" = bit 7
+base $9B37
+grid 47 9 11 0 $9B40 0 6
+rooms 1 3 3 2
+grid 124 9 22 0 $9B4D 423 11
+rooms 1 3 3 3 3 3 3 3 3 3 2
+grid 14 9 0 0 $9B61 1539 1
+rooms 0
+placements
+12 38 0
+12 10 0
+12 60 0
+12 90 0
+4 0 15
+4 4 15
+4 8 15
+4 12 15
+4 16 15
+4 20 15
+4 81 15
+4 85 15
+4 89 15
+4 93 15
+end
+placements
+0 20 13
+1 34 13
+2 44 13
+3 60 9
+2 86 9
+0 80 5
+3 100 13
+1 110 13
+2 148 13
+2 172 13
+0 182 13
+4 37 17
+4 47 17
+4 73 17
+2 10 13
+4 77 17
+4 81 17
+4 91 17
+4 95 17
+4 159 17
+4 163 17
+4 202 17
+4 206 17
+4 231 15
+4 235 15
+5 190 6
+6 188 8
+7 234 7
+9 120 13
+8 122 13
+8 129 13
+9 131 13
+10 124 8
+11 124 8
+end
+placements
+end

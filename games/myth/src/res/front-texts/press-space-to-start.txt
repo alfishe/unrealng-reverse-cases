@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: small
+column: 8
+shift: 3
+line: 116
+text: "PRESS SPACE TO START"

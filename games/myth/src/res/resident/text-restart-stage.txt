@@ -1,0 +1,4 @@
+column 8
+bit 5
+row 84
+text "RESTART THIS STAGE"

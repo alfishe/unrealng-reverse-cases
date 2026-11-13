@@ -1,0 +1,6 @@
+# stage3: table dragon-head-frames, 4 rows of 6 bytes (tools/res_stage.py TABLES)
+row,dx,dy,width,height,offset
+0,3,6,4,27,0
+1,3,7,4,27,108
+2,3,8,4,27,216
+3,3,9,4,27,324

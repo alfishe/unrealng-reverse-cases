@@ -1,0 +1,42 @@
+# The annotations of the loader's second stage $FF26-$FFCF (tape block 7, 170 bytes and a check byte): the source of
+# src/loader/sl1.asm (../../kit/mkgame.py --part src/loader/sl1.json). Format: ../../../../docs/ann-format.md.
+# Witness: c1 (work/stage1/c1, a 48K from power-on, the tape at signal speed): LoaderMain (src/loader/chain.asm)
+# loads this block over $FF26 and falls into it; the blocks it reads, decoded with the loader's own keys, equal the
+# game image (docs/03-build-and-load.md).
+
+@equ $4000 Screen 6144 ; the bitmap, the first block of the stream loads straight into it
+@equ $82FF AttrRevealOff ; zero: AttrRevealStart pads its time and leaves the attributes alone
+@equ $FC0D AttrRevealStart ; the edge loop's task: the attribute reveal, then the countdown (src/loader/chain.asm)
+@equ $FD2C LoadStream ; the block reader (src/loader/chain.asm)
+@equ $FDE7 LastStoreJump ; the operand of LoadStream's JP after a block's bytes: where the last byte goes
+@equ $FDE9 StoreLast ; the last-byte store and the table walk (src/loader/chain.asm)
+@equ $FEE9 FailFlag ; non-zero when the timing check or a mark failed (src/loader/chain.asm)
+
+@module sl1 ; The second stage: the screen, the block table, the countdown digits
+@about LoaderMain loads this block over $FF26 and runs into it. Sl1Start points LoadStream's last-byte path at StoreLast, then reads the screen's bitmap and every block BlockTable names, each after its mark: the attributes to $8000, the resident's first piece to $DE80, the key patches at $FDB5 and $FDE9, then a new table over this one (block 23) whose rows load the rest of the resident and the loader's last pieces. The stream returns to $FF3A, which block 31 has replaced by then with Sl1End (src/loader/sl1end.asm).
+@about c1: the stage runs once (L1 1 on Sl1Start); the digits at CountdownDigits are the countdown on the screen (character row 20, columns 13-18, the last digit at $5092) while the blocks load.
+
+$FF26 c Sl1Start ; Load the screen and the table's blocks, then the end of the stage
+> AttrRevealOff := 0 (the attributes are not on the screen yet: the hook only pads its time); IX = Screen, DE = $17FF (6144 bytes); LastStoreJump := StoreLast, so the bitmap's last byte goes through StoreLast and the walk of BlockTable follows; CALL LoadStream. Outputs: the blocks in memory, FailFlag. Side effects: the screen drawn, the table rewritten by its own block.
+> Witness: L1 1 (c1).
+$FF2A ; IX = Screen, DE = 6144 - 1
+$FF31 ; the last byte goes to StoreLast
+$FF37 ; returns to $FF3A: by then Sl1End (block 31)
+
+$FF3A c Sl1Tail ; The stage's own end, replaced by Sl1End before it runs: the reveal task on a failure, then a wipe
+> If FailFlag is set, CALL AttrRevealStart; then LD (HL),0 / INC HL from Screen upwards for ever. Block 31 loads Sl1End over these bytes before LoadStream returns, so this form is not executed in any recording (c1 checked: the L1 at $FF3A counts Sl1End, which shares the first four bytes). Known only from the code ($FF3A-$FF48).
+$FF44 Sl1TailWipe ; LD (HL),0 / INC HL for ever
+
+$FF49 b BlockTable ; The first block table: five bytes a row, the address, the length less one, the $7FFD value
+> Read by StoreLast's table walk (c1). Rows 0-4: $8000 768 bytes (the loading screen's attributes, revealed by AttrRevealStart), $DE80 1152 (the resident's piece $F300-$F77F, XORed with $DF), $FDB5 2 (the body key), $FDE9 4 (the last-byte key), $FF49 55 (this table again: block 23's rows 5-10 are $DB80 768, $E300 2176, $FE76 115 (Unxor), $FF3A 15 (Sl1End), $5B00 33 (Boot), the end). Rows 5-7 here ($6000 8192 page $13, $4000 6912 page $12, $FB00 512) are never read: block 23 rewrites them first. Row 8 is the end (a zero $7FFD value). src/tape/tape.txt has the blocks.
+$FF4E ; row 1: $DE80, the resident's first piece
+$FF53 ; row 2: $FDB5, the body key
+$FF58 ; row 3: $FDE9, the last-byte key
+$FF5D ; row 4: $FF49, this table (block 23)
+$FF62 ; rows 5-7: never read
+$FF71 ; row 8: the end
+$FF76 BlockTablePad ; zeros up to the digits
+
+$FF80 b CountdownDigits 8 ; The countdown's digits 0-9, 8 bytes each
+> Read by the countdown in AttrRevealStart (src/loader/chain.asm, $FC73): a digit's glyph is $FF80 + 8 x digit, the four digit pointers at $FD07-$FD0A hold the glyphs' low bytes. c1: the digits on the loading screen at character row 20, columns 13-18 (the last digit at $5092) while the blocks load.
+@res loader/countdown-digits.bin

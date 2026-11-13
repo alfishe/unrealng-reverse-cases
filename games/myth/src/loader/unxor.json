@@ -1,0 +1,42 @@
+{
+  "about": "The loader's piece at $FE76 (tape block 29)",
+  "image_cmd": [
+    "sh",
+    "-c",
+    "test -f work/parts/resident-f000.bin || $SKOOLKIT_VENV/bin/python tools/parts.py"
+  ],
+  "image": "work/parts/unxor-fe76.bin",
+  "org": "FE76",
+  "ann": "src/loader/pieces.ann",
+  "top": "unxor",
+  "bin": "unxor.bin",
+  "dest": "src/loader",
+  "device": "ZXSPECTRUM48",
+  "mode": "blocks",
+  "pages": [
+    5,
+    2,
+    0
+  ],
+  "header": [
+    "; Myth: History in the Making, System 3 Software 1989: the SpeedLock loader's piece at $FE76, tape block 29."
+  ],
+  "l1": [
+    {
+      "path": "work/stage1/c1/l1.json",
+      "lo": "FE76",
+      "hi": "FEE9",
+      "reads": false
+    }
+  ],
+  "same_bytes": true,
+  "data_entries": "stop",
+  "work": "work/stage2/mkunxor",
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: a 48K from power-on, the whole load at signal speed, the menu, stage 1"
+    ]
+  ],
+  "other_builds": []
+}

@@ -1,0 +1,6 @@
+# PrintText $9D72 parameters (src/res/front-texts/README.md)
+font: large
+column: 11
+shift: 0
+line: 100
+text: "SYSTEM THREE"

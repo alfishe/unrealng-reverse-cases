@@ -1,0 +1,462 @@
+# The annotations of the resident $F000-$FFFF (tape blocks 25, 17 and 27 of the SpeedLock group, XOR $DF, moved
+# into place by Boot): the source of src/resident/resident.asm (../../kit/mkgame.py --part src/resident/resident.json).
+# Format: ../../../../docs/ann-format.md. Witnesses: c1 (work/stage1/c1, the load, the menu and stage 1) and the
+# recordings of WALKTHROUGH 6 (menu, deaths, s1-idle, sN-right). The L1 windows start at $F03F: every stage block
+# loads $6C3F-$F03E, over ResidentInit, so the counts below $F03F would be the stages' own. The L1 counts of a byte
+# also hold the chain and the loader that ran at the same addresses during the load (the parts' same-bytes match
+# cannot tell them apart), so a count here is an upper bound; the routines' own runs are in the text.
+
+@equ $4000 Screen 6144 ; the bitmap
+@equ $5800 Attributes 768 ; the attributes
+@isub $F003 LD SP,$FFFF
+@isub $F5D9 LD HL,50000
+@equ $5B00 TextBuffer 256 ; TextToBuffer's line of text, 32 bytes a pixel row, 8 rows
+@equ $5D00 GlyphBuffer 14 ; one glyph shifted into place, 2 bytes a row
+@equ $6C3F GameBlock ; where every turbo block loads: the front ($6C3F-$A83E) or a stage ($6C3F-$F03E)
+@equ $7800 GameMain ; the front's FrontMain and each stage's entry (src/front, src/stageN)
+@equ $BB80 StageCheckByte ; the byte of a loaded stage block that names it (StageCheck)
+
+@module init ; Start-up: silence, the IM 2 set-up, the front
+@about Boot jumps to ResidentEntry. ResidentInit silences the AY, saves the turbo loader's bytes under the IM 2 jump, sets IM 2 with Im2Handler, marks no stage loaded and loads the front, then runs it. The front returns into NewGame when START GAME is chosen.
+
+$F000 c ResidentInit ; Border black, SP = $FFFF, silence, IM 2 on Im2Handler, no stage loaded, then the front
+> Run once, from ResidentEntry (c1: the front loads after it; the stage blocks overwrite $F000-$F03E later, so ResidentInit is gone once a stage is loaded and the restart path goes to RestartFromStageOne instead). StageLoaded := $FF (none).
+$F017 ; to ShowFront
+
+$F019 b ResidentInitPad ; Zeros up to ResidentEntry, overwritten by every stage block
+> No code reads them: the stage blocks load $6C3F-$F03E over them (their last bytes, the stages' own). Known only from the code and tape.txt.
+
+$F040 c ResidentEntry ; Interrupts off, then ResidentInit
+> Boot's JP (HL) lands here (c1). Witness: L1 1 (c1).
+
+$F043 c ShowFront ; Clear the screen and load the front
+> Witness: L1 2 (c1).
+
+$F048 c RestartFromStageOne ; REWIND THE TAPE, AND THEN PRESS PLAY, wait, then load the front again
+> GameOver's second option (RESTART FROM STAGE ONE) jumps here: the front is the tape's first turbo block, so the tape has to go back. Not executed in any recording (the recordings checked: no game over chose it); known only from the code ($F2EE).
+$F04B ; Print: the text follows
+
+$F04E t TextRewind ; The text: column byte 9, bit 3, row 36, REWIND THE TAPE
+@res resident/text-rewind.bin
+
+$F061 c RestartFromStageOne2 ; Print the second line
+$F064 t TextPressPlayAgain ; The text: column byte 7, bit 5, row 52, AND THEN PRESS PLAY
+@res resident/text-press-play-again.bin
+
+$F07B c RestartFromStageOne3 ; WaitFrames, then into LoadFront
+
+$F07E c LoadFront ; Load the front (stage 0: B 3, H 2, L 1, 30 pages of 512 bytes) and run it
+> LoadStage with C = 0: StageLoaded := 0, so LoadBlock does not check the block. Then CALL GameMain: the front; START GAME returns to NewGame below. Witness: L1 1 (c1).
+$F08D ; the front; START GAME comes back here
+
+@module game ; The game: the stage chain, PlayStage, the game over menu
+@about NewGame starts a game with 5 lives and 4 credits, then plays the five stages in order: a stage completed (E = 2 from the stage's code) goes on to the next; a lost one goes to GameOver, which retries it (RESTART THIS STAGE, a credit less) or jumps to RestartFromStageOne. Stage 5 loops on itself.
+
+$F090 c NewGame ; Score and amount 0, lives 5, credits 4, then the five stages in turn
+> Reached from the front's StartGame by RET (front notes). Witness: L1 3728 (c1, joystick, menu, rzx-r0).
+$F0A4 PlayStage1 ; stage 1 until completed
+$F0B2 PlayStage2
+$F0C0 PlayStage3
+$F0CE PlayStage4
+$F0DC PlayStage5 ; stage 5: the same either way
+
+$F0EA b StageTable ; The five stages: the load parameters, then the two title lines as Print data
+> A record: D, E (not read by the resident: LoadStage keeps B, H, L; known only from the code), C the stage number (StageLoaded, StageCheck), H, L and B (the length: 2 x (9B + H + L) pages of 256 bytes, 132 = 33 792 bytes for every stage), then two Print strings (column byte, bit, row, text, 0): STAGE N and its title. Read by PlayStage (c1: stage 1; sN-right: stages 2-5).
+@res resident/stages.bin
+$F111 StageRecord2
+$F13E StageRecord3
+$F172 StageRecord4
+$F1A1 StageRecord5
+
+$F1CA c PlayStage ; Show the titles, load the stage at IY (unless loaded), run it; Z when it was completed
+> Input: IY a StageTable record. ClearScreen; if StageLoaded is not the record's stage, PRESS PLAY ON TAPE, WaitFrames, and the line cleared again. The two titles with PrintRecord. Then StageLoadLoop: LoadStage until it gives Z (the right block, StageCheck), each failure marking no stage loaded. SilenceAy, ClearScreen, H := Lives, CALL GameMain (the stage), Lives := H, CP E with 2, SilenceAy. Output: Z when the stage ended with E = 2 (completed), BC the address of the stage's score digits for GameOver. Witness: L1 3421 (c1, joystick, menu, rzx-r0-rzx-r4).
+$F1DC ; Print: the text follows
+$F1DF t TextPressPlay ; The text: column byte 8, bit 2, row 52, PRESS PLAY ON TAPE
+@res resident/text-press-play.bin
+$F1F5 c PlayStage2nd ; wait, then clear the line
+$F1FB t TextClearLine ; The text: column byte 8, bit 2, row 52, a space (clears the line: TextToBuffer clears the buffer)
+@res resident/text-clear-line.bin
+$F200 c PlayStageTitles ; the record's two title lines
+$F211 StageLoadLoop ; load until the block is the stage's
+$F22F StageRun ; the stage itself
+
+$F24B c GameOver ; GAME OVER: a credit less, the menu RESTART THIS STAGE / RESTART FROM STAGE ONE, SPACE chooses
+> Input: BC the address of the stage's six score digits (copied into the menu's SCORE). Credits := Credits - 1 (the POKE "credits 62045,0" is the DEC A at $F25D, src/tape notes), shown as a digit. ClearScreen, GAME OVER, PRESS SPACE TO SELECT, 20 frames of CycleColours, the menu. Every 32 frames the highlight moves to the other line (with no credit left it stays on RESTART FROM STAGE ONE); SPACE takes the highlighted one: RESTART THIS STAGE sets Lives := 5 and returns (PlayStage again), RESTART FROM STAGE ONE drops the return and jumps to RestartFromStageOne. Witness: L1 34 (c1, s1-right, s2-right, s3-right, s4-right).
+$F25D CreditsDec ; DEC A: the credit a game over costs
+$F269 ; Print: the text follows
+$F26C t TextGameOver ; The text: column byte 12, bit 0, row 40, GAME OVER
+@res resident/text-game-over.bin
+$F279 c GameOver2 ; Print the second line
+$F27C t TextPressSpace ; The text: column byte 7, bit 0, row 52, PRESS SPACE TO SELECT
+@res resident/text-press-space.bin
+$F295 c GameOver3 ; 20 frames of colours, the menu, then the choice
+$F297 GameOverPause
+$F2A7 GameOverLoop ; one frame
+$F2BA GameOverToggle
+$F2C3 GameOverSetOption
+$F2D0 ; AttrBox: the highlight bar, its row patched above
+
+$F2D3 b HighlightBox 5 ; AttrBox data: column 0, row (10 + 2 x option, written at $F2CA), 32 wide, 1 high, attribute $43
+$F2D4 HighlightRow ; the row, written by GameOver
+
+$F2D8 c GameOver4 ; CycleColours, then SPACE (port $7FFE bit 0)
+$F2F1 GameOverRetry ; RESTART THIS STAGE: Lives := 5, return
+
+$F2F7 c PrintGameOverMenu ; Print the two options and the credits and score line
+> Witness: L1 4 (s1-right, s2-right, s3-right, s4-right).
+$F2FA t TextRestartStage ; The text: column byte 8, bit 5, row 84, RESTART THIS STAGE
+@res resident/text-restart-stage.bin
+$F310 c PrintGameOverMenu2
+$F313 t TextRestartFromOne ; The text: column byte 6, bit 3, row 100, RESTART FROM STAGE ONE
+@res resident/text-restart-from-one.bin
+$F32D c PrintGameOverMenu3
+$F330 t TextCreditsScore ; The text: column byte 1, bit 6, row 148, GAME CREDITS n   SCORE nnnnnn (n written by GameOver)
+@res resident/text-credits-score.bin
+$F340 CreditsDigit ; the credits digit, written by GameOver
+$F34E ScoreDigits ; the six score digits, copied by GameOver
+$F355 c PrintGameOverMenuEnd
+
+@module print ; Text and screen: the proportional print, the reveal, the attribute boxes, the colour cycle, the screen clear, the dissolve masks
+@about Print takes its text after the CALL: a column byte, a bit within it, a pixel row, then capital letters, digits and spaces up to a 0. TextToBuffer draws the line into TextBuffer with PrintFont (each glyph its own width), then RevealText brings it onto the screen in 8 frames through the dissolve masks, while CycleColours runs. AttrBox fills an attribute rectangle given after its CALL. ClearScreen clears the screen and paints the colour bands of the title screens.
+
+$F356 c CycleColours ; One frame: FrameCounter + 1, the next colour of ColourCycle into the box under the titles
+> Called every frame by the waits (c1, every recording with a title screen). Witness: L1 7883 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F36B ; AttrBox: the cycling box
+
+$F36E b CycleBox 5 ; AttrBox data: column 6, row 4, 20 wide, 4 high, the attribute written by CycleColours
+$F372 CycleBoxAttr ; the attribute
+
+$F373 c CycleColoursEnd ; RET
+
+$F374 b ColourCycle 8 ; The box's colours, one a frame: bright red, magenta, green, cyan, yellow and back
+> Read by CycleColours (c1).
+@res resident/colour-cycle.bin
+
+$F37C c AttrBox ; Fill an attribute box: column, row, width, height, attribute after the CALL
+> The five bytes after the CALL: column, row, width, height, attribute; returns after them. Witness: L1 9086 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F394 AttrBoxRow
+$F39C AttrBoxCell
+
+$F3B0 c Print ; Print the text after the CALL: TextToBuffer, then RevealText at its row
+> The data: column byte, bit, pixel row, text, 0; returns after the 0. Witness: L1 2971 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, stageload, rzx-r0-rzx-r4).
+
+$F3BD c PrintRecord ; Print the text at IY (a StageTable title), IY past it
+> Witness: L1 12 (c1, joystick, menu, rzx-r0, rzx-r1, rzx-r3).
+
+$F3CB c TextToBuffer ; Draw the text at IY (column byte, bit, row, text, 0) into TextBuffer with PrintFont
+> Clears TextBuffer, sets BitShift and TextRow; for each character: A-Z, a space (as the glyph after Z) and 0-9 (after the space); the glyph's width mask to CharMask, its 7 rows to GlyphBuffer, shifted right by BitShift, ORed into TextBuffer at DE; then Advance. Ends after the 0 with IY past it. Witness: L1 55 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, stageload, rzx-r0-rzx-r4).
+$F3F3 TextNextChar
+$F409 TextNotDigit
+$F40F TextGlyph
+$F428 TextGlyphRow
+$F43B TextShift
+$F440 TextShiftRow
+$F44B TextMerge
+$F450 TextMergeRow
+$F482 TextEnd
+
+$F465 c Advance ; Move BitShift and DE on by the glyph's width: 9 less the trailing zeros of CharMask
+> Witness: L1 760 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, stageload, rzx-r0-rzx-r4).
+$F46A AdvanceCount
+$F473 AdvanceAdd
+$F47E AdvanceStore
+
+$F483 c RevealText ; Bring TextBuffer onto the screen from pixel row A in 8 frames through the dissolve masks
+> For step 0-7: the ADD A,n at RevealMaskAdd := $CB + step; HALT, CycleColours; for the 7 rows and 32 bytes: mask = DissolveMasks set (a ROM byte from $0001 up AND $18) at the step; screen := (screen AND NOT mask) OR (buffer AND mask). Witness: L1 2763 (c1, joystick, menu, s1-right, s2-right, s3-right, s4-right, stageload, rzx-r0-rzx-r4).
+$F490 RevealStep
+$F4AD RevealRow
+$F4BA RevealByte
+$F4C7 RevealMaskAdd ; ADD A,n: n = $CB + step, written above
+
+$F4E5 c WaitBC ; Wait BC frames (HALT each)
+> Witness: L1 2617 (c1).
+
+$F4EC c ClearScreen ; Black attributes, a clear bitmap, then the colour bands of rows 18-22 and SetMenuBands
+> Witness: L1 28 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F4EF b ClearBox 5 ; AttrBox data: the whole screen, attribute 0
+$F4F4 c ClearScreen2 ; the bitmap
+$F504 b BandRow18 5 ; AttrBox data: row 18, attribute $42
+$F509 c ClearScreen3
+$F50C b BandRow19 5 ; AttrBox data: row 19, attribute $03
+$F511 c ClearScreen4
+$F514 b BandRow21 5 ; AttrBox data: row 21, attribute $42
+$F519 c ClearScreen5
+$F51C b BandRow22 5 ; AttrBox data: row 22, attribute $03
+
+$F521 c SetMenuBands ; The colour bands of rows 10-15 (the titles' rows)
+> Also called by GameOver for each highlight move. Witness: L1 217 (c1, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F524 b BandRows10 5 ; AttrBox data: rows 10-17, attribute $44
+$F529 c SetMenuBands2
+$F52C b BandRow11 5 ; AttrBox data: row 11, attribute $05
+$F531 c SetMenuBands3
+$F534 b BandRow13 5 ; AttrBox data: row 13, attribute $05
+$F539 c SetMenuBands4
+$F53C b BandRow15 5 ; AttrBox data: row 15, attribute $05
+$F541 c SetMenuBandsEnd
+
+$F542 c WaitFrames ; 75 frames of CycleColours
+> Witness: L1 15 (c1, ending, joystick, menu, s5-right, stageload, rzx-r0-rzx-r5).
+$F544 WaitFramesLoop
+
+@module ay ; The AY driver: the effects and the three channels
+@about A stage plays an effect with CALL PlaySoundVector, E the effect number. StartEffect puts the effect into its channel (1-3); Im2Handler runs AyFrame every frame, which steps each busy channel: a segment's period and volume change each frame for its duration, then the next segment, and the channel goes quiet after the last. Every AY write is an OUT to $FFFD (the register) and $BFFD (the value): on a 48K these do nothing.
+
+$F54D b EffectData ; The 13 effects: channel, noise flag (0 a tone), segments, volume x 16, period, then the segments
+> With the noise flag set the channel's tone is off, its noise on, and AyFrame writes the period's low byte to the noise period (register 6). A segment: duration in frames, period change a frame (signed), volume change a frame (signed, x 16). Read by StartEffect and ChannelStep (every stage recording).
+@res resident/effects.bin
+$F556 Effect1
+$F55F Effect2
+$F568 Effect3
+$F571 Effect4
+$F57A Effect5
+$F58F Effect6
+$F59B Effect7
+$F5A4 Effect8
+$F5AD Effect9
+$F5B9 Effect10
+$F5C5 Effect11
+$F5CE Effect12
+
+$F5D7 b EffectLeftover 2 ; Two bytes after the last effect that no code reads: $06 $04, like the start of a second segment
+> Effect 12 has one segment, so ChannelStep stops before them (known only from the code: the count at $F5D0 is 1). A leftover of the effect's editing.
+
+@module game ; The game
+
+$F5D9 c DelayB ; B times 50 000 loop passes
+> Not executed in any recording (all checked); stage 4's code refers to it (known only from the code: work/stage2/loader/xref.txt).
+$F5DC DelayBLoop
+
+@module stageload ; The stage loader
+@about LoadStage loads the turbo block of the stage C (LoadBlock and TurboLoad), unless it is already in memory. Every turbo block has the flag $56 and the stage blocks have one length, so the loader takes whichever stage block comes next on the tape; LoadBlock then compares the block's byte at StageCheckByte with StageCheck for the stage wanted. A wrong block gives NZ: PlayStage marks no stage loaded and loads again, with no message. So a tape wound on to another stage loads that stage's block, rejects it and waits for the next block; only the stage wanted is accepted, and the stage wanted moves on only when a stage is completed.
+
+$F5E4 c LoadStage ; Load stage C's block (B, H, L its length) unless it is the one loaded; Z when it is in memory
+> Inputs: C the stage (0 the front), B, H, L the length parameters (to LoadLength). StageLoaded = C: wait 120 frames, Z. Else StageLoaded := C, HALT, LoadBlock; NZ (a wrong block or a load error) returns NZ; else clear the line, STOP THE TAPE, WaitFrames, Z. Witness: L1 8 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
+$F5FF ; Print: the text follows
+$F602 t TextClearTop ; The text: column 0, bit 0, row 36, a space
+@res resident/text-clear-top.bin
+$F607 c LoadStage2
+$F60A t TextStopTape ; The text: column byte 10, bit 3, row 52, STOP THE TAPE
+@res resident/text-stop-tape.bin
+$F61B c LoadStage3 ; WaitFrames, then Z
+$F623 LoadStageLoaded ; already in memory: 120 frames, Z
+
+@module im2 ; The IM 2 set-up, the handler and the table
+
+$F629 c SaveLoaderBytes ; Copy the three bytes at Im2Jump (TurboLoad's code) to SavedLoaderBytes
+> Witness: L1 5 (c1, joystick, stageload).
+
+$F635 c SetIm2 ; Im2Jump := JP HL, I := $FD, IM 2, EI
+> Im2Table ($FD00-$FE00, all $FE) sends every interrupt to Im2Jump at $FEFE. Witness: L1 5 (c1, joystick, stageload).
+
+@module print ; Text and screen
+
+$F646 c CopyToScreen ; Copy B rows of D bytes from HL to the screen at row C, column A (via ScreenLineTable)
+> Not executed in any recording (all checked), no reference from the front or a stage (xref.txt). Known only from the code ($F646-$F66B).
+$F656 CopyToScreenRow
+$F65A CopyColumnAdd ; ADD A,n: n the column, written above
+
+@module im2 ; The IM 2 set-up, the handler and the table
+
+$F66C b SavedLoaderBytes 3 ; TurboLoad's three bytes at Im2Jump while the IM 2 jump is there
+> Written by SaveLoaderBytes, read back by LoadBlock (c1).
+
+@module ay ; The AY driver
+
+$F66F c SilenceAy ; Mixer := $38 (tones off), every channel idle, the three volumes 0
+> Witness: L1 25 (c1, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$F687 SilenceVolumes
+
+$F69B c PlaySound ; Start effect E (through PlaySoundVector), every register kept
+> Witness: L1 3077 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$F6BB w EffectTable ; The addresses of the 13 effects
+> Read by PlaySound (every stage recording).
+
+$F6D5 c StartEffect ; Put the effect at IY into its channel; set its tone or noise bits in the mixer
+> Witness: L1 3077 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$F71E StartEffectShift
+$F73A StartEffectTone2
+$F744 StartEffectTone3
+$F748 StartEffectMixer
+$F754 StartEffectNoise
+$F765 StartEffectNoise2
+$F76F StartEffectNoise3
+$F773 StartEffectNoiseMixer
+
+$F781 c WriteMixer ; AY register 7 := Mixer
+> Witness: L1 3100 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$F78A c AyFrame ; Every frame: step the three channels, write their periods (a noise channel: the period's low byte to register 6)
+> Witness: L1 125689 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F79B AyFrameChannel
+$F7BF AyFrameNoise
+$F7C7 AyFrameNext
+
+$F7DE c ChannelStep ; One frame of the channel at IX: write its volume, move its period and volume, the next segment
+> Witness: L1 379456 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+$F817 ChannelNextSegment
+$F833 ChannelDone ; the last segment: volume 0, the channel idle
+
+$F843 c WriteVolume ; AY volume of the current channel := its volume / 16
+> Witness: L1 24735 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$F854 c AyWrite ; AY register D := E
+> Witness: L1 79117 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$F85E b Channels 8 ; The three channels, 8 bytes each
+> +0 segments left ($FF idle), +1 frames left in the segment, +2 the segment's address, +4 the period, +6 the noise flag (0 a tone), +7 the volume x 16. Read and written by StartEffect, AyFrame and ChannelStep.
+$F866 Channel2
+$F86E Channel3
+
+$F876 b Mixer ; The AY mixer value (register 7)
+$F877 b MixerSpare ; A byte no code reads (known only from the code: no operand names it)
+$F878 b ChannelNumber ; The channel AyFrame is on, 1-3
+$F879 b LoadLength 3 ; LoadStage's H, L and B: TurboLoad's length is 2 x (9B + H + L) pages
+$F87A LoadLengthL ; L
+$F87B LoadLengthB ; B
+$F87C b LoadLengthPad 4 ; Zeros no code reads (known only from the code)
+
+@module font ; The print font
+$F880 b PrintFont 8 ; 37 glyphs, 8 bytes each: the width mask, then 7 rows; A-Z, the space, 0-9
+> Read by TextToBuffer (every title screen). The mask's lowest set bit marks the glyph's width (Advance).
+@res resident/print-font.bin
+
+@module vars ; The resident's variables
+$F9A8 b BitShift ; TextToBuffer's bit within the column byte (also a scratch word with TextRow for RevealText and the stages)
+$F9A9 b TextRow ; Print's pixel row
+$F9AA b CharMask ; The current glyph's width mask
+$F9AB w RowPointer ; RevealText's place in ScreenLineTable
+$F9AD b Credits ; The game's credits: 4 at NewGame, one less a game over
+$F9AE b StageLoaded ; The stage in memory (0 the front, $FF none)
+$F9AF b Lives ; The lives, passed to each stage in H and back
+
+@module ay ; The AY driver
+
+$F9B0 c PlaySoundVector ; JP PlaySound: the stages' way in
+> Witness: L1 3076 (c1, c1o, deaths, ending, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+@module im2 ; The IM 2 set-up, the handler and the table
+
+$F9B3 c Im2Handler ; The interrupt: AyFrame in the alternate registers, EI, RETI
+> Witness: L1 125688 (c1, c1o, deaths, ending, joystick, menu, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r0-rzx-r5).
+
+@module score ; The score: the decimal table and the score variables (the stages print it)
+
+$F9BD c DropReturn ; POP HL / RET: return to the caller's caller
+> Not executed in any recording (all checked); stage 4 refers to it twice (xref.txt). Known only from the code.
+
+$F9BF w DecimalTable ; 10000, 1000, 100, 10, 1: the stages' decimal print
+> Read by the stages' score print (every stage recording).
+@module vars ; The resident's variables
+
+$F9C9 b DecimalTablePad 2 ; Zeros no code reads (known only from the code)
+
+@module print ; Text and screen
+
+$F9CB b DissolveMasks 8 ; Six sets of 8 masks, each growing to $FF: RevealText and the front's reveals pick a set by a ROM byte
+> Read by RevealText and the front (front notes). The sets at $F9EB are not picked by RevealText (A AND $18 gives 0-3).
+@res resident/dissolve-masks.bin
+
+@module score ; The score
+
+$F9FB w Score ; The score, a word (0 at NewGame; the stages add to it)
+$F9FD b ScoreHigh ; The score's high two digits (ten thousands, 0-99), above Score: 0 at NewGame; the stages' AddScore carries into it (src/stage1 AddScore)
+@module vars ; The resident's variables
+
+$F9FE b ResidentVarsPad 2 ; Zeros (known only from the code)
+
+@module tables ; The tables the stages share: bit reversal, screen lines
+
+$FA00 b BitReverse 16 ; Byte n is n with its bits in reverse order (the stages' mirrored sprites)
+> Read in c1 and in the stage recordings (deaths, s1-s3).
+@res resident/bit-reverse.bin
+
+$FB00 w ScreenLineTable ; The screen address of each of the 192 pixel lines
+> Read by RevealText, the front and the stages.
+@res resident/screen-lines.bin
+
+$FC80 b ScreenLineTablePad 16 ; Zeros no code reads (known only from the code)
+
+@module keys ; The key readers
+@about Five readers, one per control. Each calls KeyHook (a RET), reads its port, XORs KeyXorMask and tests its bit: Z when the control is on (keys are active low). The front's DEFINE KEYS and SELECT JOYSTICK rewrite the port word at +4 and the BIT byte at +13 of each. The tape's defaults: I J Q W O (front notes).
+
+$FC90 c KeyUp ; UP: port $DFFE bit 2 (I)
+> Witness: L1 41801 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$FC9F c KeyDown ; DOWN: port $BFFE bit 3 (J)
+> Witness: L1 33680 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$FCAE c KeyLeft ; LEFT: port $FBFE bit 0 (Q)
+> Witness: L1 37050 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$FCBD c KeyRight ; RIGHT: port $FBFE bit 1 (W)
+> Witness: L1 41800 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+$FCCC c KeyFire ; FIRE: port $DFFE bit 1 (O)
+> Witness: L1 49911 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$FCDB c KeyHook ; RET: each reader calls it first
+> Witness: L1 788100 (c1, c1o, deaths, ending, joystick, s1-idle, s1-right, s2-right, s3-right, s4-right, s5-right, stageload, rzx-r1-rzx-r5).
+
+$FCDC c KeyHookExit ; Not executed in any recording: on a key bit 0 clear, IM 0, the stack and return the front saved, Im2Jump back from SavedIm2Jump
+> All recordings checked. KeyHook's RET at $FCDB keeps it out of reach; with the RET replaced by a NOP the readers would run it. Known only from the code ($FCDC-$FCF9).
+
+$FCFA b KeyXorMask ; 0 for keys (active low), $FF for a Kempston (active high), written by the front
+$FCFB b KeyXorMaskPad 5 ; Zeros no code reads (known only from the code)
+
+@module im2 ; The IM 2 set-up, the handler and the table
+
+$FD00 b Im2Table 16 ; 257 bytes of $FE: whatever the bus holds, the vector is $FEFE (Im2Jump)
+> Read by the Z80 at every interrupt (I = $FD), c1 and every recording.
+
+@module vars ; The resident's variables and the stages' work space
+
+$FE01 b WorkSpace 16 ; The work space of the front and the stages (zeros in the tape's image)
+> The front: SavedIm2Jump, SavedStack, SavedReturn, ShimmerCount, ReaderBitOp, ReaderPort (src/front). The stages: $FE08-$FE6F (src/stageN). The resident's own: GameOverOption and FrameCounter.
+$FE04 SavedStack
+$FE06 SavedReturn
+$FE08 StageVars
+$FE1D ShimmerCount
+$FE1E GameOverOption ; GameOver's highlighted line, 0 or 1
+$FE1F StageVars2
+$FE31 FrameCounter ; CycleColours' frame count
+$FE32 StageVars3
+$FE4C ReaderBitOp
+$FE4D ReaderPort
+$FE4F StageVars4
+
+@module turbo ; The turbo loader
+@about TurboLoad reads one block of the game: flag $56, then D x 256 bytes to GameBlock, the ROM's LD-BYTES method with its own timing. Its three bytes at $FEFE-$FF00 are also Im2Jump: LoadBlock puts them back before it loads and SetIm2 writes the JP again after.
+
+$FE90 c TurboLoad ; Load a block of 2 x (9B + H + L) pages (LoadLength) to GameBlock; carry set when it loaded
+> Witness: L1 8 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
+$FEB1 TurboExit ; border black; carry set: return; else RST 8 report R (Tape loading error)
+$FEB9 TurboStart ; flag $56, the pilot, the sync, the bytes
+$FED1 TurboPilot
+$FED3 TurboPilotEdge
+$FEE2 TurboSync
+$FEFD TurboByte ; the flag byte first, then the data
+$FEFE Im2Jump ; JR NZ: also where SetIm2 writes JP Im2Handler
+$FF07 TurboFlag ; the first byte must be $56
+$FF11 TurboVerify ; the verify path: never taken (the flag's carry says LOAD)
+$FF16 TurboNext
+$FF18 TurboCount
+$FF1C TurboBits
+$FF1E TurboBit
+
+$FF37 c TurboEdgePair ; Two edges
+> Witness: L1 936053 (c1, joystick, menu, stageload).
+$FF3B TurboEdge ; one edge: count B up while EAR stays; the border from it
+$FF3C TurboEdgeLoop
+$FF4C TurboBorderMask ; AND n: 2 at the pilot, 1 for the data
+
+@module stageload ; The stage loader
+
+$FF54 c LoadBlock ; Load the next block with TurboLoad; with a stage wanted, check its byte at StageCheckByte; Z when right
+> DI; Im2Jump := SavedLoaderBytes (the loader's code); TurboLoad; SaveLoaderBytes; SetIm2 (Im2Handler). StageLoaded 0 (the front): Z. Else Z when the byte at StageCheckByte equals StageCheck's for StageLoaded, NZ for another stage's block. A load error does not return here: TurboExit's RST 8 ends in the ROM's error report. Witness: L1 7 (c1, joystick, menu, stageload, rzx-r0, rzx-r1).
+
+$FF7E b StageCheckFront ; Unused slot 0 of StageCheck (the front is not checked)
+$FF7F b StageCheck 5 ; The byte at StageCheckByte of stages 1-5: $16, $4B, $FA, $E0, $80
+> Read by LoadBlock (c1: stage 1; sN-right: stages 2-5). Each value is the stage block's byte at $BB80 (work/mkgame/stageN.bin).
+
+@module font ; The print font and the glyph leftover
+
+$FF84 b RomFontLeftover ; A copy of the ROM font $3E34-$3EAF (the end of F to U) and $27: no code reads it
+> A leftover of the mastering: no operand names $FF84-$FFFF and the tape's image holds the ROM's bytes. The stack (SP = $FFFF) writes over its end in play. Known only from the code.
+@res resident/rom-font-leftover.bin

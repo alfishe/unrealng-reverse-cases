@@ -1,0 +1,4 @@
+column 9
+bit 3
+row 36
+text "REWIND THE TAPE"

@@ -1,0 +1,35 @@
+# joystick: from c1's menu state (STATE work/stage1/c1/menu.szx, 48K, a Kempston card on the edge slot):
+# SELECT JOYSTICK four times, choosing in turn CURSOR KEYS, SINCLAIR, LEAVE THIS MENU and KEMPSTON (each SPACE
+# timed to the highlight of its line, record.json moments keep the key readers `$FC90-$FCDA` after each), then
+# START GAME, the original tape put in with its cursor on stage 1's block (block 34, where c1's load of the main
+# block left it: the only change from a user's load), stage 1 loaded at signal speed by the game's stage loader, and
+# stage 1 played with the Kempston joystick (right, fire, up, left)
+84 SPACE
+88 -
+320 SPACE
+324 -
+652 SPACE
+656 -
+982 SPACE
+986 -
+1314 SPACE
+1318 -
+1742 SPACE
+1746 -
+2074 SPACE
+2078 -
+2214 SPACE
+2218 -
+2354 SPACE
+2358 -
+9260 KR
+9380 -
+9400 KF
+9416 -
+9436 KU
+9466 -
+9496 KL
+9616 -
+9636 KR KF
+9666 -
+9706 END

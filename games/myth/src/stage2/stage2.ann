@@ -1,0 +1,2313 @@
+# stage 2
+# Carried over from stage 1 by tools/stage_names.py (src/stage1/stage1.ann): 150 of 310 named routines, the same code.
+@equ $4000 Screen 6144 ; the screen's pixels
+@equ $4134 EnergyBarScreen ; the HUD's energy bar: screen row 1, pixel line 1, column 20
+@equ $5800 Attributes 768 ; the screen's attributes
+@equ $5B00 PlayBuffer 4415 ; the play buffer $5B00-$6CFF (its tail $6C3F-$6CFF is PlayBufferTail in the block): 18 character rows of 8 lines of 32 bytes, linear; also the unpack area of StageGraphics
+@equ $F959 DigitGlyphs ; resident font from '0': 8 bytes a character, 7 rows drawn (RenderDigits)
+@equ $F9B0 PlaySoundVector ; resident: JP to the AY effect starter (E = the effect number)
+@equ $F9BF DecimalTable 10 ; resident: the words 10000, 1000, 100, 10, 1
+@equ $F9CC DissolveMasks 8 ; resident: DissolveHud's eight masks
+@equ $F9FB Score 2 ; resident: the score's low four decimal digits, 0-9999 (AddScore)
+@equ $F9FD ScoreHigh ; resident: the score's high two digits (ten thousands), 0-99 (AddScore)
+@equ $FA00 BitReverse 256 ; resident: each byte with its bits reversed (the sprites drawn facing left)
+@equ $FB00 ScreenLineTable 384 ; resident: the screen address of each of the 192 pixel lines (words)
+@equ $FC90 KeyUp ; resident key reader: Z when UP is held (DEFINE KEYS / joystick patch its port and bit)
+@equ $FC9F KeyDown ; resident key reader: Z when DOWN is held
+@equ $FCAE KeyLeft ; resident key reader: Z when LEFT is held
+@equ $FCBD KeyRight ; resident key reader: Z when RIGHT is held
+@equ $FCCC KeyFire ; resident key reader: Z when FIRE is held
+@equ $FCDB KeyHook ; resident: called before every key read (a RET, or the joystick / pause check DEFINE KEYS installs)
+@equ $FE08 RandomSeed 2 ; NextSeed $8B76: seed = seed x 5 + $15 (a linear congruential step); $07CF at the stage start (InitStageState)
+@equ $FE0A RandomPointer 2 ; Random $8B85: a pointer into the ROM ($0000-$3FFF), whose bytes are the random numbers; reseeded from R every 64 passes, $07CF at the stage start, $0D7A at each burst
+@equ $FE0E SavedSP 2 ; ClearBuffer and CopyBuffer keep the caller's SP here while SP walks their buffers
+@equ $FE10 InitOnly10 2 ; set to 2 by InitStageState $9766; SpawnHarpy $8DA4 keeps IY here (a word) between its two SpawnActor calls
+@equ $FE12 InitOnly12 ; set to 1 by InitStageState; no stage-2 code reads it (known only from the code)
+@equ $FE14 WorkByte ; scratch: the placement counter of LoadRoomActors, the shape bits of StartBurst
+@equ $FE17 ItemSelected ; the slot of CarriedItems the HUD cursor is on (6 at the start)
+@equ $FE18 ItemLast ; the last used slot of CarriedItems (6 at the start; AddItem raises it)
+@equ $FE19 ItemFirst ; the first slot of CarriedItems (6): the item window does not scroll before it
+@equ $FE1C SpanCount 2 ; the spans in the span table $76A0 that CopyBuffer copies (BuildSpans $99E9)
+@equ $FE1E SpanRow ; BuildSpans' cell row 0-17
+@equ $FE1F CellColumn ; the cell column 2-29 of RoomChange's and BuildSpans' loops
+@equ $FE21 RoomColumn ; the room's left edge in the grid, in blocks (2 cells)
+@equ $FE22 RoomRow ; the room's top edge in the grid, in blocks (16 lines)
+@equ $FE23 RoomGrid 2 ; the grid record of the current map grid ($9B6F, $9B8A or $9B96)
+@equ $FE25 Placements 2 ; the current grid's placement list (Grid0Placements, Grid1Placements, Grid2Placements): 3 bytes a placement, $FF ends
+@equ $FE27 MissileCursor ; AddMissile's round-robin slot number 0-7
+@equ $FE29 CellFlag ; PutBlock $9986: the byte written to the cell's twin in $7040 (always 0)
+@equ $FE2E RoomExitsPtr 2 ; the current room's byte in the grid's room table (grid record +4 + RoomNumber)
+@equ $FE30 RoomNumber ; the room in its grid, a grid row of rooms after another: +1 right, -1 left, + grid record +8 down (stage 1, grid 0: 12 the demon's lair)
+@equ $FE31 PassCounter ; +1 every pass (PassTick $984D): the animations' clock
+@equ $FE37 InitOnly3A ; stage 1 has it at $FE3A; set to $10 by InitStageState $9766; no stage-2 code reads it (known only from the code)
+@equ $FE3A BurstTimer ; stage 1 has it at $FE3D; the burst's step 0..$1B ($0D in the small mode); $64 idle (RoomChange sets it), $FF just started
+@equ $FE3B BurstSmall ; stage 1 has it at $FE3E; 0 a big burst (28 steps), 1 a small one (14 steps, doubled direction steps)
+@equ $FE3C Energy ; stage 1 has it at $FE3F; the hero's energy, 0 (full) to $2E
+@equ $FE3E InitOnly40 ; stage 1 has it at $FE40; set to $0D by InitStageState $9766; no stage-2 code reads it (known only from the code)
+@equ $FE3F InitOnly41 ; stage 1 has it at $FE41; set to 1 by InitStageState $9766; no stage-2 code reads it (known only from the code)
+@equ $FE40 SpanOpen ; stage 1 has it at $FE42; BuildSpans $93B5: 1 while a run of open cells goes on
+@equ $FE43 Hydra1Step ; the hydra's first head: its step 0-$14 (HydraNeck1Step $9EEC); HydraHead1Actor $7FB5 fires at steps 4, 8 and 12 ($B31C)
+@equ $FE53 ItemsChanged ; stage 1 has it at $FE4A; 1 after AddItem $7E2B: the main loop redraws the item strip (RedrawItemsIfChanged $7CF1)
+@equ $FE54 GridNumber ; stage 1 has it at $FE4B; the grid the hero is in: 0 Grid0 (the temple and the hydra's rooms), 1 Grid1, 2 Grid2 (Medusa's room); set by EnterGrid1 $8814, EnterGrid2 $8835, LeaveGrid2 $8859, LeaveGrid1 $8882
+@equ $FE58 EnergyShown ; stage 1 has it at $FE4D; the energy the HUD bar last drew
+@equ $FE59 EnergyChange ; stage 1 has it at $FE4E; the pending energy change: $80 and up drains 2 a pass, under $80 refills 2 a pass
+@equ $FE5B SpawnDelay ; stage 1 has it at $FE4F; SpawnTimer $8D45: passes to the next random spawn (5-20; a random byte at the stage start)
+@equ $FE60 FireLatch ; stage 1 has it at $FE50; 1 while FIRE stays held after a shot or a throw: one a press
+@equ $FE6B PiecesMask ; stage 1 has it at $FE51; one bit a piece of the artefact (the room event's bit, actor +$10): spawned and taken
+@equ $FE6A PiecesTaken ; stage 1 has it at $FE52; pieces taken, 0-5
+@equ $FE62 PieceFlash ; stage 1 has it at $FE53; passes left of the HUD pieces' colour flash
+@equ $FE69 PiecesComplete ; stage 1 has it at $FE54; set to 1 when the fifth piece is taken; +1 for each item of kind 6 taken (SpawnRewardItem gives the kind-6 item while it is 1)
+@equ $FE63 PieceTakenFlag ; stage 1 has it at $FE55; 1 for one pass after a piece is taken
+@equ $FE64 RespawnShiftX ; stage 1 has it at $FE56; $FF: no death pending; else the hero's column less the respawn column less 2 (HeroDeath $B22B); the path flyers move by it (x 2) when their path ends
+@equ $FE65 RespawnShiftY ; stage 1 has it at $FE57; the hero's line less the respawn line less $27, set with RespawnShiftX
+@equ $FE66 HeroFreeze ; stage 1 has it at $FE58; passes the hero's state handler is skipped ($17 after a life lost, LoseLife $7EA8)
+@equ $FE6C LivesFlash ; stage 1 has it at $FE59; the lives boxes' flash step, 0-$10 ($10 idle)
+@equ $FE68 RestoreAttributes ; stage 1 has it at $FE5A; 1: UpdateAttributes takes the solid cells' colours from RoomAttributes once (the new room fades in over the old one)
+@equ $FE6D GameOverTimer ; stage 1 has it at $FE5B; 0 in play; 1 when the last life is lost, counts to $32
+@equ $FE5C Hydra1Neck ; the first head's neck ($0E at the start; written by $9EEC); bit 7 set: the head cut off (CutHydraHead1 $80C1), $80 the head gone (its actors removed)
+@equ $FE5D Hydra2Neck ; the second head's neck ($16 at the start; written by $9F31); bit 7 as Hydra1Neck
+@equ $FE5E Hydra3Neck ; the third head's neck ($0E at the start; written by $9F75); bit 7 as Hydra1Neck
+@equ $FE5F HydraHeads ; the hydra's heads left: 3 at the start, - 1 for each head cut off ($80C1, $80D6, $80EB); $64 once HydraDefeated $9BB4 has burst the body
+@equ $FE6F Lives ; stage 1 has it at $FE61; lives left, from H at StageEntry
+@equ $FE41 Hydra3Step ; the third head's step (written by $9F75), as Hydra1Step
+@equ $FE42 Hydra3Pose ; the third head's pose (written by $9F75), as Hydra1Pose
+@equ $FE44 Hydra1Pose ; the first head's pose from $A113 (written by $9EEC): PlaceHydraHead $8100 picks its frame by it (under 5, 5-6, 7 and up)
+@equ $FE45 Hydra2Step ; the second head's step (written by $9F31), as Hydra1Step
+@equ $FE46 Hydra2Pose ; the second head's pose (written by $9F31), as Hydra1Pose
+@equ $FE4D Hydra1X ; the first head's x in pixels less $18 ($28 at the start; written by $9EAE): PlaceHydraHead's column and shift
+@equ $FE4E Hydra1Y ; the first head's line ($15 at the start; written by $9EAE)
+@equ $FE4F Hydra2X ; the second head's x, as Hydra1X ($6D at the start)
+@equ $FE50 Hydra2Y ; the second head's line ($11 at the start)
+@equ $FE51 Hydra3X ; the third head's x, as Hydra1X ($34 at the start)
+@equ $FE52 Hydra3Y ; the third head's line ($0E at the start)
+@equ $FE55 Statue0Broken ; 1 once the statue of kind 0 ($A6EC) is struck: BreakStatue0 $9A41; the statue is not placed again
+@equ $FE56 Statue1State ; the statue of kind 1 ($A718): 0 standing, 1-3 the flash after a blow, $C8 broken (BreakStatue1 $9A14)
+@equ $FE57 MedusaState ; 0 Medusa stands, 1 struck (MedusaStruck $8138: her head falls), 2 the head lies, 4 the head taken (an item); CheckMedusaBarrier $835D closes the way at column $18 while 0
+@equ $FE5A HarpyPhase ; the harpy's statue (kind 3, $A7F6): 3 once the harpy is out (SpawnHarpy $8DA4), $FA when it flies off ($8EA9), back to 1 from 3 when the hero leaves the room (LeaveRoomRight / Left)
+@equ $FE67 SpiritCount ; the spirits (SpawnRandomEnemy $8F8C, SpiritActor $9028) on screen, at most 2
+@inline $8C63 5
+@inline $8C93 5
+@inline $AC52
+@module variables ; The stage's work space: the play buffer's tail, the shadow attributes, the HUD picture and the records over it
+@about The block's first 5057 bytes ($6C3F-$77FF) are loaded with the stage but hold no code; they are laid out as stage 1's (the HUD picture $7000-$76BF is the same 1728 bytes as stage 1's). $6C3F-$6CFF is the end of the play buffer PlayBuffer ($5B00-$6CFF: 18 character rows of 8 lines of 32 bytes, linear), $6D00-$6FFF the shadow of the screen's attributes. $7000-$76BF holds, as loaded, the HUD: its picture (48 lines of 32 bytes, linear) and its colours (6 rows of 32). StageSetUp $9177 copies the colours into the shadow and DissolveHud $8AD6 the picture onto the screen once, at the stage's start; then the space is reused: the old room's colours, the room's cells, the 14 actor records, the 16 missile records, the score's digit picture and the span table.
+@about An actor record (18 bytes, the hero's at $74E0 and 13 at $74F2) is stage 1's: +0 X (byte column 0-29; $FF a free record), +1 Y (line in the play buffer), +2 width in bytes, +3 height in lines, +4/+5 the frame's bitmap, +6/+7 the handler, +8 the frame or a counter, +9 flags (bit 0 opaque, bit 4 hit, bit 7 facing left), +$0A the state, +$0B the item kind or a step, +$0C the attribute, +$0D/+$0E the base X and Y, +$0F kept over a room change, +$10 the placement's number or a counter, +$11 the pixel shift (PreShiftSprite $7F10).
+$6C3F s PlayBufferTail ; The last 193 bytes of the play buffer PlayBuffer $5B00-$6CFF (character row 17's last lines)
+> ClearBuffer $9484 clears the play buffer to $6CFF with PUSH HL (SP from $6D00); RoomChange $9257 unpacks the stage's tiles and map into it from $5B00 (3852 bytes, to $6A0B); the actors are drawn into it every pass. Zero as loaded. Read and written in s2-right and rzx-r2 (CopyBuffer $94A9 copies it out).
+
+$6D00 s ShadowAttributes ; The shadow of the screen's 768 attributes, the screen's layout; the play area from $6DC2 (row 6, column 2)
+> The HUD's colours are copied into rows 0-5 at the stage's set-up (StageSetUp $9177); RoomChange $9257 writes each cell's attribute into rows 6-23, the actors' colours are painted over them every pass, and UpdateAttributes $8CD0 copies the open cells to $5800 (ShowShadowAttributes $8CC3 the whole of it). FillShadowAttributes $8C93 paints rectangles into it with five bytes after its CALL. Zero as loaded.
+$6DC0 PlayAttributes ; row 6: the first row of the play area (the room's 18 rows)
+$6DC2 PlayAttributesCell ; row 6, column 2: the room's first cell
+
+$7000 b HudPicture 32 ; The HUD as loaded: 48 lines of 32 bytes (linear, top first), then their colours at $7600 (6 rows of 32)
+> DissolveHud $8AD6 dissolves the 48 lines onto the screen's lines 0-47 and StageSetUp $9177 copies the 192 colours into the shadow rows 0-5, once, at the stage's start. EndStage $789D saves the screen's lines 0-47 back here and the attributes $5800-$58BF to $7600 when the stage ends, so the next stage's block shows the HUD as the player left it. The same 1728 bytes as stage 1's HudPicture (src/res/stage2/picture-hud-32x48.png).
+$7040 RoomAttributes ; $7040-$727F: the old room's play colours (SavePlayAttrs $99C2: 576 bytes, rows 6-23) and the cells' twins; also the burst's particles (StartBurst $9BFA, 4 bytes each, read by UpdateBurst $9C92)
+$7042 RoomAttributesCell ; the twin of the cell $7282 (576 bytes lower)
+$7280 Cells ; the room's cells: 19 rows of 32 (tile numbers, then their kinds after BuildSpans $93B5; bit 1 solid, bit 3 deadly)
+$7282 CellsPlay ; row 0, column 2: the room's first cell (RoomCells $92F4 writes 28 x 18)
+$74C0 CellsFloor ; row 18 below the room: 32 bytes of $FF (StartGrid $A35D), a floor no actor falls through
+$74E0 HeroRecord ; the hero's actor record (18 bytes; +0 X)
+$74E1 HeroY ; +1 the hero's line
+$74E8 HeroFrame ; +8 the frame number of the hero's set
+$74E9 HeroFlags ; +9 bit 7: facing left
+$74EA HeroState ; +$0A the hero's state (stage 1's numbering)
+$74EC HeroAttribute ; +$0C the hero's attribute
+$74ED HeroBaseX ; +$0D the base column
+$74EE HeroBaseY ; +$0E the base line
+$74F0 HeroCounter ; +$10 the pause after a death
+$74F2 Actors ; the 13 other actor records, 18 bytes each ($74F2-$75DB); +0 = $FF a free record
+$75CA LastActor ; the 13th record
+$75DC ActorsEnd ; 4 bytes past the records (written and read in rzx-r2: a 15th record's first bytes are tested as the list's end)
+$75E0 Missiles ; the 16 missile records, 6 bytes each ($75E0-$763F): +0 the column ($FF free), +1 the line, +2 the kind, +3 to +5 the kind's own
+$7600 HudColours ; the HUD's 192 colours as loaded (rows 0-5); in play the missile records 4-15 lie over them
+$7610 MissilesHigh ; missile records 8-15 (AddMissileHigh $B3C5)
+$7640 DigitBuffer ; in play: the score's digit picture and a sprite's shifted copy (PreShiftSprite $7F10)
+$76A0 SpanTable ; in play: the open spans CopyBuffer $94A9 copies, 6 bytes each (the length, 0, the buffer address, the screen address), on to $77B9
+@res stage2/picture-hud-32x48.bin
+
+$76C0 s SpanTableRest ; The span table's room past the HUD's colours: spans 6-46 ($76C0-$77B9)
+> BuildSpans $93B5 and AddSpan $943D write the spans from $76A0 on; rzx-r2 fills them to $77B9 (47 spans; stage 1's recordings reached $779B). Zero as loaded.
+
+$77BA s Unused77BA ; 70 bytes no code reads or writes (s2-right, rzx-r2); zero as loaded
+
+@module entry ; The stage's entry and set-up
+@about Stage 2's block is entered at $7800 by the resident stage loader with H = the lives. StageEntry sets up the stage (variables, title, HUD, the first room of grid 0) and falls into the main loop; EndStage returns to the loader with E = the outcome (0 game over, 1 quit, 2 stage completed), H = the lives and BC = the score's digits. In rzx-r2 the stage runs from frame 26 to frame 19011 (EndStage with E = 2 after the exit effect at frame 18721); in s2-right it ends in game over (EndStage at frame 5826).
+$7800 c StageEntry ; Start the stage: lives from H, variables, HUD, the first room, then the main loop
+> Called by the resident stage loader ($F239) with H = the lives left. Stores H in Lives, then: InitStageState $9766 (clears $FE08-$FE6D, the carried items from StartItems, the energy refill), StageSetUp (the title, the HUD), ClearActors $8EEA, ResetObjectLists, RoomGrid = $953E (grid 0) and Placements = Grid0Placements, ReviveAllPlacements, $A396, StartGrid, RoomEvents $8381 (the first room's bonus checks), ClearBuffer, RunActorHandlers, DrawActors, CopyBuffer and StageFadeIn, then runs on into MainLoop.
+> As in stage 1 at $7800 with stage 2's own set-up calls; stage 1's RoomNumber = 2 start is done by StartGrid here.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+@module mainloop ; The main loop and its pass
+@about MainLoop $7837 runs one game step a pass, with no frame sync: rzx-r2 makes 5806 passes in frames 402-18721 (about 3.2 frames a pass), s2-right 1951 passes in frames 402-5823 (2.8). Stage 2 has no busy-wait pacing: PacePassEmpty is a bare RET. A pass ends with SPACE (the item window), CAPS SHIFT + SPACE (quit) or the end of the lives.
+$7837 c MainLoop ; One pass: HUD, input, actors, draw, copy; SPACE opens the item window
+> The pass, in order: PacePassEmpty, ShowPieceTaken, FlashPieces, CheckPause (ENTER), SpawnTimer $8D45, RedrawItemsIfChanged, ClearBuffer, CheckStageExit (may leave to EndStage), UpdateMissiles, $9EAE, RunActorHandlers, $9E4F, DrawActors, $9E21, $9C92, HydraDefeated $9BB4, KeyHook, UpdateAttributes $8CD0 (attributes and CopyBuffer), PassTick (energy, lives flash, game over step), ShowScore, then the SPACE test TestSpaceKey.
+> SPACE with CAPS SHIFT ends the stage with E = 1 (QuitStage); SPACE alone opens ItemWindow unless the hero is in state $0F (dying; the hero record's +$0A at $74EA). The loop goes on while Lives is not 0 or the hero's state is not 0; with no lives and the hero back in state 0 it ends with E = 0 (GameOverExit). rzx-r2 opened the item window 18 times; s2-right ends in game over at frame 5823.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$7878 MainLoopSpace ; SPACE pressed: CAPS SHIFT too quits, else the item window
+$7889 MainLoopNext ; go on while lives are left or the hero is not back in state 0
+$7897 c GameOverExit ; No lives: end the stage with E = 0
+> Reached from MainLoop when Lives and the hero's state $74EA are both 0. E = 0, then EndStage. s2-right ends so (frame 5823).
+> Witness: L1 1 (s2-right).
+$789B c QuitStage ; CAPS SHIFT + SPACE: end the stage with E = 1
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code ($787F).
+$789D c EndStage ; Leave the stage: hide the pieces boxes, then save the HUD and return (EndStageSave)
+> E (pushed) is the outcome: 0 game over (GameOverExit), 1 quit (QuitStage), 2 stage completed (StageExit). Clears the play buffer, then sets the attributes of the two rows of the pieces boxes (cells $5879-$587E and $5899-$589E) to 1 (blue on black) with two LDIR fills where stage 1 used FillAttributes; runs on into EndStageSave. Reached in rzx-r2 at frame 18883 (from StageExit) and in s2-right at the game over.
+> Witness: L1 2 (rzx-r2, s2-right).
+$78BB c EndStageSave ; EndStage, continued: save the HUD, clear its fields, fade, return
+> Part of EndStage, after the second inline record.
+> As in stage 1 at $78B2, the same code.
+> Witness: L1 2 (rzx-r2, s2-right).
+@module render ; The renderer: the sprite row plotters, the play buffer, the attributes, ClearBuffer and CopyBuffer
+$792E c FlashFadeScreen ; Fade every coloured ink up to white over 7 frames, then down to black over 7 frames
+> Seven times (HALT each): every attribute whose ink is neither 0 nor 7 gets ink + 1. Then seven times (two HALTs each): every ink not 0 gets ink - 1. Inputs: none; changes the whole attribute area $5800-$5AFF. Called by EndStage.
+> As in stage 1 at $7925, the same code.
+> Witness: L1 2 (rzx-r2, s2-right).
+$7930 FadeUpFrame
+$7938 FadeUpCell
+$7942 FadeUpNext
+$794D FadeDownFrame
+$7956 FadeDownCell
+$795C FadeDownNext
+@module mainloop
+$7966 c PacePassEmpty ; The pass's pacing slot: a bare RET in stage 2
+> MainLoop calls it first in every pass, where stage 1 calls PacePass (the random reseed and the busy wait of the light rooms). Stage 2 has neither: the byte is a RET.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$7967 c CheckPause ; ENTER pauses: wait for its release, a second press and its release
+> Reads port $BFFE bit 0 (ENTER). Not pressed: returns at once. Pressed: waits for the key's release, the next press and its release, so the game stands still between two presses. No other effect.
+> As in stage 1 at $79B1, the same code.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$796F PauseRelease
+$7975 PausePress
+$797B PauseRelease2
+@module render
+$7982 c CopyToScreen ; Copy a block of bytes to the screen, line by line
+> Inputs: HL = the source, B = the screen column, C = the first pixel line, D = the width in bytes, E = the lines, A = the source's stride (added to HL after each line; 0 repeats one source line, used with the cleared buffer to clear a screen block). Patches the column into $799B and the stride into $79AC, then for each line takes the line's address from ScreenLineTable and LDIRs D bytes. Destroys IX, BC, DE.
+> As in stage 1 at $79CC, the same code.
+> Witness: L1 8701 (rzx-r2, s2-right, stageload).
+$7995 CopyToScreenLine
+@module hud ; The energy, the lives, the score, the HUD, game over and the stage exit
+$79B2 c CheckStageExit ; With item 5 selected, standing at x 12-15 of grid 0's room 0: leave the stage
+> Every pass. Only in grid 0 (GridNumber 0), room 0 (RoomNumber) and with item 5 selected (GetSelectedItem): when the hero's x ($74E0) is 12-15 and its state ($74EA) is 0, drops its own return address and runs StageExit. Stage 1's check is the same with item 6, room 2, x 18-21 and y $5A. In rzx-r2 it leaves at frame 18721 (the temple's first room with the completed artefact, item 5, selected).
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$79D3 c StageExit ; The stage's exit effect: falling stars over a coloured field until FIRE or SPACE, then EndStage with E = 2
+> StartStageExit draws the field and seeds 80 stars at $5B00 (4 bytes each); then each frame (HALT) moves the stars of speed 1-3 (MoveStar), until KeyFire or SPACE ($8A79); then E = 2 and EndStage.
+> As in stage 1 at $7A1D, the same code.
+> Witness: L1 1 (rzx-r2).
+$79D7 StageExitFrame
+$79DE StageExitStar
+$79FB StageExitDone
+$7A00 c MoveStar ; Move one star down by its speed and plot it as two pixel lines
+> IX = the star: +0 speed 1-4, +1 the pixel within the byte 0-3, +2 the column 2-29, +3 y ($80 and up: not yet on screen). Off screen: y += speed only. On screen: y = (y + speed) mod 128, clears the bytes above it (speed lines, from ScreenLineTable+96, line 48 down), and plots two lines from StarPixels (speed and pixel). Called by StageExit for each of the 80 stars every frame: rzx-r2 frames 18729-18883.
+> As in stage 1 at $7A4A, the same code.
+> Witness: L1 8990 (rzx-r2).
+$7A0E MoveStarOnScreen ; on screen: y + speed, wrapped at 128
+$7A17 MoveStarPlot ; the line address from ScreenLineTable, the pattern from StarPixels
+$7A40 MoveStarClear ; clear the speed lines above the star
+$7A71 b StarPixels 8 ; The two pixel lines of a star, by speed (rows 1-4) and pixel (pairs 0-3)
+> Four rows of 8 bytes, one a speed 1-4; each row holds 4 pairs (the two pixel lines of a star at pixel 0-3 of the byte). Read by MoveStar ($7A39). Read in rzx-r2 at the stage's exit.
+$7A91 c StartStageExit ; Clear the play area, colour it at random and seed 80 stars
+> ClearPlayBuffer, then clears 144 screen lines from line 48 (ScreenLineTable+96), 30 bytes each from the line's start, directly on the screen; FillAttributes with the inline record at $7AB2 (column 2, line $30, 28 x 18 cells, attribute 0), RandomPlayAttrs, and 80 star records at $5B00: speed 1-4, pixel 0-3, column 2-29, y $80-$FF (random bytes from Random). Runs once in rzx-r2, frame 18721.
+> Witness: L1 1 (rzx-r2).
+$7A9A StartStageExitLine ; the next screen line
+$7AA7 StartStageExitByte ; clear 30 bytes
+$7AC0 SeedStar ; one star: speed and pixel
+$7AD2 SeedStarColumn ; a random column 0-27 (retry on 28-31), + 2
+$7AF3 c RandomPlayAttrs ; Fill the play area's attributes (28 x 16 cells) with bright inks 2-7 on black
+> From $58C2 (row 6, column 2), 16 rows of 28 cells: bright, ink 2-7 from $8BAC, paper 0. Sets RandomPointer to $091D first, so the colours are the same each time.
+> As in stage 1 at $7B27, the same code.
+> Witness: L1 1 (rzx-r2).
+$7AFF RandomPlayAttrsRow
+$7B02 RandomPlayAttrsCell
+$7B03 RandomPlayAttrsPick
+$7B1F c AddScore ; Add BC points to the score
+> Score += BC; at 10000 or more, Score -= 10000 and ScoreHigh += 1 (wrapping from 99 to 0). Outputs none; A, BC, HL destroyed. Called by UpdatePieceActor ($84DB, 1200 for a piece), ScoreBurst20 ($99E4), ItemHandler ($9AD9) and $AB4E. rzx-r2 adds 34 times (frames 913-17492); the score passes 10000 once.
+> As in stage 1 at $7B53, the same code.
+> Witness: L1 34 (rzx-r2).
+$7B40 c RenderScore ; Write the six score digits into ScoreDigits and draw them into the text buffer $7640
+> NumberToDigits writes Score as four digits at ScoreDigitsLow, ByteToDigits writes ScoreHigh as two at ScoreDigitsHigh, then RenderDigits draws the six characters into $7640 with a stride of 6. Every pass (from ShowScore) and once from $91E1.
+> As in stage 1 at $7B73, the same code.
+> Witness: L1 8033 (rzx-r2, s2-right, stageload).
+$7B61 c HideLeadingZeros ; Colour the score's leading zeros blue on black (unseen) and the rest yellow
+> Builds six attributes at $6D00 ($06, yellow on black), sets $01 for each leading '0' of ScoreDigitsHigh on, and copies them to the HUD at $5826 (row 1, columns 6-11).
+> As in stage 1 at $7B95, the same code.
+> Witness: L1 8030 (rzx-r2, s2-right, stageload).
+$7B75 HideLeadingZerosNext
+$7B83 HideLeadingZerosCopy
+$7B8F c ShowScore ; Draw the score on the HUD
+> RenderScore, then CopyToScreen of the 6 x 8 bytes at $7640 to column 6, line 8, then HideLeadingZeros. Every pass.
+> As in stage 1 at $7BC3, the same code.
+> Witness: L1 8030 (rzx-r2, s2-right, stageload).
+$7BA2 c RenderDigits ; Draw a string of digits into a byte buffer, 8 lines a character
+> IX = a text record (two bytes skipped, then characters from '0' up, 0 ends), HL = the buffer, A = the buffer's stride (patched into $7BC5). Each character: 7 lines from DigitGlyphs + (char - '0') x 8 and an eighth line of 0, one byte column; HL moves one byte right per character.
+> As in stage 1 at $7BD7, the same code.
+> Witness: L1 8639 (rzx-r2, s2-right, stageload).
+$7BA9 RenderDigitsChar
+$7BE9 b ScoreDigits 9 ; The score as text: two unused bytes, ScoreHigh's two digits, Score's four digits, 0
+> Read by RenderDigits (IX = $7BE9 from RenderScore, which skips the first two bytes); written by NumberToDigits and ByteToDigits. EndStage returns ScoreDigitsHigh in BC (EndStageSave $7926).
+$7BEB ScoreDigitsHigh ; ScoreHigh's two digits (ByteToDigits); EndStage returns this address in BC
+$7BED ScoreDigitsLow ; Score's four digits (NumberToDigits)
+$7BF1 ScoreDigitsEnd ; 0: the end mark
+@module hero ; The hero: walk, jump, crouch, strike, fire, the items and the item window
+$7BF2 c ItemWindow ; SPACE: stop the game, flash the strip's frame, choose an item with LEFT and RIGHT, SPACE again to go on
+> Clears PassCounter, waits (cycling the frame colours, CycleWindowFrame) for SPACE's release, then every 6 frames: DrawItemStrip and ShowItemCount; RIGHT scrolls to the previous slot (ScrollItemsRight), LEFT to the next (ScrollItemsLeft); SPACE again: waits for its release, cycles the frame back to its first colour (until the attribute at $586A is 1) and runs on into FlashSelectedBox. Called by MainLoop ($7886) when SPACE is pressed and the hero is not dying.
+> As in stage 1 at $7C27. In rzx-r2 the window opens 18 times (frames 520-18716): 14 scrolls right, 19 left; the last choice selects item 5 (the artefact) before the stage's exit.
+> Witness: L1 161 (rzx-r2).
+$7C00 ItemWindowStep ; 6 frames of the strip and the count
+$7C02 ItemWindowFrame
+$7C1A ItemWindowLeft ; not RIGHT: LEFT selects the next slot
+$7C24 ItemWindowSpace ; neither: SPACE again closes the window
+$7C29 ItemWindowRelease ; wait for SPACE's release
+$7C2E ItemWindowSettle ; cycle the frame back to its first colour
+$7C39 c FlashSelectedBox ; Colour the selected item's box with inks 2 to 6, one a frame
+> Five frames: patches the colour into the inline record SelectedBoxRecord (column 15, line 24, 2 x 2 cells) and fills it with $8C63. Called by ItemWindow and at the stage's start (StageSetUp $91E7).
+> As in stage 1 at $7C6E, the same code.
+> Witness: L1 21 (rzx-r2, s2-right, stageload).
+$7C3D FlashSelectedBoxFrame
+$7C4B c FlashSelectedBoxNext ; FlashSelectedBox, continued
+> Part of FlashSelectedBox, after its inline record.
+> As in stage 1 at $7C80, the same code.
+> Witness: L1 105 (rzx-r2, s2-right, stageload).
+$7C50 c ScrollItemsLeft ; Select the next slot: scroll the strip 24 pixels left, one pixel a frame
+> Returns if ItemSelected is ItemLast. Else ItemSelected + 1, and 24 times: shifts the strip's 18 lines in the play buffer ($5B66-$5B77, 17 bytes a line) one pixel left, cycles the frame (CycleWindowFrame) and shows the strip (ShowItemStrip). Also run three times at the stage's start (StageSetUp $91CD, $91D3, $91D9, with the frame cycle patched off) to roll the strip in.
+> As in stage 1 at $7C85, the same code.
+> Witness: L1 28 (rzx-r2, s2-right, stageload).
+$7C5F ScrollItemsLeftStep
+$7C65 ScrollItemsLeftLine
+$7C6C ScrollItemsLeftByte
+$7C84 c ScrollItemsRight ; Select the previous slot: scroll the strip 24 pixels right
+> Returns if ItemSelected is ItemFirst. Else ItemSelected - 1 and the mirror of ScrollItemsLeft.
+> As in stage 1 at $7CB9, the same code.
+> Witness: L1 14 (rzx-r2).
+$7C93 ScrollItemsRightStep
+$7C99 ScrollItemsRightLine
+$7CA0 ScrollItemsRightByte
+$7CB8 c CycleWindowFrame ; Next colour of the strip's frame (the 12 cells over and under it)
+> PassCounter + 1; the colour WindowFrameColours[PassCounter & 15] fills the attributes $586A-$5875 and $588A-$5895. Its first byte is a NOP that the stage's start (StageSetUp $91C7, $91DE) patches to RET while it rolls the strip in, and back.
+> As in stage 1 at $7CED, the same code.
+> Witness: L1 1719 (rzx-r2, s2-right, stageload).
+$7CE1 b WindowFrameColours 8 ; The frame's 16 inks: 1 to 7 and back
+> 1-7, 7, 7, 6-1: CycleWindowFrame ($7CC3) takes entry PassCounter & 15 for the 12 cells over and under the item strip.
+$7CF1 c RedrawItemsIfChanged ; When ItemsChanged is set: clear it and redraw the strip and the count
+> Every pass (MainLoop $7846). ItemsChanged is set by AddItem; DrawItemStrip, then ShowItemCount (JR). Redrew 7 times in rzx-r2 (the 7 pick-ups).
+> As in stage 1 at $7D26.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$7D01 c DrawItemStrip ; Draw the icons of slots ItemSelected-3 to +4 into the buffer and show them
+> For 8 slots from CarriedItems + ItemSelected - 3: DrawItemIcon at $5B64 + 3 x n, then ShowItemStrip.
+> As in stage 1 at $7D36, the same code.
+> Witness: L1 556 (rzx-r2, s2-right, stageload).
+$7D14 DrawItemStripNext
+$7D29 c ShowItemCount ; Draw the selected item's count (two digits) and hide it when 0
+> FormatItemCount, CopyToScreen of the 2 x 8 bytes at $7640 to column 15, line 8; then the attributes $582F and $5830: $41 (blue on black, unseen) for a zero digit pair, else $06.
+> As in stage 1 at $7D5E, the same code.
+> Witness: L1 606 (rzx-r2).
+$7D49 ShowItemCountTens
+$7D5A ShowItemCountUnits
+$7D65 ShowItemCountHide
+$7D6B c FormatItemCount ; Write CarriedCounts[ItemSelected] as two digits into ItemCountText and draw them at $7640
+> Tens and units into ItemCountText+2 and +3, then RenderDigits with a stride of 2.
+> As in stage 1 at $7DA0, the same code.
+> Witness: L1 606 (rzx-r2).
+$7D7C FormatItemCountTens
+$7D83 FormatItemCountUnits
+$7D93 b ItemCountText 5 ; The count as text for RenderDigits: two unused bytes, two digits, 0
+> Written by FormatItemCount ($7D75, the two digits) and read by RenderDigits through ShowItemCount ($7D3A).
+@module hud
+$7D98 c StartLivesFlash ; Start the lives boxes' flash
+> LivesFlash = 0. Called by LoseLife ($7EA3) and at the stage's start (RevealScore's caller $91ED).
+> As in stage 1 at $7DCD.
+> Witness: L1 10 (rzx-r2, s2-right, stageload).
+$7D9E c LivesFlashStep ; One step of the lives boxes' flash: up to white, then back to magenta (a life) or blue (lost)
+> Idle when LivesFlash is $10. Steps 1-7: the six boxes' attributes at $5861 and $5881 (rows 3-4, columns 1-6) get ink + 1 up to 7. Steps 8-15: ink - 1 down to 3 (magenta) for box n while Lives >= n, else 1 (blue). Called every pass by $9219.
+> As in stage 1 at $7DD2, the same code.
+> Witness: L1 8120 (rzx-r2, s2-right, stageload).
+$7DB2 LivesFlashUp
+$7DBF LivesFlashUpNext
+$7DC4 LivesFlashDown
+$7DC6 LivesFlashDownBox
+$7DD4 LivesFlashDownStep
+$7DE0 LivesFlashDownNext
+@module hero
+$7DE5 c DrawItemIcon ; Draw item icon A (16 lines of 2 bytes, a blank third byte) into the buffer at HL
+> HL = the buffer address (stride 32), A = the item kind; the icon's address is ItemIcons[A] ($7F00). Destroys BC, DE. Called by DrawItemStrip ($7D19) for each of the 8 slots shown.
+> As in stage 1 at $7E19.
+> Witness: L1 4448 (rzx-r2, s2-right, stageload).
+$7DF6 DrawItemIconLine
+$7E0A c ShowItemStrip ; Copy the strip's 12 x 16 window from the buffer ($5B68) to the screen ($406A)
+> Two calls of CopyStripRows: the first 8 lines to $406A (row 3, column 10), the next 8 to $408A. Called by DrawItemStrip and ScrollItemsLeft / ScrollItemsRight.
+> As in stage 1 at $7E3D.
+> Witness: L1 1444 (rzx-r2, s2-right, stageload).
+$7E18 c CopyStripRows ; Copy 8 lines of 12 bytes from the buffer (stride 32) to one character row of the screen at DE
+> HL = the buffer (left after the call at the next 8 lines), DE = the screen address.
+> As in stage 1 at $7E4C, the same code.
+> Witness: L1 2888 (rzx-r2, s2-right, stageload).
+$7E1A CopyStripRow
+$7E2B c AddItem ; Add D of item A to the carried items: a new slot after ItemLast, or the amount added (up to 99)
+> A = the item kind, D = the amount. If A is already in CarriedItems (any of the 12 slots, the padding too), its count goes up by D, at most 99; else ItemLast + 1 and the new slot gets A and D. Sets ItemsChanged. Stage 1's write of 5 into the room data for item 7 is gone. Called only by ItemHandler ($9AE2): 7 pick-ups in rzx-r2 (frames 1660-16687), 3 of them new slots.
+> As in stage 1 at $7E5F, without the item-7 poke.
+> Witness: L1 7 (rzx-r2).
+$7E31 AddItemFind ; is A in the 12 slots?
+$7E4C AddItemDone ; ItemsChanged = 1
+$7E52 AddItemMore ; found: the count + D
+$7E5F AddItemStore ; at most 99
+@module hud
+$7E62 c ApplyEnergyChange ; Move the energy 2 a pass towards EnergyChange; at 0 lose a life
+> EnergyChange 0: nothing. $80 and up (a drain): EnergyChange + 2 and Energy - 2; Energy reaching 0 jumps to LoseLife. Under $80 (a refill): EnergyChange - 2 and Energy + 2 up to $2E. Called every pass by PassTick ($921D). In s2-right the energy runs out twice (LoseLife from $7E79); in rzx-r2 never.
+> As in stage 1 at $7E9F.
+> Witness: L1 8120 (rzx-r2, s2-right, stageload).
+$7E7F ApplyEnergyRefill
+$7E90 c LoseLife ; A life lost: Lives - 1, effect 7, flash the lives, freeze the hero; refill or game over
+> Returns if the hero is already dying (state $0F at $74EA; stage 1 tests Lives = 0 instead). Lives - 1, PlaySoundVector 7, StartLivesFlash, HeroFreeze = $17. Lives left: Energy 0, EnergyChange $2E (the refill), E = $33 and $B340 (the hero's death). None left: E = $6C, GameOverTimer = 1 and $B340. Called by ApplyEnergyChange and by $B154 (the hero's cell or column check). s2-right loses 5 lives (frames 1898-5259: 3 from $B154, 2 from the energy); rzx-r2 one, at frame 12755 (the hydra's room).
+> Witness: L1 6 (rzx-r2, s2-right).
+$7EC0 LoseLastLife
+@module hero
+$7ECA c GetSelectedItem ; A = the selected item's kind, IX = the address of its count
+> A = CarriedItems[ItemSelected], IX = CarriedCounts + ItemSelected. BC destroyed.
+> As in stage 1 at $7F05, the same code.
+> Witness: L1 9245 (rzx-r2, s2-right, stageload).
+$7EDC b CarriedItems 12 ; The item kind of each of the 12 slots (slots 0-3 hold 4, the blank icon; the first item at slot 6)
+> Filled from StartItems by InitStageState ($9776); read by DrawItemStrip ($7D0C), AddItem ($7E2C, $7E41) and GetSelectedItem ($7ECA).
+$7EE8 b CarriedCounts 12 ; The amount of each slot's item (shown by ShowItemCount; AddItem adds)
+> Read by FormatItemCount ($7D71) and GetSelectedItem ($7ED5, IX = the count's address), written by AddItem ($7E47) and InitStageState ($97B8: slot 7's count). All 0 as loaded.
+$7EF4 b StartItems 12 ; The carried items at the stage's start, copied to CarriedItems by InitStageState: slot 6 item 3, slot 7 item 1
+> 4 4 4 4 (the blank icon) 0 0, then item 3 at slot 6 and item 1 at slot 7, then 0. Read by InitStageState ($9773, an LDIR of 12 bytes to CarriedItems). CarriedItems at $7EDC holds the same bytes as loaded.
+@res stage2/table-startitems.bin
+$7F00 w ItemIcons 1 ; The 16 x 16 icon of each item kind 0-7 (32 bytes each; kind 4 points to the blank BlankIcon $8BCA)
+> Read by DrawItemIcon ($7DEC). Kinds 0-7: $DE65, $DE85, $DEE5, $DEA5, $8BCA (blank), $DF05, $DEC5, $DF25. Kind 5 is the artefact the stage's exit needs (CheckStageExit).
+@res stage2/table-itemicons.bin
+@module render
+$7F10 c PreShiftSprite ; For an actor with a shift (+$11 = 1-7): copy its sprite to $7640 and shift it right
+> IY = the actor record. +$11 = 0 or $64 and up: nothing. Else copies the sprite (+4/+5, +2 bytes wide, +3 lines) to $7640 with a zero byte added to each line, then shifts each line right by +$11 pixels with the routine ShiftRoutines[+$11] (patched into PreShiftCall). Called by ClipActor $A590 for every actor drawn.
+> As in stage 1 at $7F4D, the same code.
+> Witness: L1 40014 (rzx-r2, s2-right, stageload).
+$7F25 PreShiftCopyLine
+$7F4B PreShiftLine
+$7F4C PreShiftCall ; CALL ShiftRoutines[+$11], patched
+$7F53 w ShiftRoutines 8 ; The shift routine for 1-7 pixels (entry 0 unused)
+> 0, ShiftLine1, ShiftLine2, ShiftLine3, ShiftLine4, ShiftLine5, ShiftLine6, ShiftLine7. Read by PreShiftSprite ($7F3A), which patches the CALL at PreShiftCall with entry +$11 of the actor.
+$7F63 c ShiftLine1 ; Shift one line of (IY+2)+1 bytes at HL one pixel right; HL moves past it
+> Called by ShiftLine2 ($7F70), ShiftLine2 ($7F74), ShiftLine3 ($7F79), ShiftLine3 ($7F7E), ShiftLine3 ($7F82), ShiftLine6 ($7F9E), ShiftLine7 ($7FAA), ShiftLine7 ($7FAF); jumped to from ShiftLine5 ($7F96), ShiftLine6 ($7FA2), ShiftLine7 ($7FB3).
+> As in stage 1 at $7FA0, the same code.
+> Witness: L1 26595 (rzx-r2).
+$7F69 ShiftLine1Byte
+$7F6F c ShiftLine2 ; Two pixels: ShiftLine1 twice over the same line
+> HL = the line; IY = the actor (+2 the width). One of ShiftRoutines (entry 2), called by PreShiftSprite ($7F4C). rzx-r2 runs it 3970 times (frames 8348-14306: Medusa's and the hydra's rooms).
+> As in stage 1 at $7FAC.
+> Witness: L1 3970 (rzx-r2).
+$7F78 c ShiftLine3 ; Three pixels: ShiftLine1 three times
+> As ShiftLine2, ShiftRoutines entry 3. rzx-r2: 293 times (frames 8363-11090).
+> As in stage 1 at $7FB3.
+> Witness: L1 293 (rzx-r2).
+$7F86 c ShiftLine4 ; Four pixels: RLD along the line
+> Called by ShiftLine5 ($7F92), ShiftLine6 ($7F99), ShiftLine7 ($7FA5).
+> As in stage 1 at $7FBF, the same code.
+> Witness: L1 10605 (rzx-r2).
+$7F8B ShiftLine4Byte
+$7F91 c ShiftLine5 ; Five pixels: ShiftLine4 and ShiftLine1
+> ShiftRoutines entry 5; the two operands are ShiftLine4 and ShiftLine1 (JR). rzx-r2: 2114 times (frames 8345-14179).
+> As in stage 1 at $7FCA.
+> Witness: L1 2114 (rzx-r2).
+$7F98 c ShiftLine6 ; Six pixels: ShiftLine4 and ShiftLine1 twice
+> ShiftRoutines entry 6. rzx-r2: 2735 times (frames 8360-14314).
+> As in stage 1 at $7FD1.
+> Witness: L1 2735 (rzx-r2).
+$7FA4 c ShiftLine7 ; Seven pixels: ShiftLine4 and ShiftLine1 three times
+> ShiftRoutines entry 7. rzx-r2: 2449 times (frames 8351-14187).
+> As in stage 1 at $7FDD.
+> Witness: L1 2449 (rzx-r2).
+@module enemies ; The enemies, the hazards and the bosses
+@about Stage 2's enemies and bosses: the harpy (SpawnHarpy $8DA4 brings it when HarpyPhase allows, HarpyActor $8DE8 with its wings HarpyWingsActor $8DD2; it rises, attacks with AimedShot, bobs, then flies off), the spirits that float over the temple floor (SpawnRandomEnemy $8F8C, SpiritActor $9028, at most 2), Medusa's statue (MedusaActor $814E) and her head (MedusaHeadActor $8179: struck, it falls and lies as item kind 2, and held for 20 passes it turns into item kind 6), the statues that break into items (BreakStatue0 $9A41, BreakStatue1 $9A14), the urns, the pool's ripple (WaterActor $8782) and the hydra of grid 1 (three heads on necks moved by $9EAE: HydraHead1Actor $7FB5 to HydraHead1LowActor $805B, 9 hits a head (HydraHeadHit $8092), each head cut bursts (CutHydraHead1 $80C1); with all three gone HydraDefeated $9BB4 ends the fight). In rzx-r2 the harpy is fought at frames 3199-4467, Medusa at 7462-8677 (grid 2) and the hydra at 10427-14318 (grid 1, rooms 3 and 7).
+$7FB5 c HydraHead1Actor ; The hydra's head 1 (actor kind 7): hits, the cut, the fire, placed at the end of neck 1
+> IY = the actor. Hydra1Neck = $80 (cut): RemoveActor. Else HydraHeadHit counts the hits; when the state +$0A becomes $2A (the 9th hit) CutHydraHead1 bursts it, Hydra1Neck gets bit 7 and the actor is removed. Else $B31C (a fire shot and effect 6 when Hydra1Step is 4, 8 or 12) and PlaceHydraHead with E = Hydra1X + $18, D = Hydra1Pose and A = Hydra1Y. The neck's step, pose and end are moved by $9EAE. In rzx-r2 it runs at frames 12590-14318 (grid 1 room 7) and is cut at frame 14317.
+> Witness: L1 339 (rzx-r2).
+$7FD5 HydraHead1Alive ; fire, then place the head on its neck
+$7FEB c HydraHead2Actor ; The hydra's head 2 (actor kind 8), as HydraHead1Actor with neck 2 and Y + $29
+> As HydraHead1Actor with Hydra2Neck, Hydra2Step, Hydra2X, Hydra2Pose and Hydra2Y + $29; the cut is CutHydraHead2. rzx-r2: frames 10427-11132 (grid 1 room 3), cut at frame 11132.
+> Witness: L1 131 (rzx-r2).
+$800B HydraHead2Alive
+$8023 c HydraHead3Actor ; The hydra's head 3 (actor kind 9), as HydraHead1Actor with neck 3 and Y + $27
+> As HydraHead1Actor with Hydra3Neck, Hydra3Step, Hydra3X, Hydra3Pose and Hydra3Y + $27; the cut is CutHydraHead3. rzx-r2: frames 12590-14130 (room 7), cut at frame 13532.
+> Witness: L1 210 (rzx-r2).
+$8043 HydraHead3Alive
+$805B c HydraHead1LowActor ; Head 1 as placed in the hydra's first room (actor kind 10): neck 1 with Y + $58
+> As HydraHead1Actor (the same Hydra1Neck, step and pose) with Hydra1Y + $58: the head as seen from grid 1 room 3, where the hydra stands lower in the window. rzx-r2: frames 10427-11269; it was never cut there (the cut code at $806D did not run).
+> Witness: L1 166 (rzx-r2).
+$807B HydraHead1LowAlive
+$8092 c HydraHeadHit ; Count a thrown weapon's hit on a hydra head and flash it
+> IY = the head. +9 bit 5 (set by ThrownHitsActor) is a hit: the attribute +$0C = 1 (the flash), +$0B - 1 (the hits left, 9 from ActorKinds) and at 0 the state +$0A = $2A (cut) and the attribute $44; bit 5 cleared. Then the flash steps the attribute 1 to 4 and 4 to $44 (bright green). rzx-r2: 27 hits on the three heads (9 each).
+> Witness: L1 845 (rzx-r2).
+$80AA HydraHeadHitDone ; clear the hit bit
+$80AE HydraHeadFlash ; the attribute's flash steps
+$80B9 HydraHeadFlash4
+$80C1 c CutHydraHead1 ; Head 1 cut: HydraHeads - 1 and a burst at 5, 4
+> HydraHeads - 1, then StartBurst at D = 5, E = 4 with the shape $EEAA, B = 4, C = 5 (the colours), A = 0. rzx-r2 frame 14317.
+> Witness: L1 1 (rzx-r2).
+$80D6 c CutHydraHead2 ; Head 2 cut: HydraHeads - 1 and a burst at 5, 4
+> As CutHydraHead1. rzx-r2 frame 11132.
+> Witness: L1 1 (rzx-r2).
+$80EB c CutHydraHead3 ; Head 3 cut: HydraHeads - 1 and a burst at 5, 8
+> As CutHydraHead1 with E = 8. rzx-r2 frame 13532.
+> Witness: L1 1 (rzx-r2).
+$8100 c PlaceHydraHead ; Place a hydra head: Y = A - 10, X and the shift from E + 2, the frame by pose D
+> IY = the head, A = the Y, E = the X in pixels - 2, D = the pose. +1 = A - 10; +0 = (E + 2) / 8 and +$11 = (E + 2) & 7 (drawn shifted by PreShiftSprite); the frame (3 bytes x 22 lines) is $D605 for pose 0-4, $D5C3 for 5-6 and $D581 for 7 and up. Reached by a JP from the four head handlers (842 times in rzx-r2).
+> Witness: L1 842 (rzx-r2).
+$8124 PlaceHydraHeadPose7
+$8129 PlaceHydraHeadSet
+$8138 c MedusaStruck ; Medusa's statue struck: MedusaState = 1 and a burst at 21, 7
+> MedusaState = 1 (the head falls: MedusaHeadActor), then StartBurst at D = $15, E = 7 with the shape $EEB8, colours 4 and 5, mode 0. Reached from MedusaActor ($8167) when the hero strikes it. rzx-r2: once, frame 8345 (the statue room of grid 2, screen 008525.png shows the head on the floor afterwards).
+> Witness: L1 1 (rzx-r2).
+$814E c MedusaActor ; Medusa's statue (actor kind 11): struck by the hero's sword from the left, it loses its head
+> IY = the actor. MedusaState not 0: RemoveActor. Else when the hero stands at x $17, faces right ($74E9 bit 7 clear) and IsHeroStrikeFrame gives Z: MedusaStruck. Else frame 0 (MedusaSetFrame). Placed by Grid2Placements; rzx-r2 runs it 341 times (frames 7462-16453).
+> Witness: L1 341 (rzx-r2).
+$8169 MedusaActorDraw ; frame 0
+$816D c IsHeroStrikeFrame ; Z when the hero is in state 6 (the strike) at frame 7, the frame the blow lands
+> Reads the hero's state $74EA and frame $74E8. Z when the state is 6 and the frame 7; NZ otherwise. Called by MedusaActor and the statues and urns ($A708, $A748, $A9B8): 1915 calls in rzx-r2, 1922 in s2-right.
+> Witness: L1 4121 (rzx-r2, s2-right, stageload).
+$8179 c MedusaHeadActor ; Medusa's head (actor kind 12): looks about and spits, falls when struck, lies until item 2 turns it into item 6
+> IY = the actor. By MedusaState: 4 RemoveActor; 2 MedusaHeadLies; 1 MedusaHeadFalls; 0 the head on the statue: +8 counts 0-$37 and the frame is MedusaHeadFrames[+8 / 2] (MedusaSetFrame); at +8 = $0A it spits a shot (KindTwelveShot $B3A4: a missile of type 4 at the head, effect 11). rzx-r2: 427 runs (frames 7462-16453), 6 shots.
+> Witness: L1 427 (rzx-r2).
+$8193 MedusaHeadLook
+$81AC b MedusaHeadFrames 8 ; The head's frame at each of its 28 steps (frames 1-6 of the set at $D36C)
+> Read by MedusaHeadActor ($819B) with the step +8 / 2.
+$81C8 c MedusaSetFrame ; SetActorFrame A with Medusa's frame table $D4D3 and set $D36C
+> A = the frame. CALL SetActorFrame with the four bytes MedusaFrameSet after it; returns past them. Called by MedusaActor, MedusaHeadActor and MedusaHeadDraw (763 times in rzx-r2, frames 7462-8675).
+> Witness: L1 763 (rzx-r2).
+$81CB b MedusaFrameSet 4 ; SetActorFrame's inline words: the frame table $D4D3, the set $D36C
+$81CF c MedusaHeadFalls ; The struck head falls: 26 steps down and left, then it lies (MedusaState 2, 20 passes to wait)
+> +$0B is the step. At $1A: MedusaState = 2, +$0B = $14, then MedusaHeadDraw. Else +$0B + 1, +$0E (the base Y) += MedusaHeadFallSteps[+$0B] and StepFineLeft 3 (3 pixels left), then MedusaHeadDraw. rzx-r2: 27 runs from frame 8345.
+> Witness: L1 27 (rzx-r2).
+$81E1 MedusaHeadFallStep
+$81FA b MedusaHeadFallSteps 8 ; The falling head's Y change at steps 1-26 (up, then down, a bounce at the end)
+> Read by MedusaHeadFalls ($81E8) with the step 1-$1A; the byte at index 0 is not read.
+$8215 c MedusaHeadLies ; The head on the floor: with item 2 selected for 20 passes it becomes item kind 6
+> When GetSelectedItem gives 2: +$0B - 1 each pass; at 0 MedusaState = 4, RemoveActor and SpawnItem kind 6 (icon $DEC5) at D = $11, E = $50. Without item 2 (or while counting) MedusaHeadDraw. rzx-r2: frames 8423-8677; item 6 appears at frame 8677.
+> Witness: L1 60 (rzx-r2).
+$8228 MedusaHeadToItem
+$823E c MedusaHeadDraw ; Draw the fallen head (frames 1-2 alternating) and hurt the hero who touches it
+> In MedusaState 2 the base X, Y = $0E, $3E. When the hero's x ($74E0) is the head's x or x + 1: DamageHero with C = 2. +8 counts 0-3 and the frame is +8 / 2 + 1 (MedusaSetFrame, JP). rzx-r2: 86 runs, 6 hurts.
+> Witness: L1 86 (rzx-r2).
+$824D MedusaHeadTouch
+$825A MedusaHeadHurts
+$825F MedusaHeadAnimate
+@module missiles ; The missiles: shots, thrown objects and flyers in 16 six-byte records at $75E0
+$826F c UpdateAimedShot ; Kind 1: a shot flying in one of 8 directions; hurts the hero by 6
+> +4 = the direction 0-7 (ShotDirections: dx, dy, the frame's offset in ShotFrames, mirrored). ShotHitsHero with C = 6; moves; freed at column 0 or $1F, y under 8 or $80 and up; draws the direction's frame.
+> As in stage 1 at $80DF, the same code.
+> Witness: L1 2614 (rzx-r2, s2-right, stageload).
+$82AB DrawShotFrame ; A = mirrored, C = the frame's offset in ShotFrames
+$82C4 DrawShotMirrored
+$82CD b ShotFrames 4 ; Frame records: graphics address, width, lines ($C5D0 2x5, $C5DA 1x15, $C5E9 1x15, $C5F8 2x13, $C612 2x13)
+> Five 4-byte records: the bitmap's address, the width in bytes, the height in lines. Read by DrawShotFrame ($82AB) with the offset from ShotDirections (UpdateAimedShot) or 0 (UpdateHeroShot: the 2 x 5 bolt). Read in both recordings.
+$82E1 b ShotDirections 4 ; The 8 directions: dx, dy, the frame's offset in ShotFrames, 1 mirrored
+> Eight 4-byte records for directions 0-7 (up, up-right, right, down-right, down, down-left, left, up-left): dx in columns, dy in lines, the frame's offset (0, 4, 8, 12, 16), 1 when drawn mirrored. Read by UpdateAimedShot ($827E) with the shot's +4.
+$8301 c UpdateHeroShot ; Kind 9: a shot flying left or right; stops at the room's edge or on an actor it hits
+> +4 = 0 left, else right. Freed at column 0 or $1F, or when ShotHitsActor finds an actor (it sets the actor's hit flag). Draws ShotFrames' first frame ($C5D0), mirrored by the direction (DrawShotFrame with A = +4). rzx-r2: 451 runs (frames 630-16286): the hero's magic bolts; none in s2-right.
+> As in stage 1 at $8171.
+> Witness: L1 451 (rzx-r2).
+$8315 HeroShotLeft
+$831B HeroShotHit
+@module rooms ; The room data, Unrle, the room builder and the room changes
+$8329 c CheckWalkBarriers ; While walking: thrown back from a closed way (the temple's left edge, Medusa's room)
+> IY = the hero. CheckFirstRoomLeft and CheckMedusaBarrier each return Z for a closed way; on Z the hero goes to state $0B (HeroRecoil, +$0B = $FF) and Z is returned (ReturnZ; the walk handler $B052 stops). NZ: free. Called by the walk handler: 1183 times in rzx-r2, 270 in s2-right; neither recording walked into a barrier (the hit at $8334 never ran).
+> As in stage 1 at $819A with stage 2's two checks.
+> Witness: L1 1541 (rzx-r2, s2-right, stageload).
+$8334 WalkBarrierHit
+$8342 c CheckFirstRoomLeft ; Z when the hero walks left at x 2 in grid 0's room 0 (the stage's first room)
+> Grid 0, room 0, the hero facing left (+9 bit 7): Z when +0 (x) is 2. Any other grid or room, or facing right: NZ (ReturnNZ for the facing).
+> Witness: L1 1541 (rzx-r2, s2-right, stageload).
+$835C CheckFirstRoomLeftNo ; NZ: another room
+$835D c CheckMedusaBarrier ; Z when the hero walks right into Medusa's statue: x $18 while she stands, $1C after
+> Grid 2, room 0, the hero facing right: with MedusaState 0 Z when x is $18 (the statue blocks the way), else Z when x is $1C (the room's right wall). Other rooms, or facing left: NZ. rzx-r2 tested it 12 times, all after the statue was struck.
+> Witness: L1 1541 (rzx-r2, s2-right, stageload).
+$837B CheckMedusaBarrierAfter ; the statue gone: x $1C
+$8381 c RoomEvents ; Spawn the bonus or item of a room that has one, after a room change
+> Called by StageEntry and the LeaveRoom routines ($984B and others). Grid 0: room 0 event bit 4 (the bonus at D = 7, E = $54), room 4 bit 2 ($08, $54), room 5 bit 1 ($18, $44). Grid 1: room 7 bit $20 ($12, $3C), only once the hydra is beaten (HydraHeads = $64). Grid 2: bit 8 ($0A, $34), then, with PiecesComplete = 1, SpawnItem kind 5 (the artefact, icon $DF05) at $11, $50. The event's bit goes to SpawnBonus. rzx-r2 runs it 30 times (frames 260-18424); the artefact appears once (grid 2).
+> As in stage 1 at $9FB6 with stage 2's rooms.
+> Witness: L1 39 (rzx-r2, s2-right, stageload).
+$8397 RoomEventRoom4
+$83A3 RoomEventRoom5
+$83AF RoomEventNone
+$83B0 RoomEventGrid1
+$83CC RoomEventGrid2
+$83E9 c SpawnBonus ; Spawn a room's bonus (two records) unless its event bit is set in PiecesMask
+> Input: B = the event's bit, D, E = X and Y. Returns when PiecesMask has the bit. Else, when FindTwoFreeActors $8D87 finds two free records in a row, both get the template $9742 (the bonus handler $842E) at D, E: the first with +$10 = the bit (BonusHandler sets it in PiecesMask when the hero takes it), the second with +$0B = 1 (its sparkle). Preserves IY.
+> As in stage 1 at $A023, the same code.
+> Witness: L1 12 (rzx-r2, s2-right, stageload).
+$8418 SpawnBonusFull
+$841D c ExtraLifeSparkle ; Put a sparkle at the extra life: base X + 2, the Sparkle template
+> IY = the extra-life actor. MoveBaseX with E = 2, then SpawnActor of the Sparkle template ($9730) at its base +$0D, +$0E (JP). Called by ExtraLifeActor ($9B3A) when the life is taken: rzx-r2 frame 2961.
+> Witness: L1 1 (rzx-r2).
+@module enemies
+$842E c UpdatePieceActor ; An actor that takes 6 hits, rises, bobs and then waits to be taken as a piece (1200 points)
+> IY = the actor (18-byte record). Colour from the cycle (SetCycleColour). +$0B not 0: animates frames 2-9. Else by +$0A: 6 PieceRises, 7 PieceWaitsPickup; 0-5: each hit (+$09 bit 4, set by a shot or the hero's blow) clears the flag and adds 1 to +$0A; at 6 the next record's +0 is set $FF (the record after it freed). Frame 0. Draws with SetActorFrame (PieceFrames: frames $DE29, graphics $DD41). Its template is PieceTemplate $9742 (SpawnBonus). rzx-r2: 3200 runs, 30 hits, 5 pieces raised; s2-right: 1108 runs, none hit.
+> As in stage 1 at $8233.
+> Witness: L1 4470 (rzx-r2, s2-right, stageload).
+$845C PieceActorStill
+$8460 PieceActorAnimate
+$846B PieceActorDraw
+$846E b PieceFrames 4 ; SetActorFrame's inline operands: the frame table $DE29 and the graphics base $DD41
+$8472 c PieceRises ; State 6: rise and bob along RiseSteps for 30 steps (effect 3 at steps 16 and 25), then state 7
+> Jumped to from UpdatePieceActor ($843D).
+> As in stage 1 at $8279, the same code.
+> Witness: L1 155 (rzx-r2).
+$8486 PieceRisesSound
+$848C PieceRisesMove
+$84A0 PieceRisesDone
+$84A7 b RiseSteps 8 ; The rising piece's y change at each step 0-29
+> 30 signed bytes: 10 zeros, then up 1-6, back -4 to 4, -2 to 2 (the bob). Read by PieceRises ($8491) with the step.
+$84C5 c PieceWaitsPickup ; State 7: when the hero touches it at its column (or the next): 1200 points, the piece's bit, freed
+> $9B77 (the hero within $14 lines); then the hero's x ($74E0) equal to +0 or +0 + 1: AddScore 1200, PieceTakenFlag = 1, PiecesMask |= +$10, freed ($B489).
+> As in stage 1 at $82CC, the same code.
+> Witness: L1 46 (rzx-r2).
+$84D8 PieceTaken
+$84EF PieceNotTaken
+@module hud
+$84F3 c FlashPieces ; Cycle the colours of the pieces' boxes while PieceFlash runs (always once all five are taken)
+> PieceFlash - 1 a pass; the colour is the cycle at $B509[(PieceFlash + 2) & 7] for PiecesTaken + 1 cells at $5879 and $5899 (rows 3-4 from column 25).
+> As in stage 1 at $833B, the same code.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$8502 FlashPiecesStep
+$851E FlashPiecesCell
+$8525 c ShowPieceTaken ; After a piece is taken: count it, draw its box on the HUD, start the flash, effect 12
+> Only when PieceTakenFlag is 1 (cleared here). PiecesTaken + 1 (5: PiecesComplete = 1), PieceFlash = $2D, then CopyToScreen of a 2 x 14-byte picture ($DD41 for the first piece, $DD5D for the others) to column 24 + PiecesTaken, line $19; PlaySoundVector 12.
+> As in stage 1 at $82FA, the same code.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$853D ShowPieceBox
+$854F ShowPieceBoxDraw
+$8566 c GameOverStep ; After the last life: count GameOverTimer to $31, draw GAME OVER in the item strip, then cycle its colour
+> GameOverTimer 0: nothing. 1-$30: + 1 a pass. At $31: clears the strip (column 10, line $18, 12 x 16 from the blank $8BCA) and draws the 8 x 8-byte GAME OVER picture at $C644 at column 12, line $1C. $32 and on: the colour from the cycle ($B4FB) patched into the inline record GameOverBox and filled. s1-right: the HUD's GAME OVER (WALKTHROUGH 6.1, frame 4000).
+> As in stage 1 at $836D, the same code.
+> Witness: L1 8120 (rzx-r2, s2-right, stageload).
+$8593 GameOverColour
+$85A1 c GameOverStepDone ; GameOverStep, continued: return
+> The RET after the inline record of GameOverStep's FillAttributes ($8599); FillAttributes returns here. s2-right: 168 times (frames 5401-5825, the game-over passes).
+> As in stage 1 at $83A8, the same code.
+> Witness: L1 168 (s2-right).
+@module missiles
+$85A2 c UpdatePathFlyer ; Kinds 7 and 8: a flyer along PathSteps, forwards (7) then back (8); OR-drawn 3 x 13 bytes
+> +4 = the step into PathSteps (pairs: dx in half columns, dy), +5 = x in half columns, +3 a step counter. Kind 7 steps forwards; at the end mark ($64) it becomes kind 8 and is moved by RespawnShiftX (x 2) and RespawnShiftY, unless no lives are left (freed). Kind 8 steps back and is freed at step $FF. +0 = +5 / 2; the pre-shifted half ($B6DD or $B6E1 by +5's parity) is ORed into the buffer (3 bytes x 13 lines) when on screen (column under $1E, y under $78), then coloured ($B4C5, $B748).
+> As in stage 1 at $842C, the same code.
+> Witness: L1 5192 (rzx-r2, s2-right).
+$85B9 PathFlyerForward
+$85BF PathFlyerStep
+$85F8 PathFlyerMove
+$8610 PathFlyerBack
+$861F PathFlyerPlace
+$8636 PathFlyerDraw
+$864D PathFlyerLine
+$8650 PathFlyerByte
+$8664 b PathSteps 8 ; The flyer's path: dx (half columns), dy a step; $64 $64 ends
+> 66 pairs (dx, dy), then the end mark $64 $64 at $86E8. Read by UpdatePathFlyer ($85CB) with the step +4.
+$86EA c ShotHitsActor ; NZ (and the actor's hit flag, +$09 bit 4) when the shot IY is over a shootable actor
+> For the 13 actors at $74F2: not free, shootable (+$0F bit 0), same column, and the shot's y - the actor's y under its height (+3). Returns via $B410 (NZ, hit) or $B40B (Z, none).
+> As in stage 1 at $86A2, the same code.
+> Witness: L1 441 (rzx-r2).
+$86F0 ShotHitsActorNext
+$871A ShotHitsActorSkip
+$8725 c ThrownHitsActor ; NZ (and the actor's flag +$09 bit 5) when the thrown weapon IY is over an actor it can hit
+> For the 13 actors at $74F2: not free, hit by thrown weapons (+$0F bit 0), the same column as the missile, and the missile's y - the actor's y under its height (+3): sets the actor's +9 bit 5 (read by HydraHeadHit) and returns via ReturnNZ. None: ReturnZ. The thrown weapons' handler $B56D (missile kinds 5 and 6) calls it ($B5A9): 992 times in rzx-r2 (frames 10657-15270, the hydra fight), 29 hits. As ShotHitsActor with bit 5 instead of bit 4.
+> Witness: L1 992 (rzx-r2).
+$872B ThrownHitsActorNext
+$8755 ThrownHitsActorSkip
+$8760 c ShotHitsHero ; Hurt the hero by C when the missile IY is in its column and within 14 lines
+> When the hero's x ($74E0) is the missile's +0 and $A91B (A = $0E, E = the hero's y $74E1, D = the missile's +1) gives carry (closer than 14 lines): runs on into DamageHero with C. Stage 1's shield test (item 1 selected: no harm) is gone. Called by UpdateAimedShot (C = 6) and $B6CA: 2252 calls in rzx-r2, 1676 in s2-right.
+> As in stage 1 at $86EB without the shield.
+> Witness: L1 4565 (rzx-r2, s2-right, stageload).
+@module hud
+$8774 c DamageHero ; EnergyChange - C (a drain), unless the hero is dying (state $0F)
+> C = the damage. Called by ShotHitsHero and the stage-2 actors (MedusaHeadDraw $825C, HarpyActor $8E00, HarpyRiseActor $A80D, DropActorTouch $A9B5 by a JP, $B558).
+> As in stage 1 at $870C, the same code.
+> Witness: L1 72 (rzx-r2, s2-right, stageload).
+@module enemies
+$8782 c WaterActor ; The pool's ripple (actor kind 20): a random frame 0-2 of a 4 x 2 strip every other pass
+> IY = the actor. On odd passes (PassCounter bit 0) a new frame: NextSeed & 3 (3 retried); the same frame as now becomes the one before it (0 becomes 2). Every pass: +4/+5 = $C62C + frame x 8, +2 = 4 bytes, +3 = 2 lines. Runs in the rooms with a pool: 5240 times in rzx-r2 (frames 260-18525), 3115 in s2-right.
+> Witness: L1 8944 (rzx-r2, s2-right, stageload).
+$8789 WaterActorPick ; a random frame 0-2
+$87A0 WaterActorSet
+$87A3 WaterActorDraw
+@module hero
+$87C2 c HeroRecoil ; State $0B: the hero thrown back from a closed exit, a 6-step hop, then standing
+> +$0B counts 0-6: y += RecoilSteps[+$0B], x back one pixel step ($8B75 with 3: +$11 down, the column on wrap) and the walk frame drawn ($B0D8). At 7: state 0, x - 1 column ($B256 E = $FF), +$11 = 0, standing ($AED5).
+> As in stage 1 at $871A, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$87DC HeroRecoilStep
+$87F4 b RecoilSteps 7 ; The hop's y change at steps 0-6
+> -5, -1, 0, 0, 1, 2, 3. Read by HeroRecoil ($87E6) with the step.
+$87FB c CellFlagUnused ; A leftover no code calls: Z unless bit 1 of the room cell at (column E, line D) is set
+> HL = $7282 + (D / 8) x 32 + E, then BIT 1,(HL). No caller in the image.
+> As in stage 1 at $8753, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+@module rooms
+$8814 c EnterGrid1 ; Go into grid 1 (the hydra's caves, the record $9547), room 0
+> RoomGrid = $9547, Placements = Grid1Placements, RoomNumber 0, $A3A7 (places the hero for the way in), $ADBA (the room built again), GridNumber 1. IY is kept. Reached from the grid passages ($AD7F). s2-right frame 4322, rzx-r2 frame 7179.
+> As in stage 1 at $AB83 with stage 2's grid record.
+> Witness: L1 2 (rzx-r2, s2-right).
+$8835 c EnterGrid2 ; Go into grid 2 (Medusa's room, the record $9550), room 0, then its room events
+> RoomGrid = $9550, Placements = Grid2Placements, RoomNumber 0, $A3B8 (the hero's place), $ADBA, GridNumber 2, RoomEvents (the bonus and the artefact). IY is kept. rzx-r2: frames 7450 and 16453.
+> As in stage 1 at $ABDD with stage 2's grid record and RoomEvents.
+> Witness: L1 2 (rzx-r2).
+$8859 c LeaveGrid2 ; Back from Medusa's room to grid 1, room 0
+> RoomGrid = $9547, Placements = Grid1Placements, RoomNumber 0, $A3C9 (the hero's place), $ADBA, GridNumber 1; IX = $9547 before and after. rzx-r2: frames 9262 and 16975.
+> As in stage 1 at $AC01 with stage 2's grids.
+> Witness: L1 2 (rzx-r2).
+$8882 c LeaveGrid1 ; Back from grid 1 to grid 0 room 5
+> RoomGrid = $953E, Placements = Grid0Placements, RoomNumber 5, $A3DE (the hero's place), $ADBA, RoomEvents, GridNumber 0. The grid record's byte $9540 is set to $37 for the build and put back to 0 after it. rzx-r2: frame 17558.
+> As in stage 1 at $ABA7 with stage 2's grid record.
+> Witness: L1 1 (rzx-r2).
+@module enemies
+$88B6 c HangFlashBorder ; RowPlotters' entries for width 0 and the mirrored width 7: flash the border from R for ever
+> LD A,R; OUT ($FE),A; CALL KeyHook; JR back. Entries 0, 1 and 15 of RowPlotters point here; a frame never has width 0 or a mirrored width 7, so it is not reached. Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code (RowPlotters $8A59).
+@module render
+$88BF c PlotRow1 ; Plot one sprite row 1 byte wide into the play buffer
+> HL = the sprite's bytes, DE = the buffer address. ORs (HL) into (DE) (no mask: the buffer is cleared every pass),
+> then HL + 1 and DE + 32 (the next pixel line). One of the row plotters of RowPlotters $8A59, called once a row by
+> the sprite drawer at DrawActorSprite $A60E. The plotters 1-7 bytes wide all work so; the mirrored ones read the row's bytes in
+> order and write them right to left through the bit-reversal table at $FA00 (resident), so a sprite faces left.
+> As in stage 1 at $8776, the same code.
+> Witness: L1 61507 (rzx-r2, s2-right, stageload).
+$88CA c PlotRow1Mirrored ; Plot one sprite row 1 byte wide, mirrored
+> As PlotRow1, the byte bit-reversed through the table $FA00 (B = $FA, C = the byte).
+> As in stage 1 at $8781, the same code.
+> Witness: L1 13560 (rzx-r2).
+$88DC c PlotRow2 ; Plot one sprite row 2 bytes wide
+> ORs 2 bytes from HL into DE, DE+1; then DE + 31 (the next line's first column).
+> As in stage 1 at $8793, the same code.
+> Witness: L1 89117 (rzx-r2, s2-right, stageload).
+$88EC c PlotRow2Mirrored ; Plot one sprite row 2 bytes wide, mirrored
+> DE = the row's rightmost byte: each byte bit-reversed through $FA00 and written leftwards; then DE + 33.
+> As in stage 1 at $87A3, the same code.
+> Witness: L1 14434 (rzx-r2).
+$8906 c PlotRow3 ; Plot one sprite row 3 bytes wide
+> Called through DrawActorSprite's patched CALL ($A642, RowDrawCall) for each line of a frame 3 bytes wide.
+> As in stage 1 at $87BD, the same code.
+> Witness: L1 86725 (rzx-r2, s2-right, stageload).
+$891B c PlotRow3Mirrored ; Plot one sprite row 3 bytes wide, mirrored
+> Called through DrawActorSprite's patched CALL ($A642, RowDrawCall) for each line of a frame 3 bytes wide mirrored.
+> As in stage 1 at $87D2, the same code.
+> Witness: L1 29125 (rzx-r2).
+$893D c PlotRow4 ; Plot one sprite row 4 bytes wide
+> Called through DrawActorSprite's patched CALL ($A642, RowDrawCall) for each line of a frame 4 bytes wide.
+> As in stage 1 at $87F4, the same code.
+> Witness: L1 46495 (rzx-r2, s2-right).
+$8957 c PlotRow4Mirrored ; Plot one sprite row 4 bytes wide, mirrored
+> Called through DrawActorSprite's patched CALL ($A642, RowDrawCall) for each line of a frame 4 bytes wide mirrored.
+> As in stage 1 at $880E, the same code.
+> Witness: L1 528 (rzx-r2).
+$8981 c PlotRow5 ; Plot one sprite row 5 bytes wide
+> No 5-byte-wide sprite was drawn in the stage-1 recordings.
+> As in stage 1 at $8838, the same code.
+> Witness: L1 1260 (rzx-r2, s2-right).
+$89A0 c PlotRow5Mirrored ; Plot one sprite row 5 bytes wide, mirrored
+> Called through DrawActorSprite's patched CALL ($A642, RowDrawCall) for each line of a frame 5 bytes wide mirrored.
+> As in stage 1 at $8857, the same code.
+> Witness: L1 252 (rzx-r2).
+$89D2 c PlotRow6 ; Plot one sprite row 6 bytes wide
+> Used by the 6-byte frames (in stage 2 the harpy's wings at $D797, frame 1).
+> As in stage 1 at $8889, the same code.
+> Witness: L1 6221 (rzx-r2, s2-right).
+$89F6 c PlotRow6Mirrored ; Plot one sprite row 6 bytes wide, mirrored
+> As in stage 1 at $88AD, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8A30 c PlotRow7 ; Plot one sprite row 7 bytes wide (no mirrored form)
+> The widest plotter; RowPlotters has no mirrored 7-byte entry (index 15 is $88B6).
+> As in stage 1 at $88E7, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8A59 w RowPlotters 8 ; The row plotter of each sprite width: word 2 x width + 1 when mirrored
+> Read by the sprite drawer at $A62D (LD BC,RowPlotters): index 2 x width + (facing left). Width 0 and the mirrored width 7 hold HangFlashBorder $88B6 (a hang loop: border flicker and KeyHook forever), never reached with a valid frame.
+@module util ; Small helpers: keys, clears, copies, numbers, random numbers, delays
+$8A79 c TestSpaceKey ; Is SPACE down?
+> Calls KeyHook, then reads port $7FFE bit 0: Z when SPACE is held. The main loop ($7873) opens the item window on it.
+> As in stage 1 at $8A54, the same code.
+> Witness: L1 123859 (rzx-r2, s2-right, stageload).
+$8A84 c ClearAttributes ; Clear the screen's 768 attributes to 0
+> Called by ClearScreen ($8BB9).
+> As in stage 1 at $8A5F, the same code.
+> Witness: L1 5 (rzx-r2, s2-right, stageload).
+$8A92 c ClearShadowAttributes ; Clear the shadow attributes $6D00-$6FFF to 0
+> Called by StageSetUp ($917A).
+> As in stage 1 at $8A6D, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$8AA0 c ClearPlayBuffer ; Clear $5B00-$6C30 to 0 (LDIR)
+> Clears 4401 bytes of the play buffer (the LDIR form; ClearBuffer $9484 is the fast PUSH form of the whole 4608).
+> Called by ShiftRoomColumns ($9966) and ShiftRoomRows ($99BC) before a room change.
+> As in stage 1 at $8A7B, the same code.
+> Witness: L1 34 (rzx-r2, s2-right, stageload).
+$8AAE c CopyBlockToScreen ; Copy a block of bytes to the screen, one pixel line at a time
+> HL = the source (lines packed one after the other), B = the screen column, C = the first pixel line, D = the width
+> in bytes, E = the lines. Patches its ADD A,n at $8AC2 with the column; the line addresses come from ScreenLineTable.
+> EndStageSave ($7916) copies the HUD's saved 48 lines back from $7000 with it.
+> As in stage 1 at $8A89, the same code.
+> Witness: L1 2 (rzx-r2, s2-right).
+$8ABE CopyBlockLine
+@module hud
+$8AD6 c DissolveHud ; Dissolve the HUD's 48 pixel lines onto the screen in 8 steps
+> DE = the source picture (48 lines of 32 bytes; $7000 from StageSetUp $9194: the HUD as loaded). Eight steps, each after a HALT: every byte of screen lines 0-47 = source AND a mask; the mask is one of 4 rows of 8 at $F9CC (resident; B = $F9, C = $CB + 1 + the step, the row picked by bits 3-4 of a ROM byte read through RandomPointer, reset to 0 each step so the pattern is the same every step) and gains bits each step until $FF. Patches the LD DE at DissolveSource (the source) and the ADD A at DissolveStepOperand (the step). Both recordings: frames 80-112.
+> As in stage 1 at $8AB1.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$8AE1 DissolveStep
+$8AEC DissolveSource ; LD DE,n: n = the source picture
+$8AF1 DissolveLine
+$8B01 DissolveByte
+$8B10 DissolveStepOperand ; ADD A,n: n = the step 0-7
+@module render
+$8B2A c DrawRowPicture ; Draw a row-packed picture into a buffer
+> HL = the picture, DE = the buffer address of its first line, B = its lines. Each line is one byte, the bytes to
+> copy in its high nibble and the columns to skip in its low nibble, then those bytes; DE + 32 a line. The room and
+> arena pictures are in this form; in stage 2 the hydra's body HydraBodyPicture $D967.
+> As in stage 1 at $8B03, the same code.
+> Witness: L1 46384 (rzx-r2).
+@module util
+$8B4B c Multiply ; HL = A x B (the smaller one as the loop count)
+> Returns HL = 0 when A is 0. Called by $9FCA, $A0BB and $AB9F: 4929 calls in rzx-r2 (frames 1205-17465), none in s2-right.
+> As in stage 1 at $8B24.
+> Witness: L1 4929 (rzx-r2).
+$8B57 MultiplySet
+$8B5A MultiplyLoop
+@module actors ; The actor records: placement, the per-pass update, the frames, the bursts
+$8B5E c StepFineRight ; Move the actor IY right by A eighths of a byte column (no caller)
+> Adds A to the fraction +$11; past 8 takes 8 off and moves +0 and +$0D one column right. Nothing calls it (no
+> CALL, JP or table word names $8B5E): a leftover of the engine.
+> As in stage 1 at $8B37, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8B69 StepFineRightCarry
+$8B75 c StepFineBack ; Move the actor IY back by A eighths of a byte column
+> Takes A from the fraction +$11; on a borrow adds 8 back and moves the base column +$0D one column against the
+> facing (MoveBaseX $B256 with E = -1). Called by HeroRecoil ($87DE); stage 1's other caller, the warrior's flying head, has no stage-2 counterpart.
+> As in stage 1 at $8B4E, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8B88 c StepFineLeft ; Move the actor IY left by A eighths of a byte column
+> As StepFineRight leftwards (+0 and +$0D one column left on a borrow). Called by MedusaHeadFalls ($81F5): Medusa's falling head drifts left.
+> As in stage 1 at $8B61, the same code.
+> Witness: L1 26 (rzx-r2).
+@module util
+$8B9D c NextSeed ; RandomSeed = RandomSeed x 5 + $15; A = it
+> Called by WaterActor ($8789) and LoadRoomActors ($A507).
+> As in stage 1 at $8B76, the same code.
+> Witness: L1 5970 (rzx-r2, s2-right, stageload).
+$8BAC c Random ; A = the next ROM byte
+> RandomPointer + 1, kept in $0000-$3FFF; A = the ROM byte there. The game's random numbers.
+> As in stage 1 at $8B85, the same code.
+> Witness: L1 5591 (rzx-r2, s2-right, stageload).
+$8BB9 c ClearScreen ; Clear the attributes, then the 6144 pixel bytes
+> Called by EndStageSave ($791C), StageSetUp ($9177).
+> As in stage 1 at $8B92, the same code.
+> Witness: L1 5 (rzx-r2, s2-right, stageload).
+$8BCA b BlankIcon 8 ; 32 zero bytes: the blank icon (item kind 4) and the source of every clear done by copying with stride 0
+> Read through GameOverStep ($8577) and, as item kind 4's icon, through ItemIcons $7F00 (DrawItemIcon). As in stage 1 at $8BA3. All 32 bytes read in s2-right and rzx-r2.
+$8BEA c LineAddressToIY ; IY = the screen address of pixel line C (no caller)
+> IY = ScreenLineTable[C] (the word, not the address read). Nothing calls it: a leftover.
+> As in stage 1 at $8BC3, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8BF6 c CellAddress ; HL = DE + (C / 8) x 32 + B: the cell of pixel line C, column B in a 32-wide map
+> DE = the map (Attributes or the shadow $6D00). Used by FillAttributes and FillShadowAttributes.
+> As in stage 1 at $8BCF, the same code.
+> Witness: L1 629 (rzx-r2, s2-right, stageload).
+@module hud
+$8C0A c NumberToDigits ; Write HL as B decimal digits (ASCII) at IX
+> B = 1-5 digits (the last B of 10000, 1000, 100, 10, 1 from DecimalTable); each digit by repeated subtraction.
+> IX ends past the digits. PrintScore $7B40 writes the score $F9FB with 4 digits into $7BED.
+> As in stage 1 at $8BE3, the same code.
+> Witness: L1 8033 (rzx-r2, s2-right, stageload).
+$8C1A DigitLoop
+$8C23 DigitSubtract
+$8C3C c ByteToDigits ; Write A (0-99) as two ASCII digits at IX
+> A = 0 writes "00". PrintScore writes the amount $F9FD so; only the 0 branch ran.
+> As in stage 1 at $8C15, the same code.
+> Witness: L1 8033 (rzx-r2, s2-right, stageload).
+$8C49 ByteToDigitsTens
+$8C4B ByteToDigitsLoop
+@module util
+$8C5C c WaitFrames ; Wait BC interrupts (HALT each)
+> Called by StageSetUp ($918E, $919A) and EndStageSave ($7922, 100 frames).
+> As in stage 1 at $8C35.
+> Witness: L1 500 (rzx-r2, s2-right, stageload).
+@module render
+$8C63 c FillAttributes ; Fill a rectangle of the screen's attributes (5 bytes after the CALL)
+> The 5 bytes after the CALL: the column, the pixel line (/8 = the cell row), the width, the height in cells, the
+> attribute. Returns after them. Called by StartStageExit ($7AAF), FlashSelectedBoxFrame ($7C43) and GameOverStep ($8599).
+> As in stage 1 at $8C3D, the same code.
+> Witness: L1 274 (rzx-r2, s2-right, stageload).
+$8C86 FillAttributesRow
+$8C88 FillAttributesCell
+$8C93 c FillShadowAttributes ; Fill a rectangle of the shadow attributes $6D00 (5 bytes after the CALL)
+> As FillAttributes into the shadow; StageSetUp paints the HUD's boxes with it.
+> As in stage 1 at $8C6D, the same code.
+> Witness: L1 355 (rzx-r2, s2-right, stageload).
+$8CB6 FillShadowRow
+$8CB8 FillShadowCell
+$8CC3 c ShowShadowAttributes ; Copy the whole shadow $6D00-$6FFF to the attributes after a HALT
+> Called by StageSetUp ($9188), StageSetUp ($91BD).
+> As in stage 1 at $8C9D, the same code.
+> Witness: L1 6 (rzx-r2, s2-right, stageload).
+$8CD0 c UpdateAttributes ; Copy the open cells' attributes from the shadow, then CopyBuffer
+> The play area's 18 rows x 28 columns from row 6 column 2: where the cell kind ($7282, BuildSpans) is 0 (open), the attribute comes from the shadow $6DC2 (the room's colours with the actors' painted in); solid cells keep theirs. Then CopyBuffer. With RestoreAttributes = 1 (set by SavePlayAttrs): clears it, CopyBuffer first, then after a HALT every cell is written: open cells from the shadow, solid cells from RoomAttributes $7042. Every pass (MainLoop $786A); the restore ran 32 times in rzx-r2 (the room changes).
+> As in stage 1 at $8CAA.
+> Witness: L1 8031 (rzx-r2, s2-right, stageload).
+$8CE4 UpdateAttrRow
+$8CE7 UpdateAttrCell
+$8CF0 UpdateAttrNext
+$8D06 UpdateAttrRestore
+$8D1F RestoreAttrRow
+$8D22 RestoreAttrCell
+$8D2B RestoreAttrPut
+@module actors
+$8D45 c SpawnTimer ; Count down to the next random enemy
+> Every pass: SpawnDelay - 1; at 0 reloads it with 5-20 (Random & 15 + 5) and, on a random bit 0 clear, goes to SpawnRandomEnemy $8F8C (stage 1: 30-61 and grid 0 only; the grid test is in SpawnRandomEnemy here). rzx-r2: 437 reloads, 190 tries.
+> As in stage 1 at $8D1D with a shorter delay.
+> Witness: L1 8032 (rzx-r2, s2-right, stageload).
+$8D4F SpawnTimerFire
+$8D62 b ClearRecordUnused 15 ; Code no CALL or JP reaches: PUSH IY twice, POP HL, POP DE, LD BC,$11, LD (HL),0, INC DE, LDIR, RET (clears the 18-byte record at IY)
+> No reader and no jump: the bytes between SpawnTimer and FindFreeActor. As code it would clear the actor record IY; stage 2 frees records with RemoveActor instead.
+$8D71 c FindFreeActor ; IY = the first free actor record of 13 (Z), else NZ
+> A record is free when its +0 is $FF. Returns NZ (via $B410) when none is free.
+> As in stage 1 at $8D3A, the same code.
+> Witness: L1 303 (rzx-r2, s2-right, stageload).
+$8D7A FindFreeActorLoop
+$8D87 c FindFreeActorPair ; IY = the first free actor record whose next record is free too (Z), else NZ
+> For an enemy of two records (the warrior and its head). 12 records searched.
+> As in stage 1 at $8D50, the same code.
+> Witness: L1 11 (rzx-r2, s2-right, stageload).
+$8D90 FindPairLoop
+$8D9D FindPairNext
+@module enemies
+$8DA4 c SpawnHarpy ; Bring the harpy: two records, the wings ($96E8) at $12, $4E and the body ($96FA) at $13, $62
+> FindFreeActorPair (NZ: no pair, nothing). The pair's first record, saved in InitOnly10 ($FE10, used here as an IY save word), gets the Harpy template at D = $13, E = $62 with +$0D = 0 and +$0E = $FF (the bob step and the passes left); the next record the HarpyWings template at $12, $4E. Called once by the harpy's statue handler $A7F6 ($A85C): s2-right frame 1903, rzx-r2 frame 3199 (screen 003517.png shows the harpy over the temple).
+> Witness: L1 2 (rzx-r2, s2-right).
+$8DD2 c HarpyWingsActor ; The harpy's wings: frames 0-4, two passes each; HarpyActor places them
+> IY = the wings. +8 counts 0-9 and the frame is +8 / 2 (SetActorFrame with HarpyWingsFrameSet). Their place (+$0D, +$0E) and colour (+$0C) are written by the body's HarpyPlaceWings. rzx-r2: frames 3201-4467, s2-right 1905-2883.
+> Witness: L1 770 (rzx-r2, s2-right).
+$8DDC HarpyWingsFrame
+$8DE4 b HarpyWingsFrameSet 4 ; SetActorFrame's inline words: the frame table $D949, the set $D797
+$8DE8 c HarpyActor ; The harpy: rises out of its statue, swoops and shoots, bobs for 255 passes, then flies off
+> IY = the body, IY + $12 the wings. Touch: the hero's x not left of the harpy and the harpy's y $50-$C7 (low over the floor): DamageHero 4. +$0B + 1 each pass and CycleItemInk colours the wings (+$1E). By the state +$0A: 3 (just out) rises a line a pass until its y is under +$0B, then attacks; 1 (attack) steps +8: AimedShot at steps 4 and 8, at step 9 three times in four back to step 0, at step $0E state 2; its frame from HarpyAttackFrames; 2 (hover) starts an attack at random (1 in 32 passes). Then the bob: +$0D counts 0-9 and while +$0E (255 passes) counts down Y += HarpyBobSteps[+$0D / 2]; at 0 HarpyPhase = $FA (gone for good) and it flies up a line a pass until Y = $F0 (RemoveActor). Every pass HarpyPlaceWings. rzx-r2: frames 3201-4352 (6 attacks), s2-right: 1905-2883 (7 hits on the hero).
+> Witness: L1 718 (rzx-r2, s2-right).
+$8E03 HarpyMove
+$8E21 HarpyNotRising
+$8E2C HarpyStartAttack
+$8E39 HarpyAttackStep
+$8E4E HarpyShoot
+$8E68 HarpyAttackFrame
+$8E7A HarpyBob
+$8E84 HarpyBobStep
+$8EA7 HarpyFliesOff
+$8EBA b HarpyBobSteps 5 ; The harpy's Y change at bob steps 0-4: 1, 0, -1, -1, 1
+> Read by HarpyActor ($8E99) with +$0D / 2.
+$8EBF w HarpyAttackFrames 7 ; The harpy's frame at attack steps 0-13 (by pairs): $D647, $D6B7, $D727 x 3, $D6B7, $D647
+> Read by HarpyActor ($8E6D) with +8 AND $FE; the word goes to +4/+5.
+$8ECD c HarpyPlaceWings ; Put the wings over the body: X - 1 (+1 facing left), Y - $14
+> IY = the body. The wings' +$0D = the body's X + NegateIfFacingLeft(-1), +$0E = the body's Y - $14. Reached from every path of HarpyActor (366 times in rzx-r2).
+> Witness: L1 717 (rzx-r2, s2-right).
+@module actors
+$8EE1 c RemoveActorPair ; Free the actor record IY and the next one (+0 and +$12 = $FF)
+> No stage-2 code calls or jumps to it (stage 1's callers, the warrior's walk, have no stage-2 counterpart); not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+> As in stage 1 at $B363, the same code.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$8EEA c ClearActors ; Clear the shots and free all 13 actor records ($74F2, 234 bytes of $FF)
+> Fills $74F2-$75DB with $FF, then ClearShots (JR). Called by StageEntry ($780A) and StartGrid ($A377): 8 times in rzx-r2 (frames 248-17558).
+> As in stage 1 at $921E.
+> Witness: L1 13 (rzx-r2, s2-right, stageload).
+@module rooms
+$8EF9 c ResetObjectLists ; Clear the taken flags of the stage's three object lists
+> The lists at $9568, $95A1 and $95FE: 3-byte entries up to $FF, bit 7 of the first byte cleared (ClearTakenFlags).
+> As in stage 1 at $922F, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$8F08 c ClearTakenFlags ; Clear bit 7 of each 3-byte entry at HL up to the $FF end
+> HL = a placement list. Called by ResetObjectLists for Grid0Placements, Grid1Placements and (falling in) Grid2Placements: 50 entries at the stage's start (frame 248).
+> As in stage 1 at $923E.
+> Witness: L1 159 (rzx-r2, s2-right, stageload).
+@module actors
+$8F14 c ClearShots ; Fill the shot slots $75E0-$763F (96 bytes) with $FF
+> Called by RoomChange ($9265); jumped to from ClearActors ($8EF7).
+> As in stage 1 at $924B, the same code.
+> Witness: L1 56 (rzx-r2, s2-right, stageload).
+@module hero
+$8F22 c RespawnCountdown ; The hero's wait after a death; then he comes back at the room's respawn point
+> IY = the hero. Every 2nd pass +$10 - 1; at 0: state 0, position (+$0D, +$0E) = RespawnPoint, flags 0,
+> RespawnShiftX = $FF, the standing frame (JP $AED5). Reached from HeroUpdate ($ADE2 JP Z).
+> As in stage 1 at $9259, the same code.
+> Witness: L1 723 (rzx-r2, s2-right).
+$8F45 c RespawnPoint ; D, E = the respawn column and line of the room RoomNumber in grid GridNumber
+> HL = RespawnPoints' grid 1 part, grid 0 part ($8F76) or grid 2 part ($8F82) by GridNumber; D, E = the pair at RoomNumber x 2. Called by RespawnCountdown ($8F30) and $B379 (the hero's death): 10 times in s2-right, 2 in rzx-r2 (frame 12755).
+> As in stage 1 at $927C with stage 2's tables (grid 1's first).
+> Witness: L1 12 (rzx-r2, s2-right).
+$8F59 RespawnPointRead
+$8F66 b RespawnPoints 2 ; Column, line of each room: grid 1 (8 rooms), grid 0 (6) at $8F76, grid 2 (1) at $8F82
+> 15 pairs, read by RespawnPoint ($8F45-$8F64).
+$8F76 RespawnPointsGrid0 ; grid 0, rooms 0-5
+$8F82 RespawnPointsGrid2 ; grid 2, room 0
+@module actors
+$8F84 c MoveActorY ; +$0E (the base line) + C
+> Called by ExtraLifeActor ($9B17), HarpyRiseActor ($A82A), DropActor ($A95F), CheckHeroFooting ($ACD8), HeroLeap ($B207).
+> As in stage 1 at $92C9, the same code.
+> Witness: L1 1047 (rzx-r2, s2-right, stageload).
+@module enemies
+$8F8C c SpawnRandomEnemy ; Spawn a spirit at a random place of the room, when the room allows (at most 2)
+> Not in grid 2. Needs a free record (FindFreeActor). E = $20 + Random & $1F (the line), D = Random & 7 (a place); IsSpawnBarred may drop the call. The place's column is D x 4 - 1 (places 0 and 7: none); the cell at it ($20 + the line, column + 5; CellAt) must be 0 (open). Then SpiritCount under 2: SpiritCount + 1; none of the first 5 records may have the same base column (+$0D), else it returns with the count already raised; SpawnActor of the Spirit template $96D6 at D, E (JP). rzx-r2: 190 tries, 3 spirits (frames 1187-1959); s2-right 72 tries, 9 spirits. Stage 1 spawns a warrior here.
+> As in stage 1 at $9353 (the job: a random enemy; stage 2's enemy and test).
+> Witness: L1 271 (rzx-r2, s2-right, stageload).
+$8FD6 SpawnSpiritCheck ; is a record already at this column?
+$8FE2 SpawnSpiritNext
+$8FF1 c IsSpawnBarred ; Drop SpawnRandomEnemy's call where no enemy may appear (POP HL, RET)
+> D = the place 0-7. Grid 0: barred when D is NoSpawnColumns[RoomNumber]. Grid 2: barred when D is 6 or more (never reached: SpawnRandomEnemy returns in grid 2 first; known only from the code, $900B). Grid 1: barred in rooms 3, 4 and 7 (the hydra's rooms). Barred: drops its return address and returns from SpawnRandomEnemy. rzx-r2: 164 calls, 45 barred.
+> Witness: L1 245 (rzx-r2, s2-right, stageload).
+$9007 IsSpawnBarredGrid2
+$9011 IsSpawnBarredGrid1
+$9020 SpawnBarred ; drop the caller's return
+$9022 b NoSpawnColumns 6 ; The place no spirit may take in each room 0-5 of grid 0: 5, 5, 6, 5, 0, 0
+> Read by IsSpawnBarred ($8FFE) with RoomNumber.
+$9028 c SpiritActor ; A spirit: grows out of the floor, floats, spits six shots every 16 passes, fades away or bursts when hit
+> IY = the actor. SetCycleColour. Acts on odd passes (PassCounter bit 0); by +$0A: 0 grows (+8 frames 0-6, then state 1), 1 SpiritFloat, 2 SpiritShrinks. Draws frame +8 with SetActorFrame (SpiritFrameSet). The template is $96D6 (SpawnRandomEnemy). s2-right: 579 runs (frames 784-3339), rzx-r2: 233 (frames 1264-1959; screen 001517.png).
+> Witness: L1 1066 (rzx-r2, s2-right, stageload).
+$904A SpiritDraw
+$9050 b SpiritFrameSet 4 ; SetActorFrame's inline words: the frame table $C5A0, the set $C3D5
+$9054 c SpiritFloat ; State 1: flap (frames 6 and 7), bob along SpiritBobSteps, fire, burst when hit, at random fade
+> +8 XOR 1; +$0B counts 0-19 and +$0E (the base Y) += SpiritBobSteps[+$0B]. Hit (+9 bit 4, by the hero's sword or bolt): SpiritBurst. SpiritFires. With the hero dying (state $0F) one pass in four goes to state 2, else one in 32 (Random & $1F = $1B). Then SpiritDraw.
+> Witness: L1 403 (rzx-r2, s2-right, stageload).
+$9065 SpiritBob
+$9093 SpiritMayFade
+$90A1 b SpiritBobSteps 20 ; The spirit's Y change at bob steps 0-19 (down 1-3, back up)
+> Read by SpiritFloat ($906B).
+$90B5 c SpiritShrinks ; State 2: frames back down to 0, then SpiritCount - 1 and the record freed
+> +8 - 1 each acting pass; at 0 SpiritCount - 1 and RemoveActor. s2-right: 7 spirits faded, rzx-r2: 1.
+> Witness: L1 54 (rzx-r2, s2-right, stageload).
+$90C1 c SpiritFires ; Every 16 passes (by the spirit's column) six shots in the directions of SpiritShotDirections, effect 6
+> When (PassCounter + X) & 15 is 0: six missiles of kind 1 (UpdateAimedShot) from X + 1, (Y + 4) AND $F8 with the directions 1, 2, 3, 5, 6, 7 ($B3BD, C = 1, B = the direction), then PlaySoundVector 6. s2-right: 26 volleys, rzx-r2: 13.
+> Witness: L1 403 (rzx-r2, s2-right, stageload).
+$90CF SpiritFiresNext
+$90EF b SpiritShotDirections 6 ; The six directions of a spirit's volley (ShotDirections' numbers; no straight up or down)
+> Read by SpiritFires ($90CC).
+@module hero
+$90F5 c ThrowItem ; Throw the selected item when the fire key is pressed (one throw a press)
+> Called from HeroUpdate ($ADDA CALL Z). FireLatch makes it one throw a press. Unless the hero's state is $0F: takes one of the selected
+> item's count (none left: nothing), redraws it ($7D29), plays effect 8 and launches a shot from the hero's hands
+> ($B3C5: D = the column (one less facing left), E = the line + 8 rounded to a cell, B = the direction, C = 9).
+> As in stage 1 at $92D1, the same code.
+> Witness: L1 1411 (rzx-r2).
+$9105 ThrowItemPress
+$9141 ThrowItemLeft
+@module render
+$9149 c FadeInStep ; One step of the colour fade: each cell's ink one nearer its shadow attribute
+> Over the 576 attributes from $58C2 (row 6 column 2) against the shadow $6DC2: where the shadow is non-zero, on odd
+> passes the ink goes down one, on even ones up one toward the shadow's ink (with the shadow's paper). StageFadeIn
+> calls it 35 times.
+> As in stage 1 at $9325, the same code.
+> Witness: L1 105 (rzx-r2, s2-right, stageload).
+$9152 FadeCell
+$9162 FadeUp
+$916E FadeNext
+@module entry
+$9177 c StageSetUp ; Set up the stage's screen: the HUD, its colours, the score and the items
+> Clears the screen and the shadow, copies the HUD's colours $7600 (6 rows) into the shadow and shows them,
+> dissolves the HUD's picture $7000 in (DissolveHud), paints the HUD's boxes (FillShadowAttributes x 4), then draws
+> the items with $7D01 / $7C50 three times (with $7CB8 patched to RET and ItemSelected = 3), the score, the score's
+> reveal (RevealScore) and the lives (JP $7D98).
+> As in stage 1 at $97AC, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$91F0 c StageFadeIn ; Run 30 quiet passes, then fade the room's colours in
+> 30 x (3 HALTs + PassTick), then 7 x 5 steps of FadeInStep a HALT each.
+> As in stage 1 at $9824, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$91F7 FadeInRound
+$91FE FadeInFrame
+$920E c IdlePasses ; B x (3 HALTs + PassTick)
+> Called by StageFadeIn ($91F2).
+> As in stage 1 at $9842, the same code.
+> Witness: L1 90 (rzx-r2, s2-right, stageload).
+@module mainloop
+$9219 c PassTick ; The pass's counters: PassCounter + 1, the energy, the timers and the lives' colours
+> PassCounter + 1, then $7E62, $9DC2, $8566 and $7D9E.
+> As in stage 1 at $984D, the same code.
+> Witness: L1 8120 (rzx-r2, s2-right, stageload).
+@module entry
+$9229 c RevealScore ; Raise the score's digits into the HUD line by line (8 steps)
+> Draws 1 to 8 lines of the digit buffer $7640 at columns 6 (6 wide) and 15 (2 wide), one line higher each step.
+> As in stage 1 at $985D, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$9231 RevealScoreStep
+@module rooms
+$9257 c RoomChange ; Build the room: unpack the stage's graphics, draw the scenery, make the spans
+> BurstTimer = 100. Unrle $A33D the packed tiles and map $B7D5 into $5B00 (the play buffer), clear the shots, build
+> the cells (RoomCells, IX = RoomGrid), $99D3, then patch the tile bitmaps' and the attributes' addresses into $92BD
+> and $929F (from the header words $5B02, $5B04) and draw every cell of the 18 x 28 play area: its attribute into
+> the shadow $6DC2 and its 8 bitmap bytes straight onto the screen (CopyTileToScreen, from line 48 column 2). Then
+> BuildSpans, ClearBuffer (the unpacked data is gone) and the actors (JP LoadRoomActors $A431).
+> As in stage 1 at $988B, the same code.
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+$928F RoomChangeRow
+$9298 RoomChangeCell
+$929E RoomChangeAttrs ; LD HL,n: n = the tile attributes' address
+$92BC RoomChangeBitmaps ; LD BC,n: n = the tile bitmaps' address
+$92EB c CopyTileToScreen ; Copy 8 bytes from HL to the screen cell DE (INC D a line)
+> Called by RoomChange ($92C0).
+> As in stage 1 at $991F, the same code.
+> Witness: L1 21672 (rzx-r2, s2-right, stageload).
+$92ED CopyTileLine
+$92F4 c RoomCells ; Write the room's 14 x 9 blocks as 28 x 18 tile numbers into the cells $7282
+> IX = the grid record (+0 the width in blocks, +6 the grid's offset in the map). The window starts at
+> RoomRow x width + RoomColumn of the map ($5B0A + the header word $5B08 + the offset); each block becomes 2 x 2 tiles
+> (PutBlock), the cells 64 bytes a block row (32 a cell row, columns 2-29).
+> As in stage 1 at $9928, the same code.
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+$9304 RoomCellsRowOffset
+$9307 RoomCellsColumn
+$9326 RoomCellsRow
+$932C RoomCellsBlock
+$9352 c PutBlock ; Write block A's 4 tile numbers at HL, HL + 1, HL + 32, HL + 33
+> The blocks are 4 tile numbers each at $5B0A + the header word $5B06 (top left, top right, bottom left, bottom
+> right). Also writes CellFlag (0) into each cell's twin 576 bytes lower ($7040 grid). Returns HL + 1 + 32.
+> As in stage 1 at $9986, the same code.
+> Witness: L1 5418 (rzx-r2, s2-right, stageload).
+$935E PutBlockFlag
+@module render
+$93B5 c BuildSpans ; Turn the cells into tile kinds and list the open runs as spans for CopyBuffer
+> Patches BuildSpansKinds with the tile kinds' address ($5B0A + the header word $5B00). Each cell's tile number becomes its kind (0 open, else solid scenery). Each run of open cells in a row becomes a span (AddSpan): 6 bytes from $76A0: the length in cells, 0, the play buffer's address, the screen's address. SpanCount = the spans. Called by RoomChange ($92E2) at every room change: 33 times in rzx-r2.
+> As in stage 1 at $99E9.
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+$93DB BuildSpansRow
+$93E3 BuildSpansCell
+$93E9 BuildSpansKinds ; LD HL,n: n = the tile kinds' address
+$93FE BuildSpansOpen
+$940A BuildSpansStart
+$9419 BuildSpansNext
+$943D c AddSpan ; Open a span of 1 cell at the current cell (IX = the next span record)
+> Length 1, then the buffer's address $5B00 + SpanRow x 256 + CellColumn and the screen's ($FB60 + SpanRow x 16,
+> i.e. ScreenLineTable from line 48, + CellColumn); IX + 6.
+> As in stage 1 at $9A6E, the same code.
+> Witness: L1 1374 (rzx-r2, s2-right, stageload).
+$9484 c ClearBuffer ; Clear the play buffer $5B00-$6CFF with PUSH HL (DI)
+> SP = $6D00, 144 x 16 PUSHes of 0 (4608 bytes); SP saved in SavedSP. Interrupts off meanwhile (DI ... EI).
+> As in stage 1 at $9AB5, the same code.
+> Witness: L1 8080 (rzx-r2, s2-right, stageload).
+$9491 ClearBufferLoop
+$94A9 c CopyBuffer ; Copy the open spans of the play buffer to the screen (an LDI chain cut by a patched JP)
+> SP walks the span table $76A0 (POP BC: the length, POP HL: the buffer, POP DE: the screen). For each span: patches the LD BC at CopyLineEnd with 32 - the length, writes JP CopyLineEnd ($C3 $14 $95 at $94C8-$94CE) into the LDI chain at CopyChain + 2 x the length (the place saved at CopySpanRestore), the LD E at CopyLineE with the screen address's low byte; copies 8 lines (LDIs, then HL + 32 - length, E back, D + 1); puts ED A0 ED back. SpanCount spans; interrupts off meanwhile. Called by UpdateAttributes every pass and by StageEntry.
+> As in stage 1 at $9ADA, the same code; the operands at $94BC-$94D3 are its own labels and the bytes $14 $95 the low and high bytes of CopyLineEnd.
+> Witness: L1 8033 (rzx-r2, s2-right, stageload).
+$94B5 CopySpan
+$94D8 CopyChain ; 30 LDIs, cut by the JP patched over the one after the span's length
+$9514 CopyLineEnd ; LD BC,n: n = 32 - the length
+$9518 CopyLineE ; LD E,n: n = the span's screen address's low byte
+$951E CopySpanRestore ; LD HL,n: n = where the JP was put
+
+@module rooms
+$953E b Grid0 9 ; Grid 0's record (the temple): 69 x 9 blocks, the start window at 0, 0, the room table Grid0Rooms, map offset 0, 6 rooms a grid row
+> A grid record, 9 bytes, as stage 1's: +0 the width and +1 the height in blocks, +2/+3 the start window's block column and row (StartGrid; StageEntry sets +2 = $37 for the first build and puts 0 back), +4/+5 the room table, +6/+7 the grid's offset in the map section of StageGraphics, +8 the rooms a grid row. Unlike stage 1's block the three records come first, then the three room tables, then the placement lists.
+> The room table, one byte a room: the exits, bit 0 right, bit 1 left, bit 2 up, bit 3 down (the edge checks).
+> Read and partly written (the start window) in s2-right and rzx-r2: 146 and 189 of the map's 201 bytes read. The file map.txt holds the records, their room tables and the placement lists (tools/res_stage2.py); tools/fig_rooms.py draws the map and every room from it (docs/img/maps/stage2.png, stage2-rooms.png).
+$9547 Grid1 ; Grid 1 (the hydra's caves): 47 x 15 blocks, start 0, 0, map offset $026D, 4 rooms a grid row (8 rooms; EnterGrid1, LeaveGrid2)
+$9550 Grid2 ; Grid 2 (Medusa's room): 14 x 9 blocks, one room, map offset $052E (EnterGrid2)
+$9559 Grid0Rooms ; 6 rooms in a row: the exits of each
+$955F Grid1Rooms ; 8 rooms, 4 a row
+$9567 Grid2Rooms ; 1 room, no exits
+$9568 Grid0Placements ; grid 0's 18 placements: the kind (bit 7: done), X and Y in cells over the whole grid; $FF $FF $FF ends
+> LoadRoomActors puts each placement not done that lies in the room's window into a free actor record with its kind's row of ActorKinds. Grid 0: the urns (kinds 16-19), the pools' ripples (20), the statues (0, 1, 14, 15), the harpy's lamp, flame and rise (2, 13, 3).
+$95A1 Grid1Placements ; grid 1's 30: urns, the pool (kinds 4, 5), the hydra's heads (7-10), the drops (6)
+$95FE Grid2Placements ; grid 2's 2: Medusa and her head (kinds 11, 12)
+@res stage2/map.bin
+
+@module actors
+$9607 b ActorKinds 9 ; The 21 placement kinds, 9 bytes each: the Y offset, the handler, 5 bytes for the record's +8 to +$0C, the record's +$0F
+> As stage 1's: LoadRoomActors ($A499) builds an actor from a placement with its kind's row: +1 Y = the placement's Y x 8 + the offset, +6/+7 the handler, +8 to +$0C (the counter, the flags, the state, the item, the attribute), +$0F (bit 0: kept over a room change). The handlers: 0 KneelingStatueActor, 1, 14, 15 WarriorStatueActor, 2 HarpyLampActor, 3 HarpyRiseActor, 4 and 5 PoolActor, 6 DropActor, 7-10 HydraHead1Actor, HydraHead2Actor, HydraHead3Actor, HydraHead1LowActor, 11 MedusaActor, 12 MedusaHeadActor, 13 HarpyFlameActor, 16-19 StrikeableActor, 20 WaterActor.
+> All 189 bytes read in rzx-r2 (117 in s2-right).
+@res stage2/table-kinds.bin
+
+$96C4 b ActorTemplates 18 ; Nine whole actor records (18 bytes each, the first the hero's) that SpawnActor copies for the actors no placement makes
+> The handler at +6/+7 and the frame at +4/+5 as for a placed actor; the rest as an actor record (HeroRecord $74E0). All read in rzx-r2 (90 of 162 bytes in s2-right); ExtraLifeTemplateFlags written by ReleaseExtraLife.
+$96C4 HeroTemplate ; the hero (PlaceHeroAtStart and the other PlaceHero routines): handler HeroActor $AC8E
+$96D6 SpiritTemplate ; a spirit (SpawnRandomEnemy $8FEB): handler SpiritActor $9028
+$96E8 HarpyWingsTemplate ; the harpy's wings (SpawnHarpy $8DB1): handler HarpyWingsActor $8DD2
+$96FA HarpyTemplate ; the harpy (SpawnHarpy $8DBF): 4 x 28, frame $D647, handler HarpyActor $8DE8
+$970C ItemTemplate ; an item lying on the floor (SpawnItem $9A7A): 2 x 16, handler ItemHandler $9ACD
+$971E ExtraLifeTemplate ; an urn's extra life (ReleaseExtraLife $9A99): handler ExtraLifeActor $9AFA
+$9727 ExtraLifeTemplateFlags ; its +9: $80 (facing left) once ReleaseExtraLife has set it
+$9730 SparkleTemplate ; the sparkle of a life taken (ExtraLifeSparkle $8428): handler SparkleActor $9B4F
+$9742 PieceTemplate ; a piece of the stage's artefact (SpawnBonus $83F7, $840B): handler UpdatePieceActor $842E
+$9754 FragmentTemplate ; a fragment of a broken statue (InitFragment $AA6E): 3 x 11, handler FragmentActor $AA81
+@res stage2/table-actor-templates.bin
+@module actors
+$9766 c InitStageState ; Clear and set the stage variables at the start of the stage
+> Clears $FE08-$FE6D (102 bytes), copies StartItems to CarriedItems, seeds RandomPointer from R and draws SpawnDelay (Random), then sets the stage's start values: InitOnly41 1, InitOnly40 $0D, InitOnly10 2, InitOnly12 1, InitOnly3A $10, ItemFirst and ItemSelected 6, ItemLast 7, slot 7's count $24 (36 of item 1), BurstTimer $64 (no burst), RandomSeed and RandomPointer $07CF, the hydra: Hydra1Neck and Hydra3Neck $0E, Hydra2Neck $16, HydraHeads 3, the necks' ends (Hydra1X, Y) = $28, $15, (Hydra2X, Y) = $6D, $11, (Hydra3X, Y) = $34, $0E; EnergyChange $2E (energy refilled to full), RespawnShiftX $FF.
+> Called once from StageEntry ($7804), frame 26 in both recordings. Output: none. Side effects: the $FE08-$FE6D stage variables.
+> As in stage 1 at $9DA1 with stage 2's variables.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$9804 b Unused9804 12 ; 12 bytes no code reads: 0, 1, 2, 2, 1, 0, 0, 1, 3, 3, 1, 0
+> No instruction reads or writes them (neither recording touches them, and no operand points into $9804-$980F).
+@module rooms
+$9810 c LeaveRoomRight ; Move the room window 11 blocks right when the hero leaves by the right edge
+> IY = the hero's record. When the hero faces right (+9 bit 7 clear): ShiftRoomColumns with B = 11 blocks and C = 22 cells, $9E21 and $9E4F (the hydra's body for the new room), SavePlayAttrs; a harpy still out (HarpyPhase 3) goes back to 1 (it comes again); RoomNumber + 1, BurstTimer = $64 (any burst stopped), RoomEvents. Facing left: nothing. Preserves IX and IY. Called by the room-edge check $AD4B: 110 calls, 12 room changes in rzx-r2.
+> As in stage 1 at $9E16 with the hydra and harpy steps.
+> Witness: L1 117 (rzx-r2, s2-right, stageload).
+$983F LeaveRoomRightNext
+$984E LeaveRoomRightEnd
+$9853 c LeaveRoomLeft ; Move the room window 11 blocks left when the hero leaves by the left edge
+> As LeaveRoomRight, mirrored and without $9E21 / $9E4F: only when the hero faces left (+9 bit 7 set); B = -11 blocks, C = -22 cells, SavePlayAttrs, RoomNumber - 1, BurstTimer $64, HarpyPhase 3 back to 1, RoomEvents. Called by $AD3C: 281 calls, 12 room changes in rzx-r2.
+> As in stage 1 at $9E45 with the harpy step.
+> Witness: L1 379 (rzx-r2, s2-right, stageload).
+$9888 LeaveRoomLeftEvents
+$988B LeaveRoomLeftEnd
+$9890 c LeaveRoomDown ; Move the room window 6 blocks down when the hero leaves by the bottom
+> IY = the hero. Only in the hero's state 3 (+$0A; state 2 with +8 under 8 goes nowhere): ShiftRoomRows with B = 6 blocks and C = 96 lines, SavePlayAttrs, RoomNumber + the grid's rooms-per-row (record +8), BurstTimer = $64, RoomEvents. Preserves IX and IY.
+> As in stage 1 at $9E74, the same code.
+> Witness: L1 1 (rzx-r2).
+$98A4 LeaveRoomDownState3
+$98D0 LeaveRoomDownEnd
+$98D5 c LeaveRoomUp ; Move the room window 6 blocks up when the hero leaves by the top
+> IY = the hero. Only in state 2 (+$0A) with +8 under 8: ShiftRoomRows with B = -6 blocks and C = -96 lines, SavePlayAttrs, RoomNumber - the grid's rooms-per-row, BurstTimer = $64, RoomEvents. Preserves IX and IY.
+> As in stage 1 at $9EB9, the same code.
+> Witness: L1 1 (rzx-r2).
+$990E LeaveRoomUpEnd
+$9913 c ShiftRoomColumns ; Move the room window by B blocks across, move the hero and the kept actors by C cells, build the room
+> Input: B = the blocks to move (signed), C = the cells (2B), IY = the hero. RoomColumn + B; the hero's X and entry X - C. The amount 2B is written into the two SUB operands at ShiftKeptX and ShiftKeptEntryX; then every used actor record with +$0F bit 1 (kept over a room change) is moved by it and freed when it falls outside columns 0-29; every other record is freed. Then ClearPlayBuffer and a jump to RoomChange. 24 times in rzx-r2.
+> As in stage 1 at $9EF7.
+> Witness: L1 31 (rzx-r2, s2-right, stageload).
+$993B ShiftColumnsLoop
+$994B ShiftKeptX ; SUB n: n written above (2 x blocks)
+$9957 ShiftKeptEntryX ; SUB n: n written above
+$995E ShiftColumnsFree
+$9962 ShiftColumnsNext
+$996C c ShiftRoomRows ; Move the room window by B blocks up or down, move the hero and the kept actors by C lines, build the room
+> Input: B = the blocks to move (signed), C = the lines (16B), IY = the hero. RoomRow + B; the hero's Y and entry Y - C. C is written into the SUB operands at ShiftKeptY and ShiftKeptEntryY; every used record with +$0F bit 1 is moved by it (freed outside lines 0-143), every other record is freed. Then $8AA0 and a jump to the room builder $9257.
+> The kept actor's new Y is stored at +0 (its X), not at +1 ($99A7 `LD (IY+$00),A`): the code moves a kept actor's Y into its X. Ran 6 times in s1-right.
+> As in stage 1 at $9F4F, the same code.
+> Witness: L1 2 (rzx-r2).
+$9991 ShiftRowsLoop
+$99A1 ShiftKeptY ; SUB n: n written above (16 x blocks)
+$99AD ShiftKeptEntryY ; SUB n: n written above
+$99B4 ShiftRowsFree
+$99B8 ShiftRowsNext
+$99C2 c SavePlayAttrs ; Keep the old room's play-area attributes for the fade-in of the next room
+> Copies the 576 attribute-shadow bytes of screen rows 6-23 ($6DC0, 18 x 32) to $7040 and sets RestoreAttributes = 1, so the next attribute pass ($8CD0) shows the new room over the old one's colours.
+> As in stage 1 at $9FA5, the same code.
+> Witness: L1 40 (rzx-r2, s2-right, stageload).
+@module render
+$99D3 c BlackOutPlayArea ; Fill the attributes of screen rows 6-23 with 0 (black on black)
+> Fills $58C0-$5AFF (the play area's 576 attributes) with 0 before a room is built. Called by the room builder $9257.
+> As in stage 1 at $A057, the same code.
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+@module actors
+$99E1 c ScoreBurst20 ; Score 20, then burst the actor (shape BurstShape20 $EEE2) into particles and free it
+> IY = the actor. AddScore $7B1F with 20, then StartBurst at X - 7, Y / 8 with the shape at $EEE2 in the small mode, colours 6 and 4 (3 and 2 when +8 = 8). StartBurst returns into the caller, which frees the actor.
+> Called by StrikeableActor ($A9D4) when an urn is struck: 10 times in rzx-r2.
+> As in stage 1 at $A065, the same code.
+> Witness: L1 10 (rzx-r2).
+$9A0B ScoreBurst20Alt
+$9A14 c BreakStatue1 ; The warrior statue (kind 1) smashed: Statue1State = $C8, a burst, item kind 2 and 7 fragments
+> Statue1State = $C8 (the statue is not placed again), then StartBurst at column $0D, row 4 with BurstShapeStatue $EECA, inks 6 and 7, the big mode (A = 0); SpawnItem kind 2 (amount 1, the icon ItemIconKind2 $DEE5) at column $14, line $60; SpawnFragments (a JP) with D = 7 fragments at column $14, line $75.
+> Jumped to from WarriorStatueActor ($A756 JP Z) at the sixth strike: once in rzx-r2.
+> Witness: L1 1 (rzx-r2).
+$9A41 c BreakStatue0 ; The kneeling statue (kind 0) broken: Statue0Broken = 1, a burst, 36 of item kind 1 and 5 fragments
+> Statue0Broken = 1, StartBurst at column $0D, row 5 with BurstShapeStatue $EECA, inks 6 and 7, the big mode; SpawnItem kind 1 (amount $24, the icon ItemIconKind1 $DE85) at column $14, line $60; SpawnFragments (a JP) with D = 5 at column $13, line $75.
+> Jumped to from KneelingStatueActor ($A70B JP Z): once in rzx-r2.
+> Witness: L1 1 (rzx-r2).
+$9A6E c SpawnItem ; Put an item actor (template $970C) into a free record
+> Input: D, E = X and Y, BC = the item's frame, L = the item kind (+$0B), H = the amount (+$0A). FindFreeActor $8D71; with a free record: SpawnActor with the template $970C (16 x 16 lines, handler ItemHandler), then the frame, kind and amount. Preserves IY.
+> As in stage 1 at $A098, the same code.
+> Witness: L1 7 (rzx-r2).
+$9A92 SpawnItemFull
+$9A99 c ReleaseExtraLife ; An urn's extra life: ExtraLifeTemplate two columns from the urn, on the hero's far side
+> IY = the struck urn. HL = ExtraLifeTemplate $971E, D = the urn's base column (+$0D), E = its base line (+$0E) - $18. The hero facing right (HeroFlags bit 7 clear): the template's flags ExtraLifeTemplateFlags $9727 = $80 (the life faces left) and D + 2; facing left: D - 2 (the flags as they are: once set to $80 they stay). SpawnActor (a JP) puts the life into the urn's own record.
+> Jumped to from StrikeableActor ($A9E6 JP Z) for the urn kinds that hold a life: twice in rzx-r2.
+> Witness: L1 2 (rzx-r2).
+$9AAF ReleaseExtraLifeLeft
+$9AB1 ReleaseExtraLifeSpawn
+$9ABA c DropUrnItem ; An urn's item: 36 of item kind 1 (the icon ItemIconKind1 $DE85) where the urn stood, the urn freed
+> IY = the urn. SpawnItem at its column (+0) and base line (+$0E) with kind 1, amount $24, then RemoveActor (a JP).
+> Jumped to from StrikeableActor ($A9E1 JP Z): three times in rzx-r2.
+> Witness: L1 3 (rzx-r2).
+$9ACD c ItemHandler ; An item on the floor: taken when the hero stands on it (400 points, AddItem, effect 4)
+> IY = the item (ItemTemplate $970C, frame = its icon). The colour cycles (SetCycleColour). HeroOnItem with C = $14: no carry, nothing more. Taken: AddScore 400 ($0190), AddItem with A = the kind (+$0B) and D = the amount (+$0A), PlaySoundVector 4; the kind 5 (the artefact) adds 1 to PiecesComplete; RemoveActor (a JP).
+> The handler in ItemTemplate: 268 passes and 7 items taken in rzx-r2.
+> Witness: L1 268 (rzx-r2).
+$9AFA c ExtraLifeActor ; The extra life: drifts up and left (frames 18-21 of the lamp set); the hero touching it gains a life
+> IY = the life (ExtraLifeTemplate $971E, +8 = $12). +8 + 1; at $16 it goes back to $12 and the life moves: MoveBaseX with E = -1 (freed at column 0 or $20 and up), MoveActorY with C = -4. The touch: the hero's line ($74E1) less the life's line under $14 and the hero's column equal to the life's or one less: StartLivesFlash, Lives + 1 (not stored when it would be 6) with PlaySoundVector 4, then ExtraLifeSparkle (a JP), which turns the record into the sparkle. Else HarpyLampFrame (a JP) shows frame +8 of HarpyLampSet $A7F2.
+> The handler in ExtraLifeTemplate: 102 passes in rzx-r2, the life taken once.
+> Witness: L1 102 (rzx-r2).
+$9B1A ExtraLifeTouch
+$9B31 ExtraLifeTaken
+$9B49 ExtraLifeFrame
+$9B4F c SparkleActor ; The sparkle where a life was taken: frames 1-5 of SparkleSet, then freed
+> IY = the sparkle (SparkleTemplate $9730, +8 = $FF). +8 + 1; at 6 RemoveActor (a JP); else SetActorFrame $AC52 with the inline words SparkleSet.
+> The handler in SparkleTemplate: 7 passes in rzx-r2.
+> Witness: L1 7 (rzx-r2).
+$9B5D w SparkleSet 2 ; SetActorFrame's inline words: the frame table $E5F8, the graphics SparkleSprites $E5D3
+> Read by SetActorFrame from SparkleActor ($9B5A): rzx-r2 (all four bytes); not in s2-right.
+$9B61 c HeroOnItem ; Carry when the hero stands on the item IY: the same column (3 further right when the item faces left), the line within C
+> E = the hero's column ($74E0), D = the item's column, + 3 when its +9 bit 7 is set; AbsDiffAtMost with A = 1 (carry only when the two are equal); no carry: return. Then on into HeroWithinY with C.
+> Called by ItemHandler ($9AD2): 268 times in rzx-r2.
+> Witness: L1 268 (rzx-r2).
+$9B71 HeroOnItemColumn
+$9B77 c HeroWithinY ; Carry set when the hero's Y is within C lines of the actor's
+> Input: IY = the actor, C = the distance. E = the hero's Y ($74E1), D = the actor's Y, then AbsDiffAtMost $A91B (a JP): carry when |E - D| < C.
+> As in stage 1 at $A11E, the same code.
+> Witness: L1 53 (rzx-r2).
+$9B82 c UnusedBurst ; A burst of the shape $EEB8 at column $14, row 7 (inks 4 and 5, the big mode): no code reaches it
+> D = $14, E = 7, IX = BurstShapeMedusa $EEB8, B = 4, C = 5, A = 0, then JR StartBurst. No JP, CALL or JR in stage 2 leads here and no table holds its address; it lies between HeroWithinY's JP and BurstSpirit.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$9B92 c BurstSpirit ; A spirit hit: a burst of BurstShape20 $EEE2 at its column - 6, row + 2 (inks 2 and 3, the big mode), the spirit freed
+> IY = the spirit. D = its column - 6, E = its line / 8 + 2; StartBurst with IX = $EEE2, B = 2, C = 3, A = 0, then RemoveActor (a JP).
+> Jumped to from SpiritFloat ($907A JP NZ) when the spirit is hit. Not executed in any recording (the recordings checked: s2-right, rzx-r2) (no spirit is hit in them); known only from the code.
+$9BB4 c HydraDefeated ; Each pass: once the last head is cut and its burst reaches step 4, burst the hydra's body and give room 7's bonus
+> Nothing unless BurstTimer = 4 and HydraHeads = 0. Then HydraHeads = $64 (the hydra beaten). Room 7: StartBurst at column $0F, row 2 with BurstShapeHydraBody $EEFA (inks 4 and 5, the big mode), then SpawnBonus (a JP) with D = $12, E = $3C and the event bit B = $20. Room 3 (above the body): StartBurst at column $0D, row 7 with BurstShapeHydraTop $EEEE (a JP). Other rooms: nothing more.
+> Called by MainLoop ($7864) every pass: 1951 calls in s2-right, 5805 in rzx-r2 (the body burst and the bonus once, in room 7).
+> Witness: L1 8031 (rzx-r2, s2-right, stageload).
+$9BE9 HydraDefeatedRoom3
+$9BFA c StartBurst ; Turn a 16 x 12 shape into particles at $7040 that fly apart (UpdateBurst)
+> Input: A = BurstSmall (1 small: 14 steps; 0 big: 28), D, E = the shape's left column and top cell row, IX = the shape (12 rows of 2 bytes, bit 7 left), B and C = the two inks. PlaySoundVector 1, RandomPointer = $0D7A (every burst flies the same way), the colours C, C + $40 (bright), B, B + $40 into ParticleInks, BurstTimer = $FF. Each set bit of the shape gives a particle record of 4 bytes at $7040: X, Y (cell row), the direction (a random 0-5, + 13 for the right byte), the ink (a random 0-3); $FF ends the list. Preserves IY.
+> As in stage 1 at $A1F3, the same code.
+> Witness: L1 17 (rzx-r2).
+$9C08 StartBurstSound
+$9C31 StartBurstRow
+$9C36 StartBurstByte
+$9C3F StartBurstBit
+$9C4D StartBurstDirection
+$9C6E StartBurstNextBit
+@module actors
+$9C92 c UpdateBurst ; Move and draw the burst's particles one step (every pass)
+> Called by the main loop ($7861) once a pass. Nothing while BurstTimer $FE3A = $64. Else BurstTimer + 1; at $1C the burst ends (StopBurst $9D90). Unlike stage 1 ($A28B) the end is $1C in both modes: there is no shorter end for the small mode; BurstSmall $FE3B only doubles the step index below.
+> The step picks the particles' glyph: the byte at $EDC7 + the step + a random 0-3 (Random $8BAC) x 8 + $EDA7, written into ParticleGlyph (the LD DE,n at $9D46). Each particle (4 bytes from $7040: +0 the column, +1 the cell row, +2 the direction, +3 the ink 0-3; $FF ends the list, $80 a dead one): its direction's row of 32 at $EDEA (directions 0-9 the second set of BurstSteps, $0A and up the first, less $0D) gives at the step (+ the ink's bits, doubled when BurstSmall) an index into BurstSteps (dx, dy): the column + dx is kept in 1-30, the row - dy dies ($80) at 18 and up. The 8 glyph bytes go into the play buffer at the cell ($5B00 + row x 256 + column, a line every 32 bytes) and ParticleInks[+3] into the cell's attribute (AttrShadowAddressA $B479).
+> In rzx-r2 it draws 453 steps (the bursts of the statues, the urns and the hydra's heads); s2-right has no burst.
+> As in stage 1 at $A296 (UpdateBurstStep), the same instructions; stage 1's head with the small-mode end is gone.
+> Witness: L1 8031 (rzx-r2, s2-right, stageload).
+$9CC6 UpdateBurstLoop
+$9CDE UpdateBurstDirection
+$9CFE UpdateBurstIndex
+$9D13 UpdateBurstMove
+$9D23 UpdateBurstY
+$9D33 UpdateBurstStoreY
+$9D36 UpdateBurstDraw
+$9D46 ParticleGlyph ; LD DE,n: n = the step's glyph (written by UpdateBurst)
+$9D84 UpdateBurstNext
+$9D8F b BurstLeftover 1 ; An unreached RET byte after UpdateBurst's loop
+> No code jumps to $9D8F (UpdateBurst's loop leaves by RET Z at $9CCB). As stage 1's $A392.
+$9D90 c StopBurst ; BurstTimer = $64: no burst
+> Jumped to by UpdateBurst at the burst's last step ($9C9B). In rzx-r2 16 bursts end here.
+> As in stage 1 at $A393, the same code.
+> Witness: L1 16 (rzx-r2).
+$9D96 b ParticleInks 4 ; The burst's four particle attributes, written by StartBurst
+> Ink C, bright ink C, ink B, bright ink B (StartBurst $9BFA writes them); a particle's +3 (0-3) picks one (UpdateBurst $9D72). As loaded: 2, $42, $43, 3. As in stage 1 at $A399.
+$9D9A b BurstSteps 4 ; 20 (dx, dy) steps: 10 for the directions $0A and up (less $0D), 10 for the directions 0-9
+> Read by UpdateBurst $9D06 (+ $14 for the second set): signed dx (columns) and dy (cell rows, subtracted). The pairs
+> 0, 2, 4, 6, 8 of each set: (0,0) (0,1) (0,0) (0,-1) (1,0)... As in stage 1's BurstSteps $A39D. Read in rzx-r2:
+> $9D9A-$9D9D, $9DA0-$9DA7, $9DAE-$9DB1, $9DB4-$9DBB; the pairs at $9D9E, $9DA8-$9DAD, $9DB2 and $9DBC-$9DC1 no
+> recording read.
+$9DAE BurstStepsSecond ; the 10 steps of the directions 0-9
+@res stage2/table-burst-steps.bin
+@module hud
+$9DC2 c DrawEnergyBar ; Redraw the HUD's energy bar when the energy changed
+> When Energy $FE3C differs from EnergyShown $FE58: EnergyShown = Energy; the bar is Energy / 8 bytes of EnergyBarPattern $CAFD, a last byte masked by BarMasks[Energy AND 7] (written into BarEdgeMask), then zeros to 6 bytes; drawn on 6 screen lines from EnergyBarScreen ($4134). Called every pass by PassTick $9219 ($9220); in s2-right it redraws 181 times, in rzx-r2 132.
+> This is the only code that reads $FE58: EnergyShown, not HeroFreeze (HeroFreeze is $FE66, see HeroUpdate $ADC0).
+> As in stage 1 at $A3C5, the same code.
+> Witness: L1 8120 (rzx-r2, s2-right, stageload).
+$9DF3 DrawEnergyBarLine
+$9DFC DrawEnergyBarFull
+$9E02 DrawEnergyBarEdge
+$9E03 BarEdgeMask ; AND n: n = BarMasks[Energy & 7] (written above)
+$9E0E DrawEnergyBarClear
+$9E12 DrawEnergyBarNext
+$9E19 b BarMasks 8 ; The left-aligned masks of 0-7 pixels for the bar's last byte
+> $00, $80, $C0, $E0, $F0, $F8, $FC, $FE, read by DrawEnergyBar $9DD9 (only the even entries were read in the two
+> recordings: the energy changes by 2). As in stage 1 at $A41C.
+@module enemies
+$9E21 c DrawHydraBody ; Draw the hydra's body picture into the play buffer: all of it in room 7, its top in room 3
+> Called every pass from the main loop ($785E) and by LeaveRoomRight ($9829, before the room appears). Only in grid 1 (GridNumber $FE54 = 1) while the hydra lives (HydraHeadsLeft $FE5F not $64). Room 7: DrawRowPicture $8B2A draws the row-packed picture HydraBodyPicture $D967 from the buffer address $5C12 (line 8, byte column $12), 112 lines. Room 3 (the room above it): the same picture from $6712 (line 96), 48 lines: its top shows at the bottom of room 3.
+> In rzx-r2 it draws in room 7 343 times and in room 3 166 times (screens 010562.png, 011021.png: room 3 with the body's top; 013279.png, 013504.png: room 7).
+> Witness: L1 8050 (rzx-r2, s2-right, stageload).
+$9E39 DrawHydraBodyRoom3
+$9E44 DrawHydraBodyRoom7
+$9E4F c ColourHydra ; Colour the hydra's body in the shadow attributes: a speckle of green and cyan, its eyes and mouth
+> Called every pass from the main loop ($7858) and by LeaveRoomRight ($982C). Only in grid 1. Room 7: 13 rows of 15 cells from $6DCF (screen row 6, column 15) get green or cyan at random (SpeckleHydra $9E94); then, while the hydra lives (HydraHeadsLeft $FE5F not $64), FillShadowAttributes $8C93 with its five bytes $17, $90, 6, 3, $41 and the cells $6F37 = $41 (blue on red) and $6F58, $6F59, $6F78, $6F79, $6F98 = $44 (bright green). Room 3: 13 rows of 15 cells from $6E70 (row 11, column 16) speckled.
+> The speckle keeps colouring room 7 after the hydra is beaten; DrawHydraBody draws no body then.
+> Witness: L1 8050 (rzx-r2, s2-right, stageload).
+$9E8F ColourHydraRoom3
+$9E94 c SpeckleHydra ; Colour B rows of 15 shadow cells from HL with 4 or 5 (green or cyan) at random
+> The colours come from the ROM bytes from $0000 (DE = 0, bit 0 of each byte): the same speckle every pass, since DE
+> starts at 0 each call. HL steps 32 a row. Called by ColourHydra $9E64 (room 7, 764 calls in rzx-r2) and $9E92
+> (room 3, 166).
+> Witness: L1 930 (rzx-r2).
+$9E97 SpeckleHydraRow
+$9E9B SpeckleHydraCell
+$9EAE c UpdateHydraNecks ; Move the hydra's three necks a step, draw them and put each head at its neck's end
+> Called every pass from the main loop ($7852). Only in grid 1, rooms 7 and 3. Runs the second neck (HydraNeck2Step $9F31), the first (HydraNeck1Step $9EEC) and the third (HydraNeck3Step $9F75); after each, IX points past the neck's last drawn point and the point (IX-2: the column in pixels from the play area's left, IX-1: the line) is kept for the head's handler: neck 1 in HydraHead1X/Y $FE4D/$FE4E, neck 2 in $FE4F/HydraHead2Y $FE50, neck 3 in HydraHead3X/Y $FE51/$FE52.
+> The heads are actors of the kinds 7 and 9 (room 7) and 8 and 10 (room 3) whose handlers ($7FB5, $7FEB, $8023, $805B) read these bytes (+$18 across, the line - $0A: $8100). In room 3 the third neck is not drawn and its head bytes take the second neck's point (IX is left from it).
+> In rzx-r2: 930 passes (764 in room 7, 166 in room 3); s2-right never enters grid 1's rooms 3 and 7.
+> Witness: L1 8031 (rzx-r2, s2-right, stageload).
+$9EBE UpdateHydraNecksDraw
+$9EEC c HydraNeck1Step ; The first neck: its step, its pose, its length, then draw it
+> The step $FE43 counts 0 to $14 a pass; past $14 it starts again at $0E (a sway), or at 0 (the long strike) one time
+> in four (Random $8BAC AND 3 = 0). The pose $FE44 = HydraNeck1Poses[step] (0-9). The length byte $FE5C goes through
+> NeckLength $9FB3 (E = the segments, 7 at most). IX = HydraNeck1Points + pose x 14; room 3 draws it 80 lines lower
+> (DrawNeckLow $A0B5, C = $50), room 7 8 lines higher (DrawNeckHigh $9FC4, C = $F8).
+> Witness: L1 930 (rzx-r2).
+$9EFF HydraNeck1Restart
+$9F01 HydraNeck1Pose
+$9F2B HydraNeck1Room3
+$9F31 c HydraNeck2Step ; The second neck: its step, its pose, its length, then draw it
+> As HydraNeck1Step $9EEC with the step $FE45 (0 to $13, then $0E, or 0 one time in two), the pose $FE46 =
+> HydraNeck2Poses[step] (1-9), the length byte $FE5D (11 segments at most), HydraNeck2Points (22 bytes a pose);
+> room 3 draws it 32 lines lower (C = $20), room 7 56 lines higher (C = $C8: clipped at the top, DrawNeckHigh).
+> Witness: L1 930 (rzx-r2).
+$9F44 HydraNeck2Restart
+$9F46 HydraNeck2Pose
+$9F6F HydraNeck2Room3
+$9F75 c HydraNeck3Step ; The third neck: its step, its pose, its length, then draw it (room 7 only)
+> The step $FE41 (0 to $12, then $0E, or 0 one time in eight), the pose $FE42 = HydraNeck3Poses[step] (0-7), the
+> length byte $FE5E (7 segments at most), HydraNeck3Points (14 bytes a pose), drawn 32 lines lower (DrawNeckLow, C =
+> $20). Not drawn in room 3 (RET Z at $9FA8 after the length).
+> Witness: L1 930 (rzx-r2).
+$9F88 HydraNeck3Restart
+$9F8A HydraNeck3Pose
+$9FB3 c NeckLength ; E = the neck's segments from its length byte A; a cut neck (bit 7) shrinks one a pass
+> A = the length byte ($FE5C, $FE5D or $FE5E: twice the segments). With bit 7 set (the head was killed: $7FCD, $8003,
+> $803B) and above $80, A - 1. Out: C = A = the new byte (the caller stores it), E = (A AND $7F) / 2.
+> Called by the three neck steps ($9F14, $9F59, $9F9D), 930 times each in rzx-r2.
+> Witness: L1 2790 (rzx-r2).
+$9FBC NeckLengthSplit
+$9FC4 c DrawNeckHigh ; Draw E segments of a neck from the pose IX, the lines less n (clipped at the top)
+> In: A = the pose, B = the points of a pose, IX = the neck's points, C = the line change (its negative n is written
+> into the SUB n at NeckLineUp $9FF3), E = the segments. IX = IX + pose x 2B (the multiply $8B4B). Each segment: a
+> point (+0 the pixel column from the play area's left, +1 the line); the image is NeckSegments $C684 + (column AND
+> 7) x 16 (2 bytes x 8 lines, pre-shifted); at line - n it is ORed into the play buffer at $5B00 + line x 32 +
+> column / 8 + 6 (OrNeckSegment $A066). A segment 1-7 lines above the top is drawn from the line it shows: the CALL
+> at $A034 is aimed past the hidden rows (NeckSkipCall), DE past their bytes; one higher is skipped.
+> Used for the first neck (n = 8) and the second (n = $38) in room 7: 764 calls each in rzx-r2. The top clip
+> ($9FF8-$A037) is not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+> Witness: L1 1528 (rzx-r2).
+$9FDF DrawNeckHighLoop
+$9FF3 NeckLineUp ; SUB n: n = the line change (written above)
+$9FFC DrawNeckHighClip ; the segment starts above the top: skip its hidden rows
+$A034 NeckSkipCall ; CALL n: n = OrNeckSegment + 10 x the hidden rows (written above)
+$A039 DrawNeckHighFull
+$A05C DrawNeckHighNext
+$A066 c OrNeckSegment ; OR 2 bytes x 8 lines from DE into the play buffer at HL (BC = 31)
+> Unrolled: 10 bytes of code a row, so an entry 10 x k bytes in skips k rows (DrawNeckHigh's top clip). E steps
+> through the image (it must not cross a 256-byte page). 6560 calls in rzx-r2.
+> Witness: L1 6560 (rzx-r2).
+$A0B5 c DrawNeckLow ; Draw E segments of a neck from the pose IX, the lines plus n (cut at the play area's bottom)
+> As DrawNeckHigh $9FC4, with C written into the ADD A,n at NeckLineDown $A0E2; a segment at line $90 and below is
+> not drawn. Used in room 3 for the first neck (n = $50) and the second (n = $20), in room 7 for the third (n =
+> $20): 1096 calls in rzx-r2.
+> Witness: L1 1096 (rzx-r2).
+$A0CE DrawNeckLowLoop
+$A0E2 NeckLineDown ; ADD A,n: n = the line change (written above)
+$A10B DrawNeckLowNext
+$A113 b HydraNeck1Poses 21 ; The first neck's pose (0-9) at each step 0-$14
+> Read by HydraNeck1Step $9F0B: 4, 5, 6, 7, 8, 9, 9, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3 (the long strike from
+> step 0, the sway from $0E).
+$A128 b HydraNeck1Points 14 ; The first neck's 10 poses: 7 points (pixel column, line) each, from the body out
+> Read by DrawNeckHigh / DrawNeckLow through IX (HydraNeck1Step $9F1A). The last point drawn is the head's place.
+$A1B4 b HydraNeck2Poses 20 ; The second neck's pose (1-9) at each step 0-$13
+> Read by HydraNeck2Step $9F50.
+$A1C8 b HydraNeck2Points 22 ; The second neck's poses 0-10: 11 points (pixel column, line) each
+> Read through IX from HydraNeck2Step $9F5F. The poses are 1-9: pose 0 ($A1C8-$A1DD) is read only at its last point
+> ($A1DC-$A1DD, the head's place when no segment shows) and pose 10 ($A2A4-$A2B9) is never read (the recordings
+> checked: s2-right, rzx-r2; no pose table holds 10).
+$A2BA b HydraNeck3Poses 19 ; The third neck's pose (0-7) at each step 0-$12
+> Read by HydraNeck3Step $9F94.
+$A2CD b HydraNeck3Points 14 ; The third neck's 8 poses: 7 points (pixel column, line) each
+> Read through IX from HydraNeck3Step $9FAC.
+@module rooms
+$A33D c Unrle ; Unpack an RLE block: the first byte is the escape, ESC n v is n copies of v, ESC ESC ends
+> Input: HL = the packed block, DE = the output. The block's first byte is its escape byte, written into UnrleEscape and UnrleEnd's compares. Then: a byte other than the escape is copied; the escape followed by n, v writes n copies of v (n = 0 gives 256); the escape twice ends. Output: HL = the second escape of the end mark, DE = after the output.
+> RoomChange $9257 ($9262) unpacks the stage's tiles and map StageGraphics $B7D5 to $5B00 with it at every room change (7 calls in s2-right, 33 in rzx-r2).
+> As in stage 1 at $A424, the same code.
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+$A345 UnrleNext
+$A347 UnrleEscape ; CP n: n = the block's escape byte (written above)
+$A34F UnrleRun
+$A350 UnrleEnd ; CP n: n = the escape byte (written above)
+$A357 UnrleRunLoop
+$A35D c StartGrid ; Clear the room cells and the actors' extra state, enter the current grid at its start room, build it
+> Clears $7280-$74BF (the room's cells), fills $74C0-$74DF with $FF, calls $921E, then reads the RoomGrid record: RoomColumn = +2, RoomRow = +3, RoomExitsPtr = +4/+5 (the grid's room table), and jumps to RoomChange $9257. Called at the stage start (StageEntry $7822) and by EnterGridBuild $ADBA at each grid change (1 in s2-right, 6 in rzx-r2).
+> As in stage 1 at $A444, the same code.
+> Witness: L1 10 (rzx-r2, s2-right, stageload).
+@module actors
+$A396 c PlaceHeroAtStart ; Put the hero at X $0E, Y $41 in grid 0 (the stage's start)
+> IY = the hero's record $74E0, the hero's template $96C4 copied in at D = $0E, E = $41 (SpawnActor $A416), then the
+> standing frame (HeroStandFrame $AED5). Called once by StageEntry ($781F). Stage 1 had one PlaceHero with D, E as
+> input; stage 2 has five copies with the place built in: this one and PlaceHeroGrid1 to PlaceHeroBackGrid0.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$A3A7 c PlaceHeroGrid1 ; Put the hero at X 2, Y 9: the entry into grid 1 (room 0)
+> As PlaceHeroAtStart $A396. Called by EnterGrid1 $8814 ($8827): 1 time in each recording (s2-right falls into grid
+> 1 just before its game over).
+> Witness: L1 2 (rzx-r2, s2-right).
+$A3B8 c PlaceHeroGrid2 ; Put the hero at X 2, Y $21: the entry into grid 2
+> As PlaceHeroAtStart $A396. Called by EnterGrid2 $8835 ($8848): 2 times in rzx-r2.
+> Witness: L1 2 (rzx-r2).
+$A3C9 c PlaceHeroBackGrid1 ; Put the hero at X $18, Y $29 facing left: back from grid 2 into grid 1
+> As PlaceHeroAtStart $A396, then +9 bit 7 set (facing left). Called by $8859 ($8870): 2 times in rzx-r2.
+> Witness: L1 2 (rzx-r2).
+$A3DE c PlaceHeroBackGrid0 ; Put the hero at X $1E, Y $31 facing left: back from grid 1 into grid 0 (room 5)
+> As PlaceHeroBackGrid1 $A3C9. Called by $8882 ($889C): 1 time in rzx-r2.
+> Witness: L1 1 (rzx-r2).
+$A3F3 c MarkPlacementDone ; Set bit 7 of the actor's placement (it does not come back)
+> IY = the actor: the placement +$10 x 3 + Placements gets bit 7, so LoadRoomActors $A431 skips it from now on. Called by StrikeableActor $A9D7 when an urn breaks (10 times in rzx-r2).
+> As in stage 1 at $A48E, the same code.
+> Witness: L1 10 (rzx-r2).
+$A406 c ReviveAllPlacements ; Clear bit 7 of every placement of the current grid
+> Called once from StageEntry ($781C): every placed actor comes back.
+> As in stage 1 at $A4A1, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+$A40C ReviveAllPlacementsLoop
+$A416 c SpawnActor ; Copy an 18-byte template (HL) into the record IY and put it at D, E
+> Input: HL = the template, IY = the record, D, E = X and Y (also the entry X, Y at +$0D, +$0E). Preserves IY and DE. Called by the hero's placings, the items (SpawnItem $9A6E), the fragments (InitFragment $AA6C), the harpy ($8DA4) and the actor spawners of the other range.
+> As in stage 1 at $A4B1, the same code.
+> Witness: L1 94 (rzx-r2, s2-right, stageload).
+$A431 c LoadRoomActors ; Free the actors not kept over a room change and create the room's placed actors
+> Frees every record of $74F2-$75DB without +$0F bit 1. Then walks Placements (3 bytes: the kind, bit 7 done; X and Y in cells over the whole grid; $FF ends). A placement not done inside the room window (X in 2 x RoomColumn to + 29, Y in 2 x RoomRow to + 17) takes a free record found from $75CA down (no lower bound: it is assumed there is one) and is filled from ActorKinds $9607 (9 bytes a kind: Y offset in lines, the handler, five bytes for +8..+$0C, +$0F): X and Y relative to the room (Y in lines + the offset), the entry X, Y, +$10 = the placement's index, width 1, height 8, +$11 = 0, and a random 0-63 (NextSeed $8B9D) for +$0A when the kind gives $40 (no stage-2 kind does: not executed in any recording).
+> Called by RoomChange $9257 ($92E8) at each room change: 7 times in s2-right, 33 in rzx-r2. Stage 2 has 21 kinds (ActorKinds $9607-$96C3).
+> As in stage 1 at $A4CC, the same instructions (its own table address).
+> Witness: L1 43 (rzx-r2, s2-right, stageload).
+$A43A LoadRoomActorsFree
+$A444 LoadRoomActorsNext
+$A454 LoadRoomActorsSlot
+$A462 LoadRoomActorsPlacement
+$A4A4 LoadRoomActorsKind
+$A4A7 LoadRoomActorsFill
+$A50F LoadRoomActorsTaken
+$A514 LoadRoomActorsSkip
+$A523 c RunActorHandlers ; Call the handler of every used actor record (the hero first)
+> For the 14 records from $74E0: when +0 is not $FF, the handler +6/+7 is written into HandlerCall and called with IY = the record. Called twice a main-loop pass ($782B, $7855).
+> As in stage 1 at $A5BD, the same code.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$A529 RunActorHandlersLoop
+$A539 HandlerCall ; CALL n: n = the record's handler (written above)
+$A53C RunActorHandlersNext
+@module render
+$A545 c DrawActors ; Draw every visible actor into the play buffer, in two passes (+$0F bit 7 last)
+> First pass: the used records with +$0F bits 6 and 7 clear; second pass: those with bit 7 (drawn over the others). Each: ClipActor $A590 then DrawActorSprite $A60E. Bit 6 is never drawn. Called twice a main-loop pass ($782E, $785B).
+> As in stage 1 at $A5DF, the same code.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$A54B DrawActorsLoop
+$A565 DrawActorsNext
+$A573 DrawActorsTopLoop
+$A587 DrawActorsTopNext
+$A590 c ClipActor ; The actor's visible lines, buffer address and frame address
+> IY = the actor. Output: B = the lines to draw (0 none), DE = the play-buffer address, HL = the frame. Y $C8 and up (above the top): ClipActorTop. Y $90-$C7 (below the play area): B = 0. Else B = the height cut at line $90; PreShiftSprite $7F10 makes the shifted copy at $7640 when +$11 is 1-99, and HL is then $7640, else the frame +4/+5.
+> As in stage 1 at $A62A, the same instructions (two JP turned into JR).
+> Witness: L1 40129 (rzx-r2, s2-right, stageload).
+$A5AC ClipActorShift
+$A5C1 ClipActorFrame
+$A5C8 c BufferAddressDE ; DE = $5B00 + Y x 32 + X of the actor IY
+> Called by ClipActor $A5B0. ClipActorTop $A5DE and ClipActorOff $A60B are ClipActor's exits that follow it in memory.
+> As in stage 1 at $A664, the same code.
+> Witness: L1 40014 (rzx-r2, s2-right, stageload).
+$A5DE ClipActorTop ; Above the top: draw the lines from line 0, skip the frame's first rows
+$A605 ClipActorTopSkip
+$A609 ClipActorTopDone
+$A60B ClipActorOff ; B = 0: nothing to draw
+$A60E c DrawActorSprite ; Draw B lines of the actor's frame into the play buffer, then colour it
+> Input: B lines, DE = the buffer, HL = the frame (rows of +2 bytes, top first, no mask). +9 bit 0: copied opaque (DrawActorOpaque). Else ORed in by a row routine from the table $8A59 (4 bytes a width 0-7: the right-facing and the left-facing routine); the left-facing routines mirror the bytes through the resident BitReverse $FA00 and step left, so a left-facing actor's X is its right column. A shifted copy (+$11 1-99) is one byte wider. The routine is written into RowDrawCall. Then ColourActor $A662.
+> As in stage 1 at $A6AA, the same instructions (one JP turned into JR).
+> Witness: L1 40129 (rzx-r2, s2-right, stageload).
+$A629 DrawActorSpriteRoutine
+$A639 DrawActorSpriteSet
+$A642 RowDrawCall ; CALL n: n = the row routine (written above)
+$A64B DrawActorOpaque ; LDIR each row of +2 bytes, 32 bytes a buffer line
+$A64E DrawActorOpaqueLoop
+$A662 c ColourActor ; Fill the actor's cells in the attribute shadow $6D00 with its attribute +$0C
+> The cells under the actor (screen row Y / 8 + 6; the column X, or X - width + 1 facing left; width +2, + 1 when shifted, written into ColourWidth; the rows the lines cover, cut at line $90) get +$0C in the attribute shadow at $6D00. Nothing below the play area. Called by DrawActorSprite ($A647, $A65E).
+> As in stage 1 at $A6FF, the same instructions (one JR turned into JP).
+> Witness: L1 40065 (rzx-r2, s2-right, stageload).
+$A671 ColourActorWidth
+$A69F ColourActorAddress
+$A6BA ColourActorHeight
+$A6BD ColourActorRows
+$A6D1 ColourActorRows2
+$A6DB ColourActorRow
+$A6DC ColourWidth ; LD B,n: n = the width in cells (written above)
+$A6DF ColourActorCell
+@module enemies
+$A6EC c KneelingStatueActor ; Kind 0: the kneeling statue in the temple's first room; the high strike breaks it into an item
+> The handler of ActorKinds kind 0 ($9608), placed in grid 0 at cells 20, 9. Removed once KneelStatueBroken $FE55 is 1. It shows frame 3 (3 bytes x 35 lines) of the statues' set (StatueFrame $A70E). When the hero's column + 4 or + 3 is its column and the hero's high strike is at its hitting frame ($816D: state 6, frame 7), $9A41 breaks it: KneelStatueBroken = 1, a burst of the shape $EECA, item kind 1 (amount $24) at column $14, line $60 (SpawnItem $9A6E), five fragments at $13, $75.
+> In s2-right it shows 32 passes (screen 000500.scr), in rzx-r2 330 (000520.png: the white kneeling figure on its plinth); rzx-r2 breaks it once.
+> Witness: L1 443 (rzx-r2, s2-right, stageload).
+$A70E c StatueFrame ; Show the actor's frame +8 of the statues' set (StatueSet)
+> The common end of KneelingStatueActor $A6EC and WarriorStatueActor $A718: SetActorFrame $AC52 with the four bytes
+> after the CALL, returning to the handler's caller.
+> Witness: L1 1960 (rzx-r2, s2-right, stageload).
+$A714 w StatueSet 2 ; SetActorFrame's parameters: the statues' frame table $E0A4, their graphics $DF45
+> Four frames: 0 the warrior's head (3 x 14), 1 his body with the shield (5 x 30), 2 his legs (3 x 18), 3 the kneeling
+> statue (3 x 35).
+$A718 c WarriorStatueActor ; Kinds 1, 14, 15: a part of the warrior statue; six strikes on it smash all three parts
+> The handler of ActorKinds kinds 1, 14 and 15 ($9611, $9686, $968F), all placed in grid 0 at cells 41, 6: frames 0, 1 and 2 of StatueSet (+8 from the kind), colour $47 (white). WarriorStatueState $FE56: 0 standing, 1-3 the hit flash (colour $43, magenta, one pass each), $C8 smashed (each part removes itself).
+> Only the part with +$0F bit 3 (kind 15) takes the strike: when the hero's column + 3 or + 4 is its column and the high strike is at its hitting frame ($816D), effect 2 (PlaySoundVector) and +$0B (6 at the start) - 1; at 0 $9A14 smashes the statue: WarriorStatueState = $C8, a burst of the shape $EECA, item kind 2 (amount 1, picture $DEE5) at column $14, line $60, seven fragments at $14, $75; else the flash (WarriorStatueState = 3).
+> In s2-right 735 passes (the statue stands); in rzx-r2 438 passes, six hits and the smash (screens 002017.png: the white warrior with the shield, 002530.png: only the plinth is left).
+> Witness: L1 1527 (rzx-r2, s2-right, stageload).
+$A732 WarriorStatueHit
+$A748 WarriorStatueStrike
+$A760 c HarpyFlameActor ; Kind 13: the flame of the lamp the harpy comes from; it wakes the harpy when the hero walks by
+> The handler of ActorKinds kind 13 ($967D), placed in grid 0 at cells 84, 10 with the kinds 2 and 3 (the lamp and the
+> harpy). Removed once HarpyPhase $FE5A is not 0. HeroNearGlow $B4AF sets its colour: white ($47) while the hero is left
+> of column 9, the frame is then 5 (1 x 3: a spark); else +8 counts 0-$4F and the frame is HarpyFlameFrames[+8 / 2]
+> (5, then 6-$0B: the flame flickers). +$0B (12 at the start) counts down a pass; at 0, with +8 under $30 and the hero
+> walking or jumping (state 1 or 2), HarpyPhase = 1 (the harpy wakes) and the flame is removed.
+> In s2-right 28 passes and the wake once; rzx-r2 37 passes and the wake.
+> Witness: L1 65 (rzx-r2, s2-right).
+$A776 HarpyFlameStep
+$A784 HarpyFlameCount
+$A791 HarpyFlameWake
+$A7AB HarpyFlameShow
+$A7BA b HarpyFlameFrames 8 ; The flame's frame (of HarpyLampSet) for each pair of passes 0-$27
+> Read by HarpyFlameActor $A7B7: 24 x 5, then 6, 7, 8, 9, $0A, $0B, $0A, 9, 8, 9, $0A, $0B, $0A, 9, 7, 6. In the
+> two recordings only $A7BA-$A7BF were read.
+$A7E2 c HarpyLampActor ; Kind 2: the lamp hanging from the ceiling (frame 0 of HarpyLampSet, 4 x 12)
+> The handler of ActorKinds kind 2 ($961A). Removed once HarpyPhase $FE5A is not 0. Its colour by HeroNearGlow $B4AF.
+> In s2-right 29 passes, rzx-r2 38.
+> Witness: L1 67 (rzx-r2, s2-right).
+$A7EF c HarpyLampFrame ; Show frame A of HarpyLampSet
+> The common end of HarpyFlameActor, HarpyLampActor and HarpyRiseActor; also jumped to from $9B4C (another range).
+> Witness: L1 288 (rzx-r2, s2-right).
+$A7F2 w HarpyLampSet 2 ; SetActorFrame's parameters: the frame table $E54F (22 frames), the graphics $E229
+> Frame 0 the lamp (4 x 12), 1-4 the harpy asleep (3 x 8), 5-$0B the flame (1 x 3 to 2 x 8).
+$A7F6 c HarpyRiseActor ; Kind 3: the harpy under the lamp; it rises (HarpyPhase 1) into the flying harpy
+> The handler of ActorKinds kind 3 ($9623), placed with the lamp. By HarpyPhase $FE5A: 4 and up, removed; under the
+> hero's column a touch costs 4 energy (DamageHero $8774, when the hero's column is not under its own: $A80D).
+> Phase 0 ($A87D): asleep: +8 counts 0-7, the frame 1 while white (HeroNearGlow $B4AF), else +8 / 2 + 1 (frames 1-4 of
+> HarpyLampSet). The hero in the middle strike (state 5) at base column $0F or more with its pass counter +$10 at $0E
+> sets phase 2 (not executed in any recording).
+> Phase 1 (the wake, set by the flame): its colour cycles (CycleItemInk $A8EB), +$0B counts 0-$16 and the frame is
+> HarpyRiseFrames[+$0B] of HarpyRiseSet (4 x 20, 3 x 28, 3 x 27, 4 x 24: it stands up); at $17 HarpyPhase = 3, $8DA4
+> spawns the flying harpy (two records from the templates $96E8 and $96FA at columns $12-$13, lines $4E and $62) and
+> this record is removed.
+> Phases 2 and $0A ($A817): +8 counts from $13 to $16 again and again, the base line goes 8 up each round ($8F84),
+> HarpyPhase = $0A, the frames come from HarpyRiseFrames + $17 (from $0C) of HarpyLampSet; it vanishes (RET, no frame)
+> once its line is under 8. Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from
+> the code.
+> In s2-right 50 passes and the rise (screen 000500.scr: the green figure under the lamp), in rzx-r2 59.
+> Witness: L1 109 (rzx-r2, s2-right).
+$A810 HarpyRisePhase
+$A817 HarpyRiseUp
+$A839 HarpyRiseUpFrame
+$A845 HarpyRiseGone
+$A846 HarpyRiseWake
+$A864 HarpyRiseWakeFrame
+$A879 w HarpyRiseSet 2 ; SetActorFrame's parameters: the frame table $E211 (4 frames), the graphics $E0BC
+$A87D c HarpyRiseAsleep ; HarpyRiseActor's phase 0: wait under the lamp; the middle strike next to it starts phase 2
+> Reached from HarpyRiseActor $A848. See there.
+> Witness: L1 62 (rzx-r2, s2-right).
+$A89B HarpyRiseAsleepStep
+$A8B3 HarpyRiseAsleepFrame
+$A8BD b HarpyRiseFrames 8 ; The rising harpy's frame (of HarpyRiseSet) at each step 0-$16, then 23 bytes for phase 2
+> Read by HarpyRiseActor $A870 (+$0B the step): 0, 1, 0, 1, 0, 1, 0, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3.
+> $A8D4 on: the frames $0C-$15 that phase 2 reads at $A83E (with +8 at $13-$16: $A8E7-$A8EA), not executed. Read in
+> the recordings: $A8BE-$A8D3.
+$A8D4 HarpyFallFrames ; phase 2's frames (HarpyRiseUp $A83E)
+@module render
+$A8EB c CycleItemInk ; +$0C = ItemInks[+$0B & 3]
+> In stage 1 no code referred to it; in stage 2 the flying harpy ($8E06, 351 calls in s2-right, 367 in rzx-r2) and
+> HarpyRiseActor's wake ($A84A) call it: their colours cycle red, magenta, blue, white.
+> As in stage 1 at $A788, the same code.
+> Witness: L1 764 (rzx-r2, s2-right).
+$A8FC b ItemInks 4 ; CycleItemInk's four attributes
+> Read by CycleItemInk $A8F6: $42, $43, $41, $47. As in stage 1 at $A799.
+$A900 c FreeIfOnHero ; Free the actor when it is in the hero's column and cell row (not referenced)
+> When the hero's X ($74E0) equals +0 and the hero's Y and +1 are in the same cell row: +0 = $FF and a jump to ReturnZ $B40B. No code or table in the image refers to $A900.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+> As in stage 1 at $A79D, the same code.
+@module enemies
+$A91B c AbsDiffAtMost ; Carry when |E - D| is at most A
+> In: A the limit, D and E the two values. Out: A = |E - D|, carry set when it is under the limit or equal to it. The limit goes into its own compare at AbsDiffLimit $A924. Stage 1's AbsDiffBelow $A7B8 had no equal case: stage 2 adds RET NZ / CCF (carry on equal).
+> Used for the hero's distances: DamageIfTouching $8760 (the touches), InStrikeReach $AA06, DropActorTouch $A999, the fragments ($AB3F), $9B61 and $9B77.
+> Witness: L1 598 (rzx-r2, s2-right, stageload).
+$A924 AbsDiffLimit ; CP n: n = the limit, written by the first instruction
+$A929 c DropActor ; Kind 6: a drop that falls from the ceiling, splashes and comes again
+> The handler of ActorKinds kind 6 ($963E), placed in grid 1 at line 2 of six columns. Colour red or magenta (ColourRedMagenta $B499). The frame +8 (DropSet, from $ED59 over $ECE6) is the state: 0-5 the drop forming (a step a pass, DropActorWait), 6 the fall: 4 lines a pass ($8F84) until the cell under it (column + 3, line + $0C: CellAt $B2DC) is solid, then 7-$0B the splash (effect $0A, PlaySoundVector, at frame $0A), $0C the end: the line back to $10 (+$0E), a random wait $0A-$29 (+$0A) at frame $0D, then 0 again. In the fall it costs the hero 4 energy when he stands in its column and within $0C lines (DropActorTouch $A999).
+> In s2-right 1086 passes (the blue rooms of grid 1 before the game over), in rzx-r2 2255 (the red drops in the screens of grid 1).
+> Witness: L1 3341 (rzx-r2, s2-right).
+$A943 DropActorWaitCount
+$A953 DropActorFall
+$A976 DropActorFrame
+$A983 DropActorSplash
+$A98D DropActorShow
+$A990 w DropSet 2 ; SetActorFrame's parameters: the frame table $ED59, the graphics $ECE6
+$A994 c DropActorWait ; DropActor's frames 0-5 and 7-$0B: one frame a pass
+> Reached from DropActor $A95B. See there.
+> Witness: L1 620 (rzx-r2, s2-right).
+$A999 c DropActorTouch ; DamageHero (4) when the hero is in the drop's column (or the one right of it) and within $0C lines
+> Called by DropActor $A953 at each pass of the fall. AbsDiffAtMost $A91B on the lines, DamageHero $8774 with C = 4.
+> Witness: L1 1621 (rzx-r2, s2-right).
+$A9A6 DropActorTouchLine
+$A9B8 c StrikeableActor ; Kinds 16-19: an urn or a jar that the hero's high strike breaks (two hits)
+> The handler of ActorKinds kinds 16-19 ($9698, $96A1, $96AA, $96B3; frames 6, 4, 2, 0 of StrikeableSet): urns in grid 0 and grid 1. IY = the actor record. When the hero's high strike is at its hitting frame ($816D: state 6, frame 7) and InStrikeReach $AA06 says the actor is in front of the hero, the hit count (+8, also the frame) goes up: an odd count plays effect 2 and shows the cracked frame; an even one destroys it: score +20 and a burst (ScoreBurst20 $99E1), the placement marked done (MarkPlacementDone $A3F3), then by +$10 bits 0-1: 1 the item at $9ABA, 2 the item at $9A99, else eight-odd fragments (ShatterActor $A9F5).
+> Stage 1's StrikeableActor was hit by the low strike ($7FEE); stage 2's test $816D is the high strike's.
+> In s2-right 1915 passes, 1 hit; in rzx-r2 1828 passes, 20 hits, 10 urns broken (3 items at $9ABA, 2 at $9A99, 5 shattered).
+> As in stage 1 at $A7C4, the same instructions apart from the hit test and the drops.
+> Witness: L1 4019 (rzx-r2, s2-right, stageload).
+$A9D4 StrikeableActorDies ; the second hit: score, burst, the done mark, then the drop by +$10
+$A9EB StrikeableActorFrame
+$A9F1 w StrikeableSet 2 ; SetActorFrame's parameters: the urns' frame table $C7CE, their graphics $C704
+$A9F5 c ShatterActor ; Burst the actor into fragments and remove it
+> IY = the actor. B = its column, C = its line rounded down to 8, + 5; SpawnFragments $AA37, then RemoveActor $B489. Unlike stage 1 ($A803, D = 8) D is not set: it is what ScoreBurst20 $99E1 left, the actor's column - 7 (StartBurst keeps D), so an urn further right breaks into more fragments.
+> In rzx-r2 5 urns shattered (27 fragments).
+> Witness: L1 5 (rzx-r2).
+$AA06 c InStrikeReach ; Z when the actor IY stands where the hero's strike lands
+> The actor's column must be the hero's column $74E0 + 3 when the hero faces right ($74E9 bit 7 clear), - 3 when he faces left, and its line within 24 ($18) of the hero's line $74E1 (AbsDiffAtMost $A91B). Out: Z (ReturnZ $B40B) in reach, NZ (ReturnNZ $B410) not. Called by StrikeableActor $A9BD (5 times in s2-right, 22 in rzx-r2).
+> As in stage 1 at $A816, the same instructions.
+> Witness: L1 27 (rzx-r2, s2-right).
+$AA1A InStrikeReachRight
+$AA22 InStrikeReachLine
+$AA34 InStrikeReachMiss
+$AA37 c SpawnFragments ; Start D fragment actors at column B, line C
+> Seeds RandomPointer $FE0A with $07CF (so every burst looks the same), writes B and C into the LD D / LD E at FragmentColumn $AA4E and FragmentLine $AA50, and for each of the D fragments takes a free actor record (FindFreeActor $8D71; it stops quietly when none is free), random parameters (RandomFragmentParams $AA5E) and starts it (InitFragment $AA6C). IY is kept.
+> Called by ShatterActor $AA00 and the statues' smashes $9A3E, $9A6B: 7 calls in rzx-r2, 39 fragments started.
+> As in stage 1 at $A846, the same code.
+> Witness: L1 7 (rzx-r2).
+$AA48 SpawnFragmentsLoop
+$AA4E FragmentColumn ; LD D,n: n = the column, written by SpawnFragments
+$AA50 FragmentLine ; LD E,n: n = the line, written by SpawnFragments
+$AA58 SpawnFragmentsNext
+$AA5E c RandomFragmentParams ; B = its arc (0-3), C = its speed (0-3), A = its facing (bit 7)
+> From two Random $8BAC bytes: B = the first AND 3, C = the second AND 3, A = the second AND $80.
+> As in stage 1 at $A86D, the same code.
+> Witness: L1 39 (rzx-r2).
+$AA6C c InitFragment ; Fill the actor record IY as a fragment and run its first step
+> Copies the fragment template $9754 into the record (SpawnActor $A416 with D, E the column and line), then the record's +9 = A (facing), +$0A = B (the arc), +8 = C (the speed in pixels a step), and goes on into FragmentActor $AA81. 39 calls in rzx-r2.
+> As in stage 1 at $A87B, the same instructions (its own template).
+> Witness: L1 39 (rzx-r2).
+$AA81 c FragmentActor ; Per-pass handler of a fragment: fly an arc, land, lie, sink, be picked up
+> The handler word of the fragment template ($975A). IY = the fragment. Its colour alternates (ColourRedMagenta $B499). The step counter +$0B runs from 0: steps 5, $0E, $14 and $17 play effect 3 (a bounce); each step moves it by +8 pixels a pass across (MoveFragment $AB6A, reversed when facing left) and down by the step's entry of FragmentArc0 $ABBA (arc +$0A = 0) or FragmentArc1 $ABD6 (other arcs; doubled when +$0A bit 1 is set); from step $18 it no longer moves across. At steps 9, $10, $15 and $17 it looks at the cell under it (column + 2, line + $16, $14 or $0E; CellAt $B2DC): no solid ground there makes it fall (step $1C: 7 lines a pass, removed under line $90). Step $1B is the rest (FragmentRest $AB0D): +$0E counts down; under 6 it sinks 3 lines a pass and at 0 it is removed. A fragment the hero touches (his column or the one right of it, his line within $20) is taken: EnergyChange $FE59 + 6, score +25 ($7B1F), effect 5, and it is removed.
+> In rzx-r2 1383 passes (the urns' and the statues' fragments); none in s2-right.
+> As in stage 1 at $A891, the same instructions; the touch looks at the column right of the hero's (INC E at $AB33, stage 1 DEC E).
+> Witness: L1 1383 (rzx-r2).
+$AAA9 FragmentBounce
+$AAAF FragmentStep
+$AAC1 FragmentArcEntry
+$AACD FragmentDrop
+$AADB FragmentSetLine
+$AADE FragmentMove
+$AAF9 FragmentGround
+$AB0D FragmentRest
+$AB29 FragmentTouch
+$AB36 FragmentTouchLine
+$AB5A FragmentFall
+$AB6A c MoveFragment ; Move the fragment E pixels across and point it at its pre-shifted image
+> IY = the fragment, E = the pixels (negated when it faces left, +9 bit 7). The pixel column (+0 x 8 + the sub-column +$0D) moves by E; +0 and +$0D take the new column and pixel. The image pointer +4/+5 = FragmentSprites $D264 + $21 x the shift (the multiply $8B4B; the shift is the pixel, or 7 - the pixel when it faces left): eight pre-shifted copies of 33 bytes. A fragment that reaches column 0 or 31 is removed (RemoveActor $B489).
+> As in stage 1 at $A97A, the same code.
+> Witness: L1 873 (rzx-r2).
+$AB80 MoveFragmentColumn
+$AB9D MoveFragmentImage
+$ABBA b FragmentArc0 7 ; The line change of each step of a fragment's arc 0 (28 signed bytes)
+> Read by FragmentActor $AAB4 (+$0B the step): up 8, 6, 4, 2, 1 lines, then down 1, 2, 4, 6, 8, a short second hop
+> and the rest. Read in rzx-r2: $ABBA-$ABD1 (44 reads); its last four bytes no recording read.
+$ABD6 FragmentArc1 ; the arcs 1-3 (doubled for 2 and 3): a lower hop
+$ABF2 c PoolActor ; Kinds 4 and 5: a stretch of the bubbling pool's surface (kind 5 mirrored)
+> The handler of ActorKinds kinds 4 and 5 ($962C, $9635): 18 placements on line 25 (cells) of grid 1, under rooms 4-7 (the magenta pool of screens 012551.png and 014074.png). Every second pass the frame +$0B goes up one; when the countdown +8 reaches 0 a random entry of PoolPicks (Random $8BAC AND $0F) picks a run of PoolRuns: the first frame into +$0B, twice the length into +8; the run 2 (frames 6-$0B) plays effect 9 (PlaySoundVector). The frames of PoolSet ($E82C over $E61C).
+> In rzx-r2 3268 passes; none in s2-right.
+> Witness: L1 3268 (rzx-r2).
+$AC1F PoolActorRun
+$AC2E PoolActorShow
+$AC34 w PoolSet 2 ; SetActorFrame's parameters: the frame table $E82C, the graphics $E61C
+$AC38 b PoolRuns 10 ; Five runs of the pool's frames: the first frame and the length (0, 3), (3, 3), (6, 6), ($0C, 3), ($0F, 3)
+> Read by PoolActor $AC23 at the index (0-3) PoolPicks gives: the fifth run ($AC40-$AC41) no pick selects (never
+> read).
+$AC42 b PoolPicks 16 ; The run (0-3) for each random 0-15: 0 ten times, 1 four, 2 and 3 once each
+> Read by PoolActor $AC11.
+@module actors
+$AC52 c SetActorFrame ; Set the actor IY to frame A of a frame table (the 4 bytes after the CALL)
+> The CALL is followed by two words: the frame table DE and the graphics base BC; the routine pops them and returns to its caller's caller. A frame record is 6 bytes (FrameRecordAddress $B278: DE + 6A): +0 the column offset (negated when the actor faces left, +9 bit 7), +1 the line offset, +2 the width in bytes, +3 the height in lines, +4/+5 the offset of the image from the graphics base. The actor's column +0 = the offset + its base column +$0D, its line +1 = the line offset + its base line +$0E, +2 and +3 the size, +4/+5 the image address. An image is width x height bytes, row by row, one bit a pixel, no mask.
+> Every actor's frame goes through it: 6475 calls in s2-right, 14847 in rzx-r2.
+> As in stage 1 at $AA02, the same code.
+> Witness: L1 22570 (rzx-r2, s2-right, stageload).
+@module hero
+$AC8E c HeroActor ; Per-pass handler of the hero's record ($74E0): move, fall, leave the room, change grid
+> The handler word of the hero's template ($96CA), called first in each pass of RunActorHandlers $A523 with IY = $74E0. HeroUpdate $ADC0 (controls and states), CheckHeroFooting $ACB7 (ledges and falls), CheckRoomExits $AD2A with IX = RoomExitsPtr $FE2E, CheckGridPassages $AD6C, then RoomExitsPtr = the grid record's word +4 + RoomNumber $FE30 (the room may have changed).
+> As in stage 1 at $AA3E, the same code.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$ACB7 c CheckHeroFooting ; Catch a ledge in a jump, or start a fall where the ground ends
+> IY = the hero. In a jump (state 2) at frame $0C: solid ground under the feet one column ahead (CellUnderFeet $B282, E = 1, D = 2) lands him on the ledge: frame $0F, the base column 2 back, the base line 16 up ($8F84), on into the jump's frame (JumpFrame $B1ED); at frame $0F with no ground there he drops (StartDrop $B01D). Standing (state 0) or walking (state 1) at frame 5 or $0B with no ground under him (E = 2, D = 0) starts a fall (StartFall $B00B).
+> As in stage 1 at $AA67, the same instructions; the operands the draft marked are the same numbers (the frames, the offsets) and the routines' new addresses: nothing of the stage.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$ACDE CheckHeroFootingState
+$ACFC CheckHeroFootingWalk
+$AD09 CheckHeroFootingGround
+$AD1D CheckHeroFootingGround2
+@module rooms
+$AD2A c CheckRoomExits ; Leave the room when the hero crosses an open edge
+> IY = the hero, IX = the room's exit flags (RoomExitsPtr $FE2E). Bit 1: column under 6 leaves left ($9853); bit 0: column $1A and up leaves right ($9810); bit 3: line $70 and down leaves down (LeaveRoomDown $9890); bit 2: line under $10 leaves up (LeaveRoomUp $98D5). Not while the hero is dying (state $0F).
+> As in stage 1 at $AADA, the same code.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$AD3F CheckRoomExitRight
+$AD4E CheckRoomExitDown
+$AD5D CheckRoomExitUp
+$AD6C c CheckGridPassages ; Pass between the map grids at their fixed doors
+> By GridNumber $FE54 (stage 1 had it at $FE4B), RoomNumber $FE30 and the hero's column $74E0:
+> grid 0 room 5, column $1D and up: into grid 1 (EnterGrid1 $8814);
+> grid 1 room 0, column 2: back to grid 0 room 5 ($8882);
+> grid 1 room 0, columns $15-$17, the hero in the middle strike (state 5) held at frame 3: into grid 2 ($8835);
+> grid 2, column 2: back to grid 1 ($8859).
+> The facing is not tested (stage 1's doors had one). In s2-right the first door is taken once (the walk to the right falls into grid 1); in rzx-r2 all four (1, 1, 2, 2).
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$AD82 CheckGridPassageGrid1
+$AD94 CheckGridPassageShrine ; columns $15-$17 of grid 1's room 0: the door into grid 2
+$ADAC CheckGridPassageGrid2
+$ADB9 CheckGridPassagesDone
+$ADBA c EnterGridBuild ; Build the grid just entered (StartGrid) and keep its attributes for the fade-in (SavePlayAttrs)
+> CALL StartGrid $A35D, then JP SavePlayAttrs $99C2. Called by the four grid changes ($882A, $884B, $8873, $889F):
+> once in s2-right, 6 times in rzx-r2. Stage 1 had RebuildRoom $AC37 in its place.
+> Witness: L1 7 (rzx-r2, s2-right).
+@module hero
+$ADC0 c HeroUpdate ; The hero's pass: the edges, the weapons, the colour, the freeze, then his state's handler
+> IY = the hero. At column 1, or 32 and up, a life is lost ($7E90; never executed in the two recordings). The selected item's kind (GetSelectedItem $7ECA): 6 fires the hero's missile (FireHeroMissile $AE43), 1 throws it (ThrowItem $90F5). Dying (state $0F): the death pause (RespawnCountdown $8F22). The colour (stage 1's HeroColour $ACD9, here in line): Energy $FE3C under $0E, the colour cycle (CycleColour $B4FB AND 7); else +$0C rises one a pass up to 7 (white). While HeroFreeze $FE66 counts down (LoseLife sets $17: $7EA8) the controls are ignored. Else by the state +$0A: 0 HeroStand $AE9B, 1 HeroWalk $B052, 2 HeroJump $B1C4, 3 HeroFall $B126, 4 HeroLeapBack $B1A8, 5 HeroStrikeMid $AF8C, 6 HeroStrikeHigh $AFC8, 7 HeroStrikeLow $AF4F, 9 HeroLeap $B1F7, $0B HeroRecoil $87C2 (8 and $0A: nothing).
+> Stage 1's deadly-cell test and item 1's drain are not here. In s2-right 1952 passes, rzx-r2 5806.
+> As in stage 1's HeroUpdate $AC3D in its job; the code is its own.
+> Witness: L1 8034 (rzx-r2, s2-right, stageload).
+$ADCD HeroUpdateEdge
+$ADD0 HeroUpdateWeapons
+$ADF6 HeroColourNormal
+$AE01 HeroUpdateFreeze
+$AE0D HeroUpdateDispatch
+$AE43 c FireHeroMissile ; Item kind 6: a missile for each press of FIRE (no count)
+> FIRE edge-triggered through FireLatch $FE60 (KeyFire $FCCC). E = the hero's line - 2; in the states 0, 3, 4 and 9 the column one off (B = 1), in state 5 two off (B = 2), in the others nothing; facing left: kind 5 at the column - B, facing right: kind 6 at the column + B; +4 = 1, +5 = 1 (AddMissile $B3BD); effect $0B. The missile is UpdateHeroMissile $B56D's.
+> In rzx-r2 1136 passes with item 6, 66 missiles; s2-right never selects it.
+> Witness: L1 1136 (rzx-r2).
+$AE53 FireHeroMissilePress
+$AE7B FireHeroMissileLeft
+$AE8E FireHeroMissileAdd
+$AE9B c HeroStand ; State 0: read the controls
+> IY = the hero. FIRE: HeroFireHeld $AEE1. DOWN: the leap (StartLeap $AF3F). UP: the jump (StartJump $AF2F). RIGHT: walk right (WalkRight $B02A), first turning (base column + 4, facing right) when facing left; LEFT the same to the left (WalkLeft $B03E). No key: the standing frame (HeroStandFrame $AED5). The key readers are the resident's KeyUp $FC90 to KeyFire $FCCC (Z = held).
+> As in stage 1 at $ADA2, the same instructions.
+> Witness: L1 3192 (rzx-r2, s2-right, stageload).
+$AEC1 HeroStandLeft
+$AED5 c HeroStandFrame ; Show the standing frame (frame $0C of the walk set) and end the pass
+> Frame $0C of HeroStandSet. Also jumped to by the states when they end, by the hero's placings (PlaceHeroAtStart $A396 ...) and by RespawnCountdown $8F42 (the end of the death pause).
+> As in stage 1 at $ADDD, the same code.
+> Witness: L1 274 (rzx-r2, s2-right, stageload).
+$AEDD w HeroStandSet 2 ; SetActorFrame's parameters: the walk frame table $D1F8, its graphics $CF2E
+$AEE1 c HeroFireHeld ; FIRE held while standing: a strike with a hand weapon
+> Only with the selected item's kind 6, 5 or 3 (GetSelectedItem $7ECA): DOWN the low strike (state 7, HeroStrikeLow $AF4F), UP the high strike (state 6, HeroStrikeHigh $AFC8), LEFT the middle strike (state 5, HeroStrikeMid $AF8C); each starts at frame $FF with the base column + 1. Stage 1 also cleared +$10 for the middle strike; stage 2 does not.
+> In s2-right 204 passes (4 high strikes), rzx-r2 184 (13 high, 5 low, 2 middle).
+> Witness: L1 398 (rzx-r2, s2-right, stageload).
+$AEF0 HeroFireHeldKeys
+$AF04 HeroFireHeldUp
+$AF19 HeroFireHeldLeft
+$AF2D HeroFireHeldNone
+$AF2E HeroFireHeldNoWeapon
+$AF2F c StartJump ; Start the jump: state 2, base column + 2
+> Also entered from the walk (WalkJumpCheck $B0E2).
+> As in stage 1 at $AE3D, the same code.
+> Witness: L1 58 (rzx-r2, s2-right, stageload).
+$AF3F c StartLeap ; Start the leap (DOWN): state 9, base column + 1
+> Jumped to from HeroStand ($AEA3).
+> As in stage 1 at $AE4D, the same code.
+> Witness: L1 50 (rzx-r2).
+$AF4F c HeroStrikeLow ; State 7: the low strike, 6 passes; held at pass 3 while DOWN is held
+> Frames 0, 0, 1, 1, 0, 0 of the strike set (HeroStrikeLowFrames, HeroStrikeLowSet); at pass 6 back to standing (base column - 1). Stage 1's low strike had 8 passes and frames 4-5; stage 2's low strike is the one UpdateFloorShot $B52B lets deflect a floor shot (frame 2 of the state... see there).
+> In rzx-r2 154 passes; none in s2-right.
+> Witness: L1 154 (rzx-r2).
+$AF62 HeroStrikeLowEnd
+$AF75 HeroStrikeLowShow
+$AF82 w HeroStrikeLowSet 2 ; SetActorFrame's parameters: the strike frame table $CABB, its graphics $C7FE
+$AF86 b HeroStrikeLowFrames 6 ; the strike set's frame for each pass of the low strike (+9 for the middle strike)
+$AF8C c HeroStrikeMid ; State 5: the middle strike, 6 passes; held at pass 3 while LEFT is held
+> Frames 9, 9, $0A, $0A, 9, 9 of the strike set (HeroStrikeLowFrames + 9); +$10 counts its passes (the harpy's phase 2, HarpyRiseAsleep $A87D, and the door into grid 2, CheckGridPassages $AD9D, look at it and at the frame 3).
+> In rzx-r2 16 passes; none in s2-right.
+> As in stage 1 at $AE8E in its job (stage 1: 10 passes, held at pass 6).
+> Witness: L1 16 (rzx-r2).
+$AFA2 HeroStrikeMidEnd
+$AFB5 HeroStrikeMidShow
+$AFC4 w HeroStrikeMidSet 2 ; the strike frame table $CABB, its graphics $C7FE
+$AFC8 c HeroStrikeHigh ; State 6: the high strike, $0E passes; held at pass $0A (back to 0) while FIRE and UP are held
+> Frames 2, 3, 4, 5, 6, 7, 8 of the strike set (HeroStrikeHighFrames, by the pass / 2). Its pass 7 (frame 7 of the record, $816D) is the hit of the statues and the urns (KneelingStatueActor, WarriorStatueActor, StrikeableActor).
+> In s2-right 60 passes, rzx-r2 385.
+> Witness: L1 445 (rzx-r2, s2-right).
+$AFE0 HeroStrikeHighEnd
+$AFF3 HeroStrikeHighShow
+$B000 w HeroStrikeHighSet 2 ; the strike frame table $CABB, its graphics $C7FE
+$B004 b HeroStrikeHighFrames 7 ; the strike set's frame for each pair of passes of the high strike
+$B00B c StartFall ; Start a fall: state 3, speed 2, frame $10, base column - 5
+> Jumped to from CheckHeroFooting ($AD19), CheckHeroFooting ($AD26).
+> As in stage 1 at $AF1B, the same code.
+> Witness: L1 10 (rzx-r2, s2-right, stageload).
+$B01D c StartDrop ; Drop off a ledge missed in a jump: state 3, speed 4, frame $10
+> Jumped to from CheckHeroFooting ($ACF8).
+> As in stage 1 at $AF2D, the same code.
+> Witness: L1 10 (rzx-r2, s2-right).
+$B02A c WalkRight ; RIGHT while standing: start walking unless a wall is ahead
+> FrontCellAhead $B10D: a solid cell keeps him standing. Else state 1, frame 0, base column + 2, on into HeroWalk $B052.
+> As in stage 1 at $AF3A, the same instructions.
+> Witness: L1 231 (rzx-r2, s2-right, stageload).
+$B03E c WalkLeft ; LEFT while standing: start walking unless a wall is ahead (base column - 2)
+> Jumped to from HeroStand ($AEC9).
+> As in stage 1 at $AF4F, the same instructions.
+> Witness: L1 48 (rzx-r2).
+$B052 c HeroWalk ; State 1: walk, 12 frames a cycle, 2 columns each half
+> A puzzle block ahead ($8329) ends the pass. UP at frame 5 or $0A jumps (WalkJumpCheck $B0E2). At frames 2 and 8 GridNumber $FE54 is read and not used ($B064, a leftover). At frames 5 and $0B (the feet together) a wall ahead (FrontCell $B0F4) stops him with the base column = his column - 1 (+ 1 facing left; NegateIfFacingLeft $B266), standing; no direction key stops him too. RIGHT while facing left, or LEFT while facing right, turns him (HeroTurn $B234). The frame goes 0 to $0B; at 0 and 6 the base column moves 2 (MoveBaseX $B256); then the frame of HeroWalkSet.
+> As in stage 1 at $AF64 in its job; the wall stop sets the base column (stage 1 did not) and the dead read is new.
+> Witness: L1 1541 (rzx-r2, s2-right, stageload).
+$B064 HeroWalkGridRead ; LD A,(GridNumber): A is overwritten at once
+$B067 HeroWalkFeet
+$B074 HeroWalkWall
+$B08B HeroWalkRight
+$B09B HeroWalkLeft
+$B0AB HeroWalkNoKey
+$B0B6 HeroWalkStop
+$B0BD HeroWalkStep
+$B0CC HeroWalkFrame
+$B0D8 HeroWalkShow
+$B0DE w HeroWalkSet 2 ; the walk frame table $D1F8 ($0D frames; $0C stands), its graphics $CF2E
+$B0E2 c WalkJumpCheck ; UP during the walk at frame 5 or $0A: drop the walk and jump
+> Pops the return address and jumps to StartJump $AF2F.
+> As in stage 1 at $AFDB, the same code.
+> Witness: L1 1541 (rzx-r2, s2-right, stageload).
+$B0F0 WalkJumpCheckJump
+$B0F4 c FrontCell ; A = the cell ahead of the hero at his line + 16; NZ when it is solid
+> Column + 4 facing right, + 0 facing left (CellAt $B2DC, jumped to). Called by HeroWalk $B074.
+> As in stage 1 at $AFED (the CALL and RET there are a JP here).
+> Witness: L1 238 (rzx-r2, s2-right, stageload).
+$B104 FrontCellLine
+$B10D c FrontCellAhead ; A = the cell ahead at his line + 16, column + 3 (+ 1 facing left); NZ when it is solid
+> The test of WalkRight and WalkLeft ($B02A, $B03E). Stage 1's copy ($B007) was FrontCell's twin; stage 2's looks one
+> column nearer (+3, or +1 facing left).
+> Witness: L1 279 (rzx-r2, s2-right, stageload).
+$B11D FrontCellAheadLine
+$B126 c HeroFall ; State 3: fall, speeding up to 4 lines a pass, land on solid ground; a fall into the pit kills
+> In grids 1 and 2 (GridNumber $FE54 not 0) a fall below a room's line limit (room 0 $69, 1 $79, 5 $32, the others $6C) is fatal: EnergyChange $FE59 = $32, a life lost ($7E90) and HeroDeath $B340 with E = $33. Else frames $10 to $12 of the jump set: at $10 solid ground under the feet (CellUnderFeet $B282, E = 1, D = 2, C = 4) starts the landing (frames $11, $12, then standing at frame 6, base column + 5); else the speed +$0B goes up by 2 to 4 and is added to the base line.
+> In s2-right the fall is fatal 3 times (grid 1); none in rzx-r2.
+> As in stage 1 at $B021 in its job, with the fatal fall added.
+> Witness: L1 165 (rzx-r2, s2-right, stageload).
+$B13A HeroFallRoom5
+$B141 HeroFallRoom0
+$B148 HeroFallDepth
+$B15C HeroFallFrame
+$B178 HeroFallLanding
+$B17D HeroFallFalling
+$B18D HeroFallSpeed
+$B199 HeroFallMove
+$B1A2 HeroFallShow
+$B1A8 c HeroLeapBack ; State 4: a leap that found no ledge sinks back (the leap frames backwards)
+> Jumped to from HeroUpdate ($AE26).
+> As in stage 1 at $B06B, the same code.
+> Witness: L1 441 (rzx-r2).
+$B1BE HeroLeapBackShow
+$B1C4 c HeroJump ; State 2: the forward jump, frames 0 to $12 of the jump set
+> At frame 9 the base column moves 1; at $13 he stands (base column + 5). CheckHeroFooting $ACB7 catches a ledge on the way down. A test of frame $0C at $B1D6 leads nowhere (its JR NZ goes to the next instruction).
+> As in stage 1 at $B087 apart from that test.
+> Witness: L1 1045 (rzx-r2, s2-right, stageload).
+$B1D3 HeroJumpFrameC
+$B1DA HeroJumpEnd
+$B1ED c JumpFrame ; Show frame A of the jump set
+> Jumped to from CheckHeroFooting ($ACDB), HeroFall ($B1A5), HeroJump ($B1DF).
+> As in stage 1 at $B0A9, the same instructions.
+> Witness: L1 1165 (rzx-r2, s2-right, stageload).
+$B1F3 w HeroJumpSet 2 ; the jump frame table $CEBC ($13 frames), its graphics $CB03
+$B1F7 c HeroLeap ; State 9: the leap up (DOWN), frames 0 to $0D of the leap set
+> At frame 8 a ledge under the raised feet (CellUnderFeet $B282, E = 1, D = 2) lets him climb: at $0E the base line goes 16 up and he stands; no ledge sinks him back (state 4, HeroLeapBack $B1A8).
+> As in stage 1 at $B0B3, the same code.
+> Witness: L1 446 (rzx-r2).
+$B212 HeroLeapLedge
+$B22A HeroLeapFrame
+$B22D c LeapFrame ; Show frame A of the leap set
+> Jumped to from HeroLeapBack ($B1C1).
+> As in stage 1 at $B0E9, the same code.
+> Witness: L1 789 (rzx-r2).
+$B230 w HeroLeapSet 2 ; the leap frame table $EC92, its graphics $E9AC
+$B234 c HeroTurn ; Turn the hero round in the walk: base column by TurnSteps[frame], facing flipped
+> Called by HeroWalk ($B096, $B0A6): 5 turns in rzx-r2.
+> As in stage 1 at $B0F0, the same code.
+> Witness: L1 5 (rzx-r2).
+$B24A b TurnSteps 12 ; the base-column move of a turn at each walk frame
+> Read by HeroTurn: only $B24C, $B24E, $B253, $B255 in the recordings. As in stage 1 at $B106.
+@module actors
+$B256 c MoveBaseX ; Move the actor IY's base column by E (the other way when it faces left)
+> Called by ExtraLifeSparkle ($841F), HeroRecoil ($87D2), ExtraLifeActor ($9B0A), CheckHeroFooting ($ACD3), HeroStand ($AEBA), HeroStand ($AECE), HeroFireHeld ($AEFF), HeroFireHeld ($AF13) and 15 more; jumped to from StepFineBack ($8B85).
+> As in stage 1 at $B112, the same code.
+> Witness: L1 583 (rzx-r2, s2-right, stageload).
+$B25F MoveBaseXAdd
+$B266 c NegateIfFacingLeft ; A = -A when the actor IY faces left (+9 bit 7)
+> Called by HarpyPlaceWings ($8ECF), SetActorFrame ($AC66), HeroWalk ($B07B).
+> As in stage 1 at $B122, the same code.
+> Witness: L1 23293 (rzx-r2, s2-right, stageload).
+$B26E c NegatePlus4Unused ; A = -A + 4 when the actor IY faces left, else A (no caller)
+> BIT 7,(IY+9) / RET Z / NEG / ADD A,4 / RET. No CALL, JP or word in the image reaches $B26E (stage 1 has no such
+> code). Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$B278 c FrameRecordAddress ; HL = DE + 6A: frame A's record in the frame table DE
+> Called by SetActorFrame ($AC61).
+> As in stage 1 at $B12A, the same code.
+> Witness: L1 22570 (rzx-r2, s2-right, stageload).
+@module rooms
+$B282 c CellUnderFeet ; HL = the room cell under the actor's feet, E (and D facing left) columns back; Z: not solid
+> IY = the actor. The cell row = (line +1 + height +3 + 3) / 8, the column = +0 - E (- D more when facing left); HL = row x 32 + column (an offset into the cells $7282). Z when bit 1 (solid) of the cell is clear.
+> As in stage 1 at $B134, the same code.
+> Witness: L1 3828 (rzx-r2, s2-right, stageload).
+$B2A3 CellUnderFeetColumn
+$B2B0 c CellUnderFeetUnused ; A copy of a feet-cell test: the row (line + height) / 8 + 1, the column (- 4 facing left); NZ when solid (no caller)
+> 44 bytes of code no CALL, JP or word reaches (stage 1 has no such copy). It ends LD A,(HL) / BIT 1,(HL) / RET.
+> Not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$B2D0 CellUnderFeetUnusedColumn
+$B2DC c CellAt ; A = the room cell at column E, pixel line D; Z: not solid
+> D = D / 8, on into CellAtRow $B2E2. HL = D x 32 + E - 4 (an offset into the cells $7282; the play area's cell column 0 is screen column 4). The cell's bits: 1 solid, 3 deadly.
+> As in stage 1 at $B162, the same code; stage 2 enters its second part from outside too.
+> Witness: L1 1762 (rzx-r2, s2-right, stageload).
+$B2E2 c CellAtRow ; A = the room cell at column E, cell row D; Z: not solid
+> CellAt's second part, called directly by UpdateDriftLeft $B6C3 with the row already divided.
+> Witness: L1 3847 (rzx-r2, s2-right, stageload).
+@module render
+$B2F9 c SaveAttributes ; Copy the screen's attributes to the shadow at $6D00
+> Called once from $91EA.
+> As in stage 1 at $B17F, the same code.
+> Witness: L1 3 (rzx-r2, s2-right, stageload).
+@module enemies
+$B305 c AimedShot ; A shot of type 2 at the actor IY with a random +5 ($FA asks AddMissile for one); effect 6
+> D = the column, E = the line + 4, C = 2, B = 1, A = $FA (AddMissile $B3BD), then effect 6 (PlaySoundVector). In stage 1 nothing called it; in stage 2 the flying harpy does ($8E53, $8E58): 32 shots in s2-right, 61 in rzx-r2 (UpdateDriftLeft $B639 flies them).
+> As in stage 1 at $B214, the same code.
+> Witness: L1 93 (rzx-r2, s2-right).
+$B31C c HydraHeadShot ; A hydra head breathes a shot of type 3 at its steps 4, 8 and $0C
+> A = the neck's step ($FE43, $FE45 or $FE41). For a step 3-$0D that is a multiple of 4: D = the head's column - 1, E = its line + 4, C = 3, B = 1, A = $FA (a random +5) (AddMissile $B3BD), then effect 6 (PlaySoundVector). Called by the four head handlers ($7FD8, $800E, $8046, $807E): 842 calls, 71 shots in rzx-r2.
+> Witness: L1 842 (rzx-r2).
+@module hero
+$B340 c HeroDeath ; Start the hero's death: a burst of eight fragments, the hero hidden, the pause
+> Only when no death is in progress (RespawnShiftX $FE64 = $FF). E = the pause in pairs of passes ($33 from HeroFall $B159; LoseLife's $7EBD, $7EC7), stored in the hero's +$10 ($74F0). Clears the missile slots 8-15 ($7610-$763F), adds eight missiles of type 7 at the hero (column, line + 4) with +4 = 0, 2, .. 14 (the directions) and +5 = the column x 2 (AddMissileHigh $B3C5), sets state $0F ($74EA), takes the respawn point ($8F45: D column, E line), RespawnShiftX and RespawnShiftY $FE65 from it, and hides the hero (column 0, line $8C, colour 0).
+> In s2-right 5 deaths, rzx-r2 1.
+> As in stage 1 at $B22B, the same instructions.
+> Witness: L1 9 (rzx-r2, s2-right).
+$B35B HeroDeathBurst
+@module enemies
+$B3A4 c KindTwelveShot ; Kind 12's shot: a missile of type 4 from its column, line + 8; effect $0B
+> D = the column, E = the line + 8, C = 4, B = 1, A = 1 (AddMissile $B3BD), effect $0B (PlaySoundVector). Jumped to by
+> kind 12's handler $8179 (grid 2's single room) at its pass $0A: 6 shots in rzx-r2. UpdateFloorShot $B511 flies it.
+> Witness: L1 6 (rzx-r2).
+@module actors
+$B3BD c AddMissile ; Add a missile (shot, spark) to the first eight slots of the missile records $75E0
+> In: D column, E line, C type, B and A its parameters. The list holds 16 records of 6 bytes: +0 column ($FF free), +1 line, +2 type (the handler of MissileHandlers $B449), +3 $FF, +4 B, +5 A. The search starts after the slot of MissileCursor $FE27 (round robin over 8). A = $FA puts a Random $8BAC byte in +5. Out: Z when the eight slots are full (nothing added), else NZ. AddMissileHigh $B3C5 uses slots 8-15 ($7610).
+> Called by $90E0, AimedShot, FireHeroMissile, HydraHeadShot and KindTwelveShot: 188 in s2-right, 282 in rzx-r2.
+> As in stage 1 at $B28D (its JP is a JR here).
+> Witness: L1 554 (rzx-r2, s2-right, stageload).
+@module missiles
+$B3C5 c AddMissileHigh ; Add a missile to the slots 8-15 ($7610) of the missile records
+> Called by HeroDeath ($B36E); jumped to from ThrowItem ($913E), ThrowItem ($9146).
+> As in stage 1 at $B296, the same code.
+> Witness: L1 107 (rzx-r2, s2-right).
+$B3CB c AddMissileFrom ; Add a missile to the eight slots from BC
+> Jumped to from AddMissile ($B3C3).
+> As in stage 1 at $B29C, the same code.
+> Witness: L1 661 (rzx-r2, s2-right, stageload).
+$B3CD AddMissileSearch
+$B408 AddMissileFull
+$B40B c ReturnZ ; A = 1, Z set: the "yes" exit of the tests
+> Jumped to from CheckWalkBarriers ($833F), ShotHitsActor ($8722), ThrownHitsActor ($875D), FreeIfOnHero ($A918), InStrikeReach ($AA31).
+> As in stage 1 at $B2DC, the same code.
+> Witness: L1 1428 (rzx-r2, s2-right, stageload).
+$B410 c ReturnNZ ; A = 1, Z clear: the "no" exit of the tests
+> Jumped to from CheckFirstRoomLeft ($8353), ShotHitsActor ($8717), ThrownHitsActor ($8752), FindFreeActor ($8D84), FindFreeActorPair ($8DA1), InStrikeReach ($AA34), ShotMeetsHydraBody ($B617), ShotMeetsHydraBody ($B636).
+> As in stage 1 at $B2E1, the same code.
+> Witness: L1 1239 (rzx-r2, s2-right, stageload).
+$B415 c UpdateMissiles ; Run the handler of every missile in use (once a main-loop pass)
+> Called by MainLoop ($784F).
+> As in stage 1 at $B2E6, the same code.
+> Witness: L1 8031 (rzx-r2, s2-right, stageload).
+$B420 UpdateMissilesLoop
+$B43B MissileCall ; CALL nn: nn = the effect's handler, written by UpdateMissiles
+$B442 UpdateMissilesNext
+$B449 w MissileHandlers 1 ; The handler of each missile kind 0-9 (10 words; stage 1 has 12)
+> 0 none ($0000), 1 UpdateAimedShot (the spirits' shots), 2 and 3 UpdateDriftLeft (the harpy's and the hydra heads' shots), 4 UpdateFloorShot (Medusa's head), 5 and 6 UpdateHeroMissile (item kind 6, left and right), 7 and 8 UpdatePathFlyer (the hero's death fragments), 9 UpdateHeroShot (ThrowItem's shot).
+> Read by UpdateMissiles ($B42F) for every missile in use: s2-right and rzx-r2.
+$B45D c BufferAddressHL ; HL = the play-buffer address of the actor IY ($5B00 + line x 32 + column); DE = HL in
+> Called by UpdatePathFlyer ($8648), DrawSprite ($B769), DrawSpriteMirrored ($B784).
+> As in stage 1 at $B332, the same code.
+> Witness: L1 10960 (rzx-r2, s2-right, stageload).
+$B474 c AttrShadowAddress ; HL = the attribute-shadow address of the actor IY ($6DC0 + line / 8 x 32 + column)
+> Called by ColourSprite ($B749), ColourSpriteMirrored ($B7AE).
+> As in stage 1 at $B349, the same code.
+> Witness: L1 10960 (rzx-r2, s2-right, stageload).
+$B479 AttrShadowAddressA ; entry with A = the line rounded down to 8
+$B489 c RemoveActor ; Free the actor record IY (+0 = $FF)
+> Called by MedusaHeadLies ($822D); jumped to from HydraHead1Actor ($7FBA), HydraHead1Actor ($7FD2), HydraHead2Actor ($7FF0), HydraHead2Actor ($8008), HydraHead3Actor ($8028), HydraHead3Actor ($8040), HydraHead1LowActor ($8060), HydraHead1LowActor ($8078) and 41 more.
+> As in stage 1 at $B35E, the same code.
+> Witness: L1 681 (rzx-r2, s2-right, stageload).
+$B48E c ColourGreenCyan ; C = $44 or $45 (bright green, bright cyan) on alternate passes
+> Called by DrawFloorShot ($B5D9), DrawHeroMissile ($B602).
+> As in stage 1 at $B36C, the same code.
+> Witness: L1 1432 (rzx-r2).
+$B499 c ColourRedMagenta ; C = $42 or $43 (bright red, bright magenta) on alternate passes
+> Called by DropActor ($A929), FragmentActor ($AA81).
+> As in stage 1 at $B377, the same code.
+> Witness: L1 4724 (rzx-r2, s2-right).
+$B4A4 c ColourRedYellow ; C = $42 (bright red) or 6 (yellow) on alternate passes
+> Called by UpdateAimedShot ($82BE), UpdateAimedShot ($82C7).
+> As in stage 1 at $B382, the same code.
+> Witness: L1 2741 (rzx-r2, s2-right, stageload).
+$B4AF c HeroNearGlow ; The harpy actors' colour +$0C: bright white $47 while the hero is left of column 9, else one step darker a call, down to $43
+> IY = the actor. The hero's column ($74E0) under 9: +$0C = $47. Else +$0C - 1 unless it is $43 already.
+> Called by HarpyFlameActor ($A768), HarpyLampActor ($A7EA) and HarpyRiseActor ($A8A4): 83 calls in s2-right, 107 in rzx-r2.
+> Witness: L1 190 (rzx-r2, s2-right).
+$B4C0 HeroNearGlowWhite
+$B4C5 c ColourYellowMagenta ; C = $46 or $43 (bright yellow, bright magenta) on alternate passes
+> Called by UpdatePathFlyer ($865E); jumped to from DriftShotColour ($B4E0).
+> As in stage 1 at $B38D, the same code.
+> Witness: L1 5916 (rzx-r2, s2-right).
+$B4D0 c ColourCyanGreen ; C = $45 or $44 on alternate passes
+> As in stage 1 at $B398, the same code.
+> No CALL, JP or table names it; not executed in any recording (the recordings checked: s2-right, rzx-r2); known only from the code.
+$B4DB c DriftShotColour ; C = a drifting shot's colour: type 2 (the harpy's) ColourYellowMagenta, type 3 (the hydra's) DriftColours[pass AND 3]
+> IY = the missile. +2 = 2: on into ColourYellowMagenta (a JR). Else C = DriftColours[PassCounter AND 3].
+> Called by DrawMissileMirrored ($B6D6): 583 calls in s2-right, 2038 in rzx-r2.
+> Witness: L1 2621 (rzx-r2, s2-right).
+$B4F0 b DriftColours 4 ; The hydra shots' colours: bright red, bright magenta, bright red, magenta ($42, $43, $42, 3)
+> Read by DriftShotColour ($B4E9): all four in rzx-r2; not in s2-right (no hydra there).
+$B4F4 c SetCycleColour ; The actor IY's colour +$0C = CycleColour $B4FB
+> Called by UpdatePieceActor ($842E), SpiritActor ($9028), ItemHandler ($9ACD).
+> As in stage 1 at $B3BD, the same code.
+> Witness: L1 5804 (rzx-r2, s2-right, stageload).
+$B4FB c CycleColour ; A = CycleColours[pass AND 7]: bright cyan, green, magenta, red, blue, red, magenta, green
+> Called by GameOverStep ($8593), HeroUpdate ($ADEC), SetCycleColour ($B4F4).
+> As in stage 1 at $B3C4, the same code.
+> Witness: L1 7864 (rzx-r2, s2-right, stageload).
+$B509 b CycleColours 8 ; the colour cycle
+> $45, $44, $43, $42, $41, $42, $43, $44. Read through FlashPieces ($850E) and CycleColour ($B503): all 8 bytes in s2-right and rzx-r2. As in stage 1 at $B3D2.
+$B511 c UpdateFloorShot ; Missile type 4 (Medusa's head's shot): spins up, runs left along the floor, hurts the hero by 20 or is beaten back
+> IY = the missile (+4 the frame, +5 the state; KindTwelveShot starts it with +4 = 1, +5 = 1). State 1: +4 + 1; at 5 state 2. State 2: at the hero's column + 1: the hero in state 7 at frame 2 facing right (the strike that meets it) turns it into state 3 with PlaySoundVector $0A; otherwise DamageHero with C = $14 and it goes on; elsewhere the column - 1 (from column 0 it becomes $FF: the record is free). State 3: +4 + 1 to $0B, then RemoveActor (frames 5-10: it breaks up). Every pass DrawFloorShot.
+> MissileHandlers' kind 4: 128 passes in rzx-r2, the hero hurt once ($B556); s2-right never meets Medusa.
+> Witness: L1 128 (rzx-r2).
+$B52B UpdateFloorShotRun
+$B556 UpdateFloorShotHit
+$B55B UpdateFloorShotMove
+$B560 UpdateFloorShotBreak
+$B56D c UpdateHeroMissile ; Missile types 5 and 6 (item kind 6, FireHeroMissile): spins up, flies left (5) or right (6), hits actors, stops at the hydra's body
+> IY = the missile (+4 = 1, +5 = 1 from FireHeroMissile). State 1 (or any other but 2 and 3): +4 + 1; at 5 state 2. State 2, type 5: column - 1 (freed at 0), ThrownHitsActor; type 6: column + 1, ShotMeetsHydraBody (Z: state 3), freed at $1F, ThrownHitsActor. State 3: +4 + 1 to $0B, then RemoveActor (frames 5-10). Every pass DrawHeroMissile. The CP 1 / JR Z at $B577 jumps to the next instruction.
+> MissileHandlers' kinds 5 and 6: 1368 passes in rzx-r2 (66 missiles); s2-right never selects item 6.
+> Witness: L1 1368 (rzx-r2).
+$B57C UpdateHeroMissileSpin
+$B58C UpdateHeroMissileFly
+$B5A1 UpdateHeroMissileRight
+$B5AE UpdateHeroMissileLeft
+$B5B9 UpdateHeroMissileBreak
+$B5C6 c DrawFloorShot ; Draw the floor shot: frame +4 of SpinShotSprites $D4FD (1 byte x 12 lines), bright green or cyan
+> HL = $D4FD + 12 x +4 (Multiply), IX = FloorShotImage; DrawSprite, ColourGreenCyan, ColourSprite (a JP).
+> Jumped to from UpdateFloorShot ($B524, $B55E, $B56B): 123 times in rzx-r2.
+> Witness: L1 123 (rzx-r2).
+$B5DF b FloorShotImage 4 ; DrawSprite's descriptor for the floor shot: +2 = 1 byte wide, +3 = 12 lines (+0/+1 not read, 0)
+> Read by DrawSprite and ColourSprite (+2 and +3) from DrawFloorShot: rzx-r2.
+$B5E3 c DrawHeroMissile ; Draw the hero's missile: frame +4 of SpinShotSprites $D4FD, as it is for type 5 (left), mirrored for type 6; bright green or cyan
+> HL = $D4FD + 12 x +4, IX = HeroMissileImage; +2 = 5: DrawSprite, else DrawSpriteMirrored; ColourGreenCyan, ColourSprite (a JP).
+> Jumped to from UpdateHeroMissile: 1309 times in rzx-r2.
+> Witness: L1 1309 (rzx-r2).
+$B5FF DrawHeroMissileMirrored
+$B602 DrawHeroMissileColour
+$B608 b HeroMissileImage 4 ; DrawSprite's descriptor for the hero's missile: 1 byte x 12 lines (+0/+1 not read, 0)
+> Read by DrawSprite / DrawSpriteMirrored and ColourSprite from DrawHeroMissile: rzx-r2.
+$B60C c ShotMeetsHydraBody ; Z when the hero's missile IY meets the hydra's body: grid 1, the hydra alive, room 7, column $13 (line under $2A) or $11
+> GridNumber not 1: NZ. HydraHeads = $64 (beaten): NZ (ReturnNZ). Room 7: E = $13, or $11 when the missile's line is $2A or more; Z when its column is E. Room 3 and the other rooms: NZ.
+> Called by UpdateHeroMissile ($B596): 1051 times in rzx-r2.
+> Witness: L1 1051 (rzx-r2).
+$B626 ShotMeetsHydraBodyRoom7
+$B631 ShotMeetsHydraBodyColumn
+$B636 ShotMeetsHydraBodyNo
+$B639 c UpdateDriftLeft ; Missile types 2 and 3 (the harpy's and the hydra heads' shots): fall left on one of four curves, hurt the hero by 4, fade on a solid cell
+> IY = the missile (+3 the drift step, +4 the fall step, +5 a random byte: its curve). +4 $14 and up: the fade: +4 + 1, at $1A RemoveActor; else the line rounded to a cell and descriptor +4 - $11 (4-8: DriftFadeSprites) drawn by DrawMissileMirrored. The flight: +4 + 1 up to $0F; the line + DriftFallSteps[(+5 AND 3) x 16 + +4], freed at $82 and down; +3 = +3 + 1 AND 3, on odd steps the column - 1 (freed at 0); CellAtRow at column + 3, row line / 8 + 1: solid: DriftShotLands; else ShotHitsHero with C = 4, then on into DrawMissileMirrored with descriptor +3 (DriftShotSprites).
+> MissileHandlers' kinds 2 and 3: 642 passes in s2-right, 2264 in rzx-r2.
+> Witness: L1 2906 (rzx-r2, s2-right).
+$B662 UpdateDriftLeftFly
+$B66D UpdateDriftLeftFall
+$B6A3 UpdateDriftLeftDraw
+$B6CD c DrawMissileMirrored ; Draw the image IX points to, mirrored, and colour it
+> Jumped to from UpdateDriftLeft ($B660).
+> As in stage 1 at $B3DA, the same code.
+> Witness: L1 2621 (rzx-r2, s2-right).
+$B6DD b ImageDescriptors 4 ; Nine image descriptors (the image address, the width in bytes, the height in lines): 4 drift frames, 5 fade frames
+> $E898, $E8BF, $E8E6, $E90D (DriftShotSprites, 3 x 13) and $E934, $E94C, $E964, $E97C, $E994 (DriftFadeSprites, 3 x 8). Stage 1 has the first four only. Read by UpdateDriftLeft ($B653, $B6AB) and DrawMissileMirrored: all 36 bytes in s2-right and rzx-r2.
+$B701 b DriftFallSteps 16 ; Four fall curves of 16 line steps (1-5): a drifting shot's line step at fall step 0-15, the curve by its +5 AND 3
+> Read by UpdateDriftLeft ($B681): 56 of the 64 bytes in s2-right and rzx-r2.
+$B741 c DriftShotLands ; A drifting shot on a solid cell: +4 = $14 (the fade), then UpdateDriftLeft again (a JP)
+> Jumped to from UpdateDriftLeft ($B6C3 JR NZ): 30 times in s2-right, 104 in rzx-r2.
+> Witness: L1 134 (rzx-r2, s2-right).
+$B748 c ColourSprite ; Fill the attribute shadow under an image with C
+> Jumped to from UpdateAimedShot ($82C1), UpdatePathFlyer ($8661), DrawFloorShot ($B5DC), DrawHeroMissile ($B605).
+> As in stage 1 at $B40A, the same code.
+> Witness: L1 6730 (rzx-r2, s2-right, stageload).
+$B75A ColourSpriteRow
+$B75F ColourSpriteCell
+$B769 c DrawSprite ; Copy an image to the play buffer at the actor's position (no mask)
+> Called by UpdateAimedShot ($82BB), DrawFloorShot ($B5D6), DrawHeroMissile ($B5FA).
+> As in stage 1 at $B42B, the same code.
+> Witness: L1 1255 (rzx-r2, s2-right, stageload).
+$B770 DrawSpriteRow
+$B784 c DrawSpriteMirrored ; Copy an image mirrored left to right (through the bit-reverse table $FA00)
+> Called by UpdateAimedShot ($82C4), DrawHeroMissile ($B5FF), DrawMissileMirrored ($B6D3).
+> As in stage 1 at $B446, the same code.
+> Witness: L1 5539 (rzx-r2, s2-right, stageload).
+$B78B DrawSpriteMirroredRow
+$B796 DrawSpriteMirroredByte
+$B7AD c ColourSpriteMirrored ; ColourSprite $B748 for a mirrored image (filled leftwards from its right edge)
+> Called by DrawMissileMirrored ($B6D9); jumped to from UpdateAimedShot ($82CA).
+> As in stage 1 at $B46F, the same code.
+> Witness: L1 4230 (rzx-r2, s2-right, stageload).
+$B7C6 ColourSpriteMirroredRow
+$B7CB ColourSpriteMirroredCell
+
+@module rooms
+$B7D5 b StageGraphics 16 ; The stage's tiles, blocks and map, RLE-packed (3072 bytes; 3852 unpacked: 195 tiles, 110 blocks, the three grids' map of 1452 bytes)
+> RoomChange $9257 unpacks it with Unrle $A33D into the play buffer at $5B00 at every room change. Unrle as in stage 1: the first byte is the escape ($C9 here); a byte other than the escape is itself, ESC n v is n copies of v, ESC ESC ends. The unpacked block: five words (the offsets of the tile kinds, pixels, attributes, blocks and map from $5B0A), then the five sections.
+> The packer that made it is greedy (every run of 4 to 255 equal bytes is ESC n v) except one stretch of 8 zero bytes left as they are (unpacked offset 1397, a blank tile's pixels); with that one exception tools/res_stage.py packs the block again bit for bit. graphics.txt holds the escape, the stretch, the tile kinds, the blocks and the map (GRIDS['stage2'] in tools/res_stage.py: 69 x 9, 47 x 15, 14 x 9), tiles.png the tiles' pixels and colours. Read whole in s2-right and rzx-r2.
+@res stage2/graphics.bin
+
+@module graphics ; The stage's sprites, pictures and their frame tables
+@about Every animated actor shows frames of a sprite set: the bitmaps, then a frame table of 6-byte records (dx, dy, the width in bytes, the height in lines, the bitmap's offset from the set's start). SetActorFrame $AC52 takes the frame number in A and the table and the set from the four bytes after its CALL (or from a word pair such as StatueSet $A714). The other pictures are plain 1-bit frames read through their addresses: the shots, the hydra's heads, necks and body, the harpy's body, the item icons, the drifting shots, the burst's glyphs and shapes.
+@about The layout follows stage 1's (shots, game over, the urns, the hero's strikes, the energy bar, the hero's jump and walk, the fragments, the pieces, the item icons, the drifting shots, the hero's leap, the burst tables), with stage 2's own sets between: the spirit, the pool's ripple, the hydra's necks, heads and body, Medusa, the harpy and its wings, lamp and rise, the statues, the sparkle, the pool and the drops. The block ends with 301 zero bytes. Every file is under src/res/stage2/ (README.md there).
+$C3D5 b SpiritSprites 8 ; The spirit: 8 frames, growing out of the floor (0-5) and flapping (6, 7) (SpiritActor $9028)
+> SpiritFrameSet $9050 (SetActorFrame's inline words). All 507 bytes read in s2-right and rzx-r2.
+$C5A0 SpiritFrameTable ; 8 records
+@res stage2/sprites-spirit.bin
+
+$C5D0 b ShotSmall 2 ; A shot: 2 bytes x 5 lines (ShotFrames $82CD's first record)
+> The spirits' shots (UpdateAimedShot), ShotFrames $82CD: this one, two of 1 x 15 and two of 2 x 13, by direction. Read in s2-right and rzx-r2.
+@res stage2/bitmaps-shot-small-2x5.bin
+$C5DA b ShotUpright 1 ; Two shots of 1 byte x 15 lines (the ones flying up and down)
+> Not read in the recordings checked (s2-right, rzx-r2): SpiritShotDirections $90EF has no straight up or down; known only from the code (ShotFrames).
+@res stage2/bitmaps-shot-upright-1x15.bin
+$C5F8 b ShotSlanted 2 ; Two shots of 2 bytes x 13 lines (the slanted ones)
+> Read in s2-right and rzx-r2.
+@res stage2/bitmaps-shot-slanted-2x13.bin
+
+$C62C b RippleSprites 4 ; The pool's ripple: 3 frames of 4 bytes x 2 lines (WaterActor $8782: $C62C + frame x 8)
+> Read whole in s2-right and rzx-r2.
+@res stage2/bitmaps-ripple-4x2.bin
+
+$C644 b GameOverPicture 8 ; GAME OVER: 8 bytes x 8 lines, drawn in the HUD's item strip (GameOverStep $8585)
+> Read whole in s2-right (its game over); not in rzx-r2.
+@res stage2/bitmaps-game-over-8x8.bin
+
+$C684 b NeckSegments 2 ; A segment of a hydra's neck: 8 copies of 2 bytes x 8 lines, shifted 0-7 pixels (OrNeckSegment $A066)
+> DrawNeckHighLoop ($9FEC) and DrawNeckLow ($A0DB) point BC at $C684 + 16 x the shift. 124 of the 128 bytes read in rzx-r2; not in s2-right (no hydra).
+@res stage2/bitmaps-hydra-neck-2x8.bin
+
+$C704 b StrikeableSprites 8 ; The urns: 8 frames, two of each (whole, cracked) for the kinds 16-19 (StrikeableActor $A9B8)
+> StrikeableSet $A9F1. Read whole in rzx-r2 (152 of 250 bytes in s2-right).
+$C7CE StrikeableFrameTable ; 8 records
+@res stage2/sprites-strikeable.bin
+
+$C7FE b HeroStrikeSprites 8 ; The hero's strikes: 11 frames (low, middle, high)
+> HeroStrikeLowSet $AF82, HeroStrikeMidSet $AFC4, HeroStrikeHighSet $B000. Read whole in rzx-r2 (583 of 767 bytes in s2-right).
+$CABB HeroStrikeFrameTable ; 11 records
+@res stage2/sprites-hero-strike.bin
+
+$CAFD b EnergyBarPattern 6 ; The energy bar's pattern: 6 bytes, one pixel line (DrawEnergyBar $9DC2 draws Energy / 8 of them on 6 lines)
+> Read in s2-right and rzx-r2 (three of the six bytes: the bar never runs out in them).
+@res stage2/bitmaps-energy-bar-6x1.bin
+
+$CB03 b HeroJumpSprites 8 ; The hero's jump: 19 frames (HeroJumpSet $B1F3)
+> Read whole in s2-right and rzx-r2.
+$CEBC HeroJumpFrameTable ; 19 records
+@res stage2/sprites-hero-jump.bin
+
+$CF2E b HeroWalkSprites 8 ; The hero walking and standing: 13 frames (HeroWalkSet $B0DE, HeroStandSet $AEDD; frame 12 stands)
+> Read whole in s2-right and rzx-r2.
+$D1F8 HeroWalkFrameTable ; 13 records
+@res stage2/sprites-hero-walk.bin
+
+$D246 b GraphicsLeftover 16 ; 30 bytes between the walk set's frame table and FragmentSprites that no code reads
+> No instruction or table points into them and the recordings checked (s2-right, rzx-r2) read none; known only from the code. A leftover of the graphics block (stage 1 has no such gap here).
+
+$D264 b FragmentSprites 3 ; A fragment of a broken statue: 8 copies of 3 bytes x 11 lines, shifted 0-7 pixels (MoveFragment $ABA2: $D264 + 33 x shift)
+> Read whole in rzx-r2 (the statues broken); not in s2-right.
+@res stage2/bitmaps-fragment-3x11.bin
+
+$D36C b MedusaSprites 8 ; Medusa: 7 frames, the statue, her head looking about and lying (MedusaSetFrame $81C8)
+> MedusaFrameSet $81CB (SetActorFrame's inline words). Read whole in rzx-r2; not in s2-right (it never reaches grid 2).
+$D4D3 MedusaFrameTable ; 7 records
+@res stage2/sprites-medusa.bin
+
+$D4FD b SpinShotSprites 1 ; A spinning shot: 11 frames of 1 byte x 12 lines, spinning up (0-4), flying (5), breaking up (5-10)
+> DrawFloorShot $B5C6 (Medusa's head's shot) and DrawHeroMissile $B5E3 (item 6's missile): $D4FD + 12 x frame. 108 of 132 bytes read in rzx-r2; not in s2-right.
+@res stage2/bitmaps-spin-shot-1x12.bin
+
+$D581 b HydraHeadSprites 3 ; A hydra head: 3 frames of 3 bytes x 22 lines, by its pose (PlaceHydraHead $8100: from $D605, the last frame, back 66 bytes a frame)
+> Read whole in rzx-r2; not in s2-right.
+@res stage2/bitmaps-hydra-head-3x22.bin
+
+$D647 b HarpySprites 4 ; The harpy's body: 3 frames of 4 bytes x 28 lines (HarpyAttackFrames $8EBF; HarpyTemplate's frame)
+> Read whole in s2-right and rzx-r2.
+$D6B7 HarpySprite1
+$D727 HarpySprite2
+@res stage2/bitmaps-harpy-4x28.bin
+
+$D797 b HarpyWingsSprites 8 ; The harpy's wings: 5 frames (HarpyWingsActor $8DD2)
+> HarpyWingsFrameSet $8DE4. Read whole in s2-right and rzx-r2.
+$D949 HarpyWingsFrameTable ; 5 records
+@res stage2/sprites-harpy-wings.bin
+
+$D967 b HydraBodyPicture 16 ; The hydra's body: a row-packed picture of 112 lines (each a byte LEN x 16 + SKIP, then LEN bytes), drawn in rooms 7 and 3
+> DrawHydraBody $9E21 draws it with DrawRowPicture $8B2A while the hydra lives: all 112 lines in room 7 from the buffer address $5C12, its top 48 lines at the bottom of room 3 from $6712. All 986 bytes read in rzx-r2; not in s2-right.
+@res stage2/rowpicture-hydra.bin
+
+$DD41 b PieceSprites 8 ; A piece of the stage's artefact: 10 frames (UpdatePieceActor $842E); the first two (2 x 14) are also the HUD's piece pictures
+> ShowPieceTaken copies $DD41 (the first piece) or $DD5D (the others) to the HUD. PieceFrames $846E. 286 of 292 bytes read in rzx-r2, 258 in s2-right.
+$DD5D PieceSprite1 ; the second frame, the HUD's picture of a later piece
+$DE29 PieceFrameTable ; 10 records
+@res stage2/sprites-piece.bin
+
+$DE65 b ItemIconSprites 2 ; The item icons: 7 of 2 bytes x 16 lines (the first item kind 0's), for the HUD's strip and the items on the floor (ItemIcons $7F00)
+> DrawItemIcon and the item actors (SpawnItem sets the icon as the frame). Kind 4's icon is BlankIcon $8BCA outside the block. 192 of 224 bytes read in rzx-r2, 96 in s2-right.
+$DE85 ItemIconKind1
+$DEA5 ItemIconKind3
+$DEC5 ItemIconKind6
+$DEE5 ItemIconKind2
+$DF05 ItemIconKind5 ; the artefact
+$DF25 ItemIconKind7
+@res stage2/bitmaps-item-icons-2x16.bin
+
+$DF45 b StatueSprites 8 ; The statues: 4 frames (KneelingStatueActor $A6EC, WarriorStatueActor $A718)
+> StatueSet $A714. Read whole in s2-right and rzx-r2.
+$E0A4 StatueFrameTable ; 4 records
+@res stage2/sprites-statue.bin
+
+$E0BC b HarpyRiseSprites 8 ; The harpy rising out of its statue: 4 frames (HarpyRiseActor $A7F6)
+> HarpyRiseSet $A879. Read whole in s2-right and rzx-r2.
+$E211 HarpyRiseFrameTable ; 4 records
+@res stage2/sprites-harpy-rise.bin
+
+$E229 b HarpyLampSprites 8 ; The lamp, its flame and the extra life: 22 frames (HarpyLampActor $A7E2, HarpyFlameActor $A760, ExtraLifeActor $9AFA frames 18-21)
+> HarpyLampSet $A7F2. 271 of 938 bytes read in rzx-r2, 183 in s2-right: most frames are never shown in them.
+$E54F HarpyLampFrameTable ; 22 records
+@res stage2/sprites-harpy-lamp.bin
+
+$E5D3 b SparkleSprites 8 ; The sparkle of a life taken: 6 frames (SparkleActor $9B4F)
+> SparkleSet $9B5D. Read whole in rzx-r2; not in s2-right.
+$E5F8 SparkleFrameTable ; 6 records
+@res stage2/sprites-sparkle.bin
+
+$E61C b PoolSprites 8 ; The bubbling pool's surface: 18 frames (PoolActor $ABF2)
+> PoolSet $AC34. 576 of 636 bytes read in rzx-r2; not in s2-right (no pool in grid 0's first rooms).
+$E82C PoolFrameTable ; 18 records
+@res stage2/sprites-pool.bin
+
+$E898 b DriftShotSprites 3 ; The drifting shots: 4 frames of 3 bytes x 13 lines (ImageDescriptors $B6DD 0-3, UpdateDriftLeft $B639)
+> Read whole in s2-right and rzx-r2.
+$E8BF DriftShot1
+$E8E6 DriftShot2
+$E90D DriftShot3
+@res stage2/bitmaps-drift-shots-3x13.bin
+$E934 b DriftFadeSprites 3 ; A drifting shot fading on the ground: 5 frames of 3 bytes x 8 lines (ImageDescriptors 4-8)
+> Read whole in s2-right and rzx-r2.
+$E94C DriftFade1
+$E964 DriftFade2
+$E97C DriftFade3
+$E994 DriftFade4
+@res stage2/bitmaps-drift-fade-3x8.bin
+
+$E9AC b HeroLeapSprites 8 ; The hero's leaps (back and up): 14 frames (HeroLeapSet $B230)
+> 476 of 826 bytes read in rzx-r2; not in s2-right.
+$EC92 HeroLeapFrameTable ; 14 records
+@res stage2/sprites-hero-leap.bin
+
+$ECE6 b DropSprites 8 ; The drop: 13 frames, falling and splashing (DropActor $A929)
+> DropSet $A990. 186 of 193 bytes read in s2-right and rzx-r2.
+$ED59 DropFrameTable ; 13 records
+@res stage2/sprites-drop.bin
+
+$EDA7 b ParticleGlyphs 8 ; The burst's 4 particle glyphs, 1 byte x 8 lines each (UpdateBurst $9C92: BurstGlyphs[...] x 8 + $EDA7)
+> Read whole in rzx-r2; not in s2-right (no burst in it).
+@res stage2/bitmaps-particles-1x8.bin
+$EDC7 b BurstGlyphs 16 ; The glyph (0-3) of each burst step, indexed by the step + a random 0-3 (35 bytes)
+> Read by UpdateBurst ($9CAE): 31 of 35 in rzx-r2.
+@res stage2/table-burst-glyphs.bin
+$EDEA b BurstDirections 16 ; 6 rows of 32 indices into BurstSteps $9D9A: each particle direction's step at each burst step
+> Read by UpdateBurst ($9CE6): 179 of 192 in rzx-r2.
+@res stage2/table-burst-directions.bin
+$EEAA b BurstShapes 2 ; The shapes a burst breaks up: 2 bytes x 12 lines read from six overlapping addresses (StartBurst $9BFA reads 24 bytes from the shape's address)
+> $EEAA (CutHydraHead1-3), $EEB8 (MedusaStruck $8138, UnusedBurst $9B82), $EECA (BreakStatue0 / 1), $EEE2 (ScoreBurst20 $99E1, BurstSpirit $9B92), $EEEE (HydraDefeated, room 3), $EEFA (HydraDefeated, room 7): 104 bytes in all, which the file shows as 4 frames of 24 bytes and 8 bytes left over. Read whole in rzx-r2; not in s2-right.
+$EEB8 BurstShapeMedusa ; MedusaStruck's shape (also UnusedBurst's)
+$EECA BurstShapeStatue ; the statues' shape
+$EEE2 BurstShape20 ; ScoreBurst20's and BurstSpirit's shape
+$EEEE BurstShapeHydraTop ; the hydra's top in room 3
+$EEFA BurstShapeHydraBody ; the hydra's body in room 7
+@res stage2/bitmaps-burst-shapes-2x12.bin
+
+$EF12 s BlockEnd ; 301 zero bytes to the block's end ($F03E) that no code reads (s2-right, rzx-r2; known only from the code)

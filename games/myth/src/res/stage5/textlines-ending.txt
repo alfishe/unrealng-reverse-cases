@@ -1,0 +1,8 @@
+# stage5: one text line a line: COLUMN PIXEL BYTE2 TEXT (tools/res_stage5.py); `\` is the full stop
+0 0 0 WELL DONE\
+0 0 0 YOUR TASK
+0 0 0 IS COMPLETE\
+0 0 0 HISTORY IS
+0 0 0 RESTORED AND
+0 0 0 DAMERON IS
+0 0 0 BANISHED\

@@ -1,0 +1,12 @@
+# stage3: table itemicons, 10 rows of 2 bytes (tools/res_stage.py TABLES)
+row,icon
+0,$EAC0
+1,$EB00
+2,$EA00
+3,$EA60
+4,$8A44
+5,$EAA0
+6,$EA20
+7,$EA80
+8,$EAE0
+9,$EA40

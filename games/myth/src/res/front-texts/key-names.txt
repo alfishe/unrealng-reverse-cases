@@ -1,0 +1,6 @@
+# KeyNames $97B5: 7 bytes a name, UP DOWN LEFT RIGHT FIRE (the readers KeyUp to KeyFire)
+"UP     "
+"DOWN   "
+"LEFT   "
+"RIGHT  "
+"FIRE   "

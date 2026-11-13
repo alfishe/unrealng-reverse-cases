@@ -1,0 +1,4 @@
+column 6
+bit 3
+row 100
+text "RESTART FROM STAGE ONE"
