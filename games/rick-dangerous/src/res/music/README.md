@@ -1,12 +1,13 @@
 # Music: the 128K's AY tunes and effects
 
-One file, `music.txt`, holds every resource of the music part (src/music, RAM 1 `$C000`; the game image's
+`music.txt` holds every resource of the music part but the period table (src/music, RAM 1 `$C000`; the game image's
 `$5E00-$6BA3` before CopyMusicToRam1 `$A069` copies it). `tools/res_music.py` (a format module of
 `tools/res_formats.py`) turns it into the seven `.bin` files the sources INCBIN and back; `tools/res_formats.py check`
 proves the round trip.
 
 | Resource | Address | Entry | What | In the text |
 | --- | --- | --- | --- | --- |
+| `music/periods.bin` | `$C000-$C0A9` | PeriodTable | the 85 tone periods from C-1, with the original's two typos (index 20, 24) | `periods.txt`: `INDEX NOTE PERIOD` lines (`tools/res_tables.py`) |
 | `music/patterns.bin` | `$C6E5-$CA8E` | Patterns | the 55 patterns | `pattern N` blocks |
 | `music/tunetable.bin` | `$CA8F-$CABE` | TuneTable | 8 tunes x 3 order list addresses | `tune N:` lines (names, the addresses come from the layout) |
 | `music/orders.bin` | `$CABF-$CC49` | OrderLists | the 24 order lists | `order NAME:` lines, in stored order |

@@ -26,17 +26,7 @@
 ; (`$03BC`); those two notes sound about half a semitone flat. The last entry,
 ; index 84, is 24, not 30.
 PeriodTable:
-  DEFW $0EEE,$0E18,$0D4D,$0C8E,$0BDA,$0B2F,$0A8F,$09F7
-  DEFW $0968,$08E1,$0861,$07E9,$0777,$070C,$06A7,$0647
-  DEFW $05ED,$0598,$0547,$04FC,$04D4,$0470,$0431,$03F4
-  DEFW $03DC,$0386,$0353,$0324,$02F6,$02CC,$02A4,$027E
-  DEFW $025A,$0238,$0218,$01FA,$01DE,$01C3,$01AA,$0192
-  DEFW $017B,$0166,$0152,$013F,$012D,$011C,$010C,$00FD
-  DEFW $00EF,$00E1,$00D5,$00C9,$00BE,$00B3,$00A9,$009F
-  DEFW $0096,$008E,$0086,$007F,$0077,$0071,$006A,$0064
-  DEFW $005F,$0059,$0054,$0050,$004B,$0047,$0043,$003F
-  DEFW $003C,$0038,$0035,$0032,$002F,$002D,$002A,$0028
-  DEFW $0026,$0024,$0022,$0020,$0018
+  INCBIN "res/music/periods.bin",$0000,170
 
 ; AY register 7 as last written: bits 0-2 tone off, bits 3-5 noise off (all
 ; set: silent)

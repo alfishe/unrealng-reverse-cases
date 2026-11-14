@@ -1,5 +1,5 @@
 ; --------------------------------------------------------------------------------------------------------------------
-; mainloop.asm: The main loop: one pass a frame
+; mainloop.asm: The main loop: one pass every 2 frames
 ;
 ; MainLoop $E3C9 runs once a pass: the quit test (`$A13C`), UpdateObjects $EC11 (every object, Rick included),
 ; BonusCountdown $E466, the pause test (`$A144`), the death and zone-change tests, then HALT at MainLoopHalt $E40F and
@@ -33,12 +33,12 @@ NewLife:
   LD A,$01
   LD (RickObject),A
   LD A,$06
-  LD (Dynamite),A
   LD (Bullets),A
+  LD (Dynamite),A
   CALL RestartScreen
   CALL DrawHud
 
-; The main loop, one pass per frame
+; The main loop, one pass every 2 frames in play
 ;
 ; Q (`$A13C` Z) quits to Quit $E35A. Then UpdateObjects $EC11, BonusCountdown
 ; $E466 (HL = RickY, unused), and the pause: P (`$A144` Z) waits for P to be
@@ -54,9 +54,9 @@ NewLife:
 ; `$AB93` changes the zone or level and CheckGameComplete $E406 follows; else
 ; MainLoopHalt.
 ;
-; Witness: L1 42793 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 MainLoop:
   CALL QuitPressed
   JR Z,Quit
@@ -100,7 +100,7 @@ CheckZone:
 ; $EAAE >= `$CC`: `$ADB9` (c1 14, level1 15); RickY < `$60`: `$ADF0` (only
 ; level2, 11 times).
 ;
-; Witness: L1 105 (c1, ending2, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12,
+; Witness: L1 106 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12,
 ; L4Z2-L4Z6, L4Z8, level1).
 CheckGameComplete:
   LD A,(GameComplete)
@@ -186,9 +186,9 @@ FrameCountHigh:
 ; FrameCount $E462 + 1, carried into FrameCountHigh $E464. Called by the IM 2
 ; handler once a frame (its counts equal the handler's: c1 14301, ending 1499).
 ;
-; Witness: L1 108326 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 FrameTick:
   LD HL,(FrameCount)
   INC HL

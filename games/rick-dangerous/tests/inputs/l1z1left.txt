@@ -1,0 +1,6 @@
+# l1z1left: from work/stage2/warp/L1Z1.szx, the zone warp (a patch on a clone, said so; work/stage2/zonewarp.py). Our
+# keys: left (5) held from frame 10 to 300, towards L1Z1's left exit (row $18, to $FFFF).
+0 -
+10 5
+300 -
+400 END

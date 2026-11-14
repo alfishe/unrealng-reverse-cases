@@ -1,0 +1,5 @@
+# l1end: from work/docs/integrate/warp/l1end.szx (a patch on a clone, said so: the L1Z6 zone warp entered at x $C8, row
+# $20, beside the zone's right exit to $FFFF; $E3F4 = 0; then ZoneChange $FD61 = $FF and ExitSide $FD62 = 1, the
+# flags ExitRight $FBDE sets; work/docs/integrate/warps.py). No keys: LevelEnd $ABD8, tune 1, Egypt's intro text.
+0 -
+2500 END

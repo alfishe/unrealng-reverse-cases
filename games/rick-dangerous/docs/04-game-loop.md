@@ -494,8 +494,7 @@ then restores both. It draws every flagged cell with its attribute: almost the w
 *The first scroll of `c1`: Rick climbs down out of the start screen. `c1` 30721:38000 to 30741:8000, 90 pictures. Made
 with `python3 ../../kit/routine_anim.py --work work/docs/rdA/c1 --window 30721:38000-30741:8000 --listing
 build/game.lst --page 1=build/music.lst --page-name 1="the AY player" --view screen --range 5B00-FFFF --pictures 90
---out docs/img/routines/ScrollViewDown.gif`. The listing panel names part of DrawAllDirtyCells "AttrTableHigh": that
-is an inner label at `$A853`, the operand the routine patches, not a routine of its own.*
+--out docs/img/routines/ScrollViewDown.gif`.*
 
 How to read it:
 
@@ -561,5 +560,3 @@ FrameTicks and FrameCount count real frames.
 - `LD HL,(RickY)` at `$E3D1` loads HL before BonusCountdown, which does not read it.
 - SoundTick's `EI` at `$A041` enables interrupts inside the handler, before its pops. The INT pulse is long over by
   then, so no second interrupt can nest.
-- The titles of MainLoop in `src/game/mainloop.asm` and `game.ann` say "one pass per frame". The recordings show 2
-  frames a pass; the lead has the fix (`work/docs/rdA-src-changes.md`).

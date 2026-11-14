@@ -1,0 +1,29 @@
+# emptygun: from work/stage2/warp/L1Z1.szx, the zone warp (a patch on a clone, said so: level table record 0 = level 1's,
+# $E3F4 = 0 (infinite lives, the ZXDB POKE), ENTER, $E4AD = 0, fire; work/stage2/zonewarp.py). Our keys: fire + up
+# (0 7) eight times, each followed by fire alone (0, which releases FireLatch $FD5E) and a release: six shots, then two
+# with no bullets left (effect 1 at $FA47; MaskHudCells with Bullets $A976 = 0).
+20 0 7
+24 0
+28 -
+100 0 7
+104 0
+108 -
+180 0 7
+184 0
+188 -
+260 0 7
+264 0
+268 -
+340 0 7
+344 0
+348 -
+420 0 7
+424 0
+428 -
+500 0 7
+504 0
+508 -
+580 0 7
+584 0
+588 -
+700 END

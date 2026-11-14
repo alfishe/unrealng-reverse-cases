@@ -1,0 +1,20 @@
+# CharPropsSet0 $F6C0 (levels 1-2) and CharPropsSet1 $F6D0 (levels 3-4): 8 runs a set of (count, property)
+# (tools/res_tables.py). BuildCharProps $F6A9 writes the property of each char into $5C00 + char; the chars
+# column is the run's range (a count of 0 is 256). Properties: bit 1 ladder, bit 2 deadly, bit 3 in front of
+# the sprites, bit 4 platform, bit 5 spring (with bit 6), bit 6 wall, bit 7 floor (doc 10, 10.1).
+set 0 chars 0-76 count 77 property $00 ; nothing
+set 0 chars 77-90 count 14 property $02 ; ladder
+set 0 chars 91-94 count 4 property $04 ; deadly
+set 0 chars 95-181 count 87 property $08 ; in front of the sprites
+set 0 chars 182-189 count 8 property $10 ; platform
+set 0 chars 190-192 count 3 property $60 ; spring
+set 0 chars 193-251 count 59 property $40 ; wall
+set 0 chars 252-255 count 4 property $80 ; floor
+set 1 chars 0-54 count 55 property $00 ; nothing
+set 1 chars 55-58 count 4 property $02 ; ladder
+set 1 chars 59-62 count 4 property $04 ; deadly
+set 1 chars 63-206 count 144 property $08 ; in front of the sprites
+set 1 chars 207-215 count 9 property $10 ; platform
+set 1 chars 216-216 count 1 property $60 ; spring
+set 1 chars 217-249 count 33 property $40 ; wall
+set 1 chars 250-255 count 6 property $80 ; floor

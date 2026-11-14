@@ -23,9 +23,9 @@
 ; Interrupts enabled on return. 13 call sites, all in the game code from $EC93
 ; to $FD44.
 ;
-; Witness: L1 5978 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 6022 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 PlayEffect:
   LD C,A
   LD A,(Is48K)
@@ -68,7 +68,8 @@ PlayEffectAy:
 ;
 ; Output: AF, BC, D changed.
 ;
-; Witness: L1 30 (beeper48, c1, controls, ending2, gameover, L3Z12, level1).
+; Witness: L1 31 (beeper48, c1, controls, ending2, gameover, l1end, L3Z12,
+; level1).
 StartTune:
   LD D,A
   LD A,(Is48K)
@@ -95,9 +96,9 @@ StartTune:
 ;
 ; Output: AF, BC changed (the handler saves every register).
 ;
-; Witness: L1 106735 (c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 110335 (c1, controls, emptygun, ending2, gameover, l1end,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 SoundTick:
   DI
   LD A,$01
@@ -129,15 +130,16 @@ Is48K:
 ; alternating between E + $32 and E, E climbing by 2 from $B0 until it wraps to
 ; 0. 6: 30 tones from $28, the period stepping down by 30, 29 ... 1 (modulo
 ; 256). $0B: 32 tones, the period rising 1, 5 ... $7D (a falling note). 4: a
-; single tone of period $80. Any other: up 1, 9 ... $F9, then down by 8 (a
-; siren).
+; single tone of period $80. Any other: a sweep up, periods 1, 9 ... $F9, then
+; one tone of period 1 (the down loop adds $F8 to 1, gets no carry and stops
+; after one step).
 ;
 ; The very first OUT of an effect goes to port $FE00 + the effect number (C
 ; still holds it): for an odd effect ($0B) the ULA ignores that half wave;
 ; after it C is 0.
 ;
 ; Output: AF, C, DE changed. Run in beeper48 only (98 effects: the chirp, the
-; warble, the descending steps, the falling note, the click and the siren
+; warble, the descending steps, the falling note, the click and the sweep
 ; branches all ran).
 ;
 ; Witness: L1 98 (beeper48).
@@ -196,18 +198,19 @@ BeeperNotB:
   CP $04
   JR Z,BeeperClick
   LD E,$01
-BeeperSirenUp:
-  CALL BeeperTone         ; any other effect: up
+BeeperSweepUp:
+  CALL BeeperTone         ; any other effect: the period up 1, 9 ... $F9
   LD A,E
   ADD A,$08
   LD E,A
-  JR NC,BeeperSirenUp
-BeeperSirenDown:
-  CALL BeeperTone         ; ... and down
+  JR NC,BeeperSweepUp
+BeeperSweepEnd:
+  CALL BeeperTone         ; one tone of period 1: 1 + $F8 gives no carry, the
+                          ; loop ends
   LD A,E
   ADD A,$F8
   LD E,A
-  JR C,BeeperSirenDown
+  JR C,BeeperSweepEnd
   RET
 BeeperClick:
   LD E,$80                ; effect 4: one tone of period $80, through

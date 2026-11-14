@@ -213,8 +213,10 @@ The objects:
 
 Then `$FF` and the four bytes `term` close the list. No code reads `term`.
 
-Every level's first zone has a left exit to `$FFFF`. Rick starts at x 8 facing right, and no recording took one of
-these exits.
+Every level's first zone has a left exit to `$FFFF`. Rick starts at x 8 facing right. In `L1Z1` he cannot reach
+it: `l1z1left` (the `L1Z1` zone warp, a patch on a clone, left held for 290 frames) stops him at x 4, because the
+step to x 2 meets a wall (ProbeBox `$F5D5` blocked 145 times) before X can go below 0, so ExitLeft `$FBCF` never
+runs. The other three first zones were not tried.
 
 The check against the game: after Rick's first death in `L1Z1`, RestartScreen `$AD29` loads the zone again and the
 spawner fills the slots. The two records of row `$18` are spawned; the two of row `$38` are below the view and wait.
@@ -743,10 +745,8 @@ The variables of a game in progress, with their values in `c1` at frame 31 500 (
 | BonusDivider, BonusDigits | `$E495`, `$E496-$E49A` | `02`, `00 01 09 02 00` (1 920 left from the last bonus) | BonusCountdown `$E466` |
 | ControlMethod | `$A14C` | 2, the cursor keys | the menu |
 
-The `.ann` names `$A976` "Dynamite" and `$A967` "Bullets"; the code says the opposite. FireShoot `$FA4B` takes one
-from `$A976`, DropDynamite (`$FAA1`, `$FAA7`) from `$A967`, and the HUD draws `$A976` beside a bullet. This table
-uses what the code does; the rename is sent to the lead, and [doc 8, 8.3](08-hud-and-text.md#83-the-hud) shows it on
-the screen.
+FireShoot `$FA4B` takes one from Bullets `$A976`, DropDynamite (`$FAA1`, `$FAA7`) from Dynamite `$A967`, and the HUD
+draws `$A976` beside a bullet ([doc 8, 8.3](08-hud-and-text.md#83-the-hud) shows it on the screen).
 
 **Worked example.** At 31 500 Bullets is 5: FireShoot ran at 31 326:38 121 and the HUD lost one bullet at 31 329.
 Dynamite is 6: no stick was dropped in `c1`.
@@ -758,7 +758,7 @@ lists, which NewGame `$E2DC` clears in 365 records.
 
 - KillObject `$EC42` (kind 0 with bit 7 set) frees its slot. Not executed in any recording: no slot ever held the
   type `$80`.
-- The left exits to `$FFFF` in every level's first zone: no recording took one.
+- The left exits to `$FFFF` in the first zones of levels 2-4: no recording tried them (`L1Z1`'s is walled off, 7.2).
 - The four bytes `term` after every object list: nothing reads them.
 - Slot +29 gets (+4 AND 7) x 32 at the spawn; only the stun count is seen to use the byte.
 - Slot +13 / +14 of an enemy: not read by the enemy code.

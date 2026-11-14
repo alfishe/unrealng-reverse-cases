@@ -5,10 +5,16 @@
 
   DEVICE ZXSPECTRUM128
 
+; Constants: addresses outside this image, ROM entries, ports (@const)
+CellFlags          EQU $6C00  ; the cell flags: one byte per char cell of the map window, $6C00 + 32 x row + column
+
 ; Addresses in other RAM banks (@bank)
 AyPlayTune     EQU $C3E4  ; bank 1: the tune start (A = the tune number); the image's $5E00 + $03E4
 AyTick         EQU $C46C  ; bank 1: the frame tick; the image's $5E00 + $046C
 AyPlayEffect   EQU $C685  ; bank 1: the effect start (A = the effect number); the image's $5E00 + $0685
+
+; Names that cannot be labels (@alias)
+AttrTableHigh  EQU DrawAllScan+$12  ; the LD D,n at $A852 inside DrawAllDirtyCells, whose operand LoadScreen sets
   ORG $5B00
   INCLUDE "loader.asm"  ; What the ROM and the loader leave below the game: system variables, the BASIC, the second stage, the AY player
   INCLUDE "screenwork.asm"  ; The end of the cell flags and a graphic slot: work space after the char map
@@ -25,7 +31,7 @@ AyPlayEffect   EQU $C685  ; bank 1: the effect start (A = the effect number); th
   INCLUDE "objects.asm"  ; The object table's scroll
   INCLUDE "leveldata.asm"  ; The level data: maps, tiles, object kinds, zones, exits, object lists, animations, scripts
   INCLUDE "menu.asm"  ; The menu, the control choice, the new game, quit and GAME OVER
-  INCLUDE "mainloop.asm"  ; The main loop: one pass a frame
+  INCLUDE "mainloop.asm"  ; The main loop: one pass every 2 frames
   INCLUDE "text.asm"  ; The texts
   INCLUDE "rick.asm"  ; Rick's bullet and dynamite as objects
   INCLUDE "vars.asm"  ; Rick's state

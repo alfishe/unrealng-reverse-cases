@@ -132,8 +132,8 @@ BlastFrames:
 ;
 ; Run in c1 and levels 1-4 (25 to 84 passes).
 ;
-; Witness: L1 396 (beeper48, c1, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8,
-; L4Z9, level1-level4).
+; Witness: L1 546 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3,
+; L4Z4, L4Z8, L4Z9, level1-level4).
 BulletObj:
   LD A,(BulletDx)
   AND A
@@ -186,9 +186,9 @@ BulletHitY:
 ; kept in PrevCrawl `$FD5F`, then ChooseRickFrame `$FC60` (a jump: its RET
 ; returns from here).
 ;
-; Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 RickHandler:
   CALL MoveRick
   LD A,(Crawling)
@@ -214,9 +214,9 @@ RickHandler:
 ; or down held: climbing starts; the Y velocity grows by `$80` up to `$0800`;
 ; then WalkRick `$F903`.
 ;
-; Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 MoveRick:
   XOR A
   LD (Poking),A
@@ -314,9 +314,9 @@ MoveRickSetVel:
 ; crawling, ProbeBox `$F5D5` else): bits 4-6 block; else X is stored, and a
 ; deadly char kills (KillRick `$FBED`).
 ;
-; Witness: L1 30940 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 31458 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 WalkRick:
   LD A,(InputBits)
   AND $03
@@ -386,9 +386,9 @@ WalkRickApply:
 ; The spring bounce (`$F9AC`, `$F9B2`) ran in L2Z4 only (6 and 17). The stick
 ; poke (`$F9DC`) ran in controls, level1-level3 (level3 175).
 ;
-; Witness: L1 21862 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 22412 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
 LandRick:
   LD A,(YVelocity+$0001)
   AND A
@@ -481,8 +481,8 @@ PokeSetX:
 ; Part of LandRick `$F95D`. A = 0 into PokeLatch, then FireClearPokeLatch
 ; `$FA1F`.
 ;
-; Witness: L1 432 (beeper48, c1, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z
-; x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
+; Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6,
+; L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
 FireNoStick:
   XOR A
 
@@ -500,10 +500,10 @@ FireNoStick:
 ; facing left), `$EAD0` = 0 / 1 (mirror). Not up: FireNotUp `$FA8C`.
 ;
 ; Evidence: shots (`$FA4B`) in c1 and level1-level4; the "no bullets" sound
-; (`$FA45`) ran in no build: known only from the code.
+; (`$FA45`) in emptygun only (frames 500 and 580, after six shots).
 ;
-; Witness: L1 432 (beeper48, c1, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z
-; x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
+; Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6,
+; L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
 FireClearPokeLatch:
   LD (PokeLatch),A
   LD A,D
@@ -520,7 +520,7 @@ FireClearPokeLatch:
   LD A,(BulletObject)
   AND A
   RET NZ
-  LD A,(Dynamite)
+  LD A,(Bullets)
   AND A
   JP NZ,FireShoot
   LD A,$01
@@ -528,7 +528,7 @@ FireClearPokeLatch:
   RET
 FireShoot:
   DEC A
-  LD (Dynamite),A
+  LD (Bullets),A
   XOR A
   CALL PlayEffect
   LD A,$02
@@ -570,8 +570,8 @@ ShootLeft:
 ;
 ; Evidence: a dynamite stick dropped (`$FAA6`) in level2 (1) and level3 (6).
 ;
-; Witness: L1 352 (beeper48, c1, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2,
-; L3Z6, L3Z11, L3Z12, L4Z x5, level1-level4).
+; Witness: L1 368 (beeper48, c1, emptygun, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7,
+; L3Z2, L3Z6, L3Z11, L3Z12, L4Z x5, level1-level4).
 FireNotUp:
   XOR A
   LD (FireLatch),A
@@ -586,11 +586,11 @@ DropDynamite:
   LD A,(DynamiteObject)
   AND A
   RET NZ
-  LD A,(Bullets)
+  LD A,(Dynamite)
   AND A
   RET Z
   DEC A
-  LD (Bullets),A
+  LD (Dynamite),A
   LD A,$03
   LD (DynamiteObject),A
   LD A,$32
@@ -618,9 +618,9 @@ DropDynamite:
 ; Evidence: jumps (`$FAD3`) in every game build; crawls (`$FB0C`) in
 ; level1-level4; the ladder top snap (`$FAFC`) in level1 and level3.
 ;
-; Witness: L1 20830 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 21348 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
 NoFire:
   BIT 3,D
   JP NZ,NoFireDown
@@ -903,8 +903,8 @@ KillRickDriftLeft:
 ; Evidence: DeathDone set (`$FC41`) in c1 2, controls 3, gameover 6, level1 11,
 ; level2 3, level3 5, level4 28 times.
 ;
-; Witness: L1 9925 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6,
-; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 9927 (beeper48, c1, controls, gameover, l1end, spotL3Z7-51,
+; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 DeathFall:
   LD A,(DeathDrift)
   ADD A,(IX+$01)
@@ -958,9 +958,9 @@ DeathFallStore:
 ;
 ; 0), effect 4 at steps 2 and 6.
 ;
-; Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ChooseRickFrame:
   LD A,(Facing)
   LD (IX+$06),A

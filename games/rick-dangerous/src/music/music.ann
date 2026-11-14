@@ -10,6 +10,7 @@
 $C000 w PeriodTable 8 ; AY tone periods, 85 notes from C-1 (3822) by semitones; index = note + transpose + 12
 > TrackStep $C4B4 (at $C573) and OrnamentStep $C5F5 (at $C672) read the word at PeriodTable + 2 * index; the index is the pattern's note plus the track's transpose plus 12. The values are 2 000 000 / 16 / f of the equal-tempered scale (3822: 32.7 Hz, C-1, at 2 MHz).
 > Two entries carry a typo in bit 5 of the low byte: index 20 (G#2) is 1236 (`$04D4`), not 1204 (`$04B4`), and index 24 (C-3) is 988 (`$03DC`), not 956 (`$03BC`); those two notes sound about half a semitone flat. The last entry, index 84, is 24, not 30.
+@res music/periods.bin
 $C0AA b MixerShadow ; AY register 7 as last written: bits 0-2 tone off, bits 3-5 noise off (all set: silent)
 > StartNote clears the channel's tone and/or noise bits (its instrument's flags bits 0 and 1), ReleaseStep $C2DD sets them again when the volume reaches 0. UpdateAy returns at once while bits 0-5 are all set (nothing sounding): that is the cost of a silent frame. As loaded: `$3F`.
 $C0AB b ChannelA 18 ; Channel A: +0 tone-on AND mask, +1 noise-on AND mask, +2 its mixer bits, +3/+4 period, +5 volume (0-255)
@@ -171,7 +172,7 @@ $CD08 b EffectTable 13 ; The 12 effects, 13 bytes each: an instrument's 10 bytes
 > +0-+9 as Instruments, +10/+11 the period, +12 the duration in frames. The comments give the call sites of the game's AyPlayEffect `$9FED` with A = the effect and the most runs of a call site in one recording.
 @res music/effects.bin
 $CD08 Effect0 ; Effect 0: noise, a slide; a shot fired, `$FA50` (level3 7)
-$CD15 Effect1 ; Effect 1: noise; fire with no bullets left, `$FA47` (c1 146)
+$CD15 Effect1 ; Effect 1: noise; fire with no bullets left, `$FA47` (emptygun, frames 500 and 580)
 $CD22 Effect2 ; Effect 2: noise, a slide; the dynamite's bang, `$EC93` (level3 6)
 $CD2F Effect3 ; Effect 3: noise, a slide (step -8); a trap set off `$EFCB`, a poke with the stick `$F9EF` (level4 62 at `$EFCB`)
 $CD3C Effect4 ; Effect 4: tone and noise, always channel B; Rick's steps (crawl `$FCB8`, climb `$FD0D`, walk `$FD44`) (level3 357 at `$FD44`)

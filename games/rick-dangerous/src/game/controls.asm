@@ -74,7 +74,7 @@ Key4Pressed:
 ; game over ($E389, $E38E) and the level's end ($AC38, $AC3D); each waits for
 ; the release first, then for the press.
 ;
-; Witness: L1 739194 (beeper48, c1, controls, ending2, gameover,
+; Witness: L1 1149386 (beeper48, c1, controls, ending2, gameover, l1end,
 ; level1-level4).
 StartPressed:
   LD BC,$BFFE
@@ -86,8 +86,6 @@ StartPressed:
   BIT 7,A
   RET Z
   CALL ReadInput
-
-; StartFireTest
 StartFireTest:
   LD A,(InputBits)        ; ReadInput, then bit 4 (fire)
   BIT 4,A
@@ -98,9 +96,9 @@ StartFireTest:
 ; Port $FBFE bit 0. Called once a game loop pass ($E3C9): Q ends the game (to
 ; the game over text at $E35A).
 ;
-; Witness: L1 42793 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 QuitPressed:
   LD BC,$FBFE
   IN A,(C)
@@ -113,9 +111,9 @@ QuitPressed:
 ; the next press and that release; the frame loop ($E417) calls it once more
 ; without using the result.
 ;
-; Witness: L1 243883 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 244986 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 PausePressed:
   LD BC,$DFFE
   IN A,(C)
@@ -150,9 +148,9 @@ InputBits:
 ; controls (and 30 times in c1); the cursor keys in c1, controls and the four
 ; level recordings; the Sinclair in c1 and controls.
 ;
-; Witness: L1 734946 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 1145688 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ReadInput:
   PUSH HL
   LD HL,InputBits

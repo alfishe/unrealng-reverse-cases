@@ -178,7 +178,7 @@ AnimLists:
 ; Movement scripts: 3-byte steps (frames, dx, dy), $FF ends; ObjectKinds +4-5
 ;
 ; $EE81 counts slot +$19 up to the step's frames, adding the signed dx to x
-; (slot +1) and dy to y each frame; at a frames byte $FF the object is removed
+; (slot +1) and dy to y each pass; at a frames byte $FF the object is removed
 ; (slot +$0B bit 0, when $FD68 is 0) or restarts at its spawn place.
 ObjectScripts:
   INCBIN "res/levels/scripts.bin",$0000,662

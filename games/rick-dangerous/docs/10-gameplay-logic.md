@@ -26,7 +26,8 @@ The data behind the objects (records, kinds, scripts) is in [doc 7](07-objects.m
 
 Rick never looks at a pixel. Every test of the world reads a char code from the char map and looks up one byte for
 it in a 256-byte table at `$5C00`. BuildCharProps `$F6A9` fills that table from 8 (count, property) pairs whenever a
-zone is entered (LoadScreen picks the pairs by the zone's char set).
+zone is entered (LoadScreen picks the pairs by the zone's char set). The pairs are the resource
+`src/res/levels/charprops.txt` (one line a run), which the build turns back into the bytes.
 
 ![The char properties of both sets](img/play/props.png)
 
@@ -238,7 +239,7 @@ Fire with up shoots. One bullet can be out at a time (object 2), and there are 6
 FireShoot (fire + up, on the floor):
     once per press (FireLatch $FD5E)
     if a bullet is out ($EACA): nothing
-    if bullets ($A976) = 0: effect 1; return            # never in any recording
+    if bullets ($A976) = 0: effect 1; return            # emptygun frames 500, 580
     bullets -= 1; effect 0
     bullet: kind 2, x = Rick's x, y = Rick's y + 6, frame $85F9 (frame 4)
     BulletDx $ED3F = +8, or -8 (and mirrored) facing left
@@ -252,13 +253,13 @@ BulletObj (each pass):
 FA39 3A CA EA    LD A,(BulletObject)
 FA3C A7          AND A
 FA3D C0          RET NZ                 ; one bullet at a time
-FA3E 3A 76 A9    LD A,(Dynamite)        ; $A976: the bullets (the .ann's label is swapped)
+FA3E 3A 76 A9    LD A,(Bullets)         ; $A976
 FA41 A7          AND A
 FA42 C2 4B FA    JP NZ,FireShoot
 FA45 3E 01       LD A,$01               ; none left: the click
 FA47 CD ED 9F    CALL PlayEffect
 FA4B 3D          DEC A                  ; FireShoot
-FA4C 32 76 A9    LD (Dynamite),A
+FA4C 32 76 A9    LD (Bullets),A
 FA4F AF          XOR A
 FA50 CD ED 9F    CALL PlayEffect        ; effect 0, the shot
 FA53 3E 02       LD A,$02
@@ -362,9 +363,9 @@ ECE4 CD 6F F7    CALL InBlast
 ECE9 C0          RET NZ
 ECEA C3 ED FB    JP KillRick
 FA9C 3A E8 EA    LD A,(DynamiteObject)  ; DropDynamite
-FAA1 3A 67 A9    LD A,(Bullets)         ; $A967: the sticks (the .ann's label is swapped)
+FAA1 3A 67 A9    LD A,(Dynamite)        ; $A967: the sticks
 FAA6 3D          DEC A
-FAA7 32 67 A9    LD (Bullets),A
+FAA7 32 67 A9    LD (Dynamite),A
 FAAF 3E 32       LD A,$32               ; the fuse: 50 passes
 FAB1 32 ED EC    LD (DynFuse),A
 ```
@@ -804,14 +805,15 @@ one more trap.
 - **The restart point** is the last zone entered, with full ammunition: a death costs a life and position, never
   bullets or sticks.
 - **The timed bonus** counts down in the tens digit only: 2 000 points, 10 a second and a fifth.
-- **The HUD labels swapped in the source:** the code's bullets are at `$A976`, its sticks at `$A967`
-  ([doc 8](08-hud-and-text.md#83-the-hud)).
 
 ## 10.11 Known only from the code
 
-- The click of an empty gun (`$FA45`, effect 1): no recording fires with no bullets.
-- The left exits to `$FFFF` at the start of each level ([doc 7, 7.2](07-objects.md#72-one-zone-decoded-l1z1)).
-- The end of levels 1-3 by play (tunes 1-3): no recording finishes those levels; the warps start inside them.
+- The left exits to `$FFFF` at the start of levels 2-4; `L1Z1`'s is walled off (`l1z1left`,
+  [doc 7, 7.2](07-objects.md#72-one-zone-decoded-l1z1)).
+- The end of levels 2 and 3 (tunes 2 and 3): no recording finishes them. Level 1's end ran in `l1end` (a patch on a
+  clone: the `L1Z6` warp with the right exit's two flags set): LevelEnd `$ABD8` at frame 1, StartTune with A = 1 at
+  9:33 543, then Egypt's text. The empty gun ran in `emptygun` (FireShoot's `$FA45` at frames 500 and 580, after six
+  shots).
 - The awards 1, 10, 100 and 1 000 (`$A9C5`, `$A9CA`, `$A9D4`, `$A9DE`): nothing adds them.
 - The bonus reaching 0: it would take 200 steps, 6 000 passes; no recording waits that long.
 - Set48K `$A05F`: the 48K recording starts after it ran.

@@ -2,14 +2,14 @@
 ; hud.asm: The HUD (score, dynamite, bullets, lives), the texts, the title's colours, the level's end
 ;
 ; The HUD is the screen's row 1: the six score digits at $4021, then three counters drawn as up to six icons each:
-; dynamite at $4029 (char $24), bullets at $4031 ($25), lives at $4039 ($26), all from the font at $9E95 (the digits
-; 0-9, A-Z, then the icons).
+; bullets at $4029 (char $24, a bullet), dynamite at $4031 ($25, a stick), lives at $4039 ($26), all from the font at
+; $9E95 (the digits 0-9, A-Z, then the icons).
 ;
 ; The HUD lies over the playfield: MaskHudCells $A8BF clears the cell flags under the score and the icons before each
 ; draw, so the map never overwrites them, and DrawCounter $AA0E gives the cells past the icons back to the map (flag
 ; 1).
 ;
-; The counters are bytes: Lives $A958, Bullets $A967, Dynamite $A976. A new game sets all three to 6 ($E2F7-$E30B), a
+; The counters are bytes: Lives $A958, Dynamite $A967, Bullets $A976. A new game sets all three to 6 ($E2F7-$E30B), a
 ; life lost sets dynamite and bullets to 6 again ($E3BB), and so does a level's end. UpdateHud $A90F redraws a counter
 ; only when it differs from its copy in OldHudCounts $A93A.
 ;
@@ -32,50 +32,52 @@
 ; Clear the cell flags under the score and the counters' icons
 ;
 ; Clears the six flags $6C21-$6C26 (the score), then as many flags as each
-; counter has icons (at most 6): $6C29 dynamite, $6C31 bullets, $6C39 lives.
+; counter has icons (at most 6): $6C29 bullets, $6C31 dynamite, $6C39 lives.
 ;
-; When Dynamite is 0 the JP Z at $A8CF lands in the clearing loop with HL = 0
+; When Bullets is 0 the JP Z at $A8CF lands in the clearing loop with HL = 0
 ; and B as the caller left it: it writes zeros at $0000-$00FF (the ROM:
-; ignored) B times. Harmless; with Bullets or Lives 0 the code skips properly.
+; ignored) B times. Harmless; with Dynamite or Lives 0 the code skips properly.
+; Seen in emptygun: from the sixth shot (frame 420) 139 of the 350 runs take
+; that jump (MaskBullets runs 211 times).
 ;
 ; Callers: DrawDirtyCells and DrawAllDirtyCells. Output: AF, B, HL changed.
 ;
-; Witness: L1 43074 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43626 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 MaskHudCells:
   LD HL,$0000
-  LD (Kind16Frame+$007D),HL
-  LD (Kind19Frame+$0001),HL
-  LD (Kind19Frame+$0003),HL
-  LD A,(Dynamite)
-  AND A
-  JP Z,MaskDynamiteLoop
-  CP $07
-  JP C,MaskDynamite
-  LD A,$06
-MaskDynamite:
-  LD HL,Kind19Frame+$0007
-  LD B,A
-  XOR A
-MaskDynamiteLoop:
-  LD (HL),A
-  INC L
-  DJNZ MaskDynamiteLoop
+  LD (CellFlags+$21),HL
+  LD (CellFlags+$23),HL
+  LD (CellFlags+$25),HL
   LD A,(Bullets)
   AND A
-  JP Z,MaskLives
+  JP Z,MaskBulletsLoop
   CP $07
   JP C,MaskBullets
   LD A,$06
 MaskBullets:
+  LD HL,CellFlags+$29
   LD B,A
   XOR A
-  LD HL,Kind19Frame+$000F
 MaskBulletsLoop:
   LD (HL),A
   INC L
   DJNZ MaskBulletsLoop
+  LD A,(Dynamite)
+  AND A
+  JP Z,MaskLives
+  CP $07
+  JP C,MaskDynamite
+  LD A,$06
+MaskDynamite:
+  LD B,A
+  XOR A
+  LD HL,CellFlags+$31
+MaskDynamiteLoop:
+  LD (HL),A
+  INC L
+  DJNZ MaskDynamiteLoop
 MaskLives:
   LD A,(Lives)
   AND A
@@ -86,7 +88,7 @@ MaskLives:
 MaskLivesCount:
   LD B,A
   XOR A
-  LD HL,Kind19Frame+$0017
+  LD HL,CellFlags+$39
 MaskLivesLoop:
   LD (HL),A
   INC L
@@ -95,29 +97,28 @@ MaskLivesLoop:
 
 ; Redraw the counters that changed since the last call
 ;
-; Compares Dynamite, Bullets and Lives with OldHudCounts and calls
-; DrawDynamite, DrawBullets or DrawLives for each one that differs (keeping the
-; new value).
+; Compares Bullets, Dynamite and Lives with OldHudCounts and calls DrawBullets,
+; DrawDynamite or DrawLives for each one that differs (keeping the new value).
 ;
 ; Callers: the frame loop ($E422), the game over ($E35D) and the level's end
 ; ($ABF3). Output: everything.
 ;
-; Witness: L1 42378 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 42930 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 UpdateHud:
   LD A,(OldHudCounts)
   LD C,A
-  LD A,(Dynamite)
+  LD A,(Bullets)
   LD (OldHudCounts),A
   CP C
-  CALL NZ,DrawDynamite
-  LD A,(OldBullets)
-  LD C,A
-  LD A,(Bullets)
-  LD (OldBullets),A
-  CP C
   CALL NZ,DrawBullets
+  LD A,(OldDynamite)
+  LD C,A
+  LD A,(Dynamite)
+  LD (OldDynamite),A
+  CP C
+  CALL NZ,DrawDynamite
   LD A,(OldLives)
   LD C,A
   LD A,(Lives)
@@ -126,25 +127,25 @@ UpdateHud:
   LD (OldLives),A
   JP DrawLives
 
-; The counters as last drawn: dynamite, bullets, lives
+; The counters as last drawn: bullets, dynamite, lives
 OldHudCounts:
   DEFB $00
-OldBullets:
+OldDynamite:
   DEFB $00
 OldLives:
   DEFB $00
 
 ; Draw the score and the three counters
 ;
-; Calls DrawScore, DrawDynamite, DrawBullets and DrawLives. Callers: the game
+; Calls DrawScore, DrawBullets, DrawDynamite and DrawLives. Callers: the game
 ; start ($E30E) and a life lost ($E3C6).
 ;
 ; Witness: L1 331 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6,
 ; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 DrawHud:
   CALL DrawScore
-  CALL DrawDynamite
   CALL DrawBullets
+  CALL DrawDynamite
   CALL DrawLives
   RET
 
@@ -167,42 +168,44 @@ DrawLives:
 Lives:
   DEFB $05
 
-; Draw the bullets as icons at $4031
+; Draw the sticks of dynamite as icons at $4031
 ;
-; DE = $4031, the icon $25, attribute $47, A = Bullets, then DrawCounter.
+; DE = $4031, the icon $25 (glyph 37, a stick), attribute $47, A = Dynamite,
+; then DrawCounter.
 ;
 ; Witness: L1 393 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6,
 ; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
-DrawBullets:
+DrawDynamite:
   LD DE,$4031
   LD L,$25
+  LD H,$47
+  LD A,(Dynamite)
+  CALL DrawCounter
+  RET
+
+; The sticks of dynamite: 6 at a new game, a life and a level; the dynamite
+; drop uses them ($FAA1, $FAA7)
+Dynamite:
+  DEFB $02
+
+; Draw the bullets as icons at $4029
+;
+; DE = $4029, the icon $24 (glyph 36, a bullet), attribute $47, A = Bullets,
+; then DrawCounter.
+;
+; Witness: L1 413 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51,
+; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+DrawBullets:
+  LD DE,$4029
+  LD L,$24
   LD H,$47
   LD A,(Bullets)
   CALL DrawCounter
   RET
 
 ; The bullets: 6 at a new game, a life and a level; Rick's fire uses them
-; ($FAA1, $FAA7)
+; ($FA3E, $FA4C)
 Bullets:
-  DEFB $02
-
-; Draw the dynamite as icons at $4029
-;
-; DE = $4029, the icon $24, attribute $47, A = Dynamite, then DrawCounter.
-;
-; Witness: L1 407 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6,
-; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
-DrawDynamite:
-  LD DE,$4029
-  LD L,$24
-  LD H,$47
-  LD A,(Dynamite)
-  CALL DrawCounter
-  RET
-
-; The sticks of dynamite: 6 at a new game, a life and a level; used at $FA3E,
-; $FA4C
-Dynamite:
   DEFB $04
 
 ; Draw the six score digits at $4021 and colour them $47
@@ -353,10 +356,10 @@ AddScoreCarry:
 ; CounterAttrTableHigh), so the next draw puts the map back there.
 ;
 ; The LD A,($6B00) / AND A at $AA76 has no effect (A is reloaded, the flags are
-; not tested). Callers: DrawLives, DrawBullets, DrawDynamite.
+; not tested). Callers: DrawLives, DrawDynamite, DrawBullets.
 ;
-; Witness: L1 1170 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6,
-; L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 1176 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51,
+; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 DrawCounter:
   PUSH AF
   LD A,H
@@ -468,7 +471,7 @@ CounterAttrTableHigh:
 ; Output: HL on the $FF, DE past the text, AF changed. Callers: PrintLines and
 ; the game over text ($E36B-$E381).
 ;
-; Witness: L1 4235 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 4504 (beeper48, c1, controls, ending2, gameover, l1end, level1).
 PrintText:
   LD A,(HL)
   CP $FF
@@ -547,7 +550,7 @@ SpaceGlyph:
 ; Callers: the title ($E22F-$E241), the level texts ($E31A, $AC1A). Output:
 ; everything.
 ;
-; Witness: L1 275 (beeper48, c1, controls, ending2, gameover, level1).
+; Witness: L1 287 (beeper48, c1, controls, ending2, gameover, l1end, level1).
 PrintLines:
   LD A,(HL)
   CP $FE
@@ -641,7 +644,7 @@ PlainColours:
 ; fourth the bonus and the end
 ;
 ; Falls in from CheckScreenExit when the exit points at $FFFF. MarkAllDirty,
-; clears the map's screen rows $6600-$68FF, RedrawScreen, Dynamite = Bullets =
+; clears the map's screen rows $6600-$68FF, RedrawScreen, Bullets = Dynamite =
 ; 6, UpdateHud, LevelNumber $E4AD + 1 = n.
 ;
 ; The level record at $E4AE + 11n (+0/+1 the text list, +2/+3 its screen
@@ -652,11 +655,12 @@ PlainColours:
 ; n >= 4: ClearPlayArea, MarkAllDirty, $E440 = $FF (the game loop's "over"
 ; flag: on to the game over at $E35D) and return. Else NextLevel.
 ;
-; Run once, in the ending recording (work/stage2/ending2: level 4's end exit
-; from the L4Z9 warp, the door opened by the warp); the ends of levels 1-3 are
-; in no recording. Output: everything.
+; Run once in ending2 (level 4's end exit from the L4Z9 warp, the door opened
+; by the warp) and once in l1end (level 1's end: the L1Z6 warp with the right
+; exit's flags set, tune 1); the ends of levels 2 and 3 are in no recording.
+; Output: everything.
 ;
-; Witness: L1 1 (ending2).
+; Witness: L1 2 (ending2, l1end).
 LevelEnd:
   CALL MarkAllDirty
   LD HL,MusicImage+$0800
@@ -666,8 +670,8 @@ LevelEnd:
   LDIR
   CALL RedrawScreen
   LD A,$06
-  LD (Dynamite),A
   LD (Bullets),A
+  LD (Dynamite),A
   CALL UpdateHud
   LD A,(Level)
   INC A
@@ -772,9 +776,9 @@ ClearPlayArea:
 ; Run in c1, controls, gameover, level1 and level2; never in level3 / level4.
 ; Known only from the code: the digits are not drawn here.
 ;
-; Witness: L1 42787 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43339 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 BonusCountdown:
   LD A,(BonusActive)
   AND A

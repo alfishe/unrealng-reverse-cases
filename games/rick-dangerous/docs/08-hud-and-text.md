@@ -49,8 +49,8 @@ The glyphs in numbers:
 | --- | --- | --- | --- |
 | 0-9 | the digits | `$37-$40` | the score (DrawScore takes the digit itself), the credits' "1989" |
 | 10-35 | A-Z | `$41-$5A` (ASCII) | every text |
-| 36 | a bullet | (`$5B`, not used) | DrawDynamite `$A968`, the bullets counter |
-| 37 | a stick of dynamite | (`$5C`, not used) | DrawBullets `$A959`, the sticks counter |
+| 36 | a bullet | (`$5B`, not used) | DrawBullets `$A968`, the bullets counter |
+| 37 | a stick of dynamite | (`$5C`, not used) | DrawDynamite `$A959`, the sticks counter |
 | 38 | Rick's face | (`$5D`, not used) | DrawLives `$A94A` |
 | 39-41 | `,` `.` `?` | `$5E`, `$5F`, `$60` | the intros and the closing text |
 | 42 | blank | (`$61`, not used) | nothing: a space prints SpaceGlyph `$AAE1` |
@@ -211,18 +211,18 @@ How to read it:
 | Cells | Routine | Screen | Variable | Glyph | Attribute |
 | --- | --- | --- | --- | --- | --- |
 | 1-6 | DrawScore `$A977` | `$4021` | Score `$A9BE`, six digits | the digit | `$47` |
-| 9-14 | DrawDynamite `$A968` | `$4029` | `$A976`, the bullets | 36, a bullet | `$47` |
-| 17-22 | DrawBullets `$A959` | `$4031` | `$A967`, the sticks | 37, a stick | `$47` |
+| 9-14 | DrawBullets `$A968` | `$4029` | Bullets `$A976` | 36, a bullet | `$47` |
+| 17-22 | DrawDynamite `$A959` | `$4031` | Dynamite `$A967`, the sticks | 37, a stick | `$47` |
 | 25-30 | DrawLives `$A94A` | `$4039` | Lives `$A958` | 38, a face | `$47` |
 
-The source names the two middle counters the wrong way round. The code is clear about what each byte is:
+Which byte is which comes from the code, not from the order of the variables:
 
 - FireShoot takes one from `$A976` (`$FA3E`, `$FA4C`) and gives up when it is 0;
 - DropDynamite takes one from `$A967` (`$FAA1`, `$FAA7`);
 - the counter of `$A976` draws glyph 36, the bullet; the counter of `$A967` draws glyph 37, the stick.
 
-In this document the variables are named by what they hold: `$A976` the bullets, `$A967` the sticks. The routine
-names stay as the listing has them. The fix is asked for in the source changes.
+So the bullets come first on the screen (`$4029`) though their byte lies after the sticks' in memory; the
+names Bullets, Dynamite, DrawBullets and DrawDynamite follow the code.
 
 ### Who draws the row
 
@@ -244,7 +244,7 @@ How to read it:
   `$9E95-$9E9C` (the 0 glyph: the score is 000000) and Score `$A9BE-$A9C3`.
 - CounterAttr (yellow), the loop of DrawCounter, wrote 162 bytes: 18 icons of 8 rows and 18 attributes. Its source
   is FontIcons `$9FB5-$9FCC`, glyphs 36-38.
-- The map writers (DrawDirtyScan, the char table writer named AttrTableHigh in the legend, DrawDirtyMapChar) never
+- The map writers (DrawDirtyScan, DrawAllScan, DrawDirtyMapChar) never
   write a HUD cell. The other cells of row 1 are theirs.
 
 ### The cell flags: how the map leaves the HUD alone
@@ -263,10 +263,10 @@ So a counter that loses an icon gives its cell back to the map in the same pass.
 ```mermaid
 flowchart TD
   U["UpdateHud $A90F, once a pass"] --> C1{"bullets $A976 differ from OldHudCounts $A93A?"}
-  C1 -- yes --> D1["DrawDynamite: DE $4029, glyph $24"]
+  C1 -- yes --> D1["DrawBullets: DE $4029, glyph $24"]
   C1 -- no --> C2
   D1 --> C2{"sticks $A967 differ from $A93B?"}
-  C2 -- yes --> D2["DrawBullets: DE $4031, glyph $25"]
+  C2 -- yes --> D2["DrawDynamite: DE $4031, glyph $25"]
   C2 -- no --> C3
   D2 --> C3{"Lives $A958 differ from $A93C?"}
   C3 -- yes --> D3["DrawLives: DE $4039, glyph $26"]
@@ -282,8 +282,8 @@ In pseudocode:
 
 ```text
 UpdateHud:                                   ; MainLoop $E422, GameOver, LevelEnd $ABF3
-    for (var, old, draw) in ((bullets $A976, $A93A, DrawDynamite),
-                             (sticks  $A967, $A93B, DrawBullets),
+    for (var, old, draw) in ((Bullets  $A976, $A93A, DrawBullets),
+                             (Dynamite $A967, $A93B, DrawDynamite),
                              (Lives   $A958, $A93C, DrawLives)):
         if var != old: old = var; draw()
 DrawCounter(A = count, DE = screen, L = glyph, H = attribute):
@@ -358,9 +358,9 @@ How to read it:
 **The point**: only the counter that changed is drawn, and the cell it gives up is handed to the map, not cleared.
 
 **Worked example: one bullet less, `c1` 31 329.** FireShoot ran at 31 326:38 121 and left `$A976` = 5
-([doc 10](10-gameplay-logic.md)). At 31 329 UpdateHud finds OldHudCounts `$A93A` = 6, so it calls DrawDynamite.
+([doc 10](10-gameplay-logic.md)). At 31 329 UpdateHud finds OldHudCounts `$A93A` = 6, so it calls DrawBullets.
 
-1. DrawDynamite: DE = `$4029`, L = `$24`, H = `$47`, A = 5.
+1. DrawBullets: DE = `$4029`, L = `$24`, H = `$47`, A = 5.
 2. DrawCounter: the attribute address is B = (`$40` >> 3) AND 3 OR `$58` = `$58`, C = `$29`: BC = `$5829`.
 3. The glyph is `$9E95` + 8 x `$24` = `$9FB5`, the bullet. It is drawn at `$4029`-`$402D`, attributes `$5829`-`$582D`
    = `$47`.
@@ -662,8 +662,9 @@ after the closing text in `ending`.
 
 - **MaskHudCells writes to the ROM.** With the bullets `$A976` at 0, the `JP Z` at `$A8CF` jumps into the clearing
   loop with HL = 0 and B as the caller left it, so it writes zeros at `$0000` onwards up to 256 times. The ROM
-  ignores the writes. With the sticks or the lives at 0 the code skips properly. The case was not looked for in a
-  recording.
+  ignores the writes. With the sticks or the lives at 0 the code skips properly. Seen in `emptygun` (the `L1Z1`
+  zone warp, a patch on a clone): from the sixth shot at frame 420, 139 of MaskHudCells' 350 runs take the `JP Z`
+  with HL = 0 (MaskBullets `$A8D9` runs 211 times).
 - **The awards Award1, Award10, Award100 and Award1000** have no reader in the code.
 - **ScorePad** `$A9C4` (`$FF`) follows the units digit and is never read.
 - **DrawCounter's** `LD A,($6B00)` / `AND A` at `$AA76` has no effect: A is loaded again at once and the flags are not

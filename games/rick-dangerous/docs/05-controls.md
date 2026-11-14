@@ -361,5 +361,4 @@ Witness: walking and jumping in every recording of play. A poke (`$F9DC`): `cont
 ## 5.7 Known only from the code
 
 - Bit 7 of port `$FEFE` as a start key: no recording or real machine pulls it low.
-- Fire with no bullets (`$FA45`, effect 1): no recording fires with an empty gun.
 - The second PausePressed at `$E417` in every pass: its result is never used ([doc 4, 4.9](04-game-loop.md#49-known-only-from-the-code)).

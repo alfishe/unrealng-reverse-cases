@@ -251,8 +251,8 @@ MainLoop:
 | Variable | Address | Witness |
 | --- | --- | --- |
 | Lives | `$A958` | 6 at a new game; ZXDB's infinite-lives POKE 58356 (`$E3F4`) is in the main loop |
-| the sticks of dynamite (named Bullets in the source) | `$A967` | 6 at a new game and a new life |
-| the bullets (named Dynamite in the source) | `$A976` | 6 at a new game and a new life |
+| Dynamite, the sticks | `$A967` | 6 at a new game and a new life |
+| Bullets | `$A976` | 6 at a new game and a new life |
 | Score | `$A9BE-$A9C3` | six digits; `level1` 001970 at frame 755 |
 | Level | `$E4AD` | 0-3, 4 at the ending; set by the warps ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)) |
 | GameComplete | `$E440` | `$FF` after the closing text (`ending`) |
@@ -263,12 +263,13 @@ MainLoop:
 | the input | `$A14D` | the bits read this pass |
 | the interrupts this pass | `$A237` | 0 after the HALT |
 
-The full list is in [doc 7, 7.8](07-objects.md#78-the-game-variables). The swapped names of the two middle counters
-are explained in [doc 8, 8.3](08-hud-and-text.md#83-the-hud).
+The full list is in [doc 7, 7.8](07-objects.md#78-the-game-variables). Which counter is which, from the code and the
+screen: [doc 8, 8.3](08-hud-and-text.md#83-the-hud).
 
 ## 2.5 Levels, zones and maps
 
-LevelTable `$E4AE` has a record per level: the intro text, Rick's start and the first zone. The zones are 7-byte
+LevelTable `$E4AE` has a record per level: the intro text, Rick's start and the first zone (the resource
+`src/res/levels/leveltable.txt`, the words by name). The zones are 7-byte
 records from `$D55C`: 6 for level 1, 7 for level 2, 12 for level 3 and 9 for level 4, 34 in all. The levels' first
 zones are at `$D55C`, `$D586`, `$D5B7` and `$D60B`.
 

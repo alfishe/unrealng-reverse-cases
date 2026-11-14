@@ -175,9 +175,9 @@ ResetObjectsNext:
 ; IX = ObjectTable $EA8E; UpdateObjectSlot $EC15 per slot. Called once a pass
 ; by MainLoop $E3C9.
 ;
-; Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 UpdateObjects:
   LD IX,ObjectTable
 
@@ -187,9 +187,9 @@ UpdateObjects:
 ; address and the kind (type AND `$7F`) chosen: `$47` DyingEnemyObj $F1B7,
 ; `$18` and up TrapObj $EDFC, else the word ObjectHandlers[kind].
 ;
-; Witness: L1 556242 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 563418 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 UpdateObjectSlot:
   LD A,(IX+$00)
   AND A
@@ -216,9 +216,9 @@ UpdateObjectSlot:
 
 ; IX to the next slot, +30
 ;
-; Witness: L1 513454 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 520078 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 NextObject:
   LD BC,$001E
   ADD IX,BC
@@ -311,10 +311,10 @@ BoxActive:
   CP $10
   LD A,$06
   JP Z,BoxGiveDynamite
-  LD (Dynamite),A
+  LD (Bullets),A
   JP MarkObjectDone
 BoxGiveDynamite:
-  LD (Bullets),A
+  LD (Dynamite),A
   JP MarkObjectDone
 BoxTestStick:
   LD A,(Poking)
@@ -389,10 +389,10 @@ TreasureObj:
 ;
 ; The busiest handler: c1 1299, level2 7377, level3 9162 passes.
 ;
-; Witness: L1 97698 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1,
-; L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
-; spotL1Z4-47).
+; Witness: L1 98254 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5,
+; L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9,
+; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 TrapObj:
   CALL TrapMove
   BIT 7,(IX+$00)
@@ -414,10 +414,10 @@ TrapObj:
 ;
 ; x stays within 0-`$E7`, y below `$12A`; leaving ends the path.
 ;
-; Witness: L1 97848 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1,
-; L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
-; spotL1Z4-47).
+; Witness: L1 98404 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5,
+; L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9,
+; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 TrapMove:
   LD A,(IX+$18)
   LD C,A
@@ -587,10 +587,10 @@ TrapStoreY:
 ; Triggered: type bit 7 = flag bit 3, +24 = 1, +25 = 0, the path pointer from
 ; +20/21, effect 3.
 ;
-; Witness: L1 87022 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1,
-; L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44,
-; spotL1Z4-47).
+; Witness: L1 87578 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5,
+; L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9,
+; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 TrapTriggers:
   LD A,(Dying)
   AND A
@@ -1466,8 +1466,8 @@ BonusCollect:
 ;
 ; Evidence: the object 0 test (`$F566`) ran only in level2 (6).
 ;
-; Witness: L1 392 (beeper48, c1, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8,
-; L4Z9, level1-level4).
+; Witness: L1 542 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3,
+; L4Z4, L4Z8, L4Z9, level1-level4).
 IsSolidAt:
   PUSH HL
   LD E,A
@@ -1621,9 +1621,9 @@ ProbeLowUnaligned:
 ; Preserves DE, HL. Callers: the walkers (`$F362`), MoveRick `$F85D`, WalkRick
 ; `$F903`, ClimbRick `$FB14`.
 ;
-; Witness: L1 141938 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 142633 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ProbeBox:
   PUSH DE
   PUSH HL
@@ -1664,9 +1664,9 @@ ProbeBoxRowAddr:
 ; then the bottom row with every bit, into ProbeResult `$F6A8`; on into
 ; ProbeBoxObject0 `$F624`.
 ;
-; Witness: L1 104881 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51,
-; spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
-; spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 105462 (beeper48, c1, controls, ending2, gameover, l1z1left,
+; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
+; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ProbeBoxAligned:
   LD D,$5C
   LD E,(HL)
@@ -1707,9 +1707,9 @@ ProbeBoxAligned:
 ; Evidence: object 0 overlapped the probe (`$F64E`) once, in level2; the test
 ; (`$F643`) ran in level2 and level3 only.
 ;
-; Witness: L1 148000 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 148695 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ProbeBoxObject0:
   POP HL
   POP DE
@@ -1743,9 +1743,9 @@ ProbeBoxObject0:
 ;
 ; Into ProbeResult `$F6A8`, then JP ProbeBoxObject0 `$F624`.
 ;
-; Witness: L1 265740 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 267099 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ProbeBoxUnaligned:
   LD D,$5C
   LD E,(HL)
@@ -1854,23 +1854,13 @@ BuildCharPropsFill:
 ;
 ; wall, 252-255 floor.
 CharPropsSet0:
-  DEFB $4D,$00
-  DEFB $0E,$02
-  DEFB $04,$04
-  DEFB $57,$08
-  DEFB $08,$10
-  DEFB $03,$60
-  DEFB $3B,$40
-  DEFB $04,$80
+  INCBIN "res/levels/charprops.bin",$0000,16
+
+; Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62
+; deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall,
+; 250-255 floor
 CharPropsSet1:
-  DEFB $37,$00            ; the second tile set: 0-54 nothing, 55-58 ladder,
-  DEFB $04,$02            ; 59-62 deadly, 63-206 bit 3, 207-215 platform, 216
-  DEFB $04,$04            ; spring + wall, 217-249 wall, 250-255 floor
-  DEFB $90,$08
-  DEFB $09,$10
-  DEFB $01,$60
-  DEFB $21,$40
-  DEFB $06,$80
+  INCBIN "res/levels/charprops.bin",$0010,16
 
 ; Does the IX object overlap Rick? Never while Rick dies
 ;
@@ -1881,9 +1871,9 @@ CharPropsSet1:
 ;
 ; Outputs: Z = overlap. Uses IY, A, BC, DE, HL.
 ;
-; Witness: L1 113599 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 113605 (beeper48, c1, controls, ending2, gameover, l1end,
+; spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12,
+; L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 RickTouches:
   LD A,(Dying)
   AND A
@@ -2060,9 +2050,9 @@ InBlastNo:
 ;
 ; Evidence: the Y half (`$F7EA`) ran in every game build (level3 1368).
 ;
-; Witness: L1 54742 (beeper48, c1, controls, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1, L3Z2, L3Z5-L3Z12,
-; L4Z1-L4Z8, level1-level4, spotL1Z4-43, spotL1Z4-47).
+; Witness: L1 55292 (beeper48, c1, controls, emptygun, gameover, l1z1left,
+; spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1, L3Z2,
+; L3Z5-L3Z12, L4Z1-L4Z8, level1-level4, spotL1Z4-43, spotL1Z4-47).
 PointInTrigger:
   LD A,(IX+$0C)
   CP E

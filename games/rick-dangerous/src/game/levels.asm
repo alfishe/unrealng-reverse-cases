@@ -41,7 +41,7 @@
 ;
 ; Called from the game loop ($E403). Output: everything.
 ;
-; Witness: L1 105 (c1, ending2, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12,
+; Witness: L1 107 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12,
 ; L4Z2-L4Z6, L4Z8, level1).
 CheckScreenExit:
   LD IX,$0000
@@ -129,7 +129,7 @@ LoadScreen:
   XOR A
   LD (ZoneChange),A
   LD A,$79
-  LD (AttrTableHigh+$0001),A
+  LD (AttrTableHigh+1),A
   LD (CounterAttrTableHigh+$0001),A
   LD DE,CharPropsSet0
   LD HL,CharSet0
@@ -137,7 +137,7 @@ LoadScreen:
   AND A
   JR Z,LoadScreenCharset
   LD A,$82
-  LD (AttrTableHigh+$0001),A
+  LD (AttrTableHigh+1),A
   LD (CounterAttrTableHigh+$0001),A
   LD DE,CharPropsSet1
   LD HL,CharSet1
@@ -368,26 +368,7 @@ StartLevel:
 ; text and the attribute in use. The warp recordings copy record N over record
 ; 0 (WALKTHROUGH 6.0).
 LevelTable:
-LevelTextPtr:
-  DEFB $E5,$E4
-LevelTextAt:
-  DEFB $A1,$40
-LevelAttr:
-  DEFB $04
-LevelRickX:
-  DEFB $08
-LevelRickY:
-  DEFB $8B,$00
-LevelZone:
-  DEFB $5C,$D5
-LevelZoneCount:
-  DEFB $08
-  DEFB $FC,$E5,$E1,$40,$03,$08,$8B,$00,$86,$D5,$68 ; level 1: Egypt
-  DEFB $0A,$E7,$E1,$40,$05,$10,$8B,$00,$B7,$D5,$10 ; level 2: Europe, the
-                                                   ; castle
-  DEFB $0E,$E8,$E1,$40,$03,$10,$8B,$00,$0B,$D6,$10 ; level 3: Europe, the
-                                                   ; missile base
-  DEFB $F9,$E8,$E1,$40,$03,$74,$C8,$00,$0B,$D6,$08 ; 4: the ending (London)
+  INCLUDE "res/levels/leveltable.inc"
 
   ORG $FD7D
 

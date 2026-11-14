@@ -171,7 +171,7 @@ DrawDirtyCells:
 A25D 3E FF       LD A,$FF               ; DrawDirtyCells
 A25F 32 00 6F    LD (CellFlagsRow24),A  ; the sentinel
 A262 CD BF A8    CALL MaskHudCells
-A265 21 FF 6B    LD HL,$6BFF
+A265 21 FF 6B    LD HL,CellFlags-1      ; the flag before cell 0
 A268 AF          XOR A                  ; DrawDirtyNext
 A269 23          INC HL                 ; DrawDirtyScan: 23 T a clean cell
 A26A B6          OR (HL)
@@ -412,7 +412,7 @@ has the steps, the animation and the beam figure. What the renderer does in a st
 
 RedrawScreen saves the 32 flags of the HUD's row (`$6C21-$6C40`) and the sentinel, and puts them back after, so the
 HUD is never drawn over. DrawAllDirtyCells writes the attribute of each cell from the char's attribute: its
-`LD H,$79` operand at AttrTableHigh `$A853` is patched to `$82` for the second char set by LoadScreen.
+`LD D,$79` at `$A852` has its operand (AttrTableHigh, `$A853`) patched to `$82` for the second char set by LoadScreen.
 
 MarkAllDirty `$A239` sets all 768 flags to 1 with 384 PUSHes of `$0101` (SP = `$6F00`, interrupts off). LoadScreen,
 the level end and the restart use it before RedrawScreen.
@@ -428,8 +428,8 @@ build/music.lst --view screen --sources --out docs/img/render/writers-restart.pn
 How to read it:
 
 - Left: the screen at the window's end. Right: each byte coloured by the routine that wrote it last.
-- Red, "AttrTableHigh": 6 552 bytes, the full redraw. The name is an inner label of DrawAllDirtyCells (its patched
-  operand at `$A853`); the writes are DrawAllDirtyCells'.
+- Red, DrawAllScan: 6 552 bytes, the full redraw: the scan loop of DrawAllDirtyCells. Its sources include the
+  cell flags (CellFlags `$6C00` + cell).
 - Green, CounterAttr: the HUD's three counters as icons (from the font's icons, `$9FB5-$9FCC`).
 - Yellow, DrawScoreDigit: the six score digits (from the font's digits).
 - Blue and purple: DrawDirtyScan and DrawDirtyMapChar, the first passes after the redraw: Rick drawn (blue, from the
@@ -468,7 +468,8 @@ calls an object, 8 LDI each) and with the cells they cover.
 ## 6.9 Known only from the code
 
 - UnusedBuildMirror `$A75D`: a second copy of BuildMirrorTable with a RET. Nothing calls it; no recording ran it.
-- MaskHudCells `$A8BF` jumps into its clearing loop with HL = 0 when `$A976` (the bullets; the source calls it
-  Dynamite, [doc 8, 8.3](08-hud-and-text.md#83-the-hud)) is 0. B zero bytes are then written to `$0000` up, the
-  ROM: harmless. No recording runs with no bullets.
+- MaskHudCells `$A8BF` jumps into its clearing loop with HL = 0 when Bullets `$A976` is 0. B zero bytes are then
+  written to `$0000` up, the ROM: harmless. Seen in `emptygun` (the `L1Z1` zone warp, a patch on a clone; [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)): after the sixth shot (frame 420) MaskHudCells
+  runs 350 times and MaskBullets `$A8D9` only 211, so 139 passes took the `JP Z` with HL = 0 (the recording keeps
+  `$4000-$FFFF`, so the ROM writes themselves are not in it).
 - ScrollViewUp `$ADF0` ran only in `level2` (11 times): every other recording only scrolls down.

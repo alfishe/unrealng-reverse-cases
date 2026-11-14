@@ -163,7 +163,7 @@ All the music data is in RAM 1 after the player. It is kept as one editable text
 
 | Table | Address | What |
 | --- | --- | --- |
-| PeriodTable | `$C000` | 85 tone periods by semitones, from C-1 |
+| PeriodTable | `$C000` | 85 tone periods by semitones, from C-1 (the resource `src/res/music/periods.txt`) |
 | Patterns | `$C6E5-$CA8E` | 55 patterns |
 | TuneTable | `$CA8F-$CABE` | 8 tunes x 3 order list pointers (channels A, B, C) |
 | OrderLists | `$CABF-$CC49` | 24 order lists |
@@ -234,7 +234,7 @@ as heard: 8 notes of 16 frames, 2.56 seconds. The simulator's log of channel A s
 | Tune | Called from | When | Frames | Seconds | Recordings | Audio |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | `$E324` LevelIntro | the first intro of a game | 790 | 15.8 | `controls`, `gameover`, `level1` | [tune0.mp3](audio/tune0.mp3) |
-| 1 | `$AC20` LevelEnd | level 1 done: under the Egypt intro | 1 142 | 22.8 | none | [tune1.mp3](audio/tune1.mp3) |
+| 1 | `$AC20` LevelEnd | level 1 done: under the Egypt intro | 1 142 | 22.8 | `l1end` (from 9:33 543) | [tune1.mp3](audio/tune1.mp3) |
 | 2 | `$AC20` | level 2 done: under the castle intro | 571 | 11.4 | none | [tune2.mp3](audio/tune2.mp3) |
 | 3 | `$AC20` | level 3 done: under the missile base intro | 1 203 | 24.1 | none | [tune3.mp3](audio/tune3.mp3) |
 | 4 | `$AC20` | level 4 done: under the closing text | 778 | 15.6 | `ending`, `ending2` | [tune4.mp3](audio/tune4.mp3) |
@@ -345,19 +345,20 @@ a death) are long only because their decay is slow.
 | Effect | Sound | Frames | AyTick T | Game call | Witness | Audio |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | noise, a slide | 19 | 2 535 | a shot, `$FA50` | `level3` 7 runs | [effect0.wav](audio/effect0.wav) |
-| 1 | noise | 4 | 2 576 | fire with no bullets, `$FA47` | `c1` (see 9.8) | [effect1.wav](audio/effect1.wav) |
-| 2 | noise, a slide | 100 | 2 380 | the dynamite's bang, `$EC93` | `level3` 6 | [effect2.wav](audio/effect2.wav) |
+| 1 | noise | 4 | 2 576 | fire with no bullets, `$FA47` | `emptygun` 2 (frames 500, 580) | [effect1.wav](audio/effect1.wav) |
+| 2 | noise, a slide | 100 | 2 380 | the dynamite's bang, `$EC93` | `level3` 6 | [effect2.mp3](audio/effect2.mp3) |
 | 3 | noise, a slide down | 20 | 2 438 | a trap set off `$EFCB`, a poke `$F9EF` | `level4` 62 | [effect3.wav](audio/effect3.wav) |
 | 4 | tone and noise, channel B | 7 | 2 260 | Rick's steps: crawl `$FCB8`, climb `$FD0D`, walk `$FD44` | `level3` 357 | [effect4.wav](audio/effect4.wav) |
 | 5 | noise | 13 | 2 260 | none | not executed in any recording | [effect5.wav](audio/effect5.wav) |
 | 6 | tone, a slide up after 4 frames | 20 | 2 393 | a head against a ceiling, `$F97D`, `$FADB` | `level2` 53, 67 | [effect6.wav](audio/effect6.wav) |
-| 7 | tone, a slide up after 3 frames | 55 | 2 393 | none | not executed in any recording | [effect7.wav](audio/effect7.wav) |
+| 7 | tone, a slide up after 3 frames | 55 | 2 393 | none | not executed in any recording | [effect7.mp3](audio/effect7.mp3) |
 | 8 | tone, a vibrato | 35 | 2 522 | ammunition picked up, `$ED76` | `L1Z4` once | [effect8.wav](audio/effect8.wav) |
-| 9 | tone, a vibrato | 67 | 2 522 | a treasure, `$EDEC` | `level1` 4 | [effect9.wav](audio/effect9.wav) |
-| 10 | tone, as 9 without vibrato | 67 | 2 247 | the bonus count starts, `$F4FE` | `controls` 7 | [effect10.wav](audio/effect10.wav) |
-| 11 | tone, a slide that stops | 125 | 2 393 | Rick dies `$FBF4`, an enemy hit `$F17E` | `level4` 29 | [effect11.wav](audio/effect11.wav) |
+| 9 | tone, a vibrato | 67 | 2 522 | a treasure, `$EDEC` | `level1` 4 | [effect9.mp3](audio/effect9.mp3) |
+| 10 | tone, as 9 without vibrato | 67 | 2 247 | the bonus count starts, `$F4FE` | `controls` 7 | [effect10.mp3](audio/effect10.mp3) |
+| 11 | tone, a slide that stops | 125 | 2 393 | Rick dies `$FBF4`, an enemy hit `$F17E` | `level4` 29 | [effect11.mp3](audio/effect11.mp3) |
 
-The frames count until the effect's channel is silent; AyTick T is the median of those frames. AyPlayEffect itself
+The frames count until the effect's channel is silent; AyTick T is the median of those frames. Effects up to a second are WAV files; the five longer ones (2, 7, 9, 10, 11) are MP3 (`lame -V 4`), from the same
+`python3 tools/fig_sound.py audio docs/audio`. AyPlayEffect itself
 costs about 1 000 T-states once, in the game's pass.
 
 **Worked example: effect 4, a footstep.** Its record is attack 127, decay -20, sustain 14, release -11, peak 85,
@@ -469,10 +470,13 @@ the falling note, the click and the sweep.
 - **An older effect entry** OldPlayEffect `$C365` (always channel A) and the old entries at `$C354`-`$C364`: not
   executed in any recording.
 - **The hooks** SoundHookStart `$C345` and SoundHookEnd `$C346` are bare RETs.
-- **Tunes 1, 2 and 3**: no recording reaches the end of levels 1-3 in play (the level warps start at the intros).
-  They are known from the data, rendered by the simulator.
-- **Effect 1's witness count.** The music annotation gives "c1 146" for `$FA47`. That count is of page reads, not
-  of runs of the call; the count of effect 1 calls in `c1` was not checked.
+- **Tunes 2 and 3**: no recording reaches the end of levels 2 and 3 (the level warps start at the intros). They are
+  known from the data, rendered by the simulator. Tune 1 plays in `l1end` (a patch on a clone: the `L1Z6` warp with
+  the right exit's flags set; StartTune `$A016` with A = 1 at frame 9:33 543).
+- **Effect 1** (an empty gun) runs in `emptygun`: the CALL at `$FA47` at frames 500 and 580, after six shots. The
+  "c1 146" that the music annotation once gave for `$FA47` was LoadGroup's code at the same address during the load
+  (the block `$FA43-$FA48` runs 146 times, once a block of groups 2 and 3); in `c1g`, the game window, `$FA45` never
+  runs.
 - **The beeper's first OUT** goes to port `$FE00` + the effect number, since C still holds it. For an odd effect
   (11) the ULA ignores that half wave: 63 edges, not 64.
 - **The 48K beeper's "siren"**: the comment in the listing says it goes up and down. The down loop adds `$F8` to

@@ -49,6 +49,7 @@ $6BA4 b Kind16Frame 6 ; A sprite frame (24 x 21, 126 bytes): kind 16's graphic, 
 $6C22 b Kind19Frame 6 ; A sprite frame: kind 19's graphic, which Start $AB4D copies to $7080
 > The second LDIR of Start, to GraphicSlot19 `$7080`.
 @res sprites/copied.bin
+@const CellFlags $6C00 ; the cell flags: one byte per char cell of the map window, $6C00 + 32 x row + column
 $6CA0 s LowZeros ; Zeros up to the graphics: part of the cell flags ($6B00-$707F) as the load leaves them
 > The game writes the cell flags before it reads them (MarkAllDirty `$A239`).
 
@@ -172,7 +173,7 @@ $9FCD FontPunctuation ; glyphs 39-42: comma, full stop, question mark, space
 $9FED c PlayEffect ; Play sound effect A: on the AY (128K) or the beeper (48K)
 > Input: A the effect number. On a 48K (Is48K not 0) calls BeeperEffect with A (and the effect number in C, which the beeper's first OUT uses as the port's low byte). On a 128K pages RAM 1 in (OUT $7FFD = 1), calls AyPlayEffect $C685 with A, pages RAM 0 back (OUT $7FFD = 0) and enables interrupts.
 > Output: AF and C changed on the 128K path; HL, DE, BC preserved there. Interrupts enabled on return. 13 call sites, all in the game code from $EC93 to $FD44.
-> Witness: L1 5978 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 6022 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $9FFB PlayEffectAy ; the 128K path: page RAM 1, call the player, page RAM 0
 @isub $A008 CALL AyPlayEffect
 
@@ -180,13 +181,13 @@ $A016 c StartTune ; Start tune A on the AY player (128K only)
 > Input: A the tune number. Returns at once on a 48K. Else pages RAM 1, calls AyPlayTune $C3E4, pages RAM 0 back, enables interrupts.
 > The tunes the callers start: 5 the title ($E220), 0 the game start ($E324), 6 the game over ($E386), at a level's end the number of the next level, 1-4 ($AC20).
 > Output: AF, BC, D changed.
-> Witness: L1 30 (beeper48, c1, controls, ending2, gameover, L3Z12, level1).
+> Witness: L1 31 (beeper48, c1, controls, ending2, gameover, l1end, L3Z12, level1).
 @isub $A025 CALL AyPlayTune
 
 $A030 c SoundTick ; The AY player's frame tick, called by the interrupt handler
 > Pages RAM 1, calls AyTick $C46C, pages RAM 0 back and enables interrupts. Called only from the slot at $FF11 inside the interrupt handler ($FEFE), which CopyPlayerToRam1 fills with CALL $A030 on a 128K: 50 times a second for the whole game (c1: 14301 runs in 33400 frames, most of them the loading's).
 > Output: AF, BC changed (the handler saves every register).
-> Witness: L1 106735 (c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 110335 (c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 @isub $A038 CALL AyTick
 
 @module setup ; The start: the 128K test, the player's copy to RAM 1, the interrupt mode, the mirror table
@@ -215,9 +216,9 @@ $A08D b Is48K 1 ; 0 on a 128K, $FF on a 48K (DetectPaging $A05F)
 
 $A08E c BeeperEffect ; Play a sound effect on the beeper (48K)
 > Input: A the effect number, C its copy (PlayEffect). B = $FE, H = $10 and L = 0: BeeperTone toggles port $FE bit 4 (the speaker) with a black border. The six patterns, E being the half period in loops of DEC C / JR NZ:
-> 0: 50 tones, the period falling 50 ... 1 (a rising chirp). 2: a warble, tones alternating between E + $32 and E, E climbing by 2 from $B0 until it wraps to 0. 6: 30 tones from $28, the period stepping down by 30, 29 ... 1 (modulo 256). $0B: 32 tones, the period rising 1, 5 ... $7D (a falling note). 4: a single tone of period $80. Any other: up 1, 9 ... $F9, then down by 8 (a siren).
+> 0: 50 tones, the period falling 50 ... 1 (a rising chirp). 2: a warble, tones alternating between E + $32 and E, E climbing by 2 from $B0 until it wraps to 0. 6: 30 tones from $28, the period stepping down by 30, 29 ... 1 (modulo 256). $0B: 32 tones, the period rising 1, 5 ... $7D (a falling note). 4: a single tone of period $80. Any other: a sweep up, periods 1, 9 ... $F9, then one tone of period 1 (the down loop adds $F8 to 1, gets no carry and stops after one step).
 > The very first OUT of an effect goes to port $FE00 + the effect number (C still holds it): for an odd effect ($0B) the ULA ignores that half wave; after it C is 0.
-> Output: AF, C, DE changed. Run in beeper48 only (98 effects: the chirp, the warble, the descending steps, the falling note, the click and the siren branches all ran).
+> Output: AF, C, DE changed. Run in beeper48 only (98 effects: the chirp, the warble, the descending steps, the falling note, the click and the sweep branches all ran).
 > Witness: L1 98 (beeper48).
 $A099 BeeperChirpLoop ; effect 0
 $A0A0 BeeperNot0
@@ -227,8 +228,8 @@ $A0BF BeeperDescendLoop ; effect 6
 $A0C9 BeeperNot6
 $A0CF BeeperFallLoop ; effect $0B
 $A0DB BeeperNotB
-$A0E1 BeeperSirenUp ; any other effect: up
-$A0EA BeeperSirenDown ; ... and down
+$A0E1 BeeperSweepUp ; any other effect: the period up 1, 9 ... $F9
+$A0EA BeeperSweepEnd ; one tone of period 1: 1 + $F8 gives no carry, the loop ends
 $A0F4 BeeperClick ; effect 4: one tone of period $80, through BeeperTone's RET
 
 $A0F6 c BeeperTone ; One square wave of the beeper: L out, wait E, H out, wait E
@@ -262,16 +263,16 @@ $A11B c Key4Pressed ; Z if the key 4 is held
 $A123 c StartPressed ; Z if ENTER, bit 7 of port $FEFE or the method's fire is held
 > Tests ENTER (port $BFFE bit 0), then bit 7 of port $FEFE (no key: 1 on a standard machine), then calls ReadInput and tests fire (InputBits bit 4). Output: A, BC, F; InputBits updated when it gets that far.
 > Callers: the title ($E219, $E2D1, $E2D7), the level text ($E327, $E32C), the game over ($E389, $E38E) and the level's end ($AC38, $AC3D); each waits for the release first, then for the press.
-> Witness: L1 739194 (beeper48, c1, controls, ending2, gameover, level1-level4).
+> Witness: L1 1149386 (beeper48, c1, controls, ending2, gameover, l1end, level1-level4).
 $A136 StartFireTest ; ReadInput, then bit 4 (fire)
 
 $A13C c QuitPressed ; Z if Q is held
 > Port $FBFE bit 0. Called once a game loop pass ($E3C9): Q ends the game (to the game over text at $E35A).
-> Witness: L1 42793 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $A144 c PausePressed ; Z if P is held
 > Port $DFFE bit 0. The game loop ($E3D7-$E3E9): P held waits for its release, the next press and that release; the frame loop ($E417) calls it once more without using the result.
-> Witness: L1 243883 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 244986 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $A14C b ControlMethod 1 ; The control method: 0 keyboard, 1 Kempston, 2 cursor keys, 3 Sinclair
 > Set by the title's keys 1-4 ($E27F, $E297, $E2AF, $E2C7), read by ReadInput and by the title to pick the line to highlight ($E249). 0 in the image.
@@ -282,7 +283,7 @@ $A14E c ReadInput ; Read the selected control method into InputBits
 > InputBits = $FF, then one RES per direction or fire found held. Method 0 (keyboard): O ($DFFE bit 1) up, else K ($BFFE bit 2) down; Z ($FEFE bit 1) left, else X ($FEFE bit 2) right; ENTER ($BFFE bit 0) fire. Methods 1-3 from InputKempston on.
 > Input: none. Output: A, BC, F; HL preserved. Called by StartPressed and by Rick's update ($F86B).
 > The keyboard ran in c1, controls, gameover and ending; the Kempston in controls (and 30 times in c1); the cursor keys in c1, controls and the four level recordings; the Sinclair in c1 and controls.
-> Witness: L1 734946 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 1145688 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A16A ReadKeyDown ; O not held: K
 $A176 ReadKeyLeft
 $A185 ReadKeyRight ; Z not held: X
@@ -314,7 +315,7 @@ $A21B FillVectorTable
 $A22A c WaitFrames ; Wait until C frames have been counted since the last wait, then clear the count
 > Input: C the number of frames. Enables interrupts, loops until FrameTicks >= C, then FrameTicks = 0. Output: A, F changed.
 > The frame loop waits for 1 ($E41C, after clearing FrameTicks at $E411 behind a HALT); each scroll step waits for 4 ($ADD5, $AE0C).
-> Witness: L1 42535 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43086 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A22B WaitFramesLoop
 
 $A237 b FrameTicks 2 ; The frame count: +1 each interrupt ($FF07-$FF0B), cleared by WaitFrames and the frame loop ($E411)
@@ -322,7 +323,7 @@ $A237 b FrameTicks 2 ; The frame count: +1 each interrupt ($FF07-$FF0B), cleared
 
 @module render ; The playfield: the char map, the cell flags, the sprite composer and drawers, the redraws and the scrolls
 @about The playfield is a char map of 32 columns from $6500 (44 rows: $6500-$6A7F, built by BuildScreenMap $AD5A from the screen's 4x4-char blocks); its rows from $6600 are the screen's rows. A cell's flag byte sits $600 above it ($6B00-$707F): 0 clean, 1 redraw the map's char, 2 or more draw composed char n from $5CF0 + 8n, $FF the end sentinel ($6F00, below the 24 screen rows $6C00-$6EFF). The charset is at CharsetBase $A73D ($7100, or $7A00 for some screens), a char's attribute at $7900 + char ($8200 with the other charset).
-@about Each frame ($E414-$E41F) ComposeObjects $A73F walks the object table $EA8E (30-byte records, +0: 0 empty, $FF the end) and ComposeObject $A2EC draws every object's sprite into fresh composed chars: ComposeCell $A6D0 copies each covered cell's char (the map's, or the composed one already there) to a new buffer and points the cell's flag at it. A char whose property byte at $5C00 + char has any of bits 3-6 set gets a scratch buffer that is never shown: the sprite passes behind it.
+@about Each pass ($E414-$E41F) ComposeObjects $A73F walks the object table $EA8E (30-byte records, +0: 0 empty, $FF the end) and ComposeObject $A2EC draws every object's sprite into fresh composed chars: ComposeCell $A6D0 copies each covered cell's char (the map's, or the composed one already there) to a new buffer and points the cell's flag at it. A char whose property byte at $5C00 + char has any of bits 3-6 set gets a scratch buffer that is never shown: the sprite passes behind it.
 @about A sprite frame is 21 rows of 3 bytes, each byte an (AND mask, OR data) pair, popped with SP. Aligned on x (x AND 7 = 0) it covers 3 columns of 3 or 4 cells; otherwise each row is shifted right by x AND 7 into 4 bytes (the shift chain at $A633, entered at $A633 + 14 (x AND 7)). Bit 0 of the record's +6 mirrors the frame: the bytes of a row are swapped and each one bit-reversed through the table at $5B00.
 @about DrawDirtyCells $A25D then draws every flagged cell: a flag of 1 draws the map's char and clears the flag, a composed char is drawn and its flag set back to 1, so the next frame restores the background. RedrawScreen $A781 draws the flagged cells with their attributes (after MarkAllDirty $A239: the whole screen) and keeps the HUD row's flags.
 @about The view scrolls by whole cells: when Rick's y passes $CC or falls below $60 the game loop ($E42B-$E43B) calls ScrollViewDown $ADB9 or ScrollViewUp $ADF0, two steps of 4 rows (32 pixels), each moving the map, the composed marks and every object, then rebuilds the map at the new ViewTopRow $ADB7.
@@ -330,7 +331,7 @@ $A237 b FrameTicks 2 ; The frame count: +1 each interrupt ($FF07-$FF0B), cleared
 $A239 c MarkAllDirty ; Set every cell flag of the screen to 1 ($6C00-$6EFF): the next draw redraws all
 > Pushes $0101 384 times with SP = $6F00, interrupts off, then restores SP and enables interrupts.
 > Callers: LoadScreen ($ACF7), the level's end ($ABD8) and the end of the last level ($AC4C). Output: B, HL changed.
-> Witness: L1 441 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+> Witness: L1 442 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $A246 MarkAllDirtyLoop
 $A258 MarkAllDirtySP ; its operand: the caller's SP
 
@@ -338,7 +339,7 @@ $A25D c DrawDirtyCells ; Draw the flagged cells of the screen (no attributes): t
 > Sets the sentinel $6F00 = $FF, calls MaskHudCells, then scans the flags from $6C00. Flag 1: draws the map's char (the map byte $600 below the flag) from the charset at CharsetBase and clears the flag. Flag n >= 2: draws composed char n ($5CF0 + 8n) and sets the flag to 1, so the cell is restored next frame. $FF: return.
 > The screen address follows from the flag's: the low byte is the cell's, the third is (H - $6C).
 > Callers: the frame loop ($E41F), the game over ($E360) and the end of each scroll ($ADEC, $AE21). Output: AF, BC, DE, HL changed.
-> Witness: L1 42462 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43013 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A268 DrawDirtyNext
 $A269 DrawDirtyScan
 $A2AE DrawDirtyMapChar ; flag 1: the map's char, the flag cleared
@@ -347,7 +348,7 @@ $A2EC c ComposeObject ; Draw the sprite of the object at IX into composed chars 
 > Input: IX an object record: +1 x, +2/+3 y (from the map's $6500 row; +3 is 0, or 1 with +2 below $EB, else nothing is drawn), +4/+5 the frame (0: no sprite, return), +6 bit 0 mirror.
 > Finds the first map cell HL = $6500 + 32 (y / 8) + x / 8, then calls ComposeCell for every cell the sprite covers, column by column: 3 columns of 3 cells (y AND 7 below 4) or of 4 cells when aligned; 4 columns when x AND 7 is not 0 (ComposeShifted). The drawers' IY = the first composed buffer + (y AND 7); the next column's buffer is 24 or 32 bytes on.
 > The column offsets are written into the drawers' (IY+d) operands. Output: everything but IX; interrupts on at the end. Called by ComposeObjects only.
-> Witness: L1 224375 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 225623 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A306 ComposeObjectAt
 $A3B5 ComposeAligned3 ; y AND 7 < 4: 3 cells a column
 $A419 SpriteDrawAligned ; the drawer: 21 rows of 3 bytes, IY on the first composed byte, SP on the frame
@@ -385,12 +386,12 @@ $A6D0 c ComposeCell ; Give the map cell at HL a new composed char holding what i
 > Input: HL a map cell. Output: DE the new buffer's end (the caller steps back to its start), HL, BC, AF changed. A new buffer is ComposeCount's number n, at $5CF0 + 8n; ComposeCount goes up by one.
 > If the cell's char has any of bits 3-6 set in its property byte ($5C00 + char): a scratch buffer, the flag unchanged (ComposeHidden: the sprite is hidden there). Else the flag (HL + $600) becomes n and the buffer gets the char's 8 bytes: from the charset (flag 0 or 1) or from the composed char the flag names (ComposeOverSprite: two sprites in one cell).
 > Called 9-16 times by ComposeObject per object. The most run routine of the range (level4: 148302 runs).
-> Witness: L1 1817008 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 1823882 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A6F6 ComposeCopy
 $A713 ComposeOverSprite ; the cell holds a composed char already: copy that one
 $A729 ComposeHidden ; a char drawn over sprites: a scratch buffer, no flag
 
-$A73C b ComposeCount 1 ; The next composed char's number (2 at each frame's start)
+$A73C b ComposeCount 1 ; The next composed char's number (2 at each pass's start)
 > Set to 2 by ComposeObjects, counted up by ComposeCell. The flags 0 and 1 mean the map, so the numbers start at 2 ($5D00).
 $A73D w CharsetBase 1 ; The charset of the screen: $7100, or $7A00 when the screen record's +0 is not 0 (LoadScreen $ACAD)
 > Read by DrawDirtyCells, ComposeCell and DrawAllDirtyCells: char c's 8 bytes at CharsetBase + 8c.
@@ -398,7 +399,7 @@ $A73D w CharsetBase 1 ; The charset of the screen: $7100, or $7A00 when the scre
 $A73F c ComposeObjects ; Compose the sprites of all objects for this frame
 > ComposeCount = 2, then calls ComposeObject for every record of the object table $EA8E (30 bytes each) whose +0 is not 0, up to the record whose +0 is $FF.
 > Callers: the frame loop ($E414), the game over ($E35A) and ClearOffscreenFlags ($AF52). Output: everything, IX past the table.
-> Witness: L1 42457 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43008 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $A748 ComposeObjectsLoop
 $A755 ComposeObjectsNext
 
@@ -410,7 +411,7 @@ $A761 UnusedMirrorByte
 $A781 c RedrawScreen ; Draw every flagged cell with its attribute, keeping the HUD row's flags
 > Saves the sentinel byte $6F00 (into RedrawSentinel) and the 32 flags $6C21-$6C40 of the HUD row (into SavedHudCells), calls DrawAllDirtyCells, then puts both back.
 > Callers: LoadScreen ($ACFA), the level's end ($ABE8) and each scroll step ($ADD8, $AE0F). Output: everything.
-> Witness: L1 612 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+> Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $A80E RedrawSentinel ; its operand: the byte that was at $6F00
 
 $A814 b SavedHudCells 8 ; The 32 flags of the HUD row $6C21-$6C40 while RedrawScreen runs
@@ -418,43 +419,46 @@ $A814 b SavedHudCells 8 ; The 32 flags of the HUD row $6C21-$6C40 while RedrawSc
 $A834 c DrawAllDirtyCells ; Draw the flagged cells and their attributes
 > Like DrawDirtyCells, and each cell's attribute is set from the attribute table (AttrTableHigh: $79 or $82) by its map char. A flag of 1 is cleared after the draw; a composed char's flag is left. The sentinel $FF ends the scan.
 > Called by RedrawScreen only. Output: everything.
-> Witness: L1 612 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+> Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $A83F DrawAllNext
 $A840 DrawAllScan
-$A852 AttrTableHigh ; its operand: the attribute table's high byte, $79 or $82 (LoadScreen $AC8D, $ACA1)
+$A852 ; its operand (AttrTableHigh): the attribute table's high byte, $79 or $82 (LoadScreen $AC8D, $ACA1)
 $A892 DrawAllComposed ; flag n >= 2: composed char n
+@alias AttrTableHigh DrawAllScan+$12 ; the LD D,n at $A852 inside DrawAllDirtyCells, whose operand LoadScreen sets
+@isub $AC8D LD (AttrTableHigh+1),A
+@isub $ACA1 LD (AttrTableHigh+1),A
 
 @module hud ; The HUD (score, dynamite, bullets, lives), the texts, the title's colours, the level's end
-@about The HUD is the screen's row 1: the six score digits at $4021, then three counters drawn as up to six icons each: dynamite at $4029 (char $24), bullets at $4031 ($25), lives at $4039 ($26), all from the font at $9E95 (the digits 0-9, A-Z, then the icons).
+@about The HUD is the screen's row 1: the six score digits at $4021, then three counters drawn as up to six icons each: bullets at $4029 (char $24, a bullet), dynamite at $4031 ($25, a stick), lives at $4039 ($26), all from the font at $9E95 (the digits 0-9, A-Z, then the icons).
 @about The HUD lies over the playfield: MaskHudCells $A8BF clears the cell flags under the score and the icons before each draw, so the map never overwrites them, and DrawCounter $AA0E gives the cells past the icons back to the map (flag 1).
-@about The counters are bytes: Lives $A958, Bullets $A967, Dynamite $A976. A new game sets all three to 6 ($E2F7-$E30B), a life lost sets dynamite and bullets to 6 again ($E3BB), and so does a level's end. UpdateHud $A90F redraws a counter only when it differs from its copy in OldHudCounts $A93A.
+@about The counters are bytes: Lives $A958, Dynamite $A967, Bullets $A976. A new game sets all three to 6 ($E2F7-$E30B), a life lost sets dynamite and bullets to 6 again ($E3BB), and so does a level's end. UpdateHud $A90F redraws a counter only when it differs from its copy in OldHudCounts $A93A.
 @about The score is six decimal digits, one byte each (Score $A9BE). AddScore $A9E8 adds a five-digit award to its lower five digits with carry; the awards behind the score: 50 ($F18D), 500 ($EDF3), the bonus (Lives + 1) x 10000 after the last level; one more lies at $E49A.
 @about LevelEnd $ABD8 runs when the exit Rick takes points at $FFFF: it clears the play area, refills dynamite and bullets, counts LevelNumber $E4AD up and shows the next level's text (after the fourth: the bonus, then back to the game loop's game over).
 
 $A8BF c MaskHudCells ; Clear the cell flags under the score and the counters' icons
-> Clears the six flags $6C21-$6C26 (the score), then as many flags as each counter has icons (at most 6): $6C29 dynamite, $6C31 bullets, $6C39 lives.
-> When Dynamite is 0 the JP Z at $A8CF lands in the clearing loop with HL = 0 and B as the caller left it: it writes zeros at $0000-$00FF (the ROM: ignored) B times. Harmless; with Bullets or Lives 0 the code skips properly.
+> Clears the six flags $6C21-$6C26 (the score), then as many flags as each counter has icons (at most 6): $6C29 bullets, $6C31 dynamite, $6C39 lives.
+> When Bullets is 0 the JP Z at $A8CF lands in the clearing loop with HL = 0 and B as the caller left it: it writes zeros at $0000-$00FF (the ROM: ignored) B times. Harmless; with Dynamite or Lives 0 the code skips properly. Seen in emptygun: from the sixth shot (frame 420) 139 of the 350 runs take that jump (MaskBullets runs 211 times).
 > Callers: DrawDirtyCells and DrawAllDirtyCells. Output: AF, B, HL changed.
-> Witness: L1 43074 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
-$A8D9 MaskDynamite
-$A8DE MaskDynamiteLoop
-$A8F0 MaskBullets
-$A8F5 MaskBulletsLoop
+> Witness: L1 43626 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+$A8D9 MaskBullets
+$A8DE MaskBulletsLoop
+$A8F0 MaskDynamite
+$A8F5 MaskDynamiteLoop
 $A8F9 MaskLives
 $A905 MaskLivesCount
 $A90A MaskLivesLoop
 
 $A90F c UpdateHud ; Redraw the counters that changed since the last call
-> Compares Dynamite, Bullets and Lives with OldHudCounts and calls DrawDynamite, DrawBullets or DrawLives for each one that differs (keeping the new value).
+> Compares Bullets, Dynamite and Lives with OldHudCounts and calls DrawBullets, DrawDynamite or DrawLives for each one that differs (keeping the new value).
 > Callers: the frame loop ($E422), the game over ($E35D) and the level's end ($ABF3). Output: everything.
-> Witness: L1 42378 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 42930 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
-$A93A b OldHudCounts 3 ; The counters as last drawn: dynamite, bullets, lives
-$A93B OldBullets
+$A93A b OldHudCounts 3 ; The counters as last drawn: bullets, dynamite, lives
+$A93B OldDynamite
 $A93C OldLives
 
 $A93D c DrawHud ; Draw the score and the three counters
-> Calls DrawScore, DrawDynamite, DrawBullets and DrawLives. Callers: the game start ($E30E) and a life lost ($E3C6).
+> Calls DrawScore, DrawBullets, DrawDynamite and DrawLives. Callers: the game start ($E30E) and a life lost ($E3C6).
 > Witness: L1 331 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
 $A94A c DrawLives ; Draw the lives as icons at $4039
@@ -462,15 +466,15 @@ $A94A c DrawLives ; Draw the lives as icons at $4039
 > Witness: L1 370 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $A958 b Lives 1 ; The lives: 6 at a new game, 0 is the game over ($E354)
 
-$A959 c DrawBullets ; Draw the bullets as icons at $4031
-> DE = $4031, the icon $25, attribute $47, A = Bullets, then DrawCounter.
+$A959 c DrawDynamite ; Draw the sticks of dynamite as icons at $4031
+> DE = $4031, the icon $25 (glyph 37, a stick), attribute $47, A = Dynamite, then DrawCounter.
 > Witness: L1 393 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
-$A967 b Bullets 1 ; The bullets: 6 at a new game, a life and a level; Rick's fire uses them ($FAA1, $FAA7)
+$A967 b Dynamite 1 ; The sticks of dynamite: 6 at a new game, a life and a level; the dynamite drop uses them ($FAA1, $FAA7)
 
-$A968 c DrawDynamite ; Draw the dynamite as icons at $4029
-> DE = $4029, the icon $24, attribute $47, A = Dynamite, then DrawCounter.
-> Witness: L1 407 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
-$A976 b Dynamite 1 ; The sticks of dynamite: 6 at a new game, a life and a level; used at $FA3E, $FA4C
+$A968 c DrawBullets ; Draw the bullets as icons at $4029
+> DE = $4029, the icon $24 (glyph 36, a bullet), attribute $47, A = Bullets, then DrawCounter.
+> Witness: L1 413 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+$A976 b Bullets 1 ; The bullets: 6 at a new game, a life and a level; Rick's fire uses them ($FA3E, $FA4C)
 
 $A977 c DrawScore ; Draw the six score digits at $4021 and colour them $47
 > For each digit of Score: its 8 bytes from the font at $9E95 + 8 digit, one pixel line per screen line. Then the attributes $5821-$5826 = $47.
@@ -501,8 +505,8 @@ $AA08 AddScoreCarry ; digit - 10, carry 1
 $AA0E c DrawCounter ; Draw a counter as up to six icons and give the rest of its six cells back to the map
 > Input: A the count (above 6 shown as 6), DE the screen address, L the icon char, H its attribute. Draws the icon A times with its attribute (CounterAttr).
 > For the remaining 6 - A cells it sets the cell flag to 1 ($6C00 + cell) and the attribute from the map's char ($6600 + cell, the table $7900 or $8200: CounterAttrTableHigh), so the next draw puts the map back there.
-> The LD A,($6B00) / AND A at $AA76 has no effect (A is reloaded, the flags are not tested). Callers: DrawLives, DrawBullets, DrawDynamite.
-> Witness: L1 1170 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+> The LD A,($6B00) / AND A at $AA76 has no effect (A is reloaded, the flags are not tested). Callers: DrawLives, DrawDynamite, DrawBullets.
+> Witness: L1 1176 (beeper48, c1, controls, emptygun, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $AA25 DrawCounterIcons
 $AA35 DrawCounterIcon
 $AA37 CounterAttr ; its operand: the icon's attribute (H at entry)
@@ -513,7 +517,7 @@ $AA7F CounterAttrTableHigh ; its operand: $79 or $82 (LoadScreen $AC90, $ACA4)
 $AA8D c PrintText ; Print a text from HL at the screen address DE in attribute C
 > One char a cell, $FF ends. A space ($20) prints SpaceGlyph; any other byte b prints the font char b - $37 from $9E95: 'A'-'Z' are the letters 10-35, and the digits 0-9 would be the bytes $37-$40 ('7'-'@').
 > Output: HL on the $FF, DE past the text, AF changed. Callers: PrintLines and the game over text ($E36B-$E381).
-> Witness: L1 4235 (beeper48, c1, controls, ending2, gameover, level1).
+> Witness: L1 4504 (beeper48, c1, controls, ending2, gameover, l1end, level1).
 $AA96 PrintSpace
 $AA9F PrintChar
 $AAAE PrintGlyph
@@ -523,7 +527,7 @@ $AAE1 b SpaceGlyph 8 ; The blank char PrintText prints for a space
 $AAE9 c PrintLines ; Print texts on successive screen rows until $FE
 > Input: HL the texts, each ending in $FF, the list ending in $FE; DE the first row's screen address. Each text in attribute $47; DE goes 32 on (8 more on D when E wraps: the next third).
 > Callers: the title ($E22F-$E241), the level texts ($E31A, $AC1A). Output: everything.
-> Witness: L1 275 (beeper48, c1, controls, ending2, gameover, level1).
+> Witness: L1 287 (beeper48, c1, controls, ending2, gameover, l1end, level1).
 $AB00 PrintLinesNext
 
 $AB03 c ClearScreen ; Clear the bitmap and set every attribute to $47
@@ -557,16 +561,16 @@ $AB6E BuildMirrorByte
 $AB93 c CheckScreenExit ; Find the exit Rick takes and go to its screen (or end the level)
 > C = Rick's map row (y $EAAE / 8 + ViewTopRow), B = the exit kind $FD62. Scans the exit table (the operand $AB95 of its first instruction, LD IX, written by LoadScreen $ACC3: 5-byte entries) for one of kind B whose row is at most 2 above C; none: return. Found: the next screen record +2/+3; $FFFF falls into LevelEnd, else ExitToScreen with BC = ViewTopRow - (row - entry +4).
 > Called from the game loop ($E403). Output: everything.
-> Witness: L1 105 (c1, ending2, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
+> Witness: L1 107 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
 $ABAA ExitScan
 
 @module hud
 $ABD8 c LevelEnd ; The end of a level: the next level's text and first screen, or after the fourth the bonus and the end
-> Falls in from CheckScreenExit when the exit points at $FFFF. MarkAllDirty, clears the map's screen rows $6600-$68FF, RedrawScreen, Dynamite = Bullets = 6, UpdateHud, LevelNumber $E4AD + 1 = n.
+> Falls in from CheckScreenExit when the exit points at $FFFF. MarkAllDirty, clears the map's screen rows $6600-$68FF, RedrawScreen, Bullets = Dynamite = 6, UpdateHud, LevelNumber $E4AD + 1 = n.
 > The level record at $E4AE + 11n (+0/+1 the text list, +2/+3 its screen address, +4 the attribute of char 0 at $7900): PrintLines, then StartTune n. After the fourth level (n = 4) the bonus: LevelBonus = Lives + 1, AddScore. Then waits for the start key's release and press (StartPressed).
 > n >= 4: ClearPlayArea, MarkAllDirty, $E440 = $FF (the game loop's "over" flag: on to the game over at $E35D) and return. Else NextLevel.
-> Run once, in the ending recording (work/stage2/ending2: level 4's end exit from the L4Z9 warp, the door opened by the warp); the ends of levels 1-3 are in no recording. Output: everything.
-> Witness: L1 1 (ending2).
+> Run once in ending2 (level 4's end exit from the L4Z9 warp, the door opened by the warp) and once in l1end (level 1's end: the L1Z6 warp with the right exit's flags set, tune 1); the ends of levels 2 and 3 are in no recording. Output: everything.
+> Witness: L1 2 (ending2, l1end).
 $AC38 LevelEndRelease
 $AC3D LevelEndPress
 $AC56 NextLevel ; the record's +5 Rick's x ($EAAD), +6/+7 his y ($EAAE), +8/+9 the screen record, +10 the top row: LoadScreen
@@ -867,7 +871,7 @@ $DF75 ; kinds 64
 $DF7D ; kinds 63
 $DF81 ; kinds 65
 $DF83 b ObjectScripts 9 ; Movement scripts: 3-byte steps (frames, dx, dy), $FF ends; ObjectKinds +4-5
-> $EE81 counts slot +$19 up to the step's frames, adding the signed dx to x (slot +1) and dy to y each frame; at a frames byte $FF the object is removed (slot +$0B bit 0, when $FD68 is 0) or restarts at its spawn place.
+> $EE81 counts slot +$19 up to the step's frames, adding the signed dx to x (slot +1) and dy to y each pass; at a frames byte $FF the object is removed (slot +$0B bit 0, when $FD68 is 0) or restarts at its spawn place.
 @res levels/scripts.bin
 $DF83 ; kinds 24
 $DF90 ; kinds 25
@@ -966,7 +970,7 @@ $E397 t GameOverBlankText ; 11 spaces, ended by $FF: the band above and below GA
 $E3A3 t GameOverText ; " GAME OVER ", ended by $FF
 @res texts/GameOverText.bin
 
-@module mainloop ; The main loop: one pass a frame
+@module mainloop ; The main loop: one pass every 2 frames
 @about MainLoop $E3C9 runs once a pass: the quit test (`$A13C`), UpdateObjects $EC11 (every object, Rick included), BonusCountdown $E466, the pause test (`$A144`), the death and zone-change tests, then HALT at MainLoopHalt $E40F and the drawing: `$A73F`, `$A144`, `$A22A` with C = 1, `$A25D`, `$A90F`, and the scroll down `$ADB9` (RickY $EAAE >= `$CC`) or up `$ADF0` (RickY < `$60`) unless Rick is dying (`$FD68`).
 @about NewLife $E3AF starts every life: Rick alive and back to type 1, 6 bullets and 6 dynamite, Rick put back at the zone's restart point (`$AD29`), the HUD redrawn (`$A93D`). FrameTick $E49B is called by the IM 2 handler every frame and keeps a 32-bit frame count, which Random $E441 mixes in.
 @about The pass counts (L1, the first instruction of MainLoop): c1 1073, controls 501, gameover 910, level1 2152, level2 2845, level3 2927, level4 1887; FrameTick, once an interrupt: c1 14301, level1 5822, level2 5870, so a pass takes about 2-3 frames in play.
@@ -976,11 +980,11 @@ $E3AF c NewLife ; A new life: Rick alive, ammo 6, back to the zone's restart poi
 > Run 3 times in c1, 12 in level1 (one per life and new game), 29 in level4.
 > Witness: L1 323 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
-$E3C9 c MainLoop ; The main loop, one pass per frame
+$E3C9 c MainLoop ; The main loop, one pass every 2 frames in play
 > Q (`$A13C` Z) quits to Quit $E35A. Then UpdateObjects $EC11, BonusCountdown $E466 (HL = RickY, unused), and the pause: P (`$A144` Z) waits for P to be let go, pressed again and let go (only c1 paused: 9228 / 139455 / 10050 polls).
 > CheckDeath: when `$FD69` is set (Rick's death has played out, `$FC47`) one life `$A958` goes; none left: Quit $E35A, else NewLife $E3AF. The ZXDB infinite-lives POKE 58356,0 turns the `DEC A` at `$E3F4` into NOP (the warp recordings use it).
 > CheckZone: when `$FD61` is set (Rick left the zone, `$FBD1` / `$FBE0`), `$AB93` changes the zone or level and CheckGameComplete $E406 follows; else MainLoopHalt.
-> Witness: L1 42793 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43345 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $E3DC PauseRelease ; P pressed: wait for its release
 $E3E1 PauseWaitPress
 $E3E6 PauseResume
@@ -991,7 +995,7 @@ $E3FD CheckZone
 $E406 c CheckGameComplete ; After a zone change: the game complete, or the frame's drawing
 > GameComplete $E440 set (`$AC52`, after the closing text of the ending) goes to GameOver $E35D (seen in ending); else back to MainLoop $E3C9.
 > MainLoopHalt is the frame's HALT, reached from CheckZone when no zone change is pending. After it: `$A237` = 0, `$A73F`, `$A144`, `$A22A` (C = 1), `$A25D`, `$A90F`, then the vertical scroll unless `$FD68` (Rick dying): RickY $EAAE >= `$CC`: `$ADB9` (c1 14, level1 15); RickY < `$60`: `$ADF0` (only level2, 11 times).
-> Witness: L1 105 (c1, ending2, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
+> Witness: L1 106 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z2-L4Z6, L4Z8, level1).
 $E40F MainLoopHalt ; the frame's HALT
 $E437 CheckScrollUp
 $E43E MainLoopNext
@@ -1014,7 +1018,7 @@ $E464 FrameCountHigh ; its high word
 $E466 c BonusCountdown ; Count the bonus down while it runs
 > Returns at once when `$FD6C` is 0. Else BonusDivider $E495 counts passes; every `$1E` passes (the reload) it takes 1 from BonusDigits+3 with a decimal borrow (a digit going below 0 becomes 9 and borrows from the one before); at 0 0 0 0 0 it stops.
 > Run in c1, controls, gameover, level1 and level2; never in level3 / level4. Known only from the code: the digits are not drawn here.
-> Witness: L1 42787 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43339 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $E48B BonusDecrement
 $E48E BonusBorrowLoop
 
@@ -1025,7 +1029,7 @@ $E496 BonusDigits ; five decimal digits, most significant first
 @module mainloop
 $E49B c FrameTick ; The 32-bit frame count, from the IM 2 handler
 > FrameCount $E462 + 1, carried into FrameCountHigh $E464. Called by the IM 2 handler once a frame (its counts equal the handler's: c1 14301, ending 1499).
-> Witness: L1 108326 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $E4AD b Level 1 ; The level, 0-3; 4 after the last (the ending)
 > Cleared by NewGame $E2DC, raised by the level change `$ABF6`; `$AC07` uses it to pick the LevelTable record, `$AC20` as the end-of-level tune.
@@ -1034,6 +1038,7 @@ $E4AD b Level 1 ; The level, 0-3; 4 after the last (the ending)
 $E4AE b LevelTable 11 ; 11 bytes a level: 0 jungle, 1 Egypt, 2 castle, 3 missile base, 4 the ending
 > +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in `$7900`, +5 Rick's x (RickX $EAAD), +6-7 Rick's y (RickY $EAAE), +8-9 the first zone record (to IX), +10 the count passed in C to `$AC83`.
 > Record 0 is read by NewGame $E2DC and StartLevel $E32C; at a level change `$AC07` reads record Level $E4AD (`$AC56`). The ending's record has only the text and the attribute in use. The warp recordings copy record N over record 0 (WALKTHROUGH 6.0).
+@res levels/leveltable.bin include
 $E4AE LevelTextPtr
 $E4B0 LevelTextAt
 $E4B2 LevelAttr
@@ -1047,7 +1052,7 @@ $E4CF ; level 3: Europe, the missile base
 $E4DA ; 4: the ending (London)
 
 @module text ; The texts
-@about The game's own character codes: `$FF` a new line, `$FE` the end of a text (`$AAE9`; GAME OVER's `$AA8D` stops at `$FF`). Digits are `$37` + the digit ('8' = 1, '9' = 2, '?' = 8, '@' = 9), '^' is a comma, '_' a full stop, '`' a question mark, 'C' before the year is drawn as the copyright sign.
+@about The game's own character codes: `$FF` a new line, `$FE` the end of a text (`$AAE9`; GAME OVER's `$AA8D` stops at `$FF`). Digits are `$37` + the digit ('8' = 1, '9' = 2, '?' = 8, '@' = 9), '^' is a comma, '_' a full stop, '`' a question mark, 'C' before the year is a plain C (glyph 12); the font has no copyright sign.
 @about The five intro and closing texts are printed by NewGame $E2DC and the level change `$AC1A`; the three menu texts by Menu $E219.
 
 $E4E5 t SouthAmericaText ; Level 1 intro: South America, the Goolu tribe
@@ -1097,14 +1102,14 @@ $EC0E ResetObjectsNext
 
 $EC11 c UpdateObjects ; Run every object's handler once
 > IX = ObjectTable $EA8E; UpdateObjectSlot $EC15 per slot. Called once a pass by MainLoop $E3C9.
-> Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $EC15 c UpdateObjectSlot ; One slot: dispatch on its kind
 > Type 0 is skipped, `$FF` ends. Else NextObject $EC3B is pushed as the return address and the kind (type AND `$7F`) chosen: `$47` DyingEnemyObj $F1B7, `$18` and up TrapObj $EDFC, else the word ObjectHandlers[kind].
-> Witness: L1 556242 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 563418 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $EC3B c NextObject ; IX to the next slot, +30
-> Witness: L1 513454 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 520078 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $EC42 c KillObject ; Kind 0 with bit 7 set: free the slot
 > ObjectHandlers $EC47 entry 0. Only a type `$80` reaches it. Run by no recording.
@@ -1135,7 +1140,7 @@ $ECF6 BlastFrames ; the five blast frames: small, large, larger, large, small (a
 $ED00 c BulletObj ; Kind 2: Rick's bullet flies until it hits a wall or leaves
 > x += BulletDx $ED3F (signed: `$FA75` / `$FA83` set it when Rick fires); off the left edge or at `$E8` and up the bullet goes. BulletHitX $ED40 = x (left) or x + `$17` (right), BulletHitY $ED41 = y + 5. `$F535` probes the map there: a wall frees the slot. The enemies, boxes and traps test BulletX / BulletY or BulletHitX / BulletHitY with `$F742`.
 > Run in c1 and levels 1-4 (25 to 84 passes).
-> Witness: L1 396 (beeper48, c1, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8, L4Z9, level1-level4).
+> Witness: L1 546 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8, L4Z9, level1-level4).
 $ED10 BulletStore
 $ED27 BulletRight
 $ED3A BulletGone
@@ -1169,13 +1174,13 @@ $EDE6 c TreasureObj ; Kinds 18-21: a bonus item; Rick takes it
 $EDFC c TrapObj ; Kinds 24 and up: a trap moving along its path; deadly with bit 7
 > TrapMove $EE0B, then, if type bit 7 is set, `$F6E0` tests Rick and `$FBED` kills him on touch.
 > The busiest handler: c1 1299, level2 7377, level3 9162 passes.
-> Witness: L1 97698 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 98254 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $EE0B c TrapMove ; Animate a trap and move it one step along its path
 > Animation: the list at +18/19 holds a byte per frame (bit 7 mirror, bits 0-6 the frame number n, the frame at n x `$7E` + `$8383`; 0: no sprite; `$FF`: back to the start), indexed by +24.
 > Path (+22/23): 3-byte steps (count, dx, dy) each run for count passes; `$FF` ends it. Then a one-shot trap goes (unless Rick is dying); the others restart: type bit 7 from flag bit 2, the position from +15-17, and TrapTriggers $EF2E waits for a trigger.
 > x stays within 0-`$E7`, y below `$12A`; leaving ends the path.
-> Witness: L1 97848 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 98404 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $EE23 TrapFrame
 $EE2D TrapFrameSet
 $EE48 TrapFrameAdd
@@ -1198,7 +1203,7 @@ $EF27 TrapStoreY
 $EF2E c TrapTriggers ; A waiting trap: start its path on a trigger
 > Skipped while Rick is dying (`$FD68`). By flag +11: bit 7 Rick's centre (RickX + 12, RickY + 10) inside the trap's box (`$F7C3`); bit 6 the stick (`$FD63`, the point `$FD64` / `$FD65`); bit 5 the bullet (BulletObject alive, the point BulletHitX / BulletHitY; the bullet is used up); bit 4 the blast (BlastOn, BlastX / BlastY).
 > Triggered: type bit 7 = flag bit 3, +24 = 1, +25 = 0, the path pointer from +20/21, effect 3.
-> Witness: L1 87022 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 87578 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z3, L1Z5, L1Z6, L2Z1-L2Z4, L2Z6, L2Z7, L3Z1, L3Z2, L3Z4-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $EF52 TrapTestStick
 $EF6B TrapReloadFlags
 $EF6E TrapTestBullet
@@ -1345,7 +1350,7 @@ $F535 c IsSolidAt ; Z when the point (A, L) is free: no wall char and not inside
 > it tests the point against its box (PointInObject `$F742`): inside gives NZ (A = 1), outside Z (A = 0).
 > Outputs: Z/NZ, A, E = X. Preserves HL, D; uses BC.
 > Evidence: the object 0 test (`$F566`) ran only in level2 (6).
-> Witness: L1 392 (beeper48, c1, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8, L4Z9, level1-level4).
+> Witness: L1 542 (beeper48, c1, emptygun, L1Z5, L2Z1, L2Z6, L3Z x7, L4Z3, L4Z4, L4Z8, L4Z9, level1-level4).
 $F56B IsSolidAtYes
 
 $F56D c ProbeLow ; The probe of a crawling object: properties of the chars under its box, the top row apart
@@ -1367,25 +1372,25 @@ $F5D5 c ProbeBox ; The OR of the char properties under an object's box, into Pro
 > only under the middle, a floor or platform only under the feet.
 > Outputs: ProbeResult `$F6A8` = A, with bit 6 added when the box overlaps object 0 `$EA8E` (ProbeBoxObject0 `$F624`).
 > Preserves DE, HL. Callers: the walkers (`$F362`), MoveRick `$F85D`, WalkRick `$F903`, ClimbRick `$FB14`.
-> Witness: L1 141938 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 142633 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $F5E7 ProbeBoxRowAddr
 
 $F602 c ProbeBoxAligned ; ProbeBox's rows for a box 2 columns wide
 > Part of ProbeBox `$F5D5` and ProbeLow `$F56D`, reached by their jumps, not called. B rows of 2 chars AND `$6F`,
 > then the bottom row with every bit, into ProbeResult `$F6A8`; on into ProbeBoxObject0 `$F624`.
-> Witness: L1 104881 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 105462 (beeper48, c1, controls, ending2, gameover, l1z1left, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $F624 c ProbeBoxObject0 ; ProbeBox's tail: add object 0 as a wall
 > Pops HL, DE. A wall already found (bit 6): return. With object 0 `$EA8E` present, its box against the probe's
 > (ProbeRecord `$F689` as the IY object, ObjectsOverlap `$F6E9`): an overlap sets bit 6 of ProbeResult `$F6A8`.
 > Outputs: A = `$F6A8`.
 > Evidence: object 0 overlapped the probe (`$F64E`) once, in level2; the test (`$F643`) ran in level2 and level3 only.
-> Witness: L1 148000 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 148695 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $F654 c ProbeBoxUnaligned ; ProbeBox's rows for a box 3 columns wide
 > B rows of 3 chars, the edges AND `$6D`, the middle AND `$6F`; the bottom row: edges AND `$7D`, the middle whole.
 > Into ProbeResult `$F6A8`, then JP ProbeBoxObject0 `$F624`.
-> Witness: L1 265740 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 267099 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $F689 b ProbeRecord 4 ; The probe's box as an object record (IY) for ObjectsOverlap
 > ProbeBoxObject0 `$F624` writes +1 (X) and +2/+3 (Y) and hands it to ObjectsOverlap `$F6E9` as IY; the other fields
@@ -1407,13 +1412,15 @@ $F6B3 BuildCharPropsFill
 $F6C0 b CharPropsSet0 2 ; Char properties of the first tile set: (count, property) x 8
 > Chars 0-76 nothing, 77-90 ladder, 91-94 deadly, 95-181 bit 3, 182-189 platform, 190-192 spring + wall, 193-251
 > wall, 252-255 floor.
-$F6D0 CharPropsSet1 ; the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor
+@res levels/charprops.bin
+$F6D0 b CharPropsSet1 2 ; Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor
+@res levels/charprops.bin
 
 $F6E0 c RickTouches ; Does the IX object overlap Rick? Never while Rick dies
 > Called by the object handlers with IX = the object. Rick dying (`$FD68` nonzero): NZ at once. Else IY = Rick
 > `$EAAC` and on into ObjectsOverlap `$F6E9`.
 > Outputs: Z = overlap. Uses IY, A, BC, DE, HL.
-> Witness: L1 113599 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 113605 (beeper48, c1, controls, ending2, gameover, l1end, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $F6E9 c ObjectsOverlap ; Z when the IY object's body box overlaps the IX object's box
 > IY's box (a Rick-sized body): X from IY+1 + 5 to IY+1 + 17, Y from IY+2/+3 (8 lower when IY is Rick, kind 1,
@@ -1445,7 +1452,7 @@ $F7C3 c PointInTrigger ; Z when the point (E, HL) is inside the IX object's trig
 > and BonusTrigger `$F4C8`, BonusCollect `$F502`.
 > Outputs: Z/NZ, A = 0 / 1. Uses BC, DE, HL.
 > Evidence: the Y half (`$F7EA`) ran in every game build (level3 1368).
-> Witness: L1 54742 (beeper48, c1, controls, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1, L3Z2, L3Z5-L3Z12, L4Z1-L4Z8, level1-level4, spotL1Z4-43, spotL1Z4-47).
+> Witness: L1 55292 (beeper48, c1, controls, emptygun, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1, L3Z2, L3Z5-L3Z12, L4Z1-L4Z8, level1-level4, spotL1Z4-43, spotL1Z4-47).
 $F7E5 PointInTriggerY
 $F80F PointInTriggerNo
 
@@ -1470,7 +1477,7 @@ $F842 HitsEnemyNext
 $F851 c RickHandler ; Object kind 1: move Rick, then choose his frame
 > Handler of kind 1 (the pointer at `$EC49`), IX = Rick `$EAAC`. MoveRick `$F85D`, then the crawl flag `$FD5A` is
 > kept in PrevCrawl `$FD5F`, then ChooseRickFrame `$FC60` (a jump: its RET returns from here).
-> Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $F85D c MoveRick ; One frame of Rick: fall, land, walk, climb, fire, die
 > IX = Rick. Clears Poking `$FD63` and FireHeld `$FD67`. Dying (`$FD68`): DeathFall `$FC16`. Reads the controls
@@ -1479,7 +1486,7 @@ $F85D c MoveRick ; One frame of Rick: fall, land, walk, climb, fire, die
 > (ProbeLow `$F56D` while crawling, ProbeBox `$F5D5` else). A solid char in the way (bits 4-7 falling, 5-7 rising):
 > LandRick `$F95D`. Else Rick is airborne (`$FD5B` = `$FF`): deadly char: KillRick `$FBED`; Y stored; a ladder with up
 > or down held: climbing starts; the Y velocity grows by `$80` up to `$0800`; then WalkRick `$F903`.
-> Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $F875 ; not climbing: gravity
 $F88D MoveRickFall ; HL = the new Y, D = the new fraction
 $F8A3 ; crawling with no low ceiling ($F6A7 = 0): stand up
@@ -1495,7 +1502,7 @@ $F903 c WalkRick ; Rick's horizontal step: 2 pixels left or right, or the zone e
 > nor right: AnimStep `$FD5C` = `$FF` (standing). Left: Facing `$FD58` = 1, X - 2, below 0: ExitLeft `$FBCF`. Right:
 > Facing = 0, X + 2, at `$E8` or more: ExitRight `$FBDE`. The box at the new X is probed (ProbeLow `$F56D` when
 > crawling, ProbeBox `$F5D5` else): bits 4-6 block; else X is stored, and a deadly char kills (KillRick `$FBED`).
-> Witness: L1 30940 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 31458 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $F913 WalkRickLeft
 $F928 WalkRickRight
 $F936 WalkRickProbe
@@ -1510,7 +1517,7 @@ $F95D c LandRick ; Rick's box met a solid char: a ceiling bump, or the floor and
 > `$FD65` = X + `$17` facing right or X facing left, Y + 14; effect 3 once per press, PokeLatch `$FD60`). Fire alone
 > or with up or down: FireNoStick `$FA1E`.
 > Evidence: the ceiling bump (`$F969`) ran in c1, controls and level1-level4. The spring bounce (`$F9AC`, `$F9B2`) ran in L2Z4 only (6 and 17). The stick poke (`$F9DC`) ran in controls, level1-level3 (level3 175).
-> Witness: L1 21862 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 22412 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
 $F983 LandRickDown ; falling onto a floor
 $F9AC ; up held on the spring: the high bounce
 $F9B2 LandRickBounceLow
@@ -1523,15 +1530,15 @@ $FA15 PokeSetX
 
 $FA1E c FireNoStick ; Fire without left or right: clear the poke latch
 > Part of LandRick `$F95D`. A = 0 into PokeLatch, then FireClearPokeLatch `$FA1F`.
-> Witness: L1 432 (beeper48, c1, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
+> Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
 
 $FA1F c FireClearPokeLatch ; Fire with up shoots, with down drops dynamite
 > Part of LandRick `$F95D`. Up (bits 3-2 = 0-1): FireHeld `$FD67` = `$FF`; once per press (FireLatch `$FD5E`), and
 > only with no bullet out (`$EACA` = 0): no bullets left (`$A976` = 0) plays effect 1; else one bullet less, effect
 > 0, and the bullet object starts: kind 2, Y = Rick Y + 6, X = Rick X, frame `$85F9`, X velocity `$ED3F` = 8 (`$F8`
 > facing left), `$EAD0` = 0 / 1 (mirror). Not up: FireNotUp `$FA8C`.
-> Evidence: shots (`$FA4B`) in c1 and level1-level4; the "no bullets" sound (`$FA45`) ran in no build: known only from the code.
-> Witness: L1 432 (beeper48, c1, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
+> Evidence: shots (`$FA4B`) in c1 and level1-level4; the "no bullets" sound (`$FA45`) in emptygun only (frames 500 and 580, after six shots).
+> Witness: L1 464 (beeper48, c1, emptygun, L1Z1, L1Z2, L1Z5, L2Z1, L2Z2, L2Z6, L2Z7, L3Z x7, L4Z2-L4Z5, L4Z7-L4Z9, level1-level4).
 $FA4B FireShoot
 
 $FA6D ShootSetFrame ; The bullet's frame and direction
@@ -1543,7 +1550,7 @@ $FA8C c FireNotUp ; Fire without up: release the fire latch; with down, drop a d
 > out (`$EAE8` = 0) and sticks left (`$A967`): one less, the dynamite object starts (kind 3, fuse `$ECED` = `$32`
 > frames, X `$EAE9` and Y `$EAEA` = Rick's).
 > Evidence: a dynamite stick dropped (`$FAA6`) in level2 (1) and level3 (6).
-> Witness: L1 352 (beeper48, c1, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2, L3Z6, L3Z11, L3Z12, L4Z x5, level1-level4).
+> Witness: L1 368 (beeper48, c1, emptygun, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2, L3Z6, L3Z11, L3Z12, L4Z x5, level1-level4).
 
 $FA90 FireSetAnim
 $FA9C DropDynamite
@@ -1554,7 +1561,7 @@ $FAC3 c NoFire ; On the floor without fire: jump, climb, crawl or walk
 > top (bits 0-1) with X AND `$1F` < `$0A`, X snaps to the ladder (X AND `$F0` + 4) and climbing starts; else crawl.
 > Neither: WalkRick.
 > Evidence: jumps (`$FAD3`) in every game build; crawls (`$FB0C`) in level1-level4; the ladder top snap (`$FAFC`) in level1 and level3.
-> Witness: L1 20830 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 21348 (beeper48, c1, controls, emptygun, ending2, gameover, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-44, spotL1Z4-47).
 $FAD3 Jump
 $FAE1 NoFireDown
 
@@ -1639,7 +1646,7 @@ $FC16 c DeathFall ; The dying Rick: drift sideways, fall with gravity, off the b
 > byte nonzero) the object is freed and DeathDone `$FD69` = `$FF` (read at `$E3EB`: a life lost). Else the velocity
 > grows by `$80`.
 > Evidence: DeathDone set (`$FC41`) in c1 2, controls 3, gameover 6, level1 11, level2 3, level3 5, level4 28 times.
-> Witness: L1 9925 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+> Witness: L1 9927 (beeper48, c1, controls, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $FC34 DeathFallAdd
 $FC4B DeathFallStore
 
@@ -1649,7 +1656,7 @@ $FC60 c ChooseRickFrame ; Rick's sprite frame and mirror for this frame, and the
 > and 4. Climbing: `$886F`, the mirror from (X XOR Y) AND 4 (the climbing wiggle), effect 4 every 2 moves. Airborne:
 > `$84FD`. Firing: `$8773`. Else walking: WalkFrames `$FD6D` by AnimStep 0-7 / 2 (standing, AnimStep = `$FF`, gives
 > 0), effect 4 at steps 2 and 6.
-> Witness: L1 42788 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 43340 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $FC81 FrameDying
 $FC8E FrameNotDying
 $FC9F FrameNotPoking
@@ -1671,7 +1678,7 @@ $FD47 FrameWalkTable
 $FD54 b RickVars 1 ; Rick's state, cleared by $AD29 (25 bytes)
 > Flags are 0 or `$FF` unless said. `$FD54`, `$FD5D` and `$FD6B` are never used.
 $FD55 YFraction ; Rick's Y fraction (8.8 with YVelocity)
-$FD56 YVelocity ; Rick's Y velocity, 8.8 signed (2 bytes): +$80 per frame, at most $0800; $FA80 a jump
+$FD56 YVelocity ; Rick's Y velocity, 8.8 signed (2 bytes): +$80 per pass, at most $0800; $FA80 a jump
 $FD58 Facing ; 1 left, 0 right (the sprite mirror)
 $FD59 Climbing
 $FD5A Crawling
@@ -1751,7 +1758,7 @@ $FEE8 s FreeFEE8 ; 22 zero bytes, never used
 $FEFE c Im2Handler ; The frame interrupt: frame counter, timers, music
 > Saves AF, BC, DE, HL, IX, IY; `$A237` + 1; CALL `$E49B`; at `$FF11` three NOPs in the image, CALL `$A030` once
 > `$A081` has run; restores, EI, RET.
-> Witness: L1 108326 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+> Witness: L1 111926 (beeper48, c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
 $FF07 Im2CountFrame ; Frame counter $A237 + 1
 
@@ -1779,3 +1786,17 @@ $FFEE b GameStack 2 ; The game's stack: SP = 0 ($A258), it grows down from $FFFF
 @isub $FB77 LD HL,-768
 @isub $FBC8 LD HL,-768
 @isub $FBFC LD HL,-1024
+
+# The cell flags ($6C00 + cell) named in the operands (the disassembler took the nearest label, Kind16Frame / Kind19Frame)
+@isub $A265 LD HL,CellFlags-1
+@isub $A787 LD HL,CellFlags+$21
+@isub $A7CC LD DE,CellFlags+$21
+@isub $A83C LD HL,CellFlags-1
+@isub $AE7B LD HL,CellFlags
+@isub $AF1D LD SP,CellFlags
+@isub $A8C2 LD (CellFlags+$21),HL
+@isub $A8C5 LD (CellFlags+$23),HL
+@isub $A8C8 LD (CellFlags+$25),HL
+@isub $A8D9 LD HL,CellFlags+$29
+@isub $A8F2 LD HL,CellFlags+$31
+@isub $A907 LD HL,CellFlags+$39

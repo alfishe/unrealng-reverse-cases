@@ -7,7 +7,7 @@
 ; sentinel ($6F00, below the 24 screen rows $6C00-$6EFF). The charset is at CharsetBase $A73D ($7100, or $7A00 for
 ; some screens), a char's attribute at $7900 + char ($8200 with the other charset).
 ;
-; Each frame ($E414-$E41F) ComposeObjects $A73F walks the object table $EA8E (30-byte records, +0: 0 empty, $FF the
+; Each pass ($E414-$E41F) ComposeObjects $A73F walks the object table $EA8E (30-byte records, +0: 0 empty, $FF the
 ; end) and ComposeObject $A2EC draws every object's sprite into fresh composed chars: ComposeCell $A6D0 copies each
 ; covered cell's char (the map's, or the composed one already there) to a new buffer and points the cell's flag at it.
 ; A char whose property byte at $5C00 + char has any of bits 3-6 set gets a scratch buffer that is never shown: the
@@ -38,8 +38,9 @@
 ; Callers: LoadScreen ($ACF7), the level's end ($ABD8) and the end of the last
 ; level ($AC4C). Output: B, HL changed.
 ;
-; Witness: L1 441 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51,
-; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 442 (beeper48, c1, controls, ending2, gameover, l1end,
+; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
+; spotL1Z4-43).
 MarkAllDirty:
   DI
   LD (MarkAllDirtySP+$0001),SP
@@ -83,14 +84,14 @@ MarkAllDirtySP:
 ; Callers: the frame loop ($E41F), the game over ($E360) and the end of each
 ; scroll ($ADEC, $AE21). Output: AF, BC, DE, HL changed.
 ;
-; Witness: L1 42462 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43013 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 DrawDirtyCells:
   LD A,$FF
   LD (CellFlagsRow24),A
   CALL MaskHudCells
-  LD HL,Kind16Frame+$005B
+  LD HL,CellFlags-1
 DrawDirtyNext:
   XOR A
 DrawDirtyScan:
@@ -204,9 +205,9 @@ DrawDirtyMapChar:
 ; The column offsets are written into the drawers' (IY+d) operands. Output:
 ; everything but IX; interrupts on at the end. Called by ComposeObjects only.
 ;
-; Witness: L1 224375 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 225623 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ComposeObject:
   LD A,(IX+$04)
   OR (IX+$05)
@@ -828,9 +829,9 @@ SpriteShiftedSP:
 ; Called 9-16 times by ComposeObject per object. The most run routine of the
 ; range (level4: 148302 runs).
 ;
-; Witness: L1 1817008 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 1823882 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ComposeCell:
   LD D,$5C
   LD E,(HL)
@@ -902,7 +903,7 @@ ComposeHidden:
   EX DE,HL
   RET
 
-; The next composed char's number (2 at each frame's start)
+; The next composed char's number (2 at each pass's start)
 ;
 ; Set to 2 by ComposeObjects, counted up by ComposeCell. The flags 0 and 1 mean
 ; the map, so the numbers start at 2 ($5D00).
@@ -926,9 +927,9 @@ CharsetBase:
 ; Callers: the frame loop ($E414), the game over ($E35A) and
 ; ClearOffscreenFlags ($AF52). Output: everything, IX past the table.
 ;
-; Witness: L1 42457 (beeper48, c1, controls, ending2, gameover, spotL2Z4-34,
-; spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9,
-; level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
+; Witness: L1 43008 (beeper48, c1, controls, emptygun, ending2, gameover,
+; l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7,
+; L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 ComposeObjects:
   LD A,$02
   LD (ComposeCount),A
@@ -988,12 +989,13 @@ UnusedMirrorByte:
 ; Callers: LoadScreen ($ACFA), the level's end ($ABE8) and each scroll step
 ; ($ADD8, $AE0F). Output: everything.
 ;
-; Witness: L1 612 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51,
-; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end,
+; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
+; spotL1Z4-43).
 RedrawScreen:
   LD A,(CellFlagsRow24)
   LD (RedrawSentinel+$0001),A
-  LD HL,Kind16Frame+$007D
+  LD HL,CellFlags+$21
   LD DE,SavedHudCells
   LDI
   LDI
@@ -1026,7 +1028,7 @@ RedrawScreen:
   LDI
   LDI
   CALL DrawAllDirtyCells
-  LD DE,Kind16Frame+$007D
+  LD DE,CellFlags+$21
   LD HL,SavedHudCells
   LDI
   LDI
@@ -1079,13 +1081,14 @@ SavedHudCells:
 ;
 ; Called by RedrawScreen only. Output: everything.
 ;
-; Witness: L1 612 (beeper48, c1, controls, ending2, gameover, spotL3Z7-51,
-; L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
+; Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end,
+; spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4,
+; spotL1Z4-43).
 DrawAllDirtyCells:
   LD A,$FF
   LD (CellFlagsRow24),A
   CALL MaskHudCells
-  LD HL,Kind16Frame+$005B
+  LD HL,CellFlags-1
 DrawAllNext:
   XOR A
 DrawAllScan:
@@ -1102,9 +1105,8 @@ DrawAllScan:
   LD E,(HL)
   ADD A,$F2
   LD H,A
-AttrTableHigh:
-  LD D,$79                ; its operand: the attribute table's high byte, $79
-                          ; or $82 (LoadScreen $AC8D, $ACA1)
+  LD D,$79                ; its operand (AttrTableHigh): the attribute table's
+                          ; high byte, $79 or $82 (LoadScreen $AC8D, $ACA1)
   LD A,(DE)
   LD (HL),A
   LD A,H
@@ -1322,7 +1324,7 @@ ShiftMapDownLoop:
 ShiftMarksUp:
   LD A,$FF
   LD (CellFlagsEnd),A
-  LD HL,Kind16Frame+$005C
+  LD HL,CellFlags
   LD BC,$FF80
   LD DE,$0080
 ShiftMarksUpNext:
@@ -1383,7 +1385,7 @@ ShiftMarksDownScan:
 ClearOffscreenFlags:
   DI
   LD (ClearFlagsSP+$0001),SP
-  LD SP,Kind16Frame+$005C
+  LD SP,CellFlags
   LD B,$08
   LD HL,$0000
 ClearAboveLoop:

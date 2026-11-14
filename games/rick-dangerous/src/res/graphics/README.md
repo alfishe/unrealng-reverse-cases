@@ -30,4 +30,4 @@ chunk `bits` (`cell:hex`); char set 0 and 1 have none that differ from 0.
 One row of 43 cells, black INK on white PAPER (the attributes in the text chunk are all `$38`; the build refuses
 others). Glyph G is at `$9E95` + 8G. The printers read it: `$A977` (digits as numbers), `$A9E8`, `$AA0E` / `$AA25`
 (glyph numbers) and `$AA8D` / `$AA9F` (ASCII: code - `$37`). Glyphs 36-38 are pictures for the HUD's counters (a
-stick of dynamite, bullets, a face); 39-42 comma, full stop, question mark, space.
+bullet, a stick of dynamite, a face); 39-42 comma, full stop, question mark, space.

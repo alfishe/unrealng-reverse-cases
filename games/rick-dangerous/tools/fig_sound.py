@@ -7,7 +7,7 @@ Every OUT to `$FFFD` / `$BFFD` is logged with the registers after each frame. Th
 (build/game.bin at `$5B00`) is run the same way, and every OUT to port `$FE` is logged with its T-state.
 
     python3 tools/fig_sound.py costs                       # T-states per frame of every tune and effect
-    python3 tools/fig_sound.py audio docs/audio            # WAV of the effects, MP3 (lame -V 4) of the tunes
+    python3 tools/fig_sound.py audio docs/audio            # WAV of the effects up to 1 s, MP3 (lame -V 4) of the tunes and longer effects
     python3 tools/fig_sound.py chart 5 docs/img/sound/tune5.png
     python3 tools/fig_sound.py effects docs/img/sound/effects.png
     python3 tools/fig_sound.py beeper docs/img/sound/beeper.png
@@ -193,10 +193,14 @@ def cmd_audio(out):
         subprocess.check_call(['lame', '--quiet', '-V', '4', wav, os.path.join(out, f'tune{n}.mp3')])
         os.remove(wav)
         print(f'tune{n}.mp3', len(fr), 'frames')
-    for n in range(12):
+    for n in range(12):  # an effect up to a second (50 frames) as WAV, a longer one as MP3
         _, fr = ay_run('effect', n, tail=10)
-        write_ay_wav(fr, os.path.join(out, f'effect{n}.wav'))
-        print(f'effect{n}.wav', len(fr), 'frames')
+        wav = os.path.join(out, f'effect{n}.wav')
+        write_ay_wav(fr, wav)
+        if len(fr) > 50:
+            subprocess.check_call(['lame', '--quiet', '-V', '4', wav, os.path.join(out, f'effect{n}.mp3')])
+            os.remove(wav)
+        print(f'effect{n}.' + ('mp3' if len(fr) > 50 else 'wav'), len(fr), 'frames')
     for n in (0, 2, 4, 6, 11, 1):
         edges, t = beeper_run(n)
         write_beeper_wav(edges, t, os.path.join(out, f'beeper{n}.wav'))

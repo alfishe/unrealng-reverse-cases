@@ -10,7 +10,8 @@ The formats live in the format modules tools/res_*.py, each with two tables:
 - SINGLES {bin name: (suffix, to_editable(bytes) -> bytes, from_editable(bytes) -> bytes)}: one resource, one file
   (src/res/screens/loading.png for screens/loading.scr);
 - GROUPS {editable name: ([bin names], to_editable({bin: bytes}) -> bytes, from_editable(bytes) -> {bin: bytes})}:
-  several resources in one file (a level's map, zones and objects in one text).
+  several resources in one file (a level's map, zones and objects in one text);
+- INCLUDES {bin name: editable bytes -> text}: the .inc an `@res NAME include` entry assembles (kit/resinc.py).
 Each folder's README.md lists its files, addresses, formats and readers. A file no module claims stays its bytes.
 """
 import argparse
@@ -24,7 +25,7 @@ ROOT = os.path.dirname(HERE)
 RES = os.path.join(ROOT, 'src', 'res')
 sys.path.insert(0, HERE)
 
-SINGLES, GROUPS = {}, {}
+SINGLES, GROUPS, INCLUDES = {}, {}, {}
 for _path in sorted(glob.glob(os.path.join(HERE, 'res_*.py'))):
     _name = os.path.splitext(os.path.basename(_path))[0]
     if _name == 'res_formats':
@@ -32,6 +33,7 @@ for _path in sorted(glob.glob(os.path.join(HERE, 'res_*.py'))):
     _mod = importlib.import_module(_name)
     SINGLES.update(getattr(_mod, 'SINGLES', {}))
     GROUPS.update(getattr(_mod, 'GROUPS', {}))
+    INCLUDES.update(getattr(_mod, 'INCLUDES', {}))  # {bin name: editable bytes -> NAME.inc text} (@res ... include)
 
 
 def write(path, data):
@@ -103,8 +105,11 @@ def to_bytes(rel, kind, raw):
 
 def build(out):
     for src, rel, kind in sources():
-        for name, data in to_bytes(rel, kind, open(src, 'rb').read()).items():
+        raw = open(src, 'rb').read()
+        for name, data in to_bytes(rel, kind, raw).items():
             write(os.path.join(out, name), data)
+            if name in INCLUDES:  # an @res ... include: the source INCLUDEs NAME.inc, its words by name
+                write(os.path.join(out, os.path.splitext(name)[0] + '.inc'), INCLUDES[name](raw).encode())
 
 
 def check(against=None):

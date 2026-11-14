@@ -3,7 +3,7 @@
 ;
 ; The game's own character codes: `$FF` a new line, `$FE` the end of a text (`$AAE9`; GAME OVER's `$AA8D` stops at
 ; `$FF`). Digits are `$37` + the digit ('8' = 1, '9' = 2, '?' = 8, '@' = 9), '^' is a comma, '_' a full stop, '`' a
-; question mark, 'C' before the year is drawn as the copyright sign.
+; question mark, 'C' before the year is a plain C (glyph 12); the font has no copyright sign.
 ;
 ; The five intro and closing texts are printed by NewGame $E2DC and the level change `$AC1A`; the three menu texts by
 ; Menu $E219.

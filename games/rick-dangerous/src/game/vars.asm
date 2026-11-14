@@ -16,7 +16,7 @@ YFraction:
   DEFB $00                ; Rick's Y fraction (8.8 with YVelocity)
 YVelocity:
   DEFB $00                ; Rick's Y velocity, 8.8 signed (2 bytes): +$80 per
-  DEFB $00                ; frame, at most $0800; $FA80 a jump
+  DEFB $00                ; pass, at most $0800; $FA80 a jump
 Facing:
   DEFB $00                ; 1 left, 0 right (the sprite mirror)
 Climbing:

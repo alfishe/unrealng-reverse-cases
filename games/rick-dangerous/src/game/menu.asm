@@ -48,7 +48,6 @@ Menu:
   LD HL,CreditsText
   LD DE,$5047
   CALL PrintLines
-; This entry point is used by the routine at MenuFrame.
 MenuLoop:
   LD DE,$58EE             ; DE, C = the attribute row and width of the chosen
                           ; method
@@ -68,8 +67,6 @@ MenuLoop:
   LD C,$08
 MenuShowRow:
   LD A,C
-
-; MenuFrame
 MenuFrame:
   HALT                    ; two frames a pass
   HALT
@@ -166,8 +163,8 @@ ClearDoneLoop:
   LD (Score),HL
   LD (Score+$0002),HL
   LD (Score+$0004),HL
-  LD (Dynamite),A
   LD (Bullets),A
+  LD (Dynamite),A
   CALL DrawHud
 LevelIntro:
   LD HL,(LevelTextPtr)    ; LevelTable record 0: text, place, attribute
