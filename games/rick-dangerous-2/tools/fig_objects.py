@@ -265,8 +265,8 @@ def fig_kind(a):
     w2 = lambda i: rec[i] | rec[i + 1] << 8  # noqa: E731
     byte_row(d, 14, 44, [
         (rec[0:1], 'width\n%d' % rec[0], YEL), (rec[1:2], 'height\n%d' % rec[1], YEL),
-        (rec[2:3], 'flags: %s\nkind2 bits $%02X' % (', '.join(n for bt, n in ((6, 'deadly'), (7, 'blast test'))
-                                                                if rec[2] >> bt & 1) or 'harmless', rec[2] & 0x3F), YEL),
+        (rec[2:3], '+0 bits: %s\nswitch: +0 OR $%02X' % (', '.join(n for bt, n in ((6, 'deadly'), (7, 'platform'))
+                                                                  if rec[2] >> bt & 1) or 'none', (rec[2] & 0x3F) * 4 & 0xFF), YEL),
         (rec[3:5], 'path\n$%04X' % w2(3), GRN), (rec[5:7], 'anim\n$%04X' % w2(5), CYA),
         (rec[7:9], 'path2\n$%04X' % w2(7), GRN), (rec[9:11], 'anim2\n$%04X' % w2(9), CYA)], f, fs)
     y = 120

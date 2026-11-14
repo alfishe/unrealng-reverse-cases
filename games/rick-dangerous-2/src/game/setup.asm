@@ -15,14 +15,15 @@
 ; The game's entry: SP, the IM 2 handler, the 128K test (later the first object
 ; table)
 ;
-; Called by the loader ($FF2A, JP) once, with interrupts off: SP = 0 (the stack
-; grows down over the loader's tail), SetupIm2 copies the handler and sets IM
-; 2. Then the 128K test: E = the byte at $C000 with RAM 0 paged in; RAM 1 is
-; paged in (port $7FFD = $11: ROM 1, RAM 1), E + 1 written to $C000, RAM 0
-; paged back ($10) and $C000 read again. The same value as before means the
-; write went to another bank: a 128K, go to CopyMusic. Otherwise the machine
-; has one bank there: Entry48K puts the byte back, sets $7A76 = $FF (no music)
-; and skips the copy.
+; Called by the loader ($FF2A, JP) once, with the interrupts on (the loader's
+; EI at $FF29); its first DI turns them off. SP = 0 (the stack grows down over
+; the loader's tail), SetupIm2 copies the handler and sets IM 2. Then the 128K
+; test: E = the byte at $C000 with RAM 0 paged in; RAM 1 is paged in (port
+; $7FFD = $11: ROM 1, RAM 1), E + 1 written to $C000, RAM 0 paged back ($10)
+; and $C000 read again. The same value as before means the write went to
+; another bank: a 128K, go to CopyMusic. Otherwise the machine has one bank
+; there: Entry48K puts the byte back, sets $7A76 = $FF (no music) and skips the
+; copy.
 ;
 ; From $83B8 on, the bytes from here are the object table A (six 24-byte
 ; records, updated by $A2F7 from UpdateObjects, drawn by $7329 from

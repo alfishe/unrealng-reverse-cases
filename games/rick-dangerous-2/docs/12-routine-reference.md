@@ -883,7 +883,7 @@ Witness: L1 6196803 (box-shot, cheats, controls-cursor, controls-kempston, contr
 
 HL = ViewCells at the new view's screen row 1, HL' = ViewCells at the old one (what the screen shows), DE = DirtyMap at HL - `$500`. Per cell, DirtyMap 0: drawn only when the new cell differs from the old (`$77D0`); 1: drawn (`$77CB`); n >= 2: spare cell n drawn (`$7827`). Each cell drawn gets its attribute from CellAttrs. 7 rows to the first third's end, then 8 and 8.
 
-Called three times by each scroll (ScrollDown `$78C3`, `$78D5`, `$78E7`, ScrollUp `$7923`, `$7935`, `$7947`): 515 runs in 48 builds, all RZX pieces (c1 never scrolls).
+Called three times by each scroll (ScrollDown `$78C3`, `$78D5`, `$78E7`: 96, 97, 98 runs; ScrollUp `$7923`, `$7935`, `$7947`: 88, 89, 89): 557 runs in 52 builds, the RZX pieces and sec-l4-*; a piece that starts inside a scroll counts its later steps only (c1 never scrolls).
 
 Witness: L1 1114 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12).
 
@@ -973,9 +973,9 @@ Witness: L1 279 (box-shot, controls-cursor, controls-kempston, controls-keyboard
 
 **Before a scroll: mark for restoring the cells the sprites' copies will lie on**
 
-HL = DirtyMap (or DirtyMap + 256), DE = +32 (down) or -32 (up). For each of 1024 DirtyMap bytes >= 2 (a spare cell on the screen) it sets to 1 the bytes 2, 6 and 8 rows on, when 0: the screen positions of that cell after each step of the scroll, so RedrawScrolledView redraws the level cell there.
+DE = +32 (down) or -32 (up); the caller's HL (ScrollUp loads DirtyMap + 256) is dead: the routine starts with LD HL,DirtyMap. For each of the 1024 DirtyMap bytes from `$6600` >= 2 (a spare cell on the screen) it sets to 1 the bytes 2, 6 and 8 rows on, when 0: the screen positions of that cell after each step of the scroll, so RedrawScrolledView redraws the level cell there. Going up, a spare cell in view rows 0-7 marks below `$6600`, in MirrorTable; only its 0 byte `$6500` can be written (from row 0, column 0), and no recording writes it.
 
-Called by ScrollDown `$78B1` and ScrollUp `$7911`: 169 runs in 48 builds.
+Called by ScrollDown `$78B1` and ScrollUp `$7911`: 183 runs in 52 builds (95 + 88).
 
 Witness: L1 366 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12).
 
@@ -1028,9 +1028,9 @@ Witness: L1 366 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1
 
 **Move the view 8 cell rows down the section in three steps**
 
-The main loop `$7E06` calls it when Rick's y (`$9BAD`) >= 204 and the view's top `$88CF` < its limit `$88D2`. Clears the marks (`$8985`), composes the sprites (`$85FA`), marks their cells (MarkScrollCells), then redraws the screen from 2, 6 and 8 rows lower (RedrawScrolledView), each after a frame wait (C = 1). Then `$88CF` += 8, the view is rebuilt (`$88D4`), every object moved 64 pixels up (`$9E31`, BC = -64), and the sprites composed and drawn again. So a scroll is three steps; measured, it takes 16 frames (rzx-l1-04000-poke frames 111-127, ScrollUp): each RedrawScrolledView takes 282 506 T, about four frames, so each one-count frame wait returns at once.
+The main loop `$7E06` calls it when Rick's y (`$9BAD`) >= 204 and the view's top `$88CF` < its limit `$88D2`. Clears the marks (`$8985`), composes the sprites (`$85FA`), marks their cells (MarkScrollCells), then redraws the screen from 2, 6 and 8 rows lower (RedrawScrolledView), each after a frame wait (C = 1). Then `$88CF` += 8, the view is rebuilt (`$88D4`), every object moved 64 pixels up (`$9E31`, BC = -64), and the sprites composed and drawn again. So a scroll is three steps; measured, it takes 16 frames (rzx-l1-04000-poke frames 111-127, ScrollUp): the steps are 265 696 to 296 920 T apart, each RedrawScrolledView about four frames, so each one-count frame wait returns at once.
 
-81 runs in 30 builds (RZX pieces).
+95 runs in 34 builds (81 in 30 RZX pieces, 14 in sec-l4-*).
 
 Witness: L1 190 (rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-18000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12).
 
@@ -1400,7 +1400,7 @@ Witness: L1 1206 (c48).
 
 **The game's entry: SP, the IM 2 handler, the 128K test (later the first object table)**
 
-Called by the loader (`$FF2A`, JP) once, with interrupts off: SP = 0 (the stack grows down over the loader's tail), SetupIm2 copies the handler and sets IM 2. Then the 128K test: E = the byte at `$C000` with RAM 0 paged in; RAM 1 is paged in (port `$7FFD` = `$11`: ROM 1, RAM 1), E + 1 written to `$C000`, RAM 0 paged back (`$10`) and `$C000` read again. The same value as before means the write went to another bank: a 128K, go to CopyMusic. Otherwise the machine has one bank there: Entry48K puts the byte back, sets `$7A76` = `$FF` (no music) and skips the copy.
+Called by the loader (`$FF2A`, JP) once, with the interrupts on (the loader's EI at `$FF29`); its first DI turns them off. SP = 0 (the stack grows down over the loader's tail), SetupIm2 copies the handler and sets IM 2. Then the 128K test: E = the byte at `$C000` with RAM 0 paged in; RAM 1 is paged in (port `$7FFD` = `$11`: ROM 1, RAM 1), E + 1 written to `$C000`, RAM 0 paged back (`$10`) and `$C000` read again. The same value as before means the write went to another bank: a 128K, go to CopyMusic. Otherwise the machine has one bank there: Entry48K puts the byte back, sets `$7A76` = `$FF` (no music) and skips the copy.
 
 From `$83B8` on, the bytes from here are the object table A (six 24-byte records, updated by `$A2F7` from UpdateObjects, drawn by `$7329` from DrawSprites, +0 = 0 a free record, `$FF` at `$7C1F` the end) and the falling letters of DropText (8-byte records, see BuildLetters).
 
@@ -3121,7 +3121,7 @@ Witness: L1 4621 (box-shot, life-up, long-l4, rzx-l1-00000-poke, rzx-l1-02000-po
 
 Takes a free 24-byte record at `$7B8F` (`$9BC7`; none: return) and fills it from the level's kind table, the word at LevelHeader (11 bytes a kind, addressed by kind x 2 through the table of pointers there): +7 width, +8 height, +2 bits 6-7 into +0 and bits 0-5 x 4 (with the new kind's bits 0-5) into +`$15` (the kind to switch to), +3/+4 the path (+`$0F`/+`$10`), +5/+6 the animation (+`$0A`/+`$0B`), +7/+8 the second path (+`$11`/+`$12`), +9/+10 the second animation (+`$13`/+`$14`).
 
-+0 = 1 OR bits 2-5 of the entry's +3 OR the kind table's bits 6-7: bit 0 alive, bit 1 path paused, bits 2-4 the trigger behaviour (UpdateTrap `$A4AA`), bit 5 with bit 2 the pickup kinds (`$21`, `$29`, `$2D`), bit 6 deadly to Rick and enemies, bit 7 the detonator test. Behaviour `$10` starts with +6 = `$60` (bit 6: no trigger test; bit 5: freed at the path's end), and with the one-shot bit (+3 bit 6) the record keeps no map entry (+`$0C`/+`$0D` = 0), so the entry is never re-armed. x = column x 8 (+4), y = (row - `$88CF`) x 8 (+3).
++0 = 1 OR bits 2-5 of the entry's +3 OR the kind table's bits 6-7: bit 0 alive, bit 1 path paused, bits 2-4 the trigger behaviour (UpdateTrap `$A4AA`), bit 5 a round trip (ArmTrapWait then sets +6 bit 3: switch at the loop point and back at the next; `$21`, `$29`, `$2D` in bits 0-5 are the pickups), bit 6 deadly to Rick and enemies, bit 7 an object to stand on (ObjectScanTest `$90C7`: a platform; with bit 6 a solid block, which also sets off a lit detonator it touches, `$A403`). Behaviour `$10` starts with +6 = `$60` (bit 6: no trigger test; bit 5: freed at the path's end), and with the one-shot bit (+3 bit 6) the record keeps no map entry (+`$0C`/+`$0D` = 0), so the entry is never re-armed. x = column x 8 (+4), y = (row - `$88CF`) x 8 (+3).
 
 Evidence: 1471 runs in 59 builds, from c1 (28) on; the behaviour-`$10` branch 722 runs.
 
@@ -3148,7 +3148,7 @@ Witness: L1 3268 (box-shot, life-up, long-l4, rzx-l1-00000-poke, rzx-l1-02000-po
 
 BC: the shift (signed). Adds it to the y of every live trap (`$7B8F`, 24 bytes a record) and enemy (`$7C20`, 23 bytes), to Rick's y `$9BAD`, the bullet's `$9BB6` and the detonator's `$9BBF`. A trap or enemy pushed out of the view is freed (FreeObject), a bullet or detonator switched off (`$9BB4`, `$9BBD` = 0); Rick is never tested.
 
-Callers: the scroll routines `$78A5` (`$78F8`, 83 runs) and `$7905` (`$7958`, 89 runs). Witness: 172 runs in 48 builds (rzx pieces; not in c1, where Rick never leaves the first screen).
+Callers: the scroll routines `$78A5` (`$78F8`, 97 runs) and `$7905` (`$7958`, 89 runs): 186 runs in 52 builds (rzx pieces and sec-l4-*; not in c1, where Rick never leaves the first screen).
 
 Witness: L1 372 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12).
 
@@ -3384,7 +3384,7 @@ Witness: L1 50 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke
 
 The enemy's box: x (IX+1) + 4, y (IX+2/+3), 16 x 21 pixels. In order: the bullet (record `$9BB4` live) inside the box (BulletHits): the bullet is spent (`$9BB4` = 0), return C. The detonator's blast at phase 4-9 (`$9BC6`) over the box widened to 24 (BlastHits): 50 points (Points50 `$7EF3`, AddScore `$7ED3`), return C; KillEnemy adds 50 more when the enemy is in the shown part of the view, so a blast kill gives 100. The punch (`$9BA3` set) inside the box (PunchHits): stunned, (IX+`$16`) = 40, effect 9, play goes on. Last Rick: when the box touches him (TouchesRick) he dies (`$93D0` at `$8C67`, the POKE file's immunity to enemies), return NC.
 
-Called for every live enemy by `$9ECE`. Witness: 37 761 runs in 55 builds: the bullet 43 kills, the blast 5, the punch 9 (rzx-l1-24000-poke, rzx-l5-12000-poke), Rick killed 413 times.
+Called for every live enemy by `$9ECE`. Runs (l1q index): 49 093 in 69 builds: the bullet 43 kills (`$8C13`), the blast 5 (`$8C33`), the punch 9 stuns (`$8C57`: rzx-l1-24000-poke, rzx-l5-12000-poke); Rick touched 624 times (`$8C67` reached, nearly all in the immunity-POKE builds, whose POKE replaces the call), killed 18 times (KillRick's callers).
 
 Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s8, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12, sec-l5-s3, sec-l5-s5).
 
@@ -3407,7 +3407,7 @@ Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1
 
 A dying enemy goes to EnemyFalling. Otherwise the step flags EnemyOnStep and EnemyOnGround are cleared and the behaviour (+0 bits 0-1) chosen: 1 EnemyPatrol, 2 EnemyChaser, 0 and 3 EnemyWanderer.
 
-Evidence: 41 073 runs in 59 builds (load-l2 873, load-l3 558, load-l4 634, the rzx pieces; none in c1 or the controls-* recordings), all from `$8695`.
+Evidence (l1q index): 52 717 runs in 75 builds (load-l2 873, load-l3 558, load-l4 634, the rzx pieces, c48, cheats; none in c1 or the controls-* recordings), all from `$8695`.
 
 Witness: L1 103355 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s8, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12, sec-l5-s3, sec-l5-s5).
 
@@ -3433,7 +3433,7 @@ Witness: L1 103355 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke, r
 
 `$8BF3` tests the bullet, the detonator's blast, the punch box (a stun: +`$16` = 40 passes, effect 9) and Rick (Rick dies, `$93D0`); C (the bullet or the blast hit) kills the enemy (KillEnemy). A stunned enemy keeps its sprite. A climbing one alternates Sprites 32 and 33 every two passes; a walking one takes EnemyWalkSprites[(+9 / 4)] and +9 moves on by 2 (wrapping at 12): a new frame every second pass.
 
-The step 1 (`$9F32`) and step 4 (`$9F3B`) need EnemyAnimSlow or EnemyAnimFast, which nothing writes: not executed in any recording. Witness: 37 761 runs in 55 builds (from EnemyWanderer 6166, EnemyChaser 9107, EnemyPatrol 22 488); KillEnemy from here 48 times (the bullet 43, the blast 5).
+The step 1 (`$9F32`) and step 4 (`$9F3B`) need EnemyAnimSlow or EnemyAnimFast, which nothing writes: not executed in any recording. Runs (l1q index): 49 093 in 69 builds (from EnemyWanderer 9734, EnemyChaser 12 139, EnemyPatrol 27 224); KillEnemy from here 48 times (the bullet 43, the blast 5).
 
 Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s8, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12, sec-l5-s3, sec-l5-s5).
 
@@ -3497,7 +3497,7 @@ Witness: L1 7298 (cheats, end-congrats, life-up, long-l4, rzx-l1-00000-poke, rzx
 
 EnemyVertical, EnemyWalk with the step +6, EnemyHitsAndSprite; then, when not climbing and x AND 15 = 4, one chance in 4 (`$81AF` AND 3 = 0) of a new random direction (2 or -2).
 
-Evidence: 6166 runs in 18 builds (load-l2 582, load-l3 279, the rzx pieces); a new direction 197 times.
+Evidence (l1q index): 9734 runs in 25 builds (c48 142, load-l2 582, load-l3 279, the rzx pieces); a new direction 317 times (`$A021`).
 
 Witness: L1 18465 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-06000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-12000-poke, c48, load-l2, load-l3, sec-l2-s7, sec-l2-s11, sec-l2-s12, sec-l3-s5, sec-l4-s12, sec-l5-s5).
 
@@ -3517,7 +3517,7 @@ Witness: L1 18465 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-
 
 As EnemyWanderer, but the turn is tested only when the probe (`$915E`) shows floor (bits 1-2) and no step (bit 6), at x AND 15 = 4: half the time (`$81AF` negative) towards Rick's x `$9BAC`, otherwise a random direction.
 
-Evidence: 9108 runs in 32 builds; the turn branches only in rzx-l2-20000-poke and rzx-l4-02000/04000-poke (13 runs).
+Evidence (l1q index): 12 139 runs in 40 builds; the turn branches only in rzx-l2-20000-poke and rzx-l4-02000/04000-poke (13 runs).
 
 Witness: L1 24057 (cheats, life-up, rzx-l1-02000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-14000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-full, load-l2, load-l5, sec-l2-s12, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12, sec-l5-s3, sec-l5-s5).
 
@@ -3538,7 +3538,7 @@ Witness: L1 24057 (cheats, life-up, rzx-l1-02000-poke, rzx-l1-08000-poke, rzx-l1
 
 EnemyVertical; then, unless the probe shows a step without floor, counts +`$12` up and turns (+6 negated) when it reaches the patrol length +`$13`; then EnemyWalk and EnemyHitsAndSprite.
 
-Evidence: 22 491 runs in 44 builds (load-l3, load-l4, the rzx pieces).
+Evidence (l1q index): 27 224 runs in 52 builds (load-l3, load-l4, the rzx pieces).
 
 Witness: L1 53535 (rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, load-l3, load-l4, sec-l2-s10, sec-l2-s12, sec-l3-s8, sec-l4-s2, sec-l4-s6, sec-l4-s11, sec-l4-s12, sec-l5-s5).
 
@@ -4711,7 +4711,7 @@ Witness: L1 3183 (cheats, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-
 
 The pickups (`$21`, `$29`, `$2D`) go to UpdatePickup with their sprite (Sprites 27, 25, 26). A paused trap (+0 bit 1) skips to the trigger test. Otherwise the path is read: effects played, a loop point followed (and there a one-shot trap is retired, a waiting trap switched to its second path by SwitchTrapPath, behaviour `$14` marked to be freed at the next end), a step applied: x += the x step (a trap leaving 0-`$E8` is freed), y += the y step (one leaving the view is freed), the step count moved on. Then AnimateTrap.
 
-A deadly trap (+0 bit 6) with a sprite: with bit 7 and the detonator's blast at phase 10 or more, the blast test (`$A41C`, not executed in any recording: effect 5, the phase set to 9); then every live enemy it overlaps is killed (KillEnemy, 111 times), and Rick, unless already dying (`$9B9C`), dies (`$93D0` at `$A475`) when it overlaps him (`$8D53`).
+A deadly trap (+0 bit 6) with a sprite: with +0 bit 7 (a solid block), a lit detonator (fuse `$9BC6` 10 or more, not yet exploding) whose box (its y, x + 8, 16 x 8) it overlaps is set off at once (`$A41C`, not executed in any recording: effect 5, the fuse set to 9; nothing happens to the trap); then every live enemy it overlaps, not already dying (+`$14` = 0, `$A447`), is killed (KillEnemy: 220 calls from `$A454`, 102 of them in sec-l5-s5), and Rick, unless already dying (`$9B9C`), dies (`$93D0` at `$A475`) when it overlaps him (`$8D53`).
 
 Then the trap's own trigger boxes (TestTriggerBoxes with the map entry): see `$A478`.
 
@@ -4795,7 +4795,7 @@ Witness: L1 370 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-08000-poke, rzx-l1
 
 **A trigger with behaviour bit 3 clear: switch at the path's end**
 
-Sets +6 bit 4 (waiting); with kind bit 5, bit 3 too (one more loop before the switch, cleared by `$A35C`). Witness: 361 runs in 22 builds.
+Sets +6 bit 4 (waiting); with +0 bit 5, bit 3 too: at the loop point `$A350` bit 3 set is cleared (`$A355`) and the trap switches with bit 4 kept, so at the next loop point it switches back and clears bit 4 (`$A35C`): a round trip, path 1 -> path 2 -> path 1. While it waits so, TrapTriggers (`$A485`) skips the box tests. The first switch of a round trip ran 58 times (`$A355`), the set of bit 3 59 (`$A523`). Witness: 361 runs in 22 builds.
 
 Witness: L1 722 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l4-04000-poke, rzx-l5-00000-poke, rzx-l5-16000-poke, rzx-l5-full).
 

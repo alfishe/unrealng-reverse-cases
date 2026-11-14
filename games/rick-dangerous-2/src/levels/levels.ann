@@ -499,7 +499,7 @@ $F659 ; kinds 46, 47
 $F65E ; kind 49 (second)
 $F663 ; kinds 36 (second), 37 (second)
 $F668 b KindRecords 8 ; The kind records: 11 bytes, or 7 for a kind that never switches
-> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 the detonator test), bits 0-5 x 4 the behaviour after the switch (record +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
+> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a platform, with bit 6 a solid block that also sets off a lit detonator), bits 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20 gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
 @res level/kinds-2.bin
 $F668 Kind1 ; kind 1: 24 x 8, flags $A0, path $F4BA, anim $F269, second path $F4BF, anim $F269
 $F673 Kind2 ; kind 2: 24 x 8, flags $A0, path $F4BA, anim $F269, second path $F4CA, anim $F269
@@ -1142,7 +1142,7 @@ $F7A9 ; kind 44
 $F7B2 ; kind 45
 $F759 ; 9 bytes no kind record points to (a path of an older build)
 $F7BB b KindRecords 8 ; The kind records: 11 bytes, or 7 for a kind that never switches
-> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 the detonator test), bits 0-5 x 4 the behaviour after the switch (record +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
+> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a platform, with bit 6 a solid block that also sets off a lit detonator), bits 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20 gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
 @res level/kinds-2.bin
 $F7BB Kind1 ; kind 1: 24 x 21, flags $40, path $F575, anim $F437 (7 bytes)
 $F7C2 Kind2 ; kind 2: 24 x 21, flags $50, path $F614, anim $F4AE (7 bytes)
@@ -1814,7 +1814,7 @@ $F7D7 ; kind 47 (second)
 $F7E6 ; kind 48 (second)
 $F7ED ; kind 50 (second)
 $F7F4 b KindRecords 8 ; The kind records: 11 bytes, or 7 for a kind that never switches
-> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 the detonator test), bits 0-5 x 4 the behaviour after the switch (record +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
+> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a platform, with bit 6 a solid block that also sets off a lit detonator), bits 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20 gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
 @res level/kinds-2.bin
 $F7F4 Kind1 ; kind 1: 24 x 5, flags $50, path $F4EF, anim $F38B (7 bytes)
 $F7FB Kind2 ; kind 2: 24 x 5, flags $50, path $F4F6, anim $F390 (7 bytes)
@@ -2563,7 +2563,7 @@ $FAC3 ; kind 68 (second)
 $F7B3 ; 9 bytes no kind record points to (a path of an older build)
 $F846 ; 5 bytes no kind record points to (a path of an older build)
 $FACC b KindRecords 8 ; The kind records: 11 bytes, or 7 for a kind that never switches
-> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 the detonator test), bits 0-5 x 4 the behaviour after the switch (record +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
+> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a platform, with bit 6 a solid block that also sets off a lit detonator), bits 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20 gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
 @res level/kinds-2.bin
 $FACC Kind1 ; kind 1: 24 x 21, flags $C0, path $F64D, anim $F2BB, second path $F64D, anim $F2C1
 $FAD7 Kind2 ; kind 2: 24 x 12, flags $50, path $F652, anim $F2C8 (7 bytes)
@@ -3112,7 +3112,7 @@ $F601 ; kind 51
 $F60A ; kind 52 (second)
 $F60F ; kinds 54, 54 (second)
 $F630 b KindRecords 8 ; The kind records: 11 bytes, or 7 for a kind that never switches
-> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 the detonator test), bits 0-5 x 4 the behaviour after the switch (record +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
+> KindTable points to each. +0 the width, +1 the height (record +7, +8); +2 bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a platform, with bit 6 a solid block that also sets off a lit detonator), bits 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20 gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7 bytes later by the next one has no second half of its own: its +7..+10 are the next record's first bytes, which no switch reads for such a kind (or the switch would take them).
 @res level/kinds-2.bin
 $F630 Kind1 ; kind 1: 24 x 8, flags $A0, path $F3A8, anim $F23D (7 bytes)
 $F637 Kind2 ; kind 2: 24 x 16, flags $F0, path $F3A3, anim $F244, second path $F3B3, anim $F244

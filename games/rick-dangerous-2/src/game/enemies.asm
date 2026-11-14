@@ -29,9 +29,11 @@
 ; the box touches him (TouchesRick) he dies ($93D0 at $8C67, the POKE file's
 ; immunity to enemies), return NC.
 ;
-; Called for every live enemy by $9ECE. Witness: 37 761 runs in 55 builds: the
-; bullet 43 kills, the blast 5, the punch 9 (rzx-l1-24000-poke,
-; rzx-l5-12000-poke), Rick killed 413 times.
+; Called for every live enemy by $9ECE. Runs (l1q index): 49 093 in 69 builds:
+; the bullet 43 kills ($8C13), the blast 5 ($8C33), the punch 9 stuns ($8C57:
+; rzx-l1-24000-poke, rzx-l5-12000-poke); Rick touched 624 times ($8C67 reached,
+; nearly all in the immunity-POKE builds, whose POKE replaces the call), killed
+; 18 times (KillRick's callers).
 ;
 ; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
@@ -119,8 +121,9 @@ EnemyTouchTest:
 ; EnemyOnGround are cleared and the behaviour (+0 bits 0-1) chosen: 1
 ; EnemyPatrol, 2 EnemyChaser, 0 and 3 EnemyWanderer.
 ;
-; Evidence: 41 073 runs in 59 builds (load-l2 873, load-l3 558, load-l4 634,
-; the rzx pieces; none in c1 or the controls-* recordings), all from $8695.
+; Evidence (l1q index): 52 717 runs in 75 builds (load-l2 873, load-l3 558,
+; load-l4 634, the rzx pieces, c48, cheats; none in c1 or the controls-*
+; recordings), all from $8695.
 ;
 ; Witness: L1 103355 (cheats, end-congrats, life-up, long-l4,
 ; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
@@ -163,9 +166,9 @@ UpdateEnemy:
 ; frame every second pass.
 ;
 ; The step 1 ($9F32) and step 4 ($9F3B) need EnemyAnimSlow or EnemyAnimFast,
-; which nothing writes: not executed in any recording. Witness: 37 761 runs in
-; 55 builds (from EnemyWanderer 6166, EnemyChaser 9107, EnemyPatrol 22 488);
-; KillEnemy from here 48 times (the bullet 43, the blast 5).
+; which nothing writes: not executed in any recording. Runs (l1q index): 49 093
+; in 69 builds (from EnemyWanderer 9734, EnemyChaser 12 139, EnemyPatrol 27
+; 224); KillEnemy from here 48 times (the bullet 43, the blast 5).
 ;
 ; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
@@ -402,8 +405,8 @@ EnemyFallSet:
 ; climbing and x AND 15 = 4, one chance in 4 ($81AF AND 3 = 0) of a new random
 ; direction (2 or -2).
 ;
-; Evidence: 6166 runs in 18 builds (load-l2 582, load-l3 279, the rzx pieces);
-; a new direction 197 times.
+; Evidence (l1q index): 9734 runs in 25 builds (c48 142, load-l2 582, load-l3
+; 279, the rzx pieces); a new direction 317 times ($A021).
 ;
 ; Witness: L1 18465 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke,
@@ -441,8 +444,8 @@ EnemyWanderTurn:
 ; floor (bits 1-2) and no step (bit 6), at x AND 15 = 4: half the time ($81AF
 ; negative) towards Rick's x $9BAC, otherwise a random direction.
 ;
-; Evidence: 9108 runs in 32 builds; the turn branches only in rzx-l2-20000-poke
-; and rzx-l4-02000/04000-poke (13 runs).
+; Evidence (l1q index): 12 139 runs in 40 builds; the turn branches only in
+; rzx-l2-20000-poke and rzx-l4-02000/04000-poke (13 runs).
 ;
 ; Witness: L1 24057 (cheats, life-up, rzx-l1-02000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
@@ -494,7 +497,8 @@ EnemyChaseDone:
 ; up and turns (+6 negated) when it reaches the patrol length +$13; then
 ; EnemyWalk and EnemyHitsAndSprite.
 ;
-; Evidence: 22 491 runs in 44 builds (load-l3, load-l4, the rzx pieces).
+; Evidence (l1q index): 27 224 runs in 52 builds (load-l3, load-l4, the rzx
+; pieces).
 ;
 ; Witness: L1 53535 (rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
 ; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-22000-poke,

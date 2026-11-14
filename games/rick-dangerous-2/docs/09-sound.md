@@ -373,8 +373,9 @@ docs/img/sound/pattern.png`.*
 
 Channels A and C play the other notes of the same chords: the E major chord three times, in three voicings.
 Instrument 1 has attack 64, decay -4, sustain 0 and peak 54.
-So each note jumps to 54 (register value 6) and loses 4 a frame: 6, 6, 5, 5, 4, ... 0 after 14 frames.
-The 16-frame note is silent for its last 3 frames; the 48-frame one for its last 35.
+So each note jumps to 54 (register value 6) and loses 4 a frame: volumes 54, 50, 46, ..., 6, 2, then 0; registers 6,
+6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, then 0 from the 13th frame (volume 6), while the volume itself reaches 0 on the 15th.
+The 16-frame note is silent for its last 4 frames; the 48-frame one for its last 36.
 The notes take 72 frames, and two more free the voices: the 74 frames of the table.
 
 The point: a note's length in the pattern and its sound's length are separate.
@@ -464,6 +465,7 @@ The volume runs from 0 to 127; the AY gets the volume / 8.
 EnvelopeAttack:   vol += attack;  if vol >= peak: vol = peak; phase = EnvelopeDecay
 EnvelopeDecay:    vol += decay;   if vol < sustain or vol < 0: vol = sustain; phase = EnvelopeSustain
 EnvelopeSustain:  if sustain_frames_left == 0: phase = EnvelopeRelease
+; UpdateVoice counts sustain_frames_left (+6) down every frame, in every phase ($C8F4), unless it is 0 or $FF
 EnvelopeRelease:  vol += release; if vol < 0: VoiceOff()   ; volume 0, the voice free in MixerShadow
 ```
 
@@ -633,7 +635,7 @@ The game's own calls:
 | 0 | `$9AA5`, when Rick's walk cycle `RickStep` wraps | a step |
 | 2 | `FuseHiss` `$937E` (the call at `$9386`), every 4th pass while a fuse burns | the fuse |
 | 4 | `FireBulletLaunch` `$95A6`; each bullet counted in `BonusTally` (`$86F9`) | a shot |
-| 5 | a fuse reaching 10, the blast (`$937A`); a trap's blast `$A41E`; a pickup's burst `$A5FD`; each detonator in `BonusTally` (`$871D`); the Fat Guy's death | a blast |
+| 5 | a fuse reaching 10, the blast (`$937A`); a deadly trap setting off a lit detonator `$A41E`; a pickup's burst `$A5FD`; each detonator in `BonusTally` (`$871D`); the Fat Guy's death | a blast |
 | 6 | a pickup of bullets or detonators (`$A5A2`, `$A5B2`) | ammunition |
 | 7 | a treasure (`$A58F`) | a treasure |
 | 9 | `EnemyPunchTest` (`$8C59`), when a punch lands and stuns the enemy for 40 passes; each hit on the Fat Guy | an enemy punched |
@@ -656,7 +658,9 @@ that turns every frame); 15, 16, 17 and 25 use the AY's own envelope.
 3. The period starts at 0 and the sweep (delay 0, step `$0040`) adds 64 a frame: 64, 128, 192, ...
 4. The sweep count is (0 AND `$7F`) / 2 = 0, raised to 1; when it runs out the instrument's +6 is 0, so the sweep never
    turns.
-5. Sustain 1 frame, then the release (-2) from wherever the decay stands.
+5. The sustain count (1) runs down in every phase, so it is long spent when the decay reaches 0 (127, 125, ..., 1, then
+   -1: `JP M`, 0) after 64 frames; one frame of sustain and one of release (0 - 2 < 0: `VoiceOff`) end the voice:
+   1 + 64 + 1 + 1 = 67 frames.
 
 The period rises from 64 (1732 Hz) to 4032 (27 Hz) while the volume falls: a falling whistle.
 The model gives 67 frames; `c1` asks for it at frames 17 442, 17 454, 17 488 and 17 523.

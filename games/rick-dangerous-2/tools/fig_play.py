@@ -281,7 +281,7 @@ def fig_fuse(a):
     f, fs, fb = K.font(13), K.font(12), K.font(16)
     img = Image.new('RGB', (W, 520), K.BACKGROUND)
     d = ImageDraw.Draw(img)
-    d.text((14, 10), 'The detonator\'s 64 passes (BurnFuse $937E): the fuse counts down from 64, one a pass',
+    d.text((14, 10), 'The detonator\'s 64 passes (BurnFuse $9351): the fuse counts down from 64, one a pass',
            fill=K.TEXT, font=fb)
     x0, x1 = 40, W - 20
     X = lambda fuse: x1 - (fuse - 0) * (x1 - x0) / 64.0  # noqa: E731

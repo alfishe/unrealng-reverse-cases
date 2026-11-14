@@ -6,7 +6,7 @@
 | [2. Architecture](02-architecture.md) | the stages from the tape to play, the 18 modules of the game block, the music's four and the level blocks, the memory map on a 128K and a 48K, the heatmap, the frame budget, the leftovers |
 | [3. Build and load](03-build-and-load.md) | the tape as a picture, the self-deciphering loader at `$FF00` and its bit-reversed LD-BYTES, the level loads from side B and the map cipher, the 48K path, the source build, the other releases |
 | [4. Game loop](04-game-loop.md) | the program's states, one pass of the main loop step by step with its cost, the frame wait and the lost interrupts, the heaviest pass (a section entry), the IM 2 handler, the death and restart, the delays |
-| [5. Controls](05-controls.md) | the 22 keys and their ports, `ReadControls` and the four methods, how `Controls` becomes Rick's moves, the menus' key-once reader and pointer, pause, quit and the two cheat chords |
+| [5. Controls](05-controls.md) | the 23 keys and their ports, `ReadControls` and the four methods, how `Controls` becomes Rick's moves, the menus' key-once reader and pointer, pause, quit and the two cheat chords |
 | [6. Rendering](06-rendering.md) | cells only, the cell and block sets, the sprites, `DrawChangedCells`, the scroll, the HUD |
 | [7. Objects](07-objects.md) | the section table and exits, map entries and trigger boxes, the trap and enemy records, the spawner, the hit tests |
 | [8. HUD and text](08-hud-and-text.md) | the font, the HUD, the score, `PrintText`, the falling letters, every string, the endings' texts |

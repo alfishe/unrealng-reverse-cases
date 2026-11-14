@@ -929,9 +929,10 @@ SpareCount:
 ; n >= 2: spare cell n drawn ($7827). Each cell drawn gets its attribute from
 ; CellAttrs. 7 rows to the first third's end, then 8 and 8.
 ;
-; Called three times by each scroll (ScrollDown $78C3, $78D5, $78E7, ScrollUp
-; $7923, $7935, $7947): 515 runs in 48 builds, all RZX pieces (c1 never
-; scrolls).
+; Called three times by each scroll (ScrollDown $78C3, $78D5, $78E7: 96, 97, 98
+; runs; ScrollUp $7923, $7935, $7947: 88, 89, 89): 557 runs in 52 builds, the
+; RZX pieces and sec-l4-*; a piece that starts inside a scroll counts its later
+; steps only (c1 never scrolls).
 ;
 ; Witness: L1 1114 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
@@ -1129,12 +1130,17 @@ SetAttrsLoop3:
 
 ; Before a scroll: mark for restoring the cells the sprites' copies will lie on
 ;
-; HL = DirtyMap (or DirtyMap + 256), DE = +32 (down) or -32 (up). For each of
-; 1024 DirtyMap bytes >= 2 (a spare cell on the screen) it sets to 1 the bytes
-; 2, 6 and 8 rows on, when 0: the screen positions of that cell after each step
-; of the scroll, so RedrawScrolledView redraws the level cell there.
+; DE = +32 (down) or -32 (up); the caller's HL (ScrollUp loads DirtyMap + 256)
+; is dead: the routine starts with LD HL,DirtyMap. For each of the 1024
+; DirtyMap bytes from $6600 >= 2 (a spare cell on the screen) it sets to 1 the
+; bytes 2, 6 and 8 rows on, when 0: the screen positions of that cell after
+; each step of the scroll, so RedrawScrolledView redraws the level cell there.
+; Going up, a spare cell in view rows 0-7 marks below $6600, in MirrorTable;
+; only its 0 byte $6500 can be written (from row 0, column 0), and no recording
+; writes it.
 ;
-; Called by ScrollDown $78B1 and ScrollUp $7911: 169 runs in 48 builds.
+; Called by ScrollDown $78B1 and ScrollUp $7911: 183 runs in 52 builds (95 +
+; 88).
 ;
 ; Witness: L1 366 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
 ; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
@@ -1215,10 +1221,10 @@ MarkScrollDone:
 ; Then $88CF += 8, the view is rebuilt ($88D4), every object moved 64 pixels up
 ; ($9E31, BC = -64), and the sprites composed and drawn again. So a scroll is
 ; three steps; measured, it takes 16 frames (rzx-l1-04000-poke frames 111-127,
-; ScrollUp): each RedrawScrolledView takes 282 506 T, about four frames, so
-; each one-count frame wait returns at once.
+; ScrollUp): the steps are 265 696 to 296 920 T apart, each RedrawScrolledView
+; about four frames, so each one-count frame wait returns at once.
 ;
-; 81 runs in 30 builds (RZX pieces).
+; 95 runs in 34 builds (81 in 30 RZX pieces, 14 in sec-l4-*).
 ;
 ; Witness: L1 190 (rzx-l1-04000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-24000-poke,

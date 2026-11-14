@@ -600,7 +600,7 @@ How to read it, left to right, top to bottom:
 - the end text after the tally.
 
 The RZX run has no death. `rzx-l5-full` (the same level 5 start, no POKE, the RZX's keys played without rollback) has
-several deaths and ends in GAME OVER:
+13 deaths (11 lives lost and two GAME OVERs), the menus and a new game:
 
 ![A death and the restart, rzx-l5-full frames 2196-2340](img/play/death-l5-full.gif)
 

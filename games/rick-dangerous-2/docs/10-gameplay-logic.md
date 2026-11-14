@@ -454,7 +454,8 @@ Witness: the positions come from `c1` (`memory_at`, every 2nd frame).
 ## 10.6 The detonator and its blast
 
 Fire with down drops a detonator (`DropDetonator` `$9B27`), one at a time.
-The walk keys throw it: `DetonatorDx` -2.0 or +2.0, else 0.
+The walk keys throw it (`$9B68-$9B86`): no sideways key, `DetonatorDx` 0; left alone, -2.0; right, or both keys
+together, +2.0 (the code tests `Controls` AND 3 for 3, then for 1, and takes anything else as right).
 It starts at Rick's x and y + 5, falling at +1.0, with the fuse at 64.
 
 Each pass `UpdateDetonator` `$91EB` moves it while the fuse is 11 or more.
@@ -611,8 +612,13 @@ flowchart TD
 1. Rick faces right at x = r, so the point is at r + 24.
 2. An enemy's box starts at e (its x + 4) and is 16 wide.
 3. The punch lands when r + 24 lies in e to e + 15: e from r + 9 to r + 24.
-4. The touch kills Rick when e is less than r + 20, the right edge of his body.
+4. The touch kills Rick when e is from r - 11 to r + 19 (`TouchesRick` `$8D53`: (r + 4) - e below 16 one way, e - (r
+   + 4) below 16 the other).
 5. So the punch is safe only for e from r + 20 to r + 24: a window of 5 pixels, about two passes of a walking enemy.
+6. Facing left, the point is at r: it lands for e from r - 15 to r, and the touch kills from r - 11, so the window is
+   e from r - 15 to r - 12: 4 pixels, the mirror one pixel narrower.
+7. A stunned enemy still kills on touch: the touch test at `$8C60` runs every pass, after the punch test, stunned or
+   not; the stun only stops its walk.
 
 In `controls-keyboard`, frames 932-940, `PunchTimer` reads 10, 9, 8, 7, 6 with no enemy near.
 The key is released at frame 942, and the timer is cleared at once.
@@ -620,8 +626,10 @@ The key is released at frame 942, and the timer is cleared at once.
 The point: the punch does not kill.
 It buys 40 passes, and only at the right distance.
 
-Witness: the punch stunned an enemy 9 times (`rzx-l1-24000-poke`, `rzx-l5-12000-poke`); `TestEnemyHits` ran 37 761
-times in 55 builds; an enemy's touch killed Rick 18 times (`$8C67`) (`src/game/enemies.asm`).
+Witness: the punch stunned an enemy 9 times (`$8C57`: `rzx-l1-24000-poke`, `rzx-l5-12000-poke`); `TestEnemyHits` ran
+49 093 times in 69 builds (the L1 index, `python3 tools/l1q.py 8BF3`); an enemy touched Rick 624 times (`$8C67`
+reached, nearly all in the immunity-POKE builds, whose POKE replaces that call) and killed him 18 times (l1q's
+callers of `KillRick`) (`src/game/enemies.asm`).
 
 ## 10.8 The traps and their triggers
 
@@ -637,12 +645,17 @@ What a fired box does is the behaviour ([doc 07 7.6](07-objects.md#76-the-traps)
 - remove the trap;
 - keep the trap only while the box is held.
 
-A deadly trap (flags bit 6) kills every enemy it overlaps, then Rick, unless he is already dying:
+A deadly trap (flags bit 6) sets off a lit detonator it touches (with +0 bit 7: a solid block), kills every enemy it
+overlaps that is not already dying, then Rick, unless he is already dying:
 
 ```
 UpdateTrap, each pass, after the path step and the animation:
     if trap.deadly and trap.sprite:
-        for each live enemy whose box overlaps the trap: KillEnemy      ; the call at $A454
+        if trap +0 bit 7 and DetonatorFuse >= 10                         ; a lit detonator, not yet exploding
+           and the trap's box overlaps (DetonatorY, DetonatorX + 8, 16 x 8):
+            PlayEffect(5); DetonatorFuse = 9                             ; $A41C: it goes off now
+        for each enemy, +0 not 0 and +$14 == 0 (not dying, $A447),
+            whose box overlaps the trap: KillEnemy                       ; the call at $A454
         if not RickDying and the trap's box touches Rick: KillRick       ; the call at $A475
     TestTriggerBoxes(trap's entry)                                       ; its own boxes, then the behaviour
 ```
@@ -729,8 +742,9 @@ The point: a trap is data: a size, a path, an animation, boxes and a behaviour.
 The same code runs all 562 trap entries of the five levels.
 
 Witness: the `c1` trace 17 503-17 506 (`$A475` at 17 505:49 963, IX = `$7B8F`).
-`UpdateTrap` ran 148 725 times in 61 builds; deadly traps killed enemies 111 times (`$A454`) and Rick 6 times
-(`$A475`); behaviour `$0C` was removed by its box 432 times (`src/game/traps.asm`).
+`UpdateTrap` ran 148 725 times in 61 builds; deadly traps killed enemies 220 times (l1q's callers of `KillEnemy` at
+`$A454`, 102 of them in `sec-l5-s5`) and Rick 6 times (`$A475`); behaviour `$0C` was removed by its box 432 times
+(`src/game/traps.asm`).
 
 ## 10.9 The enemies
 
@@ -752,16 +766,17 @@ All enemies walk 2 pixels a pass and fall under the same gravity as Rick
 
 How an enemy ends:
 
-| Cause | Test | Points | Effect |
-| --- | --- | ---: | ---: |
-| the bullet in its box | `BulletHits` from `TestEnemyHits` | 50 | 10 |
-| the blast, fuse 9-4 | `BlastHits` from `TestEnemyHits` | 50 + 50 | 10 |
-| a deadly trap overlapping it | `UpdateTrap` (`$A454`) | 50 | 10 |
-| a deadly cell under it | `EnemyVertical` (`$A0E8`) | 50 | 10 |
+| Cause | Test | Points in view (off view) | Effect in view |
+| --- | --- | --- | ---: |
+| the bullet in its box | `BulletHits` from `TestEnemyHits` | 50 (0) | 10 |
+| the blast, fuse 9-4 | `BlastHits` from `TestEnemyHits` | 50 + 50 (50: `$8C36` pays before `KillEnemy`) | 10 |
+| a deadly trap overlapping it | `UpdateTrap` (`$A454`) | 50 (0) | 10 |
+| a deadly cell under it | `EnemyVertical` (`$A0E8`) | 50 (0) | 10 |
 | the punch | `PunchHits` | none: stunned 40 passes | 9 |
 
-`KillEnemy` `$9F56` gives the 50 points and the effect only when the enemy is in the shown part of the view (y `$40`
-to `$FF`).
+`KillEnemy` `$9F56` gives the 50 points and effect 10 only when the enemy is in the shown part of the view (y high
+byte 0 and y `$40` to `$FF`, `$9F56-$9F62`); off the view an enemy dies silently, for nothing (the blast's own 50
+excepted).
 Then the enemy jumps (-5.0) and falls off the view, drifting towards the middle, like Rick's death.
 
 ```mermaid
@@ -793,8 +808,9 @@ So in the RZX run, most enemies died under the traps and on the spikes, not to R
 The point: three placed behaviours share one walk.
 The difficulty comes from where the level designer put them, not from what they think.
 
-Witness: `UpdateEnemy` ran 41 073 times in 59 builds (none in `c1` or the control recordings); `EnemyPatrol` 22 491,
-`EnemyChaser` 9108, `EnemyWanderer` 6166; `KillEnemy` 302 times in 48 builds (`src/game/enemies.asm`).
+Witness (the L1 index, `python3 tools/l1q.py`): `UpdateEnemy` ran 52 717 times in 75 builds; `EnemyPatrol` 27 224,
+`EnemyChaser` 12 139, `EnemyWanderer` 9 734 (the rest are dying enemies, `EnemyFalling` 3 620); `KillEnemy` 302 times in
+48 builds, 101 of them in view (`AddScore` from `$9F6D`, 10.11) (`src/game/enemies.asm`).
 The entry counts come from `sections.txt` (`python3 tools/fig_play.py stats`).
 
 ## 10.10 Every death, the restart and GAME OVER
@@ -811,8 +827,11 @@ The entry counts come from `sections.txt` (`python3 tools/fig_play.py stats`).
 | `$FACB` | the Fat Guy's shot (level 5's code) | 1 |
 | `$F946` | the Fat Guy's touch (level 5's code) | 0 (1 in `fatguy-hits`, 10.12) |
 
-The per-site column is l1q's caller count (49 in all). `KillRick` itself ran 75 times in 15 builds (the L1 index,
-`c48` included); 69 of them in the 9 builds without the immunity POKEs.
+The per-site column is l1q's caller count (49 in all). `KillRick` itself ran 75 times in 15 builds by the l1q index
+(`c48` included; 69 of them in the 9 builds without the immunity POKEs).
+That index predates the integration's `fatguy-hits`, `life-up` and `box-shot`; the listing's witness line for
+`$93D0` (`Witness: L1 121`, 16 builds) sums `mkgame`'s build set, `fatguy-hits` included.
+The two totals count different build sets, so this doc quotes the l1q figures throughout.
 
 ```
 KillRick:
@@ -932,34 +951,37 @@ The score is six decimal digits, one a byte (`Score` `$7F1D`).
 ([doc 08 8.3](08-hud-and-text.md#83-the-score)).
 Every place that adds points:
 
-| Event | Record | Caller | Calls in the builds |
+| Event | Record | Call site | Calls in the builds |
 | --- | --- | --- | ---: |
 | an enemy killed in view | `Points50` `$7EF3` | `KillEnemy` `$9F6D` | 101 |
 | the blast's extra on an enemy | `Points50` | `$8C36` | 5 |
 | a treasure | `Points500` `$7EFF` | `UpdatePickup` `$A595` | 28 |
 | the countdown bonus, what is left | `TimeBonus` `$7F17` | `StopBonusTimer` `$9CD6` | 9 |
 | the Fat Guy's last hit | `Points5000` `$7F05` | `FatGuyHit` `$F964` | 1 |
-| the Fat Guy's end | `Points100000` `$7F11` | `BonusTally` `$86E0` | 0 |
-| each bullet left | `Points5000` | `TallyBullets` `$86E6` | 0 |
-| each detonator left | `Points10000` `$7F0B` | `TallyDetonators` `$8707` | 0 |
+| the Fat Guy's end | `Points100000` `$7F11` | `BonusTally` `$86E3` | 0 |
+| each bullet left | `Points5000` | `TallyBullets` `$86F4` | 0 |
+| each detonator left | `Points10000` `$7F0B` | `TallyDetonators` `$8715` | 0 |
 | each life left | `Points100000` | `TallyLives` `$8736` | 5 |
 
 `Points100` `$7EF9` is in the table, and nothing reads it.
 
 **The countdown bonus.**
 
-1. A map entry of kind `$78` starts it (`StartBonusTimer`): the bonus digits become 002000, `BonusRunning` is set,
-   and tune 1 plays.
+1. A map entry of kind `$78` starts it (`StartBonusTimer`), only when no countdown runs (`$9CAF`): digits 2-4 of the
+   bonus (`$7F19-$7F1B`) become 2, 0, 0, `BonusRunning` is set, and tune 1 plays. Digits 0, 1 and 5 keep their
+   values: 0 from the load, so the bonus reads 002000 unless a countdown wrapped (10.15).
 2. `CountBonus` `$9163` takes 10 off every 25 passes.
-3. A kind `$7C` entry stops it (`StopBonusTimer`): what is left goes to the score, and tune 1 plays again.
+3. A kind `$7C` entry stops it (`StopBonusTimer`), only while one runs (`$9CCE`): what is left goes to the score, and
+   tune 1 plays again; the digits stay.
 
 Each level has 4 to 9 such pairs (the table in 10.8): a start box where a hard stretch begins, and a stop box where
 it ends.
 
 ```
 StartBonusTimer:  if BonusRunning: return
-                  BonusRunning = $FF; BonusPrescaler = 25; TimeBonus = 002000; StartTune(1)
+                  BonusRunning = $FF; BonusPrescaler = 25; TimeBonus[2..4] = 2, 0, 0; StartTune(1)
 CountBonus:       each pass while BonusRunning: if --BonusPrescaler == 0: 25 again, TimeBonus -= 10
+                  ; digits 1-4 only: from 000000 it wraps to 099990, and BonusRunning stays set
 StopBonusTimer:   if not BonusRunning: return
                   BonusRunning = 0; AddScore(TimeBonus); StartTune(1)
 ```
@@ -971,7 +993,7 @@ sequenceDiagram
     participant C as CountBonus 9163
     participant S as map entry 7C
     participant P as Score
-    M->>T: 002000, tune 1
+    M->>T: digits 2-4 = 2 0 0, tune 1
     loop every 25 passes
         C->>T: minus 10
     end
@@ -1127,8 +1149,24 @@ flowchart TD
 1. `BonusTally` adds 100 000 for the Fat Guy.
 2. It counts the bullets: 5000 each, effect 4, 10 frames.
 3. It counts the detonators: 10 000 each, effect 5, 15 frames.
-4. `TallyLives` counts the lives: 100 000 each, effect 10, 20 frames.
+4. `TallyLives` counts every life down to 0: 100 000 each, effect 10, 20 frames. Its head `$8728` runs once more
+   than there are lives, the last time finding 0 (`TallyDone`).
 5. Tune 10 starts, and the end text falls line by line ([doc 08 8.7](08-hud-and-text.md#87-the-endings-texts)).
+6. `EndTextPause` `$877E` waits up to 2500 frames, one `WaitFrames(1)` and a `TestFireKeys` each; fire ends it early.
+   `EndTextExit` `$8794` then puts the level's cells back (`FontCellsMode`, `LevelCellsMode`), redraws the HUD and
+   jumps to `GameOver` `$7E1E`.
+
+```
+BonusTally:                                 ; $86E0, from the level's end when LevelsDone reaches 5
+    AddScore(Points100000)
+    while Ammunition:  Ammunition -= 1; AddScore(Points5000);  PlayEffect(4);  DrawAmmo();       WaitFrames(10)
+    while Detonators:  Detonators -= 1; AddScore(Points10000); DrawDetonators(); PlayEffect(5);  WaitFrames(15)
+    while Lives:       Lives -= 1;      AddScore(Points100000); DrawLives();     PlayEffect(10); WaitFrames(20)
+    StartTune(10); ShowEndText(FatGuyEndText)
+ShowEndText:  FontCellsMode(); DrawHud(); DropText each line
+              repeat 2500: WaitFrames(1); if fire: break
+              FontCellsMode(); LevelCellsMode(); DrawHud(); GameOver()
+```
 
 ![The Fat Guy's end](img/play/ending.png)
 
@@ -1151,8 +1189,8 @@ LEVEL 4".
 The point: the true ending needs all five levels in one game.
 The level menu lets a player start later, but then only the consolation text can be reached.
 
-Witness: `Congratulations` once (`end-congrats`); `TallyLives` 6 runs in `rzx-l5-23000`; `BonusTally` and
-`EndTextExit` not executed in any recording (`src/game/ending.asm`, `src/game/mainloop.asm`).
+Witness: `Congratulations` once (`end-congrats`); `TallyLives`' head 6 runs in `rzx-l5-23000` (five lives and the
+final 0); `BonusTally` and `EndTextExit` not executed in any recording (`src/game/ending.asm`, `src/game/mainloop.asm`).
 
 ## 10.14 How the levels differ
 
@@ -1195,13 +1233,13 @@ Each feature below names its code, and its witness or "known only from the code"
 - **8.8 physics, no tables.**
   The jump, the launch pad, the death, an enemy's fling and the detonator's fall are all "speed + 0.5 a pass" from one
   starting speed (10.2).
-- **The blast kill pays 100, not 500.**
-  The comment in `TestEnemyHits` calls the award at `$8C33` "500 points", but it loads `Points50`.
-  With `KillEnemy`'s own 50, a blasted enemy pays 100.
+- **The blast kill pays 100, or 50 off the view.**
+  `TestEnemyHits` pays `Points50` for a blast hit itself (`$8C33`), and `KillEnemy` adds its own 50 only for an enemy
+  in the shown view (10.9): a blasted enemy pays 100 in view, 50 off it; the other kills pay 50 in view, 0 off it.
   Witness: `$8C36` 5 calls.
 - **The punch's 5-pixel window.**
-  The touch test runs after the punch, so closer than 20 pixels the punch stuns the enemy and Rick dies anyway
-  (10.7, known only from the code).
+  The touch test runs after the punch, every pass, stunned or not, so closer than 20 pixels the punch stuns the enemy
+  and Rick dies anyway; facing left the window is 4 pixels (10.7, known only from the code).
 - **The Fat Guy heals.**
   A death puts his count back to 20 (`$93E2`), so the 20 hits must come in one life.
   Witness: `KillRick`'s level 5 branch ran once (`rzx-l5-20000-poke`).
@@ -1219,11 +1257,14 @@ Each feature below names its code, and its witness or "known only from the code"
 - **The bonus wrap.**
   `CountBonus` counts the four digits `$7F18-$7F1B` (tens to ten thousands) of the six-digit `TimeBonus`.
   From 000 000, the next step borrows through all four, leaves 099 990 and ends at `BonusRunOut` `$917C`, a lone
-  `RET`.
-  A stop box reached after the bonus ran out would pay almost 100 000 (known only from the code).
+  `RET`; nothing clears `BonusRunning`, so the countdown never stops: it counts on from 099 990, 10 every 25 passes.
+  A stop box reached after the wrap pays 99 990 less the time since.
+  Digit 1 (`$7F18`) keeps its 9 after the stop, and a start writes only digits 2-4, so every later countdown of the
+  game starts at 092 000 (known only from the code).
 - **The left throw.**
   A detonator thrown left (-2.0) cannot stop before its fuse ends; `DetonatorStopLeft` is not executed in any
   recording (10.6).
+  Both sideways keys together throw right: `DropDetonator` tests for no key, then for left alone (`$9B68-$9B86`).
 - **Supplies can be destroyed.**
   The bullet (`$A5E4`) or the blast (`$A5F7`) bursts an ammunition or detonator pickup before Rick takes it.
   Witness: `box-shot` shoots an ammunition box (`PickupShot` 1 run, `PickupBurst` 10); the blast's branch is known
@@ -1240,7 +1281,7 @@ Each feature below names its code, and its witness or "known only from the code"
 | the end of either ending's wait (2500 frames or fire) | `EndTextExit` `$8794` |
 | level 1's special surface (jump -2.0) | `WeakJumpLevel1` `$9799` |
 | a detonator on a special surface, against a ceiling, or a left throw stopping | `DetonatorBounce`, `DetonatorHitCeiling`, `DetonatorStopLeft` |
-| a deadly trap set off by the blast | `UpdateTrap`'s blast test (`$A41C`) |
+| a deadly solid block setting off a lit detonator | `UpdateTrap`'s detonator test (`$A41C`) |
 | a pickup burst by the blast (the bullet's: `box-shot`) | `$A5F7` |
 | an enemy of behaviour 0 placed by the map | `EnemyWanderer` runs only for climbers |
 | a ride into level 1's section 0 | the exit of level 1 section 2 ([doc 07 7.12](07-objects.md#712-known-only-from-the-code)) |

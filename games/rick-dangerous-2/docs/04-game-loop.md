@@ -6,7 +6,7 @@ What this covers:
   the program from one to the next;
 - one pass of the main loop `$7D2D-$7EB2`, step by step, and what each step costs, measured in two rooms;
 - the frame wait `$7A53` with its count of two, the windows with the interrupts off, and the interrupts they lose;
-- the heaviest pass: a section entry, ten frames of drawing;
+- the heaviest pass: a section entry, about twelve frames of drawing;
 - the IM 2 handler `$FEFE`, line by line, and its cost;
 - the death and the restart, as seen by the loop;
 - every delay and timer, in frames and seconds.
@@ -18,7 +18,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `rzx-l1-06000-poke` | the RZX run's level 1 state at RZX frame 6000, its key reads as an input script, four immunity POKEs | the typical pass: frames 100-400 traced (`tools/pass_steps.py`), `MainLoop.gif` (frames 103-105), `Im2Handler.gif` (frame 104), the interrupt windows (frames 100-111) |
 | `rzx-l5-20000-poke` | the RZX run's level 5 state at RZX frame 20 000, the same POKEs | the heaviest pass: the entry into the Fat Guy's section at frame 774; the Fat Guy's room, frames 1000-1300 |
 | `c1` | power-on, side A at ROM speed | the entry, the menus, GAME OVER by the key E |
-| `rzx-l5-full` | the RZX run's level 5 start state, no POKE | six deaths, GAME OVER, the menus, a new game |
+| `rzx-l5-full` | the RZX run's level 5 start state, no POKE | 13 deaths (11 lives lost, two GAME OVERs), the menus, a new game |
 | `rzx-l4-20000-poke`, `end-congrats`, `rzx-l5-23000` | as in WALKTHROUGH 6.0 | the level's end, the CONGRATULATIONS end, the Fat Guy's end |
 
 Conventions:
@@ -118,7 +118,10 @@ leaves them only through GAME OVER, which jumps to `NewGame`. Even the two endin
 
 ### The entry and the IM 2 set-up
 
-The loader jumps to `Entry` `$7B8F` with the interrupts off. The entry runs once:
+The loader re-enables the interrupts (`EI` `$FF29`) and jumps to `Entry` `$7B8F`, whose first instruction is `DI`.
+The entry runs once, and its bytes are then reused: `ClearObjectTables` `$83B8` zeroes `$7B8F-$7C7C` at every new
+game, and that range becomes `TrapRecords` and `EnemyRecords` ([doc 2, 2.3](02-architecture.md#23-the-memory-map)).
+The steps:
 
 1. `LD SP,0`: the stack grows down from `$FFFF`, over the loader's tail ([doc 2, 2.5](02-architecture.md#25-the-stack)).
 2. `SetupIm2` `$7C1A` copies the 35-byte handler from `$7C39` to `$FEFE`, fills the 257 bytes `$FD00-$FE00` with
@@ -230,7 +233,7 @@ flowchart TD
   LD (Level5Open),A
   LD A,$03
 CountLevelDone:
-  INC A                    ; $7DAA
+  INC A                    ; $7DAD
   LD (LevelsDone),A
   CP $05
   JP Z,BonusTally          ; five levels in one game: the Fat Guy is beaten
@@ -271,11 +274,12 @@ and the two endings are the same counter seen from two sides.
 
 1. tune 2;
 2. three `NOP`s over the `JP M` at `$775A`: the cell composer no longer keeps sprites behind front cells;
-3. `ClearRedraw`, 129 bytes of the view buffer from `$6D60` cleared;
-4. a box of 12 x 3 cells at column 10, rows 11-13: attributes `$47`, pixels 0;
-5. "GAME  OVER" falls into place (`DropText`, [doc 8](08-hud-and-text.md)) and is printed on the screen at `$488B`;
-6. 512 frames, or fire, SPACE or ENTER (`TestFireKeys` `$7229`);
-7. `LevelCellsMode`, `JP NewGame`.
+3. `ClearRedraw` `$8985`: the 1280 bytes of `DirtyMap` cleared;
+4. an `LDIR` at `$7E2F-$7E3A`: 129 bytes of `ViewCells` from `$6D60` cleared;
+5. a box of 12 x 3 cells at column 10, rows 11-13: attributes `$47`, pixels 0;
+6. "GAME  OVER" falls into place (`DropText`, [doc 8](08-hud-and-text.md)) and is printed on the screen at `$488B`;
+7. 512 frames, or fire, SPACE or ENTER (`TestFireKeys` `$7229`);
+8. `LevelCellsMode`, `JP NewGame`.
 
 ![GAME OVER after the last life](img/play/game-over.png)
 
@@ -305,10 +309,11 @@ ShowEndText:
     FontCellsMode(); LevelCellsMode(); DrawHud(); GameOver()
 ```
 
-The RZX run reached the Fat Guy's end with six bullets, two detonators and five lives
-([doc 1, 1.6](01-game-design.md#16-the-rules)): 100 000 + 6 x 5000 + 2 x 10 000 + 5 x 100 000 = 650 000 points
-added, and 6 x 10 + 2 x 15 + 5 x 20 = 190 frames of tally (3.8 s). `rzx-l5-23000` starts inside `TallyLives` and
-shows its six runs (five lives and the pass to `TallyDone`).
+The RZX run reached the Fat Guy's end with six bullets, two detonators and six lives
+([doc 1, 1.6](01-game-design.md#16-the-rules)): 100 000 + 6 x 5000 + 2 x 10 000 + 6 x 100 000 = 750 000 points
+added, and 6 x 10 + 2 x 15 + 6 x 20 = 210 frames of tally (4.2 s). `TallyLives` runs seven times (six lives and the
+pass to `TallyDone`). `rzx-l5-23000` starts after the first life and shows the last six runs (five lives and the pass
+to `TallyDone`).
 
 **The point**: the endings have no state of their own. They are two short programs that reuse the menu's falling
 text and close in GAME OVER, so a finished game and a lost one both return to the control menu the same way.
@@ -374,7 +379,7 @@ flowchart TD
 The work around the frame wait, as written:
 
 ```asm
-PassWork:                  ; $7D73
+PassWork:                  ; $7D75
   CALL ScanMapObjects      ; $8B42: the map entries
   XOR A
   LD (ExitDirection),A     ; $88D3: no exit asked yet
@@ -482,8 +487,8 @@ interrupts since it was last cleared. The pass's own interrupts count: if the wo
 already come, and the wait needs only the next.
 
 The catch is that the counter counts only the interrupts the CPU takes. On the Spectrum the INT signal lasts about 32
-T-states at the start of the frame. Code that runs with the interrupts off at that moment never sees it. The game
-has four such windows:
+T-states at the start of the frame. Code that runs with the interrupts off at that moment never sees it. In play the
+game has five such windows; the four that lose interrupts in the recordings come first:
 
 | Window | Where | Why the interrupts are off | Length |
 | --- | --- | --- | --- |
@@ -491,10 +496,14 @@ has four such windows:
 | the map builder | `BuildView` `$88D4` | `POP DE` takes two cell numbers of a block at a time | about 40 000 T a call |
 | the RAM 1 calls | `CallRam1` `$7A77` | RAM 1 is paged in at `$C000`, over the level's data | until the next `EI`: often the rest of the pass |
 | the handler itself | `$FEFE-$FF1F` | `DI` first, `EI` last | about 3100 T |
+| the HUD's clear | `DrawHud` `$796F-$7993` | `LD SP,HL` and 16 `PUSH DE` a pixel line | about 1660 T, once a section set-up |
+
+Outside play, the tape load (`LdBytes`, `DI` at `$847C`) and the entry run with the interrupts off too.
+`ReadMusicByte` `$7ABF` would leave them off like `CallRam1`, but nothing calls it.
 
 `CallRam1` deserves a note. It leaves the interrupts off when it returns ("the IM 2 handler's EI or the next
 WaitFrames puts them back", `$7A77`). A sound effect started in the middle of a pass therefore keeps the interrupts
-off until the frame wait's `EI`. The red bars labelled `CallRam1` in frames 101 and 111 below are such effects.
+off until the next `EI`: a blitter's, `BuildView`'s, or the frame wait's. The red bars labelled `CallRam1` in frames 101 and 111 below are such effects.
 
 ![Interrupts off and lost interrupts in level 1](img/loop/di-windows.png)
 
@@ -580,7 +589,7 @@ Where the 699 343 T of `CheckSectionExit` go (flat, by label; `python3 work/docs
 | `ClearRedraw` (1280 bytes cleared, several times) | 32 998 | 3.9 % |
 | `RedrawAll` (1280 bytes set) | 30 399 | 3.6 % |
 
-**The point**: a section entry costs ten frames, a fifth of a second during which the picture holds. The game hides
+**The point**: a section entry costs about twelve frames, a fifth of a second during which the picture holds. The game hides
 it by changing the whole screen at once; the player sees the new section appear, not the pause. The level 1 window
 has the same kind of pass at frame 116 (11.68 frames). `tools/passes.py`'s 13.47 frames from the RZX state at frame
 22 000 ([doc 2, 2.6](02-architecture.md#26-the-frame-budget)) is a section rebuild too: that state, played without
@@ -689,8 +698,9 @@ Its callers are the enemies' turns (`$A010`, `$A016`, `$A048`, `$A05F`: 1018 run
 depend on when the interrupts fell, so a lost interrupt changes the enemies' choices: one reason a replay with keys
 held per frame drifts from the RZX run ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 
-**The point**: the handler is short and always the same work. Its one variable cost is the music, about 2600 T a
-frame, 3.7 % of the CPU.
+**The point**: the handler is short and always the same work. Its one variable cost is the music, about 2600 T each
+time the handler runs, 3.7 % of that frame. Counted over every frame of 2000 (the lost interrupts and the runs with
+nothing to play included), the player's share is 1.8 % ([doc 2, 2.6](02-architecture.md#26-the-frame-budget)).
 
 ## 4.7 The death and the restart
 
@@ -723,7 +733,7 @@ sequenceDiagram
 
 The witness: `rzx-l5-full` (no POKE). `RickDying` is set between frames 2216 and 2222, `DeathFallOver` at about
 frame 2318, and the lives go from 6 to 5 ([doc 1, 1.8](01-game-design.md#18-key-moments) has the animation). The fall
-takes about 100 frames, 2 s. The restart pass then costs a section entry, ten frames.
+takes about 100 frames, 2 s. The restart pass then costs a section entry, about twelve frames.
 
 **The point**: a life is restarted by the same code that enters a section, from a copy of Rick's state saved at the
 entry. Nothing that happened in the section survives a death: the objects are spawned again from the map.
@@ -732,8 +742,8 @@ entry. Nothing that happened in the section survives a death: the objects are sp
 
 | What | Where | Count | Time |
 | --- | --- | --- | --- |
-| a pass | `MainLoopPause` `$7D85`, `WaitFrames` C = 2 | 2 interrupts | 2 frames at best, 0.04 s; 3-5 in play |
-| a scroll | `ScrollDown` `$78A5`, `ScrollUp` `$7905` | three waits of C = 1 | 3 frames for 8 cell rows ([doc 6](06-rendering.md)) |
+| a pass | `PassWork` `$7D75`, `WaitFrames` C = 2 at `$7D8B` | 2 interrupts | 2 frames at best, 0.04 s; 3-5 in play |
+| a scroll | `ScrollDown` `$78A5`, `ScrollUp` `$7905` | three `RedrawScrolledView` passes of about 4 frames each; the three waits of C = 1 return at once | 16 frames for 8 cell rows ([doc 6](06-rendering.md#66-the-scroll)) |
 | the menus' falling letters | `DropTextWait` `$82E2` | C = 1 a frame, letters 6 frames apart | until all stop or a key |
 | the control menu's pointer | `ControlMenuLoop` `$8127` | C = 1 | a frame a step |
 | GAME OVER | `GameOverWait` `$7E9D` | 512 x C = 1 | 10.24 s, or fire |
@@ -756,5 +766,5 @@ whole game slows down together when the screen is busy, and nothing in play depe
 - The 48K pass: `PlayBeeperStep` `$7B66` runs in `c48` (1206 passes), but no trace of a 48K pass was taken. On a 48K
   the handler keeps its three `NOP`s ([doc 9](09-sound.md)).
 - `EntryDebris` `$7C5C-$7C7C`: the tail of an earlier build's handler, eight bytes higher (`CALL $81DC`,
-  `CALL $725C`); never run.
+  `CALL $725C`); never run, then cleared as part of `EnemyRecords` by `ClearObjectTables` at every new game.
 - `RestartJump` `$7C8C`: `JP NewGame` after a `CALL ResetGame` that never returns.

@@ -132,8 +132,9 @@ music is a separate program in RAM 1 that the interrupt calls.
 ![The memory map in play on a 128K](img/arch/memmap.png)
 
 *The 64 K the CPU sees in play on a 128K, to scale, and RAM 1 beside it. The regions come from the `@equ` lines and
-the parts' `.ann` files; the RAM 1 column is coloured by `src/music/music.ann`'s modules. Made with `python3
-tools/fig_arch.py memmap docs/img/arch/memmap.png`.*
+the parts' `.ann` files; the RAM 1 column is coloured by `src/music/music.ann`'s modules. The level block is drawn
+with level 4's layout (sprites to `$E1EC`, the maps from `$E1ED`); the other levels' maps start elsewhere (the table
+below). Made with `python3 tools/fig_arch.py memmap docs/img/arch/memmap.png`.*
 
 How to read it:
 
@@ -153,10 +154,12 @@ The regions, with what writes and reads them:
 | `$6600-$6AFF` | `DirtyMap` | a byte per view cell, 32 x 40: what to redraw | the composer, the scroll | `DrawChangedCells` |
 | `$6B00-$707F` | `ViewCells` | the section's cell numbers, 32 x 44 | `BuildView` `$88D4` | the drawers, the collision tests |
 | `$7080-$A7FF` | the game | code, tables, variables | the tape | |
+| `$7B8F-$7C1F` | `TrapRecords` | 24-byte trap records, over the entry code, which runs once | `ClearObjectTables` `$83B8`, the object code | the object code |
+| `$7C20-$7C7C` | `EnemyRecords` | 23-byte enemy records, over `SetupIm2`, the handler's source and `EntryDebris` | `ClearObjectTables`, the object code | the object code |
 | `$A800-$C1FF` | `CellFlags`, `CellGraphics`, `CellAttrs`, `Blocks` | the level's 256 cells and 256 blocks | the tape | the drawers, `BuildView`, the collision tests |
 | `$C200-$C26C` | `LevelHeader` | the level's table pointers, the level hooks, the number, the frame map | the tape | |
-| `$C26D-` | `Sprites` | 128 bytes a sprite, up to the maps' base | the tape | the composer |
-| to `$FCFF` | the maps, the sections, the kinds | the level's rooms and objects; level 5's code at `$F7E6-$F915` | the tape; `DecryptMaps` | `BuildView`, the object code |
+| `$C26D-` | `Sprites` | 128 bytes a sprite, up to the maps' base: `$E46D` (levels 1-2), `$E2ED` (3), `$E1ED` (4), `$E3ED` (5) | the tape | the composer |
+| the base to `$FCFF` | the maps, the sections, the kinds | the level's rooms and objects; level 5's code at `$F7E6-$FAF3`, its path table `FatGuyPath` to `$FB32`, then zeros | the tape; `DecryptMaps` | `BuildView`, the object code |
 | `$FD00-$FE00` | `Im2Table` | 257 bytes `$FE`, I = `$FD` | `SetupIm2` `$7C1A` | the CPU |
 | `$FEFE-$FF20` | `Im2Handler` | the IM 2 handler, copied from `$7C39` | `SetupIm2` | the CPU |
 | `$FF21-$FFFF` | | the loader's tail, then the stack | the loader | |
@@ -187,7 +190,9 @@ Side A carries level 1 inside its code block. Side B carries all five, each with
 
 ### 128K against 48K
 
-The entry tells the machines apart by writing `$C000` in RAM 0 and reading it back in RAM 1 (`Entry` `$7B8F`).
+The entry tells the machines apart through `$C000` (`Entry` `$7B8F`): it reads the byte there with RAM 0 paged in,
+pages RAM 1, writes that byte + 1, pages RAM 0 back and compares. On a 128K RAM 0 kept its byte; on a 48K the port
+`$7FFD` does nothing, the write changed the one RAM there, and the entry puts the byte back (`Entry48K` `$7BB3`).
 
 | | 128K | 48K (`c48`) |
 | --- | --- | --- |
@@ -272,8 +277,11 @@ How to read it:
 
 - **`WaitFrames`** is the idle time. In level 1 it is 52.7 %: half the CPU is spare.
 - **The renderer** is all the rest: `DrawChangedCells` 19.1 %, `ComposeSprite` 14.2 %, `ComposeCell` 5.9 %.
-- **The game logic** (Rick, the objects, the collisions) is under 3 % together.
-- **The music** costs 1.8 % in both.
+- **The game logic** (Rick, the objects, the collisions) is about 3.4 % in level 1, summing its rows among the top 24
+  (Rick's moves and tests 1.7 %, the object scan and update 1.3 %, `UpdatePickup` 0.33 %).
+- **The music** player costs 1.8 % of all T-states in both, counted over every frame (lost interrupts and quiet runs
+  included); `CallRam1` adds 0.16-0.19 %. Per handler run it is about 2600 T, 3.7 % of that frame
+  ([doc 4](04-game-loop.md#46-the-interrupt)).
 - **In the Fat Guy's room** the idle time falls to 25.4 %, and `ComposeSprite` rises to 29.3 %: the Fat Guy is five
   sprites, and each composes into up to 16 cells.
 
@@ -318,13 +326,16 @@ Code and data in the image that nothing reaches, or that is reached only in some
 | effects 15, 16, 17, 25 (the hardware envelope voices) | the effect table | named only by trap scripts of levels 1, 4, 5 | no recording ran their branch |
 | "CORE  " / "DESIGN" | `$C206` in levels 1-4 | the place of level 5's two jumps; the text is the developer's name, Core Design | `LevelHookOn` is never set outside level 5 |
 | `Points100` | `$7EF9` | no instruction loads `$7EF9` | no byte pair `F9 7E` in the image |
-| a dispatcher | `objects`, `$917D` | a jump table for 16 object kinds, no caller | no word `$917D` in the image |
-| an older IM 2 handler | `$7C5C-$7C7C` | after the handler's source, never copied | never run |
-| `LoadError` | `$852A` | `POP HL`, `JP $8452`: into the text "STOP TAPE AND PRESS FIRE" | no load error recorded |
+| a dispatcher | `objects`, `$917D` | a jump table of 15 words (kinds 0-14) at `$9191`, no caller | no word `$917D` in the image |
+| an older IM 2 handler | `$7C5C-$7C7C` | after the handler's source, never copied; cleared as `EnemyRecords` at every new game | never run |
 | 204 bytes of `$C9` | `$852E-$85F9` | padding after the loader | |
 | `OrderSetSlot`, `PatternCommandSkip` | music `$CB49`, `$CC30` | sequencer commands no tune uses | not executed |
 | filler sections | past `SectionCounts` | section table entries no exit leads to | level 1 section 8: `sec-l1-s8` by a POKE |
 | `BonusRunOut` | `$917C` | a lone `RET` at the countdown's wrap | [doc 1](01-game-design.md) 1.6 |
+
+`LoadError` `$852A` is not a leftover but a live bug: `LdBytesEnd` `$8524` jumps there on a bad level block, and it
+pops the return address and jumps to `$8452`, into the text "STOP TAPE AND PRESS FIRE" ([doc 3, 3.4](03-build-and-load.md#34-side-b-and-the-map-cipher)).
+No recording loads a bad block, so what the text does as code is not seen.
 
 **The point**: the image is close to tight. The leftovers are a few dozen bytes of an earlier design, one unused tune
 and the developer's name in the level blocks.

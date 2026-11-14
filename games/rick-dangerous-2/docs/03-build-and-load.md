@@ -102,11 +102,13 @@ deciphered: the loop deciphers itself before it loops.
 
 ![Decipher at work](img/routines/Decipher.gif)
 
-*`c1` frames 1110 (T 65 000) to 1111 (T 12 000), 40 pictures of 448 T. Left, the 256 bytes of `$FF00-$FFFF` (yellow:
-written now, red: written before); under it the same bytes in hex as they change; right, the loop's lines as they
-run. Made with `python3 ../../kit/routine_anim.py --work work/docs/wr/c1 --window 1110:65000-1111:12000 --listing
-build/loader.lst --out docs/img/routines/Decipher.gif --view buffer:FF00:16x16:hex --range FF00-FFFF --pc FF00-FF0E
---pictures 40`.*
+*`c1` frames 1110 (T 65 900, as the loader starts at `$FF00`) to 1111 (T 12 000), 40 pictures of 425 T, 900 px
+wide. Left, the 256 bytes of `$FF00-$FFFF` (yellow: written now, red: written before); under it the same bytes in hex
+as they change; right, the loop's lines as they run. Made with `python3 ../../kit/routine_anim.py --work
+work/docs/wr/c1 --window 1110:65900-1111:12000 --listing build/loader.lst --out docs/img/routines/Decipher.gif --view
+buffer:FF00:16x16:hex --range FF00-FFFF --pc FF00-FF0E --pictures 40 --width 900`, with `--title` set to the
+title shown (drawn from the stored trace of 1110:65000-1111:12000 with the
+instructions before T 65 900 dropped, `work/review/fixA/anim_from.py`).*
 
 How to read it: the yellow front moves up from `$FF0B` to `$FFFF`, one byte every 7 instructions. The listing on the
 right is the deciphered code: it shows what the bytes become.
@@ -119,13 +121,14 @@ Then the loader:
 4. `EI` and `JP GameEntry` (`$7B8F`).
 
 `LdBytesReversed` is the ROM's LD-BYTES (`$0556`) with the same timings (the edge loop's 22, the pilot and sync
-limits 156, 198, 201 and 212), changed in three places:
+limits 156, 198, 201 and 212), changed in four places:
 
 | | ROM LD-BYTES | the loader |
 | --- | --- | --- |
 | a byte's bits | `LD L,$01` and `RL L`: the first bit read is bit 7 | `LD L,$80` (`$FF9A`) and `RR L` (`$FFA3`): the first bit read is bit 0 |
 | the checksum test | `LD A,H; CP 1` (H = 0 when good) | `LD A,H; CPL; CP 1` (`$FFB1`): H = `$FF` when good |
 | a failed block | returns with carry clear | returns to `$FFD8`, pushed at `$FF35`: `JP NC,0`, the machine resets |
+| LD-VERIFY | `JR NC` to the verify test when the carry is clear | `JR NC` at `$FF83` jumps to the next instruction, `LdStore` `$FF85`: every byte is stored |
 
 The tail `$FFDF-$FFFF` holds fragments the stack later overwrites (SP = 0 grows down into it). The Kixx copy differs
 only there (3.7).
@@ -185,8 +188,9 @@ How to read it:
 - A player must rewind side B before every level change.
 - Level 1 is on side B too. A new game after a game that reached level 3 finds level 3 in memory, and must read
   level 1 back from side B.
-- `LdBytes` `$8479` is a second copy of the bit-reversed LD-BYTES, inside the game. Its error path is dead
-  ([doc 2](02-architecture.md) 2.7).
+- `LdBytes` `$8479` is a second copy of the bit-reversed LD-BYTES, inside the game. Its error path is live but
+  buggy: a bad block reaches `LoadError` `$852A`, which jumps into the text at `$8452`. No recording loads a bad
+  block ([doc 2, 2.7](02-architecture.md#27-the-leftovers)).
 
 ### The map cipher
 
@@ -324,14 +328,16 @@ Every copy the collection index lists was compared block by block with sides A a
 | --- | --- | --- |
 | Micro Style, `orig/RickDangerous2.tzx.zip` | the original, two sides | the reference |
 | Kixx, `Rick Dangerous 2 (Kixx) - Side A.tzx`, `- Side B.tzx` | the budget re-release | side A: 32 bytes of the loader block's tail (from offset 223), which the stack overwrites; side B byte for byte |
-| Erbe, `Rick Dangerous 2 - Side 1 (Erbe).tzx`, `- Side 2 (Erbe).tzx` | the Spanish re-release | another build: standard ROM blocks for the code, which is shifted (its POKEs are 24 lower); side 2 keeps the bit-reversed form; level 2 differs in 8 bytes, level 5 in 64 |
+| Erbe, `Rick Dangerous 2 - Side 1 (Erbe).tzx`, `- Side 2 (Erbe).tzx` | the Spanish re-release | another build: standard ROM blocks for the code, which is shifted by region (from about `$7E30` on 24 lower, so most POKEs are 24 lower; the entry and object tables `$7B80-$7E2F` 17-20 lower; `$7080-$7B3F` in place); side 2 keeps the bit-reversed form; level 2 differs in 8 bytes, level 5 in 64 |
 | ZXDB `Rick Dangerous 2.tap` | a re-save in plain bit order | a new BASIC patches the loader; 13 bytes of the level loader differ (`$8479-$8485`); the level blocks are Erbe's |
 | other TAPs and TZXs | re-saves | new BASICs, one packed |
 
 The Erbe level 5 shows the two builds apart: it addresses a table at `$7B7E`, where side B's level 5 uses `$7B8F`, the
-address side A's code uses. So the Micro Style sides belong together.
+address side A's code uses. `$7B8F` - `$7B7E` = 17, the shift of Erbe's object tables (16-byte runs of `build/game.bin`
+found in Erbe's code block, `work/review/fixA/erbe.py`). So the Micro Style sides belong together.
 
-The RZX run used a TAP version: its memory equals the Micro Style data except a 167-byte block at `$846A` (the level
-loader).
+The RZX run used a TAP version: its memory equals the Micro Style data except the level loader `$846A-$8510` (167
+bytes), the bytes `$840D-$840E`, and the page bytes of the RAM 1 calls at `$7A81` and `$7AC6` (`$16`: its music runs
+in RAM 6) ([doc 4](04-game-loop.md), conventions).
 
 **The point**: one build, re-released twice. The Kixx tape is the original; the Erbe tape is a second build.

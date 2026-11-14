@@ -55,13 +55,14 @@ TrapPaths:
 ; The kind records: 11 bytes, or 7 for a kind that never switches
 ;
 ; KindTable points to each. +0 the width, +1 the height (record +7, +8); +2
-; bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7
-; the detonator test), bits 0-5 x 4 the behaviour after the switch (record
-; +$15); +3/+4 the path, +5/+6 the animation; +7/+8 the second path, +9/+10 the
-; second animation (SwitchTrapPath $A4D5 swaps them in). A record followed 7
-; bytes later by the next one has no second half of its own: its +7..+10 are
-; the next record's first bytes, which no switch reads for such a kind (or the
-; switch would take them).
+; bits 6-7 into the record's +0 (bit 6 deadly to Rick and the enemies, bit 7 a
+; platform, with bit 6 a solid block that also sets off a lit detonator), bits
+; 0-5 x 4 OR-ed into the +0 the trap takes after the switch (record +$15; $20
+; gives bit 7); +3/+4 the path, +5/+6 the animation; +7/+8 the second path,
+; +9/+10 the second animation (SwitchTrapPath $A4D5 swaps them in). A record
+; followed 7 bytes later by the next one has no second half of its own: its
+; +7..+10 are the next record's first bytes, which no switch reads for such a
+; kind (or the switch would take them).
 KindRecords:
 Kind1:
   INCBIN "res/level/kinds-2.bin",$0000,7

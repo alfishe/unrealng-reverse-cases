@@ -59,11 +59,13 @@ TrapEffectSkip:
 ; applied: x += the x step (a trap leaving 0-$E8 is freed), y += the y step
 ; (one leaving the view is freed), the step count moved on. Then AnimateTrap.
 ;
-; A deadly trap (+0 bit 6) with a sprite: with bit 7 and the detonator's blast
-; at phase 10 or more, the blast test ($A41C, not executed in any recording:
-; effect 5, the phase set to 9); then every live enemy it overlaps is killed
-; (KillEnemy, 111 times), and Rick, unless already dying ($9B9C), dies ($93D0
-; at $A475) when it overlaps him ($8D53).
+; A deadly trap (+0 bit 6) with a sprite: with +0 bit 7 (a solid block), a lit
+; detonator (fuse $9BC6 10 or more, not yet exploding) whose box (its y, x + 8,
+; 16 x 8) it overlaps is set off at once ($A41C, not executed in any recording:
+; effect 5, the fuse set to 9; nothing happens to the trap); then every live
+; enemy it overlaps, not already dying (+$14 = 0, $A447), is killed (KillEnemy:
+; 220 calls from $A454, 102 of them in sec-l5-s5), and Rick, unless already
+; dying ($9B9C), dies ($93D0 at $A475) when it overlaps him ($8D53).
 ;
 ; Then the trap's own trigger boxes (TestTriggerBoxes with the map entry): see
 ; $A478.
@@ -132,7 +134,8 @@ TrapPathStep:
   JP NZ,RetireObject
   BIT 4,A                 ; not waiting: go on
   JP Z,TrapPathLoop
-  BIT 3,A
+  BIT 3,A                 ; waiting: bit 3 set (a round trip) switches with bit
+                          ; 4 kept, to switch back at the next loop point
   JP Z,TrapPathClearWait
   RES 3,(IX+$06)
   JP TrapPathSwitch
@@ -233,7 +236,8 @@ TrapAnimate:
   CALL BoxesOverlap
   JP NC,TrapHitEnemies
 TrapBlastHit:
-  LD A,$05                ; effect 5, $9BC6 = 9 (not executed in any recording)
+  LD A,$05                ; the lit detonator goes off now: effect 5, $9BC6 = 9
+                          ; (not executed in any recording)
   CALL PlayEffect
   LD A,$09
   LD (DetonatorFuse),A
@@ -379,8 +383,12 @@ SwitchTrapPath:
 
 ; A trigger with behaviour bit 3 clear: switch at the path's end
 ;
-; Sets +6 bit 4 (waiting); with kind bit 5, bit 3 too (one more loop before the
-; switch, cleared by $A35C). Witness: 361 runs in 22 builds.
+; Sets +6 bit 4 (waiting); with +0 bit 5, bit 3 too: at the loop point $A350
+; bit 3 set is cleared ($A355) and the trap switches with bit 4 kept, so at the
+; next loop point it switches back and clears bit 4 ($A35C): a round trip, path
+; 1 -> path 2 -> path 1. While it waits so, TrapTriggers ($A485) skips the box
+; tests. The first switch of a round trip ran 58 times ($A355), the set of bit
+; 3 59 ($A523). Witness: 361 runs in 22 builds.
 ;
 ; Witness: L1 722 (rzx-l1-00000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
 ; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,

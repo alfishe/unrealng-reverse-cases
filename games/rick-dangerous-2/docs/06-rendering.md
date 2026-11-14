@@ -47,7 +47,7 @@ flowchart LR
 | Buffer | Address | Size | What a byte is |
 | --- | --- | --- | --- |
 | `ViewCells` | `$6B00-$707F` | 32 x 44 | a cell number; view row 8 lies under the HUD, rows 9-31 are screen rows 1-23 |
-| `DirtyMap` | `$6600-$69FF` | 32 x 40 | what a screen cell needs: 0 nothing, 1 the level cell again, n >= 2 spare cell n |
+| `DirtyMap` | `$6600-$6AFF` | 32 x 40 | what a screen cell needs: 0 nothing, 1 the level cell again, n >= 2 spare cell n; `DrawChangedCells` puts its `$FF` sentinel at `$6A00` (row 32) |
 | spare cells | `$5DE8` + 8 x (n + 1) | 8 bytes each | a cell copy with sprites masked in; `SpareCount` `$77B0` is the next n |
 | the screen | `$4000-$5AFF` | 32 x 24 cells | row 0 the HUD, rows 1-23 the view |
 
@@ -146,7 +146,9 @@ numbers in hex.*
 
 How to read it: follow the third box's colour from the byte to the block and to its place in the strip.
 The point: a section's map is tiny, 8 bytes a 32-pixel row, because the blocks do the work.
-Level 1's 8 sections share 1344 bytes of map: 168 map rows.
+Level 1's 8 maps take 1344 bytes: 168 map rows.
+`SectionCounts` `$8374` counts 9 sections for level 1: the ninth is a filler record (map `$0000`, no exits) that
+no exit leads to; only the POKEd `sec-l1-s8` enters it.
 
 Witness: `BuildView` ran 269 times in 62 recordings.
 It writes only `$6B00-$707F`, and reads only the maps (`$E1ED-$E9D4` over all recordings) and `Blocks`.
@@ -280,7 +282,7 @@ flowchart TD
 **A worked example.** `rzx-l1-06000-poke` frame 103 T 53 482: Rick's record is `01 E2 AB 00 6D C5 00 10 15`.
 x = `$E2` = 226, so x AND 7 = 2: shifted, 4 columns.
 y = `$00AB` = 171, and 171 AND 4 = 0: 3 cell rows.
-The top left cell is `ViewCells` + (171 AND `$F8`) x 4 + 226 / 8 = `$6B00` + 680 + 28 = `$6DC4`.
+The top left cell is `ViewCells` + (171 AND `$F8`) x 4 + 226 / 8 = `$6B00` + 672 + 28 = `$6DBC`.
 `SpareCount` is 2 at the start and 14 at the end: 4 x 3 = 12 spare cells, from `$5E00`.
 The sprite is `$C56D` = `Sprites` + 6 x 128, Rick standing, not mirrored.
 The whole call costs 16 885 T.
@@ -321,7 +323,8 @@ flowchart LR
     S[SpareCount = 2] --> B[bullet 9BB4 if active] --> R[Rick 9BAB] --> D[detonator 9BBD if active] --> E[table B 7C20: enemies] --> A[table A 7B8F: traps, objects]
 ```
 
-Witness: `ComposeSprite` ran 250 504 times in 65 recordings: 118 841 aligned, 108 333 shifted.
+Witness: `ComposeSprite` ran 250 504 times in 65 recordings: 118 841 aligned, 108 333 shifted, and 23 330 returned at
+once (y negative or 299 or more, below the buffer, or no sprite: `$7332`, `$7338`, `$733F`).
 `ComposeCell` ran 2 497 317 times: 272 993 front cells skipped, 551 496 stacked on another sprite.
 
 The sprite routines keep the interrupts off while SP walks the sprite (`$7442-$74B5`, `$75DC-$76D2`).
@@ -407,8 +410,13 @@ The scan of 736 bytes costs far more than the copies, but a pass draws only the 
 
 *`rzx-l1-06000-poke` frames 103-105, one pass: who wrote each screen byte. 184 bytes, 23 cells, all by
 `DrawChangedCells`: the spare cells by `DrawSpareLine1/4/6` and `DrawChangedIfClear` (its unrolled `LDI`s), the restored
-level cells by `DrawLevelCellBase`. Made with `python3 ../../kit/writers_map.py --work work/docs/wr/l1p --window
-103:4930-105:4940 --listing build/game.lst --out docs/img/render/writers-pass.png --sources --zoom 200,152,40,32`.*
+level cells by `DrawLevelCellBase`. The pass shown is the `DrawChangedCells` of frame 103 (T 4960-36 650): it puts on
+the screen what the pass before composed, 18 spare cells (Rick, zoomed, and an object at the top right) and 5 level
+cells restored where a sprite stood two passes before (green, the column left of Rick among them). The composition of
+the table above (frame 103 from T 53 470) is drawn in the pass after this window; `view.png` shows its `DirtyMap`.
+Made with `python3 ../../kit/writers_map.py --work work/docs/wr/l1p --window 103:4930-105:4940 --listing build/game.lst
+--out docs/img/render/writers-pass.png --sources --zoom 216,104,40,32 --title "Code vs screen: one pass of level 1
+(rzx-l1-06000-poke frames 103-105)"`.*
 
 The point: in a typical pass 2.7 % of the screen is written, and nothing else writes it.
 
@@ -425,7 +433,8 @@ The new picture of each step is drawn straight from `ViewCells`, which already h
 ```text
 ScrollUp:
     ClearRedraw(); DrawSprites()                    // the sprites composed where they are now
-    MarkScrollCells(DirtyMap + 256, -32)            // their cells, 2, 6 and 8 rows on, marked 1
+    MarkScrollCells(-32)                            // scans DirtyMap from $6600 (the caller's HL is dead):
+                                                    // their cells, 2, 6 and 8 rows up, marked 1 where 0
     for first_row in (7, 3, 1):                     // the screen shows view rows from 9: 2, 6, 8 rows up
         WaitFrames(1)
         RedrawScrolledView(new = ViewCells + 32 * first_row, old = what the screen shows)
@@ -436,6 +445,51 @@ ScrollUp:
 ```
 
 `ScrollDown` is the same with the rows 11, 15 and 17, `ViewTopRow` + 8 and the objects moved 64 pixels up.
+
+`ScrollUp` loads HL = `DirtyMap` + 256 before the call, but `MarkScrollCells` `$786B` begins with `LD HL,DirtyMap`:
+both directions scan the same 1024 bytes from `$6600` (view rows 0-31).
+Going up (DE = -32), a spare cell in view rows 0-7 marks below `$6600`, into `MirrorTable` `$6500-$65FF`.
+A mark is written only over a 0, and the only 0 in `MirrorTable` is its first byte, so the one byte it can change is
+`$6500`, from a spare cell at view row 0, column 0 (8 rows up); no recording shows that write.
+
+The main loop's scroll test (`ScrollTest` `$7DD3`) is skipped while Rick is dying (`RickDying` `$9B9C` not 0): a
+falling dead Rick never scrolls the view.
+
+```text
+MarkScrollCells(DE):                                // DE = +32 (down) or -32 (up)
+    for i in 0..1023:                               // DirtyMap $6600-$69FF
+        if DirtyMap[i] >= 2:                        // a spare cell on the screen now
+            for k in (2, 6, 8):
+                if DirtyMap[i + k * DE / 32 * 32] == 0: set it to 1
+
+RedrawScrolledView(HL = new view row 9, HL' = old view row 9, DE = DirtyMap at HL - $500):
+    screen = $4020; attrs = $5820
+    for third, rows in ((0, 7), (1, 8), (2, 8)):    // screen rows 1-7, 8-15, 16-23
+        repeat rows: repeat 32:
+            d = *DE
+            if d >= 2:                 attrs = CellAttrs[new]; copy spare cell d to screen
+            elif d == 1 or new != old: attrs = CellAttrs[new]; copy CellGraphics + 8 * new to screen
+            next cell (HL, HL', DE, screen, attrs + 1)
+        screen += $800                 // the cells step with INC E, which wraps: the next third
+
+ShiftObjects(BC):                                   // BC = +64 (up) or -64 (down)
+    for each live record of table A ($7B8F, 24 bytes) and table B ($7C20, 23 bytes):
+        y += BC; if IsOffView(): FreeObject()
+    RickY += BC                                     // never tested
+    BulletY += BC; if off the view: bullet off ($9BB4 = 0)
+    DetonatorY += BC; if off the view: detonator off ($9BBD = 0)
+```
+
+`FontCellsMode` `$88B1` and `LevelCellsMode` `$7EB3` switch the same drawers between the font and the level's cells.
+The menus and the endings call `FontCellsMode`: it writes the font's address `$7080` into the base of
+`DrawLevelCell` (`$7730`) and of `ComposeCell` (`$7777`), and three zeros (`NOP`s) over the `JP M` at `$775A` (no
+front cells), then clears the screen and both maps.
+`LevelCellsMode` puts back `CellGraphics` `$A900` and the `JP M,ComposeCellSkip`.
+
+```text
+FontCellsMode:  base($7730) = base($7777) = $7080; ($775A..$775C) = 00 00 00; ClearScreen(); ClearRedraw(); $8977()
+LevelCellsMode: base($7730) = base($7777) = $A900; ($775A..$775C) = JP M,$77A2
+```
 
 ```text
 7905  CALL ClearRedraw
@@ -489,13 +543,15 @@ flowchart TD
 | 127, 61 717 | the main loop again | | |
 
 The scroll takes 16 frames, not 3.
-Each `RedrawScrolledView` takes 282 506 T, four frames less 1126 T.
+The step marks are 282 710 T, 296 920 T and 265 696 T apart (a frame is 70 908 T): each `RedrawScrolledView` takes
+about four frames, more or less with the cells it draws.
 So the frame wait of one count before the next step finds the counter already past 1 and returns at once.
 Half the cells or more change at each step, so the compare saves less than it would on a plain wall.
 
 ![The scroll up](img/play/scroll-up.gif)
 
-*`rzx-l1-04000-poke` frames 108-131, one picture a frame: the three steps of the scroll. Made with `python3
+*`rzx-l1-04000-poke` frames 108-131, one picture a frame (24 frames; `screen_anim.py` merges identical neighbours into
+one longer picture, so the GIF holds 18): the three steps of the scroll. Made with `python3
 ../../kit/screen_anim.py --work work/docs/wr/l14 --from 108 --to 131 --step 1 --delay 60 docs/img/play/scroll-up.gif`.*
 
 ![ScrollUp at work](img/routines/ScrollUp.gif)
@@ -524,8 +580,11 @@ the three steps.
 The point: besides a section's first drawing, the scroll is the only time the game writes attributes in play.
 The cells nobody wrote (grey) were the same before and after.
 
-Witness: `ScrollUp` 88 runs in 34 recordings, `ScrollDown` 81 in 30, `RedrawScrolledView` 515 runs; all in the `rzx-*`
-pieces (`c1` never scrolls).
+Witness (one index, `python3 tools/l1q.py 7905 78A5 786B 77B1`): `ScrollUp` 88 runs in 34 recordings, `ScrollDown` 95 in
+34 (81 in the `rzx-*` pieces, 14 in the `sec-l4-*` ones), `MarkScrollCells` 183 = 88 + 95, `RedrawScrolledView` 557:
+`ScrollDown`'s three call sites ran 96, 97 and 98 times (291), `ScrollUp`'s 88, 89 and 89 (266).
+The later steps count more than the entries because a few scrolls straddle the cut between two `rzx-*` pieces: a piece
+that starts inside a scroll counts its later steps but not its entry. `c1` never scrolls.
 
 ## 6.7 The HUD
 
@@ -562,5 +621,6 @@ Witness: `DrawHud` 98 runs in 44 recordings: the section start `$8B16` (97) and 
 ## 6.8 Known only from the code
 
 - A mirrored sprite through `MirrorTable`: the counts show both mirrored paths ran, but no figure here shows one.
+- The `MirrorTable` byte `$6500` that `MarkScrollCells` can mark going up (6.6): from the code; no recording writes it.
 - `ScrollDown`'s steps (view rows 11, 15, 17): seen in the recordings' counts, not measured frame by frame here.
 - A cell with `CellFlags` bit 7 in front of Rick: seen in `view.png` (pink), but no frame here shows Rick behind one.

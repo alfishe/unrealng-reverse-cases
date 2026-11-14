@@ -966,7 +966,9 @@ StartBonusTimer:
   LD A,$19                ; $9BAA = 25: passes per step of $9163 (10 points off
                           ; every 25 passes)
   LD (BonusPrescaler),A
-  LD HL,$0002             ; the bonus digits $7F17-$7F1C = 002000
+  LD HL,$0002             ; digits 2-4 ($7F19-$7F1B) = 2 0 0; digits 0, 1, 5
+                          ; keep their values (002000 unless a countdown
+                          ; wrapped)
   LD (TimeBonus+$0002),HL
   XOR A
   LD (TimeBonus+$0004),A
@@ -1075,11 +1077,14 @@ EnemyAnimScript3:
 ;
 ; +0 = 1 OR bits 2-5 of the entry's +3 OR the kind table's bits 6-7: bit 0
 ; alive, bit 1 path paused, bits 2-4 the trigger behaviour (UpdateTrap $A4AA),
-; bit 5 with bit 2 the pickup kinds ($21, $29, $2D), bit 6 deadly to Rick and
-; enemies, bit 7 the detonator test. Behaviour $10 starts with +6 = $60 (bit 6:
-; no trigger test; bit 5: freed at the path's end), and with the one-shot bit
-; (+3 bit 6) the record keeps no map entry (+$0C/+$0D = 0), so the entry is
-; never re-armed. x = column x 8 (+4), y = (row - $88CF) x 8 (+3).
+; bit 5 a round trip (ArmTrapWait then sets +6 bit 3: switch at the loop point
+; and back at the next; $21, $29, $2D in bits 0-5 are the pickups), bit 6
+; deadly to Rick and enemies, bit 7 an object to stand on (ObjectScanTest
+; $90C7: a platform; with bit 6 a solid block, which also sets off a lit
+; detonator it touches, $A403). Behaviour $10 starts with +6 = $60 (bit 6: no
+; trigger test; bit 5: freed at the path's end), and with the one-shot bit (+3
+; bit 6) the record keeps no map entry (+$0C/+$0D = 0), so the entry is never
+; re-armed. x = column x 8 (+4), y = (row - $88CF) x 8 (+3).
 ;
 ; Evidence: 1471 runs in 59 builds, from c1 (28) on; the behaviour-$10 branch
 ; 722 runs.
@@ -1218,8 +1223,8 @@ SpawnObjectY:
 ; (FreeObject), a bullet or detonator switched off ($9BB4, $9BBD = 0); Rick is
 ; never tested.
 ;
-; Callers: the scroll routines $78A5 ($78F8, 83 runs) and $7905 ($7958, 89
-; runs). Witness: 172 runs in 48 builds (rzx pieces; not in c1, where Rick
+; Callers: the scroll routines $78A5 ($78F8, 97 runs) and $7905 ($7958, 89
+; runs): 186 runs in 52 builds (rzx pieces and sec-l4-*; not in c1, where Rick
 ; never leaves the first screen).
 ;
 ; Witness: L1 372 (rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,

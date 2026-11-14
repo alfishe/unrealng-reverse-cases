@@ -28,7 +28,7 @@ An `IN` from port `$xxFE` reads the half rows whose bit is 0 in the port's high 
 The low 5 bits of the result are the keys, bit 0 the outermost key, and a bit at 0 is a key held.
 A Kempston joystick is a port of its own, `$1F`, active high.
 
-Rick Dangerous 2 reads 22 keys of the 40, in four places:
+Rick Dangerous 2 reads 23 keys of the 40 (O K Z X ENTER SPACE, the ten digits, E P C S N J Y), in four places:
 
 | Who reads | When | Keys |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ That is why `ReadControls` keeps one branch a method and never mixes them.
 
 `ReadControls` `$7254` sets `Controls` `$7253` to `$FF`.
 It then clears one bit for each control held: bit 0 right, 1 left, 2 down, 3 up, 4 fire.
-Bits 5-7 stay 1, except after the Kempston branch (below).
+Bits 5-7 are always 1 (the Kempston branch's `CPL` sets them too, below).
 `ControlMethod` `$7252` picks the branch: 0 keyboard, 1 Kempston, 2 cursor, 3 Sinclair.
 
 Why every interrupt and not once a pass: a pass is two to twelve frames long ([doc 04](04-game-loop.md#44-the-frame-wait-and-the-lost-interrupts)).
@@ -148,7 +148,7 @@ The keyboard branch, cut to its tests (each `JP NZ` skips the `RES` when the key
 72B0  RET
 ```
 
-**A worked example.** `controls-keyboard` holds four chords in turn. `Controls` after the interrupt of each frame
+**A worked example.** `controls-keyboard` holds five keys or chords in turn. `Controls` after the interrupt of each frame
 (read at T 3000, after `ReadControls` ran at T 2073):
 
 | Frame | Keys | Bits cleared | `Controls` |
@@ -159,10 +159,14 @@ The keyboard branch, cut to its tests (each `JP NZ` skips the `RES` when the key
 | 940 | SPACE + X | 4 fire, 0 right | `$EE` = `1110 1110` |
 | 1010 | SPACE + K | 4 fire, 2 down | `$EB` = `1110 1011` |
 
+The three fire chords are held at frames 860-869, 930-939 and 1000-1009 of the input script. The frames named for
+them (870, 940, 1010) are the first after the release, whose `Controls` still holds the chord: the release takes
+effect only at the next frame's read (`rick-keys.gif`'s panel shows `$EB` at frame 1010 with no key held).
+
 Take frame 630.
 `IN A,(C)` from `$DFFE` gives O up (bit 1 = 1), so the code goes on to K, also up.
 `$FEFE` gives Z up (bit 1 = 1), then X down (bit 2 = 0): `RES 0,(HL)`, `Controls` = `$FE`.
-ENTER and SPACE are up, and the routine returns after 34 instructions.
+ENTER and SPACE are up, and the routine returns after 33 instructions (34 with the `CALL`), six of them `IN`s.
 
 ![ReadControls at work](img/routines/ReadControls.gif)
 
@@ -173,8 +177,9 @@ build/game.lst --out docs/img/routines/ReadControls.gif --pc 7254-7329 --range 7
 --pictures 24`.*
 
 How to read it: watch the code panel take the `JP NZ` past each key that is up, and the hex line change once.
-The point: the keyboard method costs 34 instructions and five `IN`s in every interrupt, about 243 T
-([doc 04](04-game-loop.md#46-the-interrupt)).
+The point: the keyboard method costs 33 instructions and six `IN`s (O, K, Z, X, ENTER, SPACE) in every interrupt,
+333 T, 350 with the `CALL`: the T-states of the listing, the `IN`s uncontended in the top border. The cursor method of
+the RZX pieces costs 243 T on the median ([doc 04](04-game-loop.md#46-the-interrupt)).
 
 Witness: `ReadControls` ran 1 211 807 times in 68 recordings (L1). The table's frames are `controls-keyboard`.
 
@@ -219,7 +224,7 @@ The cursor keys are read without CAPS SHIFT.
 On a 128K's own cursor keys (CAPS SHIFT with 5-8) the digit is down and the shift does not matter.
 The RZX run (the `rzx-*` pieces) played with CAPS SHIFT + 5-8, and the game read only the digits.
 
-Witness: the Kempston branch `$72B1` ran 1255 times in `controls-kempston`, the cursor branch `$72BE` in
+Witness: the Kempston read `$72B6` ran 1255 times in `controls-kempston` (and 85 in `c1`'s menu tour), the cursor branch `$72BE` in
 `controls-cursor` and every `rzx-*` piece, the Sinclair branch `$72FA` 1255 times in `controls-sinclair` and 85 times
 in `c1` (its menu tour passes through method 3). ENTER as fire (`$72A1`) was pressed in no recording.
 
@@ -243,6 +248,10 @@ flowchart TD
     F -->|up| SH[RickShootUp 9AE8: a bullet]
     F -->|down| DD[DropDetonator 9B27]
     F -->|left or right| P[PunchStart 9821: once a press]
+    F -->|none| W
+    SH --> AD[RickActionDone 9B07: no step; a slide on level 2's ice, or the platform's move]
+    DD --> AD
+    P --> AD
     J -->|up| UP{bit 3 up}
     UP -->|held| JU[on the ground: RickDy = -6.0 a jump; on a ladder cell: RickClimbing]
     UP -->|up| DN{bit 2 down}
@@ -250,23 +259,26 @@ flowchart TD
     JU --> W[RickWalk 988F: bits 0-1]
     CR --> W
     DN -->|up| W
-    P --> W
     W --> M[RickMoveX: x + step, walls, the view's sides]
 ```
 
 The keys are read in this order: fire first, then up, then down, then left or right.
-With fire held, the direction keys choose a weapon instead of moving Rick, except that left or right still walk.
+With fire held, the direction keys choose a weapon instead of moving Rick: Rick does not walk while fire is held.
+Fire with left or right is the punch, which ends in `RickActionDone` `$9B07` without a step; fire alone goes to
+`RickWalk` with no direction, so Rick stands. Only level 2's ice (a slide) and a moving platform move him then.
 
 ```text
 RickReadJump:                               // on the ground, not crawling under a ceiling
     if fire held:
-        if up held:   RickShootUp()         // one bullet at a time
-        elif down held: DropDetonator()     // one detonator at a time
-        elif left or right held:
+        if up held:   RickShootUp(); RickActionDone(); return     // one bullet at a time
+        FireLatch = 0                                               // $9807: fire without up re-arms the gun
+        if down held: DropDetonator(); RickActionDone(); return   // one detonator at a time
+        if left or right held:
             if keys != PunchKeys:           // a new press only
                 PunchKeys = keys; PunchTimer = 10
                 PunchX = x + 24 (right) or x (left); PunchY = y + 8
-        else: PunchKeys = 0; PunchTimer = 0
+            RickActionDone(); return        // no step: Rick does not walk while he punches
+        PunchKeys = 0; PunchTimer = 0       // fire alone: falls through to RickWalk with no direction
     else:
         PunchKeys = 0; PunchTimer = 0
         if up held:
@@ -356,12 +368,14 @@ The point: one byte in, a dozen variables out; nothing in Rick's code touches a 
 *`controls-keyboard` frames 626-1170, one picture every 2 frames (one a pass), at real speed. Left, the screen.
 Right, the keys the input script holds, `Controls` `$7253` (a lit box is a bit at 0), Rick's variables, and a strip
 chart of `RickX` and `RickY` over the whole stretch. X walks right, O jumps, Z walks left, SPACE+O fires the ray gun
-up, SPACE+X punches, SPACE+K drops a detonator at Rick's feet; 64 passes later its blast kills Rick (frame 1110), and he
+up, SPACE+X punches, SPACE+K drops a detonator at Rick's feet (frame 1000, the fuse at 64); about 55 passes later, when
+the fuse reaches 9, its blast kills Rick (frame 1110), and he
 starts again at frame 1160. Made with `python3 tools/fig_controls.py keys --work work/docs/wr/ckb --inputs
 tests/inputs/controls-keyboard.txt --from 626 --to 1170 --step 2 docs/img/play/rick-keys.gif`.*
 
 How to read it: match the yellow keys line with the lit boxes, then with the variables that change.
-`FireLatch` goes to `$FF` at the shot (frame 870) and stays until fire is released with up.
+`FireLatch` goes to `$FF` at the shot (frame 870) and stays there: releasing fire does not clear it; only a pass with
+fire held and up released does (`$9807`).
 `PunchTimer` counts down from 10 after SPACE+X (6 at frame 940).
 The point: each control is one bit, and each bit has one effect, chosen by the mode Rick is in.
 
@@ -369,8 +383,10 @@ The point: each control is one bit, and each bit has one effect, chosen by the m
 
 Two of the actions fire once a press, not every pass a key is held:
 
-- **The shot.** `FireLatch` `$9BA8` is set when a bullet leaves (`$95E7`), and cleared at `$9807` when fire is held
-  without up. Holding SPACE+O gives one bullet; the next needs O or SPACE released.
+- **The shot.** `FireLatch` `$9BA8` is set when a bullet leaves (`$95E7`). On foot it is cleared only at `$9807`, when
+  fire is held without up; on the bike also when fire is released (`$9581`). Holding SPACE+O gives one bullet; the
+  next needs a pass with SPACE held and O released (let go of O, or press SPACE before O). Letting go of SPACE alone
+  does not re-arm the gun on foot.
 - **The punch.** `PunchKeys` `$9BA4` keeps the last fire-and-direction byte. `PunchStart` starts a punch only when
   the byte differs (`$9825`). A held SPACE+X punches once, for `PunchTimer` = 10 passes.
 
@@ -379,7 +395,7 @@ stateDiagram-v2
     [*] --> Ready
     Ready --> Fired: fire + up, no bullet in flight
     Fired --> Fired: fire + up still held
-    Fired --> Ready: fire without up, or fire released
+    Fired --> Ready: fire held without up (on foot, 9807); fire released (on the bike only, 9581)
     Ready --> Punching: fire + left or right, a new byte
     Punching --> Punching: the same byte held, PunchTimer counts down
     Punching --> Ready: fire released (PunchKeys = 0)
@@ -408,7 +424,7 @@ ReadMenuKey:
 
 ```mermaid
 flowchart LR
-    S[ScanNumberKeys 80A5] --> K{a key 0-5}
+    S[ScanNumberKeys 8087] --> K{a key 0-5}
     K -->|none| Z[MenuKeyHeld = 0, return FF]
     K -->|yes| H{MenuKeyHeld}
     H -->|set| N[return FF: the same press]

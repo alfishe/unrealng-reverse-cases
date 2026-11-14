@@ -161,10 +161,10 @@ Every amount is a record of the same form, and `AddScore` `$7ED3` adds one.
 | `Points50` | `$7EF3` | 000050 | an enemy killed (`KillEnemy`), and a blast kill once more (`$8C36`) |
 | `Points100` | `$7EF9` | 000100 | nothing: no code loads its address |
 | `Points500` | `$7EFF` | 000500 | a treasure |
-| `Points5000` | `$7F05` | 005000 | each bullet left at the Fat Guy's end |
+| `Points5000` | `$7F05` | 005000 | the Fat Guy's last hit (`FatGuyHit` `$F964`), and each bullet left at his end (`TallyBullets` `$86F4`) |
 | `Points10000` | `$7F0B` | 010000 | each detonator left at the Fat Guy's end |
-| `Points100000` | `$7F11` | 100000 | the Fat Guy defeated, and each life left at the end |
-| `TimeBonus` | `$7F17` | 002000 at its start | the bonus countdown, collected at its stop mark |
+| `Points100000` | `$7F11` | 100000 | the Fat Guy's end, once (`BonusTally` `$86E3`), and each life left there (`TallyLives` `$8736`) |
+| `TimeBonus` | `$7F17` | digits 2-4 set to 2, 0, 0 at its start | the bonus countdown, collected at its stop mark |
 
 ```text
 AddScore(record at HL):
@@ -238,11 +238,15 @@ tally 5, level 5's Fat Guy once.
 ### The bonus countdown
 
 A map entry of kind `$78` starts a countdown and one of kind `$7C` stops it ([doc 07](07-objects.md#75-the-spawner)).
-The start sets `TimeBonus` to 002000, `BonusPrescaler` `$9BAA` to 25, `BonusRunning` `$9BA9` to `$FF`, and plays
-tune 1.
+The start runs only when no countdown runs (`$9CAF`).
+It writes digits 2-4 of `TimeBonus` (`$7F19-$7F1B`) with 2, 0 and 0, sets `BonusPrescaler` `$9BAA` to 25 and
+`BonusRunning` `$9BA9` to `$FF`, and plays tune 1.
+Digits 0, 1 and 5 keep what they held: 0 from the load, so the bonus reads 002000, unless an earlier countdown wrapped
+(below).
 Every pass `CountBonus` `$9163` counts the prescaler down; at 0 it takes 1 off the tens digit, borrowing.
 So the bonus loses 10 points every 25 passes.
-The stop adds what is left to the score and plays tune 1 again.
+The stop runs only while a countdown runs (`$9CCE`): it clears `BonusRunning`, adds what is left to the score and
+plays tune 1 again; the digits stay as they are.
 
 ```text
 CountBonus():                      // each pass while BonusRunning
@@ -251,15 +255,26 @@ CountBonus():                      // each pass while BonusRunning
     for digit in TimeBonus[4], [3], [2], [1]:   // tens up to ten-thousands
         digit -= 1; if digit >= 0: return
         digit = 9                               // borrow
-    // all four wrapped: BonusRunOut, a lone RET
+    // all four wrapped: BonusRunOut, a lone RET; BonusRunning stays $FF, so the count goes on
+
+StartBonusTimer():                 // a kind $78 entry
+    if BonusRunning: return
+    BonusRunning = $FF; BonusPrescaler = 25
+    TimeBonus[2], [3], [4] = 2, 0, 0            // [0], [1], [5] untouched
+    StartTune(1)
+
+StopBonusTimer():                  // a kind $7C entry
+    if not BonusRunning: return
+    BonusRunning = 0; AddScore(TimeBonus); StartTune(1)
 ```
 
 ```mermaid
 stateDiagram-v2
     [*] --> Off
-    Off --> Running: kind 78 entry, TimeBonus = 002000, tune 1
+    Off --> Running: kind $78 entry, digits 2-4 = 2 0 0, tune 1
     Running --> Running: every 25 passes, 10 off
-    Running --> Off: kind 7C entry, score + TimeBonus, tune 1
+    Running --> Running: from 000000 the borrow wraps to 099990, counting on
+    Running --> Off: kind $7C entry, score + TimeBonus, tune 1
 ```
 
 **A worked example.** 2 000 points at 10 a step is 200 steps of 25 passes: 5 000 passes.
@@ -267,7 +282,11 @@ A pass takes two frames or more ([doc 04](04-game-loop.md)), so that is at least
 The HUD never shows the countdown; only the final addition is seen.
 
 Witness: `CountBonus` 12 127 runs in 29 recordings; a start 18 times, a stop 19.
-The bonus never ran out in any recording: from 000000 the borrow would wrap to 099990.
+The bonus never ran out in any recording.
+From the code: from 000000 the borrow wraps to 099990 and the countdown goes on (nothing clears `BonusRunning`), so a
+stop reached late pays up to 99 990.
+Digit 1 (`$7F18`) then stays 9 for the rest of the game: no code but the loader writes it, so every later start reads
+092000.
 
 ## 8.4 PrintText: a text straight on the screen
 
@@ -419,13 +438,17 @@ stateDiagram-v2
 In `controls-keyboard` the level menu's records appear at frame 118: P is `1C 0A 49 60 60 09 00 70`.
 Glyph `$1C` is 28, "P"; column 10; y 73.4; speed 9.375; delay 0; it stops at row `$70`, 112.
 
-| Frame | y | Speed |
-| --- | --- | --- |
-| 118 | 73.4 | +9.375 |
-| 120 | 103.8 | +10.500 |
-| 121 | 112.0 | -5.438: the bounce, -10.875 / 2 |
-| 135 | 75.3 | -0.188: the top, 37 pixels up |
-| 149 | 112.0 | +5.062: the second landing |
+| Frame | y | Speed | Moves since the build (y 64.0, speed +9.0) |
+| --- | --- | --- | --- |
+| 118 | 73.4 | +9.375 | 1 |
+| 120 | 103.8 | +10.500 | 4: 9.75 and 10.125 between, so three moves in two frames |
+| 121 | 112.0 | -5.438: the bounce, -10.875 / 2 | 5 |
+| 135 | 75.3 | -0.188: the top, 37 pixels up | |
+| 149 | 112.0 | +5.062: the second landing | |
+
+A move is one pass of `DropTextWait`, not one frame: between frames 118 and 120 three passes ran.
+Which pass of those frames found its one-count frame wait already over is not traced here; from frame 120 on the
+rows fit one move a frame.
 
 Each bounce is half as fast and a quarter as high: 37 pixels, then about 9, then 2.
 The "O" of "TO" is character 11 counted from 0 (the spaces count too), so it starts 1 + 6 x 11 = 67 frames after
@@ -542,8 +565,8 @@ flowchart TD
 **A worked example: the first line of the Fat Guy's end.**
 The list at `$883D` starts `04 78 41 4E 44 20 53 4F ...`.
 Column 4, row `$78` (120, cell row 15), then "AND SO ...".
-The line has 25 characters, 4 of them spaces.
-`DropText` builds 21 letter records (a space gets no record but still moves the column and adds 6 to the delay),
+The line has 25 characters, 5 of them spaces.
+`DropText` builds 20 letter records (a space gets no record but still moves the column and adds 6 to the delay),
 so the last "Y", character 24, starts 1 + 6 x 24 = 145 frames late.
 
 The GAME OVER screen falls the same way:
@@ -565,6 +588,6 @@ GAME OVER 4 runs (`c1`, `controls-keyboard`, `rzx-l5-full` twice).
 ## 8.8 Known only from the code
 
 - `Points100` `$7EF9`: no code loads its address.
-- The bonus running out: the wrap to 099990 and the lone RET `BonusRunOut` `$917C`.
+- The bonus running out: the wrap to 099990, the countdown going on, and digit 1 left at 9 for the next start.
 - A HUD count above 6 (256 - (B - 6) blanks): no code lets a count pass 6.
 - `LoadError` `$852A` into "STOP TAPE AND PRESS FIRE": a load error was never seen.

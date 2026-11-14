@@ -240,7 +240,7 @@ A record is 11 bytes:
 | --- | --- |
 | +0 | width in pixels |
 | +1 | height in pixels |
-| +2 | bit 6 deadly, bit 7 tested against the blast; bits 0-5 the behaviour after the switch |
+| +2 | bits 6-7 go into the record's +0: bit 6 deadly, bit 7 an object Rick and the enemies stand on (a platform; with bit 6 a solid block, which also sets off a lit detonator it touches); bits 0-5 x 4 are OR-ed into the +0 the trap takes after the switch |
 | +3/+4 | the path |
 | +5/+6 | the animation script |
 | +7/+8 | the second path |
@@ -262,14 +262,18 @@ A frame goes through `SpriteFrameMap` `$C20E` to a sprite number (bit 7 mirrored
 `KindTable` + 2 holds `$F668`.
 The record there is `18 08 A0 BA F4 69 F2 BF F4 69 F2`.
 
-- 24 x 8 pixels; `$A0`: tested against the blast, not deadly, the kind after the switch gets bits `$20`.
+- 24 x 8 pixels; `$A0`: bit 7 without bit 6, a platform, not deadly; after the switch
+  +0 = `$20` x 4 = `$80` OR the old bits 0-5 (`$25`) = `$A5`, bit 7 again.
 - Path `$F4BA`: `01 00 00 BA F4`, one pass of no move, then the loop: the block stands still.
 - Path 2 `$F4BF`: 16 passes of (0, +4), 24 of (0, 0), 16 of (0, -4), 16 of (0, 0), loop: down 64 pixels, a pause, up.
 - Both animations `$F269`: `8A 46 FF 69 F2`, frame 70 held 10 passes, again.
 
 In section 5 an entry `01 30 AC 25` with one box `18 36 10 08` places it.
-Its behaviour `$24` waits for the punch box at x 24, row 54, 1 x 2 cells.
-After the punch, at the end of its still path, the block switches to path 2 and starts its crushing round.
+Its behaviour `$24` (`$04` with bit 5) waits for the punch box at x 24, row 54, 1 x 2 cells.
+After the punch, at the end of its still path, the platform switches to path 2 and makes one round, down 64 pixels
+and back up.
+Bit 5 makes the wait a round trip: at the end of path 2 it switches back to the still path, and the punch box is
+tested again from then on (7.6).
 
 ![Level 1 kind 1](img/objects/kind.png)
 
@@ -300,11 +304,11 @@ Table A's record:
 
 | Byte | What |
 | --- | --- |
-| +0 | bit 0 alive, bit 1 path paused, bits 2-4 the trigger behaviour, bit 5 (with bit 2: a pickup), bit 6 deadly, bit 7 blast test |
+| +0 | bit 0 alive, bit 1 path paused, bits 2-4 the trigger behaviour, bit 5 switch there and back (`$21`, `$29`, `$2D` with bits 0-5 are the pickups), bit 6 deadly, bit 7 a platform (with bit 6 a solid block, `ObjectScanTest` `$90C7`; such a block also sets off a lit detonator it touches) |
 | +1 | x |
 | +2/+3 | y, pixels from the view's top |
 | +4/+5 | the sprite's address (0: none) |
-| +6 | bit 7 mirrored, 6 no trigger test, 5 freed at the path's end, 4 waiting to switch, 3 one more loop first |
+| +6 | bit 7 mirrored, 6 no trigger test, 5 freed at the path's end, 4 waiting to switch, 3 switch once more (the return) |
 | +7/+8 | width, height |
 | +9 | the frame's pass count |
 | +`$0A`/+`$0B` | the animation script's place |
@@ -338,8 +342,8 @@ work/docs/wr/l1p --at 105 docs/img/objects/records.png`. Live records coloured, 
 **A worked example: the records at frame 105.**
 
 - `$7BBF`: `21 C8 4B 00 ED CF ...`. Kind `$21` is a treasure; x 200, y 75, sprite `$CFED` = `Sprites` + 27 x 128.
-- `$7BD7`: `A5 64 00 00 6D DA ...`. `$A5` = alive, behaviour `$04`, bit 5, blast test: level 1's kind 1 block at x 100,
-  y 0, above the screen's window; path `$F4BC`, the still loop.
+- `$7BD7`: `A5 64 00 00 6D DA ...`. `$A5` = alive, behaviour `$04`, bit 5 (there and back), bit 7 (a platform):
+  level 1's kind 1 block at x 100, y 0, above the screen's window; path `$F4BC`, the still loop.
 - `$7C20`: `75 8A 4B 00 6D D0 02 ...`. Kind `$75`: behaviour 1, a patrol; x 138, y 75, stepping +2; patrol pass 22
   of 32.
 - `$7C37`: `00 8E 02 01 ...`. Free; its +`$14` still says `$FF`: the last enemy there died.
@@ -374,9 +378,9 @@ ScanMapObjects():
 
 SpawnFromMap(entry):
     k = entry.kind
-    if k < 74: SpawnMapObject(entry)                   // a trap or pickup into table A
-    else if k == 78: start the bonus countdown (2000, tune 1)
-    else if k == 7C: stop it, add what is left to the score
+    if k < $74: SpawnMapObject(entry)                  // a trap or pickup into table A
+    else if k == $78: StartBonusTimer()                // only when no countdown runs: digits 2-4 = 0 2 0
+    else if k == $7C: StopBonusTimer()                 // only while one runs: what is left to the score
     else: SpawnEnemy(entry)                            // into table B
 ```
 
@@ -489,8 +493,11 @@ So a trap left behind a scroll comes back, from its start, when the view returns
 3. The path: `$FF n` plays effect n; a `00` loop point is followed, and there a waiting trap switches or ends.
 4. A step: x += the x step, freed when it leaves 0-`$E8`; y += the y step, freed when it leaves the view.
 5. `AnimateTrap` `$A608` moves the script on and sets the sprite.
-6. A deadly trap (+0 bit 6) with a sprite kills every enemy it overlaps, then Rick when it touches him.
-7. The trap's own map entry boxes are tested, and the behaviour decides.
+6. A deadly trap (+0 bit 6) with a sprite: with +0 bit 7 (a solid block), touching a lit detonator (fuse 10 or more)
+   sets it off now (effect 5, fuse 9); then it kills every live enemy it overlaps (one already dying, +`$14` not 0,
+   is skipped), then Rick when it touches him.
+7. The trap's own map entry boxes are tested, and the behaviour decides; a trap waiting to switch with +0 bit 5 skips
+   the test.
 
 ```text
 UpdateTrap(r):
@@ -503,8 +510,9 @@ UpdateTrap(r):
                 r.p = word(path[r.p+1])                 // the loop point
                 if r.flags bit 5: Retire(r); return     // a one-shot path ends
                 if r.flags bit 4:                       // waiting to switch
-                    if bit 3: clear bit 3 else clear bit 4 and
-                    if behaviour == 14: set flags bit 5
+                    if r.flags bit 3: clear bit 3       // switch now, bit 4 kept: switch back at the next end
+                    else:             clear bit 4       // the last switch
+                    if behaviour == 14: set flags bit 5 // both branches: freed at the next end
                     SwitchTrapPath(r); return
                 continue
             break
@@ -513,9 +521,13 @@ UpdateTrap(r):
         r.step += 1; if r.step == path[r.p]: r.step = 0; r.p += 2
         AnimateTrap(r)
         if r.deadly and r.sprite:
-            for each live enemy touching r: KillEnemy
+            if r.kind bit 7 and DetonatorFuse >= 10 and r touches (DetonatorY, DetonatorX + 8, 16 x 8):
+                PlayEffect(5); DetonatorFuse = 9                // the lit detonator goes off now
+            for each enemy with +0 not 0 and +14 == 0 touching r: KillEnemy
             if Rick not dying and touches r: KillRick
-    TrapTriggers(r)
+    if r.flags bit 6: return                                    // TrapTriggers: no more tests
+    if r.flags bit 4 and r.kind bit 5: return                   // waiting for a round trip
+    TestTriggerBoxes(r) ...                                     // the behaviours below
 ```
 
 The eight trigger behaviours (+0 bits 2-4, from the entry's +3):
@@ -523,7 +535,7 @@ The eight trigger behaviours (+0 bits 2-4, from the entry's +3):
 | Behaviour | When a box fires | Without a fire |
 | --- | --- | --- |
 | `$00` | the path pauses or resumes (+0 bit 1 toggled) | nothing |
-| `$04` | wait: switch at the path's end (`ArmTrapWait` `$A51A`) | nothing |
+| `$04` | wait: switch at the path's end (`ArmTrapWait` `$A51A`); with +0 bit 5 also +6 bit 3: switch back at the next end | nothing |
 | `$08` | stop testing, switch now | nothing |
 | `$0C` | removed (`RetireObject`) | nothing |
 | `$10` | never tested: spawned with +6 = `$60`, it runs its path once and is freed | |
@@ -545,6 +557,11 @@ A4BE  CP $0C
 A4C0  JP Z,RetireObject ; $0C: removed
 A4C3  BIT 3,A
 A4C5  JP Z,ArmTrapWait  ; $04, $10, $14: wait for the path's end
+...
+A51A  SET 4,(IX+$06)    ; ArmTrapWait: waiting
+A51E  BIT 5,(IX+$00)
+A522  RET Z
+A523  SET 3,(IX+$06)    ; +0 bit 5: switch there and back
 A4C8  SET 6,(IX+$06)    ; $08, $18: no more tests
 A4CC  BIT 4,A
 A4CE  JP Z,SwitchTrapPath
@@ -561,6 +578,8 @@ stateDiagram-v2
     Paused --> Running: box fires again
     Running --> Waiting: box fires, behaviour 04 or 14
     Waiting --> Second: the path's loop point
+    Waiting --> Return: the loop point, +0 bit 5 (+6 bit 3)
+    Return --> Running: the second path's loop point: switch back
     Running --> Second: box fires, behaviour 08 or 18
     Second --> Gone: path end with flags bit 5 (14, 18)
     Running --> Gone: box fires, behaviour 0C
@@ -585,6 +604,8 @@ The point: a trap that does not move still costs about 2 100 T a pass: path, ani
 
 Witness: `UpdateTrap` 148 725 runs in 61 recordings; the trap-on-Rick test 83 559; `SwitchTrapPath` 184 runs in 42;
 behaviour `$0C` removed by its box 432 times, `$1C` released 9 times.
+The round trips: `ArmTrapWait` set +6 bit 3 (+0 bit 5) 59 times in 15 recordings (`$A523`), the first switch kept
+bit 4 58 times (`$A355`), and the last switch cleared it 77 times (`$A35C`, the plain waits included).
 `KillEnemy` from a deadly trap (`$A454`): 220 times, 102 of them in `sec-l5-s5`.
 
 ### The pickups
@@ -600,7 +621,8 @@ When Rick, alive, overlaps it:
 | detonators `$2D` | `Detonators` `$8B3D` = 6, effect 6 |
 
 The pickup is then retired.
-An ammunition or detonator box hit by the bullet or the blast bursts (effect 5, ten frames).
+An ammunition or detonator box hit by the bullet or the blast bursts (effect 5, ten passes: `UpdatePickup`'s +`$0E`
+counts down one a pass).
 `box-shot` (POKEs, said so: level 1 starts in section 3 beside the boxes; WALKTHROUGH 6.0) shoots the ammunition box:
 `PickupShot` `$A5E4` 1 run, `PickupBurst` `$A53A` 10 runs. The blast's branch (`$A5F7`) runs in no recording.
 
@@ -629,7 +651,7 @@ Each behaviour calls the same three parts:
 ```text
 EnemyPatrol(e):
     EnemyVertical(e)
-    if CollisionFlags & 06 (on a floor) or not CollisionFlags bit 6 (no step):
+    if CollisionFlags & $06 (solid or floor) or not CollisionFlags bit 6 (not on an object):
         e.pstep += 1
         if e.pstep >= e.plen: e.xstep = -e.xstep; e.pstep = 0
     EnemyWalk(e, e.xstep)
@@ -637,7 +659,7 @@ EnemyPatrol(e):
 
 EnemyWanderer(e):
     EnemyVertical(e); EnemyWalk(e, e.xstep); EnemyHitsAndSprite(e)
-    if not e.climbing and e.x & 0F == 4 and Random() & 3 == 0:
+    if not e.climbing and e.x & $0F == 4 and Random() & 3 == 0:
         e.xstep = +2 if Random() >= 0 else -2
 ```
 
@@ -720,8 +742,13 @@ the records decoded.*
 How to read it: the patrol walks between x 92 and 156 under Rick; at frame 118 Rick enters section 6 and four
 treasure-room records replace the old ones.
 
-Witness: `UpdateEnemy` 37 761 runs in 55 recordings (patrol 22 488, chaser 9 107, wanderer 6 166); killed by the
-bullet 43 times, the blast 5, punched 9, Rick killed by a touch 413 times; a wanderer's new direction 197 times.
+Witness (the L1 index, `python3 tools/l1q.py`, every recording of case.json and stage 2): `UpdateEnemy` `$9EAF` 52 717
+runs in 75 recordings; `EnemyHitsAndSprite` `$9ECE` and so `TestEnemyHits` 49 093 runs in 69 (patrol `$A06E` 27 224,
+chaser `$A025` 12 139, wanderer `$9FF7` 9 734; the rest are falling enemies, `$9F8D` 3 620).
+Hit by the bullet 43 times (`$8C13`), by the blast 5 (`$8C33`), stunned by a punch 9 (`$8C57`).
+An enemy touched Rick 624 times (`$8C67` reached), nearly all in the immunity-POKE recordings, whose POKE replaces that
+call; the touch killed him 18 times (`KillRick`'s callers in l1q, [doc 10](10-gameplay-logic.md#107-the-punch)).
+A wanderer took a new direction 317 times (`$A021`).
 
 ## 7.8 The hit tests
 
@@ -742,7 +769,8 @@ A box is E (x), HL (y, 16 bits), C (width), B (height).
 
 The cells' side is `TestBodyBox` `$8FF9`.
 It reads `CellFlags` of the 2 or 3 body rows and the feet row under a 16-pixel body at x + 4 into `CollisionFlags`
-`$915E`: bit 1 solid, 2 floor one can jump up through, 3 ladder, 4 ladder top, 5 deadly, 6 a platform object.
+`$915E`: bit 0 a special surface (the feet row only), 1 solid, 2 floor one can jump up through, 3 ladder, 4 ladder
+top, 5 deadly; `TestBoxObjects` adds bit 6, on an object (a platform or block of table A).
 
 ```text
 TouchesRick(E, HL, C, B):            // carry: overlap
@@ -780,8 +808,9 @@ flowchart LR
 ```
 
 **A worked example.**
-At frame 105 the enemy's box is x 138 + 4 = 142, y 75, 16 x 21; Rick stands at x 174 + 4 = 178, y 171.
-dx = 178 - 142 = 36, not below 16: no touch, and the y test is not even reached.
+At frame 105 the enemy's box is x 138 + 4 = 142, y 75, 16 x 21; Rick stands at x 226 + 4 = 230, y 171 (his record
+at frame 103, [doc 06](06-rendering.md#64-the-sprites)).
+dx = 230 - 142 = 88, not below 16: no touch, and the y test is not even reached.
 
 The point: every test is two 8-bit compares and one 16-bit subtraction.
 The 16-bit y lets the objects live in the 44-row view, above and below the screen.
@@ -814,7 +843,8 @@ flowchart LR
 One time in four the low two bits are 0, and a second call's sign picks +2 or -2.
 Since `Ticks` counts interrupts, a replay with the same inputs gets the same turns.
 
-Witness: `Random` 1 018 runs in 21 recordings (999 and 995 from the wanderer, 19 and 18 from the chaser).
+Witness: `Random` 1 569 runs in 27 recordings: 1 233 from the wanderer's turn test (`$A010`), 317 from its direction
+(`$A016`: about one in four, as the `AND 3` says), 13 and 6 from the chaser (`$A048`, `$A05F`).
 
 ## 7.10 The game variables
 
@@ -833,7 +863,7 @@ Witness: `Random` 1 018 runs in 21 recordings (999 and 995 from the wanderer, 19
 | `SectionEntries`, `ScanStart` | `$8B3E`, `$8B40` | the section's map entry list, the scan's start |
 | `RickSection` | `$9B93` | the section Rick is in |
 | `RestartPoint` | `$9B8C` | where a new life starts |
-| `RideMode` | `$945D` | the ride: level 2 section 6, level 4 sections 4-5, level 5 section 2 |
+| `RideMode` | `$945D` | the ride: level 2 section 6, level 4 sections 4-5, level 5 section 2, and the never-recorded exit of level 1 section 2 into section 0 |
 | `BonusRunning`, `BonusPrescaler` | `$9BA9`, `$9BAA` | the countdown on, its pass count |
 | `RickRecord` | `$9BAB` | Rick's record ([doc 10](10-gameplay-logic.md)) |
 | `BulletRecord`, `DetonatorRecord` | `$9BB4`, `$9BBD` | the shots |
@@ -841,6 +871,8 @@ Witness: `Random` 1 018 runs in 21 recordings (999 and 995 from the wanderer, 19
 
 ## 7.11 The long levels
 
+The chord (SPACE, N, ENTER, J and Y) sets `CheatExits` only while `Level5Open` is set (`CheatExitsKeys` `$7D4C`):
+without level 5 open the chord does nothing ([doc 05](05-controls.md#57-the-cheat-chords)).
 With `CheatExits` set, an exit with bit 7 and without bit 4 does not end the level.
 Rick walks on into the section in its +2, a hidden part of the map.
 
@@ -863,7 +895,7 @@ The point: the long levels are in every copy of the game, behind a chord on the 
 ## 7.12 Known only from the code
 
 - A pickup box burst by the blast (`$A5F7`): no recording runs it (the bullet's branch: `box-shot`, 7.6).
-- The trap blast test at `$A41C` (a blast-tested trap at fuse 10 or more): not run.
+- A deadly solid block (+0 bits 6 and 7) setting off a lit detonator (`$A41C`, fuse 10 or more): not run.
 - `DispatchByKind` `$917D` and its handler table: an earlier design; nothing jumps there.
 - `EnemyAnimScripts` `$9D59`: written into every enemy, read by nothing.
 - `EnemyLandLevel5` `$A1AE` and the enemy animation steps 1 and 4 (`$9F32`, `$9F3B`): not run.

@@ -1,5 +1,5 @@
 # Kinds: a trap or pickup kind (a map entry's kind below $74) points to an 11-byte record: width, height,
-# flags (bit 6 deadly, 7 the detonator test; bits 0-5 the behaviour after the switch), path, anim, path2,
+# flags (bit 6 deadly, 7 a platform, both a solid block; bits 0-5 x 4 OR-ed into +0 at the switch), path, anim, path2,
 # anim2 (absolute words). A record whose kind never switches has 7 bytes (the next record follows). The
 # animation and path tokens: anim N (a frame), N+K (frame N for K more passes), fx=N, jump=$hhhh; path
 # C*(dx,dy) (C passes of the step, dx and dy signed nibbles), fx=N, jump=$hhhh.

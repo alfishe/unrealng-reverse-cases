@@ -102,7 +102,8 @@ Points10000:
 Points100000:
   INCBIN "res/tables/points-100000.bin",$0000,6
 
-; A bonus that counts down: 002000 when set, collected by $9CD6
+; A bonus that counts down: digits 2-4 set to 2 0 0 at a start, collected by
+; $9CD6
 ;
 ; $9C97 sets its digits +2..+4 to 2, 0, 0 (2000) when Rick takes a certain
 ; object (the code at $9CAC), $9163 takes 1 off its digits +1..+4 every 25

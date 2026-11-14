@@ -20,9 +20,10 @@ block with sides A and B (`work/stage1/tape-compare.txt`):
 - the Kixx sides equal the original but for 32 bytes of the loader block's tail, which the stack overwrites;
 - ZXDB's `Rick Dangerous 2.tap` is the Micro Style tape decoded to plain bit order, with a new BASIC that patches the
   loader and 13 other bytes in the level loader (`$8479-$8485`); its level blocks are Erbe's;
-- Erbe's tapes are another build (standard ROM blocks, the code shifted, the POKEs 24 lower) whose levels 2 and 5
-  differ from side B (8 and 64 bytes); side B's level 5 addresses the table at `$7B8F` that side A's code uses, Erbe's
-  `$7B7E`, so the Micro Style sides belong together;
+- Erbe's tapes are another build (standard ROM blocks, the code shifted by region: from about `$7E30` on 24 lower, so
+  most POKEs are 24 lower; the entry and object tables 17-20 lower) whose levels 2 and 5 differ from side B (8 and
+  64 bytes); side B's level 5 addresses the table at `$7B8F` that side A's code uses, Erbe's `$7B7E`, so the Micro
+  Style sides belong together;
 - the other TAPs and TZXs are re-saves with new BASICs (one packed), the zxart files are hacks and crack intros.
 
 The table is in the README. No SkoolKit disassembly or other reverse is known (GitHub searched).
@@ -122,7 +123,7 @@ The images and what changes between them:
     `$9F4D`), Rick's record and the two after it (his shot and detonator, to confirm) and the section
     (`$9B8D-$9BC2`);
   - the IM 2 table `$FD00-$FE00` and the handler's page `$FEFE-$FFFF` (the stack);
-  - the RZX run's own build: its level loader (`$846A-$8510`, 165 bytes: its TAP version), `$840D-$840E`, and the
+  - the RZX run's own build: its level loader (`$846A-$8510`, 167 bytes: its TAP version), `$840D-$840E`, and the
     page bytes at `$7A81` and `$7AC6` (`LD A,$16`: its RAM 1 calls page RAM 6), found against `build/game.bin` by
     the docs writer (`rzx-l1-06000-poke` frame 0); `$8311-$831F` change in every level.
   The level data at `$A800-$FCFF` does not change in play (but for level 3's 3 bytes): the maps' last 768 bytes are

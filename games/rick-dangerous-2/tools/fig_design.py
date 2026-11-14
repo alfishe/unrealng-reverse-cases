@@ -252,7 +252,7 @@ MOMENTS = [  # (level, RZX frame, caption)
     (1, 3250, 'L1 s5: on a ladder\n(RickClimbing $9B99 set)'),
     (1, 5500, 'L1 s5: a detonator burning\n(DetonatorOn $9BBD set)'),
     (1, 5750, 'L1 s5: a punch\n(PunchTimer $9BA3 set)'),
-    (2, 21300, 'L2 s5: the anti-gravity bike\n(RideMode $945D = $FF)'),
+    (2, 21300, 'L2 s6: the anti-gravity bike\n(RideMode $945D = $FF)'),
     (4, 11100, 'L4 s4: the bike in the mud mines\n(RideMode set 11 000-12 750)'),
     (5, 20800, 'L5 s7: the Fat Guy\n(LevelHookOn $8A24 set from 20 750)'),
     (5, 25000, 'the end text after the tally\n(score 803 440)'),
