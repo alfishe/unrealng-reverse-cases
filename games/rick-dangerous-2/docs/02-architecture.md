@@ -1,137 +1,330 @@
 # 2. Architecture
 
-What this covers: the machine budget, the memory map, the stages from the medium to play, the frame, the main loop's
-call graph, the module map. The recordings it rests on: `c1` (128K, power-on, side A at ROM speed) and the level
-recordings of [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings) (from the RZX run's states; no tape).
+What this covers: how the program is built and where its time goes.
 
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
+- the stages from the tape to play;
+- the module map: the 18 modules of the game block, the music's four, the level blocks;
+- the memory map on a 128K and on a 48K: RAM 1 for the music, the level block at `$A800`;
+- the heatmap of every recording, and the stack;
+- the frame budget: a pass of the main loop every two frames, and what fills it;
+- the leftovers: code and data nothing reaches.
 
-## 2.0 The stages
+The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
+
+| Recording | Load | Used for |
+| --- | --- | --- |
+| `c1` | 128K power-on, side A at ROM speed | the entry, the stack, the menus |
+| `c48` | 48K power-on, side A at ROM speed | the 48K path |
+| `rzx-l1-06000-poke` | the RZX run's level 1 state at frame 6000, 2000 frames | the budget of ordinary play |
+| `rzx-l5-20000-poke` | the RZX run's level 5 state at frame 20 000, 2000 frames | the budget of the Fat Guy's room |
+| every stage 1 recording | merged into `work/stage1/l1-all.json` (71 L1 builds, 310 426 frames) | the heatmap |
+| the pass timings | `tools/passes.py`, 300 passes from six RZX states (`work/stage1/passes.txt`) | the pass lengths |
+
+## 2.1 The stages
 
 ```mermaid
 flowchart LR
-  A["BASIC RICK-II<br/>side A, ROM"] --> B["loader $FF00<br/>decrypts itself (XOR $5C)"]
-  B --> C["screen $4000, code $6000-$FEFD<br/>bit-reversed blocks"]
-  C --> D["entry $7B8F<br/>128K test, music to RAM 1, IM 2"]
-  D --> E["control menu, level menu"]
-  E -->|level 1| G["level start $7CC5"]
-  E -->|levels 2-4, 5 when open| F["side B: skip, read $A800-$FCFF<br/>decrypt maps $894E"]
+  A["BASIC RICK-II, side A"] --> B["the loader at $FF00 decrypts itself"]
+  B --> C["the screen, then the code $6000-$FEFD, bit-reversed"]
+  C --> D["Entry $7B8F: 128K test, music to RAM 1, IM 2"]
+  D --> E["ControlMenu $80B5, LevelMenu $7F44"]
+  E -->|"level 1"| G["LevelStart $7CC5"]
+  E -->|"levels 2-5"| F["LoadLevel $840C: side B into $A800-$FCFF, DecryptMaps $894E"]
   F --> G
-  G --> H["main loop $7D2D<br/>a pass every 2 frames"]
-  H -->|level done| G
-  H -->|last life, E| I["GAME OVER"] --> E
-  H -->|Fat Guy beaten| J["bonus tally $86E0<br/>the ending $883D"]
+  G --> H["MainLoop $7D2D: a pass every 2 frames"]
+  H -->|"level done"| G
+  H -->|"last life, E"| I["GameOver $7E1E"]
+  I --> E
+  H -->|"the fifth level done"| J["BonusTally $86E0, the ending $883D"]
+  J --> I
 ```
-
-The witnesses: `c1` (the loader at frame 1110, the entry at 13 998), the level loads `load-l2` ... `load-l5`, the
-RZX run's level 5 for the ending ([WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on),
-[doc 3](03-build-and-load.md)).
-
-## 2.1 The memory map
-
-A stage 1 map: every address below is a witness from the code (`sna2skool` over the play state
-`work/stage1/lab/dump-e3-end/z80.bin`) or from the L1 of the recordings (`work/stage1/*/l1.json`, the routines'
-read and write ranges); names are first names, to be checked in stage 2. On a 128K the game runs with ROM 1 and
-RAM 5, 2 and 0 (`$4000`, `$8000`, `$C000`); RAM 1 is paged in at `$C000` only for the music (`$7A77`).
-
-| Range | What | Witness |
-| --- | --- | --- |
-| `$4000-$5AFF` | the screen; the HUD in the top row (score, lives, ammunition, detonators) | the drawers `$77B1`, `$783F`, `$7A2C` |
-| `$5DE8-$5F8F` | the composed cells: background cells copied here and the sprites masked into them (8 bytes a cell, `$5DE8` + 8 x n, the counter at `$77B0`) | `$7755`, `$76D4`, the blitter `$7329` |
-| `$6000-$707F` | on the tape: the AY music, copied to RAM 1 `$C000-$D07F` by the entry code on a 128K (4224 bytes, the loop at `$7BBF`); then free | `$7B8F-$7BEF` |
-| `$6500-$65FF` | a table of the 256 bytes bit-reversed: the sprites mirrored (bit 7 of a record's +6) | `$7329` (`LD H,$65`) |
-| `$6600-$6AFF`, `$6B00-$707F` | the view's cell buffers: the cells built from the map, 32 x 44 (`$6B00`, by `$88D4`: 11 block rows), and a 32 x 40 buffer at `$6600` compared cell by cell when the view is redrawn | `$88D4`, `$77B1`, `$8969` |
-| `$7080-$715F` | the HUD's glyphs (digits, the life, bolt and detonator icons) | `$7A2C` reads `$7080-$715F` |
-| `$71C0-$72F8` | the controls: the pause, quit and menu key tests `$71C0-$724A`, the method `$7252` (0 keyboard, 1 Kempston, 2 cursor, 3 Sinclair), the read `$7254` into `$7253` (active low: bit 0 right, 1 left, 2 down, 3 up, 4 fire) | the IM 2 handler calls `$7254` |
-| `$7329-$7A52` | the sprite blitter `$7329`, the cell drawers `$76D4`, `$7755`, `$77B1`, the view scroll `$78A8`, the attributes `$783F` | L1 routines |
-| `$7A53-$7A60` | the frame wait (EI, until the counter `$7A60` reaches C, then clear it) | `$7A53` |
-| `$7A76-$7ABE` | the 48K flag `$7A76` (`$FF`: no music) and the RAM 1 call `$7A77` (`DI`, RAM 1 paged in, `CALL` HL, RAM 0 back; the operands stored into its own code at `$7A8B`, `$7A8D`): the player each frame (`$7AB6`: `$CAAF`), the tune starts (`$7AAD`: `$CA27`), the effects (`$7A97`: `$CCC8`) | `$7B8F` sets the flag when no RAM 1 is found; the code at `$7A77-$7ABE` |
-| `$7B8F-$7C9F` | the entry code (`$7B8F`: SP = 0, the 128K test, the music copy), then reused as the object tables (`LD IX,$7B8F`, `$7C20`, `$7C8F`) | `c1`: entry at frame 13 998, the tables zero in play |
-| `$7CC5-$7E1B` | a level's start (`$7CC5`: read from tape `$840C` and decrypt `$894E` when `$C20C` is not the level wanted; a life up to 6, ammunition and detonators 6) and the main loop `$7D2D-$7E1B` (two frames a pass: `LD C,$02`, `CALL $7A53`) | [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on) |
-| `$7EC8-$88AF` | the texts: GAME OVER `$7EC8`, the level menu `$7FC7-$8063`, the control menu `$8159-$81AD`, the tape messages `$843A`, `$8451`, the end texts `$87A2-$88AF` (the digits are stored 4 higher: "5" is shown as 1) | the image's strings |
-| `$7EF1-$7EF2` | the level (1-5) and a counter beside it | `$7CC5`, `$7D9E-$7DCD` |
-| `$7F1D-$7F22` | the score, six digits 0-9 | the RZX memory at level 5, frame 1000: `00 04 01 03 08 00` with "041380" on the screen |
-| `$846A-$8520` | the level loader (reads side B, skips the blocks before the level) | the TAP version patches `$8479-$8485`; the RZX's version differs in `$846A-$8510` |
-| `$88CF-$88D3` | the view: the top row in the section (`$88CF`), the section's map (`$88D0`), `$88D2` | `$88D4`, `$8A6D` |
-| `$894E` | decrypts the level's last 768 bytes of maps ([2.2](#22-the-level-maps)) | |
-| `$8A6D` | a section's setup from the section table | |
-| `$8B3B-$8B3D` | lives, ammunition (ray gun), detonators | the POKE file: `$8A30` `DEC A` of lives, `$86ED` and `$959F` of ammunition, `$870E` and `$9B41` of detonators |
-| `$93D0` | Rick dies | called by the collision tests at `$8C67`, `$A475`, `$93B4` (the POKE file's immunities) |
-| `$9B93` | the section Rick is in | the RZX run: 0-9 |
-| `$9BAB-$9BC5` | three 9-byte records: Rick (`$9BAB`: +1 x, +2 y, +4 the sprite, +6 bit 7 mirror), and two more (his shot and detonator, to confirm) | `LD IX,$9BAB`, `$9BB4`, `$9BBD`; the RZX memory |
-| `$A800-$FCFF` | the level (side B's block; level 1 is in side A's code block on the 128K) | [doc 3, 3.1](03-build-and-load.md#31-the-tape-block-by-block) |
-| `$A800-$A8FF` | a flag byte per cell kind (bit 7 set: the sprite composer leaves the cell as it is) | `$7755` (`LD B,$A8`) |
-| `$A900-$B0FF` | 256 cells of 8 x 8 pixels | `$76D4`, `$77B1` (`ADD A,$A9`) |
-| `$B100-$B1FF` | the cells' attributes | `$77B1` (`LD H,$B1`) |
-| `$B200-$C1FF` | 256 blocks of 4 x 4 cells | `$88D4` (`LD BC,$B200`) |
-| `$C200-$C26C` | the level header: `$C200` a pointer, `$C202` the section table, `$C204` the maps' base, "CORE  " or "DESIGN" in levels 1-4 where level 5 has two jumps (`$C206`: `JP $F7E6`, `$C209`: `JP $F8D0`), the level number at `$C20C` | the five level blocks; the main code calls `$C206` (`$8AF8`, `$9261`, `$96A9`, `$A074`, `$A116`) and `$C209` (`$8664`, `$9352`, `$9FD8`), each behind a test of `$8A24` (`$8AF1`, `$865D`) |
-| `$C26D-` | the sprites, 128 bytes each, to the maps' base (the first 24, Rick and the explosions, the same in every level) | the blitter `$7329`; [the sprite sheets](#23-the-sprites) |
-| maps' base (`$E1ED-$E46D`) to the table | the sections' maps, 8 blocks a row | [the maps](#22-the-level-maps) |
-| `$F7E6-$F915` (level 5) | level 5's own code, run through the two jumps: the Fat Guy's part (to name in stage 2) | executed in `rzx-l5-20000-poke` (`$F7E6-$F83B`) and `rzx-l5-22000-poke` (`$F8D0-$F915`), the L1 |
-| `$FD00-$FE00` | the IM 2 table (257 bytes `$FE`, I = `$FD`) | built by the entry code |
-| `$FEFE-$FF20` | the IM 2 handler: counts `$7A60`, calls `$81D4`, `$7254` (controls), `$7AB6` | `c1` L1: 4706 entries |
-| `$FF21-$FFFF` | the tape loader (its tail overwritten), then the stack from `$0000` down: low mark `$FFDC` in `c1` | `c1` L1: the writes above `$FD00` after frame 14 100 |
-
-## 2.2 The level maps
-
-A level is a set of sections, each a shaft one screen wide (8 blocks, 32 cells) and from one to 56 block rows tall;
-the view scrolls up and down a section by 8 cells a step and moves to another section (at the side edges, to confirm
-in stage 2). The section table (`$C202`) has 8 bytes an entry: the map's offset from `$C204` (big-endian), then
-fields the setup `$8A6D` copies to `$88D2`, `$8995` and `$8B3E` (the section's objects and enemies, to decode).
-`tools/level_map.py` draws every section from the level block, a column each, its height taken to the next section's
-map (the last: one screen). The last 768 bytes of the maps (from the maps' base + `$600`) are encrypted on the tape
-and decrypted by `$894E` when the level starts (each byte XOR a key from 0 that becomes (key XOR the address's low
-byte) + 1): the decrypted bytes equal the RZX run's memory in play for levels 2-5 and side A's resident level 1, 0
-bytes differ (`tools/image.py` decrypt_maps). Those bytes are the 762 that differ between side A's level 1 and side
-B's block 1.
-
-- level 1, Hyde Park London, 8 sections: ![Level 1 sections](img/maps/level1.png)
-- level 2, the Ice Caverns of Freezia, 13 sections: ![Level 2 sections](img/maps/level2.png)
-- level 3, the Forests of Vegetablia, 10 sections: ![Level 3 sections](img/maps/level3.png)
-- level 4, the Atomic Mud Mines, 13 sections: ![Level 4 sections](img/maps/level4.png)
-- level 5, the Fat Guy's headquarters, 8 sections: ![Level 5 sections](img/maps/level5.png)
-
-The section Rick is in is `$9B93`: in the RZX run's 453 samples (one every 250 frames) it takes the values 0-9 only,
-so sections 10-12 of levels 2 and 4 are reached only in frames between the samples, or not at all (stage 2).
-
-## 2.3 The sprites
-
-`tools/sprite_sheet.py` draws every sprite of a level from `$C26D` in 128-byte steps to the maps' base: the rows to
-skip, the rows drawn (at most 24), then 6 bytes a row, three data and three mask bytes for a 24-pixel row. Sprites
-0-23 (`$C26D-$CE6C`: Rick standing, walking, crawling, climbing, shooting, the explosions) are the same in all five
-levels; the rest are the level's enemies, objects and hazards.
-
-![The sprites of level 1](img/sprites/level1.png)
-
-The other levels: [level 2](img/sprites/level2.png), [level 3](img/sprites/level3.png),
-[level 4](img/sprites/level4.png), [level 5](img/sprites/level5.png).
-
-## 2.4 The heatmap and the stack
-
-![Executed, read and written per byte over every stage 1 recording](img/arch/heatmap.png)
-
-*Memory use over every stage 1 recording: 71 L1 builds, 310 426 frames, merged by `tools/l1merge.py` into
-`work/stage1/l1-all.json`, drawn by `python3 ../../kit/heatmap.py work/stage1/l1-all.json docs/img/arch/heatmap.png
---cell 2 --from 4000 --to FFFF`. Four panels: executed, read, written, and a composite (red written, green read, blue
-executed), one row a page of 256 bytes from `$4000`. The `$C000` window shows RAM 0 only: the music's instructions in
-RAM 1 (4.0 million, our recordings) and RAM 6 (25.3 million, the RZX pieces: the RZX run's TAP version keeps its
-music in RAM 6) are left out.*
 
 How to read it:
 
-- Executed: the code band `$71C0-$A7EF`; above it only level 5's code (`$F7E6-$F915`, the RZX pieces at 20 000 and
-  22 000), and the loader page (`$FF00`, the tape loads of `c1` and the level loads) and the IM 2 handler `$FEFE`;
-  below it the 128 ROM's paging routine in the system variables (`$5B0A`, `c1`'s load).
-- Read: the buffers `$6500-$707F`, the code's tables and variables, the level's cells and blocks (`$A800-$C1FF`), the
-  maps at the top of the level (`$EE00-$FCFF` the brightest), and two thin columns down `$C800-$E1FF` in the sprite
-  area (one byte in 256 read again and again: to explain in stage 2).
-- Written: the screen, the composed cells `$5B00-$61FF`, the buffers `$6500-$707F`, the variables in the code
-  (`$7000-$A6FF`); the level area `$A800-$FCFF` is written only by the loads and the maps' decryption.
-- The inset under each panel is the screen page drawn as the screen.
+- The tape side A carries the BASIC, the loader, the screen and one block of code. The code block holds the game,
+  the music and level 1 ([doc 3](03-build-and-load.md)).
+- The entry runs once. After it, the program never returns to BASIC.
+- A level other than the one in memory is read from side B into the same `$A800-$FCFF` area. Only one level is ever
+  in memory.
 
-### The stack
+The witnesses: `c1` (the loader at frame 1110, the entry at 13 998), the level loads `load-l2` ... `load-l5`, and the
+RZX run's level 5 for the ending ([WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on)).
 
-The entry sets SP = 0 (`$7B8F`), so the stack grows down from `$FFFF` over the loader's tail. The lowest byte written
-under the loader's code (`$FF21` up) is `$FFDC` in `c1` (36 bytes, the menus and the start) and `$FFE6` (26 bytes)
-in every other recording (the 70 L1 builds' writes in `$FF21-$FFFF`). The map builder and the blitters borrow SP to
-pop data with the interrupts off and set it back to `$FFFA` (`$88D4`), so the handler never pushes into level data.
+**The point**: a tape game with one level resident. Everything a level needs (cells, blocks, sprites, maps, objects,
+level 5's own code) travels with the level.
+
+## 2.2 The module map
+
+The case's source has six parts. Each is rebuilt byte for byte by `kit/mkgame.py` from its `.ann`.
+
+| Part | Source | Where it runs | Size | Modules |
+| --- | --- | --- | ---: | --- |
+| the game | `src/game/game.ann` | `$7080-$A7FF` | 14 208 | 18 (below) |
+| the music | `src/music/music.ann` | RAM 1 `$C000-$D07F` (loaded at `$6000`) | 4224 | tunes, effects, player, sequencer |
+| the levels | `src/levels/levels.ann`, one piece a level | `$A800-$FCFF` | 21 760 each | cells, header, maps, sections, kinds (+ fatguy in level 5) |
+| the loader | `src/loader/loader.ann` | `$FF00` | | 1 |
+| the screen | `src/screen/screen.ann` | `$4000` | 6912 | 1 |
+| the BASIC | `src/tape/basic.ann` | the BASIC area | | 1 |
+
+![The game block by module](img/arch/modules.png)
+
+*Every byte of the game block `$7080-$A7FF` coloured by the module of its entry in `src/game/game.ann` (the
+`@module` lines, cut as `kit/mkgame.py` cuts the source). Made with `python3 tools/fig_arch.py modules
+docs/img/arch/modules.png`.*
+
+How to read it:
+
+- A row is 448 bytes, from the address at its left. Each colour is one module; the legend gives its size.
+- The modules are interleaved. `render` appears in five places, `rick` in five, `objects` in seven.
+- The game was not written module by module in memory: routines were added where there was room. The source groups
+  them back by purpose.
+
+The 18 modules, by size:
+
+| Module | Bytes | What it does | Doc |
+| --- | ---: | --- | --- |
+| rick | 2381 | the body box tests, walk, jump, crawl, climb, the ride, the special floors, death | [10](10-gameplay-logic.md) |
+| render | 1777 | the sprite composer, the cell drawers, the scroll, the attributes | [6](06-rendering.md) |
+| objects | 1482 | the map entry scan, spawning, freeing, the trigger boxes | [7](07-objects.md) |
+| enemies | 1195 | the walkers, chasers, patrols and climbers | [10](10-gameplay-logic.md) |
+| menu | 1079 | the control and level menus, the cheat flags, the falling letters | [5](05-controls.md) |
+| traps | 958 | the traps and pickups: paths, animations, triggers | [10](10-gameplay-logic.md) |
+| weapons | 772 | the gun, the detonator and its blast, the punch | [10](10-gameplay-logic.md) |
+| collision | 701 | points and boxes against boxes, the probes | [10](10-gameplay-logic.md) |
+| level | 661 | the view built from the map, the exits, the section setup | [6](06-rendering.md), [7](07-objects.md) |
+| hud | 581 | the font, the score, the icons | [8](08-hud-and-text.md) |
+| mainloop | 568 | the new game, the level start, the main loop, GAME OVER | [4](04-game-loop.md) |
+| levelload | 521 | the tape level loader, the maps' decipher | [3](03-build-and-load.md) |
+| ending | 476 | the bonus tally and the two end texts | [8](08-hud-and-text.md) |
+| controls | 361 | the four methods, pause, quit, the cheat keys | [5](05-controls.md) |
+| interrupt | 210 | the frame wait, the RAM 1 calls, the IM 2 handler's source | [4](04-game-loop.md) |
+| sound | 208 | the 48K beeper effects | [9](09-sound.md) |
+| setup | 170 | the entry: the 128K test, the music copy, IM 2 | [4](04-game-loop.md) |
+| score | 107 | the points records, the score digits, `AddScore` | [8](08-hud-and-text.md) |
+
+The calls between the main modules, in one pass of the main loop (`MainLoop` `$7D2D`, [doc 4](04-game-loop.md)):
+
+```mermaid
+flowchart TD
+    IRQ["IM 2 handler $FEFE (interrupt)"] --> RC["ReadControls $7254 (controls)"]
+    IRQ --> MF["CallRam1: MusicFrame $CAAF (music, RAM 1)"]
+    ML["MainLoop $7D2D (mainloop)"] --> K["TestQuitKey, the cheat chords, TestPauseKey (controls)"]
+    ML --> SC["ScanMapObjects $8B42 (objects)"]
+    ML --> UO["UpdateObjects $865D (objects)"]
+    UO --> TR["UpdateTrap $A2F7 (traps)"]
+    UO --> EN["UpdateEnemy $9EAF (enemies)"]
+    UO --> RK["UpdateRick $95ED (rick)"]
+    UO --> WP["the bullet $91B0, the detonator $91EB (weapons)"]
+    UO --> BN["CountBonus $9163 (score)"]
+    RK --> CO["TestBodyBox $8FF9 (collision)"]
+    ML --> DS["DrawSprites $85FA, ComposeSprite $7329 (render)"]
+    ML --> WF["WaitFrames $7A53 with C = 2 (interrupt)"]
+    ML --> DC["DrawChangedCells $76D4 (render)"]
+    ML --> EX["CheckSectionExit $8993 (level)"]
+    ML --> SR["ScrollDown $78A5, ScrollUp $7905 (render)"]
+```
+
+**The point**: the game is one loop over a handful of updaters, and a renderer that composes sprites into cells. The
+music is a separate program in RAM 1 that the interrupt calls.
+
+## 2.3 The memory map
+
+![The memory map in play on a 128K](img/arch/memmap.png)
+
+*The 64 K the CPU sees in play on a 128K, to scale, and RAM 1 beside it. The regions come from the `@equ` lines and
+the parts' `.ann` files; the RAM 1 column is coloured by `src/music/music.ann`'s modules. Made with `python3
+tools/fig_arch.py memmap docs/img/arch/memmap.png`.*
+
+How to read it:
+
+- **The left scale** is the CPU's address space and the bank behind each 16 K in play: ROM 1, RAM 5, RAM 2, RAM 0.
+- **The colours** are the source's parts: the screen blue, the buffers yellow and violet, the game green, the level
+  block cyan, orange and light green, the interrupt's table and handler red.
+- **RAM 1** is paged in at `$C000` only inside `CallRam1` `$7A77`, with the interrupts off.
+
+The regions, with what writes and reads them:
+
+| Range | Name | What | Written by | Read by |
+| --- | --- | --- | --- | --- |
+| `$4000-$5AFF` | `Screen`, `ScreenAttrs` | row 0 the HUD, rows 1-23 the view | the cell drawers, the HUD | the ULA |
+| `$5DE8-$5F8F` | `SpareCells` | the composed cells: a level cell with sprites masked in, 8 bytes each | `ComposeCell` `$7755` | `DrawChangedCells` `$76D4` |
+| `$6000-$707F` | `MusicImage` | the music as loaded (4224 bytes) | the tape | `CopyMusic` `$7BBF`, once |
+| `$6500-$65FF` | `MirrorTable` | the 256 bytes bit-reversed, for mirrored sprites | the entry | the composer `$7329` |
+| `$6600-$6AFF` | `DirtyMap` | a byte per view cell, 32 x 40: what to redraw | the composer, the scroll | `DrawChangedCells` |
+| `$6B00-$707F` | `ViewCells` | the section's cell numbers, 32 x 44 | `BuildView` `$88D4` | the drawers, the collision tests |
+| `$7080-$A7FF` | the game | code, tables, variables | the tape | |
+| `$A800-$C1FF` | `CellFlags`, `CellGraphics`, `CellAttrs`, `Blocks` | the level's 256 cells and 256 blocks | the tape | the drawers, `BuildView`, the collision tests |
+| `$C200-$C26C` | `LevelHeader` | the level's table pointers, the level hooks, the number, the frame map | the tape | |
+| `$C26D-` | `Sprites` | 128 bytes a sprite, up to the maps' base | the tape | the composer |
+| to `$FCFF` | the maps, the sections, the kinds | the level's rooms and objects; level 5's code at `$F7E6-$F915` | the tape; `DecryptMaps` | `BuildView`, the object code |
+| `$FD00-$FE00` | `Im2Table` | 257 bytes `$FE`, I = `$FD` | `SetupIm2` `$7C1A` | the CPU |
+| `$FEFE-$FF20` | `Im2Handler` | the IM 2 handler, copied from `$7C39` | `SetupIm2` | the CPU |
+| `$FF21-$FFFF` | | the loader's tail, then the stack | the loader | |
+
+The music image at `$6000-$707F` is dead once copied. The tables built after it (`MirrorTable`, `DirtyMap`,
+`ViewCells`) lie over its last 2944 bytes. Only `$6000-$64FF` is left unused.
+
+### The level block
+
+Every level is one block of 21 760 bytes loaded at `$A800` ([doc 7](07-objects.md)):
+
+| Offset | Address | What |
+| --- | --- | --- |
+| `+$0000` | `$A800` | `CellFlags`: a flag byte per cell (solid, floor, ladder, deadly, front, the special floor) |
+| `+$0100` | `$A900` | `CellGraphics`: 256 cells of 8 bytes |
+| `+$0900` | `$B100` | `CellAttrs`: a cell's attribute |
+| `+$0A00` | `$B200` | `Blocks`: 256 blocks of 4 x 4 cell numbers |
+| `+$1A00` | `$C200` | `LevelHeader`: +0 the kind table, +2 the section table, +4 the maps' base |
+| `+$1A06` | `$C206` | `LevelHookA`, `LevelHookB`: level 5's two jumps; text in levels 1-4 (2.6) |
+| `+$1A0C` | `$C20C` | `LevelNumber` |
+| `+$1A0E` | `$C20E` | `SpriteFrameMap` |
+| `+$1A6D` | `$C26D` | `Sprites`, 128 bytes each |
+| | the maps' base | the maps, 8 blocks a row; the last 768 bytes enciphered on tape |
+| | after the maps | the section table, the exits, the map entries, the kinds, the trap scripts |
+
+Side A carries level 1 inside its code block. Side B carries all five, each with its maps' last 768 bytes enciphered
+([doc 3](03-build-and-load.md)).
+
+### 128K against 48K
+
+The entry tells the machines apart by writing `$C000` in RAM 0 and reading it back in RAM 1 (`Entry` `$7B8F`).
+
+| | 128K | 48K (`c48`) |
+| --- | --- | --- |
+| the bank test | passes | fails (`$7BB3`, 1 run) |
+| `Machine48K` `$7A76` | clear | `$FF`: no music; `CallRam1` returns at once |
+| the music | copied to RAM 1, played every interrupt | not copied; the tune calls return at once (`StartTune` `$7AAD`, 4 calls) |
+| the handler | `CALL $7AB6` written into it at `$FF14` | not written |
+| the effects | the AY, from RAM 1 (`MusicEffect` `$CCC8`) | the beeper, one note a pass from the main loop (`$7B66`, 1206 passes in `c48`) |
+| `$6000-$64FF` | dead after the copy | never used |
+| levels 2-5 | from side B | from side B, the same code |
+
+Everything else is the same code on both: the menus, the levels, the gun, the detonator, the punch, pause and quit
+all work in `c48`.
+
+**The point**: the program fills the 48K map from `$5DE8` to `$FFFF`. The 128K adds only one thing, the music in RAM
+1, which the main program reaches through one routine, `CallRam1` `$7A77`.
+
+## 2.4 The heatmap
+
+![Memory use over every stage 1 recording](img/arch/heatmap.png)
+
+*Memory use over every stage 1 recording: 71 L1 builds, 310 426 frames, merged by `tools/l1merge.py` into
+`work/stage1/l1-all.json`. One row is 256 bytes from `$4000`; red written, green read, blue executed, log2 of the
+count. The brackets are the regions of 2.3 (`work/docs/wr/regions.txt`). Made with `python3 ../../kit/heatmap.py
+work/stage1/l1-all.json docs/img/arch/heatmap.png --cell 3 --from 4000 --to FFFF --panels composite --columns 1
+--regions work/docs/wr/regions.txt`.*
+
+How to read it:
+
+- **Blue** is code. The game's code band runs from `$71C0` to `$A7EF`. Above it only level 5's code at `$F7E6`, the
+  IM 2 handler at `$FEFE` and the loader at `$FF00` are blue.
+- **Red and orange** are written: the screen, the composed cells, the buffers `$6500-$707F`, the variables inside the
+  code.
+- **Green** is read only: the level's cells (`$A800-$B1FF`) and the maps and objects at the top of the level block.
+- **The blocks** `$B200-$C1FF` are dark red: written by the loads, read rarely (only when a view is built).
+- **Two thin green columns** run down the sprite area. They are the first bytes of each sprite (offsets `$6D` and
+  `$ED` of a page): the rows to skip and the rows drawn, which the composer reads every time a sprite is placed.
+- The `$C000` window shows RAM 0. The music's instructions in RAM 1 (our recordings) and RAM 6 (the RZX run's TAP
+  version keeps its music there) are left out.
+
+**The point**: the program's working set is small and fixed. The screen, two buffers and the variables are written;
+the level block is read-only in play.
+
+## 2.5 The stack
+
+`Entry` sets SP = 0, so the stack grows down from `$FFFF` over the loader's tail.
+
+| Recording | The lowest stack byte | Depth |
+| --- | --- | ---: |
+| `c1` (the menus and the start) | `$FFDC` | 36 bytes |
+| every other recording | `$FFE6` | 26 bytes |
+
+Three routines borrow SP to pop data fast, with the interrupts off:
+
+| Routine | What SP points at | SP back from |
+| --- | --- | --- |
+| `BuildView` `$88D4` | a block's 16 cell numbers | the `LD SP,nn` at `$8946`, its operand written on entry |
+| the composer (`ComposeAlignedData`, `ComposeShiftedData`, `render`) | a sprite's mask and data rows | `LD SP,nn` at the routine's end |
+| `DrawHud` (`hud`) | the HUD row on the screen: it clears row 0 by pushing zeros | `ClearHudEnd`'s `LD SP,nn` |
+
+Each writes the caller's SP into the operand of its own closing `LD SP,nn` (self-modifying code). With the interrupts
+off, the IM 2 handler never pushes into level data or onto the screen.
+
+**The point**: 36 bytes of stack is the deepest the program goes. The 253 free bytes between the IM 2 table and the
+handler (`$FE01-$FEFD`) are never touched.
+
+## 2.6 The frame budget
+
+The main loop waits for the second interrupt after the previous pass (`WaitFrames` `$7A53` with C = 2). A pass that
+fits in two frames runs at 25 passes a second. A longer pass is caught by the next even count.
+
+![Where the time goes: level 1 play against the Fat Guy's room](img/arch/budget.png)
+
+*The share of all T-states per routine over 2000 frames of `rzx-l1-06000-poke` (level 1, sections 5 and 6) and of
+`rzx-l5-20000-poke` (the Fat Guy's room), coloured by module. Made with `sh work/docs/wr/budget.sh`, which runs
+`python3 ../../kit/fig_budget.py work/stage1/rec/rzx-l1-06000-poke/l1.json docs/img/arch/budget.png --ann
+src/game/game.ann,page=0/2/5,range=7080-A7FF --ann src/music/music.ann,page=1/6,label=music --ann
+src/levels/levels.ann,page=0,range=A800-FCFF,label=level --state "...=work/stage1/rec/rzx-l5-20000-poke/l1.json"
+--top 24`.*
+
+How to read it:
+
+- **`WaitFrames`** is the idle time. In level 1 it is 52.7 %: half the CPU is spare.
+- **The renderer** is all the rest: `DrawChangedCells` 19.1 %, `ComposeSprite` 14.2 %, `ComposeCell` 5.9 %.
+- **The game logic** (Rick, the objects, the collisions) is under 3 % together.
+- **The music** costs 1.8 % in both.
+- **In the Fat Guy's room** the idle time falls to 25.4 %, and `ComposeSprite` rises to 29.3 %: the Fat Guy is five
+  sprites, and each composes into up to 16 cells.
+
+The pass lengths measured by `tools/passes.py` (300 passes from each state; the work is the pass without the wait):
+
+| State | Pass, median | Pass, longest | Work, median | Work, longest |
+| --- | ---: | ---: | ---: | ---: |
+| level 1, RZX frame 6000 | 3.0 frames | 3.0 | 1.34 | 1.50 |
+| level 2, RZX frame 10 000 | 2.61 | 3.07 | 2.29 | 2.62 |
+| level 3, RZX frame 6000 | 2.0 | 4.0 | 1.37 | 2.36 |
+| level 4, RZX frame 10 000 | 2.0 | 2.0 | 0.61 | 0.64 |
+| level 5, RZX frame 12 000 | 3.0 | 3.0 | 2.15 | 2.36 |
+| level 5, RZX frame 22 000 (the Fat Guy) | 3.0 | 13.47 | 2.19 | 13.47 |
+
+A worked example, level 4 against level 1:
+
+1. Level 4 at RZX frame 10 000: the work takes 0.61 frames (43 071 T of 70 908 a frame). The wait then sits until
+   the counter `$7A60` reaches 2. The pass is exactly 2.0 frames: 25 passes a second.
+2. Level 1 at RZX frame 6000: the work takes 1.34 frames, still under two. Yet the pass is 3.0 frames, every time.
+   An interrupt that arrives while the renderer runs with the interrupts off is not counted, so the counter reaches
+   2 a frame late. [Doc 4](04-game-loop.md) times those windows.
+3. Level 2 at RZX frame 10 000: the work takes 2.29 frames, more than two, so two interrupts should already be
+   counted when the wait starts. Yet the pass is 2.61 frames on the median: the wait still sits 0.32 frames, because
+   at least one of the interrupts fell in a window with the interrupts off.
+
+The interrupt signal on a Spectrum lasts about 32 T-states. An interrupt that arrives inside a `DI` window is lost,
+and the frame counter `$7A60` misses a tick.
+
+The longest pass, 13.47 frames, is in the Fat Guy's room ([doc 4](04-game-loop.md)).
+
+**The point**: the game is drawn at 25 or 16.7 passes a second, and the CPU is half idle in a quiet room. The cost is
+the renderer, not the logic: the number of sprites on screen decides the speed.
+
+## 2.7 The leftovers
+
+Code and data in the image that nothing reaches, or that is reached only in some versions:
+
+| What | Where | Why it is a leftover | Witness |
+| --- | --- | --- | --- |
+| tune 3 | music `$C2D2`, patterns 11-13 (`$C0D2-$C0E7`) | no `StartTune` with A = 3 in the game | `tunes_per_rec.py`: never started |
+| effects 1, 3, 8 | the effect table in RAM 1 | no constant call site, and no level's trap script names them | the kinds' `fx=` fields of all five levels |
+| effects 15, 16, 17, 25 (the hardware envelope voices) | the effect table | named only by trap scripts of levels 1, 4, 5 | no recording ran their branch |
+| "CORE  " / "DESIGN" | `$C206` in levels 1-4 | the place of level 5's two jumps; the text is the developer's name, Core Design | `LevelHookOn` is never set outside level 5 |
+| `Points100` | `$7EF9` | no instruction loads `$7EF9` | no byte pair `F9 7E` in the image |
+| a dispatcher | `objects`, `$917D` | a jump table for 16 object kinds, no caller | no word `$917D` in the image |
+| an older IM 2 handler | `$7C5C-$7C7C` | after the handler's source, never copied | never run |
+| `LoadError` | `$852A` | `POP HL`, `JP $8452`: into the text "STOP TAPE AND PRESS FIRE" | no load error recorded |
+| 204 bytes of `$C9` | `$852E-$85F9` | padding after the loader | |
+| `OrderSetSlot`, `PatternCommandSkip` | music `$CB49`, `$CC30` | sequencer commands no tune uses | not executed |
+| filler sections | past `SectionCounts` | section table entries no exit leads to | level 1 section 8: `sec-l1-s8` by a POKE |
+| `BonusRunOut` | `$917C` | a lone `RET` at the countdown's wrap | [doc 1](01-game-design.md) 1.6 |
+
+**The point**: the image is close to tight. The leftovers are a few dozen bytes of an earlier design, one unused tune
+and the developer's name in the level blocks.
