@@ -24,39 +24,31 @@
 ; 20 the menus and texts ($7E9D, $8150, $82E4, $8743, $8784). 63 583 runs in 68
 ; builds.
 ;
-; Witness: L1 185643 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 187571 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8,
+; c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 WaitFrames:
   EI
-
-; WaitFramesLoop
-;
-; Used by the routine at WaitFramesUntil.
 WaitFramesLoop:
   LD A,(FrameCounter)
-
-; WaitFramesCompare
 WaitFramesCompare:
   CP C
-
-; WaitFramesUntil
 WaitFramesUntil:
   JP C,WaitFramesLoop
   XOR A
@@ -86,25 +78,25 @@ Machine48K:
 ; next WaitFrames puts them back. 133 677 runs in 68 builds: MusicFrameCall 127
 ; 035, PlayEffect 6585, StartTune 57.
 ;
-; Witness: L1 333595 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 336977 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8,
+; c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 CallRam1:
   LD (CallRam1Arg+$0001),A
   LD A,(Machine48K)
@@ -131,24 +123,24 @@ CallRam1Call:
 ; $9AA5 (4445), $9F67, $A2F2, $A58F, $A5A2, $A5B2, $8C59, the ending's tally
 ; $873E, and level 5's own code ($F956, $F969, $F96E). 6585 runs in 66 builds.
 ;
-; Witness: L1 13692 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s12,
-; sec-l3-s7, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 13756 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s12, sec-l3-s7, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 PlayEffect:
   PUSH AF
   PUSH HL
@@ -175,16 +167,17 @@ PlayEffect:
 ; ending $874B, $9CC6, $9CDB, and the cheat keys ($7D3B, $7D55: A = 1). 57 runs
 ; in 34 builds.
 ;
-; Witness: L1 259 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
-; rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke,
-; rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
-; rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
-; rzx-l4-14000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-06000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-23000, rzx-l5-full, sec-l1-s8,
-; c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 263 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, life-up,
+; rzx-l1-00000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
+; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
+; rzx-l3-00000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
+; rzx-l4-08000-poke, rzx-l4-14000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
+; rzx-l5-06000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-23000,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 StartTune:
   PUSH HL
   LD HL,MusicStartTune
@@ -197,24 +190,24 @@ StartTune:
 ; CallRam1 with MusicFrame $CAAF, keeps HL. Called by the IM 2 handler $FF14
 ; every interrupt: 127 035 runs in 68 builds (c1 4706).
 ;
-; Witness: L1 319801 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8, c1,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; Witness: L1 323115 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8,
+; c1, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
 ; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 MusicFrameCall:
   PUSH HL
@@ -323,25 +316,25 @@ Ticks:
 ; Evidence: 127 035 runs in 68 builds, every call from $FF0E (the handler at
 ; $FEFE: the copy of $7C49); c1 4706.
 ;
-; Witness: L1 324903 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 328217 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8,
+; c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 CountTicks:
   LD HL,(Ticks)
   INC HL

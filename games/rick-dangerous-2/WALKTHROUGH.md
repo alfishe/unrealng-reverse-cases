@@ -31,7 +31,7 @@ Side A is a BASIC, a 256-byte block at `$FF00` and two headerless blocks the ROM
 `$FF`, not `$00`. The loader at `$FF00` is encrypted (XOR `$5C` from `$FF0B`); decrypted, it is a copy of LD-BYTES that
 shifts each bit in from the top (`LD L,$80`, `RR L`), so every byte on the tape is stored bit-reversed. Reversing the
 blocks' bytes gives the screen and the code exactly as `c1` holds them at the entry (0 bytes differ), and the same for
-side B's level blocks at `$A800` ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block),
+side B's level blocks at `$A800` ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-as-a-picture),
 [3.2](docs/03-build-and-load.md#32-the-loader-at-ff00)). `tools/image.py` writes the image `case.json` names.
 
 Other sources: the RZX archive's `rick2-1.rzx` ... `rick2-5.rzx` (Jim Waterman's run, one file a level, to the
@@ -64,7 +64,7 @@ The interrupts and the timing, a first look:
   with them off), `controls-keyboard` 2333 in 2340, `load-l4` 3404 in 26 600 (the tape), and the RZX level 5 replay
   `rzx-l5-full` 20 404 in 26 257: 22 % of its frames lose their interrupt, so the frame counter and the music run slow
   when many sprites are on screen (the L1's `replay.interrupts`).
-- **The main loop.** `$7D2D-$7E1B`, no HALT: the quit key (`$724A`), the pause (`$71C0`), the music switch, then
+- **The main loop.** `$7D2D-$7E1B`, no HALT: the quit key (`$724A`), the cheat chords (`$71C0`, `$71DC`), the pause (`$7242`), then
   `LD C,$02` and `CALL $7A53`, the frame wait: `EI`, loop until the counter `$7A60` reaches C, clear it (`$7A5B`). So a
   pass takes two frames or more. After the wait come the cell drawer `$76D4`, the section change, the moving parts, the
   scroll up or down (`$7905`, `$78A5`, whose steps wait a frame each, `LD C,$01`) and the death test (`$9B9B`, lives
@@ -89,19 +89,19 @@ The interrupts and the timing, a first look:
   the two): the wait asks for two counts of `$7A60`, and an interrupt lost in a DI window (above) costs the pass a third
   frame even where the work is 1.34 frames (level 1). So play runs at 25 or 16.7 passes a second, by the screen's
   load. The heaviest pass measured, 955 192 T (13.47 frames) in the Fat Guy's room, holds no wait at all (work and
-  pass equal): a section set-up or the boss's end, to name in stage 2. The section numbers are `$9B93` at frame 250
+  pass equal): a section entry (`CheckSectionExit` `$8993` and the section set-up: [doc 4, 4.5](docs/04-game-loop.md#45-the-heaviest-pass-entering-a-section)). The section numbers are `$9B93` at frame 250
   of the matching recording (`tools/rec_state.py`).
 
 ## 2. Static pass over the medium
 
 - `python3 tools/tzxblocks.py list` on each side: every block standard speed; the BASIC, the loader header and block,
   two headerless blocks on side A, five on side B
-  ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)).
+  ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-as-a-picture)).
 - `python3 tools/image.py OUT [--level N]`: the 64 K as the tape leaves it, the bit-reversed blocks turned back (the
   screen at `$4000`, the code at `$6000-$FEFD`, the decrypted loader at `$FF00`), with side B's block N at `$A800`
   when a level is named. `case.json` runs it for the image every later comparison starts from.
 - `python3 tools/level_map.py` and `tools/sprite_sheet.py`: the five levels' sections and sprites drawn from the level
-  blocks ([doc 2, 2.2](docs/02-architecture.md#22-the-level-maps), [2.3](docs/02-architecture.md#23-the-sprites)).
+  blocks ([doc 1, 1.7](docs/01-game-design.md#17-the-levels), [doc 6, 6.4](docs/06-rendering.md#64-the-sprites)).
 
 The images and what changes between them:
 
@@ -122,14 +122,15 @@ The images and what changes between them:
     `$9F4D`), Rick's record and the two after it (his shot and detonator, to confirm) and the section
     (`$9B8D-$9BC2`);
   - the IM 2 table `$FD00-$FE00` and the handler's page `$FEFE-$FFFF` (the stack);
-  - the RZX run's own level loader (`$846A-$8510`, 165 bytes: its TAP version); `$8311-$831F` and `$840D-$840E`
-    change in every level (to name in stage 2).
+  - the RZX run's own build: its level loader (`$846A-$8510`, 165 bytes: its TAP version), `$840D-$840E`, and the
+    page bytes at `$7A81` and `$7AC6` (`LD A,$16`: its RAM 1 calls page RAM 6), found against `build/game.bin` by
+    the docs writer (`rzx-l1-06000-poke` frame 0); `$8311-$831F` change in every level.
   The level data at `$A800-$FCFF` does not change in play (but for level 3's 3 bytes): the maps' last 768 bytes are
   decrypted once when the level starts (without `--decrypted`, those 768 bytes differ too).
 - **The state variables** found: the level `$7EF1` (1-5), the lives `$8B3B`, the ammunition `$8B3C`, the detonators
   `$8B3D`, the score `$7F1D-$7F22` (six digits), the section `$9B93`, Rick's record `$9BAB` (+1 x, +2 y, +4 the
-  sprite, +6 bit 7 the mirror), the death flag `$9B9B`, the view's top row `$88CF`, the control method `$7252`
-  ([doc 2, 2.1](docs/02-architecture.md#21-the-memory-map)).
+  sprite, +6 bit 7 the mirror), the death fall's end `DeathFallOver` `$9B9B` (`RickDying` `$9B9C`), the view's top row `$88CF`, the control method `$7252`
+  ([doc 2, 2.3](docs/02-architecture.md#23-the-memory-map)).
 
 ## 3. The stages and the packers
 
@@ -140,6 +141,19 @@ play. A level other than the first is read from side B by the level loader and i
 ([6.0](#60-the-recordings)).
 
 ## 4. The medium from source
+
+Stage 2 wrote the source ([doc 3, 3.6](docs/03-build-and-load.md#36-the-build), `work/stage2/NOTES.md`):
+
+```sh
+sh tools/mkasm_all.sh --fix-witness      # every .asm from its .ann (kit/mkgame.py), each assembled and compared
+python3 tools/res_formats.py check       # every resource in src/res converts back to its bytes
+sh tools/build.sh $SJASMPLUS             # build/side-a.tzx and side-b.tzx: identical to orig/RickDangerous2.tzx.zip
+python3 ../../kit/refdocs.py --case .    # docs 11 and 12
+```
+
+The parts: the game (`src/game/game.ann`, 18 modules), the AY music (`src/music`), the five levels (`src/levels`,
+one `@piece` a level), the loader at `$FF00`, the loading screen and the tape's BASIC; `tools/mktape.py` writes the
+blocks in the loader's bit-reversed form and enciphers the maps' last 768 bytes of each level.
 
 ## 5. Tool gaps found and fixed in unreal-ng
 
@@ -172,11 +186,36 @@ where the RZX player stood with the same keys, so every piece starts in the RZX'
 `tools/rec_state.py --summary`): level 1 0-7, level 2 0-9, level 3 0-2 and 6, level 4 0 and 3-9, level 5 0-4, 6 and
 7.
 
-Not reached: the 48K path (no music, `$7A76` = `$FF`); the "CONGRATULATIONS" end (`$8754`, level 4 completed in a game
-that did not complete four levels); the sections of the maps that `$9B93` never shows (level 2 sections 10-12, level 3
-3-5 and 7-9, level 4 1-2 and 10-12, level 5 5) may lie between the samples; which tune and which effect each
-recording plays is stage 2's (the tunes start at `$7AAD`, the effects at `$7A97`; every recording here is a 128K with
-the music on).
+Stage 2 and the integration added these recordings (all with `--ranges 4000-FFFF` and their `session.ttd`; the
+`sec-*` ones by `sh work/stage2/runsec.sh 37500 NAME ...`, the others by the `tools/capture.py` line below):
+
+```sh
+python3 tools/capture.py --work work/stage2/rec/NAME --snapshot START --model 128K --inputs tests/inputs/NAME.txt \
+    --ranges 4000-FFFF --port-base 37500 --binary $BIN       # then: python3 $RS stop --work work/stage2/rec/NAME
+```
+
+| Name | Session | Start (load) | Inputs | Frames | Reached |
+| --- | --- | --- | --- | ---: | --- |
+| `c48` | `work/stage2/rec/c48/session.ttd` | power-on 48K, side A at ROM speed (`LOAD ""` typed, `--media A --model 48K --record-load`) | `tests/inputs/c48.txt` | 19 571 (15 401 of load, then 4170) | the 48K path: the bank test fails, `Machine48K` `$7A76` = `$FF`, no music; `PlayBeeperStep` `$7B66` 1206 runs; the menus, level 1, gun, detonator, punch, pause, quit ([doc 9, 9.11](docs/09-sound.md#911-the-48k-beeper)) |
+| `cheats` | `work/stage2/rec/cheats/session.ttd` | `work/stage1/rzx/l5/at002000.szx` (no load) | `tests/inputs/cheats.txt` | 800 | both chords: C+S+3 at frame 50 (`CheatInfinite` `$8066` on, off, on at 54, 56, 60), SPACE+N+ENTER+J+Y at 200 (`CheatExits` `$8067` = `$FF` at 204) ([doc 5, 5.7](docs/05-controls.md#57-the-cheat-chords)) |
+| `end-congrats` | `work/stage2/rec/end-congrats/session.ttd` | `work/stage1/rzx/l4/at020000.szx` | `tests/inputs/end-congrats.txt`: POKE `$7EF2` = 0 and the immunity POKEs, said so | 2600 | the CONGRATULATIONS ending `$8754` |
+| `long-l4` | `work/stage2/rec/long-l4/session.ttd` | `work/stage1/rzx/l4/at020000.szx` | `tests/inputs/long-l4.txt`: POKE `$8067` = `$FF` and the immunity POKEs | 1200 | level 4 section 7's level-end exit becomes the passage to section 10 (`$89E0`) |
+| `sec-lL-sS` (20: level 1 section 8; level 2 sections 7, 10-12; level 3 3-5, 7-9; level 4 1, 2, 6, 11, 12; level 5 3, 5) | `work/stage2/rec/sec-lL-sS/session.ttd` | `work/stage1/lab/e1-end.szx` (level 1), else `work/stage1/rzx/lL/start.szx` | `tests/inputs/sec-lL-sS.txt` (written by `work/stage2/mksections.py`): POKE `LevelStarts` (`$7C8F` + 6 (L - 1)) and the immunity POKEs | 1190 (level 1), 2470 | every section the other recordings never entered, so every section of every level is read by `SetupSection` in at least one recording |
+| `life-up` | `work/docs/rec/life-up/session.ttd` | `work/stage1/rzx/l5/start.szx` (level 5's "STOP TAPE AND PRESS FIRE") | `tests/inputs/life-up.txt`: POKE `Lives` `$8B3B` = 3, said so | 350 | `AddLife` `$7CEE` (1 run): the level starts with 4 lives |
+| `box-shot` | `work/docs/rec/box-shot/session.ttd` | `work/stage1/lab/e1-end.szx` | `tests/inputs/box-shot.txt`: POKE `LevelStarts` = level 1 section 3, x 96, y 227, and the immunity POKEs | 906 | an ammunition box shot: `PickupShot` `$A5E4` 1 run, `PickupBurst` `$A53A` 10 runs |
+| `fatguy-hits` | `work/docs/rec/fatguy-hits/session.ttd` | `work/stage1/rzx/l5/at021000.szx` (the Fat Guy at 20 hits) | `tests/inputs/fatguy-hits.txt`: the immunity POKEs (the Fat Guy's own tests are not POKEd) | 900 | his touch kills Rick (`$F946` jumps, frames 196-198) and a bullet from the left ledge hits him (`$F922`, the count 20 -> 19 in frames 822-824) ([doc 10, 10.12](docs/10-gameplay-logic.md#1012-the-fat-guy)) |
+
+`life-up`, `box-shot` and `fatguy-hits` were made at the integration for what the docs writer listed as known only
+from the code; each POKE is in its script's header and named where the recording is a witness. `case.json` counts
+all three in `read_builds` and `code_builds`. `c48` and the tape loads (`c1`, `load-lN`) are in `code_builds` only:
+the ROM's RAM test and the tape loaders read every byte, which would make every unexecuted byte "data" for the
+static walk.
+
+Not reached: the end of both endings (`EndTextExit` `$8794`, after 2500 frames or fire), `BonusTally` `$86E0`'s
+bullet and detonator loops, the countdown bonus running out (`BonusRunOut` `$917C`), a pickup box burst by the blast
+(`$A5F7`), a detonator thrown left that stops, level 1's weak jump (`$9799`), and the Fat Guy's shot aimed right
+(`$FA46-$FA64`): [doc 10, 10.16](docs/10-gameplay-logic.md#1016-what-no-recording-reached) lists them with the code
+that shows each.
 
 ### 6.1 Screens and levels
 
@@ -199,6 +238,54 @@ Every screen reached, from the recordings at the frames named:
 | GAME OVER | [game-over.png](docs/img/play/game-over.png) | `rzx-l5-full` 11 500 |
 | the ending | [ending.png](docs/img/play/ending.png) | `rzx-l5-24000-poke` 250 |
 
-The level maps and the sprite sheets drawn from the data are in [doc 2](docs/02-architecture.md#22-the-level-maps).
+The level maps drawn from the data are in [doc 1, 1.7](docs/01-game-design.md#17-the-levels), the sprite sheets in
+[doc 6, 6.4](docs/06-rendering.md#64-the-sprites) and `src/res/levels/levelN/level/sprites.png`.
+
+Sheets of the screens: [design/screens.png](docs/img/design/screens.png) (the screenshots above on one sheet, doc 1)
+and [design/moments.png](docs/img/design/moments.png) (ten key moments of the RZX run from its own screens,
+`work/stage1/rzx/lN/screens.bin`, doc 1).
+
+### 6.2 Animations
+
+30 animations, each drawn from a recording by the command in its caption (`kit/routine_anim.py`,
+`kit/screen_anim.py`, `kit/memanim.py` or the case's `tools/fig_play.py`, `fig_hud.py`, `fig_objects.py`); the
+writer's working sessions (`work/docs/wr/<name>`) are the recordings named, opened with `re_session.py open`.
+
+| Animation | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| [`load-side-a.gif`](docs/img/play/load-side-a.gif) | [doc 03](docs/03-build-and-load.md) | `c1` | 1100-14 100 |
+| [`Decipher.gif`](docs/img/routines/Decipher.gif) | [doc 03](docs/03-build-and-load.md) | `c1` | 1110-1111 |
+| [`DecryptMaps.gif`](docs/img/routines/DecryptMaps.gif) | [doc 03](docs/03-build-and-load.md) | `load-l2` | 13 071 |
+| [`MainLoop.gif`](docs/img/routines/MainLoop.gif) | [doc 04](docs/04-game-loop.md) | `rzx-l1-06000-poke` | 103-105 |
+| [`Im2Handler.gif`](docs/img/routines/Im2Handler.gif) | [doc 04](docs/04-game-loop.md) | `rzx-l1-06000-poke` | 104 |
+| [`control-menu-pointer.gif`](docs/img/play/control-menu-pointer.gif) | [doc 05](docs/05-controls.md) | `c1` | 15 090-15 400 |
+| [`rick-keys.gif`](docs/img/play/rick-keys.gif) | [doc 05](docs/05-controls.md) | `controls-keyboard` | 626-1170 |
+| [`ReadControls.gif`](docs/img/routines/ReadControls.gif) | [doc 05](docs/05-controls.md) | `controls-keyboard` | 630 |
+| [`UpdateRick.gif`](docs/img/routines/UpdateRick.gif) | [doc 05](docs/05-controls.md) | `controls-keyboard` | 630 |
+| [`ComposeSprite.gif`](docs/img/routines/ComposeSprite.gif) | [doc 06](docs/06-rendering.md) | `rzx-l1-06000-poke` | 103 |
+| [`DrawChangedCells.gif`](docs/img/routines/DrawChangedCells.gif) | [doc 06](docs/06-rendering.md) | `rzx-l1-06000-poke` | 103 |
+| [`scroll-up.gif`](docs/img/play/scroll-up.gif) | [doc 06](docs/06-rendering.md) | `rzx-l1-04000-poke` | 108-131 |
+| [`ScrollUp.gif`](docs/img/routines/ScrollUp.gif) | [doc 06](docs/06-rendering.md) | `rzx-l1-04000-poke` | 111-127 |
+| [`objects-l1.gif`](docs/img/play/objects-l1.gif) | [doc 07](docs/07-objects.md) | `rzx-l1-06000-poke` | 0-118 |
+| [`ScanMapObjects.gif`](docs/img/routines/ScanMapObjects.gif) | [doc 07](docs/07-objects.md) | `rzx-l1-06000-poke` | 118 |
+| [`UpdateTrap.gif`](docs/img/routines/UpdateTrap.gif) | [doc 07](docs/07-objects.md) | `rzx-l1-06000-poke` | 105 |
+| [`UpdateEnemy.gif`](docs/img/routines/UpdateEnemy.gif) | [doc 07](docs/07-objects.md) | `rzx-l1-06000-poke` | 105 |
+| [`AddScore.gif`](docs/img/routines/AddScore.gif) | [doc 08](docs/08-hud-and-text.md) | `rzx-l1-06000-poke` | 259 |
+| [`letters.gif`](docs/img/play/letters.gif) | [doc 08](docs/08-hud-and-text.md) | `controls-keyboard` | 112-328 |
+| [`MoveLetters.gif`](docs/img/routines/MoveLetters.gif) | [doc 08](docs/08-hud-and-text.md) | `controls-keyboard` | 172 |
+| [`game-over-letters.gif`](docs/img/play/game-over-letters.gif) | [doc 08](docs/08-hud-and-text.md) | `controls-keyboard` | 1430-1600 |
+| [`MusicFrame.gif`](docs/img/routines/MusicFrame.gif) | [doc 09](docs/09-sound.md) | `c1` | 17 440-17 539 |
+| [`UpdateVoices.gif`](docs/img/routines/UpdateVoices.gif) | [doc 09](docs/09-sound.md) | `c1` | 17 456 |
+| [`death-l5-full.gif`](docs/img/play/death-l5-full.gif) | [doc 01](docs/01-game-design.md) | `rzx-l5-full` | 2196-2340 |
+| [`jump.gif`](docs/img/play/jump.gif) | [doc 10](docs/10-gameplay-logic.md) | `controls-keyboard` | 706-766 |
+| [`shot.gif`](docs/img/play/shot.gif) | [doc 10](docs/10-gameplay-logic.md) | `c1` | 16 586-16 656 |
+| [`blast.gif`](docs/img/play/blast.gif) | [doc 10](docs/10-gameplay-logic.md) | `c1` | 16 676-16 870 |
+| [`BurnFuse.gif`](docs/img/routines/BurnFuse.gif) | [doc 10](docs/10-gameplay-logic.md) | `c1` | 16 789 |
+| [`trap-death.gif`](docs/img/play/trap-death.gif) | [doc 10](docs/10-gameplay-logic.md) | `c1` | 17 466-17 580 |
+| [`KillRick.gif`](docs/img/routines/KillRick.gif) | [doc 10](docs/10-gameplay-logic.md) | `c1` | 17 505 |
 
 ## 7. Review
+
+Docs 01-10 written; integrated (the source changes the writer asked for applied, docs 11 and 12 generated, three
+recordings added: 6.0). The review rounds are next (`work/review/`; the writers' open points:
+`work/review/open-from-writers.md`).

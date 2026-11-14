@@ -242,8 +242,8 @@ the enemies make a player hurry.
 - A death puts Rick back at the section's restart point (`$9B8C`), with the section's objects rebuilt
   ([doc 10](10-gameplay-logic.md)).
 - The last life lost is GAME OVER.
-- A level's start adds a life only when Rick has fewer than six. Every recorded level start had six lives, so `$7CEE`
-  is known only from the code.
+- A level's start adds a life only when Rick has fewer than six. Every level start of the RZX run had six lives;
+  `life-up` (a POKE, said so: `Lives` `$8B3B` = 3 at the RZX's level 5 "STOP TAPE AND PRESS FIRE", then fire; WALKTHROUGH 6.0) runs `$7CEE` once and level 5 starts with 4 lives.
 - A box of bolts or detonators fills its counter to 6. Six is also the most the HUD shows.
 - With `CheatInfinite` set, none of the three goes down.
 
@@ -595,7 +595,7 @@ How to read it, left to right, top to bottom:
 - the first side room with a treasure (section 3, +500);
 - crawling (`RickCrawling` `$9B98`), then climbing a ladder (`RickClimbing` `$9B99`);
 - a detonator burning, then a punch;
-- the anti-gravity bike in levels 2 and 4 (`RideMode` `$945D`);
+- the anti-gravity bike (`RideMode` `$945D`) in level 2 section 6, level 4 sections 4-5 and level 5 section 2;
 - the Fat Guy in section 7 of level 5;
 - the end text after the tally.
 
@@ -662,7 +662,6 @@ traps must be solved in order.
 
 ## 1.10 Known only from the code
 
-- A life added at a level start below six lives (`$7CEE`).
 - `BonusTally`'s bolt and detonator loops, and the step after both end texts (`$8794`).
 - The countdown bonus running out and wrapping to 099 990 (`BonusRunOut` `$917C`).
 - Level 1's special floor (the weak jump, `$9799`): no recording ran it.

@@ -27,10 +27,10 @@
 ; (load-l5's first frames before its POKE was added, stage 1), load-l5 with the
 ; POKE $8065 = $FF shows level 5 and plays it.
 ;
-; Witness: L1 54 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 56 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 LevelMenu:
   CALL FontCellsMode
   CALL ClearScreen
@@ -128,7 +128,7 @@ Level5Open:
 ;
 ; Toggled by the chord C+S+3 in MainLoop (CheatInfiniteKeys); read by $8A26 (a
 ; life lost), $9593 (a bullet), $9B27 (a detonator), $95ED and $96B4. 0 in the
-; image; no recording sets it.
+; image; cheats sets it with the chord (frames 54, 56, 60: on, off, on).
 CheatInfinite:
   DEFB $00
 
@@ -136,7 +136,7 @@ CheatInfinite:
 ; level 5 open)
 ;
 ; Set by CheatExitsKeys, read by $8993 (bit 7, at $89D9); never cleared. 0 in
-; the image; no recording sets it.
+; the image; cheats sets it with the chord (frame 204), long-l4 by POKE.
 CheatExits:
   DEFB $00
 
@@ -149,11 +149,11 @@ CheatExits:
 ; Evidence: 89 436 runs in 13 builds (callers LevelMenuWait, ControlMenuLoop,
 ; DropTextWait).
 ;
-; Witness: L1 198492 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ReadMenuKey:
   CALL ScanNumberKeys
   CP $FF
@@ -182,11 +182,11 @@ MenuKeyNew:
 ;
 ; Evidence: 89 436 runs in 13 builds.
 ;
-; Witness: L1 198492 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ScanNumberKeys:
   CALL TestKey0
   LD A,$00
@@ -293,10 +293,10 @@ ControlMenu:
 ; Evidence: 2230 runs in 10 builds; c1 sets each method in turn, controls-*
 ; each one (stage 1).
 ;
-; Witness: L1 8392 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 8614 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ControlMenuLoop:
   CALL ReadMenuKey
   AND A
@@ -355,10 +355,11 @@ MenuKeyHeld:
 ;
 ; Evidence: 4731 runs in 11 builds (from DropTextFrame).
 ;
-; Witness: L1 25150 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1,
-; c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 25558 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 MoveLetters:
   LD A,$02
   LD (SpareCount),A
@@ -370,11 +371,11 @@ MoveLetters:
 ;
 ; Evidence: the loop of MoveLetters (reads $7B8F-$7C4F).
 ;
-; Witness: L1 330002 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 334490 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 MoveLettersLoop:
   LD A,(IX+$00)
   CP $FF
@@ -396,11 +397,11 @@ MoveLettersLoop:
 ;
 ; Evidence: 57 671 runs in 12 builds.
 ;
-; Witness: L1 304850 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 308930 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 MoveLetter:
   LD A,(IX+$06)
   AND A
@@ -456,10 +457,11 @@ LetterStoreY:
 ;
 ; Evidence: 41 runs in 11 builds (writes $7B8F-$7C4F).
 ;
-; Witness: L1 226 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1,
-; c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 230 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 BuildLetters:
   LD IX,Entry
   LD C,$01
@@ -503,11 +505,11 @@ BuildLettersNext:
 ;
 ; Evidence: 97 runs in 12 builds (writes $67A7-$695D and $6CA7-$6E5D).
 ;
-; Witness: L1 639 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 651 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 PutTextCells:
   LD C,$FB
 PutTextCellsLoop:
@@ -546,10 +548,11 @@ PutTextCellsNext:
 ; Evidence: 97 runs in 11 builds (callers: LevelMenu, ControlMenu, GameOver
 ; $7E8B, ShowEndTextLoop $8777).
 ;
-; Witness: L1 639 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1,
-; c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 651 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 DropText:
   PUSH AF
   LD (DropTextFinish+$0002),HL
@@ -584,11 +587,11 @@ DropTextFrame:
 ;
 ; Evidence: 4732 runs in 12 builds.
 ;
-; Witness: L1 25152 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 25560 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 DropTextWait:
   LD C,$01
   CALL WaitFrames
@@ -631,11 +634,11 @@ DropTextFinish:
 ; Evidence: 57 671 runs in 12 builds (reads the glyphs $7080-$71AF, writes
 ; $5E00-$5F0E).
 ;
-; Witness: L1 304850 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-24000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 308930 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ComposeLetter:
   LD A,(SpareCount)
   LD L,A
@@ -699,10 +702,10 @@ ComposeLetterLoop:
 ;
 ; Evidence: 2219 runs in 10 builds (from ControlMenuPointer).
 ;
-; Witness: L1 8338 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 8558 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 MoveMenuRick:
   LD A,(RickY)
   CP C

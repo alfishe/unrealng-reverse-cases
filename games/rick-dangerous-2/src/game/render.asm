@@ -56,24 +56,25 @@
 ; rows 5395), shifted 108 333 (3 rows 96 247, 4 rows 13 402); mirrored rows 232
 ; 085 aligned, 551 698 shifted.
 ;
-; Witness: L1 593362 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 599916 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 ComposeSprite:
   LD A,(IX+$03)
   AND A
@@ -83,10 +84,6 @@ ComposeSprite:
   LD A,(IX+$02)
   CP $2B
   RET NC
-
-; ComposeSpriteCells
-;
-; Used by the routine at ComposeSprite.
 ComposeSpriteCells:
   LD A,(IX+$04)           ; y on the buffer: is there a sprite?
   OR (IX+$05)
@@ -177,7 +174,7 @@ ComposeAligned4Rows:
 
 ; ComposeAligned3Rows
 ;
-; Used by the routine at ComposeSpriteCells.
+; Used by the routine at ComposeSprite.
 ComposeAligned3Rows:
   CALL ComposeCell        ; aligned, y AND 4 = 0: 3 columns of 3 cells
   LD BC,$0020
@@ -185,8 +182,6 @@ ComposeAligned3Rows:
   CALL ComposeCell
   LD BC,$0020
   ADD HL,BC
-
-; ComposeAligned3RowsCell3
 ComposeAligned3RowsCell3:
   CALL ComposeCell
   LD BC,-2*32+1
@@ -223,7 +218,7 @@ ComposeAligned3RowsCell3:
 
 ; ComposeAlignedBlit
 ;
-; Used by the routine at ComposeSpriteCells.
+; Used by the routine at ComposeSprite.
 ComposeAlignedBlit:
   PUSH HL                 ; IY = the strip + (y AND 7)
   POP IY
@@ -248,10 +243,6 @@ ComposeAlignedData:
   INC HL
   LD SP,HL
   LD B,A
-
-; ComposeAlignedRow
-;
-; Used by the routine at ComposeAlignedNext.
 ComposeAlignedRow:
   EXX                     ; pop a row: L data 2, H data 1, C data 0, B mask 0,
                           ; E mask 2, D mask 1
@@ -307,15 +298,11 @@ MaskAlignedCol1:
 MaskAlignedCol2:
   LD A,(IY+$00)           ; +2w: (byte AND mask 2) OR data 2
   AND E
-
-; MaskAlignedCol2Or
 MaskAlignedCol2Or:
   OR L
   LD (IY+$00),A
   INC IY
   EXX
-
-; ComposeAlignedNext
 ComposeAlignedNext:
   DJNZ ComposeAlignedRow  ; the next row
 ComposeAlignedEnd:
@@ -325,7 +312,7 @@ ComposeAlignedEnd:
 
 ; ComposeShifted
 ;
-; Used by the routine at ComposeSpriteCells.
+; Used by the routine at ComposeSprite.
 ComposeShifted:
   ADD A,A                 ; x AND 7 = k > 0: ShiftRowJump's target = ShiftChain
                           ; + 14k
@@ -489,7 +476,7 @@ ComposeShiftedData:
 
 ; ComposeShiftedRow
 ;
-; Used by the routine at MaskShiftedCol3Mask.
+; Used by the routine at ShiftRight7.
 ComposeShiftedRow:
   EXX                     ; pop a row into the second register set
   POP HL
@@ -610,8 +597,6 @@ ShiftRight6:
   RL B
   EXX
   RL C
-
-; ShiftStep6Exx
 ShiftStep6Exx:
   EXX
 
@@ -619,35 +604,25 @@ ShiftStep6Exx:
 ShiftRight7:
   ADD HL,HL               ; the last step: it ends in the second set (no final
                           ; EXX)
-
-; ShiftStep7Rotate
 ShiftStep7Rotate:
   RL C
   RLA
   SLL E
   RL D
   RL B
-
-; ShiftStep7Exx
 ShiftStep7Exx:
   EXX
   RL C
-
-; MaskShiftedCol0
 MaskShiftedCol0:
   LD B,A                  ; B' = data 0: (byte AND mask 0) OR data 0
   LD A,(IY+$00)
   AND C
   OR B
-
-; MaskShiftedCol0Store
 MaskShiftedCol0Store:
   LD (IY+$00),A
   EXX
 MaskShiftedCol1:
   LD A,(IY+$20)           ; +w
-
-; MaskShiftedCol1Mask
 MaskShiftedCol1Mask:
   AND B
   OR C
@@ -659,8 +634,6 @@ MaskShiftedCol2:
   LD (IY+$40),A
 MaskShiftedCol3:
   LD A,(IY+$60)           ; +3w
-
-; MaskShiftedCol3Mask
 MaskShiftedCol3Mask:
   AND E
   OR L
@@ -693,25 +666,25 @@ ComposeShiftedEnd:
 ; runs in 67 builds; spare cells drawn 1 689 139 times, level cells restored
 ; 196 595.
 ;
-; Witness: L1 154386 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 156350 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 DrawChangedCells:
   LD A,$FF
   LD (DirtyMap+1024),A
@@ -719,21 +692,13 @@ DrawChangedCells:
 
 ; DrawChangedNext
 ;
-; Used by the routines at DrawSpareLine6 and DrawLevelCell.
+; Used by the routine at DrawLevelCell.
 DrawChangedNext:
   XOR A
-
-; DrawChangedScan
-;
-; Used by the routine at DrawChangedIfClear.
 DrawChangedScan:
   INC HL
-
-; DrawChangedRead
 DrawChangedRead:
   OR (HL)
-
-; DrawChangedIfClear
 DrawChangedIfClear:
   JP Z,DrawChangedScan    ; 0: next; A = value + 1, 0 at the sentinel
   INC A
@@ -759,8 +724,6 @@ DrawChangedIfClear:
   LD BC,SpareCells
   ADD HL,BC
   LDI
-
-; DrawSpareLine1
 DrawSpareLine1:
   DEC DE
   INC D
@@ -773,16 +736,12 @@ DrawSpareLine1:
   LDI
   DEC DE
   INC D
-
-; DrawSpareLine4
 DrawSpareLine4:
   LDI
   DEC DE
   INC D
   LDI
   DEC DE
-
-; DrawSpareLine6
 DrawSpareLine6:
   INC D
   LDI
@@ -794,7 +753,7 @@ DrawSpareLine6:
 
 ; DrawLevelCell
 ;
-; Used by the routine at DrawChangedIfClear.
+; Used by the routine at DrawChangedNext.
 DrawLevelCell:
   LD (HL),$00             ; 1: draw the level cell again, then mark 0
   PUSH HL
@@ -852,29 +811,27 @@ DrawLevelCellBase:
 ; Callers: ComposeSprite $7329 (9 to 16 times a sprite) and $8321 ($8340,
 ; $8352: 2 cells). 2 497 317 runs; front cells 272 993, stacked 551 496.
 ;
-; Witness: L1 6116909 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 6196803 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ComposeCell:
   LD B,CellFlags/256
-
-; ComposeCellRead
 ComposeCellRead:
   LD C,(HL)
   LD A,(BC)
@@ -907,17 +864,13 @@ ComposeCellBase:
 
 ; CopyCellGraphics
 ;
-; Used by the routine at ComposeCellStackShift.
+; Used by the routine at ComposeCellStack.
 CopyCellGraphics:
   LDI
   LDI
   LDI
-
-; CopyCellLine3
 CopyCellLine3:
   LDI
-
-; CopyCellLine4
 CopyCellLine4:
   LDI
   LDI
@@ -928,7 +881,7 @@ CopyCellLine4:
 
 ; ComposeCellStack
 ;
-; Used by the routine at ComposeCellRead.
+; Used by the routine at ComposeCell.
 ComposeCellStack:
   LD C,A                  ; copy the other sprite's spare cell instead
   LD A,(SpareCount)
@@ -939,8 +892,6 @@ ComposeCellStack:
   LD H,$00
   ADD HL,HL
   ADD HL,HL
-
-; ComposeCellStackShift
 ComposeCellStackShift:
   ADD HL,HL
   LD BC,SpareCells+8
@@ -949,7 +900,7 @@ ComposeCellStackShift:
 
 ; ComposeCellSkip
 ;
-; Used by the routine at ComposeCellRead.
+; Used by the routine at ComposeCell.
 ComposeCellSkip:
   LD A,(SpareCount)       ; a front cell: skip one spare cell
   INC A
@@ -1002,23 +953,14 @@ RedrawScrolledView:
   LD IX,ScreenAttrs+32
   LD A,$07
   LD B,$03
-
-; RedrawThird
-;
-; Used by the routine at RedrawNext.
+; This entry point is used by the routine at RedrawSkip.
 RedrawThird:
   PUSH BC
-
-; RedrawRow
-;
-; Used by the routine at RedrawNext.
+; This entry point is used by the routine at RedrawSkip.
 RedrawRow:
   EX AF,AF'
   LD B,$20
-
-; RedrawCell
-;
-; Used by the routine at RedrawNext.
+; This entry point is used by the routine at RedrawSkip.
 RedrawCell:
   LD A,(DE)               ; DirtyMap: 0 compare, 1 draw, n >= 2 the spare cell
   AND A
@@ -1041,8 +983,6 @@ RedrawSkip:
   INC HL
   INC E
   EXX
-
-; RedrawNext
 RedrawNext:
   INC DE
   INC HL
@@ -1064,7 +1004,7 @@ RedrawNext:
 
 ; RedrawLevelCell
 ;
-; Used by the routine at RedrawCell.
+; Used by the routine at RedrawScrolledView.
 RedrawLevelCell:
   PUSH HL                 ; A = the cell: its attribute, then its graphics
   LD L,A
@@ -1112,7 +1052,7 @@ RedrawCopyCell:
 
 ; RedrawSpareCell
 ;
-; Used by the routine at RedrawCell.
+; Used by the routine at RedrawScrolledView.
 RedrawSpareCell:
   PUSH HL                 ; the view cell's attribute, spare cell n's graphics
   LD L,(HL)
@@ -1137,18 +1077,19 @@ RedrawSpareCell:
 ; 256 + 256 in three loops on A'). Called by RedrawView $7965 only: 97 runs in
 ; 43 builds.
 ;
-; Witness: L1 271 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
-; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-20000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
-; rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
-; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
-; rzx-l4-16000-poke, rzx-l5-00000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
+; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
+; rzx-l2-04000-poke, rzx-l2-08000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-16000-poke, rzx-l5-00000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-18000-poke,
+; rzx-l5-20000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 SetViewAttrs:
   LD HL,ViewCells+288
   LD D,CellAttrs/256
@@ -1223,7 +1164,7 @@ MarkScrollScan:
 
 ; MarkScrollNext
 ;
-; Used by the routines at MarkScrollCell and MarkScrollRow6Test.
+; Used by the routine at MarkScrollCell.
 MarkScrollNext:
   INC HL
   DJNZ MarkScrollScan
@@ -1250,8 +1191,6 @@ MarkScrollRow6:
   ADD HL,DE
   ADD HL,DE
   LD A,(HL)
-
-; MarkScrollRow6Test
 MarkScrollRow6Test:
   AND A
   JP NZ,MarkScrollRow8
@@ -1274,8 +1213,10 @@ MarkScrollDone:
 ; ($85FA), marks their cells (MarkScrollCells), then redraws the screen from 2,
 ; 6 and 8 rows lower (RedrawScrolledView), each after a frame wait (C = 1).
 ; Then $88CF += 8, the view is rebuilt ($88D4), every object moved 64 pixels up
-; ($9E31, BC = -64), and the sprites composed and drawn again. So a scroll
-; takes at least three frames.
+; ($9E31, BC = -64), and the sprites composed and drawn again. So a scroll is
+; three steps; measured, it takes 16 frames (rzx-l1-04000-poke frames 111-127,
+; ScrollUp): each RedrawScrolledView takes 282 506 T, about four frames, so
+; each one-count frame wait returns at once.
 ;
 ; 81 runs in 30 builds (RZX pieces).
 ;
@@ -1385,18 +1326,19 @@ ScrollUp:
 ; SetViewAttrs $783F. Called by the section start ($8B2D, $8B34): 97 runs in 43
 ; builds, a few per recording (c1 6).
 ;
-; Witness: L1 271 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke,
-; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-20000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
-; rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
-; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
-; rzx-l4-16000-poke, rzx-l5-00000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 279 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, life-up, long-l4,
+; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
+; rzx-l2-04000-poke, rzx-l2-08000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-16000-poke, rzx-l5-00000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-18000-poke,
+; rzx-l5-20000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 RedrawView:
   CALL RedrawAll
   CALL DrawChangedCells
@@ -1410,11 +1352,11 @@ RedrawView:
 ; Callers: the level menu $7F47, the tape loader $840C, $8427, $84FF and the
 ; text printer $88C4. 47 runs in 13 builds.
 ;
-; Witness: L1 176 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l3-10000-poke, rzx-l4-20000-poke,
-; rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 180 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l3-10000-poke,
+; rzx-l4-20000-poke, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ClearScreen:
   LD HL,Screen
   LD DE,Screen+1
@@ -1461,24 +1403,25 @@ LevelCellsMode:
 ; Evidence: called by MainLoopPause every pass, by the scrolls $78A5 and $7905
 ; and the section setup $8A6D.
 ;
-; Witness: L1 120416 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 121734 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 DrawSprites:
   LD A,$02
   LD (SpareCount),A
@@ -1535,10 +1478,11 @@ DrawTableANext:
 ;
 ; Evidence: 16 runs in 11 builds (callers LevelMenu, ControlMenu, ShowEndText).
 ;
-; Witness: L1 100 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l5-23000, rzx-l5-full, sec-l1-s8, c1,
-; c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 102 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l5-23000,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 FontCellsMode:
   PUSH HL
   LD HL,Glyphs

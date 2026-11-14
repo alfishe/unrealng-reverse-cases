@@ -25,19 +25,19 @@
 ; x101, $A595 x28, $F964 x1); the RZX memory at level 5, frame 1000 holds 00 04
 ; 01 03 08 00 with "041380" on the screen (stage 1).
 ;
-; Witness: L1 310 (cheats, rzx-l1-00000-poke, rzx-l1-02000-poke,
-; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
-; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke,
-; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke,
-; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
-; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
-; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke,
-; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
-; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000, rzx-l5-full, load-l5,
-; sec-l2-s7, sec-l2-s12, sec-l5-s3).
+; Witness: L1 316 (box-shot, cheats, life-up, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-24000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke,
+; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
+; rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
+; rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-14000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke,
+; rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke,
+; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
+; rzx-l5-full, load-l5, sec-l2-s7, sec-l2-s12, sec-l5-s3).
 AddScore:
   LD BC,$0005
   ADD HL,BC
@@ -188,7 +188,8 @@ CountBonusDigitLoop:
 ; RET the end of CountBonus when all four digits borrowed (the bonus wrapped)
 ;
 ; A lone RET ($C9), reached only when the four digits $7F18-$7F1B all wrapped
-; from 0 to 9. Not executed in any recording; a data entry because c1's
+; from 0 to 9. The bonus is then 099 990: a stop mark reached after 201 s pays
+; nearly 100 000. Not executed in any recording; a data entry because c1's
 ; power-on RAM test ($11CB) reads every byte, so the static walk does not take
 ; it as code.
 ;

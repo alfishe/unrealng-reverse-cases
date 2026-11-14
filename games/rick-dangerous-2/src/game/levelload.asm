@@ -48,10 +48,10 @@ LoadLevel:
 ;
 ; Evidence: 1 078 823 runs in 9 builds.
 ;
-; Witness: L1 1238557 (rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke,
-; rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 1247039 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 LoadLevelWaitFire:
   CALL TestFireKeys
   JP NZ,LoadLevelWaitFire
@@ -294,10 +294,10 @@ LoaderFill:
 ; (level 4) and the same 768 bytes above each base; the deciphered bytes equal
 ; the RZX run's memory (NOTES).
 ;
-; Witness: L1 48 (rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke,
-; rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 50 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 DecryptMaps:
   LD HL,(LevelHeader+4)
   LD BC,$0600

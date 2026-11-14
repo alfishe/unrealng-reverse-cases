@@ -24,17 +24,18 @@
 ;
 ; Ran 755 times in 43 builds (c1 62, each control recording 1).
 ;
-; Witness: L1 1479 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke,
-; rzx-l3-06000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
-; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
-; rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-12000-poke,
-; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 1539 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
+; rzx-l5-full, c1, c48).
 MoveBullet:
   LD A,(BulletX)
   ADD A,$04
@@ -84,15 +85,15 @@ BulletStore:
 ; Ran 3401 times in 34 builds: 64 passes per detonator (c1 64, each control
 ; recording 64, the RZX pieces 64 or 128).
 ;
-; Witness: L1 6866 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 6994 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 UpdateDetonator:
   LD A,(DetonatorFuse)
   CP $0B
@@ -185,15 +186,15 @@ DetonatorHitCeiling:
 ; y = (y - 1) AND $F8 (low byte), stored in DetonatorY. Ran 2632 times in 32
 ; builds.
 ;
-; Witness: L1 5318 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke, rzx-l4-00000-poke,
-; rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke,
-; rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1,
-; c48).
+; Witness: L1 5426 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
+; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
+; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
+; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, c1, c48).
 DetonatorOnFloor:
   DEC HL
   LD A,L
@@ -246,15 +247,15 @@ DetonatorLaunchPad:
 ;
 ; Ran 2726 times in 34 builds.
 ;
-; Witness: L1 5506 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 5614 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 DetonatorStopFall:
   LD HL,$0100
 ; This entry point is used by the routine at DetonatorBounce.
@@ -266,15 +267,15 @@ DetonatorStoreDy:
 ; BC = 8, DE = -8: the friction (1/32 pixel a pass every pass); a special
 ; surface goes to DetonatorSurfaceFriction first. Ran 2857 times in 34 builds.
 ;
-; Witness: L1 5768 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 5876 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 DetonatorSlide:
   LD BC,$0008
   LD DE,-8
@@ -307,15 +308,15 @@ DetonatorSurfaceFriction:
 ; Moving left (negative): add 8; a carry means it reached 0
 ; (DetonatorStopLeft). Ran 2857 times in 34 builds.
 ;
-; Witness: L1 5768 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 5876 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 DetonatorFriction:
   LD HL,(DetonatorDx)
   LD A,H
@@ -339,15 +340,15 @@ DetonatorStopLeft:
 ; Ran 2533 times in 32 builds; DetonatorStop 1188 times (mostly a detonator
 ; dropped standing still, speed 0).
 ;
-; Witness: L1 5120 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-12000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1,
-; c48).
+; Witness: L1 5228 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-12000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, c1, c48).
 DetonatorSlowRight:
   ADD HL,DE
   JP C,DetonatorMoveX
@@ -417,15 +418,15 @@ DetonatorStoreX:
 ; blast 8 times ($93B4 in the caller list of $93D0, c1 and the control
 ; recordings).
 ;
-; Witness: L1 6858 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
-; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 6986 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-20000-poke, rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 BurnFuse:
   DEC (IX+$09)
   JP NZ,FuseFrame
@@ -535,17 +536,18 @@ DetonatorYFrac:
 ; Callers: ShootBullet ($9B21) 73, UpdateRide ($958F) 15. 88 shots in 43
 ; builds.
 ;
-; Witness: L1 175 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke,
-; rzx-l3-06000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
-; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
-; rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-12000-poke,
-; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 179 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
+; rzx-l5-full, c1, c48).
 FireBullet:
   LD A,(CheatInfinite)
   AND A
@@ -601,16 +603,17 @@ FireStoreDx:
 ;
 ; Ran 161 times in 39 builds.
 ;
-; Witness: L1 304 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
-; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-12000-poke,
-; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 318 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
+; rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l5-02000-poke,
+; rzx-l5-06000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
+; rzx-l5-full, c1, c48).
 RickShootUp:
   LD C,A
   LD A,$FF
@@ -632,16 +635,17 @@ RickShootUp:
 ;
 ; Ran 73 times in 39 builds.
 ;
-; Witness: L1 145 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
-; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l5-02000-poke, rzx-l5-06000-poke, rzx-l5-12000-poke,
-; rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-full, c1, c48).
+; Witness: L1 149 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, fatguy-hits, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-16000-poke,
+; rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
+; rzx-l4-02000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l5-02000-poke,
+; rzx-l5-06000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
+; rzx-l5-full, c1, c48).
 ShootBullet:
   CALL FireBullet
   JP RickActionDone
@@ -657,15 +661,15 @@ ShootBullet:
 ; Ran 233 times in 33 builds; 56 detonators placed (DetonatorPlace), 24 dropped
 ; standing, 6 thrown left, 26 right.
 ;
-; Witness: L1 471 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke, rzx-l1-08000-poke,
-; rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l2-00000-poke,
-; rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
-; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke, rzx-l4-00000-poke,
-; rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke,
-; rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
-; rzx-l5-full, c1, c48).
+; Witness: L1 473 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,
+; rzx-l1-08000-poke, rzx-l1-12000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-08000-poke,
+; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-20000-poke,
+; rzx-l4-00000-poke, rzx-l4-04000-poke, rzx-l4-10000-poke, rzx-l4-16000-poke,
+; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke, rzx-l5-20000-poke,
+; rzx-l5-22000-poke, rzx-l5-full, c1, c48).
 DropDetonator:
   LD A,$FF
   LD (DetonatorPose),A

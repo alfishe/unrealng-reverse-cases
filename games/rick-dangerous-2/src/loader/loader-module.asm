@@ -28,7 +28,7 @@
 ; c1: entered at frame 1110 T 65 924, the deciphering done by frame 1111, the
 ; game entered at frame 13 998 T 9477.
 ;
-; Witness: L1 1 (c1).
+; Witness: L1 0 ().
 Decipher:
   LD DE,DecipherLoop+$0008
 DecipherLoop:
@@ -176,7 +176,7 @@ LdParity:
 ; state)
 ;
 ; As the ROM's $05E3: LdEdge1 twice. Carry clear: timed out or BREAK. Witness:
-; L1 0 (c1).
+; L1 381458 (c1).
 LdEdge2:
   CALL LdEdge1
   RET NC
@@ -186,7 +186,7 @@ LdEdge2:
 ; As the ROM's $05E7: wait 358 T, then sample port $FE until the EAR bit
 ; changes or B wraps; on an edge the border colour toggles (C bits 0-2, OR 8
 ; for the MIC off). Carry clear: timed out or BREAK (SPACE in row $7F).
-; Witness: L1 0 (c1).
+; Witness: L1 765549 (c1).
 LdEdge1:
   LD A,$16
 LdDelay:
@@ -219,7 +219,7 @@ LdSample:
 ; checksum error, a timeout or BREAK): JP 0, the machine resets. Carry set:
 ; border 0, RET to the loader. c1: two returns, both good.
 ;
-; Witness: L1 0 (c1).
+; Witness: L1 2 (c1).
 LoadFailed:
   JP NC,Reset
 LoadGood:

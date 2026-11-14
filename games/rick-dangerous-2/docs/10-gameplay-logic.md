@@ -23,6 +23,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `c1` | 128K power-on, side A at ROM speed, `tests/inputs/c1.txt` | a shot (16 586-16 656), a detonator and its blast killing Rick (16 676-16 870), a falling trap killing Rick (17 466-17 580) |
 | the `rzx-lL-NNNNN-poke` pieces, `rzx-l5-full`, `rzx-l5-23000` | the RZX run's states (stage 1) | the enemies, the ride, the Fat Guy, the lives tally and the ending |
 | `end-congrats` | `rzx-l4-20000-poke`'s state with POKE `LevelsDone` = 0 | the CONGRATULATIONS ending |
+| `fatguy-hits`, `box-shot` | the RZX's level 5 state at 21 000, the control menu after side A; POKEs said in WALKTHROUGH 6.0 | the Fat Guy's touch and a bullet hit (10.12), an ammunition box shot (10.15) |
 
 **Frames and passes.**
 A frame is 1/50 s of the machine.
@@ -784,15 +785,16 @@ stateDiagram-v2
 ```
 
 **A worked example: who kills the enemies.**
-`KillEnemy`'s callers: deadly traps 111 times, deadly cells 34 times.
-`TestEnemyHits` records 43 kills by the bullet and 5 by the blast.
+`KillEnemy` ran 302 times in 48 builds: 220 from deadly traps (`$A454`; 102 of them in `sec-l5-s5`), 34 from deadly
+cells (`$A0E8`) and 48 from `EnemyHitsAndSprite` (`$9ED1`), which are `TestEnemyHits`' 43 bullet kills (`$8C13`) and
+5 blast kills (`$8C33`).
 So in the RZX run, most enemies died under the traps and on the spikes, not to Rick's weapons.
 
 The point: three placed behaviours share one walk.
 The difficulty comes from where the level designer put them, not from what they think.
 
 Witness: `UpdateEnemy` ran 41 073 times in 59 builds (none in `c1` or the control recordings); `EnemyPatrol` 22 491,
-`EnemyChaser` 9108, `EnemyWanderer` 6166; `KillEnemy` 193 times in 43 builds (`src/game/enemies.asm`).
+`EnemyChaser` 9108, `EnemyWanderer` 6166; `KillEnemy` 302 times in 48 builds (`src/game/enemies.asm`).
 The entry counts come from `sections.txt` (`python3 tools/fig_play.py stats`).
 
 ## 10.10 Every death, the restart and GAME OVER
@@ -807,9 +809,10 @@ The entry counts come from `sections.txt` (`python3 tools/fig_play.py stats`).
 | `$A475` | a deadly trap | 6 |
 | `$9988` | a deadly cell met sideways | 3 |
 | `$FACB` | the Fat Guy's shot (level 5's code) | 1 |
-| `$F946` | the Fat Guy's touch (level 5's code) | 0: known only from the code |
+| `$F946` | the Fat Guy's touch (level 5's code) | 0 (1 in `fatguy-hits`, 10.12) |
 
-These are 65 deaths in 14 builds without the POKEs.
+The per-site column is l1q's caller count (49 in all). `KillRick` itself ran 75 times in 15 builds (the L1 index,
+`c48` included); 69 of them in the 9 builds without the immunity POKEs.
 
 ```
 KillRick:
@@ -911,7 +914,7 @@ Only the restart point and the lives decide what follows.
 
 Witness: the `controls-keyboard` values (`memory_at`, every 2nd frame); the `c1` traces 16 788-16 791 (`$93B4`) and
 17 503-17 506 (`$A475`, then `DeathFall` at T 52 545 and 57 611).
-The caller counts are `KillRick`'s (l1q, 14 builds); `DeathFall` ran 895 times and set `DeathFallOver` 35 times
+The caller counts are `KillRick`'s callers in l1q; `DeathFall` ran 895 times and set `DeathFallOver` 35 times
 (`src/game/rick.asm`); `LoseLife` L1 54 in 14 builds (`src/game/level.asm`).
 
 ## 10.11 Lives, bullets, detonators and the score
@@ -1056,8 +1059,11 @@ The point: the boss is five ordinary trap records, driven by level 5's own code 
 Other levels fill those hooks with the developer's name.
 
 Witness: `FatGuyUpdate` ran 524 times (`rzx-l5-20000-poke` 377, `rzx-l5-22000-poke` 147); 14 hits, all from the blast
-(`$F940`; the bullet branch `$F922` never ran); the touch never killed; the shot killed Rick once (`$FACB`)
-(`src/levels/level5/fatguy.asm`).
+(`$F940`); the shot killed Rick once (`$FACB`) (`src/levels/level5/fatguy.asm`).
+`fatguy-hits` (the RZX's state at 21 000 with the pieces' immunity POKEs, which leave the Fat Guy's tests alone;
+WALKTHROUGH 6.0) runs the other two branches: Rick walks into him while he hangs low and dies (`$F946` jumps once,
+`RickDying` set in frames 196-198), and a bullet fired from the left ledge hits him (`$F922` once, his count 20 -> 19 in
+frames 822-824). A bullet fired from the floor flies at y 211, under his box (y 165-207 at his lowest).
 
 ## 10.13 The level order and the two endings
 
@@ -1219,8 +1225,9 @@ Each feature below names its code, and its witness or "known only from the code"
   A detonator thrown left (-2.0) cannot stop before its fuse ends; `DetonatorStopLeft` is not executed in any
   recording (10.6).
 - **Supplies can be destroyed.**
-  The bullet (`$A5E4`) or the blast (`$A5F7`) bursts an ammunition or detonator pickup before Rick takes it (known
-  only from the code).
+  The bullet (`$A5E4`) or the blast (`$A5F7`) bursts an ammunition or detonator pickup before Rick takes it.
+  Witness: `box-shot` shoots an ammunition box (`PickupShot` 1 run, `PickupBurst` 10); the blast's branch is known
+  only from the code.
 - **No wanderers.**
   Behaviour 0 has code and no map entry; only the climbers run it (10.9).
 
@@ -1228,14 +1235,12 @@ Each feature below names its code, and its witness or "known only from the code"
 
 | What | Where the code shows it |
 | --- | --- |
-| a life added at a level start below 6 lives | `$7CEE` (`INC A` / `LD (Lives),A`) |
 | the countdown bonus running out | `CountBonus` `$9163`, `BonusRunOut` `$917C` |
 | `BonusTally`'s 100 000, bullets and detonators | `$86E0`-`$8727` (the RZX run passed it before frame 23 000) |
 | the end of either ending's wait (2500 frames or fire) | `EndTextExit` `$8794` |
 | level 1's special surface (jump -2.0) | `WeakJumpLevel1` `$9799` |
 | a detonator on a special surface, against a ceiling, or a left throw stopping | `DetonatorBounce`, `DetonatorHitCeiling`, `DetonatorStopLeft` |
 | a deadly trap set off by the blast | `UpdateTrap`'s blast test (`$A41C`) |
-| a pickup burst by the bullet or the blast | `$A5E4`, `$A5F7` |
-| the Fat Guy's touch killing Rick, a bullet hitting him | `$F946`, `$F922` |
+| a pickup burst by the blast (the bullet's: `box-shot`) | `$A5F7` |
 | an enemy of behaviour 0 placed by the map | `EnemyWanderer` runs only for climbers |
 | a ride into level 1's section 0 | the exit of level 1 section 2 ([doc 07 7.12](07-objects.md#712-known-only-from-the-code)) |

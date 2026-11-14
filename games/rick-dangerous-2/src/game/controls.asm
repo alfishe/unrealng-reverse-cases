@@ -21,30 +21,29 @@
 ; the flag the life loss $8A26 tests before it takes a life (and $9593, $95ED,
 ; $96B4, $9B27 read): an infinite-lives cheat.
 ;
-; Only the first half row ran: $71CA-$71DB (the S and 3 tests) ran in no
-; recording, and the static walk takes them for data (every byte of the block
-; is read once in the fast L1), so they are written as DEFB: LD B,$FD / IN
-; A,(C) / AND $1F / CP $1D / RET NZ / LD B,$F7 / IN A,(C) / AND $1F / CP $1B /
-; RET.
+; $71CA-$71DB (the S and 3 tests) ran only in cheats (stage 2: the chord at
+; frame 50): LD B,$FD / IN A,(C) / AND $1F / CP $1D / RET NZ / LD B,$F7 / IN
+; A,(C) / AND $1F / CP $1B / RET.
 ;
-; Witness: L1 119134 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 TestInfiniteLivesKeys:
   LD BC,$FEFE
   IN A,(C)
@@ -72,28 +71,29 @@ TestInfiniteLivesRest:
 ; and sets $8067 = $FF, whose bit 7 the section test $8993 reads ($89D9): a
 ; cheat that only works after the game is finished.
 ;
-; $71E6-$71F8 (the ENTER+J and Y tests) ran in no recording and are DEFB (as
-; $71CA): LD BC,$BFFE / IN A,(C) / AND $1F / CP $16 / RET NZ / LD B,$DF / IN
-; A,(C) / AND $1F / CP $0F / RET.
+; $71E6-$71F8 (the ENTER+J and Y tests) ran only in cheats (stage 2: the chord
+; at frame 200): LD BC,$BFFE / IN A,(C) / AND $1F / CP $16 / RET NZ / LD B,$DF
+; / IN A,(C) / AND $1F / CP $0F / RET.
 ;
-; Witness: L1 119134 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 TestSectionCheatKeys:
   LD BC,$7FFE
   IN A,(C)
@@ -120,11 +120,11 @@ TestSectionCheatRest:
 ; every pass of the menus, $7221 only when level 5 is open): IN from the half
 ; row, BIT n, RET; Z = held.
 ;
-; Witness: L1 198492 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 199122 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestKey0:
   LD BC,$EFFE
   IN A,(C)
@@ -135,11 +135,11 @@ TestKey0:
 ;
 ; Half row $F7FE bit 0. Called by $808D.
 ;
-; Witness: L1 146738 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 147360 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestKey1:
   LD BC,$F7FE
   IN A,(C)
@@ -150,11 +150,11 @@ TestKey1:
 ;
 ; Half row $F7FE bit 1. Called by $8093.
 ;
-; Witness: L1 146328 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 146928 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestKey2:
   LD BC,$F7FE
   IN A,(C)
@@ -165,11 +165,11 @@ TestKey2:
 ;
 ; Half row $F7FE bit 2. Called by $8099.
 ;
-; Witness: L1 146274 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 146874 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestKey3:
   LD BC,$F7FE
   IN A,(C)
@@ -180,11 +180,11 @@ TestKey3:
 ;
 ; Half row $F7FE bit 3. Called by $809F.
 ;
-; Witness: L1 146216 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, end-congrats, rzx-l1-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 146816 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, rzx-l1-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestKey4:
   LD BC,$F7FE
   IN A,(C)
@@ -212,11 +212,11 @@ TestKey5:
 ; wait for a key: the tape loader's message $8433 (over a million runs in
 ; load-l2 ... load-l5), the GAME OVER wait $7EA0 and the end text $8787.
 ;
-; Witness: L1 1270451 (controls-keyboard, end-congrats, rzx-l2-00000-poke,
-; rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 1278933 (controls-keyboard, end-congrats, life-up,
+; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 TestFireKeys:
   LD BC,$BFFE
   IN A,(C)
@@ -237,24 +237,25 @@ TestFireKeys:
 ; second press and its release (the pause); c1 and controls-keyboard press P
 ; (95 582 and 129 946 runs: the waiting loops).
 ;
-; Witness: L1 573892 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 575194 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 TestPauseKey:
   LD BC,$DFFE
   IN A,(C)
@@ -266,24 +267,25 @@ TestPauseKey:
 ; $FBFE bit 2. The main loop $7D2D jumps to the game's end $7E1E on Z (c1
 ; presses E at its end).
 ;
-; Witness: L1 119172 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120474 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 TestQuitKey:
   LD BC,$FBFE
   IN A,(C)
@@ -323,31 +325,29 @@ Controls:
 ; $72FA in controls-sinclair (1255) and c1 (85, its menu tour). ENTER as fire
 ; ($72A1) was never pressed.
 ;
-; Witness: L1 1595354 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-23000,
-; rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 1607150 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-23000, rzx-l5-24000-poke, rzx-l5-26000-poke, rzx-l5-full, sec-l1-s8,
+; c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ReadControls:
   PUSH HL
   LD HL,Controls
   LD (HL),$FF
-
-; ReadControlsMethod
 ReadControlsMethod:
   LD A,(ControlMethod)    ; A = ControlMethod: 0 the keyboard here, else
                           ; ReadKempston
@@ -398,7 +398,7 @@ ReadControlsDone:
 
 ; ReadKempston
 ;
-; Used by the routine at ReadControlsMethod.
+; Used by the routine at ReadControls.
 ReadKempston:
   CP $01                  ; method 1: Kempston, port $1F
   JP NZ,ReadCursor
@@ -421,10 +421,6 @@ ReadCursorRight:
   BIT 2,A                 ; 8 = right
   JP NZ,ReadCursorUp
   RES 0,(HL)
-
-; ReadCursorUp
-;
-; Used by the routine at ReadKempston.
 ReadCursorUp:
   BIT 3,A                 ; 7 = up
   JP NZ,ReadCursorDown
@@ -434,16 +430,10 @@ ReadCursorDown:
   BIT 4,A                 ; 6 = down
   JP NZ,ReadCursorLeft
   RES 2,(HL)
-
-; ReadCursorLeft
-;
-; Used by the routine at ReadCursorUp.
 ReadCursorLeft:
   BIT 0,(HL)              ; 5 = left, only when right is not held
   JP Z,ReadCursorDone
   LD BC,$F7FE
-
-; ReadCursorLeftKey
 ReadCursorLeftKey:
   IN A,(C)
   BIT 4,A
@@ -452,7 +442,7 @@ ReadCursorLeftKey:
 
 ; ReadCursorDone
 ;
-; Used by the routines at ReadCursorLeft and ReadCursorLeftKey.
+; Used by the routine at ReadKempston.
 ReadCursorDone:
   POP HL
   RET

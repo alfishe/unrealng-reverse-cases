@@ -1,0 +1,9 @@
+# life-up: the life added at a level start below six lives (AddLife $7CEE), from work/stage1/rzx/l5/start.szx (the
+# RZX run at level 5's "STOP TAPE AND PRESS FIRE", the cursor method, six lives). One POKE, said so: Lives $8B3B = 3
+# at frame 0; fire (0) ends the load, LevelStart runs and gives the fourth life.
+0 POKE 35643 3
+0 -
++30 0
++10 -
++300 -
++10 END

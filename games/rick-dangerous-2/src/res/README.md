@@ -30,7 +30,7 @@ and each level's map from levels/ (with tables/section-counts.csv).
 ## What stays bytes in the `.ann`, and why
 
 Data no one edits as content stays as named `b` / `w` entries: the game's variables and work tables (the object
-records `$7B8F` / `$7C20` are written over the entry code), the IM 2 handler's debris `$7C5C`, the 204 `$C9` bytes
+records `$7B8F` / `$7C20` are written over the entry code), the IM 2 handler's source `$7C39` (code copied to `$FEFE`) and its debris `$7C5C`, three address tables whose words are labels in the source (`BeeperEffectTable` `$7AF2`, the effects themselves are `tables/beeper-effects.txt`; `KindHandlers` `$9191`, read by no recording; `EnemyWalkSprites` `$9F50`, three sprite addresses), `EnemyAnimScripts` `$9D59` (9 bytes nothing reads), the 204 `$C9` bytes
 after LoadError `$852E`, the mirror table built at run time, the music player's state and the source-text leftovers
 in its variables (src/music), the loader's code (src/loader), and in the levels the unread leftovers listed in
 levels/README.md.

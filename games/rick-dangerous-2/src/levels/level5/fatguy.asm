@@ -105,9 +105,13 @@ FatGuyPieceAnims:
 ; against Rick (TouchesRick): JP KillRick. Then the shot: FatGuyShoot,
 ; FatGuyShotMove with IX = EnemyRecords.
 ;
-; Witness: 524 runs (rzx-l5-20000-poke 377, rzx-l5-22000-poke 147); hits 14,
-; all from the blast ($F940; the bullet branch $F922 never ran); the touch
-; never killed (the JP C at $F946 never jumped).
+; Witness: 524 runs (rzx-l5-20000-poke 377, rzx-l5-22000-poke 147); hits 14 in
+; the RZX pieces, all from the blast ($F940). fatguy-hits (the RZX's state at
+; 21000 with the pieces' POKEs) runs the other two: the touch kills Rick (the
+; JP C at $F946 jumps once, frames 196-198) and a bullet fired from the left
+; ledge hits him (the bullet branch $F922 once, the count 20 -> 19 in frames
+; 822-824); a bullet fired from the floor (y 211) passes under his box (y
+; 165-207 at his lowest).
 ;
 ; Witness: L1 524 (rzx-l5-20000-poke, rzx-l5-22000-poke).
 FatGuyUpdate:

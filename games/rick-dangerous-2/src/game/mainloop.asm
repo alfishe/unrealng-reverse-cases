@@ -35,10 +35,10 @@ NewGame:
 ; Evidence: 11 runs in 10 builds (c1, the four controls-*, the four load-*,
 ; rzx-l5-full 2).
 ;
-; Witness: L1 54 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
-; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 56 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l5-full, sec-l1-s8, c1, c48,
+; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ChooseLevel:
   CALL LevelMenu
 
@@ -50,10 +50,10 @@ ChooseLevel:
 ;
 ; Evidence: 12 runs in 11 builds.
 ;
-; Witness: L1 56 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 58 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l5-full,
+; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 StartGame:
   CALL ClearObjectTables
   CALL ResetSectionObjects
@@ -92,10 +92,10 @@ LevelStarts:
 ;
 ; Evidence: 12 runs in 11 builds, called from StartGame ($7C89).
 ;
-; Witness: L1 56 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 58 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l5-full,
+; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
+; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 ResetGame:
   LD HL,$0000
   LD (Score),HL
@@ -118,11 +118,11 @@ ResetGame:
 ; recordings and rzx-l3-10000-poke, rzx-l4-20000-poke (the RZX run's own
 ; loader, a TAP version at $846A).
 ;
-; Witness: L1 60 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l3-10000-poke, rzx-l4-20000-poke,
-; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 62 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l3-10000-poke,
+; rzx-l4-20000-poke, rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 LevelStart:
   LD A,(Level)
   LD C,A
@@ -141,10 +141,10 @@ LevelStart:
 ; Evidence: 9 runs in 9 builds (load-l2 ... load-l5,
 ; rzx-l2/l3/l4/l5-00000-poke, rzx-l5-full).
 ;
-; Witness: L1 48 (rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke,
-; rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 50 (life-up, rzx-l2-00000-poke, rzx-l3-00000-poke,
+; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9,
+; sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 DecryptLevel:
   CALL DecryptMaps
 
@@ -157,11 +157,12 @@ DecryptLevel:
 ; recordings (c1 starts a game, the RZX pieces have the infinite lives POKE),
 ; so AddLife is not executed in any recording.
 ;
-; Witness: L1 100 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l2-00000-poke, rzx-l3-00000-poke,
-; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 104 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, life-up, rzx-l1-00000-poke,
+; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 LevelTune:
   LD A,(Level)
   ADD A,$04
@@ -172,11 +173,12 @@ LevelTune:
 
 ; INC A / LD ($8B3B),A: one life more at a level start
 ;
-; The code bytes INC A / LD ($8B3B),A: lives + 1 when they are below 6. Not
-; executed in any recording (every level start had six lives); a level start
-; with five lives or fewer would run it.
+; The code bytes INC A / LD ($8B3B),A: lives + 1 when they are below 6. Only
+; life-up runs it (1 run): a POKE, said so, of Lives = 3 at the RZX's level 5
+; "STOP TAPE AND PRESS FIRE", then fire; the level starts with 4 lives. Every
+; other level start had six lives.
 ;
-; Witness: L1 0 ().
+; Witness: L1 2 (life-up).
 AddLife:
   INC A
   LD (Lives),A
@@ -190,11 +192,12 @@ AddLife:
 ;
 ; Evidence: 17 runs in 15 builds.
 ;
-; Witness: L1 100 (controls-cursor, controls-kempston, controls-keyboard,
-; controls-sinclair, rzx-l1-00000-poke, rzx-l2-00000-poke, rzx-l3-00000-poke,
-; rzx-l4-00000-poke, rzx-l5-00000-poke, rzx-l5-full, sec-l1-s8, c1, c48,
-; load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5,
-; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 104 (box-shot, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, life-up, rzx-l1-00000-poke,
+; rzx-l2-00000-poke, rzx-l3-00000-poke, rzx-l4-00000-poke, rzx-l5-00000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 LevelSetup:
   LD A,$06
   LD (Ammunition),A
@@ -233,24 +236,25 @@ LevelSetup:
 ; in c1 and controls-keyboard went to GAME OVER. The chord C+S+3: cheats (stage
 ; 2).
 ;
-; Witness: L1 119172 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120474 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 MainLoop:
   CALL TestQuitKey
   JP Z,GameOver
@@ -262,6 +266,9 @@ MainLoop:
 ; The code bytes LD A,1 / CALL $7AAD (tune 1, the signal) / LD A,($8066) / XOR
 ; $FF / LD ($8066),A. CheatInfinite then stops the loss of lives ($8A26),
 ; ammunition ($9593) and detonators ($9B27, the reads of $8066).
+;
+; A toggle once a pass while the chord is held: a hold of an odd number of
+; passes leaves it on (cheats: on, off, on in frames 50-60, 3 runs).
 ;
 ; Evidence: cheats (stage 2: C, S and 3 held at frame 50 on the RZX run's level
 ; 5) 3 runs: the chord held 10 frames toggles three times in its first passes.
@@ -282,24 +289,25 @@ CheatInfiniteKeys:
 ;
 ; Evidence: 50 161 runs in 65 builds; the chord: cheats (stage 2).
 ;
-; Witness: L1 119134 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 MainLoopCheatB:
   CALL TestSectionCheatKeys
   JP NZ,MainLoopPause
@@ -309,8 +317,9 @@ MainLoopCheatB:
 ; The code bytes LD A,($8065) / AND A / JP Z,$7D5D / LD A,1 / CALL $7AAD / LD
 ; A,$FF / LD ($8067),A: only when Level5Open is set, tune 1 and CheatExits
 ; ($8067) = $FF. The section exit test $8993 reads CheatExits (bit 7) before it
-; tests bit 4 of an exit's kind ($89D9): which exits it opens is for the run.
-; Not executed in any recording.
+; tests bit 4 of an exit's kind ($89D9): a level-end exit without bit 4 becomes
+; a passage (long-l4: level 4 section 7 into section 10, $89E0). cheats runs it
+; 3 times with the chord held (CheatExits = $FF at frame 204).
 ;
 ; Evidence: cheats (stage 2: SPACE, N, ENTER, J and Y held at frame 200,
 ; Level5Open set by the RZX run) 3 runs; long-l4 (POKE CheatExits = $FF on the
@@ -367,24 +376,25 @@ CheatExitsKeys:
 ; inside TallyLives). GameOver 4 runs: c1 1 and controls-keyboard 1 (the key
 ; E), rzx-l5-full 2 (the lives lost).
 ;
-; Witness: L1 119134 (cheats, controls-cursor, controls-kempston,
-; controls-keyboard, controls-sinclair, end-congrats, long-l4,
-; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
-; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
-; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
-; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
-; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
-; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
-; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
-; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
-; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
-; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full,
-; sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12,
-; sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 120436 (box-shot, cheats, controls-cursor, controls-kempston,
+; controls-keyboard, controls-sinclair, end-congrats, fatguy-hits, life-up,
+; long-l4, rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
+; rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
+; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke,
+; rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke,
+; rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke,
+; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
+; rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke,
+; rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke,
+; rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke,
+; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
+; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke,
+; rzx-l5-full, sec-l1-s8, c1, c48, load-l2-load-l5, sec-l2-s7,
+; sec-l2-s10-sec-l2-s12, sec-l3-s3-sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
+; sec-l5-s3, sec-l5-s5).
 MainLoopPause:
   CALL TestPauseKey
   JP NZ,PassWork

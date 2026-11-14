@@ -1,0 +1,23 @@
+# fatguy-hits: the Fat Guy's touch killing Rick ($F946) and a bullet hitting him ($F922), from
+# work/stage1/rzx/l5/at021000.szx (the RZX run in level 5 section 7, the Fat Guy at 20 hits, the cursor method).
+# The RZX pieces' four POKEs, said so (infinite lives $8A30; immune to enemies $8C67, traps $A475, the blast
+# $93B4); the Fat Guy's own tests are not POKEd. Rick walks right to x 122, then on into the Fat Guy while he hangs
+# low (his box y 165-207 in frames 175-260): the touch. Rick restarts on the left ledge (y 171); there he turns
+# right and fires (7 up + 0 fire) while the Fat Guy is low again (frames 750-815): a bullet at y 179 meets his box
+# (from the floor, y 211, it passes under it).
+0 POKE 35376 0
+0 POKE 35943 58
+0 POKE 42101 58
+0 POKE 37812 58
+0 -
+10 8
+40 -
+180 8
+240 -
+760 8
+764 -
+770 7 0
+774 -
+790 7 0
+794 -
+900 END

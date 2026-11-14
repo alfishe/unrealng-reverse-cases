@@ -585,7 +585,7 @@ The point: a trap that does not move still costs about 2 100 T a pass: path, ani
 
 Witness: `UpdateTrap` 148 725 runs in 61 recordings; the trap-on-Rick test 83 559; `SwitchTrapPath` 184 runs in 42;
 behaviour `$0C` removed by its box 432 times, `$1C` released 9 times.
-`KillEnemy` from a deadly trap: 111 times.
+`KillEnemy` from a deadly trap (`$A454`): 220 times, 102 of them in `sec-l5-s5`.
 
 ### The pickups
 
@@ -600,8 +600,9 @@ When Rick, alive, overlaps it:
 | detonators `$2D` | `Detonators` `$8B3D` = 6, effect 6 |
 
 The pickup is then retired.
-An ammunition or detonator box hit by the bullet or the blast bursts in the code (effect 5, ten frames).
-No recording runs that branch.
+An ammunition or detonator box hit by the bullet or the blast bursts (effect 5, ten frames).
+`box-shot` (POKEs, said so: level 1 starts in section 3 beside the boxes; WALKTHROUGH 6.0) shoots the ammunition box:
+`PickupShot` `$A5E4` 1 run, `PickupBurst` `$A53A` 10 runs. The blast's branch (`$A5F7`) runs in no recording.
 
 Witness: a treasure taken 28 times, ammunition 13, detonators 12 (`UpdatePickup` 20 424 runs in 47 recordings).
 
@@ -832,7 +833,7 @@ Witness: `Random` 1 018 runs in 21 recordings (999 and 995 from the wanderer, 19
 | `SectionEntries`, `ScanStart` | `$8B3E`, `$8B40` | the section's map entry list, the scan's start |
 | `RickSection` | `$9B93` | the section Rick is in |
 | `RestartPoint` | `$9B8C` | where a new life starts |
-| `RideMode` | `$945D` | level 5's ride |
+| `RideMode` | `$945D` | the ride: level 2 section 6, level 4 sections 4-5, level 5 section 2 |
 | `BonusRunning`, `BonusPrescaler` | `$9BA9`, `$9BAA` | the countdown on, its pass count |
 | `RickRecord` | `$9BAB` | Rick's record ([doc 10](10-gameplay-logic.md)) |
 | `BulletRecord`, `DetonatorRecord` | `$9BB4`, `$9BBD` | the shots |
@@ -861,7 +862,7 @@ The point: the long levels are in every copy of the game, behind a chord on the 
 
 ## 7.12 Known only from the code
 
-- A pickup box burst by the bullet or the blast (`$A5E4`, `$A5F7`): no recording runs it.
+- A pickup box burst by the blast (`$A5F7`): no recording runs it (the bullet's branch: `box-shot`, 7.6).
 - The trap blast test at `$A41C` (a blast-tested trap at fuse 10 or more): not run.
 - `DispatchByKind` `$917D` and its handler table: an earlier design; nothing jumps there.
 - `EnemyAnimScripts` `$9D59`: written into every enemy, read by nothing.

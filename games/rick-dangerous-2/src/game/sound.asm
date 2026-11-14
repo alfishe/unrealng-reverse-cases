@@ -3,8 +3,9 @@
 ;
 ; On a 48K (Machine48K $7A76 set) PlayEffect $7A97 points PlayBeeperStep's note pointer at one of eleven effects, and
 ; the main loop calls PlayBeeperStep $7B66 once a pass: one note a pass, a square wave on port $FE bit 3 for $600 loop
-; turns whatever the pitch. No recording runs a 48K, so this module is known only from the code; the static walk takes
-; it for data, and it is written as DEFB, one instruction a line.
+; turns whatever the pitch. Only c48 (power-on 48K, side A at ROM speed) runs a 48K: PlayBeeperStep 1206 runs there.
+; The other recordings are 128K, and c48 is a code build only (its tape load reads every byte), so the static walk
+; takes this module for data, and it is written as DEFB, one instruction a line.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $7ABF
@@ -112,7 +113,8 @@ BeeperEffect10:
 ; start: the first passes on a 48K would play the ROM's bytes at $0000 ($F3,
 ; $AF, $11) until its $FF at $0003. The note: C = the byte, then port $FE = $08
 ; / $00 (MIC bit, black border) toggled every C turns of a DE = $600 countdown,
-; about 49 000 T: most of a frame per pass. Not executed in any recording.
+; about 49 000 T: most of a frame per pass. c48 runs it: 1206 runs
+; (docs/09-sound.md 9.11).
 ;
 ; Evidence: c48 1206 runs, one a main loop pass after the game started (no
 ; other recording is a 48K).

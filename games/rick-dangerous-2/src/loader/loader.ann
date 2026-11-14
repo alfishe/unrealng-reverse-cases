@@ -20,7 +20,7 @@ $FF00 c Decipher ; Decipher $FF0B-$FFFF (XOR IYH = $5C), then load the screen an
 > Entered by the BASIC's RANDOMIZE USR 65280 with IY = $5C3A (the ROM's system variables base). DE runs from $FF0B to $FFFF; each byte XOR IYH. The loop ends when D wraps to 0. The first byte deciphered is DecipherLoop's own JR NZ operand ($FF0B: $AB XOR $5C = $F7, the jump back).
 > Then SP = 0 (the stack under the top of memory: the game keeps it so, and it grows down over this page), LdBytesReversed reads the loading screen (6912 bytes, flag $FF) to $4000 and the game block ($9EFE bytes) to $6000, EI and JP GameEntry $7B8F.
 > c1: entered at frame 1110 T 65 924, the deciphering done by frame 1111, the game entered at frame 13 998 T 9477.
-> Witness: L1 1 (c1).
+> Witness: L1 0 ().
 $FF03 DecipherLoop
 $FF0B LoadScreenAndGame ; the first byte this loop deciphers is the operand of the JR NZ before it
 $FF2A ; interrupts on again: the IM 1 handler of the ROM until the game's entry sets IM 2
@@ -45,15 +45,15 @@ $FF9C LdBitLoop
 $FFAD LdParity ; DE = 0: the checksum test, H must be $FF
 
 $FFB6 c LdEdge2 ; Two edges: the ROM's LD-EDGE-2 (B = the time count, C = the border and EAR state)
-> As the ROM's $05E3: LdEdge1 twice. Carry clear: timed out or BREAK. Witness: L1 0 (c1).
+> As the ROM's $05E3: LdEdge1 twice. Carry clear: timed out or BREAK. Witness: L1 381458 (c1).
 $FFBA c LdEdge1 ; One edge: the ROM's LD-EDGE-1, the delay loop of 22, the border stripes
-> As the ROM's $05E7: wait 358 T, then sample port $FE until the EAR bit changes or B wraps; on an edge the border colour toggles (C bits 0-2, OR 8 for the MIC off). Carry clear: timed out or BREAK (SPACE in row $7F). Witness: L1 0 (c1).
+> As the ROM's $05E7: wait 358 T, then sample port $FE until the EAR bit changes or B wraps; on an edge the border colour toggles (C bits 0-2, OR 8 for the MIC off). Carry clear: timed out or BREAK (SPACE in row $7F). Witness: L1 765549 (c1).
 $FFBC LdDelay
 $FFC0 LdSample
 
 $FFD8 c LoadFailed ; The return of LdBytesReversed: a failed block resets the machine, a good one turns the border black
 > Pushed by LdBytesReversed ($FF35) as its return address. Carry clear (a checksum error, a timeout or BREAK): JP 0, the machine resets. Carry set: border 0, RET to the loader. c1: two returns, both good.
-> Witness: L1 0 (c1).
+> Witness: L1 2 (c1).
 $FFDB LoadGood
 
 $FFDF b LoaderTail ; 33 bytes of an older routine's tail, never run: the ROM's SA-BYTES fragments; the stack overwrites them

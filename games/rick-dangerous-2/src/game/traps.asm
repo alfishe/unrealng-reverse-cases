@@ -73,23 +73,23 @@ TrapEffectSkip:
 ; patches); behaviour $0C removed by its trigger 432 times ($A4C0), behaviour
 ; $1C on release 9 ($A4A7).
 ;
-; Witness: L1 345924 (cheats, end-congrats, long-l4, rzx-l1-00000-poke,
-; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
-; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke,
-; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
-; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
-; rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke,
-; rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke,
-; rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
-; rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
-; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke,
-; rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke,
-; rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke,
-; rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke,
-; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48, load-l2-load-l5,
-; sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s
-; x5, sec-l5-s3, sec-l5-s5).
+; Witness: L1 347342 (box-shot, cheats, end-congrats, life-up, long-l4,
+; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
+; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
+; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
+; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
+; rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke,
+; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
+; rzx-l4-00000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
+; rzx-l4-08000-poke, rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke,
+; rzx-l4-16000-poke, rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke,
+; rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke,
+; rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke,
+; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1,
+; c48, load-l2-load-l5, sec-l2-s7, sec-l2-s10-sec-l2-s12, sec-l3-s5,
+; sec-l3-s7-sec-l3-s9, sec-l4-s x5, sec-l5-s3, sec-l5-s5).
 UpdateTrap:
   LD A,(IX+$00)
   AND $3F
@@ -245,8 +245,6 @@ TrapHitEnemies:
   LD C,(IX+$07)
   LD B,(IX+$08)
   LD IX,SetupIm2+$0006
-
-; TrapHitEnemiesLoop
 TrapHitEnemiesLoop:
   LD A,(IX+$00)
   AND A
@@ -283,7 +281,7 @@ TrapHitRick:
 
 ; TrapTriggers
 ;
-; Used by the routines at UpdateTrap, TrapMoveRight and TrapHitEnemiesLoop.
+; Used by the routines at UpdateTrap and TrapMoveRight.
 TrapTriggers:
   LD A,(IX+$06)           ; flags +6 bit 6: no trigger test; bit 4 with kind
                           ; bit 5: none either
@@ -304,8 +302,6 @@ TrapTestBoxes:
   CALL TestTriggerBoxes
   POP IX
   JP C,TrapTriggered
-
-; TrapNoTrigger
 TrapNoTrigger:
   LD A,(IX+$00)           ; behaviour $1C: the trap lives only while its box is
                           ; held
@@ -313,7 +309,6 @@ TrapNoTrigger:
   CP $1C
   RET NZ
   JP RetireObject
-; This entry point is used by the routine at TrapTriggers.
 TrapTriggered:
   LD A,(IX+$00)           ; behaviour 0: pause or resume the path
   AND $1C
@@ -410,27 +405,29 @@ ArmTrapWait:
 ;
 ; Not taken: an ammunition or detonator box hit by the bullet ($A5E4) or by the
 ; detonator's blast at phase 4-9 ($A5F7) bursts (effect 5, ten frames from the
-; table $93C0 by the burst counter +$0E, PickupBurst, then retired): none of
-; these ran in any recording.
+; table $93C0 by the burst counter +$0E, PickupBurst, then retired). box-shot
+; (POKEs, said so: level 1 starts in section 3 beside the boxes) runs the
+; bullet's branch: PickupShot 1 run, PickupBurst 10 runs; the blast's branch
+; ($A5F7) ran in no recording.
 ;
 ; Evidence: 20 424 runs in 47 builds (from $A301 3685, $A309 1820, $A311 2825;
 ; c1 none); taken: a treasure 28 times ($A58D, 18 builds), ammunition 13 ($A59B
 ; 25 less $A5B0 12), detonators 12 ($A5B0, 11 builds).
 ;
-; Witness: L1 48852 (cheats, rzx-l1-00000-poke, rzx-l1-02000-poke,
-; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke,
-; rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
-; rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke, rzx-l2-08000-poke,
-; rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke, rzx-l2-16000-poke,
-; rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke, rzx-l3-00000-poke,
-; rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke,
-; rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
-; rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke,
-; rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke, rzx-l5-06000-poke,
-; rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke, rzx-l5-16000-poke,
-; rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full, load-l2, load-l5,
-; sec-l2-s7, sec-l2-s10, sec-l2-s11, sec-l3-s5, sec-l3-s9, sec-l4-s2,
-; sec-l5-s5).
+; Witness: L1 49532 (box-shot, cheats, life-up, rzx-l1-00000-poke,
+; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-10000-poke,
+; rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke,
+; rzx-l1-22000-poke, rzx-l2-00000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
+; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
+; rzx-l2-16000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke, rzx-l2-24000-poke,
+; rzx-l3-00000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke, rzx-l3-08000-poke,
+; rzx-l3-10000-poke, rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke,
+; rzx-l4-08000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke,
+; rzx-l4-18000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke,
+; rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke,
+; rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke, rzx-l5-full,
+; load-l2, load-l5, sec-l2-s7, sec-l2-s10, sec-l2-s11, sec-l3-s5, sec-l3-s9,
+; sec-l4-s2, sec-l5-s5).
 UpdatePickup:
   LD (IX+$00),A
   LD (IX+$07),$18
@@ -440,7 +437,7 @@ UpdatePickup:
   JP Z,PickupTouch
 PickupBurst:
   DEC A                   ; burst counter -1, retired at 0, the sprite from
-                          ; $93C0 (not executed in any recording)
+                          ; $93C0 (box-shot: 10 runs)
   JP Z,RetireObject
   LD (IX+$0E),A
   AND $FE
@@ -512,8 +509,7 @@ PickupShotTest:
   CALL BulletHits
   JP NC,PickupBlastTest
 PickupShot:
-  XOR A                   ; BulletSpent = $FF, then the burst (not executed in
-                          ; any recording)
+  XOR A                   ; BulletSpent = $FF, then the burst (box-shot: 1 run)
   DEC A
   LD (BulletSpent),A
   JP PickupBurstStart
@@ -549,23 +545,23 @@ PickupBurstStart:
 ; executed in any recording. Witness: 127 532 runs in 60 builds (all from
 ; $A3E8); a new frame 76 384 times.
 ;
-; Witness: L1 295451 (cheats, end-congrats, long-l4, rzx-l1-00000-poke,
-; rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke,
-; rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke, rzx-l1-16000-poke,
-; rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke, rzx-l1-24000-poke,
-; rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
-; rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke, rzx-l2-14000-poke,
-; rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke, rzx-l2-22000-poke,
-; rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke, rzx-l3-06000-poke,
-; rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke, rzx-l4-02000-poke,
-; rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke, rzx-l4-10000-poke,
-; rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke, rzx-l4-18000-poke,
-; rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke, rzx-l5-04000-poke,
-; rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke, rzx-l5-12000-poke,
-; rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke, rzx-l5-20000-poke,
-; rzx-l5-22000-poke, rzx-l5-full, c1, c48, load-l2-load-l5, sec-l2-s7,
-; sec-l2-s11, sec-l2-s12, sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s x5,
-; sec-l5-s3, sec-l5-s5).
+; Witness: L1 296189 (cheats, end-congrats, life-up, long-l4,
+; rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke, rzx-l1-06000-poke,
+; rzx-l1-08000-poke, rzx-l1-10000-poke, rzx-l1-12000-poke, rzx-l1-14000-poke,
+; rzx-l1-16000-poke, rzx-l1-18000-poke, rzx-l1-20000-poke, rzx-l1-22000-poke,
+; rzx-l1-24000-poke, rzx-l2-00000-poke, rzx-l2-02000-poke, rzx-l2-04000-poke,
+; rzx-l2-06000-poke, rzx-l2-08000-poke, rzx-l2-10000-poke, rzx-l2-12000-poke,
+; rzx-l2-14000-poke, rzx-l2-16000-poke, rzx-l2-18000-poke, rzx-l2-20000-poke,
+; rzx-l2-22000-poke, rzx-l3-00000-poke, rzx-l3-02000-poke, rzx-l3-04000-poke,
+; rzx-l3-06000-poke, rzx-l3-08000-poke, rzx-l3-10000-poke, rzx-l4-00000-poke,
+; rzx-l4-02000-poke, rzx-l4-04000-poke, rzx-l4-06000-poke, rzx-l4-08000-poke,
+; rzx-l4-10000-poke, rzx-l4-12000-poke, rzx-l4-14000-poke, rzx-l4-16000-poke,
+; rzx-l4-18000-poke, rzx-l4-20000-poke, rzx-l5-00000-poke, rzx-l5-02000-poke,
+; rzx-l5-04000-poke, rzx-l5-06000-poke, rzx-l5-08000-poke, rzx-l5-10000-poke,
+; rzx-l5-12000-poke, rzx-l5-14000-poke, rzx-l5-16000-poke, rzx-l5-18000-poke,
+; rzx-l5-20000-poke, rzx-l5-22000-poke, rzx-l5-full, c1, c48, load-l2-load-l5,
+; sec-l2-s7, sec-l2-s11, sec-l2-s12, sec-l3-s5, sec-l3-s7-sec-l3-s9, sec-l4-s
+; x5, sec-l5-s3, sec-l5-s5).
 AnimateTrap:
   LD A,(IX+$09)
   AND A

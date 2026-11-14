@@ -193,7 +193,8 @@ cell rows down the section), `E` = 0 (the left edge), `HL` = `$00AB` (pixel row 
 Rick starts at the bottom left of a view that is already scrolled far down section 1.
 
 `AddLife` is the only extra life of the game: a level started with fewer than six lives gets one back. Every level
-start of the recordings had six lives, so it is not executed in any recording. Known only from the code (`$7CE6-$7CF1`).
+start of the RZX run had six lives; `life-up` (a POKE, said so: `Lives` `$8B3B` = 3 at level 5's "STOP TAPE AND PRESS
+FIRE", WALKTHROUGH 6.0) runs `$7CEE` once and the level starts with 4.
 
 **The point**: one table places Rick in every level, and the same `SetupSection` that a section exit uses builds the
 first view.
@@ -751,7 +752,6 @@ whole game slows down together when the screen is busy, and nothing in play depe
 
 ## 4.9 Known only from the code
 
-- `AddLife` `$7CEE`: no level start with fewer than six lives in any recording.
 - `EndTextExit` `$8794`: no recording waits the 2500 frames of an end text or presses fire there.
 - The 48K pass: `PlayBeeperStep` `$7B66` runs in `c48` (1206 passes), but no trace of a 48K pass was taken. On a 48K
   the handler keeps its three `NOP`s ([doc 9](09-sound.md)).
