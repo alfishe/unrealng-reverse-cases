@@ -13,7 +13,7 @@ import figlib
 BLOCKS = [  # (name, seconds, colour)
     ('header "DEFLEKTOR"', 5.09, (90, 150, 230)), ('pause', 0.989, (45, 45, 55)),
     ('BASIC + loader 1 (384)', 4.12, (90, 210, 120)), ('pause', 0.986, (45, 45, 55)),
-    ('turbo block, flag 19, 58 316 bytes', 296.74, (230, 90, 160)),
+    ('turbo block, 58 316 bytes', 296.74, (230, 90, 160)),
 ]
 LOADS = [  # (address, bytes, what, colour)
     (0xB75A, 0xB869 - 0xB75A, 'loader 2, part 1', (240, 200, 80)),

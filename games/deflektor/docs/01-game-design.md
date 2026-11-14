@@ -14,8 +14,11 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `mine`, `gameover`: level 1 from POKEd states (the overload bar full, the beam on a mine): BOOM, GAME OVER.
 - `rzx-NNNNNN` (60 segments): the RZX archive's play of all 60 levels and the ending (someone else's play).
 - `L01`, `L03` and 18 more (stage 2, `work/stage2/rec/LNN`): levels completed by the case's bot with its own input.
+  Only `L01` is from power-on: `L03` to `L59` start on a clone, the bot's earlier levels ended by the LevelDone POKE
+  (`$8ED2` = `$FF`; from level 38 on also Lives `$837D` poked back to 3).
 - `hof`, `ending`, `energy-out` (stage 2, `work/stage2/rec`): a name entered, the ending, game over by energy alone.
-  `hof` and `ending` start from clones where earlier levels were skipped by a POKE of LevelDone `$8ED2`.
+  `hof` (and `nameedit`) and `ending` start from clones where earlier levels were skipped by a POKE of LevelDone
+  `$8ED2`; `corner` is a clone with the beam's start POKEd.
 - `practice` (new for this document, `work/docs/dfA/rec/practice`): from `menu.szx`, SPACE at frame 300, key 6 at
   400, then cursor keys; 2500 frames, port base 37485, inputs `work/docs/dfA/practice.txt`. It is the only recording
   that reaches a practice level (in `menu` the 6 did not take: its "practice" screen is level 1).
@@ -61,7 +64,8 @@ message on the play screen. Command: `python3 tools/fig_play.py docs/img/design`
 | Play | The field (rows 0-19), the panel (rows 20-23) | 7 START GAME | [`L01` 1000](img/play/l01-001000-play.png) |
 | Pause | INTERMISSION ... PRESS ENTER FOR MORE ACTION; a tune | P | [`controls` 1500](img/play/controls-001500-intermission.png) |
 | Game aborted | GAME ABORTED, then the title | U + G together | [`controls` 2000](img/play/game-aborted.png) |
-| Life lost | BOOM BOOM BOOM, the field red | The overload full, or the energy drained | [`gameover` 100](img/play/gameover-000100.png), [`mine` 500](img/play/life-lost.png) |
+| Life lost (overload) | BOOM BOOM BOOM, the field red | The overload full (LoseLife `$866A`) | [`gameover` 100](img/play/gameover-000100.png), [`mine` 500](img/play/life-lost.png) |
+| Life lost (energy) | ENERGY DRAINED and a falling sweep; no BOOM, no red field (LoseLifeDrained `$869A`, taken when MessageNumber is `$16` or more) | The energy drained | `energy` 6460 ([the play sheet](img/design/screens-play.png)) |
 | Game over | A GAME OVER banner over the red field | The third life of a level lost | [`gameover` 150](img/play/gameover-000150.png) |
 | Name entry | HIGH DEFLEKTOR RATING under the hall of fame; the name typed into its place | A score above 015000 at game over | [`hof` 17160](img/play/hof-017160-name.png) |
 | Ending | CONGRATULATIONS / YOU ARE TRULY A MASTER DEFLEKTOR / THE CIRCUIT IS NOW COMPLETE, a plug and a kettle joined by the beam, THE TEA WILL BE READY IN FIVE MINUTES!, PRESS ANY KEY | Level 60 completed | [`ending` 1000](img/play/ending-001000.png) |
@@ -110,7 +114,7 @@ flowchart TD
     Title -->|any key| Options[Options panel and hall of fame]
     Options -->|1-4: the controls| Options
     Options -->|5| Demo[Demo: every level, one pass each]
-    Demo -->|60 levels or SPACE| Title
+    Demo -->|60 levels or U+G| Title
     Options -->|6| Practice[Practice P1-P3]
     Options -->|7| Play[Level N, three lives]
     Practice -->|P3 done or U+G| Title
@@ -180,11 +184,11 @@ docs/img/design/elements.png`.*
 | Reflecting wall | `$30-$3E` | reflects it | `L01` (the orange walls) |
 | Cell | `$40` | burns when the beam crosses it: points | `L01` 395 |
 | Mine | `$41` | the beam on it: the overload bar 4 steps a pass | `L01` 1336 |
-| Prism | `$42` | sends the beam on in a random direction | RZX segments, level 60 |
+| Prism | `$42` | turns the beam by a random amount, up to 4 sixteenths either way of its direction (PrismTurn `$9014`), anew on every pass | `L` recordings (8) and RZX segments |
 | Laser | `$47-$4A` (east, south, west, north) | the beam's start; the beam back into it: overload | `L01` 262 |
 | Receiver | `$4B-$4E` (east, south, west, north) | the goal; shut by the element in front of it until the last cell burns | `L01` 1420-1520 |
-| Fibre-optic end | `$50-$57` (pairs) | the beam into one end comes out of the other | `L01` (pair 2) |
-| Explosion | `$57-$5C` | a burning cell or a blown door, one frame a pass | `L01` 395 |
+| Fibre-optic end | `$4F-$57` (the trace's range; the levels hold `$50-$57`, in pairs) | the beam into one end comes out of the other | `L01` (pair 2) |
+| Explosion | `$58-$5C` | a burning cell or a blown door, one frame a pass; the beam stops on it until the explosion ends (BeamStep's `CP $58; RET NC`) | `L01` 395 |
 
 Bit 7 of a code makes the element turn by itself, one step a pass: turning mirrors and turning polarisers. Gremlins
 are not cells: they walk over the field and stop on mirrors. The rules of each element as code are in
@@ -218,9 +222,10 @@ receiver.*
    may turn one step at random (1 in 2 each pass, 1 in 8 on levels with 30 mirrors or more). So a level never starts
    as its data says. In `L01` the mirror at row 0, column 0 is `$07` in the data and `$09` when the charge ends.
 2. **The beam.** From then on, every pass traces the beam from the laser over the field. A beam longer than 40
-   steps (about 40 cells) counts as a beam back in the laser: OVERLOAD on every pass; a trace stops at 150 steps.
+   counted steps (BeamSteps `$8EBF`, how it counts: [doc 10](10-gameplay-logic.md)) counts as a beam back in the laser: OVERLOAD on every pass; a trace stops at 150 steps.
 3. **The cells.** A cell the beam crosses explodes (five pictures over five passes) and is gone: 120 points, or 30 on
-   levels with 30 cells or more.
+   levels with 30 cells or more. While it burns the beam stops on it, so the cells behind it wait for the explosion
+   to end.
 4. **The door.** When the last cell burns, the element in front of the receiver explodes like a cell: 250 points. In
    the 60 levels that element is a mine (23 levels), a wall (32), a block (4) or a fibre-optic end (1).
 5. **Contact.** The beam into the receiver's open side: CONTACT!, the field turns magenta, every pixel of energy left
@@ -420,7 +425,7 @@ segments, someone else's play); on the bot's clones they were skipped by a POKE 
 | --- | --- | --- | --- | --- |
 | Game | 7 | levels 1-60, three lives a level, the energy and overload bars | NewGame `$8419` | `c1`, the L recordings |
 | Practice | 6 | levels P1-P3 (slots 60-62); energy rate 255 (a pixel every 5.1 s); a full overload bar takes no life; after P3 the title | PracticeFlag `$8407`, `$8424`, `$A7E3` | `practice` (P1 played to frame 2500) |
-| Demo | 5 | every level for one pass while it charges; SPACE stops it (DEMO ABORTED) | `$8379`, MainLoop `$855F` | `menu` (60 levels) |
+| Demo | 5 | every level for one pass while it charges; U + G stops it (DEMO ABORTED, AbortGame `$981F`), else it ends after level 60 (`$856E`) | `$8379`, MainLoop `$855F` | `menu` (60 levels) |
 
 The difficulty grows by the puzzles, not by the rules: the rules and the scoring are the same on every level; only the
 field, the energy rate and the gremlin count change.

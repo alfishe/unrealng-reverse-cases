@@ -10,7 +10,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   level 1.
 - `L01` (stage 2, `work/stage2/rec/L01`): level 1 completed by the bot, 1645 frames; the time budget is measured on it.
 - The 68 recordings summed for the heatmap: `c1g`, `menu`, `controls`, `kempston`, `energy`, `overload`, `mine`,
-  `gameover` and the 60 RZX segments (someone else's play).
+  `gameover` and the 60 RZX segments (someone else's play). `overload`, `mine` and `gameover` start on a clone (the
+  bars and the beam flags POKEd), so their states are not reached by play from power-on as recorded.
 
 ## 2.1 The machine and the budget
 
@@ -52,14 +53,14 @@ recording; the bonus count and the level start add frames with no pass, so a pas
 *The 64 K, one row a kilobyte, each byte coloured by what it holds; numbered regions with the legend below. How to
 read it: from the top left, `$0000`, to the bottom right, `$FFFF`; dark grey bands are bytes nobody uses. The point:
 the game is one image from `$6000` to `$DFFF` (the loader's mover puts it there), with its work buffers above it in
-`$E000-$FCFF`, the level grid and the interrupt table at the top, and a stack of 13 bytes. Command: `python3
+`$E000-$FCFF`, the level grid and the interrupt table at the top, and a stack of 12 bytes. Command: `python3
 tools/fig_memmap.py docs/img/arch/memmap.png` (the ranges from `src/game/game.ann`).*
 
 | Range | What | Witness |
 | --- | --- | --- |
 | `$0000-$3FFF` | ROM: the font at `$3D00` for the loader only; the game runs no ROM code | the L1 of all recordings: no instruction below `$8382` runs after the entry (2.3) |
 | `$4000-$5AFF` | the screen: the field in rows 0-19 (a border and 15 x 9 cells of 2 x 2 characters), the panel in rows 20-23 | screenshots ([doc 1](01-game-design.md#12-the-screens)) |
-| `$5B00-$5FFF` | the loader's leftovers (`$5B00` `POP HL; JP (HL)`, `$5C00` the block head); never read or written by the game | [doc 3](03-build-and-load.md#31-the-tape-block-by-block) |
+| `$5B00-$5FFF` | the chain's fill stream: ChainFill writes `$5B00-$7B51` and `$FD1B-$FFFF` before the layers run, so the BASIC, the loader's stubs and the block head are overwritten (`$5B00` reads `95 F0 FC C9` at the entry); never read or written by the game | [doc 3, 3.5](03-build-and-load.md#35-the-cipher) |
 | `$6000-$7AFF` | TitlePicture: the title, a whole screen (6912 bytes), copied to `$4000` by TitleScreen `$A729` | L1: read, never written |
 | `$7B00-$7B7F` | Gap7B00: 128 zeros | no instruction reads them |
 | `$7B80-$7FFF` | PanelPicture: rows 20-23 of the screen, 1024 pixel bytes in plain rows and 128 attributes | LevelPanel `$8432` |
@@ -86,7 +87,7 @@ tools/fig_memmap.py docs/img/arch/memmap.png` (the ranges from `src/game/game.an
 | `$FD00-$FDFA` | LevelGrid: the level's cells from `$FD23`, 17 bytes a row; before the game, the loader's mover | BuildLevel `$891A`; [doc 3](03-build-and-load.md#31-the-tape-block-by-block) |
 | `$FDFD-$FDFF` | `JP $A32A`, the interrupt's jump | SetupInterrupts `$A2FA` |
 | `$FE00-$FF00` | the IM 2 table: 257 bytes of `$FD` | SetupInterrupts `$A2FA` |
-| `$FFF3-$FFFF` | the stack (`SP` = `$FFFF` from the mover); its low mark is `$FFF3` | 2.3 |
+| `$FFF3-$FFFE` | the stack (`SP` = `$FFFF` from the mover): 12 bytes, its low mark `$FFF3` | 2.3 |
 
 The point: four buffers in high memory hold the whole field (characters, marks, colours, pixels). The screen is only
 ever written by copies from them, so a pass that changes one mirror redraws only that mirror's four characters into
@@ -119,13 +120,13 @@ What it shows:
 
 ```mermaid
 flowchart TD
-    A[ROM: LOAD from the BASIC header] --> B[BASIC line 0: RANDOMIZE USR into the line]
+    A[ROM: LOAD from the BASIC header] --> B[BASIC line 0: RANDOMIZE USR, hidden numbers: PROG + 58]
     B --> C[stage 0 at 5D05: move the loader to B626]
     C --> D[stage 1 at B65B: find the turbo pilot, load the second loader to B75A]
-    D --> E[stage 2 at B856: the countdown, the rest of the block, a hook every 8th byte]
+    D --> E[stage 2 at B856: the countdown, the rest of the block, a hook every 7 data bytes]
     E --> F[stage 3 at 5B00: LDIR, RET]
     F --> G[stage 4 at 5C00: the block head moves the code up to FD1A]
-    G --> H[stages 5-7 at 7B52: 30 XOR and sum layers decipher the image]
+    G --> H[stages 5-7 at 7B52: ChainFill, 30 layers decipher the chain; FinalSum and Final16 decipher the image]
     H --> I[stage 8 at FD00: move 7D00-FCFF to 6000-DFFF, SP = FFFF]
     I --> J[GameEntry 8382: JP Start]
     J --> K[Start 8408: DI, SetupInterrupts A2FA, IM 2]
@@ -187,7 +188,7 @@ The interrupt and the pass share nothing but a few counters and flags:
 
 | Owner | Writes | The other side reads |
 | --- | --- | --- |
-| InterruptHandler `$A32A` | EnergyTick `$A506`, FrameCounter `$837F`, the COMPUTER line on the screen | DrainEnergy `$A613` (the energy's clock), MainLoop (the beam's flicker), the gremlins |
+| InterruptHandler `$A32A` | EnergyTick `$A506`, FrameCounter `$837F`, the COMPUTER line on the screen | EnergyTick: DrainEnergy `$A613` (the energy's clock) and PauseGame; FrameCounter: MainLoop `$858D` only (the beam's flicker). UpdateGremlins reads neither |
 | the pass | MessageText `$A10E`, MessageNumber `$A104`, SoundFlags `$A8A6` | the interrupt: which message to scroll, which effect to play |
 
 ```mermaid
@@ -251,21 +252,23 @@ The source is cut into 13 modules (`src/game/*.asm`, written by `kit/mkgame.py` 
 
 | Module | File | Labels | Lines | What it holds | Share of `L01` |
 | --- | --- | ---: | ---: | --- | ---: |
-| entry | `entry.asm` | 8 | 156 | GameEntry, LevelSettings, Start, TitleLoop, NewGame | 0 % |
-| mainloop | `mainloop.asm` | 57 | 790 | SetUpLevel, MainLoop, PassEnd, LoseLife, LevelComplete, TheEnd, Delay | 3.9 % |
-| levels | `levels.asm` | 9 | 119 | BuildLevel, LevelData | 0.04 % |
-| render | `render.asm` | 65 | 1005 | RenderGrid, DrawMarkedChars, CopyPlayArea, the wipes, the printers, Random | 48.2 % |
-| beam | `beam.asm` | 139 | 2409 | FindLaser, OpenReceiver, TraceBeam and its steps, the cursor, the beam's tables and glyphs | 32.2 % |
-| elements | `elements.asm` | 66 | 1054 | the bars (energy, overload, charge), the gremlins | 0.7 % |
+| entry | `entry.asm` | 9 | 140 | GameEntry, LevelSettings, Start, TitleLoop, NewGame | 0 % |
+| mainloop | `mainloop.asm` | 57 | 791 | SetUpLevel, MainLoop, PassEnd, LoseLife, LevelComplete, TheEnd, Delay | 3.9 % |
+| levels | `levels.asm` | 9 | 120 | BuildLevel, LevelData | 0.04 % |
+| render | `render.asm` | 65 | 980 | RenderGrid, DrawMarkedChars, CopyPlayArea, the wipes, the printers, Random | 48.2 % |
+| beam | `beam.asm` | 139 | 2385 | FindLaser, OpenReceiver, TraceBeam and its steps, the cursor, the beam's tables and glyphs | 32.2 % |
+| elements | `elements.asm` | 66 | 992 | the bars (energy, overload, charge), the gremlins | 0.7 % |
 | controls | `controls.asm` | 35 | 386 | ReadKeys, PauseGame, ReadControls, the four control methods, LevelCheat | 0.06 % |
-| panel | `panel.asm` | 65 | 637 | the score, the lives, the COMPUTER messages | 0.1 % |
-| hiscore | `hiscore.asm` | 60 | 589 | HallOfFame, RankScore, the name entry | 0 % |
-| menu | `menu.asm` | 33 | 490 | TitleScreen, OptionsMenu, the scroller | 0 % |
-| interrupt | `interrupt.asm` | 35 | 450 | SetupInterrupts, InterruptHandler, the COMPUTER line | 2.6 % |
-| sound | `sound.asm` | 43 | 610 | PlaySound, TwoTone, PlaySweep, PlayNoise, TitleTune | 12.1 % |
-| ending | `ending.asm` | 15 | 226 | EndingScreen, the plug and the kettle | 0 % |
+| panel | `panel.asm` | 65 | 612 | the score, the lives, the COMPUTER messages | 0.1 % |
+| hiscore | `hiscore.asm` | 60 | 584 | HallOfFame, RankScore, the name entry | 0 % |
+| menu | `menu.asm` | 33 | 376 | TitleScreen, OptionsMenu, the scroller | 0 % |
+| interrupt | `interrupt.asm` | 35 | 453 | SetupInterrupts, InterruptHandler, the COMPUTER line | 2.6 % |
+| sound | `sound.asm` | 43 | 442 | PlaySound, TwoTone, PlaySweep, PlayNoise, TitleTune | 12.1 % |
+| ending | `ending.asm` | 15 | 176 | EndingScreen, the plug and the kettle | 0 % |
 
-The point: two modules, the renderer and the beam, are 80 % of the time and half the source; the rest is small.
+Labels and lines: `grep -c '^[A-Za-z][A-Za-z0-9_]*:'` and `wc -l` over `src/game/*.asm` (8437 lines in the 13
+modules). The point: two modules, the renderer and the beam, are 80 % of the time and two fifths of the source; the
+rest is small.
 
 ## 2.7 The levels in memory
 
@@ -289,24 +292,30 @@ Bytes the game carries but never uses (each checked in the L1 of every recording
 
 | Address | Size | What | Why it is there (our reading) |
 | --- | ---: | --- | --- |
-| `$5B00-$5FFF` | 1280 | the loader's last code and block head | the load's workspace; the game does not clear it |
+| `$5B00-$5FFF` | 1280 | the chain's fill stream (ChainFill, [doc 3, 3.5](03-build-and-load.md#35-the-cipher)); the loader's code and the block head are overwritten | the load's workspace; the game does not clear it |
 | `$7B00-$7B7F` | 128 | Gap7B00: zeros | pads the panel picture to end at `$7FFF` |
 | `$81FC`, `$81FE` | 1 + 1 | zeros between the sound records, ControlMethod and Level | alignment of Level at `$81FF` |
 | `$8100-$813F` | 64 | InCornerTable: a diagonal beam's bounce in the incoming pass | read only by ReflectInCorner `$93F2`, a branch no play runs; the clone recording `corner` runs it ([doc 10, 10.12](10-gameplay-logic.md#1012-what-is-known-only-from-the-code)) |
+| `$8080-$8087`, `$80A0-$80A7`, `$80C0-$80C7`, `$80E0-$80E7` | 32 | the rows of OutBounceTable for the axis directions 0, 4, 8, 12 | an axis beam grazes or goes straight back (`$8190`); the table is indexed by every direction |
 | `$8405-$8406` | 2 | the end of LevelSettings: `$01 $00` | a 65th pair |
+| `$8918-$8919` | 2 | a word after BuildLevel: `$0000` | no code reads or writes it |
 | `$96D7-$96DA` | 4 | in the pause's save area | never used |
 | `$9AF1-$9AF2` | 2 | Unused9AF1: `$06 $04` | no code reads them |
 | `$9B49` | 1 | "0" after the saved score | never read |
+| `$9B8A-$9BBF` | 54 | after the name entry's variables: zeros | never used |
 | `$A102` | 1 | UnusedA102: `$FF` | never read |
+| `$A323-$A329` | 7 | RestoreIm1: `LD A,$3E; IM 1; LD I,A; RET` | dead code: no instruction calls or jumps to it; perhaps for a version that returned to BASIC |
 | `$AD46-$AD78` | 51 | UnusedAD46: zeros | before the title tune |
 | `$D139-$D1BF` | 135 | slot 63 of LevelData: level 23 with five mirrors changed | a test level or an edit left in ([doc 7](07-objects.md)) |
 | `$D1C0-$D1FF` | 64 | SpareD1C0: zeros | below the font |
 | `$D638-$D6FF` | 200 | SpareBeamGlyphs: 14 dotted beam drawings, then zeros | an older beam style |
 | `$DB00-$DB7F` | 128 | CellGraphics `$80-$8F`: the four lasers drawn in cyan, codes `$43-$46` | no level holds those codes |
+| `$DDA0-$DEFF` | 352 | SpareCellGraphics: zeros, characters `$D4-$FF` | CellTable names no character above `$D3` |
+| `$DF73`, `$DF80-$DF8F` | 1 + 16 | CellColours of character `$73` and of the cyan lasers `$80-$8F` | no level draws them |
 | `$DFD4-$DFFF` | 44 | SpareCellColours: zeros | characters `$D4-$FF` have no colour |
 | `$982F` | 3 | `JP $9869`: jumps over LevelCheat `$9832` (W / S change the level) | a developer's cheat left in, switched off ([doc 5](05-controls.md)) |
 | `$983E` | | the Y + T drop of a return address | a second cheat key, never run |
 | `$96B8` | | the 40th bounce of a beam: OVERLOAD | never reached in any recording ([doc 10](10-gameplay-logic.md)) |
 
 The point: the image is tight. The leftovers are zeros between tables, a cheat switched off by one jump, one level
-slot and a set of cyan lasers no level uses.
+slot, a routine nothing calls and a set of cyan lasers no level uses.

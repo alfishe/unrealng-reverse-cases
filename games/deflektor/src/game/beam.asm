@@ -37,10 +37,10 @@ BeamGlyphBytes:
 ;
 ; BeamReflectOut `$960D` (at `$965C`, a slope or diagonal meeting a wall or a
 ; yellow polariser) takes `$8080` + 8 x the new direction: two words, the
-; offsets from the vertex's up-left character in the character map of the two
-; characters to test, then four directions by which of them are walls
-; (`$31-$72`): none, the first, the second, both. BeamCornerChar (at `$94E9`,
-; two corners met) reads only the last byte, `$8087` + 8 x direction.
+; offsets from the wall character met (CharMapPointer `$8914`) in the character
+; map of the two characters to test, then four directions by which of them are
+; walls (`$31-$72`): none, the first, the second, both. BeamCornerChar (at
+; `$94E9`, two corners met) reads only the last byte, `$8087` + 8 x direction.
 ;
 ; The rows of the axis directions 0, 4, 8 and 12 are never read (an axis beam
 ; grazes or goes straight back: `$8190`); `$80CF` and `$80DF` (the "both" of
@@ -53,11 +53,11 @@ OutBounceTable:
 ; diagonals 2, 6, 10, 14
 ;
 ; ReflectInCorner `$93F2` (`$93F4`): InBounceTable gives `$80` + n for a
-; diagonal, and `$8100` + n holds two words (the offsets of the characters
-; above or below and beside the corner) and four answers of three bytes (the
-; new direction, dx, dy) by which of them are walls: none (+4), the first (+7),
-; the second (+10), both (+13). None or both send the beam back (OVERLOAD), one
-; turns it a quarter.
+; diagonal, and `$8100` + n holds two words (the offsets, from the wall
+; character met (CharMapPointer `$8914`), of the characters above or below and
+; beside it) and four answers of three bytes (the new direction, dx, dy) by
+; which of them are walls: none (+4), the first (+7), the second (+10), both
+; (+13). None or both send the beam back (OVERLOAD), one turns it a quarter.
 ;
 ; No play reads it: the trace's first vertex is the only one whose incoming
 ; pass meets a wall the outgoing pass before it has not
@@ -403,9 +403,9 @@ TraceBeam:
 ;
 ; BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When
 ; BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell
-; (row y/2 - 1, column x/2 - 1) at `$FD12` + 17 (y/2) + x/2, BeamAtCentre =
-; `$FF`, and the code with bit 7 cleared (a turning element acts as its current
-; angle):
+; (row y/2 - 1, column x/2 - 1) at `$FD11` + 17 (y/2) + x/2 (= `$FD12` + 17
+; (row + 1) + column), BeamAtCentre = `$FF`, and the code with bit 7 cleared (a
+; turning element acts as its current angle):
 ;
 ; - `$00` empty: on (`$906E`);
 ;
@@ -449,7 +449,7 @@ BeamStep:
   SRL A
   LD B,A
   JP C,BeamVertex
-  XOR A                   ; the cell: $FD12 + 17 (y/2) + x/2
+  XOR A                   ; the cell: $FD11 + 17 (y/2) + x/2
   INC B
 BeamStepRowAdd:
   ADD A,$11
@@ -1066,12 +1066,12 @@ BeamNewDirection:
 ; negative result is above too): else the trace ends.
 ;
 ; The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10,
-; 14, one character a step) only at even x, so it counts about one a cell. At a
-; length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as
-; if the beam had come back into the laser, and the laser lit; the trace still
-; goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells
-; overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59
-; level segments, `$926D` 2010 runs in all).
+; 14, one character a step) only when the new x is odd, so it counts about one
+; a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5`
+; = `$FF`) as if the beam had come back into the laser, and the laser lit; the
+; trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer
+; than 40 cells overloads the laser on every pass (the RZX segments reach 40 in
+; 14 of the 59 level segments, `$926D` 2010 runs in all).
 ;
 ; Then back to the trace `$8EDD` for the next vertex.
 ;
@@ -1094,7 +1094,7 @@ BeamMove:
   CP $15
   RET NC
   LD (BeamY),A
-  LD A,(BeamDirection)    ; the diagonals (2, 6, 10, 14) count at even x only
+  LD A,(BeamDirection)    ; the diagonals (2, 6, 10, 14) count at odd x only
   DEC A
   DEC A
   AND $03

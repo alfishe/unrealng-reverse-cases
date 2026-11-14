@@ -613,7 +613,11 @@ GremlinFrame3:
 ; is 2 x 2; even values are on a cell).
 ;
 ; +4, +5 the grid address (`$FDxx`) of the cell it stands on, +5 = 0 between
-; cells. The cursor's fire (`$9AC5`) compares it with the turned mirror's cell.
+; cells. Written only by GremlinMove (`$AC88`, `$ACAB`) and the kill (`$9AD9`,
+; +5 = 0): neither the set-up nor GremlinAppear touches them, so until a
+; gremlin first steps they keep a cell from an earlier life or level. The
+; cursor's fire (`$9AC5`) compares them with the cursor's cell, whatever the
+; delay.
 ;
 ; Only GremlinCount (0-8) of them are used. Evidence: written in every level
 ; start; read in 54 RZX segments.

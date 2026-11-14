@@ -13,7 +13,9 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `L01` (`work/docs/dfA/L01`, port base 37480): the panel in play (frames 1000-1030), CONTACT! and the bonus count
   (frames 1515-1645).
 - `hof` (stage 2, `work/stage2/rec/hof`, reopened as `work/docs/dfA/hof` on port base 37485): a game over with
-  021940 points, sixth place, and the name AGENT typed at frames 17055-17155.
+  021940 points, sixth place, and the name AGENT typed at frames 17055-17155. It runs on a clone: it starts from the
+  bot's `lv/L06.szx`, and levels 2 and 4 before it were completed by the LevelDone POKE (`$8ED2`), so the score is
+  not one a player reached; `nameedit` starts from the same state.
 - `energy`: the energy messages (CHARGING LASER at frame 500, ENERGY LOW at 5000, CRITICAL at 5750, ENERGY DRAINED at
   6450).
 - `controls`: the pause's INTERMISSION line and GAME ABORTED. `gameover`, `mine` and `overload`: BOOM BOOM BOOM and
@@ -165,8 +167,10 @@ PrintDigitsBack:            ; $9B10
   JR PrintDigitsBack
 ```
 
-The score is printed in full after every ten points, and the digits are counted in ASCII. Nothing here needs a
-binary number or a division.
+AddScore counts B tens one at a time (`DJNZ AddScore` at `$9B08`) and only then falls into PrintScore `$9B0A`: the
+score is printed in full once per AddScore call, whatever B (12 or 3 tens for a cell, 25 for the door, 16 a gremlin,
+50 a life). Only the energy bonus calls it with B = 1, so only there is each ten printed. The digits are counted in
+ASCII; nothing here needs a binary number or a division.
 
 | Points | Who adds them | B | Where |
 | ---: | --- | ---: | --- |
@@ -185,7 +189,8 @@ takes away the points of the unfinished level. PrintHighScore `$9B53` copies the
 *`L01` frames 1598-1614, the end-of-level bonus, 70 pictures of 15 975 T. How to read it: top left, memory
 `$4000-$5AFF`; bottom left, the screen; right, the listing at the current instruction (`$9AF3-$9B52` highlighted).
 The point: the energy bar shrinks a pixel at a time, from the right, and each pixel is one AddScore of 10 points. Each
-step plays a short TwoTone `$A843`, so the count is heard as a rising chirp. The play area is magenta (CONTACT!) and
+step plays the same short TwoTone `$0A3C` (`LD HL,$0A3C` at `$880B`: 319 Hz, 2 frames, [doc 9](09-sound.md)), so the
+count is heard as a run of equal beeps. The play area is magenta (CONTACT!) and
 the COMPUTER line blinks CONTACT!. Command: `python3 ../../kit/routine_anim.py --work work/docs/dfA/L01 --window
 1598:0-1614:0 --listing build/game.lst --view screen --range 4000-5AFF --pc 9AF3-9B52 --pictures 70 --title "..."
 --out docs/img/hud/AddScore.gif`.*
@@ -220,7 +225,18 @@ The line in the panel's box (row 23, columns 0-15) is driven by the interrupt al
 To show one, it does two things:
 
 - it writes the text's address to MessageText `$A10E`;
-- it writes a number to MessageNumber `$A104`, but only if the message is more urgent than the one shown.
+- it writes a number to MessageNumber `$A104`, the message's priority.
+
+Not every poster tests the priority first:
+
+- GREMLINS (4), ENERGY LOW (`$0A`), CRITICAL (`$0C`) and BOOM (`$16`) post only when the number shown is lower
+  (GremlinWarn below, DrainEnergy `$A626`/`$A660`, LoseLife `$8671`);
+- MINE ALERT (`$13`, `$A689`), ENERGY DRAINED (`$17`, `$A66F`), GAME ABORTED (`$14`, `$9811`), CONTACT! (`$18`,
+  `$87D8`) and CHARGING LASER (ResetBars, at a level start) post with no test;
+- OVERLOAD (`$12`) posts when the number shown is below `$12` or is MINE ALERT's `$13` (`$A6B3`:
+  `CP $13; JR Z,OverloadShowMessage`), so it replaces a MINE ALERT though that is the higher number;
+- CoolOverload `$A6F4` sets MessageNumber 0 and posts BlankMessage when OVERLOAD or MINE ALERT is shown and the beam
+  is neither on a mine nor in the laser.
 
 ```asm
 GremlinWarn:                ; $AC17, from GremlinAppear $ABED
@@ -246,21 +262,100 @@ two ways:
 ```mermaid
 stateDiagram-v2
     [*] --> Idle: BlankMessage, MessageNumber 0
-    Idle --> Pending: the game writes MessageText and a higher MessageNumber
+    Idle --> Pending: the game writes MessageText and MessageNumber
     Pending --> Static: the text starts with FE
     Pending --> Scrolling: any other text
-    Static --> Static: 15 frames shown, 10 blank, until a higher message
+    Static --> Static: 15 frames shown, 10 blank, until the next post
     Scrolling --> Scrolling: a pixel a frame, a character every 8 frames
     Scrolling --> Idle: FF to BlankMessage
     Scrolling --> Scrolling: FF back to its own start (a loop)
-    Static --> Pending: a more urgent message
-    Scrolling --> Pending: a more urgent message
+    Static --> Pending: a new post (a more urgent one, or one with no test, or CoolOverload's BlankMessage)
+    Scrolling --> Pending: a new post
 ```
 
 *The COMPUTER line. Witness: the `energy` recording's MessageNumber goes 1 (frame 500), `$0A` (5000), `$0C` (5750),
 `$17` (6450) (`tools/ttd_watch.py --addr A104`); ScrollRowLoop runs once a frame in every recording. The point: a
-message is a priority and an address. The game posts it once and forgets it, and the line can never fall back to a
-less urgent message.*
+message is a priority and an address. The game posts it once and forgets it. Most posters skip a message less
+urgent than the one shown, but MINE ALERT, ENERGY DRAINED, GAME ABORTED and CONTACT! post with no test, OVERLOAD
+replaces MINE ALERT, and CoolOverload blanks either of them.*
+
+The interrupt's part, every frame from InterruptHandler `$A343` (MessageState `$A10D`: 0-7 the pixel count of a
+scroll, `$E6-$EF` a static text's blank phase, `$F0-$FE` its shown phase):
+
+```asm
+  LD A,(MessageText+$0001)  ; $A343: a new post?
+  AND A
+  JR Z,ScrollMessageTick
+  LD A,(MessageState)       ; a static text's blank phase: show at once
+  CP $E6
+  JR C,ScrollerTakeMessage
+  CP $F0
+  JR NC,ScrollerTakeMessage
+  LD A,$F0
+  LD (MessageState),A
+  JR ShowStaticMessage
+ScrollerTakeMessage:        ; $A35B
+  LD HL,(MessageText)
+  LD (MessagePointer),HL
+  XOR A
+  LD (MessageText+$0001),A  ; taken
+  LD A,(HL)
+  CP $FE
+  JP NZ,ScrollNextChar
+  LD (MessageState),A       ; static: $FE, then the tick below
+StaticMessageTick:          ; $A36E
+  LD A,(MessageState)
+  INC A
+  LD (MessageState),A
+  CP $F0
+  JR Z,ShowStaticMessage    ; draw the 14 characters
+  CP $FF
+  JP C,InterruptExit        ; shown or blank: wait
+  LD A,$E6                  ; $FF: blank the line, ten frames from $E6
+  LD (MessageState),A
+```
+
+```text
+every frame:
+    if MessageText.high != 0:                        # a post
+        if MessageState in E6..EF:                   # a static text is blank
+            MessageState = F0; draw the text at MessagePointer; done   # (still the old pointer)
+        MessagePointer = MessageText; MessageText.high = 0
+        if text[0] != FE: next character (below); shift; done
+        MessageState = FE                            # the tick below makes it FF: the blank phase
+    elif MessageState < E6:                          # scrolling
+        MessageState += 1
+        if MessageState == 8:
+            next character: MessageState = 0; c = *MessagePointer
+            if c == FF: MessagePointer = the word after it; if that is BlankMessage: MessageNumber = 0
+            MessageGlyph = the 8 font rows of c; MessagePointer += 1
+        shift the 5 rows of 16 bytes one pixel left, the glyph's next bit in at the right
+        done
+    MessageState += 1                                # static
+    if MessageState == F0: draw the 14 characters after FE
+    elif MessageState == FF: MessageState = E6; blank the line
+```
+
+So a new static text starts with a blank phase: `$FE`, `$FF` and the line cleared, ten frames (`$E6-$EF`), then
+fifteen shown (`$F0-$FE`). A post that arrives while a static text is blank first redraws the old text for one frame
+(the jump to ShowStaticMessage keeps the old MessagePointer) and is taken on the next frame; this is read from the code,
+no recording was searched for it.
+
+**Worked example: the energy messages of `energy`.** The recording's snapshots every 250 frames hold the line's
+state (`work/stage1/energy/snapshots/NNNNNN/ram-2.bin`, `$8000` + offset: MessageNumber `$A104`, MessageState
+`$A10D`, MessagePointer `$A110`):
+
+| Frame | MessageNumber | MessageState | MessagePointer | What it shows |
+| --- | --- | --- | --- | --- |
+| 4750 | `$00` | `$03` | `$A19A` | BlankMessage's spaces going round |
+| 5000 | `$0A` | `$04` | `$A1C1` | ENERGY LOW, posted over 0, its fourth character in |
+| 5250 | `$00` | `$06` | `$A19B` | ENERGY LOW reached `$FF` and BlankMessage: the number back to 0 |
+| 5750 | `$0C` | `$03` | `$A1E3` | CRITICAL, posted over 0 (DrainEnergy's `CP $0C` passes) |
+| 6250 | `$0C` | `$07` | `$A1FE` | CRITICAL's loop, still shown |
+| 6500 | `$17` | `$FC` | `$A14E` | ENERGY DRAINED, posted with no test; static, in its shown phase |
+
+So the scroll's state counts 0-7 between characters, the static one sits in `$F0-$FE`, and the "once" message gives
+the number back to 0 by itself, which is what lets CRITICAL in later.
 
 Every message, by its number (the priority):
 
@@ -323,6 +418,65 @@ flowchart TD
 *The entry. Witness: `hof` runs HallOfFame once, with place 6, five letters and ENTER, and CopyFullScreen at the end
 (`$9DD6`). `nameedit` (the same start) runs DELETE and SPACE once each (below). The point: a name is typed straight into the hall of
 fame's own text record, which is also what the options screen prints, so there is no separate copy to save.*
+
+RankScore compares the score's six digits (ScoreCopy `$9B84`) with each record's, from the sixth record up; the first
+record not lower stops it:
+
+```asm
+RankScore:                  ; $9E1F
+  LD A,$07
+  LD (Rank),A               ; $9B78: 7 = no place
+  LD HL,ScoreCopy
+  LD DE,HallOfFameScores+$0030  ; the sixth record's digits
+  LD B,$06
+RankScoreRecord:
+  PUSH BC
+  PUSH HL
+  PUSH DE
+  LD C,$06
+RankScoreDigit:
+  LD A,(DE)                 ; the record's digit
+  CP (HL)                   ; against the score's
+  JR C,RankScoreUp          ; lower: the score passes this record
+  JR NZ,RankScoreDone       ; higher: stop here
+  INC DE
+  INC HL
+  DEC C
+  JR NZ,RankScoreDigit      ; equal: the next digit; all six equal: stop (an equal score does not pass)
+RankScoreDone:
+  ...                       ; A = Rank
+RankScoreUp:
+  LD A,(Rank)               ; one place up, the record above (9 bytes back)
+  DEC A
+  LD (Rank),A
+  ...
+  DJNZ RankScoreRecord
+```
+
+The entry loop, HallOfFameLoop `$9CCE` with ReadLetterKey `$9E5A` (a key is taken only on its first poll; LastKey
+`$9B81` holds the key seen last, 0 when none):
+
+```text
+NameColumn = 1; BlinkTimer = 70
+loop:
+    BlinkTimer -= 1; if 0: BlinkTimer = 70; draw the diamond or a space at the column, in turn
+    if ENTER: DrawMenuScreen; CopyFullScreen; TwoTone 465A; six Delays; return
+    if 0 (DELETE) newly pressed and NameColumn > 1:
+        NameColumn -= 1; blank the place (EraseNameCursor); the name's last character = space
+    elif SPACE newly pressed:
+        if NameColumn == 6: (full) read the letters only, nothing written
+        else: a space into the name, NameColumn += 1
+    elif NameColumn == 6: ReadLetterKey only (a letter is read but refused: $9D7E)
+    elif ReadLetterKey gives a letter n (1-26) newly pressed:
+        the character 64 + n into the name and on the screen, NameColumn += 1
+ReadLetterKey: n = 1; for each of the 26 TestKey codes at LetterKeys $9EBD:
+    pressed: if n != LastKey: LastKey = n, carry (new) else no carry (held); return
+    n += 1
+    none pressed: LastKey = 0
+```
+
+`hof` and `nameedit` are clones (the bot's `lv/L06.szx`, levels 2 and 4 completed by the LevelDone POKE): the score
+021940 is the clone's, the entry routine is the game's own.
 
 ![The name entry](img/hud/name-entry.gif)
 

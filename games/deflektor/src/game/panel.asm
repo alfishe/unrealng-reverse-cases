@@ -6,11 +6,11 @@
 ; the title. Practice takes no life.
 ;
 ; The COMPUTER line (row 23, columns 1-15) is driven by the interrupt (InterruptHandler $A32A): the game only writes
-; the address of a message to MessageText $A10E, and a message number to MessageNumber $A104 when the message is more
-; urgent than the one shown. A message that starts with $FE is static (14 characters, blinking); any other scrolls in
-; from the right a pixel a frame, its $FF followed by the address where it goes on (a loop, or BlankMessage $A199,
-; which ends it). The same line in the menu (row 21, columns 5-25, MenuScroller $A103 set) scrolls the credits and the
-; name-entry prompt, where a byte $FE is a pause counted down in the text itself.
+; the address of a message to MessageText $A10E, and a message number to MessageNumber $A104 (most writers only when
+; the message is more urgent than the one shown). A message that starts with $FE is static (14 characters, blinking);
+; any other scrolls in from the right a pixel a frame, its $FF followed by the address where it goes on (a loop, or
+; BlankMessage $A199, which ends it). The same line in the menu (row 21, columns 5-25, MenuScroller $A103 set) scrolls
+; the credits and the name-entry prompt, where a byte $FE is a pause counted down in the text itself.
 ; --------------------------------------------------------------------------------------------------------------------
 
   ORG $7B80
@@ -358,15 +358,18 @@ PrintHighScorePrint:
 MenuScroller:
   DEFB $00
 
-; The number of the message shown: 0 none ... $18 CONTACT!; a message replaces
-; a lower one only
+; The number of the message shown: 0 none ... $18 CONTACT!; most writers
+; replace only a lower one
 ;
-; Each writer compares first (`CP n` / `JR NC`) and writes only when the
-; current number is lower, so a more urgent message is never replaced by a less
-; urgent one: 1 CHARGING LASER / DEMO (ResetBars `$A55E`), 4 BEWARE OF THE
-; GREMLINS (`$AC21`), `$0A` ENERGY LOW (`$A665`), `$0C` ENERGY LEVEL CRITICAL
-; (`$A62F`), `$12` OVERLOAD (`$A6BD`), `$13` MINE ALERT (`$A68B`), `$14` GAME /
-; DEMO ABORTED (`$9816`), `$16` BOOM BOOM BOOM (`$8677`), `$17` ENERGY DRAINED
+; GREMLINS, ENERGY LOW, CRITICAL and BOOM compare first (`CP n` / `JR NC`) and
+; write only when the current number is lower. CHARGING LASER (a level start),
+; MINE ALERT, GAME ABORTED, ENERGY DRAINED and CONTACT! write with no test;
+; OVERLOAD writes when the number is below `$12` or is MINE ALERT's `$13`
+; (`$A6B3`); CoolOverload `$A6FC` blanks OVERLOAD and MINE ALERT. The numbers:
+; 1 CHARGING LASER / DEMO (ResetBars `$A55E`), 4 BEWARE OF THE GREMLINS
+; (`$AC21`), `$0A` ENERGY LOW (`$A665`), `$0C` ENERGY LEVEL CRITICAL (`$A62F`),
+; `$12` OVERLOAD (`$A6BD`), `$13` MINE ALERT (`$A68B`), `$14` GAME / DEMO
+; ABORTED (`$9816`), `$16` BOOM BOOM BOOM (`$8677`), `$17` ENERGY DRAINED
 ; (`$A671`), `$18` CONTACT! (`$87DA`, the beam has reached the receiver). 0
 ; again when a scrolling message runs back into BlankMessage (`$A3F0`) or the
 ; overload stops (`$A708`).

@@ -393,8 +393,10 @@ both the mine's bit 1 and the overload's bit 2 are set, and the mine's falling s
 - From frame 1330 the watch shows bit 2 (`$04`, OVERLOAD `$12`) and then `$06` at 1334. MINE ALERT (`$13`) follows
   at 1336, and the flags are clear at 1345 when the life is lost.
 
-These figures are T-states of the effect alone, without contention: the routines run from `$A8xx` and `$81xx`, which
-are uncontended, and they write no screen.
+These figures are T-states of the effect alone, without contention. The code and its records are in uncontended
+memory (`$A8xx`, `$81xx`) and write no screen, but each `OUT ($FE),A` is a ULA I/O cycle: during the 192 display
+lines it waits like a contended access (the port's low bit is 0, so the pattern is N:1, C:3). The real effects are
+therefore a little longer when they run across the screen lines; by how much was not measured.
 
 ## 9.7 The title tune
 
@@ -504,6 +506,7 @@ A flag sound repeats once a frame in the game. The files hold one repeat; the 50
 - SoundFlags bit 0: no instruction sets it. Its record, BurnSound, is played only directly.
 - NoiseOp `$A89F`: the self-modifying opcode is always `AND D`, the image's own. Other opcodes would come from noise
   records the game does not have.
-- The simulator's timings have no contention and no interrupt. The flag sounds run inside the interrupt; the direct
+- The simulator's timings have no contention and no interrupt; in the real game each `OUT ($FE)` also waits for the
+  ULA during the display (9.6). The flag sounds run inside the interrupt; the direct
   ones run with the interrupt on, so the interrupt's own work cuts into them once a frame. The real CONTACT! is
   therefore a little longer than the simulated 43.3 frames.

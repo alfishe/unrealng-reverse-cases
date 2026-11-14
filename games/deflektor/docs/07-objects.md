@@ -10,7 +10,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 - `L01` (stage 2, `work/stage2/rec/L01`): level 1 completed by the bot, 1645 frames. Reopened as `work/docs/dfA/L01`
   on port base 37480 for the decode animation, the counts and the explosion slot.
 - `L03` (stage 2, `work/stage2/rec/L03`): level 3, which has two gremlins. Reopened as `work/docs/dfA/L03` on port
-  base 37485 for the gremlin records and the mover's animation.
+  base 37485 for the gremlin records and the mover's animation. It starts on a clone: the bot ended level 2 by the
+  LevelDone POKE ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 - `practice` (`work/docs/dfA/rec/practice`, [doc 5](05-controls.md#54-practice)): slot 60, practice level P1.
 - The 60 RZX segments: the witness counts in the listing.
 
@@ -69,6 +70,7 @@ turning form of the mirrors and polarisers (`$81-$A0`).*
 | `$19-$20` | yellow polariser, 8 angles: passes along its axis, reflects across | `$51-$70` | as cyan | 17 |
 | `$21-$2F` | absorbing wall, by the quarters filled (`$29`, `$2A` unused) | `$71` and `$00` | BeamAbsorbIn `$9344` (by character) | 31 |
 | `$30-$3E` | reflecting wall, by the quarters filled | `$72` and `$00` | BeamReflectIn `$938F` (by character) | 32 |
+| `$3F` | a cell (no level holds it) | `$74-$77` | BeamBurn `$8F40` | 0 |
 | `$40` | cell to burn | `$74-$77` | BeamBurn `$8F40` | all |
 | `$41` | mine | `$78-$7B` | BeamMine `$8F6A` | 52 |
 | `$42` | prism: sends the beam on at random | `$7C-$7F` | PrismTurn `$9014` | 26 |
@@ -95,7 +97,7 @@ BeamStep's dispatch, the code c = grid[cell] AND 7F at a cell's centre:
     c == 42            -> PrismTurn
     c in 21..3E        -> BeamVertex (the walls act per character, in the passes)
     c == 41            -> BeamMine
-    c == 40            -> BeamBurn
+    c in 3F..40        -> BeamBurn (3F: a cell that no level holds)
 ```
 
 **Worked example: one byte of level 1.** The mirror the bot turns last is at row 8, column 8. Its slot byte is
@@ -237,14 +239,15 @@ fails the `DEC A; CP $10` test. Two of the settings live as instruction operands
 patches its own code at every level start.
 
 **Worked example: level 1's set-up.** Slot 0's pair at `$8385` is (90, 0): a step of the energy bar every 90 frames
-and no gremlins. The count over `$B000-$B086` finds 19 `$40`s and 8 mirrors (the turning `$86` is not one of them),
-so CellsLeft = `$13` and MirrorCount = 8. Since 19 is below 30, each cell is worth 120 points. The watch
+and no gremlins. The count over `$B000-$B086` finds 19 `$40`s and 7 mirrors (`$07 $0F $02 $0A $07 $03 $0E`; the turning `$86` is not one of
+them), so CellsLeft = `$13` and MirrorCount = 7. Since 19 is below 30, each cell is worth 120 points. The watch
 `tools/ttd_watch.py --work work/docs/dfA/L01 --addr 8380,837A --from 60 --to 70` shows CellsLeft = `$13` from frame
 63, the end of the wipe.
 
 ## 7.5 The explosion slots
 
-When the beam reaches a cell (`$40`), BeamBurn `$8F40` takes a free one of seven slots at ExplosionSlots `$81B8`:
+When the beam reaches a cell (`$40`), BeamBurn `$8F40` takes the first free one of the first six slots at ExplosionSlots `$81B8`,
+or the seventh when those six are all busy (`LD B,$06` at `$8F41`: the seventh is written whether free or not):
 
 | Byte | Meaning |
 | ---: | --- |
@@ -296,12 +299,16 @@ A gremlin is the one object that moves. Eight records of six bytes at Gremlins `
 
 | Byte | Field | Meaning |
 | ---: | --- | --- |
-| +0 | delay | counted passes until it appears (`$41` + 10k at the set-up); 0 when it walks |
+| +0 | delay | counted passes until it appears (`$41` + 10k at the set-up, `$C8` after the cursor's kill `$9AD2`); 0 when it walks |
 | +1 | turns | while not 0 it stands on a mirror and turns it one step a pass |
 | +2 | X | its place in characters of the play area, 0-28 (even: on a cell column) |
 | +3 | Y | 0-16 (even: on a cell row) |
-| +4 | cell, low | the grid address of the cell it stands on |
-| +5 | cell, high | `$FD`, or 0 between cells |
+| +4 | cell, low | the grid address of the cell it stands on; written only by GremlinMove (`$AC88`) |
+| +5 | cell, high | `$FD`, or 0 between cells (`$ACAB`) and after the kill (`$9AD9`) |
+
+Neither the set-up (`$84B3-$84C4` writes +0 and +1) nor GremlinAppear (`$ABED` writes +2 and +3) touches +4/+5.
+Until a gremlin first steps onto a cell they keep the cell of an earlier life or level, and CursorFire `$9AC5` tests
+only +4/+5, not the delay (7.8).
 
 ```asm
 UpdateGremlins:             ; $AB9F, once a pass after the charge
@@ -422,7 +429,7 @@ The game's state outside the grid and the records, by area (from the listing; ea
 | `$837D` | Lives | 3 at a new game and after each level | NewGame, LoseLife | the panel |
 | `$837E` | EnergyCritical | `$FF` on the energy's last byte | DrainEnergy | MainLoop (the flashing beam) |
 | `$837F` | FrameCounter | + 1 a frame | the interrupt | MainLoop |
-| `$8380` | CellsLeft | cells to burn; `$FF` once the door is opened | SetUpLevel, PassEnd | PassEnd |
+| `$8380` | CellsLeft | cells to burn; `$FF` when the door is opened, `$FE` once it has exploded | SetUpLevel, PassEnd | PassEnd |
 | `$8381` | BeamGlyphSet | 0, or `$40` (flashing) | MainLoop | BeamVertex |
 | `$8407` | PracticeFlag | `$FF` in practice | the options panel's 6 | five places ([doc 5](05-controls.md#54-practice)) |
 | `$8912-$8917` | LevelAddress, CharMapPointer, PixelPointer | addresses | BuildLevel, RenderGrid, the trace | the same |
@@ -432,7 +439,7 @@ The game's state outside the grid and the records, by area (from the listing; ea
 | `$9B3E`, `$9B44` | ScoreDigits, SavedScore | six and five digits | AddScore, SetUpLevel | the panel, the hall of fame |
 | `$A104`, `$A10D`, `$A110` | MessageNumber, MessageState, MessagePointer | the COMPUTER line | the messages | the interrupt |
 | `$A507`, `$A509`, `$A50A` | EnergyBarPointer, LaserCharging, OverloadBarPointer | screen addresses, `$FF` | ResetBars, DrainEnergy, UpdateOverload | the same |
-| `$A8A6` | SoundFlags | bits: 1 mine, 2 overload, 3 burning, 4 charge | the pass | the interrupt's sound |
+| `$A8A6` | SoundFlags | bits: 1 mine, 2 the beam in the laser (OVERLOAD), 3 burning, 4 charge | the pass | the interrupt's sound |
 | `$AB95`, `$AB96` | GremlinCount, GremlinPhase | 0-8; 0, `$20`, `$40`, `$60` | SetUpLevel, UpdateGremlins | UpdateGremlins |
 
 Two more values live inside instructions: the energy rate at `$A63C` (EnergyRate + 1) and a cell's points at `$8F63`
@@ -440,7 +447,10 @@ Two more values live inside instructions: the energy rate at `$A63C` (EnergyRate
 
 ## 7.8 What is known only from the code
 
-- Slots 61-63 (P2, P3 and the unused slot 63): no recording set them up. The `practice` recording reached P1 (slot
-  60) only; it is the first recording to read a practice slot.
+- Slots 61 and 62 (P2, P3): no recording set them up. The `practice` recording reached P1 (slot 60) only; it is the
+  first recording to read a practice slot. Slot 63 is never set up: LevelCompletePause leaves practice at `$3F`.
+- A gremlin still waiting, or just appeared, keeps a stale +4/+5 (7.6). If that old cell is the cursor's, fire kills
+  it (delay `$C8` again, 160 points) though it is not on the screen there. The code says so (`$9AC5-$9AED`); no
+  recording shows it.
 - A gremlin record with delay `$FF` (parked): the test is in UpdateGremlins, but no code writes `$FF` there.
 - The cell codes `$29`, `$2A`, `$3F`, `$43-$46` and `$4F`: in CellTable and the trace's ranges, but held by no level.

@@ -4,6 +4,11 @@
 
     python3 tools/fig_trace.py DUMP.cpu.bin OUT.gif [--title T]      # the trace as an animation
     python3 tools/fig_trace.py DUMP.cpu.bin --list                   # the vertices as text
+    python3 tools/fig_trace.py DUMP.cpu.bin --list --poke 6,5=3E     # an experiment: cell row 6, column 5 = $3E
+
+--poke R,C=CODE (repeatable) puts a cell code into the dumped LevelGrid ($FD23 + 17R + C) and its four characters
+from CellTable $8200 into the character map ($E000 + 32 (2R + 1) + 2C + 1), as RenderGrid would: an experiment,
+not a recording.
 
 DUMP is a 64 K CPU view from tools/ttd_dump.py. The beam's start is set as MainLoop $859B sets it (BeamDirection
 $8ECB = $8378, BeamX $8ECD = $8376, BeamY $8ECE = $8377), then TraceBeam runs to its RET. Each BeamStep $8EDD entry
@@ -36,8 +41,26 @@ HANDLERS = {
     0x9344: 'BeamAbsorbIn: an absorbing wall, the beam ends',
     0x938F: 'BeamReflectIn: a reflecting wall',
     0x92FD: 'BeamInPolariser: a polariser',
+    0x9317: 'PolariserPassIn: along its axis, passed',
+    0x93DC: 'ReflectInSlant: InBounceTable $8140 bounce',
+    0x93D7: 'ReflectInBack: straight back, OVERLOAD',
+    0x965A: 'ReflectOutSlant: OutBounceTable $8080 bounce',
+    0x9655: 'ReflectOutBack: straight back, OVERLOAD',
 }
 NAMES = ['E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N', 'NNE', 'NE', 'ENE']
+
+
+def poke(mem, specs):
+    m = bytearray(mem)
+    for spec in specs:
+        rc, code = spec.split('=')
+        r, c = (int(v) for v in rc.split(','))
+        code = int(code, 16)
+        m[0xFD23 + 17 * r + c] = code
+        ch = m[0x8200 + 4 * (code & 0x7F):0x8200 + 4 * (code & 0x7F) + 4]
+        a = 0xE000 + 32 * (2 * r + 1) + 2 * c + 1
+        m[a], m[a + 1], m[a + 32], m[a + 33] = ch
+    return bytes(m)
 
 
 def trace(mem):
@@ -76,6 +99,8 @@ def base_picture(mem):
 def main():
     dump = sys.argv[1]
     mem = open(dump, 'rb').read()
+    pokes = [sys.argv[i + 1] for i, v in enumerate(sys.argv) if v == '--poke']
+    mem = poke(mem, pokes)
     steps, total, flags = trace(mem)
     if '--list' in sys.argv:
         for i, st in enumerate(steps):

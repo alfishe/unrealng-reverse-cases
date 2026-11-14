@@ -1,8 +1,9 @@
 # levels
 
-levels.txt: LevelData `$B000`, 64 slots of 135 bytes (9 rows of 15 cells), read by BuildLevel (LevelSetup `$891A`)
-at `$B000 + $87 x level`, copied into the grid `$FD23` (17 bytes a row). Slots 0-59 are levels 1-60, slot `$3C` (60)
-is the practice level, slots 61-63 are not reached by the game.
+levels.txt: LevelData `$B000`, 64 slots of 135 bytes (9 rows of 15 cells), read by BuildLevel `$891A` at `$B000 +
+$87 x level`, copied into the grid `$FD23` (17 bytes a row). Slots 0-59 are levels 1-60, slots 60-62 (`$3C-$3E`) the
+practice levels P1-P3 (only P1 recorded, `practice`); slot 63 is never set up: LevelCompletePause goes back to the
+title when Level reaches 63 (`$887D`).
 
 A `slot N` line starts a slot (the words after N are a comment), then 9 lines of 15 tokens:
 

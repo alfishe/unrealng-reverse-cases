@@ -11,7 +11,8 @@ The recordings it rests on:
 
 - `L01` (`work/docs/dfA/L01`, port base 37480): level 1 played from the menu to CONTACT! and the bonus, frames
   0-1645. Its memory at frames 256, 377 and 1514 was dumped with `tools/ttd_dump.py` into `work/docs/dfA/dump/`.
-- `L03` (`work/docs/dfA/L03`, port base 37485): level 3 with its two gremlins, frames 1150-1330.
+- `L03` (`work/docs/dfA/L03`, port base 37485): level 3 with its two gremlins, frames 1150-1330. It starts on a clone:
+  the bot ended level 2 by the LevelDone POKE ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 
 The single traces are replayed from those dumps by SkoolKit's simulator: `tools/fig_trace.py` runs TraceBeam
 `$8ED6` on a copy of the dumped memory, from the start MainLoop gives it.
@@ -89,7 +90,15 @@ BeamStep:                   ; $8EDD, once a vertex
   SRL A
   LD B,A
   JP C,BeamVertex
-  ...                       ; HL = $FD12 + 17 (y/2) + x/2: the cell
+  XOR A                     ; HL = $FD11 + 17 (y/2) + x/2: the cell
+  INC B                     ; (y/2 + 1) times 17, + x/2: row y/2 - 1, column x/2 - 1
+BeamStepRowAdd:
+  ADD A,$11
+  DJNZ BeamStepRowAdd
+  ADD A,C
+  LD L,A
+  LD H,$FD
+  ...
   LD A,(HL)
   RES 7,A                   ; a turning element acts as its current angle
   AND A
@@ -129,7 +138,7 @@ TraceBeam():                                  # from the half-cell in front of t
         if next == FF: end
         direction = next; (x, y) += BeamDeltas[direction]
         if off the field: end
-        steps += 1 (diagonals only at even x)
+        steps += 1 (a diagonal step only when the new x is odd)
         if steps == 40: BeamBackToLaser (OVERLOAD)  # the beam goes on
         if steps == 150: end
 ```
@@ -162,7 +171,8 @@ east-south-east, to west). It enters the receiver from its open side: BeamReceiv
 5. Five steps west reach x 8, y 18 (row 8, column 3), the receiver `$4B`. The beam is on an axis, and ((8 + 8) AND
    12) / 4 = 0 = (`$4B` - `$4B`) AND 3, so it entered from the front. LevelDone = `$FF`.
 
-The trace's length counter stands at 15 at the end, well under the 40 of 10.4.
+The trace's length counter stands at 15 at the end, well under the 40 of 10.4. The cell of step 2 is `$FD11` + 17 x 8
++ 1 = `$FD9A` (row 7, column 0: `$FD23` + 17 x 7), the grid address BeamStep computes from the half-cells.
 
 ## 10.3 What each element does
 
@@ -172,8 +182,8 @@ The trace's length counter stands at 15 at the end, well under the 40 of 10.4.
 | `$01-$10` | mirror (16 angles) | BeamMirror `$8FFB`: out = (16 - in + code - 1 + 8) AND 15 | 212 472 runs |
 | `$11-$18` | cyan polariser | by its characters: along its axis it passes, else it absorbs | `elements.py` experiment |
 | `$19-$20` | yellow polariser | by its characters: along its axis it passes, else it reflects | `elements.py` experiment |
-| `$21-$2F` | absorbing wall | by its characters (`$71`): the beam ends | every level |
-| `$30-$3E` | reflecting wall | by its characters (`$72`): the beam bounces | 21 949 bounces |
+| `$21-$2F` | absorbing wall | by its characters (`$71`): the beam ends, or grazes a lone quarter (below) | every level |
+| `$30-$3E` | reflecting wall | by its characters (`$72`): the beam bounces, by the tables below | 21 949 bounces |
 | `$40` | cell | BeamBurn: an explosion slot, the points, the beam ends | 10.5 |
 | `$41` | mine | BeamMine: BeamOnMine, SoundFlags bit 1, the beam ends | `mine`, 46 RZX segments |
 | `$42` | prism | PrismTurn `$9014`: a random new direction 4-12 sixteenths off the reverse | 16 015 runs |
@@ -204,15 +214,248 @@ Three elements are random or remote:
   (H AND 7)), so it flickers from pass to pass. It never goes straight back, so a prism never overloads.
 - **A fibre end** finds its partner by scanning the grid backwards for the code XOR 1. The beam is drawn into the
   first end, jumps to the partner's centre, and leaves in its arrival direction. Every level that holds an end holds
-  its partner, so the "no partner" branch (FibreNoPartner `$9059`) is dead.
+  its partner, so the "no partner" branch (FibreNoPartner `$9059`) is dead. The code and the worked example are
+  below.
 - **The laser and the receiver** both demand an axis beam on their open side. A beam on their back or flank, or a
   slanted one, just ends.
+
+### The fibre jump
+
+```asm
+FibreEntry:                 ; $903E, A = the end's code ($50-$57)
+  XOR $01                   ; D = the partner's code
+  LD D,A
+  LD A,$02                  ; $8ED1 = 2: the beam enters a fibre at this vertex
+  LD (BeamY+$0003),A
+  LD HL,LevelGrid+185       ; the last cell (row 8, column 14), backwards
+  LD C,$09
+FibreSearchRow:
+  LD B,$0F
+FibreSearchCell:
+  LD A,(HL)
+  CP D
+  JR Z,FibrePartner
+  DEC L
+  DJNZ FibreSearchCell
+  DEC HL                    ; over the row's two guard bytes
+  DEC HL
+  DEC C
+  JR NZ,FibreSearchRow
+FibreNoPartner:             ; $9059: no level gets here
+  LD A,$FF
+  LD (BeamNextDirection),A
+  JP BeamVertex
+FibrePartner:               ; $9061: the partner's centre x = 2B, y = 2C
+  LD A,B
+  ADD A,A
+  LD (BeamY+$0001),A
+  LD A,C
+  ADD A,A
+  LD (BeamY+$0002),A
+  JP BeamVertex             ; the entry vertex drawn; then FibreJump $91C6
+```
+
+```text
+FibreEntry(code):
+    partner = code XOR 1
+    for row 8 down to 0, column 14 down to 0:        # the last match wins: the scan is backwards
+        if grid[row][column] == partner:
+            target = (2 (column + 1), 2 (row + 1)); mode = 2; draw this vertex; break
+    else: the beam ends here (FibreNoPartner)
+BeamOutgoing, mode 2 (FibreJump $91C6):
+    mode = 1; (x, y) = target; direction = FF (no incoming pass)
+    draw the partner's vertex with the outgoing pass only, then step on in the same direction
+```
+
+**Worked example: the fibre of level 1.** In the trace of `L01` frame 377 (`trace-burn.gif` in 10.5, `python3
+tools/fig_trace.py work/docs/dfA/dump/l01-377.cpu.bin --list`) the beam runs south from the mirror at x 30, y 12 and
+reaches x 30, y 16: row 7, column 14, code `$55`. The partner is `$54`; the scan from row 8, column 14 backwards meets
+it at row 3, column 10 (B = 11, C = 4), so the target is x 22, y 8. The next vertex the trace counts is x 22, y 10,
+one step south of the partner (direction 4 kept), and the beam burns the cell at x 22, y 16. Level 1 holds only this
+pair. Witness: FibreEntry ran 4105 times over the recordings (the listing: `L` x6, RZX x15), 21 of them in `L01`.
+
+### Walls and polarisers at the vertices
+
+A wall or a polariser is not decided at a cell's centre: BeamStep sends those codes on to BeamVertex `$906E`, and the
+three drawing passes of the vertex ([doc 6, 6.6](06-rendering.md)) look at each character round it in the character
+map `$E000`. The incoming pass (BeamInChar `$9278`) runs over the characters the beam enters, the outgoing pass
+(BeamOutChar) over those it leaves by. Each pass reacts to the character it is about to draw:
+
+| Character | Incoming pass | Outgoing pass |
+| --- | --- | --- |
+| `$71` (absorbing wall) | BeamAbsorbIn `$9344` | BeamAbsorbOut |
+| `$72` (reflecting wall) | BeamReflectIn `$938F` | BeamReflectOut `$960D` |
+| `$31-$70` (polariser) | BeamInPolariser `$92FD` | the outgoing polariser test |
+| `$80-$AF` (laser, receiver) | absorbed (BeamAbsorbIn) | absorbed |
+
+The polariser test takes its angle from the character, (character - `$31`) AND `$1F` / 4 = 0-7, and compares it with
+the beam's direction AND 7:
+
+```asm
+BeamInPolariser:            ; $92FD, A = the character ($31-$70)
+  LD D,A
+  SUB $31
+  AND $1F
+  SRL A
+  SRL A
+  LD B,A                    ; the polariser's angle 0-7
+  LD A,(BeamDirection)
+  AND $07
+  CP B
+  JR Z,PolariserPassIn      ; along its axis: passed, its other three characters lit ($81A0)
+  LD A,D
+  CP $51
+  JR C,BeamAbsorbIn         ; cyan ($31-$50): absorbed
+  JP BeamReflectIn          ; yellow ($51-$70): reflected like a wall
+```
+
+A reflecting wall (or a yellow polariser across the beam) then acts by the beam's kind:
+
+- **Axis beam** (direction AND 3 = 0): the character across the beam line (GrazeOffsets `$8190`, one offset for each
+  character of the pass and axis) decides. If it is free (below `$31` or above `$72`), the beam grazes the wall's
+  side and goes on. If it is a wall too, the beam goes straight back: BeamBackToLaser `$8FC5`, OVERLOAD, and the trace
+  ends. A second wall character at the same vertex always sends it back.
+- **Slope or diagonal, incoming pass** (ReflectInSlant `$93DC`): InBounceTable `$8140` + 3 x direction gives the
+  new direction and a step (dx, dy) back to the vertex the beam leaves from; BeamMove `$9235` takes the step. A slope
+  is mirrored off the wall it can meet (1 and 7, 9 and 15 off an upright wall; 3 and 13, 5 and 11 off a level one). A
+  diagonal's entry is `$80` + n: InCornerTable `$8100` + n holds two neighbours to test and four answers with their
+  steps (10.12).
+- **Slope or diagonal, outgoing pass** (ReflectOutSlant `$965A`): OutBounceTable `$8080` + 8 x the new direction
+  holds two offsets from the wall character met, to the two neighbours that tell which way the wall runs, then four
+  answers: neither of them a wall, the first (+1), the second (+2), both (+3). The answer that is the reverse of the
+  incoming direction is OVERLOAD. Any other answer turns the beam in place: the direction becomes `$FF` (no incoming
+  pass), a bounce counter `$8EC0` counts one, and the vertex is drawn again with the new direction. At 40 bounces
+  OVERLOAD, at 150 the trace stops (`$96B8`, never reached).
+
+```asm
+ReflectOutSlant:            ; $965A, B = the new direction
+  POP DE
+  POP DE
+  LD HL,OutBounceTable      ; $8080 + 8 x direction
+  LD A,B
+  ADD A,A
+  ADD A,A
+  ADD A,A
+  ADD A,L
+  LD L,A
+  EX DE,HL
+  XOR A
+  EX AF,AF'                 ; A' = 0: the answer's index
+  LD BC,(CharMapPointer)    ; the wall character met
+  ...                       ; the first offset: a wall ($31-$72)? A' + 1
+  ...                       ; the second offset: a wall? A' + 2
+ReflectOutPick:             ; $9694
+  EX AF,AF'
+  ADD A,E                   ; DE = the row's +4, + A'
+  LD E,A
+  LD A,(DE)
+  LD (BeamNextDirection),A
+  LD B,A
+  LD A,(BeamDirection)
+  ADD A,$08
+  AND $0F
+  CP B                      ; the reverse: OVERLOAD
+  JP Z,BeamBackToLaser
+  LD A,$FF                  ; turned in place: no incoming pass
+  LD (BeamDirection),A
+  LD A,(BeamSteps+$0001)    ; the bounce count
+  INC A
+  LD (BeamSteps+$0001),A
+  CP $28
+  JP C,BeamVertex           ; draw the vertex again, with the new direction
+```
+
+```text
+a pass meets character ch at the vertex, the beam's direction d:
+    if ch in 31..70 (polariser): angle = ((ch - 31) AND 1F) / 4
+        if d AND 7 == angle: pass, light its other three characters (PolariserCells $81A0)
+        elif ch < 51: absorb (as 71)            # cyan
+        else: reflect (as 72)                   # yellow
+    if absorb: axis beam and the character across is free: graze on; else the beam ends
+    if reflect:
+        if d AND 3 == 0:                        # axis
+            the character across (GrazeOffsets) free: graze on; else OVERLOAD, the trace ends
+        elif incoming pass:
+            new, dx, dy = InBounceTable[d]       # a slope: never its own reverse
+            if new >= 80:                        # a diagonal
+                new, dx, dy = InCornerTable[new - 80] by the walls round the corner
+                if new == d + 8: OVERLOAD, the trace ends
+            direction = new; move by (dx, dy); on to the next vertex
+        else:                                   # outgoing pass, new = the direction after this vertex
+            k = (row[0] is a wall) + 2 (row[1] is a wall), row = OutBounceTable[new]
+            out = row[4 + k]
+            if out == incoming d + 8: OVERLOAD
+            else: bounces += 1; redraw this vertex leaving by out (40 bounces: OVERLOAD; 150: stop)
+```
+
+```mermaid
+flowchart TD
+    C[a pass meets a character] --> P{polariser 31-70?}
+    P -->|along its axis| PASS[passed, three characters lit]
+    P -->|cyan, across| AB[absorbing, as 71]
+    P -->|yellow, across| RF[reflecting, as 72]
+    C -->|71, 80-AF| AB
+    C -->|72| RF
+    AB -->|axis, the character across free| G[grazed: on]
+    AB -->|else| E[the beam ends]
+    RF -->|axis, the character across free| G
+    RF -->|axis, a wall across| O[OVERLOAD]
+    RF -->|slant, incoming pass| IN[InBounceTable 8140: new direction and step]
+    IN -->|a diagonal| IC[InCornerTable 8100: by two neighbours]
+    RF -->|slant, outgoing pass| OUT[OutBounceTable 8080: by two neighbours, +1 and +2]
+    IN --> M[BeamMove: the next vertex]
+    IC -->|the reverse| O
+    IC --> M
+    OUT -->|the reverse| O
+    OUT --> V[the vertex drawn again, the bounce counted]
+```
+
+*A wall or polariser met by a pass. Witness: per recording (each `l1.json`), ReflectInSlant `$93DC` and
+ReflectOutSlant `$965A` ran 2 and 35 times in `L01`, 211 and 264 in `L03`,
+565 and 649 in `L22` (a clone), 2944 and 1472 in `hof` (a clone); ReflectOutBack `$9655` 3 times in `L01`;
+PolariserPassIn `$9317` 20 times in `L01`, 184 in `L12`. Over the RZX segments the slope branch of `$93DC` ran 21 949
+times. The point: a slanted beam is never simply stopped by a reflecting wall; which way it leaves depends on the
+characters beside the one it met, so a wall's corner and its side bounce differently.*
+
+![The bounce tables](img/logic/bounce-tables.png)
+
+*InBounceTable `$8140` and OutBounceTable `$8080` for the twelve slanted directions, drawn by `python3
+tools/fig_logic.py bounce docs/img/logic/bounce-tables.png` from the game's image. How to read it: a row per
+direction (magenta arrow); the incoming answer in the second column; then the two neighbours the outgoing pass tests
+round the character it met (grey) and its four answers. Red is the reverse of a beam that came straight on: OVERLOAD.
+The point: in the outgoing pass the side of the wall decides; a diagonal meeting a lone corner (neither neighbour a
+wall) is always sent back.*
+
+The editable forms are `src/res/tables/in-bounce.csv`, `out-bounce.csv`, `in-corner.csv`, `graze-offsets.csv` and
+`polariser-cells.csv` ([src/res/tables/README.md](../src/res/tables/README.md)).
+
+**Worked example: two bounces, by experiment.** No dump of the recordings catches a bounce, so the two cases are
+replayed on `L01`'s frame 1514 with one cell changed (`tools/fig_trace.py --poke`, which writes the cell into
+LevelGrid and its four characters into the character map, as RenderGrid would). The beam leaves the mirror at x 6,
+y 12 on direction 1 (east by south-east), as in 10.2:
+
+1. `--poke 6,5=3E`, a full reflecting wall at row 6, column 5 (four characters `$72`). At the vertex x 12, y 15 the
+   incoming pass meets the wall's character at row 14, column 11. InBounceTable row 1 (`$8143`) = 7, -2, 0: the beam
+   turns to direction 7 (west by south-west) and steps to x 10, y 15. It runs on to the laser's side at x 8, y 16 and
+   ends there (a slanted beam at the laser just ends).
+2. `--poke 7,5=3E`, the same wall one row lower. Now the incoming pass of x 12, y 15 is clear, and the outgoing pass
+   meets `$72` at row 15, column 12 (CharMapPointer `$E1EC`). OutBounceTable row 1 (`$8088`) tests -32 (row 14,
+   column 12: empty) and -1 (row 15, column 11: `$72`): only the second, so the answer is the row's +6, `$808E` = 15
+   (east by north-east). That is not the reverse of 1 (9), so the vertex is redrawn leaving by 15, and the beam runs
+   up and away to the edge at x 32, y 5 (20 steps, 141 755 T).
+
+![A bounce in the outgoing pass](img/logic/trace-bounce.gif)
+
+*The second experiment drawn: `python3 tools/fig_trace.py work/docs/dfA/dump/l01-1514.cpu.bin
+docs/img/logic/trace-bounce.gif --poke 7,5=3E --title "..."`. How to read it: as the traces above; the poked wall
+is the right half of the block at row 7, columns 4-5 (column 4 is level 1's own wall `$37`). The point: the beam is not stopped at the wall; at step 10 the panel names
+ReflectOutSlant, and the next vertex already runs on direction 15.*
 
 ## 10.4 The overlong beam
 
 ```asm
 BeamCountStep:              ; in BeamMove $9235
-  LD A,(BeamSteps)          ; length + 1 (a diagonal step only at even x)
+  LD A,(BeamSteps)          ; length + 1 (a diagonal step only at odd x)
   INC A
   LD (BeamSteps),A
 BeamLengthCheck:
@@ -364,6 +607,67 @@ the ENERGY bar every `rate` frames, the level's first settings byte. The bar is 
 | 1 byte (`$54F1`) | ENERGY LEVEL CRITICAL (`$0C`), repeated; EnergyCritical `$837E`: the beam flashes (glyph set `$8040`) |
 | empty (`$54F0`) | ENERGY DRAINED (`$17`), LifeLost |
 
+```asm
+DrainEnergy:                ; $A613, once a pass
+  LD A,(LaserCharging)
+  AND A
+  JP NZ,ChargeLaser         ; still charging: fill instead
+  LD A,(EnergyBarPointer)   ; one byte left: critical
+  CP $F1
+  JR NZ,DrainEnergyTick
+  LD A,$FF
+  LD (EnergyCritical),A     ; the beam flashes
+  ...                       ; CRITICAL ($0C) unless MessageNumber >= $0C
+DrainEnergyTick:
+  LD A,(EnergyTick)         ; $A506, counted up by the interrupt each frame
+EnergyRate:
+  CP $64                    ; patched at $A63C: the level's rate
+  RET C
+  XOR A
+  LD (EnergyTick),A
+  LD HL,(EnergyBarPointer)  ; a pixel off: the byte shifted left in its three lines
+  LD A,(HL)
+  SLA A
+  LD (HL),A
+  INC H
+  LD (HL),A
+  INC H
+  LD (HL),A
+  DEC H
+  DEC H
+  AND A
+  RET NZ
+  DEC L                     ; the byte empty: one byte left
+  LD (EnergyBarPointer),HL
+  LD A,L
+  CP $F0
+  JR Z,EnergyDrained        ; $A66F: ENERGY DRAINED, LifeLost, no test
+  CP $F2
+  RET NZ
+  ...                       ; ENERGY LOW ($0A) unless MessageNumber >= $0A
+```
+
+```text
+DrainEnergy, once a pass:
+    if charging: ChargeLaser; return
+    if the pointer is at the last byte ($54F1): EnergyCritical = FF; post CRITICAL if MessageNumber < 0C
+    if EnergyTick < rate: return              # the interrupt counts EnergyTick once a frame
+    EnergyTick = 0; the bar's byte <<= 1 (three lines)
+    if the byte is now 0:
+        pointer -= 1
+        if pointer == $54F0: ENERGY DRAINED, LifeLost = FF   # a life, in practice too
+        elif pointer == $54F2: post ENERGY LOW if MessageNumber < 0A
+```
+
+![The energy bar over a whole recording](img/logic/energy-course.png)
+
+*`energy` (level 1, no key, 18 500 frames), drawn by `python3 tools/fig_logic.py energy
+docs/img/logic/energy-course.png` from the recording's snapshots (`work/stage1/energy/snapshots/NNNNNN`, every 250
+frames). How to read it: the pixels left in the bar, frame across; the colour is the message shown; a red line is a
+life lost. The first point (frame 250) is the panel before the level. The point: the bar falls in a straight line, a
+pixel every 90 frames whatever happens on the screen; ENERGY LOW, CRITICAL and DRAINED come at two bytes, one byte
+and none; each life lost starts the charge and the same clock again.*
+
 **Worked example: level 1's clock.** The rate is `$5A` = 90 frames, so the level lasts 64 x 90 = 5760 frames: 115
 seconds after the charge. The `energy` recording charged at about frame 690 and drained at 6450, which is 5760
 frames later. The charge itself takes 32 passes (8 bytes of 4 steps), and it scrambles the mirrors on every pass
@@ -378,7 +682,7 @@ trace never reads the gremlin records, so a gremlin does not stop the beam. The 
 which can send the beam back into the laser, onto a mine, or off the cells.
 
 The player's weapon is the cursor. CursorFire `$9A57` runs every pass. With fire held, it looks for any gremlin whose
-cell (+4, +5) is the cursor's cell. Each one found is killed:
+cell (+4, +5) is the cursor's cell, standing or turning a mirror. Each one found is killed:
 
 - its delay becomes `$C8` (200 counts, so it comes back much later);
 - its turns and its cell are cleared;
@@ -392,6 +696,59 @@ cell (+4, +5) is the cursor's cell. Each one found is killed:
 the player sees it. The gremlins are the dithered magenta blobs. The point: the first gremlin appears at frame 1167
 and the second at 1251, and both wander over the cells. The beam meanwhile alternates between the receiver's area
 and OVERLOAD as the player turns mirrors: the gremlins and the beam do not interact.*
+
+```asm
+  ...                       ; HL = the cursor's cell, $FD12 + 17 (CursorY + 1) + CursorX
+  LD A,(GremlinCount)
+  AND A
+  RET Z
+  LD B,A
+  LD C,$00                  ; the kills
+  LD DE,$0006
+  LD IX,Gremlins
+CursorFireGremlin:          ; $9AC5
+  LD A,(IX+$04)             ; its cell, low and high: only these are compared
+  CP L
+  JR NZ,CursorFireNext
+  LD A,(IX+$05)
+  CP H
+  JR NZ,CursorFireNext
+  XOR A                     ; killed
+  LD (IX+$00),$C8
+  LD (IX+$01),A
+  LD (IX+$05),A
+  LD A,$FF
+  LD (GremlinSoundFlag),A
+  INC C
+CursorFireNext:
+  ADD IX,DE
+  DJNZ CursorFireGremlin
+  LD A,C                    ; 16 tens a kill
+  ADD A,A
+  RET Z
+  ADD A,A
+  ADD A,A
+  ADD A,A
+  LD B,A
+  CALL AddScore
+  RET
+```
+
+```text
+CursorFire, with fire held:
+    cell = the cursor's grid address
+    kills = 0
+    for each of the GremlinCount records:
+        if record.cell (+4, +5) == cell:      # the delay is not looked at
+            record.delay = C8; record.turns = 0; record.cell_high = 0
+            GremlinSoundFlag = FF; kills += 1
+    if kills: AddScore(16 x kills)
+```
+
+Since only +4/+5 are compared, a gremlin still waiting, or just appeared and not yet moved, is matched on whatever
+cell its record kept from an earlier life or level (+4/+5 are written only by GremlinMove and the kill; [doc 7,
+7.6](07-objects.md#76-the-gremlins-records-and-mover)). Fire on that old cell kills it unseen. This is read from the
+code; no recording shows it.
 
 **Worked example: a gremlin kill.** Fire with the cursor on the gremlin's cell: the record's +4/+5 must equal the
 cursor cell's grid address. In `L03` at frame 1176, record 0 stands on `$FD7B` = `$FD23` + 17 x 5 + 3 (row 5,
@@ -408,7 +765,7 @@ flowchart TD
     E[DrainEnergy: a step every rate frames] -->|bar empty| D[EnergyDrained A66F: ENERGY DRAINED]
     D --> L
     L --> P[PassEnd: LoseLife 866A]
-    P -->|message below 16| R[BOOM BOOM BOOM, the play area red, LifeLostSound]
+    P -->|MessageNumber below hex 16: no BOOM or ENERGY DRAINED shown| R[BOOM BOOM BOOM, the play area red, LifeLostSound]
     P -->|ENERGY DRAINED shown| S[EnergyDrainedSound]
     R --> C[LoseLifeCount: a life bar hollowed]
     S --> C
@@ -422,8 +779,11 @@ are only two causes, the overload bar and the energy. A mine is not instant deat
 four times faster.*
 
 A life lost restarts the level from SetUpLevel: the score goes back to SavedScore (the score at the level's start),
-the mirrors are scrambled again by the charge, and the energy is full again. In practice (PracticeFlag `$8407`) the
-overload never takes a life.
+the mirrors are scrambled again by the charge, and the energy is full again. In practice (PracticeFlag `$8407`) a
+full overload bar does not stop play (UpdateOverload `$A6E9` sets no LifeLost), while drained energy does: DrainEnergy
+sets LifeLost with no practice test (`$A67C`), LoseLife shows ENERGY DRAINED, and LoseLifeCount `$86A0` skips the life
+itself, so the level restarts with the same lives. The practice slots' rate is 255, so that takes 64 x 255 = 16 320
+frames.
 
 ## 10.9 Level complete, the bonus and the ending
 
@@ -483,11 +843,14 @@ across. The point: the whole level in one picture.*
 
 **The ending.** After level 60, LevelCompletePause jumps to TheEnd `$8885`:
 
-- it clears the full-screen buffer and draws the ending (EndingScreen `$A8CE`);
-- it plays ChargedSound twice, waits until no key is held, and plays the title tune;
+- it clears the full-screen buffer and draws the ending (EndingScreen `$A8CE`, which itself plays ChargedSound once,
+  at `$A949`, after twelve Delays);
+- it plays ChargedSound twice more (`$8896`, `$889C`), waits until no key is held, and plays the title tune;
 - it returns to the title, where the hall of fame takes the score.
 
-The ending was seen only in `rzx-344752` and the stage-2 `ending` recording.
+The ending was seen only in `rzx-344752` and the stage-2 `ending` recording. `ending` runs on a clone: it starts at
+level 60's CONTACT! on the bot's state `lv2/L61.szx`, where level 60 was completed by the LevelDone POKE
+([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 
 ## 10.10 The solver as a reading of TraceBeam
 
@@ -515,8 +878,10 @@ document are TraceBeam's own answers, not a re-implementation.
 - **Odd and even mirrors.** Only odd codes can reflect a beam square back (10.3).
 - **Two drawing models.** The grid decides at a cell's centre, the characters between. So the walls have quarter
   shapes that the beam can graze or clip.
-- **The randomness** is in only three places: the prism, the charge's mirror scramble and the gremlins. All of them
-  use the one Random `$8E15`, whose seed the options panel advances while it waits for a key.
+- **The randomness** of the play is in three places: the prism, the charge's mirror scramble and the gremlins. All
+  of them use the one Random `$8E15`, whose seed the options panel advances while it waits for a key. The wipe's
+  corner (WipeIn `$8CAD`) and the burning noise (PlayNoise, the call at `$A896`) draw on the same generator, so every
+  wipe and every hiss also moves it.
 - **Lives reset at every level** (Lives = 3 in LevelCompletePause). A game over needs all three lost in one level.
 
 ## 10.12 What is known only from the code
@@ -542,3 +907,7 @@ quarter turn.*
 - The codes `$3F` and `$43-$46` (a cell and lasers no level holds): the trace treats them as a cell and as lasers.
 - A gremlin killed while standing on a mirror it is turning: the kill clears +1, so the turn stops (no recording
   shows it).
+- A gremlin killed on a stale cell (10.7): its +4/+5 from an earlier life or level matched while it waits.
+- The outgoing bounce counter's 40 and 150 (`$96B8`): the recordings never passed 39 bounces at one vertex.
+- The wall bounces have no dump of their own: the worked example of 10.3 is an experiment on `L01`'s frame 1514; the
+  recordings witness the routines by their run counts only.

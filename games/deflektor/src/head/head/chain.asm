@@ -1,17 +1,19 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; chain.asm: D.G. Cooke's decryption chain: 30 layers keyed on sums of memory, then a 16-bit layer over the game
 ;
-; The chain runs from $7B52 with SP = $5BFE (the loader's stack); it depends on SP and on the whole of memory
-; $4000-$FFFF, the loading screen and the loader included, so a changed byte anywhere breaks the keys. It is decrypted
-; while it runs: each layer decrypts the bytes after its own call, so the code past a CALL exists only once that call
-; has returned.
+; The chain runs from $7B52 with SP = $5C00 (BlockHead's RET leaves it there; the CALLs' return addresses at
+; $5BFE-$5BFF are summed with the rest); it depends on SP and on the whole of memory $4000-$FFFF: the loading screen,
+; ChainFill's stream and the block itself (the loader and the BASIC are overwritten by then), so a changed byte
+; anywhere breaks the keys. It is decrypted while it runs: each layer decrypts the bytes after its own call, so the
+; code past a CALL exists only once that call has returned.
 ;
-; ChainStart fills the printer buffer and the system variables' area $5B00-$7B51 with a generated stream and the
-; mover's tail, then sums memory into A. Each of the 30 layers is a CALL followed by a key byte: XorLayer decrypts B
-; bytes after the call with a running key (p = 17 x prev + C, XORed in), a sum layer (SumLayer1-3: three copies with
-; their own addresses) adds memory from $4000 in steps of C + 1 to A; both then add the key byte at the return address
-; to A, write C over it and jump past it. On the original tape every layer's incoming A is 0: the key bytes are chosen
-; so (src/head/keys.txt has them, the byte each layer finds and C, the byte it leaves).
+; ChainStart fills the printer buffer and the system variables' area $5B00-$7B51, then the space past the mover
+; $FD1B-$FFFF, with a generated stream (D = $95, D = 17 x D + L + 11), then sums memory into A. Each of the 30 layers
+; is a CALL followed by a key byte: XorLayer decrypts B bytes after the call with a running key (p = 17 x prev + C,
+; XORed in), a sum layer (SumLayer1-3: three copies with their own addresses) adds memory from $4000 in steps of C + 1
+; to A; both then add the key byte at the return address to A, write C over it and jump past it. On the original tape
+; every layer's incoming A is 0: the key bytes are chosen so (src/head/keys.txt has them, the byte each layer finds
+; and C, the byte it leaves).
 ;
 ; FinalSum makes a 16-bit sum of $4000-$FFFF (with its own operand at $7CA7 zeroed first), and Final16 decrypts
 ; $7D00-$FD19 in words with it: the whole game and the mover. The last decrypted word plus $7A3D is the jump: $FD00 on

@@ -64,11 +64,11 @@ $8060 ; set 1, directions 8-11
 $8070 ; set 1, directions 12-15
 @res tables/beam-glyph-bytes.bin
 $8080 b OutBounceTable 8 ; A slanted beam's bounce in the outgoing pass: 8 bytes for each new direction
-> BeamReflectOut `$960D` (at `$965C`, a slope or diagonal meeting a wall or a yellow polariser) takes `$8080` + 8 x the new direction: two words, the offsets from the vertex's up-left character in the character map of the two characters to test, then four directions by which of them are walls (`$31-$72`): none, the first, the second, both. BeamCornerChar (at `$94E9`, two corners met) reads only the last byte, `$8087` + 8 x direction.
+> BeamReflectOut `$960D` (at `$965C`, a slope or diagonal meeting a wall or a yellow polariser) takes `$8080` + 8 x the new direction: two words, the offsets from the wall character met (CharMapPointer `$8914`) in the character map of the two characters to test, then four directions by which of them are walls (`$31-$72`): none, the first, the second, both. BeamCornerChar (at `$94E9`, two corners met) reads only the last byte, `$8087` + 8 x direction.
 > The rows of the axis directions 0, 4, 8 and 12 are never read (an axis beam grazes or goes straight back: `$8190`); `$80CF` and `$80DF` (the "both" of directions 9 and 11) were read by no recording. Editable form: tables/out-bounce.csv.
 @res tables/out-bounce.bin
 $8100 b InCornerTable 16 ; A diagonal beam's bounce in the incoming pass: 16 bytes for each of the diagonals 2, 6, 10, 14
-> ReflectInCorner `$93F2` (`$93F4`): InBounceTable gives `$80` + n for a diagonal, and `$8100` + n holds two words (the offsets of the characters above or below and beside the corner) and four answers of three bytes (the new direction, dx, dy) by which of them are walls: none (+4), the first (+7), the second (+10), both (+13). None or both send the beam back (OVERLOAD), one turns it a quarter.
+> ReflectInCorner `$93F2` (`$93F4`): InBounceTable gives `$80` + n for a diagonal, and `$8100` + n holds two words (the offsets, from the wall character met (CharMapPointer `$8914`), of the characters above or below and beside it) and four answers of three bytes (the new direction, dx, dy) by which of them are walls: none (+4), the first (+7), the second (+10), both (+13). None or both send the beam back (OVERLOAD), one turns it a quarter.
 > No play reads it: the trace's first vertex is the only one whose incoming pass meets a wall the outgoing pass before it has not (work/docs/integrate/corner_level1.py), and that vertex is the laser's front, on an axis. Read only on a clone, `corner` (game0.szx with the beam's start `$8376-$8378` POKEd to x 10, y 16, direction 10: 342 passes, the beam turned a quarter to direction 14). Editable form: tables/in-corner.csv.
 $8100 ; direction 2 (south-east)
 $8110 ; direction 6 (south-west)
@@ -660,7 +660,7 @@ $8ED6 c TraceBeam ; Trace the beam from the laser: the step count cleared, then 
 > BeamStep runs about 11.7 times a trace (1 038 316 against 88 519).
 > Witness: L1 112689 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8EDD c BeamStep ; One step of the beam: at a cell's centre, what the cell does to it; then the step code ($906E)
-> BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell (row y/2 - 1, column x/2 - 1) at `$FD12` + 17 (y/2) + x/2, BeamAtCentre = `$FF`, and the code with bit 7 cleared (a turning element acts as its current angle):
+> BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell (row y/2 - 1, column x/2 - 1) at `$FD11` + 17 (y/2) + x/2 (= `$FD12` + 17 (row + 1) + column), BeamAtCentre = `$FF`, and the code with bit 7 cleared (a turning element acts as its current angle):
 > - `$00` empty: on (`$906E`);
 > - `$01-$10` a mirror: BeamMirror `$8FFB`;
 > - `$11-$20` a block: BeamAtCentre = 0, on (`$906E`, the step code decides);
@@ -675,7 +675,7 @@ $8EDD c BeamStep ; One step of the beam: at a cell's centre, what the cell does 
 > Witness: L1 1251228 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $8EF0 ; x / 2: odd, between cells
 $8EF9 ; y / 2: odd, between cells
-$8F02 ; the cell: $FD12 + 17 (y/2) + x/2
+$8F02 ; the cell: $FD11 + 17 (y/2) + x/2
 $8F04 BeamStepRowAdd
 $8F0C ; at a cell's centre
 $8F11 ; the code, a turning element as its current angle
@@ -776,13 +776,13 @@ $9226 c BeamNewDirection ; Take the new direction and move the beam to its next 
 > Witness: L1 1108934 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9235 c BeamMove ; Move the vertex by the step at HL, count the beam's length, trace on
 > Entered from `BeamNewDirection` (the step of the direction) and from the reflections of `BeamReflectIn` `$938F` with HL at a step of their own tables (`$8140`, `$8100`). x + dx must stay below `$21` and y + dy below `$15` (a negative result is above too): else the trace ends.
-> The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10, 14, one character a step) only at even x, so it counts about one a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as if the beam had come back into the laser, and the laser lit; the trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59 level segments, `$926D` 2010 runs in all).
+> The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10, 14, one character a step) only when the new x is odd, so it counts about one a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as if the beam had come back into the laser, and the laser lit; the trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59 level segments, `$926D` 2010 runs in all).
 > Then back to the trace `$8EDD` for the next vertex.
 > Witness: L1 1139437 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x59).
 $9235 ; B = x, C = y
 $923D ; x + dx: off the area ($21 or more, or below 0): the trace ends
 $9246 ; y + dy: off the area: the trace ends
-$924E ; the diagonals (2, 6, 10, 14) count at even x only
+$924E ; the diagonals (2, 6, 10, 14) count at odd x only
 $925E BeamCountStep ; length + 1
 $9265 BeamLengthCheck ; under 40: the next vertex
 $926D ; exactly 40: OVERLOAD, as if back in the laser
@@ -1265,11 +1265,11 @@ $A102 b UnusedA102 ; One byte $FF that no recording reads or writes
 > No instruction in the image addresses it (searched in `game.skool`); probably a spare end mark of the layout above.
 
 @module panel ; The HUD panel and the COMPUTER line: the message variables and texts
-@about The COMPUTER line (row 23, columns 1-15) is driven by the interrupt (InterruptHandler $A32A): the game only writes the address of a message to MessageText $A10E, and a message number to MessageNumber $A104 when the message is more urgent than the one shown. A message that starts with $FE is static (14 characters, blinking); any other scrolls in from the right a pixel a frame, its $FF followed by the address where it goes on (a loop, or BlankMessage $A199, which ends it). The same line in the menu (row 21, columns 5-25, MenuScroller $A103 set) scrolls the credits and the name-entry prompt, where a byte $FE is a pause counted down in the text itself.
+@about The COMPUTER line (row 23, columns 1-15) is driven by the interrupt (InterruptHandler $A32A): the game only writes the address of a message to MessageText $A10E, and a message number to MessageNumber $A104 (most writers only when the message is more urgent than the one shown). A message that starts with $FE is static (14 characters, blinking); any other scrolls in from the right a pixel a frame, its $FF followed by the address where it goes on (a loop, or BlankMessage $A199, which ends it). The same line in the menu (row 21, columns 5-25, MenuScroller $A103 set) scrolls the credits and the name-entry prompt, where a byte $FE is a pause counted down in the text itself.
 $A103 b MenuScroller ; $FF: the interrupt runs the menu's scroller (row 21) and counts nothing; 0: the game's COMPUTER line
 > Set by the menu set-up `$9BC0` (at `$9BC7`), cleared by OptionsMenu `$A757` when a game starts (`$A804`). While set, InterruptHandler `$A32A` jumps to MenuScrollerTick `$A459` and neither EnergyTick `$A506` nor FrameCounter `$837F` is counted. Evidence: read by every interrupt (381 862 in all recordings), written 19 times.
-$A104 b MessageNumber ; The number of the message shown: 0 none ... $18 CONTACT!; a message replaces a lower one only
-> Each writer compares first (`CP n` / `JR NC`) and writes only when the current number is lower, so a more urgent message is never replaced by a less urgent one: 1 CHARGING LASER / DEMO (ResetBars `$A55E`), 4 BEWARE OF THE GREMLINS (`$AC21`), `$0A` ENERGY LOW (`$A665`), `$0C` ENERGY LEVEL CRITICAL (`$A62F`), `$12` OVERLOAD (`$A6BD`), `$13` MINE ALERT (`$A68B`), `$14` GAME / DEMO ABORTED (`$9816`), `$16` BOOM BOOM BOOM (`$8677`), `$17` ENERGY DRAINED (`$A671`), `$18` CONTACT! (`$87DA`, the beam has reached the receiver). 0 again when a scrolling message runs back into BlankMessage (`$A3F0`) or the overload stops (`$A708`).
+$A104 b MessageNumber ; The number of the message shown: 0 none ... $18 CONTACT!; most writers replace only a lower one
+> GREMLINS, ENERGY LOW, CRITICAL and BOOM compare first (`CP n` / `JR NC`) and write only when the current number is lower. CHARGING LASER (a level start), MINE ALERT, GAME ABORTED, ENERGY DRAINED and CONTACT! write with no test; OVERLOAD writes when the number is below `$12` or is MINE ALERT's `$13` (`$A6B3`); CoolOverload `$A6FC` blanks OVERLOAD and MINE ALERT. The numbers: 1 CHARGING LASER / DEMO (ResetBars `$A55E`), 4 BEWARE OF THE GREMLINS (`$AC21`), `$0A` ENERGY LOW (`$A665`), `$0C` ENERGY LEVEL CRITICAL (`$A62F`), `$12` OVERLOAD (`$A6BD`), `$13` MINE ALERT (`$A68B`), `$14` GAME / DEMO ABORTED (`$9816`), `$16` BOOM BOOM BOOM (`$8677`), `$17` ENERGY DRAINED (`$A671`), `$18` CONTACT! (`$87DA`, the beam has reached the receiver). 0 again when a scrolling message runs back into BlankMessage (`$A3F0`) or the overload stops (`$A708`).
 > The pause `$973F` saves the 14 bytes MessageNumber to MessagePointer (`$A104-$A111`) to `$96C7` and puts them back (`$97DD`). Evidence: `energy` (`tools/ttd_watch.py`): 1 at frame 500, `$0A` at 5000, `$0C` at 5750, `$17` at 6450.
 $A105 b MessageGlyph 8 ; The character being scrolled in: its 8 font bytes; rows 2-6 ($A107-$A10B) are shifted out a bit a frame
 > Filled by `LDIR` from the font (`$D200 + 8 x (c - 32)`) at `$A405` / `$A4E2`; each scroll step rotates rows 2-6 left (`RLA`) and the carry goes into the line's rightmost byte. Rows 0, 1 and 7 are copied but never shifted (the line shows 5 pixel rows).
@@ -1652,7 +1652,7 @@ $AB63 b Gremlins 6 ; Eight gremlin records of 6 bytes: delay, turns, X, Y, the c
 > +0 delay: the passes (counted every other pass) until it appears; 0 when it walks; `$FF` would park it (no writer found). Set by the level set-up `$84B3` to `$41`, `$4B`, `$55` ... (`$41` + 10 x n) with +1 = 0, and by the cursor's kill (`$9AD2`) to `$C8`.
 > +1 turns: while not 0 the gremlin stands on a mirror and turns it a step a pass (GremlinTurnMirror).
 > +2, +3 X, Y: the place in characters of the play area, 0-28 and 0-16 (a cell is 2 x 2; even values are on a cell).
-> +4, +5 the grid address (`$FDxx`) of the cell it stands on, +5 = 0 between cells. The cursor's fire (`$9AC5`) compares it with the turned mirror's cell.
+> +4, +5 the grid address (`$FDxx`) of the cell it stands on, +5 = 0 between cells. Written only by GremlinMove (`$AC88`, `$ACAB`) and the kill (`$9AD9`, +5 = 0): neither the set-up nor GremlinAppear touches them, so until a gremlin first steps they keep a cell from an earlier life or level. The cursor's fire (`$9AC5`) compares them with the cursor's cell, whatever the delay.
 > Only GremlinCount (0-8) of them are used. Evidence: written in every level start; read in 54 RZX segments.
 $AB63 ; gremlin 0
 $AB69 ; gremlin 1

@@ -14,7 +14,9 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
   - frame 225: the charge ends;
   - frame 246: the first beam;
   - frames 1500-1515: the last turn.
-- `menu`, `hof` and `ending`: the full-screen buffer and its two copiers.
+- `menu`, `hof` and `ending`: the full-screen buffer and its two copiers. `hof` and `ending` run on clones: `hof`
+  from the bot's `lv/L06.szx` (levels 2 and 4 completed by the LevelDone POKE), `ending` from level 60 completed by
+  that POKE ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 - The 60 RZX segments: the witness counts in the listing (how often each routine ran over a whole game).
 
 ## 6.1 The screen and its buffers
@@ -205,7 +207,8 @@ round the play area: lines 0 and 159 set, and the outer pixel of columns 0 and 3
 How to read it: top left, the buffers `$E000-$FFFF`, 128 bytes a row; bottom left, PixelBuffer `$E900` as a 32 x 160
 bitmap; right, the listing at the current instruction. The point: BuildLevel marks every character with 1, so the
 first DrawMarkedChars draws the whole level, row by row, over the options screen still in the buffer. The frame round
-the play area comes last, and the wipe (6.9) starts while the bottom rows are still being drawn. Command: `python3
+the play area comes last; then SetUpLevel calls the wipe (6.9, `$8512`, after BuildLevel at `$8509` has returned),
+so the last pictures show the PC outside the range (in WipeInPauseInner) with the buffer complete. Command: `python3
 ../../kit/routine_anim.py --work work/docs/dfA/L01 --window 24:0-30:0 --listing build/game.lst --view
 buffer:E900:32x160 --range E000-FFFF --pc 891A-8AC0 --pictures 70 --title "..." --out
 docs/img/routines/BuildLevel.gif`.*
@@ -457,32 +460,39 @@ the window, coloured by the routine that wrote it last; under them, each routine
 and the addresses it read from. The tool names a source by the nearest listing label: `$E300-$E359` is DrawMarks,
 not SpareCellColours, and `$FEFF-$FF00` is the IM 2 table round `$FE00`. The point: the beam's three passes write
 696 of the 932 bytes written last (BeamPlotRows 312, BeamOutRows 264, BeamCornerRows 120). The frame round the play
-area is rewritten every pass (140 bytes). The next pass's DrawMarkedChars had only begun when the window closed (96
+area is rewritten every pass (380 bytes: two `LDIR`s of 32 for lines 0 and 159, and 2 x 158 side bytes,
+`$8A8C-$8A9A`); the window caught only the last 70 lines of DrawMarkedFrameLoop, 140 bytes. The next pass's DrawMarkedChars had only begun when the window closed (96
 bytes). Command: `python3 ../../kit/writers_map.py --work work/docs/dfA/L01 --window 1000:0-1005:0 --listing
 build/game.lst --view buffer:E900:32x160 --sources --title "..." --out docs/img/render/writers-buffer.png`.*
 
 ![Who wrote the screen in one pass](img/render/writers-screen.png)
 
-*The same pass on the screen. How to read it: as above. The point: only two routines write the play area.
+*The same pass on the screen. How to read it: as above; the tool's SpareCellColours+n names are DrawMarks
+`$E315-$E57F`, PixelBuffer `$F504-...` and ColourBuffer `$E600-$E87F` (the nearest label below each source). The
+point: only two routines write the play area.
 CopyPlayArea writes 888 pixel bytes (111 marked characters: the beam's path and the cursor) and all 640 attributes.
 Outside the play area, ScrollRowLoop (the interrupt's COMPUTER line, [doc 8](08-hud-and-text.md)) writes 80 bytes
 five times over, and CoolOverloadStep writes 3 bytes of the overload bar. Command: `python3 ../../kit/writers_map.py
 --work work/docs/dfA/L01 --window 1000:0-1005:0 --listing build/game.lst --view screen --sources --title "..." --out
 docs/img/render/writers-screen.png`.*
 
-**Worked example from the counts.** Copying a marked character costs about 250 T:
+**Worked example from the counts.** Copying a marked character costs 298 T:
 
-- the test and the count-down: about 36 T;
+- the test and the count-down (`LD A,(DE)`, `AND A`, `JP Z`, `DEC A`, `LD (DE),A`, `LD D,B`): 36 T;
 - eight loads, eight stores and seven `DEC D`: 140 T;
-- the four `RES 5,L` and the four 32-byte steps back: about 92 T.
+- the four `RES 5,L` and the four 32-byte steps back (`LD A,$E0; ADD A,L; LD L,A`): 92 T;
+- `LD D,C` back to the marks' page: 4 T;
+- the tail shared with the skip (`DEC E; DEC L; BIT 5,L; JP NZ`): 26 T.
 
-Skipping an unmarked one costs about 47 T, and the colours' `LDIR` costs 640 x 21 T. So this pass costs:
+Skipping an unmarked one costs 47 T (21 T of test and taken `JP Z`, then the same 26 T tail), and the colours'
+`LDIR` costs 640 x 21 T. So this pass costs:
 
-- 111 copied characters: 111 x 250 = 27 750 T;
-- 529 skipped ones: 529 x 47 = 24 900 T;
-- the colours: 13 440 T.
+- 111 copied characters: 111 x 298 = 33 078 T;
+- 529 skipped ones: 529 x 47 = 24 863 T;
+- the colours: 13 435 T;
+- the 20 row ends (`LD L,$FF` ... `JP NZ`, 29 T) and the thirds' set-up: about 600 T.
 
-The total is about 66 000 T, a little under one frame before contention. That matches the beam timeline: the copy
+The total is about 72 000 T, just over one frame (69 888 T) before contention. That matches the beam timeline: the copy
 fills frame 1003 and the colours go in early in 1004.
 
 ## 6.8 The raster
@@ -564,8 +574,8 @@ flowchart TD
     F -->|width 33| X[done: the whole buffer on the screen]
 ```
 
-*WipeIn's loop. Witness: WipeIn ran 208 times over all recordings (the listing's witness line), WipeInScreen 12 of
-them. The point: one loop serves both buffers and all four corners. A corner is just four steps and four start
+*WipeIn's loop. Witness: WipeIn ran 214 times over all recordings (the listing's witness line), WipeInScreen 14 of
+them and WipeInPlayArea 200. The point: one loop serves both buffers and all four corners. A corner is just four steps and four start
 addresses.*
 
 The steps make the picture slide rather than grow. Take the top-left corner, the first record of PlayAreaWipes:
@@ -595,7 +605,7 @@ docs/img/routines/WipeInPlayArea.gif`.*
 | --- | --- | --- |
 | 1 (1 row, 13 bytes) to 6 | 30-35 | one round a frame |
 | 7-15 | 37-51 | one to two frames a round |
-| 16-20 | 53-60 | two to three frames a round |
+| 16-20 | start at 53-60; the last ends at 63 | about two frames a round (by the counts below 1.5-1.8 frames each before contention: round 16 about 101 000 T, round 20 about 124 000 T) |
 | the end (rows `$15`, width `$21`) | 63 | |
 
 Two costs pull against each other:

@@ -1,9 +1,10 @@
 # 3. Build and load
 
-What this covers: the tape block by block and as a picture; the BASIC and the loader's first stage; the turbo block
-read in the loader's own code; the second stage that loads over its own end and runs a script and a countdown while
-the game loads; the block head that finds its own address; the cipher of 30 layers and the 16-bit layer that turn the
-loaded bytes into the game at `$6000-$DFFF`; the build from the sources back to the same tape; why the original TZX
+What this covers: the tape block by block and as a picture; the BASIC line and its hidden numbers, and the loader's
+first stage; the turbo block's byte code (8 bits, an invert flag and padding pairs); the second stage that loads over
+its own end and runs a script and a countdown while the game loads, and the script's codes; the block head that finds
+its own address; ChainFill, the cipher of 30 layers and the 16-bit layer that turn the loaded bytes into the game at
+`$6000-$DFFF`; the build from the sources back to the same tape; why the original TZX
 does not load in unreal-ng; the releases.
 
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
@@ -21,8 +22,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | Block | TZX kind | Bytes | Flag | What it is | Time | Pause after |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | `$10` standard | 19 | `$00` | Program header "DEFLEKTOR", length 384, LINE 0, variables at 52 | 5.09 s | 989 ms |
-| 1 | `$10` standard | 386 | `$FF` | the BASIC (384 bytes): `RANDOMIZE USR (PEEK 23635+256*PEEK 23636+58)`, and the loader's code after the line, run at `$5D05` | 4.12 s | 986 ms |
-| 2 | `$11` turbo: pilot 2127 T x 4836, sync 693 / 693, zero 836, one 1670, 3 bits used in the last byte | 58 316 | `$19` | the game in the loader's own pulse code | 296.74 s | 0 |
+| 1 | `$10` standard | 386 | `$FF` | the BASIC (384 bytes): line 0, which LIST shows as `RANDOMIZE USR (PEEK 23641+256*PEEK 23642+4)` but whose hidden numbers run `$5D05` (3.2), and the loader's code after the line | 4.12 s | 986 ms |
+| 2 | `$11` turbo: pilot 2127 T x 4836, sync 693 / 693, zero 836, one 1670, 3 bits used in the last byte | 58 316 | none (`$19` is the first 8 pulse pairs, 3.3.1) | the loader's second stage, the loading screen's glyphs and script, the game: eight loads in the loader's own byte code (3.3.1) | 296.74 s | 0 |
 
 ![The tape](img/load/tape.png)
 
@@ -41,11 +42,11 @@ The stages, each with its first instruction in `c1` (`$RS stages`, the frame and
 | Stage | Entry | `c1` frame, T | What it does | Witness |
 | --- | --- | --- | --- | --- |
 | 0 | `$5D05` | 771 | the BASIC's machine code: moves `$134` bytes to `$B626` (LDIR), jumps to `$B65B` | `c1` stages; `work/stage1/blocks/code5d05.bin` |
-| 1 | `$B65B` | 771, 61 700 | clears the screen, copies three character rows of the ROM font from `$3D00`, DI, finds the pilot and sync (`$B693`), loads the first `$010F` bytes to `$B75A` (`$B727`); a failed edge or checksum jumps to `$0000` | `c1` stages; `work/stage1/blocks/ldr_b626.bin` |
+| 1 | `$B65B` | 771, 61 700 | clears the screen, copies the whole ROM font (768 bytes, characters 32-127) from `$3D00` to `$B326`, DI, finds the pilot and sync (`$B693`), loads the first `$010F` bytes to `$B75A` (`$B727`); a failed edge or checksum jumps to `$0000` | `c1` stages; `work/stage1/blocks/ldr_b626.bin` |
 | 2 | `$B856` | 1006, 38 026 | the second loader just loaded (`$B75A-$B868`): prints the loading text and a countdown while it loads the rest; a per-byte hook at `$B752` falls into code the load has just written | `c1` stages, writes `$B75A-$B868` |
 | 3 | `$5B00` | 15 635, 27 704 | `LDIR; RET` (`$ED $B0 $C9`), the loader's last step; its return goes to `$5C00` (what it moves: stage 2) | `c1` stages; `work/stage1/images/loaded.cpu.bin` at `$5B00` |
 | 4 | `$5C00` | 15 640, 44 028 | the loaded block's head (`$5C00-$9DEF` written by `$B737`): DI, writes `POP HL; JP (HL)` at `$5B00` and calls it to learn where it runs, then moves `$81C9` bytes up to end at `$FD1A` (LDDR at `$5C21`) and returns to `$7B52` | `c1` stages, writes `$7B52-$FD1A` by `$5C21` |
-| 5-7 | `$7B52`, `$7BC0`, `$7C8C` | 15 651 onward | a key from a generator and a sum over memory from `$4000`, an XOR pass over the moved code (known only from the code at `$5C27-$5C68` before the move; proved in stage 2) | `c1` stages |
+| 5-7 | `$7B52`, `$7BC0`, `$7C8C` | 15 651 onward | ChainFill writes a generated stream over `$5B00-$7B51` and `$FD1B-$FFFF` (the BASIC, the system variables and the block head go), ChainSum adds `$4000-$FFFF` into A; then 30 layers, each deciphering the chain's next piece; FinalSum and Final16 decipher `$7D00-$FD19`, the game and the mover (3.5) | `c1` stages; [the decipher animation](img/load/decipher.gif) |
 | 8 | `$FD00` | before 15 752 | `LDIR` `$7D00-$FCFF` to `$6000-$DFFF`, `LD ($5C09),BC` (0), `LD SP,$FFFF`, bit 7 of R cleared, `JP $8382` | `work/stage1/images/entry.cpu.bin` at `$FD00-$FD1A` |
 | 9 | `$8382` | 15 752, 33 930 | the game's entry: the menu | `c1` stages; the `c1g` game window starts here |
 
@@ -56,8 +57,9 @@ flowchart LR
     S1 --> S2[B856 loader 2: script, countdown, loads 2-8]
     S2 --> S3[5B00: LDIR, RET]
     S3 --> S4[5C00 BlockHead: own address, move up to 7B52-FD1A]
-    S4 --> S5[7B52 chain: 30 layers]
-    S5 --> S6[7CA6 FinalSum: 16-bit layer over 7D00-FD1A]
+    S4 --> SF[7B52 ChainFill: stream over 5B00-7B51 and FD1B-FFFF, sum 4000-FFFF]
+    SF --> S5[7BB2 chain: 30 layers]
+    S5 --> S6[7CA6 FinalSum, Final16: 16-bit layer over 7D00-FD19]
     S6 --> S7[FD00 MoveGame: 7D00-FCFF to 6000-DFFF]
     S7 --> G[8382 GameEntry]
 ```
@@ -68,31 +70,99 @@ nothing of the game is readable before the last layer.*
 
 ## 3.2 The BASIC and the first stage
 
-Block 1 is a BASIC program of 52 bytes, line 0, and 332 bytes of machine code stored as its "variables":
+Block 1 is a BASIC program of 52 bytes, line 0, and 332 bytes of machine code stored as its "variables". LIST shows:
 
 ```text
-0 RANDOMIZE USR (PEEK 23635+256*PEEK 23636+58)
+0 RANDOMIZE USR (PEEK 23641+256*PEEK 23642+4)
 ```
 
-PEEK 23635 + 256 x PEEK 23636 is PROG, the program's start (`$5CCB` after a normal load); + 58 points past the line
-into the code, at `$5D05`. That code copies `$134` bytes to `$B626` (LDIR) and jumps to `$B65B`. The first stage then
-clears the screen, copies three character rows of the ROM font from `$3D00`, disables the interrupts and looks for
-the turbo block's pilot and sync (`$B693`). It reads bytes with its own edge timing (ReadByte `$B6D4`, EdgeWait
-`$B70E`) and loads the first `$010F` bytes to `$B75A`. Every byte calls a hook, ByteHook `$B752`. A failed edge or a
-bad checksum jumps to `$0000`: the machine resets.
+That is not what runs. A number in a BASIC line is stored twice: its digits, which LIST prints, then `$0E` and a
+five-byte value, which the interpreter uses. Here three of the four values differ from their digits:
+
+![BASIC line 0 byte by byte](img/load/basic-line.png)
+
+*The 52 bytes of line 0 (`build/basic.bin`), coloured by kind; under each number the digits LIST prints (yellow) and
+the value the ROM uses (green). How to read it: bytes 0-1 the line number, 2-3 the length field, then the tokens and
+numbers; byte 51 is where ENTER would be. The point: the line LIST shows reads E_LINE + 4, a decoy; the line the ROM
+runs reads PROG + 58. Command: `python3 tools/fig_loader.py basic docs/img/load/basic-line.png`.*
+
+| Digits LIST shows | Hidden value used | Bytes (`$0E`, five-byte form) |
+| --- | --- | --- |
+| 23641 (E_LINE) | 23635 (PROG) | `0E 00 00 53 5C 00` |
+| 256 | 256 | `0E 00 00 00 01 00` |
+| 23642 (E_LINE + 1) | 23636 (PROG + 1) | `0E 00 00 54 5C 00` |
+| 4 | 58 | `0E 00 00 3A 00 00` |
+
+The length field says 923 and the line ends in `$00`, not ENTER (`$0D`). Neither matters: the ROM evaluates USR
+before it looks for the statement's end, and the code never returns. The line is the only program line; VARS points
+at `$5CFF`, six unused bytes, then the code at `$5D05`.
+
+What the ROM does with it, as pseudocode:
+
+```text
+auto-run LINE 0:
+    a = PEEK 23635 + 256 * PEEK 23636 + 58     # PROG + 58: $5CCB + $3A = $5D05
+    USR a                                      # BC = a on entry
+BasicCode ($5D05):
+    HL = BC + $12                              # $5D17, the first stage's bytes, wherever PROG is
+    SP = $5C00
+    copy $134 bytes from HL to $B626 (LDIR)
+    jump $B65B                                 # Loader1Start
+```
+
+```asm
+BasicCode:              ; $5D05, entered by USR with BC = $5D05
+  LD HL,$0012
+  ADD HL,BC             ; HL = $5D17: the first stage, relative to the code itself
+  LD DE,HookCount       ; $B626
+  LD BC,$0134
+  LD SP,$5C00           ; the stack below the main block's load address
+  LDIR
+  JP Loader1Start       ; $B65B
+```
+
+```mermaid
+flowchart LR
+    R[ROM: LOAD, auto-run LINE 0] --> P[evaluate the hidden values: PEEK 23635 + 256 x PEEK 23636 + 58]
+    P --> U[USR 5D05, BC = 5D05]
+    U --> M[BasicCode: HL = BC + 12, LDIR 134 bytes to B626, SP = 5C00]
+    M --> L[JP B65B Loader1Start]
+    L --> F[clear the screen, ROM font to B326, DI]
+    F --> FP[FindPilot B693, LoadBlock 10F bytes to B75A]
+    FP --> S2[JP B856 LoadRest]
+```
+
+*From the ROM to the second stage (the hex are addresses). Witness: `c1` (USR enters `$5D05` with BC = `$5D05`,
+frame 771). The point: the code finds itself through PROG and BC, so it runs wherever the BASIC was loaded.*
+
+Worked example, the address the line computes after a normal load: PROG = `$5CCB`, so PEEK 23635 = `$CB` = 203 and
+PEEK 23636 = `$5C` = 92; 203 + 256 x 92 + 58 = 23 813 = `$5D05`. With the digits LIST shows, the same line would read
+E_LINE + 4, a point in the editing area past the program and its 332 bytes of "variables", so a reader who trusts
+the listing looks in the wrong place. BasicCode then gets BC = `$5D05`, adds `$12`: `$5D17`, the first byte of the first stage.
+
+The first stage then clears the screen, copies the whole ROM font (768 bytes, characters 32-127) from `$3D00` to
+`$B326`, disables the interrupts and looks for the turbo block's pilot and sync (FindPilot `$B693`: up to 2000 tries
+for an edge, then 256 - H pilot pairs whose count passes `$C6`, then edges counted from `$C9` until one falls short of
+`$D4`, the first sync pulse). It reads bytes with its own edge timing (ReadByte `$B6D4`, EdgeWait `$B70E`; 3.3.1) and
+loads the first `$010F` bytes to `$B75A`. Every byte calls a hook, ByteHook `$B752`. A failed edge or a bad checksum
+jumps to `$0000`: the machine resets. Later the glyphs load replaces characters 32-90 of the font copy with the
+loading screen's own.
 
 The point: the BASIC finds its code wherever PROG is, so the loader does not depend on the memory below `$5CCB`.
 
 ## 3.3 The second stage: a loader that loads its own end
 
 The first load lands at `$B75A`, right after ByteHook `$B752`, so the hook falls into code the load has just written.
-From then on, every 8th byte loaded runs HookWork `$B75A`:
+LoadRest `$B856` then sets HookCount to 8: the first hook comes after 8 bytes of the second piece, and from then on
+after every 7 data bytes, because the hook counts itself as the eighth (HookPad ends by running ByteHook once more
+with L = `$FF`). A load's checksum byte counts as a data byte, so the period holds across the loads. 5882 hooks ran in
+`c1`. Each runs HookWork `$B75A`:
 
 ```asm
 HookWork:                 ; $B75A, from ByteHook after each byte
   LD (HookCount),A
-  RET NZ                  ; 7 bytes in 8: nothing
-  LD A,$08                ; every 8th: HookCount = 8 again
+  RET NZ                  ; not yet 0: nothing
+  LD A,$08                ; a hook: HookCount = 8 again (7 bytes and the hook itself)
   LD (HookCount),A
   LD A,(LoadFlags)
   LD B,A
@@ -121,7 +191,7 @@ the loader's own code, in SkoolKit's simulator, which pulse pair it waits for ne
 
 ```mermaid
 flowchart TD
-    B[ByteHook B752: a byte loaded] --> C{HookCount: every 8th byte?}
+    B[ByteHook B752: a byte loaded] --> C{HookCount 0: 7 bytes since the last hook?}
     C -->|no| R[load the next byte]
     C -->|yes| T{countdown on?}
     T -->|yes, every 20 hooks| CT[CountdownTick B87A: one second off]
@@ -155,15 +225,18 @@ Seven moments of it:
 | --- | --- | --- |
 | 700 | [the ROM's "Program: DEFLEKTOR"](img/load/load-000700.png) | the header loaded by the ROM |
 | 1000 | [black](img/load/load-001000.png) | the first stage has cleared the screen and waits for the turbo pilot |
-| 2000 | [275 DEFLEKTOR SERIAL NO-VX3240](img/load/load-002000.png) | the countdown starts at 275 s, a serial number scrolls |
+| 2000 | [275 DEFLEKTOR SERIAL NO-VX3240](img/load/load-002000.png) | the countdown (from 294) shows 275; the serial number SerialText `$B835`, typed in by the script engine a character at a time |
 | 8000 | [154 SECONDS TO LOAD DEFLEKTOR](img/load/load-008000.png) | a page of the instructions: OVERLOAD SITUATIONS |
 | 15 000 | [013 SECONDS](img/load/load-015000.png) | the DEFLEKTOR plate; the main block loading |
 | 15 700 | [000](img/load/load-015700.png) | the load done; the cipher runs |
 | 15 760 | [000](img/load/load-015760.png) | the game's entry has run; the screen not yet cleared |
 
-Worked example, the countdown against the clock: 275 at frame 2000, 0 at frame about 15 640: 13 640 frames is
-272.8 s at 50 frames a second, so the 275 is honest to within 1 %. The tick is counted in hooks (one every 20 hooks of 8
-bytes), so it measures bytes loaded; the bytes come at a fixed rate because the tape is fixed.
+Worked example, the countdown against the clock. Countdown starts at "294" (`$B628`); the first tick comes after 5
+hooks (TickHooks), then one every 20 hooks, that is 160 byte times of 13 short pairs: 3 475 776 T, 0.993 s. In `c1`
+the 294 ticks run from 293 at 3.73 s to 000 at 293.70 s after the pilot, a tenth of a second before the last byte.
+Frame 2000, the screenshot above, shows 275; 0 comes at about frame 15 640: 13 640 frames is 272.8 s at 50 frames a
+second, so the 275 is honest to within 1 %. The tick is counted in hooks, so it measures bytes loaded; the bytes come
+at a fixed rate because every byte lasts the same time (3.3.1).
 
 CountdownTick `$B87A` subtracts one from three ASCII digits with the carry as the borrow:
 
@@ -186,10 +259,155 @@ CountdownDigit:
   ...
 ```
 
+### 3.3.1 One byte on tape
+
+The turbo block uses the ROM's pulse lengths (a 0 is a pair of 836 T pulses, a 1 a pair of 1670 T), but not the ROM's
+byte. Each data bit is one pulse pair; ReadByte `$B6D4` reads nine pairs, 8 bits MSB first and an invert flag, then
+some padding pairs whose value it never tests:
+
+```asm
+ReadByte:                 ; $B6D4, from LoadBlock: L = the byte, carry set; NC on a timeout
+  PUSH DE
+  LD DE,$FC09             ; D = -4 (zeros counted up), E = 9 pairs
+ReadByteBit:
+  RL L                    ; the last pair's bit into L
+  CALL EdgePair           ; two edges, B counts 56 T passes from $B0
+  JR NC,ReadByteEnd
+  LD A,$CB                ; a count above $CB is a 1
+  CP B
+  JR C,ReadByteNext
+  INC D                   ; a 0: one more zero
+ReadByteNext:
+  LD B,$B0
+  DEC E
+  JR NZ,ReadByteBit
+  SBC A,A                 ; the ninth bit, the invert flag, complements L
+  XOR L
+  LD L,A
+  INC B                   ; the code's time before the next pair
+  SCF
+  JR ReadBytePadCount
+ReadBytePad:
+  CALL EdgePair           ; a padding pair, its value not tested
+  JR NC,ReadByteEnd
+  LD B,$B0
+ReadBytePadCount:
+  DEC D                   ; zeros - 5 padding pairs
+  JR NZ,ReadBytePad
+ReadByteEnd:
+  POP DE
+  RET
+```
+
+```text
+read_byte():
+    zeros = 0
+    repeat 9 times:                      # 8 bits MSB first, then the invert flag
+        bit = (EdgePair count from $B0) > $CB
+        shift bit into L (the 9th lands in the carry)
+        if not bit: zeros += 1
+    if flag: L = NOT L                   # the encoder sends the form with at most 4 ones
+    repeat zeros - 5 times: EdgePair     # padding, never tested
+    return L
+```
+
+Why the padding: a 1 lasts as long as two 0s. A byte with z zeros among its nine pairs has 9 - z ones, so its pairs
+last 2(9 - z) + z short pairs, and the z - 5 padding pairs bring that to 13 whatever z is. With at most four ones in
+the eight bits (the invert flag sees to it), z is 5 to 9 and the padding 0 to 4. Every byte takes the time of 13 short
+pairs, 21 720-21 736 T, about 6.2 ms. So the loader can do work between bytes at a fixed rate (the hook, 3.3) and the
+countdown counts seconds by counting bytes.
+
+```mermaid
+flowchart TD
+    S[ReadByte B6D4: D = -4, E = 9] --> P[EdgePair from B = B0]
+    P -->|timeout| X[NC: LoadBlock jumps to 0000, a reset]
+    P --> T{count above CB?}
+    T -->|yes| O[a 1]
+    T -->|no| Z[a 0: D + 1]
+    O --> E{9 pairs read?}
+    Z --> E
+    E -->|no| P
+    E -->|yes| F[the 9th bit set: L = NOT L]
+    F --> D{D - 1 = 0?}
+    D -->|no| PP[a padding pair, not tested] --> D
+    D -->|yes| R[RET: L the byte, carry set]
+```
+
+*ReadByte (the hex are addresses and counts). Witness: `c1` (ReadByte 82 906 runs: every byte of the eight loads and
+their checksums). The point: the bit is in a pair's length, the byte's length is fixed by the padding.*
+
+![The turbo block's first pulses](img/load/turbo-byte.png)
+
+*The first 21 pulse pairs after the sync, from the original TZX, read as LoadBlock reads them. How to read it: the
+waveform on top, each pair's bit below it, coloured by its role; the bytes and their times under them. The point: the
+TZX block's first byte `$19` is not a flag but eight pairs: LoadBlock's lead pair and the first seven bits of `$32`.
+Command: `python3 tools/fig_loader.py byte docs/img/load/turbo-byte.png`.*
+
+Worked example, the block's first byte. The TZX block starts `19 04 C2 4F`, bits `00011001 00000100 11000010 ...`,
+one pulse pair each. LoadBlock reads one lead pair first (bit 0). ReadByte then reads `0 0 1 1 0 0 1 0` (bits 7-0)
+and the invert flag 0: L = `$32`, the first byte of stage 2's first piece, `LD (HookCount),A` at `$B75A`. Among the
+nine pairs six are 0, so D ends at 2 and one padding pair follows (another 0). The byte took 3 long and 7 short pairs:
+3 x 3340 + 7 x 1672 = 21 724 T, against 13 x 1672 = 21 736 T for 13 short ones. The next nine pairs, `0 0 1 0 0 1 1 0`
+and 0, are `$26`, again six zeros and one padding pair. A byte with five ones, say `$F8`, would go out inverted:
+`00000111` and the flag 1, five zeros, no padding.
+
+### 3.3.2 The script's codes
+
+The script engine ScriptStep `$B78E` reads the byte at ScriptPtr: `$04` ends the script, a byte of 32 or more is a
+character (PrintGlyph with the loader's font, then the print position moves right, wrapping inside the window), a byte
+below 32 is a control code. A step costs one long pulse pair; a hook has room for 6 steps (2 when the countdown
+ticks). The codes (ControlCode `$B8DD` and ControlTable `$BB92`):
+
+| Code | Operands | What it does |
+| --- | --- | --- |
+| `$03` | n | pause: wait n hooks before the next step (ScriptWait) |
+| `$04` | | the end of the script (LoadFlags bit 1 off) |
+| `$05` | c | FillChar = c, the character `$0C`, `$0E` and `$1D` print |
+| `$08`, `$09`, `$0A`, `$0B` | | the print position left, right, down, up |
+| `$0C` | | clear the window: FillChar into every cell, one cell a step |
+| `$0D` | | to the window's left on the next row |
+| `$0E` | n | print FillChar n times (0: 256), one a step |
+| `$0F` | row col rows cols | a picture of rows x cols cells at an absolute place; each cell an attribute and 8 pixel bytes from the script, one cell a step |
+| `$10`, `$11`, `$12`, `$13` | n | INK, PAPER, FLASH, BRIGHT (the ROM's codes 16-19) |
+| `$16` | row col | AT, inside the window (the ROM's 22) |
+| `$18` | | swap INK and PAPER |
+| `$19` | c, 8 bytes | a new glyph for character c |
+| `$1A` | left right top bottom | the window |
+| `$1D` | n | fill with FillChar to column n |
+| `$1E` | n | BORDER n |
+| `$00-$02`, `$06`, `$07`, `$14`, `$15`, `$17`, `$1B`, `$1C`, `$1F` | | nothing (IgnoreCode `$B8DC`), no operand |
+
+```text
+script_step():                            # up to 6 a hook, one long pulse pair each
+    if a picture is being drawn: draw its next cell; return
+    c = next byte
+    if c == $04: script off
+    elif c < 32: control code c (it may take its operands, or repeat itself next step)
+    else: print c at the position, move right, wrap in the window
+```
+
+Worked example, the script's first 46 bytes (`src/res/loader/script.txt`, at `$998E`):
+
+| Bytes | Decoded | On the screen |
+| --- | --- | --- |
+| `16 16 05` | AT 22,5 (the window is still the whole screen) | |
+| `53 45 43 ... 52 20 20` | "SECONDS TO LOAD DEFLEKTOR  ", 27 characters | over the serial number in row 22, after the countdown: `154 SECONDS TO LOAD DEFLEKTOR` at frame 8000 |
+| `11 00`, `10 07` | PAPER 0, INK 7 | |
+| `1A 01 1E 0A 14` | the window: columns 1-30, rows 10-20 | where the instruction pages are printed |
+| `03 E6` | pause 230 hooks, about 11 s | |
+| `0F 00 00 09 20` | a picture at row 0, column 0, 9 rows of 32 cells | the DEFLEKTOR logo's band at the top |
+| `05 FF 80 80 80 80 80 80 80` | its first cell: attribute `$05` (cyan on black), then 8 pixel rows | the band's top left corner |
+
+Before it, while stage 2's own pieces load, ScriptPtr points at SerialText `$B835`: six spaces and "DEFLEKTOR SERIAL
+NO-VX3240", then `$04`, typed into row 22 from column 0 in white on black (PrintAttr 7). The countdown overprints
+columns 1-3, so frame 2000 shows `275 DEFLEKTOR SERIAL NO-VX3240`. LoadFiles starts the script proper with ScriptWait
+= 230 hooks, so frame 2000 is still before its first step.
+
 ## 3.4 The main block and the head
 
 The last three loads put the main block at `$C000` (its `$9DF0-$DDEF`), `$5C00-$9BFF` and `$9C00-$9DEF`;
-LoadFiles `$BACC` then plants `LDIR; RET` at `$5B00` and moves the `$C000` piece down. The RET goes to `$5C00`, the
+LoadFiles `$BACC` then plants `LDIR; RET` at `$5B00` and moves the `$C000` piece down to `$9DF0-$DDEF`, over the
+loader itself (`$B326-$BBDE`): the copy runs from the printer buffer for that reason. The RET goes to `$5C00`, the
 block's first byte: BlockHead, the only 39 bytes of the block not enciphered.
 
 ```asm
@@ -213,8 +431,95 @@ block would run wherever a loader put it.
 
 ## 3.5 The cipher
 
-The block moved to `$7B52-$FD1A` starts with D.G. Cooke's chain (`src/head/head/chain.asm`). Thirty layers each
-decipher the code that follows them, and the code after a CALL exists only once the CALL returns:
+The block moved to `$7B52-$FD1A` starts with D.G. Cooke's chain (`src/head/head/chain.asm`). It runs with SP =
+`$5C00` (BlockHead's RET left it there), so its CALLs keep their return addresses at `$5BFE-$5BFF`.
+
+### ChainFill: wiping what lies around the block
+
+Before any layer, ChainStart `$7B52` overwrites everything below the block down to the printer buffer, and the space
+above the mover, with a generated stream, then adds all of `$4000-$FFFF` into A:
+
+```asm
+ChainStart:               ; $7B52
+  LD DE,$9502             ; D = $95 the stream's first byte, E = 2 passes
+  LD HL,MoveStub          ; $5B00
+  LD BC,$2052             ; $5B00-$7B51
+ChainFill:
+  LD A,D                  ; one byte of the stream
+  LD (HL),A
+  ADD A,A
+  ADD A,A
+  ADD A,A
+  ADD A,A
+  ADD A,D                 ; 17 x D
+  ADD A,L                 ; + the address's low byte
+  ADD A,$0B               ; + 11
+  LD D,A
+  INC HL
+  DEC BC
+  LD A,B
+  OR C
+  JP NZ,ChainFill
+  LD HL,$FD1B             ; the second pass: $FD1B-$FFFF, past the mover
+  LD BC,$02E5
+  DEC E
+  JR NZ,ChainFill
+  LD HL,$4000             ; the sum of $4000-$FFFF into A
+  LD BC,$0001
+  LD A,D
+ChainSum:
+  ADD A,(HL)
+  ADD HL,BC
+  JP NC,ChainSum          ; the carry out of HL ends it
+  JR C,ChainLayers        ; $7BB2
+```
+
+```text
+chain_start():
+    D = $95
+    for (lo, hi) in [($5B00, $7B51), ($FD1B, $FFFF)]:
+        for a in lo..hi:
+            mem[a] = D
+            D = (17 * D + (a AND $FF) + 11) AND $FF
+    A = D
+    for a in $4000..$FFFF: A = (A + mem[a]) AND $FF
+    go to ChainLayers with A as the first key
+```
+
+```mermaid
+flowchart TD
+    A[ChainStart 7B52: D = 95, E = 2] --> B[pass 1: HL = 5B00, BC = 2052]
+    B --> C[mem HL = D, D = 17 D + L + 11, HL + 1]
+    C --> D{BC = 0?}
+    D -->|no| C
+    D -->|yes| E{E - 1 = 0?}
+    E -->|no| F[pass 2: HL = FD1B, BC = 02E5] --> C
+    E -->|yes| G[ChainSum 7B7D: A = D + every byte of 4000-FFFF]
+    G --> H[ChainLayers 7BB2: the first XorLayer with key A]
+```
+
+*ChainStart (the hex are addresses and counts). Witness: `c1` (ChainStart runs once at frame 15 651; the entry image
+holds the stream at `$5B00-$5FFF`). The point: after the fill nothing of the BASIC, the system variables, the
+printer-buffer stubs or the block head is left, and the stream is part of every key that follows.*
+
+![ChainFill's stream and the chain's sum area](img/load/chainfill.png)
+
+*What `$4000-$FFFF` holds when ChainSum runs, and the stream's first 32 bytes. How to read it: the bar is the 48 K by
+address, coloured by what each part holds; below it the stream byte by byte, grey for its value. The point: the
+chain's keys are sums over the loading screen, the stream and the block; the loader is gone by then. Command:
+`python3 tools/fig_loader.py fill docs/img/load/chainfill.png` (the stream computed and checked against
+`work/stage1/images/entry.cpu.bin`).*
+
+Worked example, the stream's first bytes. `$5B00` gets D = `$95`. Then 17 x `$95` = `$9E5`, plus L = `$00` plus 11 =
+`$9F0`: D = `$F0` at `$5B01`. 17 x `$F0` = `$FF0`, + `$01` + 11 = `$FFC`: `$FC` at `$5B02`; then `$C9` at `$5B03`.
+The game's entry image still reads `95 F0 FC C9` at `$5B00`: the game never touches `$5B00-$5FFF`, and of its 1280
+bytes only four differ from the stream, `$5BFE-$5BFF` (`$7CA5`, the return address of the last layer's CALL) and
+`$5C09-$5C0A` (REPDEL and REPPER, which the mover zeroes). After both passes D = `$7C`. In the decipher animation below
+the fill is the yellow band that grows down from `$5B00` from the fourth picture (frame 15 653) on.
+
+### The 30 layers
+
+Thirty layers each decipher the code that follows them, and the code after a CALL exists only once the CALL returns:
 
 ```asm
 XorLayer:               ; $7B84
@@ -243,13 +548,13 @@ XorLayerByte:
 
 ```mermaid
 flowchart TD
-    A[ChainStart 7B52] --> B[plant CB at 7B99, BC = 46D9]
+    A[ChainStart 7B52: ChainFill, ChainSum] --> B[plant CB at 7B99, BC = 46D9]
     B --> C[XorLayer 7B84: decipher B bytes after the call]
     C --> D{30 layers done?}
     D -->|no| E[the new code: shift B and C, maybe a SumLayer over memory]
     E --> C
     D -->|yes| F[FinalSum 7CA6: a 16-bit key from a sum, E = 146]
-    F --> G[Final16 7CBE: 16-bit layer over 7D00-FD1A, key 43FB]
+    F --> G[Final16 7CBE: 16-bit layer over 7D00-FD19, key 43FB]
     G --> H[jump: the last word 82C3 + 7A3D = FD00]
     H --> I[MoveGame FD00]
 ```
@@ -260,14 +565,17 @@ read without running it, and a change anywhere breaks it.*
 
 Facts of the chain (`tools/cipher.py`, `src/head/keys.txt`):
 
-- The keys are sums of memory over `$4000-$FFFF` that take in the cipher itself, the loading screen and the loader.
-  On the original tape every layer's incoming key is 0: the balance bytes after each CALL are chosen so.
-- SumLayer1-3 (`$7BD2`, `$7C15`, `$7C54`) fold sums of memory into the key. The chain depends on SP (the real SP at
-  `$5B00` is `$5BFE`): a first simulation with SP = `$FFF0` ran wild.
+- The keys are sums of memory over `$4000-$FFFF`: the loading screen, ChainFill's stream and the block itself (the
+  cipher included). The loader is gone by then (overwritten by the `$C000` piece's move and by the block), and the
+  BASIC by the stream. On the original tape every layer's incoming key is 0: the balance bytes after each CALL are
+  chosen so.
+- SumLayer1-3 (`$7BD2`, `$7C15`, `$7C54`) fold sums of memory into the key. The chain depends on SP, because its
+  return addresses lie inside the summed memory (SP is `$5BFE` at `$5B00` and `$5C00` in the chain): a first
+  simulation with SP = `$FFF0` ran wild.
 - 3642 byte decryptions on 372 addresses (`$7BC0-$7D33`), up to 17 layers on one address. The text
   "COPYRIGHT D.G.COOKE 1987" (ChainText `$7B9A`) lies inside the layers' range, so it is key material too.
-- The last word deciphered, `$FD18` = `$82C3`, plus `$7A3D` gives `$FD00`: the jump to the mover. A wrong key jumps
-  wild.
+- Final16 deciphers `$7D00-$FD19`, 16 397 words (32 794 bytes): the game and the mover. The last word deciphered,
+  `$FD18` = `$82C3`, plus `$7A3D` gives `$FD00`: the jump to the mover. A wrong key jumps wild.
 
 The mover (`$FD00`) copies `$7D00-$FCFF` down to `$6000-$DFFF`, clears REPDEL and REPPER, sets SP = `$FFFF`, clears
 bit 7 of R and jumps to `$8382`:

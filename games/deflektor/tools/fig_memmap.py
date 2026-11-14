@@ -17,7 +17,7 @@ C = {'rom': (70, 70, 80), 'screen': (90, 150, 230), 'loader': (110, 110, 110), '
 REGIONS = [
     (0x0000, 0x3FFF, 'rom', 'ROM (the game calls none of it)'),
     (0x4000, 0x5AFF, 'screen', 'the screen: field rows 0-19, panel rows 20-23'),
-    (0x5B00, 0x5FFF, 'loader', "the loader's leftovers, never touched"),
+    (0x5B00, 0x5FFF, 'loader', "the chain's fill stream, never touched"),
     (0x6000, 0x7AFF, 'picture', 'TitlePicture: a whole screen'),
     (0x7B00, 0x7B7F, 'spare', 'Gap7B00: 128 zeros'),
     (0x7B80, 0x7FFF, 'picture', 'PanelPicture: rows 20-23'),
@@ -50,7 +50,7 @@ REGIONS = [
     (0xFDFD, 0xFDFF, 'im2', 'JP InterruptHandler'),
     (0xFE00, 0xFF00, 'im2', 'the IM 2 table: 257 x FD'),
     (0xFF01, 0xFFF2, 'spare', 'stack space never reached'),
-    (0xFFF3, 0xFFFF, 'stack', 'the stack: 13 bytes used'),
+    (0xFFF3, 0xFFFF, 'stack', 'the stack: 12 bytes used, SP = FFFF'),
 ]
 
 

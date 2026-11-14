@@ -7,7 +7,8 @@ cheat W / S and the Y + T drop.
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
 
 - `c1`, `c1g`: the options panel (3, 4, 2, 1, 7) and level 1 with the keyboard.
-- `menu` (from `work/stage1/probe/menu.szx`): 5 DEMO, SPACE, U + G.
+- `menu` (from `work/stage1/probe/menu.szx`): SPACE (it leaves the title for the options panel), 5 DEMO, then U + G
+  (DEMO ABORTED); no code reads SPACE in the demo or in play.
 - `controls`: 1 KEYBOARD, P and ENTER (the pause), U + G (GAME ABORTED), 4 PROTEK, 2 SINCLAIR; its 3 KEMPSTON did not
   take (pressed while the title was up).
 - `kempston`: 3 KEMPSTON, the cursor and a mirror moved by the joystick (port `$1F`).
@@ -188,7 +189,8 @@ The cursor's look (DrawCursor `$99C6`): without fire the cell's four colours are
 with fire a white 16 x 16 square is ORed round the cell (CursorGraphic `$9A37`). MarkCursorCells `$999F` marks the
 cell's characters for redraw at the start of every pass, so last pass's cursor is wiped.
 
-Fire also kills a gremlin: CursorFire `$9A57` looks for a gremlin turning a mirror on the cursor's cell and resets it
+Fire also kills a gremlin: CursorFire `$9A57` looks for a gremlin standing on the cursor's cell, turning a mirror or
+not (it compares only the gremlin's +4/+5 with the cell, `$9AC5-$9AD0`), and resets it
 (160 points; [doc 10](10-gameplay-logic.md)).
 
 ## 5.4 Practice
@@ -196,17 +198,22 @@ Fire also kills a gremlin: CursorFire `$9A57` looks for a gremlin turning a mirr
 ![Practice P1](img/play/practice-001750.png)
 
 *`practice` at frame 1750: LEVEL P1, the line "PRACTICE MODE . G AND U ABORTS" printed into the field's bottom row.
-The point: practice is the game with three switches flipped by one flag.*
+The point: practice is the game with a few switches flipped by one flag.*
 
-PracticeFlag `$8407` (set by key 6, `$A7E5`) changes five things (each run in `practice`, `work/docs/dfA/rec/practice/l1.json`):
+PracticeFlag `$8407` (set by key 6, `$A7E5`) is read at six places, one for each thing it changes (the runs in `practice`, `work/docs/dfA/rec/practice/l1.json`):
 
 | Where | What | Runs in `practice` |
 | --- | --- | ---: |
-| NewGame `$8424` | the start slot 60 (`$3C`, P1) instead of 0 | 1 |
+| NewGame `$841E` (`$8424`) | the start slot 60 (`$3C`, P1) instead of 0 | 1 |
 | SetUpLevel `$84DA` | the score cleared each level | 1 |
 | DrawMarkedChars `$8A68`, PrintPlay `$8E47` | the PRACTICE MODE line printed in the field every pass | 615 |
 | LoseLife `$86A0` | no life taken (the level restarts) | 0 (no life lost) |
-| LevelCompletePause `$887D` | after P3 (slot 63) the title | 0 |
+| UpdateOverload `$A6E9` | a full overload bar sets no LifeLost | 0 (the bar never filled) |
+| HallOfFame `$9BCA` | no hall-of-fame entry when practice ends | 0 (the recording stops in P1) |
+
+The end of practice is not a flag read: LevelCompletePause `$887D` compares Level with 63 (`CP $3F`). After P3, slot
+62, Level becomes 63 and the game goes back to the title; slot 63 is never set up. The `practice` recording reached P1
+only, so P2, P3 and this return are known from the code.
 
 The practice slots' energy rate is 255 (LevelSettings `$8385`): a pixel every 255 frames, 5.4 minutes for the bar.
 

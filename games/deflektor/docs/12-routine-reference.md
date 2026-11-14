@@ -306,7 +306,7 @@ Witness: L1 112689 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, k
 
 **One step of the beam: at a cell's centre, what the cell does to it; then the step code (`$906E`)**
 
-BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell (row y/2 - 1, column x/2 - 1) at `$FD12` + 17 (y/2) + x/2, BeamAtCentre = `$FF`, and the code with bit 7 cleared (a turning element acts as its current angle):
+BeamNextDirection = BeamDirection (`$FF`: return, the beam has ended). When BeamX or BeamY is odd the beam is between cells: on to `$906E`. Else the cell (row y/2 - 1, column x/2 - 1) at `$FD11` + 17 (y/2) + x/2 (= `$FD12` + 17 (row + 1) + column), BeamAtCentre = `$FF`, and the code with bit 7 cleared (a turning element acts as its current angle):
 
 - `$00` empty: on (`$906E`);
 
@@ -501,7 +501,7 @@ Witness: L1 1108934 (c1, c1g, cheat, controls, corner, energy, energy-out, hof, 
 
 Entered from `BeamNewDirection` (the step of the direction) and from the reflections of `BeamReflectIn` `$938F` with HL at a step of their own tables (`$8140`, `$8100`). x + dx must stay below `$21` and y + dy below `$15` (a negative result is above too): else the trace ends.
 
-The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10, 14, one character a step) only at even x, so it counts about one a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as if the beam had come back into the laser, and the laser lit; the trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59 level segments, `$926D` 2010 runs in all).
+The length `$8EBF` counts the steps, the diagonal ones (directions 2, 6, 10, 14, one character a step) only when the new x is odd, so it counts about one a cell. At a length of 40 (`$28`) the trace calls `$8FC5`: OVERLOAD (`$8ED5` = `$FF`) as if the beam had come back into the laser, and the laser lit; the trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer than 40 cells overloads the laser on every pass (the RZX segments reach 40 in 14 of the 59 level segments, `$926D` 2010 runs in all).
 
 Then back to the trace `$8EDD` for the next vertex.
 

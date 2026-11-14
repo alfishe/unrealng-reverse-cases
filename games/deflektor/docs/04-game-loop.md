@@ -42,12 +42,13 @@ stateDiagram-v2
 
 *Every state of the game and its routine (the hex are addresses). How to read it: a state is a routine the code
 stays in; the arrows are the jumps between them. Witness: `c1` (Start to the pass), `menu` (the demo's 60 levels),
-`controls` (P, U + G), `mine` and `gameover` (LoseLife, GAME OVER), `L01` (LevelComplete), `ending` (TheEnd). The
+`controls` (P, U + G), `mine` and `gameover` (LoseLife, GAME OVER; both a clone with the bars POKEd), `L01`
+(LevelComplete), `ending` (TheEnd; a clone, level 60 ended by the LevelDone POKE). The
 point: there is no state variable; the state is where the program counter is, and every exit leads back to
 TitleLoop by a jump, never a return.*
 
 Two exits drop the stack rather than unwind it: U + G in ReadKeys pops its return address and jumps to TitleLoop
-(`$840C`); LoseLife and LevelComplete are jumped to from PassEnd and jump on. The stack stays within 13 bytes
+(`$840C`); LoseLife and LevelComplete are jumped to from PassEnd and jump on. The stack stays within 12 bytes
 ([doc 2](02-architecture.md#23-the-heatmap-and-the-stack)).
 
 ## 4.2 The pass
@@ -101,7 +102,7 @@ The order of work, with each part's share of the T-states of `L01` ([doc 2](02-a
 | 3 | RenderGrid `$8960`, DrawMarkedChars `$8A09` | turning elements one step; the cells' characters into CharMap; every marked character drawn into PixelBuffer and ColourBuffer | 28 % |
 | 4 | TraceBeam `$8ED6` | the beam from the laser: drawn into the buffers, cells set burning, the flags LevelDone, LifeLost's causes | 32 % |
 | 5 | CursorFire `$9A57`, DrawCursor `$99C6` | the square or the arrow cursor drawn | small |
-| 6 | UpdateGremlins `$AB9F` | every other pass: delays, appearance, a step, a mirror turned | 0.3 % |
+| 6 | UpdateGremlins `$AB9F` | every pass: a gremlin's step and the mirror it turns; every other pass (GremlinPhase bit 5): the delays and the appearance | 0.3 % |
 | 7 | CopyPlayArea `$8C10` | 5120 pixel bytes and 640 attributes to the screen | 17 % |
 | 8 | PassEnd `$85AE` | the overload, a life, the energy, the receiver, the explosions, their sounds | 13 % with the sounds |
 
@@ -220,8 +221,11 @@ flowchart TD
 the work that must keep time (the energy, the COMPUTER line, the continuous sounds), the pass does the rest.*
 
 Worked example, the energy's clock: DrainEnergy compares EnergyTick `$A506` with the level's rate (90 on level 1) and
-takes a pixel off the bar each time it is reached. EnergyTick counts frames, not passes, so the bar empties in 64 x 90
-= 5760 frames whatever the beam costs. The POKE file's "infinite lives" (POKE 41784,0: `NOP` over the `INC A` at
+takes a pixel off the bar each time it is reached, setting EnergyTick back to 0. EnergyTick counts frames, not passes,
+so the bar empties in about 64 x 90 = 5760 frames whatever the beam costs. About, because the check runs once a pass:
+EnergyTick may pass the rate by up to one pass (about 5 frames) before it is seen, and the reset to 0 drops those
+frames, so each pixel is late by up to a pass. In `energy` level 1's bar took about 5800 frames (charged at about
+650, drained at 6450). The POKE file's "infinite lives" (POKE 41784,0: `NOP` over the `INC A` at
 `$A338`) stops this clock: the energy never drains.
 
 ## 4.7 Timing
