@@ -1,4 +1,4 @@
-; Bumpy, Loriciels 1989: tape block 4, the loading screen BUMPY.SCR, loaded by the BASIC's LOAD "" SCREEN$ at $4000.
+; Bumpy, Loriciels 1989: tape block 4, the loading screen BUMPY.SCR, loaded by the BASIC's `LOAD "" SCREEN$` at $4000.
 ; Written by kit/mkgame.py from src/screen/screen.ann; edit screen.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48

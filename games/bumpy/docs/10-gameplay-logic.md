@@ -22,6 +22,9 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `rzx/l68` | the RZX's level 68 replayed, drifting from the RZX: a fall out (frames 682-715) and a burst on spikes (frames 920-947) |
 | `fire` | level 38, Water `$AAFD` POKEd to 0, the ball moved left onto a burning platform (frame 41) |
 | `gameover`, `twoname` | lives lost by S, the game over, two players |
+| `scoreloop` | level 87 from the RZX's play start: the RZX's first 330 passes, then S, three times (score 36 081 → 36 171 → 36 261 → 36 351, lives 16 → 17 → 16 each round) |
+| `rightspike` | level 75 from the RZX's play start, right held: RightSpikeDeath (frame 60) |
+| `exitbelow` | level 0 with its start, prize count and exit POKEd (start 21, 1 prize, exit 15): the prize at frame 215, the rise into the exit from cell 21, level 1 from frame 275 |
 
 Conventions:
 
@@ -579,14 +582,15 @@ Five things can end a life; the timer is not one of them.
 
 | Death | Where | Routine | Sound | Then | Seen |
 | --- | --- | --- | --- | --- | --- |
-| spikes, landing | the last step of a side move or a fall | LeftSpikeDeath `$CA75`, RightSpikeDeath `$CCB8`, DownSpikeDeath `$CEF4` | SfxSpikeDeath | the burst, 10 steps | DownSpikeDeath 4 times (`rzx/l45`, `l56`, `l68` twice), LeftSpikeDeath once (`rzx/l56`) |
+| spikes, landing | the last step of a side move or a fall | LeftSpikeDeath `$CA75`, RightSpikeDeath `$CCB8`, DownSpikeDeath `$CEF4` | SfxSpikeDeath | the burst, 10 steps | DownSpikeDeath 4 times (`rzx/l45`, `l56`, `l68` twice), LeftSpikeDeath once (`rzx/l56`), RightSpikeDeath once (`rightspike` frame 60, [shot](img/play/rightspike-000060-burst.png)) |
 | spikes, from below | step 4 of the up move | UpSpikeDeath `$CDC6` | SfxSpikeDeath | the burst from step 3 | 8 times (`rzx/l35`, `l45`, `l51`, `l56`, `l59`, `l96` twice, `l97`) |
 | fire | the last step of a side move or a fall, with Water 0 | LeftFireDeath `$CA7A`, RightFireDeath `$CCBD`, DownFireDeath `$CEF9` | SfxFireDeath, 20 frames | the burst | once, `fire` frame 41 (LeftFireDeath, Water POKEd to 0) |
 | the fall out | a landing on the bottom row with no platform | LandingLost `$B0E0`, BallFallOut `$B20A` | SfxLifeLost | LoseLife | 8 times (`rzx/l10`, `l36`, `l51` three times, `l59`, `l68`, `l98`) |
 | S | any step of a move, not in the demo | SelfDestruct `$BA71` | SfxLifeLost | LoseLife | 12 times (`gameover`, `twoname`) |
 | the timer | never | | | | `c1`: 0 from frame 15 436 to 18 186, the ball still bouncing |
 
-The deaths in the recordings come from the drifting replays of the RZX, from the POKE in `fire`, or from S.
+The deaths in the recordings come from the drifting replays of the RZX, from the POKE in `fire`, from `rightspike`, or
+from S.
 The RZX's own run never lost a life: its Lives only rise, 2 to 18, in `rzx-states.tsv`.
 
 ```text
@@ -1009,22 +1013,23 @@ The point: a level is a puzzle with one fixed rule set; the counts of its parts 
 - **The timer counts passes and kills nobody.** It is a bonus that runs slower when the game is busy.
 - **A death keeps the points and gives the level back.** Prizes, the bottle and the locks return; the score does not
   go back. A level with a bottle can be played for points without end: take the prizes and the bottle, press S,
-  start again with the same lives and more points. Known only from the code.
+  start again with the same lives and more points. `scoreloop`: three rounds on level 87, 90 points each, lives
+  16 → 17 → 16 each time.
 - **The game never ends.** Level 99 leads to level 0 with everything kept.
 - **Nothing is random.** The board is the same at every start; the ball's path is fixed by the keys at the landings
   ([doc 7](07-objects.md#79-nothing-is-random)).
 - **The exit can be reached from below.** UpStep4 lets the ball rise into a cell whose platform is the exit, and the
-  landing at the end of the up move ends the level. Known only from the code.
+  landing at the end of the up move ends the level. `exitbelow` (level 0's record POKEd so that the exit opens above
+  the start): UpStep5 `$CDD9` takes the ball into cell 15, the exit, and level 1 follows
+  ([below the exit](img/play/exitbelow-000243-below-exit.png), [in it](img/play/exitbelow-000275-in-exit.png)).
 
 ## 10.15 What no recording reached
 
-- RightSpikeDeath `$CCB8`, RightFireDeath `$CCBD` and DownFireDeath `$CEF9`: L1 0; they mirror LeftSpikeDeath and
-  LeftFireDeath.
+- RightFireDeath `$CCBD` and DownFireDeath `$CEF9`: L1 0; they mirror LeftFireDeath (RightSpikeDeath ran in
+  `rightspike`).
 - SetStateDown `$B861`: no caller; a fall is always set by LandingCheck or BallBumpCeiling.
 - A score past 65 535 and the wrap of the 16-bit word; the hall of fame would then compare the small number.
-- The points loop of 10.14 (a bottle, the prizes, S, again).
 - Lives, water, keys or hammers at 99, where the stores stop growing.
 - A second loop of the 100 levels beyond level 0's start.
 - The cheat mode's level choice at the level end and at S (`$B2C9`, `$BA80`): FirmwareStub5 is a stub, so the level
   it gives is not known.
-- The exit entered from below (10.14).

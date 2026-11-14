@@ -23,7 +23,7 @@
 
 ; All attributes = A (7: white ink, black paper), the border = A >> 3 (black)
 ;
-; Witness: L1 9 (c1, gameover, menu, twoname).
+; Witness: L1 10 (c1, exitbelow, gameover, menu, twoname).
 ClearAttrs:
   LD A,$07
   LD HL,$5800
@@ -40,7 +40,7 @@ ClearAttrs:
 ; Draws the side panels: $6398 at the CPC address $F800 and $6518 at $F83C, 192
 ; lines each ($E318)
 ;
-; Witness: L1 9 (c1, gameover, menu, twoname).
+; Witness: L1 10 (c1, exitbelow, gameover, menu, twoname).
 DrawSides:
   LD HL,SidePanels
   LD DE,$F800
@@ -92,8 +92,8 @@ FillColumnLoop:
 ; Clears columns 1-29 of the 200 lines (the blank $6708), then the play
 ; attributes (ink 7)
 ;
-; Witness: L1 151 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 164 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 ClearPlayArea:
   PUSH IX
   LD IX,SpectrumLines
@@ -120,8 +120,8 @@ ClearPlayAreaLoop:
 ; Each attribute row: column 0 and 30 yellow (6), columns 1-29 = A; column 31
 ; untouched
 ;
-; Witness: L1 149 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 162 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 SetPlayAttrs:
   LD HL,$5800
   LD B,$18
@@ -148,7 +148,8 @@ SetPlayAttrsLoop:
 ; Input the line $C751 and column $C750 from ScreenAddrToLine $C71F. Output IX
 ; points at the Spectrum line address; the caller ORs $B52C into its low byte.
 ;
-; Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 327885 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 LineAddress:
   LD A,(PixelLine)
   LD L,A
@@ -204,7 +205,7 @@ SpectrumLines:
 ; $C3D5, StartWearTo4 $C3F8 or StartFallAway $C41B left there). Called by the
 ; first or last step of each change ($C1C3, $C1FF, $C211).
 ;
-; Witness: L1 1400 (menu, l x12, rzx x91).
+; Witness: L1 1427 (menu, scoreloop, l x12, rzx x91).
 SetPlatformCell:
   LD A,(CrumbleCell)
   LD D,$00
@@ -225,7 +226,8 @@ SetPlatformCell:
 ; CellAddrs $E131[cell] + $17B1 (DrawSpriteInk $E2A0). Called by MainLoop
 ; ($ACDB) and the level end ($B32E).
 ;
-; Witness: L1 93190 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 94334 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 AnimateFires:
   AND A
   LD A,(FireTick)
@@ -292,7 +294,8 @@ AnimateFiresNext:
 ; (2 bytes × 24 rows) XORed at WallAddrs $E179[cell] (DrawSpriteXorInk, colour
 ; $83). Called by MainLoop ($ACDE) and the level end ($B331).
 ;
-; Witness: L1 93190 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 94334 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 AnimateWalls:
   AND A
   LD A,(WallTick)
@@ -348,7 +351,8 @@ AnimateWallsNext:
 
 ; $AA0C = 0; the flame frame $AA16 steps 1, 2, 3, 1 ...
 ;
-; Witness: L1 23297 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 23584 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 NextFireFrame:
   LD A,$00
   LD (FireTick),A
@@ -365,7 +369,8 @@ NextFireFrameWrap:
 
 ; $AA0D = 0; the wall frame $AA17 steps 1, 2, 3, 4, 1 ...
 ;
-; Witness: L1 23297 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 23584 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 NextWallFrame:
   LD A,$00
   LD (WallTick),A
@@ -391,8 +396,8 @@ NextWallFrameWrap:
 ; the bounce handlers when up or fire (UpKey $B463) is down, or the demo byte
 ; is 9.
 ;
-; Witness: L1 2286 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2308 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 LoadSpring:
   XOR A
   LD A,(SpringArmed)
@@ -427,8 +432,8 @@ LoadSpring:
 ; down, back, rest, up, rest. Called by the bounce handlers at fixed steps of
 ; the bounce ($C800, $C80B, $C81C, $C827 and the like).
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep1:
   AND A
   CALL SpringPart0
@@ -437,8 +442,8 @@ SpringStep1:
 
 ; Spring frame 1 off, 2 on
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep2:
   AND A
   CALL SpringPart1
@@ -447,8 +452,8 @@ SpringStep2:
 
 ; Spring frame 2 off, 1 on
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep3:
   AND A
   CALL SpringPart2
@@ -457,8 +462,8 @@ SpringStep3:
 
 ; Spring frame 1 off, 0 on
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep4:
   AND A
   CALL SpringPart1
@@ -469,8 +474,8 @@ SpringStep4:
 ;
 ; Called by the up-move handler ($CD1D).
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep5:
   AND A
   CALL SpringPart0
@@ -481,8 +486,8 @@ SpringStep5:
 ;
 ; Called by the up-move handler ($CD62).
 ;
-; Witness: L1 1316 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1326 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringStep6:
   AND A
   CALL SpringPart3
@@ -496,8 +501,8 @@ SpringStep6:
 ; HL = $AB2D + the offset $AB35, DE = the frame $AB3D, width $AB45, rows $AB49,
 ; DrawSpriteXor $E3EE.
 ;
-; Witness: L1 5273 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 5313 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringPart0:
   LD HL,(CellScrAddr)
   LD BC,(SpringRecord)
@@ -512,8 +517,8 @@ SpringPart0:
 
 ; XOR spring frame 1 (offset $AB37, frame $AB3F, width $AB46, rows $AB4A)
 ;
-; Witness: L1 5276 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 5316 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringPart1:
   LD HL,(CellScrAddr)
   LD BC,(SpringRecord+$0002)
@@ -528,8 +533,8 @@ SpringPart1:
 
 ; XOR spring frame 2 (offset $AB39, frame $AB41, width $AB47, rows $AB4B)
 ;
-; Witness: L1 2638 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2658 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringPart2:
   LD HL,(CellScrAddr)
   LD BC,(SpringRecord+$0004)
@@ -544,8 +549,8 @@ SpringPart2:
 
 ; XOR spring frame 3 (offset $AB3B, frame $AB43, width $AB48, rows $AB4C)
 ;
-; Witness: L1 2635 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2655 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SpringPart3:
   LD HL,(CellScrAddr)
   LD BC,(SpringRecord+$0006)
@@ -567,7 +572,8 @@ SpringPart3:
 ; TiltPart1 tilt it left, TiltPart0 + TiltPart2 right, and the reverse pair
 ; sets it back. The AND C after the ADD only sets flags.
 ;
-; Witness: L1 2402 (c1, fire, gameover, menu, twoname, l x12, rzx x90).
+; Witness: L1 2408 (c1, exitbelow, fire, gameover, menu, rightspike, twoname, l
+; x12, rzx x90).
 TiltPart0:
   LD HL,(CellScrAddr)
   LD BC,(TakeoffRecord)
@@ -583,7 +589,8 @@ TiltPart0:
 
 ; XOR the left-tilt frame (offset $AB4F, frame $AB55, width $AB5A, rows $AB5D)
 ;
-; Witness: L1 1106 (c1, fire, gameover, menu, twoname, l x11, rzx x85).
+; Witness: L1 1108 (c1, exitbelow, fire, gameover, menu, twoname, l x11, rzx
+; x85).
 TiltPart1:
   LD HL,(CellScrAddr)
   LD BC,(TakeoffRecord+$0002)
@@ -599,7 +606,8 @@ TiltPart1:
 
 ; XOR the right-tilt frame (offset $AB51, frame $AB57, width $AB5B, rows $AB5E)
 ;
-; Witness: L1 1296 (c1, gameover, menu, twoname, l x12, rzx x89).
+; Witness: L1 1300 (c1, exitbelow, gameover, menu, rightspike, twoname, l x12,
+; rzx x89).
 TiltPart2:
   LD HL,(CellScrAddr)
   LD BC,(TakeoffRecord+$0004)
@@ -619,7 +627,8 @@ TiltPart2:
 ; BrickCrumble1-4 clear the hit layer at $AB31 in four checkered passes. Called
 ; by MainLoop ($ACCF).
 ;
-; Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93416 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 BrickStep:
   AND A
   LD A,(BrickActive)
@@ -651,7 +660,7 @@ BrickStep:
 ;
 ; Witness: L1 409 (l51, l59, l96, l98, rzx x27).
 BrickCrumble1:
-  CALL SfxAnimB
+  CALL SfxBrickCrumble
   DI
   PUSH IY
   AND A
@@ -802,7 +811,8 @@ BrickCrumble4:
 ; (ExtinguishFire $C10C), then shows 4 frames of steam. Called by MainLoop
 ; ($ACD2).
 ;
-; Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93416 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 WaterStep:
   AND A
   LD A,(FireOutActive)
@@ -827,7 +837,7 @@ WaterStep:
 ;
 ; Witness: L1 12 (l59, rzx x8).
 WaterA1:
-  CALL SfxAnimA
+  CALL SfxWaterDrop
   JP DropA1
 
 ; Drop A1 off, A2 on
@@ -885,7 +895,7 @@ WaterA8:
 ;
 ; Witness: L1 25 (l36, l59, rzx x17).
 WaterB1:
-  CALL SfxAnimA
+  CALL SfxWaterDrop
   JP DropB1
 
 ; Drop B1 off, B2 on
@@ -943,7 +953,7 @@ WaterB8:
 ;
 ; Witness: L1 18 (menu, l10, l56, rzx x12).
 WaterC1:
-  CALL SfxAnimA
+  CALL SfxWaterDrop
   JP DropC1
 
 ; Drop C1 off, C2 on
@@ -1215,7 +1225,8 @@ Steam4:
 ; XORed at $AB24 (the cell's address when the change started). Called by
 ; MainLoop ($ACD5) and the move handlers ($CD80, $CD83, $CDA0, $CE8F).
 ;
-; Witness: L1 93581 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 94743 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PlatformChangeStep:
   AND A
   LD A,(CrumbleActive)
@@ -1274,7 +1285,7 @@ WearTo3Step4:
 
 ; Type 3 becomes 4: platform 3 off, crack 3a on
 ;
-; Witness: L1 385 (menu, l x11, rzx x77).
+; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 WearTo4Step1:
   CALL XorPlatform3
   CALL XorCrack3a
@@ -1282,7 +1293,7 @@ WearTo4Step1:
 
 ; Crack 3a off, 3b on
 ;
-; Witness: L1 385 (menu, l x11, rzx x77).
+; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 WearTo4Step2:
   CALL XorCrack3a
   CALL XorCrack3b
@@ -1290,7 +1301,7 @@ WearTo4Step2:
 
 ; Crack 3b off, 3c on
 ;
-; Witness: L1 385 (menu, l x11, rzx x77).
+; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 WearTo4Step3:
   CALL XorCrack3b
   CALL XorCrack3c
@@ -1298,7 +1309,7 @@ WearTo4Step3:
 
 ; Write the cell (4), crack 3c off, platform 4 on; done
 ;
-; Witness: L1 385 (menu, l x11, rzx x77).
+; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 WearTo4Step4:
   CALL SetPlatformCell
   CALL XorCrack3c
@@ -1310,7 +1321,7 @@ WearTo4Step4:
 
 ; Type 4 goes: write the cell (0), platform 4 off, fall frame 1 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep1:
   CALL SetPlatformCell
   CALL XorPlatform4
@@ -1319,7 +1330,7 @@ FallAwayStep1:
 
 ; Fall frame 1 off, 2 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep2:
   CALL XorFall1
   CALL XorFall2
@@ -1327,7 +1338,7 @@ FallAwayStep2:
 
 ; Fall frame 2 off, 3 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep3:
   CALL XorFall2
   CALL XorFall3
@@ -1335,7 +1346,7 @@ FallAwayStep3:
 
 ; Fall frame 3 off, 4 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep4:
   CALL XorFall3
   CALL XorFall4
@@ -1343,7 +1354,7 @@ FallAwayStep4:
 
 ; Fall frame 4 off, 5 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep5:
   CALL XorFall4
   CALL XorFall5
@@ -1351,7 +1362,7 @@ FallAwayStep5:
 
 ; Fall frame 5 off, 6 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep6:
   CALL XorFall5
   CALL XorFall6
@@ -1359,7 +1370,7 @@ FallAwayStep6:
 
 ; Fall frame 6 off, 7 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep7:
   CALL XorFall6
   CALL XorFall7
@@ -1367,7 +1378,7 @@ FallAwayStep7:
 
 ; Fall frame 7 off, 8 on
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep8:
   CALL XorFall7
   CALL XorFall8
@@ -1375,7 +1386,7 @@ FallAwayStep8:
 
 ; Fall frame 8 off: the platform is gone; done
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 FallAwayStep9:
   CALL XorFall8
   LD A,$00
@@ -1447,7 +1458,7 @@ XorCrack2c:
 
 ; XOR the type 3 platform ($7A78, 6 bytes × 4 rows) at $AB24 + 1
 ;
-; Witness: L1 634 (menu, l x11, rzx x78).
+; Witness: L1 643 (menu, scoreloop, l x11, rzx x78).
 XorPlatform3:
   AND A
   LD DE,Platform3Pictures
@@ -1463,7 +1474,7 @@ XorPlatform3:
 
 ; XOR $7DD4 (6 bytes × 4 rows) at $AB24 + 1
 ;
-; Witness: L1 770 (menu, l x11, rzx x77).
+; Witness: L1 788 (menu, scoreloop, l x11, rzx x77).
 XorCrack3a:
   AND A
   LD DE,CrumbleType3+$0030
@@ -1479,7 +1490,7 @@ XorCrack3a:
 
 ; XOR $7DEC (4 bytes × 4 rows) at $AB24 + 2
 ;
-; Witness: L1 770 (menu, l x11, rzx x77).
+; Witness: L1 788 (menu, scoreloop, l x11, rzx x77).
 XorCrack3b:
   AND A
   LD DE,CrumbleType4
@@ -1495,7 +1506,7 @@ XorCrack3b:
 
 ; XOR $7DFC (4 bytes × 4 rows) at $AB24 + 2
 ;
-; Witness: L1 770 (menu, l x11, rzx x77).
+; Witness: L1 788 (menu, scoreloop, l x11, rzx x77).
 XorCrack3c:
   AND A
   LD DE,CrumbleType4+$0010
@@ -1511,7 +1522,7 @@ XorCrack3c:
 
 ; XOR the type 4 platform ($7B62, 4 bytes × 4 rows) at $AB24 + 2
 ;
-; Witness: L1 1150 (menu, l x12, rzx x90).
+; Witness: L1 1177 (menu, scoreloop, l x12, rzx x90).
 XorPlatform4:
   AND A
   LD DE,Platform4Pictures
@@ -1527,7 +1538,7 @@ XorPlatform4:
 
 ; XOR $7E0C (4 bytes × 4 rows) at $AB24 + 2
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall1:
   AND A
   LD DE,CrumbleType4+$0020
@@ -1543,7 +1554,7 @@ XorFall1:
 
 ; XOR $7E1C (2 bytes × 4 rows) at $AB24 + 3
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall2:
   AND A
   LD DE,CrumbleSmall
@@ -1559,7 +1570,7 @@ XorFall2:
 
 ; XOR $7E24 (2 bytes × 4 rows) at $AB24 + 3
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall3:
   AND A
   LD DE,CrumbleSmall+$0008
@@ -1575,7 +1586,7 @@ XorFall3:
 
 ; XOR $7E2C (2 bytes × 4 rows) at $AB24 + 3
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall4:
   AND A
   LD DE,CrumbleSmall+$0010
@@ -1591,7 +1602,7 @@ XorFall4:
 
 ; XOR $7E34 (2 bytes × 5 rows) at $AB24 + 3
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall5:
   AND A
   LD DE,CrumbleBits
@@ -1607,7 +1618,7 @@ XorFall5:
 
 ; XOR $7E3E (2 bytes × 5 rows) at $AB24 + 3 - $0800 (a pixel line higher)
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall6:
   AND A
   LD DE,CrumbleBits+$000A
@@ -1623,7 +1634,7 @@ XorFall6:
 
 ; XOR $7E48 (2 bytes × 5 rows) at $AB24 + 3 - $0800
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall7:
   AND A
   LD DE,CrumbleBits+$0014
@@ -1639,7 +1650,7 @@ XorFall7:
 
 ; XOR $7E52 (2 bytes × 5 rows) at $AB24 + 3 - $0800
 ;
-; Witness: L1 1530 (l x11, rzx x87).
+; Witness: L1 1566 (scoreloop, l x11, rzx x87).
 XorFall8:
   AND A
   LD DE,CrumbleBits+$001E
@@ -1683,7 +1694,7 @@ StartWearTo3:
 ; As StartWearTo3 with WearTo4Steps $C544 and the new type 4. Witness: 328
 ; runs.
 ;
-; Witness: L1 385 (menu, l x11, rzx x77).
+; Witness: L1 394 (menu, scoreloop, l x11, rzx x77).
 StartWearTo4:
   AND A
   LD HL,(CellScrAddr)
@@ -1705,7 +1716,7 @@ StartWearTo4:
 ; As StartWearTo3 with FallAwaySteps $C54C and the new type 0. Witness: 672
 ; runs.
 ;
-; Witness: L1 765 (l x11, rzx x87).
+; Witness: L1 783 (scoreloop, l x11, rzx x87).
 StartFallAway:
   AND A
   LD HL,(CellScrAddr)
@@ -1730,7 +1741,8 @@ StartFallAway:
 ; into 2, 2 into 1, and 1 into an open wall, each with its sound. Called by
 ; MainLoop ($ACD8).
 ;
-; Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93416 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 WallStep:
   AND A
   LD A,(LockActive)
@@ -1974,7 +1986,8 @@ WallDrawTable:
 ; 80. BC, DE, HL changed. Every picture drawn goes through it (277 064 calls in
 ; the recordings).
 ;
-; Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 327885 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 ScreenAddrToLine:
   LD BC,$C000
   AND A
@@ -2018,7 +2031,8 @@ PixelLine:
 ; Output HL = DivQuotient $C774, DE = DivRemainder $C776. Only ScreenAddrToLine
 ; calls it (BC = 80).
 ;
-; Witness: L1 324616 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 327885 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 DivideHLbyBC:
   LD DE,$0000
   EX DE,HL
@@ -2132,21 +2146,23 @@ DrawExitSign:
 
 ; Platform types 0 and 11: nothing to draw
 ;
-; Witness: L1 1003 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x23).
+; Witness: L1 1118 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x23).
 PlatDrawNone:
   JP BuildLevelObject
 
 ; Platform type 1, the plain platform
 ;
-; Witness: L1 1222 (c1, fire, gameover, menu, twoname, l51, l98, rzx x13).
+; Witness: L1 1285 (c1, exitbelow, fire, gameover, menu, rightspike, twoname,
+; l51, l98, rzx x13).
 PlatDraw1:
   CALL DrawPlatform1Pic
   JP BuildLevelObject
 
 ; XOR the plain platform $7788 at the cell
 ;
-; Witness: L1 1290 (c1, fire, gameover, menu, twoname, l51, l98, rzx x13).
+; Witness: L1 1355 (c1, exitbelow, fire, gameover, menu, rightspike, twoname,
+; l51, l98, rzx x13).
 DrawPlatform1Pic:
   LD DE,Platform1Pictures
   JR DrawPlatformPic
@@ -2167,14 +2183,14 @@ DrawPlatform2Pic:
 
 ; Platform type 3, the second crumbling stage
 ;
-; Witness: L1 141 (l51, l59, l96, l98, rzx x15).
+; Witness: L1 196 (scoreloop, l51, l59, l96, l98, rzx x15).
 PlatDraw3:
   CALL DrawPlatform3Pic
   JP BuildLevelObject
 
 ; XOR the picture $7A78 (6 bytes wide) one byte right of the cell
 ;
-; Witness: L1 141 (l51, l59, l96, l98, rzx x15).
+; Witness: L1 196 (scoreloop, l51, l59, l96, l98, rzx x15).
 DrawPlatform3Pic:
   LD HL,(CellScrAddr)
   LD DE,$0001
@@ -2188,14 +2204,14 @@ DrawPlatform3Pic:
 
 ; Platform type 4, the last crumbling stage
 ;
-; Witness: L1 229 (fire, l51, l59, l96, l98, rzx x14).
+; Witness: L1 266 (fire, rightspike, scoreloop, l51, l59, l96, l98, rzx x14).
 PlatDraw4:
   CALL DrawPlatform4Pic
   JP BuildLevelObject
 
 ; XOR the picture $7B62 (4 bytes wide) two bytes right of the cell
 ;
-; Witness: L1 229 (fire, l51, l59, l96, l98, rzx x14).
+; Witness: L1 266 (fire, rightspike, scoreloop, l51, l59, l96, l98, rzx x14).
 DrawPlatform4Pic:
   LD HL,(CellScrAddr)
   LD DE,$0002
@@ -2223,7 +2239,8 @@ DrawPlatform5Pic:
 
 ; XOR the picture DE at the cell's address $AB2D: 8 bytes wide, 4 lines
 ;
-; Witness: L1 1551 (c1, fire, gameover, menu, twoname, l51, l96, l98, rzx x21).
+; Witness: L1 1616 (c1, exitbelow, fire, gameover, menu, rightspike, twoname,
+; l51, l96, l98, rzx x21).
 DrawPlatformPic:
   LD HL,(CellScrAddr)
   LD A,$08
@@ -2278,7 +2295,7 @@ DrawConveyorRightPic:
 ;
 ; Draws the platform, then the flames.
 ;
-; Witness: L1 68 (c1, gameover, menu, twoname, rzx x8).
+; Witness: L1 70 (c1, exitbelow, gameover, menu, twoname, rzx x8).
 PlatDraw8:
   CALL DrawPlatform1Pic
   CALL DrawFlames
@@ -2286,10 +2303,10 @@ PlatDraw8:
 
 ; Mark the cell burning and draw the first flames
 ;
-; $AAB3[$AA44] = 1 (the fire animation $BD21 then plays FireFrames there), and
+; $AAB3[$AA44] = 1 (AnimateFires $BBCD then animates the flames there), and
 ; $814D is drawn with ink $C2 at $AB2D + $17B1 (5 lines of 6 bytes).
 ;
-; Witness: L1 76 (c1, fire, gameover, menu, twoname, rzx x8).
+; Witness: L1 78 (c1, exitbelow, fire, gameover, menu, twoname, rzx x8).
 DrawFlames:
   LD HL,CellBurning
   LD A,(BallCell)
@@ -2319,7 +2336,7 @@ PlatDraw9:
 
 ; Platform type 10, bricks
 ;
-; Witness: L1 51 (fire, l98, rzx x6).
+; Witness: L1 64 (fire, rightspike, l98, rzx x6).
 PlatDraw10:
   CALL DrawBricks
   JP BuildLevelObject
@@ -2330,7 +2347,7 @@ PlatDraw10:
 ; the cell while it is not 0; $B8D1 counts it down), then $8345 four times, 8
 ; lines each, $50 bytes apart, through $E4BB with ink $82.
 ;
-; Witness: L1 51 (fire, l98, rzx x6).
+; Witness: L1 64 (fire, rightspike, l98, rzx x6).
 DrawBricks:
   LD HL,BrickLayers
   LD A,(BallCell)
@@ -2362,14 +2379,14 @@ DrawBricksRow:
 
 ; Platform type 12, spikes
 ;
-; Witness: L1 217 (menu, l51, l59, l96, l98, rzx x15).
+; Witness: L1 220 (menu, rightspike, l51, l59, l96, l98, rzx x15).
 PlatDraw12:
   CALL DrawSpikesPic
   JP BuildLevelObject
 
 ; XOR the spikes $7D5A (7 lines, 6 bytes) at $AB2D + $2FB1
 ;
-; Witness: L1 217 (menu, l51, l59, l96, l98, rzx x15).
+; Witness: L1 220 (menu, rightspike, l51, l59, l96, l98, rzx x15).
 DrawSpikesPic:
   LD HL,(CellScrAddr)
   LD DE,$2FB1
@@ -2383,8 +2400,8 @@ DrawSpikesPic:
 
 ; Wall type 0: nothing to draw
 ;
-; Witness: L1 2955 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 3241 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 WallDrawNone:
   JP BuildLevelNextCell
 
@@ -2419,7 +2436,7 @@ WallDraw3:
 
 ; Wall type 4, the wall no key opens
 ;
-; Witness: L1 176 (fire, menu, l51, l59, l98, rzx x12).
+; Witness: L1 178 (fire, menu, rightspike, l51, l59, l98, rzx x12).
 WallDraw4:
   LD A,(BallCell)
   CALL WallScreenAddr
@@ -2449,7 +2466,7 @@ DrawLock3Pic:
 
 ; Draw the wall $7E5C with ink $83 at the wall
 ;
-; Witness: L1 176 (fire, menu, l51, l59, l98, rzx x12).
+; Witness: L1 178 (fire, menu, rightspike, l51, l59, l98, rzx x12).
 DrawWall4Pic:
   LD DE,WallPictures
   LD C,$83

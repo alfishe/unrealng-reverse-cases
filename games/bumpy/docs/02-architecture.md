@@ -273,7 +273,7 @@ The panel is the CPC game's status column: lives, score, water, keys, hammers, l
 | EditorTexts, EditorFont | `$E1C9-$E29F` | 81 + 130 | the CPC level editor's menu, in French (RETOUR, EDITEUR, CHARGER TABLEAUX, SAUVER, EFFACER, QUITTER) and its 8 × 5 letters | no editor on the Spectrum |
 | UnusedPicture61A8, UnusedPicture75A8, Unused8385 | `$61A8`, `$75A8`, `$8385` | 496, 480, 2231 | CPC pictures | no routine reads them (`src/res/leftovers`) |
 | LevelLeftover | `$E0C4` | 85 | small numbers | not read |
-| the effects' parameters | `$F3CF`, `$F3E6`, ... `$F500` | 14 × 16 | each effect's sound parameters on the CPC | each effect loads HL with them and calls a beeper primitive that ignores HL (doc 9) |
+| the effects' AY register images | `$F3CF`, `$F3E6`, ... `$F500` | 14 × 16 | AY registers R0-R13 and two zeros for each effect (src/res/sound/ay-images.csv) | each effect loads HL with them and calls a beeper primitive that ignores HL (doc 9) |
 | the firmware stubs | `$B744-$B754` | 17 | the CPC firmware calls (a border flash, a level choice) | each is a `RET` |
 | DrawExitSign, ExitSign | `$D08E`, `$6698` | | the EXIT sign | never called |
 | PrintOnceUponATime | `$E7C6` | | "Erase Una Vez ..." (Spanish: the Proein heritage) | never called |

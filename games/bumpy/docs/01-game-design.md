@@ -20,7 +20,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `gameover` | three lives lost by S, game over, the hall of fame |
 | `twoname` (stage 2) | two players to the end, both names entered (scores POKEd to 2000 and 2100, said in its `record.json`) |
 | `fire` (stage 2) | level 38 with Water POKEd to 0: the death by fire |
-| `rec/l83`, `rec/l01`, `rzx/l68`, `rzx/l99` | a level finished, locks opened, a fall and the spikes, the wrap from level 99 to level 0 |
+| `scoreloop`, `rightspike`, `exitbelow` (integration) | the points loop on level 87; the right spike death on level 75; the exit entered from below (level 0's record POKEd, said in its `record.json`) |
+| `rec/l83`, `rzx/l01`, `rzx/l68`, `rzx/l99` | a level finished, locks opened, a fall and the spikes, the wrap from level 99 to level 0 |
 | the RZX | someone else's run through all 100 levels (xmikex and Jamie Angus, SPIN 0.5), replayed level by level |
 
 Every rule below is read from the code and seen in a recording, unless it says "known only from the code".
@@ -208,7 +209,7 @@ The stores (water, keys, hammers, lives) each stop at 99.
 
 ![Locks before](img/play/l01-000100-locks.png)
 
-*Level 1 with its locks (`rec/l01`, frame 100). By [frame 700](img/play/l01-000700-locks-open.png) the keys have
+*Level 1 with its locks (`rzx/l01`, frame 100). By [frame 700](img/play/l01-000700-locks-open.png) the keys have
 opened them.*
 
 Worked example, level 0 ([shot](img/play/c1-015086-play.png)): the record is
@@ -235,7 +236,7 @@ The five ways to lose a life:
 
 | Death | How | Seen in |
 | --- | --- | --- |
-| the spikes | landing on platform 12, or rising into spikes above | `rzx/l68` frame 924 ([shot](img/play/l68-000932-burst.png)) |
+| the spikes | landing on platform 12, or rising into spikes above | `rzx/l68` frame 924 ([shot](img/play/l68-000932-burst.png)); from the side, `rightspike` frame 60 ([shot](img/play/rightspike-000060-burst.png)) |
 | the fall | no platform under the bottom row | `rzx/l68` frame 686 ([shot](img/play/l68-000700-fall.png)) |
 | the fire | landing on a burning platform without water | `fire` frame 41 ([shot](img/play/fire-000070-burst.png)) |
 | S | the self-destruct key, for a level that cannot be finished | `gameover` frame 602 |
@@ -244,7 +245,11 @@ The five ways to lose a life:
 After a lost life the level starts again from its record: every prize, platform and lock is back.
 The water, keys and hammers go back to what the player had when the level started.
 The score keeps the points of the prizes taken before the death, and those prizes are back on the level (LoseLife
-`$BA93` saves the score with the record; known only from the code).
+`$BA93` saves the score with the record).
+`scoreloop` shows it on level 87: three times the RZX player's first 330 passes (six prizes and the bottle), then S;
+each round adds 90 points and leaves the lives where they were, 16 → 17 → 16
+([before S](img/play/scoreloop-000400-before-s.png), [after S](img/play/scoreloop-000484-after-s.png),
+[the second round](img/play/scoreloop-000934-before-s.png)).
 
 The timer starts at 1000 at READY? and loses one each turn of the main loop.
 It stops at 0, and play goes on.

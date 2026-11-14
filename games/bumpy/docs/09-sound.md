@@ -35,7 +35,7 @@ Conventions:
 
 ## 9.1 The effects
 
-Every effect is three instructions: `LD HL` with its parameter block, a `CALL` of a primitive, and `RET`.
+Every effect is three instructions: `LD HL` with its AY register image, a `CALL` of a primitive, and `RET`.
 SfxExtraLife and SfxLevelEnd call their primitive twice.
 
 | Effect | Primitive | Played when | OUTs | flips | T-states | frames | WAV | L1 | First traced call |
@@ -44,7 +44,7 @@ SfxExtraLife and SfxLevelEnd call their primitive twice.
 | SfxHit `$F3DF` | RomNoise | the first step of a jump up from a platform that is not bricks | 100 | 49 | 110 676 | 1.58 | [hit](img/sound/hit.wav) | 1314 | `rzx/l01` 484 T 3310 |
 | SfxPickup `$F3F6` | RandomNoise2 | a prize, key, drop or hammer; a menu option | 100 | 61 | 184 317 | 2.64 | [pickup](img/sound/pickup.wav) | 1034 | `c1` 14 127 T 12 159 |
 | SfxExtraLife `$F40D` | TripleSweep × 2 | the bottle | 1402 | 1399 | 2 699 370 | 38.62 | [extra-life](img/sound/extra-life.wav) | 20 | `menu`, `l10`, `l36`, `l45`, `l68` (no trace) |
-| SfxAnimA `$F427` | RumbleHigh | a water drop starts to fall on a fire | 900 | 470 | 212 982 | 3.05 | [water](img/sound/water.wav) | 55 | `menu`, `l10`, `l36`, `l56`, `l59` (no trace) |
+| SfxWaterDrop `$F427` | RumbleHigh | a water drop starts to fall on a fire | 900 | 470 | 212 982 | 3.05 | [water](img/sound/water.wav) | 55 | `menu`, `l10`, `l36`, `l56`, `l59` (no trace) |
 | SfxWallBounce `$F43E` | SweepDown | a wall turns the ball back; a lock 3 lowered | 100 | 99 | 84 161 | 1.20 | [wall-bounce](img/sound/wall-bounce.wav) | 119 | `rzx/l01` 588 T 23 947 |
 | SfxLockA `$F455` | RandomNoise1 | a lock 2 lowered | 100 | 62 | 115 077 | 1.65 | [lock-a](img/sound/lock-a.wav) | 38 | `rzx/l01` 603 T 23 939 |
 | SfxLockB `$F46C` | RandomNoise2 | a lock 1 lowered (opened) | 100 | 61 | 184 317 | 2.64 | [lock-b](img/sound/lock-b.wav) | 117 | `rzx/l01` 619 T 23 939 |
@@ -52,7 +52,7 @@ SfxExtraLife and SfxLevelEnd call their primitive twice.
 | SfxLevelEnd `$F49A` | TripleSweep × 2 | the ball has sunk into the exit | 1402 | 1399 | 2 699 370 | 38.62 | [level-end](img/sound/level-end.wav) | 101 | `rec/l83`, between 522 and 594 (no trace) |
 | SfxSpikeDeath `$F4B4` | RumbleLow | spikes | 600 | 268 | 1 398 730 | 20.01 | [spike-death](img/sound/spike-death.wav) | 13 | 8 RZX levels (no trace) |
 | SfxLifeLost `$F4CB` | RumbleLow | a fall out below; the S key | 600 | 268 | 1 398 730 | 20.01 | [life-lost](img/sound/life-lost.wav) | 20 | `rzx/l68` 690 T 5612 |
-| SfxAnimB `$F4E2` | RumbleHigh | a brick layer knocked off | 900 | 470 | 212 982 | 3.05 | [brick](img/sound/brick.wav) | 409 | `rzx/l01` 149 T 21 724 |
+| SfxBrickCrumble `$F4E2` | RumbleHigh | a brick layer knocked off | 900 | 470 | 212 982 | 3.05 | [brick](img/sound/brick.wav) | 409 | `rzx/l01` 149 T 21 724 |
 | SfxTimerTick `$F4F9` | SweepDown | one point of the timer counted in | 100 | 99 | 84 161 | 1.20 | [timer-tick](img/sound/timer-tick.wav) | 5598 | `rec/l83`, 58 calls in frames 594-672 |
 | SfxUnused `$F5BB` | RomRumble | nothing calls it | 900 | 426 | 536 425 | 7.68 | [unused](img/sound/unused.wav) | 0 | known only from the code |
 
@@ -62,9 +62,8 @@ The code and its delays are above `$8000`, so only the `OUT` may wait for the UL
 The three death effects share RumbleLow and its fixed ROM samples, so fire, spikes and a fall sound the same.
 SfxLockB and SfxPickup are the same primitive with the same timing: opening a lock sounds like a pick-up.
 
-The names SfxAnimA and SfxAnimB are the listing's.
-SfxAnimA is called only by the water-drop animations WaterA1 `$C019`, WaterB1 `$C04C` and WaterC1 `$C07F`.
-SfxAnimB is called only by BrickCrumble1 `$BEBB`.
+SfxWaterDrop is called only by the water-drop animations WaterA1 `$C019`, WaterB1 `$C04C` and WaterC1 `$C07F`.
+SfxBrickCrumble is called only by BrickCrumble1 `$BEBB`.
 
 ![Every effect's speaker bit](img/sound/waves.png)
 
@@ -88,7 +87,7 @@ character, not by pitch.
 All seven turn interrupts off at the start and on at the end.
 TripleSweep is the exception inside: each SweepFromE it calls ends with `EI`, so its second and third sweeps run with
 interrupts on.
-None reads its parameter block, except RomNoise, which uses the block address's low byte.
+None reads its AY register image, except RomNoise, which uses the block address's low byte.
 
 | Primitive | Address | Loop | Delay of each half-period |
 | --- | --- | --- | --- |
@@ -305,7 +304,7 @@ Either way the main loop does not run during an effect, so the pass that played 
 | Length | Effects | What the player sees |
 | --- | --- | --- |
 | about 1.2 frames | SfxLand, SfxWallBounce, SfxTimerTick | a pass of two frames instead of one |
-| 1.6-3 frames | SfxHit, SfxPickup, SfxLockA, SfxLockB, SfxAnimA, SfxAnimB | a short stop |
+| 1.6-3 frames | SfxHit, SfxPickup, SfxLockA, SfxLockB, SfxWaterDrop, SfxBrickCrumble | a short stop |
 | 20 frames | the three deaths | the game frozen for 0.4 s while the ball bursts |
 | 38.6 frames | SfxExtraLife, SfxLevelEnd | the game frozen for 0.77 s |
 
@@ -371,7 +370,7 @@ to the beeper and ignores them.
 | SfxHit `$F3E6` | 1236, 400, 680 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 51, 156, 92 | 640 |
 | SfxPickup `$F3FD` | 200, 200, 200 | 0 | `$F8` | `$11` `$11` `$11` | 2000, 9 | 312, 312, 312 | 512 |
 | SfxExtraLife `$F417` | 60, 400, 100 | 20 | `$FA` | `$11` `$11` `$11` | 5000, 9 | 1042, 156, 625 | 1280 |
-| SfxAnimA `$F42E` | 3000, 404, 300 | 10 | `$F7` | `$15` `$18` `$1A` | 1000, 9 | 21, 155, 208 | 256 |
+| SfxWaterDrop `$F42E` | 3000, 404, 300 | 10 | `$F7` | `$15` `$18` `$1A` | 1000, 9 | 21, 155, 208 | 256 |
 | SfxWallBounce `$F445` | 90, 300, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 208, 694 | 640 |
 | SfxLockA `$F45C` | 90, 500, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 125, 694 | 640 |
 | SfxLockB `$F473` | 90, 700, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 89, 694 | 640 |
@@ -379,7 +378,7 @@ to the beeper and ignores them.
 | SfxLevelEnd `$F4A4` | 100, 100, 100 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 15 | 625, 625, 625 | 640 |
 | SfxSpikeDeath `$F4BB` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
 | SfxLifeLost `$F4D2` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
-| SfxAnimB `$F4E9` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 500, 9 | 69, 26, 48 | 128 |
+| SfxBrickCrumble `$F4E9` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 500, 9 | 69, 26, 48 | 128 |
 | SfxTimerTick `$F500` | 50, 50, 50 | 0 | `$F8` | `$11` `$11` `$11` | 400, 9 | 1250, 1250, 1250 | 102 |
 
 Every volume has bit 4 set, so the envelope shapes every effect.

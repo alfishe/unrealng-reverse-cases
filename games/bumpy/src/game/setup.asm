@@ -74,14 +74,16 @@ DemoInputPtr:
 DemoFlag:
   DEFB $00
 
-; A flag the object handlers ($B9A7-$B9FD) read; no recording writes it (always
-; 0 in the image)
+; The quiet flag: 1 before the landing click (SfxLand at $C79E, $C86D, $CAB3),
+; 4 after the bottle (TakeBottle $BA1C) or a water drop spent on a fire ($CA0C,
+; $CC4F, $CE4E); at 4 the next bounce, jump or pick-up is silent, and the
+; silent branch sets it back to 0
 ObjectFlag:
   DEFB $00
 
 ; One player ($ADDC = 1); NewGame follows
 ;
-; Witness: L1 7 (c1, gameover, menu).
+; Witness: L1 8 (c1, exitbelow, gameover, menu).
 ;
 ; NewGame: ClearAttrs $B471 (ink 7, black border), DrawSides $B488, InitPlayers
 ; $BB96 (both records zeroed, 2 lives each by $BBA8). Then the cheat: TestKey
@@ -124,7 +126,7 @@ FirstPlayer:
 ; ClearPlayArea $B4CE, then zeroes the ball state $AA00, BallStep $A9FF,
 ; SpringArmed $AA13, the animation flags $AA12, $AB33, $AB2B, $AA15, $AA14,
 ; $AA1D, the platform under the ball $AB1C and $A9FD; the timer $AB04 = 1000
-; ($03E8: the frames the level allows).
+; ($03E8: the passes the level allows).
 ;
 ; The players: the current player $ADDB is kept in $ADDE. With two players
 ; ($ADDC = 2) the code copies player 2's record ($AB10) to the working copy
@@ -144,8 +146,8 @@ FirstPlayer:
 ; Last, in both: ClearPlayArea and BuildLevel again (the text goes), the HUD
 ; and WaitFrame $B6E4; MainLoop follows.
 ;
-; Witness: L1 57 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 62 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 LifeStart:
   LD A,(CheatMode)
   CP $00
@@ -204,8 +206,7 @@ LifeStartCurrent:
   LD DE,Player1ReadyText
   JR LifeStartCopy
 LifeStartPlayer2:
-  LD HL,Player2Record     ; player 2: record $AB10, text Player2ReadyText (no
-                          ; recording ran it)
+  LD HL,Player2Record     ; player 2: record $AB10, text Player2ReadyText
   LD DE,Player2ReadyText
 LifeStartCopy:
   PUSH DE                 ; the record to the working copy $AAFB
@@ -262,7 +263,7 @@ LifeStartGo:
 ; not 0) player 1 gets water, keys and hammers 2 and level 10. Called by
 ; GameStart ($ABBA).
 ;
-; Witness: L1 9 (c1, gameover, menu, twoname).
+; Witness: L1 10 (c1, exitbelow, gameover, menu, twoname).
 InitPlayers:
   LD IX,Player1Record
   LD B,$0E

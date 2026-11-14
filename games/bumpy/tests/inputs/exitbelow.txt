@@ -1,0 +1,20 @@
+# exitbelow: the exit entered from below (UpStep4 `$CD8A` lets the rising ball into a cell of platform 11), known
+# before only from the code; no level has a start, a prize and an exit placed for it, so three bytes of level 0's
+# record (LevelRecords `$8C3C`) are POKEd on this machine before the game starts (said so): the start cell (+36) 21,
+# the prizes to take (+37) 1, the exit cell (+38) 15, the cell above the start. From the menu after a fast load
+# (work/stage1/probe/load-fast-nokemp/end.szx): 2 (keyboard), 0, SPACE at READY?; right P held until the ball is in
+# cell 22 (the prize `$0D`: PrizesLeft 0, OpenExit `$BCB9` writes platform 11 in cell 15), left O until it is back in
+# cell 21, then up Q until the ball rises (state 3) into the exit: the level ends (state 8) and level 1 starts
+0 2
+4 -
+44 0
+48 -
+148 SPACE
+152 -
+172 P
+185 -
+215 O
+239 -
+243 Q
+264 -
+375 END

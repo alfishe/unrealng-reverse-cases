@@ -45,7 +45,7 @@ a 48K at power-on, `LOAD ""` typed, the original `BUMPY.TAP` at ROM speed, 18 18
 
 **Interrupts.** IM 1 all the time: the handler is the ROM's `$0038` (`$02BF`, the keyboard scan), which the game does
 not need (it reads the ports itself at `$B418`). An IM 2 setup exists at `$F343` and `$F388` (I = `$FE`, vectors at
-`$FDFD`) but no recording ever executes it (the L1 of all 103, [doc 2, 2.4](docs/02-architecture.md#24-the-memory-map)).
+`$FDFD`) but no recording ever executes it (the L1 of every recording, [doc 2, 2.6](docs/02-architecture.md#26-the-memory-map)).
 Interrupts are off most of the time: the input routine `$B418` begins with `DI` and, with no stick moved (the low five
 bits of port `$DF` all 1), returns by `RET Z` at `$B431` before its `EI` at `$B434`. They come back on only at the
 waits, each an `EI: HALT`: the frame wait `$B6E9`, and `$B35A`, `$B7BE`, `$C4DF`. c1 takes 4534 interrupts in 18 186
@@ -83,7 +83,12 @@ an `EI: HALT` and the tick `$F4F9` a step).
 
 ## 2. Static pass over the medium
 
-Stage 2.
+`kit/tapblocks.py list` cut the tape; `tools/image.py` writes the game image `work/mkgame/original.bin` (the code
+block at `$61A8`, as LD-BYTES leaves it), the image `case.json` names. Stage 2 merged five region fragments
+(`work/stage2/ann/`) into `src/game/game.ann`; `kit/mkgame.py` walked the code from the entry `$AB7C` and from every
+recording's L1 and wrote the 14 modules ([stage 2 NOTES](work/stage2/NOTES.md)). The level format was read from
+BuildLevel `$CF2E` ([doc 2, 2.5](docs/02-architecture.md#25-the-levels-as-data)); `tools/fig_levels.py` draws the 100
+levels from `src/res/levels/levels.txt` alone.
 
 ## 3. The stages and the packers
 
@@ -91,7 +96,10 @@ There are none: the code runs where `LD-BYTES` put it ([doc 3, 3.2](docs/03-buil
 
 ## 4. The medium from source
 
-Stage 4.
+`tools/build.sh` assembles the BASIC (`src/tape/basic.ann`), the loading screen (`src/screen/screen.ann`) and the game
+(`src/game/game.ann`, 15 module files, 60 resources in `src/res/`) and writes `build/BUMPY.TAP`, identical to
+`orig/Bumpy.tap.zip`'s `BUMPY.TAP` byte for byte ([doc 3, 3.3](docs/03-build-and-load.md#33-the-source-build));
+`tools/res_formats.py check` converts each of the 44 editable resources back to its bytes (0 bad).
 
 ## 5. Tool gaps found and fixed in unreal-ng
 
@@ -103,26 +111,61 @@ Stage 4.
 
 ### 6.0 The recordings
 
-Each one is made by `tools/record.py <plan>` from its input script in `tests/inputs/` and keeps its `session.ttd`, its
-`l1.json`, `record.json` (the plan, the moments and the state at each) and `screens/` in `work/stage1/<name>/`.
+All on unreal-ng's 48K, muted, each on a port base of its own (37510, 37515, 37600); each keeps its `session.ttd`,
+`l1.json`, `record.json` (the plan, the moments, the state at each, the POKEs) and `screens/` in its folder, and its
+input script in `tests/inputs/`. A snapshot start is said; every POKE is said in the recording's `record.json` and
+here. Every command runs from the case folder after `. work/env.sh`.
 
-| Name | Start and load | Frames | How it was made | What it reached |
+| Name | Folder | Start | Frames | What it reached |
 | --- | --- | --- | --- | --- |
-| c1 | power-on, `LOAD ""`, the original tape at ROM speed | 18 186 | section 1 | the load, the menu, keyboard play on level 0, the timer at 0 |
-| `menu` | a snapshot after a fast load (`work/stage1/probe/load-fast-nokemp/end.szx`, the LD-BYTES trap), Kempston fitted, the mouse quiet (section 5) | 12 760 | `tests/inputs/menu.txt`: 4000 frames idle, SPACE, then options 2, 3 and 4 each with moves, H, H, R; two players; R, 1, 2, then 0 with R, SPACE and V held | the demo (levels 10 and 11, frames 250-4000; [shot](docs/img/play/menu-001500-demo.png)) and back to the menu (4204); keyboard play (5352-6228) with the pause (H at 5756, the timer held to 5924; [shot](docs/img/play/menu-005820-pause.png)) and R back to the menu; Sinclair (6376-7252); option 4, Kempston: the stick moves did not start the level, READY? stayed up until H (7400-7972; [shot](docs/img/play/menu-007604-kempston.png)); two players (8320, [shot](docs/img/play/menu-008320-two-players.png)): the ball stayed at its start through 12 300; the cheat (12 656: water, keys, hammers and lives 99, "PLAYER 1 READY?"; [shot](docs/img/play/menu-012656-cheat.png)) |
-| `gameover` | the same snapshot, port 37515 | 6444 | `tests/inputs/gameover.txt`: game 0, keyboard, moves, then S three times with SPACE at each READY?; game 1, the score POKEd to 2000 (`$AAFB`, said so in the script), S three times, then B U M ENTER | lives 2 to 1 at 602 ([shot](docs/img/play/gameover-000602-life-lost.png)) and 1 to 0 at 1080, game over after the third S (1458) and back to the menu (2072); game 1: game over, the hall of fame (4618, [shot](docs/img/play/gameover-004618-hall-of-fame.png)) with a fourth entry of 2000 replacing POP's 1700; the name stayed "@..": letters are chosen with up and down and fixed with fire (`$EC40`-`$ECBE`), not typed |
-| `rzx/l00`-`rzx/l99` | the RZX's own state at each level's play start (`tools/rzx_levels.py`, `work/stage1/rzx/levels/`), `$B43E` set to `$FF` once | 405-3999 each, 110 790 in all | `tests/inputs/lNN.txt`: the RZX player's keys for that level (`tools/rzx_keys.py`), replayed by unreal-ng | 88 reach the next level as the RZX does; `l99` reaches the wrap to level 0 (frame 1154, [shot](docs/img/play/rzx-l99-001154-level-99-end.png), [level 0 again](docs/img/play/rzx-l99-001685-level-0-again.png)); 12 drift from the RZX (the cause not yet found; the game draws random numbers from `LD A,R`) and stop on their own level: `l10`, `l35`, `l36`, `l45`, `l51`, `l56`, `l59`, `l68`, `l83`, `l96`, `l97`, `l98` (their start screens are in the atlas) |
+| `c1` | `work/stage1/c1` | power-on, `LOAD ""`, the original tape at ROM speed | 18 186 | section 1: the load, the menu, keyboard play on level 0, the timer at 0 |
+| `menu` | `work/stage1/menu` | a snapshot after a fast load (`work/stage1/probe/load-fast-nokemp/end.szx`, the LD-BYTES trap), Kempston fitted, the mouse quiet (section 5) | 12 760 | 4000 frames idle, SPACE, then options 2, 3 and 4 each with moves, H, H, R; two players; R, 1, 2, then 0 with R, SPACE and V held: the demo (levels 10 and 11, frames 250-4000; [shot](docs/img/play/menu-001500-demo.png)) and back to the menu (4204); keyboard play (5352-6228) with the pause (H at 5756, the timer held to 5924; [shot](docs/img/play/menu-005820-pause.png)) and R back to the menu; Sinclair (6376-7252); option 4, Kempston: the stick reads nothing (the card does not answer port `$DF`, section 5), READY? stays up until H (7400-7972; [shot](docs/img/play/menu-007604-kempston.png)); two players (8320, [shot](docs/img/play/menu-008320-two-players.png)): player 1 bouncing in place with no key through 12 300; the cheat (12 656: water, keys, hammers and lives 99, "PLAYER 1 READY?"; [shot](docs/img/play/menu-012656-cheat.png)) |
+| `gameover` | `work/stage1/gameover` | the same snapshot | 6444 | game 0, keyboard, moves, then S three times with SPACE at each READY?; game 1, the score `$AAFB` POKEd to 2000, S three times, then B U M ENTER: lives 2 to 1 at 602 ([shot](docs/img/play/gameover-000602-life-lost.png)) and 1 to 0 at 1080, game over after the third S (1458), the menu (2072); game 1: the hall of fame (4618, [shot](docs/img/play/gameover-004618-hall-of-fame.png)) with a fourth entry of 2000 replacing POP's 1700; the name stayed "@..": the letters are stepped by right and left and fixed by fire or up, not typed (EnterName `$ECC0`, [doc 8, 8.9](docs/08-hud-and-text.md#89-the-name-entry)) |
+| `rzx/l00`-`rzx/l99` | `work/stage1/rzx/lNN` | the RZX's own state at each level's play start (`tools/rzx_levels.py`, `work/stage1/rzx/levels/play-F.z80`), `$B43E` POKEd to `$FF` once | 405-3999 each, 110 790 in all | the RZX player's keys for that level (`tools/rzx_keys.py`) frame by frame: 88 reach the next level as the RZX does; `l99` reaches the wrap to level 0 (frame 1154, [shot](docs/img/play/rzx-l99-001154-level-99-end.png), [level 0 again](docs/img/play/rzx-l99-001685-level-0-again.png)); 12 drift from the RZX and stop on their own level (`l10`, `l35`, `l36`, `l45`, `l51`, `l56`, `l59`, `l68`, `l83`, `l96`, `l97`, `l98`): a key the RZX's player pressed between two of the game's reads of one frame ([stage 2 NOTES](work/stage2/NOTES.md), leftover 1); their deaths are the deaths of the drifting replays |
+| `rec/l10` ... `rec/l98` (12) | `work/stage2/rec/lNN` | the same play-start states, `$B43E` POKEd to `$FF` | 653-1819 | the 12 lost levels finished by the `events` plan (l10, l35, l36, l45, l51, l68, l83, l97) or the `passes` plan (l56, l59, l96, l98): the RZX player's decisions looked up by the game's own progress; inputs `tests/inputs/solve-lNN.txt`; with stage 1's 88 every level 0-99 has a recording of being finished |
+| `fire` | `work/stage2/rec/fire` | level 38's play start, `$B43E` = `$FF` and Water `$AAFD` POKEd to 0 | 300 | left (Sinclair 6) onto cell 31, platform 9: LeftFireDeath `$CA7A` at frame 41, Lives 10 → 9 ([shot](docs/img/play/fire-000070-burst.png)) |
+| `twoname` | `work/stage2/rec/twoname` | `load-fast-nokemp/end.szx` | 6021 | two players to the end, turns passed by S; the score POKEd to 2000 (frame 2118) and 2100 (frame 3711) before each last life; B U M and Z A P entered by right, left and fire ([shot](docs/img/play/twoname-003300-name.png), [the hall](docs/img/play/twoname-005300-hall.png)) |
+| `scoreloop` | `work/docs/integrate/rec/scoreloop` | level 87's play start (`play-130843.z80`), `$B43E` = `$FF` | 1552 | the points loop: the RZX player's keys numbered by the timer for the first 330 passes (six prizes and the bottle), then S, three times; score 36 081 → 36 171 → 36 261 → 36 351, lives 16 → 17 → 16 each round ([before S](docs/img/play/scoreloop-000400-before-s.png), [after S](docs/img/play/scoreloop-000484-after-s.png)) |
+| `rightspike` | `work/docs/integrate/rec/rightspike` | level 75's play start (`play-113295.z80`), `$B43E` = `$FF` | 220 | right (Sinclair 7) from cell 30 onto the spikes of cell 31: RightSpikeDeath `$CCB8` once, Lives 15 → 14 ([shot](docs/img/play/rightspike-000060-burst.png)) |
+| `exitbelow` | `work/docs/integrate/rec/exitbelow` | `load-fast-nokemp/end.szx`; level 0's record POKEd before the game: start cell (`$8C60`) 21, prizes (`$8C61`) 1, exit cell (`$8C62`) 15 | 375 | 2, 0, SPACE; right to cell 22 (the prize, frame 215: the exit opens on cell 15), left back to 21, up: the ball rises into the exit (UpStep5 `$CDD9` once) and level 1 starts at frame 275 ([below the exit](docs/img/play/exitbelow-000243-below-exit.png), [in it](docs/img/play/exitbelow-000275-in-exit.png)) |
+
+The `work/docs/bmA/<name>` and `work/docs/bm/twoname` folders are no recordings: they are the docs writer's trace
+windows over the recordings above (`c1`, `fire`, `rzx/l01`, `rzx/l21`, `rzx/l68`, `rec/l83`, `twoname`), opened
+from their `session.ttd` with `python3 R/kit/rs.py open --work W --ttd REC/session.ttd --model 48K --ranges 4000-FFFF`;
+the animations name them (6.2).
+
+How they were made (port base 37510 unless said):
+
+```sh
+python3 tools/record.py c1 --work work/stage1/c1
+python3 tools/record.py menu --start work/stage1/probe/load-fast-nokemp/end.szx --work work/stage1/menu
+python3 tools/record.py gameover --start work/stage1/probe/load-fast-nokemp/end.szx --work work/stage1/gameover --port-base 37515
+python3 tools/record.py rzx --rzx N N --work work/stage1/rzx/lNN                  # N = 0 ... 99
+work/stage2/run-lost.sh 37510 10 35 36 45 51 68 83 97                             # tools/record.py events
+PLAN=passes work/stage2/run-lost.sh 37510 56 59 96 98
+python3 tools/record.py fire --rzx 38 38 --work work/stage2/rec/fire --port-base 37515
+python3 tools/record.py twoname --start work/stage1/probe/load-fast-nokemp/end.szx --work work/stage2/rec/twoname
+python3 tools/record.py scoreloop --rzx 87 87 --work work/docs/integrate/rec/scoreloop --port-base 37600
+python3 tools/record.py rightspike --rzx 75 75 --work work/docs/integrate/rec/rightspike --port-base 37600
+python3 tools/record.py exitbelow --start work/stage1/probe/load-fast-nokemp/end.szx --work work/docs/integrate/rec/exitbelow --port-base 37600
+```
 
 The RZX is someone else's play (xmikex and Jamie Angus, SPIN 0.5, recorded with rollback) and is a witness only of
-the levels' layouts and of the order of play; it never loses a life and gains 16 extra lives, the cause not yet found.
+the levels' layouts and of the order of play. Its own run never loses a life: its Lives only rise, 2 to 18, with its
+16 bottles (`work/stage2/rzx-states.tsv`); the lives lost under `work/stage1/rzx/` are the drifting replays'.
 
 ### 6.1 The screens
+
+Every screen the documents link, in `docs/img/play/` (a recording's `screens/` file, or drawn from its `session.ttd`):
 
 | Recording, frame | Screen |
 | --- | --- |
 | c1 10 182 | [the loading screen](docs/img/play/c1-010182-loading.png) |
+| c1 13 700 | [the menu as it first appears](docs/img/play/c1-013700-entry.png) |
 | c1 13 782 | [the menu](docs/img/play/c1-013782-menu.png) |
 | c1 14 018 | [READY?](docs/img/play/c1-014018-ready.png) |
+| c1 14 130 | [a water drop taken](docs/img/play/c1-014130-water.png) |
+| c1 14 200 | [the spring](docs/img/play/c1-014200-spring.png) |
 | c1 15 086 | [level 0 in play](docs/img/play/c1-015086-play.png) |
 | c1 18 186 | [the timer at 0, play goes on](docs/img/play/c1-018186-timer-zero.png) |
 | `menu` 1500 | [the demo](docs/img/play/menu-001500-demo.png) |
@@ -133,12 +176,48 @@ the levels' layouts and of the order of play; it never loses a life and gains 16
 | `gameover` 602 | [a life lost by S](docs/img/play/gameover-000602-life-lost.png) |
 | `gameover` 4618 | [the hall of fame](docs/img/play/gameover-004618-hall-of-fame.png) |
 | `rzx/l00` 971 | [every prize taken, the exit open](docs/img/play/rzx-l00-000971-exit-open.png) |
+| `rzx/l01` 100, 700 | [the locks](docs/img/play/l01-000100-locks.png), [opened](docs/img/play/l01-000700-locks-open.png) |
+| `rzx/l68` 700, 932 | [the fall out](docs/img/play/l68-000700-fall.png), [the burst on spikes](docs/img/play/l68-000932-burst.png) |
+| `rec/l83` 100, 400, 540, 650 | [play](docs/img/play/l83-000100-play.png), [the exit open](docs/img/play/l83-000400-exit-open.png), [the sink](docs/img/play/l83-000540-sink.png), [the count](docs/img/play/l83-000650-count.png) |
 | `rzx/l99` 1154 | [the end of level 99](docs/img/play/rzx-l99-001154-level-99-end.png) |
 | `rzx/l99` 1685 | [level 0 again, the score kept](docs/img/play/rzx-l99-001685-level-0-again.png) |
+| `fire` 30, 70 | [before the fire](docs/img/play/fire-000030-before.png), [the burst](docs/img/play/fire-000070-burst.png) |
+| `twoname` 200, 2300, 3300, 5300 | [two players, READY?](docs/img/play/twoname-000200-two-ready.png), [the name entry starts](docs/img/play/twoname-002300-name-start.png), [the name](docs/img/play/twoname-003300-name.png), [the hall of fame](docs/img/play/twoname-005300-hall.png) |
+| `scoreloop` 400, 484, 934 | [before S](docs/img/play/scoreloop-000400-before-s.png), [after S](docs/img/play/scoreloop-000484-after-s.png), [the second round](docs/img/play/scoreloop-000934-before-s.png) |
+| `rightspike` 60 | [the right spike death](docs/img/play/rightspike-000060-burst.png) |
+| `exitbelow` 243, 275 | [below the open exit](docs/img/play/exitbelow-000243-below-exit.png), [in it](docs/img/play/exitbelow-000275-in-exit.png) |
+| every screen | [the contact sheet](docs/img/play/screens.png) |
 
 Every level's start screen, from the RZX: [0-24](docs/img/maps/levels-00-24.png),
 [25-49](docs/img/maps/levels-25-49.png), [50-74](docs/img/maps/levels-50-74.png),
 [75-99](docs/img/maps/levels-75-99.png); the same drawn from the data in
-[doc 2, 2.3](docs/02-architecture.md#23-the-levels).
+[doc 2, 2.5](docs/02-architecture.md#25-the-levels-as-data).
+
+### 6.2 The animations
+
+| File | Document | Recording | Frames |
+| --- | --- | --- | --- |
+| [tape-load.gif](docs/img/load/tape-load.gif) | [doc 3](docs/03-build-and-load.md) | c1 | 600-13 800, every 240th |
+| [MainLoop.gif](docs/img/routines/MainLoop.gif) | [doc 4](docs/04-game-loop.md) | `rec/l83` | 349 (T 1800 to 38 700) |
+| [BuildLevel.gif](docs/img/routines/BuildLevel.gif) | doc 4, [doc 6](docs/06-rendering.md) | `rzx/l21` | 1534-1539 |
+| [BallRight.gif](docs/img/routines/BallRight.gif) | doc 4, [doc 10](docs/10-gameplay-logic.md) | `rec/l83` | 349-378 |
+| [OpenExit.gif](docs/img/routines/OpenExit.gif) | doc 4 | `rec/l83` | 341-347 |
+| [LevelEnd.gif](docs/img/routines/LevelEnd.gif) | doc 4 | `rec/l83` | 518-530 |
+| [level-end-l21.gif](docs/img/play/level-end-l21.gif) | doc 4 | `rzx/l21` | 1384-1542, every 2nd |
+| [ChooseNextState.gif](docs/img/routines/ChooseNextState.gif) | [doc 1](docs/01-game-design.md), [doc 5](docs/05-controls.md) | c1 | 14 082-14 138 |
+| [BrickStep.gif](docs/img/routines/BrickStep.gif) | doc 6, [doc 7](docs/07-objects.md) | `rzx/l01` | 147-157 |
+| [BuildLevel-record.gif](docs/img/routines/BuildLevel-record.gif) | doc 7 | `rzx/l21` | 1534-1535 |
+| [PlatformChangeStep.gif](docs/img/routines/PlatformChangeStep.gif) | doc 7, doc 10 | `rzx/l01` | 484-495 |
+| [WallStep.gif](docs/img/routines/WallStep.gif) | doc 7 | `rzx/l01` | 586-625 |
+| [DrawHud.gif](docs/img/routines/DrawHud.gif) | doc 7, [doc 8](docs/08-hud-and-text.md), doc 10 | c1 | 14 127-14 130 |
+| [PrintText.gif](docs/img/routines/PrintText.gif) | doc 8 | c1 | 13 926 (T 35 900 to 52 100) |
+| [EnterName.gif](docs/img/routines/EnterName.gif) | doc 8, doc 4 | `twoname` | 3030-3300 |
+| [BallBounce.gif](docs/img/routines/BallBounce.gif) | doc 10 | c1 | 14 082-14 138 |
+| [LeftFireDeath.gif](docs/img/routines/LeftFireDeath.gif) | doc 10 | `fire` | 40-85 |
+| [BallBurst.gif](docs/img/routines/BallBurst.gif) | doc 10 | `rzx/l68` | 920-947 |
+| [BallFallOut.gif](docs/img/routines/BallFallOut.gif) | doc 10 | `rzx/l68` | 682-715 |
 
 ## 7. Review
+
+Docs 01-10 written (one writer, `work/docs/bm-*`), integrated (sources, docs 11 and 12, the three integration
+recordings); in review. Open points for the reviewers: `work/review/open-from-writers.md`.

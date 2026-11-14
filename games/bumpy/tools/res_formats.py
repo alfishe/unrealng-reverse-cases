@@ -19,6 +19,7 @@ The formats (each folder's README.md lists its files, addresses and readers):
 - texts/*.txt: UTF-8, one quoted string a line, `#` lines comments; printable ASCII as itself, `\\xNN` any other
   byte, `\\"` and `\\\\` escaped. The build joins the strings.
 - tables/*.csv: a header line naming the columns, `#` lines comments, numbers decimal or `$hex`.
+- sound/ay-images.csv: the 14 effects' AY register images, one row an effect (tone and envelope periods as words).
 Any other file (leftovers/) stays its bytes.
 """
 import argparse
@@ -491,7 +492,48 @@ def words(column, comments, index):
     return '.csv', out, back
 
 
-GROUPS = {}
+AY_EFFECTS = ['land', 'hit', 'pickup', 'extra-life', 'water-drop', 'wall-bounce', 'lock-a', 'lock-b', 'fire-death',
+              'level-end', 'spike-death', 'life-lost', 'brick-crumble', 'timer-tick']
+AY_COLUMNS = ['effect', 'tone_a', 'tone_b', 'tone_c', 'noise', 'mixer', 'vol_a', 'vol_b', 'vol_c', 'env_period',
+              'env_shape', 'tail1', 'tail2']
+AY_WORDS = (0, 1, 2, 8)  # tone periods R0/R1, R2/R3, R4/R5 and the envelope period R11/R12 are words
+
+
+def ay_out(part):
+    """the 14 effects' AY register images (16 bytes each after each effect's LD HL: R0-R13, then two zeros) as one
+    table, a row an effect; tone and envelope periods as decimal words, the rest `$hex` bytes"""
+    lines = head(['The sound effects\' AY-3-8912 register images (SfxLandParams $F3CF ... SfxTimerTickParams $F500):',
+                  '16 bytes after each effect\'s LD HL: R0-R13 (tone periods A B C, noise, mixer, volumes A B C,',
+                  'envelope period and shape), then two zeros. WriteAyRegisters $F190 would write them; the 48K',
+                  'beeper code never reads them (doc 9, 9.5). Periods decimal, the other bytes $hex. The bytes are',
+                  'kept whole: the chip takes 12 bits of a tone period and 5 of the noise, so 4500 plays as 404.'])
+    lines.append(','.join(AY_COLUMNS))
+    for e in AY_EFFECTS:
+        d = part['sound/ay-%s.bin' % e]
+        if len(d) != 16:
+            raise ValueError('ay: %s is %d bytes, not 16' % (e, len(d)))
+        regs = [d[0] | d[1] << 8, d[2] | d[3] << 8, d[4] | d[5] << 8, d[6], d[7], d[8], d[9], d[10],
+                d[11] | d[12] << 8, d[13], d[14], d[15]]
+        lines.append(','.join([e] + [str(v) if i in AY_WORDS or i in (3, 9) else '$%02X' % v
+                                     for i, v in enumerate(regs)]))
+    return text_file(lines)
+
+
+def ay_in(raw):
+    out = {}
+    for ln in lines_of(raw)[1:]:
+        t = ln.split(',')
+        v = [num(x) for x in t[1:]]
+        if len(v) != 12:
+            raise ValueError('ay: %s has %d values, not 12' % (t[0], len(v)))
+        d = bytearray()
+        for i, x in enumerate(v):
+            d += bytes([x & 255, x >> 8 & 255]) if i in AY_WORDS else bytes([x & 255])
+        out['sound/ay-%s.bin' % t[0]] = bytes(d)
+    return out
+
+
+GROUPS = {'sound/ay-images.csv': (['sound/ay-%s.bin' % e for e in AY_EFFECTS], ay_out, ay_in)}
 
 # .bin name -> (suffix, to_editable(bytes), from_editable(raw))
 SINGLES = {

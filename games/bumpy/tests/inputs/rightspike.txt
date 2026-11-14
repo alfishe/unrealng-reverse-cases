@@ -1,0 +1,6 @@
+# rightspike: the right spike death (RightSpikeDeath `$CCB8`), known before only from the code: from the RZX's
+# play start of level 75 (play-F.z80; the ball starts in cell 30, plain, and cell 31 on its right is spikes, platform
+# 12, with no wall between), the Sinclair right key 7 held until the burst; no POKE but stage 1's Kempston byte
+0 7
+60 -
+220 END

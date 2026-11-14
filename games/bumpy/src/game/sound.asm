@@ -1,9 +1,10 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; sound.asm: The sound: beeper effects, their primitives, and the unused 128K and interrupt code
 ;
-; Every effect is LD HL,params: CALL primitive(s): RET, followed by 16 bytes of parameters. No primitive reads them
-; (the CPC original's envelopes, known only from the code): they are kept as leftovers. The primitives drive the
-; speaker (bit 4 of port $FE) with interrupts off: sweeps, random noise from R, and noise from ROM bytes.
+; Every effect is LD HL,params: CALL primitive(s): RET, followed by its AY register image: 16 bytes, R0-R13 and two
+; zeros, the block WriteAyRegisters $F190 would write (doc 9, 9.5). No beeper primitive reads them (RomNoise only the
+; address's low byte): they are the resource sound/ay-images.csv. The primitives drive the speaker (bit 4 of port $FE)
+; with interrupts off: sweeps, random noise from R, and noise from ROM bytes.
 ;
 ; $F183-$F3C7 holds code no recording ran and nothing calls: a random number, an AY register writer for the 128K, a
 ; delay, a line-table builder, and two IM 2 set-ups whose handlers call empty hooks. It is the frame of a 128K music
@@ -266,75 +267,83 @@ Im2HookWait:
 ; SquareTone $F54C. Called at $C79E, $C86D, $CAB3 when the landing sets $ABA7 =
 ; 1.
 ;
-; Witness: L1 2605 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2628 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 SfxLand:
   LD HL,SfxLandParams
   CALL SquareTone
   RET
 
-; SfxLand's 16 unread parameter bytes
+; SfxLand's AY register image: R0-R13 and two zeros, the block WriteAyRegisters
+; $F190 would write; unread on the 48K
 SfxLandParams:
-  INCBIN "res/leftovers/sfx-land-params.bin",$0000,16
+  INCBIN "res/sound/ay-land.bin",$0000,16
 
 ; Effect: the ball strikes a cell that is not empty and not bricks
 ;
 ; RomNoise $F560 (its noise from the ROM at $04E6). Called at $CCE2.
 ;
-; Witness: L1 1314 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1324 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 SfxHit:
   LD HL,SfxHitParams
   CALL RomNoise
   RET
 
-; SfxHit's 16 parameter bytes (only the address's low byte $E6 is used, as
-; RomNoise's start in the ROM)
+; SfxHit's AY register image: R0-R13 and two zeros, the block WriteAyRegisters
+; $F190 would write; on the 48K only the address's low byte $E6 is used, as
+; RomNoise's start in the ROM
 SfxHitParams:
-  INCBIN "res/leftovers/sfx-hit-params.bin",$0000,16
+  INCBIN "res/sound/ay-hit.bin",$0000,16
 
 ; Effect: an object picked up, a menu option chosen
 ;
 ; RandomNoise2 $F534. Called by the prize, key, water and hammer handlers
 ; ($B9AE, $B9C6, $B9E5, $BA04) and MenuRedraw.
 ;
-; Witness: L1 1034 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1054 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 SfxPickup:
   LD HL,SfxPickupParams
   CALL RandomNoise2
   RET
 
-; SfxPickup's 16 unread parameter bytes
+; SfxPickup's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxPickupParams:
-  INCBIN "res/leftovers/sfx-pickup-params.bin",$0000,16
+  INCBIN "res/sound/ay-pickup.bin",$0000,16
 
 ; Effect: the bottle, an extra life
 ;
 ; TripleSweep $F579 twice. Called at $BA21.
 ;
-; Witness: L1 20 (menu, l10, l36, l45, l68, rzx x15).
+; Witness: L1 23 (menu, scoreloop, l10, l36, l45, l68, rzx x15).
 SfxExtraLife:
   LD HL,SfxExtraLifeParams
   CALL TripleSweep
   CALL TripleSweep
   RET
 
-; SfxExtraLife's 16 unread parameter bytes
+; SfxExtraLife's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxExtraLifeParams:
-  INCBIN "res/leftovers/sfx-extra-life-params.bin",$0000,16
+  INCBIN "res/sound/ay-extra-life.bin",$0000,16
 
-; Effect: a step of the animations at $C019, $C04C, $C07F
+; Effect: a water drop falls on a fire (WaterA1 $C019, WaterB1 $C04C, WaterC1
+; $C07F)
 ;
 ; RumbleHigh $F5AD.
 ;
 ; Witness: L1 55 (menu, l10, l36, l56, l59, rzx x28).
-SfxAnimA:
-  LD HL,SfxAnimAParams
+SfxWaterDrop:
+  LD HL,SfxWaterDropParams
   CALL RumbleHigh
   RET
 
-; SfxAnimA's 16 unread parameter bytes
-SfxAnimAParams:
-  INCBIN "res/leftovers/sfx-anim-a-params.bin",$0000,16
+; SfxWaterDrop's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
+SfxWaterDropParams:
+  INCBIN "res/sound/ay-water-drop.bin",$0000,16
 
 ; Effect: the ball bounces back from a wall (a falling sweep)
 ;
@@ -346,9 +355,10 @@ SfxWallBounce:
   CALL SweepDown
   RET
 
-; SfxWallBounce's 16 unread parameter bytes
+; SfxWallBounce's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxWallBounceParams:
-  INCBIN "res/leftovers/sfx-wall-bounce-params.bin",$0000,16
+  INCBIN "res/sound/ay-wall-bounce.bin",$0000,16
 
 ; Effect: a step of the lock animation at $C476
 ;
@@ -360,9 +370,10 @@ SfxLockA:
   CALL RandomNoise1
   RET
 
-; SfxLockA's 16 unread parameter bytes
+; SfxLockA's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxLockAParams:
-  INCBIN "res/leftovers/sfx-lock-a-params.bin",$0000,16
+  INCBIN "res/sound/ay-lock-a.bin",$0000,16
 
 ; Effect: a step of the lock animation at $C488
 ;
@@ -374,15 +385,16 @@ SfxLockB:
   CALL RandomNoise2
   RET
 
-; SfxLockB's 16 unread parameter bytes
+; SfxLockB's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxLockBParams:
-  INCBIN "res/leftovers/sfx-lock-b-params.bin",$0000,16
+  INCBIN "res/sound/ay-lock-b.bin",$0000,16
 
 ; Effect: the ball lands on fire without water (stage2/rec/fire)
 ;
 ; RumbleLow $F58C, as SfxSpikeDeath. Called at $CA7A, $CCBD, $CEF9, the
-; landings on a burning platform with no water drop; no recording lost a ball
-; to fire.
+; landings on a burning platform with no water drop; stage2/rec/fire (Water
+; POKEd to 0) is the only one.
 ;
 ; Witness: L1 1 (fire).
 SfxFireDeath:
@@ -390,95 +402,101 @@ SfxFireDeath:
   CALL RumbleLow
   RET
 
-; SfxFireDeath's 16 unread parameter bytes
+; SfxFireDeath's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxFireDeathParams:
-  INCBIN "res/leftovers/sfx-fire-death-params.bin",$0000,16
+  INCBIN "res/sound/ay-fire-death.bin",$0000,16
 
 ; Effect: the level is finished
 ;
 ; TripleSweep $F579 twice. Called at $B354.
 ;
-; Witness: L1 101 (menu, l x12, rzx x88).
+; Witness: L1 102 (exitbelow, menu, l x12, rzx x88).
 SfxLevelEnd:
   LD HL,SfxLevelEndParams
   CALL TripleSweep
   CALL TripleSweep
   RET
 
-; SfxLevelEnd's 16 unread parameter bytes
+; SfxLevelEnd's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxLevelEndParams:
-  INCBIN "res/leftovers/sfx-level-end-params.bin",$0000,16
+  INCBIN "res/sound/ay-level-end.bin",$0000,16
 
 ; Effect: the ball dies on platform 12
 ;
 ; RumbleLow $F58C. Called at $CA75, $CCB8, $CDC6, $CEF4.
 ;
-; Witness: L1 13 (rzx x8).
+; Witness: L1 14 (rightspike, rzx x8).
 SfxSpikeDeath:
   LD HL,SfxSpikeDeathParams
   CALL RumbleLow
   RET
 
-; SfxSpikeDeath's 16 unread parameter bytes
+; SfxSpikeDeath's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxSpikeDeathParams:
-  INCBIN "res/leftovers/sfx-spike-death-params.bin",$0000,16
+  INCBIN "res/sound/ay-spike-death.bin",$0000,16
 
 ; Effect: a life is lost (the ball fell, or the S key)
 ;
 ; RumbleLow $F58C. Called at $B2B2 (the fall below the screen) and $BA90.
 ;
-; Witness: L1 20 (gameover, twoname, rzx x6).
+; Witness: L1 23 (gameover, scoreloop, twoname, rzx x6).
 SfxLifeLost:
   LD HL,SfxLifeLostParams
   CALL RumbleLow
   RET
 
-; SfxLifeLost's 16 unread parameter bytes
+; SfxLifeLost's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxLifeLostParams:
-  INCBIN "res/leftovers/sfx-life-lost-params.bin",$0000,16
+  INCBIN "res/sound/ay-life-lost.bin",$0000,16
 
-; Effect: a step of the animation at $BEBB
+; Effect: a brick layer crumbles (BrickCrumble1 $BEBB)
 ;
 ; RumbleHigh $F5AD.
 ;
 ; Witness: L1 409 (l51, l59, l96, l98, rzx x27).
-SfxAnimB:
-  LD HL,SfxAnimBParams
+SfxBrickCrumble:
+  LD HL,SfxBrickCrumbleParams
   CALL RumbleHigh
   RET
 
-; SfxAnimB's 16 unread parameter bytes
-SfxAnimBParams:
-  INCBIN "res/leftovers/sfx-anim-b-params.bin",$0000,16
+; SfxBrickCrumble's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
+SfxBrickCrumbleParams:
+  INCBIN "res/sound/ay-brick-crumble.bin",$0000,16
 
 ; Effect: a tick of the timer counted into the score at the level's end
 ;
 ; SweepDown $F510. Called at $B36B.
 ;
-; Witness: L1 5598 (menu, l x8, rzx x80).
+; Witness: L1 5622 (exitbelow, menu, l x8, rzx x80).
 SfxTimerTick:
   LD HL,SfxTimerTickParams
   CALL SweepDown
   RET
 
-; SfxTimerTick's 16 unread parameter bytes
+; SfxTimerTick's AY register image: R0-R13 and two zeros, the block
+; WriteAyRegisters $F190 would write; unread on the 48K
 SfxTimerTickParams:
-  INCBIN "res/leftovers/sfx-timer-tick-params.bin",$0000,16
+  INCBIN "res/sound/ay-timer-tick.bin",$0000,16
 
 ; 100 speaker toggles, each delay one shorter (E = 100 down to 1): a rising
 ; tone
 ;
 ; Interrupts off; EI at the end.
 ;
-; Witness: L1 5717 (c1, menu, twoname, l x11, rzx x94).
+; Witness: L1 5741 (c1, exitbelow, menu, twoname, l x11, rzx x94).
 SweepDown:
   DI
   LD E,$64
 
 ; As SweepDown from the delay in E
 ;
-; Witness: L1 6443 (c1, menu, twoname, l x12, rzx00-rzx34, rzx36-rzx82,
-; rzx84-rzx97, rzx99).
+; Witness: L1 6491 (c1, exitbelow, menu, scoreloop, twoname, l x12,
+; rzx00-rzx34, rzx36-rzx82, rzx84-rzx97, rzx99).
 SweepFromE:
   XOR A
 SweepFromELoop:
@@ -515,7 +533,8 @@ RandomNoise1Loop2:
 
 ; 100 pulses, the speaker bit from R, delay $50 + (R & $3F)
 ;
-; Witness: L1 1151 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1171 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 RandomNoise2:
   DI
   LD E,$64
@@ -537,7 +556,8 @@ RandomNoise2Loop2:
 
 ; 100 half periods: on with a delay of 100, off at once
 ;
-; Witness: L1 2605 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2628 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 SquareTone:
   DI
   LD E,$64
@@ -561,8 +581,8 @@ SquareToneSkip:
 ;
 ; L is the low byte of the effect's parameter address.
 ;
-; Witness: L1 1314 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1324 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 RomNoise:
   DI
   LD E,$64
@@ -586,7 +606,7 @@ RomNoiseLoop2:
 
 ; Three sweeps from R-based delays (R set to $3F first, so the same each time)
 ;
-; Witness: L1 242 (menu, l x12, rzx x91).
+; Witness: L1 250 (exitbelow, menu, scoreloop, l x12, rzx x91).
 TripleSweep:
   DI
   LD A,$3F
@@ -605,7 +625,7 @@ TripleSweepLoop:
 ;
 ; Writes the mask $F0 into the AND at $F59F; RomRumble does the rest.
 ;
-; Witness: L1 34 (fire, gameover, twoname, rzx x11).
+; Witness: L1 38 (fire, gameover, rightspike, scoreloop, twoname, rzx x11).
 RumbleLow:
   DI
   LD HL,$0000
@@ -618,7 +638,8 @@ RumbleLow:
 ; Each byte: OUT ($FE),(byte & $F8) (border black, MIC and speaker bits from
 ; the ROM), then a delay of (byte & mask) + 1. EI at the end.
 ;
-; Witness: L1 438000 (fire, gameover, menu, twoname, l x7, rzx x48).
+; Witness: L1 440400 (fire, gameover, menu, rightspike, scoreloop, twoname, l
+; x7, rzx x48).
 RomRumble:
   LD A,(HL)
   INC HL

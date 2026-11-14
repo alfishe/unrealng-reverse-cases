@@ -18,7 +18,8 @@
 ; whatever the CPC-style drawing leaves in those cells is put right once a
 ; frame.
 ;
-; Witness: L1 95989 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97366 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PaintHudAttrs:
   LD HL,HudRowAttrs
   LD DE,$5803
@@ -78,14 +79,16 @@ HudRowAttrsEnd:
 
   ORG $B7D1
 
-; Count the level timer down by one frame, stopping at 0
+; Count the level timer down by one pass of MainLoop, stopping at 0
 ;
 ; The level timer $AB04 (a word, 1000 = $03E8 at each level start, $AC06) goes
-; down by one each frame MainLoop runs ($ACE4) and stops at 0. Nothing here
-; acts on 0: the timer only sets the bonus the level end ($B35F) adds to the
-; score. 1000 frames are 20 seconds.
+; down by one each pass of MainLoop ($ACE4) and stops at 0. Nothing here acts
+; on 0: the timer only sets the bonus the level end ($B35F) adds to the score.
+; A pass that takes two frames counts once, so 1000 is 1000 passes, 20 to 40
+; seconds.
 ;
-; Witness: L1 92279 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93414 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 TickTimer:
   LD HL,(Timer)
   LD A,H
@@ -112,7 +115,7 @@ TickTimerLowByte:
 ; FirmwareStub5 $B754, then Level = L reduced below 100 by steps of 97. Then
 ; the death sound $F4CB and LoseLife.
 ;
-; Witness: L1 12 (gameover, twoname).
+; Witness: L1 15 (gameover, scoreloop, twoname).
 SelfDestruct:
   LD A,(DemoFlag)
   CP $00
@@ -121,7 +124,7 @@ SelfDestruct:
   CP $00
   JR Z,SelfDestructSound
 SelfDestructLevelSelect:
-  CALL FirmwareStub5      ; dead code
+  CALL FirmwareStub5      ; never reached (CheatMode is never set)
   LD A,L
 SelfDestructReduce:
   CP $64
@@ -145,10 +148,14 @@ SelfDestructSound:
 ; (out): $ADDB = 1 or 2. Then 50 frames (WaitOneFrame), WaitKeyOrSecond, and JP
 ; $ABD8, which starts the level of the player whose turn it is. Entered from
 ; the burst death ($B1D1), the fall below the screen ($B2B5) and SelfDestruct.
-; Witness: 27 runs (gameover, rzx x11): 25 lives lost, 2 game overs; the turn
-; change is known only from the code.
+; The score is not touched and LifeStart rebuilds the level with all its prizes
+; and its bottle, so the bottle, the prizes and S give points again for no
+; life: docs/integrate/rec/scoreloop (level 87, three rounds of the RZX's first
+; 330 passes and S: score + 90, lives 16 → 17 → 16 each round). The turn change
+; ran in twoname. The rzx runs are replays that drift from the RZX; the RZX
+; itself never loses a life (lives only rise, work/stage2/rzx-states.tsv).
 ;
-; Witness: L1 34 (fire, gameover, twoname, rzx x11).
+; Witness: L1 38 (fire, gameover, rightspike, scoreloop, twoname, rzx x11).
 LoseLife:
   LD A,(Lives)
   CP $00
@@ -219,7 +226,8 @@ LoseLifeWaitLoop:
 ; and LevelToHud. Called from the main loop ($ACB0, $ACC2) and the frame wait
 ; ($B6E6).
 ;
-; Witness: L1 95989 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97366 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 DrawHud:
   CALL PaintHudAttrs
   CALL ScoreToHud
@@ -234,7 +242,8 @@ DrawHud:
 ;
 ; The score word $AAFB as five digits (PrintNumber5), columns 3-7.
 ;
-; Witness: L1 96679 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 98075 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 ScoreToHud:
   LD A,$03
   LD (HudColumn),A
@@ -247,7 +256,8 @@ ScoreToHud:
 ; Icon character $7B at column 9, then the low byte of $AB01 as two digits
 ; (PrintNumber2).
 ;
-; Witness: L1 96009 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97389 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 LivesToHud:
   LD A,$09
   LD (HudColumn),A
@@ -262,7 +272,8 @@ LivesToHud:
 ;
 ; Icon $7C at column 14, then the byte $AAFD as two digits.
 ;
-; Witness: L1 96110 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97487 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 WaterToHud:
   LD A,$0E
   LD (HudColumn),A
@@ -277,7 +288,8 @@ WaterToHud:
 ;
 ; Icon $7D at column 18, then the byte $AAFE as two digits.
 ;
-; Witness: L1 96372 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97749 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 KeysToHud:
   LD A,$12
   LD (HudColumn),A
@@ -292,7 +304,8 @@ KeysToHud:
 ;
 ; Icon $7E at column 22, then the byte $AAFF as two digits.
 ;
-; Witness: L1 96104 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97481 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 HammersToHud:
   LD A,$16
   LD (HudColumn),A
@@ -308,7 +321,8 @@ HammersToHud:
 ; Icon $7F at column 26, then Level $AB00 as two digits: the number shown is
 ; the level's index 0-99 as stored.
 ;
-; Witness: L1 95991 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97368 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 LevelToHud:
   LD A,$1A
   LD (HudColumn),A
@@ -324,7 +338,8 @@ LevelToHud:
 ; PrintDigit for 10000, 1000 and 100, then falls into PrintNumber2. Also called
 ; by $B37A (the score while the timer is counted in).
 ;
-; Witness: L1 102196 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 103615 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PrintNumber5:
   LD DE,$2710
   CALL PrintDigit
@@ -339,7 +354,8 @@ PrintNumber5:
 ; (the glyph after "9"); the callers pass bytes below 100 (known only from the
 ; code).
 ;
-; Witness: L1 582784 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 591091 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PrintNumber2:
   LD DE,$000A
   CALL PrintDigit
@@ -353,7 +369,8 @@ PrintNumber2:
 ; left with the remainder; the glyph is Font + 8 x (C + 16) ($F649, "0"), drawn
 ; by PrintHudGlyph.
 ;
-; Witness: L1 1472156 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1493027 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PrintDigit:
   LD C,$00
 PrintDigitLoop:
@@ -370,7 +387,8 @@ PrintDigitSkip:
 ;
 ; HL = DE + 8 x C, then HudBlit. HL is kept.
 ;
-; Witness: L1 1952742 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1980501 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PrintHudGlyph:
   PUSH HL
   LD L,C
@@ -387,7 +405,8 @@ PrintHudGlyph:
 ; Rows go to screen lines 1-7 (line-table entry 8, $B53D, then INC D for each
 ; line); glyph row 7 is not drawn. No attribute is written. $AB18 + 1.
 ;
-; Witness: L1 1952744 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1980503 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 HudBlit:
   LD IX,SpectrumLines+$0010
   LD D,(IX+$01)
@@ -410,7 +429,8 @@ HudBlitLoop:
 ; DE = $F4C9 (Font - 256, so that 8 x A lands on the character), C = A, then
 ; PrintHudGlyph.
 ;
-; Witness: L1 480586 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 487474 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PrintHudIcon:
   LD DE,SfxSpikeDeathParams+$000E
   LD C,A

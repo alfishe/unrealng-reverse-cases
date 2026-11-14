@@ -782,8 +782,9 @@ The only random numbers are the R register in two sound effects (doc 9).
 Random `$F183` belongs to the AY skeleton and is never called (doc 2, 2.8).
 Stage 2 traced the drift of a replay from the RZX to how keys are read, never to chance (`work/stage2/NOTES.md`).
 
-Witness: the RZX replays all 100 levels in step with the recording (doc 4, 4.8); that no gameplay routine reads R is
-known only from the code.
+Witness: the RZX replays all 100 levels in step with the recording (doc 4, 4.8), and `scoreloop` plays the same keys
+three times from level 87's start and takes the same six prizes and the bottle each time; that no gameplay routine
+reads R is known only from the code.
 
 The point: a level is a fixed puzzle; the same moves solve it every time, which the stage 2 solutions in
 `tests/inputs/` rely on.

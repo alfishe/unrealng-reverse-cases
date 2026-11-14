@@ -203,8 +203,8 @@ AfterLives:
 Unused3:
   DEFS $01
 
-; The level's timer: 1000 at a life's start, one off a frame; the rest goes
-; into the score at the level end
+; The level's timer: 1000 at a life's start, one off a pass of MainLoop; the
+; rest goes into the score at the level end
 Timer:
   DEFW $0000
 

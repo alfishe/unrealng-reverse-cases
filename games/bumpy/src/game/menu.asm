@@ -60,7 +60,8 @@ ControlMask:
 ; $B3F5 and the bit into the opcode byte $B3F6 (self-modifying), then tests.
 ; Output Z when held (bit 0), NZ when not. Keeps IX.
 ;
-; Witness: L1 423995 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 428989 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 TestKeyBit:
   PUSH IX
   LD IX,KeyRows
@@ -86,7 +87,8 @@ TestKeyBit:
 ; than at TestKeyBit: a recording that starts inside the routine). Nothing
 ; calls or jumps here (known only from the code); it is the tail of TestKeyBit.
 ;
-; Witness: L1 423996 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 428990 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 TestKeyBitTest:
   LD (TestKeyBitTest+$0006),A
   BIT 0,(IX+$00)
@@ -103,8 +105,8 @@ WaitPress:
 
 ; Waits until no key and no stick direction is held
 ;
-; Witness: L1 152206 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98,
-; rzx x24).
+; Witness: L1 152211 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 WaitRelease:
   CALL AnyControl
   JR NZ,WaitRelease
@@ -113,8 +115,8 @@ WaitRelease:
 ; ReadControls, then Z when nothing is held (the AND of the nine KeyRows bytes
 ; is $FF)
 ;
-; Witness: L1 501803 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98,
-; rzx x26).
+; Witness: L1 518862 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x26).
 AnyControl:
   CALL ReadControls
   LD HL,KeyRows
@@ -138,7 +140,8 @@ AnyControlLoop:
 ; like the keys) and EI. A Kempston mouse answering on port $DF would be read
 ; as a stick here (known only from the code).
 ;
-; Witness: L1 925798 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 947851 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 ReadControls:
   DI
   LD HL,KeyRows
@@ -184,8 +187,8 @@ Pause:
 
 ; NZ when the left control (slot $F086) is held
 ;
-; Witness: L1 5463 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 5520 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx77, rzx79-rzx99).
 TestLeft:
   LD A,(KeySlots+$0002)
   CALL TestKey
@@ -193,17 +196,18 @@ TestLeft:
 
 ; NZ when the right control (slot $F087) is held
 ;
-; Witness: L1 4674 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 4730 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx77, rzx79-rzx99).
 TestRight:
   LD A,(KeySlots+$0003)
   CALL TestKey
   RET
 
-; NZ when the fire control (slot $F084) is held: never called
+; NZ when the up control (slot 0, $F084) is held, despite its name: never
+; called
 ;
-; TestUpOrFire $B463 tests fire itself; nothing calls this one (known only from
-; the code).
+; TestUpOrFire $B463 tests slot 0 itself; nothing calls this one (known only
+; from the code).
 ;
 ; Witness: L1 0 ().
 TestFire:
@@ -213,15 +217,16 @@ TestFire:
 
 ; NZ when the down control (slot $F085) is held
 ;
-; Witness: L1 990 (l x12, rzx x94).
+; Witness: L1 1017 (scoreloop, l x12, rzx x94).
 TestDown:
   LD A,(KeySlots+$0001)
   CALL TestKey
   RET
 
-; NZ when up (slot $F088) or fire (slot $F084) is held: the spring
+; NZ when fire (slot 4, $F088) or up (slot 0, $F084) is held: the spring
 ;
-; Witness: L1 6352 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 6426 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 TestUpOrFire:
   LD A,(KeySlots+$0004)
   CALL TestKey
@@ -336,13 +341,13 @@ Menu:
 
 ; After an option: the pick-up sound, then MenuPrint
 ;
-; Witness: L1 11 (c1, gameover, menu, twoname).
+; Witness: L1 12 (c1, exitbelow, gameover, menu, twoname).
 MenuRedraw:
   CALL SfxPickup
 
 ; Start the time-out (3000 frames) and print the options
 ;
-; Witness: L1 19 (c1, gameover, menu, twoname).
+; Witness: L1 20 (c1, exitbelow, gameover, menu, twoname).
 MenuPrint:
   LD HL,$0BB8
   LD (MenuTimer),HL
@@ -357,13 +362,13 @@ MenuPrint:
 ; MenuDemoToggle flips: 1 returns with $B3B1 = 4 (the demo), 0 shows the hall
 ; of fame (MenuShowHallOfFame).
 ;
-; Witness: L1 7019 (c1, gameover, menu, twoname).
+; Witness: L1 7058 (c1, exitbelow, gameover, menu, twoname).
 MenuLoop:
   EI
 
 ; MenuLoop's HALT
 ;
-; Witness: L1 7022 (c1, gameover, menu, twoname).
+; Witness: L1 7062 (c1, exitbelow, gameover, menu, twoname).
 MenuWait:
   HALT
   LD A,$18
@@ -436,7 +441,7 @@ MenuTogglePlayers:
 ; ControlChoice $F083 = A; the three options' ink bytes ($F015, $F025, $F035)
 ; are set to 4 (green) and the chosen one to 7 (white); then MenuRedraw.
 ;
-; Witness: L1 7 (c1, gameover, menu, twoname).
+; Witness: L1 8 (c1, exitbelow, gameover, menu, twoname).
 MenuSelectControls:
   PUSH AF
   LD DE,$0010
@@ -515,7 +520,7 @@ SinclairKeys:
 
 ; Copy the chosen control set into KeySlots
 ;
-; Witness: L1 8 (c1, gameover, menu, twoname).
+; Witness: L1 9 (c1, exitbelow, gameover, menu, twoname).
 LoadControls:
   LD A,(ControlChoice)
   ADD A,A
@@ -534,7 +539,7 @@ LoadControls:
 
 ; $B3B1 = 2 x Players (0 one player, 2 two players)
 ;
-; Witness: L1 8 (c1, gameover, menu, twoname).
+; Witness: L1 9 (c1, exitbelow, gameover, menu, twoname).
 SetPlayersMode:
   LD A,(Players)
   SLA A

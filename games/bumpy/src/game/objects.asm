@@ -20,7 +20,8 @@
 ; handlers ($C811, $CA46, $CC89, $CDF9, $CEC6). Witness: 936 objects taken in
 ; the recordings, 625 prizes.
 ;
-; Witness: L1 8156 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 8264 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 TakeObject:
   AND A
   LD A,(CellObject)
@@ -161,7 +162,7 @@ TakeHammerQuiet:
 ; lives). The only way to gain a life: 15 bottles in the RZX and one in the
 ; menu recording's demo, each one life.
 ;
-; Witness: L1 20 (menu, l10, l36, l45, l68, rzx x15).
+; Witness: L1 23 (menu, scoreloop, l10, l36, l45, l68, rzx x15).
 TakeBottle:
   LD A,$04
   LD (ObjectFlag),A
@@ -191,7 +192,8 @@ ObjectHandlers:
 ; Score $AAFB += BC, PrintScore $E5A1, PrizesLeft $AA45 - 1 and OpenExit $BCB9
 ; when it reaches 0. Only prizes come here (BC = 15).
 ;
-; Witness: L1 690 (c1, menu, l x12, rzx00-rzx44, rzx46-rzx99).
+; Witness: L1 709 (c1, exitbelow, menu, scoreloop, l x12, rzx00-rzx44,
+; rzx46-rzx99).
 AddScore:
   AND A
   LD HL,(Score)
@@ -212,7 +214,8 @@ AddScore:
 ; CPC border back to black; a RET here). Called by MainLoop ($ACE7) every
 ; frame.
 ;
-; Witness: L1 92279 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93414 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 BottleFlashOff:
   LD A,(BorderFlash)
   CP $00
@@ -235,7 +238,7 @@ BottleFlashOff:
 ; (AnimateExit). Called by AddScore $BA47. Witness: 92 exits opened in the
 ; recordings.
 ;
-; Witness: L1 104 (menu, l x12, rzx x91).
+; Witness: L1 105 (exitbelow, menu, l x12, rzx x91).
 OpenExit:
   AND A
   LD A,(ExitCell)
@@ -288,11 +291,12 @@ OpenExit:
 ; Every 2 frames, the next frame of the open exit
 ;
 ; When $AA12 is set: $AA0E counts frames, at 2 NextExitFrame $BD5C steps $AA0F
-; (1-4) and the frame ExitFrames $C522[frame - 1] (6 bytes × 5 rows, colour
+; (1-4) and the frame ExitFrameTable $C522[frame - 1] (6 bytes × 5 rows, colour
 ; $5E) is stored at $AA10. Called by MainLoop ($ACE1) and the level end
 ; ($B32B).
 ;
-; Witness: L1 93188 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 94332 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 AnimateExit:
   AND A
   LD A,(ExitOpen)
@@ -311,7 +315,7 @@ AnimateExit:
   RLA
   LD D,$00
   LD E,A
-  LD IX,FireFrames
+  LD IX,ExitFrameTable
   ADD IX,DE
   LD H,(IX+$01)
   LD L,(IX+$00)
@@ -325,7 +329,7 @@ AnimateExit:
 
 ; $AA0E = 0; the exit frame $AA0F steps 1, 2, 3, 4, 1 ...
 ;
-; Witness: L1 6672 (menu, l x12, rzx x91).
+; Witness: L1 6714 (exitbelow, menu, l x12, rzx x91).
 NextExitFrame:
   LD A,$00
   LD (ExitTick),A

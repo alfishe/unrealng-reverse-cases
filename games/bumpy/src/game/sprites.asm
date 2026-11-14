@@ -20,8 +20,8 @@
 ; ($A9FE) the width in CPC bytes), then PaintAttrs $E2A3 with the attribute in
 ; C.
 ;
-; Witness: L1 89434 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx34,
-; rzx36-rzx44, rzx46-rzx99).
+; Witness: L1 89526 (c1, exitbelow, fire, gameover, menu, rightspike, twoname,
+; l x12, rzx00-rzx34, rzx36-rzx44, rzx46-rzx99).
 DrawSpriteColoured:
   CALL DrawSprite
 
@@ -38,7 +38,8 @@ DrawSpriteColoured:
 ; each gets C (bit 7 cleared), written into the operand of the LD (HL),n at
 ; $E30E before the loop. Output: the attributes; $E3E4 and $C74F changed.
 ;
-; Witness: L1 275682 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 278233 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PaintAttrs:
   LD A,C
   AND $07
@@ -121,7 +122,8 @@ PaintAttrsLoop2:
 ; BC kept; IY kept; the screen bytes stored. Interrupts are off from $E32A and
 ; on again at the end.
 ;
-; Witness: L1 91481 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 91594 (c1, exitbelow, fire, gameover, menu, rightspike, twoname,
+; l x12, rzx00-rzx99).
 DrawSprite:
   PUSH BC
   PUSH IX
@@ -258,7 +260,8 @@ SpriteHeight:
 ; XorSprite $E3EE (HL the CPC screen address, DE the graphics, B the lines),
 ; then PaintAttrs $E2A3 with C.
 ;
-; Witness: L1 186047 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 188454 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 XorSpriteColoured:
   PUSH BC
   CALL XorSprite
@@ -273,7 +276,8 @@ XorSpriteColoured:
 ; last half byte of an odd width at an even column ($E442) never ran: no sprite
 ; of odd width is XORed there.
 ;
-; Witness: L1 228035 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 231120 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 XorSprite:
   PUSH IX
   PUSH DE
@@ -407,7 +411,7 @@ XorSpriteSkip4:
 ; XorBricks $E4C4, then PaintAttrs $E2A3 with C. The only caller is the brick
 ; drawing at $D1A6.
 ;
-; Witness: L1 204 (fire, l98, rzx x6).
+; Witness: L1 256 (fire, rightspike, l98, rzx x6).
 XorBricksColoured:
   PUSH BC
   CALL XorBricks
@@ -421,7 +425,7 @@ XorBricksColoured:
 ; byte >> 4): the other bit plane of the CPC graphic. The odd-column path
 ; $E530-$E58A never ran (the bricks lie at even columns).
 ;
-; Witness: L1 204 (fire, l98, rzx x6).
+; Witness: L1 256 (fire, rightspike, l98, rzx x6).
 XorBricks:
   PUSH IX
   PUSH DE

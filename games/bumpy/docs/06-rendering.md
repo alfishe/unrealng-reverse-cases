@@ -267,7 +267,7 @@ each picture is drawn in its low plane, as the Spectrum shows it, with its addre
 | the plain platform | `$7788` | 8 × 4 | XorSprite |
 | the walls, 4 turning frames | `$7E5C + 48 × f` | 2 × 24 | XorSprite, ink `$83` |
 | the flames, 3 frames | `$814D + 30 × f` | 6 × 5 | DrawSpriteColoured, ink `$C2` |
-| the exit's frames | ExitFrames `$C522` table | 6 × 5 | DrawSpriteColoured, ink `$5E` |
+| the exit's frames | ExitFrameTable `$C522` | 6 × 5 | DrawSpriteColoured, ink `$5E` |
 | a brick row | `$8345` | 8 × 8 | XorBricksColoured, ink `$82` |
 | the burst, 6 frames | `$81F5-$830D` | 4 × 14 | doc 10 |
 | the blank | `$6708` | any | DrawSprite: the eraser |
@@ -457,7 +457,7 @@ Seven things change on the board while the ball moves, each driven from MainLoop
 | --- | --- | --- | --- | --- |
 | the flames | AnimateFires `$BBCD` | every 4 passes, 3 frames, every burning cell | `$814D + 30 × f` | DrawSpriteColoured, ink `$C2` |
 | the turning walls | AnimateWalls `$BC30` | every 4 passes, 4 frames, every type 4 wall | `$7E5C + 48 × f` | XorSprite, ink `$83` |
-| the open exit | AnimateExit `$BD21` | every 2 passes, 4 frames | ExitFrames `$C522` | DrawSpriteColoured, ink `$5E` |
+| the open exit | AnimateExit `$BD21` | every 2 passes, 4 frames | ExitFrameTable `$C522` | DrawSpriteColoured, ink `$5E` |
 | a platform wearing | PlatformChangeStep `$C19D` | 4 or 9 steps, one a pass | cracks | XorSprite |
 | a lock opening | WallStep `$C43E` | 2 or 7 steps | lock pictures | XorSprite, then DrawSprite of the blanks |
 | a brick layer | BrickStep `$BE94` | 4 steps | the layer cleared in a checker | direct stores of 0 |

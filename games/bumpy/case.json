@@ -13,6 +13,16 @@
     "2": "8000",
     "0": "C000"
   },
+  "ref_parts": [
+    [
+      "src/tape/basic.json",
+      "The tape's BASIC"
+    ],
+    [
+      "src/screen/screen.json",
+      "The loading screen"
+    ]
+  ],
   "read_builds": [
     "stage1/menu",
     "stage1/gameover",
@@ -129,7 +139,10 @@
     "stage2/rec/l97",
     "stage2/rec/l98",
     "stage2/rec/fire",
-    "stage2/rec/twoname"
+    "stage2/rec/twoname",
+    "docs/integrate/rec/scoreloop",
+    "docs/integrate/rec/rightspike",
+    "docs/integrate/rec/exitbelow"
   ],
   "ref_builds": [
     [

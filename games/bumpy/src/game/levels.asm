@@ -37,7 +37,8 @@ LevelsEnd:
 ; A CPC screen address (the game draws in CPC coordinates, ScreenAddrToLine
 ; $C71F converts). Called by MainLoop ($ACCC) and the level builder.
 ;
-; Witness: L1 98391 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 99879 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 CellScreenAddr:
   AND A
   LD A,(BallCell)
@@ -56,7 +57,7 @@ CellScreenAddr:
 ; Input A, a cell. Called by the wall handlers and the builder ($C93E, $CB81,
 ; $D1D3-$D1F7).
 ;
-; Witness: L1 673 (c1, fire, menu, l x9, rzx x59).
+; Witness: L1 675 (c1, fire, menu, rightspike, l x9, rzx x59).
 WallScreenAddr:
   AND A
   RLA
@@ -74,7 +75,8 @@ WallScreenAddr:
 ; $AB1C = PlatformCells $AA6B[$AA44], $AB1D = ObjectCells $AA47[$AA44]. Called
 ; by MainLoop ($ACC9) every frame and the handlers.
 ;
-; Witness: L1 97066 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 98282 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 ReadCell:
   AND A
   LD A,(BallCell)
@@ -119,8 +121,8 @@ ReadWallCell:
 ; (10 lines of 4 bytes). Called by the main loop at $AC7D, $AC86 and $ACBF (75
 ; builds in the recordings).
 ;
-; Witness: L1 94 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 102 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 BuildLevel:
   AND A
   LD B,$07
@@ -210,8 +212,8 @@ SplitCell:
 ; $AA44 = the cell, $AA07 = the cell as a word, $AB2D its screen address
 ; ($BB05), then a jump to PlatformDrawTable[platform].
 ;
-; Witness: L1 3363 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 3651 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 BuildLevelCell:
   AND A
   PUSH BC
@@ -242,8 +244,8 @@ BuildLevelCell:
 ; $AB2D - $9E with ink ObjectInks[K] (14 lines of 4 bytes, $E3E5). Then a jump
 ; to WallDrawTable[$AA8F[cell]].
 ;
-; Witness: L1 3363 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 3651 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 BuildLevelObject:
   AND A
   LD DE,(CellIndex)
@@ -289,8 +291,8 @@ BuildLevelWall:
 
 ; The next cell, or the ball when all 36 are drawn
 ;
-; Witness: L1 3362 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 3650 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 BuildLevelNextCell:
   POP BC
   DEC B

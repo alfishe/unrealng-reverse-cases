@@ -1,0 +1,54 @@
+# scoreloop: the points loop known before only from the code: a lost life keeps the score, and LifeStart rebuilds
+# the level with its prizes and its bottle, so the bottle, the prizes and S give points again and again for no
+# life. From the RZX's play start of level 87 (play-F.z80, as the rzx plan), the RZX player's keys of each pass
+# (plan_passes' numbering by the timer `$AB04`) until the timer reads 1000 - 330 (the RZX took the bottle, its
+# 6 prizes before it, at pass 312); then S held (SelfDestruct `$BA71`, LoseLife) until the timer is back at 1000;
+# READY? ended by B; the same keys by the same timer values again; three times. No POKE but stage 1's Kempston byte
+0 7
+20 -
+49 0
+90 -
+98 7
+116 -
+163 0
+208 -
+220 0
+271 -
+289 7
+306 -
+398 0
+400 S
+474 -
+525 B
+534 7
+554 -
+583 0
+624 -
+632 7
+650 -
+697 0
+742 -
+754 0
+805 -
+823 7
+840 -
+932 0
+934 S
+1008 -
+1059 B
+1067 7
+1088 -
+1117 0
+1158 -
+1166 7
+1184 -
+1231 0
+1276 -
+1288 0
+1339 -
+1357 7
+1374 -
+1466 0
+1468 S
+1542 -
+1552 END

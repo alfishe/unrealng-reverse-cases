@@ -31,9 +31,10 @@
 ;
 ; Input HL a ball sprite (player 1's); output HL unchanged when CurrentPlayer
 ; $ADDB = 1, else HL + $280 (player 2's ball, a different pattern). Player 2's
-; branch ran in no recording (no two-player game reached play).
+; branch ran 763 times in twoname (player 2's turns).
 ;
-; Witness: L1 218172 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 220591 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 PlayerBallSprite:
   LD A,(CurrentPlayer)
   CP $01
@@ -44,7 +45,8 @@ PlayerBallSprite:
 
 ; XOR the round ball ($67E8) at the ball's address $AA03
 ;
-; Witness: L1 57057 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 58039 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 DrawBallRound:
   LD HL,BallPictures
   CALL PlayerBallSprite
@@ -54,7 +56,8 @@ DrawBallRound:
 
 ; XOR the ball's sprite $AA01 (a rolling frame) at $AA03
 ;
-; Witness: L1 34344 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 34487 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 DrawBallFrame:
   LD HL,(BallSprite)
   CALL PlayerBallSprite
@@ -64,7 +67,8 @@ DrawBallFrame:
 
 ; XOR the round ball at the previous address $AA05 (erases it)
 ;
-; Witness: L1 200 (c1, gameover, menu, twoname, l10, l51, l68, l96, rzx x29).
+; Witness: L1 206 (c1, gameover, menu, scoreloop, twoname, l10, l51, l68, l96,
+; rzx x29).
 DrawBallRoundOld:
   LD HL,BallPictures
   CALL PlayerBallSprite
@@ -83,7 +87,8 @@ EraseBallOld:
 ; Sets $A9FE = 4, B = 10 (lines), C = 7, and calls the XOR sprite routine
 ; $E3E5. The sprite routines above load HL and DE and come here.
 ;
-; Witness: L1 182818 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 185077 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 DrawBallXor:
   LD A,$04
   LD (SpriteWidth),A
@@ -100,7 +105,8 @@ DrawBallXor:
 ; a character row); then EraseBallOld at $AE18 removes the old picture. The
 ; caller draws the new one.
 ;
-; Witness: L1 91187 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 92310 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 BallStepMove:
   LD HL,(BallScrAddr)
   LD (BallOldAddr),HL
@@ -121,7 +127,8 @@ BallStepMove:
 ; cells, then goes on to the state's move routine (BallBounceMove $AE65 and the
 ; others) or to a crash.
 ;
-; Witness: L1 91704 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 92830 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 StepDispatch:
   LD A,(BallStep)
   RLA
@@ -136,7 +143,8 @@ StepDispatch:
 
 ; State 0: the bounce in place, 16 steps (the checks in BounceChecks)
 ;
-; Witness: L1 18987 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 19355 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x11, rzx x94).
 BallBounce:
   LD IX,BounceChecks
   JR StepDispatch
@@ -150,7 +158,8 @@ BallBounce:
 ; offsets lift the ball 4, 8, 11, 14, 16, 17, 18, 18, 18, 17, 16, 14, 11, 8, 4
 ; and 0 lines above its rest line (pixel line 6 or 7 of a character row).
 ;
-; Witness: L1 18987 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 19355 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x11, rzx x94).
 BallBounceMove:
   AND A
   LD HL,BallPictures
@@ -188,8 +197,8 @@ BounceOffsets:
 
 ; State 1: the jump to the left, 16 steps (the checks in LeftChecks)
 ;
-; Witness: L1 15425 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 15441 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 BallLeft:
   LD IX,LeftChecks
   JP StepDispatch
@@ -201,8 +210,8 @@ BallLeft:
 ; left-rolling frames). The ball moves 10 CPC bytes left (5 Spectrum bytes, one
 ; cell) on the same arc.
 ;
-; Witness: L1 15478 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 15494 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 BallLeftMove:
   AND A
   LD IX,LeftOffsets
@@ -239,7 +248,8 @@ LeftOffsets:
 
 ; State 2: the jump to the right, 16 steps (the checks in RightChecks)
 ;
-; Witness: L1 18921 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 19049 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 BallRight:
   LD IX,RightChecks
   JP StepDispatch
@@ -249,7 +259,8 @@ BallRight:
 ;
 ; As BallLeftMove with RightOffsets $AFAF and the right-rolling frames ($B882).
 ;
-; Witness: L1 18866 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 18993 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 BallRightMove:
   AND A
   LD IX,RightOffsets
@@ -286,8 +297,8 @@ RightOffsets:
 
 ; State 3: the spring's jump up one cell, 8 steps (the checks in UpChecks)
 ;
-; Witness: L1 18771 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 19058 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 BallUp:
   LD IX,UpChecks
   JP StepDispatch
@@ -298,8 +309,8 @@ BallUp:
 ; step 7, BallStep = 0 and DecideMove $B7E4 picks the next state (the ball is
 ; on the platform above).
 ;
-; Witness: L1 18254 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 18538 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 BallUpMove:
   AND A
   LD HL,BallPictures
@@ -334,7 +345,8 @@ BallUpEnd:
 ; ($B87E), moves it back ($1000) and sets BallState = 4 (down). 88 bumps in the
 ; recordings (its witness).
 ;
-; Witness: L1 100 (c1, gameover, menu, twoname, l10, l51, l68, l96, rzx x29).
+; Witness: L1 103 (c1, gameover, menu, scoreloop, twoname, l10, l51, l68, l96,
+; rzx x29).
 BallBumpCeiling:
   AND A
   LD HL,(BallScrAddr)
@@ -368,14 +380,16 @@ UpOffsets:
 
 ; State 4: the fall one cell down, 8 steps (the checks in DownChecks)
 ;
-; Witness: L1 19600 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 19927 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 BallDown:
   LD IX,DownChecks
   JP StepDispatch
 
 ; State 4's step: 4 lines down, S kills; after step 7 LandingCheck
 ;
-; Witness: L1 19596 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 19923 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 BallDownMove:
   AND A
   LD HL,BallPictures
@@ -410,7 +424,8 @@ BallDownEnd:
 ; No platform on the bottom row: BallState = 7 (lost below), BallStep = 0.
 ; Witness: state 7 started 8 times in the recordings ($B0E0).
 ;
-; Witness: L1 6101 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 6174 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 LandingCheck:
   AND A
   LD A,(BallCell)
@@ -458,7 +473,7 @@ LandingLost:
 ; without water) goes through it too. 5 bursts in the recordings (rzx45, rzx56,
 ; rzx68).
 ;
-; Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+; Witness: L1 7 (fire, rightspike, rzx45, rzx56, rzx68).
 BallBurstStart:
   LD A,$06
   LD (BallState),A
@@ -513,7 +528,7 @@ BallStoppedWait:
 ; (BurstBall1-3), six burst pictures $81F5-$830D (56 bytes each, 14 lines), a
 ; blank ($6708), then LoseLife $BA93.
 ;
-; Witness: L1 116 (fire, rzx x8).
+; Witness: L1 126 (fire, rightspike, rzx x8).
 BallBurst:
   AND A
   LD IX,BurstSteps
@@ -534,7 +549,7 @@ BallBurst:
 
 ; Burst step 0: the ball at $AB2D + $FF62
 ;
-; Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+; Witness: L1 7 (fire, rightspike, rzx45, rzx56, rzx68).
 BurstBall1:
   LD BC,$FF62
   CALL DrawBurstBall
@@ -542,7 +557,7 @@ BurstBall1:
 
 ; Burst step 1: the ball at $AB2D + $FF62 (off) and + $2F12
 ;
-; Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+; Witness: L1 7 (fire, rightspike, rzx45, rzx56, rzx68).
 BurstBall2:
   LD BC,$FF62
   CALL DrawBurstBall
@@ -552,7 +567,7 @@ BurstBall2:
 
 ; Burst step 2: the ball at $AB2D + $2F12 (off) and + $2712
 ;
-; Witness: L1 6 (fire, rzx45, rzx56, rzx68).
+; Witness: L1 7 (fire, rightspike, rzx45, rzx56, rzx68).
 BurstBall3:
   LD BC,$2F12
   CALL DrawBurstBall
@@ -562,7 +577,7 @@ BurstBall3:
 
 ; Burst step 3: picture $81F5
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame1:
   LD DE,BurstPictures
   CALL DrawBurstPicture
@@ -570,7 +585,7 @@ BurstFrame1:
 
 ; Burst step 4: picture $822D
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame2:
   LD DE,BurstPictures+$0038
   CALL DrawBurstPicture
@@ -578,7 +593,7 @@ BurstFrame2:
 
 ; Burst step 5: picture $8265
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame3:
   LD DE,BurstPictures+$0070
   CALL DrawBurstPicture
@@ -586,7 +601,7 @@ BurstFrame3:
 
 ; Burst step 6: picture $829D
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame4:
   LD DE,BurstPictures+$00A8
   CALL DrawBurstPicture
@@ -594,7 +609,7 @@ BurstFrame4:
 
 ; Burst step 7: picture $82D5
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame5:
   LD DE,BurstPictures+$00E0
   CALL DrawBurstPicture
@@ -602,7 +617,7 @@ BurstFrame5:
 
 ; Burst step 8: picture $830D
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstFrame6:
   LD DE,BurstPictures+$0118
   CALL DrawBurstPicture
@@ -610,7 +625,7 @@ BurstFrame6:
 
 ; Burst step 9: the blank picture $6708 over it, then LoseLife
 ;
-; Witness: L1 14 (fire, rzx x8).
+; Witness: L1 15 (fire, rightspike, rzx x8).
 BurstEnd:
   LD DE,BlankPicture
   CALL DrawBurstPicture
@@ -619,7 +634,7 @@ BurstEnd:
 ; Stores the picture at DE (14 lines, $A9FE = 4) at the burst point $AB2D +
 ; $1712
 ;
-; Witness: L1 98 (fire, rzx x8).
+; Witness: L1 105 (fire, rightspike, rzx x8).
 DrawBurstPicture:
   LD HL,(CellScrAddr)
   LD BC,$1712
@@ -633,7 +648,7 @@ DrawBurstPicture:
 
 ; XOR the player's round ball at $AB2D + BC
 ;
-; Witness: L1 30 (fire, rzx45, rzx56, rzx68).
+; Witness: L1 35 (fire, rightspike, rzx45, rzx56, rzx68).
 DrawBurstBall:
   LD HL,BallPictures
   CALL PlayerBallSprite
@@ -765,7 +780,7 @@ LostSteps:
 ; a RET; then L reduced below 100 by steps of 97: known only from the code).
 ; Else NextLevel $B2D5.
 ;
-; Witness: L1 101 (menu, l x12, rzx x88).
+; Witness: L1 102 (exitbelow, menu, l x12, rzx x88).
 ;
 ; NextLevel: level 99 is followed by level 0 (witness: one run of $B2DE in the
 ; RZX). Then 9 times: two bytes of the ball's top line cleared ($C71F, $B515),
@@ -916,7 +931,8 @@ LevelEndNext:
 ; BallState $AA00, and SpringArmed still forces 3. Output: BallState $AA00.
 ; Witness: every play recording (rzx x100, menu demo).
 ;
-; Witness: L1 6161 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 6229 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 ChooseNextState:
   LD A,(DemoFlag)
   CP $00
@@ -979,8 +995,8 @@ ChooseUpOrBounce:
 ; Also the target of the left conveyor and of the stopped ball's left key
 ; ($B13F).
 ;
-; Witness: L1 979 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 980 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 SetStateLeft:
   LD A,$01
   LD (BallState),A
@@ -991,7 +1007,8 @@ SetStateLeft:
 ; Also the target of the right conveyor and of the stopped ball's right key
 ; ($B139).
 ;
-; Witness: L1 1238 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1246 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 SetStateRight:
   LD A,$02
   LD (BallState),A
@@ -1034,7 +1051,8 @@ SetStateLevelEnd:
 ; BallStep $A9FF from BallFramesRight $C4E2 into $AA01 and calls DrawBall
 ; $ADE6. Called by the right-move handler ($AF73).
 ;
-; Witness: L1 18866 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 18993 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 DrawBallRight:
   AND A
   LD A,$04
@@ -1056,8 +1074,8 @@ DrawBallRight:
 ; As DrawBallRight with the table BallFramesLeft $C502. Called by the left-move
 ; handler ($AEF9).
 ;
-; Witness: L1 15478 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx18,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 15494 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx18, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 DrawBallLeft:
   AND A
   LD A,$04
@@ -1191,12 +1209,13 @@ BallFramesRight:
 BallFramesLeft:
   DEFW $6A40,$6A18,$69F0,$69C8,$69A0,$6978,$6950,$6928,$6900,$68D8,$68B0,$6888,$6860,$6838,$6810,BallPictures
 
-; The four pictures of the flames on a burning platform
+; The addresses of the four pictures of the open exit (ExitFrames $80D5)
 ;
-; $BD21 draws FireFrames[$AA0F - 1] ($80D5, $80F3, $8111, $812F; 30 bytes
-; apart, 5 lines of 6 bytes) with ink $5E at the burning cell, every second
-; frame (5672 times).
-FireFrames:
+; AnimateExit $BD21 draws ExitFrameTable[$AA0F - 1] ($80D5, $80F3, $8111,
+; $812F; 30 bytes apart, 5 lines of 6 bytes) with ink $5E at ExitAnimAddr,
+; every second pass (5672 times), only while the exit is open; the flames are
+; animated by AnimateFires $BBCD.
+ExitFrameTable:
   DEFW ExitFrames,$80F3,$8111,$812F
 
 ; The spring-press records of platform types 1-5 (24 bytes each at SpringPics)
@@ -1303,7 +1322,8 @@ UpTakeoffTable:
 ; types 2-4 start crumbling the platform, the others go to the state's tail
 ; $AE65.
 ;
-; Witness: L1 1199 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1222 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep0:
   LD A,(ObjectFlag)
   CP $04
@@ -1357,7 +1377,7 @@ BounceCrumble2:
 ;
 ; Calls $C3F8 (CrumbleSteps3), then $AE65.
 ;
-; Witness: L1 102 (l36, l45, l56, l68, rzx x38).
+; Witness: L1 105 (scoreloop, l36, l45, l56, l68, rzx x38).
 BounceCrumble3:
   CALL StartWearTo4
   JP BallBounceMove
@@ -1366,7 +1386,7 @@ BounceCrumble3:
 ;
 ; Calls $C41B (CrumbleSteps4), then $AE65.
 ;
-; Witness: L1 210 (l x6, rzx x55).
+; Witness: L1 225 (scoreloop, l x6, rzx x55).
 BounceCrumble4:
   CALL StartFallAway
   JP BallBounceMove
@@ -1376,7 +1396,8 @@ BounceCrumble4:
 ; If $AA14 is set (a crumble was started at step 0), $AA15 = $AA14, which lets
 ; $C19D play it. Then $AE65.
 ;
-; Witness: L1 1197 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1220 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep1:
   LD A,(CrumblePending)
   CP $00
@@ -1387,7 +1408,8 @@ BounceStep1:
 ;
 ; Jumps to $AE65; also the end of BounceStep1.
 ;
-; Witness: L1 8710 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 8889 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStepIdle:
   JP BallBounceMove
 
@@ -1398,7 +1420,8 @@ BounceStepIdle:
 ; LoadSpring $BD73. If SpringArmed $AA13, $BDA6 draws the first press frame.
 ; Then $AE65.
 ;
-; Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1205 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep9:
   LD A,(DemoFlag)
   CP $00
@@ -1420,7 +1443,8 @@ BounceSpringFrame:
 
 ; Bounce, step 10: nothing but the tail
 ;
-; Witness: L1 2364 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 2410 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep10:
   JP BallBounceMove
 
@@ -1428,7 +1452,8 @@ BounceStep10:
 ;
 ; If SpringArmed, $BDAE draws it. Then $AE65.
 ;
-; Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1205 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep11:
   LD A,(SpringArmed)
   CP $00
@@ -1436,7 +1461,8 @@ BounceStep11:
 
 ; Bounce, step 12: nothing but the tail
 ;
-; Witness: L1 2364 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 2410 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep12:
   JP BallBounceMove
 
@@ -1444,7 +1470,8 @@ BounceStep12:
 ;
 ; Calls TakeObject $B958, then $AE65.
 ;
-; Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1205 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep13:
   CALL TakeObject
   JP BallBounceMove
@@ -1453,7 +1480,8 @@ BounceStep13:
 ;
 ; If SpringArmed, $BDB6. Then $AE65.
 ;
-; Witness: L1 1182 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1205 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep14:
   LD A,(SpringArmed)
   CP $00
@@ -1465,7 +1493,8 @@ BounceStep14:
 ; If SpringArmed, $BDBE. Then $AE65, whose end at step 15 calls ChooseNextState
 ; $B7E4.
 ;
-; Witness: L1 1181 (c1, fire, gameover, menu, twoname, l x11, rzx x94).
+; Witness: L1 1204 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l x11, rzx x94).
 BounceStep15:
   LD A,(SpringArmed)
   CP $00
@@ -1486,8 +1515,8 @@ BounceTypeTable:
 ; As BounceStep0 (the $ABA7 and $F3C8 sound rule), then it jumps to
 ; LeftTakeoffTable[$AB1C] $C6A8.
 ;
-; Witness: L1 992 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 993 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep0:
   LD A,(ObjectFlag)
   CP $04
@@ -1534,7 +1563,8 @@ LeftQuiet:
 ; ($BE43) and picture 1 ($BE5E) by XOR, sets $A9FD = 1 (to be undone at step
 ; 5), then the left tail $AEE2.
 ;
-; Witness: L1 553 (c1, fire, gameover, menu, twoname, l x11, rzx x85).
+; Witness: L1 554 (c1, exitbelow, fire, gameover, menu, twoname, l x11, rzx
+; x85).
 LeftTakeoff:
   LD A,(CellPlatform)
   RLA
@@ -1594,8 +1624,8 @@ LeftCrumble4:
 
 ; Move left, steps 1-4: the tail only
 ;
-; Witness: L1 3968 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 3972 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStepIdle:
   JP BallLeftMove
 
@@ -1610,8 +1640,8 @@ LeftStepIdle:
 ; lock becomes type - 1, its animation (LockOpenSteps1-3) starts at the wall's
 ; place ($AB2D + $2EBE), Keys - 1 (HUD $E5D3), and the ball turns back too.
 ;
-; Witness: L1 992 (c1, fire, gameover, menu, twoname, l x11, rzx00-rzx17,
-; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 993 (c1, exitbelow, fire, gameover, menu, twoname, l x11,
+; rzx00-rzx17, rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep5:
   LD A,(TakeoffDrawn)
   CP $00
@@ -1714,7 +1744,7 @@ LeftWallBlocked:
 
 ; Move left, steps 6 and 7: the tail only
 ;
-; Witness: L1 1758 (c1, fire, gameover, menu, l x11, rzx x94).
+; Witness: L1 1760 (c1, exitbelow, fire, gameover, menu, l x11, rzx x94).
 LeftStepIdle2:
   JP BallLeftMove
 
@@ -1723,7 +1753,7 @@ LeftStepIdle2:
 ; If the brick counter $AAD7[$AA44 - 1] is not 0 the ball turns right
 ; (BallState 2) and stays in its cell; else $AA44 - 1.
 ;
-; Witness: L1 879 (c1, fire, gameover, menu, l x11, rzx x94).
+; Witness: L1 880 (c1, exitbelow, fire, gameover, menu, l x11, rzx x94).
 LeftStep8:
   LD A,(BallCell)
   DEC A
@@ -1750,7 +1780,7 @@ LeftEnterCell:
 ; $AAFD), Water - 1 (HUD $E5C0), $ABA7 = 4 and FireOutLeft starts at the cell's
 ; screen address (from $E131). Then $AEE2.
 ;
-; Witness: L1 884 (c1, fire, gameover, menu, l x11, rzx x94).
+; Witness: L1 885 (c1, exitbelow, fire, gameover, menu, l x11, rzx x94).
 LeftStep9:
   LD A,(DemoFlag)
   CP $00
@@ -1803,13 +1833,13 @@ LeftPutOutFire:
 
 ; Move left, step 10: the tail only
 ;
-; Witness: L1 896 (c1, fire, gameover, menu, l x11, rzx x94).
+; Witness: L1 897 (c1, exitbelow, fire, gameover, menu, l x11, rzx x94).
 LeftStep10:
   JP BallLeftMove
 
 ; Move left, step 11: the second spring frame
 ;
-; Witness: L1 884 (c1, fire, gameover, menu, l x11, rzx x94).
+; Witness: L1 885 (c1, exitbelow, fire, gameover, menu, l x11, rzx x94).
 LeftStep11:
   LD A,(SpringArmed)
   CP $00
@@ -1817,23 +1847,23 @@ LeftStep11:
 
 ; Move left, step 12: the tail only
 ;
-; Witness: L1 1930 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81,
-; rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 1932 (c1, exitbelow, fire, gameover, menu, l x11, rzx00-rzx18,
+; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep12:
   JP BallLeftMove
 
 ; Move left, step 13: take the object
 ;
-; Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81,
-; rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 1047 (c1, exitbelow, fire, gameover, menu, l x11, rzx00-rzx18,
+; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep13:
   CALL TakeObject
   JP BallLeftMove
 
 ; Move left, step 14: the third spring frame
 ;
-; Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81,
-; rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 1047 (c1, exitbelow, fire, gameover, menu, l x11, rzx00-rzx18,
+; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep14:
   LD A,(SpringArmed)
   CP $00
@@ -1849,8 +1879,8 @@ LeftStep14:
 ; ($B0ED). Otherwise the tail $AEE2. Witness: the spike death ran once
 ; (LeftSpikeDeath); the fire death once, in stage2/rec/fire (LeftFireDeath).
 ;
-; Witness: L1 1046 (c1, fire, gameover, menu, l x11, rzx00-rzx18, rzx21-rzx81,
-; rzx83-rzx86, rzx88-rzx99).
+; Witness: L1 1047 (c1, exitbelow, fire, gameover, menu, l x11, rzx00-rzx18,
+; rzx21-rzx81, rzx83-rzx86, rzx88-rzx99).
 LeftStep15:
   LD A,(SpringArmed)
   CP $00
@@ -1884,7 +1914,8 @@ LeftDeath:
 ;
 ; The mirror of LeftStep0, through RightTakeoffTable $C6C2.
 ;
-; Witness: L1 1258 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1266 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep0:
   LD A,(ObjectFlag)
   CP $04
@@ -1929,7 +1960,8 @@ RightQuiet:
 ;
 ; As LeftTakeoff with picture 2 ($BE79), then the right tail $AF5C.
 ;
-; Witness: L1 648 (c1, gameover, menu, twoname, l x12, rzx x89).
+; Witness: L1 650 (c1, exitbelow, gameover, menu, rightspike, twoname, l x12,
+; rzx x89).
 RightTakeoff:
   LD A,(CellPlatform)
   RLA
@@ -1982,7 +2014,8 @@ RightCrumble4:
 
 ; Move right, steps 1-4: the tail only
 ;
-; Witness: L1 5032 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 5064 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStepIdle:
   JP BallRightMove
 
@@ -1992,7 +2025,8 @@ RightStepIdle:
 ; pattern $3E for wall type 4, the wall $AA8F[$AA44], the animation at $AB2D +
 ; $2EC8; the ball turns back to the left (BallState 1, BallStep 11).
 ;
-; Witness: L1 1258 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1266 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep5:
   LD A,(TakeoffDrawn)
   CP $00
@@ -2086,13 +2120,15 @@ RightWallBlocked:
 
 ; Move right, steps 6 and 7: the tail only
 ;
-; Witness: L1 2192 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2208 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStepIdle2:
   JP BallRightMove
 
 ; Move right, step 8: enter the cell on the right, unless bricks fill it
 ;
-; Witness: L1 1096 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1104 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep8:
   LD A,(BallCell)
   INC A
@@ -2116,7 +2152,8 @@ RightEnterCell:
 ;
 ; As LeftStep9 with FireOutRight.
 ;
-; Witness: L1 1091 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1099 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep9:
   LD A,(DemoFlag)
   CP $00
@@ -2169,13 +2206,15 @@ RightPutOutFire:
 
 ; Move right, step 10: the tail only
 ;
-; Witness: L1 1116 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1124 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep10:
   JP BallRightMove
 
 ; Move right, step 11: the second spring frame
 ;
-; Witness: L1 1091 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1099 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep11:
   LD A,(SpringArmed)
   CP $00
@@ -2183,20 +2222,23 @@ RightStep11:
 
 ; Move right, step 12: the tail only
 ;
-; Witness: L1 2294 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2310 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep12:
   JP BallRightMove
 
 ; Move right, step 13: take the object
 ;
-; Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1211 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep13:
   CALL TakeObject
   JP BallRightMove
 
 ; Move right, step 14: the third spring frame
 ;
-; Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1211 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep14:
   LD A,(SpringArmed)
   CP $00
@@ -2205,10 +2247,12 @@ RightStep14:
 
 ; Move right, step 15: the last spring frame, then death on fire or spikes
 ;
-; As LeftStep15 with the offsets $AFAF. Neither death ran in the recordings
-; (known only from the code).
+; As LeftStep15 with the offsets $AFAF. The spike death ran once, in
+; docs/integrate/rec/rightspike (level 75: right from cell 30 onto the spikes
+; of cell 31); the fire death ran in no recording (known only from the code).
 ;
-; Witness: L1 1203 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 1211 (c1, exitbelow, gameover, menu, rightspike, scoreloop,
+; twoname, l x12, rzx00-rzx99).
 RightStep15:
   LD A,(SpringArmed)
   CP $00
@@ -2225,7 +2269,7 @@ RightStep15:
   AND A
   JP BallRightMove
 RightSpikeDeath:
-  CALL SfxSpikeDeath      ; the spike sound, never run
+  CALL SfxSpikeDeath      ; the spike sound (once, in rightspike)
   JR RightDeath
 RightFireDeath:
   CALL SfxFireDeath       ; the fire sound, never run
@@ -2245,8 +2289,8 @@ RightDeath:
 ; turn the ball down: when BallState is no longer 3, the down handler $B064
 ; takes over. Then UpTakeoffTable[$AB1C] $C6DC.
 ;
-; Witness: L1 2568 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2605 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpStep0:
   LD A,(ObjectFlag)
   CP $04
@@ -2290,8 +2334,8 @@ UpQuiet:
 ;
 ; If SpringArmed, $BDC6. Then the up tail $AFD6.
 ;
-; Witness: L1 1319 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 1329 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpSpringRelease:
   LD A,(SpringArmed)
   CP $00
@@ -2307,14 +2351,14 @@ UpCrumble2:
 
 ; Jump from a type-3 platform
 ;
-; Witness: L1 119 (l x10, rzx x49).
+; Witness: L1 125 (scoreloop, l x10, rzx x49).
 UpCrumble3:
   CALL StartWearTo4
   JP UpSpringRelease
 
 ; Jump from a type-4 platform
 ;
-; Witness: L1 230 (l x10, rzx x71).
+; Witness: L1 233 (scoreloop, l x10, rzx x71).
 UpCrumble4:
   CALL StartFallAway
   JP UpSpringRelease
@@ -2324,8 +2368,8 @@ UpCrumble4:
 ; Every step of the jump calls $B8D1 when the platform is bricks and leaves for
 ; $B064 when that turned the ball down.
 ;
-; Witness: L1 2516 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2553 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpStep1:
   LD A,(CellPlatform)
   CP $0A
@@ -2337,8 +2381,8 @@ UpStep1:
 
 ; Jump, step 2: the bricks check
 ;
-; Witness: L1 2463 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2500 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpStep2:
   LD A,(CellPlatform)
   CP $0A
@@ -2354,8 +2398,8 @@ UpStep2:
 ; If SpringArmed, $BDCE; a pending crumble starts ($AA15 = $AA14) and $C19D
 ; plays two of its steps.
 ;
-; Witness: L1 2412 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2449 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpStep3:
   AND A
   LD A,(SpringArmed)
@@ -2382,10 +2426,13 @@ UpStep3:
 ; or a cell with bricks or the exit (10, 11) it goes on. Spikes (12) above
 ; kill: sound $F4B4, the burst state 6 at step 3 (UpSpikeDeath, 8 deaths in the
 ; recordings). Any other platform (1-9) above stops the jump: $B00F turns the
-; ball down.
+; ball down. The open exit above lets the ball in: UpStep5 enters the cell and
+; the landing gives state 8, the level end, as from the side
+; (docs/integrate/rec/exitbelow, level 0's record POKEd so the exit opens above
+; the start; the only exit taken from below).
 ;
-; Witness: L1 2361 (c1, gameover, menu, twoname, l x12, rzx00-rzx77,
-; rzx79-rzx99).
+; Witness: L1 2398 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx77, rzx79-rzx99).
 UpStep4:
   LD A,(CellPlatform)
   CP $0A
@@ -2427,7 +2474,8 @@ UpSpikeDeath:
 ;
 ; $AA44 - 6, and $BB32 reads the new cell's platform and object.
 ;
-; Witness: L1 2202 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+; Witness: L1 2236 (c1, exitbelow, menu, scoreloop, l x12, rzx00-rzx77,
+; rzx79-rzx99).
 UpStep5:
   LD A,(BallCell)
   LD B,$06
@@ -2445,7 +2493,8 @@ UpStep5:
 
 ; Jump, step 6: take the object
 ;
-; Witness: L1 2150 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+; Witness: L1 2184 (c1, exitbelow, menu, scoreloop, l x12, rzx00-rzx77,
+; rzx79-rzx99).
 UpStep6:
   CALL TakeObject
   LD A,(CellPlatform)
@@ -2459,7 +2508,8 @@ UpStep6:
 
 ; Jump, step 7: the bricks check; the tail then calls ChooseNextState
 ;
-; Witness: L1 2099 (c1, menu, l x12, rzx00-rzx77, rzx79-rzx99).
+; Witness: L1 2133 (c1, exitbelow, menu, scoreloop, l x12, rzx00-rzx77,
+; rzx79-rzx99).
 UpStep7:
   LD A,(CellPlatform)
   CP $0A
@@ -2476,7 +2526,7 @@ UpStep7:
 ; is not 0: Water - 1, $ABA7 = 4, FireOutDown starts at that cell. Then the
 ; down tail $B06B.
 ;
-; Witness: L1 2222 (c1, menu, l x12, rzx00-rzx99).
+; Witness: L1 2264 (c1, menu, scoreloop, l x12, rzx00-rzx99).
 DownStep0:
   AND A
   LD A,(BallCell)
@@ -2522,7 +2572,7 @@ DownPutOutFire:
 
 ; Fall, steps 1 and 2: the tail only
 ;
-; Witness: L1 4615 (c1, menu, l x12, rzx00-rzx99).
+; Witness: L1 4693 (c1, menu, scoreloop, l x12, rzx00-rzx99).
 DownStepIdle:
   JP BallDownMove
 
@@ -2530,7 +2580,7 @@ DownStepIdle:
 ;
 ; $AA44 + 6.
 ;
-; Witness: L1 2376 (c1, menu, l x12, rzx00-rzx99).
+; Witness: L1 2415 (c1, menu, scoreloop, l x12, rzx00-rzx99).
 DownStep3:
   LD A,(BallCell)
   ADD A,$06
@@ -2543,7 +2593,8 @@ DownStep3:
 ; cell ($BB05, $BB32), arms the spring as at BounceStep9 and draws two press
 ; frames ($BDA6, $BDAE).
 ;
-; Witness: L1 2527 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2569 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 DownStep4:
   LD A,(CrumbleActive)
   CP $00
@@ -2575,13 +2626,15 @@ DownSpringFrame:
 
 ; Fall, step 5: take the object
 ;
-; Witness: L1 2575 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2617 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 DownStep5:
   CALL TakeObject
 
 ; Fall, step 6: the tail only
 ;
-; Witness: L1 5201 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 5285 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 DownStepIdle2:
   JP BallDownMove
 
@@ -2592,7 +2645,8 @@ DownStepIdle2:
 ; from the side); type 12 kills with $F4B4 (4 deaths): the ball drawn at $B10A,
 ; then the burst ($B0ED).
 ;
-; Witness: L1 2677 (c1, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 2719 (c1, gameover, menu, scoreloop, twoname, l x12,
+; rzx00-rzx99).
 DownStep7:
   AND A
   LD A,(SpringArmed)

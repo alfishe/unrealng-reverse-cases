@@ -1,5 +1,5 @@
 ; Bumpy, Loriciels 1989: tape block 2, the BASIC program "BUMPY" (191 bytes at PROG $5CCB, LINE 10):
-; hides the tape messages, CLEAR 24999, LOAD "" SCREEN$, LOAD "" CODE 25000 and RANDOMIZE USR 43900.
+; hides the tape messages, CLEAR 24999, `LOAD "" SCREEN$`, LOAD "" CODE 25000 and RANDOMIZE USR 43900.
 ; Written by kit/mkgame.py from src/tape/basic.ann and the recordings; edit basic.ann, not the .asm.
 
   DEVICE ZXSPECTRUM48

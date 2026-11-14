@@ -1,0 +1,20 @@
+# The sound effects' AY-3-8912 register images (SfxLandParams $F3CF ... SfxTimerTickParams $F500):
+# 16 bytes after each effect's LD HL: R0-R13 (tone periods A B C, noise, mixer, volumes A B C,
+# envelope period and shape), then two zeros. WriteAyRegisters $F190 would write them; the 48K
+# beeper code never reads them (doc 9, 9.5). Periods decimal, the other bytes $hex. The bytes are
+# kept whole: the chip takes 12 bits of a tone period and 5 of the noise, so 4500 plays as 404.
+effect,tone_a,tone_b,tone_c,noise,mixer,vol_a,vol_b,vol_c,env_period,env_shape,tail1,tail2
+land,436,0,180,0,$E8,$11,$11,$11,900,9,$00,$00
+hit,1236,400,680,0,$F8,$11,$11,$11,2500,9,$00,$00
+pickup,200,200,200,0,$F8,$11,$11,$11,2000,9,$00,$00
+extra-life,60,400,100,20,$FA,$11,$11,$11,5000,9,$00,$00
+water-drop,3000,4500,300,10,$F7,$15,$18,$1A,1000,9,$00,$00
+wall-bounce,90,300,90,0,$F8,$11,$11,$11,2500,9,$00,$00
+lock-a,90,500,90,0,$F8,$11,$11,$11,2500,9,$00,$00
+lock-b,90,700,90,0,$F8,$11,$11,$11,2500,9,$00,$00
+fire-death,5000,6500,1300,54,$F4,$15,$18,$1A,9000,9,$00,$00
+level-end,100,100,100,0,$F8,$11,$11,$11,2500,15,$00,$00
+spike-death,5000,6500,1300,54,$F4,$15,$18,$1A,9000,9,$00,$00
+life-lost,5000,6500,1300,54,$F4,$15,$18,$1A,9000,9,$00,$00
+brick-crumble,5000,6500,1300,54,$F4,$15,$18,$1A,500,9,$00,$00
+timer-tick,50,50,50,0,$F8,$11,$11,$11,400,9,$00,$00

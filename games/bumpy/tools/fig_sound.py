@@ -5,7 +5,7 @@
     python3 tools/fig_sound.py wav       docs/img/sound/<effect>.wav: 44 100 Hz mono 16 bit (never played here)
     python3 tools/fig_sound.py waves     docs/img/sound/waves.png: the speaker bit of every effect against time
     python3 tools/fig_sound.py pitch     docs/img/sound/pitch.png: the half-period of each edge against time
-    python3 tools/fig_sound.py ay        each effect's 16 parameter bytes read as AY registers 0-13 (printed)
+    python3 tools/fig_sound.py ay        each effect's AY register image read as registers 0-13 (printed)
     python3 tools/fig_sound.py all
 
 The memory is the 48K ROM (SkoolKit's resources/48.rom) and the built code block build/game.bin at $61A8 (the
@@ -38,7 +38,7 @@ EFFECTS = [
     (0xF3DF, 'SfxHit', 'hit', 'a jump up from a platform', 'RomNoise ($04E6)'),
     (0xF3F6, 'SfxPickup', 'pickup', 'a prize, key, drop or hammer; a menu option', 'RandomNoise2'),
     (0xF40D, 'SfxExtraLife', 'extra-life', 'the bottle', 'TripleSweep'),
-    (0xF427, 'SfxAnimA', 'water', 'a water drop falls on a fire', 'RumbleHigh'),
+    (0xF427, 'SfxWaterDrop', 'water', 'a water drop falls on a fire', 'RumbleHigh'),
     (0xF43E, 'SfxWallBounce', 'wall-bounce', 'a wall turns the ball back; lock 3 opens a stage', 'SweepDown'),
     (0xF455, 'SfxLockA', 'lock-a', 'lock 2 opens a stage', 'RandomNoise1'),
     (0xF46C, 'SfxLockB', 'lock-b', 'lock 1 opens', 'RandomNoise2'),
@@ -46,7 +46,7 @@ EFFECTS = [
     (0xF49A, 'SfxLevelEnd', 'level-end', 'the ball sunk into the exit', 'TripleSweep'),
     (0xF4B4, 'SfxSpikeDeath', 'spike-death', 'spikes', 'RumbleLow'),
     (0xF4CB, 'SfxLifeLost', 'life-lost', 'a fall out below, the S key', 'RumbleLow'),
-    (0xF4E2, 'SfxAnimB', 'brick', 'a brick layer knocked off', 'RumbleHigh'),
+    (0xF4E2, 'SfxBrickCrumble', 'brick', 'a brick layer knocked off', 'RumbleHigh'),
     (0xF4F9, 'SfxTimerTick', 'timer-tick', 'one point of the timer counted in', 'SweepDown'),
     (0xF5BB, 'SfxUnused', 'unused', 'nothing calls it', 'RomRumble ($0BB8)'),
 ]

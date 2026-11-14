@@ -1,7 +1,7 @@
 ; --------------------------------------------------------------------------------------------------------------------
 ; screen-module.asm: The loading screen
 ;
-; Tape block 4: the 6912-byte screen "BUMPY.SCR" (its header says start 32768; LOAD "" SCREEN$ puts it at $4000 all
+; Tape block 4: the 6912-byte screen "BUMPY.SCR" (its header says start 32768; `LOAD "" SCREEN$` puts it at $4000 all
 ; the same). The game never reads it: GameStart clears the screen.
 ; --------------------------------------------------------------------------------------------------------------------
 

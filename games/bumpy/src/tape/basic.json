@@ -11,7 +11,7 @@
   "device": "ZXSPECTRUM48",
   "header": [
     "; Bumpy, Loriciels 1989: tape block 2, the BASIC program \"BUMPY\" (191 bytes at PROG $5CCB, LINE 10):",
-    "; hides the tape messages, CLEAR 24999, LOAD \"\" SCREEN$, LOAD \"\" CODE 25000 and RANDOMIZE USR 43900."
+    "; hides the tape messages, CLEAR 24999, `LOAD \"\" SCREEN$`, LOAD \"\" CODE 25000 and RANDOMIZE USR 43900."
   ],
   "l1": [{"path": "work/stage1/c1/l1.json", "lo": "5CCB", "hi": "5D8A"}],
   "data_entries": "stop",

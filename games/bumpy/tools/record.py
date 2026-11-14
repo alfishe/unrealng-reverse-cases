@@ -504,7 +504,127 @@ def plan_passes(r, first, last, margin=150):
         r.notes.append({'failed': 'no level change', 'frames': lab.frame})
 
 
-PLANS = {'c1': plan_c1, 'menu': plan_menu, 'gameover': plan_gameover, 'rzx': plan_rzx, 'events': plan_events, 'passes': plan_passes, 'fire': plan_fire, 'twoname': plan_twoname}
+def passes_table(first):
+    """plan_passes' table for the first life of a level: the RZX's keys of each main-loop pass by its timer value
+    (the game's first read of each keyboard row in the frames that end with that timer)"""
+    from rzx_script import frame_keys
+    from rzx_keys import starts
+    plays, lchg = starts()
+    a = plays[first][0]
+    nxt = [c for c in lchg if c > a]
+    b = nxt[0] + 10 if nxt else 150437
+    timers = {}
+    for ln in open(os.path.join(CASE, 'work', 'stage2', 'rzx-states.tsv')):
+        t = ln.split('\t')
+        if t[0].isdigit() and a <= int(t[0]) <= b:
+            timers[int(t[0])] = int(t[9]) | int(t[10]) << 8
+    seq, order, reads = {}, [], []
+    for f, pc, port, v in json.load(open(os.path.join(RZX, 'inputs.json')))['reads']:
+        if a < f <= b and pc >= 0x4000 and f in timers:
+            k = timers[f]
+            if k not in seq:
+                seq[k] = len(order) + 1
+                order.append(k)
+            reads.append((seq[k], pc, port, v))
+    first_read = {}
+    for x in reads:
+        first_read.setdefault((x[0], x[2]), x)
+    pk = frame_keys(sorted(first_read.values()), 0, len(order))
+    return {k: pk[seq[k]] for k in order}, a, b
+
+
+def plan_scoreloop(r, first=87, last=87, until=330, lives=3):
+    """scoreloop: the points loop known before only from the code: a lost life keeps the score, and LifeStart rebuilds
+    the level with its prizes and its bottle, so the bottle, the prizes and S give points again and again for no
+    life. From the RZX's play start of level 87 (play-F.z80, as the rzx plan), the RZX player's keys of each pass
+    (plan_passes' numbering by the timer `$AB04`) until the timer reads 1000 - 330 (the RZX took the bottle, its
+    6 prizes before it, at pass 312); then S held (SelfDestruct `$BA71`, LoseLife) until the timer is back at 1000;
+    READY? ended by B; the same keys by the same timer values again; three times. No POKE but stage 1's Kempston byte"""
+    table, a, b = passes_table(first)
+    r.notes.append({'rzx_from': a, 'passes': len(table), 'until_pass': until})
+    lab = r.lab
+    r.shot('start')
+    for life in range(lives):
+        held, last_t, still, forced = [], None, 0, 0
+        for n in range(3000):
+            t = int.from_bytes(lab.read(0xAB04, 2), 'little')
+            if t <= 1000 - until:
+                break
+            still = still + 1 if t == last_t and t == 1000 else 0
+            last_t = t
+            keys = table.get(t - 1, held)
+            if still > 40:
+                forced, still = 3, 0
+            if forced:
+                keys = ['B']
+                forced -= 1
+            if keys != held:
+                r.keys(keys)
+                held = keys
+            lab.run(1)
+        r.shot(f'life{life}-before-s')
+        r.keys(['S'])
+        for n in range(200):
+            lab.run(1)
+            if int.from_bytes(lab.read(0xAB04, 2), 'little') == 1000:
+                break
+        r.keys([])
+        lab.run(10)
+        r.shot(f'life{life}-after-s')
+
+
+def plan_rightspike(r):
+    """rightspike: the right spike death (RightSpikeDeath `$CCB8`), known before only from the code: from the RZX's
+    play start of level 75 (play-F.z80; the ball starts in cell 30, plain, and cell 31 on its right is spikes, platform
+    12, with no wall between), the Sinclair right key 7 held until the burst; no POKE but stage 1's Kempston byte"""
+    r.shot('start')
+    r.hold('7', 60); r.shot('right')
+    r.keys([])
+    for i in range(4):
+        r.wait(40); r.shot(f'after-{i}')
+
+
+def plan_exitbelow(r):
+    """exitbelow: the exit entered from below (UpStep4 `$CD8A` lets the rising ball into a cell of platform 11), known
+    before only from the code; no level has a start, a prize and an exit placed for it, so three bytes of level 0's
+    record (LevelRecords `$8C3C`) are POKEd on this machine before the game starts (said so): the start cell (+36) 21,
+    the prizes to take (+37) 1, the exit cell (+38) 15, the cell above the start. From the menu after a fast load
+    (work/stage1/probe/load-fast-nokemp/end.szx): 2 (keyboard), 0, SPACE at READY?; right P held until the ball is in
+    cell 22 (the prize `$0D`: PrizesLeft 0, OpenExit `$BCB9` writes platform 11 in cell 15), left O until it is back in
+    cell 21, then up Q until the ball rises (state 3) into the exit: the level ends (state 8) and level 1 starts"""
+    lab = r.lab
+    rec = 0x8C3C
+    r.poke(rec + 36, [21], "level 0's start cell: 21 (row 3, column 3), under the exit")
+    r.poke(rec + 37, [1], "level 0's prizes to take: 1, so the prize in cell 22 opens the exit")
+    r.poke(rec + 38, [15], "level 0's exit cell: 15, the cell above the start")
+    r.tap('2', 4, 40)
+    r.tap('0', 4, 100); r.shot('ready')
+    r.tap('SPACE', 4, 20); r.shot('play-start')
+
+    def until(keys, test, limit=400):
+        r.keys(keys)
+        for _ in range(limit):
+            lab.run(1)
+            if test():
+                break
+        r.keys([])
+
+    cell = lambda: lab.read(0xAA44, 1)[0]
+    until(['P'], lambda: cell() == 22)
+    lab.run(30); r.shot('prize')
+    until(['O'], lambda: cell() == 21)
+    lab.run(4); r.shot('below-exit')
+    until(['Q'], lambda: lab.read(0xAA00, 1)[0] == 3)
+    for _ in range(300):
+        lab.run(1)
+        if lab.read(0xAB00, 1)[0] != 0:
+            break
+    r.shot('level-1')
+    r.wait(100); r.shot('end')
+
+
+PLANS = {'c1': plan_c1, 'menu': plan_menu, 'gameover': plan_gameover, 'rzx': plan_rzx, 'events': plan_events, 'passes': plan_passes, 'fire': plan_fire, 'twoname': plan_twoname,
+         'scoreloop': plan_scoreloop, 'rightspike': plan_rightspike, 'exitbelow': plan_exitbelow}
 
 
 def main():
@@ -531,13 +651,13 @@ def main():
     began = time.time()
     try:
         start = a.start
-        if a.plan in ('rzx', 'events', 'passes', 'fire'):
+        if a.plan in ('rzx', 'events', 'passes', 'fire', 'scoreloop', 'rightspike'):
             plays, _ = rzx_rows()
             start = os.path.join(RZX, 'levels', f'play-{plays[a.rzx[0]][0]:06d}.z80')
         if start:
             lab.load(os.path.abspath(start))
         lab.quiet_mouse()
-        if a.plan in ('rzx', 'events', 'passes', 'fire'):
+        if a.plan in ('rzx', 'events', 'passes', 'fire', 'scoreloop', 'rightspike'):
             r.poke(0xB43E, [0xFF], 'the key buffer\'s Kempston byte: no stick (SPIN\'s port $DF reads left another value)')
         if not start:
             lab.save(os.path.join(work, 'power-on.szx'))
@@ -549,6 +669,8 @@ def main():
             PLANS[a.plan](r, *a.rzx)
         elif a.plan == 'fire':
             plan_fire(r)
+        elif a.plan == 'scoreloop':
+            plan_scoreloop(r, *a.rzx)
         else:
             PLANS[a.plan](r)
         r.keys([])

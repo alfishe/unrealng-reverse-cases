@@ -1,7 +1,7 @@
 # Resources
 
 Every resource out of the code, in an editable format; `tools/res_formats.py build` turns them back into the bytes
-the sources INCBIN, `tools/res_formats.py check` proves the round trip (43 editable files, 0 bad; the `.bin` files of
+the sources INCBIN, `tools/res_formats.py check` proves the round trip (44 editable files, 0 bad; the `.bin` files of
 leftovers/ are bytes). kit/mkgame.py `--install` writes them from the images through `install()`. The parts: the game
 (tape block 6, src/game) and the loading screen (block 4, src/screen).
 
@@ -14,4 +14,5 @@ leftovers/ are bytes). kit/mkgame.py `--install` writes them from the images thr
 | `screens/loading.png` | the loading screen | PNG colour cells | LoadingScreen `$4000` (src/screen) |
 | `texts/*.txt` | the menu, players, hall of fame frame, the unused "Erase Una Vez" and editor texts | UTF-8 quoted | MenuText `$EFEF`, ... |
 | `tables/*.csv`, `*.txt` | object inks, demo moves, level colours, cell and wall addresses, brick steps, control sets, hall of fame | CSV / records | ObjectInks `$C6F6`, DemoMoves `$D25A`, ... |
-| `leftovers/*.bin` | bytes no routine reads: unused CPC pictures, the sound effects' parameter blocks, `$E0C4` | bytes | Unused8385 `$8385`, ... |
+| `sound/ay-images.csv` | the 14 sound effects' AY register images (R0-R13 and two zeros each), unread on the 48K | CSV, a row an effect | SfxLandParams `$F3CF` ... SfxTimerTickParams `$F500` |
+| `leftovers/*.bin` | bytes no routine reads: unused CPC pictures, `$E0C4` | bytes | Unused8385 `$8385`, ... |

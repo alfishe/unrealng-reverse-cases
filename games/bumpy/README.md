@@ -1,11 +1,19 @@
 # Bumpy (Loriciels, 1989)
 
-State: in progress (stage 1, 2026-11-12).
+State: docs written, in review (2026-11-14): docs 01-10 by one writer, docs 11 and 12 generated, the tape builds
+identical from the sources. 12 documents, 75 figures (PNG), 19 animations (GIF), 60 mermaid diagrams and 15 audio
+files (15 short WAV, no MP3; 588 KB), counted on 2026-11-14 with:
+
+```sh
+ls docs/[0-9][0-9]-*.md | wc -l; find docs/img -name '*.png' | wc -l; find docs/img -name '*.gif' | wc -l
+cat docs/[0-9][0-9]-*.md | grep -c '^```mermaid'
+find docs -name '*.mp3' | wc -l; find docs -name '*.wav' | wc -l; du -sh docs/img/sound
+```
 
 | | |
 | --- | --- |
-| Machine | 48K (ZXDB: "ZX-Spectrum 48K"). The game is one 38 700-byte block at `$61A8-$F8D3`, run by `RANDOMIZE USR 43900` (`$AB7C`); no 128K code, no AY (the beeper only, port `$FE` written from `$F513`, `$F534`, `$F54C`, `$F560`, `$F5AD`) |
-| Profile (AGENTS.md 4.0) | a single-screen arcade puzzle for one or two players (to be confirmed from play): Bumpy, a bouncing ball, bounces on the platforms of 100 levels (`$AB00` 0-99; after level 99 the count wraps to 0), each one screen of 6 x 6 cells drawn from a 75-byte record (`$8C3C` + 75 x level; [doc 2, 2.3](docs/02-architecture.md#23-the-levels)): 11 platform types in use (low nibble of a cell, handlers `$C5A8`), 4 wall types (high nibble, handlers `$C5C2`), and 1 to 33 objects a level of 40 kinds (`$6CB0` + 56 x k; fruit, sweets and other prizes, and the hammers, keys and water drops the HUD counts; [sprites](docs/img/sprites/sheet.png)); when every prize is taken (record byte 37 counts them) an exit opens on the cell of byte 38 and the level ends; a timer from 1000 a level (`$AB04`) whose rest is a bonus; two lives at the start (`$AB01`); a hall of fame of four; no enemies seen in the 100 levels' start screens, the hazards seen are spikes; 14 beeper sound effects (`$F3C8-$F50F`), no music seen; controls: keyboard Q A O P SPACE, Sinclair (9 8 6 7 0), Kempston (port `$DF`, which unreal-ng's Kempston mouse also answers: [WALKTHROUGH 5](WALKTHROUGH.md#5-tool-gaps-found-and-fixed-in-unreal-ng)), H and R in play. Still to see in play: what each platform, wall and object does, every way to die |
+| Machine | 48K (ZXDB 763: ZX-Spectrum 48K). The game is one 38 700-byte block at `$61A8-$F8D3`, run by `RANDOMIZE USR 43900` (`$AB7C`); beeper only (port `$FE`); the AY register writer and two IM 2 set-ups at `$F183-$F3C7` are never called, so the 48K and the 128K play alike ([doc 2, 2.8](docs/02-architecture.md#28-the-leftovers)) |
+| Profile (AGENTS.md 4.0) | a single-screen arcade puzzle for one or two players ([doc 1](docs/01-game-design.md)): Bumpy, a ball that never stops bouncing, is steered only at its landings; 100 levels (Level `$AB00`; level 99 wraps to 0 with everything kept), each a board of 6 x 6 cells from a 75-byte record (LevelRecords `$8C3C`, [doc 2, 2.5](docs/02-architecture.md#25-the-levels-as-data), [doc 7](docs/07-objects.md)); 12 platform types (plain, three crumbling, stopper, two conveyors, two burning, bricks, the exit, spikes), locks lowered by keys and fixed walls, and objects: hammers, keys, water drops, the bottle (an extra life) and 36 prize kinds of 15 points; the last prize opens the exit; a timer of 1000 passes that kills nobody and whose rest is the bonus; 2 spare lives, no enemies, five ways to die (spikes landed on or risen into, fire without water, the fall off the bottom row, the S key; [doc 10](docs/10-gameplay-logic.md)); the ball's nine states and five fixed move tables ([doc 10, 10.1](docs/10-gameplay-logic.md#101-the-ball-nine-states-and-five-fixed-moves)); MainLoop `$ACC8`, one ball step a pass, HALT-paced, 1.28 frames a pass on average ([doc 4](docs/04-game-loop.md)); the Amstrad CPC's mode-1 pictures and screen addresses drawn on the Spectrum one plane a pixel ([doc 6](docs/06-rendering.md)); 14 beeper effects, each followed by an AY register image no code reads ([doc 9](docs/09-sound.md)); a HUD row, a hall of fame of four with a name entry ([doc 8](docs/08-hud-and-text.md)); keyboard Q A O P SPACE, Sinclair 9 8 6 7 0, Kempston on port `$DF`; H pause, R quit, S self-destruct, the cheat R + SPACE + V, the demo after 3000 idle frames ([doc 5](docs/05-controls.md)); a standard ROM tape, no packer ([doc 3](docs/03-build-and-load.md)) |
 | Authors | Spectrum conversion: Luis Jorge Garcia and J250 (ZXDB 763; the loading screen "CONVERSION SPECTRUM LUIS JORGE GARCIA Y J250", the menu "VERSIONED BY J250 (SPAIN)"); the original game by Loriciels |
 | Release | ZXDB 763: Bumpy, Arcade Game: Platform, up to 2 players; release 0 Loriciels 1989, release 1 Proein Soft Line 1989 (Spain, TZX and +3 disk). The Proein tape's archive info: "BUMPY; LORICIELS / PROEIN SOFT LINE; SPECTRUM CONVERSION: LUIS JORGE GARCIA Y J250; 1989; ENGLISH; M-39542-1989" |
 | Original | `orig/Bumpy.tap.zip` (md5 `da242969086de41598b7a3c8510d1e16`, SHA-1 `94cf909e4fd5f739c6b5c61aa78c18cc0cee8191`; ZXDB `pub/sinclair/games/b/Bumpy.tap.zip`, the Loriciels release): `BUMPY.TAP` (45 878 bytes, md5 `e4b397939057962033b57fef8ca3154c`, SHA-1 `351e52eba4097bd094a181f7395d5ec32ea45c85`), six standard-speed blocks: a Program header "BUMPY" and its 191-byte BASIC, "BUMPY.SCR" (6912 bytes, the loading screen) and "BUMPY.CDE" (38 700 bytes at `$61A8`) ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)); the zip also holds `SCRSHOT/BUMPY.SCR` (the same 6912 bytes as the screen block) and `POKES/BUMPY.POK` |
@@ -46,5 +54,7 @@ The documents: [docs/README.md](docs/README.md). How the reverse was done: [WALK
 tools/build.sh [SJASMPLUS]     # builds build/BUMPY.TAP and compares it with orig/Bumpy.tap.zip's BUMPY.TAP byte for byte
 ```
 
-The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann`; the resources are
-`src/res/` (`src/res/README.md`). Not written yet (stage 4).
+The game source is `src/game/*.asm`, written by `kit/mkgame.py` from `src/game/game.ann` (the BASIC from
+`src/tape/basic.ann`, the loading screen from `src/screen/screen.ann`); the resources are `src/res/`
+(`src/res/README.md`; `python3 tools/res_formats.py check`: 44 editable files, 0 bad). `python3 ../../kit/refdocs.py
+--case .` writes docs 11 and 12.

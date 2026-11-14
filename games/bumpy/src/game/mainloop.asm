@@ -26,7 +26,8 @@
 ; pause key (slot $F08A) calls Pause $B440. Last WaitFrame (through $B87E) and
 ; the dispatch.
 ;
-; Witness: L1 92281 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 93416 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 MainLoop:
   AND A
   CALL ReadCell
@@ -75,8 +76,8 @@ Dispatch:
 StateTable:
   DEFW BallBounce,BallLeft,BallRight,BallUp,BallDown,BallStopped,BallBurst,BallFallOut,LevelEnd
 
-; The one-player text: AT 11,13, INK 7, double height, "ready?", end (PrintText
-; $E667)
+; The one-player text: AT 11,13, ATTR 7, double height, "ready?", end
+; (PrintText $E667)
 ReadyText:
   DEFB $16,$0B,$0D,$14,$07,$02,$72,$65,$61,$64,$79,$3F,$00
 
@@ -147,7 +148,8 @@ CheatModeOn:
 ; NZ (A = 1) when the key or stick code A is held, else Z (A = 0): ReadControls
 ; then TestKeyBit
 ;
-; Witness: L1 423995 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 428989 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 TestKey:
   PUSH AF
   CALL ReadControls
@@ -163,8 +165,8 @@ TestKeySkip:
 
 ; A RET the level builder calls three times ($CF50, $CF5A, $CF64)
 ;
-; Witness: L1 282 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 306 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
+; twoname, l51, l59, l96, l98, rzx x24).
 NoOp:
   RET
 
@@ -175,7 +177,8 @@ UnusedRetB6DC:
 ; Waits until a key or the stick is held (no wait for the release): the
 ; "ready?" prompt
 ;
-; Witness: L1 332911 (c1, fire, gameover, menu, twoname, rzx x23).
+; Witness: L1 349912 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, rzx x23).
 WaitPressHeld:
   CALL AnyControl
   JR Z,WaitPressHeld
@@ -192,7 +195,8 @@ UnusedRetB6E3:
 ; $ACC8 a frame. IX is preserved. Called by MainLoop ($ACC5) and WaitOneFrame
 ; $B87E.
 ;
-; Witness: L1 95897 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97266 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 WaitFrame:
   PUSH IX
   CALL DrawHud
@@ -212,7 +216,7 @@ WaitFrame:
 ; which fits SCR SET BORDER (26 bright white, 0 black): a border flash for the
 ; extra life that the Spectrum drops (known only from the code).
 ;
-; Witness: L1 40 (menu, l10, l36, l45, l68, rzx x15).
+; Witness: L1 46 (menu, scoreloop, l10, l36, l45, l68, rzx x15).
 FirmwareStub:
   RET
 
@@ -239,8 +243,8 @@ FirmwareStubs4:
 
 ; A RET stub, called only by the disabled cheat routes $B2C9 and $BA80
 ;
-; A lone RET; both callers are dead code (the level-select cheat, see
-; SelfDestruct $BA71), so it never runs.
+; A lone RET; both callers are never reached (CheatMode $ADDD is never set:
+; $ADDF is a RET before its store), so it never runs; known only from the code.
 ;
 ; Witness: L1 0 ().
 FirmwareStub5:
@@ -255,7 +259,8 @@ FirmwareStub5:
 ; Used between lives (LoseLife $BA93), after a level ($B3AB) and before the
 ; menu (BackToMenu).
 ;
-; Witness: L1 56 (fire, gameover, menu, twoname, l51, l59, l96, l98, rzx x26).
+; Witness: L1 60 (fire, gameover, menu, rightspike, scoreloop, twoname, l51,
+; l59, l96, l98, rzx x26).
 WaitKeyOrSecond:
   LD HL,$0032
   LD (MenuTimer),HL
@@ -297,7 +302,8 @@ DelayInner:
 ; $B029, $B169), the level end ($B328, $B334) and the pause between lives
 ; (LoseLife, 50 calls).
 ;
-; Witness: L1 95861 (c1, fire, gameover, menu, twoname, l x12, rzx00-rzx99).
+; Witness: L1 97227 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l x12, rzx00-rzx99).
 WaitOneFrame:
   CALL WaitFrame
   RET

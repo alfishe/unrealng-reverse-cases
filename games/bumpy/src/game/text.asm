@@ -18,8 +18,8 @@
 ; (always clear) into the bit, so FLASH and BRIGHT are always cleared (known
 ; only from the code; the menu's "$13 1" at $F05A has no effect).
 ;
-; Witness: L1 46858 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 47004 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 PrintText:
   LD A,(HL)
   INC HL
@@ -137,8 +137,8 @@ TextColumn:
 ; $0D: NewLine; $09: NextColumn; codes below 32 or from 128: "?"; else
 ; DrawGlyph. HL kept.
 ;
-; Witness: L1 34443 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 34549 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 PrintChar:
   PUSH HL
   CP $0D
@@ -174,8 +174,8 @@ PrintCharSkip3:
 ; twice, so the character covers the row and the next. Then the attribute
 ; TextAttr at the cell (and the cell below at double height), and NextColumn.
 ;
-; Witness: L1 34375 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 34481 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 DrawGlyph:
   LD DE,SfxSpikeDeathParams+$000E
   LD L,A
@@ -239,8 +239,8 @@ DrawGlyphSkip:
 
 ; TextColumn + 1; at 32 a new line
 ;
-; Witness: L1 34443 (c1, fire, gameover, menu, twoname, l51, l59, l96, l98, rzx
-; x24).
+; Witness: L1 34549 (c1, exitbelow, fire, gameover, menu, rightspike,
+; scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 NextColumn:
   LD A,(TextColumn)
   INC A
