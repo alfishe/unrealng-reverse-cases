@@ -58,7 +58,7 @@ It then clears one bit for each control held: bit 0 right, 1 left, 2 down, 3 up,
 Bits 5-7 are always 1 (the Kempston branch's `CPL` sets them too, below).
 `ControlMethod` `$7252` picks the branch: 0 keyboard, 1 Kempston, 2 cursor, 3 Sinclair.
 
-Why every interrupt and not once a pass: a pass is two to twelve frames long ([doc 04](04-game-loop.md#44-the-frame-wait-and-the-lost-interrupts)).
+Why every interrupt and not once a pass: a pass is two to about thirteen frames long ([doc 04](04-game-loop.md#44-the-frame-wait-and-the-lost-interrupts)).
 The interrupt reads the keys at a steady 50 Hz.
 The pass then takes the state of the last interrupt before it.
 A key held for less than one frame between two interrupts is missed.
@@ -387,8 +387,8 @@ Two of the actions fire once a press, not every pass a key is held:
   fire is held without up; on the bike also when fire is released (`$9581`). Holding SPACE+O gives one bullet; the
   next needs a pass with SPACE held and O released (let go of O, or press SPACE before O). Letting go of SPACE alone
   does not re-arm the gun on foot.
-- **The punch.** `PunchKeys` `$9BA4` keeps the last fire-and-direction byte. `PunchStart` starts a punch only when
-  the byte differs (`$9825`). A held SPACE+X punches once, for `PunchTimer` = 10 passes.
+- **The punch.** `PunchKeys` `$9BA4` keeps the direction bits of the last punch (`Controls` AND 3, active low: `$02`
+  right, `$01` left; `$9810-$9814`). `PunchStart` starts a punch only when they differ (`$9825`). A held SPACE+X punches once, for `PunchTimer` = 10 passes.
 
 ```mermaid
 stateDiagram-v2
@@ -666,7 +666,7 @@ and Rick went on into section 10 ([doc 07](07-objects.md)).
 Witness: `cheats` frames 50-60 and 200-210; `TestInfiniteLivesKeys` and `TestSectionCheatKeys` ran in full there.
 
 The point: the cheats are not hidden behind a secret address but behind exact port values.
-The second one is the authors' gift to a player who has finished the game.
+The second one is the authors' gift to a player who has reached level 5.
 
 ## 5.8 Known only from the code
 

@@ -41,7 +41,8 @@ The story, from the Kixx instructions (`work/candidates/zxdb-info/RickDangerous2
 
 How it plays:
 
-- **A level is a set of sections.** Each section is one screen wide and up to 44 cell rows tall.
+- **A level is a set of sections.** Each section is one screen wide and from 24 to 168 cell rows tall (224 for level
+  4's hidden section 10). The view buffer `ViewCells` `$6B00` holds 44 rows of it ([doc 6](06-rendering.md)).
 - **The view scrolls** up and down inside a section, 8 cell rows at a time ([doc 6](06-rendering.md)).
 - **Exits** sit at a section's left or right edge on set rows. Rick leaves there and enters the next section.
 - **Traps everywhere.** A block falls, a spike shoots out, a door closes. A trap fires when something enters its
@@ -289,11 +290,12 @@ Some sections hold a pair of invisible map entries: a start mark (kind `$78`) an
 2. Every 25 passes (one second at 25 passes a second) it loses 10 (`CountBonus` `$9163`).
 3. Rick reaches the stop mark: tune 1 again, and what is left goes to the score (`StopBonusTimer`).
 
-A worked example: a player who needs 8 seconds (200 passes) between the marks loses 8 x 10 and scores 1920.
-After 200 seconds the bonus reaches 0, and nothing stops the count. `CountBonus` takes 10 off the digits
-`$7F18-$7F1B` with a borrow, and a borrow out of all four ends at `BonusRunOut` `$917C`, a lone `RET`. So one step
-after 0 the digits wrap: the bonus becomes 099 990. A player who dawdles over 201 seconds between the marks would
-collect nearly 100 000 points. No recording let the bonus run out, so this is known only from the code. The recordings started the countdown 18 times and stopped it 19 times.
+A worked example: a player who needs 8 seconds (200 passes) between the marks loses 8 x 10 and scores 1920. After 200
+seconds the bonus reaches 0, and nothing stops the count. `CountBonus` takes 10 off the digits `$7F18-$7F1B` with a
+borrow, and a borrow out of all four ends at `BonusRunOut` `$917C`, a lone `RET`. So one step after 0 the digits wrap:
+the bonus becomes 099 990. A player who dawdles over 201 seconds between the marks would collect nearly 100 000
+points. No recording let the bonus run out, so this is known only from the code. In the recordings `StartBonusTimer`
+ran 18 times and `StopBonusTimer` 19: one entry with no countdown running returns at once.
 
 ### The level 5 lock and the two endings
 
@@ -344,8 +346,9 @@ Known only from the code: the bolt and detonator loops of `BonusTally`, and the 
 back to GAME OVER). The RZX run passed the tally before its first saved state, and no recording waits the 2500
 frames.
 
-**The point**: the score rewards finishing far more than playing. With six lives, the tally of the true ending is
-600 000 points, more than ten times everything the five levels give.
+**The point**: the score rewards finishing far more than playing. With six lives, the lives alone add 600 000
+points to the tally of the true ending (750 000 with the rest of the tally in the RZX run), more than ten times
+everything the five levels give.
 
 ### The difficulty
 

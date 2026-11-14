@@ -81,7 +81,7 @@ def entry_meaning(rec):
     pb = par >> 2 & 15
     name = {8: 'treasure', 10: 'ammunition', 11: 'detonators'}.get(pb)
     if k >= 0x74 and k not in (0x78, 0x7C):
-        ptxt = 'patrol %d px' % ((pb + 1) * 8)
+        ptxt = 'patrol %d passes' % ((pb + 1) * 8)
     else:
         ptxt = name or 'behaviour $%02X' % (par & 0x3C)
     return [

@@ -102,13 +102,14 @@ deciphered: the loop deciphers itself before it loops.
 
 ![Decipher at work](img/routines/Decipher.gif)
 
-*`c1` frames 1110 (T 65 900, as the loader starts at `$FF00`) to 1111 (T 12 000), 40 pictures of 425 T, 900 px
-wide. Left, the 256 bytes of `$FF00-$FFFF` (yellow: written now, red: written before); under it the same bytes in hex
-as they change; right, the loop's lines as they run. Made with `python3 ../../kit/routine_anim.py --work
-work/docs/wr/c1 --window 1110:65900-1111:12000 --listing build/loader.lst --out docs/img/routines/Decipher.gif --view
-buffer:FF00:16x16:hex --range FF00-FFFF --pc FF00-FF0E --pictures 40 --width 900`, with `--title` set to the
-title shown (drawn from the stored trace of 1110:65000-1111:12000 with the
-instructions before T 65 900 dropped, `work/review/fixA/anim_from.py`).*
+*`c1` frames 1110 T 65 924 (the loader's first instruction, at `$FF00`) to 1111 T 11 993, 40 pictures of 425 T,
+900 px wide; each picture shows the state at the end of its slice, so the first one already has `$FF0B-$FF13`
+deciphered and the PC in the loop. Left, the 256 bytes of `$FF00-$FFFF` (yellow: written now, red: written before);
+under it the same bytes in hex as they change; right, the loop's lines as they run. Made with `python3
+work/review/fixA/anim_from.py 1110:65900 --work work/docs/wr/c1 --window 1110:65000-1111:12000 --listing
+build/loader.lst --out docs/img/routines/Decipher.gif --view buffer:FF00:16x16:hex --range FF00-FFFF --pc FF00-FF0E
+--pictures 40 --width 900 --title "..."` (the title as shown): the stored trace of 1110:65000-1111:12000 with the
+instructions before T 65 900 dropped; the labels count from the first kept instruction.*
 
 How to read it: the yellow front moves up from `$FF0B` to `$FFFF`, one byte every 7 instructions. The listing on the
 right is the deciphered code: it shows what the bytes become.
@@ -243,8 +244,9 @@ Right, the loop's lines and the registers: HL the address, E the key, BC the cou
 docs/img/routines/DecryptMaps.gif --view buffer:EA6D:32x24:hex --range E400-EDFF --pc 894E-8968 --pictures 48`.*
 
 Why the last 768 bytes: side A's code block holds level 1 with its maps plain. A copier that took side A's code and
-side B's level 1 would find 762 bytes that differ. Those bytes (`$EA6E-$ED6C`) are exactly the cipher's. The
-deciphered bytes equal the RZX run's memory for levels 2-5 (`tools/image.py` `decrypt_maps`).
+side B's level 1 would find 762 bytes that differ: all of the cipher's 768 (`$EA6D-$ED6C`) except the six where the
+key is 0 (`$EA6D`, `$EA91`, `$EB6D`, `$EB91`, `$EC6D`, `$EC91`), which are stored plain. The deciphered bytes equal
+the RZX run's memory for levels 2-5 (`tools/image.py` `decrypt_maps`).
 
 **The point**: the cipher protects the one place where the two sides overlap. Level 1 travels twice, and only side
 B's copy is enciphered.
@@ -340,4 +342,4 @@ The RZX run used a TAP version: its memory equals the Micro Style data except th
 bytes), the bytes `$840D-$840E`, and the page bytes of the RAM 1 calls at `$7A81` and `$7AC6` (`$16`: its music runs
 in RAM 6) ([doc 4](04-game-loop.md), conventions).
 
-**The point**: one build, re-released twice. The Kixx tape is the original; the Erbe tape is a second build.
+**The point**: two builds: Micro Style's, re-released by Kixx unchanged, and Erbe's, its code shifted by region.

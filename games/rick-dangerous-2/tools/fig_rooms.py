@@ -18,6 +18,10 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import res_formats as rf  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import kitlib  # noqa: E402
+
+LABEL_FONT = kitlib.font(13)
 
 ROOT = rf.ROOT
 
@@ -88,7 +92,10 @@ def draw_section(b, s):
         y = row * 8 + (3 if col & 0x40 else 0) - top
         colour = (255, 0, 0) if k >= 0x74 and k not in (0x78, 0x7C) else (0, 255, 255) if k in (0x78, 0x7C) else (255, 255, 0)
         d.rectangle([x, y, x + 15, y + 15], outline=colour)
-        d.text((x + 2, y + 2), '%d' % (k & 0x7F), fill=colour)
+        label = '%d' % (k & 0x7F)  # readable at 900 px: a TrueType font on a dark backdrop
+        box = d.textbbox((x + 2, y + 1), label, font=LABEL_FONT)
+        d.rectangle([box[0] - 1, box[1] - 1, box[2] + 1, box[3] + 1], fill=(0, 0, 0))
+        d.text((x + 2, y + 1), label, fill=colour, font=LABEL_FONT)
         for bx in boxes:
             x0, y0 = bx[0], bx[1] * 8 - top
             w, h = ((bx[2] & 15) + 1) * 8, ((bx[2] >> 4) + 1) * 8

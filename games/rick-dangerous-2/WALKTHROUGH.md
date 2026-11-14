@@ -59,9 +59,9 @@ The interrupts and the timing, a first look:
   effects (`$7A97`: `$CCC8`); on a 48K (`$7A76` = `$FF`) it returns at once.
 - **DI and EI in play.** Besides the handler, these run with interrupts off (the L1's `F3` and `FB`, the same pairs in
   every recording): the sprite blitter `$7442-$74B5` and the cell drawer `$75DC-$76D2` (both move SP to pop data), the
-  map builder `$88F3-$8949`, the scroll `$796F-$7993`, the RAM 1 calls (`DI` at `$7A7F`; called from the main code,
-  interrupts come back at the next wait's `EI`) and the level loader (`$847C`, the tape). An interrupt that falls in
-  one of those windows is lost (the 128K's INT lasts 36 T): `c1` takes 4863 interrupts in 18 910 frames (the load runs
+  map builder `$88F3-$8949`, the HUD clear in `DrawHud` (`$796F-$7993`), the RAM 1 calls (`DI` at `$7A7F`; called
+  from the main code, interrupts come back at the next wait's `EI`) and the level loader (`$847C`, the tape). An
+  interrupt that falls in one of those windows is lost (the 128K's INT lasts 36 T): `c1` takes 4863 interrupts in 18 910 frames (the load runs
   with them off), `controls-keyboard` 2333 in 2340, `load-l4` 3404 in 26 600 (the tape), and the RZX level 5 replay
   `rzx-l5-full` 20 404 in 26 257: 22 % of its frames lose their interrupt, so the frame counter and the music run slow
   when many sprites are on screen (the L1's `replay.interrupts`).
@@ -69,8 +69,9 @@ The interrupts and the timing, a first look:
   `LD C,$02` and `CALL $7A53`, the frame wait: `EI`, loop until the counter `$7A60` reaches C, clear it (`$7A5B`). So a
   pass takes two frames or more. After the wait come the cell drawer `$76D4`, the section change, the moving parts, the
   scroll up or down (`$7905`, `$78A5`, whose steps wait a frame each, `LD C,$01`) and the death test (`$9B9B`, lives
-  `$8B3B`). The other callers of `$7A53` are the menus and the texts (C = 1, 10, 15 and 20). A level starts at `$7CC5`:
-  when the level wanted (`$7EF1`) is not the one in memory (`$C20C`) it is read from tape (`$840C`) and decrypted
+  `$8B3B`). The other callers of `$7A53` are the menus and the texts (C = 1) and the end tally (C = 10
+  `TallyBullets` `$8701`, 15 `TallyDetonators` `$8722`, 20 `TallyLives` `$8743`). A level starts at `$7CC5`: when
+  the level wanted (`$7EF1`) is not the one in memory (`$C20C`) it is read from tape (`$840C`) and decrypted
   (`$894E`); a life is added up to 6, the ammunition and the detonators set to 6.
 - **Frames per pass**, measured on our instance (`tools/passes.py`: from each RZX state, 300 passes from one exit of
   the frame wait (`$7A5B`) to the next, the work being the part up to the next entry of `$7A53`; `/skip_until`, timed
@@ -118,10 +119,10 @@ The images and what changes between them:
   - code that stores into itself: the SP saves of the blitter, the cell drawer and the map builder (`$7485`,
     `$749F-$74B4`, `$761F`, `$76B2-$76D1`, `$8947`), the RAM 1 call's operands (`$7A81-$7A8E`);
   - the state: the control method and the controls (`$7252-$7253`), the frame counter (`$7A60`), the level and a
-    counter beside it (`$7EF1-$7EF2`), the score (`$7F19-$7F21`), the view (`$88CF-$88D2`), the ammunition, the
-    detonators and their neighbours (`$8B3C-$8B41`), the objects' and enemies' fields (`$8ECF-$9160`, `$93CD`,
-    `$9F4D`), Rick's record and the two after it (his shot and detonator, to confirm) and the section
-    (`$9B8D-$9BC2`);
+    counter beside it (`$7EF1-$7EF2`), the countdown bonus's digits 2-4 and the score (`$7F19-$7F21`: `TimeBonus`
+    `$7F19-$7F1B`, `Score` from `$7F1D`), the view (`$88CF-$88D2`), the ammunition, the detonators and their neighbours
+    (`$8B3C-$8B41`), the objects' and enemies' fields (`$8ECF-$9160`, `$93CD`, `$9F4D`), Rick's record and the two
+    after it (`BulletRecord` `$9BB4`, `DetonatorRecord` `$9BBD`) and the section (`$9B8D-$9BC2`);
   - the IM 2 table `$FD00-$FE00` and the handler's page `$FEFE-$FFFF` (the stack);
   - the RZX run's own build: its level loader (`$846A-$8510`, 167 bytes: its TAP version), `$840D-$840E`, and the
     page bytes at `$7A81` and `$7AC6` (`LD A,$16`: its RAM 1 calls page RAM 6), found against `build/game.bin` by
@@ -174,7 +175,7 @@ at ROM speed from power-on; the level loads at ROM speed from side B; the rest s
 | `c1` | `work/stage1/c1/session.ttd` | power-on, side A at ROM speed | `tests/inputs/c1.txt` | 18 910 | the loader, the entry, the control menu (2, 3, 4, 1), level 1, keyboard play (the ray gun `$959F`, a detonator `$9B41`), P, deaths (`$93D0`), E and GAME OVER (`$7E1E`) |
 | `controls-kempston`, `controls-cursor`, `controls-sinclair`, `controls-keyboard` | `work/stage1/controls-*/session.ttd` | `work/stage1/lab/e1-end.szx`, the control menu after side A at ROM speed | `tests/inputs/controls-*.txt` | 1310 each, the keyboard 2340 | each method picked (`$7252` = 1, 2, 3, 0 in the samples), level 1, walking, a jump, fire with up, right and down (the ray gun `$959F` and a detonator `$9B41` once in each, the same play under every method), a death; the keyboard one also P and E (GAME OVER) |
 | `load-l2` ... `load-l5` | `work/stage1/load-lN/session.ttd` | `work/stage1/lab/e1-end.szx`; side B inserted at frame 370 and played at ROM speed | `tests/inputs/load-lN.txt` | 13 901, 20 200, 26 600, 32 901 | "START TAPE ON SIDE TWO", the blocks before the level skipped, "STOP TAPE AND PRESS FIRE", the level's first section (`$7EF1` = N). `load-l5` uses a POKE, said so: `$8065` = `$FF` at frame 0, which opens level 5 in the level menu (without it the menu lists levels 1-4) |
-| `rzx-lL-NNNNN-poke` (59: level 1 15, level 2 13, level 3 6, level 4 11, level 5 14) | `work/stage1/rec/rzx-lL-NNNNN-poke/session.ttd` | the RZX run's saved state at its frame NNNNN (`work/stage1/rzx/lL/atNNNNN.szx`, `start.szx` for 0; someone else's play) | `tests/inputs/rzx-lL-NNNNN-poke.txt` (`tools/rzx_script.py`: the RZX's port reads as held keys) | 2000 each, the last of a level shorter | the RZX run in pieces through each level, level 1 to its end (level 2 starts in `rzx-l1-26000-poke`), the Fat Guy and the ending text: four POKEs at frame 0, said so (infinite lives `$8A30`, immune to enemies `$8C67`, to moving objects `$A475`, to the bomb blast `$93B4`) |
+| `rzx-lL-NNNNN-poke` (58: level 1 14, level 2 13, level 3 6, level 4 11, level 5 14) | `work/stage1/rec/rzx-lL-NNNNN-poke/session.ttd` | the RZX run's saved state at its frame NNNNN (`work/stage1/rzx/lL/atNNNNN.szx`, `start.szx` for 0; someone else's play) | `tests/inputs/rzx-lL-NNNNN-poke.txt` (`tools/rzx_script.py`: the RZX's port reads as held keys) | 2000 each, the last of a level shorter | the RZX run in pieces through each level, level 1 to its end (level 2 starts in `rzx-l1-26000-poke`), the Fat Guy and the ending text: four POKEs at frame 0, said so (infinite lives `$8A30`, immune to enemies `$8C67`, to moving objects `$A475`, to the bomb blast `$93B4`) |
 | `rzx-l5-full` | `work/stage1/rec/rzx-l5-full/session.ttd` | the RZX's level 5 start state | `tests/inputs/rzx-l5-full.txt` | 26 257 | no POKE: level 5 section 0, deaths, two GAME OVERs, the control menu, the level menu with five levels, a new game |
 | `rzx-l1-full-poke`, `rzx-l5-full-poke` | `work/stage1/rec/rzx-lL-full-poke/session.ttd` | the RZX's level start states | `tests/inputs/rzx-lL-full-poke.txt` | 26 687, 26 257 | the first tries: whole levels with the POKEs, off the run's course after a few hundred frames (Rick stuck in level 1 sections 0-3 and level 5 section 0) |
 | `rzx-l5-23000` | `work/stage1/rec/rzx-l5-23000/session.ttd` | the RZX's level 5 state at 23 000 | `tests/inputs/rzx-l5-23000.txt` | 3257 | no POKE: the end of the lives tally (`$874E`) and the ending text, "AND SO RICK SAVES THE DAY BY DEFEATING THE FAT GUY AND HIS FLEET OF ROBOT STARSHIPS ... WHAT WILL RICK DO NEXT", letter by letter (frames 250-1000), then held |
@@ -201,7 +202,7 @@ python3 tools/capture.py --work work/stage2/rec/NAME --snapshot START --model 12
 | `cheats` | `work/stage2/rec/cheats/session.ttd` | `work/stage1/rzx/l5/at002000.szx` (no load) | `tests/inputs/cheats.txt` | 800 | both chords: C+S+3 at frame 50 (`CheatInfinite` `$8066` on, off, on at 54, 56, 60), SPACE+N+ENTER+J+Y at 200 (`CheatExits` `$8067` = `$FF` at 204) ([doc 5, 5.7](docs/05-controls.md#57-the-cheat-chords)) |
 | `end-congrats` | `work/stage2/rec/end-congrats/session.ttd` | `work/stage1/rzx/l4/at020000.szx` | `tests/inputs/end-congrats.txt`: POKE `$7EF2` = 0 and the immunity POKEs, said so | 2600 | the CONGRATULATIONS ending `$8754` |
 | `long-l4` | `work/stage2/rec/long-l4/session.ttd` | `work/stage1/rzx/l4/at020000.szx` | `tests/inputs/long-l4.txt`: POKE `$8067` = `$FF` and the immunity POKEs | 1200 | level 4 section 7's level-end exit becomes the passage to section 10 (`$89E0`) |
-| `sec-lL-sS` (20: level 1 section 8; level 2 sections 7, 10-12; level 3 3-5, 7-9; level 4 1, 2, 6, 11, 12; level 5 3, 5) | `work/stage2/rec/sec-lL-sS/session.ttd` | `work/stage1/lab/e1-end.szx` (level 1), else `work/stage1/rzx/lL/start.szx` | `tests/inputs/sec-lL-sS.txt` (written by `work/stage2/mksections.py`): POKE `LevelStarts` (`$7C8F` + 6 (L - 1)) and the immunity POKEs | 1190 (level 1), 2470 | every section the other recordings never entered, so every section of every level is read by `SetupSection` in at least one recording |
+| `sec-lL-sS` (18: level 1 section 8; level 2 sections 7, 10-12; level 3 3-5, 7-9; level 4 1, 2, 6, 11, 12; level 5 3, 5) | `work/stage2/rec/sec-lL-sS/session.ttd` | `work/stage1/lab/e1-end.szx` (level 1), else `work/stage1/rzx/lL/start.szx` | `tests/inputs/sec-lL-sS.txt` (written by `work/stage2/mksections.py`): POKE `LevelStarts` (`$7C8F` + 6 (L - 1)) and the immunity POKEs | 1190 (level 1), 2470 | every section the other recordings never entered, so every section of every level is read by `SetupSection` in at least one recording |
 | `life-up` | `work/docs/rec/life-up/session.ttd` | `work/stage1/rzx/l5/start.szx` (level 5's "STOP TAPE AND PRESS FIRE") | `tests/inputs/life-up.txt`: POKE `Lives` `$8B3B` = 3, said so | 350 | `AddLife` `$7CEE` (1 run): the level starts with 4 lives |
 | `box-shot` | `work/docs/rec/box-shot/session.ttd` | `work/stage1/lab/e1-end.szx` | `tests/inputs/box-shot.txt`: POKE `LevelStarts` = level 1 section 3, x 96, y 227, and the immunity POKEs | 906 | an ammunition box shot: `PickupShot` `$A5E4` 1 run, `PickupBurst` `$A53A` 10 runs |
 | `fatguy-hits` | `work/docs/rec/fatguy-hits/session.ttd` | `work/stage1/rzx/l5/at021000.szx` (the Fat Guy at 20 hits) | `tests/inputs/fatguy-hits.txt`: the immunity POKEs (the Fat Guy's own tests are not POKEd) | 900 | his touch kills Rick (`$F946` jumps, frames 196-198) and a bullet from the left ledge hits him (`$F922`, the count 20 -> 19 in frames 822-824) ([doc 10, 10.12](docs/10-gameplay-logic.md#1012-the-fat-guy)) |
@@ -237,7 +238,7 @@ Every screen reached, from the recordings at the frames named:
 | level 5, the Fat Guy's headquarters, the start and section 4 | [level5-start.png](docs/img/play/level5-start.png), [level5-section4.png](docs/img/play/level5-section4.png) | `rzx-l5-full` 250, `rzx-l5-12000-poke` 250 |
 | the Fat Guy | [level5-fat-guy.png](docs/img/play/level5-fat-guy.png) | `rzx-l5-22000-poke` 250 |
 | GAME OVER | [game-over.png](docs/img/play/game-over.png) | `rzx-l5-full` 11 500 |
-| the ending | [ending.png](docs/img/play/ending.png) | `rzx-l5-24000-poke` 250 |
+| the ending | [ending.png](docs/img/play/ending.png) | `rzx-l5-24000-poke` 250 (the same screen as `rzx-l5-23000` from 1250 on) |
 
 The level maps drawn from the data are in [doc 1, 1.7](docs/01-game-design.md#17-the-levels), the sprite sheets in
 [doc 6, 6.4](docs/06-rendering.md#64-the-sprites) and `src/res/levels/levelN/level/sprites.png`.

@@ -285,8 +285,10 @@ Witness: `CountBonus` 12 127 runs in 29 recordings; a start 18 times, a stop 19.
 The bonus never ran out in any recording.
 From the code: from 000000 the borrow wraps to 099990 and the countdown goes on (nothing clears `BonusRunning`), so a
 stop reached late pays up to 99 990.
-Digit 1 (`$7F18`) then stays 9 for the rest of the game: no code but the loader writes it, so every later start reads
-092000.
+Digit 1 (`$7F18`) is then 9, and `CountBonus` decrements it like the others at each borrow out of digit 2: every 1000
+steps (25 000 passes), so the count goes 099 990, ..., 090 000, 089 990.
+A start writes digits 2-4 only, and nothing else resets digit 1 at a new game (only the loader sets it): a start after
+the wrap gives 0d2 000, with d whatever digit 1 holds (092 000 while it is still 9).
 
 ## 8.4 PrintText: a text straight on the screen
 
@@ -441,14 +443,18 @@ Glyph `$1C` is 28, "P"; column 10; y 73.4; speed 9.375; delay 0; it stops at row
 | Frame | y | Speed | Moves since the build (y 64.0, speed +9.0) |
 | --- | --- | --- | --- |
 | 118 | 73.4 | +9.375 | 1 |
-| 120 | 103.8 | +10.500 | 4: 9.75 and 10.125 between, so three moves in two frames |
+| 119 | 93.3 | +10.125 | 3 |
+| 120 | 103.8 | +10.500 | 4 |
 | 121 | 112.0 | -5.438: the bounce, -10.875 / 2 | 5 |
 | 135 | 75.3 | -0.188: the top, 37 pixels up | |
 | 149 | 112.0 | +5.062: the second landing | |
 
-A move is one pass of `DropTextWait`, not one frame: between frames 118 and 120 three passes ran.
-Which pass of those frames found its one-count frame wait already over is not traced here; from frame 120 on the
-rows fit one move a frame.
+The rows are sampled at T 0 of each frame.
+The first move comes late in frame 117 (after T 35 000; frames 114-117 still hold the build's bytes at T 0).
+Frame 118 holds two moves: y 83.1 (speed 9.75) by T 35 000, 93.3 (speed 10.125) by the end of the frame.
+From frame 119 on the letter moves once a frame; the bounce comes in frame 120, before T 35 000, so frame 121's row
+shows it.
+Why frame 118 runs two passes of `DropTextWait` (its one-count frame wait already over) is not traced here.
 
 Each bounce is half as fast and a quarter as high: 37 pixels, then about 9, then 2.
 The "O" of "TO" is character 11 counted from 0 (the spaces count too), so it starts 1 + 6 x 11 = 67 frames after
@@ -560,7 +566,8 @@ flowchart TD
 
 ![The Fat Guy's end](img/play/ending.png)
 
-*The end of `rzx-l5-23000`: the four lines in place (WALKTHROUGH 6.1).*
+*`rzx-l5-24000-poke` frame 250: the four lines in place (the same screen as `rzx-l5-23000` from frame 1250 on;
+WALKTHROUGH 6.1).*
 
 **A worked example: the first line of the Fat Guy's end.**
 The list at `$883D` starts `04 78 41 4E 44 20 53 4F ...`.
@@ -582,7 +589,8 @@ How to read it: the letters land one after the other, 6 frames apart; when the l
 text snaps into place.
 The point: the game ends with the same code that draws its menus.
 
-Witness: `ShowEndTextLoop` 6 runs (`rzx-l5-23000` 5, `rzx-l5-24000-poke` 1); `Congratulations` only in `end-congrats`;
+Witness: `ShowEndTextLoop` `$876B` 13 runs (`rzx-l5-23000` 5, `rzx-l5-24000-poke` 1, `end-congrats` 7: the
+CONGRATULATIONS text goes through it too); `Congratulations` `$8754` only in `end-congrats` (1 run);
 GAME OVER 4 runs (`c1`, `controls-keyboard`, `rzx-l5-full` twice).
 
 ## 8.8 Known only from the code

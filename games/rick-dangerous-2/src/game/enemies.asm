@@ -32,8 +32,8 @@
 ; Called for every live enemy by $9ECE. Runs (l1q index): 49 093 in 69 builds:
 ; the bullet 43 kills ($8C13), the blast 5 ($8C33), the punch 9 stuns ($8C57:
 ; rzx-l1-24000-poke, rzx-l5-12000-poke); Rick touched 624 times ($8C67 reached,
-; nearly all in the immunity-POKE builds, whose POKE replaces the call), killed
-; 18 times (KillRick's callers).
+; nearly all in the immunity-POKE builds, whose POKE replaces the call),
+; KillRick called 18 times from here ($8C67).
 ;
 ; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,
@@ -167,8 +167,9 @@ UpdateEnemy:
 ;
 ; The step 1 ($9F32) and step 4 ($9F3B) need EnemyAnimSlow or EnemyAnimFast,
 ; which nothing writes: not executed in any recording. Runs (l1q index): 49 093
-; in 69 builds (from EnemyWanderer 9734, EnemyChaser 12 139, EnemyPatrol 27
-; 224); KillEnemy from here 48 times (the bullet 43, the blast 5).
+; in 69 builds (callers: EnemyWanderer $A000 9734, EnemyChaser $A02E 12 138,
+; EnemyPatrol $A09D 27 221); KillEnemy from here 48 times (the bullet 43, the
+; blast 5).
 ;
 ; Witness: L1 96049 (cheats, life-up, rzx-l1-00000-poke, rzx-l1-02000-poke,
 ; rzx-l1-04000-poke, rzx-l1-06000-poke, rzx-l1-08000-poke, rzx-l1-10000-poke,

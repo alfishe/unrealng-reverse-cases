@@ -632,13 +632,19 @@ PlatformDy:
 ; (right half), else +2 (he drifts to the middle); then the first DeathFall
 ; pass.
 ;
-; Callers ($93D0 in l1q): $8C67 (an enemy touch) 18, $9668 (a deadly cell) 13,
-; $93B4 (the detonator's blast) 8, $A475 (a trap) 6, $9988 (a deadly cell met
-; sideways) 3, $FACB (level 5's code) 1 (l1q's caller counts, 49 in all). The
-; entry ran 75 times in 15 builds: c1 8, c48 10, each control recording 4,
-; load-l2 12, load-l3 6, load-l4 1, rzx-l3-02000/04000/06000-poke 4,
-; rzx-l5-18000-poke and rzx-l5-20000-poke 1 each, rzx-l5-full 16. The level 5
-; branch ran once (rzx-l5-20000-poke).
+; Calls per site, summed over every recording's l1.json (taken branches; $8C67,
+; a plain CALL, its 29 runs less the 11 in immunity-POKE builds): $8C67 (an
+; enemy touch) 18, $9668 (a deadly cell) 13, $93B4 (the detonator's blast) 32,
+; $A475 (a trap) 8, $9988 (a deadly cell met sideways) 3, $FACB (the Fat Guy's
+; shot) 4 (fatguy-hits 3, rzx-l5-20000-poke 1), $F946 (the Fat Guy's touch) 1
+; (fatguy-hits): 79 in all. The entry ran 79 times in 16 builds; 38 got past
+; the RET NZ ($93D5): the deaths. Entries / deaths: c1 8/5, each control
+; recording 4/1, load-l2 12/2, load-l3 6/1, load-l4 1/1, rzx-l3-02000-poke 1/1,
+; rzx-l3-04000-poke 2/2, rzx-l3-06000-poke 1/1, rzx-l5-18000-poke 1/1,
+; rzx-l5-20000-poke 1/1, rzx-l5-full 16/13, c48 10/4, fatguy-hits 4/2. The
+; level 5 branch ($93E0) ran 3 times (rzx-l5-20000-poke 1, fatguy-hits 2). The
+; witness line's 121 counts the 11 builds that are in both case.json's
+; read_builds and code_builds twice (42 entries).
 ;
 ; Witness: L1 121 (controls-cursor, controls-kempston, controls-keyboard,
 ; controls-sinclair, fatguy-hits, rzx-l3-02000-poke, rzx-l3-04000-poke,

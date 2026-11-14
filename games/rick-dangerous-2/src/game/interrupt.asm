@@ -269,8 +269,9 @@ ObjectTableBEnd:
 ; A (as given) XOR L XOR D XOR E XOR H becomes L; HL stored in RandomValue; A
 ; is the result. HL and DE kept.
 ;
-; Evidence: 1018 runs in 21 builds (callers $A010 x999, $A016 x995, $A048 x19,
-; $A05F x18).
+; Evidence: 1569 runs in 27 builds, summed over every recording's l1.json (the
+; calls: $A010 x1233, $A016 x317, $A048 x13, $A05F x6; l1q's caller list gives
+; other figures).
 ;
 ; Witness: L1 3010 (rzx-l1-00000-poke, rzx-l1-02000-poke, rzx-l1-04000-poke,
 ; rzx-l1-08000-poke, rzx-l1-16000-poke, rzx-l1-20000-poke, rzx-l1-24000-poke,

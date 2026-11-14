@@ -192,8 +192,9 @@ The table `LevelStarts` `$7C8F` (src/res/tables/level-starts.csv), 6 bytes a lev
 | 5 | `00 60 00 AB 00 00` | 0 | `$60` | 0 | `$00AB` | 0 |
 
 A worked example, level 3: `IX` = `$7C8F` + 6 x 2 = `$7C9B`. `A` = 1 (section 1), `C` = `$90` (the view starts 144
-cell rows down the section), `E` = 0 (the left edge), `HL` = `$00AB` (pixel row 171 of the view, near its bottom).
-Rick starts at the bottom left of a view that is already scrolled far down section 1.
+cell rows down the section), `E` = 0 (the left edge), `HL` = `$00AB` (171 pixels from the view buffer's top, whose row
+8 is screen row 0: screen line 107, the middle of the view). Rick starts at the left edge, halfway down a view that is
+already scrolled far down section 1.
 
 `AddLife` is the only extra life of the game: a level started with fewer than six lives gets one back. Every level
 start of the RZX run had six lives; `life-up` (a POKE, said so: `Lives` `$8B3B` = 3 at level 5's "STOP TAPE AND PRESS
@@ -398,7 +399,7 @@ PassWork:                  ; $7D75
 ```
 
 The order is the point of the design. Everything that changes the picture is built off screen first: `DrawSprites`
-composes each sprite into copies of the cells under it, in spare cells from `$5DF0`, and only marks the view buffer.
+composes each sprite into copies of the cells under it, in spare cells from `$5E00`, and only marks the view buffer.
 The wait comes next. `DrawChangedCells` then copies the changed cells to the screen right after the interrupt, while
 the beam is still in the top border, so the screen changes at one moment of the frame ([doc 6](06-rendering.md)).
 
@@ -408,16 +409,19 @@ The animation runs one pass of level 1:
 
 *`rzx-l1-06000-poke` frames 103 T 4930 to 105 T 4940, the pass that starts after the frame wait at frame 103, 70
 pictures of 2026 T. Top left, `$6000-$FFFF` lit by age (green executed, blue read, yellow written); under it the
-screen; right, the listing at the PC. Made with `python3 ../../kit/routine_anim.py --work work/docs/wr/l1p --window
-103:4930-105:4940 --listing build/game.lst --pc 7D2D-7EB3 --range 6000-FFFF --pictures 70 --delay 120 --out
-docs/img/routines/MainLoop.gif`.*
+screen; right, the listing at the PC (the music in RAM 6, the RZX version's page, is shown as one name). Made with
+`python3 ../../kit/routine_anim.py --work work/docs/wr/l1p --window 103:4930-105:4940 --listing build/game.lst
+--page-name "6=the music player (RAM 6, the RZX version)" --pc 7D2D-7EB3 --range 6000-FFFF --pictures 70 --delay 120
+--out docs/img/routines/MainLoop.gif`.*
 
 How to read it:
 
 - The first pictures are `DrawChangedCells`: writes into the screen where Rick and the enemy are.
 - Then the long middle: the map entry scan, the objects, and `DrawSprites` writing the dirty map at `$6600` (the
-  spare cells at `$5DF0-$5F00` lie under the grid's `$6000`).
+  spare cells from `$5E00` reach `$61BF` at most in the recordings, over the dead music image at `$6000`).
 - The last third is the frame wait: the PC sits in `WaitFrames` while nothing in memory changes.
+- The last pictures, from T 1846 of frame 105, are the interrupt that ends the wait: the handler, then the music
+  player in RAM 6 (PC `$C935` in the last one).
 
 ### The steps and their cost
 
@@ -488,7 +492,8 @@ already come, and the wait needs only the next.
 
 The catch is that the counter counts only the interrupts the CPU takes. On the Spectrum the INT signal lasts about 32
 T-states at the start of the frame. Code that runs with the interrupts off at that moment never sees it. In play the
-game has five such windows; the four that lose interrupts in the recordings come first:
+game has five such windows. The handler's own cannot lose one: it starts after the INT has been taken and ends long
+before the next. The blitters, `BuildView` and `CallRam1` are the ones that lose interrupts in the recordings:
 
 | Window | Where | Why the interrupts are off | Length |
 | --- | --- | --- | --- |
@@ -589,11 +594,11 @@ Where the 699 343 T of `CheckSectionExit` go (flat, by label; `python3 work/docs
 | `ClearRedraw` (1280 bytes cleared, several times) | 32 998 | 3.9 % |
 | `RedrawAll` (1280 bytes set) | 30 399 | 3.6 % |
 
-**The point**: a section entry costs about twelve frames, a fifth of a second during which the picture holds. The game hides
-it by changing the whole screen at once; the player sees the new section appear, not the pause. The level 1 window
-has the same kind of pass at frame 116 (11.68 frames). `tools/passes.py`'s 13.47 frames from the RZX state at frame
-22 000 ([doc 2, 2.6](02-architecture.md#26-the-frame-budget)) is a section rebuild too: that state, played without
-keys, loses Rick, and the restart rebuilds the section.
+**The point**: a section entry costs about twelve frames, a quarter of a second during which the picture holds. The
+game hides it by changing the whole screen at once; the player sees the new section appear, not the pause. The level 1
+window has the same kind of pass at frame 116 (11.68 frames). `tools/passes.py`'s 13.47 frames from the RZX state at
+frame 22 000 ([doc 2, 2.6](02-architecture.md#26-the-frame-budget)) is a section rebuild too: that state, played
+without keys, loses Rick, and the restart rebuilds the section.
 
 ### The pass against the beam
 
@@ -694,9 +699,10 @@ Random(A):
     return L
 ```
 
-Its callers are the enemies' turns (`$A010`, `$A016`, `$A048`, `$A05F`: 1018 runs in 21 builds). The random numbers
-depend on when the interrupts fell, so a lost interrupt changes the enemies' choices: one reason a replay with keys
-held per frame drifts from the RZX run ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
+Its callers are the enemies' turns (`$A010`, `$A016`, `$A048`, `$A05F`: 1569 runs in the l1q index, 1233, 317, 13 and
+6 of them; `python3 tools/l1q.py`). The random numbers depend on when the interrupts fell, so a lost interrupt changes
+the enemies' choices: one reason a replay with keys held per frame drifts from the RZX run ([WALKTHROUGH
+6.0](../WALKTHROUGH.md#60-the-recordings)).
 
 **The point**: the handler is short and always the same work. Its one variable cost is the music, about 2600 T each
 time the handler runs, 3.7 % of that frame. Counted over every frame of 2000 (the lost interrupts and the runs with
@@ -742,11 +748,11 @@ entry. Nothing that happened in the section survives a death: the objects are sp
 
 | What | Where | Count | Time |
 | --- | --- | --- | --- |
-| a pass | `PassWork` `$7D75`, `WaitFrames` C = 2 at `$7D8B` | 2 interrupts | 2 frames at best, 0.04 s; 3-5 in play |
+| a pass | `PassWork` `$7D75`, `WaitFrames` C = 2 at `$7D8B` | 2 interrupts | 2 frames at best, 0.04 s; 2-5 in play (13 at a section entry) |
 | a scroll | `ScrollDown` `$78A5`, `ScrollUp` `$7905` | three `RedrawScrolledView` passes of about 4 frames each; the three waits of C = 1 return at once | 16 frames for 8 cell rows ([doc 6](06-rendering.md#66-the-scroll)) |
 | the menus' falling letters | `DropTextWait` `$82E2` | C = 1 a frame, letters 6 frames apart | until all stop or a key |
 | the control menu's pointer | `ControlMenuLoop` `$8127` | C = 1 | a frame a step |
-| GAME OVER | `GameOverWait` `$7E9D` | 512 x C = 1 | 10.24 s, or fire |
+| GAME OVER | `GameOverWait` `$7E9A` | 512 x C = 1 | 10.24 s, or fire |
 | an end text | `EndTextWait` `$8781` | 2500 x C = 1 | 50 s, or fire |
 | the bonus tally | `BonusTally` `$86E0` | C = 10 a bullet, 15 a detonator, 20 a life | 0.2, 0.3, 0.4 s each |
 | the countdown bonus | `CountBonus` `$9163` | 10 points every 25 passes | 1 s or more ([doc 10](10-gameplay-logic.md)) |
@@ -754,8 +760,8 @@ entry. Nothing that happened in the section survives a death: the objects are sp
 | the punch's stick | `PunchTimer` `$9BA3` | 10 passes | 0.4 s or more |
 | the pause | `MainLoopPause` `$7D5D` | P released, pressed, released | until the player |
 
-Every timer of play counts passes, not frames. A detonator lit in the Fat Guy's room, at 3.2 frames a pass, burns
-for 4.1 s instead of 2.6 s.
+Every timer of play counts passes, not frames. A detonator lit in the Fat Guy's room, at about 3.4 frames a pass,
+burns for 4.4 s instead of 2.6 s.
 
 **The point**: only the screens outside play (menus, GAME OVER, the endings) count frames. Play counts passes, so the
 whole game slows down together when the screen is busy, and nothing in play depends on the real time.

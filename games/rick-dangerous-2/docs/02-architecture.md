@@ -141,14 +141,16 @@ How to read it:
 - **The left scale** is the CPU's address space and the bank behind each 16 K in play: ROM 1, RAM 5, RAM 2, RAM 0.
 - **The colours** are the source's parts: the screen blue, the buffers yellow and violet, the game green, the level
   block cyan, orange and light green, the interrupt's table and handler red.
-- **RAM 1** is paged in at `$C000` only inside `CallRam1` `$7A77`, with the interrupts off.
+- **RAM 1** is paged in at `$C000` in play only inside `CallRam1` `$7A77`, with the interrupts off. The entry pages
+  it in too, once, with the interrupts off: for the 128K test (`$7B9E-$7BA0`) and byte by byte in `CopyMusic`
+  (`$7BD3-$7BD5`).
 
 The regions, with what writes and reads them:
 
 | Range | Name | What | Written by | Read by |
 | --- | --- | --- | --- | --- |
 | `$4000-$5AFF` | `Screen`, `ScreenAttrs` | row 0 the HUD, rows 1-23 the view | the cell drawers, the HUD | the ULA |
-| `$5DE8-$5F8F` | `SpareCells` | the composed cells: a level cell with sprites masked in, 8 bytes each | `ComposeCell` `$7755` | `DrawChangedCells` `$76D4` |
+| `$5E00-$61BF` | `SpareCells` | the composed cells: a level cell with sprites masked in, 8 bytes each; cell n at `$5DE8` + 8 x (n + 1) from n = 2 (`DrawSprites` `$85FA` sets `SpareCount` to 2), so the first is `$5E00`; the end is the most the recordings reach (`$61BF`, n = 121, `rzx-l3-10000-poke`), over the dead music image | `ComposeCell` `$7755` | `DrawChangedCells` `$76D4` |
 | `$6000-$707F` | `MusicImage` | the music as loaded (4224 bytes) | the tape | `CopyMusic` `$7BBF`, once |
 | `$6500-$65FF` | `MirrorTable` | the 256 bytes bit-reversed, for mirrored sprites | the entry | the composer `$7329` |
 | `$6600-$6AFF` | `DirtyMap` | a byte per view cell, 32 x 40: what to redraw | the composer, the scroll | `DrawChangedCells` |
@@ -178,7 +180,7 @@ Every level is one block of 21 760 bytes loaded at `$A800` ([doc 7](07-objects.m
 | `+$0900` | `$B100` | `CellAttrs`: a cell's attribute |
 | `+$0A00` | `$B200` | `Blocks`: 256 blocks of 4 x 4 cell numbers |
 | `+$1A00` | `$C200` | `LevelHeader`: +0 the kind table, +2 the section table, +4 the maps' base |
-| `+$1A06` | `$C206` | `LevelHookA`, `LevelHookB`: level 5's two jumps; text in levels 1-4 (2.6) |
+| `+$1A06` | `$C206` | `LevelHookA`, `LevelHookB`: level 5's two jumps; text in levels 1-4 (2.7) |
 | `+$1A0C` | `$C20C` | `LevelNumber` |
 | `+$1A0E` | `$C20E` | `SpriteFrameMap` |
 | `+$1A6D` | `$C26D` | `Sprites`, 128 bytes each |
@@ -207,7 +209,7 @@ pages RAM 1, writes that byte + 1, pages RAM 0 back and compares. On a 128K RAM 
 Everything else is the same code on both: the menus, the levels, the gun, the detonator, the punch, pause and quit
 all work in `c48`.
 
-**The point**: the program fills the 48K map from `$5DE8` to `$FFFF`. The 128K adds only one thing, the music in RAM
+**The point**: the program fills the 48K map from `$5E00` to `$FFFF`. The 128K adds only one thing, the music in RAM
 1, which the main program reaches through one routine, `CallRam1` `$7A77`.
 
 ## 2.4 The heatmap
@@ -277,7 +279,7 @@ How to read it:
 
 - **`WaitFrames`** is the idle time. In level 1 it is 52.7 %: half the CPU is spare.
 - **The renderer** is all the rest: `DrawChangedCells` 19.1 %, `ComposeSprite` 14.2 %, `ComposeCell` 5.9 %.
-- **The game logic** (Rick, the objects, the collisions) is about 3.4 % in level 1, summing its rows among the top 24
+- **The game logic** (Rick, the objects, the collisions) is about 3.3 % in level 1, summing its rows among the top 24
   (Rick's moves and tests 1.7 %, the object scan and update 1.3 %, `UpdatePickup` 0.33 %).
 - **The music** player costs 1.8 % of all T-states in both, counted over every frame (lost interrupts and quiet runs
   included); `CallRam1` adds 0.16-0.19 %. Per handler run it is about 2600 T, 3.7 % of that frame

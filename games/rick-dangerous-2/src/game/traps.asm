@@ -411,8 +411,8 @@ ArmTrapWait:
 ; ammunition sets the bullets $8B3C to 6 ($79D1 redraws them); detonators set
 ; $8B3D to 6 ($79DF); effect 6 for both; the pickup is retired.
 ;
-; Not taken: an ammunition or detonator box hit by the bullet ($A5E4) or by the
-; detonator's blast at phase 4-9 ($A5F7) bursts (effect 5, ten frames from the
+; Shot: an ammunition or detonator box hit by the bullet ($A5E4) or by the
+; detonator's blast at phase 4-9 ($A5F7) bursts (effect 5, ten passes from the
 ; table $93C0 by the burst counter +$0E, PickupBurst, then retired). box-shot
 ; (POKEs, said so: level 1 starts in section 3 beside the boxes) runs the
 ; bullet's branch: PickupShot 1 run, PickupBurst 10 runs; the blast's branch

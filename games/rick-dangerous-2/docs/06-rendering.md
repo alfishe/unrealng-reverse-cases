@@ -169,7 +169,8 @@ How to read it: the yellow marks in `DirtyMap` sit where a sprite covers a cell.
 Marks above the window are objects above the screen: they are composed but never drawn.
 `DrawChangedCells` starts its scan at screen row 1 and never reads them.
 No byte is 1 here: every sprite covers again the cells it covered in the pass before.
-The point: the 44-row view holds 8 rows above the screen and 12 below it.
+The point: the 44-row view holds 8 rows above the screen (0-7) and 12 below it (32-43); row 8 is the screen's top row,
+under the HUD, so 9 rows (0-8) above the play area are never shown.
 So the scroll and the objects just off the screen need no second build.
 
 ## 6.4 The sprites

@@ -206,7 +206,9 @@ The list is sorted by row; a kind of 0 ends it.
 | +2 | 7 | spawn when the row comes into view; clear: spawn when a box fires |
 | +3 | 0-1 | the number of boxes |
 | +3 | 2-5 | a trap's behaviour (`$00`-`$1C`), a pickup (`$20` treasure, `$28` ammunition, `$2C` detonators), or an enemy's patrol length |
-| +3 | 6 | one-shot: once taken or ended, the entry never comes back |
+| +3 | 5 with 2-4 | bit 5 with a trap behaviour: in the five levels' data only `$24` (`$04` with bit 5, 28 entries), a round trip (+0 bit 5, `ArmTrapWait` `$A51A`); level 1's `01 30 AC 25` below |
+| +3 | 6 | one-shot: once taken or ended, the entry never comes back (`RetireObject` `$9C77`) |
+| +3 | 7 | set in many entries (enemies `$80`-`$D4`, traps up to `$ED`); no code reads it: the trap spawn keeps `AND $3C` (`$9DAA`) and tests bit 6 (`$9DB5`), the enemy spawn bits 2-5 (`$9D4A`), the scan and the boxes bits 0-1 (`$8B67`, `$A6A3`), `RetireObject` bit 6 |
 
 A trigger box:
 
@@ -743,11 +745,12 @@ How to read it: the patrol walks between x 92 and 156 under Rick; at frame 118 R
 treasure-room records replace the old ones.
 
 Witness (the L1 index, `python3 tools/l1q.py`, every recording of case.json and stage 2): `UpdateEnemy` `$9EAF` 52 717
-runs in 75 recordings; `EnemyHitsAndSprite` `$9ECE` and so `TestEnemyHits` 49 093 runs in 69 (patrol `$A06E` 27 224,
-chaser `$A025` 12 139, wanderer `$9FF7` 9 734; the rest are falling enemies, `$9F8D` 3 620).
+runs in 75 recordings (patrol `$A06E` 27 224, chaser `$A025` 12 139, wanderer `$9FF7` 9 734, dying `EnemyFalling`
+`$9F8D` 3 620); `EnemyHitsAndSprite` `$9ECE` and so `TestEnemyHits` 49 093 runs in 69 (called from the wanderer 9 734,
+the chaser 12 138, the patrol 27 221 times).
 Hit by the bullet 43 times (`$8C13`), by the blast 5 (`$8C33`), stunned by a punch 9 (`$8C57`).
 An enemy touched Rick 624 times (`$8C67` reached), nearly all in the immunity-POKE recordings, whose POKE replaces that
-call; the touch killed him 18 times (`KillRick`'s callers in l1q, [doc 10](10-gameplay-logic.md#107-the-punch)).
+call; the touch called `KillRick` 18 times (summed over the recordings, [doc 10](10-gameplay-logic.md#107-the-punch)).
 A wanderer took a new direction 317 times (`$A021`).
 
 ## 7.8 The hit tests

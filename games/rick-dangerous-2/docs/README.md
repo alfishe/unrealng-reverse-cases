@@ -23,22 +23,22 @@ Each term once, here; the documents use these names and no others.
 | --- | --- |
 | chord | keys that must be held together and alone in their half rows (the two cheats; doc 5) |
 | Controls | `$7253`, the five controls read by the interrupt, active low: bit 0 right, 1 left, 2 down, 3 up, 4 fire (doc 5) |
-| countdown bonus | 2000 points set by a start mark (map kind `$78`), 10 off every 25 passes, paid at a stop mark (`$7C`); from 0 it wraps to 099 990 (`BonusRunOut` `$917C`; doc 10) |
-| DI window | a stretch with the interrupts off (a blitter, `BuildView`, the handler); an interrupt that falls inside it is lost (doc 4) |
+| countdown bonus | 2000 points set by a start mark (map kind `$78`), 10 off every 25 passes, paid at a stop mark (`$7C`); from 0 it wraps to 099 990 and counts on (`BonusRunning` stays `$FF`); digit 1 (`$7F18`) is then 9 and `CountBonus` decrements it at each borrow like the other digits; a start writes digits 2-4 only, so a later start gives 0d2 000 with d what digit 1 holds, 092 000 while it is 9 (`BonusRunOut` `$917C`; doc 8, 10) |
+| DI window | a stretch with the interrupts off (a blitter, `BuildView`, `CallRam1` until the next `EI`, `DrawHud`, the handler); an interrupt that falls inside it is lost (doc 4) |
 | exit | 4 bytes of the section table: side and flags, Rick's feet row, the section entered, the arrival row (doc 7) |
 | frame | 1/50 s of the machine, 70 908 T on the 128K; a recording's frame numbers count from its start (doc 4) |
-| fuse | `DetonatorFuse` `$9BC6`, 64 passes; the blast hurts at 9-4 (doc 10) |
+| fuse | `DetonatorFuse` `$9BC6`, 64 passes; the blast hurts at 9-4. A deadly cell under the detonator sets it to 10; a deadly solid block (table A +0 bits 6 and 7) touching a lit detonator (fuse 10 or more) sets it to 9 (`$A41C`, never run) (doc 10) |
 | level hook | `LevelHookA` `$C206` / `LevelHookB` `$C209`: level 5's Fat Guy code, "CORE  " / "DESIGN" in levels 1-4 (doc 7, 10) |
 | level-end exit | an exit with flag `$80`; with bit 4 clear it becomes a passage under the long-levels cheat (doc 7) |
 | Level5Open | `$8065`, set at the fourth level done in one game; not cleared by a new game (doc 1, 10) |
 | LevelsDone | `$7EF2`, levels completed in this game; 5 means the true ending (doc 10) |
-| long levels | the hidden sections 10-12 (levels 2, 4) and 7-9 (level 3) reached with the SPACE+N+ENTER+J+Y chord (doc 1, 7) |
+| long levels | the hidden sections 10-12 (levels 2, 4) and 7-9 (level 3) reached with the SPACE+N+ENTER+J+Y chord, which sets `CheatExits` only once `Level5Open` is set (`CheatExitsKeys` `$7D4C`; doc 1, 7) |
 | method | `ControlMethod` `$7252`: 0 keyboard, 1 Kempston, 2 cursor, 3 Sinclair (doc 5) |
 | pass | one turn of the main loop, from one return of the frame wait `$7A5B` to the next: 2 frames or more (doc 4) |
-| punch window | the 5 pixels where a punch stuns an enemy without its touch killing Rick (doc 10) |
-| ride | `RideMode` `$945D`: Rick on the anti-gravity bike, set by an exit with bit 5 (level 2 section 6, level 4 sections 4-5, level 5 section 2; doc 10) |
+| punch window | 5 pixels to the right of Rick, 4 to the left, where a punch stuns an enemy; a stunned enemy still kills on touch (doc 10) |
+| ride | `RideMode` `$945D`: Rick on the anti-gravity bike, set by an exit with bit 5 (level 2 section 6, level 4 sections 4-5, level 5 section 2, and level 1 section 2's exit into section 0, row 74, never taken; doc 10) |
 | RZX frame | a frame counted from the start of one of the RZX archive's five level files (doc 1) |
-| section | one room of a level: one screen wide, up to 44 cell rows tall, entered and left by its exits (doc 1, 7) |
+| section | one room of a level: one screen wide, 24 to 168 cell rows tall (224 for level 4's hidden section 10), entered and left by its exits (doc 1, 7) |
 | special surface | cell flag bit 0: weak jump (level 1), ice (2), bounce (3), mud (4), launch pad (5) (doc 10) |
 | view | the 32 x 23 cells shown under the HUD; it scrolls inside the section 8 cell rows at a time (doc 6) |
 | work (of a pass) | a pass's T-states without the frame wait and the interrupts (doc 4) |

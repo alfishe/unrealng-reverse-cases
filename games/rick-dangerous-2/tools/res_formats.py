@@ -718,7 +718,7 @@ def object_note(o):
     elif k == 0x7C:
         what = 'bonus countdown stop'
     elif k >= 0x74:
-        what = 'enemy, behaviour %d, patrol %d px' % (k & 3, ((par >> 2 & 15) + 1) * 8)
+        what = 'enemy, behaviour %d, patrol %d passes' % (k & 3, ((par >> 2 & 15) + 1) * 8)
     else:
         what = {0x20: 'treasure', 0x28: 'ammunition', 0x2C: 'detonators'}.get(par & 0x3C, 'trap behaviour $%02X' % (par & 0x3C))
         what = 'kind %d, %s' % (k, what)

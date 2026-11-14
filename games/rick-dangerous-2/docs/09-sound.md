@@ -101,6 +101,7 @@ The player is data first, then code, then its state.
 | `$C672` | 170 | `Periods` | 85 AY tone periods, a semitone apart |
 | `$C71C` | 1 | `MixerShadow` | register 7 as last written |
 | `$C71D` / `$C72F` / `$C741` | 18 each | `VoiceA` / `VoiceB` / `VoiceC` | what each AY channel plays |
+| `$C753` | 1 | `NoiseShadow` | the noise period of the last voice with noise (register 6 gets it rotated right 3 times) |
 | `$C754-$C9CE` | | `StartVoice` ... `WriteAyRegister` | the voices' code |
 | `$C9CF` | 1 | `MusicPlaying` | `$FF` a tune runs, 1 it dies away, 0 none |
 | `$C9D0` / `$C9E5` / `$C9FA` | 21 each | `ChannelA` / `ChannelB` / `ChannelC` | the sequencer's state per channel |
@@ -286,7 +287,9 @@ Channel B holds long notes with a vibrato, the zigzags.
 - Channel C, `$C37A`: `17 8C 16 FF`: pattern 23, then pattern 22 12 times, the end.
 
 Pattern 21 is one byte, `84` (instrument 4), and runs on into pattern 22, the shared tail.
-Pattern 23 is a rest of 8 frames and `85` (instrument 5), then the same tail.
+Pattern 23 is a rest of 8 frames with instrument 5 and ends there (`$FF`, `$C14D-$C150`).
+Channel C's order list then plays pattern 22 twelve times (`17 8C 16`): 168 notes after the rest, 169 events, and
+instrument 5 carries on, since pattern 22 sets none.
 So the echo is in the data: the same 14 notes, delayed by a rest.
 
 ![The control menu's tune](img/sound/tune-00.png)

@@ -159,7 +159,8 @@ Detonators:
 ;
 ; Ran 12 127 times in 29 builds (levels 1, 2 and others; the borrow loop
 ; CountBonusDigitLoop 548 times). The bonus never ran out in any recording:
-; from 0000 the borrow would leave 9999 and end at BonusRunOut.
+; from 0000 the borrow would leave 9999 and end at BonusRunOut; the countdown
+; then goes on.
 ;
 ; Witness: L1 24953 (cheats, rzx-l1-00000-poke, rzx-l1-06000-poke,
 ; rzx-l1-18000-poke, rzx-l1-24000-poke, rzx-l2-04000-poke, rzx-l2-06000-poke,
@@ -190,7 +191,9 @@ CountBonusDigitLoop:
 ;
 ; A lone RET ($C9), reached only when the four digits $7F18-$7F1B all wrapped
 ; from 0 to 9. The bonus is then 099 990: a stop mark reached after 201 s pays
-; nearly 100 000. Not executed in any recording; a data entry because c1's
+; nearly 100 000. Digit 1 then counts down with the borrows like the others
+; (every 1000 steps); a start writes digits 2-4 only and nothing resets digit 1
+; at a new game. Not executed in any recording; a data entry because c1's
 ; power-on RAM test ($11CB) reads every byte, so the static walk does not take
 ; it as code.
 ;

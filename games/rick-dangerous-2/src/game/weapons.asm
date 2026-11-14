@@ -414,9 +414,9 @@ DetonatorStoreX:
 ; least 0) and 21 high at the detonator's y against Rick: a hit kills him
 ; (KillRick, from $93B4).
 ;
-; Ran 3397 times in 34 builds; the bang (effect 5) 56 times; KillRick from the
-; blast 8 times ($93B4 in the caller list of $93D0, c1 and the control
-; recordings).
+; Ran 3397 times in 34 builds; the bang (effect 5) 56 times; KillRick called
+; from the blast 32 times ($93B4 taken: c1 4, each control recording 4,
+; rzx-l5-full 4, c48 8).
 ;
 ; Witness: L1 6986 (box-shot, controls-cursor, controls-kempston,
 ; controls-keyboard, controls-sinclair, rzx-l1-00000-poke, rzx-l1-04000-poke,

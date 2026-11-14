@@ -552,7 +552,7 @@ A detonator thrown left cannot stop before its fuse ends: friction needs 64 pass
 it for 53.
 
 Witness: the trace of `c1` 16 788-16 791 (`KillRick` from `$93B4`).
-`BurnFuse` ran 3397 times in 34 builds; the bang 56 times; `KillRick` from the blast 8 times.
+`BurnFuse` ran 3397 times in 34 builds; the bang 56 times; `KillRick` called from the blast 32 times (10.10).
 56 detonators were placed: 24 dropped standing, 6 thrown left, 26 right (`src/game/weapons.asm`).
 
 ## 10.7 The punch
@@ -628,8 +628,8 @@ It buys 40 passes, and only at the right distance.
 
 Witness: the punch stunned an enemy 9 times (`$8C57`: `rzx-l1-24000-poke`, `rzx-l5-12000-poke`); `TestEnemyHits` ran
 49 093 times in 69 builds (the L1 index, `python3 tools/l1q.py 8BF3`); an enemy touched Rick 624 times (`$8C67`
-reached, nearly all in the immunity-POKE builds, whose POKE replaces that call) and killed him 18 times (l1q's
-callers of `KillRick`) (`src/game/enemies.asm`).
+reached, nearly all in the immunity-POKE builds, whose POKE replaces that call) and called `KillRick` 18 times
+(10.10) (`src/game/enemies.asm`).
 
 ## 10.8 The traps and their triggers
 
@@ -715,14 +715,15 @@ flowchart TD
 ```
 
 **A worked example: level 1 section 0.**
-The section's entry list (`src/res/levels/level1/level/sections.txt`) holds six kind-13 entries and one kind-14 entry,
+The section's entry list (`src/res/levels/level1/level/sections.txt`) holds five kind-13 entries and one kind-14 entry,
 all with behaviour `$10` (run the path once).
 
 - Kind 13 is 6 x 21 and deadly, with the path `14*(0,7) 1*(-8,0) 9*(0,0)`: down 8 pixels a pass for 14 passes (7
   means 8), a step left, then still.
 - Kind 14 is 16 x 16 and deadly, with the path `20*(6,6)`: diagonally down.
 - The kind-14 entry waits for Rick in a box of 8 x 6 cells.
-- Five kind-13 entries wait for a trap in a box of 3 x 1 cells at row 30; the sixth waits for Rick.
+- All five kind-13 entries wait for a trap in a box of 3 x 1 cells at row 30; the one at column `$09` also has a Rick
+  box (x 96, row 24, 1 x 7 cells).
 
 What `c1` shows:
 
@@ -743,12 +744,12 @@ The same code runs all 562 trap entries of the five levels.
 
 Witness: the `c1` trace 17 503-17 506 (`$A475` at 17 505:49 963, IX = `$7B8F`).
 `UpdateTrap` ran 148 725 times in 61 builds; deadly traps killed enemies 220 times (l1q's callers of `KillEnemy` at
-`$A454`, 102 of them in `sec-l5-s5`) and Rick 6 times (`$A475`); behaviour `$0C` was removed by its box 432 times
-(`src/game/traps.asm`).
+`$A454`, 102 of them in `sec-l5-s5`) and `KillRick` was called 8 times from `$A475` (10.10); behaviour `$0C` was
+removed by its box 432 times (`src/game/traps.asm`).
 
 ## 10.9 The enemies
 
-An enemy is a record of table B (`$7C20`, 23 bytes), placed by a map entry of kind `$75` to `$7F`, except `$78` and
+An enemy is a record of table B (`$7C20`, 23 bytes), placed by a map entry of kind `$74` to `$7F`, except `$78` and
 `$7C` (the bonus boxes).
 The kind's bits 0-1 give the behaviour, and bit 2 the sprite set (clear: the second set, 6 sprites on).
 The entry's +3 bits 2-5 give the patrol length.
@@ -817,21 +818,26 @@ The entry counts come from `sections.txt` (`python3 tools/fig_play.py stats`).
 
 `KillRick` `$93D0` has seven callers:
 
-| Caller | What | Deaths in the builds |
+| Caller | What | Calls (entries) in the builds |
 | --- | --- | ---: |
 | `$8C67` | an enemy's touch | 18 |
 | `$9668` | a deadly cell under Rick | 13 |
-| `$93B4` | his own detonator's blast | 8 |
-| `$A475` | a deadly trap | 6 |
+| `$93B4` | his own detonator's blast | 32 |
+| `$A475` | a deadly trap | 8 |
 | `$9988` | a deadly cell met sideways | 3 |
-| `$FACB` | the Fat Guy's shot (level 5's code) | 1 |
-| `$F946` | the Fat Guy's touch (level 5's code) | 0 (1 in `fatguy-hits`, 10.12) |
+| `$FACB` | the Fat Guy's shot (level 5's code) | 4 (`fatguy-hits` 3, `rzx-l5-20000-poke` 1) |
+| `$F946` | the Fat Guy's touch (level 5's code) | 1 (`fatguy-hits`, 10.12) |
 
-The per-site column is l1q's caller count (49 in all). `KillRick` itself ran 75 times in 15 builds by the l1q index
-(`c48` included; 69 of them in the 9 builds without the immunity POKEs).
-That index predates the integration's `fatguy-hits`, `life-up` and `box-shot`; the listing's witness line for
-`$93D0` (`Witness: L1 121`, 16 builds) sums `mkgame`'s build set, `fatguy-hits` included.
-The two totals count different build sets, so this doc quotes the l1q figures throughout.
+The counts are summed over every recording's `l1.json` (16 builds run `KillRick`): the taken branches of the
+conditional calls, and for `$8C67`, a plain `CALL`, its 29 executions less the 11 in immunity-POKE builds, whose POKE
+replaces that call.
+`KillRick` was entered 79 times; 38 of the entries got past the `RET NZ` of the immunity test (`$93D5`): deaths.
+The other 41 came while Rick was already dying (a blast or a trap goes on touching him).
+Per build, entries / deaths: `c1` 8 / 5; each `controls-*` 4 / 1; `load-l2` 12 / 2; `load-l3` 6 / 1; `load-l4` 1 / 1;
+`rzx-l3-02000-poke` 1 / 1; `rzx-l3-04000-poke` 2 / 2; `rzx-l3-06000-poke` 1 / 1; `rzx-l5-18000-poke` 1 / 1;
+`rzx-l5-20000-poke` 1 / 1; `rzx-l5-full` 16 / 13; `c48` 10 / 4; `fatguy-hits` 4 / 2.
+The listing's witness line for `$93D0` (`Witness: L1 121`) sums the same 16 builds but counts the 11 that are in both
+case.json's `read_builds` and `code_builds` twice (42 entries): 79 + 42 = 121.
 
 ```
 KillRick:
@@ -916,7 +922,9 @@ buffer:9B95:16x3:hex --pictures 50 --title "..."`.*
 4. At frame 1158 y is 257: the high byte is 1, so `DeathFallOver` is set.
 5. At frame 1160 Rick stands at the section's restart point, x 0, y 204, with a life less.
 
-The fall took 25 passes, 50 frames: one second.
+The fall took 24 passes: 227 plus the speeds -4.5, -4.0, ..., +7.0 is exactly 257 (25 passes would give 264.5).
+From frame 1110 (the first pass done) to frame 1158 (the 24th) is 48 frames for 23 passes, so one pass of those took
+four frames (or two took three); the samples, every 2nd frame, do not show which. About 50 frames: one second.
 
 The trap death in `c1` adds a detail.
 The traps are updated before Rick, so `DeathFall` runs twice in the dying pass: from `KillRick` at T 52 545 and from
@@ -1170,7 +1178,8 @@ ShowEndText:  FontCellsMode(); DrawHud(); DropText each line
 
 ![The Fat Guy's end](img/play/ending.png)
 
-*The end of `rzx-l5-23000`: the end text (doc 08's screenshot).*
+*`rzx-l5-24000-poke` frame 250: the end text (doc 08's screenshot; the same screen as `rzx-l5-23000` from frame 1250
+on, WALKTHROUGH 6.1).*
 
 **A worked example: which ending.**
 
@@ -1259,8 +1268,10 @@ Each feature below names its code, and its witness or "known only from the code"
   From 000 000, the next step borrows through all four, leaves 099 990 and ends at `BonusRunOut` `$917C`, a lone
   `RET`; nothing clears `BonusRunning`, so the countdown never stops: it counts on from 099 990, 10 every 25 passes.
   A stop box reached after the wrap pays 99 990 less the time since.
-  Digit 1 (`$7F18`) keeps its 9 after the stop, and a start writes only digits 2-4, so every later countdown of the
-  game starts at 092 000 (known only from the code).
+  Digit 1 (`$7F18`) is then 9; `CountBonus` decrements it at each borrow out of digit 2, like the others (every 1000
+  steps: 099 990, ..., 090 000, 089 990).
+  A start writes only digits 2-4 and nothing resets digit 1 at a new game (only the loader sets it), so a later
+  countdown starts at 0d2 000, d whatever digit 1 holds: 092 000 while it is still 9 (known only from the code).
 - **The left throw.**
   A detonator thrown left (-2.0) cannot stop before its fuse ends; `DetonatorStopLeft` is not executed in any
   recording (10.6).
@@ -1284,4 +1295,5 @@ Each feature below names its code, and its witness or "known only from the code"
 | a deadly solid block setting off a lit detonator | `UpdateTrap`'s detonator test (`$A41C`) |
 | a pickup burst by the blast (the bullet's: `box-shot`) | `$A5F7` |
 | an enemy of behaviour 0 placed by the map | `EnemyWanderer` runs only for climbers |
+| the Fat Guy's shot aimed right (Rick to the right of the shot, C positive) | `AimRightLoop` `$FA46-$FA64` (level 5's code) |
 | a ride into level 1's section 0 | the exit of level 1 section 2 ([doc 07 7.12](07-objects.md#712-known-only-from-the-code)) |
