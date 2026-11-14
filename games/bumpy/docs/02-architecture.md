@@ -1,164 +1,425 @@
 # 2. Architecture
 
-What this covers: the machine budget, the images, the levels as data, the memory map (a figure), the stages from the
-medium to play. The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)): c1 (power-on,
-the original tape at ROM speed), `menu` and `gameover` (from a snapshot taken after a fast load), and
-`rzx/l00`-`rzx/l99` (replays of the ZXDB RZX from its own state at each level start).
+What this covers:
 
-<!-- Figures this document needs (GUIDE.md 4.2), remove each line when it is in: -->
-<!-- - the main loop's call graph (stage 2) -->
+- the machine budget and the images;
+- the module map: the 14 modules of the source and where each lies;
+- the memory map, as stage 2 named every byte;
+- the state variables and the levels as data;
+- the heatmap and the stack;
+- the leftovers: the CPC original's panel, its level editor's texts and font, the unrun 128K AY skeleton
+  `$F183-$F3C7`;
+- the frame budget and the main loop's call graph;
+- the stages from power-on to play.
+
+The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
+
+| Recording | Used for |
+| --- | --- |
+| `c1` | power-on, the original tape at ROM speed, the menu and play on level 0 |
+| `menu`, `gameover` | from a snapshot after a fast load: the menu, the demo, the controls, the game over, the hall of fame |
+| `rzx/l00`-`rzx/l99` | the RZX's own state at each level's start, replayed by its keys |
+| `rec/l83` (stage 2) | level 83 solved by our script: the frame budget in play (2.9) |
+| `work/stage1/l1-play.json` | the L1 builds of the 102 play recordings merged (129 994 frames, `tools/l1merge.py`): the memory use (2.6, 2.7) |
+
+The source is `src/game/game.ann`, one entry a line (doc 12, generated at integration, lists them all).
+Every number below that is not a measurement is counted from it.
 
 ## 2.1 The machine budget
 
-A 48K Spectrum, nothing else: one 38 700-byte block at `$61A8-$F8D3`, entered at `$AB7C`, the beeper (port `$FE`,
-`$F510-$F5BA`), the keyboard, and a Kempston stick on port `$DF` ([doc 3](03-build-and-load.md),
-[WALKTHROUGH 5](../WALKTHROUGH.md#5-tool-gaps-found-and-fixed-in-unreal-ng)). No paging, no AY, no second screen: the
-game draws straight into `$4000`. The ROM is used for its interrupt handler (IM 1, `$0038`) and by the BASIC loader.
+A 48K Spectrum, nothing else.
+One 38 700-byte block at `$61A8-$F8D4` is loaded and entered at `$AB7C`.
+The game uses the beeper (port `$FE`), the keyboard and a Kempston stick on port `$DF` ([doc 5](05-controls.md)).
+There is no paging, no AY, no second screen: the game draws straight into `$4000`.
+The ROM serves the BASIC loader and the interrupt (IM 1, `$0038`).
 
 | Part | Bytes | Where |
-| --- | --- | --- |
+| --- | ---: | --- |
 | screen | 6912 | `$4000-$5AFF` |
-| ROM system variables, BASIC, free | 1704 | `$5B00-$61A7` (the BASIC loader, then free; the stack at `$6170-$618F`) |
-| the game: data | about 24 200 | `$61A8-$AB7B` (tables, sprites, the 100 level records, the variables), `$D240-$E29F`, `$E7C1-$EC3F` and others (2.4) |
-| the game: code | about 14 500 | `$AB7C-$D23F`, `$E2A0-$E7C0`, `$EC40-$F0E7`, `$F183-$F5BA` |
-| above the game | 1836 | `$F8D4-$FFFF`, never touched in play |
+| system variables, BASIC, free, the stack | 1704 | `$5B00-$61A7`; the stack at `$6170-$618F` (2.7) |
+| the game: code | 11 956 | 429 routines in 13 modules (2.3) |
+| the game: data | 26 744 | the pictures 10 900, the level records 7500, the font 768, the texts, the tables, the variables |
+| of which never read or run | 8203 | 55 entries whose titles say so, the CPC leftovers among them (2.8) |
+| above the game | 1835 | `$F8D5-$FFFF`, never touched |
+
+The point: a single block, no loader code and no packer; a quarter of it is the CPC original's dead weight.
 
 ## 2.2 The images
 
 | Image | How | What it is |
 | --- | --- | --- |
-| as loaded | `case.json` `image_cmd`: block 5 of `BUMPY.TAP` (`work/mkgame/original.bin`) | `$61A8-$F8D3` byte for byte |
-| at the entry | SkoolKit `tap2sna.py -s 43900` (`work/stage1/images/entry.z80`), and c1 at frame 13 357 (T 19 678), the first fetch of `$AB7C` | the same bytes as loaded: there is no unpacker and no relocation. SP `$6190` (from `CLEAR 24999` and `USR`) |
-| in play | the RZX's level 0 play start (`work/stage1/rzx/levels/play-000172.z80`); every level's start (`rzx/levels/lvl-*.z80`) | 125 bytes in 49 runs differ from the entry image, every one a variable or a self-modified operand (below) |
+| as loaded | block 5 of `BUMPY.TAP` (`work/mkgame/original.bin`) | `$61A8-$F8D4` byte for byte |
+| at the entry | SkoolKit `tap2sna.py -s 43900` (`work/stage1/images/entry.z80`), and `c1` at frame 13 357 (T 19 678), the first fetch of `$AB7C` | the same bytes as loaded: no unpacker, no relocation. SP is `$6190` (from `CLEAR 24999` and `USR`) |
+| in play | the RZX's level 0 play start (`work/stage1/rzx/levels/play-000172.z80`) and every level's start | 125 bytes in 49 runs differ from the entry image, every one a variable or a self-modified operand |
+| rebuilt | `tools/build.sh` from `src/` | the whole TAP, identical to the original |
 
-What play changes (the entry image against play, `work/stage1/NOTES.md`): `$A9FE` (the sprite width), `$AA01-$AB2E`
-(the level buffer `$AA20-$AA6A`, its unpacked cells `$AA6B-$AAB2`, the game state `$AAFB-$AB0F`), `$ADDB-$ADDE` (the
-players), `$B3F5-$B3F6`, `$B439`, `$B43E` (the key buffer), `$B52C`, `$C74E-$C751`, `$C774`, `$C776`, `$D01D` (the
-displacement of `LD C,(IX+d)` that picks an object's ink), `$E30F`, `$E3E4`, `$E714-$E716`, `$EFED-$EFEE`, `$F015`,
-`$F025` (the menu), `$F083-$F089` (the active key table). The sprites and the level records are never written in any
-recording (the "written" panel of 2.5): a level is copied into a buffer and changed there.
+What play changes, the entry image against play (`work/stage1/NOTES.md`):
 
-### The state variables
+- the variables `$A9FD-$AB7B` (2.4) and the players `$ADDB-$ADDE`;
+- the key buffer KeyRows `$B436-$B43E` and the active controls KeySlots `$F083-$F08B`;
+- self-modified operands: `$C74E-$C751` and `$C774`, `$C776` (the screen-address divide), `$D01D` (the displacement of
+  `LD C,(IX+d)` that picks an object's ink), `$E30F`, `$E3E4` (the blitters), `$E714-$E716` (the printer), the
+  menu's `$EFED-$EFEE`, `$F015`, `$F025`.
+
+The pictures and the level records are never written: a level is copied into a buffer and changed there.
+
+The point: the code runs where `LD-BYTES` put it, and play writes only to the variables and to a few operands.
+
+## 2.3 The module map
+
+The source cuts the block into 14 modules (`kit/mkgame.py` writes one `.asm` a module, in address order).
+A module is a topic, not a range: most of them are spread over several runs, because the original's routines lie in
+the order its authors wrote them.
+
+| Module | Entries | Bytes | Code | Runs | Main ranges | What it holds |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| graphics | 28 | 10 900 | 0 | 1 | `$61A8-$8C3B` | the CPC mode-1 pictures: side panels, ball, objects, platforms, walls, fire, burst, bricks |
+| levels | 15 | 8350 | 409 | 5 | `$8C3C-$A9FC`, `$CF2E-$D075` | LevelRecords, BuildLevel, the cell reader, the colours and cell addresses, the editor leftovers |
+| vars | 75 | 383 | 0 | 1 | `$A9FD-$AB7B` | the variables (2.4) |
+| setup | 10 | 387 | 382 | 2 | `$AB7C-$ACC7` | GameStart, NewGame, LifeStart, the cheat's stock |
+| mainloop | 26 | 375 | 180 | 5 | `$ACC8-$ADE5` | MainLoop, Dispatch, StateTable, WaitFrame, WaitKeyOrSecond, Delay |
+| ball | 138 | 4153 | 3452 | 8 | `$ADE6-$B3B0`, `$C778-$CF0B` | the nine states, the per-step checks, landing, ChooseNextState, the deaths |
+| menu | 44 | 2035 | 537 | 5 | `$B3B1-$B470`, `$EF33-$F182` | ReadControls, TestKey, the menu, the control sets, the demo moves, the logo |
+| render | 192 | 7246 | 2913 | 10 | `$B471-$B6CA`, `$BBCD-$C4D4`, `$D076-$E0C3` | attributes, side panels, the CPC-to-Spectrum line table, the cells and their animations, the CPC panel picture |
+| hud | 18 | 476 | 453 | 4 | `$E58B-$E666` | DrawHud, the numbers, the timer, LoseLife |
+| hiscore | 18 | 867 | 525 | 3 | `$EC40-$EF32` | GameOver, the hall of fame, the name entry |
+| objects | 13 | 508 | 457 | 3 | `$B958-$BA70`, `$BCB9-$BD72` | taking an object, AddScore, OpenExit, the object inks |
+| sprites | 8 | 747 | 746 | 1 | `$E2A0-$E58A` | DrawSprite, XorSprite, XorBricks |
+| text | 11 | 1180 | 370 | 2 | `$E667-$E7F6`, `$F5C9-$F8D4` | PrintText and the font |
+| sound | 54 | 1094 | 532 | 1 | `$F183-$F5C8` | the 14 effects, the beeper primitives, the unrun AY skeleton |
+
+The modules call each other in one direction: the state machine on top, the drawing at the bottom.
+
+```mermaid
+flowchart TD
+    setup["setup: GameStart, LifeStart"] --> mainloop["mainloop: MainLoop, Dispatch, WaitFrame"]
+    setup --> menu["menu: Menu, ReadControls"]
+    setup --> levels["levels: BuildLevel"]
+    mainloop --> ball["ball: the nine states"]
+    mainloop --> render["render: animations"]
+    mainloop --> hud["hud: DrawHud, TickTimer"]
+    mainloop --> menu
+    ball --> objects["objects: take, score, exit"]
+    ball --> render
+    ball --> sound["sound: effects"]
+    ball --> hud
+    hud --> hiscore["hiscore: GameOver, hall of fame"]
+    objects --> render
+    objects --> sound
+    render --> sprites["sprites: blitters"]
+    levels --> render
+    hud --> sprites
+    hiscore --> text["text: PrintText, font"]
+    setup --> text
+    sprites --> vars["vars"]
+    render --> graphics["graphics: pictures"]
+```
+
+![The memory map by module](img/arch/memory-map.png)
+
+*The game block by module, 1 KB a row (`python3 tools/fig_arch.py`, from `src/game/game.ann`). Pale: entries no
+routine reads or runs. The large pale blocks are the CPC leftovers: Unused8385, PanelPicture, the AY skeleton.*
+
+Worked example: the address `$C750`.
+`modules.py` (`work/docs/bmA/modules.py`) finds it in the run `$C71F-$C777` of render: ScreenAddrToLine `$C71F`.
+Its operands `$C74E-$C751` are written at run time (2.2): ScreenAddrToLine stores the divisor there before
+DivideHLbyBC `$C752`.
+
+The point: the modules are the case's own reading; the image is the original's order, with ball, render and menu code
+scattered over the whole block.
+
+## 2.4 The state variables
+
+All the variables lie in one run, `$A9FD-$AB7B`, apart from the players `$ADDB-$ADDE`, the key buffer and the menu
+(2.6).
+The names are game.ann's; [doc 7](07-objects.md) gives every one.
 
 | Address | What | Witness |
 | --- | --- | --- |
-| `$AAFB-$AAFC` | the score (a word) | the HUD in every recording |
-| `$AAFD`, `$AAFE`, `$AAFF` | water drops, keys, hammers carried | c1 frames 14 162 and 14 990; the POK file (hammers 47386 = `$B91A`) |
-| `$AB00` | the level, 0-99 (`$B2D5` wraps 100 to 0) | `rzx/levels/levels.tsv`; `rzx/l99` frame 1154 |
-| `$AB01` | lives, 2 at the start | c1 frame 14 018; `gameover` frames 602 and 1080 |
-| `$AB04-$AB05` | the level timer: 1000 at READY? (`$AC06`), minus 1 a pass (`$B7D1`), held at 0. At the level's end what is left is counted into the score, a point a step (`$B35F`, with the tick `$F4F9`) | c1 15 436-18 186 (at 0 nothing happens) |
-| `$AB06-$AB08` | the water, keys and hammers a life starts with | code `$BA9F-$BAAE` |
-| `$AB09-$AB0F`, `$AB10-$AB16` | players 1 and 2: score, water, keys, hammers, level, lives (swapped at `$BABE`) | code |
-| `$AB1A` | the ball's start cell | code `$CF89` |
-| `$AA45` | prizes left on the level (record byte 37); at 0 `$BCB9` opens the exit | code `$BA53`; `rzx/l00` frame 971 |
-| `$ADDB`, `$ADDC` | the player whose turn it is; the number of players | code |
-| `$B3B1`, `$ABA6`, `$ABA4` | the menu's choice (0 one player, 2 two players, 4 the demo); 1 in the demo; the demo's input pointer (`$D25A` at the start) | code `$EF97`, `$AB95`; `menu` frames 250-4000 |
-| `$B436-$B43E` | the key buffer: 8 keyboard rows (`$7FFE` first) and the Kempston byte | code `$B418` |
-| `$F084-$F08B` | the active key table: up, down, left, right, fire, fire, pause, abort (row x 8 + bit) | code `$F0B8` |
-| `$EEB3` + 32 x n | the hall of fame, four entries of 32 bytes: the name at +6 (three letters), the score at +18 (PAP 16000, PEP 8000, PIP 4000, POP 1700) | code `$EC4F-$EC6D`; `gameover` frame 4618 |
+| BallStep `$A9FF`, BallState `$AA00` | the ball's step and state ([doc 4](04-game-loop.md#46-the-state-dispatcher-ad0f-and-statetable-ad29)) | `work/stage2/rzx-states.tsv` |
+| LevelRecord `$AA20-$AA46` | the level's record: 36 cells, BallCell `$AA44`, PrizesLeft `$AA45`, ExitCell `$AA46` | every level start |
+| CellObjects `$AA47`, CellPlatforms `$AA6B`, CellWalls `$AA8F`, CellBurning `$AAB3`, BrickLayers `$AAD7` | the five 36-byte grids | BuildLevel `$CF2E` |
+| Score `$AAFB`, Water `$AAFD`, Keys `$AAFE`, Hammers `$AAFF`, Level `$AB00`, Lives `$AB01` | the current player's working copy, 7 bytes with `$AB02` | the HUD in every recording |
+| Timer `$AB04` | 1000 at LifeStart, minus 1 a pass, held at 0 | `c1` 15 436-18 186 |
+| `$AB06-$AB08` | water, keys and hammers at the level's start | LoseLife `$BA93` |
+| Player1Record `$AB09`, Player2Record `$AB10` | the two players' records; lives `$FA` marks a player out | `twoname` |
+| CurrentPlayer `$ADDB`, PlayerCount `$ADDC` | the player whose turn it is; 1 or 2 players | `twoname` |
+| MenuChoice `$B3B1`, DemoFlag `$ABA6`, DemoInputPtr `$ABA4` | 0 one player, 2 two, 4 the demo; 1 in the demo; the demo's pointer (`$D25A` at the start) | `menu` frames 250-4000 |
+| KeyRows `$B436-$B43E` | the 8 keyboard half-rows (`$7FFE` first) and the Kempston byte | ReadControls `$B418` |
+| KeySlots `$F084-$F08B` | the controls in play: up, down, left, right, fire, fire, pause, quit (row × 8 + bit) | LoadControls `$F0AA` |
+| HallOfFame `$EEB3` + 32 × n | four entries: the name at +6, the score at +18 (PAP 16000, PEP 8000, PIP 4000, POP 1700) | `gameover` frame 4618 |
 
-## 2.3 The levels
+The point: the whole game state is 383 bytes in one run, plus two 7-byte player records; a snapshot of `$A9FD-$AB7B`
+is a save game.
 
-The 100 levels are 75-byte records at `$8C3C` + 75 x level (`$8C3C-$A987`). `$CF2E` (called from `$AC7D`, `$AC86`,
-`$ACBF`) picks the colours by the level mod 7 from the table `$E119` (three bytes a level), clears `$AA20-$AAFA`,
-copies the record to `$AA20` and splits its first 36 bytes into the platform and wall grids:
+## 2.5 The levels as data
+
+The 100 levels are 75-byte records at LevelRecords `$8C3C` + 75 × level (`$8C3C-$A987`).
+BuildLevel `$CF2E` copies the current one to `$AA20` and splits its 36 cell bytes into the grids ([doc 7](07-objects.md)
+decodes a record byte by byte).
 
 | Record bytes | Copied to | What |
 | --- | --- | --- |
-| 0-35 | `$AA20-$AA43` | one byte a cell of the 6 x 6 grid, left to right, top to bottom. The low nibble (to `$AA6B` + cell) is the platform type, handled through `$C5A8`; the high nibble (to `$AA8F` + cell) a wall on the cell, handled through `$C5C2` |
+| 0-35 | `$AA20-$AA43` | one byte a cell, 6 × 6, left to right, top to bottom: the high nibble the wall on the cell's right, the low nibble the platform |
 | 36 | `$AA44`, `$AB1A` | the ball's start cell |
-| 37 | `$AA45` | the number of prizes on the level: its objects of kind 5 and up (true for all 100 levels) |
-| 38 | `$AA46` | the exit's cell: when the last prize is taken `$BCB9` writes platform type 11 there (the magenta exit, [the shot](img/play/rzx-l00-000971-exit-open.png)) |
-| 39-74 | `$AA47-$AA6A` | the object on each cell, 0 none or a kind 1-40 |
+| 37 | `$AA45` | the number of prizes (objects 5 and up) |
+| 38 | `$AA46` | the exit's cell: the last prize opens the exit there |
+| 39-74 | `$AA47-$AA6A` | the object on each cell, 0 none or 1-40 |
 
-Platform types in use: 1-10 and 12 (11 is the exit, never in the data); walls 1-4. Objects by their sprites: kind 1 a
-hammer, 2 a key, 3 a water drop, 4 a green bottle (its use not seen yet), 5-40 prizes; 1 to 33 objects a level. Over
-the 100 levels: 67 hammers, 207 keys, 57 drops, 30 bottles and prizes of 36 kinds. Each object is a 16 x 14 sprite at
-`$6CB0` + 56 x kind (one byte a 4-pixel nibble), its ink at `$C6F6` + kind.
-
-The maps drawn from the records alone (`tools/fig_levelmap.py`, each level labelled with its record's address), and the
-same levels as the RZX shows them at their start (`tools/fig_levels.py`), match level for level:
+The maps drawn from the records alone (`tools/fig_levelmap.py`) and the same levels as the RZX shows them at their start
+match level for level:
 
 ![Levels 0-24 from the data](img/maps/data-levels-00-24.png)
 
-- from the data: [levels 25-49](img/maps/data-levels-25-49.png), [50-74](img/maps/data-levels-50-74.png),
-  [75-99](img/maps/data-levels-75-99.png);
-- from the RZX's level starts: [0-24](img/maps/levels-00-24.png), [25-49](img/maps/levels-25-49.png),
-  [50-74](img/maps/levels-50-74.png), [75-99](img/maps/levels-75-99.png).
+*Levels 0-24 from their records (`tools/fig_levelmap.py`). The rest: [25-49](img/maps/data-levels-25-49.png),
+[50-74](img/maps/data-levels-50-74.png), [75-99](img/maps/data-levels-75-99.png); the RZX's starts:
+[0-24](img/maps/levels-00-24.png), [25-49](img/maps/levels-25-49.png), [50-74](img/maps/levels-50-74.png),
+[75-99](img/maps/levels-75-99.png).*
 
-The sprites, all drawn from the image (`tools/fig_sprites.py`): the objects 0-40 with their addresses and inks, the
-platform types (1 `$7788`, 2 `$7900`, 3 `$7A78`, 4 `$7B62`, 5 `$7BE2`, 6 `$77A8`, 7 `$77F8`, 8 = 1 with the spikes
-`$814D`, 9 = 5 with the spikes, 10 the bricks `$8345` drawn by `$E4BB`, 12 `$7D5A`), and the EXIT sign `$6698`:
+The pictures, drawn from the image (`tools/fig_sprites.py`):
 
 ![The sprite sheet](img/sprites/sheet.png)
 
-## 2.4 The memory map
+*The objects 1-40 (ObjectPictures `$6CE8`, kind k at `$6CB0` + 56k), the platforms (`$7788-$7D5A`), the walls `$7E5C`,
+the exit, the flames, the burst and the bricks, at their CPC addresses ([doc 6](06-rendering.md)).*
 
-From the L1 builds of the 102 play recordings (`work/stage1/l1-play.json`, 129 994 frames: `menu`, `gameover`,
-`rzx/l00`-`l99`; c1 is left out because the ROM's RAM test and the load touch every byte; `tools/memmap.py`). "Use"
-is what the recordings did with the bytes: x executed, r read only, w written, `.` never touched.
+The point: the levels are 7500 bytes of plain data, one record a level, with nothing packed.
 
-| Range | Use | What |
-| --- | --- | --- |
-| `$4000-$5AFF` | w | the screen, drawn directly |
-| `$5B00-$616F` | . | system variables and BASIC, idle after the load |
-| `$6170-$618F` | w | the machine stack (2.5) |
-| `$61A8-$6397` | . | the start of the block; to identify (stage 2) |
-| `$6398-$6697` | r | a 768-byte table (three 256-byte pages); to identify |
-| `$6698-$6707` | . / r | the EXIT sign's sprite `$6698` |
-| `$6708-$6757`, `$67E8-$6A67` | r | the screen line address tables the sprite routines use |
-| `$6CB0-$75A7` | r | the 41 object sprites, 56 bytes each (kind 0 is never placed) |
-| `$75A8-$7787` | . | data never read in the recordings |
-| `$7788-$8384` | r | the platform sprites, the spikes `$814D`, the bricks `$8345` |
-| `$8385-$8C3B` | . | 2231 bytes of data never read |
-| `$8C3C-$A987` | r | the 100 level records (read only for the levels started inside a recording: each RZX replay starts after its level's copy) |
-| `$A9FD-$AB7B` | w | the variables: the level buffer `$AA20`, the grids `$AA6B` and `$AA8F`, the state `$AAFB-$AB1C` |
-| `$AB7C-$D23F` | x | the game's code: the entry `$AB7C`, the main loop `$ACC8`, the state dispatch table `$AD29` with handlers `$AE5F-$B2C2`, the input `$B3B5-$B43E`, the frame wait `$B6E4`, the platform and wall handlers (tables `$C5A8`, `$C5C2`), the inks `$C6F6`, the level unpack `$CF2E`; tables between the routines (`$AE9B`, `$B52D-$B6BE`, `$C4E2-$C6B5`) |
-| `$D240-$E118` | . / r | the demo's input from `$D25A` (48 bytes read in 4000 demo frames); `$D300-$E118` holds 3600 bytes never read |
-| `$E119-$E29F` | r | the level colours (`$E119`, three bytes a level mod 7) and a table at `$E131` read when the exit opens |
-| `$E2A0-$E7C0` | x | the sprite and screen routines: `$E318` (store), `$E3E5`/`$E3EE` (XOR), `$E4BB` (the bricks), `$E58B` (called before each frame wait) |
-| `$E808-$EC3F` | r | 1080 bytes read in the menu and the hall of fame; to identify |
-| `$EC40-$EDC5` | x | the hall of fame: the insertion and the name entry (`$EC40`) |
-| `$EDE1-$EF32` | r | its texts and the table `$EEB3` |
-| `$EF33-$F0E7` | x | the menu (`$EF33`), its texts, the key tables `$F084` and `$F09x` |
-| `$F0E8-$F182` | r | menu data |
-| `$F183-$F3C7` | . | the random routine (`LD A,R` at `$F184`) and an IM 2 setup (`$F343`, `$F388`: I = `$FE`, vectors at `$FDFD`, handlers `$F36B`, `$F3B0`), never executed in any recording, c1 included |
-| `$F3C8-$F50F` | x | 14 sound effects, each a parameter list and a call to a primitive; 13 heard in the recordings, `$F483` never |
-| `$F510-$F5BA` | x | the beeper primitives (`$F510`, `$F513`, `$F521`, `$F534`, `$F54C`, `$F560`, `$F579`, `$F58C`, `$F5AD`) |
-| `$F5BB-$F8D3` | r / . | the font from `$F641` (the characters used were read) |
-| `$F8D4-$FFFF` | . | not part of the game, never touched |
+## 2.6 The memory map
 
-## 2.5 The heatmap and the stack
+From the L1 builds of the 102 play recordings (`work/stage1/l1-play.json`, 129 994 frames; `c1` is left out
+because the ROM's RAM test and the load touch every byte).
+"Use" is what the recordings did: x executed, r read, w written, `.` never touched.
 
-All 103 recordings merged (`tools/l1merge.py`, `work/stage1/l1-all.json`: c1, `menu`, `gameover` and the 100 RZX
-levels, 148 180 frames; drawn by `kit/heatmap.py` with the regions of 2.4). c1's ROM RAM test and load write every
-byte once, which shows as the faint floor of the "written" panel; the bright rows are the screen, the variables at
-`$AA00-$AB5E` and the self-modified operands:
+| Range | Use | Entries | What |
+| --- | --- | --- | --- |
+| `$4000-$5AFF` | w | | the screen, drawn directly |
+| `$5B00-$616F` | . | | system variables and BASIC, idle after the load |
+| `$6170-$618F` | w | | the machine stack (2.7) |
+| `$61A8-$6397` | . | UnusedPicture61A8 | 496 bytes of CPC picture |
+| `$6398-$6697` | r | SidePanels | the two side panels, 2 × 192 lines each |
+| `$6698-$6707` | . | ExitSign | the EXIT sign, read only by the unrun DrawExitSign `$D08E` |
+| `$6708-$67E7` | r / . | BlankPicture, Unused6758 | the blank picture that erases a cell |
+| `$67E8-$6CE7` | r | BallPictures | the ball: 16 pictures for player 1, 16 for player 2 at `$6A68` |
+| `$6CE8-$75A7` | r | ObjectPictures | the objects 1-40 |
+| `$75A8-$7787` | . | UnusedPicture75A8 | 480 bytes of CPC picture |
+| `$7788-$8384` | r | Platform1Pictures ... BrickPicture | platforms, crumbling pieces, walls and locks, the exit, flames, steam, the burst, the bricks |
+| `$8385-$8C3B` | . | Unused8385 | 2231 bytes of CPC pictures |
+| `$8C3C-$A987` | r | LevelRecords | the 100 level records |
+| `$A988-$A9FC` | . | LevelsEnd | 117 zeros |
+| `$A9FD-$AB7B` | w | vars | the variables (2.4) |
+| `$AB7C-$ADE5` | x | setup, mainloop | GameStart, LifeStart, MainLoop, StateTable, the READY? texts, the players |
+| `$ADE6-$B3B0` | x | ball | the ball's drawing, the nine states and their step tables |
+| `$B3B1-$B470` | x | menu | ReadControls, KeyRows, TestKey, Pause |
+| `$B471-$B6CA` | x / r | render | attributes, the side panels, LineAddress `$B515` and SpectrumLines `$B52D` |
+| `$B6CB-$BBCC` | x | mainloop, hud, hiscore, ball, objects | WaitFrame, GameOver, ChooseNextState, Delay, the objects, LoseLife |
+| `$BBCD-$C4D4` | x | render | the animated cells: crumbling, springs, bricks, fires, water, walls, the exit |
+| `$C4E2-$CF0B` | x | ball, render, objects | the per-step checks, the screen-address divide `$C71F`, the object inks |
+| `$CF0C-$D259` | x | render, levels | BuildLevel `$CF2E`, the cell drawers, the wall drawers |
+| `$D25A-$D2B3` | r | DemoMoves, DemoPad | the demo's moves |
+| `$D2B4-$E0C3` | . | PanelPicture | the CPC status panel, 3600 bytes (2.8) |
+| `$E0C4-$E29F` | r / . | LevelLeftover, LevelColours, CellAddresses, WallAddresses, BrickSteps, EditorTexts, EditorFont | the level tables, and the editor leftovers |
+| `$E2A0-$E58A` | x | sprites | the blitters |
+| `$E58B-$E666` | x | hud | DrawHud |
+| `$E667-$E7F6` | x | text | PrintText `$E667` and its state |
+| `$E7F7-$EC3F` | x / r | menu | DrawLogo and Logo `$E808` |
+| `$EC40-$EF32` | x | hiscore | the hall of fame, the name entry, the table `$EEB3` |
+| `$EF33-$F182` | x | menu | Menu `$EF33`, its texts, the control sets |
+| `$F183-$F3C7` | . | sound | the AY skeleton, never run (2.8) |
+| `$F3C8-$F5C8` | x | sound | the effects and the beeper primitives ([doc 9](09-sound.md)) |
+| `$F5C9-$F8D4` | r | Font | the font, characters 32-127 |
+| `$F8D5-$FFFF` | . | | free, never touched |
 
-![Memory heatmap of all recordings](img/arch/heatmap.png)
+The point: code and data alternate all over the block; only the pictures and the levels are in one piece.
 
-The stack: `USR` enters with SP `$6190`; the lowest byte written below `$61A8` in play is `$6170`, so the game uses 32
-bytes of stack (`$6170-$618F`) in all 102 play recordings. The 1269 bytes below it (`$5C7B-$616F`) stay free.
+## 2.7 The heatmap and the stack
 
-## 2.6 The stages from power-on to play
+![The heatmap of the play recordings](img/arch/heatmap-play.png)
+
+*What the 102 play recordings did with `$6000-$FFFF` (red written, green read, blue executed, log scale), with the
+stage-2 regions. `python3 R/kit/heatmap.py work/stage1/l1-play.json docs/img/arch/heatmap-play.png --from 6000
+--to FFFF --cell 3 --regions work/docs/bmA/regions2.txt --panels composite --columns 1`.*
+
+What it shows:
+
+- the pictures in green at the top, with dark bands where the CPC leftovers lie (`$75A8`, `$8385`);
+- the level records almost dark: each recording reads only the records of the levels it starts;
+- the variables in yellow and red at `$AA00`;
+- the code in blue from `$AB7C`, with the dark block of PanelPicture at `$D2B4-$E0C3`;
+- the dark AY skeleton before the sound at `$F3C8`.
+
+The stage-1 heatmap of all 103 recordings, `c1` included, is [here](img/arch/heatmap.png): `c1`'s RAM test and load
+write every byte once, which shows as a faint floor.
+
+The stack: `USR` enters with SP `$6190`.
+The lowest byte written below `$61A8` in play is `$6170`, so the game uses 32 bytes of stack (`$6170-$618F`) in all
+102 play recordings.
+
+The point: the heatmap and the module map agree: the large never-read entries of game.ann are dark in the play recordings.
+
+## 2.8 The leftovers
+
+Bumpy was an Amstrad CPC game by Loriciels, converted for the Spectrum by Luis Jorge Garcia and J250 (1989).
+The Spectrum release keeps much of the CPC program that it never uses.
+
+![The CPC leftovers](img/arch/leftovers.png)
+
+*PanelPicture `$D2B4`, EditorFont `$E21E` and EditorTexts `$E1C9` drawn from the image (`python3 tools/fig_arch.py`).
+The panel is the CPC game's status column: lives, score, water, keys, hammers, level and the BUMPY loriciels logo.*
+
+| Leftover | Address | Bytes | What it was | Why it is dead |
+| --- | --- | ---: | --- | --- |
+| PanelPicture | `$D2B4-$E0C3` | 3600 | the CPC status panel, 18 bytes × 200 lines | the Spectrum's HUD is a row of digits at the top (doc 8); DrawPanelA/B `$CF0C`/`$CF1D` are never called |
+| EditorTexts, EditorFont | `$E1C9-$E29F` | 81 + 130 | the CPC level editor's menu, in French (RETOUR, EDITEUR, CHARGER TABLEAUX, SAUVER, EFFACER, QUITTER) and its 8 × 5 letters | no editor on the Spectrum |
+| UnusedPicture61A8, UnusedPicture75A8, Unused8385 | `$61A8`, `$75A8`, `$8385` | 496, 480, 2231 | CPC pictures | no routine reads them (`src/res/leftovers`) |
+| LevelLeftover | `$E0C4` | 85 | small numbers | not read |
+| the effects' parameters | `$F3CF`, `$F3E6`, ... `$F500` | 14 × 16 | each effect's sound parameters on the CPC | each effect loads HL with them and calls a beeper primitive that ignores HL (doc 9) |
+| the firmware stubs | `$B744-$B754` | 17 | the CPC firmware calls (a border flash, a level choice) | each is a `RET` |
+| DrawExitSign, ExitSign | `$D08E`, `$6698` | | the EXIT sign | never called |
+| PrintOnceUponATime | `$E7C6` | | "Erase Una Vez ..." (Spanish: the Proein heritage) | never called |
+| the AY skeleton | `$F183-$F3C7` | 581 | a 128K music driver's frame | never called (below) |
+
+### The AY skeleton `$F183-$F3C7`
+
+The block before the effects holds the frame of a 128K music driver.
+Nothing calls any of it, and no recording, `c1` included, ran a byte of it.
+
+```asm
+WriteAyRegister:
+  F19F  CP $07                  ; register 7, the mixer: keep the I/O bits clear
+  F1A1  JR NZ,WriteAyRegisterSkip
+  F1A3  LD B,A
+  F1A4  LD A,$3F
+  F1A6  AND C
+  F1A7  LD C,A
+  F1A8  LD A,B
+WriteAyRegisterSkip:
+  F1A9  DI
+  F1AA  LD E,C
+  F1AB  LD BC,$FFFD             ; select the register
+  F1AE  OUT (C),A
+  F1B0  LD A,E
+  F1B1  LD BC,$BFFD             ; write the value
+  F1B4  OUT (C),A
+  F1B6  EI
+  F1B7  RET
+InstallIm2Key:
+  F343  DI
+  F344  LD HL,$FDFF             ; 257 bytes of $FD: the vector table $FDFF-$FEFF
+  F347  LD DE,$FE00
+  F34A  LD BC,$0101
+  F34D  LD (HL),$FD
+  F34F  LDIR
+  F351  LD A,$C3                ; JP Im2HandlerKey at $FDFD
+  F353  LD ($FDFD),A
+  F356  LD HL,Im2HandlerKey
+  F359  LD ($FDFE),HL
+  F35C  LD A,$FE
+  F35E  LD I,A
+  F360  IM 2
+```
+
+```text
+Random:            A = R XOR R XOR (the byte at an R-made address)
+WriteAyRegisters:  for r in 0..13: WriteAyRegister(r, the next byte at HL)
+WriteAyRegister:   register 7 masked to $3F; OUT ($FFFD) = r; OUT ($BFFD) = value
+DelayAfterFrame:   HALT, then 512 loops
+BuildLineTable:    the 192 line addresses at $F206 (over this code)
+InstallIm2Key:     vectors $FDFF-$FEFF = $FD, JP Im2HandlerKey at $FDFD, I = $FE, IM 2, read the keys
+InstallIm2Wait:    the same with Im2HandlerWait, then wait for a key
+Im2Handler*:       save every register, CALL the hook (a RET), restore, EI, RETI
+```
 
 ```mermaid
 flowchart LR
-    A["ROM: LOAD #quot;#quot;"] --> B["BASIC line 10: POKEs, CLEAR 24999"]
-    B --> C["LOAD #quot;#quot; SCREEN$ to $4000"]
-    C --> D["LOAD #quot;#quot; CODE 25000: $61A8-$F8D3"]
+    I1["InstallIm2Key $F343"] --> V["vector table $FDFF-$FEFF, JP at $FDFD, I = $FE, IM 2"]
+    I2["InstallIm2Wait $F388"] --> V
+    V --> H1["Im2HandlerKey $F36B"] --> K1["Im2HookKey $F382: RET"]
+    V --> H2["Im2HandlerWait $F3B0"] --> K2["Im2HookWait $F3C7: RET"]
+    W["WriteAyRegisters $F190"] --> R["WriteAyRegister $F19F: ports $FFFD, $BFFD"]
+    N["nothing calls any of these"]
+```
+
+The hooks are where a music player would go: called 50 times a second, writing the AY with WriteAyRegisters.
+The player itself is not in the release.
+So the 48K and the 128K play Bumpy alike, with the beeper only (known only from the code; every recording is on the
+48K).
+
+Worked example: if InstallIm2Key ran, it would fill `$FDFF-$FEFF` with `$FD` and put `JP $F36B` at `$FDFD`.
+An interrupt with any byte on the bus would read the vector at `$FE00`-`$FEFF`, find `$FDFD`, and jump to the handler.
+That memory is above the game block, in the 1835 free bytes: the only use the game would ever have made of them.
+
+The point: the release is a port that kept the CPC program's data and a 128K frame without its music; 8203 bytes are
+never touched.
+
+## 2.9 The frame budget and the call graph
+
+Where the T-states of a frame go, in play and in the menu:
+
+![The frame budget by module](img/arch/budget-modules.png)
+
+*T-states by module (`python3 R/kit/fig_budget.py --by module`): play in `rec/l83` against the `menu` recording.*
+
+| Module | Play (`rec/l83`) | Menu and demo (`menu`) |
+| --- | ---: | ---: |
+| sprites | 31.7 % | 8.5 % |
+| the `HALT` (idle) | 23.4 % | 55.7 % |
+| sound | 18.4 % | 6.3 % |
+| render | 11.2 % | |
+| hud | 10.9 % | 9.1 % |
+| menu (the key reads) | 1.9 % | 11.2 % |
+| ROM (the IM 1 handler) | 0.97 % | |
+| ball | 0.63 % | |
+| mainloop | 0.62 % | |
+
+The game is three quarters busy in play.
+The blitters take a third of all time, and the beeper almost a fifth: a sound stops everything else.
+
+The main loop's call graph (one pass, [doc 4](04-game-loop.md#44-mainloop-acc8-one-pass)):
+
+```mermaid
+flowchart TD
+    ML["MainLoop $ACC8"] --> RC["ReadCell $BB32"]
+    ML --> CSA["CellScreenAddr $BB05"]
+    ML --> AN["BrickStep, WaterStep, PlatformChangeStep, WallStep"]
+    ML --> AF["AnimateFires, AnimateWalls, AnimateExit"]
+    ML --> TT["TickTimer $B7D1"]
+    ML --> TK["TestKey"] --> RD["ReadControls $B418"]
+    ML --> WF["WaitOneFrame $B87E"] --> WFR["WaitFrame $B6E4"] --> DH["DrawHud $E58B"]
+    ML --> DP["Dispatch $AD0F"] --> ST["state routine"]
+    ST --> BS["BallStepMove $AE30"] --> XB["DrawBallXor $AE23"] --> XS["XorSprite $E3EE"]
+    ST --> CK["step check: StepDispatch $AE4B"] --> OB["take an object, Sfx"]
+    ST --> LC["LandingCheck $B09E"] --> CN["ChooseNextState $B7E4"]
+    AN --> DS["DrawSprite $E318"]
+    AF --> DS
+    DS --> SA["ScreenAddrToLine $C71F"] --> LA["LineAddress $B515"]
+    DH --> DS
+```
+
+The point: everything that draws goes through two blitters and one address conversion, so their cost sets the game's
+speed ([doc 6](06-rendering.md)).
+
+## 2.10 The stages from power-on to play
+
+```mermaid
+flowchart LR
+    A["ROM: LOAD"] --> B["BASIC line 10: POKEs, CLEAR 24999"]
+    B --> C["LOAD SCREEN$ to $4000"]
+    C --> D["LOAD CODE 25000: $61A8-$F8D4"]
     D --> E["RANDOMIZE USR 43900: $AB7C"]
-    E --> F["the menu $EF33"]
-    F -->|"0 GAME"| G["READY? $AC06: timer 1000"]
-    F -->|"idle"| H["the demo, $B3B1 = 4"]
-    H -->|"a key"| F
-    G --> I["the main loop $ACC8"]
-    I -->|"last life lost"| J["game over $B755"]
-    J -->|"score above the 4th entry"| K["the hall of fame $EC40"]
+    E --> F["Menu $EF33"]
+    F -->|"0"| G["NewGame, LifeStart $ABD8: READY?"]
+    F -->|"3000 idle frames"| H["the demo, MenuChoice 4"]
+    H --> F
+    G --> I["MainLoop $ACC8"]
+    I -->|"last life lost"| J["GameOver $B755"]
+    J -->|"score not below the 4th entry"| K["EnterHallOfFame $EC40"]
     J --> F
     K --> F
     I -->|"R"| F
 ```
 
-The main loop and the frame: [WALKTHROUGH 1](../WALKTHROUGH.md#1-one-recording-from-power-on); the state machine and
-the order of work inside a pass go into doc 4 at stage 2.
+The load is in [doc 3](03-build-and-load.md), the cycle from the menu on in
+[doc 4](04-game-loop.md#42-the-game-cycle).
+
+The point: the path from the tape to play has no stage of its own: BASIC loads three blocks and jumps in.
