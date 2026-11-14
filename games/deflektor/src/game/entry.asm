@@ -34,7 +34,8 @@ GameEntry:
 ; `$A506` reaches it, so it is the number of frames per pixel (70-140 in levels
 ; 1-60, 255 in the practice slots). Byte 1 goes to `$AB95`, the number of
 ; gremlin records `$AB63` the gremlin code walks (`$9AB6`, `$ABAD`): 0-5 in
-; levels 1-59, 8 in level 60, 0 / 8 / 0 / 0 in the four practice slots.
+; levels 1-59 but level 52 (8), 8 in level 60, 0 / 8 / 0 / 0 in the four
+; practice slots.
 ;
 ; Levels 1-60 are slots 0-59; slots 60-62 are the practice levels P1-P3
 ; (PracticeFlag); slot 63 is never set up (LevelCompletePause `$887D` returns

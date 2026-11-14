@@ -377,6 +377,7 @@ sequenceDiagram
     Irq->>Spk: BurningNoise, 2 585 T a frame, to 390
     Main->>Flags: the beam on a mine: bits 1 and 2 (1334)
     Irq->>Spk: MineSound (bit 1 wins), to 1344
+    Main->>Flags: the beam off the mine: CoolOverload clears bits 1 and 2 (1345)
 ```
 
 *`L01`, frames 0-1645. Witness: `python3 tools/ttd_watch.py --work work/docs/dfA/L01 --addr A8A6,837B,837C,A104
@@ -391,7 +392,8 @@ both the mine's bit 1 and the overload's bit 2 are set, and the mine's falling s
 - At frame 379, BurnSoundFlag `$837B` is `$57` (a new explosion this pass), and PassEnd plays BurnSound directly
   (0.49 frame). Then SoundFlags is `$08` up to frame 390: twelve frames of BurningNoise, 2585 T each.
 - From frame 1330 the watch shows bit 2 (`$04`, OVERLOAD `$12`) and then `$06` at 1334. MINE ALERT (`$13`) follows
-  at 1336, and the flags are clear at 1345 when the life is lost.
+  at 1336, and the flags are clear at 1345, when the player turns the beam off the mine and CoolOverload clears bits
+  1 and 2.
 
 These figures are T-states of the effect alone, without contention. The code and its records are in uncontended
 memory (`$A8xx`, `$81xx`) and write no screen, but each `OUT ($FE),A` is a ULA I/O cycle: during the 192 display

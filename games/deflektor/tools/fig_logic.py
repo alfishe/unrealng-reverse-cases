@@ -174,24 +174,27 @@ def energy(out):
     names = {0: 'none', 1: '$01 CHARGING LASER', 0x0A: '$0A ENERGY LOW', 0x0C: '$0C CRITICAL',
              0x17: '$17 ENERGY DRAINED'}
     prev = None
+    lost = []
     for f, px, msg, lives, chg in rows:
         x = x0 + f * pw // fmax
         y = y0 + ph - px * ph // 64
         if prev and lives < prev[3]:
-            d.line([(x, y0), (x, y0 + ph)], fill=(200, 60, 60), width=1)
-            figlib.text(d, (x + 3, y0 + 4), 'lives %d' % lives, 11, (230, 90, 90))
+            lost.append((x, lives))
         if prev:
             d.line([(prev[0], prev[1]), (x, y)], fill=(90, 90, 100), width=1)
         c = colours.get(msg, figlib.FG)
         d.ellipse([x - 4, y - 4, x + 4, y + 4], fill=c)
         prev = (x, y, msg, lives)
+    for x, lives in lost:  # drawn after the course, so no point or segment covers them
+        d.line([(x, y0), (x, y0 + ph)], fill=(200, 60, 60), width=2)
+        figlib.text(d, (x + 4, y0 + 4), 'lives %d' % lives, 11, (230, 90, 90))
     for k, (m, nm) in enumerate(names.items()):
         x = 20 + 205 * k
         d.ellipse([x, y0 + ph + 44, x + 9, y0 + ph + 53], fill=colours[m])
         figlib.text(d, (x + 14, y0 + ph + 40), nm, 12, figlib.FG)
     figlib.text(d, (10, H - 52), 'Source: %s/snapshots/NNNNNN (ram-5: the screen, ram-2: $8000-$BFFF).'
                 % os.path.relpath(work, figlib.CASE), 12, figlib.DIM)
-    figlib.text(d, (10, H - 32), 'Level 1: full at 1000, two bytes left at 5000, one at 5750, empty at 6500; '
+    figlib.text(d, (10, H - 32), 'Level 1: full by 750, two bytes left at 5000, one at 5750, empty at 6500; '
                 'the charge refills it, and the clock starts again.', 12, figlib.DIM)
     o.save(out)
 

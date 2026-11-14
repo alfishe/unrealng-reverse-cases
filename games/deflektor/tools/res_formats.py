@@ -419,7 +419,7 @@ def out_bounce_out(d):
         e = d[8 * i:8 * i + 8]
         rows.append([i, sw(e[0], e[1]), sw(e[2], e[3])] + list(e[4:8]))
     return csv_out(['OutBounceTable $8080: 8 bytes for each new direction (BeamReflectOut $965A, BeamCornerChar $94E9).',
-                    'test1 / test2: offsets (words) from the up-left character of the vertex in the character map;',
+                    'test1 / test2: offsets (words) from the wall character met (CharMapPointer $8914) in the character map;',
                     'none / first / second / both: the bounced direction by which of the two characters are walls',
                     '($31-$72). The corner pass reads only `both`. The axis directions\' rows are not read.'],
                    ['direction', 'test1', 'test2', 'none', 'first', 'second', 'both'], rows)
@@ -444,9 +444,9 @@ def in_corner_out(d):
     for k in ('none', 'first', 'second', 'both'):
         head += [k, k + '_dx', k + '_dy']
     return csv_out(['InCornerTable $8100: 16 bytes for each diagonal direction (2, 6, 10, 14), reached by BeamReflectIn',
-                    '$93F2 through InBounceTable ($80 + 16 n). test1 / test2: offsets (words) from the up-left character',
-                    'of the vertex; then for none / first / second / both of them walls: the new direction and the step',
-                    '(dx, dy) to the vertex the beam leaves from. Known only from the code: no recording ran it.'],
+                    '$93F2 through InBounceTable ($80 + 16 n). test1 / test2: offsets (words) from the wall character',
+                    'met (CharMapPointer $8914); then for none / first / second / both of them walls: the new direction and',
+                    'the step (dx, dy) to the vertex the beam leaves from. Run only by the clone `corner` ($93F2 342 times).'],
                    head, rows)
 
 

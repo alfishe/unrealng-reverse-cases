@@ -252,8 +252,8 @@ FindLaserRowAdd:
 ; (the code `$57`, then `$58-$5C`, then empty).
 ;
 ; In levels 1-60 the element in front of the receiver is a mine (`$41`, 23
-; levels), a wall (`$21-$3E`, 32), a block (4) or a fibre-optic end (`$53`, 1):
-; the receiver is shut until every cell burns.
+; levels), a wall (`$21-$3E`, 32), a polariser (`$11`, `$15`, `$19`, `$1D`, 4)
+; or a fibre-optic end (`$53`, 1): the receiver is shut until every cell burns.
 ;
 ; Run 21 times, all in RZX segments (once in each level the last cell burns).
 ;
@@ -1071,7 +1071,9 @@ BeamNewDirection:
 ; = `$FF`) as if the beam had come back into the laser, and the laser lit; the
 ; trace still goes on, up to 150 (`$96`) steps, then stops. So a beam longer
 ; than 40 cells overloads the laser on every pass (the RZX segments reach 40 in
-; 14 of the 59 level segments, `$926D` 2010 runs in all).
+; 14 of the 59 level segments, `$926D` 2010 steps at 40 or more, and 261 in six
+; bot recordings; one trace ran on to the 150-step stop, `$9277` once in
+; `rzx-263143`, level 47).
 ;
 ; Then back to the trace `$8EDD` for the next vertex.
 ;
@@ -1319,11 +1321,13 @@ PolariserMarkLoop:
 ; From `BeamInChar` `$9278` and the polariser test `$92FD`. A beam on the
 ; slopes or diagonals (direction AND 3 not 0) is absorbed at once. A beam along
 ; an axis, at its first wall character of the vertex (`$8EC3`), runs between
-; two characters: the one across the beam from this one (offsets `$8190`, one
-; word for each character and axis) must be a wall or a polariser too
-; (`$31`-`$72`), else the beam grazes the wall's side and goes on
-; (`BeamInNext`). When it is, and this is not the first character of the pass,
-; the glyph drawn last (`$8EC9`) is wiped with the blank character `$D700`.
+; two characters: the one across the beam line one character back, where the
+; beam came from (offsets `$8190` + 2 x (count - 1) + direction: 31, -33 east;
+; -31, -33 south; 33, -31 west; 33, 31 north; the character they land on is
+; read from the geometry) must be a wall or a polariser too (`$31`-`$72`), else
+; the beam grazes the wall's side and goes on (`BeamInNext`). When it is, and
+; this is not the first character of the pass, the glyph drawn last (`$8EC9`)
+; is wiped with the blank character `$D700`.
 ;
 ; Absorbed: the two return addresses are dropped and the trace returns to
 ; MainPass: the beam ends here.
@@ -1915,8 +1919,13 @@ AbsorbOutEnd:
 ; gives the bounced direction. Its reverse: OVERLOAD. Else the beam is turned
 ; in place: the direction `$8ECB` = `$FF` (no incoming pass), the bounce count
 ; `$8EC0` + 1, and the vertex is drawn again (`BeamVertex` `$906E`) with the
-; new direction. At 40 bounces OVERLOAD, at 150 the trace ends; the bounce
-; count never passed 39 in the recordings (`$96B8` never ran).
+; new direction. BeamDirection stays `$FF` for that redraw, so a further bounce
+; at the same vertex tests its answer against 7 (`$FF` + 8 AND 15), not the
+; real reverse, and a polariser met there is judged at angle 7 (known only from
+; the code). The bounce count is cleared once per trace (TraceBeam `$8EDA`),
+; not per vertex: at the trace's 40th bounce OVERLOAD and the redraw goes on,
+; at the 150th the trace ends; the count never passed 39 in the recordings
+; (`$96B8` ran in no L1).
 ;
 ; Witness: L1 50666 (c1, c1g, cheat, hof, nameedit, L x9, rzx x31).
 BeamReflectOut:

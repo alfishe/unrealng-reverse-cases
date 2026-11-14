@@ -252,21 +252,21 @@ The source is cut into 13 modules (`src/game/*.asm`, written by `kit/mkgame.py` 
 
 | Module | File | Labels | Lines | What it holds | Share of `L01` |
 | --- | --- | ---: | ---: | --- | ---: |
-| entry | `entry.asm` | 9 | 140 | GameEntry, LevelSettings, Start, TitleLoop, NewGame | 0 % |
-| mainloop | `mainloop.asm` | 57 | 791 | SetUpLevel, MainLoop, PassEnd, LoseLife, LevelComplete, TheEnd, Delay | 3.9 % |
+| entry | `entry.asm` | 9 | 138 | GameEntry, LevelSettings, Start, TitleLoop, NewGame | 0 % |
+| mainloop | `mainloop.asm` | 57 | 785 | SetUpLevel, MainLoop, PassEnd, LoseLife, LevelComplete, TheEnd, Delay | 3.9 % |
 | levels | `levels.asm` | 9 | 120 | BuildLevel, LevelData | 0.04 % |
 | render | `render.asm` | 65 | 980 | RenderGrid, DrawMarkedChars, CopyPlayArea, the wipes, the printers, Random | 48.2 % |
-| beam | `beam.asm` | 139 | 2385 | FindLaser, OpenReceiver, TraceBeam and its steps, the cursor, the beam's tables and glyphs | 32.2 % |
+| beam | `beam.asm` | 139 | 2394 | FindLaser, OpenReceiver, TraceBeam and its steps, the cursor, the beam's tables and glyphs | 32.2 % |
 | elements | `elements.asm` | 66 | 996 | the bars (energy, overload, charge), the gremlins | 0.7 % |
 | controls | `controls.asm` | 35 | 386 | ReadKeys, PauseGame, ReadControls, the four control methods, LevelCheat | 0.06 % |
 | panel | `panel.asm` | 65 | 615 | the score, the lives, the COMPUTER messages | 0.1 % |
 | hiscore | `hiscore.asm` | 60 | 584 | HallOfFame, RankScore, the name entry | 0 % |
 | menu | `menu.asm` | 33 | 376 | TitleScreen, OptionsMenu, the scroller | 0 % |
 | interrupt | `interrupt.asm` | 35 | 453 | SetupInterrupts, InterruptHandler, the COMPUTER line | 2.6 % |
-| sound | `sound.asm` | 43 | 442 | PlaySound, TwoTone, PlaySweep, PlayNoise, TitleTune | 12.1 % |
+| sound | `sound.asm` | 43 | 435 | PlaySound, TwoTone, PlaySweep, PlayNoise, TitleTune | 12.1 % |
 | ending | `ending.asm` | 15 | 176 | EndingScreen, the plug and the kettle | 0 % |
 
-Labels and lines: `grep -c '^[A-Za-z][A-Za-z0-9_]*:'` and `wc -l` over `src/game/*.asm` (8444 lines in the 13
+Labels and lines: `grep -c '^[A-Za-z][A-Za-z0-9_]*:'` and `wc -l` over `src/game/*.asm` (8438 lines in the 13
 modules). The point: two modules, the renderer and the beam, are 80 % of the time and two fifths of the source; the
 rest is small.
 

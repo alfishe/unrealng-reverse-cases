@@ -1,6 +1,6 @@
 # Deflektor (Gremlin Graphics, 1987)
 
-State: docs written, in review (2026-11-13). 12 documents, 199 figures (PNG), 25 animations (GIF), 36 mermaid diagrams
+State: complete 2026-11-13 (two review rounds, kit gaps fixed, every case regressed identical). 12 documents, 199 figures (PNG), 25 animations (GIF), 36 mermaid diagrams
 and 20 audio files (1 MP3, 19 short WAV; 764 KB), counted on 2026-11-13 with:
 
 ```sh

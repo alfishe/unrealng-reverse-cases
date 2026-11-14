@@ -185,10 +185,10 @@ The trace's length counter stands at 15 at the end, well under the 40 of 10.4. T
 | `$21-$2F` | absorbing wall | by its characters (`$71`): the beam ends, or grazes a lone quarter (below) | every level |
 | `$30-$3E` | reflecting wall | by its characters (`$72`): the beam bounces, by the tables below | 21 949 bounces |
 | `$40` | cell | BeamBurn: an explosion slot, the points, the beam ends | 10.5 |
-| `$41` | mine | BeamMine: BeamOnMine, SoundFlags bit 1, the beam ends | `mine`, 46 RZX segments |
+| `$41` | mine | BeamMine: BeamOnMine, SoundFlags bit 1, the beam ends | 46 RZX segments (1751 runs), `L01` (1) and 23 bot clones; `mine` only POKEs the flag |
 | `$42` | prism | PrismTurn `$9014`: a random new direction 4-12 sixteenths off the reverse | 16 015 runs |
-| `$47-$4A` | laser | BeamAtLaser: from its front on an axis, BeamBackToLaser (OVERLOAD); else the beam ends | 1094 runs |
-| `$4B-$4E` | receiver | BeamReceiver: from its front on an axis, LevelDone; else the beam ends | 18 completions |
+| `$47-$4A` | laser | BeamAtLaser: from its front on an axis, BeamBackToLaser (OVERLOAD); else the beam ends | 1094 runs in 18 RZX segments, 42 in 11 bot recordings |
+| `$4B-$4E` | receiver | BeamReceiver: from its front on an axis, LevelDone; else the beam ends | 18 RZX completions and the bot's 20 |
 | `$50-$57` | fibre-optic end | FibreEntry `$903E`: the beam jumps to the partner (code XOR 1) and leaves it in the same direction | 4105 runs |
 | `$58-$5C` | an explosion | the beam ends | 10.5 |
 | bit 7 | turning | acts as its current angle; ChargeLaser and the gremlins turn it | |
@@ -283,10 +283,19 @@ map `$E000`. The incoming pass (BeamInChar `$9278`) runs over the characters the
 
 | Character | Incoming pass | Outgoing pass |
 | --- | --- | --- |
-| `$71` (absorbing wall) | BeamAbsorbIn `$9344` | BeamAbsorbOut |
+| `$00` (empty) | the glyph drawn | the glyph drawn |
+| `$01-$30` (mirror) | skipped, no glyph | skipped, no glyph |
+| `$31-$70` (polariser) | BeamInPolariser `$92FD` | BeamOutPolariser `$957A` |
+| `$71` (absorbing wall) | BeamAbsorbIn `$9344` | BeamAbsorbOut `$95C2` |
 | `$72` (reflecting wall) | BeamReflectIn `$938F` | BeamReflectOut `$960D` |
-| `$31-$70` (polariser) | BeamInPolariser `$92FD` | the outgoing polariser test |
-| `$80-$AF` (laser, receiver) | absorbed (BeamAbsorbIn) | absorbed |
+| `$73-$7B` (cell, mine) | the glyph drawn | the glyph drawn |
+| `$7C-$7F` (prism) | skipped, no glyph | skipped, no glyph |
+| `$80-$AF` (laser, receiver) | absorbed (BeamAbsorbIn) | absorbed (BeamAbsorbOut) |
+| `$B0` up (fibre ends, explosions) | skipped, no glyph | skipped, no glyph |
+
+That table holds away from a cell's centre. At a centre (BeamAtCentre `$8EC1` = `$FF`, BeamInChar's `$9289`) only
+`$71` and `$72` count and every other character gets the glyph (`$92A8-$92B3`); this is why BeamBlock `$8F7D` clears
+BeamAtCentre for a polariser's cell, so that its characters are tested as above.
 
 The polariser test takes its angle from the character, (character - `$31`) AND `$1F` / 4 = 0-7, and compares it with
 the beam's direction AND 7:
@@ -311,8 +320,9 @@ BeamInPolariser:            ; $92FD, A = the character ($31-$70)
 
 A reflecting wall (or a yellow polariser across the beam) then acts by the beam's kind:
 
-- **Axis beam** (direction AND 3 = 0): the character across the beam line (GrazeOffsets `$8190`, one offset for each
-  character of the pass and axis) decides. If it is free (below `$31` or above `$72`), the beam grazes the wall's
+- **Axis beam** (direction AND 3 = 0): the character across the beam line one character back, where the beam came from,
+  decides (GrazeOffsets `$8190` + 2 (count - 1) + direction, `$935A-$9361`: 31, -33 east; -31, -33 south; 33, -31
+  west; 33, 31 north; which character they land on is read from the geometry, not replayed). If it is free (below `$31` or above `$72`), the beam grazes the wall's
   side and goes on. If it is a wall too, the beam goes straight back: BeamBackToLaser `$8FC5`, OVERLOAD, and the trace
   ends. A second wall character at the same vertex always sends it back.
 - **Slope or diagonal, incoming pass** (ReflectInSlant `$93DC`): InBounceTable `$8140` + 3 x direction gives the
@@ -324,8 +334,11 @@ A reflecting wall (or a yellow polariser across the beam) then acts by the beam'
   holds two offsets from the wall character met, to the two neighbours that tell which way the wall runs, then four
   answers: neither of them a wall, the first (+1), the second (+2), both (+3). The answer that is the reverse of the
   incoming direction is OVERLOAD. Any other answer turns the beam in place: the direction becomes `$FF` (no incoming
-  pass), a bounce counter `$8EC0` counts one, and the vertex is drawn again with the new direction. At 40 bounces
-  OVERLOAD, at 150 the trace stops (`$96B8`, never reached).
+  pass), a bounce counter `$8EC0` (cleared once per trace, by TraceBeam) counts one, and the vertex is drawn again
+  with the new direction. BeamDirection stays `$FF` for that redraw, so a further bounce at the same vertex tests its
+  answer against 7 (`$FF` + 8 AND 15), not the real reverse, and a polariser met there is judged at angle 7
+  (BeamOutPolariser takes `$FF` AND 7; known only from the code). At the 40th bounce of the trace OVERLOAD, and the
+  trace goes on; at the 150th it stops (`$96B8`, never reached).
 
 ```asm
 ReflectOutSlant:            ; $965A, B = the new direction
@@ -384,8 +397,9 @@ a pass meets character ch at the vertex, the beam's direction d:
         else:                                   # outgoing pass, new = the direction after this vertex
             k = (row[0] is a wall) + 2 (row[1] is a wall), row = OutBounceTable[new]
             out = row[4 + k]
-            if out == incoming d + 8: OVERLOAD
-            else: bounces += 1; redraw this vertex leaving by out (40 bounces: OVERLOAD; 150: stop)
+            if out == (d + 8) AND 15: OVERLOAD      # d is FF after an earlier bounce in place, so 7
+            else: d = FF; bounces += 1              # bounces: cleared once per trace
+                redraw this vertex leaving by out   # the 40th: OVERLOAD, on; the 150th: stop
 ```
 
 ```mermaid
@@ -407,7 +421,8 @@ flowchart TD
     IC -->|the reverse| O
     IC --> M
     OUT -->|the reverse| O
-    OUT --> V[the vertex drawn again, the bounce counted]
+    OUT --> V[the vertex drawn again, direction FF, the bounce counted]
+    V -->|the trace's 40th bounce| O
 ```
 
 *A wall or polariser met by a pass. Witness: per recording (each `l1.json`), ReflectInSlant `$93DC` and
@@ -473,7 +488,8 @@ BeamLengthCheck:
 A beam that runs 40 steps sets BeamInLaser as if it had come back into the laser, but the trace goes on, up to 150
 steps. So a long path costs a step of the overload bar every pass, even when it reaches the cells. Lighting a far
 cell by a long detour is not free: the player has to burn it before the bar fills (64 passes, 10.6). The RZX run hit
-the 40 in 14 of the 59 level segments (`$926D`, 2010 runs).
+the 40 in 14 of the 59 level segments (`$926D`, 2010 steps at 40 or more; and 261 in six bot recordings). One trace
+ran on to the 150-step stop (`$9277`, once, in `rzx-263143`, level 47).
 
 ## 10.5 Burning a cell
 
@@ -556,12 +572,12 @@ now open.
 UpdateOverload:             ; $A683, once a pass
   LD A,(BeamOnMine)
   AND A
-  JR Z,OverloadLaser
+  JR Z,OverloadBeamInLaser
   ...                       ; MINE ALERT ($13), then OverloadStep and three OverloadAddStep: 4 steps
-OverloadLaser:
+OverloadBeamInLaser:        ; $A6A0
   LD A,(BeamInLaser)
   AND A
-  JP Z,CoolOverload         ; neither: one step back
+  JR Z,CoolOverload         ; neither: one step back
   LD A,(SoundFlags)
   SET 2,A                   ; the overload tone on, the mine's off
   RES 1,A
@@ -655,7 +671,7 @@ DrainEnergy, once a pass:
     EnergyTick = 0; the bar's byte <<= 1 (three lines)
     if the byte is now 0:
         pointer -= 1
-        if pointer == $54F0: ENERGY DRAINED, LifeLost = FF   # a life, in practice too
+        if pointer == $54F0: ENERGY DRAINED, LifeLost = FF   # LifeLost even in practice; LoseLifeCount then keeps the life (10.8)
         elif pointer == $54F2: post ENERGY LOW if MessageNumber < 0A
 ```
 
@@ -773,8 +789,10 @@ flowchart TD
     C -->|none| G[GAME OVER banner, then the hall of fame]
 ```
 
-*Every way to lose a life. Witness: LoseLife ran 45 times: `mine`, `overload` and `gameover` (the red screen,
-`$8675` 41 times), `energy` (ENERGY DRAINED, `$869A` 4 times), and 36 lives over 26 RZX segments. The point: there
+*Every way to lose a life. Witness: LoseLife `$866A` ran 58 times: 36 over 26 RZX segments, and 22 in our
+recordings (clones but `energy` and `energy-out`): BOOM (`$8675`) in `mine` 3, `overload` 3, `gameover` 1 (the bars
+POKEd) and the bot's `L40`, `L45`, `L49`, `L59` 1 each; ENERGY DRAINED (`$869A`) in `energy` 2, `energy-out` 3, `hof`
+and `nameedit` 3 each. The point: there
 are only two causes, the overload bar and the energy. A mine is not instant death: it only fills the overload bar
 four times faster.*
 
@@ -886,8 +904,6 @@ document are TraceBeam's own answers, not a re-implementation.
 
 ## 10.12 What is known only from the code
 
-- The 150-step stop of BeamLengthCheck: the recordings reach 40 steps; how often a trace ran on to 150 was not
-  counted.
 - FibreNoPartner `$9059`: no level lacks a partner.
 - InCornerTable `$8100` (a diagonal beam bouncing in the incoming pass, ReflectInCorner `$93F2`): no play reads it.
   The outgoing pass of each vertex already tests the character the next vertex's incoming pass meets, so only the
@@ -908,6 +924,7 @@ quarter turn.*
 - A gremlin killed while standing on a mirror it is turning: the kill clears +1, so the turn stops (no recording
   shows it).
 - A gremlin killed on a stale cell (10.7): its +4/+5 from an earlier life or level matched while it waits.
-- The outgoing bounce counter's 40 and 150 (`$96B8`): the recordings never passed 39 bounces at one vertex.
+- The outgoing bounce counter's 40 and 150 (`$96B8`): the recordings never passed 39 bounces in one trace (`$96B8`
+  ran 0 times in all 101 L1s). The redraw's angle 7 after a bounce in place (10.3) is known only from the code.
 - The wall bounces have no dump of their own: the worked example of 10.3 is an experiment on `L01`'s frame 1514; the
   recordings witness the routines by their run counts only.

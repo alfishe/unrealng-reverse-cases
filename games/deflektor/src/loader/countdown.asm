@@ -55,8 +55,8 @@ LoadRest:
 ; Out: A = 20 (TickHooks), B = LoadFlags. IgnoreCode `$B8DC` (the final `RET`)
 ; is also the control-code table's handler for the codes that do nothing.
 ;
-; c1: 294 ticks, 3475776 T apart (0.993 s), from 293 at 3.73 s to 000 at 293.70
-; s; the count never passed 000.
+; c1: 294 ticks, 3475776 T apart (0.993 s), from 293 at about 2.74 s to 000 at
+; 293.70 s; the count never passed 000.
 ;
 ; Witness: L1 294 (c1).
 CountdownTick:

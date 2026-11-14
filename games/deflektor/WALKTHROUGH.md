@@ -65,7 +65,7 @@ The interrupts and the timing, a first look:
   the RZX segments' L1s count as many interrupts as frames (`rzx-004833`: 7019 in 7019).
 - **The main loop.** `$843C` sets up the level (the LEVEL digits from `$88B0`, the flags `$96C3`, `$96C4`, `$8ED2`
   cleared); the pass runs from `$854A`: `$97F0` (the keys), `$999F`, `$8960` (the grid drawn into the buffers), then
-  the level-complete test (`$A509`, `$8ED2`: `$81FF` + 1, `JP $843C`, or `JP $840C` after level 60), the beam, the
+  the level-complete test (`$A509`, `$8ED2`: `$81FF` + 1, `JP $8432` (LevelPanel), or TheEnd `$8885` after level 60 and `$840C` after P3), the beam, the
   bars (`$A683` the overload), and back to `$854A` (`$865D`, `$8B58`). No HALT in the pass: the HALTs are at `$82FE`,
   `$8302`, `$8788` and `$9F77`, outside it.
 - **Frames per pass.** The pass reads the keyboard once at `$97F6` (port `$DFFE`). In the RZX run (SkoolKit's
@@ -187,8 +187,7 @@ level 1 among them), game over by energy alone (`energy-out`), CONTACT! checked 
 receiver, LevelComplete `$87D4`, message `$18`, not a gremlin's touch: the gremlins only turn mirrors; doc 10), a
 hall-of-fame entry from our own play (`hof`, `nameedit`, on a clone), the W / S cheat on a clone (`cheat`), practice
 (`practice`) and the diagonal bounce in the incoming pass on a clone (`corner`). Still known only from the code (each
-document's last section): practice levels P2 and P3 (slot 63 is never set up), the Y + T level drop `$983E`, the 150-step stop of the
-trace, FibreNoPartner `$9059`, the cell codes no level holds, the gremlin delay `$FF`, a gremlin killed by our own
+document's last section): practice levels P2 and P3 (slot 63 is never set up), the Y + T level drop `$983E`, FibreNoPartner `$9059`, the cell codes no level holds, the gremlin delay `$FF`, a gremlin killed by our own
 fire (only in RZX segments) and on a mirror it is turning, beam glyphs 28 and 36.
 
 ### 6.1 Screens and levels
@@ -305,5 +304,6 @@ The levels drawn from the data, without the beam: the contact sheets of [doc 1, 
 | [UpdateOverload.gif](docs/img/logic/UpdateOverload.gif) | doc 10 | L01 | 1325-1352 |
 | [gremlins.gif](docs/img/logic/gremlins.gif) | doc 10 | L03 | 1150-1330, every 3rd |
 | [level-complete.gif](docs/img/logic/level-complete.gif) | doc 10 | L01 | 1508-1645, every 3rd |
+| [trace-bounce.gif](docs/img/logic/trace-bounce.gif) | doc 10 | L01 (a dump replayed, with a wall POKEd: an experiment) | 1514 |
 
 ## 7. Review

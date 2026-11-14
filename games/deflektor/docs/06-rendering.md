@@ -425,7 +425,8 @@ Before drawing, each pass tests the character under the glyph ([doc 10](10-gamep
 - a wall character absorbs or reflects the beam;
 - a polariser lets it through only along its axis;
 - a laser or receiver character absorbs it;
-- a mirror's own characters are not drawn over, because the beam stops at the mirror's centre.
+- a mirror's or the prism's characters are skipped when the beam only passes their corner; at the mirror's own centre
+  (BeamAtCentre `$8EC1`) its four characters get the beam's glyph like any other (6.5's example).
 
 At a mirror, BeamLightChar `$92F0` gives the character the beam's colour `$43`, which is why a mirror the beam
 bounces off turns magenta. At a fibre-optic entry the colour is `$7B` instead.
@@ -457,8 +458,8 @@ That is the double line in the pictures.
 
 *`L01` frames 1000-1005, one pass. How to read it: left, PixelBuffer at the window's end; right, each byte written in
 the window, coloured by the routine that wrote it last; under them, each routine with its count of bytes and writes
-and the addresses it read from. The tool names a source by the nearest listing label: `$E300-$E359` is DrawMarks,
-not SpareCellColours, and `$FEFF-$FF00` is the IM 2 table round `$FE00`. The point: the beam's three passes write
+and the addresses it read from. `$FEFF-$FF00` (Im2Table+255) are the IM 2 table's last two bytes, read by the frame
+loop. The point: the beam's three passes write
 696 of the 932 bytes written last (BeamPlotRows 312, BeamOutRows 264, BeamCornerRows 120). The frame round the play
 area is rewritten every pass (380 bytes: two `LDIR`s of 32 for lines 0 and 159, and 2 x 158 side bytes,
 `$8A8C-$8A9A`); the window caught only the last 70 lines of DrawMarkedFrameLoop, 140 bytes. The next pass's DrawMarkedChars had only begun when the window closed (96
@@ -467,9 +468,7 @@ build/game.lst --view buffer:E900:32x160 --sources --title "..." --out docs/img/
 
 ![Who wrote the screen in one pass](img/render/writers-screen.png)
 
-*The same pass on the screen. How to read it: as above; the tool's SpareCellColours+n names are DrawMarks
-`$E315-$E57F`, PixelBuffer `$F504-...` and ColourBuffer `$E600-$E87F` (the nearest label below each source). The
-point: only two routines write the play area.
+*The same pass on the screen. How to read it: as above. The point: only two routines write the play area.
 CopyPlayArea writes 888 pixel bytes (111 marked characters: the beam's path and the cursor) and all 640 attributes.
 Outside the play area, ScrollRowLoop (the interrupt's COMPUTER line, [doc 8](08-hud-and-text.md)) writes 80 bytes
 five times over, and CoolOverloadStep writes 3 bytes of the overload bar. Command: `python3 ../../kit/writers_map.py

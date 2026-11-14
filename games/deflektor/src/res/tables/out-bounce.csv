@@ -1,5 +1,5 @@
 # OutBounceTable $8080: 8 bytes for each new direction (BeamReflectOut $965A, BeamCornerChar $94E9).
-# test1 / test2: offsets (words) from the up-left character of the vertex in the character map;
+# test1 / test2: offsets (words) from the wall character met (CharMapPointer $8914) in the character map;
 # none / first / second / both: the bounced direction by which of the two characters are walls
 # ($31-$72). The corner pass reads only `both`. The axis directions' rows are not read.
 direction,test1,test2,none,first,second,both

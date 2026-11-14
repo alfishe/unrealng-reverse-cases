@@ -77,6 +77,7 @@ turning form of the mirrors and polarisers (`$81-$A0`).*
 | `$43-$46` | lasers drawn in cyan (no level) | `$80-$8F` | BeamAtLaser `$8FAE` | 0 |
 | `$47-$4A` | laser facing east, south, west, north | `$90-$9F` | FindLaser `$8AC1`, BeamAtLaser | all, once |
 | `$4B-$4E` | receiver open to the east, south, west, north | `$A0-$AF` | BeamReceiver `$8F84` | all, once |
+| `$4F` | a fibre end with no picture (no level): its partner code is `$4E`, a north receiver, so the beam would jump to the receiver | `$00` x 4 | FibreEntry `$903E` | 0 |
 | `$50-$57` | fibre-optic ends, pairs `$50/$51` to `$56/$57` | `$B0-$BF` | FibreEntry `$903E` | 19 |
 | `$58-$5C` | explosion frames (only at run time) | `$C0-$D3` | the trace ends (`RET NC`) | - |
 | `$81-$A0` | the turning mirrors and polarisers | as their low code | RenderGridTurning `$89B1` | 37 |

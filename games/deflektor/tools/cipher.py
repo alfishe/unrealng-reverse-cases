@@ -10,10 +10,10 @@ it has run, then the mover `$FD00-$FD1A`; GAME.bin is src/game assembled, `$6000
 (src/head/head.ann):
 
 1. BlockHead `$5C00` moves `$5C27-$DDEF` up by `$1F2B` to `$7B52-$FD1A` (LDDR) and enters the chain at `$7B52`.
-2. The chain: a sum of all memory, then 29 layers. XorLayer `$7B84` decrypts the B bytes after its call: each plain
-   byte is `(17 * previous + C) XOR cipher` (the first "previous" is the key A), then `A = last + (RET)` and C is
-   written over the byte at RET, the call's return address, and the code goes on at RET + 1. A sum layer (`$7BD2`,
-   `$7C15`, `$7C54`) adds B and every (C + 1)-th byte of `$4000-$FFFF` to A and writes C at RET the same way.
+2. The chain: a sum of all memory, then 30 layers (18 XorLayers, 12 sum layers). XorLayer `$7B84` decrypts the B
+   bytes after its call: each plain byte is `(17 * previous + C) XOR cipher` (the first "previous" is the key A),
+   then `A = last + (RET)` and C is written over the byte at RET, the call's return address, and the code goes on
+   at RET + 1. A sum layer (`$7BD2`, `$7C15`, `$7C54`) adds B and every (C + 1)-th byte of `$4000-$FFFF` to A and writes C at RET the same way.
 3. FinalSum `$7CA6`: a 16-bit sum of `$4000-$FFFF` is the key of the last layer, which decrypts `$7D00-$FD19` a word
    at a time: H = L, HL += BC (C = `$29`, B the last plain high byte), plain low = cipher XOR L, L = plain low,
    plain high = cipher XOR H. The last word, `$FD18`, gives the jump: `JP (HL)` to `$FD18`'s word + `$7A3D` = `$FD00`.

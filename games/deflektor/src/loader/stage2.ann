@@ -105,7 +105,7 @@ $B87A c CountdownTick ; One second less: Countdown - 1 in ASCII digits, shown at
 > Called by HookWork when TickHooks reaches 0 (EXX: the loader's HL, DE and B kept in the other set).
 > The three digits from the last: `SBC A,0` with the borrow, `DAA`, below `$30` a borrow on and `SET 4,A` ('0' - 1 gives '9'). A borrow out of the first digit (past 000): LoadFlags bit 0 off, the marker bit set at bit 7, one pair (CountdownWait). Else the digits are printed at CountdownAt (`$5AC1`) with CountdownPair's B (CountdownAttr `$57`), each after one long pair (EdgeNoDelay, EdgeWait; `RL L` with bit 0 of C, the level byte, as the carry: its value does not matter, the marker set at bit 4 leaves after 4 pairs whatever comes in): 4 pairs.
 > Out: A = 20 (TickHooks), B = LoadFlags. IgnoreCode `$B8DC` (the final `RET`) is also the control-code table's handler for the codes that do nothing.
-> c1: 294 ticks, 3475776 T apart (0.993 s), from 293 at 3.73 s to 000 at 293.70 s; the count never passed 000.
+> c1: 294 ticks, 3475776 T apart (0.993 s), from 293 at about 2.74 s to 000 at 293.70 s; the count never passed 000.
 > Witness: L1 294 (c1).
 $B87B ; the last digit first, with the borrow in
 $B881 CountdownDigit
