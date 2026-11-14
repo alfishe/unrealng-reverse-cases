@@ -29,13 +29,16 @@ code ([doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)). The l
 Loader]" in TOSEC) loads a second stage over its own end that runs as it arrives, then the game; a mover at `$5C00`,
 a decrypting stage at `$7B52` and a second mover at `$FD00` lead to the entry `$8382`.
 
-The original TZX does not load in unreal-ng. Its turbo block is the last block of the tape with pause 0; the loader
-waits for an edge after the last pulse, which never comes. In `work/stage1/probe/orig.log` (`work/stage1/probe_tape.py`,
-port base 37480, ROM timing) the load runs to IX = `$9DF0`, the tape ends near frame 15 640, the loader times out and
-jumps to `$0000`. The 10 Mega Games tape (`work/media/mega/mega-games-1.tzx`: the same three blocks byte for byte, the
-same timing, then a 16 561 ms pause and the next game) loads (`work/stage1/probe/mega.log`), and so does the TOSEC
-standard-timing dump (`work/stage1/probe/tosec.log`). `c1` loads the 10 Mega Games copy: the pulses the loader reads
-are the original's. The gap is in "For the lead (kit)", `work/stage1/NOTES.md`.
+The original TZX did not load in unreal-ng before commit `f13cee7da` (2026-11-13). Its turbo block is the last block
+of the tape with pause 0; the loader waits for the edge of the last pulse, which the player undid: it stopped the
+tape in the same step, and a stopped 48K reads the `#FE` bit 4 feedback, the level before the edge. In
+`work/stage1/probe/orig.log` (`work/stage1/probe_tape.py`, port base 37480, ROM timing) the load runs to IX = `$9DF0`,
+the tape ends near frame 15 640, the loader times out and jumps to `$0000`. The 10 Mega Games tape
+(`work/media/mega/mega-games-1.tzx`: the same three blocks byte for byte, the same timing, then a 16 561 ms pause and
+the next game) loads (`work/stage1/probe/mega.log`), and so does the TOSEC standard-timing dump
+(`work/stage1/probe/tosec.log`). `c1` loads the 10 Mega Games copy: the pulses the loader reads are the original's.
+Since `f13cee7da` an ended tape holds the level of its last edge and the original loads to the title and plays
+(`work/stage1/probe/fixed/screens.png`, [doc 3, 3.7](docs/03-build-and-load.md#37-why-the-original-tzx-did-not-load-in-unreal-ng-fixed-in-f13cee7da)).
 
 Other sources: the RZX archive's `deflektor.rzx` (Roman Rugalenko, recorded with rollback; someone else's run through
 all 60 levels), ZXDB's instructions, map and POKE file (`work/candidates/zxdb-*`). No SkoolKit disassembly exists on
@@ -120,7 +123,7 @@ level set-up `$84CD` writes the level's energy rate from the table `$8385` into 
 
 | Gap | Fix | unreal-ng commit |
 | --- | --- | --- |
-| A TZX turbo block that is the last on the tape with pause 0 gives no final edge: `orig/Deflektor.tzx` loads to IX = `$9DF0` and the loader jumps to `$0000` (WALKTHROUGH 0) | none yet: `c1` loads the 10 Mega Games copy (the same blocks and timing); reported in `work/stage1/NOTES.md` "For the lead (kit)" | - |
+| A TZX turbo block that is the last on the tape with pause 0 gives no final edge: `orig/Deflektor.tzx` loads to IX = `$9DF0` and the loader jumps to `$0000` (WALKTHROUGH 0) | an ended tape holds the level of its last edge (`Tape::handlePortIn`); the original loads to the title and plays. `c1` stays on the 10 Mega Games copy (recorded before the fix) | `f13cee7da` (master `36d3b7675`) |
 
 ## 6. The game
 

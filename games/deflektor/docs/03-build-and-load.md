@@ -5,7 +5,7 @@ first stage; the turbo block's byte code (8 bits, an invert flag and padding pai
 its own end and runs a script and a countdown while the game loads, and the script's codes; the block head that finds
 its own address; ChainFill, the cipher of 30 layers (18 decipher, 12 only sum) and the 16-bit layer that turn the loaded bytes into the game at
 `$6000-$DFFF`; the build from the sources back to the same tape; why the original TZX
-does not load in unreal-ng; the releases.
+did not load in unreal-ng before `f13cee7da`; the releases.
 
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
 
@@ -826,21 +826,29 @@ the script engine's runs of ones ending in a 0. A changed script or game changes
 direction is the chain applied backwards with the keys of `src/head/keys.txt`; `tools/cipher.py check` loads the
 built tape in the simulator and checks that `$6000-$DFFF` at the entry is the game.
 
-## 3.7 Why the original TZX does not load in unreal-ng
+## 3.7 Why the original TZX did not load in unreal-ng (fixed in `f13cee7da`)
 
 The turbo block is the tape's last block, with a pause of 0 ms, and its last byte uses 3 bits. The loader, after its
-last bit, waits for one more edge to time the bit's second half. In a TZX player that stops at the last pulse that
-edge never comes: the load times out at IX = `$9DF0`, about frame 15 640, and the loader jumps to `$0000` (a reset).
-`work/stage1/probe/orig.log` shows it. A real tape gives the edge (the signal falls back to silence), and so does
-SkoolKit's simulator, which loads the original. The 10 Mega Games copy has the same three blocks, then a pause of
-16 561 ms: the pause gives the edge, and it loads. `c1` uses it. The gap is listed for unreal-ng in `R/TODO.md`.
+last bit, waits for one more edge to time the bit's second half. That edge is the last pulse of the tape: unreal-ng's
+player toggled the level and stopped playback in the same step, before the loader's next `IN`, and a stopped tape
+read the board's idle EAR level, on the 48K bit 4 of the last `#FE` write fed back. That level was the one before the
+edge, so the edge was undone: the load timed out at IX = `$9DF0`, about frame 15 640, and the loader jumped to `$0000`
+(a reset). `work/stage1/probe/orig.log` shows it. A real tape keeps the edge (the signal falls back to silence after
+it), and so does SkoolKit's simulator, which loads the original. The 10 Mega Games copy has the same three blocks,
+then a pause of 16 561 ms: the pause holds the level, and it loaded even then.
+
+unreal-ng commit `f13cee7da` (on master as `36d3b7675`, 2026-11-13) makes a tape that ran out hold the level of its
+last edge (`Tape::handlePortIn`, the unit test `TapePosition_Test.EndedTapeHoldsLastEdgeLevel`). With it the original
+TZX loads on the 48K at ROM timing to the title and the options panel and plays (`re_session.py capture --record-load
+--frames 20000`, port base 37540; the screens in `work/stage1/probe/fixed/screens.png`). `c1` was recorded before the
+fix and stays on the 10 Mega Games copy: the pulses the loader reads are the original's, byte for byte.
 
 ## 3.8 The releases
 
 | Copy | What differs from `orig/Deflektor.tzx` | Loads in unreal-ng |
 | --- | --- | --- |
-| ZXDB Gremlin tape (`orig/`) | the reference | no (3.7) |
-| 10 Mega Games Volume One | the same three blocks byte for byte, a 16 561 ms pause after | yes: `c1` |
+| ZXDB Gremlin tape (`orig/`) | the reference | yes since `f13cee7da` (3.7) |
+| 10 Mega Games Volume One | the same three blocks byte for byte, a 16 561 ms pause after | yes: `c1` (recorded before the fix) |
 | TOSEC 2020 TZX and TAP | the turbo block's last byte only (the unused bits), written at standard timing | yes |
 | Erbe (Spain) | the same header and BASIC; the turbo block differs in 32 bytes from offset 306 | not tried |
 | ZXDB TAP (a re-save) | a packed 23 266-byte DEFL.CDE at `$6000` | not tried |

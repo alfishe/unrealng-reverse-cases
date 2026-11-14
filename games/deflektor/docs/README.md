@@ -4,7 +4,7 @@
 | --- | --- |
 | [1. Game design](01-game-design.md) | the game as a player meets it: the screens, the elements, the rules, the 60 levels and how one is solved, the modes |
 | [2. Architecture](02-architecture.md) | the 48K machine and the frame budget, the memory map and heatmap, power-on to play, the interrupt and the pass, the modules |
-| [3. Build and load](03-build-and-load.md) | the tape block by block, the two loader stages, the cipher, the build that rebuilds the TZX byte for byte, why the original TZX does not load |
+| [3. Build and load](03-build-and-load.md) | the tape block by block, the two loader stages, the cipher, the build that rebuilds the TZX byte for byte, why the original TZX did not load before unreal-ng `f13cee7da` |
 | [4. Game loop](04-game-loop.md) | the states, one pass of MainLoop animated, the trace as the heaviest work, the pass against the raster, the interrupt, timing |
 | [5. Controls](05-controls.md) | the options panel, the four control methods, the cursor and the mirror turn, practice, pause and abort, the dormant cheat |
 | [6. Rendering](06-rendering.md) | the play area's buffers, a cell to four characters, the draw marks, CopyPlayArea, the beam's glyphs, the raster, the wipes |
