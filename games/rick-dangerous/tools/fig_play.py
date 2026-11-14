@@ -32,7 +32,7 @@ BG, TEXT, DIM, GRID = (24, 24, 30), (235, 235, 235), (170, 170, 180), (60, 60, 7
 PROPS = {0x00: ('nothing', (60, 60, 75)), 0x02: ('ladder (bit 1)', (60, 200, 60)),
          0x04: ('deadly (bit 2)', (230, 50, 50)), 0x08: ('in front (bit 3)', (90, 120, 220)),
          0x10: ('platform (bit 4)', (230, 200, 40)), 0x60: ('spring + wall (bits 5, 6)', (230, 90, 230)),
-         0x40: ('wall (bit 6)', (150, 150, 150)), 0x80: ('floor (bit 7)', (240, 140, 40))}
+         0x40: ('wall (bit 6)', (150, 150, 150)), 0x80: ('floor, ladder top (bit 7)', (240, 140, 40))}
 
 
 def load():
@@ -151,7 +151,7 @@ def cmd_course(js, png):
     zones = {0xD55C + 7 * i: n for i, n in enumerate(
         [f'L1Z{k}' for k in range(1, 7)] + [f'L2Z{k}' for k in range(1, 8)] + [f'L3Z{k}' for k in range(1, 13)]
         + [f'L4Z{k}' for k in range(1, 10)])}
-    W, H = 1050, 660
+    W, H = 1050, 680
     out = Image.new('RGB', (W, H), BG)
     d = ImageDraw.Draw(out)
     d.text((12, 10), f'The course of a game: {os.path.basename(js).replace("course-", "").replace(".json", "")}, '
@@ -197,8 +197,9 @@ def cmd_course(js, png):
     for f in range(0, f1 + 1, 500):
         d.line((X(f), y - 14, X(f), y - 8), fill=DIM)
         d.text((X(f) - 14, y - 6), f'{f}', fill=DIM, font=K.font(12))
-    d.text((x0, y + 14), 'Dark red: Rick dying ($FD68 set). Green: Rick\'s zone (gaps: no game in play). Values above '
-           'the top are drawn at it.', fill=DIM, font=K.font(14))
+    d.text((x0, y + 14), 'Dark red: Rick dying ($FD68 set). Green: Rick\'s zone (gaps: no game in play).', fill=DIM,
+           font=K.font(14))
+    d.text((x0, y + 32), 'Values above the top are drawn at it.', fill=DIM, font=K.font(14))
     out.save(png)
     print(png, out.size)
 

@@ -3,8 +3,8 @@
 ;
 ; Rick Dangerous has four levels of 6, 7, 12 and 9 zones (34). A zone is a vertical strip of map rows; the player
 ; scrolls up and down inside it and leaves by its left or right edge into another zone (Exits). The level table at
-; $E4AE (11 bytes a level) points at the level's first zone (bytes 8-9) and gives the starting map row (byte 10);
-; $AC83 enters a zone.
+; $E4AE (11 bytes a level) points at the level's first zone (bytes 8-9) and gives the first view row, ViewTopRow $ADB7
+; (byte 10); $AC83 enters a zone.
 ;
 ; All of it is editable text in src/res/levels/ (tools/res_levels.py: one file a level, plus the tiles, the object
 ; kinds and the animation and movement lists); src/res/levels/README.md lists the files, addresses and readers.
@@ -149,10 +149,11 @@ Level4Exits:
 ; SpawnObjects $FD7D (D = the first map row, E = the rows) starts at the first
 ; record whose +0 is D or more and spawns while +0 < D + E. +0 the map char row
 ; (bits 3-7) ; +1 the kind (ObjectKinds; bit 7 set: taken, never spawned again;
-; NewGame $E2DC clears bit 7 of all 365 records from $D7FD); +2 flags (bit 1:
-; the one special slot $EA8E, bit 2: slot +0 bit 7, the whole byte to slot
-; +$0B); +3 the x (bits 3-7) and a row offset (bits 0-2); +4 a second x (bits
-; 3-7) and row offset (bits 0-2), slot +$0C/+$1D.
+; NewGame $E2DC clears bit 7 in 365 five-byte groups from $D7FD: the 331
+; records and the 34 zone terminators); +2 flags (bit 1: the one special slot
+; $EA8E, bit 2: slot +0 bit 7, the whole byte to slot +$0B); +3 the x (bits
+; 3-7) and a row offset (bits 0-2); +4 a second x (bits 3-7) and row offset
+; (bits 0-2), slot +$0C/+$1D.
 ;
 ; Each list ends with $FF and the 4 bytes "term", a 5-byte record of its own:
 ; the RES 7 loop steps over it.

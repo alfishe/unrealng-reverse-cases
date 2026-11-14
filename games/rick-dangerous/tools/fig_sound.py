@@ -48,7 +48,7 @@ CH = [(250, 110, 90), (110, 220, 120), (110, 150, 250)]
 TUNE_NAMES = {0: 'a level\'s intro', 1: 'level 1 done', 2: 'level 2 done', 3: 'level 3 done', 4: 'level 4 done',
               5: 'the menu', 6: 'GAME OVER', 7: 'the bonus collected'}
 EFFECT_NAMES = {0: 'a shot', 1: 'no bullets', 2: 'the dynamite\'s bang', 3: 'a trap set off, a poke',
-                4: 'a footstep', 5: 'no call site', 6: 'head against a ceiling', 7: 'no call site',
+                4: 'a footstep', 5: 'no call site', 6: 'a jump, a ceiling bump', 7: 'no call site',
                 8: 'ammunition picked up', 9: 'a treasure', 10: 'the bonus count starts',
                 11: 'Rick dies, an enemy hit'}
 NOTES = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-']
@@ -315,7 +315,7 @@ def cmd_beeper(png):
     """The 48K's six beeper patterns: each half period (E) against time"""
     W = 1050
     effects = [(0, 'effect 0: the chirp'), (2, 'effect 2: the warble'), (6, 'effect 6: the steps down'),
-               (11, 'effect 11: the falling note'), (4, 'effect 4: one click'), (1, 'others (1, 3, 5, 7-10): the sweep')]
+               (11, 'effect 11: the falling note'), (4, 'effect 4: one click'), (1, 'effect 1 (3, 5, 7-10): the sweep')]
     cw, chh = (W - 30) // 3, 200
     H = 90 + 2 * (chh + 24)
     img = Image.new('RGB', (W, H), BG)

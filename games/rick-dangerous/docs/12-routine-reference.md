@@ -502,7 +502,7 @@ Witness: L1 0 ().
 
 **Draw every flagged cell with its attribute, keeping the HUD row's flags**
 
-Saves the sentinel byte `$6F00` (into RedrawSentinel) and the 32 flags `$6C21-$6C40` of the HUD row (into SavedHudCells), calls DrawAllDirtyCells, then puts both back.
+Saves the sentinel byte `$6F00` (into RedrawSentinel) and the 30 flags `$6C21-$6C3E` of the HUD row (into SavedHudCells, 30 LDIs each way), calls DrawAllDirtyCells, then puts both back.
 
 Callers: LoadScreen (`$ACFA`), the level's end (`$ABE8`) and each scroll step (`$ADD8`, `$AE0F`). Output: everything.
 
@@ -1088,7 +1088,7 @@ Witness: L1 134127 (beeper48, c1, controls, gameover, level1-level4).
 | --- | --- |
 | Runs | not reached in `stage2/c1g`; in the other recordings run into, not called (`stage1/level3`, `stage1/level2`, `stage1/level4`) |
 | Calls | `StartPressed`, `LoadScreen` |
-| Reads | `$A958` (`Lives`); `$E410` (`MainLoopHalt+1`); `$E4B3`-`$E4B8` (`LevelRickX`, `LevelRickY`, `LevelZone`, `LevelZoneCount`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
+| Reads | `$A958` (`Lives`); `$E410` (`MainLoopHalt+1`); `$E4B3`-`$E4B8` (`LevelRickX`, `LevelRickY`, `LevelZone`, `LevelViewTop`); `$EAAE`-`$EAAF` (`RickY`); `$FD61`-`$FD69` (`ZoneChange`, `ExitSide`, `Poking`, `PokeX` and 4 more) |
 | Writes | `$A237` (`FrameTicks`); `$A958`-`$A976` (`Lives`, `DrawDynamite`, `Dynamite`, `DrawBullets` and 1 more); `$EAAC`-`$EAB4` (`RickObject`, `RickX`, `RickY`, `RickMirror` and 2 more); `$FD68`-`$FD69` (`Dying`, `DeathDone`) |
 
 ### `SpawnObjects` (`$FD7D`)
@@ -1413,7 +1413,7 @@ Witness: L1 14644 (c1, L1Z3, L1Z4, L2Z5, L2Z6, L3Z2-L3Z4, L3Z6-L3Z9, L3Z11, L3Z1
 
 **An enemy: fall and walk, die by the bullet or blast, stunned by the stick**
 
-EnemyFall `$F02F`; `$F812` Z kills it (KillEnemy `$F17C`). The bullet (the point BulletX, + `$18` when BulletDx is positive, and BulletY, `$F742`) kills it and is used up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at `$FD64` / `$FD65`) stuns it: +29 = 20 passes.
+The patrollers and trackers (kinds 4, 5, 7, 8, 10, 11, 13, 14); the climbers run ClimberObj `$F233`. EnemyFall `$F02F`; `$F812` (HitsObstacle: object 0 or a deadly actor) Z kills it (KillEnemy `$F17C`). The bullet (the point BulletX, + `$18` when BulletDx is positive, and BulletY, `$F742`) kills it and is used up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at `$FD64` / `$FD65`) stuns it: +29 = 20 passes.
 
 Witness: L1 39975 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2, L2Z4-L2Z7, L3Z2-L3Z12, L4Z1-L4Z9, level1, level2, level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 
@@ -1816,9 +1816,9 @@ Witness: L1 718 (c1, L1Z4, L2Z1, L3Z x7, L4Z3-L4Z6, L4Z9, level1, level2, level4
 
 **Z when the IX object lies inside the dynamite's blast box**
 
-The blast box: X from dynamite X (`$EAE9`) - 4 to + 32 (clamped to 0 and `$FF`), Y from dynamite Y (`$EAEA`) - 4
+The blast box: X from dynamite X (`$EAE9`) - 4 to that + 32, x + 28 (clamped to 0 and `$FF`), Y from dynamite Y (`$EAEA`) - 4
 
-(clamped to 0) to + 29. The object's box: IX+1 / +7, IX+2/+3 / +8.
+(clamped to 0) to that + 29, y + 25: 33 x 30 pixels. The object's box: IX+1 / +7, IX+2/+3 / +8.
 
 Outputs: Z/NZ, A = 0 / 1. Uses BC, DE, HL.
 

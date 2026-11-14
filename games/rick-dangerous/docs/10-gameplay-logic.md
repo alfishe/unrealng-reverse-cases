@@ -49,7 +49,7 @@ How to read it:
 | 4 | `$10` | platform: stops a fall only | 182-189 | 207-215 |
 | 5, 6 | `$60` | spring (and a wall) | 190-192 | 216 |
 | 6 | `$40` | wall | 193-251 | 217-249 |
-| 7 | `$80` | floor | 252-255 | 250-255 |
+| 7 | `$80` | floor, also a ladder's top: stops a fall, climbable down | 252-255 | 250-255 |
 
 ```text
 BuildCharProps(DE = the pairs):
@@ -78,7 +78,9 @@ F6CE 04 80       DEFB $04,$80           ; 4 x floor
 ```
 
 ProbeBox `$F5D5` ORs the properties of the chars under Rick's box into ProbeResult `$F6A8`. It counts ladders only
-under the middle column, and floor or platform only on the bottom row.
+under the middle column, and floor or platform only on the bottom row. It also sets bit 6 (wall) when the box
+overlaps object 0 (ProbeBoxObject0 `$F624`), so a solid object 0 stops Rick like a wall. The overlap itself
+(`$F64E`) ran once, in `level2`; the test (`$F643`) ran in `level2` and `level3`.
 
 ```mermaid
 flowchart TD
@@ -114,9 +116,35 @@ so every "a pass" below is 25 times a second.
 | jump | up, on a floor | y speed `$FA80` (-5.5 pixels a pass), effect 6 | Jump `$FAD3` |
 | fall | no floor | y speed + `$80` (0.5) a pass, at most `$0800` (8 pixels a pass) | MoveRickGravity `$F8EC` |
 | climb | up or down on a ladder | 2 pixels a pass; sideways 2 off the ladder | ClimbRick `$FB14` |
-| crawl | down, on a floor | the box 8 pixels lower; walks at 2 pixels a pass | SetCrawl `$FB0E` |
-| spring | land on a spring | bounce: up held `$F800` (-8 pixels a pass), else 254 - the speed | LandRick `$F9AC`, `$F9B2` |
+| down at a ladder top | down, on `$80` chars, left and right not held, x AND `$1F` < `$0A` | x snaps to (x AND `$F0`) + 4, Climbing `$FD59` = `$FF`: he climbs down (ClimbRick treats bits 1 and 7 alike, `$FB69` AND `$82`) | DownFloorTest `$FAE6`, the snap `$FAFC` (`level1`, `level3`) |
+| crawl | down, on a floor (not a ladder top) | the box 8 pixels lower; walks at 2 pixels a pass | SetCrawl `$FB0E` |
+| spring | land on a spring at 2 pixels a pass or more (slower: he stands on it) | bounce: up held `$F800` (-8 pixels a pass), else 254 - the speed | LandRick `$F9AC`, `$F9B2` |
 | leave the zone | walk past x 0 or `$E7` | x becomes `$E4` or `$02`, the exit is looked up | ExitLeft `$FBCF`, ExitRight `$FBDE` |
+
+**Down at a ladder top.** The `$80` chars are both a floor and the head of a ladder. With down held on the floor,
+DownFloorTest decides between crawling and climbing down:
+
+```text
+FAE6 CB 79       BIT 7,C                ; a $80 char under Rick?
+FAE8 CA 0C FB    JP Z,StartCrawl
+FAEB E6 03       AND $03                ; left and right not held
+FAED FE 03       CP $03
+FAEF C2 0C FB    JP NZ,StartCrawl
+FAF2 DD 7E 01    LD A,(IX+$01)
+FAF5 E6 1F       AND $1F                ; x AND $1F < 10?
+FAF7 FE 0A       CP $0A
+FAF9 D2 0C FB    JP NC,StartCrawl
+FAFC DD 7E 01    LD A,(IX+$01)          ; the snap
+FAFF E6 F0       AND $F0
+FB01 F6 04       OR $04
+FB03 DD 77 01    LD (IX+$01),A
+FB06 3E FF       LD A,$FF
+FB08 32 59 FD    LD (Climbing),A
+```
+
+Worked example: Rick at x `$86` = 134: `$86` AND `$1F` = 6 < 10, so x becomes `$80` + 4 = `$84` = 132 and he
+climbs down from the next pass. At x `$8E` (`$0E` = 14) he crawls instead. Witness: the snap `$FAFC` ran in `level1`
+and `level3`.
 
 ```text
 MoveRick (once a pass):
@@ -126,6 +154,9 @@ MoveRick (once a pass):
     y' = y + speed (8.8)
     probe Rick's box at y' (low box when crawling)
     if a solid char (falling: bits 4-7, rising: bits 5-7): LandRick   # floor, ceiling, spring, then fire / jump
+        # LandRick's controls, down held on the floor (DownFloorTest $FAE6):
+        #   a $80 char under him, left and right not held, x AND $1F < $0A: x = (x AND $F0) + 4, climbing = on
+        #   else: crawl
     else:
         airborne; if deadly: KillRick
         y = y'
@@ -178,7 +209,8 @@ stateDiagram-v2
     Standing --> Climbing: up or down on a ladder
     Airborne --> Climbing: a ladder with up or down
     Climbing --> Airborne: off the ladder (a hop with up)
-    Standing --> Crawling: down
+    Standing --> Climbing: down on a ladder top (x snapped, DownFloorTest FAE6)
+    Standing --> Crawling: down, not at a ladder top
     Crawling --> Standing: no low ceiling and not down
     Standing --> Dying: KillRick
     Walking --> Dying: KillRick
@@ -216,13 +248,15 @@ The values change every second frame: one pass is 2 frames. The first two steps 
 
 ![MoveRick: a jump with up held](img/play/jump.gif)
 
-*`c1` 30 984 to 31 000, 64 pictures. Made with `python3 ../../kit/routine_anim.py --work work/docs/rdA/c1 --listing
+*`c1` 30 984 to 31 000, 64 pictures: the take-off, 8 of the jump's 23 passes (the apex and the landing are in
+jump-arc.png above). Made with `python3 ../../kit/routine_anim.py --work work/docs/rdA/c1 --listing
 build/game.lst --page 1=build/music.lst --page-name 1="the AY player" --window 30984:0-31000:0 --view screen --range
 5B00-FFFF --pictures 64 --out docs/img/play/jump.gif`.*
 
 How to read it:
 
-- The screen shows Rick leave the floor; the listing follows MoveRick and LandRick.
+- The screen shows Rick leave the floor and rise: the take-off only. The listing shows the routine running at each
+  picture: MoveRick in the passes, and DrawDirtyCells and WaitFramesLoop between them (the first and last pictures).
 - The memory strip shows the writes each pass to Rick's slot at `$EAAC` and to the speed at `$FD55-$FD57`.
 
 Witness: Jump `$FAD3` runs in every game recording (`c1` at 30 984, 31 122, 31 389, 31 439, 32 088, 32 478). The
@@ -310,8 +344,7 @@ How to read it:
 away.
 
 Witness: FireShoot in `c1` 4 times, `level1` 6, `level2` 4, `level3` 7, `level4` 2. The click of an empty gun
-(`$FA45`) is not executed in any recording (`c1`, `controls`, `gameover`, `level1`-`level4`, the zone and spot
-recordings, `ending2`, `beeper48`).
+(`$FA45`) runs only in `emptygun` (a patch on a clone), at frames 500 and 580; no plain recording reaches it.
 
 **The point**: six shots a life, one at a time. The gun is a resource, not a weapon of choice: NewLife gives back 6,
 so the player who dies keeps fighting at full ammunition.
@@ -330,7 +363,7 @@ DynamiteObj (each pass):
     fuse = 0: the slot and BlastOn cleared
     fuse >= 20: the burning stick (mirrored every other pass); at 20: effect 2, the bang
     fuse < 20: the blast: BlastX = x + 12, BlastY = y + 10, BlastOn = $FF, frame BlastFrames[fuse / 4]
-               fuse >= 4 and Rick in the blast box (36 x 33 from x - 4, y - 4): KillRick
+               fuse >= 4 and Rick in the blast box (33 x 30 from x - 4, y - 4): KillRick
 the stick (fire + left or right):
     Poking $FD63 = $FF; the point PokeX = x + $17 (right) or x (left), PokeY = y + 14
     effect 3 once a press
@@ -389,7 +422,7 @@ stateDiagram-v2
 How to read it:
 
 - At the start Rick drops the stick and walks on; the burning stick blinks (the mirror flips every pass).
-- The blast grows and shrinks over 20 passes, through the five BlastFrames.
+- The blast grows and shrinks over 19 passes (fuse 19 to 1), through the five BlastFrames.
 - Rick has walked back into it: he hops up and falls through the floor, dead.
 
 **Worked example.** The drop runs at `L1Z1` frame 10:32 603: the fuse is 50. The bang (effect 2 at `$EC93`) comes
@@ -402,12 +435,14 @@ flag bit 6 is set off. Witness: the poke (`$F9DC`) runs in `controls` 9 times, `
 `level2` (1) and `level3` (6).
 
 **The point**: the dynamite is the only weapon that kills everything, Rick included. The fuse gives him 30 passes,
-1.2 seconds, to walk 60 pixels away; the blast box reaches 36 pixels around the stick.
+1.2 seconds, to walk 60 pixels away; the blast box reaches about 30 pixels around the stick
+(x - 4 to x + 28, y - 4 to y + 25).
 
 ## 10.5 Enemies
 
-Twelve enemy kinds share one routine, EnemyCommon `$EFDB`. They differ by their graphic (one per level, the last
-shared by levels 3 and 4) and by one of three behaviours:
+Twelve enemy kinds, in three behaviours. Eight of them (the patrollers and the trackers) share one routine,
+EnemyCommon `$EFDB`; the four climbers run ClimberObj `$F233`, with the same tests in another order. They differ by
+their graphic (one per level, the last shared by levels 3 and 4) and by the behaviour:
 
 | Kinds | Handler | Behaviour | Graphic |
 | --- | --- | --- | --- |
@@ -416,17 +451,25 @@ shared by levels 3 and 4) and by one of three behaviours:
 | 6, 9, 12, 15 | ClimberObj `$F233` | falls, and on a ladder above Rick climbs towards him | 10-15: frame 27 (`$914B`), levels 3-4 |
 
 ```text
-EnemyCommon (IX = an enemy):
+EnemyCommon (IX = a patroller or a tracker):
+    EnemyFall $F02F:
+        fall: y += the speed (+`$80` a pass up to `$0800`); y >= $12D: gone
+            a deadly char under it: KillEnemy; falling onto Rick: KillRick
+        on a floor: y = 8n + 3; frame = base + EnemyWalkFrames[x bits 2-3]
+            stunned: count down; touching Rick still kills him
+            else x += step (2 or -2) within 0-$E7; turn at a wall or a ledge, after +12 / 2 steps,
+                 or (a tracker) towards RickX when x AND $1E = $10
+            touching Rick: KillRick
+    if it overlaps object 0 or a deadly actor of the slots from $EB06 (HitsObstacle $F812): KillEnemy
     if hit by the bullet ($F742 at the bullet's point): KillEnemy; the bullet is used up
     if in the blast ($F76F): KillEnemy
     if the stick's point inside it: stunned for 20 passes (+29)
-    fall: y += the speed (+`$80` a pass up to `$0800`); y >= $12D: gone
-        a deadly char under it: KillEnemy; falling onto Rick: KillRick
-    on a floor: y = 8n + 3; frame = base + EnemyWalkFrames[x bits 2-3]
-        stunned: count down; touching Rick still kills him
-        else x += step (2 or -2) within 0-$E7; turn at a wall or a ledge, after +12 / 2 steps,
-             or (a tracker) towards RickX when x AND $1E = $10
-        touching Rick: KillRick
+ClimberObj $F233 (IX = a climber):
+    ClimberMove $F266: in the blast: KillEnemy; the stick: stunned (+29 = 20); stunned: count down and stay;
+                       +24 = 0: ClimberFall $F362; else climb 2 pixels towards Rick, or step towards RickX
+    touching Rick: KillRick
+    HitsObstacle $F812: KillEnemy
+    hit by the bullet: KillEnemy; the bullet is used up
 KillEnemy $F17C:
     effect 11, type $47 (DyingEnemyObj), y speed $FC00, score + 50, the drift 3 or -3, one-shot: record taken
 ```
@@ -435,18 +478,22 @@ KillEnemy $F17C:
 EFCF AF          XOR A                  ; PatrolObj
 EFD0 32 73 F1    LD (TracksRick),A
 EFD3 C3 DB EF    JP EnemyCommon
-EFD6 3E FF       LD A,$FF               ; TrackerObj
+EFD6 F6 FF       OR $FF                 ; TrackerObj
 EFD8 32 73 F1    LD (TracksRick),A
+EFDB CD 2F F0    CALL EnemyFall         ; EnemyCommon: fall or walk first
+EFDE CD 12 F8    CALL HitsObstacle      ; object 0 or a deadly actor
+EFE1 CA 7C F1    JP Z,KillEnemy
+...
+F233 CD 66 F2    CALL ClimberMove       ; ClimberObj: blast, stick, climb or fall
+F236 CD E0 F6    CALL RickTouches
+F239 CC ED FB    CALL Z,KillRick
+F23C CD 12 F8    CALL HitsObstacle
+F23F CA 7C F1    JP Z,KillEnemy
 ```
 
 ```mermaid
 flowchart TD
-    E[EnemyCommon] --> H{bullet or blast?}
-    H -->|yes| K[KillEnemy F17C: effect 11, 50 points, tumbles out]
-    H -->|no| S{stick?}
-    S -->|yes| ST[stunned 20 passes]
-    S -->|no| F{on a floor?}
-    ST --> F
+    E[EnemyCommon EFDB] --> F{on a floor?}
     F -->|no| FA[fall; deadly char: killed; onto Rick: Rick dies]
     F -->|yes| W{stunned?}
     W -->|yes| C[count down]
@@ -457,12 +504,23 @@ flowchart TD
     TU --> R
     C --> R
     R -->|yes| KR[KillRick]
+    R -->|no| O
+    KR --> O
+    FA --> O{object 0 or a deadly actor? HitsObstacle F812}
+    O -->|yes| K[KillEnemy F17C: effect 11, 50 points, tumbles out]
+    O -->|no| H{bullet or blast?}
+    H -->|yes| K
+    H -->|no| S{stick?}
+    S -->|yes| ST[stunned 20 passes]
 ```
+
+The climbers (ClimberObj `$F233`) run the blast and the stick first, then the climb or the fall, then the touch on
+Rick, HitsObstacle and the bullet.
 
 **Worked example.** Slot 10 at `c1` 31 500 ([doc 7, 7.3](07-objects.md#73-the-object-table-ea8e)): kind 4, x 140,
 walk step -2, frame 25. Its base is frame 23; x = 140 = `%10001100`, bits 2-3 = 3, so the walk frame is base + the
 table's entry for 3. Each pass x goes 138, 136, ... until a wall or the patrol count turns it. Killed, it becomes type
-`$47`, flies up at 4 pixels a pass, drifts 3 pixels a pass away from the middle and leaves the zone at the bottom.
+`$47`, flies up at 4 pixels a pass, drifts 3 pixels a pass towards the middle (+3 when x < `$80`, else -3, KillEnemyDrift `$F1A3`) and leaves the zone at the bottom.
 
 Witness: KillEnemy runs in `c1` 5 times (31 038, 31 337, 31 611, 31 737, 32 326), `level1` 5, `level2` 4, `level4` 2.
 PatrolObj runs 693 times in `c1`, TrackerObj 178, ClimberObj's climb only in `level4` (869). Every enemy kind is
@@ -491,6 +549,10 @@ The trigger, the danger and the path are all data. The flags each kind carries i
 | 28, 44, 46, 54, 55, 58, 67, 68 | 1-4 | the blast | 28, 44, 55, 58, 67, 68 | 1-37 steps | blocks, a brick wall, a rock heap, a pillar (55: level 4's door), a cart, flashes (67 / 68: the door's debris) |
 | 50, 53, 66 | 3 | the stick, the bullet, the blast, or Rick | yes | 1-2 steps | a round grid, a dog's head |
 | 56 | 3, 4 | Rick, the bullet or the blast | no | 7 steps down | a helmeted head |
+| 24, 31 | 2 | Rick | always; object 0 (flag bit 1), a solid block | down 48 (24) or 32 (31) pixels, a wait, back up | a block (frame 32) |
+| 35 | 2 | Rick | always; object 0 | after 35 passes, 70 passes x 8 pixels down | a block (frame 32) |
+| 51, 61 | 3 | Rick | while it moves | 128 passes x 3 pixels, right (51) or left (61) | as kind 50 (frame 45) |
+| 52 | 3 | the stick | always | 32 pixels up, a wait, 32 down | as kinds 45 and 49 (frame 43) |
 
 The flags come from the object records of the four levels (`tools/res_levels.py`); the pictures are the kinds' first
 frames. The code knows only the numbers.

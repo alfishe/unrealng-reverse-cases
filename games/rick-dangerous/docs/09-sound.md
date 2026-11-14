@@ -92,10 +92,13 @@ MixerShadow `$C0AA` is register 7 as last written. While its six low bits are al
 **StartNote** `$C0E2` loads a channel from a 10-byte instrument, a period and a duration. It turns the channel's tone
 and/or noise on in MixerShadow and sets the phase to AttackStep.
 
-**AyTick** `$C46C` runs once an interrupt. It calls UpdateAy `$C19F`, which steps the three channels and writes AY
-registers 0-10. Then, while a tune plays (MusicOn `$C35A` not 0), it steps the three tracks with TrackStep `$C4B4`.
+**AyTick** `$C46C` runs once an interrupt. It calls UpdateAy `$C19F`, which returns at once while every channel is off
+(MixerShadow AND `$3F` = `$3F`); otherwise it steps the three channels and writes AY registers 7, 0-6 and 8-10.
+Then, while a tune plays (MusicOn `$C35A` not 0), it steps the three tracks with TrackStep `$C4B4`.
 
-The volume envelope is in software; the AY's own envelope is never used. ChannelStep `$C25B` counts the duration down,
+The volume envelope is in software; the AY's own envelope is never used. SilenceAll `$C15E`, called by AyPlayTune
+`$C3E4` before each tune, writes R11 = 1 and R12 = R13 = 0 (`$C17B-$C187`); no volume reaches bit 4 (the largest is
+127 / 8 = 15), so the envelope is never selected and R11 has no effect. ChannelStep `$C25B` counts the duration down,
 moves the vibrato, and jumps to the channel's phase routine:
 
 ```mermaid
@@ -193,7 +196,9 @@ a rest; `$7E` LO HI F is a period given directly (no tune uses it); `$FF` ends t
 **The periods.** The table is 2 000 000 / 16 / f of the equal-tempered scale: an Atari ST's YM2149 at 2 MHz. The
 Spectrum's AY runs at 1.7734 MHz, so every note sounds about two semitones lower than its name. Two entries carry a
 typo in bit 5 of the low byte: index 20 (G#2) is 1 236 (`$04D4`), not 1 204, and index 24 (C-3) is 988 (`$03DC`),
-not 956; those two notes are about half a semitone flat. The last entry, 84, is 24, not 30.
+not 956; those two notes are about half a semitone flat. The index 20 typo is heard: tune 0, the level intro, plays
+period 1 236 on channel B from frame 641 (about 13 s), and tune 2 on channel B from its first frame (the simulator,
+`fig_sound.ay_run`, tunes 0-7). No tune plays index 24. The last entry, 84, is 24, not 30.
 
 **Worked example: tune 0, pattern 0, by hand.** TuneTable's first entry gives channel A's order list at `$CABF`:
 
@@ -279,7 +284,10 @@ How to read it:
 - Beside the periods, the note they sound; beside the volumes, a bar.
 - Right, the three volumes over the interrupts so far.
 
-**The point**: AyTick writes registers 0-10 every interrupt, changed or not: 11 writes, about 4 000 T-states. The
+**The point**: while a channel sounds, AyTick writes registers 7, 0-6 and 8-10 every interrupt, changed or not: 11
+writes, about 4 000 T-states. With all channels off it writes nothing: of the 47 434 UpdateAy calls, 33 094 did the
+full update (SoundHookStart `$C345` ran 33 124 times, 30 of them from SilenceAll), and WriteAy ran 364 244 times, not
+11 x 47 434. The
 volume curve of each note (6, 5, 4, held) is the software envelope of 9.2.
 
 ## 9.5 The effects
@@ -350,7 +358,7 @@ a death) are long only because their decay is slow.
 | 3 | noise, a slide down | 20 | 2 438 | a trap set off `$EFCB`, a poke `$F9EF` | `level4` 62 | [effect3.wav](audio/effect3.wav) |
 | 4 | tone and noise, channel B | 7 | 2 260 | Rick's steps: crawl `$FCB8`, climb `$FD0D`, walk `$FD44` | `level3` 357 | [effect4.wav](audio/effect4.wav) |
 | 5 | noise | 13 | 2 260 | none | not executed in any recording | [effect5.wav](audio/effect5.wav) |
-| 6 | tone, a slide up after 4 frames | 20 | 2 393 | a head against a ceiling, `$F97D`, `$FADB` | `level2` 53, 67 | [effect6.wav](audio/effect6.wav) |
+| 6 | tone, a slide up after 4 frames | 20 | 2 393 | a jump `$FADB`, a head against a ceiling `$F97D` | `level2` 53, 67 | [effect6.wav](audio/effect6.wav) |
 | 7 | tone, a slide up after 3 frames | 55 | 2 393 | none | not executed in any recording | [effect7.mp3](audio/effect7.mp3) |
 | 8 | tone, a vibrato | 35 | 2 522 | ammunition picked up, `$ED76` | `L1Z4` once | [effect8.wav](audio/effect8.wav) |
 | 9 | tone, a vibrato | 67 | 2 522 | a treasure, `$EDEC` | `level1` 4 | [effect9.mp3](audio/effect9.mp3) |
@@ -379,8 +387,8 @@ The simulator's log of channel B gives 10, 8, 5, 3, 1, 1, 0: the staircase of th
 ## 9.6 The 48K beeper
 
 On a 48K, PlayEffect calls **BeeperEffect** `$A08E`. It plays square waves on port `$FE` bit 4 and does nothing else
-while it plays: the game stops for the effect's length. BeeperTone `$A0F6` is one wave: OUT `$10` (speaker high,
-border black), wait E loops, OUT `$00`, wait E loops. A wait of E loops is about 16 x E T-states.
+while it plays: the game stops for the effect's length. BeeperTone `$A0F6` is one wave: OUT L = `$00` (speaker low,
+border black), wait E loops, OUT H = `$10` (speaker high), wait E loops (BeeperEffect sets HL = `$1000`). A wait of E loops is about 16 x E T-states.
 
 Six patterns, chosen by the effect number:
 
@@ -388,10 +396,10 @@ Six patterns, chosen by the effect number:
 | --- | --- | --- | --- | --- | --- |
 | 0 | the chirp | 50 tones, E = 50 down to 1 (rising pitch) | 100 | 44 093 T, 0.62 frames | a shot |
 | 2 | the warble | E and E + 50 in turn, E from `$B0` by 2 until it wraps: 80 tones | 160 | 423 449 T, 5.97 frames | the bang |
-| 6 | the steps down | 30 tones from `$28`, E - 30, - 29, ... modulo 256 | 60 | 121 753 T, 1.72 frames | a head against a ceiling |
+| 6 | the steps down | 30 tones from `$28`, E - 30, - 29, ... modulo 256 | 60 | 121 753 T, 1.72 frames | a jump, a head against a ceiling |
 | 11 | the falling note | E = 1, 5, ... `$7D`: 32 tones | 63 | 67 263 T, 0.95 frames | Rick dies, an enemy hit |
 | 4 | one click | one tone, E = `$80` | 2 | 4 242 T, 0.06 frames | a footstep |
-| any other | the sweep | E = 1, 9, ... `$F9`, then one tone of E = 1 | 65 | 130 649 T, 1.84 frames | 1, 3, 8, 9, 10 |
+| any other | the sweep | E = 1, 9, ... `$F9`, then one tone of E = 1 | 65 for 1, 3, 9; 66 for 8, 10 | 130 649 T, 1.84 frames | 1, 3, 8, 9, 10 |
 
 ```mermaid
 flowchart TD
@@ -406,8 +414,8 @@ flowchart TD
 
 ```text
 BeeperTone(E):                         ; one square wave
-    OUT ($FE), $10;  wait E loops       ; speaker high
-    OUT ($FE), $00;  wait E loops       ; speaker low
+    OUT ($FE), $00;  wait E loops       ; L: speaker low
+    OUT ($FE), $10;  wait E loops       ; H: speaker high
 the sweep (A not 0, 2, 4, 6, 11):
     E = 1
     repeat: BeeperTone(E); E += 8  until E passes 255     ; 32 tones
@@ -416,12 +424,12 @@ the sweep (A not 0, 2, 4, 6, 11):
 
 ```asm
 BeeperTone:
-  OUT (C),L           ; speaker on ($10), border black
+  OUT (C),L           ; speaker low ($00), border black
   LD C,E
 BeeperWaitLow:
   DEC C
   JR NZ,BeeperWaitLow ; 16 T a loop
-  OUT (C),H           ; speaker off
+  OUT (C),H           ; speaker high ($10)
   LD C,E
 BeeperWaitHigh:
   DEC C
@@ -478,6 +486,6 @@ the falling note, the click and the sweep.
   (the block `$FA43-$FA48` runs 146 times, once a block of groups 2 and 3); in `c1g`, the game window, `$FA45` never
   runs.
 - **The beeper's first OUT** goes to port `$FE00` + the effect number, since C still holds it. For an odd effect
-  (11) the ULA ignores that half wave: 63 edges, not 64.
-- **The 48K beeper's "siren"**: the comment in the listing says it goes up and down. The down loop adds `$F8` to
-  E = 1, gets no carry and stops after one tone, so the sweep only rises.
+  (11, and 1, 3, 9 of the sweep) the ULA ignores that half wave: 63 edges, not 64, and 65 for the sweep, not 66.
+- **The 48K beeper's "siren"**: the code has a down loop after the rising one. It adds `$F8` to E = 1, gets no carry
+  and stops after one tone, so the sweep only rises (an earlier annotation called it up and down).

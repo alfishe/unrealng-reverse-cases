@@ -18,8 +18,9 @@ The recordings it rests on:
 | `c1g` | the game window of `c1`, from the entry | 14 390 | the interrupt counts |
 | `gameover` | `after128.szx`, no POKE | 3 000 | a natural GAME OVER (six deaths) |
 | `ending2` | a level 4 warp on a clone, the door opened by a patch | 2 000 | LevelEnd and the game complete |
+| `docs/integrate/l1end` | the L1Z6 zone warp on a clone, ZoneChange and ExitSide set by a patch | 2 500 | LevelEnd after level 1, tune 1, the next level's intro |
 | the zone recordings | warps on a clone (stage 2, POKE `58356,0`) | 2 000 each | the pass costs in other zones |
-| `beeper48` | a 48K state | 2 000 | the handler without music |
+| `beeper48` | a 48K state | 1 600 | the handler without music |
 
 Conventions:
 
@@ -81,7 +82,8 @@ stateDiagram-v2
 | StartLevel to NewLife | fire pressed, Lives not 0 | `JR NZ,NewLife` at the end of StartLevel | NewLife at 30506:58088 |
 | a pass to a scroll | Rick's y `$EAAE` >= `$CC` or < `$60`, not dying | `$E42B-$E43B` | ScrollViewDown at 30723:37282, 14 runs |
 | a pass to a zone change | ZoneChange `$FD61` set by Rick's exit | `$E3FD-$E403` | CheckScreenExit at 31172:34081, 32512, 32726 |
-| a zone change to LevelEnd | the exit's screen is `$FFFF` | CheckScreenExit | `ending2` (the only run of `$ABD8`) |
+| a zone change to LevelEnd | the exit's screen is `$FFFF` | CheckScreenExit | `l1end` (level 1) and `ending2` (level 4), the only runs of `$ABD8`; the ends of levels 2 and 3 are in no recording |
+| LevelEnd to the next level | levels 1-3 done | back to the pass with the next level's first zone | `l1end`: LevelEnd at frame 1, tune 1 at frame 9, Egypt's intro |
 | LevelEnd to GameOver | level 4 done | GameComplete = `$FF`, then `$E40A` | `ending2` |
 | a pass to NewLife | DeathDone `$FD69`, Lives - 1 not 0 | `$E3EB-$E3FB` | 32717:47142, 32825:34602 |
 | a pass to GameOver | DeathDone and the last life | `$E3F8` `JP Z,Quit` | `gameover`, `level1` |
@@ -193,12 +195,14 @@ IM 2 acknowledge adds 19 T before the first instruction.
 
 | Code | Why |
 | --- | --- |
-| MarkAllDirty `$A239` | it uses SP to fill the cell flags fast |
-| the sprite drawers (SpriteDrawAligned and SpriteDrawShifted in render.asm) | they use SP to read the sprite rows |
-| BuildScreenMap `$AD5A` | it uses SP to write the char map |
-| ClearOffscreenFlags `$AF18` | it uses SP to clear the flags |
-| PlayEffect `$9FED`, the AY player | paging: RAM 1 must stay in while it runs |
-| the handler itself | |
+| Start `$AB4D` and DetectPaging `$A043` | the set-up: interrupts stay off from the entry until SetUpInterrupts' `EI` |
+| SetUpInterrupts `$A215` | it builds the IM 2 table and sets `I` |
+| MarkAllDirty `$A239` | it uses SP to fill the cell flags fast (PUSH) |
+| the sprite drawers (SpriteDrawAligned and SpriteDrawShifted in render.asm) | they use SP to read the sprite rows (POP) |
+| BuildScreenMap `$AD5A` | it copies the tiles with `LDI` and the shadow registers; it only saves SP into its own code (`$ADB1`) and restores it, so nothing in it needs the `DI` |
+| ClearOffscreenFlags `$AF18` | it uses SP to clear the flags (PUSH) |
+| PlayEffect `$9FED`, StartTune `$A016` | paging: RAM 1 must stay in while the AY player runs |
+| the handler itself, with SoundTick `$A030` | |
 
 An interrupt that arrives in one of them waits. If the region outlasts the INT pulse (about 32 T), the interrupt is
 lost ([4.6](#46-lost-interrupts-and-the-3-frame-pass)).
@@ -327,9 +331,14 @@ How to read it:
 | ---: | ---: | --- |
 | 2 | 983 | the typical pass |
 | 3 | 63 | a lost interrupt ([4.6](#46-lost-interrupts-and-the-3-frame-pass)) |
-| 9 | 5 | a zone change or a restart |
+| 9 | 3 | a zone change (31171, 32511, 32725) |
+| 9 | 2 | a restart after a death (32716, 32824) |
 | 14-19 | 14 | a scroll |
 | 161 | 1 | the pause |
+
+The table counts the 1 066 gaps between the 1 067 HALT returns of `c1` (983 + 63 + 5 + 14 + 1). MainLoop's first
+instruction runs 1 073 times: 5 of its passes leave before the HALT (the three zone changes and the two deaths go back
+to the loop's start), and the last is the pass that quits at 33 101.
 
 The 2000-frame zone recordings show the same, with 647 to 997 passes each. The 400-frame spot recordings show exactly
 200 passes of 2 frames.
@@ -430,6 +439,13 @@ frames.
 passes of 31290-31389, 100 frames passed but there were only 82 interrupts: 18 were lost. Each lost interrupt adds a
 frame to its pass and drops one tick of the music.
 
+**On a 48K.** Every measure above is from the 128K. On a 48K the handler is only its fixed part, 276 T (the slot at
+`$FF11` holds three NOPs), so the loop gets back AyTick's share (the 128K rows above minus 276 T). But the effects
+then play on the beeper: BeeperEffect `$A08E` (called from PlayEffect before its `DI`) holds the CPU for the whole
+effect, with interrupts on. The interrupts it lets through still count FrameTicks, so a pass with an effect lasts as
+long as the effect plus the work, then waits for the next interrupt.
+Whether a heavy pass loses interrupts on a 48K was not measured: `beeper48` ran no `$RS interrupts` count per pass.
+
 **The point**: the game slows down by design when a zone is busy. It does not tear and does not crash: it drops to
 about 17 Hz for a while, and the music lags with it.
 
@@ -489,12 +505,13 @@ ADDE CD 5A AD    CALL BuildScreenMap
 RedrawScreen saves the cell flags of the HUD row (`$6C21-$6C40`) and the sentinel, calls DrawAllDirtyCells `$A834`,
 then restores both. It draws every flagged cell with its attribute: almost the whole play area, twice.
 
-![ScrollViewDown: c1 30721-30741](img/routines/ScrollViewDown.gif)
+![ScrollViewDown: c1 30721:38000-30741:8000](img/routines/ScrollViewDown.gif)
 
 *The first scroll of `c1`: Rick climbs down out of the start screen. `c1` 30721:38000 to 30741:8000, 90 pictures. Made
 with `python3 ../../kit/routine_anim.py --work work/docs/rdA/c1 --window 30721:38000-30741:8000 --listing
 build/game.lst --page 1=build/music.lst --page-name 1="the AY player" --view screen --range 5B00-FFFF --pictures 90
---out docs/img/routines/ScrollViewDown.gif`.*
+--title "ScrollViewDown: c1 30721:38000-30741:8000" --out docs/img/routines/ScrollViewDown.gif`. Each picture is
+15 424 T; the first ends at the main loop's HALT, the scroll's own work starts in the second.*
 
 How to read it:
 
@@ -537,11 +554,11 @@ accepted a few torn frames there for a cell-based renderer that never tears in n
 
 | Where | How long | Measured |
 | --- | --- | --- |
-| a pass | 2 frames (40 ms); 3 when an interrupt is lost | `c1`: 983 of 1067 passes are 2 frames |
+| a pass | 2 frames (40 ms); 3 when an interrupt is lost | `c1`: 983 of the 1 066 gaps between HALTs are 2 frames |
 | the menu | HALT, HALT a round: 2 frames; the highlight steps once a round | MenuFrame `$E267` |
 | the level intro | until fire is released, then pressed | `c1`: 30471 to 30500, 29 frames |
 | a scroll | WaitFrames(4) twice plus two redraws: 14-19 frames | `c1`: 14 scrolls |
-| a zone change | about 9 frames | `c1`: 5 passes of 9 |
+| a zone change | about 9 frames | `c1`: 3 passes of 9 (and 2 restarts of 9) |
 | a death | Rick falls off the bottom: 60-82 frames from KillRickNow to NewLife | `c1`: `$FBF2` at 32635, NewLife at 32717; `$FBF2` at 32765, NewLife at 32825 |
 | the pause | until P is pressed, released, pressed, released | `c1`: one pass of 161 frames at 32849 |
 | the timed bonus | BonusDivider: one step every 30 passes (60 frames, 1.2 s): the tens digit - 1 | BonusCountdown `$E466` |
@@ -553,8 +570,6 @@ FrameTicks and FrameCount count real frames.
 
 ## 4.9 Known only from the code
 
-- GameOver back to the Menu: `c1` ends while GAME OVER waits for a key. The `gameover` recording goes back to the
-  menu.
 - Set48K `$A05F` was not executed in any recording ([doc 3, 3.11](03-build-and-load.md#311-the-48k-and-the-128k-paths)).
 - The second PausePressed at `$E417` runs every pass, and its result is never used. It costs a port read a pass.
 - `LD HL,(RickY)` at `$E3D1` loads HL before BonusCountdown, which does not read it.

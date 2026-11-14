@@ -4,7 +4,7 @@
 # (CALL $C3E4) and the IM 2 tick $A030 (CALL $C46C), each with RAM 1 paged in.
 
 @module player ; The AY player: periods, the three channels' state, note start, volume envelopes, the AY output
-@about The player under the tunes and the effects. Three channel records (ChannelA, ChannelB, ChannelC, 18 bytes each) hold what each AY channel sounds now: tone period, volume, a software volume envelope (attack, decay, sustain, release, run by a routine pointer per channel), a duration count and a vibrato or slide added to the period. StartNote $C0E2 loads a channel from a 10-byte instrument (or the first 10 bytes of an effect); UpdateAy $C19F, once a frame from AyTick $C46C, steps the three channels and writes AY registers 0-10.
+@about The player under the tunes and the effects. Three channel records (ChannelA, ChannelB, ChannelC, 18 bytes each) hold what each AY channel sounds now: tone period, volume, a software volume envelope (attack, decay, sustain, release, run by a routine pointer per channel), a duration count and a vibrato or slide added to the period. StartNote $C0E2 loads a channel from a 10-byte instrument (or the first 10 bytes of an effect); UpdateAy $C19F, once a frame from AyTick $C46C, steps the three channels and writes AY registers 7, 0-6 and 8-10, or returns at once while every channel is off.
 @about The period table is the one of an Atari ST player (YM2149 at 2 MHz), index 0 = C-1: on the Spectrum's 1.7734 MHz AY every note sounds about two semitones lower. The player uses no hardware envelope: the hooks SoundHookStart $C345 and SoundHookEnd $C346 are bare RETs, and the envelope stub at StartNoteFixed $C148 loads registers and writes nothing.
 
 $C000 w PeriodTable 8 ; AY tone periods, 85 notes from C-1 (3822) by semitones; index = note + transpose + 12
@@ -177,7 +177,7 @@ $CD22 Effect2 ; Effect 2: noise, a slide; the dynamite's bang, `$EC93` (level3 6
 $CD2F Effect3 ; Effect 3: noise, a slide (step -8); a trap set off `$EFCB`, a poke with the stick `$F9EF` (level4 62 at `$EFCB`)
 $CD3C Effect4 ; Effect 4: tone and noise, always channel B; Rick's steps (crawl `$FCB8`, climb `$FD0D`, walk `$FD44`) (level3 357 at `$FD44`)
 $CD49 Effect5 ; Effect 5: noise; no call site passes 5
-$CD56 Effect6 ; Effect 6: tone, a slide up after 4 frames (step `$0FF8`: -8 in the AY's 12 bits); a head against a ceiling `$F97D`, `$FADB` (level2 53 and 67)
+$CD56 Effect6 ; Effect 6: tone, a slide up after 4 frames (step `$0FF8`: -8 in the AY's 12 bits); a jump `$FADB` (Jump `$FAD3`) and a head against a ceiling `$F97D` (LandRick, rising); level2 53 and 67
 $CD63 Effect7 ; Effect 7: tone, a slide up after 3 frames (step `$0FF7`); no call site passes 7
 $CD70 Effect8 ; Effect 8: tone, a vibrato; dynamite or bullets picked up, `$ED76` (once, in the L1Z4 zone recording)
 $CD7D Effect9 ; Effect 9: tone, a vibrato; a treasure picked up, `$EDEC` (level1 4)

@@ -347,7 +347,7 @@ StartLevel:
   LD A,$15
   LD (RickHeight),A
   LD IX,(LevelZone)
-  LD A,(LevelZoneCount)
+  LD A,(LevelViewTop)
   LD C,A
   LD B,$00
   CALL LoadScreen
@@ -361,7 +361,8 @@ StartLevel:
 ;
 ; +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in
 ; `$7900`, +5 Rick's x (RickX $EAAD), +6-7 Rick's y (RickY $EAAE), +8-9 the
-; first zone record (to IX), +10 the count passed in C to `$AC83`.
+; first zone record (to IX), +10 the first view row, passed in C to LoadScreen
+; `$AC83`, which stores it in ViewTopRow $ADB7 (not a zone count).
 ;
 ; Record 0 is read by NewGame $E2DC and StartLevel $E32C; at a level change
 ; `$AC07` reads record Level $E4AD (`$AC56`). The ending's record has only the

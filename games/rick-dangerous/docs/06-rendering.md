@@ -30,7 +30,7 @@ chars to the screen. Every buffer is one byte or one char per screen cell:
 | composed chars | `$5D00` up | char n at `$5CF0` + 8n: 8 bytes, a background char with sprites drawn over it | ComposeCell `$A6D0`, the sprite drawers |
 | char sets | `$7100` (levels 1-2), `$7A00` (levels 3-4) | 256 chars of 8 bytes | loaded |
 | char attributes | `$7900`, `$8200` | one attribute per char code | loaded; `$7900` is rewritten with each level's colour |
-| char properties | `$5C00-$5CFF` | one byte per char code: ladder, deadly, wall, floor, and "in front" | BuildCharProps `$F6A9` |
+| char properties | `$5C00-$5CFF` | one byte per char code: ladder, deadly, in front, platform, spring, wall, floor | BuildCharProps `$F6A9` |
 
 The screen part of the flags is `$6C00-$6EFF`, 24 rows of 32. The sentinel `$FF` at `$6F00` stops the scan.
 
@@ -92,7 +92,7 @@ AD67 29          ADD HL,HL              ; 2 bytes of map a char row: 8 a tile ro
 AD68 ED 4B B5 AD LD BC,(MapBlockTable)
 AD6C 09          ADD HL,BC
   ...
-AD7B 7E          LD A,(HL)              ; BuildMapBlock: the tile number
+AD7B 7E          LD A,(HL)              ; the tile number
 AD7C 6F          LD L,A
 AD7D 26 00       LD H,$00
 AD7F 29          ADD HL,HL
@@ -138,7 +138,7 @@ How to read it:
 - The hex view is the screen part of the char map, `$6600-$68FF`, 32 codes a row.
 - The memory map above it shows `$6500-$70FF`: the char map, then the cell flags.
 - The writes run down in bands 4 rows tall: one tile row at a time, 8 tiles across.
-- Then RedrawScreen walks the flags (all 1 after MarkAllDirty) and the screen is drawn.
+- After the window, MarkAllDirty sets every flag to 1 and RedrawScreen draws the screen (not shown).
 
 ![LoadScreen: zone 1 to zone 2](img/routines/LoadScreen.gif)
 
@@ -147,7 +147,7 @@ How to read it:
 Witness: BuildScreenMap ran 21 times in `c1`: at each level start and restart, each zone change (31 172, 32 512,
 32 726) and each scroll.
 
-**The point**: a zone is 8 bytes a tile row, 32 times less than its chars. The build costs one frame and runs only at
+**The point**: a zone is 8 bytes a tile row, 16 times less than its 128 chars. The build costs one frame and runs only at
 a zone change or a scroll.
 
 ## 6.3 Only the changed cells: DrawDirtyCells
@@ -228,7 +228,8 @@ That cell is char row 10, column 5. Its map char is at `$6D45` - `$600` = `$6745
 little changed. A cell drawn costs 8 LDI plus 7 x (DEC DE, INC D): 198 T for its bytes.
 
 Witness: `c1` pass 31 097 drew 12 cells (96 screen writes, [doc 4, 4.5](04-game-loop.md#45-a-pass-against-the-beam)).
-DrawDirtyCells took 16.6 % of that pass's three frames.
+DrawDirtyCells took 16.6 % of that pass's two frames (31 097 and 31 098 counted by `work/docs/rdA/steps.py`,
+about 23 500 T): the 17 664 T scan plus the 12 cells.
 
 **The point**: the drawer writes the screen in raster order, cell by cell, right after the interrupt. With a dozen
 cells it finishes far ahead of the beam ([figure](img/loop/beam-pass-31097.png)).
@@ -329,11 +330,13 @@ A483 10 DE       DJNZ SpriteAlignedRow
 ```
 
 **The shift chain.** For x AND 7 = s, not 0, each row's three bytes are shifted right by s into four. The chain at
-`$A633` is a run of shift instructions; the drawer enters it at `$A633` + 14 s, so it runs only the last s steps.
-The mask shifts in 1 bits from the left (keeping the background), the pixels 0 bits.
+`$A633` is a run of shift instructions; the chain at `$A633` holds 8 left-shift steps of 14 bytes across the 4-byte group (ADD HL,HL, RL, SLL E, RL C').
+ComposeShifted `$A48A` patches the entry to `$A633` + 14 s: entering at step s leaves 8 - s left shifts, which
+moves the frame right by s. The mask fills with 1 bits from the right (SLL), keeping the background; the pixels
+with 0 bits.
 
 **The mirror.** Bit 0 of the object's +6 selects the mirrored path. SpriteAlignedJump `$A441` holds `JP $A468` (plain)
-or `JP $A444` (mirrored); ComposeObject writes the operand. The mirrored path swaps columns 1 and 3 and reverses every
+or `JP $A444` (mirrored); SpriteDrawAligned `$A419` writes the operand. The mirrored path swaps columns 1 and 3 and reverses every
 byte through the table at `$5B00`:
 
 ```text
@@ -375,8 +378,8 @@ Witness: SpriteAlignedMirror `$A444` ran 525 times in `c1` before frame 31 200, 
 facing left). SpriteShiftedMirror's lookup `$A607` ran 2 163 times. The aligned paths: `$A3B5` 1 056 and `$A329`
 1 127 runs; the shifted: `$A48A` 1 619 and `$A531` 316 (`c1`).
 
-**The point**: the game stores each frame facing one way only. The mirror table costs 256 bytes and halves the 6 804
-bytes the frames would need for both directions.
+**The point**: the game stores each frame facing one way only. The mirror table costs 256 bytes and saves 6 804: the
+second direction of 54 frames of 126 bytes.
 
 ## 6.5 Behind the scenery
 
@@ -410,7 +413,7 @@ has the steps, the animation and the beam figure. What the renderer does in a st
 | 3 | ShiftObjects `$AEBE` | every object's y moves by -32; an object that leaves the map is freed |
 | 4 | RedrawScreen `$A781` | DrawAllDirtyCells `$A834`: every flagged cell, with its attribute |
 
-RedrawScreen saves the 32 flags of the HUD's row (`$6C21-$6C40`) and the sentinel, and puts them back after, so the
+RedrawScreen saves the 30 flags of the HUD's row (`$6C21-$6C3E`, 30 LDIs each way) and the sentinel, and puts them back after, so the
 HUD is never drawn over. DrawAllDirtyCells writes the attribute of each cell from the char's attribute: its
 `LD D,$79` at `$A852` has its operand (AttrTableHigh, `$A853`) patched to `$82` for the second char set by LoadScreen.
 
@@ -433,7 +436,8 @@ How to read it:
 - Green, CounterAttr: the HUD's three counters as icons (from the font's icons, `$9FB5-$9FCC`).
 - Yellow, DrawScoreDigit: the six score digits (from the font's digits).
 - Blue and purple: DrawDirtyScan and DrawDirtyMapChar, the first passes after the redraw: Rick drawn (blue, from the
-  composed chars at `$5D00`), and the cells he left restored (purple, from the char set).
+  composed chars at `$5D00`), and the HUD row's gaps between the counters (purple, from the char set): RedrawScreen restored their flags
+  as 1, so the next DrawDirtyCells drew the map chars under them.
 - The lists under the picture name the instructions that wrote and the memory each one copied from.
 
 **The point**: four routines write the play screen: the full redraw, the per-pass drawer (two paths) and the HUD's
@@ -472,4 +476,4 @@ calls an object, 8 LDI each) and with the cells they cover.
   written to `$0000` up, the ROM: harmless. Seen in `emptygun` (the `L1Z1` zone warp, a patch on a clone; [WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)): after the sixth shot (frame 420) MaskHudCells
   runs 350 times and MaskBullets `$A8D9` only 211, so 139 passes took the `JP Z` with HL = 0 (the recording keeps
   `$4000-$FFFF`, so the ROM writes themselves are not in it).
-- ScrollViewUp `$ADF0` ran only in `level2` (11 times): every other recording only scrolls down.
+- ScrollViewUp `$ADF0` ran in L1Z4, L2Z2, L3Z8, L3Z9 and `level2` (16 times; 11 of them in `level2`).

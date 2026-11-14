@@ -1,9 +1,10 @@
 # LevelTable $E4AE: one record of 11 bytes a level (tools/res_tables.py). Fields: the intro text (a word,
 # by name), its screen address, the attribute stored in $7900, Rick's x (RickX $EAAD) and y (RickY $EAAE),
-# the first zone record (Zones + 7n, by name), the count passed in C to $AC83. Record 0 is the one the game
-# starts from; a level change reads record Level $E4AD. The ending's record uses only the text and attribute.
-level 0 text SouthAmericaText at $40A1 attr $04 x $08 y $008B zone Zones count $08 ; the jungle (South America)
-level 1 text EgyptText at $40E1 attr $03 x $08 y $008B zone Level2Zones count $68 ; Egypt
-level 2 text CastleText at $40E1 attr $05 x $10 y $008B zone Level3Zones count $10 ; the castle (Europe)
-level 3 text MissileBaseText at $40E1 attr $03 x $10 y $008B zone Level4Zones count $10 ; the missile base (Europe)
-level 4 text LondonText at $40E1 attr $03 x $74 y $00C8 zone Level4Zones count $08 ; the ending (London)
+# the first zone record (Zones + 7n, by name), the first view row (ViewTopRow $ADB7, passed in C to $AC83).
+# Record 0 is the one the game starts from; a level change reads record Level $E4AD. The ending's record
+# uses only the text and attribute.
+level 0 text SouthAmericaText at $40A1 attr $04 x $08 y $008B zone Zones view $08 ; the jungle (South America)
+level 1 text EgyptText at $40E1 attr $03 x $08 y $008B zone Level2Zones view $68 ; Egypt
+level 2 text CastleText at $40E1 attr $05 x $10 y $008B zone Level3Zones view $10 ; the castle (Europe)
+level 3 text MissileBaseText at $40E1 attr $03 x $10 y $008B zone Level4Zones view $10 ; the missile base (Europe)
+level 4 text LondonText at $40E1 attr $03 x $74 y $00C8 zone Level4Zones view $08 ; the ending (London)

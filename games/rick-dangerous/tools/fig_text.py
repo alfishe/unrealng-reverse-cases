@@ -80,10 +80,10 @@ def cmd_hud(shot, png):
         d.line((ox + c * 8 * s, oy - 6, ox + c * 8 * s, oy), fill=GRID)
     for c in range(0, 32, 4):
         d.text((ox + c * 8 * s + 2, oy - 26), f'{c}', fill=DIM, font=K.font(12))
-    parts = [(1, 'DrawScore', '$4021', 'Score $A9BE', 'digits 0-9', (200, 120, 230)),
-             (9, 'DrawDynamite', '$4029', '$A976 (the bullets)', 'glyph 36 $24', (250, 210, 80)),
-             (17, 'DrawBullets', '$4031', '$A967 (the sticks)', 'glyph 37 $25', (110, 150, 250)),
-             (25, 'DrawLives', '$4039', 'Lives $A958', 'glyph 38 $26', (110, 220, 120))]
+    parts = [(1, 'DrawScore $A977', '$4021', 'Score $A9BE', 'digits 0-9', (200, 120, 230)),
+             (9, 'DrawBullets $A968', '$4029', 'Bullets $A976', 'glyph 36 $24', (250, 210, 80)),
+             (17, 'DrawDynamite $A959', '$4031', 'Dynamite $A967', 'glyph 37 $25', (110, 150, 250)),
+             (25, 'DrawLives $A94A', '$4039', 'Lives $A958', 'glyph 38 $26', (110, 220, 120))]
     for c, name, addr, var, gl, col in parts:
         x0, x1 = ox + c * 8 * s, ox + (c + 6) * 8 * s
         d.rectangle((x0, oy - 2, x1, oy + 8 * s + 2), outline=col, width=2)
@@ -95,10 +95,8 @@ def cmd_hud(shot, png):
            'the count', fill=DIM, font=K.font(14))
     d.text((12, y + 20), 'are given back to the map: DrawCounter sets their flag at $6C00 + cell and the map char\'s '
            'attribute, and the next', fill=DIM, font=K.font(14))
-    d.text((12, y + 40), 'map draw puts the scenery there. The routine names and the variables at $A967 / $A976 are '
-           'swapped in the source:', fill=DIM, font=K.font(14))
-    d.text((12, y + 60), 'the code fires with $A976 and drops sticks with $A967 (section 8.3).', fill=DIM,
-           font=K.font(14))
+    d.text((12, y + 40), 'map draw puts the scenery there. FireShoot takes a bullet from $A976, DropDynamite a stick '
+           'from $A967 (section 8.3).', fill=DIM, font=K.font(14))
     out.save(png)
     print(png, out.size)
 

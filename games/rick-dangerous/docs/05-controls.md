@@ -97,16 +97,16 @@ A15E ED 78       IN A,(C)
 A160 CB 4F       BIT 1,A
 A162 C2 6A A1    JP NZ,ReadKeyDown
 A165 CB 9E       RES 3,(HL)
-A167 C3 75 A1    JP ReadKeyLeft         ; up beats down
+A167 C3 76 A1    JP ReadKeyLeft         ; up beats down
 A16A 01 FE BF    LD BC,$BFFE            ; ReadKeyDown: K
   ...
-A190 01 FE BF    LD BC,$BFFE            ; ReadKeyFire: ENTER
-A193 ED 78       IN A,(C)
-A195 CB 47       BIT 0,A
-A197 C2 9C A1    JP NZ,ReadInputDone
-A19A CB A6       RES 4,(HL)
-A19C E1          POP HL                 ; ReadInputDone
-A19D C9          RET
+A191 01 FE BF    LD BC,$BFFE            ; ReadKeyFire: ENTER
+A194 ED 78       IN A,(C)
+A196 CB 47       BIT 0,A
+A198 C2 9D A1    JP NZ,ReadInputDone
+A19B CB A6       RES 4,(HL)
+A19D E1          POP HL                 ; ReadInputDone
+A19E C9          RET
 ```
 
 The keys of each method:
@@ -116,7 +116,7 @@ The keys of each method:
 | 0 keyboard | O | K | Z | X | ENTER | `$DFFE`, `$BFFE`, `$FEFE` |
 | 1 Kempston | - | - | - | always | - | none |
 | 2 cursor | 7 | 6 | 5 | 8 | 0 | `$EFFE`, `$F7FE` |
-| 3 Sinclair (Interface 2, port 2) | 9 | 8 | 6 | 7 | 0 | `$EFFE` |
+| 3 Sinclair (Interface 2, joystick 1) | 9 | 8 | 6 | 7 | 0 | `$EFFE` |
 
 The pairs are exclusive. On the keyboard and the Sinclair stick, up beats down and left beats right. On the cursor
 keys, up beats down and right beats left.
@@ -161,10 +161,12 @@ Witness (L1 runs of each path's first instruction):
 | --- | ---: | ---: | --- |
 | 0 keyboard (`$A15B`) | 32 112 | 5 572 | `gameover` 110 714, `ending` 187 306 |
 | 1 Kempston (`$A1A4`) | 52 007 | 30 | |
-| 2 cursor (`$A1AA`) | 33 215 | 53 211 | `level1` 118 103, `level2` 4 348, `level3` 4 043, `level4` 2 072 |
+| 2 cursor (`$A1AF`, after the method test) | 33 215 | 53 211 | `level1` 118 103, `level2` 4 348, `level3` 4 043, `level4` 2 072 |
 | 3 Sinclair (`$A1E6`) | 36 847 | 30 | |
 
-The keyboard counts are high in the menus because StartPressed calls ReadInput on every poll.
+The keyboard counts are high in the menus because StartPressed calls ReadInput on every poll. The cursor row counts
+`$A1AF`, the first instruction after `CP $02`: InputCursor `$A1AA` itself also runs for the Sinclair method, which
+falls through it (70 062 runs in `controls`, 53 242 in `c1`).
 
 ## 5.3 The Kempston bug
 
@@ -194,6 +196,21 @@ Bit 0 (right) is 0, so "right" is held. Every other bit is 1, so nothing else is
 (right, left, down, up, fire), active high. One instruction is missing: `IN A,($1F)` (`DB 1F`) between `$A1A1` and
 `$A1A4`. With it the code would be right.
 
+The fire button is lost with the rest: StartPressed calls ReadInput and tests bit 4, which is always 1 here, so with
+the Kempston chosen only ENTER starts a game or passes the screens that wait for fire.
+
+Which releases have the bug (a byte search of every copy in `work/candidates/`):
+
+| Release | Bytes at InputKempston | Bug |
+| --- | --- | --- |
+| Firebird tape (this case), RICKDAN1 dump, the +3 disk, the zxart hacks and translations | `FE 01 C2 AA A1 E6 1F 2F` | yes |
+| MCM, Erbe, IBSA, TOSEC `[a2]` TAP, ZXDB `RICKDANG.Z80` | `FE 01 C2 B4 A1 DB 1F E6 1F 2F 77 E1 C9` | no: `IN A,($1F)` inserted |
+| Kixx | the pattern found in neither form (its block is packed) | not known |
+
+The later build put the missing `DB 1F` in, which is why its code from InputKempston on lies 2 bytes further up than
+here and its jump targets are shifted (`$A1B4` for `$A1AA`, [doc 3, 3.12](03-build-and-load.md#312-the-releases-and-the-hacks)).
+So Firebird's own re-builds fixed the bug; the original tape and every copy made from it keep it.
+
 ![The Kempston method: the stick held left, Rick walks right](img/play/kempston-bug.gif)
 
 *`controls` frames 1 384 to 1 540, 53 pictures. Made with `python3 tools/fig_controls.py rick --work
@@ -212,7 +229,8 @@ How to read it:
 it shows only in play.*
 
 Witness: `controls` selects the Kempston with key 2 and plays: `$A1A4` runs 52 007 times, and InputBits is `$FE`
-throughout. `$A1A4` runs 30 times in `c1`, where the menu passes over the Kempston method.
+throughout. `$A1A4` runs 30 times in `c1`, where the menu passes over the Kempston method. The byte search above is
+the witness for the releases.
 
 **The point**: a player who picks the Kempston cannot play: Rick walks right on his own, into the first danger.
 The other three methods work, so the bug was easy to miss in testing with a keyboard.
@@ -243,18 +261,19 @@ CycleAttributes `$AB18` paints the chosen line with one of CycleColours `$AB3D` 
 bright white ink on blue, red, magenta, green paper), stepped by the phase `$AB3C` mod 8. The old line goes back to
 PlainColours `$AB45` (`$47`).
 
-![The menu keys: 2, 4, 1, 3 pressed in turn](img/play/menu-keys.gif)
+![The menu: 4 chooses Sinclair](img/play/menu-keys.gif)
 
-*`controls` frames 620 to 700, every second frame. Made with `python3 tools/fig_controls.py menu --work
-work/docs/rdB/controls --inputs tests/inputs/controls.txt --from 620 --to 700 --step 2 --out
-docs/img/play/menu-keys.gif`.*
+*`controls` frames 620 to 690, every second frame, 36 pictures. Made with `python3 tools/fig_controls.py menu --work
+work/docs/rdB/controls --inputs tests/inputs/controls.txt --from 620 --to 690 --step 2 --title "The menu: 4 chooses
+Sinclair (controls, frames 620-690)" --out docs/img/play/menu-keys.gif`.*
 
 How to read it:
 
 - The menu's screen, with the key the script holds.
-- The highlighted line follows the key: the colour cycles on the chosen line, the old line turns plain white.
+- The script presses 4 at frame 640: the colour cycling moves to the Sinclair line, the keyboard line turns plain white.
+  ENTER at 680 starts the game. The keys 2, 4, 1, 3 in turn are pressed in `c1`'s menu.
 
-The three methods' menus as seen in the recordings:
+Two of the methods' menus as seen in the recordings (the cursor menu looks the same, its line highlighted):
 
 ![The menu, keyboard chosen](img/play/menu.png)
 
@@ -291,12 +310,12 @@ Two keys work in play, tested once a pass by the main loop ([doc 4, 4.4](04-game
 ```text
 E3D7 CD 44 A1    CALL PausePressed      ; P held?
 E3DA 20 0F       JR NZ,CheckDeath
-E3DC CD 44 A1    CALL PausePressed      ; PauseWaitRelease: wait for P up
-E3DF 28 FB       JR Z,PauseWaitRelease
+E3DC CD 44 A1    CALL PausePressed      ; PauseRelease: wait for P up
+E3DF 28 FB       JR Z,PauseRelease
 E3E1 CD 44 A1    CALL PausePressed      ; PauseWaitPress: wait for P down
 E3E4 20 FB       JR NZ,PauseWaitPress
-E3E6 CD 44 A1    CALL PausePressed      ; PauseWaitRelease2: wait for P up
-E3E9 28 FB       JR Z,PauseWaitRelease2
+E3E6 CD 44 A1    CALL PausePressed      ; PauseResume: wait for P up
+E3E9 28 FB       JR Z,PauseResume
 ```
 
 ```mermaid
@@ -307,7 +326,8 @@ stateDiagram-v2
     HeldAgain --> Play: P released
 ```
 
-The pause is a busy loop: no HALT, no screen work. The interrupt still runs, so the music plays on through the pause.
+The pause is a busy loop: no HALT, no screen work. The interrupt still runs, so a sound effect already started plays to its end (in play there is no tune, only effects;
+[doc 1, 1.7](01-game-design.md#17-what-the-game-does-not-have)).
 The objects freeze because UpdateObjects is not called.
 
 Witness: in `c1` the pause holds one pass for 161 frames, from frame 32 849; the polls of PausePressed run 9 228,
@@ -321,7 +341,8 @@ Witness: in `c1` the pause holds one pass for 161 frames, from frame 32 849; the
 ![From the keys to Rick: the keyboard round of controls](img/controls/timeline.png)
 
 *`controls` frames 150 to 440. Drawn by `python3 tools/fig_controls.py timeline --work work/docs/rdB/controls --inputs
-tests/inputs/controls.txt --from 150 --to 330 --out docs/img/controls/timeline.png`, from `time_travel memory_at` at
+tests/inputs/controls.txt --from 150 --to 440 --title "From the keys to Rick: the keyboard round of controls, frames
+150-440" --out docs/img/controls/timeline.png`, from `time_travel memory_at` at
 each frame's start.*
 
 How to read it:
@@ -335,8 +356,14 @@ How to read it:
 ![Rick answering the keys: walk, jump, poke](img/play/rick-keys.gif)
 
 *`controls` frames 150 to 330, every second frame. Made with `python3 tools/fig_controls.py rick --work
-work/docs/rdB/controls --inputs tests/inputs/controls.txt --from 150 --to 320 --step 2 --out
-docs/img/play/rick-keys.gif`.*
+work/docs/rdB/controls --inputs tests/inputs/controls.txt --from 150 --to 330 --step 2 --title "Rick answering the keyboard: X, X+O, ENTER+X, then the
+boulder (controls, frames 150-330)" --out docs/img/play/rick-keys.gif`.*
+
+How to read it:
+
+- Left: the screen, Rick in a pink box; right: the keys held, InputBits as lamps, Rick's state.
+- The first picture (frame 150) shows no key held but the fire lamp lit: InputBits still holds the pass that read
+  ENTER at frames 140-143; the next pass clears it.
 
 How fire combines with the directions (MoveRick, [doc 10, 10.2](10-gameplay-logic.md#102-rick)):
 

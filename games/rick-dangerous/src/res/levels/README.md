@@ -13,7 +13,7 @@ properties) convert them to the bytes the sources `INCBIN` and back; `python3 to
 | `tiles.txt` | `levels/tiles.bin` | `$C31C-$D31B` | 4096 | `tile $NN` and 4 rows of 4 char codes (hex) | DrawZone `$AD76` |
 | `kinds.txt` | `levels/kinds.bin` | `$D31C-$D55B` | 576 | `kind NAME a b anim script c d`: 72 records of 8 bytes | SpawnObjects `$FD7D`, `$F7C3` (+6, +7 through `$D322`) |
 | | `levels/anims.bin` | `$DF1D-$DF82` | 102 | `anim An`: frame bytes, `end` = `$FF` (back to the start) | `$EE0B` |
-| `leveltable.txt` | `levels/leveltable.bin` (an `@res ... include`: the build writes `leveltable.inc`) | `$E4AE-$E4E4` | 55 | `level N text TEXT at $SCREEN attr $A x $X y $Y zone ZONE count $C`: 5 records of 11 bytes; the text and zone words by name (kit/resinc.py), record 0's fields labelled LevelTextPtr ... LevelZoneCount in the .inc | NewGame `$E2DC`, StartLevel `$E32C`, the level change `$AC07` |
+| `leveltable.txt` | `levels/leveltable.bin` (an `@res ... include`: the build writes `leveltable.inc`) | `$E4AE-$E4E4` | 55 | `level N text TEXT at $SCREEN attr $A x $X y $Y zone ZONE view $V`: 5 records of 11 bytes; the text and zone words by name (kit/resinc.py), record 0's fields labelled LevelTextPtr ... LevelViewTop in the .inc; `view` is the first view row (ViewTopRow `$ADB7`) | NewGame `$E2DC`, StartLevel `$E32C`, the level change `$AC07` |
 | `charprops.txt` | `levels/charprops.bin` | `$F6C0-$F6DF` | 32 | `set S chars A-B count N property $P`: 8 runs of (count, property) a char set | BuildCharProps `$F6A9` (LoadScreen) |
 | | `levels/scripts.bin` | `$DF83-$E218` | 662 | `script Sn`: steps `FRAMES,DX,DY` (signed), `end` = `$FF` | `$EE81` |
 

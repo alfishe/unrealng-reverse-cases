@@ -33,7 +33,7 @@ Each term once, here; the documents use these names and no others.
 | HUD | the row of the score, the lives, the bullets (Bullets `$A976`) and the dynamite (Dynamite `$A967`), each count drawn as its icons (doc 8) |
 | kind | an object's type byte in its slot: 1 Rick, 2 bullet, 3 dynamite, 4-15 enemies, 16-17 boxes, 18-21 treasures, 22-23 the timed bonus, 24 and up traps (doc 7) |
 | LevelBonus | `$A9E3`: (lives + 1) x 10 000, paid at the end of level 4 only (doc 10) |
-| LevelTable | `$E4AE`: 5 records of 11 bytes (the intro text, its place, Rick's start, the first zone, the zone count); the fifth is the ending; the resource `src/res/levels/leveltable.txt` (doc 2, 7) |
+| LevelTable | `$E4AE`: 5 records of 11 bytes (the intro text, its place, char 0's attribute at `$7900`, Rick's start, the first zone, LevelViewTop: the first view row); the fifth is the ending; the resource `src/res/levels/leveltable.txt` (doc 2, 7) |
 | map char row | a row of 8 pixels in a zone's map, one char high; a tile row is 4 of them (doc 1, 6) |
 | object table | ObjectTable `$EA8E`: 12 slots of 30 bytes; slot 1 is Rick, 2 his bullet, 3 his dynamite (doc 7) |
 | pass | one run of MainLoop `$E3C9`: 2 frames in play (a HALT at `$E40F`, then WaitFrames), 3 when an interrupt is lost (doc 4) |

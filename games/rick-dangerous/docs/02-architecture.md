@@ -36,8 +36,9 @@ flowchart LR
 ```
 
 The tape and its blocks are in [doc 3, 3.1](03-build-and-load.md#31-the-tape-block-by-block). In `c1` the interrupts
-stay disabled through the turbo load. Start `$AB4D` runs in frame 19 010, and the first byte of the RAM 1 copy is
-written at T-state 70 589. The menu is on screen by frame 30 200, and play is under way at 31 500.
+stay disabled through the turbo load. Start `$AB4D` runs in frame 19 010 at T-state 70 483. DetectPaging `$A043` follows at
+70 514 and writes its test byte to RAM 1's `$C000` at 70 589; CopyPlayerToRam1 `$A069` starts at 70 632, its `LDIR`
+writes the first byte at about 70 700 and runs on into frame 19 012. The menu is on screen by frame 30 200, and play is under way at 31 500.
 
 At the start the game tests the paging. On the 128K it copies `$5E00-$6BA3` (`$0DA4` bytes, the AY player and its
 tunes) to RAM 1 at `$C000` and puts `CALL $A030` into the IM 2 handler at `$FF11`. On a 48K it sets Is48K `$A08D` =
@@ -70,12 +71,12 @@ The game is one flat image, `$5B00-$FFFF`, the same on both machines. Only the 1
 | `$E219-$E4AD` | the menu, the new game, quit, GAME OVER, the main loop `$E3C9` (its HALT at `$E40F`) | `menu`, `mainloop` | executed |
 | `$E4AE-$E4E4` | LevelTable: 5 records of 11 bytes, the fifth the ending | `levels` | [doc 8, 8.5](08-hud-and-text.md#85-the-texts) |
 | `$E4E5-$EA8D` | the texts | `text` | screenshots |
-| `$EA8E-$EC76` | the object table: 12 slots of 30 bytes from `$EA8E`, Rick in the first | `objects` | [doc 7, 7.3](07-objects.md#73-the-object-table-ea8e) |
+| `$EA8E-$EC76` | the object table: 12 slots of 30 bytes from `$EA8E`; slot 0 at `$EA8E` is another object, Rick is slot 1, RickObject `$EAAC` | `objects` | [doc 7, 7.3](07-objects.md#73-the-object-table-ea8e) |
 | `$EC77-$FD53` | code: the objects, the traps, Rick, his gun and his dynamite | `objects`, `rick` | executed |
 | `$FD54-$FD7C` | Rick's state: YFraction `$FD55`, ZoneChange `$FD61`, Dying `$FD68`, DeathDone `$FD69`, ... | `vars` | [doc 7, 7.8](07-objects.md#78-the-game-variables) |
 | `$FD7D-$FEFD` | SpawnObjects and the map build | `levels` | executed |
 | `$FEFE-$FF1D` | the IM 2 handler; `$FF11-$FF13` its music slot | `interrupt` | executed every interrupt |
-| `$FFEC-$FFFF` | the stack, under SP = `$0000` | `interrupt` | the low mark below |
+| `$FFE4-$FFFF` | the stack, under SP = `$0000` | `interrupt` | the low mark below |
 
 ### The 128K's pages
 
@@ -84,7 +85,7 @@ The game is one flat image, `$5B00-$FFFF`, the same on both machines. Only the 1
 | RAM 5 | `$4000` | the screen and the image's low part | always |
 | RAM 2 | `$8000` | the image's middle | always |
 | RAM 0 | `$C000` | the image's top | always; paged out only inside PlayEffect, StartTune and SoundTick |
-| RAM 1 | `$C000` when paged | the AY player and its music, `$C000-$CDA3` | 24 702 520 instructions over the recordings |
+| RAM 1 | `$C000` when paged | the AY player and its music, `$C000-$CDA3`; and `$FFDC-$FFFF`, the stack while RAM 1 is paged in | 24 702 520 instructions over the recordings |
 | RAM 3, 4, 6, 7 | | nothing | never |
 
 The game never uses the second screen (RAM 7) nor the extra pages. RAM 1 holds 0 nonzero bytes at the entry and
@@ -101,6 +102,7 @@ RAM 1 in detail:
 | `$C38D-$C3E3` | the three tracks' state and InstrumentMap |
 | `$C3E4-$C6E4` | AyPlayTune, AyTick, TrackStep, PatternCommand, the ornaments, AyPlayEffect, EffectChannel |
 | `$C6E5-$CDA3` | the music data: patterns, TuneTable, order lists, pattern pointers, instruments, effects |
+| `$FFDC-$FFFF` | the stack while PlayEffect, StartTune or SoundTick have RAM 1 paged in: SP is near `$0000`, so their calls and the interrupt push into RAM 1's top; the `menu` and `play` images hold the returns `$A03B` (SoundTick), `$A028` (StartTune) and, in `play`, `$A00B` (PlayEffect) there |
 
 ### The heatmap
 
@@ -130,33 +132,33 @@ counters and the score; the line near `$EA8E` is the object table.
 The game sets SP = `$0000` at Start (`LD SP,0` at `$AB4E`), so the stack runs down from `$FFFF`. SP is `$0000` at the
 main loop's HALT `$E40F` in every snapshot.
 
-Over the 48 recordings the lowest byte written in `$FF20-$FFFF` is `$FFEC`: the deepest stack is 20 bytes. The stage 1
-recordings alone give:
+The stack reaches at least `$FFE4`: 28 bytes. The handler `$FEFE-$FF1D` sits 198 bytes below that low mark. The only
+writes in `$FE00-$FF1D` are the three bytes of the music slot `$FF11-$FF13`, once, at the start.
 
-| Recording | Low mark |
-| --- | --- |
-| `level1`, `level2`, `level3`, `gameover` | `$FFEE` |
-| `level4` | `$FFF0` |
-| `controls` | `$FFF2` |
+While RAM 1 is paged in, the top of the stack is RAM 1's: there it reaches `$FFDC` (36 bytes), with nothing of the
+player's above `$CDA3` to hit.
 
-The handler `$FEFE-$FF1D` sits 206 bytes below the low mark. The only writes in `$FE00-$FF1D` are the three bytes of
-the music slot `$FF11-$FF13`, once, at the start.
-
-**Witness.** The merged L1's write counts: `$FF11`-`$FF13` and `$FFEC-$FFFF` are the only written bytes from `$FE00`
-up.
+**Witness.** The memory images (`work/images/*.ram.bin`). At the entry `$FFE4-$FFEB` still hold the loaded bytes. In
+the `menu` image (`c1` 30 200) RAM 0 holds `$FF14`, the return of the handler's `CALL $A030` at `$FF11`, at `$FFE4` and
+`$FFF0`; in the `play` image (31 500) at `$FFE4`, `$FFE6`, `$FFE8`, `$FFEE` and `$FFF0`. RAM 1 holds stack bytes
+from `$FFDC` up in both. The L1 write counts are no witness here: they miss the pushes (they give `$FFEC` over all
+the recordings, `$FFF2` for `c1g`'s page 0).
 
 ## 2.3 The images: loaded, at the entry, in play
 
 | Image | Where | Made by |
 | --- | --- | --- |
 | at the entry | `work/mkgame/original.bin`, `$5B00-$FFFF`, 42 240 bytes | `python3 tools/image.py` (SkoolKit `tap2sna.py` simulates the whole load up to `$AB4D`) |
-| at the entry, from the emulator | `work/images/entry.{cpu,ram,view}.bin` | `c1` frame 19 010, T-state 70 580 |
+| at the entry, from the emulator | `work/images/entry.{cpu,ram,view}.bin` | `c1` frame 19 010, T-state 70 580: 97 T after Start (70 483), inside DetectPaging, RAM 1 paged at `$C000` and the CALL's return on the stack |
 | at the menu | `work/images/menu.*` | `c1` frame 30 200 |
 | in play | `work/images/play.*` | `c1` frame 31 500, level 1 |
 | the rebuilt image | `build/game.bin`, `build/music.bin` | `sh tools/build.sh`: identical to the entry image ([doc 3, 3.13](03-build-and-load.md#313-the-source-build)) |
 
-The tap2sna image and the emulator's image at the entry differ only in 39 bytes, in `$5B89-$5BDD`. The game writes
-the mirror table over that area after the entry, so the 39 bytes never reach play.
+The tap2sna image (at `$AB4D`) and the emulator's image (pages 5, 2 and 0) differ in 39 bytes: `$5B89`,
+`$5BC7-$5BD2`, `$5BD7-$5BE9`, `$5BEB-$5BEC`, `$5BFB`, `$5C06`, `$5C78` and `$FFFE-$FFFF`. The first 37 are the 128K
+ROM's work space and system variables as the two loads left them; the game writes the mirror table over
+`$5B00-$5BFF` and the char properties over `$5C00-$5CFF` after the entry, so they never reach play. `$FFFE-$FFFF` is
+the return address of Start's `CALL DetectPaging`, pushed after `$AB4D`.
 
 **Entry to menu:** 755 bytes differ:
 
@@ -169,7 +171,8 @@ the mirror table over that area after the entry, so the 39 bytes never reach pla
 - `$FF11-$FF13`: `CALL $A030` in the handler;
 - `$FFE4-$FFFF`: the stack.
 
-**Entry to play:** 3 545 bytes in 47 runs. The large ones:
+**Entry to play:** 3 545 bytes, in 239 runs of changed bytes (47 when runs fewer than 16 bytes apart are merged). The
+large ones:
 
 - `$5C37-$5F0F`: the char properties and the composed chars;
 - `$6500-$6C9E`: the char map and the cell flags;
@@ -185,7 +188,9 @@ drawer's operands `$A442-$A487`, CounterAttr's operand `$AA38`, OldHudCounts `$A
 
 ## 2.4 The modules
 
-The source is cut into 19 modules by the annotations `src/game/game.ann` (221 entries, 127 of them code). Each module
+The source is cut into 19 modules by the annotations `src/game/game.ann` (222 entries, 127 of them code; 221 lie
+inside the modules). [Doc 12](12-routine-reference.md) lists 130 code entries: these 127 and three labels inside them
+that other code jumps to (InputKempston `$A19F`, ExitScan `$ABAA`, ExitNoMatch `$AC78`). Each module
 is one `.asm` file in `src/game`, written by `kit/mkgame.py`.
 
 | Module | Ranges | Bytes | Code entries | What |
@@ -256,7 +261,7 @@ MainLoop:
 | Score | `$A9BE-$A9C3` | six digits; `level1` 001970 at frame 755 |
 | Level | `$E4AD` | 0-3, 4 at the ending; set by the warps ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)) |
 | GameComplete | `$E440` | `$FF` after the closing text (`ending`) |
-| RickX, RickY | `$EAAD`, `$EAAE` | changes at every scroll in `level1` (`$8C` at frame 443, `$8F` at 452) |
+| RickX, RickY | `$EAAD`, `$EAAE` | y grows by 3 a pass as he falls in `level1` (`$8C` at frame 443, `$8F` at 452); a scroll moves it by 32 a step, 64 in all (ShiftObjects `$AEBE`, BC = `$FFE0` twice) |
 | ZoneChange, ExitSide | `$FD61`, `$FD62` | set when Rick walks off a side |
 | Dying, DeathDone | `$FD68`, `$FD69` | set when Rick dies, and when his fall has played out |
 | ControlMethod | `$A14C` | the menu's choice (`controls`) |
@@ -268,8 +273,20 @@ screen: [doc 8, 8.3](08-hud-and-text.md#83-the-hud).
 
 ## 2.5 Levels, zones and maps
 
-LevelTable `$E4AE` has a record per level: the intro text, Rick's start and the first zone (the resource
-`src/res/levels/leveltable.txt`, the words by name). The zones are 7-byte
+LevelTable `$E4AE` has a record per level, 11 bytes (the resource `src/res/levels/leveltable.txt`, the words by
+name):
+
+| Offset | Field | Level 1 |
+| --- | --- | --- |
+| +0-1 | the intro text | SouthAmericaText |
+| +2-3 | its screen address | `$40A1` |
+| +4 | the attribute stored in `$7900` (char 0's) | `$04` |
+| +5 | Rick's x (RickX `$EAAD`) | `$08` |
+| +6-7 | Rick's y (RickY `$EAAE`) | `$008B` |
+| +8-9 | the first zone record (to IX) | Zones `$D55C` |
+| +10 | LevelViewTop: the first view row, passed in C to LoadScreen `$AC83`, which stores it in ViewTopRow `$ADB7` | 8 |
+
++10 is not a zone count: it is 8, `$68`, `$10`, `$10` for levels 1-4 (level 3 has 12 zones). The zones are 7-byte
 records from `$D55C`: 6 for level 1, 7 for level 2, 12 for level 3 and 9 for level 4, 34 in all. The levels' first
 zones are at `$D55C`, `$D586`, `$D5B7` and `$D60B`.
 
@@ -355,7 +372,8 @@ scenery and effects named by the kinds' animation lists.
 object table holds for Rick in the `play` image. An animation byte B gives `$8383` + 126 B: B = 3 gives `$84FD`
 again.
 
-**Witness.** In `c1` frame 31 500 Rick's slot `$EA8E` holds `$84FD` at +4/+5 (the `play` image).
+**Witness.** In `c1` frame 31 500 Rick's slot, slot 1 at RickObject `$EAAC`, holds `$84FD` at +4/+5 (the `play` image:
+`01 8E A5 00 FD 84 01 18 15` from `$EAAC`; slot 0 at `$EA8E` is empty there).
 
 ## 2.7 The frame budget
 
@@ -386,7 +404,7 @@ Code and data in the image that no recording uses:
 | --- | --- | --- | --- |
 | UnusedBuildMirror | `$A75D` | a second copy of BuildMirrorTable with a RET; nothing calls it | not executed in any recording |
 | the decoy last block | group 1 block 47, `src/res/loader/lastblock.bin` | read and checked but never stored; only three pointers in it are used, the rest looks like stage 2 and ends in `JP $AB4D` and `JP $5D94` ([doc 3, 3.6](03-build-and-load.md#36-the-decoy-last-block)) | LoadLastBlock ran once in `c1`; the jumps were not executed in any recording |
-| Award1, Award10, Award100, Award1000 | `$A9C5-$A9E2` | five-digit awards no code adds | no reader |
+| Award1, Award10, Award100, Award1000 | `$A9C5`, `$A9CA`, `$A9D4`, `$A9DE` (Award50 `$A9CF` and Award500 `$A9D9` between them are used, from `$F18D` and `$EDF3`) | five-digit awards no code adds | no reader |
 | ScorePad | `$A9C4` | `$FF` after the score's units | no reader |
 | the score in the image | `$A9BE` | 0 9 3 0 0 0: the build's last game | cleared by NewGame |
 | the old music entries | RAM 1 `$C354-$C38C` | an older AyPlayEffect (always channel A) and its jumps | not executed in any recording |

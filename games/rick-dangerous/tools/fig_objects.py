@@ -160,7 +160,7 @@ def cmd_record(view, png):
     lines = [
         ('Rick, slot 1 ($EAAC):', HI),
         (f'  type {r[0]:02X} = kind 1 (Rick); x ${r[1]:02X} = {r[1]}; y ${r[3]:02X}{r[2]:02X} = {r[2] | r[3] << 8} '
-         f'(map pixels); frame ${r[5]:02X}{r[4]:02X} = sprite frame {((r[4] | r[5] << 8) - 0x8401) // 126}', TEXT),
+         f'(pixels from the view top row); frame ${r[5]:02X}{r[4]:02X} = sprite frame {((r[4] | r[5] << 8) - 0x8401) // 126}', TEXT),
         (f'  mirror {r[6]:02X} (bit 0 set: drawn mirrored); width ${r[7]:02X} = 24, height ${r[8]:02X} = 21 pixels', TEXT),
         ('A zone enemy, slot 10 ($EBBA):', HI),
         (f'  type {e[0]:02X} = kind {e[0] & 0x7F} ({kind_name(e[0])}); x {e[1]}, y {e[2] | e[3] << 8}; frame '

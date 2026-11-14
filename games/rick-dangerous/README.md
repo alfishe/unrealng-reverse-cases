@@ -39,10 +39,10 @@ turbo blocks are enciphered, a second search looked for the game image itself, i
 
 | Copy | What it is | How it differs from the original |
 | --- | --- | --- |
-| `rickdan1.zip`: `RICKDAN1.TZX` (md5 `0975e1ad...`) | another dump of the Firebird tape | 150 of the 198 data blocks byte for byte; the 48 blocks of group 1 (the second loader stage) differ from byte 77 on; the game it loads on the 128K differs from ours in 19 bytes of variables and stack |
+| `rickdan1.zip`: `RICKDAN1.TZX` (md5 `0975e1ad...`) | another dump of the Firebird tape | 150 of the 198 data blocks byte for byte; the 48 blocks of group 1 (the second loader stage) differ from byte 77 on and do not decipher with this case's cipher; groups 2 and 3 (`$6E00-$FFFF`) are ours byte for byte ([doc 3, 3.12](docs/03-build-and-load.md#312-the-releases-and-the-hacks)) |
 | ZXDB `RickDangerous.tap.zip`: `RICKDAN1.TAP` (md5 `1921e037...`) | the same dump as a TAP | 148 blocks byte for byte; a 774-byte BASIC that POKEs the first loader stage so that it loads from a TAP |
 | ZXDB `RickDangerous.dsk.zip`: `Rick Dangerous.dsk` (+3) | the disk release | 558 of the 562 pieces of the game image whole |
-| ZXDB Kixx, MCM, IBSA and Erbe TZX and TAP; TOSEC `[a2]` TAP | the re-releases | one 41 246-byte block behind a small loader (Kixx: 256 bytes at `$FF00`, its last block's checksum bad; the others: 24 bytes at `$FF80`); MCM, Erbe and the `[a2]` TAP hold 397 of the 562 pieces: a later build with its code moved (the RZX archive's run is on such a build, [WALKTHROUGH 6.0](WALKTHROUGH.md#60-the-recordings)) |
+| ZXDB Kixx, MCM, IBSA and Erbe TZX and TAP; TOSEC `[a2]` TAP | the re-releases | one 41 246-byte block behind a small loader (Kixx: 256 bytes at `$FF00`, its last block's checksum bad; the others: 24 bytes at `$FF80`); MCM, Erbe and the `[a2]` TAP hold 397 of the 562 pieces: a later build with its code moved and the Kempston bug fixed ([doc 5, 5.3](docs/05-controls.md#53-the-kempston-bug)) (the RZX archive's run is on such a build, [WALKTHROUGH 6.0](WALKTHROUGH.md#60-the-recordings)) |
 | zxart and vtrd TR-DOS conversions and hacks | other people's conversions | packed or patched: from 0 to 527 of the 562 pieces |
 
 ## Build

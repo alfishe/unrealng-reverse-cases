@@ -17,7 +17,7 @@ The recordings it rests on:
 | Recording | Load | Frames | Used for |
 | --- | --- | ---: | --- |
 | `c1` | power-on, the 128 menu's Tape Loader, the original TZX at ROM speed | 33 400 | every loader stage, every frame number in this document |
-| `beeper48` | a 48K state with Is48K = `$FF` | 2 000 | the 48K path after the load |
+| `beeper48` | a 48K state with Is48K = `$FF` | 1 600 | the 48K path after the load |
 
 Conventions:
 
@@ -535,6 +535,8 @@ How to read it:
 - A flash over `$CF00-$FBFF` at about frame 5559: the decipher. The screen area then fills with the picture.
 - The long middle: group 2 fills `$6E00-$F9FF` upwards, one page every 1.75 s.
 - The end: group 3 at `$4000`, then its copy to `$FA00`.
+- The count in the title line ("4461 bytes changed" on the last picture) is the bytes changed since the previous picture,
+  not the total: the load writes all of `$4000-$FFFF`.
 
 **The point**: the order of the load is the order of trust. Nothing keyed is used until the key exists, and the game
 is written last, over the loaders.
@@ -542,7 +544,8 @@ is written last, over the loaders.
 ## 3.10 The static decode against the recording
 
 `tools/bleepload.py check` deciphers orig/'s TZX without an emulator. Its result against the image at the entry
-(`tools/image.py`; the `c1` state at 19010:70483):
+(`tools/image.py`; `c1` enters Start at 19010:70483, and the emulator's image `work/images/entry.*` is taken 97 T
+later, at 19010:70580, inside DetectPaging):
 
 | Part | Static decode | `c1` at the entry | Differences |
 | --- | --- | --- | --- |
@@ -553,7 +556,9 @@ is written last, over the loaders.
 | the 194 turbo blocks | rebuilt from their plain payloads | | 0 bad |
 
 The check ends with `194 turbo blocks rebuilt from their plain payloads; 0 bad`. The stage 1 image (SkoolKit's
-tap2sna, a full load simulation) matched `c1` except 39 bytes of `$5B89-$5BDD`, the 128K ROM's own work space.
+tap2sna, a full load simulation) matched `c1`'s image except 39 bytes: `$5B89`, `$5BC7-$5BD2`, `$5BD7-$5BE9`,
+`$5BEB-$5BEC`, `$5BFB`, `$5C06` and `$5C78` (the 128K ROM's work space and system variables, which the game
+overwrites), and `$FFFE-$FFFF` (Start's `CALL DetectPaging` return, pushed after `$AB4D`).
 
 **The point**: the cipher is fully understood. The tape is rebuilt from the plain source, byte for byte
 ([3.13](#313-the-source-build)).
@@ -587,14 +592,17 @@ original twice (stage 1): block by block (`tools/copy_blocks.py`, `work/stage1/c
 | Copy | What it is | How it differs from the original |
 | --- | --- | --- |
 | ZXDB `RickDangerous.tzx.zip` | the original (this case) | the reference |
-| ZXDB `RICKDAN1.TZX` | another dump of the Firebird tape | the BASIC and Rick1 identical; 150 of the 198 data blocks equal; its key page differs in 255 of 256 bytes, so all of group 1's keyed blocks differ; the loaded game differs in 19 bytes of variables and stack |
+| ZXDB `RICKDAN1.TZX` | another dump of the Firebird tape | the BASIC and Rick1 identical; 150 of the 198 data blocks equal: the 4 ROM blocks and all 146 blocks of groups 2 and 3, so `$6E00-$FFFF` loads the same; the 48 blocks of group 1 differ (lengths too), its key page in 255 of 256 bytes |
 | ZXDB `RICKDAN1.TAP` | the same dump as a TAP | a 774-byte BASIC that POKEs Rick1 to read a TAP |
 | ZXDB `Rick Dangerous.dsk` | the +3 disk release | 558 of the 562 image pieces whole |
 | ZXDB Kixx, MCM, IBSA, Erbe; TOSEC `[a2]` TAP | the re-releases | one 41 246-byte block behind a small loader; MCM, Erbe and `[a2]`: 397 of 562 pieces, a later build with its code moved (+8 from `$A13B`, +26 from `$E2D1`, down to +19 at `$F88C`) |
 | zxart and vtrd TR-DOS conversions and hacks | other people's work | packed or patched: 0 to 527 pieces |
 
-The second dump was mastered with another key page and the same Rick1, so its keyed bytes were enciphered with
-another key. Decoding it with this tape's key gives garbage. This case did not decode the second dump further.
+What the second dump's group 1 is was not settled. Deciphered with its own key page by this case's cipher
+(`tools/bleepload.py`, run by `work/docs/rdA/othercopy.py`), it gives garbage: the loading screen differs from ours in
+6 831 of 6 912 bytes, stage 2 in 190 of 256. So either its group 1 is damaged, or it was mastered with a cipher
+other than ours. Groups 2 and 3, which do not use the key, are byte for byte ours; no copy of the game loaded from it
+was compared.
 
 **The hacks.** ZXDB's POKE file names addresses in the original. Each one lands on an instruction this source
 explains:
@@ -606,10 +614,17 @@ explains:
 | `64166,0` | `$FAA6` | `DEC A` in DropDynamite: one stick used | a NOP: infinite dynamite |
 | `58300,n` | `$E3BC` | the 6 of `LD A,$06` in NewLife | n bullets and sticks each life |
 | `44012,n` | `$ABEC` | the 6 of `LD A,$06` in LevelEnd | n bullets and sticks at each level |
-| `58104,n` | `$E2F8` | the 6 of `LD A,$06` in NewGame | n lives, bullets and sticks at the start |
+| `58104,n` | `$E2F8` | the 6 of `LD A,$06` in NewGame | n lives at the start (NewGame also stores A in the bullets and sticks, but StartLevel always goes on to NewLife, which sets them to 6, or to the `58300` value) |
+| `63524,195` | `$F824` | `JP Z,HitsYes` in HitsObstacle, after the test against slot 0 | `JP`: whenever slot 0 is in use, every bullet or thrown object hits ("kill most enemies on arrival") |
+| `63218,195` | `$F6F2` | `JP C,OverlapNo` in ObjectsOverlap | `JP`: no two objects ever overlap ("no touch") |
+| `58357,58` | `$E3F5` | `LD (Lives),A` after the death's `DEC A` | `$3A`: `LD A,(Lives)`, the store turned into a load: infinite lives |
+| `64076,58` | `$FA4C` | `LD (Bullets),A` in FireShoot | as above: infinite bullets |
+| `64167,58` | `$FAA7` | `LD (Dynamite),A` in DropDynamite | as above: infinite dynamite |
 
-The same file lists the re-release's addresses, for example `58381` for the lives: 25 bytes later, as the shift at
-`$E2D1` says. The stage 2 zone recordings used POKE `58356,0` on a clone and say so.
+The last three are ZXDB's "alt" set. The same file lists the re-release's addresses, for example `58381` for the
+lives: 25 bytes after `$E3F4`, the shift from `$E397` on (from `$E2D1` to there it is +26). Its two `[+3]` POKEs,
+`58357,0` and `43092,54`, are for the +3 disk's build, whose code lies 1 byte up from `$E3F4` at least; they were not
+checked against that build. The stage 2 zone recordings used POKE `58356,0` on a clone and say so.
 
 **The point**: the classic cheats all hit a `DEC A` before a store, or the 6 of a refill.
 

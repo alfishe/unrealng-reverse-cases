@@ -10,13 +10,14 @@ What this covers:
 
 The recordings it rests on:
 
-| Recording | Load | Used for |
-| --- | --- | --- |
-| `c1` | power-on, the original TZX at ROM speed (128K) | the menu, the level 1 intro, level 1 in play, a quit |
-| `controls` | `after128.szx` (the menu, 128K), the four control methods in turn | the menus of each method, Rick answering the keys |
-| `gameover` | `after128.szx` (the menu), six deaths to the first boulder | GAME OVER at the last life |
-| `level1`-`level4` | `menu-cursor.szx` (level 1), the level warps (levels 2-4), the RZX's keys | the intros of levels 2-4, each level in play, the course of a game |
-| `ending` | `warp/ending.szx`: level 4 sent down the path of its last exit | the closing text, the end bonus |
+| Recording | Load | Patch | Used for |
+| --- | --- | --- | --- |
+| `c1` | power-on, the original TZX at ROM speed (128K) | none | the menu, the level 1 intro, level 1 in play, a quit |
+| `controls` | `after128.szx` (the menu, 128K), the four control methods in turn | none | the menus of each method, Rick answering the keys |
+| `gameover` | `after128.szx` (the menu), six deaths to the first boulder | none | GAME OVER at the last life |
+| `level1`-`level4` | `menu-cursor.szx` (level 1), the level warps (levels 2-4), the RZX's keys | levels 2-4: the level warp on a clone (LevelTable record N copied over record 0, Level `$E4AD` = N) and POKE 58356,0, infinite lives | the intros of levels 2-4, each level in play, the course of a game |
+| `ending` | `warp/ending.szx`: level 4 sent down the path of its last exit | on a clone: the level 4 warp, then Level = 3, the return address `$E406` pushed, PC = LevelEnd `$ABD8` | the closing text, the end bonus |
+| `docs/integrate/l1z1left` | `work/stage2/warp/L1Z1.szx`, left held | the zone warp on a clone | L1Z1's left exit is walled |
 
 The mechanics behind each rule are in [doc 10](10-gameplay-logic.md); the data of the levels in
 [doc 7](07-objects.md).
@@ -241,8 +242,9 @@ The levels one by one, at a larger scale, with their records: [level 1](img/maps
 
 ## 1.6 A route
 
-The exits give the route. Each zone has an exit back to the previous zone and one on to the next; the last zone's exit
-leads to `$FFFF`, the end of the level. The table lists the way forward, from the exit records ([doc 7, 7.1](07-objects.md#the-exits)):
+The exits give the route. Each zone after the first has an exit back to the previous zone and one on to the next; the
+first zone's back exit leads to `$FFFF` (below), and the last zone's forward exit leads to `$FFFF`, the end of the
+level. The table lists the way forward, from the exit records ([doc 7, 7.1](07-objects.md#the-exits)):
 
 | Level | Forward exits (side, at map char row) |
 | --- | --- |
@@ -252,7 +254,11 @@ leads to `$FFFF`, the end of the level. The table lists the way forward, from th
 | 4 | L4Z1 right 40, L4Z2 right 24, L4Z3 right 32, L4Z4 right 104, L4Z5 right 24, L4Z6 right 24, L4Z7 right 24, L4Z8 right 96, L4Z9 right 36: the end |
 
 Level 3 is the one with side ways: some exits lead back, and two zones (L3Z8, L3Z10) have exits that lead into
-themselves, to another row of the same map.
+themselves at the same row: L3Z8 right `$18` and left `$18` to L3Z8 `$18`, L3Z10 right `$18` to L3Z10 `$18`. An exit
+moves the view by its row minus the row there (CheckScreenExit `$AB93`: ViewTopRow - (row - row there)), here 0, and
+ExitRight `$FBDE` puts Rick at x 2, ExitLeft `$FBCF` at x `$E4`. So Rick leaves by one edge and comes back in at the
+other edge of the same zone, at the same height, the zone redrawn and its objects spawned again. No recording takes
+these exits.
 
 ```mermaid
 flowchart LR
@@ -295,8 +301,24 @@ level and prints the Egypt intro.
 **Witness.** `c1` goes from L1Z1 to L1Z2 at frame 31 172-31 173; `level1` crosses it too (zones 1 and 2). The other zones are reached by
 the zone warps, one recording each (WALKTHROUGH 6.0).
 
-The first zone of every level also has an exit to `$FFFF`, on the side Rick does not take (L1Z1 left, row 24). No
-recording takes it.
+The first zone of every level also has an exit to `$FFFF`, on the side Rick does not take: L1Z1 left row 24, L2Z1 left
+row 120, L3Z1 left row 32, L4Z1 left row 32. They sit at Rick's start height. Rick starts at map row y / 8 +
+ViewTopRow: `$8B` / 8 = 17, plus the record's first view row (8, `$68`, `$10`, `$10`), gives rows 25, 121, 33 and 33.
+CheckScreenExit takes an exit when Rick's row minus the exit's row is 0, 1 or 2, so each of these exits would match
+right at the start.
+
+```text
+start row = RickY / 8 + ViewTopRow        ; $8B / 8 = 17
+level 1: 17 + 8   = 25   exit row 24: 25 - 24 = 1 < 3, matches
+level 2: 17 + 104 = 121  exit row 120: 1, matches
+level 3: 17 + 16  = 33   exit row 32: 1, matches
+level 4: 17 + 16  = 33   exit row 32: 1, matches
+```
+
+**Witness.** `docs/integrate/l1z1left` (the L1Z1 zone warp on a clone, left held from frame 10 to 300): Rick stops at
+x 4 against the wall, and ExitLeft `$FBCF` never runs. L1Z1's back exit is walled off. The other three were tried by no
+recording, so whether a wall stops Rick there too is not known; taken, one would end the level the way the last exit does (CheckScreenExit goes on to LevelEnd `$ABD8` for
+`$FFFF`).
 
 ## 1.7 What the game does not have
 

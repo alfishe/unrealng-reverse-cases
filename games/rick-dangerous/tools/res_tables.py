@@ -1,9 +1,9 @@
 """Resource formats (tools/res_formats.py): the game's small design tables as text.
 
 - levels/leveltable.txt (LevelTable `$E4AE`, 5 records of 11 bytes): one line a record: the intro text by name, its
-  screen address, the attribute, Rick's x and y, the first zone record by name and the count of zones the spawner
-  is started with. An `@res ... include`: the build writes leveltable.inc (kit/resinc.py), its words by name and
-  record 0's field labels (LevelTextPtr ... LevelZoneCount) between its bytes.
+  screen address, the attribute, Rick's x and y, the first zone record by name and the first view row (ViewTopRow
+  `$ADB7`, passed in C to LoadScreen `$AC83`). An `@res ... include`: the build writes leveltable.inc (kit/resinc.py), its words by name and
+  record 0's field labels (LevelTextPtr ... LevelViewTop) between its bytes.
 - levels/charprops.txt (CharPropsSet0 `$F6C0`, CharPropsSet1 `$F6D0`): the char property runs of each tile set,
   (count, property) x 8; BuildCharProps `$F6A9` expands them into `$5C00-$5CFF`.
 - music/periods.txt (PeriodTable `$C000` of the AY player, 85 words): one note a line, its index, name and period.
@@ -39,11 +39,11 @@ def value_of(text):
 
 # ---- the level table
 
-FIELDS = ('LevelTextPtr', 'LevelTextAt', 'LevelAttr', 'LevelRickX', 'LevelRickY', 'LevelZone', 'LevelZoneCount')
+FIELDS = ('LevelTextPtr', 'LevelTextAt', 'LevelAttr', 'LevelRickX', 'LevelRickY', 'LevelZone', 'LevelViewTop')
 PLACES = ('the jungle (South America)', 'Egypt', 'the castle (Europe)', 'the missile base (Europe)',
           'the ending (London)')
 LEVEL = re.compile(r'^level (\d) text (\S+) at \$([0-9A-F]{4}) attr \$([0-9A-F]{2}) x \$([0-9A-F]{2}) '
-                   r'y \$([0-9A-F]{4}) zone (\S+) count \$([0-9A-F]{2})(?:\s*;.*)?$')
+                   r'y \$([0-9A-F]{4}) zone (\S+) view \$([0-9A-F]{2})(?:\s*;.*)?$')
 
 
 def records(raw):
@@ -58,10 +58,11 @@ def leveltable_to_text(raw):
         raise ValueError('leveltable: %d bytes, not records of 11' % len(raw))
     out = ['# LevelTable $E4AE: one record of 11 bytes a level (tools/res_tables.py). Fields: the intro text (a word,',
            '# by name), its screen address, the attribute stored in $7900, Rick\'s x (RickX $EAAD) and y (RickY $EAAE),',
-           '# the first zone record (Zones + 7n, by name), the count passed in C to $AC83. Record 0 is the one the game',
-           '# starts from; a level change reads record Level $E4AD. The ending\'s record uses only the text and attribute.']
+           '# the first zone record (Zones + 7n, by name), the first view row (ViewTopRow $ADB7, passed in C to $AC83).',
+           '# Record 0 is the one the game starts from; a level change reads record Level $E4AD. The ending\'s record',
+           '# uses only the text and attribute.']
     for n, (text, at, attr, x, y, zone, count) in records(raw):
-        out.append('level %d text %s at $%04X attr $%02X x $%02X y $%04X zone %s count $%02X ; %s' % (
+        out.append('level %d text %s at $%04X attr $%02X x $%02X y $%04X zone %s view $%02X ; %s' % (
             n, name_of(text), at, attr, x, y, name_of(zone), count, PLACES[n] if n < len(PLACES) else ''))
     return ('\n'.join(out) + '\n').encode()
 

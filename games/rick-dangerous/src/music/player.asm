@@ -5,7 +5,8 @@
 ; what each AY channel sounds now: tone period, volume, a software volume envelope (attack, decay, sustain, release,
 ; run by a routine pointer per channel), a duration count and a vibrato or slide added to the period. StartNote $C0E2
 ; loads a channel from a 10-byte instrument (or the first 10 bytes of an effect); UpdateAy $C19F, once a frame from
-; AyTick $C46C, steps the three channels and writes AY registers 0-10.
+; AyTick $C46C, steps the three channels and writes AY registers 7, 0-6 and 8-10, or returns at once while every
+; channel is off.
 ;
 ; The period table is the one of an Atari ST player (YM2149 at 2 MHz), index 0 = C-1: on the Spectrum's 1.7734 MHz AY
 ; every note sounds about two semitones lower. The player uses no hardware envelope: the hooks SoundHookStart $C345

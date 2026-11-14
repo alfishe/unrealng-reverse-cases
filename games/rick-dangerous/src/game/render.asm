@@ -982,9 +982,9 @@ UnusedMirrorByte:
 
 ; Draw every flagged cell with its attribute, keeping the HUD row's flags
 ;
-; Saves the sentinel byte $6F00 (into RedrawSentinel) and the 32 flags
-; $6C21-$6C40 of the HUD row (into SavedHudCells), calls DrawAllDirtyCells,
-; then puts both back.
+; Saves the sentinel byte $6F00 (into RedrawSentinel) and the 30 flags
+; $6C21-$6C3E of the HUD row (into SavedHudCells, 30 LDIs each way), calls
+; DrawAllDirtyCells, then puts both back.
 ;
 ; Callers: LoadScreen ($ACFA), the level's end ($ABE8) and each scroll step
 ; ($ADD8, $AE0F). Output: everything.
@@ -1065,7 +1065,8 @@ RedrawSentinel:
   LD (CellFlagsRow24),A
   RET
 
-; The 32 flags of the HUD row $6C21-$6C40 while RedrawScreen runs
+; The 30 flags of the HUD row $6C21-$6C3E while RedrawScreen runs (32 bytes;
+; the last 2 unused)
 SavedHudCells:
   DEFB $00,$00,$00,$00,$00,$00,$00,$00
   DEFB $00,$00,$00,$00,$00,$00,$00,$00

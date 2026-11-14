@@ -241,7 +241,7 @@ $A0FF BeeperWaitHigh
 @module controls ; The keys and joysticks: the four control methods, the start, pause and quit keys
 @about ReadInput $A14E turns the selected control method (ControlMethod $A14C, 0-3, chosen with the keys 1-4 on the title at $E273-$E2D1) into one active-low byte, InputBits $A14D: bit 0 right, 1 left, 2 down, 3 up, 4 fire. Rick's code ($F8DC, $F9A4, $F9C4, $FBC2) reads only that byte.
 @about The methods: 0 keyboard (O up, K down, Z left, X right, ENTER fire), 1 Kempston, 2 cursor keys (5 left, 6 down, 7 up, 8 right, 0 fire), 3 Sinclair (6 left, 7 right, 8 down, 9 up, 0 fire). Up beats down and left beats right on the keyboard; on the cursor keys the 5 (left) is read only when the 8 (right) is not held.
-@about The Kempston method never reads a port: InputKempston $A19F keeps A = 1 (the method number), AND $1F and CPL make $FE, so InputBits says "right" for ever and nothing else. The controls recording selected it: 52007 runs of $A1A4.
+@about The Kempston method never reads a port: InputKempston $A19F keeps A = 1 (the method number), AND $1F and CPL make $FE, so InputBits says "right" for ever and nothing else. The controls recording selected it: 52007 runs of $A1A4. Fire is lost too: StartPressed $A123 tests bit 4 of InputBits, always 1 here, so with the Kempston only ENTER starts a game. The re-releases (MCM, Erbe, IBSA, TOSEC [a2]) insert `IN A,($1F)` (`DB 1F`) and so fix it; the +3 disk and the hacks keep the bug (doc 5, 5.3).
 @about The single-key tests return Z when the key is held: the keys 1-4 (the title's method choice), the start (ENTER, a bit 7 of port $FEFE that a standard machine never pulls low, or fire), Q (quit the game, $E3C9) and P (pause, $E3D7: wait for the release, the next press and its release).
 
 $A103 c Key1Pressed ; Z if the key 1 is held
@@ -409,12 +409,12 @@ $A75D c UnusedBuildMirror ; A callable copy of BuildMirrorTable: never called
 $A761 UnusedMirrorByte
 
 $A781 c RedrawScreen ; Draw every flagged cell with its attribute, keeping the HUD row's flags
-> Saves the sentinel byte $6F00 (into RedrawSentinel) and the 32 flags $6C21-$6C40 of the HUD row (into SavedHudCells), calls DrawAllDirtyCells, then puts both back.
+> Saves the sentinel byte $6F00 (into RedrawSentinel) and the 30 flags $6C21-$6C3E of the HUD row (into SavedHudCells, 30 LDIs each way), calls DrawAllDirtyCells, then puts both back.
 > Callers: LoadScreen ($ACFA), the level's end ($ABE8) and each scroll step ($ADD8, $AE0F). Output: everything.
 > Witness: L1 613 (beeper48, c1, controls, ending2, gameover, l1end, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 $A80E RedrawSentinel ; its operand: the byte that was at $6F00
 
-$A814 b SavedHudCells 8 ; The 32 flags of the HUD row $6C21-$6C40 while RedrawScreen runs
+$A814 b SavedHudCells 8 ; The 30 flags of the HUD row $6C21-$6C3E while RedrawScreen runs (32 bytes; the last 2 unused)
 
 $A834 c DrawAllDirtyCells ; Draw the flagged cells and their attributes
 > Like DrawDirtyCells, and each cell's attribute is set from the attribute table (AttrTableHigh: $79 or $82) by its map char. A flag of 1 is cleared after the draw; a composed char's flag is left. The sentinel $FF ends the scan.
@@ -680,7 +680,7 @@ $AF56 c ClearPlayArea ; Clear the map's screen rows $6600-$68FF (the char 0)
 # ---- 30-d.ann
 # Fork D: $AF64-$E218, the level data (work/stage2/d_mkann.py writes this file)
 @module leveldata ; The level data: maps, tiles, object kinds, zones, exits, object lists, animations, scripts
-@about Rick Dangerous has four levels of 6, 7, 12 and 9 zones (34). A zone is a vertical strip of map rows; the player scrolls up and down inside it and leaves by its left or right edge into another zone (Exits). The level table at $E4AE (11 bytes a level) points at the level's first zone (bytes 8-9) and gives the starting map row (byte 10); $AC83 enters a zone.
+@about Rick Dangerous has four levels of 6, 7, 12 and 9 zones (34). A zone is a vertical strip of map rows; the player scrolls up and down inside it and leaves by its left or right edge into another zone (Exits). The level table at $E4AE (11 bytes a level) points at the level's first zone (bytes 8-9) and gives the first view row, ViewTopRow $ADB7 (byte 10); $AC83 enters a zone.
 @about All of it is editable text in src/res/levels/ (tools/res_levels.py: one file a level, plus the tiles, the object kinds and the animation and movement lists); src/res/levels/README.md lists the files, addresses and readers.
 @about The range also holds three addresses that mean RAM bank 1 code: the music the entry copies to $C000 there; their @bank lines name them so these bytes stay data.
 $AF64 b LevelMaps 8 ; The zones' maps: rows of 8 tile numbers (32 x 4 chars), one map a zone, zone after zone
@@ -801,7 +801,7 @@ $D7DB ; level 4 zone 7
 $D7E6 ; level 4 zone 8
 $D7F1 ; level 4 zone 9
 $D7FC b Objects 5 ; The object lists, one a zone: 5-byte records in map row order, then $FF and "term"
-> SpawnObjects $FD7D (D = the first map row, E = the rows) starts at the first record whose +0 is D or more and spawns while +0 < D + E. +0 the map char row (bits 3-7) ; +1 the kind (ObjectKinds; bit 7 set: taken, never spawned again; NewGame $E2DC clears bit 7 of all 365 records from $D7FD); +2 flags (bit 1: the one special slot $EA8E, bit 2: slot +0 bit 7, the whole byte to slot +$0B); +3 the x (bits 3-7) and a row offset (bits 0-2); +4 a second x (bits 3-7) and row offset (bits 0-2), slot +$0C/+$1D.
+> SpawnObjects $FD7D (D = the first map row, E = the rows) starts at the first record whose +0 is D or more and spawns while +0 < D + E. +0 the map char row (bits 3-7) ; +1 the kind (ObjectKinds; bit 7 set: taken, never spawned again; NewGame $E2DC clears bit 7 in 365 five-byte groups from $D7FD: the 331 records and the 34 zone terminators); +2 flags (bit 1: the one special slot $EA8E, bit 2: slot +0 bit 7, the whole byte to slot +$0B); +3 the x (bits 3-7) and a row offset (bits 0-2); +4 a second x (bits 3-7) and row offset (bits 0-2), slot +$0C/+$1D.
 > Each list ends with $FF and the 4 bytes "term", a 5-byte record of its own: the RES 7 loop steps over it.
 @res levels/objects.bin
 $D7FC Level1Objects ; level 1 zone 1
@@ -1036,7 +1036,7 @@ $E4AD b Level 1 ; The level, 0-3; 4 after the last (the ending)
 
 @module levels
 $E4AE b LevelTable 11 ; 11 bytes a level: 0 jungle, 1 Egypt, 2 castle, 3 missile base, 4 the ending
-> +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in `$7900`, +5 Rick's x (RickX $EAAD), +6-7 Rick's y (RickY $EAAE), +8-9 the first zone record (to IX), +10 the count passed in C to `$AC83`.
+> +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in `$7900`, +5 Rick's x (RickX $EAAD), +6-7 Rick's y (RickY $EAAE), +8-9 the first zone record (to IX), +10 the first view row, passed in C to LoadScreen `$AC83`, which stores it in ViewTopRow $ADB7 (not a zone count).
 > Record 0 is read by NewGame $E2DC and StartLevel $E32C; at a level change `$AC07` reads record Level $E4AD (`$AC56`). The ending's record has only the text and the attribute in use. The warp recordings copy record N over record 0 (WALKTHROUGH 6.0).
 @res levels/leveltable.bin include
 $E4AE LevelTextPtr
@@ -1045,7 +1045,7 @@ $E4B2 LevelAttr
 $E4B3 LevelRickX
 $E4B4 LevelRickY
 $E4B6 LevelZone
-$E4B8 LevelZoneCount
+$E4B8 LevelViewTop
 $E4B9 ; level 1: Egypt
 $E4C4 ; level 2: Europe, the castle
 $E4CF ; level 3: Europe, the missile base
@@ -1221,7 +1221,7 @@ $EFD6 c TrackerObj ; Kinds 5, 8, 11, 14: an enemy that turns towards Rick
 > Witness: L1 14644 (c1, L1Z3, L1Z4, L2Z5, L2Z6, L3Z2-L3Z4, L3Z6-L3Z9, L3Z11, L3Z12, L4Z2-L4Z8, level1, level2).
 
 $EFDB c EnemyCommon ; An enemy: fall and walk, die by the bullet or blast, stunned by the stick
-> EnemyFall $F02F; `$F812` Z kills it (KillEnemy $F17C). The bullet (the point BulletX, + `$18` when BulletDx is positive, and BulletY, `$F742`) kills it and is used up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at `$FD64` / `$FD65`) stuns it: +29 = 20 passes.
+> The patrollers and trackers (kinds 4, 5, 7, 8, 10, 11, 13, 14); the climbers run ClimberObj $F233. EnemyFall $F02F; `$F812` (HitsObstacle: object 0 or a deadly actor) Z kills it (KillEnemy $F17C). The bullet (the point BulletX, + `$18` when BulletDx is positive, and BulletY, `$F742`) kills it and is used up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at `$FD64` / `$FD65`) stuns it: +29 = 20 passes.
 > Witness: L1 39975 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2, L2Z4-L2Z7, L3Z2-L3Z12, L4Z1-L4Z9, level1, level2, level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 $EFFA EnemyBulletPoint
 $F00C EnemyTestBlast
@@ -1411,9 +1411,9 @@ $F6B3 BuildCharPropsFill
 
 $F6C0 b CharPropsSet0 2 ; Char properties of the first tile set: (count, property) x 8
 > Chars 0-76 nothing, 77-90 ladder, 91-94 deadly, 95-181 bit 3, 182-189 platform, 190-192 spring + wall, 193-251
-> wall, 252-255 floor.
+> wall, 252-255 floor (bit 7: also a ladder top, DownFloorTest $FAE6).
 @res levels/charprops.bin
-$F6D0 b CharPropsSet1 2 ; Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor
+$F6D0 b CharPropsSet1 2 ; Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor (also a ladder top)
 @res levels/charprops.bin
 
 $F6E0 c RickTouches ; Does the IX object overlap Rick? Never while Rick dies
@@ -1437,8 +1437,8 @@ $F742 c PointInObject ; Z when the point (E, HL) is inside the IX object's box
 $F76C PointInObjectNo
 
 $F76F c InBlast ; Z when the IX object lies inside the dynamite's blast box
-> The blast box: X from dynamite X (`$EAE9`) - 4 to + 32 (clamped to 0 and `$FF`), Y from dynamite Y (`$EAEA`) - 4
-> (clamped to 0) to + 29. The object's box: IX+1 / +7, IX+2/+3 / +8.
+> The blast box: X from dynamite X (`$EAE9`) - 4 to that + 32, x + 28 (clamped to 0 and `$FF`), Y from dynamite Y (`$EAEA`) - 4
+> (clamped to 0) to that + 29, y + 25: 33 x 30 pixels. The object's box: IX+1 / +7, IX+2/+3 / +8.
 > Outputs: Z/NZ, A = 0 / 1. Uses BC, DE, HL.
 > Witness: L1 1181 (beeper48, L1Z1, L1Z2, L2Z1, L2Z2, L2Z6, L2Z7, L3Z2, L3Z6, L3Z11, L4Z x5, level2, level3).
 $F778 InBlastRight

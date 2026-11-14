@@ -145,7 +145,7 @@ heading with its modules, its source, its annotations and its recordings.
 | --- | --- | --- | --- | --- | --- |
 | `$A73C` | `ComposeCount` | 1 | The next composed char's number (2 at each pass's start). Set to 2 by ComposeObjects, counted up by ComposeCell. The flags 0 and 1 mean the map, so the numbers start at 2 (`$5D00`). | `ComposeCell` | `ComposeCell`, `ComposeObjects` |
 | `$A73D` | `CharsetBase` | 2 | The charset of the screen: `$7100`, or `$7A00` when the screen record's +0 is not 0 (LoadScreen `$ACAD`). Read by DrawDirtyCells, ComposeCell and DrawAllDirtyCells: char c's 8 bytes at CharsetBase + 8c. | `ComposeCell`, `DrawAllDirtyCells`, `DrawDirtyCells` | `LoadScreen` |
-| `$A814` | `SavedHudCells` | 32 | The 32 flags of the HUD row `$6C21-$6C40` while RedrawScreen runs | `RedrawScreen` | `RedrawScreen` |
+| `$A814` | `SavedHudCells` | 32 | The 30 flags of the HUD row `$6C21-$6C3E` while RedrawScreen runs (32 bytes; the last 2 unused) | `RedrawScreen` | `RedrawScreen` |
 
 ## hud
 
@@ -185,13 +185,13 @@ heading with its modules, its source, its annotations and its recordings.
 | `$AD27` | `RestartScreenRecord` (`RestartPoint`+7) | 2 | - | `RestartScreen` | `LoadScreen` |
 | `$ADB5` | `MapBlockTable` | 2 | The current screen's map: the block numbers, 8 a row | `BuildScreenMap` | `LoadScreen` |
 | `$ADB7` | `ViewTopRow` | 2 | The map row at the view's top (read as a byte too) | `BuildScreenMap`, `CheckScreenExit`, `ExitScan`, `LoadScreen`, `SaveRestartPoint` +3 | `LoadScreen`, `ScrollViewDown`, `ScrollViewUp` (`stage1/level2`) |
-| `$E4AE` | `LevelTable` | 2 of 55 | 11 bytes a level: 0 jungle, 1 Egypt, 2 castle, 3 missile base, 4 the ending. +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in `$7900`, +5 Rick's x (RickX `$EAAD`), +6-7 Rick's y (RickY `$EAAE`), +8-9 the first zone record (to IX), +10 the count passed in C to `$AC83`. Record 0 is read by NewGame `$E2DC` and StartLevel `$E32C`; at a level change `$AC07` reads record Level `$E4AD` (`$AC56`). The ending's record has only the text and the attribute in use. The warp recordings copy record N over record 0 (WALKTHROUGH 6.0). | `Menu`, `StartLevel` (`stage1/level2`), `LevelIntro` (code) | - |
+| `$E4AE` | `LevelTable` | 2 of 55 | 11 bytes a level: 0 jungle, 1 Egypt, 2 castle, 3 missile base, 4 the ending. +0-1 the intro text, +2-3 its screen address, +4 the attribute stored in `$7900`, +5 Rick's x (RickX `$EAAD`), +6-7 Rick's y (RickY `$EAAE`), +8-9 the first zone record (to IX), +10 the first view row, passed in C to LoadScreen `$AC83`, which stores it in ViewTopRow `$ADB7` (not a zone count). Record 0 is read by NewGame `$E2DC` and StartLevel `$E32C`; at a level change `$AC07` reads record Level `$E4AD` (`$AC56`). The ending's record has only the text and the attribute in use. The warp recordings copy record N over record 0 (WALKTHROUGH 6.0). | `Menu`, `StartLevel` (`stage1/level2`), `LevelIntro` (code) | - |
 | `$E4B0` | `LevelTextAt` (`LevelTable`+2) | 2 | - | `Menu`, `LevelIntro` (code) | - |
 | `$E4B2` | `LevelAttr` (`LevelTable`+4) | 1 | - | `Menu`, `LevelIntro` (code) | - |
 | `$E4B3` | `LevelRickX` (`LevelTable`+5) | 1 | - | `Menu`, `StartLevel` (`stage1/level2`) | - |
 | `$E4B4` | `LevelRickY` (`LevelTable`+6) | 2 | - | `Menu`, `StartLevel` (`stage1/level2`) | - |
 | `$E4B6` | `LevelZone` (`LevelTable`+8) | 2 | - | `Menu`, `StartLevel` (`stage1/level2`) | - |
-| `$E4B8` | `LevelZoneCount` (`LevelTable`+10) | 45 | - | `Menu`, `StartLevel` (`stage1/level2`) | - |
+| `$E4B8` | `LevelViewTop` (`LevelTable`+10) | 45 | - | `Menu`, `StartLevel` (`stage1/level2`) | - |
 | `$FEE8` | `FreeFEE8` | 22 | 22 zero bytes, never used | - | - |
 
 ## objects
@@ -218,8 +218,8 @@ heading with its modules, its source, its annotations and its recordings.
 | `$F689` | `ProbeRecord` | 30 of 32 | The probe's box as an object record (IY) for ObjectsOverlap. ProbeBoxObject0 `$F624` writes +1 (X) and +2/+3 (Y) and hands it to ObjectsOverlap `$F6E9` as IY; the other fields are never read (0 in the image). | `ClimbRick`, `ClimberFall`, `EnemyFall`, `MoveRick`, `WalkRick` +4 | `ProbeBox`, `ProbeBoxAligned`, `ProbeBoxUnaligned`, `ProbeLow`, `ProbeBoxObject0` (`stage1/level2`) |
 | `$F6A7` | `ProbeLowResult` (`ProbeRecord`+30) | 1 | ProbeLow's top row (AND `$F0`); MoveRick reads it while crawling | `MoveRick` | `ProbeLow` |
 | `$F6A8` | `ProbeResult` (`ProbeRecord`+31) | 1 | the OR of the properties under the box (+ bit 6 for object 0) | `ClimbRick`, `ClimberFall`, `EnemyFall`, `MoveRick`, `WalkRick` +3 | `ProbeBox`, `ProbeBoxAligned`, `ProbeBoxUnaligned`, `ProbeBoxObject0` (`stage1/level2`) |
-| `$F6C0` | `CharPropsSet0` | 16 | Char properties of the first tile set: (count, property) x 8. Chars 0-76 nothing, 77-90 ladder, 91-94 deadly, 95-181 bit 3, 182-189 platform, 190-192 spring + wall, 193-251 wall, 252-255 floor. | `BuildCharProps` | - |
-| `$F6D0` | `CharPropsSet1` | 16 | Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor | `BuildCharProps` (`stage1/level3`) | - |
+| `$F6C0` | `CharPropsSet0` | 16 | Char properties of the first tile set: (count, property) x 8. Chars 0-76 nothing, 77-90 ladder, 91-94 deadly, 95-181 bit 3, 182-189 platform, 190-192 spring + wall, 193-251 wall, 252-255 floor (bit 7: also a ladder top, DownFloorTest `$FAE6`). | `BuildCharProps` | - |
+| `$F6D0` | `CharPropsSet1` | 16 | Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62 deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall, 250-255 floor (also a ladder top) | `BuildCharProps` (`stage1/level3`) | - |
 
 ## leveldata
 
@@ -269,7 +269,7 @@ heading with its modules, its source, its annotations and its recordings.
 | `$D68C` | `Level2Exits` (`Exits`+66) | 77 | level 2 zone 1 | - | - |
 | `$D6D9` | `Level3Exits` (`Exits`+143) | 192 | level 3 zone 1 | - | - |
 | `$D799` | `Level4Exits` (`Exits`+335) | 99 | level 4 zone 1 | - | - |
-| `$D7FC` | `Objects` | 285 of 1825 | The object lists, one a zone: 5-byte records in map row order, then `$FF` and "term". SpawnObjects `$FD7D` (D = the first map row, E = the rows) starts at the first record whose +0 is D or more and spawns while +0 < D + E. +0 the map char row (bits 3-7) ; +1 the kind (ObjectKinds; bit 7 set: taken, never spawned again; NewGame `$E2DC` clears bit 7 of all 365 records from `$D7FD`); +2 flags (bit 1: the one special slot `$EA8E`, bit 2: slot +0 bit 7, the whole byte to slot +`$0B`); +3 the x (bits 3-7) and a row offset (bits 0-2); +4 a second x (bits 3-7) and row offset (bits 0-2), slot +`$0C`/+`$1D`. Each list ends with `$FF` and the 4 bytes "term", a 5-byte record of its own: the RES 7 loop steps over it. | `Menu`, `SpawnObjects`, `TreasureObj` | `Menu`, `TreasureObj` |
+| `$D7FC` | `Objects` | 285 of 1825 | The object lists, one a zone: 5-byte records in map row order, then `$FF` and "term". SpawnObjects `$FD7D` (D = the first map row, E = the rows) starts at the first record whose +0 is D or more and spawns while +0 < D + E. +0 the map char row (bits 3-7) ; +1 the kind (ObjectKinds; bit 7 set: taken, never spawned again; NewGame `$E2DC` clears bit 7 in 365 five-byte groups from `$D7FD`: the 331 records and the 34 zone terminators); +2 flags (bit 1: the one special slot `$EA8E`, bit 2: slot +0 bit 7, the whole byte to slot +`$0B`); +3 the x (bits 3-7) and a row offset (bits 0-2); +4 a second x (bits 3-7) and row offset (bits 0-2), slot +`$0C`/+`$1D`. Each list ends with `$FF` and the 4 bytes "term", a 5-byte record of its own: the RES 7 loop steps over it. | `Menu`, `SpawnObjects`, `TreasureObj` | `Menu`, `TreasureObj` |
 | `$D919` | `Level2Objects` (`Objects`+285) | 460 | level 2 zone 1 | `Menu`, `SpawnObjects` (`stage1/level2`), `TreasureObj` (`stage1/level2`) | `Menu`, `TreasureObj` (`stage1/level2`) |
 | `$DAE5` | `Level3Objects` (`Objects`+745) | 545 | level 3 zone 1 | `Menu`, `SpawnObjects` (`stage1/level3`) | `Menu` |
 | `$DD06` | `Level4Objects` (`Objects`+1290) | 535 | level 4 zone 1 | `Menu`, `SpawnObjects` (`stage1/level4`) | `Menu` |
@@ -463,7 +463,7 @@ src/music/music.json`; the readers and writers from `work/stage2/c1g`, `work/sta
 | `$CD2F` | `Effect3` (`EffectTable`+39) | 13 | Effect 3: noise, a slide (step -8); a trap set off `$EFCB`, a poke with the stick `$F9EF` (level4 62 at `$EFCB`) | `AttackStep`, `AyPlayEffect`, `ChannelStep`, `DecayStep`, `ReleaseStep` +2 | - |
 | `$CD3C` | `Effect4` (`EffectTable`+52) | 13 | Effect 4: tone and noise, always channel B; Rick's steps (crawl `$FCB8`, climb `$FD0D`, walk `$FD44`) (level3 357 at `$FD44`) | `AttackStep`, `AyPlayEffect`, `ChannelStep`, `DecayStep`, `ReleaseStep` +1 | - |
 | `$CD49` | `Effect5` (`EffectTable`+65) | 13 | Effect 5: noise; no call site passes 5 | - | - |
-| `$CD56` | `Effect6` (`EffectTable`+78) | 13 | Effect 6: tone, a slide up after 4 frames (step `$0FF8`: -8 in the AY's 12 bits); a head against a ceiling `$F97D`, `$FADB` (level2 53 and 67) | `AttackStep`, `AyPlayEffect`, `ChannelStep`, `DecayStep`, `ReleaseStep` +2 | - |
+| `$CD56` | `Effect6` (`EffectTable`+78) | 13 | Effect 6: tone, a slide up after 4 frames (step `$0FF8`: -8 in the AY's 12 bits); a jump `$FADB` (Jump `$FAD3`) and a head against a ceiling `$F97D` (LandRick, rising); level2 53 and 67 | `AttackStep`, `AyPlayEffect`, `ChannelStep`, `DecayStep`, `ReleaseStep` +2 | - |
 | `$CD63` | `Effect7` (`EffectTable`+91) | 13 | Effect 7: tone, a slide up after 3 frames (step `$0FF7`); no call site passes 7 | - | - |
 | `$CD70` | `Effect8` (`EffectTable`+104) | 13 | Effect 8: tone, a vibrato; dynamite or bullets picked up, `$ED76` (once, in the L1Z4 zone recording) | - | - |
 | `$CD7D` | `Effect9` (`EffectTable`+117) | 13 | Effect 9: tone, a vibrato; a treasure picked up, `$EDEC` (level1 4) | `AttackStep`, `AyPlayEffect`, `ChannelStep`, `DecayStep`, `ReleaseStep` +2 | - |

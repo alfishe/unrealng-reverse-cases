@@ -52,7 +52,7 @@ The glyphs in numbers:
 | 36 | a bullet | (`$5B`, not used) | DrawBullets `$A968`, the bullets counter |
 | 37 | a stick of dynamite | (`$5C`, not used) | DrawDynamite `$A959`, the sticks counter |
 | 38 | Rick's face | (`$5D`, not used) | DrawLives `$A94A` |
-| 39-41 | `,` `.` `?` | `$5E`, `$5F`, `$60` | the intros and the closing text |
+| 39-41 | `,` `.` `?` | `$5E`, `$5F`, `$60` | the intros and the closing text, and the menu (the `.` of the control list, "1 . KEYBOARD") |
 | 42 | blank | (`$61`, not used) | nothing: a space prints SpaceGlyph `$AAE1` |
 
 The letters keep their ASCII codes because the printer subtracts `$37`: `'A'` = `$41` gives glyph 10. The digits
@@ -184,8 +184,8 @@ copyright sign.
 to `$40C1`, `$40E1`, then E = `$E1` + `$20` = `$01` with a carry, so D = `$40` + 8: the fourth line is at `$4801`,
 char row 8, the first row of the middle third.
 
-**Witness.** PrintText runs in `beeper48`, `c1`, `controls`, `ending2`, `gameover` and `level1` (its L1 witness,
-4 235 runs in all). The intro in the animation is the text of `src/res/texts/SouthAmericaText.txt`, line for line.
+**Witness.** PrintText runs in `beeper48`, `c1`, `controls`, `ending2`, `gameover`, `l1end` and `level1` (its L1
+witness, 4 504 runs in all). The intro in the animation is the text of `src/res/texts/SouthAmericaText.txt`, line for line.
 
 ## 8.3 The HUD
 
@@ -380,7 +380,7 @@ work/docs/rdA/shots8 hudA=31329:30000`.*
 *`c1` 31 330: five bullets. Cell 14 still holds the bullet's pixels, now in the map char's colours: DrawCounter
 gave the cell its attribute, and the map has not drawn its char there yet. Same command, `hudB=31330`.*
 
-**Witness.** UpdateHud runs 42 378 times over all the recordings (its L1 witness), DrawCounter 1 170. The two
+**Witness.** UpdateHud runs 42 930 times over all the recordings (its L1 witness), DrawCounter 1 176. The two
 screens above show the counter before and after.
 
 ## 8.4 The score
@@ -611,7 +611,8 @@ code through Quit `$E35A` ([quit picture](img/play/quit-game-over.png), `c1` 33 
 
 ```mermaid
 flowchart LR
-  Q["Quit $E35A: Q, or the last life"] --> G["GameOver $E35D"]
+  Q["Quit $E35A: Q, or the last life"] --> C["ComposeObjects $A73F"]
+  C --> G["GameOver $E35D"]
   E["CheckGameComplete $E406, after the ending"] --> G
   G --> U["UpdateHud, DrawDirtyCells"]
   U --> P["three PrintText: blank $49, GAME OVER $4F, blank $49"]
@@ -621,7 +622,9 @@ flowchart LR
 ```
 
 ```text
-GameOver:
+Quit:                                  ; $E35A
+    ComposeObjects()                   ; then falls into GameOver
+GameOver:                              ; $E35D
     UpdateHud(); DrawDirtyCells()
     PrintText(GameOverBlankText, $484B, $49)
     PrintText(GameOverText,      $486B, $4F)
@@ -632,6 +635,8 @@ GameOver:
 ```
 
 ```asm
+Quit:
+  CALL ComposeObjects     ; $E35A, falls through
 GameOver:
   CALL UpdateHud
   CALL DrawDirtyCells

@@ -42,11 +42,11 @@ flowchart LR
 | Table | Range | Entry | Fields |
 | --- | --- | --- | --- |
 | level table | `$E4AE-$E4E4` | 11 bytes, 5 records | +0-1 intro text, +2-3 its screen address, +4 the colour of char 0, +5 Rick's x, +6-7 Rick's y, +8-9 the first zone record, +10 the first map row in view |
-| zone records | `$D55C-$D64B` | 7 bytes, 34 zones | +0 char set (0: `$7100`, else `$7A00`), +1-2 map, +3-4 exit list, +5-6 object list |
+| zone records | `$D55C-$D649` | 7 bytes, 34 zones | +0 char set (0: `$7100`, else `$7A00`), +1-2 map, +3-4 exit list, +5-6 object list |
 | maps | `$AF64-$C31B` | 8 bytes a map row | a tile number per 32 pixels |
 | tiles | `$C31C-$D31B` | 16 bytes, 256 tiles | 4 rows of 4 char codes |
 | kinds | `$D31C-$D55B` | 8 bytes, 72 kinds | +0 width, +1 height (pixels), +2-3 a graphic or an animation list, +4-5 a movement script, +6 / +7 the trigger box (chars) |
-| exit lists | from `$D64C` | 5 bytes, `$FF` ends | +0 side (0 left, 1 right), +1 map char row, +2-3 the zone entered (`$FFFF`: the level's end), +4 the row there |
+| exit lists | from `$D64A` | 5 bytes, `$FF` ends | +0 side (0 left, 1 right), +1 map char row, +2-3 the zone entered (`$FFFF`: the level's end), +4 the row there |
 | object lists | `$D7FC-$DF1C` | 5 bytes, `$FF` + "term" ends | +0 map char row, +1 kind (bit 7: taken), +2 flags, +3 x and a row offset, +4 the trigger box's x and a row offset |
 | animation lists | `$DF1D-$DF82` | a byte a picture, `$FF` wraps | bit 7 mirror, bits 0-6 the frame + 1, 0 no picture |
 | movement scripts | `$DF83-$E218` | 3 bytes a step, `$FF` ends | count (passes), dx, dy (signed) |
@@ -108,8 +108,9 @@ flowchart TD
 
 Witness: LoadScreen runs 7 times in `c1` and 30 times in `level4`.
 
-**The point**: the zone record is read once. After LoadScreen no variable holds "the current zone": the map, the exit
-list and the object list live as operands inside the instructions that read them.
+**The point**: the zone record is read once. LoadScreen keeps its address in RestartScreenRecord `$AD27` for the
+restart, and nothing else reads it: the map, the exit list and the object list live as operands inside the
+instructions that read them.
 
 ### The exits
 
@@ -191,7 +192,7 @@ The record by hand:
 | `4A D6` | +3-4 exits | `$D64A` |
 | `FC D7` | +5-6 objects | `$D7FC`, the first object list |
 
-The map has 15 rows of tiles, 60 map char rows. Rows 0-4 are all tile `$46`, the jungle above. Row 5 is
+The map has 15 rows of tiles, 60 map char rows. Rows 0-4 are all tile `$46`, solid rock (chars `$D9-$DC`, in set 0's wall run 193-251). Row 5 is
 `54 49 48 71 54 53 55 54`. Tile `$54` is 16 bytes at `$C31C` + 16 x `$54` = `$C85C`. BuildScreenMap copies those 16
 char codes as a 4 x 4 block into the char map ([doc 6, 6.2](06-rendering.md#62-the-zone-build-tiles-into-the-char-map)).
 
@@ -299,7 +300,8 @@ The flags byte +11:
 | Meaning | Rick's centre triggers it | the stick triggers it | the bullet triggers it | the blast triggers it | deadly when triggered | deadly at spawn and when reset | object 0 | one-shot |
 
 **Worked example.** Rick's slot at `c1` 31 500 starts `01 8E A5 00 FD 84 01 18 15`. Kind 1, x `$8E` = 142, y
-`$00A5` = 165. Frame `$84FD` = `$8401` + 126 x 2: frame 2, in the air. Mirror `01`: drawn mirrored, he faces left.
+`$00A5` = 165, in pixels from the view's top row (ViewTopRow, 8 char rows above the screen's top), not from the
+map's top. Frame `$84FD` = `$8401` + 126 x 2: frame 2, in the air. Mirror `01`: drawn mirrored, he faces left.
 Size `$18 x $15` = 24 x 21 pixels.
 
 **The point**: a slot is the kind's record and the object's record merged, plus the state. Once spawned an object
@@ -396,7 +398,7 @@ How to read it:
   kinds, scripts and the table.
 - The red bytes fill four slots: a treasure (kind `$12`) and an actor (kind `$19`) at `$EB06` / `$EB24`, two
   patrolling enemies (kind 4) at `$EB9C` / `$EBBA`.
-- The listing at the right ends in the HUD masks: the spawn is over and the pass goes on.
+- The listing at the right ends in the redraw (DrawAllDirtyCells): the spawn is over and the screen is drawn.
 
 **Worked example.** The boulder's record `18 2A 88 01 28` at `$D801`, at Rick's restart in `L1Z1` (ViewTopRow 8):
 
@@ -483,14 +485,14 @@ flowchart TD
 | --- | --- | --- |
 | TrapObj `$EDFC` | 24-70 | `c1` 1 299, `level2` 7 377, `level3` 9 162 |
 | ClimberObj `$F233` | 6, 9, 12, 15 | `level4` 3 517 |
-| EnemyCommon `$EFDB` | 4-15 | `level1` 1 681 |
+| EnemyCommon `$EFDB` (from PatrolObj `$EFCF`, TrackerObj `$EFD6`) | 4, 5, 7, 8, 10, 11, 13, 14 | `level1` 1 681 |
 | BulletObj `$ED00` | 2 | `c1` 25, `level3` 84 |
 | DynamiteObj `$EC77` | 3 | `level2` 50, `level3` 300 |
 | TreasureObj `$EDE6` | 18-21 | 4 takes in `c1` |
 | AmmoBoxObj `$ED43` | 16, 17 | 11 zone recordings; a box taken once, in `L1Z4` |
 | KillObject `$EC42` | a type `$80` | not executed in any recording (`c1`, `c1g`, `controls`, `gameover`, `level1`-`level4`, `ending2`, `beeper48`, the 34 zone and 6 spot recordings) |
 
-UpdateObjectSlot runs 556 242 times over all the recordings: 13 a pass, the 12 slots and the end mark.
+UpdateObjectSlot runs 563 418 times over all the recordings: 13 a pass, the 12 slots and the end mark.
 
 **The point**: one compare splits the 72 kinds in two. Every kind from 24 up is the same machine, TrapObj, driven by
 its data; only the kinds below 24 have code of their own.
@@ -580,7 +582,8 @@ stateDiagram-v2
     Moving --> Moving: one script step a pass
     Moving --> Gone: script end, one-shot
     Moving --> Waiting: script end, not one-shot (home again, type bit 7 = flag bit 2)
-    Moving --> Waiting: leaves the zone sideways or below
+    Moving --> Waiting: leaves the zone (sideways, below, or y < 0), not one-shot
+    Moving --> Gone: leaves the zone, one-shot (TrapPathEnd)
     Gone --> [*]
 ```
 
@@ -638,7 +641,7 @@ Five tests decide every contact in the game:
 | RickTouches | `$F6E0` | Rick's body (x + 5 to x + 17, y to y + 20; 8 lower when crawling) against the object's +7 x +8 box | traps, enemies, boxes, treasures |
 | PointInTrigger | `$F7C3` | a point against the trigger box (+12, +13-14; the size from the kind's +6 / +7, chars x 8) | TrapTriggers, the bonus markers |
 | point in box | `$F742` | a point strictly inside the object's +7 x +8 box | the bullet's hit point |
-| in the blast | `$F76F` | the object's box against the blast: from the stick's x - 4, y - 4, 36 x 33 pixels | DynamiteObj: Rick, enemies, boxes |
+| in the blast | `$F76F` | the object's box against the blast: from the stick's x - 4, y - 4 to x + 28, y + 25 (33 x 30 pixels, clamped at 0), overlapping the object's box | DynamiteObj: Rick, enemies, boxes |
 | char properties | `$5C00` | a char cell under Rick or an enemy | walls, floors, ladders, deadly cells ([doc 10, 10.1](10-gameplay-logic.md#101-the-world-chars-and-their-properties)) |
 
 TrapTriggers `$EF2E` checks the four trigger kinds in a fixed order, by the flag bits:
@@ -734,14 +737,14 @@ The variables of a game in progress, with their values in `c1` at frame 31 500 (
 | MapBlockTable | `$ADB5` | `$AFDC` (L1Z2's map) | LoadScreen |
 | Lives | `$A958` | 6 | NewGame, MainLoop `$E3F1` (- 1 a death) |
 | Bullets | `$A976` | 5 | FireShoot `$FA4B` (- 1), the bullet box (6), NewLife (6) |
-| Dynamite | `$A967` | 6 | DropDynamite `$FAA6` (- 1), the dynamite box (6), NewLife (6) |
+| Dynamite | `$A967` | 6 | DropDynamite `$FA9C` (- 1 at `$FAA6`), the dynamite box (6), NewLife (6) |
 | Score | `$A9BE-$A9C3` | `00 00 02 05 02 00` = 2 520 | AddScore: six decimal digits, highest first |
-| Dying, DeathDone | `$FD68`, `$FD69` | 0, 0 | KillRick `$FBED`, the death fall `$FC47` |
+| Dying, DeathDone | `$FD68`, `$FD69` | 0, 0 | KillRick `$FBED`, DeathFall `$FC16` (DeathDone stored at `$FC47`) |
 | ZoneChange, ExitSide | `$FD61`, `$FD62` | 0, 1 | MoveRick at the edges |
 | Poking, PokeX, PokeY | `$FD63-$FD66` | 0 | the stick `$F9DC` |
-| YFraction, YVelocity | `$FD55`, `$FD56-$FD57` | `$80`, then `$00` low byte | MoveRick (8.8 pixels a pass) |
+| YFraction, YVelocity | `$FD55`, `$FD56-$FD57` | `$80`, `$0200` | MoveRick (8.8 pixels a pass) |
 | DynFuse, BlastX, BlastY, BlastOn | `$ECED-$ECF1` | 0 | DropDynamite `$FAB1`, DynamiteObj |
-| BonusOn | `$FD6C` | 0 | BonusTrigger `$F4C8`, BonusCollect `$F502` |
+| BonusActive | `$FD6C` | 0 | BonusTrigger `$F4C8`, BonusCollect `$F502` |
 | BonusDivider, BonusDigits | `$E495`, `$E496-$E49A` | `02`, `00 01 09 02 00` (1 920 left from the last bonus) | BonusCountdown `$E466` |
 | ControlMethod | `$A14C` | 2, the cursor keys | the menu |
 
@@ -752,7 +755,8 @@ draws `$A976` beside a bullet ([doc 8, 8.3](08-hud-and-text.md#83-the-hud) shows
 Dynamite is 6: no stick was dropped in `c1`.
 
 **The point**: the whole state of a game is a few dozen bytes, the object table, and the "taken" bits of the object
-lists, which NewGame `$E2DC` clears in 365 records.
+lists: NewGame `$E2DC` clears bit 7 in 365 five-byte groups from `$D7FD`, the 331 records and the 34 zone
+terminators.
 
 ## 7.9 Known only from the code
 

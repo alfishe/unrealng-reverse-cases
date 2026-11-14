@@ -690,10 +690,12 @@ TrackerObj:
 
 ; An enemy: fall and walk, die by the bullet or blast, stunned by the stick
 ;
-; EnemyFall $F02F; `$F812` Z kills it (KillEnemy $F17C). The bullet (the point
-; BulletX, + `$18` when BulletDx is positive, and BulletY, `$F742`) kills it
-; and is used up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at
-; `$FD64` / `$FD65`) stuns it: +29 = 20 passes.
+; The patrollers and trackers (kinds 4, 5, 7, 8, 10, 11, 13, 14); the climbers
+; run ClimberObj $F233. EnemyFall $F02F; `$F812` (HitsObstacle: object 0 or a
+; deadly actor) Z kills it (KillEnemy $F17C). The bullet (the point BulletX, +
+; `$18` when BulletDx is positive, and BulletY, `$F742`) kills it and is used
+; up; the blast (`$F76F`) kills it. The stick (`$FD63`, `$F742` at `$FD64` /
+; `$FD65`) stuns it: +29 = 20 passes.
 ;
 ; Witness: L1 39975 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2,
 ; L2Z4-L2Z7, L3Z2-L3Z12, L4Z1-L4Z9, level1, level2, level4, spotL1Z4-43,
@@ -1852,13 +1854,13 @@ BuildCharPropsFill:
 ; Chars 0-76 nothing, 77-90 ladder, 91-94 deadly, 95-181 bit 3, 182-189
 ; platform, 190-192 spring + wall, 193-251
 ;
-; wall, 252-255 floor.
+; wall, 252-255 floor (bit 7: also a ladder top, DownFloorTest $FAE6).
 CharPropsSet0:
   INCBIN "res/levels/charprops.bin",$0000,16
 
 ; Char properties of the second tile set: 0-54 nothing, 55-58 ladder, 59-62
 ; deadly, 63-206 bit 3, 207-215 platform, 216 spring + wall, 217-249 wall,
-; 250-255 floor
+; 250-255 floor (also a ladder top)
 CharPropsSet1:
   INCBIN "res/levels/charprops.bin",$0010,16
 
@@ -1978,10 +1980,11 @@ PointInObjectNo:
 
 ; Z when the IX object lies inside the dynamite's blast box
 ;
-; The blast box: X from dynamite X (`$EAE9`) - 4 to + 32 (clamped to 0 and
-; `$FF`), Y from dynamite Y (`$EAEA`) - 4
+; The blast box: X from dynamite X (`$EAE9`) - 4 to that + 32, x + 28 (clamped
+; to 0 and `$FF`), Y from dynamite Y (`$EAEA`) - 4
 ;
-; (clamped to 0) to + 29. The object's box: IX+1 / +7, IX+2/+3 / +8.
+; (clamped to 0) to that + 29, y + 25: 33 x 30 pixels. The object's box: IX+1 /
+; +7, IX+2/+3 / +8.
 ;
 ; Outputs: Z/NZ, A = 0 / 1. Uses BC, DE, HL.
 ;
