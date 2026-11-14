@@ -138,7 +138,7 @@ Witness: L1 31 (beeper48, c1, controls, ending2, gameover, l1end, L3Z12, level1)
 
 **The AY player's frame tick, called by the interrupt handler**
 
-Pages RAM 1, calls AyTick `$C46C`, pages RAM 0 back and enables interrupts. Called only from the slot at `$FF11` inside the interrupt handler (`$FEFE`), which CopyPlayerToRam1 fills with CALL `$A030` on a 128K: 50 times a second for the whole game (c1: 14301 runs in 33400 frames, most of them the loading's).
+Pages RAM 1, calls AyTick `$C46C`, pages RAM 0 back and enables interrupts. Called only from the slot at `$FF11` inside the interrupt handler (`$FEFE`), which CopyPlayerToRam1 fills with CALL `$A030` on a 128K: 50 times a second for the whole game (c1: 14 301 runs, one per frame from the entry, frame 19 012, to the end).
 
 Output: AF, BC changed (the handler saves every register).
 
@@ -561,7 +561,7 @@ Witness: L1 71 (beeper48, c1, gameover, L1Z1, L1Z2, L1Z4-L1Z6, L2Z6, L3Z6, L3Z8,
 
 **Scroll the view up by 8 rows, in two steps of 4**
 
-The mirror of ScrollViewDown: ShiftMapDown, ShiftMarksDown, ShiftObjects by +32, ViewTopRow - 4; the objects of the top rows (`$FD7D`, D = ViewTopRow, E = 8). Called when Rick's y is below `$60` (`$E43B`). Only level2 scrolled up.
+The mirror of ScrollViewDown: ShiftMapDown, ShiftMarksDown, ShiftObjects by +32, ViewTopRow - 4; the objects of the top rows (`$FD7D`, D = ViewTopRow, E = 8). Called when Rick's y is below `$60` (`$E43B`). Scrolled up in L1Z4, L2Z2, L3Z8 and L3Z9 and in level2 (11 of the 16).
 
 Witness: L1 16 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 
@@ -1859,7 +1859,7 @@ Witness: L1 55292 (beeper48, c1, controls, emptygun, gameover, l1z1left, spotL2Z
 
 The IX object becomes IY; tested against object 0 `$EA8E` (when present) and the 5 slots from `$EB06` with bit 7
 
-of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. The bullet's and the thrown objects' hit test.
+of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. An enemy's hit test: does object 0 or a deadly actor overlap it (callers EnemyCommon `$EFDE`, ClimberObj `$F23C`).
 
 Outputs: Z (A = 0) on a hit, NZ (A = 1) else. Uses BC, DE, HL, IY.
 
@@ -2006,7 +2006,7 @@ Witness: L1 106 (c1, ending2, l1end, L1Z2-L1Z4, L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z
 
 HL = RandomState + FrameCount + `$0D` + FrameCountHigh (with carry); L = A XOR L XOR D XOR E XOR H (A the caller's), stored back to RandomState; returns that byte in A, HL and DE kept.
 
-Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). What the caller does with it is known only from the code.
+Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). Its one user is WalkerStepX `$F4AA`: bit 0 picks the direction of a climber walking on a floor (0 right, 1 left), at x AND `$1E` = 8. RandomState is `$0000` in the image and never reset, so the seed is the frame count since the load.
 
 Witness: L1 519 (c1, L1Z3, L1Z4, L2Z2-L2Z5, L3Z2, L3Z5, L3Z11, L4Z1-L4Z3, L4Z5, L4Z7, L4Z8, level1-level4).
 
@@ -2383,7 +2383,7 @@ Witness: L1 400 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-
 
 ### `KillRickNow` (`$FBF2`)
 
-**Effect 11, Dying, a hop up, the drift away from the middle**
+**Effect 11, Dying, a hop up, the drift towards the middle of the screen**
 
 Part of KillRick `$FBED`. Effect 11, Dying `$FD68` = `$FF`, Y velocity `$FC00`, DeathDrift `$FD6A` = 3 (Rick X <
 
@@ -2465,9 +2465,8 @@ power-on, the original tape at ROM speed on the 128K, the control menu and play 
 
 Rick Dangerous, Firebird 1989 (Bleepload): TZX block 4, Rick1: the first loader stage, which the ROM loads at
 `$CD00` (512 bytes). Its entries are `src/loader/<module>.asm`, written from `src/loader/rick1.ann` by
-`kit/mkgame.py --part src/loader/rick1.json`; the recordings: `work/stage2/c1g` (c1: power-on, the original tape at
-ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)), and
-`work/stage1/c1` (`$CD00`-`$CEFF`).
+`kit/mkgame.py --part src/loader/rick1.json`; the recordings: `work/stage1/c1` (c1: power-on, the original tape at
+ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)).
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -2487,8 +2486,9 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 1 call (`stage1/c1` 1) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 1 call, 63 t-states own (0.00 %) |
 | Calls | `PrintInline` |
+| Writes | `$5C6B` (`DfSz`) |
 
 #### `Rick1Begin` (`$CD11`)
 
@@ -2498,9 +2498,10 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 1 call (`stage1/c1` 1) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 1 call, 44 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `NextBlock` (falls into), `ShowSearching` |
+| Writes | `$FF15` (`NextFiller`) |
 
 #### `NextBlock` (`$CD1B`)
 
@@ -2514,9 +2515,11 @@ Witness: L1 47 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 47 calls (`stage1/c1` 47) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 47 calls, 15,778 t-states own (0.00 %) |
 | Called from | `Rick1Begin` (falls into) |
 | Calls | `StoreBlock`, `LoadBlock`, `CheckBlock`, `ShowLoading` |
+| Reads | `$FE00` (`BlockBuffer`); `$FF01`-`$FF10` (`BlockNumber`, `BlockDest`, `BlockFiller`) |
+| Writes | `$FF15` (`NextFiller`) |
 
 #### `StoreBlock` (`$CD59`)
 
@@ -2528,8 +2531,10 @@ Witness: L1 47 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 47 calls (`stage1/c1` 47) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 47 calls, 260,583 t-states own (0.01 %) |
 | Called from | `NextBlock` |
+| Reads | `$FE01`-`$FF03` (`BlockPayload`, `BlockNumber`, `BlockDest`) |
+| Writes | `$5D00`-`$5DE6`; `$5DFF`; `$C900`-`$C9FF`; `$CF00`-`$FBFF` |
 
 #### `LoadBlock` (`$CD6E`)
 
@@ -2543,9 +2548,10 @@ Witness: L1 48 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 48 calls (`stage1/c1` 48) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 48 calls, 8,409,018 t-states own (0.36 %) |
 | Called from | `NextBlock` |
 | Calls | `EdgeTwo`, `EdgeOne`, `BlockLength` |
+| Writes | `$FE00`-`$FF10` (`BlockBuffer`, `BlockPayload`, `BlockNumber`, `BlockDest` and 1 more) |
 | Ports in | `$0FFE` |
 | Ports out | `$0FFE` |
 
@@ -2559,7 +2565,7 @@ Witness: L1 109221 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 109,221 calls (`stage1/c1` 109,221) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 109,221 calls, 2,402,862 t-states own (0.10 %) |
 | Called from | `LoadBlock` |
 | Calls | `EdgeOne` (falls into) |
 
@@ -2573,7 +2579,7 @@ Witness: L1 224652 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 224,652 calls (`stage1/c1` 224,652) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 224,652 calls, 294,552,267 t-states own (12.44 %) |
 | Called from | `LoadBlock`, `EdgeTwo` (falls into) |
 | Ports in | `$7FFE` |
 | Ports out | `$09FE`, `$0AFE`, `$0DFE`, `$0EFE` |
@@ -2586,8 +2592,9 @@ Witness: L1 96 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 96 calls (`stage1/c1` 96) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 96 calls, 12,280 t-states own (0.00 %) |
 | Called from | `LoadBlock`, `CheckBlock` |
+| Reads | `$FF15` (`NextFiller`) |
 
 #### `CheckBlock` (`$CE2A`)
 
@@ -2597,9 +2604,10 @@ Witness: L1 48 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 48 calls (`stage1/c1` 48) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 48 calls, 608,766 t-states own (0.03 %) |
 | Called from | `NextBlock` |
 | Calls | `BlockLength` |
+| Reads | `$FE00`-`$FF0F` (`BlockBuffer`, `BlockPayload`, `BlockNumber`, `BlockDest` and 1 more) |
 
 #### `PrintBlockNumber` (`$CE3D`)
 
@@ -2609,9 +2617,11 @@ Witness: L1 47 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 47 calls (`stage1/c1` 47) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 47 calls, 3,908 t-states own (0.00 %) |
 | Called from | `ShowLoadingNumber` (tail), `ShowSearchingNumber` (tail) |
 | Calls | `PrintHexDigit` (falls into) |
+| Reads | `$FF01` (`BlockNumber`) |
+| Writes | `$FF01` (`BlockNumber`) |
 
 #### `PrintHexDigit` (`$CE4B`)
 
@@ -2621,7 +2631,7 @@ Witness: L1 96 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 96 calls (`stage1/c1` 96) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 96 calls, 5,218 t-states own (0.00 %) |
 | Called from | `PrintBlockNumber` (falls into) |
 
 #### `ShowLoading` (`$CE57`)
@@ -2634,7 +2644,7 @@ Witness: L1 47 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 47 calls (`stage1/c1` 47) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 47 calls, 1,833 t-states own (0.00 %) |
 | Called from | `NextBlock` |
 | Calls | `PrintInline` |
 
@@ -2646,7 +2656,7 @@ Witness: L1 47 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 47 calls (`stage1/c1` 47) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 47 calls, 1,410 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintBlockNumber` (tail) |
 
@@ -2682,7 +2692,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 1 call (`stage1/c1` 1) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 1 call, 28 t-states own (0.00 %) |
 | Called from | `Rick1Begin` |
 | Calls | `PrintInline` |
 
@@ -2694,7 +2704,7 @@ Witness: L1 1 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 1 call (`stage1/c1` 1) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 1 call, 24 t-states own (0.00 %) |
 | Called from | `PrintInline` |
 | Calls | `PrintBlockNumber` (tail) |
 
@@ -2730,18 +2740,18 @@ Witness: L1 49 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 49 calls (`stage1/c1` 49) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 49 calls, 69,750 t-states own (0.00 %) |
 | Called from | `Rick1Start`, `ShowLoading`, `ShowSearching` |
 | Calls | `Rick1Begin`, `ShowLoadingNumber`, `ShowSearchingNumber` |
+| Reads | `$CD0C`-`$CD10` (`ColoursText`); `$CE5C`-`$CE78` (`LoadingText`); `$CE9F`-`$CEAC` (`SearchingText`) |
 
 
 ## The second loader stage (`src/loader/stage2.json`)
 
 Rick Dangerous, Firebird 1989 (Bleepload): group 1's block 46: the second loader stage at `$5D00` (256 bytes,
 deciphered, as the tape holds it). Its entries are `src/loader/<module>.asm`, written from `src/loader/stage2.ann`
-by `kit/mkgame.py --part src/loader/stage2.json`; the recordings: `work/stage2/c1g` (c1: power-on, the original tape
-at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)),
-and `work/stage1/c1` (`$5D00`-`$5DFF`).
+by `kit/mkgame.py --part src/loader/stage2.json`; the recordings: `work/stage1/c1` (c1: power-on, the original tape
+at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)).
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -2768,9 +2778,8 @@ Witness: L1 1 (c1).
 
 Rick Dangerous, Firebird 1989 (Bleepload): group 1's blocks 44-45: LoadGroup at `$FA00`, the loader of groups 2 and
 3 (512 bytes, deciphered). Its entries are `src/loader/<module>.asm`, written from `src/loader/loadgroup.ann` by
-`kit/mkgame.py --part src/loader/loadgroup.json`; the recordings: `work/stage2/c1g` (c1: power-on, the original tape
-at ROM speed on the 128K, the control menu and play on level 1; from the entry `$AB4D` (frame 19 010, T 70 483)),
-and `work/stage1/c1` (`$FA00`-`$FBFF`).
+`kit/mkgame.py --part src/loader/loadgroup.json`; the recordings: `work/stage1/c1` (c1: power-on, the original tape
+at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)).
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
@@ -2796,8 +2805,9 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 2 calls (`stage1/c1` 2) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 2 calls, 254 t-states own (0.00 %) |
 | Calls | `GroupPrintInline` |
+| Writes | `$5C6B` (`DfSz`); `$FBE7`-`$FBF3` (`StatusAt`, `AtStatusEnd`, `AtError`, `ErrorAtText` and 2 more) |
 
 #### `LoadGroupBegin` (`$FA1F`)
 
@@ -2819,7 +2829,7 @@ Witness: L1 146 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 146 calls (`stage1/c1` 146) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 146 calls, 1,821 t-states own (0.00 %) |
 
 #### `LoadGroupBlock` (`$FA85`)
 
@@ -2831,7 +2841,7 @@ Witness: L1 146 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 146 calls (`stage1/c1` 146) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 146 calls, 1,672,858 t-states own (0.07 %) |
 | Calls | `GroupEdgeOne` |
 
 #### `GroupEdgeTwo` (`$FB0E`)
@@ -2852,7 +2862,7 @@ Witness: L1 677895 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 677,895 calls (`stage1/c1` 677,895) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 677,895 calls, 4,745,265 t-states own (0.20 %) |
 | Called from | `LoadGroupBlock` |
 
 #### `GroupSpareRet` (`$FB31`)
@@ -2885,7 +2895,7 @@ Witness: L1 198 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings run into, not called (`stage1/c1`) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | run into, not called, 1,723 t-states own (0.00 %) |
 
 #### `GroupPrintHexDigit` (`$FB53`)
 
@@ -2905,7 +2915,7 @@ Witness: L1 146 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 146 calls (`stage1/c1` 146) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 146 calls, 3,575 t-states own (0.00 %) |
 
 #### `ShowGroupLoadingNumber` (`$FB78`)
 
@@ -2915,7 +2925,7 @@ Witness: L1 146 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 146 calls (`stage1/c1` 146) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 146 calls, 5,194 t-states own (0.00 %) |
 
 #### `GroupBadBlock` (`$FB7C`)
 
@@ -2949,7 +2959,7 @@ Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 2 calls (`stage1/c1` 2) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 2 calls, 27 t-states own (0.00 %) |
 
 #### `ShowGroupSearchingNumber` (`$FBAB`)
 
@@ -2993,7 +3003,7 @@ Witness: L1 594 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 594 calls (`stage1/c1` 594) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 594 calls, 7,088 t-states own (0.00 %) |
 | Called from | `LoadGroup`, `ClearMessage`, `AtError` |
 
 #### `ClearMessage` (`$FBD2`)
@@ -3004,7 +3014,7 @@ Witness: L1 148 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 148 calls (`stage1/c1` 148) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 148 calls, 3,001 t-states own (0.00 %) |
 | Calls | `GroupPrintInline` |
 
 #### `ClearMessageEnd` (`$FBE2`)
@@ -3015,7 +3025,7 @@ Witness: L1 148 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 148 calls (`stage1/c1` 148) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 148 calls, 1,642 t-states own (0.00 %) |
 
 #### `AtStatus` (`$FBE3`)
 
@@ -3035,7 +3045,7 @@ Witness: L1 148 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 148 calls (`stage1/c1` 148) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 148 calls, 1,852 t-states own (0.00 %) |
 
 #### `AtError` (`$FBEB`)
 
@@ -3045,7 +3055,7 @@ Witness: L1 148 (c1).
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage2/c1g`; in the other recordings 148 calls (`stage1/c1` 148) |
+| Runs (c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)) | 148 calls, 2,722 t-states own (0.00 %) |
 | Calls | `GroupPrintInline` |
 
 #### `AtErrorEnd` (`$FBF2`)

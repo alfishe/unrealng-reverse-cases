@@ -7,6 +7,7 @@ What this covers:
 - the object table `$EA8E`: 12 slots of 30 bytes;
 - the spawner SpawnObjects `$FD7D`, and the update dispatch UpdateObjectSlot `$EC15`;
 - the kinds `$D31C`, their animation lists and their movement scripts, with the boulder of L1Z1 at work;
+- the boxes and the treasures, and the random numbers;
 - the triggers and the collision tests;
 - the game variables.
 
@@ -631,6 +632,124 @@ x 140, frame 25 = base 23 + 2, walk step -2, count 32. Its walk, and its death t
 
 **The point**: the 47 actor kinds are data. A rolling boulder, a spear from a wall and a dropping block differ only in
 their animation list, their script and their flags; one routine of 467 bytes (`$EDFC-$EFCE`) runs them all.
+
+### The boxes and the treasures
+
+AmmoBoxObj `$ED43` runs kinds 16 (the dynamite box) and 17 (the bullet box); TreasureObj `$EDE6` runs kinds 18-21.
+Neither moves. Both end with MarkObjectDone `$EDDC`, which sets bit 7 of the object's level list entry, so the item
+does not come back when the zone is entered again (NewGame clears the bits).
+
+```text
+AmmoBoxObj (IX = a box):
+    type bit 7 set (being destroyed): +24 += 1; +24 = 10: free the slot
+                                      else picture = BlastFrames $ECF6[+24 AND $1E]
+    Rick touches it: effect 8; free the slot; kind 16: Dynamite = 6, kind 17: Bullets = 6; MarkObjectDone
+    the stick's point, the bullet's point (the bullet used up) or the blast on it:
+        type bit 7 set, +24 = 0, MarkObjectDone
+TreasureObj (IX = a treasure):
+    Rick touches it: effect 9; free the slot; score + 500 (Award500); MarkObjectDone
+```
+
+```text
+ED6E CD E0 F6    CALL RickTouches       ; BoxActive
+ED71 C2 93 ED    JP NZ,BoxTestStick
+ED74 3E 08       LD A,$08
+ED76 CD ED 9F    CALL PlayEffect        ; effect 8: taken
+ED79 DD 7E 00    LD A,(IX+$00)
+ED7C DD 36 00 00 LD (IX+$00),$00        ; the slot freed
+ED80 FE 10       CP $10
+ED82 3E 06       LD A,$06
+ED84 CA 8D ED    JP Z,BoxGiveDynamite   ; kind 16: Dynamite $A967 = 6
+ED87 32 76 A9    LD (Bullets),A         ; kind 17: Bullets $A976 = 6
+ED8A C3 DC ED    JP MarkObjectDone
+...
+EDE6 CD E0 F6    CALL RickTouches       ; TreasureObj
+EDE9 C0          RET NZ
+EDEA 3E 09       LD A,$09
+EDEC CD ED 9F    CALL PlayEffect        ; effect 9
+EDEF DD 36 00 00 LD (IX+$00),$00
+EDF3 11 DD A9    LD DE,Award500+$0004
+EDF6 CD E8 A9    CALL AddScore          ; + 500
+EDF9 C3 DC ED    JP MarkObjectDone
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Waiting: spawned (kind 16 or 17)
+    Waiting --> Taken: Rick touches it (effect 8, the counter back to 6)
+    Waiting --> Exploding: the stick, the bullet or the blast (type bit 7)
+    Exploding --> Exploding: BlastFrames, passes 1-9
+    Exploding --> Gone: the tenth pass frees the slot
+    Taken --> Gone: slot freed, marked done
+    Gone --> [*]
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Waiting: spawned (kinds 18-21)
+    Waiting --> Waiting: Rick not touching
+    Waiting --> Gone: Rick touches it (effect 9, + 500, marked done)
+    Gone --> [*]
+```
+
+**Worked example.** In `L1Z4` Rick walks into the bullet box: RickTouches returns Z, PlayEffect plays effect 8
+(`$ED76`, its one run), the kind is `$11`, not `$10`, so `$ED87` writes 6 into Bullets `$A976`, and MarkObjectDone
+sets bit 7 of the box's list entry. A treasure is the same with effect 9 and AddScore: `c1` and `level1` each take 4.
+
+Witness: AmmoBoxObj runs wherever a box is in view in the zone recordings; the bullet box taken once (`L1Z4`), a box
+blown up in `L4Z4` (BoxBlastFrame, 9 passes). TreasureObj's effect (`$EDEC`) runs 4 times in `c1` and `level1`, once in
+`level2`.
+
+### The random numbers
+
+The game has one random number generator, Random `$E441`, and one user of it. Its state is RandomState `$E460`
+(16 bits, `$0000` in the image, never reset); it mixes in the 32-bit frame count FrameCount `$E462` /
+FrameCountHigh `$E464`, which FrameTick `$E49B` counts up once a frame from the interrupt. So the seed is the time
+since the load.
+
+```text
+Random (A = the caller's byte):
+    HL = RandomState + FrameCount + $0D + FrameCountHigh (+ the carry)
+    A = A XOR L XOR D XOR E XOR H                 # DE = FrameCountHigh
+    RandomState = H, A                            # L replaced by the result
+    return A                                      # HL, DE kept
+```
+
+```text
+E443 2A 60 E4    LD HL,(RandomState)
+E446 ED 5B 62 E4 LD DE,(FrameCount)
+E44A 19          ADD HL,DE
+E44B 11 0D 00    LD DE,$000D
+E44E 19          ADD HL,DE
+E44F ED 5B 64 E4 LD DE,(FrameCountHigh)
+E453 ED 5A       ADC HL,DE
+E455 AD          XOR L
+E456 AA          XOR D
+E457 AB          XOR E
+E458 AC          XOR H
+E459 6F          LD L,A
+E45A 22 60 E4    LD (RandomState),HL
+```
+
+Its one caller is WalkerStepX `$F4AA`: a climber (kinds 6, 9, 12, 15) that has landed on a floor walks 2 pixels a
+pass, and each time its x AND `$1E` = 8 (once every 32 pixels) bit 0 of Random picks its direction: 0 right (+2),
+1 left (-2) ([doc 10, 10.5](10-gameplay-logic.md#105-enemies)).
+
+```mermaid
+flowchart LR
+    T[FrameTick E49B, each frame] --> FC[FrameCount E462-E465]
+    FC --> R[Random E441]
+    RS[RandomState E460] --> R
+    R --> RS
+    R --> W[WalkerStepX F4AA: bit 0, the climber's direction]
+```
+
+**Worked example.** At `c1` 31 500 the image holds RandomState = `$0000`, FrameCount = `$309E`, FrameCountHigh = 0. A
+call there with A = 8 (WalkerStepX's x AND `$1E`) gives HL = `$0000` + `$309E` + `$0D` = `$30AB`, A = 8 XOR `$AB`
+XOR 0 XOR 0 XOR `$30` = `$93`: bit 0 is 1, so the climber turns left, and RandomState becomes `$3093`.
+
+Witness: Random runs 519 times over all the recordings (its L1 witness), among them `c1` 3, `level1` 19, `level2`
+32, `level3` 13 and `level4` 137, each run followed by `$F4AD` (the caller's next instruction) as often.
 
 ## 7.7 Triggers and collisions
 

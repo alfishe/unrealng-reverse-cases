@@ -146,8 +146,10 @@ GameComplete:
 ; XOR L XOR D XOR E XOR H (A the caller's), stored back to RandomState; returns
 ; that byte in A, HL and DE kept.
 ;
-; Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). What the
-; caller does with it is known only from the code.
+; Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). Its one
+; user is WalkerStepX `$F4AA`: bit 0 picks the direction of a climber walking
+; on a floor (0 right, 1 left), at x AND `$1E` = 8. RandomState is `$0000` in
+; the image and never reset, so the seed is the frame count since the load.
 ;
 ; Witness: L1 519 (c1, L1Z3, L1Z4, L2Z2-L2Z5, L3Z2, L3Z5, L3Z11, L4Z1-L4Z3,
 ; L4Z5, L4Z7, L4Z8, level1-level4).

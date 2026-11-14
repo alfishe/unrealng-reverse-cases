@@ -55,8 +55,8 @@ heading with its modules, its source, its annotations and its recordings.
 | `$8300` | `Im2Table` | 257 | The IM 2 vector table: 257 bytes `$FE` written at the entry (`$A215`, I = `$83`), 0 as loaded. `$A215` fills `$8300-$8400` with `$FE` and sets I = `$83`, so any data bus value gives the vector `$FEFE`, the handler. With the Spectrum's idle bus (`$FF`) every interrupt reads `$83FF` and `$8400` (every routine of the recordings shows that read: the interrupt's acceptance booked to the interrupted instruction). | `Im2Handler` | `SetUpInterrupts` |
 | `$A237` | `FrameTicks` | 2 | The frame count: +1 each interrupt (`$FF07-$FF0B`), cleared by WaitFrames and the frame loop (`$E411`). Only the first byte is used. | `Im2Handler`, `WaitFrames` | `Im2Handler`, `Menu`, `WaitFrames`, `StartLevel` (`stage1/level2`), `MainLoopHalt` (code) |
 | `$FF1E` | `BasicStackResidue` | 58 | Residue of a 48K BASIC session the tape carries: never read. Bytes the tape's last group holds, read by no code: the leftovers of the developers' BASIC memory. The ROM's machine stack (return addresses such as `$1B76` and `$1303` at `$FF52`) and, at `$FF57`, RAMTOP's GO SUB stack marker `$3E`. | - | - |
-| `$FF58` | `UdgResidue` | 150 | The BASIC UDGs A-U as the ROM sets them up: never read. 21 letters, 8 bytes each, as the ROM copies them to UDG `$FF58`; the game stack takes the last 18 bytes. | - | - |
-| `$FFEE` | `GameStack` | 18 | The game's stack: SP = 0 (`$A258`), it grows down from `$FFFF`. The image holds the UDG bytes here; at run time the stack's words. Where the stack really ends is known only from the code: this entry takes 18 bytes, the last two and a half UDG letters. | - | `Im2Handler` |
+| `$FF58` | `UdgResidue` | 150 | The BASIC UDGs A-U as the ROM sets them up: never read. 21 letters, 8 bytes each, as the ROM copies them to UDG `$FF58`; the game stack uses at least the last 28 bytes (`$FFE4` on). | - | - |
+| `$FFEE` | `GameStack` | 18 | The game's stack: SP = 0, set at Start `$AB4E`; it grows down from `$FFFF`. The image holds the UDG bytes here; at run time the stack's words. This entry is the last 18 bytes; the deepest use seen in the memory images is `$FFE4` (`menu` and `play`), 28 bytes, so the stack also reaches into UdgResidue. | - | `Im2Handler` |
 
 ## sprites
 
@@ -372,16 +372,16 @@ from `src/tape/basic.ann` by `kit/mkgame.py --part src/tape/basic.json`; the rea
 
 Rick Dangerous, Firebird 1989 (Bleepload): TZX block 4, Rick1: the first loader stage, which the ROM loads at
 `$CD00` (512 bytes). Its entries are `src/loader/<module>.asm`, written from `src/loader/rick1.ann` by
-`kit/mkgame.py --part src/loader/rick1.json`; the readers and writers from `work/stage2/c1g`.
+`kit/mkgame.py --part src/loader/rick1.json`; the readers and writers from `work/stage1/c1`.
 
 ### Rick1, the first loader stage: rick1
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$CD0C` | `ColoursText` | 5 | INK 9, PAPER 8: the print colours (contrasting ink, transparent paper), `$FF` the end | - | - |
-| `$CE5C` | `LoadingText` | 29 | AT 10,10, twelve spaces (clear the search line), AT 7,10 "Loading   " | - | - |
+| `$CD0C` | `ColoursText` | 5 | INK 9, PAPER 8: the print colours (contrasting ink, transparent paper), `$FF` the end | `PrintInline` | - |
+| `$CE5C` | `LoadingText` | 29 | AT 10,10, twelve spaces (clear the search line), AT 7,10 "Loading   " | `PrintInline` | - |
 | `$CE84` | `BlockText` | 14 | AT 7,10 "Block ?   " | - | - |
-| `$CE9F` | `SearchingText` | 14 | AT 10,10 "Searching " | - | - |
+| `$CE9F` | `SearchingText` | 14 | AT 10,10 "Searching " | `PrintInline` | - |
 | `$CEB5` | `RewindText` | 14 | AT 10,10 "Rewind to " | - | - |
 | `$CED4` | `Rick1Spare` | 44 | Rick1's last 44 bytes: zeros, which nothing reads but MakeKey `$5D12` (the key material) | - | - |
 
@@ -390,7 +390,7 @@ Rick Dangerous, Firebird 1989 (Bleepload): TZX block 4, Rick1: the first loader 
 
 Rick Dangerous, Firebird 1989 (Bleepload): group 1's block 46: the second loader stage at `$5D00` (256 bytes,
 deciphered, as the tape holds it). Its entries are `src/loader/<module>.asm`, written from `src/loader/stage2.ann`
-by `kit/mkgame.py --part src/loader/stage2.json`; the readers and writers from `work/stage2/c1g`.
+by `kit/mkgame.py --part src/loader/stage2.json`; the readers and writers from `work/stage1/c1`.
 
 ### The second loader stage: stage2
 
@@ -403,7 +403,7 @@ by `kit/mkgame.py --part src/loader/stage2.json`; the readers and writers from `
 
 Rick Dangerous, Firebird 1989 (Bleepload): group 1's blocks 44-45: LoadGroup at `$FA00`, the loader of groups 2 and
 3 (512 bytes, deciphered). Its entries are `src/loader/<module>.asm`, written from `src/loader/loadgroup.ann` by
-`kit/mkgame.py --part src/loader/loadgroup.json`; the readers and writers from `work/stage2/c1g`.
+`kit/mkgame.py --part src/loader/loadgroup.json`; the readers and writers from `work/stage1/c1`.
 
 ### LoadGroup, the loader of groups 2 and 3: loadgroup
 
@@ -415,11 +415,11 @@ Rick Dangerous, Firebird 1989 (Bleepload): group 1's blocks 44-45: LoadGroup at 
 | `$FBA0` | `GroupSearchingText` | 11 | "Searching " | - | - |
 | `$FBB6` | `GroupRewindText` | 11 | "Rewind to " | - | - |
 | `$FBD5` | `SpacesText` | 13 | twelve spaces | - | - |
-| `$FBE6` | `StatusAtText` | 1 of 4 | AT row, column: the row and the column LoadGroup sets | - | `LoadGroup` (code) |
-| `$FBE7` | `StatusAt` (`StatusAtText`+1) | 3 | the row, then the column: LoadGroup's C and B | - | `LoadGroup` (code) |
-| `$FBEE` | `ErrorAtText` | 1 of 4 | AT row, column: the row and the column LoadGroup sets | - | `LoadGroup` (code) |
-| `$FBEF` | `ErrorAt` (`ErrorAtText`+1) | 3 | the row, then the column: LoadGroup's E and D | - | `LoadGroup` (code) |
-| `$FBF3` | `GroupMarker` | 1 | The marker of the group being loaded (`$34` or `$35`), set by LoadGroup | `GroupNextBlock` (code) | `LoadGroup` (code) |
+| `$FBE6` | `StatusAtText` | 1 of 4 | AT row, column: the row and the column LoadGroup sets | - | `LoadGroup` |
+| `$FBE7` | `StatusAt` (`StatusAtText`+1) | 3 | the row, then the column: LoadGroup's C and B | - | `LoadGroup` |
+| `$FBEE` | `ErrorAtText` | 1 of 4 | AT row, column: the row and the column LoadGroup sets | - | `LoadGroup` |
+| `$FBEF` | `ErrorAt` (`ErrorAtText`+1) | 3 | the row, then the column: LoadGroup's E and D | - | `LoadGroup` |
+| `$FBF3` | `GroupMarker` | 1 | The marker of the group being loaded (`$34` or `$35`), set by LoadGroup | `GroupNextBlock` (code) | `LoadGroup` |
 | `$FBF4` | `LoadGroupSpare` | 12 | LoadGroup's last 12 bytes: zeros | - | - |
 
 
@@ -474,7 +474,7 @@ src/music/music.json`; the readers and writers from `work/stage2/c1g`, `work/sta
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$C6E5` | `Patterns` | 938 | The 55 patterns, one after the other: notes (note, frames), rests, instrument bytes, `$FF` at the end. A pattern: `$80`-`$87` instrument slot, `$7F` FRAMES a rest, `$7E` LO HI FRAMES a period given directly, NOTE FRAMES a note (NOTE 0-`$7D`, played at PeriodTable[NOTE + transpose + 12]), `$FF` the end. The tunes use notes 6-52, durations of 4-96 frames (50 a second) and instruments 0-5. Patterns 34-37 are empty (only `$FF`), and 12 patterns are named by no order list: 21, 28-30, 34-37, 39, 42, 49, 50. | `PatternCommand`, `TrackStep` | - |
+| `$C6E5` | `Patterns` | 938 | The 55 patterns, one after the other: notes (note, frames), rests, instrument bytes, `$FF` at the end. A pattern: `$80`-`$87` instrument slot, `$7F` FRAMES a rest, `$7E` LO HI FRAMES a period given directly, NOTE FRAMES a note (NOTE 0-`$7D`, played at PeriodTable[NOTE + transpose + 12]), `$FF` the end. The tunes use notes 6-52, durations of 4-96 frames (50 a second) and instruments 0-4 (instrument 5 only in pattern 42, which no tune uses). Patterns 34-37 are empty (only `$FF`), and 12 patterns are named by no order list: 21, 28-30, 34-37, 39, 42, 49, 50. | `PatternCommand`, `TrackStep` | - |
 | `$CA8F` | `TuneTable` | 48 | 8 tunes x 3 order list pointers (channels A, B, C). Tune 0 `$E324` (a level's intro), 1-4 `$AC20` (a level's end), 5 `$E220` (the menu), 6 `$E386` (GAME OVER), 7 `$F531` (the bonus end marker). In the recordings (reads of this table): tunes 0, 5, 6 in `controls` and `gameover`; 0, 5, 6, 7 in `level1`; 4, 5, 6 in `ending`. | `AyPlayTune` | - |
 | `$CABF` | `OrderLists` | 395 | The 24 order lists: pattern numbers, `$80`+N repeats, `$FE` N transpose, `$FF` end. Stored for tunes 0-3, 5-7, then 4. Tunes 2, 3, 4, 6 and 7 leave a channel silent (a list that is only `$FF`). Transposes run from -12 (tune 2) to +28 semitones (tune 0's last pattern). | `TrackStep` | - |
 | `$CC4A` | `PatternLo` | 55 | The low bytes of the 55 pattern addresses | `TrackStep` | - |

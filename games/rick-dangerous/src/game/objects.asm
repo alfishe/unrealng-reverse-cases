@@ -2113,8 +2113,9 @@ PointInTriggerNo:
 ; The IX object becomes IY; tested against object 0 `$EA8E` (when present) and
 ; the 5 slots from `$EB06` with bit 7
 ;
-; of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. The bullet's and the
-; thrown objects' hit test.
+; of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. An enemy's hit test:
+; does object 0 or a deadly actor overlap it (callers EnemyCommon `$EFDE`,
+; ClimberObj `$F23C`).
 ;
 ; Outputs: Z (A = 0) on a hit, NZ (A = 1) else. Uses BC, DE, HL, IY.
 ;

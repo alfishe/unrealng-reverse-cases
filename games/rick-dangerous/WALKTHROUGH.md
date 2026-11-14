@@ -15,16 +15,17 @@ copies:
 - `tools/copy_blocks.py` compared the tapes block by block;
 - a search for the game image's 562 pieces of 64 bytes went through every copy (`work/stage1/copy-image.txt`).
 
-The results are in the README's copies table. The disk release holds 558 of the 562 pieces. The Kixx, MCM, IBSA and
-Erbe re-releases are a later build with its code moved: from `$A13B` on, about 10 bytes later, and from `$E2D1` on, 25
-bytes later.
+The results are in the README's copies table. The disk release holds 558 of the 562 pieces. The MCM and Erbe
+re-releases and TOSEC `[a2]` are a later build: code moved +8 from `$A13B`, +26 from `$E2D1`, down to +19 at `$F88C`
+(397 of the 562 pieces found; ZXDB's IBSA file calls itself MCM). The Kixx copy is packed and was not compared.
 
 `tools/tzxblocks.py list` lists the tape: a BASIC loader, the 512-byte first stage "Rick1" at `$CD00`, then three
 groups of Bleepload turbo blocks (48 + 140 + 6). [Doc 3, 3.1](docs/03-build-and-load.md#31-the-tape-block-by-block)
 has the table. The turbo payload is enciphered: none of its 37 376 bytes equals the image byte at its destination.
 So the game image is not cut from the tape. SkoolKit's `tap2sna.py` instead simulates the whole load on a 128K up to
 the entry `$AB4D` (`python3 tools/image.py work/mkgame/original.bin`, `case.json` `image_cmd`). Its image matches the
-emulator's at the entry in `c1` except 39 bytes in `$5B89-$5BDD`, which the game overwrites before it uses them
+emulator's at the entry in `c1` except 39 bytes (`$5B89`, `$5BC7-$5BD2`, `$5BD7-$5BE9`, `$5BEB-$5BEC`, `$5BFB`, `$5C06`, `$5C78`,
+`$FFFE-$FFFF`), which the game overwrites before it uses them
 ([doc 2, 2.3](docs/02-architecture.md#23-the-images-loaded-at-the-entry-in-play)).
 
 The SAM Coupe port's source disk (zxart, ZXDB 38305): not used (only the standard Spectrum releases).
@@ -39,7 +40,7 @@ The SAM Coupe port's source disk (zxart, ZXDB 38305): not used (only the standar
 | --- | --- |
 | 0 | power-on |
 | 0-19 010 | BASIC, "Rick1", then the turbo groups 1, 2 and 3; the interrupts are disabled through the turbo load |
-| 19 010 | the entry `$AB4D` (DI, `LD SP,0`, `CALL $A043`); the RAM 1 copy starts at T-state 70 589 |
+| 19 010 | the entry `$AB4D` (DI, `LD SP,0`, `CALL $A043`); DetectPaging's test write at T-state 70 589; the RAM 1 copy starts at 70 632 and ends in frame 19 012 |
 | 30 250 | the menu ([menu](docs/img/play/menu.png)) |
 | 30 500 | the intro text of level 1 |
 | 31 000 | level 1 in play |
@@ -53,10 +54,10 @@ holds, the vector is `$FEFE`. The handler at `$FEFE-$FF1D` does the following:
 - on the 128K, calls the music tick `CALL $A030` (patched in at `$FF11` at the entry);
 - pops the registers, then EI and RET.
 
-The handler runs once per interrupt. In `c1` the L1 counts 14 502 executions of `$FEFE` in 33 400 frames, and the
-same count for `$A030`. The turbo load runs with the interrupts off.
+The handler runs once per interrupt. In `c1` the L1 counts 14 301 executions of `$FEFE` in 33 400 frames, and the
+same count for `$A030`: one a frame from the entry on. The turbo load runs with the interrupts off.
 
-**The main loop and the frame.** The main loop at `$E3C9` waits at the HALT at `$E40F`, and `$E410` then clears
+**The main loop and the frame.** The main loop at `$E3C9` waits at the HALT at `$E40F`, and `$E411` then clears
 FrameTicks `$A237`; WaitFrames (`$A22A`, `$A233`) waits for one more interrupt and clears it again. So `$A237` is
 cleared twice in a pass. Stage 1's `work/stage1/pass_frames.py` read `$A237` at the end of every frame with
 `time_travel memory_at` and took the run of frames from one 0 to the next as a pass:
@@ -68,13 +69,15 @@ cleared twice in a pass. Stage 1's `work/stage1/pass_frames.py` read `$A237` at 
 
 These runs are the halves of a pass, not passes: stage 1's "1.08 frames a pass" was wrong. A pass in play takes 2
 frames (one HALT, then WaitFrames for one more tick), 25 a second, measured from the hits of `$E410` and `$E3C9` in
-`c1`: 983 passes of 2 frames, 63 of 3 (a lost interrupt), 5 of 9 (a zone change or a restart)
+`c1`: 983 passes of 2 frames, 63 of 3 (a lost interrupt), 5 of 9 (a zone change or a restart), 14 of
+14-19 and 1 of 161: 1 066 in all
 ([doc 4, 4.1 and 4.4](docs/04-game-loop.md#41-the-shape)). The long runs are still the screen changes: they come in
 threes as the view scrolls (`level1` frames 325, 329, 335 and 434, 438, 443; `$EAAE`, Rick's map position, steps from
 `$8C` to `$8F` across the second three), and the longest is at `level1` frame 2 807, where `$EAAE` jumps from `$FC` to
 `$8B` and a whole new view is drawn.
 
-**The stack** is at `$FFEE-$FFFF` under `SP` = `$0000`
+**The stack** is under `SP` = `$0000` (set at Start `$AB4E`); the deepest use the memory images show is `$FFE4`,
+so it takes at least `$FFE4-$FFFF` (28 bytes)
 ([doc 2, 2.2](docs/02-architecture.md#22-the-memory-map)).
 
 ## 2. Static pass over the medium
@@ -130,14 +133,14 @@ in step with our original only for a while (bitmap diff of the screens against t
 
 | Recording | Starts from | Frames | Inputs | Reached |
 | --- | --- | --- | --- | --- |
-| `c1` | power-on, the TZX at ROM speed | 33 400 | `c1.txt`: the control menu 2, 4, 1, 3; the RZX's keys of its frames 0-2 400 from frame 400; P, P (pause); Q | the whole load, the entry (frame 19 010), the menu, every control choice, the intro music, level 1's first two zones (score 4 170 at the quit), pause, quit, GAME OVER, the menu |
+| `c1` | power-on, the TZX at ROM speed | 33 400 | `c1.txt`: the control menu 2, 4, 1, 3; the RZX's keys of its frames 0-2 400 from frame 400; P, P (pause); Q | the whole load, the entry (frame 19 010), the menu, every control choice, the intro music, level 1's zones 1 to 3 (L1Z3 and back to L1Z2; score 4 170 at the quit), pause, quit, GAME OVER, the menu |
 | `controls` | `after128.szx`, no POKE | 2 500 | `controls.txt` | each control method in turn (keyboard, Sinclair, Kempston, cursor), each game quit with Q; the Kempston bug: Rick walks right on his own |
 | `gameover` | `after128.szx`, no POKE | 3 000 | `gameover.txt`: ENTER, ENTER, X held | the boulder of the first screen kills Rick six times; GAME OVER and its tune; back to the menu |
-| `level1` | `menu-cursor.szx`, no POKE | 6 000 | `level1.txt`: the RZX's frames 1-6 000 | level 1 zones 1 and 2, deaths, a natural GAME OVER and a new game |
+| `level1` | `menu-cursor.szx`, no POKE | 6 000 | `level1.txt`: the RZX's frames 1-6 000 | level 1 zones 1 to 3 (L1Z3 and back to L1Z2), deaths, a natural GAME OVER and a new game |
 | `level2` | `warp/level2c.szx`, the level warp | 6 000 | `level2.txt`: the RZX's frames 8 581-14 580 | Egypt's intro and first screens; when the RZX falls out of step, Rick stands at the start |
 | `level3` | `warp/level3c.szx`, the level warp | 6 000 | `level3.txt`: the RZX's frames 25 371-31 370 | the castle's intro and its first two screens |
 | `level4` | `warp/level4c.szx`, the level warp | 6 000 | `level4.txt`: the RZX's frames 43 101-49 100 | the missile base's intro and first screens |
-| `ending` | `warp/ending.szx`, a warp | 1 500 | `ending.txt`: ENTER at 300 and 1 200 | the last level's end: the closing text, the closing effect `$AF56`, `$E440` = `$FF`, GAME OVER, the menu |
+| `ending` | `warp/ending.szx`, a warp | 1 500 | `ending.txt`: ENTER at 300 and 1 200 | the last level's end: the closing text, ClearPlayArea `$AF56` clearing the play area, `$E440` = `$FF`, GAME OVER, the menu |
 
 `warp/ending.szx` is level 4 in play after the level warp, then a second patch at the main loop's HALT: `$E4AD` = 3,
 the return address `$E406` pushed (SP = `$FFFE`), PC = `$ABD8`, the path the game takes when Rick leaves a level by

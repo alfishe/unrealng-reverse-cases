@@ -185,7 +185,7 @@ $A016 c StartTune ; Start tune A on the AY player (128K only)
 @isub $A025 CALL AyPlayTune
 
 $A030 c SoundTick ; The AY player's frame tick, called by the interrupt handler
-> Pages RAM 1, calls AyTick $C46C, pages RAM 0 back and enables interrupts. Called only from the slot at $FF11 inside the interrupt handler ($FEFE), which CopyPlayerToRam1 fills with CALL $A030 on a 128K: 50 times a second for the whole game (c1: 14301 runs in 33400 frames, most of them the loading's).
+> Pages RAM 1, calls AyTick $C46C, pages RAM 0 back and enables interrupts. Called only from the slot at $FF11 inside the interrupt handler ($FEFE), which CopyPlayerToRam1 fills with CALL $A030 on a 128K: 50 times a second for the whole game (c1: 14 301 runs, one per frame from the entry, frame 19 012, to the end).
 > Output: AF, BC changed (the handler saves every register).
 > Witness: L1 110335 (c1, controls, emptygun, ending2, gameover, l1end, l1z1left, spotL2Z4-34, spotL3Z7-51, spotL4Z8-69, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
 @isub $A038 CALL AyTick
@@ -241,7 +241,7 @@ $A0FF BeeperWaitHigh
 @module controls ; The keys and joysticks: the four control methods, the start, pause and quit keys
 @about ReadInput $A14E turns the selected control method (ControlMethod $A14C, 0-3, chosen with the keys 1-4 on the title at $E273-$E2D1) into one active-low byte, InputBits $A14D: bit 0 right, 1 left, 2 down, 3 up, 4 fire. Rick's code ($F8DC, $F9A4, $F9C4, $FBC2) reads only that byte.
 @about The methods: 0 keyboard (O up, K down, Z left, X right, ENTER fire), 1 Kempston, 2 cursor keys (5 left, 6 down, 7 up, 8 right, 0 fire), 3 Sinclair (6 left, 7 right, 8 down, 9 up, 0 fire). Up beats down and left beats right on the keyboard; on the cursor keys the 5 (left) is read only when the 8 (right) is not held.
-@about The Kempston method never reads a port: InputKempston $A19F keeps A = 1 (the method number), AND $1F and CPL make $FE, so InputBits says "right" for ever and nothing else. The controls recording selected it: 52007 runs of $A1A4. Fire is lost too: StartPressed $A123 tests bit 4 of InputBits, always 1 here, so with the Kempston only ENTER starts a game. The re-releases (MCM, Erbe, IBSA, TOSEC [a2]) insert `IN A,($1F)` (`DB 1F`) and so fix it; the +3 disk and the hacks keep the bug (doc 5, 5.3).
+@about The Kempston method never reads a port: InputKempston $A19F keeps A = 1 (the method number), AND $1F and CPL make $FE, so InputBits says "right" for ever and nothing else. The controls recording selected it: 52007 runs of $A1A4. Fire is lost too: StartPressed $A123 tests bit 4 of InputBits, always 1 here, so with the Kempston only ENTER starts a game. The re-releases (MCM, Erbe, IBSA, whose ZXDB archives hold a file named `Rick Dangerous (MCM)`, TOSEC [a2] and the three TOSEC Microdrive `.mdr` transfers) insert `IN A,($1F)` (`DB 1F`) and so fix it; the +3 disk and the hacks keep the bug (doc 5, 5.3).
 @about The single-key tests return Z when the key is held: the keys 1-4 (the title's method choice), the start (ENTER, a bit 7 of port $FEFE that a standard machine never pulls low, or fire), Q (quit the game, $E3C9) and P (pause, $E3D7: wait for the release, the next press and its release).
 
 $A103 c Key1Pressed ; Z if the key 1 is held
@@ -626,7 +626,7 @@ $ADB9 c ScrollViewDown ; Scroll the view down by 8 rows, in two steps of 4
 $ADBE ScrollDownStep
 
 $ADF0 c ScrollViewUp ; Scroll the view up by 8 rows, in two steps of 4
-> The mirror of ScrollViewDown: ShiftMapDown, ShiftMarksDown, ShiftObjects by +32, ViewTopRow - 4; the objects of the top rows ($FD7D, D = ViewTopRow, E = 8). Called when Rick's y is below $60 ($E43B). Only level2 scrolled up.
+> The mirror of ScrollViewDown: ShiftMapDown, ShiftMarksDown, ShiftObjects by +32, ViewTopRow - 4; the objects of the top rows ($FD7D, D = ViewTopRow, E = 8). Called when Rick's y is below $60 ($E43B). Scrolled up in L1Z4, L2Z2, L3Z8 and L3Z9 and in level2 (11 of the 16).
 > Witness: L1 16 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 $ADF5 ScrollUpStep
 
@@ -1005,7 +1005,7 @@ $E440 b GameComplete 1 ; $FF when the last level is done (`$AC52`); cleared by N
 
 $E441 c Random ; A pseudo-random byte from the frame count
 > HL = RandomState + FrameCount + `$0D` + FrameCountHigh (with carry); L = A XOR L XOR D XOR E XOR H (A the caller's), stored back to RandomState; returns that byte in A, HL and DE kept.
-> Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). What the caller does with it is known only from the code.
+> Called by `$F4AA`; run in c1 (3) and levels 1-4 (19, 32, 13, 137). Its one user is WalkerStepX `$F4AA`: bit 0 picks the direction of a climber walking on a floor (0 right, 1 left), at x AND `$1E` = 8. RandomState is `$0000` in the image and never reset, so the seed is the frame count since the load.
 > Witness: L1 519 (c1, L1Z3, L1Z4, L2Z2-L2Z5, L3Z2, L3Z5, L3Z11, L4Z1-L4Z3, L4Z5, L4Z7, L4Z8, level1-level4).
 
 $E460 w RandomState 1 ; the generator's 16-bit state
@@ -1458,7 +1458,7 @@ $F80F PointInTriggerNo
 
 $F812 c HitsObstacle ; Z when the IX object overlaps object 0 or an active object of the slots $EB06
 > The IX object becomes IY; tested against object 0 `$EA8E` (when present) and the 5 slots from `$EB06` with bit 7
-> of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. The bullet's and the thrown objects' hit test.
+> of +0 set, by ObjectsOverlap `$F6E9`. IX is restored. An enemy's hit test: does object 0 or a deadly actor overlap it (callers EnemyCommon `$EFDE`, ClimberObj `$F23C`).
 > Outputs: Z (A = 0) on a hit, NZ (A = 1) else. Uses BC, DE, HL, IY.
 > Evidence: a hit on object 0 (`$F824`) in level2 and level3; on a slot (`$F83B`) in c1, level1, level2, level4.
 > Witness: L1 55773 (c1, ending2, spotL3Z7-51, spotL4Z8-69, L1Z2-L1Z6, L2Z2-L2Z7, L3Z2-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43, spotL1Z4-44, spotL1Z4-47).
@@ -1634,7 +1634,7 @@ $FBED c KillRick ; Rick dies (once)
 > Rick.
 > Witness: L1 400 (beeper48, c1, controls, gameover, spotL3Z7-51, L1Z1-L1Z6, L2Z1-L2Z7, L3Z1-L3Z12, L4Z1-L4Z9, level1-level4, spotL1Z4-43).
 
-$FBF2 c KillRickNow ; Effect 11, Dying, a hop up, the drift away from the middle
+$FBF2 c KillRickNow ; Effect 11, Dying, a hop up, the drift towards the middle of the screen
 > Part of KillRick `$FBED`. Effect 11, Dying `$FD68` = `$FF`, Y velocity `$FC00`, DeathDrift `$FD6A` = 3 (Rick X <
 > `$80`) or `$FD` (-3).
 > Evidence: deaths in every game build (level4 29).
@@ -1774,11 +1774,11 @@ $FF1E b BasicStackResidue 8 ; Residue of a 48K BASIC session the tape carries: n
 $FF57 ; RAMTOP's $3E
 
 $FF58 b UdgResidue 8 ; The BASIC UDGs A-U as the ROM sets them up: never read
-> 21 letters, 8 bytes each, as the ROM copies them to UDG `$FF58`; the game stack takes the last 18 bytes.
+> 21 letters, 8 bytes each, as the ROM copies them to UDG `$FF58`; the game stack uses at least the last 28 bytes (`$FFE4` on).
 
-$FFEE b GameStack 2 ; The game's stack: SP = 0 ($A258), it grows down from $FFFF
-> The image holds the UDG bytes here; at run time the stack's words. Where the stack really ends is known only from
-> the code: this entry takes 18 bytes, the last two and a half UDG letters.
+$FFEE b GameStack 2 ; The game's stack: SP = 0, set at Start `$AB4E`; it grows down from $FFFF
+> The image holds the UDG bytes here; at run time the stack's words. This entry is the last 18 bytes; the deepest use
+> seen in the memory images is `$FFE4` (`menu` and `play`), 28 bytes, so the stack also reaches into UdgResidue.
 
 @isub $F9AC LD HL,-2048
 @isub $FAD3 LD HL,-1408

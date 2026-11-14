@@ -65,8 +65,8 @@ SoundTick:
   RET
 ```
 
-**Worked example.** `c1` ran SoundTick 14 301 times in its 33 400 frames: from the copy during the load on, once an
-interrupt. `beeper48`'s start state has Is48K = `$FF` and three NOPs at `$FF11`.
+**Worked example.** `c1` ran SoundTick 14 301 times in its 33 400 frames: from the copy at the entry on (frame
+19 012), once an interrupt, in the 14 390 frames that follow. `beeper48`'s start state has Is48K = `$FF` and three NOPs at `$FF11`.
 
 **Witness.** DetectPaging and CopyPlayerToRam1 run once in `c1`. Set48K runs in no recording: `beeper48` starts
 after the load, with Is48K already `$FF`.
@@ -238,12 +238,12 @@ as heard: 8 notes of 16 frames, 2.56 seconds. The simulator's log of channel A s
 
 | Tune | Called from | When | Frames | Seconds | Recordings | Audio |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | `$E324` LevelIntro | the first intro of a game | 790 | 15.8 | `controls`, `gameover`, `level1` | [tune0.mp3](audio/tune0.mp3) |
+| 0 | `$E324` LevelIntro | the first intro of a game | 790 | 15.8 | `c1`, `controls`, `gameover`, `level1` | [tune0.mp3](audio/tune0.mp3) |
 | 1 | `$AC20` LevelEnd | level 1 done: under the Egypt intro | 1 142 | 22.8 | `l1end` (from 9:33 543) | [tune1.mp3](audio/tune1.mp3) |
 | 2 | `$AC20` | level 2 done: under the castle intro | 571 | 11.4 | none | [tune2.mp3](audio/tune2.mp3) |
 | 3 | `$AC20` | level 3 done: under the missile base intro | 1 203 | 24.1 | none | [tune3.mp3](audio/tune3.mp3) |
 | 4 | `$AC20` | level 4 done: under the closing text | 778 | 15.6 | `ending`, `ending2` | [tune4.mp3](audio/tune4.mp3) |
-| 5 | `$E220` Menu | the menu | 2 936 | 58.7 | `controls`, `gameover`, `level1`, `ending` | [tune5.mp3](audio/tune5.mp3) |
+| 5 | `$E220` Menu | the menu | 2 936 | 58.7 | `c1`, `controls`, `gameover`, `level1`, `ending` | [tune5.mp3](audio/tune5.mp3) |
 | 6 | `$E386` GameOver | GAME OVER | 298 | 6.0 | `controls`, `gameover`, `level1`, `ending` | [tune6.mp3](audio/tune6.mp3) |
 | 7 | `$F531` BonusCollect | the bonus taken | 78 | 1.6 | `level1` | [tune7.mp3](audio/tune7.mp3) |
 
@@ -392,14 +392,14 @@ border black), wait E loops, OUT H = `$10` (speaker high), wait E loops (BeeperE
 
 Six patterns, chosen by the effect number:
 
-| Effect | Pattern | E sequence | Edges | Length | Game event |
+| Effect | Pattern | E sequence | Edges | Length (frames of 69 888 T) | Game event |
 | --- | --- | --- | --- | --- | --- |
-| 0 | the chirp | 50 tones, E = 50 down to 1 (rising pitch) | 100 | 44 093 T, 0.62 frames | a shot |
-| 2 | the warble | E and E + 50 in turn, E from `$B0` by 2 until it wraps: 80 tones | 160 | 423 449 T, 5.97 frames | the bang |
-| 6 | the steps down | 30 tones from `$28`, E - 30, - 29, ... modulo 256 | 60 | 121 753 T, 1.72 frames | a jump, a head against a ceiling |
-| 11 | the falling note | E = 1, 5, ... `$7D`: 32 tones | 63 | 67 263 T, 0.95 frames | Rick dies, an enemy hit |
+| 0 | the chirp | 50 tones, E = 50 down to 1 (rising pitch) | 100 | 44 093 T, 0.63 frames | a shot |
+| 2 | the warble | E and E + 50 in turn, E from `$B0` by 2 until it wraps: 80 tones | 160 | 423 449 T, 6.06 frames | the bang |
+| 6 | the steps down | 30 tones from `$28`, E - 30, - 29, ... modulo 256 | 60 | 121 753 T, 1.74 frames | a jump, a head against a ceiling |
+| 11 | the falling note | E = 1, 5, ... `$7D`: 32 tones | 63 | 67 263 T, 0.96 frames | Rick dies, an enemy hit |
 | 4 | one click | one tone, E = `$80` | 2 | 4 242 T, 0.06 frames | a footstep |
-| any other | the sweep | E = 1, 9, ... `$F9`, then one tone of E = 1 | 65 for 1, 3, 9; 66 for 8, 10 | 130 649 T, 1.84 frames | 1, 3, 8, 9, 10 |
+| any other | the sweep | E = 1, 9, ... `$F9`, then one tone of E = 1 | 65 for 1, 3, 9; 66 for 8, 10 | 130 649 T, 1.87 frames | 1, 3, 8, 9, 10 |
 
 ```mermaid
 flowchart TD
@@ -466,7 +466,7 @@ the falling note, the click and the sweep.
   speed does not depend on the game's passes (one every 2 frames in play, [doc 4](04-game-loop.md)).
 - Its cost, 1 000-6 600 T-states, is taken from the frame in which the interrupt falls.
 - Effects start in the game's pass and play on in the interrupt.
-- On a 48K there is no tick; each effect blocks the game for its length, from 0.06 to 5.97 frames.
+- On a 48K there is no tick; each effect blocks the game for its length, from 0.06 to 6.06 frames.
 
 ## 9.8 Known only from the code
 

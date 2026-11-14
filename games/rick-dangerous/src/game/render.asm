@@ -1228,7 +1228,8 @@ ScrollDownStep:
 ;
 ; The mirror of ScrollViewDown: ShiftMapDown, ShiftMarksDown, ShiftObjects by
 ; +32, ViewTopRow - 4; the objects of the top rows ($FD7D, D = ViewTopRow, E =
-; 8). Called when Rick's y is below $60 ($E43B). Only level2 scrolled up.
+; 8). Called when Rick's y is below $60 ($E43B). Scrolled up in L1Z4, L2Z2,
+; L3Z8 and L3Z9 and in level2 (11 of the 16).
 ;
 ; Witness: L1 16 (L1Z4, L2Z2, L3Z8, L3Z9, level2).
 ScrollViewUp:

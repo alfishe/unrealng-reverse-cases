@@ -233,6 +233,7 @@ MakeKey:
 DecipherSelf:
     for i in $40..$FF:
         mem[$5D00 + i] = mem[$5D00 + i] XOR key[i - $40]
+NMIADD ($5CB0) = 0; DF_SZ ($5C6B) = 2      # an NMI now resets the 48K
 DecipherGroup1:
     for a in $CF00..$FBFF:
         mem[a] = mem[a] XOR key[a AND $FF]
@@ -262,6 +263,11 @@ flowchart LR
     X3 --> LG[LoadGroup FA00-FBFF]
 ```
 
+Between the two, `$5D32-$5D3C` sets the ROM's NMIADD `$5CB0` to 0 and DF_SZ `$5C6B` to 2. The 48K ROM's NMI routine
+at `$0066` jumps through NMIADD only when it is 0, that is to `$0000`: with NMIADD cleared, an NMI (a freezer
+cartridge's button) resets the machine instead of returning. That this is the purpose is known only from the code;
+no recording presses an NMI.
+
 The asm (`build/stage2.lst`):
 
 ```text
@@ -278,7 +284,11 @@ The asm (`build/stage2.lst`):
 5D20 2C          INC L
 5D21 1C          INC E
 5D22 20 F6       JR NZ,MakeKeyLoop
-  ...
+  ...                                  ; DecipherSelf $5D24-$5D31
+5D32 21 00 00    LD HL,$0000           ; NMIADD = 0, DF_SZ = 2
+5D35 22 B0 5C    LD (NmiAdd),HL
+5D38 3E 02       LD A,$02
+5D3A 32 6B 5C    LD (DfSz),A
 5D3D ED 5B E7 FE LD DE,(KeyPagePtr)    ; DecipherGroup1: DE = the key
 5D41 2A E9 FE    LD HL,(KeyedFrom)     ; HL = $CF00
 5D44 1A          LD A,(DE)             ; DecipherLoop
@@ -454,7 +464,8 @@ Then StartOrVerify `$5D98`:
 
 ```text
 enable interrupts; read the keyboard with the ROM's KEY-SCAN
-if exactly two keys are held and their codes differ by $21:
+if KEY-SCAN rejects the keys held (NZ: two keys neither of them a shift, or more)
+        and D - E = $21 (the first two codes, in KEY-SCAN's order):
     LD-BYTES in verify mode: $A11E bytes from $5E00 against a ROM-speed block with flag $FF
     border = green if they agree, black if not; loop forever
 else:
@@ -466,7 +477,7 @@ flowchart TD
     G2[group 2 loaded] --> CL[clear 4000-5AFF to 0]
     CL --> G3[LoadGroup 35: group 3 into 4000-45FF, unseen]
     G3 --> CP[LDIR 600 bytes from 4000 to FA00]
-    CP --> KS{KEY-SCAN: two keys, codes differ by 21?}
+    CP --> KS{KEY-SCAN NZ and D - E = 21?}
     KS -- no --> GO[JP AB4D, the game]
     KS -- yes --> V[ROM LD-BYTES verify, 5E00, A11E bytes]
     V --> BD{bytes agree?}
@@ -595,7 +606,8 @@ original twice (stage 1): block by block (`tools/copy_blocks.py`, `work/stage1/c
 | ZXDB `RICKDAN1.TZX` | another dump of the Firebird tape | the BASIC and Rick1 identical; 150 of the 198 data blocks equal: the 4 ROM blocks and all 146 blocks of groups 2 and 3, so `$6E00-$FFFF` loads the same; the 48 blocks of group 1 differ (lengths too), its key page in 255 of 256 bytes |
 | ZXDB `RICKDAN1.TAP` | the same dump as a TAP | a 774-byte BASIC that POKEs Rick1 to read a TAP |
 | ZXDB `Rick Dangerous.dsk` | the +3 disk release | 558 of the 562 image pieces whole |
-| ZXDB Kixx, MCM, IBSA, Erbe; TOSEC `[a2]` TAP | the re-releases | one 41 246-byte block behind a small loader; MCM, Erbe and `[a2]`: 397 of 562 pieces, a later build with its code moved (+8 from `$A13B`, +26 from `$E2D1`, down to +19 at `$F88C`) |
+| ZXDB Kixx, MCM, IBSA (its file calls itself MCM), Erbe; TOSEC `[a2]` TAP | the re-releases | one 41 246-byte block behind a small loader; MCM, Erbe and `[a2]`: 397 of 562 pieces, a later build with its code moved (+8 from `$A13B`, +26 from `$E2D1`, down to +19 at `$F88C`) |
+| TOSEC Microdrive `.mdr` (three) | transfers to Microdrive | hold the later build's fixed InputKempston bytes ([doc 5, 5.3](05-controls.md#53-the-kempston-bug)); pieces not counted |
 | zxart and vtrd TR-DOS conversions and hacks | other people's work | packed or patched: 0 to 527 pieces |
 
 What the second dump's group 1 is was not settled. Deciphered with its own key page by this case's cipher

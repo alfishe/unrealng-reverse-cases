@@ -12,8 +12,9 @@
 ; The Kempston method never reads a port: InputKempston $A19F keeps A = 1 (the method number), AND $1F and CPL make
 ; $FE, so InputBits says "right" for ever and nothing else. The controls recording selected it: 52007 runs of $A1A4.
 ; Fire is lost too: StartPressed $A123 tests bit 4 of InputBits, always 1 here, so with the Kempston only ENTER starts
-; a game. The re-releases (MCM, Erbe, IBSA, TOSEC [a2]) insert `IN A,($1F)` (`DB 1F`) and so fix it; the +3 disk and
-; the hacks keep the bug (doc 5, 5.3).
+; a game. The re-releases (MCM, Erbe, IBSA, whose ZXDB archives hold a file named `Rick Dangerous (MCM)`, TOSEC [a2]
+; and the three TOSEC Microdrive `.mdr` transfers) insert `IN A,($1F)` (`DB 1F`) and so fix it; the +3 disk and the
+; hacks keep the bug (doc 5, 5.3).
 ;
 ; The single-key tests return Z when the key is held: the keys 1-4 (the title's method choice), the start (ENTER, a
 ; bit 7 of port $FEFE that a standard machine never pulls low, or fire), Q (quit the game, $E3C9) and P (pause, $E3D7:

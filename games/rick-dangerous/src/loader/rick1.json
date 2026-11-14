@@ -25,5 +25,11 @@
       "reads": false
     }
   ],
+  "ref_builds": [
+    [
+      "stage1/c1",
+      "c1: power-on, the original tape at ROM speed on the 128K, the whole load (the loader runs in frames 0-19 010)"
+    ]
+  ],
   "work": "work/stage2/mkrick1"
 }

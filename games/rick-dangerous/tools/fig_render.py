@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Doc 06: a sprite frame decoded byte by byte, plain and mirrored through the bit-reversal table at `$5B00`.
+"""Doc 06: a sprite frame decoded byte by byte, plain and mirrored through the bit-reversal table at `$5B00`; and the
+colour clash: a part of a screenshot enlarged, with its cell grid and the two colours of each cell.
 
     python3 tools/fig_render.py sprite 1 docs/img/render/sprite-mirror.png
+    python3 tools/fig_render.py clash docs/img/play/level1-start.png docs/img/render/clash.png 0 6 14 11
 
 A frame is 126 bytes at SpriteFrames `$8401` + 126 F: 21 rows of 6 bytes in the order the drawers POP them
 (OR3, OR2, OR1, AND1, AND3, AND2; column 1 is the left one). The screen byte becomes (screen AND mask) OR pixels. The
@@ -101,10 +103,47 @@ def cmd_sprite(f, png):
     print(png, out.size)
 
 
+SPECCY = {(0, 0, 0): 'K', (0, 0, 1): 'B', (1, 0, 0): 'R', (1, 0, 1): 'M', (0, 1, 0): 'G', (0, 1, 1): 'C', (1, 1, 0): 'Y',
+          (1, 1, 1): 'W'}
+
+
+def cmd_clash(src, png, col, row, cols, rows):
+    """cells col..col+cols-1, rows row..row+rows-1 of a screenshot (any whole scale of 256 x 192), enlarged; each cell
+    labelled with the colours it shows (one colour: ink and paper alike, or a cell of one colour)"""
+    im = Image.open(src).convert('RGB')
+    im = im.resize((256, 192), Image.NEAREST)
+    z, top = 6, 40
+    out = Image.new('RGB', (cols * 8 * z + 40, rows * 8 * z + top + 56), BG)
+    d = ImageDraw.Draw(out)
+    crop = im.crop((col * 8, row * 8, (col + cols) * 8, (row + rows) * 8)).resize((cols * 8 * z, rows * 8 * z),
+                                                                                   Image.NEAREST)
+    out.paste(crop, (20, top))
+    d.text((20, 10), f'{os.path.basename(src)}: columns {col}-{col + cols - 1}, char rows {row}-{row + rows - 1}',
+           fill=TEXT, font=K.font(15))
+    for r in range(rows):
+        for c in range(cols):
+            x, y = 20 + c * 8 * z, top + r * 8 * z
+            d.rectangle((x, y, x + 8 * z, y + 8 * z), outline=GRID)
+            names = sorted({SPECCY[tuple(int(v > 100) for v in im.getpixel((col * 8 + c * 8 + i, row * 8 + r * 8 + j)))]
+                            for i in range(8) for j in range(8)})
+            label = ''.join(names)
+            d.rectangle((x + 2, y + 2, x + 6 + 7 * len(label), y + 16), fill=BG)
+            d.text((x + 4, y + 2), label, fill=TEXT, font=K.font(11))
+    d.text((20, top + rows * 8 * z + 8), 'The colours found in each cell: K black, B blue, C cyan, G green, W white.',
+           fill=DIM, font=K.font(15))
+    d.text((20, top + rows * 8 * z + 30), 'Never more than two (ink and paper); a sprite adds none of its own.',
+           fill=DIM, font=K.font(15))
+    out.save(png)
+    print(png, out.size)
+
+
 def main():
-    if len(sys.argv) < 4 or sys.argv[1] != 'sprite':
+    if len(sys.argv) >= 4 and sys.argv[1] == 'sprite':
+        cmd_sprite(int(sys.argv[2]), sys.argv[3])
+    elif len(sys.argv) >= 8 and sys.argv[1] == 'clash':
+        cmd_clash(sys.argv[2], sys.argv[3], *map(int, sys.argv[4:8]))
+    else:
         raise SystemExit(__doc__)
-    cmd_sprite(int(sys.argv[2]), sys.argv[3])
 
 
 if __name__ == '__main__':

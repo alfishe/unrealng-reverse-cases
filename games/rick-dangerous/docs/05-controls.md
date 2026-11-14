@@ -30,7 +30,7 @@ Who reads it:
 
 | Reader | What it takes |
 | --- | --- |
-| MoveRick `$F85D` (calls ReadInput at `$F86B` once a pass) | every bit, at `$F8DC`, `$F9A4`, `$F9C4`, `$FBC2` |
+| MoveRick `$F85D` (calls ReadInput at `$F86B` once a pass, not while Rick is dying: `$F864-$F868` jump to DeathFall first) | every bit, in seven reads: `$F8DC`, `$F903` (WalkRick: left and right), `$F9A4`, `$F9C4`, `$FB14` and `$FB82` (the climb), `$FBC2` |
 | StartPressed `$A123` (through StartFireTest) | bit 4 only |
 
 ![InputBits: which key sets which bit, per control method](img/controls/inputbits.png)
@@ -150,7 +150,7 @@ How to read it:
 
 - Left: the memory of `$A100-$A1FF` (the control code and InputBits), then Rick's state at `$FD50-$FD6F`.
 - Right: the code running. ReadInput runs first, then MoveRick, then the jump's effect on the AY player.
-- `$FD55-$FD56` (Rick's y speed) takes the jump's value.
+- `$FD56-$FD57` (YVelocity) takes the jump's `$FA80` (Jump `$FAD3`, `LD (YVelocity),HL` at `$FAD6`).
 
 **The point**: the code reads each key with its own `IN` and `BIT`, about 20 instructions, once a pass. It costs
 under 300 T-states.
@@ -203,12 +203,16 @@ Which releases have the bug (a byte search of every copy in `work/candidates/`):
 
 | Release | Bytes at InputKempston | Bug |
 | --- | --- | --- |
-| Firebird tape (this case), RICKDAN1 dump, the +3 disk, the zxart hacks and translations | `FE 01 C2 AA A1 E6 1F 2F` | yes |
-| MCM, Erbe, IBSA, TOSEC `[a2]` TAP, ZXDB `RICKDANG.Z80` | `FE 01 C2 B4 A1 DB 1F E6 1F 2F 77 E1 C9` | no: `IN A,($1F)` inserted |
+| Firebird tape (this case), RICKDAN1 dump, the +3 disk, the zxart hacks and translations | `FE 01 C2 AA A1 E6 1F 2F` (on the Firebird and RICKDAN1 tapes as stored XOR `$A1`, the page cipher of [doc 3, 3.7](03-build-and-load.md#37-loadgroup-and-the-page-cipher-of-groups-2-and-3); plain on the +3 disk and in the hacks) | yes |
+| MCM, Erbe, IBSA (see below), TOSEC `[a2]` TAP, the three TOSEC Microdrive `.mdr` transfers, ZXDB `RICKDANG.Z80` | `FE 01 C2 B4 A1 DB 1F E6 1F 2F 77 E1 C9` | no: `IN A,($1F)` inserted |
 | Kixx | the pattern found in neither form (its block is packed) | not known |
 
-The later build put the missing `DB 1F` in, which is why its code from InputKempston on lies 2 bytes further up than
-here and its jump targets are shifted (`$A1B4` for `$A1AA`, [doc 3, 3.12](03-build-and-load.md#312-the-releases-and-the-hacks)).
+IBSA: what was searched is ZXDB's IBSA entry (`RickDangerous(different)(IBSA).tap.zip` and `.tzx.zip`); each archive
+holds one file that calls itself `Rick Dangerous (MCM)`, not the same file as the MCM "Medium Case" release.
+
+In the later build the code already lies 8 bytes further up from `$A13B` on (its ReadKeyFire jumps to `$A1A5` where
+ours goes to `$A19D`), and 10 from InputCursor on, after the two bytes of `IN A,($1F)` (`JP NZ,$A1B4` where we have
+`JP NZ,$A1AA`; [doc 3, 3.12](03-build-and-load.md#312-the-releases-and-the-hacks)).
 So Firebird's own re-builds fixed the bug; the original tape and every copy made from it keep it.
 
 ![The Kempston method: the stick held left, Rick walks right](img/play/kempston-bug.gif)
@@ -257,8 +261,9 @@ MenuFrame:
 | 3 | Key3Pressed `$A113` | `$F7FE` b2 | 2 cursor | `$596E`, 6 |
 | 4 | Key4Pressed `$A11B` | `$F7FE` b3 | 3 Sinclair | `$59AE`, 8 |
 
-CycleAttributes `$AB18` paints the chosen line with one of CycleColours `$AB3D` (`$4F $4F $57 $57 $5F $5F $67 $67`,
-bright white ink on blue, red, magenta, green paper), stepped by the phase `$AB3C` mod 8. The old line goes back to
+CycleAttributes `$AB18` paints cell n of the chosen line with CycleColours[(phase + n) mod 8] (CycleColours `$AB3D`:
+`$4F $4F $57 $57 $5F $5F $67 $67`, bright white ink on blue, red, magenta, green paper; the phase `$AB3C` goes up by 1
+a call): two cells of each of the four papers, the band moving one cell along the line a round (2 frames). The old line goes back to
 PlainColours `$AB45` (`$47`).
 
 ![The menu: 4 chooses Sinclair](img/play/menu-keys.gif)

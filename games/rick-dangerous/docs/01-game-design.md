@@ -62,7 +62,7 @@ flowchart TD
 *`c1` frame 30 250 (WALKTHROUGH 6.1).*
 
 The title, the four control methods and the credits. Keys 1-4 choose the method, whose line then cycles through four
-colours; fire starts. Tune 5 plays.
+colours running along it; fire starts. Tune 5 plays.
 
 ![The menu, Sinclair chosen](img/play/menu-sinclair.png)
 
@@ -163,7 +163,8 @@ Four methods, chosen on the menu: 1 the keyboard (O up, K down, Z left, X right,
 ![Rick answering the keys: walk, jump, poke](img/play/rick-keys.gif)
 
 *`controls` frames 150 to 330, every second frame (`python3 tools/fig_controls.py rick --work work/docs/rdB/controls
---inputs tests/inputs/controls.txt --from 150 --to 320 --step 2 --out docs/img/play/rick-keys.gif`).*
+--inputs tests/inputs/controls.txt --from 150 --to 330 --step 2 --title "Rick answering the keyboard: X, X+O, ENTER+X,
+then the boulder (controls, frames 150-330)" --out docs/img/play/rick-keys.gif`).*
 
 How to read it:
 
@@ -180,7 +181,7 @@ The Kempston method does not read the joystick: Rick walks right on his own ([do
 | --- | --- | --- |
 | lives at a new game | 6 | [doc 10, 10.9](10-gameplay-logic.md#109-lives-the-end-of-a-level-and-the-ending) |
 | bullets and sticks | 6 each, filled again at every new life and every level | doc 10, 10.3 and 10.4 |
-| a death | an enemy's touch, a trap, a deadly char (spikes, water), one's own blast, a bullet back | [doc 10, 10.7](10-gameplay-logic.md#107-deaths) |
+| a death | an enemy's touch, a trap, a deadly char (spikes, water), one's own blast | [doc 10, 10.7](10-gameplay-logic.md#107-deaths) |
 | after a death | Rick restarts at the place he entered the zone | doc 10, 10.9 |
 | an enemy shot or blown up | 50 points | [doc 10, 10.8](10-gameplay-logic.md#108-the-bonus-and-the-score) |
 | a treasure | 500 points | doc 10, 10.8 |
@@ -204,8 +205,8 @@ How to read it:
 - Dark red lines are the frames in which Rick is dying.
 
 **The point**: a game of Rick Dangerous is short and deadly: the run gains 50 points for an enemy at frame 640, 1 920
-the bonus collected at 755, treasures of 500, and loses six lives in under 3 600 frames (72 seconds) in the first two
-zones; GAME OVER, then a new game at 4 500.
+the bonus collected at 755, treasures of 500, and loses six lives in under 3 600 frames (72 seconds) in zones 2 and 3
+(three deaths in each, none in L1Z1); GAME OVER, then a new game at 4 500.
 
 **Witness.** The values are the game's own variables read from `level1`: Lives `$A958`, the score `$A9BE`, the zone
 record `$AD27`.
@@ -298,8 +299,10 @@ left; its exit is at the bottom right, row 104. L1Z3 is short and leads on at ro
 (33 tile rows), is crossed top to bottom to row 128; L1Z5 to row 80; L1Z6 to its right exit at row 32, which ends the
 level and prints the Egypt intro.
 
-**Witness.** `c1` goes from L1Z1 to L1Z2 at frame 31 172-31 173; `level1` crosses it too (zones 1 and 2). The other zones are reached by
-the zone warps, one recording each (WALKTHROUGH 6.0).
+**Witness.** `c1` goes from L1Z1 to L1Z2 at frame 31 172-31 173; `level1` crosses it
+too (frame 780) and goes on to L1Z3 at 2 120 and back to L1Z2 by its left exit at 2 340; `c1` does the same 30 400
+frames later (L1Z3 at 32 512, back at 32 726). L1Z4-L1Z6 are reached only by the zone warps, one recording each
+(WALKTHROUGH 6.0).
 
 The first zone of every level also has an exit to `$FFFF`, on the side Rick does not take: L1Z1 left row 24, L2Z1 left
 row 120, L3Z1 left row 32, L4Z1 left row 32. They sit at Rick's start height. Rick starts at map row y / 8 +
@@ -324,6 +327,8 @@ recording, so whether a wall stops Rick there too is not known; taken, one would
 
 - no high score table and no hiscore kept between games;
 - no difficulty choice, no two-player mode;
+- no cheat keys: every port read of the game is in the controls module, keys 1-4, ENTER, Q, P and the four methods
+  ([doc 5](05-controls.md)); the only cheats are the POKEs of [doc 3, 3.12](03-build-and-load.md#312-the-releases-and-the-hacks);
 - no music in play: the AY plays tunes only at the menu, the intros, GAME OVER and the ending, plus a jingle of 1.6
   seconds when the bonus is taken; in play it plays effects ([doc 9](09-sound.md));
 - on a 48K, no music at all: the effects play on the beeper and stop the game while they sound.

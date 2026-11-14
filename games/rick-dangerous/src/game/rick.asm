@@ -861,7 +861,7 @@ KillRick:
   AND A
   RET NZ
 
-; Effect 11, Dying, a hop up, the drift away from the middle
+; Effect 11, Dying, a hop up, the drift towards the middle of the screen
 ;
 ; Part of KillRick `$FBED`. Effect 11, Dying `$FD68` = `$FF`, Y velocity
 ; `$FC00`, DeathDrift `$FD6A` = 3 (Rick X <

@@ -15,9 +15,9 @@
 ; A pattern: `$80`-`$87` instrument slot, `$7F` FRAMES a rest, `$7E` LO HI
 ; FRAMES a period given directly, NOTE FRAMES a note (NOTE 0-`$7D`, played at
 ; PeriodTable[NOTE + transpose + 12]), `$FF` the end. The tunes use notes 6-52,
-; durations of 4-96 frames (50 a second) and instruments 0-5. Patterns 34-37
-; are empty (only `$FF`), and 12 patterns are named by no order list: 21,
-; 28-30, 34-37, 39, 42, 49, 50.
+; durations of 4-96 frames (50 a second) and instruments 0-4 (instrument 5 only
+; in pattern 42, which no tune uses). Patterns 34-37 are empty (only `$FF`),
+; and 12 patterns are named by no order list: 21, 28-30, 34-37, 39, 42, 49, 50.
 Patterns:
   INCBIN "res/music/patterns.bin",$0000,938
 

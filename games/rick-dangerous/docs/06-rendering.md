@@ -7,6 +7,7 @@ What this covers:
 - the dirty-cell drawer, which puts on screen only the cells that changed;
 - the sprites: their format, the composer `$A2EC`, the masks, the shift chain and the mirror table `$5B00`;
 - sprites passing behind the scenery;
+- the screen layout and the colour clash;
 - the scroll and the full redraw;
 - who writes each screen byte, and when, against the beam.
 
@@ -62,6 +63,54 @@ A cell's life over two passes:
 
 **The point**: the screen holds no sprite state at all. Each pass rebuilds the sprites from the map, so nothing ever
 has to be erased: the flag 1 left behind does the erasing.
+
+### The screen layout and the colour clash
+
+All 24 char rows of the screen are the play area: screen row r shows char map row 8 + r. The HUD is not a panel of
+its own: it is 24 cells of char row 1 (score 1-6, bullets 9-14, sticks 17-22, lives 25-30), which MaskHudCells `$A8BF`
+keeps the drawer off each pass ([doc 8, 8.3](08-hud-and-text.md#83-the-hud)). The rest of row 1, and all of row 0,
+are scenery.
+
+Who writes the attributes `$5800-$5AFF`:
+
+| Writer | When | Attribute |
+| --- | --- | --- |
+| DrawAllDirtyCells `$A834` (in RedrawScreen `$A781`) | the full redraw: a zone change, a scroll, a restart | the map char's, from the table at `$7900` or `$8200` (`LD D,$79` at `$A852`, its operand patched) |
+| DrawCounter `$AA0E`, DrawScoreDigit `$A97F` | a counter or the score changes | `$47` for an icon or a digit; a counter's left-over cells get the map char's (CounterAttrTableHigh `$AA7F`) |
+| PrintText `$AA8D`, PrintLines `$AAE9` | the intros, the menu, the closing text | the text's |
+| CycleAttributes `$AB18` | the menu | the chosen line's cells from an 8-colour table, rotated each call |
+
+The per-pass drawer DrawDirtyCells `$A25D` writes only the 8 pixel bytes of a cell (`$A28C-$A2A8`, `$A2CA-$A2E6`):
+no path of it touches `$5800` up. A composed char keeps the attribute the full redraw gave the cell, which is the
+background char's. So a sprite has no colour of its own: Rick and every enemy take the ink and paper of the scenery
+under them, cell by cell, and a sprite that straddles two colours is drawn in both.
+
+```mermaid
+flowchart LR
+    R[RedrawScreen: map char attribute into 5800 up] --> A[cell attribute]
+    H[DrawCounter / DrawScoreDigit: 47 or the map char's] --> A
+    D[DrawDirtyCells each pass: pixels only] --> P[cell pixels]
+    A --> S[what the cell shows: the sprite in the scenery's colours]
+    P --> S
+```
+
+![The colour clash at the start of level 1](img/render/clash.png)
+
+*The start of level 1 ([the screenshot](img/play/level1-start.png)), columns 0-13, char rows 6-16, enlarged 6
+times. Made with `python3 tools/fig_render.py clash docs/img/play/level1-start.png docs/img/render/clash.png 0 6 14
+11`.*
+
+How to read it:
+
+- Each square is one cell; the letters are the colours found in it (K black, B blue, C cyan, G green, W white).
+- Rick (rows 8-10, columns 8-10) and the guard (rows 13-15, columns 3-6) are green on black: the colours of the
+  vine chars they stand in. Neither has a colour of its own.
+- No cell holds more than two colours, sprite or not.
+
+**Worked example: a counter cell.** In `c1` at 31 330 the bullets counter drops from 6 to 5. DrawCounter writes the
+map char's attribute into `$582E` while cell 14 still holds the bullet's pixels, so for one frame the bullet shows in
+the scenery's colours ([doc 8, the worked example](08-hud-and-text.md#83-the-hud)). The next pass draws the map's char
+there with the same attribute.
 
 ## 6.2 The zone build: tiles into the char map
 
@@ -307,30 +356,31 @@ The drawers read the frame with SP: `LD SP,frame`, then three POPs a row. Interr
 are written into the drawers' `(IY+d)` operands before the loop:
 
 ```text
-A463 D9          EXX                    ; SpriteAlignedRow: three pairs popped into HL, BC, DE'
-A464 6F          LD L,A
-A465 7E          LD A,(HL)
-A466 D9          EXX
-A467 67          LD H,A
+A43D D9          EXX                    ; SpriteAlignedRow: a row's three (AND, OR) pairs
+A43E E1          POP HL
+A43F C1          POP BC
+A440 D1          POP DE
+A441 C3 68 A4    JP SpriteAlignedPut    ; SpriteAlignedJump: $A468 plain, $A444 mirrored (written by $A419)
+...              (A444-A467: the mirrored path, below)
 A468 FD 7E 00    LD A,(IY+$00)          ; SpriteAlignedPut: column 1
 A46B A0          AND B                  ; mask
 A46C B1          OR C                   ; pixels
 A46D FD 77 00    LD (IY+$00),A
-A470 FD 7E 20    LD A,(IY+$20)          ; column 2: its offset written by ComposeObject
+A470 FD 7E 20    LD A,(IY+$20)          ; column 2: +$20 or +$18, patched by ComposeObject
 A473 A2          AND D
 A474 B4          OR H
 A475 FD 77 20    LD (IY+$20),A
-A478 FD 7E 40    LD A,(IY+$40)          ; column 3
+A478 FD 7E 00    LD A,(IY+$00)          ; column 3: +0 in the image, patched to +$40 or +$30
 A47B A3          AND E
 A47C B5          OR L
-A47D FD 77 40    LD (IY+$40),A
+A47D FD 77 00    LD (IY+$00),A          ; the same patched displacement
 A480 FD 23       INC IY
 A482 D9          EXX
-A483 10 DE       DJNZ SpriteAlignedRow
+A483 10 B8       DJNZ SpriteAlignedRow
 ```
 
 **The shift chain.** For x AND 7 = s, not 0, each row's three bytes are shifted right by s into four. The chain at
-`$A633` is a run of shift instructions; the chain at `$A633` holds 8 left-shift steps of 14 bytes across the 4-byte group (ADD HL,HL, RL, SLL E, RL C').
+`$A633` is a run of shift instructions: 8 left-shift steps of 14 bytes across the 4-byte group (ADD HL,HL, RL, SLL E, RL C').
 ComposeShifted `$A48A` patches the entry to `$A633` + 14 s: entering at step s leaves 8 - s left shifts, which
 moves the frame right by s. The mask fills with 1 bits from the right (SLL), keeping the background; the pixels
 with 0 bits.

@@ -41,7 +41,8 @@ from skoolkit import simutils as su  # noqa: E402
 AY_PLAY_TUNE, AY_TICK, AY_PLAY_EFFECT, MUSIC_ON = 0xC3E4, 0xC46C, 0xC685, 0xC35A
 BEEPER_EFFECT = 0xA08E
 SENTINEL = 0x0000
-FRAME_T = 70908
+FRAME_T = 70908  # the 128K's frame (the AY path)
+FRAME_T48 = 69888  # the 48K's frame: the beeper runs only there
 AY_CLOCK = 1773400
 BG, TEXT, DIM, GRID = (24, 24, 30), (235, 235, 235), (170, 170, 180), (60, 60, 75)
 CH = [(250, 110, 90), (110, 220, 120), (110, 150, 250)]
@@ -181,7 +182,7 @@ def cmd_costs():
             print(kind, n, len(fr), t0, ts[0], ts[len(ts) // 2], ts[-1])
     for n in (0, 2, 4, 6, 11, 1):
         edges, t = beeper_run(n)
-        print('beeper', n, 'T', t, f'{t / FRAME_T:.2f} frames', 'edges', len(edges))
+        print('beeper', n, 'T', t, f'{t / FRAME_T48:.2f} frames (48K)', 'edges', len(edges))
 
 
 def cmd_audio(out):

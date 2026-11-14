@@ -18,7 +18,8 @@ The recordings it rests on:
 | `c1` | power-on, the original TZX at ROM speed (128K) | the menu (30 250), the level 1 intro printed (30 469-30 471), the HUD drawn at the start (30 490-30 700), one bullet less (31 329), the GAME OVER after Q (33 250) |
 | `gameover` | power-on, the original TZX (128K), six deaths | GAME OVER at the last life (2 500) |
 | `level2`, `level3`, `level4` | the level warps (WALKTHROUGH 6.0) | the intros of levels 2-4 (frame 0) |
-| `ending`, `ending2` | the L4Z9 warp with the door freed | the closing text (250), the end bonus in the score (500) |
+| `ending` | stage 1: a warp into level 4's end, PC = `$ABD8` ([WALKTHROUGH](../WALKTHROUGH.md)) | the closing text (250), GAME OVER after it (500) |
+| `ending2` | the L4Z9 warp with the door freed | the end bonus in the score (250 to 500) |
 | `level1` | the level 1 warp | the bonus added to the score (755) |
 
 The game logic behind the counters (what a shot, a stick and a life cost) is in [doc 10](10-gameplay-logic.md).

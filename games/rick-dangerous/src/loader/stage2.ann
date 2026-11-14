@@ -31,7 +31,7 @@ $5D12 MakeKey ; HL = Rick1's first page; each key page byte XOR Rick1[$CD00 + i]
 $5D1A MakeKeyLoop
 $5D24 DecipherSelf ; the stage's bytes $5D40-$5DFF XOR key[0..$BF]
 $5D2B DecipherSelfLoop
-$5D32 ; NMIADD = 0, DF_SZ = 2
+$5D32 ; NMIADD = 0, DF_SZ = 2: an NMI then resets the 48K (its NMI routine jumps through NMIADD only when it is 0); purpose known only from the code
 $5D3D DecipherGroup1 ; KeyedFrom to KeyedEnd: each byte XOR key[address AND $FF]
 $5D44 DecipherLoop
 $5D51 ShowScreen ; the stack under $5DFF, the loading screen to the screen

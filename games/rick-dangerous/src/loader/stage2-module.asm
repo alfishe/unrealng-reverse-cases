@@ -58,7 +58,9 @@ DecipherSelfLoop:
   INC E
   INC L
   JR NZ,DecipherSelfLoop
-  LD HL,$0000             ; NMIADD = 0, DF_SZ = 2
+  LD HL,$0000             ; NMIADD = 0, DF_SZ = 2: an NMI then resets the 48K
+                          ; (its NMI routine jumps through NMIADD only when it
+                          ; is 0); purpose known only from the code
   LD (NmiAdd),HL
   LD A,$02
   LD (DfSz),A

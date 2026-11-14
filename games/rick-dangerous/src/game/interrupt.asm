@@ -140,7 +140,7 @@ BasicStackResidue:
 ; The BASIC UDGs A-U as the ROM sets them up: never read
 ;
 ; 21 letters, 8 bytes each, as the ROM copies them to UDG `$FF58`; the game
-; stack takes the last 18 bytes.
+; stack uses at least the last 28 bytes (`$FFE4` on).
 UdgResidue:
   DEFB $00,$3C,$42,$42,$7E,$42,$42,$00
   DEFB $00,$7C,$42,$7C,$42,$42,$7C,$00
@@ -162,12 +162,13 @@ UdgResidue:
   DEFB $00,$7C,$42,$42,$7C,$44,$42,$00
   DEFB $00,$3C,$40,$3C,$02,$42
 
-; The game's stack: SP = 0 ($A258), it grows down from $FFFF
+; The game's stack: SP = 0, set at Start `$AB4E`; it grows down from $FFFF
 ;
-; The image holds the UDG bytes here; at run time the stack's words. Where the
-; stack really ends is known only from
+; The image holds the UDG bytes here; at run time the stack's words. This entry
+; is the last 18 bytes; the deepest use
 ;
-; the code: this entry takes 18 bytes, the last two and a half UDG letters.
+; seen in the memory images is `$FFE4` (`menu` and `play`), 28 bytes, so the
+; stack also reaches into UdgResidue.
 GameStack:
   DEFB $3C,$00
   DEFB $00,$FE

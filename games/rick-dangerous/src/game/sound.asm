@@ -92,7 +92,8 @@ StartTune:
 ; Pages RAM 1, calls AyTick $C46C, pages RAM 0 back and enables interrupts.
 ; Called only from the slot at $FF11 inside the interrupt handler ($FEFE),
 ; which CopyPlayerToRam1 fills with CALL $A030 on a 128K: 50 times a second for
-; the whole game (c1: 14301 runs in 33400 frames, most of them the loading's).
+; the whole game (c1: 14 301 runs, one per frame from the entry, frame 19 012,
+; to the end).
 ;
 ; Output: AF, BC changed (the handler saves every register).
 ;

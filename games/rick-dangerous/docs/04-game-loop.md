@@ -106,6 +106,74 @@ Witness: Start at `c1` 19010:70483, SetUpInterrupts at 19012:16638, BuildMirrorT
 **The point**: the program has one real loop. Everything that waits for the player (menu, intro, level end, game over)
 is a polling loop outside it. The music keeps playing there because only the interrupt runs it.
 
+### LevelEnd: a screen that holds the loop
+
+LevelEnd `$ABD8` is called by CheckScreenExit when the exit leads to `$FFFF`, inside the pass, and does not return
+to MainLoop until the player presses fire. Its own two polling loops stand in for the pass meanwhile; the game
+mechanism (the refills, the bonus, the next level's start) is [doc 10, 10.9](10-gameplay-logic.md#109-lives-the-end-of-a-level-and-the-ending).
+
+```text
+LevelEnd:
+    MarkAllDirty(); clear the map $6600-$68FF; RedrawScreen()   ; the zone is wiped, top to bottom
+    Bullets = Dynamite = 6; UpdateHud()
+    Level += 1; record = LevelTable + 11 * Level
+    PrintLines(record's text); StartTune(Level)                 ; the next level's intro and its tune
+    if Level == 4: LevelBonus = Lives + 1; AddScore
+    while StartPressed(): wait                                  ; LevelEndRelease $AC38
+    while not StartPressed(): wait                              ; LevelEndPress $AC3D
+    if Level < 4: NextLevel (Rick's start, LoadScreen) and back to the pass
+    else: ClearPlayArea; GameComplete = $FF; back to the pass (CheckGameComplete -> GameOver)
+```
+
+```mermaid
+flowchart TD
+    CSE[CheckScreenExit: exit to FFFF] --> LE[LevelEnd ABD8: wipe the zone, refill 6 and 6]
+    LE --> TX[Level + 1, PrintLines, StartTune Level]
+    TX --> L4{Level 4?}
+    L4 -- yes --> BON[LevelBonus = Lives + 1, AddScore]
+    L4 -- no --> REL
+    BON --> REL[AC38: wait for fire released]
+    REL --> PR[AC3D: wait for fire pressed]
+    PR --> NX{Level below 4?}
+    NX -- yes --> NL[NextLevel: Rick placed, LoadScreen, back to the pass]
+    NX -- no --> GC[GameComplete FF, then GameOver E35D]
+```
+
+The asm (`build/game.lst`):
+
+```text
+AC20 CD 16 A0    CALL StartTune          ; A = Level: tune 1 after level 1
+AC38 CD 23 A1    CALL StartPressed       ; LevelEndRelease
+AC3B 28 FB       JR Z,LevelEndRelease    ; Z = fire held: wait for its release
+AC3D CD 23 A1    CALL StartPressed       ; LevelEndPress
+AC40 20 FB       JR NZ,LevelEndPress     ; NZ = not pressed: wait
+```
+
+GameOver holds the loop the same way (GameOverWaitRelease `$E389`, GameOverWaitPress `$E38E`), the music running from
+the interrupt meanwhile.
+
+![LevelEnd after level 1: the zone wiped, the Egypt intro printed, then the wait for fire](img/loop/LevelEnd.gif)
+
+*`l1end` frames 0 to 30, every frame, 31 pictures (10 different; the rest are merged by the GIF). Made with `python3
+../../kit/screen_anim.py --work work/review/fixA2/l1end --from 0 --to 30 --step 1 --scale 2 --delay 120 --hold 3000
+docs/img/loop/LevelEnd.gif`, the instance opened with unreal-ng's `re_session.py open --work work/review/fixA2/l1end
+--ttd work/docs/integrate/l1end/session.ttd --port-base 37420`.*
+
+How to read it:
+
+- First picture: L1Z6, Rick at its right exit (the warp of `l1end`); LevelEnd runs from frame 1.
+- The zone disappears from the top down over five pictures: RedrawScreen draws the cleared map, which takes several
+  frames.
+- The text of LevelTable's next record (Egypt) is printed line by line; tune 1 starts at frame 9 (T 33 543).
+- The last picture stays: the screen waits at `$AC3D` for fire. `l1end` presses no key, so it stays there to its
+  frame 2 500.
+
+**Worked example.** Level 0 becomes 1: the record is LevelTable + 11 = `$E4B9`; its text is Egypt's and StartTune gets
+A = 1, the tune heard in `l1end` at frame 9. Level 1 is not 4, so no bonus; the screen waits for fire.
+
+**Witness.** `l1end`: LevelEnd at frame 1, StartTune with tune 1 at frame 9; the last picture is unchanged from frame
+about 20 to 2 500 (the probe of every 20th frame). `ending2` runs the level 4 branch.
+
 ## 4.3 The interrupt
 
 **The mode.** SetUpInterrupts `$A215` fills the 257 bytes `$8300-$8400` with `$FE`, sets I = `$83` and IM 2. Whatever
@@ -179,10 +247,10 @@ flowchart LR
 | `beeper48` (48K, no music) | 0.99 | 276 | 0.4 % |
 | `c1g` (menu, play, game over) | 14 301 / 14 390 | 1 733 | 2.4 % |
 | `L1Z1` | 0.99 | 3 385 | 4.7 % |
-| `L1Z6` | 0.97 | 3 068 | |
+| `L1Z6` | 0.97 | 3 068 | 4.2 % |
 | `L2Z5` | 1 679 / 2 000 = 0.84 | 3 538 | 4.2 % |
-| `L3Z9` | 0.97 | 3 611 | |
-| `L4Z8` | 0.95 | 3 124 | |
+| `L3Z9` | 0.97 | 3 611 | 4.9 % |
+| `L4Z8` | 0.95 | 3 124 | 4.2 % |
 | the spot `L2Z4-34` | 1.00 | 4 626 | 6.5 % |
 
 The 276 T on the 48K are the fixed part. Everything above it on the 128K is AyTick.
@@ -204,7 +272,8 @@ IM 2 acknowledge adds 19 T before the first instruction.
 | PlayEffect `$9FED`, StartTune `$A016` | paging: RAM 1 must stay in while the AY player runs |
 | the handler itself, with SoundTick `$A030` | |
 
-An interrupt that arrives in one of them waits. If the region outlasts the INT pulse (about 32 T), the interrupt is
+An interrupt that arrives in one of them waits. If the region outlasts the INT pulse (36 T on the 128K, 32 on the
+48K), the interrupt is
 lost ([4.6](#46-lost-interrupts-and-the-3-frame-pass)).
 
 **The point**: the interrupt is small and fixed. The game's timing depends on it only through FrameTicks, so a lost
@@ -305,7 +374,8 @@ A236 C9          RET
 ### Why a pass is two frames
 
 1. The HALT at `$E40F` returns after interrupt 1. The pass clears FrameTicks at once.
-2. ComposeObjects runs: about 24 000 T in a typical pass.
+2. ComposeObjects runs: about 18 900 T in the pass `c1` 31097-31099 (13.3 % of its 141 816 T), 44 800 T a pass on
+   average over 31000-31099 (31.6 %; [the step table](#what-each-step-costs)).
 3. WaitFrames(1) spins until FrameTicks >= 1, that is until interrupt 2.
 4. DrawDirtyCells runs right after interrupt 2, while the beam is still in the top border, so its writes land ahead of
    the beam ([4.5](#45-a-pass-against-the-beam)).
@@ -502,7 +572,7 @@ ADDC 10 E0       DJNZ ScrollDownStep
 ADDE CD 5A AD    CALL BuildScreenMap
 ```
 
-RedrawScreen saves the cell flags of the HUD row (`$6C21-$6C40`) and the sentinel, calls DrawAllDirtyCells `$A834`,
+RedrawScreen saves the cell flags of the HUD row (`$6C21-$6C3E`, 30 cells) and the sentinel, calls DrawAllDirtyCells `$A834`,
 then restores both. It draws every flagged cell with its attribute: almost the whole play area, twice.
 
 ![ScrollViewDown: c1 30721:38000-30741:8000](img/routines/ScrollViewDown.gif)

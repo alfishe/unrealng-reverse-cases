@@ -71,10 +71,11 @@ The game is one flat image, `$5B00-$FFFF`, the same on both machines. Only the 1
 | `$E219-$E4AD` | the menu, the new game, quit, GAME OVER, the main loop `$E3C9` (its HALT at `$E40F`) | `menu`, `mainloop` | executed |
 | `$E4AE-$E4E4` | LevelTable: 5 records of 11 bytes, the fifth the ending | `levels` | [doc 8, 8.5](08-hud-and-text.md#85-the-texts) |
 | `$E4E5-$EA8D` | the texts | `text` | screenshots |
-| `$EA8E-$EC76` | the object table: 12 slots of 30 bytes from `$EA8E`; slot 0 at `$EA8E` is another object, Rick is slot 1, RickObject `$EAAC` | `objects` | [doc 7, 7.3](07-objects.md#73-the-object-table-ea8e) |
+| `$EA8E-$EBF6` | the object table: 12 slots of 30 bytes from `$EA8E` to `$EBF5`, the `$FF` end ObjectTableEnd `$EBF6`; slot 0 at `$EA8E` is another object, Rick is slot 1, RickObject `$EAAC` | `objects` | [doc 7, 7.3](07-objects.md#73-the-object-table-ea8e) |
+| `$EBF7-$EC76` | code and a table: ResetObjects `$EBF7`, UpdateObjects `$EC11`, KillObject `$EC42`, ObjectHandlers `$EC47` | `objects` | executed |
 | `$EC77-$FD53` | code: the objects, the traps, Rick, his gun and his dynamite | `objects`, `rick` | executed |
 | `$FD54-$FD7C` | Rick's state: YFraction `$FD55`, ZoneChange `$FD61`, Dying `$FD68`, DeathDone `$FD69`, ... | `vars` | [doc 7, 7.8](07-objects.md#78-the-game-variables) |
-| `$FD7D-$FEFD` | SpawnObjects and the map build | `levels` | executed |
+| `$FD7D-$FEFD` | SpawnObjects and its slot finders FindSlotHighKind `$FEA1`, FindSlotLowKind `$FEB2` (the map build is BuildScreenMap `$AD5A`) | `levels` | executed |
 | `$FEFE-$FF1D` | the IM 2 handler; `$FF11-$FF13` its music slot | `interrupt` | executed every interrupt |
 | `$FFE4-$FFFF` | the stack, under SP = `$0000` | `interrupt` | the low mark below |
 
@@ -245,7 +246,10 @@ MainLoop:
     BonusCountdown()           ; hud
     pause on P
     if Rick's death is over: a life less, NewLife or Quit
-    if Rick left the zone: CheckScreenExit(); CheckGameComplete
+    if Rick left the zone:
+        CheckScreenExit()
+        if GameComplete: GameOver
+        back to MainLoop       ; no HALT, no drawing this pass
     HALT
     ComposeObjects(); WaitFrames(1); DrawDirtyCells(); UpdateHud()
     scroll the view if Rick is near the top or the bottom
@@ -261,7 +265,7 @@ MainLoop:
 | Score | `$A9BE-$A9C3` | six digits; `level1` 001970 at frame 755 |
 | Level | `$E4AD` | 0-3, 4 at the ending; set by the warps ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)) |
 | GameComplete | `$E440` | `$FF` after the closing text (`ending`) |
-| RickX, RickY | `$EAAD`, `$EAAE` | y grows by 3 a pass as he falls in `level1` (`$8C` at frame 443, `$8F` at 452); a scroll moves it by 32 a step, 64 in all (ShiftObjects `$AEBE`, BC = `$FFE0` twice) |
+| RickX, RickY | `$EAAD`, `$EAAE` | a fall adds `$80` (half a pixel) a pass to YVelocity `$FD56`, up to `$0800`, so the step grows 0.5, 1, 1.5 ... up to 8 pixels a pass (MoveRickGravity `$F8EC`); a scroll moves it by 32 a step, 64 in all (ShiftObjects `$AEBE`, BC = `$FFE0` twice) |
 | ZoneChange, ExitSide | `$FD61`, `$FD62` | set when Rick walks off a side |
 | Dying, DeathDone | `$FD68`, `$FD69` | set when Rick dies, and when his fall has played out |
 | ControlMethod | `$A14C` | the menu's choice (`controls`) |

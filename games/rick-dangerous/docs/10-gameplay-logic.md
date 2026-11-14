@@ -191,7 +191,10 @@ F8CA C2 ED FB    JP NZ,KillRick
 F8EC 2A 56 FD    LD HL,(YVelocity)      ; MoveRickGravity: + $80, at most $0800
 F8EF 01 80 00    LD BC,$0080
 F8F2 09          ADD HL,BC
-F8F7 FE 08       CP $08
+F8F3 7C          LD A,H
+F8F4 A7          AND A
+F8F5 FA 00 F9    JP M,MoveRickSetVel    ; rising (negative): no cap
+F8F8 FE 08       CP $08
 F8FA DA 00 F9    JP C,MoveRickSetVel
 F8FD 21 00 08    LD HL,$0800
 ```
@@ -444,11 +447,19 @@ Twelve enemy kinds, in three behaviours. Eight of them (the patrollers and the t
 EnemyCommon `$EFDB`; the four climbers run ClimberObj `$F233`, with the same tests in another order. They differ by
 their graphic (one per level, the last shared by levels 3 and 4) and by the behaviour:
 
-| Kinds | Handler | Behaviour | Graphic |
-| --- | --- | --- | --- |
-| 4, 7, 10, 13 | PatrolObj `$EFCF` | walks to and fro, turning at a wall, a ledge, or after +12 / 2 steps | 4-6: frame 23 (`$8F53`), level 1 |
-| 5, 8, 11, 14 | TrackerObj `$EFD6` | the same, but at x AND `$1E` = `$10` turns to face Rick | 7-9: frame 18 (`$8CDD`), level 2 |
-| 6, 9, 12, 15 | ClimberObj `$F233` | falls, and on a ladder above Rick climbs towards him | 10-15: frame 27 (`$914B`), levels 3-4 |
+| Kinds | Handler | Behaviour |
+| --- | --- | --- |
+| 4, 7, 10, 13 | PatrolObj `$EFCF` | walks to and fro, turning at a wall, a ledge, or after +12 / 2 steps |
+| 5, 8, 11, 14 | TrackerObj `$EFD6` | the same, but at x AND `$1E` = `$10` turns to face Rick |
+| 6, 9, 12, 15 | ClimberObj `$F233` | falls; on a floor walks, with a random direction at x AND `$1E` = 8 (WalkerOnFloor `$F406`); on a ladder with Rick above, climbs towards him |
+
+The graphic goes by level, not by behaviour (the kind's +2-3, [doc 7, 7.6](07-objects.md#76-the-kinds-their-animations-and-their-scripts)):
+
+| Kinds (patroller, tracker, climber) | Graphic | Level |
+| --- | --- | --- |
+| 4, 5, 6 | frame 23 (`$8F53`) | 1 |
+| 7, 8, 9 | frame 18 (`$8CDD`) | 2 |
+| 10, 11, 12 and 13, 14, 15 | frame 27 (`$914B`) | 3 and 4 |
 
 ```text
 EnemyCommon (IX = a patroller or a tracker):
@@ -467,6 +478,9 @@ EnemyCommon (IX = a patroller or a tracker):
 ClimberObj $F233 (IX = a climber):
     ClimberMove $F266: in the blast: KillEnemy; the stick: stunned (+29 = 20); stunned: count down and stay;
                        +24 = 0: ClimberFall $F362; else climb 2 pixels towards Rick, or step towards RickX
+    ClimberFall $F362, on a floor (WalkerOnFloor $F406): y = 8n + 3; on a ladder at x AND $0E = 4 with Rick
+                       above: +24 = 1 (climb); else walk 2 pixels, turning at a wall or at x $E8;
+                       at x AND $1E = 8: direction = Random $E441 bit 0 ? -2 : +2 (WalkerStepX $F4AA)
     touching Rick: KillRick
     HitsObstacle $F812: KillEnemy
     hit by the bullet: KillEnemy; the bullet is used up
@@ -516,6 +530,41 @@ flowchart TD
 
 The climbers (ClimberObj `$F233`) run the blast and the stick first, then the climb or the fall, then the touch on
 Rick, HitsObstacle and the bullet.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Falling: spawned
+    Falling --> Walking: a floor under it (WalkerOnFloor F406)
+    Falling --> Climbing: a ladder at x AND 7 = 4, Rick above
+    Walking --> Walking: 2 pixels a pass; a wall or x E8: turn
+    Walking --> Walking: x AND 1E = 8: Random bit 0 picks left or right
+    Walking --> Climbing: a ladder at x AND 0E = 4, Rick above
+    Walking --> Falling: no floor
+    Climbing --> Falling: off the ladder (+24 = 0)
+    Falling --> Dead: a deadly char, the blast, the bullet, object 0
+    Walking --> Dead: the blast, the bullet, object 0
+    Climbing --> Dead: the blast, the bullet, object 0
+    Dead --> [*]: KillEnemy F17C
+```
+
+The walk on a floor and its random turn (`$F4A1-$F4B9`):
+
+```text
+F4A1 DD 73 01    LD (IX+$01),E          ; the new x
+F4A4 7B          LD A,E
+F4A5 E6 1E       AND $1E
+F4A7 FE 08       CP $08
+F4A9 C0          RET NZ
+F4AA CD 41 E4    CALL Random            ; x AND $1E = 8: a random direction
+F4AD E6 01       AND $01
+F4AF 1E 02       LD E,$02
+F4B1 CA B6 F4    JP Z,WalkerSetDir      ; bit 0 = 0: right
+F4B4 1E FE       LD E,$FE               ; bit 0 = 1: left
+F4B6 DD 73 19    LD (IX+$19),E
+```
+
+The generator itself is in [doc 7](07-objects.md#the-random-numbers). Witness: `$F4AD` runs 3 times in `c1`, 19 in
+`level1`, 32 in `level2`, 13 in `level3` and 137 in `level4`.
 
 **Worked example.** Slot 10 at `c1` 31 500 ([doc 7, 7.3](07-objects.md#73-the-object-table-ea8e)): kind 4, x 140,
 walk step -2, frame 25. Its base is frame 23; x = 140 = `%10001100`, bits 2-3 = 3, so the walk frame is base + the
@@ -772,8 +821,9 @@ How to read it:
 
 **Worked example.** In `level1` the start marker of L1Z1 lies at Rick's start (x 8, row `$18`): the bonus starts at
 once, at 2 000. Rick reaches the end marker (x `$E0`, row `$38`) at frame 755. The score was 50 (one enemy), and
-becomes 1 970: 1 920 was left, 8 steps of 10. Eight steps take 7 x 30 passes plus the divider left from before, about
-240 passes, which is the 635 frames since the start at the 2-3 frames a pass of this zone (it scrolls).
+becomes 1 970: 1 920 was left, 8 steps of 10. Eight steps take 50 passes for the first (BonusDivider `$E495` starts
+at `$32` in the image, and nothing before level 1 has run it down) and 30 for each of the other seven: 260 passes,
+the 635 frames since the start (120 to 755) at about 2.4 frames a pass, the scrolls included.
 
 ![The course of the level1 recording](img/play/course-level1.png)
 
