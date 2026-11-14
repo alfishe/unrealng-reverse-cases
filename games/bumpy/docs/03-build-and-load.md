@@ -26,7 +26,7 @@ There is no custom loader, no packer and no protection, so there is no unpack to
 | 2 | header, Bytes | "BUMPY.SCR" | 6912 | (header `$8000`) | 5.1 s | `LOAD "" SCREEN$` ignores the header's address and loads to `$4000` |
 | 3 | data | | 6912 | `$4000-$5AFF` | 36.2 s | the loading screen (the same bytes as the zip's `SCRSHOT/BUMPY.SCR`) |
 | 4 | header, Bytes | "BUMPY.CDE" | 38 700 | `$61A8` (25000) | 5.1 s | |
-| 5 | data | | 38 700 | `$61A8-$F8D4` | 204.6 s | the whole game: code, data, pictures, the 100 level records |
+| 5 | data | | 38 700 | `$61A8-$F8D3` | 204.6 s | the whole game: code, data, pictures, the 100 level records |
 
 Total 259.0 s at ROM speed (12 971 frames).
 
@@ -41,7 +41,7 @@ the pauses between the blocks.
 ![The load, memory and screen](img/load/tape-load.gif)
 
 *The load in `c1`, frames 600 to 13 800, a picture every 240 frames: `$4000-$FFFF` as a grid (each byte's last write)
-with the screen beside it. The screen fills in its thirds, then the game block rises from `$61A8` to `$F8D4`.
+with the screen beside it. The screen fills in its thirds, then the game block rises from `$61A8` to `$F8D3`.
 `python3 R/kit/memanim.py --work work/docs/bmA/c1 --from 600 --to 13800 --step 16773120 --from-address 4000
 --to-address FFFF --screen --cell fit docs/img/load/tape-load.gif` (16 773 120 T = 240 frames).*
 
@@ -57,7 +57,8 @@ The BASIC is one line (`tools/basic_list.py`, `src/tape/basic.asm`):
    LOAD "" CODE 25000: POKE 23607,60: POKE 23685,0: RANDOMIZE USR 43900
 ```
 
-Between `PAPER 5:` and `LOAD` the line holds the bytes `$0A $00`, which the listing shows as `{10}{00}`.
+Between `PAPER 5:` and `LOAD` the line holds the bytes `$10 $00`, an embedded INK 0 control that the interpreter skips
+and a LIST shows as `{INK 0}` (`build/basic.lst`, `5D3E`).
 
 What each statement does:
 
@@ -71,7 +72,7 @@ What each statement does:
 | `PRINT: BRIGHT 1: OVER 1: PAPER 5:` | | cosmetic: the attributes of later prints |
 | `LOAD "" CODE 25000` | | the game to `$61A8` |
 | `POKE 23607,60` | CHARS | the ROM font back |
-| `POKE 23685,0` | SCR-CT `$5C8C` | no "scroll?" prompt |
+| `POKE 23685,0` | DF_CC high byte `$5C85` | the print position's high byte zeroed; nothing prints after it, so it has no effect (known only from the code) |
 | `RANDOMIZE USR 43900` | | `CALL $AB7C`: GameStart |
 
 ```text
@@ -79,7 +80,7 @@ hide the tape messages: border black, ink = paper, font in empty RAM
 RAMTOP = 24999
 load the screen block to $4000
 load the code block to 25000 ($61A8)
-restore the font; no scroll prompt
+restore the font; clear DF_CC's high byte
 call 43900 ($AB7C)
 ```
 
@@ -94,9 +95,32 @@ flowchart LR
 ```
 
 The code is entered at `$AB7C` (`DI`) with the image exactly as `LD-BYTES` left it.
-The entry image's `$61A8-$F8D4` equals block 5 byte for byte (`work/stage1/images/code.bin` against `entry.z80`).
+The entry image's `$61A8-$F8D3` equals block 5 byte for byte (`work/stage1/images/code.bin` against `entry.z80`).
 So the game has no unpacking or relocation stage.
 What changes between the entry and play: [doc 2, 2.2](02-architecture.md#22-the-images).
+
+The stages from power-on, in `c1` (`work/stage1/c1/record.json` for the tape and the moments, `work/stage1/c1/l1.json`
+for the frame of each byte's last access):
+
+```mermaid
+flowchart LR
+    P["power-on"] -->|"frame 150: LOAD typed"| T["tape plays"]
+    T -->|"182: play"| B["BASIC line 10 runs"]
+    B -->|"636: $5CCB last read"| S["LOAD SCREEN$"]
+    S -->|"2182 black, 5182 complete"| K["LOAD CODE 25000"]
+    K -->|"3211: $61A8 written"| K2["the code block"]
+    K2 -->|"13 356: $F8D3 written"| U["RANDOMIZE USR 43900"]
+    U -->|"13 357, T 19 678: $AB7C fetched"| G["GameStart, Menu"]
+    G -->|"13 782: the menu shown"| M["the menu"]
+```
+
+| Stage | Frames in `c1` | What the static decode says | What the recording shows | Match |
+| --- | --- | --- | --- | --- |
+| the BASIC | 182-636 | blocks 0 and 1, autostart `LINE 10` (3.1) | the tape plays at 182; the line's first byte `$5CCB` is last read at 636 | yes |
+| the loading screen | between 636 and 3211 | blocks 2 and 3 to `$4000`, 6912 bytes, black on black until the attributes arrive | the shot at 2182 is still black, the one at 5182 shows the whole screen ([load GIF](img/load/tape-load.gif)) | yes |
+| the code block | 3211-13 356 | block 5 to `$61A8-$F8D3`, 204.6 s with its pilot | `$61A8` written at 3211, `$F8D3` at 13 356: 10 145 frames, 202.9 s, the rest is the 2 s pilot | yes |
+| the entry | 13 357 | `RANDOMIZE USR 43900`: `CALL $AB7C`, the image as loaded | the first fetch of `$AB7C` at T 19 678, the code written `$61A8-$F8D3` by LD-BYTES `$05AE` (L1 arrivals) | yes |
+| the menu | 13 366, 13 782 | GameStart `DI`, CALL Menu `$EF33` | Menu's code first runs at 13 366 (`$EF55`); the menu is on screen at 13 782 ([shot](img/play/c1-013782-menu.png)); the tape ends at 13 682 | yes |
 
 Worked example, the font trick: CHARS `$5C36` holds the font address minus 256.
 `POKE 23607,128` makes it `$8000`, so a character c prints from `$8000` + 8 × c.
@@ -133,8 +157,8 @@ is 32782.
 flowchart TD
     ANN["src/game/game.ann, 650 entries"] --> MK["R/kit/mkgame.py"]
     MK --> ASM["src/game/*.asm, 15 files"]
-    RES["src/res: 61 resources, PNG, TXT, CSV"] --> RF["tools/res_formats.py build"]
-    RF --> BIN["build/res/*.bin"]
+    RES["src/res: 44 editable files, PNG, TXT, CSV"] --> RF["tools/res_formats.py build"]
+    RF --> BIN["build/res: the 60 binaries game.asm INCBINs"]
     ASM --> SJ["sjasmplus"]
     BIN --> SJ
     SJ --> G["game.bin"]

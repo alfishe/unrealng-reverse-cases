@@ -10,8 +10,9 @@
 
   ORG $B3B1
 
-; The menu's choice: 0 one player, 1 the demo, 2 two players (written by Menu
-; at $EF97, $F0C7)
+; The menu's choice: 0 one player, 2 two players, 4 the demo; GameRestart
+; starts the demo on any value but 0 and 2 (written by Menu at $EF97 with 4, by
+; SetPlayersMode $F0C7 with 0 or 2)
 MenuChoice:
   DEFB $00
 
@@ -284,8 +285,8 @@ PracticeStock:
 ;
 ; GameStart sets the demo pointer $ABA4 = $D25A; each decision reads the byte
 ; after it (from $D25B on, 48 bytes read): 0-5 the next ball state at a
-; landing, 9 arm the spring at a step 9 (BounceStep9, LeftStep9 and the
-; others). The first byte is never read.
+; landing, 9 arm the spring at a step 9 (BounceStep9, LeftStep9 and the others)
+; or at a fall's step 4 (DownStep4). The first byte is never read.
 DemoMoves:
   INCBIN "res/tables/demo-moves.bin",$0000,49
 

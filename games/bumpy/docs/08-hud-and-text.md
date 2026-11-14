@@ -18,7 +18,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 
 | Recording | Used for |
 | --- | --- |
-| `c1` | the menu (frame 13 782), READY? printed at frame 13 926 (8.3), a water drop counted on the HUD at frame 14 128 (8.6) |
+| `c1` | the menu (frame 13 782), READY? printed at frame 13 926 (8.3), a water drop taken at frame 14 127 and shown on the HUD at frame 14 130 (8.6) |
 | `twoname` (stage 2) | both players' game overs; the names B U M (frames 3030-3237) and Z A P (frames 4625-4781) entered (8.8, 8.9) |
 | `gameover` | a score of 2000 entered as the fourth record (frame 4618) |
 | `rec/l83` | level 83 ended: the timer counted into the score from about frame 594 (8.7) |
@@ -35,7 +35,7 @@ Conventions:
 | Screen | Printed by | Text | Shot |
 | --- | --- | --- | --- |
 | the menu | Menu `$EF33` | MenuBackdropText `$F0E8`, MenuText `$EFEF` | [c1 frame 13 782](img/play/c1-013782-menu.png) |
-| a life starts | LifeStart `$AC4A` | ReadyText `$AD3B`, Player1ReadyText `$AD48`, Player2ReadyText `$AD84` | [twoname frame 200](img/play/twoname-000200-two-ready.png) |
+| a life starts | LifeStart `$ABD8` | ReadyText `$AD3B`, Player1ReadyText `$AD48`, Player2ReadyText `$AD84` | [twoname frame 200](img/play/twoname-000200-two-ready.png) |
 | play | DrawHud `$E58B` | the HUD row: score, lives, water, keys, hammers, level | [rec/l83 frame 100](img/play/l83-000100-play.png) |
 | a level's end | LevelEnd `$B2C2` | the score on the HUD, one point at a time | [rec/l83 frame 650](img/play/l83-000650-count.png) |
 | the hall of fame | ShowHallOfFame `$ED1A` | HofTitleText `$EDEF`, the four records at HallOfFame `$EEB3` | [gameover frame 4618](img/play/gameover-004618-hall-of-fame.png) |
@@ -82,7 +82,7 @@ A byte from `$01` to `$16` that it knows is a control code; any other byte goes 
 | `$10` | ink | TextAttr `$E713` bits 0-2 |
 | `$11` | paper | TextAttr bits 3-5 |
 | `$12` | flash | meant for TextAttr bit 7; always clears it (the bug below) |
-| `$13` | bright | meant for TextAttr bit 6; always clears it for 0 and 1 (the bug below) |
+| `$13` | bright | meant for TextAttr bit 6; always clears it, whatever the value (the bug below) |
 | `$14` | attribute | TextAttr = the byte |
 | `$15` | none | TextAttr = TextVars `$E712`, the default (7) |
 | `$00` | none | the end; TextAttr = TextVars |
@@ -100,7 +100,7 @@ PrintText(HL):
             $10: TextAttr = TextAttr AND $F8 OR (byte AND 7)
             $11: TextAttr = TextAttr AND $C7 OR (byte * 8 AND $38)
             $12: TextAttr = TextAttr AND $7F OR (RR(byte) AND $80)      ; RR through a clear carry: always 0
-            $13: TextAttr = TextAttr AND $BF OR (RR(RR(byte)) AND $40)  ; 0 for the values 0 and 1
+            $13: TextAttr = TextAttr AND $BF OR (RR(RR(byte)) AND $40)  ; always 0
             $14: TextAttr = byte
             $15: TextAttr = TextVars
             $00: TextAttr = TextVars; return
@@ -181,7 +181,7 @@ gives 0.
 TextAttr stays `$02`: dark red, not bright.
 The [menu shot](img/play/c1-013782-menu.png) shows "VERSIONED BY J250 <SPAIN>" in dark red under the options.
 
-Witness: PrintText L1 46 858; the BRIGHT code runs at each menu drawing; no string uses FLASH.
+Witness: PrintText L1 47 004; the BRIGHT code runs at each menu drawing; no string uses FLASH.
 
 ### READY? printed
 
@@ -200,7 +200,7 @@ written; the screen shows each glyph as it lands. `c1`, frame 13 926, T 35 900 t
 
 The glyphs of "ready?" are codes 97-122 and 63, so the screen shows capitals with a bar under them.
 Nothing prints over READY? to erase it.
-When a key is pressed, LifeStart `$ACBC` clears the play area and builds the level again (doc 7).
+When a key is pressed, LifeStartGo `$ACBC` clears the play area and builds the level again (doc 7).
 
 The point: one printer with a few codes is the whole text system; two of its codes do nothing, and no string needs
 them to work.
@@ -283,7 +283,7 @@ The attribute 7 goes to `$5800 + 32 × 11 + 13 = $596D` and to `$598D` below it.
 The "PLAYER" of the two-player texts is printed down column 31, one letter per AT.
 Each letter at column 31 moves the column to 32, so NextColumn calls NewLine; the next AT puts the place back.
 
-Witness: PrintChar L1 34 443, DrawGlyph L1 34 375.
+Witness: PrintChar L1 34 549, DrawGlyph L1 34 481.
 The 68 runs that did not draw are the `$09` codes of the hall of fame title: 17 a drawing, 4 drawings.
 NewLine L1 49 (`menu`, `twoname`), all from column 31.
 
@@ -429,8 +429,10 @@ routines (doc 6). `c1`, frame 14 127 T 1800 to frame 14 130 T 30 000 (a water dr
 `python3 R/kit/writers_map.py --trace work/docs/bmA/c1/traces/14127_1800-14130_30000.uatr --listing build/game.lst
 --sources --zoom 0,0,256,8 --title '...' --out docs/img/hud/writers-hud.png`.*
 
-The window holds three passes.
-HudBlitLoop wrote 140 bytes with 161 writes: the same 7 lines of 20 cells, again and again.
+The window holds one pass stretched over four frames by SfxPickup (the interrupts off from frame 14 127 T 12 159
+into frame 14 129), then the next pass's DrawHud from frame 14 130.
+HudBlitLoop wrote 140 bytes with 161 writes: 21 from WaterToHud (3 glyphs of 7 lines) and 140 from that one DrawHud
+(20 cells of 7 lines).
 
 ![A water drop counted on the HUD](img/routines/DrawHud.gif)
 
@@ -440,7 +442,7 @@ frame 14 130 T 30 000. `python3 R/kit/routine_anim.py --work work/docs/bmA/c1 --
 --listing build/game.lst --pc B958-BA46,E58B-E666 --range A900-AB7F --pictures 60
 --out docs/img/routines/DrawHud.gif`.*
 
-Witness: DrawHud L1 95 989, PaintHudAttrs L1 95 989, HudBlit L1 1 952 744 (about 20 glyphs a pass).
+Witness: DrawHud L1 97 366, PaintHudAttrs L1 97 366, HudBlit L1 1 980 503 (about 20 glyphs a pass).
 
 The top row of cells (doc 6) shares character row 0 with the HUD.
 A wall or an object of the top row is drawn there by the sprite routines, and the next DrawHud prints over it.
@@ -452,7 +454,8 @@ remember what changed.
 ## 8.7 The timer counted into the score
 
 The timer `$AB04` starts at 1000, and TickTimer `$B7D1` takes one off each pass, stopping at 0.
-When the ball sinks into the exit, LevelEnd `$B2C2` stores the next level and sinks the ball in 9 steps.
+When the ball sinks into the exit, LevelEnd `$B2C2` stores the next level and sinks the ball in 9 steps, two frames each (two WaitOneFrame a step; the ball drawn with
+DrawSprite, stored, not XORed).
 Then it plays SfxLevelEnd (38.6 frames, doc 9) and waits 15 frames.
 Then it counts the timer into the score, one point at a time.
 
@@ -497,12 +500,14 @@ LevelEndTimerLow:
 
 Worked example: `rec/l83`.
 At frame 522 the score is 34 151 and the timer 711; Level already reads 84.
-At frame 672 the score is 34 208 and the timer 653: 58 points counted.
+At frame 672 the score is 34 208 (57 points added) and the timer 653 (58 taken): the frame falls inside a tick,
+between the timer's decrement and the score's add (the loop takes one off the timer, plays SfxTimerTick, then adds
+the point).
 The count starts near frame 594, after the sinking, SfxLevelEnd and the 15 frames.
 So a point takes about 1.3 frames, and the whole 711 takes about 950 frames, 19 seconds.
 During the count the HUD's level number already shows 84 ([shot](img/play/l83-000650-count.png)).
 
-Witness: LevelEnd L1 101 (`menu`, the `rec/l*` recordings, 88 of the RZX level recordings).
+Witness: LevelEnd L1 102 (`menu`, the `rec/l*` recordings, 88 of the RZX level recordings).
 
 The point: the count is paced by its own sound, so a fast level, which leaves more of the timer, also has a longer
 count.

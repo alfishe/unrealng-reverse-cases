@@ -5,7 +5,7 @@
 
 - docs/img/arch/memory-map.png: `$6000-$FFFF` in rows of 1 KB, each byte coloured by the module of its entry in
   src/game/game.ann (the 14 modules); entries the code never reads or runs (their titles say "never read", "never
-  called", "never run", "nothing calls" or "nothing reads", or an Unused name) are drawn pale; the labelled blocks are
+  called", "never run", "nothing calls" or "nothing reads", or an Unused name) are drawn dark; the labelled blocks are
   the large entries.
 - docs/img/arch/leftovers.png: what the Spectrum never shows: the CPC side panel PanelPicture `$D2B4` (18 x 200 bytes,
   CPC mode 1, drawn here with all four pens; the Spectrum's pictures show only the low nibble), the CPC level editor's
@@ -24,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CASE = os.path.dirname(HERE)
 OUT = os.path.join(CASE, 'docs', 'img', 'arch')
 BG, PANEL, TEXT, DIM = '#0e0e14', '#181820', '#d2d2dc', '#787887'
-START, END = 0x61A8, 0xF8D5
+START, END = 0x61A8, 0xF8D4
 MODCOL = {
     'graphics': '#5a96fa', 'levels': '#5ac878', 'vars': '#f0c846', 'setup': '#e68cdc', 'mainloop': '#ff5050',
     'ball': '#ff9a3c', 'menu': '#46d2d2', 'render': '#a078ff', 'hud': '#c8ff64', 'hiscore': '#ff78a0',
@@ -81,14 +81,14 @@ def memory_map():
         r, c = divmod(a - 0x6000, 1024)
         ax.text(min(c, 760) + 6, r + 0.62, f'{n} \\${a:04X}', fontsize=10, color='black',
                 bbox=dict(facecolor='#f0f0f0', edgecolor='none', pad=1, alpha=0.85))
-    for a, lab in ((0x6000, 'BASIC, stack \\$6170-\\$618F'), (0xF8D5, 'free: never touched')):
+    for a, lab in ((0x6000, 'BASIC, stack \\$6170-\\$618F'), (0xF8D4, 'free: never touched')):
         r, c = divmod(a - 0x6000, 1024)
         ax.text(c + 6, r + 0.62, lab, fontsize=10, color=TEXT)
     handles = [Patch(color=MODCOL[m], label=m) for m in MODCOL]
-    handles.append(Patch(color=tuple(hexrgb('#ff9a3c', True) / 255), label='never read or run (pale)'))
+    handles.append(Patch(color=tuple(hexrgb('#ff9a3c', True) / 255), label='never read or run (dark)'))
     ax.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.04), ncol=5, fontsize=10,
               facecolor=PANEL, labelcolor=TEXT, edgecolor=DIM)
-    ax.set_title('The game block \\$61A8-\\$F8D4 by module (src/game/game.ann, 650 entries), 1 KB a row',
+    ax.set_title('The game block \\$61A8-\\$F8D3 by module (src/game/game.ann, 650 entries), 1 KB a row',
                  color=TEXT, fontsize=12)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, 'memory-map.png'), facecolor=BG)

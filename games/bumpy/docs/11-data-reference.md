@@ -215,11 +215,11 @@ its own heading with its modules, its source, its annotations and its recordings
 
 | Address | Name | Bytes | What | Read by | Written by |
 | --- | --- | --- | --- | --- | --- |
-| `$B3B1` | `MenuChoice` | 1 | The menu's choice: 0 one player, 1 the demo, 2 two players (written by Menu at `$EF97`, `$F0C7`) | `GameStart`, `GameRestart` (`stage1/menu`), `GameRestartChoice` (`stage2/rec/twoname`) | `SetPlayersMode`, `MenuWait` (`stage1/menu`) |
+| `$B3B1` | `MenuChoice` | 1 | The menu's choice: 0 one player, 2 two players, 4 the demo; GameRestart starts the demo on any value but 0 and 2 (written by Menu at `$EF97` with 4, by SetPlayersMode `$F0C7` with 0 or 2) | `GameStart`, `GameRestart` (`stage1/menu`), `GameRestartChoice` (`stage2/rec/twoname`) | `SetPlayersMode`, `MenuWait` (`stage1/menu`) |
 | `$B3CE` | `ControlMask` | 2 | ReadControlMask's result; never read (leftover) | - | `ReadControlMaskNext` (code) |
 | `$B436` | `KeyRows` | 9 | The last read of the controls: 8 keyboard half-rows (`$7FFE` ... `$FEFE`) and the Kempston stick, 0 = held | `AnyControl`, `TestKeyBit`, `TestKeyBitTest` (`stage1/rzx/l25`) | `ReadControls` |
 | `$B43F` | `UnusedByteB43F` | 1 | One byte after KeyRows; nothing reads it (leftover) | - | - |
-| `$D25A` | `DemoMoves` | 49 | The demo's move list: one byte a decision. GameStart sets the demo pointer `$ABA4` = `$D25A`; each decision reads the byte after it (from `$D25B` on, 48 bytes read): 0-5 the next ball state at a landing, 9 arm the spring at a step 9 (BounceStep9, LeftStep9 and the others). The first byte is never read. | `BallStopped` (`stage1/menu`), `BounceStep9` (`stage1/menu`), `ChooseNextState` (`stage1/menu`), `DownStep4` (`stage1/menu`), `LeftStep9` (`stage1/menu`) +1 | - |
+| `$D25A` | `DemoMoves` | 49 | The demo's move list: one byte a decision. GameStart sets the demo pointer `$ABA4` = `$D25A`; each decision reads the byte after it (from `$D25B` on, 48 bytes read): 0-5 the next ball state at a landing, 9 arm the spring at a step 9 (BounceStep9, LeftStep9 and the others) or at a fall's step 4 (DownStep4). The first byte is never read. | `BallStopped` (`stage1/menu`), `BounceStep9` (`stage1/menu`), `ChooseNextState` (`stage1/menu`), `DownStep4` (`stage1/menu`), `LeftStep9` (`stage1/menu`) +1 | - |
 | `$D28B` | `DemoPad` | 41 | 41 zeros after the demo moves, never read | - | - |
 | `$E808` | `Logo` | 1080 | The BUMPY logo: 60 lines of 18 CPC mode-1 bytes (72 x 60 pixels) | `DrawSprite` | - |
 | `$EFA2` | `MenuDemoToggle` | 1 | Flipped at each menu time-out: 1 the demo, 0 the hall of fame | `MenuWait` (`stage1/menu`) | `MenuWait` (`stage1/menu`) |

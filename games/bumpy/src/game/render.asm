@@ -390,11 +390,12 @@ NextWallFrameWrap:
 ; Arm the spring of the platform under the ball (types 1-5)
 ;
 ; When SpringArmed $AA13 is 0 and the platform $AB1C is 1-5: copies the 24-byte
-; spring record of the type (SpringRecords $C52A[type - 1]) to $AB35 (4
-; offsets, 4 frame addresses, 4 widths, 4 row counts) and sets SpringArmed.
-; Types 0 and 6 up (conveyors, fire, bricks, exit) have no spring. Called by
-; the bounce handlers when up or fire (UpKey $B463) is down, or the demo byte
-; is 9.
+; spring record of the type (found through SpringCurves $C52A[type - 1]:
+; SpringPics $C5D6 + 24 x (type - 1)) to $AB35 (4 offsets, 4 frame addresses, 4
+; widths, 4 row counts) and sets SpringArmed. Types 0 and 6 up (conveyors,
+; fire, bricks, exit) have no spring. Called at step 9 of a bounce or a side
+; move and at step 4 of a fall (DownStep4 $CE8A) when up or fire (TestUpOrFire
+; $B463) is down, or the demo byte is 9.
 ;
 ; Witness: L1 2308 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12,
 ; rzx00-rzx77, rzx79-rzx99).

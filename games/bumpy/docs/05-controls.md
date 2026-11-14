@@ -19,7 +19,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | --- | --- |
 | `c1` | the menu at frame 13 782 (1 twice, 2, 0); keyboard play on level 0 from 14 018; the keys traced over frames 14 082-14 137 |
 | `menu` | a fast-load snapshot with a Kempston fitted and the mouse quiet: the demo, the three control sets, the pause (H at 5756), R back to the menu, two players (8320), the cheat (12 656) |
-| `gameover` | S three times (lives lost at 602, 1080, game over at 1458) |
+| `gameover` | S three times in each of two games (game 0: lives lost at 602, 1080, game over at 1458; game 1: the score POKEd to 2000, said in its `record.json`, then three S and the name entry) |
 | `twoname` (stage 2) | two players to the end, both names entered |
 
 Conventions:
@@ -69,7 +69,9 @@ Worked example: `c1` (no stick, the mouse quiet) reads `$FF` from port `$FFDF` i
 14 082-14 137 ([doc 4, 4.7](04-game-loop.md#47-the-im-1-frame-and-the-windows-with-interrupts-off)).
 The game sees no stick.
 The first `menu` recording, with the mouse at Y = 85, stored `$EA` at `$B43E` and stuck at READY?: WaitRelease
-`$B401` waits for "nothing held", and the mouse held "left, up and fire" for ever.
+`$B401` waits for "nothing held", and the mouse held "right, down and fire" for ever: 85 = `$55`, AND `$1F` =
+`$15`, bits 0, 2 and 4 (right, down, fire in the Kempston set's codes `$40`, `$42`, `$44`), stored complemented as
+`$EA`.
 
 Witness: ReadControls L1 925 798, in every recording.
 
@@ -131,10 +133,11 @@ Two flaws follow from the early `RET Z`:
 - **Interrupts stay off** until the next `EI` (WaitFrame's, at the end of the pass).
   [Doc 4, 4.7](04-game-loop.md#47-the-im-1-frame-and-the-windows-with-interrupts-off) measures it: the game loses
   no timing, because each pass ends in an `EI` and a `HALT`.
-- **A released stick is never seen released.** When the stick is let go, the five bits are `$1F` and the store is
-  skipped, so `$B43E` keeps the last held value.
-  A real stick always answers, so this happens only when the device stops answering; the RZX replays set `$B43E` to
-  `$FF` at their start for this reason (WALKTHROUGH, problem table).
+- **The stick byte freezes when the port reads `$1F`.** A Kempston reads 1 for pushed, so a real stick at rest reads
+  `$00`: AND `$1F` is 0, and the store writes `$FF`, all released.
+  Only a port that reads all five low bits 1 (nothing fitted and the bus at `$FF`, a device unplugged, or all four
+  directions and fire at once) skips the store, so `$B43E` keeps its last value; the RZX replays set `$B43E` to `$FF`
+  at their start for this reason (WALKTHROUGH, problem table).
 
 Every key test calls ReadControls again: TestKey `$B6CB` reads all 9 bytes for each key it tests.
 A pass in play reads the controls about 4 times (R, D, H, then S in the state routine), plus the landing's tests.
@@ -267,7 +270,8 @@ The bytes were already the same: KeySlots is stored with the keyboard set in the
 Witness: LoadControls L1 8 (`c1`, `gameover`, `menu`, `twoname`); the `menu` recording plays the Sinclair set at
 frames 6376-7252 and the Kempston set from 7400.
 
-The point: the three sets differ only in the first five codes; pause and quit are H and R in all of them.
+The point: the three sets differ in the first six codes (the sixth, fire 2, is never read); pause and quit are H and R
+in all of them.
 
 ## 5.5 The menu keys and the time-out
 
@@ -332,7 +336,7 @@ stateDiagram-v2
 ```
 
 Each option plays SfxPickup and restarts the 3000-frame count (MenuRedraw `$EF44`).
-GameRestart treats MenuChoice 4 like 1: any value but 0 and 2 starts the demo.
+GameRestart starts the demo on any MenuChoice but 0 and 2; the menu stores 4 for it (`EF95 LD A,$04`).
 
 Worked example: `c1` reaches the menu at frame 13 782 and presses 1 twice, 2 and 0.
 1 flips Players to 1 and back to 0; 2 keeps the keyboard; 0 starts a one-player game, and READY? is up at 14 018
@@ -345,14 +349,14 @@ The point: the menu is a frame loop of five fixed key codes; nothing in it uses 
 
 ## 5.6 The keys in play
 
-MainLoop tests three keys every pass, and every state routine tests S at every step:
+MainLoop tests three keys every pass, and the move states (0-5) test S at every step, not in the demo:
 
 | Key | Code | Where | Does |
 | --- | --- | --- | --- |
 | R | `$2B` | MainLoop `$ACEA` | back to the menu (BackToMenu `$B7B2`) |
 | D | `$32` | MainLoop `$ACF2` | CheatModeSwitch `$ADDF`: a `RET` |
 | H (slot 6) | `$0C` | MainLoop `$AD03`, not in the demo | Pause `$B440` |
-| S | `$31` | BallBounce `$AE7A` and the other state routines, not in the demo | SelfDestruct `$BA71`: the ball is lost |
+| S | `$31` | the five move routines (`$AE7A`, `$AEF1`, `$AF6B`, `$AFEB`, `$B080`) and BallStopped (`$B12E`), each only when DemoFlag is 0; BallBurst, BallFallOut and LevelEnd never test it | SelfDestruct `$BA71`: the ball is lost |
 
 ```asm
   ACEA  LD A,$2B
@@ -400,14 +404,16 @@ flowchart TD
   Nothing is drawn: the screen stays as it was, and the timer stops because no pass runs.
 - **R** works in the demo too: it is the way out of the demo before its end.
 - **S** costs a life like a fall: SfxLifeLost, then LoseLife ([doc 10](10-gameplay-logic.md)).
-  In the demo SelfDestruct jumps back to MainLoop.
+  SelfDestruct also tests DemoFlag (`$BA71`) and jumps back to MainLoop in the demo, a check its callers have already
+  made: dead code.
 - **D** reaches a `RET`. The two instructions after it would set CheatMode `$ADDD`; CheatMode is never 1, so the
   level select in SelfDestruct and PracticeStock (3 of each tool at every life) are not executed in any recording.
 
 Worked example: `menu`, frame 5756, H in keyboard play.
 Pause waits; the timer `$AB04` holds its value until the key at frame 5924
 ([shot](img/play/menu-005820-pause.png)).
-`gameover` presses S three times: lives 2 to 1 at frame 602, 1 to 0 at 1080, game over at 1458.
+`gameover` presses S three times in each of its two games; in the first, lives 2 to 1 at frame 602, 1 to 0 at 1080,
+game over at 1458.
 
 Witness: Pause in `menu`; SelfDestruct L1 12 (`gameover`, `twoname`); BackToMenu in `menu` (R after keyboard play).
 
@@ -550,8 +556,10 @@ flowchart TD
 ```
 
 The spring is armed during a move, not at the landing.
-Up or fire held at step 9 of a bounce, or of a move left or right, calls LoadSpring (TestUpOrFire `$B463`), and the
-spring's frames play at steps 9, 11, 14 and 15.
+Up or fire held at step 9 of a bounce, or of a move left or right, or at step 4 of a fall (DownStep4 `$CE8A`, after the
+ball enters the new cell), calls LoadSpring (TestUpOrFire `$B463`), which arms only on the ball's platform 1-5.
+The spring's frames play at steps 9, 11, 14 and 15 of a bounce or a side move, and in a fall at steps 4 (SpringStep1
+and 2, `CEB2-CEC0`) and 7 (SpringStep3 and 4, DownStep7 `$CECC`).
 So the player presses up during the second half of a bounce, and the ball rises at the landing.
 
 Left beats right when both are held, and both beat the spring's absence: a key held at the landing always moves the
@@ -587,7 +595,7 @@ at a landing in the demo (ChooseDemoState $B7FF):
     exit, conveyors: as in a game
     DemoInputPtr += 1; BallState = the byte
     if SpringArmed: up
-at a step 9 in the demo:
+at a step 9 of a bounce or a side move, or step 4 of a fall, in the demo:
     if the next byte is 9: LoadSpring          ; it peeks, without moving the pointer
 ```
 
@@ -661,3 +669,26 @@ The point: two players are two 7-byte records swapped at each life lost.
   recording: CheatMode is never set.
 - With no device on port `$DF`, a real 48K reads the floating bus, which carries screen bytes while the ULA fetches
   the picture. The game would then see stray stick bits; no recording tested it (the emulator's port reads `$FF`).
+  Row 8 is read by the Kempston set's codes and by AnyControl `$B407`, which ANDs all nine KeyRows, so even with the
+  keyboard set a stray byte would hold WaitRelease (READY?, Pause, the hall of fame's skip), as the mouse did in the
+  first `menu` recording. MainLoop's R, D and H tests run at about T 19 000-22 600 (doc 4, 4.4), screen lines 21-37,
+  inside the ULA's fetch; the ball step's S test at T 10 778 is in the top border, where the bus reads `$FF`.
+- The level select (SelfDestructLevelSelect `$BA80` and LevelEndCheat `$B2C9`) is never reached: CheatMode is only
+  ever written 0 (`AB85`). It would take L after `CALL FirmwareStub5` (a `RET`, so L is whatever HL held), subtract
+  97 while it is 100 or more, and store it in Level:
+
+```asm
+SelfDestructLevelSelect:
+  BA80  CALL FirmwareStub5      ; a RET: L is whatever HL held
+  BA83  LD A,L
+SelfDestructReduce:
+  BA84  CP $64                  ; 100
+  BA86  JR C,SelfDestructSetLevel
+  BA88  SUB $61                 ; 97
+  BA8A  JR SelfDestructReduce
+SelfDestructSetLevel:
+  BA8C  AND A
+  BA8D  LD (Level),A
+```
+
+- There is no key redefinition: the three fixed sets of 5.4 are all the game offers.

@@ -40,20 +40,20 @@ SfxExtraLife and SfxLevelEnd call their primitive twice.
 
 | Effect | Primitive | Played when | OUTs | flips | T-states | frames | WAV | L1 | First traced call |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- | ---: | --- |
-| SfxLand `$F3C8` | SquareTone | a bounce or a move lands on a platform | 100 | 99 | 84 511 | 1.21 | [land](img/sound/land.wav) | 2605 | `c1` 14 096 T 3415 |
-| SfxHit `$F3DF` | RomNoise | the first step of a jump up from a platform that is not bricks | 100 | 49 | 110 676 | 1.58 | [hit](img/sound/hit.wav) | 1314 | `rzx/l01` 484 T 3310 |
-| SfxPickup `$F3F6` | RandomNoise2 | a prize, key, drop or hammer; a menu option | 100 | 61 | 184 317 | 2.64 | [pickup](img/sound/pickup.wav) | 1034 | `c1` 14 127 T 12 159 |
-| SfxExtraLife `$F40D` | TripleSweep × 2 | the bottle | 1402 | 1399 | 2 699 370 | 38.62 | [extra-life](img/sound/extra-life.wav) | 20 | `menu`, `l10`, `l36`, `l45`, `l68` (no trace) |
+| SfxLand `$F3C8` | SquareTone | a bounce or a move lands on a platform | 100 | 99 | 84 511 | 1.21 | [land](img/sound/land.wav) | 2628 | `c1` 14 096 T 3415 |
+| SfxHit `$F3DF` | RomNoise | the first step of a jump up from a platform that is not bricks | 100 | 49 | 110 676 | 1.58 | [hit](img/sound/hit.wav) | 1324 | `rzx/l01` 484 T 3310 |
+| SfxPickup `$F3F6` | RandomNoise2 | a prize, key, drop or hammer; a menu option | 100 | 61 | 184 317 | 2.64 | [pickup](img/sound/pickup.wav) | 1054 | `c1` 14 127 T 12 159 |
+| SfxExtraLife `$F40D` | TripleSweep × 2 | the bottle | 1402 | 1399 | 2 699 370 | 38.62 | [extra-life](img/sound/extra-life.wav) | 23 | `menu`, `scoreloop`, `l10`, `l36`, `l45`, `l68` (no trace) |
 | SfxWaterDrop `$F427` | RumbleHigh | a water drop starts to fall on a fire | 900 | 470 | 212 982 | 3.05 | [water](img/sound/water.wav) | 55 | `menu`, `l10`, `l36`, `l56`, `l59` (no trace) |
 | SfxWallBounce `$F43E` | SweepDown | a wall turns the ball back; a lock 3 lowered | 100 | 99 | 84 161 | 1.20 | [wall-bounce](img/sound/wall-bounce.wav) | 119 | `rzx/l01` 588 T 23 947 |
 | SfxLockA `$F455` | RandomNoise1 | a lock 2 lowered | 100 | 62 | 115 077 | 1.65 | [lock-a](img/sound/lock-a.wav) | 38 | `rzx/l01` 603 T 23 939 |
 | SfxLockB `$F46C` | RandomNoise2 | a lock 1 lowered (opened) | 100 | 61 | 184 317 | 2.64 | [lock-b](img/sound/lock-b.wav) | 117 | `rzx/l01` 619 T 23 939 |
 | SfxFireDeath `$F483` | RumbleLow | a landing on fire with no water | 600 | 268 | 1 398 730 | 20.01 | [fire-death](img/sound/fire-death.wav) | 1 | `fire` 41 T 3448 |
-| SfxLevelEnd `$F49A` | TripleSweep × 2 | the ball has sunk into the exit | 1402 | 1399 | 2 699 370 | 38.62 | [level-end](img/sound/level-end.wav) | 101 | `rec/l83`, between 522 and 594 (no trace) |
-| SfxSpikeDeath `$F4B4` | RumbleLow | spikes | 600 | 268 | 1 398 730 | 20.01 | [spike-death](img/sound/spike-death.wav) | 13 | 8 RZX levels (no trace) |
-| SfxLifeLost `$F4CB` | RumbleLow | a fall out below; the S key | 600 | 268 | 1 398 730 | 20.01 | [life-lost](img/sound/life-lost.wav) | 20 | `rzx/l68` 690 T 5612 |
+| SfxLevelEnd `$F49A` | TripleSweep × 2 | the ball has sunk into the exit | 1402 | 1399 | 2 699 370 | 38.62 | [level-end](img/sound/level-end.wav) | 102 | `rec/l83`, between 522 and 594 (no trace) |
+| SfxSpikeDeath `$F4B4` | RumbleLow | spikes | 600 | 268 | 1 398 730 | 20.01 | [spike-death](img/sound/spike-death.wav) | 14 | `rightspike`, 8 RZX levels (no trace) |
+| SfxLifeLost `$F4CB` | RumbleLow | a fall out below; the S key | 600 | 268 | 1 398 730 | 20.01 | [life-lost](img/sound/life-lost.wav) | 23 | `rzx/l68` 690 T 5612 |
 | SfxBrickCrumble `$F4E2` | RumbleHigh | a brick layer knocked off | 900 | 470 | 212 982 | 3.05 | [brick](img/sound/brick.wav) | 409 | `rzx/l01` 149 T 21 724 |
-| SfxTimerTick `$F4F9` | SweepDown | one point of the timer counted in | 100 | 99 | 84 161 | 1.20 | [timer-tick](img/sound/timer-tick.wav) | 5598 | `rec/l83`, 58 calls in frames 594-672 |
+| SfxTimerTick `$F4F9` | SweepDown | one point of the timer counted in | 100 | 99 | 84 161 | 1.20 | [timer-tick](img/sound/timer-tick.wav) | 5622 | `rec/l83`, 58 calls in frames 594-672 |
 | SfxUnused `$F5BB` | RomRumble | nothing calls it | 900 | 426 | 536 425 | 7.68 | [unused](img/sound/unused.wav) | 0 | known only from the code |
 
 The numbers come from the simulator, which counts no contention.
@@ -145,8 +145,9 @@ SweepFromELoop2:
 ```
 
 Worked example: SfxTimerTick.
-The first half-period is 100 turns of 16 T plus the loop's 36 T, about 1617 T: 1082 Hz for a full period.
-The last is one turn, 65 T: about 27 kHz, past hearing.
+A half-period with E turns takes 16 × E + 33 T (OUT 11, XOR 7, LD D,E 4, the turns 16 × E - 5, DEC E 4, JR 12).
+The first is E = 100, 1633 T, the second E = 99, 1617 T: a first period of 3250 T, about 1077 Hz.
+The last between two OUTs is E = 2, 65 T: about 27 kHz, past hearing.
 So each tick is a chirp of 24 ms, rising out of hearing ([timer-tick.wav](img/sound/timer-tick.wav)).
 In `rec/l83` it plays 58 times between frames 594 and 672, about 1.3 frames apart.
 
@@ -185,7 +186,12 @@ Worked example: SfxLand.
 The simulator gives half-periods of 1643 T off and 46 T on: a period of 1689 T, 2072 Hz.
 The speaker is on for 3 % of each period, a narrow pulse.
 Fifty periods take 84 511 T, 1.21 frames.
-That narrow pulse is the bounce click the player hears 2605 times in the recordings.
+That narrow pulse is the bounce click the player hears 2628 times in the recordings.
+
+Measured: in `c1` frame 14 096 the OUT at `$F550` writes `$00` at T 3457, `$10` at T 5100 and `$00` at T 5146, and so on:
+the intervals are 1643-1649 T off and 46-52 T on, the simulator's 1643 and 46 plus up to 6 T of the ULA's contention
+on the OUT (79 OUTs in that frame, the other 21 in frame 14 097: 100 in all).
+Read with `access_trace.py` from `work/docs/bmA/c1/traces/14082_0-14138_0.uatr`.
 
 ### The noises
 
@@ -350,7 +356,7 @@ BounceQuiet:
 Worked example: the bottle's SfxExtraLife lasts 38.6 frames and sets the flag to 4.
 The landing that follows plays no SfxLand, so the jingle is not cut by a click.
 
-Witness: TakeBottle L1 20, 16 bottles taken (doc 7); BounceStep0 L1 1199.
+Witness: TakeBottle L1 23 (the RZX's own run takes 16, doc 7); BounceStep0 L1 1222.
 
 The point: one byte keeps the long jingles clean.
 
@@ -364,22 +370,22 @@ to the beeper and ignores them.
 
 `python3 tools/fig_sound.py ay` reads every block as registers:
 
-| Effect | Tone A, B, C (period) | Noise | Mixer | Volumes | Envelope period, shape | Tones at 1 MHz (Hz) | Envelope cycle at 1 MHz (ms) |
+| Block | Tone A, B, C (period) | Noise | Mixer | Volumes | Envelope period, shape | Tones at 1 MHz (Hz) | Envelope cycle at 1 MHz (ms) |
 | --- | --- | ---: | --- | --- | --- | --- | ---: |
-| SfxLand `$F3CF` | 436, 0, 180 | 0 | `$E8` | `$11` `$11` `$11` | 900, 9 | 143, -, 347 | 230 |
-| SfxHit `$F3E6` | 1236, 400, 680 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 51, 156, 92 | 640 |
-| SfxPickup `$F3FD` | 200, 200, 200 | 0 | `$F8` | `$11` `$11` `$11` | 2000, 9 | 312, 312, 312 | 512 |
-| SfxExtraLife `$F417` | 60, 400, 100 | 20 | `$FA` | `$11` `$11` `$11` | 5000, 9 | 1042, 156, 625 | 1280 |
-| SfxWaterDrop `$F42E` | 3000, 404, 300 | 10 | `$F7` | `$15` `$18` `$1A` | 1000, 9 | 21, 155, 208 | 256 |
-| SfxWallBounce `$F445` | 90, 300, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 208, 694 | 640 |
-| SfxLockA `$F45C` | 90, 500, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 125, 694 | 640 |
-| SfxLockB `$F473` | 90, 700, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 89, 694 | 640 |
-| SfxFireDeath `$F48A` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
-| SfxLevelEnd `$F4A4` | 100, 100, 100 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 15 | 625, 625, 625 | 640 |
-| SfxSpikeDeath `$F4BB` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
-| SfxLifeLost `$F4D2` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
-| SfxBrickCrumble `$F4E9` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 500, 9 | 69, 26, 48 | 128 |
-| SfxTimerTick `$F500` | 50, 50, 50 | 0 | `$F8` | `$11` `$11` `$11` | 400, 9 | 1250, 1250, 1250 | 102 |
+| SfxLandParams `$F3CF` | 436, 0, 180 | 0 | `$E8` | `$11` `$11` `$11` | 900, 9 | 143, -, 347 | 230 |
+| SfxHitParams `$F3E6` | 1236, 400, 680 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 51, 156, 92 | 640 |
+| SfxPickupParams `$F3FD` | 200, 200, 200 | 0 | `$F8` | `$11` `$11` `$11` | 2000, 9 | 312, 312, 312 | 512 |
+| SfxExtraLifeParams `$F417` | 60, 400, 100 | 20 | `$FA` | `$11` `$11` `$11` | 5000, 9 | 1042, 156, 625 | 1280 |
+| SfxWaterDropParams `$F42E` | 3000, 404, 300 | 10 | `$F7` | `$15` `$18` `$1A` | 1000, 9 | 21, 155, 208 | 256 |
+| SfxWallBounceParams `$F445` | 90, 300, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 208, 694 | 640 |
+| SfxLockAParams `$F45C` | 90, 500, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 125, 694 | 640 |
+| SfxLockBParams `$F473` | 90, 700, 90 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 9 | 694, 89, 694 | 640 |
+| SfxFireDeathParams `$F48A` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
+| SfxLevelEndParams `$F4A4` | 100, 100, 100 | 0 | `$F8` | `$11` `$11` `$11` | 2500, 15 | 625, 625, 625 | 640 |
+| SfxSpikeDeathParams `$F4BB` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
+| SfxLifeLostParams `$F4D2` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 9000, 9 | 69, 26, 48 | 2304 |
+| SfxBrickCrumbleParams `$F4E9` | 904, 2404, 1300 | 22 | `$F4` | `$15` `$18` `$1A` | 500, 9 | 69, 26, 48 | 128 |
+| SfxTimerTickParams `$F500` | 50, 50, 50 | 0 | `$F8` | `$11` `$11` `$11` | 400, 9 | 1250, 1250, 1250 | 102 |
 
 Every volume has bit 4 set, so the envelope shapes every effect.
 Shape 9 is a single fall to silence; shape 15, on SfxLevelEnd, a single rise then silence.

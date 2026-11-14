@@ -20,8 +20,8 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | Recording | Used for |
 | --- | --- |
 | `rzx/l21` | the RZX's level 21 replayed; level 22 built at frames 1534-1538 (7.2) |
-| `rzx/l01` | the RZX's level 1: a brick layer knocked off at frames 147-157, a platform worn at 484-495, a lock lowered at 586-625 |
-| `c1` | level 0 by keys: a water drop taken at frame 14 128 (7.5) |
+| `rzx/l01` | the RZX's level 1: a brick layer knocked off at frames 147-157, a platform worn at 484-495, a lock opened in three stages at 586-625 |
+| `c1` | level 0 by keys: a water drop taken at frame 14 127 (7.5) |
 | the RZX itself | the counts of every pick-up, lock and brick (the witness lines of `src/game/game.ann`) |
 
 Conventions:
@@ -35,7 +35,7 @@ Conventions:
 ## 7.1 The level record
 
 Every level is 75 bytes, stored one after another from level 0 at LevelRecords `$8C3C`.
-Level `L` starts at `$8C3C + 75 × L`; level 99 ends at `$A3CA`, and 117 zero bytes (LevelsEnd) follow.
+Level `L` starts at `$8C3C + 75 × L`; level 99 ends at `$A987`, and 117 zero bytes (LevelsEnd `$A988-$A9FC`) follow.
 
 | Offset | Bytes | Meaning |
 | --- | ---: | --- |
@@ -200,7 +200,8 @@ flowchart TD
 ```
 
 The copy leaves the objects in place: CellObjects `$AA47` is the record's bytes +39..+74 at `$AA20 + 39`.
-So the work area is the record with three more tables after it.
+So the work area is the record with four more tables after it (`$AA6B`, `$AA8F`, `$AAB3`, `$AAD7`, 36 bytes each,
+ending at `$AAFA`).
 
 | Address | Size | Name | Filled by |
 | --- | ---: | --- | --- |
@@ -234,7 +235,8 @@ to `$ABFF`, 128 bytes a row; the record's row at `$92AE` is read (blue), `$AA20-
 then `$AA6B` and `$AA8F` filled one byte a cell while the code panel walks SplitCell; the last pictures draw the first
 platform. `rzx/l21`, frame 1534 T 58 000 to frame 1535 T 30 000, 3896 instructions.
 `python3 R/kit/routine_anim.py --work work/docs/bmA/l21 --window 1534:58000-1535:30000 --listing build/game.lst
---pc CF2E-D05F --range 9100-ABFF --pictures 60 --out docs/img/routines/BuildLevel-record.gif`.*
+--pc CF2E-D05F --range 9100-ABFF --pictures 60 --title '...' --out docs/img/routines/BuildLevel-record.gif`, the title
+as shown.*
 
 Worked example: level 22, cell 7 holds `01`.
 SplitCell stores `01 >> 4 = 0` at CellWalls + 7 = `$AA96` and `01 AND 15 = 1` at CellPlatforms + 7 = `$AA72`.
@@ -242,7 +244,8 @@ PlatformDrawTable[1] is PlatDraw1, the plain platform.
 CellObjects + 7 = `$AA4E` holds 6, so the prize picture `$6CB0 + 56 × 6 = $6E00` is XORed on with ink ObjectInks[6] =
 `$43`, bright magenta.
 
-Witness: BuildLevel L1 94; 75 builds in the recordings, one at each life start (doc 4, 4.3).
+Witness: BuildLevel L1 102; a life start out of the demo builds the level twice, before READY? (`$AC7D`) and after the
+key (LifeStartGo, `$ACBF`); the demo builds once (`$AC86`) (doc 4, 4.3).
 
 The point: the record never changes, and a life always starts from it, so a lost life rebuilds the level as it was,
 prizes, locks and bricks included (doc 10).
@@ -325,7 +328,9 @@ a bounce, step 0, on platform 2, 3 or 4:
     CrumbleAddr = the cell's screen address; CrumbleCell = BallCell
     CrumbleNewType = 3, 4 or 0; CrumbleSteps = the matching table
     CrumblePending = 1
-the next move's step 5 (left, right), step 3 (up), step 4 (down) or the bounce's step 1:
+the next move's step 5 (left, right), step 3 (up) or the bounce's step 1
+(LeftPendingCrumble `$C8FC`, RightPendingCrumble `$CB42`, UpStep3 `$CD5C`, BounceStep1 `$C7D3`);
+a fall does not start it: its step 4 only plays one more step of a change already running:
     CrumbleActive = CrumblePending
 every pass, PlatformChangeStep:
     if CrumbleActive: run CrumbleSteps[CrumbleStep], CrumbleStep += 1
@@ -478,22 +483,27 @@ An opened lock is passable only after its last step stores the blank picture, si
 not 0.
 WallStep `$C43E` plays the steps, one a pass, from MainLoop.
 
-Worked example: `rzx/l01`, frames 586-625.
-The ball jumps left into a lock with a key in hand.
-At its step 5 the screen byte is the lock's pattern, Keys is not 0, and CellWalls of the cell on the left is a lock.
-The nibble goes down by one, Keys goes down by one, and the ball turns back.
-WallStep then plays the lock's two steps, one a pass: at frame 606 the trace is in Lock2Step2 (the flash off, the
-stage-1 picture on), so this key lowered a stage-2 lock to stage 1.
+Worked example: `rzx/l01`, frames 586-625, the right move (RightStep5 `$CB2F` mirrors LeftStep5).
+The ball, on cell 30 with five keys, jumps right into the type 3 lock on its right three times.
+At each RightStep5 the screen byte is the lock's pattern, Keys is not 0 and CellWalls + 30 (`$AAAD`) holds a lock:
+
+| Frame | CellWalls + 30 | Keys | written at | WallStep plays | sound |
+| ---: | --- | --- | --- | --- | --- |
+| 588 | 3 → 2 | 5 → 4 | `$CBAF` RightOpenLock3, `$CBBC` | Lock3Step1 (588), Lock3Step2 (591) | SfxWallBounce |
+| 603 | 2 → 1 | 4 → 3 | `$CBA5` RightOpenLock2, `$CBBC` | Lock2Step1 (603), Lock2Step2 (606) | SfxLockA |
+| 619 | 1 → 0 | 3 → 2 | `$CB9B` RightOpenLock1, `$CBBC` | Lock1Step1 (619), Lock1Step2 (623) | SfxLockB |
+
+Each time the ball turns back; at frame 623 the lock's last step stores the blank and the way is open.
 
 ![A lock lowered by a key](img/routines/WallStep.gif)
 
-*A key lowers a lock one stage, and the ball still comes back. How to read: LeftStep5 reads the screen byte, finds a
-lock and a key, and writes CellWalls and Keys; WallStep then lights one lock step a pass at the wall's place.
-`rzx/l01`, frames 586-625. `python3 R/kit/routine_anim.py --work work/docs/bmA/l01 --window 586:0-626:0
---listing build/game.lst --pc C8E9-C9A0,C43E-C4E1 --range A900-AB7F --pictures 80
---out docs/img/routines/WallStep.gif`.*
+*Three keys lower a type 3 lock stage by stage, and the ball comes back each time. How to read: RightStep5 reads the
+screen byte, finds a lock and a key, and writes CellWalls + 30 and Keys; WallStep then lights one lock step a pass at
+the wall's place. `rzx/l01`, frames 586-625. `python3 R/kit/routine_anim.py --work work/docs/bmA/l01 --window
+586:0-626:0 --listing build/game.lst --pc CB2C-CBEC,C43E-C4E1 --range A900-AB7F --pictures 80 --title '...'
+--out docs/img/routines/WallStep.gif`, the title as shown.*
 
-Witness: LeftWallCheck L1 992; Lock3Step1 L1 24 (`l36`, `l96`, 18 RZX levels); 97 locks opened for good
+Witness: RightStep5 L1 1266, LeftStep5 L1 993; Lock3Step1 L1 24 (`l36`, `l96`, 18 RZX levels); 97 locks opened for good
 (LockOpenSteps1) in the recordings.
 
 The point: the wall test is a pixel test, so the drawn picture and the table must agree; the key logic reads the table
@@ -510,8 +520,8 @@ The ball takes it at a fixed step of each move: the bounce's step 13, left and r
 | 1 | hammer | Hammers + 1, at most 99 | SfxPickup | TakeHammer L1 63, 58 hammers |
 | 2 | key | Keys + 1, at most 99 | SfxPickup | TakeKey L1 204, 183 keys |
 | 3 | water drop | Water + 1, at most 99 | SfxPickup | TakeWater L1 66, 54 drops |
-| 4 | bottle | Lives + 1, at most 99 | SfxExtraLife | TakeBottle L1 20, 16 bottles |
-| 5-40 | prize | Score + 15, PrizesLeft - 1; at 0 the exit opens | SfxPickup | AddScore L1 690 |
+| 4 | bottle | Lives + 1, at most 99 | SfxExtraLife | TakeBottle L1 23; the RZX's own run takes 16 |
+| 5-40 | prize | Score + 15, PrizesLeft - 1; at 0 the exit opens | SfxPickup | AddScore L1 709 |
 
 ```asm
 TakeObject:
@@ -592,9 +602,10 @@ The next bounce sound or pick-up sound is then skipped and the flag cleared, so 
 is not followed by a click.
 
 Worked example: `c1`, level 0 played by keys.
-At frame 14 128 the ball reaches a cell holding kind 3.
+At frame 14 127 the ball reaches a cell holding kind 3 (TakeObject at T 3259).
 TakeObject XORs the drop off, clears CellObjects, and jumps through ObjectHandlers + 6 to TakeWater `$B9DE`.
-Water `$AAFD` goes from 0 to 1, and WaterToHud prints it before the next HALT.
+Water `$AAFD` goes from 0 to 1 at frame 14 129 (after SfxPickup, which keeps the interrupts off), WaterToHud prints
+it, and DrawHud shows it again at frame 14 130.
 
 ![A water drop taken](img/routines/DrawHud.gif)
 
@@ -604,7 +615,7 @@ frame 14 130 T 30 000. `python3 R/kit/routine_anim.py --work work/docs/bmA/c1 --
 --listing build/game.lst --pc B958-BA46,E58B-E666 --range A900-AB7F --pictures 60
 --out docs/img/routines/DrawHud.gif`.*
 
-Witness: TakeObject L1 8156 (it runs at every take step and returns at once on an empty cell); OpenExit L1 104,
+Witness: TakeObject L1 8264 (it runs at every take step and returns at once on an empty cell); OpenExit L1 105,
 92 exits opened.
 
 The point: four kinds change a counter, the rest are points; the counters are what the player spends on fires, locks
@@ -614,7 +625,7 @@ and bricks.
 
 Type 10 is a brick wall of 8 layers in one cell (BrickLayers `$AAD7`).
 The side moves cannot enter it (doc 10).
-The jump up meets it as a ceiling: HitBrick `$B8D1` runs at the up move's steps 0-5 and 7, whenever the ball's cell
+The jump up meets it as a ceiling: HitBrick `$B8D1` runs at every step of the up move (0-7), whenever the ball's cell
 holds bricks.
 
 ```asm
@@ -778,8 +789,9 @@ The point: one copy of the player's state lives at fixed addresses; two players 
 ## 7.9 Nothing is random
 
 Every level is the same at every start: the record is copied as stored, and no routine places or moves an object.
-The only random numbers are the R register in two sound effects (doc 9).
-Random `$F183` belongs to the AY skeleton and is never called (doc 2, 2.8).
+The only random numbers are the R register in two sound primitives, RandomNoise1 and RandomNoise2, used by three
+effects (SfxPickup, SfxLockA, SfxLockB; doc 9).
+Random `$F183` belongs to the AY skeleton and is dead code, never called (doc 2, 2.8).
 Stage 2 traced the drift of a replay from the RZX to how keys are read, never to chance (`work/stage2/NOTES.md`).
 
 Witness: the RZX replays all 100 levels in step with the recording (doc 4, 4.8), and `scoreloop` plays the same keys

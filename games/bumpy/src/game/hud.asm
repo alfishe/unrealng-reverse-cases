@@ -106,12 +106,13 @@ TickTimerLowByte:
 
   ORG $BA71
 
-; The S key: burst the ball (in the demo, back to the main loop)
+; The S key: burst the ball
 ;
 ; Jumped to from the state handlers ($AE7F, $AEF6, $AF70, $AFF0, $B085, $B133)
-; when the key $31 (S) is down. In the demo ($ABA6 not 0) it jumps back to
-; MainLoop $ACC8 and nothing happens. With $ADDD not 0 (never: $ADDF is a RET
-; before the store that would set it) a disabled level select runs:
+; when the key $31 (S) is down. It also tests DemoFlag $ABA6 and jumps back to
+; MainLoop $ACC8 when it is set, a test its callers have already made (each
+; tests S only when $ABA6 is 0): dead code. With $ADDD not 0 (never: $ADDF is a
+; RET before the store that would set it) a disabled level select runs:
 ; FirmwareStub5 $B754, then Level = L reduced below 100 by steps of 97. Then
 ; the death sound $F4CB and LoseLife.
 ;

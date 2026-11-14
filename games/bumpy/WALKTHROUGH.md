@@ -126,7 +126,7 @@ here. Every command runs from the case folder after `. work/env.sh`.
 | `fire` | `work/stage2/rec/fire` | level 38's play start, `$B43E` = `$FF` and Water `$AAFD` POKEd to 0 | 300 | left (Sinclair 6) onto cell 31, platform 9: LeftFireDeath `$CA7A` at frame 41, Lives 10 → 9 ([shot](docs/img/play/fire-000070-burst.png)) |
 | `twoname` | `work/stage2/rec/twoname` | `load-fast-nokemp/end.szx` | 6021 | two players to the end, turns passed by S; the score POKEd to 2000 (frame 2118) and 2100 (frame 3711) before each last life; B U M and Z A P entered by right, left and fire ([shot](docs/img/play/twoname-003300-name.png), [the hall](docs/img/play/twoname-005300-hall.png)) |
 | `scoreloop` | `work/docs/integrate/rec/scoreloop` | level 87's play start (`play-130843.z80`), `$B43E` = `$FF` | 1552 | the points loop: the RZX player's keys numbered by the timer for the first 330 passes (six prizes and the bottle), then S, three times; score 36 081 → 36 171 → 36 261 → 36 351, lives 16 → 17 → 16 each round ([before S](docs/img/play/scoreloop-000400-before-s.png), [after S](docs/img/play/scoreloop-000484-after-s.png)) |
-| `rightspike` | `work/docs/integrate/rec/rightspike` | level 75's play start (`play-113295.z80`), `$B43E` = `$FF` | 220 | right (Sinclair 7) from cell 30 onto the spikes of cell 31: RightSpikeDeath `$CCB8` once, Lives 15 → 14 ([shot](docs/img/play/rightspike-000060-burst.png)) |
+| `rightspike` | `work/docs/integrate/rec/rightspike` | level 75's play start (`play-113295.z80`), `$B43E` = `$FF` | 220 | right (Sinclair 7) from cell 30 onto the spikes of cell 31: RightSpikeDeath `$CCB8` once, Lives 15 → 14 ([shot](docs/img/play/rightspike-000066-burst.png)) |
 | `exitbelow` | `work/docs/integrate/rec/exitbelow` | `load-fast-nokemp/end.szx`; level 0's record POKEd before the game: start cell (`$8C60`) 21, prizes (`$8C61`) 1, exit cell (`$8C62`) 15 | 375 | 2, 0, SPACE; right to cell 22 (the prize, frame 215: the exit opens on cell 15), left back to 21, up: the ball rises into the exit (UpStep5 `$CDD9` once) and level 1 starts at frame 275 ([below the exit](docs/img/play/exitbelow-000243-below-exit.png), [in it](docs/img/play/exitbelow-000275-in-exit.png)) |
 
 The `work/docs/bmA/<name>` and `work/docs/bm/twoname` folders are no recordings: they are the docs writer's trace
@@ -184,7 +184,7 @@ Every screen the documents link, in `docs/img/play/` (a recording's `screens/` f
 | `fire` 30, 70 | [before the fire](docs/img/play/fire-000030-before.png), [the burst](docs/img/play/fire-000070-burst.png) |
 | `twoname` 200, 2300, 3300, 5300 | [two players, READY?](docs/img/play/twoname-000200-two-ready.png), [the name entry starts](docs/img/play/twoname-002300-name-start.png), [the name](docs/img/play/twoname-003300-name.png), [the hall of fame](docs/img/play/twoname-005300-hall.png) |
 | `scoreloop` 400, 484, 934 | [before S](docs/img/play/scoreloop-000400-before-s.png), [after S](docs/img/play/scoreloop-000484-after-s.png), [the second round](docs/img/play/scoreloop-000934-before-s.png) |
-| `rightspike` 60 | [the right spike death](docs/img/play/rightspike-000060-burst.png) |
+| `rightspike` 66 | [the right spike death](docs/img/play/rightspike-000066-burst.png) |
 | `exitbelow` 243, 275 | [below the open exit](docs/img/play/exitbelow-000243-below-exit.png), [in it](docs/img/play/exitbelow-000275-in-exit.png) |
 | every screen | [the contact sheet](docs/img/play/screens.png) |
 

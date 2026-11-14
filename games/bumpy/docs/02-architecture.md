@@ -28,7 +28,7 @@ Every number below that is not a measurement is counted from it.
 ## 2.1 The machine budget
 
 A 48K Spectrum, nothing else.
-One 38 700-byte block at `$61A8-$F8D4` is loaded and entered at `$AB7C`.
+One 38 700-byte block at `$61A8-$F8D3` is loaded and entered at `$AB7C`.
 The game uses the beeper (port `$FE`), the keyboard and a Kempston stick on port `$DF` ([doc 5](05-controls.md)).
 There is no paging, no AY, no second screen: the game draws straight into `$4000`.
 The ROM serves the BASIC loader and the interrupt (IM 1, `$0038`).
@@ -37,18 +37,18 @@ The ROM serves the BASIC loader and the interrupt (IM 1, `$0038`).
 | --- | ---: | --- |
 | screen | 6912 | `$4000-$5AFF` |
 | system variables, BASIC, free, the stack | 1704 | `$5B00-$61A7`; the stack at `$6170-$618F` (2.7) |
-| the game: code | 11 956 | 429 routines in 13 modules (2.3) |
-| the game: data | 26 744 | the pictures 10 900, the level records 7500, the font 768, the texts, the tables, the variables |
-| of which never read or run | 8203 | 55 entries whose titles say so, the CPC leftovers among them (2.8) |
-| above the game | 1835 | `$F8D5-$FFFF`, never touched |
+| the game: code | 10 956 | 429 routines in 12 modules (2.3; graphics and vars hold no code) |
+| the game: data | 27 744 | the pictures 10 900, the level records 7500, the font 768, the texts, the tables, the variables |
+| of which never read or run | 7903 | 55 entries whose titles say so (never read, never called, unrun, unused, leftover), each counted from its start to the next entry; the CPC leftovers among them (2.8) |
+| above the game | 1836 | `$F8D4-$FFFF`, never touched |
 
-The point: a single block, no loader code and no packer; a quarter of it is the CPC original's dead weight.
+The point: a single block, no loader code and no packer; a fifth of it is the CPC original's dead weight.
 
 ## 2.2 The images
 
 | Image | How | What it is |
 | --- | --- | --- |
-| as loaded | block 5 of `BUMPY.TAP` (`work/mkgame/original.bin`) | `$61A8-$F8D4` byte for byte |
+| as loaded | block 5 of `BUMPY.TAP` (`work/mkgame/original.bin`) | `$61A8-$F8D3` byte for byte |
 | at the entry | SkoolKit `tap2sna.py -s 43900` (`work/stage1/images/entry.z80`), and `c1` at frame 13 357 (T 19 678), the first fetch of `$AB7C` | the same bytes as loaded: no unpacker, no relocation. SP is `$6190` (from `CLEAR 24999` and `USR`) |
 | in play | the RZX's level 0 play start (`work/stage1/rzx/levels/play-000172.z80`) and every level's start | 125 bytes in 49 runs differ from the entry image, every one a variable or a self-modified operand |
 | rebuilt | `tools/build.sh` from `src/` | the whole TAP, identical to the original |
@@ -57,13 +57,16 @@ What play changes, the entry image against play (`work/stage1/NOTES.md`):
 
 - the variables `$A9FD-$AB7B` (2.4) and the players `$ADDB-$ADDE`;
 - the key buffer KeyRows `$B436-$B43E` and the active controls KeySlots `$F083-$F08B`;
-- self-modified operands: `$C74E-$C751` and `$C774`, `$C776` (the screen-address divide), `$D01D` (the displacement of
-  `LD C,(IX+d)` that picks an object's ink), `$E30F`, `$E3E4` (the blitters), `$E714-$E716` (the printer), the
-  menu's `$EFED-$EFEE`, `$F015`, `$F025`.
+- data bytes kept inside the code: the result bytes of the screen-address divide `$C74E-$C751` (ScanInRow, CharRow,
+  ByteColumn, PixelLine) and `$C774-$C777` (DivQuotient, DivRemainder), SpectrumColumn `$B52C`, the blitters'
+  SpriteHeight `$E3E4`, the printer's state `$E714-$E716` (TextDouble, TextRow, TextColumn), the menu's MenuTimer
+  `$EFED-$EFEE` and the colour bytes `$F015`, `$F025` inside its text;
+- three self-modified instructions: `$B3F5-$B3F6` (TestKeyBit's `BIT b,(IX+d)`, [doc 5](05-controls.md)), `$D01D` (the
+  displacement of `LD C,(IX+d)` that picks an object's ink), `$E30F` (the colour operand of PaintAttrs' `LD (HL),n`).
 
 The pictures and the level records are never written: a level is copied into a buffer and changed there.
 
-The point: the code runs where `LD-BYTES` put it, and play writes only to the variables and to a few operands.
+The point: the code runs where `LD-BYTES` put it, and play writes only to the variables, to data bytes kept between routines and to three instructions.
 
 ## 2.3 The module map
 
@@ -85,7 +88,7 @@ the order its authors wrote them.
 | hiscore | 18 | 867 | 525 | 3 | `$EC40-$EF32` | GameOver, the hall of fame, the name entry |
 | objects | 13 | 508 | 457 | 3 | `$B958-$BA70`, `$BCB9-$BD72` | taking an object, AddScore, OpenExit, the object inks |
 | sprites | 8 | 747 | 746 | 1 | `$E2A0-$E58A` | DrawSprite, XorSprite, XorBricks |
-| text | 11 | 1180 | 370 | 2 | `$E667-$E7F6`, `$F5C9-$F8D4` | PrintText and the font |
+| text | 11 | 1179 | 370 | 2 | `$E667-$E7F6`, `$F5C9-$F8D3` | PrintText and the font |
 | sound | 54 | 1094 | 532 | 1 | `$F183-$F5C8` | the 14 effects, the beeper primitives, the unrun AY skeleton |
 
 The modules call each other in one direction: the state machine on top, the drawing at the bottom.
@@ -117,13 +120,13 @@ flowchart TD
 
 ![The memory map by module](img/arch/memory-map.png)
 
-*The game block by module, 1 KB a row (`python3 tools/fig_arch.py`, from `src/game/game.ann`). Pale: entries no
-routine reads or runs. The large pale blocks are the CPC leftovers: Unused8385, PanelPicture, the AY skeleton.*
+*The game block by module, 1 KB a row (`python3 tools/fig_arch.py`, from `src/game/game.ann`). Dark: entries no
+routine reads or runs. The large dark blocks are the CPC leftovers: Unused8385, PanelPicture, the AY skeleton.*
 
 Worked example: the address `$C750`.
 `modules.py` (`work/docs/bmA/modules.py`) finds it in the run `$C71F-$C777` of render: ScreenAddrToLine `$C71F`.
-Its operands `$C74E-$C751` are written at run time (2.2): ScreenAddrToLine stores the divisor there before
-DivideHLbyBC `$C752`.
+`$C750` is ByteColumn, one of the four result bytes `$C74E-$C751` that ScreenAddrToLine stores (2.2) around its call
+to DivideHLbyBC `$C752` (the divisor, `$50`, is in BC: `C734 LD BC,$0050`); `C74A LD (ByteColumn),A` writes it.
 
 The point: the modules are the case's own reading; the image is the original's order, with ball, render and menu code
 scattered over the whole block.
@@ -147,10 +150,10 @@ The names are game.ann's; [doc 7](07-objects.md) gives every one.
 | MenuChoice `$B3B1`, DemoFlag `$ABA6`, DemoInputPtr `$ABA4` | 0 one player, 2 two, 4 the demo; 1 in the demo; the demo's pointer (`$D25A` at the start) | `menu` frames 250-4000 |
 | KeyRows `$B436-$B43E` | the 8 keyboard half-rows (`$7FFE` first) and the Kempston byte | ReadControls `$B418` |
 | KeySlots `$F084-$F08B` | the controls in play: up, down, left, right, fire, fire, pause, quit (row × 8 + bit) | LoadControls `$F0AA` |
-| HallOfFame `$EEB3` + 32 × n | four entries: the name at +6, the score at +18 (PAP 16000, PEP 8000, PIP 4000, POP 1700) | `gameover` frame 4618 |
+| HallOfFame `$EEB3` + 32 × n | four entries: the name at +6, the score at +18 (PAP 16000, PEP 8000, PIP 4000, POP 1700 at power-on) | the image (`src/res/tables/hall-of-fame.txt`); `gameover` frame 4618 shows it after a 2000-point entry replaced POP |
 
-The point: the whole game state is 383 bytes in one run, plus two 7-byte player records; a snapshot of `$A9FD-$AB7B`
-is a save game.
+The point: the whole game state is 383 bytes in one run, the two 7-byte player records included, plus the four player
+bytes `$ADDB-$ADDE` and the controls `$F083-$F08B`; a snapshot of those three runs is a save game.
 
 ## 2.5 The levels as data
 
@@ -227,8 +230,8 @@ because the ROM's RAM test and the load touch every byte).
 | `$EF33-$F182` | x | menu | Menu `$EF33`, its texts, the control sets |
 | `$F183-$F3C7` | . | sound | the AY skeleton, never run (2.8) |
 | `$F3C8-$F5C8` | x | sound | the effects and the beeper primitives ([doc 9](09-sound.md)) |
-| `$F5C9-$F8D4` | r | Font | the font, characters 32-127 |
-| `$F8D5-$FFFF` | . | | free, never touched |
+| `$F5C9-$F8D3` | r | Font | the font, characters 32-127 |
+| `$F8D4-$FFFF` | . | | free, never touched |
 
 The point: code and data alternate all over the block; only the pictures and the levels are in one piece.
 
@@ -305,7 +308,7 @@ WriteAyRegisterSkip:
   F1B7  RET
 InstallIm2Key:
   F343  DI
-  F344  LD HL,$FDFF             ; 257 bytes of $FD: the vector table $FDFF-$FEFF
+  F344  LD HL,$FDFF             ; $FD over $FDFF-$FF00 (the vectors $FE00-$FF00)
   F347  LD DE,$FE00
   F34A  LD BC,$0101
   F34D  LD (HL),$FD
@@ -325,14 +328,14 @@ WriteAyRegisters:  for r in 0..13: WriteAyRegister(r, the next byte at HL)
 WriteAyRegister:   register 7 masked to $3F; OUT ($FFFD) = r; OUT ($BFFD) = value
 DelayAfterFrame:   HALT, then 512 loops
 BuildLineTable:    the 192 line addresses at $F206 (over this code)
-InstallIm2Key:     vectors $FDFF-$FEFF = $FD, JP Im2HandlerKey at $FDFD, I = $FE, IM 2, read the keys
+InstallIm2Key:     $FDFF-$FF00 = $FD (the vectors $FE00-$FF00), JP Im2HandlerKey at $FDFD, I = $FE, IM 2, read the keys
 InstallIm2Wait:    the same with Im2HandlerWait, then wait for a key
 Im2Handler*:       save every register, CALL the hook (a RET), restore, EI, RETI
 ```
 
 ```mermaid
 flowchart LR
-    I1["InstallIm2Key $F343"] --> V["vector table $FDFF-$FEFF, JP at $FDFD, I = $FE, IM 2"]
+    I1["InstallIm2Key $F343"] --> V["vector table $FE00-$FF00, JP at $FDFD, I = $FE, IM 2"]
     I2["InstallIm2Wait $F388"] --> V
     V --> H1["Im2HandlerKey $F36B"] --> K1["Im2HookKey $F382: RET"]
     V --> H2["Im2HandlerWait $F3B0"] --> K2["Im2HookWait $F3C7: RET"]
@@ -345,11 +348,13 @@ The player itself is not in the release.
 So the 48K and the 128K play Bumpy alike, with the beeper only (known only from the code; every recording is on the
 48K).
 
-Worked example: if InstallIm2Key ran, it would fill `$FDFF-$FEFF` with `$FD` and put `JP $F36B` at `$FDFD`.
-An interrupt with any byte on the bus would read the vector at `$FE00`-`$FEFF`, find `$FDFD`, and jump to the handler.
-That memory is above the game block, in the 1835 free bytes: the only use the game would ever have made of them.
+Worked example: if InstallIm2Key ran, it would fill `$FDFF-$FF00` with `$FD` (258 bytes: `$FDFF` set first, then
+`LDIR` with BC = `$0101` from `$FDFF` to `$FE00`) and put `JP $F36B` at `$FDFD-$FDFF`, so `$FDFF` ends as the JP's high
+byte.
+An interrupt with any byte on the bus would read the vector at `$FE00`-`$FF00`, find `$FDFD`, and jump to the handler.
+That memory is above the game block, in the 1836 free bytes: the only use the game would ever have made of them.
 
-The point: the release is a port that kept the CPC program's data and a 128K frame without its music; 8203 bytes are
+The point: the release is a port that kept the CPC program's data and a 128K frame without its music; 7903 bytes are
 never touched.
 
 ## 2.9 The frame budget and the call graph
@@ -405,7 +410,7 @@ speed ([doc 6](06-rendering.md)).
 flowchart LR
     A["ROM: LOAD"] --> B["BASIC line 10: POKEs, CLEAR 24999"]
     B --> C["LOAD SCREEN$ to $4000"]
-    C --> D["LOAD CODE 25000: $61A8-$F8D4"]
+    C --> D["LOAD CODE 25000: $61A8-$F8D3"]
     D --> E["RANDOMIZE USR 43900: $AB7C"]
     E --> F["Menu $EF33"]
     F -->|"0"| G["NewGame, LifeStart $ABD8: READY?"]
@@ -414,12 +419,14 @@ flowchart LR
     G --> I["MainLoop $ACC8"]
     I -->|"last life lost"| J["GameOver $B755"]
     J -->|"score not below the 4th entry"| K["EnterHallOfFame $EC40"]
-    J --> F
-    K --> F
+    K --> J
+    J -->|"two players, the other still in"| G
+    J -->|"else"| F
     I -->|"R"| F
 ```
 
-The load is in [doc 3](03-build-and-load.md), the cycle from the menu on in
+The load, with the frame of each stage in `c1` (the code block 3211-13 356, the entry 13 357, the menu 13 782), is in
+[doc 3, 3.2](03-build-and-load.md#32-the-loader), the cycle from the menu on in
 [doc 4](04-game-loop.md#42-the-game-cycle).
 
 The point: the path from the tape to play has no stage of its own: BASIC loads three blocks and jumps in.

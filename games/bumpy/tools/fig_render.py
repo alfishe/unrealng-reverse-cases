@@ -109,7 +109,7 @@ def layout():
             d.text((tx, y), t, fill=kitlib.DIM if col is None else col, font=small)
         y += 19
     d.text((10, Y0 + 192 * S + 10), 'Rows 0-5 of cells put their platforms on lines 26, 58, 90, 122, 154 and 186; a '
-           'cell is 40 x 32 pixels, the board 240 x 192.', fill=kitlib.DIM, font=small)
+           'cell is 40 x 32 pixels; the board is 232 x 192 (x 8-239).', fill=kitlib.DIM, font=small)
     d.text((10, Y0 + 192 * S + 30), 'The top row\'s walls and objects share character row 0 with the HUD; a ball '
            'bouncing on the top row rises into the scratch lines.', fill=kitlib.DIM, font=small)
     os.makedirs(OUT, exist_ok=True)

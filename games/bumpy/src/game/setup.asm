@@ -2,7 +2,7 @@
 ; setup.asm: Start-up and the start of a game and of each life: players, records, the cheat, the "ready?" screen
 ;
 ; GameStart ($AB7C, the BASIC's RANDOMIZE USR 43900) disables interrupts and enters the menu loop at GameRestart: the
-; menu (Menu $EF33) returns the choice in $B3B1 (0 one player, 1 the demo, 2 two players). A game clears the screen,
+; menu (Menu $EF33) returns the choice in $B3B1 (0 one player, 2 two players, 4 the demo). A game clears the screen,
 ; draws the side panels, zeroes both player records ($AB09, $AB10: score word, water, keys, hammers, level, lives),
 ; offers the cheat (R, SPACE and V held at once) and starts the first life at LifeStart.
 ;

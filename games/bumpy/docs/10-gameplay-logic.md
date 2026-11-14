@@ -23,7 +23,7 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | `fire` | level 38, Water `$AAFD` POKEd to 0, the ball moved left onto a burning platform (frame 41) |
 | `gameover`, `twoname` | lives lost by S, the game over, two players |
 | `scoreloop` | level 87 from the RZX's play start: the RZX's first 330 passes, then S, three times (score 36 081 → 36 171 → 36 261 → 36 351, lives 16 → 17 → 16 each round) |
-| `rightspike` | level 75 from the RZX's play start, right held: RightSpikeDeath (frame 60) |
+| `rightspike` | level 75 from the RZX's play start, right held: RightSpikeDeath, the burst from frame 56 (its pictures at 61-71), Lives 15 → 14 at frame 76 |
 | `exitbelow` | level 0 with its start, prize count and exit POKEd (start 21, 1 prize, exit 15): the prize at frame 215, the rise into the exit from cell 21, level 1 from frame 275 |
 
 Conventions:
@@ -110,8 +110,8 @@ stateDiagram-v2
     LevelEnd --> [*]: LifeStart, next level
 ```
 
-Witness: BallBounce L1 18 987, BallLeft 15 425, BallRight 18 921, BallUp 18 771, BallDown 19 600, BallStopped 827,
-BallBurst 116, BallFallOut 40.
+Witness: BallBounce L1 19 355, BallLeft 15 441, BallRight 19 049, BallUp 19 058, BallDown 19 927, BallStopped 827,
+BallBurst 126, BallFallOut 40.
 
 The point: the ball's whole motion is five tables of words and one routine that adds them; the game is a board game
 played on a fixed clock.
@@ -230,7 +230,7 @@ stays in BallBounce and its checks, and the ball goes up and down on its cell; t
 --pc AE5F-AEDA,C778-C846,AF55-AFCE,CA8D-CCCF,B09E-B0F9,B7E4-B872,B958-BA46,BD73-BDD5 --range A900-AB7F
 --pictures 90 --out docs/img/routines/BallBounce.gif`.*
 
-Witness: StepDispatch L1 91 704; BallStepMove L1 91 187.
+Witness: StepDispatch L1 92 830; BallStepMove L1 92 310.
 
 The point: the board is read at a handful of fixed steps; between them the ball only moves.
 
@@ -336,7 +336,7 @@ Worked example: the RZX, level 0, frames 788-825 (`work/stage2/rzx-states.tsv`, 
 
 The ball went up through a gap and sideways onto the platform beside it, without ever standing in cell 29.
 
-Witness: LandingCheck L1 6101; LandingLost (state 7) 8 times.
+Witness: LandingCheck L1 6174; LandingLost (state 7) 8 times.
 In stage 1's recordings LandingFall ran 1846 times in 5420 landings, and decided at once over bricks 66 times.
 
 The point: the player steers only at landings; between two landings a move cannot be changed, only ended by S.
@@ -344,11 +344,14 @@ The point: the player steers only at landings; between two landings a move canno
 ## 10.4 The spring and the up move
 
 The spring is the only way up.
-Up or fire held at step 9 of a bounce or a side move calls LoadSpring `$BD73` (TestUpOrFire `$B463`).
+Up or fire held at step 9 of a bounce or a side move, or at step 4 of a fall (DownStep4 `$CE8A`, after it read the
+new cell), calls LoadSpring `$BD73` (TestUpOrFire `$B463`).
 LoadSpring arms the spring only on platforms 1-5: plain, crumbling and the stopper.
-It copies the squeeze pictures of the platform type, 24 bytes from SpringCurves `$C52A` to SpringRecord `$AB35`.
+It copies the squeeze pictures of the platform type, 24 bytes from SpringPics `$C5D6` + 24 × (type - 1), found
+through the pointer table SpringCurves `$C52A`, to SpringRecord `$AB35`.
 It sets SpringArmed `$AA13`.
-SpringStep1-4 squeeze the platform at steps 9, 11, 14 and 15 of the move.
+SpringStep1-4 squeeze the platform at steps 9, 11, 14 and 15 of a bounce or a side move; in a fall step 4 plays
+SpringStep1 and 2 at once and step 7 SpringStep3 and 4.
 At the landing ChooseNextState sees SpringArmed and starts the up move.
 SpringStep5 and 6 release the platform in the up move's first steps; SpringStep6 `$BDCE` clears SpringArmed.
 
@@ -426,7 +429,7 @@ UpStep4:
 
 ```mermaid
 flowchart TD
-    K["step 9 of a bounce or a side move"] --> U{"up or fire held"}
+    K["step 9 of a bounce or a side move, step 4 of a fall"] --> U{"up or fire held"}
     U -- no --> N["no spring"]
     U -- yes --> P{"platform 1 to 5"}
     P -- no --> N
@@ -449,7 +452,7 @@ The ball climbs row after row through the gaps until a platform stops it.
 Then it falls back onto the last platform it passed.
 The player leaves the column with left or right at the end of a row, as in the worked example of 10.3.
 
-Witness: LoadSpring L1 2286, SpringStep6 1316, BallBumpCeiling 100.
+Witness: LoadSpring L1 2308, SpringStep6 1316, BallBumpCeiling 100.
 In all the recordings ChooseUpOrBounce `$B849` ran 990 times and kept the ball going up 986 times
 (`work/**/l1.json`): down was held at an up landing 4 times.
 
@@ -515,7 +518,7 @@ It lands at the end of the fall, and state 0 starts at frame 7842.
 
 A fall out of the board is in 10.7.
 
-Witness: BallDown L1 19 600; DownStep0 L1 2222; DownStep7 L1 2677.
+Witness: BallDown L1 19 927; DownStep0 L1 2264; DownStep7 L1 2719.
 
 The point: falling is free and safe, except onto fire without water or onto spikes; the board is a set of chutes.
 
@@ -571,7 +574,7 @@ frame 14 130 T 30 000. `python3 R/kit/routine_anim.py --work work/docs/bmA/c1 --
 *The pass after the take. How to read: the drop of the top row's third cell is gone and the HUD shows 01 water.
 `c1`, frame 14 130.*
 
-Witness: TakeObject L1 8156; the wear, the locks and the bricks have their witnesses in doc 7.
+Witness: TakeObject L1 8264; the wear, the locks and the bricks have their witnesses in doc 7.
 
 The point: every rule of the board fires at a fixed step of a move, so a player can learn exactly where a decision
 falls.
@@ -582,11 +585,11 @@ Five things can end a life; the timer is not one of them.
 
 | Death | Where | Routine | Sound | Then | Seen |
 | --- | --- | --- | --- | --- | --- |
-| spikes, landing | the last step of a side move or a fall | LeftSpikeDeath `$CA75`, RightSpikeDeath `$CCB8`, DownSpikeDeath `$CEF4` | SfxSpikeDeath | the burst, 10 steps | DownSpikeDeath 4 times (`rzx/l45`, `l56`, `l68` twice), LeftSpikeDeath once (`rzx/l56`), RightSpikeDeath once (`rightspike` frame 60, [shot](img/play/rightspike-000060-burst.png)) |
+| spikes, landing | the last step of a side move or a fall | LeftSpikeDeath `$CA75`, RightSpikeDeath `$CCB8`, DownSpikeDeath `$CEF4` | SfxSpikeDeath | the burst, 10 steps | DownSpikeDeath 4 times (`rzx/l45`, `l56`, `l68` twice), LeftSpikeDeath once (`rzx/l56`), RightSpikeDeath once (`rightspike`, the burst at frame 66, [shot](img/play/rightspike-000066-burst.png)) |
 | spikes, from below | step 4 of the up move | UpSpikeDeath `$CDC6` | SfxSpikeDeath | the burst from step 3 | 8 times (`rzx/l35`, `l45`, `l51`, `l56`, `l59`, `l96` twice, `l97`) |
 | fire | the last step of a side move or a fall, with Water 0 | LeftFireDeath `$CA7A`, RightFireDeath `$CCBD`, DownFireDeath `$CEF9` | SfxFireDeath, 20 frames | the burst | once, `fire` frame 41 (LeftFireDeath, Water POKEd to 0) |
 | the fall out | a landing on the bottom row with no platform | LandingLost `$B0E0`, BallFallOut `$B20A` | SfxLifeLost | LoseLife | 8 times (`rzx/l10`, `l36`, `l51` three times, `l59`, `l68`, `l98`) |
-| S | any step of a move, not in the demo | SelfDestruct `$BA71` | SfxLifeLost | LoseLife | 12 times (`gameover`, `twoname`) |
+| S | any step of a move, not in the demo | SelfDestruct `$BA71` | SfxLifeLost | LoseLife | 15 times (`gameover`, `twoname`, `scoreloop` 3) |
 | the timer | never | | | | `c1`: 0 from frame 15 436 to 18 186, the ball still bouncing |
 
 The deaths in the recordings come from the drifting replays of the RZX, from the POKE in `fire`, from `rightspike`, or
@@ -699,7 +702,7 @@ step; LostStep5 calls SfxLifeLost and jumps to LoseLife. `rzx/l68`, frames 682-7
 --work work/docs/bmA/l68 --window 682:0-716:0 --listing build/game.lst --pc B20A-B2C1,BA93-BB04,F4CB-F4E1,F58C-F5BA
 --range A900-AB7F --pictures 60 --out docs/img/routines/BallFallOut.gif`.*
 
-Witness: BallBurst L1 116, BallFallOut L1 40, SelfDestruct L1 12, BallBurstStart L1 6.
+Witness: BallBurst L1 126, BallFallOut L1 40, SelfDestruct L1 15, BallBurstStart L1 6.
 
 The point: death is never a matter of time or chance; it is a fixed cell entered at a fixed step.
 
@@ -784,7 +787,7 @@ After the death the HUD shows 9 drops again, and 9 lives.
 *The burst after the fire. How to read: the burst picture sits on cell 31; the HUD still shows 0 water, before
 LoseLife. `fire`, frame 70.*
 
-Witness: LoseLife L1 34, 30 lives lost and 4 game overs (`gameover` and `twoname` two each).
+Witness: LoseLife L1 38, 30 lives lost and 4 game overs (`gameover` and `twoname` two each).
 The hand-over between players ran in `twoname` (`$BADF`, `$BAF1`).
 
 The point: a death costs a life and the tools spent on the level, never points, and gives the level back whole.
@@ -841,7 +844,7 @@ It reaches 0 at frame 15 436; at frame 18 186 the ball still bounces.
 *Nearly 3000 frames after the timer reached 0, the game goes on. How to read: the ball bounces on the top row; the HUD
 shows 2 lives, as at the start, and has no timer. `c1`, frame 18 186.*
 
-Witness: TickTimer L1 92 279.
+Witness: TickTimer L1 93 414.
 
 The point: the timer is a bonus clock, not a limit; it pays for speed and never punishes slowness.
 
@@ -900,14 +903,18 @@ flowchart LR
 
 Worked example, the score: the RZX goes through all 100 levels and shows 41 592 at level 0 again.
 The 647 prizes give 9705; the rest, 31 887, is the timer counted at 100 level ends.
-The timer read at the first frame of each level's state 8 sums to 31 894 (`rzx-states.tsv`).
+The timer read at the first frame of each level's state 8 sums to 31 894 (`rzx-states.tsv`), 7 more.
+MainLoop runs TickTimer before the frame wait and the dispatch, so the sample can fall before the pass's last tick:
+at 81 of the 100 entries into state 8 the timer is one below the previous frame's, at 12 it is already 0, and at 7
+(frames 32 719, 38 253, 45 351, 63 132, 92 792, 110 448, 117 040) it is unchanged, one tick still to come:
+31 894 - 7 = 31 887.
 Level 14 ends with 0 left, level 92 with 815.
 
 Worked example, the bottle: the RZX, level 5.
 The ball takes the bottle at step 5 of a fall into cell 27.
 The RZX frames 7830-7839 all show the ball at that step; at frame 7840 Lives reads 3.
 
-Witness: AddScore L1 690; TakeBottle L1 20; the RZX's 16 bottles take Lives from 2 to 18.
+Witness: AddScore L1 709; TakeBottle L1 23; the RZX's 16 bottles take Lives from 2 to 18.
 
 The point: the timer is worth three times all the prizes together; the score is mostly a measure of speed.
 
@@ -1005,7 +1012,7 @@ The point: a level is a puzzle with one fixed rule set; the counts of its parts 
 
 - **No physics, five tables.** Every move is a fixed list of offsets: the bounce is 18 lines high in every level, and
   the up and down moves have no acceleration.
-- **The keys act only at landings.** Between two landings only S and the spring (at step 9) are read.
+- **The keys act only at landings.** Between two landings only S and the spring (at step 9 of a bounce or a side move, step 4 of a fall) are read.
 - **The spring lifts the ball as high as the column is open.** ChooseNextState keeps the up move until a key is
   held; 986 of the 990 up landings in the recordings went on up.
 - **The arcs are not mirror images.** The right move goes 4 pixels right at its first step; the left move rises two

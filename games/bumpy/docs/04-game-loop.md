@@ -85,7 +85,7 @@ GameRestart:      Menu                       ; returns MenuChoice: 0 one player,
                   if MenuChoice is not 0 or 2: DemoFlag = 1, DemoInputPtr = DemoMoves
                   PlayerCount = 1 or 2
 NewGame:          clear the attributes, draw the side panels, InitPlayers
-                  R, 0 and the cheat keys tested: CheatStock (doc 5)
+                  R, SPACE and V all held: CheatStock (doc 5, 5.7)
                   CurrentPlayer = 1
 LifeStart:        reset the ball and the flags, Timer = 1000
                   copy the player's record to the working copy $AAFB
@@ -181,9 +181,10 @@ MainLoop:
 flowchart TD
     A["LifeStart $ABD8"] --> B["ball, flags, BallStep = 0, Timer = 1000"]
     B --> C{"PlayerCount 2?"}
-    C -- yes --> C2["copy both records in turn, test $FA (no effect)"]
-    C -- no --> D
-    C2 --> D["record of CurrentPlayer to $AAFB, pick the READY? text"]
+    C -- yes --> C2["copy player 2's record, test $FA (no effect)"]
+    C -- no --> C1
+    C2 --> C1["copy player 1's record, test $FA (no effect)"]
+    C1 --> D["record of CurrentPlayer to $AAFB, pick the READY? text"]
     D --> E{"DemoFlag?"}
     E -- game --> F["ClearPlayArea, BuildLevel, PrintText"]
     E -- demo --> G["BuildLevel"]
@@ -207,7 +208,8 @@ PrintText puts READY? up at 1539 T 3166, and the wait for a key starts at 1539 T
 `python3 R/kit/routine_anim.py --work work/docs/bmA/l21 --window 1534:58000-1539:3200 --listing build/game.lst
 --pc CF2E-D075,D0A4-D2B3 --range 6000-FFFF --pictures 90 --out docs/img/routines/BuildLevel.gif`. Doc 6 takes the drawing apart.*
 
-The test of `$FA` after each record copy (`JR Z` to the very next line) does nothing: the two copies are always made.
+The test of `$FA` after each record copy (`JR Z` to the very next line) does nothing: with two players both copies
+are always made, with one player only player 1's (`AC15 JR Z,LifeStartPlayer1` skips player 2's).
 Known only from the code; it is harmless, because the third copy picks the right record.
 
 The point: a life is not resumed but restarted, from the level's record and the stores the player had at its start.
@@ -296,7 +298,8 @@ Kempston port.
 A pass makes about four of them: R, D, the pause key, and the state routine's own (S in the bounce, the moves at a
 landing).
 
-Worked example, `rec/l83` frame 349, a pass in the middle of a right jump (BallState 2, step 1):
+Worked example, `rec/l83` frame 349, the pass of the first step of a right jump (BallState 2, BallStep 0 at the frame's
+start, 1 after the step):
 
 | T in frame 349 | What runs |
 | ---: | --- |
@@ -319,6 +322,7 @@ The work of this pass is 36 896 T, by module (kit `fig_budget.py` on the trace):
 | ball | 1249 | 3 % |
 | ROM (the IM 1 handler) | 1192 | 3 % |
 | mainloop | 986 | 3 % |
+| the rest (the pass's total less the seven modules) | 484 | 1 % |
 
 DrawHud redraws the whole HUD every pass: score, lives, hammers, water, keys and level, each digit a picture.
 It costs more than the ball.
@@ -380,8 +384,8 @@ The next INT comes at frame 350 T 1825, so the pass waits 33 100 T.
 Witness: WaitFrame L1 95 897, WaitOneFrame L1 95 861 (game.ann). WaitFrame runs 3616 more times than MainLoop: the
 level ends, the deaths and the pause between lives.
 
-The point: the `HALT` sits after the HUD and before the ball, so the ball is drawn in the border time of the next
-frame.
+The point: the `HALT` sits after the HUD and before the ball, so the ball's step starts in the top border of the next
+frame; it ends on screen line 21 at the latest (4.8).
 
 ## 4.6 The state dispatcher `$AD0F` and StateTable `$AD29`
 
@@ -415,12 +419,15 @@ StateTable:
 | 3 | BallUp `$AFCF` | 8 | a rise to the cell above, 4 lines a step |
 | 4 | BallDown `$B064` | 8 | a fall to the cell below |
 | 5 | BallStopped `$B11A` | | on a stopper: Delay 2 a pass, wait for a key |
-| 6 | BallBurst `$B14A` | 10 | the burst on spikes |
+| 6 | BallBurst `$B14A` | 10 | the burst, on spikes or fire |
 | 7 | BallFallOut `$B20A` | 5 | out below the bottom row |
 | 8 | LevelEnd `$B2C2` | | the level end (4.10), never returns to the loop |
 
-Every state routine but LevelEnd ends with `JP MainLoop`.
-At its last step it calls the landing test, which picks the next state (ChooseNextState `$B7E4`, doc 5 and doc 10).
+States 0-5 end each step with `JP MainLoop`; the last steps of 6 and 7 jump to LoseLife `$BA93` (BurstEnd `B1D1`,
+LostStep5 `B2B5`), and 8 runs on to LifeStart.
+Bounce, left, right and down end their last step in LandingCheck `$B09E`, which picks the next state (ChooseNextState
+`$B7E4`, doc 5 and doc 10); up calls ChooseNextState directly (BallUpEnd `B009`); BallStopped waits for a key and
+has no landing.
 
 ```text
 Dispatch:
@@ -440,7 +447,10 @@ flowchart LR
     T -- 6 --> S6["BallBurst $B14A"]
     T -- 7 --> S7["BallFallOut $B20A"]
     T -- 8 --> S8["LevelEnd $B2C2"]
-    S0 & S1 & S2 & S3 & S4 & S5 & S6 & S7 --> M["JP MainLoop $ACC8"]
+    S0 & S1 & S2 & S3 & S4 & S5 --> M["JP MainLoop $ACC8"]
+    S6 & S7 -->|"last step"| LL["LoseLife $BA93"]
+    S6 & S7 -->|"other steps"| M
+    S8 --> LS["LifeStart $ABD8"]
 ```
 
 Worked example: the ball lands on the exit (platform 11) at the end of a bounce.
@@ -450,7 +460,13 @@ At the next pass, Dispatch computes 8 AND 15 = 8, doubled to 16.
 StateTable + 16 = `$AD39` holds `$B2C2`, LevelEnd.
 In `rec/l83` BallState is 8 from frame 521; LevelEnd stores Level `$AB00` = 84 by frame 524.
 
-A state of 9 to 15 would jump past the table into BallBounce's code: no code stores one (known only from the code).
+A state of 9-15 would take ReadyText's bytes `$AD3B`, which follow the table, as addresses (`$0B16`, `$140D`, `$0207`,
+`$6572`, `$6461`, `$3F79`, `$1600`: the ROM and the picture area): a crash.
+Only the demo can store one: ChooseDemoState `B806-B807` and BallStopped `B128-B129` copy a DemoMoves byte into
+BallState, DemoMoves holds 9s, and a 9 becomes 3 only if the spring armed (SetStateUp at `B80F`); LoadSpring refuses on
+platforms 0 and 6-12.
+The demo in `menu` runs without a crash, so its list never leaves a 9 unarmed (known only from the code and that one
+run).
 
 ![BallState over level 0](img/loop/states-level0.png)
 
@@ -481,7 +497,7 @@ Interrupts are switched off and on all through a pass:
 | GameStart `$AB7C` | `DI` once at the start |
 | ReadControls `$B418` | `DI` first; `EI` at `$B434` only when the stick port gave something other than `$1F` in its low 5 bits |
 | WaitFrame `$B6E9` | `EI` before the `HALT` |
-| every sound primitive (`$F510-$F5AD`) | `DI` for the whole sound, `EI` at the end (doc 9) |
+| every sound primitive (`$F510-$F5AD`) | `DI` at its start, `EI` at its end; TripleSweep (SfxExtraLife, SfxLevelEnd) re-enables them after its first sweep, since SweepFromE ends with `F51F EI` (doc 9) |
 | the ROM handler | ends with `EI` |
 
 ReadControls, the only keyboard reader:
@@ -753,7 +769,7 @@ wait at all, so its length is set by the beeper.
 | Delay `$B873` | BallStopped (B = 2), GameOverDelay (B = 200), the hall of fame's border flash | B × 50 loops of `LD A,0: DJNZ` | 1036 T a unit (20 T a loop) |
 | GameOverPause `$B7A9` | the demo's end, game over | 20 × GameOverDelay (2 × Delay 200, 414 400 T, then `EI: HALT`) | 20 × 6 or 7 frames, about 2.6 s |
 | MenuTimer | Menu `$EF33` | `EI: HALT` | 3000 frames to the demo or the hall of fame; the hall of fame 750 frames |
-| the bottle's sound | TakeBottle `$BA1C`: SfxExtraLife, TripleSweep twice | interrupts off | a 40-frame pass (16 in the RZX, one per bottle) |
+| the bottle's sound | TakeBottle `$BA1C`: SfxExtraLife, TripleSweep twice | interrupts off for the first of each call's three sweeps | a 40-frame pass (16 in the RZX, one per bottle) |
 
 TickTimer:
 
@@ -783,6 +799,6 @@ The point: every delay in play is counted in passes, so a slow pass slows the wh
 ## 4.12 Known only from the code
 
 - The `$FA` tests in LifeStart do nothing (4.3).
-- A BallState of 9-15 would jump past StateTable; no code stores one (4.6).
+- A BallState of 9-15 would jump through ReadyText's bytes; only the demo's list could store one, and the recorded demo never does (4.6).
 - The cheat mode's level choice in LevelEnd (`$B2C9`): CheatMode `$ADDD` is never set (doc 5).
 - The IM 2 set-ups InstallIm2Key `$F343` and InstallIm2Wait `$F388` are never called: the game stays in IM 1 (doc 2).

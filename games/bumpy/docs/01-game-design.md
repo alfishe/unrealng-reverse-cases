@@ -17,10 +17,10 @@ The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recording
 | --- | --- |
 | `c1` | power-on, the tape at ROM speed, the menu, level 0 played by keys, the timer run down to 0 |
 | `menu` | the demo, the three control methods, the pause, two players, the cheat |
-| `gameover` | three lives lost by S, game over, the hall of fame |
+| `gameover` | game 0: three lives lost by S, game over; game 1: the score POKEd to 2000 (said in its `record.json`), three S, the name entry, the hall of fame |
 | `twoname` (stage 2) | two players to the end, both names entered (scores POKEd to 2000 and 2100, said in its `record.json`) |
 | `fire` (stage 2) | level 38 with Water POKEd to 0: the death by fire |
-| `scoreloop`, `rightspike`, `exitbelow` (integration) | the points loop on level 87; the right spike death on level 75; the exit entered from below (level 0's record POKEd, said in its `record.json`) |
+| `scoreloop`, `rightspike`, `exitbelow` (integration) | the points loop on level 87 and the right spike death on level 75, each from the RZX's saved state at that level's play start (`play-130843.z80`, `play-113295.z80`, said in its `record.json`); the exit entered from below (level 0's record POKEd, said in its `record.json`) |
 | `rec/l83`, `rzx/l01`, `rzx/l68`, `rzx/l99` | a level finished, locks opened, a fall and the spikes, the wrap from level 99 to level 0 |
 | the RZX | someone else's run through all 100 levels (xmikex and Jamie Angus, SPIN 0.5), replayed level by level |
 
@@ -84,7 +84,7 @@ frame under each).*
 | READY? | the start of each life and each level | the level drawn, "ready?" over it; with two players "PLAYER 1" or "PLAYER 2" and "PLAYER n" down the right edge |
 | play | | the 6 × 6 cells between two yellow side panels, the HUD on the top row |
 | the level end | the ball on the exit | the ball sinks into the exit, then the score counts up |
-| a life lost | a burst, a fall, a fire, or S | a pause of 50 frames, then READY? on the same level |
+| a life lost | a burst, a fall, a fire, or S | a pause of 50 frames, then up to a second or a key, then READY? on the same level |
 | the pause | H in play | the screen stays as it is until a key |
 | the name entry | game over with a score not below the 4th entry | the hall of fame with the new line, three letters chosen by left and right |
 
@@ -115,8 +115,8 @@ At the end of each bounce, at the landing, the game reads the controls and picks
 | --- | --- |
 | left | a jump one cell to the left (16 steps) |
 | right | a jump one cell to the right |
-| up or fire, pressed during the bounce | the spring: a rise to the cell above (8 steps) |
-| down, while rising | the rise turns into a bounce |
+| up or fire held at step 9 of a bounce or a side move, or at step 4 of a fall, with the ball's platform 1-5 | the spring: the landing starts an up move (8 steps); the ball rises on through gaps (and bricks, the exit) until left, right or down is held at the end of a rise, bumps back down under a platform 1-9 or at the top row, and bursts on spikes above |
+| down, held at the end of a rise | the rise turns into a bounce (on no platform the ball falls) |
 | nothing | another bounce on the spot |
 
 A jump left or right lands on the cell beside it.
@@ -131,7 +131,12 @@ stateDiagram-v2
     Bounce --> Up: the spring armed
     Left --> Bounce: lands
     Right --> Bounce: lands
-    Up --> Bounce: lands on the cell above
+    Up --> Up: no key, a gap above
+    Up --> Down: a platform above or the top row
+    Up --> Bounce: down held
+    Up --> Left: left held
+    Up --> Right: right held
+    Up --> Burst: spikes above
     Left --> Down: no platform
     Right --> Down: no platform
     Bounce --> Down: the platform gone
@@ -166,8 +171,9 @@ Worked example, from `c1`: the ball bounces on level 0.
 The player holds P; at the landing (about frame 14 095) the move becomes "right", and 16 steps later the ball is one
 cell to the right.
 O at the landing of frame 14 134 sends it back left.
-Q during the next bounce arms the spring, and at the landing of frame 14 184 the ball rises to the row above
-([shot](img/play/c1-014200-spring.png)).
+Q during the next bounce arms the spring, and at the landing of frame 14 184 the ball springs up from the top row,
+hits the ceiling (BallBumpCeiling `$B00F`: no row above) and falls back ([shot](img/play/c1-014200-spring.png): the
+ball above row 0, in the HUD row).
 
 The point: the player chooses only at landings, once every 16 steps; timing a key to a landing is the game's skill.
 
@@ -236,7 +242,7 @@ The five ways to lose a life:
 
 | Death | How | Seen in |
 | --- | --- | --- |
-| the spikes | landing on platform 12, or rising into spikes above | `rzx/l68` frame 924 ([shot](img/play/l68-000932-burst.png)); from the side, `rightspike` frame 60 ([shot](img/play/rightspike-000060-burst.png)) |
+| the spikes | landing on platform 12, or rising into spikes above | `rzx/l68` frame 924 ([shot](img/play/l68-000932-burst.png)); from the side, `rightspike`: the right key from frame 0, the burst (BallState 6) from frame 56, Lives 15 → 14 at 76 ([shot](img/play/rightspike-000066-burst.png), frame 66) |
 | the fall | no platform under the bottom row | `rzx/l68` frame 686 ([shot](img/play/l68-000700-fall.png)) |
 | the fire | landing on a burning platform without water | `fire` frame 41 ([shot](img/play/fire-000070-burst.png)) |
 | S | the self-destruct key, for a level that cannot be finished | `gameover` frame 602 |
@@ -294,7 +300,9 @@ Worked example, `rec/l83`: the last prize is taken at frame 341 and PrizesLeft r
 ([the exit open](img/play/l83-000400-exit-open.png)).
 The ball lands on the exit, BallState is 8 from frame 521, and the count of the timer starts at about frame 600
 ([shot](img/play/l83-000650-count.png)).
-A level's score is 15 × its prizes plus the timer left: level 0 gives at most 6 × 15 + 1000 = 1090.
+A level's score is 15 × its prizes plus the timer left: level 0 gives at most 6 × 15 plus the timer left, which is
+under 1000 at any level end (TickTimer runs in every pass before the dispatch, and a bounce passes before any
+landing): below 1090.
 Over the 100 levels there are 647 prizes, 9705 points.
 
 The point: the timer is the score's larger part, so a fast route pays more than a careful one, and nothing else hurries
@@ -328,9 +336,9 @@ What the 100 levels hold (counted from `src/res/levels/levels.txt`):
 | Thing | In all | Levels with it |
 | --- | ---: | ---: |
 | prizes | 647 (1 to 32 a level, 36 kinds) | 100 |
-| keys | 207 | |
-| hammers | 67 | |
-| water drops | 57 | |
+| keys | 207 | 69 |
+| hammers | 67 | 45 |
+| water drops | 57 | 32 |
 | bottles | 30 | 27 |
 | plain platforms | 390 | 63 |
 | crumbling platforms (three stages) | 263, 169, 486 | 58, 53, 77 |
@@ -343,8 +351,29 @@ What the 100 levels hold (counted from `src/res/levels/levels.txt`):
 | solid walls | 326 | 65 |
 | empty cells | 1419 | 94 |
 
-The early levels teach one thing at a time: level 0 has plain platforms and one fire, level 1 brings locks and bricks.
+The early levels teach one thing at a time: level 0 has plain platforms and one fire, level 1 brings locks, bricks,
+crumbling platforms and conveyors, level 5 the first bottle, level 10 the first stopper.
 The later ones combine everything.
+
+The first appearances, as the RZX player met them (each `rzx/lNN` replays the RZX from its own state at the level's
+play start):
+
+| Mechanic | Level | Moment | Shot |
+| --- | --- | --- | --- |
+| locks | 1 | `rzx/l01` frame 100; opened by frame 700 | [locks](img/play/l01-000100-locks.png), [open](img/play/l01-000700-locks-open.png) |
+| a hammer and bricks | 1 | `rzx/l01`: the hammer taken at frame 65 (Hammers 2 → 3), used at 150 (3 → 2); the ball, bouncing from cell 17 into cell 11 above, knocks the brick off layer by layer until it is gone at 334 | [frame 250](img/play/l01-000250-bricks.png) |
+| crumbling | 1 | `rzx/l01`: cell 13 wears from 2 to 3 at frame 495, under the ball | [frame 500](img/play/l01-000500-crumbling.png) |
+| conveyors | 1 | `rzx/l01`: the slanted piece at the bottom left, cell 30, platform 7 (push right); the ball is on it at frames 600-640 | [frame 100](img/play/l01-000100-locks.png) |
+| the bottle's extra life | 5 | `rzx/l05`: Lives `$AB01` 2 → 3 at frame 759 | [before](img/play/l05-000740-bottle.png), [after](img/play/l05-000770-extra-life.png) |
+| the stopper | 10 | the demo's level, and the RZX's level 10 | [the demo](img/play/menu-001500-demo.png) |
+| fire, spikes, the fall, the exit | 0, 1, 68 | 1.5 | 1.5 |
+
+The one published map, by Pavero (2005) on Speccy Screenshot Maps
+([maps.speccy.cz/map.php?id=Bumpy](http://maps.speccy.cz/map.php?id=Bumpy); the same picture is Spectrum Computing's
+[Bumpy.png](https://spectrumcomputing.co.uk/pub/sinclair/games-maps/b/Bumpy.png)), shows the 100 levels ten a row as
+screenshots.
+Levels 0-4 and 90-94 checked by eye against the RZX's starts above: the same cells, walls and objects.
+No published solution was found (Spectrum Computing, The Tipshop).
 The exit is on the start cell in 14 levels.
 
 The point: 100 hand-made puzzles from a handful of parts; the difficulty is in the arrangement, not in new rules.

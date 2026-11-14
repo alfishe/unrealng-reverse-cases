@@ -77,7 +77,7 @@ def main():
     m.set_facecolor(PANEL)
     regions = [(0x0000, 0x4000, 'ROM', '#3a3a48'), (0x4000, 0x5B00, 'screen', '#5a96fa'),
                (0x5CCB, 0x5D8A, 'block 1: BASIC', '#5ac878'), (0x6170, 0x6190, 'stack', '#e65a50'),
-               (0x61A8, 0xF8D5, 'block 5: the game $61A8-$F8D4, entry $AB7C', '#f0c846')]
+               (0x61A8, 0xF8D4, 'block 5: the game $61A8-$F8D3, entry $AB7C', '#f0c846')]
     for lo, hi, lab, c in regions:
         m.barh(0, hi - lo, left=lo, color=c, height=0.6)
     for lo, hi, lab, c in regions:

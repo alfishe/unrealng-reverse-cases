@@ -99,7 +99,7 @@ Witness: L1 0 ().
 
 **Build and draw level Level: copy the record, split the cells, draw them and the ball**
 
-The CPC inks of the level (LevelColours `$E119` row Level mod 7 + 1) go to `$B6DB`, a RET on the Spectrum. The work area `$AA20-$AAFA` (219 bytes) is cleared, the record at `$8C3C` + 75 x Level is copied to `$AA20` (byte 36, the start cell, also to `$AB1A`), and each of the 36 cells is split: the high nibble to the walls `$AA8F`, the low nibble to the platforms `$AA6B`. Then BuildLevelCell draws every cell. Last the ball: sprite `$67E8`, cell `$AA44` = the start cell, its screen address `$AA03` = the cell's + `$2F62`, drawn by XOR (10 lines of 4 bytes). Called by the main loop at `$AC7D`, `$AC86` and `$ACBF` (75 builds in the recordings).
+The CPC inks of the level (LevelColours `$E119` row Level mod 7 + 1) go to `$B6DB`, a RET on the Spectrum. The work area `$AA20-$AAFA` (219 bytes) is cleared, the record at `$8C3C` + 75 x Level is copied to `$AA20` (byte 36, the start cell, also to `$AB1A`), and each of the 36 cells is split: the high nibble to the walls `$AA8F`, the low nibble to the platforms `$AA6B`. Then BuildLevelCell draws every cell. Last the ball: sprite `$67E8`, cell `$AA44` = the start cell, its screen address `$AA03` = the cell's + `$2F62`, drawn by XOR (10 lines of 4 bytes). Called by the main loop at `$AC7D`, `$AC86` and `$ACBF`: a life start out of the demo builds twice, before READY? (`$AC7D`) and after the key (`$ACBF`), the demo once (`$AC86`).
 
 Witness: L1 102 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, twoname, l51, l59, l96, l98, rzx x24).
 
@@ -2707,7 +2707,7 @@ Witness: L1 23584 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, t
 
 **Arm the spring of the platform under the ball (types 1-5)**
 
-When SpringArmed `$AA13` is 0 and the platform `$AB1C` is 1-5: copies the 24-byte spring record of the type (SpringRecords `$C52A`[type - 1]) to `$AB35` (4 offsets, 4 frame addresses, 4 widths, 4 row counts) and sets SpringArmed. Types 0 and 6 up (conveyors, fire, bricks, exit) have no spring. Called by the bounce handlers when up or fire (UpKey `$B463`) is down, or the demo byte is 9.
+When SpringArmed `$AA13` is 0 and the platform `$AB1C` is 1-5: copies the 24-byte spring record of the type (found through SpringCurves `$C52A`[type - 1]: SpringPics `$C5D6` + 24 x (type - 1)) to `$AB35` (4 offsets, 4 frame addresses, 4 widths, 4 row counts) and sets SpringArmed. Types 0 and 6 up (conveyors, fire, bricks, exit) have no spring. Called at step 9 of a bounce or a side move and at step 4 of a fall (DownStep4 `$CE8A`) when up or fire (TestUpOrFire `$B463`) is down, or the demo byte is 9.
 
 Witness: L1 2308 (c1, exitbelow, gameover, menu, scoreloop, twoname, l x12, rzx00-rzx77, rzx79-rzx99).
 
@@ -4864,9 +4864,9 @@ Witness: L1 93414 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop, t
 
 ### `SelfDestruct` (`$BA71`)
 
-**The S key: burst the ball (in the demo, back to the main loop)**
+**The S key: burst the ball**
 
-Jumped to from the state handlers (`$AE7F`, `$AEF6`, `$AF70`, `$AFF0`, `$B085`, `$B133`) when the key `$31` (S) is down. In the demo (`$ABA6` not 0) it jumps back to MainLoop `$ACC8` and nothing happens. With `$ADDD` not 0 (never: `$ADDF` is a RET before the store that would set it) a disabled level select runs: FirmwareStub5 `$B754`, then Level = L reduced below 100 by steps of 97. Then the death sound `$F4CB` and LoseLife.
+Jumped to from the state handlers (`$AE7F`, `$AEF6`, `$AF70`, `$AFF0`, `$B085`, `$B133`) when the key `$31` (S) is down. It also tests DemoFlag `$ABA6` and jumps back to MainLoop `$ACC8` when it is set, a test its callers have already made (each tests S only when `$ABA6` is 0): dead code. With `$ADDD` not 0 (never: `$ADDF` is a RET before the store that would set it) a disabled level select runs: FirmwareStub5 `$B754`, then Level = L reduced below 100 by steps of 97. Then the death sound `$F4CB` and LoseLife.
 
 Witness: L1 15 (gameover, scoreloop, twoname).
 

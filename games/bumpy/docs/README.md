@@ -34,5 +34,5 @@ Each term once, here; the documents use these names and no others.
 | platform type | the cell's low nibble in the level record: 0 none, 1 plain, 2-4 crumbling, 5 stopper, 6-7 conveyors, 8-9 burning, 10 bricks, 11 exit, 12 spikes |
 | PrintText code | a control byte in a text: `$16` AT, `$01`/`$02` height, `$10`-`$15` colours (`$14` the whole attribute), `$00` end |
 | quiet flag | ObjectFlag `$ABA7`: 4 after the bottle or a water drop spent on a fire, so the next bounce, jump or pick-up is silent |
-| spring | SpringArmed `$AA13`: up or fire held at step 9 of a bounce or side move, on platforms 1-5; the landing then starts an up move |
+| spring | SpringArmed `$AA13`: up or fire held at step 9 of a bounce or a side move, or at step 4 of a fall, with the ball's platform 1-5; the landing then starts an up move |
 | step | one dispatch of the ball's state; BallStep `$A9FF` counts them (16 for a bounce or a side move, 8 up or down) |

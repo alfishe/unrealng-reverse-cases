@@ -118,8 +118,9 @@ ReadWallCell:
 ; nibble to the walls $AA8F, the low nibble to the platforms $AA6B. Then
 ; BuildLevelCell draws every cell. Last the ball: sprite $67E8, cell $AA44 =
 ; the start cell, its screen address $AA03 = the cell's + $2F62, drawn by XOR
-; (10 lines of 4 bytes). Called by the main loop at $AC7D, $AC86 and $ACBF (75
-; builds in the recordings).
+; (10 lines of 4 bytes). Called by the main loop at $AC7D, $AC86 and $ACBF: a
+; life start out of the demo builds twice, before READY? ($AC7D) and after the
+; key ($ACBF), the demo once ($AC86).
 ;
 ; Witness: L1 102 (c1, exitbelow, fire, gameover, menu, rightspike, scoreloop,
 ; twoname, l51, l59, l96, l98, rzx x24).

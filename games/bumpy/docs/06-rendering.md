@@ -35,12 +35,13 @@ Conventions:
 
 ## 6.1 The screen layout
 
-The board is 6 × 6 cells of 40 × 32 pixels, 240 × 192 in all, between two yellow side panels.
+The board is 6 × 6 cells on a 40 × 32 pixel grid; what is drawn spans x 8-239 (columns 1-29), between the two
+yellow side panels in columns 0 and 30. Column 31 is never used.
 
 | Part | Where | Drawn by |
 | --- | --- | --- |
 | the side panels | character columns 0 and 30, all 24 rows; yellow | DrawSides `$B488` once a game; SetPlayAttrs `$B4F8` |
-| the board | x 8-247: columns 1-29 and half of 30 | ClearPlayArea `$B4CE`, BuildLevel `$CF2E` |
+| the board | x 8-239: columns 1-29 | ClearPlayArea `$B4CE`, BuildLevel `$CF2E` |
 | cell `c` | its platform on line `26 + 32 × (c / 6)`, x = `8 + 40 × (c mod 6)` | CellAddresses `$E131` + 2c |
 | wall `c` | 8 pixels wide, 24 lines, at the right of cell `c`: x = `40 + 40 × (c mod 6)` | WallAddresses `$E179` + 2c |
 | the HUD | character row 0, over the top cells | DrawHud `$E58B`, every pass (doc 8) |
@@ -53,7 +54,7 @@ outlines the 30 wall places (WallAddresses), the yellow box the ball at rest on 
 side panels. Over `rec/l83` frame 100 (level 83, [shot](img/play/l83-000100-play.png)).
 `python3 tools/fig_render.py layout`, from the built image's tables.*
 
-Witness: CellScreenAddr `$BB05` L1 98 391; every frame of every recording has this layout.
+Witness: CellScreenAddr `$BB05` L1 99 879; every frame of every recording has this layout.
 
 The point: the layout is two tables of 36 CPC addresses; everything a cell shows is drawn at a fixed offset from its
 entry.
@@ -128,14 +129,14 @@ flowchart LR
 SpectrumLines maps CPC line `n` to Spectrum line `n - 7`: the first 7 CPC lines and the last 8 go to a scratch area
 at `$FCE0`, so a picture that runs off the board's top or bottom is drawn and never seen.
 The CPC screen is 200 lines of 80 bytes (320 pixels in mode 1); the game used 240 of those pixels and 192 lines plus
-the margins, which is why the board fits the Spectrum's 256 × 192 with one column to spare on each side.
+the margins, which is why the board fits the Spectrum's 256 × 192: panels in columns 0 and 30, column 31 unused.
 
 Worked example: cell 14, CellAddresses + 28 = `$CBD6`.
 The offset is `$0BD6`: s = `$0BD6 / $800` = 1, and `$03D6` = 982 = 12 × 80 + 22, so r = 12 and b = 22.
 PixelLine = 8 × 12 + 1 = 97, the Spectrum line 90.
 SpectrumColumn = 22 / 2 = 11, x = 88: the third cell of row 2, at 8 + 40 × 2 = 88.
 
-Witness: ScreenAddrToLine L1 324 616, 277 064 calls for pictures in the recordings.
+Witness: ScreenAddrToLine L1 327 885, 277 064 calls for pictures in the recordings.
 
 The point: every picture pays a division by 80 to stay in CPC coordinates; the port kept the Amstrad's drawing code
 and changed only the last step.
@@ -212,6 +213,7 @@ DrawSprite(cpc address, picture, lines B, width SpriteWidth in CPC bytes):
             an odd width: a last *d++ = b0 << 4
         else:
             *d++ = b0 AND $0F, then pairs shifted by one CPC byte
+            an even width: a last *d++ = (the last byte's low nibble) << 4   ; DrawSpriteSkip3 `$E3C2`
         the next line: IX += 2 (the next SpectrumLines entry)
     enable interrupts
 ```
@@ -227,7 +229,10 @@ flowchart TD
     G -- yes --> H["a last half byte"]
     G -- no --> I["next line"]
     H --> I
-    F --> I
+    F --> K{"width even"}
+    K -- yes --> L["a last half byte: the last low nibble to the left half (DrawSpriteSkip3)"]
+    K -- no --> I
+    L --> I
     I -- "lines left" --> D
     I -- done --> J["EI"]
 ```
@@ -244,7 +249,7 @@ DrawSprite takes the low nibbles 0, B, D, 0 and makes `$0B` and `$D0`: `....X.XX
 XorBricks would take the high nibbles 1, 2, 4, 8 and make `$12 $48`, the shading, which is why the bricks, drawn in
 plane 0 on the CPC, need a blitter of their own.
 
-Witness: DrawSprite L1 91 481, XorSprite L1 228 035, XorBricks L1 204 (`fire`, `l98`, 6 RZX levels).
+Witness: DrawSprite L1 91 594, XorSprite L1 231 120, XorBricks L1 256 (`fire`, `l98`, 6 RZX levels).
 
 The point: the port is a nibble filter; every CPC picture survives as one of its planes, chosen per blitter.
 
@@ -265,8 +270,8 @@ each picture is drawn in its low plane, as the Spectrum shows it, with its addre
 | the rolling ball, 15 frames | `$6810-$6A40` | 4 × 10 | XorSprite (BallFramesRight `$C4E2`, BallFramesLeft) |
 | the objects 1-40 | `$6CB0 + 56 × k` | 4 × 14 | XorSpriteColoured, ink ObjectInks `$C6F6` + k |
 | the plain platform | `$7788` | 8 × 4 | XorSprite |
-| the walls, 4 turning frames | `$7E5C + 48 × f` | 2 × 24 | XorSprite, ink `$83` |
-| the flames, 3 frames | `$814D + 30 × f` | 6 × 5 | DrawSpriteColoured, ink `$C2` |
+| the walls, 4 turning frames | `$7E5C + 48 × f` | 2 × 24 | XorSpriteColoured at build (DrawWallPicInk), DrawSpriteColoured in AnimateWalls; ink `$83` |
+| the flames, 3 frames | `$814D + 30 × f` | 6 × 5 | XorSpriteColoured at build (DrawFlames), DrawSpriteColoured in AnimateFires; ink `$C2` |
 | the exit's frames | ExitFrameTable `$C522` | 6 × 5 | DrawSpriteColoured, ink `$5E` |
 | a brick row | `$8345` | 8 × 8 | XorBricksColoured, ink `$82` |
 | the burst, 6 frames | `$81F5-$830D` | 4 × 14 | doc 10 |
@@ -301,6 +306,9 @@ PaintAttrs:
 PaintAttrs(C):
     if C AND 7 == 0: return
     if C bit 7: height += 8; C bit 7 cleared       ; the flag doubles as "one cell more"
+    if CharRow == 0:                               ; `$E2B5-$E2CF`: a picture off the top
+        height -= 8; if it goes below 0: return
+        CharRow = 2                                ; start at Spectrum row 1: the HUD row keeps its colours
     rows = (height + 7) / 8 from CharRow - 1; columns = (width + column bit 0 + 1) / 2 from ByteColumn / 2
     every cell = C                                 ; patched into the loop
 ```
@@ -311,8 +319,12 @@ flowchart TD
     B -- yes --> R["return"]
     B -- no --> C{"bit 7"}
     C -- yes --> D["8 lines more, clear bit 7"]
-    C -- no --> E["the cell rectangle"]
-    D --> E
+    E["the cell rectangle"]
+    D --> G{"CharRow 0"}
+    C -- no --> G
+    G -- yes --> H["8 lines less, start at Spectrum row 1 (the HUD row untouched)"]
+    G -- no --> E
+    H --> E
     E --> F["patch LD (HL),n, fill"]
 ```
 
@@ -328,7 +340,7 @@ Its CPC address is the cell's + `$FF62` = `$C9EE`: s = 1, r = 6, b = 14, so line
 PaintAttrs starts at character row r - 1 = 5 and column b / 2 = 7, and fills (14 + 7) / 8 = 2 rows of
 (4 + 0 + 1) / 2 = 2 cells: rows 5-6, columns 7-8, lines 40-55 and x 56-71, all `$43`.
 
-Witness: PaintAttrs L1 275 682.
+Witness: PaintAttrs L1 278 233.
 
 The point: one attribute per picture, written after the pixels; Bumpy accepts the clash rather than masking.
 
@@ -378,7 +390,7 @@ Worked example: level 22 has only plain platforms and objects, so the whole boar
 `$7788-$77A7` (Platform1Pictures, 32 bytes), the objects from `$6CE8-$702F`, and the ball from `$67E8`.
 Since the play area was cleared just before, XOR and store give the same picture.
 
-Witness: BuildLevel L1 94, every life start.
+Witness: BuildLevel L1 102, every life start.
 
 The point: building a level is 36 small blits and a few attribute fills, under 5 frames for level 22 (frame 1534 T 58 000 to 1539 T 3200).
 
@@ -445,7 +457,7 @@ Worked example: `rec/l83`, the jump right at frames 349-377 ([doc 4, 4.6](04-gam
 At each of the 16 steps BallStepMove adds RightOffsets[step]; the right move draws the rolling frame
 BallFramesRight[step], and step 15 the round ball again.
 
-Witness: BallStepMove L1 91 187; DrawBallXor L1 182 818, two for each step.
+Witness: BallStepMove L1 92 310; DrawBallXor L1 185 077, two for each step.
 
 The point: one picture of 40 bytes, XORed twice a step, is the whole sprite engine.
 
@@ -456,7 +468,7 @@ Seven things change on the board while the ball moves, each driven from MainLoop
 | Animation | Routine | Period | Picture | Blitter |
 | --- | --- | --- | --- | --- |
 | the flames | AnimateFires `$BBCD` | every 4 passes, 3 frames, every burning cell | `$814D + 30 × f` | DrawSpriteColoured, ink `$C2` |
-| the turning walls | AnimateWalls `$BC30` | every 4 passes, 4 frames, every type 4 wall | `$7E5C + 48 × f` | XorSprite, ink `$83` |
+| the turning walls | AnimateWalls `$BC30` | every 4 passes, 4 frames, every type 4 wall | `$7E5C + 48 × f` | DrawSpriteColoured, ink `$83` |
 | the open exit | AnimateExit `$BD21` | every 2 passes, 4 frames | ExitFrameTable `$C522` | DrawSpriteColoured, ink `$5E` |
 | a platform wearing | PlatformChangeStep `$C19D` | 4 or 9 steps, one a pass | cracks | XorSprite |
 | a lock opening | WallStep `$C43E` | 2 or 7 steps | lock pictures | XorSprite, then DrawSprite of the blanks |
@@ -487,7 +499,7 @@ Worked example: AnimateFires counts FireTick `$AA0C` to 4, steps FireFrame `$AA1
 frame `$814D + 30 × (f - 1)` over every cell whose CellBurning byte is 1.
 Level 1's two fires (cells 19 and 33) therefore change picture together, every 4 passes.
 
-Witness: AnimateFires and AnimateWalls L1 93 190 each (every pass); BrickStep L1 92 281.
+Witness: AnimateFires and AnimateWalls L1 94 334 each (every pass); BrickStep L1 93 416.
 
 The point: the board animates on a few counters shared by all cells; nothing on it moves but the ball.
 
