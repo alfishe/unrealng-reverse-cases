@@ -47,6 +47,14 @@ stays in; the arrows are the jumps between them. Witness: `c1` (Start to the pas
 point: there is no state variable; the state is where the program counter is, and every exit leads back to
 TitleLoop by a jump, never a return.*
 
+![Level 1 completed](img/logic/level-complete.gif)
+
+*The exit Pass to LevelComplete to LevelPanel, as the player sees it: `L01` frames 1508-1645, every third frame
+(`python3 ../../kit/screen_anim.py --work work/docs/dfA/L01 --from 1508 --to 1645 --step 3 --scale 2 --delay 120
+--hold 2000 docs/img/logic/level-complete.gif`, drawn for [doc 10](10-gameplay-logic.md)). How to read it: the screen
+frame by frame. The point: the last turn (frame 1513), the beam into the receiver, CONTACT! on the line, the play area
+turning magenta, and the energy bar counted into the score: the bonus is the LevelComplete state, outside the pass.*
+
 Two exits drop the stack rather than unwind it: U + G in ReadKeys pops its return address and jumps to TitleLoop
 (`$840C`); LoseLife and LevelComplete are jumped to from PassEnd and jump on. The stack stays within 12 bytes
 ([doc 2](02-architecture.md#23-the-heatmap-and-the-stack)).
@@ -93,6 +101,25 @@ PassEnd:                  ; $85AE, falls in
   JP MainLoop
 ```
 
+```text
+main_loop():                                   # MainLoop $854A, one pass; never waits for the frame
+    read_keys()                                # P: pause; U + G: drop the return address, TitleLoop
+    mark_cursor_cells()
+    render_grid()                              # turning cells one step, marked characters into the buffers
+    if not laser_charging and laser_found:
+        trace_beam()                           # the whole beam again, into the buffers
+    elif laser_charging and demo: next demo level
+    cursor_fire(); draw_cursor()
+    if not laser_charging: update_gremlins()
+    copy_play_area()                           # buffers to the screen
+    update_overload()                          # PassEnd $85AE
+    if life_lost: jump lose_life
+    drain_energy()
+    if level_done: jump level_complete
+    if cells_left == 0: open_receiver()
+    step the explosions; jump main_loop
+```
+
 The order of work, with each part's share of the T-states of `L01` ([doc 2](02-architecture.md#21-the-machine-and-the-budget)):
 
 | Step | Routine | What | Share of `L01` |
@@ -124,8 +151,9 @@ docs/img/routines/MainLoop.gif`.*
 ## 4.4 The heaviest work: the beam's trace
 
 TraceBeam `$8ED6` starts at the half-cell in front of the laser and steps the beam vertex by vertex until it ends in a
-wall, leaves the field, reaches 150 steps or the receiver. At every vertex it reads the character map (not the level
-grid) under the beam, decides what the element there does, and draws the beam's glyphs into PixelBuffer and their
+wall, leaves the field, reaches 150 steps or the receiver. At a cell centre it reads the level grid (BeamStep `$8F02`:
+`$FD11` + 17(y/2) + x/2); at a vertex between cells it reads the character map (BeamVertex `$906E`). It decides what
+the element there does, and draws the beam's glyphs into PixelBuffer and their
 colour into ColourBuffer ([doc 6](06-rendering.md), [doc 10](10-gameplay-logic.md)).
 
 ![TraceBeam at work](img/routines/TraceBeam.gif)
@@ -194,11 +222,36 @@ InterruptHandler:         ; $A32A, from JP $A32A at $FDFD
   LD A,(FrameCounter)     ; the frame counter (the beam's flicker)
   INC A
   LD (FrameCounter),A
-  LD A,(MessageText+$0001) ; a new message waiting?
+  LD A,(MessageText+$0001) ; a new message waiting (its high byte not 0)?
   AND A
   JR Z,ScrollMessageTick
-  ...                     ; take it, or scroll / blink the current one
+  LD A,(MessageState)     ; yes: in a static message's blank phase ($E6-$EF)?
+  CP $E6
+  JR C,ScrollerTakeMessage
+  CP $F0
+  JR NC,ScrollerTakeMessage
+  LD A,$F0                ; then end the blank now and show the static one
+  LD (MessageState),A
+  JR ShowStaticMessage
+ScrollerTakeMessage:      ; $A35B
+  LD HL,(MessageText)     ; MessagePointer = MessageText
+  LD (MessagePointer),HL
+  ...                     ; scroll it from its first character, or show it static
   ...                     ; InterruptExit $A450: PlaySoundFlags $A8A7, POP, EI, RET
+```
+
+```text
+interrupt():                                   # every frame, IM 2 through JP $A32A at $FDFD
+    push HL, DE, BC, AF
+    if menu_scroller: menu_scroller_tick(); go to exit
+    energy_tick += 1; frame_counter += 1       # POKE 41784,0 removes the first INC
+    if message_text_high != 0:                 # a new COMPUTER message waits
+        if $E6 <= message_state < $F0: message_state = $F0; show_static_message()
+        else: message_pointer = message_text; message_text_high = 0; start it (scroll or static)
+    else: scroll the line a pixel left, or count the static message's blink
+    play_sound_flags()                         # $A8A7: a slice of each flagged effect
+exit:
+    pop AF, BC, DE, HL; EI; RET
 ```
 
 ```mermaid
@@ -227,6 +280,20 @@ EnergyTick may pass the rate by up to one pass (about 5 frames) before it is see
 frames, so each pixel is late by up to a pass. In `energy` level 1's bar took about 5800 frames (charged at about
 650, drained at 6450). The POKE file's "infinite lives" (POKE 41784,0: `NOP` over the `INC A` at
 `$A338`) stops this clock: the energy never drains.
+
+Where the code runs with interrupts off (DI ... EI in `build/game.lst`): none of these is in the pass, so the energy
+clock, the COMPUTER line and the flagged sounds stop only outside play or in the pause.
+
+| Where | DI | EI | Why |
+| --- | --- | --- | --- |
+| Start | `$8408` | `$843B` (LevelPanel) | SetupInterrupts, then the title and the options until a level's panel is drawn |
+| HallOfFame | `$9BC0` | `$9CB7` | the check of the last score, the tone; on for the name entry (the COMPUTER line scrolls) |
+| HallOfFameDone | `$9DD2` | (TitleScreen's DIs follow) | ENTER: redraw, a tone, a pause |
+| TitleScreen, OptionsMenu | `$A735`, `$A757` | `$A774` | the picture and the wipe; on for the options panel's scroller |
+| the options' start key | `$A802` | `$843B` | MenuScroller off, then NewGame |
+| TitleTune | `$AD79` | `$ADA5` | the three-voice tune is timed by the CPU alone |
+| PauseGame | `$973F`, `$97C0` | `$97B7`, `$97EE` | the tones, the INTERMISSION print and the save / restore; on while it waits for ENTER |
+| TheEnd | `$8885` | (to TitleLoop) | the ending's screen and sounds |
 
 ## 4.7 Timing
 

@@ -140,6 +140,10 @@ class Source:
 
 
 EXECS = {}  # l1.json path -> {address: [(page, bytes, runs, self-modified)]}, filled by read_sources
+# the routine entries of the last read_sources that only a build's root marks (no call, jump or interrupt reaches
+# them in any recording): a recording that starts from a snapshot taken inside a routine; write_ctl starts no entry
+# there when the code before falls into it (a mid-routine root), unless the .ann makes it one
+ROOT_ONLY = set()
 
 
 def add_runs(ran, doc, bases):
@@ -158,6 +162,7 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
     blocks whose every instruction has the image's bytes (another program that ran at these addresses later in the
     same recording cannot make a lone byte look like code), no entries. Only the pages in bases count."""
     starts, entries, reads = set(), set(), [0] * 0x10000
+    rooted, reached = set(), set()  # entries only a build's root made; entries a call, jump or interrupt reaches
     for src in sources:
         paths = sorted(glob.glob(src.path)) if any(c in src.path for c in '*?[') else [src.path]
         for path in paths:
@@ -206,12 +211,27 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                     if decode(mem, a)[0] == len(raw) and mem[a] == raw[0] and \
                             (not same_bytes or mem[a:a + len(raw)] == raw):
                         starts.add(a)
-                for r in doc['routines']:
+                routines = doc['routines']
+                # how each routine is entered from another one: a call, an interrupt, a jump from a routine that
+                # is no build's root reaches it; a fall into it, or a jump out of a root's routine (a loop of the
+                # routine the snapshot was taken in, cut in two by the root) does not
+                entered = {}
+                for c in doc.get('calls', ()):
+                    if c.get('kind') != 'falls-into' and 'root' not in routines[c['caller']].get('kinds', ''):
+                        entered[c['callee']] = True
+                for i, r in enumerate(routines):
                     a = int(r['entry'][1:], 16)
                     if not src.roots and r.get('kinds') == 'root':
                         continue
                     if r['page'] in bases and wlo <= a < whi:
                         entries.add(a)
+                        kinds = set((r.get('kinds') or '').split(',')) - {''}
+                        # a root that is also a jump target: the jump is from the routine it was cut out of
+                        if kinds - {'root', 'jump', 'shared'} or ('root' not in kinds and (entered.get(i) or
+                                                                                         'calls' not in doc)):
+                            reached.add(a)
+                        else:
+                            rooted.add(a)
             # In the builds over the tape load the depacker reads its packed input where the game's code later lies:
             # their reads say nothing
             if not src.reads:
@@ -224,6 +244,8 @@ def read_sources(sources, mem, lo, hi, bases, mode='instructions', same_bytes=Fa
                             reads[base + i] += n
     if same_bytes:  # a routine whose bytes another program later put there is not one of this image's
         entries &= starts
+    ROOT_ONLY.clear()
+    ROOT_ONLY.update((entries & rooted) - reached)
     return starts, entries, reads
 
 
@@ -618,12 +640,20 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
             inline_bytes[c + n] = fixed[0]
     # where the code resumes after those bytes: the routine returns there (a recorded jump), no label unless named
     resumes = {c + n for c, n in inline_bytes.items()} - branched
+    # an entry only a build's root made (ROOT_ONLY), where the code before falls into it: the inside of a routine a
+    # snapshot-started recording began in, no entry of its own unless the .ann or a CALL makes it one
+    falls_into = {c + n for c, n in code.items() if decode(mem, c)[2]}
+    mid_roots = {a for a in ROOT_ONLY & set(entries) if a in falls_into and a not in ann.entries and a not in calls}
     a = LO
     kind = None
     data_kind, data_width = 'b', None
     while a < HI:
         if a in inline_bytes and kind == 'c':
-            lines.append('B $%04X,%d' % (a, inline_bytes[a]))
+            # the .ann's inner line there names the bytes and comments them, as on a data entry's line
+            name, comment = ann.inline.get(a, (None, None))
+            if name:
+                lines.append('@ $%04X label=%s' % (a, name))
+            lines.append('B $%04X,%d' % (a, inline_bytes[a]) + (' ' + comment if comment else ''))
             a += inline_bytes[a]
             continue
         is_code = a in code
@@ -631,7 +661,8 @@ def write_ctl(mem, code, targets, calls, entries, ann, path):
         if known and (known[0] == 'c') != is_code:
             sys.exit('game.ann: $%04X is %s, the recordings say %s' % (a, known[0], 'code' if is_code else 'data'))
         new_entry = (kind is None or is_code != (kind == 'c') or known is not None or
-                     (is_code and a in starts_entry and a not in resumes) or (not is_code and kind == 'c'))
+                     (is_code and a in starts_entry and a not in resumes and a not in mid_roots) or
+                     (not is_code and kind == 'c'))
         if new_entry:
             kind = 'c' if is_code else 'b'
             if known:
@@ -1465,8 +1496,15 @@ def generate(seg, mem, args, out, top):
     modules, head = split_modules(text, ann)
     resources = {name: mem[a:b] for name, (a, b) in files.items()}
     labels = set(re.findall(r'^([A-Za-z_]\w*):$', text, flags=re.M))
+    # the .ctl's entries against the .ann's: the others are where code and data meet, a CALL lands or a recording
+    # entered a routine (mid-routine roots excepted: write_ctl)
+    made = [int(line[3:7], 16) for line in open(ctl) if line[:2] in ("c ", "b ", "t ", "w ", "s ")]
+    extra = [a for a in made if a not in ann.entries]
+    own = sum(1 for a in ann.entries if LO <= a < HI)
+    why = (f' ({own} from the .ann, {len(extra)} where code and data meet, a CALL lands or a recording enters: '
+           + ' '.join('$%04X' % a for a in extra[:8]) + (' ...' if len(extra) > 8 else '') + ')') if extra else ''
     stats = (f'code bytes {sum(code.values())} ({len(code)} instructions, {len(starts)} ran), '
-             f'entries {sum(1 for line in open(ctl) if line[:2] in ("c ", "b ", "t ", "w ", "s "))}, '
+             f'entries {len(made)}{why}, '
              f'modules {len(modules)}, resources {len(files)}, addresses inside entries as Label+offset {inner}')
     return modules, head, resources, ann, labels, stats
 

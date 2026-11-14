@@ -119,9 +119,10 @@ ChainText:
 ; first XorLayer.
 ;
 ; 2. Then layer after layer, B and C changed by shifts and increments between
-; the calls (EXX, OR E and the like are key bytes, not code: XorLayer writes C
-; over them and jumps past). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`,
-; SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
+; the calls (the key byte after each CALL is data, `@inline`: the layer writes
+; C over it and jumps past it; read as code it would be an EXX, an OR E and the
+; like). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit
+; inside the run, jumped over by `JR`.
 ;
 ; 3. After the 30th layer (at `$7CA2`): FinalSum.
 ;
@@ -134,17 +135,20 @@ ChainLayers:
   LD BC,$46D9
   SET 7,B
   CALL XorLayer
-  EXX                     ; key byte 1 (XorLayer): A + 115 (the tape's byte),
+KeyByte1:
+  DEFB $D9                ; key byte 1 (XorLayer): A + 115 (the tape's byte),
                           ; then C = $D9 written here, 198 bytes decrypted
   SRL B
   SET 7,B
   CALL XorLayer
-  EXX                     ; key byte 2 (XorLayer): A + 69 (the tape's byte),
+KeyByte2:
+  DEFB $D9                ; key byte 2 (XorLayer): A + 69 (the tape's byte),
                           ; then C = $D9 written here, 227 bytes decrypted
   RRC B
   RLC C
   CALL XorLayer
-  OR E                    ; key byte 3 (XorLayer): A + 210 (the tape's byte),
+KeyByte3:
+  DEFB $B3                ; key byte 3 (XorLayer): A + 210 (the tape's byte),
                           ; then C = $B3 written here, 241 bytes decrypted
   JR ChainLayers2
 
@@ -175,92 +179,57 @@ SumLayer1Loop:
   LD (HL),C
   INC HL
   JP (HL)
-; This entry point is used by the routine at ChainLayers.
+
+; The chain goes on past SumLayer1 (jumped over by a JR): the next layers
+;
+; Part of ChainLayers, cut by the sum layer that sits inside the run.
+;
+; Witness: L1 2 (c1).
 ChainLayers2:
-  RRC C                   ; the chain goes on past SumLayer1
+  RRC C
   CALL XorLayer
-  EXX                     ; key byte 4 (XorLayer): A + 67 (the tape's byte),
+KeyByte4:
+  DEFB $D9                ; key byte 4 (XorLayer): A + 67 (the tape's byte),
                           ; then C = $D9 written here, 241 bytes decrypted
   SRA B
   INC C
   CALL XorLayer
-
-; key byte 5 (XorLayer): A + 223 (the tape's byte), then C = $DA written here,
-; 248 bytes decrypted
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte5:
-  DEFB $DA
-
-; The chain after key byte 5: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $DA                ; key byte 5 (XorLayer): A + 223 (the tape's byte),
+                          ; then C = $DA written here, 248 bytes decrypted
 Layers6:
   RLC C
   CALL SumLayer1
-  OR L                    ; key byte 6 (a sum layer): A + 87 (the tape's byte),
+KeyByte6:
+  DEFB $B5                ; key byte 6 (a sum layer): A + 87 (the tape's byte),
                           ; then C = $B5 written here
   INC B
   CALL XorLayer
-  OR L                    ; key byte 7 (XorLayer): A + 250 (the tape's byte),
+KeyByte7:
+  DEFB $B5                ; key byte 7 (XorLayer): A + 250 (the tape's byte),
                           ; then C = $B5 written here, 249 bytes decrypted
   RLC B
   SRA C
   CALL SumLayer1
-
-; key byte 8 (a sum layer): A + 121 (the tape's byte), then C = $DA written
-; here
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte8:
-  DEFB $DA
-
-; The chain after key byte 8: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $DA                ; key byte 8 (a sum layer): A + 121 (the tape's
+                          ; byte), then C = $DA written here
 Layers9:
   CALL SumLayer1
-
-; key byte 9 (a sum layer): A + 121 (the tape's byte), then C = $DA written
-; here
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte9:
-  DEFB $DA
-
-; The chain after key byte 9: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $DA                ; key byte 9 (a sum layer): A + 121 (the tape's
+                          ; byte), then C = $DA written here
 Layers10:
   RES 1,B
   CALL XorLayer
-
-; key byte 10 (XorLayer): A + 3 (the tape's byte), then C = $DA written here,
-; 241 bytes decrypted
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte10:
-  DEFB $DA
-
-; The chain after key byte 10: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $DA                ; key byte 10 (XorLayer): A + 3 (the tape's byte),
+                          ; then C = $DA written here, 241 bytes decrypted
 Layers11:
   SRL C
   CALL XorLayer
-  LD L,L                  ; key byte 11 (XorLayer): A + 69 (the tape's byte),
+KeyByte11:
+  DEFB $6D                ; key byte 11 (XorLayer): A + 69 (the tape's byte),
                           ; then C = $6D written here, 241 bytes decrypted
   JR ChainLayers3
 
@@ -284,51 +253,51 @@ SumLayer2Loop:
   LD (HL),C
   INC HL
   JP (HL)
-; This entry point is used by the routine at Layers11.
-ChainLayers3:
-  RLC B                   ; the chain goes on past SumLayer2
-  SRA C
-  CALL XorLayer
 
-; key byte 12 (XorLayer): A + 119 (the tape's byte), then C = $36 written here,
-; 227 bytes decrypted
+; The chain goes on past SumLayer2 (jumped over by a JR): the next layers
 ;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
-KeyByte12:
-  DEFB $36
-
-; The chain after key byte 12: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
+; Part of ChainLayers, cut by the sum layer that sits inside the run.
 ;
 ; Witness: L1 2 (c1).
+ChainLayers3:
+  RLC B
+  SRA C
+  CALL XorLayer
+KeyByte12:
+  DEFB $36                ; key byte 12 (XorLayer): A + 119 (the tape's byte),
+                          ; then C = $36 written here, 227 bytes decrypted
 Layers13:
   INC C
   CALL SumLayer2
-  SCF                     ; key byte 13 (a sum layer): A + 91 (the tape's
+KeyByte13:
+  DEFB $37                ; key byte 13 (a sum layer): A + 91 (the tape's
                           ; byte), then C = $37 written here
   INC B
   CALL XorLayer
-  SCF                     ; key byte 14 (XorLayer): A + 209 (the tape's byte),
+KeyByte14:
+  DEFB $37                ; key byte 14 (XorLayer): A + 209 (the tape's byte),
                           ; then C = $37 written here, 228 bytes decrypted
   SLA B
   SRA C
   CALL XorLayer
-  DEC DE                  ; key byte 15 (XorLayer): A + 203 (the tape's byte),
+KeyByte15:
+  DEFB $1B                ; key byte 15 (XorLayer): A + 203 (the tape's byte),
                           ; then C = $1B written here, 200 bytes decrypted
   SRA B
   CALL XorLayer
-  DEC DE                  ; key byte 16 (XorLayer): A + 214 (the tape's byte),
+KeyByte16:
+  DEFB $1B                ; key byte 16 (XorLayer): A + 214 (the tape's byte),
                           ; then C = $1B written here, 228 bytes decrypted
   DEC B
   LD C,B
   CALL SumLayer1
-  EX (SP),HL              ; key byte 17 (a sum layer): A + 220 (the tape's
+KeyByte17:
+  DEFB $E3                ; key byte 17 (a sum layer): A + 220 (the tape's
                           ; byte), then C = $E3 written here
   RLC B
   CALL SumLayer1
-  EX (SP),HL              ; key byte 18 (a sum layer): A + 248 (the tape's
+KeyByte18:
+  DEFB $E3                ; key byte 18 (a sum layer): A + 248 (the tape's
                           ; byte), then C = $E3 written here
   JR ChainLayers4
 
@@ -352,92 +321,73 @@ SumLayer3Loop:
   LD (HL),C
   INC HL
   JP (HL)
-; This entry point is used by the routine at Layers13.
+
+; The chain goes on past SumLayer3 (jumped over by a JR): the next layers
+;
+; Part of ChainLayers, cut by the sum layer that sits inside the run.
+;
+; Witness: L1 2 (c1).
 ChainLayers4:
-  RLC B                   ; the chain goes on past SumLayer3
+  RLC B
   CALL SumLayer3
-  EX (SP),HL              ; key byte 19 (a sum layer): A + 48 (the tape's
+KeyByte19:
+  DEFB $E3                ; key byte 19 (a sum layer): A + 48 (the tape's
                           ; byte), then C = $E3 written here
   SET 0,C
   CALL XorLayer
-  EX (SP),HL              ; key byte 20 (XorLayer): A + 233 (the tape's byte),
+KeyByte20:
+  DEFB $E3                ; key byte 20 (XorLayer): A + 233 (the tape's byte),
                           ; then C = $E3 written here, 143 bytes decrypted
   CALL XorLayer
-  EX (SP),HL              ; key byte 21 (XorLayer): A + 116 (the tape's byte),
+KeyByte21:
+  DEFB $E3                ; key byte 21 (XorLayer): A + 116 (the tape's byte),
                           ; then C = $E3 written here, 143 bytes decrypted
   SET 7,B
   CALL XorLayer
-  EX (SP),HL              ; key byte 22 (XorLayer): A + 241 (the tape's byte),
+KeyByte22:
+  DEFB $E3                ; key byte 22 (XorLayer): A + 241 (the tape's byte),
                           ; then C = $E3 written here, 143 bytes decrypted
   CALL SumLayer3
-  EX (SP),HL              ; key byte 23 (a sum layer): A + 149 (the tape's
+KeyByte23:
+  DEFB $E3                ; key byte 23 (a sum layer): A + 149 (the tape's
                           ; byte), then C = $E3 written here
   CALL XorLayer
-  EX (SP),HL              ; key byte 24 (XorLayer): A + 176 (the tape's byte),
+KeyByte24:
+  DEFB $E3                ; key byte 24 (XorLayer): A + 176 (the tape's byte),
                           ; then C = $E3 written here, 143 bytes decrypted
   DEC C
   CALL SumLayer1
-
-; key byte 25 (a sum layer): A + 208 (the tape's byte), then C = $E2 written
-; here
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte25:
-  DEFB $E2
-
-; The chain after key byte 25: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $E2                ; key byte 25 (a sum layer): A + 208 (the tape's
+                          ; byte), then C = $E2 written here
 Layers26:
   CALL XorLayer
-
-; key byte 26 (XorLayer): A + 90 (the tape's byte), then C = $E2 written here,
-; 143 bytes decrypted
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte26:
-  DEFB $E2
-
-; The chain after key byte 26: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $E2                ; key byte 26 (XorLayer): A + 90 (the tape's byte),
+                          ; then C = $E2 written here, 143 bytes decrypted
 Layers27:
   SLA B
   RRC C
   SET 7,B
   CALL XorLayer
-  LD (HL),C               ; key byte 27 (XorLayer): A + 228 (the tape's byte),
+KeyByte27:
+  DEFB $71                ; key byte 27 (XorLayer): A + 228 (the tape's byte),
                           ; then C = $71 written here, 158 bytes decrypted
   CALL SumLayer2
-  LD (HL),C               ; key byte 28 (a sum layer): A + 172 (the tape's
+KeyByte28:
+  DEFB $71                ; key byte 28 (a sum layer): A + 172 (the tape's
                           ; byte), then C = $71 written here
   INC B
   SRA C
   CALL SumLayer2
-
-; key byte 29 (a sum layer): A + 163 (the tape's byte), then C = $38 written
-; here
-;
-; A key byte the static walk takes for data: no instruction of the chain runs
-; it, the layer jumps past it.
 KeyByte29:
-  DEFB $38
-
-; The chain after key byte 29: the next layer's B and C, then its CALL
-;
-; Decrypted by an earlier layer, run once.
-;
-; Witness: L1 2 (c1).
+  DEFB $38                ; key byte 29 (a sum layer): A + 163 (the tape's
+                          ; byte), then C = $38 written here
 Layers30:
   INC C
   CALL SumLayer3
-  ADD HL,SP               ; key byte 30 (a sum layer): A + 180 (the tape's
+KeyByte30:
+  DEFB $39                ; key byte 30 (a sum layer): A + 180 (the tape's
                           ; byte), then C = $39 written here
 
 ; Zero its own operand, sum $4000-$FFFF as 16-bit words into DE, decrypt

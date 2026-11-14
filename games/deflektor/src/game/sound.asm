@@ -329,12 +329,9 @@ PlaySound:
 ; kempston, menu, mine, nameedit, overload, rzx344752).
 TitleTune:
   DI
-; This entry point is used by the routine at TitleTuneNoteLoop.
 TitleTuneRestart:
   LD B,$B0
   LD IX,TitleTuneData
-
-; TitleTuneNoteLoop
 TitleTuneNoteLoop:
   PUSH BC
   LD H,(IX+$00)
@@ -421,10 +418,6 @@ NoteVoice3Off:
 NoteVoice3On:
   DJNZ NoteVoice3On
   LD D,(IX+$02)
-
-; NoteLoopEnd
-;
-; Used by the routine at PlayNote.
 NoteLoopEnd:
   POP BC                  ; the note's loop count (BC on the stack)
   DEC BC

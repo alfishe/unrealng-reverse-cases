@@ -7,8 +7,9 @@ cheat W / S and the Y + T drop.
 The recordings it rests on ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)):
 
 - `c1`, `c1g`: the options panel (3, 4, 2, 1, 7) and level 1 with the keyboard.
-- `menu` (from `work/stage1/probe/menu.szx`): SPACE (it leaves the title for the options panel), 5 DEMO, then U + G
-  (DEMO ABORTED); no code reads SPACE in the demo or in play.
+- `menu` (from `work/stage1/probe/menu.szx`): SPACE (it leaves the title for the options panel), 5 DEMO (it runs all 60 levels and ends at
+  `$856E`), then 6 and U + G in practice (AbortGame `$9811`, GAME ABORTED); no code reads SPACE in the demo or in play.
+  DEMO ABORTED (`$981F`) ran in no recording.
 - `controls`: 1 KEYBOARD, P and ENTER (the pause), U + G (GAME ABORTED), 4 PROTEK, 2 SINCLAIR; its 3 KEMPSTON did not
   take (pressed while the title was up).
 - `kempston`: 3 KEMPSTON, the cursor and a mirror moved by the joystick (port `$1F`).
@@ -217,6 +218,33 @@ only, so P2, P3 and this return are known from the code.
 
 The practice slots' energy rate is 255 (LevelSettings `$8385`): a pixel every 255 frames, 5.4 minutes for the bar.
 
+```text
+practice (PracticeFlag $8407 = 1, key 6 at $A7E5; cleared by TitleLoop $840C):
+    new_game():          Level = 60 (P1) instead of 0                  # $8424
+    set_up_level():      score = 0                                     # $84DA
+    every pass:          print PRACTICE MODE . G AND U ABORTS          # $8A68, $8E47
+    lose_life():         no life taken, the level restarts             # $86A0
+    update_overload():   a full bar sets no LifeLost                   # $A6E9
+    level_complete():    Level + 1; Level == 63 -> TitleLoop           # $887D CP $3F
+    hall_of_fame():      no entry                                      # $9BCA
+```
+
+```mermaid
+flowchart TD
+    A[options: key 6, PracticeFlag 8407 = 1] --> B[NewGame 8419: Level = 3C, slot 60, P1]
+    B --> C[SetUpLevel: score 0]
+    C --> D[the pass: PRACTICE MODE line, energy rate 255]
+    D -->|a life lost or a full overload bar| C
+    D -->|U + G| T[TitleLoop 840C: PracticeFlag = 0]
+    D -->|level done| E[LevelComplete: Level + 1]
+    E --> F{Level = 63?}
+    F -->|no: P2, P3| C
+    F -->|yes| T
+```
+
+*Practice, one flag read at six places (the hex are addresses). Witness: `practice` (P1, played to frame 2500); P2, P3 and
+Level 63 are code-only. The point: practice is the game with its losses switched off and three extra slots.*
+
 ## 5.5 The pause and the abort
 
 ReadKeys `$97F0` runs first in every pass:
@@ -265,10 +293,94 @@ flowchart TD
     J -.->|POKEd away| W[LevelCheat 9832]
 ```
 
-*ReadKeys' tests (the hex are addresses). Witness: `controls` (P at 1400, U + G at 1900), `menu` (U + G in practice
-and the demo). The point: the abort leaves by a jump with the return address dropped; the cheat sits behind a jump.*
+*ReadKeys' tests (the hex are addresses). Witness: `controls` (P at 1400, U + G at 1900), `menu` (U + G in practice;
+the demo's DEMO ABORTED branch `$981F` is code-only). The point: the abort leaves by a jump with the return address dropped; the cheat sits behind a jump.*
 
 A quirk: with P and ENTER both held, A holds the ENTER half-row when the U test runs, so bit 3 is J, not U.
+
+```asm
+PauseGame:                ; $973A
+  LD A,(DemoFlag)
+  AND A
+  RET NZ                  ; no pause in the demo
+  DI
+  LD HL,$0F3C             ; a tone
+  CALL TwoTone
+  LD HL,MessageNumber     ; save the COMPUTER line's state $A104-$A111
+  LD DE,PauseSavedMessage ; $96C7
+  LD BC,$000E
+  LDIR
+  LD A,(EnergyTick)       ; then the energy tick and the sound flags
+  LD (DE),A
+  INC DE
+  LD A,(SoundFlags)
+  LD (DE),A
+  XOR A                   ; silence, stop the line's scroll
+  LD (SoundFlags),A
+  LD (MessageState),A
+  ...                     ; save five pixel rows of 16 bytes from $50E0, print " INTERMISSION  " there
+PauseWaitRelease:
+  XOR A                   ; wait until no key is held
+  IN A,($FE)
+  CPL
+  AND $1F
+  JR NZ,PauseWaitRelease
+  CALL TitleTune          ; the pause's tune
+  LD HL,IntermissionMessage ; COMPUTER: PRESS ENTER FOR MORE ACTION
+  LD (MessageText),HL
+  EI
+PauseWaitEnter:
+  LD A,$BF                ; ENTER?
+  IN A,($FE)
+  BIT 0,A
+  JR NZ,PauseWaitEnter
+PauseResume:
+  DI
+  LD HL,$0F3C             ; a tone
+  CALL TwoTone
+  ...                     ; the five pixel rows back
+  LD HL,PauseSavedMessage ; the COMPUTER line's state back
+  LD DE,MessageNumber
+  LD BC,$000E
+  LDIR
+  LD A,(HL)               ; the energy tick and the sound flags back
+  LD (EnergyTick),A
+  INC HL
+  LD A,(HL)
+  LD (SoundFlags),A
+  EI
+  RET
+```
+
+```text
+pause_game():
+    if demo: return
+    DI; tone
+    saved = (the COMPUTER line's 14 bytes, EnergyTick, SoundFlags)
+    SoundFlags = 0; MessageState = 0
+    save the screen rows at $50E0; print INTERMISSION there
+    wait until no key is held; play the title tune (DI: timed by the CPU)
+    MessageText = PRESS ENTER FOR MORE ACTION; EI
+    wait for ENTER                             # the interrupt scrolls the line; EnergyTick counts on
+    DI; tone; restore the rows, the line's state, EnergyTick and SoundFlags; EI; return
+```
+
+```mermaid
+flowchart TD
+    A[ReadKeys: P without ENTER] --> B{DemoFlag?}
+    B -->|set| R[return: no pause in the demo]
+    B -->|clear| C[DI, a tone, save the line, EnergyTick, SoundFlags]
+    C --> D[INTERMISSION over the COMPUTER line]
+    D --> E[wait for no key, the title tune]
+    E --> F[PRESS ENTER FOR MORE ACTION, EI]
+    F --> G{ENTER?}
+    G -->|no| G
+    G -->|yes| H[DI, a tone, restore rows, line, EnergyTick, SoundFlags, EI]
+    H --> I[back into the pass]
+```
+
+*PauseGame (the hex are addresses). Witness: `controls` (P at 1400, ENTER at about 1800). The point: the pause saves
+the energy tick and puts it back, so the frames spent in it cost no energy.*
 
 PauseGame `$973A` turns the interrupts off, saves the COMPUTER line's state, the energy tick and the sound flags in
 CursorVars (`$96C7`), prints INTERMISSION over the COMPUTER line, plays the pause tune, then shows "PRESS ENTER FOR

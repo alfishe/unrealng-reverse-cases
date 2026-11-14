@@ -70,7 +70,7 @@ tools/fig_memmap.py docs/img/arch/memmap.png` (the ranges from `src/game/game.an
 | `$81FD`, `$81FF` | ControlMethod (0 keyboard, 1 Sinclair, 2 Kempston, 3 Protek), Level (0-59 the levels, 60-62 practice) | `controls`; RZX watch |
 | `$8200-$8373` | CellTable: four character codes for each cell code `$00-$5C` | RenderGrid `$8960`; [the elements](img/design/elements.png) |
 | `$8374-$8381` | the level's variables: the beam's start, the demo flag, MirrorCount, lives, FrameCounter, CellsLeft | SetUpLevel `$843C` |
-| `$8382-$AD45` | the code, with its texts and tables between the routines: LevelSettings `$8385`, the LEVEL digits `$88B0`, INTERMISSION `$972C`, the score `$9B3E`, the hall of fame `$9FEB`, the COMPUTER messages `$A10E-$A2C3`, the ending's text `$A984` | the L1 of `c1g`; 4371 instructions run |
+| `$8382-$AD45` | the code, with its texts and tables between the routines: LevelSettings `$8385`, the LEVEL digits `$88B0`, INTERMISSION `$972C`, the score `$9B3E`, the hall of fame `$9FEB`, the COMPUTER messages `$A10E-$A2C3`, the ending's text `$A984` | the L1 of every recording: 4371 distinct instructions run (`c1g` alone 2492 in this range) |
 | `$AD46-$AD78` | UnusedAD46: 51 zeros | 2.8 |
 | `$AD79-$AFFF` | TitleTune, PlayNote and TitleTuneData (176 notes) | `menu` |
 | `$B000-$D1BF` | LevelData: 64 slots of 135 bytes (15 x 9 cells): levels 1-60, practice P1-P3, slot 63 | BuildLevel `$891A`; 2.7 |
@@ -126,7 +126,7 @@ flowchart TD
     D --> E[stage 2 at B856: the countdown, the rest of the block, a hook every 7 data bytes]
     E --> F[stage 3 at 5B00: LDIR, RET]
     F --> G[stage 4 at 5C00: the block head moves the code up to FD1A]
-    G --> H[stages 5-7 at 7B52: ChainFill, 30 layers decipher the chain; FinalSum and Final16 decipher the image]
+    G --> H[stages 5-7 at 7B52: ChainFill, 30 layers: 18 decipher the chain, 12 sum memory; FinalSum and Final16 decipher the image]
     H --> I[stage 8 at FD00: move 7D00-FCFF to 6000-DFFF, SP = FFFF]
     I --> J[GameEntry 8382: JP Start]
     J --> K[Start 8408: DI, SetupInterrupts A2FA, IM 2]
@@ -257,16 +257,16 @@ The source is cut into 13 modules (`src/game/*.asm`, written by `kit/mkgame.py` 
 | levels | `levels.asm` | 9 | 120 | BuildLevel, LevelData | 0.04 % |
 | render | `render.asm` | 65 | 980 | RenderGrid, DrawMarkedChars, CopyPlayArea, the wipes, the printers, Random | 48.2 % |
 | beam | `beam.asm` | 139 | 2385 | FindLaser, OpenReceiver, TraceBeam and its steps, the cursor, the beam's tables and glyphs | 32.2 % |
-| elements | `elements.asm` | 66 | 992 | the bars (energy, overload, charge), the gremlins | 0.7 % |
+| elements | `elements.asm` | 66 | 996 | the bars (energy, overload, charge), the gremlins | 0.7 % |
 | controls | `controls.asm` | 35 | 386 | ReadKeys, PauseGame, ReadControls, the four control methods, LevelCheat | 0.06 % |
-| panel | `panel.asm` | 65 | 612 | the score, the lives, the COMPUTER messages | 0.1 % |
+| panel | `panel.asm` | 65 | 615 | the score, the lives, the COMPUTER messages | 0.1 % |
 | hiscore | `hiscore.asm` | 60 | 584 | HallOfFame, RankScore, the name entry | 0 % |
 | menu | `menu.asm` | 33 | 376 | TitleScreen, OptionsMenu, the scroller | 0 % |
 | interrupt | `interrupt.asm` | 35 | 453 | SetupInterrupts, InterruptHandler, the COMPUTER line | 2.6 % |
 | sound | `sound.asm` | 43 | 442 | PlaySound, TwoTone, PlaySweep, PlayNoise, TitleTune | 12.1 % |
 | ending | `ending.asm` | 15 | 176 | EndingScreen, the plug and the kettle | 0 % |
 
-Labels and lines: `grep -c '^[A-Za-z][A-Za-z0-9_]*:'` and `wc -l` over `src/game/*.asm` (8437 lines in the 13
+Labels and lines: `grep -c '^[A-Za-z][A-Za-z0-9_]*:'` and `wc -l` over `src/game/*.asm` (8444 lines in the 13
 modules). The point: two modules, the renderer and the beam, are 80 % of the time and two fifths of the source; the
 rest is small.
 
@@ -288,7 +288,10 @@ cursor, and the turning elements are shown at their first angle.
 
 ## 2.8 The leftovers
 
-Bytes the game carries but never uses (each checked in the L1 of every recording: never read, written or run):
+Bytes the game carries but never uses (each checked in the L1 of every recording: never read, written or run). Four
+rows are not of that kind but are listed because the game does not need them: InCornerTable `$8100-$813F` (read only
+in the clone recording `corner`), the jump at `$982F` (it runs every pass), and the code-only branches `$983E` and
+`$96B8` (never run):
 
 | Address | Size | What | Why it is there (our reading) |
 | --- | ---: | --- | --- |
@@ -313,6 +316,8 @@ Bytes the game carries but never uses (each checked in the L1 of every recording
 | `$DDA0-$DEFF` | 352 | SpareCellGraphics: zeros, characters `$D4-$FF` | CellTable names no character above `$D3` |
 | `$DF73`, `$DF80-$DF8F` | 1 + 16 | CellColours of character `$73` and of the cyan lasers `$80-$8F` | no level draws them |
 | `$DFD4-$DFFF` | 44 | SpareCellColours: zeros | characters `$D4-$FF` have no colour |
+| `$FDFB-$FDFC` | 2 | between LevelGrid and the interrupt's jump | no code reads or writes them |
+| `$FF01-$FFF2` | 242 | ChainFill's second pass (the stream), under the stack's low mark `$FFF3` | stack space never reached (2.3) |
 | `$982F` | 3 | `JP $9869`: jumps over LevelCheat `$9832` (W / S change the level) | a developer's cheat left in, switched off ([doc 5](05-controls.md)) |
 | `$983E` | | the Y + T drop of a return address | a second cheat key, never run |
 | `$96B8` | | the 40th bounce of a beam: OVERLOAD | never reached in any recording ([doc 10](10-gameplay-logic.md)) |

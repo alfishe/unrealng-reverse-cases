@@ -28,7 +28,9 @@ insets on a row of their own under them, enlarged as far as that row allows; a l
 give code at one address, the first wins). --page is for 128K pages, not for a second listing of a flat image.
 
 --sources is a heuristic: it takes the data reads of the writing routine since its previous write, outside the
-stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values. A range
+stack and outside the written byte itself. It names a sprite's graphic and mask, not computed values. A source is
+named by the nearest label or EQU name of the listing at or below it: an `@equ` variable past the image (Deflektor's
+DrawMarks `$E300`) by its own name, not as the image's last label plus an offset; an `@bank` EQU is left out. A range
 gives its first and last byte read, both included, and its length: a loop that reads one byte past its graphic (an
 outline taken from each byte and its right neighbour) shows that byte too.
 """
@@ -180,8 +182,8 @@ def main():
             spans.sort(key=lambda r: -sum(sources[k][a] for a in range(r[0], r[1] + 1)))
             # a range is the bytes read, both ends included, with its length: a routine that reads one byte past
             # its data (an outline's right neighbour) shows it (72 bytes and one more: 73)
-            text = ', '.join(f'${lo:04X}-${hi:04X} ({lst.name(lo)}, {hi - lo + 1} bytes)' if hi > lo else f'${lo:04X}'
-                             for lo, hi in spans[:4]) or 'no data reads'
+            text = ', '.join(f'${lo:04X}-${hi:04X} ({lst.data_name(lo)}, {hi - lo + 1} bytes)' if hi > lo
+                             else f'${lo:04X}' for lo, hi in spans[:4]) or 'no data reads'
             froms[k] = wrap(f'from {text}', small, width - 2 * gap - 18)
     legend_rows = len(order[:16]) * 2 + sum(len(v) for v in froms.values()) + 2
     legend_h = 18 * legend_rows

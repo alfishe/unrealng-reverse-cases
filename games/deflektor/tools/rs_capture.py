@@ -2,7 +2,7 @@
 """re_session.py capture of a tape as a user loads it (48K: LOAD "" typed; 128K: the menu's Tape Loader), the
 fast LD-BYTES trap and turbo tape set off, so every block is read from the signal by the ROM and the game's own loader
 (`c1`: the whole load in the recording at its real length), the tape stopped after --load-frames. Every other argument is
-re_session.py capture's.
+re_session.py capture's, or kit/rs.py's (--stop, --expect; the --inputs check), as the capture goes through kit/rs.py.
 
     python3 tools/rs_capture.py --work work/stage1/c1 --media TAPE --model 48K \
         --record-load --load-frames 15700 --inputs tests/inputs/c1.txt --port-base 37485 --binary $BIN
@@ -41,5 +41,8 @@ def load(m, game, media, report, args):
 
 corpus.load = load
 re_session.corpus.load = load
-sys.argv = ['re_session.py', 'capture', *sys.argv[1:]]
-re_session.main()
+# through kit/rs.py: its input check (a "+" chord split, a word that is no key refused), --stop and --expect
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'kit'))
+import rs  # noqa: E402
+sys.exit(rs.main(['--unreal', os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.environ['RS'])))),
+                  'capture', *sys.argv[1:]]))

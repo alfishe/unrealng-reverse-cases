@@ -152,16 +152,16 @@ The controls ([doc 5](05-controls.md) has the ports and the decoding):
 
 | Action | 1 Keyboard | 2 Sinclair | 3 Kempston | 4 Protek |
 | --- | --- | --- | --- | --- |
-| Cursor up / down | Q / A | 9 / 8 | up / down | 7 / 6 |
-| Cursor left / right | K / L | 6 / 7 | left / right | 5 / 8 |
-| Fire (hold) | the bottom row | 0 | fire | 0 |
-| Turn a mirror | fire + left / right | 0 + 6 / 7 | fire + left / right | 0 + 5 / 8 |
+| Cursor up / down | Q / A | 4 / 3 or 9 / 8 | up / down | 7 / 6 |
+| Cursor left / right | K / L | 1 / 2 or 6 / 7 | left / right | 5 / 8 |
+| Fire (hold) | the bottom row | 5 or 0 | fire | 0 |
+| Turn a mirror | fire + left / right | 5 + 1 / 2 or 0 + 6 / 7 | fire + left / right | 0 + 5 / 8 |
 | Pause, go on | P, ENTER | P, ENTER | P, ENTER | P, ENTER |
 | Abort | U + G | U + G | U + G | U + G |
 
 The cursor moves from cell to cell. Fire held turns the cursor into a square; then left and right turn the mirror
-under it one step a pass (16 steps a full turn). Fire on the cell of a gremlin that is turning a mirror kills the
-gremlin.
+under it one step a pass (16 steps a full turn). Fire on a gremlin's cell kills the gremlin, whether it is turning a
+mirror or not.
 
 ## 1.4 The elements
 
@@ -183,7 +183,7 @@ docs/img/design/elements.png`.*
 | Absorbing wall | `$21-$2F` | stops it | `L01` (the red walls) |
 | Reflecting wall | `$30-$3E` | reflects it | `L01` (the orange walls) |
 | Cell | `$40` | burns when the beam crosses it: points | `L01` 395 |
-| Mine | `$41` | the beam on it: the overload bar 4 steps a pass | `L01` 1336 |
+| Mine | `$41` | the beam on it: the overload bar 4 steps a pass | `L01` 1336 (the screenshot at 1346) |
 | Prism | `$42` | turns the beam by a random amount, up to 4 sixteenths either way of its direction (PrismTurn `$9014`), anew on every pass | `L` recordings (8) and RZX segments |
 | Laser | `$47-$4A` (east, south, west, north) | the beam's start; the beam back into it: overload | `L01` 262 |
 | Receiver | `$4B-$4E` (east, south, west, north) | the goal; shut by the element in front of it until the last cell burns | `L01` 1420-1520 |
@@ -227,7 +227,7 @@ receiver.*
    levels with 30 cells or more. While it burns the beam stops on it, so the cells behind it wait for the explosion
    to end.
 4. **The door.** When the last cell burns, the element in front of the receiver explodes like a cell: 250 points. In
-   the 60 levels that element is a mine (23 levels), a wall (32), a block (4) or a fibre-optic end (1).
+   the 60 levels that element is a mine (23 levels), a wall (32), a polariser (4) or a fibre-optic end (1).
 5. **Contact.** The beam into the receiver's open side: CONTACT!, the field turns magenta, every pixel of energy left
    is 10 points, every life left 500 points. Then the next level, with three lives.
 
@@ -371,7 +371,7 @@ Patterns read from the table:
   cell) and the mirror fields (5, 10, ..., 55: 60-66 mirrors, so the charge scrambles at 1 in 8). Level 59 has 72
   mirrors, practice P2 is a mirror field too.
 - No gremlins on levels 1, 2, 21, 26, 51, 56; eight on levels 52 and 60.
-- The energy rate runs from 70 to 140 frames a pixel; the slowest levels (130-140) cluster from level 19 on.
+- The energy rate runs from 70 to 140 frames a pixel; the slowest levels (130-140) cluster from level 14 on.
 - Level 60 is 94 cells and 26 prisms: the beam scatters at random until the field is clear.
 
 ## 1.7 How a level is solved
@@ -416,8 +416,9 @@ column 3). The point: one step of one mirror moves the end of the beam from a wa
 Levels completed this way by the bot, each a replayable recording `work/stage2/rec/LNN`: 1, 3, 5, 6, 9, 10, 12, 15,
 20, 22, 25, 30, 31, 35, 39, 42, 45, 51, 55, 59. Six more (19, 24, 34, 40, 49, 54) the bot finished live, but its
 script does not reach the receiver when it is replayed (gremlin levels: a gremlin turns another mirror in the replay),
-so they are no witness and no document cites them. The other 40 levels were completed by the RZX player (stage 1, 60
-segments, someone else's play); on the bot's clones they were skipped by a POKE of LevelDone `$8ED2`.
+so they are no witness and no document cites them. All 60 levels were completed by the RZX player (stage 1, 60
+segments, someone else's play). Of the bot's other 40 levels, 6 were finished live (above) and 34 were skipped on a
+clone by a POKE of LevelDone `$8ED2` ([WALKTHROUGH 6.0](../WALKTHROUGH.md#60-the-recordings)).
 
 ## 1.8 Modes and difficulty
 
@@ -425,7 +426,7 @@ segments, someone else's play); on the bot's clones they were skipped by a POKE 
 | --- | --- | --- | --- | --- |
 | Game | 7 | levels 1-60, three lives a level, the energy and overload bars | NewGame `$8419` | `c1`, the L recordings |
 | Practice | 6 | levels P1-P3 (slots 60-62); energy rate 255 (a pixel every 5.1 s); a full overload bar takes no life; after P3 the title | PracticeFlag `$8407`, `$8424`, `$A7E3` | `practice` (P1 played to frame 2500) |
-| Demo | 5 | every level for one pass while it charges; U + G stops it (DEMO ABORTED, AbortGame `$981F`), else it ends after level 60 (`$856E`) | `$8379`, MainLoop `$855F` | `menu` (60 levels) |
+| Demo | 5 | every level for one pass while it charges; U + G would stop it (DEMO ABORTED, AbortGame `$981F`: code-only, no recording aborts the demo), else it ends after level 60 (`$856E`) | `$8379`, MainLoop `$855F` | `menu` (60 levels, to `$856E`) |
 
 The difficulty grows by the puzzles, not by the rules: the rules and the scoring are the same on every level; only the
 field, the energy rate and the gremlin count change.
@@ -436,5 +437,7 @@ field, the energy rate and the gremlin count change.
 - The Y + T level drop `$983E`: never run. The W / S level cheat `$9832` is dormant (jumped over at `$982F`); it ran
   only on a clone with the jump POKEd away (`work/stage2/rec/cheat`, [doc 5](05-controls.md)).
 - Practice levels P2 and P3 (P1 only, in `practice`).
+- DEMO ABORTED `$981F`: no recording aborts the demo (`menu` runs it to its end at `$856E`; its U + G at `$9811`
+  aborts practice).
 - The 40th bounce of a beam (`$96B8`, [doc 10](10-gameplay-logic.md)).
 - Slot 63: no code sets Level `$81FF` to 63 before a level is set up.

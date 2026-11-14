@@ -27,8 +27,34 @@ copy here would drift from the binary. `python3 kit/rs.py ARGS` runs it from the
 there with the line and the reason (`a.txt:12: "W,O" is no key: the keys are A-Z 0-9 ENTER SPACE CS SS and the
 Kempston KF KL KR KU KD, keys held together separated by spaces ("W O") or joined by "+" ("W+O") ...`), not in the
 emulator's `Unknown key 'w,o'`; a chord `W+O` (zx-reaper's form, which `mm_session.py` does not take) goes over as a
-copy of the script in `W/inputs/` with the keys separated by spaces (`kitlib.input_script`, `plain_input_script`;
-`input_vars.py` reads `W+O` as W and O too).
+copy of the script in `W/inputs/` with the keys separated by spaces (`kitlib.capture_inputs`, `input_script`,
+`plain_input_script`; `input_vars.py` reads `W+O` as W and O too). The check is the kit's: a `python3 $RS capture`
+that runs unreal-ng's `re_session.py` itself (a `work/env.sh` that sets `$RS` to it) bypasses it, and a case's
+wrapper that imports `re_session` (one that replaces `corpus.load`, Deflektor's `tools/rs_capture.py`) gets it by
+ending with `rs.main(['capture', ...])` instead of `re_session.main()`.
+
+`capture` takes three options of the kit's own, which `rs.py` takes out before `re_session.py` sees the rest:
+
+- `--stop`: the instance the capture launched is stopped when the capture is done (`re_session.py stop`). Without
+  it the instance stays up, as `re_session.py` leaves it, for `build`, `call` and `export` on the live recording; a
+  batch of captures on one port base needs `--stop` (or a `stop` after each).
+- `--expect STATE[@FRAME]` (repeat for several): the replay check. STATE is the live run's saved state (an SZX
+  snapshot, or a dump of 65536 or 49152 bytes: `kitlib.memory_image`), FRAME the count of frames into the input
+  scripts at which the live run saved it (the scripts one after another from the first one's frame 0, as
+  `re_session.py` plays them; without `@FRAME`, the scripts' end). The capture stops there, reads its 64 K and
+  compares: `replay check: L21.szx at frame 2097: identical`, or
+  `2765 bytes differ ($4041-$404C, ...; first $4041 live 00 replay 0F, ...)`. The results go to
+  `W/replay-check.json`, and a difference makes `rs.py` exit with
+  status 3 once the capture's files are written. A bot that saves the state at each event and writes its keys from
+  the previous save as a script gives both (Deflektor's `tools/play_levels.py`: `LNN.szx` at a level's start,
+  `LNN.txt` ending 50 frames after the next level's start, so `--expect L(N+1).szx@(END - 50)`; its level 19
+  differs, level 20 is identical).
+- `--expect-ranges LO-HI[,LO-HI ...]`: the addresses compared (hex, inclusive; default `4000-FFFF`).
+
+```bash
+python3 ../../kit/rs.py capture --work work/stage2/rec/L20 --snapshot work/stage2/lv/L20.szx \
+    --inputs work/stage2/lv/L20.txt --ranges 4000-FFFF --port-base 37490 --stop --expect work/stage2/lv/L21.szx@2097
+```
 
 The annotation file these scripts read is described in [docs/ann-format.md](../docs/ann-format.md) (every directive,
 what the generator does with it, the part files); every file of a case and the command that makes it in
@@ -47,7 +73,8 @@ what the generator does with it, the part files); every file of a case and the c
 | `resinc.py` (a module) | the `.inc` of an `@res NAME.bin include` resource: `lines(items)` writes `DB` / `DW` / label lines (a word may be a label's name), `symbols(case)` gives the `.ann`'s names and each resource's inner labels by offset; `Symbols(case).add(ann, lo, hi)` writes and reads an address of an editable form as a name (`word($CCDA)` is `SharedModels+591`, `value()` the address again); the case's `res_formats.py build` calls it |
 | `ctl2ann.py DRAFT.ctl --out F.ann` | a first `.ann` from `re_session.py`'s `draft.ctl` (or an L2 export JSON) |
 | `toolpaths.py` | finds sjasmplus, the SkoolKit venv, unreal-ng and its `re_session.py` (above) |
-| `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords |
+| `rs.py ARGS` | runs unreal-ng's `re_session.py` with ARGS (`open`, `build`, `stop`, ...; above); checks `capture --inputs` scripts and splits their `W+O` chords; `capture --stop` stops the instance after it, `capture --expect STATE[@FRAME]` checks that the replay reaches the live run's state |
+| `z80sim.py` (a module) | SkoolKit's simulator for a case's tools: `run(memory, start, stop, registers)` gives the memory after the run, `simulator(memory, registers)` one for several runs. `CSimulator` (SkoolKit's C one, about 50 times faster) works on its own copy of the memory: read and poke through `sim.memory`, never the bytearray passed in (`python3 kit/z80sim.py --self-test` shows it); the pure Python `Simulator` works in that bytearray itself. SkoolKit is found as `toolpaths.py` finds the venv |
 | `ann_names.py --case C ADDR=Name ...` | names labels inside entries of `game.ann` |
 | `input_vars.py --work W --inputs S --start F` | the bytes that follow the held directions and fire over a scripted recording: a first guess at the player's coordinates (a 16-bit coordinate, or one that moves only now and then, scores low: confirm in the code that reads the controls) |
 | `refdocs.py --case C` | docs 11 and 12 from `game.ann`, the parts of `ref_parts` and the recordings (below); doc 12 links `docs/img/routines/<Label>.gif` and every `<Label>-<what>.gif` |
@@ -94,6 +121,13 @@ last bytes run there, the runs of all): mkgame prints the witnessed entries whos
 frame windows of it (`kit/rs.py build --from-frame F --to-frame G --into work/stage1/c1/load`, given as
 `witness_builds`, the whole recording as `witness_skip`) keep two programs at one address apart (Myth's loader
 pieces, its resident over the SpeedLock chain, its front under stage 1).
+
+The summary line counts the entries of the control file mkgame writes, and says where they are not the `.ann`'s:
+`entries 240 (233 from the .ann, 7 where code and data meet, a CALL lands or a recording enters: $8A12 ...)`. A
+routine root that only a snapshot-started recording marks (its L1 `kinds` `root`, or a jump only from inside the
+root's own routine: the loop of the routine the snapshot was taken in, cut in two) makes no entry where the code
+before it falls into it; the `.ann` or a CALL still makes one there (Deflektor: `$842C`, `$890A`, `$890C`, `$AD80`,
+`$ADE8`, 238 entries before, 233 now).
 
 `--install` writes the modules, `game.asm` and the resources (through the json's `res_install`, else `case.json`'s,
 else the case's `tools/res_formats.py`; a part with resources and none of these prints `WARNING: N resources not
@@ -254,6 +288,11 @@ page combine: the listing names the code (routine_anim shows its lines) and NAME
 the trace's start page, then each `OUT` to `$7FFD`. With either option a plain `--pc` range at `$C000-$FFFF` is RAM
 0's and `--pc N:LO-HI` is RAM N's: `--listing build/game.lst --page 6=build/music.lst --pc 6:C000-CD60` follows
 Terramex's music player in RAM 6 while the game's code at the same addresses counts as "other".
+
+`writers_map.py --sources` names a source range by the nearest label or EQU name of the listing at or below it
+(`Listing.data_name`): a variable past the image that the `.ann` gives with `@equ` is named by it (Deflektor's
+DrawMarks `$E300-$E359`, not SpareCellColours+812, the image's last label plus an offset); `@bank` EQUs are left
+out. A code address is still named by the nearest label (`Listing.name`, `routine`).
 
 Several listings of one flat image (`routine_anim.py`, `beam_timeline.py`, `writers_map.py`): `--listing` given more
 than once merges them by address, each naming its own code (where two give code at one address, the first wins):

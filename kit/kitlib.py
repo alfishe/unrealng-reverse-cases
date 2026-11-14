@@ -28,7 +28,7 @@ def unreal_root(hint=None):
 # Input scripts (mm_session.py's, zx-reaper's tests/inputs format): "FRAME KEYS..." holds the keys until the next
 # line, "FRAME -" releases all, "FRAME END" ends, "+N" counts from the previous line. Keys held together are
 # separated by spaces ("100 W O"); "W+O" is the same chord (zx-reaper's form), which mm_session.py does not take:
-# kit/rs.py capture hands it a copy with the chords split
+# kit/rs.py capture (capture_inputs) hands it a copy with the chords split
 INPUT_KEYS = {chr(c) for c in range(ord('A'), ord('Z') + 1)} | set('0123456789') | \
     {'ENTER', 'SPACE', 'CS', 'SS', 'KF', 'KL', 'KR', 'KU', 'KD'}
 
@@ -65,6 +65,31 @@ def input_script(path):
             keys += [k.upper() for k in parts]
         lines.append((frame, keys, text))
     return lines, problems
+
+
+def capture_inputs(args):
+    """re_session.py capture's arguments with its --inputs scripts checked (input_script): a word that is no key
+    stops here with the line and the reason (SystemExit), not in the emulator's "Unknown key"; a script with "+"
+    chords ("W+O") is replaced by a copy with the chords split, in W/inputs/. Other commands go through unchanged.
+    kit/rs.py calls it; so does a case's own capture wrapper that imports re_session (it never sees rs.py)"""
+    if not args or args[0] != 'capture' or '--inputs' not in args:
+        return list(args)
+    work = args[args.index('--work') + 1] if '--work' in args[:-1] else '.'
+    out, k = list(args), args.index('--inputs') + 1
+    problems = []
+    while k < len(out) and not out[k].startswith('--'):
+        path = out[k]
+        lines, bad = input_script(path)
+        problems += bad
+        if not bad and any(len(w.split('+')) > 1 for _, _, text in lines for w in text.split()[1:]):
+            os.makedirs(os.path.join(work, 'inputs'), exist_ok=True)
+            out[k] = os.path.join(work, 'inputs', os.path.basename(path))
+            plain_input_script(path, out[k])
+            print(f'{path}: its "+" chords split into {out[k]}')
+        k += 1
+    if problems:
+        raise SystemExit('\n'.join(problems))
+    return out
 
 
 def plain_input_script(path, out):
@@ -110,6 +135,9 @@ def parse_moment(text, frame_t):
 # line number, address, the bytes column (hex pairs, its width varies with sjasmplus's layout), the source
 LINE = re.compile(r'^\s*\d+\+*\s+([0-9A-F]{4}) ((?:[0-9A-F]{2}(?: |$))*)\s*(.*)$')
 LABEL = re.compile(r'^([A-Za-z_][\w.]*):')
+# an address name of the top file: 'Name  EQU $XXXX' (mkgame.py's @equ, @const lines); an @bank line ('; bank N')
+# names another bank's address and is left out
+EQU = re.compile(r'^([A-Za-z_]\w*)\s+EQU\s+\$([0-9A-Fa-f]{4})\b\s*(;.*)?$')
 
 
 def buffer_cells(base, width, height, order='rows'):
@@ -182,10 +210,15 @@ class Listing:
         self.lines = []
         self.code_line = {}  # address -> index into lines of the instruction there
         self.labels = []     # (address, name), sorted, global labels only (no '.')
+        self.equates = {}    # address -> name: the EQU names of addresses (the .ann's @equ, @const)
         for one in ([path] if isinstance(path, str) else path):
             self._read(one)
         self.labels.sort()
         self._label_addresses = [a for a, _ in self.labels]
+        names = dict(self.equates)
+        names.update({a: n for a, n in self.labels})  # a label wins over an EQU of its address
+        self._data = sorted(names.items())
+        self._data_addresses = [a for a, _ in self._data]
 
     def _read(self, path):
         for raw in open(path, encoding='utf-8', errors='replace'):
@@ -193,6 +226,10 @@ class Listing:
             if not m:
                 continue
             address, data, source = int(m.group(1), 16), m.group(2).strip(), m.group(3).strip()
+            equ = EQU.match(source)
+            if equ and not (equ.group(3) or '').startswith('; bank '):
+                self.equates.setdefault(int(equ.group(2), 16), equ.group(1))
+                continue
             label = LABEL.match(source)
             if label:
                 self.lines.append((address, 'label', label.group(1)))
@@ -220,6 +257,15 @@ class Listing:
         base, label = self.labels[i]
         return label if base == address else f'{label}+{address - base}'
 
+    def data_name(self, address):
+        """label or label+offset for data: the nearest label or EQU name (an @equ past the image: DrawMarks+21, not
+        the last label of the image + 789) at or before address"""
+        i = bisect_right(self._data_addresses, address) - 1
+        if i < 0:
+            return f'${address:04X}'
+        base, name = self._data[i]
+        return name if base == address else f'{name}+{address - base}'
+
     def window(self, address, rows):
         """rows listing lines round the instruction at address: [(address, kind, text, is_current)]"""
         at = self.code_line.get(address)
@@ -238,7 +284,7 @@ class NoListing:
     def routine(self, address):
         return f'${address:04X}'
 
-    name = routine
+    name = data_name = routine
 
     def window(self, address, rows):
         return []
@@ -352,6 +398,42 @@ class PagedListing:
         if page in self.names and page not in self.pages:
             return []
         return [(a + PAGED * page if page and a >= 0xC000 else a, k, t, c) for a, k, t, c in lst.window(address, rows)]
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# memory images: a snapshot's or a dump's 64 K
+
+def memory_image(path):
+    """The 64 K the Z80 sees in a saved state: an SZX snapshot (RAM 5 at $4000, 2 at $8000, and at $C000 RAM 0 or,
+    on a 128K, the page the last OUT to $7FFD chose; the ROM area left zero), or a dump of 65536 bytes (the whole
+    memory) or 49152 (from $4000)"""
+    import struct
+    import zlib
+    data = open(path, 'rb').read()
+    mem = bytearray(0x10000)
+    if data[:4] != b'ZXST':
+        if len(data) == 0x10000:
+            mem[:] = data
+        elif len(data) == 0xC000:
+            mem[0x4000:] = data
+        else:
+            raise SystemExit(f'{path}: neither an SZX snapshot nor a 64 K / 48 K memory dump ({len(data)} bytes)')
+        return mem
+    pages, top = {}, 0
+    pos = 8
+    while pos + 8 <= len(data):
+        bid, size = data[pos:pos + 4], struct.unpack_from('<I', data, pos + 4)[0]
+        body = data[pos + 8:pos + 8 + size]
+        if bid == b'RAMP':
+            flags, page = struct.unpack_from('<HB', body, 0)
+            pages[page] = zlib.decompress(body[3:]) if flags & 1 else body[3:]
+        elif bid == b'SPCR':
+            top = body[1] & 7  # ch7ffd
+        pos += 8 + size
+    for page, base in ((5, 0x4000), (2, 0x8000), (top, 0xC000)):
+        if page in pages:
+            mem[base:base + 0x4000] = pages[page][:0x4000]
+    return mem
 
 
 # ---------------------------------------------------------------------------------------------------------------

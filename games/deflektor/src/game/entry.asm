@@ -115,11 +115,8 @@ NewGame:
 NewGameLevel:
   LD (Level),A            ; Level = 0, or $3C for practice
   CALL Delay              ; two Delays
-
-; NewGameDelay2
 NewGameDelay2:
-  CALL Delay              ; the second Delay (a split entry: snapshot-started
-                          ; recordings mark a routine root here)
+  CALL Delay              ; the second Delay
   CALL ClearSavedScore    ; the saved score cleared: the game starts at 0
 
 ; Draw the bottom panel afresh, blank the COMPUTER line, interrupts on; into

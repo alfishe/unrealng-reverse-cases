@@ -16,6 +16,10 @@
 @isub $7C15 LD HL,$4000
 @isub $7C54 LD HL,$4000
 @isub $7CAD LD HL,$4000
+@inline $7B84 1 ; XorLayer: the key byte after each CALL is data (it writes C there and jumps past it)
+@inline $7BD2 1 ; SumLayer1, the same
+@inline $7C15 1 ; SumLayer2
+@inline $7C54 1 ; SumLayer3
 
 @module head ; The main block's head: where it is, and the chain moved up to $7B52
 @about The loader's last step (MoveStub $5B00: LDIR; RET) returns to $5C00 with the turbo block's sixth and seventh loads in place: $5C00-$9BFF and $9C00-$9DEF, the eighth's first $1F0 bytes at $C000-$FFFF (src/loader/stage2.ann). The block is encrypted except these 39 bytes: BlockHead works out its own address (a POP HL; JP (HL) planted in the printer buffer, so the block runs wherever it is loaded) and copies the rest of the block, $5C27-$DDEF, up to $7B52-$FD1A with LDDR (the two ranges overlap: the copy runs backwards), then returns into the copy at $7B52, the chain.
@@ -58,88 +62,70 @@ $7B99 t ChainText ; "COPYRIGHT D.G.COOKE 1987" after a plant byte: ChainLayers w
 
 $7BB2 c ChainLayers ; The 30 layers in turn: each CALL is followed by its key byte, and the code after it exists only once the call returns
 > 1. `$CB` at ChainText (the plant), BC = `$46D9` with bit 7 of B set: the first XorLayer.
-> 2. Then layer after layer, B and C changed by shifts and increments between the calls (EXX, OR E and the like are key bytes, not code: XorLayer writes C over them and jumps past). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
+> 2. Then layer after layer, B and C changed by shifts and increments between the calls (the key byte after each CALL is data, `@inline`: the layer writes C over it and jumps past it; read as code it would be an EXX, an OR E and the like). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
 > 3. After the 30th layer (at `$7CA2`): FinalSum.
 > c1: 30 layers, incoming A = 0 each (src/head/keys.txt).
 > Witness: L1 2 (c1).
-$7BBF ; key byte 1 (XorLayer): A + 115 (the tape's byte), then C = $D9 written here, 198 bytes decrypted
-$7BC7 ; key byte 2 (XorLayer): A + 69 (the tape's byte), then C = $D9 written here, 227 bytes decrypted
-$7BCF ; key byte 3 (XorLayer): A + 210 (the tape's byte), then C = $B3 written here, 241 bytes decrypted
+$7BBF KeyByte1 ; key byte 1 (XorLayer): A + 115 (the tape's byte), then C = $D9 written here, 198 bytes decrypted
+$7BC7 KeyByte2 ; key byte 2 (XorLayer): A + 69 (the tape's byte), then C = $D9 written here, 227 bytes decrypted
+$7BCF KeyByte3 ; key byte 3 (XorLayer): A + 210 (the tape's byte), then C = $B3 written here, 241 bytes decrypted
 $7BD2 c SumLayer1 ; A + B + the sum of every (C + 1)th byte from $4000 to $FFFF, then the key byte at the return address, C written over it
 > In: A the key, B, C the step - 1. HL = `$4000`, DE = C + 1; A + B, then A + (HL) until HL carries out past `$FFFF`; A + (return address), (return address) = C, `JP` past it.
 > SumLayer2 `$7C15` and SumLayer3 `$7C54` are the same code at other addresses (the chain's own bytes take part in the sums, so three copies give three different chains of keys).
 > Witness: L1 12 (c1).
 $7BD9 SumLayer1Loop
-$7BE3 ChainLayers2 ; the chain goes on past SumLayer1
-$7BE8 ; key byte 4 (XorLayer): A + 67 (the tape's byte), then C = $D9 written here, 241 bytes decrypted
-$7BEF b KeyByte5 ; key byte 5 (XorLayer): A + 223 (the tape's byte), then C = $DA written here, 248 bytes decrypted
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7BF0 c Layers6 ; The chain after key byte 5: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
+$7BE3 c ChainLayers2 ; The chain goes on past SumLayer1 (jumped over by a JR): the next layers
+> Part of ChainLayers, cut by the sum layer that sits inside the run.
 > Witness: L1 2 (c1).
-$7BF5 ; key byte 6 (a sum layer): A + 87 (the tape's byte), then C = $B5 written here
-$7BFA ; key byte 7 (XorLayer): A + 250 (the tape's byte), then C = $B5 written here, 249 bytes decrypted
-$7C02 b KeyByte8 ; key byte 8 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C03 c Layers9 ; The chain after key byte 8: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
-> Witness: L1 2 (c1).
-$7C06 b KeyByte9 ; key byte 9 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C07 c Layers10 ; The chain after key byte 9: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
-> Witness: L1 2 (c1).
-$7C0C b KeyByte10 ; key byte 10 (XorLayer): A + 3 (the tape's byte), then C = $DA written here, 241 bytes decrypted
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C0D c Layers11 ; The chain after key byte 10: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
-> Witness: L1 2 (c1).
-$7C12 ; key byte 11 (XorLayer): A + 69 (the tape's byte), then C = $6D written here, 241 bytes decrypted
+$7BE8 KeyByte4 ; key byte 4 (XorLayer): A + 67 (the tape's byte), then C = $D9 written here, 241 bytes decrypted
+$7BEF KeyByte5 ; key byte 5 (XorLayer): A + 223 (the tape's byte), then C = $DA written here, 248 bytes decrypted
+$7BF0 Layers6
+$7BF5 KeyByte6 ; key byte 6 (a sum layer): A + 87 (the tape's byte), then C = $B5 written here
+$7BFA KeyByte7 ; key byte 7 (XorLayer): A + 250 (the tape's byte), then C = $B5 written here, 249 bytes decrypted
+$7C02 KeyByte8 ; key byte 8 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
+$7C03 Layers9
+$7C06 KeyByte9 ; key byte 9 (a sum layer): A + 121 (the tape's byte), then C = $DA written here
+$7C07 Layers10
+$7C0C KeyByte10 ; key byte 10 (XorLayer): A + 3 (the tape's byte), then C = $DA written here, 241 bytes decrypted
+$7C0D Layers11
+$7C12 KeyByte11 ; key byte 11 (XorLayer): A + 69 (the tape's byte), then C = $6D written here, 241 bytes decrypted
 $7C15 c SumLayer2 ; A copy of SumLayer1
 > The same eleven instructions as SumLayer1 `$7BD2`.
 > Witness: L1 6 (c1).
 $7C1C SumLayer2Loop
-$7C26 ChainLayers3 ; the chain goes on past SumLayer2
-$7C2D b KeyByte12 ; key byte 12 (XorLayer): A + 119 (the tape's byte), then C = $36 written here, 227 bytes decrypted
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C2E c Layers13 ; The chain after key byte 12: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
+$7C26 c ChainLayers3 ; The chain goes on past SumLayer2 (jumped over by a JR): the next layers
+> Part of ChainLayers, cut by the sum layer that sits inside the run.
 > Witness: L1 2 (c1).
-$7C32 ; key byte 13 (a sum layer): A + 91 (the tape's byte), then C = $37 written here
-$7C37 ; key byte 14 (XorLayer): A + 209 (the tape's byte), then C = $37 written here, 228 bytes decrypted
-$7C3F ; key byte 15 (XorLayer): A + 203 (the tape's byte), then C = $1B written here, 200 bytes decrypted
-$7C45 ; key byte 16 (XorLayer): A + 214 (the tape's byte), then C = $1B written here, 228 bytes decrypted
-$7C4B ; key byte 17 (a sum layer): A + 220 (the tape's byte), then C = $E3 written here
-$7C51 ; key byte 18 (a sum layer): A + 248 (the tape's byte), then C = $E3 written here
+$7C2D KeyByte12 ; key byte 12 (XorLayer): A + 119 (the tape's byte), then C = $36 written here, 227 bytes decrypted
+$7C2E Layers13
+$7C32 KeyByte13 ; key byte 13 (a sum layer): A + 91 (the tape's byte), then C = $37 written here
+$7C37 KeyByte14 ; key byte 14 (XorLayer): A + 209 (the tape's byte), then C = $37 written here, 228 bytes decrypted
+$7C3F KeyByte15 ; key byte 15 (XorLayer): A + 203 (the tape's byte), then C = $1B written here, 200 bytes decrypted
+$7C45 KeyByte16 ; key byte 16 (XorLayer): A + 214 (the tape's byte), then C = $1B written here, 228 bytes decrypted
+$7C4B KeyByte17 ; key byte 17 (a sum layer): A + 220 (the tape's byte), then C = $E3 written here
+$7C51 KeyByte18 ; key byte 18 (a sum layer): A + 248 (the tape's byte), then C = $E3 written here
 $7C54 c SumLayer3 ; A copy of SumLayer1
 > The same eleven instructions as SumLayer1 `$7BD2`.
 > Witness: L1 6 (c1).
 $7C5B SumLayer3Loop
-$7C65 ChainLayers4 ; the chain goes on past SumLayer3
-$7C6A ; key byte 19 (a sum layer): A + 48 (the tape's byte), then C = $E3 written here
-$7C70 ; key byte 20 (XorLayer): A + 233 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
-$7C74 ; key byte 21 (XorLayer): A + 116 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
-$7C7A ; key byte 22 (XorLayer): A + 241 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
-$7C7E ; key byte 23 (a sum layer): A + 149 (the tape's byte), then C = $E3 written here
-$7C82 ; key byte 24 (XorLayer): A + 176 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
-$7C87 b KeyByte25 ; key byte 25 (a sum layer): A + 208 (the tape's byte), then C = $E2 written here
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C88 c Layers26 ; The chain after key byte 25: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
+$7C65 c ChainLayers4 ; The chain goes on past SumLayer3 (jumped over by a JR): the next layers
+> Part of ChainLayers, cut by the sum layer that sits inside the run.
 > Witness: L1 2 (c1).
-$7C8B b KeyByte26 ; key byte 26 (XorLayer): A + 90 (the tape's byte), then C = $E2 written here, 143 bytes decrypted
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7C8C c Layers27 ; The chain after key byte 26: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
-> Witness: L1 2 (c1).
-$7C95 ; key byte 27 (XorLayer): A + 228 (the tape's byte), then C = $71 written here, 158 bytes decrypted
-$7C99 ; key byte 28 (a sum layer): A + 172 (the tape's byte), then C = $71 written here
-$7CA0 b KeyByte29 ; key byte 29 (a sum layer): A + 163 (the tape's byte), then C = $38 written here
-> A key byte the static walk takes for data: no instruction of the chain runs it, the layer jumps past it.
-$7CA1 c Layers30 ; The chain after key byte 29: the next layer's B and C, then its CALL
-> Decrypted by an earlier layer, run once.
-> Witness: L1 2 (c1).
-$7CA5 ; key byte 30 (a sum layer): A + 180 (the tape's byte), then C = $39 written here
+$7C6A KeyByte19 ; key byte 19 (a sum layer): A + 48 (the tape's byte), then C = $E3 written here
+$7C70 KeyByte20 ; key byte 20 (XorLayer): A + 233 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C74 KeyByte21 ; key byte 21 (XorLayer): A + 116 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C7A KeyByte22 ; key byte 22 (XorLayer): A + 241 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C7E KeyByte23 ; key byte 23 (a sum layer): A + 149 (the tape's byte), then C = $E3 written here
+$7C82 KeyByte24 ; key byte 24 (XorLayer): A + 176 (the tape's byte), then C = $E3 written here, 143 bytes decrypted
+$7C87 KeyByte25 ; key byte 25 (a sum layer): A + 208 (the tape's byte), then C = $E2 written here
+$7C88 Layers26
+$7C8B KeyByte26 ; key byte 26 (XorLayer): A + 90 (the tape's byte), then C = $E2 written here, 143 bytes decrypted
+$7C8C Layers27
+$7C95 KeyByte27 ; key byte 27 (XorLayer): A + 228 (the tape's byte), then C = $71 written here, 158 bytes decrypted
+$7C99 KeyByte28 ; key byte 28 (a sum layer): A + 172 (the tape's byte), then C = $71 written here
+$7CA0 KeyByte29 ; key byte 29 (a sum layer): A + 163 (the tape's byte), then C = $38 written here
+$7CA1 Layers30
+$7CA5 KeyByte30 ; key byte 30 (a sum layer): A + 180 (the tape's byte), then C = $39 written here
 $7CA6 c FinalSum ; Zero its own operand, sum $4000-$FFFF as 16-bit words into DE, decrypt $7D00-$FD19 with it, jump to the last word + $7A3D
 > 1. DE = A (the 30th layer's A; E = 146 on the tape: the operand at `$7CA7` was 200 when it ran as part of the sums), A = 0 stored into that operand (`$7CA7`), so the sum below does not count it.
 > 2. HL = `$4000`, BC = 1: DE + the word at HL, HL + 2, to `$FFFF`. On the tape DE = `$43FB` (src/head/keys.txt key16).

@@ -776,14 +776,8 @@ TheEndKeys:
 ; hof, kempston, menu, mine, nameedit, overload, practice, L x20, rzx x60).
 Delay:
   LD C,$FF
-
-; DelayOuter
-;
-; Used by the routine at DelayInner.
 DelayOuter:
   LD B,$FF
-
-; DelayInner
 DelayInner:
   DJNZ DelayInner
   DEC C

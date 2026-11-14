@@ -228,7 +228,7 @@ $8419 c NewGame ; Three lives, the first level (or practice slot 60), the saved 
 > Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice).
 $8426 NewGameLevel ; Level = 0, or $3C for practice
 $8429 ; two Delays
-$842C NewGameDelay2 ; the second Delay (a split entry: snapshot-started recordings mark a routine root here)
+$842C NewGameDelay2 ; the second Delay
 $842F ; the saved score cleared: the game starts at 0
 $8432 c LevelPanel ; Draw the bottom panel afresh, blank the COMPUTER line, interrupts on; into SetUpLevel
 > From NewGame and LevelCompletePause (`$8882`, after a level's bonus). `$A50C` copies the panel's picture `$7B80` (four character rows, the LEVEL, LIVES, OVERLOAD, ENERGY, SCORE, HIGH and COMPUTER fields, three full life bars) to the screen's rows 20-23 with its attributes; MessageText `$A10E` = `$A199` (a blank line of three spaces that loops); `EI`. Falls into SetUpLevel.

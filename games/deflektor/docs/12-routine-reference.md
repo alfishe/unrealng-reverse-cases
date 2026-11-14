@@ -18,11 +18,11 @@ and its recordings.
 | [`menu`](#menu) | `$6000`-`$7B7F`, `$9ED8`-`$A021`, `$A053`-`$A102`, `$A729`-`$A83E` | 3 of 12 |
 | [`panel`](#panel) | `$7B80`-`$7FFF`, `$866A`-`$87D3`, `$88B0`-`$8907`, `$9AF1`-`$9B75`, `$A103`-`$A2F9`, `$A50C`-`$A52E` | 8 of 43 |
 | [`beam`](#beam) | `$8000`-`$81B7`, `$8AC1`-`$8B9A`, `$8EBF`-`$9013`, `$9014`-`$9739`, `$9910`-`$9A56`, `$D500`-`$D6FF` | 30 of 44 |
-| [`mainloop`](#mainloop) | `$81B8`-`$81D3`, `$81FF`-`$81FF`, `$8374`-`$8381`, `$843C`-`$8669`, `$87D4`-`$88AF`, `$8908`-`$8911` | 8 of 25 |
-| [`sound`](#sound) | `$81D4`-`$81FC`, `$A83F`-`$A8CD`, `$AD79`-`$AFFF` | 10 of 21 |
+| [`mainloop`](#mainloop) | `$81B8`-`$81D3`, `$81FF`-`$81FF`, `$8374`-`$8381`, `$843C`-`$8669`, `$87D4`-`$88AF`, `$8908`-`$8911` | 6 of 23 |
+| [`sound`](#sound) | `$81D4`-`$81FC`, `$A83F`-`$A8CD`, `$AD79`-`$AFFF` | 8 of 19 |
 | [`controls`](#controls) | `$81FD`-`$81FE`, `$973A`-`$990F` | 5 of 7 |
 | [`render`](#render) | `$8200`-`$8373`, `$8960`-`$8AC0`, `$8B9B`-`$8EBE`, `$D200`-`$D4FF`, `$D700`-`$DFFF` | 13 of 30 |
-| [`entry`](#entry) | `$8382`-`$843B` | 6 of 8 |
+| [`entry`](#entry) | `$8382`-`$843B` | 5 of 7 |
 | [`levels`](#levels) | `$8912`-`$895F`, `$B000`-`$D1FF` | 1 of 4 |
 | [`elements`](#elements) | `$9A57`-`$9AF0`, `$A506`-`$A50B`, `$A52F`-`$A728`, `$AAE3`-`$AD78` | 13 of 25 |
 | [`hiscore`](#hiscore) | `$9B76`-`$9ED7`, `$A022`-`$A052` | 7 of 10 |
@@ -194,7 +194,7 @@ Witness: L1 13 (c1, c1g, controls, energy, energy-out, kempston, menu, practice,
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 167 t-states own (0.00 %) |
 | Runs (the other recordings) | 12 calls (`stage1/controls` 3, `docs/dfA/rec/practice` 2, `stage1/menu` 2 and 5 more) |
-| Called from | `NewGameDelay2`, `SetUpLevel` |
+| Called from | `NewGame`, `SetUpLevel` |
 | Writes | `$9B44`-`$9B48` (`SavedScore`) |
 
 ### `PrintHighScore` (`$9B53`)
@@ -963,28 +963,7 @@ Witness: L1 1400 (c1, c1g, controls, ending, energy, energy-out, gameover, hof, 
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 6 calls, 5,099,562 t-states own (1.52 %) |
 | Runs (the other recordings) | 1,394 calls (`stage1/menu` 72, `stage1/rzx/r344752` 49, `stage2/rec/ending` 44 and 90 more) |
-| Called from | `NewGame`, `NewGameDelay2`, `MainLoop`, `LoseLifeDrained`, `LevelComplete`, `LevelCompletePause`, `HallOfFame`, `TitleScreen`, `EndingScreen` |
-| Calls | `DelayOuter` (falls into) |
-
-### `DelayOuter` (`$890A`)
-
-**DelayOuter**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 99,061 calls (`stage2/rec/ending` 11,257, `docs/integrate/rec/nameedit` 6,604, `stage2/rec/hof` 6,604 and 20 more) |
-| Called from | `Delay` (falls into), `DelayInner` (tail) |
-| Calls | `DelayInner` (falls into) |
-
-### `DelayInner` (`$890C`)
-
-**DelayInner**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 99,061 calls (`stage2/rec/ending` 11,257, `docs/integrate/rec/nameedit` 6,604, `stage2/rec/hof` 6,604 and 20 more) |
-| Called from | `DelayOuter` (falls into) |
-| Calls | `DelayOuter` (tail) |
+| Called from | `NewGame`, `MainLoop`, `LoseLifeDrained`, `LevelComplete`, `LevelCompletePause`, `HallOfFame`, `TitleScreen`, `EndingScreen` |
 
 ## sound
 
@@ -1123,18 +1102,8 @@ Witness: L1 17 (c1, c1g, controls, ending, energy-out, gameover, hof, kempston, 
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 1 call, 3,515 t-states own (0.00 %) |
 | Runs (the other recordings) | 16 calls (`stage1/controls` 4, `stage1/menu` 2, `stage1/gameover` 1 and 9 more) |
 | Called from | `LevelCompletePause`, `PauseGame`, `TitleScreen` |
-| Reads | `$ADF0`-`$AFFF` (`TitleTuneData`) |
-| Ports in | `$00FE` |
-
-### `TitleTuneNoteLoop` (`$AD80`)
-
-**TitleTuneNoteLoop**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`docs/dfA/rec/practice`, `stage1/energy`) |
 | Calls | `PlayNote` |
-| Reads | `$AF52`-`$AFAB` (`TitleTuneData+354`) |
+| Reads | `$ADF0`-`$AFFF` (`TitleTuneData`) |
 | Ports in | `$00FE` |
 
 ### `PlayNote` (`$ADA7`)
@@ -1151,20 +1120,9 @@ Witness: L1 10535890 (c1, c1g, controls, ending, energy, energy-out, gameover, h
 | --- | --- |
 | Runs (c1g: the c1 recording's game window, from the jump to `$8382` (frame 15752 T 33930): the menu and play) | 19 calls, 13,473,433 t-states own (4.01 %) |
 | Runs (the other recordings) | 5,592,729 calls (`stage1/menu` 2,185,086, `stage2/rec/energy-out` 1,477,736, `stage1/controls` 1,152,802 and 11 more) |
-| Called from | `TitleTuneNoteLoop`, `NoteLoopEnd` (tail) |
-| Calls | `NoteLoopEnd` (falls into) |
+| Called from | `TitleTune` |
 | Reads | `$ADF0`-`$AFFF` (`TitleTuneData`) |
 | Ports out | `$00FE`, `$10FE` |
-
-### `NoteLoopEnd` (`$ADE8`)
-
-**NoteLoopEnd**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings 5,591,918 calls (`stage1/menu` 2,185,085, `stage2/rec/energy-out` 1,477,736, `stage1/controls` 1,152,801 and 3 more) |
-| Called from | `PlayNote` (falls into) |
-| Calls | `PlayNote` (tail) |
 
 ## controls
 
@@ -1562,21 +1520,10 @@ Witness: L1 11 (c1, c1g, controls, energy, energy-out, kempston, menu, practice)
 
 | | |
 | --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/kempston`, `docs/dfA/rec/practice`, `stage1/energy` and 1 more) |
-| Calls | `Delay` |
-| Reads | `$81FF` (`Level`); `$8385`-`$8386` (`LevelSettings`); `$83FD`-`$8407` (`LevelSettings+120`, `PracticeFlag`); `$88B0`-`$88BF` (`LevelDigits`); `$8900`-`$8913` (`LevelDigits+80`, `Delay`, `DelayOuter`, `DelayInner` and 1 more); `$9B44`-`$9B48` (`SavedScore`); 2 more ranges |
-| Writes | `$50A6`-`$50A7` (screen); `$51A6`-`$51A7` (screen); `$52A6`-`$52A7` (screen); `$53A6`-`$53A7` (screen); `$53BA`-`$53BF` (screen); `$5486`-`$5487` (screen); 18 more ranges |
-
-### `NewGameDelay2` (`$842C`)
-
-**NewGameDelay2**
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage2/rec/L01`) |
+| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage2/rec/L01`, `stage1/kempston`, `docs/dfA/rec/practice` and 2 more) |
 | Calls | `Delay`, `ClearSavedScore` |
-| Reads | `$81B8`-`$81D0` (`ExplosionSlots`); `$81FF` (`Level`); `$8376`-`$8386` (`BeamStartX`, `BeamStartY`, `BeamStartDirection`, `DemoFlag` and 10 more); `$8407` (`PracticeFlag`); `$88B0`-`$88BF` (`LevelDigits`); `$8912`-`$8913` (`LevelAddress`); 8 more ranges |
-| Writes | `$50A6`-`$50A7` (screen); `$51A6`-`$51A7` (screen); `$52A6`-`$52A7` (screen); `$53A6`-`$53A7` (screen); `$53BA`-`$53BF` (screen); `$5486`-`$5487` (screen); 30 more ranges |
+| Reads | `$81B8`-`$81D0` (`ExplosionSlots`); `$81FF` (`Level`); `$8376`-`$8386` (`BeamStartX`, `BeamStartY`, `BeamStartDirection`, `DemoFlag` and 10 more); `$83FD`-`$8407` (`LevelSettings+120`, `PracticeFlag`); `$88B0`-`$88BF` (`LevelDigits`); `$8900`-`$8913` (`LevelDigits+80`, `Delay`, `LevelAddress`); 9 more ranges |
+| Writes | `$50A6`-`$50A7` (screen); `$51A6`-`$51A7` (screen); `$52A6`-`$52A7` (screen); `$53A6`-`$53A7` (screen); `$53BA`-`$53BF` (screen); `$5486`-`$5487` (screen); 31 more ranges |
 
 ### `LevelPanel` (`$8432`)
 
@@ -2790,7 +2737,7 @@ image, run at `$7B52-$7CFF`.
 
 | Module | Entries | Code entries |
 | --- | --- | --- |
-| [`chain`](#the-main-block-the-decryption-chain-chain) | `$7B52`-`$7CFF` | 15 of 25 |
+| [`chain`](#the-main-block-the-decryption-chain-chain) | `$7B52`-`$7CFF` | 10 of 12 |
 
 ### The main block: the decryption chain: chain
 
@@ -2827,8 +2774,8 @@ Witness: L1 36 (c1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 18 calls (`stage1/c1` 18) |
-| Called from | `ChainLayers`, `SumLayer1`, `Layers6`, `Layers10`, `Layers11`, `SumLayer2`, `Layers13`, `SumLayer3`, `Layers26`, `Layers27` |
-| Calls | `ChainLayers`, `SumLayer1`, `Layers6`, `Layers11`, `Layers13`, `SumLayer3`, `Layers27` |
+| Called from | `ChainLayers`, `ChainLayers2`, `ChainLayers3`, `ChainLayers4` |
+| Calls | `ChainLayers`, `ChainLayers2`, `ChainLayers3`, `ChainLayers4` |
 
 #### `ChainLayers` (`$7BB2`)
 
@@ -2836,7 +2783,7 @@ Witness: L1 36 (c1).
 
 1. `$CB` at ChainText (the plant), BC = `$46D9` with bit 7 of B set: the first XorLayer.
 
-2. Then layer after layer, B and C changed by shifts and increments between the calls (EXX, OR E and the like are key bytes, not code: XorLayer writes C over them and jumps past). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
+2. Then layer after layer, B and C changed by shifts and increments between the calls (the key byte after each CALL is data, `@inline`: the layer writes C over it and jumps past it; read as code it would be an EXX, an OR E and the like). Sum layers SumLayer1 `$7BD2`, SumLayer2 `$7C15`, SumLayer3 `$7C54` sit inside the run, jumped over by `JR`.
 
 3. After the 30th layer (at `$7CA2`): FinalSum.
 
@@ -2863,14 +2810,14 @@ Witness: L1 12 (c1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 6 calls (`stage1/c1` 6) |
-| Called from | `XorLayer`, `Layers6`, `Layers9`, `Layers13`, `SumLayer3` |
-| Calls | `XorLayer`, `Layers6`, `Layers9`, `Layers10`, `Layers13`, `Layers26` |
+| Called from | `ChainLayers2`, `ChainLayers3`, `ChainLayers4` |
+| Calls | `ChainLayers2`, `ChainLayers3`, `ChainLayers4` |
 
-#### `Layers6` (`$7BF0`)
+#### `ChainLayers2` (`$7BE3`)
 
-**The chain after key byte 5: the next layer's B and C, then its CALL**
+**The chain goes on past SumLayer1 (jumped over by a JR): the next layers**
 
-Decrypted by an earlier layer, run once.
+Part of ChainLayers, cut by the sum layer that sits inside the run.
 
 Witness: L1 2 (c1).
 
@@ -2879,48 +2826,6 @@ Witness: L1 2 (c1).
 | Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
 | Called from | `XorLayer`, `SumLayer1` |
 | Calls | `XorLayer`, `SumLayer1` |
-
-#### `Layers9` (`$7C03`)
-
-**The chain after key byte 8: the next layer's B and C, then its CALL**
-
-Decrypted by an earlier layer, run once.
-
-Witness: L1 2 (c1).
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `SumLayer1` |
-| Calls | `SumLayer1` |
-
-#### `Layers10` (`$7C07`)
-
-**The chain after key byte 9: the next layer's B and C, then its CALL**
-
-Decrypted by an earlier layer, run once.
-
-Witness: L1 2 (c1).
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `SumLayer1` |
-| Calls | `XorLayer` |
-
-#### `Layers11` (`$7C0D`)
-
-**The chain after key byte 10: the next layer's B and C, then its CALL**
-
-Decrypted by an earlier layer, run once.
-
-Witness: L1 2 (c1).
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `XorLayer` |
-| Calls | `XorLayer` |
 
 #### `SumLayer2` (`$7C15`)
 
@@ -2933,14 +2838,14 @@ Witness: L1 6 (c1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/c1` 3) |
-| Called from | `Layers13`, `Layers27` |
-| Calls | `XorLayer`, `Layers13`, `Layers27`, `Layers30` |
+| Called from | `ChainLayers3`, `ChainLayers4` |
+| Calls | `ChainLayers3`, `ChainLayers4` |
 
-#### `Layers13` (`$7C2E`)
+#### `ChainLayers3` (`$7C26`)
 
-**The chain after key byte 12: the next layer's B and C, then its CALL**
+**The chain goes on past SumLayer2 (jumped over by a JR): the next layers**
 
-Decrypted by an earlier layer, run once.
+Part of ChainLayers, cut by the sum layer that sits inside the run.
 
 Witness: L1 2 (c1).
 
@@ -2961,50 +2866,22 @@ Witness: L1 6 (c1).
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings 3 calls (`stage1/c1` 3) |
-| Called from | `XorLayer`, `Layers30` |
-| Calls | `XorLayer`, `SumLayer1` |
+| Called from | `ChainLayers4` |
+| Calls | `ChainLayers4` |
 
-#### `Layers26` (`$7C88`)
+#### `ChainLayers4` (`$7C65`)
 
-**The chain after key byte 25: the next layer's B and C, then its CALL**
+**The chain goes on past SumLayer3 (jumped over by a JR): the next layers**
 
-Decrypted by an earlier layer, run once.
-
-Witness: L1 2 (c1).
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `SumLayer1` |
-| Calls | `XorLayer` |
-
-#### `Layers27` (`$7C8C`)
-
-**The chain after key byte 26: the next layer's B and C, then its CALL**
-
-Decrypted by an earlier layer, run once.
+Part of ChainLayers, cut by the sum layer that sits inside the run.
 
 Witness: L1 2 (c1).
 
 | | |
 | --- | --- |
 | Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `XorLayer`, `SumLayer2` |
-| Calls | `XorLayer`, `SumLayer2` |
-
-#### `Layers30` (`$7CA1`)
-
-**The chain after key byte 29: the next layer's B and C, then its CALL**
-
-Decrypted by an earlier layer, run once.
-
-Witness: L1 2 (c1).
-
-| | |
-| --- | --- |
-| Runs | not reached in `stage1/c1g`; in the other recordings run into, not called (`stage1/c1`) |
-| Called from | `SumLayer2` |
-| Calls | `SumLayer3` |
+| Called from | `XorLayer`, `SumLayer1`, `SumLayer2`, `SumLayer3` |
+| Calls | `XorLayer`, `SumLayer1`, `SumLayer2`, `SumLayer3` |
 
 #### `FinalSum` (`$7CA6`)
 

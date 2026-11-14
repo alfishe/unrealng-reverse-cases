@@ -4,12 +4,18 @@
     python3 tools/fig_loader.py basic docs/img/load/basic-line.png    # line 0 of the BASIC, build/basic.bin
     python3 tools/fig_loader.py byte docs/img/load/turbo-byte.png     # the turbo block's first pulses, orig TZX
     python3 tools/fig_loader.py fill docs/img/load/chainfill.png      # ChainFill's stream and the chain's sum area
+    python3 tools/fig_loader.py layers docs/img/load/layers.png       # the 30 layers and Final16 by address
+    python3 tools/fig_loader.py steps docs/img/load/cipher-steps.gif  # XorLayer and Final16 step by step
 
 `basic`: the 52 bytes of line 0 coloured by kind; under each number the digits LIST shows and the hidden five-byte
 value the ROM uses. `byte`: the pulse pairs after the sync, read as LoadBlock reads them (a lead pair, then ReadByte:
 8 bits MSB first, the invert flag, zeros - 5 padding pairs), with the T-states of each. `fill`: the stream of
 ChainStart `$7B52` (D = `$95`, D = 17 x D + L + 11) computed here and compared with the entry image
-(work/stage1/images/entry.cpu.bin), and what `$4000-$FFFF` holds when ChainSum adds it up.
+(work/stage1/images/entry.cpu.bin), and what `$4000-$FFFF` holds when ChainSum adds it up. `layers`: the 30 calls
+of src/head/keys.txt, each XorLayer as the range it deciphers, each SumLayer as a mark, the depth per address, and
+Final16's range. `steps`: the first XorLayer over `$7BC0-$7BC7` and Final16 over the words at `$A07A-$A089`, a byte
+or a word a picture, from build/main.bin (the tape's bytes, moved by `$1F2B`), checked against build/head.bin and
+build/game.bin.
 """
 import os
 import sys
@@ -311,5 +317,183 @@ def fill(out):
     print(out, o.size, len(same), [hex(a) for a in diff], hex(last))
 
 
+MOVE = 0x1F2B                   # BlockHead's LDDR distance: tape $5C27 -> run $7B52
+
+
+def build_bytes():
+    b = os.path.join(CASE, 'build')
+    return (open(os.path.join(b, 'main.bin'), 'rb').read(), open(os.path.join(b, 'head.bin'), 'rb').read(),
+            open(os.path.join(b, 'game.bin'), 'rb').read())
+
+
+def run_byte(main, a):
+    """The byte at run address a ($7B52-$FD1A) as BlockHead leaves it, before the chain."""
+    return main[a - MOVE - 0x5C00]
+
+
+def read_layers():
+    out = []
+    for line in open(os.path.join(CASE, 'src', 'head', 'keys.txt')):
+        f = line.split('#', 1)[0].split()
+        if f and f[0] in ('xor', 'sum'):
+            out.append((f[0], int(f[1], 16), int(f[2]), int(f[3]), int(f[4])))
+    return out
+
+
+def layers(out):
+    lay = read_layers()
+    lo, hi = 0x7BB0, 0x7D40
+    W, x0, x1 = 1060, 250, 1040
+    sc = (x1 - x0) / (hi - lo)
+    rh = 17
+    o = Image.new('RGB', (W, 120 + rh * len(lay) + 190), figlib.BG)
+    dr = ImageDraw.Draw(o)
+    figlib.text(dr, (10, 8), "The chain's 30 layers by address: 18 decipher, 12 only sum", 17, figlib.ACCENT)
+    figlib.text(dr, (10, 32), 'One row a call, in the order they run (src/head/keys.txt). Bar: the B bytes an XorLayer '
+                'deciphers after its call;', 13, figlib.DIM)
+    figlib.text(dr, (10, 50), 'dot: a SumLayer (deciphers nothing, adds memory into A). The tick on each row is the '
+                'call\'s key byte (RET).', 13, figlib.DIM)
+    y = 80
+    for a in range(0x7BC0, hi, 0x20):
+        x = x0 + (a - lo) * sc
+        dr.line([x, y - 4, x, y + rh * len(lay)], fill=(55, 55, 65))
+        figlib.text(dr, (x, y - 16), f'${a:04X}', 11, figlib.DIM, anchor='ma')
+    depth = [0] * (hi - lo)
+    total = 0
+    for k, (kind, ret, b, c, a) in enumerate(lay):
+        yy = y + 4 + k * rh
+        n = b or 256
+        col = (230, 90, 160) if kind == 'xor' else (90, 150, 230)
+        label = f'{k + 1:2d} {kind} RET ${ret:04X} B {n:3d} C ${c:02X}'
+        figlib.text(dr, (10, yy - 1), label, 12, col)
+        rx = x0 + (ret - lo) * sc
+        dr.line([rx, yy, rx, yy + rh - 6], fill=figlib.FG)
+        if kind == 'xor':
+            total += n
+            dr.rectangle([x0 + (ret + 1 - lo) * sc, yy + 2, x0 + (ret + 1 + n - lo) * sc - 1, yy + rh - 8], fill=col)
+            for t in range(ret + 1, ret + 1 + n):
+                depth[t - lo] += 1
+        else:
+            dr.ellipse([rx + 3, yy + 1, rx + 11, yy + 9], fill=col)
+    y += 8 + rh * len(lay)
+    figlib.text(dr, (10, y), f'layers on one address (max {max(depth)})', 12, figlib.FG)
+    m = max(depth)
+    for i, d in enumerate(depth):
+        if d:
+            x = x0 + i * sc
+            dr.rectangle([x, y + 40 - 36 * d / m, x + sc, y + 40], fill=(240, 200, 80))
+    y += 52
+    figlib.text(dr, (10, y), f'XorLayer bytes deciphered: {total}, on {sum(1 for d in depth if d)} addresses '
+                f'(${lo + min(i for i, d in enumerate(depth) if d):04X}-${lo + max(i for i, d in enumerate(depth) if d):04X})',
+                13, figlib.FG)
+    y += 28
+    figlib.text(dr, (10, y), 'Then Final16 (one layer of 16-bit words, autokey) over $7D00-$FD19, 16 397 words:', 13,
+                figlib.FG)
+    y += 22
+    fx0, fx1 = 20, W - 20
+    fs = (fx1 - fx0) / (0xFD1A - 0x7B52)
+    dr.rectangle([fx0, y, fx1, y + 22], outline=figlib.DIM)
+    dr.rectangle([fx0 + (0x7BC0 - 0x7B52) * fs, y + 1, fx0 + (0x7D34 - 0x7B52) * fs, y + 21], fill=(230, 90, 160))
+    dr.rectangle([fx0 + (0x7D00 - 0x7B52) * fs, y + 6, fx1 - 1, y + 16], fill=(120, 200, 120))
+    for a, t, anc in ((0x7B52, '$7B52 (the XOR layers to $7D33, Final16 from $7D00)', 'la'), (0xFD1A, '$FD1A', 'ra')):
+        figlib.text(dr, (fx0 + (a - 0x7B52) * fs, y + 26), t, 11, figlib.FG, anchor=anc)
+    figlib.text(dr, (fx0, y + 44), 'green: Final16 (the game and the mover); pink: the XOR layers; '
+                '$7D00-$7D33 gets both', 11, figlib.DIM)
+    o = o.crop((0, 0, W, y + 66))
+    o.save(out)
+    print(out, o.size, total, max(depth))
+
+
+def steps(out):
+    main, head, game = build_bytes()
+    lay = read_layers()
+    kind, ret, b, c, a = lay[0]
+    frames = []
+    W, H = 1000, 330
+    plain_head = head[0x27 + 0x7BC0 - 0x7B52:]
+
+    def cell(dr, x, y, v, hl, txt=None):
+        g = (240, 200, 80) if hl else (60, 60, 72)
+        dr.rectangle([x, y, x + 92, y + 30], fill=g)
+        figlib.text(dr, (x + 46, y + 15), txt if txt is not None else f'{v:02X}', 15,
+                    (0, 0, 0) if hl else figlib.FG, anchor='mm')
+
+    # XorLayer, layer 1: 8 bytes from $7BC0
+    addrs = list(range(ret + 1, ret + 9))
+    cip = [run_byte(main, x) for x in addrs]
+    keys, pl = [], []
+    prev = a
+    for k in range(8):
+        key = (17 * prev + c) & 0xFF
+        p = key ^ cip[k]
+        keys.append(key)
+        pl.append(p)
+        prev = p
+    assert bytes(pl[:7]) == plain_head[:7], (pl, plain_head[:7])
+    assert pl[7] == 0x45                      # keys.txt: the byte at $7BC7 before layer 2 writes its C there
+    for k in range(9):
+        o = Image.new('RGB', (W, H), figlib.BG)
+        dr = ImageDraw.Draw(o)
+        figlib.text(dr, (10, 8), 'XorLayer $7B84, the first call: B = 198, C = $D9, incoming A = 0 (autokey)', 17,
+                    figlib.ACCENT)
+        figlib.text(dr, (10, 34), 'Each byte: key = 17 x (the previous plain byte, first A) + C; plain = cipher XOR key',
+                    13, figlib.DIM)
+        for j, x in enumerate(addrs):
+            xx = 140 + j * 104
+            figlib.text(dr, (xx + 46, 70), f'${x:04X}', 12, figlib.DIM, anchor='mm')
+            cell(dr, xx, 84, cip[j], j == k)
+            cell(dr, xx, 134, keys[j], j == k, None if j <= k else '')
+            cell(dr, xx, 184, pl[j], j == k, None if j <= k else '')
+        for r, t in ((84, 'cipher'), (134, 'key'), (184, 'plain')):
+            figlib.text(dr, (10, r + 8), t, 14, figlib.FG)
+        if k < 8:
+            pv = a if k == 0 else pl[k - 1]
+            figlib.text(dr, (10, 236), f'${addrs[k]:04X}: key = 17 x ${pv:02X} + ${c:02X} = ${17 * pv + c:03X} -> '
+                        f'${keys[k]:02X};  ${cip[k]:02X} XOR ${keys[k]:02X} = ${pl[k]:02X}', 15, figlib.FG)
+        figlib.text(dr, (10, 266), 'plain $7BC0-$7BC6: CB 38 CB F8 CD 84 7B = SRL B; SET 7,B; CALL XorLayer (the next '
+                    'layer)', 13, figlib.DIM)
+        figlib.text(dr, (10, 288), '$7BC7 = $45 here; the next call writes its C ($D9, EXX) over it. The layer runs on '
+                    'for 198 bytes.', 13, figlib.DIM)
+        frames.append(o)
+    # Final16 over 8 words around the entry
+    w0 = 0xA07A
+    wa = list(range(w0, w0 + 16, 2))
+    cw = [run_byte(main, x) | run_byte(main, x + 1) << 8 for x in wa]
+    pw = [game[x - 0x1D00 - 0x6000] | game[x + 1 - 0x1D00 - 0x6000] << 8 for x in wa]
+    prevw = game[w0 - 2 - 0x1D00 - 0x6000] | game[w0 - 1 - 0x1D00 - 0x6000] << 8
+    kw = []
+    for k in range(8):
+        lo_, hi_ = (prevw if k == 0 else pw[k - 1]) & 0xFF, (prevw if k == 0 else pw[k - 1]) >> 8
+        key = ((lo_ << 8 | lo_) + (hi_ << 8 | 0x29)) & 0xFFFF
+        kw.append(key)
+        assert cw[k] ^ key == pw[k], (hex(wa[k]), hex(cw[k]), hex(key), hex(pw[k]))
+    for k in range(9):
+        o = Image.new('RGB', (W, H), figlib.BG)
+        dr = ImageDraw.Draw(o)
+        figlib.text(dr, (10, 8), 'Final16 $7CBE: one word a step over $7D00-$FD19 (autokey on words)', 17, figlib.ACCENT)
+        figlib.text(dr, (10, 34), 'key = (L:L) + (B:$29), L and B the previous plain word\'s low and high byte; '
+                    'plain = cipher XOR key', 13, figlib.DIM)
+        for j, x in enumerate(wa):
+            xx = 140 + j * 104
+            figlib.text(dr, (xx + 46, 70), f'${x:04X}', 12, figlib.DIM, anchor='mm')
+            cell(dr, xx, 84, 0, j == k, f'{cw[j] & 0xFF:02X} {cw[j] >> 8:02X}')
+            cell(dr, xx, 134, 0, j == k, f'{kw[j] & 0xFF:02X} {kw[j] >> 8:02X}' if j <= k else '')
+            cell(dr, xx, 184, 0, j == k, f'{pw[j] & 0xFF:02X} {pw[j] >> 8:02X}' if j <= k else '')
+        for r, t in ((84, 'cipher'), (134, 'key'), (184, 'plain')):
+            figlib.text(dr, (10, r + 8), t, 14, figlib.FG)
+        if k < 8:
+            pv = prevw if k == 0 else pw[k - 1]
+            figlib.text(dr, (10, 236), f'${wa[k]:04X}: key = ${pv & 0xFF:02X}{pv & 0xFF:02X} + ${pv >> 8:02X}29 = '
+                        f'${kw[k]:04X};  ${cw[k]:04X} XOR ${kw[k]:04X} = ${pw[k]:04X}', 15, figlib.FG)
+        figlib.text(dr, (10, 266), 'bytes in memory order (low first). $A082 = the game\'s $8382 after the mover: '
+                    'C3 08 84 = JP $8408', 13, figlib.DIM)
+        figlib.text(dr, (10, 288), 'The first key of all, at $7D00, is $FBFB + $4329 = $3F24 (FinalSum\'s $43FB).', 13,
+                    figlib.DIM)
+        frames.append(o)
+    dur = [900] * 8 + [2500] + [900] * 8 + [2500]
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=dur, loop=0, optimize=True)
+    print(out, len(frames), [hex(x) for x in pl], [hex(x) for x in kw])
+
+
 if __name__ == '__main__':
-    {'basic': basic, 'byte': byte, 'fill': fill}[sys.argv[1]](sys.argv[2])
+    {'basic': basic, 'byte': byte, 'fill': fill, 'layers': layers, 'steps': steps}[sys.argv[1]](sys.argv[2])

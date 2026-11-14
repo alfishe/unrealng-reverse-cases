@@ -3,7 +3,7 @@
 What this covers: the tape block by block and as a picture; the BASIC line and its hidden numbers, and the loader's
 first stage; the turbo block's byte code (8 bits, an invert flag and padding pairs); the second stage that loads over
 its own end and runs a script and a countdown while the game loads, and the script's codes; the block head that finds
-its own address; ChainFill, the cipher of 30 layers and the 16-bit layer that turn the loaded bytes into the game at
+its own address; ChainFill, the cipher of 30 layers (18 decipher, 12 only sum) and the 16-bit layer that turn the loaded bytes into the game at
 `$6000-$DFFF`; the build from the sources back to the same tape; why the original TZX
 does not load in unreal-ng; the releases.
 
@@ -44,27 +44,28 @@ The stages, each with its first instruction in `c1` (`$RS stages`, the frame and
 | 0 | `$5D05` | 771 | the BASIC's machine code: moves `$134` bytes to `$B626` (LDIR), jumps to `$B65B` | `c1` stages; `work/stage1/blocks/code5d05.bin` |
 | 1 | `$B65B` | 771, 61 700 | clears the screen, copies the whole ROM font (768 bytes, characters 32-127) from `$3D00` to `$B326`, DI, finds the pilot and sync (`$B693`), loads the first `$010F` bytes to `$B75A` (`$B727`); a failed edge or checksum jumps to `$0000` | `c1` stages; `work/stage1/blocks/ldr_b626.bin` |
 | 2 | `$B856` | 1006, 38 026 | the second loader just loaded (`$B75A-$B868`): prints the loading text and a countdown while it loads the rest; a per-byte hook at `$B752` falls into code the load has just written | `c1` stages, writes `$B75A-$B868` |
-| 3 | `$5B00` | 15 635, 27 704 | `LDIR; RET` (`$ED $B0 $C9`), the loader's last step; its return goes to `$5C00` (what it moves: stage 2) | `c1` stages; `work/stage1/images/loaded.cpu.bin` at `$5B00` |
+| 3 | `$5B00` | 15 635, 27 704 | `LDIR; RET` (`$ED $B0 $C9`), the loader's last step; it moves the `$C000-$FFFF` piece to `$9DF0-$DDEF`, and its return goes to `$5C00` (pushed by LoadMainLow's `PUSH IX`) | `c1` stages; `work/stage1/images/loaded.cpu.bin` at `$5B00` |
 | 4 | `$5C00` | 15 640, 44 028 | the loaded block's head (`$5C00-$9DEF` written by `$B737`): DI, writes `POP HL; JP (HL)` at `$5B00` and calls it to learn where it runs, then moves `$81C9` bytes up to end at `$FD1A` (LDDR at `$5C21`) and returns to `$7B52` | `c1` stages, writes `$7B52-$FD1A` by `$5C21` |
-| 5-7 | `$7B52`, `$7BC0`, `$7C8C` | 15 651 onward | ChainFill writes a generated stream over `$5B00-$7B51` and `$FD1B-$FFFF` (the BASIC, the system variables and the block head go), ChainSum adds `$4000-$FFFF` into A; then 30 layers, each deciphering the chain's next piece; FinalSum and Final16 decipher `$7D00-$FD19`, the game and the mover (3.5) | `c1` stages; [the decipher animation](img/load/decipher.gif) |
+| 5-7 | `$7B52`, `$7BC0`, `$7C8C` | 15 651 onward | ChainFill writes a generated stream over `$5B00-$7B51` and `$FD1B-$FFFF` (the BASIC, the system variables and the block head go), ChainSum adds `$4000-$FFFF` into A; then 30 layers in turn: 18 XorLayers each decipher the chain's next piece, 12 SumLayers add memory into the key; FinalSum and Final16 decipher `$7D00-$FD19`, the game and the mover (3.5) | `c1` stages; [the decipher animation](img/load/decipher.gif) |
 | 8 | `$FD00` | before 15 752 | `LDIR` `$7D00-$FCFF` to `$6000-$DFFF`, `LD ($5C09),BC` (0), `LD SP,$FFFF`, bit 7 of R cleared, `JP $8382` | `work/stage1/images/entry.cpu.bin` at `$FD00-$FD1A` |
 | 9 | `$8382` | 15 752, 33 930 | the game's entry: the menu | `c1` stages; the `c1g` game window starts here |
 
 ```mermaid
 flowchart LR
-    T0[ROM LOAD: header, BASIC] --> S0[5D05: move loader 1 to B626]
-    S0 --> S1[B65B loader 1: pilot, sync, load B75A-B868]
-    S1 --> S2[B856 loader 2: script, countdown, loads 2-8]
-    S2 --> S3[5B00: LDIR, RET]
-    S3 --> S4[5C00 BlockHead: own address, move up to 7B52-FD1A]
-    S4 --> SF[7B52 ChainFill: stream over 5B00-7B51 and FD1B-FFFF, sum 4000-FFFF]
-    SF --> S5[7BB2 chain: 30 layers]
+    T0[ROM LOAD: header, BASIC] -->|frame 771| S0[5D05: move loader 1 to B626]
+    S0 -->|771| S1[B65B loader 1: pilot, sync, load B75A-B868]
+    S1 -->|1006| S2[B856 loader 2: script, countdown, loads 2-8]
+    S2 -->|15 635| S3[5B00: LDIR, RET]
+    S3 -->|15 640| S4[5C00 BlockHead: own address, move up to 7B52-FD1A]
+    S4 -->|15 651| SF[7B52 ChainFill: stream over 5B00-7B51 and FD1B-FFFF, sum 4000-FFFF]
+    SF --> S5[7BB2 chain: 30 layers, 18 decipher, 12 sum]
     S5 --> S6[7CA6 FinalSum, Final16: 16-bit layer over 7D00-FD19]
-    S6 --> S7[FD00 MoveGame: 7D00-FCFF to 6000-DFFF]
-    S7 --> G[8382 GameEntry]
+    S6 -->|about 15 743| S7[FD00 MoveGame: 7D00-FCFF to 6000-DFFF]
+    S7 -->|15 752| G[8382 GameEntry]
 ```
 
-*The stages in order (the hex in the boxes is an address). Witness: `c1` (each stage's first instruction), the
+*The stages in order (the hex in the boxes is an address, the numbers on the arrows the `c1` frame the next stage
+starts in). Witness: `c1` (each stage's first instruction), the
 SkoolKit simulation of `tools/parts.py`. The point: each stage builds the next one in memory just before it runs;
 nothing of the game is readable before the last layer.*
 
@@ -233,7 +234,7 @@ Seven moments of it:
 
 Worked example, the countdown against the clock. Countdown starts at "294" (`$B628`); the first tick comes after 5
 hooks (TickHooks), then one every 20 hooks, that is 160 byte times of 13 short pairs: 3 475 776 T, 0.993 s. In `c1`
-the 294 ticks run from 293 at 3.73 s to 000 at 293.70 s after the pilot, a tenth of a second before the last byte.
+the 294 ticks run from 293 at about 2.74 s to 000 at 293.70 s after the pilot, a tenth of a second before the last byte.
 Frame 2000, the screenshot above, shows 275; 0 comes at about frame 15 640: 13 640 frames is 272.8 s at 50 frames a
 second, so the 275 is honest to within 1 %. The tick is counted in hooks, so it measures bytes loaded; the bytes come
 at a fixed rate because every byte lasts the same time (3.3.1).
@@ -333,8 +334,8 @@ flowchart TD
     D -->|yes| R[RET: L the byte, carry set]
 ```
 
-*ReadByte (the hex are addresses and counts). Witness: `c1` (ReadByte 82 906 runs: every byte of the eight loads and
-their checksums). The point: the bit is in a pair's length, the byte's length is fixed by the padding.*
+*ReadByte (the hex are addresses and counts). Witness: `c1` (ReadByte 41 453 runs: the 41 445 bytes of the eight loads and
+their 8 checksums). The point: the bit is in a pair's length, the byte's length is fixed by the padding.*
 
 ![The turbo block's first pulses](img/load/turbo-byte.png)
 
@@ -363,7 +364,7 @@ ticks). The codes (ControlCode `$B8DD` and ControlTable `$BB92`):
 | `$03` | n | pause: wait n hooks before the next step (ScriptWait) |
 | `$04` | | the end of the script (LoadFlags bit 1 off) |
 | `$05` | c | FillChar = c, the character `$0C`, `$0E` and `$1D` print |
-| `$08`, `$09`, `$0A`, `$0B` | | the print position left, right, down, up |
+| `$08`, `$09`, `$0A`, `$0B` | | the print position left, right, down, up; left from the window's first column falls through into up (CodeLeft `$B98E` has no RET there), so it wraps to the last column of the row above |
 | `$0C` | | clear the window: FillChar into every cell, one cell a step |
 | `$0D` | | to the window's left on the next row |
 | `$0E` | n | print FillChar n times (0: 256), one a step |
@@ -519,7 +520,17 @@ the fill is the yellow band that grows down from `$5B00` from the fourth picture
 
 ### The 30 layers
 
-Thirty layers each decipher the code that follows them, and the code after a CALL exists only once the CALL returns:
+Thirty layers run in turn: 18 XorLayers each decipher the code that follows them, and 12 SumLayers add a stretch of
+memory into A (the next key) without deciphering anything. Each is a CALL followed by one key byte, and the code
+after a CALL exists only once the CALL returns (`src/head/keys.txt` lists them in order: 18 `xor` lines, 12 `sum`).
+
+![The 30 layers by address](img/load/layers.png)
+
+*Each call of the chain as a row, in the order they run. How to read it: a pink bar is the range an XorLayer deciphers
+(the B bytes after its key byte), a blue dot a SumLayer, the yellow profile how many layers pass over each address; the
+lower bar puts the XOR layers against Final16's range. The point: the 18 XorLayers overlap, up to 17 deep, over 372
+bytes at `$7BC0-$7D33`; everything else (the game and the mover) is one 16-bit layer. Command: `python3
+tools/fig_loader.py layers docs/img/load/layers.png` (from `src/head/keys.txt`).*
 
 ```asm
 XorLayer:               ; $7B84
@@ -536,7 +547,7 @@ XorLayerByte:
   ADD A,D
   ADD A,C
   XOR (HL)              ; decipher one byte after the call
-  LD (HL),A
+  LD (HL),A             ; the plain byte stays in A: the next byte's key comes from it
   DJNZ XorLayerByte
   LD B,E
   POP HL
@@ -544,24 +555,83 @@ XorLayerByte:
   LD (HL),C             ; C over the key byte
   INC HL
   JP (HL)               ; into the bytes just deciphered
+
+SumLayer1:              ; $7BD2 (SumLayer2 $7C15, SumLayer3 $7C54: the same code)
+  LD HL,$4000
+  LD D,L                ; DE = C + 1, the stride
+  LD E,C
+  INC DE
+  ADD A,B
+SumLayer1Loop:
+  ADD A,(HL)            ; every (C + 1)th byte of $4000-$FFFF
+  ADD HL,DE
+  JP NC,SumLayer1Loop
+  POP HL
+  ADD A,(HL)            ; the key byte, then C over it, as in XorLayer
+  LD (HL),C
+  INC HL
+  JP (HL)
 ```
+
+XorLayer is an autokey cipher: each byte's key is 17 x the previous plain byte + C, and the first "previous" is the
+incoming A. On the original tape every layer's incoming A is 0 (`keys.txt`): the key byte after each CALL is chosen so
+that the sums balance to 0.
+
+```text
+xor_layer(ret, A, B, C):                      # ret = the CALL's return address, its key byte
+    prev = A
+    for a in ret + 1 .. ret + B:              # B = 0 means 256
+        plain = mem[a] XOR ((17 * prev + C) AND $FF)
+        mem[a] = plain
+        prev = plain                          # autokey: the plain byte keys the next one
+    A = (prev + mem[ret]) AND $FF             # the key byte balances the sum
+    mem[ret] = C
+    go to ret + 1
+
+sum_layer(ret, A, B, C):
+    A = A + B + mem[$4000] + mem[$4000 + (C + 1)] + ... (every (C + 1)th byte up to $FFFF), mod 256
+    A = (A + mem[ret]) AND $FF; mem[ret] = C; go to ret + 1
+```
+
+How the tape was made (`tools/cipher.py encrypt`): the same walk forward over the plain bytes, which are the key source
+in both directions, with the layers applied in the reverse order (the last layer first), each with the A, B, C and key
+byte of `keys.txt`:
+
+```text
+xor_layer_encrypt(ret, A, B, C):
+    prev = A
+    for a in ret + 1 .. ret + B:
+        plain = mem[a]
+        mem[a] = plain XOR ((17 * prev + C) AND $FF)
+        prev = plain
+    mem[ret] = the key byte from keys.txt
+```
+
+Worked example, the first call (`$7BBC`: A = 0, B = `$C6` = 198, C = `$D9`). The tape's bytes, moved to `$7BC0`, read
+`12 6C 5A AC`. Key 17 x 0 + `$D9` = `$D9`, and `$12` XOR `$D9` = `$CB`. Next key 17 x `$CB` + `$D9` = `$E54`, so
+`$54`, and `$6C` XOR `$54` = `$38`. Then `$5A` XOR `$91` = `$CB`, `$AC` XOR `$54` = `$F8`: `CB 38 CB F8` is
+`SRL B; SET 7,B`, the code that sets up the second call (`build/head.lst` `$7BC0`).
 
 ```mermaid
 flowchart TD
-    A[ChainStart 7B52: ChainFill, ChainSum] --> B[plant CB at 7B99, BC = 46D9]
-    B --> C[XorLayer 7B84: decipher B bytes after the call]
-    C --> D{30 layers done?}
-    D -->|no| E[the new code: shift B and C, maybe a SumLayer over memory]
-    E --> C
-    D -->|yes| F[FinalSum 7CA6: a 16-bit key from a sum, E = 146]
-    F --> G[Final16 7CBE: 16-bit layer over 7D00-FD19, key 43FB]
+    A[ChainStart 7B52: ChainFill, ChainSum] --> B[plant CB at 7B99, BC = 46D9, B bit 7 set]
+    B --> C{the next call}
+    C -->|18 times| X[XorLayer 7B84: B bytes after the call, key = 17 x previous plain + C]
+    C -->|12 times| S[SumLayer 7BD2, 7C15 or 7C54: A + B + every C + 1th byte of 4000-FFFF]
+    X --> K[A + key byte, C over the key byte, jump past it]
+    S --> K
+    K --> D{30 calls done?}
+    D -->|no: shift B and C| C
+    D -->|yes| F[FinalSum 7CA6: a 16-bit sum, E = 146, key 43FB]
+    F --> G[Final16 7CBE: 16-bit autokey over 7D00-FD19]
     G --> H[jump: the last word 82C3 + 7A3D = FD00]
     H --> I[MoveGame FD00]
 ```
 
-*The chain's loop (the hex are addresses and values). Witness: `c1` (the chain's run), `tools/parts.py` (887 532
-instructions in SkoolKit's simulator). The point: every key comes from the memory around it, so the cipher cannot be
-read without running it, and a change anywhere breaks it.*
+*The chain's loop (the hex are addresses and values). Witness: `c1` (L1: XorLayer entered 18 times, its byte loop
+3642 times; SumLayer1 6 times, SumLayer2 and SumLayer3 3 times each; Final16's loop 16 397 times), `tools/parts.py`
+(887 532 instructions in SkoolKit's simulator). The point: every key comes from the memory around it, so the cipher
+cannot be read without running it, and a change anywhere breaks it.*
 
 Facts of the chain (`tools/cipher.py`, `src/head/keys.txt`):
 
@@ -569,13 +639,116 @@ Facts of the chain (`tools/cipher.py`, `src/head/keys.txt`):
   cipher included). The loader is gone by then (overwritten by the `$C000` piece's move and by the block), and the
   BASIC by the stream. On the original tape every layer's incoming key is 0: the balance bytes after each CALL are
   chosen so.
-- SumLayer1-3 (`$7BD2`, `$7C15`, `$7C54`) fold sums of memory into the key. The chain depends on SP, because its
-  return addresses lie inside the summed memory (SP is `$5BFE` at `$5B00` and `$5C00` in the chain): a first
-  simulation with SP = `$FFF0` ran wild.
+- SumLayer1-3 (`$7BD2`, `$7C15`, `$7C54`) fold sums of memory into the key and decipher nothing. The chain depends on
+  SP, because its return addresses lie inside the summed memory (SP is `$5BFE` at `$5B00` and `$5C00` in the chain): a
+  first simulation with SP = `$FFF0` ran wild.
 - 3642 byte decryptions on 372 addresses (`$7BC0-$7D33`), up to 17 layers on one address. The text
   "COPYRIGHT D.G.COOKE 1987" (ChainText `$7B9A`) lies inside the layers' range, so it is key material too.
-- Final16 deciphers `$7D00-$FD19`, 16 397 words (32 794 bytes): the game and the mover. The last word deciphered,
-  `$FD18` = `$82C3`, plus `$7A3D` gives `$FD00`: the jump to the mover. A wrong key jumps wild.
+
+### Final16: the 16-bit layer
+
+FinalSum zeroes its own operand, adds `$4000-$FFFF` as 16-bit words into DE (`$43FB` on the tape, `keys.txt` key16),
+and Final16 deciphers `$7D00-$FD19`, 16 397 words (32 794 bytes): the game and the mover. It is an autokey on words:
+the key of each word is made from the previous plain word.
+
+```asm
+FinalSum:               ; $7CA6
+  LD D,$00              ; DE = A, the 30th layer's key (E = 146)
+  LD E,A
+  XOR A
+  LD (FinalSum+$0001),A ; its own operand zeroed: the sum below does not count it
+  LD HL,$4000
+  LD BC,$0001
+FinalSumLoop:
+  LD A,E                ; DE + the word at HL
+  ADD A,(HL)
+  LD E,A
+  INC HL
+  LD A,D
+  ADC A,(HL)
+  LD D,A
+  ADD HL,BC
+  JP NC,FinalSumLoop    ; to $FFFF: DE = $43FB
+Final16:                ; $7CBE
+  EX DE,HL              ; HL = $43FB
+  LD DE,$7D00
+  LD C,$29
+  LD B,H                ; B:C = $4329
+Final16Loop:
+  LD H,L                ; HL = L:L + B:$29, the key word
+  ADD HL,BC
+  LD A,(DE)
+  XOR L                 ; the low byte
+  LD (DE),A
+  LD L,A                ; L = the plain low byte
+  INC DE
+  LD A,(DE)
+  XOR H                 ; the high byte
+  LD (DE),A
+  INC DE
+  LD B,A                ; B = the plain high byte
+  LD A,E
+  CP $1A
+  JP NZ,Final16Loop
+  LD A,D
+  CP $FD
+  JR NZ,Final16Loop     ; to $FD1A
+  LD H,B                ; HL = the last word + $7A3D: the mover's address
+  LD DE,$7A3D
+  ADD HL,DE
+  LD A,R
+  SET 7,A
+  LD R,A
+  JP (HL)               ; $FD00
+```
+
+```text
+final16():
+    L, B = $FB, $43                            # from FinalSum's $43FB
+    for a in $7D00 .. $FD18 step 2:
+        key = ((L << 8) | L) + ((B << 8) | $29)  (mod $10000)     # H = L; HL += B:$29
+        mem[a]     = mem[a] XOR low(key);  L = mem[a]             # the plain low byte
+        mem[a + 1] = mem[a + 1] XOR high(key);  B = mem[a + 1]    # the plain high byte
+    jump to ((B << 8) | L) + $7A3D             # the last word $82C3: $FD00
+
+final16_encrypt():                             # tools/cipher.py encrypt16, the plain words as the key source
+    L, B = $FB, $43
+    for a in $7D00 .. $FD18 step 2:
+        key = ((L << 8) | L) + ((B << 8) | $29)
+        L, B = mem[a], mem[a + 1]              # the plain word, before it is overwritten
+        mem[a] = L XOR low(key); mem[a + 1] = B XOR high(key)
+```
+
+```mermaid
+flowchart TD
+    A[FinalSum 7CA6: DE = A, operand 7CA7 = 0] --> B[DE + every word of 4000-FFFF: 43FB]
+    B --> C[Final16 7CBE: HL = 43FB, DE = 7D00, B:C = 43:29]
+    C --> D[H = L, HL = HL + B:C: the key word]
+    D --> E[low byte XOR L, L = plain low; high byte XOR H, B = plain high]
+    E --> F{DE = FD1A?}
+    F -->|no| D
+    F -->|yes| G[HL = B:L + 7A3D = FD00, bit 7 of R set, JP HL]
+```
+
+*FinalSum and Final16 (the hex are addresses and values). Witness: `c1` (L1: Final16's loop 16 397 times, entered
+once). The point: one key word, made from a sum over all memory, unlocks the whole game, and each word's key comes from
+the word before it.*
+
+Worked example, the game's entry. The game's `$8382` is at `$A082` before the mover. The plain word before it, at
+`$A080`, is `00 00` (L = 0, B = 0), so the key is `$0000` + `$0029` = `$0029`. The tape's word there is `EA 08`:
+`$EA` XOR `$29` = `$C3`, `$08` XOR `$00` = `$08`, so `C3 08`, the first two bytes of `JP $8408`, the game's entry. The
+first word's key of all comes from `$43FB`: `$FBFB` + `$4329` = `$3F24`. Recomputed from `build/head.bin`, `game.bin`
+and `main.bin`, Final16 gives the tape's bytes in 16 371 of the 16 397 words; the other 26 (`$7D00-$7D33`) are also
+under the XOR layers. The last word deciphered, `$FD18` = `$82C3`, plus `$7A3D` gives `$FD00`: the jump to the mover. A
+wrong key jumps wild.
+
+![XorLayer and Final16 step by step](img/load/cipher-steps.gif)
+
+*The first XorLayer over `$7BC0-$7BC7`, then Final16 over the eight words at `$A07A-$A089`, a byte or a word a
+picture. How to read it: the rows are the tape's byte, the key and the plain byte; yellow is the step being worked,
+and the line under the rows gives its arithmetic. The point: both layers are autokeys, each key made from the byte or
+word just deciphered. Command: `python3 tools/fig_loader.py steps docs/img/load/cipher-steps.gif` (from
+`build/main.bin`, checked against `build/head.bin` and `build/game.bin`).*
 
 The mover (`$FD00`) copies `$7D00-$FCFF` down to `$6000-$DFFF`, clears REPDEL and REPPER, sets SP = `$FFFF`, clears
 bit 7 of R and jumps to `$8382`:
@@ -596,13 +769,29 @@ MoveGame:               ; $FD00
 
 ![The head, the chain and the mover in memory](img/load/decipher.gif)
 
-*`$5B00-$FFFF` of `c1` from frame 15 638 to 15 756, one picture every fifth frame (25). How to read it: a byte's grey is its
-value; yellow is a byte written since the last picture, fading through red. The point: first the whole block moves
-up (one sweep), then for about 100 frames (some 20 pictures) almost nothing is written (the chain reads its sums and deciphers 372
-bytes at `$7BC0-$7D33`), then the 16-bit layer and the mover rewrite everything from `$6000` up in two frames (one picture); the
+*`$5B00-$FFFF` of `c1` from frame 15 638 to 15 758, one picture every fifth frame (25). How to read it: a byte's grey
+is its value; yellow is a byte written since the last picture, fading through red. The point: first the whole block
+moves up (one sweep), then for about 55 frames (11 pictures) almost nothing is written (the chain reads its sums and
+deciphers 372 bytes at `$7BC0-$7D33`, and FinalSum adds up memory), then the 16-bit layer rewrites `$7D00-$FD19` in
+about 27 frames (5 pictures, 92 T a word) and the mover copies the game into place in about 10 more (3 pictures); the
 last pictures are the game's first pass writing its buffers at `$E000-$FCFF`. Command: `python3
 ../../kit/memanim.py --work work/docs/dfA/c1 --from 15638 --to 15756 --step 349440 --cell 3 --label "..." --delay 400
 docs/img/load/decipher.gif`.*
+
+### How each stage is known
+
+| Stage | Read from the code (static) | Confirmed in `c1` (frame) |
+| --- | --- | --- |
+| BASIC, stage 0 | `build/basic.lst`: the hidden numbers, PROG + 58 | `$5D05` runs at 771 |
+| 1 | `build/stage2.lst` (`ldr_b626.bin`): font copy, pilot, sync, the first piece | `$B65B` at 771, the font at `$B326` |
+| 2 | `build/stage2.lst`: ReadByte, the hook, the script engine, the countdown | `$B856` at 1006; the screens 2000-15 700; ReadByte 41 453 runs |
+| 3 | `build/stage2.lst` LoadFiles: the `LDIR; RET` at `$5B00` | `$5B00` at 15 635 |
+| 4 | `build/head.lst` BlockHead | `$5C00` at 15 640, the LDDR's writes |
+| 5-7 | `build/head.lst`, `tools/parts.py` (the chain in SkoolKit), `tools/cipher.py` | `$7B52` at 15 651; the L1 counts above; `decipher.gif` |
+| 8 | `build/head.lst` MoveGame | the entry image at `$FD00-$FD1A`; the mover's writes from about 15 743 |
+| 9 | `build/game.lst` GameEntry | `$8382` at 15 752 |
+
+The tape itself is the last check: `tools/build.sh` rebuilds it from these sources, identical to the original (3.6).
 
 ## 3.6 The build
 
